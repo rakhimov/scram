@@ -1,0 +1,6 @@
+# Header files exported by this diretory, and their dependencie.
+#
+PED_SHELL_H     = ${TOP}/PrimaryEvents/PED_shell.h\
+  $(BOOLEAN_H) $(PRIMARY_EVENT_H)
+PRIMARY_EVENT_H = ${TOP}/PrimaryEvents/primary_event.h\
+  $(BOOLEAN_H) $(BASIC_H)

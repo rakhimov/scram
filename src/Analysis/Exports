@@ -1,0 +1,14 @@
+# Header files exported by this directory and their dependencies.
+#
+ALGEBRAIC_H=    ${TOP}/Analysis/CutSetsByAlgebraicMethod.h\
+  $(TREE_H) $(BOOLEAN_H)
+COMBO_H=        ${TOP}/Analysis/CutSetsByComboMethod.h\
+  $(TREEP_H) $(BOOLEAN_H)
+CUT_SETS_H=     ${TOP}/Analysis/CutSetsCommon.h\
+  $(EXPR_H)
+MONTE_CARLO_H=  ${TOP}/Analysis/MonteCarloSimulation.h\
+  $(TREEP_H) $(BOOLEAN_H)
+PROBS_H=        ${TOP}/Analysis/ProbabilityAnalysis.h\
+  $(TREEP_H) $(BOOLEAN_H)
+EXPR_H=         ${TOP}/Analysis/NormalisedBooleanExpressions.h\
+  $(BITS_H)

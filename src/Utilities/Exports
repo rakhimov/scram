@@ -1,0 +1,18 @@
+# Header files exported by this directory
+#
+ASSERT_H        = ${TOP}/Utilities/AssertUtil.h
+FILE_UTILS_H    = ${TOP}/Utilities/FileUtilities.h\
+  $(BOOLEAN_H)
+LIST_SUU_H      = ${TOP}/Utilities/list_suu.h\
+  $(BOOLEAN_H)
+LIST_SUU_UTIL_H = ${TOP}/Utilities/list_suu_utilities.h\
+  $(BOOLEAN_H) $(LIST_SUU_H)
+MATHMACROS_H    = ${TOP}/Utilities/MathMacros.h
+MEMORY_H        = ${TOP}/Utilities/MemoryUtil.h\
+  $(MY_TYPES_H) $(BLOCK_H)
+PERM_H          = ${TOP}/Utilities/StatisticalMaths.h
+RAND_H          = ${TOP}/Utilities/RandomNumbers.h
+REC_IO_H        = ${TOP}/Utilities/Record_Io.h\
+  $(BOOLEAN_H)
+STR_UTILS_H     = ${TOP}/Utilities/StringUtilities.h\
+  $(BOOLEAN_H)
