@@ -1,5 +1,5 @@
 ###########
-NE574
+SCRAM
 ###########
 
 SCRAM : "Simplified Command-line Risk Analysis Machine"
