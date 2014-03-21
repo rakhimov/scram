@@ -61,8 +61,6 @@ INSTALL(FILES GoogleTest/gtest/gtest.h
 
 INCLUDE_DIRECTORIES(${SCRAM_CORE_INCLUDE_DIRS})
 
-ADD_SUBDIRECTORY(test_modules)
-
 # To add a new file, just add it to this list.  Any GoogleTests inside will be automatically
 # added to ctest.
 set ( SCRAM_CORE_TEST_SOURCE ${SCRAM_CORE_TEST_SOURCE}
