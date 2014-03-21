@@ -2,7 +2,7 @@
 NE574
 ###########
 
-Simple Risk Analysis Tool.
+SCRAM : "Simplified Command-line Risk Analysis Machine"
 
 This project attempts to build a simple command line tool for fault
 tree analysis. The development uses some code and files from `OpenFTA`_ project
