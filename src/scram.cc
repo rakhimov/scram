@@ -9,12 +9,12 @@
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 
-int main(int argc, char** argv[]) {
+int main(int argc, char* argv[]) {
   // parse command line options
   po::options_description desc("Allowed options");
   desc.add_options()
       ("help,h", "produce help message")
-      ("tree-file,input-file,t,i", po::value<std::string>(),
+      ("input-file,i", po::value<std::string>(),
        "input file with tree description")
       ("prob-file,p", po::value<std::string>(), "file with probabilities")
       ("graph-only,g", "produce graph without analysis")
@@ -33,6 +33,26 @@ int main(int argc, char** argv[]) {
             run(), vm);
   po::notify(vm);
 
+  // process command line args
+  if (vm.count("help")) {
+    std::string msg = "Scram requires a file with input description and a"
+                      " file with probabilities for events.\n";
+    std::cout << msg << std::endl;
+    std::cout << desc << "\n";
+    return 0;
+  }
+
+  if (!vm.count("input-file")) {
+    std::string msg = "Scram requires an input file with a system description.\n";
+    std::cout << msg << std::endl;
+    std::cout << desc << "\n";
+    return 0;
+  } else if (!vm.count("prob-file")) {
+    std::string msg = "Scram requires a file with probabilities for events.\n";
+    std::cout << msg << std::endl;
+    std::cout << desc << "\n";
+    return 0;
+  }
 
 
 }  // end of main
