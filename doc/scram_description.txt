@@ -1,0 +1,36 @@
+The overall flow of SCRAM and possible future additions.
+
+Step 0. Type of analysis, i.e., fault tree, even tree, Markov chain, etc.
+
+
+Fault Tree Analysis.
+--------------------
+Step 1. Reading input files. Verification of the input. Optional visual tool.
+Step 1+ (Optional). Upon users' request output instruction file for graphviz
+    dot to draw the tree. This is for visual verification of the input.
+    Stop execution of the program.
+Step 2. Create the tree for analysis.
+Step 3. Perform cut set generation.
+Step 4. Perform analysis.
+Step 5. Output the analysis results.
+
+
+Event Tree Analysis.
+--------------------
+Step 1. Reading input files. Verification of the input. Optional visual tool.
+Step 1+ (Optional). Upon users' request output instruction file for graphviz
+    dot to draw the tree. This is for visual verification of the input.
+    Stop execution of the program.
+Step 2. Create the tree for analysis.
+Step 3. Perform calculations.
+Step 4. Output the results.
+
+
+Future Additions.
+-----------------
+1. Simple event tree analysis.
+2. More efficient algorithms for faul tree analysis.
+3. More types of gates for fault trees: exclusive OR, priority AND, inhibit.
+4. More types of events for fault trees: external, undeveloped, conditioning.
+5. Monte Carlo Methods.
+6. Markov analysis.
