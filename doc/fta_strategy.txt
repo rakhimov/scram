@@ -1,0 +1,4 @@
+Fault Tree Analysis.
+
+Initially only naive implementations will be given. Various other algorithms
+will be introduced when simple ones work.
