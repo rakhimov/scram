@@ -18,7 +18,8 @@ int main(int argc, char* argv[]) {
        "input file with tree description")
       ("prob-file,p", po::value<std::string>(), "file with probabilities")
       ("graph-only,g", "produce graph without analysis")
-      ("analysis,a", "type of analysis to be performed on this input")
+      ("analysis,a", po::value<std::string>(),
+       "type of analysis to be performed on this input")
       ;
 
   po::variables_map vm;
@@ -54,5 +55,18 @@ int main(int argc, char* argv[]) {
     return 0;
   }
 
+  // determine required analysis
+  // FTA naive is assumed if no arguments are given
+  std::string analysis = "fta-naive";
+  if (!vm.count("analysis")) {
+    std::string msg = "WARNING: FTA naive is assumed.\n";
+    std::cout << msg << std::endl;
+  } else {
+    analysis = vm["analysis"].as<std::string>();
+  }
+
+  // read input files and setup.
+  std::string input_file = vm["input-file"].as<std::string>();
+  std::string prob_file = vm["prob-file"].as<std::string>();
 
 }  // end of main
