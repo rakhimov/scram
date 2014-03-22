@@ -1,0 +1,7 @@
+Structure of the core code.
+---------------------------
+Input analysis functions.
+Tree analysis functions.
+Probability calculation functions.
+Abstract data types for trees.
+Graphing instruction functions.
