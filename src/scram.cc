@@ -6,6 +6,8 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
+#include "risk_analysis.h"
+
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 
@@ -68,5 +70,29 @@ int main(int argc, char* argv[]) {
   // read input files and setup.
   std::string input_file = vm["input-file"].as<std::string>();
   std::string prob_file = vm["prob-file"].as<std::string>();
+
+  // initiate risk analysis
+  RiskAnalysis* ran;
+
+  if (analysis == "fta-naive") {
+      ran = new FaultTree(analysis);
+  }
+
+  // process input
+  ran->process_input(input_file);
+
+  // populate probabilities
+  ran->populate_probabilities(prob_file);
+
+  // graph if requested
+  if (vm.count("graph-only")) {
+    ran->graphing_instructions();
+    return 0;
+  }
+
+  // analyze
+  ran->analyze();
+
+  return 0;
 
 }  // end of main

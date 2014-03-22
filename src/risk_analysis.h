@@ -10,7 +10,7 @@ class RiskAnalysis {
  public:
   virtual void process_input(std::string input_file) = 0;
   virtual void populate_probabilities(std::string prob_file) = 0;
-  virtual void graphing_instructions(std::string output_file) = 0;
+  virtual void graphing_instructions() = 0;
   virtual void analyze() = 0;
 
   virtual ~RiskAnalysis() {}
@@ -19,11 +19,11 @@ class RiskAnalysis {
 // Fault tree analysis
 class FaultTree : public RiskAnalysis {
  public:
-  explicit FaultTree(std::string analysis) {}
+  explicit FaultTree(std::string);
 
   void process_input(std::string input_file);
   void populate_probabilities(std::string prob_file);
-  void graphing_instructions(std::string output_file);
+  void graphing_instructions();
   void analyze();
 
   ~FaultTree() {}

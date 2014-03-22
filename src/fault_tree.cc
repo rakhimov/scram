@@ -3,20 +3,20 @@
 
 #include <string>
 
-explicit FaultTree(std::string analysis): analysis_(analysis) {}
+FaultTree::FaultTree(std::string analysis) : analysis_(analysis) {}
 
-void process_input(std::string input_file) {
+void FaultTree::process_input(std::string input_file) {
   // Not yet implemented
 }
 
-void populate_probabilities(std::string prob_file) {
+void FaultTree::populate_probabilities(std::string prob_file) {
   // Not yet implemented
 }
 
-void graphing_instructions(std::string output_file) {
+void FaultTree::graphing_instructions() {
   // Not yet implemented
 }
 
-void analyze() {
+void FaultTree::analyze() {
   // Not yet implemented
 }
