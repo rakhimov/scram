@@ -2,3 +2,16 @@ Fault Tree Analysis.
 
 Initially only naive implementations will be given. Various other algorithms
 will be introduced when simple ones work.
+
+Currently Used Data Structures and Containers
+---------------------------------------------
+Vector
+Map
+
+
+Naive Algorithm
+---------------
+Walk through the tree level by level starting from the root to leaves.
+Update cut sets after each level.
+Remove non-minimal cut sets according to rules.
+Apply recursive implementation.
