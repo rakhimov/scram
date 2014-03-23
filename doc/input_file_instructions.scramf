@@ -10,7 +10,7 @@
 # Type 'Node/Gate types'
 
 # Ids of nodes should not contain spaces.
-# Ids of top event and intermidiate events/gates must be unique.
+# Ids of top event and intermidiate events must be unique.
 # Ids of basic events are not required to be unique.
 
 # Probabilities of basic events are given in a separate file.
@@ -29,7 +29,7 @@
     type        AND
 }
 
-# A representation of a gate.
+# A representation of an intermidiate event.
 {
     parent      TopEvent
     id          TrainOne
