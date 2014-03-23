@@ -39,6 +39,9 @@ class FaultTree : public RiskAnalysis {
   void add_node_(std::string parent, std::string id, std::string type,
                  int nline);
 
+  // verifies that every intermidiate node is not a leaf
+  bool is_leaf_();
+
   // type of analysis to be performed
   std::string analysis_;
 

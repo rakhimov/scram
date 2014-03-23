@@ -141,6 +141,20 @@ void FaultTree::process_input(std::string input_file) {
       }
     }
   }
+
+  // Defensive check if the top event has at least on child
+  if (top_event_->children().size() == 0) {
+    std::stringstream msg;
+    msg << "The top event does not have intermidiate or basic events.";
+    throw scram::ValidationError(msg.str());
+  }
+
+  // Check if there is any leaf intermidiate events
+  if (FaultTree::is_leaf_()) {
+    std::stringstream msg;
+    msg << "At least one intermidiate event is without basic events";
+    throw scram::ValidationError(msg.str());
+  }
 }
 
 void FaultTree::populate_probabilities(std::string prob_file) {
@@ -240,6 +254,17 @@ void FaultTree::add_node_(std::string parent, std::string id, std::string type,
         << "Top event must be defined first.";
     throw scram::ValidationError(msg.str());
   }
+}
+
+bool FaultTree::is_leaf_ () {
+  std::map<std::string, scram::InterEvent*>::iterator it;
+  for (it = inter_events_.begin(); it != inter_events_.end(); ++it) {
+    if (it->second->children().size() == 0) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 }  // namespace scram
