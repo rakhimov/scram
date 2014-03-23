@@ -11,7 +11,7 @@ BasicEvent::BasicEvent(std::string id, double p)
     : scram::Event(id),
       p_(p) {}
 
-double BasicEvent::p() {
+double BasicEvent::p() throw(scram::ValueError) {
   if (p_ == -1) {
     std::string msg = "Probability has not been set.";
     throw scram::ValueError(msg);
@@ -19,7 +19,7 @@ double BasicEvent::p() {
   return p_;
 }
 
-void BasicEvent::p(double p) {
+void BasicEvent::p(double p) throw(scram::ValueError) {
   if (p < 0 || p > 1) {
     std::string msg = "The value for probability is not valid.";
     throw scram::ValueError(msg);

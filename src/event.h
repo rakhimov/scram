@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "error.h"
+
 namespace scram {
 
 // General event base class
@@ -82,11 +84,11 @@ class BasicEvent : public scram::Event {
 
   // Returns the probability
   // Throws error if probability is not yet set
-  double p();
+  double p() throw(scram::ValueError);
 
   // Sets the probability
   // Throws error if probability is not a valid value
-  void p(double p);
+  void p(double p) throw(scram::ValueError);
 
   // Adds a parent into the parent map
   void add_parent(scram::Event* parent);
