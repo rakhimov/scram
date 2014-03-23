@@ -34,3 +34,12 @@ Future Additions.
 4. More types of events for fault trees: external, undeveloped, conditioning.
 5. Monte Carlo Methods.
 6. Markov analysis.
+
+
+General Information for Users.
+------------------------------
+1. Use extensions scram specific extensions for input files as follows:
+    FTA input file:     .scramf
+    FTA prob file:      .scramp
+2. If you are using text editor with highlighting, set filetype to 'conf'.
+    This configuration like highlighting works well scram syntax.
