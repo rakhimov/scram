@@ -3,6 +3,8 @@
 
 #include <string>
 
+#include "error.h"
+
 namespace scram {
 
 BasicEvent::BasicEvent(std::string id, double p)
@@ -10,10 +12,18 @@ BasicEvent::BasicEvent(std::string id, double p)
       p_(p) {}
 
 double BasicEvent::p() {
+  if (p_ == -1) {
+    std::string msg = "Probability has not been set.";
+    throw scram::ValueError(msg);
+  }
   return p_;
 }
 
 void BasicEvent::p(double p) {
+  if (p < 0 || p > 1) {
+    std::string msg = "The value for probability is not valid.";
+    throw scram::ValueError(msg);
+  }
   p_ = p;
 }
 

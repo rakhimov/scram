@@ -81,9 +81,11 @@ class BasicEvent : public scram::Event {
   BasicEvent(std::string id, double p = -1);
 
   // Returns the probability
+  // Throws error if probability is not yet set
   double p();
 
   // Sets the probability
+  // Throws error if probability is not a valid value
   void p(double p);
 
   // Adds a parent into the parent map

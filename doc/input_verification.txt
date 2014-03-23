@@ -7,7 +7,7 @@ Steps to verify an input for Fault Tree:
     * find closing brace '}'
     * create a node:
         ** Parent exists and is not a basic event (may change for CCF)
-        ** Non-basic event has a non-unique name
+        ** Non-basic event has a unique name
         ** Basic events with several parents are allowed (put #1)
         ** Each non-basic node is not a leaf
     * Throw an error with a helpful message (line numbers, types of errors)
