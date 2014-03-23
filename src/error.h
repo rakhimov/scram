@@ -5,6 +5,8 @@
 #include <exception>
 #include <string>
 
+namespace scram {
+
 class Error : public std::exception {
  public:
   // Constructs for a new error with a default message
@@ -48,5 +50,7 @@ class ValidationError : public Error {
  public:
   ValidationError(std::string msg) : Error(msg) {}
 };
+
+}  // namespace scram
 
 #endif  // SCRAM_ERROR_H_

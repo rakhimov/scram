@@ -3,6 +3,8 @@
 
 #include <string>
 
+namespace scram {
+
 FaultTree::FaultTree(std::string analysis) : analysis_(analysis) {}
 
 void FaultTree::process_input(std::string input_file) {
@@ -20,3 +22,5 @@ void FaultTree::graphing_instructions() {
 void FaultTree::analyze() {
   // Not yet implemented
 }
+
+}  // namespace scram

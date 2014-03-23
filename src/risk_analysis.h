@@ -5,6 +5,8 @@
 
 #include <string>
 
+namespace scram {
+
 // Interface for various risk analysis methods
 class RiskAnalysis {
  public:
@@ -19,7 +21,7 @@ class RiskAnalysis {
 // Fault tree analysis
 class FaultTree : public RiskAnalysis {
  public:
-  explicit FaultTree(std::string);
+  explicit FaultTree(std::string input_file);
 
   void process_input(std::string input_file);
   void populate_probabilities(std::string prob_file);
@@ -33,5 +35,7 @@ class FaultTree : public RiskAnalysis {
   std::string input_file_;
 
 };
+
+}  // namespace scram
 
 #endif  // SCRAM_RISK_ANALYSIS_H_

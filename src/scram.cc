@@ -11,6 +11,8 @@
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
 
+using namespace scram;
+
 int main(int argc, char* argv[]) {
   // parse command line options
   po::options_description desc("Allowed options");
