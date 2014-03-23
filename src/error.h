@@ -51,6 +51,11 @@ class ValidationError : public Error {
   ValidationError(std::string msg) : Error(msg) {}
 };
 
+// For input/output errors
+class IOError : public Error {
+  IOError(std::string msg) : Error(msg) {}
+};
+
 }  // namespace scram
 
 #endif  // SCRAM_ERROR_H_
