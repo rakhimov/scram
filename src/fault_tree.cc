@@ -33,9 +33,11 @@ void FaultTree::process_input(std::string input_file) {
   }
   input_file_ = input_file;
 
-  std::string line = "";
-  std::vector<std::string> no_comments;
+  std::string line = "";  // case incensitive input
+  std::string orig_line = "";  // line with capitazilations preserved
+  std::vector<std::string> no_comments;  // to hold lines without comments
   std::vector<std::string> args;  // to hold args after splitting the line
+  std::vector<std::string> orig_args;  // original input with capitalizations
   std::string parent = "";
   std::string id = "";
   std::string type = "";
@@ -57,6 +59,9 @@ void FaultTree::process_input(std::string input_file) {
 
     // trim again for spaces before in-line comments
     boost::trim(line);
+
+    // preserve original line for name extraction
+    orig_line = line;
 
     // convert to lower case
     boost::to_lower(line);
@@ -111,6 +116,13 @@ void FaultTree::process_input(std::string input_file) {
           parent = args[1];
         } else if (args[0] == "id" && id == "") {
           id = args[1];
+          // extract and save original id with capitalizations
+          // get args from the original line
+          boost::split(orig_args, orig_line, boost::is_any_of(" "),
+                       boost::token_compress_on);
+          // populate names
+          orig_ids_.insert(std::make_pair(id, orig_args[1]));
+
         } else if (args[0] == "type" && type == "") {
           type = args[1];
           // check if gate/event type is valid
@@ -150,9 +162,11 @@ void FaultTree::process_input(std::string input_file) {
   }
 
   // Check if there is any leaf intermidiate events
-  if (FaultTree::is_leaf_()) {
+  std::string inter_leaf = FaultTree::is_leaf_();
+  if (inter_leaf != "") {
     std::stringstream msg;
-    msg << "At least one intermidiate event is without basic events";
+    msg << "At least one intermidiate event is without basic events."
+        << " The id of the intermidiate event is " << inter_leaf;
     throw scram::ValidationError(msg.str());
   }
 }
@@ -256,15 +270,15 @@ void FaultTree::add_node_(std::string parent, std::string id, std::string type,
   }
 }
 
-bool FaultTree::is_leaf_ () {
+std::string FaultTree::is_leaf_ () {
   std::map<std::string, scram::InterEvent*>::iterator it;
   for (it = inter_events_.begin(); it != inter_events_.end(); ++it) {
     if (it->second->children().size() == 0) {
-      return true;
+      return orig_ids_[it->second->id()];
     }
   }
 
-  return false;
+  return "";
 }
 
 }  // namespace scram

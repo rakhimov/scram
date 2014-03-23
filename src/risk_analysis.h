@@ -39,14 +39,18 @@ class FaultTree : public RiskAnalysis {
   void add_node_(std::string parent, std::string id, std::string type,
                  int nline);
 
-  // verifies that every intermidiate node is not a leaf
-  bool is_leaf_();
+  // Verifies that there are no intermidiate nodes that are a leaf.
+  // Returns empty string if successful and id of a leaf if not.
+  std::string is_leaf_();
 
   // type of analysis to be performed
   std::string analysis_;
 
   // input file parth. Needed to create output files.
   std::string input_file_;
+
+  // container of original names of events with capitalizations
+  std::map<std::string, std::string> orig_ids_;
 
   // list of all valid gates
   std::set<std::string> gates_;
