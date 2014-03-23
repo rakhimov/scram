@@ -9,6 +9,6 @@ find_package(Boost COMPONENTS program_options filesystem system REQUIRED)
 
 if(Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
-    add_executable(scram scram.cc fault_tree.cc)
+    add_executable(scram scram.cc fault_tree.cc error.cc)
     target_link_libraries(scram ${Boost_LIBRARIES})
 endif()
