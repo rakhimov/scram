@@ -6,6 +6,7 @@ will be introduced when simple ones work.
 Currently Used Data Structures and Containers
 ---------------------------------------------
 Vector
+Set
 Map
 
 

@@ -23,7 +23,7 @@
 ################# Start of an Input File ########################
 # The top event must be listed first.
 {
-    # Empty parent is indication of a top event.
+    # Empty parent is an indication of a top event.
     parent      None
     id          TopEvent
     type        AND
