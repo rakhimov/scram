@@ -53,6 +53,7 @@ class ValidationError : public Error {
 
 // For input/output errors
 class IOError : public Error {
+ public:
   IOError(std::string msg) : Error(msg) {}
 };
 

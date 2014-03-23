@@ -3,7 +3,11 @@
 #ifndef SCRAM_RISK_ANALYISIS_H_
 #define SCRAM_RISK_ANALYISIS_H_
 
+#include <map>
+#include <set>
 #include <string>
+
+#include "event.h"
 
 namespace scram {
 
@@ -31,8 +35,30 @@ class FaultTree : public RiskAnalysis {
   ~FaultTree() {}
 
  private:
+  // Adds node and updates databases
+  void add_node_(std::string parent, std::string id, std::string type,
+                 int nline);
+
+  // type of analysis to be performed
   std::string analysis_;
+
+  // input file parth. Needed to create output files.
   std::string input_file_;
+
+  // list of all valid gates
+  std::set<std::string> gates_;
+
+  // id of a top event
+  std::string top_event_id_;
+
+  // top event
+  scram::TopEvent* top_event_;
+
+  // holder for intermidiate events
+  std::map<std::string, scram::InterEvent*> inter_events_;
+
+  // container for basic events
+  std::map<std::string, scram::BasicEvent*> basic_events_;
 
 };
 
