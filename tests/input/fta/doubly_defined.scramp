@@ -1,7 +1,10 @@
-# This file contains probabilities of each basic event for two train system.
+# This file contains re-assignment of probability for a basic event.
 {
 ValveOne    0.5
 ValveTwo    0.5
 PumpOne     0.7
 PumpTwo     0.7
+
+# Defining ValveOne probability again
+ValveOne    0.9
 }

@@ -1,6 +1,8 @@
-# This file contains probabilities of each basic event for two train system.
+# This file contains a wrong string value for probability.
 {
-ValveOne    0.5
+# Wrong value for ValveOne
+ValveOne    true
+
 ValveTwo    0.5
 PumpOne     0.7
 PumpTwo     0.7

@@ -1,7 +1,10 @@
-# This file contains correct input probabilities of each basic event.
+# This file contains an extra basic event.
 {
 ValveOne    0.5
 ValveTwo    0.5
 PumpOne     0.7
 PumpTwo     0.7
+
+# Extra basic event that is not defined in the tree
+ValveThree  0.3
 }

@@ -1,7 +1,7 @@
-# This file contains probabilities of each basic event for two train system.
+# This file miss probability of PumpTwo. This should cause error.
 {
 ValveOne    0.5
 ValveTwo    0.5
 PumpOne     0.7
-PumpTwo     0.7
+# PumpTwo     0.7
 }
