@@ -1,0 +1,7 @@
+# This file contains correct input probabilities of each basic event.
+{
+ValveOne    0.5
+ValveTwo    0.5
+PumpOne     0.7
+PumpTwo     0.7
+}
