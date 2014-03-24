@@ -1,0 +1,9 @@
+Steps in Naive Algorithm for generation of minimal cut sets of a fault tree.
+
+Rule 1. Each OR gate generates new rows in the table of cut sets
+Rule 2. Each AND gate generates new columns in the table of cut sets
+
+After each of the above steps:
+
+Rule 3. Eliminate redundant elements that appear multiple times in a cut set
+Rule 4. Eliminate non-minimal cut sets
