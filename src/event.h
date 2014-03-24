@@ -39,7 +39,7 @@ class TopEvent : public scram::Event {
   virtual void gate(std::string gate);
 
   // Returns children
-  virtual const std::vector<scram::Event*>& children();
+  virtual const std::map<std::string, scram::Event*>& children();
 
   // Adds a child into children list
   virtual void add_child(scram::Event* child);
@@ -50,7 +50,7 @@ class TopEvent : public scram::Event {
   // Gate type
   std::string gate_;
   // Intermidiate and basic events of the top event
-  std::vector<scram::Event*> children_;
+  std::map<std::string, scram::Event*> children_;
 };
 
 // Intermidiate event
