@@ -1,11 +1,13 @@
-# This is an input file for simple two train system fault tree analysis.
+# This is an input file with unsupported gate or type.
 
 ################# Start of an Input File ########################
 # The top event: One out of two success scenario.
 {
     parent      None
     id          TopEvent
-    type        AND
+
+    # Unsupported/unrecognized type
+    type        RO
 }
 
 # Train One

@@ -1,10 +1,14 @@
-# This is an input file for simple two train system fault tree analysis.
+# This is an input file with a missing id for an event.
+# This should fail.
 
 ################# Start of an Input File ########################
 # The top event: One out of two success scenario.
 {
     parent      None
-    id          TopEvent
+
+    # Commenting out id here.
+    #id          TopEvent
+
     type        AND
 }
 

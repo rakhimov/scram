@@ -1,4 +1,6 @@
 # This is an input file for simple two train system fault tree analysis.
+# Basic event is defined twice with a different parent.
+# This scenario should pass.
 
 ################# Start of an Input File ########################
 # The top event: One out of two success scenario.
@@ -44,6 +46,13 @@
 
 {
     parent      TrainTwo
+    id          PumpTwo
+    type        Basic
+}
+
+# Defining basic event PumpTwo  with a different parent
+{
+    parent      TrainOne
     id          PumpTwo
     type        Basic
 }

@@ -1,11 +1,12 @@
-# This is an input file for simple two train system fault tree analysis.
+# Top event is given as a basic event. This should cause an error.
 
 ################# Start of an Input File ########################
 # The top event: One out of two success scenario.
 {
     parent      None
     id          TopEvent
-    type        AND
+    # Top event cannot be Basic
+    type        Basic
 }
 
 # Train One

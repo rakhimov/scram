@@ -1,4 +1,5 @@
-# This is an input file for simple two train system fault tree analysis.
+# This is an input file missing an opening '{' brace.
+# This should fail validation.
 
 ################# Start of an Input File ########################
 # The top event: One out of two success scenario.
@@ -9,7 +10,9 @@
 }
 
 # Train One
-{
+
+# Commenting out the opening brace.
+#{
     parent      TopEvent
     id          TrainOne
     type        OR

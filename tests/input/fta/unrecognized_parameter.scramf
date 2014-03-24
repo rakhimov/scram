@@ -1,11 +1,13 @@
-# This is an input file for simple two train system fault tree analysis.
+# This is an input file with unrecognized parameter, assuming a typo.
 
 ################# Start of an Input File ########################
 # The top event: One out of two success scenario.
 {
     parent      None
     id          TopEvent
-    type        AND
+
+    # Typo here
+    tipe        AND
 }
 
 # Train One

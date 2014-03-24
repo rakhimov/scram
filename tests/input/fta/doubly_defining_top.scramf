@@ -1,4 +1,5 @@
-# This is an input file for simple two train system fault tree analysis.
+# This is an input file defining a top event twice.
+# This should fail.
 
 ################# Start of an Input File ########################
 # The top event: One out of two success scenario.
@@ -6,6 +7,13 @@
     parent      None
     id          TopEvent
     type        AND
+}
+
+# Re-defining top event again
+{
+    parent      None
+    id          TopEvent
+    type        OR
 }
 
 # Train One

@@ -1,4 +1,4 @@
-# This is an input file for simple two train system fault tree analysis.
+# This is an input file assigning non-declared parent to an event.
 
 ################# Start of an Input File ########################
 # The top event: One out of two success scenario.
@@ -45,6 +45,13 @@
 {
     parent      TrainTwo
     id          PumpTwo
+    type        Basic
+}
+
+# Assigning non-declared parent to a basic event
+{
+    parent      NonExistent
+    id          DummyBasic
     type        Basic
 }
 ################# End of an Input File ########################

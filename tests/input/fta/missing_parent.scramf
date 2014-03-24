@@ -1,4 +1,4 @@
-# This is an input file for simple two train system fault tree analysis.
+# This is an input file with missing parent.
 
 ################# Start of an Input File ########################
 # The top event: One out of two success scenario.
@@ -10,7 +10,9 @@
 
 # Train One
 {
-    parent      TopEvent
+    # Commenting out the parent here.
+    #parent      TopEvent
+
     id          TrainOne
     type        OR
 }
