@@ -27,9 +27,20 @@ class FaultTree : public RiskAnalysis {
  public:
   explicit FaultTree(std::string input_file);
 
+  // Reads input file with the structure of the Fault tree.
+  // Puts all events into their appropriate containers.
   void process_input(std::string input_file);
+
+  // Reads probabiliteis for basic events from formatted input file with values.
+  // Attaches probabilities to basic events.
   void populate_probabilities(std::string prob_file);
+
+  // Outputs a file with instructions for graphviz dot to create a fault tree.
   void graphing_instructions();
+
+  // Analyzes the fault tree and performs computations.
+  // Writes the results into output file that is named like the provided input
+  // file.
   void analyze();
 
   ~FaultTree() {}
@@ -38,6 +49,9 @@ class FaultTree : public RiskAnalysis {
   // Adds node and updates databases
   void add_node_(std::string parent, std::string id, std::string type,
                  int nline);
+
+  // Adds probability to a basic event
+  void add_prob_(std::string id, double p);
 
   // Verifies that there are no intermidiate nodes that are a leaf.
   // Returns empty string if successful and id of a leaf if not.

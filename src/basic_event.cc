@@ -9,7 +9,7 @@ namespace scram {
 
 BasicEvent::BasicEvent(std::string id, double p)
     : scram::Event(id),
-      p_(p) {}
+    p_(p) {}
 
 double BasicEvent::p() throw(scram::ValueError) {
   if (p_ == -1) {
@@ -24,6 +24,12 @@ void BasicEvent::p(double p) throw(scram::ValueError) {
     std::string msg = "The value for probability is not valid.";
     throw scram::ValueError(msg);
   }
+
+  if (p_ != -1) {
+    std::string msg = "Trying to re-assign probability for this event.";
+    throw scram::ValueError(msg);
+  }
+
   p_ = p;
 }
 

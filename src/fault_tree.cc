@@ -10,6 +10,7 @@
 #include <vector>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "error.h"
 #include "event.h"
@@ -18,7 +19,8 @@ namespace scram {
 
 FaultTree::FaultTree(std::string analysis)
     : analysis_(analysis),
-      top_event_id_("") {
+      top_event_id_(""),
+      input_file_("") {
   // add valid gates
   gates_.insert("and");
   gates_.insert("or");
@@ -84,7 +86,7 @@ void FaultTree::process_input(std::string input_file) {
           // new block successfully started
           block_started = true;
 
-        } else if ( args[0] == "}") {
+        } else if (args[0] == "}") {
           // check if this is an end of a block
           if (!block_started) {
             std::stringstream msg;
@@ -154,7 +156,7 @@ void FaultTree::process_input(std::string input_file) {
     }
   }
 
-  // Defensive check if the top event has at least on child
+  // Defensive check if the top event has at least one child
   if (top_event_->children().size() == 0) {
     std::stringstream msg;
     msg << "The top event does not have intermidiate or basic events.";
@@ -172,7 +174,110 @@ void FaultTree::process_input(std::string input_file) {
 }
 
 void FaultTree::populate_probabilities(std::string prob_file) {
-  // Not yet implemented
+  // Check if input file with tree instructions has already been read
+  if (input_file_ == "") {
+    std::string msg = "Read input file with tree instructions before attaching"
+                      " probabilities.";
+    throw scram::IOError(msg);
+  }
+
+  std::ifstream pfile(prob_file.c_str());
+  if (!pfile.good()) {
+    std::string msg = "Probability file is not accessible.";
+    throw(scram::IOError(msg));
+  }
+
+  std::string line = "";  // case incensitive input
+  std::vector<std::string> no_comments;  // to hold lines without comments
+  std::vector<std::string> args;  // to hold args after splitting the line
+
+  std::string id = "";  // name id of a basic event
+  double p = -1;  // probability of a basic event
+  bool block_started = false;
+
+  for (int nline = 1; getline(pfile, line); ++nline) {
+    // remove trailing spaces
+    boost::trim(line);
+    // check if line is empty
+    if (line == "") continue;
+
+    // remove comments starting with # sign
+    boost::split(no_comments, line, boost::is_any_of("#"),
+                 boost::token_compress_on);
+    line = no_comments[0];
+
+    // check if line is comment only
+    if (line == "") continue;
+
+    // trim again for spaces before in-line comments
+    boost::trim(line);
+
+    // convert to lower case
+    boost::to_lower(line);
+
+    // get args from the line
+    boost::split(args, line, boost::is_any_of(" "),
+                 boost::token_compress_on);
+
+    switch (args.size()) {
+      case 1: {
+        if (args[0] == "{") {
+          // check if this is a new start of a block
+          if (block_started) {
+            std::stringstream msg;
+            msg << "Line " << nline << " : " << "found second '{' before"
+                << " finishing the current block.";
+            throw scram::ValidationError(msg.str());
+          }
+          // new block successfully started
+          block_started = true;
+
+        } else if (args[0] == "}") {
+          // check if this is an end of a block
+          if (!block_started) {
+            std::stringstream msg;
+            msg << "Line " << nline << " : " << " found '}' before starting"
+                << " a new block.";
+            throw scram::ValidationError(msg.str());
+          }
+          // end of the block detected
+          // refresh values
+          id = "";
+          p = -1;
+          block_started = false;
+
+        } else {
+          std::stringstream msg;
+          msg << "Line " << nline << " : " << "undefined input.";
+          throw scram::ValidationError(msg.str());
+        }
+
+        continue;  // continue the loop
+      }
+      case 2: {
+        id = args[0];
+        p = boost::lexical_cast<double>(args[1]);
+        try {
+          // Add probability of a basic event
+          FaultTree::add_prob_(id, p);
+        } catch (scram::ValidationError& err_1) {
+          std::stringstream new_msg;
+          new_msg << "Line " << nline << " : " << err_1.msg();
+          throw scram::ValidationError(new_msg.str());
+        } catch (scram::ValueError& err_2) {
+          std::stringstream new_msg;
+          new_msg << "Line " << nline << " : " << err_2.msg();
+          throw scram::ValueError(new_msg.str());
+        }
+        break;
+      }
+      default: {
+        std::stringstream msg;
+        msg << "Line " << nline << " : " << "more than 2 arguments.";
+        throw scram::ValidationError(msg.str());
+      }
+    }
+  }
 }
 
 void FaultTree::graphing_instructions() {
@@ -268,6 +373,17 @@ void FaultTree::add_node_(std::string parent, std::string id, std::string type,
         << "Top event must be defined first.";
     throw scram::ValidationError(msg.str());
   }
+}
+
+void FaultTree::add_prob_(std::string id, double p) {
+  // Check if the basic event is in this tree
+  if (basic_events_.count(id) == 0) {
+    std::string msg = "Basic event " + id + " was not iniated in this tree.";
+    throw scram::ValidationError(msg);
+  }
+
+  basic_events_[id]->p(p);
+
 }
 
 std::string FaultTree::is_leaf_ () {
