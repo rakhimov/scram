@@ -96,6 +96,28 @@ void FaultTree::process_input(std::string input_file) {
           }
           // end of the block detected
 
+          // Check if all needed arguments for an event are received.
+          if (parent == "") {
+            std::stringstream msg;
+            msg << "Line " << nline << " : " << "missing parent in this"
+                << " block.";
+            throw scram::ValidationError(msg.str());
+          }
+
+          if (id == "") {
+            std::stringstream msg;
+            msg << "Line " << nline << " : " << "missing id in this"
+                << " block.";
+            throw scram::ValidationError(msg.str());
+          }
+
+          if (type == "") {
+            std::stringstream msg;
+            msg << "Line " << nline << " : " << "missing type in this"
+                << " block.";
+            throw scram::ValidationError(msg.str());
+          }
+
           // Add a node with the gathered information
           FaultTree::add_node_(parent, id, type, nline);
 
