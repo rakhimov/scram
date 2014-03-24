@@ -63,7 +63,7 @@ class FaultTree : public RiskAnalysis {
   // type of analysis to be performed
   std::string analysis_;
 
-  // input file parth. Needed to create output files.
+  // input file path. Needed to create output files.
   std::string input_file_;
 
   // container of original names of events with capitalizations
