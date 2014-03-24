@@ -164,11 +164,11 @@ void FaultTree::process_input(std::string input_file) {
   }
 
   // Check if there is any leaf intermidiate events
-  std::string inter_leaf = FaultTree::is_leaf_();
-  if (inter_leaf != "") {
+  std::string leaf_inters = FaultTree::inters_no_child_();
+  if (leaf_inters != "") {
     std::stringstream msg;
-    msg << "At least one intermidiate event is without basic events."
-        << " The id of the intermidiate event is " << inter_leaf;
+    msg << "Missing children for follwing intermidiate events:\n";
+    msg << leaf_inters;
     throw scram::ValidationError(msg.str());
   }
 }
@@ -302,7 +302,59 @@ void FaultTree::graphing_instructions() {
 }
 
 void FaultTree::analyze() {
-  // Not yet implemented
+  // Generate minimal cut-sets: Naive method
+  // Rule 1. Each OR gate generates new rows in the table of cut sets
+  // Rule 2. Each AND gate generates new columns in the table of cut sets
+  // After each of the above steps:
+  // Rule 3. Eliminate redundant elements that appear multiple times in a cut
+  // set
+  // Rule 4. Eliminate non-minimal cut sets
+  //
+  // Implementation:
+  // Level i : get events into
+
+  // container for cut sets with intermidiate events
+  std::vector< std::set<std::string> > inter_sets;
+
+  // container for cut sets with basic events only
+  std::vector< std::set<std::string> > cut_sets;
+
+  // container for minimal cut sets
+  std::vector< std::set<std::string> > minimal_cut_sets;
+
+  // Level 0: Start with the top event
+  std::set<std::string> top;
+  top.insert(top_event_id_);
+  // populate intermidiate and basic events of the top
+  std::map<std::string, scram::Event*> tops_children = top_event_->children();
+  // iterator for children of top and intermidiate events
+  std::map<std::string, scram::Event*>::iterator it_child;
+  // this is logic for OR gate
+  if (top_event_->gate() == "or") {
+    for (it_child = tops_children.begin(); it_child != tops_children.end();
+         ++it_child) {
+      std::set<std::string> tmp_set;
+      tmp_set.insert(it_child->first);
+      inter_sets.push_back(tmp_set);
+    }
+  }
+
+  // an iterator for a set
+  std::set<std::string>::iterator it_set;
+
+  // Generate cut sets
+  while (!inter_sets.empty()) {
+    // get rightmost set
+    std::set<std::string> tmp_set = inter_sets.back();
+    // delete rightmost set
+    inter_sets.pop_back();
+    // iterate till finding intermidiate event
+
+
+
+
+  }
+  // Compute probabilities
 }
 
 void FaultTree::add_node_(std::string parent, std::string id, std::string type,
@@ -403,15 +455,19 @@ void FaultTree::add_prob_(std::string id, double p) {
 
 }
 
-std::string FaultTree::is_leaf_ () {
+std::string FaultTree::inters_no_child_ () {
+  std::string leaf_inters = "";
   std::map<std::string, scram::InterEvent*>::iterator it;
   for (it = inter_events_.begin(); it != inter_events_.end(); ++it) {
-    if (it->second->children().size() == 0) {
-      return orig_ids_[it->second->id()];
+    try {
+      it->second->children();
+    } catch (scram::ValueError& err) {
+      leaf_inters += it->first;
+      leaf_inters += "\n";
     }
   }
 
-  return "";
+  return leaf_inters;
 }
 
 std::string FaultTree::basics_no_prob_() {

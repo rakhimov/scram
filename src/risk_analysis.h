@@ -54,8 +54,8 @@ class FaultTree : public RiskAnalysis {
   void add_prob_(std::string id, double p);
 
   // Verifies that there are no intermidiate nodes that are a leaf.
-  // Returns empty string if successful and id of a leaf if not.
-  std::string is_leaf_();
+  // Returns empty string if successful and ids of leaves if not.
+  std::string inters_no_child_();
 
   // Returns basic events that do not have probabilities assigned
   std::string basics_no_prob_();
