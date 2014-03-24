@@ -5,8 +5,11 @@
 # List Basic event's ID and its probability
 # The order of basic events does not matter.
 
+{
+
 ValveOne    0.5
 ValveTwo    0.5
 PumpOne     0.7
 PumpTwo     0.7
 
+}
