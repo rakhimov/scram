@@ -1,0 +1,3 @@
+In order to make visual verification of a created tree, Latex or other
+graphing tools may be used. Automated instruction generation is under
+development.
