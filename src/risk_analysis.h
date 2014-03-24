@@ -57,6 +57,9 @@ class FaultTree : public RiskAnalysis {
   // Returns empty string if successful and id of a leaf if not.
   std::string is_leaf_();
 
+  // Returns basic events that do not have probabilities assigned
+  std::string basics_no_prob_();
+
   // type of analysis to be performed
   std::string analysis_;
 

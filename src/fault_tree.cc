@@ -256,7 +256,14 @@ void FaultTree::populate_probabilities(std::string prob_file) {
       }
       case 2: {
         id = args[0];
-        p = boost::lexical_cast<double>(args[1]);
+        try {
+          p = boost::lexical_cast<double>(args[1]);
+        } catch (boost::bad_lexical_cast err) {
+          std::stringstream msg;
+          msg << "Line " << nline << " : " << "incorrect probability input.";
+          throw scram::ValidationError(msg.str());
+        }
+
         try {
           // Add probability of a basic event
           FaultTree::add_prob_(id, p);
@@ -278,6 +285,16 @@ void FaultTree::populate_probabilities(std::string prob_file) {
       }
     }
   }
+
+  // Check if all basic events have probabilities initialized
+  std::string uninit_basics = FaultTree::basics_no_prob_();
+  if (uninit_basics != "") {
+    std::stringstream msg;
+    msg << "Missing probabilities for following basic events:\n";
+    msg << uninit_basics;
+    throw scram::ValidationError(msg.str());
+  }
+
 }
 
 void FaultTree::graphing_instructions() {
@@ -395,6 +412,21 @@ std::string FaultTree::is_leaf_ () {
   }
 
   return "";
+}
+
+std::string FaultTree::basics_no_prob_() {
+  std::string uninit_basics = "";
+  std::map<std::string, scram::BasicEvent*>::iterator it;
+  for (it = basic_events_.begin(); it != basic_events_.end(); ++it) {
+    try {
+      it->second->p();
+    } catch (scram::ValueError& err) {
+      uninit_basics += it->first;
+      uninit_basics += "\n";
+    }
+  }
+
+  return uninit_basics;
 }
 
 }  // namespace scram
