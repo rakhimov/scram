@@ -492,6 +492,22 @@ void FaultTree::analyze() {
   }
 
   // Compute probabilities
+  // First, assume independence of events.
+  // Second, rare event approximation is applied.
+  // TODO: These assumptions should be configurable by a user in future.
+
+  // total probability
+  double p_total = 0;
+
+  // iterate minimal cut sets and combine probabilities
+  for (it_min = min_cut_sets.begin(); it_min != min_cut_sets.end(); ++it_min) {
+    double p_sub_set = 1;  // 1 is needed for multiplication
+    for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
+      p_sub_set *= basic_events_[*it_set]->p();
+    }
+    p_total += p_sub_set;
+  }
+
 
   // Print cut sets
   std::ofstream ofile("./output.txt");
@@ -527,6 +543,10 @@ void FaultTree::analyze() {
     ofile << "}\n";
     ofile.flush();
   }
+
+  // Print probability
+  ofile << "\n" << "Total probability of this fault tree" << "\n";
+  ofile << p_total;
 
 }
 
