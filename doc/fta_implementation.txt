@@ -18,3 +18,14 @@ Walk through the tree level by level starting from the root to leaves.
 Update cut sets after each level.
 Remove non-minimal cut sets according to rules.
 Apply recursive implementation.
+
+
+Probability Calculations
+------------------------
+Many assumptions may be applied for calculation of set and total
+probabilities. Some of them are:
+* Independence of events
+* Rare event approximation
+
+For naive default calculations, rare event approximation and event
+independence may be applied.
