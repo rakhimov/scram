@@ -8,6 +8,8 @@ Currently Used Data Structures and Containers
 Vector
 Set
 Map
+Set of sets
+Vector of sets
 
 
 Naive Algorithm
