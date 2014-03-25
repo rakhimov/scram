@@ -1,6 +1,7 @@
 // Implementation of fault tree analysis
 #include "risk_analysis.h"
 
+#include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <iterator>
@@ -342,7 +343,7 @@ void FaultTree::analyze() {
   std::vector< std::set<std::string> > cut_sets;
 
   // container for minimal cut sets
-  std::vector< std::set<std::string> > minimal_cut_sets;
+  std::set< std::set<std::string> > min_cut_sets;
 
   // populate intermidiate and basic events of the top
   std::map<std::string, scram::Event*> events_children = top_event_->children();
@@ -437,6 +438,58 @@ void FaultTree::analyze() {
 
   // At this point cut sets are generated.
   // Now we need to reduce them to minimal cut sets.
+  // Choose to convert vector to a set to get rid of any duplications
+  std::set< std::set<std::string> > unique_cut_sets;
+  for (it_vec = cut_sets.begin(); it_vec != cut_sets.end(); ++it_vec) {
+    if (it_vec->size() == 1) {
+      // Minimal cut set is detected
+      min_cut_sets.insert(*it_vec);
+      continue;
+    }
+    unique_cut_sets.insert(*it_vec);
+  }
+  // iterator for unique_cut_sets
+  std::set< std::set<std::string> >::iterator it_uniq;
+
+  // iterator for minimal cut sets
+  std::set< std::set<std::string> >::iterator it_min;
+
+  // minimal size of sets in uniq_cut_sets
+  int min_size = 2;
+
+  while (!unique_cut_sets.empty()) {
+    // Apply rule 4 to reduce unique cut sets
+
+    std::set< std::set<std::string> > temp_sets;
+
+    for (it_uniq = unique_cut_sets.begin();
+         it_uniq != unique_cut_sets.end(); ++it_uniq) {
+
+         bool include = true;  // determine to keep or not
+
+      for (it_min = min_cut_sets.begin();
+           it_min != min_cut_sets.end(); ++it_min) {
+        if (std::includes(it_uniq->begin(), it_uniq->end(),
+                          it_min->begin(), it_min->end())) {
+          // non-minimal cut set is detected
+          include = false;
+          break;
+        }
+      }
+      // after checking for non-minimal cut sets
+      // all minimum sized cut sets are guaranteed to be minimal
+      if (include) {
+        if (it_uniq->size() == min_size) {
+          min_cut_sets.insert(*it_uniq);
+        } else {
+          temp_sets.insert(*it_uniq);
+        }
+      }
+      // ignore the cut set because include = false
+    }
+    unique_cut_sets = temp_sets;
+    min_size++;
+  }
 
   // Compute probabilities
 
@@ -445,6 +498,30 @@ void FaultTree::analyze() {
   for (it_vec = cut_sets.begin(); it_vec != cut_sets.end(); ++it_vec) {
     ofile << "{ ";
     for (it_set = it_vec->begin(); it_set != it_vec->end(); ++it_set) {
+      ofile << orig_ids_[*it_set] << " ";
+    }
+    ofile << "}\n";
+    ofile.flush();
+  }
+
+  // Print unique cut sets
+  ofile << "\n" << "Begin unique cut sets" << "\n";
+  for (it_uniq = unique_cut_sets.begin(); it_uniq != unique_cut_sets.end();
+       ++it_uniq) {
+    ofile << "{ ";
+    for (it_set = it_uniq->begin(); it_set != it_uniq->end(); ++it_set) {
+      ofile << orig_ids_[*it_set] << " ";
+    }
+    ofile << "}\n";
+    ofile.flush();
+  }
+
+  // Print minimal cut sets
+  ofile << "\n" << "Begin minimal cut sets" << "\n";
+  for (it_min = min_cut_sets.begin(); it_min != min_cut_sets.end();
+       ++it_min) {
+    ofile << "{ ";
+    for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
       ofile << orig_ids_[*it_set] << " ";
     }
     ofile << "}\n";
