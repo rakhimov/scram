@@ -344,25 +344,37 @@ void FaultTree::analyze() {
   // container for minimal cut sets
   std::vector< std::set<std::string> > minimal_cut_sets;
 
-  // Level 0: Start with the top event
-  std::set<std::string> top;
-  top.insert(top_event_id_);
   // populate intermidiate and basic events of the top
-  std::map<std::string, scram::Event*> tops_children = top_event_->children();
+  std::map<std::string, scram::Event*> events_children = top_event_->children();
+
   // iterator for children of top and intermidiate events
   std::map<std::string, scram::Event*>::iterator it_child;
-  // this is logic for OR gate
+
+  // Type dependent logic
   if (top_event_->gate() == "or") {
-    for (it_child = tops_children.begin(); it_child != tops_children.end();
-         ++it_child) {
-      std::set<std::string> tmp_set;
-      tmp_set.insert(it_child->first);
-      inter_sets.push_back(tmp_set);
+    for (it_child = events_children.begin();
+         it_child != events_children.end(); ++it_child) {
+      std::set<std::string> tmp_set_c;
+      tmp_set_c.insert(it_child->first);
+      inter_sets.push_back(tmp_set_c);
     }
+  } else if (top_event_->gate() == "and") {
+    std::set<std::string> tmp_set_c;
+    for (it_child = events_children.begin();
+         it_child != events_children.end(); ++it_child) {
+      tmp_set_c.insert(it_child->first);
+    }
+    inter_sets.push_back(tmp_set_c);
+  } else {
+    std::string msg = "No algorithm defined for" + top_event_->gate();
+    throw scram::ValueError(msg);
   }
 
-  // an iterator for a set
+  // an iterator for a set witth ids of events
   std::set<std::string>::iterator it_set;
+
+  // an iterator for a vector with sets of ids of events
+  std::vector< std::set<std::string> >::iterator it_vec;
 
   // Generate cut sets
   while (!inter_sets.empty()) {
@@ -370,13 +382,75 @@ void FaultTree::analyze() {
     std::set<std::string> tmp_set = inter_sets.back();
     // delete rightmost set
     inter_sets.pop_back();
-    // iterate till finding intermidiate event
+    // iterate till finding intermediate event
+    std::string first_inter_event = "";
+    for (it_set = tmp_set.begin(); it_set != tmp_set.end(); ++it_set) {
+      if (inter_events_.count(*it_set)) {
+        first_inter_event = *it_set;
+        // clear temp set from the found intermediate event
+        tmp_set.erase(it_set);
 
+        break;
+      }
+    }
 
+    if (first_inter_event == "") {
+      // this is a set with basic events only
+      cut_sets.push_back(tmp_set);
+      continue;
+    }
 
+    // get the intermediate event
+    scram::InterEvent* inter_event = inter_events_[first_inter_event];
+    events_children = inter_event->children();
+    // to hold sets of children
+    std::vector< std::set<std::string> > children_sets;
 
+    // Type dependent logic
+    if (inter_event->gate() == "or") {
+      for (it_child = events_children.begin();
+           it_child != events_children.end(); ++it_child) {
+        std::set<std::string> tmp_set_c;
+        tmp_set_c.insert(it_child->first);
+        children_sets.push_back(tmp_set_c);
+      }
+    } else if (inter_event->gate() == "and") {
+      std::set<std::string> tmp_set_c;
+      for (it_child = events_children.begin();
+           it_child != events_children.end(); ++it_child) {
+        tmp_set_c.insert(it_child->first);
+      }
+      children_sets.push_back(tmp_set_c);
+    } else {
+      std::string msg = "No algorithm defined for" + inter_event->gate();
+      throw scram::ValueError(msg);
+    }
+
+    // attach the original set into this event's sets of children
+    for (it_vec = children_sets.begin(); it_vec != children_sets.end();
+         ++it_vec) {
+      it_vec->insert(tmp_set.begin(), tmp_set.end());
+      // add this set to the original inter_sets
+      inter_sets.push_back(*it_vec);
+    }
   }
+
+  // At this point cut sets are generated.
+  // Now we need to reduce them to minimal cut sets.
+
   // Compute probabilities
+
+  // Print cut sets
+  std::ofstream ofile("./output.txt");
+  for (it_vec = cut_sets.begin(); it_vec != cut_sets.end(); ++it_vec) {
+    ofile << "{ ";
+    for (it_set = it_vec->begin(); it_set != it_vec->end(); ++it_set) {
+      ofile << orig_ids_[*it_set] << " ";
+    }
+    ofile << "}\n";
+    ofile.flush();
+  }
+
 }
 
 void FaultTree::add_node_(std::string parent, std::string id, std::string type,
@@ -455,6 +529,8 @@ void FaultTree::add_node_(std::string parent, std::string id, std::string type,
           << "Parent of this intermidiate event is not defined.";
       throw scram::ValidationError(msg.str());
     }
+
+    i_event -> gate(type);
   }
 
   // check if a top event defined the first
