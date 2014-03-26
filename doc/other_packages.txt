@@ -1,0 +1,54 @@
+List of features that are available in other risk analysis packages.
+This list is used to guide the development SCRAM.
+Most popular features will be given higher priority.
+
+Note: GUI features are omitted because SCRAM is not expected to be a GUI
+application. It is a command-line tool.
+
+Commercial Packages
+===================================
+
+Isograph
+--------
+* Fault Tree Analysis
+* Monte Carlo simulation
+* Event tree analysis
+* Event tree branch types: Success, Failure, Null, Partial gate failure,
+                            Partial event failure
+* Common Cause Failure: [Beta, Alpha, MGL, Beta BFR] + (with apply IEC model)
+* Consequences for failures: Safety, Financial, Environmental, Operational, ...
+* Meta-data of an event in addition to its id
+* Markov Models
+* Weibull Sets
+* XML file format for projects
+* Multi-thread calculations
+* Gate types: AND, OR, VOTE, NOT, XOR, INHIBIT, PRIORITY, TRANSFER, NULL
+* Basic events are named "Primary events"
+* Primary event types: Basic, Undeveloped, Conditional, House, Dormant
+* Logic Modes: Probabilistic, True, False
+* Failure model: Markov model option
+* Sequencing: Initiator only, Enabler only, Last, First, Second, ...
+
+
+RiskMan
+--------
+* Fault Tree Analysis
+* Monte Carlo simulation
+* Common Cause Failure
+* Meta-data of an event in addition to its id
+
+
+
+Free Packages
+==================================
+
+OpenFTA
+-------
+* Fault Tree Analysis
+* Monte Carlo simulation
+* Meta-data of an event in addition to its id
+* Algebraic and Combo algorithms to generate minimal cut sets.
+* Primary event types: Basic, Undeveloped, External, Conditioning
+* Gate types: AND, OR, PRIORITY AND, EXCLUSIVE OR, INHIBIT, TRANSFER IN,
+              TRANSFER OUT
+
