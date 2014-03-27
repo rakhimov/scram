@@ -520,7 +520,7 @@ void FaultTree::analyze() {
     warnings_ += "The rare event approximation does not hold. Total probability"
                  "\nis above 1. Switching to the brute force algorithm.\n";
     // Re-calculate total probability
-    p_total = prob_or_(&min_cut_sets);
+    p_total = prob_or_(min_cut_sets);
   }
 
 
@@ -698,17 +698,31 @@ std::string FaultTree::basics_no_prob_() {
   return uninit_basics;
 }
 
-double FaultTree::prob_or_(const std::set< std::set<std::string> >*
-                           min_cut_sets) {
+double FaultTree::prob_or_(std::set< std::set<std::string> > min_cut_sets) {
   // Recursive implementation
-  double p_total = 0;
-  // Base case
-  if (min_cut_sets->size() == 1) {
-    // Get only element in this set
-    std::set< std::set<std::string> >::iterator it = min_cut_sets->begin();
-    it++;
-    return FaultTree::prob_and_(*it);
+  if (min_cut_sets.empty()) {
+    throw scram::ValueError("Do not pass empty set to prob_or_ function.");
   }
+
+  double p_total = 0;
+
+  // Get one element
+  std::set< std::set<std::string> >::iterator it = min_cut_sets.begin();
+  // it++;  // advance to the first element
+  std::set<std::string> element_one = *it;
+
+  // Base case
+  if (min_cut_sets.size() == 1) {
+    // Get only element in this set
+    return FaultTree::prob_and_(element_one);
+  }
+
+  // Delete element from the original set. WARNING: the iterator is invalidated.
+  min_cut_sets.erase(it);
+  p_total = FaultTree::prob_and_(element_one) +
+            FaultTree::prob_or_(min_cut_sets) -
+            FaultTree::prob_or_(FaultTree::combine_el_and_set_(element_one,
+                                                               min_cut_sets));
 
   return p_total;
 }
@@ -725,6 +739,23 @@ double FaultTree::prob_and_(const std::set< std::string>& min_cut_set) {
     p_sub_set *= basic_events_[*it_set]->p();
   }
   return p_sub_set;
+}
+
+std::set< std::set<std::string> > FaultTree::combine_el_and_set_(
+    const std::set< std::string>& el,
+    const std::set< std::set<std::string> >& set) {
+
+  std::set< std::set<std::string> > combo_set;
+  std::set< std::string> member_set;
+  std::set< std::set<std::string> >::iterator it_set;
+  for (it_set = set.begin(); it_set != set.end(); ++it_set) {
+    member_set = *it_set;
+    member_set.insert(el.begin(), el.end());
+    combo_set.insert(member_set);
+  }
+
+  return combo_set;
+
 }
 
 }  // namespace scram

@@ -64,12 +64,19 @@ class FaultTree : public RiskAnalysis {
   // Calculates a probability of a set of minimal cut sets, which are in OR
   // relationship with each other. This function is a brute force probability
   // calculation without rare event approximations.
-  double prob_or_(const std::set< std::set<std::string> >* min_cut_sets);
+  double prob_or_(const std::set< std::set<std::string> > min_cut_sets);
 
   // Calculates a probability of a minimal cut set, which members are in AND
   // relationship with each other. This function assumes independence of each
   // member.
   double prob_and_(const std::set<std::string>& min_cut_set);
+
+  // Calculates A(and)( B(or)C ) relationship for sets using set algebra.
+  // Returns non-const reference because only intended to be used for
+  // brute force probability calculations.
+  std::set< std::set<std::string> > combine_el_and_set_(
+      const std::set< std::string>& el,
+      const std::set< std::set<std::string> >& set);
 
   // This member is used to provide any warnings about assumptions,
   // calculations, and settings. These warnings must be written into output
