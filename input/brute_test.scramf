@@ -1,0 +1,44 @@
+# This is an input to test brute force probability calculation algorithm.
+
+# Top event
+{
+    parent      None
+    id          SystemFail
+    type        OR
+}
+
+{
+    parent      SystemFail
+    id          TrainOne
+    type        AND
+}
+
+{
+    parent      TrainOne
+    id          A
+    type        Basic
+}
+
+{
+    parent      TrainOne
+    id          B
+    type        Basic
+}
+
+{
+    parent      SystemFail
+    id          TrainTwo
+    type        AND
+}
+
+{
+    parent      TrainTwo
+    id          B
+    type        Basic
+}
+
+{
+    parent      TrainTwo
+    id          C
+    type        Basic
+}

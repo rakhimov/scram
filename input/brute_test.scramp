@@ -1,0 +1,8 @@
+# This is a probability input file to test brute force algorithm for
+# probability calculation
+
+{
+A       0.5
+B       0.8
+C       0.9
+}
