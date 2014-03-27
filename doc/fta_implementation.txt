@@ -24,8 +24,15 @@ Probability Calculations
 ------------------------
 Many assumptions may be applied for calculation of set and total
 probabilities. Some of them are:
-* Independence of events
+* Independence of events (Conditional cases may be supported in future.)
 * Rare event approximation
+* Brute force probability calculation if the rare event approximation fails.
+    This brute force calculation may be expensive and require much more memory
+    and time.
+    NOTE: This feature has not yet been implemented.
 
 For naive default calculations, rare event approximation and event
-independence may be applied.
+independence may be applied. However, if the rare event approximation produce
+too large probability, SCRAM may switch to other better method unless the rare
+event method is ENFORCED by a user upon calling SCRAM. An appropriate warning
+will be given even if the user enforce a rare event approximation.
