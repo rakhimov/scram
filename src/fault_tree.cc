@@ -20,6 +20,8 @@ namespace scram {
 
 FaultTree::FaultTree(std::string analysis)
     : analysis_(analysis),
+      rare_event(true),
+      warnings_(""),
       top_event_id_(""),
       input_file_("") {
   // add valid gates
@@ -501,11 +503,24 @@ void FaultTree::analyze() {
 
   // iterate minimal cut sets and combine probabilities
   for (it_min = min_cut_sets.begin(); it_min != min_cut_sets.end(); ++it_min) {
-    double p_sub_set = 1;  // 1 is needed for multiplication
-    for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
-      p_sub_set *= basic_events_[*it_set]->p();
+    // calculate a probability of a set with AND relationship
+    double p_sub_set = FaultTree::prob_and_(*it_min);
+    // check if a probability of a set does not exceed 0.1,
+    // which is required for the rare event approximation to hold.
+    if (rare_event && (p_sub_set > 0.1)) {
+      rare_event = false;  // switching off rare event assumption
+      warnings_ += "The rare event approximation may be inaccurate for this"
+                   "\nfault tree analysis because one of minimal cut sets'"
+                   "\nprobability exceeded 0.1 threshold requirement.\n\n";
     }
     p_total += p_sub_set;
+  }
+  // check if total probability is above 1
+  if (p_total > 1) {
+    warnings_ += "The rare event approximation does not hold. Total probability"
+                 "\nis above 1. Switching to the brute force algorithm.\n";
+    // Re-calculate total probability
+    p_total = prob_or_(&min_cut_sets);
   }
 
 
@@ -543,6 +558,9 @@ void FaultTree::analyze() {
     ofile << "}\n";
     ofile.flush();
   }
+
+  // Print warnings of calculations
+  ofile << "\n" << warnings_ << "\n";
 
   // Print probability
   ofile << "\n" << "Total probability of this fault tree" << "\n";
@@ -678,6 +696,35 @@ std::string FaultTree::basics_no_prob_() {
   }
 
   return uninit_basics;
+}
+
+double FaultTree::prob_or_(const std::set< std::set<std::string> >*
+                           min_cut_sets) {
+  // Recursive implementation
+  double p_total = 0;
+  // Base case
+  if (min_cut_sets->size() == 1) {
+    // Get only element in this set
+    std::set< std::set<std::string> >::iterator it = min_cut_sets->begin();
+    it++;
+    return FaultTree::prob_and_(*it);
+  }
+
+  return p_total;
+}
+
+double FaultTree::prob_and_(const std::set< std::string>& min_cut_set) {
+  // Test just in case the min cut set is empty
+  if (min_cut_set.empty()) {
+    throw scram::ValueError("The set is empty for probability calculations.");
+  }
+
+  double p_sub_set = 1;  // 1 is for multiplication
+  std::set<std::string>::iterator it_set;
+  for (it_set = min_cut_set.begin(); it_set != min_cut_set.end(); ++it_set) {
+    p_sub_set *= basic_events_[*it_set]->p();
+  }
+  return p_sub_set;
 }
 
 }  // namespace scram

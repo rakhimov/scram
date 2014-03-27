@@ -22,6 +22,7 @@ class RiskAnalysis {
   virtual ~RiskAnalysis() {}
 };
 
+
 // Fault tree analysis
 class FaultTree : public RiskAnalysis {
  public:
@@ -60,8 +61,26 @@ class FaultTree : public RiskAnalysis {
   // Returns basic events that do not have probabilities assigned
   std::string basics_no_prob_();
 
+  // Calculates a probability of a set of minimal cut sets, which are in OR
+  // relationship with each other. This function is a brute force probability
+  // calculation without rare event approximations.
+  double prob_or_(const std::set< std::set<std::string> >* min_cut_sets);
+
+  // Calculates a probability of a minimal cut set, which members are in AND
+  // relationship with each other. This function assumes independence of each
+  // member.
+  double prob_and_(const std::set<std::string>& min_cut_set);
+
+  // This member is used to provide any warnings about assumptions,
+  // calculations, and settings. These warnings must be written into output
+  // file.
+  std::string warnings_;
+
   // type of analysis to be performed
   std::string analysis_;
+
+  // rare event approximation
+  bool rare_event;
 
   // input file path. Needed to create output files.
   std::string input_file_;
