@@ -22,6 +22,10 @@ Step 1+ (Optional). Upon users' request output instruction file for graping
 Step 2. Create the tree for analysis.
 Step 3. Perform cut set generation.
 Step 4. Perform analysis: Rare event approximation and independence of events.
+        Rare event approximation is used only if enforced by a user.
+        However, if calculations are giving probabilities above 0.1 and total
+        probability above 1, the computation automatically switches to 
+        the original algorithm without the rare event approximation.
 Step 5. Output the analysis results.
 
 
@@ -29,8 +33,8 @@ Event Tree Analysis.
 --------------------
 Step 1. Reading input files. Verification of the input. Optional visual tool.
 Step 1+ (Optional). Upon users' request output instruction file for graphviz
-    dot to draw the tree. This is for visual verification of the input.
-    Stop execution of the program.
+        dot to draw the tree. This is for visual verification of the input.
+        Stop execution of the program.
 Step 2. Create the tree for analysis.
 Step 3. Perform calculations.
 Step 4. Output the results.
@@ -52,4 +56,4 @@ General Information for Users.
     FTA input file:     .scramf
     FTA prob file:      .scramp
 2. If you are using text editor with highlighting, set filetype to 'conf'.
-    This configuration like highlighting works well scram syntax.
+    This configuration like highlighting works well with scram syntax.

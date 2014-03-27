@@ -19,3 +19,12 @@ Package                Minimum Version
 `CMake`                2.8
 `boost`                1.46.1
 ====================   ==================
+
+*****************************
+Note to a User
+*****************************
+
+The development follows the Documentation Driven Development paradigm.
+Therefore, some documentation may refer to not yet developed features or the
+features under current development.
+

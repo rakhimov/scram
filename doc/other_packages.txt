@@ -36,6 +36,40 @@ RiskMan
 * Monte Carlo simulation
 * Common Cause Failure
 * Meta-data of an event in addition to its id
+* Model paradigm
+* Systems analysis
+* Several databases/ top events/
+* Fault tree editors
+* Different types of basic events
+* Equations for complicated logic for basic event probabilities
+* Ignore cut sets with too many elements
+* Several algorithms for cut set generation
+* Split fraction rules
+* Import data from excel, qbf, cafta
+* Give equation instead of probability quantities
+* Upper bound is exact
+* BDD Cause table
+* Output format is chosen by a user.
+* Very detailed reports
+* Cause table
+* Probability of each cut set and their relative contribution(importance)
+* Order of cut sets and ccf
+* Failure modes: Fail to start, fail to run,
+* Failure rates
+* Maintenance alignments: Some events guaranteed to Fail or Succeed
+    * Frequency, Total, Importance
+    * Split Fraction
+
+* Common Cause : Several models(Algebraic,and other)
+    Groups : Pumps, Valves, 
+    Put events into groups
+
+
+Definition of fragile?
+What is null?
+Local variables?
+Quantifying events several of them?
+For upper bound, does it assume independence?
 
 
 
