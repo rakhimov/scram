@@ -1,6 +1,16 @@
 The overall flow of SCRAM and possible future additions.
 
+Command-line call of SCRAM by a user
+------------------------------------
 Step 0. Type of analysis, i.e., fault tree, even tree, Markov chain, etc.
+        Upone calling on command-line, the user should indicate which analysis
+        should be performed. In addition to this, the user should provide
+        additional parameters for the analysis type chosen. For example, if
+        FTA is requested, type of algorithm for minimal cut set generation may
+        be specified by the user, or the user can choose if probability
+        calculations should assume a rare event approximation.
+        However, there are default values for these parameters that tries to
+        give the most optimal and accurate results.
 
 
 Fault Tree Analysis.
@@ -11,7 +21,7 @@ Step 1+ (Optional). Upon users' request output instruction file for graping
     Stop execution of the program.
 Step 2. Create the tree for analysis.
 Step 3. Perform cut set generation.
-Step 4. Perform analysis.
+Step 4. Perform analysis: Rare event approximation and independence of events.
 Step 5. Output the analysis results.
 
 
