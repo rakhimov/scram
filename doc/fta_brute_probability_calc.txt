@@ -1,0 +1,14 @@
+Upon examining many fault trees, it has been observed that minimal cut sets
+may share members, which introduces inaccuracies into rare event
+approximation. In addition, rare event approximation may not be appropriate
+for events with large probabilities.
+
+In order to account for the above deficiencies, naive brute force algorithm is
+going to be implemented to calculate total probability of a top event in a
+fault tree. However, note that this algorithm still assumes independence of
+basic events in the fault tree.
+
+Implementation Description
+--------------------------
+Recursive calls will be used to account for common members in minimal cut
+sets.
