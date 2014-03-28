@@ -26,7 +26,7 @@ class RiskAnalysis {
 // Fault tree analysis
 class FaultTree : public RiskAnalysis {
  public:
-  explicit FaultTree(std::string input_file);
+  FaultTree(std::string input_file, bool rare_event = false);
 
   // Reads input file with the structure of the Fault tree.
   // Puts all events into their appropriate containers.
@@ -87,7 +87,7 @@ class FaultTree : public RiskAnalysis {
   std::string analysis_;
 
   // rare event approximation
-  bool rare_event;
+  bool rare_event_;
 
   // input file path. Needed to create output files.
   std::string input_file_;

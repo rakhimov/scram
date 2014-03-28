@@ -18,9 +18,9 @@
 
 namespace scram {
 
-FaultTree::FaultTree(std::string analysis)
+FaultTree::FaultTree(std::string analysis, bool rare_event)
     : analysis_(analysis),
-      rare_event(true),
+      rare_event_(rare_event),
       warnings_(""),
       top_event_id_(""),
       input_file_("") {
@@ -495,26 +495,32 @@ void FaultTree::analyze() {
 
   // Compute probabilities
   // First, assume independence of events.
-  // Second, rare event approximation is applied.
-  // TODO: These assumptions should be configurable by a user in future.
+  // Second, rare event approximation is applied upon users' request
 
   // total probability
   double p_total = 0;
 
   // iterate minimal cut sets and combine probabilities
-  for (it_min = min_cut_sets.begin(); it_min != min_cut_sets.end(); ++it_min) {
-    // calculate a probability of a set with AND relationship
-    double p_sub_set = FaultTree::prob_and_(*it_min);
-    // check if a probability of a set does not exceed 0.1,
-    // which is required for the rare event approximation to hold.
-    if (rare_event && (p_sub_set > 0.1)) {
-      rare_event = false;  // switching off rare event assumption
-      warnings_ += "The rare event approximation may be inaccurate for this"
-                   "\nfault tree analysis because one of minimal cut sets'"
-                   "\nprobability exceeded 0.1 threshold requirement.\n\n";
+  // Check if a rare event approximation is requested
+  if (rare_event_) {
+    warnings_ += "Using the rare event approximation\n";
+    for (it_min = min_cut_sets.begin(); it_min != min_cut_sets.end(); ++it_min) {
+      // calculate a probability of a set with AND relationship
+      double p_sub_set = FaultTree::prob_and_(*it_min);
+      // check if a probability of a set does not exceed 0.1,
+      // which is required for the rare event approximation to hold.
+      if (p_sub_set > 0.1) {
+        warnings_ += "The rare event approximation may be inaccurate for this"
+            "\nfault tree analysis because one of minimal cut sets'"
+            "\nprobability exceeded 0.1 threshold requirement.\n\n";
+      }
+      p_total += p_sub_set;
     }
-    p_total += p_sub_set;
+  } else {
+    // Exact calculation of probability of cut sets
+    p_total = prob_or_(min_cut_sets);
   }
+
   // check if total probability is above 1
   if (p_total > 1) {
     warnings_ += "The rare event approximation does not hold. Total probability"
@@ -522,7 +528,6 @@ void FaultTree::analyze() {
     // Re-calculate total probability
     p_total = prob_or_(min_cut_sets);
   }
-
 
   // Print cut sets
   std::ofstream ofile("./output.txt");
@@ -564,7 +569,7 @@ void FaultTree::analyze() {
 
   // Print probability
   ofile << "\n" << "Total probability of this fault tree" << "\n";
-  ofile << p_total;
+  ofile << p_total << "\n";
 
 }
 

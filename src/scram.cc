@@ -24,6 +24,7 @@ int main(int argc, char* argv[]) {
       ("graph-only,g", "produce graph without analysis")
       ("analysis,a", po::value<std::string>(),
        "type of analysis to be performed on this input")
+      ("rare-event-approx,r", "whether or not to use a rare event approximation")
       ;
 
   po::variables_map vm;
@@ -62,11 +63,18 @@ int main(int argc, char* argv[]) {
   // determine required analysis
   // FTA naive is assumed if no arguments are given
   std::string analysis = "fta-naive";
+  bool rare_event = false;
+
   if (!vm.count("analysis")) {
     std::string msg = "WARNING: FTA naive is assumed.\n";
     std::cout << msg << std::endl;
   } else {
     analysis = vm["analysis"].as<std::string>();
+  }
+
+  // determine if a rare event approximation is requested
+  if (vm.count("rare-event-approx")) {
+    rare_event = true;
   }
 
   // read input files and setup.
@@ -77,7 +85,7 @@ int main(int argc, char* argv[]) {
   RiskAnalysis* ran;
 
   if (analysis == "fta-naive") {
-      ran = new FaultTree(analysis);
+      ran = new FaultTree(analysis, rare_event);
   }
 
   // process input
