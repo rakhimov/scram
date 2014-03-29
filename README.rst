@@ -5,7 +5,8 @@ SCRAM
 SCRAM : "Simplified Command-line Risk Analysis Multi-tool"
 
 This project attempts to build a simple command line tool for risk analysis.
-Fault Tree Analysis is under current development.
+Basic Fault Tree Analysis is implemented. Further enhancements are under current
+development. Event tree analysis is a next endeavor.
 
 ******************************
 Building and Installing
