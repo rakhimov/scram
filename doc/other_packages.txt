@@ -33,6 +33,8 @@ Isograph
 RiskMan
 --------
 * Fault Tree Analysis
+* Several Fault Tree Editors: PLGFT, NELFT, EasyFlow, CAFTA
+* AND relationship for cut sets are indicated by '*'
 * Monte Carlo simulation
 * Common Cause Failure
 * Meta-data of an event in addition to its id
@@ -40,10 +42,11 @@ RiskMan
 * Systems analysis
 * Several databases/ top events/
 * Fault tree editors
-* Different types of basic events
+* Different types of basic events: House, Basic, Transfer in/out, Null
+* Gates: Not, and, or, Conditional
 * Equations for complicated logic for basic event probabilities
 * Ignore cut sets with too many elements
-* Several algorithms for cut set generation
+* Several algorithms for cut set generation: PLGCUTD, ZBDD, FTREX
 * Split fraction rules
 * Import data from excel, qbf, cafta
 * Give equation instead of probability quantities
@@ -54,23 +57,14 @@ RiskMan
 * Cause table
 * Probability of each cut set and their relative contribution(importance)
 * Order of cut sets and ccf
-* Failure modes: Fail to start, fail to run,
+* Failure modes: Fail to start, fail to run, valve open, etc.
 * Failure rates
 * Maintenance alignments: Some events guaranteed to Fail or Succeed
     * Frequency, Total, Importance
     * Split Fraction
-
 * Common Cause : Several models(Algebraic,and other)
-    Groups : Pumps, Valves, 
+    Groups : Pumps, Valves,
     Put events into groups
-
-
-Definition of fragile?
-What is null?
-Local variables?
-Quantifying events several of them?
-For upper bound, does it assume independence?
-
 
 
 Free Packages
@@ -85,4 +79,3 @@ OpenFTA
 * Primary event types: Basic, Undeveloped, External, Conditioning
 * Gate types: AND, OR, PRIORITY AND, EXCLUSIVE OR, INHIBIT, TRANSFER IN,
               TRANSFER OUT
-
