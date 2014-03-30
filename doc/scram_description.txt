@@ -1,7 +1,7 @@
 The overall flow of SCRAM and possible future additions.
 
 Command-line call of SCRAM by a user
-------------------------------------
+====================================
 Step 0. Type of analysis, i.e., fault tree, even tree, Markov chain, etc.
         Upone calling on command-line, the user should indicate which analysis
         should be performed. In addition to this, the user should provide
@@ -14,7 +14,7 @@ Step 0. Type of analysis, i.e., fault tree, even tree, Markov chain, etc.
 
 
 Fault Tree Analysis.
---------------------
+====================
 Step 1. Reading input files. Verification of the input. Optional visual tool.
 Step 1+ (Optional). Upon users' request output instruction file for graping
     the tree. This is for visual verification of the input.
@@ -29,8 +29,85 @@ Step 4. Perform analysis: Rare event approximation and independence of events.
 Step 5. Output the analysis results.
 
 
+Fault Tree Symbols, Gate and Event Types.
+=========================================
+EVENTS
+------
+[1] Top Event : Contains a description of the top-system-level fault,
+                or undesired event. The root of a fault tree. Top event only
+                receives input from a logic gate.
+
+[2] Intermediate/Fault Event : Contains a description of a lower-level
+                fault in the system. Intermediate events receive input
+                from and provide outputs to a logic gate.
+
+[3] Basic Event : Contains a failure at the lowest level of examination, which
+                has a potential to cause a fault in the system. This is a
+                leaf of a fault tree, and it provides input to a logic gate.
+                This event must have its probability defined.
+
+[4] Undeveloped Event : Similar to a basic event, but an undeveloped event has
+                its own causes that may be analyzed by a separate fault tree.
+                This event is not further developed either because of
+                insufficient consequence or because information is unavailable.
+                This event must have its probability defined and provide input
+                to a logic gate.
+
+[5] House/Input Event : Contains a normal system operating input with the
+                capability of causing a fault. This event is expected to
+                occur with some probability, or it is sometimes used as a
+                switch of True or False. Provides input to a logic gate.
+
+[6] Conditioning Event : Defines a specific condition or restriction
+                that apply to any logic gate. Used mostly with Priority AND,
+                Inhibit gates. The alternative name is a Conditional Qualifier.
+                Conditions may be abnormal cases or environment.
+
+SYMBOLS
+-------
+[7] Transfer In : This symbol indicates that the tree is expanded further at
+                the occurance of the corresponding Transfer Out symbol.
+                This expansion may be described in another file or page.
+
+[8] Transfer Out : This symbol indicates that this portion of the tree must be
+                attached at the corresponding Transfer In symbol of the main
+                fault tree.
+
+GATES
+-----
+[9] AND : Output fault occurs if all of the input faults occur.
+
+[10] OR : Output fault occurs if at least one of the input faults occur.
+
+[11] Priority AND : Output fault occurs if all of the input faults occur in a
+                specific sequence (the sequence is represented by a
+                Conditioning Event, usually drawn to the right of the gate.)
+                The sequence also be from first to last member.
+
+[12] Exclusive OR (XOR) : Output fault occurs if exactly one of the input
+                faults occurs.
+
+[13] Inhibit : Output fault occurs if the single input fault occurs in the
+                presense of an enabling condition (the enabling condition is
+                represented by a Conditioning Event drawn to the right of the
+                gate.)
+
+[14] Combination/VOTE : Output fault occurs if a certain number of the input
+                faults occur.
+
+[15] NOT : Output fault occurs if the input event does not occur.
+
+[16] NULL : Non-essential. Only one input is allowed. Used in GUI apps to allow
+        more description.
+
+OTHER
+-----
+[] Dormant Failure : Failures that are not detected by themselves and need
+                secondary specific actions or failures to occur.
+
+
 Event Tree Analysis.
---------------------
+===================
 Step 1. Reading input files. Verification of the input. Optional visual tool.
 Step 1+ (Optional). Upon users' request output instruction file for graphviz
         dot to draw the tree. This is for visual verification of the input.
@@ -41,17 +118,18 @@ Step 4. Output the results.
 
 
 Future Additions.
------------------
+=================
 1. Simple event tree analysis.
 2. More efficient algorithms for fault tree analysis.
 3. More types of gates for fault trees: exclusive OR, priority AND, inhibit.
 4. More types of events for fault trees: external, undeveloped, conditioning.
 5. Monte Carlo Methods.
 6. Markov analysis.
+7. Success tree by inverting minimal cut sets into minimal path sets.
 
 
 General Information for Users.
-------------------------------
+==============================
 1. Use extensions scram specific extensions for input files as follows:
     FTA input file:     .scramf
     FTA prob file:      .scramp
