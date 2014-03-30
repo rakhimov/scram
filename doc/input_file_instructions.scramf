@@ -4,7 +4,7 @@
 # Opening '{' and closing '}' braces must be on a new line.
 # Input is NOT case sensitive.
 
-# Node/Gate types to be supported : AND, OR, Basic
+# Node/Gate types to be supported : AND, OR, Basic, TransferIn, TransferOut
 
 # For each node, list a Parent 'Id of a Parent', ID 'Id of the node',
 # Type 'Node/Gate types'
@@ -49,12 +49,14 @@
     type        Basic
 }
 
+# Another intermediate event
 {
     parent      TopEvent
     id          TrainTwo
     type        OR
 }
 
+# Basic events of the TrainTwo intermediate event
 {
     parent      TrainTwo
     id          ValveTwo
@@ -66,3 +68,25 @@
     id          PumpTwo
     type        Basic
 }
+
+# Representation of Transfer Function
+{
+    parent      TopEvent
+
+    # The id of the transfer function must be the name of a file containing
+    # the tree to be linked to the current tree
+    # NOTE: the name must be exact, preserving the case of the original file
+    # NOTE: all the rules for input file apply for the transfered file
+    # NOTE: The linked file's top event is going to become an intermediate
+    # event in this tree
+    # NOTE: This additional transfered in tree will be linked last in order to
+    # avoid accidentally linking basic events into intermediate events of the
+    # additional transfered in tree. This additional trees will be constructed
+    # in isolation and then linked into the main tree for analysis.
+
+    id          file_to_link.scramf
+
+    # Identify that this is TransferIn Function
+    type        TransferIn
+}
+

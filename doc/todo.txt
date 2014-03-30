@@ -1,0 +1,30 @@
+TODO list for SCRAM Project:
+    * Define output format.
+        ** Take a look at output formats of RiskMan, Isograph and OpenFTA
+        ** Fractions, importance, contributions of each minimal sets
+    * Incorporate unit tests into building
+    * Test functions.
+    * Write tests for input files.
+        ** Create input files with transferIn and TransferOut types
+    * Incorporate benchmarks into building and automation
+        ** Develop new gate and event types necessary for benchmarking
+        ** Implement test cases from OpenFTA and Isograph.
+    * Refactor the code.
+    * Creation of an equation from minimal cut sets for Monte Carlo simulation
+        ** Sampling techniques
+        ** Distributions
+        ** Refer to OpenFTA
+    * Dump/Graph the tree for verification
+    * May consider using regex for input file parsing.
+
+    * Incorporation of event tree analysis
+    * Incorporation of CCF
+        ** Multiple Greek Letter system
+        ** Alpha system
+    * Incorporation of alignments
+        ** Maintenance
+        ** Guaranteed Success/Failure
+
+    * Other input styles : XML, json, sql.
+    * GUI considerations
+    * Conditional probabilities through CCF

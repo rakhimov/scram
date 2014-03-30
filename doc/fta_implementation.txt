@@ -1,7 +1,22 @@
-Fault Tree Analysis.
+==============================================================================
+-------------------------| Fault Tree Analysis |------------------------------
+==============================================================================
 
 Initially only naive implementations will be given. Various other algorithms
 will be introduced when simple ones work.
+
+Currently Supported Gate Types
+------------------------------
+AND
+OR
+
+
+Currently Supported Event Types
+--------------------------------
+Top
+Intermediate
+Basic
+
 
 Currently Used Data Structures and Containers
 ---------------------------------------------
@@ -12,12 +27,11 @@ Set of sets
 Vector of sets
 
 
-Naive Algorithm
----------------
+Naive Algorithm to Generate Minimal Cut Sets
+--------------------------------------------
 Walk through the tree level by level starting from the root to leaves.
 Update cut sets after each level.
 Remove non-minimal cut sets according to rules.
-Apply recursive implementation.
 
 
 Probability Calculations
@@ -29,7 +43,6 @@ probabilities. Some of them are:
 * Brute force probability calculation if the rare event approximation fails.
     This brute force calculation may be expensive and require much more memory
     and time.
-    NOTE: This feature has not yet been implemented.
 
 For naive default calculations, rare event approximation and event
 independence may be applied. However, if the rare event approximation produce

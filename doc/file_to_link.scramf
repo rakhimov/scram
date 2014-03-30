@@ -1,0 +1,47 @@
+# This is a file containing a continuation of the main fault tree.
+# This additional branches are referenced by TransferIn function in the main
+# tree. The first node must have a TransferOut function type in order to link
+# this tree into the main tree.
+# All the rules for fta input files apply for this additional tree as well.
+#
+# WARNING: Be careful with the names of intermediate events. If they repeat
+# names of the main fault tree, SCRAM may throw an error.
+
+
+################### Start of Transfered Tree ###########################
+
+# The first node must be TransferOut type
+# NOTE: The Parent must be indicated as 'Any'
+# This word indicates that this additional tree can be linked to any valid
+# fault tree
+# NOTE: TransferOut nodes can have only one child.
+{
+    parent      Any
+
+    # The id must match the name of the file.
+    # This id is referenced in the original main input for linking.
+    id          file_to_link.scramf
+
+    # Identify that this is TransferOut Function
+    type        TransferOut
+}
+
+# The next node must have its parent as file_to_link.scrampf
+# Be careful not to repeat intermediate events of the main tree in this subtree.
+{
+    parent      file_to_link.scramf
+    id          TrainThree
+    type        OR
+}
+
+{
+    parent      TrainThree
+    id          PumpThree
+    type        Basic
+}
+
+{
+    parent      TrainThree
+    id          ValveThree
+    type        Basic
+}
