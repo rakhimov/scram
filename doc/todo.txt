@@ -17,11 +17,13 @@ TODO list for SCRAM Project:
         ** Implement test cases from OpenFTA and Isograph.
     * Refactor the code.
     * Creation of an equation from minimal cut sets for Monte Carlo simulation
+        ** Uncertainty analysis basics
         ** Sampling techniques
         ** Distributions
         ** Refer to OpenFTA
     * Dump/Graph the tree for verification
     * May consider using regex for input file parsing.
+    * Reformat documentation into rst.
 
     * Incorporation of event tree analysis
     * Incorporation of CCF
@@ -31,6 +33,7 @@ TODO list for SCRAM Project:
     * Incorporation of alignments
         ** Maintenance
         ** Guaranteed Success/Failure
+    * Time and space complexity of all algorithms used in this package
 
     * Other input styles : XML, json, sql.
     * GUI considerations
