@@ -9,7 +9,7 @@
 }
 
 # Train One
-
+{
     parent      TopEvent
     id          TrainOne
     type        OR
