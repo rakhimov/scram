@@ -627,16 +627,16 @@ void FaultTree::add_node_(std::string parent, std::string id,
     }
 
   } else if (type == "basic") {
-    scram::BasicEvent* b_event = new BasicEvent(id);
+    scram::PrimaryEvent* b_event = new PrimaryEvent(id);
     if (parent == top_event_id_){
       b_event->add_parent(top_event_);
       top_event_->add_child(b_event);
-      basic_events_.insert(std::make_pair(id, b_event));
+      primary_events_.insert(std::make_pair(id, b_event));
 
     } else if (inter_events_.count(parent)) {
       b_event->add_parent(inter_events_[parent]);
       inter_events_[parent]->add_child(b_event);
-      basic_events_.insert(std::make_pair(id, b_event));
+      primary_events_.insert(std::make_pair(id, b_event));
 
     } else {
       // parent is undefined
@@ -688,12 +688,12 @@ void FaultTree::add_node_(std::string parent, std::string id,
 
 void FaultTree::add_prob_(std::string id, double p) {
   // Check if the basic event is in this tree
-  if (basic_events_.count(id) == 0) {
+  if (primary_events_.count(id) == 0) {
     std::string msg = "Basic event " + id + " was not iniated in this tree.";
     throw scram::ValidationError(msg);
   }
 
-  basic_events_[id]->p(p);
+  primary_events_[id]->p(p);
 
 }
 
@@ -714,8 +714,8 @@ std::string FaultTree::inters_no_child_ () {
 
 std::string FaultTree::basics_no_prob_() {
   std::string uninit_basics = "";
-  std::map<std::string, scram::BasicEvent*>::iterator it;
-  for (it = basic_events_.begin(); it != basic_events_.end(); ++it) {
+  std::map<std::string, scram::PrimaryEvent*>::iterator it;
+  for (it = primary_events_.begin(); it != primary_events_.end(); ++it) {
     try {
       it->second->p();
     } catch (scram::ValueError& err) {
@@ -765,7 +765,7 @@ double FaultTree::prob_and_(const std::set< std::string>& min_cut_set) {
   double p_sub_set = 1;  // 1 is for multiplication
   std::set<std::string>::iterator it_set;
   for (it_set = min_cut_set.begin(); it_set != min_cut_set.end(); ++it_set) {
-    p_sub_set *= basic_events_[*it_set]->p();
+    p_sub_set *= primary_events_[*it_set]->p();
   }
   return p_sub_set;
 }

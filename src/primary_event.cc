@@ -7,11 +7,11 @@
 
 namespace scram {
 
-BasicEvent::BasicEvent(std::string id, double p)
+PrimaryEvent::PrimaryEvent(std::string id, double p)
     : scram::Event(id),
       p_(p) {}
 
-double BasicEvent::p() throw(scram::ValueError) {
+double PrimaryEvent::p() throw(scram::ValueError) {
   if (p_ == -1) {
     std::string msg = "Probability has not been set.";
     throw scram::ValueError(msg);
@@ -19,7 +19,7 @@ double BasicEvent::p() throw(scram::ValueError) {
   return p_;
 }
 
-void BasicEvent::p(double p) throw(scram::ValueError) {
+void PrimaryEvent::p(double p) throw(scram::ValueError) {
   if (p < 0 || p > 1) {
     std::string msg = "The value for probability is not valid.";
     throw scram::ValueError(msg);
@@ -33,7 +33,7 @@ void BasicEvent::p(double p) throw(scram::ValueError) {
   p_ = p;
 }
 
-void BasicEvent::add_parent(scram::Event* parent) {
+void PrimaryEvent::add_parent(scram::Event* parent) {
   if (parents_.count(parent->id())) {
     std::string msg = "Trying to re-insert existing parent.";
     throw scram::ValueError(msg);
@@ -42,7 +42,7 @@ void BasicEvent::add_parent(scram::Event* parent) {
   parents_.insert(std::make_pair(parent->id(), parent));
 }
 
-std::map<std::string, scram::Event*>& BasicEvent::parents() {
+std::map<std::string, scram::Event*>& PrimaryEvent::parents() {
   if (parents_.empty()) {
     std::string msg = "This basic event does not have parents.";
     throw scram::ValueError(msg);

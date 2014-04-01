@@ -109,7 +109,7 @@ class FaultTree : public RiskAnalysis {
   std::map<std::string, scram::InterEvent*> inter_events_;
 
   // container for basic events
-  std::map<std::string, scram::BasicEvent*> basic_events_;
+  std::map<std::string, scram::PrimaryEvent*> primary_events_;
 
   // container for minimal cut sets
   std::set< std::set<std::string> > min_cut_sets_;

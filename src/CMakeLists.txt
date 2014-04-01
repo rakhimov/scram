@@ -18,6 +18,6 @@ if(Boost_FOUND)
         error.cc
         top_event.cc
         inter_event.cc
-        basic_event.cc)
+        primary_event.cc)
     target_link_libraries(scram ${Boost_LIBRARIES})
 endif()

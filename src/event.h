@@ -75,12 +75,13 @@ class InterEvent : public scram::TopEvent {
 
 };
 
-// Basic event
-// This class should not have childrens
-class BasicEvent : public scram::Event {
+// This is a base class for events that can cause faults.
+// Base, House, Undeveloped, and other events
+class PrimaryEvent : public scram::Event {
  public:
+
   // Constructs with id name and probability
-  BasicEvent(std::string id, double p = -1);
+  PrimaryEvent(std::string id, double p = -1);
 
   // Returns the probability
   // Throws error if probability is not yet set
@@ -96,7 +97,7 @@ class BasicEvent : public scram::Event {
   // Return parents
   std::map<std::string, scram::Event*>& parents();
 
-  ~BasicEvent() {}
+  ~PrimaryEvent() {}
 
  private:
   // Probability of the basic event
