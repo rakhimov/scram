@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <iterator>
 #include <set>
@@ -501,24 +502,31 @@ void FaultTree::analyze() {
   // First, assume independence of events.
   // Second, rare event approximation is applied upon users' request
 
-  // iterate minimal cut sets and combine probabilities
+  // Iterate minimal cut sets and find probabilities for each set
+  for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
+        ++it_min) {
+    // calculate a probability of a set with AND relationship
+    double p_sub_set = FaultTree::prob_and_(*it_min);
+    // update a container with minimal cut sets and probabilities
+    prob_of_min_sets_.insert(std::make_pair(*it_min, p_sub_set));
+  }
+
   // Check if a rare event approximation is requested
   if (rare_event_) {
     warnings_ += "Using the rare event approximation\n";
     bool rare_event_legit = true;
-    for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
-         ++it_min) {
-      // calculate a probability of a set with AND relationship
-      double p_sub_set = FaultTree::prob_and_(*it_min);
+    std::map< std::set<std::string>, double >::iterator it_pr;
+    for (it_pr = prob_of_min_sets_.begin();
+         it_pr != prob_of_min_sets_.end(); ++it_pr) {
       // check if a probability of a set does not exceed 0.1,
       // which is required for the rare event approximation to hold.
-      if (rare_event_legit && (p_sub_set > 0.1)) {
+      if (rare_event_legit && (it_pr->second > 0.1)) {
         rare_event_legit = false;
         warnings_ += "The rare event approximation may be inaccurate for this"
             "\nfault tree analysis because one of minimal cut sets'"
             "\nprobability exceeded 0.1 threshold requirement.\n\n";
       }
-      p_total_ += p_sub_set;
+      p_total_ += it_pr->second;
     }
   } else {
     // Exact calculation of probability of cut sets
@@ -532,6 +540,8 @@ void FaultTree::analyze() {
     // Re-calculate total probability
     p_total_ = prob_or_(min_cut_sets_);
   }
+
+  // Calculate probability of each minimal cut set for further analysis
 
 }
 
@@ -547,11 +557,17 @@ void FaultTree::report(std::string output) {
   }
   std::ostream out(buf);
 
-  // an iterator for a set witth ids of events
+  // an iterator for a set with ids of events
   std::set<std::string>::iterator it_set;
 
   // iterator for minimal cut sets
   std::set< std::set<std::string> >::iterator it_min;
+
+  // iterator for a map with minimal cut sets and their probabilities
+  std::map< std::set<std::string>, double >::iterator it_pr;
+
+  // Print warnings of calculations
+  out << "\n" << warnings_ << "\n";
 
   // Print minimal cut sets
   out << "\n" << "Begin minimal cut sets" << "\n";
@@ -565,10 +581,28 @@ void FaultTree::report(std::string output) {
     out.flush();
   }
 
-  // Print warnings of calculations
-  out << "\n" << warnings_ << "\n";
+  // Print probabilities of minimal cut sets ordered
+  // Formatting applied
+  // put everything into sortable vector
+  std::vector< std::pair< std::set<std::string>, double > > vec;
+  for (it_pr = prob_of_min_sets_.begin(); it_pr != prob_of_min_sets_.end();
+       ++it_pr) {
+    vec.push_back(*it_pr);
+  }
 
-  // Print probability
+  out << "\n" << "Begin minimal cut sets' probabilities\n";
+  for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
+       ++it_min) {
+    out << "{ ";
+    for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
+      out << orig_ids_[*it_set] << " ";
+    }
+    out << "}    ";
+    out << prob_of_min_sets_[*it_min] << "\n";
+    out.flush();
+  }
+
+  // Print total probability
   out << "\n" << "Total probability of this fault tree" << "\n";
   out << p_total_ << "\n";
 
@@ -760,5 +794,10 @@ std::set< std::set<std::string> > FaultTree::combine_el_and_set_(
   return combo_set;
 
 }
+
+  bool pair_comp_(const std::pair< std::set<std::string>, double >& m_one,
+                  const std::pair< std::set<std::string>, double >& m_two) {
+    return m_one.second < m_two.second;
+  }
 
 }  // namespace scram
