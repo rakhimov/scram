@@ -581,15 +581,7 @@ void FaultTree::report(std::string output) {
     out.flush();
   }
 
-  // Print probabilities of minimal cut sets ordered
-  // Formatting applied
-  // put everything into sortable vector
-  std::vector< std::pair< std::set<std::string>, double > > vec;
-  for (it_pr = prob_of_min_sets_.begin(); it_pr != prob_of_min_sets_.end();
-       ++it_pr) {
-    vec.push_back(*it_pr);
-  }
-
+  // Print probabilities of minimal cut sets
   out << "\n" << "Begin minimal cut sets' probabilities\n";
   for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
        ++it_min) {
