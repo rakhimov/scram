@@ -25,9 +25,9 @@ FaultTree::FaultTree(std::string analysis, bool rare_event)
       top_event_id_(""),
       input_file_("") {
   // add valid gates
-  gates_.insert("and");
-  gates_.insert("or");
-  gates_.insert("basic");
+  types_.insert("and");
+  types_.insert("or");
+  types_.insert("basic");
 }
 
 void FaultTree::process_input(std::string input_file) {
@@ -153,7 +153,7 @@ void FaultTree::process_input(std::string input_file) {
         } else if (args[0] == "type" && type == "") {
           type = args[1];
           // check if gate/event type is valid
-          if (!gates_.count(type)) {
+          if (!types_.count(type)) {
             std::stringstream msg;
             boost::to_upper(type);
             msg << "Line " << nline << " : " << "invalid input arguments."

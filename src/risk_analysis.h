@@ -95,8 +95,8 @@ class FaultTree : public RiskAnalysis {
   // container of original names of events with capitalizations
   std::map<std::string, std::string> orig_ids_;
 
-  // list of all valid gates
-  std::set<std::string> gates_;
+  // list of all valid types
+  std::set<std::string> types_;
 
   // id of a top event
   std::string top_event_id_;
