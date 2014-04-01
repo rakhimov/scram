@@ -18,6 +18,7 @@ class RiskAnalysis {
   virtual void populate_probabilities(std::string prob_file) = 0;
   virtual void graphing_instructions() = 0;
   virtual void analyze() = 0;
+  virtual void report(std::string output) = 0;
 
   virtual ~RiskAnalysis() {}
 };
@@ -40,9 +41,10 @@ class FaultTree : public RiskAnalysis {
   void graphing_instructions();
 
   // Analyzes the fault tree and performs computations.
-  // Writes the results into output file that is named like the provided input
-  // file.
-  void analyze();
+    void analyze();
+
+  // Reports the results of analysis to a specified output destination.
+  void report(std::string output);
 
   ~FaultTree() {}
 
@@ -108,6 +110,15 @@ class FaultTree : public RiskAnalysis {
 
   // container for basic events
   std::map<std::string, scram::BasicEvent*> basic_events_;
+
+  // container for minimal cut sets
+  std::set< std::set<std::string> > min_cut_sets_;
+
+  // container for minimal cut sets and their respective probabilities
+  std::map< std::set<std::string>, double > prob_of_min_sets_;
+
+  // total probability of the top event
+  double p_total_;
 
 };
 

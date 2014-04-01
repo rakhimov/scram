@@ -24,6 +24,7 @@ int main(int argc, char* argv[]) {
       ("graph-only,g", "produce graph without analysis")
       ("analysis,a", po::value<std::string>(),
        "type of analysis to be performed on this input")
+      ("output,o", po::value<std::string>(), "output file")
       ("rare-event-approx,r", "whether or not to use a rare event approximation")
       ;
 
@@ -102,6 +103,13 @@ int main(int argc, char* argv[]) {
 
   // analyze
   ran->analyze();
+
+  // report results
+  std::string output = "cli";  // output to command line by default
+  if (vm.count("output")) {
+    output = vm["output"].as<std::string>();
+  }
+  ran->report(output);
 
   return 0;
 

@@ -23,7 +23,8 @@ FaultTree::FaultTree(std::string analysis, bool rare_event)
       rare_event_(rare_event),
       warnings_(""),
       top_event_id_(""),
-      input_file_("") {
+      input_file_(""),
+      p_total_(0) {
   // add valid gates
   types_.insert("and");
   types_.insert("or");
@@ -350,9 +351,6 @@ void FaultTree::analyze() {
   // container for cut sets with basic events only
   std::vector< std::set<std::string> > cut_sets;
 
-  // container for minimal cut sets
-  std::set< std::set<std::string> > min_cut_sets;
-
   // populate intermidiate and basic events of the top
   std::map<std::string, scram::Event*> events_children = top_event_->children();
 
@@ -451,7 +449,7 @@ void FaultTree::analyze() {
   for (it_vec = cut_sets.begin(); it_vec != cut_sets.end(); ++it_vec) {
     if (it_vec->size() == 1) {
       // Minimal cut set is detected
-      min_cut_sets.insert(*it_vec);
+      min_cut_sets_.insert(*it_vec);
       continue;
     }
     unique_cut_sets.insert(*it_vec);
@@ -475,8 +473,8 @@ void FaultTree::analyze() {
 
          bool include = true;  // determine to keep or not
 
-      for (it_min = min_cut_sets.begin();
-           it_min != min_cut_sets.end(); ++it_min) {
+      for (it_min = min_cut_sets_.begin();
+           it_min != min_cut_sets_.end(); ++it_min) {
         if (std::includes(it_uniq->begin(), it_uniq->end(),
                           it_min->begin(), it_min->end())) {
           // non-minimal cut set is detected
@@ -488,7 +486,7 @@ void FaultTree::analyze() {
       // all minimum sized cut sets are guaranteed to be minimal
       if (include) {
         if (it_uniq->size() == min_size) {
-          min_cut_sets.insert(*it_uniq);
+          min_cut_sets_.insert(*it_uniq);
         } else {
           temp_sets.insert(*it_uniq);
         }
@@ -503,15 +501,13 @@ void FaultTree::analyze() {
   // First, assume independence of events.
   // Second, rare event approximation is applied upon users' request
 
-  // total probability
-  double p_total = 0;
-
   // iterate minimal cut sets and combine probabilities
   // Check if a rare event approximation is requested
   if (rare_event_) {
     warnings_ += "Using the rare event approximation\n";
     bool rare_event_legit = true;
-    for (it_min = min_cut_sets.begin(); it_min != min_cut_sets.end(); ++it_min) {
+    for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
+         ++it_min) {
       // calculate a probability of a set with AND relationship
       double p_sub_set = FaultTree::prob_and_(*it_min);
       // check if a probability of a set does not exceed 0.1,
@@ -522,62 +518,59 @@ void FaultTree::analyze() {
             "\nfault tree analysis because one of minimal cut sets'"
             "\nprobability exceeded 0.1 threshold requirement.\n\n";
       }
-      p_total += p_sub_set;
+      p_total_ += p_sub_set;
     }
   } else {
     // Exact calculation of probability of cut sets
-    p_total = prob_or_(min_cut_sets);
+    p_total_ = prob_or_(min_cut_sets_);
   }
 
   // check if total probability is above 1
-  if (p_total > 1) {
+  if (p_total_ > 1) {
     warnings_ += "The rare event approximation does not hold. Total probability"
                  "\nis above 1. Switching to the brute force algorithm.\n";
     // Re-calculate total probability
-    p_total = prob_or_(min_cut_sets);
+    p_total_ = prob_or_(min_cut_sets_);
   }
 
-  // Print cut sets
-  std::ofstream ofile("./output.txt");
-  for (it_vec = cut_sets.begin(); it_vec != cut_sets.end(); ++it_vec) {
-    ofile << "{ ";
-    for (it_set = it_vec->begin(); it_set != it_vec->end(); ++it_set) {
-      ofile << orig_ids_[*it_set] << " ";
-    }
-    ofile << "}\n";
-    ofile.flush();
-  }
+}
 
-  // Print unique cut sets
-  ofile << "\n" << "Begin unique cut sets" << "\n";
-  for (it_uniq = unique_cut_sets.begin(); it_uniq != unique_cut_sets.end();
-       ++it_uniq) {
-    ofile << "{ ";
-    for (it_set = it_uniq->begin(); it_set != it_uniq->end(); ++it_set) {
-      ofile << orig_ids_[*it_set] << " ";
-    }
-    ofile << "}\n";
-    ofile.flush();
+void FaultTree::report(std::string output) {
+  // Check if output to file is requested
+  std::streambuf* buf;
+  std::ofstream of;
+  if (output != "cli") {
+    of.open(output.c_str());
+    buf = of.rdbuf();
+  } else {
+    buf = std::cout.rdbuf();
   }
+  std::ostream out(buf);
+
+  // an iterator for a set witth ids of events
+  std::set<std::string>::iterator it_set;
+
+  // iterator for minimal cut sets
+  std::set< std::set<std::string> >::iterator it_min;
 
   // Print minimal cut sets
-  ofile << "\n" << "Begin minimal cut sets" << "\n";
-  for (it_min = min_cut_sets.begin(); it_min != min_cut_sets.end();
+  out << "\n" << "Begin minimal cut sets" << "\n";
+  for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
        ++it_min) {
-    ofile << "{ ";
+    out << "{ ";
     for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
-      ofile << orig_ids_[*it_set] << " ";
+      out << orig_ids_[*it_set] << " ";
     }
-    ofile << "}\n";
-    ofile.flush();
+    out << "}\n";
+    out.flush();
   }
 
   // Print warnings of calculations
-  ofile << "\n" << warnings_ << "\n";
+  out << "\n" << warnings_ << "\n";
 
   // Print probability
-  ofile << "\n" << "Total probability of this fault tree" << "\n";
-  ofile << p_total << "\n";
+  out << "\n" << "Total probability of this fault tree" << "\n";
+  out << p_total_ << "\n";
 
 }
 
@@ -708,33 +701,33 @@ std::string FaultTree::basics_no_prob_() {
   return uninit_basics;
 }
 
-double FaultTree::prob_or_(std::set< std::set<std::string> > min_cut_sets) {
+double FaultTree::prob_or_(std::set< std::set<std::string> > min_cut_sets_) {
   // Recursive implementation
-  if (min_cut_sets.empty()) {
+  if (min_cut_sets_.empty()) {
     throw scram::ValueError("Do not pass empty set to prob_or_ function.");
   }
 
-  double p_total = 0;
+  double prob = 0;
 
   // Get one element
-  std::set< std::set<std::string> >::iterator it = min_cut_sets.begin();
+  std::set< std::set<std::string> >::iterator it = min_cut_sets_.begin();
   // it++;  // advance to the first element
   std::set<std::string> element_one = *it;
 
   // Base case
-  if (min_cut_sets.size() == 1) {
+  if (min_cut_sets_.size() == 1) {
     // Get only element in this set
     return FaultTree::prob_and_(element_one);
   }
 
   // Delete element from the original set. WARNING: the iterator is invalidated.
-  min_cut_sets.erase(it);
-  p_total = FaultTree::prob_and_(element_one) +
-            FaultTree::prob_or_(min_cut_sets) -
+  min_cut_sets_.erase(it);
+  prob = FaultTree::prob_and_(element_one) +
+            FaultTree::prob_or_(min_cut_sets_) -
             FaultTree::prob_or_(FaultTree::combine_el_and_set_(element_one,
-                                                               min_cut_sets));
+                                                               min_cut_sets_));
 
-  return p_total;
+  return prob;
 }
 
 double FaultTree::prob_and_(const std::set< std::string>& min_cut_set) {
