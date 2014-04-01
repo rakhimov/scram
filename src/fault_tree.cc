@@ -504,12 +504,14 @@ void FaultTree::analyze() {
   // Check if a rare event approximation is requested
   if (rare_event_) {
     warnings_ += "Using the rare event approximation\n";
+    bool rare_event_legit = true;
     for (it_min = min_cut_sets.begin(); it_min != min_cut_sets.end(); ++it_min) {
       // calculate a probability of a set with AND relationship
       double p_sub_set = FaultTree::prob_and_(*it_min);
       // check if a probability of a set does not exceed 0.1,
       // which is required for the rare event approximation to hold.
-      if (p_sub_set > 0.1) {
+      if (rare_event_legit && (p_sub_set > 0.1)) {
+        rare_event_legit = false;
         warnings_ += "The rare event approximation may be inaccurate for this"
             "\nfault tree analysis because one of minimal cut sets'"
             "\nprobability exceeded 0.1 threshold requirement.\n\n";
