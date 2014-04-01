@@ -12,8 +12,6 @@ TODO list for SCRAM Project:
     * Incorporate benchmarks into building and automation
         ** Develop new symbols, gate and event types necessary for benchmarking
             [] TransferIn and TransferOut types
-            [] Undeveloped Event
-            [] House/External Event
         ** Implement test cases from OpenFTA and Isograph.
     * Refactor the code.
     * Creation of an equation from minimal cut sets for Monte Carlo simulation
