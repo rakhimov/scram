@@ -82,7 +82,7 @@ void FaultTree::process_input(std::string input_file) {
           // check if this is a new start of a block
           if (block_started) {
             std::stringstream msg;
-            msg << "Line " << nline << " : " << "found second '{' before"
+            msg << "Line " << nline << " : " << "Found second '{' before"
                 << " finishing the current block.";
             throw scram::ValidationError(msg.str());
           }
@@ -93,7 +93,7 @@ void FaultTree::process_input(std::string input_file) {
           // check if this is an end of a block
           if (!block_started) {
             std::stringstream msg;
-            msg << "Line " << nline << " : " << " found '}' before starting"
+            msg << "Line " << nline << " : " << " Found '}' before starting"
                 << " a new block.";
             throw scram::ValidationError(msg.str());
           }
@@ -102,27 +102,33 @@ void FaultTree::process_input(std::string input_file) {
           // Check if all needed arguments for an event are received.
           if (parent == "") {
             std::stringstream msg;
-            msg << "Line " << nline << " : " << "missing parent in this"
+            msg << "Line " << nline << " : " << "Missing parent in this"
                 << " block.";
             throw scram::ValidationError(msg.str());
           }
 
           if (id == "") {
             std::stringstream msg;
-            msg << "Line " << nline << " : " << "missing id in this"
+            msg << "Line " << nline << " : " << "Missing id in this"
                 << " block.";
             throw scram::ValidationError(msg.str());
           }
 
           if (type == "") {
             std::stringstream msg;
-            msg << "Line " << nline << " : " << "missing type in this"
+            msg << "Line " << nline << " : " << "Missing type in this"
                 << " block.";
             throw scram::ValidationError(msg.str());
           }
 
-          // Add a node with the gathered information
-          FaultTree::add_node_(parent, id, type, nline);
+          try {
+            // Add a node with the gathered information
+            FaultTree::add_node_(parent, id, type);
+          } catch (scram::ValidationError& err) {
+            std::stringstream msg;
+            msg << "Line " << nline << " : " << err.msg();
+            throw scram::ValidationError(msg.str());
+          }
 
           // refresh values
           parent = "";
@@ -132,7 +138,7 @@ void FaultTree::process_input(std::string input_file) {
 
         } else {
           std::stringstream msg;
-          msg << "Line " << nline << " : " << "undefined input.";
+          msg << "Line " << nline << " : " << "Undefined input.";
           throw scram::ValidationError(msg.str());
         }
 
@@ -156,7 +162,7 @@ void FaultTree::process_input(std::string input_file) {
           if (!types_.count(type)) {
             std::stringstream msg;
             boost::to_upper(type);
-            msg << "Line " << nline << " : " << "invalid input arguments."
+            msg << "Line " << nline << " : " << "Invalid input arguments."
                 << " Do not support this '" << type
                 << "' gate/event type.";
             throw scram::ValidationError(msg.str());
@@ -165,7 +171,7 @@ void FaultTree::process_input(std::string input_file) {
           // There may go other parameters for FTA
           // For now, just throw an error
           std::stringstream msg;
-          msg << "Line " << nline << " : " << "invalid input arguments."
+          msg << "Line " << nline << " : " << "Invalid input arguments."
               << " Check spelling and doubly defined parameters inside"
               << " this block.";
           throw scram::ValidationError(msg.str());
@@ -175,7 +181,7 @@ void FaultTree::process_input(std::string input_file) {
       }
       default: {
         std::stringstream msg;
-        msg << "Line " << nline << " : " << "more than 2 arguments.";
+        msg << "Line " << nline << " : " << "More than 2 arguments.";
         throw scram::ValidationError(msg.str());
       }
     }
@@ -250,7 +256,7 @@ void FaultTree::populate_probabilities(std::string prob_file) {
           // check if this is a new start of a block
           if (block_started) {
             std::stringstream msg;
-            msg << "Line " << nline << " : " << "found second '{' before"
+            msg << "Line " << nline << " : " << "Found second '{' before"
                 << " finishing the current block.";
             throw scram::ValidationError(msg.str());
           }
@@ -261,7 +267,7 @@ void FaultTree::populate_probabilities(std::string prob_file) {
           // check if this is an end of a block
           if (!block_started) {
             std::stringstream msg;
-            msg << "Line " << nline << " : " << " found '}' before starting"
+            msg << "Line " << nline << " : " << " Found '}' before starting"
                 << " a new block.";
             throw scram::ValidationError(msg.str());
           }
@@ -273,7 +279,7 @@ void FaultTree::populate_probabilities(std::string prob_file) {
 
         } else {
           std::stringstream msg;
-          msg << "Line " << nline << " : " << "undefined input.";
+          msg << "Line " << nline << " : " << "Undefined input.";
           throw scram::ValidationError(msg.str());
         }
 
@@ -285,7 +291,7 @@ void FaultTree::populate_probabilities(std::string prob_file) {
           p = boost::lexical_cast<double>(args[1]);
         } catch (boost::bad_lexical_cast err) {
           std::stringstream msg;
-          msg << "Line " << nline << " : " << "incorrect probability input.";
+          msg << "Line " << nline << " : " << "Incorrect probability input.";
           throw scram::ValidationError(msg.str());
         }
 
@@ -305,7 +311,7 @@ void FaultTree::populate_probabilities(std::string prob_file) {
       }
       default: {
         std::stringstream msg;
-        msg << "Line " << nline << " : " << "more than 2 arguments.";
+        msg << "Line " << nline << " : " << "More than 2 arguments.";
         throw scram::ValidationError(msg.str());
       }
     }
@@ -575,8 +581,8 @@ void FaultTree::analyze() {
 
 }
 
-void FaultTree::add_node_(std::string parent, std::string id, std::string type,
-                         int nline) {
+void FaultTree::add_node_(std::string parent, std::string id,
+                          std::string type) {
   // Initialize events
   if (parent == "none") {
     // check for inaccurate second top event
@@ -587,8 +593,7 @@ void FaultTree::add_node_(std::string parent, std::string id, std::string type,
       // top event cannot be basic
       if (type == "basic") {
         std::stringstream msg;
-        msg << "Line " << nline << " : " << "invalid input arguments."
-            << " Top event cannot be basic.";
+        msg << "Invalid input arguments. Top event cannot be basic.";
         throw scram::ValidationError(msg.str());
       }
 
@@ -597,8 +602,8 @@ void FaultTree::add_node_(std::string parent, std::string id, std::string type,
     } else {
       // Another top event is detected
       std::stringstream msg;
-      msg << "Line " << nline << " : " << "invalid input arguments."
-          << "The input cannot contain more than one top event.";
+      msg << "Invalid input arguments. The input cannot contain more than"
+          << " one top event.";
       throw scram::ValidationError(msg.str());
     }
 
@@ -617,8 +622,8 @@ void FaultTree::add_node_(std::string parent, std::string id, std::string type,
     } else {
       // parent is undefined
       std::stringstream msg;
-      msg << "Line " << nline << " : " << "invalid input arguments."
-          << "Parent of this basic event is not defined.";
+      msg << "invalid input arguments. Parent of this basic event is"
+          << " not defined.";
       throw scram::ValidationError(msg.str());
     }
 
@@ -627,8 +632,7 @@ void FaultTree::add_node_(std::string parent, std::string id, std::string type,
     if (inter_events_.count(id)) {
       // doubly defined intermidiate event
       std::stringstream msg;
-      msg << "Line " << nline << " : " << "Intermidiate event is"
-          << " doubly defined.";
+      msg << "Intermidiate event is doubly defined.";
       throw scram::ValidationError(msg.str());
     }
 
@@ -647,8 +651,8 @@ void FaultTree::add_node_(std::string parent, std::string id, std::string type,
     } else {
       // parent is undefined
       std::stringstream msg;
-      msg << "Line " << nline << " : " << "invalid input arguments."
-          << "Parent of this intermidiate event is not defined.";
+      msg << "invalid input arguments. Parent of this intermidiate event"
+          << " is not defined.";
       throw scram::ValidationError(msg.str());
     }
 
@@ -658,8 +662,7 @@ void FaultTree::add_node_(std::string parent, std::string id, std::string type,
   // check if a top event defined the first
   if (top_event_id_ == "") {
     std::stringstream msg;
-    msg << "Line " << nline << " : " << "invalid input arguments."
-        << "Top event must be defined first.";
+    msg << "Invalid input arguments. Top event must be defined first.";
     throw scram::ValidationError(msg.str());
   }
 }

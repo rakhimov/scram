@@ -48,8 +48,7 @@ class FaultTree : public RiskAnalysis {
 
  private:
   // Adds node and updates databases
-  void add_node_(std::string parent, std::string id, std::string type,
-                 int nline);
+  void add_node_(std::string parent, std::string id, std::string type);
 
   // Adds probability to a basic event
   void add_prob_(std::string id, double p);
