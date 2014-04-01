@@ -27,9 +27,13 @@ FaultTree::FaultTree(std::string analysis, bool rare_event)
       input_file_(""),
       p_total_(0) {
   // add valid gates
-  types_.insert("and");
-  types_.insert("or");
+  gates_.insert("and");
+  gates_.insert("or");
+
+  // add valid primary event types
   types_.insert("basic");
+  types_.insert("undeveloped");
+  types_.insert("house");
 }
 
 void FaultTree::process_input(std::string input_file) {
@@ -161,7 +165,7 @@ void FaultTree::process_input(std::string input_file) {
         } else if (args[0] == "type" && type == "") {
           type = args[1];
           // check if gate/event type is valid
-          if (!types_.count(type)) {
+          if (!gates_.count(type) && !types_.count(type)) {
             std::stringstream msg;
             boost::to_upper(type);
             msg << "Line " << nline << " : " << "Invalid input arguments."
@@ -192,7 +196,7 @@ void FaultTree::process_input(std::string input_file) {
   // Defensive check if the top event has at least one child
   if (top_event_->children().size() == 0) {
     std::stringstream msg;
-    msg << "The top event does not have intermidiate or basic events.";
+    msg << "The top event does not have intermidiate or primary events.";
     throw scram::ValidationError(msg.str());
   }
 
@@ -224,8 +228,8 @@ void FaultTree::populate_probabilities(std::string prob_file) {
   std::vector<std::string> no_comments;  // to hold lines without comments
   std::vector<std::string> args;  // to hold args after splitting the line
 
-  std::string id = "";  // name id of a basic event
-  double p = -1;  // probability of a basic event
+  std::string id = "";  // name id of a primary event
+  double p = -1;  // probability of a primary event
   bool block_started = false;
 
   for (int nline = 1; getline(pfile, line); ++nline) {
@@ -298,7 +302,7 @@ void FaultTree::populate_probabilities(std::string prob_file) {
         }
 
         try {
-          // Add probability of a basic event
+          // Add probability of a primary event
           FaultTree::add_prob_(id, p);
         } catch (scram::ValidationError& err_1) {
           std::stringstream new_msg;
@@ -319,12 +323,12 @@ void FaultTree::populate_probabilities(std::string prob_file) {
     }
   }
 
-  // Check if all basic events have probabilities initialized
-  std::string uninit_basics = FaultTree::basics_no_prob_();
-  if (uninit_basics != "") {
+  // Check if all primary events have probabilities initialized
+  std::string uninit_primaries = FaultTree::primaries_no_prob_();
+  if (uninit_primaries != "") {
     std::stringstream msg;
     msg << "Missing probabilities for following basic events:\n";
-    msg << uninit_basics;
+    msg << uninit_primaries;
     throw scram::ValidationError(msg.str());
   }
 
@@ -349,10 +353,10 @@ void FaultTree::analyze() {
   // container for cut sets with intermidiate events
   std::vector< std::set<std::string> > inter_sets;
 
-  // container for cut sets with basic events only
+  // container for cut sets with primary events only
   std::vector< std::set<std::string> > cut_sets;
 
-  // populate intermidiate and basic events of the top
+  // populate intermidiate and primary events of the top
   std::map<std::string, scram::Event*> events_children = top_event_->children();
 
   // iterator for children of top and intermidiate events
@@ -403,7 +407,7 @@ void FaultTree::analyze() {
     }
 
     if (first_inter_event == "") {
-      // this is a set with basic events only
+      // this is a set with primary events only
       cut_sets.push_back(tmp_set);
       continue;
     }
@@ -609,10 +613,11 @@ void FaultTree::add_node_(std::string parent, std::string id,
       top_event_id_ = id;
       top_event_ = new scram::TopEvent(top_event_id_);
 
-      // top event cannot be basic
-      if (type == "basic") {
+      // top event cannot be primary
+      if (!gates_.count(type)) {
         std::stringstream msg;
-        msg << "Invalid input arguments. Top event cannot be basic.";
+        msg << "Invalid input arguments. Top event type is not defined"
+            << " correctly. The type must be a gate.";
         throw scram::ValidationError(msg.str());
       }
 
@@ -626,22 +631,23 @@ void FaultTree::add_node_(std::string parent, std::string id,
       throw scram::ValidationError(msg.str());
     }
 
-  } else if (type == "basic") {
-    scram::PrimaryEvent* b_event = new PrimaryEvent(id);
+  } else if (types_.count(type)) {
+    // this must be a primary event
+    scram::PrimaryEvent* p_event = new PrimaryEvent(id, type);
     if (parent == top_event_id_){
-      b_event->add_parent(top_event_);
-      top_event_->add_child(b_event);
-      primary_events_.insert(std::make_pair(id, b_event));
+      p_event->add_parent(top_event_);
+      top_event_->add_child(p_event);
+      primary_events_.insert(std::make_pair(id, p_event));
 
     } else if (inter_events_.count(parent)) {
-      b_event->add_parent(inter_events_[parent]);
-      inter_events_[parent]->add_child(b_event);
-      primary_events_.insert(std::make_pair(id, b_event));
+      p_event->add_parent(inter_events_[parent]);
+      inter_events_[parent]->add_child(p_event);
+      primary_events_.insert(std::make_pair(id, p_event));
 
     } else {
       // parent is undefined
       std::stringstream msg;
-      msg << "invalid input arguments. Parent of this basic event is"
+      msg << "invalid input arguments. Parent of this primary event is"
           << " not defined.";
       throw scram::ValidationError(msg.str());
     }
@@ -687,9 +693,9 @@ void FaultTree::add_node_(std::string parent, std::string id,
 }
 
 void FaultTree::add_prob_(std::string id, double p) {
-  // Check if the basic event is in this tree
+  // Check if the primary event is in this tree
   if (primary_events_.count(id) == 0) {
-    std::string msg = "Basic event " + id + " was not iniated in this tree.";
+    std::string msg = "Primary event " + id + " was not iniated in this tree.";
     throw scram::ValidationError(msg);
   }
 
@@ -712,19 +718,19 @@ std::string FaultTree::inters_no_child_ () {
   return leaf_inters;
 }
 
-std::string FaultTree::basics_no_prob_() {
-  std::string uninit_basics = "";
+std::string FaultTree::primaries_no_prob_() {
+  std::string uninit_primaries = "";
   std::map<std::string, scram::PrimaryEvent*>::iterator it;
   for (it = primary_events_.begin(); it != primary_events_.end(); ++it) {
     try {
       it->second->p();
     } catch (scram::ValueError& err) {
-      uninit_basics += it->first;
-      uninit_basics += "\n";
+      uninit_primaries += it->first;
+      uninit_primaries += "\n";
     }
   }
 
-  return uninit_basics;
+  return uninit_primaries;
 }
 
 double FaultTree::prob_or_(std::set< std::set<std::string> > min_cut_sets_) {

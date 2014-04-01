@@ -33,8 +33,8 @@ class FaultTree : public RiskAnalysis {
   // Puts all events into their appropriate containers.
   void process_input(std::string input_file);
 
-  // Reads probabiliteis for basic events from formatted input file with values.
-  // Attaches probabilities to basic events.
+  // Reads probabiliteis for primary events from formatted input file with values.
+  // Attaches probabilities to primary events.
   void populate_probabilities(std::string prob_file);
 
   // Outputs a file with instructions for graphviz dot to create a fault tree.
@@ -52,15 +52,15 @@ class FaultTree : public RiskAnalysis {
   // Adds node and updates databases
   void add_node_(std::string parent, std::string id, std::string type);
 
-  // Adds probability to a basic event
+  // Adds probability to a primary event
   void add_prob_(std::string id, double p);
 
   // Verifies that there are no intermidiate nodes that are a leaf.
   // Returns empty string if successful and ids of leaves if not.
   std::string inters_no_child_();
 
-  // Returns basic events that do not have probabilities assigned
-  std::string basics_no_prob_();
+  // Returns primary events that do not have probabilities assigned
+  std::string primaries_no_prob_();
 
   // Calculates a probability of a set of minimal cut sets, which are in OR
   // relationship with each other. This function is a brute force probability
@@ -96,7 +96,10 @@ class FaultTree : public RiskAnalysis {
   // container of original names of events with capitalizations
   std::map<std::string, std::string> orig_ids_;
 
-  // list of all valid types
+  // list of all valid gates
+  std::set<std::string> gates_;
+
+  // list of all valid types of primary events
   std::set<std::string> types_;
 
   // id of a top event
@@ -108,7 +111,7 @@ class FaultTree : public RiskAnalysis {
   // holder for intermidiate events
   std::map<std::string, scram::InterEvent*> inter_events_;
 
-  // container for basic events
+  // container for primary events
   std::map<std::string, scram::PrimaryEvent*> primary_events_;
 
   // container for minimal cut sets
