@@ -81,15 +81,23 @@ class PrimaryEvent : public scram::Event {
  public:
 
   // Constructs with id name and probability
-  PrimaryEvent(std::string id, double p = -1);
+  PrimaryEvent(std::string id, std::string type = "", double p = -1);
+
+  // Returns the type of the primary event
+  // Throws error if type is not yet set
+  std::string type();
+
+  // Sets the type
+  // Throws error if type is not valid or being re-assigned
+  void type(std::string new_type);
 
   // Returns the probability
   // Throws error if probability is not yet set
-  double p() throw(scram::ValueError);
+  double p();
 
   // Sets the probability
   // Throws error if probability is not a valid value
-  void p(double p) throw(scram::ValueError);
+  void p(double p);
 
   // Adds a parent into the parent map
   void add_parent(scram::Event* parent);
@@ -100,6 +108,9 @@ class PrimaryEvent : public scram::Event {
   ~PrimaryEvent() {}
 
  private:
+  // Type of a primary event
+  std::string type_;
+
   // Probability of the basic event
   double p_;
 

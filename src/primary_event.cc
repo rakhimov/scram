@@ -7,11 +7,30 @@
 
 namespace scram {
 
-PrimaryEvent::PrimaryEvent(std::string id, double p)
+PrimaryEvent::PrimaryEvent(std::string id, std::string type, double p)
     : scram::Event(id),
-      p_(p) {}
+      type_(type),
+      p_(p) {
+}
 
-double PrimaryEvent::p() throw(scram::ValueError) {
+std::string PrimaryEvent::type() {
+  if (type_ == "") {
+    std::string msg = "Type has not been set.";
+    throw scram::ValueError(msg);
+  }
+  return type_;
+}
+
+void PrimaryEvent::type(std::string new_type) {
+  if (type_ != "") {
+    std::string msg = "Trying to re-assign the type.";
+    throw scram::ValueError(msg);
+  }
+
+  type_ = new_type;
+}
+
+double PrimaryEvent::p() {
   if (p_ == -1) {
     std::string msg = "Probability has not been set.";
     throw scram::ValueError(msg);
@@ -19,7 +38,7 @@ double PrimaryEvent::p() throw(scram::ValueError) {
   return p_;
 }
 
-void PrimaryEvent::p(double p) throw(scram::ValueError) {
+void PrimaryEvent::p(double p) {
   if (p < 0 || p > 1) {
     std::string msg = "The value for probability is not valid.";
     throw scram::ValueError(msg);
