@@ -1,6 +1,4 @@
 TODO list for SCRAM Project:
-    * Input checking
-        ** Check gates for valid number of inputs
     * Define output format.
         ** Take a look at output formats of RiskMan, Isograph and OpenFTA
         ** Fractions, importance, contributions of each minimal sets

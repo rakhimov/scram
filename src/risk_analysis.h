@@ -55,9 +55,11 @@ class FaultTree : public RiskAnalysis {
   // Adds probability to a primary event
   void add_prob_(std::string id, double p);
 
-  // Verifies that there are no intermidiate nodes that are a leaf.
-  // Returns empty string if successful and ids of leaves if not.
-  std::string inters_no_child_();
+  // Verifies if gates are initialized correctly with right number of children
+  // Returns a warning message string with the list of bad gates and their
+  // problems.
+  // Returns an empty string if no problems are detected.
+  std::string check_gates_();
 
   // Returns primary events that do not have probabilities assigned
   std::string primaries_no_prob_();

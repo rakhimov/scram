@@ -44,8 +44,8 @@ void FaultTree::process_input(std::string input_file) {
   }
   input_file_ = input_file;
 
-  std::string line = "";  // case incensitive input
-  std::string orig_line = "";  // line with capitazilations preserved
+  std::string line = "";  // case insensitive input
+  std::string orig_line = "";  // line with capitalizations preserved
   std::vector<std::string> no_comments;  // to hold lines without comments
   std::vector<std::string> args;  // to hold args after splitting the line
   std::vector<std::string> orig_args;  // original input with capitalizations
@@ -196,16 +196,16 @@ void FaultTree::process_input(std::string input_file) {
   // Defensive check if the top event has at least one child
   if (top_event_->children().size() == 0) {
     std::stringstream msg;
-    msg << "The top event does not have intermidiate or primary events.";
+    msg << "The top event does not have intermediate or primary events.";
     throw scram::ValidationError(msg.str());
   }
 
-  // Check if there is any leaf intermidiate events
-  std::string leaf_inters = FaultTree::inters_no_child_();
-  if (leaf_inters != "") {
+  // Check if each gate has a right number of children
+  std::string bad_gates = FaultTree::check_gates_();
+  if (bad_gates != "") {
     std::stringstream msg;
-    msg << "Missing children for follwing intermidiate events:\n";
-    msg << leaf_inters;
+    msg << "\nThere are problems with the following gates:\n";
+    msg << bad_gates;
     throw scram::ValidationError(msg.str());
   }
 }
@@ -224,7 +224,7 @@ void FaultTree::populate_probabilities(std::string prob_file) {
     throw(scram::IOError(msg));
   }
 
-  std::string line = "";  // case incensitive input
+  std::string line = "";  // case insensitive input
   std::vector<std::string> no_comments;  // to hold lines without comments
   std::vector<std::string> args;  // to hold args after splitting the line
 
@@ -346,20 +346,17 @@ void FaultTree::analyze() {
   // Rule 3. Eliminate redundant elements that appear multiple times in a cut
   // set
   // Rule 4. Eliminate non-minimal cut sets
-  //
-  // Implementation:
-  // Level i : get events into
 
-  // container for cut sets with intermidiate events
+  // container for cut sets with intermediate events
   std::vector< std::set<std::string> > inter_sets;
 
   // container for cut sets with primary events only
   std::vector< std::set<std::string> > cut_sets;
 
-  // populate intermidiate and primary events of the top
+  // populate intermediate and primary events of the top
   std::map<std::string, scram::Event*> events_children = top_event_->children();
 
-  // iterator for children of top and intermidiate events
+  // iterator for children of top and intermediate events
   std::map<std::string, scram::Event*>::iterator it_child;
 
   // Type dependent logic
@@ -382,7 +379,7 @@ void FaultTree::analyze() {
     throw scram::ValueError(msg);
   }
 
-  // an iterator for a set witth ids of events
+  // an iterator for a set with ids of events
   std::set<std::string>::iterator it_set;
 
   // an iterator for a vector with sets of ids of events
@@ -653,11 +650,11 @@ void FaultTree::add_node_(std::string parent, std::string id,
     }
 
   } else {
-    // this must be a new intermidiate event
+    // this must be a new intermediate event
     if (inter_events_.count(id)) {
-      // doubly defined intermidiate event
+      // doubly defined intermediate event
       std::stringstream msg;
-      msg << "Intermidiate event is doubly defined.";
+      msg << "Intermediate event is doubly defined.";
       throw scram::ValidationError(msg.str());
     }
 
@@ -676,7 +673,7 @@ void FaultTree::add_node_(std::string parent, std::string id,
     } else {
       // parent is undefined
       std::stringstream msg;
-      msg << "invalid input arguments. Parent of this intermidiate event"
+      msg << "invalid input arguments. Parent of this intermediate event"
           << " is not defined.";
       throw scram::ValidationError(msg.str());
     }
@@ -695,7 +692,7 @@ void FaultTree::add_node_(std::string parent, std::string id,
 void FaultTree::add_prob_(std::string id, double p) {
   // Check if the primary event is in this tree
   if (primary_events_.count(id) == 0) {
-    std::string msg = "Primary event " + id + " was not iniated in this tree.";
+    std::string msg = "Primary event " + id + " was not initiated in this tree.";
     throw scram::ValidationError(msg);
   }
 
@@ -703,19 +700,31 @@ void FaultTree::add_prob_(std::string id, double p) {
 
 }
 
-std::string FaultTree::inters_no_child_ () {
-  std::string leaf_inters = "";
+std::string FaultTree::check_gates_() {
+  std::stringstream msg;
+  msg << "";  // an empty default message, an indicator of no problems
   std::map<std::string, scram::InterEvent*>::iterator it;
   for (it = inter_events_.begin(); it != inter_events_.end(); ++it) {
     try {
-      it->second->children();
+      std::string gate = it->second->gate();
+      // this line throws error if there are no children
+      int size = it->second->children().size();
+
+      // gate dependent logic
+      if ((gate == "and") && (size < 2)) {
+        msg << orig_ids_[it->first] << " : AND gate must have 2 or more "
+            << "children.\n";
+      } else if ((gate == "or") && (size < 2)) {
+        msg << orig_ids_[it->first] << " : OR gate must have 2 or more "
+            << "children.\n";
+      }
+
     } catch (scram::ValueError& err) {
-      leaf_inters += it->first;
-      leaf_inters += "\n";
+      msg << orig_ids_[it->first] << " : No children detected.";
     }
   }
 
-  return leaf_inters;
+  return msg.str();
 }
 
 std::string FaultTree::primaries_no_prob_() {
