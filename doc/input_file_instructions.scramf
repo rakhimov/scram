@@ -3,14 +3,16 @@
 # This sign may be used inside a line for comments after inputs.
 # Opening '{' and closing '}' braces must be on a new line.
 # Input is NOT case sensitive.
+# The order of input parameters inside of a block are not strict. However,
+# it is recommended to keep them organized for readability.
 
-# Node/Gate types to be supported : AND, OR, Basic, TransferIn, TransferOut
+# Node/Gate types to be supported are listed in the description of SCRAM
 
 # For each node, list a Parent 'Id of a Parent', ID 'Id of the node',
 # Type 'Node/Gate types'
 
 # Ids of nodes should not contain spaces.
-# Ids of top event and intermidiate events must be unique.
+# Ids of top event and intermediate events must be unique.
 # Ids of basic events are not required to be unique.
 
 # Probabilities of basic events are given in a separate file.
@@ -18,7 +20,7 @@
 # Hierarchical structure of input must be strict. That is, a parent must
 # be defined before its children.
 
-# Spaces at the start and end of an input line are ignorred.
+# Spaces at the start and end of an input line are ignored.
 
 ################# Start of an Input File ########################
 # The top event must be listed first.
@@ -29,7 +31,7 @@
     type        AND
 }
 
-# A representation of an intermidiate event.
+# A representation of an intermediate event.
 {
     parent      TopEvent
     id          TrainOne
@@ -89,4 +91,3 @@
     # Identify that this is TransferIn Function
     type        TransferIn
 }
-

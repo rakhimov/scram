@@ -15,7 +15,7 @@ PrimaryEvent::PrimaryEvent(std::string id, std::string type, double p)
 
 std::string PrimaryEvent::type() {
   if (type_ == "") {
-    std::string msg = "Type has not been set.";
+    std::string msg = this->id() + " type has not been set.";
     throw scram::ValueError(msg);
   }
   return type_;
@@ -23,7 +23,7 @@ std::string PrimaryEvent::type() {
 
 void PrimaryEvent::type(std::string new_type) {
   if (type_ != "") {
-    std::string msg = "Trying to re-assign the type.";
+    std::string msg = "Trying to re-assign the type of " + this->id();
     throw scram::ValueError(msg);
   }
 
@@ -32,7 +32,7 @@ void PrimaryEvent::type(std::string new_type) {
 
 double PrimaryEvent::p() {
   if (p_ == -1) {
-    std::string msg = "Probability has not been set.";
+    std::string msg = "Probability has not been set for " + this->id();
     throw scram::ValueError(msg);
   }
   return p_;
@@ -40,12 +40,12 @@ double PrimaryEvent::p() {
 
 void PrimaryEvent::p(double p) {
   if (p < 0 || p > 1) {
-    std::string msg = "The value for probability is not valid.";
+    std::string msg = "The value for probability is not valid for " + this->id();
     throw scram::ValueError(msg);
   }
 
   if (p_ != -1) {
-    std::string msg = "Trying to re-assign probability for this event.";
+    std::string msg = "Trying to re-assign probability for " + this->id();
     throw scram::ValueError(msg);
   }
 
@@ -54,7 +54,7 @@ void PrimaryEvent::p(double p) {
 
 void PrimaryEvent::add_parent(scram::Event* parent) {
   if (parents_.count(parent->id())) {
-    std::string msg = "Trying to re-insert existing parent.";
+    std::string msg = "Trying to re-insert existing parent for " + this->id();
     throw scram::ValueError(msg);
   }
 
@@ -63,7 +63,7 @@ void PrimaryEvent::add_parent(scram::Event* parent) {
 
 std::map<std::string, scram::Event*>& PrimaryEvent::parents() {
   if (parents_.empty()) {
-    std::string msg = "This basic event does not have parents.";
+    std::string msg = this->id() + " primary event does not have parents.";
     throw scram::ValueError(msg);
   }
 

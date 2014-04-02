@@ -6,15 +6,15 @@ import subprocess
 def main():
     # correct corner case inputs
     pass_inputs = ["correct_tree_input.scramf",
-                   "doubly_defining_basic.scramf",
+                   "doubly_defined_basic.scramf",
+                   "different_order.scramf",
                    "inline_comments.scramf"]
 
     # wrong input files in the current directory
     bad_inputs = ["basic_top_event.scramf",
-                  "doubly_defining_intermidiate.scramf",
-                  "doubly_defining_top.scramf",
+                  "doubly_defined_intermediate.scramf",
+                  "doubly_defined_top.scramf",
                   "extra_parameter.scramf",
-                  "incorrect_order.scramf",
                   "leaf_intermidiate_event.scramf",
                   "missing_closing_brace.scramf",
                   "missing_id.scramf",
@@ -28,7 +28,7 @@ def main():
                   "unrecognized_type.scramf"]
 
     # wrong probability files in the current directory
-    bad_probs = ["doubly_defined.scramp",
+    bad_probs = ["doubly_defined_prob.scramp",
                  "extra_basic_event.scramp",
                  "huge_prob.scramp",
                  "missing_basic_event.scramp",

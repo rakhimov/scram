@@ -613,8 +613,8 @@ void FaultTree::add_node_(std::string parent, std::string id,
       // top event cannot be primary
       if (!gates_.count(type)) {
         std::stringstream msg;
-        msg << "Invalid input arguments. Top event type is not defined"
-            << " correctly. The type must be a gate.";
+        msg << "Invalid input arguments. " << orig_ids_[top_event_id_]
+            << " top event type is not defined correctly. It must be a gate.";
         throw scram::ValidationError(msg.str());
       }
 
@@ -624,7 +624,7 @@ void FaultTree::add_node_(std::string parent, std::string id,
       // Another top event is detected
       std::stringstream msg;
       msg << "Invalid input arguments. The input cannot contain more than"
-          << " one top event.";
+          << " one top event. " << orig_ids_[id] << " is redundant.";
       throw scram::ValidationError(msg.str());
     }
 
@@ -644,8 +644,8 @@ void FaultTree::add_node_(std::string parent, std::string id,
     } else {
       // parent is undefined
       std::stringstream msg;
-      msg << "invalid input arguments. Parent of this primary event is"
-          << " not defined.";
+      msg << "Invalid input arguments. Parent of " << orig_ids_[id]
+          << " primary event is not defined.";
       throw scram::ValidationError(msg.str());
     }
 
@@ -654,7 +654,7 @@ void FaultTree::add_node_(std::string parent, std::string id,
     if (inter_events_.count(id)) {
       // doubly defined intermediate event
       std::stringstream msg;
-      msg << "Intermediate event is doubly defined.";
+      msg << orig_ids_[id] << " intermediate event is doubly defined.";
       throw scram::ValidationError(msg.str());
     }
 
@@ -673,8 +673,8 @@ void FaultTree::add_node_(std::string parent, std::string id,
     } else {
       // parent is undefined
       std::stringstream msg;
-      msg << "invalid input arguments. Parent of this intermediate event"
-          << " is not defined.";
+      msg << "Invalid input arguments. Parent of " << orig_ids_[id]
+          << " intermediate event is not defined.";
       throw scram::ValidationError(msg.str());
     }
 
@@ -734,7 +734,7 @@ std::string FaultTree::primaries_no_prob_() {
     try {
       it->second->p();
     } catch (scram::ValueError& err) {
-      uninit_primaries += it->first;
+      uninit_primaries += orig_ids_[it->first];
       uninit_primaries += "\n";
     }
   }

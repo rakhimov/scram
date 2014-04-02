@@ -1,2 +1,1 @@
 Some bugs found during development:
-* Incorrect order of input parameters in a input file do not raise any error.

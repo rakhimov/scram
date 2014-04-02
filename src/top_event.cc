@@ -13,7 +13,7 @@ TopEvent::TopEvent(std::string id, std::string gate)
 
 std::string TopEvent::gate() {
   if (gate_ == "NONE") {
-    std::string msg = "Gate is not set for this event.";
+    std::string msg = "Gate is not set for " + this->id() + " event.";
     throw scram::ValueError(msg);
   }
 
@@ -22,7 +22,7 @@ std::string TopEvent::gate() {
 
 void TopEvent::gate(std::string gate) {
   if (gate_ != "NONE") {
-    std::string msg = "Trying to re-assign a gate for this event.";
+    std::string msg = "Trying to re-assign a gate for " + this->id() + " event.";
     throw scram::ValueError(msg);
   }
 
@@ -31,7 +31,7 @@ void TopEvent::gate(std::string gate) {
 
 const std::map<std::string, scram::Event*>& TopEvent::children() {
   if (children_.empty()) {
-    std::string msg = "This event does not have children.";
+    std::string msg = this->id() + " event does not have children.";
     throw scram::ValueError(msg);
   }
 
@@ -40,7 +40,7 @@ const std::map<std::string, scram::Event*>& TopEvent::children() {
 
 void TopEvent::add_child(scram::Event* child) {
   if (children_.count(child->id())) {
-    std::string msg = "Trying to re-insert a child for this event.";
+    std::string msg = "Trying to re-insert a child for " + this->id() + " event.";
     throw scram::ValueError(msg);
   }
 
