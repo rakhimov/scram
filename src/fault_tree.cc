@@ -568,7 +568,9 @@ void FaultTree::report(std::string output) {
   std::map< std::set<std::string>, double >::iterator it_pr;
 
   // Print warnings of calculations
-  out << "\n" << warnings_ << "\n";
+  if (warnings_ != "") {
+    out << "\n" << warnings_ << "\n";
+  }
 
   // Print minimal cut sets
   out << "\n" << "Begin minimal cut sets" << "\n";
@@ -692,7 +694,8 @@ void FaultTree::add_node_(std::string parent, std::string id,
 void FaultTree::add_prob_(std::string id, double p) {
   // Check if the primary event is in this tree
   if (primary_events_.count(id) == 0) {
-    std::string msg = "Primary event " + id + " was not initiated in this tree.";
+    boost::to_upper(id);
+    std::string msg = "Primary event " + id + " is not in this tree.";
     throw scram::ValidationError(msg);
   }
 
