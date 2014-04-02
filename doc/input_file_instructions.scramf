@@ -77,7 +77,8 @@
 
     # The id of the transfer function must be the name of a file containing
     # the tree to be linked to the current tree
-    # NOTE: the name must be exact, preserving the case of the original file
+    # NOTE: the name must be exact
+    # NOTE: the name must be in LOWER case.
     # NOTE: all the rules for input file apply for the transfered file
     # NOTE: The linked file's top event is going to become an intermediate
     # event in this tree

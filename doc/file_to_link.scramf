@@ -18,7 +18,7 @@
 {
     parent      Any
 
-    # The id must match the name of the file.
+    # The id must match the name of the file and be in lower case.
     # This id is referenced in the original main input for linking.
     id          file_to_link.scramf
 
