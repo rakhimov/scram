@@ -6,8 +6,10 @@
 #include <map>
 #include <set>
 #include <string>
+#include <queue>
 
 #include "event.h"
+#include "transfer.h"
 
 namespace scram {
 
@@ -46,7 +48,7 @@ class FaultTree : public RiskAnalysis {
   // Reports the results of analysis to a specified output destination.
   void report(std::string output);
 
-  ~FaultTree() {}
+  virtual ~FaultTree() {}
 
  private:
   // Adds node and updates databases
@@ -54,6 +56,9 @@ class FaultTree : public RiskAnalysis {
 
   // Adds probability to a primary event
   void add_prob_(std::string id, double p);
+
+  // Includes external transfer in subtrees to this current main tree
+  void include_transfers_();
 
   // Verifies if gates are initialized correctly with right number of children
   // Returns a warning message string with the list of bad gates and their
@@ -115,6 +120,10 @@ class FaultTree : public RiskAnalysis {
 
   // container for primary events
   std::map<std::string, scram::PrimaryEvent*> primary_events_;
+
+  // container for transfer symbols
+  // a queue contains a tuple of the parent and id of transferIn
+  std::queue< std::pair<std::string, std::string> > transfers_;
 
   // container for minimal cut sets
   std::set< std::set<std::string> > min_cut_sets_;

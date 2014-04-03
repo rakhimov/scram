@@ -1,0 +1,24 @@
+Characteristics of Transfer In and Transfer Out:
+* Get the list of transfers
+    ** If transfer is a root, then check if there are other nodes in the main
+        file. If so, it is a mistake.( May put a special flag for this case)
+    ** Transfer can list their parent as only a intermediate event or top
+        event. No dangling transfers. (Check just like other nodes.)
+    ** Intermediate event can have many transferIn.
+    ** ONLY one transferOut per intermediate event
+* Check if the transfer list is initiated correctly
+    ** Only one intermediate event can follow the transfer out
+    ** None of the elements in the transfer tree should refer to elements in
+        the original tree.
+    ** Transfer Intermediate events may show up in several places and cause
+        conflicts with the uniqueness of intermediate events.
+        May append some suffix to avoid problems.
+* Attach one list to corresponding 
+
+
+Note:
+    * If a user wants to re-use intermediate event in multiple places,
+        transfers should be used instead of finding unique names for those
+        intermediate events with the same basic events.
+    * Warn a user about cyclic inclusions.
+    * May create probability file inclusion logic.

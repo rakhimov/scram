@@ -49,11 +49,11 @@ class TopEvent : public scram::Event {
  private:
   // Gate type
   std::string gate_;
-  // Intermidiate and basic events of the top event
+  // Intermediate and primary events of the top event
   std::map<std::string, scram::Event*> children_;
 };
 
-// Intermidiate event
+// Intermediate event
 // This event is Top event with a parent
 class InterEvent : public scram::TopEvent {
  public:
@@ -70,7 +70,7 @@ class InterEvent : public scram::TopEvent {
   ~InterEvent() {}
 
  private:
-  // The parent of this intermidiate event
+  // The parent of this intermediate event
   scram::Event* parent_;
 
 };
@@ -111,10 +111,10 @@ class PrimaryEvent : public scram::Event {
   // Type of a primary event
   std::string type_;
 
-  // Probability of the basic event
+  // Probability of the primary event
   double p_;
 
-  // Parents of this basic event
+  // Parents of this primary event
   std::map<std::string, scram::Event*> parents_;
 };
 

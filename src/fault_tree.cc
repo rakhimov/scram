@@ -165,7 +165,8 @@ void FaultTree::process_input(std::string input_file) {
         } else if (args[0] == "type" && type == "") {
           type = args[1];
           // check if gate/event type is valid
-          if (!gates_.count(type) && !types_.count(type)) {
+          if (!gates_.count(type) && !types_.count(type)
+              && (type != "transferin")) {
             std::stringstream msg;
             boost::to_upper(type);
             msg << "Line " << nline << " : " << "Invalid input arguments."
@@ -193,8 +194,13 @@ void FaultTree::process_input(std::string input_file) {
     }
   }
 
+  // Transfer include external trees from other files
+  if (!transfers_.empty()) {
+    FaultTree::include_transfers_();
+  }
+
   // Defensive check if the top event has at least one child
-  if (top_event_->children().size() == 0) {
+  if (top_event_->children().empty()) {
     std::stringstream msg;
     msg << "The top event does not have intermediate or primary events.";
     throw scram::ValidationError(msg.str());
@@ -605,6 +611,13 @@ void FaultTree::report(std::string output) {
 
 void FaultTree::add_node_(std::string parent, std::string id,
                           std::string type) {
+  // Check if this is a transfer
+  if (type == "transferin") {
+    // register to call later
+    transfers_.push(std::make_pair(parent, id));
+    return;
+  }
+
   // Initialize events
   if (parent == "none") {
     // check for inaccurate second top event
@@ -701,6 +714,195 @@ void FaultTree::add_prob_(std::string id, double p) {
 
   primary_events_[id]->p(p);
 
+}
+
+void FaultTree::include_transfers_() {
+  while (!transfers_.empty()) {
+    std::pair<std::string, std::string>* tr_node = &transfers_.front();
+    transfers_.pop();
+
+    std::ifstream ifile(tr_node->second.c_str());
+    if (!ifile.good()) {
+      std::string msg = "Input instruction file is not accessible.";
+      throw(scram::IOError(msg));
+    }
+
+    // Keep an original copy of the events
+    std::map<std::string, scram::PrimaryEvent*> orig_inter_events_ =
+        inter_events_;
+
+    std::string line = "";  // case insensitive input
+    std::string orig_line = "";  // line with capitalizations preserved
+    std::vector<std::string> no_comments;  // to hold lines without comments
+    std::vector<std::string> args;  // to hold args after splitting the line
+    std::vector<std::string> orig_args;  // original input with capitalizations
+    std::string parent = "";
+    std::string id = "";
+    std::string type = "";
+    bool block_started = false;
+
+    for (int nline = 1; getline(ifile, line); ++nline) {
+      // remove trailing spaces
+      boost::trim(line);
+      // check if line is empty
+      if (line == "") continue;
+
+      // remove comments starting with # sign
+      boost::split(no_comments, line, boost::is_any_of("#"),
+                   boost::token_compress_on);
+      line = no_comments[0];
+
+      // check if line is comment only
+      if (line == "") continue;
+
+      // trim again for spaces before in-line comments
+      boost::trim(line);
+
+      // preserve original line for name extraction
+      orig_line = line;
+
+      // convert to lower case
+      boost::to_lower(line);
+
+      // get args from the line
+      boost::split(args, line, boost::is_any_of(" "),
+                   boost::token_compress_on);
+
+
+      switch (args.size()) {
+        case 1: {
+          if (args[0] == "{") {
+            // check if this is a new start of a block
+            if (block_started) {
+              std::stringstream msg;
+              msg << "Line " << nline << " : " << "Found second '{' before"
+                  << " finishing the current block.";
+              throw scram::ValidationError(msg.str());
+            }
+            // new block successfully started
+            block_started = true;
+
+          } else if (args[0] == "}") {
+            // check if this is an end of a block
+            if (!block_started) {
+              std::stringstream msg;
+              msg << "Line " << nline << " : " << " Found '}' before starting"
+                  << " a new block.";
+              throw scram::ValidationError(msg.str());
+            }
+            // end of the block detected
+
+            // Check if all needed arguments for an event are received.
+            if (parent == "") {
+              std::stringstream msg;
+              msg << "Line " << nline << " : " << "Missing parent in this"
+                  << " block.";
+              throw scram::ValidationError(msg.str());
+            }
+
+            if (id == "") {
+              std::stringstream msg;
+              msg << "Line " << nline << " : " << "Missing id in this"
+                  << " block.";
+              throw scram::ValidationError(msg.str());
+            }
+
+            if (type == "") {
+              std::stringstream msg;
+              msg << "Line " << nline << " : " << "Missing type in this"
+                  << " block.";
+              throw scram::ValidationError(msg.str());
+            }
+
+            try {
+              // Add a node with the gathered information
+              FaultTree::add_node_(parent, id, type);
+            } catch (scram::ValidationError& err) {
+              std::stringstream msg;
+              msg << "Line " << nline << " : " << err.msg();
+              throw scram::ValidationError(msg.str());
+            }
+
+            // refresh values
+            parent = "";
+            id = "";
+            type = "";
+            block_started = false;
+
+          } else {
+            std::stringstream msg;
+            msg << "Line " << nline << " : " << "Undefined input.";
+            throw scram::ValidationError(msg.str());
+          }
+
+          continue;  // continue the loop
+        }
+        case 2: {
+          if (args[0] == "parent" && parent == "") {
+            parent = args[1];
+          } else if (args[0] == "id" && id == "") {
+            id = args[1];
+            // extract and save original id with capitalizations
+            // get args from the original line
+            boost::split(orig_args, orig_line, boost::is_any_of(" "),
+                         boost::token_compress_on);
+            // populate names
+            orig_ids_.insert(std::make_pair(id, orig_args[1]));
+
+          } else if (args[0] == "type" && type == "") {
+            type = args[1];
+            // check if gate/event type is valid
+            if (!gates_.count(type) && !types_.count(type)
+                && (type != "transferin")) {
+              std::stringstream msg;
+              boost::to_upper(type);
+              msg << "Line " << nline << " : " << "Invalid input arguments."
+                  << " Do not support this '" << type
+                  << "' gate/event type.";
+              throw scram::ValidationError(msg.str());
+            }
+          } else {
+            // There may go other parameters for FTA
+            // For now, just throw an error
+            std::stringstream msg;
+            msg << "Line " << nline << " : " << "Invalid input arguments."
+                << " Check spelling and doubly defined parameters inside"
+                << " this block.";
+            throw scram::ValidationError(msg.str());
+          }
+
+          break;
+        }
+        default: {
+          std::stringstream msg;
+          msg << "Line " << nline << " : " << "More than 2 arguments.";
+          throw scram::ValidationError(msg.str());
+        }
+      }
+    }
+
+    // Transfer include external trees from other files
+    if (!transfers_.empty()) {
+      FaultTree::include_transfers_();
+    }
+
+    // Defensive check if the top event has at least one child
+    if (top_event_->children().empty()) {
+      std::stringstream msg;
+      msg << "The top event does not have intermediate or primary events.";
+      throw scram::ValidationError(msg.str());
+    }
+
+    // Check if each gate has a right number of children
+    std::string bad_gates = FaultTree::check_gates_();
+    if (bad_gates != "") {
+      std::stringstream msg;
+      msg << "\nThere are problems with the following gates:\n";
+      msg << bad_gates;
+      throw scram::ValidationError(msg.str());
+    }
+
+  }
 }
 
 std::string FaultTree::check_gates_() {
