@@ -9,7 +9,6 @@
 #include <queue>
 
 #include "event.h"
-#include "transfer.h"
 
 namespace scram {
 
@@ -43,7 +42,7 @@ class FaultTree : public RiskAnalysis {
   void graphing_instructions();
 
   // Analyzes the fault tree and performs computations.
-    void analyze();
+  void analyze();
 
   // Reports the results of analysis to a specified output destination.
   void report(std::string output);
@@ -115,15 +114,24 @@ class FaultTree : public RiskAnalysis {
   // top event
   scram::TopEvent* top_event_;
 
+  // indicator of detection of top event described by a transfer sub-tree
+  bool top_detected_;
+
+  // indicates that reading the main tree file as opposed to a transfer tree
+  bool is_main_;
+
   // holder for intermidiate events
   std::map<std::string, scram::InterEvent*> inter_events_;
 
   // container for primary events
   std::map<std::string, scram::PrimaryEvent*> primary_events_;
 
-  // container for transfer symbols
+  // container for transfer symbols as requested in tree initialization
   // a queue contains a tuple of the parent and id of transferIn
   std::queue< std::pair<std::string, std::string> > transfers_;
+
+  // container for storing all transfer sub-trees' names and number of calls
+  std::map<std::string, int> trans_calls_;
 
   // container for minimal cut sets
   std::set< std::set<std::string> > min_cut_sets_;

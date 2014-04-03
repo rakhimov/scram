@@ -34,3 +34,8 @@ TODO list for SCRAM Project:
     * Other input styles : XML, json, sql.
     * GUI considerations
     * Conditional probabilities through CCF
+
+    * Coding corrections:
+        ** Adjust and check for Google C++ style
+        ** Capitalize comments
+        ** End comments with a dot.

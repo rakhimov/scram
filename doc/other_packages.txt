@@ -2,14 +2,16 @@ List of features that are available in other risk analysis packages.
 This list is used to guide the development SCRAM.
 Most popular features will be given higher priority.
 
-Note: GUI features are omitted because SCRAM is not expected to be a GUI
-application. It is a command-line tool.
+Note: Detailed GUI features are omitted because SCRAM is not expected to be
+      a GUI application. It is a command-line tool.
 
 Commercial Packages
 ===================================
 
 Isograph
 --------
+* Very reader-friendly documentation of the package.
+* Tricky GUI with fast learning curve. Modern look of GUI.
 * Fault Tree Analysis
 * Monte Carlo simulation
 * Event tree analysis
@@ -28,10 +30,15 @@ Isograph
 * Logic Modes: Probabilistic, True, False
 * Failure model: Markov model option
 * Sequencing: Initiator only, Enabler only, Last, First, Second, ...
+* Detection of circluar inclusion of TRANSFER trees.
+* GUI based analysis reports. Very Flexible and Dynamic.
+* Several examples and step-by-step learning introduction.
 
 
 RiskMan
 --------
+* Text based documentation of the package.(Hard to load and search.)
+* GUI with a lot of nesting. (Old GUI with no tabs implemented.)
 * Fault Tree Analysis
 * Several Fault Tree Editors: PLGFT, NELFT, EasyFlow, CAFTA
 * AND relationship for cut sets are indicated by '*'
@@ -65,6 +72,9 @@ RiskMan
 * Common Cause : Several models(Algebraic,and other)
     Groups : Pumps, Valves,
     Put events into groups
+* Text based output. Very well formatted. Calculations are performed for each
+  report separately.
+* BUG: accepts negative probabilities.
 
 
 Free Packages
@@ -79,3 +89,6 @@ OpenFTA
 * Primary event types: Basic, Undeveloped, External, Conditioning
 * Gate types: AND, OR, PRIORITY AND, EXCLUSIVE OR, INHIBIT, TRANSFER IN,
               TRANSFER OUT
+* Does not detect cyclic inclusions through TRANSFER symbols.
+* The system crashes upon cyclic inclusions.
+* Several simple examples that test the functionality of the package.
