@@ -1,14 +1,10 @@
-###############################################################################
-#################################### begin google test ########################
-###############################################################################
-
 # Be sure to clear these each time
 SET( GENERATED_TEST_LIST "" CACHE INTERNAL "" )
 SET( GENERATED_FILTER_LIST "" CACHE INTERNAL "" )
 SET( GENERATED_TEST_SOURCE_LIST "" CACHE INTERNAL "" )
 
 # The gtest include file directories.
-SET(GTEST_INCLUDE_DIRS 
+SET(GTEST_INCLUDE_DIRS
   "${CMAKE_CURRENT_SOURCE_DIR}/GoogleTest"
   )
 
@@ -51,30 +47,21 @@ INSTALL(FILES GoogleTest/gtest/gtest.h
   COMPONENT testing
   )
 
-###############################################################################
-##################################### end google test #########################
-###############################################################################
-
-###############################################################################
-################################### begin scram testing ######################
-###############################################################################
 
 INCLUDE_DIRECTORIES(${SCRAM_CORE_INCLUDE_DIRS})
 
 # To add a new file, just add it to this list.  Any GoogleTests inside will be automatically
 # added to ctest.
-set ( SCRAM_CORE_TEST_SOURCE ${SCRAM_CORE_TEST_SOURCE}
-  # --
-  )
+#set (
+#    )
 
 ADD_EXECUTABLE( scram_unit_tests
-  scram_unit_test_driver.cc 
-  ${SCRAM_CORE_TEST_SOURCE}
+  scram_unit_test_driver.cc
   )
 
-TARGET_LINK_LIBRARIES( scram_unit_tests dl 
-  ${LIBS} 
-  scramcore 
+TARGET_LINK_LIBRARIES( scram_unit_tests dl
+  ${LIBS}
+  scramcore
   gtest
   )
 
@@ -100,7 +87,3 @@ add_custom_command(TARGET ${tgt}
   DEPENDS
   VERBATIM
   )
-
-###############################################################################
-#################################### end scram testing #######################
-###############################################################################
