@@ -12,10 +12,13 @@
 #include <vector>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 
 #include "error.h"
 #include "event.h"
+
+namespace fs = boost::filesystem;
 
 namespace scram {
 
@@ -772,9 +775,14 @@ void FaultTree::include_transfers_() {
     sufstr << "-" << tr_id << "[" << trans_calls_[tr_id] << "]";
     std::string suffix = sufstr.str();
 
-    std::ifstream ifile(tr_id.c_str());
+    // The sub-tree descriptions must be located in the same directory as
+    // the main input file.
+    fs::path p(input_file_);
+    std::string dir = p.parent_path().generic_string();
+    std::string path_to_tr = dir + "/" + tr_id;
+    std::ifstream ifile(path_to_tr.c_str());
     if (!ifile.good()) {
-      std::string msg = tr_id + " : Tree file is not accessible.";
+      std::string msg = tr_id + " : tree file is not accessible.";
       throw(scram::IOError(msg));
     }
 
