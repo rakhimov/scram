@@ -15,7 +15,6 @@ TODO list for SCRAM Project:
         ** Distributions
         ** Refer to OpenFTA
     * Dump/Graph the tree for verification
-    * May consider using regex for input file parsing.
     * Reformat documentation into rst.
 
     * Incorporation of event tree analysis

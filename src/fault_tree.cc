@@ -1107,9 +1107,9 @@ std::set< std::set<std::string> > FaultTree::combine_el_and_set_(
 
 }
 
-  bool pair_comp_(const std::pair< std::set<std::string>, double >& m_one,
-                  const std::pair< std::set<std::string>, double >& m_two) {
-    return m_one.second < m_two.second;
-  }
+bool pair_comp_(const std::pair< std::set<std::string>, double >& m_one,
+                const std::pair< std::set<std::string>, double >& m_two) {
+  return m_one.second < m_two.second;
+}
 
 }  // namespace scram
