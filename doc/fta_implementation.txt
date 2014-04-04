@@ -10,6 +10,11 @@ Currently Supported Gate Types
 AND
 OR
 
+Currently Supported Symbols
+---------------------------
+TransferIn
+TransferOut
+
 
 Currently Supported Event Types
 --------------------------------

@@ -3,16 +3,12 @@ TODO list for SCRAM Project:
         ** Take a look at output formats of RiskMan, Isograph and OpenFTA
         ** Fractions, importance, contributions of each minimal sets
         ** May order minimal cut sets by their size, importance
-    * Incorporate unit tests into building
-    * Test functions.
-    * Write tests for input files.
-        ** Create input files with transferIn and TransferOut types
     * Incorporate benchmarks into building and automation
         ** Develop new symbols, gate and event types necessary for benchmarking
-            [] TransferIn and TransferOut types
+            *** Conditioning event
+            *** Priority AND, XOR, Inhibit, VOTE, NOT, NULL, Dormant
         ** Implement test cases from OpenFTA
         ** Implement test cases from Isograph.
-    * Refactor the code.
     * Creation of an equation from minimal cut sets for Monte Carlo simulation
         ** Uncertainty analysis basics
         ** Sampling techniques
@@ -36,7 +32,12 @@ TODO list for SCRAM Project:
     * GUI considerations
     * Conditional probabilities through CCF
 
-    * Coding corrections:
+    * Coding specific:
+        ** Incorporate unit tests into building
+        ** Test functions.
+        ** Write tests for input files.
+        ** Create input files with transferIn and TransferOut types
         ** Adjust and check for Google C++ style
         ** Capitalize comments
         ** End comments with a dot.
+        ** Refactor the code

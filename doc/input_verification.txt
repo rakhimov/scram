@@ -10,7 +10,7 @@ Steps to verify an input for Fault Tree:
         ** Non-basic event has a unique name [done]
         ** Basic events with several parents are allowed (put #1) [done]
         ** Each non-basic node has correct number of children [done]
-        ** Create TransferIn function in isolation and link it the last.
+        ** Create TransferIn function in isolation and link it the last.[done]
     * Throw an error with a message (line numbers, types of errors) [done]
     * Find probabilities for basic events:
         ** Report missing probabilities [done]

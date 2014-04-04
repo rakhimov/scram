@@ -4,8 +4,7 @@
 # this tree into the main tree.
 # All the rules for fta input files apply for this additional tree as well.
 #
-# WARNING: Be careful with the names of intermediate events. If they repeat
-# names of the main fault tree, SCRAM may throw an error.
+# Additional instructions and description of Transfer logic are in documentation.
 
 
 ################### Start of Transfered Tree ###########################

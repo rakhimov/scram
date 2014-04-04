@@ -1,2 +1,3 @@
 Some bugs found during development:
-    * The tree is not checked for cyclic transer includes.
+    * For Transfer Symbols, SCRAM must run only in the directory where input 
+      files are located.

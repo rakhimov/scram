@@ -76,16 +76,16 @@
     parent      TopEvent
 
     # The id of the transfer function must be the name of a file containing
-    # the tree to be linked to the current tree
+    # the tree to be linked to the current tree. It not the PATH to the file.
     # NOTE: the name must be exact
     # NOTE: the name must be in LOWER case.
     # NOTE: all the rules for input file apply for the transfered file
-    # NOTE: The linked file's top event is going to become an intermediate
-    # event in this tree
+    # NOTE: The linked file's first event is going to become an intermediate
+    # event in this main tree.
     # NOTE: This additional transfered in tree will be linked last in order to
     # avoid accidentally linking basic events into intermediate events of the
-    # additional transfered in tree. This additional trees will be constructed
-    # in isolation and then linked into the main tree for analysis.
+    # additional transfered in tree. Multiple references to sub-tree are
+    # possible.
 
     id          file_to_link.scramf
 
