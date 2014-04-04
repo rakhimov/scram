@@ -25,7 +25,12 @@ def main():
                   "missing_type.scramf",
                   "non_existent_parent.scramf",
                   "unrecognized_parameter.scramf",
-                  "unrecognized_type.scramf"]
+                  "unrecognized_type.scramf",
+                  "transfer_circular_self_top.scramf",
+                  "transfer_circular_top.scramf",
+                  "transfer_head_extra_nodes.scramf",
+                  "transfer_no_file.scramf",
+                  "transfer_wrong_parent.scramf"]
 
     # wrong probability files in the current directory
     bad_probs = ["doubly_defined_prob.scramp",
