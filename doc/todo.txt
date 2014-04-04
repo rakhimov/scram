@@ -7,7 +7,7 @@ TODO list for SCRAM Project:
         ** Develop new symbols, gate and event types necessary for benchmarking
             *** Conditioning event
             *** Priority AND, XOR, Inhibit, VOTE, NOT, NULL, Dormant
-        ** Implement test cases from OpenFTA
+     [!]** Implement test cases from OpenFTA
         ** Implement test cases from Isograph.
     * Creation of an equation from minimal cut sets for Monte Carlo simulation
         ** Uncertainty analysis basics
@@ -25,13 +25,12 @@ TODO list for SCRAM Project:
     * Incorporation of alignments
         ** Maintenance
         ** Guaranteed Success/Failure
-    * Time and space complexity of all algorithms used in this package
 
     * Other input styles : XML, json, sql.
     * GUI considerations
     * Conditional probabilities through CCF
 
-    * Coding specific:
+ [!]* Coding specific:
         ** Incorporate unit tests into building
         ** Test functions.
         ** Write tests for input files.
@@ -40,3 +39,4 @@ TODO list for SCRAM Project:
         ** Capitalize comments
         ** End comments with a dot.
         ** Refactor the code
+        ** Time and space complexity of all algorithms used in this package

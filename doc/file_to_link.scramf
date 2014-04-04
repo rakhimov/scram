@@ -2,6 +2,7 @@
 # This additional branches are referenced by TransferIn function in the main
 # tree. The first node must have a TransferOut function type in order to link
 # this tree into the main tree.
+# This file must be located in the same directory as the main faul tree input.
 # All the rules for fta input files apply for this additional tree as well.
 #
 # Additional instructions and description of Transfer logic are in documentation.
