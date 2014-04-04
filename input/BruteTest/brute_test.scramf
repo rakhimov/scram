@@ -1,4 +1,7 @@
-# This is an input to test brute force probability calculation algorithm.
+# This is an input to test exact probability calculation algorithm.
+# The system contains two trains that have a common event.
+# The calculation of the probability should take this common event into
+# account.
 
 # Top event
 {
