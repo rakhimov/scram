@@ -23,7 +23,7 @@ Characteristics of Transfer In and Transfer Out:
         references. [done]
 * Update database of top, inter, and primary events after reading the
   sub-tree. [done]
-* Keep track of cyclic inclusions and prevent with an error.
+* Keep track of cyclic inclusions and prevent with an error.[done]
 
 
 Note:

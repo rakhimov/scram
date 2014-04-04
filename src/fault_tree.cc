@@ -620,7 +620,34 @@ void FaultTree::add_node_(std::string parent, std::string id,
     // register to call later
     transfers_.push(std::make_pair(parent, id));
     trans_calls_.insert(std::make_pair(id, 0));
+    // check if this is a cyclic inclusion
+    // this line does many things that are tricky and c++ map specific.
+    // find vectors ending with the currently opened file name and append
+    // the sub-tree requested to be called later.
+    // Attach that subtree if it does not clash with the initiating grandparents
 
+    trans_tree_[current_file_].push_back(id);
+
+    std::map< std::string, std::vector<std::string> >::iterator it_t;
+    for (it_t = trans_tree_.begin(); it_t != trans_tree_.end(); ++it_t) {
+      if (!it_t->second.empty() && it_t->second.back() == current_file_) {
+        if (it_t->first == id) {
+          std::vector<std::string> chain = it_t->second;
+          std::stringstream msg;
+          msg << "Detected circular inclusion of ( " << id;
+
+          std::vector<std::string>::iterator it;
+          for (it = chain.begin(); it != chain.end(); ++it) {
+            msg << "->" << *it;
+          }
+          msg << "->" << id << " )";
+          throw scram::ValidationError(msg.str());
+
+        } else {
+          it_t->second.push_back(id);
+        }
+      }
+    }
     return;
   }
 
@@ -750,6 +777,9 @@ void FaultTree::include_transfers_() {
       std::string msg = tr_id + " : Tree file is not accessible.";
       throw(scram::IOError(msg));
     }
+
+    // register that a sub-tree file is under operation
+    current_file_ = tr_id;
 
     std::string line = "";  // case insensitive input
     std::string orig_line = "";  // line with capitalizations preserved

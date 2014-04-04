@@ -96,8 +96,11 @@ class FaultTree : public RiskAnalysis {
   // rare event approximation
   bool rare_event_;
 
-  // input file path. Needed to create output files.
+  // input file path.
   std::string input_file_;
+
+  // keep track of currently opened file with sub-trees
+  std::string current_file_;
 
   // container of original names of events with capitalizations
   std::map<std::string, std::string> orig_ids_;
@@ -132,6 +135,9 @@ class FaultTree : public RiskAnalysis {
 
   // container for storing all transfer sub-trees' names and number of calls
   std::map<std::string, int> trans_calls_;
+
+  // container to track transfer calls to prevent cyclic calls/inclusions
+  std::map< std::string, std::vector<std::string> > trans_tree_;
 
   // container for minimal cut sets
   std::set< std::set<std::string> > min_cut_sets_;
