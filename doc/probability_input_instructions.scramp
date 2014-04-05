@@ -6,10 +6,39 @@
 # The order of basic events does not matter.
 
 {
+    # block     prob
 
-ValveOne    0.5
-ValveTwo    0.5
-PumpOne     0.7
-PumpTwo     0.7
+    ValveOne    0.5
+    ValveTwo    0.5
+    PumpOne     0.7
+    PumpTwo     0.7
 
+}
+
+# Instructions for Common Cause Analysis(CCF)
+# Group events into groups and provide analysis method: MGL, alpha, beta.
+{
+    # block    CCF
+    # id name of the CCF group
+    group       Pumps
+    # CCF method to be used
+    method      MGL
+    # Parameters for this CCF method
+    beta        0.08
+    gamma       0.007
+    delta       0.0005
+    # Group members
+    PumpOne
+    PumpTwo
+}
+
+{
+    block       CCF
+    method      MGL
+    beta        0.09
+    gamma       0.05
+    delta       0.001
+    group       Valves
+    ValveOne
+    ValveTwo
 }
