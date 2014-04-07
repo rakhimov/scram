@@ -1,4 +1,4 @@
-The overall flow of SCRAM and possible future additions.
+The overall description of SCRAM and possible future additions.
 
 Command-line call of SCRAM by a user
 ====================================
@@ -24,7 +24,7 @@ Step 3. Perform cut set generation.
 Step 4. Perform analysis: Rare event approximation and independence of events.
         Rare event approximation is used only if enforced by a user.
         However, if calculations are giving probabilities above 0.1 and total
-        probability above 1, the computation automatically switches to 
+        probability above 1, the computation automatically switches to
         the original algorithm without the rare event approximation.
 Step 5. Output the analysis results.
 
@@ -53,10 +53,11 @@ EVENTS
                 This event must have its probability defined and provide input
                 to a logic gate.
 
-[5] House/Input Event : Contains a normal system operating input with the
-                capability of causing a fault. This event is expected to
-                occur with some probability, or it is sometimes used as a
-                switch of True or False. Provides input to a logic gate.
+[5] House/Input/External Event : Contains a normal system operating input with
+                the capability of causing a fault. This event is expected to
+                occur with probability 0 or 1 only, or it is sometimes used
+                as a switch of True or False. Provides input to a logic gate.
+                May be used to switch off a sub-tree.
 
 [6] Conditioning Event : Defines a specific condition or restriction
                 that apply to any logic gate. Used mostly with Priority AND,
@@ -85,25 +86,36 @@ GATES
                 The sequence also be from first to last member.
 
 [12] Exclusive OR (XOR) : Output fault occurs if exactly one of the input
-                faults occurs.
+                faults occurs. (A XOR B) = (A AND B') OR (A' AND B)
+                Some packages restrict input events to only two.
 
 [13] Inhibit : Output fault occurs if the single input fault occurs in the
                 presense of an enabling condition (the enabling condition is
                 represented by a Conditioning Event drawn to the right of the
-                gate.)
+                gate.). Some packages restrict input events to only two events.
 
 [14] Combination/VOTE : Output fault occurs if a certain number of the input
                 faults occur.
 
 [15] NOT : Output fault occurs if the input event does not occur.
 
-[16] NULL : Non-essential. Only one input is allowed. Used in GUI apps to allow
-        more description.
+[16] NULL/Pass-Through : Non-essential. Only one input is allowed.
+                Used in GUI apps to allow more description or alignment.
+
+[17] NAND : NOT AND gate. Indicates that the output occurs when at least one
+                of the input events is absent. This may lead to non-coherent
+                trees, where non-occurance of an event causes the top event.
+
+[18] NOR : NOT OR gate. Indicates that the output occurs when all the input
+                events are absent. This may also lead to non-coherent trees.
 
 OTHER
 -----
 [] Dormant Failure : Failures that are not detected by themselves and need
                 secondary specific actions or failures to occur.
+                This is a special case of a primary event that may fail with
+                no visible external effects.
+                May be treated as a basic event for primitive analysis.
 
 
 Event Tree Analysis.

@@ -6,12 +6,14 @@ TODO list for SCRAM Project:
     * Incorporate benchmarks into building and automation
         ** Develop new symbols, gate and event types necessary for benchmarking
             *** Conditioning event
-            *** Priority AND, XOR, Inhibit, VOTE, NOT, NULL, Dormant
+            *** Priority AND, XOR, Inhibit, VOTE, NOT, NULL, [!] Dormant
      [!]** Implement test cases from OpenFTA
+            *** Save output files of OpenFTA for all analysis types.
         ** Implement test cases from Isograph.
         ** A python script to generate a tree of any size.
     * Creation of an equation from minimal cut sets for Monte Carlo simulation
-        ** Uncertainty analysis basics
+        ** Uncertainty analysis
+        ** Sensitivity analysis
         ** Sampling techniques
         ** Distributions
         ** Refer to OpenFTA
@@ -26,6 +28,18 @@ TODO list for SCRAM Project:
     * Incorporation of alignments
         ** Maintenance
         ** Guaranteed Success/Failure
+    * Option to save minimal cut sets into specific uploadable file for later
+        analysis.
+    * Option to limit the order of minimal cut sets to speed up calculations.
+    * Probabilities as a function of time (lambda).
+    * Output report may include input file names, date and time, all the
+        options invoked by the user, the duration of analysis.
+    * The user should be able to request minimal cut sets only without
+        probabilities.
+    * Provide check for correct probability for House events: 0 or 1.
+    * Analyse a large tree and optimize the algorithms: mcs generator,
+        probabilty calculations with approximation.
+    * Provide probability assignments through True/False and Lambda/Time.
 
     * Other input styles : XML, json, sql.
     * GUI considerations
@@ -35,7 +49,7 @@ TODO list for SCRAM Project:
         ** Incorporate unit tests into building
         ** Test functions.
         ** Write tests for input files.
-        ** Create input files with transferIn and TransferOut types
+        ** Create test input files with transferIn and TransferOut types
         ** Adjust and check for Google C++ style
         ** Capitalize comments
         ** End comments with a dot.
