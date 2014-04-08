@@ -779,7 +779,13 @@ void FaultTree::include_transfers_() {
     // the main input file.
     fs::path p(input_file_);
     std::string dir = p.parent_path().generic_string();
-    std::string path_to_tr = dir + "/" + tr_id;
+    std::string path_to_tr = "";
+    if (dir != "") {
+      path_to_tr = dir + "/" + tr_id;
+    } else {
+      path_to_tr = tr_id;
+    }
+
     std::ifstream ifile(path_to_tr.c_str());
     if (!ifile.good()) {
       std::string msg = tr_id + " : tree file is not accessible.";
