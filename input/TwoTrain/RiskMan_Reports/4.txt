@@ -1,0 +1,60 @@
+
+                               MODEL Name: RAKHI
+                     Basic Event Report for Top Event SYS
+
+                            15:15:31  29 MAR 2014
+                                    Page 1
+
+
+ ...................................................................................................................................
+
+  Basic Events     Description
+----------------   -----------------------------------------------------------------------------------------------------------------
+PUMPONE
+
+     Equation: Constant Value:0.7
+
+[PUMPONE]          Common Cause: Group PUMPS, 1/2
+
+     Equation: (1-0.2)*0.1 = 8.0000E-02
+
+[PUMPONE
+PUMPTWO]          Common Cause: Group PUMPS, 2/2
+
+     Equation: 0.2*0.1 = 2.0000E-02
+
+PUMPTWO
+
+     Equation: Constant Value:0.7
+
+[PUMPTWO]          Common Cause: Group PUMPS, 1/2
+
+     Equation: (1-0.2)*0.1 = 8.0000E-02
+
+VALVETWO
+
+     Equation: Constant Value:0.5
+
+[VALVETWO]          Common Cause: Group VALVES, 1/2
+
+     Equation: (1-0.2)*0.1 = 8.0000E-02
+
+[VALVETWO
+VAVLEONE]          Common Cause: Group VALVES, 2/2
+
+     Equation: 0.2*0.1 = 2.0000E-02
+
+VAVLEONE
+
+     Equation: Constant Value:0.5
+
+[VAVLEONE]          Common Cause: Group VALVES, 1/2
+
+     Equation: (1-0.2)*0.1 = 8.0000E-02
+
+
+Local Variables     Description                   Equation
+-------------------------------------------------------------------------------
+
+Database Variables
+------------------

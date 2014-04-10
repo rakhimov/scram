@@ -1,0 +1,33 @@
+
+                               MODEL Name: RAKHI
+             Cause Table for Top Event SYS and Split Fraction SYS1
+
+           BDD Value of SYS1 = 6.2943E-02      Date : 29 MAR 2014 15:11
+No... Cutsets................................. Value..... % Importance. % Cumulative. Alignment...
+1     [VALVETWO                                1.9890E-02      31.60009       31.6001 NORMAL
+      VAVLEONE]
+      (Common Cause: Group VALVES, 2/2)
+
+2     [PUMPONE                                 1.9890E-02      31.60009       63.2002 NORMAL
+      PUMPTWO]
+      (Common Cause: Group PUMPS, 2/2)
+
+3     [VAVLEONE]                               6.3649E-03      10.11218       73.3124 NORMAL
+      (Common Cause: Group VALVES, 1/2) *
+      [VALVETWO]
+      (Common Cause: Group VALVES, 1/2)
+
+4     [PUMPTWO]                                6.3649E-03      10.11218       83.4245 NORMAL
+      (Common Cause: Group PUMPS, 1/2) *
+      [VAVLEONE]
+      (Common Cause: Group VALVES, 1/2)
+
+5     [PUMPONE]                                6.3649E-03      10.11218       93.5367 NORMAL
+      (Common Cause: Group PUMPS, 1/2) *
+      [VALVETWO]
+      (Common Cause: Group VALVES, 1/2)
+
+6     [PUMPONE]                                6.3649E-03      10.11218      100.0000 NORMAL
+      (Common Cause: Group PUMPS, 1/2) *
+      [PUMPTWO]
+      (Common Cause: Group PUMPS, 1/2)
