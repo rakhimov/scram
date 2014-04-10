@@ -14,11 +14,13 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/date_time.hpp>
 
 #include "error.h"
 #include "event.h"
 
 namespace fs = boost::filesystem;
+namespace pt = boost::posix_time;
 
 namespace scram {
 
@@ -30,6 +32,7 @@ FaultTree::FaultTree(std::string analysis, bool rare_event)
       top_detected_(false),
       is_main_(true),
       input_file_(""),
+      max_order_(1),
       p_total_(0) {
   // add valid gates
   gates_.insert("and");
@@ -509,6 +512,9 @@ void FaultTree::analyze() {
     min_size++;
   }
 
+  // Update the maximum order of the detected minimal cut sets
+  max_order_ = min_size - 1;  // -1 due to post increment of min_size
+
   // Compute probabilities
   // First, assume independence of events.
   // Second, rare event approximation is applied upon users' request
@@ -582,35 +588,79 @@ void FaultTree::report(std::string output) {
     out << "\n" << warnings_ << "\n";
   }
 
-  // Print minimal cut sets
-  out << "\n" << "Begin minimal cut sets" << "\n";
-  for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
-       ++it_min) {
-    out << "{ ";
-    for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
-      out << orig_ids_[*it_set] << " ";
+  // Print minimal cut sets by their order
+  out << "\n" << "Minimal Cut Sets" << "\n";
+  out << "================\n\n";
+  out << "Fault Tree : " << input_file_ << "\n";
+  out << "Time : " << pt::second_clock::local_time() << "\n\n";
+  out << "Number of Primary Events : " << primary_events_.size() << "\n";
+  out << "Minimal Cut Set Maximum Order : " << max_order_ << "\n";
+  out.flush();
+
+  int order = 1;  // order of minimal cut sets
+  std::vector<int> order_numbers;  // number of sets per order
+  while (order < max_order_ + 1) {
+    std::set< std::set<std::string> > order_sets;
+    for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
+        ++it_min) {
+      if (it_min->size() == order) {
+        order_sets.insert(*it_min);
+      }
     }
-    out << "}\n";
-    out.flush();
+    order_numbers.push_back(order_sets.size());
+    if (!order_sets.empty()) {
+      out << "\nOrder " << order << ":\n";
+      int i = 1;
+      for (it_min = order_sets.begin(); it_min != order_sets.end(); ++it_min) {
+        out << i << ") ";
+        out << "{ ";
+        for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
+          out << orig_ids_[*it_set] << " ";
+        }
+        out << "}\n";
+        out.flush();
+        i++;
+      }
+    }
+    order++;
   }
 
+  out << "\nQualitative Importance Analysis :" << "\n\n";
+  out << "Order        Number\n";
+  out << "-----        ------\n";
+  for (int i = 1; i < max_order_ + 1; ++i) {
+    out << "  " << i << "            " << order_numbers[i-1] << "\n";
+  }
+  out.flush();
+
+
   // Print probabilities of minimal cut sets
-  out << "\n" << "Begin minimal cut sets' probabilities\n";
+  out << "\n" << "Probability Analysis" << "\n";
+  out << "====================\n\n";
+  out << "Fault Tree : " << input_file_ << "\n";
+  out << "Time : " << pt::second_clock::local_time() << "\n\n";
+  out << "Number of Primary Events : " << primary_events_.size() << "\n";
+  out << "Number of Minimal Cut Sets : " << min_cut_sets_.size() << "\n\n";
+  out << "Minimal Cut Set Probabilities :\n\n";
+  out.flush();
+  int i = 1;
   for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
        ++it_min) {
-    out << "{ ";
+    out << i << ") { ";
     for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
       out << orig_ids_[*it_set] << " ";
     }
     out << "}    ";
     out << prob_of_min_sets_[*it_min] << "\n";
+    i++;
     out.flush();
   }
 
   // Print total probability
-  out << "\n" << "Total probability of this fault tree" << "\n";
-  out << p_total_ << "\n";
-
+  out << "\n" << "=============================\n";
+  out <<  "Total Probability : " << p_total_ << "\n";
+  out << "=============================\n\n";
+  out.flush();
 }
 
 void FaultTree::add_node_(std::string parent, std::string id,
@@ -1061,31 +1111,30 @@ std::string FaultTree::primaries_no_prob_() {
   return uninit_primaries;
 }
 
-double FaultTree::prob_or_(std::set< std::set<std::string> > min_cut_sets_) {
+double FaultTree::prob_or_(std::set< std::set<std::string> > min_cut_sets) {
   // Recursive implementation
-  if (min_cut_sets_.empty()) {
+  if (min_cut_sets.empty()) {
     throw scram::ValueError("Do not pass empty set to prob_or_ function.");
   }
 
   double prob = 0;
 
   // Get one element
-  std::set< std::set<std::string> >::iterator it = min_cut_sets_.begin();
-  // it++;  // advance to the first element
+  std::set< std::set<std::string> >::iterator it = min_cut_sets.begin();
   std::set<std::string> element_one = *it;
 
   // Base case
-  if (min_cut_sets_.size() == 1) {
+  if (min_cut_sets.size() == 1) {
     // Get only element in this set
     return FaultTree::prob_and_(element_one);
   }
 
   // Delete element from the original set. WARNING: the iterator is invalidated.
-  min_cut_sets_.erase(it);
+  min_cut_sets.erase(it);
   prob = FaultTree::prob_and_(element_one) +
-            FaultTree::prob_or_(min_cut_sets_) -
+            FaultTree::prob_or_(min_cut_sets) -
             FaultTree::prob_or_(FaultTree::combine_el_and_set_(element_one,
-                                                               min_cut_sets_));
+                                                               min_cut_sets));
 
   return prob;
 }

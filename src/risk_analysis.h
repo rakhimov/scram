@@ -145,6 +145,9 @@ class FaultTree : public RiskAnalysis {
   // container for minimal cut sets and their respective probabilities
   std::map< std::set<std::string>, double > prob_of_min_sets_;
 
+  // maximum order of the minimal cut sets
+  int max_order_;
+
   // total probability of the top event
   double p_total_;
 
