@@ -1,11 +1,21 @@
-A description of python script to generate a tree of any size and complexity.
+A description of python script to generate a tree of any size and complexity:
+
 * Use random numbers to determine the structure of the tree.
-* Number of basic events is specified by a user.
-* The seed of the rundom number generator may be fixed and specified as well.
+* Number of primary events is specified by a user.
+* The seed of the random number generator may be fixed and specified as well.
 * Names of events in the tree must be randomly chosen between creating a
     new event or re-using already created event.
 * Probabilities for primary events are generated randomly.
+* Names are assigned sequentially. E# and P#.
+
 * No support for transfer ins or outs is expected.
 * No support for CCF is expected.
+
+Script arguments:
+    * Random number generator seed.
+    * Number of primary events.
+    * Ratio primary events to intermediate events. Average.
+    * Minimum and maximum probabilities for primary events.
+    * Output file name.
 
 * The output should be an input tree file and a probability file.
