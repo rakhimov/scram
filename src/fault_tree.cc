@@ -406,9 +406,6 @@ void FaultTree::analyze() {
     // delete rightmost set
     inter_sets.pop_back();
 
-    // discard this tmp set if it is larger than the limit
-    if (tmp_set.size() > limit_order_) continue;
-
     // iterate till finding intermediate event
     std::string first_inter_event = "";
     for (it_set = tmp_set.begin(); it_set != tmp_set.end(); ++it_set) {
@@ -422,6 +419,9 @@ void FaultTree::analyze() {
     }
 
     if (first_inter_event == "") {
+      // discard this tmp set if it is larger than the limit
+      if (tmp_set.size() > limit_order_) continue;
+
       // this is a set with primary events only
       cut_sets.push_back(tmp_set);
       continue;
@@ -448,9 +448,6 @@ void FaultTree::analyze() {
         tmp_set_c.insert(it_child->first);
       }
       children_sets.push_back(tmp_set_c);
-
-      // discard if the childrend_set increases the size above the limit
-      if ((children_sets.size() + tmp_set.size()) > limit_order_) continue;
 
     } else {
       std::string msg = "No algorithm defined for" + inter_event->gate();
@@ -519,8 +516,6 @@ void FaultTree::analyze() {
       }
       // ignore the cut set because include = false
     }
-    // check if the limit for order is reached
-    if (max_order_ == limit_order_) break;  // stop further calculations
     unique_cut_sets = temp_sets;
     min_size++;
   }
