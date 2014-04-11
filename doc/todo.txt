@@ -8,7 +8,6 @@ TODO list for SCRAM Project:
             *** Conditioning event
             *** Priority AND, XOR, Inhibit, VOTE, NOT, NULL, [!] Dormant
         ** Implement test cases from Isograph.
-        ** A python script to generate a tree of any size.
     * Creation of an equation from minimal cut sets for Monte Carlo simulation
         ** Uncertainty analysis
         ** Sensitivity analysis
