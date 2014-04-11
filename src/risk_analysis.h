@@ -123,7 +123,7 @@ class FaultTree : public RiskAnalysis {
   // indicates that reading the main tree file as opposed to a transfer tree
   bool is_main_;
 
-  // holder for intermidiate events
+  // holder for intermediate events
   std::map<std::string, scram::InterEvent*> inter_events_;
 
   // container for primary events
@@ -147,6 +147,9 @@ class FaultTree : public RiskAnalysis {
 
   // maximum order of the minimal cut sets
   int max_order_;
+
+  // limit on the size of the minimal cut sets for performance reasons
+  int limit_order_;
 
   // total probability of the top event
   double p_total_;

@@ -33,6 +33,7 @@ FaultTree::FaultTree(std::string analysis, bool rare_event)
       is_main_(true),
       input_file_(""),
       max_order_(1),
+      limit_order_(20),
       p_total_(0) {
   // add valid gates
   gates_.insert("and");
@@ -404,6 +405,10 @@ void FaultTree::analyze() {
     std::set<std::string> tmp_set = inter_sets.back();
     // delete rightmost set
     inter_sets.pop_back();
+
+    // discard this tmp set if it is larger than the limit
+    if (tmp_set.size() > limit_order_) continue;
+
     // iterate till finding intermediate event
     std::string first_inter_event = "";
     for (it_set = tmp_set.begin(); it_set != tmp_set.end(); ++it_set) {
@@ -443,6 +448,10 @@ void FaultTree::analyze() {
         tmp_set_c.insert(it_child->first);
       }
       children_sets.push_back(tmp_set_c);
+
+      // discard if the childrend_set increases the size above the limit
+      if ((children_sets.size() + tmp_set.size()) > limit_order_) continue;
+
     } else {
       std::string msg = "No algorithm defined for" + inter_event->gate();
       throw scram::ValueError(msg);
@@ -502,18 +511,19 @@ void FaultTree::analyze() {
       if (include) {
         if (it_uniq->size() == min_size) {
           min_cut_sets_.insert(*it_uniq);
+          // update maximum order of the sets
+          if (min_size > max_order_) max_order_ = min_size;
         } else {
           temp_sets.insert(*it_uniq);
         }
       }
       // ignore the cut set because include = false
     }
+    // check if the limit for order is reached
+    if (max_order_ == limit_order_) break;  // stop further calculations
     unique_cut_sets = temp_sets;
     min_size++;
   }
-
-  // Update the maximum order of the detected minimal cut sets
-  max_order_ = min_size - 1;  // -1 due to post increment of min_size
 
   // Compute probabilities
   // First, assume independence of events.
