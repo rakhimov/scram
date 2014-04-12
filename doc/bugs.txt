@@ -1,2 +1,1 @@
 Some bugs found during development:
-    Input files and simulation for ThreeMotor from OpenFTA are incorrect.

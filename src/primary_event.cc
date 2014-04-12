@@ -50,7 +50,7 @@ void PrimaryEvent::p(double p) {
   }
 
   if (type_ == "house") {
-    if (p != 0 || p != 1) {
+    if (p != 0 && p != 1) {
       std::string msg = "Incorrect probability for house event: " + this->id();
       throw scram::ValueError(msg);
     }
