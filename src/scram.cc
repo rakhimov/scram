@@ -28,6 +28,8 @@ int main(int argc, char* argv[]) {
       ("rare-event-approx,r", "whether or not to use a rare event approximation")
       ("limit-order,l", po::value<int>()->default_value(20),
        "upper limit for cut set order")
+      ("nsums,s", po::value<int>()->default_value(1000000),
+       "number of sums in series expansion for probability calculations")
       ("output,o", po::value<std::string>(), "output file")
       ;
 
@@ -81,7 +83,15 @@ int main(int argc, char* argv[]) {
       return 0;
     }
 
-    ran = new FaultTree(analysis, rare_event, vm["limit-order"].as<int>());
+    if(vm["nsums"].as<int>() < 1) {
+      std::string msg = "Number of sums for series can't be less than 1\n";
+      std::cout << msg << std::endl;
+      std::cout << desc << "\n";
+      return 0;
+    }
+
+    ran = new FaultTree(analysis, rare_event, vm["limit-order"].as<int>(),
+                        vm["nsums"].as<int>());
   }
 
   // process input and validate it

@@ -28,7 +28,8 @@ class RiskAnalysis {
 // Fault tree analysis
 class FaultTree : public RiskAnalysis {
  public:
-  FaultTree(std::string input_file, bool rare_event=false, int limit_order=20);
+  FaultTree(std::string input_file, bool rare_event=false, int limit_order=20,
+            int nsums=1000000);
 
   // Reads input file with the structure of the Fault tree.
   // Puts all events into their appropriate containers.
@@ -71,7 +72,9 @@ class FaultTree : public RiskAnalysis {
   // Calculates a probability of a set of minimal cut sets, which are in OR
   // relationship with each other. This function is a brute force probability
   // calculation without rare event approximations.
-  double prob_or_(const std::set< std::set<std::string> > min_cut_sets);
+  // nsums parameter specifies number of sums in the series.
+  double prob_or_(const std::set< std::set<std::string> > min_cut_sets,
+                  int nsums=1000000);
 
   // Calculates a probability of a minimal cut set, which members are in AND
   // relationship with each other. This function assumes independence of each
@@ -105,6 +108,9 @@ class FaultTree : public RiskAnalysis {
   // indicator if probability calculations are requested
   bool prob_requested_;
 
+  // number of sums in series expansion for probability calculations
+  int nsums_;
+
   // container of original names of events with capitalizations
   std::map<std::string, std::string> orig_ids_;
 
@@ -120,7 +126,7 @@ class FaultTree : public RiskAnalysis {
   // top event
   scram::TopEvent* top_event_;
 
-  // indicator of detection of top event described by a transfer sub-tree
+  // indicator of detection of a top event described by a transfer sub-tree
   bool top_detected_;
 
   // indicates that reading the main tree file as opposed to a transfer tree

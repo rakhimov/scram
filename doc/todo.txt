@@ -1,5 +1,6 @@
 TODO list for SCRAM Project:
     * Define output format.
+        ** Table like spacing for output numbers
         ** Take a look at output formats of RiskMan and Isograph
         ** Fractions, importance, contributions of each minimal sets
         ** May order minimal cut sets by their probability and importance
@@ -26,9 +27,7 @@ TODO list for SCRAM Project:
     * Probabilities as a function of time (lambda).
  [!]* Sort minimal cut sets by probabilities.
     * Find importance of primary events.
-    * Analyse a large tree and optimize the algorithms: mcs generator,
-        probabilty calculations with approximation.
-    * Probability calculations through series expansion.
+    * Analyse a large tree and optimize the algorithms: mcs generator
 
     * Other input styles : XML, json, sql.
     * GUI considerations

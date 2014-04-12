@@ -1,4 +1,5 @@
 Steps in Naive Algorithm for generation of minimal cut sets of a fault tree.
+This algorithm is similar to the algebraic method.
 
 Rule 1. Each OR gate generates new rows in the table of cut sets
 Rule 2. Each AND gate generates new columns in the table of cut sets
@@ -18,3 +19,8 @@ sets traversed to find sets with size one, which are guaranteed to be
 minimal. Then all other sets are checked if they are supersets of the found
 minimal sets so far. If this is not the case, the sets with size 2 are
 minimal. This logic is continued till the original set of the sets is empty.
+
+Improvements for this algorithm:
+    * Precalculate intermediate events.
+    * Keep track of primary events in a set to eliminate by the order.
+    * Switch to hash tables for maps and sets.

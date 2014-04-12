@@ -17,13 +17,14 @@ Exact Probability Calculation Implementation Description
 --------------------------------------------------------
 The general probability formula for sets is expanded recursively.
 In each iteration, some sets are merged in order to account for common members
-in minimal cut sets.
+in minimal cut sets. This algorithm is also used for series expansion.
 
 Approximate Probability Calculation
 -----------------------------------
-Approximate calculations may be implemented in order to reduce calculation
-time. The series expansion of the exact formula may be applied as in OpenFTA.
-This may be an option for a user.
+Approximate calculations are implemented in order to reduce calculation
+time. The series expansion of the exact formula is applied as in OpenFTA.
+This feature is an option for a user. The default value for series is set to
+a very large number around 1000000 sums.
 
 Probability Types
 -----------------
