@@ -31,8 +31,6 @@ TODO list for SCRAM Project:
     * Probabilities as a function of time (lambda).
     * Output report may include input file names, date and time, all the
         options invoked by the user, the duration of analysis.
- [!]* The user should be able to request minimal cut sets only without
-        probabilities. The maximum order must be configurable.
  [!]* Provide check for correct probability for House events: 0 or 1.
  [!]* Sort minimal cut sets by probabilities.
     * Find importance of primary events.

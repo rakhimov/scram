@@ -39,6 +39,7 @@ Naive Algorithm to Generate Minimal Cut Sets
 Walk through the tree level by level starting from the root to leaves.
 Update cut sets after each level.
 Remove non-minimal cut sets according to rules.
+Remove cut sets that are larger than the specified maximum order.
 
 
 Probability Calculations

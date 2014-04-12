@@ -102,6 +102,9 @@ class FaultTree : public RiskAnalysis {
   // keep track of currently opened file with sub-trees
   std::string current_file_;
 
+  // indicator if probability calculations are requested
+  bool prob_requested_;
+
   // container of original names of events with capitalizations
   std::map<std::string, std::string> orig_ids_;
 

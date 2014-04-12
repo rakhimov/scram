@@ -1,6 +1,7 @@
 SCRAM can be called with specific flags in order to perform FTA analysis
 step by step.
-A user should be able to:
-1. Check input tree file.
+A user can specify to:
+1. Check and validate input tree file.
 2. Check probability file after checking an input tree file.
-3. Find minimal cut sets only with an input tree file.
+3. Find minimal cut sets only with an input tree file if no probability file
+    is provided.

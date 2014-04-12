@@ -32,6 +32,7 @@ FaultTree::FaultTree(std::string analysis, bool rare_event)
       top_detected_(false),
       is_main_(true),
       input_file_(""),
+      prob_requested_(false),
       max_order_(1),
       limit_order_(20),
       p_total_(0) {
@@ -237,6 +238,8 @@ void FaultTree::populate_probabilities(std::string prob_file) {
     std::string msg = prob_file + " : Probability file is not accessible.";
     throw(scram::IOError(msg));
   }
+
+  prob_requested_ = true;  // switch indicator
 
   std::string line = "";  // case insensitive input
   std::vector<std::string> no_comments;  // to hold lines without comments
@@ -520,7 +523,9 @@ void FaultTree::analyze() {
     min_size++;
   }
 
-  // Compute probabilities
+  // Compute probabilities only if requested
+  if (!prob_requested_) return;
+
   // First, assume independence of events.
   // Second, rare event approximation is applied upon users' request
 
@@ -596,10 +601,10 @@ void FaultTree::report(std::string output) {
   // Print minimal cut sets by their order
   out << "\n" << "Minimal Cut Sets" << "\n";
   out << "================\n\n";
-  out << "Fault Tree : " << input_file_ << "\n";
-  out << "Time : " << pt::second_clock::local_time() << "\n\n";
-  out << "Number of Primary Events : " << primary_events_.size() << "\n";
-  out << "Minimal Cut Set Maximum Order : " << max_order_ << "\n";
+  out << "Fault Tree: " << input_file_ << "\n";
+  out << "Time: " << pt::second_clock::local_time() << "\n\n";
+  out << "Number of Primary Events: " << primary_events_.size() << "\n";
+  out << "Minimal Cut Set Maximum Order: " << max_order_ << "\n";
   out.flush();
 
   int order = 1;  // order of minimal cut sets
@@ -630,7 +635,7 @@ void FaultTree::report(std::string output) {
     order++;
   }
 
-  out << "\nQualitative Importance Analysis :" << "\n\n";
+  out << "\nQualitative Importance Analysis:" << "\n\n";
   out << "Order        Number\n";
   out << "-----        ------\n";
   for (int i = 1; i < max_order_ + 1; ++i) {
@@ -638,15 +643,16 @@ void FaultTree::report(std::string output) {
   }
   out.flush();
 
+  // Print probabilities of minimal cut sets only if requested
+  if (!prob_requested_) return;
 
-  // Print probabilities of minimal cut sets
   out << "\n" << "Probability Analysis" << "\n";
   out << "====================\n\n";
-  out << "Fault Tree : " << input_file_ << "\n";
-  out << "Time : " << pt::second_clock::local_time() << "\n\n";
-  out << "Number of Primary Events : " << primary_events_.size() << "\n";
-  out << "Number of Minimal Cut Sets : " << min_cut_sets_.size() << "\n\n";
-  out << "Minimal Cut Set Probabilities :\n\n";
+  out << "Fault Tree: " << input_file_ << "\n";
+  out << "Time: " << pt::second_clock::local_time() << "\n\n";
+  out << "Number of Primary Events: " << primary_events_.size() << "\n";
+  out << "Number of Minimal Cut Sets: " << min_cut_sets_.size() << "\n\n";
+  out << "Minimal Cut Set Probabilities:\n\n";
   out.flush();
   int i = 1;
   for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
@@ -663,7 +669,7 @@ void FaultTree::report(std::string output) {
 
   // Print total probability
   out << "\n" << "=============================\n";
-  out <<  "Total Probability : " << p_total_ << "\n";
+  out <<  "Total Probability: " << p_total_ << "\n";
   out << "=============================\n\n";
   out.flush();
 }

@@ -26,7 +26,7 @@ Step 4. Perform analysis: Rare event approximation and independence of events.
         However, if calculations are giving probabilities above 0.1 and total
         probability above 1, the computation automatically switches to
         the original algorithm without the rare event approximation.
-Step 5. Output the analysis results.
+Step 5. Output the user specified analysis results.
 
 
 Fault Tree Symbols, Gate and Event Types.

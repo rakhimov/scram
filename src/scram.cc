@@ -21,6 +21,7 @@ int main(int argc, char* argv[]) {
       ("input-file,i", po::value<std::string>(),
        "input file with tree description")
       ("prob-file,p", po::value<std::string>(), "file with probabilities")
+      ("validate,v", "only validate input files")
       ("graph-only,g", "produce graph without analysis")
       ("analysis,a", po::value<std::string>(),
        "type of analysis to be performed on this input")
@@ -54,11 +55,6 @@ int main(int argc, char* argv[]) {
     std::cout << msg << std::endl;
     std::cout << desc << "\n";
     return 0;
-  } else if (!vm.count("prob-file")) {
-    std::string msg = "Scram requires a file with probabilities for events.\n";
-    std::cout << msg << std::endl;
-    std::cout << desc << "\n";
-    return 0;
   }
 
   // determine required analysis
@@ -80,7 +76,6 @@ int main(int argc, char* argv[]) {
 
   // read input files and setup.
   std::string input_file = vm["input-file"].as<std::string>();
-  std::string prob_file = vm["prob-file"].as<std::string>();
 
   // initiate risk analysis
   RiskAnalysis* ran;
@@ -89,11 +84,20 @@ int main(int argc, char* argv[]) {
       ran = new FaultTree(analysis, rare_event);
   }
 
-  // process input
+  // process input and validate it
   ran->process_input(input_file);
 
-  // populate probabilities
-  ran->populate_probabilities(prob_file);
+  if (vm.count("prob-file")) {
+    std::string prob_file = vm["prob-file"].as<std::string>();
+    // populate probabilities
+    ran->populate_probabilities(prob_file);
+  }
+
+  // stop if only validation is requested
+  if (vm.count("validate")) {
+    std::cout << "The files are VALID." << std::endl;
+    return 0;
+  }
 
   // graph if requested
   if (vm.count("graph-only")) {
