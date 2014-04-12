@@ -60,6 +60,10 @@ class FaultTree : public RiskAnalysis {
   // Includes external transfer in subtrees to this current main tree
   void include_transfers_();
 
+  // Adds children of top or intermediate event into a specified vector of sets
+  void expand_sets_(scram::TopEvent* t,
+                               std::vector< std::set<std::string> >& sets);
+
   // Verifies if gates are initialized correctly with right number of children
   // Returns a warning message string with the list of bad gates and their
   // problems.

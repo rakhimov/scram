@@ -372,31 +372,7 @@ void FaultTree::analyze() {
   // container for cut sets with primary events only
   std::vector< std::set<std::string> > cut_sets;
 
-  // populate intermediate and primary events of the top
-  std::map<std::string, scram::Event*> events_children = top_event_->children();
-
-  // iterator for children of top and intermediate events
-  std::map<std::string, scram::Event*>::iterator it_child;
-
-  // Type dependent logic
-  if (top_event_->gate() == "or") {
-    for (it_child = events_children.begin();
-         it_child != events_children.end(); ++it_child) {
-      std::set<std::string> tmp_set_c;
-      tmp_set_c.insert(it_child->first);
-      inter_sets.push_back(tmp_set_c);
-    }
-  } else if (top_event_->gate() == "and") {
-    std::set<std::string> tmp_set_c;
-    for (it_child = events_children.begin();
-         it_child != events_children.end(); ++it_child) {
-      tmp_set_c.insert(it_child->first);
-    }
-    inter_sets.push_back(tmp_set_c);
-  } else {
-    std::string msg = "No algorithm defined for" + top_event_->gate();
-    throw scram::ValueError(msg);
-  }
+  FaultTree::expand_sets_(top_event_, inter_sets);
 
   // an iterator for a set with ids of events
   std::set<std::string>::iterator it_set;
@@ -434,30 +410,10 @@ void FaultTree::analyze() {
 
     // get the intermediate event
     scram::InterEvent* inter_event = inter_events_[first_inter_event];
-    events_children = inter_event->children();
     // to hold sets of children
     std::vector< std::set<std::string> > children_sets;
 
-    // Type dependent logic
-    if (inter_event->gate() == "or") {
-      for (it_child = events_children.begin();
-           it_child != events_children.end(); ++it_child) {
-        std::set<std::string> tmp_set_c;
-        tmp_set_c.insert(it_child->first);
-        children_sets.push_back(tmp_set_c);
-      }
-    } else if (inter_event->gate() == "and") {
-      std::set<std::string> tmp_set_c;
-      for (it_child = events_children.begin();
-           it_child != events_children.end(); ++it_child) {
-        tmp_set_c.insert(it_child->first);
-      }
-      children_sets.push_back(tmp_set_c);
-
-    } else {
-      std::string msg = "No algorithm defined for" + inter_event->gate();
-      throw scram::ValueError(msg);
-    }
+    FaultTree::expand_sets_(inter_event, children_sets);
 
     // attach the original set into this event's sets of children
     for (it_vec = children_sets.begin(); it_vec != children_sets.end();
@@ -1094,6 +1050,35 @@ void FaultTree::include_transfers_() {
   }
 }
 
+void FaultTree::expand_sets_(scram::TopEvent* t,
+                             std::vector< std::set<std::string> >& sets) {
+  // populate intermediate and primary events of the top
+  std::map<std::string, scram::Event*> events_children = t->children();
+
+  // iterator for children of top and intermediate events
+  std::map<std::string, scram::Event*>::iterator it_child;
+
+  // Type dependent logic
+  if (t->gate() == "or") {
+    for (it_child = events_children.begin();
+         it_child != events_children.end(); ++it_child) {
+      std::set<std::string> tmp_set_c;
+      tmp_set_c.insert(it_child->first);
+      sets.push_back(tmp_set_c);
+    }
+  } else if (t->gate() == "and") {
+    std::set<std::string> tmp_set_c;
+    for (it_child = events_children.begin();
+         it_child != events_children.end(); ++it_child) {
+      tmp_set_c.insert(it_child->first);
+    }
+    sets.push_back(tmp_set_c);
+  } else {
+    std::string msg = "No algorithm defined for" + t->gate();
+    throw scram::ValueError(msg);
+  }
+}
+
 std::string FaultTree::check_gates_() {
   std::stringstream msg;
   msg << "";  // an empty default message, an indicator of no problems
@@ -1199,11 +1184,6 @@ std::set< std::set<std::string> > FaultTree::combine_el_and_set_(
 
   return combo_set;
 
-}
-
-bool pair_comp_(const std::pair< std::set<std::string>, double >& m_one,
-                const std::pair< std::set<std::string>, double >& m_two) {
-  return m_one.second < m_two.second;
 }
 
 }  // namespace scram
