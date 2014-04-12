@@ -28,7 +28,7 @@ class RiskAnalysis {
 // Fault tree analysis
 class FaultTree : public RiskAnalysis {
  public:
-  FaultTree(std::string input_file, bool rare_event = false);
+  FaultTree(std::string input_file, bool rare_event=false, int limit_order=20);
 
   // Reads input file with the structure of the Fault tree.
   // Puts all events into their appropriate containers.

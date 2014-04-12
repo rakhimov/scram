@@ -24,9 +24,10 @@ namespace pt = boost::posix_time;
 
 namespace scram {
 
-FaultTree::FaultTree(std::string analysis, bool rare_event)
+FaultTree::FaultTree(std::string analysis, bool rare_event, int limit_order)
     : analysis_(analysis),
       rare_event_(rare_event),
+      limit_order_(limit_order),
       warnings_(""),
       top_event_id_(""),
       top_detected_(false),
@@ -34,7 +35,6 @@ FaultTree::FaultTree(std::string analysis, bool rare_event)
       input_file_(""),
       prob_requested_(false),
       max_order_(1),
-      limit_order_(20),
       p_total_(0) {
   // add valid gates
   gates_.insert("and");
@@ -603,6 +603,8 @@ void FaultTree::report(std::string output) {
   out << "================\n\n";
   out << "Fault Tree: " << input_file_ << "\n";
   out << "Time: " << pt::second_clock::local_time() << "\n\n";
+  out << "Analysis algorithm: " << analysis_ << "\n";
+  out << "Limit on order of cut sets: " << limit_order_ << "\n";
   out << "Number of Primary Events: " << primary_events_.size() << "\n";
   out << "Minimal Cut Set Maximum Order: " << max_order_ << "\n";
   out.flush();
@@ -650,6 +652,8 @@ void FaultTree::report(std::string output) {
   out << "====================\n\n";
   out << "Fault Tree: " << input_file_ << "\n";
   out << "Time: " << pt::second_clock::local_time() << "\n\n";
+  out << "Analysis type: " << analysis_ << "\n";
+  out << "Limit on series: " << "No Limit\n";
   out << "Number of Primary Events: " << primary_events_.size() << "\n";
   out << "Number of Minimal Cut Sets: " << min_cut_sets_.size() << "\n\n";
   out << "Minimal Cut Set Probabilities:\n\n";

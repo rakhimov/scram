@@ -2,19 +2,17 @@ TODO list for SCRAM Project:
     * Define output format.
         ** Take a look at output formats of RiskMan and Isograph
         ** Fractions, importance, contributions of each minimal sets
-        ** May order minimal cut sets by their size, importance
+        ** May order minimal cut sets by their probability and importance
     * Incorporate benchmarks into building and automation
         ** Develop new symbols, gate and event types necessary for benchmarking
-            *** Conditioning event
-            *** Priority AND, XOR, Inhibit, VOTE, NOT, NULL, [!] Dormant
         ** Implement test cases from Isograph.
     * Creation of an equation from minimal cut sets for Monte Carlo simulation
         ** Uncertainty analysis
         ** Sensitivity analysis
         ** Sampling techniques
         ** Distributions
-        ** Refer to OpenFTA
-    * Dump/Graph the tree for verification
+        ** Refer to OpenFTA: Minimal cut set generation through MC
+ [!]* Dump/Graph the tree for verification
     * Reformat documentation into rst.
 
     * Incorporation of event tree analysis
@@ -25,17 +23,11 @@ TODO list for SCRAM Project:
     * Incorporation of alignments
         ** Maintenance
         ** Guaranteed Success/Failure
-    * Option to save minimal cut sets into specific uploadable file for later
-        analysis.
- [!]* Option to limit the order of minimal cut sets to speed up calculations.
     * Probabilities as a function of time (lambda).
-    * Output report may include input file names, date and time, all the
-        options invoked by the user, the duration of analysis.
  [!]* Sort minimal cut sets by probabilities.
     * Find importance of primary events.
     * Analyse a large tree and optimize the algorithms: mcs generator,
         probabilty calculations with approximation.
-    * Provide probability assignments through True/False and Lambda/Time.
     * Probability calculations through series expansion.
 
     * Other input styles : XML, json, sql.

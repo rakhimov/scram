@@ -23,10 +23,12 @@ int main(int argc, char* argv[]) {
       ("prob-file,p", po::value<std::string>(), "file with probabilities")
       ("validate,v", "only validate input files")
       ("graph-only,g", "produce graph without analysis")
-      ("analysis,a", po::value<std::string>(),
+      ("analysis,a", po::value<std::string>()->default_value("fta-naive"),
        "type of analysis to be performed on this input")
-      ("output,o", po::value<std::string>(), "output file")
       ("rare-event-approx,r", "whether or not to use a rare event approximation")
+      ("limit-order,l", po::value<int>()->default_value(20),
+       "upper limit for cut set order")
+      ("output,o", po::value<std::string>(), "output file")
       ;
 
   po::variables_map vm;
@@ -59,20 +61,11 @@ int main(int argc, char* argv[]) {
 
   // determine required analysis
   // FTA naive is assumed if no arguments are given
-  std::string analysis = "fta-naive";
+  std::string analysis = vm["analysis"].as<std::string>();
   bool rare_event = false;
 
-  if (!vm.count("analysis")) {
-    std::string msg = "WARNING: FTA naive is assumed.\n";
-    std::cout << msg << std::endl;
-  } else {
-    analysis = vm["analysis"].as<std::string>();
-  }
-
   // determine if a rare event approximation is requested
-  if (vm.count("rare-event-approx")) {
-    rare_event = true;
-  }
+  if (vm.count("rare-event-approx")) rare_event = true;
 
   // read input files and setup.
   std::string input_file = vm["input-file"].as<std::string>();
@@ -81,7 +74,14 @@ int main(int argc, char* argv[]) {
   RiskAnalysis* ran;
 
   if (analysis == "fta-naive") {
-      ran = new FaultTree(analysis, rare_event);
+    if(vm["limit-order"].as<int>() < 1) {
+      std::string msg = "Upper limit for cut sets can't be less than 1\n";
+      std::cout << msg << std::endl;
+      std::cout << desc << "\n";
+      return 0;
+    }
+
+    ran = new FaultTree(analysis, rare_event, vm["limit-order"].as<int>());
   }
 
   // process input and validate it
