@@ -72,14 +72,12 @@ class InterEvent : public scram::TopEvent {
  private:
   // The parent of this intermediate event
   scram::Event* parent_;
-
 };
 
 // This is a base class for events that can cause faults.
 // Base, House, Undeveloped, and other events
 class PrimaryEvent : public scram::Event {
  public:
-
   // Constructs with id name and probability
   PrimaryEvent(std::string id, std::string type = "", double p = -1);
 

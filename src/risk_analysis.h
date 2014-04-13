@@ -28,8 +28,8 @@ class RiskAnalysis {
 // Fault tree analysis
 class FaultTree : public RiskAnalysis {
  public:
-  FaultTree(std::string input_file, bool rare_event=false, int limit_order=20,
-            int nsums=1000000);
+  FaultTree(std::string input_file, bool rare_event = false,
+            int limit_order = 20, int nsums = 1000000);
 
   // Reads input file with the structure of the Fault tree.
   // Puts all events into their appropriate containers.
@@ -51,6 +51,18 @@ class FaultTree : public RiskAnalysis {
   virtual ~FaultTree() {}
 
  private:
+  // Gets arguments from a line in an input file formatted accordingly
+  bool get_args_(std::vector<std::string>& args, std::string& line,
+                 std::string& orig_line);
+
+  // Interpret arguments and perform specific actions
+  void interpret_args_(int nline, std::stringstream& msg,
+                       std::vector<std::string>& args,
+                       std::string& orig_line,
+                       std::string tr_parent = "",
+                       std::string tr_id = "",
+                       std::string suffix = "");
+
   // Adds node and updates databases
   void add_node_(std::string parent, std::string id, std::string type);
 
@@ -62,7 +74,7 @@ class FaultTree : public RiskAnalysis {
 
   // Adds children of top or intermediate event into a specified vector of sets
   void expand_sets_(scram::TopEvent* t,
-                               std::vector< std::set<std::string> >& sets);
+                    std::vector< std::set<std::string> >& sets);
 
   // Verifies if gates are initialized correctly with right number of children
   // Returns a warning message string with the list of bad gates and their
@@ -78,7 +90,7 @@ class FaultTree : public RiskAnalysis {
   // calculation without rare event approximations.
   // nsums parameter specifies number of sums in the series.
   double prob_or_(const std::set< std::set<std::string> > min_cut_sets,
-                  int nsums=1000000);
+                  int nsums = 1000000);
 
   // Calculates a probability of a minimal cut set, which members are in AND
   // relationship with each other. This function assumes independence of each
@@ -167,6 +179,16 @@ class FaultTree : public RiskAnalysis {
   // total probability of the top event
   double p_total_;
 
+  // specific variables that are shared for initialization of tree nodes
+  std::string parent_;
+  std::string id_;
+  std::string type_;
+  bool block_started_;
+  // indicate if TransferOut is initiated correctly
+  bool transfer_correct_;
+
+  // indication of the first intermediate event of the transfer
+  bool transfer_first_inter_;
 };
 
 }  // namespace scram

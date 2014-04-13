@@ -76,14 +76,14 @@ int main(int argc, char* argv[]) {
   RiskAnalysis* ran;
 
   if (analysis == "fta-naive") {
-    if(vm["limit-order"].as<int>() < 1) {
+    if (vm["limit-order"].as<int>() < 1) {
       std::string msg = "Upper limit for cut sets can't be less than 1\n";
       std::cout << msg << std::endl;
       std::cout << desc << "\n";
       return 0;
     }
 
-    if(vm["nsums"].as<int>() < 1) {
+    if (vm["nsums"].as<int>() < 1) {
       std::string msg = "Number of sums for series can't be less than 1\n";
       std::cout << msg << std::endl;
       std::cout << desc << "\n";
@@ -126,5 +126,4 @@ int main(int argc, char* argv[]) {
   ran->report(output);
 
   return 0;
-
 }  // end of main

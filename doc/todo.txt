@@ -38,8 +38,4 @@ TODO list for SCRAM Project:
         ** Test functions.
         ** Write tests for input files.
         ** Create test input files with transferIn and TransferOut types
-        ** Adjust and check for Google C++ style
-        ** Capitalize comments
-        ** End comments with a dot.
-        ** Refactor the code
         ** Time and space complexity of all algorithms used in this package
