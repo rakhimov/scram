@@ -93,6 +93,7 @@ OpenFTA
 * Primary event types: Basic, Undeveloped, External, Conditioning
 * Gate types: AND, OR, PRIORITY AND, EXCLUSIVE OR, INHIBIT, TRANSFER IN,
               TRANSFER OUT
-* Does not detect cyclic inclusions through TRANSFER symbols.
-* The system crashes upon cyclic inclusions.
+* BUG: Does not detect cyclic inclusions through TRANSFER symbols.
+* BUG: The system crashes upon cyclic inclusions.
+* BUG: Some errors in example cases. Validation fails to detect issues.
 * Several simple examples that test the functionality of the package.

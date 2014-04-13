@@ -134,7 +134,7 @@ Future Additions.
 1. Simple event tree analysis.
 2. More efficient algorithms for fault tree analysis.
 3. More types of gates for fault trees: exclusive OR, priority AND, inhibit.
-4. More types of events for fault trees: external, undeveloped, conditioning.
+4. More types of events for fault trees: conditioning.
 5. Monte Carlo Methods.
 6. Markov analysis.
 7. Success tree by inverting minimal cut sets into minimal path sets.
@@ -147,3 +147,4 @@ General Information for Users.
     FTA prob file:      .scramp
 2. If you are using text editor with highlighting, set filetype to 'conf'.
     This configuration like highlighting works well with scram syntax.
+3. Run 'scram -h' to see all the flags and parameters for analysis.

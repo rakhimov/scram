@@ -1,4 +1,4 @@
-Steps in Naive Algorithm for generation of minimal cut sets of a fault tree.
+Steps in the Algorithm for generation of minimal cut sets of a fault tree.
 This algorithm is similar to the algebraic method.
 
 Rule 1. Each OR gate generates new rows in the table of cut sets
