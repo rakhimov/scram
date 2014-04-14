@@ -939,7 +939,7 @@ void FaultTree::ExpandSets_(scram::TopEvent* t,
 std::string FaultTree::CheckGates_() {
   std::stringstream msg;
   msg << "";  // an empty default message, an indicator of no problems
-  std::map<std::string, scram::InterEvent*>::iterator it;
+  boost::unordered_map<std::string, scram::InterEvent*>::iterator it;
   for (it = inter_events_.begin(); it != inter_events_.end(); ++it) {
     try {
       std::string gate = it->second->gate();
@@ -964,7 +964,7 @@ std::string FaultTree::CheckGates_() {
 
 std::string FaultTree::PrimariesNoProb_() {
   std::string uninit_primaries = "";
-  std::map<std::string, scram::PrimaryEvent*>::iterator it;
+  boost::unordered_map<std::string, scram::PrimaryEvent*>::iterator it;
   for (it = primary_events_.begin(); it != primary_events_.end(); ++it) {
     try {
       it->second->p();

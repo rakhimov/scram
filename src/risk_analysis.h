@@ -8,6 +8,8 @@
 #include <string>
 #include <queue>
 
+#include <boost/unordered_map.hpp>
+
 #include "event.h"
 
 namespace scram {
@@ -150,10 +152,10 @@ class FaultTree : public RiskAnalysis {
   bool is_main_;
 
   // holder for intermediate events
-  std::map<std::string, scram::InterEvent*> inter_events_;
+  boost::unordered_map<std::string, scram::InterEvent*> inter_events_;
 
   // container for primary events
-  std::map<std::string, scram::PrimaryEvent*> primary_events_;
+  boost::unordered_map<std::string, scram::PrimaryEvent*> primary_events_;
 
   // container for transfer symbols as requested in tree initialization
   // a queue contains a tuple of the parent and id of transferIn
