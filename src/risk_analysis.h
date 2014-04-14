@@ -15,11 +15,11 @@ namespace scram {
 // Interface for various risk analysis methods
 class RiskAnalysis {
  public:
-  virtual void process_input(std::string input_file) = 0;
-  virtual void populate_probabilities(std::string prob_file) = 0;
-  virtual void graphing_instructions() = 0;
-  virtual void analyze() = 0;
-  virtual void report(std::string output) = 0;
+  virtual void ProcessInput(std::string input_file) = 0;
+  virtual void PopulateProbabilities(std::string prob_file) = 0;
+  virtual void GraphingInstructions() = 0;
+  virtual void Analyze() = 0;
+  virtual void Report(std::string output) = 0;
 
   virtual ~RiskAnalysis() {}
 };
@@ -33,30 +33,30 @@ class FaultTree : public RiskAnalysis {
 
   // Reads input file with the structure of the Fault tree.
   // Puts all events into their appropriate containers.
-  void process_input(std::string input_file);
+  void ProcessInput(std::string input_file);
 
   // Reads probabiliteis for primary events from formatted input file with values.
   // Attaches probabilities to primary events.
-  void populate_probabilities(std::string prob_file);
+  void PopulateProbabilities(std::string prob_file);
 
   // Outputs a file with instructions for graphviz dot to create a fault tree.
-  void graphing_instructions();
+  void GraphingInstructions();
 
   // Analyzes the fault tree and performs computations.
-  void analyze();
+  void Analyze();
 
   // Reports the results of analysis to a specified output destination.
-  void report(std::string output);
+  void Report(std::string output);
 
   virtual ~FaultTree() {}
 
  private:
   // Gets arguments from a line in an input file formatted accordingly
-  bool get_args_(std::vector<std::string>& args, std::string& line,
+  bool GetArgs_(std::vector<std::string>& args, std::string& line,
                  std::string& orig_line);
 
   // Interpret arguments and perform specific actions
-  void interpret_args_(int nline, std::stringstream& msg,
+  void InterpretArgs_(int nline, std::stringstream& msg,
                        std::vector<std::string>& args,
                        std::string& orig_line,
                        std::string tr_parent = "",
@@ -64,43 +64,43 @@ class FaultTree : public RiskAnalysis {
                        std::string suffix = "");
 
   // Adds node and updates databases
-  void add_node_(std::string parent, std::string id, std::string type);
+  void AddNode_(std::string parent, std::string id, std::string type);
 
   // Adds probability to a primary event
-  void add_prob_(std::string id, double p);
+  void AddProb_(std::string id, double p);
 
   // Includes external transfer in subtrees to this current main tree
-  void include_transfers_();
+  void IncludeTransfers_();
 
   // Adds children of top or intermediate event into a specified vector of sets
-  void expand_sets_(scram::TopEvent* t,
+  void ExpandSets_(scram::TopEvent* t,
                     std::vector< std::set<std::string> >& sets);
 
   // Verifies if gates are initialized correctly with right number of children
   // Returns a warning message string with the list of bad gates and their
   // problems.
   // Returns an empty string if no problems are detected.
-  std::string check_gates_();
+  std::string CheckGates_();
 
   // Returns primary events that do not have probabilities assigned
-  std::string primaries_no_prob_();
+  std::string PrimariesNoProb_();
 
   // Calculates a probability of a set of minimal cut sets, which are in OR
   // relationship with each other. This function is a brute force probability
   // calculation without rare event approximations.
   // nsums parameter specifies number of sums in the series.
-  double prob_or_(std::set< std::set<std::string> >& min_cut_sets,
+  double ProbOr_(std::set< std::set<std::string> >& min_cut_sets,
                   int nsums = 1000000);
 
   // Calculates a probability of a minimal cut set, which members are in AND
   // relationship with each other. This function assumes independence of each
   // member.
-  double prob_and_(const std::set<std::string>& min_cut_set);
+  double ProbAnd_(const std::set<std::string>& min_cut_set);
 
   // Calculates A(and)( B(or)C ) relationship for sets using set algebra.
   // Returns non-const reference because only intended to be used for
   // brute force probability calculations.
-  std::set< std::set<std::string> > combine_el_and_set_(
+  std::set< std::set<std::string> > CombineElAndSet_(
       const std::set< std::string>& el,
       const std::set< std::set<std::string> >& set);
 

@@ -95,12 +95,12 @@ int main(int argc, char* argv[]) {
   }
 
   // process input and validate it
-  ran->process_input(input_file);
+  ran->ProcessInput(input_file);
 
   if (vm.count("prob-file")) {
     std::string prob_file = vm["prob-file"].as<std::string>();
     // populate probabilities
-    ran->populate_probabilities(prob_file);
+    ran->PopulateProbabilities(prob_file);
   }
 
   // stop if only validation is requested
@@ -111,19 +111,19 @@ int main(int argc, char* argv[]) {
 
   // graph if requested
   if (vm.count("graph-only")) {
-    ran->graphing_instructions();
+    ran->GraphingInstructions();
     return 0;
   }
 
   // analyze
-  ran->analyze();
+  ran->Analyze();
 
   // report results
   std::string output = "cli";  // output to command line by default
   if (vm.count("output")) {
     output = vm["output"].as<std::string>();
   }
-  ran->report(output);
+  ran->Report(output);
 
   return 0;
 }  // end of main

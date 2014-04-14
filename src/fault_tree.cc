@@ -54,7 +54,7 @@ FaultTree::FaultTree(std::string analysis, bool rare_event, int limit_order,
   types_.insert("house");
 }
 
-void FaultTree::process_input(std::string input_file) {
+void FaultTree::ProcessInput(std::string input_file) {
   std::ifstream ifile(input_file.c_str());
   if (!ifile.good()) {
     std::string msg = input_file +  " : Tree file is not accessible.";
@@ -71,14 +71,14 @@ void FaultTree::process_input(std::string input_file) {
   std::stringstream msg;
 
   for (int nline = 1; getline(ifile, line); ++nline) {
-    if (!FaultTree::get_args_(args, line, orig_line)) continue;
+    if (!FaultTree::GetArgs_(args, line, orig_line)) continue;
 
-    FaultTree::interpret_args_(nline, msg, args, orig_line);
+    FaultTree::InterpretArgs_(nline, msg, args, orig_line);
   }
 
   // Transfer include external trees from other files
   if (!transfers_.empty()) {
-    FaultTree::include_transfers_();
+    FaultTree::IncludeTransfers_();
   }
 
   // Defensive check if the top event has at least one child
@@ -89,7 +89,7 @@ void FaultTree::process_input(std::string input_file) {
   }
 
   // Check if each gate has a right number of children
-  std::string bad_gates = FaultTree::check_gates_();
+  std::string bad_gates = FaultTree::CheckGates_();
   if (bad_gates != "") {
     std::stringstream msg;
     msg << "\nThere are problems with the following gates:\n";
@@ -98,7 +98,7 @@ void FaultTree::process_input(std::string input_file) {
   }
 }
 
-void FaultTree::populate_probabilities(std::string prob_file) {
+void FaultTree::PopulateProbabilities(std::string prob_file) {
   // Check if input file with tree instructions has already been read
   if (input_file_ == "") {
     std::string msg = "Read input file with tree instructions before attaching"
@@ -126,7 +126,7 @@ void FaultTree::populate_probabilities(std::string prob_file) {
   std::stringstream msg;
 
   for (int nline = 1; getline(pfile, line); ++nline) {
-    if (!FaultTree::get_args_(args, line, orig_line)) continue;
+    if (!FaultTree::GetArgs_(args, line, orig_line)) continue;
 
     switch (args.size()) {
       case 1: {
@@ -171,7 +171,7 @@ void FaultTree::populate_probabilities(std::string prob_file) {
 
         try {
           // Add probability of a primary event
-          FaultTree::add_prob_(id, p);
+          FaultTree::AddProb_(id, p);
         } catch (scram::ValidationError& err_1) {
           msg << "Line " << nline << " : " << err_1.msg();
           throw scram::ValidationError(msg.str());
@@ -189,7 +189,7 @@ void FaultTree::populate_probabilities(std::string prob_file) {
   }
 
   // Check if all primary events have probabilities initialized
-  std::string uninit_primaries = FaultTree::primaries_no_prob_();
+  std::string uninit_primaries = FaultTree::PrimariesNoProb_();
   if (uninit_primaries != "") {
     msg << "Missing probabilities for following basic events:\n";
     msg << uninit_primaries;
@@ -197,11 +197,11 @@ void FaultTree::populate_probabilities(std::string prob_file) {
   }
 }
 
-void FaultTree::graphing_instructions() {
+void FaultTree::GraphingInstructions() {
   // Not yet implemented
 }
 
-void FaultTree::analyze() {
+void FaultTree::Analyze() {
   // Generate minimal cut-sets: Naive method
   // Rule 1. Each OR gate generates new rows in the table of cut sets
   // Rule 2. Each AND gate generates new columns in the table of cut sets
@@ -216,7 +216,7 @@ void FaultTree::analyze() {
   // container for cut sets with primary events only
   std::vector< std::set<std::string> > cut_sets;
 
-  FaultTree::expand_sets_(top_event_, inter_sets);
+  FaultTree::ExpandSets_(top_event_, inter_sets);
 
   // an iterator for a set with ids of events
   std::set<std::string>::iterator it_set;
@@ -257,7 +257,7 @@ void FaultTree::analyze() {
     // to hold sets of children
     std::vector< std::set<std::string> > children_sets;
 
-    FaultTree::expand_sets_(inter_event, children_sets);
+    FaultTree::ExpandSets_(inter_event, children_sets);
 
     // attach the original set into this event's sets of children
     for (it_vec = children_sets.begin(); it_vec != children_sets.end();
@@ -342,7 +342,7 @@ void FaultTree::analyze() {
   for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
         ++it_min) {
     // calculate a probability of a set with AND relationship
-    double p_sub_set = FaultTree::prob_and_(*it_min);
+    double p_sub_set = FaultTree::ProbAnd_(*it_min);
     // update a container with minimal cut sets and probabilities
     prob_of_min_sets_.insert(std::make_pair(*it_min, p_sub_set));
   }
@@ -367,7 +367,7 @@ void FaultTree::analyze() {
   } else {
     // Exact calculation of probability of cut sets
     std::set< std::set<std::string> > min_cut_sets = min_cut_sets_;
-    p_total_ = prob_or_(min_cut_sets, nsums_);
+    p_total_ = ProbOr_(min_cut_sets, nsums_);
   }
 
   // check if total probability is above 1
@@ -376,13 +376,13 @@ void FaultTree::analyze() {
                  "\nis above 1. Switching to the brute force algorithm.\n";
     // Re-calculate total probability
     std::set< std::set<std::string> > min_cut_sets = min_cut_sets_;
-    p_total_ = prob_or_(min_cut_sets, nsums_);
+    p_total_ = ProbOr_(min_cut_sets, nsums_);
   }
 
   // Calculate probability of each minimal cut set for further analysis
 }
 
-void FaultTree::report(std::string output) {
+void FaultTree::Report(std::string output) {
   // Check if output to file is requested
   std::streambuf* buf;
   std::ofstream of;
@@ -488,7 +488,7 @@ void FaultTree::report(std::string output) {
   out.flush();
 }
 
-bool FaultTree::get_args_(std::vector<std::string>& args, std::string& line,
+bool FaultTree::GetArgs_(std::vector<std::string>& args, std::string& line,
                           std::string& orig_line) {
     std::vector<std::string> no_comments;  // to hold lines without comments
 
@@ -520,12 +520,12 @@ bool FaultTree::get_args_(std::vector<std::string>& args, std::string& line,
     return true;
 }
 
-void FaultTree::interpret_args_(int nline, std::stringstream& msg,
-                                std::vector<std::string>& args,
-                                std::string& orig_line,
-                                std::string tr_parent,
-                                std::string tr_id,
-                                std::string suffix) {
+void FaultTree::InterpretArgs_(int nline, std::stringstream& msg,
+                               std::vector<std::string>& args,
+                               std::string& orig_line,
+                               std::string tr_parent,
+                               std::string tr_id,
+                               std::string suffix) {
   std::vector<std::string> orig_args;  // original input with capitalizations
 
   switch (args.size()) {
@@ -640,7 +640,7 @@ void FaultTree::interpret_args_(int nline, std::stringstream& msg,
 
         try {
           // Add a node with the gathered information
-          FaultTree::add_node_(parent_, id_, type_);
+          FaultTree::AddNode_(parent_, id_, type_);
         } catch (scram::ValidationError& err) {
           msg << "Line " << nline << " : " << err.msg();
           throw scram::ValidationError(msg.str());
@@ -701,8 +701,8 @@ void FaultTree::interpret_args_(int nline, std::stringstream& msg,
   }
 }
 
-void FaultTree::add_node_(std::string parent, std::string id,
-                          std::string type) {
+void FaultTree::AddNode_(std::string parent, std::string id,
+                         std::string type) {
   // Check if this is a transfer
   if (type == "transferin") {
     if (parent == "none") {
@@ -834,7 +834,7 @@ void FaultTree::add_node_(std::string parent, std::string id,
   }
 }
 
-void FaultTree::add_prob_(std::string id, double p) {
+void FaultTree::AddProb_(std::string id, double p) {
   // Check if the primary event is in this tree
   if (primary_events_.count(id) == 0) {
     boost::to_upper(id);
@@ -845,7 +845,7 @@ void FaultTree::add_prob_(std::string id, double p) {
   primary_events_[id]->p(p);
 }
 
-void FaultTree::include_transfers_() {
+void FaultTree::IncludeTransfers_() {
   is_main_ = false;
   while (!transfers_.empty()) {
     std::pair<std::string, std::string> tr_node = transfers_.front();
@@ -899,16 +899,16 @@ void FaultTree::include_transfers_() {
     transfer_first_inter_ = false;
 
     for (int nline = 1; getline(ifile, line); ++nline) {
-      if (!FaultTree::get_args_(args, line, orig_line)) continue;
+      if (!FaultTree::GetArgs_(args, line, orig_line)) continue;
 
-      FaultTree::interpret_args_(nline, msg,  args, orig_line, tr_parent,
-                                 tr_id, suffix);
+      FaultTree::InterpretArgs_(nline, msg,  args, orig_line, tr_parent,
+                                tr_id, suffix);
     }
   }
 }
 
-void FaultTree::expand_sets_(scram::TopEvent* t,
-                             std::vector< std::set<std::string> >& sets) {
+void FaultTree::ExpandSets_(scram::TopEvent* t,
+                            std::vector< std::set<std::string> >& sets) {
   // populate intermediate and primary events of the top
   std::map<std::string, scram::Event*> events_children = t->children();
 
@@ -936,7 +936,7 @@ void FaultTree::expand_sets_(scram::TopEvent* t,
   }
 }
 
-std::string FaultTree::check_gates_() {
+std::string FaultTree::CheckGates_() {
   std::stringstream msg;
   msg << "";  // an empty default message, an indicator of no problems
   std::map<std::string, scram::InterEvent*>::iterator it;
@@ -962,7 +962,7 @@ std::string FaultTree::check_gates_() {
   return msg.str();
 }
 
-std::string FaultTree::primaries_no_prob_() {
+std::string FaultTree::PrimariesNoProb_() {
   std::string uninit_primaries = "";
   std::map<std::string, scram::PrimaryEvent*>::iterator it;
   for (it = primary_events_.begin(); it != primary_events_.end(); ++it) {
@@ -977,7 +977,7 @@ std::string FaultTree::primaries_no_prob_() {
   return uninit_primaries;
 }
 
-double FaultTree::prob_or_(std::set< std::set<std::string> >& min_cut_sets,
+double FaultTree::ProbOr_(std::set< std::set<std::string> >& min_cut_sets,
                            int nsums) {
   // Recursive implementation
   if (min_cut_sets.empty()) {
@@ -998,21 +998,21 @@ double FaultTree::prob_or_(std::set< std::set<std::string> >& min_cut_sets,
   if (min_cut_sets.size() == 1) {
     nsums--;
     // Get only element in this set
-    return FaultTree::prob_and_(element_one);
+    return FaultTree::ProbAnd_(element_one);
   }
 
   // Delete element from the original set. WARNING: the iterator is invalidated.
   min_cut_sets.erase(it);
   std::set < std::set<std::string> > combo_sets =
-      FaultTree::combine_el_and_set_(element_one, min_cut_sets);
+      FaultTree::CombineElAndSet_(element_one, min_cut_sets);
 
-  prob = FaultTree::prob_and_(element_one) +
-         FaultTree::prob_or_(min_cut_sets, nsums) -
-         FaultTree::prob_or_(combo_sets, nsums - 1);
+  prob = FaultTree::ProbAnd_(element_one) +
+         FaultTree::ProbOr_(min_cut_sets, nsums) -
+         FaultTree::ProbOr_(combo_sets, nsums - 1);
   return prob;
 }
 
-double FaultTree::prob_and_(const std::set< std::string>& min_cut_set) {
+double FaultTree::ProbAnd_(const std::set< std::string>& min_cut_set) {
   // Test just in case the min cut set is empty
   if (min_cut_set.empty()) {
     throw scram::ValueError("The set is empty for probability calculations.");
@@ -1026,7 +1026,7 @@ double FaultTree::prob_and_(const std::set< std::string>& min_cut_set) {
   return p_sub_set;
 }
 
-std::set< std::set<std::string> > FaultTree::combine_el_and_set_(
+std::set< std::set<std::string> > FaultTree::CombineElAndSet_(
     const std::set< std::string>& el,
     const std::set< std::set<std::string> >& set) {
 

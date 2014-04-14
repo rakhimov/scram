@@ -34,7 +34,6 @@ TODO list for SCRAM Project:
     * Explore conditional probabilities through CCF
 
  [!]* Coding specific:
-        ** Google style function names
         ** Incorporate unit tests into building
         ** Test functions.
         ** Write tests for input files.
