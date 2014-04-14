@@ -232,21 +232,18 @@ void FaultTree::Analyze() {
     // delete rightmost set
     inter_sets.pop_back();
 
-    std::string first_inter_event = "";
 
     if (tmp_set->ninters() == 0) {
       // discard this tmp set if it is larger than the limit
       if (tmp_set->nprimes() > limit_order_) continue;
 
       // this is a set with primary events only
-      cut_sets.push_back(tmp_set->all());
+      cut_sets.push_back(tmp_set->primes());
       continue;
-    } else {
-      first_inter_event = tmp_set->PopInter();
     }
 
     // get the intermediate event
-    scram::InterEvent* inter_event = inter_events_[first_inter_event];
+    scram::InterEvent* inter_event = inter_events_[tmp_set->PopInter()];
     // to hold sets of children
     std::vector< Superset* > children_sets;
 

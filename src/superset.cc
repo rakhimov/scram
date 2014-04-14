@@ -24,7 +24,7 @@ std::string Superset::PopInter() {
   if (inters_.empty()) {
     throw scram::ValueError("No intermediate events to return.");
   }
-  std::set<std::string>::iterator it = inters_.begin();
+  boost::unordered_set<std::string>::iterator it = inters_.begin();
   std::string inter = *it;
   inters_.erase(it);
   return inter;
@@ -38,13 +38,9 @@ int Superset::ninters() {
   return inters_.size();
 }
 
-std::set<std::string>& Superset::all() {
-  if (inters_.size() == 0) {
-    return primes_;
-  }
-  std::set<std::string> temp = primes_;
-  temp.insert(inters_.begin(), inters_.end());
-  return temp;
+std::set<std::string>& Superset::primes() {
+  std_primes_.insert(primes_.begin(), primes_.end());
+  return std_primes_;
 }
 
 }  // namespace scram

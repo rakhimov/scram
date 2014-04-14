@@ -1,9 +1,10 @@
 #ifndef SCRAM_SUPERSET_H_
 #define SCRAM_SUPERSET_H_
 
-#include <map>
 #include <set>
 #include <string>
+
+#include <boost/unordered_set.hpp>
 
 #include "error.h"
 #include "risk_analysis.h"
@@ -32,13 +33,14 @@ class Superset {
   int ninters();
 
   // Returns the total set
-  std::set<std::string>& all();
+  std::set<std::string>& primes();
 
   ~Superset() {}
 
  private:
-  std::set<std::string> inters_;
-  std::set<std::string> primes_;
+  boost::unordered_set<std::string> inters_;
+  boost::unordered_set<std::string> primes_;
+  std::set<std::string> std_primes_;
 };
 
 }  // namespace scram
