@@ -16,6 +16,7 @@ if(Boost_FOUND)
         scram.cc
         fault_tree.cc
         superset.cc
+        primeset.cc
         error.cc
         top_event.cc
         inter_event.cc

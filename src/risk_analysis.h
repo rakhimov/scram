@@ -15,6 +15,7 @@
 namespace scram {
 
 class Superset;
+class Primeset;
 
 // Interface for various risk analysis methods
 class RiskAnalysis {
@@ -31,8 +32,9 @@ class RiskAnalysis {
 
 // Fault tree analysis
 class FaultTree : public RiskAnalysis {
-  // This is a set class with various options which needs access to the private.
+  // These are set classes which needs access to the private for speed.
   friend class Superset;
+  friend class Primeset;
 
  public:
   FaultTree(std::string input_file, bool rare_event = false,
@@ -96,20 +98,19 @@ class FaultTree : public RiskAnalysis {
   // relationship with each other. This function is a brute force probability
   // calculation without rare event approximations.
   // nsums parameter specifies number of sums in the series.
-  double ProbOr_(std::set< std::set<std::string> >& min_cut_sets,
-                 int nsums = 1000000);
+  double ProbOr_(std::vector< Primeset* >& min_cut_sets, int nsums = 1000000);
 
   // Calculates a probability of a minimal cut set, which members are in AND
   // relationship with each other. This function assumes independence of each
   // member.
-  double ProbAnd_(const std::set<std::string>& min_cut_set);
+  double ProbAnd_(Primeset* min_cut_set);
 
   // Calculates A(and)( B(or)C ) relationship for sets using set algebra.
   // Returns non-const reference because only intended to be used for
   // brute force probability calculations.
-  void CombineElAndSet_(const std::set< std::string>& el,
-                        const std::set< std::set<std::string> >& set,
-                        std::set< std::set<std::string> >& combo_set);
+  void CombineElAndSet_(Primeset* el,
+                        std::vector< Primeset* >& set,
+                        std::vector< Primeset* >& combo_set);
 
   // This member is used to provide any warnings about assumptions,
   // calculations, and settings. These warnings must be written into output
