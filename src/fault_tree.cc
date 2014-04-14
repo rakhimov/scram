@@ -978,7 +978,7 @@ std::string FaultTree::PrimariesNoProb_() {
 }
 
 double FaultTree::ProbOr_(std::set< std::set<std::string> >& min_cut_sets,
-                           int nsums) {
+                          int nsums) {
   // Recursive implementation
   if (min_cut_sets.empty()) {
     throw scram::ValueError("Do not pass empty set to prob_or_ function.");
@@ -988,23 +988,22 @@ double FaultTree::ProbOr_(std::set< std::set<std::string> >& min_cut_sets,
     return 0;
   }
 
+  // Base case
+  if (min_cut_sets.size() == 1) {
+    // Get only element in this set
+    return FaultTree::ProbAnd_(*min_cut_sets.begin());
+  }
+
   double prob = 0;
 
   // Get one element
   std::set< std::set<std::string> >::iterator it = min_cut_sets.begin();
   std::set<std::string> element_one = *it;
 
-  // Base case
-  if (min_cut_sets.size() == 1) {
-    nsums--;
-    // Get only element in this set
-    return FaultTree::ProbAnd_(element_one);
-  }
-
   // Delete element from the original set. WARNING: the iterator is invalidated.
   min_cut_sets.erase(it);
-  std::set < std::set<std::string> > combo_sets =
-      FaultTree::CombineElAndSet_(element_one, min_cut_sets);
+  std::set< std::set<std::string> > combo_sets;
+  FaultTree::CombineElAndSet_(element_one, min_cut_sets, combo_sets);
 
   prob = FaultTree::ProbAnd_(element_one) +
          FaultTree::ProbOr_(min_cut_sets, nsums) -
@@ -1026,11 +1025,11 @@ double FaultTree::ProbAnd_(const std::set< std::string>& min_cut_set) {
   return p_sub_set;
 }
 
-std::set< std::set<std::string> > FaultTree::CombineElAndSet_(
+void FaultTree::CombineElAndSet_(
     const std::set< std::string>& el,
-    const std::set< std::set<std::string> >& set) {
+    const std::set< std::set<std::string> >& set,
+    std::set< std::set<std::string> >& combo_set) {
 
-  std::set< std::set<std::string> > combo_set;
   std::set< std::string> member_set;
   std::set< std::set<std::string> >::iterator it_set;
   for (it_set = set.begin(); it_set != set.end(); ++it_set) {
@@ -1038,8 +1037,6 @@ std::set< std::set<std::string> > FaultTree::CombineElAndSet_(
     member_set.insert(el.begin(), el.end());
     combo_set.insert(member_set);
   }
-
-  return combo_set;
 }
 
 }  // namespace scram

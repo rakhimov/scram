@@ -100,9 +100,10 @@ class FaultTree : public RiskAnalysis {
   // Calculates A(and)( B(or)C ) relationship for sets using set algebra.
   // Returns non-const reference because only intended to be used for
   // brute force probability calculations.
-  std::set< std::set<std::string> > CombineElAndSet_(
+  void CombineElAndSet_(
       const std::set< std::string>& el,
-      const std::set< std::set<std::string> >& set);
+      const std::set< std::set<std::string> >& set,
+      std::set< std::set<std::string> >& combo_set);
 
   // This member is used to provide any warnings about assumptions,
   // calculations, and settings. These warnings must be written into output
