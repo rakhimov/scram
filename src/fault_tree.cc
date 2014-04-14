@@ -366,7 +366,8 @@ void FaultTree::analyze() {
     }
   } else {
     // Exact calculation of probability of cut sets
-    p_total_ = prob_or_(min_cut_sets_, nsums_);
+    std::set< std::set<std::string> > min_cut_sets = min_cut_sets_;
+    p_total_ = prob_or_(min_cut_sets, nsums_);
   }
 
   // check if total probability is above 1
@@ -374,7 +375,8 @@ void FaultTree::analyze() {
     warnings_ += "The rare event approximation does not hold. Total probability"
                  "\nis above 1. Switching to the brute force algorithm.\n";
     // Re-calculate total probability
-    p_total_ = prob_or_(min_cut_sets_, nsums_);
+    std::set< std::set<std::string> > min_cut_sets = min_cut_sets_;
+    p_total_ = prob_or_(min_cut_sets, nsums_);
   }
 
   // Calculate probability of each minimal cut set for further analysis
@@ -975,7 +977,7 @@ std::string FaultTree::primaries_no_prob_() {
   return uninit_primaries;
 }
 
-double FaultTree::prob_or_(std::set< std::set<std::string> > min_cut_sets,
+double FaultTree::prob_or_(std::set< std::set<std::string> >& min_cut_sets,
                            int nsums) {
   // Recursive implementation
   if (min_cut_sets.empty()) {
@@ -1001,11 +1003,12 @@ double FaultTree::prob_or_(std::set< std::set<std::string> > min_cut_sets,
 
   // Delete element from the original set. WARNING: the iterator is invalidated.
   min_cut_sets.erase(it);
+  std::set < std::set<std::string> > combo_sets =
+      FaultTree::combine_el_and_set_(element_one, min_cut_sets);
+
   prob = FaultTree::prob_and_(element_one) +
          FaultTree::prob_or_(min_cut_sets, nsums) -
-         FaultTree::prob_or_(FaultTree::combine_el_and_set_(element_one,
-                                                            min_cut_sets),
-                             nsums - 1);
+         FaultTree::prob_or_(combo_sets, nsums - 1);
   return prob;
 }
 
