@@ -18,6 +18,7 @@
 
 #include "error.h"
 #include "event.h"
+#include "superset.h"
 
 namespace fs = boost::filesystem;
 namespace pt = boost::posix_time;
@@ -211,63 +212,56 @@ void FaultTree::Analyze() {
   // Rule 4. Eliminate non-minimal cut sets
 
   // container for cut sets with intermediate events
-  std::vector< std::set<std::string> > inter_sets;
+  std::vector< Superset* > inter_sets;
 
   // container for cut sets with primary events only
   std::vector< std::set<std::string> > cut_sets;
 
   FaultTree::ExpandSets_(top_event_, inter_sets);
 
-  // an iterator for a set with ids of events
-  std::set<std::string>::iterator it_set;
-
   // an iterator for a vector with sets of ids of events
   std::vector< std::set<std::string> >::iterator it_vec;
+
+  // an iterator for a vector with Supersets
+  std::vector< Superset* >::iterator it_sup;
 
   // Generate cut sets
   while (!inter_sets.empty()) {
     // get rightmost set
-    std::set<std::string> tmp_set = inter_sets.back();
+    Superset* tmp_set = inter_sets.back();
     // delete rightmost set
     inter_sets.pop_back();
 
-    // iterate till finding intermediate event
     std::string first_inter_event = "";
-    for (it_set = tmp_set.begin(); it_set != tmp_set.end(); ++it_set) {
-      if (inter_events_.count(*it_set)) {
-        first_inter_event = *it_set;
-        // clear temp set from the found intermediate event
-        tmp_set.erase(it_set);
 
-        break;
-      }
-    }
-
-    if (first_inter_event == "") {
+    if (tmp_set->ninters() == 0) {
       // discard this tmp set if it is larger than the limit
-      if (tmp_set.size() > limit_order_) continue;
+      if (tmp_set->nprimes() > limit_order_) continue;
 
       // this is a set with primary events only
-      cut_sets.push_back(tmp_set);
+      cut_sets.push_back(tmp_set->all());
       continue;
+    } else {
+      first_inter_event = tmp_set->PopInter();
     }
 
     // get the intermediate event
     scram::InterEvent* inter_event = inter_events_[first_inter_event];
     // to hold sets of children
-    std::vector< std::set<std::string> > children_sets;
+    std::vector< Superset* > children_sets;
 
     FaultTree::ExpandSets_(inter_event, children_sets);
 
     // attach the original set into this event's sets of children
-    for (it_vec = children_sets.begin(); it_vec != children_sets.end();
-         ++it_vec) {
-      it_vec->insert(tmp_set.begin(), tmp_set.end());
+    for (it_sup = children_sets.begin(); it_sup != children_sets.end();
+         ++it_sup) {
+      (*it_sup)->Insert(tmp_set);
       // add this set to the original inter_sets
-      inter_sets.push_back(*it_vec);
+      inter_sets.push_back(*it_sup);
     }
   }
 
+  // throw scram::Error("271");
   // At this point cut sets are generated.
   // Now we need to reduce them to minimal cut sets.
 
@@ -908,7 +902,7 @@ void FaultTree::IncludeTransfers_() {
 }
 
 void FaultTree::ExpandSets_(scram::TopEvent* t,
-                            std::vector< std::set<std::string> >& sets) {
+                            std::vector< Superset* >& sets) {
   // populate intermediate and primary events of the top
   std::map<std::string, scram::Event*> events_children = t->children();
 
@@ -919,15 +913,15 @@ void FaultTree::ExpandSets_(scram::TopEvent* t,
   if (t->gate() == "or") {
     for (it_child = events_children.begin();
          it_child != events_children.end(); ++it_child) {
-      std::set<std::string> tmp_set_c;
-      tmp_set_c.insert(it_child->first);
+      Superset* tmp_set_c = new Superset();
+      tmp_set_c->AddMember(it_child->first, this);
       sets.push_back(tmp_set_c);
     }
   } else if (t->gate() == "and") {
-    std::set<std::string> tmp_set_c;
+    Superset* tmp_set_c = new Superset();
     for (it_child = events_children.begin();
          it_child != events_children.end(); ++it_child) {
-      tmp_set_c.insert(it_child->first);
+      tmp_set_c->AddMember(it_child->first, this);
     }
     sets.push_back(tmp_set_c);
   } else {

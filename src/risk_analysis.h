@@ -14,6 +14,8 @@
 
 namespace scram {
 
+class Superset;
+
 // Interface for various risk analysis methods
 class RiskAnalysis {
  public:
@@ -29,6 +31,9 @@ class RiskAnalysis {
 
 // Fault tree analysis
 class FaultTree : public RiskAnalysis {
+  // This is a set class with various options which needs access to the private.
+  friend class Superset;
+
  public:
   FaultTree(std::string input_file, bool rare_event = false,
             int limit_order = 20, int nsums = 1000000);
@@ -76,7 +81,7 @@ class FaultTree : public RiskAnalysis {
 
   // Adds children of top or intermediate event into a specified vector of sets
   void ExpandSets_(scram::TopEvent* t,
-                    std::vector< std::set<std::string> >& sets);
+                    std::vector< Superset* >& sets);
 
   // Verifies if gates are initialized correctly with right number of children
   // Returns a warning message string with the list of bad gates and their

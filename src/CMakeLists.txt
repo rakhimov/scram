@@ -15,6 +15,7 @@ if(Boost_FOUND)
     add_executable(scram
         scram.cc
         fault_tree.cc
+        superset.cc
         error.cc
         top_event.cc
         inter_event.cc

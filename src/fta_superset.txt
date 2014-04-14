@@ -1,0 +1,2 @@
+Special superset class operates with sets that contain primary and
+intermediate events. It is designed to efficiently find cut sets.
