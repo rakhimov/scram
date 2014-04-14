@@ -39,6 +39,4 @@ TODO list for SCRAM Project:
         ** Write tests for input files.
         ** Create test input files with transferIn and TransferOut types
         ** Time and space complexity of all algorithms used in this package
-        ** Use boost unordered maps and sets, and a multimap
-        ** Track the number of primary vs. intermediate events in sets.
-        ** A class for set operations and storage.
+        ** Use boost multimap

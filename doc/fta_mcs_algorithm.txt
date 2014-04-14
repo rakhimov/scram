@@ -10,9 +10,10 @@ Rule 3. Eliminate redundant elements that appear multiple times in a cut set
 Rule 4. Eliminate non-minimal cut sets
 
 The actual implementation uses a set of sets in order to avoid duplicates,
-so Rule 3 is satisfied automatically. Each OR gate adds new sets into the set
-of sets, while each AND gate adds additional elements into one specific set
-inside the set of sets.
+so Rule 3 is satisfied automatically. The special Superset class is
+implemented to deal with various types of events in the set.
+Each OR gate adds new sets into the set of sets, while each AND gate adds
+additional elements into one specific set inside the set of sets.
 
 The only algorithmically complex part is the application of Rule 4. The set of
 sets traversed to find sets with size one, which are guaranteed to be

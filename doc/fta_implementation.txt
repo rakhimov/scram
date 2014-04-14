@@ -32,6 +32,8 @@ Set
 Map
 Set of sets
 Vector of sets
+Boost Unordered Maps
+Boost Unordered Sets
 
 
 Naive Algorithm to Generate Minimal Cut Sets

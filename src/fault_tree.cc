@@ -232,11 +232,10 @@ void FaultTree::Analyze() {
     // delete rightmost set
     inter_sets.pop_back();
 
+    // discard this tmp set if it is larger than the limit
+    if (tmp_set->nprimes() > limit_order_) continue;
 
     if (tmp_set->ninters() == 0) {
-      // discard this tmp set if it is larger than the limit
-      if (tmp_set->nprimes() > limit_order_) continue;
-
       // this is a set with primary events only
       cut_sets.push_back(tmp_set->primes());
       continue;
@@ -258,7 +257,6 @@ void FaultTree::Analyze() {
     }
   }
 
-  // throw scram::Error("271");
   // At this point cut sets are generated.
   // Now we need to reduce them to minimal cut sets.
 
@@ -1016,10 +1014,9 @@ double FaultTree::ProbAnd_(const std::set< std::string>& min_cut_set) {
   return p_sub_set;
 }
 
-void FaultTree::CombineElAndSet_(
-    const std::set< std::string>& el,
-    const std::set< std::set<std::string> >& set,
-    std::set< std::set<std::string> >& combo_set) {
+void FaultTree::CombineElAndSet_(const std::set< std::string>& el,
+                                 const std::set< std::set<std::string> >& set,
+                                 std::set< std::set<std::string> >& combo_set) {
 
   std::set< std::string> member_set;
   std::set< std::set<std::string> >::iterator it_set;

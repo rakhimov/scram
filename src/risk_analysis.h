@@ -60,15 +60,15 @@ class FaultTree : public RiskAnalysis {
  private:
   // Gets arguments from a line in an input file formatted accordingly
   bool GetArgs_(std::vector<std::string>& args, std::string& line,
-                 std::string& orig_line);
+                std::string& orig_line);
 
   // Interpret arguments and perform specific actions
   void InterpretArgs_(int nline, std::stringstream& msg,
-                       std::vector<std::string>& args,
-                       std::string& orig_line,
-                       std::string tr_parent = "",
-                       std::string tr_id = "",
-                       std::string suffix = "");
+                      std::vector<std::string>& args,
+                      std::string& orig_line,
+                      std::string tr_parent = "",
+                      std::string tr_id = "",
+                      std::string suffix = "");
 
   // Adds node and updates databases
   void AddNode_(std::string parent, std::string id, std::string type);
@@ -81,7 +81,7 @@ class FaultTree : public RiskAnalysis {
 
   // Adds children of top or intermediate event into a specified vector of sets
   void ExpandSets_(scram::TopEvent* t,
-                    std::vector< Superset* >& sets);
+                   std::vector< Superset* >& sets);
 
   // Verifies if gates are initialized correctly with right number of children
   // Returns a warning message string with the list of bad gates and their
@@ -97,7 +97,7 @@ class FaultTree : public RiskAnalysis {
   // calculation without rare event approximations.
   // nsums parameter specifies number of sums in the series.
   double ProbOr_(std::set< std::set<std::string> >& min_cut_sets,
-                  int nsums = 1000000);
+                 int nsums = 1000000);
 
   // Calculates a probability of a minimal cut set, which members are in AND
   // relationship with each other. This function assumes independence of each
@@ -107,10 +107,9 @@ class FaultTree : public RiskAnalysis {
   // Calculates A(and)( B(or)C ) relationship for sets using set algebra.
   // Returns non-const reference because only intended to be used for
   // brute force probability calculations.
-  void CombineElAndSet_(
-      const std::set< std::string>& el,
-      const std::set< std::set<std::string> >& set,
-      std::set< std::set<std::string> >& combo_set);
+  void CombineElAndSet_(const std::set< std::string>& el,
+                        const std::set< std::set<std::string> >& set,
+                        std::set< std::set<std::string> >& combo_set);
 
   // This member is used to provide any warnings about assumptions,
   // calculations, and settings. These warnings must be written into output

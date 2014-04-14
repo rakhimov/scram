@@ -1,16 +1,16 @@
-WARNING: FTA naive is assumed.
-
 Using the rare event approximation
 
 
 Minimal Cut Sets
 ================
 
-Fault Tree : fta_tree.scramf
-Time : 2014-Apr-10 22:30:45
+Fault Tree: fta_tree.scramf
+Time: 2014-Apr-14 05:36:44
 
-Number of Primary Events : 1000
-Minimal Cut Set Maximum Order : 11
+Analysis algorithm: fta-naive
+Limit on order of cut sets: 20
+Number of Primary Events: 1000
+Minimal Cut Set Maximum Order: 11
 
 Order 1:
 1) { P1 }
@@ -40,7 +40,7 @@ Order 11:
 1) { P12 P30 P31 P33 P34 P35 P36 P37 P5 P6 P7 }
 2) { P12 P30 P31 P33 P34 P35 P36 P38 P5 P6 P7 }
 
-Qualitative Importance Analysis :
+Qualitative Importance Analysis:
 
 Order        Number
 -----        ------
@@ -59,13 +59,15 @@ Order        Number
 Probability Analysis
 ====================
 
-Fault Tree : fta_tree.scramf
-Time : 2014-Apr-10 22:30:47
+Fault Tree: fta_tree.scramf
+Time: 2014-Apr-14 05:36:44
 
-Number of Primary Events : 1000
-Number of Minimal Cut Sets : 16
+Analysis type: fta-naive
+Limit on series: 1000000
+Number of Primary Events: 1000
+Number of Minimal Cut Sets: 16
 
-Minimal Cut Set Probabilities :
+Minimal Cut Set Probabilities:
 
 1) { P1 }    0.0093301
 2) { P11 P12 }    0.00217814
@@ -85,10 +87,6 @@ Minimal Cut Set Probabilities :
 16) { P4 }    0.0986673
 
 =============================
-Total Probability : 0.263618
+Total Probability: 0.263618
 =============================
 
-
-real    2m38.540s
-user    2m33.826s
-sys    0m0.904s
