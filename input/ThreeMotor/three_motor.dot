@@ -1,0 +1,76 @@
+digraph THREE_MOTOR {
+E1 -> E2;
+E1 -> E3;
+ -> ;
+ -> K1;
+ -> ;
+ -> ;
+ -> KT3inc;
+ -> T4inc;
+E12 -> KT2;
+E12 -> T4;
+E11 -> S1;
+E11 -> T3;
+ -> KT1inc;
+ -> T2inc;
+E10 -> E12;
+E10 -> KT1;
+E10 -> KT3;
+ -> S1;
+ -> T1inc;
+E8 -> E9;
+E8 -> K1;
+E9 -> E10;
+E9 -> E11;
+E6 -> K5;
+E6 -> T2;
+ -> ;
+ -> ;
+ -> ;
+E4 -> ;
+E4 -> E6;
+E5 -> E8;
+E5 -> T1;
+E2 -> E4;
+E2 -> K5;
+E3 -> E5;
+E3 -> K2;
+ -> KT2inc;
+ -> T3inc;
+E1 [shape=ellipse]
+ [shape=box]
+ [shape=box]
+ [shape=box]
+E12 [shape=box]
+E11 [shape=box]
+ [shape=box]
+E10 [shape=box]
+ [shape=box]
+E8 [shape=box]
+E9 [shape=box]
+E6 [shape=box]
+ [shape=box]
+E4 [shape=box]
+E5 [shape=box]
+E2 [shape=box]
+E3 [shape=box]
+ [shape=box]
+T2 [shape=circle]
+K2 [shape=circle]
+KT1 [shape=circle]
+KT3inc [shape=circle]
+KT2 [shape=circle]
+T3inc [shape=circle]
+KT3 [shape=circle]
+K5 [shape=circle]
+T1inc [shape=circle]
+K1 [shape=circle]
+KT1inc [shape=circle]
+KT2inc [shape=circle]
+T2inc [shape=circle]
+T4inc [shape=circle]
+S1 [shape=circle]
+T4 [shape=circle]
+T1 [shape=circle]
+T3 [shape=circle]
+}

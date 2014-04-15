@@ -199,7 +199,59 @@ void FaultTree::PopulateProbabilities(std::string prob_file) {
 }
 
 void FaultTree::GraphingInstructions() {
-  // Not yet implemented
+  // List inter events and their children
+  // List inter events and primary events descriptions.
+  std::string graph_name = input_file_;
+  graph_name.erase(graph_name.find_last_of("."), std::string::npos);
+
+  std::string output_path = graph_name + ".dot";
+  std::ofstream out(output_path.c_str());
+  if (!out.good()) {
+    std::string msg = output_path +  " : Cannot write the graphing file.";
+    throw (scram::IOError(msg));
+  }
+  boost::to_upper(graph_name);
+  out << "digraph " << graph_name << " {\n";
+  // write top event
+
+  // populate intermediate and primary events of the top
+  std::map<std::string, scram::Event*> events_children = top_event_->children();
+
+  std::map<std::string, scram::Event*>::iterator it_child;
+  for (it_child = events_children.begin();
+       it_child != events_children.end(); ++it_child) {
+    out << orig_ids_[top_event_id_] << " -> " << orig_ids_[it_child->first] <<
+        ";\n";
+  }
+  // do the same for all intermediate events
+  boost::unordered_map<std::string, scram::InterEvent*>::iterator it_inter;
+  for (it_inter = inter_events_.begin(); it_inter != inter_events_.end();
+       ++it_inter) {
+    events_children = it_inter->second->children();
+    for (it_child = events_children.begin();
+         it_child != events_children.end(); ++it_child) {
+      out << orig_ids_[it_inter->first] << " -> " << orig_ids_[it_child->first] <<
+          ";\n";
+    }
+    out.flush();
+  }
+
+  // format events
+  out << orig_ids_[top_event_id_] << " [shape=ellipse]\n";
+  for (it_inter = inter_events_.begin(); it_inter != inter_events_.end();
+       ++it_inter) {
+    out << orig_ids_[it_inter->first] << " [shape=box]\n";
+  }
+  out.flush();
+
+  boost::unordered_map<std::string, scram::PrimaryEvent*>::iterator it_prime;
+  for (it_prime = primary_events_.begin(); it_prime != primary_events_.end();
+       ++it_prime) {
+    out << orig_ids_[it_prime->first] << " [shape=circle]\n";
+  }
+
+  out << "}";
+  out.flush();
 }
 
 void FaultTree::Analyze() {

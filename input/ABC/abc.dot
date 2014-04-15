@@ -1,0 +1,9 @@
+digraph ABC {
+TopEvent -> A;
+TopEvent -> B;
+TopEvent -> C;
+TopEvent [shape=ellipse]
+A [shape=circle]
+B [shape=circle]
+C [shape=circle]
+}

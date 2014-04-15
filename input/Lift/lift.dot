@@ -1,0 +1,67 @@
+digraph LIFT {
+LiftDoor -> DoorOpensInMotion;
+LiftDoor -> DoorRefuses;
+LiftDoor -> LiftStartsDoorOpen;
+LiftDoor -> OR_1;
+DoorHindered -> D_1;
+DoorHindered -> DOD_1;
+LiftStartsDoorOpen -> AND_1;
+LiftStartsDoorOpen -> DoorMotorSlow;
+LiftStartsDoorOpen -> DPD_1;
+LiftStartsDoorOpen -> LMD_1;
+OR_1 -> DMS_1;
+OR_1 -> DOD_1;
+OR_1 -> DOD_2;
+MotionDetector -> LMD_1;
+MotionDetector -> LMD_1_1;
+UncommandedDoorOpen -> CP_1;
+UncommandedDoorOpen -> DMS_2;
+UncommandedDoorOpen -> W_1;
+DoorOpensInMotion -> AND_2;
+DoorOpensInMotion -> AND_3;
+DoorOpensInMotion -> DMS_2;
+AND_1 -> DM_1;
+AND_1 -> DPD_1;
+DoorMotor -> DM_1;
+DoorMotor -> PS_1;
+AND_2 -> MotionDetector;
+AND_2 -> UncommandedDoorOpen;
+DoorRefuses -> CP_1;
+DoorRefuses -> DoorMotor;
+DoorRefuses -> LMD_2;
+DoorRefuses -> LPD_1;
+MotionDetector_R -> LMD_1;
+MotionDetector_R -> LMD_1_1;
+DoorMotorSlow -> DoorHindered;
+DoorMotorSlow -> PS_1;
+AND_3 -> CP_1;
+AND_3 -> MotionDetector_R;
+LiftDoor [shape=ellipse]
+DoorHindered [shape=box]
+LiftStartsDoorOpen [shape=box]
+OR_1 [shape=box]
+MotionDetector [shape=box]
+UncommandedDoorOpen [shape=box]
+DoorOpensInMotion [shape=box]
+AND_1 [shape=box]
+DoorMotor [shape=box]
+AND_2 [shape=box]
+DoorRefuses [shape=box]
+MotionDetector_R [shape=box]
+DoorMotorSlow [shape=box]
+AND_3 [shape=box]
+LMD_1_1 [shape=circle]
+DM_1 [shape=circle]
+DMS_1 [shape=circle]
+DOD_2 [shape=circle]
+DOD_1 [shape=circle]
+DPD_1 [shape=circle]
+LPD_1 [shape=circle]
+D_1 [shape=circle]
+CP_1 [shape=circle]
+W_1 [shape=circle]
+LMD_1 [shape=circle]
+LMD_2 [shape=circle]
+DMS_2 [shape=circle]
+PS_1 [shape=circle]
+}
