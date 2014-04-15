@@ -26,7 +26,9 @@ Step 4. Perform analysis: Rare event approximation and independence of events.
         However, if calculations are giving probabilities above 0.1 and total
         probability above 1, the computation automatically switches to
         the original algorithm without the rare event approximation.
-Step 5. Output the user specified analysis results.
+Step 5. Output the user specified analysis results. The output is sorted by
+        the order of minimal cut sets, their probabilities. In addition,
+        the contribution of each primary event is given in the output.
 
 
 Fault Tree Symbols, Gate and Event Types.
@@ -148,3 +150,6 @@ General Information for Users.
 2. If you are using text editor with highlighting, set filetype to 'conf'.
     This configuration like highlighting works well with scram syntax.
 3. Run 'scram -h' to see all the flags and parameters for analysis.
+4. The tree analysis and minimum cut set generation for a fault tree
+   use a lot of memory; whereas, probability calculations use a lot of time.
+   Adjust SCRAM flags and parameters to reduce these demands.

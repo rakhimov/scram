@@ -32,11 +32,12 @@ Set
 Map
 Set of sets
 Vector of sets
-Boost Unordered Maps
-Boost Unordered Sets
+Boost Unordered Map
+Boost Unordered Set
+Boost Multimap
 
 
-Naive Algorithm to Generate Minimal Cut Sets
+The Algorithm to Generate Minimal Cut Sets
 --------------------------------------------
 Walk through the tree level by level starting from the root to leaves.
 Update cut sets after each level.
@@ -51,8 +52,7 @@ probabilities. Some of them are:
 * Independence of events (Conditional cases may be supported in future.)
 * Rare event approximation
 * Brute force probability calculation if the rare event approximation fails.
-    This brute force calculation may be expensive and require much more memory
-    and time.
+    This brute force calculation may be expensive and require much more time.
 
 For naive default calculations, rare event approximation and event
 independence may be applied. However, if the rare event approximation produce

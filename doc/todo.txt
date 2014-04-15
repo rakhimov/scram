@@ -2,8 +2,6 @@ TODO list for SCRAM Project:
     * Define output format.
         ** Table like spacing for output numbers
         ** Take a look at output formats of RiskMan and Isograph
-        ** Fractions, importance, contributions of each minimal sets
-     [!]** Order minimal cut sets by their probability and importance
     * Incorporate benchmarks into building and automation
         ** Develop new symbols, gate and event types necessary for benchmarking
         ** Implement test cases from Isograph.
@@ -27,16 +25,14 @@ TODO list for SCRAM Project:
         ** Maintenance
         ** Guaranteed Success/Failure
     * Probabilities as a function of time (lambda).
-    * Analyze a large tree and optimize the algorithms: mcs generator
 
     * Other input styles : XML, json, sql.
     * GUI considerations
     * Explore conditional probabilities through CCF
 
- [!]* Coding specific:
+    * Coding specific:
         ** Incorporate unit tests into building
         ** Test functions.
         ** Write tests for input files.
         ** Create test input files with transferIn and TransferOut types
         ** Time and space complexity of all algorithms used in this package
-        ** Use boost multimap
