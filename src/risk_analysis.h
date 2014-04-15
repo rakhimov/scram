@@ -8,6 +8,7 @@
 #include <string>
 #include <queue>
 
+#include <boost/serialization/map.hpp>
 #include <boost/unordered_map.hpp>
 
 #include "event.h"
@@ -176,6 +177,15 @@ class FaultTree : public RiskAnalysis {
 
   // container for minimal cut sets and their respective probabilities
   std::map< std::set<std::string>, double > prob_of_min_sets_;
+
+  // container for minimal cut sets ordered by their probabilities
+  std::multimap < double, std::set<std::string> > ordered_min_sets_;
+
+  // container for primary events and their contribution
+  std::map< std::string, double > imp_of_primaries_;
+
+  // container for primary events ordered by their contribution
+  std::multimap < double, std::string > ordered_primaries_;
 
   // maximum order of the minimal cut sets
   int max_order_;

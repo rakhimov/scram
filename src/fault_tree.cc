@@ -329,11 +329,12 @@ void FaultTree::Analyze() {
 
   // Iterate minimal cut sets and find probabilities for each set
   for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
-        ++it_min) {
+       ++it_min) {
     // calculate a probability of a set with AND relationship
     double p_sub_set = FaultTree::ProbAnd_(*it_min);
     // update a container with minimal cut sets and probabilities
     prob_of_min_sets_.insert(std::make_pair(*it_min, p_sub_set));
+    ordered_min_sets_.insert(std::make_pair(p_sub_set, *it_min));
   }
 
   // Check if a rare event approximation is requested
@@ -368,7 +369,21 @@ void FaultTree::Analyze() {
     p_total_ = ProbOr_(min_cut_sets, nsums_);
   }
 
-  // Calculate probability of each minimal cut set for further analysis
+  // Calculate failure contributions of each primary event
+  boost::unordered_map<std::string, scram::PrimaryEvent*>::iterator it_prime;
+  for (it_prime = primary_events_.begin(); it_prime != primary_events_.end();
+       ++it_prime) {
+    double contrib = 0;  // total contribution of this event
+    std::map< std::set<std::string>, double >::iterator it_pr;
+    for (it_pr = prob_of_min_sets_.begin();
+         it_pr != prob_of_min_sets_.end(); ++it_pr) {
+      if (it_pr->first.count(it_prime->first)) {
+        contrib += it_pr->second;
+      }
+    }
+    imp_of_primaries_.insert(std::make_pair(it_prime->first, contrib));
+    ordered_primaries_.insert(std::make_pair(contrib, it_prime->first));
+  }
 }
 
 void FaultTree::Report(std::string output) {
@@ -442,6 +457,7 @@ void FaultTree::Report(std::string output) {
   for (int i = 1; i < max_order_ + 1; ++i) {
     out << "  " << i << "            " << order_numbers[i-1] << "\n";
   }
+  out << "  ALL          " << min_cut_sets_.size() << "\n";
   out.flush();
 
   // Print probabilities of minimal cut sets only if requested
@@ -455,17 +471,49 @@ void FaultTree::Report(std::string output) {
   out << "Limit on series: " << nsums_ << "\n";
   out << "Number of Primary Events: " << primary_events_.size() << "\n";
   out << "Number of Minimal Cut Sets: " << min_cut_sets_.size() << "\n\n";
-  out << "Minimal Cut Set Probabilities:\n\n";
+  out << "Minimal Cut Set Probabilities Sorted by Order:\n";
+  out.flush();
+  order = 1;  // order of minimal cut sets
+  std::multimap < double, std::set<std::string> >::reverse_iterator it_or;
+  while (order < max_order_ + 1) {
+    std::multimap< double, std::set<std::string> > order_sets;
+    for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
+         ++it_min) {
+      if (it_min->size() == order) {
+        order_sets.insert(std::make_pair(prob_of_min_sets_[*it_min], *it_min));
+      }
+    }
+    if (!order_sets.empty()) {
+      out << "\nOrder " << order << ":\n";
+      int i = 1;
+      for (it_or = order_sets.rbegin(); it_or != order_sets.rend(); ++it_or) {
+        out << i << ") ";
+        out << "{ ";
+        for (it_set = it_or->second.begin(); it_set != it_or->second.end();
+             ++it_set) {
+          out << orig_ids_[*it_set] << " ";
+        }
+        out << "}    ";
+        out << it_or->first << "\n";
+        out.flush();
+        i++;
+      }
+    }
+    order++;
+  }
+
+  out << "\nMinimal Cut Set Probabilities Sorted by Probability:\n\n";
   out.flush();
   int i = 1;
-  for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
-       ++it_min) {
+  for (it_or = ordered_min_sets_.rbegin(); it_or != ordered_min_sets_.rend();
+       ++it_or) {
     out << i << ") { ";
-    for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
+    for (it_set = it_or->second.begin(); it_set != it_or->second.end();
+         ++it_set) {
       out << orig_ids_[*it_set] << " ";
     }
     out << "}    ";
-    out << prob_of_min_sets_[*it_min] << "\n";
+    out << it_or->first << "\n";
     i++;
     out.flush();
   }
@@ -475,6 +523,17 @@ void FaultTree::Report(std::string output) {
   out <<  "Total Probability: " << p_total_ << "\n";
   out << "=============================\n\n";
   out.flush();
+
+  // Primary event analysis
+  out << "Primary Event Analysis:\n\n";
+  out << "Event        Failure Contrib.        Importance\n\n";
+  std::multimap < double, std::string >::reverse_iterator it_contr;
+  for (it_contr = ordered_primaries_.rbegin();
+       it_contr != ordered_primaries_.rend(); ++it_contr) {
+  out << orig_ids_[it_contr->second] << "          " << it_contr->first
+      << "          " << 100 * it_contr->first / p_total_ << "%\n";
+  out.flush();
+  }
 }
 
 bool FaultTree::GetArgs_(std::vector<std::string>& args, std::string& line,
@@ -1000,7 +1059,7 @@ double FaultTree::ProbOr_(std::set< std::set<std::string> >& min_cut_sets,
   return prob;
 }
 
-double FaultTree::ProbAnd_(const std::set< std::string>& min_cut_set) {
+double FaultTree::ProbAnd_(const std::set<std::string>& min_cut_set) {
   // Test just in case the min cut set is empty
   if (min_cut_set.empty()) {
     throw scram::ValueError("The set is empty for probability calculations.");
@@ -1014,10 +1073,9 @@ double FaultTree::ProbAnd_(const std::set< std::string>& min_cut_set) {
   return p_sub_set;
 }
 
-void FaultTree::CombineElAndSet_(const std::set< std::string>& el,
+void FaultTree::CombineElAndSet_(const std::set<std::string>& el,
                                  const std::set< std::set<std::string> >& set,
                                  std::set< std::set<std::string> >& combo_set) {
-
   std::set< std::string> member_set;
   std::set< std::set<std::string> >::iterator it_set;
   for (it_set = set.begin(); it_set != set.end(); ++it_set) {
