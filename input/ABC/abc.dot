@@ -1,6 +1,0 @@
-digraph ABC {
-TopEvent -> A_R0;
-TopEvent -> B_R0;
-TopEvent -> C_R0;
-TopEvent [shape=ellipse]
-}
