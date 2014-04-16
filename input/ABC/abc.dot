@@ -1,9 +1,6 @@
 digraph ABC {
-TopEvent -> A;
-TopEvent -> B;
-TopEvent -> C;
+TopEvent -> A_R0;
+TopEvent -> B_R0;
+TopEvent -> C_R0;
 TopEvent [shape=ellipse]
-A [shape=circle]
-B [shape=circle]
-C [shape=circle]
 }

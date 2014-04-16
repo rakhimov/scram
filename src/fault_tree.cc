@@ -25,11 +25,12 @@ namespace pt = boost::posix_time;
 
 namespace scram {
 
-FaultTree::FaultTree(std::string analysis, bool rare_event, int limit_order,
-                     int nsums)
+FaultTree::FaultTree(std::string analysis, bool graph_only, bool rare_event,
+                     int limit_order, int nsums)
     : analysis_(analysis),
       rare_event_(rare_event),
       limit_order_(limit_order),
+      graph_only_(graph_only),
       nsums_(nsums),
       warnings_(""),
       top_event_id_(""),
@@ -78,7 +79,7 @@ void FaultTree::ProcessInput(std::string input_file) {
   }
 
   // Transfer include external trees from other files
-  if (!transfers_.empty()) {
+  if (!transfers_.empty() && !graph_only_) {
     FaultTree::IncludeTransfers_();
   }
 
@@ -205,6 +206,8 @@ void FaultTree::GraphingInstructions() {
   graph_name.erase(graph_name.find_last_of("."), std::string::npos);
 
   std::string output_path = graph_name + ".dot";
+
+  graph_name = graph_name.substr(graph_name.find_last_of("/") + 1, std::string::npos);
   std::ofstream out(output_path.c_str());
   if (!out.good()) {
     std::string msg = output_path +  " : Cannot write the graphing file.";
@@ -214,14 +217,31 @@ void FaultTree::GraphingInstructions() {
   out << "digraph " << graph_name << " {\n";
   // write top event
 
+  // keep track of number of repetitions of the primary events
+  std::map<std::string, int> pr_repeat;
   // populate intermediate and primary events of the top
   std::map<std::string, scram::Event*> events_children = top_event_->children();
 
   std::map<std::string, scram::Event*>::iterator it_child;
   for (it_child = events_children.begin();
        it_child != events_children.end(); ++it_child) {
-    out << orig_ids_[top_event_id_] << " -> " << orig_ids_[it_child->first] <<
-        ";\n";
+    // deal with repeated primary events
+    if (primary_events_.count(it_child->first)) {
+      if (pr_repeat.count(it_child->first)) {
+        int rep = pr_repeat[it_child->first];
+        rep++;
+        pr_repeat.erase(it_child->first);
+        pr_repeat.insert(std::make_pair(it_child->first, rep));
+      } else if (!inter_events_.count(it_child->first)) {
+        pr_repeat.insert(std::make_pair(it_child->first, 0));
+      }
+      out << "\"" <<  orig_ids_[top_event_id_] << "\" -> "
+          << "\"" <<orig_ids_[it_child->first] <<"_R"
+          << pr_repeat[it_child->first] << "\";\n";
+    } else {
+      out << "\"" << orig_ids_[top_event_id_] << "\" -> "
+          << "\"" << orig_ids_[it_child->first] << "\";\n";
+    }
   }
   // do the same for all intermediate events
   boost::unordered_map<std::string, scram::InterEvent*>::iterator it_inter;
@@ -230,24 +250,69 @@ void FaultTree::GraphingInstructions() {
     events_children = it_inter->second->children();
     for (it_child = events_children.begin();
          it_child != events_children.end(); ++it_child) {
-      out << orig_ids_[it_inter->first] << " -> " << orig_ids_[it_child->first] <<
-          ";\n";
+      if (primary_events_.count(it_child->first)) {
+        if (pr_repeat.count(it_child->first)) {
+          int rep = pr_repeat[it_child->first];
+          rep++;
+          pr_repeat.erase(it_child->first);
+          pr_repeat.insert(std::make_pair(it_child->first, rep));
+        } else {
+          pr_repeat.insert(std::make_pair(it_child->first, 0));
+        }
+        out << "\"" <<  orig_ids_[it_inter->first] << "\" -> "
+            << "\"" <<orig_ids_[it_child->first] <<"_R"
+            << pr_repeat[it_child->first] << "\";\n";
+      } else {
+        out << "\"" << orig_ids_[it_inter->first] << "\" -> "
+            << "\"" << orig_ids_[it_child->first] << "\";\n";
+      }
     }
     out.flush();
   }
 
+  // do the same for all transfers
+  std::pair<std::string, std::string> tr_pair;
+  while (!transfers_.empty()) {
+    tr_pair = transfers_.front();
+    transfers_.pop();
+    out << "\"" <<  orig_ids_[tr_pair.first] << "\" -> "
+        << "\"" << orig_ids_[tr_pair.second] <<"\";\n";
+    // apply format
+    std::string tr_name = orig_ids_[tr_pair.second];
+    tr_name = tr_name.substr(tr_name.find_last_of("/") + 1, std::string::npos);
+    out << "\"" << orig_ids_[tr_pair.second] << "\" [shape=triangle, "
+        << "fontsize=10, fontcolor=black, fontname=\"times-bold\", "
+        << "label=\"" << tr_name << "\"]\n";
+  }
+
   // format events
-  out << orig_ids_[top_event_id_] << " [shape=ellipse]\n";
+  std::string gate = top_event_->gate();
+  boost::to_upper(gate);
+  out << "\"" <<  orig_ids_[top_event_id_] << "\" [shape=ellipse, "
+      << "fontsize=12, fontcolor=black, fontname=\"times-bold\", "
+      << "label=\"" << orig_ids_[top_event_id_] << "\\n"
+      << "{ " << gate <<" }\"]\n";
   for (it_inter = inter_events_.begin(); it_inter != inter_events_.end();
        ++it_inter) {
-    out << orig_ids_[it_inter->first] << " [shape=box]\n";
+    gate = it_inter->second->gate();
+    boost::to_upper(gate);
+    out << "\"" <<  orig_ids_[it_inter->first] << "\" [shape=box, "
+        << "fontsize=11, fontcolor=blue, "
+        << "label=\"" << orig_ids_[it_inter->first] << "\\n"
+        << "{ " << gate <<" }\"]\n";
   }
   out.flush();
 
-  boost::unordered_map<std::string, scram::PrimaryEvent*>::iterator it_prime;
-  for (it_prime = primary_events_.begin(); it_prime != primary_events_.end();
-       ++it_prime) {
-    out << orig_ids_[it_prime->first] << " [shape=circle]\n";
+  std::map<std::string, int>::iterator it;
+  for (it = pr_repeat.begin(); it != pr_repeat.end(); ++it) {
+    for (int i = 0; i < it->second + 1; ++i) {
+      out << "\"" << orig_ids_[it->first] << "_R" << i << "\" [shape=circle, "
+          << "height=1, fontsize=10, fixedsize=true, fontcolor=black, "
+          << "label=\"" << orig_ids_[it->first] << "\\n["
+          << primary_events_[it->first]->type() << "]";
+      if (prob_requested_) { out << "\\n" << primary_events_[it->first]->p(); }
+      out << "\"]\n";
+    }
   }
 
   out << "}";
@@ -811,6 +876,7 @@ void FaultTree::AddNode_(std::string parent, std::string id,
     // register to call later
     transfers_.push(std::make_pair(parent, id));
     trans_calls_.insert(std::make_pair(id, 0));
+    transfer_map_.insert(std::make_pair(parent, id));
     // check if this is a cyclic inclusion
     // this line does many things that are tricky and c++ map specific.
     // find vectors ending with the currently opened file name and append
@@ -936,10 +1002,8 @@ void FaultTree::AddNode_(std::string parent, std::string id,
 
 void FaultTree::AddProb_(std::string id, double p) {
   // Check if the primary event is in this tree
-  if (primary_events_.count(id) == 0) {
-    boost::to_upper(id);
-    std::string msg = "Primary event " + id + " is not in this tree.";
-    throw scram::ValidationError(msg);
+  if (!primary_events_.count(id)) {
+    return;  // ignore non-existent assignment
   }
 
   primary_events_[id]->p(p);
@@ -1045,6 +1109,8 @@ std::string FaultTree::CheckGates_() {
       std::string gate = it->second->gate();
       // this line throws error if there are no children
       int size = it->second->children().size();
+      // add transfer gates if needed for graphing
+      size += transfer_map_.count(it->second->id());
 
       // gate dependent logic
       if ((gate == "and") && (size < 2)) {

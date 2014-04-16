@@ -27,7 +27,7 @@
 
 {
     parent      E4
-    id          T.scramf  # K1 relay contacts fail to open K3 relay contacts closed
+    id          t.scramf  # K1 relay contacts fail to open K3 relay contacts closed
     type        TransferIn
 }
 

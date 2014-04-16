@@ -1,6 +1,8 @@
 # This file contains probabilities of each basic event that is in the
 # fault tree described in the input file.
-# All basic events should have their probabilities listed in this file
+# All basic events should have their probabilities listed in this file.
+# The probability descriptions may have extra events defined.
+# This extra information is ignored.
 
 # List Basic event's ID and its probability
 # The order of basic events does not matter.

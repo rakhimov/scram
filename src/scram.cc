@@ -64,8 +64,11 @@ int main(int argc, char* argv[]) {
   // determine required analysis
   // FTA naive is assumed if no arguments are given
   std::string analysis = vm["analysis"].as<std::string>();
+  bool graph_only = false;
   bool rare_event = false;
 
+  // determin if only graphing instructions are requested
+  if (vm.count("graph-only")) graph_only = true;
   // determine if a rare event approximation is requested
   if (vm.count("rare-event-approx")) rare_event = true;
 
@@ -90,8 +93,8 @@ int main(int argc, char* argv[]) {
       return 0;
     }
 
-    ran = new FaultTree(analysis, rare_event, vm["limit-order"].as<int>(),
-                        vm["nsums"].as<int>());
+    ran = new FaultTree(analysis, graph_only, rare_event,
+                        vm["limit-order"].as<int>(), vm["nsums"].as<int>());
   }
 
   // process input and validate it

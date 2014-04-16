@@ -3,65 +3,75 @@ LiftDoor -> DoorOpensInMotion;
 LiftDoor -> DoorRefuses;
 LiftDoor -> LiftStartsDoorOpen;
 LiftDoor -> OR_1;
-DoorHindered -> D_1;
-DoorHindered -> DOD_1;
+DoorHindered -> D_1_R0;
+DoorHindered -> DOD_1_R0;
 LiftStartsDoorOpen -> AND_1;
 LiftStartsDoorOpen -> DoorMotorSlow;
-LiftStartsDoorOpen -> DPD_1;
-LiftStartsDoorOpen -> LMD_1;
-OR_1 -> DMS_1;
-OR_1 -> DOD_1;
-OR_1 -> DOD_2;
-MotionDetector -> LMD_1;
-MotionDetector -> LMD_1_1;
-UncommandedDoorOpen -> CP_1;
-UncommandedDoorOpen -> DMS_2;
-UncommandedDoorOpen -> W_1;
+LiftStartsDoorOpen -> DPD_1_R0;
+LiftStartsDoorOpen -> LMD_1_R0;
+OR_1 -> DMS_1_R0;
+OR_1 -> DOD_1_R1;
+OR_1 -> DOD_2_R0;
+MotionDetector -> LMD_1_R1;
+MotionDetector -> LMD_1_1_R0;
+UncommandedDoorOpen -> CP_1_R0;
+UncommandedDoorOpen -> DMS_2_R0;
+UncommandedDoorOpen -> W_1_R0;
 DoorOpensInMotion -> AND_2;
 DoorOpensInMotion -> AND_3;
-DoorOpensInMotion -> DMS_2;
-AND_1 -> DM_1;
-AND_1 -> DPD_1;
-DoorMotor -> DM_1;
-DoorMotor -> PS_1;
+DoorOpensInMotion -> DMS_2_R1;
+AND_1 -> DM_1_R0;
+AND_1 -> DPD_1_R1;
+DoorMotor -> DM_1_R1;
+DoorMotor -> PS_1_R0;
 AND_2 -> MotionDetector;
 AND_2 -> UncommandedDoorOpen;
-DoorRefuses -> CP_1;
+DoorRefuses -> CP_1_R1;
 DoorRefuses -> DoorMotor;
-DoorRefuses -> LMD_2;
-DoorRefuses -> LPD_1;
-MotionDetector_R -> LMD_1;
-MotionDetector_R -> LMD_1_1;
+DoorRefuses -> LMD_2_R0;
+DoorRefuses -> LPD_1_R0;
+MotionDetector_R -> LMD_1_R2;
+MotionDetector_R -> LMD_1_1_R1;
 DoorMotorSlow -> DoorHindered;
-DoorMotorSlow -> PS_1;
-AND_3 -> CP_1;
+DoorMotorSlow -> PS_1_R1;
+AND_3 -> CP_1_R2;
 AND_3 -> MotionDetector_R;
-LiftDoor [shape=ellipse]
-DoorHindered [shape=box]
-LiftStartsDoorOpen [shape=box]
-OR_1 [shape=box]
-MotionDetector [shape=box]
-UncommandedDoorOpen [shape=box]
-DoorOpensInMotion [shape=box]
-AND_1 [shape=box]
-DoorMotor [shape=box]
-AND_2 [shape=box]
-DoorRefuses [shape=box]
-MotionDetector_R [shape=box]
-DoorMotorSlow [shape=box]
-AND_3 [shape=box]
-LMD_1_1 [shape=circle]
-DM_1 [shape=circle]
-DMS_1 [shape=circle]
-DOD_2 [shape=circle]
-DOD_1 [shape=circle]
-DPD_1 [shape=circle]
-LPD_1 [shape=circle]
-D_1 [shape=circle]
-CP_1 [shape=circle]
-W_1 [shape=circle]
-LMD_1 [shape=circle]
-LMD_2 [shape=circle]
-DMS_2 [shape=circle]
-PS_1 [shape=circle]
+LiftDoor [shape=ellipse, fontsize=12, fontcolor=black, fontname="times-bold", label="LiftDoor\n{ OR }"]
+DoorHindered [shape=box, fontsize=11, fontcolor=blue, label="DoorHindered\n{ OR }"]
+LiftStartsDoorOpen [shape=box, fontsize=11, fontcolor=blue, label="LiftStartsDoorOpen\n{ OR }"]
+OR_1 [shape=box, fontsize=11, fontcolor=blue, label="OR_1\n{ OR }"]
+MotionDetector [shape=box, fontsize=11, fontcolor=blue, label="MotionDetector\n{ AND }"]
+UncommandedDoorOpen [shape=box, fontsize=11, fontcolor=blue, label="UncommandedDoorOpen\n{ OR }"]
+DoorOpensInMotion [shape=box, fontsize=11, fontcolor=blue, label="DoorOpensInMotion\n{ OR }"]
+AND_1 [shape=box, fontsize=11, fontcolor=blue, label="AND_1\n{ AND }"]
+DoorMotor [shape=box, fontsize=11, fontcolor=blue, label="DoorMotor\n{ OR }"]
+AND_2 [shape=box, fontsize=11, fontcolor=blue, label="AND_2\n{ AND }"]
+DoorRefuses [shape=box, fontsize=11, fontcolor=blue, label="DoorRefuses\n{ OR }"]
+MotionDetector_R [shape=box, fontsize=11, fontcolor=blue, label="MotionDetector_R\n{ AND }"]
+DoorMotorSlow [shape=box, fontsize=11, fontcolor=blue, label="DoorMotorSlow\n{ OR }"]
+AND_3 [shape=box, fontsize=11, fontcolor=blue, label="AND_3\n{ AND }"]
+CP_1_R0 [shape=circle, height=1, fontsize=10, fixedsize=true, fontcolor=black, label="CP_1\n1e-06"]
+CP_1_R1 [shape=circle, height=1, fontsize=10, fixedsize=true, fontcolor=black, label="CP_1\n1e-06"]
+CP_1_R2 [shape=circle, height=1, fontsize=10, fixedsize=true, fontcolor=black, label="CP_1\n1e-06"]
+D_1_R0 [shape=circle, height=1, fontsize=10, fixedsize=true, fontcolor=black, label="D_1\n1e-06"]
+DM_1_R0 [shape=circle, height=1, fontsize=10, fixedsize=true, fontcolor=black, label="DM_1\n1e-06"]
+DM_1_R1 [shape=circle, height=1, fontsize=10, fixedsize=true, fontcolor=black, label="DM_1\n1e-06"]
+DMS_1_R0 [shape=circle, height=1, fontsize=10, fixedsize=true, fontcolor=black, label="DMS_1\n1e-06"]
+DMS_2_R0 [shape=circle, height=1, fontsize=10, fixedsize=true, fontcolor=black, label="DMS_2\n1e-06"]
+DMS_2_R1 [shape=circle, height=1, fontsize=10, fixedsize=true, fontcolor=black, label="DMS_2\n1e-06"]
+DOD_1_R0 [shape=circle, height=1, fontsize=10, fixedsize=true, fontcolor=black, label="DOD_1\n1e-06"]
+DOD_1_R1 [shape=circle, height=1, fontsize=10, fixedsize=true, fontcolor=black, label="DOD_1\n1e-06"]
+DOD_2_R0 [shape=circle, height=1, fontsize=10, fixedsize=true, fontcolor=black, label="DOD_2\n1e-06"]
+DPD_1_R0 [shape=circle, height=1, fontsize=10, fixedsize=true, fontcolor=black, label="DPD_1\n1e-06"]
+DPD_1_R1 [shape=circle, height=1, fontsize=10, fixedsize=true, fontcolor=black, label="DPD_1\n1e-06"]
+LMD_1_R0 [shape=circle, height=1, fontsize=10, fixedsize=true, fontcolor=black, label="LMD_1\n1e-06"]
+LMD_1_R1 [shape=circle, height=1, fontsize=10, fixedsize=true, fontcolor=black, label="LMD_1\n1e-06"]
+LMD_1_R2 [shape=circle, height=1, fontsize=10, fixedsize=true, fontcolor=black, label="LMD_1\n1e-06"]
+LMD_1_1_R0 [shape=circle, height=1, fontsize=10, fixedsize=true, fontcolor=black, label="LMD_1_1\n1e-06"]
+LMD_1_1_R1 [shape=circle, height=1, fontsize=10, fixedsize=true, fontcolor=black, label="LMD_1_1\n1e-06"]
+LMD_2_R0 [shape=circle, height=1, fontsize=10, fixedsize=true, fontcolor=black, label="LMD_2\n1e-06"]
+LPD_1_R0 [shape=circle, height=1, fontsize=10, fixedsize=true, fontcolor=black, label="LPD_1\n1e-06"]
+PS_1_R0 [shape=circle, height=1, fontsize=10, fixedsize=true, fontcolor=black, label="PS_1\n1e-06"]
+PS_1_R1 [shape=circle, height=1, fontsize=10, fixedsize=true, fontcolor=black, label="PS_1\n1e-06"]
+W_1_R0 [shape=circle, height=1, fontsize=10, fixedsize=true, fontcolor=black, label="W_1\n1e-06"]
 }

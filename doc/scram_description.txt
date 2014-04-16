@@ -16,7 +16,7 @@ Step 0. Type of analysis, i.e., fault tree, even tree, Markov chain, etc.
 Fault Tree Analysis.
 ====================
 Step 1. Reading input files. Verification of the input. Optional visual tool.
-Step 1+ (Optional). Upon users' request output instruction file for graping
+Step 1+ (Optional). Upon users' request output instruction file for graphing
     the tree. This is for visual verification of the input.
     Stop execution of the program.
 Step 2. Create the tree for analysis.

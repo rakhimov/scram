@@ -36,7 +36,7 @@ class FaultTree : public RiskAnalysis {
   friend class Superset;
 
  public:
-  FaultTree(std::string input_file, bool rare_event = false,
+  FaultTree(std::string input_file, bool graph_only,  bool rare_event = false,
             int limit_order = 20, int nsums = 1000000);
 
   // Reads input file with the structure of the Fault tree.
@@ -120,6 +120,9 @@ class FaultTree : public RiskAnalysis {
   // type of analysis to be performed
   std::string analysis_;
 
+  // request for graphing instructions only
+  bool graph_only_;
+
   // rare event approximation
   bool rare_event_;
 
@@ -165,6 +168,9 @@ class FaultTree : public RiskAnalysis {
   // container for transfer symbols as requested in tree initialization
   // a queue contains a tuple of the parent and id of transferIn
   std::queue< std::pair<std::string, std::string> > transfers_;
+
+  // For graphing purposes the same transferIn
+  std::multimap<std::string, std::string> transfer_map_;
 
   // container for storing all transfer sub-trees' names and number of calls
   std::map<std::string, int> trans_calls_;

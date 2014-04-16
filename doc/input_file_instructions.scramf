@@ -11,7 +11,8 @@
 # For each node, list a Parent 'Id of a Parent', ID 'Id of the node',
 # Type 'Node/Gate types'
 
-# Ids of nodes should not contain spaces.
+# Ids of nodes should not contain spaces. Please avoid using "\", "/", "{"
+# "}", or other special characters for clarity.
 # Ids of top event and intermediate events must be unique.
 # Ids of basic events are not required to be unique.
 
