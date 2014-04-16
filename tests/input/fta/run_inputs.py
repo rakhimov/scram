@@ -34,7 +34,6 @@ def main():
 
     # wrong probability files in the current directory
     bad_probs = ["doubly_defined_prob.scramp",
-                 "extra_basic_event.scramp",
                  "huge_prob.scramp",
                  "missing_basic_event.scramp",
                  "string_prob.scramp",
