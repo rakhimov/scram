@@ -474,7 +474,19 @@ void FaultTree::Analyze() {
   } else {
     // Exact calculation of probability of cut sets
     std::set< std::set<std::string> > min_cut_sets = min_cut_sets_;
-    p_total_ = ProbOr_(min_cut_sets, nsums_);
+    // p_total_ = ProbOr_(min_cut_sets, nsums_);
+    // ---------- Algorithm Improvement Check -----------------
+    for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
+         ++it_min) {
+      std::set<scram::PrimaryEvent*> pr_set;
+      std::set<std::string>::iterator it_set;
+      for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
+         pr_set.insert(primary_events_[*it_set]);
+      }
+      mcs_.insert(pr_set);
+    }
+    p_total_ = ProbOr_(mcs_, nsums_);
+    // ------------------------------------------------------------
   }
 
   // check if total probability is above 1
@@ -483,7 +495,19 @@ void FaultTree::Analyze() {
                  "\nis above 1. Switching to the brute force algorithm.\n";
     // Re-calculate total probability
     std::set< std::set<std::string> > min_cut_sets = min_cut_sets_;
-    p_total_ = ProbOr_(min_cut_sets, nsums_);
+    // p_total_ = ProbOr_(min_cut_sets, nsums_);
+    // ---------- Algorithm Improvement Check -----------------
+    for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
+         ++it_min) {
+      std::set<scram::PrimaryEvent*> pr_set;
+      std::set<std::string>::iterator it_set;
+      for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
+         pr_set.insert(primary_events_[*it_set]);
+      }
+      mcs_.insert(pr_set);
+    }
+    p_total_ = ProbOr_(mcs_, nsums_);
+    // ------------------------------------------------------------
   }
 
   // Calculate failure contributions of each primary event
@@ -1202,5 +1226,69 @@ void FaultTree::CombineElAndSet_(const std::set<std::string>& el,
     combo_set.insert(member_set);
   }
 }
+
+// ------------------------- Algorithm Improvement Trial --------------
+double FaultTree::ProbOr_(
+    std::set< std::set<scram::PrimaryEvent*> >& min_cut_sets,
+    int nsums) {
+  // Recursive implementation
+  if (min_cut_sets.empty()) {
+    throw scram::ValueError("Do not pass empty set to prob_or_ function.");
+  }
+
+  if (nsums == 0) {
+    return 0;
+  }
+
+  // Base case
+  if (min_cut_sets.size() == 1) {
+    // Get only element in this set
+    return FaultTree::ProbAnd_(*min_cut_sets.begin());
+  }
+
+  double prob = 0;
+
+  // Get one element
+  std::set< std::set<scram::PrimaryEvent*> >::iterator it = min_cut_sets.begin();
+  std::set<scram::PrimaryEvent*> element_one = *it;
+
+  // Delete element from the original set. WARNING: the iterator is invalidated.
+  min_cut_sets.erase(it);
+  std::set< std::set<scram::PrimaryEvent*> > combo_sets;
+  FaultTree::CombineElAndSet_(element_one, min_cut_sets, combo_sets);
+
+  prob = FaultTree::ProbAnd_(element_one) +
+         FaultTree::ProbOr_(min_cut_sets, nsums) -
+         FaultTree::ProbOr_(combo_sets, nsums - 1);
+  return prob;
+}
+
+double FaultTree::ProbAnd_(const std::set<scram::PrimaryEvent*>& min_cut_set) {
+  // Test just in case the min cut set is empty
+  if (min_cut_set.empty()) {
+    throw scram::ValueError("The set is empty for probability calculations.");
+  }
+
+  double p_sub_set = 1;  // 1 is for multiplication
+  std::set<scram::PrimaryEvent*>::iterator it_set;
+  for (it_set = min_cut_set.begin(); it_set != min_cut_set.end(); ++it_set) {
+    p_sub_set *= (*it_set)->p();
+  }
+  return p_sub_set;
+}
+
+void FaultTree::CombineElAndSet_(
+    const std::set<scram::PrimaryEvent*>& el,
+    const std::set< std::set<scram::PrimaryEvent*> >& set,
+    std::set< std::set<scram::PrimaryEvent*> >& combo_set) {
+  std::set<scram::PrimaryEvent*> member_set;
+  std::set< std::set<scram::PrimaryEvent*> >::iterator it_set;
+  for (it_set = set.begin(); it_set != set.end(); ++it_set) {
+    member_set = *it_set;
+    member_set.insert(el.begin(), el.end());
+    combo_set.insert(member_set);
+  }
+}
+// ----------------------------------------------------------------------
 
 }  // namespace scram
