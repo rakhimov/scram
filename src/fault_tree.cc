@@ -475,38 +475,39 @@ void FaultTree::Analyze() {
     // Exact calculation of probability of cut sets
     std::set< std::set<std::string> > min_cut_sets = min_cut_sets_;
     // p_total_ = ProbOr_(min_cut_sets, nsums_);
-    // ---------- Algorithm Improvement Check -----------------
-    for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
-         ++it_min) {
-      std::set<scram::PrimaryEvent*> pr_set;
-      std::set<std::string>::iterator it_set;
-      for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
-         pr_set.insert(primary_events_[*it_set]);
-      }
-      mcs_.insert(pr_set);
-    }
-    p_total_ = ProbOr_(mcs_, nsums_);
+    // ---------- Algorithm Improvement Check : Pointers -----------------
+//    for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
+//         ++it_min) {
+//      std::set<scram::PrimaryEvent*> pr_set;
+//      std::set<std::string>::iterator it_set;
+//      for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
+//         pr_set.insert(primary_events_[*it_set]);
+//      }
+//      mcs_.insert(pr_set);
+//    }
+//    p_total_ = ProbOr_(mcs_, nsums_);
     // ------------------------------------------------------------
-  }
 
-  // check if total probability is above 1
-  if (p_total_ > 1) {
-    warnings_ += "The rare event approximation does not hold. Total probability"
-                 "\nis above 1. Switching to the brute force algorithm.\n";
-    // Re-calculate total probability
-    std::set< std::set<std::string> > min_cut_sets = min_cut_sets_;
-    // p_total_ = ProbOr_(min_cut_sets, nsums_);
-    // ---------- Algorithm Improvement Check -----------------
+    // ---------- Algorithm Improvement Check : Integers -----------------
+    // map primary events to integers
+    int j = 0;
+    boost::unordered_map<std::string, scram::PrimaryEvent*>::iterator itp;
+    for (itp = primary_events_.begin(); itp != primary_events_.end();
+         ++itp) {
+      int_to_prime_.insert(std::make_pair(j, itp->second));
+      prime_to_int_.insert(std::make_pair(itp->second->id(), j));
+      ++j;
+    }
     for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
          ++it_min) {
-      std::set<scram::PrimaryEvent*> pr_set;
+      std::set<int> pr_set;
       std::set<std::string>::iterator it_set;
       for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
-         pr_set.insert(primary_events_[*it_set]);
+         pr_set.insert(prime_to_int_[*it_set]);
       }
-      mcs_.insert(pr_set);
+      imcs_.insert(pr_set);
     }
-    p_total_ = ProbOr_(mcs_, nsums_);
+    p_total_ = ProbOr_(imcs_, nsums_);
     // ------------------------------------------------------------
   }
 
@@ -663,6 +664,9 @@ void FaultTree::Report(std::string output) {
   out << "\n" << "=============================\n";
   out <<  "Total Probability: " << p_total_ << "\n";
   out << "=============================\n\n";
+
+  if (p_total_ > 1) out << "WARNING: Total Probability is invalid.\n\n";
+
   out.flush();
 
   // Primary event analysis
@@ -1227,7 +1231,7 @@ void FaultTree::CombineElAndSet_(const std::set<std::string>& el,
   }
 }
 
-// ------------------------- Algorithm Improvement Trial --------------
+// ------------------------- Algorithm Improvement Trial:Pointers --------------
 double FaultTree::ProbOr_(
     std::set< std::set<scram::PrimaryEvent*> >& min_cut_sets,
     int nsums) {
@@ -1246,8 +1250,6 @@ double FaultTree::ProbOr_(
     return FaultTree::ProbAnd_(*min_cut_sets.begin());
   }
 
-  double prob = 0;
-
   // Get one element
   std::set< std::set<scram::PrimaryEvent*> >::iterator it = min_cut_sets.begin();
   std::set<scram::PrimaryEvent*> element_one = *it;
@@ -1257,10 +1259,9 @@ double FaultTree::ProbOr_(
   std::set< std::set<scram::PrimaryEvent*> > combo_sets;
   FaultTree::CombineElAndSet_(element_one, min_cut_sets, combo_sets);
 
-  prob = FaultTree::ProbAnd_(element_one) +
+  return FaultTree::ProbAnd_(element_one) +
          FaultTree::ProbOr_(min_cut_sets, nsums) -
          FaultTree::ProbOr_(combo_sets, nsums - 1);
-  return prob;
 }
 
 double FaultTree::ProbAnd_(const std::set<scram::PrimaryEvent*>& min_cut_set) {
@@ -1283,6 +1284,64 @@ void FaultTree::CombineElAndSet_(
     std::set< std::set<scram::PrimaryEvent*> >& combo_set) {
   std::set<scram::PrimaryEvent*> member_set;
   std::set< std::set<scram::PrimaryEvent*> >::iterator it_set;
+  for (it_set = set.begin(); it_set != set.end(); ++it_set) {
+    member_set = *it_set;
+    member_set.insert(el.begin(), el.end());
+    combo_set.insert(member_set);
+  }
+}
+// ----------------------------------------------------------------------
+
+// ------------------------- Algorithm Improvement Trial:Integers --------------
+double FaultTree::ProbOr_(std::set< std::set<int> >& min_cut_sets, int nsums) {
+  // Recursive implementation
+  if (min_cut_sets.empty()) {
+    throw scram::ValueError("Do not pass empty set to prob_or_ function.");
+  }
+
+  if (nsums == 0) {
+    return 0;
+  }
+
+  // Base case
+  if (min_cut_sets.size() == 1) {
+    // Get only element in this set
+    return FaultTree::ProbAnd_(*min_cut_sets.begin());
+  }
+
+  // Get one element
+  std::set< std::set<int> >::iterator it = min_cut_sets.begin();
+  std::set<int> element_one = *it;
+
+  // Delete element from the original set. WARNING: the iterator is invalidated.
+  min_cut_sets.erase(it);
+  std::set< std::set<int> > combo_sets;
+  FaultTree::CombineElAndSet_(element_one, min_cut_sets, combo_sets);
+
+  return FaultTree::ProbAnd_(element_one) +
+         FaultTree::ProbOr_(min_cut_sets, nsums) -
+         FaultTree::ProbOr_(combo_sets, nsums - 1);
+}
+
+double FaultTree::ProbAnd_(const std::set<int>& min_cut_set) {
+  // Test just in case the min cut set is empty
+  if (min_cut_set.empty()) {
+    throw scram::ValueError("The set is empty for probability calculations.");
+  }
+
+  double p_sub_set = 1;  // 1 is for multiplication
+  std::set<int>::iterator it_set;
+  for (it_set = min_cut_set.begin(); it_set != min_cut_set.end(); ++it_set) {
+    p_sub_set *= int_to_prime_[*it_set]->p();
+  }
+  return p_sub_set;
+}
+
+void FaultTree::CombineElAndSet_(const std::set<int>& el,
+                                 const std::set< std::set<int> >& set,
+                                 std::set< std::set<int> >& combo_set) {
+  std::set<int> member_set;
+  std::set< std::set<int> >::iterator it_set;
   for (it_set = set.begin(); it_set != set.end(); ++it_set) {
     member_set = *it_set;
     member_set.insert(el.begin(), el.end());

@@ -112,7 +112,7 @@ class FaultTree : public RiskAnalysis {
                         const std::set< std::set<std::string> >& set,
                         std::set< std::set<std::string> >& combo_set);
 
-  // -------------------- Algorithm Improvement Trial ----------------
+  // -------------------- Algorithm Improvement Trial:Pointers---------------
   double ProbOr_(std::set< std::set<scram::PrimaryEvent*> >& min_cut_sets,
                  int nsums = 1000000);
 
@@ -125,6 +125,20 @@ class FaultTree : public RiskAnalysis {
   std::set< std::set<scram::PrimaryEvent*> > mcs_;
   // -----------------------------------------------------------------
 
+  // -------------------- Algorithm Improvement Trial:Integers ---------------
+  double ProbOr_(std::set< std::set<int> >& min_cut_sets,
+                 int nsums = 1000000);
+
+  double ProbAnd_(const std::set<int>& min_cut_set);
+
+  void CombineElAndSet_(const std::set<int>& el,
+                        const std::set< std::set<int> >& set,
+                        std::set< std::set<int> >& combo_set);
+
+  std::set< std::set<int> > imcs_;
+  boost::unordered_map<int, scram::PrimaryEvent*> int_to_prime_;
+  boost::unordered_map<std::string, int> prime_to_int_;
+  // -----------------------------------------------------------------
   // This member is used to provide any warnings about assumptions,
   // calculations, and settings. These warnings must be written into output
   // file.

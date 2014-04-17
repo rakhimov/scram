@@ -23,9 +23,6 @@ Step 2. Create the tree for analysis.
 Step 3. Perform cut set generation.
 Step 4. Perform analysis: Rare event approximation and independence of events.
         Rare event approximation is used only if enforced by a user.
-        However, if calculations are giving probabilities above 0.1 and total
-        probability above 1, the computation automatically switches to
-        the original algorithm without the rare event approximation.
 Step 5. Output the user specified analysis results. The output is sorted by
         the order of minimal cut sets, their probabilities. In addition,
         the contribution of each primary event is given in the output.
