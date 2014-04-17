@@ -70,6 +70,10 @@ def main():
     parser.add_argument("--topprime", type=int, help=topprime,
                         choices=range(0, 1000000), default=0)
 
+    ctop = "minimal number of children for a root node"
+    parser.add_argument("-n", "--ctop", type=int, help=ctop,
+                        choices=range(2, 1000000), default=0)
+
     out = "name of a file without extension to write the fault tree"
     parser.add_argument("-o", "--out", help=out, default="fta_tree")
 
@@ -81,6 +85,9 @@ def main():
 
     if args.topprime > args.nprimary:
         raise args.ArgumentTypeError("Topprime > number of total primary events")
+
+    if args.topprime > args.ctop:
+        raise args.ArgumentTypeError("Topprime > number of children for top")
 
     # set the seed for this tree generator
     random.seed(args.seed)
@@ -104,7 +111,11 @@ def main():
     top_event.gate = random.choice(types)
     child_size = random.randint(min_children, max_children)
 
-    if child_size < args.topprime: child_size = args.topprime
+    # Configuring child size for the top event
+    if args.ctop != 0:
+        child_size = args.ctop
+    elif child_size < args.topprime:
+        child_size = args.topprime
 
     # container for not yet initialized intermediate events
     inters_queue = Queue.Queue()
