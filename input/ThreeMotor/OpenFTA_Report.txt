@@ -178,37 +178,37 @@ Minimal cut set probabilities :
  37    T1 T2 T2inc T3inc T4inc         3.200000E-009
  38    T2 T2inc T3 T3inc T4inc         3.200000E-009
  39    KT1 KT1inc KT2 KT2inc KT3       1.600000E-007
-       KT3inc T2          
+       KT3inc T2
  40    KT1 KT1inc KT2 KT2inc KT3 T2    1.600000E-007
-       T4inc              
+       T4inc
  41    KT1 KT1inc KT2 KT3 KT3inc T2    1.600000E-007
-       T3inc              
+       T3inc
  42    KT1 KT1inc KT2 KT3 T2 T3inc     1.600000E-007
-       T4inc              
+       T4inc
  43    KT1 KT1inc KT2inc KT3 KT3inc    3.200000E-009
-       T2 T4              
+       T2 T4
  44    KT1 KT1inc KT2inc KT3 T2 T4     3.200000E-009
-       T4inc              
+       T4inc
  45    KT1 KT1inc KT3 KT3inc T2        3.200000E-009
-       T3inc T4           
+       T3inc T4
  46    KT1 KT1inc KT3 T2 T3inc T4      3.200000E-009
-       T4inc              
+       T4inc
  47    KT1 KT2 KT2inc KT3 KT3inc T2    1.600000E-007
-       T2inc              
+       T2inc
  48    KT1 KT2 KT2inc KT3 T2 T2inc     1.600000E-007
-       T4inc              
+       T4inc
  49    KT1 KT2 KT3 KT3inc T2 T2inc     1.600000E-007
-       T3inc              
+       T3inc
  50    KT1 KT2 KT3 T2 T2inc T3inc      1.600000E-007
-       T4inc              
+       T4inc
  51    KT1 KT2inc KT3 KT3inc T2        3.200000E-009
-       T2inc T4           
+       T2inc T4
  52    KT1 KT2inc KT3 T2 T2inc T4      3.200000E-009
-       T4inc              
+       T4inc
  53    KT1 KT3 KT3inc T2 T2inc T3inc   3.200000E-009
-       T4                 
+       T4
  54    KT1 KT3 T2 T2inc T3inc T4       3.200000E-009
-       T4inc              
+       T4inc
 
 
 Probability of top level event (minimal cut sets up to order 18 used):
@@ -272,41 +272,41 @@ Rank   Failure mode         Failures  Estimated Probability         Importance
   4    K5 KT1 KT2 KT3 S1    4         4.000000E-004 ( +/- 2.000000E-004 )   2.08%
   5    K2 K5 KT1 KT2 KT3    4         4.000000E-004 ( +/- 2.000000E-004 )   2.08%
   6    K5 KT1 KT2 KT3       4         4.000000E-004 ( +/- 2.000000E-004 )   2.08%
-       KT3inc             
+       KT3inc
   7    K5 KT1 KT2 KT2inc    3         3.000000E-004 ( +/- 1.732051E-004 )   1.56%
-       KT3                
+       KT3
   8    K5 KT1 KT2 KT3       3         3.000000E-004 ( +/- 1.732051E-004 )   1.56%
-       T3inc              
+       T3inc
   9    K5 KT1 KT1inc KT2    3         3.000000E-004 ( +/- 1.732051E-004 )   1.56%
-       KT3                
+       KT3
  10    KT1 KT2 KT3 T1inc    3         3.000000E-004 ( +/- 1.732051E-004 )   1.56%
-       T2                 
+       T2
  11    K5 KT1 KT2 KT3 T3    2         2.000000E-004 ( +/- 1.414214E-004 )   1.04%
  12    K5 KT1 KT2 KT3 T2    2         2.000000E-004 ( +/- 1.414214E-004 )   1.04%
  13    K5 KT1 KT2 KT3       2         2.000000E-004 ( +/- 1.414214E-004 )   1.04%
-       T1inc              
+       T1inc
  14    KT1 KT2 KT3 S1 T2    2         2.000000E-004 ( +/- 1.414214E-004 )   1.04%
  15    K5 KT1 KT2 KT3 T4    2         2.000000E-004 ( +/- 1.414214E-004 )   1.04%
  16    K5 KT1 KT2 KT3       1         1.000000E-004 ( +/- 1.000000E-004 )   0.52%
-       T1inc T4inc        
+       T1inc T4inc
  17    K5 KT1 KT2 KT3       1         1.000000E-004 ( +/- 1.000000E-004 )   0.52%
-       T4inc              
+       T4inc
  18    K5 KT1 KT2 KT2inc    1         1.000000E-004 ( +/- 1.000000E-004 )   0.52%
-       KT3 T1             
+       KT3 T1
  19    K5 KT1 KT1inc KT2    1         1.000000E-004 ( +/- 1.000000E-004 )   0.52%
-       KT3 T1inc          
+       KT3 T1inc
  20    K5 KT1 KT2 KT3       1         1.000000E-004 ( +/- 1.000000E-004 )   0.52%
-       T2inc              
+       T2inc
  21    K5 KT1 KT2 KT2inc    1         1.000000E-004 ( +/- 1.000000E-004 )   0.52%
-       KT3 S1             
+       KT3 S1
  22    K2 K5 KT1 KT2 KT3    1         1.000000E-004 ( +/- 1.000000E-004 )   0.52%
-       T1inc              
+       T1inc
  23    K5 KT1 KT1inc KT2    1         1.000000E-004 ( +/- 1.000000E-004 )   0.52%
-       KT3 T1             
+       KT3 T1
  24    K5 KT1 KT2 KT3 T1    1         1.000000E-004 ( +/- 1.000000E-004 )   0.52%
-       T2                 
+       T2
  25    K5 KT1 KT2 KT2inc    1         1.000000E-004 ( +/- 1.000000E-004 )   0.52%
-       KT3 T4inc          
+       KT3 T4inc
 
 
 Compressed:
@@ -316,7 +316,7 @@ Rank   Failure mode         Failures  Estimated Probability    Importance
   1    K5 KT1 KT2 KT3       182       1.820000E-002 ( +/- 1.349074E-003 )  94.79%
   2    KT1 KT2 KT3 S1 T2    2         2.000000E-004 ( +/- 1.414214E-004 )   1.04%
   3    KT1 KT2 KT3 T1inc    3         3.000000E-004 ( +/- 1.732051E-004 )   1.56%
-       T2                 
+       T2
   4    K1 KT1 KT2 KT3 T2    5         5.000000E-004 ( +/- 2.236068E-004 )   2.60%
 
 
