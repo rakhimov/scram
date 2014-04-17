@@ -22,7 +22,12 @@ Script arguments:
         in several places in the tree. [done]
     * Minimum and maximum probabilities for primary events. [done]
     * Number of primary events for the root node of the tree. [done]
+    * Fixed number of children for the root node of the tree. [done]
     * Output file name. [done]
+
+WARNING: The values for these arguments are not tested for validity. The
+        output tree will be validated by SCRAM.
+        For some invalid values the python script may scream itself.
 
 * The output should be an input tree file and a probability file. [done]
 

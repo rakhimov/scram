@@ -44,35 +44,35 @@ def main():
 
     nprimary = "the number of unique primary events"
     parser.add_argument("-p", "--nprimary", type=int, help=nprimary,
-                        choices=range(2, 1000000), default=10)
+                        default=10)
 
     nchildren = "the average number of children per intermediate event"
     parser.add_argument("-c", "--nchildren", type=int, help=nchildren,
-                        choices=range(2, 100), default=3)
+                        default=3)
 
     ratio = "primary events to intermediate events ratio per new node"
     parser.add_argument("-r", "--ratio", type=float, help=ratio,
-                        choices=range(1, 1000), default=2)
+                        default=2)
 
     reuse = "approximate percentage of repeated primary event in the tree"
     parser.add_argument("-u", "--reuse", type=float, help=reuse,
-                        choices=range(0, 1), default=0.1)
+                        default=0.1)
 
     maxprob = "maximum probability for primary events"
     parser.add_argument("-x", "--maxprob", type=float, help=maxprob,
-                        choices=range(0, 1), default=0.1)
+                        default=0.1)
 
     minprob = "minimum probability for primary events"
     parser.add_argument("-m", "--minprob", type=float, help=minprob,
-                        choices=range(0, 1), default=0.001)
+                        default=0.001)
 
     topprime = "minimal number of primary events for a root node"
     parser.add_argument("--topprime", type=int, help=topprime,
-                        choices=range(0, 1000000), default=0)
+                        default=0)
 
     ctop = "minimal number of children for a root node"
     parser.add_argument("-n", "--ctop", type=int, help=ctop,
-                        choices=range(2, 1000000), default=0)
+                        default=0)
 
     out = "name of a file without extension to write the fault tree"
     parser.add_argument("-o", "--out", help=out, default="fta_tree")
@@ -88,6 +88,22 @@ def main():
 
     if args.topprime > args.ctop:
         raise args.ArgumentTypeError("Topprime > number of children for top")
+
+    if args.ctop < 0 or\
+            args.topprime < 0 or\
+            args.ratio < 0 or\
+            args.nchildren < 0 or\
+            args.nprimary < 0 or\
+            args.minprob < 0 or\
+            args.maxprob < 0 or\
+            args.reuse < 0:
+        raise args.ArgumentTypeError("Check for negative value for arguments.")
+
+    if args.reuse > 0.9 or\
+            args.maxprob > 1 or\
+            args.minprob > 1:
+        raise args.ArgumentTypeError("Too big value for some of ratio args.")
+
 
     # set the seed for this tree generator
     random.seed(args.seed)
