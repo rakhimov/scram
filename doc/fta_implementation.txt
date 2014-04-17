@@ -59,3 +59,5 @@ independence may be applied. However, if the rare event approximation produce
 too large probability, SCRAM may switch to other better method unless the rare
 event method is ENFORCED by a user upon calling SCRAM. An appropriate warning
 will be given even if the user enforce a rare event approximation.
+It is suggested that cut-off for series should be around 4-8.
+The original cut-off tries to include all the series.

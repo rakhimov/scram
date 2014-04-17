@@ -21,7 +21,4 @@ minimal. Then all other sets are checked if they are supersets of the found
 minimal sets so far. If this is not the case, the sets with size 2 are
 minimal. This logic is continued till the original set of the sets is empty.
 
-Improvements for this algorithm:
-    * Precalculate intermediate events.
-    * Keep track of primary events in a set to eliminate by the order.
-    * Switch to hash tables for maps and sets.
+Proposed Improvements for this algorithm:

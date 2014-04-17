@@ -87,7 +87,7 @@ OpenFTA
 -------
 * Cost : $0
 * Fault Tree Analysis
-* Monte Carlo simulation
+* Monte Carlo minimal cut set generation.
 * Meta-data of an event in addition to its id
 * Algebraic and Combo algorithms to generate minimal cut sets.
 * Primary event types: Basic, Undeveloped, External, Conditioning
