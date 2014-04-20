@@ -5,19 +5,41 @@
 # This extra information is ignored.
 
 # List Basic event's ID and its probability
+# The default interpretation is the P-Model probability of the event
+# If this event's probability model is Lambda Model by failure frequency,
+# it needs to be in a different block. Indicate it as 'L-Model'
 # The order of basic events does not matter.
 
 {
-    # block     prob
+    # Type of probability model block
+    block           P-Model
 
-    ValveOne    0.5
-    ValveTwo    0.5
-    PumpOne     0.7
-    PumpTwo     0.7
+    ValveOne        0.5
+    ValveTwo        0.5
+    PumpOne         0.7
+    PumpTwo         0.7
 
 }
 
-# Instructions for Common Cause Analysis(CCF)
+{
+    # Type of lambda probability model block (Not yet supported)
+    block           L-Model
+
+    ValveThree      1.2e-5
+    PumpThree       2.5e-3
+
+}
+
+# Instructions for Monte Carlo Uncertainty Analysis (Not yet supported)
+# Give all the parameters for distributions
+{
+    block           MC
+
+    id              ValveFour
+    dist            Normal
+}
+
+# Instructions for Common Cause Analysis(CCF) (Not yet implemented)
 # Group events into groups and provide analysis method: MGL, alpha, beta.
 {
     # block    CCF

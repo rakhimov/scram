@@ -7,10 +7,12 @@
 
 namespace scram {
 
-PrimaryEvent::PrimaryEvent(std::string id, std::string type, double p)
+PrimaryEvent::PrimaryEvent(std::string id, std::string type, double p,
+                           std::string p_model)
     : scram::Event(id),
       type_(type),
-      p_(p) {
+      p_(p),
+      p_model_(p_model) {
 }
 
 std::string PrimaryEvent::type() {

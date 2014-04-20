@@ -79,7 +79,8 @@ class InterEvent : public scram::TopEvent {
 class PrimaryEvent : public scram::Event {
  public:
   // Constructs with id name and probability
-  PrimaryEvent(std::string id, std::string type = "", double p = -1);
+  PrimaryEvent(std::string id, std::string type = "", double p = -1,
+               std::string p_model = "p-model");
 
   // Returns the type of the primary event
   // Throws error if type is not yet set
@@ -111,6 +112,9 @@ class PrimaryEvent : public scram::Event {
 
   // Probability of the primary event
   double p_;
+
+  // Probability model
+  std::string p_model_;
 
   // Parents of this primary event
   std::map<std::string, scram::Event*> parents_;

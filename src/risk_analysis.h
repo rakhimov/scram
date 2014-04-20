@@ -147,7 +147,7 @@ class FaultTree : public RiskAnalysis {
                         const std::set< std::set<int> >& set,
                         std::set< std::set<int> >& combo_set);
 
-  void MSample() {}  // perform simulation
+  void MSample();  // perform simulation
   std::vector< std::set<int> > pos_terms_;  // plus terms of the equation
   std::vector< std::set<int> > neg_terms_;  // minus terms of the equation
   std::vector<double> sampled_results_;  // storage for sampled values

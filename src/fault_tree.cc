@@ -123,6 +123,7 @@ void FaultTree::PopulateProbabilities(std::string prob_file) {
   std::string id = "";  // name id of a primary event
   double p = -1;  // probability of a primary event
   bool block_started = false;
+  std::string block_type = "";  // type of information in this block
 
   // Error messages
   std::stringstream msg;
@@ -154,16 +155,32 @@ void FaultTree::PopulateProbabilities(std::string prob_file) {
           id = "";
           p = -1;
           block_started = false;
+          block_type = "";
 
         } else {
           msg << "Line " << nline << " : " << "Undefined input.";
           throw scram::ValidationError(msg.str());
         }
 
-        continue;  // continue the loop
+        break;
       }
       case 2: {
         id = args[0];
+        if (!block_started) {
+          msg << "Line " << nline << " : " << "Missing opening bracket {";
+          throw scram::ValidationError(msg.str());
+        }
+
+        if (block_type == "" && id == "block") {
+          block_type = args[1];
+          break;
+        } else if (id == "block") {
+          msg << "Line " << nline << " : " << "Doubly defining this block";
+          throw scram::ValidationError(msg.str());
+        }
+
+        // There should be a check for non-initialized block
+
         try {
           p = boost::lexical_cast<double>(args[1]);
         } catch (boost::bad_lexical_cast err) {
@@ -1454,6 +1471,10 @@ void FaultTree::MCombineElAndSet_(const std::set<int>& el,
     member_set.insert(el.begin(), el.end());
     combo_set.insert(member_set);
   }
+}
+
+void FaultTree::MSample() {
+
 }
 // ----------------------------------------------------------------------
 
