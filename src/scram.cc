@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
       ("prob-file,p", po::value<std::string>(), "file with probabilities")
       ("validate,v", "only validate input files")
       ("graph-only,g", "produce graph without analysis")
-      ("analysis,a", po::value<std::string>()->default_value("fta-naive"),
+      ("analysis,a", po::value<std::string>()->default_value("fta-default"),
        "type of analysis to be performed on this input")
       ("rare-event-approx,r", "whether or not to use a rare event approximation")
       ("limit-order,l", po::value<int>()->default_value(20),
@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
   // initiate risk analysis
   RiskAnalysis* ran;
 
-  if (analysis == "fta-naive") {
+  if (analysis == "fta-default" || analysis == "fta-mc") {
     if (vm["limit-order"].as<int>() < 1) {
       std::string msg = "Upper limit for cut sets can't be less than 1\n";
       std::cout << msg << std::endl;
@@ -95,6 +95,12 @@ int main(int argc, char* argv[]) {
 
     ran = new FaultTree(analysis, graph_only, rare_event,
                         vm["limit-order"].as<int>(), vm["nsums"].as<int>());
+  } else {
+    std::string msg = analysis + ": analysis is not recognized or supported"
+                      " yet :)\n";
+    std::cout << msg << std::endl;
+    std::cout << desc << "\n";
+    return 0;
   }
 
   // process input and validate it

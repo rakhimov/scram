@@ -441,6 +441,32 @@ void FaultTree::Analyze() {
   // Compute probabilities only if requested
   if (!prob_requested_) return;
 
+  // Perform Monte Carlo Uncertainty analysis
+  if (analysis_ == "fta-mc") {
+    // Generate the equation
+    int j = 0;
+    boost::unordered_map<std::string, scram::PrimaryEvent*>::iterator itp;
+    for (itp = primary_events_.begin(); itp != primary_events_.end();
+         ++itp) {
+      int_to_prime_.insert(std::make_pair(j, itp->second));
+      prime_to_int_.insert(std::make_pair(itp->second->id(), j));
+      ++j;
+    }
+    for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
+         ++it_min) {
+      std::set<int> pr_set;
+      std::set<std::string>::iterator it_set;
+      for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
+         pr_set.insert(prime_to_int_[*it_set]);
+      }
+      imcs_.insert(pr_set);
+    }
+    MProbOr_(imcs_, 1, nsums_);
+    // Sample probabilities and generate data
+    MSample();
+    return;
+  }
+
   // First, assume independence of events.
   // Second, rare event approximation is applied upon users' request
 
@@ -613,71 +639,101 @@ void FaultTree::Report(std::string output) {
   out << "Limit on series: " << nsums_ << "\n";
   out << "Number of Primary Events: " << primary_events_.size() << "\n";
   out << "Number of Minimal Cut Sets: " << min_cut_sets_.size() << "\n\n";
-  out << "Minimal Cut Set Probabilities Sorted by Order:\n";
   out.flush();
-  order = 1;  // order of minimal cut sets
-  std::multimap < double, std::set<std::string> >::reverse_iterator it_or;
-  while (order < max_order_ + 1) {
-    std::multimap< double, std::set<std::string> > order_sets;
-    for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
-         ++it_min) {
-      if (it_min->size() == order) {
-        order_sets.insert(std::make_pair(prob_of_min_sets_[*it_min], *it_min));
-      }
-    }
-    if (!order_sets.empty()) {
-      out << "\nOrder " << order << ":\n";
-      int i = 1;
-      for (it_or = order_sets.rbegin(); it_or != order_sets.rend(); ++it_or) {
-        out << i << ") ";
-        out << "{ ";
-        for (it_set = it_or->second.begin(); it_set != it_or->second.end();
-             ++it_set) {
-          out << orig_ids_[*it_set] << " ";
-        }
-        out << "}    ";
-        out << it_or->first << "\n";
-        out.flush();
-        i++;
-      }
-    }
-    order++;
-  }
 
-  out << "\nMinimal Cut Set Probabilities Sorted by Probability:\n\n";
-  out.flush();
-  int i = 1;
-  for (it_or = ordered_min_sets_.rbegin(); it_or != ordered_min_sets_.rend();
-       ++it_or) {
-    out << i << ") { ";
-    for (it_set = it_or->second.begin(); it_set != it_or->second.end();
-         ++it_set) {
-      out << orig_ids_[*it_set] << " ";
-    }
-    out << "}    ";
-    out << it_or->first << "\n";
-    i++;
+  if (analysis_ == "fta-default") {
+    out << "Minimal Cut Set Probabilities Sorted by Order:\n";
     out.flush();
-  }
+    order = 1;  // order of minimal cut sets
+    std::multimap < double, std::set<std::string> >::reverse_iterator it_or;
+    while (order < max_order_ + 1) {
+      std::multimap< double, std::set<std::string> > order_sets;
+      for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
+           ++it_min) {
+        if (it_min->size() == order) {
+          order_sets.insert(std::make_pair(prob_of_min_sets_[*it_min], *it_min));
+        }
+      }
+      if (!order_sets.empty()) {
+        out << "\nOrder " << order << ":\n";
+        int i = 1;
+        for (it_or = order_sets.rbegin(); it_or != order_sets.rend(); ++it_or) {
+          out << i << ") ";
+          out << "{ ";
+          for (it_set = it_or->second.begin(); it_set != it_or->second.end();
+               ++it_set) {
+            out << orig_ids_[*it_set] << " ";
+          }
+          out << "}    ";
+          out << it_or->first << "\n";
+          out.flush();
+          i++;
+        }
+      }
+      order++;
+    }
 
-  // Print total probability
-  out << "\n" << "=============================\n";
-  out <<  "Total Probability: " << p_total_ << "\n";
-  out << "=============================\n\n";
+    out << "\nMinimal Cut Set Probabilities Sorted by Probability:\n\n";
+    out.flush();
+    int i = 1;
+    for (it_or = ordered_min_sets_.rbegin(); it_or != ordered_min_sets_.rend();
+         ++it_or) {
+      out << i << ") { ";
+      for (it_set = it_or->second.begin(); it_set != it_or->second.end();
+           ++it_set) {
+        out << orig_ids_[*it_set] << " ";
+      }
+      out << "}    ";
+      out << it_or->first << "\n";
+      i++;
+      out.flush();
+    }
 
-  if (p_total_ > 1) out << "WARNING: Total Probability is invalid.\n\n";
+    // Print total probability
+    out << "\n" << "=============================\n";
+    out <<  "Total Probability: " << p_total_ << "\n";
+    out << "=============================\n\n";
 
-  out.flush();
+    if (p_total_ > 1) out << "WARNING: Total Probability is invalid.\n\n";
 
-  // Primary event analysis
-  out << "Primary Event Analysis:\n\n";
-  out << "Event        Failure Contrib.        Importance\n\n";
-  std::multimap < double, std::string >::reverse_iterator it_contr;
-  for (it_contr = ordered_primaries_.rbegin();
-       it_contr != ordered_primaries_.rend(); ++it_contr) {
-  out << orig_ids_[it_contr->second] << "          " << it_contr->first
-      << "          " << 100 * it_contr->first / p_total_ << "%\n";
-  out.flush();
+    out.flush();
+
+    // Primary event analysis
+    out << "Primary Event Analysis:\n\n";
+    out << "Event        Failure Contrib.        Importance\n\n";
+    std::multimap < double, std::string >::reverse_iterator it_contr;
+    for (it_contr = ordered_primaries_.rbegin();
+         it_contr != ordered_primaries_.rend(); ++it_contr) {
+      out << orig_ids_[it_contr->second] << "          " << it_contr->first
+          << "          " << 100 * it_contr->first / p_total_ << "%\n";
+      out.flush();
+    }
+
+  } else if (analysis_ == "fta-mc") {
+    // Report for Monte Carlo Uncertainty Analysis
+    // Show the terms of the equation
+    // Positive terms
+    out << "\nPositive Terms in the Probability Equation:\n";
+    std::vector< std::set<int> >::iterator it_vec;
+    std::set<int>::iterator it_set;
+    for(it_vec = pos_terms_.begin(); it_vec != pos_terms_.end(); ++it_vec) {
+      out << "{ ";
+      for (it_set = it_vec->begin(); it_set != it_vec->end(); ++it_set) {
+        out << orig_ids_[int_to_prime_[*it_set]->id()] << " ";
+      }
+      out << "}\n";
+      out.flush();
+    }
+    // Negative terms
+    out << "\nNegative Terms in the Probability Equation:\n";
+    for(it_vec = neg_terms_.begin(); it_vec != neg_terms_.end(); ++it_vec) {
+      out << "{ ";
+      for (it_set = it_vec->begin(); it_set != it_vec->end(); ++it_set) {
+        out << orig_ids_[int_to_prime_[*it_set]->id()] << " ";
+      }
+      out << "}\n";
+      out.flush();
+    }
   }
 }
 
@@ -1340,6 +1396,57 @@ double FaultTree::ProbAnd_(const std::set<int>& min_cut_set) {
 void FaultTree::CombineElAndSet_(const std::set<int>& el,
                                  const std::set< std::set<int> >& set,
                                  std::set< std::set<int> >& combo_set) {
+  std::set<int> member_set;
+  std::set< std::set<int> >::iterator it_set;
+  for (it_set = set.begin(); it_set != set.end(); ++it_set) {
+    member_set = *it_set;
+    member_set.insert(el.begin(), el.end());
+    combo_set.insert(member_set);
+  }
+}
+// ----------------------------------------------------------------------
+// ----- Algorithm for Total Equation for Monte Carlo Simulation --------
+// Generation of the representation of the original equation
+void FaultTree::MProbOr_(std::set< std::set<int> >& min_cut_sets,
+                           int sign, int nsums) {
+  // Recursive implementation
+  if (min_cut_sets.empty()) {
+    throw scram::ValueError("Do not pass empty set to prob_or_ function.");
+  }
+
+  if (nsums == 0) {
+    return;
+  }
+
+  // Get one element
+  std::set< std::set<int> >::iterator it = min_cut_sets.begin();
+  std::set<int> element_one = *it;
+
+  // Delete element from the original set. WARNING: the iterator is invalidated
+  min_cut_sets.erase(it);
+
+  // Put this element into the equation
+  if ((sign % 2) == 1) {
+    // this is a positive member
+    pos_terms_.push_back(element_one);
+  } else {
+    // this must be a negative member
+    neg_terms_.push_back(element_one);
+  }
+
+  // Base case
+  if (min_cut_sets.empty()) return;
+
+  std::set< std::set<int> > combo_sets;
+  FaultTree::MCombineElAndSet_(element_one, min_cut_sets, combo_sets);
+  FaultTree::MProbOr_(min_cut_sets, sign, nsums);
+  FaultTree::MProbOr_(combo_sets, sign + 1, nsums - 1);
+  return;
+}
+
+void FaultTree::MCombineElAndSet_(const std::set<int>& el,
+                                  const std::set< std::set<int> >& set,
+                                  std::set< std::set<int> >& combo_set) {
   std::set<int> member_set;
   std::set< std::set<int> >::iterator it_set;
   for (it_set = set.begin(); it_set != set.end(); ++it_set) {
