@@ -1,0 +1,6 @@
+SCRAM Monte Carlo Uncertainty Analysis
+======================================
+* Generation of an equation for this type of analysis from minimal cut sets.
+* Definitions and parameters for various distributions.
+    ** May be specified by a user in a probability input file.
+* Output results and analysis.
