@@ -93,44 +93,27 @@ class FaultTree : public RiskAnalysis {
   // Returns primary events that do not have probabilities assigned
   std::string PrimariesNoProb_();
 
-  // Calculates a probability of a set of minimal cut sets, which are in OR
-  // relationship with each other. This function is a brute force probability
-  // calculation without rare event approximations.
-  // nsums parameter specifies number of sums in the series.
-  double ProbOr_(std::set< std::set<std::string> >& min_cut_sets,
-                 int nsums = 1000000);
-
   // Calculates a probability of a minimal cut set, which members are in AND
   // relationship with each other. This function assumes independence of each
   // member.
   double ProbAnd_(const std::set<std::string>& min_cut_set);
 
-  // Calculates A(and)( B(or)C ) relationship for sets using set algebra.
-  // Returns non-const reference because only intended to be used for
-  // brute force probability calculations.
-  void CombineElAndSet_(const std::set< std::string>& el,
-                        const std::set< std::set<std::string> >& set,
-                        std::set< std::set<std::string> >& combo_set);
-
-  // -------------------- Algorithm Improvement Trial:Pointers---------------
-  double ProbOr_(std::set< std::set<scram::PrimaryEvent*> >& min_cut_sets,
-                 int nsums = 1000000);
-
-  double ProbAnd_(const std::set<scram::PrimaryEvent*>& min_cut_set);
-
-  void CombineElAndSet_(const std::set<scram::PrimaryEvent*>& el,
-                        const std::set< std::set<scram::PrimaryEvent*> >& set,
-                        std::set< std::set<scram::PrimaryEvent*> >& combo_set);
-
-  std::set< std::set<scram::PrimaryEvent*> > mcs_;
-  // -----------------------------------------------------------------
-
   // -------------------- Algorithm Improvement Trial:Integers ---------------
+  // Calculates a probability of a set of minimal cut sets, which are in OR
+  // relationship with each other. This function is a brute force probability
+  // calculation without rare event approximations.
+  // nsums parameter specifies number of sums in the series.
   double ProbOr_(std::set< std::set<int> >& min_cut_sets,
                  int nsums = 1000000);
 
+  // Calculates a probability of a minimal cut set, which members are in AND
+  // relationship with each other. This function assumes independence of each
+  // member.
   double ProbAnd_(const std::set<int>& min_cut_set);
 
+  // Calculates A(and)( B(or)C ) relationship for sets using set algebra.
+  // Returns non-const reference because only intended to be used for
+  // brute force probability calculations.
   void CombineElAndSet_(const std::set<int>& el,
                         const std::set< std::set<int> >& set,
                         std::set< std::set<int> >& combo_set);
