@@ -524,6 +524,7 @@ void FaultTree::Analyze() {
          ++itp) {
       int_to_prime_.insert(std::make_pair(j, itp->second));
       prime_to_int_.insert(std::make_pair(itp->second->id(), j));
+      iprobs_.push_back(itp->second->p());
       ++j;
     }
     for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
@@ -1283,7 +1284,7 @@ double FaultTree::ProbAnd_(const std::set<int>& min_cut_set) {
   double p_sub_set = 1;  // 1 is for multiplication
   std::set<int>::iterator it_set;
   for (it_set = min_cut_set.begin(); it_set != min_cut_set.end(); ++it_set) {
-    p_sub_set *= int_to_prime_[*it_set]->p();
+    p_sub_set *= iprobs_[*it_set];
   }
   return p_sub_set;
 }
@@ -1303,7 +1304,7 @@ void FaultTree::CombineElAndSet_(const std::set<int>& el,
 // ----- Algorithm for Total Equation for Monte Carlo Simulation --------
 // Generation of the representation of the original equation
 void FaultTree::MProbOr_(std::set< std::set<int> >& min_cut_sets,
-                           int sign, int nsums) {
+                         int sign, int nsums) {
   // Recursive implementation
   if (min_cut_sets.empty()) {
     throw scram::ValueError("Do not pass empty set to prob_or_ function.");

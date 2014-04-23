@@ -121,6 +121,7 @@ class FaultTree : public RiskAnalysis {
   std::set< std::set<int> > imcs_;
   boost::unordered_map<int, scram::PrimaryEvent*> int_to_prime_;
   boost::unordered_map<std::string, int> prime_to_int_;
+  std::vector<double> iprobs_;  // holds probabilities of basic events
   // -----------------------------------------------------------------
   // ---- Algorithm for Equation Construction for Monte Carlo Sim -------
   void MProbOr_(std::set< std::set<int> >& min_cut_sets, int sign,
