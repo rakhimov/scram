@@ -17,22 +17,22 @@ class Superset {
  public:
   Superset();
 
-  // Add an event into the set
+  // Add an event into the set.
   void AddMember(std::string id, FaultTree* ft);
 
-  // Inserts another superset
+  // Inserts another superset.
   void Insert(Superset* st);
 
-  // Returns an intermidiate event and deletes it from the set
+  // Returns an intermidiate event and deletes it from the set.
   std::string PopInter();
 
-  // Returns primary events
+  // Returns primary events.
   int nprimes();
 
-  // Returns intermediate events
+  // Returns intermediate events.
   int ninters();
 
-  // Returns the total set
+  // Returns the total set.
   std::set<std::string>& primes();
 
   ~Superset() {}

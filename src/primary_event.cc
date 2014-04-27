@@ -1,4 +1,4 @@
-// Implementation of primary event class
+// Implementation of primary event class.
 #include "event.h"
 
 #include <string>

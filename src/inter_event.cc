@@ -1,4 +1,4 @@
-// Implementation of intermidiate event class
+// Implementation of intermidiate event class.
 #include "event.h"
 
 #include <string>

@@ -1,4 +1,4 @@
-// Main entrance
+// Main entrance.
 
 #include <iostream>
 #include <string>
@@ -14,7 +14,7 @@ namespace fs = boost::filesystem;
 using namespace scram;
 
 int main(int argc, char* argv[]) {
-  // parse command line options
+  // Parse command line options.
   po::options_description desc("Allowed options");
   desc.add_options()
       ("help,h", "produce help message")
@@ -45,7 +45,7 @@ int main(int argc, char* argv[]) {
             run(), vm);
   po::notify(vm);
 
-  // process command line args
+  // Process command line args.
   if (vm.count("help")) {
     std::string msg = "Scram requires a file with input description and a"
                       " file with probabilities for events.\n";
@@ -61,21 +61,21 @@ int main(int argc, char* argv[]) {
     return 0;
   }
 
-  // determine required analysis
-  // FTA naive is assumed if no arguments are given
+  // Determine required analysis.
+  // FTA naive is assumed if no arguments are given.
   std::string analysis = vm["analysis"].as<std::string>();
   bool graph_only = false;
   bool rare_event = false;
 
-  // determin if only graphing instructions are requested
+  // Determin if only graphing instructions are requested.
   if (vm.count("graph-only")) graph_only = true;
-  // determine if a rare event approximation is requested
+  // Determine if a rare event approximation is requested.
   if (vm.count("rare-event-approx")) rare_event = true;
 
-  // read input files and setup.
+  // Read input files and setup.
   std::string input_file = vm["input-file"].as<std::string>();
 
-  // initiate risk analysis
+  // Initiate risk analysis.
   RiskAnalysis* ran;
 
   if (analysis == "fta-default" || analysis == "fta-mc") {
@@ -103,36 +103,36 @@ int main(int argc, char* argv[]) {
     return 0;
   }
 
-  // process input and validate it
+  // Process input and validate it.
   ran->ProcessInput(input_file);
 
   if (vm.count("prob-file")) {
     std::string prob_file = vm["prob-file"].as<std::string>();
-    // populate probabilities
+    // Populate probabilities.
     ran->PopulateProbabilities(prob_file);
   }
 
-  // stop if only validation is requested
+  // Stop if only validation is requested.
   if (vm.count("validate")) {
     std::cout << "The files are VALID." << std::endl;
     return 0;
   }
 
-  // graph if requested
+  // Graph if requested.
   if (vm.count("graph-only")) {
     ran->GraphingInstructions();
     return 0;
   }
 
-  // analyze
+  // Analyze.
   ran->Analyze();
 
-  // report results
-  std::string output = "cli";  // output to command line by default
+  // Report results.
+  std::string output = "cli";  // Output to command line by default.
   if (vm.count("output")) {
     output = vm["output"].as<std::string>();
   }
   ran->Report(output);
 
   return 0;
-}  // end of main
+}  // End of main.

@@ -1,0 +1,5 @@
+This project follows the following coding styles:
+================================================
+Google C++ Style Guide
+Google Python Style Guide
+PEP 8 -- Style Guide for Python Code

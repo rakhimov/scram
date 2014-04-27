@@ -9,7 +9,7 @@
 
 namespace scram {
 
-// General event base class
+// General event base class.
 class Event {
  public:
   Event(std::string id) : id_(id) {}
@@ -21,102 +21,102 @@ class Event {
   virtual ~Event() {}
 
  private:
-  // Id name of an event
+  // Id name of an event.
   std::string id_;
 };
 
-// Top event
-// This class should not have a parent
+// Top event.
+// This class should not have a parent.
 class TopEvent : public scram::Event {
  public:
-  // Constructs with a gate
+  // Constructs with a gate.
   TopEvent(std::string id, std::string gate = "NONE");
 
-  // Returns the gate type
+  // Returns the gate type.
   virtual std::string gate();
 
-  // Sets the gate type
+  // Sets the gate type.
   virtual void gate(std::string gate);
 
-  // Returns children
+  // Returns children.
   virtual const std::map<std::string, scram::Event*>& children();
 
-  // Adds a child into children list
+  // Adds a child into children list.
   virtual void add_child(scram::Event* child);
 
   virtual ~TopEvent() {}
 
  private:
-  // Gate type
+  // Gate type.
   std::string gate_;
-  // Intermediate and primary events of the top event
+  // Intermediate and primary events of the top event.
   std::map<std::string, scram::Event*> children_;
 };
 
-// Intermediate event
-// This event is Top event with a parent
+// Intermediate event.
+// This event is Top event with a parent.
 class InterEvent : public scram::TopEvent {
  public:
-  // Constructs with id, gate, and parent
+  // Constructs with id, gate, and parent.
   InterEvent(std::string id, std::string gate = "NONE",
              scram::Event* parent = NULL);
 
-  // Returns the parent
+  // Returns the parent.
   const scram::Event* parent();
 
-  // Sets the parent
+  // Sets the parent.
   void parent(scram::Event* parent);
 
   ~InterEvent() {}
 
  private:
-  // The parent of this intermediate event
+  // The parent of this intermediate event.
   scram::Event* parent_;
 };
 
 // This is a base class for events that can cause faults.
-// Base, House, Undeveloped, and other events
+// Base, House, Undeveloped, and other events.
 class PrimaryEvent : public scram::Event {
  public:
-  // Constructs with id name and probability
+  // Constructs with id name and probability.
   PrimaryEvent(std::string id, std::string type = "", double p = -1,
                std::string p_model = "p-model");
 
-  // Returns the type of the primary event
-  // Throws error if type is not yet set
+  // Returns the type of the primary event.
+  // Throws error if type is not yet set.
   std::string type();
 
-  // Sets the type
-  // Throws error if type is not valid or being re-assigned
+  // Sets the type.
+  // Throws error if type is not valid or being re-assigned.
   void type(std::string new_type);
 
-  // Returns the probability
-  // Throws error if probability is not yet set
+  // Returns the probability.
+  // Throws error if probability is not yet set.
   double p();
 
-  // Sets the probability
-  // Throws error if probability is not a valid value
+  // Sets the probability.
+  // Throws error if probability is not a valid value.
   void p(double p);
 
-  // Adds a parent into the parent map
+  // Adds a parent into the parent map.
   void add_parent(scram::Event* parent);
 
-  // Return parents
+  // Return parents.
   std::map<std::string, scram::Event*>& parents();
 
   ~PrimaryEvent() {}
 
  private:
-  // Type of a primary event
+  // Type of a primary event.
   std::string type_;
 
-  // Probability of the primary event
+  // Probability of the primary event.
   double p_;
 
-  // Probability model
+  // Probability model.
   std::string p_model_;
 
-  // Parents of this primary event
+  // Parents of this primary event.
   std::map<std::string, scram::Event*> parents_;
 };
 

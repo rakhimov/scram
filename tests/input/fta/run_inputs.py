@@ -1,16 +1,16 @@
-#! /usr/env/python
+#! /usr/bin/env python
 
 import sys
 import subprocess
 
 def main():
-    # correct corner case inputs
+    # Correct corner case inputs
     pass_inputs = ["correct_tree_input.scramf",
                    "doubly_defined_basic.scramf",
                    "different_order.scramf",
                    "inline_comments.scramf"]
 
-    # wrong input files in the current directory
+    # Wrong input files in the current directory
     bad_inputs = ["basic_top_event.scramf",
                   "doubly_defined_intermediate.scramf",
                   "doubly_defined_top.scramf",
@@ -32,7 +32,7 @@ def main():
                   "transfer_no_file.scramf",
                   "transfer_wrong_parent.scramf"]
 
-    # wrong probability files in the current directory
+    # Wrong probability files in the current directory
     bad_probs = ["doubly_defined_prob.scramp",
                  "huge_prob.scramp",
                  "missing_basic_event.scramp",

@@ -1,4 +1,4 @@
-// Implementation of top event class
+// Implementation of top event class.
 #include "event.h"
 
 #include <string>

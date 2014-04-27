@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/env python
 
 import random
 import Queue
@@ -79,7 +79,7 @@ def main():
 
     args = parser.parse_args()
 
-    # check validity of arguments
+    # Check for validity of arguments
     if args.maxprob < args.minprob:
         raise args.ArgumentTypeError("Max probability < Min probability")
 
@@ -105,23 +105,23 @@ def main():
         raise args.ArgumentTypeError("Too big value for some of ratio args.")
 
 
-    # set the seed for this tree generator
+    # Set the seed for this tree generator
     random.seed(args.seed)
 
-    # container for created primary events
+    # Container for created primary events
     primary_vec = []
 
-    # supported types of gates
+    # Supported types of gates
     types = ["OR", "AND"]
 
-    # minimum number of children per intermediate event
+    # Minimum number of children per intermediate event
     min_children = 2
 
-    # maximum number of children
+    # Maximum number of children
     max_children = args.nchildren * 2 - min_children
 
     # Tree generation
-    # start with a top event
+    # Start with a top event
     top_event = TopEvent()
     top_event.id = "TopEvent"
     top_event.gate = random.choice(types)
@@ -133,7 +133,7 @@ def main():
     elif child_size < args.topprime:
         child_size = args.topprime
 
-    # container for not yet initialized intermediate events
+    # Container for not yet initialized intermediate events
     inters_queue = Queue.Queue()
 
     def create_inter(parent):
@@ -149,51 +149,51 @@ def main():
         parent.p_children.add(prime_event)
 
 
-    # initialize the top root node
+    # Initialize the top root node
     while (len(top_event.p_children) + len(top_event.i_children)) < child_size:
         while len(top_event.p_children) < args.topprime:
             create_primary(top_event)
 
         create_inter(top_event)
 
-    # initialize intermediate events
+    # Initialize intermediate events
     while not inters_queue.empty():
-        # get the intermediate event to intialize
+        # Get the intermediate event to intialize
         init_inter = inters_queue.get()
 
-        # sample children size
+        # Sample children size
         child_size = random.randint(min_children, max_children)
 
         while (len(init_inter.p_children) + len(init_inter.i_children)) < child_size:
-            # case when the number of primary events is already satisfied
+            # Case when the number of primary events is already satisfied
             if len(primary_vec) == args.nprimary:
-                # reuse already initialized events only
+                # Reuse already initialized events only
                 init_inter.p_children.add(random.choice(primary_vec))
                 continue
 
-            # sample inter events vs. primary events
+            # Sample inter events vs. primary events
             s_ratio = random.random()
             if s_ratio < (1.0/(1 + args.ratio)):
                 create_inter(init_inter)
             else:
-                # create a primary event
-                # sample reuse
+                # Create a primary event
+                # Sample reuse
                 s_reuse = random.random()
                 if s_reuse < args.reuse and not len(primary_vec) == 0:
-                    # reuse an already initialized primary event
+                    # Reuse an already initialized primary event
                     init_inter.p_children.add(random.choice(primary_vec))
                 else:
                     create_primary(init_inter)
 
-            # corner case when not enough new primary events initialized, but
+            # Corner case when not enough new primary events initialized, but
             # ther are no more intemediate events due to low ratio.
             if inters_queue.empty() and (len(primary_vec) < args.nprimary):
-                # initialize one more intermediate event
-                # this is a naive implementation, so
+                # Initialize one more intermediate event.
+                # This is a naive implementation, so
                 # there might be another algorithm in future.
                 create_inter(init_inter)
 
-    # write output files
+    # Write output files
     tree_file = args.out + ".scramf"
     prob_file = args.out + ".scramp"
 
@@ -218,30 +218,30 @@ def main():
         """Print children for the intermediate event.
         Note that it also updates the queue for intermediate events.
         """
-        # print primary events first
+        # Print primary events first
         for p in inter_event.p_children:
             o_file.write("{\n    parent        " + inter_event.id + "\n"\
                         "    id            " + p.id +"\n"\
                         "    type          " + p.type + "\n}\n"
                         )
-        # print intermediate events
+        # Print intermediate events
         for i in inter_event.i_children:
             o_file.write("{\n    parent        " + inter_event.id + "\n"\
                         "    id            " + i.id +"\n"\
                         "    type          " + i.gate + "\n}\n"
                         )
-            # update the queue
+            # Update the queue
             inters_queue.put(i)
 
-    # write top event and update queue of intermediate events
-    # write top event and update queue of intermediate events
+    # Write top event and update queue of intermediate events
+    # Write top event and update queue of intermediate events
     t_file.write("{\n    parent        None\n"\
                 "    id            " + top_event.id +"\n"\
                 "    type          " + top_event.gate + "\n}\n"
                 )
     write_node(top_event, t_file)
 
-    # proceed with intermediate events
+    # Proceed with intermediate events
     while not inters_queue.empty():
         i_event = inters_queue.get()
         write_node(i_event, t_file)
@@ -251,7 +251,7 @@ def main():
     t_file.close()
 
 
-    # print probabilities of primary events
+    # Print probabilities of primary events
     p_file.write("# This is a probability input file accompanying a fault tree\n"\
                  "# written in " + tree_file + "\n"\
                  )
