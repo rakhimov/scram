@@ -1,4 +1,5 @@
 # This input describes a fault tree for my laptop ACER 4830T 6642.
+# Assume USB ports and wires do not fail.
 # Main laptop failure is the root of the tree.
 {
     parent      None
@@ -19,7 +20,7 @@
 {
     parent      Laptop
     id          InputDevices
-    type        AND
+    type        OR
 }
 {
     parent      Laptop
@@ -102,38 +103,23 @@
 # Main Screen
 {
     parent      MainScreen
-    id          BacklitLED_Main
-    type        basic
+    id          LaptopScreen
+    type        undeveloped
 }
 {
     parent      MainScreen
     id          DroppedOpenScreen  # an accident
     type        basic
 }
-{
-    parent      MainScreen
-    id          DeadPixelsMain
-    type        basic
-}
-{
-    parent      MainScreen
-    id          ScreenWires
-    type        basic
-}
 # External Monitor
 {
     parent      ExternalMonitor
-    id          BacklitLED_Ext
-    type        basic
+    id          External_Monitor
+    type        undeveloped
 }
 {
     parent      ExternalMonitor
     id          DroppedExtMonitor  # an accident
-    type        basic
-}
-{
-    parent      ExternalMonitor
-    id          DeadPixels_Ext
     type        basic
 }
 {
@@ -160,22 +146,37 @@
 # Start Input Devices
 {
     parent      InputDevices
+    id          Keyboards
+    type        AND
+}
+{
+    parent      Keyboards
     id          MainKeyboard
     type        basic
 }
 {
-    parent      InputDevices
+    parent      Keyboards
     id          BackupKeyboard
     type        basic
 }
 {
     parent      InputDevices
+    id          PointingDevices
+    type        AND
+}
+{
+    parent      PointingDevices
+    id          PointingNeeded
+    type        house
+}
+{
+    parent      PointingDevices
     id          TrackPad
     type        basic
 }
 {
-    parent      InputDevices
-    id          Mouse
+    parent      PointingDevices
+    id          ExtMouse
     type        basic
 }
 # End Input Devices
