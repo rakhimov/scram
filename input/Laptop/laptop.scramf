@@ -328,12 +328,17 @@
 }
 {
     parent      ExternalEvents
-    id          Fire
+    id          Intrusion
+    type        AND
+}
+{
+    parent      Intrusion
+    id          HackingAttempt
     type        basic
 }
 {
-    parent      ExternalEvents
-    id          Flood
+    parent      Intrusion
+    id          FirewallFails
     type        basic
 }
 # End External Events
