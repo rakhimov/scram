@@ -198,7 +198,12 @@
 # Start Internet Acces
 {
     parent      InternetAccess
-    id          WiFi
+    id          Wifi
+    type        basic
+}
+{
+    parent      InternetAccess
+    id          USB_Wifi  # this is a backup wifi that's ordered
     type        basic
 }
 {
@@ -206,11 +211,26 @@
     id          Ethernet
     type        basic
 }
+{
+    parent      InternetAccess
+    id          USB_Ethernet  # a backup ethernet is ordered
+    type        basic
+}
 # End Internet Access
 # Start Power Supply
 {
     parent      PowerSupply
+    id          InternalPower
+    type        AND
+}
+{
+    parent      InternalPower
     id          Battery
+    type        basic
+}
+{
+    parent      InternalPower
+    id          Backup_Battery
     type        basic
 }
 {
