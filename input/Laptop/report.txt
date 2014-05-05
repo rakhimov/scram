@@ -1,0 +1,54 @@
+
+Minimal Cut Sets
+================
+
+Fault Tree: laptop.scramf
+Time: 2014-May-05 02:15:21
+
+Analysis algorithm: fta-default
+Limit on order of cut sets: 20
+Number of Primary Events: 41
+Minimal Cut Set Maximum Order: 3
+
+Order 1:
+1) { Blackout }
+2) { CoffeeSpill }
+3) { DroppedLaptop }
+4) { JointsShort }
+5) { Lost }
+6) { MemoryFailure }
+7) { ProcessorFailure }
+8) { Stolen }
+
+Order 2:
+1) { AntivirusFailed VirusEncountered }
+2) { BackupKeyboard MainKeyboard }
+3) { CPU_Fan CPU_Fan_Backup }
+4) { DroppedExtMonitor DroppedOpenScreen }
+5) { DroppedExtMonitor LaptopScreen }
+6) { DroppedOpenScreen External_Monitor }
+7) { DroppedOpenScreen PowerSurge }
+8) { Ethernet WiFi }
+9) { External_Monitor LaptopScreen }
+10) { FirewallFails HackingAttempt }
+11) { LaptopScreen PowerSurge }
+
+Order 3:
+1) { Battery PowerAdapterOne PowerAdapterTwo }
+2) { Battery PowerJackOne PowerJackTwo }
+3) { BlueScreen CD-ROM ExternalHDD }
+4) { BlueScreen ExternalHDD RecoveryDisc }
+5) { DropBox ExternalHDD SSD }
+6) { DroppedOpenScreen HDMI VGA }
+7) { ExtMouse PointingNeeded TrackPad }
+8) { HDMI LaptopScreen VGA }
+9) { PowerJackMelts PowerSurge SurgeProtector }
+
+Qualitative Importance Analysis:
+
+Order        Number
+-----        ------
+  1            8
+  2            11
+  3            9
+  ALL          28

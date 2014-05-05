@@ -89,6 +89,21 @@
     id          PowerJackMelts  # power jack fails to fail
     type        basic
 }
+{
+    parent      MotherBoard
+    id          CoolingSystem
+    type        AND
+}
+{
+    parent      CoolingSystem
+    id          CPU_Fan
+    type        basic
+}
+{
+    parent      CoolingSystem
+    id          CPU_Fan_Backup
+    type        basic
+}
 # Start Screen
 {
     parent      Screen
