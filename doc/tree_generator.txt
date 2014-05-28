@@ -24,6 +24,7 @@ Script arguments:
     * Number of primary events for the root node of the tree. [done]
     * Fixed number of children for the root node of the tree. [done]
     * Output file name. [done]
+    * Optional use of more complex gates and primary event types.
 
 WARNING: The values for these arguments are not tested for validity. The
         output tree will be validated by SCRAM.

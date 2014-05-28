@@ -18,6 +18,7 @@ TODO list for SCRAM Project
         ** Refer to OpenFTA: Minimal cut set generation through MC
     * Reformat documentation into rst.
     * Analysis of a transfer sub-tree without a main file.
+    * Improve fault tree generator
 
     * Incorporation of an event tree analysis
  [!]* Incorporation of CCF
@@ -32,6 +33,13 @@ TODO list for SCRAM Project
     * Other input styles : XML, json, sql.
     * GUI considerations for building trees
     * Explore conditional probabilities through CCF
+
+    * Documentation:
+        ** Getting Started
+        ** Building/Installing
+        ** Simple Walkthrough Example
+        ** Reference Papers
+        ** Background Theory
 
     * Coding specific:
         ** Incorporate unit tests into building
