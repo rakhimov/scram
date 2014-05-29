@@ -57,6 +57,12 @@ set (SCRAM_CORE_TEST_SOURCE ${SCRAM_CORE_TEST_SOURCE}
     "${CMAKE_CURRENT_SOURCE_DIR}/input_tests.cc"
     )
 
+# Make tests to switch and run in build directory
+configure_file(scram_unit_test_driver.cc.in 
+    "${CMAKE_CURRENT_SOURCE_DIR}/scram_unit_test_driver.cc"
+    @ONLY
+    )
+
 ADD_EXECUTABLE( scram_unit_tests
   scram_unit_test_driver.cc
   ${SCRAM_CORE_TEST_SOURCE}
@@ -87,6 +93,17 @@ add_custom_command(TARGET ${tgt}
           "--executable=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${tgt}"
           "--output=${SCRAM_BINARY_DIR}/CTestTestfile.cmake"
   COMMENT "adding tests from ${tgt}"
+  DEPENDS
+  VERBATIM
+  )
+
+# copy input files into build directory for testing
+add_custom_command(TARGET ${tgt}
+  POST_BUILD
+  COMMAND cp "-r"
+          "${CMAKE_CURRENT_SOURCE_DIR}/input"
+          "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/"
+  COMMENT "copying input files for unit testing"
   DEPENDS
   VERBATIM
   )
