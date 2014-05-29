@@ -34,6 +34,27 @@ Package                Minimum Version
 `Graphviz Dot`         2.26.3
 ====================   ==================
 
+Building SCRAM (Linux and Unix)
+===============================
+
+Currently only building is enough to get SCRAM working for testing purposes.
+A python script is provided to make the process easier.
+After installing the dependencies, run the following inside main SCRAM directory:
+
+.. code-block:: bash
+
+    .../scram$ python install.py
+
+Executable file and tests will be located in build/bin directory.
+
+For better performance run the building with the optimization flag:
+
+.. code-block:: bash
+
+    .../scram$ python install.py -o
+
+Various other flags are described by the script's help prompt.
+
 *****************************
 Note to a User
 *****************************
