@@ -36,7 +36,7 @@ class FaultTree : public RiskAnalysis {
   friend class Superset;
 
  public:
-  FaultTree(std::string input_file, bool graph_only,  bool rare_event = false,
+  FaultTree(std::string analysis, bool graph_only,  bool rare_event = false,
             int limit_order = 20, int nsums = 1000000);
 
   // Reads input file with the structure of the Fault tree.

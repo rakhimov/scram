@@ -8,6 +8,9 @@ set(SCRAM_DOC_DIR "${PROJECT_SOURCE_DIR}/doc")
 set(SCRAM_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src")
 set(SCRAM_TEST_DIR "${PROJECT_SOURCE_DIR}/tests")
 
+# This makes all the libraries build as SHARED
+SET(BUILD_SHARED_LIBS true)
+
 # Setup build locations.
 if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${SCRAM_BINARY_DIR}/bin")
@@ -58,6 +61,7 @@ message("--    Boost Filesystem location: ${Boost_FILESYSTEM_LIBRARY}")
 
 # include all the directories we just found
 include_directories("${Boost_INCLUDE_DIR}")
+include_directories("${SCRAM_SOURCE_DIR}")
 
 add_subdirectory("${SCRAM_SOURCE_DIR}")
-# add_subdirectory("${SCRAM_TEST_DIR}")
+add_subdirectory("${SCRAM_TEST_DIR}")

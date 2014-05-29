@@ -1,9 +1,27 @@
+set(SCRAM_CORE_SRC ${SCRAM_CORE_SRC}
+    "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/superset.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/error.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/top_event.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/inter_event.cc"
+    "${CMAKE_CURRENT_SOURCE_DIR}/primary_event.cc")
+add_library(scramcore ${SCRAM_CORE_SRC})
+
+SET_TARGET_PROPERTIES( scramcore
+  PROPERTIES
+  INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib"
+  INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
+  )
+
+TARGET_LINK_LIBRARIES( scramcore dl ${LIBS} )
+
+INSTALL(
+  TARGETS scramcore
+  LIBRARY DESTINATION lib
+  COMPONENT cycluscore
+  )
+
 add_executable(scram
     scram.cc
-    fault_tree.cc
-    superset.cc
-    error.cc
-    top_event.cc
-    inter_event.cc
-    primary_event.cc)
-target_link_libraries(scram ${Boost_LIBRARIES})
+    )
+target_link_libraries(scram scramcore ${Boost_LIBRARIES})

@@ -39,6 +39,7 @@ SET_TARGET_PROPERTIES(gtest
 
 INSTALL(TARGETS gtest
   LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib
   COMPONENT testing
   )
 
@@ -52,11 +53,13 @@ INCLUDE_DIRECTORIES(${SCRAM_CORE_INCLUDE_DIRS})
 
 # To add a new file, just add it to this list.  Any GoogleTests inside will be automatically
 # added to ctest.
-#set (
-#    )
+set (SCRAM_CORE_TEST_SOURCE ${SCRAM_CORE_TEST_SOURCE}
+    "${CMAKE_CURRENT_SOURCE_DIR}/input_tests.cc"
+    )
 
 ADD_EXECUTABLE( scram_unit_tests
   scram_unit_test_driver.cc
+  ${SCRAM_CORE_TEST_SOURCE}
   )
 
 TARGET_LINK_LIBRARIES( scram_unit_tests dl
