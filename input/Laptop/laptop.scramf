@@ -90,6 +90,11 @@
     type        basic
 }
 {
+    parent      Overpower
+    id          PowerJackTwo
+    type        basic
+}
+{
     parent      MotherBoard
     id          CoolingSystem
     type        AND
@@ -129,7 +134,7 @@
 # External Monitor
 {
     parent      ExternalMonitor
-    id          External_Monitor
+    id          ExtMonitorHardware
     type        undeveloped
 }
 {
@@ -140,21 +145,6 @@
 {
     parent      ExternalMonitor
     id          PowerSurge
-    type        basic
-}
-{
-    parent      ExternalMonitor
-    id          VideoInput
-    type        AND
-}
-{
-    parent      VideoInput
-    id          VGA
-    type        basic
-}
-{
-    parent      VideoInput
-    id          HDMI
     type        basic
 }
 # End Screen Failure
@@ -203,17 +193,12 @@
 }
 {
     parent      InternetAccess
-    id          USB_Wifi  # this is a backup wifi that's ordered
+    id          USB_to_Wifi
     type        basic
 }
 {
     parent      InternetAccess
     id          Ethernet
-    type        basic
-}
-{
-    parent      InternetAccess
-    id          USB_Ethernet  # a backup ethernet is ordered
     type        basic
 }
 # End Internet Access
