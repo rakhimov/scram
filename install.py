@@ -32,6 +32,8 @@ def install_scram(args):
                           absexpanduser(args.prefix)]
         if args.optimize:
             cmake_cmd += ["-DCMAKE_BUILD_TYPE=Release"]
+        elif args.debug:
+            cmake_cmd += ["-DCMAKE_BUILD_TYPE=Debug"]
 
         rtn = subprocess.check_call(cmake_cmd, cwd=args.build_dir,
                                     shell=(os.name == "nt"))
@@ -86,6 +88,10 @@ def main():
 
     test = "run tests after building"
     parser.add_argument("--test", action="store_true", help=test)
+
+    debug = "build for debugging"
+    parser.add_argument("-d", "--debug", help=debug, action="store_true",
+                        default=False)
 
     optimize = "apply maximum optimizations"
     parser.add_argument("-o", "--optimize", help=optimize, action="store_true",
