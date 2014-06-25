@@ -43,7 +43,6 @@ TODO list for SCRAM Project
 
     * Coding specific:
         ** Test functions.
-        ** Write tests for input files.
         ** Test input files for TransferOut types
         ** Time and space complexity of all algorithms used in this package
         ** Installation instructions for various platforms
