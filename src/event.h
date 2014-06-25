@@ -42,7 +42,7 @@ class TopEvent : public scram::Event {
   virtual const std::map<std::string, scram::Event*>& children();
 
   // Adds a child into children list.
-  virtual void add_child(scram::Event* child);
+  virtual void AddChild(scram::Event* child);
 
   virtual ~TopEvent() {}
 
@@ -99,7 +99,7 @@ class PrimaryEvent : public scram::Event {
   void p(double p);
 
   // Adds a parent into the parent map.
-  void add_parent(scram::Event* parent);
+  void AddParent(scram::Event* parent);
 
   // Return parents.
   std::map<std::string, scram::Event*>& parents();

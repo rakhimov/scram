@@ -2,8 +2,7 @@
 
 namespace scram {
 
-Superset::Superset() {
-}
+Superset::Superset() {}
 
 void Superset::AddMember(std::string id, FaultTree* ft) {
   if (ft->inter_events_.count(id)) {
@@ -30,11 +29,11 @@ std::string Superset::PopInter() {
   return inter;
 }
 
-int Superset::nprimes() {
+int Superset::NumOfPrimeEvents() {
   return primes_.size();
 }
 
-int Superset::ninters() {
+int Superset::NumOfInterEvents() {
   return inters_.size();
 }
 

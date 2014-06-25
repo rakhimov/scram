@@ -367,9 +367,9 @@ void FaultTree::Analyze() {
     inter_sets.pop_back();
 
     // Discard this tmp set if it is larger than the limit.
-    if (tmp_set->nprimes() > limit_order_) continue;
+    if (tmp_set->NumOfPrimeEvents() > limit_order_) continue;
 
-    if (tmp_set->ninters() == 0) {
+    if (tmp_set->NumOfInterEvents() == 0) {
       // This is a set with primary events only.
       cut_sets.push_back(tmp_set->primes());
       continue;
@@ -1031,13 +1031,13 @@ void FaultTree::AddNode_(std::string parent, std::string id,
     // This must be a primary event.
     scram::PrimaryEvent* p_event = new PrimaryEvent(id, type);
     if (parent == top_event_id_) {
-      p_event->add_parent(top_event_);
-      top_event_->add_child(p_event);
+      p_event->AddParent(top_event_);
+      top_event_->AddChild(p_event);
       primary_events_.insert(std::make_pair(id, p_event));
 
     } else if (inter_events_.count(parent)) {
-      p_event->add_parent(inter_events_[parent]);
-      inter_events_[parent]->add_child(p_event);
+      p_event->AddParent(inter_events_[parent]);
+      inter_events_[parent]->AddChild(p_event);
       primary_events_.insert(std::make_pair(id, p_event));
 
     } else {
@@ -1061,12 +1061,12 @@ void FaultTree::AddNode_(std::string parent, std::string id,
 
     if (parent == top_event_id_) {
       i_event->parent(top_event_);
-      top_event_->add_child(i_event);
+      top_event_->AddChild(i_event);
       inter_events_.insert(std::make_pair(id, i_event));
 
     } else if (inter_events_.count(parent)) {
       i_event->parent(inter_events_[parent]);
-      inter_events_[parent]->add_child(i_event);
+      inter_events_[parent]->AddChild(i_event);
       inter_events_.insert(std::make_pair(id, i_event));
 
     } else {

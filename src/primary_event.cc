@@ -12,8 +12,7 @@ PrimaryEvent::PrimaryEvent(std::string id, std::string type, double p,
     : scram::Event(id),
       type_(type),
       p_(p),
-      p_model_(p_model) {
-}
+      p_model_(p_model) {}
 
 std::string PrimaryEvent::type() {
   if (type_ == "") {
@@ -58,11 +57,10 @@ void PrimaryEvent::p(double p) {
     }
   }
 
-
   p_ = p;
 }
 
-void PrimaryEvent::add_parent(scram::Event* parent) {
+void PrimaryEvent::AddParent(scram::Event* parent) {
   if (parents_.count(parent->id())) {
     std::string msg = "Trying to re-insert existing parent for " + this->id();
     throw scram::ValueError(msg);

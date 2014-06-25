@@ -26,13 +26,13 @@ class Superset {
   // Returns an intermidiate event and deletes it from the set.
   std::string PopInter();
 
-  // Returns primary events.
-  int nprimes();
+  // Returns the number of primary events.
+  int NumOfPrimeEvents();
 
-  // Returns intermediate events.
-  int ninters();
+  // Returns the number of intermediate events.
+  int NumOfInterEvents();
 
-  // Returns the total set.
+  // Returns the set of primary events.
   std::set<std::string>& primes();
 
   ~Superset() {}
