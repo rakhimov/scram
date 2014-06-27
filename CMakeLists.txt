@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 
-project( SCRAM )
+project(SCRAM)
 
 # set project directories
 set(PROJECT_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -34,8 +34,8 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
 # enable testing, must be at top-level cmake file
-option( USE_TESTING "Build testing" ON )
-if( USE_TESTING )
+option(USE_TESTING "Build testing" ON)
+if(USE_TESTING)
   enable_testing()
   include(CTest)
 endif()
@@ -46,9 +46,9 @@ endif()
 set(Boost_USE_STATIC_LIBS       OFF)
 set(Boost_USE_STATIC_RUNTIME    OFF)
 # SET(Boost_USE_MULTITHREADED    OFF)
-find_package( Boost COMPONENTS
-    program_options filesystem system random
-    REQUIRED)
+find_package(Boost COMPONENTS
+  program_options filesystem system random
+  REQUIRED)
 message("--    Boost Root: ${Boost_ROOT}")
 message("--    Boost Include directory: ${Boost_INCLUDE_DIR}")
 message("--    Boost Library directories: ${Boost_LIBRARY_DIRS}")
