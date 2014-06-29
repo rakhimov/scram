@@ -55,6 +55,7 @@ include_directories(${SCRAM_CORE_INCLUDE_DIRS})
 # added to ctest.
 set (SCRAM_CORE_TEST_SOURCE ${SCRAM_CORE_TEST_SOURCE}
   "${CMAKE_CURRENT_SOURCE_DIR}/input_tests.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/superset_tests.cc"
   )
 
 # Make tests to switch and run in build directory

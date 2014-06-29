@@ -32,9 +32,6 @@ class RiskAnalysis {
 
 // Fault tree analysis.
 class FaultTree : public RiskAnalysis {
-  // This is a set class with various options which needs access to the private.
-  friend class Superset;
-
  public:
   FaultTree(std::string analysis, bool graph_only,  bool rare_event = false,
             int limit_order = 20, int nsums = 1000000);
@@ -236,6 +233,9 @@ class FaultTree : public RiskAnalysis {
 
   // Indication of the first intermediate event of the transfer.
   bool transfer_first_inter_;
+
+  // This is a set class with various options which needs access to the private.
+  friend class Superset;
 };
 
 }  // namespace scram

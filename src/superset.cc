@@ -42,4 +42,9 @@ std::set<std::string>& Superset::primes() {
   return std_primes_;
 }
 
+std::set<std::string>& Superset::inters() {
+  std_inters_.insert(inters_.begin(), inters_.end());
+  return std_inters_;
+}
+
 }  // namespace scram

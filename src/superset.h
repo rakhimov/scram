@@ -35,12 +35,16 @@ class Superset {
   // Returns the set of primary events.
   std::set<std::string>& primes();
 
+  // Returns the set of intermediate events. NOTE: Implemented for testing.
+  std::set<std::string>& inters();
+
   ~Superset() {}
 
  private:
   boost::unordered_set<std::string> inters_;
   boost::unordered_set<std::string> primes_;
   std::set<std::string> std_primes_;
+  std::set<std::string> std_inters_;
 };
 
 }  // namespace scram
