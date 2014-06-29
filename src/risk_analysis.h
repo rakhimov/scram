@@ -117,7 +117,7 @@ class FaultTree : public RiskAnalysis {
   std::set< std::set<int> > imcs_;
   boost::unordered_map<int, scram::PrimaryEvent*> int_to_prime_;
   boost::unordered_map<std::string, int> prime_to_int_;
-  std::vector<double> iprobs_;  // holds probabilities of basic events.
+  std::vector<double> iprobs_;  // Holds probabilities of basic events.
   // -----------------------------------------------------------------
   // ---- Algorithm for Equation Construction for Monte Carlo Sim -------
   void MProbOr_(std::set< std::set<int> >& min_cut_sets, int sign,
@@ -127,11 +127,11 @@ class FaultTree : public RiskAnalysis {
                         const std::set< std::set<int> >& set,
                         std::set< std::set<int> >& combo_set);
 
-  void MSample();  // perform simulation.
-  std::vector< std::set<int> > pos_terms_;  // plus terms of the equation.
-  std::vector< std::set<int> > neg_terms_;  // minus terms of the equation.
-  std::vector<double> sampled_results_;  // storage for sampled values.
-  int nsimulations_;  // number of simulations to run.
+  void MSample();  // Perform simulation.
+  std::vector< std::set<int> > pos_terms_;  // Plus terms of the equation.
+  std::vector< std::set<int> > neg_terms_;  // Minus terms of the equation.
+  std::vector<double> sampled_results_;  // Storage for sampled values.
+  int nsimulations_;  // Number of simulations to run.
   // -----------------------------------------------------------------
   // This member is used to provide any warnings about assumptions,
   // calculations, and settings. These warnings must be written into output
