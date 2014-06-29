@@ -22,23 +22,19 @@ TEST(SupersetTest, AddMember) {
 
   std::set<std::string> inters;
   std::set<std::string> primes;
-
   // Expect empty superset at beginning.
   EXPECT_EQ(sset->primes(), primes);
   EXPECT_EQ(sset->inters(), inters);
-
   // Add members.
   EXPECT_NO_THROW(sset->AddMember(inter_event, ftree));
   EXPECT_NO_THROW(sset->AddMember(prime_event, ftree));
   EXPECT_THROW(sset->AddMember(new_inter_event, ftree), ValueError);
   EXPECT_THROW(sset->AddMember(new_prime_event, ftree), ValueError);
-
   // Test if members were added successfully.
   primes.insert(prime_event);
   inters.insert(inter_event);
   EXPECT_EQ(sset->primes(), primes);
   EXPECT_EQ(sset->inters(), inters);
-
   // Test if repeated addition handled in a set.
   EXPECT_NO_THROW(sset->AddMember(inter_event, ftree));
   EXPECT_NO_THROW(sset->AddMember(prime_event, ftree));
@@ -87,7 +83,7 @@ TEST(SupersetTest, PopInter) {
   Superset* sset = new Superset();
   // Fail to pop when the set is empty.
   EXPECT_THROW(sset->PopInter(), ValueError);
-
+  // Add intermediate event into the set.
   std::string inter_event = "trainone";
   sset->AddMember(inter_event, ftree);
   EXPECT_EQ(sset->PopInter(), inter_event);
@@ -132,4 +128,25 @@ TEST(SupersetTest, NumOfInterEvents) {
   // Empty the set.
   sset->PopInter();
   EXPECT_EQ(sset->NumOfInterEvents(), 0);
+}
+
+// Test corner case with deleting the superset instance.
+TEST(SupersetTest, DeleteSet) {
+  // Initialize the fault tree from an input file.
+  FaultTree* ftree = new FaultTree("fta-default", false);
+  ftree->ProcessInput("./input/fta/correct_tree_input.scramf");
+  Superset* sset = new Superset();
+  std::string prime_event = "valveone";
+  std::string inter_event = "trainone";
+  sset->AddMember(prime_event, ftree);
+  sset->AddMember(inter_event, ftree);
+  std::set<std::string> primes;
+  std::set<std::string> inters;
+  primes = sset->primes();
+  inters = sset->inters();
+  primes.insert("invalid");
+  EXPECT_EQ(sset->primes().size(), 1);
+  delete sset;
+  EXPECT_EQ(primes.size(), 2);
+  EXPECT_EQ(inters.size(), 1);
 }

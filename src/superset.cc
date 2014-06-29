@@ -38,11 +38,13 @@ int Superset::NumOfInterEvents() {
 }
 
 std::set<std::string>& Superset::primes() {
+  if (!std_primes_.empty()) std_primes_.clear();
   std_primes_.insert(primes_.begin(), primes_.end());
   return std_primes_;
 }
 
 std::set<std::string>& Superset::inters() {
+  if (!std_inters_.empty()) std_inters_.clear();
   std_inters_.insert(inters_.begin(), inters_.end());
   return std_inters_;
 }
