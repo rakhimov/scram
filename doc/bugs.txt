@@ -1,1 +1,6 @@
 Some bugs found during development:
+  * Primary and Inter event classes do not check if a newly added parent is
+    not a primary event. This is currently being tested by FaultTree class
+    upon input processing and initialization of the fault tree.
+  * Types of event and gates are checked in FaultTree class but not in Event
+    classes, which may seem intuitive.

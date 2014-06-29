@@ -40,13 +40,13 @@ double PrimaryEvent::p() {
 }
 
 void PrimaryEvent::p(double p) {
-  if (p < 0 || p > 1) {
-    std::string msg = "The value for probability is not valid for " + this->id();
+  if (p_ != -1) {
+    std::string msg = "Trying to re-assign probability for " + this->id();
     throw scram::ValueError(msg);
   }
 
-  if (p_ != -1) {
-    std::string msg = "Trying to re-assign probability for " + this->id();
+  if (p < 0 || p > 1) {
+    std::string msg = "The value for probability is not valid for " + this->id();
     throw scram::ValueError(msg);
   }
 

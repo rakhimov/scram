@@ -43,7 +43,6 @@ TODO list for SCRAM Project
 
     * Coding specific:
         ** Write tests for classes and functions.
-            [] Events: primary, intermediate, and top.
             [] Fault tree analysis.
             [] Benchmark cases.
         ** Test input files for TransferOut types
