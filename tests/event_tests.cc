@@ -6,7 +6,7 @@
 using namespace scram;
 
 // Test for Event base class.
-TEST(Event, Id) {
+TEST(EventTest, Id) {
   Event* event = new Event("event_name");
   EXPECT_EQ(event->id(), "event_name");
 }
