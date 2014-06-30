@@ -8,7 +8,7 @@
 using namespace scram;
 
 // Test correct tree inputs
-TEST(InputTest, CorrectFTAInputs) {
+TEST(FaultTreeInputTest, CorrectFTAInputs) {
   std::vector<std::string> correct_inputs;
   correct_inputs.push_back("./input/fta/correct_tree_input.scramf");
   correct_inputs.push_back("./input/fta/doubly_defined_basic.scramf");
@@ -25,7 +25,7 @@ TEST(InputTest, CorrectFTAInputs) {
 }
 
 // Test correct probability inputs
-TEST (InputTest, CorrectFTAProbability) {
+TEST (FaultTreeInputTest, CorrectFTAProbability) {
   std::string input_correct = "./input/fta/correct_tree_input.scramf";
   std::string prob_correct = "./input/fta/correct_prob_input.scramp";
 
@@ -35,7 +35,7 @@ TEST (InputTest, CorrectFTAProbability) {
 }
 
 // Test incorrect fault tree inputs
-TEST (InputTest, IncorrectFTAInputs) {
+TEST (FaultTreeInputTest, IncorrectFTAInputs) {
   std::vector<std::string> incorrect_inputs;
   incorrect_inputs.push_back("./input/fta/basic_top_event.scramf");
   incorrect_inputs.push_back("./input/fta/doubly_defined_intermediate.scramf");
@@ -69,7 +69,7 @@ TEST (InputTest, IncorrectFTAInputs) {
 
 
 // Test incorrect probability input
-TEST (InputTest, IncorrectFTAProbability) {
+TEST (FaultTreeInputTest, IncorrectFTAProbability) {
   std::string correct_input = "./input/fta/correct_tree_input.scramf";
   std::vector<std::string> incorrect_prob;
   incorrect_prob.push_back("./input/fta/doubly_defined_prob.scramp");
