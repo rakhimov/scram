@@ -156,6 +156,9 @@ class FaultTree : public RiskAnalysis {
   // Indicator if probability calculations are requested.
   bool prob_requested_;
 
+  // Indicate if analysis of the tree is done.
+  bool analysis_done_;
+
   // Number of sums in series expansion for probability calculations.
   int nsums_;
 

@@ -38,6 +38,7 @@ FaultTree::FaultTree(std::string analysis, bool graph_only, bool rare_event,
       is_main_(true),
       input_file_(""),
       prob_requested_(false),
+      analysis_done_(false),
       max_order_(1),
       p_total_(0),
       parent_(""),
@@ -351,7 +352,6 @@ void FaultTree::Analyze() {
                       " the tree before requesting analysis.";
     throw scram::Error(msg);
   }
-
   // Generate minimal cut-sets: Naive method.
   // Rule 1. Each OR gate generates new rows in the table of cut sets.
   // Rule 2. Each AND gate generates new columns in the table of cut sets.
@@ -470,6 +470,8 @@ void FaultTree::Analyze() {
     min_size++;
   }
 
+  analysis_done_ = true;  // Main analysis enough for reporting is done.
+
   // Compute probabilities only if requested.
   if (!prob_requested_) return;
 
@@ -573,6 +575,11 @@ void FaultTree::Analyze() {
 }
 
 void FaultTree::Report(std::string output) {
+  // Check if the analysis has been performed before requesting a report.
+  if (!analysis_done_) {
+    std::string msg = "Perform analysis before calling this report function.";
+    throw scram::Error(msg);
+  }
   // Check if output to file is requested.
   std::streambuf* buf;
   std::ofstream of;

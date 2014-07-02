@@ -97,6 +97,7 @@ TEST_F(FaultTreeTest, GraphingInstructions) {
 TEST_F(FaultTreeTest, Analyze) {
   std::string tree_input = "./input/fta/correct_tree_input.scramf";
   std::string prob_input = "./input/fta/correct_prob_input.scramp";
+  ASSERT_THROW(fta->Analyze(), Error);  // Calling without a tree initialized.
   ASSERT_NO_THROW(fta->ProcessInput(tree_input));
   ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(fta->Analyze());
@@ -108,6 +109,7 @@ TEST_F(FaultTreeTest, Report) {
   std::string prob_input = "./input/fta/correct_prob_input.scramp";
   ASSERT_NO_THROW(fta->ProcessInput(tree_input));
   ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
+  ASSERT_THROW(fta->Report("/dev/null"), Error);  // Calling before analysis.
   ASSERT_NO_THROW(fta->Analyze());
   ASSERT_NO_THROW(fta->Report("/dev/null"));
 }
