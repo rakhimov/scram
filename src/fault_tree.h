@@ -209,13 +209,13 @@ class FaultTree : public RiskAnalysis {
   std::map< std::set<std::string>, double > prob_of_min_sets_;
 
   // Container for minimal cut sets ordered by their probabilities.
-  std::multimap < double, std::set<std::string> > ordered_min_sets_;
+  std::multimap< double, std::set<std::string> > ordered_min_sets_;
 
   // Container for primary events and their contribution.
   std::map< std::string, double > imp_of_primaries_;
 
   // Container for primary events ordered by their contribution.
-  std::multimap < double, std::string > ordered_primaries_;
+  std::multimap< double, std::string > ordered_primaries_;
 
   // Maximum order of the minimal cut sets.
   int max_order_;

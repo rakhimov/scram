@@ -99,8 +99,37 @@ TEST_F(FaultTreeTest, Analyze) {
   std::string prob_input = "./input/fta/correct_prob_input.scramp";
   ASSERT_THROW(fta->Analyze(), Error);  // Calling without a tree initialized.
   ASSERT_NO_THROW(fta->ProcessInput(tree_input));
+  ASSERT_NO_THROW(fta->Analyze());
+  std::set<std::string> mcs_1;
+  std::set<std::string> mcs_2;
+  std::set<std::string> mcs_3;
+  std::set<std::string> mcs_4;
+  mcs_1.insert("pumpone");
+  mcs_1.insert("pumptwo");
+  mcs_2.insert("pumpone");
+  mcs_2.insert("valvetwo");
+  mcs_3.insert("pumptwo");
+  mcs_3.insert("valveone");
+  mcs_4.insert("valveone");
+  mcs_4.insert("valvetwo");
+  EXPECT_EQ(4, min_cut_sets().size());
+  EXPECT_EQ(1, min_cut_sets().count(mcs_1));
+  EXPECT_EQ(1, min_cut_sets().count(mcs_2));
+  EXPECT_EQ(1, min_cut_sets().count(mcs_3));
+  EXPECT_EQ(1, min_cut_sets().count(mcs_4));
+
   ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(fta->Analyze());
+  EXPECT_DOUBLE_EQ(0.646, p_total());
+  EXPECT_DOUBLE_EQ(0.42, prob_of_min_sets()[mcs_1]);
+  EXPECT_DOUBLE_EQ(0.3, prob_of_min_sets()[mcs_2]);
+  EXPECT_DOUBLE_EQ(0.28, prob_of_min_sets()[mcs_3]);
+  EXPECT_DOUBLE_EQ(0.2, prob_of_min_sets()[mcs_4]);
+
+  EXPECT_DOUBLE_EQ(0.72, imp_of_primaries()["pumpone"]);
+  EXPECT_DOUBLE_EQ(0.7, imp_of_primaries()["pumptwo"]);
+  EXPECT_DOUBLE_EQ(0.48, imp_of_primaries()["valveone"]);
+  EXPECT_DOUBLE_EQ(0.5, imp_of_primaries()["valvetwo"]);
 }
 
 // Test Reporting capabilities

@@ -352,7 +352,7 @@ void FaultTree::Analyze() {
                       " the tree before requesting analysis.";
     throw scram::Error(msg);
   }
-  // Generate minimal cut-sets: Naive method.
+  // Generate minimal cut-sets: Default method.
   // Rule 1. Each OR gate generates new rows in the table of cut sets.
   // Rule 2. Each AND gate generates new columns in the table of cut sets.
   // After each of the above steps:

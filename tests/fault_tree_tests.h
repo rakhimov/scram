@@ -31,6 +31,16 @@ class FaultTreeTest : public ::testing::Test {
   boost::unordered_map<std::string, scram::PrimaryEvent*> primary_events() {
     return fta->primary_events_;
   }
+  std::set< std::set<std::string> > min_cut_sets() {
+    return fta->min_cut_sets_;
+  }
+  double p_total() { return fta->p_total_; }
+  std::map< std::set<std::string>, double > prob_of_min_sets() {
+    return fta->prob_of_min_sets_;
+  }
+  std::map< std::string, double > imp_of_primaries() {
+    return fta->imp_of_primaries_;
+  }
 
   FaultTree* fta;
 };
