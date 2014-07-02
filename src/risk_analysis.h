@@ -1,5 +1,4 @@
 // Classes for various risk analysis.
-
 #ifndef SCRAM_RISK_ANALYISIS_H_
 #define SCRAM_RISK_ANALYISIS_H_
 
@@ -40,7 +39,7 @@ class FaultTree : public RiskAnalysis {
   // Puts all events into their appropriate containers.
   void ProcessInput(std::string input_file);
 
-  // Reads probabiliteis for primary events from formatted input file with values.
+  // Reads probabilities for primary events from a formatted input file.
   // Attaches probabilities to primary events.
   void PopulateProbabilities(std::string prob_file);
 

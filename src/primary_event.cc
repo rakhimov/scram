@@ -46,7 +46,8 @@ void PrimaryEvent::p(double p) {
   }
 
   if (p < 0 || p > 1) {
-    std::string msg = "The value for probability is not valid for " + this->id();
+    std::string msg = "The value for probability is not valid for " +
+        this->id();
     throw scram::ValueError(msg);
   }
 

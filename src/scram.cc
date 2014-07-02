@@ -1,5 +1,4 @@
 // Main entrance.
-
 #include <iostream>
 #include <string>
 
@@ -25,7 +24,7 @@ int main(int argc, char* argv[]) {
       ("graph-only,g", "produce graph without analysis")
       ("analysis,a", po::value<std::string>()->default_value("fta-default"),
        "type of analysis to be performed on this input")
-      ("rare-event-approx,r", "whether or not to use a rare event approximation")
+      ("rare-event-approx,r", "use the rare event approximation")
       ("limit-order,l", po::value<int>()->default_value(20),
        "upper limit for cut set order")
       ("nsums,s", po::value<int>()->default_value(1000000),
@@ -55,7 +54,8 @@ int main(int argc, char* argv[]) {
   }
 
   if (!vm.count("input-file")) {
-    std::string msg = "Scram requires an input file with a system description.\n";
+    std::string msg = "Scram requires an input file with"
+                      " a system description.\n";
     std::cout << msg << std::endl;
     std::cout << desc << "\n";
     return 0;

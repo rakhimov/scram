@@ -28,7 +28,7 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 
 add_library(gtest ${GTest})
 
-if (CMAKE_USE_PTHREADS_INIT)
+if(CMAKE_USE_PTHREADS_INIT)
   target_link_libraries(gtest ${CMAKE_THREAD_LIBS_INIT})
 endif()
 
@@ -53,14 +53,14 @@ include_directories(${SCRAM_CORE_INCLUDE_DIRS})
 
 # To add a new file, just add it to this list.  Any GoogleTests inside will be automatically
 # added to ctest.
-set (SCRAM_CORE_TEST_SOURCE ${SCRAM_CORE_TEST_SOURCE}
+set(SCRAM_CORE_TEST_SOURCE ${SCRAM_CORE_TEST_SOURCE}
   "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree_input_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/superset_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/event_tests.cc"
   )
 
 # Make tests to switch and run in build directory
-configure_file(scram_unit_test_driver.cc.in 
+configure_file(scram_unit_test_driver.cc.in
   "${CMAKE_CURRENT_SOURCE_DIR}/scram_unit_test_driver.cc"
   @ONLY
   )

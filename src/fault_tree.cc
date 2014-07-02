@@ -224,11 +224,12 @@ void FaultTree::GraphingInstructions() {
 
   std::string output_path = graph_name + ".dot";
 
-  graph_name = graph_name.substr(graph_name.find_last_of("/") + 1, std::string::npos);
+  graph_name = graph_name.substr(graph_name.find_last_of("/") +
+                                 1, std::string::npos);
   std::ofstream out(output_path.c_str());
   if (!out.good()) {
     std::string msg = output_path +  " : Cannot write the graphing file.";
-    throw (scram::IOError(msg));
+    throw(scram::IOError(msg));
   }
   boost::to_upper(graph_name);
   out << "digraph " << graph_name << " {\n";
@@ -654,7 +655,8 @@ void FaultTree::Report(std::string output) {
       for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
            ++it_min) {
         if (it_min->size() == order) {
-          order_sets.insert(std::make_pair(prob_of_min_sets_[*it_min], *it_min));
+          order_sets.insert(std::make_pair(prob_of_min_sets_[*it_min],
+                                           *it_min));
         }
       }
       if (!order_sets.empty()) {
@@ -719,7 +721,7 @@ void FaultTree::Report(std::string output) {
     out << "\nPositive Terms in the Probability Equation:\n";
     std::vector< std::set<int> >::iterator it_vec;
     std::set<int>::iterator it_set;
-    for(it_vec = pos_terms_.begin(); it_vec != pos_terms_.end(); ++it_vec) {
+    for (it_vec = pos_terms_.begin(); it_vec != pos_terms_.end(); ++it_vec) {
       out << "{ ";
       for (it_set = it_vec->begin(); it_set != it_vec->end(); ++it_set) {
         out << orig_ids_[int_to_prime_[*it_set]->id()] << " ";
@@ -729,7 +731,7 @@ void FaultTree::Report(std::string output) {
     }
     // Negative terms.
     out << "\nNegative Terms in the Probability Equation:\n";
-    for(it_vec = neg_terms_.begin(); it_vec != neg_terms_.end(); ++it_vec) {
+    for (it_vec = neg_terms_.begin(); it_vec != neg_terms_.end(); ++it_vec) {
       out << "{ ";
       for (it_set = it_vec->begin(); it_set != it_vec->end(); ++it_set) {
         out << orig_ids_[int_to_prime_[*it_set]->id()] << " ";
@@ -1354,7 +1356,6 @@ void FaultTree::MCombineElAndSet_(const std::set<int>& el,
 }
 
 void FaultTree::MSample() {
-
 }
 // ----------------------------------------------------------------------
 
