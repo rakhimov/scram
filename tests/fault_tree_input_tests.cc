@@ -30,13 +30,15 @@ TEST(FaultTreeInputTest, CorrectFTAProbability) {
   std::string prob_correct = "./input/fta/correct_prob_input.scramp";
 
   RiskAnalysis* ran = new FaultTree("fta-default", false);
-  EXPECT_NO_THROW(ran->ProcessInput(input_correct));
+  EXPECT_THROW(ran->PopulateProbabilities(prob_correct), IOError);
+  EXPECT_NO_THROW(ran->ProcessInput(input_correct));  // Create the fault tree.
   EXPECT_NO_THROW(ran->PopulateProbabilities(prob_correct));
 }
 
 // Test incorrect fault tree inputs
 TEST(FaultTreeInputTest, IncorrectFTAInputs) {
   std::vector<std::string> incorrect_inputs;
+  incorrect_inputs.push_back("./input/fta/nonexistent_file.scramf");
   incorrect_inputs.push_back("./input/fta/basic_top_event.scramf");
   incorrect_inputs.push_back("./input/fta/doubly_defined_intermediate.scramf");
   incorrect_inputs.push_back("./input/fta/doubly_defined_top.scramf");
@@ -67,11 +69,11 @@ TEST(FaultTreeInputTest, IncorrectFTAInputs) {
   }
 }
 
-
 // Test incorrect probability input
 TEST(FaultTreeInputTest, IncorrectFTAProbability) {
   std::string correct_input = "./input/fta/correct_tree_input.scramf";
   std::vector<std::string> incorrect_prob;
+  incorrect_prob.push_back("./input/fta/nonexistent_file.scramf");
   incorrect_prob.push_back("./input/fta/doubly_defined_prob.scramp");
   incorrect_prob.push_back("./input/fta/huge_prob.scramp");
   incorrect_prob.push_back("./input/fta/missing_basic_event.scramp");
