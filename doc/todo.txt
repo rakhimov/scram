@@ -1,15 +1,15 @@
 TODO list for SCRAM Project
 ===========================
- [!]* Define output format.
+    * Define output format.
         ** Table like spacing for output numbers
         ** Take a look at output formats of RiskMan and Isograph
         ** Option for CSV output for spreadsheet applications
         ** Save minimal cut sets for later analysis
     * Minimal cut set input file as an alternative to a tree file
-    * Incorporate benchmarks into building and automation
+ [!]* Incorporate benchmarks into building and automation
         ** Develop new symbols, gate and event types necessary for benchmarking
         ** Implement test cases from Isograph.
- [!]* Monte Carlo Simulations
+    * Monte Carlo Simulations
         ** Uncertainty analysis
         ** Sensitivity analysis
         ** Sampling techniques
@@ -21,7 +21,7 @@ TODO list for SCRAM Project
     * Improve fault tree generator
 
     * Incorporation of an event tree analysis
- [!]* Incorporation of CCF
+    * Incorporation of CCF
         ** Multiple Greek Letter system
         ** Alpha system
         ** Beta system
@@ -43,8 +43,12 @@ TODO list for SCRAM Project
 
     * Coding specific:
         ** Write tests for classes and functions.
-            [] Fault tree analysis.
             [] Benchmark cases.
+            [] FTA important private functions.
+                ** ProbAnd
+                ** ProbOR
+                ** ExpandSets
+            [] Basic MC functions.
         ** Test input files for TransferOut types
         ** Time and space complexity of all algorithms used in this package
         ** Installation instructions for various platforms
