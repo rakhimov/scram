@@ -38,12 +38,16 @@ class FaultTree : public RiskAnalysis {
   void PopulateProbabilities(std::string prob_file);
 
   // Outputs a file with instructions for graphviz dot to create a fault tree.
+  // This function must be called only after initializing the tree.
   void GraphingInstructions();
 
   // Analyzes the fault tree and performs computations.
+  // This function must be called only after initilizing the tree with or 
+  // without its probabilities.
   void Analyze();
 
   // Reports the results of analysis to a specified output destination.
+  // This function must be called only after Analyze() function.
   void Report(std::string output);
 
   virtual ~FaultTree() {}

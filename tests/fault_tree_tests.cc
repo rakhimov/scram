@@ -67,6 +67,7 @@ TEST_F(FaultTreeTest, ProcessInput) {
 TEST_F(FaultTreeTest, PopulateProbabilities) {
   std::string tree_input = "./input/fta/correct_tree_input.scramf";
   std::string prob_input = "./input/fta/correct_prob_input.scramp";
+  ASSERT_THROW(fta->PopulateProbabilities(prob_input), Error);  // No tree.
   ASSERT_NO_THROW(fta->ProcessInput(tree_input));
   ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
   ASSERT_EQ(4, primary_events().size());
@@ -87,6 +88,7 @@ TEST_F(FaultTreeTest, PopulateProbabilities) {
 // Test Graphing Intructions
 TEST_F(FaultTreeTest, GraphingInstructions) {
   std::string tree_input = "./input/fta/correct_tree_input.scramf";
+  ASSERT_THROW(fta->GraphingInstructions(), Error);
   ASSERT_NO_THROW(fta->ProcessInput(tree_input));
   ASSERT_NO_THROW(fta->GraphingInstructions());
 }

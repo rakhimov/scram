@@ -104,7 +104,7 @@ void FaultTree::PopulateProbabilities(std::string prob_file) {
   if (input_file_ == "") {
     std::string msg = "Read input file with tree instructions before attaching"
                       " probabilities.";
-    throw scram::IOError(msg);
+    throw scram::Error(msg);
   }
 
   std::ifstream pfile(prob_file.c_str());
@@ -216,6 +216,14 @@ void FaultTree::PopulateProbabilities(std::string prob_file) {
 }
 
 void FaultTree::GraphingInstructions() {
+  // Check if input file with tree instructions has already been read.
+  if (input_file_ == "") {
+    std::string msg = "Read input file with tree instructions and initialize"
+                      " the tree before requesting for a graphing"
+                      " instructions.";
+    throw scram::Error(msg);
+  }
+
   // List inter events and their children.
   // List inter events and primary events' descriptions.
   std::string graph_name = input_file_;
@@ -337,6 +345,13 @@ void FaultTree::GraphingInstructions() {
 }
 
 void FaultTree::Analyze() {
+  // Check if input file with tree instructions has already been read.
+  if (input_file_ == "") {
+    std::string msg = "Read input file with tree instructions and initialize"
+                      " the tree before requesting analysis.";
+    throw scram::Error(msg);
+  }
+
   // Generate minimal cut-sets: Naive method.
   // Rule 1. Each OR gate generates new rows in the table of cut sets.
   // Rule 2. Each AND gate generates new columns in the table of cut sets.
