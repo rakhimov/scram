@@ -7,7 +7,7 @@
 #include <boost/unordered_set.hpp>
 
 #include "error.h"
-#include "risk_analysis.h"
+#include "fault_tree.h"
 
 namespace scram {
 

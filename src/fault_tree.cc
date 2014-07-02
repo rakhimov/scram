@@ -1,5 +1,5 @@
 // Implementation of fault tree analysis.
-#include "risk_analysis.h"
+#include "fault_tree.h"
 
 #include <algorithm>
 #include <fstream>

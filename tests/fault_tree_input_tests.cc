@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "error.h"
-#include "risk_analysis.h"
+#include "fault_tree.h"
 
 using namespace scram;
 
