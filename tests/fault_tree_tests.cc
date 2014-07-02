@@ -69,6 +69,19 @@ TEST_F(FaultTreeTest, PopulateProbabilities) {
   std::string prob_input = "./input/fta/correct_prob_input.scramp";
   ASSERT_NO_THROW(fta->ProcessInput(tree_input));
   ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
+  ASSERT_EQ(4, primary_events().size());
+  ASSERT_EQ(1, primary_events().count("pumpone"));
+  ASSERT_EQ(1, primary_events().count("pumptwo"));
+  ASSERT_EQ(1, primary_events().count("valveone"));
+  ASSERT_EQ(1, primary_events().count("valvetwo"));
+  ASSERT_NO_THROW(primary_events()["pumpone"]->p());
+  ASSERT_NO_THROW(primary_events()["pumptwo"]->p());
+  ASSERT_NO_THROW(primary_events()["valveone"]->p());
+  ASSERT_NO_THROW(primary_events()["valvetwo"]->p());
+  EXPECT_EQ(0.6, primary_events()["pumpone"]->p());
+  EXPECT_EQ(0.7, primary_events()["pumptwo"]->p());
+  EXPECT_EQ(0.4, primary_events()["valveone"]->p());
+  EXPECT_EQ(0.5, primary_events()["valvetwo"]->p());
 }
 
 // Test Graphing Intructions
