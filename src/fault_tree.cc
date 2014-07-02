@@ -742,7 +742,7 @@ void FaultTree::Report(std::string output) {
 }
 
 bool FaultTree::GetArgs_(std::vector<std::string>& args, std::string& line,
-                          std::string& orig_line) {
+                         std::string& orig_line) {
     std::vector<std::string> no_comments;  // To hold lines without comments.
 
     // Remove trailing spaces.
@@ -779,7 +779,8 @@ void FaultTree::InterpretArgs_(int nline, std::stringstream& msg,
                                std::string tr_parent,
                                std::string tr_id,
                                std::string suffix) {
-  std::vector<std::string> orig_args;  // Original input with capitalizations.
+  assert(nline > 0);  // Sanity checks.
+  assert(args.size() != 0);  // Empty input args shouldn't be passed.
 
   switch (args.size()) {
     case 1: {
@@ -919,6 +920,7 @@ void FaultTree::InterpretArgs_(int nline, std::stringstream& msg,
         id_ = args[1];
         // Extract and save original id with capitalizations.
         // Get args from the original line.
+        std::vector<std::string> orig_args;
         boost::split(orig_args, orig_line, boost::is_any_of(" "),
                      boost::token_compress_on);
         // Populate names.

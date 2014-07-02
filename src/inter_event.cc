@@ -12,7 +12,7 @@ InterEvent::InterEvent(std::string id, std::string gate,
     : scram::TopEvent(id, gate),
       parent_(parent) {}
 
-const scram::Event* InterEvent::parent() {
+scram::Event* InterEvent::parent() {
   if (parent_ == NULL) {
     std::string msg = "Parent is not set for " + this->id();
     throw scram::ValueError(msg);

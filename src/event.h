@@ -62,7 +62,7 @@ class InterEvent : public scram::TopEvent {
              scram::Event* parent = NULL);
 
   // Returns the parent.
-  const scram::Event* parent();
+  scram::Event* parent();
 
   // Sets the parent.
   void parent(scram::Event* parent);

@@ -50,10 +50,13 @@ class FaultTree : public RiskAnalysis {
 
  private:
   // Gets arguments from a line in an input file formatted accordingly.
+  // Arguments vector will be flashed, and new contents will be inserted.
   bool GetArgs_(std::vector<std::string>& args, std::string& line,
                 std::string& orig_line);
 
-  // Interpret arguments and perform specific actions.
+  // Interpret arguments and perform specific actions on the tree.
+  // This should be performed only after GetArgs_ function has been called,
+  // and the arguments and original line have been processed.
   void InterpretArgs_(int nline, std::stringstream& msg,
                       std::vector<std::string>& args,
                       std::string& orig_line,
