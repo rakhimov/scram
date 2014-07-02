@@ -67,7 +67,6 @@ void FaultTree::ProcessInput(std::string input_file) {
   std::string line = "";  // Case insensitive input.
   std::string orig_line = "";  // Line with capitalizations preserved.
   std::vector<std::string> args;  // To hold args after splitting the line.
-  std::vector<std::string> orig_args;  // Original input with capitalizations.
 
   // Error messages.
   std::stringstream msg;
@@ -1139,7 +1138,6 @@ void FaultTree::IncludeTransfers_() {
     std::string line = "";  // Case insensitive input.
     std::string orig_line = "";  // Line with capitalizations preserved.
     std::vector<std::string> args;  // To hold args after splitting the line.
-    std::vector<std::string> orig_args;  // Original input with capitalizations.
 
     // Error messages.
     std::stringstream msg;

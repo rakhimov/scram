@@ -31,6 +31,10 @@ class RiskAnalysis {
 
 // Fault tree analysis.
 class FaultTree : public RiskAnalysis {
+  // This is a set class to work with sets of intermediate and primary events.
+  // The class is a friend because of performance reasons.
+  friend class Superset;
+
  public:
   FaultTree(std::string analysis, bool graph_only,  bool rare_event = false,
             int limit_order = 20, int nsums = 1000000);
@@ -146,7 +150,7 @@ class FaultTree : public RiskAnalysis {
   // Rare event approximation.
   bool rare_event_;
 
-  // Input file path..
+  // Input file path.
   std::string input_file_;
 
   // Keep track of currently opened file with sub-trees.
@@ -227,14 +231,12 @@ class FaultTree : public RiskAnalysis {
   std::string id_;
   std::string type_;
   bool block_started_;
+
   // Indicate if TransferOut is initiated correctly.
   bool transfer_correct_;
 
   // Indication of the first intermediate event of the transfer.
   bool transfer_first_inter_;
-
-  // This is a set class with various options which needs access to the private.
-  friend class Superset;
 };
 
 }  // namespace scram
