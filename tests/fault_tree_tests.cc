@@ -1,4 +1,5 @@
 #include "fault_tree_tests.h"
+#include "superset.h"
 
 using namespace scram;
 
@@ -23,6 +24,200 @@ TEST_F(FaultTreeTest, GetArgs_) {
   EXPECT_EQ("Arg", orig_line);
   EXPECT_EQ("arg", line);
   EXPECT_EQ("arg", args[0]);
+}
+
+TEST_F(FaultTreeTest, ExpandSets) {
+  InterEvent* inter = new InterEvent("inter");  // No gate is defined.
+  inter_events().insert(std::make_pair("inter", inter));
+  std::vector< Superset* > sets;
+  std::vector< Superset* >::iterator it_set;
+  EXPECT_THROW(ExpandSets(inter, sets), ValueError);
+  PrimaryEvent* A = new PrimaryEvent("a");
+  PrimaryEvent* B = new PrimaryEvent("b");
+  PrimaryEvent* C = new PrimaryEvent("c");
+  primary_events().insert(std::make_pair("a", A));
+  primary_events().insert(std::make_pair("b", B));
+  primary_events().insert(std::make_pair("c", C));
+
+  // Testing for OR gate.
+  inter->gate("or");
+  inter->AddChild(A);
+  inter->AddChild(B);
+  inter->AddChild(C);
+  ASSERT_NO_THROW(ExpandSets(inter, sets));
+  EXPECT_EQ(3, sets.size());
+  bool a_found = false;
+  bool b_found = false;
+  bool c_found = false;
+  for (it_set = sets.begin(); it_set != sets.end(); ++it_set) {
+    std::set<std::string> result = (*it_set)->primes();
+    EXPECT_EQ(1, result.size());
+    EXPECT_EQ(1, result.count("a") + result.count("b") + result.count("c"));
+    if (!a_found && result.count("a")) a_found = true;
+    else if (!b_found && result.count("b")) b_found = true;
+    else if (!c_found && result.count("c")) c_found = true;
+  }
+  EXPECT_EQ(true, a_found && b_found && c_found);
+
+  // Testing for AND gate.
+  delete inter;
+  inter = new InterEvent("inter", "and");
+  sets.clear();
+  inter->AddChild(A);
+  inter->AddChild(B);
+  inter->AddChild(C);
+  ASSERT_NO_THROW(ExpandSets(inter, sets));
+  EXPECT_EQ(1, sets.size());
+  std::set<std::string> result = (*sets.begin())->primes();
+  EXPECT_EQ(3, result.size());
+  EXPECT_EQ(1, result.count("a"));
+  EXPECT_EQ(1, result.count("b"));
+  EXPECT_EQ(1, result.count("c"));
+
+  delete inter;
+  delete A, B, C;
+}
+
+TEST_F(FaultTreeTest, ProbAndString) {
+  std::set<std::string> min_cut_set;
+  ASSERT_THROW(ProbAnd(min_cut_set), ValueError);  // Error for an empty set.
+
+  PrimaryEvent* A = new PrimaryEvent("a");
+  PrimaryEvent* B = new PrimaryEvent("b");
+  PrimaryEvent* C = new PrimaryEvent("c");
+  A->p(0.1);
+  B->p(0.2);
+  C->p(0.3);
+  primary_events().insert(std::make_pair("a", A));
+  primary_events().insert(std::make_pair("b", B));
+  primary_events().insert(std::make_pair("c", C));
+
+  min_cut_set.insert("a");
+  EXPECT_DOUBLE_EQ(0.1, ProbAnd(min_cut_set));
+  min_cut_set.insert("b");
+  EXPECT_DOUBLE_EQ(0.02, ProbAnd(min_cut_set));
+  min_cut_set.insert("c");
+  EXPECT_DOUBLE_EQ(0.006, ProbAnd(min_cut_set));
+
+  delete A, B, C;
+}
+
+TEST_F(FaultTreeTest, ProbAndInt) {
+  std::set<int> min_cut_set;
+  ASSERT_THROW(ProbAnd(min_cut_set), ValueError);  // Error for an empty set.
+
+  min_cut_set.insert(0);
+  AddPrimeIntProb(0.1);
+  EXPECT_DOUBLE_EQ(0.1, ProbAnd(min_cut_set));
+  min_cut_set.insert(1);
+  AddPrimeIntProb(0.2);
+  EXPECT_DOUBLE_EQ(0.02, ProbAnd(min_cut_set));
+  min_cut_set.insert(2);
+  AddPrimeIntProb(0.3);
+  EXPECT_DOUBLE_EQ(0.006, ProbAnd(min_cut_set));
+}
+
+TEST_F(FaultTreeTest, CombineElAndSet) {
+  std::set<int> el_one;
+  std::set<int> el_two;
+  std::set< std::set<int> > set_one;
+  std::set< std::set<int> > set_two;
+  std::set< std::set<int> > combo_set;
+
+  // One element checks.
+  el_one.insert(1);
+  set_one.insert(el_one);  // Insert (1)
+  ASSERT_NO_THROW(CombineElAndSet(el_one, set_one, combo_set));
+  EXPECT_EQ(set_one, combo_set);  // Must be only (1)
+  combo_set.clear();
+
+  el_two.insert(3);
+  ASSERT_NO_THROW(CombineElAndSet(el_two, set_one, combo_set));
+
+  set_one.insert(el_two);  // Insert (3)
+
+  EXPECT_EQ(1, combo_set.size());
+  el_two.insert(1);
+  set_two.insert(el_two);  // set_two is (1,3)
+  EXPECT_EQ(set_two, combo_set);  // Must be only (1,3)
+  combo_set.clear();
+
+  // Two element checks.
+  el_one.insert(2);  // el_one is (1, 2)
+  ASSERT_NO_THROW(CombineElAndSet(el_one, set_two, combo_set));
+
+  set_one.insert(el_two);  // Insert (1, 3)
+
+  el_two.insert(2);
+  set_two.clear();
+  set_two.insert(el_two);
+  EXPECT_EQ(set_two, combo_set);  // Expected (1,2,3)
+  combo_set.clear();
+
+  // Multi element checks
+  set_one.insert(el_one);  // Insert (1, 2)
+
+  // After the above intantiation the set_one is [(1), (3), (1,2), (1,3)].
+  // The result of [ el_one AND set_one ] is [(1,2), (1,2,3)].
+  EXPECT_EQ(4, set_one.size());
+  EXPECT_EQ(2, el_one.size());
+  EXPECT_EQ(0, combo_set.size());
+  ASSERT_NO_THROW(CombineElAndSet(el_one, set_one, combo_set));
+  EXPECT_EQ(2, combo_set.size());
+  set_one.clear();  // To construct the expected output set_one.
+  set_one.insert(el_one);
+  el_one.insert(3);
+  set_one.insert(el_one);
+  EXPECT_EQ(set_one, combo_set);
+}
+
+TEST_F(FaultTreeTest, ProbOrInt) {
+  std::set<int> mcs;  // Minimal cut set.
+  std::set<std::set<int> > min_cut_sets;  // A set of minimal cut sets.
+  ASSERT_THROW(ProbOr(min_cut_sets), ValueError);  // Error for an empty set.
+  AddPrimeIntProb(0.1);  // A is element 0.
+  AddPrimeIntProb(0.2);  // B is element 1.
+  AddPrimeIntProb(0.3);  // C is element 2.
+
+  // Check for one element calculation for A.
+  mcs.insert(0);
+  min_cut_sets.insert(mcs);
+  EXPECT_DOUBLE_EQ(0.1, ProbOr(min_cut_sets));
+
+  // Check for [A or B]
+  min_cut_sets.clear();
+  mcs.clear();
+  mcs.insert(0);
+  min_cut_sets.insert(mcs);
+  mcs.clear();
+  mcs.insert(1);
+  min_cut_sets.insert(mcs);
+  EXPECT_DOUBLE_EQ(0.28, ProbOr(min_cut_sets));
+
+  // Check for [A or B or C]
+  min_cut_sets.clear();
+  mcs.clear();
+  mcs.insert(0);
+  min_cut_sets.insert(mcs);
+  mcs.clear();
+  mcs.insert(1);
+  min_cut_sets.insert(mcs);
+  mcs.clear();
+  mcs.insert(2);
+  min_cut_sets.insert(mcs);
+  EXPECT_DOUBLE_EQ(0.496, ProbOr(min_cut_sets));
+
+  // Check for [(A,B) or (B,C)]
+  mcs.clear();
+  min_cut_sets.clear();
+  mcs.insert(0);
+  mcs.insert(1);
+  min_cut_sets.insert(mcs);
+  mcs.clear();
+  mcs.insert(1);
+  mcs.insert(2);
+  min_cut_sets.insert(mcs);
+  EXPECT_DOUBLE_EQ(0.074, ProbOr(min_cut_sets));
 }
 
 // ---------------------- Test Public Functions --------------------------

@@ -99,6 +99,8 @@ class FaultTree : public RiskAnalysis {
   // relationship with each other. This function is a brute force probability
   // calculation without rare event approximations.
   // nsums parameter specifies number of sums in the series.
+  // Note: This function drastically modifies min_cut_sets by deleting
+  // sets inside it. This is for better performance.
   double ProbOr_(std::set< std::set<int> >& min_cut_sets,
                  int nsums = 1000000);
 
