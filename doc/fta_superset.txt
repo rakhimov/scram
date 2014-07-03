@@ -1,3 +1,5 @@
 Special superset class operates with sets that contain primary and
-intermediate events. It is designed to efficiently find cut sets.
-This class intoduces the major tradeoff between speed and memory.
+intermediate events. It is designed to help efficiently find cut sets.
+This class separates primary events and intermediate events internally.
+In order to decide if a given event is primary or intermediate, the superset
+accesses private containers of the fault tree.

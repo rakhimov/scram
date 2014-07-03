@@ -7,7 +7,7 @@ approximation. That is, minimal cut sets may be neither mutually exclusive
 nor independent. In addition, rare event approximation may not be appropriate
 for events with large probabilities.
 
-In order to account for the above deficiencies, naive brute force algorithm is
+In order to account for the above deficiencies, brute force algorithm is
 implemented to calculate total probability of a top event in a
 fault tree. However, note that this algorithm still assumes independence of
 primary events in the fault tree.

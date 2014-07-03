@@ -49,15 +49,15 @@ Probability Calculations
 ------------------------
 Many assumptions may be applied for calculation of set and total
 probabilities. Some of them are:
-* Independence of events (Conditional cases may be supported in future.)
-* Rare event approximation
+* Independence of events (dependence may be simulated by common cause)
+* Rare event approximation (must be enforced)
 * Brute force probability calculation if the rare event approximation fails.
     This brute force calculation may be expensive and require much more time.
 
-For naive default calculations, rare event approximation and event
+For default calculations, rare event approximation and event
 independence may be applied. However, if the rare event approximation produce
-too large probability, SCRAM may switch to other better method unless the rare
-event method is ENFORCED by a user upon calling SCRAM. An appropriate warning
-will be given even if the user enforce a rare event approximation.
+too large probability, SCRAM can use the upper bound method unless.
+An appropriate warning will be given even if the user enforces the rare event
+approximation.
 It is suggested that cut-off for series should be around 4-8.
 The original cut-off tries to include all the series.
