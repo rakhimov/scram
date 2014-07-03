@@ -44,11 +44,9 @@ TODO list for SCRAM Project
     * Coding specific:
         ** Write tests for classes and functions.
             [] Benchmark cases.
-            [] FTA important private functions.
-                ** ProbAnd
-                ** ProbOR
-                ** ExpandSets
             [] Basic MC functions.
         ** Test input files for TransferOut types
         ** Time and space complexity of all algorithms used in this package
         ** Installation instructions for various platforms
+        ** CI
+        ** Test coverage checking tool.
