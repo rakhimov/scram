@@ -4,3 +4,5 @@ Some bugs found during development:
     upon input processing and initialization of the fault tree.
   * Types of event and gates are checked in FaultTree class but not in Event
     classes, which may seem intuitive.
+  * Memory is not managed well. There are many places where objects are
+    not deleted.
