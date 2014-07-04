@@ -34,6 +34,11 @@ def install_scram(args):
             cmake_cmd += ["-DCMAKE_BUILD_TYPE=Release"]
         elif args.debug:
             cmake_cmd += ["-DCMAKE_BUILD_TYPE=Debug"]
+        elif args.profile:
+            cmake_cmd += ["-DCMAKE_BUILD_TYPE=Debug"]
+            cmake_cmd += ["-DCMAKE_C_FLAGS=-pg"]
+            cmake_cmd += ["-DCMAKE_CXX_FLAGS=-pg"]
+            cmake_cmd += ["-DCMAKE_CXX_FLAGS='-Wall -fprofile-arcs -ftest-coverage'"]
 
         rtn = subprocess.check_call(cmake_cmd, cwd=args.build_dir,
                                     shell=(os.name == "nt"))
@@ -91,6 +96,10 @@ def main():
 
     debug = "build for debugging"
     parser.add_argument("-d", "--debug", help=debug, action="store_true",
+                        default=False)
+
+    profile = "build for profiling"
+    parser.add_argument("-p", "--profile", help=profile, action="store_true",
                         default=False)
 
     optimize = "apply maximum optimizations"
