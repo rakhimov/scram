@@ -1,40 +1,40 @@
 TODO list for SCRAM Project
 ===========================
-    * Define output format.
+    * Define output format. (Moderate)
         ** Table like spacing for output numbers
         ** Take a look at output formats of RiskMan and Isograph
         ** Option for CSV output for spreadsheet applications
         ** Save minimal cut sets for later analysis
-    * Minimal cut set input file as an alternative to a tree file
- [!]* Incorporate benchmarks into building and automation
+    * Minimal cut set input file as an alternative to a tree file (Moderate)
+ [!]* Incorporate benchmarks into building and automation (High)
         ** Develop new symbols, gate and event types necessary for benchmarking
         ** Implement test cases from Isograph.
-    * Monte Carlo Simulations
+    * Monte Carlo Simulations (Moderate)
         ** Uncertainty analysis
         ** Sensitivity analysis
         ** Sampling techniques
         ** Distributions
         ** Latin Hypercube sampling technique
         ** Refer to OpenFTA: Minimal cut set generation through MC
-    * Reformat documentation into rst.
-    * Analysis of a transfer sub-tree without a main file.
-    * Improve fault tree generator
+    * Reformat documentation into rst. (Low)
+    * Analysis of a transfer sub-tree without a main file. (Low)
+    * Improve fault tree generator  (Low)
 
-    * Incorporation of an event tree analysis
-    * Incorporation of CCF
+    * Incorporation of an event tree analysis (Moderate)
+    * Incorporation of CCF (High)
         ** Multiple Greek Letter system
         ** Alpha system
         ** Beta system
-    * Incorporation of alignments
+    * Incorporation of alignments (Moderate)
         ** Maintenance
         ** Guaranteed Success/Failure
- [!]* Probabilities as a function of time (lambda).
+ [!]* Probabilities as a function of time (lambda). (High)
 
-    * Other input styles : XML, json, sql.
-    * GUI considerations for building trees
-    * Explore conditional probabilities through CCF
+    * Other input styles : XML, json, sql. (Low)
+    * GUI considerations for building trees (Moderate)
+    * Explore conditional probabilities through CCF (Low)
 
-    * Documentation:
+    * Documentation: (Moderate)
         ** Getting Started
         ** Building/Installing
         ** Simple Walkthrough Example
@@ -42,11 +42,10 @@ TODO list for SCRAM Project
         ** Background Theory
 
     * Coding specific:
-        ** Write tests for classes and functions.
+        ** Write tests for classes and functions. (High)
             [] Benchmark cases.
-            [] Basic MC functions.
-        ** Test input files for TransferOut types
-        ** Time and space complexity of all algorithms used in this package
-        ** Installation instructions for various platforms
-        ** CI
-        ** Test coverage checking tool.
+        ** Test input files for TransferOut types (Low)
+        ** Time and space complexity of all algorithms used in this package (Moderate)
+        ** Installation instructions for various platforms (Low)
+        ** CI (Moderate)
+        ** Test coverage checking tool. (Moderate)
