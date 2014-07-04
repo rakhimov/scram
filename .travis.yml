@@ -1,0 +1,15 @@
+language: cpp
+
+compiler: gcc
+
+before_install: sudo apt-get update -qq
+
+install:
+    - sudo apt-get install -qq libboost-all-dev
+    - sudo apt-get install -qq libboost-random-dev
+    - sudo apt-get install -qq python2.7
+
+script: ./install.py
+
+after_success:
+    - ./build/bin/scram_unit_tests
