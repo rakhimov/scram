@@ -8,8 +8,9 @@ install:
     - sudo apt-get install -qq libboost-all-dev
     - sudo apt-get install -qq libboost-random-dev
     - sudo apt-get install -qq python2.7
+    - sudo pip install cpp-coveralls
 
-script: ./install.py
+script: ./install.py -p
 
 after_success:
-    - ./build/bin/scram_unit_tests
+    - ./coveralls.sh
