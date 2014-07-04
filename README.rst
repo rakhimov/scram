@@ -2,6 +2,9 @@
 SCRAM
 ###########
 
+.. image:: https://travis-ci.org/rakhimov/SCRAM.svg?branch=develop
+    :target: https://travis-ci.org/rakhimov/SCRAM
+
 SCRAM : "Simplified Command-line Risk Analysis Multi-tool"
 
 This project attempts to build a simple command line tool for risk analysis.
