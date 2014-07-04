@@ -468,16 +468,6 @@ TEST_F(FaultTreeTest, AnalyzeMC) {
   ASSERT_NO_THROW(fta->Analyze());
 }
 
-// Test Monte Carlo Analysis
-TEST_F(FaultTreeTest, AnalyzeMC) {
-  delete fta;
-  fta = new FaultTree("fta-mc", false);
-  std::string tree_input = "./input/fta/correct_tree_input.scramf";
-  ASSERT_THROW(fta->Analyze(), Error);  // Calling without a tree initialized.
-  ASSERT_NO_THROW(fta->ProcessInput(tree_input));
-  ASSERT_NO_THROW(fta->Analyze());
-}
-
 // Test Reporting capabilities
 TEST_F(FaultTreeTest, Report) {
   std::string tree_input = "./input/fta/correct_tree_input.scramf";
