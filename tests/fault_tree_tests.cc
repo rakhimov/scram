@@ -5,7 +5,7 @@ using namespace scram;
 
 // ---------------------- Test Private Functions -------------------------
 // Test the function that gets arguments from a line in an input file.
-TEST_F(FaultTreeTest, GetArgs_) {
+TEST_F(FaultTreeTest, GetArgs) {
   std::string line = "";  // An empty line.
   std::string orig_line = "";
   std::vector<std::string> args;
