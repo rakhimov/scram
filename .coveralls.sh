@@ -3,7 +3,6 @@
 # Run tests for Coveralls.
 
 cd build
-./bin/scram_unit_tests
 mkdir report
 cd ./src/CMakeFiles/scram.dir/
 coveralls --dryrun --exclude lib --exclude tests --exclude CMakeFiles --exclude build > /dev/null

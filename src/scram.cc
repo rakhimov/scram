@@ -51,7 +51,7 @@ int main(int argc, char* argv[]) {
                       " file with probabilities for events.\n";
     std::cout << msg << std::endl;
     std::cout << desc << "\n";
-    return 1;
+    return 0;
   }
 
   if (!vm.count("input-file")) {

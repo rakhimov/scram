@@ -2,6 +2,9 @@ language: cpp
 
 compiler: gcc
 
+env:
+    - PATH=$PATH:`pwd`/build/bin
+
 before_install: sudo apt-get update -qq
 
 install:
@@ -11,11 +14,9 @@ install:
     - sudo pip install cpp-coveralls
     - sudo pip install nose
 
-script: ./install.py -p
+script:
+    - ./install.py -p
+    - ./.run_tests.sh
 
 after_success:
-    - cd ../tests
-    - export PATH=$PATH:`pwd`/../build/bin
-    - nosetests
-    - cd ..
-    - ./coveralls.sh
+    - ./.coveralls.sh
