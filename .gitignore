@@ -14,3 +14,6 @@ tests/scram_unit_test_driver.cc
 *.lai
 *.la
 *.a
+
+# Python compiled files
+*.pyc

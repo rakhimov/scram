@@ -9,8 +9,13 @@ install:
     - sudo apt-get install -qq libboost-random-dev
     - sudo apt-get install -qq python2.7
     - sudo pip install cpp-coveralls
+    - sudo pip install nose
 
 script: ./install.py -p
 
 after_success:
+    - cd ../tests
+    - export PATH=$PATH:`pwd`/../build/bin
+    - nosetests
+    - cd ..
     - ./coveralls.sh

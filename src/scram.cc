@@ -51,7 +51,7 @@ int main(int argc, char* argv[]) {
                       " file with probabilities for events.\n";
     std::cout << msg << std::endl;
     std::cout << desc << "\n";
-    return 0;
+    return 1;
   }
 
   if (!vm.count("input-file")) {
@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
                       " a system description.\n";
     std::cout << msg << std::endl;
     std::cout << desc << "\n";
-    return 0;
+    return 1;
   }
 
   // Determine required analysis.
@@ -84,14 +84,14 @@ int main(int argc, char* argv[]) {
       std::string msg = "Upper limit for cut sets can't be less than 1\n";
       std::cout << msg << std::endl;
       std::cout << desc << "\n";
-      return 0;
+      return 1;
     }
 
     if (vm["nsums"].as<int>() < 1) {
       std::string msg = "Number of sums for series can't be less than 1\n";
       std::cout << msg << std::endl;
       std::cout << desc << "\n";
-      return 0;
+      return 1;
     }
 
     ran = new FaultTree(analysis, graph_only, rare_event,
@@ -101,7 +101,7 @@ int main(int argc, char* argv[]) {
                       " yet :)\n";
     std::cout << msg << std::endl;
     std::cout << desc << "\n";
-    return 0;
+    return 1;
   }
 
   // Process input and validate it.

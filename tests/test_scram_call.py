@@ -1,0 +1,39 @@
+#!usr/bin/env python
+
+from subprocess import call
+
+from nose.tools import assert_equal
+
+def test_fta_calls():
+    """Tests all possible calls from the cli."""
+
+    # Correct inputs
+    fta_input = "./input/fta/correct_tree_input.scramf"
+    fta_prob = "./input/fta/correct_prob_input.scramp"
+
+    # Test help
+    cmd = ["scram", "-h"]
+    assert_equal(0, call(cmd));
+
+    # Test the validation
+    cmd = ["scram", "-v", fta_input]
+    assert_equal(0, call(cmd));
+
+    # Test graph only
+    cmd = ["scram", "-g", fta_input]
+    assert_equal(0, call(cmd));
+
+    cmd = ["scram", "-v", fta_input, fta_prob]
+    assert_equal(0, call(cmd));
+
+    # Test calculation calls
+    cmd = ["scram", fta_input]
+    assert_equal(0, call(cmd));
+    cmd.append(fta_prob)
+    assert_equal(0, call(cmd));
+
+    # Test MC
+    cmd = ["scram", fta_input, "-a", "fta-mc"]
+    assert_equal(0, call(cmd));
+    cmd = ["scram", fta_input, fta_prob, "-a", "fta-mc"]
+    assert_equal(0, call(cmd));

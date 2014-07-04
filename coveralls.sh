@@ -6,8 +6,8 @@ cd build
 ./bin/scram_unit_tests
 mkdir report
 cd ./src/CMakeFiles/scram.dir/
-# coveralls --dryrun --exclude lib --exclude tests --exclude CMakeFiles --exclude build > /dev/null
-# cp ./*.cc.gcov ../../../report/
+coveralls --dryrun --exclude lib --exclude tests --exclude CMakeFiles --exclude build > /dev/null
+cp ./*.cc.gcov ../../../report/
 cd ../scramcore.dir/
 coveralls --dryrun --exclude lib --exclude tests --exclude CMakeFiles --exclude build > /dev/null
 cp ./*.cc.gcov ../../../report/
