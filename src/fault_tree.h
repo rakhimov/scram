@@ -122,12 +122,12 @@ class FaultTree : public RiskAnalysis {
   std::vector<double> iprobs_;  // Holds probabilities of basic events.
   // -----------------------------------------------------------------
   // ---- Algorithm for Equation Construction for Monte Carlo Sim -------
-  void MProbOr_(std::set< std::set<int> >& min_cut_sets, int sign,
-                 int nsums = 1000000);
+  void MProbOr_(std::set< std::set<int> >& min_cut_sets, int sign = 1,
+                int nsums = 1000000);
 
   void MCombineElAndSet_(const std::set<int>& el,
-                        const std::set< std::set<int> >& set,
-                        std::set< std::set<int> >& combo_set);
+                         const std::set< std::set<int> >& set,
+                         std::set< std::set<int> >& combo_set);
 
   void MSample();  // Perform simulation.
   std::vector< std::set<int> > pos_terms_;  // Plus terms of the equation.

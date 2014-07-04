@@ -220,6 +220,129 @@ TEST_F(FaultTreeTest, ProbOrInt) {
   EXPECT_DOUBLE_EQ(0.074, ProbOr(min_cut_sets));
 }
 
+// ------------------------ Monte Carlo -----------------------------
+TEST_F(FaultTreeTest, MCombineElAndSet) {
+  std::set<int> el_one;
+  std::set<int> el_two;
+  std::set< std::set<int> > set_one;
+  std::set< std::set<int> > set_two;
+  std::set< std::set<int> > combo_set;
+
+  // One element checks.
+  el_one.insert(1);
+  set_one.insert(el_one);  // Insert (1)
+  ASSERT_NO_THROW(MCombineElAndSet(el_one, set_one, combo_set));
+  EXPECT_EQ(set_one, combo_set);  // Must be only (1)
+  combo_set.clear();
+
+  el_two.insert(3);
+  ASSERT_NO_THROW(MCombineElAndSet(el_two, set_one, combo_set));
+
+  set_one.insert(el_two);  // Insert (3)
+
+  EXPECT_EQ(1, combo_set.size());
+  el_two.insert(1);
+  set_two.insert(el_two);  // set_two is (1,3)
+  EXPECT_EQ(set_two, combo_set);  // Must be only (1,3)
+  combo_set.clear();
+
+  // Two element checks.
+  el_one.insert(2);  // el_one is (1, 2)
+  ASSERT_NO_THROW(MCombineElAndSet(el_one, set_two, combo_set));
+
+  set_one.insert(el_two);  // Insert (1, 3)
+
+  el_two.insert(2);
+  set_two.clear();
+  set_two.insert(el_two);
+  EXPECT_EQ(set_two, combo_set);  // Expected (1,2,3)
+  combo_set.clear();
+
+  // Multi element checks
+  set_one.insert(el_one);  // Insert (1, 2)
+
+  // After the above intantiation the set_one is [(1), (3), (1,2), (1,3)].
+  // The result of [ el_one AND set_one ] is [(1,2), (1,2,3)].
+  EXPECT_EQ(4, set_one.size());
+  EXPECT_EQ(2, el_one.size());
+  EXPECT_EQ(0, combo_set.size());
+  ASSERT_NO_THROW(MCombineElAndSet(el_one, set_one, combo_set));
+  EXPECT_EQ(2, combo_set.size());
+  set_one.clear();  // To construct the expected output set_one.
+  set_one.insert(el_one);
+  el_one.insert(3);
+  set_one.insert(el_one);
+  EXPECT_EQ(set_one, combo_set);
+}
+
+TEST_F(FaultTreeTest, MProbOr) {
+  std::set<int> mcs;  // Minimal cut set.
+  std::set< std::set<int> > p_terms;  // Positive terms of the equation.
+  std::set< std::set<int> > n_terms;  // Negative terms of the equation.
+  std::set< std::set<int> > temp_set;  // Temp set for dumping the output.
+  std::set< std::set<int> > min_cut_sets;  // A set of minimal cut sets.
+  ASSERT_THROW(MProbOr(min_cut_sets), ValueError);  // Error for an empty set.
+
+  // Check for one element calculation for A.
+  mcs.insert(0);
+  p_terms.insert(mcs);
+  min_cut_sets.insert(mcs);
+  ASSERT_NO_THROW(MProbOr(min_cut_sets));
+  temp_set.insert(pos_terms().begin(), pos_terms().end());
+  EXPECT_EQ(p_terms, temp_set);
+
+  // Check for [A or B]
+  pos_terms().clear();
+  neg_terms().clear();
+  min_cut_sets.clear();
+  mcs.clear();
+  p_terms.clear();
+  mcs.insert(0);
+  p_terms.insert(mcs);
+  min_cut_sets.insert(mcs);
+  mcs.clear();
+  mcs.insert(1);
+  p_terms.insert(mcs);
+  min_cut_sets.insert(mcs);
+  mcs.insert(0);
+  n_terms.insert(mcs);
+  ASSERT_NO_THROW(MProbOr(min_cut_sets));
+  temp_set.clear();
+  temp_set.insert(pos_terms().begin(), pos_terms().end());
+  EXPECT_EQ(p_terms, temp_set);
+  temp_set.clear();
+  temp_set.insert(neg_terms().begin(), neg_terms().end());
+  EXPECT_EQ(n_terms, temp_set);
+
+  // Check for [(A,B) or (B,C)]
+  pos_terms().clear();
+  neg_terms().clear();
+  min_cut_sets.clear();
+  mcs.clear();
+  p_terms.clear();
+  n_terms.clear();
+  pos_terms().clear();
+  neg_terms().clear();
+  mcs.insert(0);
+  mcs.insert(1);
+  p_terms.insert(mcs);
+  min_cut_sets.insert(mcs);
+  mcs.clear();
+  mcs.insert(1);
+  mcs.insert(2);
+  p_terms.insert(mcs);
+  min_cut_sets.insert(mcs);
+  mcs.insert(0);
+  n_terms.insert(mcs);
+  ASSERT_NO_THROW(MProbOr(min_cut_sets));
+  temp_set.clear();
+  temp_set.insert(pos_terms().begin(), pos_terms().end());
+  EXPECT_EQ(p_terms, temp_set);
+  temp_set.clear();
+  temp_set.insert(neg_terms().begin(), neg_terms().end());
+  EXPECT_EQ(n_terms, temp_set);
+}
+// ----------------------------------------------------------------------
 // ---------------------- Test Public Functions --------------------------
 // Test Input Processing
 // Note that there are tests specificly for correct and incorrect inputs
@@ -289,7 +412,7 @@ TEST_F(FaultTreeTest, GraphingInstructions) {
 }
 
 // Test Analysis
-TEST_F(FaultTreeTest, Analyze) {
+TEST_F(FaultTreeTest, AnalyzeDefault) {
   std::string tree_input = "./input/fta/correct_tree_input.scramf";
   std::string prob_input = "./input/fta/correct_prob_input.scramp";
   ASSERT_THROW(fta->Analyze(), Error);  // Calling without a tree initialized.
@@ -325,6 +448,16 @@ TEST_F(FaultTreeTest, Analyze) {
   EXPECT_DOUBLE_EQ(0.7, imp_of_primaries()["pumptwo"]);
   EXPECT_DOUBLE_EQ(0.48, imp_of_primaries()["valveone"]);
   EXPECT_DOUBLE_EQ(0.5, imp_of_primaries()["valvetwo"]);
+}
+
+// Test Monte Carlo Analysis
+TEST_F(FaultTreeTest, AnalyzeMC) {
+  delete fta;
+  fta = new FaultTree("fta-mc", false);
+  std::string tree_input = "./input/fta/correct_tree_input.scramf";
+  ASSERT_THROW(fta->Analyze(), Error);  // Calling without a tree initialized.
+  ASSERT_NO_THROW(fta->ProcessInput(tree_input));
+  ASSERT_NO_THROW(fta->Analyze());
 }
 
 // Test Reporting capabilities

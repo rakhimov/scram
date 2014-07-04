@@ -81,6 +81,27 @@ class FaultTreeTest : public ::testing::Test {
     fta->iprobs_.push_back(prob);
   }
   // -----------------------------------------------------------------------
+  // -------------- Monte Carlo simulation algorithms ----------------------
+  void MProbOr(std::set< std::set<int> >& min_cut_sets, int sign = 1,
+               int nsums = 1000000) {
+    return fta->MProbOr_(min_cut_sets, sign, nsums);
+  }
+
+  void MCombineElAndSet(const std::set<int>& el,
+                        const std::set< std::set<int> >& set,
+                        std::set< std::set<int> >& combo_set) {
+    return fta->MCombineElAndSet_(el, set, combo_set);
+  }
+
+  std::vector< std::set<int> >& pos_terms() {
+    return fta->pos_terms_;
+  }
+
+  std::vector< std::set<int> >& neg_terms() {
+    return fta->neg_terms_;
+  }
+  // -----------------------------------------------------------------------
+  // Members
 
   FaultTree* fta;
 };
