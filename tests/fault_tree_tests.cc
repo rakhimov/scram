@@ -448,6 +448,24 @@ TEST_F(FaultTreeTest, AnalyzeDefault) {
   EXPECT_DOUBLE_EQ(0.7, imp_of_primaries()["pumptwo"]);
   EXPECT_DOUBLE_EQ(0.48, imp_of_primaries()["valveone"]);
   EXPECT_DOUBLE_EQ(0.5, imp_of_primaries()["valvetwo"]);
+
+  // Probability calculations with the rare event approximation.
+  delete fta;  // Re-initializing.
+  fta = new FaultTree("fta-default", false, true);
+  ASSERT_NO_THROW(fta->ProcessInput(tree_input));
+  ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
+  ASSERT_NO_THROW(fta->Analyze());
+  EXPECT_DOUBLE_EQ(1.2, p_total());
+}
+
+// Test Monte Carlo Analysis
+TEST_F(FaultTreeTest, AnalyzeMC) {
+  delete fta;  // Re-initializing.
+  fta = new FaultTree("fta-mc", false);
+  std::string tree_input = "./input/fta/correct_tree_input.scramf";
+  ASSERT_THROW(fta->Analyze(), Error);  // Calling without a tree initialized.
+  ASSERT_NO_THROW(fta->ProcessInput(tree_input));
+  ASSERT_NO_THROW(fta->Analyze());
 }
 
 // Test Monte Carlo Analysis
