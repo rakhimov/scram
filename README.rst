@@ -4,6 +4,7 @@ SCRAM
 
 .. image:: https://travis-ci.org/rakhimov/SCRAM.svg?branch=develop
     :target: https://travis-ci.org/rakhimov/SCRAM
+.. image:: https://coveralls.io/repos/rakhimov/SCRAM/badge.png?branch=develop :target: https://coveralls.io/r/rakhimov/SCRAM?branch=develop
 
 SCRAM : "Simplified Command-line Risk Analysis Multi-tool"
 
