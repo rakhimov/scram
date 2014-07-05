@@ -191,9 +191,6 @@ void FaultTree::PopulateProbabilities(std::string prob_file) {
         try {
           // Add probability of a primary event.
           FaultTree::AddProb_(id, p);
-        } catch (scram::ValidationError& err_1) {
-          msg << "Line " << nline << " : " << err_1.msg();
-          throw scram::ValidationError(msg.str());
         } catch (scram::ValueError& err_2) {
           msg << "Line " << nline << " : " << err_2.msg();
           throw scram::ValueError(msg.str());
