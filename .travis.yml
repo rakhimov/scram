@@ -21,3 +21,4 @@ script:
 after_success:
     - coveralls  --verbose  --exclude tests  --exclude ./build/CMakeFiles/
       --exclude ./build/lib/  --exclude src/error.h --exclude src/error.cc
+      --exclude ./build/bin/
