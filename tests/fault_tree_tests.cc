@@ -471,7 +471,7 @@ TEST_F(FaultTreeTest, GraphingInstructions) {
   std::vector<std::string>::iterator it;
   for (it = tree_input.begin(); it != tree_input.end(); ++it) {
     delete fta;
-    fta = new FaultTree("fta-default", false);
+    fta = new FaultTree("fta-default", true);
     ASSERT_THROW(fta->GraphingInstructions(), Error);
     ASSERT_NO_THROW(fta->ProcessInput(*it));
     ASSERT_NO_THROW(fta->GraphingInstructions());
