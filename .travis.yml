@@ -11,6 +11,7 @@ install:
     - sudo apt-get install -qq libboost-all-dev
     - sudo apt-get install -qq libboost-random-dev
     - sudo apt-get install -qq python2.7
+    - sudo apt-get install -qq graphviz
     - sudo pip install cpp-coveralls
     - sudo pip install nose
 
