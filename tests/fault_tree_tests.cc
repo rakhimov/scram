@@ -110,6 +110,15 @@ TEST_F(FaultTreeTest, ExpandSets) {
   EXPECT_EQ(1, result.count("b"));
   EXPECT_EQ(1, result.count("c"));
 
+  // Testing for some UNKNOWN gate.
+  delete inter;
+  inter = new InterEvent("inter", "unknown_gate");
+  sets.clear();
+  inter->AddChild(A);
+  inter->AddChild(B);
+  inter->AddChild(C);
+  ASSERT_THROW(ExpandSets(inter, sets), ValueError);
+
   delete inter;
   delete A, B, C;
 }
