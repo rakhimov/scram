@@ -544,4 +544,13 @@ TEST_F(FaultTreeTest, Report) {
   ASSERT_THROW(fta->Report("/dev/null"), Error);  // Calling before analysis.
   ASSERT_NO_THROW(fta->Analyze());
   ASSERT_NO_THROW(fta->Report("/dev/null"));
+
+  // Generate warning due to rare event approximation.
+  delete fta;
+  fta = new FaultTree(tree_input, false, true);
+  ASSERT_NO_THROW(fta->ProcessInput(tree_input));
+  ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
+  ASSERT_THROW(fta->Report("/dev/null"), Error);  // Calling before analysis.
+  ASSERT_NO_THROW(fta->Analyze());
+  ASSERT_NO_THROW(fta->Report("/dev/null"));
 }
