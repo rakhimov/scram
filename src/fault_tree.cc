@@ -1112,13 +1112,6 @@ void FaultTree::AddNode_(std::string parent, std::string id,
 
     i_event -> gate(type);
   }
-
-  // Check if a top event defined the first.
-  if (top_event_id_ == "") {
-    std::stringstream msg;
-    msg << "Invalid input arguments. Top event must be defined first.";
-    throw scram::ValidationError(msg.str());
-  }
 }
 
 void FaultTree::AddProb_(std::string id, double p) {
