@@ -890,18 +890,18 @@ void FaultTree::InterpretArgs_(int nline, std::stringstream& msg,
             parent_ = tr_parent;
             transfer_first_inter_ = true;
           } else {
+            // Defensive check if there are other events having the name of
+            // the current transfer file as their parent.
+            if (parent_ == tr_id) {
+              msg << "Line " << nline << " : Found the second event with "
+                  << "a parent as a starting node. Only one intermediate event"
+                  << " can be linked to TransferOut of the transfer tree.";
+              throw scram::ValidationError(msg.str());
+            }
+
             // Attach specific suffix for the parents of events
             // in the sub-tree.
             parent_ += suffix;
-          }
-
-          // Defensive check if there are other events having the name of
-          // the current transfer file as their parent.
-          if (parent_ == tr_id) {
-            msg << "Line " << nline << " : Found the second event with "
-                << "a parent as a starting node. Only one intermediate event"
-                << " can be linked to TransferOut of the transfer tree.";
-            throw scram::ValidationError(msg.str());
           }
 
           // Defensive check if there is another TransferOut in the same file.
