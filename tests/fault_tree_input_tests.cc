@@ -62,6 +62,7 @@ TEST(FaultTreeInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back("./input/fta/missing_closing_brace_at_end.scramf");
   incorrect_inputs.push_back("./input/fta/too_many_args.scramf");
   incorrect_inputs.push_back("./input/fta/secon_closing_brace.scramf");
+  incorrect_inputs.push_back("./input/fta/one_arg_err.scramf");
   // Other issues.
   incorrect_inputs.push_back("./input/fta/top_event_with_no_child.scramf");
   incorrect_inputs.push_back("./input/fta/basic_top_event.scramf");
@@ -106,6 +107,7 @@ TEST(FaultTreeInputTest, IncorrectFTAProbability) {
   incorrect_prob.push_back("./input/fta/missing_closing_brace_at_end.scramp");
   incorrect_prob.push_back("./input/fta/too_many_args.scramp");
   incorrect_prob.push_back("./input/fta/second_closing_brace.scramp");
+  incorrect_prob.push_back("./input/fta/one_arg_err.scramp");
   // Other issues.
   incorrect_prob.push_back("./input/fta/doubly_defined_prob.scramp");
   incorrect_prob.push_back("./input/fta/huge_prob.scramp");
