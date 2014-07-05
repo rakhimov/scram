@@ -184,6 +184,11 @@ TEST_F(FaultTreeTest, ProbOrInt) {
   min_cut_sets.insert(mcs);
   EXPECT_DOUBLE_EQ(0.1, ProbOr(min_cut_sets));
 
+  // Check that recursive nsums=0 returns without changing anything.
+  mcs.insert(0);
+  min_cut_sets.insert(mcs);
+  EXPECT_EQ(0, ProbOr(min_cut_sets, 0));
+
   // Check for [A or B]
   min_cut_sets.clear();
   mcs.clear();
@@ -288,8 +293,16 @@ TEST_F(FaultTreeTest, MProbOr) {
   p_terms.insert(mcs);
   min_cut_sets.insert(mcs);
   ASSERT_NO_THROW(MProbOr(min_cut_sets));
+  EXPECT_EQ(0, min_cut_sets.size());  // This set is emptied recursively.
   temp_set.insert(pos_terms().begin(), pos_terms().end());
   EXPECT_EQ(p_terms, temp_set);
+
+  // Check that recursive nsums=0 returns without changing anything.
+  min_cut_sets.insert(mcs);
+  pos_terms().clear();
+  ASSERT_NO_THROW(MProbOr(min_cut_sets, 1, 0));
+  EXPECT_EQ(1, min_cut_sets.size());
+  EXPECT_EQ(0, pos_terms().size());
 
   // Check for [A or B]
   pos_terms().clear();
