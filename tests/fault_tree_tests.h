@@ -49,6 +49,10 @@ class FaultTreeTest : public ::testing::Test {
     return fta->imp_of_primaries_;
   }
 
+  bool CheckGate(TopEvent* event) {
+    return (fta->CheckGate_(event) == "") ? true : false;
+  }
+
   void ExpandSets(scram::TopEvent* t, std::vector< Superset* >& sets) {
     return fta->ExpandSets_(t, sets);
   }

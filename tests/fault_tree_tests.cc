@@ -26,6 +26,42 @@ TEST_F(FaultTreeTest, GetArgs) {
   EXPECT_EQ("arg", args[0]);
 }
 
+TEST_F(FaultTreeTest, CheckGate) {
+  TopEvent* top = new TopEvent("top", "and");  // AND gate.
+  PrimaryEvent* A = new PrimaryEvent("a");
+  PrimaryEvent* B = new PrimaryEvent("b");
+  PrimaryEvent* C = new PrimaryEvent("c");
+
+  // AND Gate tests.
+  EXPECT_FALSE(CheckGate(top));  // No child.
+  top->AddChild(A);
+  EXPECT_FALSE(CheckGate(top));  // One child is not enough.
+  top->AddChild(B);
+  EXPECT_TRUE(CheckGate(top));  // Two children are enough.
+  top->AddChild(C);
+  EXPECT_TRUE(CheckGate(top));  // More children are OK.
+
+  // OR Gate tests.
+  delete top;
+  top = new TopEvent("top", "or");
+  EXPECT_FALSE(CheckGate(top));  // No child.
+  top->AddChild(A);
+  EXPECT_FALSE(CheckGate(top));  // One child is not enough.
+  top->AddChild(B);
+  EXPECT_TRUE(CheckGate(top));  // Two children are enough.
+  top->AddChild(C);
+  EXPECT_TRUE(CheckGate(top));  // More children are OK.
+
+  // Some UNKNOWN gate tests.
+  delete top;
+  top = new TopEvent("top", "unknown_gate");
+  EXPECT_FALSE(CheckGate(top));  // No child.
+  top->AddChild(A);
+  EXPECT_FALSE(CheckGate(top));
+  top->AddChild(B);
+  EXPECT_FALSE(CheckGate(top));
+}
+
 TEST_F(FaultTreeTest, ExpandSets) {
   InterEvent* inter = new InterEvent("inter");  // No gate is defined.
   inter_events().insert(std::make_pair("inter", inter));

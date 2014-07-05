@@ -1250,12 +1250,17 @@ std::string FaultTree::CheckGate_(scram::TopEvent* event) {
     size += transfer_map_.count(event->id());
 
     // Gate dependent logic.
-    if ((gate == "and") && (size < 2)) {
-      msg << orig_ids_[event->id()] << " : AND gate must have 2 or more "
-          << "children.\n";
-    } else if ((gate == "or") && (size < 2)) {
-      msg << orig_ids_[event->id()] << " : OR gate must have 2 or more "
-          << "children.\n";
+    if (gate == "and" || gate == "or") {
+      if (size < 2) {
+        boost::to_upper(gate);
+        msg << orig_ids_[event->id()] << " : " << gate
+            << " gate must have 2 or more "
+            << "children.\n";
+      }
+    } else {
+      boost::to_upper(gate);
+      msg << orig_ids_[event->id()] << " : Gate Check failure. No check for "
+          << gate << " gate.";
     }
   } catch (scram::ValueError& err) {
     msg << orig_ids_[event->id()] << " : No children detected.";
