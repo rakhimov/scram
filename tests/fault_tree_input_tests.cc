@@ -14,6 +14,9 @@ TEST(FaultTreeInputTest, CorrectFTAInputs) {
   correct_inputs.push_back("./input/fta/doubly_defined_basic.scramf");
   correct_inputs.push_back("./input/fta/different_order.scramf");
   correct_inputs.push_back("./input/fta/inline_comments.scramf");
+  correct_inputs.push_back("./input/fta/transfer_correct_top.scramf");
+  // Transfer input file path without current dir indicator "./"
+  correct_inputs.push_back("input/fta/transfer_correct_top.scramf");
 
   RiskAnalysis* ran;
 
