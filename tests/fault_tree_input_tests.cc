@@ -127,6 +127,7 @@ TEST(FaultTreeInputTest, IncorrectFTAProbability) {
   incorrect_prob.push_back("./input/fta/second_closing_brace.scramp");
   incorrect_prob.push_back("./input/fta/one_arg_err.scramp");
   // Other issues.
+  incorrect_prob.push_back("./input/fta/doubly_defined_block.scramp");
   incorrect_prob.push_back("./input/fta/doubly_defined_prob.scramp");
   incorrect_prob.push_back("./input/fta/huge_prob.scramp");
   incorrect_prob.push_back("./input/fta/missing_basic_event.scramp");
