@@ -23,7 +23,7 @@ TEST(FaultTreeInputTest, CorrectFTAInputs) {
   std::vector<std::string>::iterator it;
   for (it = correct_inputs.begin(); it != correct_inputs.end(); ++it) {
     ran = new FaultTree("fta-default", false);
-    EXPECT_NO_THROW(ran->ProcessInput(*it));
+    EXPECT_NO_THROW(ran->ProcessInput(*it)) << " Filename: " << *it;
     delete ran;
   }
 
@@ -52,9 +52,13 @@ TEST(FaultTreeInputTest, CorrectFTAProbability) {
 
 // Test incorrect fault tree inputs
 TEST(FaultTreeInputTest, IncorrectFTAInputs) {
+  std::vector<std::string> ioerror_inputs;
   std::vector<std::string> incorrect_inputs;
-  // Access issues.
-  incorrect_inputs.push_back("./input/fta/nonexistent_file.scramf");
+
+  // Access issues. IOErrors
+  ioerror_inputs.push_back("./input/fta/nonexistent_file.scramf");
+  ioerror_inputs.push_back("./input/fta/transfer_no_file.scramf");
+
   // Formatting issues.
   incorrect_inputs.push_back("./input/fta/missing_opening_brace_at_start.scramf");
   incorrect_inputs.push_back("./input/fta/missing_opening_brace.scramf");
@@ -83,15 +87,25 @@ TEST(FaultTreeInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back("./input/fta/transfer_circular_self_top.scramf");
   incorrect_inputs.push_back("./input/fta/transfer_circular_top.scramf");
   incorrect_inputs.push_back("./input/fta/transfer_head_extra_nodes.scramf");
-  incorrect_inputs.push_back("./input/fta/transfer_no_file.scramf");
   incorrect_inputs.push_back("./input/fta/transfer_wrong_parent.scramf");
+  incorrect_inputs.push_back("./input/fta/transfer_name_mismatch_top.scramf");
+  incorrect_inputs.push_back("./input/fta/transfer_wrong_type_top.scramf");
+  incorrect_inputs.push_back("./input/fta/transfer_wrong_second_node_top.scramf");
 
   RiskAnalysis* ran;
 
   std::vector<std::string>::iterator it;
+  for (it = ioerror_inputs.begin(); it != ioerror_inputs.end(); ++it) {
+    ran = new FaultTree("fta-default", false);
+    EXPECT_THROW(ran->ProcessInput(*it), scram::IOError)
+        << " Filename: " << *it;
+    delete ran;
+  }
+
   for (it = incorrect_inputs.begin(); it != incorrect_inputs.end(); ++it) {
     ran = new FaultTree("fta-default", false);
-    EXPECT_THROW(ran->ProcessInput(*it), scram::Error);
+    EXPECT_THROW(ran->ProcessInput(*it), scram::ValidationError)
+        << " Filename: " << *it;
     delete ran;
   }
 }
@@ -121,7 +135,8 @@ TEST(FaultTreeInputTest, IncorrectFTAProbability) {
   for (it = incorrect_prob.begin(); it != incorrect_prob.end(); ++it) {
     ran = new FaultTree("fta-default", false);
     EXPECT_NO_THROW(ran->ProcessInput(correct_input));
-    EXPECT_THROW(ran->PopulateProbabilities(*it), scram::Error);
+    EXPECT_THROW(ran->PopulateProbabilities(*it), scram::Error)
+        << " Filename: " << *it;
     delete ran;
   }
 }
