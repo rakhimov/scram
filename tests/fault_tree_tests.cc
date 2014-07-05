@@ -463,10 +463,19 @@ TEST_F(FaultTreeTest, PopulateProbabilities) {
 
 // Test Graphing Intructions
 TEST_F(FaultTreeTest, GraphingInstructions) {
-  std::string tree_input = "./input/fta/correct_tree_input.scramf";
-  ASSERT_THROW(fta->GraphingInstructions(), Error);
-  ASSERT_NO_THROW(fta->ProcessInput(tree_input));
-  ASSERT_NO_THROW(fta->GraphingInstructions());
+  std::vector<std::string> tree_input;
+  tree_input.push_back("./input/fta/correct_tree_input.scramf");
+  tree_input.push_back("./input/fta/doubly_defined_basic.scramf");
+  tree_input.push_back("./input/fta/transfer_correct_top.scramf");
+
+  std::vector<std::string>::iterator it;
+  for (it = tree_input.begin(); it != tree_input.end(); ++it) {
+    delete fta;
+    fta = new FaultTree("fta-default", false);
+    ASSERT_THROW(fta->GraphingInstructions(), Error);
+    ASSERT_NO_THROW(fta->ProcessInput(*it));
+    ASSERT_NO_THROW(fta->GraphingInstructions());
+  }
 }
 
 // Test Analysis
