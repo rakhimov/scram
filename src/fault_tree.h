@@ -84,7 +84,10 @@ class FaultTree : public RiskAnalysis {
   // Returns a warning message string with the list of bad gates and their
   // problems.
   // Returns an empty string if no problems are detected.
-  std::string CheckGates_();
+  std::string CheckAllGates_();
+
+  // Checks if a gate is initialized correctly.
+  std::string CheckGate_(scram::TopEvent* event);
 
   // Returns primary events that do not have probabilities assigned.
   std::string PrimariesNoProb_();

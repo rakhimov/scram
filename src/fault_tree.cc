@@ -83,15 +83,8 @@ void FaultTree::ProcessInput(std::string input_file) {
     FaultTree::IncludeTransfers_();
   }
 
-  // Defensive check if the top event has at least one child.
-  if (top_event_->children().empty()) {
-    std::stringstream msg;
-    msg << "The top event does not have intermediate or primary events.";
-    throw scram::ValidationError(msg.str());
-  }
-
-  // Check if each gate has a right number of children.
-  std::string bad_gates = FaultTree::CheckGates_();
+  // Check if all gates have a right number of children.
+  std::string bad_gates = FaultTree::CheckAllGates_();
   if (bad_gates != "") {
     std::stringstream msg;
     msg << "\nThere are problems with the following gates:\n";
@@ -1212,33 +1205,47 @@ void FaultTree::ExpandSets_(scram::TopEvent* t,
   }
 }
 
-std::string FaultTree::CheckGates_() {
+std::string FaultTree::CheckAllGates_() {
   std::stringstream msg;
-  msg << "";  // An empty default message, an indicator of no problems.
+  msg << "";  // An empty default message is the indicator of no problems.
+
+  // Check the top event.
+  msg << FaultTree::CheckGate_(top_event_);
+
+  // Check the intermediate events.
   boost::unordered_map<std::string, scram::InterEvent*>::iterator it;
   for (it = inter_events_.begin(); it != inter_events_.end(); ++it) {
-    try {
-      std::string gate = it->second->gate();
-      // This line throws error if there are no children.
-      int size = it->second->children().size();
-      // Add transfer gates if needed for graphing.
-      size += transfer_map_.count(it->second->id());
-
-      // Gate dependent logic.
-      if ((gate == "and") && (size < 2)) {
-        msg << orig_ids_[it->first] << " : AND gate must have 2 or more "
-            << "children.\n";
-      } else if ((gate == "or") && (size < 2)) {
-        msg << orig_ids_[it->first] << " : OR gate must have 2 or more "
-            << "children.\n";
-      }
-    } catch (scram::ValueError& err) {
-      msg << orig_ids_[it->first] << " : No children detected.";
-    }
+    msg << FaultTree::CheckGate_(it->second);
   }
 
   return msg.str();
 }
+
+std::string FaultTree::CheckGate_(scram::TopEvent* event) {
+  std::stringstream msg;
+  msg << "";  // An empty default message is the indicator of no problems.
+  try {
+    std::string gate = event->gate();
+    // This line throws error if there are no children.
+    int size = event->children().size();
+    // Add transfer gates if needed for graphing.
+    size += transfer_map_.count(event->id());
+
+    // Gate dependent logic.
+    if ((gate == "and") && (size < 2)) {
+      msg << orig_ids_[event->id()] << " : AND gate must have 2 or more "
+          << "children.\n";
+    } else if ((gate == "or") && (size < 2)) {
+      msg << orig_ids_[event->id()] << " : OR gate must have 2 or more "
+          << "children.\n";
+    }
+  } catch (scram::ValueError& err) {
+    msg << orig_ids_[event->id()] << " : No children detected.";
+  }
+
+  return msg.str();
+}
+
 
 std::string FaultTree::PrimariesNoProb_() {
   std::string uninit_primaries = "";
