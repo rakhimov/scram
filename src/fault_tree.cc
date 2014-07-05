@@ -78,6 +78,12 @@ void FaultTree::ProcessInput(std::string input_file) {
     FaultTree::InterpretArgs_(nline, msg, args, orig_line);
   }
 
+  // Check if the last data is written, and the last '}' isn't omitted.
+  if (block_started_) {
+    msg << "Missing closing '}' at the end of a file.";
+    throw scram::ValidationError(msg.str());
+  }
+
   // Transfer include external trees from other files.
   if (!transfers_.empty() && !graph_only_) {
     FaultTree::IncludeTransfers_();
@@ -158,11 +164,12 @@ void FaultTree::PopulateProbabilities(std::string prob_file) {
         break;
       }
       case 2: {
-        id = args[0];
         if (!block_started) {
           msg << "Line " << nline << " : " << "Missing opening bracket {";
           throw scram::ValidationError(msg.str());
         }
+
+        id = args[0];
 
         if (block_type == "" && id == "block") {
           block_type = args[1];
@@ -198,6 +205,12 @@ void FaultTree::PopulateProbabilities(std::string prob_file) {
         throw scram::ValidationError(msg.str());
       }
     }
+  }
+
+  // Check if the last data is written, and the last '}' isn't omitted.
+  if (block_started) {
+    msg << "Missing closing '}' at the end of a file.";
+    throw scram::ValidationError(msg.str());
   }
 
   // Check if all primary events have probabilities initialized.
@@ -929,6 +942,11 @@ void FaultTree::InterpretArgs_(int nline, std::stringstream& msg,
       break;
     }
     case 2: {
+      if (!block_started_) {
+        msg << "Line " << nline << " : " << "Missing opening bracket {";
+        throw scram::ValidationError(msg.str());
+      }
+
       if (args[0] == "parent" && parent_ == "") {
         parent_ = args[1];
       } else if (args[0] == "id" && id_ == "") {

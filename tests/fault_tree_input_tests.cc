@@ -38,23 +38,29 @@ TEST(FaultTreeInputTest, CorrectFTAProbability) {
 // Test incorrect fault tree inputs
 TEST(FaultTreeInputTest, IncorrectFTAInputs) {
   std::vector<std::string> incorrect_inputs;
+  // Access issues.
   incorrect_inputs.push_back("./input/fta/nonexistent_file.scramf");
+  // Formatting issues.
+  incorrect_inputs.push_back("./input/fta/missing_opening_brace_at_start.scramf");
+  incorrect_inputs.push_back("./input/fta/missing_opening_brace.scramf");
+  incorrect_inputs.push_back("./input/fta/missing_closing_brace.scramf");
+  incorrect_inputs.push_back("./input/fta/missing_closing_brace_at_end.scramf");
+  // Other issues.
   incorrect_inputs.push_back("./input/fta/top_event_with_no_child.scramf");
   incorrect_inputs.push_back("./input/fta/basic_top_event.scramf");
   incorrect_inputs.push_back("./input/fta/doubly_defined_intermediate.scramf");
   incorrect_inputs.push_back("./input/fta/doubly_defined_top.scramf");
   incorrect_inputs.push_back("./input/fta/extra_parameter.scramf");
   incorrect_inputs.push_back("./input/fta/leaf_intermidiate_event.scramf");
-  incorrect_inputs.push_back("./input/fta/missing_closing_brace.scramf");
   incorrect_inputs.push_back("./input/fta/missing_id.scramf");
   incorrect_inputs.push_back("./input/fta/missing_nodes.scramf");
-  incorrect_inputs.push_back("./input/fta/missing_opening_brace.scramf");
   incorrect_inputs.push_back("./input/fta/missing_parameter.scramf");
   incorrect_inputs.push_back("./input/fta/missing_parent.scramf");
   incorrect_inputs.push_back("./input/fta/missing_type.scramf");
   incorrect_inputs.push_back("./input/fta/non_existent_parent.scramf");
   incorrect_inputs.push_back("./input/fta/unrecognized_parameter.scramf");
   incorrect_inputs.push_back("./input/fta/unrecognized_type.scramf");
+  // Issues with transfer gates.
   incorrect_inputs.push_back("./input/fta/transfer_circular_self_top.scramf");
   incorrect_inputs.push_back("./input/fta/transfer_circular_top.scramf");
   incorrect_inputs.push_back("./input/fta/transfer_head_extra_nodes.scramf");
@@ -74,7 +80,13 @@ TEST(FaultTreeInputTest, IncorrectFTAInputs) {
 TEST(FaultTreeInputTest, IncorrectFTAProbability) {
   std::string correct_input = "./input/fta/correct_tree_input.scramf";
   std::vector<std::string> incorrect_prob;
-  incorrect_prob.push_back("./input/fta/nonexistent_file.scramf");
+  incorrect_prob.push_back("./input/fta/nonexistent_file.scramp");
+  // Formatting issues.
+  incorrect_prob.push_back("./input/fta/missing_opening_brace_at_start.scramp");
+  incorrect_prob.push_back("./input/fta/missing_opening_brace.scramp");
+  incorrect_prob.push_back("./input/fta/missing_closing_brace.scramp");
+  incorrect_prob.push_back("./input/fta/missing_closing_brace_at_end.scramp");
+  // Other issues.
   incorrect_prob.push_back("./input/fta/doubly_defined_prob.scramp");
   incorrect_prob.push_back("./input/fta/huge_prob.scramp");
   incorrect_prob.push_back("./input/fta/missing_basic_event.scramp");
