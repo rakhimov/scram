@@ -75,7 +75,8 @@ TEST(FaultTreeInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back("./input/fta/missing_parameter.scramf");
   incorrect_inputs.push_back("./input/fta/missing_parent.scramf");
   incorrect_inputs.push_back("./input/fta/missing_type.scramf");
-  incorrect_inputs.push_back("./input/fta/non_existent_parent.scramf");
+  incorrect_inputs.push_back("./input/fta/non_existent_parent_primary.scramf");
+  incorrect_inputs.push_back("./input/fta/non_existent_parent_inter.scramf");
   incorrect_inputs.push_back("./input/fta/unrecognized_parameter.scramf");
   incorrect_inputs.push_back("./input/fta/unrecognized_type.scramf");
   // Issues with transfer gates.
