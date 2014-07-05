@@ -16,9 +16,25 @@ def test_fta_calls():
     cmd = ["scram", "-h"]
     yield assert_equal, 0, call(cmd)
 
-    # Test the validation
+    # Empty call
+    cmd = ["scram"]
+    yield assert_equal, 1, call(cmd)
+
+    # Test the validation a fta tree file
     cmd = ["scram", "-v", fta_input]
     yield assert_equal, 0, call(cmd)
+
+    # Test the incorrect limit order
+    cmd = ["scram", fta_input, "-l", "-1"]
+    yield assert_equal, 1, call(cmd)
+
+    # Test the incorrect number for probability series
+    cmd = ["scram", fta_input, fta_prob, "-s", "-1"]
+    yield assert_equal, 1, call(cmd)
+
+    # Test incorrect type of analysis
+    cmd = ["scram", fta_input, fta_prob, "-a", "fta-nonexistent-analysis"]
+    yield assert_equal, 1, call(cmd)
 
     # Test graph only
     cmd = ["scram", "-g", fta_input]
@@ -27,14 +43,21 @@ def test_fta_calls():
     if os.path.isfile(graph_file):
         os.remove(graph_file)
 
+    # Test validation of a probability file
     cmd = ["scram", "-v", fta_input, fta_prob]
     yield assert_equal, 0, call(cmd)
 
     # Test calculation calls
     cmd = ["scram", fta_input]
     yield assert_equal, 0, call(cmd)
-    assert_equal(0, call(cmd));
+    cmd.append(fta_prob)
     yield assert_equal, 0, call(cmd)
+    out_temp = "./output_temp.txt"
+    cmd.append("-o")
+    cmd.append(out_temp)
+    yield assert_equal, 0, call(cmd)  # Report into an outupt file
+    if os.path.isfile(out_temp):
+        os.remove(out_temp)
 
     # Test MC
     cmd = ["scram", fta_input, "-a", "fta-mc"]
