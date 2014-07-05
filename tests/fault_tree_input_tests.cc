@@ -61,7 +61,7 @@ TEST(FaultTreeInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back("./input/fta/missing_closing_brace.scramf");
   incorrect_inputs.push_back("./input/fta/missing_closing_brace_at_end.scramf");
   incorrect_inputs.push_back("./input/fta/too_many_args.scramf");
-  incorrect_inputs.push_back("./input/fta/secon_closing_brace.scramf");
+  incorrect_inputs.push_back("./input/fta/second_closing_brace.scramf");
   incorrect_inputs.push_back("./input/fta/one_arg_err.scramf");
   // Other issues.
   incorrect_inputs.push_back("./input/fta/top_event_with_no_child.scramf");
