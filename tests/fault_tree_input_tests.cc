@@ -46,6 +46,8 @@ TEST(FaultTreeInputTest, CorrectFTAProbability) {
   EXPECT_THROW(ran->PopulateProbabilities(prob_correct), Error);
   EXPECT_NO_THROW(ran->ProcessInput(input_correct));  // Create the fault tree.
   EXPECT_NO_THROW(ran->PopulateProbabilities(prob_correct));
+
+  delete ran;
 }
 
 // Test incorrect fault tree inputs
@@ -87,6 +89,7 @@ TEST(FaultTreeInputTest, IncorrectFTAInputs) {
   for (it = incorrect_inputs.begin(); it != incorrect_inputs.end(); ++it) {
     ran = new FaultTree("fta-default", false);
     EXPECT_THROW(ran->ProcessInput(*it), scram::Error);
+    delete ran;
   }
 }
 
@@ -114,5 +117,6 @@ TEST(FaultTreeInputTest, IncorrectFTAProbability) {
     ran = new FaultTree("fta-default", false);
     EXPECT_NO_THROW(ran->ProcessInput(correct_input));
     EXPECT_THROW(ran->PopulateProbabilities(*it), scram::Error);
+    delete ran;
   }
 }
