@@ -19,4 +19,5 @@ script:
     - ./.run_tests.sh
 
 after_success:
-    - ./.coveralls.sh
+    - coveralls  --verbose  --exclude tests  --exclude ./build/CMakeFiles/
+      --exclude ./build/lib/  --exclude src/error.h --exclude src/error.cc

@@ -1,5 +1,6 @@
 #!usr/bin/env python
 
+import os
 from subprocess import call
 
 from nose.tools import assert_equal
@@ -22,6 +23,9 @@ def test_fta_calls():
     # Test graph only
     cmd = ["scram", "-g", fta_input]
     yield assert_equal, 0, call(cmd)
+    graph_file = "./input/fta/correct_tree_input.dot"
+    if os.path.isfile(graph_file):
+        os.remove(graph_file)
 
     cmd = ["scram", "-v", fta_input, fta_prob]
     yield assert_equal, 0, call(cmd)
