@@ -9,6 +9,8 @@ using namespace scram;
 TEST(EventTest, Id) {
   Event* event = new Event("event_name");
   EXPECT_EQ(event->id(), "event_name");
+
+  delete event;
 }
 
 // Test TopEvent class
@@ -23,6 +25,8 @@ TEST(TopEventTest, Gate) {
   // Requesting the gate should work without errors after setting.
   EXPECT_NO_THROW(top->gate());
   EXPECT_EQ(top->gate(), "and");
+
+  delete top;
 }
 
 TEST(TopEventTest, Children) {
@@ -43,6 +47,8 @@ TEST(TopEventTest, Children) {
   EXPECT_NO_THROW(top->AddChild(second_child));
   children.insert(std::make_pair(second_child->id(), second_child));
   EXPECT_EQ(top->children(), children);
+
+  delete top, first_child, second_child;
 }
 
 // Test InterEvent class
@@ -57,6 +63,8 @@ TEST(InterEventTest, Parent) {
   EXPECT_THROW(inter_event->parent(parent_event), ValueError);  // Resetting.
   EXPECT_NO_THROW(inter_event->parent());
   EXPECT_EQ(inter_event->parent(), parent_event);
+
+  delete inter_event, parent_event;
 }
 
 // Test PrimaryEvent class
@@ -70,6 +78,8 @@ TEST(PrimaryEventTest, Type) {
   EXPECT_THROW(primary->type(event_type), ValueError);  // Resetting.
   EXPECT_NO_THROW(primary->type());
   EXPECT_EQ(primary->type(), event_type);
+
+  delete primary;
 }
 
 TEST(PrimaryEventTest, GeneralProbability) {
@@ -85,6 +95,8 @@ TEST(PrimaryEventTest, GeneralProbability) {
   EXPECT_THROW(primary->p(prob), ValueError);  // Resetting is an error.
   EXPECT_NO_THROW(primary->p());
   EXPECT_EQ(primary->p(), prob);
+
+  delete primary;
 }
 
 TEST(PrimaryEventTest, HouseProbability) {
@@ -97,9 +109,12 @@ TEST(PrimaryEventTest, HouseProbability) {
   // Setting with a valid values.
   EXPECT_NO_THROW(primary->p(0));
   EXPECT_EQ(primary->p(), 0);
+  delete primary;
   primary = new PrimaryEvent("valve", "house");
   EXPECT_NO_THROW(primary->p(1));
   EXPECT_EQ(primary->p(), 1);
+
+  delete primary;
 }
 
 TEST(PrimaryEventTest, Parent) {
@@ -122,4 +137,6 @@ TEST(PrimaryEventTest, Parent) {
   EXPECT_NO_THROW(primary->parents());
   parents.insert(std::make_pair(second_parent->id(), second_parent));
   EXPECT_EQ(primary->parents(), parents);
+
+  delete primary, first_parent, second_parent;
 }
