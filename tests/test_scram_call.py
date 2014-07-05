@@ -28,6 +28,11 @@ def test_fta_calls():
     cmd = ["scram", fta_input, "-l", "-1"]
     yield assert_equal, 1, call(cmd)
 
+    # Test the limit order no minimal cut sets.
+    # This was an issue #17. This should not throw an error anymore.
+    cmd = ["scram", fta_input, fta_prob, "-l", "1"]
+    yield assert_equal, 0, call(cmd)
+
     # Test the incorrect number for probability series
     cmd = ["scram", fta_input, fta_prob, "-s", "-1"]
     yield assert_equal, 1, call(cmd)

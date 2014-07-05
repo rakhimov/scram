@@ -415,8 +415,10 @@ void FaultTree::Analyze() {
   // First, defensive check if cut sets exists for the specified limit order.
   if (cut_sets.empty()) {
     std::stringstream msg;
-    msg << "No cut sets for the limit order " << limit_order_;
-    throw scram::ValueError(msg.str());
+    msg << "No cut sets for the limit order " <<  limit_order_;
+    warnings_ += msg.str();
+    analysis_done_ = true;
+    return;
   }
 
   // Choose to convert vector to a set to get rid of any duplications.
