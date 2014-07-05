@@ -3,7 +3,7 @@
 import os
 from subprocess import call
 
-from nose.tools import assert_equal
+from nose.tools import assert_equal, assert_not_equal
 
 def test_fta_calls():
     """Tests all possible calls from the cli."""
@@ -45,6 +45,11 @@ def test_fta_calls():
     cmd = ["scram", "-g", fta_input]
     yield assert_equal, 0, call(cmd)
     graph_file = "./input/fta/correct_tree_input.dot"
+    # Changing permission
+    cmd = ["chmod", "a-w", graph_file]
+    call(cmd)
+    cmd = ["scram", "-g", fta_input]
+    yield assert_not_equal, 0, call(cmd)
     if os.path.isfile(graph_file):
         os.remove(graph_file)
 

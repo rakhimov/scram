@@ -249,53 +249,13 @@ void FaultTree::GraphingInstructions() {
   // Keep track of number of repetitions of the primary events.
   std::map<std::string, int> pr_repeat;
   // Populate intermediate and primary events of the top.
-  std::map<std::string, scram::Event*> events_children = top_event_->children();
-
-  std::map<std::string, scram::Event*>::iterator it_child;
-  for (it_child = events_children.begin();
-       it_child != events_children.end(); ++it_child) {
-    // Deal with repeated primary events.
-    if (primary_events_.count(it_child->first)) {
-      if (pr_repeat.count(it_child->first)) {
-        int rep = pr_repeat[it_child->first];
-        rep++;
-        pr_repeat.erase(it_child->first);
-        pr_repeat.insert(std::make_pair(it_child->first, rep));
-      } else if (!inter_events_.count(it_child->first)) {
-        pr_repeat.insert(std::make_pair(it_child->first, 0));
-      }
-      out << "\"" <<  orig_ids_[top_event_id_] << "\" -> "
-          << "\"" <<orig_ids_[it_child->first] <<"_R"
-          << pr_repeat[it_child->first] << "\";\n";
-    } else {
-      out << "\"" << orig_ids_[top_event_id_] << "\" -> "
-          << "\"" << orig_ids_[it_child->first] << "\";\n";
-    }
-  }
+  FaultTree::GraphNode_(top_event_, pr_repeat, out);
+  out.flush();
   // Do the same for all intermediate events.
   boost::unordered_map<std::string, scram::InterEvent*>::iterator it_inter;
   for (it_inter = inter_events_.begin(); it_inter != inter_events_.end();
        ++it_inter) {
-    events_children = it_inter->second->children();
-    for (it_child = events_children.begin();
-         it_child != events_children.end(); ++it_child) {
-      if (primary_events_.count(it_child->first)) {
-        if (pr_repeat.count(it_child->first)) {
-          int rep = pr_repeat[it_child->first];
-          rep++;
-          pr_repeat.erase(it_child->first);
-          pr_repeat.insert(std::make_pair(it_child->first, rep));
-        } else {
-          pr_repeat.insert(std::make_pair(it_child->first, 0));
-        }
-        out << "\"" <<  orig_ids_[it_inter->first] << "\" -> "
-            << "\"" <<orig_ids_[it_child->first] <<"_R"
-            << pr_repeat[it_child->first] << "\";\n";
-      } else {
-        out << "\"" << orig_ids_[it_inter->first] << "\" -> "
-            << "\"" << orig_ids_[it_child->first] << "\";\n";
-      }
-    }
+    FaultTree::GraphNode_(it_inter->second, pr_repeat, out);
     out.flush();
   }
 
@@ -1182,6 +1142,34 @@ void FaultTree::IncludeTransfers_() {
 
       FaultTree::InterpretArgs_(nline, msg,  args, orig_line, tr_parent,
                                 tr_id, suffix);
+    }
+  }
+}
+
+void FaultTree::GraphNode_(scram::TopEvent* t,
+                           std::map<std::string, int>& pr_repeat,
+                           std::ofstream& out) {
+  // Populate intermediate and primary events of the input inter event.
+  std::map<std::string, scram::Event*> events_children = t->children();
+  std::map<std::string, scram::Event*>::iterator it_child;
+  for (it_child = events_children.begin();
+       it_child != events_children.end(); ++it_child) {
+    // Deal with repeated primary events.
+    if (primary_events_.count(it_child->first)) {
+      if (pr_repeat.count(it_child->first)) {
+        int rep = pr_repeat[it_child->first];
+        rep++;
+        pr_repeat.erase(it_child->first);
+        pr_repeat.insert(std::make_pair(it_child->first, rep));
+      } else if (!inter_events_.count(it_child->first)) {
+        pr_repeat.insert(std::make_pair(it_child->first, 0));
+      }
+      out << "\"" <<  orig_ids_[t->id()] << "\" -> "
+          << "\"" <<orig_ids_[it_child->first] <<"_R"
+          << pr_repeat[it_child->first] << "\";\n";
+    } else {
+      out << "\"" << orig_ids_[t->id()] << "\" -> "
+          << "\"" << orig_ids_[it_child->first] << "\";\n";
     }
   }
 }

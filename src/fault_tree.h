@@ -1,6 +1,7 @@
 #ifndef SCRAM_FAULT_TREE_H_
 #define SCRAM_FAULT_TREE_H_
 
+#include <fstream>
 #include <map>
 #include <set>
 #include <string>
@@ -76,6 +77,10 @@ class FaultTree : public RiskAnalysis {
 
   // Includes external transfer in subtrees to this current main tree.
   void IncludeTransfers_();
+
+  // Graphs one top or intermediate event
+  void GraphNode_(scram::TopEvent* t, std::map<std::string, int>& pr_repeat,
+                  std::ofstream& out);
 
   // Adds children of top or intermediate event into a specified vector of sets.
   void ExpandSets_(scram::TopEvent* t, std::vector< Superset* >& sets);
