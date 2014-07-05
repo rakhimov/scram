@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 
+#include <unistd.h>
+
 #include <vector>
 
 #include "error.h"
@@ -15,8 +17,6 @@ TEST(FaultTreeInputTest, CorrectFTAInputs) {
   correct_inputs.push_back("./input/fta/different_order.scramf");
   correct_inputs.push_back("./input/fta/inline_comments.scramf");
   correct_inputs.push_back("./input/fta/transfer_correct_top.scramf");
-  // Transfer input file path without current dir indicator "./"
-  correct_inputs.push_back("input/fta/transfer_correct_top.scramf");
 
   RiskAnalysis* ran;
 
@@ -24,7 +24,17 @@ TEST(FaultTreeInputTest, CorrectFTAInputs) {
   for (it = correct_inputs.begin(); it != correct_inputs.end(); ++it) {
     ran = new FaultTree("fta-default", false);
     EXPECT_NO_THROW(ran->ProcessInput(*it));
+    delete ran;
   }
+
+  // This test is written after detecting a bug for transfer trees.
+  // Transfer input file path without current dir indicator "./"
+  std::string clean_name = "transfer_correct_top.scramf";
+  ASSERT_EQ(0, chdir("./input/fta/"));
+  ran = new FaultTree("fta-default", false);
+  EXPECT_NO_THROW(ran->ProcessInput(clean_name));
+  ASSERT_EQ(0, chdir("../../"));  // Setting back the directory.
+  delete ran;
 }
 
 // Test correct probability inputs
