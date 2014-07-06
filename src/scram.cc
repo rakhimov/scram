@@ -15,12 +15,13 @@ using namespace scram;
 
 int main(int argc, char* argv[]) {
   // Parse command line options.
+  std::string usage = "Usage:    scram [input-file] [prob-file] [opts]";
   po::options_description desc("Allowed options");
   desc.add_options()
       ("help,h", "produce help message")
-      ("input-file,i", po::value<std::string>(),
+      ("input-file", po::value<std::string>(),
        "input file with tree description")
-      ("prob-file,p", po::value<std::string>(), "file with probabilities")
+      ("prob-file", po::value<std::string>(), "file with probabilities")
       ("validate,v", "only validate input files")
       ("graph-only,g", "produce graph without analysis")
       ("analysis,a", po::value<std::string>()->default_value("fta-default"),
@@ -34,7 +35,13 @@ int main(int argc, char* argv[]) {
       ;
 
   po::variables_map vm;
-  po::store(po::parse_command_line(argc, argv, desc), vm);
+  try {
+    po::store(po::parse_command_line(argc, argv, desc), vm);
+  } catch(std::exception err) {
+    std::cout << "Invalid arguments.\n"
+              << usage << "\n\n" << desc << "\n";
+    return 1;
+  }
   po::notify(vm);
 
   po::positional_options_description p;
@@ -47,18 +54,13 @@ int main(int argc, char* argv[]) {
 
   // Process command line args.
   if (vm.count("help")) {
-    std::string msg = "Scram requires a file with input description and a"
-                      " file with probabilities for events.\n";
-    std::cout << msg << std::endl;
-    std::cout << desc << "\n";
+    std::cout << usage << "\n\n" << desc << "\n";
     return 0;
   }
 
   if (!vm.count("input-file")) {
-    std::string msg = "Scram requires an input file with"
-                      " a system description.\n";
-    std::cout << msg << std::endl;
-    std::cout << desc << "\n";
+    std::string msg = "No input file given.\n";
+    std::cout << usage << "\n\n" << desc << "\n";
     return 1;
   }
 
@@ -97,8 +99,7 @@ int main(int argc, char* argv[]) {
     ran = new FaultTree(analysis, graph_only, rare_event,
                         vm["limit-order"].as<int>(), vm["nsums"].as<int>());
   } else {
-    std::string msg = analysis + ": analysis is not recognized or supported"
-                      " yet :)\n";
+    std::string msg = analysis + ": this analysis is not recognized.\n";
     std::cout << msg << std::endl;
     std::cout << desc << "\n";
     return 1;
@@ -134,6 +135,8 @@ int main(int argc, char* argv[]) {
     output = vm["output"].as<std::string>();
   }
   ran->Report(output);
+
+  delete ran;
 
   return 0;
 }  // End of main.
