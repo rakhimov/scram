@@ -124,6 +124,11 @@ class FaultTree : public RiskAnalysis {
                         const std::set< std::set<int> >& set,
                         std::set< std::set<int> >& combo_set);
 
+  // Assign an index to each primary event, and then populates with this
+  // indexes new databases of minimal cut sets and primary to integer
+  // converting maps.
+  void AssignIndexes_();
+
   std::set< std::set<int> > imcs_;
   boost::unordered_map<int, scram::PrimaryEvent*> int_to_prime_;
   boost::unordered_map<std::string, int> prime_to_int_;
@@ -137,7 +142,7 @@ class FaultTree : public RiskAnalysis {
                          const std::set< std::set<int> >& set,
                          std::set< std::set<int> >& combo_set);
 
-  void MSample();  // Perform simulation.
+  void MSample_();  // Perform simulation.
   std::vector< std::set<int> > pos_terms_;  // Plus terms of the equation.
   std::vector< std::set<int> > neg_terms_;  // Minus terms of the equation.
   std::vector<double> sampled_results_;  // Storage for sampled values.

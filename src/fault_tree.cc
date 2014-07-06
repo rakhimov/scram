@@ -443,26 +443,10 @@ void FaultTree::Analyze() {
   // Perform Monte Carlo Uncertainty analysis.
   if (analysis_ == "fta-mc") {
     // Generate the equation.
-    int j = 0;
-    boost::unordered_map<std::string, scram::PrimaryEvent*>::iterator itp;
-    for (itp = primary_events_.begin(); itp != primary_events_.end();
-         ++itp) {
-      int_to_prime_.insert(std::make_pair(j, itp->second));
-      prime_to_int_.insert(std::make_pair(itp->second->id(), j));
-      ++j;
-    }
-    for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
-         ++it_min) {
-      std::set<int> pr_set;
-      std::set<std::string>::iterator it_set;
-      for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
-         pr_set.insert(prime_to_int_[*it_set]);
-      }
-      imcs_.insert(pr_set);
-    }
-    MProbOr_(imcs_, 1, nsums_);
+    FaultTree::AssignIndexes_();
+    FaultTree::MProbOr_(imcs_, 1, nsums_);
     // Sample probabilities and generate data.
-    MSample();
+    FaultTree::MSample_();
     return;
   }
 
@@ -500,25 +484,8 @@ void FaultTree::Analyze() {
     // Exact calculation of probability of cut sets.
     // ---------- Algorithm Improvement Check : Integers -----------------
     // Map primary events to integers.
-    int j = 0;
-    boost::unordered_map<std::string, scram::PrimaryEvent*>::iterator itp;
-    for (itp = primary_events_.begin(); itp != primary_events_.end();
-         ++itp) {
-      int_to_prime_.insert(std::make_pair(j, itp->second));
-      prime_to_int_.insert(std::make_pair(itp->second->id(), j));
-      iprobs_.push_back(itp->second->p());
-      ++j;
-    }
-    for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
-         ++it_min) {
-      std::set<int> pr_set;
-      std::set<std::string>::iterator it_set;
-      for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
-         pr_set.insert(prime_to_int_[*it_set]);
-      }
-      imcs_.insert(pr_set);
-    }
-    p_total_ = ProbOr_(imcs_, nsums_);
+    FaultTree::AssignIndexes_();
+    p_total_ = FaultTree::ProbOr_(imcs_, nsums_);
     // ------------------------------------------------------------
   }
 
@@ -1335,6 +1302,31 @@ void FaultTree::CombineElAndSet_(const std::set<int>& el,
     combo_set.insert(member_set);
   }
 }
+
+void FaultTree::AssignIndexes_() {
+  // Assign an index to each primary event, and populate relevant
+  // databases.
+  int j = 0;
+  boost::unordered_map<std::string, scram::PrimaryEvent*>::iterator itp;
+  for (itp = primary_events_.begin(); itp != primary_events_.end();
+       ++itp) {
+    int_to_prime_.insert(std::make_pair(j, itp->second));
+    prime_to_int_.insert(std::make_pair(itp->second->id(), j));
+    iprobs_.push_back(itp->second->p());
+    ++j;
+  }
+  // Update minimal cut sets with the assigned indexes.
+  std::set< std::set<std::string> >::iterator it_min;
+  for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
+       ++it_min) {
+    std::set<int> pr_set;
+    std::set<std::string>::iterator it_set;
+    for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
+      pr_set.insert(prime_to_int_[*it_set]);
+    }
+    imcs_.insert(pr_set);
+  }
+}
 // ----------------------------------------------------------------------
 // ----- Algorithm for Total Equation for Monte Carlo Simulation --------
 // Generation of the representation of the original equation.
@@ -1387,7 +1379,7 @@ void FaultTree::MCombineElAndSet_(const std::set<int>& el,
   }
 }
 
-void FaultTree::MSample() {
+void FaultTree::MSample_() {
 }
 // ----------------------------------------------------------------------
 
