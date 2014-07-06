@@ -40,6 +40,8 @@ TEST(SupersetTest, AddMember) {
   EXPECT_NO_THROW(sset->AddMember(prime_event, ftree));
   EXPECT_EQ(sset->primes(), primes);
   EXPECT_EQ(sset->inters(), inters);
+
+  delete ftree, sset;
 }
 
 // Test Insert function
@@ -72,6 +74,8 @@ TEST(SupersetTest, Insert) {
 
   EXPECT_EQ(sset_one->primes(), primes);
   EXPECT_EQ(sset_one->inters(), inters);
+
+  delete ftree, sset_one, sset_two;
 }
 
 // Test PopInter function
@@ -89,6 +93,8 @@ TEST(SupersetTest, PopInter) {
   EXPECT_EQ(sset->PopInter(), inter_event);
   // Test emptyness after poping the only inserted event.
   EXPECT_THROW(sset->PopInter(), ValueError);
+
+  delete ftree, sset;
 }
 
 // Test NumOfPrimeEvents function
@@ -106,6 +112,8 @@ TEST(SupersetTest, NumOfPrimeEvents) {
   // Add a new member.
   sset->AddMember("pumptwo", ftree);
   EXPECT_EQ(sset->NumOfPrimeEvents(), 2);
+
+  delete ftree, sset;
 }
 
 // Test NumOfInterEvents function
@@ -128,6 +136,8 @@ TEST(SupersetTest, NumOfInterEvents) {
   // Empty the set.
   sset->PopInter();
   EXPECT_EQ(sset->NumOfInterEvents(), 0);
+
+  delete ftree, sset;
 }
 
 // Test corner case with deleting the superset instance.
@@ -146,7 +156,9 @@ TEST(SupersetTest, DeleteSet) {
   inters = sset->inters();
   primes.insert("invalid");
   EXPECT_EQ(sset->primes().size(), 1);
-  delete sset;
+  delete sset;  // This is a wild test that should be deleted in future.
   EXPECT_EQ(primes.size(), 2);
   EXPECT_EQ(inters.size(), 1);
+
+  delete ftree, sset;
 }

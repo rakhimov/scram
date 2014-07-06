@@ -60,6 +60,9 @@ TEST_F(FaultTreeTest, CheckGate) {
   EXPECT_FALSE(CheckGate(top));
   top->AddChild(B);
   EXPECT_FALSE(CheckGate(top));
+
+  delete top;
+  delete A, B, C;
 }
 
 TEST_F(FaultTreeTest, ExpandSets) {
