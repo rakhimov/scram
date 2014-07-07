@@ -70,8 +70,8 @@ TEST_F(FaultTreeTest, CheckGate) {
 TEST_F(FaultTreeTest, ExpandSets) {
   InterEvent* inter = new InterEvent("inter");  // No gate is defined.
   inter_events().insert(std::make_pair("inter", inter));
-  std::vector< Superset* > sets;
-  std::vector< Superset* >::iterator it_set;
+  std::vector< SupersetPtr > sets;
+  std::vector< SupersetPtr >::iterator it_set;
   EXPECT_THROW(ExpandSets(inter, sets), ValueError);
   PrimaryEvent* A = new PrimaryEvent("a");
   PrimaryEvent* B = new PrimaryEvent("b");

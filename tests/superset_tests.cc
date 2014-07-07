@@ -1,14 +1,18 @@
 #include <gtest/gtest.h>
 
+#include <boost/shared_ptr.hpp>
+
 #include "error.h"
 #include "risk_analysis.h"
 #include "superset.h"
 
 using namespace scram;
 
+typedef boost::shared_ptr<Superset> SupersetPtr;
+
 // Test AddPrime function
 TEST(SupersetTest, AddPrime) {
-  Superset* sset = new Superset();
+  SupersetPtr sset(new Superset());
 
   std::string prime_event = "valveone";  // Prime event in the tree.
   std::string new_prime_event = "valvetwo";  // Prime event not in the tree.
@@ -33,13 +37,11 @@ TEST(SupersetTest, AddPrime) {
   // Test if repeated addition handled in a set.
   EXPECT_NO_THROW(sset->AddPrimary(new_prime_event));
   EXPECT_EQ(sset->primes(), primes);
-
-  delete sset;
 }
 
 // Test AddInter function.
 TEST(SupersetTest, AddInter) {
-  Superset* sset = new Superset();
+  SupersetPtr sset(new Superset());
 
   std::string inter_event = "trainone";  // Inter event in the tree.
   std::string new_inter_event = "traintwo";  // Inter event not in the tree.
@@ -56,14 +58,12 @@ TEST(SupersetTest, AddInter) {
   EXPECT_NO_THROW(sset->AddInter(new_inter_event));
   inters.insert(new_inter_event);
   EXPECT_EQ(sset->inters(), inters);
-
-  delete sset;
 }
 
 // Test Insert function
 TEST(SupersetTest, Insert) {
-  Superset* sset_one = new Superset();
-  Superset* sset_two = new Superset();
+  SupersetPtr sset_one(new Superset());
+  SupersetPtr sset_two(new Superset());
 
   std::string prime_event_one = "valveone";
   std::string inter_event_one = "trainone";
@@ -86,14 +86,11 @@ TEST(SupersetTest, Insert) {
 
   EXPECT_EQ(sset_one->primes(), primes);
   EXPECT_EQ(sset_one->inters(), inters);
-
-  delete sset_one;
-  delete sset_two;
 }
 
 // Test PopInter function
 TEST(SupersetTest, PopInter) {
-  Superset* sset = new Superset();
+  SupersetPtr sset(new Superset());
   // Fail to pop when the set is empty.
   EXPECT_THROW(sset->PopInter(), ValueError);
   // Add intermediate event into the set.
@@ -102,13 +99,11 @@ TEST(SupersetTest, PopInter) {
   EXPECT_EQ(sset->PopInter(), inter_event);
   // Test emptyness after poping the only inserted event.
   EXPECT_THROW(sset->PopInter(), ValueError);
-
-  delete sset;
 }
 
 // Test NumOfPrimeEvents function
 TEST(SupersetTest, NumOfPrimeEvents) {
-  Superset* sset = new Superset();
+  SupersetPtr sset(new Superset());
   EXPECT_EQ(sset->NumOfPrimeEvents(), 0);  // Empty case.
   sset->AddPrimary("pumpone");
   EXPECT_EQ(sset->NumOfPrimeEvents(), 1);
@@ -118,13 +113,11 @@ TEST(SupersetTest, NumOfPrimeEvents) {
   // Add a new member.
   sset->AddPrimary("pumptwo");
   EXPECT_EQ(sset->NumOfPrimeEvents(), 2);
-
-  delete sset;
 }
 
 // Test NumOfInterEvents function
 TEST(SupersetTest, NumOfInterEvents) {
-  Superset* sset = new Superset();
+  SupersetPtr sset(new Superset());
   EXPECT_EQ(sset->NumOfInterEvents(), 0);  // Empty case.
   sset->AddInter("trainone");
   EXPECT_EQ(sset->NumOfInterEvents(), 1);
@@ -139,13 +132,11 @@ TEST(SupersetTest, NumOfInterEvents) {
   // Empty the set.
   sset->PopInter();
   EXPECT_EQ(sset->NumOfInterEvents(), 0);
-
-  delete sset;
 }
 
 // Test corner case with deleting the superset instance.
 TEST(SupersetTest, DeleteSet) {
-  Superset* sset = new Superset();
+  SupersetPtr sset(new Superset());
   std::string prime_event = "valveone";
   std::string inter_event = "trainone";
   sset->AddPrimary(prime_event);
@@ -156,7 +147,4 @@ TEST(SupersetTest, DeleteSet) {
   inters = sset->inters();
   primes.insert("invalid");
   EXPECT_EQ(sset->primes().size(), 1);
-  delete sset;  // This is a wild test that should be deleted in future.
-  EXPECT_EQ(primes.size(), 2);
-  EXPECT_EQ(inters.size(), 1);
 }

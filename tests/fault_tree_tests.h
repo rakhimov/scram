@@ -8,6 +8,8 @@
 
 using namespace scram;
 
+typedef boost::shared_ptr<Superset> SupersetPtr;
+
 class FaultTreeTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
@@ -53,7 +55,7 @@ class FaultTreeTest : public ::testing::Test {
     return (fta->CheckGate_(event) == "") ? true : false;
   }
 
-  void ExpandSets(scram::TopEvent* t, std::vector< Superset* >& sets) {
+  void ExpandSets(scram::TopEvent* t, std::vector< SupersetPtr >& sets) {
     return fta->ExpandSets_(t, sets);
   }
 

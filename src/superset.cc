@@ -12,7 +12,7 @@ void Superset::AddInter(std::string id) {
   inters_.insert(id);
 }
 
-void Superset::Insert(Superset* st) {
+void Superset::Insert(boost::shared_ptr<Superset> st) {
   primes_.insert(st->primes_.begin(), st->primes_.end());
   inters_.insert(st->inters_.begin(), st->inters_.end());
 }

@@ -4,6 +4,7 @@
 #include <set>
 #include <string>
 
+#include <boost/shared_ptr.hpp>
 #include <boost/unordered_set.hpp>
 
 #include "error.h"
@@ -23,7 +24,7 @@ class Superset {
   void AddInter(std::string id);
 
   // Inserts another superset.
-  void Insert(Superset* st);
+  void Insert(boost::shared_ptr<Superset> st);
 
   // Returns an intermidiate event and deletes it from the set.
   std::string PopInter();

@@ -20,6 +20,8 @@
 namespace fs = boost::filesystem;
 namespace pt = boost::posix_time;
 
+typedef boost::shared_ptr<scram::Superset> SupersetPtr;
+
 namespace scram {
 
 FaultTree::FaultTree(std::string analysis, bool graph_only, bool rare_event,
@@ -324,7 +326,7 @@ void FaultTree::Analyze() {
   // Rule 4. Eliminate non-minimal cut sets.
 
   // Container for cut sets with intermediate events.
-  std::vector< scram::Superset* > inter_sets;
+  std::vector< SupersetPtr > inter_sets;
 
   // Container for cut sets with primary events only.
   std::vector< std::set<std::string> > cut_sets;
@@ -335,12 +337,12 @@ void FaultTree::Analyze() {
   std::vector< std::set<std::string> >::iterator it_vec;
 
   // An iterator for a vector with Supersets.
-  std::vector< scram::Superset* >::iterator it_sup;
+  std::vector< SupersetPtr >::iterator it_sup;
 
   // Generate cut sets.
   while (!inter_sets.empty()) {
     // Get rightmost set.
-    scram::Superset* tmp_set = inter_sets.back();
+    SupersetPtr tmp_set = inter_sets.back();
     // Delete rightmost set.
     inter_sets.pop_back();
 
@@ -356,7 +358,7 @@ void FaultTree::Analyze() {
     // Get the intermediate event.
     scram::InterEvent* inter_event = inter_events_[tmp_set->PopInter()];
     // To hold sets of children.
-    std::vector< scram::Superset* > children_sets;
+    std::vector< SupersetPtr > children_sets;
 
     FaultTree::ExpandSets_(inter_event, children_sets);
 
@@ -1142,7 +1144,7 @@ void FaultTree::GraphNode_(scram::TopEvent* t,
 }
 
 void FaultTree::ExpandSets_(scram::TopEvent* t,
-                            std::vector< scram::Superset* >& sets) {
+                            std::vector< SupersetPtr >& sets) {
   // Populate intermediate and primary events of the top.
   std::map<std::string, scram::Event*> events_children = t->children();
 
@@ -1153,7 +1155,7 @@ void FaultTree::ExpandSets_(scram::TopEvent* t,
   if (t->gate() == "or") {
     for (it_child = events_children.begin();
          it_child != events_children.end(); ++it_child) {
-      scram::Superset* tmp_set_c = new scram::Superset();
+      SupersetPtr tmp_set_c(new scram::Superset());
       if (inter_events_.count(it_child->first)) {
         tmp_set_c->AddInter(it_child->first);
       } else {
@@ -1162,7 +1164,7 @@ void FaultTree::ExpandSets_(scram::TopEvent* t,
       sets.push_back(tmp_set_c);
     }
   } else if (t->gate() == "and") {
-    scram::Superset* tmp_set_c = new scram::Superset();
+    SupersetPtr tmp_set_c(new scram::Superset());
     for (it_child = events_children.begin();
          it_child != events_children.end(); ++it_child) {
       if (inter_events_.count(it_child->first)) {

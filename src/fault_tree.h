@@ -8,6 +8,7 @@
 #include <queue>
 
 #include <boost/serialization/map.hpp>
+#include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 
 #include "error.h"
@@ -81,7 +82,8 @@ class FaultTree : public RiskAnalysis {
                   std::ofstream& out);
 
   // Adds children of top or intermediate event into a specified vector of sets.
-  void ExpandSets_(scram::TopEvent* t, std::vector< scram::Superset* >& sets);
+  void ExpandSets_(scram::TopEvent* t,
+                   std::vector< boost::shared_ptr<scram::Superset> >& sets);
 
   // Verifies if gates are initialized correctly with right number of children.
   // Returns a warning message string with the list of bad gates and their
