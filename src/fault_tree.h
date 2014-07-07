@@ -146,7 +146,6 @@ class FaultTree : public RiskAnalysis {
   std::vector< std::set<int> > pos_terms_;  // Plus terms of the equation.
   std::vector< std::set<int> > neg_terms_;  // Minus terms of the equation.
   std::vector<double> sampled_results_;  // Storage for sampled values.
-  int nsimulations_;  // Number of simulations to run.
   // -----------------------------------------------------------------
   // This member is used to provide any warnings about assumptions,
   // calculations, and settings. These warnings must be written into output

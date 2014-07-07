@@ -55,6 +55,9 @@ FaultTree::FaultTree(std::string analysis, bool graph_only, bool rare_event,
   types_.insert("basic");
   types_.insert("undeveloped");
   types_.insert("house");
+
+  // Pointer to the top event
+  scram::TopEvent* top_event_;
 }
 
 void FaultTree::ProcessInput(std::string input_file) {
