@@ -10,20 +10,18 @@
 #include <boost/serialization/map.hpp>
 #include <boost/unordered_map.hpp>
 
+#include "error.h"
 #include "event.h"
 #include "risk_analysis.h"
+#include "superset.h"
 
 class FaultTreeTest;
 
 namespace scram {
 
-class Superset;
-
 // Fault tree analysis.
 class FaultTree : public RiskAnalysis {
-  // This is a set class to work with sets of intermediate and primary events.
-  // The class is a friend because of performance reasons.
-  friend class Superset;
+
   friend class ::FaultTreeTest;
 
  public:
@@ -83,7 +81,7 @@ class FaultTree : public RiskAnalysis {
                   std::ofstream& out);
 
   // Adds children of top or intermediate event into a specified vector of sets.
-  void ExpandSets_(scram::TopEvent* t, std::vector< Superset* >& sets);
+  void ExpandSets_(scram::TopEvent* t, std::vector< scram::Superset* >& sets);
 
   // Verifies if gates are initialized correctly with right number of children.
   // Returns a warning message string with the list of bad gates and their

@@ -4,14 +4,12 @@ namespace scram {
 
 Superset::Superset() {}
 
-void Superset::AddMember(std::string id, FaultTree* ft) {
-  if (ft->inter_events_.count(id)) {
-    inters_.insert(id);
-  } else if (ft->primary_events_.count(id)) {
-    primes_.insert(id);
-  } else {
-    throw scram::ValueError(id + " event does not exists in the fault tree.");
-  }
+void Superset::AddPrimary(std::string id) {
+  primes_.insert(id);
+}
+
+void Superset::AddInter(std::string id) {
+  inters_.insert(id);
 }
 
 void Superset::Insert(Superset* st) {

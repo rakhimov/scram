@@ -7,7 +7,6 @@
 #include <boost/unordered_set.hpp>
 
 #include "error.h"
-#include "fault_tree.h"
 
 namespace scram {
 
@@ -17,8 +16,11 @@ class Superset {
  public:
   Superset();
 
-  // Add an event into the set.
-  void AddMember(std::string id, FaultTree* ft);
+  // Add a name of a primary event into the set.
+  void AddPrimary(std::string id);
+
+  // Add a name of an intermediate event into the set.
+  void AddInter(std::string id);
 
   // Inserts another superset.
   void Insert(Superset* st);

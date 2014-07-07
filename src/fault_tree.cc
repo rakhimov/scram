@@ -16,9 +16,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/date_time.hpp>
 
-#include "error.h"
-#include "event.h"
-#include "superset.h"
 
 namespace fs = boost::filesystem;
 namespace pt = boost::posix_time;
@@ -327,7 +324,7 @@ void FaultTree::Analyze() {
   // Rule 4. Eliminate non-minimal cut sets.
 
   // Container for cut sets with intermediate events.
-  std::vector< Superset* > inter_sets;
+  std::vector< scram::Superset* > inter_sets;
 
   // Container for cut sets with primary events only.
   std::vector< std::set<std::string> > cut_sets;
@@ -338,12 +335,12 @@ void FaultTree::Analyze() {
   std::vector< std::set<std::string> >::iterator it_vec;
 
   // An iterator for a vector with Supersets.
-  std::vector< Superset* >::iterator it_sup;
+  std::vector< scram::Superset* >::iterator it_sup;
 
   // Generate cut sets.
   while (!inter_sets.empty()) {
     // Get rightmost set.
-    Superset* tmp_set = inter_sets.back();
+    scram::Superset* tmp_set = inter_sets.back();
     // Delete rightmost set.
     inter_sets.pop_back();
 
@@ -359,7 +356,7 @@ void FaultTree::Analyze() {
     // Get the intermediate event.
     scram::InterEvent* inter_event = inter_events_[tmp_set->PopInter()];
     // To hold sets of children.
-    std::vector< Superset* > children_sets;
+    std::vector< scram::Superset* > children_sets;
 
     FaultTree::ExpandSets_(inter_event, children_sets);
 
@@ -1145,7 +1142,7 @@ void FaultTree::GraphNode_(scram::TopEvent* t,
 }
 
 void FaultTree::ExpandSets_(scram::TopEvent* t,
-                            std::vector< Superset* >& sets) {
+                            std::vector< scram::Superset* >& sets) {
   // Populate intermediate and primary events of the top.
   std::map<std::string, scram::Event*> events_children = t->children();
 
@@ -1156,15 +1153,23 @@ void FaultTree::ExpandSets_(scram::TopEvent* t,
   if (t->gate() == "or") {
     for (it_child = events_children.begin();
          it_child != events_children.end(); ++it_child) {
-      Superset* tmp_set_c = new Superset();
-      tmp_set_c->AddMember(it_child->first, this);
+      scram::Superset* tmp_set_c = new scram::Superset();
+      if (inter_events_.count(it_child->first)) {
+        tmp_set_c->AddInter(it_child->first);
+      } else {
+        tmp_set_c->AddPrimary(it_child->first);
+      }
       sets.push_back(tmp_set_c);
     }
   } else if (t->gate() == "and") {
-    Superset* tmp_set_c = new Superset();
+    scram::Superset* tmp_set_c = new scram::Superset();
     for (it_child = events_children.begin();
          it_child != events_children.end(); ++it_child) {
-      tmp_set_c->AddMember(it_child->first, this);
+      if (inter_events_.count(it_child->first)) {
+        tmp_set_c->AddInter(it_child->first);
+      } else {
+        tmp_set_c->AddPrimary(it_child->first);
+      }
     }
     sets.push_back(tmp_set_c);
   } else {
