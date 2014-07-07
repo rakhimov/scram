@@ -46,4 +46,3 @@ TODO list for SCRAM Project
             [] Benchmark cases.
         ** Time and space complexity of all algorithms used in this package (Moderate)
         ** Installation instructions for various platforms (Low)
-        ** Consider using smart pointers instead of raw ones.

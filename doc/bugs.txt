@@ -3,9 +3,7 @@ Some bugs found during development:
     not a primary event. This is currently being tested by FaultTree class
     upon input processing and initialization of the fault tree.
   * Types of events and gates are checked in FaultTree class but not in Event
-    classes, which may seem intuitive.
-  * Memory is not managed well. There are many places where objects are
-    not deleted.
+    classes, which may seem more intuitive.
 
 Minor issues:
   * MCombineElSet is the same as CombineElSet.
