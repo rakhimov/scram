@@ -61,7 +61,7 @@ void PrimaryEvent::p(double p) {
   p_ = p;
 }
 
-void PrimaryEvent::AddParent(scram::Event* parent) {
+void PrimaryEvent::AddParent(boost::shared_ptr<scram::Event> parent) {
   if (parents_.count(parent->id())) {
     std::string msg = "Trying to re-insert existing parent for " + this->id();
     throw scram::ValueError(msg);
@@ -70,7 +70,8 @@ void PrimaryEvent::AddParent(scram::Event* parent) {
   parents_.insert(std::make_pair(parent->id(), parent));
 }
 
-std::map<std::string, scram::Event*>& PrimaryEvent::parents() {
+std::map<std::string,
+    boost::shared_ptr<scram::Event> >& PrimaryEvent::parents() {
   if (parents_.empty()) {
     std::string msg = this->id() + " primary event does not have parents.";
     throw scram::ValueError(msg);

@@ -1,21 +1,26 @@
 #include <gtest/gtest.h>
 
+#include <boost/shared_ptr.hpp>
+
 #include "error.h"
 #include "event.h"
 
 using namespace scram;
 
+typedef boost::shared_ptr<scram::Event> EventPtr;
+typedef boost::shared_ptr<scram::TopEvent> TopEventPtr;
+typedef boost::shared_ptr<scram::InterEvent> InterEventPtr;
+typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
+
 // Test for Event base class.
 TEST(EventTest, Id) {
-  Event* event = new Event("event_name");
+  EventPtr event(new Event("event_name"));
   EXPECT_EQ(event->id(), "event_name");
-
-  delete event;
 }
 
 // Test TopEvent class
 TEST(TopEventTest, Gate) {
-  TopEvent* top = new TopEvent("top_event");
+  TopEventPtr top(new TopEvent("top_event"));
   // No gate has been set, so the request is an error.
   EXPECT_THROW(top->gate(), ValueError);
   // Setting the gate.
@@ -25,15 +30,13 @@ TEST(TopEventTest, Gate) {
   // Requesting the gate should work without errors after setting.
   EXPECT_NO_THROW(top->gate());
   EXPECT_EQ(top->gate(), "and");
-
-  delete top;
 }
 
 TEST(TopEventTest, Children) {
-  TopEvent* top = new TopEvent("top_event");
-  std::map<std::string, Event*> children;
-  Event* first_child = new Event("first");
-  Event* second_child = new Event("second");
+  TopEventPtr top(new TopEvent("top_event"));
+  std::map<std::string, EventPtr> children;
+  EventPtr first_child(new Event("first"));
+  EventPtr second_child(new Event("second"));
   // Request for children when there are no children is an error.
   EXPECT_THROW(top->children(), ValueError);
   // Adding first child.
@@ -47,16 +50,12 @@ TEST(TopEventTest, Children) {
   EXPECT_NO_THROW(top->AddChild(second_child));
   children.insert(std::make_pair(second_child->id(), second_child));
   EXPECT_EQ(top->children(), children);
-
-  delete top;
-  delete first_child;
-  delete second_child;
 }
 
 // Test InterEvent class
 TEST(InterEventTest, Parent) {
-  InterEvent* inter_event = new InterEvent("inter");
-  Event* parent_event = new Event("parent");
+  InterEventPtr inter_event(new InterEvent("inter"));
+  EventPtr parent_event(new Event("parent"));
   // Request for the parent when it has not been set.
   EXPECT_THROW(inter_event->parent(), ValueError);
   // Setting a parent. Note that there is no check if the parent is not a
@@ -65,14 +64,11 @@ TEST(InterEventTest, Parent) {
   EXPECT_THROW(inter_event->parent(parent_event), ValueError);  // Resetting.
   EXPECT_NO_THROW(inter_event->parent());
   EXPECT_EQ(inter_event->parent(), parent_event);
-
-  delete inter_event;
-  delete parent_event;
 }
 
 // Test PrimaryEvent class
 TEST(PrimaryEventTest, Type) {
-  PrimaryEvent* primary = new PrimaryEvent("valve");
+  PrimaryEventPtr primary(new PrimaryEvent("valve"));
   std::string event_type = "basic";
   // Request for a type without setting it beforehand.
   EXPECT_THROW(primary->type(), ValueError);
@@ -81,12 +77,10 @@ TEST(PrimaryEventTest, Type) {
   EXPECT_THROW(primary->type(event_type), ValueError);  // Resetting.
   EXPECT_NO_THROW(primary->type());
   EXPECT_EQ(primary->type(), event_type);
-
-  delete primary;
 }
 
 TEST(PrimaryEventTest, GeneralProbability) {
-  PrimaryEvent* primary = new PrimaryEvent("valve");
+  PrimaryEventPtr primary(new PrimaryEvent("valve"));
   double prob = 0.5;
   // Request without having set.
   EXPECT_THROW(primary->p(), ValueError);
@@ -98,13 +92,11 @@ TEST(PrimaryEventTest, GeneralProbability) {
   EXPECT_THROW(primary->p(prob), ValueError);  // Resetting is an error.
   EXPECT_NO_THROW(primary->p());
   EXPECT_EQ(primary->p(), prob);
-
-  delete primary;
 }
 
 TEST(PrimaryEventTest, HouseProbability) {
   // House primary event.
-  PrimaryEvent* primary = new PrimaryEvent("valve", "house");
+  PrimaryEventPtr primary(new PrimaryEvent("valve", "house"));
   // Test for empty probability.
   EXPECT_THROW(primary->p(), ValueError);
   // Setting probability with various illegal values.
@@ -112,19 +104,16 @@ TEST(PrimaryEventTest, HouseProbability) {
   // Setting with a valid values.
   EXPECT_NO_THROW(primary->p(0));
   EXPECT_EQ(primary->p(), 0);
-  delete primary;
-  primary = new PrimaryEvent("valve", "house");
+  primary = PrimaryEventPtr(new PrimaryEvent("valve", "house"));
   EXPECT_NO_THROW(primary->p(1));
   EXPECT_EQ(primary->p(), 1);
-
-  delete primary;
 }
 
 TEST(PrimaryEventTest, Parent) {
-  PrimaryEvent* primary = new PrimaryEvent("valve");
-  Event* first_parent = new Event("trainone");
-  Event* second_parent = new Event("traintwo");
-  std::map<std::string, Event*> parents;
+  PrimaryEventPtr primary(new PrimaryEvent("valve"));
+  EventPtr first_parent(new Event("trainone"));
+  EventPtr second_parent(new Event("traintwo"));
+  std::map<std::string, EventPtr> parents;
   // Request for the parents when it has not been set.
   EXPECT_THROW(primary->parents(), ValueError);
   // Setting a parent. Note that there is no check if the parent is not a
@@ -140,8 +129,4 @@ TEST(PrimaryEventTest, Parent) {
   EXPECT_NO_THROW(primary->parents());
   parents.insert(std::make_pair(second_parent->id(), second_parent));
   EXPECT_EQ(primary->parents(), parents);
-
-  delete primary;
-  delete first_parent;
-  delete second_parent;
 }

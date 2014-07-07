@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include <boost/shared_ptr.hpp>
+
 #include "error.h"
 
 namespace scram {
@@ -39,10 +41,11 @@ class TopEvent : public scram::Event {
   virtual void gate(std::string gate);
 
   // Returns children.
-  virtual const std::map<std::string, scram::Event*>& children();
+  virtual const std::map<std::string, boost::shared_ptr<scram::Event> >&
+      children();
 
   // Adds a child into children list.
-  virtual void AddChild(scram::Event* child);
+  virtual void AddChild(boost::shared_ptr<scram::Event> child);
 
   virtual ~TopEvent() {}
 
@@ -50,7 +53,7 @@ class TopEvent : public scram::Event {
   // Gate type.
   std::string gate_;
   // Intermediate and primary events of the top event.
-  std::map<std::string, scram::Event*> children_;
+  std::map<std::string, boost::shared_ptr<scram::Event> > children_;
 };
 
 // Intermediate event.
@@ -58,20 +61,19 @@ class TopEvent : public scram::Event {
 class InterEvent : public scram::TopEvent {
  public:
   // Constructs with id, gate, and parent.
-  InterEvent(std::string id, std::string gate = "NONE",
-             scram::Event* parent = NULL);
+  InterEvent(std::string id, std::string gate = "NONE");
 
   // Returns the parent.
-  scram::Event* parent();
+  boost::shared_ptr<scram::Event> parent();
 
   // Sets the parent.
-  void parent(scram::Event* parent);
+  void parent(boost::shared_ptr<scram::Event> parent);
 
   ~InterEvent() {}
 
  private:
   // The parent of this intermediate event.
-  scram::Event* parent_;
+  boost::shared_ptr<scram::Event> parent_;
 };
 
 // This is a base class for events that can cause faults.
@@ -99,10 +101,10 @@ class PrimaryEvent : public scram::Event {
   void p(double p);
 
   // Adds a parent into the parent map.
-  void AddParent(scram::Event* parent);
+  void AddParent(boost::shared_ptr<scram::Event> parent);
 
   // Return parents.
-  std::map<std::string, scram::Event*>& parents();
+  std::map<std::string, boost::shared_ptr<scram::Event> >& parents();
 
   ~PrimaryEvent() {}
 
@@ -117,7 +119,7 @@ class PrimaryEvent : public scram::Event {
   std::string p_model_;
 
   // Parents of this primary event.
-  std::map<std::string, scram::Event*> parents_;
+  std::map<std::string, boost::shared_ptr<scram::Event> > parents_;
 };
 
 }  // namespace scram

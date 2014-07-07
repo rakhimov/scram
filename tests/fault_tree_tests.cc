@@ -27,10 +27,10 @@ TEST_F(FaultTreeTest, GetArgs) {
 }
 
 TEST_F(FaultTreeTest, CheckGate) {
-  TopEvent* top = new TopEvent("top", "and");  // AND gate.
-  PrimaryEvent* A = new PrimaryEvent("a");
-  PrimaryEvent* B = new PrimaryEvent("b");
-  PrimaryEvent* C = new PrimaryEvent("c");
+  TopEventPtr top(new TopEvent("top", "and"));  // AND gate.
+  PrimaryEventPtr A(new PrimaryEvent("a"));
+  PrimaryEventPtr B(new PrimaryEvent("b"));
+  PrimaryEventPtr C(new PrimaryEvent("c"));
 
   // AND Gate tests.
   EXPECT_FALSE(CheckGate(top));  // No child.
@@ -42,8 +42,7 @@ TEST_F(FaultTreeTest, CheckGate) {
   EXPECT_TRUE(CheckGate(top));  // More children are OK.
 
   // OR Gate tests.
-  delete top;
-  top = new TopEvent("top", "or");
+  top = TopEventPtr(new TopEvent("top", "or"));
   EXPECT_FALSE(CheckGate(top));  // No child.
   top->AddChild(A);
   EXPECT_FALSE(CheckGate(top));  // One child is not enough.
@@ -53,29 +52,23 @@ TEST_F(FaultTreeTest, CheckGate) {
   EXPECT_TRUE(CheckGate(top));  // More children are OK.
 
   // Some UNKNOWN gate tests.
-  delete top;
-  top = new TopEvent("top", "unknown_gate");
+  top = TopEventPtr(new TopEvent("top", "unknown_gate"));
   EXPECT_FALSE(CheckGate(top));  // No child.
   top->AddChild(A);
   EXPECT_FALSE(CheckGate(top));
   top->AddChild(B);
   EXPECT_FALSE(CheckGate(top));
-
-  delete top;
-  delete A;
-  delete B;
-  delete C;
 }
 
 TEST_F(FaultTreeTest, ExpandSets) {
-  InterEvent* inter = new InterEvent("inter");  // No gate is defined.
+  InterEventPtr inter(new InterEvent("inter"));  // No gate is defined.
   inter_events().insert(std::make_pair("inter", inter));
   std::vector< SupersetPtr > sets;
   std::vector< SupersetPtr >::iterator it_set;
   EXPECT_THROW(ExpandSets(inter, sets), ValueError);
-  PrimaryEvent* A = new PrimaryEvent("a");
-  PrimaryEvent* B = new PrimaryEvent("b");
-  PrimaryEvent* C = new PrimaryEvent("c");
+  PrimaryEventPtr A(new PrimaryEvent("a"));
+  PrimaryEventPtr B(new PrimaryEvent("b"));
+  PrimaryEventPtr C(new PrimaryEvent("c"));
   primary_events().insert(std::make_pair("a", A));
   primary_events().insert(std::make_pair("b", B));
   primary_events().insert(std::make_pair("c", C));
@@ -101,8 +94,7 @@ TEST_F(FaultTreeTest, ExpandSets) {
   EXPECT_EQ(true, a_found && b_found && c_found);
 
   // Testing for AND gate.
-  delete inter;
-  inter = new InterEvent("inter", "and");
+  inter = InterEventPtr(new InterEvent("inter", "and"));
   sets.clear();
   inter->AddChild(A);
   inter->AddChild(B);
@@ -116,27 +108,21 @@ TEST_F(FaultTreeTest, ExpandSets) {
   EXPECT_EQ(1, result.count("c"));
 
   // Testing for some UNKNOWN gate.
-  delete inter;
-  inter = new InterEvent("inter", "unknown_gate");
+  inter = InterEventPtr(new InterEvent("inter", "unknown_gate"));
   sets.clear();
   inter->AddChild(A);
   inter->AddChild(B);
   inter->AddChild(C);
   ASSERT_THROW(ExpandSets(inter, sets), ValueError);
-
-  delete inter;
-  delete A;
-  delete B;
-  delete C;
 }
 
 TEST_F(FaultTreeTest, ProbAndString) {
   std::set<std::string> min_cut_set;
   ASSERT_THROW(ProbAnd(min_cut_set), ValueError);  // Error for an empty set.
 
-  PrimaryEvent* A = new PrimaryEvent("a");
-  PrimaryEvent* B = new PrimaryEvent("b");
-  PrimaryEvent* C = new PrimaryEvent("c");
+  PrimaryEventPtr A(new PrimaryEvent("a"));
+  PrimaryEventPtr B(new PrimaryEvent("b"));
+  PrimaryEventPtr C(new PrimaryEvent("c"));
   A->p(0.1);
   B->p(0.2);
   C->p(0.3);
@@ -150,10 +136,6 @@ TEST_F(FaultTreeTest, ProbAndString) {
   EXPECT_DOUBLE_EQ(0.02, ProbAnd(min_cut_set));
   min_cut_set.insert("c");
   EXPECT_DOUBLE_EQ(0.006, ProbAnd(min_cut_set));
-
-  delete A;
-  delete B;
-  delete C;
 }
 
 TEST_F(FaultTreeTest, ProbAndInt) {
@@ -429,7 +411,7 @@ TEST_F(FaultTreeTest, ProcessInput) {
   EXPECT_EQ(1, primary_events().count("valveone"));
   EXPECT_EQ(1, primary_events().count("valvetwo"));
   if (inter_events().count("trainone")) {
-    InterEvent* inter = inter_events()["trainone"];
+    InterEventPtr inter = inter_events()["trainone"];
     EXPECT_EQ("trainone", inter->id());
     ASSERT_NO_THROW(inter->gate());
     EXPECT_EQ("or", inter->gate());
@@ -437,7 +419,7 @@ TEST_F(FaultTreeTest, ProcessInput) {
     EXPECT_EQ("topevent", inter->parent()->id());
   }
   if (primary_events().count("valveone")) {
-    PrimaryEvent* primary = primary_events()["valveone"];
+    PrimaryEventPtr primary = primary_events()["valveone"];
     EXPECT_EQ("valveone", primary->id());
     ASSERT_NO_THROW(primary->parents());
     EXPECT_EQ(1, primary->parents().size());

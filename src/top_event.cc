@@ -30,7 +30,8 @@ void TopEvent::gate(std::string gate) {
   gate_ = gate;
 }
 
-const std::map<std::string, scram::Event*>& TopEvent::children() {
+const std::map<std::string,
+      boost::shared_ptr<scram::Event> >& TopEvent::children() {
   if (children_.empty()) {
     std::string msg = this->id() + " event does not have children.";
     throw scram::ValueError(msg);
@@ -39,7 +40,7 @@ const std::map<std::string, scram::Event*>& TopEvent::children() {
   return children_;
 }
 
-void TopEvent::AddChild(scram::Event* child) {
+void TopEvent::AddChild(boost::shared_ptr<scram::Event> child) {
   if (children_.count(child->id())) {
     std::string msg = "Trying to re-insert a child for " + this->id() +
                       " event.";

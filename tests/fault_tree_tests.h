@@ -8,6 +8,11 @@
 
 using namespace scram;
 
+typedef boost::shared_ptr<scram::Event> EventPtr;
+typedef boost::shared_ptr<scram::TopEvent> TopEventPtr;
+typedef boost::shared_ptr<scram::InterEvent> InterEventPtr;
+typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
+
 typedef boost::shared_ptr<Superset> SupersetPtr;
 
 class FaultTreeTest : public ::testing::Test {
@@ -29,11 +34,11 @@ class FaultTreeTest : public ::testing::Test {
 
   std::string top_event_id() { return fta->top_event_id_; }
 
-  boost::unordered_map<std::string, scram::InterEvent*>& inter_events() {
+  boost::unordered_map<std::string, InterEventPtr>& inter_events() {
     return fta->inter_events_;
   }
 
-  boost::unordered_map<std::string, scram::PrimaryEvent*>& primary_events() {
+  boost::unordered_map<std::string, PrimaryEventPtr>& primary_events() {
     return fta->primary_events_;
   }
 
@@ -51,11 +56,11 @@ class FaultTreeTest : public ::testing::Test {
     return fta->imp_of_primaries_;
   }
 
-  bool CheckGate(TopEvent* event) {
+  bool CheckGate(TopEventPtr event) {
     return (fta->CheckGate_(event) == "") ? true : false;
   }
 
-  void ExpandSets(scram::TopEvent* t, std::vector< SupersetPtr >& sets) {
+  void ExpandSets(TopEventPtr t, std::vector< SupersetPtr >& sets) {
     return fta->ExpandSets_(t, sets);
   }
 
