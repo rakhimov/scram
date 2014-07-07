@@ -62,7 +62,9 @@ TEST_F(FaultTreeTest, CheckGate) {
   EXPECT_FALSE(CheckGate(top));
 
   delete top;
-  delete A, B, C;
+  delete A;
+  delete B;
+  delete C;
 }
 
 TEST_F(FaultTreeTest, ExpandSets) {
@@ -123,7 +125,9 @@ TEST_F(FaultTreeTest, ExpandSets) {
   ASSERT_THROW(ExpandSets(inter, sets), ValueError);
 
   delete inter;
-  delete A, B, C;
+  delete A;
+  delete B;
+  delete C;
 }
 
 TEST_F(FaultTreeTest, ProbAndString) {
@@ -147,7 +151,9 @@ TEST_F(FaultTreeTest, ProbAndString) {
   min_cut_set.insert("c");
   EXPECT_DOUBLE_EQ(0.006, ProbAnd(min_cut_set));
 
-  delete A, B, C;
+  delete A;
+  delete B;
+  delete C;
 }
 
 TEST_F(FaultTreeTest, ProbAndInt) {

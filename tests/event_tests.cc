@@ -48,7 +48,9 @@ TEST(TopEventTest, Children) {
   children.insert(std::make_pair(second_child->id(), second_child));
   EXPECT_EQ(top->children(), children);
 
-  delete top, first_child, second_child;
+  delete top;
+  delete first_child;
+  delete second_child;
 }
 
 // Test InterEvent class
@@ -64,7 +66,8 @@ TEST(InterEventTest, Parent) {
   EXPECT_NO_THROW(inter_event->parent());
   EXPECT_EQ(inter_event->parent(), parent_event);
 
-  delete inter_event, parent_event;
+  delete inter_event;
+  delete parent_event;
 }
 
 // Test PrimaryEvent class
@@ -138,5 +141,7 @@ TEST(PrimaryEventTest, Parent) {
   parents.insert(std::make_pair(second_parent->id(), second_parent));
   EXPECT_EQ(primary->parents(), parents);
 
-  delete primary, first_parent, second_parent;
+  delete primary;
+  delete first_parent;
+  delete second_parent;
 }
