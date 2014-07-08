@@ -3,7 +3,6 @@
 #include <boost/shared_ptr.hpp>
 
 #include "error.h"
-#include "risk_analysis.h"
 #include "superset.h"
 
 using namespace scram;

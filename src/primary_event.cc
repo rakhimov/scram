@@ -1,8 +1,6 @@
 // Implementation of primary event class.
 #include "event.h"
 
-#include <string>
-
 #include "error.h"
 
 namespace scram {

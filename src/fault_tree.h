@@ -27,7 +27,6 @@ namespace scram {
 
 // Fault tree analysis.
 class FaultTree : public RiskAnalysis {
-
   friend class ::FaultTreeTest;
 
  public:
@@ -47,7 +46,7 @@ class FaultTree : public RiskAnalysis {
   void GraphingInstructions();
 
   // Analyzes the fault tree and performs computations.
-  // This function must be called only after initilizing the tree with or 
+  // This function must be called only after initilizing the tree with or
   // without its probabilities.
   void Analyze();
 
