@@ -44,5 +44,12 @@ TODO list for SCRAM Project
     * Coding specific:
         ** Write tests for classes and functions. (High)
             [] Benchmark cases.
+                *TwoTrain
+                *Complex
+                *Lift
+                *Theatre
+                *ThreeLevels
+                *ThreeMotor
+                *TransTest
         ** Time and space complexity of all algorithms used in this package (Moderate)
         ** Installation instructions for various platforms (Low)
