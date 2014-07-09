@@ -1,7 +1,10 @@
-file(GLOB cc_core "${CMAKE_CURRENT_SOURCE_DIR}/*.cc")
 set(SCRAM_CORE_SRC ${SCRAM_CORE_SRC}
-  "${cc_core}"
-  )
+  "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/superset.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/error.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/top_event.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/inter_event.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/primary_event.cc")
 add_library(scramcore ${SCRAM_CORE_SRC})
 
 set_target_properties(scramcore

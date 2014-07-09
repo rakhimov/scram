@@ -53,9 +53,15 @@ include_directories(${SCRAM_CORE_INCLUDE_DIRS})
 
 # To add a new file, just add it to this list.  Any GoogleTests inside will be automatically
 # added to ctest.
-file(GLOB cc_tests "${CMAKE_CURRENT_SOURCE_DIR}/*_tests.cc")
 set(SCRAM_CORE_TEST_SOURCE ${SCRAM_CORE_TEST_SOURCE}
-  "${cc_tests}"
+  "${CMAKE_CURRENT_SOURCE_DIR}/event_tests.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/superset_tests.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree_input_tests.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree_tests.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/bench_abc_tests.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/bench_abbc_tests.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/bench_lift_tests.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/bench_ne574_tests.cc"
   )
 
 # Make tests to switch and run in build directory
