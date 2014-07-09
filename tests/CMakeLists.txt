@@ -59,6 +59,7 @@ set(SCRAM_CORE_TEST_SOURCE ${SCRAM_CORE_TEST_SOURCE}
   "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree_input_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/abc_tests.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/abbc_tests.cc"
   )
 
 # Make tests to switch and run in build directory
