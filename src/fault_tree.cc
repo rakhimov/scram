@@ -73,6 +73,7 @@ void FaultTree::ProcessInput(std::string input_file) {
 
   // Error messages.
   std::stringstream msg;
+  msg << "In " << input_file << ", ";
 
   for (int nline = 1; getline(ifile, line); ++nline) {
     if (!FaultTree::GetArgs_(args, line, orig_line)) continue;
@@ -128,6 +129,7 @@ void FaultTree::PopulateProbabilities(std::string prob_file) {
 
   // Error messages.
   std::stringstream msg;
+  msg << "In " << prob_file << ", ";
 
   for (int nline = 1; getline(pfile, line); ++nline) {
     if (!FaultTree::GetArgs_(args, line, orig_line)) continue;
