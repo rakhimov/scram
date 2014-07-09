@@ -5,3 +5,7 @@ ValveTwo    0.5
 PumpOne     0.6
 PumpTwo     0.7
 }
+{
+A           0.8
+B           0.9
+}
