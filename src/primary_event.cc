@@ -57,7 +57,7 @@ void PrimaryEvent::p(double p) {
   p_ = p;
 }
 
-void PrimaryEvent::AddParent(boost::shared_ptr<scram::TopEvent> parent) {
+void PrimaryEvent::AddParent(const boost::shared_ptr<scram::TopEvent>& parent) {
   if (parents_.count(parent->id())) {
     std::string msg = "Trying to re-insert existing parent for " + this->id();
     throw scram::ValueError(msg);

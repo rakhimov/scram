@@ -43,7 +43,7 @@ class TopEvent : public scram::Event {
       children();
 
   // Adds a child into children list.
-  virtual void AddChild(boost::shared_ptr<scram::Event> child);
+  virtual void AddChild(const boost::shared_ptr<scram::Event>& child);
 
   virtual ~TopEvent() {}
 
@@ -62,10 +62,10 @@ class InterEvent : public scram::TopEvent {
   InterEvent(std::string id, std::string gate = "NONE");
 
   // Returns the parent, which can only be Top or Intermediate event.
-  boost::shared_ptr<scram::TopEvent> parent();
+  const boost::shared_ptr<scram::TopEvent>& parent();
 
   // Sets the parent.
-  void parent(boost::shared_ptr<scram::TopEvent> parent);
+  void parent(const boost::shared_ptr<scram::TopEvent>& parent);
 
   ~InterEvent() {}
 
@@ -99,7 +99,7 @@ class PrimaryEvent : public scram::Event {
   void p(double p);
 
   // Adds a parent into the parent map.
-  void AddParent(boost::shared_ptr<scram::TopEvent> parent);
+  void AddParent(const boost::shared_ptr<scram::TopEvent>& parent);
 
   // Return parents.
   std::map<std::string, boost::shared_ptr<scram::TopEvent> >& parents();

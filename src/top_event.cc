@@ -35,7 +35,7 @@ const std::map<std::string,
   return children_;
 }
 
-void TopEvent::AddChild(boost::shared_ptr<scram::Event> child) {
+void TopEvent::AddChild(const boost::shared_ptr<scram::Event>& child) {
   if (children_.count(child->id())) {
     std::string msg = "Trying to re-insert a child for " + this->id() +
                       " event.";
