@@ -55,7 +55,7 @@ TEST(TopEventTest, Children) {
 // Test InterEvent class
 TEST(InterEventTest, Parent) {
   InterEventPtr inter_event(new InterEvent("inter"));
-  EventPtr parent_event(new Event("parent"));
+  TopEventPtr parent_event(new TopEvent("parent"));
   // Request for the parent when it has not been set.
   EXPECT_THROW(inter_event->parent(), ValueError);
   // Setting a parent. Note that there is no check if the parent is not a
@@ -111,9 +111,9 @@ TEST(PrimaryEventTest, HouseProbability) {
 
 TEST(PrimaryEventTest, Parent) {
   PrimaryEventPtr primary(new PrimaryEvent("valve"));
-  EventPtr first_parent(new Event("trainone"));
-  EventPtr second_parent(new Event("traintwo"));
-  std::map<std::string, EventPtr> parents;
+  InterEventPtr first_parent(new InterEvent("trainone"));
+  InterEventPtr second_parent(new InterEvent("traintwo"));
+  std::map<std::string, TopEventPtr> parents;
   // Request for the parents when it has not been set.
   EXPECT_THROW(primary->parents(), ValueError);
   // Setting a parent. Note that there is no check if the parent is not a

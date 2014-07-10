@@ -25,7 +25,6 @@ void PrimaryEvent::type(std::string new_type) {
     std::string msg = "Trying to re-assign the type of " + this->id();
     throw scram::ValueError(msg);
   }
-
   type_ = new_type;
 }
 
@@ -55,26 +54,23 @@ void PrimaryEvent::p(double p) {
       throw scram::ValueError(msg);
     }
   }
-
   p_ = p;
 }
 
-void PrimaryEvent::AddParent(boost::shared_ptr<scram::Event> parent) {
+void PrimaryEvent::AddParent(boost::shared_ptr<scram::TopEvent> parent) {
   if (parents_.count(parent->id())) {
     std::string msg = "Trying to re-insert existing parent for " + this->id();
     throw scram::ValueError(msg);
   }
-
   parents_.insert(std::make_pair(parent->id(), parent));
 }
 
 std::map<std::string,
-    boost::shared_ptr<scram::Event> >& PrimaryEvent::parents() {
+    boost::shared_ptr<scram::TopEvent> >& PrimaryEvent::parents() {
   if (parents_.empty()) {
     std::string msg = this->id() + " primary event does not have parents.";
     throw scram::ValueError(msg);
   }
-
   return parents_;
 }
 

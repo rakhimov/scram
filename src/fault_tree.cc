@@ -20,8 +20,6 @@
 namespace fs = boost::filesystem;
 namespace pt = boost::posix_time;
 
-typedef boost::shared_ptr<scram::Superset> SupersetPtr;
-
 namespace scram {
 
 FaultTree::FaultTree(std::string analysis, bool graph_only, bool rare_event,
