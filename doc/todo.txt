@@ -6,9 +6,8 @@ TODO list for SCRAM Project
         ** Option for CSV output for spreadsheet applications
         ** Save minimal cut sets for later analysis
     * Minimal cut set input file as an alternative to a tree file (Moderate)
- [!]* Incorporate benchmarks into building and automation (High)
-        ** Develop new symbols, gate and event types necessary for benchmarking
-        ** Implement test cases from Isograph.
+ [!]* New gates, event types, and probability types. (high)
+        ** Probabilities as a function of time (lambda). (High)
     * Monte Carlo Simulations (Moderate)
         ** Uncertainty analysis
         ** Sensitivity analysis
@@ -28,7 +27,6 @@ TODO list for SCRAM Project
     * Incorporation of alignments (Moderate)
         ** Maintenance
         ** Guaranteed Success/Failure
- [!]* Probabilities as a function of time (lambda). (High)
 
     * Other input styles : XML, json, sql. (Low)
     * GUI considerations for building trees (Moderate)
@@ -44,11 +42,7 @@ TODO list for SCRAM Project
     * Coding specific:
         ** Write tests for classes and functions. (High)
             [] Benchmark cases.
-                *TwoTrain
-                *Complex
-                *Lift
                 *Theatre
-                *ThreeLevels
                 *ThreeMotor
                 *TransTest
         ** Time and space complexity of all algorithms used in this package (Moderate)
