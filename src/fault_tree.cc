@@ -1144,7 +1144,7 @@ void FaultTree::GraphNode_(TopEventPtr t,
   }
 }
 
-void FaultTree::ExpandSets_(TopEventPtr t,
+void FaultTree::ExpandSets_(const TopEventPtr& t,
                             std::vector< SupersetPtr >& sets) {
   // Populate intermediate and primary events of the top.
   std::map<std::string, boost::shared_ptr<scram::Event> >

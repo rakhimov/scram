@@ -88,7 +88,7 @@ class FaultTree : public RiskAnalysis {
                   std::ofstream& out);
 
   // Adds children of top or intermediate event into a specified vector of sets.
-  void ExpandSets_(TopEventPtr t, std::vector<SupersetPtr>& sets);
+  void ExpandSets_(const TopEventPtr& t, std::vector<SupersetPtr>& sets);
 
   // Verifies if gates are initialized correctly with right number of children.
   // Returns a warning message string with the list of bad gates and their
