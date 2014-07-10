@@ -4,15 +4,15 @@ namespace scram {
 
 Superset::Superset() {}
 
-void Superset::AddPrimary(std::string id) {
+void Superset::AddPrimary(const std::string& id) {
   primes_.insert(id);
 }
 
-void Superset::AddInter(std::string id) {
+void Superset::AddInter(const std::string& id) {
   inters_.insert(id);
 }
 
-void Superset::Insert(boost::shared_ptr<Superset> st) {
+void Superset::Insert(const boost::shared_ptr<Superset>& st) {
   primes_.insert(st->primes_.begin(), st->primes_.end());
   inters_.insert(st->inters_.begin(), st->inters_.end());
 }

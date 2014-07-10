@@ -18,13 +18,13 @@ class Superset {
   Superset();
 
   // Add a name of a primary event into the set.
-  void AddPrimary(std::string id);
+  void AddPrimary(const std::string& id);
 
   // Add a name of an intermediate event into the set.
-  void AddInter(std::string id);
+  void AddInter(const std::string& id);
 
   // Inserts another superset.
-  void Insert(boost::shared_ptr<Superset> st);
+  void Insert(const boost::shared_ptr<Superset>& st);
 
   // Returns an intermidiate event and deletes it from the set.
   std::string PopInter();
