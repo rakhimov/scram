@@ -116,7 +116,7 @@
 }
 
 {
-    parent      E10 
+    parent      E10
     id          E12  # KT2 timer contacts fail to open when K5 relay contacts
                      # closed for t > 60 sec
     type        OR
