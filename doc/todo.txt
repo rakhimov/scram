@@ -40,8 +40,5 @@ TODO list for SCRAM Project
         ** Background Theory
 
     * Coding specific:
-        ** Write tests for classes and functions. (High)
-            [] Benchmark cases.
-                *ThreeMotor
         ** Time and space complexity of all algorithms used in this package (Moderate)
         ** Installation instructions for various platforms (Low)
