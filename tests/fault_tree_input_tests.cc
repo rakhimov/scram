@@ -95,6 +95,7 @@ TEST(FaultTreeInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back("./input/fta/transfer_primary_second_node_top.scramf");
   incorrect_inputs.push_back("./input/fta/transfer_second_transferout_top.scramf");
   incorrect_inputs.push_back("./input/fta/transfer_extra_second_node_top.scramf");
+  incorrect_inputs.push_back("./input/fta/transfer_illegal_reference_top.scramf");
 
   RiskAnalysis* ran;
 
