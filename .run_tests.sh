@@ -14,10 +14,15 @@ then
         if scram -g fta_tree.scramf
         then
           dot -Tsvg fta_tree.dot -o fta_tree.svg
+        else exit 1
         fi
+      else exit 1
       fi
+    else exit 1
     fi
+  else exit 1
   fi
+else exit 1
 fi
 
 exit
