@@ -45,7 +45,7 @@ Probability Types
 
     .. math::
 
-        P = 1-exp(-\lambda*t)
+        P = 1-\exp(-\lambda*t)
 
     For small lambda and time, the approximation is
 

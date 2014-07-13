@@ -5,10 +5,10 @@ SCRAM FTA: Common Cause Failure (CCF)
 .. note:: This functionality is not yet present.
 
 #. Define groups of basic events that share common cause failure.
-    * Can groups share memebers?
+    - Can groups share memebers?
 #. Choose a model for analysis: MGL, alpha, beta, etc.
-    * Factors must be provided by a user
-    * Calculation must be performed with only with provided factors, or
+    - Factors must be provided by a user
+    - Calculation must be performed with only with provided factors, or
       a user may specify the maximum number of common cause members
       can be in a group for analysis. Alternatively, for some types of
       CCF analysis methods, the maximum number of events for a set can be

@@ -17,6 +17,7 @@ This project follows the following coding styles:
 
 Currently nonconforming cases in the source code:
 =================================================
+
 * Exceptions are used. (This is not recommended by GCSG)
 * Functions use default values.
 * Header guards do not include the source file name.

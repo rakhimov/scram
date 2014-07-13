@@ -9,8 +9,8 @@ Current Command-line Functionality:
 #. Output a graphing dot file. *No probability definition file needed*
 #. Find minimal cut sets. *No probability definition file needed*
 
-   * May specify maximum order for cut sets for faster calculations.
+   - May specify maximum order for cut sets for faster calculations.
 
 #. Find total probability of the top event.
 
-   * May specify rare event approximation for faster calculations.
+   - May specify rare event approximation for faster calculations.
