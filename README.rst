@@ -2,10 +2,10 @@
 SCRAM
 ###########
 
-.. image:: https://travis-ci.org/rakhimov/SCRAM.svg?branch=develop
+.. image:: https://travis-ci.org/rakhimov/SCRAM.svg?branch=master
     :target: https://travis-ci.org/rakhimov/SCRAM
-.. image:: https://coveralls.io/repos/rakhimov/SCRAM/badge.png?branch=develop
-    :target: https://coveralls.io/r/rakhimov/SCRAM?branch=develop
+.. image:: https://coveralls.io/repos/rakhimov/SCRAM/badge.png?branch=master
+    :target: https://coveralls.io/r/rakhimov/SCRAM?branch=master
 .. image:: https://scan.coverity.com/projects/2555/badge.svg
     :target: https://scan.coverity.com/projects/2555
 
