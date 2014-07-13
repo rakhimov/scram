@@ -442,6 +442,9 @@ void FaultTree::Analyze() {
   // Compute probabilities only if requested.
   if (!prob_requested_) return;
 
+  // Maximum number of sums in the series.
+  if (nsums_ > min_cut_sets_.size()) nsums_ = min_cut_sets_.size();
+
   // Perform Monte Carlo Uncertainty analysis.
   if (analysis_ == "fta-mc") {
     // Generate the equation.
