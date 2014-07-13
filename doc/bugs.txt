@@ -1,3 +1,0 @@
-Some bugs found during development:
-
-Minor issues:

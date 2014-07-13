@@ -11,8 +11,10 @@
 
 namespace scram {
 
-// This class holds sets generated upon traversing the fault tree.
-// This class is a friend of FaultTree class, so it accesses private members.
+// This class holds sets generated upon traversing a fault tree.
+// Special superset class operates with sets that contain primary and
+// intermediate events. It is designed to help efficiently find cut sets.
+// This class separates primary events and intermediate events internally.
 class Superset {
  public:
   Superset();
