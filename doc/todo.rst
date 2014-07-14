@@ -9,10 +9,11 @@ Currently Low Hanging Fruits
 
 - Correct Transfer behavior. *Moderate*
 
+- Analysis of a transfer sub-tree without a main file. *Low*
+
 - Define output format. *Moderate*
 
     * Table like spacing for output numbers
-    * Take a look at output formats of RiskMan and Isograph
     * Option for CSV output for spreadsheet applications
     * Save minimal cut sets for later analysis
 
@@ -29,13 +30,8 @@ Currently Low Hanging Fruits
     * Sampling techniques
     * Distributions
     * Latin Hypercube sampling technique
-    * Refer to OpenFTA: Minimal cut set generation through MC
 
-- Reformat documentation into rst. *Low*
-
-- Analysis of a transfer sub-tree without a main file. *Low*
-
-- Improve fault tree generator. *Low*
+- Improve fault tree generator. *Low* (*This may break benchmarking*)
 
 
 Major Enhancements and Capabilities
@@ -58,9 +54,8 @@ Major Enhancements and Capabilities
 Minor Enhancements and Capabilities
 ===================================
 
-- Other input styles : XML, json, sql. *Low*
-- GUI considerations for building trees. *Moderate*
-- Explore conditional probabilities through CCF. *Low*
+- Other input/output methods : XML, json, sql. *Moderate*
+- GUI development. *Moderate*
 
 
 Documentation: Moderate Importance
@@ -68,7 +63,7 @@ Documentation: Moderate Importance
 
 - Getting Started
 - Building/Installing
-- Installation instructions for various platforms. *Low*
+- Installation instructions for various platforms
 - Simple Walkthrough Example
 - Reference Papers
 - Background Theory
