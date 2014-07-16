@@ -458,6 +458,7 @@ TEST_F(FaultTreeTest, GraphingInstructions) {
   tree_input.push_back("./input/fta/correct_tree_input.scramf");
   tree_input.push_back("./input/fta/doubly_defined_basic.scramf");
   tree_input.push_back("./input/fta/transfer_correct_top.scramf");
+  tree_input.push_back("./input/fta/transfer_correct_sub.scramf");
 
   std::vector<std::string>::iterator it;
   for (it = tree_input.begin(); it != tree_input.end(); ++it) {
@@ -467,6 +468,12 @@ TEST_F(FaultTreeTest, GraphingInstructions) {
     ASSERT_NO_THROW(fta->ProcessInput(*it));
     ASSERT_NO_THROW(fta->GraphingInstructions());
   }
+
+  // Handle an exception graphing case with one TransferIn only.
+  std::string special_case = "./input/fta/transfer_graphing_exception.scramf";
+  fta = new FaultTree("fta-default", true);
+  ASSERT_NO_THROW(fta->ProcessInput(special_case));
+  ASSERT_THROW(fta->GraphingInstructions(), ValidationError);
 }
 
 // Test Analysis

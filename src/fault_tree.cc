@@ -245,6 +245,13 @@ void FaultTree::GraphingInstructions() {
     std::string msg = output_path +  " : Cannot write the graphing file.";
     throw(scram::IOError(msg));
   }
+
+  // Check for the special case when only one node TransferIn tree is graphed.
+  if (top_event_id_ == "") {
+    std::string msg = "Cannot graph one node TransferIn tree.";
+    throw(scram::ValidationError(msg));
+  }
+
   boost::to_upper(graph_name);
   out << "digraph " << graph_name << " {\n";
   // Special case for sub-tree only graphing.
@@ -1264,6 +1271,9 @@ void FaultTree::ExpandSets_(const TopEventPtr& t,
 }
 
 std::string FaultTree::CheckAllGates_() {
+  // Handle the special case when only one node TransferIn tree is graphed.
+  if (graph_only_ && top_event_id_ == "") return "";
+
   std::stringstream msg;
   msg << "";  // An empty default message is the indicator of no problems.
 

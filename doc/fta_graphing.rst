@@ -11,6 +11,8 @@ SCRAM Graphing Specifics
 #. Should be called after tree initiation steps.
 #. May operate without probabilities.
 #. Does not include transfer sub-trees.
+#. Graphes sub-trees in isolation.
+#. One node reference to sub-tree cannot be graphed from a main tree file.
 #. May include descriptions of events. *Not Supported Yet*
 #. May incorporate compact and full trees. Gates only vs. Event descriptions.
    *Not Supported Yet*
