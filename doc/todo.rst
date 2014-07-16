@@ -9,7 +9,9 @@ Currently Low Hanging Fruits
 
 - Correct Transfer behavior. *Moderate*
 
-- Analysis of a transfer sub-tree without a main file. *Low*
+- Analysis of a transfer sub-tree without a main file. *Moderate*
+
+- Graphing instructions for a transfer tree without a main file. *Moderate*
 
 - Define output format. *Moderate*
 

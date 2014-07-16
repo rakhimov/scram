@@ -27,11 +27,13 @@ Specifics of Transfer In and Transfer Out
       show up for graphing.
     * Transfer Intermediate events may show up in several places and cause
       conflicts with the uniqueness of intermediate events.
-      May append some suffix to avoid problems, such as number of
-      references. *Not Yet Implemented The Right Way*
+      This is avoided by appending specific suffix to the Intermediate event
+      names, such as number of references. *Not Yet Implemented The Right Way*
 
 - Update database of top, inter, and primary events after reading the
   sub-tree. *Currently is not done in isolation*
+
+- Graphing Instructions for a sub-tree without a main tree. *Not Done Yet*
 
 - Keep track of cyclic inclusions and prevent it with an error.
 
@@ -39,3 +41,9 @@ Specifics of Transfer In and Transfer Out
     - If a user wants to re-use an intermediate event in multiple places,
       transfers should be used instead of finding unique names for those
       intermediate events with the same structure and primary events.
+    - Transfer trees are build in isolation and then linked to the main tree.
+      This ensures that the sub-tree events don't use nodes of the main tree
+      directly.
+    - Transfer tree intermediate event names may repeat or conflict with other
+      sub-trees' intermediate event names. This conflict is ignored in order
+      in order to provide better modularity to sub-trees.
