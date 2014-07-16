@@ -1,9 +1,0 @@
-# This file contains probability above 1.
-{
-ValveOne    0.5
-ValveTwo    0.5
-PumpOne     0.7
-
-# Incorrect probability
-PumpTwo     1.01
-}

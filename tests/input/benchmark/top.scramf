@@ -1,8 +1,0 @@
-# This input file is created to test nested Transfer symbols.
-# This input is originally created for OpenFTA.
-
-{
-    parent      None
-    id          middle.scramf
-    type        TransferIn
-}

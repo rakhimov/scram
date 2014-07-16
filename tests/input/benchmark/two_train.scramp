@@ -1,7 +1,0 @@
-# This file contains probabilities of each basic event for two train system.
-{
-ValveOne    0.5
-ValveTwo    0.5
-PumpOne     0.7
-PumpTwo     0.7
-}

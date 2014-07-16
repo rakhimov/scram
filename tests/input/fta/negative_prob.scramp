@@ -1,9 +1,0 @@
-# This file contains negative probability
-{
-ValveOne    0.5
-ValveTwo    0.5
-PumpOne     0.7
-
-# Negative value for probability
-PumpTwo     -0.7
-}
