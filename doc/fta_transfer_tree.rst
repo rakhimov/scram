@@ -28,12 +28,12 @@ Specifics of Transfer In and Transfer Out
     * Transfer Intermediate events may show up in several places and cause
       conflicts with the uniqueness of intermediate events.
       This is avoided by appending specific suffix to the Intermediate event
-      names, such as number of references. *Not Yet Implemented The Right Way*
+      names, such as number of references.
 
 - Update database of top, inter, and primary events after reading the
-  sub-tree. *Currently is not done in isolation*
+  sub-tree.
 
-- Graphing Instructions for a sub-tree without a main tree. *Not Done Yet*
+- Graphing Instructions for a sub-tree without a main tree.
 
 - Keep track of cyclic inclusions and prevent it with an error.
 

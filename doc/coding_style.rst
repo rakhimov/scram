@@ -22,4 +22,3 @@ Currently nonconforming cases in the source code:
 * Functions use default values.
 * Header guards do not include the source file name.
 * Null values for strings are not "\0".
-* Some function names are not camel case.

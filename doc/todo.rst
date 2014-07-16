@@ -7,10 +7,6 @@ Relative importances within groups are given in *italics*.
 Currently Low Hanging Fruits
 ============================
 
-- Analysis of a transfer sub-tree without a main file. *Moderate*
-
-- Graphing instructions for a transfer tree without a main file. *Moderate*
-
 - Define output format. *Moderate*
 
     * Table like spacing for output numbers
