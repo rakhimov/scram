@@ -17,6 +17,7 @@ TEST(FaultTreeInputTest, CorrectFTAInputs) {
   correct_inputs.push_back("./input/fta/different_order.scramf");
   correct_inputs.push_back("./input/fta/inline_comments.scramf");
   correct_inputs.push_back("./input/fta/transfer_correct_top.scramf");
+  correct_inputs.push_back("./input/fta/transfer_correct_sub.scramf");
 
   RiskAnalysis* ran;
 
@@ -96,6 +97,18 @@ TEST(FaultTreeInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back("./input/fta/transfer_second_transferout_top.scramf");
   incorrect_inputs.push_back("./input/fta/transfer_extra_second_node_top.scramf");
   incorrect_inputs.push_back("./input/fta/transfer_illegal_reference_top.scramf");
+  // Issues with analyzing sub-trees in isolation.
+  incorrect_inputs.push_back("./input/fta/transfer_circular_self_bottom.scramf");
+  incorrect_inputs.push_back("./input/fta/transfer_circular_middle.scramf");
+  incorrect_inputs.push_back("./input/fta/transfer_circular_bottom.scramf");
+  incorrect_inputs.push_back("./input/fta/transfer_sub_wrong_parent.scramf");
+  incorrect_inputs.push_back("./input/fta/transfer_name_mismatch_sub.scramf");
+  incorrect_inputs.push_back("./input/fta/transfer_wrong_type_sub.scramf");
+  incorrect_inputs.push_back("./input/fta/transfer_wrong_second_node_sub.scramf");
+  incorrect_inputs.push_back("./input/fta/transfer_primary_second_node_sub.scramf");
+  incorrect_inputs.push_back("./input/fta/transfer_second_transferout_sub.scramf");
+  incorrect_inputs.push_back("./input/fta/transfer_extra_second_node_sub.scramf");
+  incorrect_inputs.push_back("./input/fta/transfer_illegal_reference_sub.scramf");
 
   RiskAnalysis* ran;
 

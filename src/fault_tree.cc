@@ -33,6 +33,7 @@ FaultTree::FaultTree(std::string analysis, bool graph_only, bool rare_event,
       top_event_id_(""),
       top_detected_(false),
       is_main_(true),
+      sub_tree_analysis_(false),
       input_file_(""),
       prob_requested_(false),
       analysis_done_(false),
@@ -775,6 +776,82 @@ void FaultTree::InterpretArgs_(int nline, std::stringstream& msg,
           msg << "Line " << nline << " : " << "Missing type in this"
               << " block.";
           throw scram::ValidationError(msg.str());
+        }
+
+        // Special case for sub-tree analysis without a main file.
+        if (is_main_ && type_ == "transferout") {
+          if (sub_tree_analysis_) {
+            msg << "Line " << nline << " : Found a second TransferOut in a"
+                << " in a sub-tree analysis file.";
+            throw scram::ValidationError(msg.str());
+          }
+
+          std::string tr_id =
+              input_file_.substr(input_file_.find_last_of("/") +
+                                 1, std::string::npos);
+          if (top_event_id_ != "") {
+            msg << "Line " << nline << " : TransferOut must be a separate tree"
+                << " in a separate file.";
+            throw scram::ValidationError(msg.str());
+          } else if (parent_ != "any") {
+            msg << "Line " << nline << " : Parent of TransferOut must be "
+                << "'Any'.";
+            throw scram::ValidationError(msg.str());
+          } else if (id_ != tr_id) {
+            msg << "Line " << nline << " : Id of the first node in "
+                << "TransferOut must match the name of the file.";
+            throw scram::ValidationError(msg.str());
+          }
+          sub_tree_analysis_ = true;
+          transfer_first_inter_ = false;
+          // Refresh values.
+          parent_ = "";
+          id_ = "";
+          type_ = "";
+          block_started_ = false;
+          break;
+        }
+
+        if (is_main_ && sub_tree_analysis_) {
+          std::string tr_id =
+              input_file_.substr(input_file_.find_last_of("/") +
+                                 1, std::string::npos);
+          if (!transfer_first_inter_) {
+            // Check the second node's validity.
+            if (parent_ != tr_id) {
+              msg << "Line " << nline << " : Parent of the first intermediate "
+                  << "event must be the name of the file.";
+              throw scram::ValidationError(msg.str());
+            } else if (types_.count(type_)) {
+              msg << "Line " << nline << " : Type of the first intermediate "
+                  << "event in the transfer tree cannot be a primary event.";
+              throw scram::ValidationError(msg.str());
+            }
+            parent_ = "none";  // Making this event a root.
+            try {
+              // Add a node with the gathered information.
+              FaultTree::AddNode_(parent_, id_, type_);
+            } catch (scram::ValidationError& err) {
+              msg << "Line " << nline << " : " << err.msg();
+              throw scram::ValidationError(msg.str());
+            }
+            transfer_first_inter_ = true;
+            // Refresh values.
+            parent_ = "";
+            id_ = "";
+            type_ = "";
+            block_started_ = false;
+            break;
+          } else {
+            // Defensive check if there are other events having the name of
+            // the current transfer file as their parent.
+            if (parent_ == tr_id) {
+              msg << "Line " << nline << " : Found the second event with "
+                  << "a parent as a starting node. Only one intermediate event"
+                  << " can be linked to TransferOut of the transfer tree.";
+              throw scram::ValidationError(msg.str());
+            }
+          }
         }
 
         if (!is_main_) {

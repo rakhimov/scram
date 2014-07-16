@@ -11,6 +11,7 @@ def main():
             "doubly_defined_basic.scramf",
             "inline_comments.scramf"
             "transfer_correct_top.scramf",
+            "transfer_correct_sub.scramf",
             ]
 
     # Wrong input files in the current directory

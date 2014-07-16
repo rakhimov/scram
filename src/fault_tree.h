@@ -256,6 +256,9 @@ class FaultTree : public RiskAnalysis {
 
   // Indication of the first intermediate event of the transfer.
   bool transfer_first_inter_;
+
+  // Sub-tree analysis only.
+  bool sub_tree_analysis_;
 };
 
 }  // namespace scram
