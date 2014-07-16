@@ -1,5 +1,5 @@
 # This input file is created to test nested Transfer symbols.
-# This input is contains an event that references other event from a subtree
+# This input contains an event that references other event from a subtree
 # as a parent, which should be illegal.
 
 {

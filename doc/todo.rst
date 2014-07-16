@@ -7,8 +7,6 @@ Relative importances within groups are given in *italics*.
 Currently Low Hanging Fruits
 ============================
 
-- Correct Transfer behavior. *Moderate*
-
 - Analysis of a transfer sub-tree without a main file. *Moderate*
 
 - Graphing instructions for a transfer tree without a main file. *Moderate*
@@ -20,6 +18,8 @@ Currently Low Hanging Fruits
     * Save minimal cut sets for later analysis
 
 - Minimal cut set input file as an alternative to a tree file. *Moderate*
+
+- Block types for probabilities. *Moderate*
 
 - New gates, event types, and probability types. *High*
 

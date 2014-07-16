@@ -14,7 +14,7 @@
 
 {
     parent      TopEvent
-    id          transfer_correct_sub.scramf
+    id          transfer_illegal_reference_sub.scramf
     type        TransferIn
 }
 

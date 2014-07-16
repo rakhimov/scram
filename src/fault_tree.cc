@@ -767,15 +767,11 @@ void FaultTree::InterpretArgs_(int nline, std::stringstream& msg,
           msg << "Line " << nline << " : " << "Missing parent in this"
               << " block.";
           throw scram::ValidationError(msg.str());
-        }
-
-        if (id_ == "") {
+        } else if (id_ == "") {
           msg << "Line " << nline << " : " << "Missing id in this"
               << " block.";
           throw scram::ValidationError(msg.str());
-        }
-
-        if (type_ == "") {
+        } else if (type_ == "") {
           msg << "Line " << nline << " : " << "Missing type in this"
               << " block.";
           throw scram::ValidationError(msg.str());
@@ -849,7 +845,7 @@ void FaultTree::InterpretArgs_(int nline, std::stringstream& msg,
           if (gates_.count(type_)) {
             id_ += suffix;
           }
-        }
+        }  // Transfer tree related name manipulations are done.
 
         try {
           // Add a node with the gathered information.
@@ -894,8 +890,7 @@ void FaultTree::InterpretArgs_(int nline, std::stringstream& msg,
         type_ = args[1];
         // Check if gate/event type is valid.
         if (!gates_.count(type_) && !types_.count(type_)
-            && (type_ != "transferin")
-            && (type_ != "transferout")) {
+            && (type_ != "transferin") && (type_ != "transferout")) {
           boost::to_upper(type_);
           msg << "Line " << nline << " : " << "Invalid input arguments."
               << " Do not support this '" << type_
@@ -928,8 +923,8 @@ void FaultTree::AddNode_(std::string parent, std::string id,
       top_detected_ = true;
     }
     // Register to call later.
-    transfers_.push(std::make_pair(parent, id));
-    trans_calls_.insert(std::make_pair(id, 0));
+    transfers_.push(std::make_pair(parent, id));  // Parent names are unique.
+    trans_calls_.insert(std::make_pair(id, 0));  // Discard if exists already.
     transfer_map_.insert(std::make_pair(parent, id));
     // Check if this is a cyclic inclusion.
     // This line does many things that are tricky and c++ map specific.
