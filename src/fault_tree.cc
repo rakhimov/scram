@@ -247,8 +247,19 @@ void FaultTree::GraphingInstructions() {
   }
   boost::to_upper(graph_name);
   out << "digraph " << graph_name << " {\n";
-  // Write top event.
+  // Special case for sub-tree only graphing.
+  if (sub_tree_analysis_) {
+    std::string tr_id =
+        input_file_.substr(input_file_.find_last_of("/") +
+                           1, std::string::npos);
+    out << "\"" << tr_id << "\" -> "
+        << "\"" << orig_ids_[top_event_id_] <<"\";\n";
+    out << "\"" << tr_id << "\" [shape=invtriangle, "
+        << "fontsize=10, fontcolor=black, "
+        << "label=\"" << tr_id << "\"]\n";
+  }
 
+  // Write top event.
   // Keep track of number of repetitions of the primary events.
   std::map<std::string, int> pr_repeat;
   // Populate intermediate and primary events of the top.
@@ -828,13 +839,8 @@ void FaultTree::InterpretArgs_(int nline, std::stringstream& msg,
               throw scram::ValidationError(msg.str());
             }
             parent_ = "none";  // Making this event a root.
-            try {
-              // Add a node with the gathered information.
-              FaultTree::AddNode_(parent_, id_, type_);
-            } catch (scram::ValidationError& err) {
-              msg << "Line " << nline << " : " << err.msg();
-              throw scram::ValidationError(msg.str());
-            }
+            // Add a node with the gathered information.
+            FaultTree::AddNode_(parent_, id_, type_);  // No error expected.
             transfer_first_inter_ = true;
             // Refresh values.
             parent_ = "";

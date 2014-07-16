@@ -9,7 +9,7 @@ def main():
             "correct_tree_input.scramf",
             "different_order.scramf",
             "doubly_defined_basic.scramf",
-            "inline_comments.scramf"
+            "inline_comments.scramf",
             "transfer_correct_top.scramf",
             "transfer_correct_sub.scramf",
             ]
@@ -39,8 +39,9 @@ def main():
             "top_event_with_no_child.scramf",
             "transfer_circular_self_top.scramf",
             "transfer_circular_top.scramf",
-            "transfer_extra_second_node_top.scramf"
+            "transfer_extra_second_node_top.scramf",
             "transfer_head_extra_nodes.scramf",
+            "transfer_extra_transferout.scramf",
             "transfer_illegal_reference_top.scramf",
             "transfer_name_mismatch_top.scramf",
             "transfer_no_file.scramf",
@@ -52,6 +53,17 @@ def main():
             "transfer_wrong_type_top.scramf",
             "unrecognized_parameter.scramf",
             "unrecognized_type.scramf",
+            "transfer_circular_self_bottom.scramf",
+            "transfer_circular_middle.scramf",
+            "transfer_circular_bottom.scramf",
+            "transfer_sub_wrong_parent.scramf",
+            "transfer_name_mismatch_sub.scramf",
+            "transfer_wrong_type_sub.scramf",
+            "transfer_wrong_second_node_sub.scramf",
+            "transfer_primary_second_node_sub.scramf",
+            "transfer_second_transferout_sub.scramf",
+            "transfer_extra_second_node_sub.scramf",
+            "transfer_illegal_reference_sub.scramf",
             ]
 
     # Wrong probability files in the current directory
@@ -63,7 +75,7 @@ def main():
             "missing_closing_brace_at_end.scramp",
             "missing_opening_brace.scramp",
             "missing_opening_brace_at_start.scramp",
-            "negative_prob.scramp"
+            "negative_prob.scramp",
             "nonexistent_file.scramp",
             "one_arg_err.scramp",
             "second_closing_brace.scramp",

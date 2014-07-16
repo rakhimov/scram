@@ -88,6 +88,7 @@ TEST(FaultTreeInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back("./input/fta/transfer_circular_self_top.scramf");
   incorrect_inputs.push_back("./input/fta/transfer_circular_top.scramf");
   incorrect_inputs.push_back("./input/fta/transfer_head_extra_nodes.scramf");
+  incorrect_inputs.push_back("./input/fta/transfer_extra_transferout.scramf");
   incorrect_inputs.push_back("./input/fta/transfer_wrong_parent.scramf");
   incorrect_inputs.push_back("./input/fta/transfer_name_mismatch_top.scramf");
   incorrect_inputs.push_back("./input/fta/transfer_wrong_type_top.scramf");
