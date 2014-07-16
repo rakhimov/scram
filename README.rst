@@ -16,7 +16,9 @@ Fault Tree Analysis is implemented. In addition, a random tree generator is
 provided for exploring performance of SCRAM. A fault tree can be drawn by
 Graphviz Dot tool.
 
-A full description of SCRAM and its capabilities is in documentation directory.
+A full description of SCRAM and its current capabilities is in `documentation`_.
+
+.. _documentation: http://rakhimov.github.io/SCRAM
 
 ******************************
 Building and Installing
@@ -37,7 +39,7 @@ Optional dependencies:
 ====================   ==================
 Package                Minimum Version
 ====================   ==================
-`Python`               2.7.4
+`Python`               2.7.3
 `Graphviz Dot`         2.26.3
 ====================   ==================
 
