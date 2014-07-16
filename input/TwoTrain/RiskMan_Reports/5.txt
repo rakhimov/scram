@@ -1,0 +1,40 @@
+
+                               MODEL Name: RAKHI
+                    BDD Alignment Report for Top Event SYS
+
+                            15:15:46  29 MAR 2014
+                                    Page 1
+
+
+....................................................................................................................................
+TOP EVENT: SYS
+
+
+NORMAL Alignment - default
+
+     Fraction of Time in the Alignment is:
+     1 - 48/8760 = 9.9452E-01
+
+
+PUMP1 Alignment - 24/8760
+
+     Fraction of Time in the Alignment is:
+     24/8760 = 2.7397E-03
+
+     Basic Event Impacts for PUMP1 Alignment
+
+       Basic Event      State   Description
+     ----------------   -----   --------------------------------------
+     PUMPONE              F
+
+
+PUMP2 Alignment - 24/8760
+
+     Fraction of Time in the Alignment is:
+     24/8760 = 2.7397E-03
+
+     Basic Event Impacts for PUMP2 Alignment
+
+       Basic Event      State   Description
+     ----------------   -----   --------------------------------------
+     PUMPTWO              F

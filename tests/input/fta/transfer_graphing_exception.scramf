@@ -1,0 +1,9 @@
+# This input file is created to test exception for a graphing.
+# The only node transfer should not be graphed.
+# Instead the file itself should be requested for graphing.
+
+{
+    parent      None
+    id          middle.scramf
+    type        TransferIn
+}

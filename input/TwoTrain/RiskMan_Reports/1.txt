@@ -1,0 +1,53 @@
+
+                               MODEL Name: RAKHI
+                    Split Fraction Report for Top Event SYS
+
+                            15:13:54  29 MAR 2014
+                                    Page 1
+
+
+....................................................................................................................................
+TOP EVENT: SYS
+
+                         Split Fraction SYS1
+                        Default Split Fraction
+
+     PE Mean     =                     Date :
+     MC/LH Mean  =                     Date :
+     BDD Exact   = 6.2943E-02          Date : 29 MAR 2014 15:11
+     BDD MC      =                     Date :
+
+     PE Totaling Method:            MC Totaling Method:
+
+       There are NO Boundary Conditions for this Split Fraction
+
+
+                         Split Fraction NOEP1
+
+
+     PE Mean     =                     Date :
+     MC/LH Mean  =                     Date :
+     BDD Exact   = 1.0000E+00          Date : 29 MAR 2014 15:11
+     BDD MC      =                     Date :
+
+     PE Totaling Method:            MC Totaling Method:
+
+                     Basic Event and Gate Impacts
+
+           Name         State   Description
+     ----------------   -----   --------------------------------------
+     PUMPONE              F
+     PUMPTWO              F
+
+
+                         Split Fraction NOEP
+
+
+     PE Mean     =                     Date :
+     MC/LH Mean  =                     Date :
+     BDD Exact   = 1.0000E+00          Date : 29 MAR 2014 15:11
+     BDD MC      =                     Date :
+
+     PE Totaling Method:            MC Totaling Method:
+
+     Constant Value: 1
