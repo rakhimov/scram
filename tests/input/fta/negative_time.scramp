@@ -1,0 +1,13 @@
+# This file contains probabilities of each basic event for two train system.
+# The time identificator is a negative number, which is an error.
+{
+block       l-model
+
+# Negative value for time.
+time        -100
+
+ValveOne    4e-4
+ValveTwo    5e-4
+PumpOne     6e-4
+PumpTwo     7e-4
+}

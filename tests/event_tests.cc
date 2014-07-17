@@ -1,5 +1,7 @@
 #include <gtest/gtest.h>
 
+#include <math.h>
+
 #include <boost/shared_ptr.hpp>
 
 #include "error.h"
@@ -94,6 +96,23 @@ TEST(PrimaryEventTest, GeneralProbability) {
   EXPECT_EQ(primary->p(), prob);
 }
 
+TEST(PrimaryEventTest, LambdaProbability) {
+  PrimaryEventPtr primary(new PrimaryEvent("valve"));
+  double prob = 0.5e-4;
+  double time = 1e2;
+  // Request without having set.
+  EXPECT_THROW(primary->p(), ValueError);
+  // Setting probability with various illegal values.
+  EXPECT_THROW(primary->p(-1, 100), ValueError);
+  EXPECT_THROW(primary->p(1, -100), ValueError);
+  // Setting a correct value.
+  EXPECT_NO_THROW(primary->p(prob, time));
+  EXPECT_THROW(primary->p(prob, time), ValueError);  // Resetting is an error.
+  EXPECT_NO_THROW(primary->p());
+  double p_value = 1 - exp(prob * time);
+  EXPECT_DOUBLE_EQ(primary->p(), p_value);
+}
+
 TEST(PrimaryEventTest, HouseProbability) {
   // House primary event.
   PrimaryEventPtr primary(new PrimaryEvent("valve", "house"));
@@ -107,6 +126,9 @@ TEST(PrimaryEventTest, HouseProbability) {
   primary = PrimaryEventPtr(new PrimaryEvent("valve", "house"));
   EXPECT_NO_THROW(primary->p(1));
   EXPECT_EQ(primary->p(), 1);
+  // Lambda model for a house event.
+  primary = PrimaryEventPtr(new PrimaryEvent("valve", "house"));
+  EXPECT_THROW(primary->p(0.5, 100), ValueError);
 }
 
 TEST(PrimaryEventTest, Parent) {

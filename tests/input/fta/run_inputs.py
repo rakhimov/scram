@@ -68,7 +68,9 @@ def main():
 
     # Wrong probability files in the current directory
     bad_probs = [
+            "doubly_defined_block.scramp",
             "doubly_defined_prob.scramp",
+            "doubly_defined_time.scramp",
             "huge_prob.scramp",
             "missing_basic_event.scramp",
             "missing_closing_brace.scramp",
@@ -76,11 +78,15 @@ def main():
             "missing_opening_brace.scramp",
             "missing_opening_brace_at_start.scramp",
             "negative_prob.scramp",
+            "negative_time.scramp",
+            "no_time_given.scramp",
             "nonexistent_file.scramp",
             "one_arg_err.scramp",
             "second_closing_brace.scramp",
             "string_prob.scramp",
+            "string_time.scramp",
             "too_many_args.scramp",
+            "unrecognized_block.scramp",
             ]
 
     input_correct = "correct_tree_input.scramf"

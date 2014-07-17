@@ -145,10 +145,15 @@ TEST(FaultTreeInputTest, IncorrectFTAProbability) {
   // Other issues.
   incorrect_prob.push_back("./input/fta/doubly_defined_block.scramp");
   incorrect_prob.push_back("./input/fta/doubly_defined_prob.scramp");
+  incorrect_prob.push_back("./input/fta/doubly_defined_time.scramp");
   incorrect_prob.push_back("./input/fta/huge_prob.scramp");
   incorrect_prob.push_back("./input/fta/missing_basic_event.scramp");
-  incorrect_prob.push_back("./input/fta/string_prob.scramp");
   incorrect_prob.push_back("./input/fta/negative_prob.scramp");
+  incorrect_prob.push_back("./input/fta/negative_time.scramp");
+  incorrect_prob.push_back("./input/fta/no_time_given.scramp");
+  incorrect_prob.push_back("./input/fta/string_prob.scramp");
+  incorrect_prob.push_back("./input/fta/string_time.scramp");
+  incorrect_prob.push_back("./input/fta/unrecognized_block.scramp");
 
   RiskAnalysis* ran;
   std::vector<std::string>::iterator it;
