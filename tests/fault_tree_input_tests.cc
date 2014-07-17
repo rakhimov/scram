@@ -42,12 +42,18 @@ TEST(FaultTreeInputTest, CorrectFTAInputs) {
 TEST(FaultTreeInputTest, CorrectFTAProbability) {
   std::string input_correct = "./input/fta/correct_tree_input.scramf";
   std::string prob_correct = "./input/fta/correct_prob_input.scramp";
+  std::string lambda_correct = "./input/fta/correct_lambda_prob.scramp";
 
   RiskAnalysis* ran = new FaultTree("fta-default", false);
   EXPECT_THROW(ran->PopulateProbabilities(prob_correct), Error);
   EXPECT_NO_THROW(ran->ProcessInput(input_correct));  // Create the fault tree.
   EXPECT_NO_THROW(ran->PopulateProbabilities(prob_correct));
+  delete ran;
 
+  ran = new FaultTree("fta-default", false);
+  EXPECT_THROW(ran->PopulateProbabilities(prob_correct), Error);
+  EXPECT_NO_THROW(ran->ProcessInput(input_correct));  // Create the fault tree.
+  EXPECT_NO_THROW(ran->PopulateProbabilities(lambda_correct));
   delete ran;
 }
 
