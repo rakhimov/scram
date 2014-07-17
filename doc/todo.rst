@@ -15,11 +15,7 @@ Currently Low Hanging Fruits
 
 - Minimal cut set input file as an alternative to a tree file. *Moderate*
 
-- Block types for probabilities. *Moderate*
-
 - New gates, event types, and probability types. *High*
-
-    * Probabilities as a function of time (lambda). *High*
 
 - Monte Carlo Simulations. *Moderate*
 
@@ -29,7 +25,7 @@ Currently Low Hanging Fruits
     * Distributions
     * Latin Hypercube sampling technique
 
-- Improve fault tree generator. *Low* (*This may break benchmarking*)
+- Improve fault tree generator. *Low*
 
 
 Major Enhancements and Capabilities
