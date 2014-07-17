@@ -77,8 +77,11 @@ class FaultTree : public RiskAnalysis {
   // Adds node and updates databases.
   void AddNode_(std::string parent, std::string id, std::string type);
 
-  // Adds probability to a primary event.
+  // Adds probability to a primary event for p-model.
   void AddProb_(std::string id, double p);
+
+  // Adds probability to a primary event for l-model.
+  void AddProb_(std::string id, double p, double time);
 
   // Includes external transfer in subtrees to this current main tree.
   void IncludeTransfers_();

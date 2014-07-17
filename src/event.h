@@ -79,8 +79,7 @@ class InterEvent : public scram::TopEvent {
 class PrimaryEvent : public scram::Event {
  public:
   // Constructs with id name and probability.
-  PrimaryEvent(std::string id, std::string type = "", double p = -1,
-               std::string p_model = "p-model");
+  PrimaryEvent(std::string id, std::string type = "", double p = -1);
 
   // Returns the type of the primary event.
   // Throws error if type is not yet set.
@@ -96,7 +95,8 @@ class PrimaryEvent : public scram::Event {
 
   // Sets the probability.
   // Throws error if probability is not a valid value.
-  void p(double p);
+  void p(double p);  // p-model.
+  void p(double p, double time);  // l-model.
 
   // Adds a parent into the parent map.
   void AddParent(const boost::shared_ptr<scram::TopEvent>& parent);
@@ -112,9 +112,6 @@ class PrimaryEvent : public scram::Event {
 
   // Probability of the primary event.
   double p_;
-
-  // Probability model.
-  std::string p_model_;
 
   // Parents of this primary event.
   std::map<std::string, boost::shared_ptr<scram::TopEvent> > parents_;

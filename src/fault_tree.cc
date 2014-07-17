@@ -123,8 +123,10 @@ void FaultTree::PopulateProbabilities(std::string prob_file) {
 
   std::string id = "";  // Name id of a primary event.
   double p = -1;  // Probability of a primary event.
+  double time = -1;  // Time for lambda type probability.
   bool block_started = false;
-  std::string block_type = "";  // Type of information in this block.
+  std::string block_type = "p-model";  // Default probability type.
+  bool block_set = false;  // If the block type defined by a user explicitly.
 
   // Error messages.
   std::stringstream msg;
@@ -156,8 +158,10 @@ void FaultTree::PopulateProbabilities(std::string prob_file) {
           // Refresh values.
           id = "";
           p = -1;
+          time = -1;
           block_started = false;
-          block_type = "";
+          block_type = "p-model";
+          block_set = false;
 
         } else {
           msg << "Line " << nline << " : " << "Undefined input.";
@@ -174,15 +178,38 @@ void FaultTree::PopulateProbabilities(std::string prob_file) {
 
         id = args[0];
 
-        if (block_type == "" && id == "block") {
-          block_type = args[1];
-          break;
-        } else if (id == "block") {
-          msg << "Line " << nline << " : " << "Doubly defining this block";
-          throw scram::ValidationError(msg.str());
+        if (id == "block") {
+          if (!block_set) {
+            block_type = args[1];
+            if (block_type != "p-model" && block_type != "l-model") {
+              msg << "Line " << nline << " : " << "Unrecognized block type.";
+              throw scram::ValidationError(msg.str());
+            }
+            block_set = true;
+            break;
+          } else  {
+            msg << "Line " << nline << " : " << "Doubly defining this block.";
+            throw scram::ValidationError(msg.str());
+          }
         }
 
-        // There should be a check for non-initialized block.
+        if (id == "time" && block_type == "l-model") {
+          if (time == -1) {
+            try {
+              time = boost::lexical_cast<double>(args[1]);
+            } catch (boost::bad_lexical_cast err) {
+              msg << "Line " << nline << " : " << "Incorrect time input.";
+              throw scram::ValidationError(msg.str());
+            }
+            if (time < 0) {
+              msg << "Line " << nline << " : " << "Invalid value for time.";
+              throw scram::ValidationError(msg.str());
+            }
+          } else {
+            msg << "Line " << nline << " : " << "Doubly defining time.";
+            throw scram::ValidationError(msg.str());
+          }
+        }
 
         try {
           p = boost::lexical_cast<double>(args[1]);
@@ -193,7 +220,15 @@ void FaultTree::PopulateProbabilities(std::string prob_file) {
 
         try {
           // Add probability of a primary event.
-          FaultTree::AddProb_(id, p);
+          if (block_type == "p-model") {
+            FaultTree::AddProb_(id, p);
+          } else if (block_type == "l-model") {
+            if (time == -1) {
+              msg << "Line " << nline << " : " << "L-Model Time is not given";
+              throw scram::ValidationError(msg.str());
+            }
+            FaultTree::AddProb_(id, p, time);
+          }
         } catch (scram::ValueError& err_2) {
           msg << "Line " << nline << " : " << err_2.msg();
           throw scram::ValueError(msg.str());
@@ -336,13 +371,6 @@ void FaultTree::Analyze() {
                       " the tree before requesting analysis.";
     throw scram::Error(msg);
   }
-  // Generate minimal cut-sets: Default method.
-  // Rule 1. Each OR gate generates new rows in the table of cut sets.
-  // Rule 2. Each AND gate generates new columns in the table of cut sets.
-  // After each of the above steps:
-  // Rule 3. Eliminate redundant elements that appear multiple times in a cut
-  // set.
-  // Rule 4. Eliminate non-minimal cut sets.
 
   // Container for cut sets with intermediate events.
   std::vector< SupersetPtr > inter_sets;
@@ -1140,6 +1168,15 @@ void FaultTree::AddProb_(std::string id, double p) {
   }
 
   primary_events_[id]->p(p);
+}
+
+void FaultTree::AddProb_(std::string id, double p, double time) {
+  // Check if the primary event is in this tree.
+  if (!primary_events_.count(id)) {
+    return;  // Ignore non-existent assignment.
+  }
+
+  primary_events_[id]->p(p, time);
 }
 
 void FaultTree::IncludeTransfers_() {
