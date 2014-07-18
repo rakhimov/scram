@@ -137,10 +137,21 @@ class FaultTree : public RiskAnalysis {
   // converting maps.
   void AssignIndexes_();
 
+  // Updates minimal cut sets with the assigned indexes for primary events.
+  void UpdateMCS_();
+
+  // Updates minimal cut sets from indexes to strings.
+  void SetsToString_();
+
   std::set< std::set<int> > imcs_;
+  std::map< std::set<int>, std::set<std::string> > imcs_to_smcs_;
+
   boost::unordered_map<int, PrimaryEventPtr> int_to_prime_;
   boost::unordered_map<std::string, int> prime_to_int_;
   std::vector<double> iprobs_;  // Holds probabilities of basic events.
+
+  boost::unordered_map<int, InterEventPtr> int_to_inter_;
+  boost::unordered_map<std::string, int> inter_to_int_;
   // -----------------------------------------------------------------
   // ---- Algorithm for Equation Construction for Monte Carlo Sim -------
   void MProbOr_(std::set< std::set<int> >& min_cut_sets, int sign = 1,

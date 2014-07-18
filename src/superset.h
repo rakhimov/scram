@@ -5,7 +5,6 @@
 #include <string>
 
 #include <boost/shared_ptr.hpp>
-#include <boost/unordered_set.hpp>
 
 #include "error.h"
 
@@ -20,16 +19,16 @@ class Superset {
   Superset();
 
   // Add a name of a primary event into the set.
-  void AddPrimary(const std::string& id);
+  void AddPrimary(int id);
 
   // Add a name of an intermediate event into the set.
-  void AddInter(const std::string& id);
+  void AddInter(int id);
 
   // Inserts another superset.
   void Insert(const boost::shared_ptr<Superset>& st);
 
   // Returns an intermidiate event and deletes it from the set.
-  std::string PopInter();
+  int PopInter();
 
   // Returns the number of primary events.
   int NumOfPrimeEvents();
@@ -38,18 +37,16 @@ class Superset {
   int NumOfInterEvents();
 
   // Returns the set of primary events.
-  std::set<std::string>& primes();
+  std::set<int>& primes();
 
   // Returns the set of intermediate events. NOTE: Implemented for testing.
-  std::set<std::string>& inters();
+  std::set<int>& inters();
 
   ~Superset() {}
 
  private:
-  boost::unordered_set<std::string> inters_;
-  boost::unordered_set<std::string> primes_;
-  std::set<std::string> std_primes_;
-  std::set<std::string> std_inters_;
+  std::set<int> inters_;
+  std::set<int> primes_;
 };
 
 }  // namespace scram

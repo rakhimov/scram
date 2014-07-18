@@ -60,6 +60,7 @@ TEST_F(FaultTreeTest, CheckGate) {
   EXPECT_FALSE(CheckGate(top));
 }
 
+/*
 TEST_F(FaultTreeTest, ExpandSets) {
   InterEventPtr inter(new InterEvent("inter"));  // No gate is defined.
   inter_events().insert(std::make_pair("inter", inter));
@@ -115,6 +116,7 @@ TEST_F(FaultTreeTest, ExpandSets) {
   inter->AddChild(C);
   ASSERT_THROW(ExpandSets(inter, sets), ValueError);
 }
+*/
 
 TEST_F(FaultTreeTest, ProbAndString) {
   std::set<std::string> min_cut_set;

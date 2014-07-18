@@ -376,12 +376,14 @@ void FaultTree::Analyze() {
   std::vector< SupersetPtr > inter_sets;
 
   // Container for cut sets with primary events only.
-  std::vector< std::set<std::string> > cut_sets;
+  std::vector< std::set<int> > cut_sets;
+
+  FaultTree::AssignIndexes_();
 
   FaultTree::ExpandSets_(top_event_, inter_sets);
 
   // An iterator for a vector with sets of ids of events.
-  std::vector< std::set<std::string> >::iterator it_vec;
+  std::vector< std::set<int> >::iterator it_vec;
 
   // An iterator for a vector with Supersets.
   std::vector< SupersetPtr >::iterator it_sup;
@@ -403,7 +405,7 @@ void FaultTree::Analyze() {
     }
 
     // Get the intermediate event.
-    InterEventPtr inter_event = inter_events_[tmp_set->PopInter()];
+    InterEventPtr inter_event = int_to_inter_[tmp_set->PopInter()];
     // To hold sets of children.
     std::vector< SupersetPtr > children_sets;
 
@@ -431,20 +433,20 @@ void FaultTree::Analyze() {
   }
 
   // Choose to convert vector to a set to get rid of any duplications.
-  std::set< std::set<std::string> > unique_cut_sets;
+  std::set< std::set<int> > unique_cut_sets;
   for (it_vec = cut_sets.begin(); it_vec != cut_sets.end(); ++it_vec) {
     if (it_vec->size() == 1) {
       // Minimal cut set is detected.
-      min_cut_sets_.insert(*it_vec);
+      imcs_.insert(*it_vec);
       continue;
     }
     unique_cut_sets.insert(*it_vec);
   }
   // Iterator for unique_cut_sets.
-  std::set< std::set<std::string> >::iterator it_uniq;
+  std::set< std::set<int> >::iterator it_uniq;
 
   // Iterator for minimal cut sets.
-  std::set< std::set<std::string> >::iterator it_min;
+  std::set< std::set<int> >::iterator it_min;
 
   // Minimal size of sets in uniq_cut_sets.
   int min_size = 2;
@@ -452,14 +454,13 @@ void FaultTree::Analyze() {
   while (!unique_cut_sets.empty()) {
     // Apply rule 4 to reduce unique cut sets.
 
-    std::set< std::set<std::string> > temp_sets;
+    std::set< std::set<int> > temp_sets;
 
     for (it_uniq = unique_cut_sets.begin();
          it_uniq != unique_cut_sets.end(); ++it_uniq) {
          bool include = true;  // Determine to keep or not.
 
-      for (it_min = min_cut_sets_.begin();
-           it_min != min_cut_sets_.end(); ++it_min) {
+      for (it_min = imcs_.begin(); it_min != imcs_.end(); ++it_min) {
         if (std::includes(it_uniq->begin(), it_uniq->end(),
                           it_min->begin(), it_min->end())) {
           // Non-minimal cut set is detected.
@@ -471,7 +472,7 @@ void FaultTree::Analyze() {
       // all minimum sized cut sets are guaranteed to be minimal.
       if (include) {
         if (it_uniq->size() == min_size) {
-          min_cut_sets_.insert(*it_uniq);
+          imcs_.insert(*it_uniq);
           // Update maximum order of the sets.
           if (min_size > max_order_) max_order_ = min_size;
         } else {
@@ -484,35 +485,34 @@ void FaultTree::Analyze() {
     min_size++;
   }
 
+  FaultTree::SetsToString_();
+
   analysis_done_ = true;  // Main analysis enough for reporting is done.
 
   // Compute probabilities only if requested.
   if (!prob_requested_) return;
 
   // Maximum number of sums in the series.
-  if (nsums_ > min_cut_sets_.size()) nsums_ = min_cut_sets_.size();
+  if (nsums_ > imcs_.size()) nsums_ = imcs_.size();
 
   // Perform Monte Carlo Uncertainty analysis.
   if (analysis_ == "fta-mc") {
     // Generate the equation.
-    FaultTree::AssignIndexes_();
     FaultTree::MProbOr_(imcs_, 1, nsums_);
     // Sample probabilities and generate data.
     FaultTree::MSample_();
     return;
   }
 
-  // First, assume independence of events.
-  // Second, rare event approximation is applied upon users' request.
-
   // Iterate minimal cut sets and find probabilities for each set.
-  for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
-       ++it_min) {
+  for (it_min = imcs_.begin(); it_min != imcs_.end(); ++it_min) {
     // Calculate a probability of a set with AND relationship.
     double p_sub_set = FaultTree::ProbAnd_(*it_min);
     // Update a container with minimal cut sets and probabilities.
-    prob_of_min_sets_.insert(std::make_pair(*it_min, p_sub_set));
-    ordered_min_sets_.insert(std::make_pair(p_sub_set, *it_min));
+    prob_of_min_sets_.insert(std::make_pair(imcs_to_smcs_[*it_min],
+                                            p_sub_set));
+    ordered_min_sets_.insert(std::make_pair(p_sub_set,
+                                            imcs_to_smcs_[*it_min]));
   }
 
   // Check if a rare event approximation is requested.
@@ -536,7 +536,6 @@ void FaultTree::Analyze() {
     // Exact calculation of probability of cut sets.
     // ---------- Algorithm Improvement Check : Integers -----------------
     // Map primary events to integers.
-    FaultTree::AssignIndexes_();
     p_total_ = FaultTree::ProbOr_(imcs_, nsums_);
     // ------------------------------------------------------------
   }
@@ -1284,9 +1283,9 @@ void FaultTree::ExpandSets_(const TopEventPtr& t,
          it_child != events_children.end(); ++it_child) {
       SupersetPtr tmp_set_c(new scram::Superset());
       if (inter_events_.count(it_child->first)) {
-        tmp_set_c->AddInter(it_child->first);
+        tmp_set_c->AddInter(inter_to_int_[it_child->first]);
       } else {
-        tmp_set_c->AddPrimary(it_child->first);
+        tmp_set_c->AddPrimary(prime_to_int_[it_child->first]);
       }
       sets.push_back(tmp_set_c);
     }
@@ -1295,9 +1294,9 @@ void FaultTree::ExpandSets_(const TopEventPtr& t,
     for (it_child = events_children.begin();
          it_child != events_children.end(); ++it_child) {
       if (inter_events_.count(it_child->first)) {
-        tmp_set_c->AddInter(it_child->first);
+        tmp_set_c->AddInter(inter_to_int_[it_child->first]);
       } else {
-        tmp_set_c->AddPrimary(it_child->first);
+        tmp_set_c->AddPrimary(prime_to_int_[it_child->first]);
       }
     }
     sets.push_back(tmp_set_c);
@@ -1448,13 +1447,24 @@ void FaultTree::AssignIndexes_() {
   // databases.
   int j = 0;
   boost::unordered_map<std::string, PrimaryEventPtr>::iterator itp;
-  for (itp = primary_events_.begin(); itp != primary_events_.end();
-       ++itp) {
+  for (itp = primary_events_.begin(); itp != primary_events_.end(); ++itp) {
     int_to_prime_.insert(std::make_pair(j, itp->second));
     prime_to_int_.insert(std::make_pair(itp->second->id(), j));
-    iprobs_.push_back(itp->second->p());
+    if (prob_requested_) iprobs_.push_back(itp->second->p());
     ++j;
   }
+
+  // Assign an index to each top and intermediate event and populate
+  // relevant databases.
+  boost::unordered_map<std::string, InterEventPtr>::iterator iti;
+  for (iti = inter_events_.begin(); iti != inter_events_.end(); ++iti) {
+    int_to_inter_.insert(std::make_pair(j, iti->second));
+    inter_to_int_.insert(std::make_pair(iti->second->id(), j));
+    ++j;
+  }
+}
+
+void FaultTree::UpdateMCS_() {
   // Update minimal cut sets with the assigned indexes.
   std::set< std::set<std::string> >::iterator it_min;
   for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
@@ -1467,6 +1477,20 @@ void FaultTree::AssignIndexes_() {
     imcs_.insert(pr_set);
   }
 }
+
+void FaultTree::SetsToString_() {
+  std::set< std::set<int> >::iterator it_min;
+  for (it_min = imcs_.begin(); it_min != imcs_.end(); ++it_min) {
+    std::set<std::string> pr_set;
+    std::set<int>::iterator it_set;
+    for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
+      pr_set.insert(int_to_prime_[*it_set]->id());
+    }
+    imcs_to_smcs_.insert(std::make_pair(*it_min, pr_set));
+    min_cut_sets_.insert(pr_set);
+  }
+}
+
 // ----------------------------------------------------------------------
 // ----- Algorithm for Total Equation for Monte Carlo Simulation --------
 // Generation of the representation of the original equation.

@@ -4,11 +4,11 @@ namespace scram {
 
 Superset::Superset() {}
 
-void Superset::AddPrimary(const std::string& id) {
+void Superset::AddPrimary(int id) {
   primes_.insert(id);
 }
 
-void Superset::AddInter(const std::string& id) {
+void Superset::AddInter(int id) {
   inters_.insert(id);
 }
 
@@ -17,12 +17,12 @@ void Superset::Insert(const boost::shared_ptr<Superset>& st) {
   inters_.insert(st->inters_.begin(), st->inters_.end());
 }
 
-std::string Superset::PopInter() {
+int Superset::PopInter() {
   if (inters_.empty()) {
     throw scram::ValueError("No intermediate events to return.");
   }
-  boost::unordered_set<std::string>::iterator it = inters_.begin();
-  std::string inter = *it;
+  std::set<int>::iterator it = inters_.begin();
+  int inter = *it;
   inters_.erase(it);
   return inter;
 }
@@ -35,15 +35,12 @@ int Superset::NumOfInterEvents() {
   return inters_.size();
 }
 
-std::set<std::string>& Superset::primes() {
-  std_primes_.insert(primes_.begin(), primes_.end());
-  return std_primes_;
+std::set<int>& Superset::primes() {
+  return primes_;
 }
 
-std::set<std::string>& Superset::inters() {
-  if (!std_inters_.empty()) std_inters_.clear();  // Inters may be deleted.
-  std_inters_.insert(inters_.begin(), inters_.end());
-  return std_inters_;
+std::set<int>& Superset::inters() {
+  return inters_;
 }
 
 }  // namespace scram
