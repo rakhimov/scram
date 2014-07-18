@@ -132,9 +132,6 @@ class FaultTree : public RiskAnalysis {
   // converting maps.
   void AssignIndexes_();
 
-  // Updates minimal cut sets with the assigned indexes for primary events.
-  void UpdateMCS_();
-
   // Updates minimal cut sets from indexes to strings.
   void SetsToString_();
 

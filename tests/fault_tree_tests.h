@@ -79,6 +79,10 @@ class FaultTreeTest : public ::testing::Test {
     return fta->CombineElAndSet_(el, set, combo_set);
   }
 
+  void AssignIndexes() {
+    fta->AssignIndexes_();
+  }
+
   void AddPrimeIntProb(double prob) {
     fta->iprobs_.push_back(prob);
   }

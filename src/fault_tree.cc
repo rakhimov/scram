@@ -1448,20 +1448,6 @@ void FaultTree::AssignIndexes_() {
   }
 }
 
-void FaultTree::UpdateMCS_() {
-  // Update minimal cut sets with the assigned indexes.
-  std::set< std::set<std::string> >::iterator it_min;
-  for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
-       ++it_min) {
-    std::set<int> pr_set;
-    std::set<std::string>::iterator it_set;
-    for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
-      pr_set.insert(prime_to_int_[*it_set]);
-    }
-    imcs_.insert(pr_set);
-  }
-}
-
 void FaultTree::SetsToString_() {
   std::set< std::set<int> >::iterator it_min;
   for (it_min = imcs_.begin(); it_min != imcs_.end(); ++it_min) {
