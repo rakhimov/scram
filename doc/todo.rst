@@ -2,7 +2,8 @@
 TODO list for SCRAM Project
 #################################
 
-Relative importances within groups are given in *italics*.
+.. note::
+    Relative importances within groups are given in *italics*.
 
 Currently Low Hanging Fruits
 ============================

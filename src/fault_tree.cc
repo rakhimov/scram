@@ -449,16 +449,21 @@ void FaultTree::Analyze() {
   // Minimal size of sets in uniq_cut_sets.
   int min_size = 2;
 
+  // Min cut sets of the previous size.
+  std::set< std::set<int> > mcs_prev_size = imcs_;  // Current size is 1.
+
   while (!unique_cut_sets.empty()) {
     // Apply rule 4 to reduce unique cut sets.
 
-    std::set< std::set<int> > temp_sets;
+    std::set< std::set<int> > temp_sets;  // For mcs of a level above.
+    std::set< std::set<int> > temp_min_sets;  // For mcs of this level.
 
     for (it_uniq = unique_cut_sets.begin();
          it_uniq != unique_cut_sets.end(); ++it_uniq) {
          bool include = true;  // Determine to keep or not.
 
-      for (it_min = imcs_.begin(); it_min != imcs_.end(); ++it_min) {
+      for (it_min = mcs_prev_size.begin(); it_min != mcs_prev_size.end();
+           ++it_min) {
         if (std::includes(it_uniq->begin(), it_uniq->end(),
                           it_min->begin(), it_min->end())) {
           // Non-minimal cut set is detected.
@@ -471,6 +476,7 @@ void FaultTree::Analyze() {
       if (include) {
         if (it_uniq->size() == min_size) {
           imcs_.insert(*it_uniq);
+          temp_min_sets.insert(*it_uniq);
           // Update maximum order of the sets.
           if (min_size > max_order_) max_order_ = min_size;
         } else {
@@ -480,6 +486,7 @@ void FaultTree::Analyze() {
       // Ignore the cut set because include = false.
     }
     unique_cut_sets = temp_sets;
+    mcs_prev_size = temp_min_sets;
     min_size++;
   }
 

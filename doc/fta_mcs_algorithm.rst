@@ -31,12 +31,21 @@ Gates of intermediate events affect cut sets. Each OR gate adds new sets into
 the set of sets, while each AND gate adds additional elements into one
 specific set inside the set of sets.
 
-The next algorithmically complex part is the application of Rule 4. The set of
-sets traversed to find sets with size one, which are guaranteed to be
-minimal. Then all other sets are checked if they are supersets of the found
+In the first pass, the fault tree is traversed from the top to down, and all
+cut sets are generated. In this step, Superset class may cancel cut sets if
+the fault tree is non-coherent and contains NOT elements. Also, if a cut set
+is larger than the limit set by a user, it is discarded.
+
+After the first pass, all possible and required cut sets are generated.
+The generated cut sets are stored in a set. The next algorithmically complex
+part is the application of Rule 4. The set of cut sets is traversed to find
+sets with size one, which are minimal by default.
+Then all other sets are checked if they are supersets of the found
 minimal sets so far. If this is not the case, the sets with size 2 are
-minimal. This logic is continued till the original set of the sets is empty,
-or the limit for maximum order for MCS is reached.
+minimal, and these size 2 cut sets are added into minimal cut set collection.
+Then these size 2 minimal cut sets are used to check if they are subsets of
+the other cut sets. If not, then size 3 cut sets are minimal.
+This incremental logic is continued till the initial set of cut sets is empty.
 
 Proposed Improvements for this algorithm
 ------------------------------------------
