@@ -1371,20 +1371,6 @@ std::string FaultTree::PrimariesNoProb_() {
   return uninit_primaries;
 }
 
-double FaultTree::ProbAnd_(const std::set<std::string>& min_cut_set) {
-  // Test just in case the min cut set is empty.
-  if (min_cut_set.empty()) {
-    throw scram::ValueError("The set is empty for probability calculations.");
-  }
-
-  double p_sub_set = 1;  // 1 is for multiplication.
-  std::set<std::string>::iterator it_set;
-  for (it_set = min_cut_set.begin(); it_set != min_cut_set.end(); ++it_set) {
-    p_sub_set *= primary_events_[*it_set]->p();
-  }
-  return p_sub_set;
-}
-
 // ------------------------- Algorithm Improvement Trial:Integers --------------
 double FaultTree::ProbOr_(std::set< std::set<int> >& min_cut_sets, int nsums) {
   // Recursive implementation.

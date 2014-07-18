@@ -64,10 +64,6 @@ class FaultTreeTest : public ::testing::Test {
     return fta->ExpandSets_(t, sets);
   }
 
-  double ProbAnd(const std::set<std::string>& min_cut_set) {
-    return fta->ProbAnd_(min_cut_set);
-  }
-
   // ----------- Probability calculation algorithm related part ------------
   double ProbAnd(const std::set<int>& min_cut_set) {
     return fta->ProbAnd_(min_cut_set);

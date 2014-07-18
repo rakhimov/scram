@@ -118,28 +118,6 @@ TEST_F(FaultTreeTest, ExpandSets) {
 }
 */
 
-TEST_F(FaultTreeTest, ProbAndString) {
-  std::set<std::string> min_cut_set;
-  ASSERT_THROW(ProbAnd(min_cut_set), ValueError);  // Error for an empty set.
-
-  PrimaryEventPtr A(new PrimaryEvent("a"));
-  PrimaryEventPtr B(new PrimaryEvent("b"));
-  PrimaryEventPtr C(new PrimaryEvent("c"));
-  A->p(0.1);
-  B->p(0.2);
-  C->p(0.3);
-  primary_events().insert(std::make_pair("a", A));
-  primary_events().insert(std::make_pair("b", B));
-  primary_events().insert(std::make_pair("c", C));
-
-  min_cut_set.insert("a");
-  EXPECT_DOUBLE_EQ(0.1, ProbAnd(min_cut_set));
-  min_cut_set.insert("b");
-  EXPECT_DOUBLE_EQ(0.02, ProbAnd(min_cut_set));
-  min_cut_set.insert("c");
-  EXPECT_DOUBLE_EQ(0.006, ProbAnd(min_cut_set));
-}
-
 TEST_F(FaultTreeTest, ProbAndInt) {
   std::set<int> min_cut_set;
   ASSERT_THROW(ProbAnd(min_cut_set), ValueError);  // Error for an empty set.
