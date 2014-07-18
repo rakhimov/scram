@@ -79,11 +79,6 @@ class FaultTreeTest : public ::testing::Test {
     return fta->CombineElAndSet_(el, set, combo_set);
   }
 
-  void AddPrimeInt(int id_num, PrimaryEvent* event) {
-    fta->int_to_prime_.insert(std::make_pair(id_num, event));
-    return;
-  }
-
   void AddPrimeIntProb(double prob) {
     fta->iprobs_.push_back(prob);
   }

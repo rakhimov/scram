@@ -404,12 +404,10 @@ void FaultTree::Analyze() {
       continue;
     }
 
-    // Get the intermediate event.
-    InterEventPtr inter_event = int_to_inter_[tmp_set->PopInter()];
     // To hold sets of children.
     std::vector< SupersetPtr > children_sets;
 
-    FaultTree::ExpandSets_(inter_event, children_sets);
+    FaultTree::ExpandSets_(int_to_inter_[tmp_set->PopInter()], children_sets);
 
     // Attach the original set into this event's sets of children.
     for (it_sup = children_sets.begin(); it_sup != children_sets.end();
@@ -1371,7 +1369,7 @@ std::string FaultTree::PrimariesNoProb_() {
   return uninit_primaries;
 }
 
-// ------------------------- Algorithm Improvement Trial:Integers --------------
+// -------------------- Algorithm for Cut Sets and Probabilities -----------
 double FaultTree::ProbOr_(std::set< std::set<int> >& min_cut_sets, int nsums) {
   // Recursive implementation.
   if (min_cut_sets.empty()) {
@@ -1434,7 +1432,7 @@ void FaultTree::AssignIndexes_() {
   int j = 0;
   boost::unordered_map<std::string, PrimaryEventPtr>::iterator itp;
   for (itp = primary_events_.begin(); itp != primary_events_.end(); ++itp) {
-    int_to_prime_.insert(std::make_pair(j, itp->second));
+    int_to_prime_.push_back(itp->second);
     prime_to_int_.insert(std::make_pair(itp->second->id(), j));
     if (prob_requested_) iprobs_.push_back(itp->second->p());
     ++j;

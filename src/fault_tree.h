@@ -105,7 +105,7 @@ class FaultTree : public RiskAnalysis {
   // Returns primary events that do not have probabilities assigned.
   std::string PrimariesNoProb_();
 
-  // -------------------- Algorithm Improvement Trial:Integers ---------------
+  // -------------------- Algorithm for Cut Sets and Probabilities -----------
   // Calculates a probability of a set of minimal cut sets, which are in OR
   // relationship with each other. This function is a brute force probability
   // calculation without rare event approximations.
@@ -141,7 +141,7 @@ class FaultTree : public RiskAnalysis {
   std::set< std::set<int> > imcs_;
   std::map< std::set<int>, std::set<std::string> > imcs_to_smcs_;
 
-  boost::unordered_map<int, PrimaryEventPtr> int_to_prime_;
+  std::vector<PrimaryEventPtr> int_to_prime_;
   boost::unordered_map<std::string, int> prime_to_int_;
   std::vector<double> iprobs_;  // Holds probabilities of basic events.
 

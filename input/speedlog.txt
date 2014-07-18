@@ -12,11 +12,9 @@ user    5.550s  |  5.589s
 
 ---------- fta-200 -l 16 ---------------
 Standard build:
-real    48.000s
-user    44.500s
+real    25.000s
+user    22.500s
 
 Release build:
-real    9.576s
-user    8.891s
-
-2m21
+real    5.038s
+user    4.546s
