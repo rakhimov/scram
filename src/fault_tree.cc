@@ -2,6 +2,7 @@
 #include "fault_tree.h"
 
 #include <algorithm>
+#include <cmath>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -412,9 +413,8 @@ void FaultTree::Analyze() {
     // Attach the original set into this event's sets of children.
     for (it_sup = children_sets.begin(); it_sup != children_sets.end();
          ++it_sup) {
-      (*it_sup)->Insert(tmp_set);
       // Add this set to the original inter_sets.
-      inter_sets.push_back(*it_sup);
+      if ((*it_sup)->Insert(tmp_set)) inter_sets.push_back(*it_sup);
     }
   }
 
@@ -1274,11 +1274,13 @@ void FaultTree::GraphNode_(TopEventPtr t, std::map<std::string,
 
 void FaultTree::ExpandSets_(int inter_index,
                             std::vector< SupersetPtr >& sets) {
+  int mult = 1;
+  if (inter_index < 0) mult = -1;
   // Populate intermediate and primary events of the top.
   std::map<std::string, EventPtr> events_children =
-      int_to_inter_[inter_index]->children();
+      int_to_inter_[std::abs(inter_index)]->children();
 
-  std::string gate = int_to_inter_[inter_index]->gate();
+  std::string gate = int_to_inter_[std::abs(inter_index)]->gate();
 
   // Iterator for children of top and intermediate events.
   std::map<std::string, EventPtr>::iterator it_child;
@@ -1289,9 +1291,9 @@ void FaultTree::ExpandSets_(int inter_index,
          it_child != events_children.end(); ++it_child) {
       SupersetPtr tmp_set_c(new scram::Superset());
       if (inter_events_.count(it_child->first)) {
-        tmp_set_c->AddInter(inter_to_int_[it_child->first]);
+        tmp_set_c->AddInter(mult * inter_to_int_[it_child->first]);
       } else {
-        tmp_set_c->AddPrimary(prime_to_int_[it_child->first]);
+        tmp_set_c->AddPrimary(mult * prime_to_int_[it_child->first]);
       }
       sets.push_back(tmp_set_c);
     }
@@ -1300,10 +1302,21 @@ void FaultTree::ExpandSets_(int inter_index,
     for (it_child = events_children.begin();
          it_child != events_children.end(); ++it_child) {
       if (inter_events_.count(it_child->first)) {
-        tmp_set_c->AddInter(inter_to_int_[it_child->first]);
+        tmp_set_c->AddInter(mult * inter_to_int_[it_child->first]);
       } else {
-        tmp_set_c->AddPrimary(prime_to_int_[it_child->first]);
+        tmp_set_c->AddPrimary(mult * prime_to_int_[it_child->first]);
       }
+    }
+    sets.push_back(tmp_set_c);
+  } else if (gate == "not") {
+    // Only one child is expected.
+    assert(events_children.size() == 1);
+    SupersetPtr tmp_set_c(new scram::Superset());
+    it_child = events_children.begin();
+    if (inter_events_.count(it_child->first)) {
+      tmp_set_c->AddInter(-1 * mult * inter_to_int_[it_child->first]);
+    } else {
+      tmp_set_c->AddPrimary(-1 * mult * prime_to_int_[it_child->first]);
     }
     sets.push_back(tmp_set_c);
   } else {

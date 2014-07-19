@@ -63,11 +63,14 @@ TEST_F(FaultTreeTest, CheckGate) {
 TEST_F(FaultTreeTest, ExpandSets) {
   InterEventPtr inter(new InterEvent("inter"));  // No gate is defined.
   inter_events().insert(std::make_pair("inter", inter));
+
   std::vector<SupersetPtr> sets;
   std::vector<SupersetPtr>::iterator it_set;
   PrimaryEventPtr A(new PrimaryEvent("a"));
   PrimaryEventPtr B(new PrimaryEvent("b"));
   PrimaryEventPtr C(new PrimaryEvent("c"));
+  std::set<int> result_set;
+
   primary_events().insert(std::make_pair("a", A));
   primary_events().insert(std::make_pair("b", B));
   primary_events().insert(std::make_pair("c", C));
@@ -112,11 +115,50 @@ TEST_F(FaultTreeTest, ExpandSets) {
   inter->AddChild(C);
   ASSERT_NO_THROW(ExpandSets(5, sets));
   EXPECT_EQ(1, sets.size());
-  std::set<int> result = (*sets.begin())->primes();
-  EXPECT_EQ(3, result.size());
-  EXPECT_EQ(1, result.count(1));
-  EXPECT_EQ(1, result.count(2));
-  EXPECT_EQ(1, result.count(3));
+  result_set = (*sets.begin())->primes();
+  EXPECT_EQ(3, result_set.size());
+  EXPECT_EQ(1, result_set.count(1));
+  EXPECT_EQ(1, result_set.count(2));
+  EXPECT_EQ(1, result_set.count(3));
+
+  // Testing for NOT gate with a primary event child.
+  delete fta;
+  fta = new FaultTree("fta-default", false);
+  inter = InterEventPtr(new InterEvent("inter", "not"));
+  inter_events().insert(std::make_pair("inter", inter));
+  primary_events().insert(std::make_pair("a", A));
+  AssignIndexes();
+  inter->AddChild(A);
+  sets.clear();
+  ASSERT_NO_THROW(ExpandSets(3, sets));
+  result_set = (*sets.begin())->primes();
+  EXPECT_EQ(1, result_set.size());
+  EXPECT_EQ(1, result_set.count(-1));
+  sets.clear();
+  ASSERT_NO_THROW(ExpandSets(-3, sets));  // Negative InterEvent.
+  result_set = (*sets.begin())->primes();
+  EXPECT_EQ(1, result_set.size());
+  EXPECT_EQ(1, result_set.count(1));
+
+  // Testing for NOT gate with a intermediate event child.
+  delete fta;
+  fta = new FaultTree("fta-default", false);
+  inter = InterEventPtr(new InterEvent("inter", "not"));
+  InterEventPtr child_inter(new InterEvent("znter"));
+  inter_events().insert(std::make_pair("znter", child_inter));
+  inter_events().insert(std::make_pair("inter", inter));
+  AssignIndexes();
+  inter->AddChild(child_inter);
+  sets.clear();
+  ASSERT_NO_THROW(ExpandSets(2, sets));
+  result_set = (*sets.begin())->inters();
+  EXPECT_EQ(1, result_set.size());
+  EXPECT_EQ(1, result_set.count(-3));
+  sets.clear();
+  ASSERT_NO_THROW(ExpandSets(-2, sets));  // Negative InterEvent.
+  result_set = (*sets.begin())->inters();
+  EXPECT_EQ(1, result_set.size());
+  EXPECT_EQ(1, result_set.count(3));
 
   // Testing for some UNKNOWN gate.
   delete fta;
