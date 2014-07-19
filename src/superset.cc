@@ -2,19 +2,56 @@
 
 namespace scram {
 
-Superset::Superset() {}
+Superset::Superset() : cancel(false) {}
 
-void Superset::AddPrimary(int id) {
+bool Superset::AddPrimary(int id) {
+  if (cancel) return false;
+  if (primes_.count(-1 * id)) {
+    primes_.clear();
+    inters_.clear();
+    cancel = true;
+    return false;
+  }
   primes_.insert(id);
+  return true;
 }
 
-void Superset::AddInter(int id) {
+bool Superset::AddInter(int id) {
+  if (cancel) return false;
+  if (inters_.count(-1 * id)) {
+    primes_.clear();
+    inters_.clear();
+    cancel = true;
+    return false;
+  }
   inters_.insert(id);
+  return true;
 }
 
-void Superset::Insert(const boost::shared_ptr<Superset>& st) {
-  primes_.insert(st->primes_.begin(), st->primes_.end());
-  inters_.insert(st->inters_.begin(), st->inters_.end());
+bool Superset::Insert(const boost::shared_ptr<Superset>& st) {
+  if (cancel) return false;
+  std::set<int>::iterator it;
+  for (it = st->primes_.begin(); it != st->primes_.end(); ++it) {
+    if (primes_.count(-1 * (*it))) {
+      primes_.clear();
+      inters_.clear();
+      cancel = true;
+      return false;
+    }
+    primes_.insert(*it);
+  }
+
+  for (it = st->inters_.begin(); it != st->inters_.end(); ++it) {
+    if (inters_.count(-1 * (*it))) {
+      primes_.clear();
+      inters_.clear();
+      cancel = true;
+      return false;
+    }
+    inters_.insert(*it);
+  }
+
+  return true;
 }
 
 int Superset::PopInter() {

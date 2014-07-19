@@ -36,6 +36,18 @@ TEST(SupersetTest, AddPrime) {
   // Test if repeated addition handled in a set.
   EXPECT_NO_THROW(sset->AddPrimary(new_prime_event));
   EXPECT_EQ(sset->primes(), primes);
+
+  // Negative events assiciated with NOT logic.
+  int neg_prime = -11;
+  primes.insert(neg_prime);
+  EXPECT_NO_THROW(sset->AddPrimary(neg_prime));
+  EXPECT_EQ(sset->primes(), primes);
+
+  int neg_existing = -1;  // This is a negation of an existing event.
+  EXPECT_FALSE(sset->AddPrimary(neg_existing));
+  EXPECT_TRUE(sset->primes().empty());
+  EXPECT_TRUE(sset->inters().empty());
+  EXPECT_FALSE(sset->AddPrimary(1000));  // Reject any further additions.
 }
 
 // Test AddInter function.
@@ -57,6 +69,18 @@ TEST(SupersetTest, AddInter) {
   EXPECT_NO_THROW(sset->AddInter(new_inter_event));
   inters.insert(new_inter_event);
   EXPECT_EQ(sset->inters(), inters);
+
+  // Negative events assiciated with NOT logic.
+  int neg_inter = -11;
+  inters.insert(neg_inter);
+  EXPECT_NO_THROW(sset->AddInter(neg_inter));
+  EXPECT_EQ(sset->inters(), inters);
+
+  int neg_existing = -100;  // This is a negation of an existing event.
+  EXPECT_FALSE(sset->AddInter(neg_existing));
+  EXPECT_TRUE(sset->primes().empty());
+  EXPECT_TRUE(sset->inters().empty());
+  EXPECT_FALSE(sset->AddInter(100000));  // Reject any further additions.
 }
 
 // Test Insert function
@@ -74,7 +98,7 @@ TEST(SupersetTest, Insert) {
   sset_one->AddInter(inter_event_one);
   sset_two->AddInter(inter_event_two);
 
-  sset_one->Insert(sset_two);
+  EXPECT_TRUE(sset_one->Insert(sset_two));
 
   std::set<int> primes;
   std::set<int> inters;
@@ -85,6 +109,19 @@ TEST(SupersetTest, Insert) {
 
   EXPECT_EQ(sset_one->primes(), primes);
   EXPECT_EQ(sset_one->inters(), inters);
+
+  // Insert negative primary elements.
+  EXPECT_TRUE(sset_two->AddPrimary(-1));
+  EXPECT_FALSE(sset_one->Insert(sset_two));
+  EXPECT_TRUE(sset_one->primes().empty());
+  EXPECT_TRUE(sset_one->inters().empty());
+
+  // Insert negative intermediate elements.
+  sset_one = SupersetPtr(new Superset());
+  EXPECT_TRUE(sset_one->AddInter(-50));
+  EXPECT_FALSE(sset_two->Insert(sset_one));
+  EXPECT_TRUE(sset_two->primes().empty());
+  EXPECT_TRUE(sset_two->inters().empty());
 }
 
 // Test PopInter function

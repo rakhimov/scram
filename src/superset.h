@@ -19,13 +19,13 @@ class Superset {
   Superset();
 
   // Add a name of a primary event into the set.
-  void AddPrimary(int id);
+  bool AddPrimary(int id);
 
   // Add a name of an intermediate event into the set.
-  void AddInter(int id);
+  bool AddInter(int id);
 
   // Inserts another superset.
-  void Insert(const boost::shared_ptr<Superset>& st);
+  bool Insert(const boost::shared_ptr<Superset>& st);
 
   // Returns an intermidiate event and deletes it from the set.
   int PopInter();
@@ -47,6 +47,7 @@ class Superset {
  private:
   std::set<int> inters_;
   std::set<int> primes_;
+  bool cancel;
 };
 
 }  // namespace scram
