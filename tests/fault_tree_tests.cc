@@ -51,6 +51,14 @@ TEST_F(FaultTreeTest, CheckGate) {
   top->AddChild(C);
   EXPECT_TRUE(CheckGate(top));  // More children are OK.
 
+  // NOT Gate tests.
+  top = TopEventPtr(new TopEvent("top", "not"));
+  EXPECT_FALSE(CheckGate(top));  // No child.
+  top->AddChild(A);
+  EXPECT_TRUE(CheckGate(top));  // Exactly one child is required.
+  top->AddChild(B);
+  EXPECT_FALSE(CheckGate(top));  // Two children are too much.
+
   // Some UNKNOWN gate tests.
   top = TopEventPtr(new TopEvent("top", "unknown_gate"));
   EXPECT_FALSE(CheckGate(top));  // No child.

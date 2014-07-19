@@ -100,7 +100,7 @@ class FaultTree : public RiskAnalysis {
   std::string CheckAllGates_();
 
   // Checks if a gate is initialized correctly.
-  std::string CheckGate_(TopEventPtr event);
+  std::string CheckGate_(const TopEventPtr& event);
 
   // Returns primary events that do not have probabilities assigned.
   std::string PrimariesNoProb_();

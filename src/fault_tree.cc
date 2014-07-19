@@ -49,6 +49,7 @@ FaultTree::FaultTree(std::string analysis, bool graph_only, bool rare_event,
   // Add valid gates.
   gates_.insert("and");
   gates_.insert("or");
+  gates_.insert("not");
 
   // Add valid primary event types.
   types_.insert("basic");
@@ -1320,6 +1321,7 @@ void FaultTree::ExpandSets_(int inter_index,
     }
     sets.push_back(tmp_set_c);
   } else {
+    boost::to_upper(gate);
     std::string msg = "No algorithm defined for " + gate;
     throw scram::ValueError(msg);
   }
@@ -1344,12 +1346,12 @@ std::string FaultTree::CheckAllGates_() {
   return msg.str();
 }
 
-std::string FaultTree::CheckGate_(TopEventPtr event) {
+std::string FaultTree::CheckGate_(const TopEventPtr& event) {
   std::stringstream msg;
   msg << "";  // An empty default message is the indicator of no problems.
   try {
     std::string gate = event->gate();
-    // This line throws error if there are no children.
+    // This line throws an error if there are no children.
     int size = event->children().size();
     // Add transfer gates if needed for graphing.
     size += transfer_map_.count(event->id());
@@ -1361,6 +1363,12 @@ std::string FaultTree::CheckGate_(TopEventPtr event) {
         msg << orig_ids_[event->id()] << " : " << gate
             << " gate must have 2 or more "
             << "children.\n";
+      }
+    } else if (gate == "not") {
+      if (size != 1) {
+        boost::to_upper(gate);
+        msg << orig_ids_[event->id()] << " : " << gate
+            << " gate must have exactly one child.";
       }
     } else {
       boost::to_upper(gate);
