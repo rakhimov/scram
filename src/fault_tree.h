@@ -91,7 +91,7 @@ class FaultTree : public RiskAnalysis {
                   std::ofstream& out);
 
   // Adds children of top or intermediate event into a specified vector of sets.
-  void ExpandSets_(const TopEventPtr& t, std::vector<SupersetPtr>& sets);
+  void ExpandSets_(int inter_index, std::vector<SupersetPtr>& sets);
 
   // Verifies if gates are initialized correctly with right number of children.
   // Returns a warning message string with the list of bad gates and their
@@ -142,7 +142,8 @@ class FaultTree : public RiskAnalysis {
   boost::unordered_map<std::string, int> prime_to_int_;
   std::vector<double> iprobs_;  // Holds probabilities of basic events.
 
-  boost::unordered_map<int, InterEventPtr> int_to_inter_;
+  int top_event_index_;
+  boost::unordered_map<int, TopEventPtr> int_to_inter_;
   boost::unordered_map<std::string, int> inter_to_int_;
   // -----------------------------------------------------------------
   // ---- Algorithm for Equation Construction for Monte Carlo Sim -------

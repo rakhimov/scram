@@ -60,8 +60,8 @@ class FaultTreeTest : public ::testing::Test {
     return (fta->CheckGate_(event) == "") ? true : false;
   }
 
-  void ExpandSets(TopEventPtr t, std::vector< SupersetPtr >& sets) {
-    return fta->ExpandSets_(t, sets);
+  void ExpandSets(int inter_index, std::vector< SupersetPtr >& sets) {
+    return fta->ExpandSets_(inter_index, sets);
   }
 
   // ----------- Probability calculation algorithm related part ------------

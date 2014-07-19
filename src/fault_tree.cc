@@ -380,7 +380,7 @@ void FaultTree::Analyze() {
 
   FaultTree::AssignIndexes_();
 
-  FaultTree::ExpandSets_(top_event_, inter_sets);
+  FaultTree::ExpandSets_(top_event_index_, inter_sets);
 
   // An iterator for a vector with sets of ids of events.
   std::vector< std::set<int> >::iterator it_vec;
@@ -407,7 +407,7 @@ void FaultTree::Analyze() {
     // To hold sets of children.
     std::vector< SupersetPtr > children_sets;
 
-    FaultTree::ExpandSets_(int_to_inter_[tmp_set->PopInter()], children_sets);
+    FaultTree::ExpandSets_(tmp_set->PopInter(), children_sets);
 
     // Attach the original set into this event's sets of children.
     for (it_sup = children_sets.begin(); it_sup != children_sets.end();
@@ -1244,9 +1244,8 @@ void FaultTree::IncludeTransfers_() {
   }
 }
 
-void FaultTree::GraphNode_(TopEventPtr t,
-                           std::map<std::string, int>& pr_repeat,
-                           std::ofstream& out) {
+void FaultTree::GraphNode_(TopEventPtr t, std::map<std::string,
+                           int>& pr_repeat, std::ofstream& out) {
   // Populate intermediate and primary events of the input inter event.
   std::map<std::string, boost::shared_ptr<scram::Event> >
       events_children = t->children();
@@ -1273,17 +1272,19 @@ void FaultTree::GraphNode_(TopEventPtr t,
   }
 }
 
-void FaultTree::ExpandSets_(const TopEventPtr& t,
+void FaultTree::ExpandSets_(int inter_index,
                             std::vector< SupersetPtr >& sets) {
   // Populate intermediate and primary events of the top.
-  std::map<std::string, boost::shared_ptr<scram::Event> >
-      events_children = t->children();
+  std::map<std::string, EventPtr> events_children =
+      int_to_inter_[inter_index]->children();
+
+  std::string gate = int_to_inter_[inter_index]->gate();
 
   // Iterator for children of top and intermediate events.
-  std::map<std::string, boost::shared_ptr<scram::Event> >::iterator it_child;
+  std::map<std::string, EventPtr>::iterator it_child;
 
   // Type dependent logic.
-  if (t->gate() == "or") {
+  if (gate == "or") {
     for (it_child = events_children.begin();
          it_child != events_children.end(); ++it_child) {
       SupersetPtr tmp_set_c(new scram::Superset());
@@ -1294,7 +1295,7 @@ void FaultTree::ExpandSets_(const TopEventPtr& t,
       }
       sets.push_back(tmp_set_c);
     }
-  } else if (t->gate() == "and") {
+  } else if (gate == "and") {
     SupersetPtr tmp_set_c(new scram::Superset());
     for (it_child = events_children.begin();
          it_child != events_children.end(); ++it_child) {
@@ -1306,7 +1307,7 @@ void FaultTree::ExpandSets_(const TopEventPtr& t,
     }
     sets.push_back(tmp_set_c);
   } else {
-    std::string msg = "No algorithm defined for" + t->gate();
+    std::string msg = "No algorithm defined for " + gate;
     throw scram::ValueError(msg);
   }
 }
@@ -1450,6 +1451,10 @@ void FaultTree::AssignIndexes_() {
 
   // Assign an index to each top and intermediate event and populate
   // relevant databases.
+  top_event_index_ = j;
+  int_to_inter_.insert(std::make_pair(j, top_event_));
+  inter_to_int_.insert(std::make_pair(top_event_id_, j));
+  ++j;
   boost::unordered_map<std::string, InterEventPtr>::iterator iti;
   for (iti = inter_events_.begin(); iti != inter_events_.end(); ++iti) {
     int_to_inter_.insert(std::make_pair(j, iti->second));

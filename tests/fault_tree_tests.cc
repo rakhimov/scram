@@ -65,7 +65,6 @@ TEST_F(FaultTreeTest, ExpandSets) {
   inter_events().insert(std::make_pair("inter", inter));
   std::vector<SupersetPtr> sets;
   std::vector<SupersetPtr>::iterator it_set;
-  EXPECT_THROW(ExpandSets(inter, sets), ValueError);
   PrimaryEventPtr A(new PrimaryEvent("a"));
   PrimaryEventPtr B(new PrimaryEvent("b"));
   PrimaryEventPtr C(new PrimaryEvent("c"));
@@ -75,12 +74,15 @@ TEST_F(FaultTreeTest, ExpandSets) {
 
   AssignIndexes();
 
+  // Without any gate.
+  EXPECT_THROW(ExpandSets(5, sets), ValueError);
+
   // Testing for OR gate.
-  inter->gate("or");
-  inter->AddChild(A);
-  inter->AddChild(B);
-  inter->AddChild(C);
-  ASSERT_NO_THROW(ExpandSets(inter, sets));
+  inter->gate("or");   // Index 5.
+  inter->AddChild(A);  // Index 1.
+  inter->AddChild(B);  // Index 2.
+  inter->AddChild(C);  // Index 3.
+  ASSERT_NO_THROW(ExpandSets(5, sets));
   EXPECT_EQ(3, sets.size());
   bool a_found = false;  // Index 1
   bool b_found = false;  // Index 2
@@ -96,12 +98,19 @@ TEST_F(FaultTreeTest, ExpandSets) {
   EXPECT_EQ(true, a_found && b_found && c_found);
 
   // Testing for AND gate.
+  delete fta;
+  fta = new FaultTree("fta-default", false);
   inter = InterEventPtr(new InterEvent("inter", "and"));
+  inter_events().insert(std::make_pair("inter", inter));
+  primary_events().insert(std::make_pair("a", A));
+  primary_events().insert(std::make_pair("b", B));
+  primary_events().insert(std::make_pair("c", C));
+  AssignIndexes();
   sets.clear();
   inter->AddChild(A);
   inter->AddChild(B);
   inter->AddChild(C);
-  ASSERT_NO_THROW(ExpandSets(inter, sets));
+  ASSERT_NO_THROW(ExpandSets(5, sets));
   EXPECT_EQ(1, sets.size());
   std::set<int> result = (*sets.begin())->primes();
   EXPECT_EQ(3, result.size());
@@ -110,12 +119,19 @@ TEST_F(FaultTreeTest, ExpandSets) {
   EXPECT_EQ(1, result.count(3));
 
   // Testing for some UNKNOWN gate.
+  delete fta;
+  fta = new FaultTree("fta-default", false);
   inter = InterEventPtr(new InterEvent("inter", "unknown_gate"));
+  inter_events().insert(std::make_pair("inter", inter));
+  primary_events().insert(std::make_pair("a", A));
+  primary_events().insert(std::make_pair("b", B));
+  primary_events().insert(std::make_pair("c", C));
+  AssignIndexes();
   sets.clear();
   inter->AddChild(A);
   inter->AddChild(B);
   inter->AddChild(C);
-  ASSERT_THROW(ExpandSets(inter, sets), ValueError);
+  ASSERT_THROW(ExpandSets(5, sets), ValueError);
 }
 
 TEST_F(FaultTreeTest, ProbAndInt) {
