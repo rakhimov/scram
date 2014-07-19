@@ -589,6 +589,24 @@ void FaultTree::Report(std::string output) {
   // Iterator for a map with minimal cut sets and their probabilities.
   std::map< std::set<std::string>, double >::iterator it_pr;
 
+  // Convert MCS into representative strings.
+  std::map< std::set<std::string>, std::string> represent;
+  for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
+       ++it_min) {
+    std::stringstream rep;
+    rep << "{ ";
+    int j = 1;
+    int size = it_min->size();
+    for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
+      rep << orig_ids_[*it_set];
+      if (j < size) rep << ", ";
+      else rep << " ";
+      ++j;
+    }
+    rep << "}";
+    represent.insert(std::make_pair(*it_min, rep.str()));
+  }
+
   // Print warnings of calculations.
   if (warnings_ != "") {
     out << "\n" << warnings_ << "\n";
@@ -620,12 +638,7 @@ void FaultTree::Report(std::string output) {
       out << "\nOrder " << order << ":\n";
       int i = 1;
       for (it_min = order_sets.begin(); it_min != order_sets.end(); ++it_min) {
-        out << i << ") ";
-        out << "{ ";
-        for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
-          out << orig_ids_[*it_set] << " ";
-        }
-        out << "}\n";
+        out << i << ") " << represent[*it_min] << "\n";
         out.flush();
         i++;
       }
@@ -673,13 +686,8 @@ void FaultTree::Report(std::string output) {
         out << "\nOrder " << order << ":\n";
         int i = 1;
         for (it_or = order_sets.rbegin(); it_or != order_sets.rend(); ++it_or) {
-          out << i << ") ";
-          out << "{ ";
-          for (it_set = it_or->second.begin(); it_set != it_or->second.end();
-               ++it_set) {
-            out << orig_ids_[*it_set] << " ";
-          }
-          out << "}    ";
+          out << i << ") " << represent[it_or->second];
+          out << "    ";
           out << it_or->first << "\n";
           out.flush();
           i++;
@@ -693,12 +701,8 @@ void FaultTree::Report(std::string output) {
     int i = 1;
     for (it_or = ordered_min_sets_.rbegin(); it_or != ordered_min_sets_.rend();
          ++it_or) {
-      out << i << ") { ";
-      for (it_set = it_or->second.begin(); it_set != it_or->second.end();
-           ++it_set) {
-        out << orig_ids_[*it_set] << " ";
-      }
-      out << "}    ";
+      out << i << ") " << represent[it_or->second];
+      out << "    ";
       out << it_or->first << "\n";
       i++;
       out.flush();
@@ -1490,7 +1494,11 @@ void FaultTree::SetsToString_() {
     std::set<std::string> pr_set;
     std::set<int>::iterator it_set;
     for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
-      pr_set.insert(int_to_prime_[*it_set]->id());
+      if (*it_set < 0) {  // NOT logic.
+        pr_set.insert("not " + int_to_prime_[std::abs(*it_set)]->id());
+      } else {
+        pr_set.insert(int_to_prime_[*it_set]->id());
+      }
     }
     imcs_to_smcs_.insert(std::make_pair(*it_min, pr_set));
     min_cut_sets_.insert(pr_set);
