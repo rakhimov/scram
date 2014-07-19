@@ -1436,8 +1436,11 @@ void FaultTree::CombineElAndSet_(const std::set<int>& el,
 void FaultTree::AssignIndexes_() {
   // Assign an index to each primary event, and populate relevant
   // databases.
-  int j = 0;
+  int j = 1;
   boost::unordered_map<std::string, PrimaryEventPtr>::iterator itp;
+  // Dummy primary event at index 0.
+  int_to_prime_.push_back(PrimaryEventPtr(new PrimaryEvent("dummy")));
+  iprobs_.push_back(0);
   for (itp = primary_events_.begin(); itp != primary_events_.end(); ++itp) {
     int_to_prime_.push_back(itp->second);
     prime_to_int_.insert(std::make_pair(itp->second->id(), j));

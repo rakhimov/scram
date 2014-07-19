@@ -82,16 +82,16 @@ TEST_F(FaultTreeTest, ExpandSets) {
   inter->AddChild(C);
   ASSERT_NO_THROW(ExpandSets(inter, sets));
   EXPECT_EQ(3, sets.size());
-  bool a_found = false;  // Index 0
-  bool b_found = false;  // Index 1
-  bool c_found = false;  // Index 2
+  bool a_found = false;  // Index 1
+  bool b_found = false;  // Index 2
+  bool c_found = false;  // Index 3
   for (it_set = sets.begin(); it_set != sets.end(); ++it_set) {
     std::set<int> result = (*it_set)->primes();
     EXPECT_EQ(1, result.size());
-    EXPECT_EQ(1, result.count(0) + result.count(1) + result.count(2));
-    if (!a_found && result.count(0)) a_found = true;
-    else if (!b_found && result.count(1)) b_found = true;
-    else if (!c_found && result.count(2)) c_found = true;
+    EXPECT_EQ(1, result.count(1) + result.count(2) + result.count(3));
+    if (!a_found && result.count(1)) a_found = true;
+    else if (!b_found && result.count(2)) b_found = true;
+    else if (!c_found && result.count(3)) c_found = true;
   }
   EXPECT_EQ(true, a_found && b_found && c_found);
 
@@ -105,9 +105,9 @@ TEST_F(FaultTreeTest, ExpandSets) {
   EXPECT_EQ(1, sets.size());
   std::set<int> result = (*sets.begin())->primes();
   EXPECT_EQ(3, result.size());
-  EXPECT_EQ(1, result.count(0));
   EXPECT_EQ(1, result.count(1));
   EXPECT_EQ(1, result.count(2));
+  EXPECT_EQ(1, result.count(3));
 
   // Testing for some UNKNOWN gate.
   inter = InterEventPtr(new InterEvent("inter", "unknown_gate"));
@@ -481,6 +481,10 @@ TEST_F(FaultTreeTest, AnalyzeDefault) {
   EXPECT_EQ(1, min_cut_sets().count(mcs_3));
   EXPECT_EQ(1, min_cut_sets().count(mcs_4));
 
+  // Probability calculations.
+  delete fta;  // Re-initializing.
+  fta = new FaultTree("fta-default", false);
+  ASSERT_NO_THROW(fta->ProcessInput(tree_input));
   ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(fta->Analyze());
   EXPECT_DOUBLE_EQ(0.646, p_total());
