@@ -598,7 +598,16 @@ void FaultTree::Report(std::string output) {
     int j = 1;
     int size = it_min->size();
     for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
-      rep << orig_ids_[*it_set];
+      std::vector<std::string> names;
+      boost::split(names, *it_set, boost::is_any_of(" "),
+                   boost::token_compress_on);
+      assert(names.size() < 3);
+      assert(names.size() > 0);
+      if (names.size() == 1) {
+        rep << orig_ids_[names[0]];
+      } else if (names.size() == 2) {
+        rep << "NOT " << orig_ids_[names[1]];
+      }
       if (j < size) rep << ", ";
       else rep << " ";
       ++j;

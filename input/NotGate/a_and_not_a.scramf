@@ -1,0 +1,21 @@
+# This tree contains NOT gate after AND gate for the same A event.
+{
+    parent      none
+    id          TopEvent
+    type        AND
+}
+{
+    parent      TopEvent
+    id          A
+    type        Basic
+}
+{
+    parent      TopEvent
+    id          NotGate
+    type        NOT
+}
+{
+    parent      NotGate
+    id          A
+    type        Basic
+}

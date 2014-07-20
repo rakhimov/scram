@@ -1,0 +1,9 @@
+# This file contains probabilities for testing exact probability calculation
+# algorithm. The system contains three events with respective probabilities of
+# 0.1, 0.2, 0.3.
+
+{
+    A   0.1
+    B   0.2
+    C   0.3
+}
