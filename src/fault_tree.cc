@@ -1447,7 +1447,11 @@ double FaultTree::ProbAnd_(const std::set<int>& min_cut_set) {
   double p_sub_set = 1;  // 1 is for multiplication.
   std::set<int>::iterator it_set;
   for (it_set = min_cut_set.begin(); it_set != min_cut_set.end(); ++it_set) {
-    p_sub_set *= iprobs_[*it_set];
+    if (*it_set > 0) {
+      p_sub_set *= iprobs_[*it_set];
+    } else {
+      p_sub_set *= 1 - iprobs_[std::abs(*it_set)];
+    }
   }
   return p_sub_set;
 }

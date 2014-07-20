@@ -187,15 +187,26 @@ TEST_F(FaultTreeTest, ExpandSets) {
 TEST_F(FaultTreeTest, ProbAndInt) {
   std::set<int> min_cut_set;
 
-  min_cut_set.insert(0);
+  AddPrimeIntProb(0.0);  // Dummy element.
+
+  min_cut_set.insert(1);
   AddPrimeIntProb(0.1);
   EXPECT_DOUBLE_EQ(0.1, ProbAnd(min_cut_set));
-  min_cut_set.insert(1);
+  min_cut_set.insert(2);
   AddPrimeIntProb(0.2);
   EXPECT_DOUBLE_EQ(0.02, ProbAnd(min_cut_set));
-  min_cut_set.insert(2);
+  min_cut_set.insert(3);
   AddPrimeIntProb(0.3);
   EXPECT_DOUBLE_EQ(0.006, ProbAnd(min_cut_set));
+
+  // Test for negative event calculations.
+  min_cut_set.clear();
+  min_cut_set.insert(-1);
+  EXPECT_DOUBLE_EQ(0.9, ProbAnd(min_cut_set));
+  min_cut_set.insert(-2);
+  EXPECT_DOUBLE_EQ(0.72, ProbAnd(min_cut_set));
+  min_cut_set.insert(3);
+  EXPECT_DOUBLE_EQ(0.216, ProbAnd(min_cut_set));
 }
 
 TEST_F(FaultTreeTest, CombineElAndSet) {
@@ -255,52 +266,53 @@ TEST_F(FaultTreeTest, CombineElAndSet) {
 TEST_F(FaultTreeTest, ProbOrInt) {
   std::set<int> mcs;  // Minimal cut set.
   std::set<std::set<int> > min_cut_sets;  // A set of minimal cut sets.
+  AddPrimeIntProb(0.0);  // Dummy element.
   AddPrimeIntProb(0.1);  // A is element 0.
   AddPrimeIntProb(0.2);  // B is element 1.
   AddPrimeIntProb(0.3);  // C is element 2.
 
   // Check for one element calculation for A.
-  mcs.insert(0);
+  mcs.insert(1);
   min_cut_sets.insert(mcs);
   EXPECT_DOUBLE_EQ(0.1, ProbOr(min_cut_sets));
 
   // Check that recursive nsums=0 returns without changing anything.
-  mcs.insert(0);
+  mcs.insert(1);
   min_cut_sets.insert(mcs);
   EXPECT_EQ(0, ProbOr(min_cut_sets, 0));
 
   // Check for [A or B]
   min_cut_sets.clear();
   mcs.clear();
-  mcs.insert(0);
+  mcs.insert(1);
   min_cut_sets.insert(mcs);
   mcs.clear();
-  mcs.insert(1);
+  mcs.insert(2);
   min_cut_sets.insert(mcs);
   EXPECT_DOUBLE_EQ(0.28, ProbOr(min_cut_sets));
 
   // Check for [A or B or C]
   min_cut_sets.clear();
   mcs.clear();
-  mcs.insert(0);
-  min_cut_sets.insert(mcs);
-  mcs.clear();
   mcs.insert(1);
   min_cut_sets.insert(mcs);
   mcs.clear();
   mcs.insert(2);
+  min_cut_sets.insert(mcs);
+  mcs.clear();
+  mcs.insert(3);
   min_cut_sets.insert(mcs);
   EXPECT_DOUBLE_EQ(0.496, ProbOr(min_cut_sets));
 
   // Check for [(A,B) or (B,C)]
   mcs.clear();
   min_cut_sets.clear();
-  mcs.insert(0);
-  mcs.insert(1);
-  min_cut_sets.insert(mcs);
-  mcs.clear();
   mcs.insert(1);
   mcs.insert(2);
+  min_cut_sets.insert(mcs);
+  mcs.clear();
+  mcs.insert(2);
+  mcs.insert(3);
   min_cut_sets.insert(mcs);
   EXPECT_DOUBLE_EQ(0.074, ProbOr(min_cut_sets));
 }
