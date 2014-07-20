@@ -186,7 +186,6 @@ TEST_F(FaultTreeTest, ExpandSets) {
 
 TEST_F(FaultTreeTest, ProbAndInt) {
   std::set<int> min_cut_set;
-  ASSERT_THROW(ProbAnd(min_cut_set), ValueError);  // Error for an empty set.
 
   min_cut_set.insert(0);
   AddPrimeIntProb(0.1);
@@ -256,7 +255,6 @@ TEST_F(FaultTreeTest, CombineElAndSet) {
 TEST_F(FaultTreeTest, ProbOrInt) {
   std::set<int> mcs;  // Minimal cut set.
   std::set<std::set<int> > min_cut_sets;  // A set of minimal cut sets.
-  ASSERT_THROW(ProbOr(min_cut_sets), ValueError);  // Error for an empty set.
   AddPrimeIntProb(0.1);  // A is element 0.
   AddPrimeIntProb(0.2);  // B is element 1.
   AddPrimeIntProb(0.3);  // C is element 2.
