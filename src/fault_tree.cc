@@ -746,8 +746,17 @@ void FaultTree::Report(std::string output) {
     std::set<int>::iterator it_set;
     for (it_vec = pos_terms_.begin(); it_vec != pos_terms_.end(); ++it_vec) {
       out << "{ ";
+      int j = 1;
+      int size = it_vec->size();
       for (it_set = it_vec->begin(); it_set != it_vec->end(); ++it_set) {
-        out << orig_ids_[int_to_prime_[*it_set]->id()] << " ";
+        if (*it_set > 0) {
+          out << orig_ids_[int_to_prime_[*it_set]->id()];
+        } else {
+          out << "NOT " << orig_ids_[int_to_prime_[std::abs(*it_set)]->id()];
+        }
+        if (j < size) out << ", ";
+        else out << " ";
+        ++j;
       }
       out << "}\n";
       out.flush();
@@ -756,8 +765,17 @@ void FaultTree::Report(std::string output) {
     out << "\nNegative Terms in the Probability Equation:\n";
     for (it_vec = neg_terms_.begin(); it_vec != neg_terms_.end(); ++it_vec) {
       out << "{ ";
+      int j = 1;
+      int size = it_vec->size();
       for (it_set = it_vec->begin(); it_set != it_vec->end(); ++it_set) {
-        out << orig_ids_[int_to_prime_[*it_set]->id()] << " ";
+        if (*it_set > 0) {
+          out << orig_ids_[int_to_prime_[*it_set]->id()];
+        } else {
+          out << "NOT " << orig_ids_[int_to_prime_[std::abs(*it_set)]->id()];
+        }
+        if (j < size) out << ", ";
+        else out << " ";
+        ++j;
       }
       out << "}\n";
       out.flush();

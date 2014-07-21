@@ -93,12 +93,6 @@ class FaultTreeTest : public ::testing::Test {
     return fta->MProbOr_(min_cut_sets, sign, nsums);
   }
 
-  void MCombineElAndSet(const std::set<int>& el,
-                        const std::set< std::set<int> >& set,
-                        std::set< std::set<int> >& combo_set) {
-    return fta->MCombineElAndSet_(el, set, combo_set);
-  }
-
   std::vector< std::set<int> >& pos_terms() {
     return fta->pos_terms_;
   }

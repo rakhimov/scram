@@ -113,3 +113,20 @@ TEST_F(FaultTreeTest, A_OR_NOT_AB) {
   EXPECT_EQ(2, min_cut_sets().size());
   EXPECT_EQ(mcs, min_cut_sets());
 }
+
+// [A OR NOT B] FTA MC
+TEST_F(FaultTreeTest, MC_A_OR_NOT_B) {
+  delete fta;
+  fta = new FaultTree("fta-mc", false);
+  std::string tree_input = "./input/benchmark/a_or_not_b.scramf";
+  std::string prob_input = "./input/benchmark/abc.scramp";
+  std::set< std::set<int> > p_terms;
+  std::set< std::set<int> > n_terms;
+  std::set<int> cut_set;
+  std::set< std::set<int> > temp_sets;
+
+  ASSERT_NO_THROW(fta->ProcessInput(tree_input));
+  ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
+  ASSERT_NO_THROW(fta->Analyze());
+  ASSERT_NO_THROW(fta->Report("/dev/null"));
+}
