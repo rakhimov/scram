@@ -187,6 +187,9 @@ TEST_F(FaultTreeTest, ExpandSets) {
 TEST_F(FaultTreeTest, ProbAndInt) {
   std::set<int> min_cut_set;
 
+  // 0 probability for an empty set.
+  EXPECT_DOUBLE_EQ(0, ProbAnd(min_cut_set));
+
   AddPrimeIntProb(0.0);  // Dummy element.
 
   min_cut_set.insert(1);
@@ -261,6 +264,23 @@ TEST_F(FaultTreeTest, CombineElAndSet) {
   el_one.insert(3);
   set_one.insert(el_one);
   EXPECT_EQ(set_one, combo_set);
+
+  // Testing for operations with negative elements.
+  el_one.clear();
+  el_two.clear();
+  set_one.clear();
+  set_two.clear();
+  combo_set.clear();
+
+  el_one.insert(-1);
+  set_one.insert(el_one);
+  ASSERT_NO_THROW(CombineElAndSet(el_one, set_one, combo_set));
+  EXPECT_EQ(set_one, combo_set);
+
+  el_two.insert(1);
+  combo_set.clear();
+  ASSERT_NO_THROW(CombineElAndSet(el_two, set_one, combo_set));
+  EXPECT_TRUE(combo_set.empty());
 }
 
 TEST_F(FaultTreeTest, ProbOrInt) {
@@ -270,6 +290,9 @@ TEST_F(FaultTreeTest, ProbOrInt) {
   AddPrimeIntProb(0.1);  // A is element 0.
   AddPrimeIntProb(0.2);  // B is element 1.
   AddPrimeIntProb(0.3);  // C is element 2.
+
+  // 0 probability for an empty set.
+  EXPECT_DOUBLE_EQ(0, ProbOr(min_cut_sets));
 
   // Check for one element calculation for A.
   mcs.insert(1);

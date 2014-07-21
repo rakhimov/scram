@@ -1414,11 +1414,9 @@ std::string FaultTree::PrimariesNoProb_() {
 // -------------------- Algorithm for Cut Sets and Probabilities -----------
 double FaultTree::ProbOr_(std::set< std::set<int> >& min_cut_sets, int nsums) {
   // Recursive implementation.
-  assert(!min_cut_sets.empty());
+  if (min_cut_sets.empty()) return 0;
 
-  if (nsums == 0) {
-    return 0;
-  }
+  if (nsums == 0) return 0;
 
   // Base case.
   if (min_cut_sets.size() == 1) {
@@ -1442,7 +1440,7 @@ double FaultTree::ProbOr_(std::set< std::set<int> >& min_cut_sets, int nsums) {
 
 double FaultTree::ProbAnd_(const std::set<int>& min_cut_set) {
   // Test just in case the min cut set is empty.
-  assert(!min_cut_set.empty());
+  if (min_cut_set.empty()) return 0;
 
   double p_sub_set = 1;  // 1 is for multiplication.
   std::set<int>::iterator it_set;
@@ -1460,11 +1458,19 @@ void FaultTree::CombineElAndSet_(const std::set<int>& el,
                                  const std::set< std::set<int> >& set,
                                  std::set< std::set<int> >& combo_set) {
   std::set<int> member_set;
+  std::set<int>::iterator it;
   std::set< std::set<int> >::iterator it_set;
   for (it_set = set.begin(); it_set != set.end(); ++it_set) {
     member_set = *it_set;
-    member_set.insert(el.begin(), el.end());
-    combo_set.insert(member_set);
+    bool include = true;
+    for (it = el.begin(); it != el.end(); ++it) {
+      if (it_set->count(-1 * (*it))) {
+        include = false;
+        break;
+      }
+      member_set.insert(*it);
+    }
+    if (include) combo_set.insert(member_set);
   }
 }
 

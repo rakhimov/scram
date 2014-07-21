@@ -1,0 +1,31 @@
+# This tree contains NOT gate after OR gate for the same A event.
+{
+    parent      none
+    id          TopEvent
+    type        OR
+}
+{
+    parent      TopEvent
+    id          A
+    type        Basic
+}
+{
+    parent      TopEvent
+    id          TrainOne
+    type        AND
+}
+{
+    parent      TrainOne
+    id          NotGate
+    type        NOT
+}
+{
+    parent      NotGate
+    id          A
+    type        Basic
+}
+{
+    parent      TrainOne
+    id          B
+    type        Basic
+}
