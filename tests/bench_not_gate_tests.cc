@@ -14,6 +14,7 @@ TEST_F(FaultTreeTest, A_OR_NOT_A) {
   ASSERT_NO_THROW(fta->ProcessInput(tree_input));
   ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(fta->Analyze());
+  ASSERT_NO_THROW(fta->Report("/dev/null"));
   EXPECT_DOUBLE_EQ(1, p_total());  // Total prob check.
   // Minimal cut set check.
   cut_set.insert(A);
@@ -37,6 +38,7 @@ TEST_F(FaultTreeTest, A_OR_NOT_B) {
   ASSERT_NO_THROW(fta->ProcessInput(tree_input));
   ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(fta->Analyze());
+  ASSERT_NO_THROW(fta->Report("/dev/null"));
   EXPECT_DOUBLE_EQ(0.82, p_total());  // Total prob check.
   // Minimal cut set check.
   cut_set.insert(A);
@@ -59,6 +61,7 @@ TEST_F(FaultTreeTest, A_AND_NOT_A) {
   ASSERT_NO_THROW(fta->ProcessInput(tree_input));
   ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(fta->Analyze());
+  ASSERT_NO_THROW(fta->Report("/dev/null"));
   EXPECT_DOUBLE_EQ(0, p_total());  // Total prob check.
   // Minimal cut set check.
   EXPECT_EQ(0, min_cut_sets().size());
@@ -76,6 +79,7 @@ TEST_F(FaultTreeTest, A_AND_NOT_B) {
   ASSERT_NO_THROW(fta->ProcessInput(tree_input));
   ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(fta->Analyze());
+  ASSERT_NO_THROW(fta->Report("/dev/null"));
   EXPECT_DOUBLE_EQ(0.08, p_total());  // Total prob check.
   // Minimal cut set check.
   cut_set.insert(A);
@@ -97,6 +101,7 @@ TEST_F(FaultTreeTest, A_OR_NOT_AB) {
   ASSERT_NO_THROW(fta->ProcessInput(tree_input));
   ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(fta->Analyze());
+  ASSERT_NO_THROW(fta->Report("/dev/null"));
   EXPECT_DOUBLE_EQ(0.28, p_total());  // Total prob check.
   // Minimal cut set check.
   cut_set.insert(A);

@@ -16,6 +16,7 @@ TEST_F(FaultTreeTest, Theatre) {
   ASSERT_NO_THROW(fta->ProcessInput(tree_input));
   ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(fta->Analyze());
+  ASSERT_NO_THROW(fta->Report("/dev/null"));
   EXPECT_DOUBLE_EQ(0.00207, p_total());  // Total prob check.
   // Minimal cut set check.
   cut_set.insert(GEN_FAIL);

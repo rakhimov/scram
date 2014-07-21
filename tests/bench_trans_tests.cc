@@ -18,6 +18,7 @@ TEST_F(FaultTreeTest, TransTest) {
   ASSERT_NO_THROW(fta->ProcessInput(trans_tree_input));
   ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(fta->Analyze());
+  ASSERT_NO_THROW(fta->Report("/dev/null"));
   EXPECT_DOUBLE_EQ(2.4e-5, p_total());  // Total prob check.
   // Minimal cut set check.
   cut_set.insert(A);
@@ -33,6 +34,7 @@ TEST_F(FaultTreeTest, TransTest) {
   ASSERT_NO_THROW(fta->ProcessInput(trans_tree_input));
   ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(fta->Analyze());
+  ASSERT_NO_THROW(fta->Report("/dev/null"));
   EXPECT_DOUBLE_EQ(2.4e-5, p_total());  // Total prob check.
   // Minimal cut set check.
   EXPECT_EQ(1, min_cut_sets().size());

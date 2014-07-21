@@ -32,6 +32,7 @@ TEST_F(FaultTreeTest, ThreeMotor) {
   ASSERT_NO_THROW(fta->ProcessInput(tree_input));
   ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(fta->Analyze());
+  ASSERT_NO_THROW(fta->Report("/dev/null"));
   double delta_sqr = std::abs(p_total() - 0.0211538);
   EXPECT_TRUE(delta_sqr < 1e-5);
   // Minimal cut set check.
