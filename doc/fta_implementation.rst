@@ -10,6 +10,7 @@ Currently Supported Gate Types
 
 - AND
 - OR
+- NOT
 
 Currently Supported Symbols
 ==============================

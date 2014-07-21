@@ -2,19 +2,19 @@ Speed recordings for scram.
 
 ----------- Three Motor ---------------
 Standard build:
-real    26.202s
-usert   24.471s
+real    26.202s |  30.500s
+user    24.471s |  28.000s
 
 Release build:
-real    5.596s  |  6.014s
-user    5.550s  |  5.589s
+real    5.596s  |  6.250s
+user    5.550s  |  5.700s
 
 
 ---------- fta-200 -l 16 ---------------
 Standard build:
-real    11.500s
-user    10.500s
+real    11.500s |  14.500s
+user    10.500s |  13.250s
 
 Release build:
-real    2.700s
-user    2.500s
+real    2.700s |  3.100s
+user    2.500s |  2.800s
