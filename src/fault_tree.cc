@@ -1526,13 +1526,9 @@ void FaultTree::SetsToString_() {
 void FaultTree::MProbOr_(std::set< std::set<int> >& min_cut_sets,
                          int sign, int nsums) {
   // Recursive implementation.
-  if (min_cut_sets.empty()) {
-    throw scram::ValueError("Do not pass empty set to prob_or_ function.");
-  }
+  if (min_cut_sets.empty()) return;
 
-  if (nsums == 0) {
-    return;
-  }
+  if (nsums == 0) return;
 
   // Get one element.
   std::set< std::set<int> >::iterator it = min_cut_sets.begin();
@@ -1549,9 +1545,6 @@ void FaultTree::MProbOr_(std::set< std::set<int> >& min_cut_sets,
     // This must be a negative member.
     neg_terms_.push_back(element_one);
   }
-
-  // Base case.
-  if (min_cut_sets.empty()) return;
 
   std::set< std::set<int> > combo_sets;
   FaultTree::MCombineElAndSet_(element_one, min_cut_sets, combo_sets);

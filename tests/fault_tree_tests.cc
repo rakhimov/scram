@@ -341,67 +341,14 @@ TEST_F(FaultTreeTest, ProbOrInt) {
 }
 
 // ------------------------ Monte Carlo -----------------------------
-TEST_F(FaultTreeTest, MCombineElAndSet) {
-  std::set<int> el_one;
-  std::set<int> el_two;
-  std::set< std::set<int> > set_one;
-  std::set< std::set<int> > set_two;
-  std::set< std::set<int> > combo_set;
-
-  // One element checks.
-  el_one.insert(1);
-  set_one.insert(el_one);  // Insert (1)
-  ASSERT_NO_THROW(MCombineElAndSet(el_one, set_one, combo_set));
-  EXPECT_EQ(set_one, combo_set);  // Must be only (1)
-  combo_set.clear();
-
-  el_two.insert(3);
-  ASSERT_NO_THROW(MCombineElAndSet(el_two, set_one, combo_set));
-
-  set_one.insert(el_two);  // Insert (3)
-
-  EXPECT_EQ(1, combo_set.size());
-  el_two.insert(1);
-  set_two.insert(el_two);  // set_two is (1,3)
-  EXPECT_EQ(set_two, combo_set);  // Must be only (1,3)
-  combo_set.clear();
-
-  // Two element checks.
-  el_one.insert(2);  // el_one is (1, 2)
-  ASSERT_NO_THROW(MCombineElAndSet(el_one, set_two, combo_set));
-
-  set_one.insert(el_two);  // Insert (1, 3)
-
-  el_two.insert(2);
-  set_two.clear();
-  set_two.insert(el_two);
-  EXPECT_EQ(set_two, combo_set);  // Expected (1,2,3)
-  combo_set.clear();
-
-  // Multi element checks
-  set_one.insert(el_one);  // Insert (1, 2)
-
-  // After the above intantiation the set_one is [(1), (3), (1,2), (1,3)].
-  // The result of [ el_one AND set_one ] is [(1,2), (1,2,3)].
-  EXPECT_EQ(4, set_one.size());
-  EXPECT_EQ(2, el_one.size());
-  EXPECT_EQ(0, combo_set.size());
-  ASSERT_NO_THROW(MCombineElAndSet(el_one, set_one, combo_set));
-  EXPECT_EQ(2, combo_set.size());
-  set_one.clear();  // To construct the expected output set_one.
-  set_one.insert(el_one);
-  el_one.insert(3);
-  set_one.insert(el_one);
-  EXPECT_EQ(set_one, combo_set);
-}
-
 TEST_F(FaultTreeTest, MProbOr) {
   std::set<int> mcs;  // Minimal cut set.
   std::set< std::set<int> > p_terms;  // Positive terms of the equation.
   std::set< std::set<int> > n_terms;  // Negative terms of the equation.
   std::set< std::set<int> > temp_set;  // Temp set for dumping the output.
   std::set< std::set<int> > min_cut_sets;  // A set of minimal cut sets.
-  ASSERT_THROW(MProbOr(min_cut_sets), ValueError);  // Error for an empty set.
+  ASSERT_NO_THROW(MProbOr(min_cut_sets));  // Empty sets.
+  ASSERT_TRUE(pos_terms().empty() && neg_terms().empty());
 
   // Check for one element calculation for A.
   mcs.insert(0);
