@@ -77,11 +77,13 @@ TEST_F(FaultTreeTest, ExpandSets) {
   PrimaryEventPtr A(new PrimaryEvent("a"));
   PrimaryEventPtr B(new PrimaryEvent("b"));
   PrimaryEventPtr C(new PrimaryEvent("c"));
+  InterEventPtr D(new InterEvent("d"));
   std::set<int> result_set;
 
   primary_events().insert(std::make_pair("a", A));
   primary_events().insert(std::make_pair("b", B));
   primary_events().insert(std::make_pair("c", C));
+  // inter_events().insert(std::make_pair("d", D));
 
   AssignIndexes();
 
@@ -107,6 +109,15 @@ TEST_F(FaultTreeTest, ExpandSets) {
     else if (!c_found && result.count(3)) c_found = true;
   }
   EXPECT_EQ(true, a_found && b_found && c_found);
+  // Negative OR gate.
+  sets.clear();
+  ASSERT_NO_THROW(ExpandSets(-5, sets));
+  EXPECT_EQ(1, sets.size());
+  result_set = (*sets.begin())->primes();
+  EXPECT_EQ(3, result_set.size());
+  EXPECT_EQ(1, result_set.count(-1));
+  EXPECT_EQ(1, result_set.count(-2));
+  EXPECT_EQ(1, result_set.count(-3));
 
   // Testing for AND gate.
   delete fta;
@@ -128,6 +139,22 @@ TEST_F(FaultTreeTest, ExpandSets) {
   EXPECT_EQ(1, result_set.count(1));
   EXPECT_EQ(1, result_set.count(2));
   EXPECT_EQ(1, result_set.count(3));
+  // Negative AND gate.
+  sets.clear();
+  ASSERT_NO_THROW(ExpandSets(-5, sets));
+  EXPECT_EQ(3, sets.size());
+  a_found = false;  // Index -1
+  b_found = false;  // Index -2
+  c_found = false;  // Index -3
+  for (it_set = sets.begin(); it_set != sets.end(); ++it_set) {
+    std::set<int> result = (*it_set)->primes();
+    EXPECT_EQ(1, result.size());
+    EXPECT_EQ(1, result.count(-1) + result.count(-2) + result.count(-3));
+    if (!a_found && result.count(-1)) a_found = true;
+    else if (!b_found && result.count(-2)) b_found = true;
+    else if (!c_found && result.count(-3)) c_found = true;
+  }
+  EXPECT_EQ(true, a_found && b_found && c_found);
 
   // Testing for NOT gate with a primary event child.
   delete fta;
@@ -167,6 +194,8 @@ TEST_F(FaultTreeTest, ExpandSets) {
   result_set = (*sets.begin())->inters();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(3));
+
+  // Testing for NOR gate.
 
   // Testing for some UNKNOWN gate.
   delete fta;

@@ -50,6 +50,7 @@ FaultTree::FaultTree(std::string analysis, bool graph_only, bool rare_event,
   gates_.insert("and");
   gates_.insert("or");
   gates_.insert("not");
+  gates_.insert("nor");
 
   // Add valid primary event types.
   types_.insert("basic");
@@ -1319,27 +1320,53 @@ void FaultTree::ExpandSets_(int inter_index,
 
   // Type dependent logic.
   if (gate == "or") {
-    for (it_child = events_children.begin();
-         it_child != events_children.end(); ++it_child) {
+    if (mult > 0) {
+      for (it_child = events_children.begin();
+           it_child != events_children.end(); ++it_child) {
+        SupersetPtr tmp_set_c(new scram::Superset());
+        if (inter_events_.count(it_child->first)) {
+          tmp_set_c->AddInter(inter_to_int_[it_child->first]);
+        } else {
+          tmp_set_c->AddPrimary(prime_to_int_[it_child->first]);
+        }
+        sets.push_back(tmp_set_c);
+      }
+    } else {
       SupersetPtr tmp_set_c(new scram::Superset());
-      if (inter_events_.count(it_child->first)) {
-        tmp_set_c->AddInter(mult * inter_to_int_[it_child->first]);
-      } else {
-        tmp_set_c->AddPrimary(mult * prime_to_int_[it_child->first]);
+      for (it_child = events_children.begin();
+           it_child != events_children.end(); ++it_child) {
+        if (inter_events_.count(it_child->first)) {
+          tmp_set_c->AddInter(mult * inter_to_int_[it_child->first]);
+        } else {
+          tmp_set_c->AddPrimary(mult * prime_to_int_[it_child->first]);
+        }
       }
       sets.push_back(tmp_set_c);
     }
   } else if (gate == "and") {
-    SupersetPtr tmp_set_c(new scram::Superset());
-    for (it_child = events_children.begin();
-         it_child != events_children.end(); ++it_child) {
-      if (inter_events_.count(it_child->first)) {
-        tmp_set_c->AddInter(mult * inter_to_int_[it_child->first]);
-      } else {
-        tmp_set_c->AddPrimary(mult * prime_to_int_[it_child->first]);
+    if (mult > 0) {
+      SupersetPtr tmp_set_c(new scram::Superset());
+      for (it_child = events_children.begin();
+           it_child != events_children.end(); ++it_child) {
+        if (inter_events_.count(it_child->first)) {
+          tmp_set_c->AddInter(mult * inter_to_int_[it_child->first]);
+        } else {
+          tmp_set_c->AddPrimary(mult * prime_to_int_[it_child->first]);
+        }
+      }
+      sets.push_back(tmp_set_c);
+    } else {
+      for (it_child = events_children.begin();
+           it_child != events_children.end(); ++it_child) {
+        SupersetPtr tmp_set_c(new scram::Superset());
+        if (inter_events_.count(it_child->first)) {
+          tmp_set_c->AddInter(mult * inter_to_int_[it_child->first]);
+        } else {
+          tmp_set_c->AddPrimary(mult * prime_to_int_[it_child->first]);
+        }
+        sets.push_back(tmp_set_c);
       }
     }
-    sets.push_back(tmp_set_c);
   } else if (gate == "not") {
     // Only one child is expected.
     assert(events_children.size() == 1);
