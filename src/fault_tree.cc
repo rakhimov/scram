@@ -1439,7 +1439,7 @@ std::string FaultTree::CheckGate_(const TopEventPtr& event) {
     size += transfer_map_.count(event->id());
 
     // Gate dependent logic.
-    if (gate == "and" || gate == "or") {
+    if (gate == "and" || gate == "or" || gate == "nor") {
       if (size < 2) {
         boost::to_upper(gate);
         msg << orig_ids_[event->id()] << " : " << gate
