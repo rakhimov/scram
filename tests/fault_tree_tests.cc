@@ -83,41 +83,58 @@ TEST_F(FaultTreeTest, ExpandSets) {
   primary_events().insert(std::make_pair("a", A));
   primary_events().insert(std::make_pair("b", B));
   primary_events().insert(std::make_pair("c", C));
-  // inter_events().insert(std::make_pair("d", D));
+  inter_events().insert(std::make_pair("d", D));
 
   AssignIndexes();
+  // Get Indices.
+  int a_id = GetIndex("a");
+  int b_id = GetIndex("b");
+  int c_id = GetIndex("c");
+  int inter_id = GetIndex("inter");
+  int d_id = GetIndex("d");
 
   // Without any gate.
-  EXPECT_THROW(ExpandSets(5, sets), ValueError);
+  EXPECT_THROW(ExpandSets(inter_id, sets), ValueError);
 
   // Testing for OR gate.
-  inter->gate("or");   // Index 5.
-  inter->AddChild(A);  // Index 1.
-  inter->AddChild(B);  // Index 2.
-  inter->AddChild(C);  // Index 3.
-  ASSERT_NO_THROW(ExpandSets(5, sets));
-  EXPECT_EQ(3, sets.size());
-  bool a_found = false;  // Index 1
-  bool b_found = false;  // Index 2
-  bool c_found = false;  // Index 3
+  inter->gate("or");
+  inter->AddChild(A);
+  inter->AddChild(B);
+  inter->AddChild(C);
+  inter->AddChild(D);
+  ASSERT_NO_THROW(ExpandSets(inter_id, sets));
+  EXPECT_EQ(4, sets.size());
+  bool a_found = false;
+  bool b_found = false;
+  bool c_found = false;
   for (it_set = sets.begin(); it_set != sets.end(); ++it_set) {
-    std::set<int> result = (*it_set)->primes();
-    EXPECT_EQ(1, result.size());
-    EXPECT_EQ(1, result.count(1) + result.count(2) + result.count(3));
-    if (!a_found && result.count(1)) a_found = true;
-    else if (!b_found && result.count(2)) b_found = true;
-    else if (!c_found && result.count(3)) c_found = true;
+    if (!(*it_set)->primes().empty()) {
+      std::set<int> result = (*it_set)->primes();
+      EXPECT_EQ(1, result.size());
+      EXPECT_EQ(1, result.count(a_id) + result.count(b_id)
+                + result.count(c_id));
+      if (!a_found && result.count(a_id)) a_found = true;
+      else if (!b_found && result.count(b_id)) b_found = true;
+      else if (!c_found && result.count(c_id)) c_found = true;
+    } else {
+      std::set<int> result = (*it_set)->inters();
+      EXPECT_EQ(1, result.size());
+      EXPECT_EQ(1, result.count(d_id));
+    }
   }
   EXPECT_EQ(true, a_found && b_found && c_found);
   // Negative OR gate.
   sets.clear();
-  ASSERT_NO_THROW(ExpandSets(-5, sets));
+  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));
   EXPECT_EQ(1, sets.size());
   result_set = (*sets.begin())->primes();
   EXPECT_EQ(3, result_set.size());
-  EXPECT_EQ(1, result_set.count(-1));
-  EXPECT_EQ(1, result_set.count(-2));
-  EXPECT_EQ(1, result_set.count(-3));
+  EXPECT_EQ(1, result_set.count(-1 * a_id));
+  EXPECT_EQ(1, result_set.count(-1 * b_id));
+  EXPECT_EQ(1, result_set.count(-1 * c_id));
+  result_set = (*sets.begin())->inters();
+  EXPECT_EQ(1, result_set.size());
+  EXPECT_EQ(1, result_set.count(-1 * d_id));
 
   // Testing for AND gate.
   delete fta;
@@ -127,32 +144,50 @@ TEST_F(FaultTreeTest, ExpandSets) {
   primary_events().insert(std::make_pair("a", A));
   primary_events().insert(std::make_pair("b", B));
   primary_events().insert(std::make_pair("c", C));
+  inter_events().insert(std::make_pair("d", D));
   AssignIndexes();
+  // Get Indices.
+  a_id = GetIndex("a");
+  b_id = GetIndex("b");
+  c_id = GetIndex("c");
+  inter_id = GetIndex("inter");
+  d_id = GetIndex("d");
   sets.clear();
   inter->AddChild(A);
   inter->AddChild(B);
   inter->AddChild(C);
-  ASSERT_NO_THROW(ExpandSets(5, sets));
+  inter->AddChild(D);
+  ASSERT_NO_THROW(ExpandSets(inter_id, sets));
   EXPECT_EQ(1, sets.size());
   result_set = (*sets.begin())->primes();
   EXPECT_EQ(3, result_set.size());
-  EXPECT_EQ(1, result_set.count(1));
-  EXPECT_EQ(1, result_set.count(2));
-  EXPECT_EQ(1, result_set.count(3));
+  EXPECT_EQ(1, result_set.count(a_id));
+  EXPECT_EQ(1, result_set.count(b_id));
+  EXPECT_EQ(1, result_set.count(c_id));
+  result_set = (*sets.begin())->inters();
+  EXPECT_EQ(1, result_set.size());
+  EXPECT_EQ(1, result_set.count(d_id));
   // Negative AND gate.
   sets.clear();
-  ASSERT_NO_THROW(ExpandSets(-5, sets));
-  EXPECT_EQ(3, sets.size());
-  a_found = false;  // Index -1
-  b_found = false;  // Index -2
-  c_found = false;  // Index -3
+  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));
+  EXPECT_EQ(4, sets.size());
+  a_found = false;
+  b_found = false;
+  c_found = false;
   for (it_set = sets.begin(); it_set != sets.end(); ++it_set) {
-    std::set<int> result = (*it_set)->primes();
-    EXPECT_EQ(1, result.size());
-    EXPECT_EQ(1, result.count(-1) + result.count(-2) + result.count(-3));
-    if (!a_found && result.count(-1)) a_found = true;
-    else if (!b_found && result.count(-2)) b_found = true;
-    else if (!c_found && result.count(-3)) c_found = true;
+    if (!(*it_set)->primes().empty()) {
+      std::set<int> result = (*it_set)->primes();
+      EXPECT_EQ(1, result.size());
+      EXPECT_EQ(1, result.count(-1 * a_id) + result.count(-1 * b_id)
+                + result.count(-1 * c_id));
+      if (!a_found && result.count(-1 * a_id)) a_found = true;
+      else if (!b_found && result.count(-1 * b_id)) b_found = true;
+      else if (!c_found && result.count(-1 * c_id)) c_found = true;
+    } else {
+      std::set<int> result = (*it_set)->inters();
+      EXPECT_EQ(1, result.size());
+      EXPECT_EQ(1, result.count(-1 * d_id));
+    }
   }
   EXPECT_EQ(true, a_found && b_found && c_found);
 
@@ -163,37 +198,40 @@ TEST_F(FaultTreeTest, ExpandSets) {
   inter_events().insert(std::make_pair("inter", inter));
   primary_events().insert(std::make_pair("a", A));
   AssignIndexes();
+  a_id = GetIndex("a");
+  inter_id = GetIndex("inter");
   inter->AddChild(A);
   sets.clear();
-  ASSERT_NO_THROW(ExpandSets(3, sets));
+  ASSERT_NO_THROW(ExpandSets(inter_id, sets));
   result_set = (*sets.begin())->primes();
   EXPECT_EQ(1, result_set.size());
-  EXPECT_EQ(1, result_set.count(-1));
+  EXPECT_EQ(1, result_set.count(-1 * a_id));
   sets.clear();
-  ASSERT_NO_THROW(ExpandSets(-3, sets));  // Negative InterEvent.
+  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));  // Negative InterEvent.
   result_set = (*sets.begin())->primes();
   EXPECT_EQ(1, result_set.size());
-  EXPECT_EQ(1, result_set.count(1));
+  EXPECT_EQ(1, result_set.count(a_id));
 
   // Testing for NOT gate with a intermediate event child.
   delete fta;
   fta = new FaultTree("fta-default", false);
   inter = InterEventPtr(new InterEvent("inter", "not"));
-  InterEventPtr child_inter(new InterEvent("znter"));
-  inter_events().insert(std::make_pair("znter", child_inter));
   inter_events().insert(std::make_pair("inter", inter));
+  inter_events().insert(std::make_pair("d", D));
   AssignIndexes();
-  inter->AddChild(child_inter);
+  inter_id = GetIndex("inter");
+  d_id = GetIndex("d");
+  inter->AddChild(D);
   sets.clear();
-  ASSERT_NO_THROW(ExpandSets(2, sets));
+  ASSERT_NO_THROW(ExpandSets(inter_id, sets));
   result_set = (*sets.begin())->inters();
   EXPECT_EQ(1, result_set.size());
-  EXPECT_EQ(1, result_set.count(-3));
+  EXPECT_EQ(1, result_set.count(-1 * d_id));
   sets.clear();
-  ASSERT_NO_THROW(ExpandSets(-2, sets));  // Negative InterEvent.
+  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));  // Negative InterEvent.
   result_set = (*sets.begin())->inters();
   EXPECT_EQ(1, result_set.size());
-  EXPECT_EQ(1, result_set.count(3));
+  EXPECT_EQ(1, result_set.count(d_id));
 
   // Testing for NOR gate.
 
@@ -206,11 +244,12 @@ TEST_F(FaultTreeTest, ExpandSets) {
   primary_events().insert(std::make_pair("b", B));
   primary_events().insert(std::make_pair("c", C));
   AssignIndexes();
+  inter_id = GetIndex("inter");
   sets.clear();
   inter->AddChild(A);
   inter->AddChild(B);
   inter->AddChild(C);
-  ASSERT_THROW(ExpandSets(5, sets), ValueError);
+  ASSERT_THROW(ExpandSets(inter_id, sets), ValueError);
 }
 
 TEST_F(FaultTreeTest, ProbAndInt) {

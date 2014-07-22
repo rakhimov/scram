@@ -83,6 +83,14 @@ class FaultTreeTest : public ::testing::Test {
     fta->AssignIndexes_();
   }
 
+  int GetIndex(std::string id) {
+    if (fta->prime_to_int_.count(id)) {
+      return fta->prime_to_int_[id];
+    } else {
+      return fta->inter_to_int_[id];
+    }
+  }
+
   void AddPrimeIntProb(double prob) {
     fta->iprobs_.push_back(prob);
   }
