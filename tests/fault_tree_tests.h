@@ -94,6 +94,10 @@ class FaultTreeTest : public ::testing::Test {
   void AddPrimeIntProb(double prob) {
     fta->iprobs_.push_back(prob);
   }
+
+  void nsums(int n) {
+    fta->nsums_ = n;
+  }
   // -----------------------------------------------------------------------
   // -------------- Monte Carlo simulation algorithms ----------------------
   void MProbOr(std::set< std::set<int> >& min_cut_sets, int sign = 1,

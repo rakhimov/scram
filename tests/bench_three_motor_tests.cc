@@ -31,6 +31,7 @@ TEST_F(FaultTreeTest, ThreeMotor) {
   // Check the tree with the transfer gate.
   ASSERT_NO_THROW(fta->ProcessInput(tree_input));
   ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
+  nsums(3);
   ASSERT_NO_THROW(fta->Analyze());
   ASSERT_NO_THROW(fta->Report("/dev/null"));
   double delta_sqr = std::abs(p_total() - 0.0211538);
