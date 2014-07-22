@@ -11,6 +11,7 @@ Currently Supported Gate Types
 - AND
 - OR
 - NOT
+- NOR
 
 Currently Supported Symbols
 ==============================

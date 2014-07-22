@@ -234,6 +234,59 @@ TEST_F(FaultTreeTest, ExpandSets) {
   EXPECT_EQ(1, result_set.count(d_id));
 
   // Testing for NOR gate.
+  delete fta;
+  fta = new FaultTree("fta-default", false);
+  inter = InterEventPtr(new InterEvent("inter", "nor"));
+  inter_events().insert(std::make_pair("inter", inter));
+  primary_events().insert(std::make_pair("a", A));
+  primary_events().insert(std::make_pair("b", B));
+  primary_events().insert(std::make_pair("c", C));
+  inter_events().insert(std::make_pair("d", D));
+  AssignIndexes();
+  // Get Indices.
+  a_id = GetIndex("a");
+  b_id = GetIndex("b");
+  c_id = GetIndex("c");
+  inter_id = GetIndex("inter");
+  d_id = GetIndex("d");
+  sets.clear();
+  inter->AddChild(A);
+  inter->AddChild(B);
+  inter->AddChild(C);
+  inter->AddChild(D);
+  ASSERT_NO_THROW(ExpandSets(inter_id, sets));
+  EXPECT_EQ(1, sets.size());
+  result_set = (*sets.begin())->primes();
+  EXPECT_EQ(3, result_set.size());
+  EXPECT_EQ(1, result_set.count(-1 * a_id));
+  EXPECT_EQ(1, result_set.count(-1 * b_id));
+  EXPECT_EQ(1, result_set.count(-1 * c_id));
+  result_set = (*sets.begin())->inters();
+  EXPECT_EQ(1, result_set.size());
+  EXPECT_EQ(1, result_set.count(-1 * d_id));
+  // Negative NOR gate.
+  sets.clear();
+  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));  // Negative InterEvent.
+  EXPECT_EQ(4, sets.size());
+  a_found = false;
+  b_found = false;
+  c_found = false;
+  for (it_set = sets.begin(); it_set != sets.end(); ++it_set) {
+    if (!(*it_set)->primes().empty()) {
+      std::set<int> result = (*it_set)->primes();
+      EXPECT_EQ(1, result.size());
+      EXPECT_EQ(1, result.count(a_id) + result.count(b_id)
+                + result.count(c_id));
+      if (!a_found && result.count(a_id)) a_found = true;
+      else if (!b_found && result.count(b_id)) b_found = true;
+      else if (!c_found && result.count(c_id)) c_found = true;
+    } else {
+      std::set<int> result = (*it_set)->inters();
+      EXPECT_EQ(1, result.size());
+      EXPECT_EQ(1, result.count(d_id));
+    }
+  }
+  EXPECT_EQ(true, a_found && b_found && c_found);
 
   // Testing for some UNKNOWN gate.
   delete fta;
