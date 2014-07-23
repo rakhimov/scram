@@ -51,6 +51,7 @@ FaultTree::FaultTree(std::string analysis, bool graph_only, bool rare_event,
   gates_.insert("or");
   gates_.insert("not");
   gates_.insert("nor");
+  gates_.insert("nand");
 
   // Add valid primary event types.
   types_.insert("basic");
@@ -1402,6 +1403,30 @@ void FaultTree::ExpandSets_(int inter_index,
         sets.push_back(tmp_set_c);
       }
     }
+  } else if (gate == "nand") {
+    if (inter_index > 0) {
+      for (it_child = events_children.begin();
+           it_child != events_children.end(); ++it_child) {
+        SupersetPtr tmp_set_c(new scram::Superset());
+        if (inter_events_.count(it_child->first)) {
+          tmp_set_c->AddInter(-1 * inter_to_int_[it_child->first]);
+        } else {
+          tmp_set_c->AddPrimary(-1 * prime_to_int_[it_child->first]);
+        }
+        sets.push_back(tmp_set_c);
+      }
+    } else {
+      SupersetPtr tmp_set_c(new scram::Superset());
+      for (it_child = events_children.begin();
+           it_child != events_children.end(); ++it_child) {
+        if (inter_events_.count(it_child->first)) {
+          tmp_set_c->AddInter(inter_to_int_[it_child->first]);
+        } else {
+          tmp_set_c->AddPrimary(prime_to_int_[it_child->first]);
+        }
+      }
+      sets.push_back(tmp_set_c);
+    }
   } else {
     boost::to_upper(gate);
     std::string msg = "No algorithm defined for " + gate;
@@ -1439,7 +1464,7 @@ std::string FaultTree::CheckGate_(const TopEventPtr& event) {
     size += transfer_map_.count(event->id());
 
     // Gate dependent logic.
-    if (gate == "and" || gate == "or" || gate == "nor") {
+    if (gate == "and" || gate == "or" || gate == "nor" || gate == "nand") {
       if (size < 2) {
         boost::to_upper(gate);
         msg << orig_ids_[event->id()] << " : " << gate
