@@ -79,6 +79,16 @@ TEST_F(FaultTreeTest, CheckGate) {
   top->AddChild(C);
   EXPECT_TRUE(CheckGate(top));  // More children are OK.
 
+  // XOR Gate tests.
+  top = TopEventPtr(new TopEvent("top", "xor"));
+  EXPECT_FALSE(CheckGate(top));  // No child.
+  top->AddChild(A);
+  EXPECT_FALSE(CheckGate(top));  // One child is not enough.
+  top->AddChild(B);
+  EXPECT_TRUE(CheckGate(top));  // Two children are enough.
+  top->AddChild(C);
+  EXPECT_FALSE(CheckGate(top));  // More than 2 is not allowed.
+
   // Some UNKNOWN gate tests.
   top = TopEventPtr(new TopEvent("top", "unknown_gate"));
   EXPECT_FALSE(CheckGate(top));  // No child.
@@ -362,6 +372,67 @@ TEST_F(FaultTreeTest, ExpandSets) {
   result_set = (*sets.begin())->inters();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(d_id));
+
+  // Testing for XOR gate.
+  delete fta;
+  fta = new FaultTree("fta-default", false);
+  inter = InterEventPtr(new InterEvent("inter", "xor"));
+  inter_events().insert(std::make_pair("inter", inter));
+  primary_events().insert(std::make_pair("a", A));
+  inter_events().insert(std::make_pair("d", D));
+  AssignIndexes();
+  // Get Indices.
+  a_id = GetIndex("a");
+  inter_id = GetIndex("inter");
+  d_id = GetIndex("d");
+  sets.clear();
+  inter->AddChild(A);
+  inter->AddChild(D);
+  ASSERT_NO_THROW(ExpandSets(inter_id, sets));
+  EXPECT_EQ(2, sets.size());
+  std::set<int> set_one;
+  std::set<int> set_two;
+  std::set<int> result_one;
+  std::set<int> result_two;
+  set_one.insert(*(*sets.begin())->primes().begin());
+  set_one.insert(*(*sets.begin())->inters().begin());
+  set_two.insert(*(*++sets.begin())->primes().begin());
+  set_two.insert(*(*++sets.begin())->inters().begin());
+  result_one.insert(a_id);
+  result_one.insert(-1 * d_id);
+  result_two.insert(-1 * a_id);
+  result_two.insert(d_id);
+  ASSERT_TRUE(set_one.count(a_id) || set_one.count(-1 * a_id));
+  if (set_one.count(a_id)) {
+    ASSERT_EQ(result_one, set_one);
+    ASSERT_EQ(result_two, set_two);
+  } else {
+    ASSERT_EQ(result_two, set_one);
+    ASSERT_EQ(result_one, set_two);
+  }
+  // Negative XOR gate.
+  sets.clear();
+  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));
+  set_one.clear();
+  set_two.clear();
+  result_one.clear();
+  result_two.clear();
+  set_one.insert(*(*sets.begin())->primes().begin());
+  set_one.insert(*(*sets.begin())->inters().begin());
+  set_two.insert(*(*++sets.begin())->primes().begin());
+  set_two.insert(*(*++sets.begin())->inters().begin());
+  result_one.insert(a_id);
+  result_one.insert(d_id);
+  result_two.insert(-1 * a_id);
+  result_two.insert(-1 * d_id);
+  ASSERT_TRUE(set_one.count(a_id) || set_one.count(-1 * a_id));
+  if (set_one.count(a_id)) {
+    ASSERT_EQ(result_one, set_one);
+    ASSERT_EQ(result_two, set_two);
+  } else {
+    ASSERT_EQ(result_two, set_one);
+    ASSERT_EQ(result_one, set_two);
+  }
 
   // Testing for some UNKNOWN gate.
   delete fta;

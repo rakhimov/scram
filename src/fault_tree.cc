@@ -52,6 +52,7 @@ FaultTree::FaultTree(std::string analysis, bool graph_only, bool rare_event,
   gates_.insert("not");
   gates_.insert("nor");
   gates_.insert("nand");
+  gates_.insert("xor");
 
   // Add valid primary event types.
   types_.insert("basic");
@@ -1319,6 +1320,7 @@ void FaultTree::ExpandSets_(int inter_index,
 
   // Type dependent logic.
   if (gate == "or") {
+    assert(events_children.size() > 1);
     if (inter_index > 0) {
       for (it_child = events_children.begin();
            it_child != events_children.end(); ++it_child) {
@@ -1343,6 +1345,7 @@ void FaultTree::ExpandSets_(int inter_index,
       sets.push_back(tmp_set_c);
     }
   } else if (gate == "and") {
+    assert(events_children.size() > 1);
     if (inter_index > 0) {
       SupersetPtr tmp_set_c(new scram::Superset());
       for (it_child = events_children.begin();
@@ -1380,6 +1383,7 @@ void FaultTree::ExpandSets_(int inter_index,
     }
     sets.push_back(tmp_set_c);
   } else if (gate == "nor") {
+    assert(events_children.size() > 1);
     if (inter_index > 0) {
       SupersetPtr tmp_set_c(new scram::Superset());
       for (it_child = events_children.begin();
@@ -1404,6 +1408,7 @@ void FaultTree::ExpandSets_(int inter_index,
       }
     }
   } else if (gate == "nand") {
+    assert(events_children.size() > 1);
     if (inter_index > 0) {
       for (it_child = events_children.begin();
            it_child != events_children.end(); ++it_child) {
@@ -1426,6 +1431,51 @@ void FaultTree::ExpandSets_(int inter_index,
         }
       }
       sets.push_back(tmp_set_c);
+    }
+  } else if (gate == "xor") {
+    assert(events_children.size() == 2);
+    if (inter_index > 0) {
+      SupersetPtr tmp_set_one(new scram::Superset());
+      SupersetPtr tmp_set_two(new scram::Superset());
+      std::string first_child = events_children.begin()->first;
+      std::string second_child = (++events_children.begin())->first;
+      if (inter_events_.count(first_child)) {
+        tmp_set_one->AddInter(inter_to_int_[first_child]);
+        tmp_set_two->AddInter(-1 * inter_to_int_[first_child]);
+      } else {
+        tmp_set_one->AddPrimary(prime_to_int_[first_child]);
+        tmp_set_two->AddPrimary(-1 * prime_to_int_[first_child]);
+      }
+      if (inter_events_.count(second_child)) {
+        tmp_set_one->AddInter(-1 * inter_to_int_[second_child]);
+        tmp_set_two->AddInter(inter_to_int_[second_child]);
+      } else {
+        tmp_set_one->AddPrimary(-1 * prime_to_int_[second_child]);
+        tmp_set_two->AddPrimary(prime_to_int_[second_child]);
+      }
+      sets.push_back(tmp_set_one);
+      sets.push_back(tmp_set_two);
+    } else {
+      SupersetPtr tmp_set_one(new scram::Superset());
+      SupersetPtr tmp_set_two(new scram::Superset());
+      std::string first_child = events_children.begin()->first;
+      std::string second_child = (++events_children.begin())->first;
+      if (inter_events_.count(first_child)) {
+        tmp_set_one->AddInter(inter_to_int_[first_child]);
+        tmp_set_two->AddInter(-1 * inter_to_int_[first_child]);
+      } else {
+        tmp_set_one->AddPrimary(prime_to_int_[first_child]);
+        tmp_set_two->AddPrimary(-1 * prime_to_int_[first_child]);
+      }
+      if (inter_events_.count(second_child)) {
+        tmp_set_one->AddInter(inter_to_int_[second_child]);
+        tmp_set_two->AddInter(-1 * inter_to_int_[second_child]);
+      } else {
+        tmp_set_one->AddPrimary(prime_to_int_[second_child]);
+        tmp_set_two->AddPrimary(-1 * prime_to_int_[second_child]);
+      }
+      sets.push_back(tmp_set_one);
+      sets.push_back(tmp_set_two);
     }
   } else {
     boost::to_upper(gate);
@@ -1470,6 +1520,12 @@ std::string FaultTree::CheckGate_(const TopEventPtr& event) {
         msg << orig_ids_[event->id()] << " : " << gate
             << " gate must have 2 or more "
             << "children.\n";
+      }
+    } else if (gate == "xor") {
+      if (size != 2) {
+        boost::to_upper(gate);
+        msg << orig_ids_[event->id()] << " : " << gate
+            << " gate must have exactly 2 children.\n";
       }
     } else if (gate == "not") {
       if (size != 1) {
