@@ -98,7 +98,7 @@ TEST_F(FaultTreeTest, CheckGate) {
   EXPECT_FALSE(CheckGate(top));
 }
 
-TEST_F(FaultTreeTest, ExpandSets) {
+TEST_F(FaultTreeTest, NO_GATE) {
   InterEventPtr inter(new InterEvent("inter"));  // No gate is defined.
   inter_events().insert(std::make_pair("inter", inter));
 
@@ -125,6 +125,46 @@ TEST_F(FaultTreeTest, ExpandSets) {
 
   // Without any gate.
   EXPECT_THROW(ExpandSets(inter_id, sets), ValueError);
+
+  // Testing for some UNKNOWN gate.
+  inter = InterEventPtr(new InterEvent("inter", "unknown_gate"));
+  inter_events().insert(std::make_pair("inter", inter));
+  primary_events().insert(std::make_pair("a", A));
+  primary_events().insert(std::make_pair("b", B));
+  primary_events().insert(std::make_pair("c", C));
+  AssignIndexes();
+  inter_id = GetIndex("inter");
+  sets.clear();
+  inter->AddChild(A);
+  inter->AddChild(B);
+  inter->AddChild(C);
+  EXPECT_THROW(ExpandSets(inter_id, sets), ValueError);
+}
+
+TEST_F(FaultTreeTest, OR_GATE) {
+  InterEventPtr inter(new InterEvent("inter"));  // No gate is defined.
+  inter_events().insert(std::make_pair("inter", inter));
+
+  std::vector<SupersetPtr> sets;
+  std::vector<SupersetPtr>::iterator it_set;
+  PrimaryEventPtr A(new PrimaryEvent("a"));
+  PrimaryEventPtr B(new PrimaryEvent("b"));
+  PrimaryEventPtr C(new PrimaryEvent("c"));
+  InterEventPtr D(new InterEvent("d"));
+  std::set<int> result_set;
+
+  primary_events().insert(std::make_pair("a", A));
+  primary_events().insert(std::make_pair("b", B));
+  primary_events().insert(std::make_pair("c", C));
+  inter_events().insert(std::make_pair("d", D));
+
+  AssignIndexes();
+  // Get Indices.
+  int a_id = GetIndex("a");
+  int b_id = GetIndex("b");
+  int c_id = GetIndex("c");
+  int inter_id = GetIndex("inter");
+  int d_id = GetIndex("d");
 
   // Testing for OR gate.
   inter->gate("or");
@@ -165,23 +205,36 @@ TEST_F(FaultTreeTest, ExpandSets) {
   result_set = (*sets.begin())->inters();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(-1 * d_id));
+}
 
-  // Testing for AND gate.
-  delete fta;
-  fta = new FaultTree("fta-default", false);
-  inter = InterEventPtr(new InterEvent("inter", "and"));
+TEST_F(FaultTreeTest, AND_GATE) {
+  InterEventPtr inter(new InterEvent("inter"));  // No gate is defined.
   inter_events().insert(std::make_pair("inter", inter));
+
+  std::vector<SupersetPtr> sets;
+  std::vector<SupersetPtr>::iterator it_set;
+  PrimaryEventPtr A(new PrimaryEvent("a"));
+  PrimaryEventPtr B(new PrimaryEvent("b"));
+  PrimaryEventPtr C(new PrimaryEvent("c"));
+  InterEventPtr D(new InterEvent("d"));
+  std::set<int> result_set;
+
   primary_events().insert(std::make_pair("a", A));
   primary_events().insert(std::make_pair("b", B));
   primary_events().insert(std::make_pair("c", C));
   inter_events().insert(std::make_pair("d", D));
+
   AssignIndexes();
   // Get Indices.
-  a_id = GetIndex("a");
-  b_id = GetIndex("b");
-  c_id = GetIndex("c");
-  inter_id = GetIndex("inter");
-  d_id = GetIndex("d");
+  int a_id = GetIndex("a");
+  int b_id = GetIndex("b");
+  int c_id = GetIndex("c");
+  int inter_id = GetIndex("inter");
+  int d_id = GetIndex("d");
+
+  // Testing for AND gate.
+  inter->gate("and");
+  inter_events().insert(std::make_pair("inter", inter));
   sets.clear();
   inter->AddChild(A);
   inter->AddChild(B);
@@ -201,9 +254,9 @@ TEST_F(FaultTreeTest, ExpandSets) {
   sets.clear();
   ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));
   EXPECT_EQ(4, sets.size());
-  a_found = false;
-  b_found = false;
-  c_found = false;
+  bool a_found = false;
+  bool b_found = false;
+  bool c_found = false;
   for (it_set = sets.begin(); it_set != sets.end(); ++it_set) {
     if (!(*it_set)->primes().empty()) {
       std::set<int> result = (*it_set)->primes();
@@ -220,16 +273,37 @@ TEST_F(FaultTreeTest, ExpandSets) {
     }
   }
   EXPECT_EQ(true, a_found && b_found && c_found);
+}
+
+TEST_F(FaultTreeTest, NOT_GATE) {
+  InterEventPtr inter(new InterEvent("inter"));  // No gate is defined.
+  inter_events().insert(std::make_pair("inter", inter));
+
+  std::vector<SupersetPtr> sets;
+  std::vector<SupersetPtr>::iterator it_set;
+  PrimaryEventPtr A(new PrimaryEvent("a"));
+  PrimaryEventPtr B(new PrimaryEvent("b"));
+  PrimaryEventPtr C(new PrimaryEvent("c"));
+  InterEventPtr D(new InterEvent("d"));
+  std::set<int> result_set;
+
+  primary_events().insert(std::make_pair("a", A));
+  primary_events().insert(std::make_pair("b", B));
+  primary_events().insert(std::make_pair("c", C));
+  inter_events().insert(std::make_pair("d", D));
+
+  AssignIndexes();
+  // Get Indices.
+  int a_id = GetIndex("a");
+  int b_id = GetIndex("b");
+  int c_id = GetIndex("c");
+  int inter_id = GetIndex("inter");
+  int d_id = GetIndex("d");
 
   // Testing for NOT gate with a primary event child.
-  delete fta;
-  fta = new FaultTree("fta-default", false);
-  inter = InterEventPtr(new InterEvent("inter", "not"));
+  inter->gate("not");
   inter_events().insert(std::make_pair("inter", inter));
   primary_events().insert(std::make_pair("a", A));
-  AssignIndexes();
-  a_id = GetIndex("a");
-  inter_id = GetIndex("inter");
   inter->AddChild(A);
   sets.clear();
   ASSERT_NO_THROW(ExpandSets(inter_id, sets));
@@ -263,22 +337,35 @@ TEST_F(FaultTreeTest, ExpandSets) {
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(d_id));
 
-  // Testing for NOR gate.
-  delete fta;
-  fta = new FaultTree("fta-default", false);
-  inter = InterEventPtr(new InterEvent("inter", "nor"));
+}
+
+TEST_F(FaultTreeTest, NOR_GATE) {
+  InterEventPtr inter(new InterEvent("inter"));  // No gate is defined.
   inter_events().insert(std::make_pair("inter", inter));
+
+  std::vector<SupersetPtr> sets;
+  std::vector<SupersetPtr>::iterator it_set;
+  PrimaryEventPtr A(new PrimaryEvent("a"));
+  PrimaryEventPtr B(new PrimaryEvent("b"));
+  PrimaryEventPtr C(new PrimaryEvent("c"));
+  InterEventPtr D(new InterEvent("d"));
+  std::set<int> result_set;
+
   primary_events().insert(std::make_pair("a", A));
   primary_events().insert(std::make_pair("b", B));
   primary_events().insert(std::make_pair("c", C));
   inter_events().insert(std::make_pair("d", D));
+
   AssignIndexes();
   // Get Indices.
-  a_id = GetIndex("a");
-  b_id = GetIndex("b");
-  c_id = GetIndex("c");
-  inter_id = GetIndex("inter");
-  d_id = GetIndex("d");
+  int a_id = GetIndex("a");
+  int b_id = GetIndex("b");
+  int c_id = GetIndex("c");
+  int inter_id = GetIndex("inter");
+  int d_id = GetIndex("d");
+
+  // Testing for NOR gate.
+  inter->gate("nor");
   sets.clear();
   inter->AddChild(A);
   inter->AddChild(B);
@@ -298,9 +385,9 @@ TEST_F(FaultTreeTest, ExpandSets) {
   sets.clear();
   ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));  // Negative InterEvent.
   EXPECT_EQ(4, sets.size());
-  a_found = false;
-  b_found = false;
-  c_found = false;
+  bool a_found = false;
+  bool b_found = false;
+  bool c_found = false;
   for (it_set = sets.begin(); it_set != sets.end(); ++it_set) {
     if (!(*it_set)->primes().empty()) {
       std::set<int> result = (*it_set)->primes();
@@ -317,23 +404,35 @@ TEST_F(FaultTreeTest, ExpandSets) {
     }
   }
   EXPECT_EQ(true, a_found && b_found && c_found);
+}
 
-  // Testing for NAND gate.
-  delete fta;
-  fta = new FaultTree("fta-default", false);
-  inter = InterEventPtr(new InterEvent("inter", "nand"));
+TEST_F(FaultTreeTest, NAND_GATE) {
+  InterEventPtr inter(new InterEvent("inter"));  // No gate is defined.
   inter_events().insert(std::make_pair("inter", inter));
+
+  std::vector<SupersetPtr> sets;
+  std::vector<SupersetPtr>::iterator it_set;
+  PrimaryEventPtr A(new PrimaryEvent("a"));
+  PrimaryEventPtr B(new PrimaryEvent("b"));
+  PrimaryEventPtr C(new PrimaryEvent("c"));
+  InterEventPtr D(new InterEvent("d"));
+  std::set<int> result_set;
+
   primary_events().insert(std::make_pair("a", A));
   primary_events().insert(std::make_pair("b", B));
   primary_events().insert(std::make_pair("c", C));
   inter_events().insert(std::make_pair("d", D));
+
   AssignIndexes();
   // Get Indices.
-  a_id = GetIndex("a");
-  b_id = GetIndex("b");
-  c_id = GetIndex("c");
-  inter_id = GetIndex("inter");
-  d_id = GetIndex("d");
+  int a_id = GetIndex("a");
+  int b_id = GetIndex("b");
+  int c_id = GetIndex("c");
+  int inter_id = GetIndex("inter");
+  int d_id = GetIndex("d");
+
+  // Testing for NAND gate.
+  inter->gate("nand");
   sets.clear();
   inter->AddChild(A);
   inter->AddChild(B);
@@ -341,9 +440,9 @@ TEST_F(FaultTreeTest, ExpandSets) {
   inter->AddChild(D);
   ASSERT_NO_THROW(ExpandSets(inter_id, sets));
   EXPECT_EQ(4, sets.size());
-  a_found = false;
-  b_found = false;
-  c_found = false;
+  bool a_found = false;
+  bool b_found = false;
+  bool c_found = false;
   for (it_set = sets.begin(); it_set != sets.end(); ++it_set) {
     if (!(*it_set)->primes().empty()) {
       std::set<int> result = (*it_set)->primes();
@@ -372,19 +471,35 @@ TEST_F(FaultTreeTest, ExpandSets) {
   result_set = (*sets.begin())->inters();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(d_id));
+}
 
-  // Testing for XOR gate.
-  delete fta;
-  fta = new FaultTree("fta-default", false);
-  inter = InterEventPtr(new InterEvent("inter", "xor"));
+TEST_F(FaultTreeTest, XOR_GATE) {
+  InterEventPtr inter(new InterEvent("inter"));  // No gate is defined.
   inter_events().insert(std::make_pair("inter", inter));
+
+  std::vector<SupersetPtr> sets;
+  std::vector<SupersetPtr>::iterator it_set;
+  PrimaryEventPtr A(new PrimaryEvent("a"));
+  PrimaryEventPtr B(new PrimaryEvent("b"));
+  PrimaryEventPtr C(new PrimaryEvent("c"));
+  InterEventPtr D(new InterEvent("d"));
+  std::set<int> result_set;
+
   primary_events().insert(std::make_pair("a", A));
+  primary_events().insert(std::make_pair("b", B));
+  primary_events().insert(std::make_pair("c", C));
   inter_events().insert(std::make_pair("d", D));
+
   AssignIndexes();
   // Get Indices.
-  a_id = GetIndex("a");
-  inter_id = GetIndex("inter");
-  d_id = GetIndex("d");
+  int a_id = GetIndex("a");
+  int b_id = GetIndex("b");
+  int c_id = GetIndex("c");
+  int inter_id = GetIndex("inter");
+  int d_id = GetIndex("d");
+
+  // Testing for XOR gate.
+  inter->gate("xor");
   sets.clear();
   inter->AddChild(A);
   inter->AddChild(D);
@@ -427,28 +542,12 @@ TEST_F(FaultTreeTest, ExpandSets) {
   result_two.insert(-1 * d_id);
   ASSERT_TRUE(set_one.count(a_id) || set_one.count(-1 * a_id));
   if (set_one.count(a_id)) {
-    ASSERT_EQ(result_one, set_one);
-    ASSERT_EQ(result_two, set_two);
+    EXPECT_EQ(result_one, set_one);
+    EXPECT_EQ(result_two, set_two);
   } else {
-    ASSERT_EQ(result_two, set_one);
-    ASSERT_EQ(result_one, set_two);
+    EXPECT_EQ(result_two, set_one);
+    EXPECT_EQ(result_one, set_two);
   }
-
-  // Testing for some UNKNOWN gate.
-  delete fta;
-  fta = new FaultTree("fta-default", false);
-  inter = InterEventPtr(new InterEvent("inter", "unknown_gate"));
-  inter_events().insert(std::make_pair("inter", inter));
-  primary_events().insert(std::make_pair("a", A));
-  primary_events().insert(std::make_pair("b", B));
-  primary_events().insert(std::make_pair("c", C));
-  AssignIndexes();
-  inter_id = GetIndex("inter");
-  sets.clear();
-  inter->AddChild(A);
-  inter->AddChild(B);
-  inter->AddChild(C);
-  ASSERT_THROW(ExpandSets(inter_id, sets), ValueError);
 }
 
 TEST_F(FaultTreeTest, ProbAndInt) {
