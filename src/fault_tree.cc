@@ -1148,6 +1148,13 @@ void FaultTree::AddNode_(std::string parent, std::string id,
 
   } else if (types_.count(type)) {
     // This must be a primary event.
+    // Check if this is a re-initialization with a different type.
+    if (primary_events_.count(id) && primary_events_[id]->type() != type) {
+      std::stringstream msg;
+      msg << "Redefining a primary event " << orig_ids_[id]
+          << " with a different type.";
+      throw scram::ValidationError(msg.str());
+    }
     PrimaryEventPtr p_event(new PrimaryEvent(id, type));
     if (parent == top_event_id_) {
       p_event->AddParent(top_event_);
