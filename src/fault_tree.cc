@@ -1443,37 +1443,29 @@ void FaultTree::ExpandSets_(int inter_index,
     assert(events_children.size() == 2);
     SupersetPtr tmp_set_one(new scram::Superset());
     SupersetPtr tmp_set_two(new scram::Superset());
-    std::string first_child = events_children.begin()->first;
-    std::string second_child = (++events_children.begin())->first;
     if (inter_index > 0) {
-      if (inter_events_.count(first_child)) {
-        tmp_set_one->AddInter(inter_to_int_[first_child]);
-        tmp_set_two->AddInter(-1 * inter_to_int_[first_child]);
-      } else {
-        tmp_set_one->AddPrimary(prime_to_int_[first_child]);
-        tmp_set_two->AddPrimary(-1 * prime_to_int_[first_child]);
-      }
-      if (inter_events_.count(second_child)) {
-        tmp_set_one->AddInter(-1 * inter_to_int_[second_child]);
-        tmp_set_two->AddInter(inter_to_int_[second_child]);
-      } else {
-        tmp_set_one->AddPrimary(-1 * prime_to_int_[second_child]);
-        tmp_set_two->AddPrimary(prime_to_int_[second_child]);
+      int j = 1;
+      for (it_child = events_children.begin();
+           it_child != events_children.end(); ++it_child) {
+        if (inter_events_.count(it_child->first)) {
+          tmp_set_one->AddInter(j * inter_to_int_[it_child->first]);
+          tmp_set_two->AddInter(-1 * j * inter_to_int_[it_child->first]);
+        } else {
+          tmp_set_one->AddPrimary(j * prime_to_int_[it_child->first]);
+          tmp_set_two->AddPrimary(-1 * j * prime_to_int_[it_child->first]);
+        }
+        j = -1;
       }
     } else {
-      if (inter_events_.count(first_child)) {
-        tmp_set_one->AddInter(inter_to_int_[first_child]);
-        tmp_set_two->AddInter(-1 * inter_to_int_[first_child]);
-      } else {
-        tmp_set_one->AddPrimary(prime_to_int_[first_child]);
-        tmp_set_two->AddPrimary(-1 * prime_to_int_[first_child]);
-      }
-      if (inter_events_.count(second_child)) {
-        tmp_set_one->AddInter(inter_to_int_[second_child]);
-        tmp_set_two->AddInter(-1 * inter_to_int_[second_child]);
-      } else {
-        tmp_set_one->AddPrimary(prime_to_int_[second_child]);
-        tmp_set_two->AddPrimary(-1 * prime_to_int_[second_child]);
+      for (it_child = events_children.begin();
+           it_child != events_children.end(); ++it_child) {
+        if (inter_events_.count(it_child->first)) {
+          tmp_set_one->AddInter(inter_to_int_[it_child->first]);
+          tmp_set_two->AddInter(-1 * inter_to_int_[it_child->first]);
+        } else {
+          tmp_set_one->AddPrimary(prime_to_int_[it_child->first]);
+          tmp_set_two->AddPrimary(-1 * prime_to_int_[it_child->first]);
+        }
       }
     }
     sets.push_back(tmp_set_one);
