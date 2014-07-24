@@ -283,8 +283,7 @@ void FaultTree::GraphingInstructions() {
                                  1, std::string::npos);
   std::ofstream out(output_path.c_str());
   if (!out.good()) {
-    std::string msg = output_path +  " : Cannot write the graphing file.";
-    throw(scram::IOError(msg));
+    throw(scram::IOError(output_path +  " : Cannot write the graphing file."));
   }
 
   // Check for the special case when only one node TransferIn tree is graphed.
@@ -612,8 +611,11 @@ void FaultTree::Report(std::string output) {
       } else if (names.size() == 2) {
         rep << "NOT " << orig_ids_[names[1]];
       }
-      if (j < size) rep << ", ";
-      else rep << " ";
+      if (j < size) {
+        rep << ", ";
+      } else {
+        rep << " ";
+      }
       ++j;
     }
     rep << "}";
@@ -758,8 +760,11 @@ void FaultTree::Report(std::string output) {
         } else {
           out << "NOT " << orig_ids_[int_to_prime_[std::abs(*it_set)]->id()];
         }
-        if (j < size) out << ", ";
-        else out << " ";
+        if (j < size) {
+          out << ", ";
+        } else {
+          out << " ";
+        }
         ++j;
       }
       out << "}\n";
@@ -777,8 +782,11 @@ void FaultTree::Report(std::string output) {
         } else {
           out << "NOT " << orig_ids_[int_to_prime_[std::abs(*it_set)]->id()];
         }
-        if (j < size) out << ", ";
-        else out << " ";
+        if (j < size) {
+          out << ", ";
+        } else {
+          out << " ";
+        }
         ++j;
       }
       out << "}\n";
@@ -1551,7 +1559,6 @@ std::string FaultTree::CheckGate_(const TopEventPtr& event) {
 
   return msg.str();
 }
-
 
 std::string FaultTree::PrimariesNoProb_() {
   std::string uninit_primaries = "";

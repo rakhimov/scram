@@ -8,6 +8,6 @@
 int main(int argc, char* argv[]) {
   const char* target = "@CMAKE_RUNTIME_OUTPUT_DIRECTORY@";
   assert(chdir(target) == 0);
-  testing::InitGoogleTest ( &argc, argv );
+  testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

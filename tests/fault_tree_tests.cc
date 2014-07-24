@@ -415,7 +415,6 @@ TEST_F(FaultTreeTest, NULL_GATE) {
   result_set = (*sets.begin())->inters();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(-1 * d_id));
-
 }
 
 TEST_F(FaultTreeTest, ProbAndInt) {

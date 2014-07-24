@@ -25,9 +25,10 @@ Approximate Probability Calculation Implementation
 
 Approximate calculations are implemented in order to reduce calculation
 time. The series expansion of the exact formula is applied as in OpenFTA.
-This feature is an option for a user. The default value for series is set to
-a very large number around 1000000 sums. In general, it is impractical to
-include more than 6 sums.
+This feature is the default. The default value for series is set to N
+(*number of the sets*) to get all the series included.
+In general, it is impractical to include more than 8 sums, so the suggestion
+is to include between 4 and 8 sums.
 
 Probability Types
 ========================================================

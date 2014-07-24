@@ -448,7 +448,7 @@ TEST_F(FaultTreeTest, ThreeMotor) {
   cut_set.clear();
 
   cut_set.insert(KT1);
-  cut_set.insert( KT1inc);
+  cut_set.insert(KT1inc);
   cut_set.insert(KT3);
   cut_set.insert(KT3inc);
   cut_set.insert(T2);
@@ -458,7 +458,7 @@ TEST_F(FaultTreeTest, ThreeMotor) {
   cut_set.clear();
 
   cut_set.insert(KT1);
-  cut_set.insert( KT1inc);
+  cut_set.insert(KT1inc);
   cut_set.insert(KT2inc);
   cut_set.insert(KT3);
   cut_set.insert(T2);
@@ -468,7 +468,7 @@ TEST_F(FaultTreeTest, ThreeMotor) {
   cut_set.clear();
 
   cut_set.insert(KT1);
-  cut_set.insert( KT1inc);
+  cut_set.insert(KT1inc);
   cut_set.insert(KT2inc);
   cut_set.insert(KT3);
   cut_set.insert(KT3inc);
