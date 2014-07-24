@@ -1434,11 +1434,11 @@ void FaultTree::ExpandSets_(int inter_index,
     }
   } else if (gate == "xor") {
     assert(events_children.size() == 2);
+    SupersetPtr tmp_set_one(new scram::Superset());
+    SupersetPtr tmp_set_two(new scram::Superset());
+    std::string first_child = events_children.begin()->first;
+    std::string second_child = (++events_children.begin())->first;
     if (inter_index > 0) {
-      SupersetPtr tmp_set_one(new scram::Superset());
-      SupersetPtr tmp_set_two(new scram::Superset());
-      std::string first_child = events_children.begin()->first;
-      std::string second_child = (++events_children.begin())->first;
       if (inter_events_.count(first_child)) {
         tmp_set_one->AddInter(inter_to_int_[first_child]);
         tmp_set_two->AddInter(-1 * inter_to_int_[first_child]);
@@ -1453,13 +1453,7 @@ void FaultTree::ExpandSets_(int inter_index,
         tmp_set_one->AddPrimary(-1 * prime_to_int_[second_child]);
         tmp_set_two->AddPrimary(prime_to_int_[second_child]);
       }
-      sets.push_back(tmp_set_one);
-      sets.push_back(tmp_set_two);
     } else {
-      SupersetPtr tmp_set_one(new scram::Superset());
-      SupersetPtr tmp_set_two(new scram::Superset());
-      std::string first_child = events_children.begin()->first;
-      std::string second_child = (++events_children.begin())->first;
       if (inter_events_.count(first_child)) {
         tmp_set_one->AddInter(inter_to_int_[first_child]);
         tmp_set_two->AddInter(-1 * inter_to_int_[first_child]);
@@ -1474,9 +1468,9 @@ void FaultTree::ExpandSets_(int inter_index,
         tmp_set_one->AddPrimary(prime_to_int_[second_child]);
         tmp_set_two->AddPrimary(-1 * prime_to_int_[second_child]);
       }
-      sets.push_back(tmp_set_one);
-      sets.push_back(tmp_set_two);
     }
+    sets.push_back(tmp_set_one);
+    sets.push_back(tmp_set_two);
   } else {
     boost::to_upper(gate);
     std::string msg = "No algorithm defined for " + gate;
