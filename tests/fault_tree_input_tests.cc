@@ -78,6 +78,7 @@ TEST(FaultTreeInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back("./input/fta/top_event_with_no_child.scramf");
   incorrect_inputs.push_back("./input/fta/basic_top_event.scramf");
   incorrect_inputs.push_back("./input/fta/doubly_defined_intermediate.scramf");
+  incorrect_inputs.push_back("./input/fta/doubly_defined_primary_type.scramf");
   incorrect_inputs.push_back("./input/fta/doubly_defined_top.scramf");
   incorrect_inputs.push_back("./input/fta/extra_parameter.scramf");
   incorrect_inputs.push_back("./input/fta/leaf_intermidiate_event.scramf");

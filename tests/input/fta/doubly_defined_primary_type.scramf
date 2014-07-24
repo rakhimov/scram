@@ -1,0 +1,58 @@
+# This is an incorrect input file with a type of a primary event defined
+# differently twice.
+
+################# Start of an Input File ########################
+# The top event: One out of two success scenario.
+{
+    parent      None
+    id          TopEvent
+    type        AND
+}
+
+# Train One
+{
+    parent      TopEvent
+    id          TrainOne
+    type        OR
+}
+
+# Valves and Pumps of Train One
+{
+    parent      TrainOne
+    id          ValveOne
+    type        Basic
+}
+
+{
+    parent      TrainOne
+    id          PumpOne
+    type        Basic
+}
+
+# Train Two
+{
+    parent      TopEvent
+    id          TrainTwo
+    type        OR
+}
+
+# Valves and Pumps of Train Two
+{
+    parent      TrainTwo
+    id          ValveTwo
+    type        Basic
+}
+
+{
+    parent      TrainTwo
+    id          PumpTwo
+    type        Basic
+}
+
+# ERROR: Doubly defining an event with a different type.
+{
+    parent      TrainOne  # A different parent is OK.
+    id          ValveTwo
+    type        Undeveloped
+}
+################# End of an Input File ########################

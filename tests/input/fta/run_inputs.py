@@ -23,6 +23,7 @@ def main():
     bad_inputs = [
             "basic_top_event.scramf",
             "doubly_defined_intermediate.scramf",
+            "doubly_defined_primary_type.scramf",
             "doubly_defined_top.scramf",
             "extra_parameter.scramf",
             "leaf_intermidiate_event.scramf",
