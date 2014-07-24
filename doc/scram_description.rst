@@ -108,9 +108,12 @@ GATES
     The sequence also be from first to last member.
 
 #. Exclusive OR (XOR) :
-    Output fault occurs if exactly one of the input
-    faults occurs. (A XOR B) = (A AND B') OR (A' AND B)
-    Some packages restrict input events to only two.
+    Output fault occurs if exactly one of the two input
+    faults occurs. (A XOR B) = (A AND B') OR (A' AND B). In other words,
+    the result is one or the other but not both.
+    This gate can only have two inputs. For several inputs,
+    the output fault occurs if odd number of faults occur. This can be
+    simulated by chaining XOR gates if needed.
 
 #. Inhibit :
     Output fault occurs if the single input fault occurs in the
@@ -119,7 +122,9 @@ GATES
     gate.). Some packages restrict input events to only two events.
 
 #. Combination/VOTE :
-    Output fault occurs if a certain number of the input faults occur.
+    Output fault occurs if **m** out of the **n** input events
+    occurs. The **m** input events need not to occur simultaneously. The output
+    occurs if at least **m** events occur.
 
 #. NOT :
     Output fault occurs if the input event does not occur.
@@ -181,6 +186,6 @@ General Information for Users.
 
 #. Run 'scram -h' to see all the flags and parameters for analysis.
 
-#. The minimum cut set generation for a fault tree and probability calculations 
+#. The minimum cut set generation for a fault tree and probability calculations
    may use a lot of time and computing power.
    Adjust SCRAM flags and parameters to reduce these demands.
