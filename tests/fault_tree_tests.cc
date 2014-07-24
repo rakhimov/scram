@@ -383,6 +383,41 @@ TEST_F(FaultTreeTest, XOR_GATE) {
   }
 }
 
+TEST_F(FaultTreeTest, NULL_GATE) {
+  std::vector<SupersetPtr> sets;
+  std::set<int> result_set;
+
+  // Testing for NULL gate with a primary event child.
+  SetUpGate("null");
+  inter->AddChild(A);
+  ASSERT_NO_THROW(ExpandSets(inter_id, sets));
+  result_set = (*sets.begin())->primes();
+  EXPECT_EQ(1, result_set.size());
+  EXPECT_EQ(1, result_set.count(a_id));
+  sets.clear();
+  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));  // Negative InterEvent.
+  result_set = (*sets.begin())->primes();
+  EXPECT_EQ(1, result_set.size());
+  EXPECT_EQ(1, result_set.count(-1 * a_id));
+
+  // Testing for NULL gate with a intermediate event child.
+  delete fta;
+  fta = new FaultTree("fta-default", false);
+  SetUpGate("null");
+  inter->AddChild(D);
+  sets.clear();
+  ASSERT_NO_THROW(ExpandSets(inter_id, sets));
+  result_set = (*sets.begin())->inters();
+  EXPECT_EQ(1, result_set.size());
+  EXPECT_EQ(1, result_set.count(d_id));
+  sets.clear();
+  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));  // Negative InterEvent.
+  result_set = (*sets.begin())->inters();
+  EXPECT_EQ(1, result_set.size());
+  EXPECT_EQ(1, result_set.count(-1 * d_id));
+
+}
+
 TEST_F(FaultTreeTest, ProbAndInt) {
   std::set<int> min_cut_set;
 

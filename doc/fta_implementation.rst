@@ -14,6 +14,7 @@ Currently Supported Gate Types
 - NOR
 - NAND
 - XOR
+- NULL
 
 Currently Supported Symbols
 ==============================

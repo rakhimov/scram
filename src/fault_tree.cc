@@ -53,6 +53,7 @@ FaultTree::FaultTree(std::string analysis, bool graph_only, bool rare_event,
   gates_.insert("nor");
   gates_.insert("nand");
   gates_.insert("xor");
+  gates_.insert("null");
 
   // Add valid primary event types.
   types_.insert("basic");
@@ -1470,6 +1471,19 @@ void FaultTree::ExpandSets_(int inter_index,
     }
     sets.push_back(tmp_set_one);
     sets.push_back(tmp_set_two);
+  } else if (gate == "null") {
+    int mult = 1;
+    if (inter_index < 0) mult = -1;
+    // Only one child is expected.
+    assert(events_children.size() == 1);
+    SupersetPtr tmp_set_c(new scram::Superset());
+    it_child = events_children.begin();
+    if (inter_events_.count(it_child->first)) {
+      tmp_set_c->AddInter(mult * inter_to_int_[it_child->first]);
+    } else {
+      tmp_set_c->AddPrimary(mult * prime_to_int_[it_child->first]);
+    }
+    sets.push_back(tmp_set_c);
   } else {
     boost::to_upper(gate);
     std::string msg = "No algorithm defined for " + gate;
@@ -1520,7 +1534,7 @@ std::string FaultTree::CheckGate_(const TopEventPtr& event) {
         msg << orig_ids_[event->id()] << " : " << gate
             << " gate must have exactly 2 children.\n";
       }
-    } else if (gate == "not") {
+    } else if (gate == "not" || gate == "null") {
       if (size != 1) {
         boost::to_upper(gate);
         msg << orig_ids_[event->id()] << " : " << gate
