@@ -113,9 +113,39 @@ class FaultTreeTest : public ::testing::Test {
     return fta->neg_terms_;
   }
   // -----------------------------------------------------------------------
+
+  // SetUp for Gate Testing.
+  void SetUpGate(std::string gate) {
+    inter = InterEventPtr(new InterEvent("inter", gate));
+    A = PrimaryEventPtr(new PrimaryEvent("a"));
+    B = PrimaryEventPtr(new PrimaryEvent("b"));
+    C = PrimaryEventPtr(new PrimaryEvent("c"));
+    D = InterEventPtr(new InterEvent("d"));
+    primary_events().insert(std::make_pair("a", A));
+    primary_events().insert(std::make_pair("b", B));
+    primary_events().insert(std::make_pair("c", C));
+    inter_events().insert(std::make_pair("d", D));
+    inter_events().insert(std::make_pair("inter", inter));
+    AssignIndexes();
+    a_id = GetIndex("a");
+    b_id = GetIndex("b");
+    c_id = GetIndex("c");
+    inter_id = GetIndex("inter");
+    d_id = GetIndex("d");
+  }
   // Members
 
   FaultTree* fta;
+  InterEventPtr inter;  // No gate is defined.
+  PrimaryEventPtr A;
+  PrimaryEventPtr B;
+  PrimaryEventPtr C;
+  InterEventPtr D;
+  int a_id;
+  int b_id;
+  int c_id;
+  int inter_id;
+  int d_id;
 };
 
 #endif  // SCRAM_TESTS_FAULT_TREE_TESTS_H_
