@@ -297,6 +297,7 @@ TEST_F(FaultTreeTest, NAND_GATE) {
   bool a_found = false;
   bool b_found = false;
   bool c_found = false;
+  bool d_found = false;
   for (it_set = sets.begin(); it_set != sets.end(); ++it_set) {
     if (!(*it_set)->primes().empty()) {
       std::set<int> result = (*it_set)->primes();
@@ -415,6 +416,45 @@ TEST_F(FaultTreeTest, NULL_GATE) {
   result_set = (*sets.begin())->inters();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(-1 * d_id));
+}
+
+TEST_F(FaultTreeTest, INHIBIT_GATE) {
+  std::vector<SupersetPtr> sets;
+  std::vector<SupersetPtr>::iterator it_set;
+  std::set<int> result_set;
+
+  // INHIBIT GATE.
+  SetUpGate("inhibit");
+  inter->AddChild(A);
+  inter->AddChild(D);
+  ASSERT_NO_THROW(ExpandSets(inter_id, sets));
+  EXPECT_EQ(1, sets.size());
+  result_set = (*sets.begin())->primes();
+  EXPECT_EQ(1, result_set.size());
+  EXPECT_EQ(1, result_set.count(a_id));
+  result_set = (*sets.begin())->inters();
+  EXPECT_EQ(1, result_set.size());
+  EXPECT_EQ(1, result_set.count(d_id));
+  // Negative AND gate.
+  sets.clear();
+  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));
+  EXPECT_EQ(2, sets.size());
+  bool a_found = false;
+  bool d_found = false;
+  for (it_set = sets.begin(); it_set != sets.end(); ++it_set) {
+    if (!(*it_set)->primes().empty()) {
+      std::set<int> result = (*it_set)->primes();
+      EXPECT_EQ(1, result.size());
+      EXPECT_EQ(1, result.count(-1 * a_id));
+      a_found = true;
+    } else {
+      std::set<int> result = (*it_set)->inters();
+      EXPECT_EQ(1, result.size());
+      EXPECT_EQ(1, result.count(-1 * d_id));
+      d_found = true;
+    }
+  }
+  EXPECT_EQ(true, a_found && d_found);
 }
 
 TEST_F(FaultTreeTest, ProbAndInt) {

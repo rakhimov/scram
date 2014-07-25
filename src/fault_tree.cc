@@ -54,11 +54,13 @@ FaultTree::FaultTree(std::string analysis, bool graph_only, bool rare_event,
   gates_.insert("nand");
   gates_.insert("xor");
   gates_.insert("null");
+  gates_.insert("inhibit");
 
   // Add valid primary event types.
   types_.insert("basic");
   types_.insert("undeveloped");
   types_.insert("house");
+  types_.insert("conditional");
 
   // Pointer to the top event
   TopEventPtr top_event_;
@@ -857,7 +859,7 @@ void FaultTree::InterpretArgs_(int nline, std::stringstream& msg,
         }
         // End of the block detected.
 
-        // Check if all needed arguments for an event are received..
+        // Check if all needed arguments for an event are received.
         if (parent_ == "") {
           msg << "Line " << nline << " : " << "Missing parent in this"
               << " block.";
@@ -1169,12 +1171,24 @@ void FaultTree::AddNode_(std::string parent, std::string id,
       p_event->AddParent(top_event_);
       top_event_->AddChild(p_event);
       primary_events_.insert(std::make_pair(id, p_event));
-
+      // Check for conditional event.
+      if (type == "conditional" && top_event_->gate() != "inhibit") {
+        std::stringstream msg;
+        msg << "Parent of " << orig_ids_[id] << " conditional event is not "
+            << "an inhibit gate.";
+        throw scram::ValidationError(msg.str());
+      }
     } else if (inter_events_.count(parent)) {
       p_event->AddParent(inter_events_[parent]);
       inter_events_[parent]->AddChild(p_event);
       primary_events_.insert(std::make_pair(id, p_event));
-
+      // Check for conditional event.
+      if (type == "conditional" && inter_events_[parent]->gate() != "inhibit") {
+        std::stringstream msg;
+        msg << "Parent of " << orig_ids_[id] << " conditional event is not "
+            << "an inhibit gate.";
+        throw scram::ValidationError(msg.str());
+      }
     } else {
       // Parent is undefined.
       std::stringstream msg;
@@ -1182,7 +1196,6 @@ void FaultTree::AddNode_(std::string parent, std::string id,
           << " primary event is not defined.";
       throw scram::ValidationError(msg.str());
     }
-
   } else {
     // This must be a new intermediate event.
     if (inter_events_.count(id)) {
@@ -1492,6 +1505,31 @@ void FaultTree::ExpandSets_(int inter_index,
       tmp_set_c->AddPrimary(mult * prime_to_int_[it_child->first]);
     }
     sets.push_back(tmp_set_c);
+  } else if (gate == "inhibit") {
+    assert(events_children.size() == 2);
+    if (inter_index > 0) {
+      SupersetPtr tmp_set_c(new scram::Superset());
+      for (it_child = events_children.begin();
+           it_child != events_children.end(); ++it_child) {
+        if (inter_events_.count(it_child->first)) {
+          tmp_set_c->AddInter(inter_to_int_[it_child->first]);
+        } else {
+          tmp_set_c->AddPrimary(prime_to_int_[it_child->first]);
+        }
+      }
+      sets.push_back(tmp_set_c);
+    } else {
+      for (it_child = events_children.begin();
+           it_child != events_children.end(); ++it_child) {
+        SupersetPtr tmp_set_c(new scram::Superset());
+        if (inter_events_.count(it_child->first)) {
+          tmp_set_c->AddInter(-1 * inter_to_int_[it_child->first]);
+        } else {
+          tmp_set_c->AddPrimary(-1 * prime_to_int_[it_child->first]);
+        }
+        sets.push_back(tmp_set_c);
+      }
+    }
   } else {
     boost::to_upper(gate);
     std::string msg = "No algorithm defined for " + gate;
@@ -1541,6 +1579,35 @@ std::string FaultTree::CheckGate_(const TopEventPtr& event) {
         boost::to_upper(gate);
         msg << orig_ids_[event->id()] << " : " << gate
             << " gate must have exactly 2 children.\n";
+      }
+    } else if (gate == "inhibit") {
+      if (size != 2) {
+        boost::to_upper(gate);
+        msg << orig_ids_[event->id()] << " : " << gate
+            << " gate must have exactly 2 children.\n";
+      } else {
+        bool conditional_found = false;
+        std::map<std::string, EventPtr> children = event->children();
+        std::map<std::string, EventPtr>::iterator it;
+        for (it = children.begin(); it != children.end(); ++it) {
+          if (primary_events_.count(it->first)) {
+            std::string type = primary_events_[it->first]->type();
+            if (type == "conditional") {
+              if (!conditional_found) {
+                conditional_found = true;
+              } else {
+                boost::to_upper(gate);
+                msg << orig_ids_[event->id()] << " : " << gate
+                    << " gate must have exactly one conditional event.\n";
+              }
+            }
+          }
+        }
+        if (!conditional_found) {
+          boost::to_upper(gate);
+          msg << orig_ids_[event->id()] << " : " << gate
+              << " gate is missing a conditional event.\n";
+        }
       }
     } else if (gate == "not" || gate == "null") {
       if (size != 1) {
