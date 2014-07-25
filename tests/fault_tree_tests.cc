@@ -59,6 +59,14 @@ TEST_F(FaultTreeTest, CheckGate) {
   top->AddChild(B);
   EXPECT_FALSE(CheckGate(top));  // Two children are too much.
 
+  // NULL Gate tests.
+  top = TopEventPtr(new TopEvent("top", "null"));
+  EXPECT_FALSE(CheckGate(top));  // No child.
+  top->AddChild(A);
+  EXPECT_TRUE(CheckGate(top));  // Exactly one child is required.
+  top->AddChild(B);
+  EXPECT_FALSE(CheckGate(top));  // Two children are too much.
+
   // NOR Gate tests.
   top = TopEventPtr(new TopEvent("top", "nor"));
   EXPECT_FALSE(CheckGate(top));  // No child.
@@ -88,6 +96,31 @@ TEST_F(FaultTreeTest, CheckGate) {
   EXPECT_TRUE(CheckGate(top));  // Two children are enough.
   top->AddChild(C);
   EXPECT_FALSE(CheckGate(top));  // More than 2 is not allowed.
+
+  // INHIBIT Gate tests.
+  top = TopEventPtr(new TopEvent("top", "inhibit"));
+  EXPECT_FALSE(CheckGate(top));  // No child.
+  A->type("basic");
+  primary_events().insert(std::make_pair("a", A));
+  top->AddChild(A);
+  EXPECT_FALSE(CheckGate(top));  // One child is not enough.
+  B->type("basic");
+  primary_events().insert(std::make_pair("b", B));
+  top->AddChild(B);
+  EXPECT_FALSE(CheckGate(top));  // Events must be conditional.
+  top->AddChild(C);
+  EXPECT_FALSE(CheckGate(top));  // More than 2 is not allowed.
+  top = TopEventPtr(new TopEvent("top", "inhibit"));  // Re-initialize.
+  C->type("conditional");
+  primary_events().insert(std::make_pair("c", C));
+  top->AddChild(A);  // Basic event.
+  top->AddChild(C);  // Conditional event.
+  EXPECT_TRUE(CheckGate(top));  // Two children with exact combination.
+  A = PrimaryEventPtr(new PrimaryEvent("a", "conditional"));
+  primary_events().clear();
+  primary_events().insert(std::make_pair("a", A));
+  primary_events().insert(std::make_pair("c", C));
+  EXPECT_FALSE(CheckGate(top));  // Wrong combination.
 
   // Some UNKNOWN gate tests.
   top = TopEventPtr(new TopEvent("top", "unknown_gate"));
