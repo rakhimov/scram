@@ -125,6 +125,7 @@ TEST_F(FaultTreeTest, OR_GATE) {
   bool a_found = false;
   bool b_found = false;
   bool c_found = false;
+  bool d_found = false;
   for (it_set = sets.begin(); it_set != sets.end(); ++it_set) {
     if (!(*it_set)->primes().empty()) {
       std::set<int> result = (*it_set)->primes();
@@ -138,9 +139,10 @@ TEST_F(FaultTreeTest, OR_GATE) {
       std::set<int> result = (*it_set)->inters();
       EXPECT_EQ(1, result.size());
       EXPECT_EQ(1, result.count(d_id));
+      d_found = true;
     }
   }
-  EXPECT_EQ(true, a_found && b_found && c_found);
+  EXPECT_EQ(true, a_found && b_found && c_found && d_found);
   // Negative OR gate.
   sets.clear();
   ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));
@@ -183,6 +185,7 @@ TEST_F(FaultTreeTest, AND_GATE) {
   bool a_found = false;
   bool b_found = false;
   bool c_found = false;
+  bool d_found = false;
   for (it_set = sets.begin(); it_set != sets.end(); ++it_set) {
     if (!(*it_set)->primes().empty()) {
       std::set<int> result = (*it_set)->primes();
@@ -196,9 +199,10 @@ TEST_F(FaultTreeTest, AND_GATE) {
       std::set<int> result = (*it_set)->inters();
       EXPECT_EQ(1, result.size());
       EXPECT_EQ(1, result.count(-1 * d_id));
+      d_found = true;
     }
   }
-  EXPECT_EQ(true, a_found && b_found && c_found);
+  EXPECT_EQ(true, a_found && b_found && c_found && d_found);
 }
 
 TEST_F(FaultTreeTest, NOT_GATE) {
@@ -263,6 +267,7 @@ TEST_F(FaultTreeTest, NOR_GATE) {
   bool a_found = false;
   bool b_found = false;
   bool c_found = false;
+  bool d_found = false;
   for (it_set = sets.begin(); it_set != sets.end(); ++it_set) {
     if (!(*it_set)->primes().empty()) {
       std::set<int> result = (*it_set)->primes();
@@ -276,9 +281,10 @@ TEST_F(FaultTreeTest, NOR_GATE) {
       std::set<int> result = (*it_set)->inters();
       EXPECT_EQ(1, result.size());
       EXPECT_EQ(1, result.count(d_id));
+      d_found = true;
     }
   }
-  EXPECT_EQ(true, a_found && b_found && c_found);
+  EXPECT_EQ(true, a_found && b_found && c_found && d_found);
 }
 
 TEST_F(FaultTreeTest, NAND_GATE) {
@@ -311,9 +317,10 @@ TEST_F(FaultTreeTest, NAND_GATE) {
       std::set<int> result = (*it_set)->inters();
       EXPECT_EQ(1, result.size());
       EXPECT_EQ(1, result.count(-1 * d_id));
+      d_found = true;
     }
   }
-  EXPECT_EQ(true, a_found && b_found && c_found);
+  EXPECT_EQ(true, a_found && b_found && c_found && d_found);
   // Negative NAND gate.
   sets.clear();
   ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));
