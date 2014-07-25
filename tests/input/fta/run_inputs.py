@@ -22,6 +22,8 @@ def main():
     # Wrong input files in the current directory
     bad_inputs = [
             "basic_top_event.scramf",
+            "conditional_wrong_type_inter.scramf",
+            "conditional_wrong_type_top.scramf",
             "doubly_defined_intermediate.scramf",
             "doubly_defined_primary_type.scramf",
             "doubly_defined_top.scramf",
