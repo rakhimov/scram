@@ -28,6 +28,8 @@ Currently Low Hanging Fruits
 
 - Improve fault tree generator. *Low*
 
+- Implement Min-Cut-Upper Bound Approximation. *Moderate*
+
 
 Major Enhancements and Capabilities
 ===================================

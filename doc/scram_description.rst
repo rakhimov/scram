@@ -75,11 +75,12 @@ EVENTS
     as a switch of True or False. Provides input to a logic gate.
     May be used to switch off a sub-tree.
 
-#. Conditioning Event :
+#. Conditional Event :
     Defines a specific condition or restriction
-    that apply to any logic gate. Used mostly with Priority AND,
+    that apply to any logic gate. Used mostly with Priority AND and
     Inhibit gates. The alternative name is a Conditional Qualifier.
-    Conditions may be abnormal cases or environment.
+    Conditions may be abnormal cases or environment. The probability
+    of this event might be a conditional probability.
 
 SYMBOLS
 -------
@@ -116,15 +117,17 @@ GATES
     simulated by chaining XOR gates if needed.
 
 #. Inhibit :
+    This gate is a special case of the AND gate.
     Output fault occurs if the single input fault occurs in the
     presense of an enabling condition (the enabling condition is
     represented by a Conditioning Event drawn to the right of the
-    gate.). Some packages restrict input events to only two events.
+    gate.). This gate restricts input events to only two events.
 
 #. Combination/VOTE :
     Output fault occurs if **m** out of the **n** input events
     occurs. The **m** input events need not to occur simultaneously. The output
-    occurs if at least **m** events occur.
+    occurs if at least **m** events occur. **m** is more than 1, and **n**
+    is more than **n**.
 
 #. NOT :
     Output fault occurs if the input event does not occur.

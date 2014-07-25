@@ -13,14 +13,15 @@ fault tree. However, note that this algorithm still assumes independence of
 primary events in the fault tree.
 
 
-Exact Probability Calculation Implementation
+The Exact Probability Calculation Implementation
 ========================================================
 
 The general probability formula for sets is expanded recursively.
 In each iteration, some sets are merged in order to account for common members
-in minimal cut sets. This algorithm is also used for series expansion.
+in minimal cut sets. This algorithm is also used for series expansion, giving
+the Sylvester-Poincaré expansion.
 
-Approximate Probability Calculation Implementation
+The Approximate Probability Calculation Implementation
 ========================================================
 
 Approximate calculations are implemented in order to reduce calculation
@@ -29,6 +30,25 @@ This feature is the default. The default value for series is set to N
 (*number of the sets*) to get all the series included.
 In general, it is impractical to include more than 8 sums, so the suggestion
 is to include between 4 and 8 sums.
+
+The Rare-Event Approximation
+=============================
+Given that probabilities of events are very small value less than 0.1, only the
+first series in the probability equation may be used as a conservative
+approximation; that is, the total probability is the sum of all probabilities
+of minimal cut sets. Ideally, this approximation gives good results for
+independent minimal cut sets with very low probabilities. However, if the cut
+set probabilities are high, the total probability may exceed 1.0.
+
+The Min-Cut-Upper Bound (MCUB) Approximation
+=============================================
+This method calculates the total probability by subtracting the probability
+of all minimal cut sets being successful from 1.0; thus, the total probability
+never exceeds 1.0. Non-independence of the minimal cut sets introduce
+the major discrepancy for this technique. However, the MCUB approximation
+provides non-conservative estimation for non-coherent trees containing
+*NOT* logic. There are other limitations described by Don Wakefield in
+"You Can't Just Build Trees and Call It PSA."
 
 Probability Types
 ========================================================

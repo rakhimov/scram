@@ -15,6 +15,7 @@ Currently Supported Gate Types
 - NAND
 - XOR
 - NULL
+- INHIBIT
 
 Currently Supported Symbols
 ==============================
@@ -31,6 +32,7 @@ Currently Supported Event Types
 - Basic
 - House
 - Undeveloped
+- Conditional
 
 
 The Algorithm to Generate Minimal Cut Sets
