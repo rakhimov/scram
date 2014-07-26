@@ -7,7 +7,8 @@ namespace scram {
 
 TopEvent::TopEvent(std::string id, std::string gate)
     : scram::Event(id),
-      gate_(gate) {}
+      gate_(gate),
+      vote_number_(-1) {}
 
 std::string TopEvent::gate() {
   if (gate_ == "NONE") {
@@ -26,8 +27,34 @@ void TopEvent::gate(std::string gate) {
   gate_ = gate;
 }
 
+int TopEvent::vote_number() {
+  if (vote_number_ == -1) {
+    std::string msg = "Vote number is not set for " + this->id() + " event.";
+    throw scram::ValueError(msg);
+  }
+  return vote_number_;
+}
+
+void TopEvent::vote_number(int vnumber) {
+  if (gate_ != "vote") {
+    // This line calls gate() function which may throw an exception if
+    // the gate of this event is not yet set.
+    std::string msg = "Vote number can only be defined for the VOTE gate. "
+                      "The " + this->id() + " event has " + this->gate() + ".";
+    throw scram::ValueError(msg);
+  } else if (vnumber < 2) {
+    std::string msg = "Vote number cannot be less than 2.";
+    throw scram::ValueError(msg);
+  } else if (vote_number_ != -1) {
+    std::string msg = "Trying to re-assign a vote number for " + this->id() +
+                      " event.";
+    throw scram::ValueError(msg);
+  }  // Children number should be checked outside of this class.
+  vote_number_ = vnumber;
+}
+
 const std::map<std::string,
-      boost::shared_ptr<scram::Event> >& TopEvent::children() {
+               boost::shared_ptr<scram::Event> >& TopEvent::children() {
   if (children_.empty()) {
     std::string msg = this->id() + " event does not have children.";
     throw scram::ValueError(msg);

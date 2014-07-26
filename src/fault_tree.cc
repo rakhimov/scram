@@ -55,6 +55,7 @@ FaultTree::FaultTree(std::string analysis, bool graph_only, bool rare_event,
   gates_.insert("xor");
   gates_.insert("null");
   gates_.insert("inhibit");
+  gates_.insert("vote");
 
   // Add valid primary event types.
   types_.insert("basic");

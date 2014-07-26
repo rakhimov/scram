@@ -30,8 +30,30 @@ TEST(TopEventTest, Gate) {
   // Trying to set the gate again should cause an error.
   EXPECT_THROW(top->gate("and"), ValueError);
   // Requesting the gate should work without errors after setting.
-  EXPECT_NO_THROW(top->gate());
+  ASSERT_NO_THROW(top->gate());
   EXPECT_EQ(top->gate(), "and");
+}
+
+TEST(TopEventTest, VoteNumber) {
+  TopEventPtr top(new TopEvent("top_event"));
+  // No gate has been set, so the request is an error.
+  EXPECT_THROW(top->vote_number(), ValueError);
+  // Setting the wrong AND gate.
+  EXPECT_NO_THROW(top->gate("and"));
+  // Setting a vote number for non-Vote gate is an error.
+  EXPECT_THROW(top->vote_number(2), ValueError);
+  // Resetting to VOTE gate.
+  top = TopEventPtr(new TopEvent("top_event"));
+  EXPECT_NO_THROW(top->gate("vote"));
+  // Illegal vote number.
+  EXPECT_THROW(top->vote_number(-2), ValueError);
+  // Legal vote number.
+  EXPECT_NO_THROW(top->vote_number(2));
+  // Trying to reset the vote number.
+  EXPECT_THROW(top->vote_number(2), ValueError);
+  // Requesting the vote number should succeed.
+  ASSERT_NO_THROW(top->vote_number());
+  EXPECT_EQ(top->vote_number(), 2);
 }
 
 TEST(TopEventTest, Children) {

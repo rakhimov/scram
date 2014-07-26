@@ -38,9 +38,15 @@ class TopEvent : public scram::Event {
   // Sets the gate type.
   virtual void gate(std::string gate);
 
+  // Returns the vote number.
+  virtual int vote_number();
+
+  // Sets the vote number.
+  virtual void vote_number(int vnumber);
+
   // Returns children.
-  virtual const std::map<std::string, boost::shared_ptr<scram::Event> >&
-      children();
+  virtual const std::map<std::string,
+                         boost::shared_ptr<scram::Event> >& children();
 
   // Adds a child into children list.
   virtual void AddChild(const boost::shared_ptr<scram::Event>& child);
@@ -50,6 +56,8 @@ class TopEvent : public scram::Event {
  private:
   // Gate type.
   std::string gate_;
+  // Vote number for the vote gate.
+  int vote_number_;
   // Intermediate and primary events of the top event.
   std::map<std::string, boost::shared_ptr<scram::Event> > children_;
 };
