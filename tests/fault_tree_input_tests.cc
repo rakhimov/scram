@@ -93,6 +93,9 @@ TEST(FaultTreeInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back("./input/fta/non_existent_parent_inter.scramf");
   incorrect_inputs.push_back("./input/fta/unrecognized_parameter.scramf");
   incorrect_inputs.push_back("./input/fta/unrecognized_type.scramf");
+  incorrect_inputs.push_back("./input/fta/vote_no_number.scramf");
+  incorrect_inputs.push_back("./input/fta/vote_not_enough_children.scramf");
+  incorrect_inputs.push_back("./input/fta/vote_string.scramf");
   // Issues with transfer gates.
   incorrect_inputs.push_back("./input/fta/transfer_circular_self_top.scramf");
   incorrect_inputs.push_back("./input/fta/transfer_circular_top.scramf");

@@ -43,6 +43,7 @@ FaultTree::FaultTree(std::string analysis, bool graph_only, bool rare_event,
       parent_(""),
       id_(""),
       type_(""),
+      vote_number_(-1),
       block_started_(false),
       transfer_correct_(false),
       transfer_first_inter_(false) {
@@ -873,6 +874,10 @@ void FaultTree::InterpretArgs_(int nline, std::stringstream& msg,
           msg << "Line " << nline << " : " << "Missing type in this"
               << " block.";
           throw scram::ValidationError(msg.str());
+        } else if (type_ == "vote" && vote_number_ == -1) {
+          msg << "Line " << nline << " : " << "Missing Vote Number in this"
+              << " block.";
+          throw scram::ValidationError(msg.str());
         }
 
         // Special case for sub-tree analysis without a main file.
@@ -1018,7 +1023,7 @@ void FaultTree::InterpretArgs_(int nline, std::stringstream& msg,
 
         try {
           // Add a node with the gathered information.
-          FaultTree::AddNode_(parent_, id_, type_);
+          FaultTree::AddNode_(parent_, id_, type_, vote_number_);
         } catch (scram::ValidationError& err) {
           msg << "Line " << nline << " : " << err.msg();
           throw scram::ValidationError(msg.str());
@@ -1028,6 +1033,7 @@ void FaultTree::InterpretArgs_(int nline, std::stringstream& msg,
         parent_ = "";
         id_ = "";
         type_ = "";
+        vote_number_ = -1;
         block_started_ = false;
 
       } else {
@@ -1066,6 +1072,13 @@ void FaultTree::InterpretArgs_(int nline, std::stringstream& msg,
               << "' gate/event type.";
           throw scram::ValidationError(msg.str());
         }
+      } else if (args[0] == "votenumber" && vote_number_ == -1) {
+        try {
+          vote_number_ = boost::lexical_cast<int>(args[1]);
+        } catch (boost::bad_lexical_cast err) {
+          msg << "Line " << nline << " : " << "Incorrect vote number input.";
+          throw scram::ValidationError(msg.str());
+        }
       } else {
         // There may go other parameters for FTA.
         // For now, just throw an error.
@@ -1085,7 +1098,7 @@ void FaultTree::InterpretArgs_(int nline, std::stringstream& msg,
 }
 
 void FaultTree::AddNode_(std::string parent, std::string id,
-                         std::string type) {
+                         std::string type, int vote_number) {
   // Check if this is a transfer.
   if (type == "transferin") {
     if (parent == "none") {
@@ -1149,6 +1162,7 @@ void FaultTree::AddNode_(std::string parent, std::string id,
       }
 
       top_event_->gate(type);
+      if (type == "vote") top_event_->vote_number(vote_number);
 
     } else {
       // Another top event is detected.
@@ -1227,6 +1241,7 @@ void FaultTree::AddNode_(std::string parent, std::string id,
     }
 
     i_event -> gate(type);
+    if (type == "vote") i_event->vote_number(vote_number);
   }
 }
 
@@ -1615,6 +1630,13 @@ std::string FaultTree::CheckGate_(const TopEventPtr& event) {
         boost::to_upper(gate);
         msg << orig_ids_[event->id()] << " : " << gate
             << " gate must have exactly one child.";
+      }
+    } else if (gate == "vote") {
+      if (size <= event->vote_number()) {
+        boost::to_upper(gate);
+        msg << orig_ids_[event->id()] << " : " << gate
+            << " gate must have more children that its vote number "
+            << event->vote_number() << ".";
       }
     } else {
       boost::to_upper(gate);

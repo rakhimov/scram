@@ -75,7 +75,8 @@ class FaultTree : public RiskAnalysis {
                       std::string suffix = "");
 
   // Adds node and updates databases.
-  void AddNode_(std::string parent, std::string id, std::string type);
+  void AddNode_(std::string parent, std::string id, std::string type,
+                int vote_number = -1);
 
   // Adds probability to a primary event for p-model.
   void AddProb_(std::string id, double p);
@@ -256,6 +257,7 @@ class FaultTree : public RiskAnalysis {
   std::string parent_;
   std::string id_;
   std::string type_;
+  int vote_number_;
   bool block_started_;
 
   // Indicate if TransferOut is initiated correctly.

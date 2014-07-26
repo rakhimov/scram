@@ -1,0 +1,38 @@
+# This is a test input file for VOTE gate.
+# The description of the VOTE gate in this tree has fewer children than
+# it is required.
+
+################# Start of an Input File ########################
+{
+    parent      None
+    id          TopEvent
+    type        AND
+}
+
+# One primary event for the top.
+{
+    parent      TopEvent
+    id          A
+    type        Basic
+}
+# One intermediate event for the top.
+{
+    parent      TopEvent
+    id          TrainOne
+    type        VOTE
+    votenumber  2
+}
+# ERROR: Only two children of Train One. At least three are needed.
+{
+    parent      TrainOne
+    id          B
+    type        Basic
+}
+
+{
+    parent      TrainOne
+    id          C
+    type        Basic
+}
+
+################# End of an Input File ########################

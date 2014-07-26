@@ -72,6 +72,9 @@ def main():
             "transfer_second_transferout_sub.scramf",
             "transfer_extra_second_node_sub.scramf",
             "transfer_illegal_reference_sub.scramf",
+            "vote_no_number.scramf",
+            "vote_not_enough_children.scramf",
+            "vote_string.scramf",
             ]
 
     # Wrong probability files in the current directory
