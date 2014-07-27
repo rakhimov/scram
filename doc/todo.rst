@@ -16,8 +16,6 @@ Currently Low Hanging Fruits
 
 - Minimal cut set input file as an alternative to a tree file. *Moderate*
 
-- New gates, event types, and probability types. *High*
-
 - Monte Carlo Simulations. *Moderate*
 
     * Uncertainty analysis
@@ -35,6 +33,8 @@ Major Enhancements and Capabilities
 ===================================
 
 - Incorporation of an event tree analysis. *Moderate*
+
+- Dynamic Fault Tree Analysis. *Moderate*
 
 - Incorporation of CCF. *High*
 
