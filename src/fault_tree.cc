@@ -1459,11 +1459,19 @@ void FaultTree::ExpandSets_(int inter_index,
     assert(events_children.size() >= vote_number);
     std::set< std::set<int> > all_sets;
     int size = events_children.size();
+
     for (int j = 0; j < size; ++j) {
       std::set<int> set;
       set.insert(events_children[j]);
       all_sets.insert(set);
     }
+
+    int mult = 1;
+    if (inter_index < 0) {
+      mult = -1;
+      vote_number = size - vote_number + 1;
+    }
+
     for (int i = 1; i < vote_number; ++i) {
       std::set< std::set<int> > tmp_sets;
       std::set< std::set<int> >::iterator it_sets;
@@ -1478,19 +1486,21 @@ void FaultTree::ExpandSets_(int inter_index,
       }
       all_sets = tmp_sets;
     }
+
     std::set< std::set<int> >::iterator it_sets;
     for (it_sets = all_sets.begin(); it_sets != all_sets.end(); ++it_sets) {
       SupersetPtr tmp_set_c(new scram::Superset());
       std::set<int>::iterator it;
       for (it = it_sets->begin(); it != it_sets->end(); ++it) {
         if (*it > top_event_index_) {
-          tmp_set_c->AddInter(*it);
+          tmp_set_c->AddInter(*it * mult);
         } else {
-          tmp_set_c->AddPrimary(*it);
+          tmp_set_c->AddPrimary(*it * mult);
         }
       }
       sets.push_back(tmp_set_c);
     }
+
   } else {
     boost::to_upper(gate);
     std::string msg = "No algorithm defined for " + gate;
