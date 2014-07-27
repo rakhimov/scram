@@ -1355,127 +1355,59 @@ void FaultTree::GraphNode_(TopEventPtr t, std::map<std::string,
 void FaultTree::ExpandSets_(int inter_index,
                             std::vector< SupersetPtr >& sets) {
   // Populate intermediate and primary events of the top.
-  std::map<std::string, EventPtr> events_children =
+  std::map<std::string, EventPtr> children =
       int_to_inter_[std::abs(inter_index)]->children();
 
   std::string gate = int_to_inter_[std::abs(inter_index)]->gate();
 
   // Iterator for children of top and intermediate events.
-  std::map<std::string, EventPtr>::iterator it_child;
+  std::map<std::string, EventPtr>::iterator it_children;
+  std::vector<int> events_children;
+  std::vector<int>::iterator it_child;
+
+  for (it_children = children.begin();
+       it_children != children.end(); ++it_children) {
+    if (inter_events_.count(it_children->first)) {
+      events_children.push_back(inter_to_int_[it_children->first]);
+    } else {
+      events_children.push_back(prime_to_int_[it_children->first]);
+    }
+  }
 
   // Type dependent logic.
   if (gate == "or") {
     assert(events_children.size() > 1);
     if (inter_index > 0) {
-      for (it_child = events_children.begin();
-           it_child != events_children.end(); ++it_child) {
-        SupersetPtr tmp_set_c(new scram::Superset());
-        if (inter_events_.count(it_child->first)) {
-          tmp_set_c->AddInter(inter_to_int_[it_child->first]);
-        } else {
-          tmp_set_c->AddPrimary(prime_to_int_[it_child->first]);
-        }
-        sets.push_back(tmp_set_c);
-      }
+      FaultTree::SetOr_(events_children, sets);
     } else {
-      SupersetPtr tmp_set_c(new scram::Superset());
-      for (it_child = events_children.begin();
-           it_child != events_children.end(); ++it_child) {
-        if (inter_events_.count(it_child->first)) {
-          tmp_set_c->AddInter(-1 * inter_to_int_[it_child->first]);
-        } else {
-          tmp_set_c->AddPrimary(-1 * prime_to_int_[it_child->first]);
-        }
-      }
-      sets.push_back(tmp_set_c);
+      FaultTree::SetAnd_(events_children, sets, -1);
     }
   } else if (gate == "and") {
     assert(events_children.size() > 1);
     if (inter_index > 0) {
-      SupersetPtr tmp_set_c(new scram::Superset());
-      for (it_child = events_children.begin();
-           it_child != events_children.end(); ++it_child) {
-        if (inter_events_.count(it_child->first)) {
-          tmp_set_c->AddInter(inter_to_int_[it_child->first]);
-        } else {
-          tmp_set_c->AddPrimary(prime_to_int_[it_child->first]);
-        }
-      }
-      sets.push_back(tmp_set_c);
+      FaultTree::SetAnd_(events_children, sets);
     } else {
-      for (it_child = events_children.begin();
-           it_child != events_children.end(); ++it_child) {
-        SupersetPtr tmp_set_c(new scram::Superset());
-        if (inter_events_.count(it_child->first)) {
-          tmp_set_c->AddInter(-1 * inter_to_int_[it_child->first]);
-        } else {
-          tmp_set_c->AddPrimary(-1 * prime_to_int_[it_child->first]);
-        }
-        sets.push_back(tmp_set_c);
-      }
+      FaultTree::SetOr_(events_children, sets, -1);
     }
   } else if (gate == "not") {
     int mult = 1;
     if (inter_index < 0) mult = -1;
     // Only one child is expected.
     assert(events_children.size() == 1);
-    SupersetPtr tmp_set_c(new scram::Superset());
-    it_child = events_children.begin();
-    if (inter_events_.count(it_child->first)) {
-      tmp_set_c->AddInter(-1 * mult * inter_to_int_[it_child->first]);
-    } else {
-      tmp_set_c->AddPrimary(-1 * mult * prime_to_int_[it_child->first]);
-    }
-    sets.push_back(tmp_set_c);
+    FaultTree::SetAnd_(events_children, sets, -1 * mult);
   } else if (gate == "nor") {
     assert(events_children.size() > 1);
     if (inter_index > 0) {
-      SupersetPtr tmp_set_c(new scram::Superset());
-      for (it_child = events_children.begin();
-           it_child != events_children.end(); ++it_child) {
-        if (inter_events_.count(it_child->first)) {
-          tmp_set_c->AddInter(-1 * inter_to_int_[it_child->first]);
-        } else {
-          tmp_set_c->AddPrimary(-1 * prime_to_int_[it_child->first]);
-        }
-      }
-      sets.push_back(tmp_set_c);
+      FaultTree::SetAnd_(events_children, sets, -1);
     } else {
-      for (it_child = events_children.begin();
-           it_child != events_children.end(); ++it_child) {
-        SupersetPtr tmp_set_c(new scram::Superset());
-        if (inter_events_.count(it_child->first)) {
-          tmp_set_c->AddInter(inter_to_int_[it_child->first]);
-        } else {
-          tmp_set_c->AddPrimary(prime_to_int_[it_child->first]);
-        }
-        sets.push_back(tmp_set_c);
-      }
+      FaultTree::SetOr_(events_children, sets);
     }
   } else if (gate == "nand") {
     assert(events_children.size() > 1);
     if (inter_index > 0) {
-      for (it_child = events_children.begin();
-           it_child != events_children.end(); ++it_child) {
-        SupersetPtr tmp_set_c(new scram::Superset());
-        if (inter_events_.count(it_child->first)) {
-          tmp_set_c->AddInter(-1 * inter_to_int_[it_child->first]);
-        } else {
-          tmp_set_c->AddPrimary(-1 * prime_to_int_[it_child->first]);
-        }
-        sets.push_back(tmp_set_c);
-      }
+      FaultTree::SetOr_(events_children, sets, -1);
     } else {
-      SupersetPtr tmp_set_c(new scram::Superset());
-      for (it_child = events_children.begin();
-           it_child != events_children.end(); ++it_child) {
-        if (inter_events_.count(it_child->first)) {
-          tmp_set_c->AddInter(inter_to_int_[it_child->first]);
-        } else {
-          tmp_set_c->AddPrimary(prime_to_int_[it_child->first]);
-        }
-      }
-      sets.push_back(tmp_set_c);
+      FaultTree::SetAnd_(events_children, sets);
     }
   } else if (gate == "xor") {
     assert(events_children.size() == 2);
@@ -1485,24 +1417,24 @@ void FaultTree::ExpandSets_(int inter_index,
       int j = 1;
       for (it_child = events_children.begin();
            it_child != events_children.end(); ++it_child) {
-        if (inter_events_.count(it_child->first)) {
-          tmp_set_one->AddInter(j * inter_to_int_[it_child->first]);
-          tmp_set_two->AddInter(-1 * j * inter_to_int_[it_child->first]);
+        if (*it_child > top_event_index_) {
+          tmp_set_one->AddInter(j * (*it_child));
+          tmp_set_two->AddInter(-1 * j * (*it_child));
         } else {
-          tmp_set_one->AddPrimary(j * prime_to_int_[it_child->first]);
-          tmp_set_two->AddPrimary(-1 * j * prime_to_int_[it_child->first]);
+          tmp_set_one->AddPrimary(j * (*it_child));
+          tmp_set_two->AddPrimary(-1 * j * (*it_child));
         }
         j = -1;
       }
     } else {
       for (it_child = events_children.begin();
            it_child != events_children.end(); ++it_child) {
-        if (inter_events_.count(it_child->first)) {
-          tmp_set_one->AddInter(inter_to_int_[it_child->first]);
-          tmp_set_two->AddInter(-1 * inter_to_int_[it_child->first]);
+        if (*it_child > top_event_index_) {
+          tmp_set_one->AddInter(*it_child);
+          tmp_set_two->AddInter(-1 * (*it_child));
         } else {
-          tmp_set_one->AddPrimary(prime_to_int_[it_child->first]);
-          tmp_set_two->AddPrimary(-1 * prime_to_int_[it_child->first]);
+          tmp_set_one->AddPrimary(*it_child);
+          tmp_set_two->AddPrimary(-1 * (*it_child));
         }
       }
     }
@@ -1513,57 +1445,23 @@ void FaultTree::ExpandSets_(int inter_index,
     if (inter_index < 0) mult = -1;
     // Only one child is expected.
     assert(events_children.size() == 1);
-    SupersetPtr tmp_set_c(new scram::Superset());
-    it_child = events_children.begin();
-    if (inter_events_.count(it_child->first)) {
-      tmp_set_c->AddInter(mult * inter_to_int_[it_child->first]);
-    } else {
-      tmp_set_c->AddPrimary(mult * prime_to_int_[it_child->first]);
-    }
-    sets.push_back(tmp_set_c);
+    FaultTree::SetAnd_(events_children, sets, mult);
   } else if (gate == "inhibit") {
     assert(events_children.size() == 2);
     if (inter_index > 0) {
-      SupersetPtr tmp_set_c(new scram::Superset());
-      for (it_child = events_children.begin();
-           it_child != events_children.end(); ++it_child) {
-        if (inter_events_.count(it_child->first)) {
-          tmp_set_c->AddInter(inter_to_int_[it_child->first]);
-        } else {
-          tmp_set_c->AddPrimary(prime_to_int_[it_child->first]);
-        }
-      }
-      sets.push_back(tmp_set_c);
+      FaultTree::SetAnd_(events_children, sets);
     } else {
-      for (it_child = events_children.begin();
-           it_child != events_children.end(); ++it_child) {
-        SupersetPtr tmp_set_c(new scram::Superset());
-        if (inter_events_.count(it_child->first)) {
-          tmp_set_c->AddInter(-1 * inter_to_int_[it_child->first]);
-        } else {
-          tmp_set_c->AddPrimary(-1 * prime_to_int_[it_child->first]);
-        }
-        sets.push_back(tmp_set_c);
-      }
+      FaultTree::SetOr_(events_children, sets, -1);
     }
   } else if (gate == "vote") {
     int vote_number = int_to_inter_[std::abs(inter_index)]->vote_number();
     assert(vote_number > 1);
     assert(events_children.size() >= vote_number);
-    std::vector<int> ch;
-    for (it_child = events_children.begin();
-         it_child != events_children.end(); ++it_child) {
-      if (inter_events_.count(it_child->first)) {
-        ch.push_back(inter_to_int_[it_child->first]);
-      } else {
-        ch.push_back(prime_to_int_[it_child->first]);
-      }
-    }
     std::set< std::set<int> > all_sets;
-    int size = ch.size();
+    int size = events_children.size();
     for (int j = 0; j < size; ++j) {
       std::set<int> set;
-      set.insert(ch[j]);
+      set.insert(events_children[j]);
       all_sets.insert(set);
     }
     for (int i = 1; i < vote_number; ++i) {
@@ -1572,7 +1470,7 @@ void FaultTree::ExpandSets_(int inter_index,
       for (it_sets = all_sets.begin(); it_sets != all_sets.end(); ++it_sets) {
         for (int j = 0; j < size; ++j) {
           std::set<int> set = *it_sets;
-          set.insert(ch[j]);
+          set.insert(events_children[j]);
           if (set.size() > i) {
             tmp_sets.insert(set);
           }
@@ -1600,8 +1498,35 @@ void FaultTree::ExpandSets_(int inter_index,
   }
 }
 
-void FaultTree::SetAnd_() {}
-void FaultTree::SetOr_() {}
+void FaultTree::SetOr_(std::vector<int>& events_children,
+                       std::vector<SupersetPtr>& sets, int mult) {
+  std::vector<int>::iterator it_child;
+  for (it_child = events_children.begin();
+       it_child != events_children.end(); ++it_child) {
+    SupersetPtr tmp_set_c(new scram::Superset());
+    if (*it_child > top_event_index_) {
+      tmp_set_c->AddInter(*it_child * mult);
+    } else {
+      tmp_set_c->AddPrimary(*it_child * mult);
+    }
+    sets.push_back(tmp_set_c);
+  }
+}
+
+void FaultTree::SetAnd_(std::vector<int>& events_children,
+                        std::vector<SupersetPtr>& sets, int mult) {
+  SupersetPtr tmp_set_c(new scram::Superset());
+  std::vector<int>::iterator it_child;
+  for (it_child = events_children.begin();
+       it_child != events_children.end(); ++it_child) {
+    if (*it_child > top_event_index_) {
+      tmp_set_c->AddInter(*it_child * mult);
+    } else {
+      tmp_set_c->AddPrimary(*it_child * mult);
+    }
+  }
+  sets.push_back(tmp_set_c);
+}
 
 std::string FaultTree::CheckAllGates_() {
   // Handle the special case when only one node TransferIn tree is graphed.
