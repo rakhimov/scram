@@ -107,6 +107,12 @@ class FaultTree : public RiskAnalysis {
   std::string PrimariesNoProb_();
 
   // -------------------- Algorithm for Cut Sets and Probabilities -----------
+  // Expands sets for OR operator.
+  void SetOr_();
+
+  // Expands sets for AND operator.
+  void SetAnd_();
+
   // Calculates a probability of a set of minimal cut sets, which are in OR
   // relationship with each other. This function is a brute force probability
   // calculation without rare event approximations.

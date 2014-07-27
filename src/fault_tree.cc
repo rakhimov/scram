@@ -1546,12 +1546,62 @@ void FaultTree::ExpandSets_(int inter_index,
         sets.push_back(tmp_set_c);
       }
     }
+  } else if (gate == "vote") {
+    int vote_number = int_to_inter_[std::abs(inter_index)]->vote_number();
+    assert(vote_number > 1);
+    assert(events_children.size() >= vote_number);
+    std::vector<int> ch;
+    for (it_child = events_children.begin();
+         it_child != events_children.end(); ++it_child) {
+      if (inter_events_.count(it_child->first)) {
+        ch.push_back(inter_to_int_[it_child->first]);
+      } else {
+        ch.push_back(prime_to_int_[it_child->first]);
+      }
+    }
+    std::set< std::set<int> > all_sets;
+    int size = ch.size();
+    for (int j = 0; j < size; ++j) {
+      std::set<int> set;
+      set.insert(ch[j]);
+      all_sets.insert(set);
+    }
+    for (int i = 1; i < vote_number; ++i) {
+      std::set< std::set<int> > tmp_sets;
+      std::set< std::set<int> >::iterator it_sets;
+      for (it_sets = all_sets.begin(); it_sets != all_sets.end(); ++it_sets) {
+        for (int j = 0; j < size; ++j) {
+          std::set<int> set = *it_sets;
+          set.insert(ch[j]);
+          if (set.size() > i) {
+            tmp_sets.insert(set);
+          }
+        }
+      }
+      all_sets = tmp_sets;
+    }
+    std::set< std::set<int> >::iterator it_sets;
+    for (it_sets = all_sets.begin(); it_sets != all_sets.end(); ++it_sets) {
+      SupersetPtr tmp_set_c(new scram::Superset());
+      std::set<int>::iterator it;
+      for (it = it_sets->begin(); it != it_sets->end(); ++it) {
+        if (*it > top_event_index_) {
+          tmp_set_c->AddInter(*it);
+        } else {
+          tmp_set_c->AddPrimary(*it);
+        }
+      }
+      sets.push_back(tmp_set_c);
+    }
   } else {
     boost::to_upper(gate);
     std::string msg = "No algorithm defined for " + gate;
     throw scram::ValueError(msg);
   }
 }
+
+void FaultTree::SetAnd_() {}
+void FaultTree::SetOr_() {}
 
 std::string FaultTree::CheckAllGates_() {
   // Handle the special case when only one node TransferIn tree is graphed.

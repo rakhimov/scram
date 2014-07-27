@@ -497,6 +497,71 @@ TEST_F(FaultTreeTest, INHIBIT_GATE) {
   EXPECT_EQ(true, a_found && d_found);
 }
 
+TEST_F(FaultTreeTest, VOTE_GATE) {
+  std::vector<SupersetPtr> sets;
+  std::vector<SupersetPtr>::iterator it_set;
+
+  // Testing for VOTE gate.
+  SetUpGate("vote");
+  inter->AddChild(A);
+  inter->AddChild(B);
+  inter->AddChild(C);
+  inter->AddChild(D);
+  inter->vote_number(3);
+  ASSERT_NO_THROW(ExpandSets(inter_id, sets));
+  EXPECT_EQ(4, sets.size());
+  bool a_found = false;
+  bool b_found = false;
+  bool c_found = false;
+  bool d_found = false;
+  std::set< std::set<int> > output;
+  std::set<int> mcs;
+  for (it_set = sets.begin(); it_set != sets.end(); ++it_set) {
+    mcs.insert((*it_set)->primes().begin(), (*it_set)->primes().end());
+    mcs.insert((*it_set)->inters().begin(), (*it_set)->inters().end());
+    output.insert(mcs);
+    mcs.clear();
+  }
+  std::set< std::set<int> > exp;
+  mcs.clear();
+  mcs.insert(a_id);
+  mcs.insert(b_id);
+  mcs.insert(c_id);
+  exp.insert(mcs);
+  mcs.clear();
+  mcs.insert(a_id);
+  mcs.insert(b_id);
+  mcs.insert(d_id);
+  exp.insert(mcs);
+  mcs.clear();
+  mcs.insert(a_id);
+  mcs.insert(c_id);
+  mcs.insert(d_id);
+  exp.insert(mcs);
+  mcs.clear();
+  mcs.insert(b_id);
+  mcs.insert(c_id);
+  mcs.insert(d_id);
+  exp.insert(mcs);
+  mcs.clear();
+
+  EXPECT_EQ(exp, output);
+  // Negative VOTE gate.
+  /*
+  sets.clear();
+  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));
+  EXPECT_EQ(1, sets.size());
+  result_set = (*sets.begin())->primes();
+  EXPECT_EQ(3, result_set.size());
+  EXPECT_EQ(1, result_set.count(-1 * a_id));
+  EXPECT_EQ(1, result_set.count(-1 * b_id));
+  EXPECT_EQ(1, result_set.count(-1 * c_id));
+  result_set = (*sets.begin())->inters();
+  EXPECT_EQ(1, result_set.size());
+  EXPECT_EQ(1, result_set.count(-1 * d_id));
+  */
+}
+
 TEST_F(FaultTreeTest, ProbAndInt) {
   std::set<int> min_cut_set;
 
