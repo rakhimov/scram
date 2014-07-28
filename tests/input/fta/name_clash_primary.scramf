@@ -1,0 +1,53 @@
+# This input file has a repetition of an intermediate event by a primary
+# event.
+
+################# Start of an Input File ########################
+# The top event: One out of two success scenario.
+{
+    parent      None
+    id          TopEvent
+    type        AND
+}
+
+# Train One
+{
+    parent      TopEvent
+    id          TrainOne
+    type        OR
+}
+
+# Valves and Pumps of Train One
+{
+    parent      TrainOne
+    id          ValveOne
+    type        Basic
+}
+
+{
+    parent      TrainOne
+    id          PumpOne
+    type        Basic
+}
+
+# Train Two
+{
+    parent      TopEvent
+    id          TrainTwo
+    type        OR
+}
+
+# Valves and Pumps of Train Two
+{
+    parent      TrainTwo
+    id          ValveTwo
+    type        Basic
+}
+
+{
+    parent      TrainTwo
+
+    # ERROR: This primary event repeats the name of an intermediate event.
+    id          TrainOne
+    type        Basic
+}
+################# End of an Input File ########################

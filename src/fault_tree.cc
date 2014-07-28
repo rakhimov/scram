@@ -32,6 +32,7 @@ FaultTree::FaultTree(std::string analysis, bool graph_only, bool rare_event,
       nsums_(nsums),
       warnings_(""),
       top_event_id_(""),
+      top_event_index_(-1),
       top_detected_(false),
       is_main_(true),
       sub_tree_analysis_(false),
@@ -1181,6 +1182,14 @@ void FaultTree::AddNode_(std::string parent, std::string id,
           << " with a different type.";
       throw scram::ValidationError(msg.str());
     }
+    // Detect name clashes.
+    if (id == top_event_id_ || inter_events_.count(id)) {
+      std::stringstream msg;
+      msg << "The id " << orig_ids_[id]
+          << " is already assigned to the top or intermediate event.";
+      throw scram::ValidationError(msg.str());
+    }
+
     PrimaryEventPtr p_event(new PrimaryEvent(id, type));
     if (parent == top_event_id_) {
       p_event->AddParent(top_event_);
@@ -1217,6 +1226,13 @@ void FaultTree::AddNode_(std::string parent, std::string id,
       // Doubly defined intermediate event.
       std::stringstream msg;
       msg << orig_ids_[id] << " intermediate event is doubly defined.";
+      throw scram::ValidationError(msg.str());
+    }
+    // Detect name clashes.
+    if (id == top_event_id_ || primary_events_.count(id)) {
+      std::stringstream msg;
+      msg << "The id " << orig_ids_[id]
+          << " is already assigned to the top or primary event.";
       throw scram::ValidationError(msg.str());
     }
 
