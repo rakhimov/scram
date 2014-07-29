@@ -1,4 +1,7 @@
 #include "fault_tree_tests.h"
+
+#include <cmath>
+
 #include "superset.h"
 
 using namespace scram;
@@ -952,6 +955,14 @@ TEST_F(FaultTreeTest, AnalyzeDefault) {
   ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(fta->Analyze());
   EXPECT_DOUBLE_EQ(1.2, p_total());
+
+  // Probability calculations with the MCUB approximation.
+  delete fta;  // Re-initializing.
+  fta = new FaultTree("default", false, "mcub");
+  ASSERT_NO_THROW(fta->ProcessInput(tree_input));
+  ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
+  ASSERT_NO_THROW(fta->Analyze());
+  EXPECT_DOUBLE_EQ(0.766144, p_total());
 }
 
 // Test Monte Carlo Analysis
