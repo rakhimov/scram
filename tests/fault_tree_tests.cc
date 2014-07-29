@@ -823,6 +823,18 @@ TEST_F(FaultTreeTest, MProbOr) {
 }
 // ----------------------------------------------------------------------
 // ---------------------- Test Public Functions --------------------------
+// Invalid options for the constructor.
+TEST_F(FaultTreeTest, Constructor) {
+  // Incorrect analysis type.
+  ASSERT_THROW(new FaultTree("analysis", false), ValueError);
+  // Incorrect approximation argument.
+  ASSERT_THROW(new FaultTree("default", false, "approx"), ValueError);
+  // Incorrect limit order for minmal cut sets.
+  ASSERT_THROW(new FaultTree("default", false, "no", -1), ValueError);
+  // Incorrect number of series in the probability equation.
+  ASSERT_THROW(new FaultTree("default", false, "no", 1, -1), ValueError);
+}
+
 // Test Input Processing
 // Note that there are tests specificly for correct and incorrect inputs
 // in fault_tree_input_tests.cc, so this test only concerned with actual changes
