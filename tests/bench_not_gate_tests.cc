@@ -117,7 +117,7 @@ TEST_F(FaultTreeTest, A_OR_NOT_AB) {
 // [A OR NOT B] FTA MC
 TEST_F(FaultTreeTest, MC_A_OR_NOT_B) {
   delete fta;
-  fta = new FaultTree("fta-mc", false);
+  fta = new FaultTree("mc", false);
   std::string tree_input = "./input/benchmark/a_or_not_b.scramf";
   std::string prob_input = "./input/benchmark/abc.scramp";
   std::set< std::set<int> > p_terms;

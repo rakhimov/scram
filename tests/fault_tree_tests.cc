@@ -257,7 +257,7 @@ TEST_F(FaultTreeTest, NOT_GATE) {
 
   // Testing for NOT gate with a intermediate event child.
   delete fta;
-  fta = new FaultTree("fta-default", false);
+  fta = new FaultTree("default", false);
   SetUpGate("not");
   inter->AddChild(D);
   sets.clear();
@@ -443,7 +443,7 @@ TEST_F(FaultTreeTest, NULL_GATE) {
 
   // Testing for NULL gate with a intermediate event child.
   delete fta;
-  fta = new FaultTree("fta-default", false);
+  fta = new FaultTree("default", false);
   SetUpGate("null");
   inter->AddChild(D);
   sets.clear();
@@ -890,7 +890,7 @@ TEST_F(FaultTreeTest, GraphingInstructions) {
   std::vector<std::string>::iterator it;
   for (it = tree_input.begin(); it != tree_input.end(); ++it) {
     delete fta;
-    fta = new FaultTree("fta-default", true);
+    fta = new FaultTree("default", true);
     ASSERT_THROW(fta->GraphingInstructions(), Error);
     ASSERT_NO_THROW(fta->ProcessInput(*it));
     ASSERT_NO_THROW(fta->GraphingInstructions());
@@ -898,7 +898,7 @@ TEST_F(FaultTreeTest, GraphingInstructions) {
 
   // Handle an exception graphing case with one TransferIn only.
   std::string special_case = "./input/fta/transfer_graphing_exception.scramf";
-  fta = new FaultTree("fta-default", true);
+  fta = new FaultTree("default", true);
   ASSERT_NO_THROW(fta->ProcessInput(special_case));
   ASSERT_THROW(fta->GraphingInstructions(), ValidationError);
 }
@@ -930,7 +930,7 @@ TEST_F(FaultTreeTest, AnalyzeDefault) {
 
   // Probability calculations.
   delete fta;  // Re-initializing.
-  fta = new FaultTree("fta-default", false);
+  fta = new FaultTree("default", false);
   ASSERT_NO_THROW(fta->ProcessInput(tree_input));
   ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(fta->Analyze());
@@ -947,7 +947,7 @@ TEST_F(FaultTreeTest, AnalyzeDefault) {
 
   // Probability calculations with the rare event approximation.
   delete fta;  // Re-initializing.
-  fta = new FaultTree("fta-default", false, true);
+  fta = new FaultTree("default", false, "rare");
   ASSERT_NO_THROW(fta->ProcessInput(tree_input));
   ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(fta->Analyze());
@@ -957,7 +957,7 @@ TEST_F(FaultTreeTest, AnalyzeDefault) {
 // Test Monte Carlo Analysis
 TEST_F(FaultTreeTest, AnalyzeMC) {
   delete fta;  // Re-initializing.
-  fta = new FaultTree("fta-mc", false);
+  fta = new FaultTree("mc", false);
   std::string tree_input = "./input/fta/correct_tree_input.scramf";
   ASSERT_THROW(fta->Analyze(), Error);  // Calling without a tree initialized.
   ASSERT_NO_THROW(fta->ProcessInput(tree_input));
@@ -976,7 +976,7 @@ TEST_F(FaultTreeTest, Report) {
 
   // Generate warning due to rare event approximation.
   delete fta;
-  fta = new FaultTree(tree_input, false, true);
+  fta = new FaultTree("default", false, "rare");
   ASSERT_NO_THROW(fta->ProcessInput(tree_input));
   ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
   ASSERT_THROW(fta->Report("/dev/null"), Error);  // Calling before analysis.

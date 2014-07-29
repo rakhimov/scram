@@ -32,7 +32,7 @@ class FaultTree : public RiskAnalysis {
   friend class ::FaultTreeTest;
 
  public:
-  FaultTree(std::string analysis, bool graph_only,  bool rare_event = false,
+  FaultTree(std::string analysis, bool graph_only, std::string approx = "no",
             int limit_order = 20, int nsums = 1000000);
 
   // Reads input file with the structure of the Fault tree.
@@ -179,8 +179,8 @@ class FaultTree : public RiskAnalysis {
   // Request for graphing instructions only.
   bool graph_only_;
 
-  // Rare event approximation.
-  bool rare_event_;
+  // Approximations for probability calculations.
+  std::string approx_;
 
   // Input file path.
   std::string input_file_;

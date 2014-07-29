@@ -18,7 +18,7 @@ typedef boost::shared_ptr<Superset> SupersetPtr;
 class FaultTreeTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
-    fta = new FaultTree("fta-default", false);
+    fta = new FaultTree("default", false);
   }
 
   virtual void TearDown() {

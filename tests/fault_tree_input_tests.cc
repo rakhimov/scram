@@ -23,7 +23,7 @@ TEST(FaultTreeInputTest, CorrectFTAInputs) {
 
   std::vector<std::string>::iterator it;
   for (it = correct_inputs.begin(); it != correct_inputs.end(); ++it) {
-    ran = new FaultTree("fta-default", false);
+    ran = new FaultTree("default", false);
     EXPECT_NO_THROW(ran->ProcessInput(*it)) << " Filename: " << *it;
     delete ran;
   }
@@ -32,7 +32,7 @@ TEST(FaultTreeInputTest, CorrectFTAInputs) {
   // Transfer input file path without current dir indicator "./"
   std::string clean_name = "transfer_correct_top.scramf";
   ASSERT_EQ(0, chdir("./input/fta/"));
-  ran = new FaultTree("fta-default", false);
+  ran = new FaultTree("default", false);
   EXPECT_NO_THROW(ran->ProcessInput(clean_name));
   ASSERT_EQ(0, chdir("../../"));  // Setting back the directory.
   delete ran;
@@ -44,13 +44,13 @@ TEST(FaultTreeInputTest, CorrectFTAProbability) {
   std::string prob_correct = "./input/fta/correct_prob_input.scramp";
   std::string lambda_correct = "./input/fta/correct_lambda_prob.scramp";
 
-  RiskAnalysis* ran = new FaultTree("fta-default", false);
+  RiskAnalysis* ran = new FaultTree("default", false);
   EXPECT_THROW(ran->PopulateProbabilities(prob_correct), Error);
   EXPECT_NO_THROW(ran->ProcessInput(input_correct));  // Create the fault tree.
   EXPECT_NO_THROW(ran->PopulateProbabilities(prob_correct));
   delete ran;
 
-  ran = new FaultTree("fta-default", false);
+  ran = new FaultTree("default", false);
   EXPECT_THROW(ran->PopulateProbabilities(prob_correct), Error);
   EXPECT_NO_THROW(ran->ProcessInput(input_correct));  // Create the fault tree.
   EXPECT_NO_THROW(ran->PopulateProbabilities(lambda_correct));
@@ -130,14 +130,14 @@ TEST(FaultTreeInputTest, IncorrectFTAInputs) {
 
   std::vector<std::string>::iterator it;
   for (it = ioerror_inputs.begin(); it != ioerror_inputs.end(); ++it) {
-    ran = new FaultTree("fta-default", false);
+    ran = new FaultTree("default", false);
     EXPECT_THROW(ran->ProcessInput(*it), scram::IOError)
         << " Filename: " << *it;
     delete ran;
   }
 
   for (it = incorrect_inputs.begin(); it != incorrect_inputs.end(); ++it) {
-    ran = new FaultTree("fta-default", false);
+    ran = new FaultTree("default", false);
     EXPECT_THROW(ran->ProcessInput(*it), scram::ValidationError)
         << " Filename: " << *it;
     delete ran;
@@ -173,7 +173,7 @@ TEST(FaultTreeInputTest, IncorrectFTAProbability) {
   RiskAnalysis* ran;
   std::vector<std::string>::iterator it;
   for (it = incorrect_prob.begin(); it != incorrect_prob.end(); ++it) {
-    ran = new FaultTree("fta-default", false);
+    ran = new FaultTree("default", false);
     EXPECT_NO_THROW(ran->ProcessInput(correct_input));
     EXPECT_THROW(ran->PopulateProbabilities(*it), scram::Error)
         << " Filename: " << *it;

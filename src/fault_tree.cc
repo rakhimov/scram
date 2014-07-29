@@ -23,13 +23,9 @@ namespace pt = boost::posix_time;
 
 namespace scram {
 
-FaultTree::FaultTree(std::string analysis, bool graph_only, bool rare_event,
-                     int limit_order, int nsums)
-    : analysis_(analysis),
-      rare_event_(rare_event),
-      limit_order_(limit_order),
-      graph_only_(graph_only),
-      nsums_(nsums),
+FaultTree::FaultTree(std::string analysis, bool graph_only,
+                     std::string approx, int limit_order, int nsums)
+    : graph_only_(graph_only),
       warnings_(""),
       top_event_id_(""),
       top_event_index_(-1),
@@ -48,6 +44,36 @@ FaultTree::FaultTree(std::string analysis, bool graph_only, bool rare_event,
       block_started_(false),
       transfer_correct_(false),
       transfer_first_inter_(false) {
+  // Check for valid analysis type.
+  if (analysis != "default" && analysis != "mc") {
+    std::string msg = "The analysis type is not recognized.";
+    throw scram::ValueError(msg);
+  }
+  analysis_ = analysis;
+
+  // Check for right limit order.
+  if (limit_order < 1) {
+    std::string msg = "The limit on the order of minimal cut sets "
+                      "cannot be less than one.";
+    throw scram::ValueError(msg);
+  }
+  limit_order_ = limit_order;
+
+  // Check for right limit order.
+  if (nsums < 1) {
+    std::string msg = "The number of sums in the probability calculation "
+                      "cannot be less than one";
+    throw scram::ValueError(msg);
+  }
+  nsums_ = nsums;
+
+  // Check the right approximation for probability calculations.
+  if (approx != "no" && approx != "rare" && approx != "mcub") {
+    std::string msg = "The probability approximation is not recognized.";
+    throw scram::ValueError(msg);
+  }
+  approx_ = approx;
+
   // Add valid gates.
   gates_.insert("and");
   gates_.insert("or");
@@ -123,7 +149,7 @@ void FaultTree::PopulateProbabilities(std::string prob_file) {
   std::ifstream pfile(prob_file.c_str());
   if (!pfile.good()) {
     std::string msg = prob_file + " : Probability file is not accessible.";
-    throw(scram::IOError(msg));
+    throw scram::IOError(msg);
   }
 
   prob_requested_ = true;  // Switch indicator.
@@ -288,13 +314,13 @@ void FaultTree::GraphingInstructions() {
                                  1, std::string::npos);
   std::ofstream out(output_path.c_str());
   if (!out.good()) {
-    throw(scram::IOError(output_path +  " : Cannot write the graphing file."));
+    throw scram::IOError(output_path +  " : Cannot write the graphing file.");
   }
 
   // Check for the special case when only one node TransferIn tree is graphed.
   if (top_event_id_ == "") {
     std::string msg = "Cannot graph one node TransferIn tree.";
-    throw(scram::ValidationError(msg));
+    throw scram::ValidationError(msg);
   }
 
   boost::to_upper(graph_name);
@@ -510,7 +536,7 @@ void FaultTree::Analyze() {
   if (nsums_ > imcs_.size()) nsums_ = imcs_.size();
 
   // Perform Monte Carlo Uncertainty analysis.
-  if (analysis_ == "fta-mc") {
+  if (analysis_ == "mc") {
     // Generate the equation.
     FaultTree::MProbOr_(imcs_, 1, nsums_);
     // Sample probabilities and generate data.
@@ -530,7 +556,7 @@ void FaultTree::Analyze() {
   }
 
   // Check if a rare event approximation is requested.
-  if (rare_event_) {
+  if (approx_ == "rare") {
     warnings_ += "Using the rare event approximation\n";
     bool rare_event_legit = true;
     std::map< std::set<std::string>, double >::iterator it_pr;
@@ -546,12 +572,20 @@ void FaultTree::Analyze() {
       }
       p_total_ += it_pr->second;
     }
-  } else {
+
+  } else if (approx_ == "mcub") {
+    warnings_ += "Using the MCUB approximation\n";
+    double m = 1;
+    std::map< std::set<std::string>, double >::iterator it;
+    for (it = prob_of_min_sets_.begin(); it != prob_of_min_sets_.end();
+         ++it) {
+      m *= 1 - it->second;
+    }
+    p_total_ = 1 - m;
+
+  } else {  // No approximation technique is assumed.
     // Exact calculation of probability of cut sets.
-    // ---------- Algorithm Improvement Check : Integers -----------------
-    // Map primary events to integers.
     p_total_ = FaultTree::ProbOr_(imcs_, nsums_);
-    // ------------------------------------------------------------
   }
 
   // Calculate failure contributions of each primary event.
@@ -583,6 +617,7 @@ void FaultTree::Report(std::string output) {
   if (output != "cli") {
     of.open(output.c_str());
     buf = of.rdbuf();
+
   } else {
     buf = std::cout.rdbuf();
   }
@@ -613,9 +648,11 @@ void FaultTree::Report(std::string output) {
       assert(names.size() > 0);
       if (names.size() == 1) {
         rep << orig_ids_[names[0]];
+
       } else if (names.size() == 2) {
         rep << "NOT " << orig_ids_[names[1]];
       }
+
       if (j < size) {
         rep << ", ";
       } else {
@@ -688,7 +725,7 @@ void FaultTree::Report(std::string output) {
   out << "Number of Minimal Cut Sets: " << min_cut_sets_.size() << "\n\n";
   out.flush();
 
-  if (analysis_ == "fta-default") {
+  if (analysis_ == "default") {
     out << "Minimal Cut Set Probabilities Sorted by Order:\n";
     out.flush();
     order = 1;  // Order of minimal cut sets.
@@ -748,7 +785,7 @@ void FaultTree::Report(std::string output) {
       out.flush();
     }
 
-  } else if (analysis_ == "fta-mc") {
+  } else if (analysis_ == "mc") {
     // Report for Monte Carlo Uncertainty Analysis.
     // Show the terms of the equation.
     // Positive terms.
@@ -1310,7 +1347,7 @@ void FaultTree::IncludeTransfers_() {
     std::ifstream ifile(path_to_tr.c_str());
     if (!ifile.good()) {
       std::string msg = tr_id + " : tree file is not accessible.";
-      throw(scram::IOError(msg));
+      throw scram::IOError(msg);
     }
 
     // Register that a sub-tree file is under operation.

@@ -27,6 +27,7 @@ int main(int argc, char* argv[]) {
       ("analysis,a", po::value<std::string>()->default_value("fta-default"),
        "type of analysis to be performed on this input")
       ("rare-event-approx,r", "use the rare event approximation")
+      ("mcub,m", "use the MCUB approximation for probability calculations")
       ("limit-order,l", po::value<int>()->default_value(20),
        "upper limit for cut set order")
       ("nsums,s", po::value<int>()->default_value(1000000),
@@ -69,11 +70,14 @@ int main(int argc, char* argv[]) {
   std::string analysis = vm["analysis"].as<std::string>();
   bool graph_only = false;
   bool rare_event = false;
+  bool mcub = false;
 
   // Determin if only graphing instructions are requested.
   if (vm.count("graph-only")) graph_only = true;
-  // Determine if a rare event approximation is requested.
+  // Determine if the rare event approximation is requested.
   if (vm.count("rare-event-approx")) rare_event = true;
+  // Determine if the MCUB approximation is requested.
+  if (vm.count("mcub")) mcub = true;
 
   // Read input files and setup.
   std::string input_file = vm["input-file"].as<std::string>();
@@ -95,8 +99,14 @@ int main(int argc, char* argv[]) {
       std::cout << desc << "\n";
       return 1;
     }
+    std::string fta_analysis = "default";
+    if (analysis == "fta-mc") fta_analysis = "mc";
 
-    ran = new FaultTree(analysis, graph_only, rare_event,
+    std::string approx = "no";
+    if (rare_event) approx = "rare";
+    if (mcub) approx = "mcub";
+
+    ran = new FaultTree(fta_analysis, graph_only, approx,
                         vm["limit-order"].as<int>(), vm["nsums"].as<int>());
   } else {
     std::string msg = analysis + ": this analysis is not recognized.\n";

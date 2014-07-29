@@ -30,7 +30,7 @@ TEST_F(FaultTreeTest, TransTest) {
 
   // Check the full tree without the transfer gate.
   delete fta;
-  fta = new FaultTree("fta-default", false);
+  fta = new FaultTree("default", false);
   ASSERT_NO_THROW(fta->ProcessInput(trans_tree_input));
   ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(fta->Analyze());
