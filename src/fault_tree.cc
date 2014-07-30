@@ -592,16 +592,25 @@ void FaultTree::Analyze() {
   boost::unordered_map<std::string, PrimaryEventPtr>::iterator it_prime;
   for (it_prime = primary_events_.begin(); it_prime != primary_events_.end();
        ++it_prime) {
-    double contrib = 0;  // Total contribution of this event.
+    double contrib_pos = 0;  // Total positive contribution of this event.
+    double contrib_neg = 0;  // Negative event contribution.
     std::map< std::set<std::string>, double >::iterator it_pr;
     for (it_pr = prob_of_min_sets_.begin();
          it_pr != prob_of_min_sets_.end(); ++it_pr) {
       if (it_pr->first.count(it_prime->first)) {
-        contrib += it_pr->second;
+        contrib_pos += it_pr->second;
+      } else if (it_pr->first.count("not " + it_prime->first)) {
+        contrib_neg += it_pr->second;
       }
     }
-    imp_of_primaries_.insert(std::make_pair(it_prime->first, contrib));
-    ordered_primaries_.insert(std::make_pair(contrib, it_prime->first));
+    imp_of_primaries_.insert(std::make_pair(it_prime->first, contrib_pos));
+    ordered_primaries_.insert(std::make_pair(contrib_pos, it_prime->first));
+    if (contrib_neg > 0) {
+      imp_of_primaries_.insert(std::make_pair("not " + it_prime->first,
+                                              contrib_neg));
+      ordered_primaries_.insert(std::make_pair(contrib_neg,
+                                               "not " + it_prime->first));
+    }
   }
 }
 
@@ -672,12 +681,12 @@ void FaultTree::Report(std::string output) {
   // Print minimal cut sets by their order.
   out << "\n" << "Minimal Cut Sets" << "\n";
   out << "================\n\n";
-  out << "Fault Tree: " << input_file_ << "\n";
-  out << "Time: " << pt::second_clock::local_time() << "\n\n";
-  out << "Analysis algorithm: " << analysis_ << "\n";
-  out << "Limit on order of cut sets: " << limit_order_ << "\n";
-  out << "Number of Primary Events: " << primary_events_.size() << "\n";
-  out << "Minimal Cut Set Maximum Order: " << max_order_ << "\n";
+  out << std::setw(40) << std::left << "Fault Tree: " << input_file_ << "\n";
+  out << std::setw(40) << "Time: " << pt::second_clock::local_time() << "\n\n";
+  out << std::setw(40) << "Analysis algorithm: " << analysis_ << "\n";
+  out << std::setw(40) << "Limit on order of cut sets: " << limit_order_ << "\n";
+  out << std::setw(40) << "Number of Primary Events: " << primary_events_.size() << "\n";
+  out << std::setw(40) << "Minimal Cut Set Maximum Order: " << max_order_ << "\n";
   out.flush();
 
   int order = 1;  // Order of minimal cut sets.
@@ -703,13 +712,15 @@ void FaultTree::Report(std::string output) {
     order++;
   }
 
-  out << "\nQualitative Importance Analysis:" << "\n\n";
-  out << "Order        Number\n";
-  out << "-----        ------\n";
+  out << "\nQualitative Importance Analysis:" << "\n";
+  out << "--------------------------------\n";
+  out << std::left;
+  out << std::setw(20) << "Order" << "Number\n";
+  out << std::setw(20) << "-----" << "------\n";
   for (int i = 1; i < max_order_ + 1; ++i) {
-    out << "  " << i << "            " << order_numbers[i-1] << "\n";
+    out << "  " << std::setw(18) << i << order_numbers[i-1] << "\n";
   }
-  out << "  ALL          " << min_cut_sets_.size() << "\n";
+  out << "  " << std::setw(18) << "ALL" << min_cut_sets_.size() << "\n";
   out.flush();
 
   // Print probabilities of minimal cut sets only if requested.
@@ -717,16 +728,19 @@ void FaultTree::Report(std::string output) {
 
   out << "\n" << "Probability Analysis" << "\n";
   out << "====================\n\n";
-  out << "Fault Tree: " << input_file_ << "\n";
-  out << "Time: " << pt::second_clock::local_time() << "\n\n";
-  out << "Analysis type: " << analysis_ << "\n";
-  out << "Limit on series: " << nsums_ << "\n";
-  out << "Number of Primary Events: " << primary_events_.size() << "\n";
-  out << "Number of Minimal Cut Sets: " << min_cut_sets_.size() << "\n\n";
+  out << std::setw(40) << std::left << "Fault Tree: " << input_file_ << "\n";
+  out << std::setw(40) << "Time: " << pt::second_clock::local_time() << "\n\n";
+  out << std::setw(40) << "Analysis type:" << analysis_ << "\n";
+  out << std::setw(40) << "Limit on series: " << nsums_ << "\n";
+  out << std::setw(40) << "Number of Primary Events: "
+      << primary_events_.size() << "\n";
+  out << std::setw(40) << "Number of Minimal Cut Sets: "
+      << min_cut_sets_.size() << "\n\n";
   out.flush();
 
   if (analysis_ == "default") {
     out << "Minimal Cut Set Probabilities Sorted by Order:\n";
+    out << "----------------------------------------------\n";
     out.flush();
     order = 1;  // Order of minimal cut sets.
     std::multimap < double, std::set<std::string> >::reverse_iterator it_or;
@@ -753,7 +767,8 @@ void FaultTree::Report(std::string output) {
       order++;
     }
 
-    out << "\nMinimal Cut Set Probabilities Sorted by Probability:\n\n";
+    out << "\nMinimal Cut Set Probabilities Sorted by Probability:\n";
+    out << "----------------------------------------------------\n";
     out.flush();
     int i = 1;
     for (it_or = ordered_min_sets_.rbegin(); it_or != ordered_min_sets_.rend();
@@ -766,22 +781,37 @@ void FaultTree::Report(std::string output) {
     }
 
     // Print total probability.
-    out << "\n" << "=============================\n";
-    out <<  "Total Probability: " << p_total_ << "\n";
-    out << "=============================\n\n";
+    out << "\n" << "================================\n";
+    out <<  "Total Probability: " << std::setprecision(7) << p_total_ << "\n";
+    out << "================================\n\n";
 
     if (p_total_ > 1) out << "WARNING: Total Probability is invalid.\n\n";
 
     out.flush();
 
     // Primary event analysis.
-    out << "Primary Event Analysis:\n\n";
-    out << "Event        Failure Contrib.        Importance\n\n";
+    out << "Primary Event Analysis:\n";
+    out << "-----------------------\n";
+    out << std::left;
+    out << std::setw(20) << "Event" << std::setw(20) << "Failure Contrib."
+        << "Importance\n\n";
     std::multimap < double, std::string >::reverse_iterator it_contr;
     for (it_contr = ordered_primaries_.rbegin();
          it_contr != ordered_primaries_.rend(); ++it_contr) {
-      out << orig_ids_[it_contr->second] << "          " << it_contr->first
-          << "          " << 100 * it_contr->first / p_total_ << "%\n";
+      out << std::left;
+      std::vector<std::string> names;
+      boost::split(names, it_contr->second, boost::is_any_of(" "),
+                   boost::token_compress_on);
+      assert(names.size() < 3);
+      assert(names.size() > 0);
+      if (names.size() == 1) {
+        out << std::setw(20) << orig_ids_[names[0]] << std::setw(20)
+            << it_contr->first << 100 * it_contr->first / p_total_ << "%\n";
+
+      } else if (names.size() == 2) {
+        out << "NOT " << std::setw(16) << orig_ids_[names[1]] << std::setw(20)
+            << it_contr->first << 100 * it_contr->first / p_total_ << "%\n";
+      }
       out.flush();
     }
 
@@ -790,6 +820,7 @@ void FaultTree::Report(std::string output) {
     // Show the terms of the equation.
     // Positive terms.
     out << "\nPositive Terms in the Probability Equation:\n";
+    out << "--------------------------------------------\n";
     std::vector< std::set<int> >::iterator it_vec;
     std::set<int>::iterator it_set;
     for (it_vec = pos_terms_.begin(); it_vec != pos_terms_.end(); ++it_vec) {
@@ -814,6 +845,7 @@ void FaultTree::Report(std::string output) {
     }
     // Negative terms.
     out << "\nNegative Terms in the Probability Equation:\n";
+    out << "-------------------------------------------\n";
     for (it_vec = neg_terms_.begin(); it_vec != neg_terms_.end(); ++it_vec) {
       out << "{ ";
       int j = 1;

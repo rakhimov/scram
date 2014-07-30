@@ -18,7 +18,7 @@ This project follows the following coding styles:
 Currently nonconforming cases in the source code:
 =================================================
 
-* Exceptions are used. (This is not recommended by GCSG)
+* Exceptions are used. (This is not recommended by GCSG.)
 * Functions use default values.
-* Header guards do not include the source file name.
-* Null values for strings are not "\0".
+* Header guards do not include the source folder name.
+* Null values for strings are not "\\0".

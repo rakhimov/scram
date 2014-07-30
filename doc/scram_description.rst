@@ -169,13 +169,11 @@ Event Tree Analysis.
 
 Future Additions.
 =================
-#. Simple event tree analysis.
-#. More efficient algorithms for fault tree analysis.
-#. More types of gates for fault trees: exclusive OR, priority AND, inhibit.
-#. More types of events for fault trees: conditioning.
+#. Event tree analysis.
+#. Various other algorithms for fault tree analysis.
+#. Dynamic fault tree analysis.
 #. Monte Carlo Methods.
 #. Markov analysis.
-#. Success tree by inverting minimal cut sets into minimal path sets.
 
 
 General Information for Users.
@@ -185,11 +183,11 @@ General Information for Users.
     :FTA input file:     .scramf
     :FTA prob file:      .scramp
 
-#. If you are using text editor with highlighting, set filetype to 'conf'.
-   This configuration like highlighting works well with scram syntax.
+#. If you are using a text editor with highlighting, set filetype to 'conf'.
+   This configuration-like highlighting works well with a scram input file.
 
 #. Run 'scram -h' to see all the flags and parameters for analysis.
 
 #. The minimum cut set generation for a fault tree and probability calculations
-   may use a lot of time and computing power.
-   Adjust SCRAM flags and parameters to reduce these demands.
+   may use a lot of time and computing power depending on the complexity of
+   the tree. You can adjust SCRAM flags and parameters to reduce these demands.
