@@ -643,10 +643,13 @@ void FaultTree::Report(std::string output) {
 
   // Convert MCS into representative strings.
   std::map< std::set<std::string>, std::string> represent;
+  std::map< std::set<std::string>, std::vector<std::string> > lines;
   for (it_min = min_cut_sets_.begin(); it_min != min_cut_sets_.end();
        ++it_min) {
     std::stringstream rep;
     rep << "{ ";
+    std::string line = "{ ";
+    std::vector<std::string> vec_line;
     int j = 1;
     int size = it_min->size();
     for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
@@ -655,22 +658,35 @@ void FaultTree::Report(std::string output) {
                    boost::token_compress_on);
       assert(names.size() < 3);
       assert(names.size() > 0);
+      std::string name = "";
       if (names.size() == 1) {
-        rep << orig_ids_[names[0]];
-
+        name = orig_ids_[names[0]];
       } else if (names.size() == 2) {
-        rep << "NOT " << orig_ids_[names[1]];
+        name = "NOT " + orig_ids_[names[1]];
+      }
+      rep << name;
+
+      if (line.length() + name.length() + 2 > 60) {
+        vec_line.push_back(line);
+        line = name;
+      } else {
+        line += name;
       }
 
       if (j < size) {
         rep << ", ";
+        line += ", ";
       } else {
         rep << " ";
+        line += " ";
       }
       ++j;
     }
     rep << "}";
+    line += "}";
+    vec_line.push_back(line);
     represent.insert(std::make_pair(*it_min, rep.str()));
+    lines.insert(std::make_pair(*it_min, vec_line));
   }
 
   // Print warnings of calculations.
@@ -704,7 +720,20 @@ void FaultTree::Report(std::string output) {
       out << "\nOrder " << order << ":\n";
       int i = 1;
       for (it_min = order_sets.begin(); it_min != order_sets.end(); ++it_min) {
-        out << i << ") " << represent[*it_min] << "\n";
+        std::stringstream number;
+        number << i << ") ";
+        out << std::left;
+        std::vector<std::string>::iterator it;
+        int j = 0;
+        for (it = lines[*it_min].begin(); it != lines[*it_min].end(); ++it) {
+          if (j == 0) {
+            out << number.str() <<  *it << "\n";
+          } else {
+            out << "  " << std::setw(number.str().length()) << " "
+                << *it << "\n";
+          }
+          ++j;
+        }
         out.flush();
         i++;
       }
@@ -757,9 +786,22 @@ void FaultTree::Report(std::string output) {
         out << "\nOrder " << order << ":\n";
         int i = 1;
         for (it_or = order_sets.rbegin(); it_or != order_sets.rend(); ++it_or) {
-          out << i << ") " << represent[it_or->second];
-          out << "    ";
-          out << it_or->first << "\n";
+          std::stringstream number;
+          number << i << ") ";
+          out << std::left;
+          std::vector<std::string>::iterator it;
+          int j = 0;
+          for (it = lines[it_or->second].begin();
+               it != lines[it_or->second].end(); ++it) {
+            if (j == 0) {
+              out << number.str() << std::setw(70 - number.str().length())
+                  << *it << std::setprecision(7) << it_or->first << "\n";
+            } else {
+              out << "  " << std::setw(number.str().length()) << " "
+                  << *it << "\n";
+            }
+            ++j;
+          }
           out.flush();
           i++;
         }
@@ -773,9 +815,22 @@ void FaultTree::Report(std::string output) {
     int i = 1;
     for (it_or = ordered_min_sets_.rbegin(); it_or != ordered_min_sets_.rend();
          ++it_or) {
-      out << i << ") " << represent[it_or->second];
-      out << "    ";
-      out << it_or->first << "\n";
+      std::stringstream number;
+      number << i << ") ";
+      out << std::left;
+      std::vector<std::string>::iterator it;
+      int j = 0;
+      for (it = lines[it_or->second].begin();
+           it != lines[it_or->second].end(); ++it) {
+        if (j == 0) {
+          out << number.str() << std::setw(70 - number.str().length())
+              << *it << std::setprecision(7) << it_or->first << "\n";
+        } else {
+          out << "  " << std::setw(number.str().length()) << " "
+              << *it << "\n";
+        }
+        ++j;
+      }
       i++;
       out.flush();
     }
