@@ -8,13 +8,9 @@ TODO list for SCRAM Project
 Currently Low Hanging Fruits
 ============================
 
-- Define output format. *Moderate*
-
-    * Table like spacing for output numbers
-    * Option for CSV output for spreadsheet applications
-    * Save minimal cut sets for later analysis
-
 - Minimal cut set input file as an alternative to a tree file. *Moderate*
+
+    * Save minimal cut sets for later analysis
 
 - Monte Carlo Simulations. *Moderate*
 
@@ -60,8 +56,6 @@ Documentation: Moderate Importance
 - Building/Installing
 - Installation instructions for various platforms
 - Simple Walkthrough Example
-- Reference Papers
-- Background Theory
 
 Coding Specific
 ===================
