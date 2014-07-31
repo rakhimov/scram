@@ -367,29 +367,57 @@ void FaultTree::GraphingInstructions() {
   }
 
   // Format events.
+  std::map<std::string, std::string> gate_colors;
+  gate_colors.insert(std::make_pair("or", "blue"));
+  gate_colors.insert(std::make_pair("and", "green"));
+  gate_colors.insert(std::make_pair("not", "red"));
+  gate_colors.insert(std::make_pair("xor", "brown"));
+  gate_colors.insert(std::make_pair("inhibit", "yellow"));
+  gate_colors.insert(std::make_pair("vote", "cyan"));
+  gate_colors.insert(std::make_pair("null", "gray"));
+  gate_colors.insert(std::make_pair("nor", "magenta"));
+  gate_colors.insert(std::make_pair("nand", "orange"));
   std::string gate = top_event_->gate();
   boost::to_upper(gate);
   out << "\"" <<  orig_ids_[top_event_id_] << "\" [shape=ellipse, "
       << "fontsize=12, fontcolor=black, fontname=\"times-bold\", "
+      << "color=" << gate_colors[top_event_->gate()] << ", "
       << "label=\"" << orig_ids_[top_event_id_] << "\\n"
-      << "{ " << gate <<" }\"]\n";
+      << "{ " << gate;
+  if (gate == "VOTE") {
+    out << " " << top_event_->vote_number() << "/"
+        << top_event_->children().size();
+  }
+  out << " }\"]\n";
   for (it_inter = inter_events_.begin(); it_inter != inter_events_.end();
        ++it_inter) {
     gate = it_inter->second->gate();
     boost::to_upper(gate);
     out << "\"" <<  orig_ids_[it_inter->first] << "\" [shape=box, "
-        << "fontsize=11, fontcolor=blue, "
+        << "fontsize=11, fontcolor=black, "
+        << "color=" << gate_colors[it_inter->second->gate()] << ", "
         << "label=\"" << orig_ids_[it_inter->first] << "\\n"
-        << "{ " << gate <<" }\"]\n";
+        << "{ " << gate;
+    if (gate == "VOTE") {
+      out << " " << it_inter->second->vote_number() << "/"
+          << it_inter->second->children().size();
+    }
+    out << " }\"]\n";
   }
   out.flush();
 
+  std::map<std::string, std::string> event_colors;
+  event_colors.insert(std::make_pair("basic", "black"));
+  event_colors.insert(std::make_pair("undeveloped", "blue"));
+  event_colors.insert(std::make_pair("house", "green"));
+  event_colors.insert(std::make_pair("conditional", "red"));
   std::map<std::string, int>::iterator it;
   for (it = pr_repeat.begin(); it != pr_repeat.end(); ++it) {
     for (int i = 0; i < it->second + 1; ++i) {
       out << "\"" << orig_ids_[it->first] << "_R" << i << "\" [shape=circle, "
-          << "height=1, fontsize=10, fixedsize=true, fontcolor=black, "
-          << "label=\"" << orig_ids_[it->first] << "\\n["
+          << "height=1, fontsize=10, fixedsize=true, "
+          << "fontcolor=" << event_colors[primary_events_[it->first]->type()]
+          << ", " << "label=\"" << orig_ids_[it->first] << "\\n["
           << primary_events_[it->first]->type() << "]";
       if (prob_requested_) { out << "\\n" << primary_events_[it->first]->p(); }
       out << "\"]\n";
@@ -1464,14 +1492,14 @@ void FaultTree::IncludeTransfers_() {
   }
 }
 
-void FaultTree::GraphNode_(TopEventPtr t, std::map<std::string,
-                           int>& pr_repeat, std::ofstream& out) {
+void FaultTree::GraphNode_(TopEventPtr t,
+                           std::map<std::string, int>& pr_repeat,
+                           std::ofstream& out) {
   // Populate intermediate and primary events of the input inter event.
-  std::map<std::string, boost::shared_ptr<scram::Event> >
-      events_children = t->children();
-  std::map<std::string, boost::shared_ptr<scram::Event> >::iterator it_child;
-  for (it_child = events_children.begin();
-       it_child != events_children.end(); ++it_child) {
+  std::map<std::string, EventPtr> events_children = t->children();
+  std::map<std::string, EventPtr>::iterator it_child;
+  for (it_child = events_children.begin(); it_child != events_children.end();
+       ++it_child) {
     // Deal with repeated primary events.
     if (primary_events_.count(it_child->first)) {
       if (pr_repeat.count(it_child->first)) {
