@@ -1,7 +1,7 @@
 // Implementation of primary event class.
 #include "event.h"
 
-#include <math.h>
+#include <cmath>
 
 #include "error.h"
 
@@ -81,7 +81,7 @@ void PrimaryEvent::p(double p, double time) {
     throw scram::ValueError(msg);
   }
 
-  p_ = 1 - exp(p * time);
+  p_ = 1 - std::exp(p * time);
 }
 
 void PrimaryEvent::AddParent(const boost::shared_ptr<scram::TopEvent>& parent) {
