@@ -14,12 +14,12 @@ SCRAM : "Simplified Command-line Risk Analysis Multi-tool"
 This project attempts to build a simple command line tool for risk analysis.
 Static Fault Tree Analysis is implemented.
 In addition, a random tree generator is
-provided for exploring performance of SCRAM. A fault tree can be drawn by
+provided for exploring the performance of SCRAM. A fault tree can be drawn by
 Graphviz Dot tool.
 
-A full description of SCRAM and its current capabilities is in `documentation`_.
+A full description of SCRAM and its current capabilities is in `the documentation`_.
 
-.. _documentation: http://rakhimov.github.io/SCRAM
+.. _`the documentation`: http://rakhimov.github.io/SCRAM
 
 ******************************
 Building and Installing
