@@ -2,24 +2,15 @@
 TODO list for SCRAM Project
 #################################
 
-Relative importances within groups are given in *italics*.
+.. note::
+    Relative importances within groups are given in *italics*.
 
 Currently Low Hanging Fruits
 ============================
 
-- Define output format. *Moderate*
-
-    * Table like spacing for output numbers
-    * Option for CSV output for spreadsheet applications
-    * Save minimal cut sets for later analysis
-
 - Minimal cut set input file as an alternative to a tree file. *Moderate*
 
-- Block types for probabilities. *Moderate*
-
-- New gates, event types, and probability types. *High*
-
-    * Probabilities as a function of time (lambda). *High*
+    * Save minimal cut sets for later analysis
 
 - Monte Carlo Simulations. *Moderate*
 
@@ -29,13 +20,15 @@ Currently Low Hanging Fruits
     * Distributions
     * Latin Hypercube sampling technique
 
-- Improve fault tree generator. *Low* (*This may break benchmarking*)
+- Improve fault tree generator. *Low*
 
 
 Major Enhancements and Capabilities
 ===================================
 
 - Incorporation of an event tree analysis. *Moderate*
+
+- Dynamic Fault Tree Analysis. *Moderate*
 
 - Incorporation of CCF. *High*
 
@@ -63,8 +56,6 @@ Documentation: Moderate Importance
 - Building/Installing
 - Installation instructions for various platforms
 - Simple Walkthrough Example
-- Reference Papers
-- Background Theory
 
 Coding Specific
 ===================

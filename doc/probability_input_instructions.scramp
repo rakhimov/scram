@@ -1,17 +1,17 @@
-# This file contains probabilities of each basic event that is in the
+# This file contains probabilities of each primary event that is in the
 # fault tree described in the input file.
-# All basic events should have their probabilities listed in this file.
+# All primary events should have their probabilities listed in this file.
 # The probability descriptions may have extra events defined.
 # This extra information is ignored.
 
-# List Basic event's ID and its probability
+# List primary event's ID and its probability.
 # The default interpretation is the P-Model probability of the event
 # If this event's probability model is Lambda Model by failure frequency,
 # it needs to be in a different block. Indicate it as 'L-Model'
-# The order of basic events does not matter.
+# The order of primary events does not matter.
 
 {
-    # Type of probability model block
+    # Type of probability model block.
     block           P-Model
 
     ValveOne        0.5
@@ -22,8 +22,11 @@
 }
 
 {
-    # Type of lambda probability model block (Not yet supported)
+    # Type of lambda probability model block.
     block           L-Model
+
+    # Time length is required to be defined for the lambda model.
+    time            100
 
     ValveThree      1.2e-5
     PumpThree       2.5e-3
@@ -54,15 +57,4 @@
     # Group members
     PumpOne
     PumpTwo
-}
-
-{
-    block       CCF
-    method      MGL
-    beta        0.09
-    gamma       0.05
-    delta       0.001
-    group       Valves
-    ValveOne
-    ValveTwo
 }

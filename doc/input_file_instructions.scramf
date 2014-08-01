@@ -1,5 +1,5 @@
 # This is an input schema for SCRAM Fault Tree.
-# Lines starting with '#' sign are comments.
+# The lines starting with '#' sign are comments.
 # This sign may be used inside a line for comments after inputs.
 # Opening '{' and closing '}' braces must be on a new line.
 # Input is NOT case sensitive.
@@ -12,11 +12,11 @@
 # Type 'Node/Gate types'
 
 # Ids of nodes should not contain spaces. Please avoid using "\", "/", "{"
-# "}", or other special characters for clarity.
+# "}", "-", or other special characters for clarity.
 # Ids of top event and intermediate events must be unique.
-# Ids of basic events are not required to be unique.
+# Ids of basic events can show up in several places.
 
-# Probabilities of basic events are given in a separate file.
+# Probabilities of basic events are given in a separate probability file.
 
 # Hierarchical structure of input must be strict. That is, a parent must
 # be defined before its children.
@@ -27,7 +27,7 @@
 # The top event must be listed first.
 {
     # Empty parent is an indication of a top event.
-    parent      None
+    parent      None  # "None" parent is the indication of the top event.
     id          TopEvent
     type        AND
 }
@@ -76,16 +76,16 @@
 {
     parent      TopEvent
 
-    # The id of the transfer function must be the name of a file containing
-    # the tree to be linked to the current tree. It not the PATH to the file.
+    # The id of the transfer function must be the name of the file containing
+    # the tree to be linked to the current tree. It is not the PATH to the file.
     # NOTE: the name must be exact
     # NOTE: the name must be in LOWER case.
-    # NOTE: all the rules for input file apply for the transfered file
+    # NOTE: all the rules for input file apply for the transfered file.
     # NOTE: The linked file's first event is going to become an intermediate
     # event in this main tree.
     # NOTE: This additional transfered in tree will be linked last in order to
     # avoid accidentally linking basic events into intermediate events of the
-    # additional transfered in tree. Multiple references to sub-tree are
+    # additional transfered in tree. Multiple references to the sub-tree are
     # possible.
 
     id          file_to_link.scramf

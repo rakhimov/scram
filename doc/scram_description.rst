@@ -9,7 +9,7 @@ Command-line Call of SCRAM by a User.
 =====================================
 
 Type of analysis, i.e., fault tree, even tree, Markov chain, etc.
-Upone calling on command-line, the user should indicate which analysis
+Upon calling from command-line, the user should indicate which analysis
 should be performed. In addition to this, the user should provide
 additional parameters for the analysis type chosen. For example, if
 FTA is requested, type of algorithm for minimal cut set generation may
@@ -75,17 +75,18 @@ EVENTS
     as a switch of True or False. Provides input to a logic gate.
     May be used to switch off a sub-tree.
 
-#. Conditioning Event :
+#. Conditional Event :
     Defines a specific condition or restriction
-    that apply to any logic gate. Used mostly with Priority AND,
+    that apply to any logic gate. Used mostly with Priority AND and
     Inhibit gates. The alternative name is a Conditional Qualifier.
-    Conditions may be abnormal cases or environment.
+    Conditions may be abnormal cases or environment. The probability
+    of this event might be a conditional probability.
 
 SYMBOLS
 -------
 #. Transfer In :
     This symbol indicates that the tree is expanded further at
-    the occurance of the corresponding Transfer Out symbol.
+    the occurrence of the corresponding Transfer Out symbol.
     This expansion may be described in another file or page.
 
 #. Transfer Out :
@@ -103,35 +104,43 @@ GATES
 
 #. Priority AND :
     Output fault occurs if all of the input faults occur in a
-    specific sequence (the sequence is represented by a
-    Conditioning Event, usually drawn to the right of the gate.)
-    The sequence also be from first to last member.
+    specific sequence. This gate is for the dynamic tree analysis.
+    The sequence may also be from first to last member or left to right.
 
 #. Exclusive OR (XOR) :
-    Output fault occurs if exactly one of the input
-    faults occurs. (A XOR B) = (A AND B') OR (A' AND B)
-    Some packages restrict input events to only two.
+    Output fault occurs if exactly one of the two input
+    faults occurs. (A XOR B) = (A AND B') OR (A' AND B). In other words,
+    the result is one or the other but not both.
+    This gate can only have two inputs. For several inputs,
+    the output fault occurs if odd number of faults occur. This can be
+    simulated by chaining XOR gates if needed.
 
 #. Inhibit :
+    This gate is a special case of the AND gate.
     Output fault occurs if the single input fault occurs in the
-    presense of an enabling condition (the enabling condition is
+    presence of an enabling condition (the enabling condition is
     represented by a Conditioning Event drawn to the right of the
-    gate.). Some packages restrict input events to only two events.
+    gate.). This gate restricts input events to only two events.
 
 #. Combination/VOTE :
-    Output fault occurs if a certain number of the input faults occur.
+    Output fault occurs if **m** out of the **n** input events
+    occurs. The **m** input events need not to occur simultaneously. The output
+    occurs if at least **m** events occur. **m** is more than 1, and **n**
+    is more than **n**.
 
 #. NOT :
     Output fault occurs if the input event does not occur.
+    This logic leads to non-coherent trees, for which non-occurrence or success
+    of events may lead to occurrence of the main undesirable event.
 
 #. NULL/Pass-Through :
     Non-essential. Only one input is allowed.
-    Used in GUI apps to allow more description or alignment.
+    Used in applications with GUI to allow more description or alignment.
 
 #. NAND :
     NOT AND gate. Indicates that the output occurs when at least one
     of the input events is absent. This may lead to non-coherent
-    trees, where non-occurance of an event causes the top event.
+    trees, where non-occurrence of an event causes the top event.
 
 #. NOR :
     NOT OR gate. Indicates that the output occurs when all the input
@@ -150,7 +159,7 @@ OTHER
 Event Tree Analysis.
 ====================
 #. Reading input files. Verification of the input. Optional visual tool.
-#. (*Optional*) Upon users' request output instruction file for graphviz
+#. (*Optional*) Upon users' request output instruction file for **graphviz**
    dot to draw the tree. This is for visual verification of the input.
    Stop execution of the program.
 #. Create the tree for analysis.
@@ -160,13 +169,11 @@ Event Tree Analysis.
 
 Future Additions.
 =================
-#. Simple event tree analysis.
-#. More efficient algorithms for fault tree analysis.
-#. More types of gates for fault trees: exclusive OR, priority AND, inhibit.
-#. More types of events for fault trees: conditioning.
+#. Event tree analysis.
+#. Various other algorithms for fault tree analysis.
+#. Dynamic fault tree analysis.
 #. Monte Carlo Methods.
 #. Markov analysis.
-#. Success tree by inverting minimal cut sets into minimal path sets.
 
 
 General Information for Users.
@@ -176,11 +183,11 @@ General Information for Users.
     :FTA input file:     .scramf
     :FTA prob file:      .scramp
 
-#. If you are using text editor with highlighting, set filetype to 'conf'.
-   This configuration like highlighting works well with scram syntax.
+#. If you are using a text editor with highlighting, set filetype to 'conf'.
+   This configuration-like highlighting works well with a scram input file.
 
 #. Run 'scram -h' to see all the flags and parameters for analysis.
 
-#. The minimum cut set generation for a fault tree and probability calculations 
-   may use a lot of time and computing power.
-   Adjust SCRAM flags and parameters to reduce these demands.
+#. The minimum cut set generation for a fault tree and probability calculations
+   may use a lot of time and computing power depending on the complexity of
+   the tree. You can adjust SCRAM flags and parameters to reduce these demands.
