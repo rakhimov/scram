@@ -10,6 +10,13 @@ Currently Supported Gate Types
 
 - AND
 - OR
+- NOT
+- NOR
+- NAND
+- XOR
+- NULL
+- INHIBIT
+- VOTE
 
 Currently Supported Symbols
 ==============================
@@ -26,6 +33,7 @@ Currently Supported Event Types
 - Basic
 - House
 - Undeveloped
+- Conditional
 
 
 The Algorithm to Generate Minimal Cut Sets
@@ -43,11 +51,12 @@ Probability Calculations
 Many assumptions may be applied for calculation of set and total
 probabilities. Some of them are:
 
-- Independence of events (dependence may be simulated by common cause)
-- Rare event approximation (must be enforced by a user)
+- Independence of events (dependence may be simulated by common cause).
+- Rare event approximation (must be enforced by a user).
+- Min-Cut-Upper Bound Approximation (must be enforced by a user).
 - Brute force probability calculation if the rare event approximation is not
   good enough. This brute force calculation may be expensive and require
-  much more time.
+  much more time. (the default method for probability calculations).
 
 .. note::
     For most calculations, rare event approximation and event
