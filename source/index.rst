@@ -22,7 +22,7 @@ Documentation:
 --------------
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     doc/scram_description
     doc/fta_calls
