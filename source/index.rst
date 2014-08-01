@@ -1,5 +1,17 @@
-Welcome to SCRAM's documentation!
-=================================
+.. raw:: html
+
+    <div style="text-align:center;"><br /><br />
+
+.. image:: logo/scram_boiling.gif
+    :align: center
+    :alt: SCRAM
+
+.. raw:: html
+
+    </div>
+
+SCRAM
+========
 
 SCRAM: "Simplified Command-line Risk Analysis Multi-tool"
 
