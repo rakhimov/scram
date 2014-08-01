@@ -14,7 +14,8 @@
 # NOTE: The Parent must be indicated as 'Any'
 # This word indicates that this additional tree can be linked to any valid
 # fault tree
-# NOTE: TransferOut nodes can have only one child.
+# NOTE: TransferOut nodes can have only one child, which must be an intermediate
+# event or another TransferIn.
 {
     parent      Any
 
@@ -27,7 +28,9 @@
 }
 
 # The next node must have its parent as file_to_link.scrampf
-# Be careful not to repeat intermediate events of the main tree in this subtree.
+# This tree is built in isolation, so names for itermediate events may be
+# repeated from the main tree, but these new nodes will be different events
+# anyway.
 {
     parent      file_to_link.scramf
     id          TrainThree

@@ -12,7 +12,7 @@ Steps in Fault Tree Input Verification
 #. Create a node:
 
     - Parent exists and is not a primary event (*may change for CCF*).
-    - Non-primary event has a unique name.
+    - Non-primary event has a unique name in an input file or a sub-tree.
     - Primary events with several parents are allowed.
     - Each gate has a correct number of children.
     - Store TransferIn gate for later inclusion.
@@ -23,4 +23,5 @@ Steps in Fault Tree Input Verification
 
     - Report missing probabilities.
     - Throw an error if an event is defined doubly.
-    - Ignore events that are not initialized in the tree.
+    - Ignore events that are not initialized in the tree when assinging
+      probabilities from a probability file.
