@@ -1,5 +1,5 @@
 #######################################
-SCRAM
+SCRAM Description
 #######################################
 
 The overall description of SCRAM and possible future additions.

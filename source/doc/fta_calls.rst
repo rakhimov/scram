@@ -13,4 +13,4 @@ Current Command-line Functionality:
 
 #. Find total probability of the top event.
 
-   - May specify rare event approximation for faster calculations.
+   - May specify the rare event approximation or MCUB for faster calculations.

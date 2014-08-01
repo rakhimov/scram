@@ -25,7 +25,7 @@ Script arguments
 =================
 * Random number generator seed.
 * Number of primary events.
-* Approximate Ratio primary events to intermediate events. Average.
+* Approximate ratio primary events to intermediate events. Average.
 * Approximate ratio of reused primary events. This events may show up
   in several places in the tree.
 * Minimum and maximum probabilities for primary events.
@@ -45,13 +45,13 @@ Algorithm
 
 1) Generate databases with intermediate and basic events.
 
-    * Top event may not have a children primary event for complexity of the
-      tree. The number of primary events for the root node may be set
-      by a user.
+    * Top event do not have children primary events, by default,
+      for complexity of the tree. The number of primary events for
+      the root node may be set by a user.
     * Random choice between creating a new intermediate event,
-      a new primary event, or existing primary event.
-    * Limiting factors: average number of primary events per intermediate
-      event, total number of primary events.
+      a new primary event, or re-using an existing primary event.
+    * Limiting factors: the average number of primary events per intermediate
+      event, and the total number of primary events.
 
 2) Write the tree description into an output tree file.
 
