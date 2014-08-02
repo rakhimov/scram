@@ -1,4 +1,5 @@
-// Main entrance.
+/// @file scram.cc
+/// Main entrance.
 #include <iostream>
 #include <string>
 

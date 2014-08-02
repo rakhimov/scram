@@ -1,3 +1,5 @@
+/// @file superset.cc
+/// Implementation of Superset class.
 #include "superset.h"
 
 namespace scram {
@@ -72,11 +74,11 @@ int Superset::NumOfInterEvents() {
   return inters_.size();
 }
 
-std::set<int>& Superset::primes() {
+const std::set<int>& Superset::primes() {
   return primes_;
 }
 
-std::set<int>& Superset::inters() {
+const std::set<int>& Superset::inters() {
   return inters_;
 }
 
