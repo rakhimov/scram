@@ -41,33 +41,46 @@ class FaultTree : public RiskAnalysis {
   /// @param[in] approx The kind of approximation for probability calculations.
   /// @param[in] limit_order The maximum limit on minimal cut sets' order.
   /// @param[in] nsums The number of sums in the probability series.
+  /// @throws ValueError if any of the parameters are invalid.
   FaultTree(std::string analysis, bool graph_only, std::string approx = "no",
             int limit_order = 20, int nsums = 1000000);
 
   /// Reads input file with the structure of the Fault tree.
   /// Puts all events into their appropriate containers.
   /// @param[in] input_file The formatted input file.
+  /// @throws ValidationError if input contains errors.
+  /// @throws ValueError if input values are not valid.
+  /// @throws IOError if the input file is not accessable.
   void ProcessInput(std::string input_file);
 
   /// Reads probabilities for primary events from a formatted input file.
   /// Attaches probabilities to primary events.
   /// @param[in] prob_file The file with probability information.
+  /// @throws Error if called before tree initialization from an input file.
+  /// @throws ValidationError if input contains errors.
+  /// @throws ValueError if input values are not valid.
+  /// @throws IOError if the input file is not accessable.
   void PopulateProbabilities(std::string prob_file);
 
   /// Outputs a file with instructions for graphviz dot to create a fault tree.
   /// @note This function must be called only after initializing the tree.
   /// @note The name of the output file is the same as the input file, but
   /// the extensions are different.
+  /// @throws Error if called before tree initialization from an input file.
+  /// @throws IOError if the output file is not accessable.
   void GraphingInstructions();
 
   /// Analyzes the fault tree and performs computations.
   /// This function must be called only after initilizing the tree with or
   /// without its probabilities.
+  /// @throws Error if called before tree initialization from an input file.
   void Analyze();
 
   /// Reports the results of analysis to a specified output destination.
   /// @note This function must be called only after Analyze() function.
   /// param[out] output The output destination.
+  /// @throws Error if called before the tree analysis.
+  /// @throws IOError if the output file is not accessable.
   void Report(std::string output);
 
   virtual ~FaultTree() {}
