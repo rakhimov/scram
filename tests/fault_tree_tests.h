@@ -25,9 +25,9 @@ class FaultTreeTest : public ::testing::Test {
     delete fta;
   }
 
-  bool GetArgs_(std::vector<std::string>& args, std::string& line,
-                std::string& orig_line) {
-    return fta->GetArgs_(args, line, orig_line);
+  bool GetArgs_(std::string& line, std::string& orig_line,
+                std::vector<std::string>& args) {
+    return fta->GetArgs_(line, orig_line, args);
   }
 
   std::map<std::string, std::string>& orig_ids() { return fta->orig_ids_; }

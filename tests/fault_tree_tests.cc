@@ -12,18 +12,18 @@ TEST_F(FaultTreeTest, GetArgs) {
   std::string line = "";  // An empty line.
   std::string orig_line = "";
   std::vector<std::string> args;
-  EXPECT_FALSE(GetArgs_(args, line, orig_line));  // Test for empty line.
+  EXPECT_FALSE(GetArgs_(line, orig_line, args));  // Test for empty line.
   EXPECT_EQ(line, "");
   line = "# This is a comment";
-  EXPECT_FALSE(GetArgs_(args, line, orig_line));  // Test for comments.
+  EXPECT_FALSE(GetArgs_(line, orig_line, args));  // Test for comments.
   line = "  Arg_1 Arg_2 ";  // Some valid arguments.
-  EXPECT_TRUE(GetArgs_(args, line, orig_line));
+  EXPECT_TRUE(GetArgs_(line, orig_line, args));
   EXPECT_EQ("Arg_1 Arg_2", orig_line);
   EXPECT_EQ("arg_1 arg_2", line);
   EXPECT_EQ("arg_1", args[0]);
   EXPECT_EQ("arg_2", args[1]);
   line = "  Arg  # comments.";  // Inline comments.
-  EXPECT_TRUE(GetArgs_(args, line, orig_line));
+  EXPECT_TRUE(GetArgs_(line, orig_line, args));
   EXPECT_EQ("Arg", orig_line);
   EXPECT_EQ("arg", line);
   EXPECT_EQ("arg", args[0]);
