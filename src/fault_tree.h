@@ -1,3 +1,5 @@
+/// @file fault_tree.h
+/// Fault Tree Analysis.
 #ifndef SCRAM_FAULT_TREE_H_
 #define SCRAM_FAULT_TREE_H_
 
@@ -27,33 +29,45 @@ typedef boost::shared_ptr<scram::Superset> SupersetPtr;
 
 namespace scram {
 
-// Fault tree analysis.
+/// @class FaultTree
+/// Fault tree analysis functionality.
 class FaultTree : public RiskAnalysis {
   friend class ::FaultTreeTest;
 
  public:
+  /// The main constructor of the Fault Tree Analysis.
+  /// @param[in] analysis The type of fault tree analysis.
+  /// @param[in] graph_only Indicates if only graph is requested.
+  /// @param[in] approx The kind of approximation for probability calculations.
+  /// @param[in] limit_order The maximum limit on minimal cut sets' order.
+  /// @param[in] nsums The number of sums in the probability series.
   FaultTree(std::string analysis, bool graph_only, std::string approx = "no",
             int limit_order = 20, int nsums = 1000000);
 
-  // Reads input file with the structure of the Fault tree.
-  // Puts all events into their appropriate containers.
+  /// Reads input file with the structure of the Fault tree.
+  /// Puts all events into their appropriate containers.
+  /// @param[in] input_file The formatted input file.
   void ProcessInput(std::string input_file);
 
-  // Reads probabilities for primary events from a formatted input file.
-  // Attaches probabilities to primary events.
+  /// Reads probabilities for primary events from a formatted input file.
+  /// Attaches probabilities to primary events.
+  /// @param[in] prob_file The file with probability information.
   void PopulateProbabilities(std::string prob_file);
 
-  // Outputs a file with instructions for graphviz dot to create a fault tree.
-  // This function must be called only after initializing the tree.
+  /// Outputs a file with instructions for graphviz dot to create a fault tree.
+  /// @note This function must be called only after initializing the tree.
+  /// @note The name of the output file is the same as the input file, but
+  /// the extensions are different.
   void GraphingInstructions();
 
-  // Analyzes the fault tree and performs computations.
-  // This function must be called only after initilizing the tree with or
-  // without its probabilities.
+  /// Analyzes the fault tree and performs computations.
+  /// This function must be called only after initilizing the tree with or
+  /// without its probabilities.
   void Analyze();
 
-  // Reports the results of analysis to a specified output destination.
-  // This function must be called only after Analyze() function.
+  /// Reports the results of analysis to a specified output destination.
+  /// @note This function must be called only after Analyze() function.
+  /// param[out] output The output destination.
   void Report(std::string output);
 
   virtual ~FaultTree() {}

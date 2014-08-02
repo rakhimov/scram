@@ -1,4 +1,5 @@
-// Implementation of fault tree analysis.
+/// @file fault_tree.cc
+/// Implementation of fault tree analysis.
 #include "fault_tree.h"
 
 #include <algorithm>
@@ -7,9 +8,7 @@
 #include <iomanip>
 #include <iostream>
 #include <iterator>
-#include <set>
 #include <sstream>
-#include <string>
 #include <vector>
 
 #include <boost/algorithm/string.hpp>
