@@ -1,5 +1,5 @@
 #################################################
-SCRAM FTA: Input Parser
+SCRAM FTA: Input Parser and Input Examples
 #################################################
 
 Steps in Fault Tree Input Verification
@@ -25,3 +25,24 @@ Steps in Fault Tree Input Verification
     - Throw an error if an event is defined doubly.
     - Ignore events that are not initialized in the tree when assinging
       probabilities from a probability file.
+
+
+.. _input_file_examples:
+
+Input File Examples with Descriptions
+=====================================
+
+Fault Tree Input File
+---------------------
+.. include:: input_file_instructions.scramf
+    :literal:
+
+Fault Tree Transfer Sub-tree File
+---------------------------------
+.. include:: file_to_link.scramf
+    :literal:
+
+Fault Tree Probability Input File
+---------------------------------
+.. include:: probability_input_instructions.scramp
+    :literal:

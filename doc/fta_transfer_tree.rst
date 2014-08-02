@@ -47,3 +47,5 @@ Specifics of Transfer In and Transfer Out
     - Transfer tree intermediate event names may repeat or conflict with other
       sub-trees' intermediate event names. This conflict is ignored in order
       in order to provide better modularity to sub-trees.
+
+- For example input files, see :ref: `input_file_examples`.
