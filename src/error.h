@@ -1,4 +1,5 @@
-// Exceptions for scram project.
+/// @file error.h
+/// Exceptions for scram project.
 #ifndef SCRAM_ERROR_H_
 #define SCRAM_ERROR_H_
 
@@ -7,53 +8,64 @@
 
 namespace scram {
 
+/// @class Error
+/// The Error class is the base class
+/// for common exceptions specific to the SCRAM code.
 class Error : public std::exception {
  public:
-  // Constructs for a new error with a default message.
+  /// Constructs a new error with a default message.
   Error();
 
-  // Constructs for a new error with a provided message.
+  /// Constructs a new error with a provided message.
+  /// @param[in] msg The message to be passed with this error.
   Error(std::string msg);
 
-  // Returns the error message.
+  /// @returns The error message.
   virtual const char* what() const throw();
 
-  // Returns the error message.
-  std::string msg() const {
-    return msg_;
-  }
+  /// @returns The error message.
+  const std::string& msg() const { return msg_; }
 
-  // Sets the error message.
-  void msg(std::string msg) {
-    msg_ = msg;
-  }
+  /// Sets the error message.
+  /// @param[in] msg The error message.
+  void msg(std::string& msg) { msg_ = msg; }
 
   virtual ~Error() throw() {}
 
  protected:
-  // The error message.
+  /// The error message.
   std::string msg_;
 
  private:
+  /// SCRAM prefix specific to the application.
   static const std::string kPrefix;
 };
 
-// For values that are not acceptable.
-// For example, negative probability.
+/// @class ValueError
+/// For values that are not acceptable.
+/// For example, negative probability.
 class ValueError : public Error {
  public:
+  /// Constructs a new value error with a provided message.
+  /// @param[in] msg The message to be passed with this error.
   ValueError(std::string msg) : Error(msg) {}
 };
 
-// For validating input parameters.
+/// @class ValidationError
+/// For validating input parameters or user arguments.
 class ValidationError : public Error {
  public:
+  /// Constructs a new validation error with a provided message.
+  /// @param[in] msg The message to be passed with this error.
   ValidationError(std::string msg) : Error(msg) {}
 };
 
-// For input/output errors.
+/// @class IOError
+/// For input/output related errors.
 class IOError : public Error {
  public:
+  /// Constructs a new io error with a provided message.
+  /// @param[in] msg The message to be passed with this error.
   IOError(std::string msg) : Error(msg) {}
 };
 

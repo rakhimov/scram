@@ -1,3 +1,5 @@
+/// @file error.cc
+/// Implementation of the exceptions for use in SCRAM.
 #include "error.h"
 
 namespace scram {
