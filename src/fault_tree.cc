@@ -111,7 +111,7 @@ void FaultTree::ProcessInput(std::string input_file) {
   msg << "In " << input_file << ", ";
 
   for (int nline = 1; getline(ifile, line); ++nline) {
-    if (!FaultTree::GetArgs_(args, line, orig_line)) continue;
+    if (!FaultTree::GetArgs_(line, orig_line, args)) continue;
 
     FaultTree::InterpretArgs_(nline, msg, args, orig_line);
   }
@@ -169,7 +169,7 @@ void FaultTree::PopulateProbabilities(std::string prob_file) {
   msg << "In " << prob_file << ", ";
 
   for (int nline = 1; getline(pfile, line); ++nline) {
-    if (!FaultTree::GetArgs_(args, line, orig_line)) continue;
+    if (!FaultTree::GetArgs_(line, orig_line, args)) continue;
 
     switch (args.size()) {
       case 1: {
@@ -951,8 +951,8 @@ void FaultTree::Report(std::string output) {
   }
 }
 
-bool FaultTree::GetArgs_(std::vector<std::string>& args, std::string& line,
-                         std::string& orig_line) {
+bool FaultTree::GetArgs_(std::string& line, std::string& orig_line,
+                         std::vector<std::string>& args) {
     std::vector<std::string> no_comments;  // To hold lines without comments.
 
     // Remove trailing spaces.
@@ -1483,12 +1483,124 @@ void FaultTree::IncludeTransfers_() {
     transfer_first_inter_ = false;
 
     for (int nline = 1; getline(ifile, line); ++nline) {
-      if (!FaultTree::GetArgs_(args, line, orig_line)) continue;
+      if (!FaultTree::GetArgs_(line, orig_line, args)) continue;
 
       FaultTree::InterpretArgs_(nline, msg,  args, orig_line, tr_parent,
                                 tr_id, suffix);
     }
   }
+}
+
+std::string FaultTree::CheckAllGates_() {
+  // Handle the special case when only one node TransferIn tree is graphed.
+  if (graph_only_ && top_event_id_ == "") return "";
+
+  std::stringstream msg;
+  msg << "";  // An empty default message is the indicator of no problems.
+
+  // Check the top event.
+  msg << FaultTree::CheckGate_(top_event_);
+
+  // Check the intermediate events.
+  boost::unordered_map<std::string, InterEventPtr>::iterator it;
+  for (it = inter_events_.begin(); it != inter_events_.end(); ++it) {
+    msg << FaultTree::CheckGate_(it->second);
+  }
+
+  return msg.str();
+}
+
+std::string FaultTree::CheckGate_(const TopEventPtr& event) {
+  std::stringstream msg;
+  msg << "";  // An empty default message is the indicator of no problems.
+  try {
+    std::string gate = event->gate();
+    // This line throws an error if there are no children.
+    int size = event->children().size();
+    // Add transfer gates if needed for graphing.
+    size += transfer_map_.count(event->id());
+
+    // Gate dependent logic.
+    if (gate == "and" || gate == "or" || gate == "nor" || gate == "nand") {
+      if (size < 2) {
+        boost::to_upper(gate);
+        msg << orig_ids_[event->id()] << " : " << gate
+            << " gate must have 2 or more "
+            << "children.\n";
+      }
+    } else if (gate == "xor") {
+      if (size != 2) {
+        boost::to_upper(gate);
+        msg << orig_ids_[event->id()] << " : " << gate
+            << " gate must have exactly 2 children.\n";
+      }
+    } else if (gate == "inhibit") {
+      if (size != 2) {
+        boost::to_upper(gate);
+        msg << orig_ids_[event->id()] << " : " << gate
+            << " gate must have exactly 2 children.\n";
+      } else {
+        bool conditional_found = false;
+        std::map<std::string, EventPtr> children = event->children();
+        std::map<std::string, EventPtr>::iterator it;
+        for (it = children.begin(); it != children.end(); ++it) {
+          if (primary_events_.count(it->first)) {
+            std::string type = primary_events_[it->first]->type();
+            if (type == "conditional") {
+              if (!conditional_found) {
+                conditional_found = true;
+              } else {
+                boost::to_upper(gate);
+                msg << orig_ids_[event->id()] << " : " << gate
+                    << " gate must have exactly one conditional event.\n";
+              }
+            }
+          }
+        }
+        if (!conditional_found) {
+          boost::to_upper(gate);
+          msg << orig_ids_[event->id()] << " : " << gate
+              << " gate is missing a conditional event.\n";
+        }
+      }
+    } else if (gate == "not" || gate == "null") {
+      if (size != 1) {
+        boost::to_upper(gate);
+        msg << orig_ids_[event->id()] << " : " << gate
+            << " gate must have exactly one child.";
+      }
+    } else if (gate == "vote") {
+      if (size <= event->vote_number()) {
+        boost::to_upper(gate);
+        msg << orig_ids_[event->id()] << " : " << gate
+            << " gate must have more children that its vote number "
+            << event->vote_number() << ".";
+      }
+    } else {
+      boost::to_upper(gate);
+      msg << orig_ids_[event->id()] << " : Gate Check failure. No check for "
+          << gate << " gate.";
+    }
+  } catch (scram::ValueError& err) {
+    msg << orig_ids_[event->id()] << " : No children detected.";
+  }
+
+  return msg.str();
+}
+
+std::string FaultTree::PrimariesNoProb_() {
+  std::string uninit_primaries = "";
+  boost::unordered_map<std::string, PrimaryEventPtr>::iterator it;
+  for (it = primary_events_.begin(); it != primary_events_.end(); ++it) {
+    try {
+      it->second->p();
+    } catch (scram::ValueError& err) {
+      uninit_primaries += orig_ids_[it->first];
+      uninit_primaries += "\n";
+    }
+  }
+
+  return uninit_primaries;
 }
 
 void FaultTree::GraphNode_(TopEventPtr t,
@@ -1705,119 +1817,53 @@ void FaultTree::SetAnd_(std::vector<int>& events_children,
   sets.push_back(tmp_set_c);
 }
 
-std::string FaultTree::CheckAllGates_() {
-  // Handle the special case when only one node TransferIn tree is graphed.
-  if (graph_only_ && top_event_id_ == "") return "";
-
-  std::stringstream msg;
-  msg << "";  // An empty default message is the indicator of no problems.
-
-  // Check the top event.
-  msg << FaultTree::CheckGate_(top_event_);
-
-  // Check the intermediate events.
-  boost::unordered_map<std::string, InterEventPtr>::iterator it;
-  for (it = inter_events_.begin(); it != inter_events_.end(); ++it) {
-    msg << FaultTree::CheckGate_(it->second);
-  }
-
-  return msg.str();
-}
-
-std::string FaultTree::CheckGate_(const TopEventPtr& event) {
-  std::stringstream msg;
-  msg << "";  // An empty default message is the indicator of no problems.
-  try {
-    std::string gate = event->gate();
-    // This line throws an error if there are no children.
-    int size = event->children().size();
-    // Add transfer gates if needed for graphing.
-    size += transfer_map_.count(event->id());
-
-    // Gate dependent logic.
-    if (gate == "and" || gate == "or" || gate == "nor" || gate == "nand") {
-      if (size < 2) {
-        boost::to_upper(gate);
-        msg << orig_ids_[event->id()] << " : " << gate
-            << " gate must have 2 or more "
-            << "children.\n";
-      }
-    } else if (gate == "xor") {
-      if (size != 2) {
-        boost::to_upper(gate);
-        msg << orig_ids_[event->id()] << " : " << gate
-            << " gate must have exactly 2 children.\n";
-      }
-    } else if (gate == "inhibit") {
-      if (size != 2) {
-        boost::to_upper(gate);
-        msg << orig_ids_[event->id()] << " : " << gate
-            << " gate must have exactly 2 children.\n";
-      } else {
-        bool conditional_found = false;
-        std::map<std::string, EventPtr> children = event->children();
-        std::map<std::string, EventPtr>::iterator it;
-        for (it = children.begin(); it != children.end(); ++it) {
-          if (primary_events_.count(it->first)) {
-            std::string type = primary_events_[it->first]->type();
-            if (type == "conditional") {
-              if (!conditional_found) {
-                conditional_found = true;
-              } else {
-                boost::to_upper(gate);
-                msg << orig_ids_[event->id()] << " : " << gate
-                    << " gate must have exactly one conditional event.\n";
-              }
-            }
-          }
-        }
-        if (!conditional_found) {
-          boost::to_upper(gate);
-          msg << orig_ids_[event->id()] << " : " << gate
-              << " gate is missing a conditional event.\n";
-        }
-      }
-    } else if (gate == "not" || gate == "null") {
-      if (size != 1) {
-        boost::to_upper(gate);
-        msg << orig_ids_[event->id()] << " : " << gate
-            << " gate must have exactly one child.";
-      }
-    } else if (gate == "vote") {
-      if (size <= event->vote_number()) {
-        boost::to_upper(gate);
-        msg << orig_ids_[event->id()] << " : " << gate
-            << " gate must have more children that its vote number "
-            << event->vote_number() << ".";
-      }
-    } else {
-      boost::to_upper(gate);
-      msg << orig_ids_[event->id()] << " : Gate Check failure. No check for "
-          << gate << " gate.";
-    }
-  } catch (scram::ValueError& err) {
-    msg << orig_ids_[event->id()] << " : No children detected.";
-  }
-
-  return msg.str();
-}
-
-std::string FaultTree::PrimariesNoProb_() {
-  std::string uninit_primaries = "";
-  boost::unordered_map<std::string, PrimaryEventPtr>::iterator it;
-  for (it = primary_events_.begin(); it != primary_events_.end(); ++it) {
-    try {
-      it->second->p();
-    } catch (scram::ValueError& err) {
-      uninit_primaries += orig_ids_[it->first];
-      uninit_primaries += "\n";
-    }
-  }
-
-  return uninit_primaries;
-}
-
 // -------------------- Algorithm for Cut Sets and Probabilities -----------
+void FaultTree::AssignIndexes_() {
+  // Assign an index to each primary event, and populate relevant
+  // databases.
+  int j = 1;
+  boost::unordered_map<std::string, PrimaryEventPtr>::iterator itp;
+  // Dummy primary event at index 0.
+  int_to_prime_.push_back(PrimaryEventPtr(new PrimaryEvent("dummy")));
+  iprobs_.push_back(0);
+  for (itp = primary_events_.begin(); itp != primary_events_.end(); ++itp) {
+    int_to_prime_.push_back(itp->second);
+    prime_to_int_.insert(std::make_pair(itp->second->id(), j));
+    if (prob_requested_) iprobs_.push_back(itp->second->p());
+    ++j;
+  }
+
+  // Assign an index to each top and intermediate event and populate
+  // relevant databases.
+  top_event_index_ = j;
+  int_to_inter_.insert(std::make_pair(j, top_event_));
+  inter_to_int_.insert(std::make_pair(top_event_id_, j));
+  ++j;
+  boost::unordered_map<std::string, InterEventPtr>::iterator iti;
+  for (iti = inter_events_.begin(); iti != inter_events_.end(); ++iti) {
+    int_to_inter_.insert(std::make_pair(j, iti->second));
+    inter_to_int_.insert(std::make_pair(iti->second->id(), j));
+    ++j;
+  }
+}
+
+void FaultTree::SetsToString_() {
+  std::set< std::set<int> >::iterator it_min;
+  for (it_min = imcs_.begin(); it_min != imcs_.end(); ++it_min) {
+    std::set<std::string> pr_set;
+    std::set<int>::iterator it_set;
+    for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
+      if (*it_set < 0) {  // NOT logic.
+        pr_set.insert("not " + int_to_prime_[std::abs(*it_set)]->id());
+      } else {
+        pr_set.insert(int_to_prime_[*it_set]->id());
+      }
+    }
+    imcs_to_smcs_.insert(std::make_pair(*it_min, pr_set));
+    min_cut_sets_.insert(pr_set);
+  }
+}
+
 double FaultTree::ProbOr_(std::set< std::set<int> >& min_cut_sets, int nsums) {
   // Recursive implementation.
   if (min_cut_sets.empty()) return 0;
@@ -1880,52 +1926,6 @@ void FaultTree::CombineElAndSet_(const std::set<int>& el,
   }
 }
 
-void FaultTree::AssignIndexes_() {
-  // Assign an index to each primary event, and populate relevant
-  // databases.
-  int j = 1;
-  boost::unordered_map<std::string, PrimaryEventPtr>::iterator itp;
-  // Dummy primary event at index 0.
-  int_to_prime_.push_back(PrimaryEventPtr(new PrimaryEvent("dummy")));
-  iprobs_.push_back(0);
-  for (itp = primary_events_.begin(); itp != primary_events_.end(); ++itp) {
-    int_to_prime_.push_back(itp->second);
-    prime_to_int_.insert(std::make_pair(itp->second->id(), j));
-    if (prob_requested_) iprobs_.push_back(itp->second->p());
-    ++j;
-  }
-
-  // Assign an index to each top and intermediate event and populate
-  // relevant databases.
-  top_event_index_ = j;
-  int_to_inter_.insert(std::make_pair(j, top_event_));
-  inter_to_int_.insert(std::make_pair(top_event_id_, j));
-  ++j;
-  boost::unordered_map<std::string, InterEventPtr>::iterator iti;
-  for (iti = inter_events_.begin(); iti != inter_events_.end(); ++iti) {
-    int_to_inter_.insert(std::make_pair(j, iti->second));
-    inter_to_int_.insert(std::make_pair(iti->second->id(), j));
-    ++j;
-  }
-}
-
-void FaultTree::SetsToString_() {
-  std::set< std::set<int> >::iterator it_min;
-  for (it_min = imcs_.begin(); it_min != imcs_.end(); ++it_min) {
-    std::set<std::string> pr_set;
-    std::set<int>::iterator it_set;
-    for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
-      if (*it_set < 0) {  // NOT logic.
-        pr_set.insert("not " + int_to_prime_[std::abs(*it_set)]->id());
-      } else {
-        pr_set.insert(int_to_prime_[*it_set]->id());
-      }
-    }
-    imcs_to_smcs_.insert(std::make_pair(*it_min, pr_set));
-    min_cut_sets_.insert(pr_set);
-  }
-}
-
 // ----------------------------------------------------------------------
 // ----- Algorithm for Total Equation for Monte Carlo Simulation --------
 // Generation of the representation of the original equation.
@@ -1953,16 +1953,10 @@ void FaultTree::MProbOr_(std::set< std::set<int> >& min_cut_sets,
   }
 
   std::set< std::set<int> > combo_sets;
-  FaultTree::MCombineElAndSet_(element_one, min_cut_sets, combo_sets);
+  FaultTree::CombineElAndSet_(element_one, min_cut_sets, combo_sets);
   FaultTree::MProbOr_(min_cut_sets, sign, nsums);
   FaultTree::MProbOr_(combo_sets, sign + 1, nsums - 1);
   return;
-}
-
-void FaultTree::MCombineElAndSet_(const std::set<int>& el,
-                                  const std::set< std::set<int> >& set,
-                                  std::set< std::set<int> >& combo_set) {
-  FaultTree::CombineElAndSet_(el, set, combo_set);  // The same function.
 }
 
 void FaultTree::MSample_() {}

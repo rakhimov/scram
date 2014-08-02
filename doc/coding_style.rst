@@ -22,3 +22,5 @@ Currently nonconforming cases in the source code:
 * Functions use default values.
 * Header guards do not include the source folder name.
 * Null values for strings are not "\\0".
+* Function output parameters are not pointers but references.
+* Input then output parameter ordering is not strict.
