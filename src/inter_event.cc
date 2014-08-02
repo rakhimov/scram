@@ -1,4 +1,5 @@
-// Implementation of intermidiate event class.
+/// @file inter_event.cc
+/// Implementation of intermidiate event class.
 #include "event.h"
 
 #include "error.h"
