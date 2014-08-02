@@ -22,7 +22,7 @@ class Event {
   Event(std::string id) : id_(id) {}
 
   /// @returns The id that is set upon the construction of this event.
-  virtual std::string id() { return id_; }
+  virtual const std::string& id() { return id_; }
 
   virtual ~Event() {}
 
@@ -41,16 +41,16 @@ class TopEvent : public scram::Event {
   /// @param[in] gate The gate for this event.
   TopEvent(std::string id, std::string gate = "NONE");
 
-  /// @returns the gate type.
+  /// @returns The gate type.
   /// @throws ValueError if the gate is not yet assigned.
-  virtual std::string gate();
+  virtual const std::string& gate();
 
   /// Sets the gate type.
   /// @param[in] gate The gate for this event.
   /// @throws ValueError if the gate is being re-assigned.
   virtual void gate(std::string gate);
 
-  /// @returns the vote number iff the gate is vote.
+  /// @returns The vote number iff the gate is vote.
   virtual int vote_number();
 
   /// Sets the vote number only for a vote gate.
@@ -58,7 +58,7 @@ class TopEvent : public scram::Event {
   /// @throws ValueError if the vote number is invalid or being re-assigned.
   virtual void vote_number(int vnumber);
 
-  /// @returns the children of this event.
+  /// @returns The children of this event.
   /// @throws ValueError if there are no children.
   virtual const std::map<std::string,
                          boost::shared_ptr<scram::Event> >& children();
@@ -91,7 +91,7 @@ class InterEvent : public scram::TopEvent {
   /// @param[in] gate The gate for this event.
   InterEvent(std::string id, std::string gate = "NONE");
 
-  /// @returns the parent, which can only be a Top or Intermediate event.
+  /// @returns The parent, which can only be a Top or Intermediate event.
   /// @throws ValueError if the parent is not yet set.
   const boost::shared_ptr<scram::TopEvent>& parent();
 
@@ -118,16 +118,16 @@ class PrimaryEvent : public scram::Event {
   /// @param[in] p The failure probability.
   PrimaryEvent(std::string id, std::string type = "", double p = -1);
 
-  /// @returns the type of the primary event.
+  /// @returns The type of the primary event.
   /// @throws ValueError if the type is not yet set.
-  std::string type();
+  const std::string& type();
 
   /// Sets the type.
   /// @param[in] new_type The type for this event.
   /// @throws ValueError if type is not valid or being re-assigned.
   void type(std::string new_type);
 
-  /// @returns the probability of failure of this event.
+  /// @returns The probability of failure of this event.
   /// @throws ValueError if probability is not yet set.
   double p();
 
@@ -147,7 +147,7 @@ class PrimaryEvent : public scram::Event {
   /// @throws ValueError if the parent is being re-inserted.
   void AddParent(const boost::shared_ptr<scram::TopEvent>& parent);
 
-  /// @returns all the parents of this primary event.
+  /// @returns All the parents of this primary event.
   /// @throws ValueError if there are no parents for this primary event.
   std::map<std::string, boost::shared_ptr<scram::TopEvent> >& parents();
 

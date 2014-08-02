@@ -13,7 +13,7 @@ PrimaryEvent::PrimaryEvent(std::string id, std::string type, double p)
       type_(type),
       p_(p) {}
 
-std::string PrimaryEvent::type() {
+const std::string& PrimaryEvent::type() {
   if (type_ == "") {
     std::string msg = this->id() + " type has not been set.";
     throw scram::ValueError(msg);

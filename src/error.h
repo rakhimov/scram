@@ -9,26 +9,26 @@
 namespace scram {
 
 /// @class Error
-///
-/// The Error class is for common exceptions specific to the SCRAM project.
+/// The Error class is the base class
+/// for common exceptions specific to the SCRAM code.
 class Error : public std::exception {
  public:
-  /// Constructs for a new error with a default message.
+  /// Constructs a new error with a default message.
   Error();
 
   /// Constructs a new error with a provided message.
   /// @param[in] msg The message to be passed with this error.
   Error(std::string msg);
 
-  /// @returns the error message.
+  /// @returns The error message.
   virtual const char* what() const throw();
 
-  /// @returns the error message.
-  std::string msg() const { return msg_; }
+  /// @returns The error message.
+  const std::string& msg() const { return msg_; }
 
   /// Sets the error message.
   /// @param[in] msg The error message.
-  void msg(std::string msg) { msg_ = msg; }
+  void msg(std::string& msg) { msg_ = msg; }
 
   virtual ~Error() throw() {}
 

@@ -11,7 +11,7 @@ TopEvent::TopEvent(std::string id, std::string gate)
       gate_(gate),
       vote_number_(-1) {}
 
-std::string TopEvent::gate() {
+const std::string& TopEvent::gate() {
   if (gate_ == "NONE") {
     std::string msg = "Gate is not set for " + this->id() + " event.";
     throw scram::ValueError(msg);
