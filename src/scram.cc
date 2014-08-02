@@ -1,4 +1,5 @@
-// Main entrance.
+/// @file scram.cc
+/// Main entrance.
 #include <iostream>
 #include <string>
 
@@ -13,6 +14,7 @@ namespace fs = boost::filesystem;
 
 using namespace scram;
 
+/// Currently for Command line interactions.
 int main(int argc, char* argv[]) {
   // Parse command line options.
   std::string usage = "Usage:    scram [input-file] [prob-file] [opts]";
