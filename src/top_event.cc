@@ -1,4 +1,5 @@
-// Implementation of top event class.
+/// @file top_event.cc
+/// Implementation of top event class.
 #include "event.h"
 
 #include "error.h"

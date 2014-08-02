@@ -1,4 +1,5 @@
-// Implementation of primary event class.
+/// @file primary_event.cc
+/// Implementation of primary event class.
 #include "event.h"
 
 #include <cmath>
