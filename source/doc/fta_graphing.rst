@@ -37,7 +37,7 @@ SCRAM Fault Tree Graphing Specifics
 
 Currently Supported Graphing Tools
 ==================================
-* `Graphviz DOT`_ (*Prefer SVG output for a complex trees*)
+* `Graphviz DOT`_ (*Prefer SVG output for complex trees*)
 
 .. _`Graphviz DOT`: http://www.graphviz.org
 
