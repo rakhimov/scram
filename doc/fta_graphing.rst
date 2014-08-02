@@ -40,3 +40,14 @@ Currently Supported Graphing Tools
 * `Graphviz DOT`_ (*Prefer SVG output for a complex trees*)
 
 .. _`Graphviz DOT`: http://www.graphviz.org
+
+Example Fault Tree Images
+=========================
+Two Train System
+----------------
+.. image:: two_train.png
+
+Three Motor
+-----------
+.. image:: three_motor.png
+.. image:: t.png
