@@ -8,6 +8,8 @@ TODO list for SCRAM Project
 Currently Low Hanging Fruits
 ============================
 
+- `Issues on GitHub <https://github.com/rakhimov/SCRAM/issues>`_
+
 - Minimal cut set input file as an alternative to a tree file. *Moderate*
 
     * Save minimal cut sets for later analysis
