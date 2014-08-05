@@ -58,13 +58,13 @@ void PrimaryEvent::p(double p) {
   p_ = p;
 }
 
-void PrimaryEvent::p(double p, double time) {
+void PrimaryEvent::p(double freq, double time) {
   if (p_ != -1) {
     std::string msg = "Trying to re-assign probability for " + this->id();
     throw scram::ValueError(msg);
   }
 
-  if (p < 0) {
+  if (freq < 0) {
     std::string msg = "The value for a failure rate is not valid for " +
         this->id();
     throw scram::ValueError(msg);
@@ -82,7 +82,7 @@ void PrimaryEvent::p(double p, double time) {
     throw scram::ValueError(msg);
   }
 
-  p_ = 1 - std::exp(p * time);
+  p_ = 1 - std::exp(freq * time);
 }
 
 void PrimaryEvent::AddParent(const boost::shared_ptr<scram::TopEvent>& parent) {

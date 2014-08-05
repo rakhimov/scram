@@ -137,10 +137,10 @@ class PrimaryEvent : public scram::Event {
   void p(double p);
 
   /// Sets the total probability for L-model.
-  /// @param[in] p The failure frequency for L-model.
+  /// @param[in] freq The failure frequency for L-model.
   /// @param[in] time The time to failure for L-model.
   /// @throws ValueError if probability is not a valid value or re-assigned.
-  void p(double p, double time);
+  void p(double freq, double time);
 
   /// Adds a parent into the parent map.
   /// @param[in] parent One of the parents of this primary event.
