@@ -326,9 +326,8 @@ void FaultTree::GraphingInstructions() {
   out << "digraph " << graph_name << " {\n";
   // Special case for sub-tree only graphing.
   if (sub_tree_analysis_) {
-    std::string tr_id =
-        input_file_.substr(input_file_.find_last_of("/") +
-                           1, std::string::npos);
+    std::string tr_id = input_file_.substr(input_file_.find_last_of("/") + 1,
+                                           std::string::npos);
     out << "\"" << tr_id << "\" -> "
         << "\"" << orig_ids_[top_event_id_] <<"\";\n";
     out << "\"" << tr_id << "\" [shape=invtriangle, "
