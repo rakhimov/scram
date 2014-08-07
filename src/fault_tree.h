@@ -75,7 +75,6 @@ class FaultTree : public RiskAnalysis {
   /// without its probabilities.
   /// @throws Error if called before tree initialization from an input file.
   /// @note Cut set generator: O_avg(N) O_max(N)
-  /// @note MCS generator: T_avg(N^3 + N^2*logN + N*logN) = O_avg(N^3)
   void Analyze();
 
   /// Reports the results of analysis to a specified output destination.
@@ -183,9 +182,19 @@ class FaultTree : public RiskAnalysis {
   /// @param[in] events_children The indices of the children of the event.
   /// @param[out] sets The final Supersets generated for OR operator.
   /// @param[in] mult The positive or negative event indicator.
-  /// @note O_avg(N*logN) O_max(N*logN) where N is the total number of children.
+  /// @note O_avg(N*logN) O_max(N*logN) where N is the number of children.
   void SetAnd_(std::vector<int>& events_children,
                std::vector<SupersetPtr>& sets, int mult = 1);
+
+  /// Finds minimal cut sets from cut sets.
+  /// Applys rule 4 to reduce unique cut sets to minimal cut sets.
+  /// @param[in] cut_sets Cut sets with primary events.
+  /// @param[in] mcs_lower_order Reference minimal cut sets of some order.
+  /// @param[in] min_order The order of sets to become minimal.
+  /// @note MCS generator: T_avg(N^3 + N^2*logN + N*logN) = O_avg(N^3)
+  void FindMCS_(const std::set< std::set<int> >& cut_sets,
+                const std::set< std::set<int> >& mcs_lower_order,
+                int min_order);
 
   // -------------------- Algorithm for Cut Sets and Probabilities -----------
   /// Assigns an index to each primary event, and then populates with this

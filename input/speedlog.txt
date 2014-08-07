@@ -14,9 +14,9 @@ user    5.550s  |  6.200s
 
 ---------- fta-200 -l 16 ---------------
 Standard build:
-real    11.500s |  16.500s
-user    10.500s |  15.250s
+real    11.500s |  14.500s
+user    10.500s |  13.500s
 
 Release build:
-real    2.700s |  3.500s
-user    2.500s |  3.300s
+real    2.700s |  2.950s
+user    2.500s |  2.600s

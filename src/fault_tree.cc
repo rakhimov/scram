@@ -482,7 +482,7 @@ void FaultTree::Analyze() {
   // At this point cut sets are generated.
   // Now we need to reduce them to minimal cut sets.
 
-  // First, defensive check if cut sets exists for the specified limit order.
+  // First, defensive check if cut sets exist for the specified limit order.
   if (cut_sets.empty()) {
     std::stringstream msg;
     msg << "No cut sets for the limit order " <<  limit_order_;
@@ -501,57 +501,10 @@ void FaultTree::Analyze() {
     }
     unique_cut_sets.insert(*it_vec);
   }
-  // Iterator for unique_cut_sets.
-  std::set< std::set<int> >::iterator it_uniq;
 
-  // Iterator for minimal cut sets.
-  std::set< std::set<int> >::iterator it_min;
+  FaultTree::FindMCS_(unique_cut_sets, imcs_, 2);
 
-  // Minimal size of sets in uniq_cut_sets.
-  int min_size = 2;
-
-  // Min cut sets of the previous size.
-  std::set< std::set<int> > mcs_prev_size = imcs_;  // Current size is 1.
-
-  while (!unique_cut_sets.empty()) {
-    // Apply rule 4 to reduce unique cut sets.
-
-    std::set< std::set<int> > temp_sets;  // For mcs of a level above.
-    std::set< std::set<int> > temp_min_sets;  // For mcs of this level.
-
-    for (it_uniq = unique_cut_sets.begin();
-         it_uniq != unique_cut_sets.end(); ++it_uniq) {
-         bool include = true;  // Determine to keep or not.
-
-      for (it_min = mcs_prev_size.begin(); it_min != mcs_prev_size.end();
-           ++it_min) {
-        if (std::includes(it_uniq->begin(), it_uniq->end(),
-                          it_min->begin(), it_min->end())) {
-          // Non-minimal cut set is detected.
-          include = false;
-          break;
-        }
-      }
-      // After checking for non-minimal cut sets,
-      // all minimum sized cut sets are guaranteed to be minimal.
-      if (include) {
-        if (it_uniq->size() == min_size) {
-          imcs_.insert(*it_uniq);
-          temp_min_sets.insert(*it_uniq);
-          // Update maximum order of the sets.
-          if (min_size > max_order_) max_order_ = min_size;
-        } else {
-          temp_sets.insert(*it_uniq);
-        }
-      }
-      // Ignore the cut set because include = false.
-    }
-    unique_cut_sets = temp_sets;
-    mcs_prev_size = temp_min_sets;
-    min_size++;
-  }
-
-  FaultTree::SetsToString_();
+  FaultTree::SetsToString_();  // MCS with event ids.
 
   analysis_done_ = true;  // Main analysis enough for reporting is done.
 
@@ -569,6 +522,9 @@ void FaultTree::Analyze() {
     FaultTree::MSample_();
     return;
   }
+
+  // Iterator for minimal cut sets.
+  std::set< std::set<int> >::iterator it_min;
 
   // Iterate minimal cut sets and find probabilities for each set.
   for (it_min = imcs_.begin(); it_min != imcs_.end(); ++it_min) {
@@ -638,6 +594,51 @@ void FaultTree::Analyze() {
                                                "not " + it_prime->first));
     }
   }
+}
+
+void FaultTree::FindMCS_(const std::set< std::set<int> >& cut_sets,
+                         const std::set< std::set<int> >& mcs_lower_order,
+                         int min_order) {
+  if (cut_sets.empty()) return;
+
+  // Iterator for cut_sets.
+  std::set< std::set<int> >::iterator it_uniq;
+
+  // Iterator for minimal cut sets.
+  std::set< std::set<int> >::iterator it_min;
+
+  std::set< std::set<int> > temp_sets;  // For mcs of a level above.
+  std::set< std::set<int> > temp_min_sets;  // For mcs of this level.
+
+  for (it_uniq = cut_sets.begin();
+       it_uniq != cut_sets.end(); ++it_uniq) {
+    bool include = true;  // Determine to keep or not.
+
+    for (it_min = mcs_lower_order.begin(); it_min != mcs_lower_order.end();
+         ++it_min) {
+      if (std::includes(it_uniq->begin(), it_uniq->end(),
+                        it_min->begin(), it_min->end())) {
+        // Non-minimal cut set is detected.
+        include = false;
+        break;
+      }
+    }
+    // After checking for non-minimal cut sets,
+    // all minimum sized cut sets are guaranteed to be minimal.
+    if (include) {
+      if (it_uniq->size() == min_order) {
+        temp_min_sets.insert(*it_uniq);
+        // Update maximum order of the sets.
+        if (min_order > max_order_) max_order_ = min_order;
+      } else {
+        temp_sets.insert(*it_uniq);
+      }
+    }
+    // Ignore the cut set because include = false.
+  }
+  imcs_.insert(temp_min_sets.begin(), temp_min_sets.end());
+  min_order++;
+  FaultTree::FindMCS_(temp_sets, temp_min_sets, min_order);
 }
 
 void FaultTree::Report(std::string output) {
