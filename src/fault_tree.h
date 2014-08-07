@@ -191,7 +191,7 @@ class FaultTree : public RiskAnalysis {
   /// @param[in] cut_sets Cut sets with primary events.
   /// @param[in] mcs_lower_order Reference minimal cut sets of some order.
   /// @param[in] min_order The order of sets to become minimal.
-  /// @note MCS generator: T_avg(N^3 + N^2*logN + N*logN) = O_avg(N^3)
+  /// @note T_avg(N^3 + N^2*logN + N*logN) = O_avg(N^3)
   void FindMCS_(const std::set< std::set<int> >& cut_sets,
                 const std::set< std::set<int> >& mcs_lower_order,
                 int min_order);
