@@ -440,7 +440,7 @@ void FaultTree::Analyze() {
   // Container for cut sets with primary events only.
   std::vector< std::set<int> > cut_sets;
 
-  FaultTree::AssignIndexes_();
+  FaultTree::AssignIndices_();
 
   FaultTree::ExpandSets_(top_event_index_, inter_sets);
 
@@ -1747,7 +1747,7 @@ void FaultTree::ExpandSets_(int inter_index,
     int mult = 1;
     if (inter_index < 0) {
       mult = -1;
-      vote_number = size - vote_number + 1;
+      vote_number = size - vote_number + 1;  // The main trick for negation.
     }
 
     for (int i = 1; i < vote_number; ++i) {
@@ -1817,7 +1817,7 @@ void FaultTree::SetAnd_(std::vector<int>& events_children,
 }
 
 // -------------------- Algorithm for Cut Sets and Probabilities -----------
-void FaultTree::AssignIndexes_() {
+void FaultTree::AssignIndices_() {
   // Assign an index to each primary event, and populate relevant
   // databases.
   int j = 1;

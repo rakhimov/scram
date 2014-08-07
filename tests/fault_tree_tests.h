@@ -79,8 +79,8 @@ class FaultTreeTest : public ::testing::Test {
     return fta->CombineElAndSet_(el, set, combo_set);
   }
 
-  void AssignIndexes() {
-    fta->AssignIndexes_();
+  void AssignIndices() {
+    fta->AssignIndices_();
   }
 
   int GetIndex(std::string id) {
@@ -126,7 +126,7 @@ class FaultTreeTest : public ::testing::Test {
     primary_events().insert(std::make_pair("c", C));
     inter_events().insert(std::make_pair("d", D));
     inter_events().insert(std::make_pair("inter", inter));
-    AssignIndexes();
+    AssignIndices();
     a_id = GetIndex("a");
     b_id = GetIndex("b");
     c_id = GetIndex("c");

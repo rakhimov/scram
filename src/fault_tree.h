@@ -74,6 +74,8 @@ class FaultTree : public RiskAnalysis {
   /// This function must be called only after initilizing the tree with or
   /// without its probabilities.
   /// @throws Error if called before tree initialization from an input file.
+  /// @note Cut set generator: O_avg(N) O_max(N)
+  /// @note MCS generator: T_avg(N^3 + N^2*logN + N*logN) = O_avg(N^3)
   void Analyze();
 
   /// Reports the results of analysis to a specified output destination.
@@ -166,12 +168,14 @@ class FaultTree : public RiskAnalysis {
   /// @param[out] sets The final Supersets from the children.
   /// @throws ValueError if the parent's gate is not recognized.
   /// @note The final sets are dependent on the gate of the parent.
+  /// @note O_avg(N, N*logN) O_max(N^2, N^3*logN) where N is a children number.
   void ExpandSets_(int inter_index, std::vector<SupersetPtr>& sets);
 
   /// Expands sets for OR operator.
   /// @param[in] events_children The indices of the children of the event.
   /// @param[out] sets The final Supersets generated for OR operator.
   /// @param[in] mult The positive or negative event indicator.
+  /// @note O_avg(N) O_max(N^2)
   void SetOr_(std::vector<int>& events_children,
               std::vector<SupersetPtr>& sets, int mult = 1);
 
@@ -179,6 +183,7 @@ class FaultTree : public RiskAnalysis {
   /// @param[in] events_children The indices of the children of the event.
   /// @param[out] sets The final Supersets generated for OR operator.
   /// @param[in] mult The positive or negative event indicator.
+  /// @note O_avg(N*logN) O_max(N*logN) where N is the total number of children.
   void SetAnd_(std::vector<int>& events_children,
                std::vector<SupersetPtr>& sets, int mult = 1);
 
@@ -186,7 +191,8 @@ class FaultTree : public RiskAnalysis {
   /// Assigns an index to each primary event, and then populates with this
   /// indices new databases of minimal cut sets and primary to integer
   /// converting maps.
-  void AssignIndexes_();
+  /// @note O_avg(N) O_max(N^2) where N is the total number of tree nodes.
+  void AssignIndices_();
 
   /// Converts minimal cut sets from indices to strings.
   void SetsToString_();
