@@ -50,5 +50,5 @@ This incremental logic is continued till the initial set of cut sets is empty.
 Proposed Improvements for this algorithm
 ------------------------------------------
 
-Other MC Generation Algorithms
-==============================
+Other MCS Generation Algorithms
+===============================

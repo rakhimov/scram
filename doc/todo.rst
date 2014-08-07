@@ -61,5 +61,3 @@ Documentation: Moderate Importance
 
 Coding Specific
 ===================
-
-- Time and space complexity of all algorithms used in this package. *Moderate*

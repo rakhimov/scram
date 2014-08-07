@@ -214,6 +214,8 @@ class FaultTree : public RiskAnalysis {
   /// @returns The total probability.
   /// @note This function drastically modifies min_cut_sets by deleting
   /// sets inside it. This is for better performance.
+  /// @note O_avg(M*logM*N*2^N) where N is the number of sets, and M is
+  /// the average size of the sets.
   double ProbOr_(std::set< std::set<int> >& min_cut_sets,
                  int nsums = 1000000);
 
@@ -222,12 +224,15 @@ class FaultTree : public RiskAnalysis {
   /// member.
   /// @param[in] min_cut_set A set of indices of primary events.
   /// @returns The total probability.
+  /// @note O_avg(N) where N is the size of the passed set.
   double ProbAnd_(const std::set<int>& min_cut_set);
 
   /// Calculates A(and)( B(or)C ) relationship for sets using set algebra.
   /// @param[in] el A set of indices of primary events.
   /// @param[in] set Sets of indices of primary events.
   /// @param[out] combo_set A final set resulting from joining el and sets.
+  /// @note O_avg(N*M*logM) where N is the size of the set, and M is the
+  /// average size of the elements.
   void CombineElAndSet_(const std::set<int>& el,
                         const std::set< std::set<int> >& set,
                         std::set< std::set<int> >& combo_set);
