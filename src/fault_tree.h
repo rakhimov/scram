@@ -74,6 +74,7 @@ class FaultTree : public RiskAnalysis {
   /// This function must be called only after initilizing the tree with or
   /// without its probabilities.
   /// @throws Error if called before tree initialization from an input file.
+  /// @note Cut set generator: O_avg(N) O_max(N)
   void Analyze();
 
   /// Reports the results of analysis to a specified output destination.
@@ -166,12 +167,14 @@ class FaultTree : public RiskAnalysis {
   /// @param[out] sets The final Supersets from the children.
   /// @throws ValueError if the parent's gate is not recognized.
   /// @note The final sets are dependent on the gate of the parent.
+  /// @note O_avg(N, N*logN) O_max(N^2, N^3*logN) where N is a children number.
   void ExpandSets_(int inter_index, std::vector<SupersetPtr>& sets);
 
   /// Expands sets for OR operator.
   /// @param[in] events_children The indices of the children of the event.
   /// @param[out] sets The final Supersets generated for OR operator.
   /// @param[in] mult The positive or negative event indicator.
+  /// @note O_avg(N) O_max(N^2)
   void SetOr_(std::vector<int>& events_children,
               std::vector<SupersetPtr>& sets, int mult = 1);
 
@@ -179,14 +182,26 @@ class FaultTree : public RiskAnalysis {
   /// @param[in] events_children The indices of the children of the event.
   /// @param[out] sets The final Supersets generated for OR operator.
   /// @param[in] mult The positive or negative event indicator.
+  /// @note O_avg(N*logN) O_max(N*logN) where N is the number of children.
   void SetAnd_(std::vector<int>& events_children,
                std::vector<SupersetPtr>& sets, int mult = 1);
+
+  /// Finds minimal cut sets from cut sets.
+  /// Applys rule 4 to reduce unique cut sets to minimal cut sets.
+  /// @param[in] cut_sets Cut sets with primary events.
+  /// @param[in] mcs_lower_order Reference minimal cut sets of some order.
+  /// @param[in] min_order The order of sets to become minimal.
+  /// @note T_avg(N^3 + N^2*logN + N*logN) = O_avg(N^3)
+  void FindMCS_(const std::set< std::set<int> >& cut_sets,
+                const std::set< std::set<int> >& mcs_lower_order,
+                int min_order);
 
   // -------------------- Algorithm for Cut Sets and Probabilities -----------
   /// Assigns an index to each primary event, and then populates with this
   /// indices new databases of minimal cut sets and primary to integer
   /// converting maps.
-  void AssignIndexes_();
+  /// @note O_avg(N) O_max(N^2) where N is the total number of tree nodes.
+  void AssignIndices_();
 
   /// Converts minimal cut sets from indices to strings.
   void SetsToString_();
@@ -199,6 +214,8 @@ class FaultTree : public RiskAnalysis {
   /// @returns The total probability.
   /// @note This function drastically modifies min_cut_sets by deleting
   /// sets inside it. This is for better performance.
+  /// @note O_avg(M*logM*N*2^N) where N is the number of sets, and M is
+  /// the average size of the sets.
   double ProbOr_(std::set< std::set<int> >& min_cut_sets,
                  int nsums = 1000000);
 
@@ -207,12 +224,15 @@ class FaultTree : public RiskAnalysis {
   /// member.
   /// @param[in] min_cut_set A set of indices of primary events.
   /// @returns The total probability.
+  /// @note O_avg(N) where N is the size of the passed set.
   double ProbAnd_(const std::set<int>& min_cut_set);
 
   /// Calculates A(and)( B(or)C ) relationship for sets using set algebra.
   /// @param[in] el A set of indices of primary events.
   /// @param[in] set Sets of indices of primary events.
   /// @param[out] combo_set A final set resulting from joining el and sets.
+  /// @note O_avg(N*M*logM) where N is the size of the set, and M is the
+  /// average size of the elements.
   void CombineElAndSet_(const std::set<int>& el,
                         const std::set< std::set<int> >& set,
                         std::set< std::set<int> >& combo_set);
