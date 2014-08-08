@@ -377,6 +377,11 @@ class FaultTree : public RiskAnalysis {
 
   /// Total probability of the top event.
   double p_total_;
+
+  // Time logging
+  double exp_time_;  ///< Expansion of tree gates time.
+  double mcs_time_;  ///< Time for MCS generation.
+  double p_time_;  ///< Time for probability calculations.
 };
 
 }  // namespace scram
