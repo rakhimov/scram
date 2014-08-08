@@ -1607,18 +1607,18 @@ void FaultTree::GraphNode_(TopEventPtr t,
 void FaultTree::ExpandSets_(int inter_index,
                             std::vector< SupersetPtr >& sets) {
   // Populate intermediate and primary events of the top.
-  std::map<std::string, EventPtr> children =
-      int_to_inter_[std::abs(inter_index)]->children();
+  const std::map<std::string, EventPtr>* children =
+      &int_to_inter_[std::abs(inter_index)]->children();
 
   std::string gate = int_to_inter_[std::abs(inter_index)]->gate();
 
   // Iterator for children of top and intermediate events.
-  std::map<std::string, EventPtr>::iterator it_children;
+  std::map<std::string, EventPtr>::const_iterator it_children;
   std::vector<int> events_children;
   std::vector<int>::iterator it_child;
 
-  for (it_children = children.begin();
-       it_children != children.end(); ++it_children) {
+  for (it_children = children->begin();
+       it_children != children->end(); ++it_children) {
     if (inter_events_.count(it_children->first)) {
       events_children.push_back(inter_to_int_[it_children->first]);
     } else {

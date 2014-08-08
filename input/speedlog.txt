@@ -19,10 +19,10 @@ Release build:
 ---------- fta-200 -l 16 ---------------
 Standard build:
 ---------------
-- Tree Expansion    8.405s  |
-- MCS Generation    3.745s  |
+- Tree Expansion    7.867s  |
+- MCS Generation    3.691s  |
 
 Release build:
 --------------
-- Tree Expansion    1.272s  |
-- MCS Generation    0.845s  |
+- Tree Expansion    1.199s  |
+- MCS Generation    0.847s  |
