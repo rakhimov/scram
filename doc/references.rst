@@ -14,3 +14,4 @@ Web Resources
 ##############
 
 #. `FTA Wiki Page <http://en.wikipedia.org/wiki/Fault_tree_analysis>`_
+#. `OpenPSA Initiative <http://open-psa.org>`_
