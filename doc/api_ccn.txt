@@ -1,0 +1,110 @@
+========================================
+  NLOC    CCN   token  PARAM  location  
+----------------------------------------
+       2      1     25      2 InterEvent::InterEvent@9-10@./inter_event.cc
+       7      2     39      0 InterEvent::parent@12-18@./inter_event.cc
+       7      2     50      1 InterEvent::parent@20-26@./inter_event.cc
+       1      1      5      0 Superset@65-65@./superset.h
+       1      1     12      0 Superset::Superset@7-7@./superset.cc
+      11      3     59      1 Superset::AddPrimary@9-19@./superset.cc
+      11      3     59      1 Superset::AddInter@21-31@./superset.cc
+      23      6    182      1 Superset::Insert@33-57@./superset.cc
+       9      2     57      0 Superset::PopInter@59-67@./superset.cc
+       3      1     14      0 Superset::NumOfPrimeEvents@69-71@./superset.cc
+       3      1     14      0 Superset::NumOfInterEvents@73-75@./superset.cc
+       3      1     10      0 Superset::primes@77-79@./superset.cc
+       3      1     10      0 Superset::inters@81-83@./superset.cc
+       1      1     14      1 Event@22-22@./event.h
+       1      1      8      0 id@25-25@./event.h
+       1      1      5      0 Event@27-27@./event.h
+       1      1      5      0 TopEvent@71-71@./event.h
+       1      1      5      0 InterEvent@103-103@./event.h
+       1      1      5      0 PrimaryEvent@154-154@./event.h
+       1      1      9      0 msg@27-27@./error.h
+       1      1     14      1 msg@31-31@./error.h
+       1      1      8      0 Error@33-33@./error.h
+       1      1     14      1 ValueError@51-51@./error.h
+       1      1     14      1 ValidationError@60-60@./error.h
+       1      1     14      1 IOError@69-69@./error.h
+       1      1     16      1 Error::Error@9-9@./error.cc
+       4      1     29      0 Error::what@11-14@./error.cc
+       4      1     36      3 PrimaryEvent::PrimaryEvent@11-14@./primary_event.cc
+       7      2     40      0 PrimaryEvent::type@16-22@./primary_event.cc
+       7      2     45      1 PrimaryEvent::type@24-30@./primary_event.cc
+       7      2     41      0 PrimaryEvent::p@32-38@./primary_event.cc
+      18      7    120      1 PrimaryEvent::p@40-59@./primary_event.cc
+      22      5    146      2 PrimaryEvent::p@61-86@./primary_event.cc
+       7      2     75      1 PrimaryEvent::AddParent@88-94@./primary_event.cc
+       7      2     42      0 PrimaryEvent::parents@97-103@./primary_event.cc
+       1      1      5      0 FaultTree@87-87@./fault_tree.h
+       1      1      5      0 RiskAnalysis@29-29@./risk_analysis.h
+     101     18    803      2 main@18-154@./scram.cc
+       4      1     34      2 TopEvent::TopEvent@9-12@./top_event.cc
+       7      2     42      0 TopEvent::gate@14-20@./top_event.cc
+       8      2     47      1 TopEvent::gate@22-29@./top_event.cc
+       7      2     43      0 TopEvent::vote_number@31-37@./top_event.cc
+      15      4    113      1 TopEvent::vote_number@39-55@./top_event.cc
+       7      2     42      0 TopEvent::children@58-64@./top_event.cc
+       8      2     77      1 TopEvent::AddChild@66-73@./top_event.cc
+      58      8    338      5 FaultTree::FaultTree@25-95@./fault_tree.cc
+      31      8    228      1 FaultTree::ProcessInput@97-138@./fault_tree.cc
+     128     28    841      1 FaultTree::PopulateProbabilities@140-294@./fault_tree.cc
+     110     13   1033      0 FaultTree::GraphingInstructions@296-427@./fault_tree.cc
+     110     25    886      0 FaultTree::Analyze@429-597@./fault_tree.cc
+     273     43   2327      1 FaultTree::Report@599-907@./fault_tree.cc
+      16      3    132      3 FaultTree::GetArgs_@909-939@./fault_tree.cc
+     214     50   1391      7 FaultTree::InterpretArgs_@941-1205@./fault_tree.cc
+     125     31   1004      4 FaultTree::AddNode_@1207-1368@./fault_tree.cc
+       6      2     39      2 FaultTree::AddProb_@1370-1377@./fault_tree.cc
+       6      2     44      3 FaultTree::AddProb_@1379-1386@./fault_tree.cc
+      39      6    300      0 FaultTree::IncludeTransfers_@1388-1447@./fault_tree.cc
+      11      4     92      0 FaultTree::CheckAllGates_@1449-1466@./fault_tree.cc
+      72     21    538      1 FaultTree::CheckGate_@1468-1544@./fault_tree.cc
+      13      3     91      0 FaultTree::PrimariesNoProb_@1546-1559@./fault_tree.cc
+      25      5    255      3 FaultTree::GraphNode_@1561-1587@./fault_tree.cc
+     141     33   1183      2 FaultTree::ExpandSets_@1589-1743@./fault_tree.cc
+      14      3    112      3 FaultTree::SetOr_@1745-1758@./fault_tree.cc
+      14      3    112      3 FaultTree::SetAnd_@1760-1773@./fault_tree.cc
+      32      8    278      3 FaultTree::FindMCS_@1775-1818@./fault_tree.cc
+      22      4    238      0 FaultTree::AssignIndices_@1821-1848@./fault_tree.cc
+      16      4    163      0 FaultTree::SetsToString_@1850-1865@./fault_tree.cc
+      15      4    159      2 FaultTree::ProbOr_@1867-1891@./fault_tree.cc
+      13      4    103      1 FaultTree::ProbAnd_@1893-1907@./fault_tree.cc
+      19      5    177      3 FaultTree::CombineElAndSet_@1909-1927@./fault_tree.cc
+      18      4    164      3 FaultTree::MProbOr_@1932-1960@./fault_tree.cc
+       1      1      7      0 FaultTree::MSample_@1962-1962@./fault_tree.cc
+--------------------------------------------------------------
+12 file analyzed.
+==============================================================
+NLOC    Avg.NLOC AvgCCN Avg.ttoken  function_cnt    file
+--------------------------------------------------------------
+     20      5    1.0        38         3     ./inter_event.cc
+     23      1    1.0         5         1     ./superset.h
+     70      7    2.0        46         9     ./superset.cc
+     56      1    1.0         7         6     ./event.h
+     29      1    1.0        12         6     ./error.h
+      9      2    1.0        22         2     ./error.cc
+     85      9    2.0        68         8     ./primary_event.cc
+    119      1    1.0         5         1     ./fault_tree.h
+     11      1    1.0         5         1     ./risk_analysis.h
+    110    101   18.0       803         1     ./scram.cc
+     61      8    2.0        56         7     ./top_event.cc
+   1559     57   12.0       453        27     ./fault_tree.cc
+
+======================================
+!!!! Warnings (CCN > 15) !!!!
+========================================
+  NLOC    CCN   token  PARAM  location  
+----------------------------------------
+     101     18    803      2 main@18-154@./scram.cc
+     128     28    841      1 FaultTree::PopulateProbabilities@140-294@./fault_tree.cc
+     110     25    886      0 FaultTree::Analyze@429-597@./fault_tree.cc
+     273     43   2327      1 FaultTree::Report@599-907@./fault_tree.cc
+     214     50   1391      7 FaultTree::InterpretArgs_@941-1205@./fault_tree.cc
+     125     31   1004      4 FaultTree::AddNode_@1207-1368@./fault_tree.cc
+      72     21    538      1 FaultTree::CheckGate_@1468-1544@./fault_tree.cc
+     141     33   1183      2 FaultTree::ExpandSets_@1589-1743@./fault_tree.cc
+==========================================================================================
+Total nloc  Avg.nloc  Avg CCN  Avg token  Fun Cnt  Warning cnt   Fun Rt   nloc Rt  
+------------------------------------------------------------------------------------------
+      2152        26     5.86     203.99       72            8      0.11    0.62
