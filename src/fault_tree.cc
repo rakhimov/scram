@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <ctime>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -15,8 +16,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/date_time.hpp>
-
-#include <ctime>
 
 namespace fs = boost::filesystem;
 namespace pt = boost::posix_time;
@@ -489,7 +488,7 @@ void FaultTree::Analyze() {
   }
 
   // Duration of the expansion.
-  exp_time_ = (std::clock() - start_time) / (double) CLOCKS_PER_SEC;
+  exp_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
 
   // At this point cut sets are generated.
   // Now we need to reduce them to minimal cut sets.
@@ -516,8 +515,7 @@ void FaultTree::Analyze() {
 
   FaultTree::FindMCS_(unique_cut_sets, imcs_, 2);
   // Duration of MCS generation.
-  mcs_time_ = (std::clock() - start_time) / (double) CLOCKS_PER_SEC;
-
+  mcs_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
   FaultTree::SetsToString_();  // MCS with event ids.
 
   analysis_done_ = true;  // Main analysis enough for reporting is done.
@@ -609,8 +607,7 @@ void FaultTree::Analyze() {
     }
   }
   // Duration of probability related operations.
-  p_time_ = (std::clock() - start_time) / (double) CLOCKS_PER_SEC;
-}
+  p_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);}
 
 void FaultTree::Report(std::string output) {
   // Check if the analysis has been performed before requesting a report.
