@@ -19,6 +19,8 @@ After each of the above steps:
 
 MCS Generation Implementation Specifics
 ==========================================
+The implemented algorithm is similar to the MOCUS algorithm, but it is not
+yet formally verified as the MOCUS-like algorithm.
 The actual implementation uses a set of sets in order to avoid duplicates,
 so Rule 3 is satisfied automatically. Elements in a set have AND relationship
 with each other; whereas sets in a set of sets have OR relationship with
