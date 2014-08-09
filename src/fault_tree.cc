@@ -698,9 +698,10 @@ void FaultTree::Report(std::string output) {
   out << std::setw(40) << "Limit on order of cut sets: " << limit_order_ << "\n";
   out << std::setw(40) << "Number of Primary Events: " << primary_events_.size() << "\n";
   out << std::setw(40) << "Minimal Cut Set Maximum Order: " << max_order_ << "\n";
-  out << std::setw(40) << "Gate Expansion Time: " << exp_time_ << "s\n";
-  out << std::setw(40) << "MCS Generation Time: " << mcs_time_ - exp_time_
-      << "s\n";
+  out << std::setw(40) << "Gate Expansion Time: " << std::setprecision(5)
+      << exp_time_ << "s\n";
+  out << std::setw(40) << "MCS Generation Time: " << std::setprecision(5)
+      << mcs_time_ - exp_time_ << "s\n";
   out.flush();
 
   int order = 1;  // Order of minimal cut sets.
@@ -763,8 +764,8 @@ void FaultTree::Report(std::string output) {
       << primary_events_.size() << "\n";
   out << std::setw(40) << "Number of Minimal Cut Sets: "
       << min_cut_sets_.size() << "\n";
-  out << std::setw(40) << "Probability Operations Time: " << p_time_ - mcs_time_
-      << "s\n\n";
+  out << std::setw(40) << "Probability Operations Time: " << std::setprecision(5)
+      << p_time_ - mcs_time_ << "s\n\n";
   out.flush();
 
   if (analysis_ == "default") {
