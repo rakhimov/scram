@@ -14,9 +14,7 @@ def install_scram(args):
         os.mkdir(args.build_dir)
     elif args.clean_build:
         shutil.rmtree(args.build_dir)
-        shutil.rmtree(args.prefix)
         os.mkdir(args.build_dir)
-        os.mkdir(args.prefix)
 
     root_dir = os.path.split(__file__)[0]
     makefile = os.path.join(args.build_dir, "Makefile")
@@ -30,7 +28,10 @@ def install_scram(args):
         if args.prefix:
             cmake_cmd += ["-DCMAKE_INSTALL_PREFIX=" +
                           absexpanduser(args.prefix)]
-        if args.optimize:
+
+        if args.build_type:
+            cmake_cmd += ['-DCMAKE_BUILD_TYPE=' + args.build_type]
+        elif args.optimize:
             cmake_cmd += ["-DCMAKE_BUILD_TYPE=Release"]
         elif args.debug:
             cmake_cmd += ["-DCMAKE_BUILD_TYPE=Debug"]
@@ -39,23 +40,22 @@ def install_scram(args):
             cmake_cmd += ["-DCMAKE_C_FLAGS=-pg"]
             cmake_cmd += ["-DCMAKE_CXX_FLAGS=-pg"]
             cmake_cmd += ["-DCMAKE_CXX_FLAGS='-Wall -fprofile-arcs -ftest-coverage'"]
-
         rtn = subprocess.check_call(cmake_cmd, cwd=args.build_dir,
-                                    shell=(os.name == "nt"))
-
+                                    shell=(os.name == 'nt'))
     make_cmd = ["make"]
     if args.threads:
         make_cmd += ["-j" + str(args.threads)]
+
     rtn = subprocess.check_call(make_cmd, cwd=args.build_dir,
                                 shell=(os.name == "nt"))
 
-    # if args.test:
-    #     make_cmd += ["test"]
-    # elif not args.build_only:
-    #     make_cmd += ["install"]
+    if args.test:
+        make_cmd += ["test"]
+    elif not args.build_only:
+        make_cmd += ["install"]
 
-    # rtn = subprocess.check_call(make_cmd, cwd=args.build_dir,
-    #                             shell=(os.name == "nt"))
+    rtn = subprocess.check_call(make_cmd, cwd=args.build_dir,
+                                shell=(os.name == "nt"))
 
 def uninstall_scram(args):
     makefile = os.path.join(args.build_dir, "Makefile")
@@ -69,7 +69,7 @@ def main():
     localdir = absexpanduser("~/.local")
 
     description = "A scram installation helper script. " +\
-        "For more information, please see scram.github.com."
+                  "For more information, please see scram.github.com."
     parser = ap.ArgumentParser(description=description)
 
     build_dir = "where to place the build directory"
@@ -93,6 +93,9 @@ def main():
 
     test = "run tests after building"
     parser.add_argument("--test", action="store_true", help=test)
+
+    build_type = "the CMAKE_BUILD_TYPE"
+    parser.add_argument('--build_type', help=build_type)
 
     debug = "build for debugging"
     parser.add_argument("-d", "--debug", help=debug, action="store_true",

@@ -18,10 +18,15 @@ target_link_libraries(scramcore dl ${LIBS})
 install(
   TARGETS scramcore
   LIBRARY DESTINATION lib
-  COMPONENT cycluscore
+  COMPONENT scramcore
   )
 
 add_executable(scram
   scram.cc
   )
 target_link_libraries(scram scramcore ${Boost_LIBRARIES})
+
+install(TARGETS scram
+  RUNTIME DESTINATION bin
+  COMPONENT scram
+  )

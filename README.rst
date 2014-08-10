@@ -9,15 +9,16 @@ SCRAM
 .. image:: https://scan.coverity.com/projects/2555/badge.svg
     :target: https://scan.coverity.com/projects/2555
 
-SCRAM : "Simplified Command-line Risk Analysis Multi-tool"
+*SCRAM* : "Simplified Command-line Risk Analysis Multi-tool"
 
 This project attempts to build a simple command line tool for risk analysis.
 Static Fault Tree Analysis is implemented.
 In addition, a random tree generator is
-provided for exploring the performance of SCRAM. A fault tree can be drawn by
+provided for exploring the performance of *SCRAM*. A fault tree can be drawn by
 Graphviz Dot tool.
 
-A full description of SCRAM and its current capabilities is in `the documentation`_.
+A full description of *SCRAM* and its current capabilities
+is in `the documentation`_.
 
 .. _`the documentation`: http://rakhimov.github.io/SCRAM
 
@@ -32,6 +33,7 @@ Package                Minimum Version
 ====================   ==================
 `CMake`                2.8
 `boost`                1.46.1
+`Python`               2.7.3
 ====================   ==================
 
 
@@ -40,30 +42,114 @@ Optional dependencies:
 ====================   ==================
 Package                Minimum Version
 ====================   ==================
-`Python`               2.7.3
 `Graphviz Dot`         2.26.3
 ====================   ==================
 
-Building SCRAM (Linux and Unix)
-===============================
+Installing Dependencies (Linux and Unix)
+========================================
 
-Currently only building is enough to get SCRAM working for testing purposes.
-A python script is provided to make the process easier.
-After installing the dependencies, run the following inside main SCRAM directory:
+The following installation instructions and scripts are taken from
+`Cyclus`_ project.
+
+.. _Cyclus:
+    https://github.com/cyclus/cyclus
+
+This guide assumes that the user has root access (to issue sudo commands) and
+access to a package manager or has some other suitable method of automatically
+installing established libraries. This process is tested using `Travis CI`_
+Ubuntu 12.04 LTS using apt-get as the package manager;
+if on a Mac system, a good manager to use is macports_.
+In that case, replace all of the following instances of "apt-get" with "port".
+
+The command to install a dependency takes the form of:
 
 .. code-block:: bash
 
-    .../scram$ python install.py
+  sudo apt-get install package
 
-Executable file and tests will be located in build/bin directory.
+where "package" is replaced by the correct package name. The minimal list of
+required library package names is:
+
+#. make
+#. cmake
+#. libboost-all-dev
+#. libboost-random-dev
+#. python2.7
+
+and (optionally):
+
+#. graphviz
+
+For example, in order to install *graphviz* on your system, type:
+
+.. code-block:: bash
+
+  sudo apt-get install graphviz
+
+If you'd prefer to copy/paste, the following line will install all *SCRAM*
+dependencies:
+
+.. code-block:: bash
+
+   sudo apt-get install -y cmake make libboost-all-dev libboost-random-dev python2.7 graphviz
+
+.. _`Travis CI`:
+    https://travis-ci.org/rakhimov/SCRAM
+.. _macports:
+    http://www.macports.org/
+
+Installing SCRAM (Linux and Unix)
+=================================
+
+A python script is provided to make the installation process easier.
+If there are dependency issues, the CMake output should guide with errors.
+
+The default build is DEBUG. There default installation directory is the user's
+.local.
+
+.. code-block:: bash
+
+    .../scram$ python install.py  --prefix=path/to/installation/directory
+
+Executable tests with supporting files will be located in
+*build/bin* directory for testing purposes. These tests are not transfered
+into the installation directory specified by the user.
+In order to run those tests:
+
+.. code-block:: bash
+
+    .../scram$ ./build/bin/scram_unit_tests
 
 For better performance run the building with the optimization flag:
 
 .. code-block:: bash
 
-    .../scram$ python install.py -o
+    .../scram$ python install.py -o --prefix=path/to/installation/directory
 
 Various other flags are described by the script's help prompt.
+
+.. code-block:: bash
+
+    .../scram$ python install.py -h
+
+Windows
+=======
+
+Currently the easiest option is to use a virtual machine with `Ubuntu 14.04`_.
+
+#. Install `VirtualBox <https://www.virtualbox.org/>`_
+#. Download `Ubuntu 14.04`_
+#. Follow the installation instructions for Linux machines.
+
+The other option is to use MinGW_ or Cygwin_ and to build on Windows machine,
+but this option is not yet tested.
+
+.. _`Ubuntu 14.04`:
+    http://www.ubuntu.com/download
+.. _MinGW:
+    http://www.mingw.org/
+.. _Cygwin:
+    https://www.cygwin.com/
 
 *****************************
 Note to a User

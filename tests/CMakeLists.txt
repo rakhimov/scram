@@ -88,10 +88,10 @@ target_link_libraries(scram_unit_tests dl
   gtest
   )
 
-install(TARGETS scram_unit_tests
-  RUNTIME DESTINATION bin
-  COMPONENT testing
-  )
+# install(TARGETS scram_unit_tests
+#   RUNTIME DESTINATION bin
+#   COMPONENT testing
+#   )
 
 file(GLOB header_files "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 install(FILES ${header_files}
