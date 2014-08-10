@@ -54,3 +54,24 @@ Proposed Improvements for this algorithm
 
 Other MCS Generation Algorithms
 ===============================
+According to :ref:`papers` about probabilistic safety and risk analysis,
+there are two main algorithms for PRA software.
+
+The first algorithm is MOCUS, a top-down algorithm first proposed by J.Fussel
+and W.Vesely in 1972. There are many suggested improvement techniques for
+this algorithm, but the basics are simpler than for other FTA algorithms.
+In addition, MOCUS-like algorithms may incorporate approximations to speed
+up their calculations; however, this may lead to inaccuracies in overall
+analysis. There seem not to be overall consensus on these approximations
+over all the tools that use this algorithm.
+The MOCUS algorithm is used by many FTA tools, such as RiskSpectrum,
+SAPHIRE and XFTA.
+
+The second algorithm uses various types of the Binary Decision Diagram (BDD)
+for Boolean operations. This is a bottom-up algorithm and seems to be
+mature and well tuned for PRA and other applications like electronics.
+This method consists of many complex algorithms of BDD to find MCS.
+The BDD algorithms tend to be faster than MOCUS and other algorithms; however,
+this algorithm is subject to combinatorial explosion for very large models with
+thousands of basic events and gates with many replicated events.
+This algorithm is used in CAFTA and RiskMan.
