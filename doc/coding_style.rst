@@ -51,3 +51,20 @@ The quality of the code is checked by the following tools:
     https://google-styleguide.googlecode.com/svn/trunk/cpplint/
 .. _`Pylint`:
     http://www.pylint.org/
+
+Testing and Continuous Integration
+==================================
+In order to facilitate better software quality and quality assurance, full
+test coverage is attempted through unit, integration, regression, and
+benchmarking tests. The following tools are used for this purpose:
+    - `GoogleTest`_
+    - `Nose`_
+
+These tests are automated, and continuous integration is provided by `Travis CI`_.
+
+.. _`GoogleTest`:
+    https://code.google.com/p/googletest/
+.. _`Nose`:
+    https://nose.readthedocs.org/en/latest/
+.. _`Travis CI`:
+    https://travis-ci.org/rakhimov/SCRAM
