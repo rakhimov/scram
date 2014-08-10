@@ -57,6 +57,7 @@ Testing and Continuous Integration
 In order to facilitate better software quality and quality assurance, full
 test coverage is attempted through unit, integration, regression, and
 benchmarking tests. The following tools are used for this purpose:
+
     - `GoogleTest`_
     - `Nose`_
 
