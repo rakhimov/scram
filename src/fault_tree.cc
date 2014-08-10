@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <ctime>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -15,7 +16,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/date_time.hpp>
-
 
 namespace fs = boost::filesystem;
 namespace pt = boost::posix_time;
@@ -36,6 +36,9 @@ FaultTree::FaultTree(std::string analysis, bool graph_only,
       analysis_done_(false),
       max_order_(1),
       p_total_(0),
+      exp_time_(0),
+      mcs_time_(0),
+      p_time_(0),
       parent_(""),
       id_(""),
       type_(""),
@@ -434,6 +437,11 @@ void FaultTree::Analyze() {
     throw scram::Error(msg);
   }
 
+  // Timing Initialization
+  std::clock_t start_time;
+  start_time = std::clock();
+  // End of Timing Initialization
+
   // Container for cut sets with intermediate events.
   std::vector< SupersetPtr > inter_sets;
 
@@ -479,6 +487,9 @@ void FaultTree::Analyze() {
     }
   }
 
+  // Duration of the expansion.
+  exp_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
+
   // At this point cut sets are generated.
   // Now we need to reduce them to minimal cut sets.
 
@@ -503,7 +514,8 @@ void FaultTree::Analyze() {
   }
 
   FaultTree::FindMCS_(unique_cut_sets, imcs_, 2);
-
+  // Duration of MCS generation.
+  mcs_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
   FaultTree::SetsToString_();  // MCS with event ids.
 
   analysis_done_ = true;  // Main analysis enough for reporting is done.
@@ -594,7 +606,8 @@ void FaultTree::Analyze() {
                                                "not " + it_prime->first));
     }
   }
-}
+  // Duration of probability related operations.
+  p_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);}
 
 void FaultTree::Report(std::string output) {
   // Check if the analysis has been performed before requesting a report.
@@ -685,6 +698,10 @@ void FaultTree::Report(std::string output) {
   out << std::setw(40) << "Limit on order of cut sets: " << limit_order_ << "\n";
   out << std::setw(40) << "Number of Primary Events: " << primary_events_.size() << "\n";
   out << std::setw(40) << "Minimal Cut Set Maximum Order: " << max_order_ << "\n";
+  out << std::setw(40) << "Gate Expansion Time: " << std::setprecision(5)
+      << exp_time_ << "s\n";
+  out << std::setw(40) << "MCS Generation Time: " << std::setprecision(5)
+      << mcs_time_ - exp_time_ << "s\n";
   out.flush();
 
   int order = 1;  // Order of minimal cut sets.
@@ -746,7 +763,9 @@ void FaultTree::Report(std::string output) {
   out << std::setw(40) << "Number of Primary Events: "
       << primary_events_.size() << "\n";
   out << std::setw(40) << "Number of Minimal Cut Sets: "
-      << min_cut_sets_.size() << "\n\n";
+      << min_cut_sets_.size() << "\n";
+  out << std::setw(40) << "Probability Operations Time: " << std::setprecision(5)
+      << p_time_ - mcs_time_ << "s\n\n";
   out.flush();
 
   if (analysis_ == "default") {
@@ -1589,18 +1608,18 @@ void FaultTree::GraphNode_(TopEventPtr t,
 void FaultTree::ExpandSets_(int inter_index,
                             std::vector< SupersetPtr >& sets) {
   // Populate intermediate and primary events of the top.
-  std::map<std::string, EventPtr> children =
-      int_to_inter_[std::abs(inter_index)]->children();
+  const std::map<std::string, EventPtr>* children =
+      &int_to_inter_[std::abs(inter_index)]->children();
 
   std::string gate = int_to_inter_[std::abs(inter_index)]->gate();
 
   // Iterator for children of top and intermediate events.
-  std::map<std::string, EventPtr>::iterator it_children;
+  std::map<std::string, EventPtr>::const_iterator it_children;
   std::vector<int> events_children;
   std::vector<int>::iterator it_child;
 
-  for (it_children = children.begin();
-       it_children != children.end(); ++it_children) {
+  for (it_children = children->begin();
+       it_children != children->end(); ++it_children) {
     if (inter_events_.count(it_children->first)) {
       events_children.push_back(inter_to_int_[it_children->first]);
     } else {

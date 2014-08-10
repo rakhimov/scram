@@ -1,3 +1,5 @@
+.. _papers:
+
 #############
 References
 #############
@@ -7,10 +9,13 @@ References
 #. `FTA: Concepts and Applications <http://www.hq.nasa.gov/office/codeq/risk/docs/ftacourse.pdf>`_
 #. `Fault Tree Handbook with Aerospace Applications <http://www.hq.nasa.gov/office/codeq/doctree/fthb.pdf>`_
 #. `Software Test Techniques for System Fault-Tree Analysis <http://www.cs.virginia.edu/~jck/publications/safecomp.97.pdf>`_
-#. D.Wakefield "You Can't Just Build Trees and Call It PSA"
+#. A.Rauzy, "Towards an Efficient Implementation of MOCUS"
+#. E.Petrosean, "Fault Tree Analysis for Energy Grid"
+#. D.Wakefield, "You Can't Just Build Trees and Call It PSA"
 
 ##############
 Web Resources
 ##############
 
 #. `FTA Wiki Page <http://en.wikipedia.org/wiki/Fault_tree_analysis>`_
+#. `OpenPSA Initiative <http://open-psa.org>`_
