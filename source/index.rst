@@ -40,9 +40,9 @@ Documentation:
     doc/monte_carlo_simulations
     doc/fta_ccf_analysis
     doc/scram_code_structure
-    doc/coding_style
+    doc/scram_coding_standards
     doc/references
-    doc/bugs
+    doc/scram_bugs
     doc/todo
 
 
