@@ -1,0 +1,563 @@
+# I. Report/Calculation Layer
+
+# I.1. Models
+
+opsa-mef =
+  element opsa-mef {
+    attlist.opsa-mef,
+    label?,
+    attributes?,
+    (define-event-tree
+     | define-alignment
+     | define-consequence-group
+     | define-consequence
+     | define-rule
+     | define-initiating-event-group
+     | define-initiating-event
+     | define-fault-tree
+     | define-substitution
+     | define-CCF-group
+     | \include)*
+  }
+attlist.opsa-mef &= empty
+label = element label { attlist.label, text }
+attlist.label &= empty
+attributes = element attributes { attlist.attributes, \attribute* }
+attlist.attributes &= empty
+\attribute = element attribute { attlist.attribute, empty }
+attlist.attribute &=
+  attribute name { text },
+  attribute value { text },
+  attribute type { text }?
+\include = element include { attlist.include, empty }
+attlist.include &= attribute file { text }
+# I.2. Consequences, Consequence Groups
+define-consequence =
+  element define-consequence {
+    attlist.define-consequence,
+    label?,
+    attributes?,
+    initiating-event,
+    sequence
+  }
+attlist.define-consequence &= attribute name { text }
+define-consequence-group =
+  element define-consequence-group {
+    attlist.define-consequence-group,
+    label?,
+    attributes?,
+    (consequence | consequence-group)*
+  }
+attlist.define-consequence-group &= attribute name { text }
+consequence = element consequence { attlist.consequence, empty }
+attlist.consequence &= attribute name { text }
+consequence-group =
+  element consequence-group { attlist.consequence-group, empty }
+attlist.consequence-group &= attribute name { text }
+# I.3. Missions, Phases
+define-alignment =
+  element define-alignment {
+    attlist.define-alignment, label?, attributes?, instruction*
+  }
+attlist.define-alignment &= attribute name { text }
+# II. Event Tree Layer
+
+# II.1. Initiating events, Initiating event Groups
+define-initiating-event =
+  element define-initiating-event {
+    attlist.define-initiating-event,
+    label?,
+    attributes?,
+    (collected-item | consequence | consequence-group)*
+  }
+attlist.define-initiating-event &= attribute name { text }
+define-initiating-event-group =
+  element define-initiating-event-group {
+    attlist.define-initiating-event-group,
+    label?,
+    attributes?,
+    (initiating-event | initiating-event-group)*
+  }
+attlist.define-initiating-event-group &= attribute name { text }
+initiating-event =
+  element initiating-event { attlist.initiating-event, empty }
+attlist.initiating-event &=
+  attribute name { text },
+  attribute event-tree { text }?
+initiating-event-group =
+  element initiating-event-group {
+    attlist.initiating-event-group, empty
+  }
+attlist.initiating-event-group &=
+  attribute name { text },
+  attribute event-tree { text }?
+# II.2. Event Trees
+define-event-tree =
+  element define-event-tree {
+    attlist.define-event-tree,
+    label?,
+    attributes?,
+    define-functional-event*,
+    define-sequence*,
+    define-branch*,
+    initial-state
+  }
+attlist.define-event-tree &= attribute name { text }
+define-functional-event =
+  element define-functional-event {
+    attlist.define-functional-event, label?, attributes?
+  }
+attlist.define-functional-event &= attribute name { text }
+define-sequence =
+  element define-sequence {
+    attlist.define-sequence, label?, attributes?, instruction*
+  }
+attlist.define-sequence &= attribute name { text }
+define-branch =
+  element define-branch {
+    attlist.define-branch, label?, attributes?, branch
+  }
+attlist.define-branch &= attribute name { text }
+fork = element fork { attlist.fork, path+ }
+attlist.fork &= attribute functional-event { text }
+path = element path { attlist.path, branch+ }
+attlist.path &= attribute state { text }
+initial-state = element initial-state { attlist.initial-state, branch }
+attlist.initial-state &= empty
+# II.3. Instructions, Rules
+set-gate = element set-gate { attlist.set-gate, formula }
+attlist.set-gate &=
+  attribute name { text },
+  attribute direction { "directions" }?
+set-house-event =
+  element set-house-event { attlist.set-house-event, Constant }
+attlist.set-house-event &=
+  attribute name { text },
+  attribute direction { "directions" }?
+set-basic-event =
+  element set-basic-event { attlist.set-basic-event, expression }
+attlist.set-basic-event &=
+  attribute name { text },
+  attribute direction { "directions" }?
+set-parameter =
+  element set-parameter { attlist.set-parameter, expression }
+attlist.set-parameter &=
+  attribute name { text },
+  attribute direction { "directions" }?
+if = element if { attlist.if, expression, instruction, instruction? }
+attlist.if &= empty
+collect-formula =
+  element collect-formula { attlist.collect-formula, formula }
+attlist.collect-formula &= empty
+collect-expression =
+  element collect-expression { attlist.collect-expression, expression }
+attlist.collect-expression &= empty
+block = element block { attlist.block, instruction* }
+attlist.block &= empty
+event-tree = element event-tree { attlist.event-tree, empty }
+attlist.event-tree &= empty
+rule = element rule { attlist.rule, empty }
+attlist.rule &= attribute name { text }
+# III. Meta-Logical Layer
+
+# III.1. CCF-Groups
+define-CCF-group =
+  element define-CCF-group {
+    attlist.define-CCF-group,
+    label?,
+    attributes?,
+    members,
+    distribution,
+    factors
+  }
+attlist.define-CCF-group &=
+  attribute name { text },
+  attribute model {
+    "beta-factor" | "MGL" | "alpha-factor" | "phi-factor"
+  }
+members = element members { attlist.members, basic-event+ }
+attlist.members &= empty
+factors = element factors { attlist.factors, factor+ }
+attlist.factors &= empty
+factor = element factor { attlist.factor, expression }
+attlist.factor &= attribute level { text }
+# III.2. Substitutions
+distribution = element distribution { attlist.distribution, expression }
+attlist.distribution &= empty
+define-substitution =
+  element define-substitution {
+    attlist.define-substitution,
+    label?,
+    attributes?,
+    hypothesis,
+    source?,
+    target
+  }
+attlist.define-substitution &=
+  attribute name { text }?,
+  attribute type { text }?
+hypothesis = element hypothesis { attlist.hypothesis, Boolean-formula }
+attlist.hypothesis &= empty
+source = element source { attlist.source, basic-event+ }
+attlist.source &= empty
+target =
+  element target { attlist.target, (basic-event+ | Boolean-formula) }
+attlist.target &= empty
+# IV. Fault Tree Layer
+
+# IV.1. Definitions of Fault Trees & Components
+define-fault-tree =
+  element define-fault-tree {
+    attlist.define-fault-tree,
+    label?,
+    attributes?,
+    (define-substitution
+     | define-CCF-group
+     | define-component
+     | define-gate
+     | define-house-event
+     | define-basic-event
+     | define-parameter
+     | \include)*
+  }
+attlist.define-fault-tree &= attribute name { text }?
+define-component =
+  element define-component {
+    attlist.define-component,
+    label?,
+    attributes?,
+    (define-substitution
+     | define-CCF-group
+     | define-component
+     | define-gate
+     | define-house-event
+     | define-basic-event
+     | define-parameter
+     | \include)*
+  }
+attlist.define-component &=
+  attribute name { text },
+  attribute role { "private" | "public" }?
+model-data =
+  element model-data {
+    attlist.model-data,
+    (define-house-event
+     | define-basic-event
+     | define-parameter
+     | \include)*
+  }
+attlist.model-data &= empty
+# IV.2. Definitions of Gates, House Events & Basic Events
+define-gate =
+  element define-gate {
+    attlist.define-gate, label?, attributes?, formula
+  }
+attlist.define-gate &= empty
+define-house-event =
+  element define-house-event {
+    attlist.define-house-event, label?, attributes?, Constant?
+  }
+attlist.define-house-event &=
+  attribute name { text },
+  attribute role { "private" | "public" }?
+define-basic-event =
+  element define-basic-event {
+    attlist.define-basic-event, label?, attributes?, expression?
+  }
+attlist.define-basic-event &=
+  attribute name { text },
+  attribute role { "private" | "public" }?
+# IV.3. Formulae
+formula =
+  element formula {
+    attlist.formula,
+    (gate
+     | house-event
+     | basic-event
+     | Constant
+     | and
+     | or
+     | not
+     | xor
+     | iff
+     | nand
+     | nor
+     | atleast
+     | cardinality)
+  }
+attlist.formula &= empty
+gate = element gate { attlist.gate, empty }
+attlist.gate &= attribute name { text }
+house-event = element house-event { attlist.house-event, empty }
+attlist.house-event &= attribute name { text }
+basic-event = element basic-event { attlist.basic-event, empty }
+attlist.basic-event &= attribute name { text }
+and = element and { attlist.and, formula+ }
+attlist.and &= empty
+or = element or { attlist.or, formula+ }
+attlist.or &= empty
+not = element not { attlist.not, formula }
+attlist.not &= empty
+xor = element xor { attlist.xor, formula+ }
+attlist.xor &= empty
+iff = element iff { attlist.iff, formula+ }
+attlist.iff &= empty
+nand = element nand { attlist.nand, formula+ }
+attlist.nand &= empty
+nor = element nor { attlist.nor, formula+ }
+attlist.nor &= empty
+atleast = element atleast { attlist.atleast, formula+ }
+attlist.atleast &= attribute min { text }
+cardinality = element cardinality { attlist.cardinality, formula+ }
+attlist.cardinality &=
+  attribute min { text },
+  attribute max { text }
+imply = element imply { attlist.imply, formula, formula }
+attlist.imply &= empty
+constant = element constant { attlist.constant, empty }
+attlist.constant &= attribute value { "true" | "false" }
+# V. Stochastic Layer
+
+# V.1. Definition of Parameters
+define-parameter =
+  element define-parameter {
+    attlist.define-parameter, label?, attributes?, expression?
+  }
+attlist.define-parameter &=
+  attribute name { text },
+  attribute role { "private" | "public" }?,
+  attribute unit { "units" }?
+# V.2. Expressions
+
+# V.2.1. Entities
+
+# V.2.2. Constants, Parameters
+bool = element bool { attlist.bool, empty }
+attlist.bool &= attribute value { "true" | "false" }
+int = element int { attlist.int, empty }
+attlist.int &= attribute value { text }
+float = element float { attlist.float, empty }
+attlist.float &= attribute value { text }
+system-mission-time =
+  element system-mission-time { attlist.system-mission-time, empty }
+attlist.system-mission-time &= attribute unit { "units" }?
+parameter = element parameter { attlist.parameter, empty }
+attlist.parameter &= attribute name { text }
+# V.2.3. Numerical Expressions
+neg = element neg { attlist.neg, expression }
+attlist.neg &= empty
+add = element add { attlist.add, expression+ }
+attlist.add &= empty
+sub = element sub { attlist.sub, expression+ }
+attlist.sub &= empty
+mul = element mul { attlist.mul, expression+ }
+attlist.mul &= empty
+\div = element div { attlist.div, expression+ }
+attlist.div &= empty
+pi = element pi { attlist.pi, empty }
+attlist.pi &= empty
+abs = element abs { attlist.abs, expression }
+attlist.abs &= empty
+acos = element acos { attlist.acos, expression }
+attlist.acos &= empty
+asin = element asin { attlist.asin, expression }
+attlist.asin &= empty
+atan = element atan { attlist.atan, expression }
+attlist.atan &= empty
+cos = element cos { attlist.cos, expression }
+attlist.cos &= empty
+cosh = element cosh { attlist.cosh, expression }
+attlist.cosh &= empty
+exp = element exp { attlist.exp, expression }
+attlist.exp &= empty
+log = element log { attlist.log, expression }
+attlist.log &= empty
+log10 = element log10 { attlist.log10, expression }
+attlist.log10 &= empty
+mod = element mod { attlist.mod, expression, expression }
+attlist.mod &= empty
+pow = element pow { attlist.pow, expression, expression }
+attlist.pow &= empty
+sin = element sin { attlist.sin, expression }
+attlist.sin &= empty
+sinh = element sinh { attlist.sinh, expression }
+attlist.sinh &= empty
+tan = element tan { attlist.tan, expression }
+attlist.tan &= empty
+tanh = element tanh { attlist.tanh, expression }
+attlist.tanh &= empty
+sqrt = element sqrt { attlist.sqrt, expression }
+attlist.sqrt &= empty
+ceil = element ceil { attlist.ceil, expression }
+attlist.ceil &= empty
+floor = element floor { attlist.floor, expression }
+attlist.floor &= empty
+min = element min { attlist.min, expression+ }
+attlist.min &= empty
+max = element max { attlist.max, expression+ }
+attlist.max &= empty
+mean = element mean { attlist.mean, expression+ }
+attlist.mean &= empty
+# V.2.4. Boolean Expressions
+bool_not = element bool_not { attlist.bool_not, expression }
+attlist.bool_not &= empty
+bool_and = element bool_and { attlist.bool_and, expression+ }
+attlist.bool_and &= empty
+bool_or = element bool_or { attlist.bool_or, expression+ }
+attlist.bool_or &= empty
+eq = element eq { attlist.eq, expression, expression }
+attlist.eq &= empty
+df = element df { attlist.df, expression, expression }
+attlist.df &= empty
+lt = element lt { attlist.lt, expression, expression }
+attlist.lt &= empty
+gt = element gt { attlist.gt, expression, expression }
+attlist.gt &= empty
+leq = element leq { attlist.leq, expression, expression }
+attlist.leq &= empty
+geq = element geq { attlist.geq, expression, expression }
+attlist.geq &= empty
+# V.2.5. Conditional Expressions
+ite = element ite { attlist.ite, expression, expression, expression }
+attlist.ite &= empty
+switch = element switch { attlist.switch, case*, expression }
+attlist.switch &= empty
+case = element case { attlist.case, expression, expression }
+attlist.case &= empty
+# V.2.6. Built-ins
+exponential =
+  element exponential { attlist.exponential, expression, expression }
+attlist.exponential &= empty
+GLM =
+  element GLM {
+    attlist.GLM, expression, expression, expression, expression
+  }
+attlist.GLM &= empty
+Weibull =
+  element Weibull {
+    attlist.Weibull, expression, expression, expression
+  }
+attlist.Weibull &= empty
+periodic-test =
+  element periodic-test { attlist.periodic-test, expression+ }
+attlist.periodic-test &= empty
+extern-function =
+  element extern-function { attlist.extern-function, expression* }
+attlist.extern-function &= attribute name { text }
+# V.2.7. Random-Deviates
+uniform-deviate =
+  element uniform-deviate {
+    attlist.uniform-deviate, expression, expression
+  }
+attlist.uniform-deviate &= empty
+normal-deviate =
+  element normal-deviate {
+    attlist.normal-deviate, expression, expression
+  }
+attlist.normal-deviate &= empty
+lognormal-deviate =
+  element lognormal-deviate {
+    attlist.lognormal-deviate, expression, expression, expression
+  }
+attlist.lognormal-deviate &= empty
+gamma-deviate =
+  element gamma-deviate {
+    attlist.gamma-deviate, expression, expression
+  }
+attlist.gamma-deviate &= empty
+beta-deviate =
+  element beta-deviate { attlist.beta-deviate, expression, expression }
+attlist.beta-deviate &= empty
+histogram = element histogram { attlist.histogram, expression, bin+ }
+attlist.histogram &= empty
+bin = element bin { attlist.bin, expression, expression }
+attlist.bin &= empty
+# V.2.8. Test-Events
+test-initiating-event =
+  element test-initiating-event { attlist.test-initiating-event, empty }
+attlist.test-initiating-event &= attribute name { text }
+test-functional-event =
+  element test-functional-event { attlist.test-functional-event, empty }
+attlist.test-functional-event &=
+  attribute name { text },
+  attribute state { text }
+Boolean-formula |= notAllowed
+Constant |= notAllowed
+branch |= notAllowed
+collected-item |= notAllowed
+define-rule |= notAllowed
+expression |= notAllowed
+instruction |= notAllowed
+sequence |= notAllowed
+start =
+  pow
+  | imply
+  | float
+  | abs
+  | uniform-deviate
+  | fork
+  | mod
+  | beta-deviate
+  | log
+  | normal-deviate
+  | floor
+  | histogram
+  | ite
+  | gt
+  | pi
+  | tan
+  | neg
+  | ceil
+  | block
+  | switch
+  | lt
+  | periodic-test
+  | df
+  | event-tree
+  | test-functional-event
+  | min
+  | max
+  | leq
+  | sqrt
+  | GLM
+  | sin
+  | set-house-event
+  | eq
+  | opsa-mef
+  | atan
+  | cos
+  | system-mission-time
+  | Weibull
+  | collect-expression
+  | tanh
+  | bool_not
+  | geq
+  | cosh
+  | int
+  | exponential
+  | bool_or
+  | sinh
+  | exp
+  | set-basic-event
+  | sub
+  | asin
+  | bool_and
+  | \div
+  | add
+  | collect-formula
+  | model-data
+  | parameter
+  | set-parameter
+  | if
+  | rule
+  | mean
+  | acos
+  | constant
+  | set-gate
+  | test-initiating-event
+  | mul
+  | log10
+  | gamma-deviate
+  | extern-function
+  | bool
+  | lognormal-deviate
