@@ -1,0 +1,216 @@
+# I. Report/Calculation Layer
+
+# I.1. Models
+start =
+  element opsa-mef {
+    attribute name { xsd:string }?,
+    label?,
+    attributes?,
+    (event-tree-definition
+     | alignment-definition
+     | consequence-group-definition
+     | consequence-definition
+     | rule-definition
+     | initiating-event-group-definition
+     | initiating-event-definition
+     | fault-tree-definition
+     | substitution-definition
+     | CCF-group-definition
+     | include-directive)*
+  }
+  # <optional>
+  #   <element name="model-data">
+  #     <zeroOrMore>
+  #       <choice>
+  #         <ref name="house-event-definition"/>
+  #         <ref name="basic-event-definition"/>
+  #         <ref name="parameter-definition"/>
+  #         <ref name="include-directive"/>
+  #       </choice>
+  #     </zeroOrMore>
+  #   </element>
+  # </optional>
+
+label = element label { text }
+attributes =
+  element attributes {
+    element attribute {
+      attribute name { xsd:string },
+      attribute value { xsd:string },
+      attribute type { xsd:string }?
+    }*
+  }
+include-directive =
+  element include {
+    attribute file { xsd:string }
+  }
+# I.2. Consequences, Consequence Groups
+consequence-definition = element define-consequence { text }
+consequence-group-definition = element define-consequence-group { text }
+# I.3. Missions, Phases
+alignment-definition = element define-alignment { text }
+# II. Event Tree Layer
+
+# II.1. Initiating events, Initiating event Groups
+initiating-event-definition = element define-initiating-event { text }
+initiating-event-group-definition =
+  element define-initiating-event-group { text }
+# II.2. Event Trees
+event-tree-definition = element define-event-tree { text }
+# II.3. Instructions, Rules
+rule-definition = element define-rule { text }
+# III. Meta-Logical Layer
+
+# III.1. CCF-Groups
+CCF-group-definition = element define-CCF-group { text }
+# III.2. Substitutions
+substitution-definition = element define-substitution { text }
+# IV. Fault Tree Layer
+
+# IV.1. Definitions of Fault Trees & Components
+fault-tree-definition =
+  element define-fault-tree {
+    attribute name { xsd:string },
+    label?,
+    attributes?,
+    (substitution-definition
+     | CCF-group-definition
+     | event-definition
+     | component-definition
+     | parameter-definition
+     | include-directive)*
+  }
+component-definition =
+  element define-component {
+    attribute name { xsd:string },
+    attribute role { "private" | "public" }?,
+    label?,
+    attributes?,
+    (substitution-definition
+     | CCF-group-definition
+     | event-definition
+     | component-definition
+     | parameter-definition
+     | include-directive)*
+  }
+event-definition =
+  gate-definition | house-event-definition | basic-event-definition
+# IV.2. Definitions of Gates, House Events & Basic Events
+gate-definition =
+  element define-gate {
+    attribute name { xsd:string },
+    attribute role { "private" | "public" }?,
+    label?,
+    attributes?,
+    formula
+  }
+house-event-definition =
+  element define-house-event {
+    attribute name { xsd:string },
+    attribute role { "private" | "public" }?,
+    label?,
+    attributes?,
+    Boolean-constant?
+  }
+basic-event-definition =
+  element define-basic-event {
+    attribute name { xsd:string },
+    attribute role { "private" | "public" }?,
+    label?,
+    attributes?,
+    expression?
+  }
+# IV.3. Formulae
+formula =
+  event
+  | Boolean-constant
+  | element and { formula+ }
+  | element or { formula+ }
+  | element not { formula }
+  | element xor { formula+ }
+  | element iff { formula+ }
+  | element nand { formula+ }
+  | element nor { formula+ }
+  | element atleast {
+      attribute min { xsd:nonNegativeInteger },
+      formula+
+    }
+  | element cardinality {
+      attribute min { xsd:nonNegativeInteger },
+      attribute max { xsd:nonNegativeInteger },
+      formula+
+    }
+  | element imply { formula, formula }
+event =
+  element event {
+    attribute name { xsd:string },
+    attribute type { "gate" | "basic-event" | "house-event" }?
+  }
+  | element gate {
+      attribute name { xsd:string }
+    }
+  | element house-event {
+      attribute name { xsd:string }
+    }
+  | element basic-event {
+      attribute name { xsd:string }
+    }
+Boolean-constant =
+  element constant {
+    attribute value { "true" | "false" }
+  }
+# V. Stochastic Layer
+
+# V.1. Definition of Parameters
+parameter-definition =
+  element define-parameter {
+    attribute name { xsd:string },
+    attribute role { "private" | "public" }?,
+    attribute unit { units }?,
+    label?,
+    attributes?,
+    expression
+  }
+units =
+  [
+    # <choice>
+    #   <element name="bool"/>
+    #   <element name="int"/>
+    #   <element name="float"/>
+    #   <element name="hours"/>
+    #   <element name="hours-1"/>
+    #   <element name="years"/>
+    #   <element name="years-1"/>
+    #   <element name="fit"/>
+    #   <element name="demands"/>
+    # </choice>
+
+  ]
+  "unit_dummy"
+# V.2. Expressions
+
+# V.2.1. Entities
+expression =
+  element expr_dummy { text }
+  # <choice>
+  #   <element name="constant"/>
+  #   <element name="parameter"/>
+  #   <element name="operation"/>
+  #   <element name="built-in"/>
+  #   <element name="random-deviate"/>
+  #   <element name="test-event"/>
+  # </choice>
+
+# V.2.2. Constants, Parameters
+
+# V.2.3. Numerical Expressions
+
+# V.2.4. Boolean Expressions
+
+# V.2.5. Conditional Expressions
+
+# V.2.6. Built-ins
+
+# V.2.7. Random-Deviates
+
+# V.2.8. Test-Events

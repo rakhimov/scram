@@ -1,9 +1,459 @@
 <grammar xmlns="http://relaxng.org/ns/structure/1.0"
   datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
-<start>
 
-<element name="pra">
+<!-- I. Report/Calculation Layer -->
 
-</element>
+  <!-- I.1. Models -->
 
-</start>
+  <start>
+    <element name="opsa-mef">
+      <optional>
+        <attribute name="name"> <data type="string"/> </attribute>
+      </optional>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <ref name="event-tree-definition"/>
+          <ref name="alignment-definition"/>
+          <ref name="consequence-group-definition"/>
+          <ref name="consequence-definition"/>
+          <ref name="rule-definition"/>
+          <ref name="initiating-event-group-definition"/>
+          <ref name="initiating-event-definition"/>
+          <ref name="fault-tree-definition"/>
+          <ref name="substitution-definition"/>
+          <ref name="CCF-group-definition"/>
+          <ref name="include-directive"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+
+    <!--
+    <optional>
+      <element name="model-data">
+        <zeroOrMore>
+          <choice>
+            <ref name="house-event-definition"/>
+            <ref name="basic-event-definition"/>
+            <ref name="parameter-definition"/>
+            <ref name="include-directive"/>
+          </choice>
+        </zeroOrMore>
+      </element>
+    </optional>
+    -->
+  </start>
+
+  <define name="label">
+    <element name="label"> <text/> </element>
+  </define>
+
+  <define name="attributes">
+    <element name="attributes">
+      <zeroOrMore>
+        <element name="attribute">
+          <attribute name="name"> <data type="string"/> </attribute>
+          <attribute name="value"> <data type="string"/> </attribute>
+          <optional>
+            <attribute name="type"> <data type="string"/> </attribute>
+          </optional>
+        </element>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="include-directive">
+    <element name="include">
+      <attribute name="file"> <data type="string"/> </attribute>
+    </element>
+  </define>
+
+
+  <!-- I.2. Consequences, Consequence Groups -->
+
+  <define name="consequence-definition">
+    <element name="define-consequence">
+      <text/>
+    </element>
+  </define>
+
+  <define name="consequence-group-definition">
+    <element name="define-consequence-group">
+      <text/>
+    </element>
+  </define>
+
+
+  <!-- I.3. Missions, Phases -->
+
+  <define name="alignment-definition">
+    <element name="define-alignment">
+      <text/>
+    </element>
+  </define>
+
+
+<!-- II. Event Tree Layer -->
+
+  <!-- II.1. Initiating events, Initiating event Groups -->
+
+  <define name="initiating-event-definition">
+    <element name="define-initiating-event">
+      <text/>
+    </element>
+  </define>
+
+  <define name="initiating-event-group-definition">
+    <element name="define-initiating-event-group">
+      <text/>
+    </element>
+  </define>
+
+
+  <!-- II.2. Event Trees -->
+
+  <define name="event-tree-definition">
+    <element name="define-event-tree">
+      <text/>
+    </element>
+  </define>
+
+
+  <!-- II.3. Instructions, Rules -->
+
+  <define name="rule-definition">
+    <element name="define-rule">
+      <text/>
+    </element>
+  </define>
+
+
+<!-- III. Meta-Logical Layer -->
+
+  <!-- III.1. CCF-Groups -->
+
+  <define name="CCF-group-definition">
+    <element name="define-CCF-group">
+      <text/>
+    </element>
+  </define>
+
+  <!-- III.2. Substitutions -->
+
+  <define name="substitution-definition">
+    <element name="define-substitution">
+      <text/>
+    </element>
+  </define>
+
+
+<!-- IV. Fault Tree Layer -->
+
+  <!-- IV.1. Definitions of Fault Trees & Components -->
+
+  <define name="fault-tree-definition">
+    <element name="define-fault-tree">
+      <attribute name="name"> <data type="string"/> </attribute>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <ref name="substitution-definition"/>
+          <ref name="CCF-group-definition"/>
+          <ref name="event-definition"/>
+          <ref name="component-definition"/>
+          <ref name="parameter-definition"/>
+          <ref name="include-directive"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="component-definition">
+    <element name="define-component">
+      <attribute name="name"> <data type="string"/> </attribute>
+      <optional>
+        <attribute name="role">
+          <choice>
+            <value>private</value>
+            <value>public</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <ref name="substitution-definition"/>
+          <ref name="CCF-group-definition"/>
+          <ref name="event-definition"/>
+          <ref name="component-definition"/>
+          <ref name="parameter-definition"/>
+          <ref name="include-directive"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="event-definition">
+    <choice>
+      <ref name="gate-definition"/>
+      <ref name="house-event-definition"/>
+      <ref name="basic-event-definition"/>
+    </choice>
+  </define>
+
+  <!-- IV.2. Definitions of Gates, House Events & Basic Events -->
+
+  <define name="gate-definition">
+    <element name="define-gate">
+      <attribute name="name"> <data type="string"/> </attribute>
+      <optional>
+        <attribute name="role">
+          <choice>
+            <value>private</value>
+            <value>public</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+      <ref name="formula"/>
+    </element>
+  </define>
+
+  <define name="house-event-definition">
+    <element name="define-house-event">
+      <attribute name="name"> <data type="string"/> </attribute>
+      <optional>
+        <attribute name="role">
+          <choice>
+            <value>private</value>
+            <value>public</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+      <optional>
+        <ref name="Boolean-constant"/>
+      </optional>
+    </element>
+  </define>
+
+  <define name="basic-event-definition">
+    <element name="define-basic-event">
+      <attribute name="name"> <data type="string"/> </attribute>
+      <optional>
+        <attribute name="role">
+          <choice>
+            <value>private</value>
+            <value>public</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+      <optional>
+        <ref name="expression"/>
+      </optional>
+    </element>
+  </define>
+
+
+  <!-- IV.3. Formulae -->
+
+  <define name="formula">
+    <choice>
+      <ref name="event"/>
+      <ref name="Boolean-constant"/>
+      <element name="and">
+        <oneOrMore>
+          <ref name="formula"/>
+        </oneOrMore>
+      </element>
+      <element name="or">
+        <oneOrMore>
+          <ref name="formula"/>
+        </oneOrMore>
+      </element>
+      <element name="not">
+        <ref name="formula"/>
+      </element>
+      <element name="xor">
+        <oneOrMore>
+          <ref name="formula"/>
+        </oneOrMore>
+      </element>
+      <element name="iff">
+        <oneOrMore>
+          <ref name="formula"/>
+        </oneOrMore>
+      </element>
+      <element name="nand">
+        <oneOrMore>
+          <ref name="formula"/>
+        </oneOrMore>
+      </element>
+      <element name="nor">
+        <oneOrMore>
+          <ref name="formula"/>
+        </oneOrMore>
+      </element>
+      <element name="atleast">
+        <attribute name="min"> <data type="nonNegativeInteger"/> </attribute>
+        <oneOrMore>
+          <ref name="formula"/>
+        </oneOrMore>
+      </element>
+      <element name="cardinality">
+        <attribute name="min"> <data type="nonNegativeInteger"/> </attribute>
+        <attribute name="max"> <data type="nonNegativeInteger"/> </attribute>
+        <oneOrMore>
+          <ref name="formula"/>
+        </oneOrMore>
+      </element>
+      <element name="imply">
+        <ref name="formula"/>
+        <ref name="formula"/>
+      </element>
+    </choice>
+  </define>
+
+  <define name="event">
+    <choice>
+      <element name="event">
+        <attribute name="name"> <data type="string"/> </attribute>
+        <optional>
+          <attribute name="type">
+            <choice>
+              <value>gate</value>
+              <value>basic-event</value>
+              <value>house-event</value>
+            </choice>
+          </attribute>
+        </optional>
+      </element>
+      <element name="gate">
+        <attribute name="name"> <data type="string"/> </attribute>
+      </element>
+      <element name="house-event">
+        <attribute name="name"> <data type="string"/> </attribute>
+      </element>
+      <element name="basic-event">
+        <attribute name="name"> <data type="string"/> </attribute>
+      </element>
+    </choice>
+  </define>
+
+  <define name="Boolean-constant">
+    <element name="constant">
+      <attribute name="value">
+        <choice>
+          <value>true</value>
+          <value>false</value>
+        </choice>
+      </attribute>
+    </element>
+  </define>
+
+
+<!-- V. Stochastic Layer -->
+
+  <!-- V.1. Definition of Parameters -->
+
+  <define name="parameter-definition">
+    <element name="define-parameter">
+      <attribute name="name"> <data type="string"/> </attribute>
+      <optional>
+        <attribute name="role">
+          <choice>
+            <value>private</value>
+            <value>public</value>
+          </choice>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="unit">
+          <ref name="units"/>
+        </attribute>
+      </optional>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+      <ref name="expression"/>
+    </element>
+  </define>
+
+  <define name="units">
+    <value>unit_dummy</value>
+    <!--
+    <choice>
+      <element name="bool"/>
+      <element name="int"/>
+      <element name="float"/>
+      <element name="hours"/>
+      <element name="hours-1"/>
+      <element name="years"/>
+      <element name="years-1"/>
+      <element name="fit"/>
+      <element name="demands"/>
+    </choice>
+    -->
+  </define>
+
+  <!-- V.2. Expressions -->
+
+    <!-- V.2.1. Entities -->
+
+  <define name="expression">
+    <element name="expr_dummy"> <text/> </element>
+    <!--
+    <choice>
+      <element name="constant"/>
+      <element name="parameter"/>
+      <element name="operation"/>
+      <element name="built-in"/>
+      <element name="random-deviate"/>
+      <element name="test-event"/>
+    </choice>
+    -->
+  </define>
+
+    <!-- V.2.2. Constants, Parameters -->
+    <!-- V.2.3. Numerical Expressions -->
+    <!-- V.2.4. Boolean Expressions -->
+    <!-- V.2.5. Conditional Expressions -->
+    <!-- V.2.6. Built-ins -->
+    <!-- V.2.7. Random-Deviates -->
+    <!-- V.2.8. Test-Events -->
+
+</grammar>

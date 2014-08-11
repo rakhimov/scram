@@ -120,7 +120,7 @@
 <!ELEMENT set-gate (formula) >
 <!ATTLIST set-gate name CDATA #REQUIRED direction (directions) #IMPLIED >
 
-<!ELEMENT set-house-event (Constant) >
+<!ELEMENT set-house-event (constant) >
 <!ATTLIST set-house-event name CDATA #REQUIRED direction (directions)
         #IMPLIED >
 
@@ -187,7 +187,7 @@
       )*
      )
 >
-<!ATTLIST define-fault-tree name CDATA #IMPLIED >
+<!ATTLIST define-fault-tree name CDATA #REQUIRED >
 
 <!ELEMENT define-component
     (label?, attributes?,
@@ -212,12 +212,12 @@
 <!-- IV.2. Definitions of Gates, House Events & Basic Events -->
 
 <!ELEMENT define-gate (label?, attributes?, formula) >
-<!ATTLIST define-component
+<!ATTLIST define-gate
     name CDATA #REQUIRED
     role (private | public) #IMPLIED
 >
 
-<!ELEMENT define-house-event (label?, attributes?, Constant? ) >
+<!ELEMENT define-house-event (label?, attributes?, constant? ) >
 <!ATTLIST define-house-event
     name CDATA #REQUIRED
     role (private | public) #IMPLIED
@@ -232,7 +232,7 @@
 <!-- IV.3. Formulae -->
 
 <!ELEMENT formula (
-                   gate | house-event | basic-event | Constant
+                   gate | house-event | basic-event | constant
                    | and | or | not | xor | iff | nand | nor | atleast | cardinality ) >
 <!ELEMENT gate EMPTY>
 <!ATTLIST gate name CDATA #REQUIRED>
@@ -268,7 +268,7 @@
 <!ENTITY % units
     '( bool | int | float | hours | hours-1 | years | years-1
 | fit | demands ) ' >
-<!ELEMENT define-parameter (label?, attributes?, expression?) >
+<!ELEMENT define-parameter (label?, attributes?, expression) >
 <!ATTLIST define-parameter
     name CDATA #REQUIRED
     role (private | public) #IMPLIED
