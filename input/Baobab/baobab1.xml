@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<pra>
+<opsa-mef>
   <define-fault-tree name="r1">
     <define-gate name="r1">
       <and>
@@ -557,4 +557,4 @@
       </or>
     </define-gate>
   </define-fault-tree>
-</pra>
+</opsa-mef>

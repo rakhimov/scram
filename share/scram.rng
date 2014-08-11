@@ -31,22 +31,19 @@
           <ref name="include-directive"/>
         </choice>
       </zeroOrMore>
+      <optional>
+        <element name="model-data">
+          <zeroOrMore>
+            <choice>
+              <ref name="house-event-definition"/>
+              <ref name="basic-event-definition"/>
+              <ref name="parameter-definition"/>
+              <ref name="include-directive"/>
+            </choice>
+          </zeroOrMore>
+        </element>
+      </optional>
     </element>
-
-    <!--
-    <optional>
-      <element name="model-data">
-        <zeroOrMore>
-          <choice>
-            <ref name="house-event-definition"/>
-            <ref name="basic-event-definition"/>
-            <ref name="parameter-definition"/>
-            <ref name="include-directive"/>
-          </choice>
-        </zeroOrMore>
-      </element>
-    </optional>
-    -->
   </start>
 
   <define name="label">
