@@ -4,7 +4,10 @@ set(SCRAM_CORE_SRC ${SCRAM_CORE_SRC}
   "${CMAKE_CURRENT_SOURCE_DIR}/error.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/top_event.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/inter_event.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/primary_event.cc")
+  "${CMAKE_CURRENT_SOURCE_DIR}/primary_event.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/xml_parser.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/relax_ng_validator.cc"
+  )
 add_library(scramcore ${SCRAM_CORE_SRC})
 
 set_target_properties(scramcore

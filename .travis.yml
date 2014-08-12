@@ -10,6 +10,8 @@ before_install: sudo apt-get update -qq
 install:
     - sudo apt-get install -qq libboost-all-dev
     - sudo apt-get install -qq libboost-random-dev
+    - sudo apt-get install -qq libxml2-dev
+    - sudo apt-get install -qq libxml++2.6-dev
     - sudo apt-get install -qq python2.7
     - sudo apt-get install -qq graphviz
     - sudo pip install cpp-coveralls

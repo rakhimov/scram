@@ -33,6 +33,8 @@ Package                Minimum Version
 ====================   ==================
 `CMake`                2.8
 `boost`                1.46.1
+`libxml2`              2
+`libxml++`             2.36
 `Python`               2.7.3
 ====================   ==================
 
@@ -74,6 +76,8 @@ required library package names is:
 #. cmake
 #. libboost-all-dev
 #. libboost-random-dev
+#. libxml2-dev
+#. libxml++2.6-dev
 #. python2.7
 
 and (optionally):
@@ -91,7 +95,7 @@ dependencies:
 
 .. code-block:: bash
 
-   sudo apt-get install -y cmake make libboost-all-dev libboost-random-dev python2.7 graphviz
+   sudo apt-get install -y cmake make libboost-all-dev libboost-random-dev libxml2-dev libxml++2.6-dev python2.7 graphviz
 
 .. _`Travis CI`:
     https://travis-ci.org/rakhimov/SCRAM
