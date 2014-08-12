@@ -40,7 +40,7 @@ int main(int argc, char* argv[]) {
   po::variables_map vm;
   try {
     po::store(po::parse_command_line(argc, argv, desc), vm);
-  } catch(std::exception err) {
+  } catch (std::exception& err) {
     std::cout << "Invalid arguments.\n"
               << usage << "\n\n" << desc << "\n";
     return 1;

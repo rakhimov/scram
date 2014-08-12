@@ -236,7 +236,7 @@ void FaultTree::PopulateProbabilities(std::string prob_file) {
           if (time == -1) {
             try {
               time = boost::lexical_cast<double>(args[1]);
-            } catch (boost::bad_lexical_cast err) {
+            } catch (boost::bad_lexical_cast& err) {
               msg << "Line " << nline << " : " << "Incorrect time input.";
               throw scram::ValidationError(msg.str());
             }
@@ -252,7 +252,7 @@ void FaultTree::PopulateProbabilities(std::string prob_file) {
 
         try {
           p = boost::lexical_cast<double>(args[1]);
-        } catch (boost::bad_lexical_cast err) {
+        } catch (boost::bad_lexical_cast& err) {
           msg << "Line " << nline << " : " << "Incorrect probability input.";
           throw scram::ValidationError(msg.str());
         }
@@ -1201,7 +1201,7 @@ void FaultTree::InterpretArgs_(int nline, std::stringstream& msg,
       } else if (args[0] == "votenumber" && vote_number_ == -1) {
         try {
           vote_number_ = boost::lexical_cast<int>(args[1]);
-        } catch (boost::bad_lexical_cast err) {
+        } catch (boost::bad_lexical_cast& err) {
           msg << "Line " << nline << " : " << "Incorrect vote number input.";
           throw scram::ValidationError(msg.str());
         }

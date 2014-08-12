@@ -69,7 +69,7 @@ bool RelaxNGValidator::Validate(const xmlpp::Document* doc) {
   int res;
   try {
     res = xmlRelaxNGValidateDoc(valid_context_, (xmlDocPtr)doc->cobj());
-  } catch (xmlError e) {
+  } catch (xmlError& e) {
     throw ValidationError(e.message);
   }
 
