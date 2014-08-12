@@ -81,16 +81,49 @@
 
   <define name="consequence-definition">
     <element name="define-consequence">
-      <text/>
+      <attribute name="name"> <data type="string"/> </attribute>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+      <element name="initiating-event">
+        <attribute name="name"> <data type="string"/> </attribute>
+      </element>
+      <element name="sequence">
+        <attribute name="name"> <data type="string"/> </attribute>
+      </element>
     </element>
   </define>
 
   <define name="consequence-group-definition">
     <element name="define-consequence-group">
-      <text/>
+      <attribute name="name"> <data type="string"/> </attribute>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+      <choice>
+        <ref name="consequence"/>
+        <ref name="consequence-group"/>
+      </choice>
     </element>
   </define>
 
+  <define name="consequence">
+    <element name="consequence">
+      <attribute name="name"> <data type="string"/> </attribute>
+    </element>
+  </define>
+
+  <define name="consequence-group">
+    <element name="consequence-group">
+      <attribute name="name"> <data type="string"/> </attribute>
+    </element>
+  </define>
 
   <!-- ============================================================= -->
   <!-- I.3. Missions, Phases -->
@@ -98,7 +131,32 @@
 
   <define name="alignment-definition">
     <element name="define-alignment">
-      <text/>
+      <attribute name="name"> <data type="string"/> </attribute>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+      <oneOrMore>
+        <ref name="phase-definition"/>
+      </oneOrMore>
+    </element>
+  </define>
+
+  <define name="phase-definition">
+    <element name="define-phase">
+      <attribute name="name"> <data type="string"/> </attribute>
+      <attribute name="time-fraction"> <data type="float"/> </attribute>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+      <zeroOrMore>
+        <ref name="instruction"/>
+      </zeroOrMore>
     </element>
   </define>
 
@@ -113,14 +171,61 @@
 
   <define name="initiating-event-definition">
     <element name="define-initiating-event">
-      <text/>
+      <attribute name="name"> <data type="string"/> </attribute>
+      <optional>
+        <attribute name="event-tree"> <data type="string"/> </attribute>
+      </optional>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+      <optional>
+        <choice>
+          <ref name="collected-item"/>
+          <ref name="consequence"/>
+          <ref name="consequence-group"/>
+        </choice>
+      </optional>
     </element>
   </define>
 
   <define name="initiating-event-group-definition">
     <element name="define-initiating-event-group">
-      <text/>
+      <attribute name="name"> <data type="string"/> </attribute>
+      <optional>
+        <attribute name="event-tree"> <data type="string"/> </attribute>
+      </optional>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+      <oneOrMore>
+        <ref name="initiating-event"/>
+      </oneOrMore>
     </element>
+  </define>
+
+  <define name="initiating-event">
+    <choice>
+      <element name="initiating-event">
+        <attribute name="name"> <data type="string"/> </attribute>
+      </element>
+      <element name="initiating-event-group">
+        <attribute name="name"> <data type="string"/> </attribute>
+      </element>
+    </choice>
+  </define>
+
+  <define name="collected-item">
+    <choice>
+      <ref name="basic-event"/>
+      <ref name="gate"/>
+      <ref name="parameter"/>
+    </choice>
   </define>
 
 
@@ -130,18 +235,254 @@
 
   <define name="event-tree-definition">
     <element name="define-event-tree">
-      <text/>
+      <attribute name="name"> <data type="string"/> </attribute>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+      <zeroOrMore>
+        <ref name="functional-event-definition"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="sequence-definition"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="branch-definition"/>
+      </zeroOrMore>
+      <ref name="initial-state"/>
     </element>
   </define>
 
+  <define name="functional-event-definition">
+    <element name="define-functional-event">
+      <attribute name="name"> <data type="string"/> </attribute>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+    </element>
+  </define>
+
+  <define name="sequence-definition">
+    <element name="define-sequence">
+      <attribute name="name"> <data type="string"/> </attribute>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+      <oneOrMore>
+        <ref name="instruction"/>
+      </oneOrMore>
+    </element>
+  </define>
+
+  <define name="branch-definition">
+    <element name="define-branch">
+      <attribute name="name"> <data type="string"/> </attribute>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+      <ref name="branch"/>
+    </element>
+  </define>
+
+  <define name="initial-state">
+    <element name="initial-state">
+      <ref name="branch"/>
+    </element>
+  </define>
+
+  <define name="branch">
+    <zeroOrMore>
+      <ref name="instruction"/>
+    </zeroOrMore>
+    <choice>
+      <ref name="fork"/>
+      <ref name="end-state"/>
+    </choice>
+  </define>
+
+  <define name="fork">
+    <element name="fork">
+      <attribute name="functional-event"> <data type="string"/> </attribute>
+      <oneOrMore>
+        <ref name="path"/>
+      </oneOrMore>
+    </element>
+  </define>
+
+  <define name="path">
+    <element name="path">
+      <attribute name="state"> <data type="string"/> </attribute>
+      <ref name="branch"/>
+    </element>
+  </define>
+
+  <define name="end-state">
+    <choice>
+      <element name="sequence">
+        <attribute name="name"> <data type="string"/> </attribute>
+        <empty/>
+      </element>
+      <element name="branch">
+        <attribute name="name"> <data type="string"/> </attribute>
+        <empty/>
+      </element>
+    </choice>
+  </define>
 
   <!-- ============================================================= -->
   <!-- II.3. Instructions, Rules -->
   <!-- ============================================================= -->
 
+  <define name="instruction">
+    <choice>
+      <ref name="set"/>
+      <ref name="collect"/>
+      <ref name="if-then-else"/>
+      <ref name="block"/>
+      <ref name="rule"/>
+      <ref name="link"/>
+    </choice>
+  </define>
+
+  <define name="set">
+    <choice>
+      <ref name="set-gate"/>
+      <ref name="set-house-event"/>
+      <ref name="set-basic-event"/>
+      <ref name="set-parameter"/>
+    </choice>
+  </define>
+
+  <define name="set-gate">
+    <element name="set-gate">
+      <attribute name="name"> <data type="string"/> </attribute>
+      <optional>
+        <attribute name="direction">
+          <ref name="direction"/>
+        </attribute>
+      </optional>
+      <ref name="formula"/>
+    </element>
+  </define>
+
+  <define name="set-house-event">
+    <element name="set-house-event">
+      <attribute name="name"> <data type="string"/> </attribute>
+      <optional>
+        <attribute name="direction">
+          <ref name="direction"/>
+        </attribute>
+      </optional>
+      <ref name="Boolean-constant"/>
+    </element>
+  </define>
+
+  <define name="set-basic-event">
+    <element name="set-basic-event">
+      <attribute name="name"> <data type="string"/> </attribute>
+      <optional>
+        <attribute name="direction">
+          <ref name="direction"/>
+        </attribute>
+      </optional>
+      <ref name="expression"/>
+    </element>
+  </define>
+
+  <define name="set-parameter">
+    <element name="set-parameter">
+      <attribute name="name"> <data type="string"/> </attribute>
+      <optional>
+        <attribute name="direction">
+          <ref name="direction"/>
+        </attribute>
+      </optional>
+      <ref name="expression"/>
+    </element>
+  </define>
+
+  <define name="direction">
+    <choice>
+      <value>forward</value>
+      <value>backward</value>
+      <value>both</value>
+    </choice>
+  </define>
+
+  <define name="if-then-else">
+    <element name="if">
+      <ref name="expression"/>
+      <ref name="instruction"/>
+      <optional>
+        <ref name="instruction"/>
+      </optional>
+    </element>
+  </define>
+
+  <define name="collect">
+    <choice>
+      <ref name="collect-formula"/>
+      <ref name="collect-expression"/>
+    </choice>
+  </define>
+
+  <define name="collect-formula">
+    <element name="collect-formula">
+      <ref name="formula"/>
+    </element>
+  </define>
+
+  <define name="collect-expression">
+    <element name="collect-expression">
+      <ref name="expression"/>
+    </element>
+  </define>
+
+  <define name="block">
+    <element name="block">
+      <zeroOrMore>
+        <ref name="instruction"/>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="rule">
+    <element name="rule">
+      <attribute name="name"> <data type="string"/> </attribute>
+      <empty/>
+    </element>
+  </define>
+
+  <define name="link">
+    <element name="event-tree">
+      <attribute name="name"> <data type="string"/> </attribute>
+      <empty/>
+    </element>
+  </define>
+
   <define name="rule-definition">
     <element name="define-rule">
-      <text/>
+      <attribute name="name"> <data type="string"/> </attribute>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+      <oneOrMore>
+        <ref name="instruction"/>
+      </oneOrMore>
     </element>
   </define>
 
@@ -156,8 +497,63 @@
 
   <define name="CCF-group-definition">
     <element name="define-CCF-group">
-      <text/>
+      <attribute name="name"> <data type="string"/> </attribute>
+      <attribute name="model">
+        <ref name="CCF-model"/>
+      </attribute>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+      <ref name="members"/>
+      <ref name="distribution"/>
+      <ref name="factors"/>
     </element>
+  </define>
+
+  <define name="members">
+    <element name="members">
+      <oneOrMore>
+        <ref name="basic-event"/>
+      </oneOrMore>
+    </element>
+  </define>
+
+  <define name="factors">
+    <choice>
+      <element name="factors">
+        <oneOrMore>
+          <ref name="factor"/>
+        </oneOrMore>
+      </element>
+      <ref name="factor"/>
+    </choice>
+  </define>
+
+  <define name="factor">
+    <element name="factor">
+      <optional>
+        <attribute name="level"> <data type="nonNegativeInteger"/> </attribute>
+      </optional>
+      <ref name="expression"/>
+    </element>
+  </define>
+
+  <define name="distribution">
+    <element name="distribution">
+      <ref name="expression"/>
+    </element>
+  </define>
+
+  <define name="CCF-model">
+    <choice>
+      <value>beta-factor</value>
+      <value>MGL</value>
+      <value>alpha-factor</value>
+      <value>phi-factor</value>
+    </choice>
   </define>
 
   <!-- ============================================================= -->
@@ -166,7 +562,36 @@
 
   <define name="substitution-definition">
     <element name="define-substitution">
-      <text/>
+      <optional>
+        <attribute name="name"> <data type="string"/> </attribute>
+      </optional>
+      <optional>
+        <attribute name="type"> <data type="string"/> </attribute>
+      </optional>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+      <element name="hypothesis">
+        <ref name="formula"/>
+      </element>
+      <optional>
+        <element name="source">
+          <oneOrMore>
+            <ref name="basic-event"/>
+          </oneOrMore>
+        </element>
+      </optional>
+      <element name="target">
+        <choice>
+          <oneOrMore>
+            <ref name="basic-event"/>
+          </oneOrMore>
+          <ref name="Boolean-constant"/>
+        </choice>
+      </element>
     </element>
   </define>
 
@@ -378,24 +803,40 @@
         <attribute name="name"> <data type="string"/> </attribute>
         <optional>
           <attribute name="type">
-            <choice>
-              <value>gate</value>
-              <value>basic-event</value>
-              <value>house-event</value>
-            </choice>
+            <ref name="event-type"/>
           </attribute>
         </optional>
       </element>
-      <element name="gate">
-        <attribute name="name"> <data type="string"/> </attribute>
-      </element>
-      <element name="house-event">
-        <attribute name="name"> <data type="string"/> </attribute>
-      </element>
-      <element name="basic-event">
-        <attribute name="name"> <data type="string"/> </attribute>
-      </element>
+      <ref name="gate"/>
+      <ref name="house-event"/>
+      <ref name="basic-event"/>
     </choice>
+  </define>
+
+  <define name="event-type">
+    <choice>
+      <value>gate</value>
+      <value>basic-event</value>
+      <value>house-event</value>
+    </choice>
+  </define>
+
+  <define name="gate">
+    <element name="gate">
+      <attribute name="name"> <data type="string"/> </attribute>
+    </element>
+  </define>
+
+  <define name="house-event">
+    <element name="house-event">
+      <attribute name="name"> <data type="string"/> </attribute>
+    </element>
+  </define>
+
+  <define name="basic-event">
+    <element name="basic-event">
+      <attribute name="name"> <data type="string"/> </attribute>
+    </element>
   </define>
 
   <define name="Boolean-constant">

@@ -52,7 +52,7 @@
 
 
 <!ELEMENT define-alignment (label?, attributes?, instruction* ) >
-<!ATTLIST define-alignment name CDATA #REQUIRED >
+<!ATTLIST define-alignment name CDATA #REQUIRED time-fraction CDATA #REQUIRED>
 
 
 <!-- II. Event Tree Layer -->
@@ -63,12 +63,12 @@
 
 <!ELEMENT define-initiating-event
     (label?, attributes?,
-     (collected-item | consequence | consequence-group)* )
+     (collected-item | consequence | consequence-group) )
 >
 <!ATTLIST define-initiating-event name CDATA #REQUIRED >
 
 <!ELEMENT define-initiating-event-group
-    (label?, attributes?, (initiating-event | initiating-event-group)* )
+    (label?, attributes?, (initiating-event | initiating-event-group)+ )
 >
 <!ATTLIST define-initiating-event-group name CDATA #REQUIRED >
 
@@ -81,7 +81,8 @@
 
 <!-- II.2. Event Trees -->
 
-<!ENTITY % end-state '(sequence | branch)'>
+<!ENTITY % end-state '(sequence | branch)'>  <!-- Something fishy is here -->
+
 <!ENTITY % branch '(instruction* (fork | end-state))'>
 <!ELEMENT define-event-tree
     (label?, attributes?,
@@ -95,7 +96,7 @@
 <!ELEMENT define-functional-event (label?, attributes?) >
 <!ATTLIST define-functional-event name CDATA #REQUIRED >
 
-<!ELEMENT define-sequence (label?, attributes?, instruction*) >
+<!ELEMENT define-sequence (label?, attributes?, instruction+) >
 <!ATTLIST define-sequence name CDATA #REQUIRED >
 
 <!ELEMENT define-branch (label?, attributes?, branch) >
@@ -104,7 +105,7 @@
 <!ELEMENT fork (path)+>
 <!ATTLIST fork functional-event CDATA #REQUIRED >
 
-<!ELEMENT path (branch)+ >
+<!ELEMENT path (branch) >
 <!ATTLIST path state CDATA #REQUIRED >
 
 <!ELEMENT initial-state (branch) >
