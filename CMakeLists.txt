@@ -113,7 +113,7 @@ include_directories("${Boost_INCLUDE_DIR}")
 include_directories("${LIBXML2_INCLUDE_DIR}")
 include_directories("${LibXML++_INCLUDE_DIR}")
 include_directories("${LibXML++Config_INCLUDE_DIR}")
-include_directories("${Glibmm_INCLUDE_DIRS}")
+include_directories(${Glibmm_INCLUDE_DIRS})
 include_directories("${SCRAM_SOURCE_DIR}")
 
 add_subdirectory("${SCRAM_SOURCE_DIR}")

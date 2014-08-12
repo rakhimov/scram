@@ -34,8 +34,12 @@ void XMLParser::Validate(const std::stringstream& xml_schema_snippet) {
 
 xmlpp::Document* XMLParser::Document() {
   xmlpp::Document* doc = parser_->get_document();
+
   // This adds the capability to have nice include semantics.
-  doc->process_xinclude();
+  // This is introduced in libxml++2.6 2.36.
+  // Not available on Ubuntu 12.04, so this commented out.
+  // doc->process_xinclude();
+
   // This removes the stupid xml:base attribute that including adds,
   // but which is unvalidatable. The web is truly cobbled together
   // by a race of evil gnomes.
