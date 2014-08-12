@@ -1,9 +1,13 @@
 <grammar xmlns="http://relaxng.org/ns/structure/1.0"
   datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
 
+<!-- ############################################################### -->
 <!-- I. Report/Calculation Layer -->
+<!-- ############################################################### -->
 
+  <!-- ============================================================= -->
   <!-- I.1. Models -->
+  <!-- ============================================================= -->
 
   <start>
     <element name="opsa-mef">
@@ -71,7 +75,9 @@
   </define>
 
 
+  <!-- ============================================================= -->
   <!-- I.2. Consequences, Consequence Groups -->
+  <!-- ============================================================= -->
 
   <define name="consequence-definition">
     <element name="define-consequence">
@@ -86,7 +92,9 @@
   </define>
 
 
+  <!-- ============================================================= -->
   <!-- I.3. Missions, Phases -->
+  <!-- ============================================================= -->
 
   <define name="alignment-definition">
     <element name="define-alignment">
@@ -95,9 +103,13 @@
   </define>
 
 
+<!-- ############################################################### -->
 <!-- II. Event Tree Layer -->
+<!-- ############################################################### -->
 
+  <!-- ============================================================= -->
   <!-- II.1. Initiating events, Initiating event Groups -->
+  <!-- ============================================================= -->
 
   <define name="initiating-event-definition">
     <element name="define-initiating-event">
@@ -112,7 +124,9 @@
   </define>
 
 
+  <!-- ============================================================= -->
   <!-- II.2. Event Trees -->
+  <!-- ============================================================= -->
 
   <define name="event-tree-definition">
     <element name="define-event-tree">
@@ -121,7 +135,9 @@
   </define>
 
 
+  <!-- ============================================================= -->
   <!-- II.3. Instructions, Rules -->
+  <!-- ============================================================= -->
 
   <define name="rule-definition">
     <element name="define-rule">
@@ -130,9 +146,13 @@
   </define>
 
 
+<!-- ############################################################### -->
 <!-- III. Meta-Logical Layer -->
+<!-- ############################################################### -->
 
+  <!-- ============================================================= -->
   <!-- III.1. CCF-Groups -->
+  <!-- ============================================================= -->
 
   <define name="CCF-group-definition">
     <element name="define-CCF-group">
@@ -140,7 +160,9 @@
     </element>
   </define>
 
+  <!-- ============================================================= -->
   <!-- III.2. Substitutions -->
+  <!-- ============================================================= -->
 
   <define name="substitution-definition">
     <element name="define-substitution">
@@ -149,9 +171,13 @@
   </define>
 
 
+<!-- ############################################################### -->
 <!-- IV. Fault Tree Layer -->
+<!-- ############################################################### -->
 
+  <!-- ============================================================= -->
   <!-- IV.1. Definitions of Fault Trees & Components -->
+  <!-- ============================================================= -->
 
   <define name="fault-tree-definition">
     <element name="define-fault-tree">
@@ -213,7 +239,9 @@
     </choice>
   </define>
 
+  <!-- ============================================================= -->
   <!-- IV.2. Definitions of Gates, House Events & Basic Events -->
+  <!-- ============================================================= -->
 
   <define name="gate-definition">
     <element name="define-gate">
@@ -283,7 +311,9 @@
   </define>
 
 
+  <!-- ============================================================= -->
   <!-- IV.3. Formulae -->
+  <!-- ============================================================= -->
 
   <define name="formula">
     <choice>
@@ -371,18 +401,26 @@
   <define name="Boolean-constant">
     <element name="constant">
       <attribute name="value">
-        <choice>
-          <value>true</value>
-          <value>false</value>
-        </choice>
+        <ref name="Boolean-value"/>
       </attribute>
     </element>
   </define>
 
+  <define name="Boolean-value">
+    <choice>
+      <value>true</value>
+      <value>false</value>
+    </choice>
+  </define>
 
+
+<!-- ############################################################### -->
 <!-- V. Stochastic Layer -->
+<!-- ############################################################### -->
 
+  <!-- ============================================================= -->
   <!-- V.1. Definition of Parameters -->
+  <!-- ============================================================= -->
 
   <define name="parameter-definition">
     <element name="define-parameter">
@@ -411,46 +449,453 @@
   </define>
 
   <define name="units">
-    <value>unit_dummy</value>
-    <!--
     <choice>
-      <element name="bool"/>
-      <element name="int"/>
-      <element name="float"/>
-      <element name="hours"/>
-      <element name="hours-1"/>
-      <element name="years"/>
-      <element name="years-1"/>
-      <element name="fit"/>
-      <element name="demands"/>
+      <value>bool</value>
+      <value>int</value>
+      <value>float</value>
+      <value>hours</value>
+      <value>hours-1</value>
+      <value>years</value>
+      <value>years-1</value>
+      <value>fit</value>
+      <value>demands</value>
     </choice>
-    -->
   </define>
 
+  <!-- ============================================================= -->
   <!-- V.2. Expressions -->
+  <!-- ============================================================= -->
 
+    <!-- *********************************************************** -->
     <!-- V.2.1. Entities -->
+    <!-- *********************************************************** -->
 
   <define name="expression">
-    <element name="expr_dummy"> <text/> </element>
-    <!--
     <choice>
-      <element name="constant"/>
-      <element name="parameter"/>
-      <element name="operation"/>
-      <element name="built-in"/>
-      <element name="random-deviate"/>
-      <element name="test-event"/>
+      <ref name="constant"/>
+      <ref name="parameter"/>
+      <ref name="operation"/>
+      <ref name="built-in"/>
+      <ref name="random-deviate"/>
+      <ref name="test-event"/>
     </choice>
-    -->
   </define>
 
+  <define name="constant">
+    <choice>
+      <ref name="bool"/>
+      <ref name="int"/>
+      <ref name="float"/>
+    </choice>
+  </define>
+
+  <define name="parameter">
+    <choice>
+      <element name="parameter">
+        <attribute name="name"> <data type="string"/> </attribute>
+        <optional>
+          <attribute name="unit">
+            <ref name="units"/>
+          </attribute>
+        </optional>
+      </element>
+      <element name="system-mission-time">
+        <optional>
+          <attribute name="unit">
+            <ref name="units"/>
+          </attribute>
+        </optional>
+      </element>
+    </choice>
+  </define>
+
+  <define name="operation">
+    <choice>
+      <ref name="numerical-operation"/>
+      <ref name="Boolean-operation"/>
+      <ref name="conditional-operation"/>
+    </choice>
+  </define>
+
+  <define name="built-in">
+    <choice>
+      <ref name="exponential"/>
+      <ref name="GLM"/>
+      <ref name="Weibull"/>
+      <ref name="periodic-test"/>
+      <ref name="extern-function"/>
+    </choice>
+  </define>
+
+  <define name="random-deviate">
+    <choice>
+      <ref name="uniform-deviate"/>
+      <ref name="normal-deviate"/>
+      <ref name="lognormal-deviate"/>
+      <ref name="gamma-deviate"/>
+      <ref name="beta-deviate"/>
+      <ref name="histogram"/>
+    </choice>
+  </define>
+
+  <define name="test-event">
+    <choice>
+      <ref name="test-initiating-event"/>
+      <ref name="test-functional-event"/>
+    </choice>
+  </define>
+
+    <!-- *********************************************************** -->
     <!-- V.2.2. Constants, Parameters -->
+    <!-- *********************************************************** -->
+
+    <define name="bool">
+      <element name="bool">
+        <attribute name="value">
+          <ref name="Boolean-value"/>
+        </attribute>
+      </element>
+    </define>
+
+    <define name="int">
+      <element name="int">
+        <attribute name="value">
+          <data type="integer"/>
+        </attribute>
+      </element>
+    </define>
+
+    <define name="float">
+      <element name="float">
+        <attribute name="value">
+          <data type="float"/>
+        </attribute>
+      </element>
+    </define>
+
+    <!-- *********************************************************** -->
     <!-- V.2.3. Numerical Expressions -->
+    <!-- *********************************************************** -->
+
+  <define name="numerical-operation">
+    <choice>
+      <element name="neg">
+        <ref name="expression"/>
+      </element>
+      <element name="add">
+        <oneOrMore>
+          <ref name="expression"/>
+        </oneOrMore>
+      </element>
+      <element name="sub">
+        <oneOrMore>
+          <ref name="expression"/>
+        </oneOrMore>
+      </element>
+      <element name="mul">
+        <oneOrMore>
+          <ref name="expression"/>
+        </oneOrMore>
+      </element>
+      <element name="div">
+        <oneOrMore>
+          <ref name="expression"/>
+        </oneOrMore>
+      </element>
+      <element name="pi"> <empty/> </element>
+      <element name="abs">
+        <ref name="expression"/>
+      </element>
+      <element name="acos">
+        <ref name="expression"/>
+      </element>
+      <element name="asin">
+        <ref name="expression"/>
+      </element>
+      <element name="atan">
+        <ref name="expression"/>
+      </element>
+      <element name="cos">
+        <ref name="expression"/>
+      </element>
+      <element name="cosh">
+        <ref name="expression"/>
+      </element>
+      <element name="exp">
+        <ref name="expression"/>
+      </element>
+      <element name="log">
+        <ref name="expression"/>
+      </element>
+      <element name="log10">
+        <ref name="expression"/>
+      </element>
+      <element name="mod">
+        <ref name="expression"/>
+        <ref name="expression"/>
+      </element>
+      <element name="pow">
+        <ref name="expression"/>
+        <ref name="expression"/>
+      </element>
+      <element name="sin">
+        <ref name="expression"/>
+      </element>
+      <element name="sinh">
+        <ref name="expression"/>
+      </element>
+      <element name="tan">
+        <ref name="expression"/>
+      </element>
+      <element name="tanh">
+        <ref name="expression"/>
+      </element>
+      <element name="sqrt">
+        <ref name="expression"/>
+      </element>
+      <element name="ceil">
+        <ref name="expression"/>
+      </element>
+      <element name="floor">
+        <ref name="expression"/>
+      </element>
+      <element name="min">
+        <oneOrMore>
+          <ref name="expression"/>
+        </oneOrMore>
+      </element>
+      <element name="max">
+        <oneOrMore>
+          <ref name="expression"/>
+        </oneOrMore>
+      </element>
+      <element name="mean">
+        <oneOrMore>
+          <ref name="expression"/>
+        </oneOrMore>
+      </element>
+    </choice>
+  </define>
+
+    <!-- *********************************************************** -->
     <!-- V.2.4. Boolean Expressions -->
+    <!-- *********************************************************** -->
+
+  <define name="Boolean-operation">
+    <choice>
+      <element name="not">
+        <ref name="expression"/>
+      </element>
+      <element name="and">
+        <oneOrMore>
+          <ref name="expression"/>
+        </oneOrMore>
+      </element>
+      <element name="or">
+        <oneOrMore>
+          <ref name="expression"/>
+        </oneOrMore>
+      </element>
+      <element name="eq">
+        <ref name="expression"/>
+        <ref name="expression"/>
+      </element>
+      <element name="df">
+        <ref name="expression"/>
+        <ref name="expression"/>
+      </element>
+      <element name="lt">
+        <ref name="expression"/>
+        <ref name="expression"/>
+      </element>
+      <element name="gt">
+        <ref name="expression"/>
+        <ref name="expression"/>
+      </element>
+      <element name="leq">
+        <ref name="expression"/>
+        <ref name="expression"/>
+      </element>
+      <element name="geq">
+        <ref name="expression"/>
+        <ref name="expression"/>
+      </element>
+    </choice>
+  </define>
+
+    <!-- *********************************************************** -->
     <!-- V.2.5. Conditional Expressions -->
+    <!-- *********************************************************** -->
+
+  <define name="conditional-operation">
+    <choice>
+      <ref name="if-then-else-operation"/>
+      <ref name="switch-operation"/>
+    </choice>
+  </define>
+
+  <define name="if-then-else-operation">
+    <element name="ite">
+      <ref name="expression"/>
+      <ref name="expression"/>
+      <ref name="expression"/>
+    </element>
+  </define>
+
+  <define name="switch-operation">
+    <element name="switch">
+      <zeroOrMore>
+        <ref name="case-operation"/>
+      </zeroOrMore>
+      <ref name="expression"/>
+    </element>
+  </define>
+
+  <define name="case-operation">
+    <element name="case">
+      <ref name="expression"/>
+      <ref name="expression"/>
+    </element>
+  </define>
+
+    <!-- *********************************************************** -->
     <!-- V.2.6. Built-ins -->
+    <!-- *********************************************************** -->
+
+    <define name="exponential">
+      <element name="exponential">
+        <ref name="expression"/>
+        <ref name="expression"/>
+      </element>
+    </define>
+
+    <define name="GLM">
+      <element name="GLM">
+        <ref name="expression"/>
+        <ref name="expression"/>
+        <ref name="expression"/>
+        <ref name="expression"/>
+      </element>
+    </define>
+
+    <define name="Weibull">
+      <element name="Weibull">
+        <ref name="expression"/>
+        <ref name="expression"/>
+        <ref name="expression"/>
+      </element>
+    </define>
+
+    <define name="periodic-test">
+      <choice>
+        <element name="periodic-test">
+          <ref name="expression"/>
+          <ref name="expression"/>
+          <ref name="expression"/>
+          <ref name="expression"/>
+        </element>
+        <element name="periodic-test">
+          <ref name="expression"/>
+          <ref name="expression"/>
+          <ref name="expression"/>
+          <ref name="expression"/>
+          <ref name="expression"/>
+        </element>
+        <element name="periodic-test">
+          <ref name="expression"/>
+          <ref name="expression"/>
+          <ref name="expression"/>
+          <ref name="expression"/>
+          <ref name="expression"/>
+          <ref name="expression"/>
+          <ref name="expression"/>
+          <ref name="expression"/>
+          <ref name="expression"/>
+          <ref name="expression"/>
+          <ref name="expression"/>
+        </element>
+      </choice>
+    </define>
+
+    <define name="extern-function">
+      <element name="extern-function">
+        <attribute name="name"> <data type="string"/> </attribute>
+        <zeroOrMore>
+          <ref name="expression"/>
+        </zeroOrMore>
+      </element>
+    </define>
+
+    <!-- *********************************************************** -->
     <!-- V.2.7. Random-Deviates -->
+    <!-- *********************************************************** -->
+
+    <define name="uniform-deviate">
+      <element name="uniform-deviate">
+        <ref name="expression"/>
+        <ref name="expression"/>
+      </element>
+    </define>
+
+    <define name="normal-deviate">
+      <element name="normal-deviate">
+        <ref name="expression"/>
+        <ref name="expression"/>
+      </element>
+    </define>
+
+    <define name="lognormal-deviate">
+      <element name="lognormal-deviate">
+        <ref name="expression"/>
+        <ref name="expression"/>
+        <ref name="expression"/>
+      </element>
+    </define>
+
+    <define name="gamma-deviate">
+      <element name="gamma-deviate">
+        <ref name="expression"/>
+        <ref name="expression"/>
+      </element>
+    </define>
+
+    <define name="beta-deviate">
+      <element name="beta-deviate">
+        <ref name="expression"/>
+        <ref name="expression"/>
+      </element>
+    </define>
+
+    <define name="histogram">
+      <element name="histogram">
+        <oneOrMore>
+          <ref name="bin"/>
+        </oneOrMore>
+      </element>
+    </define>
+
+    <define name="bin">
+      <element name="bin">
+        <ref name="expression"/>
+        <ref name="expression"/>
+      </element>
+    </define>
+
+    <!-- *********************************************************** -->
     <!-- V.2.8. Test-Events -->
+    <!-- *********************************************************** -->
+
+    <define name="test-initiating-event">
+      <element name="test-initiating-event">
+        <attribute name="name"> <data type="string"/> </attribute>
+      </element>
+    </define>
+
+    <define name="test-functional-event">
+      <element name="test-functional-event">
+        <attribute name="name"> <data type="string"/> </attribute>
+        <attribute name="state"> <data type="string"/> </attribute>
+      </element>
+    </define>
 
 </grammar>

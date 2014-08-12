@@ -1,6 +1,14 @@
+# ###############################################################
+
 # I. Report/Calculation Layer
 
+# ###############################################################
+
+# =============================================================
+
 # I.1. Models
+
+# =============================================================
 start =
   element opsa-mef {
     attribute name { xsd:string }?,
@@ -16,21 +24,14 @@ start =
      | fault-tree-definition
      | substitution-definition
      | CCF-group-definition
-     | include-directive)*
+     | include-directive)*,
+    element model-data {
+      (house-event-definition
+       | basic-event-definition
+       | parameter-definition
+       | include-directive)*
+    }?
   }
-  # <optional>
-  #   <element name="model-data">
-  #     <zeroOrMore>
-  #       <choice>
-  #         <ref name="house-event-definition"/>
-  #         <ref name="basic-event-definition"/>
-  #         <ref name="parameter-definition"/>
-  #         <ref name="include-directive"/>
-  #       </choice>
-  #     </zeroOrMore>
-  #   </element>
-  # </optional>
-
 label = element label { text }
 attributes =
   element attributes {
@@ -44,30 +45,74 @@ include-directive =
   element include {
     attribute file { xsd:string }
   }
+# =============================================================
+
 # I.2. Consequences, Consequence Groups
+
+# =============================================================
 consequence-definition = element define-consequence { text }
 consequence-group-definition = element define-consequence-group { text }
+# =============================================================
+
 # I.3. Missions, Phases
+
+# =============================================================
 alignment-definition = element define-alignment { text }
+# ###############################################################
+
 # II. Event Tree Layer
 
+# ###############################################################
+
+# =============================================================
+
 # II.1. Initiating events, Initiating event Groups
+
+# =============================================================
 initiating-event-definition = element define-initiating-event { text }
 initiating-event-group-definition =
   element define-initiating-event-group { text }
+# =============================================================
+
 # II.2. Event Trees
+
+# =============================================================
 event-tree-definition = element define-event-tree { text }
+# =============================================================
+
 # II.3. Instructions, Rules
+
+# =============================================================
 rule-definition = element define-rule { text }
+# ###############################################################
+
 # III. Meta-Logical Layer
 
+# ###############################################################
+
+# =============================================================
+
 # III.1. CCF-Groups
+
+# =============================================================
 CCF-group-definition = element define-CCF-group { text }
+# =============================================================
+
 # III.2. Substitutions
+
+# =============================================================
 substitution-definition = element define-substitution { text }
+# ###############################################################
+
 # IV. Fault Tree Layer
 
+# ###############################################################
+
+# =============================================================
+
 # IV.1. Definitions of Fault Trees & Components
+
+# =============================================================
 fault-tree-definition =
   element define-fault-tree {
     attribute name { xsd:string },
@@ -95,7 +140,11 @@ component-definition =
   }
 event-definition =
   gate-definition | house-event-definition | basic-event-definition
+# =============================================================
+
 # IV.2. Definitions of Gates, House Events & Basic Events
+
+# =============================================================
 gate-definition =
   element define-gate {
     attribute name { xsd:string },
@@ -120,7 +169,11 @@ basic-event-definition =
     attributes?,
     expression?
   }
+# =============================================================
+
 # IV.3. Formulae
+
+# =============================================================
 formula =
   event
   | Boolean-constant
@@ -157,11 +210,20 @@ event =
     }
 Boolean-constant =
   element constant {
-    attribute value { "true" | "false" }
+    attribute value { Boolean-value }
   }
+Boolean-value = "true" | "false"
+# ###############################################################
+
 # V. Stochastic Layer
 
+# ###############################################################
+
+# =============================================================
+
 # V.1. Definition of Parameters
+
+# =============================================================
 parameter-definition =
   element define-parameter {
     attribute name { xsd:string },
@@ -172,45 +234,185 @@ parameter-definition =
     expression
   }
 units =
-  [
-    # <choice>
-    #   <element name="bool"/>
-    #   <element name="int"/>
-    #   <element name="float"/>
-    #   <element name="hours"/>
-    #   <element name="hours-1"/>
-    #   <element name="years"/>
-    #   <element name="years-1"/>
-    #   <element name="fit"/>
-    #   <element name="demands"/>
-    # </choice>
+  "bool"
+  | "int"
+  | "float"
+  | "hours"
+  | "hours-1"
+  | "years"
+  | "years-1"
+  | "fit"
+  | "demands"
+# =============================================================
 
-  ]
-  "unit_dummy"
 # V.2. Expressions
 
+# =============================================================
+
+# ***********************************************************
+
 # V.2.1. Entities
+
+# ***********************************************************
 expression =
-  element expr_dummy { text }
-  # <choice>
-  #   <element name="constant"/>
-  #   <element name="parameter"/>
-  #   <element name="operation"/>
-  #   <element name="built-in"/>
-  #   <element name="random-deviate"/>
-  #   <element name="test-event"/>
-  # </choice>
+  constant
+  | parameter
+  | operation
+  | built-in
+  | random-deviate
+  | test-event
+constant = bool | int | float
+parameter =
+  element parameter {
+    attribute name { xsd:string },
+    attribute unit { units }?
+  }
+  | element system-mission-time {
+      attribute unit { units }?
+    }
+operation =
+  numerical-operation | Boolean-operation | conditional-operation
+built-in = exponential | GLM | Weibull | periodic-test | extern-function
+random-deviate =
+  uniform-deviate
+  | normal-deviate
+  | lognormal-deviate
+  | gamma-deviate
+  | beta-deviate
+  | histogram
+test-event = test-initiating-event | test-functional-event
+# ***********************************************************
 
 # V.2.2. Constants, Parameters
 
+# ***********************************************************
+bool =
+  element bool {
+    attribute value { Boolean-value }
+  }
+int =
+  element int {
+    attribute value { xsd:integer }
+  }
+float =
+  element float {
+    attribute value { xsd:float }
+  }
+# ***********************************************************
+
 # V.2.3. Numerical Expressions
+
+# ***********************************************************
+numerical-operation =
+  element neg { expression }
+  | element add { expression+ }
+  | element sub { expression+ }
+  | element mul { expression+ }
+  | element div { expression+ }
+  | element pi { empty }
+  | element abs { expression }
+  | element acos { expression }
+  | element asin { expression }
+  | element atan { expression }
+  | element cos { expression }
+  | element cosh { expression }
+  | element exp { expression }
+  | element log { expression }
+  | element log10 { expression }
+  | element mod { expression, expression }
+  | element pow { expression, expression }
+  | element sin { expression }
+  | element sinh { expression }
+  | element tan { expression }
+  | element tanh { expression }
+  | element sqrt { expression }
+  | element ceil { expression }
+  | element floor { expression }
+  | element min { expression+ }
+  | element max { expression+ }
+  | element mean { expression+ }
+# ***********************************************************
 
 # V.2.4. Boolean Expressions
 
+# ***********************************************************
+Boolean-operation =
+  element not { expression }
+  | element and { expression+ }
+  | element or { expression+ }
+  | element eq { expression, expression }
+  | element df { expression, expression }
+  | element lt { expression, expression }
+  | element gt { expression, expression }
+  | element leq { expression, expression }
+  | element geq { expression, expression }
+# ***********************************************************
+
 # V.2.5. Conditional Expressions
+
+# ***********************************************************
+conditional-operation = if-then-else-operation | switch-operation
+if-then-else-operation =
+  element ite { expression, expression, expression }
+switch-operation = element switch { case-operation*, expression }
+case-operation = element case { expression, expression }
+# ***********************************************************
 
 # V.2.6. Built-ins
 
+# ***********************************************************
+exponential = element exponential { expression, expression }
+GLM = element GLM { expression, expression, expression, expression }
+Weibull = element Weibull { expression, expression, expression }
+periodic-test =
+  element periodic-test {
+    expression, expression, expression, expression
+  }
+  | element periodic-test {
+      expression, expression, expression, expression, expression
+    }
+  | element periodic-test {
+      expression,
+      expression,
+      expression,
+      expression,
+      expression,
+      expression,
+      expression,
+      expression,
+      expression,
+      expression,
+      expression
+    }
+extern-function =
+  element extern-function {
+    attribute name { xsd:string },
+    expression*
+  }
+# ***********************************************************
+
 # V.2.7. Random-Deviates
 
+# ***********************************************************
+uniform-deviate = element uniform-deviate { expression, expression }
+normal-deviate = element normal-deviate { expression, expression }
+lognormal-deviate =
+  element lognormal-deviate { expression, expression, expression }
+gamma-deviate = element gamma-deviate { expression, expression }
+beta-deviate = element beta-deviate { expression, expression }
+histogram = element histogram { bin+ }
+bin = element bin { expression, expression }
+# ***********************************************************
+
 # V.2.8. Test-Events
+
+# ***********************************************************
+test-initiating-event =
+  element test-initiating-event {
+    attribute name { xsd:string }
+  }
+test-functional-event =
+  element test-functional-event {
+    attribute name { xsd:string },
+    attribute state { xsd:string }
+  }
