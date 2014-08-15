@@ -6,11 +6,11 @@ namespace scram {
 
 Superset::Superset() : cancel(false) {}
 
-bool Superset::AddPrimary(int id) {
+bool Superset::InsertPrimary(int id) {
   if (cancel) return false;
   if (primes_.count(-1 * id)) {
     primes_.clear();
-    inters_.clear();
+    gates_.clear();
     cancel = true;
     return false;
   }
@@ -18,68 +18,68 @@ bool Superset::AddPrimary(int id) {
   return true;
 }
 
-bool Superset::AddInter(int id) {
+bool Superset::InsertGate(int id) {
   if (cancel) return false;
-  if (inters_.count(-1 * id)) {
+  if (gates_.count(-1 * id)) {
     primes_.clear();
-    inters_.clear();
+    gates_.clear();
     cancel = true;
     return false;
   }
-  inters_.insert(id);
+  gates_.insert(id);
   return true;
 }
 
-bool Superset::Insert(const boost::shared_ptr<Superset>& st) {
+bool Superset::InsertSet(const boost::shared_ptr<Superset>& st) {
   if (cancel) return false;
   std::set<int>::iterator it;
   for (it = st->primes_.begin(); it != st->primes_.end(); ++it) {
     if (primes_.count(-1 * (*it))) {
       primes_.clear();
-      inters_.clear();
+      gates_.clear();
       cancel = true;
       return false;
     }
     primes_.insert(*it);
   }
 
-  for (it = st->inters_.begin(); it != st->inters_.end(); ++it) {
-    if (inters_.count(-1 * (*it))) {
+  for (it = st->gates_.begin(); it != st->gates_.end(); ++it) {
+    if (gates_.count(-1 * (*it))) {
       primes_.clear();
-      inters_.clear();
+      gates_.clear();
       cancel = true;
       return false;
     }
-    inters_.insert(*it);
+    gates_.insert(*it);
   }
 
   return true;
 }
 
-int Superset::PopInter() {
-  if (inters_.empty()) {
-    throw scram::ValueError("No intermediate events to return.");
+int Superset::PopGate() {
+  if (gates_.empty()) {
+    throw scram::ValueError("No gates to return.");
   }
-  std::set<int>::iterator it = inters_.begin();
-  int inter = *it;
-  inters_.erase(it);
-  return inter;
+  std::set<int>::iterator it = gates_.begin();
+  int gate = *it;
+  gates_.erase(it);
+  return gate;
 }
 
 int Superset::NumOfPrimeEvents() {
   return primes_.size();
 }
 
-int Superset::NumOfInterEvents() {
-  return inters_.size();
+int Superset::NumOfGates() {
+  return gates_.size();
 }
 
 const std::set<int>& Superset::primes() {
   return primes_;
 }
 
-const std::set<int>& Superset::inters() {
-  return inters_;
+const std::set<int>& Superset::gates() {
+  return gates_;
 }
 
 }  // namespace scram

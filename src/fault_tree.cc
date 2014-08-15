@@ -468,7 +468,7 @@ void FaultTree::Analyze() {
     // Discard this tmp set if it is larger than the limit.
     if (tmp_set->NumOfPrimeEvents() > limit_order_) continue;
 
-    if (tmp_set->NumOfInterEvents() == 0) {
+    if (tmp_set->NumOfGates() == 0) {
       // This is a set with primary events only.
       cut_sets.push_back(tmp_set->primes());
       continue;
@@ -477,13 +477,13 @@ void FaultTree::Analyze() {
     // To hold sets of children.
     std::vector< SupersetPtr > children_sets;
 
-    FaultTree::ExpandSets_(tmp_set->PopInter(), children_sets);
+    FaultTree::ExpandSets_(tmp_set->PopGate(), children_sets);
 
     // Attach the original set into this event's sets of children.
     for (it_sup = children_sets.begin(); it_sup != children_sets.end();
          ++it_sup) {
       // Add this set to the original inter_sets.
-      if ((*it_sup)->Insert(tmp_set)) inter_sets.push_back(*it_sup);
+      if ((*it_sup)->InsertSet(tmp_set)) inter_sets.push_back(*it_sup);
     }
   }
 
@@ -1671,11 +1671,11 @@ void FaultTree::ExpandSets_(int inter_index,
       for (it_child = events_children.begin();
            it_child != events_children.end(); ++it_child) {
         if (*it_child > top_event_index_) {
-          tmp_set_one->AddInter(j * (*it_child));
-          tmp_set_two->AddInter(-1 * j * (*it_child));
+          tmp_set_one->InsertGate(j * (*it_child));
+          tmp_set_two->InsertGate(-1 * j * (*it_child));
         } else {
-          tmp_set_one->AddPrimary(j * (*it_child));
-          tmp_set_two->AddPrimary(-1 * j * (*it_child));
+          tmp_set_one->InsertPrimary(j * (*it_child));
+          tmp_set_two->InsertPrimary(-1 * j * (*it_child));
         }
         j = -1;
       }
@@ -1683,11 +1683,11 @@ void FaultTree::ExpandSets_(int inter_index,
       for (it_child = events_children.begin();
            it_child != events_children.end(); ++it_child) {
         if (*it_child > top_event_index_) {
-          tmp_set_one->AddInter(*it_child);
-          tmp_set_two->AddInter(-1 * (*it_child));
+          tmp_set_one->InsertGate(*it_child);
+          tmp_set_two->InsertGate(-1 * (*it_child));
         } else {
-          tmp_set_one->AddPrimary(*it_child);
-          tmp_set_two->AddPrimary(-1 * (*it_child));
+          tmp_set_one->InsertPrimary(*it_child);
+          tmp_set_two->InsertPrimary(-1 * (*it_child));
         }
       }
     }
@@ -1746,9 +1746,9 @@ void FaultTree::ExpandSets_(int inter_index,
       std::set<int>::iterator it;
       for (it = it_sets->begin(); it != it_sets->end(); ++it) {
         if (*it > top_event_index_) {
-          tmp_set_c->AddInter(*it * mult);
+          tmp_set_c->InsertGate(*it * mult);
         } else {
-          tmp_set_c->AddPrimary(*it * mult);
+          tmp_set_c->InsertPrimary(*it * mult);
         }
       }
       sets.push_back(tmp_set_c);
@@ -1768,9 +1768,9 @@ void FaultTree::SetOr_(std::vector<int>& events_children,
        it_child != events_children.end(); ++it_child) {
     SupersetPtr tmp_set_c(new scram::Superset());
     if (*it_child > top_event_index_) {
-      tmp_set_c->AddInter(*it_child * mult);
+      tmp_set_c->InsertGate(*it_child * mult);
     } else {
-      tmp_set_c->AddPrimary(*it_child * mult);
+      tmp_set_c->InsertPrimary(*it_child * mult);
     }
     sets.push_back(tmp_set_c);
   }
@@ -1783,9 +1783,9 @@ void FaultTree::SetAnd_(std::vector<int>& events_children,
   for (it_child = events_children.begin();
        it_child != events_children.end(); ++it_child) {
     if (*it_child > top_event_index_) {
-      tmp_set_c->AddInter(*it_child * mult);
+      tmp_set_c->InsertGate(*it_child * mult);
     } else {
-      tmp_set_c->AddPrimary(*it_child * mult);
+      tmp_set_c->InsertPrimary(*it_child * mult);
     }
   }
   sets.push_back(tmp_set_c);

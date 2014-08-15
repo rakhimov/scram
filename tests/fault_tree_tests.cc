@@ -172,7 +172,7 @@ TEST_F(FaultTreeTest, OR_GATE) {
       else if (!b_found && result.count(b_id)) b_found = true;
       else if (!c_found && result.count(c_id)) c_found = true;
     } else {
-      std::set<int> result = (*it_set)->inters();
+      std::set<int> result = (*it_set)->gates();
       EXPECT_EQ(1, result.size());
       EXPECT_EQ(1, result.count(d_id));
       d_found = true;
@@ -188,7 +188,7 @@ TEST_F(FaultTreeTest, OR_GATE) {
   EXPECT_EQ(1, result_set.count(-1 * a_id));
   EXPECT_EQ(1, result_set.count(-1 * b_id));
   EXPECT_EQ(1, result_set.count(-1 * c_id));
-  result_set = (*sets.begin())->inters();
+  result_set = (*sets.begin())->gates();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(-1 * d_id));
 }
@@ -211,7 +211,7 @@ TEST_F(FaultTreeTest, AND_GATE) {
   EXPECT_EQ(1, result_set.count(a_id));
   EXPECT_EQ(1, result_set.count(b_id));
   EXPECT_EQ(1, result_set.count(c_id));
-  result_set = (*sets.begin())->inters();
+  result_set = (*sets.begin())->gates();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(d_id));
   // Negative AND gate.
@@ -232,7 +232,7 @@ TEST_F(FaultTreeTest, AND_GATE) {
       else if (!b_found && result.count(-1 * b_id)) b_found = true;
       else if (!c_found && result.count(-1 * c_id)) c_found = true;
     } else {
-      std::set<int> result = (*it_set)->inters();
+      std::set<int> result = (*it_set)->gates();
       EXPECT_EQ(1, result.size());
       EXPECT_EQ(1, result.count(-1 * d_id));
       d_found = true;
@@ -265,12 +265,12 @@ TEST_F(FaultTreeTest, NOT_GATE) {
   inter->AddChild(D);
   sets.clear();
   ASSERT_NO_THROW(ExpandSets(inter_id, sets));
-  result_set = (*sets.begin())->inters();
+  result_set = (*sets.begin())->gates();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(-1 * d_id));
   sets.clear();
   ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));  // Negative InterEvent.
-  result_set = (*sets.begin())->inters();
+  result_set = (*sets.begin())->gates();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(d_id));
 }
@@ -293,7 +293,7 @@ TEST_F(FaultTreeTest, NOR_GATE) {
   EXPECT_EQ(1, result_set.count(-1 * a_id));
   EXPECT_EQ(1, result_set.count(-1 * b_id));
   EXPECT_EQ(1, result_set.count(-1 * c_id));
-  result_set = (*sets.begin())->inters();
+  result_set = (*sets.begin())->gates();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(-1 * d_id));
   // Negative NOR gate.
@@ -314,7 +314,7 @@ TEST_F(FaultTreeTest, NOR_GATE) {
       else if (!b_found && result.count(b_id)) b_found = true;
       else if (!c_found && result.count(c_id)) c_found = true;
     } else {
-      std::set<int> result = (*it_set)->inters();
+      std::set<int> result = (*it_set)->gates();
       EXPECT_EQ(1, result.size());
       EXPECT_EQ(1, result.count(d_id));
       d_found = true;
@@ -350,7 +350,7 @@ TEST_F(FaultTreeTest, NAND_GATE) {
       else if (!b_found && result.count(-1 * b_id)) b_found = true;
       else if (!c_found && result.count(-1 * c_id)) c_found = true;
     } else {
-      std::set<int> result = (*it_set)->inters();
+      std::set<int> result = (*it_set)->gates();
       EXPECT_EQ(1, result.size());
       EXPECT_EQ(1, result.count(-1 * d_id));
       d_found = true;
@@ -366,7 +366,7 @@ TEST_F(FaultTreeTest, NAND_GATE) {
   EXPECT_EQ(1, result_set.count(a_id));
   EXPECT_EQ(1, result_set.count(b_id));
   EXPECT_EQ(1, result_set.count(c_id));
-  result_set = (*sets.begin())->inters();
+  result_set = (*sets.begin())->gates();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(d_id));
 }
@@ -387,9 +387,9 @@ TEST_F(FaultTreeTest, XOR_GATE) {
   std::set<int> result_one;
   std::set<int> result_two;
   set_one.insert(*(*sets.begin())->primes().begin());
-  set_one.insert(*(*sets.begin())->inters().begin());
+  set_one.insert(*(*sets.begin())->gates().begin());
   set_two.insert(*(*++sets.begin())->primes().begin());
-  set_two.insert(*(*++sets.begin())->inters().begin());
+  set_two.insert(*(*++sets.begin())->gates().begin());
   result_one.insert(a_id);
   result_one.insert(-1 * d_id);
   result_two.insert(-1 * a_id);
@@ -410,9 +410,9 @@ TEST_F(FaultTreeTest, XOR_GATE) {
   result_one.clear();
   result_two.clear();
   set_one.insert(*(*sets.begin())->primes().begin());
-  set_one.insert(*(*sets.begin())->inters().begin());
+  set_one.insert(*(*sets.begin())->gates().begin());
   set_two.insert(*(*++sets.begin())->primes().begin());
-  set_two.insert(*(*++sets.begin())->inters().begin());
+  set_two.insert(*(*++sets.begin())->gates().begin());
   result_one.insert(a_id);
   result_one.insert(d_id);
   result_two.insert(-1 * a_id);
@@ -451,12 +451,12 @@ TEST_F(FaultTreeTest, NULL_GATE) {
   inter->AddChild(D);
   sets.clear();
   ASSERT_NO_THROW(ExpandSets(inter_id, sets));
-  result_set = (*sets.begin())->inters();
+  result_set = (*sets.begin())->gates();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(d_id));
   sets.clear();
   ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));  // Negative InterEvent.
-  result_set = (*sets.begin())->inters();
+  result_set = (*sets.begin())->gates();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(-1 * d_id));
 }
@@ -475,7 +475,7 @@ TEST_F(FaultTreeTest, INHIBIT_GATE) {
   result_set = (*sets.begin())->primes();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(a_id));
-  result_set = (*sets.begin())->inters();
+  result_set = (*sets.begin())->gates();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(d_id));
   // Negative AND gate.
@@ -491,7 +491,7 @@ TEST_F(FaultTreeTest, INHIBIT_GATE) {
       EXPECT_EQ(1, result.count(-1 * a_id));
       a_found = true;
     } else {
-      std::set<int> result = (*it_set)->inters();
+      std::set<int> result = (*it_set)->gates();
       EXPECT_EQ(1, result.size());
       EXPECT_EQ(1, result.count(-1 * d_id));
       d_found = true;
@@ -517,7 +517,7 @@ TEST_F(FaultTreeTest, VOTE_GATE) {
   std::set<int> mcs;
   for (it_set = sets.begin(); it_set != sets.end(); ++it_set) {
     mcs.insert((*it_set)->primes().begin(), (*it_set)->primes().end());
-    mcs.insert((*it_set)->inters().begin(), (*it_set)->inters().end());
+    mcs.insert((*it_set)->gates().begin(), (*it_set)->gates().end());
     output.insert(mcs);
     mcs.clear();
   }
@@ -554,7 +554,7 @@ TEST_F(FaultTreeTest, VOTE_GATE) {
   mcs.clear();
   for (it_set = sets.begin(); it_set != sets.end(); ++it_set) {
     mcs.insert((*it_set)->primes().begin(), (*it_set)->primes().end());
-    mcs.insert((*it_set)->inters().begin(), (*it_set)->inters().end());
+    mcs.insert((*it_set)->gates().begin(), (*it_set)->gates().end());
     output.insert(mcs);
     mcs.clear();
   }
