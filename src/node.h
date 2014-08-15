@@ -1,4 +1,4 @@
-/// @file event.h
+/// @file node.h
 /// Contains node classes for fault trees.
 #ifndef SCRAM_NODE_H_
 #define SCRAM_NODE_H_
@@ -21,7 +21,7 @@ class Node {
   /// @param[in] id The identifying name for the node.
   Node(std::string id) : id_(id) {}
 
-  /// @returns The id that is set upon the construction of this event.
+  /// @returns The id that is set upon the construction of this node.
   virtual const std::string& id() { return id_; }
 
   virtual ~Node() {}
@@ -36,7 +36,7 @@ class Node {
 class Gate : public scram::Node {
  public:
   /// Constructs with an id and a gate.
-  /// @param[in] id The identifying name for this event.
+  /// @param[in] id The identifying name for this node.
   /// @param[in] type The type for this gate.
   Gate(std::string id, std::string type = "NONE");
 
@@ -45,8 +45,8 @@ class Gate : public scram::Node {
   const std::string& type();
 
   /// Sets the gate type.
-  /// @param[in] gate The gate for this event.
-  /// @throws ValueError if the gate is being re-assigned.
+  /// @param[in] gate The gate type for this node.
+  /// @throws ValueError if the gate type is being re-assigned.
   void type(std::string type);
 
   /// @returns The vote number iff the gate is vote.
@@ -58,16 +58,16 @@ class Gate : public scram::Node {
   void vote_number(int vnumber);
 
   /// Adds a parent into the parent map.
-  /// @param[in] parent One of the parents of this primary event.
+  /// @param[in] parent One of the parents of this gate node.
   /// @throws ValueError if the parent is being re-inserted.
   void AddParent(const boost::shared_ptr<scram::Gate>& parent);
 
-  /// @returns All the parents of this primary event.
-  /// @throws ValueError if there are no parents for this primary event.
+  /// @returns All the parents of this gate node.
+  /// @throws ValueError if there are no parents for this gate node.
   const std::map<std::string, boost::shared_ptr<scram::Gate> >& parents();
 
   /// Adds a child node into the children list.
-  /// @param[in] child A pointer to a child event.
+  /// @param[in] child A pointer to a child node.
   /// @throws ValueError if the child is being re-inserted.
   virtual void AddChild(const boost::shared_ptr<scram::Node>& child);
 
@@ -150,4 +150,4 @@ class PrimaryEvent : public scram::Node {
 
 }  // namespace scram
 
-#endif  // SCRAM_EVENT_H_
+#endif  // SCRAM_NODE_H_

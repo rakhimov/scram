@@ -5,7 +5,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include "error.h"
-#include "event.h"
+#include "node.h"
 
 using namespace scram;
 

@@ -1,6 +1,6 @@
-/// @file top_event.cc
+/// @file gate.cc
 /// Implementation of Gate class.
-#include "event.h"
+#include "node.h"
 
 #include "error.h"
 

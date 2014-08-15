@@ -54,7 +54,7 @@ include_directories(${SCRAM_CORE_INCLUDE_DIRS})
 # To add a new file, just add it to this list.  Any GoogleTests inside will be automatically
 # added to ctest.
 set(SCRAM_CORE_TEST_SOURCE ${SCRAM_CORE_TEST_SOURCE}
-  "${CMAKE_CURRENT_SOURCE_DIR}/event_tests.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/node_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/superset_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree_input_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree_tests.cc"

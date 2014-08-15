@@ -14,7 +14,7 @@
 #include <boost/unordered_map.hpp>
 
 #include "error.h"
-#include "event.h"
+#include "node.h"
 #include "risk_analysis.h"
 #include "superset.h"
 

@@ -1,6 +1,6 @@
 /// @file primary_event.cc
 /// Implementation of primary event class.
-#include "event.h"
+#include "node.h"
 
 #include <cmath>
 
