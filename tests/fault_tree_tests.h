@@ -8,9 +8,8 @@
 
 using namespace scram;
 
-typedef boost::shared_ptr<scram::Event> EventPtr;
-typedef boost::shared_ptr<scram::TopEvent> TopEventPtr;
-typedef boost::shared_ptr<scram::InterEvent> InterEventPtr;
+typedef boost::shared_ptr<scram::Node> NodePtr;
+typedef boost::shared_ptr<scram::Gate> GatePtr;
 typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
 
 typedef boost::shared_ptr<Superset> SupersetPtr;
@@ -34,7 +33,7 @@ class FaultTreeTest : public ::testing::Test {
 
   std::string top_event_id() { return fta->top_event_id_; }
 
-  boost::unordered_map<std::string, InterEventPtr>& inter_events() {
+  boost::unordered_map<std::string, GatePtr>& inter_events() {
     return fta->inter_events_;
   }
 
@@ -56,7 +55,7 @@ class FaultTreeTest : public ::testing::Test {
     return fta->imp_of_primaries_;
   }
 
-  bool CheckGate(TopEventPtr event) {
+  bool CheckGate(GatePtr event) {
     return (fta->CheckGate_(event) == "") ? true : false;
   }
 
@@ -116,11 +115,11 @@ class FaultTreeTest : public ::testing::Test {
 
   // SetUp for Gate Testing.
   void SetUpGate(std::string gate) {
-    inter = InterEventPtr(new InterEvent("inter", gate));
+    inter = GatePtr(new Gate("inter", gate));
     A = PrimaryEventPtr(new PrimaryEvent("a"));
     B = PrimaryEventPtr(new PrimaryEvent("b"));
     C = PrimaryEventPtr(new PrimaryEvent("c"));
-    D = InterEventPtr(new InterEvent("d"));
+    D = GatePtr(new Gate("d"));
     primary_events().insert(std::make_pair("a", A));
     primary_events().insert(std::make_pair("b", B));
     primary_events().insert(std::make_pair("c", C));
@@ -136,11 +135,11 @@ class FaultTreeTest : public ::testing::Test {
   // Members
 
   FaultTree* fta;
-  InterEventPtr inter;  // No gate is defined.
+  GatePtr inter;  // No gate is defined.
   PrimaryEventPtr A;
   PrimaryEventPtr B;
   PrimaryEventPtr C;
-  InterEventPtr D;
+  GatePtr D;
   int a_id;
   int b_id;
   int c_id;

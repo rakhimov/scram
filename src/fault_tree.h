@@ -20,9 +20,8 @@
 
 class FaultTreeTest;
 
-typedef boost::shared_ptr<scram::Event> EventPtr;
-typedef boost::shared_ptr<scram::TopEvent> TopEventPtr;
-typedef boost::shared_ptr<scram::InterEvent> InterEventPtr;
+typedef boost::shared_ptr<scram::Node> NodePtr;
+typedef boost::shared_ptr<scram::Gate> GatePtr;
 typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
 
 typedef boost::shared_ptr<scram::Superset> SupersetPtr;
@@ -148,7 +147,7 @@ class FaultTree : public RiskAnalysis {
   /// Checks if a gate is initialized correctly.
   /// @returns A warning message with the problem description.
   /// @note An empty string for no problems detected.
-  std::string CheckGate_(const TopEventPtr& event);
+  std::string CheckGate_(const GatePtr& event);
 
   /// @returns Primary events that do not have probabilities assigned.
   /// @note An empty string for no problems detected.
@@ -159,7 +158,7 @@ class FaultTree : public RiskAnalysis {
   /// @param[in] pr_repeat The number of times a primary event is repeated.
   /// @param[in] out The output stream.
   /// @note The repetition information is important to avoid clashes.
-  void GraphNode_(TopEventPtr t, std::map<std::string, int>& pr_repeat,
+  void GraphNode_(GatePtr t, std::map<std::string, int>& pr_repeat,
                   std::ofstream& out);
 
   /// Expands the children of a top or intermediate event to Supersets.
@@ -248,7 +247,7 @@ class FaultTree : public RiskAnalysis {
 
   int top_event_index_;  ///< The index of the top event.
   /// Intermediate events from indices.
-  boost::unordered_map<int, TopEventPtr> int_to_inter_;
+  boost::unordered_map<int, GatePtr> int_to_inter_;
   /// Indices of intermediate events.
   boost::unordered_map<std::string, int> inter_to_int_;
   // -----------------------------------------------------------------
@@ -318,7 +317,7 @@ class FaultTree : public RiskAnalysis {
   std::string top_event_id_;
 
   /// Top event.
-  TopEventPtr top_event_;
+  GatePtr top_event_;
 
   /// Indicator of detection of a top event described by a transfer sub-tree.
   bool top_detected_;
@@ -327,7 +326,7 @@ class FaultTree : public RiskAnalysis {
   bool is_main_;
 
   /// Holder for intermediate events.
-  boost::unordered_map<std::string, InterEventPtr> inter_events_;
+  boost::unordered_map<std::string, GatePtr> inter_events_;
 
   /// Container for primary events.
   boost::unordered_map<std::string, PrimaryEventPtr> primary_events_;

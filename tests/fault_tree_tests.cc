@@ -30,7 +30,7 @@ TEST_F(FaultTreeTest, GetArgs) {
 }
 
 TEST_F(FaultTreeTest, CheckGate) {
-  TopEventPtr top(new TopEvent("top", "and"));  // AND gate.
+  GatePtr top(new Gate("top", "and"));  // AND gate.
   PrimaryEventPtr A(new PrimaryEvent("a"));
   PrimaryEventPtr B(new PrimaryEvent("b"));
   PrimaryEventPtr C(new PrimaryEvent("c"));
@@ -45,7 +45,7 @@ TEST_F(FaultTreeTest, CheckGate) {
   EXPECT_TRUE(CheckGate(top));  // More children are OK.
 
   // OR Gate tests.
-  top = TopEventPtr(new TopEvent("top", "or"));
+  top = GatePtr(new Gate("top", "or"));
   EXPECT_FALSE(CheckGate(top));  // No child.
   top->AddChild(A);
   EXPECT_FALSE(CheckGate(top));  // One child is not enough.
@@ -55,7 +55,7 @@ TEST_F(FaultTreeTest, CheckGate) {
   EXPECT_TRUE(CheckGate(top));  // More children are OK.
 
   // NOT Gate tests.
-  top = TopEventPtr(new TopEvent("top", "not"));
+  top = GatePtr(new Gate("top", "not"));
   EXPECT_FALSE(CheckGate(top));  // No child.
   top->AddChild(A);
   EXPECT_TRUE(CheckGate(top));  // Exactly one child is required.
@@ -63,7 +63,7 @@ TEST_F(FaultTreeTest, CheckGate) {
   EXPECT_FALSE(CheckGate(top));  // Two children are too much.
 
   // NULL Gate tests.
-  top = TopEventPtr(new TopEvent("top", "null"));
+  top = GatePtr(new Gate("top", "null"));
   EXPECT_FALSE(CheckGate(top));  // No child.
   top->AddChild(A);
   EXPECT_TRUE(CheckGate(top));  // Exactly one child is required.
@@ -71,7 +71,7 @@ TEST_F(FaultTreeTest, CheckGate) {
   EXPECT_FALSE(CheckGate(top));  // Two children are too much.
 
   // NOR Gate tests.
-  top = TopEventPtr(new TopEvent("top", "nor"));
+  top = GatePtr(new Gate("top", "nor"));
   EXPECT_FALSE(CheckGate(top));  // No child.
   top->AddChild(A);
   EXPECT_FALSE(CheckGate(top));  // One child is not enough.
@@ -81,7 +81,7 @@ TEST_F(FaultTreeTest, CheckGate) {
   EXPECT_TRUE(CheckGate(top));  // More children are OK.
 
   // NAND Gate tests.
-  top = TopEventPtr(new TopEvent("top", "nand"));
+  top = GatePtr(new Gate("top", "nand"));
   EXPECT_FALSE(CheckGate(top));  // No child.
   top->AddChild(A);
   EXPECT_FALSE(CheckGate(top));  // One child is not enough.
@@ -91,7 +91,7 @@ TEST_F(FaultTreeTest, CheckGate) {
   EXPECT_TRUE(CheckGate(top));  // More children are OK.
 
   // XOR Gate tests.
-  top = TopEventPtr(new TopEvent("top", "xor"));
+  top = GatePtr(new Gate("top", "xor"));
   EXPECT_FALSE(CheckGate(top));  // No child.
   top->AddChild(A);
   EXPECT_FALSE(CheckGate(top));  // One child is not enough.
@@ -101,7 +101,7 @@ TEST_F(FaultTreeTest, CheckGate) {
   EXPECT_FALSE(CheckGate(top));  // More than 2 is not allowed.
 
   // INHIBIT Gate tests.
-  top = TopEventPtr(new TopEvent("top", "inhibit"));
+  top = GatePtr(new Gate("top", "inhibit"));
   EXPECT_FALSE(CheckGate(top));  // No child.
   A->type("basic");
   primary_events().insert(std::make_pair("a", A));
@@ -110,10 +110,10 @@ TEST_F(FaultTreeTest, CheckGate) {
   B->type("basic");
   primary_events().insert(std::make_pair("b", B));
   top->AddChild(B);
-  EXPECT_FALSE(CheckGate(top));  // Events must be conditional.
+  EXPECT_FALSE(CheckGate(top));  // Nodes must be conditional.
   top->AddChild(C);
   EXPECT_FALSE(CheckGate(top));  // More than 2 is not allowed.
-  top = TopEventPtr(new TopEvent("top", "inhibit"));  // Re-initialize.
+  top = GatePtr(new Gate("top", "inhibit"));  // Re-initialize.
   C->type("conditional");
   primary_events().insert(std::make_pair("c", C));
   top->AddChild(A);  // Basic event.
@@ -126,7 +126,7 @@ TEST_F(FaultTreeTest, CheckGate) {
   EXPECT_FALSE(CheckGate(top));  // Wrong combination.
 
   // Some UNKNOWN gate tests.
-  top = TopEventPtr(new TopEvent("top", "unknown_gate"));
+  top = GatePtr(new Gate("top", "unknown_gate"));
   EXPECT_FALSE(CheckGate(top));  // No child.
   top->AddChild(A);
   EXPECT_FALSE(CheckGate(top));
@@ -253,7 +253,7 @@ TEST_F(FaultTreeTest, NOT_GATE) {
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(-1 * a_id));
   sets.clear();
-  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));  // Negative InterEvent.
+  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));  // Negative Gate.
   result_set = (*sets.begin())->primes();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(a_id));
@@ -269,7 +269,7 @@ TEST_F(FaultTreeTest, NOT_GATE) {
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(-1 * d_id));
   sets.clear();
-  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));  // Negative InterEvent.
+  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));  // Negative Gate.
   result_set = (*sets.begin())->gates();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(d_id));
@@ -298,7 +298,7 @@ TEST_F(FaultTreeTest, NOR_GATE) {
   EXPECT_EQ(1, result_set.count(-1 * d_id));
   // Negative NOR gate.
   sets.clear();
-  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));  // Negative InterEvent.
+  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));  // Negative Gate.
   EXPECT_EQ(4, sets.size());
   bool a_found = false;
   bool b_found = false;
@@ -439,7 +439,7 @@ TEST_F(FaultTreeTest, NULL_GATE) {
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(a_id));
   sets.clear();
-  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));  // Negative InterEvent.
+  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));  // Negative Gate.
   result_set = (*sets.begin())->primes();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(-1 * a_id));
@@ -455,7 +455,7 @@ TEST_F(FaultTreeTest, NULL_GATE) {
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(d_id));
   sets.clear();
-  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));  // Negative InterEvent.
+  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));  // Negative Gate.
   result_set = (*sets.begin())->gates();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(-1 * d_id));
@@ -853,12 +853,12 @@ TEST_F(FaultTreeTest, ProcessInput) {
   EXPECT_EQ(1, primary_events().count("valveone"));
   EXPECT_EQ(1, primary_events().count("valvetwo"));
   if (inter_events().count("trainone")) {
-    InterEventPtr inter = inter_events()["trainone"];
+    GatePtr inter = inter_events()["trainone"];
     EXPECT_EQ("trainone", inter->id());
-    ASSERT_NO_THROW(inter->gate());
-    EXPECT_EQ("or", inter->gate());
-    ASSERT_NO_THROW(inter->parent());
-    EXPECT_EQ("topevent", inter->parent()->id());
+    ASSERT_NO_THROW(inter->type());
+    EXPECT_EQ("or", inter->type());
+    ASSERT_NO_THROW(inter->parents());
+    EXPECT_EQ("topevent", inter->parents().begin()->first);
   }
   if (primary_events().count("valveone")) {
     PrimaryEventPtr primary = primary_events()["valveone"];

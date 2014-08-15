@@ -94,7 +94,7 @@ FaultTree::FaultTree(std::string analysis, bool graph_only,
   types_.insert("conditional");
 
   // Pointer to the top event
-  TopEventPtr top_event_;
+  GatePtr top_event_;
 }
 
 void FaultTree::ProcessInput(std::string input_file) {
@@ -345,7 +345,7 @@ void FaultTree::GraphingInstructions() {
   FaultTree::GraphNode_(top_event_, pr_repeat, out);
   out.flush();
   // Do the same for all intermediate events.
-  boost::unordered_map<std::string, InterEventPtr>::iterator it_inter;
+  boost::unordered_map<std::string, GatePtr>::iterator it_inter;
   for (it_inter = inter_events_.begin(); it_inter != inter_events_.end();
        ++it_inter) {
     FaultTree::GraphNode_(it_inter->second, pr_repeat, out);
@@ -378,11 +378,11 @@ void FaultTree::GraphingInstructions() {
   gate_colors.insert(std::make_pair("null", "gray"));
   gate_colors.insert(std::make_pair("nor", "magenta"));
   gate_colors.insert(std::make_pair("nand", "orange"));
-  std::string gate = top_event_->gate();
+  std::string gate = top_event_->type();
   boost::to_upper(gate);
   out << "\"" <<  orig_ids_[top_event_id_] << "\" [shape=ellipse, "
       << "fontsize=12, fontcolor=black, fontname=\"times-bold\", "
-      << "color=" << gate_colors[top_event_->gate()] << ", "
+      << "color=" << gate_colors[top_event_->type()] << ", "
       << "label=\"" << orig_ids_[top_event_id_] << "\\n"
       << "{ " << gate;
   if (gate == "VOTE") {
@@ -392,11 +392,11 @@ void FaultTree::GraphingInstructions() {
   out << " }\"]\n";
   for (it_inter = inter_events_.begin(); it_inter != inter_events_.end();
        ++it_inter) {
-    gate = it_inter->second->gate();
+    gate = it_inter->second->type();
     boost::to_upper(gate);
     out << "\"" <<  orig_ids_[it_inter->first] << "\" [shape=box, "
         << "fontsize=11, fontcolor=black, "
-        << "color=" << gate_colors[it_inter->second->gate()] << ", "
+        << "color=" << gate_colors[it_inter->second->type()] << ", "
         << "label=\"" << orig_ids_[it_inter->first] << "\\n"
         << "{ " << gate;
     if (gate == "VOTE") {
@@ -1277,7 +1277,7 @@ void FaultTree::AddNode_(std::string parent, std::string id,
 
     if (top_event_id_ == "") {
       top_event_id_ = id;
-      top_event_ = TopEventPtr(new scram::TopEvent(top_event_id_));
+      top_event_ = GatePtr(new scram::Gate(top_event_id_));
 
       // Top event cannot be primary.
       if (!gates_.count(type)) {
@@ -1287,7 +1287,7 @@ void FaultTree::AddNode_(std::string parent, std::string id,
         throw scram::ValidationError(msg.str());
       }
 
-      top_event_->gate(type);
+      top_event_->type(type);
       if (type == "vote") top_event_->vote_number(vote_number);
 
     } else {
@@ -1321,7 +1321,7 @@ void FaultTree::AddNode_(std::string parent, std::string id,
       top_event_->AddChild(p_event);
       primary_events_.insert(std::make_pair(id, p_event));
       // Check for conditional event.
-      if (type == "conditional" && top_event_->gate() != "inhibit") {
+      if (type == "conditional" && top_event_->type() != "inhibit") {
         std::stringstream msg;
         msg << "Parent of " << orig_ids_[id] << " conditional event is not "
             << "an inhibit gate.";
@@ -1332,7 +1332,7 @@ void FaultTree::AddNode_(std::string parent, std::string id,
       inter_events_[parent]->AddChild(p_event);
       primary_events_.insert(std::make_pair(id, p_event));
       // Check for conditional event.
-      if (type == "conditional" && inter_events_[parent]->gate() != "inhibit") {
+      if (type == "conditional" && inter_events_[parent]->type() != "inhibit") {
         std::stringstream msg;
         msg << "Parent of " << orig_ids_[id] << " conditional event is not "
             << "an inhibit gate.";
@@ -1361,15 +1361,15 @@ void FaultTree::AddNode_(std::string parent, std::string id,
       throw scram::ValidationError(msg.str());
     }
 
-    InterEventPtr i_event(new scram::InterEvent(id));
+    GatePtr i_event(new scram::Gate(id));
 
     if (parent == top_event_id_) {
-      i_event->parent(top_event_);
+      i_event->AddParent(top_event_);
       top_event_->AddChild(i_event);
       inter_events_.insert(std::make_pair(id, i_event));
 
     } else if (inter_events_.count(parent)) {
-      i_event->parent(inter_events_[parent]);
+      i_event->AddParent(inter_events_[parent]);
       inter_events_[parent]->AddChild(i_event);
       inter_events_.insert(std::make_pair(id, i_event));
 
@@ -1381,7 +1381,7 @@ void FaultTree::AddNode_(std::string parent, std::string id,
       throw scram::ValidationError(msg.str());
     }
 
-    i_event -> gate(type);
+    i_event -> type(type);
     if (type == "vote") i_event->vote_number(vote_number);
   }
 }
@@ -1476,7 +1476,7 @@ std::string FaultTree::CheckAllGates_() {
   msg << FaultTree::CheckGate_(top_event_);
 
   // Check the intermediate events.
-  boost::unordered_map<std::string, InterEventPtr>::iterator it;
+  boost::unordered_map<std::string, GatePtr>::iterator it;
   for (it = inter_events_.begin(); it != inter_events_.end(); ++it) {
     msg << FaultTree::CheckGate_(it->second);
   }
@@ -1484,11 +1484,11 @@ std::string FaultTree::CheckAllGates_() {
   return msg.str();
 }
 
-std::string FaultTree::CheckGate_(const TopEventPtr& event) {
+std::string FaultTree::CheckGate_(const GatePtr& event) {
   std::stringstream msg;
   msg << "";  // An empty default message is the indicator of no problems.
   try {
-    std::string gate = event->gate();
+    std::string gate = event->type();
     // This line throws an error if there are no children.
     int size = event->children().size();
     // Add transfer gates if needed for graphing.
@@ -1515,8 +1515,8 @@ std::string FaultTree::CheckGate_(const TopEventPtr& event) {
             << " gate must have exactly 2 children.\n";
       } else {
         bool conditional_found = false;
-        std::map<std::string, EventPtr> children = event->children();
-        std::map<std::string, EventPtr>::iterator it;
+        std::map<std::string, NodePtr> children = event->children();
+        std::map<std::string, NodePtr>::iterator it;
         for (it = children.begin(); it != children.end(); ++it) {
           if (primary_events_.count(it->first)) {
             std::string type = primary_events_[it->first]->type();
@@ -1577,12 +1577,12 @@ std::string FaultTree::PrimariesNoProb_() {
   return uninit_primaries;
 }
 
-void FaultTree::GraphNode_(TopEventPtr t,
+void FaultTree::GraphNode_(GatePtr t,
                            std::map<std::string, int>& pr_repeat,
                            std::ofstream& out) {
   // Populate intermediate and primary events of the input inter event.
-  std::map<std::string, EventPtr> events_children = t->children();
-  std::map<std::string, EventPtr>::iterator it_child;
+  std::map<std::string, NodePtr> events_children = t->children();
+  std::map<std::string, NodePtr>::iterator it_child;
   for (it_child = events_children.begin(); it_child != events_children.end();
        ++it_child) {
     // Deal with repeated primary events.
@@ -1608,13 +1608,13 @@ void FaultTree::GraphNode_(TopEventPtr t,
 void FaultTree::ExpandSets_(int inter_index,
                             std::vector< SupersetPtr >& sets) {
   // Populate intermediate and primary events of the top.
-  const std::map<std::string, EventPtr>* children =
+  const std::map<std::string, NodePtr>* children =
       &int_to_inter_[std::abs(inter_index)]->children();
 
-  std::string gate = int_to_inter_[std::abs(inter_index)]->gate();
+  std::string gate = int_to_inter_[std::abs(inter_index)]->type();
 
   // Iterator for children of top and intermediate events.
-  std::map<std::string, EventPtr>::const_iterator it_children;
+  std::map<std::string, NodePtr>::const_iterator it_children;
   std::vector<int> events_children;
   std::vector<int>::iterator it_child;
 
@@ -1858,7 +1858,7 @@ void FaultTree::AssignIndices_() {
   int_to_inter_.insert(std::make_pair(j, top_event_));
   inter_to_int_.insert(std::make_pair(top_event_id_, j));
   ++j;
-  boost::unordered_map<std::string, InterEventPtr>::iterator iti;
+  boost::unordered_map<std::string, GatePtr>::iterator iti;
   for (iti = inter_events_.begin(); iti != inter_events_.end(); ++iti) {
     int_to_inter_.insert(std::make_pair(j, iti->second));
     inter_to_int_.insert(std::make_pair(iti->second->id(), j));

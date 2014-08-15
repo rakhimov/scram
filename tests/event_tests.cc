@@ -9,42 +9,41 @@
 
 using namespace scram;
 
-typedef boost::shared_ptr<scram::Event> EventPtr;
-typedef boost::shared_ptr<scram::TopEvent> TopEventPtr;
-typedef boost::shared_ptr<scram::InterEvent> InterEventPtr;
+typedef boost::shared_ptr<scram::Node> NodePtr;
+typedef boost::shared_ptr<scram::Gate> GatePtr;
 typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
 
-// Test for Event base class.
-TEST(EventTest, Id) {
-  EventPtr event(new Event("event_name"));
-  EXPECT_EQ(event->id(), "event_name");
+// Test for Node base class.
+TEST(NodeTest, Id) {
+  NodePtr node(new Node("event_name"));
+  EXPECT_EQ(node->id(), "event_name");
 }
 
-// Test TopEvent class
-TEST(TopEventTest, Gate) {
-  TopEventPtr top(new TopEvent("top_event"));
+// Test Gate class
+TEST(GateTest, Gate) {
+  GatePtr top(new Gate("top_event"));
   // No gate has been set, so the request is an error.
-  EXPECT_THROW(top->gate(), ValueError);
+  EXPECT_THROW(top->type(), ValueError);
   // Setting the gate.
-  EXPECT_NO_THROW(top->gate("and"));
+  EXPECT_NO_THROW(top->type("and"));
   // Trying to set the gate again should cause an error.
-  EXPECT_THROW(top->gate("and"), ValueError);
+  EXPECT_THROW(top->type("and"), ValueError);
   // Requesting the gate should work without errors after setting.
-  ASSERT_NO_THROW(top->gate());
-  EXPECT_EQ(top->gate(), "and");
+  ASSERT_NO_THROW(top->type());
+  EXPECT_EQ(top->type(), "and");
 }
 
-TEST(TopEventTest, VoteNumber) {
-  TopEventPtr top(new TopEvent("top_event"));
+TEST(GateTest, VoteNumber) {
+  GatePtr top(new Gate("top_event"));
   // No gate has been set, so the request is an error.
   EXPECT_THROW(top->vote_number(), ValueError);
   // Setting the wrong AND gate.
-  EXPECT_NO_THROW(top->gate("and"));
+  EXPECT_NO_THROW(top->type("and"));
   // Setting a vote number for non-Vote gate is an error.
   EXPECT_THROW(top->vote_number(2), ValueError);
   // Resetting to VOTE gate.
-  top = TopEventPtr(new TopEvent("top_event"));
-  EXPECT_NO_THROW(top->gate("vote"));
+  top = GatePtr(new Gate("top_event"));
+  EXPECT_NO_THROW(top->type("vote"));
   // Illegal vote number.
   EXPECT_THROW(top->vote_number(-2), ValueError);
   // Legal vote number.
@@ -56,11 +55,11 @@ TEST(TopEventTest, VoteNumber) {
   EXPECT_EQ(top->vote_number(), 2);
 }
 
-TEST(TopEventTest, Children) {
-  TopEventPtr top(new TopEvent("top_event"));
-  std::map<std::string, EventPtr> children;
-  EventPtr first_child(new Event("first"));
-  EventPtr second_child(new Event("second"));
+TEST(GateTest, Children) {
+  GatePtr top(new Gate("top_event"));
+  std::map<std::string, NodePtr> children;
+  NodePtr first_child(new Node("first"));
+  NodePtr second_child(new Node("second"));
   // Request for children when there are no children is an error.
   EXPECT_THROW(top->children(), ValueError);
   // Adding first child.
@@ -76,18 +75,18 @@ TEST(TopEventTest, Children) {
   EXPECT_EQ(top->children(), children);
 }
 
-// Test InterEvent class
-TEST(InterEventTest, Parent) {
-  InterEventPtr inter_event(new InterEvent("inter"));
-  TopEventPtr parent_event(new TopEvent("parent"));
+// Test Gate class
+TEST(GateTest, Parent) {
+  GatePtr inter_event(new Gate("inter"));
+  GatePtr parent_event(new Gate("parent"));
   // Request for the parent when it has not been set.
-  EXPECT_THROW(inter_event->parent(), ValueError);
+  EXPECT_THROW(inter_event->parents(), ValueError);
   // Setting a parent. Note that there is no check if the parent is not a
   // primary event. This should be checked by a user creating this instance.
-  EXPECT_NO_THROW(inter_event->parent(parent_event));
-  EXPECT_THROW(inter_event->parent(parent_event), ValueError);  // Resetting.
-  EXPECT_NO_THROW(inter_event->parent());
-  EXPECT_EQ(inter_event->parent(), parent_event);
+  EXPECT_NO_THROW(inter_event->AddParent(parent_event));
+  EXPECT_THROW(inter_event->AddParent(parent_event), ValueError);  // Re-adding.
+  EXPECT_NO_THROW(inter_event->parents());
+  EXPECT_EQ(inter_event->parents().count(parent_event->id()), 1);
 }
 
 // Test PrimaryEvent class
@@ -155,9 +154,9 @@ TEST(PrimaryEventTest, HouseProbability) {
 
 TEST(PrimaryEventTest, Parent) {
   PrimaryEventPtr primary(new PrimaryEvent("valve"));
-  InterEventPtr first_parent(new InterEvent("trainone"));
-  InterEventPtr second_parent(new InterEvent("traintwo"));
-  std::map<std::string, TopEventPtr> parents;
+  GatePtr first_parent(new Gate("trainone"));
+  GatePtr second_parent(new Gate("traintwo"));
+  std::map<std::string, GatePtr> parents;
   // Request for the parents when it has not been set.
   EXPECT_THROW(primary->parents(), ValueError);
   // Setting a parent. Note that there is no check if the parent is not a
