@@ -47,7 +47,11 @@ Major Enhancements and Capabilities
 Minor Enhancements and Capabilities
 ===================================
 
-- Other input/output methods : XML, json, sql. *Moderate*
+- OpenPSA-like XML input format. *Moderate*
+
+  * Remove custom input format and parser.
+  * Reduce tests for input format and parser.
+
 - GUI development. *Moderate*
 
 

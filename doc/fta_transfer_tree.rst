@@ -2,6 +2,12 @@
 SCRAM FTA: Transfer Tree
 #########################################
 
+.. note::
+    This is to be replaced by 'include-directive' for XML inputs. The graphical
+    representation of the symbol must be retained in GUI or other image output.
+    This transfer logic will serve to represent the re-use of gates/intermediate
+    events.
+
 Specifics of Transfer In and Transfer Out
 ================================================
 - Root TransferIn may be used to analyze a specific sub-tree.
