@@ -349,7 +349,7 @@ class FaultTreeAnalysis : public RiskAnalysis {
   double p_time_;  ///< Time for probability calculations.
 
   /// A fault tree.
-  FaultTreePtr fault_tree;
+  FaultTreePtr fault_tree_;
 };
 
 }  // namespace scram

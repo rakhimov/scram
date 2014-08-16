@@ -35,7 +35,7 @@ class FaultTree {
   virtual ~FaultTree() {}
 
   /// New tree methhods.
-  void AddGate(const GatePtr& gate);
+  void AddGate(GatePtr& gate);
 
   /// @returns The name of this tree.
   const std::string& name() { return name_; }
@@ -55,13 +55,16 @@ class FaultTree {
   /// @note Assuming that the leafs are primary events, which means that the
   /// tree is fully developed without indefined gates.
   const std::set<std::string>& primary_events() {
+    if (leafs_.empty()) GenerateLeafs_();
     return leafs_;
   }
 
  private:
   /// Populates all non-gate events to the appropriate container.
   /// @note This does not check if the non-gate events are basic or house.
-  void PopulatePrimaryEvents_();
+  void GenerateLeafs_();
+
+  void ChildrenToLeafs_(GatePtr& gate);
 
   /// The name of this fault tree.
   std::string name_;

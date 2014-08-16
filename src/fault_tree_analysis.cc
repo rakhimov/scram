@@ -94,7 +94,7 @@ FaultTreeAnalysis::FaultTreeAnalysis(std::string analysis,
   GatePtr top_event_;
 
   // Initialize a fault tree with a default name.
-  FaultTreePtr fault_tree(new FaultTree("main"));
+  FaultTreePtr fault_tree_;
 }
 
 void FaultTreeAnalysis::ProcessInput(std::string input_file) {
@@ -1071,6 +1071,9 @@ void FaultTreeAnalysis::AddNode_(std::string parent,
       top_event_id_ = id;
       top_event_ = GatePtr(new scram::Gate(top_event_id_));
 
+      fault_tree_ = FaultTreePtr(new FaultTree(top_event_id_));
+      fault_tree_->AddGate(top_event_);
+
       // Top event cannot be primary.
       if (!gates_.count(type)) {
         std::stringstream msg;
@@ -1154,6 +1157,8 @@ void FaultTreeAnalysis::AddNode_(std::string parent,
     }
 
     GatePtr i_event(new scram::Gate(id));
+
+    fault_tree_->AddGate(i_event);
 
     if (parent == top_event_id_) {
       i_event->AddParent(top_event_);
