@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <define-fault-tree name="AB_BC">
+    <define-gate name="SystemFail">
+      <or>
+        <event name="TrainOne" type="gate"/>
+        <event name="TrainTwo" type="gate"/>
+      </or>
+    </define-gate>
+    <define-gate name="TrainOne">
+      <and>
+        <basic-event name="A"/>
+        <basic-event name="B"/>
+      </and>
+    </define-gate>
+    <define-gate name="TrainTwo">
+      <and>
+        <basic-event name="B"/>
+        <basic-event name="C"/>
+      </and>
+    </define-gate>
+    <define-basic-event name="A">
+      <float value="0.1"/>
+    </define-basic-event>
+    <define-basic-event name="B">
+      <float value="0.2"/>
+    </define-basic-event>
+    <define-basic-event name="C">
+      <float value="0.3"/>
+    </define-basic-event>
+  </define-fault-tree>
+</opsa-mef>
