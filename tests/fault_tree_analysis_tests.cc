@@ -1,4 +1,4 @@
-#include "fault_tree_tests.h"
+#include "fault_tree_analysis_tests.h"
 
 #include <cmath>
 
@@ -8,7 +8,7 @@ using namespace scram;
 
 // ---------------------- Test Private Functions -------------------------
 // Test the function that gets arguments from a line in an input file.
-TEST_F(FaultTreeTest, GetArgs) {
+TEST_F(FaultTreeAnalysisTest, GetArgs) {
   std::string line = "";  // An empty line.
   std::string orig_line = "";
   std::vector<std::string> args;
@@ -29,7 +29,7 @@ TEST_F(FaultTreeTest, GetArgs) {
   EXPECT_EQ("arg", args[0]);
 }
 
-TEST_F(FaultTreeTest, CheckGate) {
+TEST_F(FaultTreeAnalysisTest, CheckGate) {
   GatePtr top(new Gate("top", "and"));  // AND gate.
   PrimaryEventPtr A(new PrimaryEvent("a"));
   PrimaryEventPtr B(new PrimaryEvent("b"));
@@ -134,7 +134,7 @@ TEST_F(FaultTreeTest, CheckGate) {
   EXPECT_FALSE(CheckGate(top));
 }
 
-TEST_F(FaultTreeTest, NO_GATE) {
+TEST_F(FaultTreeAnalysisTest, NO_GATE) {
   std::vector<SupersetPtr> sets;
 
   // Testing for some UNKNOWN gate.
@@ -145,7 +145,7 @@ TEST_F(FaultTreeTest, NO_GATE) {
   EXPECT_THROW(ExpandSets(inter_id, sets), ValueError);
 }
 
-TEST_F(FaultTreeTest, OR_GATE) {
+TEST_F(FaultTreeAnalysisTest, OR_GATE) {
   std::vector<SupersetPtr> sets;
   std::vector<SupersetPtr>::iterator it_set;
   std::set<int> result_set;
@@ -193,7 +193,7 @@ TEST_F(FaultTreeTest, OR_GATE) {
   EXPECT_EQ(1, result_set.count(-1 * d_id));
 }
 
-TEST_F(FaultTreeTest, AND_GATE) {
+TEST_F(FaultTreeAnalysisTest, AND_GATE) {
   std::vector<SupersetPtr> sets;
   std::vector<SupersetPtr>::iterator it_set;
   std::set<int> result_set;
@@ -241,7 +241,7 @@ TEST_F(FaultTreeTest, AND_GATE) {
   EXPECT_EQ(true, a_found && b_found && c_found && d_found);
 }
 
-TEST_F(FaultTreeTest, NOT_GATE) {
+TEST_F(FaultTreeAnalysisTest, NOT_GATE) {
   std::vector<SupersetPtr> sets;
   std::set<int> result_set;
 
@@ -260,7 +260,7 @@ TEST_F(FaultTreeTest, NOT_GATE) {
 
   // Testing for NOT gate with a intermediate event child.
   delete fta;
-  fta = new FaultTree("default", false);
+  fta = new FaultTreeAnalysis("default", false);
   SetUpGate("not");
   inter->AddChild(D);
   sets.clear();
@@ -275,7 +275,7 @@ TEST_F(FaultTreeTest, NOT_GATE) {
   EXPECT_EQ(1, result_set.count(d_id));
 }
 
-TEST_F(FaultTreeTest, NOR_GATE) {
+TEST_F(FaultTreeAnalysisTest, NOR_GATE) {
   std::vector<SupersetPtr> sets;
   std::vector<SupersetPtr>::iterator it_set;
   std::set<int> result_set;
@@ -323,7 +323,7 @@ TEST_F(FaultTreeTest, NOR_GATE) {
   EXPECT_EQ(true, a_found && b_found && c_found && d_found);
 }
 
-TEST_F(FaultTreeTest, NAND_GATE) {
+TEST_F(FaultTreeAnalysisTest, NAND_GATE) {
   std::vector<SupersetPtr> sets;
   std::vector<SupersetPtr>::iterator it_set;
   std::set<int> result_set;
@@ -371,7 +371,7 @@ TEST_F(FaultTreeTest, NAND_GATE) {
   EXPECT_EQ(1, result_set.count(d_id));
 }
 
-TEST_F(FaultTreeTest, XOR_GATE) {
+TEST_F(FaultTreeAnalysisTest, XOR_GATE) {
   std::vector<SupersetPtr> sets;
   std::vector<SupersetPtr>::iterator it_set;
   std::set<int> result_set;
@@ -427,7 +427,7 @@ TEST_F(FaultTreeTest, XOR_GATE) {
   }
 }
 
-TEST_F(FaultTreeTest, NULL_GATE) {
+TEST_F(FaultTreeAnalysisTest, NULL_GATE) {
   std::vector<SupersetPtr> sets;
   std::set<int> result_set;
 
@@ -446,7 +446,7 @@ TEST_F(FaultTreeTest, NULL_GATE) {
 
   // Testing for NULL gate with a intermediate event child.
   delete fta;
-  fta = new FaultTree("default", false);
+  fta = new FaultTreeAnalysis("default", false);
   SetUpGate("null");
   inter->AddChild(D);
   sets.clear();
@@ -461,7 +461,7 @@ TEST_F(FaultTreeTest, NULL_GATE) {
   EXPECT_EQ(1, result_set.count(-1 * d_id));
 }
 
-TEST_F(FaultTreeTest, INHIBIT_GATE) {
+TEST_F(FaultTreeAnalysisTest, INHIBIT_GATE) {
   std::vector<SupersetPtr> sets;
   std::vector<SupersetPtr>::iterator it_set;
   std::set<int> result_set;
@@ -500,7 +500,7 @@ TEST_F(FaultTreeTest, INHIBIT_GATE) {
   EXPECT_EQ(true, a_found && d_found);
 }
 
-TEST_F(FaultTreeTest, VOTE_GATE) {
+TEST_F(FaultTreeAnalysisTest, VOTE_GATE) {
   std::vector<SupersetPtr> sets;
   std::vector<SupersetPtr>::iterator it_set;
 
@@ -588,7 +588,7 @@ TEST_F(FaultTreeTest, VOTE_GATE) {
   EXPECT_EQ(exp, output);
 }
 
-TEST_F(FaultTreeTest, ProbAndInt) {
+TEST_F(FaultTreeAnalysisTest, ProbAndInt) {
   std::set<int> min_cut_set;
 
   // 0 probability for an empty set.
@@ -616,7 +616,7 @@ TEST_F(FaultTreeTest, ProbAndInt) {
   EXPECT_DOUBLE_EQ(0.216, ProbAnd(min_cut_set));
 }
 
-TEST_F(FaultTreeTest, CombineElAndSet) {
+TEST_F(FaultTreeAnalysisTest, CombineElAndSet) {
   std::set<int> el_one;
   std::set<int> el_two;
   std::set< std::set<int> > set_one;
@@ -687,7 +687,7 @@ TEST_F(FaultTreeTest, CombineElAndSet) {
   EXPECT_TRUE(combo_set.empty());
 }
 
-TEST_F(FaultTreeTest, ProbOrInt) {
+TEST_F(FaultTreeAnalysisTest, ProbOrInt) {
   std::set<int> mcs;  // Minimal cut set.
   std::set<std::set<int> > min_cut_sets;  // A set of minimal cut sets.
   AddPrimeIntProb(0.0);  // Dummy element.
@@ -745,7 +745,7 @@ TEST_F(FaultTreeTest, ProbOrInt) {
 }
 
 // ------------------------ Monte Carlo -----------------------------
-TEST_F(FaultTreeTest, MProbOr) {
+TEST_F(FaultTreeAnalysisTest, MProbOr) {
   std::set<int> mcs;  // Minimal cut set.
   std::set< std::set<int> > p_terms;  // Positive terms of the equation.
   std::set< std::set<int> > n_terms;  // Negative terms of the equation.
@@ -824,22 +824,22 @@ TEST_F(FaultTreeTest, MProbOr) {
 // ----------------------------------------------------------------------
 // ---------------------- Test Public Functions --------------------------
 // Invalid options for the constructor.
-TEST_F(FaultTreeTest, Constructor) {
+TEST_F(FaultTreeAnalysisTest, Constructor) {
   // Incorrect analysis type.
-  ASSERT_THROW(FaultTree("analysis", false), ValueError);
+  ASSERT_THROW(FaultTreeAnalysis("analysis", false), ValueError);
   // Incorrect approximation argument.
-  ASSERT_THROW(FaultTree("default", false, "approx"), ValueError);
+  ASSERT_THROW(FaultTreeAnalysis("default", false, "approx"), ValueError);
   // Incorrect limit order for minmal cut sets.
-  ASSERT_THROW(FaultTree("default", false, "no", -1), ValueError);
+  ASSERT_THROW(FaultTreeAnalysis("default", false, "no", -1), ValueError);
   // Incorrect number of series in the probability equation.
-  ASSERT_THROW(FaultTree("default", false, "no", 1, -1), ValueError);
+  ASSERT_THROW(FaultTreeAnalysis("default", false, "no", 1, -1), ValueError);
 }
 
 // Test Input Processing
 // Note that there are tests specificly for correct and incorrect inputs
 // in fault_tree_input_tests.cc, so this test only concerned with actual changes
 // after processing the input.
-TEST_F(FaultTreeTest, ProcessInput) {
+TEST_F(FaultTreeAnalysisTest, ProcessInput) {
   std::string tree_input = "./input/fta/correct_tree_input.scramf";
   ASSERT_NO_THROW(fta->ProcessInput(tree_input));
   EXPECT_EQ(7, orig_ids().size());
@@ -873,7 +873,7 @@ TEST_F(FaultTreeTest, ProcessInput) {
 }
 
 // Test Probability Assignment
-TEST_F(FaultTreeTest, PopulateProbabilities) {
+TEST_F(FaultTreeAnalysisTest, PopulateProbabilities) {
   std::string tree_input = "./input/fta/correct_tree_input.scramf";
   std::string prob_input = "./input/fta/correct_prob_input.scramp";
   ASSERT_THROW(fta->PopulateProbabilities(prob_input), Error);  // No tree.
@@ -895,7 +895,7 @@ TEST_F(FaultTreeTest, PopulateProbabilities) {
 }
 
 // Test Graphing Intructions
-TEST_F(FaultTreeTest, GraphingInstructions) {
+TEST_F(FaultTreeAnalysisTest, GraphingInstructions) {
   std::vector<std::string> tree_input;
   tree_input.push_back("./input/fta/correct_tree_input.scramf");
   tree_input.push_back("./input/fta/doubly_defined_basic.scramf");
@@ -905,7 +905,7 @@ TEST_F(FaultTreeTest, GraphingInstructions) {
   std::vector<std::string>::iterator it;
   for (it = tree_input.begin(); it != tree_input.end(); ++it) {
     delete fta;
-    fta = new FaultTree("default", true);
+    fta = new FaultTreeAnalysis("default", true);
     ASSERT_THROW(fta->GraphingInstructions(), Error);
     ASSERT_NO_THROW(fta->ProcessInput(*it));
     ASSERT_NO_THROW(fta->GraphingInstructions());
@@ -913,13 +913,13 @@ TEST_F(FaultTreeTest, GraphingInstructions) {
 
   // Handle an exception graphing case with one TransferIn only.
   std::string special_case = "./input/fta/transfer_graphing_exception.scramf";
-  fta = new FaultTree("default", true);
+  fta = new FaultTreeAnalysis("default", true);
   ASSERT_NO_THROW(fta->ProcessInput(special_case));
   ASSERT_THROW(fta->GraphingInstructions(), ValidationError);
 }
 
 // Test Analysis
-TEST_F(FaultTreeTest, AnalyzeDefault) {
+TEST_F(FaultTreeAnalysisTest, AnalyzeDefault) {
   std::string tree_input = "./input/fta/correct_tree_input.scramf";
   std::string prob_input = "./input/fta/correct_prob_input.scramp";
   ASSERT_THROW(fta->Analyze(), Error);  // Calling without a tree initialized.
@@ -945,7 +945,7 @@ TEST_F(FaultTreeTest, AnalyzeDefault) {
 
   // Probability calculations.
   delete fta;  // Re-initializing.
-  fta = new FaultTree("default", false);
+  fta = new FaultTreeAnalysis("default", false);
   ASSERT_NO_THROW(fta->ProcessInput(tree_input));
   ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(fta->Analyze());
@@ -962,7 +962,7 @@ TEST_F(FaultTreeTest, AnalyzeDefault) {
 
   // Probability calculations with the rare event approximation.
   delete fta;  // Re-initializing.
-  fta = new FaultTree("default", false, "rare");
+  fta = new FaultTreeAnalysis("default", false, "rare");
   ASSERT_NO_THROW(fta->ProcessInput(tree_input));
   ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(fta->Analyze());
@@ -970,7 +970,7 @@ TEST_F(FaultTreeTest, AnalyzeDefault) {
 
   // Probability calculations with the MCUB approximation.
   delete fta;  // Re-initializing.
-  fta = new FaultTree("default", false, "mcub");
+  fta = new FaultTreeAnalysis("default", false, "mcub");
   ASSERT_NO_THROW(fta->ProcessInput(tree_input));
   ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(fta->Analyze());
@@ -978,9 +978,9 @@ TEST_F(FaultTreeTest, AnalyzeDefault) {
 }
 
 // Test Monte Carlo Analysis
-TEST_F(FaultTreeTest, AnalyzeMC) {
+TEST_F(FaultTreeAnalysisTest, AnalyzeMC) {
   delete fta;  // Re-initializing.
-  fta = new FaultTree("mc", false);
+  fta = new FaultTreeAnalysis("mc", false);
   std::string tree_input = "./input/fta/correct_tree_input.scramf";
   ASSERT_THROW(fta->Analyze(), Error);  // Calling without a tree initialized.
   ASSERT_NO_THROW(fta->ProcessInput(tree_input));
@@ -988,7 +988,7 @@ TEST_F(FaultTreeTest, AnalyzeMC) {
 }
 
 // Test Reporting capabilities
-TEST_F(FaultTreeTest, Report) {
+TEST_F(FaultTreeAnalysisTest, Report) {
   std::string tree_input = "./input/fta/correct_tree_input.scramf";
   std::string prob_input = "./input/fta/correct_prob_input.scramp";
   ASSERT_NO_THROW(fta->ProcessInput(tree_input));
@@ -999,7 +999,7 @@ TEST_F(FaultTreeTest, Report) {
 
   // Generate warning due to rare event approximation.
   delete fta;
-  fta = new FaultTree("default", false, "rare");
+  fta = new FaultTreeAnalysis("default", false, "rare");
   ASSERT_NO_THROW(fta->ProcessInput(tree_input));
   ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
   ASSERT_THROW(fta->Report("/dev/null"), Error);  // Calling before analysis.

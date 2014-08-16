@@ -6,7 +6,7 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
-#include "fault_tree.h"
+#include "fault_tree_analysis.h"
 #include "risk_analysis.h"
 
 namespace po = boost::program_options;
@@ -108,7 +108,7 @@ int main(int argc, char* argv[]) {
     if (rare_event) approx = "rare";
     if (mcub) approx = "mcub";
 
-    ran = new FaultTree(fta_analysis, graph_only, approx,
+    ran = new FaultTreeAnalysis(fta_analysis, graph_only, approx,
                         vm["limit-order"].as<int>(), vm["nsums"].as<int>());
   } else {
     std::string msg = analysis + ": this analysis is not recognized.\n";

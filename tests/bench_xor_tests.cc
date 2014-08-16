@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
 
-#include "fault_tree_tests.h"
+#include "fault_tree_analysis_tests.h"
 
 // Benchmark Tests for [A xor B xor C] fault tree.
 // Test Minimal cut sets and total probabilty.
-TEST_F(FaultTreeTest, XOR_ABC) {
+TEST_F(FaultTreeAnalysisTest, XOR_ABC) {
   std::string tree_input = "./input/benchmark/xor.scramf";
   std::string prob_input = "./input/benchmark/abc.scramp";
   std::string A = "a";  // 0.1

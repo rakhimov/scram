@@ -1,7 +1,7 @@
-/// @file fault_tree.h
+/// @file fault_tree_analysis.h
 /// Fault Tree Analysis.
-#ifndef SCRAM_FAULT_TREE_H_
-#define SCRAM_FAULT_TREE_H_
+#ifndef SCRAM_FAULT_TREE_ANALYSIS_H_
+#define SCRAM_FAULT_TREE_ANALYSIS_H_
 
 #include <fstream>
 #include <map>
@@ -18,7 +18,7 @@
 #include "risk_analysis.h"
 #include "superset.h"
 
-class FaultTreeTest;
+class FaultTreeAnalysisTest;
 
 typedef boost::shared_ptr<scram::Node> NodePtr;
 typedef boost::shared_ptr<scram::Gate> GatePtr;
@@ -28,10 +28,10 @@ typedef boost::shared_ptr<scram::Superset> SupersetPtr;
 
 namespace scram {
 
-/// @class FaultTree
+/// @class FaultTreeAnalysis
 /// Fault tree analysis functionality.
-class FaultTree : public RiskAnalysis {
-  friend class ::FaultTreeTest;
+class FaultTreeAnalysis : public RiskAnalysis {
+  friend class ::FaultTreeAnalysisTest;
 
  public:
   /// The main constructor of the Fault Tree Analysis.
@@ -41,7 +41,7 @@ class FaultTree : public RiskAnalysis {
   /// @param[in] limit_order The maximum limit on minimal cut sets' order.
   /// @param[in] nsums The number of sums in the probability series.
   /// @throws ValueError if any of the parameters are invalid.
-  FaultTree(std::string analysis, bool graph_only, std::string approx = "no",
+  FaultTreeAnalysis(std::string analysis, bool graph_only, std::string approx = "no",
             int limit_order = 20, int nsums = 1000000);
 
   /// Reads input file with the structure of the Fault tree.
@@ -83,7 +83,7 @@ class FaultTree : public RiskAnalysis {
   /// @throws IOError if the output file is not accessable.
   void Report(std::string output);
 
-  virtual ~FaultTree() {}
+  virtual ~FaultTreeAnalysis() {}
 
  private:
   /// Gets arguments from a line in an input file formatted accordingly.
@@ -385,4 +385,4 @@ class FaultTree : public RiskAnalysis {
 
 }  // namespace scram
 
-#endif  // SCRAM_FAULT_TREE_H_
+#endif  // SCRAM_FAULT_TREE_ANALYSIS_H_

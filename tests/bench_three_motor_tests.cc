@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
 
-#include "fault_tree_tests.h"
+#include "fault_tree_analysis_tests.h"
 
 // Benchmark Tests for  fault tree from OpenFTA.
 // This tests transfer gates.
-TEST_F(FaultTreeTest, ThreeMotor) {
+TEST_F(FaultTreeAnalysisTest, ThreeMotor) {
   std::string tree_input = "./input/benchmark/three_motor.scramf";
   std::string prob_input = "./input/benchmark/three_motor.scramp";
   std::set<std::string> cut_set;

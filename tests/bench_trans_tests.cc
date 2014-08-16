@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
 
-#include "fault_tree_tests.h"
+#include "fault_tree_analysis_tests.h"
 
 // Benchmark Tests for Trans Test fault tree from OpenFTA.
 // This tests transfer gates.
-TEST_F(FaultTreeTest, TransTest) {
+TEST_F(FaultTreeAnalysisTest, TransTest) {
   std::string trans_tree_input = "./input/benchmark/trans_one.scramf";
   std::string full_tree_input = "./input/benchmark/trans_full.scramf";
   std::string prob_input = "./input/benchmark/trans_full.scramp";
@@ -30,7 +30,7 @@ TEST_F(FaultTreeTest, TransTest) {
 
   // Check the full tree without the transfer gate.
   delete fta;
-  fta = new FaultTree("default", false);
+  fta = new FaultTreeAnalysis("default", false);
   ASSERT_NO_THROW(fta->ProcessInput(trans_tree_input));
   ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(fta->Analyze());

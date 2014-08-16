@@ -5,12 +5,12 @@
 #include <vector>
 
 #include "error.h"
-#include "fault_tree.h"
+#include "fault_tree_analysis.h"
 
 using namespace scram;
 
 // Test correct tree inputs
-TEST(FaultTreeInputTest, CorrectFTAInputs) {
+TEST(FaultTreeAnalysisInputTest, CorrectFTAInputs) {
   std::vector<std::string> correct_inputs;
   correct_inputs.push_back("./input/fta/correct_tree_input.scramf");
   correct_inputs.push_back("./input/fta/doubly_defined_basic.scramf");
@@ -23,7 +23,7 @@ TEST(FaultTreeInputTest, CorrectFTAInputs) {
 
   std::vector<std::string>::iterator it;
   for (it = correct_inputs.begin(); it != correct_inputs.end(); ++it) {
-    ran = new FaultTree("default", false);
+    ran = new FaultTreeAnalysis("default", false);
     EXPECT_NO_THROW(ran->ProcessInput(*it)) << " Filename: " << *it;
     delete ran;
   }
@@ -32,25 +32,25 @@ TEST(FaultTreeInputTest, CorrectFTAInputs) {
   // Transfer input file path without current dir indicator "./"
   std::string clean_name = "transfer_correct_top.scramf";
   ASSERT_EQ(0, chdir("./input/fta/"));
-  ran = new FaultTree("default", false);
+  ran = new FaultTreeAnalysis("default", false);
   EXPECT_NO_THROW(ran->ProcessInput(clean_name));
   ASSERT_EQ(0, chdir("../../"));  // Setting back the directory.
   delete ran;
 }
 
 // Test correct probability inputs
-TEST(FaultTreeInputTest, CorrectFTAProbability) {
+TEST(FaultTreeAnalysisInputTest, CorrectFTAProbability) {
   std::string input_correct = "./input/fta/correct_tree_input.scramf";
   std::string prob_correct = "./input/fta/correct_prob_input.scramp";
   std::string lambda_correct = "./input/fta/correct_lambda_prob.scramp";
 
-  RiskAnalysis* ran = new FaultTree("default", false);
+  RiskAnalysis* ran = new FaultTreeAnalysis("default", false);
   EXPECT_THROW(ran->PopulateProbabilities(prob_correct), Error);
   EXPECT_NO_THROW(ran->ProcessInput(input_correct));  // Create the fault tree.
   EXPECT_NO_THROW(ran->PopulateProbabilities(prob_correct));
   delete ran;
 
-  ran = new FaultTree("default", false);
+  ran = new FaultTreeAnalysis("default", false);
   EXPECT_THROW(ran->PopulateProbabilities(prob_correct), Error);
   EXPECT_NO_THROW(ran->ProcessInput(input_correct));  // Create the fault tree.
   EXPECT_NO_THROW(ran->PopulateProbabilities(lambda_correct));
@@ -58,7 +58,7 @@ TEST(FaultTreeInputTest, CorrectFTAProbability) {
 }
 
 // Test incorrect fault tree inputs
-TEST(FaultTreeInputTest, IncorrectFTAInputs) {
+TEST(FaultTreeAnalysisInputTest, IncorrectFTAInputs) {
   std::vector<std::string> ioerror_inputs;
   std::vector<std::string> incorrect_inputs;
 
@@ -130,14 +130,14 @@ TEST(FaultTreeInputTest, IncorrectFTAInputs) {
 
   std::vector<std::string>::iterator it;
   for (it = ioerror_inputs.begin(); it != ioerror_inputs.end(); ++it) {
-    ran = new FaultTree("default", false);
+    ran = new FaultTreeAnalysis("default", false);
     EXPECT_THROW(ran->ProcessInput(*it), scram::IOError)
         << " Filename: " << *it;
     delete ran;
   }
 
   for (it = incorrect_inputs.begin(); it != incorrect_inputs.end(); ++it) {
-    ran = new FaultTree("default", false);
+    ran = new FaultTreeAnalysis("default", false);
     EXPECT_THROW(ran->ProcessInput(*it), scram::ValidationError)
         << " Filename: " << *it;
     delete ran;
@@ -145,7 +145,7 @@ TEST(FaultTreeInputTest, IncorrectFTAInputs) {
 }
 
 // Test incorrect probability input
-TEST(FaultTreeInputTest, IncorrectFTAProbability) {
+TEST(FaultTreeAnalysisInputTest, IncorrectFTAProbability) {
   std::string correct_input = "./input/fta/correct_tree_input.scramf";
   std::vector<std::string> incorrect_prob;
   incorrect_prob.push_back("./input/fta/nonexistent_file.scramp");
@@ -173,7 +173,7 @@ TEST(FaultTreeInputTest, IncorrectFTAProbability) {
   RiskAnalysis* ran;
   std::vector<std::string>::iterator it;
   for (it = incorrect_prob.begin(); it != incorrect_prob.end(); ++it) {
-    ran = new FaultTree("default", false);
+    ran = new FaultTreeAnalysis("default", false);
     EXPECT_NO_THROW(ran->ProcessInput(correct_input));
     EXPECT_THROW(ran->PopulateProbabilities(*it), scram::Error)
         << " Filename: " << *it;

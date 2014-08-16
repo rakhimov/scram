@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
 
-#include "fault_tree_tests.h"
+#include "fault_tree_analysis_tests.h"
 
 // Bechmark tests for NOT gate.
 // [A OR NOT A]
-TEST_F(FaultTreeTest, A_OR_NOT_A) {
+TEST_F(FaultTreeAnalysisTest, A_OR_NOT_A) {
   std::string tree_input = "./input/benchmark/a_or_not_a.scramf";
   std::string prob_input = "./input/benchmark/abc.scramp";
   std::string A = "a";  // 0.1
@@ -27,7 +27,7 @@ TEST_F(FaultTreeTest, A_OR_NOT_A) {
 }
 
 // [A OR NOT B]
-TEST_F(FaultTreeTest, A_OR_NOT_B) {
+TEST_F(FaultTreeAnalysisTest, A_OR_NOT_B) {
   std::string tree_input = "./input/benchmark/a_or_not_b.scramf";
   std::string prob_input = "./input/benchmark/abc.scramp";
   std::string A = "a";  // 0.1
@@ -51,7 +51,7 @@ TEST_F(FaultTreeTest, A_OR_NOT_B) {
 }
 
 // [A AND NOT A]
-TEST_F(FaultTreeTest, A_AND_NOT_A) {
+TEST_F(FaultTreeAnalysisTest, A_AND_NOT_A) {
   std::string tree_input = "./input/benchmark/a_and_not_a.scramf";
   std::string prob_input = "./input/benchmark/abc.scramp";
   std::string A = "a";  // 0.1
@@ -68,7 +68,7 @@ TEST_F(FaultTreeTest, A_AND_NOT_A) {
 }
 
 // [A AND NOT B]
-TEST_F(FaultTreeTest, A_AND_NOT_B) {
+TEST_F(FaultTreeAnalysisTest, A_AND_NOT_B) {
   std::string tree_input = "./input/benchmark/a_and_not_b.scramf";
   std::string prob_input = "./input/benchmark/abc.scramp";
   std::string A = "a";  // 0.1
@@ -90,7 +90,7 @@ TEST_F(FaultTreeTest, A_AND_NOT_B) {
 }
 
 // [A OR (B, NOT A)]
-TEST_F(FaultTreeTest, A_OR_NOT_AB) {
+TEST_F(FaultTreeAnalysisTest, A_OR_NOT_AB) {
   std::string tree_input = "./input/benchmark/a_or_not_ab.scramf";
   std::string prob_input = "./input/benchmark/abc.scramp";
   std::string A = "a";  // 0.1
@@ -115,9 +115,9 @@ TEST_F(FaultTreeTest, A_OR_NOT_AB) {
 }
 
 // [A OR NOT B] FTA MC
-TEST_F(FaultTreeTest, MC_A_OR_NOT_B) {
+TEST_F(FaultTreeAnalysisTest, MC_A_OR_NOT_B) {
   delete fta;
-  fta = new FaultTree("mc", false);
+  fta = new FaultTreeAnalysis("mc", false);
   std::string tree_input = "./input/benchmark/a_or_not_b.scramf";
   std::string prob_input = "./input/benchmark/abc.scramp";
   std::set< std::set<int> > p_terms;

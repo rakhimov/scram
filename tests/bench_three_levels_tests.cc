@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
 
-#include "fault_tree_tests.h"
+#include "fault_tree_analysis_tests.h"
 
 // Benchmark Tests for Three levels of transfer tree, an example from OpenFTA.
 // Test Minimal cut sets and total probabilty.
-TEST_F(FaultTreeTest, ThreeLevels) {
+TEST_F(FaultTreeAnalysisTest, ThreeLevels) {
   std::string tree_input = "./input/benchmark/top.scramf";
   std::string prob_input = "./input/benchmark/three_levels.scramp";
   std::string A = "a";  // 0.1

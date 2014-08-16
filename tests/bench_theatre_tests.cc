@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
 
-#include "fault_tree_tests.h"
+#include "fault_tree_analysis_tests.h"
 
 // Benchmark Tests for Theatre fault tree from OpenFTA.
 // Test Minimal cut sets and total probabilty.
-TEST_F(FaultTreeTest, Theatre) {
+TEST_F(FaultTreeAnalysisTest, Theatre) {
   std::string tree_input = "./input/benchmark/theatre.scramf";
   std::string prob_input = "./input/benchmark/theatre.scramp";
   std::string GEN_FAIL = "gen_fail";  // 2e-2

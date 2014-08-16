@@ -1,10 +1,10 @@
-#ifndef SCRAM_TESTS_FAULT_TREE_TESTS_H_
-#define SCRAM_TESTS_FAULT_TREE_TESTS_H_
+#ifndef SCRAM_TESTS_FAULT_TREE_ANALYSIS_TESTS_H_
+#define SCRAM_TESTS_FAULT_TREE_ANALYSIS_TESTS_H_
 
 #include <gtest/gtest.h>
 
 #include "error.h"
-#include "fault_tree.h"
+#include "fault_tree_analysis.h"
 
 using namespace scram;
 
@@ -14,10 +14,10 @@ typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
 
 typedef boost::shared_ptr<Superset> SupersetPtr;
 
-class FaultTreeTest : public ::testing::Test {
+class FaultTreeAnalysisTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
-    fta = new FaultTree("default", false);
+    fta = new FaultTreeAnalysis("default", false);
   }
 
   virtual void TearDown() {
@@ -134,7 +134,7 @@ class FaultTreeTest : public ::testing::Test {
   }
   // Members
 
-  FaultTree* fta;
+  FaultTreeAnalysis* fta;
   GatePtr inter;  // No gate is defined.
   PrimaryEventPtr A;
   PrimaryEventPtr B;
@@ -147,4 +147,4 @@ class FaultTreeTest : public ::testing::Test {
   int d_id;
 };
 
-#endif  // SCRAM_TESTS_FAULT_TREE_TESTS_H_
+#endif  // SCRAM_TESTS_FAULT_TREE_ANALYSIS_TESTS_H_
