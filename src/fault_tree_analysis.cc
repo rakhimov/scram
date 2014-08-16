@@ -1522,8 +1522,8 @@ std::string FaultTreeAnalysis::CheckGate_(const GatePtr& event) {
             << " gate must have exactly 2 children.\n";
       } else {
         bool conditional_found = false;
-        std::map<std::string, NodePtr> children = event->children();
-        std::map<std::string, NodePtr>::iterator it;
+        std::map<std::string, EventPtr> children = event->children();
+        std::map<std::string, EventPtr>::iterator it;
         for (it = children.begin(); it != children.end(); ++it) {
           if (primary_events_.count(it->first)) {
             std::string type = primary_events_[it->first]->type();
@@ -1588,8 +1588,8 @@ void FaultTreeAnalysis::GraphNode_(GatePtr t,
                            std::map<std::string, int>& pr_repeat,
                            std::ofstream& out) {
   // Populate intermediate and primary events of the input inter event.
-  std::map<std::string, NodePtr> events_children = t->children();
-  std::map<std::string, NodePtr>::iterator it_child;
+  std::map<std::string, EventPtr> events_children = t->children();
+  std::map<std::string, EventPtr>::iterator it_child;
   for (it_child = events_children.begin(); it_child != events_children.end();
        ++it_child) {
     // Deal with repeated primary events.
@@ -1615,13 +1615,13 @@ void FaultTreeAnalysis::GraphNode_(GatePtr t,
 void FaultTreeAnalysis::ExpandSets_(int inter_index,
                                     std::vector< SupersetPtr >& sets) {
   // Populate intermediate and primary events of the top.
-  const std::map<std::string, NodePtr>* children =
+  const std::map<std::string, EventPtr>* children =
       &int_to_inter_[std::abs(inter_index)]->children();
 
   std::string gate = int_to_inter_[std::abs(inter_index)]->type();
 
   // Iterator for children of top and intermediate events.
-  std::map<std::string, NodePtr>::const_iterator it_children;
+  std::map<std::string, EventPtr>::const_iterator it_children;
   std::vector<int> events_children;
   std::vector<int>::iterator it_child;
 

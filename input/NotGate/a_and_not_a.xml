@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <define-fault-tree name="A_AND_NOT_A">
+    <define-gate name="TopEvent">
+      <and>
+        <basic-event name="A"/>
+        <not>
+          <basic-event name="A"/>
+        </not>
+      </and>
+    </define-gate>
+  </define-fault-tree>
+</opsa-mef>

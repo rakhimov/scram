@@ -14,13 +14,13 @@
 #include <boost/unordered_map.hpp>
 
 #include "error.h"
-#include "node.h"
+#include "event.h"
 #include "risk_analysis.h"
 #include "superset.h"
 
 // class FaultTreeTest;
 
-typedef boost::shared_ptr<scram::Node> NodePtr;
+typedef boost::shared_ptr<scram::Event> EventPtr;
 typedef boost::shared_ptr<scram::Gate> GatePtr;
 typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
 
@@ -46,8 +46,8 @@ class FaultTree {
   /// @param[in] type The symbol, type, or gate of the event to be added.
   /// @param[in] vote_number The vote number for the VOTE gate initialization.
   /// @throws ValidationError for invalid or incorrect inputs.
-  void AddNode(std::string parent, std::string id, std::string type,
-               int vote_number = -1);
+  void AddEvent(std::string parent, std::string id, std::string type,
+                int vote_number = -1);
 
   /// New tree methhods.
   void InsertGate(std::string id, std::string type, int vote_number = -1);

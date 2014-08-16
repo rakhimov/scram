@@ -8,7 +8,7 @@
 
 using namespace scram;
 
-typedef boost::shared_ptr<scram::Node> NodePtr;
+typedef boost::shared_ptr<scram::Event> EventPtr;
 typedef boost::shared_ptr<scram::Gate> GatePtr;
 typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
 

@@ -5,18 +5,18 @@
 #include <boost/shared_ptr.hpp>
 
 #include "error.h"
-#include "node.h"
+#include "event.h"
 
 using namespace scram;
 
-typedef boost::shared_ptr<scram::Node> NodePtr;
+typedef boost::shared_ptr<scram::Event> EventPtr;
 typedef boost::shared_ptr<scram::Gate> GatePtr;
 typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
 
-// Test for Node base class.
-TEST(NodeTest, Id) {
-  NodePtr node(new Node("event_name"));
-  EXPECT_EQ(node->id(), "event_name");
+// Test for Event base class.
+TEST(EventTest, Id) {
+  EventPtr event(new Event("event_name"));
+  EXPECT_EQ(event->id(), "event_name");
 }
 
 // Test Gate class
@@ -57,9 +57,9 @@ TEST(GateTest, VoteNumber) {
 
 TEST(GateTest, Children) {
   GatePtr top(new Gate("top_event"));
-  std::map<std::string, NodePtr> children;
-  NodePtr first_child(new Node("first"));
-  NodePtr second_child(new Node("second"));
+  std::map<std::string, EventPtr> children;
+  EventPtr first_child(new Event("first"));
+  EventPtr second_child(new Event("second"));
   // Request for children when there are no children is an error.
   EXPECT_THROW(top->children(), ValueError);
   // Adding first child.

@@ -31,8 +31,8 @@ FaultTree::FaultTree(std::string name)
       current_file_(""),
       warnings_("") {}
 
-void FaultTree::AddNode(std::string parent, std::string id,
-                        std::string type, int vote_number) {
+void FaultTree::AddEvent(std::string parent, std::string id,
+                         std::string type, int vote_number) {
   // Check if this is a transfer.
   if (type == "transferin") {
     if (parent == "none") {
@@ -259,8 +259,8 @@ std::string FaultTree::CheckGate_(const GatePtr& event) {
             << " gate must have exactly 2 children.\n";
       } else {
         bool conditional_found = false;
-        std::map<std::string, NodePtr> children = event->children();
-        std::map<std::string, NodePtr>::iterator it;
+        std::map<std::string, EventPtr> children = event->children();
+        std::map<std::string, EventPtr>::iterator it;
         for (it = children.begin(); it != children.end(); ++it) {
           if (primary_events_.count(it->first)) {
             std::string type = primary_events_[it->first]->type();

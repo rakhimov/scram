@@ -1,6 +1,6 @@
 /// @file primary_event.cc
 /// Implementation of primary event class.
-#include "node.h"
+#include "event.h"
 
 #include <cmath>
 
@@ -9,7 +9,7 @@
 namespace scram {
 
 PrimaryEvent::PrimaryEvent(std::string id, std::string type, double p)
-    : scram::Node(id),
+    : scram::Event(id),
       type_(type),
       p_(p) {}
 
@@ -101,5 +101,9 @@ const std::map<std::string,
   }
   return parents_;
 }
+
+BasicEvent::BasicEvent(std::string id) : scram::PrimaryEvent(id, "basic") {}
+
+HouseEvent::HouseEvent(std::string id) : scram::PrimaryEvent(id, "house") {}
 
 }  // namespace scram

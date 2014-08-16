@@ -1,13 +1,13 @@
 /// @file gate.cc
 /// Implementation of Gate class.
-#include "node.h"
+#include "event.h"
 
 #include "error.h"
 
 namespace scram {
 
 Gate::Gate(std::string id, std::string type)
-    : scram::Node(id),
+    : scram::Event(id),
       type_(type),
       vote_number_(-1) {}
 
@@ -70,7 +70,7 @@ const std::map<std::string, boost::shared_ptr<scram::Gate> >& Gate::parents() {
   return parents_;
 }
 
-void Gate::AddChild(const boost::shared_ptr<scram::Node>& child) {
+void Gate::AddChild(const boost::shared_ptr<scram::Event>& child) {
   if (children_.count(child->id())) {
     std::string msg = "Trying to re-insert a child for " + this->id() +
                       " gate.";
@@ -79,7 +79,7 @@ void Gate::AddChild(const boost::shared_ptr<scram::Node>& child) {
   children_.insert(std::make_pair(child->id(), child));
 }
 
-const std::map<std::string, boost::shared_ptr<scram::Node> >& Gate::children() {
+const std::map<std::string, boost::shared_ptr<scram::Event> >& Gate::children() {
   if (children_.empty()) {
     std::string msg = this->id() + " gate does not have children.";
     throw scram::ValueError(msg);

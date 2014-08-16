@@ -1,7 +1,7 @@
-/// @file node.h
-/// Contains node classes for fault trees.
-#ifndef SCRAM_NODE_H_
-#define SCRAM_NODE_H_
+/// @file event.h
+/// Contains event classes for fault trees.
+#ifndef SCRAM_EVENT_H_
+#define SCRAM_EVENT_H_
 
 #include <map>
 #include <string>
@@ -13,30 +13,31 @@
 
 namespace scram {
 
-/// @class Node
-/// General fault tree node base class.
-class Node {
+/// @class Event
+/// General fault tree event base class.
+class Event {
  public:
-  /// Constructs a fault tree node with a specific id.
-  /// @param[in] id The identifying name for the node.
-  Node(std::string id) : id_(id) {}
+  /// Constructs a fault tree event with a specific id.
+  /// @param[in] id The identifying name for the event.
+  Event(std::string id) : id_(id) {}
 
-  /// @returns The id that is set upon the construction of this node.
+  /// @returns The id that is set upon the construction of this event.
   virtual const std::string& id() { return id_; }
 
-  virtual ~Node() {}
+  virtual ~Event() {}
 
  private:
-  /// Id name of a node.
+  /// Id name of a event.
   std::string id_;
+  /// @todo labels and attributes should be represented here.
 };
 
 /// @class Gate
 /// A representation of a gate in a fault tree.
-class Gate : public scram::Node {
+class Gate : public scram::Event {
  public:
   /// Constructs with an id and a gate.
-  /// @param[in] id The identifying name for this node.
+  /// @param[in] id The identifying name for this event.
   /// @param[in] type The type for this gate.
   Gate(std::string id, std::string type = "NONE");
 
@@ -45,7 +46,7 @@ class Gate : public scram::Node {
   const std::string& type();
 
   /// Sets the gate type.
-  /// @param[in] gate The gate type for this node.
+  /// @param[in] gate The gate type for this event.
   /// @throws ValueError if the gate type is being re-assigned.
   void type(std::string type);
 
@@ -55,27 +56,29 @@ class Gate : public scram::Node {
   /// Sets the vote number only for a vote gate.
   /// @param[in] vnumber The vote number.
   /// @throws ValueError if the vote number is invalid or being re-assigned.
+  /// @todo A better representation for varios gates as Vote might be a separte
+  /// class.
   void vote_number(int vnumber);
 
   /// Adds a parent into the parent map.
-  /// @param[in] parent One of the parents of this gate node.
+  /// @param[in] parent One of the parents of this gate event.
   /// @throws ValueError if the parent is being re-inserted.
   void AddParent(const boost::shared_ptr<scram::Gate>& parent);
 
-  /// @returns All the parents of this gate node.
-  /// @throws ValueError if there are no parents for this gate node.
+  /// @returns All the parents of this gate event.
+  /// @throws ValueError if there are no parents for this gate event.
   const std::map<std::string, boost::shared_ptr<scram::Gate> >& parents();
 
-  /// Adds a child node into the children list.
-  /// @param[in] child A pointer to a child node.
+  /// Adds a child event into the children list.
+  /// @param[in] child A pointer to a child event.
   /// @throws ValueError if the child is being re-inserted.
-  virtual void AddChild(const boost::shared_ptr<scram::Node>& child);
+  virtual void AddChild(const boost::shared_ptr<scram::Event>& child);
 
   /// @returns The children of this gate.
   /// @throws ValueError if there are no children.
-  const std::map<std::string, boost::shared_ptr<scram::Node> >& children();
+  const std::map<std::string, boost::shared_ptr<scram::Event> >& children();
 
-  virtual ~Gate() {}
+  ~Gate() {}
 
  private:
   /// Gate type.
@@ -88,13 +91,13 @@ class Gate : public scram::Node {
   std::map<std::string, boost::shared_ptr<scram::Gate> > parents_;
 
   /// The children of this gate.
-  std::map<std::string, boost::shared_ptr<scram::Node> > children_;
+  std::map<std::string, boost::shared_ptr<scram::Event> > children_;
 };
 
 /// @class PrimaryEvent
 /// This is a base class for events that can cause faults.
 /// This class represents Base, House, Undeveloped, and other events.
-class PrimaryEvent : public scram::Node {
+class PrimaryEvent : public scram::Event {
  public:
   /// Constructs with id name and probability.
   /// @param[in] id The identifying name of this primary event.
@@ -135,7 +138,7 @@ class PrimaryEvent : public scram::Node {
   /// @throws ValueError if there are no parents for this primary event.
   const std::map<std::string, boost::shared_ptr<scram::Gate> >& parents();
 
-  ~PrimaryEvent() {}
+  virtual ~PrimaryEvent() {}
 
  private:
   /// The type of the primary event.
@@ -148,6 +151,34 @@ class PrimaryEvent : public scram::Node {
   std::map<std::string, boost::shared_ptr<scram::Gate> > parents_;
 };
 
+/// @class BasicEvent
+/// Representation of a basic event in a fault tree.
+class BasicEvent: public scram::PrimaryEvent {
+ public:
+  /// Constructs with id name.
+  /// @param[in] id The identifying name of this basic event.
+  BasicEvent(std::string id);
+
+  ~BasicEvent() {}
+
+ private:
+  /// @todo Probabilities should be moved from Primary event.
+};
+
+/// @class HouseEvent
+/// Representation of a house event in a fault tree.
+class HouseEvent: public scram::PrimaryEvent {
+ public:
+  /// Constructs with id name.
+  /// @param[in] id The identifying name of this basic event.
+  HouseEvent(std::string id);
+
+  ~HouseEvent() {}
+
+ private:
+  /// @todo Boolean true or false should be represented here.
+};
+
 }  // namespace scram
 
-#endif  // SCRAM_NODE_H_
+#endif  // SCRAM_EVENT_H_

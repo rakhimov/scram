@@ -15,13 +15,13 @@
 
 #include "error.h"
 #include "fault_tree.h"
-#include "node.h"
+#include "event.h"
 #include "risk_analysis.h"
 #include "superset.h"
 
 class FaultTreeAnalysisTest;
 
-typedef boost::shared_ptr<scram::Node> NodePtr;
+typedef boost::shared_ptr<scram::Event> EventPtr;
 typedef boost::shared_ptr<scram::Gate> GatePtr;
 typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
 
