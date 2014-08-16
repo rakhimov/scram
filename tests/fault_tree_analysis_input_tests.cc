@@ -16,8 +16,10 @@ TEST(FaultTreeAnalysisInputTest, CorrectFTAInputs) {
   correct_inputs.push_back("./input/fta/doubly_defined_basic.scramf");
   correct_inputs.push_back("./input/fta/different_order.scramf");
   correct_inputs.push_back("./input/fta/inline_comments.scramf");
-  correct_inputs.push_back("./input/fta/transfer_correct_top.scramf");
-  correct_inputs.push_back("./input/fta/transfer_correct_sub.scramf");
+
+  /// @deprecated New include tests should be provided instead.
+  // correct_inputs.push_back("./input/fta/transfer_correct_top.scramf");
+  // correct_inputs.push_back("./input/fta/transfer_correct_sub.scramf");
 
   RiskAnalysis* ran;
 
@@ -28,6 +30,7 @@ TEST(FaultTreeAnalysisInputTest, CorrectFTAInputs) {
     delete ran;
   }
 
+  /* @deprecated Create include tests instead.
   // This test is written after detecting a bug for transfer trees.
   // Transfer input file path without current dir indicator "./"
   std::string clean_name = "transfer_correct_top.scramf";
@@ -36,6 +39,7 @@ TEST(FaultTreeAnalysisInputTest, CorrectFTAInputs) {
   EXPECT_NO_THROW(ran->ProcessInput(clean_name));
   ASSERT_EQ(0, chdir("../../"));  // Setting back the directory.
   delete ran;
+  */
 }
 
 // Test correct probability inputs
@@ -64,7 +68,9 @@ TEST(FaultTreeAnalysisInputTest, IncorrectFTAInputs) {
 
   // Access issues. IOErrors
   ioerror_inputs.push_back("./input/fta/nonexistent_file.scramf");
-  ioerror_inputs.push_back("./input/fta/transfer_no_file.scramf");
+
+  // @deprecated
+  // ioerror_inputs.push_back("./input/fta/transfer_no_file.scramf");
 
   // Formatting issues.
   incorrect_inputs.push_back("./input/fta/missing_opening_brace_at_start.scramf");
@@ -99,7 +105,9 @@ TEST(FaultTreeAnalysisInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back("./input/fta/vote_no_number.scramf");
   incorrect_inputs.push_back("./input/fta/vote_not_enough_children.scramf");
   incorrect_inputs.push_back("./input/fta/vote_string.scramf");
-  // Issues with transfer gates.
+
+  /// @deprecated Issues with transfer gates should be changed to include.
+  /*
   incorrect_inputs.push_back("./input/fta/transfer_circular_self_top.scramf");
   incorrect_inputs.push_back("./input/fta/transfer_circular_top.scramf");
   incorrect_inputs.push_back("./input/fta/transfer_head_extra_nodes.scramf");
@@ -125,6 +133,7 @@ TEST(FaultTreeAnalysisInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back("./input/fta/transfer_second_transferout_sub.scramf");
   incorrect_inputs.push_back("./input/fta/transfer_extra_second_node_sub.scramf");
   incorrect_inputs.push_back("./input/fta/transfer_illegal_reference_sub.scramf");
+  */
 
   RiskAnalysis* ran;
 

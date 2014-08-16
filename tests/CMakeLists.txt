@@ -65,8 +65,8 @@ set(SCRAM_CORE_TEST_SOURCE ${SCRAM_CORE_TEST_SOURCE}
   "${CMAKE_CURRENT_SOURCE_DIR}/bench_lift_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/bench_ne574_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/bench_two_train_tests.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/bench_three_levels_tests.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/bench_trans_tests.cc"
+  #  "${CMAKE_CURRENT_SOURCE_DIR}/bench_three_levels_tests.cc"
+  #  "${CMAKE_CURRENT_SOURCE_DIR}/bench_trans_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/bench_theatre_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/bench_three_motor_tests.cc"
   )

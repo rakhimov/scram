@@ -7,6 +7,9 @@ SCRAM FTA: Transfer Tree
     representation of the symbol must be retained in GUI or other image output.
     This transfer logic will serve to represent the re-use of gates/intermediate
     events.
+    The transfer symbols will only be a graphical representation of re-used
+    gates.
+
 
 Specifics of Transfer In and Transfer Out
 ================================================

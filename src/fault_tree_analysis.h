@@ -106,16 +106,10 @@ class FaultTreeAnalysis : public RiskAnalysis {
   /// @param[in] msg The start for the error messages.
   /// @param[in] args The arguments to be interpreted.
   /// @param[in] orig_line The original line preserving cases.
-  /// @param[in] tr_parent The parent of the TransferIn for sub-trees.
-  /// @param[in] tr_id The TransferIn/Out id name.
-  /// @param[in] suffix The suffix that is attached to the new node id.
   /// @throws ValidationError if the input or arguments are invalid.
   void InterpretArgs_(int nline, std::stringstream& msg,
                       std::vector<std::string>& args,
-                      std::string& orig_line,
-                      std::string tr_parent = "",
-                      std::string tr_id = "",
-                      std::string suffix = "");
+                      std::string& orig_line);
 
   /// Adds node and updates databases of intermediate and primary events.
   /// @param[in] parent The id of the parent node.
@@ -138,9 +132,6 @@ class FaultTreeAnalysis : public RiskAnalysis {
   /// @param[in] time The time to failure for this event.
   /// @note If id is not in the tree, the probability is ignored.
   void AddProb_(std::string id, double p, double time);
-
-  /// Includes external transfer in subtrees to this current main tree.
-  void IncludeTransfers_();
 
   /// Verifies if gates are initialized correctly.
   /// @returns A warning message with a list of all bad gates with problems.
@@ -322,39 +313,11 @@ class FaultTreeAnalysis : public RiskAnalysis {
   /// Top event.
   GatePtr top_event_;
 
-  /// Indicator of detection of a top event described by a transfer sub-tree.
-  bool top_detected_;
-
-  /// Indicates that reading the main tree file as opposed to a transfer tree.
-  bool is_main_;
-
   /// Holder for intermediate events.
   boost::unordered_map<std::string, GatePtr> inter_events_;
 
   /// Container for primary events.
   boost::unordered_map<std::string, PrimaryEventPtr> primary_events_;
-
-  /// Container for transfer symbols as requested in tree initialization.
-  /// A queue contains a tuple of the parent and id of transferIn.
-  std::queue< std::pair<std::string, std::string> > transfers_;
-
-  /// For graphing purposes the same transferIn.
-  std::multimap<std::string, std::string> transfer_map_;
-
-  /// Container for storing all transfer sub-trees' names and number of calls.
-  std::map<std::string, int> trans_calls_;
-
-  /// Container to track transfer calls to prevent cyclic calls/inclusions.
-  std::map< std::string, std::vector<std::string> > trans_tree_;
-
-  /// Indicate if TransferOut is initiated correctly.
-  bool transfer_correct_;
-
-  /// Indication of the first intermediate event of the transfer.
-  bool transfer_first_inter_;
-
-  /// Sub-tree analysis only.
-  bool sub_tree_analysis_;
 
   /// Container for minimal cut sets.
   std::set< std::set<std::string> > min_cut_sets_;

@@ -27,8 +27,8 @@
 
 {
     parent      E4
-    id          t.scramf  # K1 relay contacts fail to open K3 relay contacts closed
-    type        TransferIn
+    id          E1tr  # K1 relay contacts fail to open K3 relay contacts closed
+    type        OR
 }
 
 {
@@ -116,7 +116,7 @@
 }
 
 {
-    parent      E10 
+    parent      E10
     id          E12  # KT2 timer contacts fail to open when K5 relay contacts
                      # closed for t > 60 sec
     type        OR
@@ -150,5 +150,98 @@
 {
     parent      E11
     id          T3  # Reset signal inadvertently applied or not removed...
+    type        Undeveloped
+}
+
+
+# Move definitions from a transfer in after deprecation.
+{
+    parent      E1tr
+    id          K1  # K1 relay contacts fail to open
+    type        Basic
+}
+
+{
+    parent      E1tr
+    id          E2tr  # EMF not removed from K1 relay coil when K3 contacts closed
+    type        OR
+}
+
+{
+    parent      E2tr
+    id          E4tr  # EMF to K1 coil through S1 contacts when K3 closed
+    type        OR
+}
+
+{
+    parent      E4tr
+    id          S1  # S1 switch inadvertently closes or fails to open
+    type        Basic
+}
+
+{
+    parent      E4tr
+    id          T1inc  # Reset signal inadvertently applied
+    type        Undeveloped
+}
+
+{
+    parent      E2tr
+    id          E3tr  # EMF to K1 coil through timer circuit when K3 contacts
+                    # closed for t > 60 sec
+    type        AND
+}
+
+{
+    parent      E3tr
+    id          E5tr  # K1 timer contacts fail to open when K3 closed
+    type        OR
+}
+
+{
+    parent      E5tr
+    id          KT1inc
+    type        Basic
+}
+
+{
+    parent      E5tr
+    id          T2inc
+    type        Undeveloped
+}
+
+{
+    parent      E3tr
+    id          E6tr
+    type        OR
+}
+
+{
+    parent      E6tr
+    id          KT2inc
+    type        Basic
+}
+
+{
+    parent      E6tr
+    id          T3inc
+    type        Undeveloped
+}
+
+{
+    parent      E3tr
+    id          E7tr
+    type        OR
+}
+
+{
+    parent      E7tr
+    id          KT3inc
+    type        Basic
+}
+
+{
+    parent      E7tr
+    id          T4inc
     type        Undeveloped
 }

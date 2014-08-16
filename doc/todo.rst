@@ -51,6 +51,7 @@ Major Enhancements and Capabilities
   * Reduce tests for input format and parser.
   * Add labels to all members.
   * Add Attributes struct to all members.
+  * Deprecate Transfer tests. Create Include tests instead.
 
 - GUI development. *High*
 
