@@ -49,6 +49,10 @@ class FaultTree {
   void AddNode(std::string parent, std::string id, std::string type,
                int vote_number = -1);
 
+  /// New tree methhods.
+  void InsertGate(std::string id, std::string type, int vote_number = -1);
+  void InsertPrimary(std::string id, std::string type);
+
   /// Adds probability to a primary event for p-model.
   /// @param[in] id The id name of the primary event.
   /// @param[in] p The probability for the primary event.

@@ -14,6 +14,7 @@
 #include <boost/unordered_map.hpp>
 
 #include "error.h"
+#include "fault_tree.h"
 #include "node.h"
 #include "risk_analysis.h"
 #include "superset.h"
@@ -25,6 +26,8 @@ typedef boost::shared_ptr<scram::Gate> GatePtr;
 typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
 
 typedef boost::shared_ptr<scram::Superset> SupersetPtr;
+
+typedef boost::shared_ptr<scram::FaultTree> FaultTreePtr;
 
 namespace scram {
 
@@ -381,6 +384,9 @@ class FaultTreeAnalysis : public RiskAnalysis {
   double exp_time_;  ///< Expansion of tree gates time.
   double mcs_time_;  ///< Time for MCS generation.
   double p_time_;  ///< Time for probability calculations.
+
+  /// A fault tree.
+  FaultTreePtr fault_tree;
 };
 
 }  // namespace scram

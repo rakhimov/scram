@@ -95,8 +95,11 @@ FaultTreeAnalysis::FaultTreeAnalysis(std::string analysis,
   types_.insert("house");
   types_.insert("conditional");
 
-  // Pointer to the top event
+  // Pointer to the top event.
   GatePtr top_event_;
+
+  // Initialize a fault tree with a default name.
+  FaultTreePtr fault_tree(new FaultTree("main"));
 }
 
 void FaultTreeAnalysis::ProcessInput(std::string input_file) {
@@ -1225,8 +1228,10 @@ void FaultTreeAnalysis::InterpretArgs_(int nline, std::stringstream& msg,
   }
 }
 
-void FaultTreeAnalysis::AddNode_(std::string parent, std::string id,
-                         std::string type, int vote_number) {
+void FaultTreeAnalysis::AddNode_(std::string parent,
+                                 std::string id,
+                                 std::string type,
+                                 int vote_number) {
   // Check if this is a transfer.
   if (type == "transferin") {
     if (parent == "none") {
@@ -1608,7 +1613,7 @@ void FaultTreeAnalysis::GraphNode_(GatePtr t,
 }
 
 void FaultTreeAnalysis::ExpandSets_(int inter_index,
-                            std::vector< SupersetPtr >& sets) {
+                                    std::vector< SupersetPtr >& sets) {
   // Populate intermediate and primary events of the top.
   const std::map<std::string, NodePtr>* children =
       &int_to_inter_[std::abs(inter_index)]->children();
