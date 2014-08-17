@@ -57,16 +57,18 @@ class FaultTree {
   /// @note Assuming that the leafs are primary events, which means that the
   /// tree is fully developed without indefined gates.
   const std::map<std::string, PrimaryEventPtr>& primary_events() {
-    if (primary_events_.empty()) GenerateLeafs_();
+    if (primary_events_.empty()) GatherPrimaryEvents_();
     return primary_events_;
   }
 
  private:
-  /// Populates all non-gate events to the appropriate container.
-  /// @note This does not check if the non-gate events are basic or house.
-  void GenerateLeafs_();
+  /// Picks primary events of this tree.
+  /// Locks the tree from any further changes.
+  void GatherPrimaryEvents_();
 
-  void ChildrenToLeafs_(GatePtr& gate);
+  /// Picks primary events of the specified gate.
+  /// The primary events are put into the approriate container.
+  void GetPrimaryEvents_(GatePtr& gate);
 
   /// The name of this fault tree.
   std::string name_;

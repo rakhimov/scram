@@ -24,27 +24,26 @@ void FaultTree::AddGate(GatePtr& gate) {
     top_event_id_ = gate->id();
   } else {
     if (inter_events_.count(gate->id()) || gate->id() == top_event_id_) {
-      std::stringstream msg;
-      msg << "Trying to doubly define a gate";
-      throw scram::ValueError(msg.str());
+      std::string msg =  "Trying to doubly define a gate";
+      throw scram::ValueError(msg);
     }
     inter_events_.insert(std::make_pair(gate->id(), gate));
   }
 }
 
-void FaultTree::GenerateLeafs_() {
+void FaultTree::GatherPrimaryEvents_() {
   lock_ = true;  // Assumes that the tree is fully developed.
 
-  FaultTree::ChildrenToLeafs_(top_event_);
+  FaultTree::GetPrimaryEvents_(top_event_);
 
   boost::unordered_map<std::string, GatePtr>::iterator git;
   for (git = inter_events_.begin(); git != inter_events_.end(); ++git) {
 
-    FaultTree::ChildrenToLeafs_(git->second);
+    FaultTree::GetPrimaryEvents_(git->second);
   }
 }
 
-void FaultTree::ChildrenToLeafs_(GatePtr& gate) {
+void FaultTree::GetPrimaryEvents_(GatePtr& gate) {
   const std::map<std::string, EventPtr>* children = &gate->children();
   std::map<std::string, EventPtr>::const_iterator it;
   for (it = children->begin(); it != children->end(); ++it) {
