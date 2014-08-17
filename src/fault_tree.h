@@ -6,7 +6,9 @@
 #include <map>
 #include <set>
 #include <string>
+#include <typeinfo>
 
+#include <boost/pointer_cast.hpp>
 #include <boost/serialization/map.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
@@ -54,9 +56,9 @@ class FaultTree {
   /// @returns The container of primary events of this tree.
   /// @note Assuming that the leafs are primary events, which means that the
   /// tree is fully developed without indefined gates.
-  const std::set<std::string>& primary_events() {
-    if (leafs_.empty()) GenerateLeafs_();
-    return leafs_;
+  const std::map<std::string, PrimaryEventPtr>& primary_events() {
+    if (primary_events_.empty()) GenerateLeafs_();
+    return primary_events_;
   }
 
  private:
@@ -82,8 +84,11 @@ class FaultTree {
   /// Holder for intermediate events.
   boost::unordered_map<std::string, GatePtr> inter_events_;
 
-  /// Container for the leafs of the tree.
-  std::set<std::string> leafs_;
+  /// Container for the primary events of the tree.
+  std::map<std::string, PrimaryEventPtr> primary_events_;
+
+  /// Locks any further changes to this tree.
+  bool lock_;
 };
 
 }  // namespace scram

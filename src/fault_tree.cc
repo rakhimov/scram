@@ -13,9 +13,12 @@ namespace scram {
 FaultTree::FaultTree(std::string name)
     : name_(name),
       top_event_id_(""),
+      lock_(false),
       warnings_("") {}
 
 void FaultTree::AddGate(GatePtr& gate) {
+  if (lock_) throw scram::Error("The tree is locked. No change is allowed.");
+
   if (top_event_id_ == "") {
     top_event_ = gate;
     top_event_id_ = gate->id();
@@ -30,16 +33,14 @@ void FaultTree::AddGate(GatePtr& gate) {
 }
 
 void FaultTree::GenerateLeafs_() {
+  lock_ = true;  // Assumes that the tree is fully developed.
+
   FaultTree::ChildrenToLeafs_(top_event_);
 
   boost::unordered_map<std::string, GatePtr>::iterator git;
   for (git = inter_events_.begin(); git != inter_events_.end(); ++git) {
-    FaultTree::ChildrenToLeafs_(git->second);
-  }
 
-  // Remove gates from the leafs container.
-  for (git = inter_events_.begin(); git != inter_events_.end(); ++git) {
-    leafs_.erase(git->first);
+    FaultTree::ChildrenToLeafs_(git->second);
   }
 }
 
@@ -47,7 +48,12 @@ void FaultTree::ChildrenToLeafs_(GatePtr& gate) {
   const std::map<std::string, EventPtr>* children = &gate->children();
   std::map<std::string, EventPtr>::const_iterator it;
   for (it = children->begin(); it != children->end(); ++it) {
-    leafs_.insert(it->first);
+    if (typeid(it->second) != typeid(top_event_)) {
+      PrimaryEventPtr primary_event =
+          boost::dynamic_pointer_cast<scram::PrimaryEvent>(it->second);
+      assert(primary_event != 0);
+      primary_events_.insert(std::make_pair(it->first, primary_event));
+    }
   }
 }
 
