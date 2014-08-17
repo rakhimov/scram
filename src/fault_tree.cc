@@ -47,10 +47,10 @@ void FaultTree::GetPrimaryEvents_(GatePtr& gate) {
   const std::map<std::string, EventPtr>* children = &gate->children();
   std::map<std::string, EventPtr>::const_iterator it;
   for (it = children->begin(); it != children->end(); ++it) {
-    if (typeid(it->second) != typeid(top_event_)) {
+    if (!inter_events_.count(it->first)) {
       PrimaryEventPtr primary_event =
           boost::dynamic_pointer_cast<scram::PrimaryEvent>(it->second);
-      assert(primary_event != 0);
+      assert(primary_event != 0);  // The tree must be fully defined.
       primary_events_.insert(std::make_pair(it->first, primary_event));
     }
   }

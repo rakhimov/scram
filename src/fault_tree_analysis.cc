@@ -431,6 +431,11 @@ void FaultTreeAnalysis::Analyze() {
   // Container for cut sets with primary events only.
   std::vector< std::set<int> > cut_sets;
 
+  // Getting events from the fault tree object.
+  fault_tree_->primary_events();
+  fault_tree_->inter_events();
+  fault_tree_->top_event();
+
   FaultTreeAnalysis::AssignIndices_();
 
   FaultTreeAnalysis::ExpandSets_(top_event_index_, inter_sets);
