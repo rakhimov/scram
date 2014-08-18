@@ -1,4 +1,5 @@
 set(SCRAM_CORE_SRC ${SCRAM_CORE_SRC}
+  "${CMAKE_CURRENT_SOURCE_DIR}/risk_analysis.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree_analysis.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/superset.cc"

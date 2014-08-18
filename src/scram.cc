@@ -87,6 +87,11 @@ int main(int argc, char* argv[]) {
   // Initiate risk analysis.
   RiskAnalysis* ran;
 
+  /// @todo New sequence and architecture of analysis
+  /// Read configurations.
+  /// Initializer from input files.
+  /// Run analysis.
+
   if (analysis == "fta-default" || analysis == "fta-mc") {
     if (vm["limit-order"].as<int>() < 1) {
       std::string msg = "Upper limit for cut sets can't be less than 1\n";
