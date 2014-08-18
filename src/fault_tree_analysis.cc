@@ -432,9 +432,9 @@ void FaultTreeAnalysis::Analyze() {
   std::vector< std::set<int> > cut_sets;
 
   // Getting events from the fault tree object.
-  fault_tree_->primary_events();
-  fault_tree_->inter_events();
-  fault_tree_->top_event();
+  top_event_ = fault_tree_->top_event();
+  inter_events_ = fault_tree_->inter_events();
+  primary_events_ = fault_tree_->primary_events();
 
   FaultTreeAnalysis::AssignIndices_();
 
@@ -1115,11 +1115,18 @@ void FaultTreeAnalysis::AddNode_(std::string parent,
       throw scram::ValidationError(msg.str());
     }
 
-    PrimaryEventPtr p_event(new PrimaryEvent(id, type));
+    PrimaryEventPtr p_event;
+    // Check if this is a re-use of a primary event.
+    if (primary_events_.count(id)) {
+      p_event = primary_events_[id];
+    } else {
+      p_event = PrimaryEventPtr(new PrimaryEvent(id, type));
+      primary_events_.insert(std::make_pair(id, p_event));
+    }
+
     if (parent == top_event_id_) {
       p_event->AddParent(top_event_);
       top_event_->AddChild(p_event);
-      primary_events_.insert(std::make_pair(id, p_event));
       // Check for conditional event.
       if (type == "conditional" && top_event_->type() != "inhibit") {
         std::stringstream msg;
@@ -1130,7 +1137,6 @@ void FaultTreeAnalysis::AddNode_(std::string parent,
     } else if (inter_events_.count(parent)) {
       p_event->AddParent(inter_events_[parent]);
       inter_events_[parent]->AddChild(p_event);
-      primary_events_.insert(std::make_pair(id, p_event));
       // Check for conditional event.
       if (type == "conditional" && inter_events_[parent]->type() != "inhibit") {
         std::stringstream msg;

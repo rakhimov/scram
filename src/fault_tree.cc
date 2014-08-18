@@ -27,6 +27,7 @@ void FaultTree::AddGate(GatePtr& gate) {
       std::string msg =  "Trying to doubly define a gate";
       throw scram::ValueError(msg);
     }
+    // @todo Check if this gate has a valid parent in this tree.
     inter_events_.insert(std::make_pair(gate->id(), gate));
   }
 }
@@ -51,9 +52,14 @@ void FaultTree::GetPrimaryEvents_(GatePtr& gate) {
       PrimaryEventPtr primary_event =
           boost::dynamic_pointer_cast<scram::PrimaryEvent>(it->second);
       assert(primary_event != 0);  // The tree must be fully defined.
+                                  // @todo Must change to an exception that
+                                  // indicates un-initialized event.
       primary_events_.insert(std::make_pair(it->first, primary_event));
     }
   }
 }
+
+// @todo may overload operator= in order to unlock a new tree for changes.
+// or provide an explicit function to unlock the tree.
 
 }  // namespace scram

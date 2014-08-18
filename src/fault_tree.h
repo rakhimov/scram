@@ -54,9 +54,9 @@ class FaultTree {
   }
 
   /// @returns The container of primary events of this tree.
-  /// @note Assuming that the leafs are primary events, which means that the
-  /// tree is fully developed without indefined gates.
-  const std::map<std::string, PrimaryEventPtr>& primary_events() {
+  /// @note Assuming that all events in this tree are defined to be gates or
+  /// primary events.
+  const boost::unordered_map<std::string, PrimaryEventPtr>& primary_events() {
     if (primary_events_.empty()) GatherPrimaryEvents_();
     return primary_events_;
   }
@@ -87,7 +87,7 @@ class FaultTree {
   boost::unordered_map<std::string, GatePtr> inter_events_;
 
   /// Container for the primary events of the tree.
-  std::map<std::string, PrimaryEventPtr> primary_events_;
+  boost::unordered_map<std::string, PrimaryEventPtr> primary_events_;
 
   /// Locks any further changes to this tree.
   bool lock_;
