@@ -847,7 +847,7 @@ TEST_F(FaultTreeAnalysisTest, Constructor) {
   ASSERT_THROW(FaultTreeAnalysis("default", false, "no", 1, -1), ValueError);
 }
 
-// Test Input Processing
+// Test Input Processing for Risk Analysis.
 // Note that there are tests specificly for correct and incorrect inputs
 // in fault_tree_input_tests.cc, so this test only concerned with actual changes
 // after processing the input.
@@ -855,17 +855,17 @@ TEST_F(FaultTreeAnalysisTest, ProcessInput) {
   std::string tree_input = "./input/fta/correct_tree_input.scramf";
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   EXPECT_EQ(7, orig_ids().size());
-  EXPECT_EQ("topevent", top_event_id());
-  EXPECT_EQ(2, inter_events().size());
-  EXPECT_EQ(1, inter_events().count("trainone"));
-  EXPECT_EQ(1, inter_events().count("traintwo"));
+  EXPECT_EQ(3, gates().size());
+  EXPECT_EQ(1, gates().count("trainone"));
+  EXPECT_EQ(1, gates().count("traintwo"));
+  EXPECT_EQ(1, gates().count("topevent"));
   EXPECT_EQ(4, primary_events().size());
   EXPECT_EQ(1, primary_events().count("pumpone"));
   EXPECT_EQ(1, primary_events().count("pumptwo"));
   EXPECT_EQ(1, primary_events().count("valveone"));
   EXPECT_EQ(1, primary_events().count("valvetwo"));
-  if (inter_events().count("trainone")) {
-    GatePtr inter = inter_events()["trainone"];
+  if (gates().count("trainone")) {
+    GatePtr inter = gates()["trainone"];
     EXPECT_EQ("trainone", inter->id());
     ASSERT_NO_THROW(inter->type());
     EXPECT_EQ("or", inter->type());

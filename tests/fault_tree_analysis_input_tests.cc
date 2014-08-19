@@ -87,7 +87,7 @@ TEST(FaultTreeAnalysisInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back("./input/fta/conditional_wrong_type_top.scramf");
   incorrect_inputs.push_back("./input/fta/doubly_defined_intermediate.scramf");
   incorrect_inputs.push_back("./input/fta/doubly_defined_primary_type.scramf");
-  incorrect_inputs.push_back("./input/fta/doubly_defined_top.scramf");
+  // incorrect_inputs.push_back("./input/fta/doubly_defined_top.scramf");
   incorrect_inputs.push_back("./input/fta/extra_parameter.scramf");
   incorrect_inputs.push_back("./input/fta/leaf_intermidiate_event.scramf");
   incorrect_inputs.push_back("./input/fta/missing_id.scramf");

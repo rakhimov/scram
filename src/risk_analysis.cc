@@ -24,25 +24,22 @@ RiskAnalysis::RiskAnalysis(std::string config_file)
       id_(""),
       type_(""),
       vote_number_(-1) {
-  // Add valid gates.
-  gates_.insert("and");
-  gates_.insert("or");
-  gates_.insert("not");
-  gates_.insert("nor");
-  gates_.insert("nand");
-  gates_.insert("xor");
-  gates_.insert("null");
-  gates_.insert("inhibit");
-  gates_.insert("vote");
+  // Add valid gate types.
+  gate_types_.insert("and");
+  gate_types_.insert("or");
+  gate_types_.insert("not");
+  gate_types_.insert("nor");
+  gate_types_.insert("nand");
+  gate_types_.insert("xor");
+  gate_types_.insert("null");
+  gate_types_.insert("inhibit");
+  gate_types_.insert("vote");
 
   // Add valid primary event types.
   types_.insert("basic");
   types_.insert("undeveloped");
   types_.insert("house");
   types_.insert("conditional");
-
-  // Pointer to the top event.
-  GatePtr top_event_;
 
   // Initialize a fault tree with a default name.
   FaultTreePtr fault_tree_;
@@ -307,7 +304,7 @@ void RiskAnalysis::InterpretArgs_(int nline, std::stringstream& msg,
       } else if (args[0] == "type" && type_ == "") {
         type_ = args[1];
         // Check if gate/event type is valid.
-        if (!gates_.count(type_) && !types_.count(type_)) {
+        if (!gate_types_.count(type_) && !types_.count(type_)) {
           boost::to_upper(type_);
           msg << "Line " << nline << " : " << "Invalid input arguments."
               << " Do not support this '" << type_
@@ -345,31 +342,24 @@ void RiskAnalysis::AddNode_(std::string parent,
                             int vote_number) {
   // Initialize events.
   if (parent == "none") {
-    if (top_event_id_ == "") {
-      top_event_id_ = id;
-      top_event_ = GatePtr(new scram::Gate(top_event_id_));
+      GatePtr top_event(new scram::Gate(id));
 
-      fault_tree_ = FaultTreePtr(new FaultTree(top_event_id_));
-      fault_tree_->AddGate(top_event_);
+      gates_.insert(std::make_pair(id, top_event));
+      all_events_.insert(std::make_pair(id, top_event));
+
+      fault_tree_ = FaultTreePtr(new FaultTree(id));
+      fault_tree_->AddGate(top_event);
 
       // Top event cannot be primary.
-      if (!gates_.count(type)) {
+      if (!gate_types_.count(type)) {
         std::stringstream msg;
-        msg << "Invalid input arguments. " << orig_ids_[top_event_id_]
+        msg << "Invalid input arguments. " << orig_ids_[id]
             << " top event type is not defined correctly. It must be a gate.";
         throw scram::ValidationError(msg.str());
       }
 
-      top_event_->type(type);
-      if (type == "vote") top_event_->vote_number(vote_number);
-
-    } else {
-      // Another top event is detected.
-      std::stringstream msg;
-      msg << "Invalid input arguments. The input cannot contain more than"
-          << " one top event. " << orig_ids_[id] << " is redundant.";
-      throw scram::ValidationError(msg.str());
-    }
+      top_event->type(type);
+      if (type == "vote") top_event->vote_number(vote_number);
 
   } else if (types_.count(type)) {
     // This must be a primary event.
@@ -381,10 +371,10 @@ void RiskAnalysis::AddNode_(std::string parent,
       throw scram::ValidationError(msg.str());
     }
     // Detect name clashes.
-    if (id == top_event_id_ || inter_events_.count(id)) {
+    if (gates_.count(id)) {
       std::stringstream msg;
       msg << "The id " << orig_ids_[id]
-          << " is already assigned to the top or intermediate event.";
+          << " is already assigned to a gate.";
       throw scram::ValidationError(msg.str());
     }
 
@@ -395,23 +385,14 @@ void RiskAnalysis::AddNode_(std::string parent,
     } else {
       p_event = PrimaryEventPtr(new PrimaryEvent(id, type));
       primary_events_.insert(std::make_pair(id, p_event));
+      all_events_.insert(std::make_pair(id, p_event));
     }
 
-    if (parent == top_event_id_) {
-      p_event->AddParent(top_event_);
-      top_event_->AddChild(p_event);
+    if (gates_.count(parent)) {
+      p_event->AddParent(gates_[parent]);
+      gates_[parent]->AddChild(p_event);
       // Check for conditional event.
-      if (type == "conditional" && top_event_->type() != "inhibit") {
-        std::stringstream msg;
-        msg << "Parent of " << orig_ids_[id] << " conditional event is not "
-            << "an inhibit gate.";
-        throw scram::ValidationError(msg.str());
-      }
-    } else if (inter_events_.count(parent)) {
-      p_event->AddParent(inter_events_[parent]);
-      inter_events_[parent]->AddChild(p_event);
-      // Check for conditional event.
-      if (type == "conditional" && inter_events_[parent]->type() != "inhibit") {
+      if (type == "conditional" && gates_[parent]->type() != "inhibit") {
         std::stringstream msg;
         msg << "Parent of " << orig_ids_[id] << " conditional event is not "
             << "an inhibit gate.";
@@ -426,17 +407,17 @@ void RiskAnalysis::AddNode_(std::string parent,
     }
   } else {
     // This must be a new intermediate event.
-    if (inter_events_.count(id)) {
+    if (gates_.count(id)) {
       // Doubly defined intermediate event.
       std::stringstream msg;
       msg << orig_ids_[id] << " intermediate event is doubly defined.";
       throw scram::ValidationError(msg.str());
     }
     // Detect name clashes.
-    if (id == top_event_id_ || primary_events_.count(id)) {
+    if (primary_events_.count(id)) {
       std::stringstream msg;
       msg << "The id " << orig_ids_[id]
-          << " is already assigned to the top or primary event.";
+          << " is already assigned to a primary event.";
       throw scram::ValidationError(msg.str());
     }
 
@@ -444,15 +425,11 @@ void RiskAnalysis::AddNode_(std::string parent,
 
     fault_tree_->AddGate(i_event);
 
-    if (parent == top_event_id_) {
-      i_event->AddParent(top_event_);
-      top_event_->AddChild(i_event);
-      inter_events_.insert(std::make_pair(id, i_event));
-
-    } else if (inter_events_.count(parent)) {
-      i_event->AddParent(inter_events_[parent]);
-      inter_events_[parent]->AddChild(i_event);
-      inter_events_.insert(std::make_pair(id, i_event));
+    if (gates_.count(parent)) {
+      i_event->AddParent(gates_[parent]);
+      gates_[parent]->AddChild(i_event);
+      gates_.insert(std::make_pair(id, i_event));
+      all_events_.insert(std::make_pair(id, i_event));
 
     } else {
       // Parent is undefined.
@@ -489,12 +466,8 @@ std::string RiskAnalysis::CheckAllGates_() {
   std::stringstream msg;
   msg << "";  // An empty default message is the indicator of no problems.
 
-  // Check the top event.
-  msg << RiskAnalysis::CheckGate_(top_event_);
-
-  // Check the intermediate events.
   boost::unordered_map<std::string, GatePtr>::iterator it;
-  for (it = inter_events_.begin(); it != inter_events_.end(); ++it) {
+  for (it = gates_.begin(); it != gates_.end(); ++it) {
     msg << RiskAnalysis::CheckGate_(it->second);
   }
 

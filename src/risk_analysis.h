@@ -174,22 +174,19 @@ class RiskAnalysis {
   std::map<std::string, std::string> orig_ids_;
 
   /// List of all valid gates.
-  std::set<std::string> gates_;
+  std::set<std::string> gate_types_;
 
   /// List of all valid types of primary events.
   std::set<std::string> types_;
 
-  /// Id of a top event.
-  std::string top_event_id_;
-
-  /// Top event.
-  GatePtr top_event_;
-
-  /// Holder for intermediate events.
-  boost::unordered_map<std::string, GatePtr> inter_events_;
+  /// Container for gates.
+  boost::unordered_map<std::string, GatePtr> gates_;
 
   /// Container for primary events.
   boost::unordered_map<std::string, PrimaryEventPtr> primary_events_;
+
+  /// Container for all events.
+  boost::unordered_map<std::string, EventPtr> all_events_;
 
   /// A fault tree.
   FaultTreePtr fault_tree_;

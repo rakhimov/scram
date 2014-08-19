@@ -43,10 +43,8 @@ class FaultTreeAnalysisTest : public ::testing::Test {
 
   std::map<std::string, std::string>& orig_ids() { return ran->orig_ids_; }
 
-  std::string top_event_id() { return ran->top_event_id_; }
-
-  boost::unordered_map<std::string, GatePtr>& inter_events() {
-    return ran->inter_events_;
+  boost::unordered_map<std::string, GatePtr>& gates() {
+    return ran->gates_;
   }
 
   boost::unordered_map<std::string, PrimaryEventPtr>& primary_events() {
@@ -132,15 +130,15 @@ class FaultTreeAnalysisTest : public ::testing::Test {
     B = PrimaryEventPtr(new PrimaryEvent("b"));
     C = PrimaryEventPtr(new PrimaryEvent("c"));
     D = GatePtr(new Gate("d", "or"));
-    ran->top_event_ = GatePtr(new Gate("TopEvent", "null"));
-    ran->top_event_->AddChild(inter);
-    primary_events().insert(std::make_pair("a", A));
-    primary_events().insert(std::make_pair("b", B));
-    primary_events().insert(std::make_pair("c", C));
-    inter_events().insert(std::make_pair("d", D));
-    inter_events().insert(std::make_pair("inter", inter));
+    GatePtr top_event(new Gate("TopEvent", "null"));
+    top_event->AddChild(inter);
+    // primary_events().insert(std::make_pair("a", A));
+    // primary_events().insert(std::make_pair("b", B));
+    // primary_events().insert(std::make_pair("c", C));
+    // inter_events().insert(std::make_pair("d", D));
+    // inter_events().insert(std::make_pair("inter", inter));
     ran->fault_tree_ = FaultTreePtr(new FaultTree("dummy"));
-    ran->fault_tree_->AddGate(ran->top_event_);
+    ran->fault_tree_->AddGate(top_event);
     ran->fault_tree_->AddGate(inter);
 
     ran->fault_tree_->AddGate(D);
