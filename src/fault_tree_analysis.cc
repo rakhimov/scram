@@ -26,7 +26,6 @@ FaultTreeAnalysis::FaultTreeAnalysis(std::string analysis,
                                      std::string approx,
                                      int limit_order, int nsums)
     : warnings_(""),
-      top_event_id_(""),
       top_event_index_(-1),
       input_file_("deal_in_future"),
       prob_requested_(false),
@@ -90,7 +89,9 @@ FaultTreeAnalysis::FaultTreeAnalysis(std::string analysis,
   FaultTreePtr fault_tree_;
 }
 
-void FaultTreeAnalysis::GraphingInstructions(const FaultTreePtr& fault_tree) {
+void FaultTreeAnalysis::GraphingInstructions(
+    const FaultTreePtr& fault_tree,
+    const std::map<std::string, std::string>& orig_ids) {
   // List inter events and their children.
   // List inter events and primary events' descriptions.
   // Getting events from the fault tree object.
@@ -98,8 +99,9 @@ void FaultTreeAnalysis::GraphingInstructions(const FaultTreePtr& fault_tree) {
   top_event_ = fault_tree->top_event();
   inter_events_ = fault_tree->inter_events();
   primary_events_ = fault_tree->primary_events();
+  orig_ids_ = orig_ids;
 
-  std::string graph_name = "graph.dot";
+  std::string graph_name = "fault_tree.dot";
   graph_name.erase(graph_name.find_last_of("."), std::string::npos);
 
   std::string output_path = graph_name + ".dot";
@@ -160,10 +162,10 @@ void FaultTreeAnalysis::GraphingInstructions(const FaultTreePtr& fault_tree) {
   gate_colors.insert(std::make_pair("nand", "orange"));
   std::string gate = top_event_->type();
   boost::to_upper(gate);
-  out << "\"" <<  orig_ids_[top_event_id_] << "\" [shape=ellipse, "
+  out << "\"" <<  orig_ids_[top_event_->id()] << "\" [shape=ellipse, "
       << "fontsize=12, fontcolor=black, fontname=\"times-bold\", "
       << "color=" << gate_colors[top_event_->type()] << ", "
-      << "label=\"" << orig_ids_[top_event_id_] << "\\n"
+      << "label=\"" << orig_ids_[top_event_->id()] << "\\n"
       << "{ " << gate;
   if (gate == "VOTE") {
     out << " " << top_event_->vote_number() << "/"
@@ -989,7 +991,7 @@ void FaultTreeAnalysis::AssignIndices_(const FaultTreePtr& fault_tree) {
   // relevant databases.
   top_event_index_ = j;
   int_to_inter_.insert(std::make_pair(j, top_event_));
-  inter_to_int_.insert(std::make_pair(top_event_id_, j));
+  inter_to_int_.insert(std::make_pair(top_event_->id(), j));
   ++j;
   boost::unordered_map<std::string, GatePtr>::iterator iti;
   for (iti = inter_events_.begin(); iti != inter_events_.end(); ++iti) {

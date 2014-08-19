@@ -197,7 +197,7 @@ void RiskAnalysis::PopulateProbabilities(std::string prob_file) {
 }
 
 void RiskAnalysis::GraphingInstructions() {
-  fta_->GraphingInstructions(fault_tree_);
+  fta_->GraphingInstructions(fault_tree_, orig_ids_);
 }
 
 void RiskAnalysis::Analyze() {

@@ -54,7 +54,8 @@ class FaultTreeAnalysis {
   /// the extensions are different.
   /// @throws Error if called before tree initialization from an input file.
   /// @throws IOError if the output file is not accessable.
-  void GraphingInstructions(const FaultTreePtr& fault_tree);
+  void GraphingInstructions(const FaultTreePtr& fault_tree,
+                            const std::map<std::string, std::string>& orig_ids);
 
   /// Analyzes the fault tree and performs computations.
   /// This function must be called only after initilizing the tree with or
@@ -221,9 +222,6 @@ class FaultTreeAnalysis {
 
   /// List of all valid types of primary events.
   std::set<std::string> types_;
-
-  /// Id of a top event.
-  std::string top_event_id_;
 
   /// Top event.
   GatePtr top_event_;
