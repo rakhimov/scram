@@ -41,13 +41,12 @@ class FaultTreeAnalysis {
  public:
   /// The main constructor of the Fault Tree Analysis.
   /// @param[in] analysis The type of fault tree analysis.
-  /// @param[in] graph_only Indicates if only graph is requested.
   /// @param[in] approx The kind of approximation for probability calculations.
   /// @param[in] limit_order The maximum limit on minimal cut sets' order.
   /// @param[in] nsums The number of sums in the probability series.
   /// @throws ValueError if any of the parameters are invalid.
-  FaultTreeAnalysis(std::string analysis, bool graph_only, std::string approx = "no",
-            int limit_order = 20, int nsums = 1000000);
+  FaultTreeAnalysis(std::string analysis, std::string approx = "no",
+                    int limit_order = 20, int nsums = 1000000);
 
   /// Outputs a file with instructions for graphviz dot to create a fault tree.
   /// @note This function must be called only after initializing the tree.
@@ -198,9 +197,6 @@ class FaultTreeAnalysis {
 
   /// Type of analysis to be performed.
   std::string analysis_;
-
-  /// Indicator of request for graphing instructions only.
-  bool graph_only_;
 
   /// Approximations for probability calculations.
   std::string approx_;

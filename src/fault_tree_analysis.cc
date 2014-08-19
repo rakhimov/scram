@@ -23,11 +23,9 @@ namespace pt = boost::posix_time;
 namespace scram {
 
 FaultTreeAnalysis::FaultTreeAnalysis(std::string analysis,
-                                     bool graph_only,
                                      std::string approx,
                                      int limit_order, int nsums)
-    : graph_only_(graph_only),
-      warnings_(""),
+    : warnings_(""),
       top_event_id_(""),
       top_event_index_(-1),
       input_file_("deal_in_future"),

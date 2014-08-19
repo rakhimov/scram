@@ -44,7 +44,7 @@ RiskAnalysis::RiskAnalysis(std::string config_file)
   // Initialize a fault tree with a default name.
   FaultTreePtr fault_tree_;
 
-  fta_ = new FaultTreeAnalysis("default", false);
+  fta_ = new FaultTreeAnalysis("default");
 }
 
 void RiskAnalysis::ProcessInput(std::string input_file) {

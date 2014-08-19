@@ -264,7 +264,7 @@ TEST_F(FaultTreeAnalysisTest, NOT_GATE) {
 
   // Testing for NOT gate with a intermediate event child.
   // delete fta();
-  fta(new FaultTreeAnalysis("default", false));
+  fta(new FaultTreeAnalysis("default"));
   SetUpGate("not");
   inter->AddChild(D);
   GetIndices();
@@ -455,7 +455,7 @@ TEST_F(FaultTreeAnalysisTest, NULL_GATE) {
 
   // Testing for NULL gate with a intermediate event child.
   // delete fta();
-  fta(new FaultTreeAnalysis("default", false));
+  fta(new FaultTreeAnalysis("default"));
   SetUpGate("null");
   inter->AddChild(D);
   GetIndices();
@@ -838,13 +838,13 @@ TEST_F(FaultTreeAnalysisTest, MProbOr) {
 // Invalid options for the constructor.
 TEST_F(FaultTreeAnalysisTest, Constructor) {
   // Incorrect analysis type.
-  ASSERT_THROW(FaultTreeAnalysis("analysis", false), ValueError);
+  ASSERT_THROW(FaultTreeAnalysis("analysis"), ValueError);
   // Incorrect approximation argument.
-  ASSERT_THROW(FaultTreeAnalysis("default", false, "approx"), ValueError);
+  ASSERT_THROW(FaultTreeAnalysis("default", "approx"), ValueError);
   // Incorrect limit order for minmal cut sets.
-  ASSERT_THROW(FaultTreeAnalysis("default", false, "no", -1), ValueError);
+  ASSERT_THROW(FaultTreeAnalysis("default", "no", -1), ValueError);
   // Incorrect number of series in the probability equation.
-  ASSERT_THROW(FaultTreeAnalysis("default", false, "no", 1, -1), ValueError);
+  ASSERT_THROW(FaultTreeAnalysis("default", "no", 1, -1), ValueError);
 }
 
 // Test Input Processing for Risk Analysis.
@@ -918,9 +918,8 @@ TEST_F(FaultTreeAnalysisTest, GraphingInstructions) {
 
   std::vector<std::string>::iterator it;
   for (it = tree_input.begin(); it != tree_input.end(); ++it) {
-    // delete fta();
-    fta(new FaultTreeAnalysis("default", true));
     // ASSERT_THROW(ran->GraphingInstructions(), Error);
+    fta(new FaultTreeAnalysis("default"));
     ASSERT_NO_THROW(ran->ProcessInput(*it));
     ASSERT_NO_THROW(ran->GraphingInstructions());
   }
@@ -961,7 +960,7 @@ TEST_F(FaultTreeAnalysisTest, AnalyzeDefault) {
 
   // Probability calculations.
   // delete fta();  // Re-initializing.
-  fta(new FaultTreeAnalysis("default", false));
+  fta(new FaultTreeAnalysis("default"));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(ran->Analyze());
@@ -978,7 +977,7 @@ TEST_F(FaultTreeAnalysisTest, AnalyzeDefault) {
 
   // Probability calculations with the rare event approximation.
   // delete fta();  // Re-initializing.
-  fta(new FaultTreeAnalysis("default", false, "rare"));
+  fta(new FaultTreeAnalysis("default", "rare"));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(ran->Analyze());
@@ -986,7 +985,7 @@ TEST_F(FaultTreeAnalysisTest, AnalyzeDefault) {
 
   // Probability calculations with the MCUB approximation.
   // delete fta();  // Re-initializing.
-  fta(new FaultTreeAnalysis("default", false, "mcub"));
+  fta(new FaultTreeAnalysis("default", "mcub"));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(ran->Analyze());
@@ -996,7 +995,7 @@ TEST_F(FaultTreeAnalysisTest, AnalyzeDefault) {
 // Test Monte Carlo Analysis
 TEST_F(FaultTreeAnalysisTest, AnalyzeMC) {
   // delete fta();  // Re-initializing.
-  fta(new FaultTreeAnalysis("mc", false));
+  fta(new FaultTreeAnalysis("mc"));
   std::string tree_input = "./input/fta/correct_tree_input.scramf";
   // ASSERT_THROW(ran->Analyze(), Error);  // Calling without a tree initialized.
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
@@ -1015,7 +1014,7 @@ TEST_F(FaultTreeAnalysisTest, Report) {
 
   // Generate warning due to rare event approximation.
   // delete fta();
-  fta(new FaultTreeAnalysis("default", false, "rare"));
+  fta(new FaultTreeAnalysis("default", "rare"));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
   ASSERT_THROW(ran->Report("/dev/null"), Error);  // Calling before analysis.

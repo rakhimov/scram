@@ -116,7 +116,7 @@ TEST_F(FaultTreeAnalysisTest, A_OR_NOT_AB) {
 
 // [A OR NOT B] FTA MC
 TEST_F(FaultTreeAnalysisTest, MC_A_OR_NOT_B) {
-  fta(new FaultTreeAnalysis("mc", false));
+  fta(new FaultTreeAnalysis("mc"));
   std::string tree_input = "./input/benchmark/a_or_not_b.scramf";
   std::string prob_input = "./input/benchmark/abc.scramp";
   std::set< std::set<int> > p_terms;
