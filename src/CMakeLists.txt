@@ -9,6 +9,7 @@ set(SCRAM_CORE_SRC ${SCRAM_CORE_SRC}
   "${CMAKE_CURRENT_SOURCE_DIR}/xml_parser.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/relax_ng_validator.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/grapher.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/reporter.cc"
   )
 add_library(scramcore ${SCRAM_CORE_SRC})
 

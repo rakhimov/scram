@@ -31,12 +31,14 @@ typedef boost::shared_ptr<scram::FaultTree> FaultTreePtr;
 namespace scram {
 
 class RiskAnalysis;
+class Reporter;
 
 /// @class FaultTreeAnalysis
 /// Fault tree analysis functionality.
 class FaultTreeAnalysis {
   friend class ::FaultTreeAnalysisTest;
   friend class RiskAnalysis;
+  friend class Reporter;
 
  public:
   /// The main constructor of the Fault Tree Analysis.
@@ -56,13 +58,6 @@ class FaultTreeAnalysis {
   void Analyze(const FaultTreePtr& fault_tree,
                const std::map<std::string, std::string>& orig_ids,
                bool prob_requested);
-
-  /// Reports the results of analysis to a specified output destination.
-  /// @note This function must be called only after Analyze() function.
-  /// param[out] output The output destination.
-  /// @throws Error if called before the tree analysis.
-  /// @throws IOError if the output file is not accessable.
-  void Report(std::string output);
 
   virtual ~FaultTreeAnalysis() {}
 

@@ -24,28 +24,28 @@ RiskAnalysis::RiskAnalysis(std::string config_file)
       id_(""),
       type_(""),
       vote_number_(-1) {
-  // Add valid gate types.
-  gate_types_.insert("and");
-  gate_types_.insert("or");
-  gate_types_.insert("not");
-  gate_types_.insert("nor");
-  gate_types_.insert("nand");
-  gate_types_.insert("xor");
-  gate_types_.insert("null");
-  gate_types_.insert("inhibit");
-  gate_types_.insert("vote");
+      // Add valid gate types.
+      gate_types_.insert("and");
+      gate_types_.insert("or");
+      gate_types_.insert("not");
+      gate_types_.insert("nor");
+      gate_types_.insert("nand");
+      gate_types_.insert("xor");
+      gate_types_.insert("null");
+      gate_types_.insert("inhibit");
+      gate_types_.insert("vote");
 
-  // Add valid primary event types.
-  types_.insert("basic");
-  types_.insert("undeveloped");
-  types_.insert("house");
-  types_.insert("conditional");
+      // Add valid primary event types.
+      types_.insert("basic");
+      types_.insert("undeveloped");
+      types_.insert("house");
+      types_.insert("conditional");
 
-  // Initialize a fault tree with a default name.
-  FaultTreePtr fault_tree_;
+      // Initialize a fault tree with a default name.
+      FaultTreePtr fault_tree_;
 
-  fta_ = new FaultTreeAnalysis("default");
-}
+      fta_ = new FaultTreeAnalysis("default");
+    }
 
 void RiskAnalysis::ProcessInput(std::string input_file) {
   std::ifstream ifile(input_file.c_str());
@@ -133,9 +133,9 @@ void RiskAnalysis::PopulateProbabilities(std::string prob_file) {
         id = args[0];
 
         if (id == "block") {
-            block_type = args[1];
-            block_set = true;
-            break;
+          block_type = args[1];
+          block_set = true;
+          break;
         }
 
         if (id == "time" && block_type == "l-model") {
@@ -207,7 +207,12 @@ void RiskAnalysis::Analyze() {
   fta_->Analyze(fault_tree_, orig_ids_, prob_requested_);
 }
 
-void RiskAnalysis::Report(std::string output) { fta_->Report(output); }
+void RiskAnalysis::Report(std::string output) {
+  /// @todo Make this exception safe with a smart pointer.
+  Reporter* rp = new Reporter();
+  rp->ReportFta(fta_, output);
+  delete rp;
+}
 
 bool RiskAnalysis::GetArgs_(std::string& line, std::string& orig_line,
                             std::vector<std::string>& args) {
@@ -345,24 +350,24 @@ void RiskAnalysis::AddNode_(std::string parent,
                             int vote_number) {
   // Initialize events.
   if (parent == "none") {
-      GatePtr top_event(new scram::Gate(id));
+    GatePtr top_event(new scram::Gate(id));
 
-      gates_.insert(std::make_pair(id, top_event));
-      all_events_.insert(std::make_pair(id, top_event));
+    gates_.insert(std::make_pair(id, top_event));
+    all_events_.insert(std::make_pair(id, top_event));
 
-      fault_tree_ = FaultTreePtr(new FaultTree(id));
-      fault_tree_->AddGate(top_event);
+    fault_tree_ = FaultTreePtr(new FaultTree(id));
+    fault_tree_->AddGate(top_event);
 
-      // Top event cannot be primary.
-      if (!gate_types_.count(type)) {
-        std::stringstream msg;
-        msg << "Invalid input arguments. " << orig_ids_[id]
-            << " top event type is not defined correctly. It must be a gate.";
-        throw scram::ValidationError(msg.str());
-      }
+    // Top event cannot be primary.
+    if (!gate_types_.count(type)) {
+      std::stringstream msg;
+      msg << "Invalid input arguments. " << orig_ids_[id]
+          << " top event type is not defined correctly. It must be a gate.";
+      throw scram::ValidationError(msg.str());
+    }
 
-      top_event->type(type);
-      if (type == "vote") top_event->vote_number(vote_number);
+    top_event->type(type);
+    if (type == "vote") top_event->vote_number(vote_number);
 
   } else if (types_.count(type)) {
     // This must be a primary event.

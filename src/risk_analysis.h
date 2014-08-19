@@ -18,6 +18,7 @@
 #include "fault_tree_analysis.h"
 #include "event.h"
 #include "grapher.h"
+#include "reporter.h"
 
 class FaultTreeAnalysisTest;
 
@@ -106,6 +107,8 @@ class RiskAnalysis {
   /// @throws Error if called before the tree analysis.
   /// @throws IOError if the output file is not accessable.
   virtual void Report(std::string output);
+
+
 
   virtual ~RiskAnalysis() { delete fta_; }
 
