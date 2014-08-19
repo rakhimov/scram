@@ -29,11 +29,11 @@ TEST_F(FaultTreeAnalysisTest, ThreeMotor) {
   std::string T4inc = "t4inc";
 
   // Check the tree with the transfer gate.
-  ASSERT_NO_THROW(fta->ProcessInput(tree_input));
-  ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
+  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
   nsums(3);
-  ASSERT_NO_THROW(fta->Analyze());
-  ASSERT_NO_THROW(fta->Report("/dev/null"));
+  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(ran->Report("/dev/null"));
   double delta_sqr = std::abs(p_total() - 0.0211538);
   EXPECT_TRUE(delta_sqr < 1e-5);
   // Minimal cut set check.

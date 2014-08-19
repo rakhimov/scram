@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
   std::string input_file = vm["input-file"].as<std::string>();
 
   // Initiate risk analysis.
-  RiskAnalysis* ran;
+  RiskAnalysis* ran = new RiskAnalysis();
 
   /// @todo New sequence and architecture of analysis
   /// Read configurations.
@@ -113,8 +113,8 @@ int main(int argc, char* argv[]) {
     if (rare_event) approx = "rare";
     if (mcub) approx = "mcub";
 
-    ran = new FaultTreeAnalysis(fta_analysis, graph_only, approx,
-                        vm["limit-order"].as<int>(), vm["nsums"].as<int>());
+    // ran = new FaultTreeAnalysis(fta_analysis, graph_only, approx,
+    //                     vm["limit-order"].as<int>(), vm["nsums"].as<int>());
   } else {
     std::string msg = analysis + ": this analysis is not recognized.\n";
     std::cout << msg << std::endl;

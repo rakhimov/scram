@@ -15,10 +15,10 @@ TEST_F(FaultTreeAnalysisTest, TransTest) {
   std::set< std::set<std::string> > mcs;  // For expected min cut sets.
 
   // Check the tree with the transfer gate.
-  ASSERT_NO_THROW(fta->ProcessInput(trans_tree_input));
-  ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
-  ASSERT_NO_THROW(fta->Analyze());
-  ASSERT_NO_THROW(fta->Report("/dev/null"));
+  ASSERT_NO_THROW(ran->ProcessInput(trans_tree_input));
+  ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(ran->Report("/dev/null"));
   EXPECT_DOUBLE_EQ(2.4e-5, p_total());  // Total prob check.
   // Minimal cut set check.
   cut_set.insert(A);
@@ -31,10 +31,10 @@ TEST_F(FaultTreeAnalysisTest, TransTest) {
   // Check the full tree without the transfer gate.
   delete fta;
   fta = new FaultTreeAnalysis("default", false);
-  ASSERT_NO_THROW(fta->ProcessInput(trans_tree_input));
-  ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
-  ASSERT_NO_THROW(fta->Analyze());
-  ASSERT_NO_THROW(fta->Report("/dev/null"));
+  ASSERT_NO_THROW(ran->ProcessInput(trans_tree_input));
+  ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(ran->Report("/dev/null"));
   EXPECT_DOUBLE_EQ(2.4e-5, p_total());  // Total prob check.
   // Minimal cut set check.
   EXPECT_EQ(1, min_cut_sets().size());

@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "error.h"
-#include "fault_tree_analysis.h"
+#include "risk_analysis.h"
 
 using namespace scram;
 
@@ -25,7 +25,7 @@ TEST(FaultTreeAnalysisInputTest, CorrectFTAInputs) {
 
   std::vector<std::string>::iterator it;
   for (it = correct_inputs.begin(); it != correct_inputs.end(); ++it) {
-    ran = new FaultTreeAnalysis("default", false);
+    ran = new RiskAnalysis();
     EXPECT_NO_THROW(ran->ProcessInput(*it)) << " Filename: " << *it;
     delete ran;
   }
@@ -48,13 +48,13 @@ TEST(FaultTreeAnalysisInputTest, CorrectFTAProbability) {
   std::string prob_correct = "./input/fta/correct_prob_input.scramp";
   std::string lambda_correct = "./input/fta/correct_lambda_prob.scramp";
 
-  RiskAnalysis* ran = new FaultTreeAnalysis("default", false);
+  RiskAnalysis* ran = new RiskAnalysis();
   EXPECT_THROW(ran->PopulateProbabilities(prob_correct), Error);
   EXPECT_NO_THROW(ran->ProcessInput(input_correct));  // Create the fault tree.
   EXPECT_NO_THROW(ran->PopulateProbabilities(prob_correct));
   delete ran;
 
-  ran = new FaultTreeAnalysis("default", false);
+  ran = new RiskAnalysis();
   EXPECT_THROW(ran->PopulateProbabilities(prob_correct), Error);
   EXPECT_NO_THROW(ran->ProcessInput(input_correct));  // Create the fault tree.
   EXPECT_NO_THROW(ran->PopulateProbabilities(lambda_correct));
@@ -139,14 +139,14 @@ TEST(FaultTreeAnalysisInputTest, IncorrectFTAInputs) {
 
   std::vector<std::string>::iterator it;
   for (it = ioerror_inputs.begin(); it != ioerror_inputs.end(); ++it) {
-    ran = new FaultTreeAnalysis("default", false);
+    ran = new RiskAnalysis();
     EXPECT_THROW(ran->ProcessInput(*it), scram::IOError)
         << " Filename: " << *it;
     delete ran;
   }
 
   for (it = incorrect_inputs.begin(); it != incorrect_inputs.end(); ++it) {
-    ran = new FaultTreeAnalysis("default", false);
+    ran = new RiskAnalysis();
     EXPECT_THROW(ran->ProcessInput(*it), scram::ValidationError)
         << " Filename: " << *it;
     delete ran;
@@ -182,7 +182,7 @@ TEST(FaultTreeAnalysisInputTest, IncorrectFTAProbability) {
   RiskAnalysis* ran;
   std::vector<std::string>::iterator it;
   for (it = incorrect_prob.begin(); it != incorrect_prob.end(); ++it) {
-    ran = new FaultTreeAnalysis("default", false);
+    ran = new RiskAnalysis();
     EXPECT_NO_THROW(ran->ProcessInput(correct_input));
     EXPECT_THROW(ran->PopulateProbabilities(*it), scram::Error)
         << " Filename: " << *it;

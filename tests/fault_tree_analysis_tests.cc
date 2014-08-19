@@ -142,6 +142,7 @@ TEST_F(FaultTreeAnalysisTest, NO_GATE) {
   inter->AddChild(A);
   inter->AddChild(B);
   inter->AddChild(C);
+  GetIndices();
   EXPECT_THROW(ExpandSets(inter_id, sets), ValueError);
 }
 
@@ -156,6 +157,7 @@ TEST_F(FaultTreeAnalysisTest, OR_GATE) {
   inter->AddChild(B);
   inter->AddChild(C);
   inter->AddChild(D);
+  GetIndices();
   ASSERT_NO_THROW(ExpandSets(inter_id, sets));
   EXPECT_EQ(4, sets.size());
   bool a_found = false;
@@ -204,6 +206,7 @@ TEST_F(FaultTreeAnalysisTest, AND_GATE) {
   inter->AddChild(B);
   inter->AddChild(C);
   inter->AddChild(D);
+  GetIndices();
   ASSERT_NO_THROW(ExpandSets(inter_id, sets));
   EXPECT_EQ(1, sets.size());
   result_set = (*sets.begin())->primes();
@@ -248,6 +251,7 @@ TEST_F(FaultTreeAnalysisTest, NOT_GATE) {
   // Testing for NOT gate with a primary event child.
   SetUpGate("not");
   inter->AddChild(A);
+  GetIndices();
   ASSERT_NO_THROW(ExpandSets(inter_id, sets));
   result_set = (*sets.begin())->primes();
   EXPECT_EQ(1, result_set.size());
@@ -259,10 +263,11 @@ TEST_F(FaultTreeAnalysisTest, NOT_GATE) {
   EXPECT_EQ(1, result_set.count(a_id));
 
   // Testing for NOT gate with a intermediate event child.
-  delete fta;
-  fta = new FaultTreeAnalysis("default", false);
+  // delete fta();
+  fta(new FaultTreeAnalysis("default", false));
   SetUpGate("not");
   inter->AddChild(D);
+  GetIndices();
   sets.clear();
   ASSERT_NO_THROW(ExpandSets(inter_id, sets));
   result_set = (*sets.begin())->gates();
@@ -286,6 +291,7 @@ TEST_F(FaultTreeAnalysisTest, NOR_GATE) {
   inter->AddChild(B);
   inter->AddChild(C);
   inter->AddChild(D);
+  GetIndices();
   ASSERT_NO_THROW(ExpandSets(inter_id, sets));
   EXPECT_EQ(1, sets.size());
   result_set = (*sets.begin())->primes();
@@ -334,6 +340,7 @@ TEST_F(FaultTreeAnalysisTest, NAND_GATE) {
   inter->AddChild(B);
   inter->AddChild(C);
   inter->AddChild(D);
+  GetIndices();
   ASSERT_NO_THROW(ExpandSets(inter_id, sets));
   EXPECT_EQ(4, sets.size());
   bool a_found = false;
@@ -380,6 +387,7 @@ TEST_F(FaultTreeAnalysisTest, XOR_GATE) {
   SetUpGate("xor");
   inter->AddChild(A);
   inter->AddChild(D);
+  GetIndices();
   ASSERT_NO_THROW(ExpandSets(inter_id, sets));
   EXPECT_EQ(2, sets.size());
   std::set<int> set_one;
@@ -434,6 +442,7 @@ TEST_F(FaultTreeAnalysisTest, NULL_GATE) {
   // Testing for NULL gate with a primary event child.
   SetUpGate("null");
   inter->AddChild(A);
+  GetIndices();
   ASSERT_NO_THROW(ExpandSets(inter_id, sets));
   result_set = (*sets.begin())->primes();
   EXPECT_EQ(1, result_set.size());
@@ -445,10 +454,11 @@ TEST_F(FaultTreeAnalysisTest, NULL_GATE) {
   EXPECT_EQ(1, result_set.count(-1 * a_id));
 
   // Testing for NULL gate with a intermediate event child.
-  delete fta;
-  fta = new FaultTreeAnalysis("default", false);
+  // delete fta();
+  fta(new FaultTreeAnalysis("default", false));
   SetUpGate("null");
   inter->AddChild(D);
+  GetIndices();
   sets.clear();
   ASSERT_NO_THROW(ExpandSets(inter_id, sets));
   result_set = (*sets.begin())->gates();
@@ -470,6 +480,7 @@ TEST_F(FaultTreeAnalysisTest, INHIBIT_GATE) {
   SetUpGate("inhibit");
   inter->AddChild(A);
   inter->AddChild(D);
+  GetIndices();
   ASSERT_NO_THROW(ExpandSets(inter_id, sets));
   EXPECT_EQ(1, sets.size());
   result_set = (*sets.begin())->primes();
@@ -511,6 +522,7 @@ TEST_F(FaultTreeAnalysisTest, VOTE_GATE) {
   inter->AddChild(C);
   inter->AddChild(D);
   inter->vote_number(3);
+  GetIndices();
   ASSERT_NO_THROW(ExpandSets(inter_id, sets));
   EXPECT_EQ(4, sets.size());
   std::set< std::set<int> > output;
@@ -841,7 +853,7 @@ TEST_F(FaultTreeAnalysisTest, Constructor) {
 // after processing the input.
 TEST_F(FaultTreeAnalysisTest, ProcessInput) {
   std::string tree_input = "./input/fta/correct_tree_input.scramf";
-  ASSERT_NO_THROW(fta->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   EXPECT_EQ(7, orig_ids().size());
   EXPECT_EQ("topevent", top_event_id());
   EXPECT_EQ(2, inter_events().size());
@@ -876,9 +888,9 @@ TEST_F(FaultTreeAnalysisTest, ProcessInput) {
 TEST_F(FaultTreeAnalysisTest, PopulateProbabilities) {
   std::string tree_input = "./input/fta/correct_tree_input.scramf";
   std::string prob_input = "./input/fta/correct_prob_input.scramp";
-  ASSERT_THROW(fta->PopulateProbabilities(prob_input), Error);  // No tree.
-  ASSERT_NO_THROW(fta->ProcessInput(tree_input));
-  ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
+  ASSERT_THROW(ran->PopulateProbabilities(prob_input), Error);  // No tree.
+  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
   ASSERT_EQ(4, primary_events().size());
   ASSERT_EQ(1, primary_events().count("pumpone"));
   ASSERT_EQ(1, primary_events().count("pumptwo"));
@@ -906,11 +918,11 @@ TEST_F(FaultTreeAnalysisTest, GraphingInstructions) {
 
   std::vector<std::string>::iterator it;
   for (it = tree_input.begin(); it != tree_input.end(); ++it) {
-    delete fta;
-    fta = new FaultTreeAnalysis("default", true);
-    ASSERT_THROW(fta->GraphingInstructions(), Error);
-    ASSERT_NO_THROW(fta->ProcessInput(*it));
-    ASSERT_NO_THROW(fta->GraphingInstructions());
+    // delete fta();
+    fta(new FaultTreeAnalysis("default", true));
+    // ASSERT_THROW(ran->GraphingInstructions(), Error);
+    ASSERT_NO_THROW(ran->ProcessInput(*it));
+    ASSERT_NO_THROW(ran->GraphingInstructions());
   }
 
   /* @deprecated Include should change this behavior
@@ -926,9 +938,9 @@ TEST_F(FaultTreeAnalysisTest, GraphingInstructions) {
 TEST_F(FaultTreeAnalysisTest, AnalyzeDefault) {
   std::string tree_input = "./input/fta/correct_tree_input.scramf";
   std::string prob_input = "./input/fta/correct_prob_input.scramp";
-  ASSERT_THROW(fta->Analyze(), Error);  // Calling without a tree initialized.
-  ASSERT_NO_THROW(fta->ProcessInput(tree_input));
-  ASSERT_NO_THROW(fta->Analyze());
+  // ASSERT_THROW(ran->Analyze(), Error);  // Calling without a tree initialized.
+  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
   std::set<std::string> mcs_1;
   std::set<std::string> mcs_2;
   std::set<std::string> mcs_3;
@@ -948,11 +960,11 @@ TEST_F(FaultTreeAnalysisTest, AnalyzeDefault) {
   EXPECT_EQ(1, min_cut_sets().count(mcs_4));
 
   // Probability calculations.
-  delete fta;  // Re-initializing.
-  fta = new FaultTreeAnalysis("default", false);
-  ASSERT_NO_THROW(fta->ProcessInput(tree_input));
-  ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
-  ASSERT_NO_THROW(fta->Analyze());
+  // delete fta();  // Re-initializing.
+  fta(new FaultTreeAnalysis("default", false));
+  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
+  ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(0.646, p_total());
   EXPECT_DOUBLE_EQ(0.42, prob_of_min_sets()[mcs_1]);
   EXPECT_DOUBLE_EQ(0.3, prob_of_min_sets()[mcs_2]);
@@ -965,48 +977,48 @@ TEST_F(FaultTreeAnalysisTest, AnalyzeDefault) {
   EXPECT_DOUBLE_EQ(0.5, imp_of_primaries()["valvetwo"]);
 
   // Probability calculations with the rare event approximation.
-  delete fta;  // Re-initializing.
-  fta = new FaultTreeAnalysis("default", false, "rare");
-  ASSERT_NO_THROW(fta->ProcessInput(tree_input));
-  ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
-  ASSERT_NO_THROW(fta->Analyze());
+  // delete fta();  // Re-initializing.
+  fta(new FaultTreeAnalysis("default", false, "rare"));
+  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
+  ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(1.2, p_total());
 
   // Probability calculations with the MCUB approximation.
-  delete fta;  // Re-initializing.
-  fta = new FaultTreeAnalysis("default", false, "mcub");
-  ASSERT_NO_THROW(fta->ProcessInput(tree_input));
-  ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
-  ASSERT_NO_THROW(fta->Analyze());
+  // delete fta();  // Re-initializing.
+  fta(new FaultTreeAnalysis("default", false, "mcub"));
+  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
+  ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(0.766144, p_total());
 }
 
 // Test Monte Carlo Analysis
 TEST_F(FaultTreeAnalysisTest, AnalyzeMC) {
-  delete fta;  // Re-initializing.
-  fta = new FaultTreeAnalysis("mc", false);
+  // delete fta();  // Re-initializing.
+  fta(new FaultTreeAnalysis("mc", false));
   std::string tree_input = "./input/fta/correct_tree_input.scramf";
-  ASSERT_THROW(fta->Analyze(), Error);  // Calling without a tree initialized.
-  ASSERT_NO_THROW(fta->ProcessInput(tree_input));
-  ASSERT_NO_THROW(fta->Analyze());
+  // ASSERT_THROW(ran->Analyze(), Error);  // Calling without a tree initialized.
+  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
 }
 
 // Test Reporting capabilities
 TEST_F(FaultTreeAnalysisTest, Report) {
   std::string tree_input = "./input/fta/correct_tree_input.scramf";
   std::string prob_input = "./input/fta/correct_prob_input.scramp";
-  ASSERT_NO_THROW(fta->ProcessInput(tree_input));
-  ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
-  ASSERT_THROW(fta->Report("/dev/null"), Error);  // Calling before analysis.
-  ASSERT_NO_THROW(fta->Analyze());
-  ASSERT_NO_THROW(fta->Report("/dev/null"));
+  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
+  ASSERT_THROW(ran->Report("/dev/null"), Error);  // Calling before analysis.
+  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(ran->Report("/dev/null"));
 
   // Generate warning due to rare event approximation.
-  delete fta;
-  fta = new FaultTreeAnalysis("default", false, "rare");
-  ASSERT_NO_THROW(fta->ProcessInput(tree_input));
-  ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
-  ASSERT_THROW(fta->Report("/dev/null"), Error);  // Calling before analysis.
-  ASSERT_NO_THROW(fta->Analyze());
-  ASSERT_NO_THROW(fta->Report("/dev/null"));
+  // delete fta();
+  fta(new FaultTreeAnalysis("default", false, "rare"));
+  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
+  ASSERT_THROW(ran->Report("/dev/null"), Error);  // Calling before analysis.
+  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(ran->Report("/dev/null"));
 }

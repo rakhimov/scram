@@ -16,7 +16,6 @@
 #include "error.h"
 #include "fault_tree.h"
 #include "event.h"
-#include "risk_analysis.h"
 #include "superset.h"
 
 class FaultTreeAnalysisTest;
@@ -31,10 +30,13 @@ typedef boost::shared_ptr<scram::FaultTree> FaultTreePtr;
 
 namespace scram {
 
+class RiskAnalysis;
+
 /// @class FaultTreeAnalysis
 /// Fault tree analysis functionality.
-class FaultTreeAnalysis : public RiskAnalysis {
+class FaultTreeAnalysis {
   friend class ::FaultTreeAnalysisTest;
+  friend class RiskAnalysis;
 
  public:
   /// The main constructor of the Fault Tree Analysis.
@@ -47,37 +49,22 @@ class FaultTreeAnalysis : public RiskAnalysis {
   FaultTreeAnalysis(std::string analysis, bool graph_only, std::string approx = "no",
             int limit_order = 20, int nsums = 1000000);
 
-  /// Reads input file with the structure of the Fault tree.
-  /// Puts all events into their appropriate containers.
-  /// @param[in] input_file The formatted input file.
-  /// @throws ValidationError if input contains errors.
-  /// @throws ValueError if input values are not valid.
-  /// @throws IOError if the input file is not accessable.
-  void ProcessInput(std::string input_file);
-
-  /// Reads probabilities for primary events from a formatted input file.
-  /// Attaches probabilities to primary events.
-  /// @param[in] prob_file The file with probability information.
-  /// @throws Error if called before tree initialization from an input file.
-  /// @throws ValidationError if input contains errors.
-  /// @throws ValueError if input values are not valid.
-  /// @throws IOError if the input file is not accessable.
-  void PopulateProbabilities(std::string prob_file);
-
   /// Outputs a file with instructions for graphviz dot to create a fault tree.
   /// @note This function must be called only after initializing the tree.
   /// @note The name of the output file is the same as the input file, but
   /// the extensions are different.
   /// @throws Error if called before tree initialization from an input file.
   /// @throws IOError if the output file is not accessable.
-  void GraphingInstructions();
+  void GraphingInstructions(const FaultTreePtr& fault_tree);
 
   /// Analyzes the fault tree and performs computations.
   /// This function must be called only after initilizing the tree with or
   /// without its probabilities.
   /// @throws Error if called before tree initialization from an input file.
   /// @note Cut set generator: O_avg(N) O_max(N)
-  void Analyze();
+  void Analyze(const FaultTreePtr& fault_tree,
+               const std::map<std::string, std::string>& orig_ids,
+               bool prob_requested);
 
   /// Reports the results of analysis to a specified output destination.
   /// @note This function must be called only after Analyze() function.
@@ -89,64 +76,6 @@ class FaultTreeAnalysis : public RiskAnalysis {
   virtual ~FaultTreeAnalysis() {}
 
  private:
-  /// Gets arguments from a line in an input file formatted accordingly.
-  /// Arguments vector will be flashed, and new contents will be inserted.
-  /// @param[in] line The line containing arguments in lower case.
-  /// @param[out] orig_line The original line with cases preserved.
-  /// @param[out] args The arguments from the line.
-  /// @returns false if there are no arguments from the line.
-  /// @returns true if there are one or more arguments from the line.
-  bool GetArgs_(std::string& line, std::string& orig_line,
-                std::vector<std::string>& args);
-
-  /// Interpret arguments and perform specific actions on the tree.
-  /// This should be performed only after GetArgs_ function has been called,
-  /// and the arguments and original line have been processed.
-  /// @param[in] nline The line number of input file.
-  /// @param[in] msg The start for the error messages.
-  /// @param[in] args The arguments to be interpreted.
-  /// @param[in] orig_line The original line preserving cases.
-  /// @throws ValidationError if the input or arguments are invalid.
-  void InterpretArgs_(int nline, std::stringstream& msg,
-                      std::vector<std::string>& args,
-                      std::string& orig_line);
-
-  /// Adds node and updates databases of intermediate and primary events.
-  /// @param[in] parent The id of the parent node.
-  /// @param[in] id The id name of the node to be created.
-  /// @param[in] type The symbol, type, or gate of the event to be added.
-  /// @param[in] vote_number The vote number for the VOTE gate initialization.
-  /// @throws ValidationError for invalid or incorrect inputs.
-  void AddNode_(std::string parent, std::string id, std::string type,
-                int vote_number = -1);
-
-  /// Adds probability to a primary event for p-model.
-  /// @param[in] id The id name of the primary event.
-  /// @param[in] p The probability for the primary event.
-  /// @note If id is not in the tree, the probability is ignored.
-  void AddProb_(std::string id, double p);
-
-  /// Adds probability to a primary event for l-model.
-  /// @param[in] id The id name of the primary event.
-  /// @param[in] p The probability for the primary event.
-  /// @param[in] time The time to failure for this event.
-  /// @note If id is not in the tree, the probability is ignored.
-  void AddProb_(std::string id, double p, double time);
-
-  /// Verifies if gates are initialized correctly.
-  /// @returns A warning message with a list of all bad gates with problems.
-  /// @note An empty string for no problems detected.
-  std::string CheckAllGates_();
-
-  /// Checks if a gate is initialized correctly.
-  /// @returns A warning message with the problem description.
-  /// @note An empty string for no problems detected.
-  std::string CheckGate_(const GatePtr& event);
-
-  /// @returns Primary events that do not have probabilities assigned.
-  /// @note An empty string for no problems detected.
-  std::string PrimariesNoProb_();
-
   /// Graphs one top or intermediate event with children.
   /// @param[in] t The top or intermediate event.
   /// @param[in] pr_repeat The number of times a primary event is repeated.
@@ -194,7 +123,7 @@ class FaultTreeAnalysis : public RiskAnalysis {
   /// indices new databases of minimal cut sets and primary to integer
   /// converting maps.
   /// @note O_avg(N) O_max(N^2) where N is the total number of tree nodes.
-  void AssignIndices_();
+  void AssignIndices_(const FaultTreePtr& fault_tree);
 
   /// Converts minimal cut sets from indices to strings.
   void SetsToString_();
@@ -262,13 +191,6 @@ class FaultTreeAnalysis : public RiskAnalysis {
   std::vector<double> sampled_results_;  ///< Storage for sampled values.
   // -----------------------------------------------------------------
   // ----------------------- Member Variables of this Class -----------------
-  // Specific variables that are shared for initialization of tree nodes.
-  std::string parent_;  ///< The parent id.
-  std::string id_;  ///< The id of the node.
-  std::string type_;  ///< The type of the node.
-  int vote_number_;  ///< The vote number for the VOTE gate.
-  bool block_started_;  ///< Indicator of a start of a new block of a node.
-
   /// This member is used to provide any warnings about assumptions,
   /// calculations, and settings. These warnings must be written into output
   /// file.
@@ -285,9 +207,6 @@ class FaultTreeAnalysis : public RiskAnalysis {
 
   /// Input file path.
   std::string input_file_;
-
-  /// Keep track of currently opened file with sub-trees.
-  std::string current_file_;
 
   /// Indicator if probability calculations are requested.
   bool prob_requested_;
@@ -347,9 +266,6 @@ class FaultTreeAnalysis : public RiskAnalysis {
   double exp_time_;  ///< Expansion of tree gates time.
   double mcs_time_;  ///< Time for MCS generation.
   double p_time_;  ///< Time for probability calculations.
-
-  /// A fault tree.
-  FaultTreePtr fault_tree_;
 };
 
 }  // namespace scram

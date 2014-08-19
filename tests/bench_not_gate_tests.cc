@@ -11,10 +11,10 @@ TEST_F(FaultTreeAnalysisTest, A_OR_NOT_A) {
   std::set<std::string> cut_set;
   std::set< std::set<std::string> > mcs;  // For expected min cut sets.
 
-  ASSERT_NO_THROW(fta->ProcessInput(tree_input));
-  ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
-  ASSERT_NO_THROW(fta->Analyze());
-  ASSERT_NO_THROW(fta->Report("/dev/null"));
+  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(ran->Report("/dev/null"));
   EXPECT_DOUBLE_EQ(1, p_total());  // Total prob check.
   // Minimal cut set check.
   cut_set.insert(A);
@@ -35,10 +35,10 @@ TEST_F(FaultTreeAnalysisTest, A_OR_NOT_B) {
   std::set<std::string> cut_set;
   std::set< std::set<std::string> > mcs;  // For expected min cut sets.
 
-  ASSERT_NO_THROW(fta->ProcessInput(tree_input));
-  ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
-  ASSERT_NO_THROW(fta->Analyze());
-  ASSERT_NO_THROW(fta->Report("/dev/null"));
+  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(ran->Report("/dev/null"));
   EXPECT_DOUBLE_EQ(0.82, p_total());  // Total prob check.
   // Minimal cut set check.
   cut_set.insert(A);
@@ -58,10 +58,10 @@ TEST_F(FaultTreeAnalysisTest, A_AND_NOT_A) {
   std::set<std::string> cut_set;
   std::set< std::set<std::string> > mcs;  // For expected min cut sets.
 
-  ASSERT_NO_THROW(fta->ProcessInput(tree_input));
-  ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
-  ASSERT_NO_THROW(fta->Analyze());
-  ASSERT_NO_THROW(fta->Report("/dev/null"));
+  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(ran->Report("/dev/null"));
   EXPECT_DOUBLE_EQ(0, p_total());  // Total prob check.
   // Minimal cut set check.
   EXPECT_EQ(0, min_cut_sets().size());
@@ -76,10 +76,10 @@ TEST_F(FaultTreeAnalysisTest, A_AND_NOT_B) {
   std::set<std::string> cut_set;
   std::set< std::set<std::string> > mcs;  // For expected min cut sets.
 
-  ASSERT_NO_THROW(fta->ProcessInput(tree_input));
-  ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
-  ASSERT_NO_THROW(fta->Analyze());
-  ASSERT_NO_THROW(fta->Report("/dev/null"));
+  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(ran->Report("/dev/null"));
   EXPECT_DOUBLE_EQ(0.08, p_total());  // Total prob check.
   // Minimal cut set check.
   cut_set.insert(A);
@@ -98,10 +98,10 @@ TEST_F(FaultTreeAnalysisTest, A_OR_NOT_AB) {
   std::set<std::string> cut_set;
   std::set< std::set<std::string> > mcs;  // For expected min cut sets.
 
-  ASSERT_NO_THROW(fta->ProcessInput(tree_input));
-  ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
-  ASSERT_NO_THROW(fta->Analyze());
-  ASSERT_NO_THROW(fta->Report("/dev/null"));
+  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(ran->Report("/dev/null"));
   EXPECT_DOUBLE_EQ(0.28, p_total());  // Total prob check.
   // Minimal cut set check.
   cut_set.insert(A);
@@ -116,8 +116,7 @@ TEST_F(FaultTreeAnalysisTest, A_OR_NOT_AB) {
 
 // [A OR NOT B] FTA MC
 TEST_F(FaultTreeAnalysisTest, MC_A_OR_NOT_B) {
-  delete fta;
-  fta = new FaultTreeAnalysis("mc", false);
+  fta(new FaultTreeAnalysis("mc", false));
   std::string tree_input = "./input/benchmark/a_or_not_b.scramf";
   std::string prob_input = "./input/benchmark/abc.scramp";
   std::set< std::set<int> > p_terms;
@@ -125,8 +124,8 @@ TEST_F(FaultTreeAnalysisTest, MC_A_OR_NOT_B) {
   std::set<int> cut_set;
   std::set< std::set<int> > temp_sets;
 
-  ASSERT_NO_THROW(fta->ProcessInput(tree_input));
-  ASSERT_NO_THROW(fta->PopulateProbabilities(prob_input));
-  ASSERT_NO_THROW(fta->Analyze());
-  ASSERT_NO_THROW(fta->Report("/dev/null"));
+  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(ran->Report("/dev/null"));
 }
