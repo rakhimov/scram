@@ -197,7 +197,10 @@ void RiskAnalysis::PopulateProbabilities(std::string prob_file) {
 }
 
 void RiskAnalysis::GraphingInstructions() {
-  fta_->GraphingInstructions(fault_tree_, orig_ids_);
+  /// @todo Make this exception safe with a smart pointer.
+  Grapher* gr = new Grapher();
+  gr->GraphFaultTree(fault_tree_, orig_ids_, prob_requested_, input_file_);
+  delete gr;
 }
 
 void RiskAnalysis::Analyze() {

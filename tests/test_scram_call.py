@@ -48,7 +48,7 @@ def test_fta_calls():
     # Test graph only
     cmd = ["scram", "-g", fta_input]
     yield assert_equal, 0, call(cmd)
-    graph_file = "./graph.dot"
+    graph_file = "./input/fta/correct_tree_input.dot"
     # Changing permission
     cmd = ["chmod", "a-w", graph_file]
     call(cmd)

@@ -48,15 +48,6 @@ class FaultTreeAnalysis {
   FaultTreeAnalysis(std::string analysis, std::string approx = "no",
                     int limit_order = 20, int nsums = 1000000);
 
-  /// Outputs a file with instructions for graphviz dot to create a fault tree.
-  /// @note This function must be called only after initializing the tree.
-  /// @note The name of the output file is the same as the input file, but
-  /// the extensions are different.
-  /// @throws Error if called before tree initialization from an input file.
-  /// @throws IOError if the output file is not accessable.
-  void GraphingInstructions(const FaultTreePtr& fault_tree,
-                            const std::map<std::string, std::string>& orig_ids);
-
   /// Analyzes the fault tree and performs computations.
   /// This function must be called only after initilizing the tree with or
   /// without its probabilities.
@@ -76,14 +67,6 @@ class FaultTreeAnalysis {
   virtual ~FaultTreeAnalysis() {}
 
  private:
-  /// Graphs one top or intermediate event with children.
-  /// @param[in] t The top or intermediate event.
-  /// @param[in] pr_repeat The number of times a primary event is repeated.
-  /// @param[in] out The output stream.
-  /// @note The repetition information is important to avoid clashes.
-  void GraphNode_(GatePtr t, std::map<std::string, int>& pr_repeat,
-                  std::ofstream& out);
-
   /// Expands the children of a top or intermediate event to Supersets.
   /// @param[in] inter_index The index number of the parent node.
   /// @param[out] sets The final Supersets from the children.

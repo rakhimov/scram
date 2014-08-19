@@ -17,6 +17,7 @@
 #include "fault_tree.h"
 #include "fault_tree_analysis.h"
 #include "event.h"
+#include "grapher.h"
 
 class FaultTreeAnalysisTest;
 
