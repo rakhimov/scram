@@ -33,7 +33,6 @@ class FaultTreeAnalysisTest : public ::testing::Test {
   void fta(FaultTreeAnalysis* f) {
     delete ran;
     ran = new RiskAnalysis();
-    std::cout << f->analysis_ << std::endl;
     ran->fta_ = f;
   }
 

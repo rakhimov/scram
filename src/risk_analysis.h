@@ -202,7 +202,6 @@ class RiskAnalysis {
   std::string id_;  ///< The id of the node.
   std::string type_;  ///< The type of the node.
   int vote_number_;  ///< The vote number for the VOTE gate.
-  bool block_started_;  ///< Indicator of a start of a new block of a node.
 
   /// Input file path.
   std::string input_file_;

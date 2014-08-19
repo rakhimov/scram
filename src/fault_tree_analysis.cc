@@ -216,9 +216,6 @@ void FaultTreeAnalysis::Analyze(
     const std::map<std::string, std::string>& orig_ids,
     bool prob_requested) {
 
-  std::cout << analysis_ << std::endl;
-  std::cout << approx_ << std::endl;
-
   // Timing Initialization
   std::clock_t start_time;
   start_time = std::clock();

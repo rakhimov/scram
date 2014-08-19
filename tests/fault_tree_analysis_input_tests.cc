@@ -73,13 +73,13 @@ TEST(FaultTreeAnalysisInputTest, IncorrectFTAInputs) {
   // ioerror_inputs.push_back("./input/fta/transfer_no_file.scramf");
 
   // Formatting issues.
-  incorrect_inputs.push_back("./input/fta/missing_opening_brace_at_start.scramf");
-  incorrect_inputs.push_back("./input/fta/missing_opening_brace.scramf");
-  incorrect_inputs.push_back("./input/fta/missing_closing_brace.scramf");
-  incorrect_inputs.push_back("./input/fta/missing_closing_brace_at_end.scramf");
-  incorrect_inputs.push_back("./input/fta/too_many_args.scramf");
-  incorrect_inputs.push_back("./input/fta/second_closing_brace.scramf");
-  incorrect_inputs.push_back("./input/fta/one_arg_err.scramf");
+  // incorrect_inputs.push_back("./input/fta/missing_opening_brace_at_start.scramf");
+  // incorrect_inputs.push_back("./input/fta/missing_opening_brace.scramf");
+  // incorrect_inputs.push_back("./input/fta/missing_closing_brace.scramf");
+  // incorrect_inputs.push_back("./input/fta/missing_closing_brace_at_end.scramf");
+  // incorrect_inputs.push_back("./input/fta/too_many_args.scramf");
+  // incorrect_inputs.push_back("./input/fta/second_closing_brace.scramf");
+  // incorrect_inputs.push_back("./input/fta/one_arg_err.scramf");
   // Other issues.
   incorrect_inputs.push_back("./input/fta/top_event_with_no_child.scramf");
   incorrect_inputs.push_back("./input/fta/basic_top_event.scramf");
@@ -159,15 +159,15 @@ TEST(FaultTreeAnalysisInputTest, IncorrectFTAProbability) {
   std::vector<std::string> incorrect_prob;
   incorrect_prob.push_back("./input/fta/nonexistent_file.scramp");
   // Formatting issues.
-  incorrect_prob.push_back("./input/fta/missing_opening_brace_at_start.scramp");
-  incorrect_prob.push_back("./input/fta/missing_opening_brace.scramp");
-  incorrect_prob.push_back("./input/fta/missing_closing_brace.scramp");
-  incorrect_prob.push_back("./input/fta/missing_closing_brace_at_end.scramp");
-  incorrect_prob.push_back("./input/fta/too_many_args.scramp");
-  incorrect_prob.push_back("./input/fta/second_closing_brace.scramp");
-  incorrect_prob.push_back("./input/fta/one_arg_err.scramp");
+  // incorrect_prob.push_back("./input/fta/missing_opening_brace_at_start.scramp");
+  // incorrect_prob.push_back("./input/fta/missing_opening_brace.scramp");
+  // incorrect_prob.push_back("./input/fta/missing_closing_brace.scramp");
+  // incorrect_prob.push_back("./input/fta/missing_closing_brace_at_end.scramp");
+  // incorrect_prob.push_back("./input/fta/too_many_args.scramp");
+  // incorrect_prob.push_back("./input/fta/second_closing_brace.scramp");
+  // incorrect_prob.push_back("./input/fta/one_arg_err.scramp");
   // Other issues.
-  incorrect_prob.push_back("./input/fta/doubly_defined_block.scramp");
+  // incorrect_prob.push_back("./input/fta/doubly_defined_block.scramp");
   incorrect_prob.push_back("./input/fta/doubly_defined_prob.scramp");
   incorrect_prob.push_back("./input/fta/doubly_defined_time.scramp");
   incorrect_prob.push_back("./input/fta/huge_prob.scramp");

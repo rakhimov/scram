@@ -19,12 +19,11 @@
 namespace scram {
 
 RiskAnalysis::RiskAnalysis(std::string config_file)
-    : parent_(""),
-      prob_requested_(false),
+    : prob_requested_(false),
+      parent_(""),
       id_(""),
       type_(""),
-      vote_number_(-1),
-      block_started_(false) {
+      vote_number_(-1) {
   // Add valid gates.
   gates_.insert("and");
   gates_.insert("or");
@@ -71,12 +70,6 @@ void RiskAnalysis::ProcessInput(std::string input_file) {
     if (!RiskAnalysis::GetArgs_(line, orig_line, args)) continue;
 
     RiskAnalysis::InterpretArgs_(nline, msg, args, orig_line);
-  }
-
-  // Check if the last data is written, and the last '}' isn't omitted.
-  if (block_started_) {
-    msg << "Missing closing '}' at the end of a file.";
-    throw scram::ValidationError(msg.str());
   }
 
   // Check if all gates have a right number of children.
@@ -126,23 +119,8 @@ void RiskAnalysis::PopulateProbabilities(std::string prob_file) {
     switch (args.size()) {
       case 1: {
         if (args[0] == "{") {
-          // Check if this is a new start of a block.
-          if (block_started) {
-            msg << "Line " << nline << " : " << "Found second '{' before"
-                << " finishing the current block.";
-            throw scram::ValidationError(msg.str());
-          }
-          // New block successfully started.
-          block_started = true;
-
         } else if (args[0] == "}") {
-          // Check if this is an end of a block.
-          if (!block_started) {
-            msg << "Line " << nline << " : " << " Found '}' before starting"
-                << " a new block.";
-            throw scram::ValidationError(msg.str());
-          }
-          // End of the block detected.
+
           // Refresh values.
           id = "";
           p = -1;
@@ -150,35 +128,17 @@ void RiskAnalysis::PopulateProbabilities(std::string prob_file) {
           block_started = false;
           block_type = "p-model";
           block_set = false;
-
-        } else {
-          msg << "Line " << nline << " : " << "Undefined input.";
-          throw scram::ValidationError(msg.str());
         }
-
         break;
       }
       case 2: {
-        if (!block_started) {
-          msg << "Line " << nline << " : " << "Missing opening bracket {";
-          throw scram::ValidationError(msg.str());
-        }
 
         id = args[0];
 
         if (id == "block") {
-          if (!block_set) {
             block_type = args[1];
-            if (block_type != "p-model" && block_type != "l-model") {
-              msg << "Line " << nline << " : " << "Unrecognized block type.";
-              throw scram::ValidationError(msg.str());
-            }
             block_set = true;
             break;
-          } else  {
-            msg << "Line " << nline << " : " << "Doubly defining this block.";
-            throw scram::ValidationError(msg.str());
-          }
         }
 
         if (id == "time" && block_type == "l-model") {
@@ -228,12 +188,6 @@ void RiskAnalysis::PopulateProbabilities(std::string prob_file) {
         throw scram::ValidationError(msg.str());
       }
     }
-  }
-
-  // Check if the last data is written, and the last '}' isn't omitted.
-  if (block_started) {
-    msg << "Missing closing '}' at the end of a file.";
-    throw scram::ValidationError(msg.str());
   }
 
   // Check if all primary events have probabilities initialized.
@@ -290,29 +244,12 @@ bool RiskAnalysis::GetArgs_(std::string& line, std::string& orig_line,
 void RiskAnalysis::InterpretArgs_(int nline, std::stringstream& msg,
                                   std::vector<std::string>& args,
                                   std::string& orig_line) {
-  assert(nline > 0);  // Sanity checks.
-  assert(args.size() != 0);  // Empty input args shouldn't be passed.
 
   switch (args.size()) {
     case 1: {
       if (args[0] == "{") {
-        // Check if this is a new start of a block.
-        if (block_started_) {
-          msg << "Line " << nline << " : " << "Found second '{' before"
-              << " finishing the current block.";
-          throw scram::ValidationError(msg.str());
-        }
-        // New block successfully started.
-        block_started_ = true;
 
       } else if (args[0] == "}") {
-        // Check if this is an end of a block.
-        if (!block_started_) {
-          msg << "Line " << nline << " : " << " Found '}' before starting"
-              << " a new block.";
-          throw scram::ValidationError(msg.str());
-        }
-        // End of the block detected.
 
         // Check if all needed arguments for an event are received.
         if (parent_ == "") {
@@ -346,7 +283,6 @@ void RiskAnalysis::InterpretArgs_(int nline, std::stringstream& msg,
         id_ = "";
         type_ = "";
         vote_number_ = -1;
-        block_started_ = false;
 
       } else {
         msg << "Line " << nline << " : " << "Undefined input.";
@@ -356,11 +292,6 @@ void RiskAnalysis::InterpretArgs_(int nline, std::stringstream& msg,
       break;
     }
     case 2: {
-      if (!block_started_) {
-        msg << "Line " << nline << " : " << "Missing opening bracket {";
-        throw scram::ValidationError(msg.str());
-      }
-
       if (args[0] == "parent" && parent_ == "") {
         parent_ = args[1];
       } else if (args[0] == "id" && id_ == "") {
