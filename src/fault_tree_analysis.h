@@ -68,14 +68,14 @@ class FaultTreeAnalysis {
   /// @throws ValueError if the parent's gate is not recognized.
   /// @note The final sets are dependent on the gate of the parent.
   /// @note O_avg(N, N*logN) O_max(N^2, N^3*logN) where N is a children number.
-  void ExpandSets_(int inter_index, std::vector<SupersetPtr>& sets);
+  void ExpandSets(int inter_index, std::vector<SupersetPtr>& sets);
 
   /// Expands sets for OR operator.
   /// @param[in] events_children The indices of the children of the event.
   /// @param[out] sets The final Supersets generated for OR operator.
   /// @param[in] mult The positive or negative event indicator.
   /// @note O_avg(N) O_max(N^2)
-  void SetOr_(std::vector<int>& events_children,
+  void SetOr(std::vector<int>& events_children,
               std::vector<SupersetPtr>& sets, int mult = 1);
 
   /// Expands sets for AND operator.
@@ -83,7 +83,7 @@ class FaultTreeAnalysis {
   /// @param[out] sets The final Supersets generated for OR operator.
   /// @param[in] mult The positive or negative event indicator.
   /// @note O_avg(N*logN) O_max(N*logN) where N is the number of children.
-  void SetAnd_(std::vector<int>& events_children,
+  void SetAnd(std::vector<int>& events_children,
                std::vector<SupersetPtr>& sets, int mult = 1);
 
   /// Finds minimal cut sets from cut sets.
@@ -92,7 +92,7 @@ class FaultTreeAnalysis {
   /// @param[in] mcs_lower_order Reference minimal cut sets of some order.
   /// @param[in] min_order The order of sets to become minimal.
   /// @note T_avg(N^3 + N^2*logN + N*logN) = O_avg(N^3)
-  void FindMCS_(const std::set< std::set<int> >& cut_sets,
+  void FindMCS(const std::set< std::set<int> >& cut_sets,
                 const std::set< std::set<int> >& mcs_lower_order,
                 int min_order);
 
@@ -101,10 +101,10 @@ class FaultTreeAnalysis {
   /// indices new databases of minimal cut sets and primary to integer
   /// converting maps.
   /// @note O_avg(N) O_max(N^2) where N is the total number of tree nodes.
-  void AssignIndices_(const FaultTreePtr& fault_tree);
+  void AssignIndices(const FaultTreePtr& fault_tree);
 
   /// Converts minimal cut sets from indices to strings.
-  void SetsToString_();
+  void SetsToString();
 
   /// Calculates a probability of a set of minimal cut sets, which are in OR
   /// relationship with each other. This function is a brute force probability
@@ -116,7 +116,7 @@ class FaultTreeAnalysis {
   /// sets inside it. This is for better performance.
   /// @note O_avg(M*logM*N*2^N) where N is the number of sets, and M is
   /// the average size of the sets.
-  double ProbOr_(std::set< std::set<int> >& min_cut_sets,
+  double ProbOr(std::set< std::set<int> >& min_cut_sets,
                  int nsums = 1000000);
 
   /// Calculates a probability of a minimal cut set, whose members are in AND
@@ -125,7 +125,7 @@ class FaultTreeAnalysis {
   /// @param[in] min_cut_set A set of indices of primary events.
   /// @returns The total probability.
   /// @note O_avg(N) where N is the size of the passed set.
-  double ProbAnd_(const std::set<int>& min_cut_set);
+  double ProbAnd(const std::set<int>& min_cut_set);
 
   /// Calculates A(and)( B(or)C ) relationship for sets using set algebra.
   /// @param[in] el A set of indices of primary events.
@@ -133,7 +133,7 @@ class FaultTreeAnalysis {
   /// @param[out] combo_set A final set resulting from joining el and sets.
   /// @note O_avg(N*M*logM) where N is the size of the set, and M is the
   /// average size of the elements.
-  void CombineElAndSet_(const std::set<int>& el,
+  void CombineElAndSet(const std::set<int>& el,
                         const std::set< std::set<int> >& set,
                         std::set< std::set<int> >& combo_set);
 
@@ -157,12 +157,12 @@ class FaultTreeAnalysis {
   /// @param[in] min_cut_sets Sets of indices of primary events.
   /// @param[in] sign The sign of the series.
   /// @param[in] nsums The number of sums in the series.
-  void MProbOr_(std::set< std::set<int> >& min_cut_sets, int sign = 1,
+  void MProbOr(std::set< std::set<int> >& min_cut_sets, int sign = 1,
                 int nsums = 1000000);
 
   /// Performs Monte Carlo Simulation.
   /// @todo Implement the simulation.
-  void MSample_();
+  void MSample();
 
   std::vector< std::set<int> > pos_terms_;  ///< Plus terms of the equation.
   std::vector< std::set<int> > neg_terms_;  ///< Minus terms of the equation.

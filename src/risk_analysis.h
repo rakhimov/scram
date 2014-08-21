@@ -120,7 +120,7 @@ class RiskAnalysis {
   /// @param[out] args The arguments from the line.
   /// @returns false if there are no arguments from the line.
   /// @returns true if there are one or more arguments from the line.
-  bool GetArgs_(std::string& line, std::string& orig_line,
+  bool GetArgs(std::string& line, std::string& orig_line,
                 std::vector<std::string>& args);
 
   /// Interpret arguments and perform specific actions on the tree.
@@ -131,7 +131,7 @@ class RiskAnalysis {
   /// @param[in] args The arguments to be interpreted.
   /// @param[in] orig_line The original line preserving cases.
   /// @throws ValidationError if the input or arguments are invalid.
-  void InterpretArgs_(int nline, std::stringstream& msg,
+  void InterpretArgs(int nline, std::stringstream& msg,
                       std::vector<std::string>& args,
                       std::string& orig_line);
 
@@ -141,35 +141,35 @@ class RiskAnalysis {
   /// @param[in] type The symbol, type, or gate of the event to be added.
   /// @param[in] vote_number The vote number for the VOTE gate initialization.
   /// @throws ValidationError for invalid or incorrect inputs.
-  void AddNode_(std::string parent, std::string id, std::string type,
+  void AddNode(std::string parent, std::string id, std::string type,
                 int vote_number = -1);
 
   /// Adds probability to a primary event for p-model.
   /// @param[in] id The id name of the primary event.
   /// @param[in] p The probability for the primary event.
   /// @note If id is not in the tree, the probability is ignored.
-  void AddProb_(std::string id, double p);
+  void AddProb(std::string id, double p);
 
   /// Adds probability to a primary event for l-model.
   /// @param[in] id The id name of the primary event.
   /// @param[in] p The probability for the primary event.
   /// @param[in] time The time to failure for this event.
   /// @note If id is not in the tree, the probability is ignored.
-  void AddProb_(std::string id, double p, double time);
+  void AddProb(std::string id, double p, double time);
 
   /// Verifies if gates are initialized correctly.
   /// @returns A warning message with a list of all bad gates with problems.
   /// @note An empty string for no problems detected.
-  std::string CheckAllGates_();
+  std::string CheckAllGates();
 
   /// Checks if a gate is initialized correctly.
   /// @returns A warning message with the problem description.
   /// @note An empty string for no problems detected.
-  std::string CheckGate_(const GatePtr& event);
+  std::string CheckGate(const GatePtr& event);
 
   /// @returns Primary events that do not have probabilities assigned.
   /// @note An empty string for no problems detected.
-  std::string PrimariesNoProb_();
+  std::string PrimariesNoProb();
 
   /// @todo Containers for fault trees, events, event trees, CCF, and other
   /// analysis entities.

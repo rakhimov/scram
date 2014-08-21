@@ -57,18 +57,18 @@ class FaultTree {
   /// @note Assuming that all events in this tree are defined to be gates or
   /// primary events.
   const boost::unordered_map<std::string, PrimaryEventPtr>& primary_events() {
-    if (primary_events_.empty()) GatherPrimaryEvents_();
+    if (primary_events_.empty()) GatherPrimaryEvents();
     return primary_events_;
   }
 
  private:
   /// Picks primary events of this tree.
   /// Locks the tree from any further changes.
-  void GatherPrimaryEvents_();
+  void GatherPrimaryEvents();
 
   /// Picks primary events of the specified gate.
   /// The primary events are put into the approriate container.
-  void GetPrimaryEvents_(GatePtr& gate);
+  void GetPrimaryEvents(GatePtr& gate);
 
   /// The name of this fault tree.
   std::string name_;

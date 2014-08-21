@@ -36,9 +36,9 @@ class FaultTreeAnalysisTest : public ::testing::Test {
     ran->fta_ = f;
   }
 
-  bool GetArgs_(std::string& line, std::string& orig_line,
+  bool GetArgs(std::string& line, std::string& orig_line,
                 std::vector<std::string>& args) {
-    return ran->GetArgs_(line, orig_line, args);
+    return ran->GetArgs(line, orig_line, args);
   }
 
   std::map<std::string, std::string>& orig_ids() { return ran->orig_ids_; }
@@ -66,30 +66,30 @@ class FaultTreeAnalysisTest : public ::testing::Test {
   }
 
   bool CheckGate(GatePtr event) {
-    return (ran->CheckGate_(event) == "") ? true : false;
+    return (ran->CheckGate(event) == "") ? true : false;
   }
 
   void ExpandSets(int inter_index, std::vector< SupersetPtr >& sets) {
-    return ran->fta_->ExpandSets_(inter_index, sets);
+    return ran->fta_->ExpandSets(inter_index, sets);
   }
 
   // ----------- Probability calculation algorithm related part ------------
   double ProbAnd(const std::set<int>& min_cut_set) {
-    return ran->fta_->ProbAnd_(min_cut_set);
+    return ran->fta_->ProbAnd(min_cut_set);
   }
 
   double ProbOr(std::set< std::set<int> >& min_cut_sets, int nsums = 1000000) {
-    return ran->fta_->ProbOr_(min_cut_sets, nsums);
+    return ran->fta_->ProbOr(min_cut_sets, nsums);
   }
 
   void CombineElAndSet(const std::set<int>& el,
                        const std::set< std::set<int> >& set,
                        std::set< std::set<int> >& combo_set) {
-    return ran->fta_->CombineElAndSet_(el, set, combo_set);
+    return ran->fta_->CombineElAndSet(el, set, combo_set);
   }
 
   void AssignIndices() {
-    ran->fta_->AssignIndices_(ran->fault_tree_);
+    ran->fta_->AssignIndices(ran->fault_tree_);
   }
 
   int GetIndex(std::string id) {
@@ -111,7 +111,7 @@ class FaultTreeAnalysisTest : public ::testing::Test {
   // -------------- Monte Carlo simulation algorithms ----------------------
   void MProbOr(std::set< std::set<int> >& min_cut_sets, int sign = 1,
                int nsums = 1000000) {
-    return ran->fta_->MProbOr_(min_cut_sets, sign, nsums);
+    return ran->fta_->MProbOr(min_cut_sets, sign, nsums);
   }
 
   std::vector< std::set<int> >& pos_terms() {

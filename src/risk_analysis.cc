@@ -64,13 +64,13 @@ void RiskAnalysis::ProcessInput(std::string input_file) {
   msg << "In " << input_file << ", ";
 
   for (int nline = 1; getline(ifile, line); ++nline) {
-    if (!RiskAnalysis::GetArgs_(line, orig_line, args)) continue;
+    if (!RiskAnalysis::GetArgs(line, orig_line, args)) continue;
 
-    RiskAnalysis::InterpretArgs_(nline, msg, args, orig_line);
+    RiskAnalysis::InterpretArgs(nline, msg, args, orig_line);
   }
 
   // Check if all gates have a right number of children.
-  std::string bad_gates = RiskAnalysis::CheckAllGates_();
+  std::string bad_gates = RiskAnalysis::CheckAllGates();
   if (bad_gates != "") {
     std::stringstream msg;
     msg << "\nThere are problems with the following gates:\n";
@@ -111,7 +111,7 @@ void RiskAnalysis::PopulateProbabilities(std::string prob_file) {
   msg << "In " << prob_file << ", ";
 
   for (int nline = 1; getline(pfile, line); ++nline) {
-    if (!RiskAnalysis::GetArgs_(line, orig_line, args)) continue;
+    if (!RiskAnalysis::GetArgs(line, orig_line, args)) continue;
 
     switch (args.size()) {
       case 1: {
@@ -166,13 +166,13 @@ void RiskAnalysis::PopulateProbabilities(std::string prob_file) {
         try {
           // Add probability of a primary event.
           if (block_type == "p-model") {
-            RiskAnalysis::AddProb_(id, p);
+            RiskAnalysis::AddProb(id, p);
           } else if (block_type == "l-model") {
             if (time == -1) {
               msg << "Line " << nline << " : " << "L-Model Time is not given";
               throw scram::ValidationError(msg.str());
             }
-            RiskAnalysis::AddProb_(id, p, time);
+            RiskAnalysis::AddProb(id, p, time);
           }
         } catch (scram::ValueError& err_2) {
           msg << "Line " << nline << " : " << err_2.msg();
@@ -188,7 +188,7 @@ void RiskAnalysis::PopulateProbabilities(std::string prob_file) {
   }
 
   // Check if all primary events have probabilities initialized.
-  std::string uninit_primaries = RiskAnalysis::PrimariesNoProb_();
+  std::string uninit_primaries = RiskAnalysis::PrimariesNoProb();
   if (uninit_primaries != "") {
     msg << "Missing probabilities for following basic events:\n";
     msg << uninit_primaries;
@@ -214,7 +214,7 @@ void RiskAnalysis::Report(std::string output) {
   delete rp;
 }
 
-bool RiskAnalysis::GetArgs_(std::string& line, std::string& orig_line,
+bool RiskAnalysis::GetArgs(std::string& line, std::string& orig_line,
                             std::vector<std::string>& args) {
   std::vector<std::string> no_comments;  // To hold lines without comments.
 
@@ -246,7 +246,7 @@ bool RiskAnalysis::GetArgs_(std::string& line, std::string& orig_line,
   return true;
 }
 
-void RiskAnalysis::InterpretArgs_(int nline, std::stringstream& msg,
+void RiskAnalysis::InterpretArgs(int nline, std::stringstream& msg,
                                   std::vector<std::string>& args,
                                   std::string& orig_line) {
 
@@ -277,7 +277,7 @@ void RiskAnalysis::InterpretArgs_(int nline, std::stringstream& msg,
 
         try {
           // Add a node with the gathered information.
-          RiskAnalysis::AddNode_(parent_, id_, type_, vote_number_);
+          RiskAnalysis::AddNode(parent_, id_, type_, vote_number_);
         } catch (scram::ValidationError& err) {
           msg << "Line " << nline << " : " << err.msg();
           throw scram::ValidationError(msg.str());
@@ -344,7 +344,7 @@ void RiskAnalysis::InterpretArgs_(int nline, std::stringstream& msg,
   }
 }
 
-void RiskAnalysis::AddNode_(std::string parent,
+void RiskAnalysis::AddNode(std::string parent,
                             std::string id,
                             std::string type,
                             int vote_number) {
@@ -452,7 +452,7 @@ void RiskAnalysis::AddNode_(std::string parent,
   }
 }
 
-void RiskAnalysis::AddProb_(std::string id, double p) {
+void RiskAnalysis::AddProb(std::string id, double p) {
   // Check if the primary event is in this tree.
   if (!primary_events_.count(id)) {
     return;  // Ignore non-existent assignment.
@@ -461,7 +461,7 @@ void RiskAnalysis::AddProb_(std::string id, double p) {
   primary_events_[id]->p(p);
 }
 
-void RiskAnalysis::AddProb_(std::string id, double p, double time) {
+void RiskAnalysis::AddProb(std::string id, double p, double time) {
   // Check if the primary event is in this tree.
   if (!primary_events_.count(id)) {
     return;  // Ignore non-existent assignment.
@@ -470,19 +470,19 @@ void RiskAnalysis::AddProb_(std::string id, double p, double time) {
   primary_events_[id]->p(p, time);
 }
 
-std::string RiskAnalysis::CheckAllGates_() {
+std::string RiskAnalysis::CheckAllGates() {
   std::stringstream msg;
   msg << "";  // An empty default message is the indicator of no problems.
 
   boost::unordered_map<std::string, GatePtr>::iterator it;
   for (it = gates_.begin(); it != gates_.end(); ++it) {
-    msg << RiskAnalysis::CheckGate_(it->second);
+    msg << RiskAnalysis::CheckGate(it->second);
   }
 
   return msg.str();
 }
 
-std::string RiskAnalysis::CheckGate_(const GatePtr& event) {
+std::string RiskAnalysis::CheckGate(const GatePtr& event) {
   std::stringstream msg;
   msg << "";  // An empty default message is the indicator of no problems.
   try {
@@ -558,7 +558,7 @@ std::string RiskAnalysis::CheckGate_(const GatePtr& event) {
   return msg.str();
 }
 
-std::string RiskAnalysis::PrimariesNoProb_() {
+std::string RiskAnalysis::PrimariesNoProb() {
   std::string uninit_primaries = "";
   boost::unordered_map<std::string, PrimaryEventPtr>::iterator it;
   for (it = primary_events_.begin(); it != primary_events_.end(); ++it) {

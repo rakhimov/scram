@@ -32,19 +32,19 @@ void FaultTree::AddGate(GatePtr& gate) {
   }
 }
 
-void FaultTree::GatherPrimaryEvents_() {
+void FaultTree::GatherPrimaryEvents() {
   lock_ = true;  // Assumes that the tree is fully developed.
 
-  FaultTree::GetPrimaryEvents_(top_event_);
+  FaultTree::GetPrimaryEvents(top_event_);
 
   boost::unordered_map<std::string, GatePtr>::iterator git;
   for (git = inter_events_.begin(); git != inter_events_.end(); ++git) {
 
-    FaultTree::GetPrimaryEvents_(git->second);
+    FaultTree::GetPrimaryEvents(git->second);
   }
 }
 
-void FaultTree::GetPrimaryEvents_(GatePtr& gate) {
+void FaultTree::GetPrimaryEvents(GatePtr& gate) {
   const std::map<std::string, EventPtr>* children = &gate->children();
   std::map<std::string, EventPtr>::const_iterator it;
   for (it = children->begin(); it != children->end(); ++it) {
