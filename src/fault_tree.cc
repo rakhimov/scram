@@ -39,7 +39,6 @@ void FaultTree::GatherPrimaryEvents() {
 
   boost::unordered_map<std::string, GatePtr>::iterator git;
   for (git = inter_events_.begin(); git != inter_events_.end(); ++git) {
-
     FaultTree::GetPrimaryEvents(git->second);
   }
 }

@@ -3,6 +3,8 @@
 #ifndef SCRAM_REPORTER_H_
 #define SCRAM_REPORTER_H_
 
+#include <map>
+
 #include "fault_tree_analysis.h"
 
 namespace scram {
@@ -17,11 +19,13 @@ class Reporter {
   /// param[out] output The output destination.
   /// @throws Error if called before the tree analysis.
   /// @throws IOError if the output file is not accessable.
-  void ReportFta(FaultTreeAnalysis* fta, std::string output);
+  void ReportFta(FaultTreeAnalysis* fta,
+                 std::map<std::string, std::string>& orig_ids,
+                 std::string output);
 
  private:
-
 };
 
 }  // namespace scram
+
 #endif  // SCRAM_REPORTER_H_

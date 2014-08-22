@@ -7,7 +7,6 @@
 #include <map>
 #include <set>
 #include <string>
-#include <queue>
 
 #include <boost/serialization/map.hpp>
 #include <boost/shared_ptr.hpp>
@@ -55,9 +54,7 @@ class FaultTreeAnalysis {
   /// without its probabilities.
   /// @throws Error if called before tree initialization from an input file.
   /// @note Cut set generator: O_avg(N) O_max(N)
-  void Analyze(const FaultTreePtr& fault_tree,
-               const std::map<std::string, std::string>& orig_ids,
-               bool prob_requested);
+  void Analyze(const FaultTreePtr& fault_tree, bool prob_requested);
 
   virtual ~FaultTreeAnalysis() {}
 
@@ -76,7 +73,7 @@ class FaultTreeAnalysis {
   /// @param[in] mult The positive or negative event indicator.
   /// @note O_avg(N) O_max(N^2)
   void SetOr(std::vector<int>& events_children,
-              std::vector<SupersetPtr>& sets, int mult = 1);
+             std::vector<SupersetPtr>& sets, int mult = 1);
 
   /// Expands sets for AND operator.
   /// @param[in] events_children The indices of the children of the event.
@@ -84,7 +81,7 @@ class FaultTreeAnalysis {
   /// @param[in] mult The positive or negative event indicator.
   /// @note O_avg(N*logN) O_max(N*logN) where N is the number of children.
   void SetAnd(std::vector<int>& events_children,
-               std::vector<SupersetPtr>& sets, int mult = 1);
+              std::vector<SupersetPtr>& sets, int mult = 1);
 
   /// Finds minimal cut sets from cut sets.
   /// Applys rule 4 to reduce unique cut sets to minimal cut sets.
@@ -92,9 +89,9 @@ class FaultTreeAnalysis {
   /// @param[in] mcs_lower_order Reference minimal cut sets of some order.
   /// @param[in] min_order The order of sets to become minimal.
   /// @note T_avg(N^3 + N^2*logN + N*logN) = O_avg(N^3)
-  void FindMCS(const std::set< std::set<int> >& cut_sets,
-                const std::set< std::set<int> >& mcs_lower_order,
-                int min_order);
+  void FindMcs(const std::set< std::set<int> >& cut_sets,
+               const std::set< std::set<int> >& mcs_lower_order,
+               int min_order);
 
   // -------------------- Algorithm for Cut Sets and Probabilities -----------
   /// Assigns an index to each primary event, and then populates with this
@@ -116,8 +113,7 @@ class FaultTreeAnalysis {
   /// sets inside it. This is for better performance.
   /// @note O_avg(M*logM*N*2^N) where N is the number of sets, and M is
   /// the average size of the sets.
-  double ProbOr(std::set< std::set<int> >& min_cut_sets,
-                 int nsums = 1000000);
+  double ProbOr(std::set< std::set<int> >& min_cut_sets, int nsums = 1000000);
 
   /// Calculates a probability of a minimal cut set, whose members are in AND
   /// relationship with each other. This function assumes independence of each
@@ -134,8 +130,8 @@ class FaultTreeAnalysis {
   /// @note O_avg(N*M*logM) where N is the size of the set, and M is the
   /// average size of the elements.
   void CombineElAndSet(const std::set<int>& el,
-                        const std::set< std::set<int> >& set,
-                        std::set< std::set<int> >& combo_set);
+                       const std::set< std::set<int> >& set,
+                       std::set< std::set<int> >& combo_set);
 
   std::set< std::set<int> > imcs_;  ///< Min cut sets with indices of events.
   /// Indices min cut sets to strings min cut sets mapping.
@@ -180,26 +176,11 @@ class FaultTreeAnalysis {
   /// Approximations for probability calculations.
   std::string approx_;
 
-  /// Input file path.
-  std::string input_file_;
-
   /// Indicator if probability calculations are requested.
   bool prob_requested_;
 
-  /// Indicate if analysis of the tree is done.
-  bool analysis_done_;
-
   /// Number of sums in series expansion for probability calculations.
   int nsums_;
-
-  /// Container of original names of events with capitalizations.
-  std::map<std::string, std::string> orig_ids_;
-
-  /// List of all valid gates.
-  std::set<std::string> gates_;
-
-  /// List of all valid types of primary events.
-  std::set<std::string> types_;
 
   /// Top event.
   GatePtr top_event_;

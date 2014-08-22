@@ -14,21 +14,16 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/date_time.hpp>
 
-namespace fs = boost::filesystem;
 namespace pt = boost::posix_time;
 
 namespace scram {
 Reporter::Reporter() {}
 
-void Reporter::ReportFta(FaultTreeAnalysis* fta, std::string output) {
-  // Check if the analysis has been performed before requesting a report.
-  if (!fta->analysis_done_) {
-    std::string msg = "Perform analysis before calling this report function.";
-    throw scram::Error(msg);
-  }
+void Reporter::ReportFta(FaultTreeAnalysis* fta,
+                         std::map<std::string, std::string>& orig_ids,
+                         std::string output) {
   // Check if output to file is requested.
   std::streambuf* buf;
   std::ofstream of;
@@ -69,9 +64,9 @@ void Reporter::ReportFta(FaultTreeAnalysis* fta, std::string output) {
       assert(names.size() > 0);
       std::string name = "";
       if (names.size() == 1) {
-        name = fta->orig_ids_[names[0]];
+        name = orig_ids[names[0]];
       } else if (names.size() == 2) {
-        name = "NOT " + fta->orig_ids_[names[1]];
+        name = "NOT " + orig_ids[names[1]];
       }
       rep << name;
 
@@ -106,7 +101,7 @@ void Reporter::ReportFta(FaultTreeAnalysis* fta, std::string output) {
   // Print minimal cut sets by their order.
   out << "\n" << "Minimal Cut Sets" << "\n";
   out << "================\n\n";
-  out << std::setw(40) << std::left << "Fault Tree: " << fta->input_file_ << "\n";
+  // out << std::setw(40) << std::left << "Fault Tree: " << fta->input_file_ << "\n";
   out << std::setw(40) << "Time: " << pt::second_clock::local_time() << "\n\n";
   out << std::setw(40) << "Analysis algorithm: " << fta->analysis_ << "\n";
   out << std::setw(40) << "Limit on order of cut sets: " << fta->limit_order_ << "\n";
@@ -170,7 +165,7 @@ void Reporter::ReportFta(FaultTreeAnalysis* fta, std::string output) {
 
   out << "\n" << "Probability Analysis" << "\n";
   out << "====================\n\n";
-  out << std::setw(40) << std::left << "Fault Tree: " << fta->input_file_ << "\n";
+  // out << std::setw(40) << std::left << "Fault Tree: " << fta->input_file_ << "\n";
   out << std::setw(40) << "Time: " << pt::second_clock::local_time() << "\n\n";
   out << std::setw(40) << "Analysis type:" << fta->analysis_ << "\n";
   out << std::setw(40) << "Limit on series: " << fta->nsums_ << "\n";
@@ -275,11 +270,11 @@ void Reporter::ReportFta(FaultTreeAnalysis* fta, std::string output) {
       assert(names.size() < 3);
       assert(names.size() > 0);
       if (names.size() == 1) {
-        out << std::setw(20) << fta->orig_ids_[names[0]] << std::setw(20)
+        out << std::setw(20) << orig_ids[names[0]] << std::setw(20)
             << it_contr->first << 100 * it_contr->first / fta->p_total_ << "%\n";
 
       } else if (names.size() == 2) {
-        out << "NOT " << std::setw(16) << fta->orig_ids_[names[1]] << std::setw(20)
+        out << "NOT " << std::setw(16) << orig_ids[names[1]] << std::setw(20)
             << it_contr->first << 100 * it_contr->first / fta->p_total_ << "%\n";
       }
       out.flush();
@@ -299,9 +294,9 @@ void Reporter::ReportFta(FaultTreeAnalysis* fta, std::string output) {
       int size = it_vec->size();
       for (it_set = it_vec->begin(); it_set != it_vec->end(); ++it_set) {
         if (*it_set > 0) {
-          out << fta->orig_ids_[fta->int_to_prime_[*it_set]->id()];
+          out << orig_ids[fta->int_to_prime_[*it_set]->id()];
         } else {
-          out << "NOT " << fta->orig_ids_[fta->int_to_prime_[std::abs(*it_set)]->id()];
+          out << "NOT " << orig_ids[fta->int_to_prime_[std::abs(*it_set)]->id()];
         }
         if (j < size) {
           out << ", ";
@@ -322,9 +317,9 @@ void Reporter::ReportFta(FaultTreeAnalysis* fta, std::string output) {
       int size = it_vec->size();
       for (it_set = it_vec->begin(); it_set != it_vec->end(); ++it_set) {
         if (*it_set > 0) {
-          out << fta->orig_ids_[fta->int_to_prime_[*it_set]->id()];
+          out << orig_ids[fta->int_to_prime_[*it_set]->id()];
         } else {
-          out << "NOT " << fta->orig_ids_[fta->int_to_prime_[std::abs(*it_set)]->id()];
+          out << "NOT " << orig_ids[fta->int_to_prime_[std::abs(*it_set)]->id()];
         }
         if (j < size) {
           out << ", ";
@@ -337,7 +332,6 @@ void Reporter::ReportFta(FaultTreeAnalysis* fta, std::string output) {
       out.flush();
     }
   }
-
 }
 
 }  // namespace scram

@@ -1008,7 +1008,6 @@ TEST_F(FaultTreeAnalysisTest, Report) {
   std::string prob_input = "./input/fta/correct_prob_input.scramp";
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
-  ASSERT_THROW(ran->Report("/dev/null"), Error);  // Calling before analysis.
   ASSERT_NO_THROW(ran->Analyze());
   ASSERT_NO_THROW(ran->Report("/dev/null"));
 
@@ -1017,7 +1016,6 @@ TEST_F(FaultTreeAnalysisTest, Report) {
   fta(new FaultTreeAnalysis("default", "rare"));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
-  ASSERT_THROW(ran->Report("/dev/null"), Error);  // Calling before analysis.
   ASSERT_NO_THROW(ran->Analyze());
   ASSERT_NO_THROW(ran->Report("/dev/null"));
 }

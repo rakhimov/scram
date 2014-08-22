@@ -79,7 +79,8 @@ void Gate::AddChild(const boost::shared_ptr<scram::Event>& child) {
   children_.insert(std::make_pair(child->id(), child));
 }
 
-const std::map<std::string, boost::shared_ptr<scram::Event> >& Gate::children() {
+const std::map<std::string, boost::shared_ptr<scram::Event> >&
+Gate::children() {
   if (children_.empty()) {
     std::string msg = this->id() + " gate does not have children.";
     throw scram::ValueError(msg);

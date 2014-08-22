@@ -147,7 +147,6 @@ void Grapher::GraphFaultTree(
 
   out << "}";
   out.flush();
-
 }
 
 void Grapher::GraphNode(GatePtr t, std::map<std::string, int>& pr_repeat,

@@ -6,19 +6,12 @@
 #include <cmath>
 #include <ctime>
 #include <fstream>
-#include <iomanip>
 #include <iostream>
 #include <iterator>
 #include <sstream>
 #include <vector>
 
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/date_time.hpp>
-
-namespace fs = boost::filesystem;
-namespace pt = boost::posix_time;
 
 namespace scram {
 
@@ -27,9 +20,7 @@ FaultTreeAnalysis::FaultTreeAnalysis(std::string analysis,
                                      int limit_order, int nsums)
     : warnings_(""),
       top_event_index_(-1),
-      input_file_("deal_in_future"),
       prob_requested_(false),
-      analysis_done_(false),
       max_order_(1),
       p_total_(0),
       exp_time_(0),
@@ -65,23 +56,6 @@ FaultTreeAnalysis::FaultTreeAnalysis(std::string analysis,
   }
   approx_ = approx;
 
-  // Add valid gates.
-  gates_.insert("and");
-  gates_.insert("or");
-  gates_.insert("not");
-  gates_.insert("nor");
-  gates_.insert("nand");
-  gates_.insert("xor");
-  gates_.insert("null");
-  gates_.insert("inhibit");
-  gates_.insert("vote");
-
-  // Add valid primary event types.
-  types_.insert("basic");
-  types_.insert("undeveloped");
-  types_.insert("house");
-  types_.insert("conditional");
-
   // Pointer to the top event.
   GatePtr top_event_;
 
@@ -89,11 +63,8 @@ FaultTreeAnalysis::FaultTreeAnalysis(std::string analysis,
   FaultTreePtr fault_tree_;
 }
 
-void FaultTreeAnalysis::Analyze(
-    const FaultTreePtr& fault_tree,
-    const std::map<std::string, std::string>& orig_ids,
-    bool prob_requested) {
-
+void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
+                                bool prob_requested) {
   // Timing Initialization
   std::clock_t start_time;
   start_time = std::clock();
@@ -105,7 +76,6 @@ void FaultTreeAnalysis::Analyze(
   // Container for cut sets with primary events only.
   std::vector< std::set<int> > cut_sets;
 
-  orig_ids_ = orig_ids;
   prob_requested_ = prob_requested;
 
   FaultTreeAnalysis::AssignIndices(fault_tree);
@@ -158,7 +128,6 @@ void FaultTreeAnalysis::Analyze(
     std::stringstream msg;
     msg << "No cut sets for the limit order " <<  limit_order_;
     warnings_ += msg.str();
-    analysis_done_ = true;
     return;
   }
 
@@ -173,12 +142,10 @@ void FaultTreeAnalysis::Analyze(
     unique_cut_sets.insert(*it_vec);
   }
 
-  FaultTreeAnalysis::FindMCS(unique_cut_sets, imcs_, 2);
+  FaultTreeAnalysis::FindMcs(unique_cut_sets, imcs_, 2);
   // Duration of MCS generation.
   mcs_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
   FaultTreeAnalysis::SetsToString();  // MCS with event ids.
-
-  analysis_done_ = true;  // Main analysis enough for reporting is done.
 
   // Compute probabilities only if requested.
   if (!prob_requested_) return;
@@ -455,9 +422,9 @@ void FaultTreeAnalysis::SetAnd(std::vector<int>& events_children,
   sets.push_back(tmp_set_c);
 }
 
-void FaultTreeAnalysis::FindMCS(const std::set< std::set<int> >& cut_sets,
-                         const std::set< std::set<int> >& mcs_lower_order,
-                         int min_order) {
+void FaultTreeAnalysis::FindMcs(const std::set< std::set<int> >& cut_sets,
+                                const std::set< std::set<int> >& mcs_lower_order,
+                                int min_order) {
   if (cut_sets.empty()) return;
 
   // Iterator for cut_sets.
@@ -497,7 +464,7 @@ void FaultTreeAnalysis::FindMCS(const std::set< std::set<int> >& cut_sets,
   }
   imcs_.insert(temp_min_sets.begin(), temp_min_sets.end());
   min_order++;
-  FaultTreeAnalysis::FindMCS(temp_sets, temp_min_sets, min_order);
+  FaultTreeAnalysis::FindMcs(temp_sets, temp_min_sets, min_order);
 }
 
 // -------------------- Algorithm for Cut Sets and Probabilities -----------
@@ -553,7 +520,8 @@ void FaultTreeAnalysis::SetsToString() {
   }
 }
 
-double FaultTreeAnalysis::ProbOr(std::set< std::set<int> >& min_cut_sets, int nsums) {
+double FaultTreeAnalysis::ProbOr(std::set< std::set<int> >& min_cut_sets,
+                                 int nsums) {
   // Recursive implementation.
   if (min_cut_sets.empty()) return 0;
 

@@ -24,28 +24,28 @@ RiskAnalysis::RiskAnalysis(std::string config_file)
       id_(""),
       type_(""),
       vote_number_(-1) {
-      // Add valid gate types.
-      gate_types_.insert("and");
-      gate_types_.insert("or");
-      gate_types_.insert("not");
-      gate_types_.insert("nor");
-      gate_types_.insert("nand");
-      gate_types_.insert("xor");
-      gate_types_.insert("null");
-      gate_types_.insert("inhibit");
-      gate_types_.insert("vote");
+  // Add valid gate types.
+  gate_types_.insert("and");
+  gate_types_.insert("or");
+  gate_types_.insert("not");
+  gate_types_.insert("nor");
+  gate_types_.insert("nand");
+  gate_types_.insert("xor");
+  gate_types_.insert("null");
+  gate_types_.insert("inhibit");
+  gate_types_.insert("vote");
 
-      // Add valid primary event types.
-      types_.insert("basic");
-      types_.insert("undeveloped");
-      types_.insert("house");
-      types_.insert("conditional");
+  // Add valid primary event types.
+  types_.insert("basic");
+  types_.insert("undeveloped");
+  types_.insert("house");
+  types_.insert("conditional");
 
-      // Initialize a fault tree with a default name.
-      FaultTreePtr fault_tree_;
+  // Initialize a fault tree with a default name.
+  FaultTreePtr fault_tree_;
 
-      fta_ = new FaultTreeAnalysis("default");
-    }
+  fta_ = new FaultTreeAnalysis("default");
+}
 
 void RiskAnalysis::ProcessInput(std::string input_file) {
   std::ifstream ifile(input_file.c_str());
@@ -117,7 +117,6 @@ void RiskAnalysis::PopulateProbabilities(std::string prob_file) {
       case 1: {
         if (args[0] == "{") {
         } else if (args[0] == "}") {
-
           // Refresh values.
           id = "";
           p = -1;
@@ -129,7 +128,6 @@ void RiskAnalysis::PopulateProbabilities(std::string prob_file) {
         break;
       }
       case 2: {
-
         id = args[0];
 
         if (id == "block") {
@@ -204,13 +202,13 @@ void RiskAnalysis::GraphingInstructions() {
 }
 
 void RiskAnalysis::Analyze() {
-  fta_->Analyze(fault_tree_, orig_ids_, prob_requested_);
+  fta_->Analyze(fault_tree_, prob_requested_);
 }
 
 void RiskAnalysis::Report(std::string output) {
   /// @todo Make this exception safe with a smart pointer.
   Reporter* rp = new Reporter();
-  rp->ReportFta(fta_, output);
+  rp->ReportFta(fta_, orig_ids_, output);
   delete rp;
 }
 
@@ -249,13 +247,10 @@ bool RiskAnalysis::GetArgs(std::string& line, std::string& orig_line,
 void RiskAnalysis::InterpretArgs(int nline, std::stringstream& msg,
                                   std::vector<std::string>& args,
                                   std::string& orig_line) {
-
   switch (args.size()) {
     case 1: {
-      if (args[0] == "{") {
-
+      if (args[0] == "{") {  // Not checking for wrong formatting.
       } else if (args[0] == "}") {
-
         // Check if all needed arguments for an event are received.
         if (parent_ == "") {
           msg << "Line " << nline << " : " << "Missing parent in this"
