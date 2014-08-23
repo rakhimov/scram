@@ -1,3 +1,5 @@
+/// @file relax_ng_validator.cc
+/// Implementation of RelaxNG Validator.
 /* relaxngvalidator.cpp
  * this class is agented off of the schemavalidator in libxml++
  * here is their license statement:

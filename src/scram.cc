@@ -35,6 +35,7 @@ int main(int argc, char* argv[]) {
       ("nsums,s", po::value<int>()->default_value(1000000),
        "number of sums in series expansion for probability calculations")
       ("output,o", po::value<std::string>(), "output file")
+      ("xml,x", po::value<std::string>(), "xml input file")
       ;
 
   po::variables_map vm;
@@ -58,6 +59,13 @@ int main(int argc, char* argv[]) {
   // Process command line args.
   if (vm.count("help")) {
     std::cout << usage << "\n\n" << desc << "\n";
+    return 0;
+  }
+
+  // XML input file.
+  if (vm.count("xml")) {
+    RiskAnalysis* ran = new RiskAnalysis();
+    ran->ProcessXml(vm["xml"].as<std::string>());
     return 0;
   }
 

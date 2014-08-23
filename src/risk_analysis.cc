@@ -16,6 +16,8 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/date_time.hpp>
 
+#include "xml_parser.h"
+
 namespace scram {
 
 RiskAnalysis::RiskAnalysis(std::string config_file)
@@ -45,6 +47,28 @@ RiskAnalysis::RiskAnalysis(std::string config_file)
   FaultTreePtr fault_tree_;
 
   fta_ = new FaultTreeAnalysis("default");
+}
+
+void RiskAnalysis::ProcessXml(std::string xml_file) {
+  std::ifstream file_stream(xml_file.c_str());
+  if (!file_stream) {
+    throw IOError("The file '" + xml_file + "' could not be loaded.");
+  }
+
+  std::stringstream stream;
+  stream << file_stream.rdbuf();
+  file_stream.close();
+
+  boost::shared_ptr<XMLParser> parser(new XMLParser());
+  parser->Init(stream);
+
+  std::stringstream schema;
+  /// @todo This must be hardcoded with CMake
+  std::string schema_path = "/home/olzhas/projects/install/share/scram/scram.rng";
+  std::ifstream schema_stream(schema_path.c_str());
+  schema << schema_stream.rdbuf();
+  schema_stream.close();
+  parser->Validate(schema);
 }
 
 void RiskAnalysis::ProcessInput(std::string input_file) {

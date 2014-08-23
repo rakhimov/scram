@@ -40,6 +40,9 @@ class RiskAnalysis {
   /// @param[in] XML file with configurations for the analysis and output.
   RiskAnalysis(std::string config_file = "guess_yourself");
 
+  /// Work with XML input file.
+  void ProcessXml(std::string xml_file);
+
   /// Initializes the analysis from an input file.
   /// @param[in] input_file The input file.
   /// @todo Must deal with xml input file.
@@ -53,7 +56,7 @@ class RiskAnalysis {
   /// @throws ValidationError if input contains errors.
   /// @throws ValueError if input values are not valid.
   /// @throws IOError if the input file is not accessable.
-  virtual void ProcessInput(std::string input_file);
+  void ProcessInput(std::string input_file);
 
   /// Initializes probabilities relevant to the analysis.
   /// @param[in] prob_file The file with probability instructions.
@@ -68,7 +71,7 @@ class RiskAnalysis {
   /// @throws ValidationError if input contains errors.
   /// @throws ValueError if input values are not valid.
   /// @throws IOError if the input file is not accessable.
-  virtual void PopulateProbabilities(std::string prob_file);
+  void PopulateProbabilities(std::string prob_file);
 
   /// Graphing or other visual resources for the analysis if applicable.
   /// @todod Must be handled by a separate class.
@@ -81,7 +84,7 @@ class RiskAnalysis {
   /// the extensions are different.
   /// @throws Error if called before tree initialization from an input file.
   /// @throws IOError if the output file is not accessable.
-  virtual void GraphingInstructions();
+  void GraphingInstructions();
 
   /// Perform the main analysis operations.
   /// @todo Must use specific analyzers for this operation.
@@ -93,7 +96,7 @@ class RiskAnalysis {
   /// without its probabilities.
   /// @throws Error if called before tree initialization from an input file.
   /// @note Cut set generator: O_avg(N) O_max(N)
-  virtual void Analyze();
+  void Analyze();
 
   /// Reports the results of analysis.
   /// @param[out] output The output destination.
@@ -106,11 +109,11 @@ class RiskAnalysis {
   /// param[out] output The output destination.
   /// @throws Error if called before the tree analysis.
   /// @throws IOError if the output file is not accessable.
-  virtual void Report(std::string output);
+  void Report(std::string output);
 
 
 
-  virtual ~RiskAnalysis() { delete fta_; }
+  ~RiskAnalysis() { delete fta_; }
 
  private:
   /// Gets arguments from a line in an input file formatted accordingly.

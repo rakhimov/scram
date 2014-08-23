@@ -1,3 +1,5 @@
+/// @file relax_ng_validator.h
+/// RelaxNG Validator.
 /* relaxngvalidator.h
  * this class is agented off of the schemavalidator in libxml++
  * here is their license statement:
@@ -17,10 +19,9 @@
 
 namespace scram {
 
-/// RelaxNGValidator
-///
+/// @class RelaxNGValidator
 /// This class provides a simple interface to validate xml documents
-/// agaisnt a given RelaxNG schema.
+/// against a given RelaxNG schema.
 class RelaxNGValidator {
  public:
   /// Constructor.
@@ -33,7 +34,7 @@ class RelaxNGValidator {
   /// @param[in] contents The contents of the xml file.
   void parse_memory(const Glib::ustring& contents);
 
-  /// Validate an xml file agaisnt the given schema.
+  /// Validate an xml file against the given schema.
   /// @param[in] doc The xml file document.
   bool Validate(const xmlpp::Document* doc);
 
