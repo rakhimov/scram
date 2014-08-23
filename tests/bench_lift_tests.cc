@@ -4,8 +4,8 @@
 
 // Benchmark tests for Lift system from OpenFTA
 TEST_F(FaultTreeAnalysisTest, Lift) {
-  std::string tree_input = "./input/benchmark/lift.scramf";
-  std::string prob_input = "./input/benchmark/lift.scramp";
+  std::string tree_input = "./share/scram/input/benchmark/lift.scramf";
+  std::string prob_input = "./share/scram/input/benchmark/lift.scramp";
   std::vector<std::string> events;
   events.push_back("lmd_1");
   events.push_back("dpd_1");

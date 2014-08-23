@@ -5,8 +5,8 @@
 // Bechmark tests for NOT gate.
 // [A OR NOT A]
 TEST_F(FaultTreeAnalysisTest, A_OR_NOT_A) {
-  std::string tree_input = "./input/benchmark/a_or_not_a.scramf";
-  std::string prob_input = "./input/benchmark/abc.scramp";
+  std::string tree_input = "./share/scram/input/benchmark/a_or_not_a.scramf";
+  std::string prob_input = "./share/scram/input/benchmark/abc.scramp";
   std::string A = "a";  // 0.1
   std::set<std::string> cut_set;
   std::set< std::set<std::string> > mcs;  // For expected min cut sets.
@@ -28,8 +28,8 @@ TEST_F(FaultTreeAnalysisTest, A_OR_NOT_A) {
 
 // [A OR NOT B]
 TEST_F(FaultTreeAnalysisTest, A_OR_NOT_B) {
-  std::string tree_input = "./input/benchmark/a_or_not_b.scramf";
-  std::string prob_input = "./input/benchmark/abc.scramp";
+  std::string tree_input = "./share/scram/input/benchmark/a_or_not_b.scramf";
+  std::string prob_input = "./share/scram/input/benchmark/abc.scramp";
   std::string A = "a";  // 0.1
   std::string B = "b";  // 0.2
   std::set<std::string> cut_set;
@@ -52,8 +52,8 @@ TEST_F(FaultTreeAnalysisTest, A_OR_NOT_B) {
 
 // [A AND NOT A]
 TEST_F(FaultTreeAnalysisTest, A_AND_NOT_A) {
-  std::string tree_input = "./input/benchmark/a_and_not_a.scramf";
-  std::string prob_input = "./input/benchmark/abc.scramp";
+  std::string tree_input = "./share/scram/input/benchmark/a_and_not_a.scramf";
+  std::string prob_input = "./share/scram/input/benchmark/abc.scramp";
   std::string A = "a";  // 0.1
   std::set<std::string> cut_set;
   std::set< std::set<std::string> > mcs;  // For expected min cut sets.
@@ -69,8 +69,8 @@ TEST_F(FaultTreeAnalysisTest, A_AND_NOT_A) {
 
 // [A AND NOT B]
 TEST_F(FaultTreeAnalysisTest, A_AND_NOT_B) {
-  std::string tree_input = "./input/benchmark/a_and_not_b.scramf";
-  std::string prob_input = "./input/benchmark/abc.scramp";
+  std::string tree_input = "./share/scram/input/benchmark/a_and_not_b.scramf";
+  std::string prob_input = "./share/scram/input/benchmark/abc.scramp";
   std::string A = "a";  // 0.1
   std::string B = "b";  // 0.2
   std::set<std::string> cut_set;
@@ -91,8 +91,8 @@ TEST_F(FaultTreeAnalysisTest, A_AND_NOT_B) {
 
 // [A OR (B, NOT A)]
 TEST_F(FaultTreeAnalysisTest, A_OR_NOT_AB) {
-  std::string tree_input = "./input/benchmark/a_or_not_ab.scramf";
-  std::string prob_input = "./input/benchmark/abc.scramp";
+  std::string tree_input = "./share/scram/input/benchmark/a_or_not_ab.scramf";
+  std::string prob_input = "./share/scram/input/benchmark/abc.scramp";
   std::string A = "a";  // 0.1
   std::string B = "b";  // 0.2
   std::set<std::string> cut_set;
@@ -117,8 +117,8 @@ TEST_F(FaultTreeAnalysisTest, A_OR_NOT_AB) {
 // [A OR NOT B] FTA MC
 TEST_F(FaultTreeAnalysisTest, MC_A_OR_NOT_B) {
   fta(new FaultTreeAnalysis("mc"));
-  std::string tree_input = "./input/benchmark/a_or_not_b.scramf";
-  std::string prob_input = "./input/benchmark/abc.scramp";
+  std::string tree_input = "./share/scram/input/benchmark/a_or_not_b.scramf";
+  std::string prob_input = "./share/scram/input/benchmark/abc.scramp";
   std::set< std::set<int> > p_terms;
   std::set< std::set<int> > n_terms;
   std::set<int> cut_set;

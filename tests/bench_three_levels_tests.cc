@@ -5,8 +5,8 @@
 // Benchmark Tests for Three levels of transfer tree, an example from OpenFTA.
 // Test Minimal cut sets and total probabilty.
 TEST_F(FaultTreeAnalysisTest, ThreeLevels) {
-  std::string tree_input = "./input/benchmark/top.scramf";
-  std::string prob_input = "./input/benchmark/three_levels.scramp";
+  std::string tree_input = "./share/scram/input/benchmark/top.scramf";
+  std::string prob_input = "./share/scram/input/benchmark/three_levels.scramp";
   std::string A = "a";  // 0.1
   std::string B = "b";  // 0.2
   std::set<std::string> cut_set;

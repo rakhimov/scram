@@ -5,8 +5,8 @@
 // Benchmark Tests for [A xor B xor C] fault tree.
 // Test Minimal cut sets and total probabilty.
 TEST_F(FaultTreeAnalysisTest, XOR_ABC) {
-  std::string tree_input = "./input/benchmark/xor.scramf";
-  std::string prob_input = "./input/benchmark/abc.scramp";
+  std::string tree_input = "./share/scram/input/benchmark/xor.scramf";
+  std::string prob_input = "./share/scram/input/benchmark/abc.scramp";
   std::string A = "a";  // 0.1
   std::string B = "b";  // 0.2
   std::string C = "c";  // 0.3

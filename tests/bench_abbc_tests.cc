@@ -5,8 +5,8 @@
 // Benchmark Tests for [AB or BC] fault tree.
 // Test Minimal cut sets and total probability.
 TEST_F(FaultTreeAnalysisTest, AB_BC) {
-  std::string tree_input = "./input/benchmark/ab_bc.scramf";
-  std::string prob_input = "./input/benchmark/ab_bc.scramp";
+  std::string tree_input = "./share/scram/input/benchmark/ab_bc.scramf";
+  std::string prob_input = "./share/scram/input/benchmark/ab_bc.scramp";
   std::string A = "a";  // 0.1
   std::string B = "b";  // 0.2
   std::string C = "c";  // 0.3

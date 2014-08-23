@@ -5,8 +5,8 @@
 // Benchmark Tests for Theatre fault tree from OpenFTA.
 // Test Minimal cut sets and total probabilty.
 TEST_F(FaultTreeAnalysisTest, Theatre) {
-  std::string tree_input = "./input/benchmark/theatre.scramf";
-  std::string prob_input = "./input/benchmark/theatre.scramp";
+  std::string tree_input = "./share/scram/input/benchmark/theatre.scramf";
+  std::string prob_input = "./share/scram/input/benchmark/theatre.scramp";
   std::string GEN_FAIL = "gen_fail";  // 2e-2
   std::string RELAY_FAIL = "relay_fail";  // 5e-2
   std::string MAINS_FAIL = "mains_fail";  // 3e-2

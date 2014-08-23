@@ -852,7 +852,7 @@ TEST_F(FaultTreeAnalysisTest, Constructor) {
 // in fault_tree_input_tests.cc, so this test only concerned with actual changes
 // after processing the input.
 TEST_F(FaultTreeAnalysisTest, ProcessInput) {
-  std::string tree_input = "./input/fta/correct_tree_input.scramf";
+  std::string tree_input = "./share/scram/input/fta/correct_tree_input.scramf";
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   EXPECT_EQ(7, orig_ids().size());
   EXPECT_EQ(3, gates().size());
@@ -886,8 +886,8 @@ TEST_F(FaultTreeAnalysisTest, ProcessInput) {
 
 // Test Probability Assignment
 TEST_F(FaultTreeAnalysisTest, PopulateProbabilities) {
-  std::string tree_input = "./input/fta/correct_tree_input.scramf";
-  std::string prob_input = "./input/fta/correct_prob_input.scramp";
+  std::string tree_input = "./share/scram/input/fta/correct_tree_input.scramf";
+  std::string prob_input = "./share/scram/input/fta/correct_prob_input.scramp";
   ASSERT_THROW(ran->PopulateProbabilities(prob_input), Error);  // No tree.
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
@@ -909,12 +909,12 @@ TEST_F(FaultTreeAnalysisTest, PopulateProbabilities) {
 // Test Graphing Intructions
 TEST_F(FaultTreeAnalysisTest, GraphingInstructions) {
   std::vector<std::string> tree_input;
-  tree_input.push_back("./input/fta/correct_tree_input.scramf");
-  tree_input.push_back("./input/fta/doubly_defined_basic.scramf");
+  tree_input.push_back("./share/scram/input/fta/correct_tree_input.scramf");
+  tree_input.push_back("./share/scram/input/fta/doubly_defined_basic.scramf");
 
   /// @deprecated Change to include tests.
-  // tree_input.push_back("./input/fta/transfer_correct_top.scramf");
-  // tree_input.push_back("./input/fta/transfer_correct_sub.scramf");
+  // tree_input.push_back("./share/scram/input/fta/transfer_correct_top.scramf");
+  // tree_input.push_back("./share/scram/input/fta/transfer_correct_sub.scramf");
 
   std::vector<std::string>::iterator it;
   for (it = tree_input.begin(); it != tree_input.end(); ++it) {
@@ -926,7 +926,7 @@ TEST_F(FaultTreeAnalysisTest, GraphingInstructions) {
 
   /* @deprecated Include should change this behavior
   // Handle an exception graphing case with one TransferIn only.
-  std::string special_case = "./input/fta/transfer_graphing_exception.scramf";
+  std::string special_case = "./share/scram/input/fta/transfer_graphing_exception.scramf";
   fta = new FaultTreeAnalysis("default", true);
   ASSERT_NO_THROW(fta->ProcessInput(special_case));
   ASSERT_THROW(fta->GraphingInstructions(), ValidationError);
@@ -935,8 +935,8 @@ TEST_F(FaultTreeAnalysisTest, GraphingInstructions) {
 
 // Test Analysis
 TEST_F(FaultTreeAnalysisTest, AnalyzeDefault) {
-  std::string tree_input = "./input/fta/correct_tree_input.scramf";
-  std::string prob_input = "./input/fta/correct_prob_input.scramp";
+  std::string tree_input = "./share/scram/input/fta/correct_tree_input.scramf";
+  std::string prob_input = "./share/scram/input/fta/correct_prob_input.scramp";
   // ASSERT_THROW(ran->Analyze(), Error);  // Calling without a tree initialized.
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
@@ -996,7 +996,7 @@ TEST_F(FaultTreeAnalysisTest, AnalyzeDefault) {
 TEST_F(FaultTreeAnalysisTest, AnalyzeMC) {
   // delete fta();  // Re-initializing.
   fta(new FaultTreeAnalysis("mc"));
-  std::string tree_input = "./input/fta/correct_tree_input.scramf";
+  std::string tree_input = "./share/scram/input/fta/correct_tree_input.scramf";
   // ASSERT_THROW(ran->Analyze(), Error);  // Calling without a tree initialized.
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
@@ -1004,8 +1004,8 @@ TEST_F(FaultTreeAnalysisTest, AnalyzeMC) {
 
 // Test Reporting capabilities
 TEST_F(FaultTreeAnalysisTest, Report) {
-  std::string tree_input = "./input/fta/correct_tree_input.scramf";
-  std::string prob_input = "./input/fta/correct_prob_input.scramp";
+  std::string tree_input = "./share/scram/input/fta/correct_tree_input.scramf";
+  std::string prob_input = "./share/scram/input/fta/correct_prob_input.scramp";
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(ran->Analyze());

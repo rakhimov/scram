@@ -5,9 +5,9 @@
 // Benchmark Tests for Trans Test fault tree from OpenFTA.
 // This tests transfer gates.
 TEST_F(FaultTreeAnalysisTest, TransTest) {
-  std::string trans_tree_input = "./input/benchmark/trans_one.scramf";
-  std::string full_tree_input = "./input/benchmark/trans_full.scramf";
-  std::string prob_input = "./input/benchmark/trans_full.scramp";
+  std::string trans_tree_input = "./share/scram/input/benchmark/trans_one.scramf";
+  std::string full_tree_input = "./share/scram/input/benchmark/trans_full.scramf";
+  std::string prob_input = "./share/scram/input/benchmark/trans_full.scramp";
   std::string A = "a";  // 2e-2
   std::string B = "b";  // 4e-2
   std::string C = "c";  // 3e-2

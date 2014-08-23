@@ -89,10 +89,10 @@ target_link_libraries(scram_unit_tests dl
   gtest
   )
 
-# install(TARGETS scram_unit_tests
-#   RUNTIME DESTINATION bin
-#   COMPONENT testing
-#   )
+install(TARGETS scram_unit_tests
+  RUNTIME DESTINATION bin
+  COMPONENT testing
+  )
 
 file(GLOB header_files "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 install(FILES ${header_files}
@@ -113,12 +113,8 @@ add_custom_command(TARGET ${tgt}
   )
 
 # copy input files into build directory for testing
-add_custom_command(TARGET ${tgt}
-  POST_BUILD
-  COMMAND cp "-r"
-  "${CMAKE_CURRENT_SOURCE_DIR}/input"
-  "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/"
-  COMMENT "copying input files for unit testing"
-  DEPENDS
-  VERBATIM
-  )
+install(DIRECTORY
+    "${CMAKE_CURRENT_SOURCE_DIR}/input"
+    DESTINATION share/scram
+    COMPONENT testing
+    )
