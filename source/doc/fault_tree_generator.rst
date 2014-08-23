@@ -25,14 +25,15 @@ Script arguments
 =================
 * Random number generator seed.
 * Number of primary events.
-* Approximate ratio primary events to intermediate events. Average.
-* Approximate ratio of reused primary events. This events may show up
+* Approximate ratio primary events to gates. Average.
+* Approximate ratio of re-used primary events. This events may show up
   in several places in the tree.
+* Approximate ratio of re-used gates. The acyclic property should be ensured. [not implemented]
 * Minimum and maximum probabilities for primary events.
 * Number of primary events for the root node of the tree.
 * Fixed number of children for the root node of the tree.
 * Output file name.
-* Optional use of more complex gates and primary event types.
+* Optional use of more complex gates and primary event types. [not implemented]
 
 .. warning::
     Most values for the script arguments are not tested for validity. The
@@ -46,7 +47,7 @@ Algorithm
 1) Generate databases with intermediate and basic events.
 
     * Top event do not have children primary events, by default,
-      for complexity of the tree. The number of primary events for
+      for the higher complexity of the tree. The number of primary events for
       the root node may be set by a user.
     * Random choice between creating a new intermediate event,
       a new primary event, or re-using an existing primary event.

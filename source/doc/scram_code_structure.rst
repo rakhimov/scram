@@ -2,14 +2,42 @@
 SCRAM API Structure
 ##############################################
 
-Structure of the Core Code
-===========================
+Old Structure of the Core Code
+==============================
 
 - Input validation and processing
 - Tree validation and analysis
 - Abstract data types for trees
 - Probability calculations
 - Graphing instructions
+
+New Structure/Architecture of the Core Code
+============================================
+
+- Validator of XML input files using RelaxNG
+- Loader of the input files.
+- Loader of the configuration files.
+- Initializer of the analysis by constructing fault trees, event trees, CCF,
+  and other analysis entities.
+  This initialization phase should validate the values and logic supplied from
+  the input file. The construction and analysis are initialized according to
+  the configurations supplied from the configuration file.
+- Risk analyzer is the main machine that operates with the initialized fault,
+  event trees, and other entities to provide the requested results. It is run
+  after the initialization phase. Risk Analyzer keeps track of all the events,
+  configurations, entities of analysis by having them in appropriate databases.
+- Entity analyzers are analyzers of fault trees, event trees, CCF, MC, and
+  other analysis kinds. These analyzers are used by the main Risk Analyzer
+  to produce the final results. These analyzers should share functionalities
+  and be able to cooperate or be used by other analyzers.
+
+    * Fault Tree Analyzer operates on one fault tree and may provide minimal
+      cut sets as output or other information about the tree.
+    * Probability calculator may accepts cut sets to generate total probability,
+      individual probabilities of cut sets, contributions, importances.
+
+- Reporter outputs the results of the work of Risk Analyzer to specified files
+  or streams with a certain formatting.
 
 API Documentation
 ==================

@@ -14,7 +14,7 @@ should be performed. In addition to this, the user should provide
 additional parameters for the analysis type chosen. For example, if
 FTA is requested, type of algorithm for minimal cut set generation may
 be specified by the user, or the user can choose if probability
-calculations should assume a rare event approximation.
+calculations should assume the rare event approximation.
 However, there are default values for these parameters that try to
 give the most optimal and accurate results.
 
@@ -28,11 +28,11 @@ Fault Tree Analysis.
    the tree. This is for visual verification of the input.
    Stop execution of the program.
 
-#. Create the tree for analysis.
+#. Instantiate the analysis. Create the trees for the analysis.
 
-#. Perform cut set generation.
+#. Perform cut set generation or other analysis.
 
-#. Perform analysis: Rare event approximation and independence of events.
+#. Perform numerical analysis: Rare event approximation and independence of events.
    Rare event approximation is used only if enforced by a user.
 
 #. Output the user specified analysis results. The output is sorted by
@@ -179,12 +179,13 @@ Future Additions.
 General Information for Users.
 ==============================
 
-#. Suggested scram specific extensions for input files:
+#. Suggested scram specific extensions for input files:  *to be deprecated*
     :FTA input file:     .scramf
     :FTA prob file:      .scramp
 
 #. If you are using a text editor with highlighting, set filetype to 'conf'.
    This configuration-like highlighting works well with a scram input file.
+    *to be deprecated*
 
 #. Run 'scram -h' to see all the flags and parameters for analysis.
 

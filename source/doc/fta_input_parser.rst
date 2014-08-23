@@ -2,6 +2,10 @@
 SCRAM FTA: Input Parser and Input Examples
 #################################################
 
+.. note::
+    This is to be deprecated with XML input. Input validation will be done by
+    RelaxNG and additional validation is performed on analysis instantiation.
+
 Steps in Fault Tree Input Verification
 ========================================
 #. Ignore comment lines.

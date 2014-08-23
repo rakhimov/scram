@@ -24,6 +24,8 @@ Currently Low Hanging Fruits
 
 - Improve fault tree generator. *Low*
 
+- Create cut set generator. *Low*
+
 
 Major Enhancements and Capabilities
 ===================================
@@ -43,12 +45,19 @@ Major Enhancements and Capabilities
     * Maintenance
     * Guaranteed Success/Failure
 
+- OpenPSA-like XML input format. *High*
+
+  * Remove custom input format and parser.
+  * Reduce tests for input format and parser.
+  * Add labels to all members.
+  * Add Attributes struct to all members.
+  * Deprecate Transfer tests. Create Include tests instead.
+
+- GUI development. *High*
+
 
 Minor Enhancements and Capabilities
 ===================================
-
-- Other input/output methods : XML, json, sql. *Moderate*
-- GUI development. *Moderate*
 
 
 Documentation: Moderate Importance
@@ -57,7 +66,10 @@ Documentation: Moderate Importance
 - Getting Started
 - Building/Installing
 - Installation instructions for various platforms
-- Simple Walkthrough Example
+- Simple Walkthrough Example:
+
+    * Various ways of writing input files.
+    * Separation of inputs.
 
 Coding Specific
 ===================

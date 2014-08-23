@@ -14,11 +14,11 @@
 namespace scram {
 
 /// @class Event
-/// General event base class.
+/// General fault tree event base class.
 class Event {
  public:
-  /// Constructs an event with a specific id.
-  /// @param[in] id The identifying name for this event.
+  /// Constructs a fault tree event with a specific id.
+  /// @param[in] id The identifying name for the event.
   Event(std::string id) : id_(id) {}
 
   /// @returns The id that is set upon the construction of this event.
@@ -27,84 +27,71 @@ class Event {
   virtual ~Event() {}
 
  private:
-  /// Id name of an event.
+  /// Id name of a event.
   std::string id_;
+  /// @todo labels and attributes should be represented here.
 };
 
-/// @class TopEvent
-/// The top event of a fault tree.
-/// @note This class should not have a parent.
-class TopEvent : public scram::Event {
+/// @class Gate
+/// A representation of a gate in a fault tree.
+class Gate : public scram::Event {
  public:
   /// Constructs with an id and a gate.
   /// @param[in] id The identifying name for this event.
-  /// @param[in] gate The gate for this event.
-  TopEvent(std::string id, std::string gate = "NONE");
+  /// @param[in] type The type for this gate.
+  Gate(std::string id, std::string type = "NONE");
 
   /// @returns The gate type.
   /// @throws ValueError if the gate is not yet assigned.
-  virtual const std::string& gate();
+  const std::string& type();
 
   /// Sets the gate type.
-  /// @param[in] gate The gate for this event.
-  /// @throws ValueError if the gate is being re-assigned.
-  virtual void gate(std::string gate);
+  /// @param[in] gate The gate type for this event.
+  /// @throws ValueError if the gate type is being re-assigned.
+  void type(std::string type);
 
   /// @returns The vote number iff the gate is vote.
-  virtual int vote_number();
+  int vote_number();
 
   /// Sets the vote number only for a vote gate.
   /// @param[in] vnumber The vote number.
   /// @throws ValueError if the vote number is invalid or being re-assigned.
-  virtual void vote_number(int vnumber);
+  /// @todo A better representation for varios gates as Vote might be a separte
+  /// class.
+  void vote_number(int vnumber);
 
-  /// @returns The children of this event.
-  /// @throws ValueError if there are no children.
-  virtual const std::map<std::string,
-                         boost::shared_ptr<scram::Event> >& children();
+  /// Adds a parent into the parent map.
+  /// @param[in] parent One of the parents of this gate event.
+  /// @throws ValueError if the parent is being re-inserted.
+  void AddParent(const boost::shared_ptr<scram::Gate>& parent);
+
+  /// @returns All the parents of this gate event.
+  /// @throws ValueError if there are no parents for this gate event.
+  const std::map<std::string, boost::shared_ptr<scram::Gate> >& parents();
 
   /// Adds a child event into the children list.
   /// @param[in] child A pointer to a child event.
   /// @throws ValueError if the child is being re-inserted.
   virtual void AddChild(const boost::shared_ptr<scram::Event>& child);
 
-  virtual ~TopEvent() {}
+  /// @returns The children of this gate.
+  /// @throws ValueError if there are no children.
+  const std::map<std::string, boost::shared_ptr<scram::Event> >& children();
+
+  ~Gate() {}
 
  private:
   /// Gate type.
-  std::string gate_;
+  std::string type_;
 
   /// Vote number for the vote gate.
   int vote_number_;
 
-  /// Intermediate and primary child events of this top event.
+  /// The parents of this gate.
+  std::map<std::string, boost::shared_ptr<scram::Gate> > parents_;
+
+  /// The children of this gate.
   std::map<std::string, boost::shared_ptr<scram::Event> > children_;
-};
-
-/// @class InterEvent
-/// The intermediate event for a fault tree.
-/// This event is Top event with a parent.
-class InterEvent : public scram::TopEvent {
- public:
-  /// Constructs with a specific id and gate.
-  /// @param[in] id The identifying name for this event.
-  /// @param[in] gate The gate for this event.
-  InterEvent(std::string id, std::string gate = "NONE");
-
-  /// @returns The parent, which can only be a Top or Intermediate event.
-  /// @throws ValueError if the parent is not yet set.
-  const boost::shared_ptr<scram::TopEvent>& parent();
-
-  /// Sets the parent.
-  /// @param[in] parent The only parent of this intermediate event.
-  /// @throws ValueError if the parent is being re-assigned.
-  void parent(const boost::shared_ptr<scram::TopEvent>& parent);
-
-  ~InterEvent() {}
-
- private:
-  /// The parent of this intermediate event.
-  boost::shared_ptr<scram::TopEvent> parent_;
 };
 
 /// @class PrimaryEvent
@@ -145,13 +132,13 @@ class PrimaryEvent : public scram::Event {
   /// Adds a parent into the parent map.
   /// @param[in] parent One of the parents of this primary event.
   /// @throws ValueError if the parent is being re-inserted.
-  void AddParent(const boost::shared_ptr<scram::TopEvent>& parent);
+  void AddParent(const boost::shared_ptr<scram::Gate>& parent);
 
   /// @returns All the parents of this primary event.
   /// @throws ValueError if there are no parents for this primary event.
-  std::map<std::string, boost::shared_ptr<scram::TopEvent> >& parents();
+  const std::map<std::string, boost::shared_ptr<scram::Gate> >& parents();
 
-  ~PrimaryEvent() {}
+  virtual ~PrimaryEvent() {}
 
  private:
   /// The type of the primary event.
@@ -161,7 +148,35 @@ class PrimaryEvent : public scram::Event {
   double p_;
 
   /// The parents of this primary event.
-  std::map<std::string, boost::shared_ptr<scram::TopEvent> > parents_;
+  std::map<std::string, boost::shared_ptr<scram::Gate> > parents_;
+};
+
+/// @class BasicEvent
+/// Representation of a basic event in a fault tree.
+class BasicEvent: public scram::PrimaryEvent {
+ public:
+  /// Constructs with id name.
+  /// @param[in] id The identifying name of this basic event.
+  BasicEvent(std::string id);
+
+  ~BasicEvent() {}
+
+ private:
+  /// @todo Probabilities should be moved from Primary event.
+};
+
+/// @class HouseEvent
+/// Representation of a house event in a fault tree.
+class HouseEvent: public scram::PrimaryEvent {
+ public:
+  /// Constructs with id name.
+  /// @param[in] id The identifying name of this basic event.
+  HouseEvent(std::string id);
+
+  ~HouseEvent() {}
+
+ private:
+  /// @todo Boolean true or false should be represented here.
 };
 
 }  // namespace scram

@@ -35,6 +35,8 @@ Currently Supported Event Types
 - Undeveloped
 - Conditional
 
+.. note::
+    Top and intermediate events are gates of the acyclic fault tree.
 
 The Algorithm to Generate Minimal Cut Sets
 ===========================================
@@ -43,6 +45,7 @@ The Algorithm to Generate Minimal Cut Sets
 - Update cut sets after each level.
 - Remove non-minimal cut sets according to rules.
 - Remove cut sets that are larger than the specified maximum order.
+- Remove cut sets with lower than cutoff probability. [not implemented]
 
 
 Probability Calculations
