@@ -90,51 +90,73 @@ void RiskAnalysis::ProcessXml(std::string xml_file) {
       // Not yet capable of handling other analysis.
       throw(scram::ValidationError("Cannot handle '" + name + "'"));
     }
+  }
 
-    // Check if all events are initialized.
-    /// @todo Print Names of events.
-    /// @todo Warning about extra events being initialized and unused.
-    /// @todo all_events container is not being updated.
-    if (!tbd_house_events_.empty()) {
-      // This is default and assumed.
-      prob_requested_ = true;
-      boost::unordered_map<std::string, HouseEventPtr>::iterator it;
-      for (it = tbd_house_events_.begin(); it != tbd_house_events_.end();
-           ++it) {
-        it->second->p(0);  // False House event is the default.
-        primary_events_.insert(std::make_pair(it->first, it->second));
-      }
+  // Check if all events are initialized.
+  /// @todo Print Names of events.
+  /// @todo Warning about extra events being initialized and unused.
+  /// @todo all_events container is not being updated.
+  if (!tbd_house_events_.empty()) {
+    // This is default and assumed.
+    prob_requested_ = true;
+    boost::unordered_map<std::string, HouseEventPtr>::iterator it;
+    for (it = tbd_house_events_.begin(); it != tbd_house_events_.end();
+         ++it) {
+      it->second->p(0);  // False House event is the default.
+      primary_events_.insert(std::make_pair(it->first, it->second));
     }
-    if (!tbd_basic_events_.empty()) {
-      prob_requested_ = false;
-      boost::unordered_map<std::string, BasicEventPtr>::iterator it;
-      for (it = tbd_basic_events_.begin(); it != tbd_basic_events_.end();
-           ++it) {
-        primary_events_.insert(std::make_pair(it->first, it->second));
-      }
+  }
+  if (!tbd_basic_events_.empty()) {
+    prob_requested_ = false;
+    boost::unordered_map<std::string, BasicEventPtr>::iterator it;
+    for (it = tbd_basic_events_.begin(); it != tbd_basic_events_.end();
+         ++it) {
+      primary_events_.insert(std::make_pair(it->first, it->second));
     }
+  }
 
-    if (!tbd_events_.empty()) {
-      prob_requested_ = false;
-      boost::unordered_map<std::string, std::vector<GatePtr> >::iterator it;
-      for (it = tbd_events_.begin(); it != tbd_events_.end(); ++it) {
-        std::vector<GatePtr>::iterator itvec = it->second.begin();
-        BasicEventPtr child(new BasicEvent(it->first));
-        for (; itvec != it->second.end(); ++itvec) {
-          (*itvec)->AddChild(child);
-        }
+  if (!tbd_events_.empty()) {
+    prob_requested_ = false;
+    boost::unordered_map<std::string, std::vector<GatePtr> >::iterator it;
+    for (it = tbd_events_.begin(); it != tbd_events_.end(); ++it) {
+      std::vector<GatePtr>::iterator itvec = it->second.begin();
+      BasicEventPtr child(new BasicEvent(it->first));
+      for (; itvec != it->second.end(); ++itvec) {
+        (*itvec)->AddChild(child);
       }
-      /// @todo either clean tbd containers or warn the user.
     }
-    if (!tbd_gates_.empty()) {
-      std::stringstream ss;
-      boost::unordered_map<std::string, GatePtr>::iterator it;
-      for (it = tbd_gates_.begin(); it != tbd_gates_.end(); ++it) {
-        std::string id = it->first;
-        boost::to_upper(id);
-        ss << id << "\n";
-      }
-      throw scram::ValidationError("Undefined gates:\n" + ss.str());
+    /// @todo either clean tbd containers or warn the user.
+  }
+  if (!tbd_gates_.empty()) {
+    std::stringstream ss;
+    boost::unordered_map<std::string, GatePtr>::iterator it;
+    for (it = tbd_gates_.begin(); it != tbd_gates_.end(); ++it) {
+      std::string id = it->first;
+      boost::to_upper(id);
+      ss << id << "\n";
+    }
+    throw scram::ValidationError("Undefined gates:\n" + ss.str());
+  }
+
+  // Check if all gates have a right number of children.
+  std::string bad_gates = RiskAnalysis::CheckAllGates();
+  if (bad_gates != "") {
+    std::stringstream msg;
+    msg << "\nThere are problems with the following gates:\n";
+    msg << bad_gates;
+    throw scram::ValidationError(msg.str());
+  }
+
+  /// @todo This should give a warning or error depending on the user's
+  /// choice.
+  if (prob_requested_) {
+    // Check if all primary events have probabilities initialized.
+    std::string uninit_primaries = RiskAnalysis::PrimariesNoProb();
+    if (uninit_primaries != "") {
+      std::stringstream msg;
+      msg << "Missing probabilities for following basic events:\n";
+      msg << uninit_primaries;
+      throw scram::ValidationError(msg.str());
     }
   }
 }
