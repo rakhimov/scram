@@ -37,7 +37,7 @@ int Gate::vote_number() {
 }
 
 void Gate::vote_number(int vnumber) {
-  if (type_ != "vote") {
+  if (type_ != "vote" && type_ != "atleast") {
     // This line calls type() function which may throw an exception if
     // the type of this gate is not yet set.
     std::string msg = "Vote number can only be defined for the VOTE gate. "
