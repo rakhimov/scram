@@ -93,6 +93,7 @@ int main(int argc, char* argv[]) {
   /// Initializer from input files.
   /// Run analysis.
 
+  FaultTreeAnalysis* fta;
   if (analysis == "fta-default" || analysis == "fta-mc") {
     if (vm["limit-order"].as<int>() < 1) {
       std::string msg = "Upper limit for cut sets can't be less than 1\n";
@@ -114,14 +115,17 @@ int main(int argc, char* argv[]) {
     if (rare_event) approx = "rare";
     if (mcub) approx = "mcub";
 
-    // ran = new FaultTreeAnalysis(fta_analysis, graph_only, approx,
-    //                     vm["limit-order"].as<int>(), vm["nsums"].as<int>());
+    fta = new FaultTreeAnalysis(fta_analysis, approx,
+                         vm["limit-order"].as<int>(), vm["nsums"].as<int>());
   } else {
     std::string msg = analysis + ": this analysis is not recognized.\n";
     std::cout << msg << std::endl;
     std::cout << desc << "\n";
     return 1;
   }
+
+  // Set the fault tree analysis type.
+  ran->fta(fta);
 
   // XML input file.
   if (vm.count("xml")) {

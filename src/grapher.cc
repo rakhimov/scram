@@ -95,6 +95,7 @@ void Grapher::GraphFaultTree(
   gate_colors.insert(std::make_pair("xor", "brown"));
   gate_colors.insert(std::make_pair("inhibit", "yellow"));
   gate_colors.insert(std::make_pair("vote", "cyan"));
+  gate_colors.insert(std::make_pair("atleast", "cyan"));
   gate_colors.insert(std::make_pair("null", "gray"));
   gate_colors.insert(std::make_pair("nor", "magenta"));
   gate_colors.insert(std::make_pair("nand", "orange"));
@@ -105,7 +106,7 @@ void Grapher::GraphFaultTree(
       << "color=" << gate_colors[top_event_->type()] << ", "
       << "label=\"" << orig_ids_[top_event_->id()] << "\\n"
       << "{ " << gate;
-  if (gate == "VOTE") {
+  if (gate == "VOTE" || gate == "ATLEAST") {
     out << " " << top_event_->vote_number() << "/"
         << top_event_->children().size();
   }
@@ -119,7 +120,7 @@ void Grapher::GraphFaultTree(
         << "color=" << gate_colors[it_inter->second->type()] << ", "
         << "label=\"" << orig_ids_[it_inter->first] << "\\n"
         << "{ " << gate;
-    if (gate == "VOTE") {
+    if (gate == "VOTE" || gate == "ATLEAST") {
       out << " " << it_inter->second->vote_number() << "/"
           << it_inter->second->children().size();
     }

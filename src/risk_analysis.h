@@ -43,6 +43,9 @@ class RiskAnalysis {
   /// @param[in] XML file with configurations for the analysis and output.
   RiskAnalysis(std::string config_file = "guess_yourself");
 
+  /// Set the fault tree analysis.
+  void fta(FaultTreeAnalysis* fta) { fta_ = fta; }
+
   /// Work with XML input file.
   void ProcessXml(std::string xml_file);
 
