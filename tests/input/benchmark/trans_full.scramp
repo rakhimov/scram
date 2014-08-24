@@ -1,9 +1,0 @@
-# This file contains probabilities for primary events in Trans fault trees
-# for testing TransferIn and TransferOut capabilities of SCRAM
-# The probabilities are the same as in OpenFTA examples
-
-{
-    A   2.000000e-002
-    B   4.000000e-002
-    C   3.000000e-002
-}
