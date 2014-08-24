@@ -19,12 +19,15 @@
 #include "event.h"
 #include "grapher.h"
 #include "reporter.h"
+#include "xml_parser.h"
 
 class FaultTreeAnalysisTest;
 
 typedef boost::shared_ptr<scram::Event> EventPtr;
 typedef boost::shared_ptr<scram::Gate> GatePtr;
 typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
+typedef boost::shared_ptr<scram::BasicEvent> BasicEventPtr;
+typedef boost::shared_ptr<scram::HouseEvent> HouseEventPtr;
 
 typedef boost::shared_ptr<scram::FaultTree> FaultTreePtr;
 
@@ -111,8 +114,6 @@ class RiskAnalysis {
   /// @throws IOError if the output file is not accessable.
   void Report(std::string output);
 
-
-
   ~RiskAnalysis() { delete fta_; }
 
  private:
@@ -138,6 +139,10 @@ class RiskAnalysis {
                       std::vector<std::string>& args,
                       std::string& orig_line);
 
+  void DefineFaultTree(const xmlpp::Element* ft_node);
+
+  void ProcessModelData(const xmlpp::Element* model_data);
+
   /// Adds node and updates databases of intermediate and primary events.
   /// @param[in] parent The id of the parent node.
   /// @param[in] id The id name of the node to be created.
@@ -145,7 +150,7 @@ class RiskAnalysis {
   /// @param[in] vote_number The vote number for the VOTE gate initialization.
   /// @throws ValidationError for invalid or incorrect inputs.
   void AddNode(std::string parent, std::string id, std::string type,
-                int vote_number = -1);
+               int vote_number = -1);
 
   /// Adds probability to a primary event for p-model.
   /// @param[in] id The id name of the primary event.
@@ -190,7 +195,22 @@ class RiskAnalysis {
   boost::unordered_map<std::string, GatePtr> gates_;
 
   /// Container for primary events.
+  /// @todo Consider deprecating this container for house and basic events.
   boost::unordered_map<std::string, PrimaryEventPtr> primary_events_;
+
+  /// Events to be defined.
+  // boost::unordered_map<std::string, EventPtr> tbd_events_;
+
+  boost::unordered_map<std::string, std::vector<GatePtr> > tbd_events_;
+
+  /// Gates to be defined.
+  boost::unordered_map<std::string, GatePtr> tbd_gates_;
+
+  /// Basic events to be defined.
+  boost::unordered_map<std::string, BasicEventPtr> tbd_basic_events_;
+
+  /// House events to be defined.
+  boost::unordered_map<std::string, HouseEventPtr> tbd_house_events_;
 
   /// Container for all events.
   boost::unordered_map<std::string, EventPtr> all_events_;
