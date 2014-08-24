@@ -34,6 +34,7 @@ RiskAnalysis::RiskAnalysis(std::string config_file)
   gate_types_.insert("null");
   gate_types_.insert("inhibit");
   gate_types_.insert("vote");
+  gate_types_.insert("atleast");
 
   // Add valid primary event types.
   types_.insert("basic");
@@ -88,6 +89,52 @@ void RiskAnalysis::ProcessXml(std::string xml_file) {
     } else {
       // Not yet capable of handling other analysis.
       throw(scram::ValidationError("Cannot handle '" + name + "'"));
+    }
+
+    // Check if all events are initialized.
+    /// @todo Print Names of events.
+    /// @todo Warning about extra events being initialized and unused.
+    /// @todo all_events container is not being updated.
+    if (!tbd_house_events_.empty()) {
+      // This is default and assumed.
+      prob_requested_ = true;
+      boost::unordered_map<std::string, HouseEventPtr>::iterator it;
+      for (it = tbd_house_events_.begin(); it != tbd_house_events_.end();
+           ++it) {
+        it->second->p(0);  // False House event is the default.
+        primary_events_.insert(std::make_pair(it->first, it->second));
+      }
+    }
+    if (!tbd_basic_events_.empty()) {
+      prob_requested_ = false;
+      boost::unordered_map<std::string, BasicEventPtr>::iterator it;
+      for (it = tbd_basic_events_.begin(); it != tbd_basic_events_.end();
+           ++it) {
+        primary_events_.insert(std::make_pair(it->first, it->second));
+      }
+    }
+
+    if (!tbd_events_.empty()) {
+      prob_requested_ = false;
+      boost::unordered_map<std::string, std::vector<GatePtr> >::iterator it;
+      for (it = tbd_events_.begin(); it != tbd_events_.end(); ++it) {
+        std::vector<GatePtr>::iterator itvec = it->second.begin();
+        BasicEventPtr child(new BasicEvent(it->first));
+        for (; itvec != it->second.end(); ++itvec) {
+          (*itvec)->AddChild(child);
+        }
+      }
+      /// @todo either clean tbd containers or warn the user.
+    }
+    if (!tbd_gates_.empty()) {
+      std::stringstream ss;
+      boost::unordered_map<std::string, GatePtr>::iterator it;
+      for (it = tbd_gates_.begin(); it != tbd_gates_.end(); ++it) {
+        std::string id = it->first;
+        boost::to_upper(id);
+        ss << id << "\n";
+      }
+      throw scram::ValidationError("Undefined gates:\n" + ss.str());
     }
   }
 }
@@ -421,6 +468,21 @@ void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
         throw scram::ValidationError(msg.str());
       }
 
+      if (type == "atleast") {
+        const xmlpp::Element* gate =
+            dynamic_cast<const xmlpp::Element*>(gate_type);
+        try {
+          vote_number_ = boost::lexical_cast<int>(
+              gate->get_attribute_value("min"));
+        } catch (boost::bad_lexical_cast& err) {
+          std::stringstream msg;
+          msg << "Line " << gate_type->get_line() << " :\n "
+              << "Incorrect Vote number or Min for Atleast Gate input.";
+          throw scram::ValidationError(msg.str());
+        }
+      }
+
+
       /// @todo This should take private/public roles into account.
       if (gates_.count(id)) {
         // Doubly defined gate.
@@ -460,6 +522,7 @@ void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
       fault_tree_->AddGate(i_event);
 
       i_event->type(type);  // Setting the gate type.
+      if (type == "atleast") i_event->vote_number(vote_number_);
 
 
       // Process children of this gate.
@@ -612,6 +675,7 @@ void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
       }
 
     } else if (name == "define-basic-event") {
+      prob_requested_ = true;
       // Work out a basic event here.
       std::string orig_id = element->get_attribute_value("name");
       std::string id = orig_id;
@@ -685,6 +749,7 @@ void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
       }
 
     } else if (name == "define-house-event") {
+      prob_requested_ = true;
       // Work with a house event.
       std::string orig_id = element->get_attribute_value("name");
       std::string id = orig_id;
@@ -953,7 +1018,7 @@ std::string RiskAnalysis::CheckGate(const GatePtr& event) {
         msg << orig_ids_[event->id()] << " : " << gate
             << " gate must have exactly one child.";
       }
-    } else if (gate == "vote") {
+    } else if (gate == "vote" || gate == "atleast") {
       if (size <= event->vote_number()) {
         boost::to_upper(gate);
         msg << orig_ids_[event->id()] << " : " << gate
