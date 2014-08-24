@@ -54,22 +54,6 @@ void Gate::vote_number(int vnumber) {
   vote_number_ = vnumber;
 }
 
-void Gate::AddParent(const boost::shared_ptr<scram::Gate>& parent) {
-  if (parents_.count(parent->id())) {
-    std::string msg = "Trying to re-insert existing parent for " + this->id();
-    throw scram::ValueError(msg);
-  }
-  parents_.insert(std::make_pair(parent->id(), parent));
-}
-
-const std::map<std::string, boost::shared_ptr<scram::Gate> >& Gate::parents() {
-  if (parents_.empty()) {
-    std::string msg = this->id() + " does not have parents.";
-    throw scram::ValueError(msg);
-  }
-  return parents_;
-}
-
 void Gate::AddChild(const boost::shared_ptr<scram::Event>& child) {
   if (children_.count(child->id())) {
     std::string msg = "Trying to re-insert a child for " + this->id() +
