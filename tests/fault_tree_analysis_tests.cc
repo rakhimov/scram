@@ -831,7 +831,7 @@ TEST_F(FaultTreeAnalysisTest, Constructor) {
 // in fault_tree_input_tests.cc, so this test only concerned with actual changes
 // after processing the input.
 TEST_F(FaultTreeAnalysisTest, ProcessInput) {
-  std::string tree_input = "./share/scram/input/fta/correct_tree_input.scramf";
+  std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   EXPECT_EQ(7, orig_ids().size());
   EXPECT_EQ(3, gates().size());
@@ -866,7 +866,7 @@ TEST_F(FaultTreeAnalysisTest, ProcessInput) {
 // Test Probability Assignment
 TEST_F(FaultTreeAnalysisTest, PopulateProbabilities) {
   // Input with probabilities
-  std::string tree_input = "./share/scram/input/fta/correct_tree_input.scramf";
+  std::string tree_input = "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_EQ(4, primary_events().size());
   ASSERT_EQ(1, primary_events().count("pumpone"));
@@ -886,12 +886,12 @@ TEST_F(FaultTreeAnalysisTest, PopulateProbabilities) {
 // Test Graphing Intructions
 TEST_F(FaultTreeAnalysisTest, GraphingInstructions) {
   std::vector<std::string> tree_input;
-  tree_input.push_back("./share/scram/input/fta/correct_tree_input.scramf");
-  tree_input.push_back("./share/scram/input/fta/doubly_defined_basic.scramf");
+  tree_input.push_back("./share/scram/input/fta/correct_tree_input.xml");
+  // tree_input.push_back("./share/scram/input/fta/doubly_defined_basic.xml");
 
   /// @deprecated Change to include tests.
-  // tree_input.push_back("./share/scram/input/fta/transfer_correct_top.scramf");
-  // tree_input.push_back("./share/scram/input/fta/transfer_correct_sub.scramf");
+  // tree_input.push_back("./share/scram/input/fta/transfer_correct_top.xml");
+  // tree_input.push_back("./share/scram/input/fta/transfer_correct_sub.xml");
 
   std::vector<std::string>::iterator it;
   for (it = tree_input.begin(); it != tree_input.end(); ++it) {
@@ -903,7 +903,7 @@ TEST_F(FaultTreeAnalysisTest, GraphingInstructions) {
 
   /* @deprecated Include should change this behavior
   // Handle an exception graphing case with one TransferIn only.
-  std::string special_case = "./share/scram/input/fta/transfer_graphing_exception.scramf";
+  std::string special_case = "./share/scram/input/fta/transfer_graphing_exception.xml";
   fta = new FaultTreeAnalysis("default", true);
   ASSERT_NO_THROW(fta->ProcessInput(special_case));
   ASSERT_THROW(fta->GraphingInstructions(), ValidationError);
@@ -912,7 +912,8 @@ TEST_F(FaultTreeAnalysisTest, GraphingInstructions) {
 
 // Test Analysis
 TEST_F(FaultTreeAnalysisTest, AnalyzeDefault) {
-  std::string tree_input = "./share/scram/input/fta/correct_tree_input.scramf";
+  std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
+  std::string with_prob = "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   // ASSERT_THROW(ran->Analyze(), Error);  // Calling without a tree initialized.
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
@@ -937,7 +938,7 @@ TEST_F(FaultTreeAnalysisTest, AnalyzeDefault) {
   // Probability calculations.
   // delete fta();  // Re-initializing.
   fta(new FaultTreeAnalysis("default"));
-  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->ProcessInput(with_prob));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(0.646, p_total());
   EXPECT_DOUBLE_EQ(0.42, prob_of_min_sets()[mcs_1]);
@@ -953,14 +954,14 @@ TEST_F(FaultTreeAnalysisTest, AnalyzeDefault) {
   // Probability calculations with the rare event approximation.
   // delete fta();  // Re-initializing.
   fta(new FaultTreeAnalysis("default", "rare"));
-  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->ProcessInput(with_prob));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(1.2, p_total());
 
   // Probability calculations with the MCUB approximation.
   // delete fta();  // Re-initializing.
   fta(new FaultTreeAnalysis("default", "mcub"));
-  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->ProcessInput(with_prob));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(0.766144, p_total());
 }
@@ -969,7 +970,7 @@ TEST_F(FaultTreeAnalysisTest, AnalyzeDefault) {
 TEST_F(FaultTreeAnalysisTest, AnalyzeMC) {
   // delete fta();  // Re-initializing.
   fta(new FaultTreeAnalysis("mc"));
-  std::string tree_input = "./share/scram/input/fta/correct_tree_input.scramf";
+  std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
   // ASSERT_THROW(ran->Analyze(), Error);  // Calling without a tree initialized.
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
@@ -977,7 +978,7 @@ TEST_F(FaultTreeAnalysisTest, AnalyzeMC) {
 
 // Test Reporting capabilities
 TEST_F(FaultTreeAnalysisTest, Report) {
-  std::string tree_input = "./share/scram/input/fta/correct_tree_input.scramf";
+  std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   ASSERT_NO_THROW(ran->Report("/dev/null"));

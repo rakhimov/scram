@@ -4,8 +4,8 @@
 
 // Benchmark Tests for  fault tree from OpenFTA.
 // This tests transfer gates.
-TEST_F(FaultTreeAnalysisTest, ThreeMotor) {
-  std::string tree_input = "./share/scram/input/benchmark/three_motor.scramf";
+TEST_F(FaultTreeAnalysisTest, DISABLED_ThreeMotor) {
+  std::string tree_input = "./share/scram/input/benchmark/three_motor.xml";
   std::set<std::string> cut_set;
   std::set< std::set<std::string> > mcs;  // For expected min cut sets.
   std::string T3 = "t3";

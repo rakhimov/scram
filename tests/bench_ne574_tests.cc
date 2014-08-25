@@ -6,7 +6,7 @@
 // class at UW-Madison.
 // Test Minimal cut sets and total probabilty.
 TEST_F(FaultTreeAnalysisTest, ne574) {
-  std::string tree_input = "./share/scram/input/benchmark/ne574.scramf";
+  std::string tree_input = "./share/scram/input/benchmark/ne574.xml";
   std::string B = "b";  // 0.1
   std::string C = "c";  // 0.3
   std::string D = "d";  // 0.5

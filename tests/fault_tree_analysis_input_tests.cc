@@ -12,8 +12,8 @@ using namespace scram;
 // Test correct tree inputs
 TEST(FaultTreeAnalysisInputTest, CorrectFTAInputs) {
   std::vector<std::string> correct_inputs;
-  correct_inputs.push_back("./share/scram/input/fta/correct_tree_input.scramf");
-  // correct_inputs.push_back("./share/scram/input/fta/doubly_defined_basic.scramf");
+  correct_inputs.push_back("./share/scram/input/fta/correct_tree_input.xml");
+  // correct_inputs.push_back("./share/scram/input/fta/doubly_defined_basic.xml");
 
   RiskAnalysis* ran;
 
@@ -28,7 +28,7 @@ TEST(FaultTreeAnalysisInputTest, CorrectFTAInputs) {
 
 // Test correct probability inputs
 TEST(FaultTreeAnalysisInputTest, CorrectFTAProbability) {
-  std::string input_correct = "./share/scram/input/fta/correct_tree_input.scramf";
+  std::string input_correct = "./share/scram/input/fta/correct_tree_input.xml";
 
   RiskAnalysis* ran;
   ran = new RiskAnalysis();
@@ -42,20 +42,20 @@ TEST(FaultTreeAnalysisInputTest, DISABLED_IncorrectFTAInputs) {
   std::vector<std::string> incorrect_inputs;
 
   // Access issues. IOErrors
-  ioerror_inputs.push_back("./share/scram/input/fta/nonexistent_file.scramf");
+  ioerror_inputs.push_back("./share/scram/input/fta/nonexistent_file.xml");
 
   // Other issues.
-  // incorrect_inputs.push_back("./share/scram/input/fta/basic_top_event.scramf");
-  // incorrect_inputs.push_back("./share/scram/input/fta/doubly_defined_intermediate.scramf");
-  // incorrect_inputs.push_back("./share/scram/input/fta/doubly_defined_primary_type.scramf");
-  // incorrect_inputs.push_back("./share/scram/input/fta/name_clash_inter.scramf");
-  // incorrect_inputs.push_back("./share/scram/input/fta/name_clash_primary.scramf");
-  // incorrect_inputs.push_back("./share/scram/input/fta/name_clash_top.scramf");
-  // incorrect_inputs.push_back("./share/scram/input/fta/non_existent_parent_primary.scramf");
-  // incorrect_inputs.push_back("./share/scram/input/fta/non_existent_parent_inter.scramf");
-  // incorrect_inputs.push_back("./share/scram/input/fta/unrecognized_parameter.scramf");
-  // incorrect_inputs.push_back("./share/scram/input/fta/unrecognized_type.scramf");
-  // incorrect_inputs.push_back("./share/scram/input/fta/vote_not_enough_children.scramf");
+  // incorrect_inputs.push_back("./share/scram/input/fta/basic_top_event.xml");
+  // incorrect_inputs.push_back("./share/scram/input/fta/doubly_defined_intermediate.xml");
+  // incorrect_inputs.push_back("./share/scram/input/fta/doubly_defined_primary_type.xml");
+  // incorrect_inputs.push_back("./share/scram/input/fta/name_clash_inter.xml");
+  // incorrect_inputs.push_back("./share/scram/input/fta/name_clash_primary.xml");
+  // incorrect_inputs.push_back("./share/scram/input/fta/name_clash_top.xml");
+  // incorrect_inputs.push_back("./share/scram/input/fta/non_existent_parent_primary.xml");
+  // incorrect_inputs.push_back("./share/scram/input/fta/non_existent_parent_inter.xml");
+  // incorrect_inputs.push_back("./share/scram/input/fta/unrecognized_parameter.xml");
+  // incorrect_inputs.push_back("./share/scram/input/fta/unrecognized_type.xml");
+  // incorrect_inputs.push_back("./share/scram/input/fta/vote_not_enough_children.xml");
 }
 
 // Test incorrect probability input.
