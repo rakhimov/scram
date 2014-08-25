@@ -1,8 +1,0 @@
-# Probability for electrical failure events for the theatre benchmarking
-# scenario.
-
-{
-    GEN_FAIL        2.000000e-02
-    RELAY_FAIL      5.000000e-02
-    MAINS_FAIL      3.000000e-02
-}

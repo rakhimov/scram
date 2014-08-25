@@ -1,4 +1,9 @@
 <?xml version="1.0"?>
+<!--
+This is a scenario for benchmarking taken from OpenFTA.
+This tree represents a failure of an electrical supply to an operating
+theatre.
+-->
 <opsa-mef>
   <define-fault-tree name="Theatre">
     <define-gate name="Theatre">

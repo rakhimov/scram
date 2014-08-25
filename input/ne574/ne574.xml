@@ -1,4 +1,8 @@
 <?xml version="1.0"?>
+<!--
+# This input is from NE 574 lecture 8.
+# This input is used to test minimal cut set generation.
+-->
 <opsa-mef>
   <define-fault-tree name="ne574">
     <define-gate name="System">

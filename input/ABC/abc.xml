@@ -1,4 +1,15 @@
 <?xml version="1.0"?>
+<!--
+This input is for testing exact probability calculation algorithm.
+This system contains three events that are also minimal cut sets by
+themselves.
+
+This file contains probabilities for testing exact probability calculation
+algorithm. The system contains three events with respective probabilities of
+0.1, 0.2, 0.3.
+Therefore, the expected total exact probability for independent events is
+P = 0.1 + 0.2 + 0.3 - 0.1*0.2 - 0.1*0.3 - 0.2*0.3 + 0.1*0.2*0.3 = 0.496
+-->
 <opsa-mef>
   <define-fault-tree name="ABC">
     <define-gate name="TopEvent">
