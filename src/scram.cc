@@ -17,13 +17,12 @@ using namespace scram;
 /// Currently for Command line interactions.
 int main(int argc, char* argv[]) {
   // Parse command line options.
-  std::string usage = "Usage:    scram [input-file] [prob-file] [opts]";
+  std::string usage = "Usage:    scram [input-file] [opts]";
   po::options_description desc("Allowed options");
   desc.add_options()
       ("help,h", "produce help message")
       ("input-file", po::value<std::string>(),
-       "input file with tree description")
-      ("prob-file", po::value<std::string>(), "file with probabilities")
+       "xml input file with analysis entities")
       ("validate,v", "only validate input files")
       ("graph-only,g", "produce graph without analysis")
       ("analysis,a", po::value<std::string>()->default_value("fta-default"),
@@ -35,7 +34,6 @@ int main(int argc, char* argv[]) {
       ("nsums,s", po::value<int>()->default_value(1000000),
        "number of sums in series expansion for probability calculations")
       ("output,o", po::value<std::string>(), "output file")
-      ("xml,x", "xml input file")
       ;
 
   po::variables_map vm;
@@ -50,7 +48,6 @@ int main(int argc, char* argv[]) {
 
   po::positional_options_description p;
   p.add("input-file", 1);
-  p.add("prob-file", 2);
 
   po::store(po::command_line_parser(argc, argv).options(desc).positional(p).
             run(), vm);
@@ -127,19 +124,8 @@ int main(int argc, char* argv[]) {
   // Set the fault tree analysis type.
   ran->fta(fta);
 
-  // XML input file.
-  if (vm.count("xml")) {
-    ran->ProcessXml(input_file);
-  } else {
-    // Process input and validate it.
-    ran->ProcessInput(input_file);
-  }
-
-  if (vm.count("prob-file")) {
-    std::string prob_file = vm["prob-file"].as<std::string>();
-    // Populate probabilities.
-    ran->PopulateProbabilities(prob_file);
-  }
+  // Process input and validate it.
+  ran->ProcessInput(input_file);
 
   // Stop if only validation is requested.
   if (vm.count("validate")) {

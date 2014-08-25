@@ -41,43 +41,22 @@ class RiskAnalysis {
  public:
   /// This constructor with configurations with the analysis.
   /// @param[in] XML file with configurations for the analysis and output.
+  /// @todo Should be able to accept configurations from XML files.
   RiskAnalysis(std::string config_file = "guess_yourself");
 
   /// Set the fault tree analysis.
   void fta(FaultTreeAnalysis* fta) { fta_ = fta; }
 
-  /// Work with XML input file.
-  void ProcessXml(std::string xml_file);
-
-  /// Initializes the analysis from an input file.
-  /// @param[in] input_file The input file.
-  /// @todo Must deal with xml input file.
-  /// @todo May have default configurations for analysis off all input files.
-  ///
-  /// Descriptions from original Fault Tree Class
-  ///
-  /// Reads input file with the structure of the Fault tree.
+  /// Reads input file with the structure of analysis entities.
+  /// Initializes the analysis from the given input file.
   /// Puts all events into their appropriate containers.
-  /// @param[in] input_file The formatted input file.
+  /// @param[in] xml_file The formatted xml input file.
   /// @throws ValidationError if input contains errors.
   /// @throws ValueError if input values are not valid.
   /// @throws IOError if the input file is not accessable.
-  void ProcessInput(std::string input_file);
-
-  /// Initializes probabilities relevant to the analysis.
-  /// @param[in] prob_file The file with probability instructions.
-  /// @todo Must be merged with the processing of the input file.
-  ///
-  /// Descriptions from original Fault Tree Class
-  ///
-  /// Reads probabilities for primary events from a formatted input file.
-  /// Attaches probabilities to primary events.
-  /// @param[in] prob_file The file with probability information.
-  /// @throws Error if called before tree initialization from an input file.
-  /// @throws ValidationError if input contains errors.
-  /// @throws ValueError if input values are not valid.
-  /// @throws IOError if the input file is not accessable.
-  void PopulateProbabilities(std::string prob_file);
+  /// @todo May have default configurations for analysis off all input files.
+  /// @todo Should be able to deal with multiple files.
+  void ProcessInput(std::string xml_file);
 
   /// Graphing or other visual resources for the analysis if applicable.
   /// @todod Must be handled by a separate class.
@@ -120,53 +99,9 @@ class RiskAnalysis {
   ~RiskAnalysis() { delete fta_; }
 
  private:
-  /// Gets arguments from a line in an input file formatted accordingly.
-  /// Arguments vector will be flashed, and new contents will be inserted.
-  /// @param[in] line The line containing arguments in lower case.
-  /// @param[out] orig_line The original line with cases preserved.
-  /// @param[out] args The arguments from the line.
-  /// @returns false if there are no arguments from the line.
-  /// @returns true if there are one or more arguments from the line.
-  bool GetArgs(std::string& line, std::string& orig_line,
-                std::vector<std::string>& args);
-
-  /// Interpret arguments and perform specific actions on the tree.
-  /// This should be performed only after GetArgs_ function has been called,
-  /// and the arguments and original line have been processed.
-  /// @param[in] nline The line number of input file.
-  /// @param[in] msg The start for the error messages.
-  /// @param[in] args The arguments to be interpreted.
-  /// @param[in] orig_line The original line preserving cases.
-  /// @throws ValidationError if the input or arguments are invalid.
-  void InterpretArgs(int nline, std::stringstream& msg,
-                      std::vector<std::string>& args,
-                      std::string& orig_line);
-
   void DefineFaultTree(const xmlpp::Element* ft_node);
 
   void ProcessModelData(const xmlpp::Element* model_data);
-
-  /// Adds node and updates databases of intermediate and primary events.
-  /// @param[in] parent The id of the parent node.
-  /// @param[in] id The id name of the node to be created.
-  /// @param[in] type The symbol, type, or gate of the event to be added.
-  /// @param[in] vote_number The vote number for the VOTE gate initialization.
-  /// @throws ValidationError for invalid or incorrect inputs.
-  void AddNode(std::string parent, std::string id, std::string type,
-               int vote_number = -1);
-
-  /// Adds probability to a primary event for p-model.
-  /// @param[in] id The id name of the primary event.
-  /// @param[in] p The probability for the primary event.
-  /// @note If id is not in the tree, the probability is ignored.
-  void AddProb(std::string id, double p);
-
-  /// Adds probability to a primary event for l-model.
-  /// @param[in] id The id name of the primary event.
-  /// @param[in] p The probability for the primary event.
-  /// @param[in] time The time to failure for this event.
-  /// @note If id is not in the tree, the probability is ignored.
-  void AddProb(std::string id, double p, double time);
 
   /// Verifies if gates are initialized correctly.
   /// @returns A warning message with a list of all bad gates with problems.
@@ -184,6 +119,7 @@ class RiskAnalysis {
 
   /// @todo Containers for fault trees, events, event trees, CCF, and other
   /// analysis entities.
+  /// @deprecated l-model analysis
 
   /// Container of original names of events with capitalizations.
   std::map<std::string, std::string> orig_ids_;
