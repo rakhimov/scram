@@ -7,7 +7,6 @@
 // Test Minimal cut sets and total probabilty.
 TEST_F(FaultTreeAnalysisTest, TwoTrain) {
   std::string tree_input = "./share/scram/input/benchmark/two_train.scramf";
-  std::string prob_input = "./share/scram/input/benchmark/two_train.scramp";
   std::string ValveOne = "valveone";  // 0.5
   std::string ValveTwo = "valvetwo";  // 0.5
   std::string PumpOne = "pumpone";  // 0.7
@@ -16,7 +15,6 @@ TEST_F(FaultTreeAnalysisTest, TwoTrain) {
   std::set< std::set<std::string> > mcs;  // For expected min cut sets.
 
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
-  ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(ran->Analyze());
   ASSERT_NO_THROW(ran->Report("/dev/null"));
   EXPECT_DOUBLE_EQ(0.7225, p_total());  // Total prob check.

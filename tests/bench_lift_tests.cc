@@ -5,7 +5,6 @@
 // Benchmark tests for Lift system from OpenFTA
 TEST_F(FaultTreeAnalysisTest, Lift) {
   std::string tree_input = "./share/scram/input/benchmark/lift.scramf";
-  std::string prob_input = "./share/scram/input/benchmark/lift.scramp";
   std::vector<std::string> events;
   events.push_back("lmd_1");
   events.push_back("dpd_1");
@@ -24,7 +23,6 @@ TEST_F(FaultTreeAnalysisTest, Lift) {
   std::set< std::set<std::string> > mcs;  // For expected min cut sets.
 
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
-  ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(ran->Analyze());
   ASSERT_NO_THROW(ran->Report("/dev/null"));
   double delta_sqr = std::abs(p_total() - 1.19999e-5);

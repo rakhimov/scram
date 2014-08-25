@@ -36,11 +36,6 @@ class FaultTreeAnalysisTest : public ::testing::Test {
     ran->fta_ = f;
   }
 
-  bool GetArgs(std::string& line, std::string& orig_line,
-                std::vector<std::string>& args) {
-    return ran->GetArgs(line, orig_line, args);
-  }
-
   std::map<std::string, std::string>& orig_ids() { return ran->orig_ids_; }
 
   boost::unordered_map<std::string, GatePtr>& gates() {

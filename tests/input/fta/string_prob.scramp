@@ -1,9 +1,0 @@
-# This file contains a wrong string value for probability.
-{
-# Wrong value for ValveOne
-ValveOne    true
-
-ValveTwo    0.5
-PumpOne     0.7
-PumpTwo     0.7
-}

@@ -6,7 +6,6 @@
 // Test Minimal cut sets and total probabilty.
 TEST_F(FaultTreeAnalysisTest, Theatre) {
   std::string tree_input = "./share/scram/input/benchmark/theatre.scramf";
-  std::string prob_input = "./share/scram/input/benchmark/theatre.scramp";
   std::string GEN_FAIL = "gen_fail";  // 2e-2
   std::string RELAY_FAIL = "relay_fail";  // 5e-2
   std::string MAINS_FAIL = "mains_fail";  // 3e-2
@@ -14,7 +13,6 @@ TEST_F(FaultTreeAnalysisTest, Theatre) {
   std::set< std::set<std::string> > mcs;  // For expected min cut sets.
 
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
-  ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(ran->Analyze());
   ASSERT_NO_THROW(ran->Report("/dev/null"));
   EXPECT_DOUBLE_EQ(0.00207, p_total());  // Total prob check.

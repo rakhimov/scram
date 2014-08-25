@@ -8,27 +8,6 @@ using namespace scram;
 
 // ---------------------- Test Private Functions -------------------------
 // Test the function that gets arguments from a line in an input file.
-TEST_F(FaultTreeAnalysisTest, GetArgs) {
-  std::string line = "";  // An empty line.
-  std::string orig_line = "";
-  std::vector<std::string> args;
-  EXPECT_FALSE(GetArgs(line, orig_line, args));  // Test for empty line.
-  EXPECT_EQ(line, "");
-  line = "# This is a comment";
-  EXPECT_FALSE(GetArgs(line, orig_line, args));  // Test for comments.
-  line = "  Arg_1 Arg_2 ";  // Some valid arguments.
-  EXPECT_TRUE(GetArgs(line, orig_line, args));
-  EXPECT_EQ("Arg_1 Arg_2", orig_line);
-  EXPECT_EQ("arg_1 arg_2", line);
-  EXPECT_EQ("arg_1", args[0]);
-  EXPECT_EQ("arg_2", args[1]);
-  line = "  Arg  # comments.";  // Inline comments.
-  EXPECT_TRUE(GetArgs(line, orig_line, args));
-  EXPECT_EQ("Arg", orig_line);
-  EXPECT_EQ("arg", line);
-  EXPECT_EQ("arg", args[0]);
-}
-
 TEST_F(FaultTreeAnalysisTest, CheckGate) {
   GatePtr top(new Gate("top", "and"));  // AND gate.
   PrimaryEventPtr A(new PrimaryEvent("a"));
@@ -886,11 +865,9 @@ TEST_F(FaultTreeAnalysisTest, ProcessInput) {
 
 // Test Probability Assignment
 TEST_F(FaultTreeAnalysisTest, PopulateProbabilities) {
+  // Input with probabilities
   std::string tree_input = "./share/scram/input/fta/correct_tree_input.scramf";
-  std::string prob_input = "./share/scram/input/fta/correct_prob_input.scramp";
-  ASSERT_THROW(ran->PopulateProbabilities(prob_input), Error);  // No tree.
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
-  ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
   ASSERT_EQ(4, primary_events().size());
   ASSERT_EQ(1, primary_events().count("pumpone"));
   ASSERT_EQ(1, primary_events().count("pumptwo"));
@@ -936,7 +913,6 @@ TEST_F(FaultTreeAnalysisTest, GraphingInstructions) {
 // Test Analysis
 TEST_F(FaultTreeAnalysisTest, AnalyzeDefault) {
   std::string tree_input = "./share/scram/input/fta/correct_tree_input.scramf";
-  std::string prob_input = "./share/scram/input/fta/correct_prob_input.scramp";
   // ASSERT_THROW(ran->Analyze(), Error);  // Calling without a tree initialized.
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
@@ -962,7 +938,6 @@ TEST_F(FaultTreeAnalysisTest, AnalyzeDefault) {
   // delete fta();  // Re-initializing.
   fta(new FaultTreeAnalysis("default"));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
-  ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(0.646, p_total());
   EXPECT_DOUBLE_EQ(0.42, prob_of_min_sets()[mcs_1]);
@@ -979,7 +954,6 @@ TEST_F(FaultTreeAnalysisTest, AnalyzeDefault) {
   // delete fta();  // Re-initializing.
   fta(new FaultTreeAnalysis("default", "rare"));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
-  ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(1.2, p_total());
 
@@ -987,7 +961,6 @@ TEST_F(FaultTreeAnalysisTest, AnalyzeDefault) {
   // delete fta();  // Re-initializing.
   fta(new FaultTreeAnalysis("default", "mcub"));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
-  ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(0.766144, p_total());
 }
@@ -1005,9 +978,7 @@ TEST_F(FaultTreeAnalysisTest, AnalyzeMC) {
 // Test Reporting capabilities
 TEST_F(FaultTreeAnalysisTest, Report) {
   std::string tree_input = "./share/scram/input/fta/correct_tree_input.scramf";
-  std::string prob_input = "./share/scram/input/fta/correct_prob_input.scramp";
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
-  ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(ran->Analyze());
   ASSERT_NO_THROW(ran->Report("/dev/null"));
 
@@ -1015,7 +986,6 @@ TEST_F(FaultTreeAnalysisTest, Report) {
   // delete fta();
   fta(new FaultTreeAnalysis("default", "rare"));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
-  ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
   ASSERT_NO_THROW(ran->Analyze());
   ASSERT_NO_THROW(ran->Report("/dev/null"));
 }

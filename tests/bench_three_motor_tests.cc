@@ -6,7 +6,6 @@
 // This tests transfer gates.
 TEST_F(FaultTreeAnalysisTest, ThreeMotor) {
   std::string tree_input = "./share/scram/input/benchmark/three_motor.scramf";
-  std::string prob_input = "./share/scram/input/benchmark/three_motor.scramp";
   std::set<std::string> cut_set;
   std::set< std::set<std::string> > mcs;  // For expected min cut sets.
   std::string T3 = "t3";
@@ -30,7 +29,6 @@ TEST_F(FaultTreeAnalysisTest, ThreeMotor) {
 
   // Check the tree with the transfer gate.
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
-  ASSERT_NO_THROW(ran->PopulateProbabilities(prob_input));
   nsums(3);
   ASSERT_NO_THROW(ran->Analyze());
   ASSERT_NO_THROW(ran->Report("/dev/null"));
