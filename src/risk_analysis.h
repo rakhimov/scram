@@ -17,6 +17,7 @@
 #include "fault_tree.h"
 #include "fault_tree_analysis.h"
 #include "event.h"
+#include "env.h"
 #include "grapher.h"
 #include "reporter.h"
 #include "xml_parser.h"
@@ -171,6 +172,9 @@ class RiskAnalysis {
 
   /// Indicator if probability calculations are requested.
   bool prob_requested_;
+
+  /// Environment information provider.
+  Env* env_;
 };
 
 }  // namespace scram

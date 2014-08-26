@@ -47,6 +47,7 @@ RiskAnalysis::RiskAnalysis(std::string config_file)
   FaultTreePtr fault_tree_;
 
   fta_ = new FaultTreeAnalysis("default");
+  env_ = new Env();
 }
 
 void RiskAnalysis::ProcessInput(std::string xml_file) {
@@ -65,8 +66,7 @@ void RiskAnalysis::ProcessInput(std::string xml_file) {
   parser->Init(stream);
 
   std::stringstream schema;
-  /// @todo This must be hardcoded with CMake
-  std::string schema_path = "/home/olzhas/projects/install/share/scram/scram.rng";
+  std::string schema_path = env_->rng_schema();
   std::ifstream schema_stream(schema_path.c_str());
   schema << schema_stream.rdbuf();
   schema_stream.close();
