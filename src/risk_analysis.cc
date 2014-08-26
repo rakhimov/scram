@@ -20,6 +20,7 @@ namespace scram {
 
 RiskAnalysis::RiskAnalysis(std::string config_file)
     : prob_requested_(false),
+      input_file_(""),
       parent_(""),
       id_(""),
       type_(""),
@@ -53,6 +54,8 @@ void RiskAnalysis::ProcessInput(std::string xml_file) {
   if (!file_stream) {
     throw IOError("The file '" + xml_file + "' could not be loaded.");
   }
+
+  input_file_ = xml_file;
 
   std::stringstream stream;
   stream << file_stream.rdbuf();
@@ -201,11 +204,11 @@ void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
       boost::to_lower(id);
       orig_ids_.insert(std::make_pair(id, orig_id));
 
+      xmlpp::NodeSet gates = element->find("./*[name() != 'attribute' and name() != 'label']");
+      // Assumes that there are no attributes and labels.
+      assert(gates.size() == 1);
       // Check if the gate type is supported.
-      const xmlpp::Node* gate_type = element->get_first_child();
-      while (dynamic_cast<const xmlpp::Element*>(gate_type) == 0) {
-        gate_type = gate_type->get_next_sibling();
-      }
+      const xmlpp::Node* gate_type = gates.front();
       std::string type = gate_type->get_name();
       boost::to_lower(type);
       if (!gate_types_.count(type)) {

@@ -39,6 +39,7 @@ Major Enhancements and Capabilities
     * Multiple Greek Letter system
     * Alpha system
     * Beta system
+    * Phi system
 
 - Incorporation of alignments. *Moderate*
 
@@ -53,6 +54,10 @@ Major Enhancements and Capabilities
   * Add Attributes struct to all members.
   * Deprecate Transfer tests. Create Include tests instead.
 
+    + Test for non-existent file, circular inclusion(direct, indirect).
+
+  * SubTree Analysis of a Fault Tree.
+
 - GUI development. *High*
 
 
@@ -66,7 +71,7 @@ Documentation: Moderate Importance
 - Getting Started
 - Building/Installing
 - Installation instructions for various platforms
-- Simple Walkthrough Example:
+- Simple Walk-through Example:
 
     * Various ways of writing input files.
     * Separation of inputs.

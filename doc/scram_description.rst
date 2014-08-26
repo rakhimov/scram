@@ -122,7 +122,7 @@ GATES
     represented by a Conditioning Event drawn to the right of the
     gate.). This gate restricts input events to only two events.
 
-#. Combination/VOTE :
+#. Combination/VOTE/Atleast :
     Output fault occurs if **m** out of the **n** input events
     occurs. The **m** input events need not to occur simultaneously. The output
     occurs if at least **m** events occur. **m** is more than 1, and **n**
@@ -178,15 +178,6 @@ Future Additions.
 
 General Information for Users.
 ==============================
-
-#. Suggested scram specific extensions for input files:  *to be deprecated*
-    :FTA input file:     .scramf
-    :FTA prob file:      .scramp
-
-#. If you are using a text editor with highlighting, set filetype to 'conf'.
-   This configuration-like highlighting works well with a scram input file.
-    *to be deprecated*
-
 #. Run 'scram -h' to see all the flags and parameters for analysis.
 
 #. The minimum cut set generation for a fault tree and probability calculations

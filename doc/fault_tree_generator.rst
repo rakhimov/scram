@@ -36,7 +36,7 @@ Script arguments
 * Optional use of more complex gates and primary event types. [not implemented]
 
 .. warning::
-    Most values for the script arguments are not tested for validity. The
+    Some values for the script arguments are not tested for validity. The
     output tree will be validated by SCRAM.
     For some invalid values the python script may scream itself.
 
