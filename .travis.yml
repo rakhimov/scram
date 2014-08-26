@@ -18,10 +18,9 @@ install:
     - sudo pip install nose
 
 script:
-    - ./install.py -p
+    - ./install.py -p && ./.run_tests.sh
 
 after_success:
-    - ./.run_tests.sh
     - coveralls  --verbose  --exclude tests  --exclude ./build/CMakeFiles/
       --exclude ./build/lib/  --exclude src/error.h --exclude src/error.cc
       --exclude ./build/bin/  --exclude src/event.h
