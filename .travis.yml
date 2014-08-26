@@ -3,7 +3,7 @@ language: cpp
 compiler: gcc
 
 env:
-    - PATH=$PATH:`pwd`/build/bin
+    - PATH=$PATH:`pwd`/install/bin
 
 before_install: sudo apt-get update -qq
 
@@ -18,7 +18,7 @@ install:
     - sudo pip install nose
 
 script:
-    - ./install.py -p && ./.run_tests.sh
+    - mkdir ./install && ./install.py -p --prefix=./install && ./.run_tests.sh
 
 after_success:
     - coveralls  --verbose  --exclude tests  --exclude ./build/CMakeFiles/
