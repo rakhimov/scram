@@ -17,9 +17,6 @@ TEST(FaultTreeAnalysisInputTest, CorrectFTAInputs) {
 
   RiskAnalysis* ran;
 
-  ran = new RiskAnalysis();
-  ran->ProcessInput(correct_inputs.front());
-
   std::vector<std::string>::iterator it;
   for (it = correct_inputs.begin(); it != correct_inputs.end(); ++it) {
     ran = new RiskAnalysis();
