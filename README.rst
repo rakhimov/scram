@@ -12,9 +12,10 @@ SCRAM
 *SCRAM* : "Simplified Command-line Risk Analysis Multi-tool"
 
 This project attempts to build a simple command line tool for risk analysis.
-Static Fault Tree Analysis is implemented.
-In addition, a random fault tree generator is
-provided to explore the performance of *SCRAM*. A fault tree can be drawn by
+Static Fault Tree Analysis is implemented. The initial support for the OpenPSA
+model format is provided.
+In addition, a random fault tree generator is provided to explore the
+performance of *SCRAM*. A fault tree can be drawn by
 Graphviz Dot tool.
 
 A full description of *SCRAM* and its current capabilities
@@ -161,3 +162,18 @@ Note to a User
 The development follows the Documentation Driven Development paradigm.
 Therefore, some documentation may refer to not yet developed features or the
 features under current development.
+
+For any questions, don't hesitate to ask the mailing list (https://groups.google.com/forum/#!forum/scram-dev, scram-dev@googlegroups.com).
+
+*****************************
+How to Contribute
+*****************************
+
+Contributions are through `GitHub <https://github.com>`_ Pull Requests and
+Issue Tracker.
+Best practices are encouraged:
+
+    - `Git SCM <http://git-scm.com/>`_
+    - `Branching Model <http://nvie.com/posts/a-successful-git-branching-model/>`_
+    - `Writing Good Commit Messages <https://github.com/erlang/otp/wiki/Writing-good-commit-messages>`_
+    - `On Commit Messages <http://who-t.blogspot.com/2009/12/on-commit-messages.html>`_
