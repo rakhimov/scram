@@ -97,7 +97,10 @@ class RiskAnalysis {
   /// @throws IOError if the output file is not accessable.
   void Report(std::string output);
 
-  ~RiskAnalysis() { delete fta_; }
+  ~RiskAnalysis() {
+    delete fta_;
+    delete env_;
+  }
 
  private:
   void DefineFaultTree(const xmlpp::Element* ft_node);
