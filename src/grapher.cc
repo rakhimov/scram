@@ -32,6 +32,7 @@ void Grapher::GraphFaultTree(
   // List inter events and primary events' descriptions.
   // Getting events from the fault tree object.
 
+  /// @todo Option to graph re-used gates as a separate transfer trees.
   top_event_ = fault_tree->top_event();
   inter_events_ = fault_tree->inter_events();
   primary_events_ = fault_tree->primary_events();
@@ -108,7 +109,7 @@ void Grapher::GraphFaultTree(
         out << "\"" <<  orig_ids_[it->first] << "_R" << i
             << "\" [shape=triangle, ";
       }
-      out << "fontsize=11, fontcolor=black, "
+      out << "fontsize=10, fontcolor=black, "
           << "color=" << gate_colors[type] << ", "
           << "label=\"" << orig_ids_[it->first] << "\\n"
           << "{ " << gate;

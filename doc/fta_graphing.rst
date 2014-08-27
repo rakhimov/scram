@@ -45,7 +45,6 @@ Two Train System
 ----------------
 .. image:: two_train.png
 
-Three Motor
+Lift
 -----------
-.. image:: three_motor.png
-.. image:: t.png
+.. image:: lift.png
