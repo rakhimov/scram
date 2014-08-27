@@ -64,8 +64,8 @@ Input File Examples
 
 Fault Tree Input File
 ---------------------
-.. include:: two_train.xml
-    :literal:
+.. highlight:: xml
+.. literalinclude:: two_train.xml
 
 
 .. _RelaxNG: http://relaxng.org/

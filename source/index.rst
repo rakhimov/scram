@@ -29,9 +29,9 @@ Documentation:
     :maxdepth: 1
 
     doc/scram_description
+    doc/scram_input_file
+    doc/opsa_support
     doc/fta_calls
-    doc/fta_input_parser
-    doc/fta_transfer_tree
     doc/fta_implementation
     doc/fta_mcs_algorithm
     doc/fta_probability_calc
@@ -43,6 +43,7 @@ Documentation:
     doc/scram_coding_standards
     doc/references
     doc/scram_bugs
+    doc/xml_comments
     doc/todo
 
 
