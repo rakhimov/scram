@@ -48,7 +48,6 @@ Major Enhancements and Capabilities
 
 - OpenPSA-like XML input format. *High*
 
-  * Remove custom input format and parser.
   * Reduce tests for input format and parser.
   * Add labels to all members.
   * Add Attributes struct to all members.
@@ -56,7 +55,7 @@ Major Enhancements and Capabilities
 
     + Test for non-existent file, circular inclusion(direct, indirect).
 
-  * SubTree Analysis of a Fault Tree.
+  * Subtree Analysis of a Fault Tree.
 
 - GUI development. *High*
 
@@ -69,12 +68,18 @@ Documentation: Moderate Importance
 ==================================
 
 - Getting Started
-- Building/Installing
-- Installation instructions for various platforms
-- Simple Walk-through Example:
+- Installation instructions for various platforms:
+
+    * Linux
+    * Mac
+    * Windows
+
+- Simple Walk-through Examples/Tutorials:
 
     * Various ways of writing input files.
     * Separation of inputs.
+
+- Reference Manual/Documentation
 
 Coding Specific
 ===================

@@ -10,9 +10,7 @@ SCRAM Fault Tree Graphing Specifics
 ====================================
 #. Should be called after tree initiation steps.
 #. May operate without probabilities.
-#. Does not include transfer sub-trees.
-#. Graphes sub-trees in isolation.
-#. One node reference to sub-tree cannot be graphed from a main tree file.
+#. Gate repetition is graphed with a transfer symbol.
 #. Tries to make the tree look compact.
 #. Assign colors for clarity:
     1. Gates and Node Colors:

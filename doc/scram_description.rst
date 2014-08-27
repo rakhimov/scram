@@ -10,7 +10,7 @@ Command-line Call of SCRAM by a User.
 
 Type of analysis, i.e., fault tree, even tree, Markov chain, etc.
 Upon calling from command-line, the user should indicate which analysis
-should be performed. In addition to this, the user should provide
+should be performed. In addition to this, the user may provide
 additional parameters for the analysis type chosen. For example, if
 FTA is requested, type of algorithm for minimal cut set generation may
 be specified by the user, or the user can choose if probability

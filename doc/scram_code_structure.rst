@@ -2,21 +2,12 @@
 SCRAM API Structure
 ##############################################
 
-Old Structure of the Core Code
-==============================
-
-- Input validation and processing
-- Tree validation and analysis
-- Abstract data types for trees
-- Probability calculations
-- Graphing instructions
-
-New Structure/Architecture of the Core Code
+Structure/Architecture of the Core Code
 ============================================
 
 - Validator of XML input files using RelaxNG
 - Loader of the input files.
-- Loader of the configuration files.
+- Loader of the configuration files. [not implemented]
 - Initializer of the analysis by constructing fault trees, event trees, CCF,
   and other analysis entities.
   This initialization phase should validate the values and logic supplied from
@@ -38,6 +29,8 @@ New Structure/Architecture of the Core Code
 
 - Reporter outputs the results of the work of Risk Analyzer to specified files
   or streams with a certain formatting.
+
+- Grapher outputs a fault tree graphing instruction file for Graphviz Dot tool.
 
 API Documentation
 ==================

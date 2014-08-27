@@ -2,6 +2,9 @@
 SCRAM Monte Carlo Uncertainty Analysis
 ###########################################
 
+.. note::
+    This feature is under development.
+
 Monte Carlo (MC) Analysis Implementation
 ========================================
 
@@ -13,7 +16,7 @@ Monte Carlo (MC) Analysis Implementation
     * Distributions to be supported:
 
         - Normal
-        - LogNormal
+        - Lognormal
         - Uniform
         - Poisson
         - Binomial

@@ -2,14 +2,14 @@
 SCRAM Fault Tree Analysis Functionality
 #########################################
 
+.. note:: Run '*scram -h*' from command line to get more descriptions.
+
 Current Command-line Functionality:
 ====================================
-#. Check and validate an input file with a fault tree description.
-#. Check a probability file together with an input tree file.
-#. Validate XML input files against RelaxNG. [not implemented]
-#. Validate the input analysis specifications and instantiations. [not implemented]
-#. Output a graphing dot file. *No probability definition file needed*
-#. Find minimal cut sets. *No probability definition file needed*
+#. Validate XML input files against RelaxNG.
+#. Validate the input analysis specifications and instantiations.
+#. Output a graphing dot file. *No probability definition required*
+#. Find minimal cut sets. *No probability definition required*
 
    - May specify maximum order for cut sets for faster calculations.
    - May specify cutoff probability for cut sets. [not implemented]

@@ -13,8 +13,8 @@ SCRAM
 
 This project attempts to build a simple command line tool for risk analysis.
 Static Fault Tree Analysis is implemented.
-In addition, a random tree generator is
-provided for exploring the performance of *SCRAM*. A fault tree can be drawn by
+In addition, a random fault tree generator is
+provided to explore the performance of *SCRAM*. A fault tree can be drawn by
 Graphviz Dot tool.
 
 A full description of *SCRAM* and its current capabilities
@@ -115,14 +115,13 @@ The default build is DEBUG. There default installation directory is the user's
 
     .../scram$ python install.py  --prefix=path/to/installation/directory
 
-Executable tests with supporting files will be located in
-*build/bin* directory for testing purposes. These tests are not transfered
-into the installation directory specified by the user.
-In order to run those tests:
+The executable test binary is installed in *installation/directory/bin* directory.
+Also, the test input files and RelaxNG schema are copied in *installation/directory/share/scram/*.
+In order to run tests:
 
 .. code-block:: bash
 
-    .../scram$ ./build/bin/scram_unit_tests
+    .../scram$ path/to/installation/directory/bin/scram_unit_tests
 
 For better performance run the building with the optimization flag:
 
