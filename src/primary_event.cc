@@ -85,23 +85,6 @@ void PrimaryEvent::p(double freq, double time) {
   p_ = 1 - std::exp(freq * time);
 }
 
-void PrimaryEvent::AddParent(const boost::shared_ptr<scram::Gate>& parent) {
-  if (parents_.count(parent->id())) {
-    std::string msg = "Trying to re-insert existing parent for " + this->id();
-    throw scram::ValueError(msg);
-  }
-  parents_.insert(std::make_pair(parent->id(), parent));
-}
-
-const std::map<std::string,
-               boost::shared_ptr<scram::Gate> >& PrimaryEvent::parents() {
-  if (parents_.empty()) {
-    std::string msg = this->id() + " primary event does not have parents.";
-    throw scram::ValueError(msg);
-  }
-  return parents_;
-}
-
 BasicEvent::BasicEvent(std::string id) : scram::PrimaryEvent(id, "basic") {}
 
 HouseEvent::HouseEvent(std::string id) : scram::PrimaryEvent(id, "house") {}

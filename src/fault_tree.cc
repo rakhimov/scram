@@ -4,7 +4,6 @@
 
 #include <iostream>
 #include <iterator>
-#include <typeinfo>
 
 #include <boost/algorithm/string.hpp>
 

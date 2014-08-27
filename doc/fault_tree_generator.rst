@@ -11,14 +11,14 @@ General Description
 * The seed of the random number generator may be fixed and specified as
   well.
 * Names of events in the tree must be randomly chosen between creating a
-  new event or re-using already created event.
+  new event or re-using an already created event.
 * Probabilities for primary events are generated randomly.
 * Names are assigned sequentially. E# and P#.
 * The tree is deterministic upon setting the same parameters.
 * The exact ratios are not guaranteed.
-* No support for transfer ins or outs is expected.
 * No support for CCF is expected.
-* The output should be an input tree file and a probability file.
+* The output should be an input tree file.
+* Probabilities for events should be optional. [not implemented]
 
 
 Script arguments
@@ -36,7 +36,7 @@ Script arguments
 * Optional use of more complex gates and primary event types. [not implemented]
 
 .. warning::
-    Most values for the script arguments are not tested for validity. The
+    Some values for the script arguments are not tested for validity. The
     output tree will be validated by SCRAM.
     For some invalid values the python script may scream itself.
 
@@ -49,13 +49,11 @@ Algorithm
     * Top event do not have children primary events, by default,
       for the higher complexity of the tree. The number of primary events for
       the root node may be set by a user.
-    * Random choice between creating a new intermediate event,
-      a new primary event, or re-using an existing primary event.
+    * Random choice between creating a new intermediate or
+      primary event, or re-using an existing primary or intermediate event.
     * Limiting factors: the average number of primary events per intermediate
       event, and the total number of primary events.
 
-2) Write the tree description into an output tree file.
+2) Generate probabilities.
 
-3) Generate probabilities.
-
-4) Write probabilities into a probability file.
+3) Write the tree description into an output tree file.

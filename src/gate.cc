@@ -37,7 +37,7 @@ int Gate::vote_number() {
 }
 
 void Gate::vote_number(int vnumber) {
-  if (type_ != "vote") {
+  if (type_ != "vote" && type_ != "atleast") {
     // This line calls type() function which may throw an exception if
     // the type of this gate is not yet set.
     std::string msg = "Vote number can only be defined for the VOTE gate. "
@@ -52,22 +52,6 @@ void Gate::vote_number(int vnumber) {
     throw scram::ValueError(msg);
   }  // Children number should be checked outside of this class.
   vote_number_ = vnumber;
-}
-
-void Gate::AddParent(const boost::shared_ptr<scram::Gate>& parent) {
-  if (parents_.count(parent->id())) {
-    std::string msg = "Trying to re-insert existing parent for " + this->id();
-    throw scram::ValueError(msg);
-  }
-  parents_.insert(std::make_pair(parent->id(), parent));
-}
-
-const std::map<std::string, boost::shared_ptr<scram::Gate> >& Gate::parents() {
-  if (parents_.empty()) {
-    std::string msg = this->id() + " does not have parents.";
-    throw scram::ValueError(msg);
-  }
-  return parents_;
 }
 
 void Gate::AddChild(const boost::shared_ptr<scram::Event>& child) {

@@ -6,7 +6,7 @@ SCRAM FTA: Common Cause Failure (CCF)
 
 #. Define groups of basic events that share common cause failure.
 
-    - Can groups share memebers?
+    - Can groups share members?
 
 #. Choose a model for analysis: MGL, alpha, beta, etc.
 

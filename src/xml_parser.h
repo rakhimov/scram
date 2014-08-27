@@ -1,3 +1,5 @@
+/// @file xml_parser.h
+/// XML Parser.
 #ifndef SCRAM_XML_PARSER_H_
 #define SCRAM_XML_PARSER_H_
 
@@ -8,6 +10,7 @@
 
 namespace scram {
 
+/// @class XMLParser
 /// A helper class to hold xml file data and provide automatic
 /// validation.
 class XMLParser {
@@ -22,8 +25,8 @@ class XMLParser {
   /// @param[in] input An xml snippet to be used as input.
   void Init(const std::stringstream& input);
 
-  /// Validates the file agaisnt a schema.
-  /// @param[in] schema The schema to validate agaisnt.
+  /// Validates the file against a schema.
+  /// @param[in] schema The schema to validate against.
   void Validate(const std::stringstream& schema);
 
   /// @return The parser's document.

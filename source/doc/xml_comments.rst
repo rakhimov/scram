@@ -1,9 +1,8 @@
+.. _xml_tools:
+
 ############################################
 XML Input File Creation Tools
 ############################################
-
-.. note::
-    This feature is not yet fully supported.
 
 SCRAM project uses XML input files for analyses. These input files must be
 formatted according to `OpenPSA Model Exchange Format v2.0d`_ or later.

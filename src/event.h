@@ -13,22 +13,36 @@
 
 namespace scram {
 
+class Gate;  // Needed for being a parent of an event.
+
 /// @class Event
 /// General fault tree event base class.
 class Event {
  public:
   /// Constructs a fault tree event with a specific id.
   /// @param[in] id The identifying name for the event.
-  Event(std::string id) : id_(id) {}
+  Event(std::string id);
 
   /// @returns The id that is set upon the construction of this event.
-  virtual const std::string& id() { return id_; }
+  const std::string& id() { return id_; }
+
+  /// Adds a parent into the parent map.
+  /// @param[in] parent One of the parents of this gate event.
+  /// @throws ValueError if the parent is being re-inserted.
+  void AddParent(const boost::shared_ptr<scram::Gate>& parent);
+
+  /// @returns All the parents of this gate event.
+  /// @throws ValueError if there are no parents for this gate event.
+  const std::map<std::string, boost::shared_ptr<scram::Gate> >& parents();
 
   virtual ~Event() {}
 
  private:
   /// Id name of a event.
   std::string id_;
+
+  /// The parents of this primary event.
+  std::map<std::string, boost::shared_ptr<scram::Gate> > parents_;
   /// @todo labels and attributes should be represented here.
 };
 
@@ -60,15 +74,6 @@ class Gate : public scram::Event {
   /// class.
   void vote_number(int vnumber);
 
-  /// Adds a parent into the parent map.
-  /// @param[in] parent One of the parents of this gate event.
-  /// @throws ValueError if the parent is being re-inserted.
-  void AddParent(const boost::shared_ptr<scram::Gate>& parent);
-
-  /// @returns All the parents of this gate event.
-  /// @throws ValueError if there are no parents for this gate event.
-  const std::map<std::string, boost::shared_ptr<scram::Gate> >& parents();
-
   /// Adds a child event into the children list.
   /// @param[in] child A pointer to a child event.
   /// @throws ValueError if the child is being re-inserted.
@@ -86,9 +91,6 @@ class Gate : public scram::Event {
 
   /// Vote number for the vote gate.
   int vote_number_;
-
-  /// The parents of this gate.
-  std::map<std::string, boost::shared_ptr<scram::Gate> > parents_;
 
   /// The children of this gate.
   std::map<std::string, boost::shared_ptr<scram::Event> > children_;
@@ -129,15 +131,6 @@ class PrimaryEvent : public scram::Event {
   /// @throws ValueError if probability is not a valid value or re-assigned.
   void p(double freq, double time);
 
-  /// Adds a parent into the parent map.
-  /// @param[in] parent One of the parents of this primary event.
-  /// @throws ValueError if the parent is being re-inserted.
-  void AddParent(const boost::shared_ptr<scram::Gate>& parent);
-
-  /// @returns All the parents of this primary event.
-  /// @throws ValueError if there are no parents for this primary event.
-  const std::map<std::string, boost::shared_ptr<scram::Gate> >& parents();
-
   virtual ~PrimaryEvent() {}
 
  private:
@@ -146,9 +139,6 @@ class PrimaryEvent : public scram::Event {
 
   /// The total failure probability of the primary event.
   double p_;
-
-  /// The parents of this primary event.
-  std::map<std::string, boost::shared_ptr<scram::Gate> > parents_;
 };
 
 /// @class BasicEvent

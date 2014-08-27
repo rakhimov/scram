@@ -337,7 +337,7 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
     } else {
       FaultTreeAnalysis::SetOr(events_children, sets, -1);
     }
-  } else if (gate == "vote") {
+  } else if (gate == "vote" || gate == "atleast") {
     int vote_number = int_to_inter_[std::abs(inter_index)]->vote_number();
     assert(vote_number > 1);
     assert(events_children.size() >= vote_number);

@@ -1,3 +1,5 @@
+/// @file xml_parser.cc
+/// Implementation of XML Parser.
 #include "xml_parser.h"
 
 #include <stdlib.h>
@@ -37,7 +39,7 @@ xmlpp::Document* XMLParser::Document() {
 
   // This adds the capability to have nice include semantics.
   // This is introduced in libxml++2.6 2.36.
-  // Not available on Ubuntu 12.04, so this commented out.
+  // Not available on Ubuntu 12.04, so this is commented out.
   // doc->process_xinclude();
 
   // This removes the stupid xml:base attribute that including adds,

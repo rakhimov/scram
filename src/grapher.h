@@ -37,7 +37,7 @@ class Grapher {
   /// @param[in] out The output stream.
   /// @note The repetition information is important to avoid clashes.
   void GraphNode(GatePtr t, std::map<std::string, int>& pr_repeat,
-                 std::ofstream& out);
+                 std::map<std::string, int>& in_repeat, std::ofstream& out);
 
   /// @todo optimize and delete the following.
   /// Container of original names of events with capitalizations.

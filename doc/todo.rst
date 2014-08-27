@@ -39,6 +39,7 @@ Major Enhancements and Capabilities
     * Multiple Greek Letter system
     * Alpha system
     * Beta system
+    * Phi system
 
 - Incorporation of alignments. *Moderate*
 
@@ -47,11 +48,14 @@ Major Enhancements and Capabilities
 
 - OpenPSA-like XML input format. *High*
 
-  * Remove custom input format and parser.
   * Reduce tests for input format and parser.
   * Add labels to all members.
   * Add Attributes struct to all members.
   * Deprecate Transfer tests. Create Include tests instead.
+
+    + Test for non-existent file, circular inclusion(direct, indirect).
+
+  * Subtree Analysis of a Fault Tree.
 
 - GUI development. *High*
 
@@ -64,12 +68,18 @@ Documentation: Moderate Importance
 ==================================
 
 - Getting Started
-- Building/Installing
-- Installation instructions for various platforms
-- Simple Walkthrough Example:
+- Installation instructions for various platforms:
+
+    * Linux
+    * Mac
+    * Windows
+
+- Simple Walk-through Examples/Tutorials:
 
     * Various ways of writing input files.
     * Separation of inputs.
+
+- Reference Manual/Documentation
 
 Coding Specific
 ===================
