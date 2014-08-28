@@ -1,0 +1,174 @@
+<?xml version="1.0"?>
+<!--
+This is an input file for three motor example from OpenFTA.
+-->
+<opsa-mef>
+  <define-fault-tree name="ThreeMotor">
+    <define-gate name="E1"> <!-- "EMF applied to motor 2 for t > 60 sec" -->
+      <and>
+        <gate name="E2"/>
+        <gate name="E3"/>
+      </and>
+    </define-gate>
+    <define-gate name="E2">  <!-- "K5 relay contacts remain closed for t > 60 sec" -->
+      <or>
+        <basic-event name="K5"/>  <!-- "K5 relay contacts fail to open" -->
+        <gate name="E4"/>
+      </or>
+    </define-gate>
+    <define-gate name="E4">  <!-- "EMF remains on K5 coil for t > 60 sec" -->
+      <and>
+        <gate name="E1tr"/>
+        <gate name="E6"/>
+      </and>
+    </define-gate>
+    <define-gate name="E1tr">  <!-- "K1 relay contacts fail to open K3 relay contacts closed" -->
+      <or>
+        <basic-event name="K1"/>  <!-- "K1 relay contacts fail to open" -->
+        <gate name="E2tr"/>
+      </or>
+    </define-gate>
+    <define-gate name="E6">  <!-- "K3 relay contacts remain closed for t > 60 sec" -->
+      <or>
+        <basic-event name="T2"/>  <!-- "Test signal remains on K3 coil for t > 60 sec": Undeveloped -->
+        <basic-event name="K5"/>  <!-- "K5 relay contacts fail to open" -->
+      </or>
+    </define-gate>
+    <define-gate name="E3">  <!-- "K2 relay contacts fail to open when K5 relay contact  closed for t > 60 sec" -->
+      <or>
+        <basic-event name="K2"/>  <!-- "K2 relay contacts fail to open" -->
+        <gate name="E5"/>
+      </or>
+    </define-gate>
+    <define-gate name="E5">  <!-- "EMF not removed from K2 relay coil when K5 relay" --> <!-- "contacts closed for t > 60 sec" -->
+      <or>
+        <basic-event name="T1"/>  <!-- "EMF to K2 coild through S1, KT1, KT2 &..." -->
+        <gate name="E8"/>
+      </or>
+    </define-gate>
+    <define-gate name="E8">  <!-- "K1 relay contacts fail to open when K5 relay" --> <!-- "contacts closed for t > 60 sec" -->
+      <or>
+        <basic-event name="K1"/>  <!-- "K1 relay contacts fail to open" -->
+        <gate name="E9"/>
+      </or>
+    </define-gate>
+    <define-gate name="E9">  <!-- "EMF not removed from K1 relay coil when K5 relay" --> <!-- "contacts closed for t > 60 sec" -->
+      <or>
+        <gate name="E10"/>
+        <gate name="E11"/>
+      </or>
+    </define-gate>
+    <define-gate name="E10">  <!-- "EMF to K1 coil through timer circuit when" --> <!-- "K5 contacts closed for t > 60 sec" -->
+      <and>
+        <house-event name="KT1"/>  <!-- "KT1 timer reset" -->
+        <house-event name="KT3"/>  <!-- "KT3 timer reset" -->
+        <gate name="E12"/>
+      </and>
+    </define-gate>
+    <define-gate name="E12">  <!-- "KT2 timer contacts fail to open when K5 relay contacts" --> <!-- "closed for t > 60 sec" -->
+      <or>
+        <house-event name="KT2"/>  <!-- "KT2 timer reset" -->
+        <basic-event name="T4"/> <!-- "KT2 timer does not time "time out" due...": Undeveloped -->
+      </or>
+    </define-gate>
+    <define-gate name="E11">  <!-- "EMF to K1 coil through S1 contacts when K5 contacts" --> <!-- "closed for t > 60 sec" -->
+      <or>
+        <basic-event name="S1"/>  <!-- "switch inadvertently closes or fails to open" -->
+        <basic-event name="T3"/>  <!-- "Reset signal inadvertently applied or not removed...": Undeveloped -->
+      </or>
+    </define-gate>
+    <define-gate name="E2tr">  <!-- "EMF not removed from K1 relay coil when K3 contacts closed" -->
+      <or>
+        <gate name="E3tr"/>
+        <gate name="E4tr"/>
+      </or>
+    </define-gate>
+    <define-gate name="E4tr">  <!-- "EMF to K1 coil through S1 contacts when K3 closed" -->
+      <or>
+        <basic-event name="S1"/>  <!-- "switch inadvertently closes or fails to open" -->
+        <basic-event name="T1inc"/>  <!-- "Reset signal inadvertently applied": Undeveloped -->
+      </or>
+    </define-gate>
+    <define-gate name="E3tr">  <!-- "EMF to K1 coil through timer circuit when K3 contacts" --> <!-- "closed for t > 60 sec" -->
+      <and>
+        <gate name="E5tr"/>
+        <gate name="E6tr"/>
+        <gate name="E7tr"/>
+      </and>
+    </define-gate>
+    <define-gate name="E5tr">  <!-- "K1 timer contacts fail to open when K3 closed" -->
+      <or>
+        <basic-event name="KT1inc"/>
+        <basic-event name="T2inc"/>  <!-- Undeveloped -->
+      </or>
+    </define-gate>
+    <define-gate name="E6tr">
+      <or>
+        <basic-event name="KT2inc"/>
+        <basic-event name="T3inc"/>  <!-- Undeveloped -->
+      </or>
+    </define-gate>
+    <define-gate name="E7tr">
+      <or>
+        <basic-event name="KT3inc"/>
+        <basic-event name="T4inc"/>  <!-- Undeveloped -->
+      </or>
+    </define-gate>
+  </define-fault-tree>
+  <model-data>
+    <define-basic-event name="T3">
+      <float value="2.000000e-002"/>
+    </define-basic-event>
+    <define-basic-event name="S1">
+      <float value="2.000000e-002"/>
+    </define-basic-event>
+    <define-basic-event name="T4">
+      <float value="2.000000e-002"/>
+    </define-basic-event>
+    <define-house-event name="KT2">
+      <constant value="true"/>
+    </define-house-event>
+    <define-house-event name="KT3">
+      <constant value="true"/>
+    </define-house-event>
+    <define-house-event name="KT1">
+      <constant value="true"/>
+    </define-house-event>
+    <define-basic-event name="T1">
+      <float value="2.000000e-002"/>
+    </define-basic-event>
+    <define-basic-event name="K2">
+      <float value="2.000000e-002"/>
+    </define-basic-event>
+    <define-basic-event name="T2">
+      <float value="2.000000e-002"/>
+    </define-basic-event>
+    <define-basic-event name="K5">
+      <float value="2.000000e-002"/>
+    </define-basic-event>
+    <define-basic-event name="K1">
+      <float value="2.000000e-002"/>
+    </define-basic-event>
+    <define-basic-event name="KT1inc">
+      <float value="2.000000e-002"/>
+    </define-basic-event>
+    <define-basic-event name="KT2inc">
+      <float value="2.000000e-002"/>
+    </define-basic-event>
+    <define-basic-event name="KT3inc">
+      <float value="2.000000e-002"/>
+    </define-basic-event>
+    <define-basic-event name="T1inc">
+      <float value="2.000000e-002"/>
+    </define-basic-event>
+    <define-basic-event name="T2inc">
+      <float value="2.000000e-002"/>
+    </define-basic-event>
+    <define-basic-event name="T3inc">
+      <float value="2.000000e-002"/>
+    </define-basic-event>
+    <define-basic-event name="T4inc">
+      <float value="2.000000e-002"/>
+    </define-basic-event>
+  </model-data>
+</opsa-mef>
