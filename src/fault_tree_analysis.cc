@@ -80,7 +80,9 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
 
   FaultTreeAnalysis::AssignIndices(fault_tree);
 
-  FaultTreeAnalysis::ExpandSets(top_event_index_, inter_sets);
+  // Container for cut sets with intermediate events.
+  std::vector< SupersetPtr > top_children;
+  FaultTreeAnalysis::ExpandSets(top_event_index_, top_children);
 
   // An iterator for a vector with sets of ids of events.
   std::vector< std::set<int> >::iterator it_vec;
@@ -88,21 +90,24 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
   // An iterator for a vector with Supersets.
   std::vector< SupersetPtr >::iterator it_sup;
 
+  for (it_sup = top_children.begin(); it_sup != top_children.end(); ++it_sup) {
+    // Discard this tmp set if it is larger than the limit.
+    if ((*it_sup)->NumOfPrimeEvents() > limit_order_) continue;
+
+    if ((*it_sup)->NumOfGates() == 0) {
+      // This is a set with primary events only.
+      cut_sets.push_back((*it_sup)->primes());
+      continue;
+    }
+    inter_sets.push_back(*it_sup);
+  }
+
   // Generate cut sets.
   while (!inter_sets.empty()) {
     // Get rightmost set.
     SupersetPtr tmp_set = inter_sets.back();
     // Delete rightmost set.
     inter_sets.pop_back();
-
-    // Discard this tmp set if it is larger than the limit.
-    if (tmp_set->NumOfPrimeEvents() > limit_order_) continue;
-
-    if (tmp_set->NumOfGates() == 0) {
-      // This is a set with primary events only.
-      cut_sets.push_back(tmp_set->primes());
-      continue;
-    }
 
     // To hold sets of children.
     std::vector< SupersetPtr > children_sets;
@@ -113,7 +118,17 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
     for (it_sup = children_sets.begin(); it_sup != children_sets.end();
          ++it_sup) {
       // Add this set to the original inter_sets.
-      if ((*it_sup)->InsertSet(tmp_set)) inter_sets.push_back(*it_sup);
+      if ((*it_sup)->InsertSet(tmp_set)) {
+        // Discard this tmp set if it is larger than the limit.
+        if ((*it_sup)->NumOfPrimeEvents() > limit_order_) continue;
+
+        if ((*it_sup)->NumOfGates() == 0) {
+          // This is a set with primary events only.
+          cut_sets.push_back((*it_sup)->primes());
+          continue;
+        }
+        inter_sets.push_back(*it_sup);
+      }
     }
   }
 
@@ -236,8 +251,21 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
   // Duration of probability related operations.
   p_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);}
 
-void FaultTreeAnalysis::ExpandSets(int inter_index,
-                                    std::vector< SupersetPtr >& sets) {
+  void FaultTreeAnalysis::ExpandSets(int inter_index,
+                                     std::vector< SupersetPtr >& sets) {
+  // Assumes sets are empty.
+  assert(sets.empty());
+  if (repeat_exp_.count(inter_index)) {
+    std::vector<SupersetPtr>* repeat_set = &repeat_exp_[inter_index];
+    std::vector<SupersetPtr>::iterator it;
+    for (it = repeat_set->begin(); it != repeat_set->end(); ++it) {
+      SupersetPtr temp_set(new Superset);
+      temp_set->InsertSet(*it);
+      sets.push_back(temp_set);
+    }
+    return;
+  }
+
   // Populate intermediate and primary events of the top.
   const std::map<std::string, EventPtr>* children =
       &int_to_inter_[std::abs(inter_index)]->children();
@@ -390,10 +418,19 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
     std::string msg = "No algorithm defined for " + gate;
     throw scram::ValueError(msg);
   }
+
+  // Save the expanded sets in case this gate gets repeated.
+  std::vector<SupersetPtr>* repeat_set = &repeat_exp_[inter_index];
+  std::vector<SupersetPtr>::iterator it;
+  for (it = sets.begin(); it != sets.end(); ++it) {
+    SupersetPtr temp_set(new Superset);
+    temp_set->InsertSet(*it);
+    repeat_set->push_back(temp_set);
+  }
 }
 
 void FaultTreeAnalysis::SetOr(std::vector<int>& events_children,
-                       std::vector<SupersetPtr>& sets, int mult) {
+                              std::vector<SupersetPtr>& sets, int mult) {
   std::vector<int>::iterator it_child;
   for (it_child = events_children.begin();
        it_child != events_children.end(); ++it_child) {
@@ -408,7 +445,7 @@ void FaultTreeAnalysis::SetOr(std::vector<int>& events_children,
 }
 
 void FaultTreeAnalysis::SetAnd(std::vector<int>& events_children,
-                        std::vector<SupersetPtr>& sets, int mult) {
+                               std::vector<SupersetPtr>& sets, int mult) {
   SupersetPtr tmp_set_c(new scram::Superset());
   std::vector<int>::iterator it_child;
   for (it_child = events_children.begin();
@@ -563,9 +600,10 @@ double FaultTreeAnalysis::ProbAnd(const std::set<int>& min_cut_set) {
   return p_sub_set;
 }
 
-void FaultTreeAnalysis::CombineElAndSet(const std::set<int>& el,
-                                 const std::set< std::set<int> >& set,
-                                 std::set< std::set<int> >& combo_set) {
+void FaultTreeAnalysis::CombineElAndSet(
+    const std::set<int>& el,
+    const std::set< std::set<int> >& set,
+    std::set< std::set<int> >& combo_set) {
   std::set<int> member_set;
   std::set<int>::iterator it;
   std::set< std::set<int> >::iterator it_set;
@@ -587,7 +625,7 @@ void FaultTreeAnalysis::CombineElAndSet(const std::set<int>& el,
 // ----- Algorithm for Total Equation for Monte Carlo Simulation --------
 // Generation of the representation of the original equation.
 void FaultTreeAnalysis::MProbOr(std::set< std::set<int> >& min_cut_sets,
-                         int sign, int nsums) {
+                                int sign, int nsums) {
   // Recursive implementation.
   if (min_cut_sets.empty()) return;
 

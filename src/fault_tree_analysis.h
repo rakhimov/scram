@@ -154,7 +154,7 @@ class FaultTreeAnalysis {
   /// @param[in] sign The sign of the series.
   /// @param[in] nsums The number of sums in the series.
   void MProbOr(std::set< std::set<int> >& min_cut_sets, int sign = 1,
-                int nsums = 1000000);
+               int nsums = 1000000);
 
   /// Performs Monte Carlo Simulation.
   /// @todo Implement the simulation.
@@ -219,6 +219,10 @@ class FaultTreeAnalysis {
   double exp_time_;  ///< Expansion of tree gates time.
   double mcs_time_;  ///< Time for MCS generation.
   double p_time_;  ///< Time for probability calculations.
+
+  /// Track if the gates are repeated upon expansion.
+  boost::unordered_map<int, std::vector<SupersetPtr> > repeat_exp_;
+
 };
 
 }  // namespace scram

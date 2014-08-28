@@ -71,6 +71,12 @@ class Superset {
   /// Container for primary events.
   std::set<int> primes_;
 
+  /// The number of complement gates in the sets.
+  int neg_gates_;
+
+  /// Indicator of complement primary events.
+  bool neg_primes_;
+
   /// Indication that this set contains events that cancel each other.
   /// For example, event A and complement of A will result in a null set.
   bool cancel;
