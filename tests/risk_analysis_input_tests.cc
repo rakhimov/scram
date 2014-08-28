@@ -10,7 +10,7 @@
 using namespace scram;
 
 // Test correct tree inputs
-TEST(FaultTreeAnalysisInputTest, CorrectFTAInputs) {
+TEST(RiskAnalysisInputTest, CorrectFTAInputs) {
   std::vector<std::string> correct_inputs;
   correct_inputs.push_back("./share/scram/input/fta/correct_tree_input.xml");
   // correct_inputs.push_back("./share/scram/input/fta/doubly_defined_basic.xml");
@@ -27,7 +27,7 @@ TEST(FaultTreeAnalysisInputTest, CorrectFTAInputs) {
 }
 
 // Test correct probability inputs
-TEST(FaultTreeAnalysisInputTest, CorrectFTAProbability) {
+TEST(RiskAnalysisInputTest, CorrectFTAProbability) {
   std::string input_correct = "./share/scram/input/fta/correct_tree_input.xml";
 
   RiskAnalysis* ran;
@@ -37,7 +37,7 @@ TEST(FaultTreeAnalysisInputTest, CorrectFTAProbability) {
 }
 
 // Test incorrect fault tree inputs
-TEST(FaultTreeAnalysisInputTest, DISABLED_IncorrectFTAInputs) {
+TEST(RiskAnalysisInputTest, DISABLED_IncorrectFTAInputs) {
   std::vector<std::string> ioerror_inputs;
   std::vector<std::string> incorrect_inputs;
 
@@ -59,5 +59,5 @@ TEST(FaultTreeAnalysisInputTest, DISABLED_IncorrectFTAInputs) {
 }
 
 // Test incorrect probability input.
-TEST(FaultTreeAnalysisInputTest, DISABLED_IncorrectFTAProbability) {
+TEST(RiskAnalysisInputTest, DISABLED_IncorrectFTAProbability) {
 }
