@@ -27,7 +27,7 @@ class Event {
   const std::string& id() { return id_; }
 
   /// Adds a parent into the parent map.
-  /// @param[in] parent One of the parents of this gate event.
+  /// @param[in] parent One of the gate parents of this event.
   /// @throws ValueError if the parent is being re-inserted.
   void AddParent(const boost::shared_ptr<scram::Gate>& parent);
 

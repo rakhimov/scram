@@ -43,13 +43,13 @@ TEST(SupersetTest, InsertPrimary) {
   EXPECT_NO_THROW(sset->InsertPrimary(neg_prime));
   EXPECT_EQ(sset->primes(), primes);
 
-  /* Not intended to be used this way. Deprecation of this use.
+  // This is a use in not intended way.
+  // The user should only use this function for initialization.
   int neg_existing = -1;  // This is a negation of an existing event.
-  EXPECT_FALSE(sset->InsertPrimary(neg_existing));
-  EXPECT_TRUE(sset->primes().empty());
+  primes.insert(neg_existing);
+  EXPECT_NO_THROW(sset->InsertPrimary(neg_existing));
   EXPECT_TRUE(sset->gates().empty());
-  EXPECT_FALSE(sset->InsertPrimary(1000));  // Reject any further additions.
-  */
+  EXPECT_EQ(sset->primes(), primes);
 }
 
 // Test InsertGate function.
@@ -78,13 +78,13 @@ TEST(SupersetTest, InsertGate) {
   EXPECT_NO_THROW(sset->InsertGate(neg_gate));
   EXPECT_EQ(sset->gates(), gates);
 
-  /* Not intended to be used this way. Deprecated.
+  // This is a use in not intended way.
+  // The user should only use this function for initialization.
   int neg_existing = -100;  // This is a negation of an existing event.
-  EXPECT_FALSE(sset->InsertGate(neg_existing));
+  gates.insert(neg_existing);
+  EXPECT_NO_THROW(sset->InsertGate(neg_existing));
   EXPECT_TRUE(sset->primes().empty());
-  EXPECT_TRUE(sset->gates().empty());
-  EXPECT_FALSE(sset->InsertGate(100000));  // Reject any further additions.
-  */
+  EXPECT_EQ(sset->gates(), gates);
 }
 
 // Test Insert function
@@ -113,21 +113,6 @@ TEST(SupersetTest, Insert) {
 
   EXPECT_EQ(sset_one->primes(), primes);
   EXPECT_EQ(sset_one->gates(), gates);
-
-  /* Not intended to be used this way. Deprecated.
-  // Insert negative primary elements.
-  EXPECT_TRUE(sset_two->InsertPrimary(-1));
-  EXPECT_FALSE(sset_one->InsertSet(sset_two));
-  EXPECT_TRUE(sset_one->primes().empty());
-  EXPECT_TRUE(sset_one->gates().empty());
-
-  // Insert negative gate elements.
-  sset_one = SupersetPtr(new Superset());
-  EXPECT_TRUE(sset_one->InsertGate(-50));
-  EXPECT_FALSE(sset_two->InsertSet(sset_one));
-  EXPECT_TRUE(sset_two->primes().empty());
-  EXPECT_TRUE(sset_two->gates().empty());
-  */
 }
 
 // Test PopGate function
@@ -174,19 +159,4 @@ TEST(SupersetTest, NumOfGates) {
   // Empty the set.
   sset->PopGate();
   EXPECT_EQ(sset->NumOfGates(), 0);
-}
-
-// Test corner case with deleting the superset instance.
-TEST(SupersetTest, DeleteSet) {
-  SupersetPtr sset(new Superset());
-  int prime_event = 1;
-  int gate = 100;
-  sset->InsertPrimary(prime_event);
-  sset->InsertGate(gate);
-  std::set<int> primes;
-  std::set<int> gates;
-  primes = sset->primes();
-  gates = sset->gates();
-  primes.insert(1000);
-  EXPECT_EQ(sset->primes().size(), 1);
 }

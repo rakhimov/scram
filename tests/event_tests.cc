@@ -81,8 +81,7 @@ TEST(GateTest, Parent) {
   GatePtr parent_event(new Gate("parent"));
   // Request for the parent when it has not been set.
   EXPECT_THROW(inter_event->parents(), ValueError);
-  // Setting a parent. Note that there is no check if the parent is not a
-  // primary event. This should be checked by a user creating this instance.
+  // Setting a parent.
   EXPECT_NO_THROW(inter_event->AddParent(parent_event));
   EXPECT_THROW(inter_event->AddParent(parent_event), ValueError);  // Re-adding.
   EXPECT_NO_THROW(inter_event->parents());
