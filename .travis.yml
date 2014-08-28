@@ -18,7 +18,7 @@ install:
     - sudo pip install nose
 
 script:
-    - mkdir ./install && ./install.py -p --prefix=./install && ./.run_tests.sh
+    - mkdir ./install && ./install.py -p --prefix=./install --threads 2 && ./.run_tests.sh
 
 after_success:
     - coveralls  --verbose  --exclude tests  --exclude ./build/CMakeFiles/
