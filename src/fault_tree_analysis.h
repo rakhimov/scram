@@ -59,6 +59,10 @@ class FaultTreeAnalysis {
   virtual ~FaultTreeAnalysis() {}
 
  private:
+  /// Traverses the fault tree and expands it into sets of gates and events.
+  void ExpandTree(SupersetPtr& set_with_gates,
+                  std::vector< SupersetPtr >& cut_sets);
+
   /// Expands the children of a top or intermediate event to Supersets.
   /// @param[in] inter_index The index number of the parent node.
   /// @param[out] sets The final Supersets from the children.
@@ -89,7 +93,7 @@ class FaultTreeAnalysis {
   /// @param[in] mcs_lower_order Reference minimal cut sets of some order.
   /// @param[in] min_order The order of sets to become minimal.
   /// @note T_avg(N^3 + N^2*logN + N*logN) = O_avg(N^3)
-  void FindMcs(const std::set< std::set<int> >& cut_sets,
+  void FindMcs(const std::vector< const std::set<int>* >& cut_sets,
                const std::set< std::set<int> >& mcs_lower_order,
                int min_order);
 

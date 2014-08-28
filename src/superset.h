@@ -26,19 +26,20 @@ class Superset {
   /// Default constructor.
   Superset();
 
-  /// Inserts a primary event into the set.
+  /// Inserts a primary event into the set for initialization.
   /// @param[in] id The id index number for the event.
-  /// @returns false iff the resultant set is null.
-  /// @returns true if the insertion is successful.
-  bool InsertPrimary(int id);
+  /// @note This function does not check for complements.
+  /// It is used for the superset initialization with unique events.
+  void InsertPrimary(int id);
 
-  /// Inseerts a gate into the set.
+  /// Inserts a gate into the set for initialization.
   /// @param[in] id The id index number for the gate.
-  /// @returns false iff the resultant set is null.
-  /// @returns true if the insertion is successful.
-  bool InsertGate(int id);
+  /// @note This function does not check for complements.
+  /// It is used for the superset initialization with unique events.
+  void InsertGate(int id);
 
   /// Inserts another superset with gates and primary events.
+  /// Check if there are complements of events.
   /// @param[in] st A pointer to another superset with events.
   /// @returns false iff the resultant set is null.
   /// @returns true if the addition is successful.
@@ -46,7 +47,8 @@ class Superset {
 
   /// @returns An id index number of a gate
   /// and deletes it from this set.
-  /// @throws ValueError if there are no gates to pop.
+  /// @note Undefined behavior if the gates container is empty.
+  /// The caller must make sure that that there are gates.
   int PopGate();
 
   /// @returns The number of primary events in this set.
@@ -59,7 +61,6 @@ class Superset {
   const std::set<int>& primes();
 
   /// @returns The set of gates.
-  /// @note This is for testing only.
   const std::set<int>& gates();
 
   ~Superset() {}

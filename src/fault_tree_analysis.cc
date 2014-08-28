@@ -63,6 +63,15 @@ FaultTreeAnalysis::FaultTreeAnalysis(std::string analysis,
   FaultTreePtr fault_tree_;
 }
 
+/// Set pointer comparison.
+struct SetPtrComp
+    : public std::binary_function<const std::set<int>*,
+                                  const std::set<int>*, bool> {
+  bool operator()(const std::set<int>* lhs, const std::set<int>* rhs) const {
+    return *lhs < *rhs;
+  }
+};
+
 void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
                                 bool prob_requested) {
   // Timing Initialization
@@ -70,67 +79,16 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
   start_time = std::clock();
   // End of Timing Initialization
 
-  // Container for cut sets with intermediate events.
-  std::vector< SupersetPtr > inter_sets;
-
   // Container for cut sets with primary events only.
-  std::vector< std::set<int> > cut_sets;
+  std::vector< SupersetPtr > cut_sets;
 
   prob_requested_ = prob_requested;
 
   FaultTreeAnalysis::AssignIndices(fault_tree);
 
-  // Container for cut sets with intermediate events.
-  std::vector< SupersetPtr > top_children;
-  FaultTreeAnalysis::ExpandSets(top_event_index_, top_children);
-
-  // An iterator for a vector with sets of ids of events.
-  std::vector< std::set<int> >::iterator it_vec;
-
-  // An iterator for a vector with Supersets.
-  std::vector< SupersetPtr >::iterator it_sup;
-
-  for (it_sup = top_children.begin(); it_sup != top_children.end(); ++it_sup) {
-    // Discard this tmp set if it is larger than the limit.
-    if ((*it_sup)->NumOfPrimeEvents() > limit_order_) continue;
-
-    if ((*it_sup)->NumOfGates() == 0) {
-      // This is a set with primary events only.
-      cut_sets.push_back((*it_sup)->primes());
-      continue;
-    }
-    inter_sets.push_back(*it_sup);
-  }
-
-  // Generate cut sets.
-  while (!inter_sets.empty()) {
-    // Get rightmost set.
-    SupersetPtr tmp_set = inter_sets.back();
-    // Delete rightmost set.
-    inter_sets.pop_back();
-
-    // To hold sets of children.
-    std::vector< SupersetPtr > children_sets;
-
-    FaultTreeAnalysis::ExpandSets(tmp_set->PopGate(), children_sets);
-
-    // Attach the original set into this event's sets of children.
-    for (it_sup = children_sets.begin(); it_sup != children_sets.end();
-         ++it_sup) {
-      // Add this set to the original inter_sets.
-      if ((*it_sup)->InsertSet(tmp_set)) {
-        // Discard this tmp set if it is larger than the limit.
-        if ((*it_sup)->NumOfPrimeEvents() > limit_order_) continue;
-
-        if ((*it_sup)->NumOfGates() == 0) {
-          // This is a set with primary events only.
-          cut_sets.push_back((*it_sup)->primes());
-          continue;
-        }
-        inter_sets.push_back(*it_sup);
-      }
-    }
-  }
+  SupersetPtr top_set(new Superset());
+  top_set->InsertGate(top_event_index_);
+  ExpandTree(top_set, cut_sets);
 
   // Duration of the expansion.
   exp_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
@@ -146,18 +104,27 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
     return;
   }
 
+  // An iterator for a vector with sets of ids of primary events.
+  std::vector< SupersetPtr >::iterator it_vec;
+
   // Choose to convert vector to a set to get rid of any duplications.
-  std::set< std::set<int> > unique_cut_sets;
+  SetPtrComp comp;
+  std::set< const std::set<int>*, SetPtrComp > unique_cut_sets(comp);
   for (it_vec = cut_sets.begin(); it_vec != cut_sets.end(); ++it_vec) {
-    if (it_vec->size() == 1) {
+    if ((*it_vec)->NumOfPrimeEvents() == 1) {
       // Minimal cut set is detected.
-      imcs_.insert(*it_vec);
+      imcs_.insert((*it_vec)->primes());
       continue;
     }
-    unique_cut_sets.insert(*it_vec);
+    unique_cut_sets.insert(&(*it_vec)->primes());
+  }
+  std::vector<const std::set<int>* > sets_unique;
+  std::set< const std::set<int>*, SetPtrComp >::iterator it_un;
+  for (it_un = unique_cut_sets.begin(); it_un != unique_cut_sets.end(); ++it_un) {
+    sets_unique.push_back(*it_un);
   }
 
-  FaultTreeAnalysis::FindMcs(unique_cut_sets, imcs_, 2);
+  FaultTreeAnalysis::FindMcs(sets_unique, imcs_, 2);
   // Duration of MCS generation.
   mcs_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
   FaultTreeAnalysis::SetsToString();  // MCS with event ids.
@@ -249,10 +216,40 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
     }
   }
   // Duration of probability related operations.
-  p_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);}
+  p_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
+}
 
-  void FaultTreeAnalysis::ExpandSets(int inter_index,
-                                     std::vector< SupersetPtr >& sets) {
+void FaultTreeAnalysis::ExpandTree(
+    SupersetPtr& set_with_gates,
+    std::vector< SupersetPtr >& cut_sets) {
+  // To hold sets of children.
+  std::vector< SupersetPtr > children_sets;
+
+  FaultTreeAnalysis::ExpandSets(set_with_gates->PopGate(), children_sets);
+
+  // An iterator for a vector with Supersets.
+  std::vector< SupersetPtr >::iterator it_sup;
+
+  // Attach the original set into this event's sets of children.
+  for (it_sup = children_sets.begin(); it_sup != children_sets.end();
+       ++it_sup) {
+    // Add this set to the original inter_sets.
+    if ((*it_sup)->InsertSet(set_with_gates)) {
+      // Discard this tmp set if it is larger than the limit.
+      if ((*it_sup)->NumOfPrimeEvents() > limit_order_) continue;
+
+      if ((*it_sup)->gates().empty()) {
+        // This is a set with primary events only.
+        cut_sets.push_back(*it_sup);
+        continue;
+      }
+      ExpandTree(*it_sup, cut_sets);
+    }
+  }
+}
+
+void FaultTreeAnalysis::ExpandSets(int inter_index,
+                                   std::vector< SupersetPtr >& sets) {
   // Assumes sets are empty.
   assert(sets.empty());
   if (repeat_exp_.count(inter_index)) {
@@ -459,18 +456,18 @@ void FaultTreeAnalysis::SetAnd(std::vector<int>& events_children,
   sets.push_back(tmp_set_c);
 }
 
-void FaultTreeAnalysis::FindMcs(const std::set< std::set<int> >& cut_sets,
+void FaultTreeAnalysis::FindMcs(const std::vector< const std::set<int>* >& cut_sets,
                                 const std::set< std::set<int> >& mcs_lower_order,
                                 int min_order) {
   if (cut_sets.empty()) return;
 
   // Iterator for cut_sets.
-  std::set< std::set<int> >::iterator it_uniq;
+  std::vector< const std::set<int>* >::const_iterator it_uniq;
 
   // Iterator for minimal cut sets.
   std::set< std::set<int> >::iterator it_min;
 
-  std::set< std::set<int> > temp_sets;  // For mcs of a level above.
+  std::vector< const std::set<int>* > temp_sets;  // For mcs of a level above.
   std::set< std::set<int> > temp_min_sets;  // For mcs of this level.
 
   for (it_uniq = cut_sets.begin();
@@ -479,7 +476,7 @@ void FaultTreeAnalysis::FindMcs(const std::set< std::set<int> >& cut_sets,
 
     for (it_min = mcs_lower_order.begin(); it_min != mcs_lower_order.end();
          ++it_min) {
-      if (std::includes(it_uniq->begin(), it_uniq->end(),
+      if (std::includes((*it_uniq)->begin(), (*it_uniq)->end(),
                         it_min->begin(), it_min->end())) {
         // Non-minimal cut set is detected.
         include = false;
@@ -489,12 +486,12 @@ void FaultTreeAnalysis::FindMcs(const std::set< std::set<int> >& cut_sets,
     // After checking for non-minimal cut sets,
     // all minimum sized cut sets are guaranteed to be minimal.
     if (include) {
-      if (it_uniq->size() == min_order) {
-        temp_min_sets.insert(*it_uniq);
+      if ((*it_uniq)->size() == min_order) {
+        temp_min_sets.insert(**it_uniq);
         // Update maximum order of the sets.
         if (min_order > max_order_) max_order_ = min_order;
       } else {
-        temp_sets.insert(*it_uniq);
+        temp_sets.push_back(*it_uniq);
       }
     }
     // Ignore the cut set because include = false.
@@ -528,6 +525,7 @@ void FaultTreeAnalysis::AssignIndices(const FaultTreePtr& fault_tree) {
 
   // Assign an index to each top and intermediate event and populate
   // relevant databases.
+  /// @todo Rename to gate_to_inter
   top_event_index_ = j;
   int_to_inter_.insert(std::make_pair(j, top_event_));
   inter_to_int_.insert(std::make_pair(top_event_->id(), j));

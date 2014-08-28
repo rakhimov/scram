@@ -6,34 +6,14 @@ namespace scram {
 
 Superset::Superset() : cancel(false), neg_gates_(0), neg_primes_(false) {}
 
-bool Superset::InsertPrimary(int id) {
-  if (cancel) return false;
-  if (id < 0 || neg_primes_) {
-    if (primes_.count(-1 * id)) {
-      primes_.clear();
-      gates_.clear();
-      cancel = true;
-      return false;
-    }
-  }
+void Superset::InsertPrimary(int id) {
   if (!neg_primes_ && id < 0) neg_primes_ = true;
   primes_.insert(id);
-  return true;
 }
 
-bool Superset::InsertGate(int id) {
-  if (cancel) return false;
-  if (id < 0 || neg_gates_) {
-    if (gates_.count(-1 * id)) {
-      primes_.clear();
-      gates_.clear();
-      cancel = true;
-      return false;
-    }
-  }
+void Superset::InsertGate(int id) {
   if (id < 0) ++neg_gates_;
   gates_.insert(id);
-  return true;
 }
 
 bool Superset::InsertSet(const boost::shared_ptr<Superset>& st) {
@@ -46,8 +26,8 @@ bool Superset::InsertSet(const boost::shared_ptr<Superset>& st) {
     return true;
   }
   std::set<int>::iterator it;
-  for (it = st->primes_.begin(); it != st->primes_.end(); ++it) {
-    if (*it < 0 || neg_primes_) {
+  if (neg_primes_ || st->neg_primes_) {
+    for (it = st->primes_.begin(); it != st->primes_.end(); ++it) {
       if (primes_.count(-1 * (*it))) {
         primes_.clear();
         gates_.clear();
@@ -55,30 +35,28 @@ bool Superset::InsertSet(const boost::shared_ptr<Superset>& st) {
         return false;
       }
     }
-    if (!neg_primes_ && *it < 0) neg_primes_ = true;
-    primes_.insert(*it);
+    if (!neg_primes_) neg_primes_ = false;  // New negative were included.
   }
 
-  for (it = st->gates_.begin(); it != st->gates_.end(); ++it) {
-    if (*it < 0 || neg_gates_) {
+  if (neg_gates_ || st->neg_gates_) {
+    for (it = st->gates_.begin(); it != st->gates_.end(); ++it) {
       if (gates_.count(-1 * (*it))) {
         primes_.clear();
         gates_.clear();
         cancel = true;
         return false;
       }
+      if (*it < 0) ++neg_gates_;
     }
-    if (*it < 0) ++neg_gates_;
-    gates_.insert(*it);
   }
 
+  primes_.insert(st->primes_.begin(), st->primes_.end());
+  gates_.insert(st->gates_.begin(), st->gates_.end());
   return true;
 }
 
 int Superset::PopGate() {
-  if (gates_.empty()) {
-    throw scram::ValueError("No gates to return.");
-  }
+  assert(!gates_.empty());
   std::set<int>::iterator it = gates_.begin();
   int gate = *it;
   gates_.erase(it);
