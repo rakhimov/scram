@@ -1,19 +1,26 @@
 Speed recordings for scram.
+If the current performance is not listed, then the best is the current.
 
               Best Achieved | Current Performance
 
------------ Three Motor ---------------
+----------- Three Motor -c 0 ----------
 Standard build:
 ---------------
-- Tree Expansion    < 0.01s
-- MCS Generation    < 0.01s
-- Prob Calculation  25.000s | 31.760s
+- Prob Calculation  25.000s | 31.700s
 
 Release build:
 --------------
-- Tree Expansion    < 0.01s
-- MCS Generation    < 0.01s
-- Prob Calculation  5.500s  |  6.272s
+- Prob Calculation  5.500s  |  6.000s
+
+
+----------- Three Motor -c 1e-8 -------
+Standard build:
+---------------
+- Prob Calculation  0.680s  |
+
+Release build:
+--------------
+- Prob Calculation  0.125s  |
 
 
 ---------- fta-200 -l 16 ---------------
@@ -27,11 +34,13 @@ Release build:
 - Tree Expansion    0.920s  |
 - MCS Generation    0.370s  |
 
+
 ---------- fta-200 -l 17 ---------------
 Release build:
 --------------
 - Tree Expansion    4.700s  |
 - MCS Generation    39.26s  |
+
 
 ---------- Baobab -l 6 -----------------
 Release build:

@@ -15,9 +15,9 @@
 
 namespace scram {
 
-FaultTreeAnalysis::FaultTreeAnalysis(std::string analysis,
-                                     std::string approx,
-                                     int limit_order, int nsums)
+FaultTreeAnalysis::FaultTreeAnalysis(std::string analysis, std::string approx,
+                                     int limit_order, int nsums,
+                                     double cut_off)
     : warnings_(""),
       top_event_index_(-1),
       prob_requested_(false),
@@ -48,6 +48,13 @@ FaultTreeAnalysis::FaultTreeAnalysis(std::string analysis,
     throw scram::ValueError(msg);
   }
   nsums_ = nsums;
+
+  if (cut_off < 0 || cut_off > 1) {
+    std::string msg = "The cut-off probability cannot be negative or"
+                      " more than 1.";
+    throw scram::ValueError(msg);
+  }
+  cut_off_ = cut_off;
 
   // Check the right approximation for probability calculations.
   if (approx != "no" && approx != "rare" && approx != "mcub") {
@@ -147,15 +154,20 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
   // Iterator for minimal cut sets.
   std::set< std::set<int> >::iterator it_min;
 
+  // Cut sets with higher that cut-off probability.
+  std::set< std::set<int> > mcs_for_prob;
+
   // Iterate minimal cut sets and find probabilities for each set.
   for (it_min = imcs_.begin(); it_min != imcs_.end(); ++it_min) {
     // Calculate a probability of a set with AND relationship.
     double p_sub_set = FaultTreeAnalysis::ProbAnd(*it_min);
+    if (p_sub_set > cut_off_) mcs_for_prob.insert(*it_min);
+
     // Update a container with minimal cut sets and probabilities.
-    prob_of_min_sets_.insert(std::make_pair(imcs_to_smcs_[*it_min],
-                                            p_sub_set));
-    ordered_min_sets_.insert(std::make_pair(p_sub_set,
-                                            imcs_to_smcs_[*it_min]));
+    prob_of_min_sets_.insert(
+        std::make_pair(imcs_to_smcs_.find(*it_min)->second, p_sub_set));
+    ordered_min_sets_.insert(
+        std::make_pair(p_sub_set, imcs_to_smcs_.find(*it_min)->second));
   }
 
   // Check if the rare event approximation is requested.
@@ -186,9 +198,11 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
     }
     p_total_ = 1 - m;
 
-  } else {  // No approximation technique is assumed.
+  } else {  // The default calculations.
+    // Choose cut sets with high enough probabilities.
+    p_total_ = FaultTreeAnalysis::ProbOr(mcs_for_prob, nsums_);
     // Exact calculation of probability of cut sets.
-    p_total_ = FaultTreeAnalysis::ProbOr(imcs_, nsums_);
+    //p_total_ = FaultTreeAnalysis::ProbOr(imcs_, nsums_);
   }
 
   // Calculate failure contributions of each primary event.

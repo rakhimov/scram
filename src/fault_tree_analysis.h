@@ -45,9 +45,11 @@ class FaultTreeAnalysis {
   /// @param[in] approx The kind of approximation for probability calculations.
   /// @param[in] limit_order The maximum limit on minimal cut sets' order.
   /// @param[in] nsums The number of sums in the probability series.
+  /// @param[in] cut_off The cut-off probability for cut sets.
   /// @throws ValueError if any of the parameters are invalid.
   FaultTreeAnalysis(std::string analysis, std::string approx = "no",
-                    int limit_order = 20, int nsums = 1000000);
+                    int limit_order = 20, int nsums = 1000000,
+                    double cut_off = 1e-8);
 
   /// Analyzes the fault tree and performs computations.
   /// This function must be called only after initilizing the tree with or
@@ -210,8 +212,11 @@ class FaultTreeAnalysis {
   /// Container for primary events ordered by their contribution.
   std::multimap< double, std::string > ordered_primaries_;
 
-  /// Maximum order of the minimal cut sets.
+  /// Maximum order for minimal cut sets.
   int max_order_;
+
+  /// Cut-off probability for minimal cut sets.
+  double cut_off_;
 
   /// Limit on the size of the minimal cut sets for performance reasons.
   int limit_order_;

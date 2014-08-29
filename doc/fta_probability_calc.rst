@@ -25,11 +25,13 @@ The Approximate Probability Calculation Implementation
 ========================================================
 
 Approximate calculations are implemented in order to reduce calculation
-time. The series expansion of the exact formula is applied as in OpenFTA.
+time. The series expansion of the exact formula is applied.
 This feature is the default. The default value for series is set to N
 (*number of the sets*) to get all the series included.
 In general, it is impractical to include more than 8 sums, so the suggestion
 is to include between 4 and 8 sums.
+In addition, cut-off probability for cut sets can be applied to discard
+sets with low probabilities.
 
 The Rare-Event Approximation
 =============================
