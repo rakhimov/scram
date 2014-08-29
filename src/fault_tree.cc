@@ -12,11 +12,11 @@ namespace scram {
 FaultTree::FaultTree(std::string name)
     : name_(name),
       top_event_id_(""),
-      lock_(false),
+      changed_(true),
       warnings_("") {}
 
 void FaultTree::AddGate(GatePtr& gate) {
-  if (lock_) throw scram::Error("The tree is locked. No change is allowed.");
+  if (!changed_) changed_ = true;
 
   if (top_event_id_ == "") {
     top_event_ = gate;
@@ -32,7 +32,7 @@ void FaultTree::AddGate(GatePtr& gate) {
 }
 
 void FaultTree::GatherPrimaryEvents() {
-  lock_ = true;  // Assumes that the tree is fully developed.
+  changed_ = false;  // Assumes that the tree is fully developed.
 
   FaultTree::GetPrimaryEvents(top_event_);
 
@@ -50,14 +50,11 @@ void FaultTree::GetPrimaryEvents(GatePtr& gate) {
       PrimaryEventPtr primary_event =
           boost::dynamic_pointer_cast<scram::PrimaryEvent>(it->second);
       assert(primary_event != 0);  // The tree must be fully defined.
-                                  // @todo Must change to an exception that
-                                  // indicates un-initialized event.
+                                   // @todo May change to an exception that
+                                   // indicates un-initialized event.
       primary_events_.insert(std::make_pair(it->first, primary_event));
     }
   }
 }
-
-// @todo may overload operator= in order to unlock a new tree for changes.
-// or provide an explicit function to unlock the tree.
 
 }  // namespace scram

@@ -56,6 +56,8 @@ include_directories(${SCRAM_CORE_INCLUDE_DIRS})
 set(SCRAM_CORE_TEST_SOURCE ${SCRAM_CORE_TEST_SOURCE}
   "${CMAKE_CURRENT_SOURCE_DIR}/event_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/superset_tests.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/xml_parser_tests.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/risk_analysis_input_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/risk_analysis_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/bench_abc_tests.cc"
@@ -67,7 +69,6 @@ set(SCRAM_CORE_TEST_SOURCE ${SCRAM_CORE_TEST_SOURCE}
   "${CMAKE_CURRENT_SOURCE_DIR}/bench_two_train_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/bench_theatre_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/bench_three_motor_tests.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/xml_parser_tests.cc"
   )
 
 # Make tests to switch and run in build directory
