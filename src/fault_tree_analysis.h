@@ -17,7 +17,7 @@
 #include "event.h"
 #include "superset.h"
 
-class FaultTreeAnalysisTest;
+class RiskAnalysisTest;
 
 typedef boost::shared_ptr<scram::Event> EventPtr;
 typedef boost::shared_ptr<scram::Gate> GatePtr;
@@ -35,7 +35,7 @@ class Reporter;
 /// @class FaultTreeAnalysis
 /// Fault tree analysis functionality.
 class FaultTreeAnalysis {
-  friend class ::FaultTreeAnalysisTest;
+  friend class ::RiskAnalysisTest;
   friend class RiskAnalysis;
   friend class Reporter;
 

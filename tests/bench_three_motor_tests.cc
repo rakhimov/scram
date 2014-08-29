@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 
-#include "fault_tree_analysis_tests.h"
+#include "risk_analysis_tests.h"
 
 // Benchmark Tests for  fault tree from OpenFTA.
-TEST_F(FaultTreeAnalysisTest, ThreeMotor) {
+TEST_F(RiskAnalysisTest, ThreeMotor) {
   std::string tree_input = "./share/scram/input/benchmark/three_motor.xml";
   std::set<std::string> cut_set;
   std::set< std::set<std::string> > mcs;  // For expected min cut sets.

@@ -1,5 +1,5 @@
-#ifndef SCRAM_TESTS_FAULT_TREE_ANALYSIS_TESTS_H_
-#define SCRAM_TESTS_FAULT_TREE_ANALYSIS_TESTS_H_
+#ifndef SCRAM_TESTS_RISK_ANALYSIS_TESTS_H_
+#define SCRAM_TESTS_RISK_ANALYSIS_TESTS_H_
 
 #include <gtest/gtest.h>
 
@@ -16,7 +16,7 @@ typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
 typedef boost::shared_ptr<Superset> SupersetPtr;
 
 
-class FaultTreeAnalysisTest : public ::testing::Test {
+class RiskAnalysisTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
     ran = new RiskAnalysis();
@@ -166,4 +166,4 @@ class FaultTreeAnalysisTest : public ::testing::Test {
   int d_id;
 };
 
-#endif  // SCRAM_TESTS_FAULT_TREE_ANALYSIS_TESTS_H_
+#endif  // SCRAM_TESTS_RISK_ANALYSIS_TESTS_H_

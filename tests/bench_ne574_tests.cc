@@ -1,11 +1,11 @@
 #include <gtest/gtest.h>
 
-#include "fault_tree_analysis_tests.h"
+#include "risk_analysis_tests.h"
 
 // Benchmark Tests for an example fault tree given in NE574 Risk Analysis
 // class at UW-Madison.
 // Test Minimal cut sets and total probabilty.
-TEST_F(FaultTreeAnalysisTest, ne574) {
+TEST_F(RiskAnalysisTest, ne574) {
   std::string tree_input = "./share/scram/input/benchmark/ne574.xml";
   std::string B = "b";  // 0.1
   std::string C = "c";  // 0.3

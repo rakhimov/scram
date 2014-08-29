@@ -1,10 +1,10 @@
 #include <gtest/gtest.h>
 
-#include "fault_tree_analysis_tests.h"
+#include "risk_analysis_tests.h"
 
 // Benchmark Tests for [AB or BC] fault tree.
 // Test Minimal cut sets and total probability.
-TEST_F(FaultTreeAnalysisTest, AB_BC) {
+TEST_F(RiskAnalysisTest, AB_BC) {
   std::string tree_input = "./share/scram/input/benchmark/ab_bc.xml";
   std::string A = "a";  // 0.1
   std::string B = "b";  // 0.2

@@ -1,4 +1,4 @@
-#include "fault_tree_analysis_tests.h"
+#include "risk_analysis_tests.h"
 
 #include <cmath>
 
@@ -8,7 +8,7 @@ using namespace scram;
 
 // ---------------------- Test Private Functions -------------------------
 // Test the function that gets arguments from a line in an input file.
-TEST_F(FaultTreeAnalysisTest, CheckGate) {
+TEST_F(RiskAnalysisTest, CheckGate) {
   GatePtr top(new Gate("top", "and"));  // AND gate.
   PrimaryEventPtr A(new PrimaryEvent("a"));
   PrimaryEventPtr B(new PrimaryEvent("b"));
@@ -113,7 +113,7 @@ TEST_F(FaultTreeAnalysisTest, CheckGate) {
   EXPECT_FALSE(CheckGate(top));
 }
 
-TEST_F(FaultTreeAnalysisTest, NO_GATE) {
+TEST_F(RiskAnalysisTest, NO_GATE) {
   std::vector<SupersetPtr> sets;
 
   // Testing for some UNKNOWN gate.
@@ -125,7 +125,7 @@ TEST_F(FaultTreeAnalysisTest, NO_GATE) {
   EXPECT_THROW(ExpandSets(inter_id, sets), ValueError);
 }
 
-TEST_F(FaultTreeAnalysisTest, OR_GATE) {
+TEST_F(RiskAnalysisTest, OR_GATE) {
   std::vector<SupersetPtr> sets;
   std::vector<SupersetPtr>::iterator it_set;
   std::set<int> result_set;
@@ -174,7 +174,7 @@ TEST_F(FaultTreeAnalysisTest, OR_GATE) {
   EXPECT_EQ(1, result_set.count(-1 * d_id));
 }
 
-TEST_F(FaultTreeAnalysisTest, AND_GATE) {
+TEST_F(RiskAnalysisTest, AND_GATE) {
   std::vector<SupersetPtr> sets;
   std::vector<SupersetPtr>::iterator it_set;
   std::set<int> result_set;
@@ -223,7 +223,7 @@ TEST_F(FaultTreeAnalysisTest, AND_GATE) {
   EXPECT_EQ(true, a_found && b_found && c_found && d_found);
 }
 
-TEST_F(FaultTreeAnalysisTest, NOT_GATE) {
+TEST_F(RiskAnalysisTest, NOT_GATE) {
   std::vector<SupersetPtr> sets;
   std::set<int> result_set;
 
@@ -259,7 +259,7 @@ TEST_F(FaultTreeAnalysisTest, NOT_GATE) {
   EXPECT_EQ(1, result_set.count(d_id));
 }
 
-TEST_F(FaultTreeAnalysisTest, NOR_GATE) {
+TEST_F(RiskAnalysisTest, NOR_GATE) {
   std::vector<SupersetPtr> sets;
   std::vector<SupersetPtr>::iterator it_set;
   std::set<int> result_set;
@@ -308,7 +308,7 @@ TEST_F(FaultTreeAnalysisTest, NOR_GATE) {
   EXPECT_EQ(true, a_found && b_found && c_found && d_found);
 }
 
-TEST_F(FaultTreeAnalysisTest, NAND_GATE) {
+TEST_F(RiskAnalysisTest, NAND_GATE) {
   std::vector<SupersetPtr> sets;
   std::vector<SupersetPtr>::iterator it_set;
   std::set<int> result_set;
@@ -357,7 +357,7 @@ TEST_F(FaultTreeAnalysisTest, NAND_GATE) {
   EXPECT_EQ(1, result_set.count(d_id));
 }
 
-TEST_F(FaultTreeAnalysisTest, XOR_GATE) {
+TEST_F(RiskAnalysisTest, XOR_GATE) {
   std::vector<SupersetPtr> sets;
   std::vector<SupersetPtr>::iterator it_set;
   std::set<int> result_set;
@@ -414,7 +414,7 @@ TEST_F(FaultTreeAnalysisTest, XOR_GATE) {
   }
 }
 
-TEST_F(FaultTreeAnalysisTest, NULL_GATE) {
+TEST_F(RiskAnalysisTest, NULL_GATE) {
   std::vector<SupersetPtr> sets;
   std::set<int> result_set;
 
@@ -450,7 +450,7 @@ TEST_F(FaultTreeAnalysisTest, NULL_GATE) {
   EXPECT_EQ(1, result_set.count(-1 * d_id));
 }
 
-TEST_F(FaultTreeAnalysisTest, INHIBIT_GATE) {
+TEST_F(RiskAnalysisTest, INHIBIT_GATE) {
   std::vector<SupersetPtr> sets;
   std::vector<SupersetPtr>::iterator it_set;
   std::set<int> result_set;
@@ -490,7 +490,7 @@ TEST_F(FaultTreeAnalysisTest, INHIBIT_GATE) {
   EXPECT_EQ(true, a_found && d_found);
 }
 
-TEST_F(FaultTreeAnalysisTest, VOTE_GATE) {
+TEST_F(RiskAnalysisTest, VOTE_GATE) {
   std::vector<SupersetPtr> sets;
   std::vector<SupersetPtr>::iterator it_set;
 
@@ -579,7 +579,7 @@ TEST_F(FaultTreeAnalysisTest, VOTE_GATE) {
   EXPECT_EQ(exp, output);
 }
 
-TEST_F(FaultTreeAnalysisTest, ProbAndInt) {
+TEST_F(RiskAnalysisTest, ProbAndInt) {
   std::set<int> min_cut_set;
 
   // 0 probability for an empty set.
@@ -607,7 +607,7 @@ TEST_F(FaultTreeAnalysisTest, ProbAndInt) {
   EXPECT_DOUBLE_EQ(0.216, ProbAnd(min_cut_set));
 }
 
-TEST_F(FaultTreeAnalysisTest, CombineElAndSet) {
+TEST_F(RiskAnalysisTest, CombineElAndSet) {
   std::set<int> el_one;
   std::set<int> el_two;
   std::set< std::set<int> > set_one;
@@ -678,7 +678,7 @@ TEST_F(FaultTreeAnalysisTest, CombineElAndSet) {
   EXPECT_TRUE(combo_set.empty());
 }
 
-TEST_F(FaultTreeAnalysisTest, ProbOrInt) {
+TEST_F(RiskAnalysisTest, ProbOrInt) {
   std::set<int> mcs;  // Minimal cut set.
   std::set<std::set<int> > min_cut_sets;  // A set of minimal cut sets.
   AddPrimeIntProb(0.0);  // Dummy element.
@@ -736,7 +736,7 @@ TEST_F(FaultTreeAnalysisTest, ProbOrInt) {
 }
 
 // ------------------------ Monte Carlo -----------------------------
-TEST_F(FaultTreeAnalysisTest, MProbOr) {
+TEST_F(RiskAnalysisTest, MProbOr) {
   std::set<int> mcs;  // Minimal cut set.
   std::set< std::set<int> > p_terms;  // Positive terms of the equation.
   std::set< std::set<int> > n_terms;  // Negative terms of the equation.
@@ -815,7 +815,7 @@ TEST_F(FaultTreeAnalysisTest, MProbOr) {
 // ----------------------------------------------------------------------
 // ---------------------- Test Public Functions --------------------------
 // Invalid options for the constructor.
-TEST_F(FaultTreeAnalysisTest, Constructor) {
+TEST_F(RiskAnalysisTest, Constructor) {
   // Incorrect analysis type.
   ASSERT_THROW(FaultTreeAnalysis("analysis"), ValueError);
   // Incorrect approximation argument.
@@ -830,7 +830,7 @@ TEST_F(FaultTreeAnalysisTest, Constructor) {
 // Note that there are tests specificly for correct and incorrect inputs
 // in fault_tree_input_tests.cc, so this test only concerned with actual changes
 // after processing the input.
-TEST_F(FaultTreeAnalysisTest, ProcessInput) {
+TEST_F(RiskAnalysisTest, ProcessInput) {
   std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   EXPECT_EQ(7, orig_ids().size());
@@ -864,7 +864,7 @@ TEST_F(FaultTreeAnalysisTest, ProcessInput) {
 }
 
 // Test Probability Assignment
-TEST_F(FaultTreeAnalysisTest, PopulateProbabilities) {
+TEST_F(RiskAnalysisTest, PopulateProbabilities) {
   // Input with probabilities
   std::string tree_input = "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
@@ -884,7 +884,7 @@ TEST_F(FaultTreeAnalysisTest, PopulateProbabilities) {
 }
 
 // Test Graphing Intructions
-TEST_F(FaultTreeAnalysisTest, GraphingInstructions) {
+TEST_F(RiskAnalysisTest, GraphingInstructions) {
   std::vector<std::string> tree_input;
   tree_input.push_back("./share/scram/input/fta/correct_tree_input.xml");
   // tree_input.push_back("./share/scram/input/fta/doubly_defined_basic.xml");
@@ -911,7 +911,7 @@ TEST_F(FaultTreeAnalysisTest, GraphingInstructions) {
 }
 
 // Test Analysis
-TEST_F(FaultTreeAnalysisTest, AnalyzeDefault) {
+TEST_F(RiskAnalysisTest, AnalyzeDefault) {
   std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
   std::string with_prob = "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   // ASSERT_THROW(ran->Analyze(), Error);  // Calling without a tree initialized.
@@ -967,7 +967,7 @@ TEST_F(FaultTreeAnalysisTest, AnalyzeDefault) {
 }
 
 // Test Monte Carlo Analysis
-TEST_F(FaultTreeAnalysisTest, AnalyzeMC) {
+TEST_F(RiskAnalysisTest, AnalyzeMC) {
   // delete fta();  // Re-initializing.
   fta(new FaultTreeAnalysis("mc"));
   std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
@@ -977,7 +977,7 @@ TEST_F(FaultTreeAnalysisTest, AnalyzeMC) {
 }
 
 // Test Reporting capabilities
-TEST_F(FaultTreeAnalysisTest, Report) {
+TEST_F(RiskAnalysisTest, Report) {
   std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());

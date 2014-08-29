@@ -1,11 +1,11 @@
 #include <gtest/gtest.h>
 
-#include "fault_tree_analysis_tests.h"
+#include "risk_analysis_tests.h"
 
 // Benchmark Tests for an example fault tree with Two trains of Pumps and
 // Valves.
 // Test Minimal cut sets and total probabilty.
-TEST_F(FaultTreeAnalysisTest, TwoTrain) {
+TEST_F(RiskAnalysisTest, TwoTrain) {
   std::string tree_input = "./share/scram/input/benchmark/two_train.xml";
   std::string ValveOne = "valveone";  // 0.5
   std::string ValveTwo = "valvetwo";  // 0.5

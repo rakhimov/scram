@@ -1,9 +1,9 @@
 #include <gtest/gtest.h>
 
-#include "fault_tree_analysis_tests.h"
+#include "risk_analysis_tests.h"
 
 // Benchmark tests for Lift system from OpenFTA
-TEST_F(FaultTreeAnalysisTest, Lift) {
+TEST_F(RiskAnalysisTest, Lift) {
   std::string tree_input = "./share/scram/input/benchmark/lift.xml";
   std::vector<std::string> events;
   events.push_back("lmd_1");

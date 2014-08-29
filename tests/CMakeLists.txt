@@ -57,7 +57,7 @@ set(SCRAM_CORE_TEST_SOURCE ${SCRAM_CORE_TEST_SOURCE}
   "${CMAKE_CURRENT_SOURCE_DIR}/event_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/superset_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/risk_analysis_input_tests.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree_analysis_tests.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/risk_analysis_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/bench_abc_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/bench_abbc_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/bench_not_gate_tests.cc"

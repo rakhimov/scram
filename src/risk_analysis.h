@@ -22,7 +22,7 @@
 #include "reporter.h"
 #include "xml_parser.h"
 
-class FaultTreeAnalysisTest;
+class RiskAnalysisTest;
 
 typedef boost::shared_ptr<scram::Event> EventPtr;
 typedef boost::shared_ptr<scram::Gate> GatePtr;
@@ -37,7 +37,7 @@ namespace scram {
 /// @class RiskAnalysis
 /// Main system that performs analyses.
 class RiskAnalysis {
-  friend class ::FaultTreeAnalysisTest;
+  friend class ::RiskAnalysisTest;
 
  public:
   /// This constructor with configurations with the analysis.
