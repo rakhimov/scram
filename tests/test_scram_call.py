@@ -37,6 +37,12 @@ def test_fta_calls():
     cmd = ["scram", fta_input, "-l", "1"]
     yield assert_equal, 0, call(cmd)
 
+    # Test the incorrect cut-off probability
+    cmd = ["scram", fta_input, "-c", "-1"]
+    yield assert_equal, 1, call(cmd)
+    cmd = ["scram", fta_input, "-c", "10"]
+    yield assert_equal, 1, call(cmd)
+
     # Test the incorrect number for probability series
     cmd = ["scram", fta_input, "-s", "-1"]
     yield assert_equal, 1, call(cmd)
