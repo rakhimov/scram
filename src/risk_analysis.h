@@ -105,6 +105,10 @@ class RiskAnalysis {
  private:
   void DefineFaultTree(const xmlpp::Element* ft_node);
 
+  void DefineGate(const xmlpp::Element* gate_node, FaultTreePtr& ft);
+  void DefineBasicEvent(const xmlpp::Element* event_node, FaultTreePtr& ft);
+  void DefineHouseEvent(const xmlpp::Element* event_node, FaultTreePtr& ft);
+
   void ProcessModelData(const xmlpp::Element* model_data);
 
   /// Verifies if gates are initialized correctly.
@@ -138,12 +142,9 @@ class RiskAnalysis {
   boost::unordered_map<std::string, GatePtr> gates_;
 
   /// Container for primary events.
-  /// @todo Consider deprecating this container for house and basic events.
   boost::unordered_map<std::string, PrimaryEventPtr> primary_events_;
 
-  /// Events to be defined.
-  // boost::unordered_map<std::string, EventPtr> tbd_events_;
-
+  /// Events to be defined with their parents saved for later.
   boost::unordered_map<std::string, std::vector<GatePtr> > tbd_events_;
 
   /// Gates to be defined.
