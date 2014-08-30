@@ -2,11 +2,7 @@
 /// Implementation of fault tree analysis.
 #include "fault_tree_analysis.h"
 
-#include <algorithm>
-#include <cmath>
 #include <ctime>
-#include <fstream>
-#include <iostream>
 #include <iterator>
 #include <sstream>
 #include <vector>

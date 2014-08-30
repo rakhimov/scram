@@ -4,19 +4,13 @@
 #define SCRAM_FAULT_TREE_H_
 
 #include <map>
-#include <set>
 #include <string>
-#include <typeinfo>
 
-#include <boost/pointer_cast.hpp>
-#include <boost/serialization/map.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 
 #include "error.h"
 #include "event.h"
-
-// class FaultTreeTest;
 
 typedef boost::shared_ptr<scram::Event> EventPtr;
 typedef boost::shared_ptr<scram::Gate> GatePtr;
@@ -27,7 +21,6 @@ namespace scram {
 /// @class FaultTree
 /// Fault tree representation.
 class FaultTree {
-  // friend class ::FaultTreeTest;
 
  public:
   /// The main constructor of the Fault Tree.

@@ -2,22 +2,18 @@
 #ifndef SCRAM_RISK_ANALYISIS_H_
 #define SCRAM_RISK_ANALYISIS_H_
 
-#include <fstream>
 #include <map>
 #include <set>
 #include <string>
-#include <queue>
 
-#include <boost/serialization/map.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 
+#include "env.h"
 #include "error.h"
-
+#include "event.h"
 #include "fault_tree.h"
 #include "fault_tree_analysis.h"
-#include "event.h"
-#include "env.h"
 #include "grapher.h"
 #include "reporter.h"
 #include "xml_parser.h"

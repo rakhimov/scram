@@ -3,21 +3,20 @@
 #ifndef SCRAM_FAULT_TREE_ANALYSIS_H_
 #define SCRAM_FAULT_TREE_ANALYSIS_H_
 
-#include <fstream>
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
-#include <boost/serialization/map.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 
 #include "error.h"
-#include "fault_tree.h"
 #include "event.h"
+#include "fault_tree.h"
 #include "superset.h"
 
-class RiskAnalysisTest;
+class FaultTreeAnalysisTest;
 
 typedef boost::shared_ptr<scram::Event> EventPtr;
 typedef boost::shared_ptr<scram::Gate> GatePtr;
@@ -29,14 +28,12 @@ typedef boost::shared_ptr<scram::FaultTree> FaultTreePtr;
 
 namespace scram {
 
-class RiskAnalysis;
 class Reporter;
 
 /// @class FaultTreeAnalysis
 /// Fault tree analysis functionality.
 class FaultTreeAnalysis {
-  friend class ::RiskAnalysisTest;
-  friend class RiskAnalysis;
+  friend class ::FaultTreeAnalysisTest;
   friend class Reporter;
 
  public:
@@ -57,6 +54,23 @@ class FaultTreeAnalysis {
   /// @throws Error if called before tree initialization from an input file.
   /// @note Cut set generator: O_avg(N) O_max(N)
   void Analyze(const FaultTreePtr& fault_tree, bool prob_requested);
+
+  inline double p_total() { return p_total_; }
+
+  /// Container for minimal cut sets.
+  inline const std::set< std::set<std::string> >& min_cut_sets() {
+    return min_cut_sets_;
+  }
+
+  /// Container for minimal cut sets and their respective probabilities.
+  inline const std::map< std::set<std::string>, double >& prob_of_min_sets() {
+    return prob_of_min_sets_;
+  }
+
+  /// Container for primary events and their contribution.
+  inline const std::map< std::string, double >& imp_of_primaries() {
+    return imp_of_primaries_;
+  }
 
   virtual ~FaultTreeAnalysis() {}
 
@@ -231,7 +245,6 @@ class FaultTreeAnalysis {
 
   /// Track if the gates are repeated upon expansion.
   boost::unordered_map<int, std::vector<SupersetPtr> > repeat_exp_;
-
 };
 
 }  // namespace scram

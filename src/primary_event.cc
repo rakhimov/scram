@@ -15,7 +15,7 @@ BasicEvent::BasicEvent(std::string id) : scram::PrimaryEvent(id, "basic") {}
 
 HouseEvent::HouseEvent(std::string id)
     : scram::PrimaryEvent(id, "house"),
-      state_("false") {}
+      state_(false) {}
 
 const std::string& PrimaryEvent::type() {
   if (type_ == "") {

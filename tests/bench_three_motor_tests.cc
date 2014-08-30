@@ -27,8 +27,8 @@ TEST_F(RiskAnalysisTest, ThreeMotor) {
   std::string T4inc = "t4inc";
 
   // Check the tree with the transfer gate.
+  fta(new FaultTreeAnalysis("default", "no", 20, 3));  // Lower number of sums
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
-  nsums(3);
   ASSERT_NO_THROW(ran->Analyze());
   ASSERT_NO_THROW(ran->Report("/dev/null"));
   double delta_sqr = std::abs(p_total() - 0.0211538);

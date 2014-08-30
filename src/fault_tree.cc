@@ -2,10 +2,9 @@
 /// Implementation of fault tree analysis.
 #include "fault_tree.h"
 
-#include <iostream>
-#include <iterator>
+#include <boost/pointer_cast.hpp>
 
-#include <boost/algorithm/string.hpp>
+#include <iterator>
 
 namespace scram {
 
