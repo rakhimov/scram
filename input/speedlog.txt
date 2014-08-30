@@ -6,7 +6,7 @@ If the current performance is not listed, then the best is the current.
 ----------- Three Motor -c 0 ----------
 Standard build:
 ---------------
-- Prob Calculation  25.000s | 31.700s
+- Prob Calculation  25.000s | 31.000s
 
 Release build:
 --------------
@@ -16,34 +16,34 @@ Release build:
 ----------- Three Motor -c 1e-8 -------
 Standard build:
 ---------------
-- Prob Calculation  0.680s  |
+- Prob Calculation  0.680s  |  0.695s
 
 Release build:
 --------------
-- Prob Calculation  0.125s  |
+- Prob Calculation  0.130s |
 
 
 ---------- fta-200 -l 16 ---------------
 Standard build:
 ---------------
-- Tree Expansion    4.500s  |
-- MCS Generation    1.600s  |
+- Tree Expansion    4.180s  |
+- MCS Generation    1.600s  |  1.900s
 
 Release build:
 --------------
-- Tree Expansion    0.920s  |
-- MCS Generation    0.370s  |
+- Tree Expansion    0.870s  |
+- MCS Generation    0.280s  |
 
 
 ---------- fta-200 -l 17 ---------------
 Release build:
 --------------
-- Tree Expansion    4.700s  |
-- MCS Generation    39.26s  |
+- Tree Expansion    4.400s  |
+- MCS Generation    18.90s  |
 
 
 ---------- Baobab -l 6 -----------------
 Release build:
 --------------
-- Tree Expansion    26.600s |
-- MCS Generation    0.168s  |  0.205s
+- Tree Expansion    25.600s |
+- MCS Generation    0.168s  |  0.187s

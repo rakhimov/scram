@@ -523,9 +523,13 @@ void FaultTreeAnalysis::AssignIndices(const FaultTreePtr& fault_tree) {
   // Getting events from the fault tree object.
   /// @todo May need to clear containers if there several trees to analyze.
   /// @note Direct assignment of the containers leads to very bad performance.
+  /// @todo Very strange performance issue. Conflict between Expansion and
+  /// Probability calculations.
   top_event_ = fault_tree->top_event();
-  inter_events_.insert(fault_tree->inter_events().begin(), fault_tree->inter_events().end());
+  // inter_events_.insert(fault_tree->inter_events().begin(), fault_tree->inter_events().end());
   primary_events_.insert(fault_tree->primary_events().begin(), fault_tree->primary_events().end());
+  // primary_events_ = fault_tree->primary_events();
+  inter_events_ = fault_tree->inter_events();
 
   int j = 1;
   boost::unordered_map<std::string, PrimaryEventPtr>::iterator itp;
