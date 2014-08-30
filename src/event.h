@@ -5,7 +5,6 @@
 
 #include <map>
 #include <string>
-#include <vector>
 
 #include <boost/shared_ptr.hpp>
 
@@ -21,13 +20,13 @@ class Event {
  public:
   /// Constructs a fault tree event with a specific id.
   /// @param[in] id The identifying name for the event.
-  Event(std::string id);
+  explicit Event(std::string id);
 
   /// @returns The id that is set upon the construction of this event.
   const std::string& id() { return id_; }
 
   /// Adds a parent into the parent map.
-  /// @param[in] parent One of the parents of this gate event.
+  /// @param[in] parent One of the gate parents of this event.
   /// @throws ValueError if the parent is being re-inserted.
   void AddParent(const boost::shared_ptr<scram::Gate>& parent);
 
@@ -77,7 +76,7 @@ class Gate : public scram::Event {
   /// Adds a child event into the children list.
   /// @param[in] child A pointer to a child event.
   /// @throws ValueError if the child is being re-inserted.
-  virtual void AddChild(const boost::shared_ptr<scram::Event>& child);
+  void AddChild(const boost::shared_ptr<scram::Event>& child);
 
   /// @returns The children of this gate.
   /// @throws ValueError if there are no children.
@@ -104,8 +103,7 @@ class PrimaryEvent : public scram::Event {
   /// Constructs with id name and probability.
   /// @param[in] id The identifying name of this primary event.
   /// @param[in] type The type of the event.
-  /// @param[in] p The failure probability.
-  PrimaryEvent(std::string id, std::string type = "", double p = -1);
+  PrimaryEvent(std::string id, std::string type = "");
 
   /// @returns The type of the primary event.
   /// @throws ValueError if the type is not yet set.
@@ -113,7 +111,7 @@ class PrimaryEvent : public scram::Event {
 
   /// Sets the type.
   /// @param[in] new_type The type for this event.
-  /// @throws ValueError if type is not valid or being re-assigned.
+  /// @throws ValueError if type is being re-assigned.
   void type(std::string new_type);
 
   /// @returns The probability of failure of this event.
@@ -123,13 +121,7 @@ class PrimaryEvent : public scram::Event {
   /// Sets the total probability for P-model.
   /// @param[in] p The total failure probability.
   /// @throws ValueError if probability is not a valid value or re-assigned.
-  void p(double p);
-
-  /// Sets the total probability for L-model.
-  /// @param[in] freq The failure frequency for L-model.
-  /// @param[in] time The time to failure for L-model.
-  /// @throws ValueError if probability is not a valid value or re-assigned.
-  void p(double freq, double time);
+  virtual void p(double p);
 
   virtual ~PrimaryEvent() {}
 
@@ -147,12 +139,9 @@ class BasicEvent: public scram::PrimaryEvent {
  public:
   /// Constructs with id name.
   /// @param[in] id The identifying name of this basic event.
-  BasicEvent(std::string id);
+  explicit BasicEvent(std::string id);
 
   ~BasicEvent() {}
-
- private:
-  /// @todo Probabilities should be moved from Primary event.
 };
 
 /// @class HouseEvent
@@ -161,12 +150,19 @@ class HouseEvent: public scram::PrimaryEvent {
  public:
   /// Constructs with id name.
   /// @param[in] id The identifying name of this basic event.
-  HouseEvent(std::string id);
+  explicit HouseEvent(std::string id);
+
+  /// Sets the total probability for House event.
+  /// @param[in] p 0 or 1 for False and True.
+  /// @throws ValueError if probability is not a valid value or re-assigned.
+  void p(double p);
 
   ~HouseEvent() {}
 
  private:
-  /// @todo Boolean true or false should be represented here.
+  /// Represents the state of the house event.
+  /// Implies On or Off for True or False values of the probability.
+  bool state_;
 };
 
 }  // namespace scram

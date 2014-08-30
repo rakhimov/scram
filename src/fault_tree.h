@@ -4,19 +4,13 @@
 #define SCRAM_FAULT_TREE_H_
 
 #include <map>
-#include <set>
 #include <string>
-#include <typeinfo>
 
-#include <boost/pointer_cast.hpp>
-#include <boost/serialization/map.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 
 #include "error.h"
 #include "event.h"
-
-// class FaultTreeTest;
 
 typedef boost::shared_ptr<scram::Event> EventPtr;
 typedef boost::shared_ptr<scram::Gate> GatePtr;
@@ -27,12 +21,11 @@ namespace scram {
 /// @class FaultTree
 /// Fault tree representation.
 class FaultTree {
-  // friend class ::FaultTreeTest;
 
  public:
   /// The main constructor of the Fault Tree.
   /// @param[in] name The name identificator of this fault tree.
-  FaultTree(std::string name);
+  explicit FaultTree(std::string name);
 
   virtual ~FaultTree() {}
 
@@ -57,7 +50,7 @@ class FaultTree {
   /// @note Assuming that all events in this tree are defined to be gates or
   /// primary events.
   const boost::unordered_map<std::string, PrimaryEventPtr>& primary_events() {
-    if (primary_events_.empty()) GatherPrimaryEvents();
+    if (changed_) GatherPrimaryEvents();
     return primary_events_;
   }
 
@@ -89,8 +82,8 @@ class FaultTree {
   /// Container for the primary events of the tree.
   boost::unordered_map<std::string, PrimaryEventPtr> primary_events_;
 
-  /// Locks any further changes to this tree.
-  bool lock_;
+  /// Indication if the events in the tree have changed.
+  bool changed_;
 };
 
 }  // namespace scram

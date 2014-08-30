@@ -3,18 +3,17 @@
 #ifndef SCRAM_FAULT_TREE_ANALYSIS_H_
 #define SCRAM_FAULT_TREE_ANALYSIS_H_
 
-#include <fstream>
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
-#include <boost/serialization/map.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 
 #include "error.h"
-#include "fault_tree.h"
 #include "event.h"
+#include "fault_tree.h"
 #include "superset.h"
 
 class FaultTreeAnalysisTest;
@@ -29,14 +28,12 @@ typedef boost::shared_ptr<scram::FaultTree> FaultTreePtr;
 
 namespace scram {
 
-class RiskAnalysis;
 class Reporter;
 
 /// @class FaultTreeAnalysis
 /// Fault tree analysis functionality.
 class FaultTreeAnalysis {
   friend class ::FaultTreeAnalysisTest;
-  friend class RiskAnalysis;
   friend class Reporter;
 
  public:
@@ -45,9 +42,11 @@ class FaultTreeAnalysis {
   /// @param[in] approx The kind of approximation for probability calculations.
   /// @param[in] limit_order The maximum limit on minimal cut sets' order.
   /// @param[in] nsums The number of sums in the probability series.
+  /// @param[in] cut_off The cut-off probability for cut sets.
   /// @throws ValueError if any of the parameters are invalid.
   FaultTreeAnalysis(std::string analysis, std::string approx = "no",
-                    int limit_order = 20, int nsums = 1000000);
+                    int limit_order = 20, int nsums = 1000000,
+                    double cut_off = 1e-8);
 
   /// Analyzes the fault tree and performs computations.
   /// This function must be called only after initilizing the tree with or
@@ -56,9 +55,30 @@ class FaultTreeAnalysis {
   /// @note Cut set generator: O_avg(N) O_max(N)
   void Analyze(const FaultTreePtr& fault_tree, bool prob_requested);
 
+  inline double p_total() { return p_total_; }
+
+  /// Container for minimal cut sets.
+  inline const std::set< std::set<std::string> >& min_cut_sets() {
+    return min_cut_sets_;
+  }
+
+  /// Container for minimal cut sets and their respective probabilities.
+  inline const std::map< std::set<std::string>, double >& prob_of_min_sets() {
+    return prob_of_min_sets_;
+  }
+
+  /// Container for primary events and their contribution.
+  inline const std::map< std::string, double >& imp_of_primaries() {
+    return imp_of_primaries_;
+  }
+
   virtual ~FaultTreeAnalysis() {}
 
  private:
+  /// Traverses the fault tree and expands it into sets of gates and events.
+  void ExpandTree(SupersetPtr& set_with_gates,
+                  std::vector< SupersetPtr >& cut_sets);
+
   /// Expands the children of a top or intermediate event to Supersets.
   /// @param[in] inter_index The index number of the parent node.
   /// @param[out] sets The final Supersets from the children.
@@ -89,7 +109,7 @@ class FaultTreeAnalysis {
   /// @param[in] mcs_lower_order Reference minimal cut sets of some order.
   /// @param[in] min_order The order of sets to become minimal.
   /// @note T_avg(N^3 + N^2*logN + N*logN) = O_avg(N^3)
-  void FindMcs(const std::set< std::set<int> >& cut_sets,
+  void FindMcs(const std::vector< const std::set<int>* >& cut_sets,
                const std::set< std::set<int> >& mcs_lower_order,
                int min_order);
 
@@ -154,7 +174,7 @@ class FaultTreeAnalysis {
   /// @param[in] sign The sign of the series.
   /// @param[in] nsums The number of sums in the series.
   void MProbOr(std::set< std::set<int> >& min_cut_sets, int sign = 1,
-                int nsums = 1000000);
+               int nsums = 1000000);
 
   /// Performs Monte Carlo Simulation.
   /// @todo Implement the simulation.
@@ -206,8 +226,11 @@ class FaultTreeAnalysis {
   /// Container for primary events ordered by their contribution.
   std::multimap< double, std::string > ordered_primaries_;
 
-  /// Maximum order of the minimal cut sets.
+  /// Maximum order for minimal cut sets.
   int max_order_;
+
+  /// Cut-off probability for minimal cut sets.
+  double cut_off_;
 
   /// Limit on the size of the minimal cut sets for performance reasons.
   int limit_order_;
@@ -219,6 +242,9 @@ class FaultTreeAnalysis {
   double exp_time_;  ///< Expansion of tree gates time.
   double mcs_time_;  ///< Time for MCS generation.
   double p_time_;  ///< Time for probability calculations.
+
+  /// Track if the gates are repeated upon expansion.
+  boost::unordered_map<int, std::vector<SupersetPtr> > repeat_exp_;
 };
 
 }  // namespace scram

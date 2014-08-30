@@ -2,27 +2,23 @@
 #ifndef SCRAM_RISK_ANALYISIS_H_
 #define SCRAM_RISK_ANALYISIS_H_
 
-#include <fstream>
 #include <map>
 #include <set>
 #include <string>
-#include <queue>
 
-#include <boost/serialization/map.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 
+#include "env.h"
 #include "error.h"
-
+#include "event.h"
 #include "fault_tree.h"
 #include "fault_tree_analysis.h"
-#include "event.h"
-#include "env.h"
 #include "grapher.h"
 #include "reporter.h"
 #include "xml_parser.h"
 
-class FaultTreeAnalysisTest;
+class RiskAnalysisTest;
 
 typedef boost::shared_ptr<scram::Event> EventPtr;
 typedef boost::shared_ptr<scram::Gate> GatePtr;
@@ -37,7 +33,7 @@ namespace scram {
 /// @class RiskAnalysis
 /// Main system that performs analyses.
 class RiskAnalysis {
-  friend class ::FaultTreeAnalysisTest;
+  friend class ::RiskAnalysisTest;
 
  public:
   /// This constructor with configurations with the analysis.
@@ -105,6 +101,10 @@ class RiskAnalysis {
  private:
   void DefineFaultTree(const xmlpp::Element* ft_node);
 
+  void DefineGate(const xmlpp::Element* gate_node, FaultTreePtr& ft);
+  void DefineBasicEvent(const xmlpp::Element* event_node, FaultTreePtr& ft);
+  void DefineHouseEvent(const xmlpp::Element* event_node, FaultTreePtr& ft);
+
   void ProcessModelData(const xmlpp::Element* model_data);
 
   /// Verifies if gates are initialized correctly.
@@ -138,12 +138,9 @@ class RiskAnalysis {
   boost::unordered_map<std::string, GatePtr> gates_;
 
   /// Container for primary events.
-  /// @todo Consider deprecating this container for house and basic events.
   boost::unordered_map<std::string, PrimaryEventPtr> primary_events_;
 
-  /// Events to be defined.
-  // boost::unordered_map<std::string, EventPtr> tbd_events_;
-
+  /// Events to be defined with their parents saved for later.
   boost::unordered_map<std::string, std::vector<GatePtr> > tbd_events_;
 
   /// Gates to be defined.

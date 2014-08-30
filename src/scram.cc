@@ -33,6 +33,8 @@ int main(int argc, char* argv[]) {
        "upper limit for cut set order")
       ("nsums,s", po::value<int>()->default_value(1000000),
        "number of sums in series expansion for probability calculations")
+      ("cut-off,c", po::value<double>()->default_value(1e-8),
+       "cut-off probability for cut sets")
       ("output,o", po::value<std::string>(), "output file")
       ;
 
@@ -105,6 +107,13 @@ int main(int argc, char* argv[]) {
       std::cout << desc << "\n";
       return 1;
     }
+
+    if (vm["cut-off"].as<double>() < 0 || vm["cut-off"].as<double>() >= 1) {
+      std::string msg = "Illegal value for the cut-off probability\n";
+      std::cout << msg << std::endl;
+      std::cout << desc << "\n";
+      return 1;
+    }
     std::string fta_analysis = "default";
     if (analysis == "fta-mc") fta_analysis = "mc";
 
@@ -113,7 +122,9 @@ int main(int argc, char* argv[]) {
     if (mcub) approx = "mcub";
 
     fta = new FaultTreeAnalysis(fta_analysis, approx,
-                         vm["limit-order"].as<int>(), vm["nsums"].as<int>());
+                                vm["limit-order"].as<int>(),
+                                vm["nsums"].as<int>(),
+                                vm["cut-off"].as<double>());
   } else {
     std::string msg = analysis + ": this analysis is not recognized.\n";
     std::cout << msg << std::endl;

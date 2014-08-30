@@ -27,9 +27,9 @@ Structure/Architecture of the Core Code
     * Probability calculator may accepts cut sets to generate total probability,
       individual probabilities of cut sets, contributions, importances.
 
+- Supporting classes: Formula, Expressions.
 - Reporter outputs the results of the work of Risk Analyzer to specified files
   or streams with a certain formatting.
-
 - Grapher outputs a fault tree graphing instruction file for Graphviz Dot tool.
 
 API Documentation
