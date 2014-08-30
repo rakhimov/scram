@@ -197,8 +197,6 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
   } else {  // The default calculations.
     // Choose cut sets with high enough probabilities.
     p_total_ = FaultTreeAnalysis::ProbOr(mcs_for_prob, nsums_);
-    // Exact calculation of probability of cut sets.
-    //p_total_ = FaultTreeAnalysis::ProbOr(imcs_, nsums_);
   }
 
   // Calculate failure contributions of each primary event.
