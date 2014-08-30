@@ -174,6 +174,10 @@ int main(int argc, char* argv[]) {
     std::cerr << "SCRAM Validation Error\n" << std::endl;
     std::cerr << vld_err.what() << std::endl;
     return 1;
+  } catch (ValueError& val_err) {
+    std::cerr << "SCRAM Value Error\n" << std::endl;
+    std::cerr << val_err.what() << std::endl;
+    return 1;
   } catch (boost::exception& boost_err) {
     std::cerr << "Boost Exception:\n" << std::endl;
     std::cerr << boost::diagnostic_information(boost_err) << std::endl;
