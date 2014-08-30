@@ -1,5 +1,5 @@
 /// @file grapher.h
-/// Grapher.
+/// Graphing of analysis entities.
 #ifndef SCRAM_GRAPHER_H_
 #define SCRAM_GRAPHER_H_
 
