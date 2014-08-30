@@ -302,8 +302,14 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
       } else if (tbd_house_events_.count(id)) {
         child = tbd_house_events_.find(id)->second;
       } else {
-        tbd_events_[id].push_back(i_event);
         save_for_later = true;
+        if (tbd_events_.count(id)) {
+          tbd_events_.find(id)->second.push_back(i_event);
+        } else {
+          std::vector<GatePtr> parents;
+          parents.push_back(i_event);
+          tbd_events_.insert(std::make_pair(id, parents));
+        }
       }
     } else if (name == "gate") {
       // Detect name clashes.
@@ -445,16 +451,11 @@ void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node,
   }
   /// @todo Expression class to analyze more complex probabilities.
   /// only float for now.
-  /// @todo Create get_element(name) method for elements.
   double p = 0;
-  xmlpp::Node::NodeList children = event_node->get_children();
-  xmlpp::Node::NodeList::iterator it;
-  for (it = children.begin(); it != children.end(); ++it) {
-    const xmlpp::Element* sub_el = dynamic_cast<const xmlpp::Element*>(*it);
-    if (!sub_el) continue;  // Ignore non-elements.
-    if (sub_el->get_name() == "float") break;
-  }
-  const xmlpp::Element* float_prob = dynamic_cast<const xmlpp::Element*>(*it);
+  xmlpp::NodeSet expression = event_node->find("./*[name() = 'float']");
+  assert(expression.size() == 1);
+  const xmlpp::Element* float_prob =
+      dynamic_cast<const xmlpp::Element*>(expression.front());
   if (!float_prob) assert(false);
 
   try {
@@ -519,17 +520,13 @@ void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node,
     throw scram::ValidationError(msg.str());
   }
   // Only boolean for now.
-  xmlpp::Node::NodeList children = event_node->get_children();
-  xmlpp::Node::NodeList::iterator it;
-  for (it = children.begin(); it != children.end(); ++it) {
-    const xmlpp::Element* sub_el = dynamic_cast<const xmlpp::Element*>(*it);
-    if (!sub_el) continue;  // Ignore non-elements.
-    if (sub_el->get_name() == "constant") break;
-  }
-  const xmlpp::Element* b_const = dynamic_cast<const xmlpp::Element*>(*it);
-  if (!b_const) assert(false);
+  xmlpp::NodeSet expression = event_node->find("./*[name() = 'constant']");
+  assert(expression.size() == 1);
+  const xmlpp::Element* constant =
+      dynamic_cast<const xmlpp::Element*>(expression.front());
+  if (!constant) assert(false);
 
-  std::string val = b_const->get_attribute_value("value");
+  std::string val = constant->get_attribute_value("value");
   boost::to_lower(val);
 
   int p = 0;

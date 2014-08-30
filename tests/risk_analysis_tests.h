@@ -89,9 +89,9 @@ class RiskAnalysisTest : public ::testing::Test {
 
   int GetIndex(std::string id) {
     if (ran->fta_->prime_to_int_.count(id)) {
-      return ran->fta_->prime_to_int_[id];
+      return ran->fta_->prime_to_int_.find(id)->second;
     } else {
-      return ran->fta_->inter_to_int_[id];
+      return ran->fta_->inter_to_int_.find(id)->second;
     }
   }
 

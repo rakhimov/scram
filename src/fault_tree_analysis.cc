@@ -431,13 +431,14 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
   }
 
   // Save the expanded sets in case this gate gets repeated.
-  std::vector<SupersetPtr>* repeat_set = &repeat_exp_[inter_index];
+  std::vector<SupersetPtr> repeat_set;
   std::vector<SupersetPtr>::iterator it;
   for (it = sets.begin(); it != sets.end(); ++it) {
     SupersetPtr temp_set(new Superset);
     temp_set->InsertSet(*it);
-    repeat_set->push_back(temp_set);
+    repeat_set.push_back(temp_set);
   }
+  repeat_exp_.insert(std::make_pair(inter_index, repeat_set));
 }
 
 void FaultTreeAnalysis::SetOr(std::vector<int>& events_children,

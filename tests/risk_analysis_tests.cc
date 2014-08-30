@@ -13,10 +13,10 @@ TEST_F(RiskAnalysisTest, CheckGate) {
   PrimaryEventPtr A(new PrimaryEvent("a"));
   PrimaryEventPtr B(new PrimaryEvent("b"));
   PrimaryEventPtr C(new PrimaryEvent("c"));
-  orig_ids()["top"] = "top";
-  orig_ids()["a"] = "a";
-  orig_ids()["b"] = "b";
-  orig_ids()["c"] = "c";
+  orig_ids().insert(std::make_pair("top", "top"));
+  orig_ids().insert(std::make_pair("a", "a"));
+  orig_ids().insert(std::make_pair("b", "b"));
+  orig_ids().insert(std::make_pair("c", "c"));
 
   // AND Gate tests.
   EXPECT_FALSE(CheckGate(top));  // No child.
@@ -848,7 +848,7 @@ TEST_F(RiskAnalysisTest, ProcessInput) {
   EXPECT_EQ(1, primary_events().count("valveone"));
   EXPECT_EQ(1, primary_events().count("valvetwo"));
   if (gates().count("trainone")) {
-    GatePtr inter = gates()["trainone"];
+    GatePtr inter = gates().find("trainone")->second;
     EXPECT_EQ("trainone", inter->id());
     ASSERT_NO_THROW(inter->type());
     EXPECT_EQ("or", inter->type());
@@ -856,7 +856,7 @@ TEST_F(RiskAnalysisTest, ProcessInput) {
     EXPECT_EQ("topevent", inter->parents().begin()->first);
   }
   if (primary_events().count("valveone")) {
-    PrimaryEventPtr primary = primary_events()["valveone"];
+    PrimaryEventPtr primary = primary_events().find("valveone")->second;
     EXPECT_EQ("valveone", primary->id());
     ASSERT_NO_THROW(primary->parents());
     EXPECT_EQ(1, primary->parents().size());
@@ -877,14 +877,14 @@ TEST_F(RiskAnalysisTest, PopulateProbabilities) {
   ASSERT_EQ(1, primary_events().count("pumptwo"));
   ASSERT_EQ(1, primary_events().count("valveone"));
   ASSERT_EQ(1, primary_events().count("valvetwo"));
-  ASSERT_NO_THROW(primary_events()["pumpone"]->p());
-  ASSERT_NO_THROW(primary_events()["pumptwo"]->p());
-  ASSERT_NO_THROW(primary_events()["valveone"]->p());
-  ASSERT_NO_THROW(primary_events()["valvetwo"]->p());
-  EXPECT_EQ(0.6, primary_events()["pumpone"]->p());
-  EXPECT_EQ(0.7, primary_events()["pumptwo"]->p());
-  EXPECT_EQ(0.4, primary_events()["valveone"]->p());
-  EXPECT_EQ(0.5, primary_events()["valvetwo"]->p());
+  ASSERT_NO_THROW(primary_events().find("pumpone")->second->p());
+  ASSERT_NO_THROW(primary_events().find("pumptwo")->second->p());
+  ASSERT_NO_THROW(primary_events().find("valveone")->second->p());
+  ASSERT_NO_THROW(primary_events().find("valvetwo")->second->p());
+  EXPECT_EQ(0.6, primary_events().find("pumpone")->second->p());
+  EXPECT_EQ(0.7, primary_events().find("pumptwo")->second->p());
+  EXPECT_EQ(0.4, primary_events().find("valveone")->second->p());
+  EXPECT_EQ(0.5, primary_events().find("valvetwo")->second->p());
 }
 
 // Test Graphing Intructions
@@ -945,15 +945,15 @@ TEST_F(RiskAnalysisTest, AnalyzeDefault) {
   ASSERT_NO_THROW(ran->ProcessInput(with_prob));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(0.646, p_total());
-  EXPECT_DOUBLE_EQ(0.42, prob_of_min_sets()[mcs_1]);
-  EXPECT_DOUBLE_EQ(0.3, prob_of_min_sets()[mcs_2]);
-  EXPECT_DOUBLE_EQ(0.28, prob_of_min_sets()[mcs_3]);
-  EXPECT_DOUBLE_EQ(0.2, prob_of_min_sets()[mcs_4]);
+  EXPECT_DOUBLE_EQ(0.42, prob_of_min_sets().find(mcs_1)->second);
+  EXPECT_DOUBLE_EQ(0.3, prob_of_min_sets().find(mcs_2)->second);
+  EXPECT_DOUBLE_EQ(0.28, prob_of_min_sets().find(mcs_3)->second);
+  EXPECT_DOUBLE_EQ(0.2, prob_of_min_sets().find(mcs_4)->second);
 
-  EXPECT_DOUBLE_EQ(0.72, imp_of_primaries()["pumpone"]);
-  EXPECT_DOUBLE_EQ(0.7, imp_of_primaries()["pumptwo"]);
-  EXPECT_DOUBLE_EQ(0.48, imp_of_primaries()["valveone"]);
-  EXPECT_DOUBLE_EQ(0.5, imp_of_primaries()["valvetwo"]);
+  EXPECT_DOUBLE_EQ(0.72, imp_of_primaries().find("pumpone")->second);
+  EXPECT_DOUBLE_EQ(0.7, imp_of_primaries().find("pumptwo")->second);
+  EXPECT_DOUBLE_EQ(0.48, imp_of_primaries().find("valveone")->second);
+  EXPECT_DOUBLE_EQ(0.5, imp_of_primaries().find("valvetwo")->second);
 
   // Probability calculations with the rare event approximation.
   // delete fta();  // Re-initializing.

@@ -21,7 +21,7 @@ namespace fs = boost::filesystem;
 
 namespace scram {
 
-Grapher::Grapher() {}
+Grapher::Grapher() : prob_requested_(false) {}
 
 void Grapher::GraphFaultTree(
     const FaultTreePtr& fault_tree,
