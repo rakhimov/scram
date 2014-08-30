@@ -13,6 +13,10 @@ TEST_F(RiskAnalysisTest, CheckGate) {
   PrimaryEventPtr A(new PrimaryEvent("a"));
   PrimaryEventPtr B(new PrimaryEvent("b"));
   PrimaryEventPtr C(new PrimaryEvent("c"));
+  orig_ids()["top"] = "top";
+  orig_ids()["a"] = "a";
+  orig_ids()["b"] = "b";
+  orig_ids()["c"] = "c";
 
   // AND Gate tests.
   EXPECT_FALSE(CheckGate(top));  // No child.

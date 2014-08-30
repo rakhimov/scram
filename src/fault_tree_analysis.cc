@@ -267,7 +267,7 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
   // Assumes sets are empty.
   assert(sets.empty());
   if (repeat_exp_.count(inter_index)) {
-    std::vector<SupersetPtr>* repeat_set = &repeat_exp_[inter_index];
+    std::vector<SupersetPtr>* repeat_set = &repeat_exp_.find(inter_index)->second;
     std::vector<SupersetPtr>::iterator it;
     for (it = repeat_set->begin(); it != repeat_set->end(); ++it) {
       SupersetPtr temp_set(new Superset);
@@ -279,9 +279,9 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
 
   // Populate intermediate and primary events of the top.
   const std::map<std::string, EventPtr>* children =
-      &int_to_inter_[std::abs(inter_index)]->children();
+      &int_to_inter_.find(std::abs(inter_index))->second->children();
 
-  std::string gate = int_to_inter_[std::abs(inter_index)]->type();
+  std::string gate = int_to_inter_.find(std::abs(inter_index))->second->type();
 
   // Iterator for children of top and intermediate events.
   std::map<std::string, EventPtr>::const_iterator it_children;
@@ -291,9 +291,9 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
   for (it_children = children->begin();
        it_children != children->end(); ++it_children) {
     if (inter_events_.count(it_children->first)) {
-      events_children.push_back(inter_to_int_[it_children->first]);
+      events_children.push_back(inter_to_int_.find(it_children->first)->second);
     } else {
-      events_children.push_back(prime_to_int_[it_children->first]);
+      events_children.push_back(prime_to_int_.find(it_children->first)->second);
     }
   }
 
@@ -377,7 +377,7 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
       FaultTreeAnalysis::SetOr(events_children, sets, -1);
     }
   } else if (gate == "vote" || gate == "atleast") {
-    int vote_number = int_to_inter_[std::abs(inter_index)]->vote_number();
+    int vote_number = int_to_inter_.find(std::abs(inter_index))->second->vote_number();
     assert(vote_number > 1);
     assert(events_children.size() >= vote_number);
     std::set< std::set<int> > all_sets;

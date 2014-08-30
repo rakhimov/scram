@@ -84,11 +84,15 @@ void Grapher::GraphFaultTree(
   gate_colors.insert(std::make_pair("nor", "magenta"));
   gate_colors.insert(std::make_pair("nand", "orange"));
   std::string gate = top_event_->type();
+  std::string gate_color = "black";
+  if (gate_colors.count(gate)) {
+    gate_color = gate_colors.find(gate)->second;
+  }
   boost::to_upper(gate);
-  out << "\"" <<  orig_ids_[top_event_->id()] << "_R0\" [shape=ellipse, "
+  out << "\"" <<  orig_ids_.find(top_event_->id())->second << "_R0\" [shape=ellipse, "
       << "fontsize=12, fontcolor=black, fontname=\"times-bold\", "
-      << "color=" << gate_colors[top_event_->type()] << ", "
-      << "label=\"" << orig_ids_[top_event_->id()] << "\\n"
+      << "color=" << gate_color << ", "
+      << "label=\"" << orig_ids_.find(top_event_->id())->second << "\\n"
       << "{ " << gate;
   if (gate == "VOTE" || gate == "ATLEAST") {
     out << " " << top_event_->vote_number() << "/"
@@ -98,24 +102,28 @@ void Grapher::GraphFaultTree(
 
   std::map<std::string, int>::iterator it;
   for (it = in_repeat.begin(); it != in_repeat.end(); ++it) {
-    gate = inter_events_[it->first]->type();
+    gate = inter_events_.find(it->first)->second->type();
+    std::string gate_color = "black";
+    if (gate_colors.count(gate)) {
+      gate_color = gate_colors.find(gate)->second;
+    }
     boost::to_upper(gate);  // This is for graphing.
-    std::string type = inter_events_[it->first]->type();
+    std::string type = inter_events_.find(it->first)->second->type();
     for (int i = 0; i <= it->second; ++i) {
       if (i == 0) {
-        out << "\"" <<  orig_ids_[it->first] << "_R" << i << "\" [shape=box, ";
+        out << "\"" <<  orig_ids_.find(it->first)->second << "_R" << i << "\" [shape=box, ";
       } else {
         // Repetition is a transfer symbol.
-        out << "\"" <<  orig_ids_[it->first] << "_R" << i
+        out << "\"" <<  orig_ids_.find(it->first)->second << "_R" << i
             << "\" [shape=triangle, ";
       }
       out << "fontsize=10, fontcolor=black, "
-          << "color=" << gate_colors[type] << ", "
-          << "label=\"" << orig_ids_[it->first] << "\\n"
+          << "color=" << gate_color << ", "
+          << "label=\"" << orig_ids_.find(it->first)->second << "\\n"
           << "{ " << gate;
       if (gate == "VOTE" || gate == "ATLEAST") {
-        out << " " << inter_events_[it->first]->vote_number() << "/"
-            << inter_events_[it->first]->children().size();
+        out << " " << inter_events_.find(it->first)->second->vote_number() << "/"
+            << inter_events_.find(it->first)->second->children().size();
       }
       out << " }\"]\n";
     }
@@ -129,12 +137,12 @@ void Grapher::GraphFaultTree(
   event_colors.insert(std::make_pair("conditional", "red"));
   for (it = pr_repeat.begin(); it != pr_repeat.end(); ++it) {
     for (int i = 0; i < it->second + 1; ++i) {
-      out << "\"" << orig_ids_[it->first] << "_R" << i << "\" [shape=circle, "
+      out << "\"" << orig_ids_.find(it->first)->second << "_R" << i << "\" [shape=circle, "
           << "height=1, fontsize=10, fixedsize=true, "
-          << "fontcolor=" << event_colors[primary_events_[it->first]->type()]
-          << ", " << "label=\"" << orig_ids_[it->first] << "\\n["
-          << primary_events_[it->first]->type() << "]";
-      if (prob_requested_) { out << "\\n" << primary_events_[it->first]->p(); }
+          << "fontcolor=" << event_colors.find(primary_events_.find(it->first)->second->type())->second
+          << ", " << "label=\"" << orig_ids_.find(it->first)->second << "\\n["
+          << primary_events_.find(it->first)->second->type() << "]";
+      if (prob_requested_) { out << "\\n" << primary_events_.find(it->first)->second->p(); }
       out << "\"]\n";
     }
   }
@@ -154,28 +162,28 @@ void Grapher::GraphNode(GatePtr t, std::map<std::string, int>& pr_repeat,
     // Deal with repeated primary events.
     if (primary_events_.count(it_child->first)) {
       if (pr_repeat.count(it_child->first)) {
-        int rep = pr_repeat[it_child->first];
+        int rep = pr_repeat.find(it_child->first)->second;
         rep++;
         pr_repeat.erase(it_child->first);
         pr_repeat.insert(std::make_pair(it_child->first, rep));
       } else {
         pr_repeat.insert(std::make_pair(it_child->first, 0));
       }
-      out << "\"" <<  orig_ids_[t->id()] << "_R0\" -> "
-          << "\"" <<orig_ids_[it_child->first] <<"_R"
-          << pr_repeat[it_child->first] << "\";\n";
+      out << "\"" <<  orig_ids_.find(t->id())->second << "_R0\" -> "
+          << "\"" <<orig_ids_.find(it_child->first)->second <<"_R"
+          << pr_repeat.find(it_child->first)->second << "\";\n";
     } else {  // This must be an intermediate event.
       if (in_repeat.count(it_child->first)) {
-        int rep = in_repeat[it_child->first];
+        int rep = in_repeat.find(it_child->first)->second;
         rep++;
         in_repeat.erase(it_child->first);
         in_repeat.insert(std::make_pair(it_child->first, rep));
       } else {
         in_repeat.insert(std::make_pair(it_child->first, 0));
       }
-      out << "\"" << orig_ids_[t->id()] << "_R0\" -> "
-          << "\"" <<orig_ids_[it_child->first] <<"_R"
-          << in_repeat[it_child->first] << "\";\n";
+      out << "\"" << orig_ids_.find(t->id())->second << "_R0\" -> "
+          << "\"" <<orig_ids_.find(it_child->first)->second <<"_R"
+          << in_repeat.find(it_child->first)->second << "\";\n";
     }
   }
 }

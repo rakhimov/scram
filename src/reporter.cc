@@ -64,9 +64,9 @@ void Reporter::ReportFta(FaultTreeAnalysis* fta,
       assert(names.size() > 0);
       std::string name = "";
       if (names.size() == 1) {
-        name = orig_ids[names[0]];
+        name = orig_ids.find(names[0])->second;
       } else if (names.size() == 2) {
-        name = "NOT " + orig_ids[names[1]];
+        name = "NOT " + orig_ids.find(names[1])->second;
       }
       rep << name;
 
@@ -133,7 +133,7 @@ void Reporter::ReportFta(FaultTreeAnalysis* fta,
         out << std::left;
         std::vector<std::string>::iterator it;
         int j = 0;
-        for (it = lines[*it_min].begin(); it != lines[*it_min].end(); ++it) {
+        for (it = lines.find(*it_min)->second.begin(); it != lines.find(*it_min)->second.end(); ++it) {
           if (j == 0) {
             out << number.str() <<  *it << "\n";
           } else {
@@ -188,7 +188,7 @@ void Reporter::ReportFta(FaultTreeAnalysis* fta,
       for (it_min = fta->min_cut_sets_.begin(); it_min != fta->min_cut_sets_.end();
            ++it_min) {
         if (it_min->size() == order) {
-          order_sets.insert(std::make_pair(fta->prob_of_min_sets_[*it_min],
+          order_sets.insert(std::make_pair(fta->prob_of_min_sets_.find(*it_min)->second,
                                            *it_min));
         }
       }
@@ -201,8 +201,8 @@ void Reporter::ReportFta(FaultTreeAnalysis* fta,
           out << std::left;
           std::vector<std::string>::iterator it;
           int j = 0;
-          for (it = lines[it_or->second].begin();
-               it != lines[it_or->second].end(); ++it) {
+          for (it = lines.find(it_or->second)->second.begin();
+               it != lines.find(it_or->second)->second.end(); ++it) {
             if (j == 0) {
               out << number.str() << std::setw(70 - number.str().length())
                   << *it << std::setprecision(7) << it_or->first << "\n";
@@ -230,8 +230,8 @@ void Reporter::ReportFta(FaultTreeAnalysis* fta,
       out << std::left;
       std::vector<std::string>::iterator it;
       int j = 0;
-      for (it = lines[it_or->second].begin();
-           it != lines[it_or->second].end(); ++it) {
+      for (it = lines.find(it_or->second)->second.begin();
+           it != lines.find(it_or->second)->second.end(); ++it) {
         if (j == 0) {
           out << number.str() << std::setw(70 - number.str().length())
               << *it << std::setprecision(7) << it_or->first << "\n";
@@ -270,11 +270,11 @@ void Reporter::ReportFta(FaultTreeAnalysis* fta,
       assert(names.size() < 3);
       assert(names.size() > 0);
       if (names.size() == 1) {
-        out << std::setw(20) << orig_ids[names[0]] << std::setw(20)
+        out << std::setw(20) << orig_ids.find(names[0])->second << std::setw(20)
             << it_contr->first << 100 * it_contr->first / fta->p_total_ << "%\n";
 
       } else if (names.size() == 2) {
-        out << "NOT " << std::setw(16) << orig_ids[names[1]] << std::setw(20)
+        out << "NOT " << std::setw(16) << orig_ids.find(names[1])->second << std::setw(20)
             << it_contr->first << 100 * it_contr->first / fta->p_total_ << "%\n";
       }
       out.flush();
@@ -294,9 +294,9 @@ void Reporter::ReportFta(FaultTreeAnalysis* fta,
       int size = it_vec->size();
       for (it_set = it_vec->begin(); it_set != it_vec->end(); ++it_set) {
         if (*it_set > 0) {
-          out << orig_ids[fta->int_to_prime_[*it_set]->id()];
+          out << orig_ids.find(fta->int_to_prime_[*it_set]->id())->second;
         } else {
-          out << "NOT " << orig_ids[fta->int_to_prime_[std::abs(*it_set)]->id()];
+          out << "NOT " << orig_ids.find(fta->int_to_prime_[std::abs(*it_set)]->id())->second;
         }
         if (j < size) {
           out << ", ";
@@ -317,9 +317,9 @@ void Reporter::ReportFta(FaultTreeAnalysis* fta,
       int size = it_vec->size();
       for (it_set = it_vec->begin(); it_set != it_vec->end(); ++it_set) {
         if (*it_set > 0) {
-          out << orig_ids[fta->int_to_prime_[*it_set]->id()];
+          out << orig_ids.find(fta->int_to_prime_[*it_set]->id())->second;
         } else {
-          out << "NOT " << orig_ids[fta->int_to_prime_[std::abs(*it_set)]->id()];
+          out << "NOT " << orig_ids.find(fta->int_to_prime_[std::abs(*it_set)]->id())->second;
         }
         if (j < size) {
           out << ", ";
