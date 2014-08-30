@@ -14,7 +14,9 @@ namespace fs = boost::filesystem;
 
 using namespace scram;
 
-/// Currently for Command line interactions.
+/// Command line SCRAM entrance.
+/// @retuns 0 for success.
+/// @retuns 1 for errored state.
 int main(int argc, char* argv[]) {
   // Parse command line options.
   std::string usage = "Usage:    scram [input-file] [opts]";
@@ -84,83 +86,94 @@ int main(int argc, char* argv[]) {
   // Read input files and setup.
   std::string input_file = vm["input-file"].as<std::string>();
 
-  // Initiate risk analysis.
-  RiskAnalysis* ran = new RiskAnalysis();
+  try {
+    // Initiate risk analysis.
+    RiskAnalysis* ran = new RiskAnalysis();
 
-  /// @todo New sequence and architecture of analysis
-  /// Read configurations.
-  /// Initializer from input files.
-  /// Run analysis.
+    /// @todo New sequence and architecture of analysis
+    /// Read configurations.
+    /// Initializer from input files.
+    /// Run analysis.
 
-  FaultTreeAnalysis* fta;
-  if (analysis == "fta-default" || analysis == "fta-mc") {
-    if (vm["limit-order"].as<int>() < 1) {
-      std::string msg = "Upper limit for cut sets can't be less than 1\n";
+    FaultTreeAnalysis* fta;
+    if (analysis == "fta-default" || analysis == "fta-mc") {
+      if (vm["limit-order"].as<int>() < 1) {
+        std::string msg = "Upper limit for cut sets can't be less than 1\n";
+        std::cout << msg << std::endl;
+        std::cout << desc << "\n";
+        return 1;
+      }
+
+      if (vm["nsums"].as<int>() < 1) {
+        std::string msg = "Number of sums for series can't be less than 1\n";
+        std::cout << msg << std::endl;
+        std::cout << desc << "\n";
+        return 1;
+      }
+
+      if (vm["cut-off"].as<double>() < 0 || vm["cut-off"].as<double>() >= 1) {
+        std::string msg = "Illegal value for the cut-off probability\n";
+        std::cout << msg << std::endl;
+        std::cout << desc << "\n";
+        return 1;
+      }
+      std::string fta_analysis = "default";
+      if (analysis == "fta-mc") fta_analysis = "mc";
+
+      std::string approx = "no";
+      if (rare_event) approx = "rare";
+      if (mcub) approx = "mcub";
+
+      fta = new FaultTreeAnalysis(fta_analysis, approx,
+                                  vm["limit-order"].as<int>(),
+                                  vm["nsums"].as<int>(),
+                                  vm["cut-off"].as<double>());
+    } else {
+      std::string msg = analysis + ": this analysis is not recognized.\n";
       std::cout << msg << std::endl;
       std::cout << desc << "\n";
       return 1;
     }
 
-    if (vm["nsums"].as<int>() < 1) {
-      std::string msg = "Number of sums for series can't be less than 1\n";
-      std::cout << msg << std::endl;
-      std::cout << desc << "\n";
-      return 1;
+    // Set the fault tree analysis type.
+    ran->fta(fta);
+
+    // Process input and validate it.
+    ran->ProcessInput(input_file);
+
+    // Stop if only validation is requested.
+    if (vm.count("validate")) {
+      std::cout << "The files are VALID." << std::endl;
+      return 0;
     }
 
-    if (vm["cut-off"].as<double>() < 0 || vm["cut-off"].as<double>() >= 1) {
-      std::string msg = "Illegal value for the cut-off probability\n";
-      std::cout << msg << std::endl;
-      std::cout << desc << "\n";
-      return 1;
+    // Graph if requested.
+    if (vm.count("graph-only")) {
+      ran->GraphingInstructions();
+      return 0;
     }
-    std::string fta_analysis = "default";
-    if (analysis == "fta-mc") fta_analysis = "mc";
 
-    std::string approx = "no";
-    if (rare_event) approx = "rare";
-    if (mcub) approx = "mcub";
+    // Analyze.
+    ran->Analyze();
 
-    fta = new FaultTreeAnalysis(fta_analysis, approx,
-                                vm["limit-order"].as<int>(),
-                                vm["nsums"].as<int>(),
-                                vm["cut-off"].as<double>());
-  } else {
-    std::string msg = analysis + ": this analysis is not recognized.\n";
-    std::cout << msg << std::endl;
-    std::cout << desc << "\n";
+    // Report results.
+    std::string output = "cli";  // Output to command line by default.
+    if (vm.count("output")) {
+      output = vm["output"].as<std::string>();
+    }
+    ran->Report(output);
+
+    delete ran;
+
+  } catch (IOError& io_err) {
+    std::cerr << "SCRAM I/O Error\n" << std::endl;
+    std::cerr << io_err.what() << std::endl;
+    return 1;
+  } catch (ValidationError& vld_err) {
+    std::cerr << "SCRAM Validation Error\n" << std::endl;
+    std::cerr << vld_err.what() << std::endl;
     return 1;
   }
-
-  // Set the fault tree analysis type.
-  ran->fta(fta);
-
-  // Process input and validate it.
-  ran->ProcessInput(input_file);
-
-  // Stop if only validation is requested.
-  if (vm.count("validate")) {
-    std::cout << "The files are VALID." << std::endl;
-    return 0;
-  }
-
-  // Graph if requested.
-  if (vm.count("graph-only")) {
-    ran->GraphingInstructions();
-    return 0;
-  }
-
-  // Analyze.
-  ran->Analyze();
-
-  // Report results.
-  std::string output = "cli";  // Output to command line by default.
-  if (vm.count("output")) {
-    output = vm["output"].as<std::string>();
-  }
-  ran->Report(output);
-
-  delete ran;
 
   return 0;
 }  // End of main.

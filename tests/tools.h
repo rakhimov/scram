@@ -7,13 +7,17 @@ class FileDeleter {
  public:
   FileDeleter(std::string path) {
     path_ = path;
-    if (boost::filesystem::exists(path_))
-      remove(path_.c_str());
+    if (boost::filesystem::exists(path_)) {
+      bool done = remove(path_.c_str());
+      assert(done);
+    }
   }
 
   ~FileDeleter() {
-    if (boost::filesystem::exists(path_))
-      remove(path_.c_str());
+    if (boost::filesystem::exists(path_)) {
+      bool done = remove(path_.c_str());
+      assert(done);
+    }
   }
 
  private:
