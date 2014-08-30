@@ -178,7 +178,7 @@ TEST_F(RiskAnalysisTest, ThreeMotor) {
   cut_set.clear();
 
   cut_set.insert(KT2inc);
-  cut_set.insert( KT3inc);
+  cut_set.insert(KT3inc);
   cut_set.insert(T1);
   cut_set.insert(T2);
   cut_set.insert(T2inc);
@@ -186,7 +186,7 @@ TEST_F(RiskAnalysisTest, ThreeMotor) {
   cut_set.clear();
 
   cut_set.insert(KT1inc);
-  cut_set.insert( T2);
+  cut_set.insert(T2);
   cut_set.insert(T3);
   cut_set.insert(T3inc);
   cut_set.insert(T4inc);
@@ -194,7 +194,7 @@ TEST_F(RiskAnalysisTest, ThreeMotor) {
   cut_set.clear();
 
   cut_set.insert(KT1inc);
-  cut_set.insert( T1);
+  cut_set.insert(T1);
   cut_set.insert(T2);
   cut_set.insert(T3inc);
   cut_set.insert(T4inc);
@@ -202,7 +202,7 @@ TEST_F(RiskAnalysisTest, ThreeMotor) {
   cut_set.clear();
 
   cut_set.insert(KT1inc);
-  cut_set.insert( KT3inc);
+  cut_set.insert(KT3inc);
   cut_set.insert(T2);
   cut_set.insert(T3);
   cut_set.insert(T3inc);
@@ -210,7 +210,7 @@ TEST_F(RiskAnalysisTest, ThreeMotor) {
   cut_set.clear();
 
   cut_set.insert(KT1inc);
-  cut_set.insert( KT3inc);
+  cut_set.insert(KT3inc);
   cut_set.insert(T1);
   cut_set.insert(T2);
   cut_set.insert(T3inc);
@@ -218,7 +218,7 @@ TEST_F(RiskAnalysisTest, ThreeMotor) {
   cut_set.clear();
 
   cut_set.insert(KT1inc);
-  cut_set.insert( KT2inc);
+  cut_set.insert(KT2inc);
   cut_set.insert(T2);
   cut_set.insert(T3);
   cut_set.insert(T4inc);
@@ -226,7 +226,7 @@ TEST_F(RiskAnalysisTest, ThreeMotor) {
   cut_set.clear();
 
   cut_set.insert(KT1inc);
-  cut_set.insert( KT2inc);
+  cut_set.insert(KT2inc);
   cut_set.insert(T1);
   cut_set.insert(T2);
   cut_set.insert(T4inc);
@@ -234,7 +234,7 @@ TEST_F(RiskAnalysisTest, ThreeMotor) {
   cut_set.clear();
 
   cut_set.insert(KT1inc);
-  cut_set.insert( KT2inc);
+  cut_set.insert(KT2inc);
   cut_set.insert(KT3inc);
   cut_set.insert(T2);
   cut_set.insert(T3);
@@ -242,7 +242,7 @@ TEST_F(RiskAnalysisTest, ThreeMotor) {
   cut_set.clear();
 
   cut_set.insert(KT1inc);
-  cut_set.insert( KT2inc);
+  cut_set.insert(KT2inc);
   cut_set.insert(KT3inc);
   cut_set.insert(T1);
   cut_set.insert(T2);
@@ -250,7 +250,7 @@ TEST_F(RiskAnalysisTest, ThreeMotor) {
   cut_set.clear();
 
   cut_set.insert(K2);
-  cut_set.insert( T2);
+  cut_set.insert(T2);
   cut_set.insert(T2inc);
   cut_set.insert(T3inc);
   cut_set.insert(T4inc);
@@ -258,7 +258,7 @@ TEST_F(RiskAnalysisTest, ThreeMotor) {
   cut_set.clear();
 
   cut_set.insert(K2);
-  cut_set.insert( KT3inc);
+  cut_set.insert(KT3inc);
   cut_set.insert(T2);
   cut_set.insert(T2inc);
   cut_set.insert(T3inc);
@@ -266,7 +266,7 @@ TEST_F(RiskAnalysisTest, ThreeMotor) {
   cut_set.clear();
 
   cut_set.insert(K2);
-  cut_set.insert( KT2inc);
+  cut_set.insert(KT2inc);
   cut_set.insert(T2);
   cut_set.insert(T2inc);
   cut_set.insert(T4inc);
@@ -274,7 +274,7 @@ TEST_F(RiskAnalysisTest, ThreeMotor) {
   cut_set.clear();
 
   cut_set.insert(K2);
-  cut_set.insert( KT2inc);
+  cut_set.insert(KT2inc);
   cut_set.insert(KT3inc);
   cut_set.insert(T2);
   cut_set.insert(T2inc);
@@ -282,7 +282,7 @@ TEST_F(RiskAnalysisTest, ThreeMotor) {
   cut_set.clear();
 
   cut_set.insert(K2);
-  cut_set.insert( KT1inc);
+  cut_set.insert(KT1inc);
   cut_set.insert(T2);
   cut_set.insert(T3inc);
   cut_set.insert(T4inc);
@@ -290,7 +290,7 @@ TEST_F(RiskAnalysisTest, ThreeMotor) {
   cut_set.clear();
 
   cut_set.insert(K2);
-  cut_set.insert( KT1inc);
+  cut_set.insert(KT1inc);
   cut_set.insert(KT3inc);
   cut_set.insert(T2);
   cut_set.insert(T3inc);
@@ -298,7 +298,7 @@ TEST_F(RiskAnalysisTest, ThreeMotor) {
   cut_set.clear();
 
   cut_set.insert(K2);
-  cut_set.insert( KT1inc);
+  cut_set.insert(KT1inc);
   cut_set.insert(KT2inc);
   cut_set.insert(T2);
   cut_set.insert(T4inc);
@@ -306,7 +306,7 @@ TEST_F(RiskAnalysisTest, ThreeMotor) {
   cut_set.clear();
 
   cut_set.insert(K2);
-  cut_set.insert( KT1inc);
+  cut_set.insert(KT1inc);
   cut_set.insert(KT2inc);
   cut_set.insert(KT3inc);
   cut_set.insert(T2);
@@ -405,7 +405,7 @@ TEST_F(RiskAnalysisTest, ThreeMotor) {
   cut_set.clear();
 
   cut_set.insert(KT1);
-  cut_set.insert( KT3);
+  cut_set.insert(KT3);
   cut_set.insert(KT3inc);
   cut_set.insert(T2);
   cut_set.insert(T2inc);
@@ -415,7 +415,7 @@ TEST_F(RiskAnalysisTest, ThreeMotor) {
   cut_set.clear();
 
   cut_set.insert(KT1);
-  cut_set.insert( KT2inc);
+  cut_set.insert(KT2inc);
   cut_set.insert(KT3);
   cut_set.insert(T2);
   cut_set.insert(T2inc);
@@ -425,7 +425,7 @@ TEST_F(RiskAnalysisTest, ThreeMotor) {
   cut_set.clear();
 
   cut_set.insert(KT1);
-  cut_set.insert( KT2inc);
+  cut_set.insert(KT2inc);
   cut_set.insert(KT3);
   cut_set.insert(KT3inc);
   cut_set.insert(T2);
@@ -435,7 +435,7 @@ TEST_F(RiskAnalysisTest, ThreeMotor) {
   cut_set.clear();
 
   cut_set.insert(KT1);
-  cut_set.insert( KT1inc);
+  cut_set.insert(KT1inc);
   cut_set.insert(KT3);
   cut_set.insert(T2);
   cut_set.insert(T3inc);

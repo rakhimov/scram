@@ -1,5 +1,5 @@
 /// @file grapher.h
-/// Grapher.
+/// Graphing of analysis entities.
 #ifndef SCRAM_GRAPHER_H_
 #define SCRAM_GRAPHER_H_
 
@@ -11,7 +11,7 @@ typedef boost::shared_ptr<scram::FaultTree> FaultTreePtr;
 
 namespace scram {
 
-/// @class Grapher.
+/// @class Grapher
 /// Provides graphing instruction output to other tools.
 /// Currently operate with Fault Trees only.
 class Grapher {

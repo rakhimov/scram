@@ -21,7 +21,6 @@ namespace scram {
 /// @class FaultTree
 /// Fault tree representation.
 class FaultTree {
-
  public:
   /// The main constructor of the Fault Tree.
   /// @param[in] name The name identificator of this fault tree.
