@@ -9,6 +9,17 @@
 
 using namespace scram;
 
+// Test if the schema catches errors.
+// This is trusted to XML libraries and the correctness of the RelaxNG schema,
+// so the test is very basic calls.
+TEST(RiskAnalysisInputTest, FailSchemaValidation) {
+  std::string input_incorrect= "./share/scram/input/schema_fail.xml";
+  RiskAnalysis* ran;
+  ran = new RiskAnalysis();
+  EXPECT_THROW(ran->ProcessInput(input_incorrect), ValidationError);
+  delete ran;
+}
+
 // Test correct tree inputs
 TEST(RiskAnalysisInputTest, CorrectFTAInputs) {
   std::vector<std::string> correct_inputs;
