@@ -99,11 +99,13 @@ class RiskAnalysis {
   }
 
  private:
-  void DefineFaultTree(const xmlpp::Element* ft_node);
-
   void DefineGate(const xmlpp::Element* gate_node, FaultTreePtr& ft);
+
   void DefineBasicEvent(const xmlpp::Element* event_node, FaultTreePtr& ft);
+
   void DefineHouseEvent(const xmlpp::Element* event_node, FaultTreePtr& ft);
+
+  void DefineFaultTree(const xmlpp::Element* ft_node);
 
   void ProcessModelData(const xmlpp::Element* model_data);
 
@@ -117,13 +119,19 @@ class RiskAnalysis {
   /// @note An empty string for no problems detected.
   std::string CheckGate(const GatePtr& event);
 
-  /// @returns Primary events that do not have probabilities assigned.
+  /// @returns Formatted error message with house, basic, or other events
+  /// that are not defined.
   /// @note An empty string for no problems detected.
-  std::string PrimariesNoProb();
+  std::string CheckMissingEvents();
+
+  /// Validates if the initialization of the analysis is successful.
+  /// @throws ValidationError if the initialization contains mistakes.
+  void ValidateInitialization();
 
   /// @todo Containers for fault trees, events, event trees, CCF, and other
   /// analysis entities.
   /// @deprecated l-model analysis
+  /// @todo Container for excess events that are defined.
 
   /// Container of original names of events with capitalizations.
   std::map<std::string, std::string> orig_ids_;
@@ -134,10 +142,10 @@ class RiskAnalysis {
   /// List of all valid types of primary events.
   std::set<std::string> types_;
 
-  /// Container for gates.
+  /// Container for fully defined gates.
   boost::unordered_map<std::string, GatePtr> gates_;
 
-  /// Container for primary events.
+  /// Container for fully defined primary events.
   boost::unordered_map<std::string, PrimaryEventPtr> primary_events_;
 
   /// Events to be defined with their parents saved for later.
@@ -152,7 +160,7 @@ class RiskAnalysis {
   /// House events to be defined.
   boost::unordered_map<std::string, HouseEventPtr> tbd_house_events_;
 
-  /// Container for all events.
+  /// Container for all defined events.
   boost::unordered_map<std::string, EventPtr> all_events_;
 
   /// A fault tree.

@@ -28,7 +28,10 @@ class Error : public std::exception {
 
   /// Sets the error message.
   /// @param[in] msg The error message.
-  void msg(std::string& msg) { msg_ = msg; }
+  void msg(std::string& msg) {
+    msg_ = msg;
+    thrown_ = kPrefix_ + msg;
+  }
 
   virtual ~Error() throw() {}
 
@@ -38,7 +41,10 @@ class Error : public std::exception {
 
  private:
   /// SCRAM prefix specific to the application.
-  static const std::string kPrefix;
+  static const std::string kPrefix_;
+
+  /// The message to throw with the prefix.
+  std::string thrown_;
 };
 
 /// @class ValueError

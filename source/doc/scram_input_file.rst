@@ -9,7 +9,7 @@ Currently, only fault trees are accepted for analysis. The input file format
 follows `OpenPSA Model Exchange Format v2.0d`_ or later.
 However, not all OpenPSA formatting is supported, and some additional
 assumptions/restrictions are made by SCRAM. See `opsa_support` for the current
-implementation.
+implementation and differences.
 
 .. _`OpenPSA Model Exchange Format v2.0d`:
     http://open-psa.org/joomla1.5/index.php?option=com_content&view=category&id=4&Itemid=19
@@ -39,6 +39,7 @@ Steps in XML Input Validation
     - Each gate has a correct number of children.
     - All intermediate events have at least one parent.
     - Values of parameters are correct, i.e., non-negative for probabilities.
+    - All events must be defined for probability calculations.
 
 #. Throw an error with a message (a file name, line numbers, types of errors):
 

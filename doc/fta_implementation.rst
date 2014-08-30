@@ -57,6 +57,7 @@ probabilities. Some of them are:
 - Independence of events (dependence may be simulated by common cause).
 - Rare event approximation (must be enforced by a user).
 - Min-Cut-Upper Bound Approximation (must be enforced by a user).
+- Cut-off probability for minimal cut sets (the default value is 1e-8).
 - Brute force probability calculation if the rare event approximation is not
   good enough. This brute force calculation may be expensive and require
   much more time. (the default method for probability calculations).
@@ -66,7 +67,6 @@ probabilities. Some of them are:
     independence may be applied satisfactorily. However, if the rare event
     approximation produces too large probability, SCRAM can use the upper bound
     method. An appropriate warning will be given even if the user enforces
-    the rare event approximation. It is suggested that the cut-off for series
-    should be around 4-8. The default cut-off tries to include all the series.
-    There are N sums and :math:`2^N` terms for N minimal cut sets for
-    probability calculations.
+    the rare event approximation. It is suggested that the maximum number of
+    series should be around 4-8. The default value includes all the terms.
+    There are N sums and :math:`2^N` terms for N minimal cut sets.

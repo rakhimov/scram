@@ -58,7 +58,8 @@ void Reporter::ReportFta(FaultTreeAnalysis* fta,
     int size = it_min->size();
     for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
       std::vector<std::string> names;
-      boost::split(names, *it_set, boost::is_any_of(" "),
+      std::string full_name = *it_set;
+      boost::split(names, full_name, boost::is_any_of(" "),
                    boost::token_compress_on);
       assert(names.size() < 3);
       assert(names.size() > 0);
