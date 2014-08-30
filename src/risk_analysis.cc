@@ -91,73 +91,33 @@ void RiskAnalysis::ProcessInput(std::string xml_file) {
     }
   }
 
-  // Check if all events are initialized.
-  /// @todo Print Names of events.
-  /// @todo Warning about extra events being initialized and unused.
-  /// @todo all_events container is not being updated.
-  if (!tbd_house_events_.empty()) {
-    // This is default and assumed.
-    prob_requested_ = true;
-    boost::unordered_map<std::string, HouseEventPtr>::iterator it;
-    for (it = tbd_house_events_.begin(); it != tbd_house_events_.end();
-         ++it) {
-      it->second->p(0);  // False House event is the default.
-      primary_events_.insert(std::make_pair(it->first, it->second));
+  if (!prob_requested_) {  // Only MCS analysis without probabilities.
+    // Put all undefined events as primary events.
+    boost::unordered_map<std::string, HouseEventPtr>::iterator it_h;
+    for (it_h = tbd_house_events_.begin(); it_h != tbd_house_events_.end();
+         ++it_h) {
+      primary_events_.insert(std::make_pair(it_h->first, it_h->second));
     }
-  }
-  if (!tbd_basic_events_.empty()) {
-    prob_requested_ = false;
-    boost::unordered_map<std::string, BasicEventPtr>::iterator it;
-    for (it = tbd_basic_events_.begin(); it != tbd_basic_events_.end();
-         ++it) {
-      primary_events_.insert(std::make_pair(it->first, it->second));
-    }
-  }
 
-  if (!tbd_events_.empty()) {
-    prob_requested_ = false;
-    boost::unordered_map<std::string, std::vector<GatePtr> >::iterator it;
-    for (it = tbd_events_.begin(); it != tbd_events_.end(); ++it) {
-      std::vector<GatePtr>::iterator itvec = it->second.begin();
-      BasicEventPtr child(new BasicEvent(it->first));
-      for (; itvec != it->second.end(); ++itvec) {
+    boost::unordered_map<std::string, BasicEventPtr>::iterator it_b;
+    for (it_b = tbd_basic_events_.begin(); it_b != tbd_basic_events_.end();
+         ++it_b) {
+      primary_events_.insert(std::make_pair(it_b->first, it_b->second));
+    }
+
+    boost::unordered_map<std::string, std::vector<GatePtr> >::iterator it_e;
+    for (it_e = tbd_events_.begin(); it_e != tbd_events_.end(); ++it_e) {
+      BasicEventPtr child(new BasicEvent(it_e->first));
+      primary_events_.insert(std::make_pair(it_e->first, child));
+      std::vector<GatePtr>::iterator itvec = it_e->second.begin();
+      for (; itvec != it_e->second.end(); ++itvec) {
         (*itvec)->AddChild(child);
       }
     }
-    /// @todo either clean tbd containers or warn the user.
-  }
-  if (!tbd_gates_.empty()) {
-    std::stringstream ss;
-    boost::unordered_map<std::string, GatePtr>::iterator it;
-    for (it = tbd_gates_.begin(); it != tbd_gates_.end(); ++it) {
-      std::string id = it->first;
-      boost::to_upper(id);
-      ss << id << "\n";
-    }
-    throw scram::ValidationError("Undefined gates:\n" + ss.str());
   }
 
-  // Check if all gates have a right number of children.
-  std::string bad_gates = RiskAnalysis::CheckAllGates();
-  if (bad_gates != "") {
-    std::stringstream msg;
-    msg << "\nThere are problems with the following gates:\n";
-    msg << bad_gates;
-    throw scram::ValidationError(msg.str());
-  }
-
-  /// @todo This should give a warning or error depending on the user's
-  /// choice.
-  if (prob_requested_) {
-    // Check if all primary events have probabilities initialized.
-    std::string uninit_primaries = RiskAnalysis::PrimariesNoProb();
-    if (uninit_primaries != "") {
-      std::stringstream msg;
-      msg << "Missing probabilities for following basic events:\n";
-      msg << uninit_primaries;
-      throw scram::ValidationError(msg.str());
-    }
-  }
+  // Check if the initialization is successful.
+  RiskAnalysis::ValidateInitialization();
 }
 
 void RiskAnalysis::GraphingInstructions() {
@@ -599,6 +559,40 @@ void RiskAnalysis::ProcessModelData(const xmlpp::Element* model_data) {
   }
 }
 
+void RiskAnalysis::ValidateInitialization() {
+  std::stringstream error_messages;
+
+  // Checking uninitialized gates.
+  if (!tbd_gates_.empty()) {
+    error_messages << "Undefined gates:\n";
+    boost::unordered_map<std::string, GatePtr>::iterator it;
+    for (it = tbd_gates_.begin(); it != tbd_gates_.end(); ++it) {
+      error_messages << orig_ids_.find(it->first)->second << "\n";
+    }
+  }
+
+  // Check if all initialized gates have the right number of children.
+  std::string bad_gates = RiskAnalysis::CheckAllGates();
+  if (!bad_gates.empty()) {
+    error_messages << "\nThere are problems with the initialized gates:\n"
+                   << bad_gates;
+  }
+
+  // Check if all events are initialized.
+  /// @todo Print Names of events.
+  /// @todo Warning about extra events being initialized and unused.
+  /// @todo all_events container is not being updated.
+  /// @todo Deal with the defaults of OpenPSA MEF.
+  if (prob_requested_) {
+    // Check if some events are missing definitions.
+    error_messages << RiskAnalysis::CheckMissingEvents();
+  }
+
+  if (!error_messages.str().empty()) {
+    throw scram::ValidationError(error_messages.str());
+  }
+}
+
 std::string RiskAnalysis::CheckAllGates() {
   assert(!orig_ids_.empty());  // Events must be initialized.
 
@@ -689,19 +683,35 @@ std::string RiskAnalysis::CheckGate(const GatePtr& event) {
   return msg.str();
 }
 
-std::string RiskAnalysis::PrimariesNoProb() {
-  std::string uninit_primaries = "";
-  boost::unordered_map<std::string, PrimaryEventPtr>::iterator it;
-  for (it = primary_events_.begin(); it != primary_events_.end(); ++it) {
-    try {
-      it->second->p();
-    } catch (scram::ValueError& err) {
-      uninit_primaries += orig_ids_.find(it->first)->second;
-      uninit_primaries += "\n";
+std::string RiskAnalysis::CheckMissingEvents() {
+  std::string msg = "";
+  if (!tbd_house_events_.empty()) {
+    msg += "\nMissing definitions for House events:\n";
+    boost::unordered_map<std::string, HouseEventPtr>::iterator it;
+    for (it = tbd_house_events_.begin(); it != tbd_house_events_.end();
+         ++it) {
+      msg += orig_ids_.find(it->first)->second + "\n";
     }
   }
 
-  return uninit_primaries;
+  if (!tbd_basic_events_.empty()) {
+    msg += "\nMissing definitions for Basic events:\n";
+    boost::unordered_map<std::string, BasicEventPtr>::iterator it;
+    for (it = tbd_basic_events_.begin(); it != tbd_basic_events_.end();
+         ++it) {
+      msg += orig_ids_.find(it->first)->second + "\n";
+    }
+  }
+
+  if (!tbd_events_.empty()) {
+    msg += "\nMissing definitions for Untyped events:\n";
+    boost::unordered_map<std::string, std::vector<GatePtr> >::iterator it;
+    for (it = tbd_events_.begin(); it != tbd_events_.end(); ++it) {
+      msg += orig_ids_.find(it->first)->second + "\n";
+    }
+  }
+
+  return msg;
 }
 
 }  // namespace scram

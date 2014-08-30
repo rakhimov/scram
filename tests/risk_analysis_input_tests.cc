@@ -28,7 +28,7 @@ TEST(RiskAnalysisInputTest, CorrectFTAInputs) {
 
 // Test correct probability inputs
 TEST(RiskAnalysisInputTest, CorrectFTAProbability) {
-  std::string input_correct = "./share/scram/input/fta/correct_tree_input.xml";
+  std::string input_correct = "./share/scram/input/fta/correct_tree_input_with_probs.xml";
 
   RiskAnalysis* ran;
   ran = new RiskAnalysis();
@@ -37,17 +37,23 @@ TEST(RiskAnalysisInputTest, CorrectFTAProbability) {
 }
 
 // Test incorrect fault tree inputs
-TEST(RiskAnalysisInputTest, DISABLED_IncorrectFTAInputs) {
+TEST(RiskAnalysisInputTest, IncorrectFTAInputs) {
   std::vector<std::string> ioerror_inputs;
   std::vector<std::string> incorrect_inputs;
 
+  std::string dir = "./share/scram/input/fta/";
+
   // Access issues. IOErrors
-  ioerror_inputs.push_back("./share/scram/input/fta/nonexistent_file.xml");
+  ioerror_inputs.push_back(dir + "nonexistent_file.xml");
 
   // Other issues.
   // incorrect_inputs.push_back("./share/scram/input/fta/basic_top_event.xml");
-  // incorrect_inputs.push_back("./share/scram/input/fta/doubly_defined_intermediate.xml");
-  // incorrect_inputs.push_back("./share/scram/input/fta/doubly_defined_primary_type.xml");
+  incorrect_inputs.push_back(dir + "doubly_defined_gate.xml");
+  incorrect_inputs.push_back(dir + "doubly_defined_house.xml");
+  incorrect_inputs.push_back(dir + "doubly_defined_basic.xml");
+  incorrect_inputs.push_back(dir + "missing_basic_event_definition.xml");
+  incorrect_inputs.push_back(dir + "missing_house_event_definition.xml");
+  incorrect_inputs.push_back(dir + "missing_gate_definition.xml");
   // incorrect_inputs.push_back("./share/scram/input/fta/name_clash_inter.xml");
   // incorrect_inputs.push_back("./share/scram/input/fta/name_clash_primary.xml");
   // incorrect_inputs.push_back("./share/scram/input/fta/name_clash_top.xml");
@@ -56,8 +62,18 @@ TEST(RiskAnalysisInputTest, DISABLED_IncorrectFTAInputs) {
   // incorrect_inputs.push_back("./share/scram/input/fta/unrecognized_parameter.xml");
   // incorrect_inputs.push_back("./share/scram/input/fta/unrecognized_type.xml");
   // incorrect_inputs.push_back("./share/scram/input/fta/vote_not_enough_children.xml");
-}
+  RiskAnalysis* ran;
+  std::vector<std::string>::iterator it;
+  for (it = ioerror_inputs.begin(); it != ioerror_inputs.end(); ++it) {
+    ran = new RiskAnalysis();
+    EXPECT_THROW(ran->ProcessInput(*it), IOError) << " Filename:  " << *it;
+    delete ran;
+  }
 
-// Test incorrect probability input.
-TEST(RiskAnalysisInputTest, DISABLED_IncorrectFTAProbability) {
+  for (it = incorrect_inputs.begin(); it != incorrect_inputs.end(); ++it) {
+    ran = new RiskAnalysis();
+    EXPECT_THROW(ran->ProcessInput(*it), ValidationError)
+        << " Filename:  " << *it;
+    delete ran;
+  }
 }
