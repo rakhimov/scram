@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 
+#include <boost/exception/all.hpp>
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
@@ -161,7 +162,7 @@ int main(int argc, char* argv[]) {
     if (vm.count("output")) {
       output = vm["output"].as<std::string>();
     }
-    ran->Report(output);
+    ran->Report(output);  // May throw boost exceptions according to Coverity.
 
     delete ran;
 
@@ -172,6 +173,10 @@ int main(int argc, char* argv[]) {
   } catch (ValidationError& vld_err) {
     std::cerr << "SCRAM Validation Error\n" << std::endl;
     std::cerr << vld_err.what() << std::endl;
+    return 1;
+  } catch (boost::exception& boost_err) {
+    std::cerr << "Boost Exception:\n" << std::endl;
+    std::cerr << boost::diagnostic_information(boost_err) << std::endl;
     return 1;
   }
 
