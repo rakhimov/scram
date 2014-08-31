@@ -40,8 +40,9 @@ TEST(RiskAnalysisInputTest, UnsupportedFeature) {
 // Test correct tree inputs
 TEST(RiskAnalysisInputTest, CorrectFTAInputs) {
   std::vector<std::string> correct_inputs;
-  correct_inputs.push_back("./share/scram/input/fta/correct_tree_input.xml");
-  correct_inputs.push_back("./share/scram/input/fta/correct_atleast_gate.xml");
+  std::string dir = "./share/scram/input/fta/";
+  correct_inputs.push_back(dir + "correct_tree_input.xml");
+  correct_inputs.push_back(dir + "mixed_definitions.xml");
 
   RiskAnalysis* ran;
 
@@ -79,6 +80,7 @@ TEST(RiskAnalysisInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back(dir + "doubly_defined_gate.xml");
   incorrect_inputs.push_back(dir + "doubly_defined_house.xml");
   incorrect_inputs.push_back(dir + "doubly_defined_basic.xml");
+  incorrect_inputs.push_back(dir + "missing_event_definition.xml");
   incorrect_inputs.push_back(dir + "missing_basic_event_definition.xml");
   incorrect_inputs.push_back(dir + "missing_house_event_definition.xml");
   incorrect_inputs.push_back(dir + "missing_gate_definition.xml");
@@ -92,13 +94,7 @@ TEST(RiskAnalysisInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back(dir + "def_clash_gate_primary.xml");
   incorrect_inputs.push_back(dir + "def_clash_basic_house.xml");
   incorrect_inputs.push_back(dir + "def_clash_house_basic.xml");
-  // incorrect_inputs.push_back("./share/scram/input/fta/name_clash_inter.xml");
-  // incorrect_inputs.push_back("./share/scram/input/fta/name_clash_primary.xml");
-  // incorrect_inputs.push_back("./share/scram/input/fta/non_existent_parent_primary.xml");
-  // incorrect_inputs.push_back("./share/scram/input/fta/non_existent_parent_inter.xml");
-  // incorrect_inputs.push_back("./share/scram/input/fta/unrecognized_parameter.xml");
-  // incorrect_inputs.push_back("./share/scram/input/fta/unrecognized_type.xml");
-  // incorrect_inputs.push_back("./share/scram/input/fta/vote_not_enough_children.xml");
+  incorrect_inputs.push_back(dir + "atleast_gate.xml");
   RiskAnalysis* ran;
   std::vector<std::string>::iterator it;
   for (it = ioerror_inputs.begin(); it != ioerror_inputs.end(); ++it) {

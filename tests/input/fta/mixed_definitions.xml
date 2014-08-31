@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!-- Correct input
+Mixed re-use of events
+-->
+<opsa-mef>
+  <define-fault-tree name="Two Trains">
+    <define-gate name="TopEvent">
+      <and>
+        <gate name="TrainOne"/>
+        <event name="TrainTwo"/>
+        <event name="ValveOne"/>
+        <event name="PumpOne"/>
+      </and>
+    </define-gate>
+    <define-gate name="TrainOne">
+      <or>
+        <basic-event name="ValveOne"/>
+        <house-event name="PumpOne"/>
+      </or>
+    </define-gate>
+    <define-gate name="TrainTwo">
+      <or>
+        <event name="TrainOne"/>
+        <basic-event name="ValveTwo"/>
+        <event name="PumpTwo"/>
+        <event name="ValveOne"/>
+        <event name="PumpOne"/>
+      </or>
+    </define-gate>
+  </define-fault-tree>
+</opsa-mef>
