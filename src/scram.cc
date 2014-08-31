@@ -166,7 +166,6 @@ int main(int argc, char* argv[]) {
     ran->Report(output);  // May throw boost exceptions according to Coverity.
 
     delete ran;
-
   } catch (IOError& io_err) {
     std::cerr << "SCRAM I/O Error\n" << std::endl;
     std::cerr << io_err.what() << std::endl;

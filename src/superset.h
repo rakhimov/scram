@@ -41,7 +41,7 @@ class Superset {
   /// Inserts another superset with gates and primary events.
   /// Check if there are complements of events.
   /// @param[in] st A pointer to another superset with events.
-  /// @returns false iff the resultant set is null.
+  /// @returns false if the resultant set is null.
   /// @returns true if the addition is successful.
   bool InsertSet(const boost::shared_ptr<Superset>& st);
 
@@ -52,16 +52,16 @@ class Superset {
   int PopGate();
 
   /// @returns The number of primary events in this set.
-  int NumOfPrimeEvents();
+  inline int NumOfPrimeEvents() { return primes_.size(); }
 
   /// @returns The number of gates in this set.
-  int NumOfGates();
+  inline int NumOfGates() { return gates_.size(); }
 
   /// @returns The set of primary events.
-  const std::set<int>& primes();
+  inline const std::set<int>& primes() { return primes_; }
 
   /// @returns The set of gates.
-  const std::set<int>& gates();
+  inline const std::set<int>& gates() { return gates_; }
 
   ~Superset() {}
 

@@ -65,20 +65,4 @@ int Superset::PopGate() {
   return gate;
 }
 
-int Superset::NumOfPrimeEvents() {
-  return primes_.size();
-}
-
-int Superset::NumOfGates() {
-  return gates_.size();
-}
-
-const std::set<int>& Superset::primes() {
-  return primes_;
-}
-
-const std::set<int>& Superset::gates() {
-  return gates_;
-}
-
 }  // namespace scram

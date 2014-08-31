@@ -124,7 +124,8 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
   }
   std::vector<const std::set<int>* > sets_unique;
   std::set< const std::set<int>*, SetPtrComp >::iterator it_un;
-  for (it_un = unique_cut_sets.begin(); it_un != unique_cut_sets.end(); ++it_un) {
+  for (it_un = unique_cut_sets.begin(); it_un != unique_cut_sets.end();
+       ++it_un) {
     sets_unique.push_back(*it_un);
   }
 
@@ -260,7 +261,9 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
   // Assumes sets are empty.
   assert(sets.empty());
   if (repeat_exp_.count(inter_index)) {
-    std::vector<SupersetPtr>* repeat_set = &repeat_exp_.find(inter_index)->second;
+    std::vector<SupersetPtr>* repeat_set =
+        &repeat_exp_.find(inter_index)->second;
+
     std::vector<SupersetPtr>::iterator it;
     for (it = repeat_set->begin(); it != repeat_set->end(); ++it) {
       SupersetPtr temp_set(new Superset);
@@ -370,7 +373,9 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
       FaultTreeAnalysis::SetOr(events_children, sets, -1);
     }
   } else if (gate == "vote" || gate == "atleast") {
-    int vote_number = int_to_inter_.find(std::abs(inter_index))->second->vote_number();
+    int vote_number =
+        int_to_inter_.find(std::abs(inter_index))->second->vote_number();
+
     assert(vote_number > 1);
     assert(events_children.size() >= vote_number);
     std::set< std::set<int> > all_sets;
@@ -521,8 +526,10 @@ void FaultTreeAnalysis::AssignIndices(const FaultTreePtr& fault_tree) {
   /// @todo Very strange performance issue. Conflict between Expansion and
   /// Probability calculations.
   top_event_ = fault_tree->top_event();
-  // inter_events_.insert(fault_tree->inter_events().begin(), fault_tree->inter_events().end());
-  primary_events_.insert(fault_tree->primary_events().begin(), fault_tree->primary_events().end());
+  // inter_events_.insert(fault_tree->inter_events().begin(),
+  //                      fault_tree->inter_events().end());
+  primary_events_.insert(fault_tree->primary_events().begin(),
+                         fault_tree->primary_events().end());
   // primary_events_ = fault_tree->primary_events();
   inter_events_ = fault_tree->inter_events();
 
