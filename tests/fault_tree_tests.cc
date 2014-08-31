@@ -1,6 +1,25 @@
 #include <gtest/gtest.h>
 
 #include "fault_tree.h"
+
 using namespace scram;
 
-TEST(FaultTreeTest, AddGate) {}
+TEST(FaultTreeTest, AddGate) {
+  FaultTree* ft = new FaultTree("never_fail");
+  GatePtr gate(new Gate("Golden"));
+  EXPECT_NO_THROW(ft->AddGate(gate));
+  EXPECT_THROW(ft->AddGate(gate), ValueError);
+  delete ft;
+}
+
+TEST(FaultTreeTest, Validate) {
+  FaultTree* ft = new FaultTree("never_fail");
+  GatePtr top(new Gate("Golden"));
+  GatePtr gate(new Gate("Golden"));
+  top->AddChild(gate);
+  EXPECT_NO_THROW(ft->AddGate(top));
+
+  // Not all primary events are defined.
+  EXPECT_THROW(ft->Validate(), ValidationError);
+  delete ft;
+}

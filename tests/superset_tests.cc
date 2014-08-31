@@ -127,7 +127,7 @@ TEST(SupersetTest, InsertSet) {
   sset_one->InsertGate(-7);
   sset_one->InsertGate(7);
   EXPECT_FALSE(sset_two->InsertSet(sset_one));
-  EXPECT_TRUE(sset_one->null());
+  EXPECT_TRUE(sset_two->null());
 }
 
 // Test PopGate function
