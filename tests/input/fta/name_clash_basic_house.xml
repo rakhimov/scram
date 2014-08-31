@@ -1,4 +1,7 @@
 <?xml version="1.0"?>
+<!-- Incorrect Input
+Basic event re-uses id of a house event.
+-->
 <opsa-mef>
   <define-fault-tree name="Two Trains">
     <define-gate name="TopEvent">
@@ -15,7 +18,7 @@
     </define-gate>
     <define-gate name="TrainTwo">
       <or>
-        <basic-event name="ValveTwo"/>
+        <basic-event name="PumpOne"/>
         <event name="PumpTwo"/>
       </or>
     </define-gate>

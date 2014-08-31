@@ -1,11 +1,16 @@
 <?xml version="1.0"?>
+<!--
+The gate formula is not supported.
+-->
 <opsa-mef>
   <define-fault-tree name="Two Trains">
     <define-gate name="TopEvent">
-      <and>
+
+      <imply>  <!-- Here -->
         <gate name="TrainOne"/>
-        <event name="TrainTwo"/>
-      </and>
+        <gate name="TrainTwo"/>
+      </imply>
+
     </define-gate>
     <define-gate name="TrainOne">
       <or>

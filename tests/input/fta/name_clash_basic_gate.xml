@@ -1,22 +1,19 @@
 <?xml version="1.0"?>
+<!-- Incorrect input:
+Basic event uses id of a gate event.
+-->
 <opsa-mef>
   <define-fault-tree name="Two Trains">
     <define-gate name="TopEvent">
       <and>
         <gate name="TrainOne"/>
-        <event name="TrainTwo"/>
+        <basic-event name="ValveOne"/>
       </and>
     </define-gate>
     <define-gate name="TrainOne">
       <or>
-        <basic-event name="ValveOne"/>
         <house-event name="PumpOne"/>
-      </or>
-    </define-gate>
-    <define-gate name="TrainTwo">
-      <or>
-        <basic-event name="ValveTwo"/>
-        <event name="PumpTwo"/>
+        <basic-event name="TopEvent"/>
       </or>
     </define-gate>
   </define-fault-tree>

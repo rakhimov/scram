@@ -104,6 +104,17 @@ TEST_F(RiskAnalysisTest, CheckGate) {
   primary_events().insert(std::make_pair("c", C));
   EXPECT_FALSE(CheckGate(top));  // Wrong combination.
 
+  // VOTE/ATLEAST gate tests.
+  top = GatePtr(new Gate("top", "atleast"));
+  top->vote_number(2);
+  EXPECT_FALSE(CheckGate(top));  // No child.
+  top->AddChild(A);
+  EXPECT_FALSE(CheckGate(top));  // One child is not enough.
+  top->AddChild(B);
+  EXPECT_FALSE(CheckGate(top));  // Two children are not enough.
+  top->AddChild(C);
+  EXPECT_TRUE(CheckGate(top));  // More than 2 is needed.
+
   // Some UNKNOWN gate tests.
   top = GatePtr(new Gate("top", "unknown_gate"));
   EXPECT_FALSE(CheckGate(top));  // No child.
