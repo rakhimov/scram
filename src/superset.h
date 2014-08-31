@@ -60,7 +60,7 @@ class Superset {
 
   /// @returns The number of primary events in this set.
   /// @warning The empty set may indicated a null set.
-  inline int NumOfPrimeEvents() { return primes_.size(); }
+  inline int NumOfPrimaryEvents() { return p_events_.size(); }
 
   /// @returns The number of gates in this set.
   /// @warning The empty set may indicated a null set.
@@ -68,7 +68,7 @@ class Superset {
 
   /// @returns The set of primary events.
   /// @warning The empty set may indicated a null set.
-  inline const std::set<int>& primes() { return primes_; }
+  inline const std::set<int>& p_events() { return p_events_; }
 
   /// @returns The set of gates.
   /// @warning The empty set may indicated a null set.
@@ -85,13 +85,13 @@ class Superset {
   std::set<int> gates_;
 
   /// Container for primary events.
-  std::set<int> primes_;
+  std::set<int> p_events_;
 
   /// The number of complement gates in the sets.
   int neg_gates_;
 
   /// Indicator of complement primary events.
-  bool neg_primes_;
+  bool neg_p_events_;
 
   /// Indication that this set contains events that complement each other.
   /// For example, event A and complement of A will result in a null set.

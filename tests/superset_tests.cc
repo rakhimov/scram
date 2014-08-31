@@ -13,43 +13,43 @@ typedef boost::shared_ptr<Superset> SupersetPtr;
 TEST(SupersetTest, InsertPrimary) {
   SupersetPtr sset(new Superset());
 
-  int prime_event = 1;  // An index of a prime event in the tree.
-  int new_prime_event = 10;  // A new prime event not in the tree.
+  int p_event = 1;  // An index of a primary event in the tree.
+  int new_p_event = 10;  // A new primary event not in the tree.
 
-  std::set<int> primes;
+  std::set<int> p_events;
   // Expect empty superset at beginning.
-  EXPECT_EQ(sset->primes(), primes);
+  EXPECT_EQ(sset->p_events(), p_events);
   // Add members.
-  EXPECT_NO_THROW(sset->InsertPrimary(prime_event));
+  EXPECT_NO_THROW(sset->InsertPrimary(p_event));
   // Test if members were added successfully.
-  primes.insert(prime_event);
-  EXPECT_EQ(sset->primes(), primes);
+  p_events.insert(p_event);
+  EXPECT_EQ(sset->p_events(), p_events);
   // Test if repeated addition handled in a set.
-  EXPECT_NO_THROW(sset->InsertPrimary(prime_event));
-  EXPECT_EQ(sset->primes(), primes);
+  EXPECT_NO_THROW(sset->InsertPrimary(p_event));
+  EXPECT_EQ(sset->p_events(), p_events);
 
   // Add the second element.
-  EXPECT_NO_THROW(sset->InsertPrimary(new_prime_event));
+  EXPECT_NO_THROW(sset->InsertPrimary(new_p_event));
   // Test if members were added successfully.
-  primes.insert(new_prime_event);
-  EXPECT_EQ(sset->primes(), primes);
+  p_events.insert(new_p_event);
+  EXPECT_EQ(sset->p_events(), p_events);
   // Test if repeated addition handled in a set.
-  EXPECT_NO_THROW(sset->InsertPrimary(new_prime_event));
-  EXPECT_EQ(sset->primes(), primes);
+  EXPECT_NO_THROW(sset->InsertPrimary(new_p_event));
+  EXPECT_EQ(sset->p_events(), p_events);
 
   // Negative events assiciated with NOT logic.
-  int neg_prime = -11;
-  primes.insert(neg_prime);
-  EXPECT_NO_THROW(sset->InsertPrimary(neg_prime));
-  EXPECT_EQ(sset->primes(), primes);
+  int neg_p = -11;
+  p_events.insert(neg_p);
+  EXPECT_NO_THROW(sset->InsertPrimary(neg_p));
+  EXPECT_EQ(sset->p_events(), p_events);
 
   // This is a use in not intended way.
   // The user should only use this function for initialization.
   int neg_existing = -1;  // This is a negation of an existing event.
-  primes.insert(neg_existing);
+  p_events.insert(neg_existing);
   EXPECT_NO_THROW(sset->InsertPrimary(neg_existing));
   EXPECT_TRUE(sset->gates().empty());
-  EXPECT_EQ(sset->primes(), primes);
+  EXPECT_EQ(sset->p_events(), p_events);
 }
 
 // Test InsertGate function.
@@ -83,7 +83,7 @@ TEST(SupersetTest, InsertGate) {
   int neg_existing = -100;  // This is a negation of an existing event.
   gates.insert(neg_existing);
   EXPECT_NO_THROW(sset->InsertGate(neg_existing));
-  EXPECT_TRUE(sset->primes().empty());
+  EXPECT_TRUE(sset->p_events().empty());
   EXPECT_EQ(sset->gates(), gates);
 }
 
@@ -92,30 +92,30 @@ TEST(SupersetTest, InsertSet) {
   SupersetPtr sset_one(new Superset());
   SupersetPtr sset_two(new Superset());
 
-  int prime_event_one = 1;
+  int p_event_one = 1;
   int gate_one = 10;
-  int prime_event_two = 5;
+  int p_event_two = 5;
   int gate_two = 50;
 
-  sset_one->InsertPrimary(prime_event_one);
-  sset_two->InsertPrimary(prime_event_two);
+  sset_one->InsertPrimary(p_event_one);
+  sset_two->InsertPrimary(p_event_two);
   sset_one->InsertGate(gate_one);
   sset_two->InsertGate(gate_two);
 
   EXPECT_TRUE(sset_one->InsertSet(sset_two));
 
-  std::set<int> primes;
+  std::set<int> p_events;
   std::set<int> gates;
-  primes.insert(prime_event_one);
-  primes.insert(prime_event_two);
+  p_events.insert(p_event_one);
+  p_events.insert(p_event_two);
   gates.insert(gate_one);
   gates.insert(gate_two);
 
-  EXPECT_EQ(sset_one->primes(), primes);
+  EXPECT_EQ(sset_one->p_events(), p_events);
   EXPECT_EQ(sset_one->gates(), gates);
 
   // Putting complement members.
-  sset_one->InsertPrimary(-1 * prime_event_two);
+  sset_one->InsertPrimary(-1 * p_event_two);
   EXPECT_FALSE(sset_one->InsertSet(sset_two));
   EXPECT_TRUE(sset_one->null());
 
@@ -143,18 +143,18 @@ TEST(SupersetTest, PopGate) {
   EXPECT_EQ(sset->NumOfGates(), 0);
 }
 
-// Test NumOfPrimeEvents function
-TEST(SupersetTest, NumOfPrimeEvents) {
+// Test NumOfPrimaryEvents function
+TEST(SupersetTest, NumOfPrimaryEvents) {
   SupersetPtr sset(new Superset());
-  EXPECT_EQ(sset->NumOfPrimeEvents(), 0);  // Empty case.
+  EXPECT_EQ(sset->NumOfPrimaryEvents(), 0);  // Empty case.
   sset->InsertPrimary(1);
-  EXPECT_EQ(sset->NumOfPrimeEvents(), 1);
+  EXPECT_EQ(sset->NumOfPrimaryEvents(), 1);
   // Repeat addition to check if the size changes. It should not.
   sset->InsertPrimary(1);
-  EXPECT_EQ(sset->NumOfPrimeEvents(), 1);
+  EXPECT_EQ(sset->NumOfPrimaryEvents(), 1);
   // Add a new member.
   sset->InsertPrimary(10);
-  EXPECT_EQ(sset->NumOfPrimeEvents(), 2);
+  EXPECT_EQ(sset->NumOfPrimaryEvents(), 2);
 }
 
 // Test NumOfGates function

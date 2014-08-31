@@ -31,8 +31,8 @@ TEST_F(FaultTreeAnalysisTest, OR_GATE) {
   bool c_found = false;
   bool d_found = false;
   for (it_set = sets.begin(); it_set != sets.end(); ++it_set) {
-    if (!(*it_set)->primes().empty()) {
-      std::set<int> result = (*it_set)->primes();
+    if (!(*it_set)->p_events().empty()) {
+      std::set<int> result = (*it_set)->p_events();
       EXPECT_EQ(1, result.size());
       EXPECT_EQ(1, result.count(a_id) + result.count(b_id)
                 + result.count(c_id));
@@ -51,7 +51,7 @@ TEST_F(FaultTreeAnalysisTest, OR_GATE) {
   sets.clear();
   ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));
   EXPECT_EQ(1, sets.size());
-  result_set = (*sets.begin())->primes();
+  result_set = (*sets.begin())->p_events();
   EXPECT_EQ(3, result_set.size());
   EXPECT_EQ(1, result_set.count(-1 * a_id));
   EXPECT_EQ(1, result_set.count(-1 * b_id));
@@ -75,7 +75,7 @@ TEST_F(FaultTreeAnalysisTest, AND_GATE) {
   GetIndices();
   ASSERT_NO_THROW(ExpandSets(inter_id, sets));
   EXPECT_EQ(1, sets.size());
-  result_set = (*sets.begin())->primes();
+  result_set = (*sets.begin())->p_events();
   EXPECT_EQ(3, result_set.size());
   EXPECT_EQ(1, result_set.count(a_id));
   EXPECT_EQ(1, result_set.count(b_id));
@@ -92,8 +92,8 @@ TEST_F(FaultTreeAnalysisTest, AND_GATE) {
   bool c_found = false;
   bool d_found = false;
   for (it_set = sets.begin(); it_set != sets.end(); ++it_set) {
-    if (!(*it_set)->primes().empty()) {
-      std::set<int> result = (*it_set)->primes();
+    if (!(*it_set)->p_events().empty()) {
+      std::set<int> result = (*it_set)->p_events();
       EXPECT_EQ(1, result.size());
       EXPECT_EQ(1, result.count(-1 * a_id) + result.count(-1 * b_id)
                 + result.count(-1 * c_id));
@@ -119,12 +119,12 @@ TEST_F(FaultTreeAnalysisTest, NOT_GATE) {
   inter->AddChild(A);
   GetIndices();
   ASSERT_NO_THROW(ExpandSets(inter_id, sets));
-  result_set = (*sets.begin())->primes();
+  result_set = (*sets.begin())->p_events();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(-1 * a_id));
   sets.clear();
   ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));  // Negative Gate.
-  result_set = (*sets.begin())->primes();
+  result_set = (*sets.begin())->p_events();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(a_id));
 
@@ -160,7 +160,7 @@ TEST_F(FaultTreeAnalysisTest, NOR_GATE) {
   GetIndices();
   ASSERT_NO_THROW(ExpandSets(inter_id, sets));
   EXPECT_EQ(1, sets.size());
-  result_set = (*sets.begin())->primes();
+  result_set = (*sets.begin())->p_events();
   EXPECT_EQ(3, result_set.size());
   EXPECT_EQ(1, result_set.count(-1 * a_id));
   EXPECT_EQ(1, result_set.count(-1 * b_id));
@@ -177,8 +177,8 @@ TEST_F(FaultTreeAnalysisTest, NOR_GATE) {
   bool c_found = false;
   bool d_found = false;
   for (it_set = sets.begin(); it_set != sets.end(); ++it_set) {
-    if (!(*it_set)->primes().empty()) {
-      std::set<int> result = (*it_set)->primes();
+    if (!(*it_set)->p_events().empty()) {
+      std::set<int> result = (*it_set)->p_events();
       EXPECT_EQ(1, result.size());
       EXPECT_EQ(1, result.count(a_id) + result.count(b_id)
                 + result.count(c_id));
@@ -214,8 +214,8 @@ TEST_F(FaultTreeAnalysisTest, NAND_GATE) {
   bool c_found = false;
   bool d_found = false;
   for (it_set = sets.begin(); it_set != sets.end(); ++it_set) {
-    if (!(*it_set)->primes().empty()) {
-      std::set<int> result = (*it_set)->primes();
+    if (!(*it_set)->p_events().empty()) {
+      std::set<int> result = (*it_set)->p_events();
       EXPECT_EQ(1, result.size());
       EXPECT_EQ(1, result.count(-1 * a_id) + result.count(-1 * b_id)
                 + result.count(-1 * c_id));
@@ -234,7 +234,7 @@ TEST_F(FaultTreeAnalysisTest, NAND_GATE) {
   sets.clear();
   ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));
   EXPECT_EQ(1, sets.size());
-  result_set = (*sets.begin())->primes();
+  result_set = (*sets.begin())->p_events();
   EXPECT_EQ(3, result_set.size());
   EXPECT_EQ(1, result_set.count(a_id));
   EXPECT_EQ(1, result_set.count(b_id));
@@ -260,9 +260,9 @@ TEST_F(FaultTreeAnalysisTest, XOR_GATE) {
   std::set<int> set_two;
   std::set<int> result_one;
   std::set<int> result_two;
-  set_one.insert(*(*sets.begin())->primes().begin());
+  set_one.insert(*(*sets.begin())->p_events().begin());
   set_one.insert(*(*sets.begin())->gates().begin());
-  set_two.insert(*(*++sets.begin())->primes().begin());
+  set_two.insert(*(*++sets.begin())->p_events().begin());
   set_two.insert(*(*++sets.begin())->gates().begin());
   result_one.insert(a_id);
   result_one.insert(-1 * d_id);
@@ -283,9 +283,9 @@ TEST_F(FaultTreeAnalysisTest, XOR_GATE) {
   set_two.clear();
   result_one.clear();
   result_two.clear();
-  set_one.insert(*(*sets.begin())->primes().begin());
+  set_one.insert(*(*sets.begin())->p_events().begin());
   set_one.insert(*(*sets.begin())->gates().begin());
-  set_two.insert(*(*++sets.begin())->primes().begin());
+  set_two.insert(*(*++sets.begin())->p_events().begin());
   set_two.insert(*(*++sets.begin())->gates().begin());
   result_one.insert(a_id);
   result_one.insert(d_id);
@@ -310,12 +310,12 @@ TEST_F(FaultTreeAnalysisTest, NULL_GATE) {
   inter->AddChild(A);
   GetIndices();
   ASSERT_NO_THROW(ExpandSets(inter_id, sets));
-  result_set = (*sets.begin())->primes();
+  result_set = (*sets.begin())->p_events();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(a_id));
   sets.clear();
   ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));  // Negative Gate.
-  result_set = (*sets.begin())->primes();
+  result_set = (*sets.begin())->p_events();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(-1 * a_id));
 
@@ -349,7 +349,7 @@ TEST_F(FaultTreeAnalysisTest, INHIBIT_GATE) {
   GetIndices();
   ASSERT_NO_THROW(ExpandSets(inter_id, sets));
   EXPECT_EQ(1, sets.size());
-  result_set = (*sets.begin())->primes();
+  result_set = (*sets.begin())->p_events();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(a_id));
   result_set = (*sets.begin())->gates();
@@ -362,8 +362,8 @@ TEST_F(FaultTreeAnalysisTest, INHIBIT_GATE) {
   bool a_found = false;
   bool d_found = false;
   for (it_set = sets.begin(); it_set != sets.end(); ++it_set) {
-    if (!(*it_set)->primes().empty()) {
-      std::set<int> result = (*it_set)->primes();
+    if (!(*it_set)->p_events().empty()) {
+      std::set<int> result = (*it_set)->p_events();
       EXPECT_EQ(1, result.size());
       EXPECT_EQ(1, result.count(-1 * a_id));
       a_found = true;
@@ -394,7 +394,7 @@ TEST_F(FaultTreeAnalysisTest, VOTE_GATE) {
   std::set< std::set<int> > output;
   std::set<int> mcs;
   for (it_set = sets.begin(); it_set != sets.end(); ++it_set) {
-    mcs.insert((*it_set)->primes().begin(), (*it_set)->primes().end());
+    mcs.insert((*it_set)->p_events().begin(), (*it_set)->p_events().end());
     mcs.insert((*it_set)->gates().begin(), (*it_set)->gates().end());
     output.insert(mcs);
     mcs.clear();
@@ -431,7 +431,7 @@ TEST_F(FaultTreeAnalysisTest, VOTE_GATE) {
   output.clear();
   mcs.clear();
   for (it_set = sets.begin(); it_set != sets.end(); ++it_set) {
-    mcs.insert((*it_set)->primes().begin(), (*it_set)->primes().end());
+    mcs.insert((*it_set)->p_events().begin(), (*it_set)->p_events().end());
     mcs.insert((*it_set)->gates().begin(), (*it_set)->gates().end());
     output.insert(mcs);
     mcs.clear();
@@ -472,16 +472,16 @@ TEST_F(FaultTreeAnalysisTest, ProbAndInt) {
   // 0 probability for an empty set.
   EXPECT_DOUBLE_EQ(0, ProbAnd(min_cut_set));
 
-  AddPrimeIntProb(0.0);  // Dummy element.
+  AddPrimaryIntProb(0.0);  // Dummy element.
 
   min_cut_set.insert(1);
-  AddPrimeIntProb(0.1);
+  AddPrimaryIntProb(0.1);
   EXPECT_DOUBLE_EQ(0.1, ProbAnd(min_cut_set));
   min_cut_set.insert(2);
-  AddPrimeIntProb(0.2);
+  AddPrimaryIntProb(0.2);
   EXPECT_DOUBLE_EQ(0.02, ProbAnd(min_cut_set));
   min_cut_set.insert(3);
-  AddPrimeIntProb(0.3);
+  AddPrimaryIntProb(0.3);
   EXPECT_DOUBLE_EQ(0.006, ProbAnd(min_cut_set));
 
   // Test for negative event calculations.
@@ -568,10 +568,10 @@ TEST_F(FaultTreeAnalysisTest, CombineElAndSet) {
 TEST_F(FaultTreeAnalysisTest, ProbOrInt) {
   std::set<int> mcs;  // Minimal cut set.
   std::set<std::set<int> > min_cut_sets;  // A set of minimal cut sets.
-  AddPrimeIntProb(0.0);  // Dummy element.
-  AddPrimeIntProb(0.1);  // A is element 0.
-  AddPrimeIntProb(0.2);  // B is element 1.
-  AddPrimeIntProb(0.3);  // C is element 2.
+  AddPrimaryIntProb(0.0);  // Dummy element.
+  AddPrimaryIntProb(0.1);  // A is element 0.
+  AddPrimaryIntProb(0.2);  // B is element 1.
+  AddPrimaryIntProb(0.3);  // C is element 2.
 
   // 0 probability for an empty set.
   EXPECT_DOUBLE_EQ(0, ProbOr(min_cut_sets));

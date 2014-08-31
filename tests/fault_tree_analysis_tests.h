@@ -53,15 +53,15 @@ class FaultTreeAnalysisTest : public ::testing::Test {
   }
 
   int GetIndex(std::string id) {
-    if (fta->prime_to_int_.count(id)) {
-      return fta->prime_to_int_.find(id)->second;
+    if (fta->primary_to_int_.count(id)) {
+      return fta->primary_to_int_.find(id)->second;
     } else {
       return fta->inter_to_int_.find(id)->second;
     }
     return 0;  // This event is not in the tree.
   }
 
-  void AddPrimeIntProb(double prob) {
+  void AddPrimaryIntProb(double prob) {
     fta->iprobs_.push_back(prob);
   }
   // -----------------------------------------------------------------------
