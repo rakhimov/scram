@@ -67,10 +67,13 @@ FaultTreeAnalysis::FaultTreeAnalysis(std::string analysis, std::string approx,
   FaultTreePtr fault_tree_;
 }
 
-/// Set pointer comparison for efficiency.
+/// @class SetPtrComp
+/// Functor for set pointer comparison efficiency.
 struct SetPtrComp
     : public std::binary_function<const std::set<int>*,
                                   const std::set<int>*, bool> {
+  /// Operator overload.
+  /// Compares sets for sorting.
   bool operator()(const std::set<int>* lhs, const std::set<int>* rhs) const {
     return *lhs < *rhs;
   }
