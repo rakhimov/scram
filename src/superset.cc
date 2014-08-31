@@ -4,7 +4,7 @@
 
 namespace scram {
 
-Superset::Superset() : cancel(false), neg_gates_(0), neg_primes_(false) {}
+Superset::Superset() : null_(false), neg_gates_(0), neg_primes_(false) {}
 
 void Superset::InsertPrimary(int id) {
   if (!neg_primes_ && id < 0) neg_primes_ = true;
@@ -17,7 +17,7 @@ void Superset::InsertGate(int id) {
 }
 
 bool Superset::InsertSet(const boost::shared_ptr<Superset>& st) {
-  if (cancel) return false;
+  if (null_) return false;
   if (primes_.empty() && gates_.empty()) {
     primes_ = st->primes_;
     gates_ = st->gates_;
@@ -31,7 +31,7 @@ bool Superset::InsertSet(const boost::shared_ptr<Superset>& st) {
       if (primes_.count(-1 * (*it))) {
         primes_.clear();
         gates_.clear();
-        cancel = true;
+        null_ = true;
         return false;
       }
     }
@@ -43,7 +43,7 @@ bool Superset::InsertSet(const boost::shared_ptr<Superset>& st) {
       if (gates_.count(-1 * (*it))) {
         primes_.clear();
         gates_.clear();
-        cancel = true;
+        null_ = true;
         return false;
       }
       if (*it < 0) ++neg_gates_;

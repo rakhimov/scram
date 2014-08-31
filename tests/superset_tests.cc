@@ -88,7 +88,7 @@ TEST(SupersetTest, InsertGate) {
 }
 
 // Test Insert function
-TEST(SupersetTest, Insert) {
+TEST(SupersetTest, InsertSet) {
   SupersetPtr sset_one(new Superset());
   SupersetPtr sset_two(new Superset());
 
@@ -113,6 +113,21 @@ TEST(SupersetTest, Insert) {
 
   EXPECT_EQ(sset_one->primes(), primes);
   EXPECT_EQ(sset_one->gates(), gates);
+
+  // Putting complement members.
+  sset_one->InsertPrimary(-1 * prime_event_two);
+  EXPECT_FALSE(sset_one->InsertSet(sset_two));
+  EXPECT_TRUE(sset_one->null());
+
+  sset_one = SupersetPtr(new Superset());
+  sset_one->InsertGate(-1 * gate_two);
+  sset_one->InsertGate(-1000);
+  sset_one->InsertGate(-100);
+  sset_one->InsertGate(-9);
+  sset_one->InsertGate(-7);
+  sset_one->InsertGate(7);
+  EXPECT_FALSE(sset_two->InsertSet(sset_one));
+  EXPECT_TRUE(sset_one->null());
 }
 
 // Test PopGate function
