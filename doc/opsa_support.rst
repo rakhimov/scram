@@ -27,3 +27,4 @@ Deviations from OpenPSA MEF
 - House events do not default to false state implicitly. They must be defined.
 - First event for the fault tree must be a top event gate.
 - Fault tree input structure must be top-down. [not checked currently]
+- The correct number of a gate's children is required.
