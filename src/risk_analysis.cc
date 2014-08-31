@@ -217,7 +217,7 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
   assert(!all_events_.count(id));
   all_events_.insert(std::make_pair(id, i_event));
 
-  fault_tree_->AddGate(i_event);
+  ft->AddGate(i_event);
 
   i_event->type(type);  // Setting the gate type.
   if (type == "atleast") i_event->vote_number(vote_number_);
@@ -379,8 +379,7 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
   }
 }
 
-void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node,
-                                    FaultTreePtr& ft) {
+void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node) {
   std::string orig_id = event_node->get_attribute_value("name");
   std::string id = orig_id;
   boost::to_lower(id);
@@ -449,8 +448,7 @@ void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node,
   }
 }
 
-void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node,
-                                    FaultTreePtr& ft) {
+void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node) {
   std::string orig_id = event_node->get_attribute_value("name");
   std::string id = orig_id;
   boost::to_lower(id);
@@ -538,9 +536,9 @@ void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
       // Define and add gate here.
       RiskAnalysis::DefineGate(element, fault_tree_);
     } else if (name == "define-basic-event") {
-      RiskAnalysis::DefineBasicEvent(element, fault_tree_);
+      RiskAnalysis::DefineBasicEvent(element);
     } else if (name == "define-house-event") {
-      RiskAnalysis::DefineHouseEvent(element, fault_tree_);
+      RiskAnalysis::DefineHouseEvent(element);
     }
   }
 }
@@ -556,9 +554,9 @@ void RiskAnalysis::ProcessModelData(const xmlpp::Element* model_data) {
     if (!element) continue;  // Ignore non-elements.
     std::string name = element->get_name();
     if (name == "define-basic-event") {
-      RiskAnalysis::DefineBasicEvent(element, fault_tree_);
+      RiskAnalysis::DefineBasicEvent(element);
     } else if (name == "define-house-event") {
-      RiskAnalysis::DefineHouseEvent(element, fault_tree_);
+      RiskAnalysis::DefineHouseEvent(element);
     }
   }
 }
