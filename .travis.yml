@@ -26,3 +26,5 @@ after_success:
       --exclude ./build/bin/  --exclude src/event.h --exclude install/include/
       --exclude src/env.h  --exclude src/reporter.h --exclude src/xml_parser.h
       --exclude src/relax_ng_validator.h
+      --exclude src/fault_tree.h
+      --exclude src/fault_tree_analysis.h
