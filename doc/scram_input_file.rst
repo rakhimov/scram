@@ -8,7 +8,7 @@ more convenient writing of XML input files.
 Currently, only fault trees are accepted for analysis. The input file format
 follows `OpenPSA Model Exchange Format v2.0d`_ or later.
 However, not all OpenPSA formatting is supported, and some additional
-assumptions/restrictions are made by SCRAM. See `opsa_support` for the current
+assumptions/restrictions are made by SCRAM. See :ref:`opsa_support` for the current
 implementation and differences.
 
 .. _`OpenPSA Model Exchange Format v2.0d`:

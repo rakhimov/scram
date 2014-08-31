@@ -13,9 +13,9 @@ References
 #. E.Petrosean, "Fault Tree Analysis for Energy Grid"
 #. D.Wakefield, "You Can't Just Build Trees and Call It PSA"
 
-##############
+**************
 Web Resources
-##############
+**************
 
 #. `FTA Wiki Page <http://en.wikipedia.org/wiki/Fault_tree_analysis>`_
 #. `OpenPSA Initiative <http://open-psa.org>`_
