@@ -9,6 +9,15 @@
 
 using namespace scram;
 
+// Test if the xml is well formed.
+TEST(RiskAnalysisInputTest, XMLFormatting) {
+  std::string input_incorrect= "./share/scram/input/xml_formatting_error.xml";
+  RiskAnalysis* ran;
+  ran = new RiskAnalysis();
+  EXPECT_THROW(ran->ProcessInput(input_incorrect), ValidationError);
+  delete ran;
+}
+
 // Test if the schema catches errors.
 // This is trusted to XML libraries and the correctness of the RelaxNG schema,
 // so the test is very basic calls.

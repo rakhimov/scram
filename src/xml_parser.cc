@@ -12,9 +12,7 @@ namespace scram {
 
 XMLParser::XMLParser() {}
 
-XMLParser::~XMLParser() {
-  parser_.reset();
-}
+XMLParser::~XMLParser() { parser_.reset(); }
 
 void XMLParser::Init(const std::stringstream& xml_input_snippet) {
   parser_ = boost::shared_ptr<xmlpp::DomParser>(new xmlpp::DomParser());
@@ -36,21 +34,6 @@ void XMLParser::Validate(const std::stringstream& xml_schema_snippet) {
 
 xmlpp::Document* XMLParser::Document() {
   xmlpp::Document* doc = parser_->get_document();
-
-  // This adds the capability to have nice include semantics.
-  // This is introduced in libxml++2.6 2.36.
-  // Not available on Ubuntu 12.04, so this is commented out for now.
-  // doc->process_xinclude();
-
-  // This removes the stupid xml:base attribute that including adds,
-  // but which is unvalidatable. The web is truly cobbled together
-  // by a race of evil gnomes.
-  xmlpp::Element* root = doc->get_root_node();
-  xmlpp::NodeSet have_base = root->find("//*[@xml:base]");
-  xmlpp::NodeSet::iterator it = have_base.begin();
-  for (; it != have_base.end(); ++it) {
-    reinterpret_cast<xmlpp::Element*>(*it)->remove_attribute("base", "xml");
-  }
   return doc;
 }
 
