@@ -165,15 +165,7 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
   if (type == "atleast") {
     const xmlpp::Element* gate =
         dynamic_cast<const xmlpp::Element*>(gate_type);
-    try {
-      vote_number_ = boost::lexical_cast<int>(
-          gate->get_attribute_value("min"));
-    } catch (boost::bad_lexical_cast& err) {
-      std::stringstream msg;
-      msg << "Line " << gate_type->get_line() << " :\n "
-          << "Incorrect Vote number or Min for Atleast Gate input.";
-      throw scram::ValidationError(msg.str());
-    }
+    vote_number_ = boost::lexical_cast<int>(gate->get_attribute_value("min"));
   }
 
 
@@ -318,6 +310,13 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
           throw scram::ValidationError(msg.str());
         }
       }
+      if (tbd_house_events_.count(id)) {
+        std::stringstream msg;
+        msg << "Line " << event->get_line() << ":\n";
+        msg << "The id " << orig_ids_.find(id)->second
+            << " is already used by a house event.";
+        throw scram::ValidationError(msg.str());
+      }
       if (tbd_basic_events_.count(id)) {
         child = tbd_basic_events_.find(id)->second;
       } else {
@@ -353,6 +352,13 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
               << " is already assigned to a basic event.";
           throw scram::ValidationError(msg.str());
         }
+      }
+      if (tbd_basic_events_.count(id)) {
+        std::stringstream msg;
+        msg << "Line " << event->get_line() << ":\n";
+        msg << "The id " << orig_ids_.find(id)->second
+            << " is already used by a basic event.";
+        throw scram::ValidationError(msg.str());
       }
       if (tbd_house_events_.count(id)) {
         child = tbd_house_events_.find(id)->second;
@@ -415,15 +421,7 @@ void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node) {
       dynamic_cast<const xmlpp::Element*>(expression.front());
   if (!float_prob) assert(false);
 
-  try {
-    p = boost::lexical_cast<double>(
-        float_prob->get_attribute_value("value"));
-  } catch (boost::bad_lexical_cast& err) {
-    std::stringstream msg;
-    msg << "Line " << float_prob->get_line() << " :\n "
-        << "Incorrect probability input.";
-    throw scram::ValidationError(msg.str());
-  }
+  p = boost::lexical_cast<double>(float_prob->get_attribute_value("value"));
 
   if (tbd_basic_events_.count(id)) {
     BasicEventPtr b = tbd_basic_events_.find(id)->second;
