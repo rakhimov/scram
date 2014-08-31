@@ -45,6 +45,7 @@ FaultTreeAnalysis::FaultTreeAnalysis(std::string analysis, std::string approx,
   }
   nsums_ = nsums;
 
+  // Check for valid cut-off probability.
   if (cut_off < 0 || cut_off > 1) {
     std::string msg = "The cut-off probability cannot be negative or"
                       " more than 1.";
@@ -66,7 +67,7 @@ FaultTreeAnalysis::FaultTreeAnalysis(std::string analysis, std::string approx,
   FaultTreePtr fault_tree_;
 }
 
-/// Set pointer comparison.
+/// Set pointer comparison for efficiency.
 struct SetPtrComp
     : public std::binary_function<const std::set<int>*,
                                   const std::set<int>*, bool> {
@@ -463,9 +464,10 @@ void FaultTreeAnalysis::SetAnd(std::vector<int>& events_children,
   sets.push_back(tmp_set_c);
 }
 
-void FaultTreeAnalysis::FindMcs(const std::vector< const std::set<int>* >& cut_sets,
-                                const std::set< std::set<int> >& mcs_lower_order,
-                                int min_order) {
+void FaultTreeAnalysis::FindMcs(
+    const std::vector< const std::set<int>* >& cut_sets,
+    const std::set< std::set<int> >& mcs_lower_order,
+    int min_order) {
   if (cut_sets.empty()) return;
 
   // Iterator for cut_sets.
@@ -538,7 +540,6 @@ void FaultTreeAnalysis::AssignIndices(const FaultTreePtr& fault_tree) {
 
   // Assign an index to each top and intermediate event and populate
   // relevant databases.
-  /// @todo Rename to gate_to_inter
   top_event_index_ = j;
   int_to_inter_.insert(std::make_pair(j, top_event_));
   inter_to_int_.insert(std::make_pair(top_event_->id(), j));

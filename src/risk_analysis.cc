@@ -591,6 +591,9 @@ void RiskAnalysis::ValidateInitialization() {
   if (!error_messages.str().empty()) {
     throw scram::ValidationError(error_messages.str());
   }
+
+  // Validation of analysis entities.
+  fault_tree_->Validate();
 }
 
 std::string RiskAnalysis::CheckAllGates() {

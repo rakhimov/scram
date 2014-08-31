@@ -127,10 +127,13 @@ class FaultTreeAnalysis {
   /// Assigns an index to each primary event, and then populates with this
   /// indices new databases of minimal cut sets and primary to integer
   /// converting maps.
+  /// In addition, this function copies all events from
+  /// the fault tree for future reference.
+  /// @param[in] fault_tree Fault Tree with events and gates.
   /// @note O_avg(N) O_max(N^2) where N is the total number of tree nodes.
   void AssignIndices(const FaultTreePtr& fault_tree);
 
-  /// Converts minimal cut sets from indices to strings.
+  /// Converts minimal cut sets from indices to strings for future reporting.
   void SetsToString();
 
   /// Calculates a probability of a set of minimal cut sets, which are in OR
@@ -141,6 +144,7 @@ class FaultTreeAnalysis {
   /// @returns The total probability.
   /// @note This function drastically modifies min_cut_sets by deleting
   /// sets inside it. This is for better performance.
+  ///
   /// @note O_avg(M*logM*N*2^N) where N is the number of sets, and M is
   /// the average size of the sets.
   double ProbOr(std::set< std::set<int> >& min_cut_sets, int nsums = 1000000);
@@ -212,6 +216,12 @@ class FaultTreeAnalysis {
   /// Number of sums in series expansion for probability calculations.
   int nsums_;
 
+  /// Limit on the size of the minimal cut sets for performance reasons.
+  int limit_order_;
+
+  /// Cut-off probability for minimal cut sets.
+  double cut_off_;
+
   /// Top event.
   GatePtr top_event_;
 
@@ -236,17 +246,11 @@ class FaultTreeAnalysis {
   /// Container for primary events ordered by their contribution.
   std::multimap< double, std::string > ordered_primaries_;
 
-  /// Maximum order for minimal cut sets.
+  /// Maximum order of minimal cut sets.
   int max_order_;
-
-  /// Cut-off probability for minimal cut sets.
-  double cut_off_;
 
   /// The number of minimal cut sets with higher than cut-off probability.
   int num_prob_mcs_;
-
-  /// Limit on the size of the minimal cut sets for performance reasons.
-  int limit_order_;
 
   /// Total probability of the top event.
   double p_total_;

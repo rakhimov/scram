@@ -58,6 +58,7 @@ class FaultTreeAnalysisTest : public ::testing::Test {
     } else {
       return fta->inter_to_int_.find(id)->second;
     }
+    return 0;  // This event is not in the tree.
   }
 
   void AddPrimeIntProb(double prob) {
@@ -99,6 +100,7 @@ class FaultTreeAnalysisTest : public ::testing::Test {
   }
 
   void GetIndices() {
+    ft->Validate();
     AssignIndices();
     a_id = GetIndex("a");
     b_id = GetIndex("b");

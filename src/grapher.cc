@@ -23,9 +23,9 @@ void Grapher::GraphFaultTree(
     const std::map<std::string, std::string>& orig_ids,
     bool prob_requested,
     std::string output) {
-  // List inter events and their children.
+  // The structure of the output:
+  // List inter events with their children following the tree structure.
   // List inter events and primary events' descriptions.
-  // Getting events from the fault tree object.
 
   /// @todo Option to graph re-used gates as a separate transfer trees.
   top_event_ = fault_tree->top_event();
