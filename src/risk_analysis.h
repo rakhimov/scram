@@ -56,7 +56,7 @@ class RiskAnalysis {
   void ProcessInput(std::string xml_file);
 
   /// Graphing or other visual resources for the analysis if applicable.
-  /// @todod Must be handled by a separate class.
+  /// @todo Must be handled by a separate class.
   ///
   /// Descriptions from original Fault Tree Class
   ///

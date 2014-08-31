@@ -59,7 +59,7 @@ class Gate : public scram::Event {
   const std::string& type();
 
   /// Sets the gate type.
-  /// @param[in] gate The gate type for this event.
+  /// @param[in] type The gate type for this event.
   /// @throws ValueError if the gate type is being re-assigned.
   void type(std::string type);
 

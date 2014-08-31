@@ -16,8 +16,8 @@ namespace fs = boost::filesystem;
 using namespace scram;
 
 /// Command line SCRAM entrance.
-/// @retuns 0 for success.
-/// @retuns 1 for errored state.
+/// @returns 0 for success.
+/// @returns 1 for errored state.
 int main(int argc, char* argv[]) {
   // Parse command line options.
   std::string usage = "Usage:    scram [input-file] [opts]";
