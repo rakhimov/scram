@@ -186,34 +186,20 @@ TEST_F(RiskAnalysisTest, PopulateProbabilities) {
 TEST_F(RiskAnalysisTest, GraphingInstructions) {
   std::vector<std::string> tree_input;
   tree_input.push_back("./share/scram/input/fta/correct_tree_input.xml");
-  // tree_input.push_back("./share/scram/input/fta/doubly_defined_basic.xml");
-
-  /// @deprecated Change to include tests.
-  // tree_input.push_back("./share/scram/input/fta/transfer_correct_top.xml");
-  // tree_input.push_back("./share/scram/input/fta/transfer_correct_sub.xml");
+  tree_input.push_back("./share/scram/input/fta/graphing.xml");
 
   std::vector<std::string>::iterator it;
   for (it = tree_input.begin(); it != tree_input.end(); ++it) {
-    // ASSERT_THROW(ran->GraphingInstructions(), Error);
     fta(new FaultTreeAnalysis("default"));
     ASSERT_NO_THROW(ran->ProcessInput(*it));
     ASSERT_NO_THROW(ran->GraphingInstructions());
   }
-
-  /* @deprecated Include should change this behavior
-  // Handle an exception graphing case with one TransferIn only.
-  std::string special_case = "./share/scram/input/fta/transfer_graphing_exception.xml";
-  fta = new FaultTreeAnalysis("default", true);
-  ASSERT_NO_THROW(fta->ProcessInput(special_case));
-  ASSERT_THROW(fta->GraphingInstructions(), ValidationError);
-  */
 }
 
 // Test Analysis
 TEST_F(RiskAnalysisTest, AnalyzeDefault) {
   std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
   std::string with_prob = "./share/scram/input/fta/correct_tree_input_with_probs.xml";
-  // ASSERT_THROW(ran->Analyze(), Error);  // Calling without a tree initialized.
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   std::set<std::string> mcs_1;
@@ -235,7 +221,6 @@ TEST_F(RiskAnalysisTest, AnalyzeDefault) {
   EXPECT_EQ(1, min_cut_sets().count(mcs_4));
 
   // Probability calculations.
-  // delete fta();  // Re-initializing.
   fta(new FaultTreeAnalysis("default"));
   ASSERT_NO_THROW(ran->ProcessInput(with_prob));
   ASSERT_NO_THROW(ran->Analyze());
@@ -251,14 +236,12 @@ TEST_F(RiskAnalysisTest, AnalyzeDefault) {
   EXPECT_DOUBLE_EQ(0.5, imp_of_primaries().find("valvetwo")->second);
 
   // Probability calculations with the rare event approximation.
-  // delete fta();  // Re-initializing.
   fta(new FaultTreeAnalysis("default", "rare"));
   ASSERT_NO_THROW(ran->ProcessInput(with_prob));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(1.2, p_total());
 
   // Probability calculations with the MCUB approximation.
-  // delete fta();  // Re-initializing.
   fta(new FaultTreeAnalysis("default", "mcub"));
   ASSERT_NO_THROW(ran->ProcessInput(with_prob));
   ASSERT_NO_THROW(ran->Analyze());
@@ -267,10 +250,8 @@ TEST_F(RiskAnalysisTest, AnalyzeDefault) {
 
 // Test Monte Carlo Analysis
 TEST_F(RiskAnalysisTest, AnalyzeMC) {
-  // delete fta();  // Re-initializing.
   fta(new FaultTreeAnalysis("mc"));
   std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
-  // ASSERT_THROW(ran->Analyze(), Error);  // Calling without a tree initialized.
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
 }
@@ -283,7 +264,6 @@ TEST_F(RiskAnalysisTest, Report) {
   ASSERT_NO_THROW(ran->Report("/dev/null"));
 
   // Generate warning due to rare event approximation.
-  // delete fta();
   fta(new FaultTreeAnalysis("default", "rare"));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
