@@ -50,24 +50,32 @@ class FaultTreeAnalysis {
 
   /// Analyzes the fault tree and performs computations.
   /// This function must be called only after initilizing the tree with or
-  /// without its probabilities.
-  /// @throws Error if called before tree initialization from an input file.
+  /// without its probabilities. Underlying objects may throw errors
+  /// if the fault tree has initialization issues. However, there is no
+  /// quarantee for that.
+  /// @param[in] fault_tree Valid Fault Tree.
+  /// @param[in] prob_requested Indication for the probability calculations.
   /// @note Cut set generator: O_avg(N) O_max(N)
   void Analyze(const FaultTreePtr& fault_tree, bool prob_requested);
 
+  /// @returns The total probability calculated by the analysis.
+  /// @note The user should make sure that the analysis is actually done.
   inline double p_total() { return p_total_; }
 
-  /// Container for minimal cut sets.
+  /// @returns Set with minimal cut sets.
+  /// @note The user should make sure that the analysis is actually done.
   inline const std::set< std::set<std::string> >& min_cut_sets() {
     return min_cut_sets_;
   }
 
-  /// Container for minimal cut sets and their respective probabilities.
+  /// @returns Map with minimal cut sets and their probabilities.
+  /// @note The user should make sure that the analysis is actually done.
   inline const std::map< std::set<std::string>, double >& prob_of_min_sets() {
     return prob_of_min_sets_;
   }
 
-  /// Container for primary events and their contribution.
+  /// @returns Map with primary events and their contribution.
+  /// @note The user should make sure that the analysis is actually done.
   inline const std::map< std::string, double >& imp_of_primaries() {
     return imp_of_primaries_;
   }
@@ -76,6 +84,8 @@ class FaultTreeAnalysis {
 
  private:
   /// Traverses the fault tree and expands it into sets of gates and events.
+  /// @param[in] set_with_gates A superset with gates.
+  /// @param[in] cut_sets Container for cut sets upon tree expansion.
   void ExpandTree(SupersetPtr& set_with_gates,
                   std::vector< SupersetPtr >& cut_sets);
 
@@ -231,6 +241,9 @@ class FaultTreeAnalysis {
 
   /// Cut-off probability for minimal cut sets.
   double cut_off_;
+
+  /// The number of minimal cut sets with higher than cut-off probability.
+  int num_prob_mcs_;
 
   /// Limit on the size of the minimal cut sets for performance reasons.
   int limit_order_;

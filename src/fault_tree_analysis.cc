@@ -150,9 +150,8 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
   // Iterator for minimal cut sets.
   std::set< std::set<int> >::iterator it_min;
 
-  // Cut sets with higher that cut-off probability.
+  /// Minimal cut sets with higher than cut-off probability.
   std::set< std::set<int> > mcs_for_prob;
-
   // Iterate minimal cut sets and find probabilities for each set.
   for (it_min = imcs_.begin(); it_min != imcs_.end(); ++it_min) {
     // Calculate a probability of a set with AND relationship.
@@ -227,9 +226,8 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
   p_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
 }
 
-void FaultTreeAnalysis::ExpandTree(
-    SupersetPtr& set_with_gates,
-    std::vector< SupersetPtr >& cut_sets) {
+void FaultTreeAnalysis::ExpandTree(SupersetPtr& set_with_gates,
+                                   std::vector< SupersetPtr >& cut_sets) {
   // To hold sets of children.
   std::vector< SupersetPtr > children_sets;
 
