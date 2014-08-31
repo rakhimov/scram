@@ -20,6 +20,15 @@ TEST(RiskAnalysisInputTest, FailSchemaValidation) {
   delete ran;
 }
 
+// Unsupported operations.
+TEST(RiskAnalysisInputTest, UnsupportedFeature) {
+  std::string input_incorrect= "./share/scram/input/unsupported_feature.xml";
+  RiskAnalysis* ran;
+  ran = new RiskAnalysis();
+  EXPECT_THROW(ran->ProcessInput(input_incorrect), ValidationError);
+  delete ran;
+}
+
 // Test correct tree inputs
 TEST(RiskAnalysisInputTest, CorrectFTAInputs) {
   std::vector<std::string> correct_inputs;
