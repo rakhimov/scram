@@ -177,3 +177,8 @@ Best practices are encouraged:
     - `Branching Model <http://nvie.com/posts/a-successful-git-branching-model/>`_
     - `Writing Good Commit Messages <https://github.com/erlang/otp/wiki/Writing-good-commit-messages>`_
     - `On Commit Messages <http://who-t.blogspot.com/2009/12/on-commit-messages.html>`_
+
+`Coding Style and Quality`_
+
+.. _`Coding Style and Quality`:
+    https://rakhimov.github.io/SCRAM/doc/scram_coding_standards.html

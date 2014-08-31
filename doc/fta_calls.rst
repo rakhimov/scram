@@ -12,7 +12,7 @@ Current Command-line Functionality:
 #. Find minimal cut sets. *No probability definition required*
 
    - May specify maximum order for cut sets for faster calculations.
-   - May specify cutoff probability for cut sets. [not implemented]
+   - May specify cut-off probability for cut sets.
 
 #. Find the total probability of the top event.
 
