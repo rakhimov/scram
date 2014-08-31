@@ -182,6 +182,10 @@ int main(int argc, char* argv[]) {
     std::cerr << "Boost Exception:\n" << std::endl;
     std::cerr << boost::diagnostic_information(boost_err) << std::endl;
     return 1;
+  } catch (std::exception& std_err) {
+    std::cerr << "Standard Exception:\n" << std::endl;
+    std::cerr << std_err.what() << std::endl;
+    return 1;
   }
 
   return 0;
