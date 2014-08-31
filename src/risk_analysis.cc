@@ -146,7 +146,8 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
   boost::to_lower(id);
   orig_ids_.insert(std::make_pair(id, orig_id));
 
-  xmlpp::NodeSet gates = gate_node->find("./*[name() != 'attribute' and name() != 'label']");
+  xmlpp::NodeSet gates =
+      gate_node->find("./*[name() != 'attribute' and name() != 'label']");
   // Assumes that there are no attributes and labels.
   assert(gates.size() == 1);
   // Check if the gate type is supported.
@@ -203,7 +204,8 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
     tbd_gates_.erase(id);
   } else if (tbd_events_.count(id)) {
     std::vector<GatePtr>::iterator it;
-    for (it = tbd_events_.find(id)->second.begin(); it != tbd_events_.find(id)->second.end(); ++it) {
+    for (it = tbd_events_.find(id)->second.begin();
+         it != tbd_events_.find(id)->second.end(); ++it) {
       (*it)->AddChild(i_event);
     }
     tbd_events_.erase(id);
@@ -215,7 +217,7 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
   assert(!all_events_.count(id));
   all_events_.insert(std::make_pair(id, i_event));
 
-  fault_tree_->AddGate(i_event);
+  ft->AddGate(i_event);
 
   i_event->type(type);  // Setting the gate type.
   if (type == "atleast") i_event->vote_number(vote_number_);
@@ -289,8 +291,8 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
                            boost::dynamic_pointer_cast <scram::Gate>(child)));
         if (tbd_events_.count(id)) {
           std::vector<GatePtr>::iterator it;
-          for (it = tbd_events_.find(id)->second.begin(); it != tbd_events_.find(id)->second.end();
-               ++it) {
+          for (it = tbd_events_.find(id)->second.begin();
+               it != tbd_events_.find(id)->second.end(); ++it) {
             (*it)->AddChild(child);
           }
           tbd_events_.erase(id);
@@ -325,8 +327,8 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
                                   <scram::BasicEvent>(child)));
         if (tbd_events_.count(id)) {
           std::vector<GatePtr>::iterator it;
-          for (it = tbd_events_.find(id)->second.begin(); it != tbd_events_.find(id)->second.end();
-               ++it) {
+          for (it = tbd_events_.find(id)->second.begin();
+               it != tbd_events_.find(id)->second.end(); ++it) {
             (*it)->AddChild(child);
           }
           tbd_events_.erase(id);
@@ -361,8 +363,8 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
                                   <scram::HouseEvent>(child)));
         if (tbd_events_.count(id)) {
           std::vector<GatePtr>::iterator it;
-          for (it = tbd_events_.find(id)->second.begin(); it != tbd_events_.find(id)->second.end();
-               ++it) {
+          for (it = tbd_events_.find(id)->second.begin();
+               it != tbd_events_.find(id)->second.end(); ++it) {
             (*it)->AddChild(child);
           }
           tbd_events_.erase(id);
@@ -377,8 +379,7 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
   }
 }
 
-void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node,
-                                    FaultTreePtr& ft) {
+void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node) {
   std::string orig_id = event_node->get_attribute_value("name");
   std::string id = orig_id;
   boost::to_lower(id);
@@ -438,8 +439,8 @@ void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node,
     all_events_.insert(std::make_pair(id, child));
     if (tbd_events_.count(id)) {
       std::vector<GatePtr>::iterator it;
-      for (it = tbd_events_.find(id)->second.begin(); it != tbd_events_.find(id)->second.end();
-           ++it) {
+      for (it = tbd_events_.find(id)->second.begin();
+           it != tbd_events_.find(id)->second.end(); ++it) {
         (*it)->AddChild(child);
       }
       tbd_events_.erase(id);
@@ -447,8 +448,7 @@ void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node,
   }
 }
 
-void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node,
-                                    FaultTreePtr& ft) {
+void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node) {
   std::string orig_id = event_node->get_attribute_value("name");
   std::string id = orig_id;
   boost::to_lower(id);
@@ -502,8 +502,8 @@ void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node,
     all_events_.insert(std::make_pair(id, child));
     if (tbd_events_.count(id)) {
       std::vector<GatePtr>::iterator it;
-      for (it = tbd_events_.find(id)->second.begin(); it != tbd_events_.find(id)->second.end();
-           ++it) {
+      for (it = tbd_events_.find(id)->second.begin();
+           it != tbd_events_.find(id)->second.end(); ++it) {
         (*it)->AddChild(child);
       }
       tbd_events_.erase(id);
@@ -512,7 +512,9 @@ void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node,
 }
 
 void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
-  fault_tree_ = FaultTreePtr(new FaultTree(ft_node->get_attribute_value("name")));
+  fault_tree_ =
+      FaultTreePtr(new FaultTree(ft_node->get_attribute_value("name")));
+
   xmlpp::Node::NodeList children = ft_node->get_children();
   xmlpp::Node::NodeList::iterator it;
   for (it = children.begin(); it != children.end(); ++it) {
@@ -534,9 +536,9 @@ void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
       // Define and add gate here.
       RiskAnalysis::DefineGate(element, fault_tree_);
     } else if (name == "define-basic-event") {
-      RiskAnalysis::DefineBasicEvent(element, fault_tree_);
+      RiskAnalysis::DefineBasicEvent(element);
     } else if (name == "define-house-event") {
-      RiskAnalysis::DefineHouseEvent(element, fault_tree_);
+      RiskAnalysis::DefineHouseEvent(element);
     }
   }
 }
@@ -552,9 +554,9 @@ void RiskAnalysis::ProcessModelData(const xmlpp::Element* model_data) {
     if (!element) continue;  // Ignore non-elements.
     std::string name = element->get_name();
     if (name == "define-basic-event") {
-      RiskAnalysis::DefineBasicEvent(element, fault_tree_);
+      RiskAnalysis::DefineBasicEvent(element);
     } else if (name == "define-house-event") {
-      RiskAnalysis::DefineHouseEvent(element, fault_tree_);
+      RiskAnalysis::DefineHouseEvent(element);
     }
   }
 }
@@ -591,6 +593,9 @@ void RiskAnalysis::ValidateInitialization() {
   if (!error_messages.str().empty()) {
     throw scram::ValidationError(error_messages.str());
   }
+
+  // Validation of analysis entities.
+  fault_tree_->Validate();
 }
 
 std::string RiskAnalysis::CheckAllGates() {
@@ -673,8 +678,8 @@ std::string RiskAnalysis::CheckGate(const GatePtr& event) {
       }
     } else {
       boost::to_upper(gate);
-      msg << orig_ids_.find(event->id())->second << " : Gate Check failure. No check for "
-          << gate << " gate.";
+      msg << orig_ids_.find(event->id())->second
+          << " : Gate Check failure. No check for " << gate << " gate.";
     }
   } catch (scram::ValueError& err) {
     msg << orig_ids_.find(event->id())->second << " : No children detected.";

@@ -19,27 +19,27 @@ class Grapher {
   Grapher();
 
   /// Outputs a file with instructions for graphviz dot to create a fault tree.
-  /// @note This function must be called only after initializing the tree.
-  /// @note The name of the output file is the same as the input file, but
-  /// the extensions are different.
-  /// @throws Error if called before tree initialization from an input file.
+  /// This function must be called only after initializing the tree.
+  /// @param[in] fault_tree Fault Tree to draw.
+  /// @param[in] orig_ids Original names to put into graphs for nodes.
+  /// @param[in] prob_requested Should probabilities be included.
+  /// @param[out] output Output destination.
   /// @throws IOError if the output file is not accessable.
   void GraphFaultTree(const FaultTreePtr& fault_tree,
                       const std::map<std::string, std::string>& orig_ids,
                       bool prob_requested = false,
                       std::string output = "");
 
-
  private:
   /// Graphs one top or intermediate event with children.
   /// @param[in] t The top or intermediate event.
   /// @param[in] pr_repeat The number of times a primary event is repeated.
+  /// @param[in] in_repeat The number of times an inter event is repeated.
   /// @param[in] out The output stream.
   /// @note The repetition information is important to avoid clashes.
   void GraphNode(GatePtr t, std::map<std::string, int>& pr_repeat,
                  std::map<std::string, int>& in_repeat, std::ofstream& out);
 
-  /// @todo optimize and delete the following.
   /// Container of original names of events with capitalizations.
   std::map<std::string, std::string> orig_ids_;
 

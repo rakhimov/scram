@@ -19,10 +19,11 @@
 namespace pt = boost::posix_time;
 
 namespace scram {
+
 Reporter::Reporter() {}
 
-void Reporter::ReportFta(FaultTreeAnalysis* fta,
-                         std::map<std::string, std::string>& orig_ids,
+void Reporter::ReportFta(const FaultTreeAnalysis* fta,
+                         const std::map<std::string, std::string>& orig_ids,
                          std::string output) {
   // Check if output to file is requested.
   std::streambuf* buf;
@@ -37,13 +38,13 @@ void Reporter::ReportFta(FaultTreeAnalysis* fta,
   std::ostream out(buf);
 
   // An iterator for a set with ids of events.
-  std::set<std::string>::iterator it_set;
+  std::set<std::string>::const_iterator it_set;
 
   // Iterator for minimal cut sets.
-  std::set< std::set<std::string> >::iterator it_min;
+  std::set< std::set<std::string> >::const_iterator it_min;
 
   // Iterator for a map with minimal cut sets and their probabilities.
-  std::map< std::set<std::string>, double >::iterator it_pr;
+  std::map< std::set<std::string>, double >::const_iterator it_pr;
 
   // Convert MCS into representative strings.
   std::map< std::set<std::string>, std::string> represent;
@@ -102,12 +103,15 @@ void Reporter::ReportFta(FaultTreeAnalysis* fta,
   // Print minimal cut sets by their order.
   out << "\n" << "Minimal Cut Sets" << "\n";
   out << "================\n\n";
+  out << std::left;
   // out << std::setw(40) << std::left << "Fault Tree: " << fta->input_file_ << "\n";
   out << std::setw(40) << "Time: " << pt::second_clock::local_time() << "\n\n";
   out << std::setw(40) << "Analysis algorithm: " << fta->analysis_ << "\n";
-  out << std::setw(40) << "Limit on order of cut sets: " << fta->limit_order_ << "\n";
   out << std::setw(40) << "Number of Primary Events: " << fta->primary_events_.size() << "\n";
+  out << std::setw(40) << "Number of Gates: " << fta->inter_events_.size() + 1 << "\n";
+  out << std::setw(40) << "Limit on order of cut sets: " << fta->limit_order_ << "\n";
   out << std::setw(40) << "Minimal Cut Set Maximum Order: " << fta->max_order_ << "\n";
+  out << std::setw(40) << "Total number of MCS found: " << fta->min_cut_sets_.size() << "\n";
   out << std::setw(40) << "Gate Expansion Time: " << std::setprecision(5)
       << fta->exp_time_ << "s\n";
   out << std::setw(40) << "MCS Generation Time: " << std::setprecision(5)
@@ -118,8 +122,8 @@ void Reporter::ReportFta(FaultTreeAnalysis* fta,
   std::vector<int> order_numbers;  // Number of sets per order.
   while (order < fta->max_order_ + 1) {
     std::set< std::set<std::string> > order_sets;
-    for (it_min = fta->min_cut_sets_.begin(); it_min != fta->min_cut_sets_.end();
-        ++it_min) {
+    for (it_min = fta->min_cut_sets_.begin();
+         it_min != fta->min_cut_sets_.end(); ++it_min) {
       if (it_min->size() == order) {
         order_sets.insert(*it_min);
       }
@@ -134,7 +138,8 @@ void Reporter::ReportFta(FaultTreeAnalysis* fta,
         out << std::left;
         std::vector<std::string>::iterator it;
         int j = 0;
-        for (it = lines.find(*it_min)->second.begin(); it != lines.find(*it_min)->second.end(); ++it) {
+        for (it = lines.find(*it_min)->second.begin();
+             it != lines.find(*it_min)->second.end(); ++it) {
           if (j == 0) {
             out << number.str() <<  *it << "\n";
           } else {
@@ -166,14 +171,14 @@ void Reporter::ReportFta(FaultTreeAnalysis* fta,
 
   out << "\n" << "Probability Analysis" << "\n";
   out << "====================\n\n";
+  out << std::left;
   // out << std::setw(40) << std::left << "Fault Tree: " << fta->input_file_ << "\n";
   out << std::setw(40) << "Time: " << pt::second_clock::local_time() << "\n\n";
   out << std::setw(40) << "Analysis type:" << fta->analysis_ << "\n";
   out << std::setw(40) << "Limit on series: " << fta->nsums_ << "\n";
-  out << std::setw(40) << "Number of Primary Events: "
-      << fta->primary_events_.size() << "\n";
-  out << std::setw(40) << "Number of Minimal Cut Sets: "
-      << fta->min_cut_sets_.size() << "\n";
+  out << std::setw(40) << "Cut-off probabilty for cut sets: " << fta->cut_off_ << "\n";
+  out << std::setw(40) << "Number of Cut Sets: " << fta->num_prob_mcs_ << "\n";
+  out << std::setw(40) << "Total Probability: " << fta->p_total_ << "\n";
   out << std::setw(40) << "Probability Operations Time: " << std::setprecision(5)
       << fta->p_time_ - fta->mcs_time_ << "s\n\n";
   out.flush();
@@ -183,14 +188,16 @@ void Reporter::ReportFta(FaultTreeAnalysis* fta,
     out << "----------------------------------------------\n";
     out.flush();
     order = 1;  // Order of minimal cut sets.
-    std::multimap < double, std::set<std::string> >::reverse_iterator it_or;
+    std::multimap < double, std::set<std::string> >::const_reverse_iterator
+        it_or;
     while (order < fta->max_order_ + 1) {
       std::multimap< double, std::set<std::string> > order_sets;
-      for (it_min = fta->min_cut_sets_.begin(); it_min != fta->min_cut_sets_.end();
-           ++it_min) {
+      for (it_min = fta->min_cut_sets_.begin();
+           it_min != fta->min_cut_sets_.end(); ++it_min) {
         if (it_min->size() == order) {
-          order_sets.insert(std::make_pair(fta->prob_of_min_sets_.find(*it_min)->second,
-                                           *it_min));
+          order_sets.insert(
+              std::make_pair(fta->prob_of_min_sets_.find(*it_min)->second,
+                             *it_min));
         }
       }
       if (!order_sets.empty()) {
@@ -224,8 +231,8 @@ void Reporter::ReportFta(FaultTreeAnalysis* fta,
     out << "----------------------------------------------------\n";
     out.flush();
     int i = 1;
-    for (it_or = fta->ordered_min_sets_.rbegin(); it_or != fta->ordered_min_sets_.rend();
-         ++it_or) {
+    for (it_or = fta->ordered_min_sets_.rbegin();
+         it_or != fta->ordered_min_sets_.rend(); ++it_or) {
       std::stringstream number;
       number << i << ") ";
       out << std::left;
@@ -247,9 +254,9 @@ void Reporter::ReportFta(FaultTreeAnalysis* fta,
     }
 
     // Print total probability.
-    out << "\n" << "================================\n";
-    out <<  "Total Probability: " << std::setprecision(7) << fta->p_total_ << "\n";
-    out << "================================\n\n";
+    out << "\n================================\n";
+    out <<  "Total Probability: " << std::setprecision(7) << fta->p_total_;
+    out << "\n================================\n\n";
 
     if (fta->p_total_ > 1) out << "WARNING: Total Probability is invalid.\n\n";
 
@@ -261,7 +268,7 @@ void Reporter::ReportFta(FaultTreeAnalysis* fta,
     out << std::left;
     out << std::setw(20) << "Event" << std::setw(20) << "Failure Contrib."
         << "Importance\n\n";
-    std::multimap < double, std::string >::reverse_iterator it_contr;
+    std::multimap < double, std::string >::const_reverse_iterator it_contr;
     for (it_contr = fta->ordered_primaries_.rbegin();
          it_contr != fta->ordered_primaries_.rend(); ++it_contr) {
       out << std::left;
@@ -271,8 +278,9 @@ void Reporter::ReportFta(FaultTreeAnalysis* fta,
       assert(names.size() < 3);
       assert(names.size() > 0);
       if (names.size() == 1) {
-        out << std::setw(20) << orig_ids.find(names[0])->second << std::setw(20)
-            << it_contr->first << 100 * it_contr->first / fta->p_total_ << "%\n";
+        out << std::setw(20) << orig_ids.find(names[0])->second
+            << std::setw(20) << it_contr->first
+            << 100 * it_contr->first / fta->p_total_ << "%\n";
 
       } else if (names.size() == 2) {
         out << "NOT " << std::setw(16) << orig_ids.find(names[1])->second << std::setw(20)
@@ -287,17 +295,20 @@ void Reporter::ReportFta(FaultTreeAnalysis* fta,
     // Positive terms.
     out << "\nPositive Terms in the Probability Equation:\n";
     out << "--------------------------------------------\n";
-    std::vector< std::set<int> >::iterator it_vec;
-    std::set<int>::iterator it_set;
-    for (it_vec = fta->pos_terms_.begin(); it_vec != fta->pos_terms_.end(); ++it_vec) {
+    std::vector< std::set<int> >::const_iterator it_vec;
+    std::set<int>::const_iterator it_set;
+    for (it_vec = fta->pos_terms_.begin(); it_vec != fta->pos_terms_.end();
+         ++it_vec) {
       out << "{ ";
       int j = 1;
       int size = it_vec->size();
       for (it_set = it_vec->begin(); it_set != it_vec->end(); ++it_set) {
         if (*it_set > 0) {
-          out << orig_ids.find(fta->int_to_prime_[*it_set]->id())->second;
+          std::string id = fta->int_to_prime_[*it_set]->id();
+          out << orig_ids.find(id)->second;
         } else {
-          out << "NOT " << orig_ids.find(fta->int_to_prime_[std::abs(*it_set)]->id())->second;
+          std::string id = fta->int_to_prime_[std::abs(*it_set)]->id();
+          out << "NOT " << orig_ids.find(id)->second;
         }
         if (j < size) {
           out << ", ";
@@ -312,15 +323,18 @@ void Reporter::ReportFta(FaultTreeAnalysis* fta,
     // Negative terms.
     out << "\nNegative Terms in the Probability Equation:\n";
     out << "-------------------------------------------\n";
-    for (it_vec = fta->neg_terms_.begin(); it_vec != fta->neg_terms_.end(); ++it_vec) {
+    for (it_vec = fta->neg_terms_.begin();
+         it_vec != fta->neg_terms_.end(); ++it_vec) {
       out << "{ ";
       int j = 1;
       int size = it_vec->size();
       for (it_set = it_vec->begin(); it_set != it_vec->end(); ++it_set) {
         if (*it_set > 0) {
-          out << orig_ids.find(fta->int_to_prime_[*it_set]->id())->second;
+          std::string id = fta->int_to_prime_[*it_set]->id();
+          out << orig_ids.find(id)->second;
         } else {
-          out << "NOT " << orig_ids.find(fta->int_to_prime_[std::abs(*it_set)]->id())->second;
+          std::string id = fta->int_to_prime_[std::abs(*it_set)]->id();
+          out << "NOT " << orig_ids.find(id)->second;
         }
         if (j < size) {
           out << ", ";

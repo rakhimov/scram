@@ -22,27 +22,28 @@ int main(int argc, char* argv[]) {
   // Parse command line options.
   std::string usage = "Usage:    scram [input-file] [opts]";
   po::options_description desc("Allowed options");
-  desc.add_options()
-      ("help,h", "produce help message")
-      ("input-file", po::value<std::string>(),
-       "xml input file with analysis entities")
-      ("validate,v", "only validate input files")
-      ("graph-only,g", "produce graph without analysis")
-      ("analysis,a", po::value<std::string>()->default_value("fta-default"),
-       "type of analysis to be performed on this input")
-      ("rare-event-approx,r", "use the rare event approximation")
-      ("mcub,m", "use the MCUB approximation for probability calculations")
-      ("limit-order,l", po::value<int>()->default_value(20),
-       "upper limit for cut set order")
-      ("nsums,s", po::value<int>()->default_value(1000000),
-       "number of sums in series expansion for probability calculations")
-      ("cut-off,c", po::value<double>()->default_value(1e-8),
-       "cut-off probability for cut sets")
-      ("output,o", po::value<std::string>(), "output file")
-      ;
-
   po::variables_map vm;
+
   try {
+    desc.add_options()
+        ("help,h", "produce help message")
+        ("input-file", po::value<std::string>(),
+         "xml input file with analysis entities")
+        ("validate,v", "only validate input files")
+        ("graph-only,g", "produce graph without analysis")
+        ("analysis,a", po::value<std::string>()->default_value("fta-default"),
+         "type of analysis to be performed on this input")
+        ("rare-event-approx,r", "use the rare event approximation")
+        ("mcub,m", "use the MCUB approximation for probability calculations")
+        ("limit-order,l", po::value<int>()->default_value(20),
+         "upper limit for cut set order")
+        ("nsums,s", po::value<int>()->default_value(1000000),
+         "number of sums in series expansion for probability calculations")
+        ("cut-off,c", po::value<double>()->default_value(1e-8),
+         "cut-off probability for cut sets")
+        ("output,o", po::value<std::string>(), "output file")
+        ;
+
     po::store(po::parse_command_line(argc, argv, desc), vm);
   } catch (std::exception& err) {
     std::cout << "Invalid arguments.\n"
@@ -70,24 +71,24 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  // Determine required analysis.
-  // FTA naive is assumed if no arguments are given.
-  std::string analysis = vm["analysis"].as<std::string>();
-  bool graph_only = false;
-  bool rare_event = false;
-  bool mcub = false;
-
-  // Determin if only graphing instructions are requested.
-  if (vm.count("graph-only")) graph_only = true;
-  // Determine if the rare event approximation is requested.
-  if (vm.count("rare-event-approx")) rare_event = true;
-  // Determine if the MCUB approximation is requested.
-  if (vm.count("mcub")) mcub = true;
-
-  // Read input files and setup.
-  std::string input_file = vm["input-file"].as<std::string>();
-
   try {
+    // Determine required analysis.
+    // FTA naive is assumed if no arguments are given.
+    std::string analysis = vm["analysis"].as<std::string>();
+    bool graph_only = false;
+    bool rare_event = false;
+    bool mcub = false;
+
+    // Determin if only graphing instructions are requested.
+    if (vm.count("graph-only")) graph_only = true;
+    // Determine if the rare event approximation is requested.
+    if (vm.count("rare-event-approx")) rare_event = true;
+    // Determine if the MCUB approximation is requested.
+    if (vm.count("mcub")) mcub = true;
+
+    // Read input files and setup.
+    std::string input_file = vm["input-file"].as<std::string>();
+
     // Initiate risk analysis.
     RiskAnalysis* ran = new RiskAnalysis();
 
@@ -165,7 +166,6 @@ int main(int argc, char* argv[]) {
     ran->Report(output);  // May throw boost exceptions according to Coverity.
 
     delete ran;
-
   } catch (IOError& io_err) {
     std::cerr << "SCRAM I/O Error\n" << std::endl;
     std::cerr << io_err.what() << std::endl;

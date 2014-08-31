@@ -45,6 +45,7 @@ FaultTreeAnalysis::FaultTreeAnalysis(std::string analysis, std::string approx,
   }
   nsums_ = nsums;
 
+  // Check for valid cut-off probability.
   if (cut_off < 0 || cut_off > 1) {
     std::string msg = "The cut-off probability cannot be negative or"
                       " more than 1.";
@@ -66,7 +67,7 @@ FaultTreeAnalysis::FaultTreeAnalysis(std::string analysis, std::string approx,
   FaultTreePtr fault_tree_;
 }
 
-/// Set pointer comparison.
+/// Set pointer comparison for efficiency.
 struct SetPtrComp
     : public std::binary_function<const std::set<int>*,
                                   const std::set<int>*, bool> {
@@ -123,7 +124,8 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
   }
   std::vector<const std::set<int>* > sets_unique;
   std::set< const std::set<int>*, SetPtrComp >::iterator it_un;
-  for (it_un = unique_cut_sets.begin(); it_un != unique_cut_sets.end(); ++it_un) {
+  for (it_un = unique_cut_sets.begin(); it_un != unique_cut_sets.end();
+       ++it_un) {
     sets_unique.push_back(*it_un);
   }
 
@@ -150,9 +152,8 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
   // Iterator for minimal cut sets.
   std::set< std::set<int> >::iterator it_min;
 
-  // Cut sets with higher that cut-off probability.
+  /// Minimal cut sets with higher than cut-off probability.
   std::set< std::set<int> > mcs_for_prob;
-
   // Iterate minimal cut sets and find probabilities for each set.
   for (it_min = imcs_.begin(); it_min != imcs_.end(); ++it_min) {
     // Calculate a probability of a set with AND relationship.
@@ -227,9 +228,8 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
   p_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
 }
 
-void FaultTreeAnalysis::ExpandTree(
-    SupersetPtr& set_with_gates,
-    std::vector< SupersetPtr >& cut_sets) {
+void FaultTreeAnalysis::ExpandTree(SupersetPtr& set_with_gates,
+                                   std::vector< SupersetPtr >& cut_sets) {
   // To hold sets of children.
   std::vector< SupersetPtr > children_sets;
 
@@ -261,7 +261,9 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
   // Assumes sets are empty.
   assert(sets.empty());
   if (repeat_exp_.count(inter_index)) {
-    std::vector<SupersetPtr>* repeat_set = &repeat_exp_.find(inter_index)->second;
+    std::vector<SupersetPtr>* repeat_set =
+        &repeat_exp_.find(inter_index)->second;
+
     std::vector<SupersetPtr>::iterator it;
     for (it = repeat_set->begin(); it != repeat_set->end(); ++it) {
       SupersetPtr temp_set(new Superset);
@@ -371,7 +373,9 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
       FaultTreeAnalysis::SetOr(events_children, sets, -1);
     }
   } else if (gate == "vote" || gate == "atleast") {
-    int vote_number = int_to_inter_.find(std::abs(inter_index))->second->vote_number();
+    int vote_number =
+        int_to_inter_.find(std::abs(inter_index))->second->vote_number();
+
     assert(vote_number > 1);
     assert(events_children.size() >= vote_number);
     std::set< std::set<int> > all_sets;
@@ -465,9 +469,10 @@ void FaultTreeAnalysis::SetAnd(std::vector<int>& events_children,
   sets.push_back(tmp_set_c);
 }
 
-void FaultTreeAnalysis::FindMcs(const std::vector< const std::set<int>* >& cut_sets,
-                                const std::set< std::set<int> >& mcs_lower_order,
-                                int min_order) {
+void FaultTreeAnalysis::FindMcs(
+    const std::vector< const std::set<int>* >& cut_sets,
+    const std::set< std::set<int> >& mcs_lower_order,
+    int min_order) {
   if (cut_sets.empty()) return;
 
   // Iterator for cut_sets.
@@ -521,8 +526,10 @@ void FaultTreeAnalysis::AssignIndices(const FaultTreePtr& fault_tree) {
   /// @todo Very strange performance issue. Conflict between Expansion and
   /// Probability calculations.
   top_event_ = fault_tree->top_event();
-  // inter_events_.insert(fault_tree->inter_events().begin(), fault_tree->inter_events().end());
-  primary_events_.insert(fault_tree->primary_events().begin(), fault_tree->primary_events().end());
+  // inter_events_.insert(fault_tree->inter_events().begin(),
+  //                      fault_tree->inter_events().end());
+  primary_events_.insert(fault_tree->primary_events().begin(),
+                         fault_tree->primary_events().end());
   // primary_events_ = fault_tree->primary_events();
   inter_events_ = fault_tree->inter_events();
 
@@ -540,7 +547,6 @@ void FaultTreeAnalysis::AssignIndices(const FaultTreePtr& fault_tree) {
 
   // Assign an index to each top and intermediate event and populate
   // relevant databases.
-  /// @todo Rename to gate_to_inter
   top_event_index_ = j;
   int_to_inter_.insert(std::make_pair(j, top_event_));
   inter_to_int_.insert(std::make_pair(top_event_->id(), j));

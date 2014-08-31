@@ -23,9 +23,9 @@ void Grapher::GraphFaultTree(
     const std::map<std::string, std::string>& orig_ids,
     bool prob_requested,
     std::string output) {
-  // List inter events and their children.
+  // The structure of the output:
+  // List inter events with their children following the tree structure.
   // List inter events and primary events' descriptions.
-  // Getting events from the fault tree object.
 
   /// @todo Option to graph re-used gates as a separate transfer trees.
   top_event_ = fault_tree->top_event();
@@ -84,7 +84,8 @@ void Grapher::GraphFaultTree(
     gate_color = gate_colors.find(gate)->second;
   }
   boost::to_upper(gate);
-  out << "\"" <<  orig_ids_.find(top_event_->id())->second << "_R0\" [shape=ellipse, "
+  out << "\"" <<  orig_ids_.find(top_event_->id())->second
+      << "_R0\" [shape=ellipse, "
       << "fontsize=12, fontcolor=black, fontname=\"times-bold\", "
       << "color=" << gate_color << ", "
       << "label=\"" << orig_ids_.find(top_event_->id())->second << "\\n"
@@ -106,7 +107,8 @@ void Grapher::GraphFaultTree(
     std::string type = inter_events_.find(it->first)->second->type();
     for (int i = 0; i <= it->second; ++i) {
       if (i == 0) {
-        out << "\"" <<  orig_ids_.find(it->first)->second << "_R" << i << "\" [shape=box, ";
+        out << "\"" <<  orig_ids_.find(it->first)->second << "_R" << i
+            << "\" [shape=box, ";
       } else {
         // Repetition is a transfer symbol.
         out << "\"" <<  orig_ids_.find(it->first)->second << "_R" << i
@@ -117,8 +119,8 @@ void Grapher::GraphFaultTree(
           << "label=\"" << orig_ids_.find(it->first)->second << "\\n"
           << "{ " << gate;
       if (gate == "VOTE" || gate == "ATLEAST") {
-        out << " " << inter_events_.find(it->first)->second->vote_number() << "/"
-            << inter_events_.find(it->first)->second->children().size();
+        out << " " << inter_events_.find(it->first)->second->vote_number()
+            << "/" << inter_events_.find(it->first)->second->children().size();
       }
       out << " }\"]\n";
     }
@@ -132,12 +134,16 @@ void Grapher::GraphFaultTree(
   event_colors.insert(std::make_pair("conditional", "red"));
   for (it = pr_repeat.begin(); it != pr_repeat.end(); ++it) {
     for (int i = 0; i < it->second + 1; ++i) {
-      out << "\"" << orig_ids_.find(it->first)->second << "_R" << i << "\" [shape=circle, "
+      std::string id = it->first;
+      std::string type = primary_events_.find(id)->second->type();
+      out << "\"" << orig_ids_.find(id)->second << "_R" << i
+          << "\" [shape=circle, "
           << "height=1, fontsize=10, fixedsize=true, "
-          << "fontcolor=" << event_colors.find(primary_events_.find(it->first)->second->type())->second
-          << ", " << "label=\"" << orig_ids_.find(it->first)->second << "\\n["
-          << primary_events_.find(it->first)->second->type() << "]";
-      if (prob_requested_) { out << "\\n" << primary_events_.find(it->first)->second->p(); }
+          << "fontcolor=" << event_colors.find(type)->second
+          << ", " << "label=\"" << orig_ids_.find(id)->second << "\\n["
+          << type << "]";
+      if (prob_requested_) { out << "\\n"
+                                 << primary_events_.find(id)->second->p(); }
       out << "\"]\n";
     }
   }

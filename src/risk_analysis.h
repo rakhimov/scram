@@ -37,7 +37,7 @@ class RiskAnalysis {
 
  public:
   /// This constructor with configurations with the analysis.
-  /// @param[in] XML file with configurations for the analysis and output.
+  /// @param[in] config_file XML file with configurations.
   /// @todo Should be able to accept configurations from XML files.
   RiskAnalysis(std::string config_file = "guess_yourself");
 
@@ -99,29 +99,40 @@ class RiskAnalysis {
   }
 
  private:
+  /// Defines and adds a gate for this analysis.
+  /// @param[in] gate_node XML element defining the gate.
+  /// @param[out] ft FaultTree under which this gate is defined.
   void DefineGate(const xmlpp::Element* gate_node, FaultTreePtr& ft);
 
-  void DefineBasicEvent(const xmlpp::Element* event_node, FaultTreePtr& ft);
+  /// Defines and adds a basic event for this analysis.
+  /// @param[in] event_node XML element defining the event.
+  void DefineBasicEvent(const xmlpp::Element* event_node);
 
-  void DefineHouseEvent(const xmlpp::Element* event_node, FaultTreePtr& ft);
+  /// Defines and adds a house event for this analysis.
+  /// @param[in] event_node XML element defining the event.
+  void DefineHouseEvent(const xmlpp::Element* event_node);
 
+  /// Defines a fault tree for the analysis.
+  /// @param[in] ft_node XML element defining the fault tree.
   void DefineFaultTree(const xmlpp::Element* ft_node);
 
+  /// Processes model data with definitions of events and analysis.
+  /// @param[in] model_data XML node with model data description.
   void ProcessModelData(const xmlpp::Element* model_data);
 
   /// Verifies if gates are initialized correctly.
   /// @returns A warning message with a list of all bad gates with problems.
-  /// @note An empty string for no problems detected.
+  /// @returns An empty string for no problems detected.
   std::string CheckAllGates();
 
   /// Checks if a gate is initialized correctly.
   /// @returns A warning message with the problem description.
-  /// @note An empty string for no problems detected.
+  /// @returns An empty string for no problems detected.
   std::string CheckGate(const GatePtr& event);
 
   /// @returns Formatted error message with house, basic, or other events
   /// that are not defined.
-  /// @note An empty string for no problems detected.
+  /// @returns An empty string for no problems detected.
   std::string CheckMissingEvents();
 
   /// Validates if the initialization of the analysis is successful.
@@ -130,7 +141,6 @@ class RiskAnalysis {
 
   /// @todo Containers for fault trees, events, event trees, CCF, and other
   /// analysis entities.
-  /// @deprecated l-model analysis
   /// @todo Container for excess events that are defined.
 
   /// Container of original names of events with capitalizations.

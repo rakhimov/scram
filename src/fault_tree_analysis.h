@@ -50,24 +50,32 @@ class FaultTreeAnalysis {
 
   /// Analyzes the fault tree and performs computations.
   /// This function must be called only after initilizing the tree with or
-  /// without its probabilities.
-  /// @throws Error if called before tree initialization from an input file.
+  /// without its probabilities. Underlying objects may throw errors
+  /// if the fault tree has initialization issues. However, there is no
+  /// quarantee for that.
+  /// @param[in] fault_tree Valid Fault Tree.
+  /// @param[in] prob_requested Indication for the probability calculations.
   /// @note Cut set generator: O_avg(N) O_max(N)
   void Analyze(const FaultTreePtr& fault_tree, bool prob_requested);
 
+  /// @returns The total probability calculated by the analysis.
+  /// @note The user should make sure that the analysis is actually done.
   inline double p_total() { return p_total_; }
 
-  /// Container for minimal cut sets.
+  /// @returns Set with minimal cut sets.
+  /// @note The user should make sure that the analysis is actually done.
   inline const std::set< std::set<std::string> >& min_cut_sets() {
     return min_cut_sets_;
   }
 
-  /// Container for minimal cut sets and their respective probabilities.
+  /// @returns Map with minimal cut sets and their probabilities.
+  /// @note The user should make sure that the analysis is actually done.
   inline const std::map< std::set<std::string>, double >& prob_of_min_sets() {
     return prob_of_min_sets_;
   }
 
-  /// Container for primary events and their contribution.
+  /// @returns Map with primary events and their contribution.
+  /// @note The user should make sure that the analysis is actually done.
   inline const std::map< std::string, double >& imp_of_primaries() {
     return imp_of_primaries_;
   }
@@ -76,6 +84,8 @@ class FaultTreeAnalysis {
 
  private:
   /// Traverses the fault tree and expands it into sets of gates and events.
+  /// @param[in] set_with_gates A superset with gates.
+  /// @param[in] cut_sets Container for cut sets upon tree expansion.
   void ExpandTree(SupersetPtr& set_with_gates,
                   std::vector< SupersetPtr >& cut_sets);
 
@@ -117,10 +127,13 @@ class FaultTreeAnalysis {
   /// Assigns an index to each primary event, and then populates with this
   /// indices new databases of minimal cut sets and primary to integer
   /// converting maps.
+  /// In addition, this function copies all events from
+  /// the fault tree for future reference.
+  /// @param[in] fault_tree Fault Tree with events and gates.
   /// @note O_avg(N) O_max(N^2) where N is the total number of tree nodes.
   void AssignIndices(const FaultTreePtr& fault_tree);
 
-  /// Converts minimal cut sets from indices to strings.
+  /// Converts minimal cut sets from indices to strings for future reporting.
   void SetsToString();
 
   /// Calculates a probability of a set of minimal cut sets, which are in OR
@@ -131,6 +144,7 @@ class FaultTreeAnalysis {
   /// @returns The total probability.
   /// @note This function drastically modifies min_cut_sets by deleting
   /// sets inside it. This is for better performance.
+  ///
   /// @note O_avg(M*logM*N*2^N) where N is the number of sets, and M is
   /// the average size of the sets.
   double ProbOr(std::set< std::set<int> >& min_cut_sets, int nsums = 1000000);
@@ -202,6 +216,12 @@ class FaultTreeAnalysis {
   /// Number of sums in series expansion for probability calculations.
   int nsums_;
 
+  /// Limit on the size of the minimal cut sets for performance reasons.
+  int limit_order_;
+
+  /// Cut-off probability for minimal cut sets.
+  double cut_off_;
+
   /// Top event.
   GatePtr top_event_;
 
@@ -226,14 +246,11 @@ class FaultTreeAnalysis {
   /// Container for primary events ordered by their contribution.
   std::multimap< double, std::string > ordered_primaries_;
 
-  /// Maximum order for minimal cut sets.
+  /// Maximum order of minimal cut sets.
   int max_order_;
 
-  /// Cut-off probability for minimal cut sets.
-  double cut_off_;
-
-  /// Limit on the size of the minimal cut sets for performance reasons.
-  int limit_order_;
+  /// The number of minimal cut sets with higher than cut-off probability.
+  int num_prob_mcs_;
 
   /// Total probability of the top event.
   double p_total_;
