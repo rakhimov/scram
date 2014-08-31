@@ -8,6 +8,7 @@ Mixed re-use of events
       <and>
         <gate name="TrainOne"/>
         <event name="TrainTwo"/>
+        <gate name="TrainThree"/>
         <event name="ValveOne"/>
         <event name="PumpOne"/>
       </and>
@@ -16,11 +17,20 @@ Mixed re-use of events
       <or>
         <basic-event name="ValveOne"/>
         <house-event name="PumpOne"/>
+        <gate name="TrainTwo"/>
       </or>
     </define-gate>
     <define-gate name="TrainTwo">
       <or>
-        <event name="TrainOne"/>
+        <event name="TrainThree"/>
+        <basic-event name="ValveTwo"/>
+        <event name="PumpTwo"/>
+        <event name="ValveOne"/>
+        <event name="PumpOne"/>
+      </or>
+    </define-gate>
+    <define-gate name="TrainThree">
+      <or>
         <basic-event name="ValveTwo"/>
         <event name="PumpTwo"/>
         <event name="ValveOne"/>

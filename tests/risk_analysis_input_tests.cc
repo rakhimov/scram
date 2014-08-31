@@ -103,6 +103,8 @@ TEST(RiskAnalysisInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back(dir + "def_clash_gate_primary.xml");
   incorrect_inputs.push_back(dir + "def_clash_basic_house.xml");
   incorrect_inputs.push_back(dir + "def_clash_house_basic.xml");
+  incorrect_inputs.push_back(dir + "def_name_house_basic.xml");
+  incorrect_inputs.push_back(dir + "def_name_basic_house.xml");
   incorrect_inputs.push_back(dir + "atleast_gate.xml");
   RiskAnalysis* ran;
   std::vector<std::string>::iterator it;
