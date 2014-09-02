@@ -86,7 +86,6 @@ TEST(RiskAnalysisInputTest, IncorrectFTAInputs) {
   ioerror_inputs.push_back(dir + "nonexistent_file.xml");
 
   // Other issues.
-  // incorrect_inputs.push_back("./share/scram/input/fta/basic_top_event.xml");
   incorrect_inputs.push_back(dir + "doubly_defined_gate.xml");
   incorrect_inputs.push_back(dir + "doubly_defined_house.xml");
   incorrect_inputs.push_back(dir + "doubly_defined_basic.xml");
@@ -110,6 +109,7 @@ TEST(RiskAnalysisInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back(dir + "unordered_structure.xml");
   incorrect_inputs.push_back(dir + "dangling_gate.xml");
   incorrect_inputs.push_back(dir + "non_top_gate.xml");
+  incorrect_inputs.push_back(dir + "cyclic_tree.xml");
   RiskAnalysis* ran;
   std::vector<std::string>::iterator it;
   for (it = ioerror_inputs.begin(); it != ioerror_inputs.end(); ++it) {

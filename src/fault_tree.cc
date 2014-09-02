@@ -50,12 +50,34 @@ void FaultTree::Validate() {
   primary_events_.clear();
 
   // The gate structure must be checked first.
-  FaultTree::CheckCyclicity(top_event_);
-
-// GatherPrimaryEvents();
+  std::vector<std::string> path;
+  std::set<std::string> visited;
+  FaultTree::CheckCyclicity(top_event_, path, visited);
 }
 
-void FaultTree::CheckCyclicity(const GatePtr& parent) {
+void FaultTree::CheckCyclicity(const GatePtr& parent,
+                               std::vector<std::string> path,
+                               std::set<std::string> visited) {
+  path.push_back(parent->id());
+  if (visited.count(parent->id())) {
+    std::string msg = "Detected a cyclicity in '" + name_ + "' fault tree:\n";
+    std::vector<std::string>::iterator it;
+    bool path_start = false;
+    for (it = path.begin(); it != path.end(); ++it) {
+      if (!path_start && *it == parent->id()) {
+        path_start = true;
+        msg += parent->id();
+        continue;
+      }
+      if (path_start) {
+        msg += "->" + *it;
+      }
+    }
+    throw ValidationError(msg);
+  } else {
+    visited.insert(parent->id());
+  }
+
   const std::map<std::string, EventPtr>* children = &parent->children();
   std::map<std::string, EventPtr>::const_iterator it;
   for (it = children->begin(); it != children->end(); ++it) {
@@ -65,7 +87,7 @@ void FaultTree::CheckCyclicity(const GatePtr& parent) {
         implicit_gates_.insert(std::make_pair(child_gate->id(), child_gate));
         inter_events_.insert(std::make_pair(child_gate->id(), child_gate));
       }
-      CheckCyclicity(child_gate);
+      CheckCyclicity(child_gate, path, visited);
     } else {
       PrimaryEventPtr primary_event =
           boost::dynamic_pointer_cast<scram::PrimaryEvent>(it->second);
@@ -74,33 +96,6 @@ void FaultTree::CheckCyclicity(const GatePtr& parent) {
         throw ValidationError("Node with id '" + it->first +
                               "' was not defined in '" + name_+ "' tree");
       }
-      primary_events_.insert(std::make_pair(it->first, primary_event));
-    }
-  }
-}
-
-void FaultTree::GatherPrimaryEvents() {
-  FaultTree::GetPrimaryEvents(top_event_);
-
-  boost::unordered_map<std::string, GatePtr>::iterator git;
-  for (git = inter_events_.begin(); git != inter_events_.end(); ++git) {
-    FaultTree::GetPrimaryEvents(git->second);
-  }
-}
-
-void FaultTree::GetPrimaryEvents(const GatePtr& gate) {
-  const std::map<std::string, EventPtr>* children = &gate->children();
-  std::map<std::string, EventPtr>::const_iterator it;
-  for (it = children->begin(); it != children->end(); ++it) {
-    if (!inter_events_.count(it->first)) {
-      PrimaryEventPtr primary_event =
-          boost::dynamic_pointer_cast<scram::PrimaryEvent>(it->second);
-
-      if (primary_event == 0) {  // The tree must be fully defined.
-        throw ValidationError("Node with id '" + it->first +
-                              "' was not defined in '" + name_+ "' tree");
-      }
-
       primary_events_.insert(std::make_pair(it->first, primary_event));
     }
   }

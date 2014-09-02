@@ -27,11 +27,11 @@ Steps in XML Input Validation
 
     - Event names are not case sensitive.
     - Starting and Trailing white spaces are ignored. [not supported]
-    - Names don't contain following characters: '::', ':'. [not checked]
+    - Names shouldn't contain following characters: '::', ':', '->'. [not checked]
     - Names must be unique if they are public by default.
     - Names must be unique only locally if they are private. [not supported]
     - Primary and intermediate events with several parents are allowed.
-      These event may appear in several places in the tree.
+      These events may appear in several places in the tree.
     - Proper 'include directive' formatting. [not supported]
 
 #. Additional validation of fault trees and values of parameters is performed:
