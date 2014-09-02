@@ -1,7 +1,98 @@
 <?xml version="1.0"?>
 <!-- Correct input
-Mixed re-use of events
+Mixed re-use and definition of events:
+
+*********************
+Total Possible Cases:
+*********************
+{event, gate, basic-event, house-event,
+ define-gate, define-basic-event, define-house-event}
+
+7 x 7 = 49
+
+********************
+Correct Cases (22) :
+********************
+
+event :: event
+event :: gate
+event :: basic-event
+event :: house-event
+
+event :: define-gate
+event :: define-basic-event
+event :: define-house-event
+
+gate :: define-gate
+basic-event :: define-basic-event
+house-event :: define-house-event
+
+gate :: event
+basic-event :: event
+house-event :: event
+
+gate :: gate
+basic-event :: basic-event
+house-event :: house-event
+
+define-gate :: event
+define-basic-event :: event
+define-house-event :: event
+
+define-gate :: gate
+define-basic-event :: basic-event
+define-house-event :: house-event
+
+**********************
+Incorrect Cases (24) :
+**********************
+
+gate :: basic-event
+gate :: house-event
+
+basic-event :: gate
+basic-event :: house-event
+
+house-event :: gate
+house-event :: basic-event
+
+gate :: define-basic-event
+gate :: define-house-event
+
+basic-event :: define-gate
+basic-event :: define-house-event
+
+house-event :: define-gate
+house-event :: define-basic-event
+
+define-gate :: basic-event
+define-gate :: house-event
+
+define-basic-event :: gate
+define-basic-event :: house-event
+
+define-house-event :: gate
+define-house-event :: basic-event
+
+define-gate :: define-basic-event
+define-gate :: define-house-event
+
+define-basic-event :: define-gate
+define-basic-event :: define-house-event
+
+define-house-event :: define-gate
+define-house-event :: define-basic-event
+
+*******************
+Redifinitions (3) :
+*******************
+
+define-gate :: define-gate
+define-basic-event :: define-basic-event
+define-house-event :: define-house-event
+
 -->
+
 <opsa-mef>
   <define-fault-tree name="Two Trains">
     <define-gate name="TopEvent">
@@ -37,5 +128,17 @@ Mixed re-use of events
         <event name="PumpOne"/>
       </or>
     </define-gate>
+    <define-basic-event name="ValveOne">
+      <float value="0.4"/>
+    </define-basic-event>
+    <define-basic-event name="ValveTwo">
+      <float value="0.5"/>
+    </define-basic-event>
+    <define-house-event name="PumpOne">
+      <constant value="true"/>
+    </define-house-event>
+    <define-basic-event name="PumpTwo">
+      <float value="0.7"/>
+    </define-basic-event>
   </define-fault-tree>
 </opsa-mef>

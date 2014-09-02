@@ -52,6 +52,8 @@ TEST(RiskAnalysisInputTest, CorrectFTAInputs) {
   std::string dir = "./share/scram/input/fta/";
   correct_inputs.push_back(dir + "correct_tree_input.xml");
   correct_inputs.push_back(dir + "mixed_definitions.xml");
+  correct_inputs.push_back(dir + "trailing_spaces.xml");
+  correct_inputs.push_back(dir + "unordered_structure.xml");
 
   RiskAnalysis* ran;
 
