@@ -26,8 +26,9 @@ Steps in XML Input Validation
         + The parent must be defined before its children.
 
     - Event names are not case sensitive.
-    - Starting and Trailing white spaces are ignored. [not supported]
-    - Names shouldn't contain following characters: '::', ':', '->'. [not checked]
+    - Trailing white spaces are ignored.
+    - Names should conform to 'XML NCName datatype' not contain spaces
+      and some other special characters.
     - Names must be unique if they are public by default.
     - Names must be unique only locally if they are private. [not supported]
     - Primary and intermediate events with several parents are allowed.

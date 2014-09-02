@@ -1,6 +1,13 @@
 <?xml version="1.0"?>
 <opsa-mef>
-  <model-data>
+  <define-fault-tree name="ABC">
+    <define-gate name="TopEvent">
+      <or>
+        <event name="A" type="basic-event"/>
+        <event name="B" type="basic-event"/>
+        <event name="C" type="basic-event"/>
+      </or>
+    </define-gate>
     <define-basic-event name="A">
       <float value="0.1"/>
     </define-basic-event>
@@ -10,5 +17,5 @@
     <define-basic-event name="C">
       <float value="0.3"/>
     </define-basic-event>
-  </model-data>
+  </define-fault-tree>
 </opsa-mef>
