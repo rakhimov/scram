@@ -49,7 +49,7 @@ Steps in XML Input Validation
     - Report missing event descriptions.
     - Throw an error if an event is defined doubly.
     - Ignore primary events that are not initialized in the tree when assigning
-      model data. (Only warning [not supported])
+      model data. (Optional warning [not implemented])
 
 
 .. _schema:
