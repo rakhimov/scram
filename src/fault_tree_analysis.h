@@ -120,7 +120,7 @@ class FaultTreeAnalysis {
   /// @param[in] min_order The order of sets to become minimal.
   /// @note T_avg(N^3 + N^2*logN + N*logN) = O_avg(N^3)
   void FindMcs(const std::vector< const std::set<int>* >& cut_sets,
-               const std::set< std::set<int> >& mcs_lower_order,
+               const std::vector< std::set<int> >& mcs_lower_order,
                int min_order);
 
   // -------------------- Algorithm for Cut Sets and Probabilities -----------
@@ -167,7 +167,7 @@ class FaultTreeAnalysis {
                        const std::set< std::set<int> >& set,
                        std::set< std::set<int> >& combo_set);
 
-  std::set< std::set<int> > imcs_;  ///< Min cut sets with indices of events.
+  std::vector< std::set<int> > imcs_;  ///< Min cut sets with indices of events.
   /// Indices min cut sets to strings min cut sets mapping.
   std::map< std::set<int>, std::set<std::string> > imcs_to_smcs_;
 

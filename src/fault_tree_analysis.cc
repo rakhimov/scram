@@ -119,17 +119,19 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
   SetPtrComp comp;
   std::set< const std::set<int>*, SetPtrComp > unique_cut_sets(comp);
   for (it_vec = cut_sets.begin(); it_vec != cut_sets.end(); ++it_vec) {
-    if ((*it_vec)->NumOfPrimaryEvents() == 1) {
-      // Minimal cut set is detected.
-      imcs_.insert((*it_vec)->p_events());
-      continue;
-    }
     unique_cut_sets.insert(&(*it_vec)->p_events());
   }
+
+  imcs_.reserve(unique_cut_sets.size());
   std::vector<const std::set<int>* > sets_unique;
   std::set< const std::set<int>*, SetPtrComp >::iterator it_un;
   for (it_un = unique_cut_sets.begin(); it_un != unique_cut_sets.end();
        ++it_un) {
+    if ((*it_un)->size() == 1) {
+      // Minimal cut set is detected.
+      imcs_.push_back(**it_un);
+      continue;
+    }
     sets_unique.push_back(*it_un);
   }
 
@@ -146,15 +148,16 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
 
   // Perform Monte Carlo Uncertainty analysis.
   if (analysis_ == "mc") {
+    std::set<std::set<int> > iset(imcs_.begin(), imcs_.end());
     // Generate the equation.
-    FaultTreeAnalysis::MProbOr(imcs_, 1, nsums_);
+    FaultTreeAnalysis::MProbOr(iset, 1, nsums_);
     // Sample probabilities and generate data.
     FaultTreeAnalysis::MSample();
     return;
   }
 
   // Iterator for minimal cut sets.
-  std::set< std::set<int> >::iterator it_min;
+  std::vector< std::set<int> >::iterator it_min;
 
   /// Minimal cut sets with higher than cut-off probability.
   std::set< std::set<int> > mcs_for_prob;
@@ -475,7 +478,7 @@ void FaultTreeAnalysis::SetAnd(std::vector<int>& events_children,
 
 void FaultTreeAnalysis::FindMcs(
     const std::vector< const std::set<int>* >& cut_sets,
-    const std::set< std::set<int> >& mcs_lower_order,
+    const std::vector< std::set<int> >& mcs_lower_order,
     int min_order) {
   if (cut_sets.empty()) return;
 
@@ -483,10 +486,10 @@ void FaultTreeAnalysis::FindMcs(
   std::vector< const std::set<int>* >::const_iterator it_uniq;
 
   // Iterator for minimal cut sets.
-  std::set< std::set<int> >::iterator it_min;
+  std::vector< std::set<int> >::const_iterator it_min;
 
   std::vector< const std::set<int>* > temp_sets;  // For mcs of a level above.
-  std::set< std::set<int> > temp_min_sets;  // For mcs of this level.
+  std::vector< std::set<int> > temp_min_sets;  // For mcs of this level.
 
   for (it_uniq = cut_sets.begin();
        it_uniq != cut_sets.end(); ++it_uniq) {
@@ -505,7 +508,7 @@ void FaultTreeAnalysis::FindMcs(
     // all minimum sized cut sets are guaranteed to be minimal.
     if (include) {
       if ((*it_uniq)->size() == min_order) {
-        temp_min_sets.insert(**it_uniq);
+        temp_min_sets.push_back(**it_uniq);
         // Update maximum order of the sets.
         if (min_order > max_order_) max_order_ = min_order;
       } else {
@@ -514,7 +517,7 @@ void FaultTreeAnalysis::FindMcs(
     }
     // Ignore the cut set because include = false.
   }
-  imcs_.insert(temp_min_sets.begin(), temp_min_sets.end());
+  imcs_.insert(imcs_.end(), temp_min_sets.begin(), temp_min_sets.end());
   min_order++;
   FaultTreeAnalysis::FindMcs(temp_sets, temp_min_sets, min_order);
 }
@@ -564,7 +567,7 @@ void FaultTreeAnalysis::AssignIndices(const FaultTreePtr& fault_tree) {
 }
 
 void FaultTreeAnalysis::SetsToString() {
-  std::set< std::set<int> >::iterator it_min;
+  std::vector< std::set<int> >::iterator it_min;
   for (it_min = imcs_.begin(); it_min != imcs_.end(); ++it_min) {
     std::set<std::string> pr_set;
     std::set<int>::iterator it_set;
