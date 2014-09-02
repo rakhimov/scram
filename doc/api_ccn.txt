@@ -1,18 +1,58 @@
 ========================================
-  NLOC    CCN   token  PARAM  location
+  NLOC    CCN   token  PARAM  location  
 ----------------------------------------
        1      1      7      0 Env::Env@8-8@./env.cc
        3      1     14      0 Env::rng_schema@12-14@./env.cc
+       1      1      7      0 Env::Env@8-8@./env.cc.in
+       3      1     14      0 Env::rng_schema@12-14@./env.cc.in
+       1      1     25      1 Error::Error@9-9@./error.cc
+       3      1     18      0 Error::what@11-13@./error.cc
+       1      1      9      0 msg@27-27@./error.h
+       4      1     20      1 msg@31-34@./error.h
+       1      1      8      0 Error@36-36@./error.h
+       1      1     14      1 ValueError@57-57@./error.h
+       1      1     14      1 ValidationError@66-66@./error.h
+       1      1     14      1 IOError@75-75@./error.h
        1      1     16      1 Event::Event@7-7@./event.cc
        7      2     75      1 Event::AddParent@9-15@./event.cc
        7      2     42      0 Event::parents@17-23@./event.cc
-       1      1     25      1 Error::Error@9-9@./error.cc
-       3      1     18      0 Error::what@11-13@./error.cc
+       1      1      8      0 id@26-26@./event.h
+       1      1      5      0 Event@37-37@./event.h
+       1      1      5      0 Gate@85-85@./event.h
+       1      1      5      0 PrimaryEvent@126-126@./event.h
+       1      1      5      0 BasicEvent@144-144@./event.h
+       1      1      5      0 HouseEvent@160-160@./event.h
+      43     10    231      5 FaultTreeAnalysis::FaultTreeAnalysis@14-69@./fault_tree_analysis.cc
+       3      1     34      2 operator ( )@78-80@./fault_tree_analysis.cc
+     104     21    924      2 FaultTreeAnalysis::Analyze@83-233@./fault_tree_analysis.cc
+      17      5    141      2 FaultTreeAnalysis::ExpandTree@235-261@./fault_tree_analysis.cc
+     162     37   1395      2 FaultTreeAnalysis::ExpandSets@263-444@./fault_tree_analysis.cc
+      14      3    112      3 FaultTreeAnalysis::SetOr@446-459@./fault_tree_analysis.cc
+      14      3    112      3 FaultTreeAnalysis::SetAnd@461-474@./fault_tree_analysis.cc
+      33      8    293      3 FaultTreeAnalysis::FindMcs@476-520@./fault_tree_analysis.cc
+      26      4    292      1 FaultTreeAnalysis::AssignIndices@523-564@./fault_tree_analysis.cc
+      16      4    163      0 FaultTreeAnalysis::SetsToString@566-581@./fault_tree_analysis.cc
+      16      4    159      2 FaultTreeAnalysis::ProbOr@583-608@./fault_tree_analysis.cc
+      13      4    103      1 FaultTreeAnalysis::ProbAnd@610-624@./fault_tree_analysis.cc
+      20      5    177      3 FaultTreeAnalysis::CombineElAndSet@626-645@./fault_tree_analysis.cc
+      18      4    164      3 FaultTreeAnalysis::MProbOr@650-678@./fault_tree_analysis.cc
+       1      1      7      0 FaultTreeAnalysis::MSample@680-680@./fault_tree_analysis.cc
+       1      1      8      0 p_total@63-63@./fault_tree_analysis.h
+       3      1      8      0 min_cut_sets@67-69@./fault_tree_analysis.h
+       3      1      8      0 prob_of_min_sets@73-75@./fault_tree_analysis.h
+       3      1      8      0 imp_of_primaries@79-81@./fault_tree_analysis.h
+       1      1      5      0 FaultTreeAnalysis@83-83@./fault_tree_analysis.h
        1      1     21      1 FaultTree::FaultTree@11-11@./fault_tree.cc
-      12      4     94      1 FaultTree::AddGate@13-25@./fault_tree.cc
-       4      1     17      0 FaultTree::Validate@27-32@./fault_tree.cc
-       7      2     61      0 FaultTree::GatherPrimaryEvents@34-41@./fault_tree.cc
-      15      4    147      1 FaultTree::GetPrimaryEvents@43-59@./fault_tree.cc
+      32      9    246      1 FaultTree::AddGate@13-46@./fault_tree.cc
+       7      1     50      0 FaultTree::Validate@48-58@./fault_tree.cc
+      35      9    325      3 FaultTree::CheckCyclicity@60-95@./fault_tree.cc
+       7      2     61      0 FaultTree::GatherPrimaryEvents@97-104@./fault_tree.cc
+      15      4    147      1 FaultTree::GetPrimaryEvents@106-122@./fault_tree.cc
+       1      1      5      0 FaultTree@31-31@./fault_tree.h
+       1      1      8      0 name@48-48@./fault_tree.h
+       1      1      8      0 top_event@51-51@./fault_tree.h
+       3      1      8      0 inter_events@55-57@./fault_tree.h
+       3      1      8      0 primary_events@62-64@./fault_tree.h
        4      1     34      2 Gate::Gate@9-12@./gate.cc
        7      2     42      0 Gate::type@14-20@./gate.cc
        8      2     47      1 Gate::type@22-29@./gate.cc
@@ -37,81 +77,87 @@
        5      1     36      1 RelaxNGValidator::parse_memory@35-39@./relax_ng_validator.cc
       10      3     37      0 RelaxNGValidator::release_underlying@41-51@./relax_ng_validator.cc
       24      7    122      1 RelaxNGValidator::Validate@53-83@./relax_ng_validator.cc
-      42     10    226      5 FaultTreeAnalysis::FaultTreeAnalysis@14-68@./fault_tree_analysis.cc
-       3      1     34      2 operator ( )@77-79@./fault_tree_analysis.cc
-     104     21    924      2 FaultTreeAnalysis::Analyze@82-232@./fault_tree_analysis.cc
-      17      5    141      2 FaultTreeAnalysis::ExpandTree@234-260@./fault_tree_analysis.cc
-     162     37   1395      2 FaultTreeAnalysis::ExpandSets@262-443@./fault_tree_analysis.cc
-      14      3    112      3 FaultTreeAnalysis::SetOr@445-458@./fault_tree_analysis.cc
-      14      3    112      3 FaultTreeAnalysis::SetAnd@460-473@./fault_tree_analysis.cc
-      33      8    293      3 FaultTreeAnalysis::FindMcs@475-519@./fault_tree_analysis.cc
-      26      4    292      1 FaultTreeAnalysis::AssignIndices@522-563@./fault_tree_analysis.cc
-      16      4    163      0 FaultTreeAnalysis::SetsToString@565-580@./fault_tree_analysis.cc
-      16      4    159      2 FaultTreeAnalysis::ProbOr@582-607@./fault_tree_analysis.cc
-      13      4    103      1 FaultTreeAnalysis::ProbAnd@609-623@./fault_tree_analysis.cc
-      20      5    177      3 FaultTreeAnalysis::CombineElAndSet@625-644@./fault_tree_analysis.cc
-      18      4    164      3 FaultTreeAnalysis::MProbOr@649-677@./fault_tree_analysis.cc
-       1      1      7      0 FaultTreeAnalysis::MSample@679-679@./fault_tree_analysis.cc
        1      1      7      0 Reporter::Reporter@23-23@./reporter.cc
      289     42   2667      3 Reporter::ReportFta@25-350@./reporter.cc
-     129     24   1033      2 main@21-192@./scram.cc
-       1      1     22      0 Superset::Superset@7-7@./superset.cc
-       4      3     29      1 Superset::InsertPrimary@9-12@./superset.cc
-       4      2     25      1 Superset::InsertGate@14-17@./superset.cc
-      36     14    300      1 Superset::InsertSet@19-56@./superset.cc
-       9      2     65      0 Superset::PopGate@58-66@./superset.cc
-       1      1      7      0 XMLParser::XMLParser@13-13@./xml_parser.cc
-       3      1     11      0 XMLParser@15-17@./xml_parser.cc
-      11      3     87      1 XMLParser::Init@19-29@./xml_parser.cc
-       5      1     39      1 XMLParser::Validate@31-35@./xml_parser.cc
-      10      2     98      0 XMLParser::Document@37-55@./xml_parser.cc
       25      1    158      1 RiskAnalysis::RiskAnalysis@17-47@./risk_analysis.cc
       57     11    556      1 RiskAnalysis::ProcessInput@49-121@./risk_analysis.cc
        5      1     33      0 RiskAnalysis::GraphingInstructions@123-128@./risk_analysis.cc
        3      1     17      0 RiskAnalysis::Analyze@130-132@./risk_analysis.cc
        5      1     35      1 RiskAnalysis::Report@134-139@./risk_analysis.cc
-     214     53   1914      2 RiskAnalysis::DefineGate@141-386@./risk_analysis.cc
-      54      9    506      1 RiskAnalysis::DefineBasicEvent@388-447@./risk_analysis.cc
-      56     10    518      1 RiskAnalysis::DefineHouseEvent@449-510@./risk_analysis.cc
-      24     11    200      1 RiskAnalysis::DefineFaultTree@512-542@./risk_analysis.cc
-      15      5    133      1 RiskAnalysis::ProcessModelData@544-560@./risk_analysis.cc
-      22      6    157      0 RiskAnalysis::ValidateInitialization@562-597@./risk_analysis.cc
-      10      2     82      0 RiskAnalysis::CheckAllGates@599-611@./risk_analysis.cc
-      71     22    578      1 RiskAnalysis::CheckGate@613-687@./risk_analysis.cc
-      27      7    229      0 RiskAnalysis::CheckMissingEvents@689-718@./risk_analysis.cc
+     220     53   1980      2 RiskAnalysis::DefineGate@141-392@./risk_analysis.cc
+      58      8    531      1 RiskAnalysis::DefineBasicEvent@394-458@./risk_analysis.cc
+      59     11    545      1 RiskAnalysis::DefineHouseEvent@460-524@./risk_analysis.cc
+      24     11    200      1 RiskAnalysis::DefineFaultTree@526-556@./risk_analysis.cc
+      15      5    133      1 RiskAnalysis::ProcessModelData@558-574@./risk_analysis.cc
+      22      6    157      0 RiskAnalysis::ValidateInitialization@576-611@./risk_analysis.cc
+      10      2     82      0 RiskAnalysis::CheckAllGates@613-625@./risk_analysis.cc
+      71     22    578      1 RiskAnalysis::CheckGate@627-701@./risk_analysis.cc
+      27      7    229      0 RiskAnalysis::CheckMissingEvents@703-732@./risk_analysis.cc
+       1      1     12      1 fta@45-45@./risk_analysis.h
+       4      1     11      0 RiskAnalysis@96-99@./risk_analysis.h
+     129     26   1033      2 main@21-197@./scram.cc
+       1      1     22      0 Superset::Superset@7-7@./superset.cc
+       4      3     29      1 Superset::InsertPrimary@9-12@./superset.cc
+       4      2     25      1 Superset::InsertGate@14-17@./superset.cc
+      36     14    300      1 Superset::InsertSet@19-56@./superset.cc
+       9      2     65      0 Superset::PopGate@58-66@./superset.cc
+       1      1     12      0 NumOfPrimaryEvents@63-63@./superset.h
+       1      1     12      0 NumOfGates@67-67@./superset.h
+       1      1      8      0 p_events@71-71@./superset.h
+       1      1      8      0 gates@75-75@./superset.h
+       1      1      8      0 null@79-79@./superset.h
+       1      1      5      0 Superset@81-81@./superset.h
+       1      1      7      0 XMLParser::XMLParser@13-13@./xml_parser.cc
+       1      1     11      0 XMLParser@15-15@./xml_parser.cc
+       9      3     87      1 XMLParser::Init@17-27@./xml_parser.cc
+       5      1     39      1 XMLParser::Validate@29-33@./xml_parser.cc
+       4      1     23      0 XMLParser::Document@35-38@./xml_parser.cc
 --------------------------------------------------------------
-14 file analyzed.
+27 file analyzed.
 ==============================================================
 NLOC    Avg.NLOC AvgCCN Avg.ttoken  function_cnt    file
 --------------------------------------------------------------
+     43      0    0.0         0         0     ./CMakeLists.txt
       8      2    1.0        10         2     ./env.cc
-     18      5    1.0        44         3     ./event.cc
+      8      2    1.0        10         2     ./env.cc.in
+     10      0    0.0         0         0     ./env.h
       8      2    1.0        21         2     ./error.cc
-     44      7    2.0        68         5     ./fault_tree.cc
+     33      1    1.0        13         6     ./error.h
+     18      5    1.0        44         3     ./event.cc
+     58      1    1.0         5         6     ./event.h
+    512     33    7.0       287        15     ./fault_tree_analysis.cc
+     93      2    1.0         7         5     ./fault_tree_analysis.h
+    102     16    4.0       141         6     ./fault_tree.cc
+     40      1    1.0         7         5     ./fault_tree.h
      61      8    2.0        57         7     ./gate.cc
     159     49    7.0       500         3     ./grapher.cc
+     21      0    0.0         0         0     ./grapher.h
      53      6    2.0        43         8     ./primary_event.cc
      55      8    2.0        42         6     ./relax_ng_validator.cc
-    511     33    7.0       286        15     ./fault_tree_analysis.cc
+     17      0    0.0         0         0     ./relax_ng_validator.h
     306    145   21.0      1337         2     ./reporter.cc
-    139    129   24.0      1033         1     ./scram.cc
+     11      0    0.0         0         0     ./reporter.h
+    613     42   10.0       373        14     ./risk_analysis.cc
+     65      2    1.0        11         2     ./risk_analysis.h
+    139    129   26.0      1033         1     ./scram.cc
      57     10    4.0        88         5     ./superset.cc
-     37      6    1.0        48         5     ./xml_parser.cc
-    600     42   10.0       365        14     ./risk_analysis.cc
+     26      1    1.0         8         6     ./superset.h
+     27      4    1.0        33         5     ./xml_parser.cc
+     15      0    0.0         0         0     ./xml_parser.h
 
 ======================================
 !!!! Warnings (CCN > 15) !!!!
 ========================================
-  NLOC    CCN   token  PARAM  location
+  NLOC    CCN   token  PARAM  location  
 ----------------------------------------
-     214     53   1914      2 RiskAnalysis::DefineGate@141-386@./risk_analysis.cc
-     289     42   2667      3 Reporter::ReportFta@25-350@./reporter.cc
-     162     37   1395      2 FaultTreeAnalysis::ExpandSets@262-443@./fault_tree_analysis.cc
-     129     24   1033      2 main@21-192@./scram.cc
-      71     22    578      1 RiskAnalysis::CheckGate@613-687@./risk_analysis.cc
-     104     21    924      2 FaultTreeAnalysis::Analyze@82-232@./fault_tree_analysis.cc
+     104     21    924      2 FaultTreeAnalysis::Analyze@83-233@./fault_tree_analysis.cc
+     162     37   1395      2 FaultTreeAnalysis::ExpandSets@263-444@./fault_tree_analysis.cc
      112     16   1110      4 Grapher::GraphFaultTree@21-153@./grapher.cc
+     289     42   2667      3 Reporter::ReportFta@25-350@./reporter.cc
+     220     53   1980      2 RiskAnalysis::DefineGate@141-392@./risk_analysis.cc
+      71     22    578      1 RiskAnalysis::CheckGate@627-701@./risk_analysis.cc
+     129     26   1033      2 main@21-197@./scram.cc
 ==========================================================================================
-Total nloc  Avg.nloc  Avg CCN  Avg token  Fun Cnt  Warning cnt   Fun Rt   nloc Rt
+Total nloc  Avg.nloc  Avg CCN  Avg token  Fun Cnt  Warning cnt   Fun Rt   nloc Rt  
 ------------------------------------------------------------------------------------------
-      2056        25     5.67     216.00       78            7      0.09    0.55
+      2558        18     4.41     159.36      111            7      0.06    0.53

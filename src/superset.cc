@@ -4,11 +4,11 @@
 
 namespace scram {
 
-Superset::Superset() : cancel(false), neg_gates_(0), neg_primes_(false) {}
+Superset::Superset() : null_(false), neg_gates_(0), neg_p_events_(false) {}
 
 void Superset::InsertPrimary(int id) {
-  if (!neg_primes_ && id < 0) neg_primes_ = true;
-  primes_.insert(id);
+  if (!neg_p_events_ && id < 0) neg_p_events_ = true;
+  p_events_.insert(id);
 }
 
 void Superset::InsertGate(int id) {
@@ -17,40 +17,40 @@ void Superset::InsertGate(int id) {
 }
 
 bool Superset::InsertSet(const boost::shared_ptr<Superset>& st) {
-  if (cancel) return false;
-  if (primes_.empty() && gates_.empty()) {
-    primes_ = st->primes_;
+  if (null_) return false;
+  if (p_events_.empty() && gates_.empty()) {
+    p_events_ = st->p_events_;
     gates_ = st->gates_;
     neg_gates_ = st->neg_gates_;
-    neg_primes_ = st->neg_primes_;
+    neg_p_events_ = st->neg_p_events_;
     return true;
   }
   std::set<int>::iterator it;
-  if (neg_primes_ || st->neg_primes_) {
-    for (it = st->primes_.begin(); it != st->primes_.end(); ++it) {
-      if (primes_.count(-1 * (*it))) {
-        primes_.clear();
+  if (neg_p_events_ || st->neg_p_events_) {
+    for (it = st->p_events_.begin(); it != st->p_events_.end(); ++it) {
+      if (p_events_.count(-1 * (*it))) {
+        p_events_.clear();
         gates_.clear();
-        cancel = true;
+        null_ = true;
         return false;
       }
     }
-    if (!neg_primes_) neg_primes_ = false;  // New negative were included.
+    if (!neg_p_events_) neg_p_events_ = false;  // New negative were included.
   }
 
   if (neg_gates_ || st->neg_gates_) {
     for (it = st->gates_.begin(); it != st->gates_.end(); ++it) {
       if (gates_.count(-1 * (*it))) {
-        primes_.clear();
+        p_events_.clear();
         gates_.clear();
-        cancel = true;
+        null_ = true;
         return false;
       }
       if (*it < 0) ++neg_gates_;
     }
   }
 
-  primes_.insert(st->primes_.begin(), st->primes_.end());
+  p_events_.insert(st->p_events_.begin(), st->p_events_.end());
   gates_.insert(st->gates_.begin(), st->gates_.end());
   return true;
 }

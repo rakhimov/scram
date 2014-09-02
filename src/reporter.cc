@@ -304,10 +304,10 @@ void Reporter::ReportFta(const FaultTreeAnalysis* fta,
       int size = it_vec->size();
       for (it_set = it_vec->begin(); it_set != it_vec->end(); ++it_set) {
         if (*it_set > 0) {
-          std::string id = fta->int_to_prime_[*it_set]->id();
+          std::string id = fta->int_to_primary_[*it_set]->id();
           out << orig_ids.find(id)->second;
         } else {
-          std::string id = fta->int_to_prime_[std::abs(*it_set)]->id();
+          std::string id = fta->int_to_primary_[std::abs(*it_set)]->id();
           out << "NOT " << orig_ids.find(id)->second;
         }
         if (j < size) {
@@ -330,10 +330,10 @@ void Reporter::ReportFta(const FaultTreeAnalysis* fta,
       int size = it_vec->size();
       for (it_set = it_vec->begin(); it_set != it_vec->end(); ++it_set) {
         if (*it_set > 0) {
-          std::string id = fta->int_to_prime_[*it_set]->id();
+          std::string id = fta->int_to_primary_[*it_set]->id();
           out << orig_ids.find(id)->second;
         } else {
-          std::string id = fta->int_to_prime_[std::abs(*it_set)]->id();
+          std::string id = fta->int_to_primary_[std::abs(*it_set)]->id();
           out << "NOT " << orig_ids.find(id)->second;
         }
         if (j < size) {

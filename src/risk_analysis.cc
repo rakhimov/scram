@@ -142,6 +142,7 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
                               FaultTreePtr& ft) {
   // Only one child element is expected, which is a formulae.
   std::string orig_id = gate_node->get_attribute_value("name");
+  boost::trim(orig_id);
   std::string id = orig_id;
   boost::to_lower(id);
   orig_ids_.insert(std::make_pair(id, orig_id));
@@ -153,7 +154,6 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
   // Check if the gate type is supported.
   const xmlpp::Node* gate_type = gates.front();
   std::string type = gate_type->get_name();
-  boost::to_lower(type);
   if (!gate_types_.count(type)) {
     std::stringstream msg;
     msg << "Line " << gate_type->get_line() << ":\n";
@@ -165,7 +165,9 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
   if (type == "atleast") {
     const xmlpp::Element* gate =
         dynamic_cast<const xmlpp::Element*>(gate_type);
-    vote_number_ = boost::lexical_cast<int>(gate->get_attribute_value("min"));
+    std::string min_num = gate->get_attribute_value("min");
+    boost::trim(min_num);
+    vote_number_ = boost::lexical_cast<int>(min_num);
   }
 
 
@@ -199,6 +201,7 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
     for (it = tbd_events_.find(id)->second.begin();
          it != tbd_events_.find(id)->second.end(); ++it) {
       (*it)->AddChild(i_event);
+      i_event->AddParent(*it);
     }
     tbd_events_.erase(id);
   }
@@ -222,6 +225,7 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
     const xmlpp::Element* event = dynamic_cast<const xmlpp::Element*>(*it);
     if (!event) continue;  // Ignore non-elements.
     std::string orig_id = event->get_attribute_value("name");
+    boost::trim(orig_id);
     std::string id = orig_id;
     boost::to_lower(id);
     orig_ids_.insert(std::make_pair(id, orig_id));
@@ -231,6 +235,7 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
            name == "house-event");
     // This is for a case "<event name="id" type="type"/>".
     std::string type = event->get_attribute_value("type");
+    boost::trim(type);
     if (type != "") {
       assert(type == "gate" || type == "basic-event" ||
              type == "house-event");
@@ -286,6 +291,7 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
           for (it = tbd_events_.find(id)->second.begin();
                it != tbd_events_.find(id)->second.end(); ++it) {
             (*it)->AddChild(child);
+            child->AddParent(*it);
           }
           tbd_events_.erase(id);
         }
@@ -300,6 +306,13 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
             << " is already assigned to a gate.";
         throw scram::ValidationError(msg.str());
       }
+      if (tbd_house_events_.count(id)) {
+        std::stringstream msg;
+        msg << "Line " << event->get_line() << ":\n";
+        msg << "The id " << orig_ids_.find(id)->second
+            << " is already used by a house event.";
+        throw scram::ValidationError(msg.str());
+      }
       if (primary_events_.count(id)) {
         child = primary_events_.find(id)->second;
         if (boost::dynamic_pointer_cast<scram::BasicEvent>(child) == 0) {
@@ -309,15 +322,7 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
               << " is already assigned to a house event.";
           throw scram::ValidationError(msg.str());
         }
-      }
-      if (tbd_house_events_.count(id)) {
-        std::stringstream msg;
-        msg << "Line " << event->get_line() << ":\n";
-        msg << "The id " << orig_ids_.find(id)->second
-            << " is already used by a house event.";
-        throw scram::ValidationError(msg.str());
-      }
-      if (tbd_basic_events_.count(id)) {
+      } else if (tbd_basic_events_.count(id)) {
         child = tbd_basic_events_.find(id)->second;
       } else {
         child = BasicEventPtr(new BasicEvent(id));
@@ -329,6 +334,7 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
           for (it = tbd_events_.find(id)->second.begin();
                it != tbd_events_.find(id)->second.end(); ++it) {
             (*it)->AddChild(child);
+            child->AddParent(*it);
           }
           tbd_events_.erase(id);
         }
@@ -343,6 +349,13 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
             << " is already assigned to a gate.";
         throw scram::ValidationError(msg.str());
       }
+      if (tbd_basic_events_.count(id)) {
+        std::stringstream msg;
+        msg << "Line " << event->get_line() << ":\n";
+        msg << "The id " << orig_ids_.find(id)->second
+            << " is already used by a basic event.";
+        throw scram::ValidationError(msg.str());
+      }
       if (primary_events_.count(id)) {
         child = primary_events_.find(id)->second;
         if (boost::dynamic_pointer_cast<scram::HouseEvent>(child) == 0) {
@@ -352,15 +365,7 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
               << " is already assigned to a basic event.";
           throw scram::ValidationError(msg.str());
         }
-      }
-      if (tbd_basic_events_.count(id)) {
-        std::stringstream msg;
-        msg << "Line " << event->get_line() << ":\n";
-        msg << "The id " << orig_ids_.find(id)->second
-            << " is already used by a basic event.";
-        throw scram::ValidationError(msg.str());
-      }
-      if (tbd_house_events_.count(id)) {
+      } else if (tbd_house_events_.count(id)) {
         child = tbd_house_events_.find(id)->second;
       } else {
         child = HouseEventPtr(new HouseEvent(id));
@@ -372,6 +377,7 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
           for (it = tbd_events_.find(id)->second.begin();
                it != tbd_events_.find(id)->second.end(); ++it) {
             (*it)->AddChild(child);
+            child->AddParent(*it);
           }
           tbd_events_.erase(id);
         }
@@ -387,6 +393,7 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
 
 void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node) {
   std::string orig_id = event_node->get_attribute_value("name");
+  boost::trim(orig_id);
   std::string id = orig_id;
   boost::to_lower(id);
   orig_ids_.insert(std::make_pair(id, orig_id));
@@ -419,9 +426,12 @@ void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node) {
   assert(expression.size() == 1);
   const xmlpp::Element* float_prob =
       dynamic_cast<const xmlpp::Element*>(expression.front());
-  if (!float_prob) assert(false);
 
-  p = boost::lexical_cast<double>(float_prob->get_attribute_value("value"));
+  assert(float_prob);
+
+  std::string prob = float_prob->get_attribute_value("value");
+  boost::trim(prob);
+  p = boost::lexical_cast<double>(prob);
 
   if (tbd_basic_events_.count(id)) {
     BasicEventPtr b = tbd_basic_events_.find(id)->second;
@@ -440,6 +450,7 @@ void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node) {
       for (it = tbd_events_.find(id)->second.begin();
            it != tbd_events_.find(id)->second.end(); ++it) {
         (*it)->AddChild(child);
+        child->AddParent(*it);
       }
       tbd_events_.erase(id);
     }
@@ -448,6 +459,7 @@ void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node) {
 
 void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node) {
   std::string orig_id = event_node->get_attribute_value("name");
+  boost::trim(orig_id);
   std::string id = orig_id;
   boost::to_lower(id);
   orig_ids_.insert(std::make_pair(id, orig_id));
@@ -481,7 +493,8 @@ void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node) {
   if (!constant) assert(false);
 
   std::string val = constant->get_attribute_value("value");
-  boost::to_lower(val);
+  boost::trim(val);
+  assert(val == "true" || val == "false");
 
   int p = 0;
   if (val == "true") p = 1;
@@ -503,6 +516,7 @@ void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node) {
       for (it = tbd_events_.find(id)->second.begin();
            it != tbd_events_.find(id)->second.end(); ++it) {
         (*it)->AddChild(child);
+        child->AddParent(*it);
       }
       tbd_events_.erase(id);
     }

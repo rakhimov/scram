@@ -171,9 +171,9 @@ class FaultTreeAnalysis {
   /// Indices min cut sets to strings min cut sets mapping.
   std::map< std::set<int>, std::set<std::string> > imcs_to_smcs_;
 
-  std::vector<PrimaryEventPtr> int_to_prime_;  ///< Primary events from indices.
+  std::vector<PrimaryEventPtr> int_to_primary_;  ///< Indices to primary events.
   /// Indices of primary events.
-  boost::unordered_map<std::string, int> prime_to_int_;
+  boost::unordered_map<std::string, int> primary_to_int_;
   std::vector<double> iprobs_;  ///< Holds probabilities of primary events.
 
   int top_event_index_;  ///< The index of the top event.
