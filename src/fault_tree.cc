@@ -16,7 +16,7 @@ void FaultTree::AddGate(const GatePtr& gate) {
     top_event_id_ = gate->id();
   } else {
     if (inter_events_.count(gate->id()) || gate->id() == top_event_id_) {
-      throw scram::ValueError("Trying to doubly define a gate");
+      throw scram::ValidationError("Trying to doubly define a gate");
     }
     // Check if this gate has a valid parent in this tree.
     const std::map<std::string, GatePtr>* parents;

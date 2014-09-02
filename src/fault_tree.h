@@ -33,6 +33,7 @@ class FaultTree {
   /// Adds a gate into this tree.
   /// The first gate is assumed to be a top event.
   /// @param[in] gate The gate to be added to this tree.
+  /// @throws ValidationError for readded gates and out-of-order addition.
   void AddGate(const GatePtr& gate);
 
   /// Validates this tree's structure and events.
