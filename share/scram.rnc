@@ -11,7 +11,7 @@
 # =============================================================
 start =
   element opsa-mef {
-    attribute name { xsd:string }?,
+    attribute name { xsd:NCName }?,
     label?,
     attributes?,
     (event-tree-definition
@@ -52,30 +52,30 @@ include-directive =
 # =============================================================
 consequence-definition =
   element define-consequence {
-    attribute name { xsd:string },
+    attribute name { xsd:NCName },
     label?,
     attributes?,
     element initiating-event {
-      attribute name { xsd:string }
+      attribute name { xsd:NCName }
     },
     element sequence {
-      attribute name { xsd:string }
+      attribute name { xsd:NCName }
     }
   }
 consequence-group-definition =
   element define-consequence-group {
-    attribute name { xsd:string },
+    attribute name { xsd:NCName },
     label?,
     attributes?,
     (consequence | consequence-group)
   }
 consequence =
   element consequence {
-    attribute name { xsd:string }
+    attribute name { xsd:NCName }
   }
 consequence-group =
   element consequence-group {
-    attribute name { xsd:string }
+    attribute name { xsd:NCName }
   }
 # =============================================================
 
@@ -84,14 +84,14 @@ consequence-group =
 # =============================================================
 alignment-definition =
   element define-alignment {
-    attribute name { xsd:string },
+    attribute name { xsd:NCName },
     label?,
     attributes?,
     phase-definition+
   }
 phase-definition =
   element define-phase {
-    attribute name { xsd:string },
+    attribute name { xsd:NCName },
     attribute time-fraction { xsd:float },
     label?,
     attributes?,
@@ -110,26 +110,26 @@ phase-definition =
 # =============================================================
 initiating-event-definition =
   element define-initiating-event {
-    attribute name { xsd:string },
-    attribute event-tree { xsd:string }?,
+    attribute name { xsd:NCName },
+    attribute event-tree { xsd:NCName }?,
     label?,
     attributes?,
     (collected-item | consequence | consequence-group)?
   }
 initiating-event-group-definition =
   element define-initiating-event-group {
-    attribute name { xsd:string },
-    attribute event-tree { xsd:string }?,
+    attribute name { xsd:NCName },
+    attribute event-tree { xsd:NCName }?,
     label?,
     attributes?,
     initiating-event+
   }
 initiating-event =
   element initiating-event {
-    attribute name { xsd:string }
+    attribute name { xsd:NCName }
   }
   | element initiating-event-group {
-      attribute name { xsd:string }
+      attribute name { xsd:NCName }
     }
 collected-item = basic-event | gate | parameter
 # =============================================================
@@ -139,7 +139,7 @@ collected-item = basic-event | gate | parameter
 # =============================================================
 event-tree-definition =
   element define-event-tree {
-    attribute name { xsd:string },
+    attribute name { xsd:NCName },
     label?,
     attributes?,
     functional-event-definition*,
@@ -149,20 +149,20 @@ event-tree-definition =
   }
 functional-event-definition =
   element define-functional-event {
-    attribute name { xsd:string },
+    attribute name { xsd:NCName },
     label?,
     attributes?
   }
 sequence-definition =
   element define-sequence {
-    attribute name { xsd:string },
+    attribute name { xsd:NCName },
     label?,
     attributes?,
     instruction+
   }
 branch-definition =
   element define-branch {
-    attribute name { xsd:string },
+    attribute name { xsd:NCName },
     label?,
     attributes?,
     branch
@@ -171,21 +171,21 @@ initial-state = element initial-state { branch }
 branch = instruction*, (fork | end-state)
 fork =
   element fork {
-    attribute functional-event { xsd:string },
+    attribute functional-event { xsd:NCName },
     path+
   }
 path =
   element path {
-    attribute state { xsd:string },
+    attribute state { xsd:NCName },
     branch
   }
 end-state =
   element sequence {
-    attribute name { xsd:string },
+    attribute name { xsd:NCName },
     empty
   }
   | element branch {
-      attribute name { xsd:string },
+      attribute name { xsd:NCName },
       empty
     }
 # =============================================================
@@ -197,25 +197,25 @@ instruction = set | collect | if-then-else | block | rule | link
 set = set-gate | set-house-event | set-basic-event | set-parameter
 set-gate =
   element set-gate {
-    attribute name { xsd:string },
+    attribute name { xsd:NCName },
     attribute direction { direction }?,
     formula
   }
 set-house-event =
   element set-house-event {
-    attribute name { xsd:string },
+    attribute name { xsd:NCName },
     attribute direction { direction }?,
     Boolean-constant
   }
 set-basic-event =
   element set-basic-event {
-    attribute name { xsd:string },
+    attribute name { xsd:NCName },
     attribute direction { direction }?,
     expression
   }
 set-parameter =
   element set-parameter {
-    attribute name { xsd:string },
+    attribute name { xsd:NCName },
     attribute direction { direction }?,
     expression
   }
@@ -227,17 +227,17 @@ collect-expression = element collect-expression { expression }
 block = element block { instruction* }
 rule =
   element rule {
-    attribute name { xsd:string },
+    attribute name { xsd:NCName },
     empty
   }
 link =
   element event-tree {
-    attribute name { xsd:string },
+    attribute name { xsd:NCName },
     empty
   }
 rule-definition =
   element define-rule {
-    attribute name { xsd:string },
+    attribute name { xsd:NCName },
     label?,
     attributes?,
     instruction+
@@ -255,7 +255,7 @@ rule-definition =
 # =============================================================
 CCF-group-definition =
   element define-CCF-group {
-    attribute name { xsd:string },
+    attribute name { xsd:NCName },
     attribute model { CCF-model },
     label?,
     attributes?,
@@ -281,7 +281,7 @@ CCF-model = "beta-factor" | "MGL" | "alpha-factor" | "phi-factor"
 # =============================================================
 substitution-definition =
   element define-substitution {
-    attribute name { xsd:string }?,
+    attribute name { xsd:NCName }?,
     attribute type { xsd:string }?,
     label?,
     attributes?,
@@ -302,7 +302,7 @@ substitution-definition =
 # =============================================================
 fault-tree-definition =
   element define-fault-tree {
-    attribute name { xsd:string },
+    attribute name { xsd:NCName },
     label?,
     attributes?,
     (substitution-definition
@@ -314,7 +314,7 @@ fault-tree-definition =
   }
 component-definition =
   element define-component {
-    attribute name { xsd:string },
+    attribute name { xsd:NCName },
     attribute role { "private" | "public" }?,
     label?,
     attributes?,
@@ -334,7 +334,7 @@ event-definition =
 # =============================================================
 gate-definition =
   element define-gate {
-    attribute name { xsd:string },
+    attribute name { xsd:NCName },
     attribute role { "private" | "public" }?,
     label?,
     attributes?,
@@ -342,7 +342,7 @@ gate-definition =
   }
 house-event-definition =
   element define-house-event {
-    attribute name { xsd:string },
+    attribute name { xsd:NCName },
     attribute role { "private" | "public" }?,
     label?,
     attributes?,
@@ -350,7 +350,7 @@ house-event-definition =
   }
 basic-event-definition =
   element define-basic-event {
-    attribute name { xsd:string },
+    attribute name { xsd:NCName },
     attribute role { "private" | "public" }?,
     label?,
     attributes?,
@@ -383,7 +383,7 @@ formula =
   | element imply { formula, formula }
 event =
   element event {
-    attribute name { xsd:string },
+    attribute name { xsd:NCName },
     attribute type { event-type }?
   }
   | gate
@@ -392,15 +392,15 @@ event =
 event-type = "gate" | "basic-event" | "house-event"
 gate =
   element gate {
-    attribute name { xsd:string }
+    attribute name { xsd:NCName }
   }
 house-event =
   element house-event {
-    attribute name { xsd:string }
+    attribute name { xsd:NCName }
   }
 basic-event =
   element basic-event {
-    attribute name { xsd:string }
+    attribute name { xsd:NCName }
   }
 Boolean-constant =
   element constant {
@@ -420,7 +420,7 @@ Boolean-value = "true" | "false"
 # =============================================================
 parameter-definition =
   element define-parameter {
-    attribute name { xsd:string },
+    attribute name { xsd:NCName },
     attribute role { "private" | "public" }?,
     attribute unit { units }?,
     label?,
@@ -458,7 +458,7 @@ expression =
 constant = bool | int | float
 parameter =
   element parameter {
-    attribute name { xsd:string },
+    attribute name { xsd:NCName },
     attribute unit { units }?
   }
   | element system-mission-time {
@@ -580,7 +580,7 @@ periodic-test =
     }
 extern-function =
   element extern-function {
-    attribute name { xsd:string },
+    attribute name { xsd:NCName },
     expression*
   }
 # ***********************************************************
@@ -603,10 +603,10 @@ bin = element bin { expression, expression }
 # ***********************************************************
 test-initiating-event =
   element test-initiating-event {
-    attribute name { xsd:string }
+    attribute name { xsd:NCName }
   }
 test-functional-event =
   element test-functional-event {
-    attribute name { xsd:string },
+    attribute name { xsd:NCName },
     attribute state { xsd:string }
   }

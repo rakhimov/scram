@@ -2,7 +2,7 @@
 <!-- Correct Graphing Input
 -->
 <opsa-mef>
-  <define-fault-tree name="Two Trains">
+  <define-fault-tree name="TwoTrains">
     <define-gate name="TopEvent">
       <atleast min="2">
         <event name="TrainOne"/>

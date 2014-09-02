@@ -306,6 +306,13 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
             << " is already assigned to a gate.";
         throw scram::ValidationError(msg.str());
       }
+      if (tbd_house_events_.count(id)) {
+        std::stringstream msg;
+        msg << "Line " << event->get_line() << ":\n";
+        msg << "The id " << orig_ids_.find(id)->second
+            << " is already used by a house event.";
+        throw scram::ValidationError(msg.str());
+      }
       if (primary_events_.count(id)) {
         child = primary_events_.find(id)->second;
         if (boost::dynamic_pointer_cast<scram::BasicEvent>(child) == 0) {
@@ -315,15 +322,7 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
               << " is already assigned to a house event.";
           throw scram::ValidationError(msg.str());
         }
-      }
-      if (tbd_house_events_.count(id)) {
-        std::stringstream msg;
-        msg << "Line " << event->get_line() << ":\n";
-        msg << "The id " << orig_ids_.find(id)->second
-            << " is already used by a house event.";
-        throw scram::ValidationError(msg.str());
-      }
-      if (tbd_basic_events_.count(id)) {
+      } else if (tbd_basic_events_.count(id)) {
         child = tbd_basic_events_.find(id)->second;
       } else {
         child = BasicEventPtr(new BasicEvent(id));
@@ -350,6 +349,13 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
             << " is already assigned to a gate.";
         throw scram::ValidationError(msg.str());
       }
+      if (tbd_basic_events_.count(id)) {
+        std::stringstream msg;
+        msg << "Line " << event->get_line() << ":\n";
+        msg << "The id " << orig_ids_.find(id)->second
+            << " is already used by a basic event.";
+        throw scram::ValidationError(msg.str());
+      }
       if (primary_events_.count(id)) {
         child = primary_events_.find(id)->second;
         if (boost::dynamic_pointer_cast<scram::HouseEvent>(child) == 0) {
@@ -359,15 +365,7 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
               << " is already assigned to a basic event.";
           throw scram::ValidationError(msg.str());
         }
-      }
-      if (tbd_basic_events_.count(id)) {
-        std::stringstream msg;
-        msg << "Line " << event->get_line() << ":\n";
-        msg << "The id " << orig_ids_.find(id)->second
-            << " is already used by a basic event.";
-        throw scram::ValidationError(msg.str());
-      }
-      if (tbd_house_events_.count(id)) {
+      } else if (tbd_house_events_.count(id)) {
         child = tbd_house_events_.find(id)->second;
       } else {
         child = HouseEventPtr(new HouseEvent(id));

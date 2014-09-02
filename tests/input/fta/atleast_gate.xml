@@ -3,7 +3,7 @@
 Not enough children
 -->
 <opsa-mef>
-  <define-fault-tree name="Two Trains">
+  <define-fault-tree name="TwoTrains">
     <define-gate name="TopEvent">
       <atleast min="2">
         <basic-event name="ValveOne"/>

@@ -4,7 +4,7 @@ The tree contains a gate that was not declared as a child of another gate.
 This is only allowed for a top event but not intermediate events.
 -->
 <opsa-mef>
-  <define-fault-tree name="Two Trains">
+  <define-fault-tree name="TwoTrains">
     <define-gate name="TopEvent">
       <and>
         <gate name="TrainOne"/>

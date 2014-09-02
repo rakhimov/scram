@@ -3,7 +3,7 @@
 House event tries to define basic event.
 -->
 <opsa-mef>
-  <define-fault-tree name="Two Trains">
+  <define-fault-tree name="TwoTrains">
     <define-gate name="TopEvent">
       <and>
         <event name="TrainOne"/>

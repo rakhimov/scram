@@ -3,7 +3,7 @@
 The structure of the tree is not ordered top to down.
 -->
 <opsa-mef>
-  <define-fault-tree name="Two Trains">
+  <define-fault-tree name="TwoTrains">
     <define-gate name="TopEvent">
       <and>
         <gate name="TrainOne"/>

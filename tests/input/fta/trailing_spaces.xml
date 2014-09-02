@@ -4,7 +4,7 @@ The name of an event contains trailing spaces.
 Values contain trailing spaces.
 -->
 <opsa-mef>
-  <define-fault-tree name="Two Trains">
+  <define-fault-tree name="TwoTrains">
     <define-gate name="TopEvent">
       <and>
         <event name="TrainOne" type="   gate    "/>

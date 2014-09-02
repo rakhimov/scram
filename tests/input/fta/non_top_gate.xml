@@ -4,7 +4,7 @@ Incorrect input:
 The first gate is not the top event of the tree.
 -->
 <opsa-mef>
-  <define-fault-tree name="Two Trains">
+  <define-fault-tree name="TwoTrains">
     <define-gate name="TrainOne">
       <or>
         <basic-event name="ValveOne"/>

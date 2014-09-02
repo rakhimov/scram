@@ -94,51 +94,113 @@ define-house-event :: define-house-event
 -->
 
 <opsa-mef>
-  <define-fault-tree name="Two Trains">
-    <define-gate name="TopEvent">
-      <and>
-        <gate name="TrainOne"/>
-        <event name="TrainTwo"/>
-        <gate name="TrainThree"/>
-        <event name="ValveOne"/>
-        <event name="PumpOne"/>
-      </and>
-    </define-gate>
-    <define-gate name="TrainOne">
-      <or>
-        <basic-event name="ValveOne"/>
-        <house-event name="PumpOne"/>
-        <gate name="TrainTwo"/>
-      </or>
-    </define-gate>
-    <define-gate name="TrainTwo">
-      <or>
-        <event name="TrainThree"/>
-        <basic-event name="ValveTwo"/>
-        <event name="PumpTwo"/>
-        <event name="ValveOne"/>
-        <event name="PumpOne"/>
-      </or>
-    </define-gate>
-    <define-gate name="TrainThree">
-      <or>
-        <basic-event name="ValveTwo"/>
-        <event name="PumpTwo"/>
-        <event name="ValveOne"/>
-        <event name="PumpOne"/>
-      </or>
-    </define-gate>
-    <define-basic-event name="ValveOne">
-      <float value="0.4"/>
-    </define-basic-event>
-    <define-basic-event name="ValveTwo">
+  <define-fault-tree name="MixedDefinitions">
+    <define-basic-event name="define-basic-eventANDevent">
       <float value="0.5"/>
     </define-basic-event>
-    <define-house-event name="PumpOne">
+    <define-house-event name="define-house-eventANDevent">
       <constant value="true"/>
     </define-house-event>
-    <define-basic-event name="PumpTwo">
-      <float value="0.7"/>
+    <define-basic-event name="define-basic-eventANDbasic-event">
+      <float value="0.5"/>
     </define-basic-event>
+    <define-house-event name="define-house-eventANDhouse-event">
+      <constant value="true"/>
+    </define-house-event>
+    <define-gate name="TopEvent">
+      <and>
+        <event name="eventANDevent"/>
+        <event name="eventANDgate"/>
+        <event name="eventANDbasic-event"/>
+        <event name="eventANDhouse-event"/>
+        <event name="eventANDdefine-gate"/>
+        <event name="eventANDdefine-basic-event"/>
+        <event name="eventANDdefine-house-event"/>
+      </and>
+    </define-gate>
+    <define-gate name="eventANDdefine-gate">
+      <or>
+        <event name="eventANDevent"/>
+        <gate name="eventANDgate"/>
+        <basic-event name="eventANDbasic-event"/>
+        <house-event name="eventANDhouse-event"/>
+        <gate name="gateANDdefine-gate"/>
+        <basic-event name="basic-eventANDdefine-basic-event"/>
+        <house-event name="house-eventANDdefine-house-event"/>
+      </or>
+    </define-gate>
+    <define-gate name="gateANDdefine-gate">
+      <or>
+        <gate name="gateANDevent"/>
+        <basic-event name="basic-eventANDevent"/>
+        <house-event name="house-eventANDevent"/>
+        <gate name="gateANDgate"/>
+        <basic-event name="basic-eventANDbasic-event"/>
+        <house-event name="house-eventANDhouse-event"/>
+      </or>
+    </define-gate>
+    <define-gate name="eventANDgate">
+      <or>
+        <event name="define-basic-eventANDevent"/>
+        <event name="define-house-eventANDevent"/>
+        <event name="gateANDevent"/>
+        <event name="basic-eventANDevent"/>
+        <event name="house-eventANDevent"/>
+        <gate name="gateANDgate"/>
+        <basic-event name="basic-eventANDbasic-event"/>
+        <house-event name="house-eventANDhouse-event"/>
+      </or>
+    </define-gate>
+    <define-gate name="gateANDevent">
+      <or>
+        <basic-event name="define-basic-eventANDbasic-event"/>
+        <house-event name="define-house-eventANDhouse-event"/>
+      </or>
+    </define-gate>
+    <define-gate name="gateANDgate">
+      <or>
+        <basic-event name="define-basic-eventANDbasic-event"/>
+        <house-event name="define-house-eventANDhouse-event"/>
+      </or>
+    </define-gate>
+    <define-basic-event name="eventANDevent">
+      <float value="0.5"/>
+    </define-basic-event>
+    <define-basic-event name="eventANDdefine-basic-event">
+      <float value="0.4"/>
+    </define-basic-event>
+    <define-house-event name="eventANDdefine-house-event">
+      <constant value="true"/>
+    </define-house-event>
+    <define-basic-event name="basic-eventANDdefine-basic-event">
+      <float value="0.5"/>
+    </define-basic-event>
+    <define-house-event name="house-eventANDdefine-house-event">
+      <constant value="true"/>
+    </define-house-event>
+    <define-basic-event name="basic-eventANDevent">
+      <float value="0.5"/>
+    </define-basic-event>
+    <define-house-event name="house-eventANDevent">
+      <constant value="true"/>
+    </define-house-event>
+    <define-basic-event name="basic-eventANDbasic-event">
+      <float value="0.5"/>
+    </define-basic-event>
+    <define-house-event name="house-eventANDhouse-event">
+      <constant value="true"/>
+    </define-house-event>
+    <define-basic-event name="eventANDbasic-event">
+      <float value="0.5"/>
+    </define-basic-event>
+    <define-house-event name="eventANDhouse-event">
+      <constant value="true"/>
+    </define-house-event>
+    <define-basic-event name="extra-basic">
+      <float value="0.5"/>
+    </define-basic-event>
+    <define-house-event name="extra-house">
+      <constant value="true"/>
+    </define-house-event>
   </define-fault-tree>
 </opsa-mef>

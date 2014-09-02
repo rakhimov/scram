@@ -3,7 +3,7 @@
 The gate formula is not supported.
 -->
 <opsa-mef>
-  <define-fault-tree name="Two Trains">
+  <define-fault-tree name="TwoTrains">
     <define-gate name="TopEvent">
 
       <imply>  <!-- Here -->

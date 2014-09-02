@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <opsa-mef>
-  <define-fault-tree name="Two Trains">
+  <define-fault-tree name="TwoTrains">
     <define-gate name="TopEvent">
       <and>
         <gate name="TrainOne"/>
