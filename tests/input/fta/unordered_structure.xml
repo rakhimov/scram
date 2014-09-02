@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <!--
-The structure of the tree is not ordered top to down. However, this should
-not be a problem.
+The structure of the tree is not ordered top to down.
 -->
 <opsa-mef>
   <define-fault-tree name="Two Trains">

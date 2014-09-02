@@ -53,7 +53,6 @@ TEST(RiskAnalysisInputTest, CorrectFTAInputs) {
   correct_inputs.push_back(dir + "correct_tree_input.xml");
   correct_inputs.push_back(dir + "mixed_definitions.xml");
   correct_inputs.push_back(dir + "trailing_spaces.xml");
-  correct_inputs.push_back(dir + "unordered_structure.xml");
 
   RiskAnalysis* ran;
 
@@ -108,6 +107,9 @@ TEST(RiskAnalysisInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back(dir + "def_name_house_basic.xml");
   incorrect_inputs.push_back(dir + "def_name_basic_house.xml");
   incorrect_inputs.push_back(dir + "atleast_gate.xml");
+  incorrect_inputs.push_back(dir + "unordered_structure.xml");
+  incorrect_inputs.push_back(dir + "dangling_gate.xml");
+  incorrect_inputs.push_back(dir + "non_top_gate.xml");
   RiskAnalysis* ran;
   std::vector<std::string>::iterator it;
   for (it = ioerror_inputs.begin(); it != ioerror_inputs.end(); ++it) {

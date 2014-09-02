@@ -55,7 +55,7 @@ class FaultTreeAnalysisTest : public ::testing::Test {
   int GetIndex(std::string id) {
     if (fta->primary_to_int_.count(id)) {
       return fta->primary_to_int_.find(id)->second;
-    } else {
+    } else if (fta->inter_to_int_.count(id)) {
       return fta->inter_to_int_.find(id)->second;
     }
     return 0;  // This event is not in the tree.
@@ -89,14 +89,20 @@ class FaultTreeAnalysisTest : public ::testing::Test {
     D = GatePtr(new Gate("d", "or"));
     GatePtr top_event(new Gate("TopEvent", "null"));
     top_event->AddChild(inter);
+    inter->AddParent(top_event);
     ft = FaultTreePtr(new FaultTree("dummy"));
-    ft->AddGate(top_event);
+    ft->AddGate(top_event);  // Top event is the first gate.
     ft->AddGate(inter);
-    ft->AddGate(D);
+    // ft->AddGate(D);
 
     D->AddChild(A);
+    A->AddParent(D);
+
     D->AddChild(B);
+    B->AddParent(D);
+
     D->AddChild(C);
+    C->AddParent(D);
   }
 
   void GetIndices() {

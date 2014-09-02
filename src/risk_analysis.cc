@@ -201,6 +201,7 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
     for (it = tbd_events_.find(id)->second.begin();
          it != tbd_events_.find(id)->second.end(); ++it) {
       (*it)->AddChild(i_event);
+      i_event->AddParent(*it);
     }
     tbd_events_.erase(id);
   }
@@ -290,6 +291,7 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
           for (it = tbd_events_.find(id)->second.begin();
                it != tbd_events_.find(id)->second.end(); ++it) {
             (*it)->AddChild(child);
+            child->AddParent(*it);
           }
           tbd_events_.erase(id);
         }
@@ -333,6 +335,7 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
           for (it = tbd_events_.find(id)->second.begin();
                it != tbd_events_.find(id)->second.end(); ++it) {
             (*it)->AddChild(child);
+            child->AddParent(*it);
           }
           tbd_events_.erase(id);
         }
@@ -376,6 +379,7 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
           for (it = tbd_events_.find(id)->second.begin();
                it != tbd_events_.find(id)->second.end(); ++it) {
             (*it)->AddChild(child);
+            child->AddParent(*it);
           }
           tbd_events_.erase(id);
         }
@@ -448,6 +452,7 @@ void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node) {
       for (it = tbd_events_.find(id)->second.begin();
            it != tbd_events_.find(id)->second.end(); ++it) {
         (*it)->AddChild(child);
+        child->AddParent(*it);
       }
       tbd_events_.erase(id);
     }
@@ -513,6 +518,7 @@ void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node) {
       for (it = tbd_events_.find(id)->second.begin();
            it != tbd_events_.find(id)->second.end(); ++it) {
         (*it)->AddChild(child);
+        child->AddParent(*it);
       }
       tbd_events_.erase(id);
     }

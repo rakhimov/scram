@@ -15,11 +15,11 @@ TEST(FaultTreeTest, AddGate) {
 TEST(FaultTreeTest, Validate) {
   FaultTree* ft = new FaultTree("never_fail");
   GatePtr top(new Gate("Golden"));
-  GatePtr gate(new Gate("Golden"));
+  EventPtr gate(new Event("Iron"));
   top->AddChild(gate);
   EXPECT_NO_THROW(ft->AddGate(top));
 
-  // Not all primary events are defined.
+  // Not events are defined to be either primary or gates.
   EXPECT_THROW(ft->Validate(), ValidationError);
   delete ft;
 }

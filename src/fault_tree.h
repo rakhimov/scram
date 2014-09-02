@@ -70,6 +70,11 @@ class FaultTree {
   /// @param[in] gate The gate to get primary events from.
   void GetPrimaryEvents(const GatePtr& gate);
 
+  /// Traverses the tree to find any cyclicity.
+  /// While traversing, this function observes implicitly defined gates, and
+  /// those gates are added into the gate containers.
+  void CheckCyclicity(const GatePtr& parent);
+
   /// The name of this fault tree.
   std::string name_;
 
@@ -83,7 +88,13 @@ class FaultTree {
   boost::unordered_map<std::string, GatePtr> inter_events_;
 
   /// Container for the primary events of the tree.
+  /// This container is filled implicitly by traversing the tree.
   boost::unordered_map<std::string, PrimaryEventPtr> primary_events_;
+
+  /// Implicitly added gates.
+  /// This gates are not added through AddGate() function but by traversing
+  /// the tree as a postprocess.
+  boost::unordered_map<std::string, GatePtr> implicit_gates_;
 };
 
 }  // namespace scram
