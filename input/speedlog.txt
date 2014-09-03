@@ -1,6 +1,8 @@
 Speed recordings for scram.
 
 System specs: Core i5-2410M, Ubuntu 14.04 64bit
+GCC version: 4.8.2
+Boost version: 1.54
 
 If the current performance is not listed, then the best is the current.
 
