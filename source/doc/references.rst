@@ -17,5 +17,6 @@ References
 Web Resources
 **************
 
-#. `FTA Wiki Page <http://en.wikipedia.org/wiki/Fault_tree_analysis>`_
 #. `OpenPSA Initiative <http://open-psa.org>`_
+#. `FTA Wiki Page <http://en.wikipedia.org/wiki/Fault_tree_analysis>`_
+#. `ETA Wiki Page <https://en.wikipedia.org/wiki/Event_tree_analysis>`_
