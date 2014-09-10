@@ -69,3 +69,17 @@ These tests are automated, and continuous integration is provided by `Travis CI`
     https://nose.readthedocs.org/en/latest/
 .. _`Travis CI`:
     https://travis-ci.org/rakhimov/SCRAM
+
+Good references for testing and quality information
+---------------------------------------------------
+
+- `Software Testing Fundamentals`_
+- `Software Testing Tutorial`_
+- `ISO Standards for Software Testing`_
+
+.. _`Software Testing Fundamentals`:
+    http://softwaretestingfundamentals.com/
+.. _`Software Testing Tutorial`:
+    http://www.tutorialspoint.com/software_testing/
+.. _`ISO Standards for Software Testing`:
+    http://softwaretestingstandard.org/
