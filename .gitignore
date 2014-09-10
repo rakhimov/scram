@@ -2,6 +2,10 @@
 tests/scram_unit_test_driver.cc
 src/env.cc
 
+# Build directories
+build/
+build-*/
+
 # Compiled Object files
 *.slo
 *.lo
