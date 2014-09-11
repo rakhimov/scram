@@ -18,10 +18,13 @@ In addition, a random fault tree generator is provided to explore the
 performance of *SCRAM*. A fault tree can be drawn by
 Graphviz Dot tool.
 
+An optional GUI front-end is under development using `Qt`_.
+
 A full description of *SCRAM* and its current capabilities
 is in `the documentation`_.
 
 .. _`the documentation`: http://rakhimov.github.io/SCRAM
+.. _`Qt`: http://qt-project.org/
 
 ******************************
 Building and Installing
@@ -46,6 +49,8 @@ Optional dependencies:
 Package                Minimum Version
 ====================   ==================
 `Graphviz Dot`         2.26.3
+`Qt`                   5.2.1
+`Qt Creator`           3.0.1
 ====================   ==================
 
 Installing Dependencies (Linux and Unix)
@@ -84,19 +89,28 @@ required library package names is:
 and (optionally):
 
 #. graphviz
+#. qt5-default
+#. qtcreator
 
 For example, in order to install *graphviz* on your system, type:
 
 .. code-block:: bash
 
-  sudo apt-get install graphviz
+    sudo apt-get install graphviz
 
-If you'd prefer to copy/paste, the following line will install all *SCRAM*
-dependencies:
+If you'd prefer to copy/paste, the following line will install all major
+*SCRAM* dependencies:
 
 .. code-block:: bash
 
-   sudo apt-get install -y cmake make libboost-all-dev libboost-random-dev libxml2-dev libxml++2.6-dev python2.7 graphviz
+    sudo apt-get install -y cmake make libboost-all-dev libboost-random-dev libxml2-dev libxml++2.6-dev python2.7 graphviz
+
+Some older systems may not have Qt 5 provided by default, so a workaround may
+be needed. The optional installation for GUI:
+
+.. code-block:: bash
+
+    sudo apt-get install -y qt5-default qtcreator
 
 .. _`Travis CI`:
     https://travis-ci.org/rakhimov/SCRAM
@@ -135,6 +149,8 @@ Various other flags are described by the script's help prompt.
 .. code-block:: bash
 
     .../scram$ python install.py -h
+
+The optional GUI front-end is built using Qt Creator and qmake.
 
 Windows
 =======

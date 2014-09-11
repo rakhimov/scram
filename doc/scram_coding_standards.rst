@@ -24,6 +24,7 @@ Currently nonconforming cases in the source code:
 * Null values for strings are not "\\0".
 * Function output parameters are not pointers but references.
 * Function input-then-output parameter ordering is not strict.
+* GUI front-end source files are a mix of the Qt style and Google style.
 
 The quality of the code is checked by the following tools:
 ==========================================================
