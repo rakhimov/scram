@@ -24,6 +24,7 @@ Currently nonconforming cases in the source code:
 * Null values for strings are not "\\0".
 * Function output parameters are not pointers but references.
 * Function input-then-output parameter ordering is not strict.
+* GUI front-end source files are a mix of the Qt style and Google style.
 
 The quality of the code is checked by the following tools:
 ==========================================================
@@ -69,3 +70,17 @@ These tests are automated, and continuous integration is provided by `Travis CI`
     https://nose.readthedocs.org/en/latest/
 .. _`Travis CI`:
     https://travis-ci.org/rakhimov/SCRAM
+
+Good references for testing and quality information
+---------------------------------------------------
+
+- `Software Testing Fundamentals`_
+- `Software Testing Tutorial`_
+- `ISO Standards for Software Testing`_
+
+.. _`Software Testing Fundamentals`:
+    http://softwaretestingfundamentals.com/
+.. _`Software Testing Tutorial`:
+    http://www.tutorialspoint.com/software_testing/
+.. _`ISO Standards for Software Testing`:
+    http://softwaretestingstandard.org/
