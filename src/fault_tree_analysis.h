@@ -185,8 +185,9 @@ class FaultTreeAnalysis {
   // ---- Algorithm for Equation Construction for Monte Carlo Sim -------
   /// Generates positive and negative terms of probability equation expansion.
   /// @param[in] min_cut_sets Sets of indices of primary events.
-  /// @param[in] sign The sign of the series. Odd int is '+', event int is '-'.
+  /// @param[in] sign The sign of the series. Odd int is '+', even int is '-'.
   /// @param[in] nsums The number of sums in the series.
+  /// @todo The sign may be +/-1 instead of odd/even integers.
   void MProbOr(std::set< std::set<int> >& min_cut_sets, int sign, int nsums);
 
   /// Performs Monte Carlo Simulation.
