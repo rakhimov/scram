@@ -2,6 +2,7 @@
 #define SCRAM_TESTS_XML_PARSER_TESTS_H_
 
 #include <sstream>
+#include <string>
 
 #include <gtest/gtest.h>
 

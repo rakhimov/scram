@@ -3,6 +3,9 @@
 #ifndef SCRAM_GRAPHER_H_
 #define SCRAM_GRAPHER_H_
 
+#include <map>
+#include <string>
+
 #include <boost/shared_ptr.hpp>
 
 #include "fault_tree.h"

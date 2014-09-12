@@ -4,6 +4,7 @@
 
 #include <ctime>
 #include <iterator>
+#include <functional>
 #include <sstream>
 #include <vector>
 

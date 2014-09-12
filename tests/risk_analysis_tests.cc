@@ -1,5 +1,7 @@
 #include "risk_analysis_tests.h"
 
+#include <vector>
+
 using namespace scram;
 
 // ---------------------- Test Private Functions -------------------------

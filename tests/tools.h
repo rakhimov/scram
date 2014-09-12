@@ -1,6 +1,8 @@
 #ifndef SCRAM_TESTS_TOOLS_H_
 #define SCRAM_TESTS_TOOLS_H_
 
+#include <string>
+
 #include "boost/filesystem.hpp"
 
 class FileDeleter {

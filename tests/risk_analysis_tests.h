@@ -1,6 +1,10 @@
 #ifndef SCRAM_TESTS_RISK_ANALYSIS_TESTS_H_
 #define SCRAM_TESTS_RISK_ANALYSIS_TESTS_H_
 
+#include <map>
+#include <set>
+#include <string>
+
 #include <gtest/gtest.h>
 
 #include "error.h"

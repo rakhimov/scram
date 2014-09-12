@@ -4,6 +4,7 @@
 #define SCRAM_REPORTER_H_
 
 #include <map>
+#include <string>
 
 #include "fault_tree_analysis.h"
 

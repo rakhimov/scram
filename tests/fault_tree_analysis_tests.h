@@ -1,6 +1,10 @@
 #ifndef SCRAM_TESTS_FAULT_TREE_ANALYSIS_TESTS_H_
 #define SCRAM_TESTS_FAULT_TREE_ANALYSIS_TESTS_H_
 
+#include <set>
+#include <string>
+#include <vector>
+
 #include <gtest/gtest.h>
 
 #include "error.h"
