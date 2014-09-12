@@ -39,7 +39,7 @@ class RiskAnalysis {
   /// This constructor with configurations with the analysis.
   /// @param[in] config_file XML file with configurations.
   /// @todo Should be able to accept configurations from XML files.
-  RiskAnalysis(std::string config_file = "guess_yourself");
+  explicit RiskAnalysis(std::string config_file = "guess_yourself");
 
   /// Set the fault tree analysis.
   void fta(FaultTreeAnalysis* fta) { fta_ = fta; }

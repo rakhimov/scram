@@ -5,7 +5,7 @@
 
 class FileDeleter {
  public:
-  FileDeleter(std::string path) {
+  explicit FileDeleter(std::string path) {
     path_ = path;
     if (boost::filesystem::exists(path_)) {
       bool done = remove(path_.c_str());

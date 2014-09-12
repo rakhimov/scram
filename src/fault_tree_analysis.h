@@ -44,9 +44,9 @@ class FaultTreeAnalysis {
   /// @param[in] nsums The number of sums in the probability series.
   /// @param[in] cut_off The cut-off probability for cut sets.
   /// @throws ValueError if any of the parameters are invalid.
-  FaultTreeAnalysis(std::string analysis, std::string approx = "no",
-                    int limit_order = 20, int nsums = 1000000,
-                    double cut_off = 1e-8);
+  explicit FaultTreeAnalysis(std::string analysis, std::string approx = "no",
+                             int limit_order = 20, int nsums = 1000000,
+                             double cut_off = 1e-8);
 
   /// Analyzes the fault tree and performs computations.
   /// This function must be called only after initilizing the tree with or

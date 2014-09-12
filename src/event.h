@@ -52,7 +52,7 @@ class Gate : public scram::Event {
   /// Constructs with an id and a gate.
   /// @param[in] id The identifying name for this event.
   /// @param[in] type The type for this gate.
-  Gate(std::string id, std::string type = "NONE");
+  explicit Gate(std::string id, std::string type = "NONE");
 
   /// @returns The gate type.
   /// @throws ValueError if the gate is not yet assigned.
@@ -103,7 +103,7 @@ class PrimaryEvent : public scram::Event {
   /// Constructs with id name and probability.
   /// @param[in] id The identifying name of this primary event.
   /// @param[in] type The type of the event.
-  PrimaryEvent(std::string id, std::string type = "");
+  explicit PrimaryEvent(std::string id, std::string type = "");
 
   /// @returns The type of the primary event.
   /// @throws ValueError if the type is not yet set.
