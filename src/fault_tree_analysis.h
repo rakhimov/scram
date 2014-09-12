@@ -100,18 +100,18 @@ class FaultTreeAnalysis {
   /// Expands sets for OR operator.
   /// @param[in] events_children The indices of the children of the event.
   /// @param[out] sets The final Supersets generated for OR operator.
-  /// @param[in] mult The positive or negative event indicator.
+  /// @param[in] mult The positive(1) or negative(-1) event indicator.
   /// @note O_avg(N) O_max(N^2)
   void SetOr(std::vector<int>& events_children,
-             std::vector<SupersetPtr>& sets, int mult = 1);
+             std::vector<SupersetPtr>& sets, int mult);
 
   /// Expands sets for AND operator.
   /// @param[in] events_children The indices of the children of the event.
   /// @param[out] sets The final Supersets generated for OR operator.
-  /// @param[in] mult The positive or negative event indicator.
+  /// @param[in] mult The positive(1) or negative(-1) event indicator.
   /// @note O_avg(N*logN) O_max(N*logN) where N is the number of children.
   void SetAnd(std::vector<int>& events_children,
-              std::vector<SupersetPtr>& sets, int mult = 1);
+              std::vector<SupersetPtr>& sets, int mult);
 
   /// Finds minimal cut sets from cut sets.
   /// Applys rule 4 to reduce unique cut sets to minimal cut sets.
@@ -147,7 +147,7 @@ class FaultTreeAnalysis {
   ///
   /// @note O_avg(M*logM*N*2^N) where N is the number of sets, and M is
   /// the average size of the sets.
-  double ProbOr(std::set< std::set<int> >& min_cut_sets, int nsums = 1000000);
+  double ProbOr(std::set< std::set<int> >& min_cut_sets, int nsums);
 
   /// Calculates a probability of a minimal cut set, whose members are in AND
   /// relationship with each other. This function assumes independence of each
@@ -185,10 +185,9 @@ class FaultTreeAnalysis {
   // ---- Algorithm for Equation Construction for Monte Carlo Sim -------
   /// Generates positive and negative terms of probability equation expansion.
   /// @param[in] min_cut_sets Sets of indices of primary events.
-  /// @param[in] sign The sign of the series.
+  /// @param[in] sign The sign of the series. Odd int is '+', event int is '-'.
   /// @param[in] nsums The number of sums in the series.
-  void MProbOr(std::set< std::set<int> >& min_cut_sets, int sign = 1,
-               int nsums = 1000000);
+  void MProbOr(std::set< std::set<int> >& min_cut_sets, int sign, int nsums);
 
   /// Performs Monte Carlo Simulation.
   /// @todo Implement the simulation.
