@@ -109,6 +109,8 @@ define-house-event :: define-house-event
     </define-house-event>
     <define-gate name="TopEvent">
       <and>
+        <gate name="define-gateANDevent"/>
+        <gate name="define-gateANDgate"/>
         <event name="eventANDevent"/>
         <event name="eventANDgate"/>
         <event name="eventANDbasic-event"/>
@@ -118,8 +120,22 @@ define-house-event :: define-house-event
         <event name="eventANDdefine-house-event"/>
       </and>
     </define-gate>
+    <define-gate name="define-gateANDevent">
+      <and>
+        <event name="eventANDevent"/>
+        <event name="eventANDbasic-event"/>
+      </and>
+    </define-gate>
+    <define-gate name="define-gateANDgate">
+      <and>
+        <event name="eventANDevent"/>
+        <event name="eventANDbasic-event"/>
+      </and>
+    </define-gate>
     <define-gate name="eventANDdefine-gate">
       <or>
+        <event name="define-gateANDevent"/>
+        <gate name="define-gateANDgate"/>
         <event name="eventANDevent"/>
         <gate name="eventANDgate"/>
         <basic-event name="eventANDbasic-event"/>

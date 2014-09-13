@@ -691,7 +691,7 @@ std::string RiskAnalysis::CheckGate(const GatePtr& event) {
       if (size <= event->vote_number()) {
         boost::to_upper(gate);
         msg << event->orig_id() << " : " << gate
-            << " gate must have more children that its vote number "
+            << " gate must have more children than its vote number "
             << event->vote_number() << ".";
       }
     } else {
