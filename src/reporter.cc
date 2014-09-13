@@ -292,61 +292,45 @@ void Reporter::ReportFta(const FaultTreeAnalysis* fta, std::string output) {
 
   } else if (fta->analysis_ == "mc") {
     // Report for Monte Carlo Uncertainty Analysis.
-    // Show the terms of the equation.
+    // Show only the terms of the equation for now.
     // Positive terms.
     out << "\nPositive Terms in the Probability Equation:\n";
     out << "--------------------------------------------\n";
-    std::vector< std::set<int> >::const_iterator it_vec;
-    std::set<int>::const_iterator it_set;
-    for (it_vec = fta->pos_terms_.begin(); it_vec != fta->pos_terms_.end();
-         ++it_vec) {
-      out << "{ ";
-      int j = 1;
-      int size = it_vec->size();
-      for (it_set = it_vec->begin(); it_set != it_vec->end(); ++it_set) {
-        if (*it_set > 0) {
-          std::string id = fta->int_to_primary_[*it_set]->id();
-          out << fta->primary_events_.find(id)->second->orig_id();
-        } else {
-          std::string id = fta->int_to_primary_[std::abs(*it_set)]->id();
-          out << "NOT " << fta->primary_events_.find(id)->second->orig_id();
-        }
-        if (j < size) {
-          out << ", ";
-        } else {
-          out << " ";
-        }
-        ++j;
-      }
-      out << "}\n";
-      out.flush();
-    }
+    Reporter::ReportMcTerms(fta->pos_terms_, fta, out);
+
     // Negative terms.
     out << "\nNegative Terms in the Probability Equation:\n";
     out << "-------------------------------------------\n";
-    for (it_vec = fta->neg_terms_.begin();
-         it_vec != fta->neg_terms_.end(); ++it_vec) {
-      out << "{ ";
-      int j = 1;
-      int size = it_vec->size();
-      for (it_set = it_vec->begin(); it_set != it_vec->end(); ++it_set) {
-        if (*it_set > 0) {
-          std::string id = fta->int_to_primary_[*it_set]->id();
-          out << fta->primary_events_.find(id)->second->orig_id();
-        } else {
-          std::string id = fta->int_to_primary_[std::abs(*it_set)]->id();
-          out << "NOT " << fta->primary_events_.find(id)->second->orig_id();
-        }
-        if (j < size) {
-          out << ", ";
-        } else {
-          out << " ";
-        }
-        ++j;
+    Reporter::ReportMcTerms(fta->neg_terms_, fta, out);
+  }
+}
+
+void Reporter::ReportMcTerms(const std::vector< std::set<int> >& terms,
+                             const FaultTreeAnalysis* fta,
+                             std::ostream& out) {
+  std::vector< std::set<int> >::const_iterator it_vec;
+  std::set<int>::const_iterator it_set;
+  for (it_vec = terms.begin(); it_vec != terms.end(); ++it_vec) {
+    out << "{ ";
+    int j = 1;
+    int size = it_vec->size();
+    for (it_set = it_vec->begin(); it_set != it_vec->end(); ++it_set) {
+      if (*it_set > 0) {
+        std::string id = fta->int_to_primary_[*it_set]->id();
+        out << fta->primary_events_.find(id)->second->orig_id();
+      } else {
+        std::string id = fta->int_to_primary_[std::abs(*it_set)]->id();
+        out << "NOT " << fta->primary_events_.find(id)->second->orig_id();
       }
-      out << "}\n";
-      out.flush();
+      if (j < size) {
+        out << ", ";
+      } else {
+        out << " ";
+      }
+      ++j;
     }
+    out << "}\n";
+    out.flush();
   }
 }
 
