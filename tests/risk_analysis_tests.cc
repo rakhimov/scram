@@ -11,10 +11,6 @@ TEST_F(RiskAnalysisTest, CheckGate) {
   PrimaryEventPtr A(new PrimaryEvent("a"));
   PrimaryEventPtr B(new PrimaryEvent("b"));
   PrimaryEventPtr C(new PrimaryEvent("c"));
-  orig_ids().insert(std::make_pair("top", "top"));
-  orig_ids().insert(std::make_pair("a", "a"));
-  orig_ids().insert(std::make_pair("b", "b"));
-  orig_ids().insert(std::make_pair("c", "c"));
 
   // AND Gate tests.
   EXPECT_FALSE(CheckGate(top));  // No child.
@@ -134,7 +130,6 @@ TEST_F(RiskAnalysisTest, CheckGate) {
 TEST_F(RiskAnalysisTest, ProcessInput) {
   std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
-  EXPECT_EQ(7, orig_ids().size());
   EXPECT_EQ(3, gates().size());
   EXPECT_EQ(1, gates().count("trainone"));
   EXPECT_EQ(1, gates().count("traintwo"));

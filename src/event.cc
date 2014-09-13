@@ -4,7 +4,9 @@
 
 namespace scram {
 
-Event::Event(std::string id) : id_(id) {}
+Event::Event(std::string id, std::string orig_id)
+    : id_(id),
+      orig_id_(orig_id) {}
 
 void Event::AddParent(const boost::shared_ptr<scram::Gate>& parent) {
   if (parents_.count(parent->id())) {

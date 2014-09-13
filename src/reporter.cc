@@ -23,9 +23,7 @@ namespace scram {
 
 Reporter::Reporter() {}
 
-void Reporter::ReportFta(const FaultTreeAnalysis* fta,
-                         const std::map<std::string, std::string>& orig_ids,
-                         std::string output) {
+void Reporter::ReportFta(const FaultTreeAnalysis* fta, std::string output) {
   // Check if output to file is requested.
   std::streambuf* buf;
   std::ofstream of;
@@ -67,9 +65,9 @@ void Reporter::ReportFta(const FaultTreeAnalysis* fta,
       assert(names.size() > 0);
       std::string name = "";
       if (names.size() == 1) {
-        name = orig_ids.find(names[0])->second;
+        name = fta->primary_events_.find(names[0])->second->orig_id();
       } else if (names.size() == 2) {
-        name = "NOT " + orig_ids.find(names[1])->second;
+        name = "NOT " + fta->primary_events_.find(names[1])->second->orig_id();
       }
       rep << name;
 
@@ -279,13 +277,15 @@ void Reporter::ReportFta(const FaultTreeAnalysis* fta,
       assert(names.size() < 3);
       assert(names.size() > 0);
       if (names.size() == 1) {
-        out << std::setw(20) << orig_ids.find(names[0])->second
+        out << std::setw(20) << fta->primary_events_.find(names[0])->second->orig_id()
             << std::setw(20) << it_contr->first
             << 100 * it_contr->first / fta->p_total_ << "%\n";
 
       } else if (names.size() == 2) {
-        out << "NOT " << std::setw(16) << orig_ids.find(names[1])->second << std::setw(20)
-            << it_contr->first << 100 * it_contr->first / fta->p_total_ << "%\n";
+        out << "NOT " << std::setw(16)
+            << fta->primary_events_.find(names[1])->second->orig_id()
+            << std::setw(20) << it_contr->first
+            << 100 * it_contr->first / fta->p_total_ << "%\n";
       }
       out.flush();
     }
@@ -306,10 +306,10 @@ void Reporter::ReportFta(const FaultTreeAnalysis* fta,
       for (it_set = it_vec->begin(); it_set != it_vec->end(); ++it_set) {
         if (*it_set > 0) {
           std::string id = fta->int_to_primary_[*it_set]->id();
-          out << orig_ids.find(id)->second;
+          out << fta->primary_events_.find(id)->second->orig_id();
         } else {
           std::string id = fta->int_to_primary_[std::abs(*it_set)]->id();
-          out << "NOT " << orig_ids.find(id)->second;
+          out << "NOT " << fta->primary_events_.find(id)->second->orig_id();
         }
         if (j < size) {
           out << ", ";
@@ -332,10 +332,10 @@ void Reporter::ReportFta(const FaultTreeAnalysis* fta,
       for (it_set = it_vec->begin(); it_set != it_vec->end(); ++it_set) {
         if (*it_set > 0) {
           std::string id = fta->int_to_primary_[*it_set]->id();
-          out << orig_ids.find(id)->second;
+          out << fta->primary_events_.find(id)->second->orig_id();
         } else {
           std::string id = fta->int_to_primary_[std::abs(*it_set)]->id();
-          out << "NOT " << orig_ids.find(id)->second;
+          out << "NOT " << fta->primary_events_.find(id)->second->orig_id();
         }
         if (j < size) {
           out << ", ";

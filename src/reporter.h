@@ -17,13 +17,10 @@ class Reporter {
 
   /// Reports the results of analysis to a specified output destination.
   /// @param[in] fta Fault Tree Analysis with results.
-  /// @param[in] orig_ids Map of original names for better reporting.
   /// @param[out] output The output destination.
   /// @throws IOError if the output file is not accessable.
   /// @note This function must be called only after analysis is done.
-  void ReportFta(const FaultTreeAnalysis* fta,
-                 const std::map<std::string, std::string>& orig_ids,
-                 std::string output);
+  void ReportFta(const FaultTreeAnalysis* fta, std::string output);
 };
 
 }  // namespace scram
