@@ -13,7 +13,7 @@ Gate::Gate(std::string id, std::string type)
 
 const std::string& Gate::type() {
   if (type_ == "NONE") {
-    std::string msg = "Gate type is not set for " + this->id() + " gate.";
+    std::string msg = "Gate type is not set for " + this->orig_id() + " gate.";
     throw scram::ValueError(msg);
   }
   return type_;
@@ -21,8 +21,8 @@ const std::string& Gate::type() {
 
 void Gate::type(std::string type) {
   if (type_ != "NONE") {
-    std::string msg = "Trying to re-assign a gate type for " + this->id() +
-                      " gate.";
+    std::string msg = "Trying to re-assign a gate type for " +
+                      this->orig_id() + " gate.";
     throw scram::ValueError(msg);
   }
   type_ = type;
@@ -30,7 +30,8 @@ void Gate::type(std::string type) {
 
 int Gate::vote_number() {
   if (vote_number_ == -1) {
-    std::string msg = "Vote number is not set for " + this->id() + " gate.";
+    std::string msg = "Vote number is not set for " +
+                      this->orig_id() + " gate.";
     throw scram::ValueError(msg);
   }
   return vote_number_;
@@ -41,14 +42,15 @@ void Gate::vote_number(int vnumber) {
     // This line calls type() function which may throw an exception if
     // the type of this gate is not yet set.
     std::string msg = "Vote number can only be defined for the VOTE gate. "
-                      "The " + this->id() + " gate is " + this->type() + ".";
+                      "The " + this->orig_id() + " gate is " +
+                      this->type() + ".";
     throw scram::ValueError(msg);
   } else if (vnumber < 2) {
     std::string msg = "Vote number cannot be less than 2.";
     throw scram::ValueError(msg);
   } else if (vote_number_ != -1) {
-    std::string msg = "Trying to re-assign a vote number for " + this->id() +
-                      " gate.";
+    std::string msg = "Trying to re-assign a vote number for " +
+                      this->orig_id() + " gate.";
     throw scram::ValueError(msg);
   }  // Children number should be checked outside of this class.
   vote_number_ = vnumber;
@@ -56,7 +58,7 @@ void Gate::vote_number(int vnumber) {
 
 void Gate::AddChild(const boost::shared_ptr<scram::Event>& child) {
   if (children_.count(child->id())) {
-    std::string msg = "Trying to re-insert a child for " + this->id() +
+    std::string msg = "Trying to re-insert a child for " + this->orig_id() +
                       " gate.";
     throw scram::ValueError(msg);
   }
@@ -66,7 +68,7 @@ void Gate::AddChild(const boost::shared_ptr<scram::Event>& child) {
 const std::map<std::string, boost::shared_ptr<scram::Event> >&
 Gate::children() {
   if (children_.empty()) {
-    std::string msg = this->id() + " gate does not have children.";
+    std::string msg = this->orig_id() + " gate does not have children.";
     throw scram::ValueError(msg);
   }
   return children_;

@@ -19,7 +19,7 @@ HouseEvent::HouseEvent(std::string id)
 
 const std::string& PrimaryEvent::type() {
   if (type_ == "") {
-    std::string msg = this->id() + " type has not been set.";
+    std::string msg = this->orig_id() + " type has not been set.";
     throw scram::ValueError(msg);
   }
   return type_;
@@ -27,7 +27,7 @@ const std::string& PrimaryEvent::type() {
 
 void PrimaryEvent::type(std::string new_type) {
   if (type_ != "") {
-    std::string msg = "Trying to re-assign the type of " + this->id();
+    std::string msg = "Trying to re-assign the type of " + this->orig_id();
     throw scram::ValueError(msg);
   }
   type_ = new_type;
@@ -35,7 +35,7 @@ void PrimaryEvent::type(std::string new_type) {
 
 double PrimaryEvent::p() {
   if (p_ == -1) {
-    std::string msg = "Probability has not been set for " + this->id();
+    std::string msg = "Probability has not been set for " + this->orig_id();
     throw scram::ValueError(msg);
   }
   return p_;
@@ -43,12 +43,12 @@ double PrimaryEvent::p() {
 
 void PrimaryEvent::p(double p) {
   if (p_ != -1) {
-    std::string msg = "Trying to re-assign probability for " + this->id();
+    std::string msg = "Trying to re-assign probability for " + this->orig_id();
     throw scram::ValueError(msg);
   }
   if (p < 0 || p > 1) {
     std::string msg = "The value for probability is not valid for " +
-        this->id();
+                      this->orig_id();
     throw scram::ValueError(msg);
   }
   p_ = p;
@@ -56,7 +56,8 @@ void PrimaryEvent::p(double p) {
 
 void HouseEvent::p(double p) {
   if (p != 0 && p != 1) {
-    std::string msg = "Incorrect probability for house event: " + this->id();
+    std::string msg = "Incorrect probability for house event: " +
+                      this->orig_id();
     throw scram::ValueError(msg);
   }
   state_ = (p == 1) ? true : false;
