@@ -29,6 +29,7 @@ Currently nonconforming cases in the source code:
 * Function output parameters are not pointers but references.
 * Function input-then-output parameter ordering is not strict.
 * GUI front-end source files are a mix of the Qt style and Google style.
+* C++11 features are not allowed. Only Boost features are used instead.
 
 The quality of the code is checked by the following tools:
 ==========================================================
