@@ -7,6 +7,7 @@ This project follows the following coding styles:
 #. `Google C++ Style Guide (GCSG)`_.
 #. `Google Python Style Guide (GPSG)`_.
 #. `PEP 8 -- Style Guide for Python Code (PEP8)`_.
+#. `KDE CMake Coding Style`_.
 
 .. _`Google C++ Style Guide (GCSG)`:
     http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml
@@ -14,6 +15,8 @@ This project follows the following coding styles:
     http://google-styleguide.googlecode.com/svn/trunk/pyguide.html
 .. _`PEP 8 -- Style Guide for Python Code (PEP8)`:
     http://legacy.python.org/dev/peps/pep-0008/
+.. _`KDE CMake Coding Style`:
+    https://techbase.kde.org/Policies/CMake_Coding_Style
 
 Currently nonconforming cases in the source code:
 -------------------------------------------------

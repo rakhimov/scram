@@ -16,23 +16,23 @@ libfind_pkg_check_modules(Glibmm_PKGCONF glibmm-2.4)
 
 # Main include dir
 find_path(Glibmm_INCLUDE_DIR
-    NAMES glibmm/main.h
-    PATHS ${Glibmm_PKGCONF_INCLUDE_DIRS}
-    PATH_SUFFIXES glibmm-2.4 include/glibmm-2.4
-    )
+  NAMES glibmm/main.h
+  PATHS ${Glibmm_PKGCONF_INCLUDE_DIRS}
+  PATH_SUFFIXES glibmm-2.4 include/glibmm-2.4
+  )
 
 # Glib-related libraries also use a separate config header, which is in lib dir
 find_path(GlibmmConfig_INCLUDE_DIR
-    NAMES glibmmconfig.h
-    PATHS ${Glibmm_PKGCONF_INCLUDE_DIRS} /usr
-    PATH_SUFFIXES lib/glibmm-2.4/include
-    )
+  NAMES glibmmconfig.h
+  PATHS ${Glibmm_PKGCONF_INCLUDE_DIRS} /usr
+  PATH_SUFFIXES lib/glibmm-2.4/include
+  )
 
 # find lib
 find_path(Glibmm_PKGCONF_LIBRARY_DIRS
-    NAMES libglib-2.0.so
-    PATH_SUFFIXES lib
-    )
+  NAMES libglib-2.0.so
+  PATH_SUFFIXES lib
+  )
 libfind_library(Glibmm glibmm 2.4)
 
 # Set the include dir variables and the libraries and let libfind_process do the rest.
