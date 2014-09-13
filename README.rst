@@ -171,6 +171,13 @@ but this option is not yet tested.
 .. _Cygwin:
     https://www.cygwin.com/
 
+****************************
+Documentation Building
+****************************
+
+Documentation can be generated following the instruction in
+the *gh-source* branch. The raw documentation files are in *doc/* directory.
+
 *****************************
 Note to a User
 *****************************
