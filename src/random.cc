@@ -4,16 +4,45 @@
 
 #include <boost/random.hpp>
 
+typedef boost::mt19937 RandomGenerator;
+
 namespace scram {
 
-double Random::NormalGenerator(double mean, double sigma, int seed) {
+Random::Random(int seed) {
+  rng_.seed(static_cast<unsigned>(seed));
+}
+
+double Random::UniformRealGenerator(double min, double max) {
+  typedef boost::uniform_real<double> UniformDistribution;
+  typedef boost::variate_generator<RandomGenerator&, \
+      UniformDistribution> UniformGenerator;
+
+  UniformDistribution uniform_dist(min, max);
+
+  // Create a generator
+  UniformGenerator generator(rng_, uniform_dist);
+
+  return generator();
+}
+
+double Random::TriangularGenerator(double lower, double mode, double upper) {
+  typedef boost::triangle_distribution<double> TriangularDistribution;
+  typedef boost::variate_generator<RandomGenerator&, \
+      TriangularDistribution> TriangularGenerator;
+
+  // Choose Triangle Distribution
+  TriangularDistribution triangular_distribution(lower, mode, upper);
+
+  // Create a generator
+  TriangularGenerator generator(rng_, triangular_distribution);
+
+  return generator();
+}
+
+double Random::NormalGenerator(double mean, double sigma) {
   typedef boost::normal_distribution<double> NormalDistribution;
-  typedef boost::mt19937 RandomGenerator;
   typedef boost::variate_generator<RandomGenerator&, \
       NormalDistribution> GaussianGenerator;
-
-  // Initiate Random Number generator with current time
-  static RandomGenerator rng(static_cast<unsigned> (seed));
 
   // Choose Normal Distribution
   NormalDistribution gaussian_dist(mean, sigma);
@@ -21,75 +50,33 @@ double Random::NormalGenerator(double mean, double sigma, int seed) {
   // Create a Gaussian Random Number generator
   // by binding with previously defined
   // normal distribution object
-  GaussianGenerator generator(rng, gaussian_dist);
+  GaussianGenerator generator(rng_, gaussian_dist);
 
   return generator();
 }
 
-double Random::TriangularGenerator(double lower, double mode, double upper,
-                                   int seed) {
-  typedef boost::triangle_distribution<double> TriangularDistribution;
-  typedef boost::mt19937 RandomGenerator;
-  typedef boost::variate_generator<RandomGenerator&, \
-      TriangularDistribution> TriangularGenerator;
-
-  // Initiate Random Number generator with current time
-  static RandomGenerator rng(static_cast<unsigned> (seed));
-
-  // Choose Triangle Distribution
-  TriangularDistribution triangular_distribution(lower, mode, upper);
-  // Create a generator
-  TriangularGenerator generator(rng, triangular_distribution);
-  return generator();
-}
-
-double Random::UniformRealGenerator(double min, double max, int seed) {
-  typedef boost::uniform_real<double> UniformDistribution;
-  typedef boost::mt19937 RandomGenerator;
-  typedef boost::variate_generator<RandomGenerator&, \
-      UniformDistribution> UniformGenerator;
-
-  // Initiate Random Number generator with current time
-  static RandomGenerator rng(static_cast<unsigned> (seed));
-
-  UniformDistribution uniform_dist(min, max);
-
-  // Create a generator
-  UniformGenerator generator(rng, uniform_dist);
-
-  return generator();
-}
-
-double Random::PoissonGenerator(double mean, int seed) {
-  typedef boost::poisson_distribution<int, double> PoissonDistribution;
-  typedef boost::mt19937 RandomGenerator;
-  typedef boost::variate_generator<RandomGenerator&, \
-      PoissonDistribution> PoissonGenerator;
-
-  // Initiate Random Number generator with current time
-  static RandomGenerator rng(static_cast<unsigned> (seed));
-
-  PoissonDistribution poisson_distribution(mean);
-
-  // Create a generator
-  PoissonGenerator generator(rng, poisson_distribution);
-
-  return generator();
-}
-
-double LogNormalGenerator(double mean, double sigma, int seed) {
+double Random::LogNormalGenerator(double mean, double sigma) {
   typedef boost::lognormal_distribution<double> LogNormalDistribution;
-  typedef boost::mt19937 RandomGenerator;
   typedef boost::variate_generator<RandomGenerator&, \
       LogNormalDistribution> LogNormalGenerator;
-
-  // Initiate Random Number generator with current time
-  static RandomGenerator rng(static_cast<unsigned> (seed));
 
   LogNormalDistribution lognorm_dist(mean, sigma);
 
   // Create a generator
-  LogNormalGenerator generator(rng, lognorm_dist);
+  LogNormalGenerator generator(rng_, lognorm_dist);
+
+  return generator();
+}
+
+double Random::PoissonGenerator(double mean) {
+  typedef boost::poisson_distribution<int, double> PoissonDistribution;
+  typedef boost::variate_generator<RandomGenerator&, \
+      PoissonDistribution> PoissonGenerator;
+
+  PoissonDistribution poisson_distribution(mean);
+
+  // Create a generator
+  PoissonGenerator generator(rng_, poisson_distribution);
 
   return generator();
 }
