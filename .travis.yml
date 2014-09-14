@@ -28,3 +28,4 @@ after_success:
       --exclude src/relax_ng_validator.h
       --exclude src/fault_tree.h
       --exclude src/fault_tree_analysis.h
+      --exclude gui/
