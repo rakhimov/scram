@@ -2,7 +2,6 @@
 /// Implementation for various Rngs.
 #include "random.h"
 
-#include <boost/random.hpp>
 #include <boost/version.hpp>
 
 typedef boost::mt19937 RandomGenerator;
@@ -69,20 +68,29 @@ double Random::GammaGenerator(double k, double theta) {
   typedef boost::variate_generator<RandomGenerator&, \
       GammaDistribution> GammaGenerator;
 
-#if BOOST_VERSION > 104700
-  GammaDistribution gamma_dist(k, theta);
-#else
   GammaDistribution gamma_dist(k);
-#endif
-
   GammaGenerator generator(rng_, gamma_dist);
 
-#if BOOST_VERSION > 104700
-  return generator();
-#else
   return theta * generator();
-#endif
+}
 
+double Random::BetaGenerator(double alpha, double beta) {
+  assert(alpha > 0);
+  assert(beta > 0);
+  typedef boost::gamma_distribution<double> GammaDistribution;
+  typedef boost::variate_generator<RandomGenerator&, \
+      GammaDistribution> GammaGenerator;
+
+  GammaDistribution gamma_dist_x(alpha);
+  GammaGenerator generator_x(rng_, gamma_dist_x);
+
+  GammaDistribution gamma_dist_y(beta);
+  GammaGenerator generator_y(rng_, gamma_dist_y);
+
+  double x = generator_x();
+  double y = generator_y();
+
+  return x / (x + y);
 }
 
 double Random::PoissonGenerator(double mean) {

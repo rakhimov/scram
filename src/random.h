@@ -53,6 +53,12 @@ class Random {
   /// 1/beta as a second paramter for this generator.
   double GammaGenerator(double k, double theta);
 
+  /// Rng from Beta distribution
+  /// @param[in] alpha Alpha shape parameter of the Beta distribution.
+  /// @param[in] beta Beta shape parameter of the Beta distribution.
+  /// @returns A sampled value.
+  double BetaGenerator(double alpha, double beta);
+
   /// Rng from Poisson distribution
   /// @param[in] mean The mean value for Poisson distribution.
   /// @returns A sampled value.

@@ -117,12 +117,30 @@ TEST(RandomTest, Gamma) {
   for (int i = 0; i < sample_size; ++i) {
     double sample = 0;
     do {
-      sample = rng->GammaGenerator(2, 0.15);
+      sample = rng->GammaGenerator(2, 2) / 10;
     } while (sample < 0 || sample >= 1);
     series.insert(sample);
   }
   assert(series.size() == sample_size);
   std::cout << "\n    Gamma Distribution of " << sample_size
+      << " Real Numbers.\n" << std::endl;
+  PlotDistribution(series);
+  delete rng;
+}
+
+TEST(RandomTest, Beta) {
+  Random* rng = new Random(std::time(0));
+  std::multiset<double> series;
+  int sample_size = 1e5;
+  for (int i = 0; i < sample_size; ++i) {
+    double sample = 0;
+    do {
+      sample = rng->BetaGenerator(2, 2);
+    } while (sample < 0 || sample >= 1);
+    series.insert(sample);
+  }
+  assert(series.size() == sample_size);
+  std::cout << "\n    Beta Distribution of " << sample_size
       << " Real Numbers.\n" << std::endl;
   PlotDistribution(series);
   delete rng;
