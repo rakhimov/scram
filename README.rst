@@ -36,7 +36,7 @@ A list of dependencies:
 Package                Minimum Version
 ====================   ==================
 `CMake`                2.8
-`boost`                1.46.1
+`boost`                1.47.0
 `libxml2`              2
 `libxml++`             2.34.1
 `Python`               2.7.3
