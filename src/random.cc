@@ -75,6 +75,17 @@ int Random::DiscreteGenerator(const std::vector<double>& weights) {
   return generator();
 }
 
+int Random::BinomialGenerator(int n, double p) {
+  typedef boost::random::binomial_distribution<int> BinomialDistribution;
+  typedef boost::variate_generator<RandomGenerator&, BinomialDistribution>
+      BinomialGenerator;
+
+  BinomialDistribution binomial_dist(n, p);
+  BinomialGenerator generator(rng_, binomial_dist);
+
+  return generator();
+}
+
 double Random::NormalGenerator(double mean, double sigma) {
   assert(sigma >= 0);
   typedef boost::normal_distribution<double> NormalDistribution;

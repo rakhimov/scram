@@ -67,6 +67,12 @@ class Random {
     return values[DiscreteGenerator(weights)];
   }
 
+  /// Rng from Binomial distribution.
+  /// @param[in] n Number of trials.
+  /// @param[in] p Probability of success.
+  /// @returns Number of sucesses.
+  int BinomialGenerator(int n, double p);
+
   /// Rng from a normal distribution.
   /// @param[in] mean The mean of the distribution.
   /// @param[in] sigma The variance of the distribution.
