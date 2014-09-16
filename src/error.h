@@ -18,7 +18,7 @@ class Error : public std::exception {
 
   /// Constructs a new error with a provided message.
   /// @param[in] msg The message to be passed with this error.
-  Error(std::string msg);
+  explicit Error(std::string msg);
 
   /// @returns The error message.
   virtual const char* what() const throw();
@@ -54,7 +54,7 @@ class ValueError : public Error {
  public:
   /// Constructs a new value error with a provided message.
   /// @param[in] msg The message to be passed with this error.
-  ValueError(std::string msg) : Error(msg) {}
+  explicit ValueError(std::string msg) : Error(msg) {}
 };
 
 /// @class ValidationError
@@ -63,7 +63,7 @@ class ValidationError : public Error {
  public:
   /// Constructs a new validation error with a provided message.
   /// @param[in] msg The message to be passed with this error.
-  ValidationError(std::string msg) : Error(msg) {}
+  explicit ValidationError(std::string msg) : Error(msg) {}
 };
 
 /// @class IOError
@@ -72,7 +72,7 @@ class IOError : public Error {
  public:
   /// Constructs a new io error with a provided message.
   /// @param[in] msg The message to be passed with this error.
-  IOError(std::string msg) : Error(msg) {}
+  explicit IOError(std::string msg) : Error(msg) {}
 };
 
 }  // namespace scram

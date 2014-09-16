@@ -20,10 +20,18 @@ class Event {
  public:
   /// Constructs a fault tree event with a specific id.
   /// @param[in] id The identifying name for the event.
-  explicit Event(std::string id);
+  /// @param[in] orig_id The identifying name with caps preserved.
+  explicit Event(std::string id, std::string orig_id = "");
 
   /// @returns The id that is set upon the construction of this event.
   inline const std::string& id() { return id_; }
+
+  /// @returns The original id with capitalizations.
+  inline const std::string& orig_id() { return orig_id_; }
+
+  /// Sets the original id name with capitalizations preserved.
+  /// @param[in] id_with_caps The id name with capitalizations.
+  void orig_id(std::string id_with_caps) { orig_id_ = id_with_caps; }
 
   /// Adds a parent into the parent map.
   /// @param[in] parent One of the gate parents of this event.
@@ -37,8 +45,11 @@ class Event {
   virtual ~Event() {}
 
  private:
-  /// Id name of a event.
+  /// Id name of a event. It is in lower case.
   std::string id_;
+
+  /// Id name with capitalizations preserved of a event.
+  std::string orig_id_;
 
   /// The parents of this primary event.
   std::map<std::string, boost::shared_ptr<scram::Gate> > parents_;
@@ -52,7 +63,7 @@ class Gate : public scram::Event {
   /// Constructs with an id and a gate.
   /// @param[in] id The identifying name for this event.
   /// @param[in] type The type for this gate.
-  Gate(std::string id, std::string type = "NONE");
+  explicit Gate(std::string id, std::string type = "NONE");
 
   /// @returns The gate type.
   /// @throws ValueError if the gate is not yet assigned.
@@ -103,7 +114,7 @@ class PrimaryEvent : public scram::Event {
   /// Constructs with id name and probability.
   /// @param[in] id The identifying name of this primary event.
   /// @param[in] type The type of the event.
-  PrimaryEvent(std::string id, std::string type = "");
+  explicit PrimaryEvent(std::string id, std::string type = "");
 
   /// @returns The type of the primary event.
   /// @throws ValueError if the type is not yet set.

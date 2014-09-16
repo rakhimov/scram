@@ -13,7 +13,7 @@ class Env {
  public:
   Env();
 
-  /// Returns the location of the RelaxNG schema.
+  /// @returns the location of the RelaxNG schema.
   std::string rng_schema();
 
  private:

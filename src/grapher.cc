@@ -18,11 +18,9 @@ namespace scram {
 
 Grapher::Grapher() : prob_requested_(false) {}
 
-void Grapher::GraphFaultTree(
-    const FaultTreePtr& fault_tree,
-    const std::map<std::string, std::string>& orig_ids,
-    bool prob_requested,
-    std::string output) {
+void Grapher::GraphFaultTree(const FaultTreePtr& fault_tree,
+                             bool prob_requested,
+                             std::string output) {
   // The structure of the output:
   // List inter events with their children following the tree structure.
   // List inter events and primary events' descriptions.
@@ -31,7 +29,6 @@ void Grapher::GraphFaultTree(
   top_event_ = fault_tree->top_event();
   inter_events_ = fault_tree->inter_events();
   primary_events_ = fault_tree->primary_events();
-  orig_ids_ = orig_ids;
   prob_requested_ = prob_requested;
 
   std::string graph_name = "fault_tree.dot";
@@ -84,11 +81,11 @@ void Grapher::GraphFaultTree(
     gate_color = gate_colors.find(gate)->second;
   }
   boost::to_upper(gate);
-  out << "\"" <<  orig_ids_.find(top_event_->id())->second
+  out << "\"" <<  top_event_->orig_id()
       << "_R0\" [shape=ellipse, "
       << "fontsize=12, fontcolor=black, fontname=\"times-bold\", "
       << "color=" << gate_color << ", "
-      << "label=\"" << orig_ids_.find(top_event_->id())->second << "\\n"
+      << "label=\"" << top_event_->orig_id() << "\\n"
       << "{ " << gate;
   if (gate == "VOTE" || gate == "ATLEAST") {
     out << " " << top_event_->vote_number() << "/"
@@ -105,18 +102,19 @@ void Grapher::GraphFaultTree(
     }
     boost::to_upper(gate);  // This is for graphing.
     std::string type = inter_events_.find(it->first)->second->type();
+    std::string orig_name = inter_events_.find(it->first)->second->orig_id();
     for (int i = 0; i <= it->second; ++i) {
       if (i == 0) {
-        out << "\"" <<  orig_ids_.find(it->first)->second << "_R" << i
+        out << "\"" <<  orig_name << "_R" << i
             << "\" [shape=box, ";
       } else {
         // Repetition is a transfer symbol.
-        out << "\"" <<  orig_ids_.find(it->first)->second << "_R" << i
+        out << "\"" <<  orig_name << "_R" << i
             << "\" [shape=triangle, ";
       }
       out << "fontsize=10, fontcolor=black, "
           << "color=" << gate_color << ", "
-          << "label=\"" << orig_ids_.find(it->first)->second << "\\n"
+          << "label=\"" << orig_name << "\\n"
           << "{ " << gate;
       if (gate == "VOTE" || gate == "ATLEAST") {
         out << " " << inter_events_.find(it->first)->second->vote_number()
@@ -136,11 +134,12 @@ void Grapher::GraphFaultTree(
     for (int i = 0; i < it->second + 1; ++i) {
       std::string id = it->first;
       std::string type = primary_events_.find(id)->second->type();
-      out << "\"" << orig_ids_.find(id)->second << "_R" << i
+      std::string orig_name = primary_events_.find(id)->second->orig_id();
+      out << "\"" << orig_name << "_R" << i
           << "\" [shape=circle, "
           << "height=1, fontsize=10, fixedsize=true, "
           << "fontcolor=" << event_colors.find(type)->second
-          << ", " << "label=\"" << orig_ids_.find(id)->second << "\\n["
+          << ", " << "label=\"" << orig_name << "\\n["
           << type << "]";
       if (prob_requested_) { out << "\\n"
                                  << primary_events_.find(id)->second->p(); }
@@ -170,8 +169,8 @@ void Grapher::GraphNode(GatePtr t, std::map<std::string, int>& pr_repeat,
       } else {
         pr_repeat.insert(std::make_pair(it_child->first, 0));
       }
-      out << "\"" <<  orig_ids_.find(t->id())->second << "_R0\" -> "
-          << "\"" <<orig_ids_.find(it_child->first)->second <<"_R"
+      out << "\"" << t->orig_id() << "_R0\" -> "
+          << "\"" << it_child->second->orig_id() <<"_R"
           << pr_repeat.find(it_child->first)->second << "\";\n";
     } else {  // This must be an intermediate event.
       if (in_repeat.count(it_child->first)) {
@@ -182,8 +181,8 @@ void Grapher::GraphNode(GatePtr t, std::map<std::string, int>& pr_repeat,
       } else {
         in_repeat.insert(std::make_pair(it_child->first, 0));
       }
-      out << "\"" << orig_ids_.find(t->id())->second << "_R0\" -> "
-          << "\"" <<orig_ids_.find(it_child->first)->second <<"_R"
+      out << "\"" << t->orig_id() << "_R0\" -> "
+          << "\"" << it_child->second->orig_id() <<"_R"
           << in_repeat.find(it_child->first)->second << "\";\n";
     }
   }

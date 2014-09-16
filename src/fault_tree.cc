@@ -16,7 +16,8 @@ void FaultTree::AddGate(const GatePtr& gate) {
     top_event_id_ = gate->id();
   } else {
     if (inter_events_.count(gate->id()) || gate->id() == top_event_id_) {
-      throw scram::ValidationError("Trying to doubly define a gate");
+      throw scram::ValidationError("Trying to doubly define a gate '" +
+                                   gate->orig_id() + "'.");
     }
     // Check if this gate has a valid parent in this tree.
     const std::map<std::string, GatePtr>* parents;
@@ -24,7 +25,8 @@ void FaultTree::AddGate(const GatePtr& gate) {
       parents = &gate->parents();
     } catch (ValueError& err) {
       // No parents here.
-      throw ValidationError("Gate '" + gate->id() + "' is a dangling gate in" +
+      throw ValidationError("Gate '" + gate->orig_id() +
+                            "' is a dangling gate in" +
                             " a malformed tree input structure. " + err.msg());
     }
     std::map<std::string, GatePtr>::const_iterator it;
@@ -36,7 +38,8 @@ void FaultTree::AddGate(const GatePtr& gate) {
       }
     }
     if (!parent_found) {
-      throw ValidationError("Gate '" + gate->id() + "' has no pre-decleared" +
+      throw ValidationError("Gate '" + gate->orig_id() +
+                            "' has no pre-decleared" +
                             " parent gate in '" + name_ +
                             "' fault tree. This gate is a dangling gate." +
                             " The tree structure input might be malformed.");
@@ -65,15 +68,22 @@ void FaultTree::CheckCyclicity(const GatePtr& parent,
     std::string msg = "Detected a cyclicity in '" + name_ + "' fault tree:\n";
     std::vector<std::string>::iterator it;
     bool path_start = false;
+    bool path_end = false;
     for (it = path.begin(); it != path.end(); ++it) {
+      assert(!path_end);
       if (!path_start && *it == parent->id()) {
         path_start = true;
-        msg += parent->id();
+        msg += parent->orig_id();
         continue;
       }
-      if (path_start) {
-        msg += "->" + *it;
+      if (!path_start) continue;
+      if (*it == parent->id()) {
+        path_end = true;
+        msg += "->" + parent->orig_id();
+        continue;
       }
+      assert(inter_events_.find(*it) != inter_events_.end());
+      msg += "->" + inter_events_.find(*it)->second->orig_id();
     }
     throw ValidationError(msg);
   } else {
@@ -112,7 +122,7 @@ void FaultTree::GetPrimaryEvents(const GatePtr& gate) {
           boost::dynamic_pointer_cast<scram::PrimaryEvent>(it->second);
 
       if (primary_event == 0) {  // The tree must be fully defined.
-        throw ValidationError("Node with id '" + it->first +
+        throw ValidationError("Node with id '" + it->second->orig_id() +
                               "' was not defined in '" + name_+ "' tree");
       }
 

@@ -5,6 +5,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
@@ -39,7 +40,7 @@ class RiskAnalysis {
   /// This constructor with configurations with the analysis.
   /// @param[in] config_file XML file with configurations.
   /// @todo Should be able to accept configurations from XML files.
-  RiskAnalysis(std::string config_file = "guess_yourself");
+  explicit RiskAnalysis(std::string config_file = "guess_yourself");
 
   /// Set the fault tree analysis.
   void fta(FaultTreeAnalysis* fta) { fta_ = fta; }
@@ -143,8 +144,9 @@ class RiskAnalysis {
   /// analysis entities.
   /// @todo Container for excess events that are defined.
 
-  /// Container of original names of events with capitalizations.
-  std::map<std::string, std::string> orig_ids_;
+  /// Container of original names of to be determined events
+  /// with capitalizations.
+  std::map<std::string, std::string> tbd_orig_ids_;
 
   /// List of all valid gates.
   std::set<std::string> gate_types_;
@@ -178,12 +180,6 @@ class RiskAnalysis {
 
   /// A fault tree analysis;
   FaultTreeAnalysis* fta_;
-
-  // Specific variables that are shared for initialization of tree nodes.
-  std::string parent_;  ///< The parent id.
-  std::string id_;  ///< The id of the node.
-  std::string type_;  ///< The type of the node.
-  int vote_number_;  ///< The vote number for the VOTE gate.
 
   /// Input file path.
   std::string input_file_;

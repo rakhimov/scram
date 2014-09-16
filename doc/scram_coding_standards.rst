@@ -7,6 +7,7 @@ This project follows the following coding styles:
 #. `Google C++ Style Guide (GCSG)`_.
 #. `Google Python Style Guide (GPSG)`_.
 #. `PEP 8 -- Style Guide for Python Code (PEP8)`_.
+#. `KDE CMake Coding Style`_.
 
 .. _`Google C++ Style Guide (GCSG)`:
     http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml
@@ -14,17 +15,21 @@ This project follows the following coding styles:
     http://google-styleguide.googlecode.com/svn/trunk/pyguide.html
 .. _`PEP 8 -- Style Guide for Python Code (PEP8)`:
     http://legacy.python.org/dev/peps/pep-0008/
+.. _`KDE CMake Coding Style`:
+    https://techbase.kde.org/Policies/CMake_Coding_Style
 
 Currently nonconforming cases in the source code:
 -------------------------------------------------
 
 * Exceptions are used. (This is not recommended by GCSG.)
-* Functions use default values.
 * Header guards do not include the source folder name.
-* Null values for strings are not "\\0".
+* Null values for strings are not explicit "\\0" but "".
+* Streams are used instead of *printf-like routines*.
+* Non-const references are used instead of const pointers.
 * Function output parameters are not pointers but references.
 * Function input-then-output parameter ordering is not strict.
 * GUI front-end source files are a mix of the Qt style and Google style.
+* C++11 features are not allowed. Only Boost features are used instead.
 
 The quality of the code is checked by the following tools:
 ==========================================================

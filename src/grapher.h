@@ -3,6 +3,9 @@
 #ifndef SCRAM_GRAPHER_H_
 #define SCRAM_GRAPHER_H_
 
+#include <map>
+#include <string>
+
 #include <boost/shared_ptr.hpp>
 
 #include "fault_tree.h"
@@ -21,12 +24,10 @@ class Grapher {
   /// Outputs a file with instructions for graphviz dot to create a fault tree.
   /// This function must be called only after initializing the tree.
   /// @param[in] fault_tree Fault Tree to draw.
-  /// @param[in] orig_ids Original names to put into graphs for nodes.
   /// @param[in] prob_requested Should probabilities be included.
   /// @param[out] output Output destination.
   /// @throws IOError if the output file is not accessable.
   void GraphFaultTree(const FaultTreePtr& fault_tree,
-                      const std::map<std::string, std::string>& orig_ids,
                       bool prob_requested = false,
                       std::string output = "");
 
@@ -39,9 +40,6 @@ class Grapher {
   /// @note The repetition information is important to avoid clashes.
   void GraphNode(GatePtr t, std::map<std::string, int>& pr_repeat,
                  std::map<std::string, int>& in_repeat, std::ofstream& out);
-
-  /// Container of original names of events with capitalizations.
-  std::map<std::string, std::string> orig_ids_;
 
   /// Top event.
   GatePtr top_event_;
