@@ -28,18 +28,18 @@ Standard build:
 
 Release build:
 --------------
-- Prob Calculation  5.500s  |  6.250s
+- Prob Calculation  5.500s  |  6.000s
 
 
 ---------- fta-200 -l 16 ---------------
 Standard build:
 ---------------
-- Tree Expansion    4.100s  |
-- MCS Generation    1.300s  |
+- Tree Expansion    4.100s  |  4.220s
+- MCS Generation    1.130s  |
 
 Release build:
 --------------
-- Tree Expansion    0.870s  |  0.910s
+- Tree Expansion    0.870s  |
 - MCS Generation    0.250s  |
 
 
@@ -53,5 +53,5 @@ Release build:
 ---------- Baobab -l 6 -----------------
 Release build:
 --------------
-- Tree Expansion    25.600s | 26.000s
+- Tree Expansion    25.500s |
 - MCS Generation    0.168s  |  0.200s
