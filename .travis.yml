@@ -5,11 +5,15 @@ compiler: gcc
 env:
     - PATH=$PATH:`pwd`/install/bin
 
-before_install: sudo apt-get update -qq
+before_install:
+    - sudo apt-get update -qq
 
 install:
     - sudo apt-get install -qq libboost-all-dev
-    - sudo apt-get install -qq libboost-random-dev
+    - sudo apt-get install -qq libboost-program-options1.48-dev
+    - sudo apt-get install -qq libboost-random1.48-dev
+    - sudo apt-get install -qq libboost-filesystem1.48-dev
+    - sudo apt-get install -qq libboost-system1.48-dev
     - sudo apt-get install -qq libxml2-dev
     - sudo apt-get install -qq libxml++2.6-dev
     - sudo apt-get install -qq python2.7
