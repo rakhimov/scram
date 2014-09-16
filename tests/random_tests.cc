@@ -94,6 +94,24 @@ TEST(RandomTest, PiecewiseLinear) {
   delete rng;
 }
 
+TEST(RandomTest, Histogram) {
+  using namespace boost::assign;
+  Random* rng = new Random(std::time(0));
+  std::vector<double> intervals;
+  std::vector<double> weights;
+  intervals += 0, 2, 4, 6, 8, 10;
+  weights += 1, 2, 4, 3, 1;
+  std::multiset<double> series;
+  int sample_size = 1e5;
+  for (int i = 0; i < sample_size; ++i) {
+    series.insert(rng->HistogramGenerator(intervals, weights) / 10.0);
+  }
+  std::cout << "\n    Histogram Distribution of " << sample_size
+      << " Real Numbers.\n" << std::endl;
+  PlotDistribution(series);
+  delete rng;
+}
+
 TEST(RandomTest, Normal) {
   Random* rng = new Random(std::time(0));
   std::multiset<double> series;

@@ -37,13 +37,23 @@ class Random {
 
   /// Rng from a piecewise linear distribution.
   /// @param[in] intervals Interval points for the distribution.
-  ///                      The values must be stricly increasing.
+  ///                      The values must be strictly increasing.
   /// @param[in] weights Weights at the boundaries. The number of weights
   ///                    must be equal to the number of points.
-  ///                    Extra weights may be ignored.
+  ///                    Extra weights are ignored.
   /// @returns A sampled value.
   double PiecewiseLinearGenerator(const std::vector<double>& intervals,
                                   const std::vector<double>& weights);
+
+  /// Rng from a histogram distribution.
+  /// @param[in] intervals Interval points for the distribution.
+  ///                      The values must be strictly increasing.
+  /// @param[in] weights Weights at the boundaries. The number of weights
+  ///                    must be one less than the number of points.
+  ///                    Extra weights are ignored.
+  /// @returns A sampled value.
+  double HistogramGenerator(const std::vector<double>& intervals,
+                            const std::vector<double>& weights);
 
   /// Rng from a normal distribution.
   /// @param[in] mean The mean of the distribution.
