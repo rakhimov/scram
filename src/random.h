@@ -7,6 +7,11 @@
 
 namespace scram {
 
+/// @class Random
+/// This class contains generators for various random distributions.
+/// The values passed to the member functions are asserted to be in the
+/// correct form. In other words, the user should make sure that the passed
+/// parameters are valid. For example, variance cannot be negative.
 class Random {
  public:
   /// The constructor for Random distibutions.
@@ -39,6 +44,12 @@ class Random {
   /// @param[in] sigma The variance of the distribution.
   /// @returns A sampled value.
   double LogNormalGenerator(double mean, double sigma);
+
+  /// Rng from Gamma distribution
+  /// @param[in] alpha Positive alpha parameter of the Gamma distribution.
+  /// @param[in] beta Positive beta parameter of the Gamma distribution.
+  /// @returns A sampled value.
+  double GammaGenerator(double alpha, double beta);
 
   /// Rng from Poisson distribution
   /// @param[in] mean The mean value for Poisson distribution.
