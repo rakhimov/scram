@@ -2,6 +2,8 @@
 /// Implementation for various Rngs.
 #include "random.h"
 
+#include <cmath>
+
 #include <boost/version.hpp>
 
 typedef boost::mt19937 RandomGenerator;
@@ -177,6 +179,15 @@ double Random::PoissonGenerator(double mean) {
   PoissonGenerator generator(rng_, poisson_distribution);
 
   return generator();
+}
+
+double Random::LogUniformGenerator(double min, double max) {
+  return std::exp(Random::UniformRealGenerator(min, max));
+}
+
+double Random::LogTriangularGenerator(double lower, double mode,
+                                      double upper) {
+  return std::exp(Random::TriangularGenerator(lower, mode, upper));
 }
 
 }  // namespace scram

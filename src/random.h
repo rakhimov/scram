@@ -115,6 +115,19 @@ class Random {
   /// @returns A sampled value.
   double PoissonGenerator(double mean);
 
+  /// Rng from log-uniform distribution.
+  /// @param[in] min Lower bound.
+  /// @param[in] max Upper bound.
+  /// @returns A sampled value.
+  double LogUniformGenerator(double min, double max);
+
+  /// Rng from log-triangular distribution.
+  /// @param[in] lower Lower bound.
+  /// @param[in] mode The peak of the distribution.
+  /// @param[in] upper Upper bound.
+  /// @returns A sampled value.
+  double LogTriangularGenerator(double lower, double mode, double upper);
+
  private:
   /// Rng from a discrete distribution.
   /// @param[in] weights Weights for the range [0, n), where n is the size
