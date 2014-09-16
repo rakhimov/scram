@@ -46,24 +46,29 @@ class Random {
   double LogNormalGenerator(double mean, double sigma);
 
   /// Rng from Gamma distribution
-  /// @param[in] k Shape parameter of the Gamma distribution.
-  /// @param[in] theta Scale parameter of the Gamma distribution.
+  /// @param[in] k Shape parameter of Gamma distribution.
+  /// @param[in] theta Scale parameter of Gamma distribution.
   /// @returns A sampled value.
   /// @note The rate parameter is 1/theta, so for alpha/beta system, pass
   /// 1/beta as a second paramter for this generator.
   double GammaGenerator(double k, double theta);
 
   /// Rng from Beta distribution
-  /// @param[in] alpha Alpha shape parameter of the Beta distribution.
-  /// @param[in] beta Beta shape parameter of the Beta distribution.
+  /// @param[in] alpha Alpha shape parameter of Beta distribution.
+  /// @param[in] beta Beta shape parameter of Beta distribution.
   /// @returns A sampled value.
   double BetaGenerator(double alpha, double beta);
 
   /// Rng from Weibull distribution
-  /// @param[in] k Shape parameter of the Weibull distribution.
-  /// @param[in] lambda Scale parameter of the Weibull distribution.
+  /// @param[in] k Shape parameter of Weibull distribution.
+  /// @param[in] lambda Scale parameter of Weibull distribution.
   /// @returns A sampled value.
   double WeibullGenerator(double k, double lambda);
+
+  /// Rng from Exponential distribution
+  /// @param[in] lambda Rate parameter of Exponential distribution.
+  /// @returns A sampled value.
+  double ExponentialGenerator(double lambda);
 
   /// Rng from Poisson distribution
   /// @param[in] mean The mean value for Poisson distribution.

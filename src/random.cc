@@ -106,6 +106,18 @@ double Random::WeibullGenerator(double k, double lambda) {
   return generator();
 }
 
+double Random::ExponentialGenerator(double lambda) {
+  assert(lambda > 0);
+  typedef boost::exponential_distribution<double> ExponentialDistribution;
+  typedef boost::variate_generator<RandomGenerator&, \
+      ExponentialDistribution> ExponentialGenerator;
+
+  ExponentialDistribution exponential_dist(lambda);
+  ExponentialGenerator generator(rng_, exponential_dist);
+
+  return generator();
+}
+
 double Random::PoissonGenerator(double mean) {
   assert(mean > 0);
   typedef boost::poisson_distribution<int, double> PoissonDistribution;
