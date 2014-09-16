@@ -55,6 +55,18 @@ class Random {
   double HistogramGenerator(const std::vector<double>& intervals,
                             const std::vector<double>& weights);
 
+  /// Rng from a discrete distribution.
+  /// @param[in] values Discrete values.
+  /// @param[in] weights Weights for the corresponding values. The size must
+  ///                    be the same as the values vector size.
+  /// @returns A sample Value from the value vector.
+  template<class T>
+  inline T DiscreteGenerator(const std::vector<T>& values,
+                             const std::vector<double>& weights) {
+    assert(values.size() == weights.size());
+    return values[DiscreteGenerator(weights)];
+  }
+
   /// Rng from a normal distribution.
   /// @param[in] mean The mean of the distribution.
   /// @param[in] sigma The variance of the distribution.
@@ -98,6 +110,12 @@ class Random {
   double PoissonGenerator(double mean);
 
  private:
+  /// Rng from a discrete distribution.
+  /// @param[in] weights Weights for the range [0, n), where n is the size
+  ///                    of the vector.
+  /// @returns Integer in the range [0, 1).
+  int DiscreteGenerator(const std::vector<double>& weights);
+
   /// The random number generator.
   boost::mt19937 rng_;
 };

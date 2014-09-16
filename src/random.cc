@@ -64,6 +64,16 @@ double Random::HistogramGenerator(const std::vector<double>& intervals,
   return generator();
 }
 
+int Random::DiscreteGenerator(const std::vector<double>& weights) {
+  typedef boost::random::discrete_distribution<int> DiscreteDistribution;
+  typedef boost::variate_generator<RandomGenerator&, DiscreteDistribution>
+      DiscreteGenerator;
+
+  DiscreteDistribution discrete_dist(weights.begin(), weights.end());
+  DiscreteGenerator generator(rng_, discrete_dist);
+
+  return generator();
+}
 
 double Random::NormalGenerator(double mean, double sigma) {
   assert(sigma >= 0);

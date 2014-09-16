@@ -112,6 +112,24 @@ TEST(RandomTest, Histogram) {
   delete rng;
 }
 
+TEST(RandomTest, Discrete) {
+  using namespace boost::assign;
+  Random* rng = new Random(std::time(0));
+  std::vector<double> values;
+  std::vector<double> weights;
+  values += 0, 2, 4, 6, 8, 9;
+  weights += 1, 2, 4, 3, 1, 4;
+  std::multiset<double> series;
+  int sample_size = 1e5;
+  for (int i = 0; i < sample_size; ++i) {
+    series.insert(rng->DiscreteGenerator(values, weights) / 10.0);
+  }
+  std::cout << "\n    Discrete Distribution of " << sample_size
+      << " Real Numbers.\n" << std::endl;
+  PlotDistribution(series);
+  delete rng;
+}
+
 TEST(RandomTest, Normal) {
   Random* rng = new Random(std::time(0));
   std::multiset<double> series;
