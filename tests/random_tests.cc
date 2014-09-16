@@ -6,6 +6,8 @@
 #include <iostream>
 #include <set>
 
+#include <boost/assign/std/vector.hpp>
+
 #include "random.h"
 
 using namespace scram;
@@ -69,6 +71,24 @@ TEST(RandomTest, Triangular) {
     series.insert(rng->TriangularGenerator(0, 0.5, 1));
   }
   std::cout << "\n    Triangular Distribution of " << sample_size
+      << " Real Numbers.\n" << std::endl;
+  PlotDistribution(series);
+  delete rng;
+}
+
+TEST(RandomTest, PiecewiseLinear) {
+  using namespace boost::assign;
+  Random* rng = new Random(std::time(0));
+  std::vector<double> intervals;
+  std::vector<double> weights;
+  intervals += 0, 2, 4, 6, 8, 10;
+  weights += 0, 1, 0, 1, 0, 1;
+  std::multiset<double> series;
+  int sample_size = 1e5;
+  for (int i = 0; i < sample_size; ++i) {
+    series.insert(rng->PiecewiseLinearGenerator(intervals, weights) / 10.0);
+  }
+  std::cout << "\n    Piecewise Linear Distribution of " << sample_size
       << " Real Numbers.\n" << std::endl;
   PlotDistribution(series);
   delete rng;

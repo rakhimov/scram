@@ -37,6 +37,19 @@ double Random::TriangularGenerator(double lower, double mode, double upper) {
   return generator();
 }
 
+double Random::PiecewiseLinearGenerator(const std::vector<double>& intervals,
+                                        const std::vector<double>& weights) {
+  typedef boost::random::piecewise_linear_distribution<double> PLDistribution;
+  typedef boost::variate_generator<RandomGenerator&, \
+      PLDistribution> PLGenerator;
+
+  PLDistribution piecewise_linear_dist(intervals.begin(), intervals.end(),
+                                       weights.begin());
+  PLGenerator generator(rng_, piecewise_linear_dist);
+
+  return generator();
+}
+
 double Random::NormalGenerator(double mean, double sigma) {
   assert(sigma >= 0);
   typedef boost::normal_distribution<double> NormalDistribution;
