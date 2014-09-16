@@ -3,6 +3,7 @@
 #include "random.h"
 
 #include <boost/random.hpp>
+#include <boost/version.hpp>
 
 typedef boost::mt19937 RandomGenerator;
 
@@ -61,17 +62,27 @@ double Random::LogNormalGenerator(double mean, double sigma) {
   return generator();
 }
 
-double Random::GammaGenerator(double alpha, double beta) {
-  assert(alpha > 0);
-  assert(beta > 0);
+double Random::GammaGenerator(double k, double theta) {
+  assert(k > 0);
+  assert(theta > 0);
   typedef boost::gamma_distribution<double> GammaDistribution;
   typedef boost::variate_generator<RandomGenerator&, \
       GammaDistribution> GammaGenerator;
 
-  GammaDistribution gamma_dist(alpha, beta);
+#if BOOST_VERSION > 104700
+  GammaDistribution gamma_dist(k, theta);
+#else
+  GammaDistribution gamma_dist(k);
+#endif
+
   GammaGenerator generator(rng_, gamma_dist);
 
+#if BOOST_VERSION > 104700
   return generator();
+#else
+  return theta * generator();
+#endif
+
 }
 
 double Random::PoissonGenerator(double mean) {

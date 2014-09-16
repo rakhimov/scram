@@ -46,10 +46,12 @@ class Random {
   double LogNormalGenerator(double mean, double sigma);
 
   /// Rng from Gamma distribution
-  /// @param[in] alpha Positive alpha parameter of the Gamma distribution.
-  /// @param[in] beta Positive beta parameter of the Gamma distribution.
+  /// @param[in] k Shape parameter of the Gamma distribution.
+  /// @param[in] theta Scale parameter of the Gamma distribution.
   /// @returns A sampled value.
-  double GammaGenerator(double alpha, double beta);
+  /// @note The rate parameter is 1/theta, so for alpha/beta system, pass
+  /// 1/beta as a second paramter for this generator.
+  double GammaGenerator(double k, double theta);
 
   /// Rng from Poisson distribution
   /// @param[in] mean The mean value for Poisson distribution.
