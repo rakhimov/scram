@@ -93,6 +93,19 @@ double Random::BetaGenerator(double alpha, double beta) {
   return x / (x + y);
 }
 
+double Random::WeibullGenerator(double k, double lambda) {
+  assert(k > 0);
+  assert(lambda > 0);
+  typedef boost::random::weibull_distribution<double> WeibullDistribution;
+  typedef boost::variate_generator<RandomGenerator&, \
+      WeibullDistribution> WeibullGenerator;
+
+  WeibullDistribution weibull_dist(k, lambda);
+  WeibullGenerator generator(rng_, weibull_dist);
+
+  return generator();
+}
+
 double Random::PoissonGenerator(double mean) {
   assert(mean > 0);
   typedef boost::poisson_distribution<int, double> PoissonDistribution;

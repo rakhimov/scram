@@ -146,6 +146,24 @@ TEST(RandomTest, Beta) {
   delete rng;
 }
 
+TEST(RandomTest, Weibull) {
+  Random* rng = new Random(std::time(0));
+  std::multiset<double> series;
+  int sample_size = 1e5;
+  for (int i = 0; i < sample_size; ++i) {
+    double sample = 0;
+    do {
+      sample = rng->WeibullGenerator(3, 1) / 2;
+    } while (sample < 0 || sample >= 1);
+    series.insert(sample);
+  }
+  assert(series.size() == sample_size);
+  std::cout << "\n    Weibull Distribution of " << sample_size
+      << " Real Numbers.\n" << std::endl;
+  PlotDistribution(series);
+  delete rng;
+}
+
 TEST(RandomTest, Poisson) {
   Random* rng = new Random(std::time(0));
   std::multiset<double> series;

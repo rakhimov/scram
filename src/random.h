@@ -59,6 +59,12 @@ class Random {
   /// @returns A sampled value.
   double BetaGenerator(double alpha, double beta);
 
+  /// Rng from Weibull distribution
+  /// @param[in] k Shape parameter of the Weibull distribution.
+  /// @param[in] lambda Scale parameter of the Weibull distribution.
+  /// @returns A sampled value.
+  double WeibullGenerator(double k, double lambda);
+
   /// Rng from Poisson distribution
   /// @param[in] mean The mean value for Poisson distribution.
   /// @returns A sampled value.
