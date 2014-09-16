@@ -53,6 +53,15 @@ Package                Minimum Version
 `Qt Creator`           3.0.1
 ====================   ==================
 
+
+Compilers (Tested and Supported in CMake setup):
+
+====================   ==================
+Package                Minimum Version
+====================   ==================
+`GCC/G++`              4.6.3
+====================   ==================
+
 Installing Dependencies (Linux and Unix)
 ========================================
 
@@ -92,6 +101,10 @@ and (optionally):
 #. qt5-default
 #. qtcreator
 
+compiler:
+
+- gcc g++
+
 For example, in order to install *graphviz* on your system, type:
 
 .. code-block:: bash
@@ -99,11 +112,11 @@ For example, in order to install *graphviz* on your system, type:
     sudo apt-get install graphviz
 
 If you'd prefer to copy/paste, the following line will install all major
-*SCRAM* dependencies:
+*SCRAM* dependencies and GCC/G++ compiler:
 
 .. code-block:: bash
 
-    sudo apt-get install -y cmake make libboost-all-dev libboost-random-dev libxml2-dev libxml++2.6-dev python2.7 graphviz
+    sudo apt-get install -y cmake make gcc g++ libboost-all-dev libboost-random-dev libxml2-dev libxml++2.6-dev python2.7 graphviz
 
 Some older systems may not have Qt 5 provided by default, so a workaround may
 be needed. The optional installation for GUI:
