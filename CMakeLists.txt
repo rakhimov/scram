@@ -20,8 +20,12 @@ set(SCRAM_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src")
 set(SCRAM_SHARE_DIR "${PROJECT_SOURCE_DIR}/share")
 set(SCRAM_TEST_DIR "${PROJECT_SOURCE_DIR}/tests")
 
-# This makes all the libraries build as SHARED
-set(BUILD_SHARED_LIBS true)
+# This makes all the libraries build as SHARED for Linux/Unix only
+if(CYGWIN)
+  set(BUILD_SHARED_LIBS false)
+else()
+  set(BUILD_SHARED_LIBS true)
+endif()
 
 # Setup build locations.
 if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)

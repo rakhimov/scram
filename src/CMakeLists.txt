@@ -33,11 +33,20 @@ set_target_properties(scramcore
 
 target_link_libraries(scramcore dl ${LIBS})
 
-install(
-  TARGETS scramcore
-  LIBRARY DESTINATION lib
-  COMPONENT scramcore
-  )
+if(CYGWIN)
+  install(
+    TARGETS scramcore
+    DESTINATION lib
+    COMPONENT scramcore
+    )
+else()
+  install(
+    TARGETS scramcore
+    LIBRARY DESTINATION lib
+    COMPONENT scramcore
+    )
+endif()
+
 
 add_executable(scram
   scram.cc

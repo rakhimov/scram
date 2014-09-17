@@ -174,8 +174,8 @@ Currently the easiest option is to use a virtual machine with `Ubuntu 14.04`_.
 #. Download `Ubuntu 14.04`_
 #. Follow the installation instructions for Linux machines.
 
-The other option is to use MinGW_ or Cygwin_ and to build on Windows machine,
-but this option is not yet tested.
+The other option is to use MinGW_ or Cygwin_ and to build on Windows.
+Currently only Cygwin_ has been tested to produce binaries on Windows.
 
 .. _`Ubuntu 14.04`:
     http://www.ubuntu.com/download
