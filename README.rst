@@ -57,10 +57,12 @@ Package                Minimum Version
 Compilers (Tested and Supported in CMake setup):
 
 ====================   ==================
-Package                Minimum Version
+Package                Tested Version
 ====================   ==================
-`GCC/G++`              4.6.3
+`GCC/G++`              4.6.3, 4.8.2
+`Clang/LLVM`           5.1
 ====================   ==================
+
 
 Installing Dependencies (Linux and Unix)
 ========================================
@@ -73,10 +75,13 @@ The following installation instructions and scripts are taken from
 
 This guide assumes that the user has root access (to issue sudo commands) and
 access to a package manager or has some other suitable method of automatically
-installing established libraries. This process is tested using `Travis CI`_
+installing established libraries.
+
+Linux Systems
+-------------
+
+This process is tested using `Travis CI`_
 Ubuntu 12.04 LTS using apt-get as the package manager;
-if on a Mac system, a good manager to use is macports_.
-In that case, replace all of the following instances of "apt-get" with "port".
 
 The command to install a dependency takes the form of:
 
@@ -127,6 +132,60 @@ be needed. The optional installation for GUI:
 
 .. _`Travis CI`:
     https://travis-ci.org/rakhimov/SCRAM
+
+Mac Systems
+-----------
+
+If on a Mac system, a good manager to use is macports_. It is assumed that
+some dependencies are provided by Xcode, for example, *make*.
+The following instructions are tested on OS X 10.9.2, but it should work
+for other systems also.
+
+Using macports_, the command to install a dependency takes the form of:
+
+.. code-block:: bash
+
+  sudo port install package
+
+where "package" is replaced by the correct package name. The minimal list of
+required library package names is:
+
+#. cmake
+#. boost
+#. libxml2
+#. libxmlxx2
+#. python27
+
+and (optionally):
+
+#. graphviz
+#. qt5-mac
+#. qt5-creator-mac
+
+compiler:
+
+- clang/llvm
+
+For example, in order to install *graphviz* on your system, type:
+
+.. code-block:: bash
+
+    sudo port install graphviz
+
+If you'd prefer to copy/paste, the following line will install all major
+*SCRAM* dependencies and GCC/G++ compiler:
+
+.. code-block:: bash
+
+    sudo port install cmake boost libxml2 libxmlxx2 python27 graphviz
+
+
+The optional installation for GUI biulding:
+
+.. code-block:: bash
+
+    sudo port install qt5-mac qt5-creator-mac
+
 .. _macports:
     http://www.macports.org/
 
@@ -175,7 +234,12 @@ Currently the easiest option is to use a virtual machine with `Ubuntu 14.04`_.
 #. Follow the installation instructions for Linux machines.
 
 The other option is to use MinGW_ or Cygwin_ and to build on Windows.
+
 Currently only Cygwin_ has been tested to produce binaries on Windows.
+The dependencies listed for Linux systems must be installed with Cygwin.
+Unfortunately, this method requires building `libxml++`_ from source.
+In order to avoid building the package, after installing Cygwin,
+download a `pre-build SCRAM for Cygwin`_.
 
 .. _`Ubuntu 14.04`:
     http://www.ubuntu.com/download
@@ -183,6 +247,10 @@ Currently only Cygwin_ has been tested to produce binaries on Windows.
     http://www.mingw.org/
 .. _Cygwin:
     https://www.cygwin.com/
+.. _`libxml++`:
+    http://libxmlplusplus.sourceforge.net/
+.. _`pre-build SCRAM for Cygwin`:
+    https://sourceforge.net/projects/iscram/files/
 
 ****************************
 Documentation Building
