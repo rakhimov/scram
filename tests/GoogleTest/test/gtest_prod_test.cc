@@ -26,14 +26,32 @@
 // THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-#include <iostream>
+//
+// Author: wan@google.com (Zhanyong Wan)
+//
+// Unit test for include/gtest/gtest_prod.h.
 
 #include "gtest/gtest.h"
+#include "test/production.h"
 
-GTEST_API_ int main(int argc, char **argv) {
-  std::cout << "Running main() from gtest_main.cc\n";
+// Tests that private members can be accessed from a TEST declared as
+// a friend of the class.
+TEST(PrivateCodeTest, CanAccessPrivateMembers) {
+  PrivateCode a;
+  EXPECT_EQ(0, a.x_);
 
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+  a.set_x(1);
+  EXPECT_EQ(1, a.x_);
+}
+
+typedef testing::Test PrivateCodeFixtureTest;
+
+// Tests that private members can be accessed from a TEST_F declared
+// as a friend of the class.
+TEST_F(PrivateCodeFixtureTest, CanAccessPrivateMembers) {
+  PrivateCode a;
+  EXPECT_EQ(0, a.x_);
+
+  a.set_x(2);
+  EXPECT_EQ(2, a.x_);
 }
