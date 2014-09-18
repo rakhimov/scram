@@ -25,6 +25,14 @@ fault tree generator, and fault tree graphing with Graphviz Dot tool.
 .. _`GPL license`:
     https://github.com/rakhimov/SCRAM/blob/master/LICENSE
 
+Installation:
+-------------
+
+.. toctree::
+    :maxdepth: 2
+
+    doc/installation.rst
+
 Documentation:
 --------------
 
