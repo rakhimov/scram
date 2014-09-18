@@ -26,6 +26,8 @@ is in `the documentation`_.
 .. _`the documentation`: http://rakhimov.github.io/SCRAM
 .. _`Qt`: http://qt-project.org/
 
+.. install-start
+
 ******************************
 Building and Installing
 ******************************
@@ -259,6 +261,8 @@ download a `pre-build SCRAM for Cygwin`_.
     http://libxmlplusplus.sourceforge.net/
 .. _`pre-build SCRAM for Cygwin`:
     https://sourceforge.net/projects/iscram/files/
+
+.. install-end
 
 ****************************
 Documentation Building

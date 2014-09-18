@@ -19,7 +19,6 @@ Currently Low Hanging Fruits
     * Uncertainty analysis
     * Sensitivity analysis
     * Sampling techniques
-    * Distributions
     * Latin Hypercube sampling technique
 
 - Improve fault tree generator. *Low*
