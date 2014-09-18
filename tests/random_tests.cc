@@ -14,6 +14,7 @@ using namespace scram;
 
 // Plots the sampled numbers in the range [0, 1].
 void PlotDistribution(const std::multiset<double>& series) {
+  assert(!series.empty());
   assert(*series.begin() >= 0);  // Min element.
   assert(*series.rbegin() <= 1);  // Max element.
   int num_bins = 50;
@@ -25,9 +26,9 @@ void PlotDistribution(const std::multiset<double>& series) {
     double upper_bound = bin * bin_width;
     int size = 0;
     while (*it <= upper_bound) {
+      if (it == series.end()) break;
       ++size;
       ++it;
-      if (it == series.end()) break;
     }
     bin_hight.push_back(size);
   }
