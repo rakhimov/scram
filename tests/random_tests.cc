@@ -26,9 +26,10 @@ void PlotDistribution(const std::multiset<double>& series) {
     double upper_bound = bin * bin_width;
     int size = 0;
     while (*it <= upper_bound) {
-      if (it == series.end()) break;
+      if (it == series.end()) break;  // This is needed for Clang to work.
       ++size;
       ++it;
+      if (it == series.end()) break;
     }
     bin_hight.push_back(size);
   }
@@ -47,8 +48,11 @@ void PlotDistribution(const std::multiset<double>& series) {
     }
     std::cout << std::endl;
   }
+  std::ios state(NULL);
+  state.copyfmt(std::cout);
   std::cout << "    0" << std::right << std::setw(num_bins + 1)
       << "1\n" << std::endl;
+  std::cout.copyfmt(state);  // Restoring.
 }
 
 TEST(RandomTest, UniformReal) {
