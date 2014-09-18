@@ -26,8 +26,6 @@ is in `the documentation`_.
 .. _`the documentation`: http://rakhimov.github.io/SCRAM
 .. _`Qt`: http://qt-project.org/
 
-.. install-start
-
 ******************************
 Building and Installing
 ******************************
@@ -213,7 +211,8 @@ The default build is DEBUG. There default installation directory is the user's
     .../scram$ python install.py  --prefix=path/to/installation/directory
 
 The executable test binary is installed in *installation/directory/bin* directory.
-Also, the test input files and RelaxNG schema are copied in *installation/directory/share/scram/*.
+Also, the test input files and RelaxNG schema are copied in
+*installation/directory/share/scram/*.
 In order to run tests:
 
 .. code-block:: bash
@@ -240,8 +239,17 @@ Windows
 Currently the easiest option is to use a virtual machine with `Ubuntu 14.04`_.
 
 #. Install `VirtualBox <https://www.virtualbox.org/>`_
-#. Download `Ubuntu 14.04`_
-#. Follow the installation instructions for Linux machines.
+#. Get the system.
+
+   a. Pre-configured image
+
+        - Download `Ubuntu image with SCRAM`_
+        - Open the downloaded .ova file with VirtualBox(File->Import Appliance)
+
+   b. New system.
+
+        - Download `Ubuntu 14.04`_ or any other system.
+        - Follow the installation instructions for Linux/Unix machines.
 
 The other option is to use MinGW_ or Cygwin_ and to build on Windows.
 
@@ -261,8 +269,8 @@ download a `pre-build SCRAM for Cygwin`_.
     http://libxmlplusplus.sourceforge.net/
 .. _`pre-build SCRAM for Cygwin`:
     https://sourceforge.net/projects/iscram/files/
-
-.. install-end
+.. _`Ubuntu image with SCRAM`:
+    https://docs.google.com/uc?id=0B-nuSWux5G61RVlvSUJqWEhmbjg&export=download
 
 ****************************
 Documentation Building
