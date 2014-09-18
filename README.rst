@@ -81,7 +81,7 @@ Linux Systems
 -------------
 
 This process is tested using `Travis CI`_
-Ubuntu 12.04 LTS using apt-get as the package manager;
+Ubuntu 12.04 LTS using apt-get as the package manager.
 
 The command to install a dependency takes the form of:
 
@@ -122,6 +122,13 @@ If you'd prefer to copy/paste, the following line will install all major
 .. code-block:: bash
 
     sudo apt-get install -y cmake make gcc g++ libboost-all-dev libboost-random-dev libxml2-dev libxml++2.6-dev python2.7 graphviz
+
+For Ubuntu 12.04, the default Boost version is 1.46, so the update above
+version 1.47 is required:
+
+.. code-block:: bash
+
+    sudo apt-get install -y libboost-program-options1.48-dev libboost-random1.48-dev libboost-filesystem1.48-dev libboost-system1.48-dev
 
 Some older systems may not have Qt 5 provided by default, so a workaround may
 be needed. The optional installation for GUI:
@@ -173,7 +180,7 @@ For example, in order to install *graphviz* on your system, type:
     sudo port install graphviz
 
 If you'd prefer to copy/paste, the following line will install all major
-*SCRAM* dependencies and GCC/G++ compiler:
+*SCRAM* dependencies:
 
 .. code-block:: bash
 
@@ -194,6 +201,7 @@ Installing SCRAM (Linux and Unix)
 
 A python script is provided to make the installation process easier.
 If there are dependency issues, the CMake output should guide with errors.
+CMake can be used directly without the python script to configure the build.
 
 The default build is DEBUG. There default installation directory is the user's
 .local.
