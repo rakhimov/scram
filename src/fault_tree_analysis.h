@@ -89,6 +89,11 @@ class FaultTreeAnalysis {
   ///                 recursive purposes.
   void PreprocessTree(GatePtr& gate);
 
+  /// Finds modules in the fault tree.
+  /// @param[in] gate The root gate of the tree.
+  /// @param[in] modules The container for the modules.
+  void Modularize(GatePtr& gate, std::set<std::string>& modules);
+
   /// Traverses the fault tree and expands it into sets of gates and events.
   /// @param[in] set_with_gates A superset with gates.
   /// @param[in] cut_sets Container for cut sets upon tree expansion.

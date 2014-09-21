@@ -246,19 +246,20 @@ void FaultTreeAnalysis::PreprocessTree(GatePtr& gate) {
     GatePtr child_gate = boost::dynamic_pointer_cast<scram::Gate>(it->second);
     if (!child_gate) continue;
     /// @todo This gate compression should be improved to include more logic.
-    if (gate->type() == "xor" || gate->type() == "atleast" ||
-        gate->type() == "vote" || gate->type() == "not" ||
-        gate->type() == "nor" || gate->type() == "nand" ||
-        gate->type() == "inhibit") {
-      continue;
-    }
-    if (gate->type() == child_gate->type()) {
+    if ((gate->type() == "and" || gate->type() == "or" ||
+         gate->type() == "null") &&
+        gate->type() == child_gate->type()) {
       gate->MergeGate(child_gate);
       it = gate->children().begin();
     } else {
       FaultTreeAnalysis::PreprocessTree(child_gate);
     }
   }
+}
+
+void FaultTreeAnalysis::Modularize(GatePtr& gate,
+                                   std::set<std::string>& modules) {
+
 }
 
 void FaultTreeAnalysis::ExpandTree(SupersetPtr& set_with_gates,

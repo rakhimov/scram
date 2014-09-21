@@ -2,6 +2,21 @@
 SCRAM FTA: Minimal Cut Sets
 #############################################
 
+Fault Tree Preprocessing
+========================
+In order to optimize the analysis, fault tree preprocessing is attempted
+before initiating other Minimal Cut Set algorithms. Initially, the gates are
+merged according to rules of Boolean algebra. For example, AND gate parent and
+AND gate child are joined into a new gate or added to the parent gate. This
+operation attempts to reduce the number of gates to expand later.
+
+The second operation is to find modules of the tree. Modules are defined as
+gates or group of events that do not share events or modules with other gates.
+Modules are expanded to get the number of primary events of the module. If
+the module appears in the final minimal cut sets, then the cut sets are
+populated with the event of the module.
+
+
 Minimal Cut Set (MCS) Generation Algorithm
 ===========================================
 Steps in the Algorithm for generation of minimal cut sets of a fault tree.

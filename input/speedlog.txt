@@ -53,5 +53,5 @@ Release build:
 ---------- Baobab -l 6 -----------------
 Release build:
 --------------
-- Tree Expansion    9.100s |
-- MCS Generation    0.090s |
+- Tree Expansion    5.600s |
+- MCS Generation    0.070s |
