@@ -83,6 +83,12 @@ class FaultTreeAnalysis {
   virtual ~FaultTreeAnalysis() {}
 
  private:
+  /// Preprocesses the fault tree.
+  /// Merges similar gates.
+  /// @param[in] gate The starting gate to traverse the tree. This is for
+  ///                 recursive purposes.
+  void PreprocessTree(GatePtr& gate);
+
   /// Traverses the fault tree and expands it into sets of gates and events.
   /// @param[in] set_with_gates A superset with gates.
   /// @param[in] cut_sets Container for cut sets upon tree expansion.

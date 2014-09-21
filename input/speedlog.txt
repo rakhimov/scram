@@ -34,24 +34,24 @@ Release build:
 ---------- fta-200 -l 16 ---------------
 Standard build:
 ---------------
-- Tree Expansion    4.100s  |  4.220s
-- MCS Generation    1.130s  |
+- Tree Expansion    3.700s  |
+- MCS Generation    1.100s  |
 
 Release build:
 --------------
-- Tree Expansion    0.870s  |
-- MCS Generation    0.250s  |
+- Tree Expansion    0.790s  |
+- MCS Generation    0.240s  |
 
 
 ---------- fta-200 -l 17 ---------------
 Release build:
 --------------
-- Tree Expansion    4.400s  |
+- Tree Expansion    3.300s  |
 - MCS Generation    12.00s  |
 
 
 ---------- Baobab -l 6 -----------------
 Release build:
 --------------
-- Tree Expansion    25.500s |
-- MCS Generation    0.168s  |  0.200s
+- Tree Expansion    9.100s |
+- MCS Generation    0.090s |

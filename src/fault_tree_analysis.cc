@@ -9,6 +9,7 @@
 #include <vector>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/pointer_cast.hpp>
 
 namespace scram {
 
@@ -87,6 +88,9 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
   std::clock_t start_time;
   start_time = std::clock();
   // End of Timing Initialization
+
+  // Pre-process the tree.
+  FaultTreeAnalysis::PreprocessTree(fault_tree->top_event());
 
   // Container for cut sets with primary events only.
   std::vector< SupersetPtr > cut_sets;
@@ -234,6 +238,27 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
   }
   // Duration of probability related operations.
   p_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
+}
+
+void FaultTreeAnalysis::PreprocessTree(GatePtr& gate) {
+  std::map<std::string, EventPtr>::const_iterator it;
+  for (it = gate->children().begin(); it != gate->children().end(); ++it) {
+    GatePtr child_gate = boost::dynamic_pointer_cast<scram::Gate>(it->second);
+    if (!child_gate) continue;
+    /// @todo This gate compression should be improved to include more logic.
+    if (gate->type() == "xor" || gate->type() == "atleast" ||
+        gate->type() == "vote" || gate->type() == "not" ||
+        gate->type() == "nor" || gate->type() == "nand" ||
+        gate->type() == "inhibit") {
+      continue;
+    }
+    if (gate->type() == child_gate->type()) {
+      gate->MergeGate(child_gate);
+      it = gate->children().begin();
+    } else {
+      FaultTreeAnalysis::PreprocessTree(child_gate);
+    }
+  }
 }
 
 void FaultTreeAnalysis::ExpandTree(SupersetPtr& set_with_gates,

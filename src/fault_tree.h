@@ -48,7 +48,7 @@ class FaultTree {
   inline const std::string& name() { return name_; }
 
   /// @returns The top gate.
-  inline const GatePtr& top_event() { return top_event_; }
+  inline GatePtr& top_event() { return top_event_; }
 
   /// @returns The container of intermediate events.
   /// @warning Validate function must be called before this function.
