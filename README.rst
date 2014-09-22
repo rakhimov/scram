@@ -8,6 +8,8 @@ SCRAM
     :target: https://coveralls.io/r/rakhimov/SCRAM?branch=develop
 .. image:: https://scan.coverity.com/projects/2555/badge.svg
     :target: https://scan.coverity.com/projects/2555
+.. image:: doc/cdash.png
+    :target: http://my.cdash.org/index.php?project=SCRAM
 
 *SCRAM* : "Simplified Command-line Risk Analysis Multi-tool"
 
