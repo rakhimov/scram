@@ -33,7 +33,7 @@ set_target_properties(scramcore
 
 target_link_libraries(scramcore dl ${LIBS})
 
-if(CYGWIN)
+if(NOT BUILD_SHARED_LIBS)
   install(
     TARGETS scramcore
     DESTINATION lib
