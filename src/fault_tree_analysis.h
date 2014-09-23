@@ -90,6 +90,9 @@ class FaultTreeAnalysis {
   void PreprocessTree(GatePtr& gate);
 
   /// Finds modules in the fault tree.
+  /// Traverses the tree starting from the top and registers if the gate
+  /// shares any events with other gates in the tree. If it doesn't, it is
+  /// a module.
   /// @param[in] gate The root gate of the tree.
   /// @param[in] modules The container for the modules.
   void Modularize(GatePtr& gate, std::set<std::string>& modules);

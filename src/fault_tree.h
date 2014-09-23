@@ -56,6 +56,13 @@ class FaultTree {
     return inter_events_;
   }
 
+  /// @returns The container of intermediate events that are defined implicitly
+  ///          by traversing the tree instead of initiating AddGate() function.
+  /// @warning Validate function must be called before this function.
+  inline const boost::unordered_map<std::string, GatePtr>& implicit_gates() {
+    return implicit_gates_;
+  }
+
   /// @returns The container of primary events of this tree.
   /// @warning Validate function must be called before this function.
   inline const boost::unordered_map<std::string, PrimaryEventPtr>&

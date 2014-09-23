@@ -259,7 +259,7 @@ void FaultTreeAnalysis::PreprocessTree(GatePtr& gate) {
 
 void FaultTreeAnalysis::Modularize(GatePtr& gate,
                                    std::set<std::string>& modules) {
-
+  modules.insert(gate->id());  // Dummy implementation for now.
 }
 
 void FaultTreeAnalysis::ExpandTree(SupersetPtr& set_with_gates,
