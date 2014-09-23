@@ -6,7 +6,11 @@
 #include <gtest/gtest.h>
 
 int main(int argc, char* argv[]) {
+#if EMBED_SCHEMA
+  const char* target = ".";  // Must be the directory of the tests.
+#else
   const char* target = "@CMAKE_INSTALL_PREFIX@";
+#endif
   int ret = chdir(target);
   assert(ret == 0);
   testing::InitGoogleTest(&argc, argv);

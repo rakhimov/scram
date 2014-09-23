@@ -23,9 +23,9 @@ Graphviz Dot tool.
 An optional GUI front-end is under development using `Qt`_.
 
 A full description of *SCRAM* and its current capabilities
-is in `the documentation`_.
+is in `documentation`_.
 
-.. _`the documentation`: http://rakhimov.github.io/SCRAM
+.. _`documentation`: http://rakhimov.github.io/SCRAM
 .. _`Qt`: http://qt-project.org/
 
 ******************************
@@ -206,20 +206,15 @@ If there are dependency issues, the CMake output should guide with errors.
 CMake can be used directly without the python script to configure the build.
 
 The default build is DEBUG. There default installation directory is the user's
-.local.
+.local. The default linkage is dynamic.
 
 .. code-block:: bash
 
     .../scram$ python install.py  --prefix=path/to/installation/directory
 
-The executable test binary is installed in *installation/directory/bin* directory.
-Also, the test input files and RelaxNG schema are copied in
+The main and test binaries are installed in *installation/directory/bin*
+directory. Also, the test input files and RelaxNG schema are copied in
 *installation/directory/share/scram/*.
-In order to run tests:
-
-.. code-block:: bash
-
-    .../scram$ path/to/installation/directory/bin/scram_unit_tests
 
 For better performance run the building with the optimization flag:
 
@@ -234,6 +229,10 @@ Various other flags are described by the script's help prompt.
     .../scram$ python install.py -h
 
 The optional GUI front-end is built using Qt Creator and qmake.
+
+In order to build statically and link statically, change two variables in
+*CMakeList.txt*: **BUILD_SHARED_LIBS** and **USE_STATIC_LIBS**.
+The GTest is build statically always irrespective to the above variables.
 
 Windows
 =======
@@ -273,6 +272,49 @@ download a `pre-build SCRAM for Cygwin`_.
     https://sourceforge.net/projects/iscram/files/
 .. _`Ubuntu image with SCRAM`:
     https://docs.google.com/uc?id=0B-nuSWux5G61RVlvSUJqWEhmbjg&export=download
+
+***********************
+Running SCRAM and Tests
+***********************
+
+To run tests
+-------------
+
+For dynamic builds (default):
+
+.. code-block:: bash
+
+    path/to/installation/directory/bin/scram_unit_tests
+
+For static builds (default Windows prepackages):
+
+    #. Switch to the installation directory.
+    #. Run the tests.
+
+.. code-block:: bash
+
+    cd path/to/installation/directory
+
+.. code-block:: bash
+
+    ./bin/scram_unit_tests
+
+.. note::
+    For Windows, the test binary is **scram_unit_tests.exe**
+
+To run SCRAM
+------------
+
+On command line, run help to get running options:
+
+.. code-block:: bash
+
+    path/to/installation/directory/bin/scram -h
+
+.. note::
+    For Windows, the binary is **scram.exe**
+
+More information in `documentation`_.
 
 ****************************
 Documentation Building

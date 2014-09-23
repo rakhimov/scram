@@ -21,13 +21,19 @@ set(SCRAM_SHARE_DIR "${PROJECT_SOURCE_DIR}/share")
 set(SCRAM_TEST_DIR "${PROJECT_SOURCE_DIR}/tests")
 
 # This makes all the libraries build as SHARED for Linux/Unix only
-set(BUILD_SHARED_LIBS TRUE)
+set(BUILD_SHARED_LIBS TRUE)  # Change this for static building.
 if(CYGWIN)
   set(BUILD_SHARED_LIBS FALSE)
 endif()
 
 # Linking of external libraries, such as BOOST.
-set(USE_STATIC_LIBS OFF)
+set(USE_STATIC_LIBS OFF)  # Change this for static building
+
+# Pre-uploading the schema for static distribution.
+# The tests will need to be run in the test directory.
+if(USE_STATIC_LIBS)
+  add_definitions(-DEMBED_SCHEMA)
+endif()
 
 # Setup build locations.
 if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)

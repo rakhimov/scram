@@ -12,7 +12,12 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/pointer_cast.hpp>
 
+#if EMBED_SCHEMA
+#include <schema.h>  // For static building.
+#endif
+
 namespace scram {
+
 
 RiskAnalysis::RiskAnalysis(std::string config_file)
     : prob_requested_(false),
@@ -58,10 +63,14 @@ void RiskAnalysis::ProcessInput(std::string xml_file) {
   parser->Init(stream);
 
   std::stringstream schema;
+#if EMBED_SCHEMA
+  schema << scram::g_schema_content;
+#else
   std::string schema_path = env_->rng_schema();
   std::ifstream schema_stream(schema_path.c_str());
   schema << schema_stream.rdbuf();
   schema_stream.close();
+#endif
   parser->Validate(schema);
 
   xmlpp::Document* doc = parser->Document();
