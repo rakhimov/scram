@@ -278,7 +278,7 @@ Running SCRAM and Tests
 ***********************
 
 To run tests
--------------
+=============
 
 For dynamic builds (default):
 
@@ -303,7 +303,7 @@ For static builds (default Windows prepackages):
     For Windows, the test binary is **scram_unit_tests.exe**
 
 To run SCRAM
-------------
+============
 
 On command line, run help to get running options:
 
