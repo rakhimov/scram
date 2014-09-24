@@ -49,8 +49,10 @@ void PlotDistribution(const std::multiset<double>& series) {
     }
     std::cout << std::endl;
   }
+  std::ios::fmtflags fmt(std::cout.flags());
   std::cout << "    0" << std::right << std::setw(num_bins + 1)
       << "1\n" << std::endl;
+  std::cout.flags(fmt);
 }
 
 TEST(RandomTest, UniformReal) {
