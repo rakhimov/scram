@@ -179,7 +179,7 @@ class FaultTreeAnalysis {
   /// average size of the elements.
   void CombineElAndSet(const std::set<int>& el,
                        const std::set< std::set<int> >& set,
-                       std::set< std::set<int> >& combo_set);
+                       std::set< std::set<int> >* combo_set);
 
   std::vector< std::set<int> > imcs_;  ///< Min cut sets with indices of events.
   /// Indices min cut sets to strings min cut sets mapping.
