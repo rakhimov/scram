@@ -58,10 +58,10 @@ Documentation:
     doc/xml_comments
     doc/todo
 
+Contact Us
+----------
 
-Indices and tables
-==================
+- `Mailing List and Forum`_
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+.. _`Mailing List and Forum`:
+    https://groups.google.com/forum/#!forum/scram-dev
