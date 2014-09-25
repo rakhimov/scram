@@ -65,6 +65,16 @@ void Gate::AddChild(const boost::shared_ptr<scram::Event>& child) {
   children_.insert(std::make_pair(child->id(), child));
 }
 
+void Gate::MergeGate(const boost::shared_ptr<scram::Gate>& gate) {
+  assert(gate->type_ != "");
+  assert(gate->type_ == type_);
+
+  if (children_.count(gate->id())) children_.erase(gate->id());
+
+  assert(!gate->children_.empty());
+  children_.insert(gate->children_.begin(), gate->children_.end());
+}
+
 const std::map<std::string, boost::shared_ptr<scram::Event> >&
 Gate::children() {
   if (children_.empty()) {

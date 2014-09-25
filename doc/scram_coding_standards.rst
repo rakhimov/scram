@@ -35,6 +35,7 @@ The quality of the code is checked by the following tools:
 ==========================================================
 #. Performance Profiling with `Gprof`_.
 #. Test coverage check with `Gcov`_ and reporting with `Coveralls`_.
+#. Test status is tracked on `CDash`_.
 #. Memory management bugs and leaks with `Valgrind`_.
 #. Static code analysis with `Coverity`_.
 #. Cyclomatic complexity analysis with `Lizard`_.
@@ -47,6 +48,8 @@ The quality of the code is checked by the following tools:
     https://gcc.gnu.org/onlinedocs/gcc/Gcov.html
 .. _`Coveralls`:
     https://coveralls.io/r/rakhimov/SCRAM
+.. _`CDash`:
+    http://my.cdash.org/index.php?project=SCRAM
 .. _`Valgrind`:
     http://valgrind.org/
 .. _`Coverity`:

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/pointer_cast.hpp>
 
 namespace scram {
 
@@ -87,6 +88,9 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
   std::clock_t start_time;
   start_time = std::clock();
   // End of Timing Initialization
+
+  // Pre-process the tree.
+  FaultTreeAnalysis::PreprocessTree(fault_tree->top_event());
 
   // Container for cut sets with primary events only.
   std::vector< SupersetPtr > cut_sets;
@@ -234,6 +238,28 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
   }
   // Duration of probability related operations.
   p_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
+}
+
+void FaultTreeAnalysis::PreprocessTree(GatePtr& gate) {
+  std::map<std::string, EventPtr>::const_iterator it;
+  for (it = gate->children().begin(); it != gate->children().end(); ++it) {
+    GatePtr child_gate = boost::dynamic_pointer_cast<scram::Gate>(it->second);
+    if (!child_gate) continue;
+    /// @todo This gate compression should be improved to include more logic.
+    if ((gate->type() == "and" || gate->type() == "or" ||
+         gate->type() == "null") &&
+        gate->type() == child_gate->type()) {
+      gate->MergeGate(child_gate);
+      it = gate->children().begin();
+    } else {
+      FaultTreeAnalysis::PreprocessTree(child_gate);
+    }
+  }
+}
+
+void FaultTreeAnalysis::Modularize(GatePtr& gate,
+                                   std::set<std::string>& modules) {
+  modules.insert(gate->id());  // Dummy implementation for now.
 }
 
 void FaultTreeAnalysis::ExpandTree(SupersetPtr& set_with_gates,
@@ -603,12 +629,12 @@ double FaultTreeAnalysis::ProbOr(std::set< std::set<int> >& min_cut_sets,
 
   // Get one element.
   std::set< std::set<int> >::iterator it = min_cut_sets.begin();
-  std::set<int> element_one = *it;
+  std::set<int> element_one(*it);
 
   // Delete element from the original set. WARNING: the iterator is invalidated.
   min_cut_sets.erase(it);
   std::set< std::set<int> > combo_sets;
-  FaultTreeAnalysis::CombineElAndSet(element_one, min_cut_sets, combo_sets);
+  FaultTreeAnalysis::CombineElAndSet(element_one, min_cut_sets, &combo_sets);
 
   return FaultTreeAnalysis::ProbAnd(element_one) +
          FaultTreeAnalysis::ProbOr(min_cut_sets, nsums) -
@@ -625,7 +651,7 @@ double FaultTreeAnalysis::ProbAnd(const std::set<int>& min_cut_set) {
     if (*it_set > 0) {
       p_sub_set *= iprobs_[*it_set];
     } else {
-      p_sub_set *= 1 - iprobs_[std::abs(*it_set)];
+      p_sub_set *= 1 - iprobs_[std::abs(*it_set)];  // Never zero.
     }
   }
   return p_sub_set;
@@ -633,21 +659,22 @@ double FaultTreeAnalysis::ProbAnd(const std::set<int>& min_cut_set) {
 
 void FaultTreeAnalysis::CombineElAndSet(const std::set<int>& el,
                                         const std::set< std::set<int> >& set,
-                                        std::set< std::set<int> >& combo_set) {
-  std::set<int> member_set;
-  std::set<int>::iterator it;
+                                        std::set< std::set<int> >* combo_set) {
   std::set< std::set<int> >::iterator it_set;
   for (it_set = set.begin(); it_set != set.end(); ++it_set) {
-    member_set = *it_set;
-    bool include = true;
+    bool include = true;  // Indicates that the resultant set is not null.
+    std::set<int>::iterator it;
     for (it = el.begin(); it != el.end(); ++it) {
-      if (it_set->count(-1 * (*it))) {
+      if (it_set->count(-*it)) {
         include = false;
-        break;
+        break;  // A complement is found; the set is null.
       }
-      member_set.insert(*it);
     }
-    if (include) combo_set.insert(member_set);
+    if (include) {
+      std::set<int> member_set(*it_set);
+      member_set.insert(el.begin(), el.end());
+      combo_set->insert(combo_set->end(), member_set);
+    }
   }
 }
 
@@ -681,10 +708,9 @@ void FaultTreeAnalysis::MProbOr(std::set< std::set<int> >& min_cut_sets,
   }
 
   std::set< std::set<int> > combo_sets;
-  FaultTreeAnalysis::CombineElAndSet(element_one, min_cut_sets, combo_sets);
+  FaultTreeAnalysis::CombineElAndSet(element_one, min_cut_sets, &combo_sets);
   FaultTreeAnalysis::MProbOr(min_cut_sets, sign, nsums);
   FaultTreeAnalysis::MProbOr(combo_sets, sign + 1, nsums - 1);
-  return;
 }
 
 void FaultTreeAnalysis::MSample() {}

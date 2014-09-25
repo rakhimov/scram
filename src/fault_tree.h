@@ -48,12 +48,19 @@ class FaultTree {
   inline const std::string& name() { return name_; }
 
   /// @returns The top gate.
-  inline const GatePtr& top_event() { return top_event_; }
+  inline GatePtr& top_event() { return top_event_; }
 
   /// @returns The container of intermediate events.
   /// @warning Validate function must be called before this function.
   inline const boost::unordered_map<std::string, GatePtr>& inter_events() {
     return inter_events_;
+  }
+
+  /// @returns The container of intermediate events that are defined implicitly
+  ///          by traversing the tree instead of initiating AddGate() function.
+  /// @warning Validate function must be called before this function.
+  inline const boost::unordered_map<std::string, GatePtr>& implicit_gates() {
+    return implicit_gates_;
   }
 
   /// @returns The container of primary events of this tree.

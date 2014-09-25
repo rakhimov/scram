@@ -83,6 +83,20 @@ class FaultTreeAnalysis {
   virtual ~FaultTreeAnalysis() {}
 
  private:
+  /// Preprocesses the fault tree.
+  /// Merges similar gates.
+  /// @param[in] gate The starting gate to traverse the tree. This is for
+  ///                 recursive purposes.
+  void PreprocessTree(GatePtr& gate);
+
+  /// Finds modules in the fault tree.
+  /// Traverses the tree starting from the top and registers if the gate
+  /// shares any events with other gates in the tree. If it doesn't, it is
+  /// a module.
+  /// @param[in] gate The root gate of the tree.
+  /// @param[in] modules The container for the modules.
+  void Modularize(GatePtr& gate, std::set<std::string>& modules);
+
   /// Traverses the fault tree and expands it into sets of gates and events.
   /// @param[in] set_with_gates A superset with gates.
   /// @param[in] cut_sets Container for cut sets upon tree expansion.
@@ -165,7 +179,7 @@ class FaultTreeAnalysis {
   /// average size of the elements.
   void CombineElAndSet(const std::set<int>& el,
                        const std::set< std::set<int> >& set,
-                       std::set< std::set<int> >& combo_set);
+                       std::set< std::set<int> >* combo_set);
 
   std::vector< std::set<int> > imcs_;  ///< Min cut sets with indices of events.
   /// Indices min cut sets to strings min cut sets mapping.

@@ -28,7 +28,7 @@ bool Superset::InsertSet(const boost::shared_ptr<Superset>& st) {
   std::set<int>::iterator it;
   if (neg_p_events_ || st->neg_p_events_) {
     for (it = st->p_events_.begin(); it != st->p_events_.end(); ++it) {
-      if (p_events_.count(-1 * (*it))) {
+      if (p_events_.count(-*it)) {
         p_events_.clear();
         gates_.clear();
         null_ = true;
@@ -40,7 +40,7 @@ bool Superset::InsertSet(const boost::shared_ptr<Superset>& st) {
 
   if (neg_gates_ || st->neg_gates_) {
     for (it = st->gates_.begin(); it != st->gates_.end(); ++it) {
-      if (gates_.count(-1 * (*it))) {
+      if (gates_.count(-*it)) {
         p_events_.clear();
         gates_.clear();
         null_ = true;

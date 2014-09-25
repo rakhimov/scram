@@ -4,8 +4,6 @@
 
 #include <cmath>
 
-#include <boost/version.hpp>
-
 typedef boost::mt19937 RandomGenerator;
 
 namespace scram {
