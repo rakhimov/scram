@@ -1,6 +1,8 @@
-#############################################
+.. _mcs_algorithm:
+
+###########################
 SCRAM FTA: Minimal Cut Sets
-#############################################
+###########################
 
 Fault Tree Preprocessing
 ========================
@@ -14,7 +16,7 @@ The second operation is to find modules of the tree. Modules are defined as
 gates or group of events that do not share events or modules with other gates.
 Modules are expanded to get the number of primary events of the module. If
 the module appears in the final minimal cut sets, then the cut sets are
-populated with the event of the module.
+populated with the event of the module. [not implemented]
 
 
 Minimal Cut Set (MCS) Generation Algorithm
