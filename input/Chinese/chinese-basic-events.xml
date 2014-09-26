@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <model-data>
+    <define-basic-event name="e1">
+      <float value="0.02"/>
+    </define-basic-event>
+    <define-basic-event name="e10">
+      <float value="0.02"/>
+    </define-basic-event>
+    <define-basic-event name="e11">
+      <float value="0.02"/>
+    </define-basic-event>
+    <define-basic-event name="e12">
+      <float value="0.02"/>
+    </define-basic-event>
+    <define-basic-event name="e13">
+      <float value="0.02"/>
+    </define-basic-event>
+    <define-basic-event name="e14">
+      <float value="0.02"/>
+    </define-basic-event>
+    <define-basic-event name="e15">
+      <float value="0.02"/>
+    </define-basic-event>
+    <define-basic-event name="e16">
+      <float value="0.02"/>
+    </define-basic-event>
+    <define-basic-event name="e17">
+      <float value="0.02"/>
+    </define-basic-event>
+    <define-basic-event name="e18">
+      <float value="0.02"/>
+    </define-basic-event>
+    <define-basic-event name="e19">
+      <float value="0.02"/>
+    </define-basic-event>
+    <define-basic-event name="e2">
+      <float value="0.02"/>
+    </define-basic-event>
+    <define-basic-event name="e20">
+      <float value="0.02"/>
+    </define-basic-event>
+    <define-basic-event name="e21">
+      <float value="0.02"/>
+    </define-basic-event>
+    <define-basic-event name="e22">
+      <float value="0.02"/>
+    </define-basic-event>
+    <define-basic-event name="e23">
+      <float value="0.02"/>
+    </define-basic-event>
+    <define-basic-event name="e24">
+      <float value="0.02"/>
+    </define-basic-event>
+    <define-basic-event name="e25">
+      <float value="0.02"/>
+    </define-basic-event>
+    <define-basic-event name="e3">
+      <float value="0.02"/>
+    </define-basic-event>
+    <define-basic-event name="e4">
+      <float value="0.02"/>
+    </define-basic-event>
+    <define-basic-event name="e5">
+      <float value="0.02"/>
+    </define-basic-event>
+    <define-basic-event name="e6">
+      <float value="0.02"/>
+    </define-basic-event>
+    <define-basic-event name="e7">
+      <float value="0.02"/>
+    </define-basic-event>
+    <define-basic-event name="e8">
+      <float value="0.02"/>
+    </define-basic-event>
+    <define-basic-event name="e9">
+      <float value="0.02"/>
+    </define-basic-event>
+  </model-data>
+</opsa-mef>
