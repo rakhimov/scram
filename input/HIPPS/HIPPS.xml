@@ -1,0 +1,110 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <define-fault-tree name="HIPPS">
+    <define-gate name="top">
+      <or>
+        <gate name="SensorFailure"/>
+        <basic-event name="LogicSolverFailure"/>
+        <gate name="W1NotIsolated"/>
+        <gate name="W2NotIsolated"/>
+      </or>
+    </define-gate>
+    <define-gate name="SensorFailure">
+      <or>
+        <basic-event name="PSHCCF"/>
+        <gate name="PSHFailure"/>
+      </or>
+    </define-gate>
+    <define-gate name="PSHFailure">
+      <atleast min="2">
+        <basic-event name="PSH1Failure"/>
+        <basic-event name="PSH2Failure"/>
+        <basic-event name="PSH3Failure"/>
+      </atleast>
+    </define-gate>
+    <define-gate name="W1NotIsolated">
+      <or>
+        <basic-event name="SV1Failure"/>
+        <basic-event name="SDV1Failure"/>
+      </or>
+    </define-gate>
+    <define-gate name="W2NotIsolated">
+      <or>
+        <basic-event name="SV2Failure"/>
+        <basic-event name="SDV2Failure"/>
+      </or>
+    </define-gate>
+    <define-basic-event name="LogicSolverFailure">
+      <GLM>
+        <float value="0"/>
+        <float value="1e-006"/>
+        <float value="0.1"/>
+        <system-mission-time/>
+      </GLM>
+    </define-basic-event>
+    <define-basic-event name="PSH1Failure">
+      <periodic-test>
+        <float value="7e-007"/>
+        <float value="720"/>
+        <float value="0"/>
+        <system-mission-time/>
+      </periodic-test>
+    </define-basic-event>
+    <define-basic-event name="PSH2Failure">
+      <periodic-test>
+        <float value="7e-007"/>
+        <float value="720"/>
+        <float value="0"/>
+        <system-mission-time/>
+      </periodic-test>
+    </define-basic-event>
+    <define-basic-event name="PSH3Failure">
+      <periodic-test>
+        <float value="7e-007"/>
+        <float value="720"/>
+        <float value="0"/>
+        <system-mission-time/>
+      </periodic-test>
+    </define-basic-event>
+    <define-basic-event name="PSHCCF">
+      <periodic-test>
+        <float value="3.5e-008"/>
+        <float value="720"/>
+        <float value="0"/>
+        <system-mission-time/>
+      </periodic-test>
+    </define-basic-event>
+    <define-basic-event name="SDV1Failure">
+      <periodic-test>
+        <float value="4.1e-006"/>
+        <float value="2160"/>
+        <float value="0"/>
+        <system-mission-time/>
+      </periodic-test>
+    </define-basic-event>
+    <define-basic-event name="SDV2Failure">
+      <periodic-test>
+        <float value="4.1e-006"/>
+        <float value="2160"/>
+        <float value="0"/>
+        <system-mission-time/>
+      </periodic-test>
+    </define-basic-event>
+    <define-basic-event name="SV1Failure">
+      <periodic-test>
+        <float value="2.6e-006"/>
+        <float value="1440"/>
+        <float value="0"/>
+        <system-mission-time/>
+      </periodic-test>
+    </define-basic-event>
+    <define-basic-event name="SV2Failure">
+      <periodic-test>
+        <float value="2.6e-006"/>
+        <float value="1440"/>
+        <float value="0"/>
+        <system-mission-time/>
+      </periodic-test>
+    </define-basic-event>
+  </define-fault-tree>
+</opsa-mef>
