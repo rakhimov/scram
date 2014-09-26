@@ -17,4 +17,4 @@ scram 200_Event/fta_tree.xml -l 17 | head -n 15
 
 echo -e '\n\n'
 echo -e 'Baobab -l 6'
-scram Baobab/mcs.xml -l 6 | head -n 20
+scram Baobab/baobab1.xml -l 6 | head -n 20

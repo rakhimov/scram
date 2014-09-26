@@ -24,7 +24,7 @@ Release build:
 ----------- Three Motor -c 0 ----------
 Standard build:
 ---------------
-- Prob Calculation  25.000s | 30.000s
+- Prob Calculation  25.000s | 33.000s
 
 Release build:
 --------------
@@ -44,6 +44,11 @@ Release build:
 
 
 ---------- fta-200 -l 17 ---------------
+Standard build:
+---------------
+- Tree Expansion    15.50s  |
+- MCS Generation    90.40s  |
+
 Release build:
 --------------
 - Tree Expansion    3.300s  |
@@ -51,7 +56,12 @@ Release build:
 
 
 ---------- Baobab -l 6 -----------------
+Standard build:
+---------------
+- Tree Expansion    29.20s  |
+- MCS Generation    0.500s  |
+
 Release build:
 --------------
-- Tree Expansion    5.600s |
-- MCS Generation    0.070s |
+- Tree Expansion    5.600s  |
+- MCS Generation    0.070s  |
