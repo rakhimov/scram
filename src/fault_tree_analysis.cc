@@ -93,7 +93,7 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
   FaultTreeAnalysis::PreprocessTree(fault_tree->top_event());
 
   // Container for cut sets with primary events only.
-  std::vector< SupersetPtr > cut_sets;
+  std::vector<SupersetPtr> cut_sets;
 
   prob_requested_ = prob_requested;
 
@@ -101,7 +101,7 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
 
   SupersetPtr top_set(new Superset());
   top_set->InsertGate(top_event_index_);
-  ExpandTree(top_set, cut_sets);
+  ExpandTree(top_set, &cut_sets);
 
   // Duration of the expansion.
   exp_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
@@ -155,7 +155,7 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
   if (analysis_ == "mc") {
     std::set<std::set<int> > iset(imcs_.begin(), imcs_.end());
     // Generate the equation.
-    FaultTreeAnalysis::MProbOr(iset, 1, nsums_);
+    FaultTreeAnalysis::MProbOr(1, nsums_, &iset);
     // Sample probabilities and generate data.
     FaultTreeAnalysis::MSample();
     return;
@@ -209,7 +209,7 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
 
   } else {  // The default calculations.
     // Choose cut sets with high enough probabilities.
-    p_total_ = FaultTreeAnalysis::ProbOr(mcs_for_prob, nsums_);
+    p_total_ = FaultTreeAnalysis::ProbOr(nsums_, &mcs_for_prob);
   }
 
   // Calculate failure contributions of each primary event.
@@ -240,7 +240,7 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
   p_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
 }
 
-void FaultTreeAnalysis::PreprocessTree(GatePtr& gate) {
+void FaultTreeAnalysis::PreprocessTree(const GatePtr& gate) {
   std::map<std::string, EventPtr>::const_iterator it;
   for (it = gate->children().begin(); it != gate->children().end(); ++it) {
     GatePtr child_gate = boost::dynamic_pointer_cast<scram::Gate>(it->second);
@@ -257,20 +257,15 @@ void FaultTreeAnalysis::PreprocessTree(GatePtr& gate) {
   }
 }
 
-void FaultTreeAnalysis::Modularize(GatePtr& gate,
-                                   std::set<std::string>& modules) {
-  modules.insert(gate->id());  // Dummy implementation for now.
-}
-
-void FaultTreeAnalysis::ExpandTree(SupersetPtr& set_with_gates,
-                                   std::vector< SupersetPtr >& cut_sets) {
+void FaultTreeAnalysis::ExpandTree(const SupersetPtr& set_with_gates,
+                                   std::vector<SupersetPtr>* cut_sets) {
   // To hold sets of children.
-  std::vector< SupersetPtr > children_sets;
+  std::vector<SupersetPtr> children_sets;
 
-  FaultTreeAnalysis::ExpandSets(set_with_gates->PopGate(), children_sets);
+  FaultTreeAnalysis::ExpandSets(set_with_gates->PopGate(), &children_sets);
 
   // An iterator for a vector with Supersets.
-  std::vector< SupersetPtr >::iterator it_sup;
+  std::vector<SupersetPtr>::iterator it_sup;
 
   // Attach the original set into this event's sets of children.
   for (it_sup = children_sets.begin(); it_sup != children_sets.end();
@@ -282,7 +277,7 @@ void FaultTreeAnalysis::ExpandTree(SupersetPtr& set_with_gates,
 
       if ((*it_sup)->gates().empty()) {
         // This is a set with primary events only.
-        cut_sets.push_back(*it_sup);
+        cut_sets->push_back(*it_sup);
         continue;
       }
       ExpandTree(*it_sup, cut_sets);
@@ -291,9 +286,9 @@ void FaultTreeAnalysis::ExpandTree(SupersetPtr& set_with_gates,
 }
 
 void FaultTreeAnalysis::ExpandSets(int inter_index,
-                                   std::vector< SupersetPtr >& sets) {
+                                   std::vector< SupersetPtr >* sets) {
   // Assumes sets are empty.
-  assert(sets.empty());
+  assert(sets->empty());
   if (repeat_exp_.count(inter_index)) {
     std::vector<SupersetPtr>* repeat_set =
         &repeat_exp_.find(inter_index)->second;
@@ -302,7 +297,7 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
     for (it = repeat_set->begin(); it != repeat_set->end(); ++it) {
       SupersetPtr temp_set(new Superset);
       temp_set->InsertSet(*it);
-      sets.push_back(temp_set);
+      sets->push_back(temp_set);
     }
     return;
   }
@@ -323,7 +318,8 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
     if (inter_events_.count(it_children->first)) {
       events_children.push_back(inter_to_int_.find(it_children->first)->second);
     } else {
-      events_children.push_back(primary_to_int_.find(it_children->first)->second);
+      events_children.push_back(
+          primary_to_int_.find(it_children->first)->second);
     }
   }
 
@@ -331,36 +327,36 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
   if (gate == "or") {
     assert(events_children.size() > 1);
     if (inter_index > 0) {
-      FaultTreeAnalysis::SetOr(events_children, sets, 1);
+      FaultTreeAnalysis::SetOr(1, events_children, sets);
     } else {
-      FaultTreeAnalysis::SetAnd(events_children, sets, -1);
+      FaultTreeAnalysis::SetAnd(-1, events_children, sets);
     }
   } else if (gate == "and") {
     assert(events_children.size() > 1);
     if (inter_index > 0) {
-      FaultTreeAnalysis::SetAnd(events_children, sets, 1);
+      FaultTreeAnalysis::SetAnd(1, events_children, sets);
     } else {
-      FaultTreeAnalysis::SetOr(events_children, sets, -1);
+      FaultTreeAnalysis::SetOr(-1, events_children, sets);
     }
   } else if (gate == "not") {
     int mult = 1;
     if (inter_index < 0) mult = -1;
     // Only one child is expected.
     assert(events_children.size() == 1);
-    FaultTreeAnalysis::SetAnd(events_children, sets, -1 * mult);
+    FaultTreeAnalysis::SetAnd(-1 * mult, events_children, sets);
   } else if (gate == "nor") {
     assert(events_children.size() > 1);
     if (inter_index > 0) {
-      FaultTreeAnalysis::SetAnd(events_children, sets, -1);
+      FaultTreeAnalysis::SetAnd(-1, events_children, sets);
     } else {
-      FaultTreeAnalysis::SetOr(events_children, sets, 1);
+      FaultTreeAnalysis::SetOr(1, events_children, sets);
     }
   } else if (gate == "nand") {
     assert(events_children.size() > 1);
     if (inter_index > 0) {
-      FaultTreeAnalysis::SetOr(events_children, sets, -1);
+      FaultTreeAnalysis::SetOr(-1, events_children, sets);
     } else {
-      FaultTreeAnalysis::SetAnd(events_children, sets, 1);
+      FaultTreeAnalysis::SetAnd(1, events_children, sets);
     }
   } else if (gate == "xor") {
     assert(events_children.size() == 2);
@@ -391,20 +387,20 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
         }
       }
     }
-    sets.push_back(tmp_set_one);
-    sets.push_back(tmp_set_two);
+    sets->push_back(tmp_set_one);
+    sets->push_back(tmp_set_two);
   } else if (gate == "null") {
     int mult = 1;
     if (inter_index < 0) mult = -1;
     // Only one child is expected.
     assert(events_children.size() == 1);
-    FaultTreeAnalysis::SetAnd(events_children, sets, mult);
+    FaultTreeAnalysis::SetAnd(mult, events_children, sets);
   } else if (gate == "inhibit") {
     assert(events_children.size() == 2);
     if (inter_index > 0) {
-      FaultTreeAnalysis::SetAnd(events_children, sets, 1);
+      FaultTreeAnalysis::SetAnd(1, events_children, sets);
     } else {
-      FaultTreeAnalysis::SetOr(events_children, sets, -1);
+      FaultTreeAnalysis::SetOr(-1, events_children, sets);
     }
   } else if (gate == "vote" || gate == "atleast") {
     int vote_number =
@@ -453,7 +449,7 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
           tmp_set_c->InsertPrimary(*it * mult);
         }
       }
-      sets.push_back(tmp_set_c);
+      sets->push_back(tmp_set_c);
     }
 
   } else {
@@ -465,7 +461,7 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
   // Save the expanded sets in case this gate gets repeated.
   std::vector<SupersetPtr> repeat_set;
   std::vector<SupersetPtr>::iterator it;
-  for (it = sets.begin(); it != sets.end(); ++it) {
+  for (it = sets->begin(); it != sets->end(); ++it) {
     SupersetPtr temp_set(new Superset);
     temp_set->InsertSet(*it);
     repeat_set.push_back(temp_set);
@@ -473,10 +469,11 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
   repeat_exp_.insert(std::make_pair(inter_index, repeat_set));
 }
 
-void FaultTreeAnalysis::SetOr(std::vector<int>& events_children,
-                              std::vector<SupersetPtr>& sets, int mult) {
+void FaultTreeAnalysis::SetOr(int mult,
+                              const std::vector<int>& events_children,
+                              std::vector<SupersetPtr>* sets) {
   assert(mult == 1 || mult == -1);
-  std::vector<int>::iterator it_child;
+  std::vector<int>::const_iterator it_child;
   for (it_child = events_children.begin();
        it_child != events_children.end(); ++it_child) {
     SupersetPtr tmp_set_c(new scram::Superset());
@@ -485,15 +482,16 @@ void FaultTreeAnalysis::SetOr(std::vector<int>& events_children,
     } else {
       tmp_set_c->InsertPrimary(*it_child * mult);
     }
-    sets.push_back(tmp_set_c);
+    sets->push_back(tmp_set_c);
   }
 }
 
-void FaultTreeAnalysis::SetAnd(std::vector<int>& events_children,
-                               std::vector<SupersetPtr>& sets, int mult) {
+void FaultTreeAnalysis::SetAnd(int mult,
+                               const std::vector<int>& events_children,
+                               std::vector<SupersetPtr>* sets) {
   assert(mult == 1 || mult == -1);
   SupersetPtr tmp_set_c(new scram::Superset());
-  std::vector<int>::iterator it_child;
+  std::vector<int>::const_iterator it_child;
   for (it_child = events_children.begin();
        it_child != events_children.end(); ++it_child) {
     if (*it_child > top_event_index_) {
@@ -502,7 +500,7 @@ void FaultTreeAnalysis::SetAnd(std::vector<int>& events_children,
       tmp_set_c->InsertPrimary(*it_child * mult);
     }
   }
-  sets.push_back(tmp_set_c);
+  sets->push_back(tmp_set_c);
 }
 
 void FaultTreeAnalysis::FindMcs(
@@ -612,33 +610,33 @@ void FaultTreeAnalysis::SetsToString() {
   }
 }
 
-double FaultTreeAnalysis::ProbOr(std::set< std::set<int> >& min_cut_sets,
-                                 int nsums) {
+double FaultTreeAnalysis::ProbOr(int nsums,
+                                 std::set< std::set<int> >* min_cut_sets) {
   assert(nsums >= 0);
 
   // Recursive implementation.
-  if (min_cut_sets.empty()) return 0;
+  if (min_cut_sets->empty()) return 0;
 
   if (nsums == 0) return 0;
 
   // Base case.
-  if (min_cut_sets.size() == 1) {
+  if (min_cut_sets->size() == 1) {
     // Get only element in this set.
-    return FaultTreeAnalysis::ProbAnd(*min_cut_sets.begin());
+    return FaultTreeAnalysis::ProbAnd(*min_cut_sets->begin());
   }
 
   // Get one element.
-  std::set< std::set<int> >::iterator it = min_cut_sets.begin();
+  std::set< std::set<int> >::iterator it = min_cut_sets->begin();
   std::set<int> element_one(*it);
 
   // Delete element from the original set. WARNING: the iterator is invalidated.
-  min_cut_sets.erase(it);
+  min_cut_sets->erase(it);
   std::set< std::set<int> > combo_sets;
-  FaultTreeAnalysis::CombineElAndSet(element_one, min_cut_sets, &combo_sets);
+  FaultTreeAnalysis::CombineElAndSet(element_one, *min_cut_sets, &combo_sets);
 
   return FaultTreeAnalysis::ProbAnd(element_one) +
-         FaultTreeAnalysis::ProbOr(min_cut_sets, nsums) -
-         FaultTreeAnalysis::ProbOr(combo_sets, nsums - 1);
+         FaultTreeAnalysis::ProbOr(nsums, min_cut_sets) -
+         FaultTreeAnalysis::ProbOr(nsums - 1, &combo_sets);
 }
 
 double FaultTreeAnalysis::ProbAnd(const std::set<int>& min_cut_set) {
@@ -681,25 +679,25 @@ void FaultTreeAnalysis::CombineElAndSet(const std::set<int>& el,
 // ----------------------------------------------------------------------
 // ----- Algorithm for Total Equation for Monte Carlo Simulation --------
 // Generation of the representation of the original equation.
-void FaultTreeAnalysis::MProbOr(std::set< std::set<int> >& min_cut_sets,
-                                int sign, int nsums) {
-  assert(sign > 0);
+void FaultTreeAnalysis::MProbOr(int sign, int nsums,
+                                std::set< std::set<int> >* min_cut_sets) {
+  assert(sign != 0);
   assert(nsums >= 0);
 
   // Recursive implementation.
-  if (min_cut_sets.empty()) return;
+  if (min_cut_sets->empty()) return;
 
   if (nsums == 0) return;
 
   // Get one element.
-  std::set< std::set<int> >::iterator it = min_cut_sets.begin();
+  std::set< std::set<int> >::iterator it = min_cut_sets->begin();
   std::set<int> element_one = *it;
 
   // Delete element from the original set. WARNING: the iterator is invalidated.
-  min_cut_sets.erase(it);
+  min_cut_sets->erase(it);
 
   // Put this element into the equation.
-  if ((sign % 2) == 1) {
+  if (sign > 0) {
     // This is a positive member.
     pos_terms_.push_back(element_one);
   } else {
@@ -708,9 +706,9 @@ void FaultTreeAnalysis::MProbOr(std::set< std::set<int> >& min_cut_sets,
   }
 
   std::set< std::set<int> > combo_sets;
-  FaultTreeAnalysis::CombineElAndSet(element_one, min_cut_sets, &combo_sets);
-  FaultTreeAnalysis::MProbOr(min_cut_sets, sign, nsums);
-  FaultTreeAnalysis::MProbOr(combo_sets, sign + 1, nsums - 1);
+  FaultTreeAnalysis::CombineElAndSet(element_one, *min_cut_sets, &combo_sets);
+  FaultTreeAnalysis::MProbOr(sign, nsums, min_cut_sets);
+  FaultTreeAnalysis::MProbOr(-sign, nsums - 1, &combo_sets);
 }
 
 void FaultTreeAnalysis::MSample() {}

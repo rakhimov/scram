@@ -33,7 +33,7 @@ class FaultTreeAnalysisTest : public ::testing::Test {
     fta = f;
   }
 
-  void ExpandSets(int inter_index, std::vector< SupersetPtr >& sets) {
+  void ExpandSets(int inter_index, std::vector< SupersetPtr >* sets) {
     return fta->ExpandSets(inter_index, sets);
   }
 
@@ -42,12 +42,12 @@ class FaultTreeAnalysisTest : public ::testing::Test {
     return fta->ProbAnd(min_cut_set);
   }
 
-  double ProbOr(std::set< std::set<int> >& min_cut_sets) {
-    return fta->ProbOr(min_cut_sets, 10000);
+  double ProbOr(std::set< std::set<int> >* min_cut_sets) {
+    return fta->ProbOr(1000, min_cut_sets);
   }
 
-  double ProbOr(std::set< std::set<int> >& min_cut_sets, int nsums) {
-    return fta->ProbOr(min_cut_sets, nsums);
+  double ProbOr(int nsums, std::set< std::set<int> >* min_cut_sets) {
+    return fta->ProbOr(nsums, min_cut_sets);
   }
 
   void CombineElAndSet(const std::set<int>& el,
@@ -74,12 +74,12 @@ class FaultTreeAnalysisTest : public ::testing::Test {
   }
   // -----------------------------------------------------------------------
   // -------------- Monte Carlo simulation algorithms ----------------------
-  void MProbOr(std::set< std::set<int> >& min_cut_sets) {
-    return fta->MProbOr(min_cut_sets, 1, 10000);
+  void MProbOr(std::set< std::set<int> >* min_cut_sets) {
+    return fta->MProbOr(1, 1000, min_cut_sets);
   }
 
-  void MProbOr(std::set< std::set<int> >& min_cut_sets, int sign, int nsums) {
-    return fta->MProbOr(min_cut_sets, sign, nsums);
+  void MProbOr(int sign, int nsums, std::set< std::set<int> >* min_cut_sets) {
+    return fta->MProbOr(sign, nsums, min_cut_sets);
   }
 
   std::vector< std::set<int> >& pos_terms() {

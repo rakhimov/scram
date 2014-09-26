@@ -53,13 +53,13 @@ void Grapher::GraphFaultTree(const FaultTreePtr& fault_tree,
   // Keep track of number of repetitions of the intermediate events.
   std::map<std::string, int> in_repeat;
   // Populate intermediate and primary events of the top.
-  Grapher::GraphNode(top_event_, pr_repeat, in_repeat, out);
+  Grapher::GraphNode(top_event_, &pr_repeat, &in_repeat, out);
   out.flush();
   // Do the same for all intermediate events.
   boost::unordered_map<std::string, GatePtr>::iterator it_inter;
   for (it_inter = inter_events_.begin(); it_inter != inter_events_.end();
        ++it_inter) {
-    Grapher::GraphNode(it_inter->second, pr_repeat, in_repeat, out);
+    Grapher::GraphNode(it_inter->second, &pr_repeat, &in_repeat, out);
     out.flush();
   }
 
@@ -151,8 +151,9 @@ void Grapher::GraphFaultTree(const FaultTreePtr& fault_tree,
   out.flush();
 }
 
-void Grapher::GraphNode(GatePtr t, std::map<std::string, int>& pr_repeat,
-                        std::map<std::string, int>& in_repeat,
+void Grapher::GraphNode(const GatePtr& t,
+                        std::map<std::string, int>* pr_repeat,
+                        std::map<std::string, int>* in_repeat,
                         std::ofstream& out) {
   // Populate intermediate and primary events of the input inter event.
   std::map<std::string, EventPtr> events_children = t->children();
@@ -161,29 +162,29 @@ void Grapher::GraphNode(GatePtr t, std::map<std::string, int>& pr_repeat,
        ++it_child) {
     // Deal with repeated primary events.
     if (primary_events_.count(it_child->first)) {
-      if (pr_repeat.count(it_child->first)) {
-        int rep = pr_repeat.find(it_child->first)->second;
+      if (pr_repeat->count(it_child->first)) {
+        int rep = pr_repeat->find(it_child->first)->second;
         rep++;
-        pr_repeat.erase(it_child->first);
-        pr_repeat.insert(std::make_pair(it_child->first, rep));
+        pr_repeat->erase(it_child->first);
+        pr_repeat->insert(std::make_pair(it_child->first, rep));
       } else {
-        pr_repeat.insert(std::make_pair(it_child->first, 0));
+        pr_repeat->insert(std::make_pair(it_child->first, 0));
       }
       out << "\"" << t->orig_id() << "_R0\" -> "
           << "\"" << it_child->second->orig_id() <<"_R"
-          << pr_repeat.find(it_child->first)->second << "\";\n";
+          << pr_repeat->find(it_child->first)->second << "\";\n";
     } else {  // This must be an intermediate event.
-      if (in_repeat.count(it_child->first)) {
-        int rep = in_repeat.find(it_child->first)->second;
+      if (in_repeat->count(it_child->first)) {
+        int rep = in_repeat->find(it_child->first)->second;
         rep++;
-        in_repeat.erase(it_child->first);
-        in_repeat.insert(std::make_pair(it_child->first, rep));
+        in_repeat->erase(it_child->first);
+        in_repeat->insert(std::make_pair(it_child->first, rep));
       } else {
-        in_repeat.insert(std::make_pair(it_child->first, 0));
+        in_repeat->insert(std::make_pair(it_child->first, 0));
       }
       out << "\"" << t->orig_id() << "_R0\" -> "
           << "\"" << it_child->second->orig_id() <<"_R"
-          << in_repeat.find(it_child->first)->second << "\";\n";
+          << in_repeat->find(it_child->first)->second << "\";\n";
     }
   }
 }

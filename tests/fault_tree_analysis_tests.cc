@@ -9,7 +9,7 @@ TEST_F(FaultTreeAnalysisTest, NO_GATE) {
   inter->AddChild(B);
   inter->AddChild(C);
   GetIndices();
-  EXPECT_THROW(ExpandSets(inter_id, sets), ValueError);
+  EXPECT_THROW(ExpandSets(inter_id, &sets), ValueError);
 }
 
 TEST_F(FaultTreeAnalysisTest, OR_GATE) {
@@ -24,7 +24,7 @@ TEST_F(FaultTreeAnalysisTest, OR_GATE) {
   inter->AddChild(C);
   inter->AddChild(D);
   GetIndices();
-  ASSERT_NO_THROW(ExpandSets(inter_id, sets));
+  ASSERT_NO_THROW(ExpandSets(inter_id, &sets));
   EXPECT_EQ(4, sets.size());
   bool a_found = false;
   bool b_found = false;
@@ -49,7 +49,7 @@ TEST_F(FaultTreeAnalysisTest, OR_GATE) {
   EXPECT_EQ(true, a_found && b_found && c_found && d_found);
   // Negative OR gate.
   sets.clear();
-  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));
+  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, &sets));
   EXPECT_EQ(1, sets.size());
   result_set = (*sets.begin())->p_events();
   EXPECT_EQ(3, result_set.size());
@@ -73,7 +73,7 @@ TEST_F(FaultTreeAnalysisTest, AND_GATE) {
   inter->AddChild(C);
   inter->AddChild(D);
   GetIndices();
-  ASSERT_NO_THROW(ExpandSets(inter_id, sets));
+  ASSERT_NO_THROW(ExpandSets(inter_id, &sets));
   EXPECT_EQ(1, sets.size());
   result_set = (*sets.begin())->p_events();
   EXPECT_EQ(3, result_set.size());
@@ -85,7 +85,7 @@ TEST_F(FaultTreeAnalysisTest, AND_GATE) {
   EXPECT_EQ(1, result_set.count(d_id));
   // Negative AND gate.
   sets.clear();
-  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));
+  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, &sets));
   EXPECT_EQ(4, sets.size());
   bool a_found = false;
   bool b_found = false;
@@ -118,12 +118,12 @@ TEST_F(FaultTreeAnalysisTest, NOT_GATE) {
   SetUpGate("not");
   inter->AddChild(A);
   GetIndices();
-  ASSERT_NO_THROW(ExpandSets(inter_id, sets));
+  ASSERT_NO_THROW(ExpandSets(inter_id, &sets));
   result_set = (*sets.begin())->p_events();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(-1 * a_id));
   sets.clear();
-  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));  // Negative Gate.
+  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, &sets));  // Negative Gate.
   result_set = (*sets.begin())->p_events();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(a_id));
@@ -135,12 +135,12 @@ TEST_F(FaultTreeAnalysisTest, NOT_GATE) {
   inter->AddChild(D);
   GetIndices();
   sets.clear();
-  ASSERT_NO_THROW(ExpandSets(inter_id, sets));
+  ASSERT_NO_THROW(ExpandSets(inter_id, &sets));
   result_set = (*sets.begin())->gates();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(-1 * d_id));
   sets.clear();
-  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));  // Negative Gate.
+  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, &sets));  // Negative Gate.
   result_set = (*sets.begin())->gates();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(d_id));
@@ -158,7 +158,7 @@ TEST_F(FaultTreeAnalysisTest, NOR_GATE) {
   inter->AddChild(C);
   inter->AddChild(D);
   GetIndices();
-  ASSERT_NO_THROW(ExpandSets(inter_id, sets));
+  ASSERT_NO_THROW(ExpandSets(inter_id, &sets));
   EXPECT_EQ(1, sets.size());
   result_set = (*sets.begin())->p_events();
   EXPECT_EQ(3, result_set.size());
@@ -170,7 +170,7 @@ TEST_F(FaultTreeAnalysisTest, NOR_GATE) {
   EXPECT_EQ(1, result_set.count(-1 * d_id));
   // Negative NOR gate.
   sets.clear();
-  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));  // Negative Gate.
+  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, &sets));  // Negative Gate.
   EXPECT_EQ(4, sets.size());
   bool a_found = false;
   bool b_found = false;
@@ -207,7 +207,7 @@ TEST_F(FaultTreeAnalysisTest, NAND_GATE) {
   inter->AddChild(C);
   inter->AddChild(D);
   GetIndices();
-  ASSERT_NO_THROW(ExpandSets(inter_id, sets));
+  ASSERT_NO_THROW(ExpandSets(inter_id, &sets));
   EXPECT_EQ(4, sets.size());
   bool a_found = false;
   bool b_found = false;
@@ -232,7 +232,7 @@ TEST_F(FaultTreeAnalysisTest, NAND_GATE) {
   EXPECT_EQ(true, a_found && b_found && c_found && d_found);
   // Negative NAND gate.
   sets.clear();
-  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));
+  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, &sets));
   EXPECT_EQ(1, sets.size());
   result_set = (*sets.begin())->p_events();
   EXPECT_EQ(3, result_set.size());
@@ -254,7 +254,7 @@ TEST_F(FaultTreeAnalysisTest, XOR_GATE) {
   inter->AddChild(A);
   inter->AddChild(D);
   GetIndices();
-  ASSERT_NO_THROW(ExpandSets(inter_id, sets));
+  ASSERT_NO_THROW(ExpandSets(inter_id, &sets));
   EXPECT_EQ(2, sets.size());
   std::set<int> set_one;
   std::set<int> set_two;
@@ -278,7 +278,7 @@ TEST_F(FaultTreeAnalysisTest, XOR_GATE) {
   }
   // Negative XOR gate.
   sets.clear();
-  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));
+  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, &sets));
   set_one.clear();
   set_two.clear();
   result_one.clear();
@@ -309,12 +309,12 @@ TEST_F(FaultTreeAnalysisTest, NULL_GATE) {
   SetUpGate("null");
   inter->AddChild(A);
   GetIndices();
-  ASSERT_NO_THROW(ExpandSets(inter_id, sets));
+  ASSERT_NO_THROW(ExpandSets(inter_id, &sets));
   result_set = (*sets.begin())->p_events();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(a_id));
   sets.clear();
-  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));  // Negative Gate.
+  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, &sets));  // Negative Gate.
   result_set = (*sets.begin())->p_events();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(-1 * a_id));
@@ -326,12 +326,12 @@ TEST_F(FaultTreeAnalysisTest, NULL_GATE) {
   inter->AddChild(D);
   GetIndices();
   sets.clear();
-  ASSERT_NO_THROW(ExpandSets(inter_id, sets));
+  ASSERT_NO_THROW(ExpandSets(inter_id, &sets));
   result_set = (*sets.begin())->gates();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(d_id));
   sets.clear();
-  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));  // Negative Gate.
+  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, &sets));  // Negative Gate.
   result_set = (*sets.begin())->gates();
   EXPECT_EQ(1, result_set.size());
   EXPECT_EQ(1, result_set.count(-1 * d_id));
@@ -347,7 +347,7 @@ TEST_F(FaultTreeAnalysisTest, INHIBIT_GATE) {
   inter->AddChild(A);
   inter->AddChild(D);
   GetIndices();
-  ASSERT_NO_THROW(ExpandSets(inter_id, sets));
+  ASSERT_NO_THROW(ExpandSets(inter_id, &sets));
   EXPECT_EQ(1, sets.size());
   result_set = (*sets.begin())->p_events();
   EXPECT_EQ(1, result_set.size());
@@ -357,7 +357,7 @@ TEST_F(FaultTreeAnalysisTest, INHIBIT_GATE) {
   EXPECT_EQ(1, result_set.count(d_id));
   // Negative AND gate.
   sets.clear();
-  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));
+  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, &sets));
   EXPECT_EQ(2, sets.size());
   bool a_found = false;
   bool d_found = false;
@@ -389,7 +389,7 @@ TEST_F(FaultTreeAnalysisTest, VOTE_GATE) {
   inter->AddChild(D);
   inter->vote_number(3);
   GetIndices();
-  ASSERT_NO_THROW(ExpandSets(inter_id, sets));
+  ASSERT_NO_THROW(ExpandSets(inter_id, &sets));
   EXPECT_EQ(4, sets.size());
   std::set< std::set<int> > output;
   std::set<int> mcs;
@@ -426,7 +426,7 @@ TEST_F(FaultTreeAnalysisTest, VOTE_GATE) {
 
   // Negative VOTE gate.
   sets.clear();
-  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, sets));
+  ASSERT_NO_THROW(ExpandSets(-1 * inter_id, &sets));
   EXPECT_EQ(6, sets.size());
   output.clear();
   mcs.clear();
@@ -574,17 +574,17 @@ TEST_F(FaultTreeAnalysisTest, ProbOrInt) {
   AddPrimaryIntProb(0.3);  // C is element 2.
 
   // 0 probability for an empty set.
-  EXPECT_DOUBLE_EQ(0, ProbOr(min_cut_sets));
+  EXPECT_DOUBLE_EQ(0, ProbOr(&min_cut_sets));
 
   // Check for one element calculation for A.
   mcs.insert(1);
   min_cut_sets.insert(mcs);
-  EXPECT_DOUBLE_EQ(0.1, ProbOr(min_cut_sets));
+  EXPECT_DOUBLE_EQ(0.1, ProbOr(&min_cut_sets));
 
   // Check that recursive nsums=0 returns without changing anything.
   mcs.insert(1);
   min_cut_sets.insert(mcs);
-  EXPECT_EQ(0, ProbOr(min_cut_sets, 0));
+  EXPECT_EQ(0, ProbOr(0, &min_cut_sets));
 
   // Check for [A or B]
   min_cut_sets.clear();
@@ -594,7 +594,7 @@ TEST_F(FaultTreeAnalysisTest, ProbOrInt) {
   mcs.clear();
   mcs.insert(2);
   min_cut_sets.insert(mcs);
-  EXPECT_DOUBLE_EQ(0.28, ProbOr(min_cut_sets));
+  EXPECT_DOUBLE_EQ(0.28, ProbOr(&min_cut_sets));
 
   // Check for [A or B or C]
   min_cut_sets.clear();
@@ -607,7 +607,7 @@ TEST_F(FaultTreeAnalysisTest, ProbOrInt) {
   mcs.clear();
   mcs.insert(3);
   min_cut_sets.insert(mcs);
-  EXPECT_DOUBLE_EQ(0.496, ProbOr(min_cut_sets));
+  EXPECT_DOUBLE_EQ(0.496, ProbOr(&min_cut_sets));
 
   // Check for [(A,B) or (B,C)]
   mcs.clear();
@@ -619,7 +619,7 @@ TEST_F(FaultTreeAnalysisTest, ProbOrInt) {
   mcs.insert(2);
   mcs.insert(3);
   min_cut_sets.insert(mcs);
-  EXPECT_DOUBLE_EQ(0.074, ProbOr(min_cut_sets));
+  EXPECT_DOUBLE_EQ(0.074, ProbOr(&min_cut_sets));
 }
 
 // ------------------------ Monte Carlo -----------------------------
@@ -629,14 +629,14 @@ TEST_F(FaultTreeAnalysisTest, MProbOr) {
   std::set< std::set<int> > n_terms;  // Negative terms of the equation.
   std::set< std::set<int> > temp_set;  // Temp set for dumping the output.
   std::set< std::set<int> > min_cut_sets;  // A set of minimal cut sets.
-  ASSERT_NO_THROW(MProbOr(min_cut_sets));  // Empty sets.
+  ASSERT_NO_THROW(MProbOr(&min_cut_sets));  // Empty sets.
   ASSERT_TRUE(pos_terms().empty() && neg_terms().empty());
 
   // Check for one element calculation for A.
   mcs.insert(0);
   p_terms.insert(mcs);
   min_cut_sets.insert(mcs);
-  ASSERT_NO_THROW(MProbOr(min_cut_sets));
+  ASSERT_NO_THROW(MProbOr(&min_cut_sets));
   EXPECT_EQ(0, min_cut_sets.size());  // This set is emptied recursively.
   temp_set.insert(pos_terms().begin(), pos_terms().end());
   EXPECT_EQ(p_terms, temp_set);
@@ -644,7 +644,7 @@ TEST_F(FaultTreeAnalysisTest, MProbOr) {
   // Check that recursive nsums=0 returns without changing anything.
   min_cut_sets.insert(mcs);
   pos_terms().clear();
-  ASSERT_NO_THROW(MProbOr(min_cut_sets, 1, 0));
+  ASSERT_NO_THROW(MProbOr(1, 0, &min_cut_sets));
   EXPECT_EQ(1, min_cut_sets.size());
   EXPECT_EQ(0, pos_terms().size());
 
@@ -663,7 +663,7 @@ TEST_F(FaultTreeAnalysisTest, MProbOr) {
   min_cut_sets.insert(mcs);
   mcs.insert(0);
   n_terms.insert(mcs);
-  ASSERT_NO_THROW(MProbOr(min_cut_sets));
+  ASSERT_NO_THROW(MProbOr(&min_cut_sets));
   temp_set.clear();
   temp_set.insert(pos_terms().begin(), pos_terms().end());
   EXPECT_EQ(p_terms, temp_set);
@@ -691,7 +691,7 @@ TEST_F(FaultTreeAnalysisTest, MProbOr) {
   min_cut_sets.insert(mcs);
   mcs.insert(0);
   n_terms.insert(mcs);
-  ASSERT_NO_THROW(MProbOr(min_cut_sets));
+  ASSERT_NO_THROW(MProbOr(&min_cut_sets));
   temp_set.clear();
   temp_set.insert(pos_terms().begin(), pos_terms().end());
   EXPECT_EQ(p_terms, temp_set);

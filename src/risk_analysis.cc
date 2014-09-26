@@ -142,7 +142,7 @@ void RiskAnalysis::Report(std::string output) {
 }
 
 void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
-                              FaultTreePtr& ft) {
+                              const FaultTreePtr& ft) {
   // Only one child element is expected, which is a formulae.
   std::string orig_id = gate_node->get_attribute_value("name");
   boost::trim(orig_id);

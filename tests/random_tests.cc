@@ -38,7 +38,7 @@ void PlotDistribution(const std::multiset<double>& series) {
   int max_size = *std::max_element(bin_hight.begin(), bin_hight.end());
   int screen_hight = 20;  // Max number of characters in hight.
   for (int i = 0; i < num_bins; ++i) {
-    int num_x = screen_hight * bin_hight[i] / double(max_size) + 0.5;
+    int num_x = screen_hight * bin_hight[i] / static_cast<double>(max_size) + 0.5;
     bin_hight[i] = num_x;  // Hight in characters.
   }
   std::string hight_char = "x";

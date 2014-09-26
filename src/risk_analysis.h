@@ -103,7 +103,7 @@ class RiskAnalysis {
   /// Defines and adds a gate for this analysis.
   /// @param[in] gate_node XML element defining the gate.
   /// @param[out] ft FaultTree under which this gate is defined.
-  void DefineGate(const xmlpp::Element* gate_node, FaultTreePtr& ft);
+  void DefineGate(const xmlpp::Element* gate_node, const FaultTreePtr& ft);
 
   /// Defines and adds a basic event for this analysis.
   /// @param[in] event_node XML element defining the event.

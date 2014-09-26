@@ -87,21 +87,13 @@ class FaultTreeAnalysis {
   /// Merges similar gates.
   /// @param[in] gate The starting gate to traverse the tree. This is for
   ///                 recursive purposes.
-  void PreprocessTree(GatePtr& gate);
-
-  /// Finds modules in the fault tree.
-  /// Traverses the tree starting from the top and registers if the gate
-  /// shares any events with other gates in the tree. If it doesn't, it is
-  /// a module.
-  /// @param[in] gate The root gate of the tree.
-  /// @param[in] modules The container for the modules.
-  void Modularize(GatePtr& gate, std::set<std::string>& modules);
+  void PreprocessTree(const GatePtr& gate);
 
   /// Traverses the fault tree and expands it into sets of gates and events.
   /// @param[in] set_with_gates A superset with gates.
   /// @param[in] cut_sets Container for cut sets upon tree expansion.
-  void ExpandTree(SupersetPtr& set_with_gates,
-                  std::vector< SupersetPtr >& cut_sets);
+  void ExpandTree(const SupersetPtr& set_with_gates,
+                  std::vector<SupersetPtr>* cut_sets);
 
   /// Expands the children of a top or intermediate event to Supersets.
   /// @param[in] inter_index The index number of the parent node.
@@ -109,23 +101,23 @@ class FaultTreeAnalysis {
   /// @throws ValueError if the parent's gate is not recognized.
   /// @note The final sets are dependent on the gate of the parent.
   /// @note O_avg(N, N*logN) O_max(N^2, N^3*logN) where N is a children number.
-  void ExpandSets(int inter_index, std::vector<SupersetPtr>& sets);
+  void ExpandSets(int inter_index, std::vector<SupersetPtr>* sets);
 
   /// Expands sets for OR operator.
+  /// @param[in] mult The positive(1) or negative(-1) event indicator.
   /// @param[in] events_children The indices of the children of the event.
   /// @param[out] sets The final Supersets generated for OR operator.
-  /// @param[in] mult The positive(1) or negative(-1) event indicator.
   /// @note O_avg(N) O_max(N^2)
-  void SetOr(std::vector<int>& events_children,
-             std::vector<SupersetPtr>& sets, int mult);
+  void SetOr(int mult, const std::vector<int>& events_children,
+             std::vector<SupersetPtr>* sets);
 
   /// Expands sets for AND operator.
+  /// @param[in] mult The positive(1) or negative(-1) event indicator.
   /// @param[in] events_children The indices of the children of the event.
   /// @param[out] sets The final Supersets generated for OR operator.
-  /// @param[in] mult The positive(1) or negative(-1) event indicator.
   /// @note O_avg(N*logN) O_max(N*logN) where N is the number of children.
-  void SetAnd(std::vector<int>& events_children,
-              std::vector<SupersetPtr>& sets, int mult);
+  void SetAnd(int mult, const std::vector<int>& events_children,
+              std::vector<SupersetPtr>* sets);
 
   /// Finds minimal cut sets from cut sets.
   /// Applys rule 4 to reduce unique cut sets to minimal cut sets.
@@ -153,15 +145,15 @@ class FaultTreeAnalysis {
   /// Calculates a probability of a set of minimal cut sets, which are in OR
   /// relationship with each other. This function is a brute force probability
   /// calculation without approximations.
-  /// @param[in] min_cut_sets Sets of indices of primary events.
   /// @param[in] nsums The number of sums in the series.
+  /// @param[in] min_cut_sets Sets of indices of primary events.
   /// @returns The total probability.
   /// @note This function drastically modifies min_cut_sets by deleting
   /// sets inside it. This is for better performance.
   ///
   /// @note O_avg(M*logM*N*2^N) where N is the number of sets, and M is
   /// the average size of the sets.
-  double ProbOr(std::set< std::set<int> >& min_cut_sets, int nsums);
+  double ProbOr(int nsums, std::set< std::set<int> >* min_cut_sets);
 
   /// Calculates a probability of a minimal cut set, whose members are in AND
   /// relationship with each other. This function assumes independence of each
@@ -198,11 +190,11 @@ class FaultTreeAnalysis {
   // -----------------------------------------------------------------
   // ---- Algorithm for Equation Construction for Monte Carlo Sim -------
   /// Generates positive and negative terms of probability equation expansion.
-  /// @param[in] min_cut_sets Sets of indices of primary events.
   /// @param[in] sign The sign of the series. Odd int is '+', even int is '-'.
   /// @param[in] nsums The number of sums in the series.
+  /// @param[in] min_cut_sets Sets of indices of primary events.
   /// @todo The sign may be +/-1 instead of odd/even integers.
-  void MProbOr(std::set< std::set<int> >& min_cut_sets, int sign, int nsums);
+  void MProbOr(int sign, int nsums, std::set< std::set<int> >* min_cut_sets);
 
   /// Performs Monte Carlo Simulation.
   /// @todo Implement the simulation.

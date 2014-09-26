@@ -38,8 +38,8 @@ class Grapher {
   /// @param[in] in_repeat The number of times an inter event is repeated.
   /// @param[in] out The output stream.
   /// @note The repetition information is important to avoid clashes.
-  void GraphNode(GatePtr t, std::map<std::string, int>& pr_repeat,
-                 std::map<std::string, int>& in_repeat, std::ofstream& out);
+  void GraphNode(const GatePtr& t, std::map<std::string, int>* pr_repeat,
+                 std::map<std::string, int>* in_repeat, std::ofstream& out);
 
   /// Top event.
   GatePtr top_event_;
