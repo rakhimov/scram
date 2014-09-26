@@ -1,8 +1,8 @@
-#######################################
+#################
 SCRAM Description
-#######################################
+#################
 
-The overall description of SCRAM and possible future additions.
+This is a general description of SCRAM and possible future additions.
 These descriptions may not reflect current capabilities.
 
 Command-line Call of SCRAM by a User.

@@ -40,9 +40,6 @@ RiskAnalysis::RiskAnalysis(std::string config_file)
   types_.insert("house");
   types_.insert("conditional");
 
-  // Initialize a fault tree with a default name.
-  FaultTreePtr fault_tree_;
-
   fta_ = new FaultTreeAnalysis("default");
   env_ = new Env();
 }
@@ -145,7 +142,7 @@ void RiskAnalysis::Report(std::string output) {
 }
 
 void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
-                              FaultTreePtr& ft) {
+                              const FaultTreePtr& ft) {
   // Only one child element is expected, which is a formulae.
   std::string orig_id = gate_node->get_attribute_value("name");
   boost::trim(orig_id);
@@ -624,7 +621,7 @@ void RiskAnalysis::ValidateInitialization() {
   }
 
   // Validation of analysis entities.
-  fault_tree_->Validate();
+  if (fault_tree_) fault_tree_->Validate();
 }
 
 std::string RiskAnalysis::CheckAllGates() {

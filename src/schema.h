@@ -3,6 +3,8 @@
 #ifndef SCRAM_SCHEMA_H_
 #define SCRAM_SCHEMA_H_
 
+#include <string>
+
 namespace scram {
 
 /// RelaxNG global schema for static builds.

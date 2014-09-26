@@ -28,7 +28,7 @@ class Error : public std::exception {
 
   /// Sets the error message.
   /// @param[in] msg The error message.
-  void msg(std::string& msg) {
+  void msg(std::string msg) {
     msg_ = msg;
     thrown_ = kPrefix_ + msg;
   }

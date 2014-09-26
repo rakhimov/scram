@@ -1,6 +1,6 @@
-################################################
+#########################
 SCRAM Fault Tree Analysis
-################################################
+#########################
 
 This is a short description of the fault tree analysis implemented in
 SCRAM.
@@ -47,6 +47,8 @@ The Algorithm to Generate Minimal Cut Sets
 - Remove cut sets that are larger than the specified maximum order.
 - Remove cut sets with lower than cutoff probability. [not implemented]
 
+More information in :ref:`mcs_algorithm`.
+
 
 Probability Calculations
 ============================================
@@ -61,6 +63,8 @@ probabilities. Some of them are:
 - Brute force probability calculation if the rare event approximation is not
   good enough. This brute force calculation may be expensive and require
   much more time. (the default method for probability calculations).
+
+More information in :ref:`prob_calc`.
 
 .. note::
     For most calculations, rare event approximation and event

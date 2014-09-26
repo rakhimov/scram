@@ -6,8 +6,10 @@
 #include <fstream>
 #include <iostream>
 #include <map>
+#include <set>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "fault_tree_analysis.h"
 
@@ -16,7 +18,7 @@ namespace scram {
 /// Reporter of findings of analysis.
 class Reporter {
  public:
-  explicit Reporter();
+  Reporter();
 
   /// Reports the results of analysis to a specified output destination.
   /// @param[in] fta Fault Tree Analysis with results.
@@ -32,7 +34,6 @@ class Reporter {
   void ReportMcTerms(const std::vector< std::set<int> >& terms,
                      const FaultTreeAnalysis* fta,
                      std::ostream& out);
-
 };
 
 }  // namespace scram
