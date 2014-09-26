@@ -6,12 +6,12 @@ Boost version: 1.54
 
 If the current performance is not listed, then the best is the current.
 
------------ Input name [flags] -----------
+----------- Input name [flags] [(results)] -----------
 
               Best Achieved | Current Performance
 
 
------------ Three Motor -c 1e-8 -------
+----------- Three Motor -c 1e-8 (p = 0.02115378) -------
 Standard build:
 ---------------
 - Prob Calculation  0.680s  |
@@ -21,7 +21,7 @@ Release build:
 - Prob Calculation  0.130s |
 
 
------------ Three Motor -c 0 ----------
+----------- Three Motor -c 0 (p = 0.02115378) ----------
 Standard build:
 ---------------
 - Prob Calculation  25.000s | 33.000s
@@ -31,7 +31,7 @@ Release build:
 - Prob Calculation  5.500s  |  6.000s
 
 
----------- fta-200 -l 16 ---------------
+---------- fta-200 -l 16 (mcs = 8351) ---------------
 Standard build:
 ---------------
 - Tree Expansion    3.700s  |
@@ -43,7 +43,7 @@ Release build:
 - MCS Generation    0.240s  |
 
 
----------- fta-200 -l 17 ---------------
+---------- fta-200 -l 17 (mcs = 8487) ---------------
 Standard build:
 ---------------
 - Tree Expansion    15.50s  |
@@ -55,7 +55,7 @@ Release build:
 - MCS Generation    12.00s  |
 
 
----------- Baobab -l 6 -----------------
+---------- Baobab -l 6 (mcs = 2684) ----------------
 Standard build:
 ---------------
 - Tree Expansion    29.20s  |
@@ -65,3 +65,24 @@ Release build:
 --------------
 - Tree Expansion    5.600s  |
 - MCS Generation    0.070s  |
+
+
+---------- Baobab -l 7 (mcs = 17432) ----------------
+Release build:
+--------------
+- Tree Expansion    86.80s  |
+- MCS Generation    2.500s  |
+
+
+---------- CEA9601 -l 4 (mcs = 2732) ----------------
+Release build:
+--------------
+- Tree Expansion    19.50s  |
+- MCS Generation    0.050s  |
+
+
+---------- CEA9601 -l 5 (mcs = 3274) ----------------
+Release build:
+--------------
+- Tree Expansion    43.40s  |
+- MCS Generation    0.130s  |
