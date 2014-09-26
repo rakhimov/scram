@@ -40,9 +40,6 @@ RiskAnalysis::RiskAnalysis(std::string config_file)
   types_.insert("house");
   types_.insert("conditional");
 
-  // Initialize a fault tree with a default name.
-  FaultTreePtr fault_tree_;
-
   fta_ = new FaultTreeAnalysis("default");
   env_ = new Env();
 }
@@ -624,7 +621,7 @@ void RiskAnalysis::ValidateInitialization() {
   }
 
   // Validation of analysis entities.
-  fault_tree_->Validate();
+  if (fault_tree_) fault_tree_->Validate();
 }
 
 std::string RiskAnalysis::CheckAllGates() {
