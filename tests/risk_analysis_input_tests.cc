@@ -55,7 +55,7 @@ TEST(RiskAnalysisInputTest, CorrectFTAInputs) {
   correct_inputs.push_back(dir + "model_data_mixed_definitions.xml");
   correct_inputs.push_back(dir + "trailing_spaces.xml");
   correct_inputs.push_back(dir + "two_trees.xml");
-  // correct_inputs.push_back(dir + "labels_and_attributes.xml");
+  correct_inputs.push_back(dir + "labels_and_attributes.xml");
 
   RiskAnalysis* ran;
 

@@ -10,6 +10,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 
+#include "element.h"
 #include "env.h"
 #include "error.h"
 #include "event.h"
@@ -20,6 +21,8 @@
 #include "xml_parser.h"
 
 class RiskAnalysisTest;
+
+typedef boost::shared_ptr<scram::Element> ElementPtr;
 
 typedef boost::shared_ptr<scram::Event> EventPtr;
 typedef boost::shared_ptr<scram::Gate> GatePtr;
@@ -85,6 +88,15 @@ class RiskAnalysis {
   }
 
  private:
+  /// Attaches attributes and label to the elements of the analysis.
+  /// These attributes are not XML attributes but OpenPSA format defined
+  /// arbitrary attributes and label that can be attached to many analysis
+  /// elements.
+  /// @param[in] element_node XML element.
+  /// @param[out] element The object that needs attributes and label.
+  void AttachLabelAndAttributes(const xmlpp::Element* element_node,
+                                const ElementPtr& element);
+
   /// Defines and adds a gate for this analysis.
   /// @param[in] gate_node XML element defining the gate.
   /// @param[out] ft FaultTree under which this gate is defined.
