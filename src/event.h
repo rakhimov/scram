@@ -8,6 +8,7 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include "element.h"
 #include "error.h"
 
 namespace scram {
@@ -16,7 +17,7 @@ class Gate;  // Needed for being a parent of an event.
 
 /// @class Event
 /// General fault tree event base class.
-class Event {
+class Event : public Element {
  public:
   /// Constructs a fault tree event with a specific id.
   /// @param[in] id The identifying name for the event.
