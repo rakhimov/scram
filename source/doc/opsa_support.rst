@@ -4,9 +4,13 @@
 Currently Supported OpenPSA MEF Features
 ########################################
 
+- Label for elements
+
+- Attributes list
+
 - Fault Tree Description:
 
-  * Non-nested gates (formula).
+  * Non-nested gates (formula)
 
 - Basic Event Description:
 

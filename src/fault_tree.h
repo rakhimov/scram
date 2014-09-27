@@ -11,6 +11,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 
+#include "element.h"
 #include "error.h"
 #include "event.h"
 
@@ -22,7 +23,7 @@ namespace scram {
 
 /// @class FaultTree
 /// Fault tree representation.
-class FaultTree {
+class FaultTree : public Element {
  public:
   /// The main constructor of the Fault Tree.
   /// @param[in] name The name identificator of this fault tree.

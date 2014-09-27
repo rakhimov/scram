@@ -23,7 +23,9 @@ namespace scram {
 
 Reporter::Reporter() {}
 
-void Reporter::ReportFta(const FaultTreeAnalysis* fta, std::string output) {
+void Reporter::ReportFta(
+    const boost::shared_ptr<const scram::FaultTreeAnalysis>& fta,
+    std::string output) {
   // Check if output to file is requested.
   std::streambuf* buf;
   std::ofstream of;
@@ -305,9 +307,10 @@ void Reporter::ReportFta(const FaultTreeAnalysis* fta, std::string output) {
   }
 }
 
-void Reporter::ReportMcTerms(const std::vector< std::set<int> >& terms,
-                             const FaultTreeAnalysis* fta,
-                             std::ostream& out) {
+void Reporter::ReportMcTerms(
+      const std::vector< std::set<int> >& terms,
+      const boost::shared_ptr<const scram::FaultTreeAnalysis>& fta,
+      std::ostream& out) {
   std::vector< std::set<int> >::const_iterator it_vec;
   std::set<int>::const_iterator it_set;
   for (it_vec = terms.begin(); it_vec != terms.end(); ++it_vec) {

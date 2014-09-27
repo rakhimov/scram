@@ -10,6 +10,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 
+#include "element.h"
 #include "env.h"
 #include "error.h"
 #include "event.h"
@@ -21,6 +22,8 @@
 
 class RiskAnalysisTest;
 
+typedef boost::shared_ptr<scram::Element> ElementPtr;
+
 typedef boost::shared_ptr<scram::Event> EventPtr;
 typedef boost::shared_ptr<scram::Gate> GatePtr;
 typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
@@ -28,6 +31,7 @@ typedef boost::shared_ptr<scram::BasicEvent> BasicEventPtr;
 typedef boost::shared_ptr<scram::HouseEvent> HouseEventPtr;
 
 typedef boost::shared_ptr<scram::FaultTree> FaultTreePtr;
+typedef boost::shared_ptr<scram::FaultTreeAnalysis> FaultTreeAnalysisPtr;
 
 namespace scram {
 
@@ -57,10 +61,6 @@ class RiskAnalysis {
   void ProcessInput(std::string xml_file);
 
   /// Graphing or other visual resources for the analysis if applicable.
-  /// @todo Must be handled by a separate class.
-  ///
-  /// Descriptions from original Fault Tree Class
-  ///
   /// Outputs a file with instructions for graphviz dot to create a fault tree.
   /// @note This function must be called only after initializing the tree.
   /// @note The name of the output file is the same as the input file, but
@@ -69,28 +69,16 @@ class RiskAnalysis {
   /// @throws IOError if the output file is not accessable.
   void GraphingInstructions();
 
-  /// Perform the main analysis operations.
-  /// @todo Must use specific analyzers for this operation.
-  ///
-  /// Descriptions from original Fault Tree Class
-  ///
+  /// Performs the main analysis operations.
   /// Analyzes the fault tree and performs computations.
   /// This function must be called only after initilizing the tree with or
   /// without its probabilities.
-  /// @throws Error if called before tree initialization from an input file.
   /// @note Cut set generator: O_avg(N) O_max(N)
   void Analyze();
 
-  /// Reports the results of analysis.
-  /// @param[out] output The output destination.
-  /// @todo Must rely upon another dedicated class.
-  ///
-  /// Descriptions from original Fault Tree Class
-  ///
   /// Reports the results of analysis to a specified output destination.
   /// @note This function must be called only after Analyze() function.
   /// param[out] output The output destination.
-  /// @throws Error if called before the tree analysis.
   /// @throws IOError if the output file is not accessable.
   void Report(std::string output);
 
@@ -100,6 +88,15 @@ class RiskAnalysis {
   }
 
  private:
+  /// Attaches attributes and label to the elements of the analysis.
+  /// These attributes are not XML attributes but OpenPSA format defined
+  /// arbitrary attributes and label that can be attached to many analysis
+  /// elements.
+  /// @param[in] element_node XML element.
+  /// @param[out] element The object that needs attributes and label.
+  void AttachLabelAndAttributes(const xmlpp::Element* element_node,
+                                const ElementPtr& element);
+
   /// Defines and adds a gate for this analysis.
   /// @param[in] gate_node XML element defining the gate.
   /// @param[out] ft FaultTree under which this gate is defined.
@@ -140,10 +137,6 @@ class RiskAnalysis {
   /// @throws ValidationError if the initialization contains mistakes.
   void ValidateInitialization();
 
-  /// @todo Containers for fault trees, events, event trees, CCF, and other
-  /// analysis entities.
-  /// @todo Container for excess events that are defined.
-
   /// Container of original names of to be determined events
   /// with capitalizations.
   std::map<std::string, std::string> tbd_orig_ids_;
@@ -175,11 +168,18 @@ class RiskAnalysis {
   /// Container for all defined events.
   boost::unordered_map<std::string, EventPtr> all_events_;
 
-  /// A fault tree.
-  FaultTreePtr fault_tree_;
+  /// Container for excess primary events not in the analysis.
+  /// This container is for warning in case the input is formed not as intended.
+  std::set<PrimaryEventPtr> orphan_primary_events_;
 
-  /// A fault tree analysis;
+  /// A collection of fault trees for analysis.
+  std::map<std::string, FaultTreePtr> fault_trees_;
+
+  /// The configured fault tree analysis. Acts like a prototype.
   FaultTreeAnalysis* fta_;
+
+  /// A fault tree analyses that are performed.
+  std::vector<FaultTreeAnalysisPtr> ftas_;
 
   /// Input file path.
   std::string input_file_;

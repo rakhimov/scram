@@ -18,7 +18,6 @@
 
 namespace scram {
 
-
 RiskAnalysis::RiskAnalysis(std::string config_file)
     : prob_requested_(false),
       input_file_("") {
@@ -124,21 +123,63 @@ void RiskAnalysis::ProcessInput(std::string xml_file) {
 }
 
 void RiskAnalysis::GraphingInstructions() {
-  /// @todo Make this exception safe with a smart pointer.
-  Grapher* gr = new Grapher();
-  gr->GraphFaultTree(fault_tree_, prob_requested_, input_file_);
-  delete gr;
+  std::map<std::string, FaultTreePtr>::iterator it;
+  for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
+    std::string output_file_name = input_file_ + "_" + it->second->name();
+    Grapher gr = Grapher();
+    gr.GraphFaultTree(it->second, prob_requested_, output_file_name);
+  }
 }
 
 void RiskAnalysis::Analyze() {
-  fta_->Analyze(fault_tree_, prob_requested_);
+  std::map<std::string, FaultTreePtr>::iterator it;
+  for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
+    std::string output_file_name = input_file_ + "_" + it->second->name();
+    FaultTreeAnalysisPtr fta(new FaultTreeAnalysis(*fta_));
+    fta->Analyze(it->second, prob_requested_);
+    ftas_.push_back(fta);
+  }
 }
 
 void RiskAnalysis::Report(std::string output) {
-  /// @todo Make this exception safe with a smart pointer.
-  Reporter* rp = new Reporter();
-  rp->ReportFta(fta_, output);
-  delete rp;
+  std::vector<FaultTreeAnalysisPtr>::iterator it;
+  for (it = ftas_.begin(); it != ftas_.end(); ++it) {
+    Reporter rp = Reporter();
+    rp.ReportFta(*it, output);
+  }
+}
+
+void RiskAnalysis::AttachLabelAndAttributes(const xmlpp::Element* element_node,
+                                            const ElementPtr& element) {
+  xmlpp::NodeSet labels = element_node->find("./*[name() = 'label']");
+  if (!labels.empty()) {
+    assert(labels.size() == 1);
+    const xmlpp::Element* label =
+        dynamic_cast<const xmlpp::Element*>(labels.front());
+    assert(label);
+    const xmlpp::TextNode* text = label->get_child_text();
+    assert(text);
+    element->label(text->get_content());
+  }
+
+  xmlpp::NodeSet attributes = element_node->find("./*[name() = 'attributes']");
+  if (!attributes.empty()) {
+    assert(attributes.size() == 1);  // Only on big element 'attributes'.
+    const xmlpp::Element* attributes_element =
+        dynamic_cast<const xmlpp::Element*>(attributes.front());
+    xmlpp::NodeSet attribute_list =
+        attributes_element->find("./*[name() = 'attribute']");
+    xmlpp::NodeSet::iterator it;
+    for (it = attribute_list.begin(); it != attribute_list.end(); ++it) {
+      const xmlpp::Element* attribute =
+          dynamic_cast<const xmlpp::Element*>(*it);
+      Attribute attr;
+      attr.name = attribute->get_attribute_value("name");
+      attr.value = attribute->get_attribute_value("value");
+      attr.type = attribute->get_attribute_value("type");
+      element->AddAttribute(attr);
+    }
+  }
 }
 
 void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
@@ -150,7 +191,7 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
   boost::to_lower(id);
 
   xmlpp::NodeSet gates =
-      gate_node->find("./*[name() != 'attribute' and name() != 'label']");
+      gate_node->find("./*[name() != 'attributes' and name() != 'label']");
   // Assumes that there are no attributes and labels.
   assert(gates.size() == 1);
   // Check if the gate type is supported.
@@ -172,7 +213,6 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
     boost::trim(min_num);
     vote_number = boost::lexical_cast<int>(min_num);
   }
-
 
   /// @todo This should take private/public roles into account.
   if (gates_.count(id)) {
@@ -214,6 +254,8 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
   assert(!gates_.count(id));
   gates_.insert(std::make_pair(id, i_event));
 
+  RiskAnalysis::AttachLabelAndAttributes(gate_node, i_event);
+
   assert(!all_events_.count(id));
   all_events_.insert(std::make_pair(id, i_event));
 
@@ -221,7 +263,6 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
 
   i_event->type(type);  // Setting the gate type.
   if (type == "atleast") i_event->vote_number(vote_number);
-
 
   // Process children of this gate.
   xmlpp::Node::NodeList events = gate_type->get_children();
@@ -444,30 +485,34 @@ void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node) {
   boost::trim(prob);
   p = boost::lexical_cast<double>(prob);
 
+  BasicEventPtr basic_event;
+
   if (tbd_basic_events_.count(id)) {
-    BasicEventPtr b = tbd_basic_events_.find(id)->second;
-    b->p(p);
-    primary_events_.insert(std::make_pair(id, b));
-    all_events_.insert(std::make_pair(id, b));
+    basic_event = tbd_basic_events_.find(id)->second;
+    basic_event->p(p);
+    primary_events_.insert(std::make_pair(id, basic_event));
+    all_events_.insert(std::make_pair(id, basic_event));
     tbd_basic_events_.erase(id);
 
   } else {
-    BasicEventPtr child(new BasicEvent(id));
-    child->orig_id(orig_id);
-    child->p(p);
-    primary_events_.insert(std::make_pair(id, child));
-    all_events_.insert(std::make_pair(id, child));
+    basic_event = BasicEventPtr(new BasicEvent(id));
+    basic_event->orig_id(orig_id);
+    basic_event->p(p);
+    primary_events_.insert(std::make_pair(id, basic_event));
+    all_events_.insert(std::make_pair(id, basic_event));
     if (tbd_events_.count(id)) {
       std::vector<GatePtr>::iterator it;
       for (it = tbd_events_.find(id)->second.begin();
            it != tbd_events_.find(id)->second.end(); ++it) {
-        (*it)->AddChild(child);
-        child->AddParent(*it);
+        (*it)->AddChild(basic_event);
+        basic_event->AddParent(*it);
       }
       tbd_events_.erase(id);
       tbd_orig_ids_.erase(id);
     }
   }
+
+  RiskAnalysis::AttachLabelAndAttributes(event_node, basic_event);
 }
 
 void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node) {
@@ -511,35 +556,53 @@ void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node) {
   int p = 0;
   if (val == "true") p = 1;
 
+  HouseEventPtr house_event;
+
   if (tbd_house_events_.count(id)) {
-    HouseEventPtr h = tbd_house_events_.find(id)->second;
-    h->p(p);
-    primary_events_.insert(std::make_pair(id, h));
-    all_events_.insert(std::make_pair(id, h));
+    house_event = tbd_house_events_.find(id)->second;
+    house_event->p(p);
+    primary_events_.insert(std::make_pair(id, house_event));
+    all_events_.insert(std::make_pair(id, house_event));
     tbd_house_events_.erase(id);
 
   } else {
-    HouseEventPtr child(new HouseEvent(id));
-    child->orig_id(orig_id);
-    child->p(p);
-    primary_events_.insert(std::make_pair(id, child));
-    all_events_.insert(std::make_pair(id, child));
+    house_event = HouseEventPtr(new HouseEvent(id));
+    house_event->orig_id(orig_id);
+    house_event->p(p);
+    primary_events_.insert(std::make_pair(id, house_event));
+    all_events_.insert(std::make_pair(id, house_event));
     if (tbd_events_.count(id)) {
       std::vector<GatePtr>::iterator it;
       for (it = tbd_events_.find(id)->second.begin();
            it != tbd_events_.find(id)->second.end(); ++it) {
-        (*it)->AddChild(child);
-        child->AddParent(*it);
+        (*it)->AddChild(house_event);
+        house_event->AddParent(*it);
       }
       tbd_events_.erase(id);
       tbd_orig_ids_.erase(id);
     }
   }
+
+  RiskAnalysis::AttachLabelAndAttributes(event_node, house_event);
 }
 
 void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
-  fault_tree_ =
-      FaultTreePtr(new FaultTree(ft_node->get_attribute_value("name")));
+  std::string name = ft_node->get_attribute_value("name");
+  std::string id = name;
+  boost::to_lower(id);
+
+  if (fault_trees_.count(id)) {
+    std::stringstream msg;
+    msg << "Line " << ft_node->get_line() << ":\n";
+    msg << "The fault tree " << name
+        << " is already defined.";
+    throw ValidationError(msg.str());
+  }
+
+  FaultTreePtr fault_tree = FaultTreePtr(new FaultTree(name));
+  fault_trees_.insert(std::make_pair(id, fault_tree));
+
+  RiskAnalysis::AttachLabelAndAttributes(ft_node, fault_tree);
 
   xmlpp::Node::NodeList children = ft_node->get_children();
   xmlpp::Node::NodeList::iterator it;
@@ -548,9 +611,6 @@ void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
 
     if (!element) continue;  // Ignore non-elements.
     std::string name = element->get_name();
-    // Design by contract.
-    assert(name == "define-gate" || name == "define-basic-event" ||
-           name == "define-house-event");
 
     if (!prob_requested_ &&
         (name == "define-basic-event" || name == "define-house-event")) {
@@ -560,7 +620,7 @@ void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
     /// @todo Use function pointers.
     if (name == "define-gate") {
       // Define and add gate here.
-      RiskAnalysis::DefineGate(element, fault_tree_);
+      RiskAnalysis::DefineGate(element, fault_tree);
     } else if (name == "define-basic-event") {
       RiskAnalysis::DefineBasicEvent(element);
     } else if (name == "define-house-event") {
@@ -621,7 +681,12 @@ void RiskAnalysis::ValidateInitialization() {
   }
 
   // Validation of analysis entities.
-  if (fault_tree_) fault_tree_->Validate();
+  if (!fault_trees_.empty()) {
+    std::map<std::string, FaultTreePtr>::iterator it;
+    for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
+      it->second->Validate();
+    }
+  }
 }
 
 std::string RiskAnalysis::CheckAllGates() {
