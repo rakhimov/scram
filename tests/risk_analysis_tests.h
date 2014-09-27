@@ -41,17 +41,23 @@ class RiskAnalysisTest : public ::testing::Test {
   }
 
   const std::set< std::set<std::string> >& min_cut_sets() {
-    return ran->fta_->min_cut_sets();
+    assert(!ran->ftas_.empty());
+    return ran->ftas_[0]->min_cut_sets();
   }
 
-  double p_total() { return ran->fta_->p_total(); }
+  double p_total() {
+    assert(!ran->ftas_.empty());
+    return ran->ftas_[0]->p_total();
+  }
 
   const std::map< std::set<std::string>, double >& prob_of_min_sets() {
-    return ran->fta_->prob_of_min_sets();
+    assert(!ran->ftas_.empty());
+    return ran->ftas_[0]->prob_of_min_sets();
   }
 
   const std::map< std::string, double >& imp_of_primaries() {
-    return ran->fta_->imp_of_primaries();
+    assert(!ran->ftas_.empty());
+    return ran->ftas_[0]->imp_of_primaries();
   }
 
   bool CheckGate(GatePtr event) {

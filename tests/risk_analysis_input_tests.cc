@@ -54,6 +54,8 @@ TEST(RiskAnalysisInputTest, CorrectFTAInputs) {
   correct_inputs.push_back(dir + "mixed_definitions.xml");
   correct_inputs.push_back(dir + "model_data_mixed_definitions.xml");
   correct_inputs.push_back(dir + "trailing_spaces.xml");
+  correct_inputs.push_back(dir + "two_trees.xml");
+  // correct_inputs.push_back(dir + "labels_and_attributes.xml");
 
   RiskAnalysis* ran;
 
@@ -99,6 +101,7 @@ TEST(RiskAnalysisInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back(dir + "name_clash_gate_primary.xml");
   incorrect_inputs.push_back(dir + "name_clash_basic_house.xml");
   incorrect_inputs.push_back(dir + "name_clash_house_basic.xml");
+  incorrect_inputs.push_back(dir + "name_clash_two_trees.xml");
   incorrect_inputs.push_back(dir + "def_clash_basic_gate.xml");
   incorrect_inputs.push_back(dir + "def_clash_house_gate.xml");
   incorrect_inputs.push_back(dir + "def_clash_gate_primary.xml");

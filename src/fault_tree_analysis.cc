@@ -555,7 +555,6 @@ void FaultTreeAnalysis::AssignIndices(const FaultTreePtr& fault_tree) {
   // databases.
 
   // Getting events from the fault tree object.
-  /// @todo May need to clear containers if there several trees to analyze.
   /// @note Direct assignment of the containers leads to very bad performance.
   /// @todo Very strange performance issue. Conflict between Expansion and
   /// Probability calculations.

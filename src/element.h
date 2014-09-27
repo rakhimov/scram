@@ -53,6 +53,8 @@ class Element {
   /// @throws ValueError if there is no such attribute.
   const Attribute& GetAttribute(const std::string& id);
 
+  virtual ~Element() {}
+
  private:
   /// The label for the element.
   std::string label_;
