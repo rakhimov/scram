@@ -48,8 +48,6 @@ Major Enhancements and Capabilities
 - OpenPSA-like XML input format. *High*
 
   * Reduce tests for input format and parser.
-  * Add labels to all members.
-  * Add Attributes struct to all members.
   * Create Include feature.
 
     + Test for non-existent file, circular inclusion(direct, indirect).
