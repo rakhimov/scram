@@ -20,8 +20,6 @@ class Random {
   /// @param[in] seed The seed for RNGs.
   explicit Random(int seed);
 
-  ~Random() {}
-
   /// Rng from uniform distribution.
   /// @param[in] min Lower bound.
   /// @param[in] max Upper bound.

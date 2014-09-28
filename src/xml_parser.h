@@ -14,10 +14,7 @@ namespace scram {
 /// A helper class to hold xml file data and provide automatic validation.
 class XMLParser {
  public:
-  /// Constructor.
-  XMLParser();
-
-  /// Destructor.
+  /// Resets the parser.
   ~XMLParser();
 
   /// Initializes a parser with an xml snippet.

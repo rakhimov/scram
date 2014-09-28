@@ -18,9 +18,6 @@ namespace scram {
 /// Reporter of findings of analysis.
 class Reporter {
  public:
-  /// Default constructor.
-  Reporter();
-
   /// Reports orphan primary events.
   /// @param[in] orphan_primary_events Container of orphan events.
   /// @param[out] output The output destination.

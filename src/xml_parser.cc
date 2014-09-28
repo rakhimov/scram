@@ -10,8 +10,6 @@
 
 namespace scram {
 
-XMLParser::XMLParser() {}
-
 XMLParser::~XMLParser() { parser_.reset(); }
 
 void XMLParser::Init(const std::stringstream& xml_input_snippet) {

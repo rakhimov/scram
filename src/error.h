@@ -13,9 +13,6 @@ namespace scram {
 /// for common exceptions specific to the SCRAM code.
 class Error : public std::exception {
  public:
-  /// Constructs a new error with a default message.
-  Error();
-
   /// Constructs a new error with a provided message.
   /// @param[in] msg The message to be passed with this error.
   explicit Error(std::string msg);

@@ -29,8 +29,6 @@ class FaultTree : public Element {
   /// @param[in] name The name identificator of this fault tree.
   explicit FaultTree(std::string name);
 
-  virtual ~FaultTree() {}
-
   /// Adds a gate into this tree.
   /// The first gate is assumed to be a top event.
   /// @param[in] gate The gate to be added to this tree.

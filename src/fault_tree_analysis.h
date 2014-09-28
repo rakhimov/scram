@@ -80,8 +80,6 @@ class FaultTreeAnalysis {
     return imp_of_primaries_;
   }
 
-  virtual ~FaultTreeAnalysis() {}
-
  private:
   /// Preprocesses the fault tree.
   /// Merges similar gates.
