@@ -33,5 +33,6 @@ after_success:
       --exclude src/fault_tree.h
       --exclude src/fault_tree_analysis.h
       --exclude src/schema.h
+      --exclude src/element.h
       --exclude gui/
     - cp CTestCustom.cmake ./build/ && cd ./build && ctest -D Experimental

@@ -64,7 +64,7 @@ TEST(RiskAnalysisInputTest, CorrectFTAInputs) {
   for (it = correct_inputs.begin(); it != correct_inputs.end(); ++it) {
     ran = new RiskAnalysis();
     EXPECT_NO_THROW(ran->ProcessInput(*it)) << " Filename: " << *it;
-    EXPECT_NO_THROW(ran->Report("/dev/null")) << " Filename: " << *it;
+    EXPECT_NO_THROW(ran->Report("cli")) << " Filename: " << *it;
     delete ran;
   }
   /// @todo Create include tests.
