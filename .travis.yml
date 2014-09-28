@@ -25,7 +25,7 @@ script:
     - mkdir ./install && ./install.py -p --prefix=./install --threads 2 && ./.run_tests.sh
 
 after_success:
-    - coveralls  --verbose  --exclude tests  --exclude ./build/CMakeFiles/
+    - coveralls --exclude tests  --exclude ./build/CMakeFiles/
       --exclude ./build/lib/  --exclude src/error.h --exclude src/error.cc
       --exclude ./build/bin/  --exclude src/event.h --exclude install/include/
       --exclude src/env.h  --exclude src/reporter.h --exclude src/xml_parser.h
