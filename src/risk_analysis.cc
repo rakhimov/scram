@@ -114,6 +114,7 @@ void RiskAnalysis::ProcessInput(std::string xml_file) {
       std::vector<GatePtr>::iterator itvec = it_e->second.begin();
       for (; itvec != it_e->second.end(); ++itvec) {
         (*itvec)->AddChild(child);
+        child->AddParent(*itvec);
       }
     }
   }
