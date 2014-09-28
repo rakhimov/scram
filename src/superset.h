@@ -23,7 +23,6 @@ namespace scram {
 /// primary events or gates upon putting them into this superset.
 class Superset {
  public:
-  /// Default constructor.
   Superset();
 
   /// Inserts a primary event into the set for initialization.
@@ -77,8 +76,6 @@ class Superset {
   /// @returns true if the set is null.
   /// @returns false if the set is not null.
   inline bool null() { return null_; }
-
-  ~Superset() {}
 
  private:
   /// Container for gates.

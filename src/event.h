@@ -98,8 +98,6 @@ class Gate : public scram::Event {
   /// @throws ValueError if there are no children.
   const std::map<std::string, boost::shared_ptr<scram::Event> >& children();
 
-  ~Gate() {}
-
  private:
   /// Gate type.
   std::string type_;
@@ -121,6 +119,8 @@ class PrimaryEvent : public scram::Event {
   /// @param[in] type The type of the event.
   explicit PrimaryEvent(std::string id, std::string type = "");
 
+  virtual ~PrimaryEvent() {}
+
   /// @returns The type of the primary event.
   /// @throws ValueError if the type is not yet set.
   const std::string& type();
@@ -139,8 +139,6 @@ class PrimaryEvent : public scram::Event {
   /// @throws ValueError if probability is not a valid value or re-assigned.
   virtual void p(double p);
 
-  virtual ~PrimaryEvent() {}
-
  private:
   /// The type of the primary event.
   std::string type_;
@@ -156,8 +154,6 @@ class BasicEvent: public scram::PrimaryEvent {
   /// Constructs with id name.
   /// @param[in] id The identifying name of this basic event.
   explicit BasicEvent(std::string id);
-
-  ~BasicEvent() {}
 };
 
 /// @class HouseEvent
@@ -172,8 +168,6 @@ class HouseEvent: public scram::PrimaryEvent {
   /// @param[in] p 0 or 1 for False and True.
   /// @throws ValueError if probability is not a valid value or re-assigned.
   void p(double p);
-
-  ~HouseEvent() {}
 
  private:
   /// Represents the state of the house event.

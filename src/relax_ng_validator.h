@@ -24,10 +24,9 @@ namespace scram {
 /// against a given RelaxNG schema.
 class RelaxNGValidator {
  public:
-  /// Constructor.
   RelaxNGValidator();
 
-  /// Destructor.
+  /// Releases xml related memory by calling release_underlying().
   ~RelaxNGValidator();
 
   /// Parse a relaxng schema xml file.

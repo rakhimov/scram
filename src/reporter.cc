@@ -21,8 +21,6 @@ namespace pt = boost::posix_time;
 
 namespace scram {
 
-Reporter::Reporter() {}
-
 void Reporter::ReportOrphans(
     const std::set<boost::shared_ptr<scram::PrimaryEvent> >&
         orphan_primary_events,
