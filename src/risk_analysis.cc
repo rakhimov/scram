@@ -79,7 +79,6 @@ void RiskAnalysis::ProcessInput(std::string xml_file) {
     if (!element) continue;  // Ignore non-elements.
 
     std::string name = element->get_name();
-    /// @todo Switch to function pointers.
     if (name == "define-fault-tree") {
       // Handle the fault tree initialization.
       RiskAnalysis::DefineFaultTree(element);
@@ -126,7 +125,7 @@ void RiskAnalysis::ProcessInput(std::string xml_file) {
 void RiskAnalysis::GraphingInstructions() {
   std::map<std::string, FaultTreePtr>::iterator it;
   for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
-    std::string output_file_name = input_file_ ;
+    std::string output_file_name = input_file_;
     Grapher gr = Grapher();
     gr.GraphFaultTree(it->second, prob_requested_, output_file_name);
   }

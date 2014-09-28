@@ -52,8 +52,8 @@ class FaultTreeAnalysisTest : public ::testing::Test {
 
   void CombineElAndSet(const std::set<int>& el,
                        const std::set< std::set<int> >& set,
-                       std::set< std::set<int> >& combo_set) {
-    return fta->CombineElAndSet(el, set, &combo_set);
+                       std::set< std::set<int> >* combo_set) {
+    return fta->CombineElAndSet(el, set, combo_set);
   }
 
   void AssignIndices() {

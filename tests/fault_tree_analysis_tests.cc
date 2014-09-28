@@ -504,12 +504,12 @@ TEST_F(FaultTreeAnalysisTest, CombineElAndSet) {
   // One element checks.
   el_one.insert(1);
   set_one.insert(el_one);  // Insert (1)
-  ASSERT_NO_THROW(CombineElAndSet(el_one, set_one, combo_set));
+  ASSERT_NO_THROW(CombineElAndSet(el_one, set_one, &combo_set));
   EXPECT_EQ(set_one, combo_set);  // Must be only (1)
   combo_set.clear();
 
   el_two.insert(3);
-  ASSERT_NO_THROW(CombineElAndSet(el_two, set_one, combo_set));
+  ASSERT_NO_THROW(CombineElAndSet(el_two, set_one, &combo_set));
 
   set_one.insert(el_two);  // Insert (3)
 
@@ -521,7 +521,7 @@ TEST_F(FaultTreeAnalysisTest, CombineElAndSet) {
 
   // Two element checks.
   el_one.insert(2);  // el_one is (1, 2)
-  ASSERT_NO_THROW(CombineElAndSet(el_one, set_two, combo_set));
+  ASSERT_NO_THROW(CombineElAndSet(el_one, set_two, &combo_set));
 
   set_one.insert(el_two);  // Insert (1, 3)
 
@@ -539,7 +539,7 @@ TEST_F(FaultTreeAnalysisTest, CombineElAndSet) {
   EXPECT_EQ(4, set_one.size());
   EXPECT_EQ(2, el_one.size());
   EXPECT_EQ(0, combo_set.size());
-  ASSERT_NO_THROW(CombineElAndSet(el_one, set_one, combo_set));
+  ASSERT_NO_THROW(CombineElAndSet(el_one, set_one, &combo_set));
   EXPECT_EQ(2, combo_set.size());
   set_one.clear();  // To construct the expected output set_one.
   set_one.insert(el_one);
@@ -556,12 +556,12 @@ TEST_F(FaultTreeAnalysisTest, CombineElAndSet) {
 
   el_one.insert(-1);
   set_one.insert(el_one);
-  ASSERT_NO_THROW(CombineElAndSet(el_one, set_one, combo_set));
+  ASSERT_NO_THROW(CombineElAndSet(el_one, set_one, &combo_set));
   EXPECT_EQ(set_one, combo_set);
 
   el_two.insert(1);
   combo_set.clear();
-  ASSERT_NO_THROW(CombineElAndSet(el_two, set_one, combo_set));
+  ASSERT_NO_THROW(CombineElAndSet(el_two, set_one, &combo_set));
   EXPECT_TRUE(combo_set.empty());
 }
 
