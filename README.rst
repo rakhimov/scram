@@ -244,8 +244,10 @@ Currently the easiest option is to use a virtual machine with `Ubuntu 14.04`_.
 
    a. Pre-configured image
 
-        - Download `Ubuntu image with SCRAM`_
+        - Download `Ubuntu image with SCRAM`_ of the latest release version.
         - Open the downloaded .ova file with VirtualBox(File->Import Appliance)
+        - The user name is 'scram'.
+        - The password is 'scram'.
 
    b. New system.
 
@@ -254,14 +256,14 @@ Currently the easiest option is to use a virtual machine with `Ubuntu 14.04`_.
 
 The other option is to use MinGW_ or Cygwin_ and to build on Windows.
 
-Currently only Cygwin_ has been tested to produce binaries on Windows.
-The dependencies listed for Linux systems must be installed with Cygwin.
+Currently only Cygwin_ 64bit has been tested to produce binaries on Windows.
+The dependencies listed for Linux systems must be installed with Cygwin64.
 Unfortunately, this method requires building `libxml++`_ from source.
-In order to avoid building the package, after installing Cygwin,
+In order to avoid building the package, after installing Cygwin64,
 download a `pre-build SCRAM for Cygwin`_.
 
 .. _`Ubuntu 14.04`:
-    http://www.ubuntu.com/download
+    http://sourceforge.net/projects/iscram/files/ScramBox.ova/download
 .. _MinGW:
     http://www.mingw.org/
 .. _Cygwin:

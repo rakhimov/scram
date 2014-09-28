@@ -24,6 +24,7 @@ set(SCRAM_TEST_DIR "${PROJECT_SOURCE_DIR}/tests")
 set(BUILD_SHARED_LIBS TRUE)  # Change this for static building.
 if(CYGWIN)
   set(BUILD_SHARED_LIBS FALSE)
+  add_definitions(-DEMBED_SCHEMA)
 endif()
 
 # Linking of external libraries, such as BOOST.
