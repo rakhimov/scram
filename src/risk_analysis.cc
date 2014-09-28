@@ -114,6 +114,7 @@ void RiskAnalysis::ProcessInput(std::string xml_file) {
       std::vector<GatePtr>::iterator itvec = it_e->second.begin();
       for (; itvec != it_e->second.end(); ++itvec) {
         (*itvec)->AddChild(child);
+        child->AddParent(*itvec);
       }
     }
   }
@@ -125,7 +126,7 @@ void RiskAnalysis::ProcessInput(std::string xml_file) {
 void RiskAnalysis::GraphingInstructions() {
   std::map<std::string, FaultTreePtr>::iterator it;
   for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
-    std::string output_file_name = input_file_ + "_" + it->second->name();
+    std::string output_file_name = input_file_ ;
     Grapher gr = Grapher();
     gr.GraphFaultTree(it->second, prob_requested_, output_file_name);
   }
@@ -142,9 +143,13 @@ void RiskAnalysis::Analyze() {
 }
 
 void RiskAnalysis::Report(std::string output) {
+  Reporter rp = Reporter();
+
+  if (!orphan_primary_events_.empty())
+    rp.ReportOrphans(orphan_primary_events_, output);
+
   std::vector<FaultTreeAnalysisPtr>::iterator it;
   for (it = ftas_.begin(); it != ftas_.end(); ++it) {
-    Reporter rp = Reporter();
     rp.ReportFta(*it, output);
   }
 }
@@ -256,9 +261,6 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
 
   RiskAnalysis::AttachLabelAndAttributes(gate_node, i_event);
 
-  assert(!all_events_.count(id));
-  all_events_.insert(std::make_pair(id, i_event));
-
   ft->AddGate(i_event);
 
   i_event->type(type);  // Setting the gate type.
@@ -315,7 +317,6 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
       }
     } else if (name == "gate") {
       // Detect name clashes.
-      // @todo Provide line numbers of the repeated event.
       if (primary_events_.count(id) || tbd_basic_events_.count(id) ||
           tbd_house_events_.count(id)) {
         std::stringstream msg;
@@ -491,7 +492,6 @@ void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node) {
     basic_event = tbd_basic_events_.find(id)->second;
     basic_event->p(p);
     primary_events_.insert(std::make_pair(id, basic_event));
-    all_events_.insert(std::make_pair(id, basic_event));
     tbd_basic_events_.erase(id);
 
   } else {
@@ -499,7 +499,6 @@ void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node) {
     basic_event->orig_id(orig_id);
     basic_event->p(p);
     primary_events_.insert(std::make_pair(id, basic_event));
-    all_events_.insert(std::make_pair(id, basic_event));
     if (tbd_events_.count(id)) {
       std::vector<GatePtr>::iterator it;
       for (it = tbd_events_.find(id)->second.begin();
@@ -562,7 +561,6 @@ void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node) {
     house_event = tbd_house_events_.find(id)->second;
     house_event->p(p);
     primary_events_.insert(std::make_pair(id, house_event));
-    all_events_.insert(std::make_pair(id, house_event));
     tbd_house_events_.erase(id);
 
   } else {
@@ -570,7 +568,6 @@ void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node) {
     house_event->orig_id(orig_id);
     house_event->p(p);
     primary_events_.insert(std::make_pair(id, house_event));
-    all_events_.insert(std::make_pair(id, house_event));
     if (tbd_events_.count(id)) {
       std::vector<GatePtr>::iterator it;
       for (it = tbd_events_.find(id)->second.begin();
@@ -667,10 +664,6 @@ void RiskAnalysis::ValidateInitialization() {
   }
 
   // Check if all events are initialized.
-  /// @todo Print Names of events.
-  /// @todo Warning about extra events being initialized and unused.
-  /// @todo all_events container is not being updated.
-  /// @todo Deal with the defaults of OpenPSA MEF.
   if (prob_requested_) {
     // Check if some events are missing definitions.
     error_messages << RiskAnalysis::CheckMissingEvents();
@@ -685,6 +678,16 @@ void RiskAnalysis::ValidateInitialization() {
     std::map<std::string, FaultTreePtr>::iterator it;
     for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
       it->second->Validate();
+    }
+  }
+
+  // Gather orphan primary events for warning.
+  boost::unordered_map<std::string, PrimaryEventPtr>::iterator it_p;
+  for (it_p = primary_events_.begin(); it_p != primary_events_.end(); ++it_p) {
+    try {
+      it_p->second->parents();
+    } catch (scram::ValueError& err) {
+      orphan_primary_events_.insert(it_p->second);
     }
   }
 }

@@ -57,7 +57,6 @@ class RiskAnalysis {
   /// @throws ValueError if input values are not valid.
   /// @throws IOError if the input file is not accessable.
   /// @todo May have default configurations for analysis off all input files.
-  /// @todo Should be able to deal with multiple files.
   void ProcessInput(std::string xml_file);
 
   /// Graphing or other visual resources for the analysis if applicable.
@@ -164,9 +163,6 @@ class RiskAnalysis {
 
   /// House events to be defined.
   boost::unordered_map<std::string, HouseEventPtr> tbd_house_events_;
-
-  /// Container for all defined events.
-  boost::unordered_map<std::string, EventPtr> all_events_;
 
   /// Container for excess primary events not in the analysis.
   /// This container is for warning in case the input is formed not as intended.

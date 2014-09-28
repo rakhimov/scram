@@ -54,7 +54,6 @@ class Event : public Element {
 
   /// The parents of this primary event.
   std::map<std::string, boost::shared_ptr<scram::Gate> > parents_;
-  /// @todo labels and attributes should be represented here.
 };
 
 /// @class Gate

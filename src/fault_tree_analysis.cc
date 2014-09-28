@@ -241,14 +241,16 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
 }
 
 void FaultTreeAnalysis::PreprocessTree(const GatePtr& gate) {
+  std::string parent = gate->type();
   std::map<std::string, EventPtr>::const_iterator it;
   for (it = gate->children().begin(); it != gate->children().end(); ++it) {
     GatePtr child_gate = boost::dynamic_pointer_cast<scram::Gate>(it->second);
     if (!child_gate) continue;
-    /// @todo This gate compression should be improved to include more logic.
-    if ((gate->type() == "and" || gate->type() == "or" ||
-         gate->type() == "null") &&
-        gate->type() == child_gate->type()) {
+    std::string child = child_gate->type();
+    if (((parent == "and" || parent == "or") && parent == child) ||
+        (child == "null") ||
+        (parent == "nand" && child == "and") ||
+        (parent == "nor" && child == "or")) {
       gate->MergeGate(child_gate);
       it = gate->children().begin();
     } else {

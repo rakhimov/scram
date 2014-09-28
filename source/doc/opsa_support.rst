@@ -33,3 +33,4 @@ Deviations from OpenPSA MEF
 - Fault tree input structure must be top-down. Parents must appear before
   children.
 - The correct number of a gate's children is required.
+- Unused primary events are ignored but reported as warning.

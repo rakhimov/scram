@@ -23,19 +23,18 @@ void Grapher::GraphFaultTree(const FaultTreePtr& fault_tree,
                              std::string output) {
   // The structure of the output:
   // List inter events with their children following the tree structure.
+  // List reused inter events as transfer gates.
   // List inter events and primary events' descriptions.
-
-  /// @todo Option to graph re-used gates as a separate transfer trees.
   top_event_ = fault_tree->top_event();
   inter_events_ = fault_tree->inter_events();
   primary_events_ = fault_tree->primary_events();
   prob_requested_ = prob_requested;
 
-  std::string graph_name = "fault_tree.dot";
-  if (output != "" ) graph_name = output;
+  assert(output != "");
+  std::string graph_name = output;
   graph_name.erase(graph_name.find_last_of("."), std::string::npos);
 
-  std::string output_path = graph_name + ".dot";
+  std::string output_path = graph_name + "_" + fault_tree->name() + ".dot";
 
   graph_name = graph_name.substr(graph_name.find_last_of("/") +
                                  1, std::string::npos);
