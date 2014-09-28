@@ -191,6 +191,10 @@ TEST_F(RiskAnalysisTest, GraphingInstructions) {
     ASSERT_NO_THROW(ran->ProcessInput(*it));
     ASSERT_NO_THROW(ran->GraphingInstructions());
   }
+
+  // Messing up the input file.
+  input_file() = "abracadabra.cadabraabra/share/scram/input/graphing.xml";
+  EXPECT_THROW(ran->GraphingInstructions(), IOError);
 }
 
 // Test Analysis

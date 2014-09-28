@@ -32,6 +32,10 @@ class RiskAnalysisTest : public ::testing::Test {
     ran->fta_ = f;
   }
 
+  std::string& input_file() {
+    return ran->input_file_;
+  }
+
   boost::unordered_map<std::string, GatePtr>& gates() {
     return ran->gates_;
   }
