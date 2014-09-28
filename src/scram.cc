@@ -94,11 +94,7 @@ int main(int argc, char* argv[]) {
     // Initiate risk analysis.
     RiskAnalysis* ran = new RiskAnalysis();
 
-    /// @todo New sequence and architecture of analysis
-    /// Read configurations.
-    /// Initializer from input files.
-    /// Run analysis.
-
+    // Fault Tree Analysis settings.
     FaultTreeAnalysis* fta;
     if (analysis == "fta-default" || analysis == "fta-mc") {
       if (vm["limit-order"].as<int>() < 1) {

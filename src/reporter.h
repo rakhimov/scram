@@ -18,7 +18,16 @@ namespace scram {
 /// Reporter of findings of analysis.
 class Reporter {
  public:
+  /// Default constructor.
   Reporter();
+
+  /// Reports orphan primary events.
+  /// @param[in] orphan_primary_events Container of orphan events.
+  /// @param[out] output The output destination.
+  void ReportOrphans(
+      const std::set<boost::shared_ptr<scram::PrimaryEvent> >&
+          orphan_primary_events,
+      std::string output);
 
   /// Reports the results of analysis to a specified output destination.
   /// @param[in] fta Fault Tree Analysis with results.

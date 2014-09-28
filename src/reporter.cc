@@ -23,6 +23,33 @@ namespace scram {
 
 Reporter::Reporter() {}
 
+void Reporter::ReportOrphans(
+    const std::set<boost::shared_ptr<scram::PrimaryEvent> >&
+        orphan_primary_events,
+    std::string output) {
+  if (orphan_primary_events.empty()) return;
+
+  // Check if output to file is requested.
+  std::streambuf* buf;
+  std::ofstream of;
+  if (output != "cli") {
+    of.open(output.c_str());
+    buf = of.rdbuf();
+
+  } else {
+    buf = std::cout.rdbuf();
+  }
+  std::ostream out(buf);
+
+  out << "WARNING! Found unused primary events:\n";
+  std::set<boost::shared_ptr<scram::PrimaryEvent> >::const_iterator it;
+  for (it = orphan_primary_events.begin(); it != orphan_primary_events.end();
+       ++it) {
+    out << "    " << (*it)->orig_id() << "\n";
+  }
+  out.flush();
+}
+
 void Reporter::ReportFta(
     const boost::shared_ptr<const scram::FaultTreeAnalysis>& fta,
     std::string output) {
