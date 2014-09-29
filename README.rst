@@ -20,13 +20,19 @@ In addition, a random fault tree generator is provided to explore the
 performance of *SCRAM*. A fault tree can be drawn by
 Graphviz Dot tool.
 
-An optional GUI front-end is under development using `Qt`_.
+An experimental GUI front-end is under development using `Qt`_.
 
 A full description of *SCRAM* and its current capabilities
 is in `documentation`_.
 
 .. _`documentation`: http://rakhimov.github.io/SCRAM
 .. _`Qt`: http://qt-project.org/
+
+To get SCRAM, You can download pre-build packages on Sourceforge_ or follow the
+building and installing instructions bellow.
+
+.. _Sourceforge:
+    https://sourceforge.net/projects/iscram/files/
 
 ******************************
 Building and Installing
@@ -263,7 +269,7 @@ In order to avoid building the package, after installing Cygwin64,
 download a `pre-build SCRAM for Cygwin`_.
 
 .. _`Ubuntu 14.04`:
-    http://sourceforge.net/projects/iscram/files/ScramBox.ova/download
+    http://www.ubuntu.com/download
 .. _MinGW:
     http://www.mingw.org/
 .. _Cygwin:
@@ -273,7 +279,7 @@ download a `pre-build SCRAM for Cygwin`_.
 .. _`pre-build SCRAM for Cygwin`:
     https://sourceforge.net/projects/iscram/files/
 .. _`Ubuntu image with SCRAM`:
-    https://docs.google.com/uc?id=0B-nuSWux5G61RVlvSUJqWEhmbjg&export=download
+    http://sourceforge.net/projects/iscram/files/ScramBox.ova/download
 
 ***********************
 Running SCRAM and Tests
