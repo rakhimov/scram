@@ -16,9 +16,9 @@ SCRAM
 This project attempts to build a simple command line tool for risk analysis.
 Static Fault Tree Analysis is implemented. The initial support for the OpenPSA
 model format is provided.
+
 In addition, a random fault tree generator is provided to explore the
-performance of *SCRAM*. A fault tree can be drawn by
-Graphviz Dot tool.
+performance of *SCRAM*. A fault tree can be drawn by Graphviz Dot tool.
 
 An experimental GUI front-end is under development using `Qt`_.
 
@@ -28,7 +28,7 @@ is in `documentation`_.
 .. _`documentation`: http://rakhimov.github.io/SCRAM
 .. _`Qt`: http://qt-project.org/
 
-To get SCRAM, You can download pre-build packages on Sourceforge_ or follow the
+To get *SCRAM*, you can download pre-build packages on Sourceforge_ or follow the
 building and installing instructions bellow.
 
 .. _Sourceforge:
