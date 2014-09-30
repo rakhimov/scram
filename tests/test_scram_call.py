@@ -16,6 +16,10 @@ def test_fta_calls():
     cmd = ["scram", "-h"]
     yield assert_equal, 0, call(cmd)
 
+    # Test version information
+    cmd = ["scram", "--version"]
+    yield assert_equal, 0, call(cmd)
+
     # Empty call
     cmd = ["scram"]
     yield assert_equal, 1, call(cmd)

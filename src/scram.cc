@@ -9,6 +9,7 @@
 
 #include "fault_tree_analysis.h"
 #include "risk_analysis.h"
+#include "version.h"
 
 namespace po = boost::program_options;
 namespace fs = boost::filesystem;
@@ -26,7 +27,8 @@ int main(int argc, char* argv[]) {
 
   try {
     desc.add_options()
-        ("help,h", "produce help message")
+        ("help,h", "display this help message")
+        ("version", "display version information")
         ("input-file", po::value<std::string>(),
          "xml input file with analysis entities")
         ("validate,v", "only validate input files")
@@ -62,6 +64,15 @@ int main(int argc, char* argv[]) {
   // Process command line args.
   if (vm.count("help")) {
     std::cout << usage << "\n\n" << desc << "\n";
+    return 0;
+  }
+
+  if (vm.count("version")) {
+    std::cout << "SCRAM " << version::core()
+              << " (" << version::describe() << ")"
+              << "\n\nDependencies:\n";
+    std::cout << "   Boost    " << version::boost() << "\n";
+    std::cout << "   xml2     " << version::xml2() << "\n";
     return 0;
   }
 

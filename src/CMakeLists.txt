@@ -1,4 +1,8 @@
 ################### File Configurations #######################
+EXECUTE_PROCESS(COMMAND git describe --tags OUTPUT_VARIABLE core_version
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
+CONFIGURE_FILE(version.cc.in "${CMAKE_CURRENT_SOURCE_DIR}/version.cc" @ONLY)
+
 SET(scram_install_dir "${CMAKE_INSTALL_PREFIX}")
 CONFIGURE_FILE(
     "${CMAKE_CURRENT_SOURCE_DIR}/env.cc.in"
@@ -9,6 +13,7 @@ CONFIGURE_FILE(
 
 set(SCRAM_CORE_SRC ${SCRAM_CORE_SRC}
   "${CMAKE_CURRENT_SOURCE_DIR}/env.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/version.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/error.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/element.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/event.cc"
