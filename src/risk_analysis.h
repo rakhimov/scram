@@ -11,7 +11,6 @@
 #include <boost/unordered_map.hpp>
 
 #include "element.h"
-#include "env.h"
 #include "error.h"
 #include "event.h"
 #include "fault_tree.h"
@@ -83,7 +82,6 @@ class RiskAnalysis {
 
   ~RiskAnalysis() {
     delete fta_;
-    delete env_;
   }
 
  private:
@@ -182,9 +180,6 @@ class RiskAnalysis {
 
   /// Indicator if probability calculations are requested.
   bool prob_requested_;
-
-  /// Environment information provider.
-  Env* env_;
 };
 
 }  // namespace scram

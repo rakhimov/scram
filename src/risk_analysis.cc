@@ -16,6 +16,8 @@
 #include <schema.h>  // For static building.
 #endif
 
+#include "env.h"
+
 namespace scram {
 
 RiskAnalysis::RiskAnalysis(std::string config_file)
@@ -40,7 +42,6 @@ RiskAnalysis::RiskAnalysis(std::string config_file)
   types_.insert("conditional");
 
   fta_ = new FaultTreeAnalysis("default");
-  env_ = new Env();
 }
 
 void RiskAnalysis::ProcessInput(std::string xml_file) {
@@ -62,7 +63,7 @@ void RiskAnalysis::ProcessInput(std::string xml_file) {
 #if EMBED_SCHEMA
   schema << scram::g_schema_content;
 #else
-  std::string schema_path = env_->rng_schema();
+  std::string schema_path = Env::rng_schema();
   std::ifstream schema_stream(schema_path.c_str());
   schema << schema_stream.rdbuf();
   schema_stream.close();
