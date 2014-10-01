@@ -16,7 +16,7 @@ Settings::Settings()
 Settings& Settings::limit_order(int order) {
   if (order < 1) {
     std::string msg = "The limit on the order of minimal cut sets "
-                      "cannot be less than one.";
+                      "cannot be less than 1.";
     throw scram::ValueError(msg);
   }
   limit_order_ = order;
@@ -26,7 +26,7 @@ Settings& Settings::limit_order(int order) {
 Settings& Settings::num_sums(int n) {
   if (n < 1) {
     std::string msg = "The number of sums in the probability calculation "
-                      "cannot be less than one";
+                      "cannot be less than 1";
     throw scram::ValueError(msg);
   }
   num_sums_ = n;

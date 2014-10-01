@@ -34,9 +34,9 @@ int main(int argc, char* argv[]) {
          "xml input file with analysis entities")
         ("validate,v", "only validate input files")
         ("graph-only,g", "produce graph without analysis")
-        ("analysis,a", po::value<std::string>()->default_value("fta-default"),
+        ("analysis,a", po::value<std::string>()->default_value("default"),
          "type of analysis to be performed on this input")
-        ("rare-event-approx,r", "use the rare event approximation")
+        ("rare-event,r", "use the rare event approximation")
         ("mcub,m", "use the MCUB approximation for probability calculations")
         ("limit-order,l", po::value<int>()->default_value(20),
          "upper limit for cut set order")
@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
     po::store(po::parse_command_line(argc, argv, desc), vm);
   } catch (std::exception& err) {
     std::cout << "Invalid arguments.\n"
-              << usage << "\n\n" << desc << "\n";
+        << usage << "\n\n" << desc << "\n";
     return 1;
   }
   po::notify(vm);
@@ -70,8 +70,8 @@ int main(int argc, char* argv[]) {
 
   if (vm.count("version")) {
     std::cout << "SCRAM " << version::core()
-              << " (" << version::describe() << ")"
-              << "\n\nDependencies:\n";
+        << " (" << version::describe() << ")"
+        << "\n\nDependencies:\n";
     std::cout << "   Boost    " << version::boost() << "\n";
     std::cout << "   xml2     " << version::xml2() << "\n";
     return 0;
@@ -79,78 +79,41 @@ int main(int argc, char* argv[]) {
 
   if (!vm.count("input-file")) {
     std::string msg = "No input file given.\n";
+    std::cout << msg << std::endl;
     std::cout << usage << "\n\n" << desc << "\n";
+    return 1;
+  }
+
+  if (vm.count("rare-event") && vm.count("mcub")) {
+    std::string msg = "The rare event and MCUB approximations cannot be "
+                      "applied at the time.";
+    std::cout << msg << "\n" << std::endl;
+    std::cout << usage << "\n\n" << desc << std::endl;
     return 1;
   }
 
 #ifdef NDEBUG
   try {  // Catch exceptions only for non-debug builds.
 #endif
-    // Determine required analysis.
-    // FTA naive is assumed if no arguments are given.
-    std::string analysis = vm["analysis"].as<std::string>();
-    bool graph_only = false;
-    bool rare_event = false;
-    bool mcub = false;
-
-    // Determin if only graphing instructions are requested.
-    if (vm.count("graph-only")) graph_only = true;
-    // Determine if the rare event approximation is requested.
-    if (vm.count("rare-event-approx")) rare_event = true;
-    // Determine if the MCUB approximation is requested.
-    if (vm.count("mcub")) mcub = true;
-
-    // Read input files and setup.
-    std::string input_file = vm["input-file"].as<std::string>();
-
     // Analysis settings.
     Settings settings;
 
-    // Fault Tree Analysis settings.
-    FaultTreeAnalysis* fta;
-    if (analysis == "fta-default" || analysis == "fta-mc") {
-      if (vm["limit-order"].as<int>() < 1) {
-        std::string msg = "Upper limit for cut sets can't be less than 1\n";
-        std::cout << msg << std::endl;
-        std::cout << desc << "\n";
-        return 1;
-      }
+    // Determine if the rare event approximation is requested.
+    if (vm.count("rare-event")) settings.approx("rare");
+    // Determine if the MCUB approximation is requested.
+    if (vm.count("mcub")) settings.approx("mcub");
 
-      if (vm["nsums"].as<int>() < 1) {
-        std::string msg = "Number of sums for series can't be less than 1\n";
-        std::cout << msg << std::endl;
-        std::cout << desc << "\n";
-        return 1;
-      }
-
-      if (vm["cut-off"].as<double>() < 0 || vm["cut-off"].as<double>() >= 1) {
-        std::string msg = "Illegal value for the cut-off probability\n";
-        std::cout << msg << std::endl;
-        std::cout << desc << "\n";
-        return 1;
-      }
-      std::string fta_analysis = "default";
-      if (analysis == "fta-mc") fta_analysis = "mc";
-
-      std::string approx = "no";
-      if (rare_event) approx = "rare";
-      if (mcub) approx = "mcub";
-
-      settings.limit_order(vm["limit-order"].as<int>())
-          .num_sums(vm["nsums"].as<int>())
-          .cut_off(vm["cut-off"].as<double>())
-          .fta_type(fta_analysis)
-          .approx(approx);
-    } else {
-      std::string msg = analysis + ": this analysis is not recognized.\n";
-      std::cout << msg << std::endl;
-      std::cout << desc << "\n";
-      return 1;
-    }
+    settings.limit_order(vm["limit-order"].as<int>())
+        .num_sums(vm["nsums"].as<int>())
+        .cut_off(vm["cut-off"].as<double>())
+        .fta_type(vm["analysis"].as<std::string>());
 
     // Initiate risk analysis.
     RiskAnalysis* ran = new RiskAnalysis();
     ran->AddSettings(settings);
+
+    // Read input files and setup.
+    std::string input_file = vm["input-file"].as<std::string>();
 
     // Process input and validate it.
     ran->ProcessInput(input_file);

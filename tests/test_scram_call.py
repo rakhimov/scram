@@ -30,7 +30,7 @@ def test_fta_calls():
 
     # Test the incorrect limit order
     cmd = ["scram", fta_input, "-l", "-1"]
-    yield assert_equal, 1, call(cmd)
+    yield assert_not_equal, 0, call(cmd)
 
     # Invalid argument type for an option
     cmd = ["scram", fta_input, "-l", "string_for_int"]
@@ -43,17 +43,21 @@ def test_fta_calls():
 
     # Test the incorrect cut-off probability
     cmd = ["scram", fta_input, "-c", "-1"]
-    yield assert_equal, 1, call(cmd)
+    yield assert_not_equal, 0, call(cmd)
     cmd = ["scram", fta_input, "-c", "10"]
-    yield assert_equal, 1, call(cmd)
+    yield assert_not_equal, 0, call(cmd)
 
     # Test the incorrect number for probability series
     cmd = ["scram", fta_input, "-s", "-1"]
-    yield assert_equal, 1, call(cmd)
+    yield assert_not_equal, 0, call(cmd)
+
+    # Test the application of the rare event and MCUB at the same time.
+    cmd = ["scram", fta_input, "-r", "-m"]
+    yield assert_not_equal, 0, call(cmd)
 
     # Test incorrect type of analysis
     cmd = ["scram", fta_input, "-a", "fta-nonexistent-analysis"]
-    yield assert_equal, 1, call(cmd)
+    yield assert_not_equal, 0, call(cmd)
 
     # Test graph only
     cmd = ["scram", "-g", fta_input]
@@ -78,7 +82,7 @@ def test_fta_calls():
         os.remove(out_temp)
 
     # Test MC
-    cmd = ["scram", fta_input, "-a", "fta-mc"]
+    cmd = ["scram", fta_input, "-a", "mc"]
     yield assert_equal, 0, call(cmd)
-    cmd = ["scram", fta_no_prob, "-a", "fta-mc"]
+    cmd = ["scram", fta_no_prob, "-a", "mc"]
     yield assert_equal, 0, call(cmd)
