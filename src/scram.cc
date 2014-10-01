@@ -9,6 +9,7 @@
 
 #include "fault_tree_analysis.h"
 #include "risk_analysis.h"
+#include "settings.h"
 #include "version.h"
 
 namespace po = boost::program_options;
@@ -102,8 +103,8 @@ int main(int argc, char* argv[]) {
     // Read input files and setup.
     std::string input_file = vm["input-file"].as<std::string>();
 
-    // Initiate risk analysis.
-    RiskAnalysis* ran = new RiskAnalysis();
+    // Analysis settings.
+    Settings settings;
 
     // Fault Tree Analysis settings.
     FaultTreeAnalysis* fta;
@@ -135,10 +136,11 @@ int main(int argc, char* argv[]) {
       if (rare_event) approx = "rare";
       if (mcub) approx = "mcub";
 
-      fta = new FaultTreeAnalysis(fta_analysis, approx,
-                                  vm["limit-order"].as<int>(),
-                                  vm["nsums"].as<int>(),
-                                  vm["cut-off"].as<double>());
+      settings.limit_order(vm["limit-order"].as<int>())
+          .num_sums(vm["nsums"].as<int>())
+          .cut_off(vm["cut-off"].as<double>())
+          .fta_type(fta_analysis)
+          .approx(approx);
     } else {
       std::string msg = analysis + ": this analysis is not recognized.\n";
       std::cout << msg << std::endl;
@@ -146,8 +148,9 @@ int main(int argc, char* argv[]) {
       return 1;
     }
 
-    // Set the fault tree analysis type.
-    ran->fta(fta);
+    // Initiate risk analysis.
+    RiskAnalysis* ran = new RiskAnalysis();
+    ran->AddSettings(settings);
 
     // Process input and validate it.
     ran->ProcessInput(input_file);

@@ -106,7 +106,7 @@ TEST_F(RiskAnalysisTest, A_OR_NOT_AB) {
 
 // [A OR NOT B] FTA MC
 TEST_F(RiskAnalysisTest, MC_A_OR_NOT_B) {
-  fta(new FaultTreeAnalysis("mc"));
+  ran->AddSettings(settings.fta_type("mc"));
   std::string tree_input = "./share/scram/input/benchmark/a_or_not_b.xml";
   std::set< std::set<int> > p_terms;
   std::set< std::set<int> > n_terms;

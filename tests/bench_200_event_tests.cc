@@ -6,7 +6,7 @@
 // Test Minimal cut sets and probability.
 TEST_F(RiskAnalysisTest, 200Event) {
   std::string tree_input = "./share/scram/input/benchmark/200_event.xml";
-  fta(new FaultTreeAnalysis("default", "no", 15, 3));
+  ran->AddSettings(settings.limit_order(15).num_sums(3));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   ASSERT_NO_THROW(ran->Report("/dev/null"));

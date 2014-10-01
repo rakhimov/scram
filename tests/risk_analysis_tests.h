@@ -26,12 +26,6 @@ class RiskAnalysisTest : public ::testing::Test {
     delete ran;
   }
 
-  void fta(FaultTreeAnalysis* f) {
-    delete ran;
-    ran = new RiskAnalysis();
-    ran->fta_ = f;
-  }
-
   std::string& input_file() {
     return ran->input_file_;
   }
@@ -70,6 +64,7 @@ class RiskAnalysisTest : public ::testing::Test {
 
   // Members
   RiskAnalysis* ran;
+  Settings settings;
 };
 
 #endif  // SCRAM_TESTS_RISK_ANALYSIS_TESTS_H_

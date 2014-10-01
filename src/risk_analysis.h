@@ -17,6 +17,7 @@
 #include "fault_tree_analysis.h"
 #include "grapher.h"
 #include "reporter.h"
+#include "settings.h"
 #include "xml_parser.h"
 
 class RiskAnalysisTest;
@@ -45,8 +46,9 @@ class RiskAnalysis {
   /// @todo Should be able to accept configurations from XML files.
   explicit RiskAnalysis(std::string config_file = "guess_yourself");
 
-  /// Set the fault tree analysis.
-  void fta(FaultTreeAnalysis* fta) { fta_ = fta; }
+  /// Add set of settings for analysis.
+  /// @param[in] settings Configured settings for analysis.
+  void AddSettings(const Settings& settings) { settings_ = settings; }
 
   /// Reads input file with the structure of analysis entities.
   /// Initializes the analysis from the given input file.
@@ -79,10 +81,6 @@ class RiskAnalysis {
   /// param[out] output The output destination.
   /// @throws IOError if the output file is not accessable.
   void Report(std::string output);
-
-  ~RiskAnalysis() {
-    delete fta_;
-  }
 
  private:
   /// Attaches attributes and label to the elements of the analysis.
@@ -169,9 +167,6 @@ class RiskAnalysis {
   /// A collection of fault trees for analysis.
   std::map<std::string, FaultTreePtr> fault_trees_;
 
-  /// The configured fault tree analysis. Acts like a prototype.
-  FaultTreeAnalysis* fta_;
-
   /// A fault tree analyses that are performed.
   std::vector<FaultTreeAnalysisPtr> ftas_;
 
@@ -180,6 +175,9 @@ class RiskAnalysis {
 
   /// Indicator if probability calculations are requested.
   bool prob_requested_;
+
+  /// Settings for analysis.
+  Settings settings_;
 };
 
 }  // namespace scram

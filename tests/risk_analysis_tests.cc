@@ -188,7 +188,8 @@ TEST_F(RiskAnalysisTest, GraphingInstructions) {
 
   std::vector<std::string>::iterator it;
   for (it = tree_input.begin(); it != tree_input.end(); ++it) {
-    fta(new FaultTreeAnalysis("default"));
+    delete ran;
+    ran = new RiskAnalysis();
     ASSERT_NO_THROW(ran->ProcessInput(*it));
     ASSERT_NO_THROW(ran->GraphingInstructions());
   }
@@ -224,7 +225,8 @@ TEST_F(RiskAnalysisTest, AnalyzeDefault) {
   EXPECT_EQ(1, min_cut_sets().count(mcs_4));
 
   // Probability calculations.
-  fta(new FaultTreeAnalysis("default"));
+  delete ran;
+  ran = new RiskAnalysis();
   ASSERT_NO_THROW(ran->ProcessInput(with_prob));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(0.646, p_total());
@@ -237,23 +239,34 @@ TEST_F(RiskAnalysisTest, AnalyzeDefault) {
   EXPECT_DOUBLE_EQ(0.7, imp_of_primaries().find("pumptwo")->second);
   EXPECT_DOUBLE_EQ(0.48, imp_of_primaries().find("valveone")->second);
   EXPECT_DOUBLE_EQ(0.5, imp_of_primaries().find("valvetwo")->second);
+}
 
+// Apply the rare event approximation.
+TEST_F(RiskAnalysisTest, RareEvent) {
+  std::string with_prob =
+      "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   // Probability calculations with the rare event approximation.
-  fta(new FaultTreeAnalysis("default", "rare"));
+  ran->AddSettings(settings.approx("rare"));
   ASSERT_NO_THROW(ran->ProcessInput(with_prob));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(1.2, p_total());
+}
 
+// Apply the minimal cut set upper bound approximation.
+TEST_F(RiskAnalysisTest, MCUB) {
+  std::string with_prob =
+      "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   // Probability calculations with the MCUB approximation.
-  fta(new FaultTreeAnalysis("default", "mcub"));
+  ran->AddSettings(settings.approx("mcub"));
   ASSERT_NO_THROW(ran->ProcessInput(with_prob));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(0.766144, p_total());
 }
 
+
 // Test Monte Carlo Analysis
 TEST_F(RiskAnalysisTest, AnalyzeMC) {
-  fta(new FaultTreeAnalysis("mc"));
+  ran->AddSettings(settings.fta_type("mc"));
   std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
@@ -261,14 +274,14 @@ TEST_F(RiskAnalysisTest, AnalyzeMC) {
 
 // Test Reporting capabilities
 TEST_F(RiskAnalysisTest, Report) {
-  std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
+  std::string tree_input =
+      "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   ASSERT_NO_THROW(ran->Report("/dev/null"));
 
   // Generate warning due to rare event approximation.
-  fta(new FaultTreeAnalysis("default", "rare"));
-  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ran->AddSettings(settings.approx("rare"));
   ASSERT_NO_THROW(ran->Analyze());
   ASSERT_NO_THROW(ran->Report("/dev/null"));
 }
