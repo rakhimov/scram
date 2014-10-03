@@ -12,4 +12,4 @@ Please, follow more detailed instructions_ on GitHub.
 .. _Sourceforge:
     https://sourceforge.net/projects/iscram/files/?source=navbar
 .. _instructions:
-    https://github.com/rakhimov/SCRAM/tree/master
+    https://github.com/rakhimov/scram/tree/master

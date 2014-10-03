@@ -73,7 +73,7 @@ These tests are automated, and continuous integration is provided by `Travis CI`
 .. _`Nose`:
     https://nose.readthedocs.org/en/latest/
 .. _`Travis CI`:
-    https://travis-ci.org/rakhimov/SCRAM
+    https://travis-ci.org/rakhimov/scram
 
 Good references for testing and quality information
 ---------------------------------------------------
