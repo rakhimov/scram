@@ -40,7 +40,7 @@ FaultTreeAnalysis::FaultTreeAnalysis(std::string analysis, std::string approx,
   }
   limit_order_ = limit_order;
 
-  // Check for right limit order.
+  // Check for right number of sums.
   if (nsums < 1) {
     std::string msg = "The number of sums in the probability calculation "
                       "cannot be less than one";

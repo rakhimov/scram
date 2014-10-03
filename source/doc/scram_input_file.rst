@@ -57,9 +57,9 @@ Steps in XML Input Validation
 Validation Schemas
 ==================
 
-- `RelaxNG Schema <https://github.com/rakhimov/SCRAM/blob/master/share/scram.rng>`_
-- `RelaxNG Compact <https://github.com/rakhimov/SCRAM/blob/master/share/scram.rnc>`_
-- `DTD Schema <https://github.com/rakhimov/SCRAM/blob/master/doc/open-psa/mef.dtd>`_
+- `RelaxNG Schema <https://github.com/rakhimov/scram/blob/master/share/scram.rng>`_
+- `RelaxNG Compact <https://github.com/rakhimov/scram/blob/master/share/scram.rnc>`_
+- `DTD Schema <https://github.com/rakhimov/scram/blob/master/doc/open-psa/mef.dtd>`_
 
 Input File Examples
 ===================

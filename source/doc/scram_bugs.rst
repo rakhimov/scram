@@ -2,7 +2,7 @@
 SCRAM Bugs and Problems
 ########################
 
-`Issues on GitHub <https://github.com/rakhimov/SCRAM/issues>`_
+`Issues on GitHub <https://github.com/rakhimov/scram/issues>`_
 
 Currently Found Bugs
 ====================

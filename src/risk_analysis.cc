@@ -16,6 +16,8 @@
 #include <schema.h>  // For static building.
 #endif
 
+#include "env.h"
+
 namespace scram {
 
 RiskAnalysis::RiskAnalysis(std::string config_file)
@@ -38,9 +40,6 @@ RiskAnalysis::RiskAnalysis(std::string config_file)
   types_.insert("undeveloped");
   types_.insert("house");
   types_.insert("conditional");
-
-  fta_ = new FaultTreeAnalysis("default");
-  env_ = new Env();
 }
 
 void RiskAnalysis::ProcessInput(std::string xml_file) {
@@ -62,7 +61,7 @@ void RiskAnalysis::ProcessInput(std::string xml_file) {
 #if EMBED_SCHEMA
   schema << scram::g_schema_content;
 #else
-  std::string schema_path = env_->rng_schema();
+  std::string schema_path = Env::rng_schema();
   std::ifstream schema_stream(schema_path.c_str());
   schema << schema_stream.rdbuf();
   schema_stream.close();
@@ -135,7 +134,11 @@ void RiskAnalysis::Analyze() {
   std::map<std::string, FaultTreePtr>::iterator it;
   for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
     std::string output_file_name = input_file_ + "_" + it->second->name();
-    FaultTreeAnalysisPtr fta(new FaultTreeAnalysis(*fta_));
+    FaultTreeAnalysisPtr fta(new FaultTreeAnalysis(settings_.fta_type_,
+                                                   settings_.approx_,
+                                                   settings_.limit_order_,
+                                                   settings_.num_sums_,
+                                                   settings_.cut_off_));
     fta->Analyze(it->second, prob_requested_);
     ftas_.push_back(fta);
   }

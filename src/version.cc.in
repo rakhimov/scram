@@ -1,0 +1,33 @@
+/// @file version.cc.in
+/// Implementations of functions returning version information
+/// of the core and dependencies.
+/// Some information is filled by CMake and Git.
+#include "version.h"
+
+#include "boost/version.hpp"
+#include "libxml/xmlversion.h"
+
+#define INNER(x) #x
+#define SVER(x,y,z) INNER(x.y.z)
+
+namespace scram {
+namespace version {
+
+const char* describe() {
+  return "@core_version@";
+}
+
+const char* core() {
+  return SVER(SCRAM_VERSION_MAJOR, SCRAM_VERSION_MINOR, SCRAM_VERSION_MICRO);
+}
+
+const char* boost() {
+  return BOOST_LIB_VERSION;
+}
+
+const char* xml2() {
+  return LIBXML_DOTTED_VERSION;
+}
+
+}  // namespace version
+}  // namespace scram

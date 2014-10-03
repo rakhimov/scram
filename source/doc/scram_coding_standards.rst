@@ -43,7 +43,7 @@ The quality of the code is checked by the following tools:
 .. _`Gcov`:
     https://gcc.gnu.org/onlinedocs/gcc/Gcov.html
 .. _`Coveralls`:
-    https://coveralls.io/r/rakhimov/SCRAM
+    https://coveralls.io/r/rakhimov/scram
 .. _`CDash`:
     http://my.cdash.org/index.php?project=SCRAM
 .. _`Valgrind`:
@@ -73,7 +73,7 @@ These tests are automated, and continuous integration is provided by `Travis CI`
 .. _`Nose`:
     https://nose.readthedocs.org/en/latest/
 .. _`Travis CI`:
-    https://travis-ci.org/rakhimov/SCRAM
+    https://travis-ci.org/rakhimov/scram
 
 Good references for testing and quality information
 ---------------------------------------------------
