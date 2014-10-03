@@ -23,7 +23,7 @@ This project currently contains a static fault tree analysis,
 fault tree generator, and fault tree graphing with Graphviz Dot tool.
 
 .. _`GPL license`:
-    https://github.com/rakhimov/SCRAM/blob/master/LICENSE
+    https://github.com/rakhimov/scram/blob/master/LICENSE
 
 Installation:
 -------------
