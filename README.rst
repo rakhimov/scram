@@ -4,8 +4,8 @@ SCRAM
 
 .. image:: https://travis-ci.org/rakhimov/SCRAM.svg?branch=develop
     :target: https://travis-ci.org/rakhimov/SCRAM
-.. image:: https://coveralls.io/repos/rakhimov/SCRAM/badge.png?branch=develop
-    :target: https://coveralls.io/r/rakhimov/SCRAM?branch=develop
+.. image:: https://coveralls.io/repos/rakhimov/scram/badge.png?branch=develop
+    :target: https://coveralls.io/r/rakhimov/scram?branch=develop
 .. image:: https://scan.coverity.com/projects/2555/badge.svg
     :target: https://scan.coverity.com/projects/2555
 .. image:: doc/cdash.png
