@@ -43,7 +43,7 @@ The quality of the code is checked by the following tools:
 .. _`Gcov`:
     https://gcc.gnu.org/onlinedocs/gcc/Gcov.html
 .. _`Coveralls`:
-    https://coveralls.io/r/rakhimov/SCRAM
+    https://coveralls.io/r/rakhimov/scram
 .. _`CDash`:
     http://my.cdash.org/index.php?project=SCRAM
 .. _`Valgrind`:
