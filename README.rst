@@ -25,7 +25,7 @@ An experimental GUI front-end is under development using `Qt`_.
 A full description of *SCRAM* and its current capabilities
 is in `documentation`_.
 
-.. _`documentation`: http://rakhimov.github.io/SCRAM
+.. _`documentation`: http://rakhimov.github.io/scram
 .. _`Qt`: http://qt-project.org/
 
 To get *SCRAM*, you can download pre-build packages on Sourceforge_ or follow the
@@ -146,7 +146,7 @@ be needed. The optional installation for GUI:
     sudo apt-get install -y qt5-default qtcreator
 
 .. _`Travis CI`:
-    https://travis-ci.org/rakhimov/SCRAM
+    https://travis-ci.org/rakhimov/scram
 
 Mac Systems
 -----------
@@ -357,4 +357,4 @@ Best practices are encouraged:
 `Coding Style and Quality`_
 
 .. _`Coding Style and Quality`:
-    https://rakhimov.github.io/SCRAM/doc/scram_coding_standards.html
+    https://rakhimov.github.io/scram/doc/scram_coding_standards.html
