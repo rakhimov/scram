@@ -51,8 +51,6 @@ Major Enhancements and Capabilities
 
   * Subtree Analysis of a Fault Tree.
 
-- GUI development. *High*
-
 - Sensitivity analysis. *Moderate*
 
 
@@ -78,6 +76,20 @@ Minor Enhancements and Capabilities
 - Improve fault tree generator. *Low*
 
 - Create cut set generator. *Low*
+
+
+GUI Development: Moderate Importance
+====================================
+
+- Layout
+
+- Fault Tree Construction
+
+- Event Tree Construction
+
+- View of analysis results
+
+- Common cause group construction
 
 
 Documentation: Moderate Importance

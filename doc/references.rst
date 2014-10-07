@@ -31,3 +31,4 @@ Web Resources
 #. `Safety Culture Wiki Page <https://en.wikipedia.org/wiki/Safety_culture>`_
 #. `Sensitivity Analysis Wiki Page <https://en.wikipedia.org/wiki/Sensitivity_analysis>`_
 #. `Uncertainty Quantification Wiki Page <https://en.wikipedia.org/wiki/Uncertainty_quantification>`_
+#. `Common Cause Wiki Page <https://en.wikipedia.org/wiki/Common_cause_and_special_cause_(statistics)>`_

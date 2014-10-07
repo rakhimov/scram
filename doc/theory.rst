@@ -167,14 +167,62 @@ gates, such as Priority AND, Sequence.
 Common Cause Failure
 ====================
 
+If events are not statistically independent, common cause or mode analysis is
+performed to account for the failure of multiple elements at the same time or
+within a short time. These common mode failures may be due to the same
+manufacture flaws and design, environment, working conditions, maintenance,
+quality control, normal wear and tear, and many other factors.
+Several models are used to quantify the common cause failures.
+
+Multiple Greek Letter(MGL) System
+---------------------------------
+
+Alpha System
+------------
+
+Beta System
+-----------
+
+Phi System
+----------
+
+
 Uncertainty Analysis
 ====================
+
+Uncertainty quantification is performed for top event(gate) with determined
+minimal cut sets. If events in the minimal cut sets have their probabilities
+expressed by a statistical distribution with some uncertainties, these
+uncertainties propagate to the total probability of the top event. This
+analysis is performed employing the Monte Carlo Method. The values of
+probabilities are sampled to calculated the distribution of the total
+probability.
 
 Sensitivity Analysis
 ====================
 
+Sensitivity analysis determines how much the variation of each event
+contributes to the total uncertainty of the top event(gate).
+There are many approaches for this analysis, but in general, the analyst
+modifies the structure of the problem tree or input values to observe
+changes in results. Key assumptions and issues can be examined at this stage.
+However, since this analysis follows the uncertainty analysis,
+the sensitivity analysis may be expensive.
+
 Importance Analysis
 ===================
+
+Fussel-Vesely
+-------------
+
+Birnbaum
+--------
+
+Risk Reduction Worth
+--------------------
+
+Risk Achievement Worth
+----------------------
 
 Incorporation of Alignments
 ===========================
