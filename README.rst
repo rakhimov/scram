@@ -243,7 +243,8 @@ The GTest is build statically always irrespective to the above variables.
 Windows
 =======
 
-Currently the easiest option is to use a virtual machine with `Ubuntu 14.04`_.
+Currently the easiest and best option is to use a virtual machine with
+Ubuntu 14.04.
 
 #. Install `VirtualBox <https://www.virtualbox.org/>`_
 #. Get the system.
