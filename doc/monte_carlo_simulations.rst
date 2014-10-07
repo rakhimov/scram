@@ -1,6 +1,6 @@
-###########################################
+######################################
 SCRAM Monte Carlo Uncertainty Analysis
-###########################################
+######################################
 
 .. note::
     This feature is under development.
@@ -8,7 +8,11 @@ SCRAM Monte Carlo Uncertainty Analysis
 Monte Carlo (MC) Analysis Implementation
 ========================================
 
+#. Initializing events with distributions. *Not Supported*
+
 #. Generation of an equation for MC analysis from minimal cut sets.
+
+#. Determine the number of samples. (Set by a user) *No Support*
 
 #. Definitions and parameters for various distributions. *Not Supported Yet*
 
@@ -37,4 +41,4 @@ Monte Carlo (MC) Analysis Implementation
 #. Statistical analysis. The resulting distributions. *Not Supported Yet*
 #. Sensitivity analysis. *Not Supported Yet*
 #. Bayesian statistics. *Not Supported Yet*
-#. Output results and analysis. [Partial support]
+#. Output the results of analysis: mean, sigma, probability density plot. *No*
