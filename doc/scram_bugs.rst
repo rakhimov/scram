@@ -12,3 +12,6 @@ Minor Issues
 
 - Input files with currently unsupported advanced OpenPSA MEF features may
   cause program failures without any warnings.
+
+- The current algorithm is very inefficient with fault trees with many
+  combination gates.
