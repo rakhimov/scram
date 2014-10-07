@@ -10,18 +10,17 @@ Currently Low Hanging Fruits
 
 - `Issues on GitHub <https://github.com/rakhimov/scram/issues>`_
 
+- Uncertainty analysis. *Moderate*
+
+- XML based analysis configuration input file. *High*
+
+  * Schema
+
+- XML based output file. *High*
+
+  * Schema
+
 - Minimal cut set input file as an alternative to a tree file. *Moderate*
-
-    * Save minimal cut sets for later analysis
-
-- Monte Carlo Simulations. *Moderate*
-
-    * Uncertainty analysis
-    * Sensitivity analysis
-
-- Improve fault tree generator. *Low*
-
-- Create cut set generator. *Low*
 
 
 Major Enhancements and Capabilities
@@ -54,9 +53,31 @@ Major Enhancements and Capabilities
 
 - GUI development. *High*
 
+- Sensitivity analysis. *Moderate*
+
 
 Minor Enhancements and Capabilities
 ===================================
+
+- OpenPSA MEF Support:
+
+  * Nested formula for gates. *Moderate*
+
+  * Expressions for basic events. *Moderate*
+
+- Importance Analysis: *High*
+
+  * Fussel-Vesely
+
+  * Birnbaum
+
+  * Risk Reduction Worth
+
+  * Risk Achievement Worth
+
+- Improve fault tree generator. *Low*
+
+- Create cut set generator. *Low*
 
 
 Documentation: Moderate Importance
@@ -69,7 +90,38 @@ Documentation: Moderate Importance
     * Various ways of writing input files.
     * Separation of inputs.
 
-- Reference Manual/Documentation
+
+Platform Support
+================
+
+- Compiling with Mingw-w64 for Windows. *High*
+
+- Installation Package for Windows. *High*
+
+- Installation Package for Mac OS X. *Moderate*
+
+- Installation Package for Ubuntu (PPA/DEB). *Low*
+
 
 Coding Specific
-===================
+===============
+
+- More exception types as needed:  *Moderate*
+
+  * Invalid Argument
+
+  * Illegal Operation
+
+  * Logic Error
+
+  * Double Definition
+
+- Lower the Cyclomatic complexity.  *High*
+
+- Logging system. *Moderate*
+
+- Automated performance testing: *Moderate*
+
+  * Build mode dependent (Debugging/Non-debugging).
+
+  * Must be run optionally.

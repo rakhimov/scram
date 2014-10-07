@@ -260,7 +260,8 @@ Currently the easiest option is to use a virtual machine with `Ubuntu 14.04`_.
         - Download `Ubuntu 14.04`_ or any other system.
         - Follow the installation instructions for Linux/Unix machines.
 
-The other option is to use MinGW_ or Cygwin_ and to build on Windows.
+The other option is to use MinGW_, `Mingw-w64`_, or Cygwin_ and to build on
+Windows.
 
 Currently only Cygwin_ 64bit has been tested to produce binaries on Windows.
 The dependencies listed for Linux systems must be installed with Cygwin64.
@@ -272,6 +273,8 @@ download a `pre-build SCRAM for Cygwin`_.
     http://www.ubuntu.com/download
 .. _MinGW:
     http://www.mingw.org/
+.. _`Mingw-w64`:
+    http://mingw-w64.sourceforge.net/
 .. _Cygwin:
     https://www.cygwin.com/
 .. _`libxml++`:
