@@ -15,7 +15,7 @@
 
 namespace scram {
 /// @class Reporter
-/// Reporter of findings of analysis.
+/// This class reports the findings of the analyses.
 class Reporter {
  public:
   /// Reports orphan primary events.

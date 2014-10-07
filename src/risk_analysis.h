@@ -1,4 +1,5 @@
 /// @file risk_analysis.h
+/// Contains the main system for performing analysis.
 #ifndef SCRAM_RISK_ANALYISIS_H_
 #define SCRAM_RISK_ANALYISIS_H_
 

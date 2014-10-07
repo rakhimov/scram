@@ -1,4 +1,5 @@
 /// @file risk_analysis.cc
+/// Implementation of risk analysis handler.
 #include "risk_analysis.h"
 
 #include <algorithm>
