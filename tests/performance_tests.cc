@@ -4,7 +4,7 @@
 
 using namespace scram;
 
-// Performance testting is done only if requested by activating
+// Performance testing is done only if requested by activating
 // disabled tests.
 //
 // To run the performance tests, supply "--gtest_also_run_disable_tests" flag
@@ -100,3 +100,76 @@ TEST_F(PerformanceTest, DISABLED_200Event_L17) {
   EXPECT_GT(McsGenerationTime(), mcs_time * (1 - delta));
   EXPECT_LT(McsGenerationTime(), mcs_time * (1 + delta));
 }
+
+// Test performance of MCS generation.
+TEST_F(PerformanceTest, DISABLED_Baobab1_L6) {
+  double exp_time = 29.200;
+  double mcs_time = 0.500;
+#ifdef NDEBUG
+  exp_time = 5.600;
+  mcs_time = 0.070;
+#endif
+  std::string input = "./share/scram/input/benchmark/baobab1.xml";
+  settings.limit_order(6);
+  settings.num_sums(1);
+  ran->AddSettings(settings);
+  ASSERT_NO_THROW(ran->ProcessInput(input));
+  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_EQ(2684, NumOfMcs());
+  EXPECT_GT(TreeExpansionTime(), exp_time * (1 - delta));
+  EXPECT_LT(TreeExpansionTime(), exp_time * (1 + delta));
+  EXPECT_GT(McsGenerationTime(), mcs_time * (1 - delta));
+  EXPECT_LT(McsGenerationTime(), mcs_time * (1 + delta));
+}
+
+// Release only tests.
+#ifdef NDEBUG
+// Test performance of MCS generation.
+TEST_F(PerformanceTest, DISABLED_Baobab1_L7) {
+  double exp_time = 86.800;
+  double mcs_time = 2.500;
+  std::string input = "./share/scram/input/benchmark/baobab1.xml";
+  settings.limit_order(7);
+  settings.num_sums(1);
+  ran->AddSettings(settings);
+  ASSERT_NO_THROW(ran->ProcessInput(input));
+  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_EQ(17432, NumOfMcs());
+  EXPECT_GT(TreeExpansionTime(), exp_time * (1 - delta));
+  EXPECT_LT(TreeExpansionTime(), exp_time * (1 + delta));
+  EXPECT_GT(McsGenerationTime(), mcs_time * (1 - delta));
+  EXPECT_LT(McsGenerationTime(), mcs_time * (1 + delta));
+}
+
+TEST_F(PerformanceTest, DISABLED_CEA9601_L4) {
+  double exp_time = 19.500;
+  double mcs_time = 0.050;
+  std::string input = "./share/scram/input/benchmark/CEA9601.xml";
+  settings.limit_order(4);
+  settings.num_sums(1);
+  ran->AddSettings(settings);
+  ASSERT_NO_THROW(ran->ProcessInput(input));
+  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_EQ(2732, NumOfMcs());
+  EXPECT_GT(TreeExpansionTime(), exp_time * (1 - delta));
+  EXPECT_LT(TreeExpansionTime(), exp_time * (1 + delta));
+  EXPECT_GT(McsGenerationTime(), mcs_time * (1 - delta));
+  EXPECT_LT(McsGenerationTime(), mcs_time * (1 + delta));
+}
+
+TEST_F(PerformanceTest, DISABLED_CEA9601_L5) {
+  double exp_time = 43.400;
+  double mcs_time = 0.130;
+  std::string input = "./share/scram/input/benchmark/CEA9601.xml";
+  settings.limit_order(5);
+  settings.num_sums(1);
+  ran->AddSettings(settings);
+  ASSERT_NO_THROW(ran->ProcessInput(input));
+  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_EQ(3274, NumOfMcs());
+  EXPECT_GT(TreeExpansionTime(), exp_time * (1 - delta));
+  EXPECT_LT(TreeExpansionTime(), exp_time * (1 + delta));
+  EXPECT_GT(McsGenerationTime(), mcs_time * (1 - delta));
+  EXPECT_LT(McsGenerationTime(), mcs_time * (1 + delta));
+}
+#endif

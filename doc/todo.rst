@@ -132,12 +132,6 @@ Coding Specific
 
 - Logging system. *Moderate*
 
-- Automated performance testing: *Moderate*
-
-  * Build mode dependent (Debugging/Non-debugging).
-
-  * Must be run optionally.
-
 - Benchmark tests:
 
   * Small Tree
