@@ -164,27 +164,48 @@ This analysis takes into account the order of events' failures. The information
 about time dependency is incorporated into a fault tree by using specific
 gates, such as Priority AND, Sequence.
 
+
 Common Cause Failure
 ====================
 
 If events are not statistically independent, common cause or mode analysis is
 performed to account for the failure of multiple elements at the same time or
-within a short time. These common mode failures may be due to the same
-manufacture flaws and design, environment, working conditions, maintenance,
-quality control, normal wear and tear, and many other factors.
-Several models are used to quantify the common cause failures.
-
-Multiple Greek Letter(MGL) System
----------------------------------
-
-Alpha System
-------------
+within a short period of time. These common mode failures may be
+due to the same manufacture flaws and design, environment,
+working conditions, maintenance, quality control, normal wear and tear,
+and many other factors. Several models are used to quantify the common cause
+failures. The components in the same common cause group must be described
+by the same probability. The exact formulas to compute factors are given in
+NRC NUREG-0492.
 
 Beta System
 -----------
 
+Beta systems assumes that if common cause failure occurs, all components
+in the group fail. The components can fail independently, but multiple
+independent failures are ignored.
+
+Multiple Greek Letter(MGL) System
+---------------------------------
+
+MGL is a generalization of Beta system. MGL describes several conditional
+factors that quantify the failure of the certain number of components
+due to common cause, so the number of factors can be up to the number of
+components. The factor for **k** number of elements indicate failure of **k**
+or **more** components due to common cause.
+
+Alpha System
+------------
+
+This system is similar to MGL, but the factor for **k** number of elements
+indicate failure of exactly **k** number of elements due to common cause.
+
 Phi System
 ----------
+
+Phy system is the same as MGL and Alpha except that the factors indicate
+direct probability distribution of the common cause. The phi factors must
+sum to 1.
 
 
 Uncertainty Analysis
@@ -198,6 +219,7 @@ analysis is performed employing the Monte Carlo Method. The values of
 probabilities are sampled to calculated the distribution of the total
 probability.
 
+
 Sensitivity Analysis
 ====================
 
@@ -209,30 +231,80 @@ changes in results. Key assumptions and issues can be examined at this stage.
 However, since this analysis follows the uncertainty analysis,
 the sensitivity analysis may be expensive.
 
+
 Importance Analysis
 ===================
 
+The importance of a component or event provides information about its impact
+on the top event. This analysis is used to filter out components that need
+most attention to reduce the overall risk.
+
 Fussel-Vesely
 -------------
-This factor is also called Diagnosis Importance Factor.
+This factor is also called Diagnosis Importance Factor(DIF). The value provides
+information about how much the component is contributing to the total risk.
+
+.. math::
+
+    DIF = (P(top) - P(top/NOT event)) / P(top)
 
 Birnbaum
 --------
-This factor is also called Marginal Importance Factor.
+This factor is also called Marginal Importance Factor(MIF). This factor gives
+the increase in risk due to the failure of the component by measuring the
+difference between failed-event and non-failed event systems.
+
+.. math::
+
+    MIF = P(top/event) - P(top/NOT event)
 
 Critical Importance Factor
 --------------------------
+This factor is also called Criticality Factor and takes into account the
+reliability of the component.
+
+.. math::
+
+    CIF = P(event) / P(top/NOT event) * MIF
 
 Risk Reduction Worth
 --------------------
-This factor is also called Risk Decrease Factor.
+This factor is also called Risk Decrease Factor and indicates the
+maximum decrease in risk of the top event if the component never failed or
+increased its reliability. This factor helps select the components to improve
+first with most effect on risk reduction.
+
+.. math::
+
+    RRW = P(top) / P(top/NOT event)
 
 Risk Achievement Worth
 ----------------------
-This factor is also called Risk Increase Factor.
+This factor is also called Risk Increase Factor and measures the increase
+in risk of the top event given that the component has already failed. This
+factor indicates the importance of maintaining the component at its current
+level of reliability.
+
+.. math::
+
+    RAW = P(top/event) / P(top)
+
 
 Incorporation of Alignments
 ===========================
 
+The system's configuration may change over period of time due to maintenance
+or substitutions of failed/out-of-service event. This temporary configurations
+create different analyses and final results.
+
+
 Reliability Block Diagram
 =========================
+
+RBD or Dependence Diagram(DD) is another way of showing the system
+components layout using a diagram with series and parallel configurations. In
+this analysis, the success of the system is shown through the paths that
+are still available after failure of a component. That is, parallel paths are
+redundancies in the system. The diagram can be converted
+to a success tree or fault tree. More complex dependent relationships can
+be handled by a dynamic RBD.
