@@ -22,6 +22,7 @@
 #include "xml_parser.h"
 
 class RiskAnalysisTest;
+class PerformanceTest;
 
 typedef boost::shared_ptr<scram::Element> ElementPtr;
 
@@ -40,6 +41,7 @@ namespace scram {
 /// Main system that performs analyses.
 class RiskAnalysis {
   friend class ::RiskAnalysisTest;
+  friend class ::PerformanceTest;
 
  public:
   /// This constructor with configurations with the analysis.

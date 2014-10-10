@@ -2,7 +2,7 @@ Speed recordings for scram.
 
 System specs: Core i5-2410M, Ubuntu 14.04 64bit
 GCC version: 4.8.2
-Boost version: 1.54
+Boost version: 1.55
 
 If the current performance is not listed, then the best is the current.
 
@@ -14,7 +14,7 @@ If the current performance is not listed, then the best is the current.
 ----------- Three Motor -c 1e-8 (p = 0.02115378) -------
 Standard build:
 ---------------
-- Prob Calculation  0.680s  |
+- Prob Calculation  0.650s  |
 
 Release build:
 --------------
@@ -24,7 +24,7 @@ Release build:
 ----------- Three Motor -c 0 (p = 0.02115378) ----------
 Standard build:
 ---------------
-- Prob Calculation  25.000s | 33.000s
+- Prob Calculation  25.000s | 30.000s
 
 Release build:
 --------------
