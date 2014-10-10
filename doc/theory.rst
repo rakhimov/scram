@@ -214,15 +214,22 @@ Importance Analysis
 
 Fussel-Vesely
 -------------
+This factor is also called Diagnosis Importance Factor.
 
 Birnbaum
 --------
+This factor is also called Marginal Importance Factor.
+
+Critical Importance Factor
+--------------------------
 
 Risk Reduction Worth
 --------------------
+This factor is also called Risk Decrease Factor.
 
 Risk Achievement Worth
 ----------------------
+This factor is also called Risk Increase Factor.
 
 Incorporation of Alignments
 ===========================

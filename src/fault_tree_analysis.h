@@ -193,8 +193,8 @@ class FaultTreeAnalysis {
   /// @param[in] min_cut_sets Sets of indices of primary events.
   void MProbOr(int sign, int nsums, std::set< std::set<int> >* min_cut_sets);
 
-  /// Performs Monte Carlo Simulation.
-  /// @todo Implement the simulation.
+  /// Performs Monte Carlo Simulation by sampling the probability distributions
+  /// and providing the final sampled values of the final probability.
   void MSample();
 
   std::vector< std::set<int> > pos_terms_;  ///< Plus terms of the equation.

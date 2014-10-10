@@ -2,13 +2,24 @@
 SCRAM Monte Carlo Uncertainty Analysis
 ######################################
 
-.. note::
-    This feature is under development.
+For Monte Carlo simulations, `MT 19937`_ Mersenne Twister Pseudo-random number
+generator is provided by Boost_. Mersenne Twister PRNG is well tested and
+well suited for Monte Carlo simulations. The seed of the PRNG is usually
+the system time at the runtime, but this parameter can be fixed by a user,
+for example, to test the analysis.
+
+.. _`MT 19937`:
+    https://en.wikipedia.org/wiki/Mersenne_twister
+.. _Boost:
+    http://www.boost.org/doc/libs/1_56_0/doc/html/boost_random/reference.html
 
 Monte Carlo (MC) Analysis Implementation
 ========================================
 
 #. Initializing events with distributions. *Not Supported*
+
+#. If MC Analysis is not requested, perform the standard analysis with
+   average probabilities. *Not Supported*
 
 #. Generation of an equation for MC analysis from minimal cut sets.
 

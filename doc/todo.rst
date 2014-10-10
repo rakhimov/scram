@@ -137,3 +137,17 @@ Coding Specific
   * Build mode dependent (Debugging/Non-debugging).
 
   * Must be run optionally.
+
+- Benchmark tests:
+
+  * Small Tree
+
+  * HIPPS
+
+  * Chinese
+
+  * Baobab1
+
+  * Baobab2
+
+  * CEA9601
