@@ -97,11 +97,6 @@ Documentation: Moderate Importance
 
 - Getting Started
 
-- Simple Walk-through Examples/Tutorials:
-
-    * Various ways of writing input files.
-    * Separation of inputs.
-
 
 Platform Support
 ================

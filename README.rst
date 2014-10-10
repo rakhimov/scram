@@ -14,8 +14,8 @@ SCRAM
 *SCRAM* : "Simplified Command-line Risk Analysis Multi-tool"
 
 This project attempts to build a simple command line tool for risk analysis.
-Static Fault Tree Analysis is implemented. The initial support for the OpenPSA
-model format is provided.
+Static Fault Tree Analysis is implemented. The initial support for the OpenPSA_
+model exchange format is provided.
 
 In addition, a random fault tree generator is provided to explore the
 performance of *SCRAM*. A fault tree can be drawn by Graphviz Dot tool.
@@ -25,6 +25,7 @@ An experimental GUI front-end is under development using `Qt`_.
 A full description of *SCRAM* and its current capabilities
 is in `documentation`_.
 
+.. _OpenPSA: http://open-psa.org
 .. _`documentation`: http://rakhimov.github.io/scram
 .. _`Qt`: http://qt-project.org/
 
@@ -341,7 +342,7 @@ On command line, run help to get running options:
 .. note::
     For Windows, the binary is **scram.exe**
 
-More information in `documentation`_.
+More information about use and input files for SCRAM in `documentation`_.
 
 ****************************
 Documentation Building
