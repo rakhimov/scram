@@ -321,7 +321,7 @@ To run performance tests
 A set of performance tests is provided to approximate the host's performance
 in comparison to a reference computer with Ubuntu 14.04 with i5-2410M
 processor. These tests can be helpful for developers to check for regression.
-More details can be found performance test source files.
+More details can be found in performance test source files.
 
 To run all the performance tests (may take considerable time):
 
