@@ -58,6 +58,14 @@ Documentation:
     doc/xml_comments
     doc/todo
 
+Theoretical Background:
+-----------------------
+
+.. toctree::
+    :maxdepth: 2
+
+    doc/theory.rst
+
 Contact Us
 ----------
 
