@@ -25,14 +25,12 @@ using namespace scram;
 // NOTE: Running tests several times is recommended to take into account
 //       the variation of time results.
 
-// Tests the performance of probability calculations.
-// Both with and without approximations tests are done.
+// Tests the performance of probability calculations
+// with cut-off approximations tests are done.
 TEST_F(PerformanceTest, DISABLED_ThreeMotor) {
   double p_time_std = 0.650;
-  double p_time_full = 30.000;  // Without cut-off approximation.
 #ifdef NDEBUG
   p_time_std = 0.130;
-  p_time_full = 6.000;
 #endif
   std::string input = "./share/scram/input/benchmark/three_motor.xml";
   ASSERT_NO_THROW(ran->ProcessInput(input));
@@ -41,14 +39,21 @@ TEST_F(PerformanceTest, DISABLED_ThreeMotor) {
   EXPECT_TRUE(delta_sqr < 1e-5);
   EXPECT_GT(ProbCalcTime(), p_time_std * (1 - delta));
   EXPECT_LT(ProbCalcTime(), p_time_std * (1 + delta));
+}
 
-  delete ran;
-  ran = new RiskAnalysis();
+// Tests the performance of probability calculations
+// without approximations tests are done.
+TEST_F(PerformanceTest, DISABLED_ThreeMotor_C0) {
+  double p_time_full = 30.000;  // Without cut-off approximation.
+#ifdef NDEBUG
+  p_time_full = 6.000;
+#endif
+  std::string input = "./share/scram/input/benchmark/three_motor.xml";
   settings.cut_off(0);  // No approximation.
   ran->AddSettings(settings);
   ASSERT_NO_THROW(ran->ProcessInput(input));
   ASSERT_NO_THROW(ran->Analyze());
-  delta_sqr = std::abs(p_total() - 0.0211538);
+  double delta_sqr = std::abs(p_total() - 0.0211538);
   EXPECT_TRUE(delta_sqr < 1e-5);
   EXPECT_GT(ProbCalcTime(), p_time_full * (1 - delta));
   EXPECT_LT(ProbCalcTime(), p_time_full * (1 + delta));
