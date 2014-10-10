@@ -53,3 +53,45 @@ TEST_F(PerformanceTest, DISABLED_ThreeMotor) {
   EXPECT_GT(ProbCalcTime(), p_time_full * (1 - delta));
   EXPECT_LT(ProbCalcTime(), p_time_full * (1 + delta));
 }
+
+// Test performance of MCS generation.
+TEST_F(PerformanceTest, DISABLED_200Event_L16) {
+  double exp_time = 3.700;
+  double mcs_time = 1.100;
+#ifdef NDEBUG
+  exp_time = 0.790;
+  mcs_time = 0.240;
+#endif
+  std::string input = "./share/scram/input/benchmark/200_event.xml";
+  settings.limit_order(16);
+  settings.num_sums(1);
+  ran->AddSettings(settings);
+  ASSERT_NO_THROW(ran->ProcessInput(input));
+  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_EQ(8351, NumOfMcs());
+  EXPECT_GT(TreeExpansionTime(), exp_time * (1 - delta));
+  EXPECT_LT(TreeExpansionTime(), exp_time * (1 + delta));
+  EXPECT_GT(McsGenerationTime(), mcs_time * (1 - delta));
+  EXPECT_LT(McsGenerationTime(), mcs_time * (1 + delta));
+}
+
+// Test performance of MCS generation.
+TEST_F(PerformanceTest, DISABLED_200Event_L17) {
+  double exp_time = 15.500;
+  double mcs_time = 90.400;
+#ifdef NDEBUG
+  exp_time = 3.300;
+  mcs_time = 12.000;
+#endif
+  std::string input = "./share/scram/input/benchmark/200_event.xml";
+  settings.limit_order(17);
+  settings.num_sums(1);
+  ran->AddSettings(settings);
+  ASSERT_NO_THROW(ran->ProcessInput(input));
+  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_EQ(8487, NumOfMcs());
+  EXPECT_GT(TreeExpansionTime(), exp_time * (1 - delta));
+  EXPECT_LT(TreeExpansionTime(), exp_time * (1 + delta));
+  EXPECT_GT(McsGenerationTime(), mcs_time * (1 - delta));
+  EXPECT_LT(McsGenerationTime(), mcs_time * (1 + delta));
+}
