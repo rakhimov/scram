@@ -2,6 +2,9 @@
 SCRAM GUI Front-End
 ###################
 
+.. note::
+    This feature is under development.
+
 The GUI front-end provides a more convenient and user-friendly way to build
 fault trees, event trees, and other analysis components. It should be easier to
 visualize and setup the analysis using this front-end tool. However, some of
@@ -14,3 +17,21 @@ The GUI front-end is developed with `Qt and Qt Creator`_.
 .. _`Qt and Qt Creator`: http://qt-project.org/
 .. _`The basic concepts of UI`:
     http://www.usability.gov/what-and-why/user-interface-design.html
+
+GUI Features
+============
+- Clear
+- Intuitive
+- Full screen mode
+- Dynamic/Interactive
+- Scrolling/Dragging/Magnification
+- Printing capability
+- Find and replace
+- Warning pane
+- Status line
+- Multiple levels of undo
+- Hot keys/Shortcuts
+- Auto-Save
+- Separate editors for analysis components
+- Convenient review of results
+- Context menu

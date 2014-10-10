@@ -6,10 +6,12 @@ SCRAM uses XML input files to describe analysis. See :ref:`xml_tools` for
 more convenient writing of XML input files.
 
 Currently, only fault trees are accepted for analysis. The input file format
-follows `OpenPSA Model Exchange Format v2.0d`_ or later.
+follows `OpenPSA Model Exchange Format v2.0d`_ or later. The extensive
+description is given in the above format documentation by OpenPSA,
+and input files should be straightforward to create and understand.
 However, not all OpenPSA formatting is supported, and some additional
-assumptions/restrictions are made by SCRAM. See :ref:`opsa_support` for the current
-implementation and differences.
+assumptions/restrictions are made by SCRAM. See :ref:`opsa_support` for
+the format description and current implementation with differences.
 
 .. _`OpenPSA Model Exchange Format v2.0d`:
     http://open-psa.org/joomla1.5/index.php?option=com_content&view=category&id=4&Itemid=19
