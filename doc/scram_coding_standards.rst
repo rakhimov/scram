@@ -22,7 +22,6 @@ Currently nonconforming cases in the source code:
 -------------------------------------------------
 
 * Exceptions are used. (This is not recommended by GCSG.)
-* Header guards do not include the source folder name.
 * Streams are used instead of *printf-like routines*.
 * GUI front-end source files are a mix of the Qt style and Google style.
 * C++11 features are not allowed. Only Boost features are used instead.

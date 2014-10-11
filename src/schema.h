@@ -1,7 +1,7 @@
 /// @file schema.h
 /// Contains the RelaxNG schema for static builds.
-#ifndef SCRAM_SCHEMA_H_
-#define SCRAM_SCHEMA_H_
+#ifndef SCRAM_SRC_SCHEMA_H_
+#define SCRAM_SRC_SCHEMA_H_
 
 #include <string>
 
@@ -1356,4 +1356,4 @@ std::string g_schema_content =
 
 }  // namespace scram
 
-#endif  // SCRAM_SCHEMA_H_
+#endif  // SCRAM_SRC_SCHEMA_H_

@@ -1,7 +1,7 @@
 /// @file reporter.h
 /// Reporter of results.
-#ifndef SCRAM_REPORTER_H_
-#define SCRAM_REPORTER_H_
+#ifndef SCRAM_SRC_REPORTER_H_
+#define SCRAM_SRC_REPORTER_H_
 
 #include <fstream>
 #include <iostream>
@@ -46,4 +46,4 @@ class Reporter {
 
 }  // namespace scram
 
-#endif  // SCRAM_REPORTER_H_
+#endif  // SCRAM_SRC_REPORTER_H_

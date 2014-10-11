@@ -1,7 +1,7 @@
 /// @file random.h
 /// Contains helpers for randomness simulations.
-#ifndef SCRAM_RANDOM_H_
-#define SCRAM_RANDOM_H_
+#ifndef SCRAM_SRC_RANDOM_H_
+#define SCRAM_SRC_RANDOM_H_
 
 #include <vector>
 
@@ -139,4 +139,4 @@ class Random {
 
 }  // namespace scram
 
-#endif  // SCRAM_RANDOM_H_
+#endif  // SCRAM_SRC_RANDOM_H_

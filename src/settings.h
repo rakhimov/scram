@@ -1,7 +1,7 @@
 /// @file settings.h
 /// Builder for settings.
-#ifndef SCRAM_SETTINGS_H_
-#define SCRAM_SETTINGS_H_
+#ifndef SCRAM_SRC_SETTINGS_H_
+#define SCRAM_SRC_SETTINGS_H_
 
 #include <string>
 
@@ -67,4 +67,4 @@ class Settings {
 
 }  // namespace scram
 
-#endif   // SCRAM_SETTINGS_H_
+#endif   // SCRAM_SRC_SETTINGS_H_

@@ -1,7 +1,7 @@
 /// @file error.h
 /// Exceptions for scram project.
-#ifndef SCRAM_ERROR_H_
-#define SCRAM_ERROR_H_
+#ifndef SCRAM_SRC_ERROR_H_
+#define SCRAM_SRC_ERROR_H_
 
 #include <exception>
 #include <string>
@@ -74,4 +74,4 @@ class IOError : public Error {
 
 }  // namespace scram
 
-#endif  // SCRAM_ERROR_H_
+#endif  // SCRAM_SRC_ERROR_H_

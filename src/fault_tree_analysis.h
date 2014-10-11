@@ -1,7 +1,7 @@
 /// @file fault_tree_analysis.h
 /// Fault Tree Analysis.
-#ifndef SCRAM_FAULT_TREE_ANALYSIS_H_
-#define SCRAM_FAULT_TREE_ANALYSIS_H_
+#ifndef SCRAM_SRC_FAULT_TREE_ANALYSIS_H_
+#define SCRAM_SRC_FAULT_TREE_ANALYSIS_H_
 
 #include <map>
 #include <set>
@@ -271,4 +271,4 @@ class FaultTreeAnalysis {
 
 }  // namespace scram
 
-#endif  // SCRAM_FAULT_TREE_ANALYSIS_H_
+#endif  // SCRAM_SRC_FAULT_TREE_ANALYSIS_H_

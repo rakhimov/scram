@@ -1,7 +1,7 @@
 /// @file risk_analysis.h
 /// Contains the main system for performing analysis.
-#ifndef SCRAM_RISK_ANALYISIS_H_
-#define SCRAM_RISK_ANALYISIS_H_
+#ifndef SCRAM_SRC_RISK_ANALYISIS_H_
+#define SCRAM_SRC_RISK_ANALYISIS_H_
 
 #include <map>
 #include <set>
@@ -185,4 +185,4 @@ class RiskAnalysis {
 
 }  // namespace scram
 
-#endif  // SCRAM_RISK_ANALYSIS_H_
+#endif  // SCRAM_SRC_RISK_ANALYSIS_H_

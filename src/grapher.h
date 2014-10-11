@@ -1,7 +1,7 @@
 /// @file grapher.h
 /// Graphing of analysis entities.
-#ifndef SCRAM_GRAPHER_H_
-#define SCRAM_GRAPHER_H_
+#ifndef SCRAM_SRC_GRAPHER_H_
+#define SCRAM_SRC_GRAPHER_H_
 
 #include <map>
 #include <string>
@@ -56,4 +56,4 @@ class Grapher {
 
 }  // namespace scram
 
-#endif  // SCRAM_GRAPHER_H_
+#endif  // SCRAM_SRC_GRAPHER_H_

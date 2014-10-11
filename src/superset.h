@@ -1,7 +1,7 @@
 /// @file superset.h
 /// Superset class for storing various events.
-#ifndef SCRAM_SUPERSET_H_
-#define SCRAM_SUPERSET_H_
+#ifndef SCRAM_SRC_SUPERSET_H_
+#define SCRAM_SRC_SUPERSET_H_
 
 #include <set>
 #include <string>
@@ -97,4 +97,4 @@ class Superset {
 
 }  // namespace scram
 
-#endif  // SCRAM_SUPERSET_H_
+#endif  // SCRAM_SRC_SUPERSET_H_

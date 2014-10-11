@@ -1,7 +1,7 @@
 /// @file xml_parser.h
 /// XML Parser.
-#ifndef SCRAM_XML_PARSER_H_
-#define SCRAM_XML_PARSER_H_
+#ifndef SCRAM_SRC_XML_PARSER_H_
+#define SCRAM_SRC_XML_PARSER_H_
 
 #include <sstream>
 
@@ -35,4 +35,4 @@ class XMLParser {
 
 }  // namespace scram
 
-#endif  // SCRAM_XML_PARSER_H_
+#endif  // SCRAM_SRC_XML_PARSER_H_
