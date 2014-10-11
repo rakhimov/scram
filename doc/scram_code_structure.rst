@@ -6,15 +6,15 @@ Structure/Architecture of the Core Code
 ============================================
 
 - Validator of XML input files using RelaxNG
-- Loader of the input files.
-- Loader of the configuration files. [not implemented]
+- Loader of input files.
+- Loader of analysis configuration files. [not implemented]
 - Initializer of the analysis by constructing fault trees, event trees, CCF,
   and other analysis entities.
   This initialization phase should validate the values and logic supplied from
   the input file. The construction and analysis are initialized according to
   the configurations supplied from the configuration file.
 - Risk analyzer is the main machine that operates with the initialized fault,
-  event trees, and other entities to provide the requested results. It is run
+  event trees, and other entities to provide the requested results. It runs
   after the initialization phase. Risk Analyzer keeps track of all the events,
   configurations, entities of analysis by having them in appropriate databases.
 - Entity analyzers are analyzers of fault trees, event trees, CCF, MC, and
