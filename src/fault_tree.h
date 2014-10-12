@@ -12,7 +12,6 @@
 #include <boost/unordered_map.hpp>
 
 #include "element.h"
-#include "error.h"
 #include "event.h"
 
 typedef boost::shared_ptr<scram::Event> EventPtr;

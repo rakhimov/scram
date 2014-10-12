@@ -18,6 +18,8 @@
 #endif
 
 #include "env.h"
+#include "error.h"
+#include "reporter.h"
 
 namespace scram {
 

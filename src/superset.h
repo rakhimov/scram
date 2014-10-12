@@ -8,8 +8,6 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "error.h"
-
 namespace scram {
 
 /// @class Superset

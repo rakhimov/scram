@@ -11,7 +11,6 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 
-#include "error.h"
 #include "event.h"
 #include "fault_tree.h"
 #include "superset.h"

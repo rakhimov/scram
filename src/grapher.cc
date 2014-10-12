@@ -12,6 +12,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/date_time.hpp>
 
+#include "error.h"
+
 namespace fs = boost::filesystem;
 
 namespace scram {

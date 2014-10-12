@@ -2,6 +2,8 @@
 
 #include "fault_tree.h"
 
+#include "error.h"
+
 using namespace scram;
 
 TEST(FaultTreeTest, AddGate) {

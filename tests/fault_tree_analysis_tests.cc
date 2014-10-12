@@ -1,5 +1,7 @@
 #include "fault_tree_analysis_tests.h"
 
+#include "error.h"
+
 TEST_F(FaultTreeAnalysisTest, NO_GATE) {
   std::vector<SupersetPtr> sets;
 

@@ -7,7 +7,6 @@
 
 #include <gtest/gtest.h>
 
-#include "error.h"
 #include "risk_analysis.h"
 
 using namespace scram;

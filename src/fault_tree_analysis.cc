@@ -11,6 +11,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/pointer_cast.hpp>
 
+#include "error.h"
+
 namespace scram {
 
 FaultTreeAnalysis::FaultTreeAnalysis(std::string analysis, std::string approx,

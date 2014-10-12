@@ -2,6 +2,8 @@
 
 #include <vector>
 
+#include "error.h"
+
 using namespace scram;
 
 // ---------------------- Test Private Functions -------------------------

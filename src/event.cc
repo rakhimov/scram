@@ -2,6 +2,8 @@
 /// Implementation of Event Class.
 #include "event.h"
 
+#include "error.h"
+
 namespace scram {
 
 Event::Event(std::string id, std::string orig_id)

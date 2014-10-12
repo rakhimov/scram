@@ -12,12 +12,10 @@
 #include <boost/unordered_map.hpp>
 
 #include "element.h"
-#include "error.h"
 #include "event.h"
 #include "fault_tree.h"
 #include "fault_tree_analysis.h"
 #include "grapher.h"
-#include "reporter.h"
 #include "settings.h"
 #include "xml_parser.h"
 
