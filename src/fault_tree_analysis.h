@@ -13,6 +13,7 @@
 
 #include "event.h"
 #include "fault_tree.h"
+#include "probability_analysis.h"
 #include "superset.h"
 
 class FaultTreeAnalysisTest;
@@ -38,7 +39,7 @@ class FaultTreeAnalysis {
   friend class Reporter;
 
  public:
-  /// The main constructor of the Fault Tree Analysis.
+  /// The main constructor of Fault Tree Analysis.
   /// @param[in] analysis The type of fault tree analysis.
   /// @param[in] approx The kind of approximation for probability calculations.
   /// @param[in] limit_order The maximum limit on minimal cut sets' order.
@@ -48,6 +49,8 @@ class FaultTreeAnalysis {
   explicit FaultTreeAnalysis(std::string analysis, std::string approx = "no",
                              int limit_order = 20, int nsums = 1000000,
                              double cut_off = 1e-8);
+
+  ~FaultTreeAnalysis() { delete prob_analysis_; }
 
   /// Analyzes the fault tree and performs computations.
   /// This function must be called only after initilizing the tree with or
@@ -266,6 +269,9 @@ class FaultTreeAnalysis {
 
   /// Track if the gates are repeated upon expansion.
   boost::unordered_map<int, std::vector<SupersetPtr> > repeat_exp_;
+
+  /// Member for probability calculations.
+  ProbabilityAnalysis* prob_analysis_;
 };
 
 }  // namespace scram

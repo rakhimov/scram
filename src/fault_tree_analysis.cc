@@ -70,6 +70,8 @@ FaultTreeAnalysis::FaultTreeAnalysis(std::string analysis, std::string approx,
 
   // Initialize a fault tree with a default name.
   FaultTreePtr fault_tree_;
+
+  prob_analysis_ = new ProbabilityAnalysis(approx_, nsums_, cut_off_);
 }
 
 /// @class SetPtrComp
@@ -163,81 +165,15 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
     return;
   }
 
-  // Iterator for minimal cut sets.
-  std::vector< std::set<int> >::iterator it_min;
+  prob_analysis_->UpdateDatabase(primary_events_);
+  prob_analysis_->Analyze(min_cut_sets_);
 
-  /// Minimal cut sets with higher than cut-off probability.
-  std::set< std::set<int> > mcs_for_prob;
-  // Iterate minimal cut sets and find probabilities for each set.
-  for (it_min = imcs_.begin(); it_min != imcs_.end(); ++it_min) {
-    // Calculate a probability of a set with AND relationship.
-    double p_sub_set = FaultTreeAnalysis::ProbAnd(*it_min);
-    if (p_sub_set > cut_off_) mcs_for_prob.insert(*it_min);
+  p_total_ = prob_analysis_->p_total();
+  prob_of_min_sets_ = prob_analysis_->prob_of_min_sets();
+  imp_of_primaries_ = prob_analysis_->imp_of_primaries();
+  ordered_min_sets_ = prob_analysis_->ordered_min_sets();
+  ordered_primaries_ = prob_analysis_->ordered_primaries();
 
-    // Update a container with minimal cut sets and probabilities.
-    prob_of_min_sets_.insert(
-        std::make_pair(imcs_to_smcs_.find(*it_min)->second, p_sub_set));
-    ordered_min_sets_.insert(
-        std::make_pair(p_sub_set, imcs_to_smcs_.find(*it_min)->second));
-  }
-
-  // Check if the rare event approximation is requested.
-  if (approx_ == "rare") {
-    warnings_ += "Using the rare event approximation\n";
-    bool rare_event_legit = true;
-    std::map< std::set<std::string>, double >::iterator it_pr;
-    for (it_pr = prob_of_min_sets_.begin();
-         it_pr != prob_of_min_sets_.end(); ++it_pr) {
-      // Check if a probability of a set does not exceed 0.1,
-      // which is required for the rare event approximation to hold.
-      if (rare_event_legit && (it_pr->second > 0.1)) {
-        rare_event_legit = false;
-        warnings_ += "The rare event approximation may be inaccurate for this"
-            "\nfault tree analysis because one of minimal cut sets'"
-            "\nprobability exceeded 0.1 threshold requirement.\n\n";
-      }
-      p_total_ += it_pr->second;
-    }
-
-  } else if (approx_ == "mcub") {
-    warnings_ += "Using the MCUB approximation\n";
-    double m = 1;
-    std::map< std::set<std::string>, double >::iterator it;
-    for (it = prob_of_min_sets_.begin(); it != prob_of_min_sets_.end();
-         ++it) {
-      m *= 1 - it->second;
-    }
-    p_total_ = 1 - m;
-
-  } else {  // The default calculations.
-    // Choose cut sets with high enough probabilities.
-    p_total_ = FaultTreeAnalysis::ProbOr(nsums_, &mcs_for_prob);
-  }
-
-  // Calculate failure contributions of each primary event.
-  boost::unordered_map<std::string, PrimaryEventPtr>::iterator it_p;
-  for (it_p = primary_events_.begin(); it_p != primary_events_.end();
-       ++it_p) {
-    double contrib_pos = 0;  // Total positive contribution of this event.
-    double contrib_neg = 0;  // Negative event contribution.
-    std::map< std::set<std::string>, double >::iterator it_pr;
-    for (it_pr = prob_of_min_sets_.begin();
-         it_pr != prob_of_min_sets_.end(); ++it_pr) {
-      if (it_pr->first.count(it_p->first)) {
-        contrib_pos += it_pr->second;
-      } else if (it_pr->first.count("not " + it_p->first)) {
-        contrib_neg += it_pr->second;
-      }
-    }
-    imp_of_primaries_.insert(std::make_pair(it_p->first, contrib_pos));
-    ordered_primaries_.insert(std::make_pair(contrib_pos, it_p->first));
-    if (contrib_neg > 0) {
-      imp_of_primaries_.insert(std::make_pair("not " + it_p->first,
-                                              contrib_neg));
-      ordered_primaries_.insert(std::make_pair(contrib_neg,
-                                               "not " + it_p->first));
-    }
-  }
   // Duration of probability related operations.
   p_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
 }
