@@ -297,7 +297,7 @@ For dynamic builds (default):
 
 .. code-block:: bash
 
-    path/to/installation/directory/bin/scram_unit_tests
+    path/to/installation/directory/bin/scram_tests
 
 For static builds (default Windows prepackages):
 
@@ -310,10 +310,10 @@ For static builds (default Windows prepackages):
 
 .. code-block:: bash
 
-    ./bin/scram_unit_tests
+    ./bin/scram_tests
 
 .. note::
-    For Windows, the test binary is **scram_unit_tests.exe**
+    For Windows, the test binary is **scram_tests.exe**
 
 To run performance tests
 ========================
@@ -327,7 +327,7 @@ To run all the performance tests (may take considerable time):
 
 .. code-block:: bash
 
-    path/to/installation/directory/bin/scram_unit_tests --gtest_also_run_disabled_tests --gtest_filter=*Performance*
+    path/to/installation/directory/bin/scram_tests --gtest_also_run_disabled_tests --gtest_filter=*Performance*
 
 
 To run SCRAM

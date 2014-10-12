@@ -2,8 +2,8 @@
 
 # Assuming that path contains the built binaries.
 # And this script is called from the root directory.
-which scram_unit_tests && which scram \
-  && scram_unit_tests \
+which scram_tests && which scram \
+  && scram_tests \
   && nosetests -w ./tests/ \
   && ./input/tree_generator.py -p 200 -c 5 \
   && scram -g fta_tree.xml \
