@@ -420,11 +420,8 @@ void FaultTreeAnalysis::FindMcs(
   FaultTreeAnalysis::FindMcs(temp_sets, temp_min_sets, min_order);
 }
 
-// -------------------- Algorithm for Cut Sets and Probabilities -----------
+// -------------------- Algorithm for Cut Set Indexation -----------
 void FaultTreeAnalysis::AssignIndices(const FaultTreePtr& fault_tree) {
-  // Assign an index to each primary event, and populate relevant
-  // databases.
-
   // Getting events from the fault tree object.
   /// @note Direct assignment of the containers leads to very bad performance.
   /// @todo Very strange performance issue. Conflict between Expansion and
@@ -437,6 +434,8 @@ void FaultTreeAnalysis::AssignIndices(const FaultTreePtr& fault_tree) {
   // primary_events_ = fault_tree->primary_events();
   inter_events_ = fault_tree->inter_events();
 
+  // Assign an index to each primary event, and populate relevant
+  // databases.
   int j = 1;
   boost::unordered_map<std::string, PrimaryEventPtr>::iterator itp;
   // Dummy primary event at index 0.

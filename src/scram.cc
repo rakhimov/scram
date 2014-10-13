@@ -7,6 +7,7 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
+#include "error.h"
 #include "fault_tree_analysis.h"
 #include "risk_analysis.h"
 #include "settings.h"
