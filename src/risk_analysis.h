@@ -128,6 +128,11 @@ class RiskAnalysis {
   /// @returns An empty string for no problems detected.
   std::string CheckGate(const GatePtr& event);
 
+  /// Checks if an Inhibit gate is initialized correctly.
+  /// @returns A warning message with the problem description.
+  /// @returns An empty string for no problems detected.
+  std::string CheckInhibitGate(const GatePtr& event);
+
   /// @returns Formatted error message with house, basic, or other events
   /// that are not defined.
   /// @returns An empty string for no problems detected.

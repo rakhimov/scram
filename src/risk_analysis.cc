@@ -731,76 +731,106 @@ std::string RiskAnalysis::CheckAllGates() {
 std::string RiskAnalysis::CheckGate(const GatePtr& event) {
   std::stringstream msg;
   msg << "";  // An empty default message is the indicator of no problems.
+  std::string gate = event->type();
+  int size = 0;  // The number of children.
   try {
-    std::string gate = event->type();
     // This line throws an error if there are no children.
-    int size = event->children().size();
-
-    // Gate dependent logic.
-    if (gate == "and" || gate == "or" || gate == "nor" || gate == "nand") {
-      if (size < 2) {
-        boost::to_upper(gate);
-        msg << event->orig_id() << " : " << gate
-            << " gate must have 2 or more "
-            << "children.\n";
-      }
-    } else if (gate == "xor") {
-      if (size != 2) {
-        boost::to_upper(gate);
-        msg << event->orig_id() << " : " << gate
-            << " gate must have exactly 2 children.\n";
-      }
-    } else if (gate == "inhibit") {
-      if (size != 2) {
-        boost::to_upper(gate);
-        msg << event->orig_id() << " : " << gate
-            << " gate must have exactly 2 children.\n";
-      } else {
-        bool conditional_found = false;
-        std::map<std::string, EventPtr> children = event->children();
-        std::map<std::string, EventPtr>::iterator it;
-        for (it = children.begin(); it != children.end(); ++it) {
-          if (primary_events_.count(it->first)) {
-            std::string type = primary_events_.find(it->first)->second->type();
-            if (type == "conditional") {
-              if (!conditional_found) {
-                conditional_found = true;
-              } else {
-                boost::to_upper(gate);
-                msg << event->orig_id() << " : " << gate
-                    << " gate must have exactly one conditional event.\n";
-              }
-            }
-          }
-        }
-        if (!conditional_found) {
-          boost::to_upper(gate);
-          msg << event->orig_id() << " : " << gate
-              << " gate is missing a conditional event.\n";
-        }
-      }
-    } else if (gate == "not" || gate == "null") {
-      if (size != 1) {
-        boost::to_upper(gate);
-        msg << event->orig_id() << " : " << gate
-            << " gate must have exactly one child.";
-      }
-    } else if (gate == "vote" || gate == "atleast") {
-      if (size <= event->vote_number()) {
-        boost::to_upper(gate);
-        msg << event->orig_id() << " : " << gate
-            << " gate must have more children than its vote number "
-            << event->vote_number() << ".";
-      }
-    } else {
-      boost::to_upper(gate);
-      msg << event->orig_id()
-          << " : Gate Check failure. No check for " << gate << " gate.";
-    }
+    size = event->children().size();
   } catch (scram::ValueError& err) {
     msg << event->orig_id() << " : No children detected.";
   }
 
+  // Gates that should have two or more children.
+  std::set<std::string> two_or_more;
+  two_or_more.insert("and");
+  two_or_more.insert("or");
+  two_or_more.insert("nand");
+  two_or_more.insert("nor");
+
+  // Gates that should have only one child.
+  std::set<std::string> single;
+  single.insert("null");
+  single.insert("not");
+
+  // Gate dependent logic.
+  if (two_or_more.count(gate)) {
+    if (size < 2) {
+      boost::to_upper(gate);
+      msg << event->orig_id() << " : " << gate
+          << " gate must have 2 or more "
+          << "children.\n";
+    }
+  } else if (single.count(gate)) {
+    if (size != 1) {
+      boost::to_upper(gate);
+      msg << event->orig_id() << " : " << gate
+          << " gate must have exactly one child.";
+    }
+  } else if (gate == "xor") {
+    if (size != 2) {
+      boost::to_upper(gate);
+      msg << event->orig_id() << " : " << gate
+          << " gate must have exactly 2 children.\n";
+    }
+  } else if (gate == "inhibit") {
+    msg << RiskAnalysis::CheckInhibitGate(event);
+
+  } else if (gate == "vote" || gate == "atleast") {
+    if (size <= event->vote_number()) {
+      boost::to_upper(gate);
+      msg << event->orig_id() << " : " << gate
+          << " gate must have more children than its vote number "
+          << event->vote_number() << ".";
+    }
+  } else {
+    boost::to_upper(gate);
+    msg << event->orig_id()
+        << " : Gate Check failure. No check for " << gate << " gate.";
+  }
+
+  return msg.str();
+}
+
+std::string RiskAnalysis::CheckInhibitGate(const GatePtr& event) {
+  std::stringstream msg;
+  msg << "";  // An empty default message is the indicator of no problems.
+  std::string gate = event->type();
+  assert(gate == "inhibit");
+  int size = 0;  // The number of children.
+  try {
+    // This line throws an error if there are no children.
+    size = event->children().size();
+  } catch (scram::ValueError& err) {
+    msg << event->orig_id() << " : No children detected.";
+  }
+  if (size != 2) {
+    boost::to_upper(gate);
+    msg << event->orig_id() << " : " << gate
+        << " gate must have exactly 2 children.\n";
+  } else {
+    bool conditional_found = false;
+    std::map<std::string, EventPtr> children = event->children();
+    std::map<std::string, EventPtr>::iterator it;
+    for (it = children.begin(); it != children.end(); ++it) {
+      if (primary_events_.count(it->first)) {
+        std::string type = primary_events_.find(it->first)->second->type();
+        if (type == "conditional") {
+          if (!conditional_found) {
+            conditional_found = true;
+          } else {
+            boost::to_upper(gate);
+            msg << event->orig_id() << " : " << gate
+                << " gate must have exactly one conditional event.\n";
+          }
+        }
+      }
+    }
+    if (!conditional_found) {
+      boost::to_upper(gate);
+      msg << event->orig_id() << " : " << gate
+          << " gate is missing a conditional event.\n";
+    }
+  }
   return msg.str();
 }
 
