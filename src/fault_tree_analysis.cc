@@ -15,21 +15,12 @@
 
 namespace scram {
 
-FaultTreeAnalysis::FaultTreeAnalysis(std::string analysis, int limit_order,
-                                     int nsums)
+FaultTreeAnalysis::FaultTreeAnalysis(int limit_order)
     : warnings_(""),
       top_event_index_(-1),
-      prob_requested_(false),
       max_order_(1),
       exp_time_(0),
       mcs_time_(0) {
-  // Check for valid analysis type.
-  if (analysis != "default" && analysis != "mc") {
-    std::string msg = "The analysis type is not recognized.";
-    throw scram::ValueError(msg);
-  }
-  analysis_ = analysis;
-
   // Check for right limit order.
   if (limit_order < 1) {
     std::string msg = "The limit on the order of minimal cut sets "
@@ -37,14 +28,6 @@ FaultTreeAnalysis::FaultTreeAnalysis(std::string analysis, int limit_order,
     throw scram::ValueError(msg);
   }
   limit_order_ = limit_order;
-
-  // Check for right number of sums.
-  if (nsums < 1) {
-    std::string msg = "The number of sums in the probability calculation "
-                      "cannot be less than one";
-    throw scram::ValueError(msg);
-  }
-  nsums_ = nsums;
 
   // Pointer to the top event.
   GatePtr top_event_;
@@ -65,8 +48,7 @@ struct SetPtrComp
   }
 };
 
-void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
-                                bool prob_requested) {
+void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
   // Timing Initialization
   std::clock_t start_time;
   start_time = std::clock();
@@ -77,8 +59,6 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
 
   // Container for cut sets with primary events only.
   std::vector<SupersetPtr> cut_sets;
-
-  prob_requested_ = prob_requested;
 
   FaultTreeAnalysis::AssignIndices(fault_tree);
 
@@ -127,22 +107,6 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
   // Duration of MCS generation.
   mcs_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
   FaultTreeAnalysis::SetsToString();  // MCS with event ids.
-
-  // Compute probabilities only if requested.
-  if (!prob_requested_) return;
-
-  // Perform Monte Carlo Uncertainty analysis.
-  if (analysis_ == "mc") {
-    // Maximum number of sums in the series.
-    if (nsums_ > imcs_.size()) nsums_ = imcs_.size();
-
-    std::set<std::set<int> > iset(imcs_.begin(), imcs_.end());
-    // Generate the equation.
-    FaultTreeAnalysis::MProbOr(1, nsums_, &iset);
-    // Sample probabilities and generate data.
-    FaultTreeAnalysis::MSample();
-    return;
-  }
 }
 
 void FaultTreeAnalysis::PreprocessTree(const GatePtr& gate) {
@@ -512,64 +476,5 @@ void FaultTreeAnalysis::SetsToString() {
     min_cut_sets_.insert(pr_set);
   }
 }
-
-void FaultTreeAnalysis::CombineElAndSet(const std::set<int>& el,
-                                        const std::set< std::set<int> >& set,
-                                        std::set< std::set<int> >* combo_set) {
-  std::set< std::set<int> >::iterator it_set;
-  for (it_set = set.begin(); it_set != set.end(); ++it_set) {
-    bool include = true;  // Indicates that the resultant set is not null.
-    std::set<int>::iterator it;
-    for (it = el.begin(); it != el.end(); ++it) {
-      if (it_set->count(-*it)) {
-        include = false;
-        break;  // A complement is found; the set is null.
-      }
-    }
-    if (include) {
-      std::set<int> member_set(*it_set);
-      member_set.insert(el.begin(), el.end());
-      combo_set->insert(combo_set->end(), member_set);
-    }
-  }
-}
-
-// ----------------------------------------------------------------------
-// ----- Algorithm for Total Equation for Monte Carlo Simulation --------
-// Generation of the representation of the original equation.
-void FaultTreeAnalysis::MProbOr(int sign, int nsums,
-                                std::set< std::set<int> >* min_cut_sets) {
-  assert(sign != 0);
-  assert(nsums >= 0);
-
-  // Recursive implementation.
-  if (min_cut_sets->empty()) return;
-
-  if (nsums == 0) return;
-
-  // Get one element.
-  std::set< std::set<int> >::iterator it = min_cut_sets->begin();
-  std::set<int> element_one = *it;
-
-  // Delete element from the original set. WARNING: the iterator is invalidated.
-  min_cut_sets->erase(it);
-
-  // Put this element into the equation.
-  if (sign > 0) {
-    // This is a positive member.
-    pos_terms_.push_back(element_one);
-  } else {
-    // This must be a negative member.
-    neg_terms_.push_back(element_one);
-  }
-
-  std::set< std::set<int> > combo_sets;
-  FaultTreeAnalysis::CombineElAndSet(element_one, *min_cut_sets, &combo_sets);
-  FaultTreeAnalysis::MProbOr(sign, nsums, min_cut_sets);
-  FaultTreeAnalysis::MProbOr(-sign, nsums - 1, &combo_sets);
-}
-
-void FaultTreeAnalysis::MSample() {}
-// ----------------------------------------------------------------------
 
 }  // namespace scram

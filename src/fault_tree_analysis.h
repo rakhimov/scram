@@ -13,7 +13,6 @@
 
 #include "event.h"
 #include "fault_tree.h"
-#include "probability_analysis.h"
 #include "superset.h"
 
 class FaultTreeAnalysisTest;
@@ -40,12 +39,9 @@ class FaultTreeAnalysis {
 
  public:
   /// The main constructor of Fault Tree Analysis.
-  /// @param[in] analysis The type of fault tree analysis.
   /// @param[in] limit_order The maximum limit on minimal cut sets' order.
-  /// @param[in] nsums The number of sums in the probability series.
   /// @throws ValueError if any of the parameters are invalid.
-  explicit FaultTreeAnalysis(std::string analysis, int limit_order = 20,
-                             int nsums = 1000000);
+  explicit FaultTreeAnalysis(int limit_order = 20);
 
   /// Analyzes the fault tree and performs computations.
   /// This function must be called only after initilizing the tree with or
@@ -53,9 +49,8 @@ class FaultTreeAnalysis {
   /// if the fault tree has initialization issues. However, there is no
   /// quarantee for that.
   /// @param[in] fault_tree Valid Fault Tree.
-  /// @param[in] prob_requested Indication for the probability calculations.
   /// @note Cut set generator: O_avg(N) O_max(N)
-  void Analyze(const FaultTreePtr& fault_tree, bool prob_requested);
+  void Analyze(const FaultTreePtr& fault_tree);
 
   /// @returns Set with minimal cut sets.
   /// @note The user should make sure that the analysis is actually done.
@@ -110,7 +105,7 @@ class FaultTreeAnalysis {
                const std::vector< std::set<int> >& mcs_lower_order,
                int min_order);
 
-  // -------------------- Algorithm for Cut Sets and Probabilities -----------
+  // -------------------- Algorithm for Cut Set Indexation -----------
   /// Assigns an index to each primary event, and then populates with this
   /// indices new databases of minimal cut sets and primary to integer
   /// converting maps.
@@ -123,16 +118,6 @@ class FaultTreeAnalysis {
   /// Converts minimal cut sets from indices to strings for future reporting.
   void SetsToString();
 
-  /// Calculates A(and)( B(or)C ) relationship for sets using set algebra.
-  /// @param[in] el A set of indices of primary events.
-  /// @param[in] set Sets of indices of primary events.
-  /// @param[out] combo_set A final set resulting from joining el and sets.
-  /// @note O_avg(N*M*logM) where N is the size of the set, and M is the
-  /// average size of the elements.
-  void CombineElAndSet(const std::set<int>& el,
-                       const std::set< std::set<int> >& set,
-                       std::set< std::set<int> >* combo_set);
-
   std::vector< std::set<int> > imcs_;  ///< Min cut sets with indices of events.
 
   std::vector<PrimaryEventPtr> int_to_primary_;  ///< Indices to primary events.
@@ -144,36 +129,11 @@ class FaultTreeAnalysis {
   boost::unordered_map<int, GatePtr> int_to_inter_;
   /// Indices of intermediate events.
   boost::unordered_map<std::string, int> inter_to_int_;
-  // -----------------------------------------------------------------
-  // ---- Algorithm for Equation Construction for Monte Carlo Sim -------
-  /// Generates positive and negative terms of probability equation expansion.
-  /// @param[in] sign The sign of the series. Odd int is '+', even int is '-'.
-  /// @param[in] nsums The number of sums in the series.
-  /// @param[in] min_cut_sets Sets of indices of primary events.
-  void MProbOr(int sign, int nsums, std::set< std::set<int> >* min_cut_sets);
-
-  /// Performs Monte Carlo Simulation by sampling the probability distributions
-  /// and providing the final sampled values of the final probability.
-  void MSample();
-
-  std::vector< std::set<int> > pos_terms_;  ///< Plus terms of the equation.
-  std::vector< std::set<int> > neg_terms_;  ///< Minus terms of the equation.
-  std::vector<double> sampled_results_;  ///< Storage for sampled values.
-  // -----------------------------------------------------------------
   // ----------------------- Member Variables of this Class -----------------
   /// This member is used to provide any warnings about assumptions,
   /// calculations, and settings. These warnings must be written into output
   /// file.
   std::string warnings_;
-
-  /// Type of analysis to be performed.
-  std::string analysis_;
-
-  /// Indicator if probability calculations are requested.
-  bool prob_requested_;
-
-  /// Number of sums in series expansion for probability calculations.
-  int nsums_;
 
   /// Limit on the size of the minimal cut sets for performance reasons.
   int limit_order_;

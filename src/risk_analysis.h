@@ -18,6 +18,7 @@
 #include "grapher.h"
 #include "probability_analysis.h"
 #include "settings.h"
+#include "uncertainty_analysis.h"
 #include "xml_parser.h"
 
 class RiskAnalysisTest;
@@ -34,6 +35,7 @@ typedef boost::shared_ptr<scram::HouseEvent> HouseEventPtr;
 typedef boost::shared_ptr<scram::FaultTree> FaultTreePtr;
 typedef boost::shared_ptr<scram::FaultTreeAnalysis> FaultTreeAnalysisPtr;
 typedef boost::shared_ptr<scram::ProbabilityAnalysis> ProbabilityAnalysisPtr;
+typedef boost::shared_ptr<scram::UncertaintyAnalysis> UncertaintyAnalysisPtr;
 
 namespace scram {
 
@@ -175,6 +177,9 @@ class RiskAnalysis {
 
   /// Probability analyses that are performed.
   std::vector<ProbabilityAnalysisPtr> prob_analyses_;
+
+  /// Uncertainty analyses that are performed.
+  std::vector<UncertaintyAnalysisPtr> uncertainty_analyses_;
 
   /// Input file path.
   std::string input_file_;

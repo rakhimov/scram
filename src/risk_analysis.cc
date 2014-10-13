@@ -137,19 +137,24 @@ void RiskAnalysis::Analyze() {
   std::map<std::string, FaultTreePtr>::iterator it;
   for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
     std::string output_file_name = input_file_ + "_" + it->second->name();
-    FaultTreeAnalysisPtr fta(new FaultTreeAnalysis(settings_.fta_type_,
-                                                   settings_.limit_order_,
-                                                   settings_.num_sums_));
-    fta->Analyze(it->second, prob_requested_);
+    FaultTreeAnalysisPtr fta(new FaultTreeAnalysis(settings_.limit_order_));
+    fta->Analyze(it->second);
     ftas_.push_back(fta);
 
     if (prob_requested_) {
-      ProbabilityAnalysisPtr pa(new ProbabilityAnalysis(settings_.approx_,
-                                                        settings_.num_sums_,
-                                                        settings_.cut_off_));
-      pa->UpdateDatabase(it->second->primary_events());
-      pa->Analyze(fta->min_cut_sets());
-      prob_analyses_.push_back(pa);
+      if (settings_.fta_type_ == "default") {
+        ProbabilityAnalysisPtr pa(
+            new ProbabilityAnalysis(settings_.approx_, settings_.num_sums_,
+                                    settings_.cut_off_));
+        pa->UpdateDatabase(it->second->primary_events());
+        pa->Analyze(fta->min_cut_sets());
+        prob_analyses_.push_back(pa);
+      } else if (settings_.fta_type_ == "mc"){
+        UncertaintyAnalysisPtr ua(new UncertaintyAnalysis(settings_.num_sums_));
+        ua->UpdateDatabase(it->second->primary_events());
+        ua->Analyze(fta->min_cut_sets());
+        uncertainty_analyses_.push_back(ua);
+      }
     }
   }
 }

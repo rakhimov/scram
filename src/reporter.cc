@@ -87,7 +87,7 @@ void Reporter::ReportFta(
   out << std::left;
   // out << std::setw(40) << std::left << "Fault Tree: " << fta->input_file_ << "\n";
   out << std::setw(40) << "Time: " << pt::second_clock::local_time() << "\n\n";
-  out << std::setw(40) << "Analysis algorithm: " << fta->analysis_ << "\n";
+  // out << std::setw(40) << "Analysis algorithm: " << fta->analysis_ << "\n";
   out << std::setw(40) << "Number of Primary Events: " << fta->primary_events_.size() << "\n";
   out << std::setw(40) << "Number of Gates: " << fta->inter_events_.size() + 1 << "\n";
   out << std::setw(40) << "Limit on order of cut sets: " << fta->limit_order_ << "\n";
