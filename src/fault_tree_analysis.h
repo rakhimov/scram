@@ -41,16 +41,11 @@ class FaultTreeAnalysis {
  public:
   /// The main constructor of Fault Tree Analysis.
   /// @param[in] analysis The type of fault tree analysis.
-  /// @param[in] approx The kind of approximation for probability calculations.
   /// @param[in] limit_order The maximum limit on minimal cut sets' order.
   /// @param[in] nsums The number of sums in the probability series.
-  /// @param[in] cut_off The cut-off probability for cut sets.
   /// @throws ValueError if any of the parameters are invalid.
-  explicit FaultTreeAnalysis(std::string analysis, std::string approx = "no",
-                             int limit_order = 20, int nsums = 1000000,
-                             double cut_off = 1e-8);
-
-  ~FaultTreeAnalysis() { delete prob_analysis_; }
+  explicit FaultTreeAnalysis(std::string analysis, int limit_order = 20,
+                             int nsums = 1000000);
 
   /// Analyzes the fault tree and performs computations.
   /// This function must be called only after initilizing the tree with or
@@ -62,26 +57,10 @@ class FaultTreeAnalysis {
   /// @note Cut set generator: O_avg(N) O_max(N)
   void Analyze(const FaultTreePtr& fault_tree, bool prob_requested);
 
-  /// @returns The total probability calculated by the analysis.
-  /// @note The user should make sure that the analysis is actually done.
-  inline double p_total() { return p_total_; }
-
   /// @returns Set with minimal cut sets.
   /// @note The user should make sure that the analysis is actually done.
   inline const std::set< std::set<std::string> >& min_cut_sets() {
     return min_cut_sets_;
-  }
-
-  /// @returns Map with minimal cut sets and their probabilities.
-  /// @note The user should make sure that the analysis is actually done.
-  inline const std::map< std::set<std::string>, double >& prob_of_min_sets() {
-    return prob_of_min_sets_;
-  }
-
-  /// @returns Map with primary events and their contribution.
-  /// @note The user should make sure that the analysis is actually done.
-  inline const std::map< std::string, double >& imp_of_primaries() {
-    return imp_of_primaries_;
   }
 
  private:
@@ -190,9 +169,6 @@ class FaultTreeAnalysis {
   /// Type of analysis to be performed.
   std::string analysis_;
 
-  /// Approximations for probability calculations.
-  std::string approx_;
-
   /// Indicator if probability calculations are requested.
   bool prob_requested_;
 
@@ -201,9 +177,6 @@ class FaultTreeAnalysis {
 
   /// Limit on the size of the minimal cut sets for performance reasons.
   int limit_order_;
-
-  /// Cut-off probability for minimal cut sets.
-  double cut_off_;
 
   /// Top event.
   GatePtr top_event_;
@@ -217,37 +190,15 @@ class FaultTreeAnalysis {
   /// Container for minimal cut sets.
   std::set< std::set<std::string> > min_cut_sets_;
 
-  /// Container for minimal cut sets and their respective probabilities.
-  std::map< std::set<std::string>, double > prob_of_min_sets_;
-
-  /// Container for minimal cut sets ordered by their probabilities.
-  std::multimap< double, std::set<std::string> > ordered_min_sets_;
-
-  /// Container for primary events and their contribution.
-  std::map< std::string, double > imp_of_primaries_;
-
-  /// Container for primary events ordered by their contribution.
-  std::multimap< double, std::string > ordered_primaries_;
-
   /// Maximum order of minimal cut sets.
   int max_order_;
-
-  /// The number of minimal cut sets with higher than cut-off probability.
-  int num_prob_mcs_;
-
-  /// Total probability of the top event.
-  double p_total_;
 
   // Time logging
   double exp_time_;  ///< Expansion of tree gates time.
   double mcs_time_;  ///< Time for MCS generation.
-  double p_time_;  ///< Time for probability calculations.
 
   /// Track if the gates are repeated upon expansion.
   boost::unordered_map<int, std::vector<SupersetPtr> > repeat_exp_;
-
-  /// Member for probability calculations.
-  ProbabilityAnalysis* prob_analysis_;
 };
 
 }  // namespace scram

@@ -4,7 +4,6 @@
 #ifndef SCRAM_SRC_PROBABILITY_ANALYSIS_H_
 #define SCRAM_SRC_PROBABILITY_ANALYSIS_H_
 
-#include <ctime>
 #include <map>
 #include <set>
 #include <string>
@@ -16,6 +15,7 @@
 #include <event.h>
 
 class ProbabilityAnalysisTest;
+class PerformanceTest;
 
 typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
 
@@ -26,8 +26,9 @@ class Reporter;
 /// @class ProbabilityAnalysis
 /// Main quantitative analysis.
 class ProbabilityAnalysis {
-  friend ::ProbabilityAnalysisTest;
-  friend Reporter;
+  friend class ::ProbabilityAnalysisTest;
+  friend class ::PerformanceTest;
+  friend class Reporter;
 
  public:
   /// The main constructor of Probability Analysis.

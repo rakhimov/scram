@@ -43,18 +43,18 @@ class RiskAnalysisTest : public ::testing::Test {
   }
 
   double p_total() {
-    assert(!ran->ftas_.empty());
-    return ran->ftas_[0]->p_total();
+    assert(!ran->prob_analyses_.empty());
+    return ran->prob_analyses_[0]->p_total();
   }
 
   const std::map< std::set<std::string>, double >& prob_of_min_sets() {
-    assert(!ran->ftas_.empty());
-    return ran->ftas_[0]->prob_of_min_sets();
+    assert(!ran->prob_analyses_.empty());
+    return ran->prob_analyses_[0]->prob_of_min_sets();
   }
 
   const std::map< std::string, double >& imp_of_primaries() {
-    assert(!ran->ftas_.empty());
-    return ran->ftas_[0]->imp_of_primaries();
+    assert(!ran->prob_analyses_.empty());
+    return ran->prob_analyses_[0]->imp_of_primaries();
   }
 
   bool CheckGate(GatePtr event) {

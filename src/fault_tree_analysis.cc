@@ -15,18 +15,14 @@
 
 namespace scram {
 
-FaultTreeAnalysis::FaultTreeAnalysis(std::string analysis, std::string approx,
-                                     int limit_order, int nsums,
-                                     double cut_off)
+FaultTreeAnalysis::FaultTreeAnalysis(std::string analysis, int limit_order,
+                                     int nsums)
     : warnings_(""),
       top_event_index_(-1),
       prob_requested_(false),
       max_order_(1),
-      num_prob_mcs_(0),
-      p_total_(0),
       exp_time_(0),
-      mcs_time_(0),
-      p_time_(0) {
+      mcs_time_(0) {
   // Check for valid analysis type.
   if (analysis != "default" && analysis != "mc") {
     std::string msg = "The analysis type is not recognized.";
@@ -50,28 +46,11 @@ FaultTreeAnalysis::FaultTreeAnalysis(std::string analysis, std::string approx,
   }
   nsums_ = nsums;
 
-  // Check for valid cut-off probability.
-  if (cut_off < 0 || cut_off > 1) {
-    std::string msg = "The cut-off probability cannot be negative or"
-                      " more than 1.";
-    throw scram::ValueError(msg);
-  }
-  cut_off_ = cut_off;
-
-  // Check the right approximation for probability calculations.
-  if (approx != "no" && approx != "rare" && approx != "mcub") {
-    std::string msg = "The probability approximation is not recognized.";
-    throw scram::ValueError(msg);
-  }
-  approx_ = approx;
-
   // Pointer to the top event.
   GatePtr top_event_;
 
   // Initialize a fault tree with a default name.
   FaultTreePtr fault_tree_;
-
-  prob_analysis_ = new ProbabilityAnalysis(approx_, nsums_, cut_off_);
 }
 
 /// @class SetPtrComp
@@ -152,11 +131,11 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
   // Compute probabilities only if requested.
   if (!prob_requested_) return;
 
-  // Maximum number of sums in the series.
-  if (nsums_ > imcs_.size()) nsums_ = imcs_.size();
-
   // Perform Monte Carlo Uncertainty analysis.
   if (analysis_ == "mc") {
+    // Maximum number of sums in the series.
+    if (nsums_ > imcs_.size()) nsums_ = imcs_.size();
+
     std::set<std::set<int> > iset(imcs_.begin(), imcs_.end());
     // Generate the equation.
     FaultTreeAnalysis::MProbOr(1, nsums_, &iset);
@@ -164,19 +143,6 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
     FaultTreeAnalysis::MSample();
     return;
   }
-
-  prob_analysis_->UpdateDatabase(primary_events_);
-  prob_analysis_->Analyze(min_cut_sets_);
-
-  p_total_ = prob_analysis_->p_total();
-  prob_of_min_sets_ = prob_analysis_->prob_of_min_sets();
-  imp_of_primaries_ = prob_analysis_->imp_of_primaries();
-  ordered_min_sets_ = prob_analysis_->ordered_min_sets();
-  ordered_primaries_ = prob_analysis_->ordered_primaries();
-  warnings_ += prob_analysis_->warnings();
-
-  // Duration of probability related operations.
-  p_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
 }
 
 void FaultTreeAnalysis::PreprocessTree(const GatePtr& gate) {

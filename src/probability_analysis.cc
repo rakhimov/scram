@@ -3,6 +3,8 @@
 /// informations.
 #include "probability_analysis.h"
 
+#include <ctime>
+
 #include <boost/algorithm/string.hpp>
 
 #include "error.h"
@@ -10,7 +12,11 @@
 namespace scram {
 
 ProbabilityAnalysis::ProbabilityAnalysis(std::string approx, int nsums,
-                                         double cut_off) {
+                                         double cut_off)
+    : warnings_(""),
+      p_total_(0),
+      num_prob_mcs_(-1),
+      p_time_(-1) {
   // Check for right number of sums.
   if (nsums < 1) {
     std::string msg = "The number of sums in the probability calculation "
@@ -33,7 +39,6 @@ ProbabilityAnalysis::ProbabilityAnalysis(std::string approx, int nsums,
     throw scram::ValueError(msg);
   }
   approx_ = approx;
-
 }
 
 
@@ -123,6 +128,7 @@ void ProbabilityAnalysis::Analyze(
 
   } else {  // The default calculations.
     // Choose cut sets with high enough probabilities.
+    if (nsums_ > mcs_for_prob.size()) nsums_ = mcs_for_prob.size();
     p_total_ = ProbabilityAnalysis::ProbOr(nsums_, &mcs_for_prob);
   }
 

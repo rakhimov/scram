@@ -265,7 +265,6 @@ TEST_F(RiskAnalysisTest, MCUB) {
   EXPECT_DOUBLE_EQ(0.766144, p_total());
 }
 
-
 // Test Monte Carlo Analysis
 TEST_F(RiskAnalysisTest, AnalyzeMC) {
   ran->AddSettings(settings.fta_type("mc"));

@@ -622,13 +622,8 @@ TEST_F(FaultTreeAnalysisTest, MProbOr) {
 TEST_F(FaultTreeAnalysisTest, Constructor) {
   // Incorrect analysis type.
   ASSERT_THROW(FaultTreeAnalysis("analysis"), ValueError);
-  // Incorrect approximation argument.
-  ASSERT_THROW(FaultTreeAnalysis("default", "approx"), ValueError);
   // Incorrect limit order for minmal cut sets.
-  ASSERT_THROW(FaultTreeAnalysis("default", "no", -1), ValueError);
+  ASSERT_THROW(FaultTreeAnalysis("default", -1), ValueError);
   // Incorrect number of series in the probability equation.
-  ASSERT_THROW(FaultTreeAnalysis("default", "no", 1, -1), ValueError);
-  // Incorrect cut-off probability.
-  ASSERT_THROW(FaultTreeAnalysis("default", "no", 1, 1, -1), ValueError);
-  ASSERT_THROW(FaultTreeAnalysis("default", "no", 1, 1, 10), ValueError);
+  ASSERT_THROW(FaultTreeAnalysis("default", 1, -1), ValueError);
 }

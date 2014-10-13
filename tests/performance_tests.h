@@ -21,8 +21,8 @@ class PerformanceTest : public ::testing::Test {
 
   // Total probability as a result of analysis.
   double p_total() {
-    assert(!ran->ftas_.empty());
-    return ran->ftas_[0]->p_total();
+    assert(!ran->prob_analyses_.empty());
+    return ran->prob_analyses_[0]->p_total();
   }
 
   // The number of MCS as a result of analysis.
@@ -45,8 +45,8 @@ class PerformanceTest : public ::testing::Test {
 
   // Time taken to calculate total probability.
   double ProbCalcTime() {
-    assert(!ran->ftas_.empty());
-    return ran->ftas_[0]->p_time_ - ran->ftas_[0]->mcs_time_;
+    assert(!ran->prob_analyses_.empty());
+    return ran->prob_analyses_[0]->p_time_;
   }
 
   RiskAnalysis* ran;

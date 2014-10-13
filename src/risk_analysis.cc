@@ -138,17 +138,15 @@ void RiskAnalysis::Analyze() {
   for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
     std::string output_file_name = input_file_ + "_" + it->second->name();
     FaultTreeAnalysisPtr fta(new FaultTreeAnalysis(settings_.fta_type_,
-                                                   settings_.approx_,
                                                    settings_.limit_order_,
-                                                   settings_.num_sums_,
-                                                   settings_.cut_off_));
+                                                   settings_.num_sums_));
     fta->Analyze(it->second, prob_requested_);
     ftas_.push_back(fta);
 
-    ProbabilityAnalysisPtr pa(new ProbabilityAnalysis(settings_.approx_,
-                                                      settings_.num_sums_,
-                                                      settings_.cut_off_));
     if (prob_requested_) {
+      ProbabilityAnalysisPtr pa(new ProbabilityAnalysis(settings_.approx_,
+                                                        settings_.num_sums_,
+                                                        settings_.cut_off_));
       pa->UpdateDatabase(it->second->primary_events());
       pa->Analyze(fta->min_cut_sets());
       prob_analyses_.push_back(pa);
