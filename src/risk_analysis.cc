@@ -35,7 +35,6 @@ RiskAnalysis::RiskAnalysis(std::string config_file)
   gate_types_.insert("xor");
   gate_types_.insert("null");
   gate_types_.insert("inhibit");
-  gate_types_.insert("vote");
   gate_types_.insert("atleast");
 
   // Add valid primary event types.
@@ -775,7 +774,7 @@ std::string RiskAnalysis::CheckGate(const GatePtr& event) {
   } else if (gate == "inhibit") {
     msg << RiskAnalysis::CheckInhibitGate(event);
 
-  } else if (gate == "vote" || gate == "atleast") {
+  } else if (gate == "atleast") {
     if (size <= event->vote_number()) {
       boost::to_upper(gate);
       msg << event->orig_id() << " : " << gate

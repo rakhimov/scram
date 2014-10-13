@@ -104,7 +104,7 @@ GATES
     Output fault occurs if **m** out of the **n** input events
     occurs. The **m** input events need not to occur simultaneously. The output
     occurs if at least **m** events occur. **m** is more than 1, and **n**
-    is more than **n**.
+    is more than **n**. The **m** can also be called **vote number**.
 
 #. NOT :
     Output fault occurs if the input event does not occur.

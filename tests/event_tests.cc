@@ -41,7 +41,7 @@ TEST(GateTest, VoteNumber) {
   EXPECT_THROW(top->vote_number(2), ValueError);
   // Resetting to VOTE gate.
   top = GatePtr(new Gate("top_event"));
-  EXPECT_NO_THROW(top->type("vote"));
+  EXPECT_NO_THROW(top->type("atleast"));
   // Illegal vote number.
   EXPECT_THROW(top->vote_number(-2), ValueError);
   // Legal vote number.

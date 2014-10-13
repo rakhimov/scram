@@ -379,12 +379,12 @@ TEST_F(FaultTreeAnalysisTest, INHIBIT_GATE) {
   EXPECT_EQ(true, a_found && d_found);
 }
 
-TEST_F(FaultTreeAnalysisTest, VOTE_GATE) {
+TEST_F(FaultTreeAnalysisTest, ATLEAST_GATE) {
   std::vector<SupersetPtr> sets;
   std::vector<SupersetPtr>::iterator it_set;
 
-  // Testing for VOTE gate.
-  SetUpGate("vote");
+  // Testing for ATLEAST gate.
+  SetUpGate("atleast");
   inter->AddChild(A);
   inter->AddChild(B);
   inter->AddChild(C);

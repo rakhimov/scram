@@ -247,7 +247,7 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
     } else {
       FaultTreeAnalysis::SetOr(-1, events_children, sets);
     }
-  } else if (gate == "vote" || gate == "atleast") {
+  } else if (gate == "atleast") {
     FaultTreeAnalysis::SetAtleast(inter_index, events_children, sets);
 
   } else {
