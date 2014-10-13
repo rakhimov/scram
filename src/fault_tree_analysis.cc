@@ -248,54 +248,7 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
       FaultTreeAnalysis::SetOr(-1, events_children, sets);
     }
   } else if (gate == "vote" || gate == "atleast") {
-    int vote_number =
-        int_to_inter_.find(std::abs(inter_index))->second->vote_number();
-
-    assert(vote_number > 1);
-    assert(events_children.size() >= vote_number);
-    std::set< std::set<int> > all_sets;
-    int size = events_children.size();
-
-    for (int j = 0; j < size; ++j) {
-      std::set<int> set;
-      set.insert(events_children[j]);
-      all_sets.insert(set);
-    }
-
-    int mult = 1;
-    if (inter_index < 0) {
-      mult = -1;
-      vote_number = size - vote_number + 1;  // The main trick for negation.
-    }
-
-    for (int i = 1; i < vote_number; ++i) {
-      std::set< std::set<int> > tmp_sets;
-      std::set< std::set<int> >::iterator it_sets;
-      for (it_sets = all_sets.begin(); it_sets != all_sets.end(); ++it_sets) {
-        for (int j = 0; j < size; ++j) {
-          std::set<int> set = *it_sets;
-          set.insert(events_children[j]);
-          if (set.size() > i) {
-            tmp_sets.insert(set);
-          }
-        }
-      }
-      all_sets = tmp_sets;
-    }
-
-    std::set< std::set<int> >::iterator it_sets;
-    for (it_sets = all_sets.begin(); it_sets != all_sets.end(); ++it_sets) {
-      SupersetPtr tmp_set_c(new scram::Superset());
-      std::set<int>::iterator it;
-      for (it = it_sets->begin(); it != it_sets->end(); ++it) {
-        if (*it > top_event_index_) {
-          tmp_set_c->InsertGate(*it * mult);
-        } else {
-          tmp_set_c->InsertPrimary(*it * mult);
-        }
-      }
-      sets->push_back(tmp_set_c);
-    }
+    FaultTreeAnalysis::SetAtleast(inter_index, events_children, sets);
 
   } else {
     boost::to_upper(gate);
@@ -383,6 +336,59 @@ void FaultTreeAnalysis::SetXor(int inter_index,
   }
   sets->push_back(tmp_set_one);
   sets->push_back(tmp_set_two);
+}
+
+void FaultTreeAnalysis::SetAtleast(int inter_index,
+                                   const std::vector<int>& events_children,
+                                   std::vector<SupersetPtr>* sets) {
+  int vote_number =
+      int_to_inter_.find(std::abs(inter_index))->second->vote_number();
+
+  assert(vote_number > 1);
+  assert(events_children.size() >= vote_number);
+  std::set< std::set<int> > all_sets;
+  int size = events_children.size();
+
+  for (int j = 0; j < size; ++j) {
+    std::set<int> set;
+    set.insert(events_children[j]);
+    all_sets.insert(set);
+  }
+
+  int mult = 1;
+  if (inter_index < 0) {
+    mult = -1;
+    vote_number = size - vote_number + 1;  // The main trick for negation.
+  }
+
+  for (int i = 1; i < vote_number; ++i) {
+    std::set< std::set<int> > tmp_sets;
+    std::set< std::set<int> >::iterator it_sets;
+    for (it_sets = all_sets.begin(); it_sets != all_sets.end(); ++it_sets) {
+      for (int j = 0; j < size; ++j) {
+        std::set<int> set = *it_sets;
+        set.insert(events_children[j]);
+        if (set.size() > i) {
+          tmp_sets.insert(set);
+        }
+      }
+    }
+    all_sets = tmp_sets;
+  }
+
+  std::set< std::set<int> >::iterator it_sets;
+  for (it_sets = all_sets.begin(); it_sets != all_sets.end(); ++it_sets) {
+    SupersetPtr tmp_set_c(new scram::Superset());
+    std::set<int>::iterator it;
+    for (it = it_sets->begin(); it != it_sets->end(); ++it) {
+      if (*it > top_event_index_) {
+        tmp_set_c->InsertGate(*it * mult);
+      } else {
+        tmp_set_c->InsertPrimary(*it * mult);
+      }
+    }
+    sets->push_back(tmp_set_c);
+  }
 }
 
 void FaultTreeAnalysis::FindMcs(

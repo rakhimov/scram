@@ -102,6 +102,13 @@ class FaultTreeAnalysis {
   void SetXor(int inter_index, const std::vector<int>& events_children,
               std::vector<SupersetPtr>* sets);
 
+  /// Expands sets for Vote or Atleat operator.
+  /// @param[in] inter_index The positive or negative gate event indicator.
+  /// @param[in] events_children The indices of the children of the event.
+  /// @param[out] sets The final Supersets generated for OR operator.
+  void SetAtleast(int inter_index, const std::vector<int>& events_children,
+                  std::vector<SupersetPtr>* sets);
+
   /// Finds minimal cut sets from cut sets.
   /// Applys rule 4 to reduce unique cut sets to minimal cut sets.
   /// @param[in] cut_sets Cut sets with primary events.
