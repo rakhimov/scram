@@ -1,0 +1,11 @@
+curve ::=
+  <curve
+    [ name="identifier" ]
+    [ description="text" ]
+    [ X-title="string" Y-title="string" [ Z-title="string" ] ]
+    [ X-unit="unit" Y-unit="unit" [ Z-unit="unit" ] ]
+  >
+    <point X="float" Y="float" [ Z="float" ] />*
+  </curve>
+
+unit ::= seconds | hours | ...
