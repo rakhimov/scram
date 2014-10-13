@@ -45,6 +45,7 @@ void ProbabilityAnalysis::UpdateDatabase(
 
 void ProbabilityAnalysis::Analyze(
     const std::set< std::set<std::string> >& min_cut_sets) {
+  min_cut_sets_ = min_cut_sets;
   // Update databases of minimal cut sets with indexed events.
   std::set< std::set<std::string> >::const_iterator it;
   for (it = min_cut_sets.begin(); it != min_cut_sets.end(); ++it) {
@@ -84,6 +85,12 @@ void ProbabilityAnalysis::Analyze(
     ordered_min_sets_.insert(
         std::make_pair(p_sub_set, imcs_to_smcs_.find(*it_min)->second));
   }
+
+  num_prob_mcs_ = mcs_for_prob.size();
+
+  // Timing Initialization
+  std::clock_t start_time;
+  start_time = std::clock();
 
   // Get the total probability.
   // Check if the rare event approximation is requested.
@@ -143,6 +150,8 @@ void ProbabilityAnalysis::Analyze(
                                                "not " + it_p->first));
     }
   }
+  // Duration of the calculations.
+  p_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
 }
 
 void ProbabilityAnalysis::AssignIndices() {

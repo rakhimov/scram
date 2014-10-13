@@ -4,6 +4,7 @@
 #ifndef SCRAM_SRC_PROBABILITY_ANALYSIS_H_
 #define SCRAM_SRC_PROBABILITY_ANALYSIS_H_
 
+#include <ctime>
 #include <map>
 #include <set>
 #include <string>
@@ -20,10 +21,13 @@ typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
 
 namespace scram {
 
+class Reporter;
+
 /// @class ProbabilityAnalysis
 /// Main quantitative analysis.
 class ProbabilityAnalysis {
   friend ::ProbabilityAnalysisTest;
+  friend Reporter;
 
  public:
   /// The main constructor of Probability Analysis.
@@ -136,6 +140,9 @@ class ProbabilityAnalysis {
   boost::unordered_map<std::string, int> primary_to_int_;
   std::vector<double> iprobs_;  ///< Holds probabilities of primary events.
 
+  /// Minimal cut sets passed for analysis.
+  std::set< std::set<std::string> > min_cut_sets_;
+
   std::vector< std::set<int> > imcs_;  ///< Min cut sets with indices of events.
   /// Indices min cut sets to strings min cut sets mapping.
   std::map< std::set<int>, std::set<std::string> > imcs_to_smcs_;
@@ -157,6 +164,11 @@ class ProbabilityAnalysis {
 
   /// Register warnings.
   std::string warnings_;
+
+  /// The number of minimal cut sets with higher than cut-off probability.
+  int num_prob_mcs_;
+
+  double p_time_;  ///< Time for probability calculations.
 };
 
 }  // namespace scram

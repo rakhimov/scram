@@ -144,6 +144,15 @@ void RiskAnalysis::Analyze() {
                                                    settings_.cut_off_));
     fta->Analyze(it->second, prob_requested_);
     ftas_.push_back(fta);
+
+    ProbabilityAnalysisPtr pa(new ProbabilityAnalysis(settings_.approx_,
+                                                      settings_.num_sums_,
+                                                      settings_.cut_off_));
+    if (prob_requested_) {
+      pa->UpdateDatabase(it->second->primary_events());
+      pa->Analyze(fta->min_cut_sets());
+      prob_analyses_.push_back(pa);
+    }
   }
 }
 
@@ -156,6 +165,13 @@ void RiskAnalysis::Report(std::string output) {
   std::vector<FaultTreeAnalysisPtr>::iterator it;
   for (it = ftas_.begin(); it != ftas_.end(); ++it) {
     rp.ReportFta(*it, output);
+  }
+
+  if (prob_requested_) {
+    std::vector<ProbabilityAnalysisPtr>::iterator it_p;
+    for (it_p = prob_analyses_.begin(); it_p != prob_analyses_.end(); ++it_p) {
+      rp.ReportProbability(*it_p, output);
+    }
   }
 }
 

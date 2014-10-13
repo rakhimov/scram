@@ -12,6 +12,9 @@
 #include <vector>
 
 #include "fault_tree_analysis.h"
+#include "probability_analysis.h"
+
+typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
 
 namespace scram {
 /// @class Reporter
@@ -33,15 +36,23 @@ class Reporter {
   void ReportFta(const boost::shared_ptr<const scram::FaultTreeAnalysis>& fta,
                  std::string output);
 
+  /// Reports the results of probability analysis with minimal cut sets.
+  /// @param[in] prob_analysis ProbabilityAnalysis with results.
+  /// @param[out] output The output destination.
+  /// @note This function must be called only after analysis is done.
+  void ReportProbability(
+      const boost::shared_ptr<const scram::ProbabilityAnalysis>& prob_analysis,
+      std::string output);
+
  private:
-  /// Reports for MC results.
-  /// param[in] terms Collection of sets to be printed.
-  /// param[in] fta Pointer to the Fault Tree Analysis with the events.
-  /// param[in] out The output stream.
-  void ReportMcTerms(
-      const std::vector< std::set<int> >& terms,
-      const boost::shared_ptr<const scram::FaultTreeAnalysis>& fta,
-      std::ostream& out);
+  /// Produces lines for printing minimal cut sets.
+  /// @param[in] min_cut_sets Minimal cut sets to print.
+  /// @param[in] primary_events Primary events in the minimal cut sets.
+  /// @param[out] lines Lines representing minimal cut sets.
+  void McsToPrint(
+      const std::set< std::set<std::string> >& min_cut_sets,
+      const boost::unordered_map<std::string, PrimaryEventPtr>& primary_events,
+      std::map< std::set<std::string>, std::vector<std::string> >* lines);
 };
 
 }  // namespace scram
