@@ -92,6 +92,10 @@ class ProbabilityAnalysis {
   /// These indices will be used for future analysis.
   void AssignIndices();
 
+  /// Populates databases of minimal cut sets with indices of the events.
+  /// @param[in] min_cut_sets Minimal cut sets with event ids.
+  void IndexMcs(const std::set<std::set<std::string> >& min_cut_sets);
+
   /// Calculates a probability of a set of minimal cut sets, which are in OR
   /// relationship with each other. This function is a brute force probability
   /// calculation without approximations.
@@ -122,6 +126,9 @@ class ProbabilityAnalysis {
   void CombineElAndSet(const std::set<int>& el,
                        const std::set< std::set<int> >& set,
                        std::set< std::set<int> >* combo_set);
+
+  /// Importance analysis of events.
+  void PerformImportanceAnalysis();
 
 
   /// Approximations for probability calculations.

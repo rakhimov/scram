@@ -53,6 +53,10 @@ friend class ::UncertaintyAnalysisTest;
   /// These indices will be used for future analysis.
   void AssignIndices();
 
+  /// Populates databases of minimal cut sets with indices of the events.
+  /// @param[in] min_cut_sets Minimal cut sets with event ids.
+  void IndexMcs(const std::set<std::set<std::string> >& min_cut_sets);
+
   /// Calculates A(and)( B(or)C ) relationship for sets using set algebra.
   /// @param[in] el A set of indices of primary events.
   /// @param[in] set Sets of indices of primary events.
