@@ -75,6 +75,11 @@ class ProbabilityAnalysis {
     return ordered_primaries_;
   }
 
+  /// @returns Warnings generated upon analysis.
+  inline const std::string warnings() {
+    return warnings_;
+  }
+
  private:
   /// Assigns an index to each primary event, and then populates with this
   /// indices new databases and primary to integer converting maps.

@@ -37,18 +37,6 @@ class FaultTreeAnalysisTest : public ::testing::Test {
   }
 
   // ----------- Probability calculation algorithm related part ------------
-  double ProbAnd(const std::set<int>& min_cut_set) {
-    return fta->ProbAnd(min_cut_set);
-  }
-
-  double ProbOr(std::set< std::set<int> >* min_cut_sets) {
-    return fta->ProbOr(1000, min_cut_sets);
-  }
-
-  double ProbOr(int nsums, std::set< std::set<int> >* min_cut_sets) {
-    return fta->ProbOr(nsums, min_cut_sets);
-  }
-
   void CombineElAndSet(const std::set<int>& el,
                        const std::set< std::set<int> >& set,
                        std::set< std::set<int> >* combo_set) {
@@ -68,9 +56,6 @@ class FaultTreeAnalysisTest : public ::testing::Test {
     return 0;  // This event is not in the tree.
   }
 
-  void AddPrimaryIntProb(double prob) {
-    fta->iprobs_.push_back(prob);
-  }
   // -----------------------------------------------------------------------
   // -------------- Monte Carlo simulation algorithms ----------------------
   void MProbOr(std::set< std::set<int> >* min_cut_sets) {

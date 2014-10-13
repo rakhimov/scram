@@ -144,27 +144,6 @@ class FaultTreeAnalysis {
   /// Converts minimal cut sets from indices to strings for future reporting.
   void SetsToString();
 
-  /// Calculates a probability of a set of minimal cut sets, which are in OR
-  /// relationship with each other. This function is a brute force probability
-  /// calculation without approximations.
-  /// @param[in] nsums The number of sums in the series.
-  /// @param[in] min_cut_sets Sets of indices of primary events.
-  /// @returns The total probability.
-  /// @note This function drastically modifies min_cut_sets by deleting
-  /// sets inside it. This is for better performance.
-  ///
-  /// @note O_avg(M*logM*N*2^N) where N is the number of sets, and M is
-  /// the average size of the sets.
-  double ProbOr(int nsums, std::set< std::set<int> >* min_cut_sets);
-
-  /// Calculates a probability of a minimal cut set, whose members are in AND
-  /// relationship with each other. This function assumes independence of each
-  /// member.
-  /// @param[in] min_cut_set A set of indices of primary events.
-  /// @returns The total probability.
-  /// @note O_avg(N) where N is the size of the passed set.
-  double ProbAnd(const std::set<int>& min_cut_set);
-
   /// Calculates A(and)( B(or)C ) relationship for sets using set algebra.
   /// @param[in] el A set of indices of primary events.
   /// @param[in] set Sets of indices of primary events.
@@ -176,13 +155,10 @@ class FaultTreeAnalysis {
                        std::set< std::set<int> >* combo_set);
 
   std::vector< std::set<int> > imcs_;  ///< Min cut sets with indices of events.
-  /// Indices min cut sets to strings min cut sets mapping.
-  std::map< std::set<int>, std::set<std::string> > imcs_to_smcs_;
 
   std::vector<PrimaryEventPtr> int_to_primary_;  ///< Indices to primary events.
   /// Indices of primary events.
   boost::unordered_map<std::string, int> primary_to_int_;
-  std::vector<double> iprobs_;  ///< Holds probabilities of primary events.
 
   int top_event_index_;  ///< The index of the top event.
   /// Intermediate events from indices.

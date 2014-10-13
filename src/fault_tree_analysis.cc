@@ -173,6 +173,7 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree,
   imp_of_primaries_ = prob_analysis_->imp_of_primaries();
   ordered_min_sets_ = prob_analysis_->ordered_min_sets();
   ordered_primaries_ = prob_analysis_->ordered_primaries();
+  warnings_ += prob_analysis_->warnings();
 
   // Duration of probability related operations.
   p_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
@@ -510,11 +511,9 @@ void FaultTreeAnalysis::AssignIndices(const FaultTreePtr& fault_tree) {
   boost::unordered_map<std::string, PrimaryEventPtr>::iterator itp;
   // Dummy primary event at index 0.
   int_to_primary_.push_back(PrimaryEventPtr(new PrimaryEvent("dummy")));
-  iprobs_.push_back(0);
   for (itp = primary_events_.begin(); itp != primary_events_.end(); ++itp) {
     int_to_primary_.push_back(itp->second);
     primary_to_int_.insert(std::make_pair(itp->second->id(), j));
-    if (prob_requested_) iprobs_.push_back(itp->second->p());
     ++j;
   }
 
@@ -544,54 +543,8 @@ void FaultTreeAnalysis::SetsToString() {
         pr_set.insert(int_to_primary_[*it_set]->id());
       }
     }
-    imcs_to_smcs_.insert(std::make_pair(*it_min, pr_set));
     min_cut_sets_.insert(pr_set);
   }
-}
-
-double FaultTreeAnalysis::ProbOr(int nsums,
-                                 std::set< std::set<int> >* min_cut_sets) {
-  assert(nsums >= 0);
-
-  // Recursive implementation.
-  if (min_cut_sets->empty()) return 0;
-
-  if (nsums == 0) return 0;
-
-  // Base case.
-  if (min_cut_sets->size() == 1) {
-    // Get only element in this set.
-    return FaultTreeAnalysis::ProbAnd(*min_cut_sets->begin());
-  }
-
-  // Get one element.
-  std::set< std::set<int> >::iterator it = min_cut_sets->begin();
-  std::set<int> element_one(*it);
-
-  // Delete element from the original set. WARNING: the iterator is invalidated.
-  min_cut_sets->erase(it);
-  std::set< std::set<int> > combo_sets;
-  FaultTreeAnalysis::CombineElAndSet(element_one, *min_cut_sets, &combo_sets);
-
-  return FaultTreeAnalysis::ProbAnd(element_one) +
-         FaultTreeAnalysis::ProbOr(nsums, min_cut_sets) -
-         FaultTreeAnalysis::ProbOr(nsums - 1, &combo_sets);
-}
-
-double FaultTreeAnalysis::ProbAnd(const std::set<int>& min_cut_set) {
-  // Test just in case the min cut set is empty.
-  if (min_cut_set.empty()) return 0;
-
-  double p_sub_set = 1;  // 1 is for multiplication.
-  std::set<int>::iterator it_set;
-  for (it_set = min_cut_set.begin(); it_set != min_cut_set.end(); ++it_set) {
-    if (*it_set > 0) {
-      p_sub_set *= iprobs_[*it_set];
-    } else {
-      p_sub_set *= 1 - iprobs_[std::abs(*it_set)];  // Never zero.
-    }
-  }
-  return p_sub_set;
 }
 
 void FaultTreeAnalysis::CombineElAndSet(const std::set<int>& el,
