@@ -53,6 +53,21 @@ class Reporter {
       const std::set< std::set<std::string> >& min_cut_sets,
       const boost::unordered_map<std::string, PrimaryEventPtr>& primary_events,
       std::map< std::set<std::string>, std::vector<std::string> >* lines);
+
+  /// Reports minimal cut sets' probabilities.
+  /// @param[in] prob_analysis ProbabilityAnalysis with results.
+  /// @param[in] out Output stream.
+  void ReportMcsProb(
+      const boost::shared_ptr<const scram::ProbabilityAnalysis>& prob_analysis,
+      std::ostream& out);
+
+  /// Reports results of importance analysis in probability analysis.
+  /// @param[in] prob_analysis ProbabilityAnalysis with results.
+  /// Reports as "Primary Event Analysis".
+  /// @param[in] out Output stream.
+  void ReportImportance(
+      const boost::shared_ptr<const scram::ProbabilityAnalysis>& prob_analysis,
+      std::ostream& out);
 };
 
 }  // namespace scram
