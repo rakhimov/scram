@@ -202,7 +202,7 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
     } else {
       FaultTreeAnalysis::SetAnd(-1, events_children, sets);
     }
-  } else if (gate == "and") {
+  } else if (gate == "and" || gate == "inhibit") {
     assert(events_children.size() > 1);
     if (inter_index > 0) {
       FaultTreeAnalysis::SetAnd(1, events_children, sets);
@@ -210,11 +210,10 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
       FaultTreeAnalysis::SetOr(-1, events_children, sets);
     }
   } else if (gate == "not") {
-    int mult = 1;
-    if (inter_index < 0) mult = -1;
+    int mult = (inter_index > 0) ? 1 : -1;
     // Only one child is expected.
     assert(events_children.size() == 1);
-    FaultTreeAnalysis::SetAnd(-1 * mult, events_children, sets);
+    FaultTreeAnalysis::SetAnd(-mult, events_children, sets);
 
   } else if (gate == "nor") {
     assert(events_children.size() > 1);
@@ -235,18 +234,11 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
     FaultTreeAnalysis::SetXor(inter_index, events_children, sets);
 
   } else if (gate == "null") {
-    int mult = 1;
-    if (inter_index < 0) mult = -1;
+    int mult = (inter_index > 0) ? 1 : -1;
     // Only one child is expected.
     assert(events_children.size() == 1);
     FaultTreeAnalysis::SetAnd(mult, events_children, sets);
-  } else if (gate == "inhibit") {
-    assert(events_children.size() == 2);
-    if (inter_index > 0) {
-      FaultTreeAnalysis::SetAnd(1, events_children, sets);
-    } else {
-      FaultTreeAnalysis::SetOr(-1, events_children, sets);
-    }
+
   } else if (gate == "atleast") {
     FaultTreeAnalysis::SetAtleast(inter_index, events_children, sets);
 
