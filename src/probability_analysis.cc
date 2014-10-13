@@ -5,13 +5,35 @@
 
 #include <boost/algorithm/string.hpp>
 
+#include "error.h"
+
 namespace scram {
 
 ProbabilityAnalysis::ProbabilityAnalysis(std::string approx, int nsums,
                                          double cut_off) {
-  approx_ = approx;
+  // Check for right number of sums.
+  if (nsums < 1) {
+    std::string msg = "The number of sums in the probability calculation "
+                      "cannot be less than one";
+    throw scram::ValueError(msg);
+  }
   nsums_ = nsums;
+
+  // Check for valid cut-off probability.
+  if (cut_off < 0 || cut_off > 1) {
+    std::string msg = "The cut-off probability cannot be negative or"
+                      " more than 1.";
+    throw scram::ValueError(msg);
+  }
   cut_off_ = cut_off;
+
+  // Check the right approximation for probability calculations.
+  if (approx != "no" && approx != "rare" && approx != "mcub") {
+    std::string msg = "The probability approximation is not recognized.";
+    throw scram::ValueError(msg);
+  }
+  approx_ = approx;
+
 }
 
 
@@ -34,12 +56,12 @@ void ProbabilityAnalysis::Analyze(
                    boost::token_compress_on);
       assert(names.size() == 1 || names.size() == 2);
       if (names.size() == 1) {
-        assert(primary_to_int_.find(names[0]) != primary_to_int_.end());
+        assert(primary_to_int_.count(names[0]));
         mcs_with_indices.insert(primary_to_int_.find(names[0])->second);
       } else {
         // This must be a complement of an event.
         assert(names[0] == "not");
-        assert(primary_to_int_.find(names[1]) != primary_to_int_.end());
+        assert(primary_to_int_.count(names[1]));
         mcs_with_indices.insert(-primary_to_int_.find(names[1])->second);
       }
     }

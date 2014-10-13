@@ -14,6 +14,8 @@
 
 #include <event.h>
 
+class ProbabilityAnalysisTest;
+
 typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
 
 namespace scram {
@@ -21,6 +23,8 @@ namespace scram {
 /// @class ProbabilityAnalysis
 /// Main quantitative analysis.
 class ProbabilityAnalysis {
+  friend ::ProbabilityAnalysisTest;
+
  public:
   /// The main constructor of Probability Analysis.
   /// @param[in] approx The kind of approximation for probability calculations.
