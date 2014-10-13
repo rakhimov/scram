@@ -215,6 +215,7 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
     // Only one child is expected.
     assert(events_children.size() == 1);
     FaultTreeAnalysis::SetAnd(-1 * mult, events_children, sets);
+
   } else if (gate == "nor") {
     assert(events_children.size() > 1);
     if (inter_index > 0) {
@@ -231,35 +232,8 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
     }
   } else if (gate == "xor") {
     assert(events_children.size() == 2);
-    SupersetPtr tmp_set_one(new scram::Superset());
-    SupersetPtr tmp_set_two(new scram::Superset());
-    if (inter_index > 0) {
-      int j = 1;
-      for (it_child = events_children.begin();
-           it_child != events_children.end(); ++it_child) {
-        if (*it_child > top_event_index_) {
-          tmp_set_one->InsertGate(j * (*it_child));
-          tmp_set_two->InsertGate(-1 * j * (*it_child));
-        } else {
-          tmp_set_one->InsertPrimary(j * (*it_child));
-          tmp_set_two->InsertPrimary(-1 * j * (*it_child));
-        }
-        j = -1;
-      }
-    } else {
-      for (it_child = events_children.begin();
-           it_child != events_children.end(); ++it_child) {
-        if (*it_child > top_event_index_) {
-          tmp_set_one->InsertGate(*it_child);
-          tmp_set_two->InsertGate(-1 * (*it_child));
-        } else {
-          tmp_set_one->InsertPrimary(*it_child);
-          tmp_set_two->InsertPrimary(-1 * (*it_child));
-        }
-      }
-    }
-    sets->push_back(tmp_set_one);
-    sets->push_back(tmp_set_two);
+    FaultTreeAnalysis::SetXor(inter_index, events_children, sets);
+
   } else if (gate == "null") {
     int mult = 1;
     if (inter_index < 0) mult = -1;
@@ -372,6 +346,43 @@ void FaultTreeAnalysis::SetAnd(int mult,
     }
   }
   sets->push_back(tmp_set_c);
+}
+
+void FaultTreeAnalysis::SetXor(int inter_index,
+                               const std::vector<int>& events_children,
+                               std::vector<SupersetPtr>* sets) {
+  assert(events_children.size() == 2);
+  assert(inter_index != 0);
+  SupersetPtr tmp_set_one(new scram::Superset());
+  SupersetPtr tmp_set_two(new scram::Superset());
+  std::vector<int>::const_iterator it_child;
+  if (inter_index > 0) {
+    int j = 1;
+    for (it_child = events_children.begin();
+         it_child != events_children.end(); ++it_child) {
+      if (*it_child > top_event_index_) {
+        tmp_set_one->InsertGate(j * (*it_child));
+        tmp_set_two->InsertGate(-j * (*it_child));
+      } else {
+        tmp_set_one->InsertPrimary(j * (*it_child));
+        tmp_set_two->InsertPrimary(-j * (*it_child));
+      }
+      j = -1;
+    }
+  } else {
+    for (it_child = events_children.begin();
+         it_child != events_children.end(); ++it_child) {
+      if (*it_child > top_event_index_) {
+        tmp_set_one->InsertGate(*it_child);
+        tmp_set_two->InsertGate(-(*it_child));
+      } else {
+        tmp_set_one->InsertPrimary(*it_child);
+        tmp_set_two->InsertPrimary(-(*it_child));
+      }
+    }
+  }
+  sets->push_back(tmp_set_one);
+  sets->push_back(tmp_set_two);
 }
 
 void FaultTreeAnalysis::FindMcs(
