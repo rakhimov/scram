@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+# This script runs SCRAM with analysis inputs that reveal common performance
+# bottlenecks, such as probability calculation and minimal cut set calculation.
+# This script uses input files and needs to be run in the 'scram/input'
+# directory or in the directory where input files are located.
+#
+# NOTE: It is recommended to have SCRAM built in Release mode because the
+#       tested cases in this script may take very long time.
+
 echo -e 'Three Motor -c 1e-8'
 scram ThreeMotor/three_motor.xml -c 1e-8 | grep 'Probability'
 
