@@ -12,6 +12,7 @@ TEST_F(FaultTreeAnalysisTest, NO_GATE) {
   inter->AddChild(C);
   GetIndices();
   EXPECT_THROW(ExpandSets(inter_id, &sets), ValueError);
+  EXPECT_THROW(ExpandSets(-inter_id, &sets), ValueError);
 }
 
 TEST_F(FaultTreeAnalysisTest, OR_GATE) {
