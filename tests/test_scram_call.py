@@ -86,3 +86,11 @@ def test_fta_calls():
     yield assert_equal, 0, call(cmd)
     cmd = ["scram", fta_no_prob, "-a", "mc"]
     yield assert_equal, 0, call(cmd)
+
+    # Test the rare event approximation
+    cmd = ["scram", fta_input, "-r"]
+    yield assert_equal, 0, call(cmd)
+
+    # Test the MCUB approximation
+    cmd = ["scram", fta_input, "-m"]
+    yield assert_equal, 0, call(cmd)
