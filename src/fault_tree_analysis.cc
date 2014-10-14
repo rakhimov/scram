@@ -254,8 +254,7 @@ bool FaultTreeAnalysis::GetExpandedSets(int inter_index,
 
     std::vector<SupersetPtr>::iterator it;
     for (it = repeat_set->begin(); it != repeat_set->end(); ++it) {
-      SupersetPtr temp_set(new Superset);
-      temp_set->InsertSet(*it);
+      SupersetPtr temp_set(new Superset(**it));
       sets->push_back(temp_set);
     }
     return true;
@@ -269,8 +268,7 @@ void FaultTreeAnalysis::SaveExpandedSets(int inter_index,
   std::vector<SupersetPtr> repeat_set;
   std::vector<SupersetPtr>::const_iterator it;
   for (it = sets.begin(); it != sets.end(); ++it) {
-    SupersetPtr temp_set(new Superset);
-    temp_set->InsertSet(*it);
+    SupersetPtr temp_set(new Superset(**it));
     repeat_set.push_back(temp_set);
   }
   repeat_exp_.insert(std::make_pair(inter_index, repeat_set));

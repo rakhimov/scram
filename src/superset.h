@@ -37,12 +37,7 @@ class Superset {
 
   /// Inserts another superset with gates and primary events.
   /// Check if there are complements of events.
-  ///
-  /// @warning All the containers of this set are emptied. However, the call for
-  /// the size or containers do not reflect that the set is null.
-  /// This is for efficiency and inlining.
-  /// The caller should make sure that this set is not null after the
-  /// insertion operation.
+  /// If the final set is null, all containers of this set are emptied.
   ///
   /// @param[in] st A pointer to another superset with events.
   /// @returns false if the resultant set is null.
