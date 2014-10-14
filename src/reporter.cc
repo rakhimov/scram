@@ -365,22 +365,10 @@ void Reporter::ReportImportance(
   for (it_contr = prob_analysis->ordered_primaries_.rbegin();
        it_contr != prob_analysis->ordered_primaries_.rend(); ++it_contr) {
     out << std::left;
-    std::vector<std::string> names;
-    boost::split(names, it_contr->second, boost::is_any_of(" "),
-                 boost::token_compress_on);
-    assert(names.size() < 3);
-    assert(names.size() > 0);
-    if (names.size() == 1) {
-      out << std::setw(20) << prob_analysis->primary_events_.find(names[0])->second->orig_id()
-          << std::setw(20) << it_contr->first
-          << 100 * it_contr->first / prob_analysis->p_total_ << "%\n";
-
-    } else if (names.size() == 2) {
-      out << "NOT " << std::setw(16)
-          << prob_analysis->primary_events_.find(names[1])->second->orig_id()
-          << std::setw(20) << it_contr->first
-          << 100 * it_contr->first / prob_analysis->p_total_ << "%\n";
-    }
+    out << std::setw(20)
+        << prob_analysis->primary_events_.find(it_contr->second) ->second->orig_id()
+        << std::setw(20) << it_contr->first
+        << 100 * it_contr->first / prob_analysis->p_total_ << "%\n";
     out.flush();
   }
 }

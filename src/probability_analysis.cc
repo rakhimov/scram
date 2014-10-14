@@ -263,24 +263,15 @@ void ProbabilityAnalysis::PerformImportanceAnalysis() {
   for (it_p = primary_events_.begin(); it_p != primary_events_.end();
        ++it_p) {
     double contrib_pos = 0;  // Total positive contribution of this event.
-    double contrib_neg = 0;  // Negative event contribution.
     std::map< std::set<std::string>, double >::iterator it_pr;
     for (it_pr = prob_of_min_sets_.begin();
          it_pr != prob_of_min_sets_.end(); ++it_pr) {
       if (it_pr->first.count(it_p->first)) {
         contrib_pos += it_pr->second;
-      } else if (it_pr->first.count("not " + it_p->first)) {
-        contrib_neg += it_pr->second;
       }
     }
     imp_of_primaries_.insert(std::make_pair(it_p->first, contrib_pos));
     ordered_primaries_.insert(std::make_pair(contrib_pos, it_p->first));
-    if (contrib_neg > 0) {
-      imp_of_primaries_.insert(std::make_pair("not " + it_p->first,
-                                              contrib_neg));
-      ordered_primaries_.insert(std::make_pair(contrib_neg,
-                                               "not " + it_p->first));
-    }
   }
 }
 
