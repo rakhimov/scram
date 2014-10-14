@@ -79,6 +79,12 @@ class FaultTreeAnalysis {
   /// @note O_avg(N, N*logN) O_max(N^2, N^3*logN) where N is a children number.
   void ExpandSets(int inter_index, std::vector<SupersetPtr>* sets);
 
+  /// Converts a set of children into a vector of children indices.
+  /// @param[in] children A set of children of a gate.
+  /// @param[out] events_children The same children's indices in a vector.
+  void ConvertChildrenToVector(const std::map<std::string, EventPtr>& children,
+                               std::vector<int>* events_children);
+
   /// Populates the sets of supersets of a gate that has already been expanded.
   /// @param[in] inter_index The index number of the parent node.
   /// @param[out] sets The final Supersets from the children if there is a gate.

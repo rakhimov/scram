@@ -163,22 +163,10 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
   if (FaultTreeAnalysis::GetExpandedSets(inter_index, sets)) return;
 
   // Populate intermediate and primary events of the top.
-  const std::map<std::string, EventPtr>* children =
-      &int_to_inter_.find(std::abs(inter_index))->second->children();
-
-  // Iterator for children of top and intermediate events.
-  std::map<std::string, EventPtr>::const_iterator it_children;
   std::vector<int> events_children;
-
-  for (it_children = children->begin();
-       it_children != children->end(); ++it_children) {
-    if (inter_events_.count(it_children->first)) {
-      events_children.push_back(inter_to_int_.find(it_children->first)->second);
-    } else {
-      events_children.push_back(
-          primary_to_int_.find(it_children->first)->second);
-    }
-  }
+  FaultTreeAnalysis::ConvertChildrenToVector(
+      int_to_inter_.find(std::abs(inter_index))->second->children(),
+      &events_children);
 
   std::string gate = int_to_inter_.find(std::abs(inter_index))->second->type();
 
@@ -197,6 +185,13 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
     } else {
       FaultTreeAnalysis::SetOr(-1, events_children, sets);
     }
+  } else if (gate == "atleast") {
+    FaultTreeAnalysis::SetAtleast(inter_index, events_children, sets);
+
+  } else if (gate == "xor") {
+    assert(events_children.size() == 2);
+    FaultTreeAnalysis::SetXor(inter_index, events_children, sets);
+
   } else if (gate == "not") {
     int mult = (inter_index > 0) ? 1 : -1;
     // Only one child is expected.
@@ -217,18 +212,11 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
     } else {
       FaultTreeAnalysis::SetAnd(1, events_children, sets);
     }
-  } else if (gate == "xor") {
-    assert(events_children.size() == 2);
-    FaultTreeAnalysis::SetXor(inter_index, events_children, sets);
-
   } else if (gate == "null") {
     int mult = (inter_index > 0) ? 1 : -1;
     // Only one child is expected.
     assert(events_children.size() == 1);
     FaultTreeAnalysis::SetAnd(mult, events_children, sets);
-
-  } else if (gate == "atleast") {
-    FaultTreeAnalysis::SetAtleast(inter_index, events_children, sets);
 
   } else {
     boost::to_upper(gate);
@@ -237,6 +225,24 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
   }
 
   SaveExpandedSets(inter_index, *sets);
+}
+
+
+void FaultTreeAnalysis::ConvertChildrenToVector(
+    const std::map<std::string, EventPtr>& children,
+    std::vector<int>* events_children) {
+  // Iterator for children of top and intermediate events.
+  std::map<std::string, EventPtr>::const_iterator it_children;
+  for (it_children = children.begin();
+       it_children != children.end(); ++it_children) {
+    if (inter_events_.count(it_children->first)) {
+      events_children->push_back(
+          inter_to_int_.find(it_children->first)->second);
+    } else {
+      events_children->push_back(
+          primary_to_int_.find(it_children->first)->second);
+    }
+  }
 }
 
 bool FaultTreeAnalysis::GetExpandedSets(int inter_index,
