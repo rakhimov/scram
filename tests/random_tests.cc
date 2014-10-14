@@ -64,7 +64,8 @@ TEST(RandomTest, UniformReal) {
     series.insert(rng->UniformRealGenerator(0, 1));
   }
   std::cout << "\n    Uniform Distribution of " << sample_size
-      << " Real Numbers.\n" << std::endl;
+      << " Real Numbers." << std::endl;
+  std::cout << "        Min: 0    Max: 1\n" << std::endl;
   PlotDistribution(series);
   delete rng;
 }
@@ -77,7 +78,8 @@ TEST(RandomTest, Triangular) {
     series.insert(rng->TriangularGenerator(0, 0.5, 1));
   }
   std::cout << "\n    Triangular Distribution of " << sample_size
-      << " Real Numbers.\n" << std::endl;
+      << " Real Numbers." << std::endl;
+  std::cout << "        Min: 0    Mode: 0.5    Max: 1\n" << std::endl;
   PlotDistribution(series);
   delete rng;
 }
@@ -95,7 +97,9 @@ TEST(RandomTest, PiecewiseLinear) {
     series.insert(rng->PiecewiseLinearGenerator(intervals, weights) / 10.0);
   }
   std::cout << "\n    Piecewise Linear Distribution of " << sample_size
-      << " Real Numbers.\n" << std::endl;
+      << " Real Numbers." << std::endl;
+  std::cout << "        Intervals: 0  2  4  6  8  10" << std::endl;
+  std::cout << "        Weights:   0  1  0  1  0  1\n" << std::endl;
   PlotDistribution(series);
   delete rng;
 }
@@ -113,7 +117,9 @@ TEST(RandomTest, Histogram) {
     series.insert(rng->HistogramGenerator(intervals, weights) / 10.0);
   }
   std::cout << "\n    Histogram Distribution of " << sample_size
-      << " Real Numbers.\n" << std::endl;
+      << " Real Numbers." << std::endl;
+  std::cout << "        Intervals: 0   2   4   6   8   10" << std::endl;
+  std::cout << "        Weights:     1   2   4   3   1\n" << std::endl;
   PlotDistribution(series);
   delete rng;
 }
@@ -131,7 +137,9 @@ TEST(RandomTest, Discrete) {
     series.insert(rng->DiscreteGenerator(values, weights) / 10.0);
   }
   std::cout << "\n    Discrete Distribution of " << sample_size
-      << " Real Numbers.\n" << std::endl;
+      << " Real Numbers." << std::endl;
+  std::cout << "        Values:  0  2  4  6  8  9" << std::endl;
+  std::cout << "        Weights: 1  2  4  3  1  4\n" << std::endl;
   PlotDistribution(series);
   delete rng;
 }
@@ -144,7 +152,8 @@ TEST(RandomTest, Binomial) {
     series.insert(rng->BinomialGenerator(20, 0.5) / 20.0);
   }
   std::cout << "\n    Binomial Distribution of " << sample_size
-      << " Real Numbers.\n" << std::endl;
+      << " Real Numbers." << std::endl;
+  std::cout << "      Trials: 20    Prob: 0.5   Scale: 1/20\n" << std::endl;
   PlotDistribution(series);
   delete rng;
 }
@@ -162,7 +171,8 @@ TEST(RandomTest, Normal) {
   }
   assert(series.size() == sample_size);
   std::cout << "\n    Normal Distribution of " << sample_size
-      << " Real Numbers.\n" << std::endl;
+      << " Real Numbers." << std::endl;
+  std::cout << "        Mean: 0.5    Sigma: 0.15\n" << std::endl;
   PlotDistribution(series);
   delete rng;
 }
@@ -180,7 +190,8 @@ TEST(RandomTest, LogNormal) {
   }
   assert(series.size() == sample_size);
   std::cout << "\n    Log-Normal Distribution of " << sample_size
-      << " Real Numbers.\n" << std::endl;
+      << " Real Numbers." << std::endl;
+  std::cout << "        Mean: 0.3    Sigma: 0.2\n" << std::endl;
   PlotDistribution(series);
   delete rng;
 }
@@ -198,7 +209,8 @@ TEST(RandomTest, Gamma) {
   }
   assert(series.size() == sample_size);
   std::cout << "\n    Gamma Distribution of " << sample_size
-      << " Real Numbers.\n" << std::endl;
+      << " Real Numbers." << std::endl;
+  std::cout << "        k: 2    theta: 2   Scaled-down: 1/20\n" << std::endl;
   PlotDistribution(series);
   delete rng;
 }
@@ -216,7 +228,8 @@ TEST(RandomTest, Beta) {
   }
   assert(series.size() == sample_size);
   std::cout << "\n    Beta Distribution of " << sample_size
-      << " Real Numbers.\n" << std::endl;
+      << " Real Numbers." << std::endl;
+  std::cout << "        alpha: 2    beta: 2\n" << std::endl;
   PlotDistribution(series);
   delete rng;
 }
@@ -234,7 +247,8 @@ TEST(RandomTest, Weibull) {
   }
   assert(series.size() == sample_size);
   std::cout << "\n    Weibull Distribution of " << sample_size
-      << " Real Numbers.\n" << std::endl;
+      << " Real Numbers." << std::endl;
+  std::cout << "        k: 3    lambda: 1    Scaled-down: 1/2\n" << std::endl;
   PlotDistribution(series);
   delete rng;
 }
@@ -252,7 +266,8 @@ TEST(RandomTest, Exponential) {
   }
   assert(series.size() == sample_size);
   std::cout << "\n    Exponential Distribution of " << sample_size
-      << " Real Numbers.\n" << std::endl;
+      << " Real Numbers." << std::endl;
+  std::cout << "        lambda: 1    Scaled-down: 1/5\n" << std::endl;
   PlotDistribution(series);
   delete rng;
 }
@@ -270,7 +285,8 @@ TEST(RandomTest, Poisson) {
   }
   assert(series.size() == sample_size);
   std::cout << "\n    Poisson Distribution of " << sample_size
-      << " Real Numbers.\n" << std::endl;
+      << " Real Numbers." << std::endl;
+  std::cout << "        Mean: 5    Scaled-down: 1/10\n" << std::endl;
   PlotDistribution(series);
   delete rng;
 }
@@ -288,7 +304,9 @@ TEST(RandomTest, LogUniform) {
   }
   assert(series.size() == sample_size);
   std::cout << "\n    Log-Uniform Distribution of " << sample_size
-      << " Real Numbers.\n" << std::endl;
+      << " Real Numbers." << std::endl;
+  std::cout << "        Min: 0    Max: 1.308    Shifted: -1    "
+      << "Scaled-down: 1/2.7\n" << std::endl;
   PlotDistribution(series);
   delete rng;
 }
@@ -307,7 +325,9 @@ TEST(RandomTest, LogTriangular) {
   }
   assert(series.size() == sample_size);
   std::cout << "\n    Log-Triangular Distribution of " << sample_size
-      << " Real Numbers.\n" << std::endl;
+      << " Real Numbers." << std::endl;
+  std::cout << "        Lower: 0    Mode: 0.5    Upper: 1.308"
+      << "    Shifted: -1    Scaled-down: 1/2.7\n" << std::endl;
   PlotDistribution(series);
   delete rng;
 }
