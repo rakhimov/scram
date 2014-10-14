@@ -160,29 +160,15 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
                                    std::vector< SupersetPtr >* sets) {
   // Assumes sets are empty.
   assert(sets->empty());
-  if (repeat_exp_.count(inter_index)) {
-    std::vector<SupersetPtr>* repeat_set =
-        &repeat_exp_.find(inter_index)->second;
-
-    std::vector<SupersetPtr>::iterator it;
-    for (it = repeat_set->begin(); it != repeat_set->end(); ++it) {
-      SupersetPtr temp_set(new Superset);
-      temp_set->InsertSet(*it);
-      sets->push_back(temp_set);
-    }
-    return;
-  }
+  if (FaultTreeAnalysis::GetExpandedSets(inter_index, sets)) return;
 
   // Populate intermediate and primary events of the top.
   const std::map<std::string, EventPtr>* children =
       &int_to_inter_.find(std::abs(inter_index))->second->children();
 
-  std::string gate = int_to_inter_.find(std::abs(inter_index))->second->type();
-
   // Iterator for children of top and intermediate events.
   std::map<std::string, EventPtr>::const_iterator it_children;
   std::vector<int> events_children;
-  std::vector<int>::iterator it_child;
 
   for (it_children = children->begin();
        it_children != children->end(); ++it_children) {
@@ -193,6 +179,8 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
           primary_to_int_.find(it_children->first)->second);
     }
   }
+
+  std::string gate = int_to_inter_.find(std::abs(inter_index))->second->type();
 
   // Type dependent logic.
   if (gate == "or") {
@@ -248,10 +236,33 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
     throw scram::ValueError(msg);
   }
 
-  // Save the expanded sets in case this gate gets repeated.
+  SaveExpandedSets(inter_index, *sets);
+}
+
+bool FaultTreeAnalysis::GetExpandedSets(int inter_index,
+                                        std::vector< SupersetPtr >* sets) {
+  assert(sets->empty());
+  if (repeat_exp_.count(inter_index)) {
+    std::vector<SupersetPtr>* repeat_set =
+        &repeat_exp_.find(inter_index)->second;
+
+    std::vector<SupersetPtr>::iterator it;
+    for (it = repeat_set->begin(); it != repeat_set->end(); ++it) {
+      SupersetPtr temp_set(new Superset);
+      temp_set->InsertSet(*it);
+      sets->push_back(temp_set);
+    }
+    return true;
+  } else {
+    return false;
+  }
+}
+
+void FaultTreeAnalysis::SaveExpandedSets(int inter_index,
+                                         const std::vector<SupersetPtr>& sets) {
   std::vector<SupersetPtr> repeat_set;
-  std::vector<SupersetPtr>::iterator it;
-  for (it = sets->begin(); it != sets->end(); ++it) {
+  std::vector<SupersetPtr>::const_iterator it;
+  for (it = sets.begin(); it != sets.end(); ++it) {
     SupersetPtr temp_set(new Superset);
     temp_set->InsertSet(*it);
     repeat_set.push_back(temp_set);

@@ -79,6 +79,21 @@ class FaultTreeAnalysis {
   /// @note O_avg(N, N*logN) O_max(N^2, N^3*logN) where N is a children number.
   void ExpandSets(int inter_index, std::vector<SupersetPtr>* sets);
 
+  /// Populates the sets of supersets of a gate that has already been expanded.
+  /// @param[in] inter_index The index number of the parent node.
+  /// @param[out] sets The final Supersets from the children if there is a gate.
+  /// @returns true if sets already exist and got copied.
+  /// @returns false if the gate is not yet encountered.
+  /// @note This function works together with SaveExpandedSets.
+  bool GetExpandedSets(int inter_index, std::vector<SupersetPtr>* sets);
+
+  /// Saves the expanded sets in case the gate is repeated. The sets are
+  /// @param[in] inter_index The index number of the parent node.
+  /// saved in repeat_exp_ container.
+  /// @param[in] sets The expanded Supersets from the children.
+  /// @note This function works together with GetExpandedSets.
+  void SaveExpandedSets(int inter_index, const std::vector<SupersetPtr>& sets);
+
   /// Expands sets for OR operator.
   /// @param[in] mult The positive(1) or negative(-1) event indicator.
   /// @param[in] events_children The indices of the children of the event.
