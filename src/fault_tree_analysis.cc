@@ -160,8 +160,9 @@ void FaultTreeAnalysis::ExpandTree(const SupersetPtr& set_with_gates,
 
 void FaultTreeAnalysis::ExpandSets(int inter_index,
                                    std::vector< SupersetPtr >* sets) {
-  // Assumes sets are empty.
   assert(sets->empty());
+  assert(inter_index != 0);
+
   if (FaultTreeAnalysis::GetExpandedSets(inter_index, sets)) return;
 
   // Populate intermediate and primary events of the top.
@@ -170,23 +171,30 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
       int_to_inter_.find(std::abs(inter_index))->second->children(),
       &events_children);
 
-  std::string gate = int_to_inter_.find(std::abs(inter_index))->second->type();
+  if (inter_index > 0) {
+    FaultTreeAnalysis::ExpandPositiveGate(inter_index, events_children, sets);
+  } else {
+    FaultTreeAnalysis::ExpandNegativeGate(-inter_index, events_children, sets);
+  }
 
+  SaveExpandedSets(inter_index, *sets);
+}
+
+void FaultTreeAnalysis::ExpandPositiveGate(
+    int inter_index,
+    const std::vector<int>& events_children,
+    std::vector<SupersetPtr>* sets) {
+  assert(inter_index > 0);
+  std::string gate = int_to_inter_.find(inter_index)->second->type();
   // Type dependent logic.
   if (gate == "or") {
     assert(events_children.size() > 1);
-    if (inter_index > 0) {
-      FaultTreeAnalysis::SetOr(1, events_children, sets);
-    } else {
-      FaultTreeAnalysis::SetAnd(-1, events_children, sets);
-    }
+    FaultTreeAnalysis::SetOr(1, events_children, sets);
+
   } else if (gate == "and" || gate == "inhibit") {
     assert(events_children.size() > 1);
-    if (inter_index > 0) {
-      FaultTreeAnalysis::SetAnd(1, events_children, sets);
-    } else {
-      FaultTreeAnalysis::SetOr(-1, events_children, sets);
-    }
+    FaultTreeAnalysis::SetAnd(1, events_children, sets);
+
   } else if (gate == "atleast") {
     FaultTreeAnalysis::SetAtleast(inter_index, events_children, sets);
 
@@ -195,40 +203,72 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
     FaultTreeAnalysis::SetXor(inter_index, events_children, sets);
 
   } else if (gate == "not") {
-    int mult = (inter_index > 0) ? 1 : -1;
-    // Only one child is expected.
     assert(events_children.size() == 1);
-    FaultTreeAnalysis::SetAnd(-mult, events_children, sets);
+    FaultTreeAnalysis::SetAnd(-1, events_children, sets);
 
   } else if (gate == "nor") {
     assert(events_children.size() > 1);
-    if (inter_index > 0) {
-      FaultTreeAnalysis::SetAnd(-1, events_children, sets);
-    } else {
-      FaultTreeAnalysis::SetOr(1, events_children, sets);
-    }
+    FaultTreeAnalysis::SetAnd(-1, events_children, sets);
+
   } else if (gate == "nand") {
     assert(events_children.size() > 1);
-    if (inter_index > 0) {
-      FaultTreeAnalysis::SetOr(-1, events_children, sets);
-    } else {
-      FaultTreeAnalysis::SetAnd(1, events_children, sets);
-    }
+    FaultTreeAnalysis::SetOr(-1, events_children, sets);
+
   } else if (gate == "null") {
-    int mult = (inter_index > 0) ? 1 : -1;
-    // Only one child is expected.
     assert(events_children.size() == 1);
-    FaultTreeAnalysis::SetAnd(mult, events_children, sets);
+    FaultTreeAnalysis::SetAnd(1, events_children, sets);
 
   } else {
     boost::to_upper(gate);
     std::string msg = "No algorithm defined for " + gate;
     throw scram::ValueError(msg);
   }
-
-  SaveExpandedSets(inter_index, *sets);
 }
 
+void FaultTreeAnalysis::ExpandNegativeGate(
+    int inter_index,
+    const std::vector<int>& events_children,
+    std::vector<SupersetPtr>* sets) {
+  assert(inter_index > 0);
+  std::string gate = int_to_inter_.find(inter_index)->second->type();
+  // Type dependent logic.
+  if (gate == "or") {
+    assert(events_children.size() > 1);
+    FaultTreeAnalysis::SetAnd(-1, events_children, sets);
+
+  } else if (gate == "and" || gate == "inhibit") {
+    assert(events_children.size() > 1);
+    FaultTreeAnalysis::SetOr(-1, events_children, sets);
+
+  } else if (gate == "atleast") {
+    FaultTreeAnalysis::SetAtleast(-inter_index, events_children, sets);
+
+  } else if (gate == "xor") {
+    assert(events_children.size() == 2);
+    FaultTreeAnalysis::SetXor(-inter_index, events_children, sets);
+
+  } else if (gate == "not") {
+    assert(events_children.size() == 1);
+    FaultTreeAnalysis::SetAnd(1, events_children, sets);
+
+  } else if (gate == "nor") {
+    assert(events_children.size() > 1);
+    FaultTreeAnalysis::SetOr(1, events_children, sets);
+
+  } else if (gate == "nand") {
+    assert(events_children.size() > 1);
+    FaultTreeAnalysis::SetAnd(1, events_children, sets);
+
+  } else if (gate == "null") {
+    assert(events_children.size() == 1);
+    FaultTreeAnalysis::SetAnd(-1, events_children, sets);
+
+  } else {
+    boost::to_upper(gate);
+    std::string msg = "No algorithm defined for " + gate;
+    throw scram::ValueError(msg);
+  }
+}
 
 void FaultTreeAnalysis::ConvertChildrenToVector(
     const std::map<std::string, EventPtr>& children,

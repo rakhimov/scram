@@ -94,11 +94,27 @@ class FaultTreeAnalysis {
   bool GetExpandedSets(int inter_index, std::vector<SupersetPtr>* sets);
 
   /// Saves the expanded sets in case the gate is repeated. The sets are
-  /// @param[in] inter_index The index number of the parent node.
   /// saved in repeat_exp_ container.
+  /// @param[in] inter_index The index number of the parent node.
   /// @param[in] sets The expanded Supersets from the children.
   /// @note This function works together with GetExpandedSets.
   void SaveExpandedSets(int inter_index, const std::vector<SupersetPtr>& sets);
+
+  /// Expands positive gate's children into supersets.
+  /// @param[in] inter_index The index number of the parent node.
+  /// @param[in] events_children The indices of the children of the event.
+  /// @param[out] sets The final Supersets from the children if there is a gate.
+  void ExpandPositiveGate(int inter_index,
+                          const std::vector<int>& events_children,
+                          std::vector<SupersetPtr>* sets);
+
+  /// Expands complement gate's children into supersets.
+  /// @param[in] inter_index The index number of the parent node.
+  /// @param[in] events_children The indices of the children of the event.
+  /// @param[out] sets The final Supersets from the children if there is a gate.
+  void ExpandNegativeGate(int inter_index,
+                          const std::vector<int>& events_children,
+                          std::vector<SupersetPtr>* sets);
 
   /// Expands sets for OR operator.
   /// @param[in] mult The positive(1) or negative(-1) event indicator.
