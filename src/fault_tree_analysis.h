@@ -135,12 +135,13 @@ class FaultTreeAnalysis {
   /// @param[in] cut_sets Cut sets with primary events.
   /// @param[in] mcs_lower_order Reference minimal cut sets of some order.
   /// @param[in] min_order The order of sets to become minimal.
+  /// @param[out] imcs Min cut sets with indices of events.
   /// @note T_avg(N^3 + N^2*logN + N*logN) = O_avg(N^3)
   void FindMcs(const std::vector< const std::set<int>* >& cut_sets,
                const std::vector< std::set<int> >& mcs_lower_order,
-               int min_order);
+               int min_order,
+               std::vector< std::set<int> >* imcs);
 
-  // -------------------- Algorithm for Cut Set Indexation -----------
   /// Assigns an index to each primary event, and then populates with this
   /// indices new databases of minimal cut sets and primary to integer
   /// converting maps.
@@ -151,9 +152,8 @@ class FaultTreeAnalysis {
   void AssignIndices(const FaultTreePtr& fault_tree);
 
   /// Converts minimal cut sets from indices to strings for future reporting.
-  void SetsToString();
-
-  std::vector< std::set<int> > imcs_;  ///< Min cut sets with indices of events.
+  /// @param[in] imcs Min cut sets with indices of events.
+  void SetsToString(const std::vector< std::set<int> >& imcs);
 
   std::vector<PrimaryEventPtr> int_to_primary_;  ///< Indices to primary events.
   /// Indices of primary events.
@@ -164,7 +164,7 @@ class FaultTreeAnalysis {
   boost::unordered_map<int, GatePtr> int_to_inter_;
   /// Indices of intermediate events.
   boost::unordered_map<std::string, int> inter_to_int_;
-  // ----------------------- Member Variables of this Class -----------------
+
   /// This member is used to provide any warnings about assumptions,
   /// calculations, and settings. These warnings must be written into output
   /// file.
