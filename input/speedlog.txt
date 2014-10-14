@@ -14,21 +14,21 @@ If the current performance is not listed, then the best is the current.
 ----------- Three Motor -c 1e-8 (p = 0.02115378) -------
 Standard build:
 ---------------
-- Prob Calculation  0.650s  |
+- Prob Calculation  0.500s  |
 
 Release build:
 --------------
-- Prob Calculation  0.130s |
+- Prob Calculation  0.030s |
 
 
 ----------- Three Motor -c 0 (p = 0.02115378) ----------
 Standard build:
 ---------------
-- Prob Calculation  25.000s | 30.000s
+- Prob Calculation  23.000s |
 
 Release build:
 --------------
-- Prob Calculation  5.500s  |  6.000s
+- Prob Calculation  1.250s  |
 
 
 ---------- fta-200 -l 16 (mcs = 8351) ---------------
