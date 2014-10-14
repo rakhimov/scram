@@ -12,6 +12,8 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 
+#include <boost/container/flat_set.hpp>
+
 #include <event.h>
 
 class ProbabilityAnalysisTest;
@@ -107,11 +109,20 @@ class ProbabilityAnalysis {
   ///
   /// @note O_avg(M*logM*N*2^N) where N is the number of sets, and M is
   /// the average size of the sets.
-  double ProbOr(int nsums, std::set< std::set<int> >* min_cut_sets);
+  double ProbOr(int nsums,
+                std::set< boost::container::flat_set<int> >* min_cut_sets);
 
   /// Calculates a probability of a minimal cut set, whose members are in AND
   /// relationship with each other. This function assumes independence of each
   /// member.
+  /// @param[in] min_cut_set A flat set of indices of primary events.
+  /// @returns The total probability.
+  /// @note O_avg(N) where N is the size of the passed set.
+  double ProbAnd(const boost::container::flat_set<int>& min_cut_set);
+
+  /// Calculates a probability of a minimal cut set, whose members are in AND
+  /// relationship with each other. This function assumes independence of each
+  /// member. This functionality is provided for the rare event and MCUB.
   /// @param[in] min_cut_set A set of indices of primary events.
   /// @returns The total probability.
   /// @note O_avg(N) where N is the size of the passed set.
@@ -123,9 +134,10 @@ class ProbabilityAnalysis {
   /// @param[out] combo_set A final set resulting from joining el and sets.
   /// @note O_avg(N*M*logM) where N is the size of the set, and M is the
   /// average size of the elements.
-  void CombineElAndSet(const std::set<int>& el,
-                       const std::set< std::set<int> >& set,
-                       std::set< std::set<int> >* combo_set);
+  void CombineElAndSet(
+      const boost::container::flat_set<int>& el,
+      const std::set< boost::container::flat_set<int> >& set,
+      std::set< boost::container::flat_set<int> >* combo_set);
 
   /// Importance analysis of events.
   void PerformImportanceAnalysis();

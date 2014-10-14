@@ -41,7 +41,6 @@ ProbabilityAnalysis::ProbabilityAnalysis(std::string approx, int nsums,
   approx_ = approx;
 }
 
-
 void ProbabilityAnalysis::UpdateDatabase(
     const boost::unordered_map<std::string, PrimaryEventPtr>& primary_events) {
   /// @todo Strange bottleneck upon direct assignment.
@@ -57,13 +56,17 @@ void ProbabilityAnalysis::Analyze(
   ProbabilityAnalysis::IndexMcs(min_cut_sets_);
 
   // Minimal cut sets with higher than cut-off probability.
-  std::set< std::set<int> > mcs_for_prob;
+  using boost::container::flat_set;
+  std::set< flat_set<int> > mcs_for_prob;
   // Iterate minimal cut sets and find probabilities for each set.
   std::vector< std::set<int> >::const_iterator it_min;
   for (it_min = imcs_.begin(); it_min != imcs_.end(); ++it_min) {
     // Calculate a probability of a set with AND relationship.
     double p_sub_set = ProbabilityAnalysis::ProbAnd(*it_min);
-    if (p_sub_set > cut_off_) mcs_for_prob.insert(*it_min);
+    if (p_sub_set > cut_off_) {
+      flat_set<int> mcs(it_min->begin(), it_min->end());
+      mcs_for_prob.insert(mcs);
+    }
 
     // Update a container with minimal cut sets and probabilities.
     prob_of_min_sets_.insert(
@@ -166,8 +169,9 @@ void ProbabilityAnalysis::IndexMcs(
   }
 }
 
-double ProbabilityAnalysis::ProbOr(int nsums,
-                                   std::set< std::set<int> >* min_cut_sets) {
+double ProbabilityAnalysis::ProbOr(
+    int nsums,
+    std::set< boost::container::flat_set<int> >* min_cut_sets) {
   assert(nsums >= 0);
 
   // Recursive implementation.
@@ -181,18 +185,37 @@ double ProbabilityAnalysis::ProbOr(int nsums,
     return ProbabilityAnalysis::ProbAnd(*min_cut_sets->begin());
   }
 
-  // Get one element.
-  std::set< std::set<int> >::iterator it = min_cut_sets->begin();
-  std::set<int> element_one(*it);
+  using boost::container::flat_set;
 
-  // Delete element from the original set. WARNING: the iterator is invalidated.
+  // Get one element.
+  std::set< flat_set<int> >::iterator it = min_cut_sets->begin();
+  flat_set<int> element_one(*it);
+
+  // Delete element from the original set.
   min_cut_sets->erase(it);
-  std::set< std::set<int> > combo_sets;
+  std::set< flat_set<int> > combo_sets;
   ProbabilityAnalysis::CombineElAndSet(element_one, *min_cut_sets, &combo_sets);
 
   return ProbabilityAnalysis::ProbAnd(element_one) +
       ProbabilityAnalysis::ProbOr(nsums, min_cut_sets) -
       ProbabilityAnalysis::ProbOr(nsums - 1, &combo_sets);
+}
+
+double ProbabilityAnalysis::ProbAnd(const boost::container::flat_set<int>& min_cut_set) {
+  // Test just in case the min cut set is empty.
+  if (min_cut_set.empty()) return 0;
+
+  using boost::container::flat_set;
+  double p_sub_set = 1;  // 1 is for multiplication.
+  flat_set<int>::const_iterator it_set;
+  for (it_set = min_cut_set.begin(); it_set != min_cut_set.end(); ++it_set) {
+    if (*it_set > 0) {
+      p_sub_set *= iprobs_[*it_set];
+    } else {
+      p_sub_set *= 1 - iprobs_[std::abs(*it_set)];  // Never zero.
+    }
+  }
+  return p_sub_set;
 }
 
 double ProbabilityAnalysis::ProbAnd(const std::set<int>& min_cut_set) {
@@ -211,13 +234,15 @@ double ProbabilityAnalysis::ProbAnd(const std::set<int>& min_cut_set) {
   return p_sub_set;
 }
 
-void ProbabilityAnalysis::CombineElAndSet(const std::set<int>& el,
-                                          const std::set< std::set<int> >& set,
-                                          std::set< std::set<int> >* combo_set) {
-  std::set< std::set<int> >::iterator it_set;
+void ProbabilityAnalysis::CombineElAndSet(
+    const boost::container::flat_set<int>& el,
+    const std::set< boost::container::flat_set<int> >& set,
+    std::set< boost::container::flat_set<int> >* combo_set) {
+  using boost::container::flat_set;
+  std::set< flat_set<int> >::iterator it_set;
   for (it_set = set.begin(); it_set != set.end(); ++it_set) {
     bool include = true;  // Indicates that the resultant set is not null.
-    std::set<int>::iterator it;
+    flat_set<int>::const_iterator it;
     for (it = el.begin(); it != el.end(); ++it) {
       if (it_set->count(-*it)) {
         include = false;
@@ -225,7 +250,7 @@ void ProbabilityAnalysis::CombineElAndSet(const std::set<int>& el,
       }
     }
     if (include) {
-      std::set<int> member_set(*it_set);
+      flat_set<int> member_set(*it_set);
       member_set.insert(el.begin(), el.end());
       combo_set->insert(combo_set->end(), member_set);
     }
