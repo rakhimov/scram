@@ -8,23 +8,18 @@ Superset::Superset() : null_(false), neg_gates_(0), neg_p_events_(false) {}
 
 void Superset::InsertPrimary(int id) {
   if (!neg_p_events_ && id < 0) neg_p_events_ = true;
-  p_events_.insert(id);
+  if (id > 0) p_events_.insert(p_events_.end(), id);
+  else p_events_.insert(p_events_.begin(), id);
 }
 
 void Superset::InsertGate(int id) {
   if (id < 0) ++neg_gates_;
-  gates_.insert(id);
+  if (id > 0) gates_.insert(gates_.end(), id);
+  else gates_.insert(gates_.begin(), id);
 }
 
 bool Superset::InsertSet(const boost::shared_ptr<Superset>& st) {
   if (null_) return false;
-  if (p_events_.empty() && gates_.empty()) {
-    p_events_ = st->p_events_;
-    gates_ = st->gates_;
-    neg_gates_ = st->neg_gates_;
-    neg_p_events_ = st->neg_p_events_;
-    return true;
-  }
   std::set<int>::iterator it;
   if (neg_p_events_ || st->neg_p_events_) {
     for (it = st->p_events_.begin(); it != st->p_events_.end(); ++it) {

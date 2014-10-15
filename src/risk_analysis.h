@@ -1,7 +1,7 @@
 /// @file risk_analysis.h
 /// Contains the main system for performing analysis.
-#ifndef SCRAM_RISK_ANALYISIS_H_
-#define SCRAM_RISK_ANALYISIS_H_
+#ifndef SCRAM_SRC_RISK_ANALYISIS_H_
+#define SCRAM_SRC_RISK_ANALYISIS_H_
 
 #include <map>
 #include <set>
@@ -12,13 +12,13 @@
 #include <boost/unordered_map.hpp>
 
 #include "element.h"
-#include "error.h"
 #include "event.h"
 #include "fault_tree.h"
 #include "fault_tree_analysis.h"
 #include "grapher.h"
-#include "reporter.h"
+#include "probability_analysis.h"
 #include "settings.h"
+#include "uncertainty_analysis.h"
 #include "xml_parser.h"
 
 class RiskAnalysisTest;
@@ -34,6 +34,8 @@ typedef boost::shared_ptr<scram::HouseEvent> HouseEventPtr;
 
 typedef boost::shared_ptr<scram::FaultTree> FaultTreePtr;
 typedef boost::shared_ptr<scram::FaultTreeAnalysis> FaultTreeAnalysisPtr;
+typedef boost::shared_ptr<scram::ProbabilityAnalysis> ProbabilityAnalysisPtr;
+typedef boost::shared_ptr<scram::UncertaintyAnalysis> UncertaintyAnalysisPtr;
 
 namespace scram {
 
@@ -100,6 +102,44 @@ class RiskAnalysis {
   /// @param[out] ft FaultTree under which this gate is defined.
   void DefineGate(const xmlpp::Element* gate_node, const FaultTreePtr& ft);
 
+  /// Processes the formula of a gate to be defined.
+  /// Currently only one layer formula is supported.
+  /// @param[in] gate The main gate to be defined with the formula.
+  /// @param[in] events The xml node list of children of the gate definition.
+  void ProcessFormula(const GatePtr& gate, const xmlpp::Node::NodeList& events);
+
+  /// Process <event name=id/> cases inside of a one layer gate description.
+  /// @param[in] gate The main gate to be defined with the event as its child.
+  /// @param[out] child The child the currently processed gate.
+  /// @returns true if the child type is identified and it is update.
+  /// @returns false if child type cannot be identified and it is saved for
+  ///                late definition.
+  bool ProcessFormulaEvent(const GatePtr& gate, EventPtr& child);
+
+  /// Process <basic-event name=id/> cases inside of a one layer
+  /// gate description.
+  /// @param[in] event XML element defining this event.
+  /// @param[in] gate The main gate to be defined with the event as its child.
+  /// @param[out] child The child the currently processed gate.
+  void ProcessFormulaBasicEvent(const xmlpp::Element* event,
+                                const GatePtr& gate, EventPtr& child);
+
+  /// Process <house-event name=id/> cases inside of a one layer
+  /// gate description.
+  /// @param[in] event XML element defining this event.
+  /// @param[in] gate The main gate to be defined with the event as its child.
+  /// @param[out] child The child the currently processed gate.
+  void ProcessFormulaHouseEvent(const xmlpp::Element* event,
+                                const GatePtr& gate, EventPtr& child);
+
+  /// Process <gate name=id/> cases inside of a one layer
+  /// gate description.
+  /// @param[in] event XML element defining this event.
+  /// @param[in] gate The main gate to be defined with the event as its child.
+  /// @param[out] child The child the currently processed gate.
+  void ProcessFormulaGate(const xmlpp::Element* event, const GatePtr& gate,
+                          EventPtr& child);
+
   /// Defines and adds a basic event for this analysis.
   /// @param[in] event_node XML element defining the event.
   void DefineBasicEvent(const xmlpp::Element* event_node);
@@ -107,6 +147,17 @@ class RiskAnalysis {
   /// Defines and adds a house event for this analysis.
   /// @param[in] event_node XML element defining the event.
   void DefineHouseEvent(const xmlpp::Element* event_node);
+
+  /// Manages events that are defined late. That is, the id appears as
+  /// <event name="id"/> before any of definition inside a formula.
+  /// The late definition should update if this event is a gate or primary
+  /// event. In addition, all the parents of this late defined event are
+  /// notified to include one child.
+  /// @param[in] event Event that is defined late.
+  /// @returns true if the given event is indeed a late one and
+  ///               database update operations are performed accordingly.
+  /// @returns false if the given event is not late and no action was taken.
+  bool UpdateIfLateEvent(const EventPtr& event);
 
   /// Defines a fault tree for the analysis.
   /// @param[in] ft_node XML element defining the fault tree.
@@ -125,6 +176,11 @@ class RiskAnalysis {
   /// @returns A warning message with the problem description.
   /// @returns An empty string for no problems detected.
   std::string CheckGate(const GatePtr& event);
+
+  /// Checks if an Inhibit gate is initialized correctly.
+  /// @returns A warning message with the problem description.
+  /// @returns An empty string for no problems detected.
+  std::string CheckInhibitGate(const GatePtr& event);
 
   /// @returns Formatted error message with house, basic, or other events
   /// that are not defined.
@@ -170,8 +226,14 @@ class RiskAnalysis {
   /// A collection of fault trees for analysis.
   std::map<std::string, FaultTreePtr> fault_trees_;
 
-  /// A fault tree analyses that are performed.
+  /// Fault tree analyses that are performed.
   std::vector<FaultTreeAnalysisPtr> ftas_;
+
+  /// Probability analyses that are performed.
+  std::vector<ProbabilityAnalysisPtr> prob_analyses_;
+
+  /// Uncertainty analyses that are performed.
+  std::vector<UncertaintyAnalysisPtr> uncertainty_analyses_;
 
   /// Input file path.
   std::string input_file_;
@@ -185,4 +247,4 @@ class RiskAnalysis {
 
 }  // namespace scram
 
-#endif  // SCRAM_RISK_ANALYSIS_H_
+#endif  // SCRAM_SRC_RISK_ANALYSIS_H_

@@ -12,6 +12,8 @@
 #include <boost/filesystem.hpp>
 #include <boost/date_time.hpp>
 
+#include "error.h"
+
 namespace fs = boost::filesystem;
 
 namespace scram {
@@ -69,7 +71,6 @@ void Grapher::GraphFaultTree(const FaultTreePtr& fault_tree,
   gate_colors.insert(std::make_pair("not", "red"));
   gate_colors.insert(std::make_pair("xor", "brown"));
   gate_colors.insert(std::make_pair("inhibit", "yellow"));
-  gate_colors.insert(std::make_pair("vote", "cyan"));
   gate_colors.insert(std::make_pair("atleast", "cyan"));
   gate_colors.insert(std::make_pair("null", "gray"));
   gate_colors.insert(std::make_pair("nor", "magenta"));
@@ -86,7 +87,7 @@ void Grapher::GraphFaultTree(const FaultTreePtr& fault_tree,
       << "color=" << gate_color << ", "
       << "label=\"" << top_event_->orig_id() << "\\n"
       << "{ " << gate;
-  if (gate == "VOTE" || gate == "ATLEAST") {
+  if (gate == "ATLEAST") {
     out << " " << top_event_->vote_number() << "/"
         << top_event_->children().size();
   }

@@ -1,0 +1,26 @@
+measure ::=
+  <measure
+    [ name="identifier" ]
+    [ description="text" ]
+  >
+    [ <mean value="float" > ]
+    [ <standard-deviation value="float" > ]
+    [ <confidence-range
+        percentage="float"
+        lower-bound="float"
+        upper-bound="float" > ]
+    [ <error-factor percentage="float" value="float" > ]
+    [ quantiles ]
+  </measure>
+
+quantiles ::=
+  <quantiles number="integer" >
+    quantile+
+  </quantiles>
+
+quantile ::=
+  <quantile number="integer"
+    [ mean="float" ]
+    [ lower-bound="float" ]
+    [ upper-bound="float" ]
+  />

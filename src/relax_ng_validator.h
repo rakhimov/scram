@@ -10,8 +10,8 @@
  * included with libxml++ as the file COPYING.
  */
 
-#ifndef SCRAM_RELAX_NG_VALIDATOR_H_
-#define SCRAM_RELAX_NG_VALIDATOR_H_
+#ifndef SCRAM_SRC_RELAX_NG_VALIDATOR_H_
+#define SCRAM_SRC_RELAX_NG_VALIDATOR_H_
 
 #include <libxml/relaxng.h>
 #include <libxml++/document.h>
@@ -54,4 +54,4 @@ class RelaxNGValidator {
 
 }  // namespace scram
 
-#endif  // SCRAM_RELAX_NG_VALIDATOR_H_
+#endif  // SCRAM_SRC_RELAX_NG_VALIDATOR_H_

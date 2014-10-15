@@ -1,0 +1,88 @@
+Speed recordings for scram.
+
+System specs: Core i5-2410M, Ubuntu 14.04 64bit
+GCC version: 4.8.2
+Boost version: 1.55
+
+If the current performance is not listed, then the best is the current.
+
+----------- Input name [flags] [(results)] -----------
+
+              Best Achieved | Current Performance
+
+
+----------- Three Motor -c 1e-8 (p = 0.02115378) -------
+Standard build:
+---------------
+- Prob Calculation  0.330s  |
+
+Release build:
+--------------
+- Prob Calculation  0.025s |
+
+
+----------- Three Motor -c 0 (p = 0.02115378) ----------
+Standard build:
+---------------
+- Prob Calculation  15.000s |
+
+Release build:
+--------------
+- Prob Calculation  1.000s  |
+
+
+---------- fta-200 -l 16 (mcs = 8351) ---------------
+Standard build:
+---------------
+- Tree Expansion    3.700s  |
+- MCS Generation    1.100s  |
+
+Release build:
+--------------
+- Tree Expansion    0.790s  |
+- MCS Generation    0.240s  |
+
+
+---------- fta-200 -l 17 (mcs = 8487) ---------------
+Standard build:
+---------------
+- Tree Expansion    15.50s  |
+- MCS Generation    90.40s  |
+
+Release build:
+--------------
+- Tree Expansion    3.300s  |
+- MCS Generation    12.00s  |
+
+
+---------- Baobab -l 6 (mcs = 2684) ----------------
+Standard build:
+---------------
+- Tree Expansion    29.20s  |
+- MCS Generation    0.500s  |
+
+Release build:
+--------------
+- Tree Expansion    5.600s  |
+- MCS Generation    0.070s  |
+
+
+---------- Baobab -l 7 (mcs = 17432) ----------------
+Release build:
+--------------
+- Tree Expansion    86.80s  |
+- MCS Generation    2.500s  |
+
+
+---------- CEA9601 -l 4 (mcs = 2732) ----------------
+Release build:
+--------------
+- Tree Expansion    19.50s  |
+- MCS Generation    0.050s  |
+
+
+---------- CEA9601 -l 5 (mcs = 3274) ----------------
+Release build:
+--------------
+- Tree Expansion    43.40s  |
+- MCS Generation    0.130s  |

@@ -69,6 +69,8 @@ Minor Enhancements and Capabilities
 
   * Birnbaum
 
+  * Critical
+
   * Risk Reduction Worth
 
   * Risk Achievement Worth

@@ -1,7 +1,7 @@
 /// @file reporter.h
 /// Reporter of results.
-#ifndef SCRAM_REPORTER_H_
-#define SCRAM_REPORTER_H_
+#ifndef SCRAM_SRC_REPORTER_H_
+#define SCRAM_SRC_REPORTER_H_
 
 #include <fstream>
 #include <iostream>
@@ -12,6 +12,9 @@
 #include <vector>
 
 #include "fault_tree_analysis.h"
+#include "probability_analysis.h"
+
+typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
 
 namespace scram {
 /// @class Reporter
@@ -33,17 +36,40 @@ class Reporter {
   void ReportFta(const boost::shared_ptr<const scram::FaultTreeAnalysis>& fta,
                  std::string output);
 
+  /// Reports the results of probability analysis with minimal cut sets.
+  /// @param[in] prob_analysis ProbabilityAnalysis with results.
+  /// @param[out] output The output destination.
+  /// @note This function must be called only after analysis is done.
+  void ReportProbability(
+      const boost::shared_ptr<const scram::ProbabilityAnalysis>& prob_analysis,
+      std::string output);
+
  private:
-  /// Reports for MC results.
-  /// param[in] terms Collection of sets to be printed.
-  /// param[in] fta Pointer to the Fault Tree Analysis with the events.
-  /// param[in] out The output stream.
-  void ReportMcTerms(
-      const std::vector< std::set<int> >& terms,
-      const boost::shared_ptr<const scram::FaultTreeAnalysis>& fta,
+  /// Produces lines for printing minimal cut sets.
+  /// @param[in] min_cut_sets Minimal cut sets to print.
+  /// @param[in] primary_events Primary events in the minimal cut sets.
+  /// @param[out] lines Lines representing minimal cut sets.
+  void McsToPrint(
+      const std::set< std::set<std::string> >& min_cut_sets,
+      const boost::unordered_map<std::string, PrimaryEventPtr>& primary_events,
+      std::map< std::set<std::string>, std::vector<std::string> >* lines);
+
+  /// Reports minimal cut sets' probabilities.
+  /// @param[in] prob_analysis ProbabilityAnalysis with results.
+  /// @param[in] out Output stream.
+  void ReportMcsProb(
+      const boost::shared_ptr<const scram::ProbabilityAnalysis>& prob_analysis,
+      std::ostream& out);
+
+  /// Reports results of importance analysis in probability analysis.
+  /// @param[in] prob_analysis ProbabilityAnalysis with results.
+  /// Reports as "Primary Event Analysis".
+  /// @param[in] out Output stream.
+  void ReportImportance(
+      const boost::shared_ptr<const scram::ProbabilityAnalysis>& prob_analysis,
       std::ostream& out);
 };
 
 }  // namespace scram
 
-#endif  // SCRAM_REPORTER_H_
+#endif  // SCRAM_SRC_REPORTER_H_

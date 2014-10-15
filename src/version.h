@@ -1,8 +1,8 @@
 /// @file version.h
 /// Set of functions with version information of the core and
 /// dependencies.
-#ifndef SCRAM_VERSION_H_
-#define SCRAM_VERSION_H_
+#ifndef SCRAM_SRC_VERSION_H_
+#define SCRAM_SRC_VERSION_H_
 
 #define SCRAM_VERSION_MAJOR 0
 #define SCRAM_VERSION_MINOR 3
@@ -26,4 +26,4 @@ const char* xml2();
 }  // namespace version
 }  // namespace scram
 
-#endif  // SCRAM_VERSION_H_
+#endif  // SCRAM_SRC_VERSION_H_

@@ -1,7 +1,7 @@
 /// @file env.h
 /// Environmental Variables
-#ifndef SCRAM_ENV_H_
-#define SCRAM_ENV_H_
+#ifndef SCRAM_SRC_ENV_H_
+#define SCRAM_SRC_ENV_H_
 
 #include <string>
 
@@ -21,4 +21,4 @@ class Env {
 
 }  // namespace scram
 
-#endif  // SCRAM_ENV_H_
+#endif  // SCRAM_SRC_ENV_H_

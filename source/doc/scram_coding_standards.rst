@@ -22,20 +22,20 @@ Currently nonconforming cases in the source code:
 -------------------------------------------------
 
 * Exceptions are used. (This is not recommended by GCSG.)
-* Header guards do not include the source folder name.
 * Streams are used instead of *printf-like routines*.
 * GUI front-end source files are a mix of the Qt style and Google style.
 * C++11 features are not allowed. Only Boost features are used instead.
 
 The quality of the code is checked by the following tools:
 ==========================================================
-#. Performance Profiling with `Gprof`_.
+#. Performance profiling with `Gprof`_.
 #. Test coverage check with `Gcov`_ and reporting with `Coveralls`_.
 #. Test status is tracked on `CDash`_.
 #. Memory management bugs and leaks with `Valgrind`_.
 #. Static code analysis with `Coverity`_.
 #. Cyclomatic complexity analysis with `Lizard`_.
-#. Google Style Conformance Check with `Cpplint`_.
+#. Google style conformance check with `Cpplint`_.
+#. Common C++ code problem check with cppclean_.
 #. Python code quality check with `Pylint`_.
 
 .. _`Gprof`:
@@ -54,6 +54,8 @@ The quality of the code is checked by the following tools:
     https://github.com/terryyin/lizard
 .. _`Cpplint`:
     https://google-styleguide.googlecode.com/svn/trunk/cpplint/
+.. _cppclean:
+    https://github.com/myint/cppclean
 .. _`Pylint`:
     http://www.pylint.org/
 

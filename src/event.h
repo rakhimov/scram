@@ -1,7 +1,7 @@
 /// @file event.h
 /// Contains event classes for fault trees.
-#ifndef SCRAM_EVENT_H_
-#define SCRAM_EVENT_H_
+#ifndef SCRAM_SRC_EVENT_H_
+#define SCRAM_SRC_EVENT_H_
 
 #include <map>
 #include <string>
@@ -9,7 +9,6 @@
 #include <boost/shared_ptr.hpp>
 
 #include "element.h"
-#include "error.h"
 
 namespace scram {
 
@@ -177,4 +176,4 @@ class HouseEvent: public scram::PrimaryEvent {
 
 }  // namespace scram
 
-#endif  // SCRAM_EVENT_H_
+#endif  // SCRAM_SRC_EVENT_H_

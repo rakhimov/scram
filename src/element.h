@@ -1,7 +1,7 @@
 /// @file element.h
 /// Helper classes, structs, and properties common to all other classes.
-#ifndef SCRAM_ELEMENT_H_
-#define SCRAM_ELEMENT_H_
+#ifndef SCRAM_SRC_ELEMENT_H_
+#define SCRAM_SRC_ELEMENT_H_
 
 #include <string>
 #include <map>
@@ -65,4 +65,4 @@ class Element {
 
 }  // namespace scram
 
-#endif  // SCRAM_ELEMENT_H_
+#endif  // SCRAM_SRC_ELEMENT_H_

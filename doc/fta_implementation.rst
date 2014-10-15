@@ -16,7 +16,7 @@ Currently Supported Gate Types
 - XOR
 - NULL
 - INHIBIT
-- VOTE
+- ATLEAST
 
 Currently Supported Symbols
 ==============================

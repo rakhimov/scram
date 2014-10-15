@@ -1,0 +1,18 @@
+sum-of-products ::=
+  <sum-of-products
+    [ name="identifier" ]
+    [ description="text" ]
+    [ basic-events="integer" ]
+    [ products="integer" ]
+  >
+    product*
+  </sum-of-products>
+
+product ::=
+  <product [ order="integer" ]>
+    literal*
+  </product>
+
+literal ::=
+    <basic-event name="identifier"/>
+  | <not> <basic-event name="identifier"/> </not>

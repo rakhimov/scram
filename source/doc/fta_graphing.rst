@@ -20,7 +20,7 @@ SCRAM Fault Tree Graphing Specifics
         :NOT:         Red
         :XOR:         Brown
         :Inhibit:     Yellow
-        :VOTE:        Cyan
+        :ATLEAST:     Cyan
         :NULL:        Gray
         :NOR:         Magenta
         :NAND:        Orange

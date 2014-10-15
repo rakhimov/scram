@@ -1,7 +1,7 @@
 /// @file fault_tree.h
 /// Fault Tree.
-#ifndef SCRAM_FAULT_TREE_H_
-#define SCRAM_FAULT_TREE_H_
+#ifndef SCRAM_SRC_FAULT_TREE_H_
+#define SCRAM_SRC_FAULT_TREE_H_
 
 #include <map>
 #include <string>
@@ -12,7 +12,6 @@
 #include <boost/unordered_map.hpp>
 
 #include "element.h"
-#include "error.h"
 #include "event.h"
 
 typedef boost::shared_ptr<scram::Event> EventPtr;
@@ -112,4 +111,4 @@ class FaultTree : public Element {
 
 }  // namespace scram
 
-#endif  // SCRAM_FAULT_TREE_H_
+#endif  // SCRAM_SRC_FAULT_TREE_H_
