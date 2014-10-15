@@ -17,11 +17,11 @@ scram ThreeMotor/three_motor.xml -c 0 | grep 'Probability'
 
 echo -e '\n\n'
 echo -e '200_Event -l 16'
-scram 200_Event/fta_tree.xml -l 16 | head -n 15
+scram 200_Event/fta_tree.xml -l 16 -r | head -n 15
 
 echo -e '\n\n'
 echo -e '200_Event -l 17'
-scram 200_Event/fta_tree.xml -l 17 | head -n 15
+scram 200_Event/fta_tree.xml -l 17 -r | head -n 15
 
 echo -e '\n\n'
 echo -e 'Baobab -l 6'

@@ -1055,7 +1055,6 @@ Name of a file without extension to write the fault tree: fta_tree
       </or>
     </define-gate>
   </define-fault-tree>
-  <!--
   <model-data>
     <define-basic-event name="P1">
       <float value="0.00116538480434"/>
@@ -1658,5 +1657,4 @@ Name of a file without extension to write the fault tree: fta_tree
       <float value="0.0261902704624"/>
     </define-basic-event>
   </model-data>
-  -->
 </opsa-mef>
