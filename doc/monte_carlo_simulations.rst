@@ -16,7 +16,7 @@ for example, to test the analysis.
 Monte Carlo (MC) Analysis Implementation
 ========================================
 
-#. Initializing events with distributions. *Not Supported*
+#. Initialization of events with distributions. *Not Supported*
 
 #. If MC Analysis is not requested, perform the standard analysis with
    average probabilities. *Not Supported*

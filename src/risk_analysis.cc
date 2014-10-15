@@ -161,18 +161,30 @@ void RiskAnalysis::Analyze() {
 void RiskAnalysis::Report(std::string output) {
   Reporter rp = Reporter();
 
+  // Check if output to file is requested.
+  std::streambuf* buf;
+  std::ofstream of;
+  if (output != "cli") {
+    of.open(output.c_str());
+    buf = of.rdbuf();
+
+  } else {
+    buf = std::cout.rdbuf();
+  }
+  std::ostream out(buf);
+
   if (!orphan_primary_events_.empty())
-    rp.ReportOrphans(orphan_primary_events_, output);
+    rp.ReportOrphans(orphan_primary_events_, out);
 
   std::vector<FaultTreeAnalysisPtr>::iterator it;
   for (it = ftas_.begin(); it != ftas_.end(); ++it) {
-    rp.ReportFta(*it, output);
+    rp.ReportFta(*it, out);
   }
 
   if (prob_requested_) {
     std::vector<ProbabilityAnalysisPtr>::iterator it_p;
     for (it_p = prob_analyses_.begin(); it_p != prob_analyses_.end(); ++it_p) {
-      rp.ReportProbability(*it_p, output);
+      rp.ReportProbability(*it_p, out);
     }
   }
 }

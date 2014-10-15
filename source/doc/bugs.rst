@@ -16,5 +16,5 @@ Minor Issues
 - The current algorithm is very inefficient with fault trees with many
   combination gates.
 
-- Importances are calculated assuming non-coherent trees. If assumptions fails,
-  no warning is given. The current importance analysis is flawed.
+- Importances are calculated assuming non-coherent trees. If assumptions fail,
+  no warning is given. The current importance analysis is very limited.

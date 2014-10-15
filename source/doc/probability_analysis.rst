@@ -1,8 +1,8 @@
 .. _prob_calc:
 
-###############################################
-SCRAM FTA: Probability Calculations
-###############################################
+##########################
+SCRAM Probability Analysis
+##########################
 
 Since minimal cut sets may neither be mutually exclusive
 nor independent, direct use of the sets' total probabilities may be inaccurate.
@@ -16,7 +16,7 @@ primary events in the fault tree.
 
 
 The Exact Probability Calculation Implementation
-========================================================
+=================================================
 
 The general probability formula for sets is expanded recursively.
 In each iteration, some sets are merged in order to account for common members
@@ -24,16 +24,16 @@ in minimal cut sets. This algorithm is also used for series expansion, giving
 the Sylvester-Poincaré expansion.
 
 The Approximate Probability Calculation Implementation
-========================================================
+=======================================================
 
 Approximate calculations are implemented in order to reduce calculation
 time. The series expansion of the exact formula is applied.
-This feature is the default. The default value for series is set to N
-(*number of the sets*) to get all the series included.
+This feature is the default. The default value for series is set to 7
+to get a conservative result while having acceptable performance.
 In general, it is impractical to include more than 8 sums, so the suggestion
 is to include between 4 and 8 sums.
 In addition, cut-off probability for cut sets can be applied to discard
-sets with low probabilities.
+sets with low probabilities. The default cut-off is 1e-8.
 
 The Rare-Event Approximation
 =============================
@@ -55,7 +55,7 @@ provides non-conservative estimation for non-coherent trees containing
 "You Can't Just Build Trees and Call It PSA."
 
 Probability Types
-========================================================
+=================
 
 **P-model**
     The probability of an event occurring when the time to failure is
@@ -77,3 +77,27 @@ Probability Types
     .. math::
 
         P \approx \lambda*t
+
+Probability Calculations
+========================
+
+The described assumptions may be applied for calculation of a cut set and total
+probabilities:
+
+- Independence of events (dependence may be simulated by common cause).
+- Rare event approximation (must be enforced by a user).
+- Min-Cut-Upper Bound Approximation (must be enforced by a user).
+- Cut-off probability for minimal cut sets (the default value is 1e-8).
+- Brute force probability calculation if the rare event approximation is not
+  good enough. This brute force calculation may be expensive and require
+  much more time. (the default method for probability calculations).
+
+.. note::
+    For most calculations, rare event approximation and event
+    independence may be applied satisfactorily. However, if the rare event
+    approximation produces too large probability, SCRAM can use the upper bound
+    method. An appropriate warning will be given even if the user enforces
+    the rare event approximation. It is suggested that the maximum number of
+    series should be around 4-8. The default value is conservative 7.
+    There are N sums and :math:`2^N` terms for N minimal cut sets, so
+    the N number of series for calculations can be enforced by a user.

@@ -72,6 +72,44 @@ class IOError : public Error {
   explicit IOError(std::string msg) : Error(msg) {}
 };
 
+/// @class DoubleDefinition
+/// For cases when events or practically anything is defined several times.
+class DoubleDefinition : public Error {
+ public:
+  /// Constructs a new double definition error with a provided message.
+  /// @param[in] msg The message to be passed with this error.
+  explicit DoubleDefinition(std::string msg) : Error(msg) {}
+};
+
+/// @class InvalidArgument
+/// This error class can be used to indicate unacceptable arguments.
+class IllegalArgument : public Error {
+ public:
+  /// Constructs a new illegal argument error with a provided message.
+  /// @param[in] msg The message to be passed with this error.
+  explicit IllegalArgument(std::string msg) : Error(msg) {}
+};
+
+/// @class LogicError
+/// Signals internal logic errors, for example, pre-condition failure.
+class LogicError : public Error {
+ public:
+  /// Constructs a new logic error with a provided message.
+  /// @param[in] msg The message to be passed with this error.
+  explicit LogicError(std::string msg) : Error(msg) {}
+};
+
+/// @class IllegalOperation
+/// This error can be used to indicate that call for a method is not
+/// what is intended from an object derived from another class that actually
+/// supports the operation.
+class IllegalOperation : public Error {
+ public:
+  /// Constructs a new illegal operation error with a provided message.
+  /// @param[in] msg The message to be passed with this error.
+  explicit IllegalOperation(std::string msg) : Error(msg) {}
+};
+
 }  // namespace scram
 
 #endif  // SCRAM_SRC_ERROR_H_

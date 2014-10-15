@@ -40,21 +40,21 @@ Documentation:
     :maxdepth: 1
 
     doc/scram_description
-    doc/scram_input_file
+    doc/input_file
     doc/opsa_support
-    doc/scram_gui
+    doc/gui
     doc/fta_calls
     doc/fta_implementation
     doc/fta_mcs_algorithm
-    doc/fta_probability_calc
+    doc/probability_analysis
     doc/fta_graphing
     doc/fault_tree_generator
     doc/monte_carlo_simulations
-    doc/fta_ccf_analysis
-    doc/scram_code_structure
-    doc/scram_coding_standards
+    doc/common_cause_analysis
+    doc/code_structure
+    doc/coding_standards
     doc/references
-    doc/scram_bugs
+    doc/bugs
     doc/xml_comments
     doc/todo
 

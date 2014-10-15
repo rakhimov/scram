@@ -23,26 +23,26 @@ class Reporter {
  public:
   /// Reports orphan primary events.
   /// @param[in] orphan_primary_events Container of orphan events.
-  /// @param[out] output The output destination.
+  /// @param[out] out Output stream.
   void ReportOrphans(
       const std::set<boost::shared_ptr<scram::PrimaryEvent> >&
           orphan_primary_events,
-      std::string output);
+      std::ostream& out);
 
   /// Reports the results of analysis to a specified output destination.
   /// @param[in] fta Fault Tree Analysis with results.
-  /// @param[out] output The output destination.
+  /// @param[out] out Output stream.
   /// @note This function must be called only after analysis is done.
   void ReportFta(const boost::shared_ptr<const scram::FaultTreeAnalysis>& fta,
-                 std::string output);
+                 std::ostream& out);
 
   /// Reports the results of probability analysis with minimal cut sets.
   /// @param[in] prob_analysis ProbabilityAnalysis with results.
-  /// @param[out] output The output destination.
+  /// @param[out] out Output stream.
   /// @note This function must be called only after analysis is done.
   void ReportProbability(
       const boost::shared_ptr<const scram::ProbabilityAnalysis>& prob_analysis,
-      std::string output);
+      std::ostream& out);
 
  private:
   /// Produces lines for printing minimal cut sets.
@@ -56,7 +56,7 @@ class Reporter {
 
   /// Reports minimal cut sets' probabilities.
   /// @param[in] prob_analysis ProbabilityAnalysis with results.
-  /// @param[in] out Output stream.
+  /// @param[out] out Output stream.
   void ReportMcsProb(
       const boost::shared_ptr<const scram::ProbabilityAnalysis>& prob_analysis,
       std::ostream& out);
@@ -64,7 +64,7 @@ class Reporter {
   /// Reports results of importance analysis in probability analysis.
   /// @param[in] prob_analysis ProbabilityAnalysis with results.
   /// Reports as "Primary Event Analysis".
-  /// @param[in] out Output stream.
+  /// @param[out] out Output stream.
   void ReportImportance(
       const boost::shared_ptr<const scram::ProbabilityAnalysis>& prob_analysis,
       std::ostream& out);
