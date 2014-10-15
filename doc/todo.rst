@@ -115,16 +115,6 @@ Platform Support
 Coding Specific
 ===============
 
-- More exception types as needed:  *Moderate*
-
-  * Invalid Argument
-
-  * Illegal Operation
-
-  * Logic Error
-
-  * Double Definition
-
 - Logging system. *Moderate*
 
 - Benchmark tests:
