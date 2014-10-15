@@ -44,7 +44,7 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
         ("mcub,m", "use the MCUB approximation for probability calculations")
         ("limit-order,l", po::value<int>()->default_value(20),
          "upper limit for cut set order")
-        ("nsums,s", po::value<int>()->default_value(1000000),
+        ("nsums,s", po::value<int>()->default_value(7),
          "number of sums in series expansion for probability calculations")
         ("cut-off,c", po::value<double>()->default_value(1e-8),
          "cut-off probability for cut sets")

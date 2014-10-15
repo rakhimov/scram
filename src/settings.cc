@@ -7,7 +7,7 @@
 namespace scram {
 
 Settings::Settings()
-    : num_sums_(1e6),
+    : num_sums_(7),
       limit_order_(20),
       approx_("no"),
       cut_off_(1e-8),
