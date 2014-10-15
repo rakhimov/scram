@@ -216,7 +216,7 @@ minimal cut sets. If events in the minimal cut sets have their probabilities
 expressed by a statistical distribution with some uncertainties, these
 uncertainties propagate to the total probability of the top event. This
 analysis is performed employing the Monte Carlo Method. The values of
-probabilities are sampled to calculated the distribution of the total
+probabilities are sampled to calculate the distribution of the total
 probability.
 
 

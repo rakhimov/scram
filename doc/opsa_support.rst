@@ -75,3 +75,4 @@ Deviations from OpenPSA MEF
   children.
 - The correct number of a gate's children is required.
 - Unused primary events are ignored but reported as warning.
+- Double definition of events is considered an error instead of warning.

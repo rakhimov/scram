@@ -17,10 +17,13 @@ This project attempts to build a simple command line tool for risk analysis.
 Static Fault Tree Analysis is implemented. The initial support for the OpenPSA_
 model exchange format is provided.
 
-In addition, a random fault tree generator is provided to explore the
-performance of *SCRAM*. A fault tree can be drawn by Graphviz Dot tool.
+SCRAM generates a Graphviz Dot instruction file for a graphical
+representation of a fault tree.
 
 An experimental GUI front-end is under development using `Qt`_.
+
+In addition, a random fault tree generator script is provided to explore the
+performance of *SCRAM*.
 
 A full description of *SCRAM* and its current capabilities
 is in `documentation`_.
@@ -29,8 +32,8 @@ is in `documentation`_.
 .. _`documentation`: http://rakhimov.github.io/scram
 .. _`Qt`: http://qt-project.org/
 
-To get *SCRAM*, you can download pre-build packages on Sourceforge_ or follow the
-building and installing instructions bellow.
+To get *SCRAM*, you can download pre-build packages or a virtual machine image
+on Sourceforge_ or follow the building and installing instructions bellow.
 
 .. _Sourceforge:
     https://sourceforge.net/projects/iscram/files/
@@ -90,7 +93,7 @@ Linux Systems
 -------------
 
 This process is tested using `Travis CI`_
-Ubuntu 12.04 LTS using apt-get as the package manager.
+Ubuntu 12.04 LTS using apt-get as a package manager.
 
 The command to install a dependency takes the form of:
 
@@ -196,7 +199,7 @@ If you'd prefer to copy/paste, the following line will install all major
     sudo port install cmake boost libxml2 libxmlxx2 python27 graphviz
 
 
-The optional installation for GUI biulding:
+The optional installation for GUI building:
 
 .. code-block:: bash
 
@@ -239,7 +242,7 @@ The optional GUI front-end is built using Qt Creator and qmake.
 
 In order to build statically and link statically, change two variables in
 *CMakeList.txt*: **BUILD_SHARED_LIBS** and **USE_STATIC_LIBS**.
-The GTest is build statically always irrespective to the above variables.
+GoogleTest is always build statically irrespective to the above variables.
 
 Windows
 =======

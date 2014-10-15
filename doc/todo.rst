@@ -125,8 +125,6 @@ Coding Specific
 
   * Double Definition
 
-- Lower the Cyclomatic complexity.  *High*
-
 - Logging system. *Moderate*
 
 - Benchmark tests:

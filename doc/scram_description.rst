@@ -32,7 +32,8 @@ Fault Tree Analysis
 
 #. Perform cut set generation or other analysis.
 
-#. Perform numerical analysis: Rare event approximation and independence of events.
+#. Perform numerical analysis:
+   Rare event approximation and independence of events.
    Rare event approximation is used only if enforced by a user.
 
 #. Output the user specified analysis results. The output is sorted by
