@@ -24,20 +24,8 @@ namespace scram {
 void Reporter::ReportOrphans(
     const std::set<boost::shared_ptr<scram::PrimaryEvent> >&
         orphan_primary_events,
-    std::string output) {
+    std::ostream& out) {
   if (orphan_primary_events.empty()) return;
-
-  // Check if output to file is requested.
-  std::streambuf* buf;
-  std::ofstream of;
-  if (output != "cli") {
-    of.open(output.c_str());
-    buf = of.rdbuf();
-
-  } else {
-    buf = std::cout.rdbuf();
-  }
-  std::ostream out(buf);
 
   out << "WARNING! Found unused primary events:\n";
   std::set<boost::shared_ptr<scram::PrimaryEvent> >::const_iterator it;
@@ -50,19 +38,7 @@ void Reporter::ReportOrphans(
 
 void Reporter::ReportFta(
     const boost::shared_ptr<const scram::FaultTreeAnalysis>& fta,
-    std::string output) {
-  // Check if output to file is requested.
-  std::streambuf* buf;
-  std::ofstream of;
-  if (output != "cli") {
-    of.open(output.c_str());
-    buf = of.rdbuf();
-
-  } else {
-    buf = std::cout.rdbuf();
-  }
-  std::ostream out(buf);
-
+    std::ostream& out) {
   // An iterator for a set with ids of events.
   std::set<std::string>::const_iterator it_set;
 
@@ -155,25 +131,11 @@ void Reporter::ReportFta(
 
 void Reporter::ReportProbability(
     const boost::shared_ptr<const scram::ProbabilityAnalysis>& prob_analysis,
-    std::string output) {
-  // Check if output to file is requested.
-  std::streambuf* buf;
-  std::ofstream of;
-  if (output != "cli") {
-    of.open(output.c_str());
-    buf = of.rdbuf();
-
-  } else {
-    buf = std::cout.rdbuf();
-  }
-  std::ostream out(buf);
-
+    std::ostream& out) {
   // Print warnings of calculations.
   if (prob_analysis->warnings_ != "") {
     out << "\n" << prob_analysis->warnings_ << "\n";
   }
-
-  Reporter::ReportMcsProb(prob_analysis, out);
 
   out << "\n" << "Probability Analysis" << "\n";
   out << "====================\n\n";
@@ -202,6 +164,10 @@ void Reporter::ReportProbability(
 
   out.flush();
 
+  Reporter::ReportMcsProb(prob_analysis, out);
+
+  out.flush();
+
   Reporter::ReportImportance(prob_analysis, out);
 
   out.flush();
@@ -225,7 +191,7 @@ void Reporter::ReportMcsProb(
                        prob_analysis->primary_events_,
                        &lines);
 
-  out << "Minimal Cut Set Probabilities Sorted by Order:\n";
+  out << "\nMinimal Cut Set Probabilities Sorted by Order:\n";
   out << "----------------------------------------------\n";
   out.flush();
   int order = 1;  // Order of minimal cut sets.
@@ -356,7 +322,7 @@ void Reporter::ReportImportance(
     const boost::shared_ptr<const scram::ProbabilityAnalysis>& prob_analysis,
     std::ostream& out) {
   // Primary event analysis.
-  out << "Primary Event Analysis:\n";
+  out << "\nPrimary Event Analysis:\n";
   out << "-----------------------\n";
   out << std::left;
   out << std::setw(20) << "Event" << std::setw(20) << "Failure Contrib."
