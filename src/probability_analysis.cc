@@ -16,6 +16,7 @@ ProbabilityAnalysis::ProbabilityAnalysis(std::string approx, int nsums,
     : warnings_(""),
       p_total_(0),
       num_prob_mcs_(-1),
+      coherent_(true),
       p_time_(-1) {
   // Check for right number of sums.
   if (nsums < 1) {
@@ -114,7 +115,11 @@ void ProbabilityAnalysis::Analyze(
     // Choose cut sets with high enough probabilities.
     num_prob_mcs_ = mcs_for_prob.size();
     if (nsums_ > mcs_for_prob.size()) nsums_ = mcs_for_prob.size();
-    p_total_ = ProbabilityAnalysis::ProbOr(nsums_, &mcs_for_prob);
+    if (coherent_) {
+      p_total_ = ProbabilityAnalysis::CoherentProbOr(nsums_, &mcs_for_prob);
+    } else {
+      p_total_ = ProbabilityAnalysis::ProbOr(nsums_, &mcs_for_prob);
+    }
   }
 
   ProbabilityAnalysis::PerformImportanceAnalysis();
@@ -161,12 +166,31 @@ void ProbabilityAnalysis::IndexMcs(
         // This must be a complement of an event.
         assert(names[0] == "not");
         assert(primary_to_int_.count(names[1]));
+
+        if (coherent_) coherent_ = false;  // Detected non-coherency.
+
         mcs_with_indices.insert(-primary_to_int_.find(names[1])->second);
       }
     }
     imcs_.push_back(mcs_with_indices);
     imcs_to_smcs_.insert(std::make_pair(mcs_with_indices, *it));
   }
+}
+
+double ProbabilityAnalysis::ProbAnd(const std::set<int>& min_cut_set) {
+  // Test just in case the min cut set is empty.
+  if (min_cut_set.empty()) return 0;
+
+  double p_sub_set = 1;  // 1 is for multiplication.
+  std::set<int>::iterator it_set;
+  for (it_set = min_cut_set.begin(); it_set != min_cut_set.end(); ++it_set) {
+    if (*it_set > 0) {
+      p_sub_set *= iprobs_[*it_set];
+    } else {
+      p_sub_set *= 1 - iprobs_[std::abs(*it_set)];  // Never zero.
+    }
+  }
+  return p_sub_set;
 }
 
 double ProbabilityAnalysis::ProbOr(
@@ -218,22 +242,6 @@ double ProbabilityAnalysis::ProbAnd(const boost::container::flat_set<int>& min_c
   return p_sub_set;
 }
 
-double ProbabilityAnalysis::ProbAnd(const std::set<int>& min_cut_set) {
-  // Test just in case the min cut set is empty.
-  if (min_cut_set.empty()) return 0;
-
-  double p_sub_set = 1;  // 1 is for multiplication.
-  std::set<int>::iterator it_set;
-  for (it_set = min_cut_set.begin(); it_set != min_cut_set.end(); ++it_set) {
-    if (*it_set > 0) {
-      p_sub_set *= iprobs_[*it_set];
-    } else {
-      p_sub_set *= 1 - iprobs_[std::abs(*it_set)];  // Never zero.
-    }
-  }
-  return p_sub_set;
-}
-
 void ProbabilityAnalysis::CombineElAndSet(
     const boost::container::flat_set<int>& el,
     const std::set< boost::container::flat_set<int> >& set,
@@ -254,6 +262,66 @@ void ProbabilityAnalysis::CombineElAndSet(
       member_set.insert(el.begin(), el.end());
       combo_set->insert(combo_set->end(), member_set);
     }
+  }
+}
+
+double ProbabilityAnalysis::CoherentProbOr(
+    int nsums,
+    std::set< boost::container::flat_set<int> >* min_cut_sets) {
+  assert(nsums >= 0);
+
+  // Recursive implementation.
+  if (min_cut_sets->empty()) return 0;
+
+  if (nsums == 0) return 0;
+
+  // Base case.
+  if (min_cut_sets->size() == 1) {
+    // Get only element in this set.
+    return ProbabilityAnalysis::CoherentProbAnd(*min_cut_sets->begin());
+  }
+
+  using boost::container::flat_set;
+
+  // Get one element.
+  std::set< flat_set<int> >::iterator it = min_cut_sets->begin();
+  flat_set<int> element_one(*it);
+
+  // Delete element from the original set.
+  min_cut_sets->erase(it);
+  std::set< flat_set<int> > combo_sets;
+  ProbabilityAnalysis::CoherentCombineElAndSet(element_one,
+                                               *min_cut_sets, &combo_sets);
+
+  return ProbabilityAnalysis::CoherentProbAnd(element_one) +
+      ProbabilityAnalysis::CoherentProbOr(nsums, min_cut_sets) -
+      ProbabilityAnalysis::CoherentProbOr(nsums - 1, &combo_sets);
+}
+
+double ProbabilityAnalysis::CoherentProbAnd(
+    const boost::container::flat_set<int>& min_cut_set) {
+  // Test just in case the min cut set is empty.
+  if (min_cut_set.empty()) return 0;
+
+  using boost::container::flat_set;
+  double p_sub_set = 1;  // 1 is for multiplication.
+  flat_set<int>::const_iterator it_set;
+  for (it_set = min_cut_set.begin(); it_set != min_cut_set.end(); ++it_set) {
+      p_sub_set *= iprobs_[*it_set];
+  }
+  return p_sub_set;
+}
+
+void ProbabilityAnalysis::CoherentCombineElAndSet(
+    const boost::container::flat_set<int>& el,
+    const std::set< boost::container::flat_set<int> >& set,
+    std::set< boost::container::flat_set<int> >* combo_set) {
+  using boost::container::flat_set;
+  std::set< flat_set<int> >::iterator it_set;
+  for (it_set = set.begin(); it_set != set.end(); ++it_set) {
+    flat_set<int> member_set(*it_set);
+    member_set.insert(el.begin(), el.end());
+    combo_set->insert(combo_set->end(), member_set);
   }
 }
 

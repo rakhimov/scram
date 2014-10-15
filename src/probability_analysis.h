@@ -95,8 +95,19 @@ class ProbabilityAnalysis {
   void AssignIndices();
 
   /// Populates databases of minimal cut sets with indices of the events.
+  /// This traversal detects if cut sets contain complement events and
+  /// turns non-coherent analysis.
   /// @param[in] min_cut_sets Minimal cut sets with event ids.
   void IndexMcs(const std::set<std::set<std::string> >& min_cut_sets);
+
+  /// Calculates a probability of a minimal cut set, whose members are in AND
+  /// relationship with each other. This function assumes independence of each
+  /// member. This functionality is provided for the rare event and MCUB,
+  /// so the method is not as optimized as the others.
+  /// @param[in] min_cut_set A set of indices of primary events.
+  /// @returns The total probability.
+  /// @note O_avg(N) where N is the size of the passed set.
+  double ProbAnd(const std::set<int>& min_cut_set);
 
   /// Calculates a probability of a set of minimal cut sets, which are in OR
   /// relationship with each other. This function is a brute force probability
@@ -120,14 +131,6 @@ class ProbabilityAnalysis {
   /// @note O_avg(N) where N is the size of the passed set.
   double ProbAnd(const boost::container::flat_set<int>& min_cut_set);
 
-  /// Calculates a probability of a minimal cut set, whose members are in AND
-  /// relationship with each other. This function assumes independence of each
-  /// member. This functionality is provided for the rare event and MCUB.
-  /// @param[in] min_cut_set A set of indices of primary events.
-  /// @returns The total probability.
-  /// @note O_avg(N) where N is the size of the passed set.
-  double ProbAnd(const std::set<int>& min_cut_set);
-
   /// Calculates A(and)( B(or)C ) relationship for sets using set algebra.
   /// @param[in] el A set of indices of primary events.
   /// @param[in] set Sets of indices of primary events.
@@ -139,9 +142,39 @@ class ProbabilityAnalysis {
       const std::set< boost::container::flat_set<int> >& set,
       std::set< boost::container::flat_set<int> >* combo_set);
 
+  /// Calculates a probability of a coherent set of minimal cut sets,
+  /// which are in OR relationship with each other.
+  /// This function is a brute force probability
+  /// calculation without approximations. Coherency is the key assumption.
+  /// @param[in] nsums The number of sums in the series.
+  /// @param[in] min_cut_sets Sets of indices of primary events.
+  /// @returns The total probability.
+  /// @note This function drastically modifies min_cut_sets by deleting
+  /// sets inside it. This is for better performance.
+  double CoherentProbOr(
+      int nsums,
+      std::set< boost::container::flat_set<int> >* min_cut_sets);
+
+  /// Calculates a probability of a minimal cut set, whose members are in AND
+  /// relationship with each other. This function assumes independence of each
+  /// member. Coherency is the key assumption for optimization.
+  /// @param[in] min_cut_set A flat set of indices of primary events.
+  /// @returns The total probability.
+  /// @note O_avg(N) where N is the size of the passed set.
+  double CoherentProbAnd(const boost::container::flat_set<int>& min_cut_set);
+
+  /// Calculates A(and)( B(or)C ) relationship for coherent sets using set
+  /// algebra.
+  /// @param[in] el A set of indices of primary events.
+  /// @param[in] set Sets of indices of primary events.
+  /// @param[out] combo_set A final set resulting from joining el and sets.
+  void CoherentCombineElAndSet(
+      const boost::container::flat_set<int>& el,
+      const std::set< boost::container::flat_set<int> >& set,
+      std::set< boost::container::flat_set<int> >* combo_set);
+
   /// Importance analysis of events.
   void PerformImportanceAnalysis();
-
 
   /// Approximations for probability calculations.
   std::string approx_;
@@ -187,6 +220,8 @@ class ProbabilityAnalysis {
 
   /// The number of minimal cut sets with higher than cut-off probability.
   int num_prob_mcs_;
+
+  bool coherent_;  ///< Indication of coherent optimized analysis.
 
   double p_time_;  ///< Time for probability calculations.
 };
