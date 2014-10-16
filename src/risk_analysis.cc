@@ -803,8 +803,9 @@ void RiskAnalysis::ValidateInitialization() {
 
   // Check if all events are initialized.
   if (prob_requested_) {
-    // Check if some events are missing definitions.
+    // Check if some members are missing definitions.
     error_messages << RiskAnalysis::CheckMissingEvents();
+    error_messages << RiskAnalysis::CheckMissingParameters();
   }
 
   if (!error_messages.str().empty()) {
@@ -973,6 +974,20 @@ std::string RiskAnalysis::CheckMissingEvents() {
     boost::unordered_map<std::string, std::vector<GatePtr> >::iterator it;
     for (it = tbd_events_.begin(); it != tbd_events_.end(); ++it) {
       msg += tbd_orig_ids_.find(it->first)->second + "\n";
+    }
+  }
+
+  return msg;
+}
+
+std::string RiskAnalysis::CheckMissingParameters() {
+  std::string msg = "";
+  if (!tbd_parameters_.empty()) {
+    msg += "\nMissing parameter definitions:\n";
+    boost::unordered_map<std::string, ParameterPtr>::iterator it;
+    for (it = tbd_parameters_.begin(); it != tbd_parameters_.end();
+         ++it) {
+      msg += it->first + "\n";
     }
   }
 

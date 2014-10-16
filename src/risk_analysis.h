@@ -205,6 +205,10 @@ class RiskAnalysis {
   /// @returns An empty string for no problems detected.
   std::string CheckMissingEvents();
 
+  /// @returns Formatted error message with missing parameter names.
+  /// @returns An empty string for no problems detected.
+  std::string CheckMissingParameters();
+
   /// Validates if the initialization of the analysis is successful.
   /// @throws ValidationError if the initialization contains mistakes.
   void ValidateInitialization();
