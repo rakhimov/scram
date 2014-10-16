@@ -324,13 +324,13 @@ void Reporter::ReportImportance(
   out << "\nPrimary Event Analysis:\n";
   out << "-----------------------\n";
   out << std::left;
-  out << std::setw(20) << "Event" << std::setw(20) << "Failure Contrib."
+  out << std::setw(40) << "Event" << std::setw(20) << "Failure Contrib."
       << "Importance\n\n";
   std::multimap < double, std::string >::const_reverse_iterator it_contr;
   for (it_contr = prob_analysis->ordered_primaries_.rbegin();
        it_contr != prob_analysis->ordered_primaries_.rend(); ++it_contr) {
     out << std::left;
-    out << std::setw(20)
+    out << std::setw(40)
         << prob_analysis->primary_events_.find(it_contr->second) ->second->orig_id()
         << std::setw(20) << it_contr->first
         << 100 * it_contr->first / prob_analysis->p_total_ << "%\n";

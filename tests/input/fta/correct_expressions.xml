@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!--
+This input uses expression in valid ways.
+The input tries to utilize all the functionality including optional cases.
+-->
+
+<opsa-mef>
+  <define-fault-tree name="ExpressionsTree">
+    <define-gate name="TopEvent">
+      <or>
+        <house-event name="BooleanConstant"/>
+        <basic-event name="ConstantExpressionFloat"/>
+        <basic-event name="ConstantExpressionInt"/>
+        <basic-event name="ConstantExpressionBool"/>
+      </or>
+    </define-gate>
+    <define-house-event name="BooleanConstant">
+      <constant value="true"/>
+    </define-house-event>
+    <define-basic-event name="ConstantExpressionFloat">
+      <float value="0.5"/>
+    </define-basic-event>
+    <define-basic-event name="ConstantExpressionInt">
+      <int value="1"/>
+    </define-basic-event>
+    <define-basic-event name="ConstantExpressionBool">
+      <bool value="false"/>
+    </define-basic-event>
+  </define-fault-tree>
+</opsa-mef>

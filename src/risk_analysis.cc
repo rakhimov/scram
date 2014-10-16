@@ -662,7 +662,10 @@ Units RiskAnalysis::GetUnit(const xmlpp::TextNode* unit_node) {
 
 bool RiskAnalysis::GetExpression(const xmlpp::Element* parent_node,
                                  ExpressionPtr& expression) {
-  xmlpp::NodeSet expressions = parent_node->find("./*[name() = 'float']");
+  xmlpp::NodeSet expressions =
+      parent_node->find("./*[name() = 'float' or name() = 'int' or \
+                        name() = 'bool']");
+  // parent_node->find("./*[name() = 'unit' or name() = '']");
   assert(expressions.size() == 1);
   const xmlpp::Element* expr_element =
         dynamic_cast<const xmlpp::Element*>(expressions.back());
@@ -674,12 +677,18 @@ bool RiskAnalysis::GetExpression(const xmlpp::Element* parent_node,
     boost::trim(val);
     double num = boost::lexical_cast<double>(val);
     expression = ConstantExpressionPtr(new ConstantExpression(num));
-    return true;
-  }
-  // Ignores unsupported cases.
 
-  // parent_node->find("./*[name() = 'unit' or name() = '']");
-  return false;
+  } else if (expr_name == "bool") {
+    std::string val = expr_element->get_attribute_value("value");
+    boost::trim(val);
+    bool state = (val == "true") ? true : false;
+    expression = ConstantExpressionPtr(new ConstantExpression(state));
+
+  } else {
+    return false;
+  }
+
+  return true;
 }
 
 bool RiskAnalysis::UpdateIfLateEvent(const EventPtr& event) {

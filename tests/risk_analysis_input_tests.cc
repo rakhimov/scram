@@ -57,6 +57,7 @@ TEST(RiskAnalysisInputTest, CorrectFTAInputs) {
   correct_inputs.push_back(dir + "two_trees.xml");
   correct_inputs.push_back(dir + "labels_and_attributes.xml");
   correct_inputs.push_back(dir + "orphan_primary_event.xml");
+  correct_inputs.push_back(dir + "correct_expressions.xml");
 
   RiskAnalysis* ran;
 
