@@ -10,6 +10,8 @@ using namespace scram;
 typedef boost::shared_ptr<scram::Event> EventPtr;
 typedef boost::shared_ptr<scram::Gate> GatePtr;
 typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
+typedef boost::shared_ptr<scram::HouseEvent> HouseEventPtr;
+typedef boost::shared_ptr<scram::BasicEvent> BasicEventPtr;
 
 // Test for Event base class.
 TEST(EventTest, Id) {
@@ -86,47 +88,15 @@ TEST(GateTest, Parent) {
   EXPECT_EQ(inter_event->parents().count(parent_event->id()), 1);
 }
 
-// Test PrimaryEvent class
-TEST(PrimaryEventTest, Type) {
-  PrimaryEventPtr primary(new PrimaryEvent("valve"));
-  std::string event_type = "basic";
-  // Request for a type without setting it beforehand.
-  EXPECT_THROW(primary->type(), ValueError);
-  // Setting and getting the type of a primary event.
-  EXPECT_NO_THROW(primary->type(event_type));
-  EXPECT_THROW(primary->type(event_type), ValueError);  // Resetting.
-  EXPECT_NO_THROW(primary->type());
-  EXPECT_EQ(primary->type(), event_type);
-}
-
-TEST(PrimaryEventTest, GeneralProbability) {
-  PrimaryEventPtr primary(new BasicEvent("valve"));
-  double prob = 0.5;
-  // Request without having set.
-  EXPECT_THROW(primary->p(), ValueError);
-  // Setting probability with various illegal values.
-  EXPECT_THROW(primary->p(-1), ValueError);
-  EXPECT_THROW(primary->p(100), ValueError);
-  // Setting a correct value.
-  EXPECT_NO_THROW(primary->p(prob));
-  EXPECT_THROW(primary->p(prob), ValueError);  // Resetting is an error.
-  EXPECT_NO_THROW(primary->p());
-  EXPECT_EQ(primary->p(), prob);
-}
-
 TEST(PrimaryEventTest, HouseProbability) {
   // House primary event.
-  PrimaryEventPtr primary(new HouseEvent("valve"));
-  // Test for empty probability.
-  EXPECT_THROW(primary->p(), ValueError);
-  // Setting probability with various illegal values.
-  EXPECT_THROW(primary->p(0.5), ValueError);
+  HouseEventPtr primary(new HouseEvent("valve"));
+  EXPECT_EQ(primary->p(), 0);  // Default state.
   // Setting with a valid values.
-  EXPECT_NO_THROW(primary->p(0));
-  EXPECT_EQ(primary->p(), 0);
-  primary = PrimaryEventPtr(new HouseEvent("valve"));
-  EXPECT_NO_THROW(primary->p(1));
+  EXPECT_NO_THROW(primary->state(true));
   EXPECT_EQ(primary->p(), 1);
+  EXPECT_NO_THROW(primary->state(false));
+  EXPECT_EQ(primary->p(), 0);
 }
 
 TEST(PrimaryEventTest, Parent) {

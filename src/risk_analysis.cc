@@ -504,34 +504,32 @@ void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node) {
         << " is already used by a house event.";
     throw scram::ValidationError(msg.str());
   }
-  /// @todo Expression class to analyze more complex probabilities.
-  /// only float for now.
-  double p = 0;
-  xmlpp::NodeSet expression = event_node->find("./*[name() = 'float']");
-  assert(expression.size() == 1);
-  const xmlpp::Element* float_prob =
-      dynamic_cast<const xmlpp::Element*>(expression.front());
-
-  assert(float_prob);
-
-  std::string prob = float_prob->get_attribute_value("value");
-  boost::trim(prob);
-  p = boost::lexical_cast<double>(prob);
 
   BasicEventPtr basic_event;
 
   if (tbd_basic_events_.count(id)) {
     basic_event = tbd_basic_events_.find(id)->second;
-    basic_event->p(p);
     primary_events_.insert(std::make_pair(id, basic_event));
     tbd_basic_events_.erase(id);
 
   } else {
     basic_event = BasicEventPtr(new BasicEvent(id));
     basic_event->orig_id(orig_id);
-    basic_event->p(p);
     primary_events_.insert(std::make_pair(id, basic_event));
     RiskAnalysis::UpdateIfLateEvent(basic_event);
+  }
+
+  ExpressionPtr expression;
+  bool expr_found = RiskAnalysis::GetExpression(event_node, expression);
+
+  if (expr_found) {
+    basic_event->expression(expression);
+  } else {
+    std::stringstream msg;
+    msg << "Line " << event_node->get_line() << ":\n";
+    msg << "The " << orig_id
+        << " basic event does not have an expression.";
+    throw ValidationError(msg.str());
   }
 
   RiskAnalysis::AttachLabelAndAttributes(event_node, basic_event);
@@ -575,26 +573,115 @@ void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node) {
   boost::trim(val);
   assert(val == "true" || val == "false");
 
-  int p = 0;
-  if (val == "true") p = 1;
+  bool state = (val == "true") ? true : false;
 
   HouseEventPtr house_event;
 
   if (tbd_house_events_.count(id)) {
     house_event = tbd_house_events_.find(id)->second;
-    house_event->p(p);
+    house_event->state(state);
     primary_events_.insert(std::make_pair(id, house_event));
     tbd_house_events_.erase(id);
 
   } else {
     house_event = HouseEventPtr(new HouseEvent(id));
     house_event->orig_id(orig_id);
-    house_event->p(p);
+    house_event->state(state);
     primary_events_.insert(std::make_pair(id, house_event));
     RiskAnalysis::UpdateIfLateEvent(house_event);
   }
 
   RiskAnalysis::AttachLabelAndAttributes(event_node, house_event);
+}
+
+void RiskAnalysis::DefineParameter(const xmlpp::Element* param_node) {
+  std::string name = param_node->get_attribute_value("name");
+  boost::trim(name);
+  // Detect case sensitive name clashes.
+  if (parameters_.count(name)) {
+    std::stringstream msg;
+    msg << "Line " << param_node->get_line() << ":\n";
+    msg << "The " << name << " parameter is doubly defined.";
+    throw scram::ValidationError(msg.str());
+  }
+
+  ParameterPtr parameter;
+
+  if (tbd_parameters_.count(name)) {
+    parameter = tbd_parameters_.find(name)->second;
+    parameters_.insert(std::make_pair(name, parameter));
+    tbd_parameters_.erase(name);
+
+  } else {
+    parameter = ParameterPtr(new Parameter(name));
+    parameters_.insert(std::make_pair(name, parameter));
+  }
+
+  // Attach units.
+  xmlpp::NodeSet units = param_node->find("./*[name() = 'unit']");
+  if (!units.empty()) {
+    assert(units.size() == 1);
+    const xmlpp::TextNode* element =
+        dynamic_cast<const xmlpp::TextNode*>(units.back());
+    assert(element);
+    /// @todo Check for parameter unit clash or double definition.
+    parameter->unit(RiskAnalysis::GetUnit(element));
+  }
+  ExpressionPtr expression;
+  bool expr_found = RiskAnalysis::GetExpression(param_node, expression);
+  assert(expr_found);
+  parameter->expression(expression);
+  RiskAnalysis::AttachLabelAndAttributes(param_node, parameter);
+}
+
+Units RiskAnalysis::GetUnit(const xmlpp::TextNode* unit_node) {
+  std::string unit_str = unit_node->get_content();
+  boost::trim(unit_str);
+  Units unit;
+  if (unit_str == "bool") {
+    unit = kBool;
+  } else if (unit_str == "int") {
+    unit = kInt;
+  } else if (unit_str == "float") {
+    unit = kFloat;
+  } else if (unit_str == "hours") {
+    unit = kHours;
+  } else if (unit_str == "hours-1") {
+    unit = kInverseHours;
+  } else if (unit_str == "years") {
+    unit = kYears;
+  } else if (unit_str == "years-1") {
+    unit = kInverseYears;
+  } else if (unit_str == "fit") {
+    unit = kFit;
+  } else if (unit_str == "demands") {
+    unit = kDemands;
+  } else {
+    assert(false);
+  }
+  return unit;
+}
+
+bool RiskAnalysis::GetExpression(const xmlpp::Element* parent_node,
+                                 ExpressionPtr& expression) {
+  xmlpp::NodeSet expressions = parent_node->find("./*[name() = 'float']");
+  assert(expressions.size() == 1);
+  const xmlpp::Element* expr_element =
+        dynamic_cast<const xmlpp::Element*>(expressions.back());
+  assert(expr_element);
+
+  std::string expr_name = expr_element->get_name();
+  if (expr_name == "float" || expr_name == "int") {
+    std::string val = expr_element->get_attribute_value("value");
+    boost::trim(val);
+    double num = boost::lexical_cast<double>(val);
+    expression = ConstantExpressionPtr(new ConstantExpression(num));
+    return true;
+  }
+  // Ignores unsupported cases.
+
+  // parent_node->find("./*[name() = 'unit' or name() = '']");
+  return false;
 }
 
 bool RiskAnalysis::UpdateIfLateEvent(const EventPtr& event) {
