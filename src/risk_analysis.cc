@@ -827,6 +827,21 @@ void RiskAnalysis::ValidateInitialization() {
     }
   }
 
+  // Check probability values for primary events.
+  if (prob_requested_) {
+    std::stringstream msg;
+    msg << "";
+    boost::unordered_map<std::string, PrimaryEventPtr>::iterator it;
+    for (it = primary_events_.begin(); it != primary_events_.end(); ++it) {
+      double p = it->second->p();
+      if (p < 0 || p > 1) msg << it->second->orig_id() << " : " << p << "\n";
+    }
+    if (msg.str() != "") {
+      std::string head = "Invalid probabilities detected:\n";
+      throw ValidationError(head + msg.str());
+    }
+  }
+
   // Gather orphan primary events for warning.
   boost::unordered_map<std::string, PrimaryEventPtr>::iterator it_p;
   for (it_p = primary_events_.begin(); it_p != primary_events_.end(); ++it_p) {

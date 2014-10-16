@@ -166,10 +166,11 @@ class BasicEvent: public PrimaryEvent {
   }
 
   /// @returns The mean probability of this basic event.
+  /// @note The user of this function should make sure that the returned
+  ///       value is acceptable for calculations.
   /// @warning Undefined behavior if the expression is not set.
   inline double p() const {
     assert(expression_);
-    assert(expression_->Mean() <= 1 && expression_->Mean() >= 0);
     return expression_->Mean();
   }
 
