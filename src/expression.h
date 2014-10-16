@@ -9,6 +9,7 @@
 #include <boost/shared_ptr.hpp>
 
 #include "element.h"
+#include "error.h"
 
 namespace scram {
 
@@ -110,6 +111,33 @@ class Parameter : public Expression, public Element {
   /// Expression for this parameter.
   ExpressionPtr expression_;
 };
+
+/// @class MissionTime
+/// This is for the system mission time.
+class MissionTime : public Expression {
+ public:
+  /// Constructor with time.
+  MissionTime() : mission_time_(-1) {}
+
+  /// Sets the mission time only once.
+  /// @param[in] time The mission time.
+  void mission_time(double time) { mission_time_ = time; }
+
+  /// Sets the unit of this parameter.
+  /// @param[in] unit A valid unit.
+  inline void unit(const Units& unit) { unit_ = unit; }
+
+  inline double Mean() { return mission_time_; }
+  inline double Sample() { return mission_time_; }
+
+ private:
+  /// The constant's value.
+  double mission_time_;
+
+  /// Units of this parameter.
+  Units unit_;
+};
+
 
 }  // namespace scram
 

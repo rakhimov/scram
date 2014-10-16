@@ -274,6 +274,9 @@ class RiskAnalysis {
 
   /// Settings for analysis.
   Settings settings_;
+
+  /// Mission time expression.
+  boost::shared_ptr<MissionTime> mission_time_;
 };
 
 }  // namespace scram

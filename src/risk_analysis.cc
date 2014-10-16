@@ -53,6 +53,9 @@ RiskAnalysis::RiskAnalysis(std::string config_file)
   units_.insert(std::make_pair("years-1", kInverseYears));
   units_.insert(std::make_pair("fit", kFit));
   units_.insert(std::make_pair("demands", kDemands));
+
+  // Initialize the mission time with any value.
+  mission_time_ = boost::shared_ptr<MissionTime>(new MissionTime());
 }
 
 void RiskAnalysis::ProcessInput(std::string xml_file) {
@@ -144,6 +147,9 @@ void RiskAnalysis::GraphingInstructions() {
 }
 
 void RiskAnalysis::Analyze() {
+  // Set system mission time for all analysis.
+  mission_time_->mission_time(settings_.mission_time_);
+
   std::map<std::string, FaultTreePtr>::iterator it;
   for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
     std::string output_file_name = input_file_ + "_" + it->second->name();
@@ -653,7 +659,8 @@ bool RiskAnalysis::GetExpression(const xmlpp::Element* parent_node,
                                  ExpressionPtr& expression) {
   xmlpp::NodeSet expressions =
       parent_node->find("./*[name() = 'float' or name() = 'int' or \
-                        name() = 'bool' or name() = 'parameter'\
+                        name() = 'bool' or name() = 'parameter' or \
+                        name() = 'system-mission-time'\
                         ]");
 
   if (expressions.empty()) return false;
@@ -690,6 +697,9 @@ bool RiskAnalysis::GetExpression(const xmlpp::Element* parent_node,
       tbd_parameters_.insert(std::make_pair(name, param));
       expression = param;
     }
+  } else if (expr_name == "system-mission-time") {
+    /// @todo check for possible unit clashes.
+    expression = mission_time_;
   }
 
   return true;

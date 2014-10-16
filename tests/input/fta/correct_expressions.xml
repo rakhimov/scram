@@ -46,5 +46,8 @@ The input tries to utilize all the functionality including optional cases.
     <define-parameter name="UnusedParameter">
       <int value="1000"/>
     </define-parameter>
+    <define-parameter name="MissionTimeParameter">
+      <system-mission-time/>
+    </define-parameter>
   </model-data>
 </opsa-mef>
