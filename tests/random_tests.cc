@@ -56,37 +56,36 @@ void PlotDistribution(const std::multiset<double>& series) {
   std::cout.flags(fmt);
 }
 
+TEST(RandomTest, Seed) {
+  ASSERT_NO_THROW(Random::seed(std::time(0)));
+}
+
 TEST(RandomTest, UniformReal) {
-  Random* rng = new Random(std::time(0));
   std::multiset<double> series;
   int sample_size = 1e5;
   for (int i = 0; i < sample_size; ++i) {
-    series.insert(rng->UniformRealGenerator(0, 1));
+    series.insert(Random::UniformRealGenerator(0, 1));
   }
   std::cout << "\n    Uniform Distribution of " << sample_size
       << " Real Numbers." << std::endl;
   std::cout << "        Min: 0    Max: 1\n" << std::endl;
   PlotDistribution(series);
-  delete rng;
 }
 
 TEST(RandomTest, Triangular) {
-  Random* rng = new Random(std::time(0));
   std::multiset<double> series;
   int sample_size = 1e5;
   for (int i = 0; i < sample_size; ++i) {
-    series.insert(rng->TriangularGenerator(0, 0.5, 1));
+    series.insert(Random::TriangularGenerator(0, 0.5, 1));
   }
   std::cout << "\n    Triangular Distribution of " << sample_size
       << " Real Numbers." << std::endl;
   std::cout << "        Min: 0    Mode: 0.5    Max: 1\n" << std::endl;
   PlotDistribution(series);
-  delete rng;
 }
 
 TEST(RandomTest, PiecewiseLinear) {
   using namespace boost::assign;
-  Random* rng = new Random(std::time(0));
   std::vector<double> intervals;
   std::vector<double> weights;
   intervals += 0, 2, 4, 6, 8, 10;
@@ -94,19 +93,17 @@ TEST(RandomTest, PiecewiseLinear) {
   std::multiset<double> series;
   int sample_size = 1e5;
   for (int i = 0; i < sample_size; ++i) {
-    series.insert(rng->PiecewiseLinearGenerator(intervals, weights) / 10.0);
+    series.insert(Random::PiecewiseLinearGenerator(intervals, weights) / 10.0);
   }
   std::cout << "\n    Piecewise Linear Distribution of " << sample_size
       << " Real Numbers." << std::endl;
   std::cout << "        Intervals: 0  2  4  6  8  10" << std::endl;
   std::cout << "        Weights:   0  1  0  1  0  1\n" << std::endl;
   PlotDistribution(series);
-  delete rng;
 }
 
 TEST(RandomTest, Histogram) {
   using namespace boost::assign;
-  Random* rng = new Random(std::time(0));
   std::vector<double> intervals;
   std::vector<double> weights;
   intervals += 0, 2, 4, 6, 8, 10;
@@ -114,19 +111,17 @@ TEST(RandomTest, Histogram) {
   std::multiset<double> series;
   int sample_size = 1e5;
   for (int i = 0; i < sample_size; ++i) {
-    series.insert(rng->HistogramGenerator(intervals, weights) / 10.0);
+    series.insert(Random::HistogramGenerator(intervals, weights) / 10.0);
   }
   std::cout << "\n    Histogram Distribution of " << sample_size
       << " Real Numbers." << std::endl;
   std::cout << "        Intervals: 0   2   4   6   8   10" << std::endl;
   std::cout << "        Weights:     1   2   4   3   1\n" << std::endl;
   PlotDistribution(series);
-  delete rng;
 }
 
 TEST(RandomTest, Discrete) {
   using namespace boost::assign;
-  Random* rng = new Random(std::time(0));
   std::vector<double> values;
   std::vector<double> weights;
   values += 0, 2, 4, 6, 8, 9;
@@ -134,38 +129,34 @@ TEST(RandomTest, Discrete) {
   std::multiset<double> series;
   int sample_size = 1e5;
   for (int i = 0; i < sample_size; ++i) {
-    series.insert(rng->DiscreteGenerator(values, weights) / 10.0);
+    series.insert(Random::DiscreteGenerator(values, weights) / 10.0);
   }
   std::cout << "\n    Discrete Distribution of " << sample_size
       << " Real Numbers." << std::endl;
   std::cout << "        Values:  0  2  4  6  8  9" << std::endl;
   std::cout << "        Weights: 1  2  4  3  1  4\n" << std::endl;
   PlotDistribution(series);
-  delete rng;
 }
 
 TEST(RandomTest, Binomial) {
-  Random* rng = new Random(std::time(0));
   std::multiset<double> series;
   int sample_size = 1e5;
   for (int i = 0; i < sample_size; ++i) {
-    series.insert(rng->BinomialGenerator(20, 0.5) / 20.0);
+    series.insert(Random::BinomialGenerator(20, 0.5) / 20.0);
   }
   std::cout << "\n    Binomial Distribution of " << sample_size
       << " Real Numbers." << std::endl;
   std::cout << "      Trials: 20    Prob: 0.5   Scale: 1/20\n" << std::endl;
   PlotDistribution(series);
-  delete rng;
 }
 
 TEST(RandomTest, Normal) {
-  Random* rng = new Random(std::time(0));
   std::multiset<double> series;
   int sample_size = 1e5;
   for (int i = 0; i < sample_size; ++i) {
     double sample = 0;
     do {
-      sample = rng->NormalGenerator(0.5, 0.15);
+      sample = Random::NormalGenerator(0.5, 0.15);
     } while (sample < 0 || sample >= 1);
     series.insert(sample);
   }
@@ -174,17 +165,15 @@ TEST(RandomTest, Normal) {
       << " Real Numbers." << std::endl;
   std::cout << "        Mean: 0.5    Sigma: 0.15\n" << std::endl;
   PlotDistribution(series);
-  delete rng;
 }
 
 TEST(RandomTest, LogNormal) {
-  Random* rng = new Random(std::time(0));
   std::multiset<double> series;
   int sample_size = 1e5;
   for (int i = 0; i < sample_size; ++i) {
     double sample = 0;
     do {
-      sample = rng->LogNormalGenerator(0.3, 0.2);
+      sample = Random::LogNormalGenerator(0.3, 0.2);
     } while (sample < 0 || sample >= 1);
     series.insert(sample);
   }
@@ -193,17 +182,15 @@ TEST(RandomTest, LogNormal) {
       << " Real Numbers." << std::endl;
   std::cout << "        Mean: 0.3    Sigma: 0.2\n" << std::endl;
   PlotDistribution(series);
-  delete rng;
 }
 
 TEST(RandomTest, Gamma) {
-  Random* rng = new Random(std::time(0));
   std::multiset<double> series;
   int sample_size = 1e5;
   for (int i = 0; i < sample_size; ++i) {
     double sample = 0;
     do {
-      sample = rng->GammaGenerator(2, 2) / 10;
+      sample = Random::GammaGenerator(2, 2) / 10;
     } while (sample < 0 || sample >= 1);
     series.insert(sample);
   }
@@ -212,17 +199,15 @@ TEST(RandomTest, Gamma) {
       << " Real Numbers." << std::endl;
   std::cout << "        k: 2    theta: 2   Scaled-down: 1/20\n" << std::endl;
   PlotDistribution(series);
-  delete rng;
 }
 
 TEST(RandomTest, Beta) {
-  Random* rng = new Random(std::time(0));
   std::multiset<double> series;
   int sample_size = 1e5;
   for (int i = 0; i < sample_size; ++i) {
     double sample = 0;
     do {
-      sample = rng->BetaGenerator(2, 2);
+      sample = Random::BetaGenerator(2, 2);
     } while (sample < 0 || sample >= 1);
     series.insert(sample);
   }
@@ -231,17 +216,15 @@ TEST(RandomTest, Beta) {
       << " Real Numbers." << std::endl;
   std::cout << "        alpha: 2    beta: 2\n" << std::endl;
   PlotDistribution(series);
-  delete rng;
 }
 
 TEST(RandomTest, Weibull) {
-  Random* rng = new Random(std::time(0));
   std::multiset<double> series;
   int sample_size = 1e5;
   for (int i = 0; i < sample_size; ++i) {
     double sample = 0;
     do {
-      sample = rng->WeibullGenerator(3, 1) / 2;
+      sample = Random::WeibullGenerator(3, 1) / 2;
     } while (sample < 0 || sample >= 1);
     series.insert(sample);
   }
@@ -250,17 +233,15 @@ TEST(RandomTest, Weibull) {
       << " Real Numbers." << std::endl;
   std::cout << "        k: 3    lambda: 1    Scaled-down: 1/2\n" << std::endl;
   PlotDistribution(series);
-  delete rng;
 }
 
 TEST(RandomTest, Exponential) {
-  Random* rng = new Random(std::time(0));
   std::multiset<double> series;
   int sample_size = 1e5;
   for (int i = 0; i < sample_size; ++i) {
     double sample = 0;
     do {
-      sample = rng->ExponentialGenerator(1) / 5;
+      sample = Random::ExponentialGenerator(1) / 5;
     } while (sample < 0 || sample >= 1);
     series.insert(sample);
   }
@@ -269,17 +250,15 @@ TEST(RandomTest, Exponential) {
       << " Real Numbers." << std::endl;
   std::cout << "        lambda: 1    Scaled-down: 1/5\n" << std::endl;
   PlotDistribution(series);
-  delete rng;
 }
 
 TEST(RandomTest, Poisson) {
-  Random* rng = new Random(std::time(0));
   std::multiset<double> series;
   int sample_size = 1e5;
   for (int i = 0; i < sample_size; ++i) {
     double sample = 0;
     do {
-      sample = rng->PoissonGenerator(5) / 10;
+      sample = Random::PoissonGenerator(5) / 10;
     } while (sample < 0 || sample >= 1);
     series.insert(sample);
   }
@@ -288,17 +267,16 @@ TEST(RandomTest, Poisson) {
       << " Real Numbers." << std::endl;
   std::cout << "        Mean: 5    Scaled-down: 1/10\n" << std::endl;
   PlotDistribution(series);
-  delete rng;
 }
 
 TEST(RandomTest, LogUniform) {
-  Random* rng = new Random(std::time(0));
   std::multiset<double> series;
   int sample_size = 1e5;
   for (int i = 0; i < sample_size; ++i) {
     double sample = 0;
     do {
-      sample = (rng->LogUniformGenerator(0, std::log(3.7)) - 1) / std::exp(1);
+      sample = (Random::LogUniformGenerator(0, std::log(3.7)) - 1) /
+               std::exp(1);
     } while (sample < 0 || sample >= 1);
     series.insert(sample);
   }
@@ -308,17 +286,15 @@ TEST(RandomTest, LogUniform) {
   std::cout << "        Min: 0    Max: 1.308    Shifted: -1    "
       << "Scaled-down: 1/2.7\n" << std::endl;
   PlotDistribution(series);
-  delete rng;
 }
 
 TEST(RandomTest, LogTriangular) {
-  Random* rng = new Random(std::time(0));
   std::multiset<double> series;
   int sample_size = 1e5;
   for (int i = 0; i < sample_size; ++i) {
     double sample = 0;
     do {
-      sample = (rng->LogTriangularGenerator(0, 0.5, std::log(3.7)) - 1) /
+      sample = (Random::LogTriangularGenerator(0, 0.5, std::log(3.7)) - 1) /
                std::exp(1);
     } while (sample < 0 || sample >= 1);
     series.insert(sample);
@@ -329,5 +305,4 @@ TEST(RandomTest, LogTriangular) {
   std::cout << "        Lower: 0    Mode: 0.5    Upper: 1.308"
       << "    Shifted: -1    Scaled-down: 1/2.7\n" << std::endl;
   PlotDistribution(series);
-  delete rng;
 }

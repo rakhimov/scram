@@ -6,11 +6,11 @@
 
 typedef boost::mt19937 RandomGenerator;
 
+boost::mt19937 scram::Random::rng_;
+
 namespace scram {
 
-Random::Random(int seed) {
-  rng_.seed(static_cast<unsigned>(seed));
-}
+void Random::seed(int seed) { Random::rng_.seed(static_cast<unsigned>(seed)); }
 
 double Random::UniformRealGenerator(double min, double max) {
   assert(min < max);
