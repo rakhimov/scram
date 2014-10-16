@@ -191,7 +191,7 @@ void FaultTreeAnalysis::ExpandPositiveGate(
     assert(events_children.size() > 1);
     FaultTreeAnalysis::SetOr(1, events_children, sets);
 
-  } else if (gate == "and" || gate == "inhibit") {
+  } else if (gate == "and") {
     assert(events_children.size() > 1);
     FaultTreeAnalysis::SetAnd(1, events_children, sets);
 
@@ -236,7 +236,7 @@ void FaultTreeAnalysis::ExpandNegativeGate(
     assert(events_children.size() > 1);
     FaultTreeAnalysis::SetAnd(-1, events_children, sets);
 
-  } else if (gate == "and" || gate == "inhibit") {
+  } else if (gate == "and") {
     assert(events_children.size() > 1);
     FaultTreeAnalysis::SetOr(-1, events_children, sets);
 

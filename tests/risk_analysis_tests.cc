@@ -10,9 +10,9 @@ using namespace scram;
 // Test the function that gets arguments from a line in an input file.
 TEST_F(RiskAnalysisTest, CheckGate) {
   GatePtr top(new Gate("top", "and"));  // AND gate.
-  PrimaryEventPtr A(new PrimaryEvent("a"));
-  PrimaryEventPtr B(new PrimaryEvent("b"));
-  PrimaryEventPtr C(new PrimaryEvent("c"));
+  BasicEventPtr A(new BasicEvent("a"));
+  BasicEventPtr B(new BasicEvent("b"));
+  BasicEventPtr C(new BasicEvent("c"));
 
   // AND Gate tests.
   EXPECT_FALSE(CheckGate(top));  // No child.
@@ -79,31 +79,6 @@ TEST_F(RiskAnalysisTest, CheckGate) {
   top->AddChild(C);
   EXPECT_FALSE(CheckGate(top));  // More than 2 is not allowed.
 
-  // INHIBIT Gate tests.
-//  top = GatePtr(new Gate("top", "inhibit"));
-//  EXPECT_FALSE(CheckGate(top));  // No child.
-//  A->type("basic");
-//  primary_events().insert(std::make_pair("a", A));
-//  top->AddChild(A);
-//  EXPECT_FALSE(CheckGate(top));  // One child is not enough.
-//  B->type("basic");
-//  primary_events().insert(std::make_pair("b", B));
-//  top->AddChild(B);
-//  EXPECT_FALSE(CheckGate(top));  // Nodes must be conditional.
-//  top->AddChild(C);
-//  EXPECT_FALSE(CheckGate(top));  // More than 2 is not allowed.
-//  top = GatePtr(new Gate("top", "inhibit"));  // Re-initialize.
-//  C->type("conditional");
-//  primary_events().insert(std::make_pair("c", C));
-//  top->AddChild(A);  // Basic event.
-//  top->AddChild(C);  // Conditional event.
-//  EXPECT_TRUE(CheckGate(top));  // Two children with exact combination.
-//  A = PrimaryEventPtr(new PrimaryEvent("a", "conditional"));
-//  primary_events().clear();
-//  primary_events().insert(std::make_pair("a", A));
-//  primary_events().insert(std::make_pair("c", C));
-//  EXPECT_FALSE(CheckGate(top));  // Wrong combination.
-
   // VOTE/ATLEAST gate tests.
   top = GatePtr(new Gate("top", "atleast"));
   top->vote_number(2);
@@ -114,6 +89,36 @@ TEST_F(RiskAnalysisTest, CheckGate) {
   EXPECT_FALSE(CheckGate(top));  // Two children are not enough.
   top->AddChild(C);
   EXPECT_TRUE(CheckGate(top));  // More than 2 is needed.
+
+  // INHIBIT Gate tests.
+  Attribute inh_attr;
+  inh_attr.name="flavor";
+  inh_attr.value="inhibit";
+  top = GatePtr(new Gate("top", "and"));
+  top->AddAttribute(inh_attr);
+  EXPECT_FALSE(CheckGate(top));  // No child.
+  primary_events().insert(std::make_pair("a", A));
+  top->AddChild(A);
+  EXPECT_FALSE(CheckGate(top));  // One child is not enough.
+  primary_events().insert(std::make_pair("b", B));
+  top->AddChild(B);
+  EXPECT_FALSE(CheckGate(top));  // Nodes must be conditional.
+  top->AddChild(C);
+  EXPECT_FALSE(CheckGate(top));  // More than 2 is not allowed.
+
+  top = GatePtr(new Gate("top", "and"));  // Re-initialize.
+  top->AddAttribute(inh_attr);
+
+  Attribute cond;
+  cond.name = "flavor";
+  cond.value = "conditional";
+  C->AddAttribute(cond);
+  primary_events().insert(std::make_pair("c", C));
+  top->AddChild(A);  // Basic event.
+  top->AddChild(C);  // Conditional event.
+  EXPECT_TRUE(CheckGate(top));  // Two children with exact combination.
+  A->AddAttribute(cond);
+  EXPECT_FALSE(CheckGate(top));  // Wrong combination.
 
   // Some UNKNOWN gate tests.
   top = GatePtr(new Gate("top", "unknown_gate"));
@@ -186,6 +191,7 @@ TEST_F(RiskAnalysisTest, GraphingInstructions) {
   std::vector<std::string> tree_input;
   tree_input.push_back("./share/scram/input/fta/correct_tree_input.xml");
   tree_input.push_back("./share/scram/input/fta/graphing.xml");
+  tree_input.push_back("./share/scram/input/fta/flavored_types.xml");
 
   std::vector<std::string>::iterator it;
   for (it = tree_input.begin(); it != tree_input.end(); ++it) {

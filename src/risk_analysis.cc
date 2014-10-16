@@ -853,6 +853,7 @@ std::string RiskAnalysis::CheckGate(const GatePtr& event) {
     size = event->children().size();
   } catch (ValueError& err) {
     msg << event->orig_id() << " : No children detected.";
+    return msg.str();
   }
 
   // Gates that should have two or more children.
@@ -866,6 +867,12 @@ std::string RiskAnalysis::CheckGate(const GatePtr& event) {
   std::set<std::string> single;
   single.insert("null");
   single.insert("not");
+
+  // Detect inhibit gate.
+  if (gate == "and" && event->HasAttribute("flavor")) {
+    const Attribute* attr = &event->GetAttribute("flavor");
+    if (attr->value == "inhibit") gate = "inhibit";
+  }
 
   // Gate dependent logic.
   if (two_or_more.count(gate)) {
@@ -909,40 +916,31 @@ std::string RiskAnalysis::CheckGate(const GatePtr& event) {
 std::string RiskAnalysis::CheckInhibitGate(const GatePtr& event) {
   std::stringstream msg;
   msg << "";  // An empty default message is the indicator of no problems.
-  std::string gate = event->type();
-  assert(gate == "inhibit");
-  int size = 0;  // The number of children.
-  try {
-    // This line throws an error if there are no children.
-    size = event->children().size();
-  } catch (ValueError& err) {
-    msg << event->orig_id() << " : No children detected.";
-  }
-  if (size != 2) {
-    boost::to_upper(gate);
-    msg << event->orig_id() << " : " << gate
-        << " gate must have exactly 2 children.\n";
+
+  if (event->children().size() != 2) {
+    msg << event->orig_id() << " : "
+        << "INHIBIT gate must have exactly 2 children.\n";
   } else {
     bool conditional_found = false;
     std::map<std::string, EventPtr> children = event->children();
     std::map<std::string, EventPtr>::iterator it;
     for (it = children.begin(); it != children.end(); ++it) {
       if (primary_events_.count(it->first)) {
-        std::string type = primary_events_.find(it->first)->second->type();
-        if (type == "conditional") {
-          if (!conditional_found) {
-            conditional_found = true;
-          } else {
-            boost::to_upper(gate);
-            msg << event->orig_id() << " : " << gate
-                << " gate must have exactly one conditional event.\n";
+        if (it->second->HasAttribute("flavor")) {
+          std::string type = it->second->GetAttribute("flavor").value;
+          if (type == "conditional") {
+            if (!conditional_found) {
+              conditional_found = true;
+            } else {
+              msg << event->orig_id() << " : " << "INHIBIT"
+                  << " gate must have exactly one conditional event.\n";
+            }
           }
         }
       }
     }
     if (!conditional_found) {
-      boost::to_upper(gate);
-      msg << event->orig_id() << " : " << gate
+      msg << event->orig_id() << " : " << "INHIBIT"
           << " gate is missing a conditional event.\n";
     }
   }

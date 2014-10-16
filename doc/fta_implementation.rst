@@ -38,6 +38,47 @@ Currently Supported Event Types
 .. note::
     Top and intermediate events are gates of the acyclic fault tree.
 
+Representation of INHIBIT, Undeveloped, and Conditional
+=======================================================
+
+This gate and event types are not directly supported by the input format
+based on OpenPSA MEF. Indeed, these types are treated just like AND gate and
+Basic event respectively; therefore, the description of these types is
+supported through OpenPSA MEF "attribute" element for gates and events.
+The attribute name "flavor" is used to indicated the different representation
+of the event as shown in the description bellow.
+
+INHIBIT
+-------
+Add this XML line to AND gate description:
+
+.. highlight:: xml
+.. literal::
+    <attributes>
+        <attribute name="flavor" value="inhibit"/>
+    </attributes>
+
+Undeveloped
+-----------
+Add this XML line to basic event description:
+
+.. highlight:: xml
+.. literal::
+    <attributes>
+        <attribute name="flavor" value="undeveloped"/>
+    </attributes>
+
+Conditional
+-----------
+Add this XML line to basic event description:
+
+.. highlight:: xml
+.. literal::
+    <attributes>
+        <attribute name="flavor" value="conditional"/>
+    </attributes>
+
+
 The Algorithm to Generate Minimal Cut Sets
 ===========================================
 
