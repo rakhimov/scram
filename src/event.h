@@ -160,11 +160,8 @@ class BasicEvent: public PrimaryEvent {
 
   /// Sets the expression of this basic event.
   /// @param[in] expression The expression to describe this event.
-  /// @note The expression should be able to describe probability values.
-  ///       No hard checks are provided except for mean value check.
   /// @todo Provide more tests that the expression is valid.
   inline void expression(const ExpressionPtr& expression) {
-    assert(expression->Mean() <= 1 && expression->Mean() >= 0);
     expression_ = expression;
   }
 
@@ -172,6 +169,7 @@ class BasicEvent: public PrimaryEvent {
   /// @warning Undefined behavior if the expression is not set.
   inline double p() const {
     assert(expression_);
+    assert(expression_->Mean() <= 1 && expression_->Mean() >= 0);
     return expression_->Mean();
   }
 

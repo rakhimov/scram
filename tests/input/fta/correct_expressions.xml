@@ -26,5 +26,25 @@ The input tries to utilize all the functionality including optional cases.
     <define-basic-event name="ConstantExpressionBool">
       <bool value="false"/>
     </define-basic-event>
+    <define-parameter name="PreDefinedParameter" unit="int">
+      <int value="0"/>
+    </define-parameter>
+    <define-basic-event name="UsePreDefinedParameter">
+      <parameter name="PreDefinedParameter"/>
+    </define-basic-event>
+    <define-basic-event name="UsePostDefinedParameter">
+      <parameter name="PostDefinedParameter"/>
+    </define-basic-event>
+    <define-basic-event name="ReUsePostDefinedParameter">
+      <parameter name="PostDefinedParameter"/>
+    </define-basic-event>
+    <define-parameter name="PostDefinedParameter">
+      <float value="0.5"/>
+    </define-parameter>
   </define-fault-tree>
+  <model-data>
+    <define-parameter name="UnusedParameter">
+      <int value="1000"/>
+    </define-parameter>
+  </model-data>
 </opsa-mef>

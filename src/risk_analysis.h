@@ -157,10 +157,6 @@ class RiskAnalysis {
   /// @param[in] param_node XML element defining the parameter.
   void DefineParameter(const xmlpp::Element* param_node);
 
-  /// @returns Unit of parameter from XML input.
-  /// @param[in] unit_node XML element defining the unit of parameter.
-  Units GetUnit(const xmlpp::TextNode* unit_node);
-
   /// Processes Expression definitions in input file.
   /// @param[in] parent_node XML parent element containing the expression
   ///                        elements.
@@ -250,6 +246,9 @@ class RiskAnalysis {
 
   /// Container for to-be-defined parameters or variables.
   boost::unordered_map<std::string, ParameterPtr> tbd_parameters_;
+
+  /// Map of valid units for parameters.
+  std::map<std::string, Units> units_;
 
   /// A collection of fault trees for analysis.
   std::map<std::string, FaultTreePtr> fault_trees_;

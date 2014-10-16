@@ -42,6 +42,17 @@ RiskAnalysis::RiskAnalysis(std::string config_file)
   types_.insert("undeveloped");
   types_.insert("house");
   types_.insert("conditional");
+
+  // Add valid units.
+  units_.insert(std::make_pair("bool", kBool));
+  units_.insert(std::make_pair("int", kInt));
+  units_.insert(std::make_pair("float", kFloat));
+  units_.insert(std::make_pair("hours", kHours));
+  units_.insert(std::make_pair("hours-1", kInverseHours));
+  units_.insert(std::make_pair("years", kYears));
+  units_.insert(std::make_pair("years-1", kInverseYears));
+  units_.insert(std::make_pair("fit", kFit));
+  units_.insert(std::make_pair("demands", kDemands));
 }
 
 void RiskAnalysis::ProcessInput(std::string xml_file) {
@@ -626,14 +637,11 @@ void RiskAnalysis::DefineParameter(const xmlpp::Element* param_node) {
   }
 
   // Attach units.
-  xmlpp::NodeSet units = param_node->find("./*[name() = 'unit']");
-  if (!units.empty()) {
-    assert(units.size() == 1);
-    const xmlpp::TextNode* element =
-        dynamic_cast<const xmlpp::TextNode*>(units.back());
-    assert(element);
+  std::string unit = param_node->get_attribute_value("unit");
+  if (unit != "") {
+    assert(units_.count(unit));
     /// @todo Check for parameter unit clash or double definition.
-    parameter->unit(RiskAnalysis::GetUnit(element));
+    parameter->unit(units_.find(unit)->second);
   }
   ExpressionPtr expression;
   bool expr_found = RiskAnalysis::GetExpression(param_node, expression);
@@ -642,39 +650,12 @@ void RiskAnalysis::DefineParameter(const xmlpp::Element* param_node) {
   RiskAnalysis::AttachLabelAndAttributes(param_node, parameter);
 }
 
-Units RiskAnalysis::GetUnit(const xmlpp::TextNode* unit_node) {
-  std::string unit_str = unit_node->get_content();
-  boost::trim(unit_str);
-  Units unit;
-  if (unit_str == "bool") {
-    unit = kBool;
-  } else if (unit_str == "int") {
-    unit = kInt;
-  } else if (unit_str == "float") {
-    unit = kFloat;
-  } else if (unit_str == "hours") {
-    unit = kHours;
-  } else if (unit_str == "hours-1") {
-    unit = kInverseHours;
-  } else if (unit_str == "years") {
-    unit = kYears;
-  } else if (unit_str == "years-1") {
-    unit = kInverseYears;
-  } else if (unit_str == "fit") {
-    unit = kFit;
-  } else if (unit_str == "demands") {
-    unit = kDemands;
-  } else {
-    assert(false);
-  }
-  return unit;
-}
-
 bool RiskAnalysis::GetExpression(const xmlpp::Element* parent_node,
                                  ExpressionPtr& expression) {
   xmlpp::NodeSet expressions =
       parent_node->find("./*[name() = 'float' or name() = 'int' or \
-                        name() = 'bool']");
+                        name() = 'bool' or name() = 'parameter'\
+                        ]");
 
   if (expressions.empty()) return false;
 
@@ -696,6 +677,20 @@ bool RiskAnalysis::GetExpression(const xmlpp::Element* parent_node,
     bool state = (val == "true") ? true : false;
     expression = ConstantExpressionPtr(new ConstantExpression(state));
 
+  } else if (expr_name == "parameter") {
+    std::string name = expr_element->get_attribute_value("name");
+    /// @todo check for possible unit clashes.
+    if (parameters_.count(name)) {
+      expression = parameters_.find(name)->second;
+
+    } else if (tbd_parameters_.count(name)) {
+      expression = tbd_parameters_.find(name)->second;
+
+    } else {
+      ParameterPtr param(new Parameter(name));
+      tbd_parameters_.insert(std::make_pair(name, param));
+      expression = param;
+    }
   }
 
   return true;
@@ -749,14 +744,17 @@ void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
       prob_requested_ = true;
     }
 
-    /// @todo Use function pointers.
     if (name == "define-gate") {
-      // Define and add gate here.
       RiskAnalysis::DefineGate(element, fault_tree);
+
     } else if (name == "define-basic-event") {
       RiskAnalysis::DefineBasicEvent(element);
+
     } else if (name == "define-house-event") {
       RiskAnalysis::DefineHouseEvent(element);
+
+    } else if (name == "define-parameter") {
+      RiskAnalysis::DefineParameter(element);
     }
   }
 }
@@ -771,10 +769,15 @@ void RiskAnalysis::ProcessModelData(const xmlpp::Element* model_data) {
 
     if (!element) continue;  // Ignore non-elements.
     std::string name = element->get_name();
+
     if (name == "define-basic-event") {
       RiskAnalysis::DefineBasicEvent(element);
+
     } else if (name == "define-house-event") {
       RiskAnalysis::DefineHouseEvent(element);
+
+    } else if (name == "define-parameter") {
+      RiskAnalysis::DefineParameter(element);
     }
   }
 }
