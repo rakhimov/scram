@@ -83,11 +83,11 @@ class DoubleDefinition : public Error {
 
 /// @class InvalidArgument
 /// This error class can be used to indicate unacceptable arguments.
-class IllegalArgument : public Error {
+class InvalidArgument : public Error {
  public:
-  /// Constructs a new illegal argument error with a provided message.
+  /// Constructs a new invalid argument error with a provided message.
   /// @param[in] msg The message to be passed with this error.
-  explicit IllegalArgument(std::string msg) : Error(msg) {}
+  explicit InvalidArgument(std::string msg) : Error(msg) {}
 };
 
 /// @class LogicError

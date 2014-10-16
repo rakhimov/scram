@@ -47,6 +47,10 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
          "number of sums in series expansion for probability calculations")
         ("cut-off,c", po::value<double>()->default_value(1e-8),
          "cut-off probability for cut sets")
+        ("mission-time,t", po::value<double>()->default_value(8760),
+         "system mission time in hours")
+        ("trials,S", po::value<int>()->default_value(1e3),
+         "number of trials for Monte Carlo simulations")
         ("output,o", po::value<std::string>(), "output file")
         ;
 
@@ -117,6 +121,8 @@ Settings ConstructSettings(const po::variables_map& vm) {
   settings.limit_order(vm["limit-order"].as<int>())
       .num_sums(vm["nsums"].as<int>())
       .cut_off(vm["cut-off"].as<double>())
+      .mission_time(vm["mission-time"].as<double>())
+      .trials(vm["trials"].as<int>())
       .fta_type(vm["analysis"].as<std::string>());
 
   return settings;
