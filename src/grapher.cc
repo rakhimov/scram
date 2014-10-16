@@ -42,7 +42,7 @@ void Grapher::GraphFaultTree(const FaultTreePtr& fault_tree,
                                  1, std::string::npos);
   std::ofstream out(output_path.c_str());
   if (!out.good()) {
-    throw scram::IOError(output_path +  " : Cannot write the graphing file.");
+    throw IOError(output_path +  " : Cannot write the graphing file.");
   }
 
   boost::to_upper(graph_name);

@@ -22,13 +22,12 @@ namespace pt = boost::posix_time;
 namespace scram {
 
 void Reporter::ReportOrphans(
-    const std::set<boost::shared_ptr<scram::PrimaryEvent> >&
-        orphan_primary_events,
+    const std::set<boost::shared_ptr<PrimaryEvent> >& orphan_primary_events,
     std::ostream& out) {
   if (orphan_primary_events.empty()) return;
 
   out << "WARNING! Found unused primary events:\n";
-  std::set<boost::shared_ptr<scram::PrimaryEvent> >::const_iterator it;
+  std::set<boost::shared_ptr<PrimaryEvent> >::const_iterator it;
   for (it = orphan_primary_events.begin(); it != orphan_primary_events.end();
        ++it) {
     out << "    " << (*it)->orig_id() << "\n";
@@ -37,7 +36,7 @@ void Reporter::ReportOrphans(
 }
 
 void Reporter::ReportFta(
-    const boost::shared_ptr<const scram::FaultTreeAnalysis>& fta,
+    const boost::shared_ptr<const FaultTreeAnalysis>& fta,
     std::ostream& out) {
   // An iterator for a set with ids of events.
   std::set<std::string>::const_iterator it_set;
@@ -130,7 +129,7 @@ void Reporter::ReportFta(
 }
 
 void Reporter::ReportProbability(
-    const boost::shared_ptr<const scram::ProbabilityAnalysis>& prob_analysis,
+    const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
     std::ostream& out) {
   // Print warnings of calculations.
   if (prob_analysis->warnings_ != "") {
@@ -174,7 +173,7 @@ void Reporter::ReportProbability(
 }
 
 void Reporter::ReportMcsProb(
-    const boost::shared_ptr<const scram::ProbabilityAnalysis>& prob_analysis,
+    const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
     std::ostream& out) {
   // An iterator for a set with ids of events.
   std::set<std::string>::const_iterator it_set;
@@ -319,7 +318,7 @@ void Reporter::McsToPrint(
 }
 
 void Reporter::ReportImportance(
-    const boost::shared_ptr<const scram::ProbabilityAnalysis>& prob_analysis,
+    const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
     std::ostream& out) {
   // Primary event analysis.
   out << "\nPrimary Event Analysis:\n";

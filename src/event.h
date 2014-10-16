@@ -40,11 +40,11 @@ class Event : public Element {
   /// Adds a parent into the parent map.
   /// @param[in] parent One of the gate parents of this event.
   /// @throws ValueError if the parent is being re-inserted.
-  void AddParent(const boost::shared_ptr<scram::Gate>& parent);
+  void AddParent(const boost::shared_ptr<Gate>& parent);
 
   /// @returns All the parents of this gate event.
   /// @throws ValueError if there are no parents for this gate event.
-  const std::map<std::string, boost::shared_ptr<scram::Gate> >& parents();
+  const std::map<std::string, boost::shared_ptr<Gate> >& parents();
 
   virtual ~Event() {}
 
@@ -56,7 +56,7 @@ class Event : public Element {
   std::string orig_id_;
 
   /// The parents of this primary event.
-  std::map<std::string, boost::shared_ptr<scram::Gate> > parents_;
+  std::map<std::string, boost::shared_ptr<Gate> > parents_;
 };
 
 /// @class Gate
@@ -90,16 +90,16 @@ class Gate : public Event {
   /// Adds a child event into the children list.
   /// @param[in] child A pointer to a child event.
   /// @throws ValueError if the child is being re-inserted.
-  void AddChild(const boost::shared_ptr<scram::Event>& child);
+  void AddChild(const boost::shared_ptr<Event>& child);
 
   /// Adds children of another gate to this gate.
   /// If this gate exists as a child then it is removed from the children.
   /// @param[in] gate The gate which children are to be added to this gate.
-  void MergeGate(const boost::shared_ptr<scram::Gate>& gate);
+  void MergeGate(const boost::shared_ptr<Gate>& gate);
 
   /// @returns The children of this gate.
   /// @throws ValueError if there are no children.
-  const std::map<std::string, boost::shared_ptr<scram::Event> >& children();
+  const std::map<std::string, boost::shared_ptr<Event> >& children();
 
  private:
   /// Gate type.
@@ -109,7 +109,7 @@ class Gate : public Event {
   int vote_number_;
 
   /// The children of this gate.
-  std::map<std::string, boost::shared_ptr<scram::Event> > children_;
+  std::map<std::string, boost::shared_ptr<Event> > children_;
 };
 
 /// @class PrimaryEvent
@@ -120,7 +120,9 @@ class PrimaryEvent : public Event {
   /// Constructs with id name and probability.
   /// @param[in] id The identifying name of this primary event.
   /// @param[in] type The type of the event.
-  explicit PrimaryEvent(std::string id, std::string type = "");
+  explicit PrimaryEvent(std::string id, std::string type = "")
+      : type_(type),
+        Event(id) {}
 
   virtual ~PrimaryEvent() {}
 
@@ -154,7 +156,7 @@ class BasicEvent: public PrimaryEvent {
  public:
   /// Constructs with id name.
   /// @param[in] id The identifying name of this basic event.
-  explicit BasicEvent(std::string id);
+  explicit BasicEvent(std::string id) : PrimaryEvent(id, "basic") {}
 
   /// Sets the expression of this basic event.
   /// @param[in] expression The expression to describe this event.
@@ -195,7 +197,9 @@ class HouseEvent: public PrimaryEvent {
  public:
   /// Constructs with id name.
   /// @param[in] id The identifying name of this basic event.
-  explicit HouseEvent(std::string id);
+  explicit HouseEvent(std::string id)
+      : state_(false),
+        PrimaryEvent(id, "house") {}
 
   /// Sets the state for House event.
   /// @param[in] constant False or True for the state of this house event.

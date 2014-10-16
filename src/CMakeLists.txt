@@ -19,7 +19,6 @@ set(SCRAM_CORE_SRC ${SCRAM_CORE_SRC}
   "${CMAKE_CURRENT_SOURCE_DIR}/element.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/event.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/gate.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/primary_event.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/superset.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/random.cc"

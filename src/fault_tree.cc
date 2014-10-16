@@ -18,8 +18,8 @@ void FaultTree::AddGate(const GatePtr& gate) {
     top_event_id_ = gate->id();
   } else {
     if (inter_events_.count(gate->id()) || gate->id() == top_event_id_) {
-      throw scram::ValidationError("Trying to doubly define a gate '" +
-                                   gate->orig_id() + "'.");
+      throw ValidationError("Trying to doubly define a gate '" +
+                            gate->orig_id() + "'.");
     }
     // Check if this gate has a valid parent in this tree.
     const std::map<std::string, GatePtr>* parents;
@@ -95,7 +95,7 @@ void FaultTree::CheckCyclicity(const GatePtr& parent,
   const std::map<std::string, EventPtr>* children = &parent->children();
   std::map<std::string, EventPtr>::const_iterator it;
   for (it = children->begin(); it != children->end(); ++it) {
-    GatePtr child_gate = boost::dynamic_pointer_cast<scram::Gate>(it->second);
+    GatePtr child_gate = boost::dynamic_pointer_cast<Gate>(it->second);
     if (child_gate) {
       if (!inter_events_.count(child_gate->id())) {
         implicit_gates_.insert(std::make_pair(child_gate->id(), child_gate));
@@ -121,7 +121,7 @@ void FaultTree::GetPrimaryEvents(const GatePtr& gate) {
   for (it = children->begin(); it != children->end(); ++it) {
     if (!inter_events_.count(it->first)) {
       PrimaryEventPtr primary_event =
-          boost::dynamic_pointer_cast<scram::PrimaryEvent>(it->second);
+          boost::dynamic_pointer_cast<PrimaryEvent>(it->second);
 
       if (primary_event == 0) {  // The tree must be fully defined.
         throw ValidationError("Node with id '" + it->second->orig_id() +

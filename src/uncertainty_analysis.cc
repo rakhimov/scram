@@ -15,7 +15,7 @@ UncertaintyAnalysis::UncertaintyAnalysis(int nsums) : p_time_(-1) {
   if (nsums < 1) {
     std::string msg = "The number of sums in the probability calculation "
                       "cannot be less than one";
-    throw scram::ValueError(msg);
+    throw ValueError(msg);
   }
   nsums_ = nsums;
 }
