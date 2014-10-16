@@ -665,7 +665,9 @@ bool RiskAnalysis::GetExpression(const xmlpp::Element* parent_node,
   xmlpp::NodeSet expressions =
       parent_node->find("./*[name() = 'float' or name() = 'int' or \
                         name() = 'bool']");
-  // parent_node->find("./*[name() = 'unit' or name() = '']");
+
+  if (expressions.empty()) return false;
+
   assert(expressions.size() == 1);
   const xmlpp::Element* expr_element =
         dynamic_cast<const xmlpp::Element*>(expressions.back());
@@ -684,8 +686,6 @@ bool RiskAnalysis::GetExpression(const xmlpp::Element* parent_node,
     bool state = (val == "true") ? true : false;
     expression = ConstantExpressionPtr(new ConstantExpression(state));
 
-  } else {
-    return false;
   }
 
   return true;
