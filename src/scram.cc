@@ -26,7 +26,6 @@ using namespace scram;
 /// @returns 1 for errored state.
 /// @returns -1 for information only state like help and version.
 int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
-  // Parse command line options.
   std::string usage = "Usage:    scram [input-file] [opts]";
   po::options_description desc("Allowed options");
 
@@ -100,7 +99,7 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
 }
 
 /// Constructs analysis settings from command-line arguments.
-/// @param[out] vm Variables map of program options.
+/// @param[in] vm Variables map of program options.
 /// @throws std::exception if vm does not contain a required option.
 ///                        At least defaults are expected.
 Settings ConstructSettings(const po::variables_map& vm) {
@@ -123,6 +122,49 @@ Settings ConstructSettings(const po::variables_map& vm) {
   return settings;
 }
 
+/// Main body of commond-line entrance to run the program.
+/// @param[in] vm Variables map of program options.
+/// @throws Error for any type of internal problems like validation.
+/// @throws boost::exception for possible Boost usage errors.
+/// @throws std::exception for any other problems.
+/// @returns 0 for success.
+/// @returns 1 for errored state.
+int RunScram(const po::variables_map& vm) {
+  // Initiate risk analysis.
+  RiskAnalysis* ran = new RiskAnalysis();
+  ran->AddSettings(ConstructSettings(vm));
+
+  // Read input files and setup.
+  std::string input_file = vm["input-file"].as<std::string>();
+
+  // Process input and validate it.
+  ran->ProcessInput(input_file);
+
+  // Stop if only validation is requested.
+  if (vm.count("validate")) {
+    std::cout << "The files are VALID." << std::endl;
+    return 0;
+  }
+
+  // Graph if requested.
+  if (vm.count("graph-only")) {
+    ran->GraphingInstructions();
+    return 0;
+  }
+
+  ran->Analyze();
+
+  // Report results.
+  std::string output = "cli";  // Output to command line by default.
+  if (vm.count("output")) {
+    output = vm["output"].as<std::string>();
+  }
+  ran->Report(output);  // May throw boost exceptions according to Coverity.
+
+  delete ran;
+  return 0;
+}
+
 /// Command line SCRAM entrance.
 /// @returns 0 for success.
 /// @returns 1 for errored state.
@@ -136,56 +178,51 @@ int main(int argc, char* argv[]) {
 #ifdef NDEBUG
   try {  // Catch exceptions only for non-debug builds.
 #endif
-    // Initiate risk analysis.
-    RiskAnalysis* ran = new RiskAnalysis();
-    ran->AddSettings(ConstructSettings(vm));
 
-    // Read input files and setup.
-    std::string input_file = vm["input-file"].as<std::string>();
-
-    // Process input and validate it.
-    ran->ProcessInput(input_file);
-
-    // Stop if only validation is requested.
-    if (vm.count("validate")) {
-      std::cout << "The files are VALID." << std::endl;
-      return 0;
-    }
-
-    // Graph if requested.
-    if (vm.count("graph-only")) {
-      ran->GraphingInstructions();
-      return 0;
-    }
-
-    ran->Analyze();
-
-    // Report results.
-    std::string output = "cli";  // Output to command line by default.
-    if (vm.count("output")) {
-      output = vm["output"].as<std::string>();
-    }
-    ran->Report(output);  // May throw boost exceptions according to Coverity.
-
-    delete ran;
+    return RunScram(vm);
 
 #ifdef NDEBUG
   } catch (IOError& io_err) {
     std::cerr << "SCRAM I/O Error\n" << std::endl;
     std::cerr << io_err.what() << std::endl;
     return 1;
+
   } catch (ValidationError& vld_err) {
     std::cerr << "SCRAM Validation Error\n" << std::endl;
     std::cerr << vld_err.what() << std::endl;
     return 1;
+
   } catch (ValueError& val_err) {
     std::cerr << "SCRAM Value Error\n" << std::endl;
     std::cerr << val_err.what() << std::endl;
     return 1;
+
+  } catch (LogicError& logic_err) {
+    std::cerr << "Bad, bad news. Please report this error. Thank you!\n"
+        << std::endl;
+    std::cerr << "SCRAM Logic Error\n" << std::endl;
+    std::cerr << logic_err.what() << std::endl;
+    return 1;
+
+  } catch (IllegalOperation& iopp_err) {
+    std::cerr << "Bad, bad news. Please report this error. Thank you!\n"
+        << std::endl;
+    std::cerr << "SCRAM Illegal Operation\n" << std::endl;
+    std::cerr << iopp_err.what() << std::endl;
+    return 1;
+
+  } catch (InvalidArgument& iarg_err) {
+    std::cerr << "Bad, bad news. Please report this error. Thank you!\n"
+        << std::endl;
+    std::cerr << "SCRAM Invalid Argument Error\n" << std::endl;
+    std::cerr << iarg_err.what() << std::endl;
+    return 1;
+
   } catch (boost::exception& boost_err) {
     std::cerr << "Boost Exception:\n" << std::endl;
     std::cerr << boost::diagnostic_information(boost_err) << std::endl;
     return 1;
+
   } catch (std::exception& std_err) {
     std::cerr << "Standard Exception:\n" << std::endl;
     std::cerr << std_err.what() << std::endl;
