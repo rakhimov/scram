@@ -562,7 +562,17 @@ void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node) {
   }
   // Only boolean for now.
   xmlpp::NodeSet expression = event_node->find("./*[name() = 'constant']");
+
+  if (expression.empty()) {
+    std::stringstream msg;
+    msg << "Line " << event_node->get_line() << ":\n";
+    msg << "The " << orig_id
+        << " house event does not have a Boolean constant expression.";
+    throw ValidationError(msg.str());
+  }
+
   assert(expression.size() == 1);
+
   const xmlpp::Element* constant =
       dynamic_cast<const xmlpp::Element*>(expression.front());
   if (!constant) assert(false);
