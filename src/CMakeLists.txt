@@ -17,6 +17,7 @@ set(SCRAM_CORE_SRC ${SCRAM_CORE_SRC}
   "${CMAKE_CURRENT_SOURCE_DIR}/error.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/settings.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/element.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/expression.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/event.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/gate.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree.cc"

@@ -2,7 +2,7 @@
 /// Implementation of fault tree analysis.
 #include "fault_tree.h"
 
-#include <iterator>
+#include <algorithm>
 
 #include <boost/pointer_cast.hpp>
 
@@ -68,26 +68,16 @@ void FaultTree::CheckCyclicity(const GatePtr& parent,
   path.push_back(parent->id());
   if (visited.count(parent->id())) {
     std::string msg = "Detected a cyclicity in '" + name_ + "' fault tree:\n";
-    std::vector<std::string>::iterator it;
-    bool path_start = false;
-    bool path_end = false;
-    for (it = path.begin(); it != path.end(); ++it) {
-      assert(!path_end);
-      if (!path_start && *it == parent->id()) {
-        path_start = true;
-        msg += parent->orig_id();
-        continue;
-      }
-      if (!path_start) continue;
-      if (*it == parent->id()) {
-        path_end = true;
-        msg += "->" + parent->orig_id();
-        continue;
-      }
-      assert(inter_events_.find(*it) != inter_events_.end());
+    std::vector<std::string>::iterator it = std::find(path.begin(),
+                                                      path.end(),
+                                                      parent->id());
+    msg += parent->orig_id();
+    for (; it != path.end(); ++it) {
+      assert(inter_events_.count(*it));
       msg += "->" + inter_events_.find(*it)->second->orig_id();
     }
     throw ValidationError(msg);
+
   } else {
     visited.insert(parent->id());
   }

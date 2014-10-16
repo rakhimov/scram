@@ -4,6 +4,7 @@
 #define SCRAM_SRC_EXPRESSION_H_
 
 #include <string>
+#include <vector>
 
 #include <boost/shared_ptr.hpp>
 
@@ -87,10 +88,19 @@ class Parameter : public Expression, public Element {
   /// @returns The unit of this parameter.
   inline const Units& unit() { return unit_; }
 
+  /// Checks for circular references in parameters.
+  /// @throws ValidationError if any cyclic reference is found.
+  void CheckCyclicity();
+
   inline double Mean() { return expression_->Mean(); }
   inline double Sample() { return expression_->Sample(); }
 
  private:
+  /// Helper funciton to check for cyclic references in parameters.
+  /// @param[out] path The current path of names in cyclicity search.
+  /// @throws ValidationError if any cyclic reference is found.
+  void CheckCyclicity(std::vector<std::string>* path);
+
   /// Name of this parameter or variable.
   std::string name_;
 

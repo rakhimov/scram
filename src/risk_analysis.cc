@@ -454,8 +454,7 @@ void RiskAnalysis::ProcessFormulaHouseEvent(const xmlpp::Element* event,
     child = HouseEventPtr(new HouseEvent(id));
     child->orig_id(orig_id);
     tbd_house_events_.insert(
-        std::make_pair(id, boost::dynamic_pointer_cast
-                       <HouseEvent>(child)));
+        std::make_pair(id, boost::dynamic_pointer_cast<HouseEvent>(child)));
     RiskAnalysis::UpdateIfLateEvent(child);
   }
 }
@@ -817,6 +816,14 @@ void RiskAnalysis::ValidateInitialization() {
     std::map<std::string, FaultTreePtr>::iterator it;
     for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
       it->second->Validate();
+    }
+  }
+
+  // Check for cyclicity in parameters.
+  if (!parameters_.empty()) {
+    boost::unordered_map<std::string, ParameterPtr>::iterator it;
+    for (it = parameters_.begin(); it != parameters_.end(); ++it) {
+      it->second->CheckCyclicity();
     }
   }
 
