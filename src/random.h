@@ -78,10 +78,10 @@ class Random {
   static double NormalGenerator(double mean, double sigma);
 
   /// Rng from lognormal distribution.
-  /// @param[in] mean The mean of the distribution.
-  /// @param[in] sigma The standard deviation of the distribution.
+  /// @param[in] m The m location parameter of the distribution.
+  /// @param[in] s The s scale factor of the distribution.
   /// @returns A sampled value.
-  static double LogNormalGenerator(double mean, double sigma);
+  static double LogNormalGenerator(double m, double s);
 
   /// Rng from Gamma distribution.
   /// @param[in] k Shape parameter of Gamma distribution.
