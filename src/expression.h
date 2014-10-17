@@ -10,7 +10,6 @@
 #include <boost/shared_ptr.hpp>
 
 #include "element.h"
-#include "error.h"
 #include "random.h"
 
 namespace scram {
@@ -34,11 +33,11 @@ class ConstantExpression : public Expression {
  public:
   /// Constructor for integer and float values.
   /// @param[in] val Any numerical value.
-  ConstantExpression(double val) : value_(val) {}
+  explicit ConstantExpression(double val) : value_(val) {}
 
   /// Constructor for boolean values.
   /// @param[in] val true for 1 and false for 0 value of this constant.
-  ConstantExpression(bool val) : value_(val ? 1 : 0) {}
+  explicit ConstantExpression(bool val) : value_(val ? 1 : 0) {}
 
   inline double Mean() { return value_; }
   inline double Sample() { return value_; }
@@ -72,7 +71,7 @@ class Parameter : public Expression, public Element {
   /// Sets the expression of this basic event.
   /// @param[in] name The name of this variable (Case sensitive).
   /// @param[in] expression The expression to describe this event.
-  Parameter(std::string name) : name_(name) {}
+  explicit Parameter(std::string name) : name_(name) {}
 
   /// Sets the expression of this parameter.
   /// @param[in] expression The expression to describe this parameter.

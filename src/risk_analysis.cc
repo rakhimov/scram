@@ -20,6 +20,7 @@
 #include "env.h"
 #include "error.h"
 #include "reporter.h"
+#include "xml_parser.h"
 
 namespace scram {
 
@@ -165,7 +166,8 @@ void RiskAnalysis::Analyze() {
         pa->UpdateDatabase(it->second->primary_events());
         pa->Analyze(fta->min_cut_sets());
         prob_analyses_.push_back(pa);
-      } else if (settings_.fta_type_ == "mc"){
+
+      } else if (settings_.fta_type_ == "mc") {
         UncertaintyAnalysisPtr ua(new UncertaintyAnalysis(settings_.num_sums_));
         ua->UpdateDatabase(it->second->primary_events());
         ua->Analyze(fta->min_cut_sets());
@@ -365,14 +367,19 @@ bool RiskAnalysis::ProcessFormulaEvent(const GatePtr& gate,
   std::string orig_id = child->orig_id();
   if (primary_events_.count(id)) {
     child = primary_events_.find(id)->second;
+
   } else if (gates_.count(id)) {
     child = gates_.find(id)->second;
+
   } else if (tbd_gates_.count(id)) {
     child = tbd_gates_.find(id)->second;
+
   } else if (tbd_basic_events_.count(id)) {
     child = tbd_basic_events_.find(id)->second;
+
   } else if (tbd_house_events_.count(id)) {
     child = tbd_house_events_.find(id)->second;
+
   } else {
     if (tbd_events_.count(id)) {
       tbd_events_.find(id)->second.push_back(gate);
@@ -658,10 +665,10 @@ void RiskAnalysis::DefineParameter(const xmlpp::Element* param_node) {
 bool RiskAnalysis::GetExpression(const xmlpp::Element* parent_node,
                                  ExpressionPtr& expression) {
   xmlpp::NodeSet expressions =
-      parent_node->find("./*[name() = 'float' or name() = 'int' or \
-                        name() = 'bool' or name() = 'parameter' or \
-                        name() = 'system-mission-time'\
-                        ]");
+      parent_node->find("./*[name() = 'float' or name() = 'int' or"
+                        " name() = 'bool' or name() = 'parameter' or"
+                        " name() = 'system-mission-time'"
+                        "]");
 
   if (expressions.empty()) return false;
 
@@ -1023,7 +1030,5 @@ std::string RiskAnalysis::CheckMissingParameters() {
 
   return msg;
 }
-
-
 
 }  // namespace scram

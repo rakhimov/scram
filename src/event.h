@@ -128,7 +128,7 @@ class PrimaryEvent : public Event {
 
   /// @returns The type of the primary event.
   /// @throws ValueError if the type is not yet set.
-  inline const std::string& type() const { return type_; };
+  inline const std::string& type() const { return type_; }
 
   /// @returns The mean probability of failure of this event.
   /// @throws IllegalOperation if the base class function is called where
@@ -202,7 +202,7 @@ class HouseEvent: public PrimaryEvent {
 
   /// Sets the state for House event.
   /// @param[in] constant False or True for the state of this house event.
-  inline void state(bool constant) { state_ = constant; };
+  inline void state(bool constant) { state_ = constant; }
 
   /// @returns The mean probability of this basic event.
   inline double p() const { return state_ ? 1 : 0; }

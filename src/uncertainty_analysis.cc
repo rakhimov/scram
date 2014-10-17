@@ -91,9 +91,10 @@ void UncertaintyAnalysis::IndexMcs(
   }
 }
 
-void UncertaintyAnalysis::CombineElAndSet(const std::set<int>& el,
-                                          const std::set< std::set<int> >& set,
-                                          std::set< std::set<int> >* combo_set) {
+void UncertaintyAnalysis::CombineElAndSet(
+    const std::set<int>& el,
+    const std::set< std::set<int> >& set,
+    std::set< std::set<int> >* combo_set) {
   std::set< std::set<int> >::iterator it_set;
   for (it_set = set.begin(); it_set != set.end(); ++it_set) {
     bool include = true;  // Indicates that the resultant set is not null.

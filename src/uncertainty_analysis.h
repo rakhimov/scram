@@ -20,14 +20,13 @@ typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
 namespace scram {
 
 class UncertaintyAnalysis {
-
 friend class ::UncertaintyAnalysisTest;
 
  public:
   /// The main constructor of Uncertainty Analysis.
   /// @param[in] nsums The number of sums in the probability series.
   /// @throws ValueError if any of the parameters are invalid.
-  UncertaintyAnalysis(int nsums = 1e6);
+  explicit UncertaintyAnalysis(int nsums = 1e6);
 
   /// Set the databases of primary events with probabilities.
   /// Resets the main primary events database and clears the

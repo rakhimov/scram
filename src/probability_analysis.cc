@@ -225,7 +225,8 @@ double ProbabilityAnalysis::ProbOr(
       ProbabilityAnalysis::ProbOr(nsums - 1, &combo_sets);
 }
 
-double ProbabilityAnalysis::ProbAnd(const boost::container::flat_set<int>& min_cut_set) {
+double ProbabilityAnalysis::ProbAnd(
+    const boost::container::flat_set<int>& min_cut_set) {
   // Test just in case the min cut set is empty.
   if (min_cut_set.empty()) return 0;
 

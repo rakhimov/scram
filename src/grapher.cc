@@ -105,7 +105,8 @@ void Grapher::GraphFaultTree(const FaultTreePtr& fault_tree,
 
     if (inter_events_.find(it->first)->second->HasAttribute("flavor") &&
         gate == "and")
-      gate = inter_events_.find(it->first)->second->GetAttribute("flavor").value;
+      gate =
+          inter_events_.find(it->first)->second->GetAttribute("flavor").value;
 
     std::string gate_color = "black";
     if (gate_colors.count(gate)) {

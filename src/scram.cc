@@ -192,43 +192,36 @@ int main(int argc, char* argv[]) {
     std::cerr << "SCRAM I/O Error\n" << std::endl;
     std::cerr << io_err.what() << std::endl;
     return 1;
-
   } catch (ValidationError& vld_err) {
     std::cerr << "SCRAM Validation Error\n" << std::endl;
     std::cerr << vld_err.what() << std::endl;
     return 1;
-
   } catch (ValueError& val_err) {
     std::cerr << "SCRAM Value Error\n" << std::endl;
     std::cerr << val_err.what() << std::endl;
     return 1;
-
   } catch (LogicError& logic_err) {
     std::cerr << "Bad, bad news. Please report this error. Thank you!\n"
         << std::endl;
     std::cerr << "SCRAM Logic Error\n" << std::endl;
     std::cerr << logic_err.what() << std::endl;
     return 1;
-
   } catch (IllegalOperation& iopp_err) {
     std::cerr << "Bad, bad news. Please report this error. Thank you!\n"
         << std::endl;
     std::cerr << "SCRAM Illegal Operation\n" << std::endl;
     std::cerr << iopp_err.what() << std::endl;
     return 1;
-
   } catch (InvalidArgument& iarg_err) {
     std::cerr << "Bad, bad news. Please report this error. Thank you!\n"
         << std::endl;
     std::cerr << "SCRAM Invalid Argument Error\n" << std::endl;
     std::cerr << iarg_err.what() << std::endl;
     return 1;
-
   } catch (boost::exception& boost_err) {
     std::cerr << "Boost Exception:\n" << std::endl;
     std::cerr << boost::diagnostic_information(boost_err) << std::endl;
     return 1;
-
   } catch (std::exception& std_err) {
     std::cerr << "Standard Exception:\n" << std::endl;
     std::cerr << std_err.what() << std::endl;

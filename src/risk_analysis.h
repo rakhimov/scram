@@ -10,17 +10,17 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
+#include <libxml++/libxml++.h>
 
 #include "element.h"
 #include "event.h"
+#include "expression.h"
 #include "fault_tree.h"
 #include "fault_tree_analysis.h"
 #include "grapher.h"
 #include "probability_analysis.h"
 #include "settings.h"
 #include "uncertainty_analysis.h"
-#include "xml_parser.h"
-#include "expression.h"
 
 class RiskAnalysisTest;
 class PerformanceTest;

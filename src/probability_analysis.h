@@ -11,7 +11,6 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
-
 #include <boost/container/flat_set.hpp>
 
 #include <event.h>
