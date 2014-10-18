@@ -99,6 +99,54 @@ double GlmExpression::Sample() {
   return (lambda - (lambda - gamma * r) * std::exp(-r * time)) / r;
 }
 
+WeibullExpression::WeibullExpression(const ExpressionPtr& alpha,
+                                     const ExpressionPtr& beta,
+                                     const ExpressionPtr& t0,
+                                     const ExpressionPtr& time) {
+  if (alpha->Mean() <= 0) {
+    throw InvalidArgument("The scale parameter for Weibull distribution must"
+                          " be positive.");
+  } else if (beta->Mean() <= 0) {
+    throw InvalidArgument("The shape parameter for Weibull distribution must"
+                          " be positive.");
+  } else if (t0->Mean() < 0) {
+    throw InvalidArgument("Invalid value for time shift.");
+  } else if (time->Mean() < 0) {
+    throw InvalidArgument("The mission time cannot be negative.");
+  } else if (time->Mean() < t0->Mean()) {
+    throw InvalidArgument("The mission time must be longer than time shift.");
+  }
+
+  alpha_ = alpha;
+  beta_ = beta;
+  t0_ = t0;
+  time_ = time;
+}
+
+double WeibullExpression::Sample() {
+  double alpha = alpha_->Sample();
+  double beta = beta_->Sample();
+  double t0 = t0_->Sample();
+  double time = time_->Sample();
+
+  if (alpha <= 0) {
+    throw InvalidArgument("The scale parameter for Weibull distribution must"
+                          " be positive for sampled values.");
+  } else if (beta <= 0) {
+    throw InvalidArgument("The shape parameter for Weibull distribution must"
+                          " be positive for sampled values.");
+  } else if (t0 < 0) {
+    throw InvalidArgument("Invalid value for time shift in sampled values.");
+  } else if (time < 0) {
+    throw InvalidArgument("The sampled mission time cannot be negative.");
+  } else if (time < t0) {
+    throw InvalidArgument("The sampled mission time must be"
+                          " longer than time shift.");
+  }
+
+  return 1 - std::exp(-std::pow((time - t0) / alpha, beta));
+}
+
 UniformDeviate::UniformDeviate(const ExpressionPtr& min,
                               const ExpressionPtr& max) {
   if (min->Mean() >= max->Mean()) {

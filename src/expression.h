@@ -115,6 +115,43 @@ class GlmExpression : public Expression {
   ExpressionPtr mu_;
 };
 
+/// @class WeibullExpression
+/// Weibull distribution with scale, shap, time shift, and time.
+class WeibullExpression : public Expression {
+ public:
+  /// Constructor for Wibull distribution.
+  /// @param[in] alpha Scale parameter.
+  /// @param[in] beta Shape parameter.
+  /// @param[in] t0 Time shift.
+  /// @param[in] time Mission time.
+  /// @throws InvalidArgument if arguments are invalid.
+  WeibullExpression(const ExpressionPtr& alpha, const ExpressionPtr& beta,
+                    const ExpressionPtr& t0, const ExpressionPtr& time);
+
+  inline double Mean() {
+    return 1 - std::exp(-std::pow((time_->Mean() - t0_->Mean()) /
+                                  alpha_->Mean(), beta_->Mean()));
+  }
+
+  /// Samples the underlying distributions.
+  /// @returns A sampled value.
+  /// @throws InvalidArgument if sampled values are invalid.
+  double Sample();
+
+ private:
+  /// Scale parameter.
+  ExpressionPtr alpha_;
+
+  /// Shape parameter.
+  ExpressionPtr beta_;
+
+  /// Time shift in hours.
+  ExpressionPtr t0_;
+
+  /// Mission time in hours.
+  ExpressionPtr time_;
+};
+
 /// @enum Units
 /// Provides units for parameters.
 enum Units {

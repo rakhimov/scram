@@ -107,6 +107,72 @@ TEST(ExpressionTest, GLM) {
   ASSERT_NO_THROW(dev->Sample());
 }
 
+TEST(ExpressionTest, Weibull) {
+  OpenExpressionPtr alpha(new OpenExpression(0.10, 0.8));
+  OpenExpressionPtr beta(new OpenExpression(10, 8));
+  OpenExpressionPtr t0(new OpenExpression(10, 8));
+  OpenExpressionPtr time(new OpenExpression(50, 40));
+  ASSERT_NO_THROW(WeibullExpression(alpha, beta, t0, time));
+
+  alpha->mean = -1;
+  EXPECT_THROW(WeibullExpression(alpha, beta, t0, time), InvalidArgument);
+  alpha->mean = 0;
+  EXPECT_THROW(WeibullExpression(alpha, beta, t0, time), InvalidArgument);
+  alpha->mean = 0.10;
+  ASSERT_NO_THROW(WeibullExpression(alpha, beta, t0, time));
+
+  beta->mean = -1;
+  EXPECT_THROW(WeibullExpression(alpha, beta, t0, time), InvalidArgument);
+  beta->mean = 0;
+  EXPECT_THROW(WeibullExpression(alpha, beta, t0, time), InvalidArgument);
+  beta->mean = 10;
+  ASSERT_NO_THROW(WeibullExpression(alpha, beta, t0, time));
+
+  t0->mean = -10;
+  EXPECT_THROW(WeibullExpression(alpha, beta, t0, time), InvalidArgument);
+  t0->mean = 100;
+  EXPECT_THROW(WeibullExpression(alpha, beta, t0, time), InvalidArgument);
+  t0->mean = 10;
+  ASSERT_NO_THROW(WeibullExpression(alpha, beta, t0, time));
+
+  time->mean = -1;
+  EXPECT_THROW(WeibullExpression(alpha, beta, t0, time), InvalidArgument);
+  time->mean = 50;
+  ASSERT_NO_THROW(WeibullExpression(alpha, beta, t0, time));
+
+  ExpressionPtr dev;
+  ASSERT_NO_THROW(dev = ExpressionPtr(new WeibullExpression(alpha, beta,
+                                                            t0, time)));
+  EXPECT_DOUBLE_EQ(1 - std::exp(-std::pow(40 / 0.1, 10)),
+                   dev->Mean());
+
+  alpha->sample = -1;
+  EXPECT_THROW(dev->Sample(), InvalidArgument);
+  alpha->sample = 0;
+  EXPECT_THROW(dev->Sample(), InvalidArgument);
+  alpha->sample = 0.10;
+  ASSERT_NO_THROW(dev->Sample());
+
+  beta->sample = -1;
+  EXPECT_THROW(dev->Sample(), InvalidArgument);
+  beta->sample = 0;
+  EXPECT_THROW(dev->Sample(), InvalidArgument);
+  beta->sample = 10;
+  ASSERT_NO_THROW(dev->Sample());
+
+  t0->sample = -10;
+  EXPECT_THROW(dev->Sample(), InvalidArgument);
+  t0->sample = 100;
+  EXPECT_THROW(dev->Sample(), InvalidArgument);
+  t0->sample = 10;
+  ASSERT_NO_THROW(dev->Sample());
+
+  time->sample = -1;
+  EXPECT_THROW(dev->Sample(), InvalidArgument);
+  time->sample = 50;
+  ASSERT_NO_THROW(dev->Sample());
+}
+
 // Uniform deviate test for invalid minimum and maximum values.
 TEST(ExpressionTest, UniformDeviate) {
   OpenExpressionPtr min(new OpenExpression(1, 2));

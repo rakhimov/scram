@@ -26,6 +26,7 @@ typedef boost::shared_ptr<scram::ConstantExpression> ConstantExpressionPtr;
 typedef boost::shared_ptr<scram::ExponentialExpression>
     ExponentialExpressionPtr;
 typedef boost::shared_ptr<scram::GlmExpression> GlmExpressionPtr;
+typedef boost::shared_ptr<scram::WeibullExpression> WeibullExpressionPtr;
 typedef boost::shared_ptr<scram::UniformDeviate> UniformDeviatePtr;
 typedef boost::shared_ptr<scram::NormalDeviate> NormalDeviatePtr;
 typedef boost::shared_ptr<scram::LogNormalDeviate> LogNormalDeviatePtr;
@@ -876,6 +877,35 @@ void RiskAnalysis::GetExpression(const xmlpp::Element* expr_element,
     GetExpression(element, time);
 
     expression = GlmExpressionPtr(new GlmExpression(gamma, lambda, mu, time));
+
+  } else if (expr_name == "Weibull") {
+    assert(expr_element->find("./*").size() == 4);
+    const xmlpp::Element* element =
+        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[0]);
+    assert(element);
+    ExpressionPtr alpha;
+    GetExpression(element, alpha);
+
+    element =
+        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[1]);
+    assert(element);
+    ExpressionPtr beta;
+    GetExpression(element, beta);
+
+    element =
+        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[2]);
+    assert(element);
+    ExpressionPtr t0;
+    GetExpression(element, t0);
+
+    element =
+        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[3]);
+    assert(element);
+    ExpressionPtr time;
+    GetExpression(element, time);
+
+    expression = WeibullExpressionPtr(new WeibullExpression(alpha, beta,
+                                                            t0, time));
 
   } else {
     std::stringstream msg;
