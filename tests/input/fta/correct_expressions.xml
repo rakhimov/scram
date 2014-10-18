@@ -49,6 +49,12 @@ The input tries to utilize all the functionality including optional cases.
     <define-parameter name="MissionTimeParameter">
       <system-mission-time/>
     </define-parameter>
+    <define-basic-event name="Exponential">
+      <exponential>
+        <float value="1"/>
+        <system-mission-time/>
+      </exponential>
+    </define-basic-event>
     <define-basic-event name="UniformDeviate">
       <uniform-deviate>
         <float value="0"/>

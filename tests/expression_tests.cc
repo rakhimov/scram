@@ -19,16 +19,52 @@ class OpenExpression : public Expression {
 
 typedef boost::shared_ptr<OpenExpression> OpenExpressionPtr;
 
+TEST(ExpressionTest, Exponential) {
+  OpenExpressionPtr lambda(new OpenExpression(10, 8));
+  OpenExpressionPtr time(new OpenExpression(5, 4));
+  ASSERT_NO_THROW(ExponentialExpression(lambda, time));
+
+  lambda->mean = -1;
+  EXPECT_THROW(ExponentialExpression(lambda, time), InvalidArgument);
+  lambda->mean = 10;
+  ASSERT_NO_THROW(ExponentialExpression(lambda, time));
+
+  time->mean = -1;
+  EXPECT_THROW(ExponentialExpression(lambda, time), InvalidArgument);
+  time->mean = 5;
+  ASSERT_NO_THROW(ExponentialExpression(lambda, time));
+
+  ExpressionPtr dev;
+  ASSERT_NO_THROW(dev = ExpressionPtr(new ExponentialExpression(lambda, time)));
+  EXPECT_DOUBLE_EQ(1 - std::exp(-50), dev->Mean());
+
+  lambda->sample = -1;
+  EXPECT_THROW(dev->Sample(), InvalidArgument);
+  lambda->sample = 10;
+  ASSERT_NO_THROW(dev->Sample());
+
+  time->sample = -1;
+  EXPECT_THROW(dev->Sample(), InvalidArgument);
+  time->sample = 5;
+  ASSERT_NO_THROW(dev->Sample());
+}
+
 // Uniform deviate test for invalid minimum and maximum values.
 TEST(ExpressionTest, UniformDeviate) {
-  OpenExpressionPtr min(new OpenExpression(10));
-  OpenExpressionPtr max(new OpenExpression(5));
+  OpenExpressionPtr min(new OpenExpression(1, 2));
+  OpenExpressionPtr max(new OpenExpression(5, 4));
+  ASSERT_NO_THROW(UniformDeviate(min, max));
+
+  min->mean = 10;
   EXPECT_THROW(UniformDeviate(min, max), InvalidArgument);  // min > max
   min->mean = 1;
+  ASSERT_NO_THROW(UniformDeviate(min, max));
+
   ExpressionPtr dev;
-  EXPECT_NO_THROW(dev = ExpressionPtr(new UniformDeviate(min, max)));
+  ASSERT_NO_THROW(dev = ExpressionPtr(new UniformDeviate(min, max)));
+  EXPECT_DOUBLE_EQ(3, dev->Mean());
+
   min->sample = 10;
-  max->sample = 5;
   EXPECT_THROW(dev->Sample(), InvalidArgument);  // min > max
   min->sample = 1;
   EXPECT_NO_THROW(dev->Sample());
@@ -36,16 +72,21 @@ TEST(ExpressionTest, UniformDeviate) {
 
 // Normal deviate test for invalid standard deviation.
 TEST(ExpressionTest, NormalDeviate) {
-  OpenExpressionPtr mean(new OpenExpression(10));
-  OpenExpressionPtr sigma(new OpenExpression(-5));
+  OpenExpressionPtr mean(new OpenExpression(10, 1));
+  OpenExpressionPtr sigma(new OpenExpression(5, 4));
+  ASSERT_NO_THROW(NormalDeviate(mean, sigma));
+
+  sigma->mean = -5;
   EXPECT_THROW(NormalDeviate(mean, sigma), InvalidArgument);  // sigma < 0
   sigma->mean = 0;
   EXPECT_THROW(NormalDeviate(mean, sigma), InvalidArgument);  // sigma = 0
-  sigma->mean = 1;
+  sigma->mean = 5;
+  ASSERT_NO_THROW(NormalDeviate(mean, sigma));
+
   ExpressionPtr dev;
-  EXPECT_NO_THROW(dev = ExpressionPtr(new NormalDeviate(mean, sigma)));
+  ASSERT_NO_THROW(dev = ExpressionPtr(new NormalDeviate(mean, sigma)));
+
   sigma->sample = -1;
-  mean->sample = 5;
   EXPECT_THROW(dev->Sample(), InvalidArgument);  // sigma < 0
   sigma->sample = 0;
   EXPECT_THROW(dev->Sample(), InvalidArgument);  // sigma = 0

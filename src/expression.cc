@@ -35,6 +35,30 @@ void Parameter::CheckCyclicity(std::vector<std::string>* path) {
   if (ptr) ptr->CheckCyclicity(path);
 }
 
+ExponentialExpression::ExponentialExpression(const ExpressionPtr& lambda,
+                                             const ExpressionPtr& t) {
+  if (lambda->Mean() < 0) {
+    throw InvalidArgument("The rate of failure cannot be negative.");
+  } else if (t->Mean() < 0) {
+    throw InvalidArgument("The mission time cannot be negative.");
+  }
+
+  lambda_ = lambda;
+  time_ = t;
+}
+
+double ExponentialExpression::Sample() {
+  double lambda = lambda_->Sample();
+  double time = time_->Sample();
+
+  if (lambda < 0) {
+    throw InvalidArgument("The sampled rate of failure cannot be negative.");
+  } else if (time < 0) {
+    throw InvalidArgument("The sampled mission time cannot be negative.");
+  }
+  return 1 - std::exp(-(lambda * time));
+}
+
 UniformDeviate::UniformDeviate(const ExpressionPtr& min,
                               const ExpressionPtr& max) {
   if (min->Mean() >= max->Mean()) {

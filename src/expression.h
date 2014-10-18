@@ -47,6 +47,35 @@ class ConstantExpression : public Expression {
   double value_;
 };
 
+typedef boost::shared_ptr<scram::Expression> ExpressionPtr;
+
+/// @class ExponentialExpression
+/// Negative exponential distribution with hourly rate and time.
+class ExponentialExpression : public Expression {
+ public:
+  /// Constructor for integer and float values.
+  /// @param[in] lambda Hourly rate of failure.
+  /// @param[in] t Mission time in hours.
+  /// @throws InvalidArgument if arguments are negative.
+  ExponentialExpression(const ExpressionPtr& lambda, const ExpressionPtr& t);
+
+  inline double Mean() {
+    return 1 - std::exp(-(lambda_->Mean() * time_->Mean()));
+  }
+
+  /// Samples the underlying distributions.
+  /// @returns A sampled value.
+  /// @throws InvalidArgument if sampled failure rate or time is negative.
+  double Sample();
+
+ private:
+  /// Failure rate in hours.
+  ExpressionPtr lambda_;
+
+  /// Mission time in hours.
+  ExpressionPtr time_;
+};
+
 /// @enum Units
 /// Provides units for parameters.
 enum Units {
@@ -60,8 +89,6 @@ enum Units {
   kFit,
   kDemands
 };
-
-typedef boost::shared_ptr<scram::Expression> ExpressionPtr;
 
 /// @class Parameter
 /// This class provides a representation of a variable in basic event
@@ -334,6 +361,7 @@ class Histogram : public Expression {
   /// Weights of intervals described by boundaries.
   std::vector<ExpressionPtr> weights_;
 };
+
 
 }  // namespace scram
 

@@ -23,6 +23,8 @@
 #include "xml_parser.h"
 
 typedef boost::shared_ptr<scram::ConstantExpression> ConstantExpressionPtr;
+typedef boost::shared_ptr<scram::ExponentialExpression>
+    ExponentialExpressionPtr;
 typedef boost::shared_ptr<scram::UniformDeviate> UniformDeviatePtr;
 typedef boost::shared_ptr<scram::NormalDeviate> NormalDeviatePtr;
 typedef boost::shared_ptr<scram::LogNormalDeviate> LogNormalDeviatePtr;
@@ -72,6 +74,9 @@ void RiskAnalysis::ProcessInput(std::string xml_file) {
   if (!file_stream) {
     throw IOError("The file '" + xml_file + "' could not be loaded.");
   }
+
+  // Assume that setting are configured.
+  mission_time_->mission_time(settings_.mission_time_);
 
   input_file_ = xml_file;
 
@@ -826,6 +831,23 @@ void RiskAnalysis::GetExpression(const xmlpp::Element* expr_element,
       weights.push_back(weight);
     }
     expression = HistogramPtr(new Histogram(boundaries, weights));
+
+  } else if (expr_name == "exponential") {
+    assert(expr_element->find("./*").size() == 2);
+    const xmlpp::Element* element =
+        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[0]);
+    assert(element);
+    ExpressionPtr lambda;
+    GetExpression(element, lambda);
+
+    element =
+        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[1]);
+    assert(element);
+    ExpressionPtr time;
+    GetExpression(element, time);
+
+    expression = ExponentialExpressionPtr(new ExponentialExpression(lambda,
+                                                                    time));
 
   } else {
     std::stringstream msg;
