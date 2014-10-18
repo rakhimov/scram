@@ -246,11 +246,6 @@ Histogram::Histogram(const std::vector<ExpressionPtr>& boundaries,
 void Histogram::Validate() {
   CheckBoundaries(boundaries_);
   CheckWeights(weights_);
-
-  if (weights_.size() != boundaries_.size()) {
-    throw InvalidArgument("The number of weights is not equal to the number"
-                          " of boundaries.");
-  }
 }
 
 double Histogram::Mean() {
