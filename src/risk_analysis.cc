@@ -913,6 +913,8 @@ void RiskAnalysis::GetExpression(const xmlpp::Element* expr_element,
     msg << "Unsupported expression: " << expr_element->get_name();
     throw ValidationError(msg.str());
   }
+
+  expressions_.insert(expression);
 }
 
 bool RiskAnalysis::UpdateIfLateEvent(const EventPtr& event) {
@@ -1028,8 +1030,7 @@ void RiskAnalysis::ValidateInitialization() {
   }
 
   if (!error_messages.str().empty()) {
-    throw ValidationError(error_messages.str());
-  }
+    throw ValidationError(error_messages.str()); }
 
   // Validation of analysis entities.
   if (!fault_trees_.empty()) {
@@ -1044,6 +1045,18 @@ void RiskAnalysis::ValidateInitialization() {
     boost::unordered_map<std::string, ParameterPtr>::iterator it;
     for (it = parameters_.begin(); it != parameters_.end(); ++it) {
       it->second->Validate();
+    }
+  }
+
+  // Validate expressions.
+  if (!expressions_.empty()) {
+    try {
+      std::set<ExpressionPtr>::iterator it;
+      for (it = expressions_.begin(); it != expressions_.end(); ++it) {
+        (*it)->Validate();
+      }
+    } catch (InvalidArgument& err) {
+      throw ValidationError(err.msg());
     }
   }
 

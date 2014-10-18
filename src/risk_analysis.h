@@ -251,6 +251,9 @@ class RiskAnalysis {
   /// Map of valid units for parameters.
   std::map<std::string, Units> units_;
 
+  /// Container for defined expressions.
+  std::set<ExpressionPtr> expressions_;
+
   /// A collection of fault trees for analysis.
   std::map<std::string, FaultTreePtr> fault_trees_;
 
