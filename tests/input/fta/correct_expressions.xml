@@ -55,6 +55,14 @@ The input tries to utilize all the functionality including optional cases.
         <system-mission-time/>
       </exponential>
     </define-basic-event>
+    <define-basic-event name="FourArgumentExponential">
+      <GLM>
+        <float value="0.3"/>
+        <float value="10"/>
+        <float value="100"/>
+        <system-mission-time/>
+      </GLM>
+    </define-basic-event>
     <define-basic-event name="UniformDeviate">
       <uniform-deviate>
         <float value="0"/>

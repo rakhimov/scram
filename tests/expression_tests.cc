@@ -49,6 +49,64 @@ TEST(ExpressionTest, Exponential) {
   ASSERT_NO_THROW(dev->Sample());
 }
 
+TEST(ExpressionTest, GLM) {
+  OpenExpressionPtr gamma(new OpenExpression(0.10, 0.8));
+  OpenExpressionPtr lambda(new OpenExpression(10, 8));
+  OpenExpressionPtr mu(new OpenExpression(100, 80));
+  OpenExpressionPtr time(new OpenExpression(5, 4));
+  ASSERT_NO_THROW(GlmExpression(gamma, lambda, mu, time));
+
+  gamma->mean = -1;
+  EXPECT_THROW(GlmExpression(gamma, lambda, mu, time), InvalidArgument);
+  gamma->mean = 10;
+  EXPECT_THROW(GlmExpression(gamma, lambda, mu, time), InvalidArgument);
+  gamma->mean = 0.10;
+  ASSERT_NO_THROW(GlmExpression(gamma, lambda, mu, time));
+
+  lambda->mean = -1;
+  EXPECT_THROW(GlmExpression(gamma, lambda, mu, time), InvalidArgument);
+  lambda->mean = 10;
+  ASSERT_NO_THROW(GlmExpression(gamma, lambda, mu, time));
+
+  mu->mean = -10;
+  EXPECT_THROW(GlmExpression(gamma, lambda, mu, time), InvalidArgument);
+  mu->mean = 100;
+  ASSERT_NO_THROW(GlmExpression(gamma, lambda, mu, time));
+
+  time->mean = -1;
+  EXPECT_THROW(GlmExpression(gamma, lambda, mu, time), InvalidArgument);
+  time->mean = 5;
+  ASSERT_NO_THROW(GlmExpression(gamma, lambda, mu, time));
+
+  ExpressionPtr dev;
+  ASSERT_NO_THROW(dev = ExpressionPtr(new GlmExpression(gamma, lambda,
+                                                        mu, time)));
+  EXPECT_DOUBLE_EQ((10 - (10 - 0.10 * 110) * std::exp(-110 * 5)) / 110,
+                   dev->Mean());
+
+  gamma->sample = -1;
+  EXPECT_THROW(dev->Sample(), InvalidArgument);
+  gamma->sample = 10;
+  EXPECT_THROW(dev->Sample(), InvalidArgument);
+  gamma->sample = 0.10;
+  ASSERT_NO_THROW(dev->Sample());
+
+  lambda->sample = -1;
+  EXPECT_THROW(dev->Sample(), InvalidArgument);
+  lambda->sample = 10;
+  ASSERT_NO_THROW(dev->Sample());
+
+  mu->sample = -10;
+  EXPECT_THROW(dev->Sample(), InvalidArgument);
+  mu->sample = 100;
+  ASSERT_NO_THROW(dev->Sample());
+
+  time->sample = -1;
+  EXPECT_THROW(dev->Sample(), InvalidArgument);
+  time->sample = 5;
+  ASSERT_NO_THROW(dev->Sample());
+}
+
 // Uniform deviate test for invalid minimum and maximum values.
 TEST(ExpressionTest, UniformDeviate) {
   OpenExpressionPtr min(new OpenExpression(1, 2));

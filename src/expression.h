@@ -50,10 +50,10 @@ class ConstantExpression : public Expression {
 typedef boost::shared_ptr<scram::Expression> ExpressionPtr;
 
 /// @class ExponentialExpression
-/// Negative exponential distribution with hourly rate and time.
+/// Negative exponential distribution with hourly failure rate and time.
 class ExponentialExpression : public Expression {
  public:
-  /// Constructor for integer and float values.
+  /// Constructor for exponential expression with two arguments.
   /// @param[in] lambda Hourly rate of failure.
   /// @param[in] t Mission time in hours.
   /// @throws InvalidArgument if arguments are negative.
@@ -74,6 +74,45 @@ class ExponentialExpression : public Expression {
 
   /// Mission time in hours.
   ExpressionPtr time_;
+};
+
+/// @class GlmExpression
+/// Exponential with probability of failure on demand, hourly failure rate,
+/// hourly repairing rate, and time.
+class GlmExpression : public Expression {
+ public:
+  /// Constructor for GLM or exponential expression with four arguments.
+  /// @param[in] gamma Probability of failure on demand.
+  /// @param[in] lambda Hourly rate of failure.
+  /// @param[in] mu Hourly repairing rate.
+  /// @param[in] t Mission time in hours.
+  /// @throws InvalidArgument if arguments are invalid.
+  GlmExpression(const ExpressionPtr& gamma, const ExpressionPtr& lambda,
+                const ExpressionPtr& mu, const ExpressionPtr& t);
+
+  inline double Mean() {
+    double r = lambda_->Mean() + mu_->Mean();
+    return (lambda_->Mean() - (lambda_->Mean() - gamma_->Mean() * r) *
+                               std::exp(-r * time_->Mean())) / r;
+  }
+
+  /// Samples the underlying distributions.
+  /// @returns A sampled value.
+  /// @throws InvalidArgument if sampled values are invalid.
+  double Sample();
+
+ private:
+  /// Failure rate in hours.
+  ExpressionPtr gamma_;
+
+  /// Failure rate in hours.
+  ExpressionPtr lambda_;
+
+  /// Mission time in hours.
+  ExpressionPtr time_;
+
+  /// Mission time in hours.
+  ExpressionPtr mu_;
 };
 
 /// @enum Units

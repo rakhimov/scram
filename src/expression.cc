@@ -59,6 +59,46 @@ double ExponentialExpression::Sample() {
   return 1 - std::exp(-(lambda * time));
 }
 
+GlmExpression::GlmExpression(const ExpressionPtr& gamma,
+                             const ExpressionPtr& lambda,
+                             const ExpressionPtr& mu,
+                             const ExpressionPtr& t) {
+  if (lambda->Mean() < 0) {
+    throw InvalidArgument("The rate of failure cannot be negative.");
+  } else if (mu->Mean() < 0) {
+    throw InvalidArgument("The rate of repair cannot be negative.");
+  } else if (gamma->Mean() < 0 || gamma->Mean() > 1) {
+    throw InvalidArgument("Invalid value for probabilty.");
+  } else if (t->Mean() < 0) {
+    throw InvalidArgument("The mission time cannot be negative.");
+  }
+
+  gamma_ = gamma;
+  lambda_ = lambda;
+  mu_ = mu;
+  time_ = t;
+}
+
+double GlmExpression::Sample() {
+  double gamma = gamma_->Sample();
+  double lambda = lambda_->Sample();
+  double mu = mu_->Sample();
+  double time = time_->Sample();
+
+  if (lambda < 0) {
+    throw InvalidArgument("The sampled rate of failure cannot be negative.");
+  } else if (mu < 0) {
+    throw InvalidArgument("The sampled rate of repair cannot be negative.");
+  } else if (gamma < 0 || gamma > 1) {
+    throw InvalidArgument("Invalid sampled value for probabilty.");
+  } else if (time < 0) {
+    throw InvalidArgument("The sampled mission time cannot be negative.");
+  }
+
+  double r = lambda + mu;
+  return (lambda - (lambda - gamma * r) * std::exp(-r * time)) / r;
+}
+
 UniformDeviate::UniformDeviate(const ExpressionPtr& min,
                               const ExpressionPtr& max) {
   if (min->Mean() >= max->Mean()) {
