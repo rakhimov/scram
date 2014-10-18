@@ -147,14 +147,15 @@ class UniformDeviate : public Expression {
   /// Setup for uniform distribution.
   /// @param[in] min Minimum value of the distribution.
   /// @param[in] max Maximum value of the distribution.
-  UniformDeviate(const ExpressionPtr& min, const ExpressionPtr& max)
-      : min_(min),
-        max_(max) {}
+  /// @throws InvalidArgument if min value is more or equal to max value.
+  UniformDeviate(const ExpressionPtr& min, const ExpressionPtr& max);
 
   inline double Mean() { return (min_->Mean() + max_->Mean()) / 2; }
-  inline double Sample() {
-    return Random::UniformRealGenerator(min_->Sample(), max_->Sample());
-  }
+
+  /// Samples the underlying distributions and uniform distribution.
+  /// @returns A sampled value.
+  /// @throws InvalidArgument if min value is more or equal to max value.
+  double Sample();
 
  private:
   /// Minimum value of the distribution.

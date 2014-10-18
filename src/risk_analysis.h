@@ -34,7 +34,6 @@ typedef boost::shared_ptr<scram::BasicEvent> BasicEventPtr;
 typedef boost::shared_ptr<scram::HouseEvent> HouseEventPtr;
 
 typedef boost::shared_ptr<scram::Expression> ExpressionPtr;
-typedef boost::shared_ptr<scram::Expression> ConstantExpressionPtr;
 typedef boost::shared_ptr<scram::Parameter> ParameterPtr;
 
 typedef boost::shared_ptr<scram::FaultTree> FaultTreePtr;
@@ -158,12 +157,11 @@ class RiskAnalysis {
   void DefineParameter(const xmlpp::Element* param_node);
 
   /// Processes Expression definitions in input file.
-  /// @param[in] parent_node XML parent element containing the expression
-  ///                        elements.
-  /// @param[out] expression Expression described in XML input parent node.
+  /// @param[in] expr_element XML expression element containing the definition.
+  /// @param[out] expression Expression described in XML input expression node.
   /// @returns true if expression was found and intantiated.
   /// @returns false otherwise.
-  bool GetExpression(const xmlpp::Element* parent_node,
+  bool GetExpression(const xmlpp::Element* expr_element,
                      ExpressionPtr& expression);
 
   /// Manages events that are defined late. That is, the id appears as

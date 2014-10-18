@@ -35,6 +35,28 @@ void Parameter::CheckCyclicity(std::vector<std::string>* path) {
   if (ptr) ptr->CheckCyclicity(path);
 }
 
+UniformDeviate::UniformDeviate(const ExpressionPtr& min,
+                              const ExpressionPtr& max) {
+  if (min->Mean() >= max->Mean()) {
+    throw InvalidArgument("Min value is more than max for Uniform"
+                          " distribution.");
+  }
+  min_ = min;
+  max_ = max;
+}
+
+double UniformDeviate::Sample() {
+  double min = min_->Sample();
+  double max = max_->Sample();
+
+  if (min >= max) {
+    throw InvalidArgument("Sampled min value is more than sampled max"
+                          " for Uniform distribution.");
+  }
+
+  return Random::UniformRealGenerator(min, max);
+}
+
 NormalDeviate::NormalDeviate(const ExpressionPtr& mean,
                              const ExpressionPtr& sigma)
     : mean_(mean) {
@@ -177,7 +199,7 @@ double Histogram::Sample() {
 
 void Histogram::CheckBoundaries(const std::vector<ExpressionPtr>& boundaries) {
   for (int i = 1; i < boundaries.size(); ++i) {
-    if (boundaries[i]->Mean() < boundaries[i - 1]->Mean()) {
+    if (boundaries[i-1]->Mean() >= boundaries[i]->Mean()) {
       throw InvalidArgument("Histogram upper boundaries are not strictly"
                             " increasing.");
     }
@@ -186,7 +208,7 @@ void Histogram::CheckBoundaries(const std::vector<ExpressionPtr>& boundaries) {
 
 void Histogram::CheckBoundaries(const std::vector<double>& boundaries) {
   for (int i = 1; i < boundaries.size(); ++i) {
-    if (boundaries[i] < boundaries[i - 1]) {
+    if (boundaries[i-1] >= boundaries[i]) {
       throw InvalidArgument("Histogram sampled upper boundaries are"
                             " not strictly increasing.");
     }
@@ -194,7 +216,7 @@ void Histogram::CheckBoundaries(const std::vector<double>& boundaries) {
 }
 
 void Histogram::CheckWeights(const std::vector<ExpressionPtr>& weights) {
-  for (int i = 1; i < weights.size(); ++i) {
+  for (int i = 0; i < weights.size(); ++i) {
     if (weights[i]->Mean() < 0) {
       throw InvalidArgument("Histogram weights are negative.");
     }
@@ -202,7 +224,7 @@ void Histogram::CheckWeights(const std::vector<ExpressionPtr>& weights) {
 }
 
 void Histogram::CheckWeights(const std::vector<double>& weights) {
-  for (int i = 1; i < weights.size(); ++i) {
+  for (int i = 0; i < weights.size(); ++i) {
     if (weights[i] < 0) {
       throw InvalidArgument("Histogram sampled weights are negative.");
     }

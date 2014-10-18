@@ -22,6 +22,14 @@
 #include "reporter.h"
 #include "xml_parser.h"
 
+typedef boost::shared_ptr<scram::ConstantExpression> ConstantExpressionPtr;
+typedef boost::shared_ptr<scram::UniformDeviate> UniformDeviatePtr;
+typedef boost::shared_ptr<scram::NormalDeviate> NormalDeviatePtr;
+typedef boost::shared_ptr<scram::LogNormalDeviate> LogNormalDeviatePtr;
+typedef boost::shared_ptr<scram::GammaDeviate> GammaDeviatePtr;
+typedef boost::shared_ptr<scram::BetaDeviate> BetaDeviatePtr;
+typedef boost::shared_ptr<scram::Histogram> HistogramPtr;
+
 namespace scram {
 
 RiskAnalysis::RiskAnalysis(std::string config_file)
@@ -540,10 +548,16 @@ void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node) {
     RiskAnalysis::UpdateIfLateEvent(basic_event);
   }
 
-  ExpressionPtr expression;
-  bool expr_found = RiskAnalysis::GetExpression(event_node, expression);
+  xmlpp::NodeSet expressions =
+     event_node->find("./*[name() != 'attributes' and name() != 'label']");
 
-  if (expr_found) {
+  if (!expressions.empty()) {
+    const xmlpp::Element* expr_node =
+        dynamic_cast<const xmlpp::Element*>(expressions.back());
+    assert(expr_node);
+
+    ExpressionPtr expression;
+    RiskAnalysis::GetExpression(expr_node, expression);
     basic_event->expression(expression);
   } else {
     std::stringstream msg;
@@ -655,28 +669,24 @@ void RiskAnalysis::DefineParameter(const xmlpp::Element* param_node) {
     /// @todo Check for parameter unit clash or double definition.
     parameter->unit(units_.find(unit)->second);
   }
+  // Assuming that expression is the last child of the parameter definition.
+  xmlpp::NodeSet expressions =
+      param_node->find("./*[name() != 'attributes' and name() != 'label']");
+  assert(expressions.size() == 1);
+  const xmlpp::Element* expr_node =
+      dynamic_cast<const xmlpp::Element*>(expressions.back());
+  assert(expr_node);
   ExpressionPtr expression;
-  bool expr_found = RiskAnalysis::GetExpression(param_node, expression);
+  bool expr_found = RiskAnalysis::GetExpression(expr_node, expression);
   assert(expr_found);
+
   parameter->expression(expression);
   RiskAnalysis::AttachLabelAndAttributes(param_node, parameter);
 }
 
-bool RiskAnalysis::GetExpression(const xmlpp::Element* parent_node,
+bool RiskAnalysis::GetExpression(const xmlpp::Element* expr_element,
                                  ExpressionPtr& expression) {
-  xmlpp::NodeSet expressions =
-      parent_node->find("./*[name() = 'float' or name() = 'int' or"
-                        " name() = 'bool' or name() = 'parameter' or"
-                        " name() = 'system-mission-time'"
-                        "]");
-
-  if (expressions.empty()) return false;
-
-  assert(expressions.size() == 1);
-  const xmlpp::Element* expr_element =
-        dynamic_cast<const xmlpp::Element*>(expressions.back());
   assert(expr_element);
-
   std::string expr_name = expr_element->get_name();
   if (expr_name == "float" || expr_name == "int") {
     std::string val = expr_element->get_attribute_value("value");
@@ -707,6 +717,119 @@ bool RiskAnalysis::GetExpression(const xmlpp::Element* parent_node,
   } else if (expr_name == "system-mission-time") {
     /// @todo check for possible unit clashes.
     expression = mission_time_;
+
+  } else if (expr_name == "uniform-deviate") {
+    assert(expr_element->find("./*").size() == 2);
+    const xmlpp::Element* element =
+        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[0]);
+    assert(element);
+    ExpressionPtr min;
+    GetExpression(element, min);
+
+    element =
+        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[1]);
+    assert(element);
+    ExpressionPtr max;
+    GetExpression(element, max);
+
+    expression = UniformDeviatePtr(new UniformDeviate(min, max));
+
+  } else if (expr_name == "normal-deviate") {
+    assert(expr_element->find("./*").size() == 2);
+    const xmlpp::Element* element =
+        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[0]);
+    assert(element);
+    ExpressionPtr mean;
+    GetExpression(element, mean);
+
+    element =
+        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[1]);
+    assert(element);
+    ExpressionPtr sigma;
+    GetExpression(element, sigma);
+
+    expression = NormalDeviatePtr(new NormalDeviate(mean, sigma));
+
+  } else if (expr_name == "lognormal-deviate") {
+    assert(expr_element->find("./*").size() == 3);
+    const xmlpp::Element* element =
+        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[0]);
+    assert(element);
+    ExpressionPtr mean;
+    GetExpression(element, mean);
+
+    element =
+        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[1]);
+    assert(element);
+    ExpressionPtr ef;
+    GetExpression(element, ef);
+
+    element =
+        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[2]);
+    assert(element);
+    ExpressionPtr level;
+    GetExpression(element, level);
+
+    expression = LogNormalDeviatePtr(new LogNormalDeviate(mean, ef, level));
+
+  } else if (expr_name == "gamma-deviate") {
+    assert(expr_element->find("./*").size() == 2);
+    const xmlpp::Element* element =
+        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[0]);
+    assert(element);
+    ExpressionPtr k;
+    GetExpression(element, k);
+
+    element =
+        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[1]);
+    assert(element);
+    ExpressionPtr theta;
+    GetExpression(element, theta);
+
+    expression = GammaDeviatePtr(new GammaDeviate(k, theta));
+
+  } else if (expr_name == "beta-deviate") {
+    assert(expr_element->find("./*").size() == 2);
+    const xmlpp::Element* element =
+        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[0]);
+    assert(element);
+    ExpressionPtr alpha;
+    GetExpression(element, alpha);
+
+    element =
+        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[1]);
+    assert(element);
+    ExpressionPtr beta;
+    GetExpression(element, beta);
+
+    expression = BetaDeviatePtr(new BetaDeviate(alpha, beta));
+
+  } else if (expr_name == "histogram") {
+    std::vector<ExpressionPtr> boundaries;
+    std::vector<ExpressionPtr> weights;
+    xmlpp::NodeSet bins = expr_element->find("./*");
+    xmlpp::NodeSet::iterator it;
+    for (it = bins.begin(); it != bins.end(); ++it) {
+      const xmlpp::Element* el = dynamic_cast<const xmlpp::Element*>(*it);
+      assert(el->find("./*").size() == 2);
+      const xmlpp::Element* element =
+          dynamic_cast<const xmlpp::Element*>(el->find("./*")[0]);
+      assert(element);
+      ExpressionPtr bound;
+      GetExpression(element, bound);
+      boundaries.push_back(bound);
+
+      element =
+          dynamic_cast<const xmlpp::Element*>(el->find("./*")[1]);
+      assert(element);
+      ExpressionPtr weight;
+      GetExpression(element, weight);
+      weights.push_back(weight);
+    }
+    expression = HistogramPtr(new Histogram(boundaries, weights));
+
+  } else {
+    return false;
   }
 
   return true;

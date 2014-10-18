@@ -49,5 +49,52 @@ The input tries to utilize all the functionality including optional cases.
     <define-parameter name="MissionTimeParameter">
       <system-mission-time/>
     </define-parameter>
+    <define-basic-event name="UniformDeviate">
+      <uniform-deviate>
+        <float value="0"/>
+        <float value="1"/>
+      </uniform-deviate>
+    </define-basic-event>
+    <define-basic-event name="NormalDeviate">
+      <normal-deviate>
+        <float value="0.5"/>
+        <float value="0.2"/>
+      </normal-deviate>
+    </define-basic-event>
+    <define-basic-event name="LogNormalDeviate">
+      <lognormal-deviate>
+        <float value="2e-3"/>
+        <float value="2"/>
+        <float value="0.95"/>
+      </lognormal-deviate>
+    </define-basic-event>
+    <define-basic-event name="GammaDeviate">
+      <gamma-deviate>
+        <float value="0.2"/>
+        <float value="3"/>
+      </gamma-deviate>
+    </define-basic-event>
+    <define-basic-event name="BetaDeviate">
+      <beta-deviate>
+        <float value="3"/>
+        <float value="4"/>
+      </beta-deviate>
+    </define-basic-event>
+    <define-basic-event name="Histogram">
+      <histogram>
+        <bin>
+          <int value="1"/>
+          <float value="2"/>
+        </bin>
+        <bin>
+          <int value="3"/>
+          <float value="4"/>
+        </bin>
+        <bin>
+          <int value="5"/>
+          <float value="1"/>
+        </bin>
+      </histogram>
+    </define-basic-event>
   </model-data>
 </opsa-mef>
