@@ -198,6 +198,9 @@ double Histogram::Sample() {
 }
 
 void Histogram::CheckBoundaries(const std::vector<ExpressionPtr>& boundaries) {
+  if (boundaries[0]->Mean() <= 0) {
+    throw InvalidArgument("Histogram lower boundary must be positive.");
+  }
   for (int i = 1; i < boundaries.size(); ++i) {
     if (boundaries[i-1]->Mean() >= boundaries[i]->Mean()) {
       throw InvalidArgument("Histogram upper boundaries are not strictly"
@@ -207,6 +210,9 @@ void Histogram::CheckBoundaries(const std::vector<ExpressionPtr>& boundaries) {
 }
 
 void Histogram::CheckBoundaries(const std::vector<double>& boundaries) {
+  if (boundaries[1] <= 0) {
+    throw InvalidArgument("Histogram sampled lower boundary must be positive.");
+  }
   for (int i = 1; i < boundaries.size(); ++i) {
     if (boundaries[i-1] >= boundaries[i]) {
       throw InvalidArgument("Histogram sampled upper boundaries are"

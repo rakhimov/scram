@@ -258,7 +258,7 @@ class BetaDeviate : public Expression {
   /// Setup for Beta distribution with validity check for arguments.
   /// @param[in] alpha Alpha shape parameter of Gamma distribution.
   /// @param[in] beta Beta shape parameter of Gamma distribution.
-  /// @throws InvalidArgument if (k <= 0) or (theta <= 0)
+  /// @throws InvalidArgument if (alpha <= 0) or (beta <= 0)
   BetaDeviate(const ExpressionPtr& alpha, const ExpressionPtr& beta);
 
   inline double Mean() {
