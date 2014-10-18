@@ -112,7 +112,7 @@ class RiskAnalysis {
   /// @param[in] events The xml node list of children of the gate definition.
   void ProcessFormula(const GatePtr& gate, const xmlpp::Node::NodeList& events);
 
-  /// Process <event name=id/> cases inside of a one layer gate description.
+  /// Process [event name=id] cases inside of a one layer gate description.
   /// @param[in] gate The main gate to be defined with the event as its child.
   /// @param[out] child The child the currently processed gate.
   /// @returns true if the child type is identified and it is update.
@@ -120,7 +120,7 @@ class RiskAnalysis {
   ///                late definition.
   bool ProcessFormulaEvent(const GatePtr& gate, EventPtr& child);
 
-  /// Process <basic-event name=id/> cases inside of a one layer
+  /// Process [basic-event name=id] cases inside of a one layer
   /// gate description.
   /// @param[in] event XML element defining this event.
   /// @param[in] gate The main gate to be defined with the event as its child.
@@ -128,7 +128,7 @@ class RiskAnalysis {
   void ProcessFormulaBasicEvent(const xmlpp::Element* event,
                                 const GatePtr& gate, EventPtr& child);
 
-  /// Process <house-event name=id/> cases inside of a one layer
+  /// Process [house-event name=id] cases inside of a one layer
   /// gate description.
   /// @param[in] event XML element defining this event.
   /// @param[in] gate The main gate to be defined with the event as its child.
@@ -136,7 +136,7 @@ class RiskAnalysis {
   void ProcessFormulaHouseEvent(const xmlpp::Element* event,
                                 const GatePtr& gate, EventPtr& child);
 
-  /// Process <gate name=id/> cases inside of a one layer
+  /// Process [gate name=id]cases inside of a one layer
   /// gate description.
   /// @param[in] event XML element defining this event.
   /// @param[in] gate The main gate to be defined with the event as its child.
@@ -164,7 +164,7 @@ class RiskAnalysis {
                      ExpressionPtr& expression);
 
   /// Manages events that are defined late. That is, the id appears as
-  /// <event name="id"/> before any of definition inside a formula.
+  /// [event name="id"] before any of definition inside a formula.
   /// The late definition should update if this event is a gate or primary
   /// event. In addition, all the parents of this late defined event are
   /// notified to include one child.
