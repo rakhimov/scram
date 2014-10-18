@@ -36,6 +36,7 @@ TEST(RiskAnalysisInputTest, UnsupportedFeature) {
   std::string dir = "./share/scram/input/fta/";
   incorrect_inputs.push_back(dir + "../unsupported_feature.xml");
   incorrect_inputs.push_back(dir + "unsupported_gate.xml");
+  incorrect_inputs.push_back(dir + "unsupported_expression.xml");
   RiskAnalysis* ran;
   std::vector<std::string>::iterator it;
   for (it = incorrect_inputs.begin(); it != incorrect_inputs.end(); ++it) {

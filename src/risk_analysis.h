@@ -159,9 +159,8 @@ class RiskAnalysis {
   /// Processes Expression definitions in input file.
   /// @param[in] expr_element XML expression element containing the definition.
   /// @param[out] expression Expression described in XML input expression node.
-  /// @returns true if expression was found and intantiated.
-  /// @returns false otherwise.
-  bool GetExpression(const xmlpp::Element* expr_element,
+  /// @throws ValidationError if the expression is not supported.
+  void GetExpression(const xmlpp::Element* expr_element,
                      ExpressionPtr& expression);
 
   /// Manages events that are defined late. That is, the id appears as

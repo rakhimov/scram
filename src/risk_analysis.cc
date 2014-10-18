@@ -677,14 +677,13 @@ void RiskAnalysis::DefineParameter(const xmlpp::Element* param_node) {
       dynamic_cast<const xmlpp::Element*>(expressions.back());
   assert(expr_node);
   ExpressionPtr expression;
-  bool expr_found = RiskAnalysis::GetExpression(expr_node, expression);
-  assert(expr_found);
+  RiskAnalysis::GetExpression(expr_node, expression);
 
   parameter->expression(expression);
   RiskAnalysis::AttachLabelAndAttributes(param_node, parameter);
 }
 
-bool RiskAnalysis::GetExpression(const xmlpp::Element* expr_element,
+void RiskAnalysis::GetExpression(const xmlpp::Element* expr_element,
                                  ExpressionPtr& expression) {
   assert(expr_element);
   std::string expr_name = expr_element->get_name();
@@ -829,10 +828,11 @@ bool RiskAnalysis::GetExpression(const xmlpp::Element* expr_element,
     expression = HistogramPtr(new Histogram(boundaries, weights));
 
   } else {
-    return false;
+    std::stringstream msg;
+    msg << "Line " << expr_element->get_line() << ":\n";
+    msg << "Unsupported expression: " << expr_element->get_name();
+    throw ValidationError(msg.str());
   }
-
-  return true;
 }
 
 bool RiskAnalysis::UpdateIfLateEvent(const EventPtr& event) {
