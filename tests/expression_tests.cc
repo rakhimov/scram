@@ -15,6 +15,7 @@ class OpenExpression : public Expression {
   double sample;
   inline double Mean() { return mean; }
   inline double Sample() { return sample; }
+  void Validate() {}
 };
 
 typedef boost::shared_ptr<OpenExpression> OpenExpressionPtr;
@@ -22,22 +23,21 @@ typedef boost::shared_ptr<OpenExpression> OpenExpressionPtr;
 TEST(ExpressionTest, Exponential) {
   OpenExpressionPtr lambda(new OpenExpression(10, 8));
   OpenExpressionPtr time(new OpenExpression(5, 4));
-  ASSERT_NO_THROW(ExponentialExpression(lambda, time));
-
-  lambda->mean = -1;
-  EXPECT_THROW(ExponentialExpression(lambda, time), InvalidArgument);
-  lambda->mean = 10;
-  ASSERT_NO_THROW(ExponentialExpression(lambda, time));
-
-  time->mean = -1;
-  EXPECT_THROW(ExponentialExpression(lambda, time), InvalidArgument);
-  time->mean = 5;
-  ASSERT_NO_THROW(ExponentialExpression(lambda, time));
-
   ExpressionPtr dev;
   ASSERT_NO_THROW(dev = ExpressionPtr(new ExponentialExpression(lambda, time)));
   EXPECT_DOUBLE_EQ(1 - std::exp(-50), dev->Mean());
 
+  lambda->mean = -1;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  lambda->mean = 10;
+  ASSERT_NO_THROW(dev->Validate());
+
+  time->mean = -1;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  time->mean = 5;
+  ASSERT_NO_THROW(dev->Validate());
+
+  ASSERT_NO_THROW(dev->Sample());
   lambda->sample = -1;
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   lambda->sample = 10;
@@ -54,36 +54,36 @@ TEST(ExpressionTest, GLM) {
   OpenExpressionPtr lambda(new OpenExpression(10, 8));
   OpenExpressionPtr mu(new OpenExpression(100, 80));
   OpenExpressionPtr time(new OpenExpression(5, 4));
-  ASSERT_NO_THROW(GlmExpression(gamma, lambda, mu, time));
-
-  gamma->mean = -1;
-  EXPECT_THROW(GlmExpression(gamma, lambda, mu, time), InvalidArgument);
-  gamma->mean = 10;
-  EXPECT_THROW(GlmExpression(gamma, lambda, mu, time), InvalidArgument);
-  gamma->mean = 0.10;
-  ASSERT_NO_THROW(GlmExpression(gamma, lambda, mu, time));
-
-  lambda->mean = -1;
-  EXPECT_THROW(GlmExpression(gamma, lambda, mu, time), InvalidArgument);
-  lambda->mean = 10;
-  ASSERT_NO_THROW(GlmExpression(gamma, lambda, mu, time));
-
-  mu->mean = -10;
-  EXPECT_THROW(GlmExpression(gamma, lambda, mu, time), InvalidArgument);
-  mu->mean = 100;
-  ASSERT_NO_THROW(GlmExpression(gamma, lambda, mu, time));
-
-  time->mean = -1;
-  EXPECT_THROW(GlmExpression(gamma, lambda, mu, time), InvalidArgument);
-  time->mean = 5;
-  ASSERT_NO_THROW(GlmExpression(gamma, lambda, mu, time));
-
   ExpressionPtr dev;
   ASSERT_NO_THROW(dev = ExpressionPtr(new GlmExpression(gamma, lambda,
                                                         mu, time)));
   EXPECT_DOUBLE_EQ((10 - (10 - 0.10 * 110) * std::exp(-110 * 5)) / 110,
                    dev->Mean());
 
+
+  gamma->mean = -1;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  gamma->mean = 10;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  gamma->mean = 0.10;
+  ASSERT_NO_THROW(dev->Validate());
+
+  lambda->mean = -1;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  lambda->mean = 10;
+  ASSERT_NO_THROW(dev->Validate());
+
+  mu->mean = -10;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  mu->mean = 100;
+  ASSERT_NO_THROW(dev->Validate());
+
+  time->mean = -1;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  time->mean = 5;
+  ASSERT_NO_THROW(dev->Validate());
+
+  ASSERT_NO_THROW(dev->Sample());
   gamma->sample = -1;
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   gamma->sample = 10;
@@ -112,40 +112,40 @@ TEST(ExpressionTest, Weibull) {
   OpenExpressionPtr beta(new OpenExpression(10, 8));
   OpenExpressionPtr t0(new OpenExpression(10, 8));
   OpenExpressionPtr time(new OpenExpression(50, 40));
-  ASSERT_NO_THROW(WeibullExpression(alpha, beta, t0, time));
-
-  alpha->mean = -1;
-  EXPECT_THROW(WeibullExpression(alpha, beta, t0, time), InvalidArgument);
-  alpha->mean = 0;
-  EXPECT_THROW(WeibullExpression(alpha, beta, t0, time), InvalidArgument);
-  alpha->mean = 0.10;
-  ASSERT_NO_THROW(WeibullExpression(alpha, beta, t0, time));
-
-  beta->mean = -1;
-  EXPECT_THROW(WeibullExpression(alpha, beta, t0, time), InvalidArgument);
-  beta->mean = 0;
-  EXPECT_THROW(WeibullExpression(alpha, beta, t0, time), InvalidArgument);
-  beta->mean = 10;
-  ASSERT_NO_THROW(WeibullExpression(alpha, beta, t0, time));
-
-  t0->mean = -10;
-  EXPECT_THROW(WeibullExpression(alpha, beta, t0, time), InvalidArgument);
-  t0->mean = 100;
-  EXPECT_THROW(WeibullExpression(alpha, beta, t0, time), InvalidArgument);
-  t0->mean = 10;
-  ASSERT_NO_THROW(WeibullExpression(alpha, beta, t0, time));
-
-  time->mean = -1;
-  EXPECT_THROW(WeibullExpression(alpha, beta, t0, time), InvalidArgument);
-  time->mean = 50;
-  ASSERT_NO_THROW(WeibullExpression(alpha, beta, t0, time));
-
   ExpressionPtr dev;
   ASSERT_NO_THROW(dev = ExpressionPtr(new WeibullExpression(alpha, beta,
                                                             t0, time)));
   EXPECT_DOUBLE_EQ(1 - std::exp(-std::pow(40 / 0.1, 10)),
                    dev->Mean());
 
+
+  alpha->mean = -1;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  alpha->mean = 0;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  alpha->mean = 0.10;
+  ASSERT_NO_THROW(dev->Validate());
+
+  beta->mean = -1;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  beta->mean = 0;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  beta->mean = 10;
+  ASSERT_NO_THROW(dev->Validate());
+
+  t0->mean = -10;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  t0->mean = 100;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  t0->mean = 10;
+  ASSERT_NO_THROW(dev->Validate());
+
+  time->mean = -1;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  time->mean = 50;
+  ASSERT_NO_THROW(dev->Validate());
+
+  ASSERT_NO_THROW(dev->Sample());
   alpha->sample = -1;
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   alpha->sample = 0;
@@ -177,39 +177,37 @@ TEST(ExpressionTest, Weibull) {
 TEST(ExpressionTest, UniformDeviate) {
   OpenExpressionPtr min(new OpenExpression(1, 2));
   OpenExpressionPtr max(new OpenExpression(5, 4));
-  ASSERT_NO_THROW(UniformDeviate(min, max));
-
-  min->mean = 10;
-  EXPECT_THROW(UniformDeviate(min, max), InvalidArgument);  // min > max
-  min->mean = 1;
-  ASSERT_NO_THROW(UniformDeviate(min, max));
-
   ExpressionPtr dev;
   ASSERT_NO_THROW(dev = ExpressionPtr(new UniformDeviate(min, max)));
   EXPECT_DOUBLE_EQ(3, dev->Mean());
 
+  min->mean = 10;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  min->mean = 1;
+  ASSERT_NO_THROW(dev->Validate());
+
+  ASSERT_NO_THROW(dev->Sample());
   min->sample = 10;
   EXPECT_THROW(dev->Sample(), InvalidArgument);  // min > max
   min->sample = 1;
-  EXPECT_NO_THROW(dev->Sample());
+  ASSERT_NO_THROW(dev->Sample());
 }
 
 // Normal deviate test for invalid standard deviation.
 TEST(ExpressionTest, NormalDeviate) {
   OpenExpressionPtr mean(new OpenExpression(10, 1));
   OpenExpressionPtr sigma(new OpenExpression(5, 4));
-  ASSERT_NO_THROW(NormalDeviate(mean, sigma));
-
-  sigma->mean = -5;
-  EXPECT_THROW(NormalDeviate(mean, sigma), InvalidArgument);  // sigma < 0
-  sigma->mean = 0;
-  EXPECT_THROW(NormalDeviate(mean, sigma), InvalidArgument);  // sigma = 0
-  sigma->mean = 5;
-  ASSERT_NO_THROW(NormalDeviate(mean, sigma));
-
   ExpressionPtr dev;
   ASSERT_NO_THROW(dev = ExpressionPtr(new NormalDeviate(mean, sigma)));
 
+  sigma->mean = -5;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  sigma->mean = 0;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  sigma->mean = 5;
+  ASSERT_NO_THROW(dev->Validate());
+
+  ASSERT_NO_THROW(dev->Sample());
   sigma->sample = -1;
   EXPECT_THROW(dev->Sample(), InvalidArgument);  // sigma < 0
   sigma->sample = 0;
@@ -220,34 +218,31 @@ TEST(ExpressionTest, NormalDeviate) {
 
 // Log-Normal deviate test for invalid mean, error factor, and level.
 TEST(ExpressionTest, LogNormalDeviate) {
-  OpenExpressionPtr mean(new OpenExpression(10));
-  OpenExpressionPtr ef(new OpenExpression(5));
+  OpenExpressionPtr mean(new OpenExpression(10, 5));
+  OpenExpressionPtr ef(new OpenExpression(5, 3));
   OpenExpressionPtr level(new OpenExpression(0.95));
-  ASSERT_NO_THROW(LogNormalDeviate(mean, ef, level));
-
-  level->mean = 0.5; // Unsupported level.
-  EXPECT_THROW(LogNormalDeviate(mean, ef, level), InvalidArgument);
-  level->mean = 0.95;
-  ASSERT_NO_THROW(LogNormalDeviate(mean, ef, level));
-
-  mean->mean = -1;  // mean < 0
-  EXPECT_THROW(LogNormalDeviate(mean, ef, level), InvalidArgument);
-  mean->mean = 0;  // mean = 0
-  EXPECT_THROW(LogNormalDeviate(mean, ef, level), InvalidArgument);
-  mean->mean = 1;
-  ASSERT_NO_THROW(LogNormalDeviate(mean, ef, level));
-
-  ef->mean = -1;  // ef < 0
-  EXPECT_THROW(LogNormalDeviate(mean, ef, level), InvalidArgument);
-  ef->mean = 0;  // ef = 0
-  EXPECT_THROW(LogNormalDeviate(mean, ef, level), InvalidArgument);
-  ef->mean = 1;
-  ASSERT_NO_THROW(LogNormalDeviate(mean, ef, level));
-
   ExpressionPtr dev;
   ASSERT_NO_THROW(dev = ExpressionPtr(new LogNormalDeviate(mean, ef, level)));
-  mean->sample = 5;
-  ef->sample = 3;
+
+  level->mean = 0.5; // Unsupported level.
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  level->mean = 0.95;
+  ASSERT_NO_THROW(dev->Validate());
+
+  mean->mean = -1;  // mean < 0
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  mean->mean = 0;  // mean = 0
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  mean->mean = 1;
+  ASSERT_NO_THROW(dev->Validate());
+
+  ef->mean = -1;  // ef < 0
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  ef->mean = 0;  // ef = 0
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  ef->mean = 1;
+  ASSERT_NO_THROW(dev->Validate());
+
   ASSERT_NO_THROW(dev->Sample());
   mean->sample = -1;
   EXPECT_THROW(dev->Sample(), InvalidArgument);
@@ -265,33 +260,27 @@ TEST(ExpressionTest, LogNormalDeviate) {
 
 // Gamma deviate test for invalid arguments.
 TEST(ExpressionTest, GammaDeviate) {
-  OpenExpressionPtr k(new OpenExpression(10));
-  OpenExpressionPtr theta(new OpenExpression(5));
-  ASSERT_NO_THROW(GammaDeviate(k, theta));
+  OpenExpressionPtr k(new OpenExpression(3, 5));
+  OpenExpressionPtr theta(new OpenExpression(7, 1));
+  ExpressionPtr dev;
+  ASSERT_NO_THROW(dev = ExpressionPtr(new GammaDeviate(k, theta)));
+  EXPECT_DOUBLE_EQ(21, dev->Mean());
 
   k->mean = -1;
-  EXPECT_THROW(GammaDeviate(k, theta), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
   k->mean = 0;
-  EXPECT_THROW(GammaDeviate(k, theta), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
   k->mean = 1;
-  ASSERT_NO_THROW(GammaDeviate(k, theta));
+  ASSERT_NO_THROW(dev->Validate());
 
   theta->mean = 0;
-  EXPECT_THROW(GammaDeviate(k, theta), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
   theta->mean = -1;
-  EXPECT_THROW(GammaDeviate(k, theta), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
   theta->mean = 1;
-  ASSERT_NO_THROW(GammaDeviate(k, theta));
+  ASSERT_NO_THROW(dev->Validate());
 
-  ExpressionPtr dev;
-  k->mean = 3;
-  theta->mean = 7;
-  EXPECT_NO_THROW(dev = ExpressionPtr(new GammaDeviate(k, theta)));
-  EXPECT_DOUBLE_EQ(21, dev->Mean());
-  theta->sample = 1;
-  k->sample = 5;
   ASSERT_NO_THROW(dev->Sample());
-
   k->sample = -1;
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   k->sample = 0;
@@ -309,33 +298,27 @@ TEST(ExpressionTest, GammaDeviate) {
 
 // Beta deviate test for invalid arguments.
 TEST(ExpressionTest, BetaDeviate) {
-  OpenExpressionPtr alpha(new OpenExpression(10));
-  OpenExpressionPtr beta(new OpenExpression(5));
-  ASSERT_NO_THROW(BetaDeviate(alpha, beta));
+  OpenExpressionPtr alpha(new OpenExpression(8, 5));
+  OpenExpressionPtr beta(new OpenExpression(2, 1));
+  ExpressionPtr dev;
+  ASSERT_NO_THROW(dev = ExpressionPtr(new BetaDeviate(alpha, beta)));
+  EXPECT_DOUBLE_EQ(0.8, dev->Mean());
 
   alpha->mean = -1;
-  EXPECT_THROW(BetaDeviate(alpha, beta), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
   alpha->mean = 0;
-  EXPECT_THROW(BetaDeviate(alpha, beta), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
   alpha->mean = 1;
-  ASSERT_NO_THROW(BetaDeviate(alpha, beta));
+  ASSERT_NO_THROW(dev->Validate());
 
   beta->mean = 0;
-  EXPECT_THROW(BetaDeviate(alpha, beta), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
   beta->mean = -1;
-  EXPECT_THROW(BetaDeviate(alpha, beta), InvalidArgument);
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
   beta->mean = 1;
-  ASSERT_NO_THROW(BetaDeviate(alpha, beta));
+  ASSERT_NO_THROW(dev->Validate());
 
-  ExpressionPtr dev;
-  alpha->mean = 8;
-  beta->mean = 2;
-  EXPECT_NO_THROW(dev = ExpressionPtr(new BetaDeviate(alpha, beta)));
-  EXPECT_DOUBLE_EQ(0.8, dev->Mean());
-  beta->sample = 1;
-  alpha->sample = 5;
   ASSERT_NO_THROW(dev->Sample());
-
   alpha->sample = -1;
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   alpha->sample = 0;
@@ -363,23 +346,6 @@ TEST(ExpressionTest, Histogram) {
   OpenExpressionPtr w2(new OpenExpression(4, 4));
   weights.push_back(w1);
   weights.push_back(w2);
-  ASSERT_NO_THROW(Histogram(boundaries, weights));
-
-  b1->mean = -1;
-  EXPECT_THROW(Histogram(boundaries, weights), InvalidArgument);
-  b1->mean = 0;
-  EXPECT_THROW(Histogram(boundaries, weights), InvalidArgument);
-  b1->mean = b2->mean;
-  EXPECT_THROW(Histogram(boundaries, weights), InvalidArgument);
-  b1->mean = b2->mean + 1;
-  EXPECT_THROW(Histogram(boundaries, weights), InvalidArgument);
-  b1->mean = 1;
-  ASSERT_NO_THROW(Histogram(boundaries, weights));
-
-  w1->mean = -1;
-  EXPECT_THROW(Histogram(boundaries, weights), InvalidArgument);
-  w1->mean = 2;
-  ASSERT_NO_THROW(Histogram(boundaries, weights));
 
   // Size mismatch.
   weights.push_back(OpenExpressionPtr(new OpenExpression()));
@@ -390,21 +356,37 @@ TEST(ExpressionTest, Histogram) {
   ExpressionPtr dev;
   EXPECT_NO_THROW(dev = ExpressionPtr(new Histogram(boundaries, weights)));
   EXPECT_DOUBLE_EQ(10.0 / 18, dev->Mean());
+
+  b1->mean = -1;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  b1->mean = 0;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  b1->mean = b2->mean;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  b1->mean = b2->mean + 1;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  b1->mean = 1;
+  ASSERT_NO_THROW(dev->Validate());
+
+  w1->mean = -1;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  w1->mean = 2;
+  ASSERT_NO_THROW(dev->Validate());
+
+  ASSERT_NO_THROW(dev->Sample());
+  b1->sample = -1;
+  EXPECT_THROW(dev->Sample(), InvalidArgument);
+  b1->sample = 0;
+  EXPECT_THROW(dev->Sample(), InvalidArgument);
+  b1->sample = b2->sample;
+  EXPECT_THROW(dev->Sample(), InvalidArgument);
+  b1->sample = b2->sample + 1;
+  EXPECT_THROW(dev->Sample(), InvalidArgument);
+  b1->sample = 1;
   ASSERT_NO_THROW(dev->Sample());
 
-   b1->sample = -1;
-   EXPECT_THROW(dev->Sample(), InvalidArgument);
-   b1->sample = 0;
-   EXPECT_THROW(dev->Sample(), InvalidArgument);
-   b1->sample = b2->sample;
-   EXPECT_THROW(dev->Sample(), InvalidArgument);
-   b1->sample = b2->sample + 1;
-   EXPECT_THROW(dev->Sample(), InvalidArgument);
-   b1->sample = 1;
-   ASSERT_NO_THROW(dev->Sample());
-
-   w1->sample = -1;
-   EXPECT_THROW(dev->Sample(), InvalidArgument);
-   w1->sample = 2;
-   ASSERT_NO_THROW(dev->Sample());
+  w1->sample = -1;
+  EXPECT_THROW(dev->Sample(), InvalidArgument);
+  w1->sample = 2;
+  ASSERT_NO_THROW(dev->Sample());
 }

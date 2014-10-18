@@ -1043,7 +1043,7 @@ void RiskAnalysis::ValidateInitialization() {
   if (!parameters_.empty()) {
     boost::unordered_map<std::string, ParameterPtr>::iterator it;
     for (it = parameters_.begin(); it != parameters_.end(); ++it) {
-      it->second->CheckCyclicity();
+      it->second->Validate();
     }
   }
 

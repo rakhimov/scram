@@ -11,9 +11,9 @@ typedef boost::shared_ptr<scram::Parameter> ParameterPtr;
 
 namespace scram {
 
-void Parameter::CheckCyclicity() {
+void Parameter::Validate() {
   std::vector<std::string> path;
-  CheckCyclicity(&path);
+  Parameter::CheckCyclicity(&path);
 }
 
 void Parameter::CheckCyclicity(std::vector<std::string>* path) {
@@ -35,16 +35,12 @@ void Parameter::CheckCyclicity(std::vector<std::string>* path) {
   if (ptr) ptr->CheckCyclicity(path);
 }
 
-ExponentialExpression::ExponentialExpression(const ExpressionPtr& lambda,
-                                             const ExpressionPtr& t) {
-  if (lambda->Mean() < 0) {
+void ExponentialExpression::Validate() {
+  if (lambda_->Mean() < 0) {
     throw InvalidArgument("The rate of failure cannot be negative.");
-  } else if (t->Mean() < 0) {
+  } else if (time_->Mean() < 0) {
     throw InvalidArgument("The mission time cannot be negative.");
   }
-
-  lambda_ = lambda;
-  time_ = t;
 }
 
 double ExponentialExpression::Sample() {
@@ -59,24 +55,16 @@ double ExponentialExpression::Sample() {
   return 1 - std::exp(-(lambda * time));
 }
 
-GlmExpression::GlmExpression(const ExpressionPtr& gamma,
-                             const ExpressionPtr& lambda,
-                             const ExpressionPtr& mu,
-                             const ExpressionPtr& t) {
-  if (lambda->Mean() < 0) {
+void GlmExpression::Validate() {
+  if (lambda_->Mean() < 0) {
     throw InvalidArgument("The rate of failure cannot be negative.");
-  } else if (mu->Mean() < 0) {
+  } else if (mu_->Mean() < 0) {
     throw InvalidArgument("The rate of repair cannot be negative.");
-  } else if (gamma->Mean() < 0 || gamma->Mean() > 1) {
+  } else if (gamma_->Mean() < 0 || gamma_->Mean() > 1) {
     throw InvalidArgument("Invalid value for probabilty.");
-  } else if (t->Mean() < 0) {
+  } else if (time_->Mean() < 0) {
     throw InvalidArgument("The mission time cannot be negative.");
   }
-
-  gamma_ = gamma;
-  lambda_ = lambda;
-  mu_ = mu;
-  time_ = t;
 }
 
 double GlmExpression::Sample() {
@@ -99,28 +87,20 @@ double GlmExpression::Sample() {
   return (lambda - (lambda - gamma * r) * std::exp(-r * time)) / r;
 }
 
-WeibullExpression::WeibullExpression(const ExpressionPtr& alpha,
-                                     const ExpressionPtr& beta,
-                                     const ExpressionPtr& t0,
-                                     const ExpressionPtr& time) {
-  if (alpha->Mean() <= 0) {
+void WeibullExpression::Validate() {
+  if (alpha_->Mean() <= 0) {
     throw InvalidArgument("The scale parameter for Weibull distribution must"
                           " be positive.");
-  } else if (beta->Mean() <= 0) {
+  } else if (beta_->Mean() <= 0) {
     throw InvalidArgument("The shape parameter for Weibull distribution must"
                           " be positive.");
-  } else if (t0->Mean() < 0) {
+  } else if (t0_->Mean() < 0) {
     throw InvalidArgument("Invalid value for time shift.");
-  } else if (time->Mean() < 0) {
+  } else if (time_->Mean() < 0) {
     throw InvalidArgument("The mission time cannot be negative.");
-  } else if (time->Mean() < t0->Mean()) {
+  } else if (time_->Mean() < t0_->Mean()) {
     throw InvalidArgument("The mission time must be longer than time shift.");
   }
-
-  alpha_ = alpha;
-  beta_ = beta;
-  t0_ = t0;
-  time_ = time;
 }
 
 double WeibullExpression::Sample() {
@@ -147,14 +127,11 @@ double WeibullExpression::Sample() {
   return 1 - std::exp(-std::pow((time - t0) / alpha, beta));
 }
 
-UniformDeviate::UniformDeviate(const ExpressionPtr& min,
-                              const ExpressionPtr& max) {
-  if (min->Mean() >= max->Mean()) {
+void UniformDeviate::Validate() {
+  if (min_->Mean() >= max_->Mean()) {
     throw InvalidArgument("Min value is more than max for Uniform"
                           " distribution.");
   }
-  min_ = min;
-  max_ = max;
 }
 
 double UniformDeviate::Sample() {
@@ -169,10 +146,7 @@ double UniformDeviate::Sample() {
   return Random::UniformRealGenerator(min, max);
 }
 
-NormalDeviate::NormalDeviate(const ExpressionPtr& mean,
-                             const ExpressionPtr& sigma)
-    : mean_(mean) {
-  sigma_ = sigma;
+void NormalDeviate::Validate() {
   if (sigma_->Mean() <= 0) {
     throw InvalidArgument("Standard deviation cannot be negative or zero.");
   }
@@ -183,23 +157,19 @@ double NormalDeviate::Sample() {
   if (sigma <= 0) {
     throw InvalidArgument("Sampled standard deviation is negative or zero.");
   }
+  return Random::NormalGenerator(mean_->Sample(), sigma);
 }
 
-LogNormalDeviate::LogNormalDeviate(const ExpressionPtr& mean,
-                                   const ExpressionPtr& ef,
-                                   const ExpressionPtr& level) {
-  if (level->Mean() != 0.95) {
+void LogNormalDeviate::Validate() {
+  if (level_->Mean() != 0.95) {
     throw InvalidArgument("The confidence level is expected to be 0.95.");
-  } else if (ef->Mean() <= 0) {
+  } else if (ef_->Mean() <= 0) {
     throw InvalidArgument("The Error Factor for Log-Normal distribution"
                           " cannot be negative or zero.");
-  } else if (mean->Mean() <= 0) {
+  } else if (mean_->Mean() <= 0) {
     throw InvalidArgument("The mean of Log-Normal distribution cannot be"
                           " negative or zero.");
   }
-  mean_ = mean;
-  ef_ = ef;
-  level_ = level;
 }
 
 double LogNormalDeviate::Sample() {
@@ -217,17 +187,14 @@ double LogNormalDeviate::Sample() {
   return Random::LogNormalGenerator(mu, sigma);
 }
 
-GammaDeviate::GammaDeviate(const ExpressionPtr& k,
-                           const ExpressionPtr& theta) {
-  if (k->Mean() <= 0) {
+void GammaDeviate::Validate() {
+  if (k_->Mean() <= 0) {
     throw InvalidArgument("The k shape parameter for Gamma distribution"
                           " cannot be negative or zero.");
-  } else if (theta->Mean() <= 0) {
+  } else if (theta_->Mean() <= 0) {
     throw InvalidArgument("The theta scale parameter for Gamma distribution"
                           " cannot be negative or zero.");
   }
-  k_ = k;
-  theta_ = theta;
 }
 
 double GammaDeviate::Sample() {
@@ -243,17 +210,14 @@ double GammaDeviate::Sample() {
   return Random::GammaGenerator(k, theta);
 }
 
-BetaDeviate::BetaDeviate(const ExpressionPtr& alpha,
-                         const ExpressionPtr& beta) {
-  if (alpha->Mean() <= 0) {
+void BetaDeviate::Validate() {
+  if (alpha_->Mean() <= 0) {
     throw InvalidArgument("The alpha shape parameter for Beta distribution"
                           " cannot be negative or zero.");
-  } else if (beta->Mean() <= 0) {
+  } else if (beta_->Mean() <= 0) {
     throw InvalidArgument("The beta shape parameter for Beta distribution"
                           " cannot be negative or zero.");
   }
-  alpha_ = alpha;
-  beta_ = beta;
 }
 
 double BetaDeviate::Sample() {
@@ -270,12 +234,18 @@ double BetaDeviate::Sample() {
 }
 
 Histogram::Histogram(const std::vector<ExpressionPtr>& boundaries,
-                     const std::vector<ExpressionPtr>& weights) {
-  CheckBoundaries(boundaries);
-  CheckWeights(weights);
-
+            const std::vector<ExpressionPtr>& weights) {
+  if (weights.size() != boundaries.size()) {
+    throw InvalidArgument("The number of weights is not equal to the number"
+                          " of boundaries.");
+  }
   boundaries_ = boundaries;
   weights_ = weights;
+}
+
+void Histogram::Validate() {
+  CheckBoundaries(boundaries_);
+  CheckWeights(weights_);
 
   if (weights_.size() != boundaries_.size()) {
     throw InvalidArgument("The number of weights is not equal to the number"
