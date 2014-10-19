@@ -30,11 +30,11 @@ class UncertaintyAnalysisTest : public ::testing::Test {
   }
 
   void MProbOr(std::set< std::set<int> >* min_cut_sets) {
-    return ua->MProbOr(1, 1000, min_cut_sets);
+    return ua->ProbOr(1, 1000, min_cut_sets);
   }
 
   void MProbOr(int sign, int nsums, std::set< std::set<int> >* min_cut_sets) {
-    return ua->MProbOr(sign, nsums, min_cut_sets);
+    return ua->ProbOr(sign, nsums, min_cut_sets);
   }
 
   std::vector< std::set<int> >& pos_terms() {

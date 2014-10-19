@@ -10,7 +10,9 @@
 
 namespace scram {
 
-UncertaintyAnalysis::UncertaintyAnalysis(int nsums) : p_time_(-1) {
+UncertaintyAnalysis::UncertaintyAnalysis(int nsums)
+    : p_time_(-1),
+      num_trials_(10000) {
   // Check for right number of sums.
   if (nsums < 1) {
     std::string msg = "The number of sums in the probability calculation "
@@ -41,9 +43,9 @@ void UncertaintyAnalysis::Analyze(
 
   std::set<std::set<int> > iset(imcs_.begin(), imcs_.end());
   // Generate the equation.
-  UncertaintyAnalysis::MProbOr(1, nsums_, &iset);
+  UncertaintyAnalysis::ProbOr(1, nsums_, &iset);
   // Sample probabilities and generate data.
-  UncertaintyAnalysis::MSample();
+  UncertaintyAnalysis::Sample();
 
   // Duration of the calculations.
   p_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
@@ -114,8 +116,8 @@ void UncertaintyAnalysis::CombineElAndSet(
 }
 
 // Generation of the representation of the original equation.
-void UncertaintyAnalysis::MProbOr(int sign, int nsums,
-                                std::set< std::set<int> >* min_cut_sets) {
+void UncertaintyAnalysis::ProbOr(int sign, int nsums,
+                                 std::set< std::set<int> >* min_cut_sets) {
   assert(sign != 0);
   assert(nsums >= 0);
 
@@ -142,10 +144,31 @@ void UncertaintyAnalysis::MProbOr(int sign, int nsums,
 
   std::set< std::set<int> > combo_sets;
   UncertaintyAnalysis::CombineElAndSet(element_one, *min_cut_sets, &combo_sets);
-  UncertaintyAnalysis::MProbOr(sign, nsums, min_cut_sets);
-  UncertaintyAnalysis::MProbOr(-sign, nsums - 1, &combo_sets);
+  UncertaintyAnalysis::ProbOr(sign, nsums, min_cut_sets);
+  UncertaintyAnalysis::ProbOr(-sign, nsums - 1, &combo_sets);
 }
 
-void UncertaintyAnalysis::MSample() {}
+void UncertaintyAnalysis::Sample() {
+  // Reset distributions.
+  // Sample all basic events.
+  /// @todo Sample only events that are in the minimal cut sets.
+  /// @todo Do not sample constant values(i.e. events without distributions.)
+}
+
+double UncertaintyAnalysis::ProbAnd(const std::set<int>& min_cut_set) {
+  // Test just in case the min cut set is empty.
+  if (min_cut_set.empty()) return 0;
+
+  double p_sub_set = 1;  // 1 is for multiplication.
+  std::set<int>::iterator it_set;
+  for (it_set = min_cut_set.begin(); it_set != min_cut_set.end(); ++it_set) {
+    if (*it_set > 0) {
+      p_sub_set *= iprobs_[*it_set];
+    } else {
+      p_sub_set *= 1 - iprobs_[std::abs(*it_set)];  // Never zero.
+    }
+  }
+  return p_sub_set;
+}
 
 }  // namespace scram

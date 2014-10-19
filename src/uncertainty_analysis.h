@@ -70,11 +70,20 @@ friend class ::UncertaintyAnalysisTest;
   /// @param[in] sign The sign of the series. Odd int is '+', even int is '-'.
   /// @param[in] nsums The number of sums in the series.
   /// @param[in] min_cut_sets Sets of indices of primary events.
-  void MProbOr(int sign, int nsums, std::set< std::set<int> >* min_cut_sets);
+  void ProbOr(int sign, int nsums, std::set< std::set<int> >* min_cut_sets);
 
   /// Performs Monte Carlo Simulation by sampling the probability distributions
   /// and providing the final sampled values of the final probability.
-  void MSample();
+  void Sample();
+
+  /// Calculates a probability of a minimal cut set, whose members are in AND
+  /// relationship with each other. This function assumes independence of each
+  /// member. This functionality is provided for the rare event and MCUB,
+  /// so the method is not as optimized as the others.
+  /// @param[in] min_cut_set A set of indices of primary events.
+  /// @returns The total probability.
+  /// @note O_avg(N) where N is the size of the passed set.
+  double ProbAnd(const std::set<int>& min_cut_set);
 
   std::vector< std::set<int> > pos_terms_;  ///< Plus terms of the equation.
   std::vector< std::set<int> > neg_terms_;  ///< Minus terms of the equation.
@@ -87,10 +96,15 @@ friend class ::UncertaintyAnalysisTest;
   /// Indices of primary events.
   boost::unordered_map<std::string, int> primary_to_int_;
 
+  /// This vector holds sampled probabilities of events.
+  std::vector<double> iprobs_;
+
   /// Minimal cut sets passed for analysis.
   std::set< std::set<std::string> > min_cut_sets_;
 
   std::vector< std::set<int> > imcs_;  ///< Min cut sets with indices of events.
+
+  int num_trials_;  ///< The number of trials to perform.
 
   double p_time_;  ///< Time for probability calculations.
 };
