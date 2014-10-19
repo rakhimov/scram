@@ -36,6 +36,9 @@ class Expression {
   /// This routine resets the sampling to get a new values.
   virtual inline void Reset() { sampled_ = false; }
 
+  /// Indication of constant expression.
+  virtual inline bool IsConstant() { return false; }
+
  protected:
   /// Indication if the expression is already sampled.
   bool sampled_;
@@ -99,6 +102,8 @@ class Parameter : public Expression, public Element {
     return Expression::sampled_value_;
   }
 
+  inline bool IsConstant() { return expression_->IsConstant(); }
+
  private:
   /// Helper funciton to check for cyclic references in parameters.
   /// @param[out] path The current path of names in cyclicity search.
@@ -136,6 +141,7 @@ class MissionTime : public Expression {
 
   inline double Mean() { return mission_time_; }
   inline double Sample() { return mission_time_; }
+  inline bool IsConstant() { return true; }
 
  private:
   /// The constant's value.
@@ -160,6 +166,7 @@ class ConstantExpression : public Expression {
   void Validate() {}
   inline double Mean() { return value_; }
   inline double Sample() { return value_; }
+  inline bool IsConstant() { return true; }
 
  private:
   /// The constant's value.
@@ -188,6 +195,10 @@ class ExponentialExpression : public Expression {
   /// @returns A sampled value.
   /// @throws InvalidArgument if sampled failure rate or time is negative.
   double Sample();
+
+  inline bool IsConstant() {
+    return lambda_->IsConstant() && time_->IsConstant();
+  }
 
  private:
   /// Failure rate in hours.
@@ -226,6 +237,11 @@ class GlmExpression : public Expression {
   /// @returns A sampled value.
   /// @throws InvalidArgument if sampled values are invalid.
   double Sample();
+
+  inline bool IsConstant() {
+    return gamma_->IsConstant() && lambda_->IsConstant() &&
+        time_->IsConstant() && mu_->IsConstant();
+  }
 
  private:
   /// Failure rate in hours.
@@ -268,6 +284,11 @@ class WeibullExpression : public Expression {
   /// @returns A sampled value.
   /// @throws InvalidArgument if sampled values are invalid.
   double Sample();
+
+  inline bool IsConstant() {
+    return alpha_->IsConstant() && beta_->IsConstant() && t0_->IsConstant() &&
+        time_->IsConstant();
+  }
 
  private:
   /// Scale parameter.

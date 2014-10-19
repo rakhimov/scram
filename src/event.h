@@ -184,6 +184,12 @@ class BasicEvent: public PrimaryEvent {
     return expression_->Sample();
   }
 
+  /// Resets the sampling.
+  inline void Reset() { expression_->Reset(); }
+
+  /// @returns Indication if this event does not have uncertainty.
+  inline bool IsConstant() { return expression_->IsConstant(); }
+
  private:
   /// Expression that describes this basic event and provides numerical
   /// values for probability calculations.
