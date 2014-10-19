@@ -65,26 +65,20 @@ void ProbabilityAnalysis::Analyze(
   for (it_min = imcs_.begin(); it_min != imcs_.end(); ++it_min) {
     // Calculate a probability of a set with AND relationship.
     double p_sub_set = ProbabilityAnalysis::ProbAnd(*it_min);
-    if (p_sub_set > cut_off_) {
-      bool include = true;
+    if (p_sub_set > cut_off_) {  // This also removes false state house events.
+      // Remove house events that have probability of 1.
       flat_set<int> mcs;
       std::set<int>::iterator it;
       for (it = it_min->begin(); it != it_min->end(); ++it) {
         if (*it > 0) {
-          if (false_house_events_.count(*it)) {
-            include = false;
-            break;
-          } else if (true_house_events_.count(*it)) continue;
+          if (true_house_events_.count(*it)) continue;
           mcs.insert(mcs.end(), *it);
         } else {
-          if (true_house_events_.count(-*it)) {
-            include = false;
-            break;
-          } else if (false_house_events_.count(-*it)) continue;
+          if (false_house_events_.count(-*it)) continue;
           mcs.insert(mcs.end(), *it);
         }
       }
-      if (include) mcs_for_prob.insert(mcs);
+      mcs_for_prob.insert(mcs);
     }
 
     // Update a container with minimal cut sets and probabilities.
