@@ -36,8 +36,8 @@ class ProbabilityAnalysis {
   /// @param[in] approx The kind of approximation for probability calculations.
   /// @param[in] nsums The number of sums in the probability series.
   /// @param[in] cut_off The cut-off probability for cut sets.
-  /// @throws ValueError if any of the parameters are invalid.
-  ProbabilityAnalysis(std::string approx = "no", int nsums = 1000000,
+  /// @throws InvalidArgument if any of the parameters is invalid.
+  ProbabilityAnalysis(std::string approx = "no", int nsums = 7,
                       double cut_off = 1e-8);
 
   /// Set the databases of primary events with probabilities.

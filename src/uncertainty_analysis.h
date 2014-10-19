@@ -19,14 +19,20 @@ typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
 
 namespace scram {
 
+class Reporter;
+
 class UncertaintyAnalysis {
 friend class ::UncertaintyAnalysisTest;
+friend class Reporter;
 
  public:
   /// The main constructor of Uncertainty Analysis.
   /// @param[in] nsums The number of sums in the probability series.
-  /// @throws ValueError if any of the parameters are invalid.
-  explicit UncertaintyAnalysis(int nsums = 1e6);
+  /// @param[in] cut_off The cut-off probability for cut sets.
+  /// @param[in] num_tirals The number of trials to perform.
+  /// @throws InvalidArgument if any of the parameters is invalid.
+  explicit UncertaintyAnalysis(int nsums = 7, double cut_off = 1e-8,
+                               int num_trials = 1e4);
 
   /// Set the databases of primary events with probabilities.
   /// Resets the main primary events database and clears the
@@ -43,9 +49,6 @@ friend class ::UncertaintyAnalysisTest;
   void Analyze(const std::set< std::set<std::string> >& min_cut_sets);
 
  private:
-  /// Number of sums in series expansion for probability calculations.
-  int nsums_;
-
   /// Assigns an index to each primary event, and then populates with this
   /// indices new databases and primary to integer converting maps.
   /// The previous data are lost.
@@ -104,7 +107,12 @@ friend class ::UncertaintyAnalysisTest;
 
   std::vector< std::set<int> > imcs_;  ///< Min cut sets with indices of events.
 
+  /// Number of sums in series expansion for probability calculations.
+  int nsums_;
+
   int num_trials_;  ///< The number of trials to perform.
+
+  double cut_off_;  ///< The cut-off probability for minimal cut sets.
 
   double p_time_;  ///< Time for probability calculations.
 };

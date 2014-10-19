@@ -18,13 +18,13 @@ Standard build:
 
 Release build:
 --------------
-- Prob Calculation  0.019s |
+- Prob Calculation  0.019s  |
 
 
 ----------- Three Motor -c 0 (p = 0.02115378) ----------
 Standard build:
 ---------------
-- Prob Calculation  4.100s |
+- Prob Calculation  4.100s  |
 
 Release build:
 --------------
@@ -86,3 +86,16 @@ Release build:
 --------------
 - Tree Expansion    43.40s  |
 - MCS Generation    0.130s  |
+
+
+==================== Uncertainty Analysis =================
+
+----------- Three Motor -c 1e-8 -a mc -s 6 -------
+
+Standard build:
+---------------
+- Calculation Time  47.60s  |
+
+Release build:
+--------------
+- Calculation Time  0.000s  |

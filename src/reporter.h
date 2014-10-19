@@ -13,6 +13,7 @@
 
 #include "fault_tree_analysis.h"
 #include "probability_analysis.h"
+#include "uncertainty_analysis.h"
 
 typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
 
@@ -41,6 +42,14 @@ class Reporter {
   /// @note This function must be called only after analysis is done.
   void ReportProbability(
       const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
+      std::ostream& out);
+
+  /// Reports the results of uncertainty analysis with minimal cut sets.
+  /// @param[in] uncert_analysis UncertaintyAnalysis with results.
+  /// @param[out] out Output stream.
+  /// @note This function must be called only after analysis is done.
+  void ReportUncertainty(
+      const boost::shared_ptr<const UncertaintyAnalysis>& uncert_analysis,
       std::ostream& out);
 
  private:

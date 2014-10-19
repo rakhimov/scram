@@ -162,10 +162,14 @@ TEST_F(ProbabilityAnalysisTest, ProbOrInt) {
 // Invalid options for the constructor.
 TEST_F(ProbabilityAnalysisTest, Constructor) {
   // Incorrect approximation argument.
-  ASSERT_THROW(ProbabilityAnalysis("approx"), ValueError);
+  ASSERT_THROW(ProbabilityAnalysis("approx"), InvalidArgument);
   // Incorrect number of series in the probability equation.
-  ASSERT_THROW(ProbabilityAnalysis("no", -1), ValueError);
+  ASSERT_NO_THROW(ProbabilityAnalysis("no"));
+  ASSERT_NO_THROW(ProbabilityAnalysis("mcub"));
+  ASSERT_NO_THROW(ProbabilityAnalysis("rare"));
+  ASSERT_THROW(ProbabilityAnalysis("no", -1), InvalidArgument);
   // Incorrect cut-off probability.
-  ASSERT_THROW(ProbabilityAnalysis("no", 1, -1), ValueError);
-  ASSERT_THROW(ProbabilityAnalysis("no", 1, 10), ValueError);
+  ASSERT_NO_THROW(ProbabilityAnalysis("no", 1));
+  ASSERT_THROW(ProbabilityAnalysis("no", 1, -1), InvalidArgument);
+  ASSERT_THROW(ProbabilityAnalysis("no", 1, 10), InvalidArgument);
 }

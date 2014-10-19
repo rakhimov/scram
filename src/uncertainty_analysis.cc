@@ -10,15 +10,30 @@
 
 namespace scram {
 
-UncertaintyAnalysis::UncertaintyAnalysis(int nsums)
-    : p_time_(-1),
-      num_trials_(10000) {
+UncertaintyAnalysis::UncertaintyAnalysis(int nsums, double cut_off,
+                                         int num_trials)
+    : p_time_(-1) {
   // Check for right number of sums.
   if (nsums < 1) {
     std::string msg = "The number of sums in the probability calculation "
                       "cannot be less than one";
-    throw ValueError(msg);
+    throw InvalidArgument(msg);
   }
+
+  // Check for valid cut-off probability.
+  if (cut_off < 0 || cut_off > 1) {
+    std::string msg = "The cut-off probability cannot be negative or"
+                      " more than 1.";
+    throw InvalidArgument(msg);
+  }
+  cut_off_ = cut_off;
+
+  if (num_trials < 1) {
+    std::string msg = "The number of trials for uncertainty analysis cannot"
+                      " be fewer than 1.";
+    throw InvalidArgument(msg);
+  }
+
   nsums_ = nsums;
 }
 

@@ -174,6 +174,13 @@ void Reporter::ReportProbability(
   out.flush();
 }
 
+void Reporter::ReportUncertainty(
+    const boost::shared_ptr<const UncertaintyAnalysis>& uncert_analysis,
+    std::ostream& out) {
+  out << "\nMC time: " << uncert_analysis->p_time_ << "\n";
+  out.flush();
+}
+
 void Reporter::ReportMcsProb(
     const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
     std::ostream& out) {

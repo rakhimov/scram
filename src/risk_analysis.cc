@@ -220,6 +220,11 @@ void RiskAnalysis::Report(std::string output) {
     for (it_p = prob_analyses_.begin(); it_p != prob_analyses_.end(); ++it_p) {
       rp.ReportProbability(*it_p, out);
     }
+    std::vector<UncertaintyAnalysisPtr>::iterator it_u;
+    for (it_u = uncertainty_analyses_.begin();
+         it_u != uncertainty_analyses_.end(); ++it_u) {
+      rp.ReportUncertainty(*it_u, out);
+    }
   }
 }
 
