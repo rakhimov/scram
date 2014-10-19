@@ -6,6 +6,7 @@
 #include <ctime>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/pointer_cast.hpp>
 
 #include "error.h"
 
@@ -65,8 +66,25 @@ void ProbabilityAnalysis::Analyze(
     // Calculate a probability of a set with AND relationship.
     double p_sub_set = ProbabilityAnalysis::ProbAnd(*it_min);
     if (p_sub_set > cut_off_) {
-      flat_set<int> mcs(it_min->begin(), it_min->end());
-      mcs_for_prob.insert(mcs);
+      bool include = true;
+      flat_set<int> mcs;
+      std::set<int>::iterator it;
+      for (it = it_min->begin(); it != it_min->end(); ++it) {
+        if (*it > 0) {
+          if (false_house_events_.count(*it)) {
+            include = false;
+            break;
+          } else if (true_house_events_.count(*it)) continue;
+          mcs.insert(mcs.end(), *it);
+        } else {
+          if (true_house_events_.count(-*it)) {
+            include = false;
+            break;
+          } else if (false_house_events_.count(-*it)) continue;
+          mcs.insert(mcs.end(), *it);
+        }
+      }
+      if (include) mcs_for_prob.insert(mcs);
     }
 
     // Update a container with minimal cut sets and probabilities.
@@ -141,6 +159,13 @@ void ProbabilityAnalysis::AssignIndices() {
   iprobs_.push_back(0);
   for (itp = primary_events_.begin(); itp != primary_events_.end(); ++itp) {
     int_to_primary_.push_back(itp->second);
+    if (boost::dynamic_pointer_cast<HouseEvent>(itp->second)) {
+      if (itp->second->p() == 0) {
+        false_house_events_.insert(false_house_events_.end(), j);
+      } else {
+        true_house_events_.insert(true_house_events_.end(), j);
+      }
+    }
     primary_to_int_.insert(std::make_pair(itp->second->id(), j));
     iprobs_.push_back(itp->second->p());
     ++j;

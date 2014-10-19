@@ -190,6 +190,11 @@ class ProbabilityAnalysis {
   std::vector<PrimaryEventPtr> int_to_primary_;  ///< Indices to primary events.
   /// Indices of primary events.
   boost::unordered_map<std::string, int> primary_to_int_;
+  /// Indices of house events with state true.
+  std::set<int> true_house_events_;
+  /// Indices of house events with state false.
+  std::set<int> false_house_events_;
+
   std::vector<double> iprobs_;  ///< Holds probabilities of primary events.
 
   /// Minimal cut sets passed for analysis.
