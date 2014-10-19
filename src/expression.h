@@ -18,6 +18,8 @@ namespace scram {
 /// The base class for all sorts of expressions to describe events.
 class Expression {
  public:
+  Expression() : sampled_(false), sampled_value_(0) {}
+
   virtual ~Expression() {}
 
   /// Validates the expression.
@@ -31,6 +33,15 @@ class Expression {
   /// @returns A sampled value of this expression.
   virtual double Sample() = 0;
 
+  /// This routine resets the sampling to get a new values.
+  virtual inline void Reset() { sampled_ = false; }
+
+ protected:
+  /// Indication if the expression is already sampled.
+  bool sampled_;
+
+  /// The sampled value.
+  double sampled_value_;
 };
 
 typedef boost::shared_ptr<scram::Expression> ExpressionPtr;
@@ -80,7 +91,13 @@ class Parameter : public Expression, public Element {
   inline const Units& unit() { return unit_; }
 
   inline double Mean() { return expression_->Mean(); }
-  inline double Sample() { return expression_->Sample(); }
+  inline double Sample() {
+    if (!Expression::sampled_) {
+      Expression::sampled_ = true;
+      Expression::sampled_value_ = expression_->Sample();
+    }
+    return Expression::sampled_value_;
+  }
 
  private:
   /// Helper funciton to check for cyclic references in parameters.

@@ -44,15 +44,18 @@ void ExponentialExpression::Validate() {
 }
 
 double ExponentialExpression::Sample() {
-  double lambda = lambda_->Sample();
-  double time = time_->Sample();
+  if (!Expression::sampled_) {
+    double lambda = lambda_->Sample();
+    double time = time_->Sample();
 
-  if (lambda < 0) {
-    throw InvalidArgument("The sampled rate of failure cannot be negative.");
-  } else if (time < 0) {
-    throw InvalidArgument("The sampled mission time cannot be negative.");
+    if (lambda < 0) {
+      throw InvalidArgument("The sampled rate of failure cannot be negative.");
+    } else if (time < 0) {
+      throw InvalidArgument("The sampled mission time cannot be negative.");
+    }
+    Expression::sampled_value_ =  1 - std::exp(-(lambda * time));
   }
-  return 1 - std::exp(-(lambda * time));
+  return Expression::sampled_value_;
 }
 
 void GlmExpression::Validate() {
@@ -68,23 +71,27 @@ void GlmExpression::Validate() {
 }
 
 double GlmExpression::Sample() {
-  double gamma = gamma_->Sample();
-  double lambda = lambda_->Sample();
-  double mu = mu_->Sample();
-  double time = time_->Sample();
+  if (!Expression::sampled_) {
+    double gamma = gamma_->Sample();
+    double lambda = lambda_->Sample();
+    double mu = mu_->Sample();
+    double time = time_->Sample();
 
-  if (lambda < 0) {
-    throw InvalidArgument("The sampled rate of failure cannot be negative.");
-  } else if (mu < 0) {
-    throw InvalidArgument("The sampled rate of repair cannot be negative.");
-  } else if (gamma < 0 || gamma > 1) {
-    throw InvalidArgument("Invalid sampled value for probabilty.");
-  } else if (time < 0) {
-    throw InvalidArgument("The sampled mission time cannot be negative.");
+    if (lambda < 0) {
+      throw InvalidArgument("The sampled rate of failure cannot be negative.");
+    } else if (mu < 0) {
+      throw InvalidArgument("The sampled rate of repair cannot be negative.");
+    } else if (gamma < 0 || gamma > 1) {
+      throw InvalidArgument("Invalid sampled value for probabilty.");
+    } else if (time < 0) {
+      throw InvalidArgument("The sampled mission time cannot be negative.");
+    }
+
+    double r = lambda + mu;
+    Expression::sampled_value_ =  (lambda - (lambda - gamma * r) *
+                                   std::exp(-r * time)) / r;
   }
-
-  double r = lambda + mu;
-  return (lambda - (lambda - gamma * r) * std::exp(-r * time)) / r;
+  return Expression::sampled_value_;
 }
 
 void WeibullExpression::Validate() {
@@ -104,27 +111,32 @@ void WeibullExpression::Validate() {
 }
 
 double WeibullExpression::Sample() {
-  double alpha = alpha_->Sample();
-  double beta = beta_->Sample();
-  double t0 = t0_->Sample();
-  double time = time_->Sample();
+  if (!Expression::sampled_) {
+    double alpha = alpha_->Sample();
+    double beta = beta_->Sample();
+    double t0 = t0_->Sample();
+    double time = time_->Sample();
 
-  if (alpha <= 0) {
-    throw InvalidArgument("The scale parameter for Weibull distribution must"
-                          " be positive for sampled values.");
-  } else if (beta <= 0) {
-    throw InvalidArgument("The shape parameter for Weibull distribution must"
-                          " be positive for sampled values.");
-  } else if (t0 < 0) {
-    throw InvalidArgument("Invalid value for time shift in sampled values.");
-  } else if (time < 0) {
-    throw InvalidArgument("The sampled mission time cannot be negative.");
-  } else if (time < t0) {
-    throw InvalidArgument("The sampled mission time must be"
-                          " longer than time shift.");
+    if (alpha <= 0) {
+      throw InvalidArgument("The scale parameter for Weibull distribution must"
+                            " be positive for sampled values.");
+    } else if (beta <= 0) {
+      throw InvalidArgument("The shape parameter for Weibull distribution must"
+                            " be positive for sampled values.");
+    } else if (t0 < 0) {
+      throw InvalidArgument("Invalid value for time shift in sampled values.");
+    } else if (time < 0) {
+      throw InvalidArgument("The sampled mission time cannot be negative.");
+    } else if (time < t0) {
+      throw InvalidArgument("The sampled mission time must be"
+                            " longer than time shift.");
+    }
+
+    Expression::sampled_value_ =  1 - std::exp(-std::pow((time - t0) /
+                                                         alpha, beta));
   }
 
-  return 1 - std::exp(-std::pow((time - t0) / alpha, beta));
+  return Expression::sampled_value_;
 }
 
 void UniformDeviate::Validate() {
@@ -135,15 +147,18 @@ void UniformDeviate::Validate() {
 }
 
 double UniformDeviate::Sample() {
-  double min = min_->Sample();
-  double max = max_->Sample();
+  if (!Expression::sampled_) {
+    double min = min_->Sample();
+    double max = max_->Sample();
 
-  if (min >= max) {
-    throw InvalidArgument("Sampled min value is more than sampled max"
-                          " for Uniform distribution.");
+    if (min >= max) {
+      throw InvalidArgument("Sampled min value is more than sampled max"
+                            " for Uniform distribution.");
+    }
+
+    Expression::sampled_value_ = Random::UniformRealGenerator(min, max);
   }
-
-  return Random::UniformRealGenerator(min, max);
+  return Expression::sampled_value_;
 }
 
 void NormalDeviate::Validate() {
@@ -153,11 +168,15 @@ void NormalDeviate::Validate() {
 }
 
 double NormalDeviate::Sample() {
-  double sigma = sigma_->Sample();
-  if (sigma <= 0) {
-    throw InvalidArgument("Sampled standard deviation is negative or zero.");
+  if (!Expression::sampled_) {
+    double sigma = sigma_->Sample();
+    if (sigma <= 0) {
+      throw InvalidArgument("Sampled standard deviation is negative or zero.");
+    }
+    Expression::sampled_value_ =  Random::NormalGenerator(mean_->Sample(),
+                                                         sigma);
   }
-  return Random::NormalGenerator(mean_->Sample(), sigma);
+  return Expression::sampled_value_;
 }
 
 void LogNormalDeviate::Validate() {
@@ -173,18 +192,21 @@ void LogNormalDeviate::Validate() {
 }
 
 double LogNormalDeviate::Sample() {
-  double mean = mean_->Sample();
-  double ef = ef_->Sample();
-  if (ef <= 0) {
-    throw InvalidArgument("The Sampled Error Factor for Log-Normal"
-                          " distribution cannot be negative or zero.");
-  } else if (mean <= 0) {
-    throw InvalidArgument("The sampled mean of Log-Normal distribution"
-                          " cannot be negative or zero.");
+  if (!Expression::sampled_) {
+    double mean = mean_->Sample();
+    double ef = ef_->Sample();
+    if (ef <= 0) {
+      throw InvalidArgument("The Sampled Error Factor for Log-Normal"
+                            " distribution cannot be negative or zero.");
+    } else if (mean <= 0) {
+      throw InvalidArgument("The sampled mean of Log-Normal distribution"
+                            " cannot be negative or zero.");
+    }
+    double sigma = std::log(ef) / 1.645;
+    double mu = std::log(mean) - std::pow(sigma, 2) / 2;
+    Expression::sampled_value_ =  Random::LogNormalGenerator(mu, sigma);
   }
-  double sigma = std::log(ef) / 1.645;
-  double mu = std::log(mean) - std::pow(sigma, 2) / 2;
-  return Random::LogNormalGenerator(mu, sigma);
+  return Expression::sampled_value_;
 }
 
 void GammaDeviate::Validate() {
@@ -198,16 +220,19 @@ void GammaDeviate::Validate() {
 }
 
 double GammaDeviate::Sample() {
-  double k = k_->Sample();
-  double theta = theta_->Sample();
-  if (k <= 0) {
-    throw InvalidArgument("Sampled k shape parameter for Gamma distribution"
-                          " cannot be negative or zero.");
-  } else if (theta <= 0) {
-    throw InvalidArgument("Sampled theta scale parameter for Gamma "
-                          "distribution cannot be negative or zero.");
+  if (!Expression::sampled_) {
+    double k = k_->Sample();
+    double theta = theta_->Sample();
+    if (k <= 0) {
+      throw InvalidArgument("Sampled k shape parameter for Gamma distribution"
+                            " cannot be negative or zero.");
+    } else if (theta <= 0) {
+      throw InvalidArgument("Sampled theta scale parameter for Gamma "
+                            "distribution cannot be negative or zero.");
+    }
+    Expression::sampled_value_ = Random::GammaGenerator(k, theta);
   }
-  return Random::GammaGenerator(k, theta);
+  return Expression::sampled_value_;
 }
 
 void BetaDeviate::Validate() {
@@ -221,20 +246,23 @@ void BetaDeviate::Validate() {
 }
 
 double BetaDeviate::Sample() {
-  double alpha = alpha_->Sample();
-  double beta = beta_->Sample();
-  if (alpha <= 0) {
-    throw InvalidArgument("Sampled alpha shape parameter for Beta distribution"
-                          " cannot be negative or zero.");
-  } else if (beta <= 0) {
-    throw InvalidArgument("Sampled beta shape parameter for Beta distribution"
-                          " cannot be negative or zero.");
+  if (!Expression::sampled_) {
+    double alpha = alpha_->Sample();
+    double beta = beta_->Sample();
+    if (alpha <= 0) {
+      throw InvalidArgument("Sampled alpha shape parameter for"
+                            " Beta distribution cannot be negative or zero.");
+    } else if (beta <= 0) {
+      throw InvalidArgument("Sampled beta shape parameter for Beta"
+                            " distribution cannot be negative or zero.");
+    }
+    Expression::sampled_value_ = Random::BetaGenerator(alpha, beta);
   }
-  return Random::BetaGenerator(alpha, beta);
+  return Expression::sampled_value_;
 }
 
 Histogram::Histogram(const std::vector<ExpressionPtr>& boundaries,
-            const std::vector<ExpressionPtr>& weights) {
+                     const std::vector<ExpressionPtr>& weights) {
   if (weights.size() != boundaries.size()) {
     throw InvalidArgument("The number of weights is not equal to the number"
                           " of boundaries.");
@@ -262,16 +290,19 @@ double Histogram::Mean() {
 }
 
 double Histogram::Sample() {
-  std::vector<double> b;
-  b.push_back(0);  // The initial point.
-  std::vector<double> w;
-  for (int i = 0; i < boundaries_.size(); ++i) {
-    b.push_back(boundaries_[i]->Sample());
-    w.push_back(weights_[i]->Sample());
+  if (!Expression::sampled_) {
+    std::vector<double> b;
+    b.push_back(0);  // The initial point.
+    std::vector<double> w;
+    for (int i = 0; i < boundaries_.size(); ++i) {
+      b.push_back(boundaries_[i]->Sample());
+      w.push_back(weights_[i]->Sample());
+    }
+    CheckBoundaries(b);
+    CheckWeights(w);
+    Expression::sampled_value_ = Random::HistogramGenerator(w, b);
   }
-  CheckBoundaries(b);
-  CheckWeights(w);
-  return Random::HistogramGenerator(w, b);
+  return Expression::sampled_value_;
 }
 
 void Histogram::CheckBoundaries(const std::vector<ExpressionPtr>& boundaries) {
