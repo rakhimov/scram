@@ -45,6 +45,7 @@ void ExponentialExpression::Validate() {
 
 double ExponentialExpression::Sample() {
   if (!Expression::sampled_) {
+    Expression::sampled_ = true;
     double lambda = lambda_->Sample();
     double time = time_->Sample();
 
@@ -72,6 +73,7 @@ void GlmExpression::Validate() {
 
 double GlmExpression::Sample() {
   if (!Expression::sampled_) {
+    Expression::sampled_ = true;
     double gamma = gamma_->Sample();
     double lambda = lambda_->Sample();
     double mu = mu_->Sample();
@@ -112,6 +114,7 @@ void WeibullExpression::Validate() {
 
 double WeibullExpression::Sample() {
   if (!Expression::sampled_) {
+    Expression::sampled_ = true;
     double alpha = alpha_->Sample();
     double beta = beta_->Sample();
     double t0 = t0_->Sample();
@@ -148,6 +151,7 @@ void UniformDeviate::Validate() {
 
 double UniformDeviate::Sample() {
   if (!Expression::sampled_) {
+    Expression::sampled_ = true;
     double min = min_->Sample();
     double max = max_->Sample();
 
@@ -169,6 +173,7 @@ void NormalDeviate::Validate() {
 
 double NormalDeviate::Sample() {
   if (!Expression::sampled_) {
+    Expression::sampled_ = true;
     double sigma = sigma_->Sample();
     if (sigma <= 0) {
       throw InvalidArgument("Sampled standard deviation is negative or zero.");
@@ -193,6 +198,7 @@ void LogNormalDeviate::Validate() {
 
 double LogNormalDeviate::Sample() {
   if (!Expression::sampled_) {
+    Expression::sampled_ = true;
     double mean = mean_->Sample();
     double ef = ef_->Sample();
     if (ef <= 0) {
@@ -221,6 +227,7 @@ void GammaDeviate::Validate() {
 
 double GammaDeviate::Sample() {
   if (!Expression::sampled_) {
+    Expression::sampled_ = true;
     double k = k_->Sample();
     double theta = theta_->Sample();
     if (k <= 0) {
@@ -247,6 +254,7 @@ void BetaDeviate::Validate() {
 
 double BetaDeviate::Sample() {
   if (!Expression::sampled_) {
+    Expression::sampled_ = true;
     double alpha = alpha_->Sample();
     double beta = beta_->Sample();
     if (alpha <= 0) {
@@ -291,6 +299,7 @@ double Histogram::Mean() {
 
 double Histogram::Sample() {
   if (!Expression::sampled_) {
+    Expression::sampled_ = true;
     std::vector<double> b;
     b.push_back(0);  // The initial point.
     std::vector<double> w;

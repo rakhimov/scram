@@ -5,6 +5,11 @@
 #include <ctime>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/accumulators/accumulators.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics/mean.hpp>
+#include <boost/accumulators/statistics/variance.hpp>
+#include <boost/accumulators/statistics/density.hpp>
 
 #include "error.h"
 
@@ -12,7 +17,9 @@ namespace scram {
 
 UncertaintyAnalysis::UncertaintyAnalysis(int nsums, double cut_off,
                                          int num_trials)
-    : p_time_(-1) {
+    : mean_(-1),
+      sigma_(-1),
+      p_time_(-1) {
   // Check for right number of sums.
   if (nsums < 1) {
     std::string msg = "The number of sums in the probability calculation "
@@ -33,6 +40,7 @@ UncertaintyAnalysis::UncertaintyAnalysis(int nsums, double cut_off,
                       " be fewer than 1.";
     throw InvalidArgument(msg);
   }
+  num_trials_ = num_trials;
 
   nsums_ = nsums;
 }
@@ -49,18 +57,42 @@ void UncertaintyAnalysis::Analyze(
 
   UncertaintyAnalysis::IndexMcs(min_cut_sets_);
 
+  std::set< std::set<int> > iset;
+
+  std::vector< std::set<int> >::const_iterator it_min;
+  for (it_min = imcs_.begin(); it_min != imcs_.end(); ++it_min) {
+    // Calculate a probability of a set with AND relationship.
+    double p_sub_set = UncertaintyAnalysis::ProbAnd(*it_min);
+    if (p_sub_set > cut_off_) {
+      // Remove house events that have probability of 1.
+      std::set<int> mcs;
+      std::set<int>::iterator it;
+      for (it = it_min->begin(); it != it_min->end(); ++it) {
+        if (*it > 0) {
+          if (true_house_events_.count(*it)) continue;
+          mcs.insert(mcs.end(), *it);
+        } else {
+          if (false_house_events_.count(-*it)) continue;
+          mcs.insert(mcs.end(), *it);
+        }
+      }
+      iset.insert(mcs);
+    }
+  }
+
   // Timing Initialization
   std::clock_t start_time;
   start_time = std::clock();
 
   // Maximum number of sums in the series.
-  if (nsums_ > imcs_.size()) nsums_ = imcs_.size();
-
-  std::set<std::set<int> > iset(imcs_.begin(), imcs_.end());
+  if (nsums_ > iset.size()) nsums_ = iset.size();
   // Generate the equation.
   UncertaintyAnalysis::ProbOr(1, nsums_, &iset);
   // Sample probabilities and generate data.
   UncertaintyAnalysis::Sample();
+
+  // Perform statistical analysis.
+  UncertaintyAnalysis::CalculateStatistics();
 
   // Duration of the calculations.
   p_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
@@ -75,9 +107,21 @@ void UncertaintyAnalysis::AssignIndices() {
   boost::unordered_map<std::string, PrimaryEventPtr>::iterator itp;
   // Dummy primary event at index 0.
   int_to_primary_.push_back(PrimaryEventPtr(new PrimaryEvent("dummy")));
+  iprobs_.push_back(0);
   for (itp = primary_events_.begin(); itp != primary_events_.end(); ++itp) {
     int_to_primary_.push_back(itp->second);
+    if (boost::dynamic_pointer_cast<HouseEvent>(itp->second)) {
+      if (itp->second->p() == 0) {
+        false_house_events_.insert(false_house_events_.end(), j);
+      } else {
+        true_house_events_.insert(true_house_events_.end(), j);
+      }
+    } else {
+      basic_events_.push_back(
+          boost::dynamic_pointer_cast<BasicEvent>(itp->second));
+    }
     primary_to_int_.insert(std::make_pair(itp->second->id(), j));
+    iprobs_.push_back(itp->second->p());
     ++j;
   }
 }
@@ -164,10 +208,30 @@ void UncertaintyAnalysis::ProbOr(int sign, int nsums,
 }
 
 void UncertaintyAnalysis::Sample() {
-  // Reset distributions.
-  // Sample all basic events.
-  /// @todo Sample only events that are in the minimal cut sets.
-  /// @todo Do not sample constant values(i.e. events without distributions.)
+  for (int i = 0; i < num_trials_; ++i) {
+    // Reset distributions.
+    std::vector<BasicEventPtr>::iterator it_b;
+    for (it_b = basic_events_.begin(); it_b != basic_events_.end(); ++it_b) {
+      (*it_b)->Reset();
+    }
+    // Sample all basic events.
+    /// @todo Sample only events that are in the minimal cut sets.
+    /// @todo Do not sample constant values(i.e. events without distributions.)
+    for (it_b = basic_events_.begin(); it_b != basic_events_.end(); ++it_b) {
+      iprobs_[primary_to_int_.find((*it_b)->id())->second] =
+          (*it_b)->SampleProbability();
+    }
+    double pos = 0;
+    std::vector< std::set<int> >::iterator it_s;
+    for (it_s = pos_terms_.begin(); it_s != pos_terms_.end(); ++it_s) {
+      pos += UncertaintyAnalysis::ProbAnd(*it_s);
+    }
+    double neg = 0;
+    for (it_s = neg_terms_.begin(); it_s != neg_terms_.end(); ++it_s) {
+      neg += UncertaintyAnalysis::ProbAnd(*it_s);
+    }
+    sampled_results_.push_back(pos - neg);
+  }
 }
 
 double UncertaintyAnalysis::ProbAnd(const std::set<int>& min_cut_set) {
@@ -184,6 +248,19 @@ double UncertaintyAnalysis::ProbAnd(const std::set<int>& min_cut_set) {
     }
   }
   return p_sub_set;
+}
+
+void UncertaintyAnalysis::CalculateStatistics() {
+  using namespace boost;
+  using namespace boost::accumulators;
+  accumulator_set<double, stats<tag::mean, tag::variance, tag::density> >
+      acc(tag::density::num_bins = 20, tag::density::cache_size = 10);
+  std::vector<double>::iterator it;
+  for (it = sampled_results_.begin(); it != sampled_results_.end(); ++it) {
+    acc(*it);
+  }
+  mean_ = boost::accumulators::mean(acc);
+  sigma_ = variance(acc);
 }
 
 }  // namespace scram

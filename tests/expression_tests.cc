@@ -37,15 +37,20 @@ TEST(ExpressionTest, Exponential) {
   time->mean = 5;
   ASSERT_NO_THROW(dev->Validate());
 
+  dev->Reset();
   ASSERT_NO_THROW(dev->Sample());
   lambda->sample = -1;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   lambda->sample = 10;
+  dev->Reset();
   ASSERT_NO_THROW(dev->Sample());
 
   time->sample = -1;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   time->sample = 5;
+  dev->Reset();
   ASSERT_NO_THROW(dev->Sample());
 }
 
@@ -83,27 +88,37 @@ TEST(ExpressionTest, GLM) {
   time->mean = 5;
   ASSERT_NO_THROW(dev->Validate());
 
+  dev->Reset();
   ASSERT_NO_THROW(dev->Sample());
   gamma->sample = -1;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   gamma->sample = 10;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   gamma->sample = 0.10;
+  dev->Reset();
   ASSERT_NO_THROW(dev->Sample());
 
   lambda->sample = -1;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   lambda->sample = 10;
+  dev->Reset();
   ASSERT_NO_THROW(dev->Sample());
 
   mu->sample = -10;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   mu->sample = 100;
+  dev->Reset();
   ASSERT_NO_THROW(dev->Sample());
 
   time->sample = -1;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   time->sample = 5;
+  dev->Reset();
   ASSERT_NO_THROW(dev->Sample());
 }
 
@@ -145,31 +160,43 @@ TEST(ExpressionTest, Weibull) {
   time->mean = 50;
   ASSERT_NO_THROW(dev->Validate());
 
+  dev->Reset();
   ASSERT_NO_THROW(dev->Sample());
   alpha->sample = -1;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   alpha->sample = 0;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   alpha->sample = 0.10;
+  dev->Reset();
   ASSERT_NO_THROW(dev->Sample());
 
   beta->sample = -1;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   beta->sample = 0;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   beta->sample = 10;
+  dev->Reset();
   ASSERT_NO_THROW(dev->Sample());
 
   t0->sample = -10;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   t0->sample = 100;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   t0->sample = 10;
+  dev->Reset();
   ASSERT_NO_THROW(dev->Sample());
 
   time->sample = -1;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   time->sample = 50;
+  dev->Reset();
   ASSERT_NO_THROW(dev->Sample());
 }
 
@@ -186,10 +213,13 @@ TEST(ExpressionTest, UniformDeviate) {
   min->mean = 1;
   ASSERT_NO_THROW(dev->Validate());
 
+  dev->Reset();
   ASSERT_NO_THROW(dev->Sample());
   min->sample = 10;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);  // min > max
   min->sample = 1;
+  dev->Reset();
   ASSERT_NO_THROW(dev->Sample());
 }
 
@@ -207,12 +237,16 @@ TEST(ExpressionTest, NormalDeviate) {
   sigma->mean = 5;
   ASSERT_NO_THROW(dev->Validate());
 
+  dev->Reset();
   ASSERT_NO_THROW(dev->Sample());
   sigma->sample = -1;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);  // sigma < 0
   sigma->sample = 0;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);  // sigma = 0
   sigma->sample = 1;
+  dev->Reset();
   EXPECT_NO_THROW(dev->Sample());
 }
 
@@ -243,18 +277,25 @@ TEST(ExpressionTest, LogNormalDeviate) {
   ef->mean = 1;
   ASSERT_NO_THROW(dev->Validate());
 
+  dev->Reset();
   ASSERT_NO_THROW(dev->Sample());
   mean->sample = -1;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   mean->sample = 0;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   mean->sample = 5;
+  dev->Reset();
   ASSERT_NO_THROW(dev->Sample());
   ef->sample = 0;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   ef->sample = -1;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   ef->sample = 3;
+  dev->Reset();
   ASSERT_NO_THROW(dev->Sample());
 }
 
@@ -280,19 +321,26 @@ TEST(ExpressionTest, GammaDeviate) {
   theta->mean = 1;
   ASSERT_NO_THROW(dev->Validate());
 
+  dev->Reset();
   ASSERT_NO_THROW(dev->Sample());
   k->sample = -1;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   k->sample = 0;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   k->sample = 1;
+  dev->Reset();
   ASSERT_NO_THROW(dev->Sample());
 
   theta->sample = -1;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   theta->sample = 0;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   theta->sample = 1;
+  dev->Reset();
   ASSERT_NO_THROW(dev->Sample());
 }
 
@@ -318,19 +366,26 @@ TEST(ExpressionTest, BetaDeviate) {
   beta->mean = 1;
   ASSERT_NO_THROW(dev->Validate());
 
+  dev->Reset();
   ASSERT_NO_THROW(dev->Sample());
   alpha->sample = -1;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   alpha->sample = 0;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   alpha->sample = 1;
+  dev->Reset();
   ASSERT_NO_THROW(dev->Sample());
 
   beta->sample = -1;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   beta->sample = 0;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   beta->sample = 1;
+  dev->Reset();
   ASSERT_NO_THROW(dev->Sample());
 }
 
@@ -373,20 +428,28 @@ TEST(ExpressionTest, Histogram) {
   w1->mean = 2;
   ASSERT_NO_THROW(dev->Validate());
 
+  dev->Reset();
   ASSERT_NO_THROW(dev->Sample());
   b1->sample = -1;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   b1->sample = 0;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   b1->sample = b2->sample;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   b1->sample = b2->sample + 1;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   b1->sample = 1;
+  dev->Reset();
   ASSERT_NO_THROW(dev->Sample());
 
   w1->sample = -1;
+  dev->Reset();
   EXPECT_THROW(dev->Sample(), InvalidArgument);
   w1->sample = 2;
+  dev->Reset();
   ASSERT_NO_THROW(dev->Sample());
 }

@@ -178,6 +178,17 @@ void Reporter::ReportUncertainty(
     const boost::shared_ptr<const UncertaintyAnalysis>& uncert_analysis,
     std::ostream& out) {
   out << "\nMC time: " << uncert_analysis->p_time_ << "\n";
+  out << "Mean: " << uncert_analysis->mean() << "\n";
+  out << "Standard deviation: " << uncert_analysis->sigma() << "\n";
+  out << "Confidence range(0.95): " << "\n";
+  out << "Distribution:\n";
+  out << "Bin     Number\n";
+  std::vector<int>::const_iterator it;
+  int bin = 1;
+  for (it = uncert_analysis->distribution().begin();
+       it != uncert_analysis->distribution().end(); ++it) {
+    out << bin << "      " << *it << "\n";
+  }
   out.flush();
 }
 

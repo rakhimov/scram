@@ -183,7 +183,9 @@ void RiskAnalysis::Analyze() {
         prob_analyses_.push_back(pa);
 
       } else if (settings_.fta_type_ == "mc") {
-        UncertaintyAnalysisPtr ua(new UncertaintyAnalysis(settings_.num_sums_));
+        UncertaintyAnalysisPtr ua(new UncertaintyAnalysis(settings_.num_sums_,
+                                                          settings_.cut_off_,
+                                                          settings_.trials_));
         ua->UpdateDatabase(it->second->primary_events());
         ua->Analyze(fta->min_cut_sets());
         uncertainty_analyses_.push_back(ua);
