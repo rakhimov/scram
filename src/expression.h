@@ -52,6 +52,7 @@ typedef boost::shared_ptr<scram::Expression> ExpressionPtr;
 /// @enum Units
 /// Provides units for parameters.
 enum Units {
+  kUnitless,
   kBool,
   kInt,
   kFloat,
@@ -71,7 +72,7 @@ class Parameter : public Expression, public Element {
   /// Sets the expression of this basic event.
   /// @param[in] name The name of this variable (Case sensitive).
   /// @param[in] expression The expression to describe this event.
-  explicit Parameter(std::string name) : name_(name) {}
+  explicit Parameter(std::string name) : name_(name), unit_(kUnitless) {}
 
   /// Sets the expression of this parameter.
   /// @param[in] expression The expression to describe this parameter.
@@ -124,7 +125,7 @@ class Parameter : public Expression, public Element {
 /// This is for the system mission time.
 class MissionTime : public Expression {
  public:
-  MissionTime() : mission_time_(-1) {}
+  MissionTime() : mission_time_(-1), unit_(kHours) {}
 
   /// Sets the mission time only once.
   /// @param[in] time The mission time.
