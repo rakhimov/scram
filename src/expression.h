@@ -10,7 +10,6 @@
 #include <boost/shared_ptr.hpp>
 
 #include "element.h"
-#include "random.h"
 
 namespace scram {
 
@@ -101,6 +100,11 @@ class Parameter : public Expression, public Element {
       Expression::sampled_value_ = expression_->Sample();
     }
     return Expression::sampled_value_;
+  }
+
+  inline void Reset() {
+    Expression::sampled_ = false;
+    expression_->Reset();
   }
 
   inline bool IsConstant() { return expression_->IsConstant(); }
@@ -197,6 +201,12 @@ class ExponentialExpression : public Expression {
   /// @throws InvalidArgument if sampled failure rate or time is negative.
   double Sample();
 
+  inline void Reset() {
+    Expression::sampled_ = false;
+    lambda_->Reset();
+    time_->Reset();
+  }
+
   inline bool IsConstant() {
     return lambda_->IsConstant() && time_->IsConstant();
   }
@@ -238,6 +248,14 @@ class GlmExpression : public Expression {
   /// @returns A sampled value.
   /// @throws InvalidArgument if sampled values are invalid.
   double Sample();
+
+  inline void Reset() {
+    Expression::sampled_ = false;
+    gamma_->Reset();
+    lambda_->Reset();
+    time_->Reset();
+    mu_->Reset();
+  }
 
   inline bool IsConstant() {
     return gamma_->IsConstant() && lambda_->IsConstant() &&
@@ -286,6 +304,14 @@ class WeibullExpression : public Expression {
   /// @throws InvalidArgument if sampled values are invalid.
   double Sample();
 
+  inline void Reset() {
+    Expression::sampled_ = false;
+    alpha_->Reset();
+    beta_->Reset();
+    t0_->Reset();
+    time_->Reset();
+  }
+
   inline bool IsConstant() {
     return alpha_->IsConstant() && beta_->IsConstant() && t0_->IsConstant() &&
         time_->IsConstant();
@@ -326,6 +352,12 @@ class UniformDeviate : public Expression {
   /// @throws InvalidArgument if min value is more or equal to max value.
   double Sample();
 
+  inline void Reset() {
+    Expression::sampled_ = false;
+    min_->Reset();
+    max_->Reset();
+  }
+
  private:
   /// Minimum value of the distribution.
   ExpressionPtr min_;
@@ -354,6 +386,12 @@ class NormalDeviate : public Expression {
   /// @returns A sampled value.
   /// @throws InvalidArgument if the sampled sigma is negative or zero.
   double Sample();
+
+  inline void Reset() {
+    Expression::sampled_ = false;
+    mean_->Reset();
+    sigma_->Reset();
+  }
 
  private:
   /// Mean value of normal distribution.
@@ -393,6 +431,13 @@ class LogNormalDeviate : public Expression {
   /// @throws InvalidArgument if (mean <= 0) or (ef <= 0) or (level != 0.95)
   double Sample();
 
+  inline void Reset() {
+    Expression::sampled_ = false;
+    mean_->Reset();
+    ef_->Reset();
+    level_->Reset();
+  }
+
  private:
   /// Mean value of the log-normal distribution.
   ExpressionPtr mean_;
@@ -425,6 +470,12 @@ class GammaDeviate : public Expression {
   /// @throws InvalidArgument if (k <= 0) or (theta <= 0)
   double Sample();
 
+  inline void Reset() {
+    Expression::sampled_ = false;
+    k_->Reset();
+    theta_->Reset();
+  }
+
  private:
   /// The shape parameter of the gamma distribution.
   ExpressionPtr k_;
@@ -455,6 +506,12 @@ class BetaDeviate : public Expression {
   /// @returns A sampled value.
   /// @throws InvalidArgument if (alpha <= 0) or (beta <= 0)
   double Sample();
+
+  inline void Reset() {
+    Expression::sampled_ = false;
+    alpha_->Reset();
+    beta_->Reset();
+  }
 
  private:
   /// The alpha shape parameter of the beta distribution.
@@ -498,6 +555,17 @@ class Histogram : public Expression {
   /// @throws InvalidArgument if the boundaries are not strictly increasing
   ///                         or weights are negative.
   double Sample();
+
+  inline void Reset() {
+    Expression::sampled_ = false;
+    std::vector<ExpressionPtr>::iterator it;
+    for (it = boundaries_.begin(); it != boundaries_.end(); ++it) {
+      (*it)->Reset();
+    }
+    for (it = weights_.begin(); it != weights_.end(); ++it) {
+      (*it)->Reset();
+    }
+  }
 
  private:
   /// Checks if mean values of expressions are stricly increasing.

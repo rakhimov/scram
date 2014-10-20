@@ -6,6 +6,7 @@
 #include <algorithm>
 
 #include "error.h"
+#include "random.h"
 
 typedef boost::shared_ptr<scram::Parameter> ParameterPtr;
 
@@ -201,9 +202,9 @@ double LogNormalDeviate::Sample() {
     Expression::sampled_ = true;
     double mean = mean_->Sample();
     double ef = ef_->Sample();
-    if (ef <= 0) {
+    if (ef < 1) {
       throw InvalidArgument("The Sampled Error Factor for Log-Normal"
-                            " distribution cannot be negative or zero.");
+                            " distribution cannot be less than 1.");
     } else if (mean <= 0) {
       throw InvalidArgument("The sampled mean of Log-Normal distribution"
                             " cannot be negative or zero.");

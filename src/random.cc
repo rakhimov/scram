@@ -27,7 +27,7 @@ double Random::UniformRealGenerator(double min, double max) {
 double Random::TriangularGenerator(double lower, double mode, double upper) {
   assert(lower < mode);
   assert(mode < upper);
-  typedef boost::triangle_distribution<double> TriangularDistribution;
+  typedef boost::random::triangle_distribution<double> TriangularDistribution;
   typedef boost::variate_generator<RandomGenerator&, TriangularDistribution>
       TriangularGenerator;
 
@@ -88,7 +88,7 @@ int Random::BinomialGenerator(int n, double p) {
 
 double Random::NormalGenerator(double mean, double sigma) {
   assert(sigma >= 0);
-  typedef boost::normal_distribution<double> NormalDistribution;
+  typedef boost::random::normal_distribution<double> NormalDistribution;
   typedef boost::variate_generator<RandomGenerator&, NormalDistribution>
       GaussianGenerator;
 
@@ -100,7 +100,7 @@ double Random::NormalGenerator(double mean, double sigma) {
 
 double Random::LogNormalGenerator(double m, double s) {
   assert(s >= 0);
-  typedef boost::lognormal_distribution<double> LogNormalDistribution;
+  typedef boost::random::lognormal_distribution<double> LogNormalDistribution;
   typedef boost::variate_generator<RandomGenerator&, LogNormalDistribution>
       LogNormalGenerator;
 
@@ -113,7 +113,7 @@ double Random::LogNormalGenerator(double m, double s) {
 double Random::GammaGenerator(double k, double theta) {
   assert(k > 0);
   assert(theta > 0);
-  typedef boost::gamma_distribution<double> GammaDistribution;
+  typedef boost::random::gamma_distribution<double> GammaDistribution;
   typedef boost::variate_generator<RandomGenerator&, GammaDistribution>
       GammaGenerator;
 
@@ -126,7 +126,7 @@ double Random::GammaGenerator(double k, double theta) {
 double Random::BetaGenerator(double alpha, double beta) {
   assert(alpha > 0);
   assert(beta > 0);
-  typedef boost::gamma_distribution<double> GammaDistribution;
+  typedef boost::random::gamma_distribution<double> GammaDistribution;
   typedef boost::variate_generator<RandomGenerator&, GammaDistribution>
       GammaGenerator;
 
@@ -157,7 +157,7 @@ double Random::WeibullGenerator(double k, double lambda) {
 
 double Random::ExponentialGenerator(double lambda) {
   assert(lambda > 0);
-  typedef boost::exponential_distribution<double> ExponentialDistribution;
+  typedef boost::random::exponential_distribution<double> ExponentialDistribution;
   typedef boost::variate_generator<RandomGenerator&, ExponentialDistribution>
       ExponentialGenerator;
 
@@ -169,7 +169,7 @@ double Random::ExponentialGenerator(double lambda) {
 
 double Random::PoissonGenerator(double mean) {
   assert(mean > 0);
-  typedef boost::poisson_distribution<int, double> PoissonDistribution;
+  typedef boost::random::poisson_distribution<int, double> PoissonDistribution;
   typedef boost::variate_generator<RandomGenerator&, PoissonDistribution>
       PoissonGenerator;
 

@@ -173,14 +173,14 @@ TEST(RandomTest, LogNormal) {
   for (int i = 0; i < sample_size; ++i) {
     double sample = 0;
     do {
-      sample = Random::LogNormalGenerator(0.3, 0.2);
+      sample = Random::LogNormalGenerator(0, 2);
     } while (sample < 0 || sample >= 1);
     series.insert(sample);
   }
   assert(series.size() == sample_size);
   std::cout << "\n    Log-Normal Distribution of " << sample_size
       << " Real Numbers." << std::endl;
-  std::cout << "        Mean: 0.3    Sigma: 0.2\n" << std::endl;
+  std::cout << "        Mean: 0    Sigma: 2\n" << std::endl;
   PlotDistribution(series);
 }
 
