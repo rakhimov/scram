@@ -103,11 +103,11 @@ void RiskAnalysis::ProcessInput(std::string xml_file) {
   xmlpp::Document* doc = parser->Document();
   const xmlpp::Node* root = doc->get_root_node();
   assert(root->get_name() == "opsa-mef");
-  xmlpp::Node::NodeList roots_children = root->get_children();
-  xmlpp::Node::NodeList::iterator it_ch;
+  xmlpp::NodeSet roots_children = root->find("./*");
+  xmlpp::NodeSet::iterator it_ch;
   for (it_ch = roots_children.begin(); it_ch != roots_children.end(); ++it_ch) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it_ch);
-    if (!element) continue;  // Ignore non-elements.
+    assert(element);
 
     std::string name = element->get_name();
     if (name == "define-fault-tree") {
@@ -336,16 +336,15 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
   if (type == "atleast") i_event->vote_number(vote_number);
 
   // Process children formula of this gate.
-  xmlpp::Node::NodeList events = gate_type->get_children();
-  RiskAnalysis::ProcessFormula(i_event, events);
+  RiskAnalysis::ProcessFormula(i_event, gate_type->find("./*"));
 }
 
 void RiskAnalysis::ProcessFormula(const GatePtr& gate,
-                                  const xmlpp::Node::NodeList& events) {
-  xmlpp::Node::NodeList::const_iterator it;
+                                  const xmlpp::NodeSet& events) {
+  xmlpp::NodeSet::const_iterator it;
   for (it = events.begin(); it != events.end(); ++it) {
     const xmlpp::Element* event = dynamic_cast<const xmlpp::Element*>(*it);
-    if (!event) continue;  // Ignore non-elements.
+    assert(event);
     std::string orig_id = event->get_attribute_value("name");
     boost::trim(orig_id);
     std::string id = orig_id;
@@ -699,6 +698,23 @@ void RiskAnalysis::DefineParameter(const xmlpp::Element* param_node) {
 
 void RiskAnalysis::GetExpression(const xmlpp::Element* expr_element,
                                  ExpressionPtr& expression) {
+  using scram::RiskAnalysis;
+  assert(expr_element);
+  if (GetConstantExpression(expr_element, expression)) {
+  } else if (GetParameterExpression(expr_element, expression)) {
+  } else if (GetDeviateExpression(expr_element, expression)) {
+  } else {
+    std::stringstream msg;
+    msg << "Line " << expr_element->get_line() << ":\n";
+    msg << "Unsupported expression: " << expr_element->get_name();
+    throw ValidationError(msg.str());
+  }
+
+  expressions_.insert(expression);
+}
+
+bool RiskAnalysis::GetConstantExpression(const xmlpp::Element* expr_element,
+                                         ExpressionPtr& expression) {
   assert(expr_element);
   std::string expr_name = expr_element->get_name();
   if (expr_name == "float" || expr_name == "int") {
@@ -712,8 +728,17 @@ void RiskAnalysis::GetExpression(const xmlpp::Element* expr_element,
     boost::trim(val);
     bool state = (val == "true") ? true : false;
     expression = ConstantExpressionPtr(new ConstantExpression(state));
+  } else {
+    return false;
+  }
+  return true;
+}
 
-  } else if (expr_name == "parameter") {
+bool RiskAnalysis::GetParameterExpression(const xmlpp::Element* expr_element,
+                                          ExpressionPtr& expression) {
+  assert(expr_element);
+  std::string expr_name = expr_element->get_name();
+  if (expr_name == "parameter") {
     std::string name = expr_element->get_attribute_value("name");
     /// @todo check for possible unit clashes.
     if (parameters_.count(name)) {
@@ -731,7 +756,17 @@ void RiskAnalysis::GetExpression(const xmlpp::Element* expr_element,
     /// @todo check for possible unit clashes.
     expression = mission_time_;
 
-  } else if (expr_name == "uniform-deviate") {
+  } else {
+    return false;
+  }
+  return true;
+}
+
+bool RiskAnalysis::GetDeviateExpression(const xmlpp::Element* expr_element,
+                                        ExpressionPtr& expression) {
+  assert(expr_element);
+  std::string expr_name = expr_element->get_name();
+  if (expr_name == "uniform-deviate") {
     assert(expr_element->find("./*").size() == 2);
     const xmlpp::Element* element =
         dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[0]);
@@ -913,15 +948,10 @@ void RiskAnalysis::GetExpression(const xmlpp::Element* expr_element,
 
     expression = WeibullExpressionPtr(new WeibullExpression(alpha, beta,
                                                             t0, time));
-
   } else {
-    std::stringstream msg;
-    msg << "Line " << expr_element->get_line() << ":\n";
-    msg << "Unsupported expression: " << expr_element->get_name();
-    throw ValidationError(msg.str());
+    return false;
   }
-
-  expressions_.insert(expression);
+  return true;
 }
 
 bool RiskAnalysis::UpdateIfLateEvent(const EventPtr& event) {
@@ -959,12 +989,12 @@ void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
 
   RiskAnalysis::AttachLabelAndAttributes(ft_node, fault_tree);
 
-  xmlpp::Node::NodeList children = ft_node->get_children();
-  xmlpp::Node::NodeList::iterator it;
+  xmlpp::NodeSet children = ft_node->find("./*");
+  xmlpp::NodeSet::iterator it;
   for (it = children.begin(); it != children.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
 
-    if (!element) continue;  // Ignore non-elements.
+    assert(element);
     std::string name = element->get_name();
 
     if (!prob_requested_ &&
@@ -990,12 +1020,12 @@ void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
 void RiskAnalysis::ProcessModelData(const xmlpp::Element* model_data) {
   prob_requested_ = true;
 
-  xmlpp::Node::NodeList children = model_data->get_children();
-  xmlpp::Node::NodeList::iterator it;
+  xmlpp::NodeSet children = model_data->find("./*");
+  xmlpp::NodeSet::iterator it;
   for (it = children.begin(); it != children.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
+    assert(element);
 
-    if (!element) continue;  // Ignore non-elements.
     std::string name = element->get_name();
 
     if (name == "define-basic-event") {
@@ -1011,8 +1041,25 @@ void RiskAnalysis::ProcessModelData(const xmlpp::Element* model_data) {
 }
 
 void RiskAnalysis::ValidateInitialization() {
-  std::stringstream error_messages;
+  // Validation of essential members of analysis in the first layer.
+  RiskAnalysis::CheckFirstLayer();
 
+  // Validation of fault trees.
+  RiskAnalysis::CheckSecondLayer();
+
+  // Gather orphan primary events for warning.
+  boost::unordered_map<std::string, PrimaryEventPtr>::iterator it_p;
+  for (it_p = primary_events_.begin(); it_p != primary_events_.end(); ++it_p) {
+    try {
+      it_p->second->parents();
+    } catch (ValueError& err) {
+      orphan_primary_events_.insert(it_p->second);
+    }
+  }
+}
+
+void RiskAnalysis::CheckFirstLayer() {
+  std::stringstream error_messages;
   // Checking uninitialized gates.
   if (!tbd_gates_.empty()) {
     error_messages << "Undefined gates:\n";
@@ -1039,56 +1086,14 @@ void RiskAnalysis::ValidateInitialization() {
   if (!error_messages.str().empty()) {
     throw ValidationError(error_messages.str()); }
 
-  // Validation of analysis entities.
+  RiskAnalysis::ValidateExpressions();
+}
+
+void RiskAnalysis::CheckSecondLayer() {
   if (!fault_trees_.empty()) {
     std::map<std::string, FaultTreePtr>::iterator it;
     for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
       it->second->Validate();
-    }
-  }
-
-  // Check for cyclicity in parameters.
-  if (!parameters_.empty()) {
-    boost::unordered_map<std::string, ParameterPtr>::iterator it;
-    for (it = parameters_.begin(); it != parameters_.end(); ++it) {
-      it->second->Validate();
-    }
-  }
-
-  // Validate expressions.
-  if (!expressions_.empty()) {
-    try {
-      std::set<ExpressionPtr>::iterator it;
-      for (it = expressions_.begin(); it != expressions_.end(); ++it) {
-        (*it)->Validate();
-      }
-    } catch (InvalidArgument& err) {
-      throw ValidationError(err.msg());
-    }
-  }
-
-  // Check probability values for primary events.
-  if (prob_requested_) {
-    std::stringstream msg;
-    msg << "";
-    boost::unordered_map<std::string, PrimaryEventPtr>::iterator it;
-    for (it = primary_events_.begin(); it != primary_events_.end(); ++it) {
-      double p = it->second->p();
-      if (p < 0 || p > 1) msg << it->second->orig_id() << " : " << p << "\n";
-    }
-    if (msg.str() != "") {
-      std::string head = "Invalid probabilities detected:\n";
-      throw ValidationError(head + msg.str());
-    }
-  }
-
-  // Gather orphan primary events for warning.
-  boost::unordered_map<std::string, PrimaryEventPtr>::iterator it_p;
-  for (it_p = primary_events_.begin(); it_p != primary_events_.end(); ++it_p) {
-    try {
-      it_p->second->parents();
-    } catch (ValueError& err) {
-      orphan_primary_events_.insert(it_p->second);
     }
   }
 }
@@ -1252,6 +1257,43 @@ std::string RiskAnalysis::CheckMissingParameters() {
   }
 
   return msg;
+}
+
+void RiskAnalysis::ValidateExpressions() {
+  // Check for cyclicity in parameters.
+  if (!parameters_.empty()) {
+    boost::unordered_map<std::string, ParameterPtr>::iterator it;
+    for (it = parameters_.begin(); it != parameters_.end(); ++it) {
+      it->second->Validate();
+    }
+  }
+
+  // Validate expressions.
+  if (!expressions_.empty()) {
+    try {
+      std::set<ExpressionPtr>::iterator it;
+      for (it = expressions_.begin(); it != expressions_.end(); ++it) {
+        (*it)->Validate();
+      }
+    } catch (InvalidArgument& err) {
+      throw ValidationError(err.msg());
+    }
+  }
+
+  // Check probability values for primary events.
+  if (prob_requested_) {
+    std::stringstream msg;
+    msg << "";
+    boost::unordered_map<std::string, PrimaryEventPtr>::iterator it;
+    for (it = primary_events_.begin(); it != primary_events_.end(); ++it) {
+      double p = it->second->p();
+      if (p < 0 || p > 1) msg << it->second->orig_id() << " : " << p << "\n";
+    }
+    if (msg.str() != "") {
+      std::string head = "Invalid probabilities detected:\n";
+      throw ValidationError(head + msg.str());
+    }
+  }
 }
 
 }  // namespace scram

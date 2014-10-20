@@ -110,7 +110,7 @@ class RiskAnalysis {
   /// Currently only one layer formula is supported.
   /// @param[in] gate The main gate to be defined with the formula.
   /// @param[in] events The xml node list of children of the gate definition.
-  void ProcessFormula(const GatePtr& gate, const xmlpp::Node::NodeList& events);
+  void ProcessFormula(const GatePtr& gate, const xmlpp::NodeSet& events);
 
   /// Process [event name=id] cases inside of a one layer gate description.
   /// @param[in] gate The main gate to be defined with the event as its child.
@@ -163,6 +163,27 @@ class RiskAnalysis {
   void GetExpression(const xmlpp::Element* expr_element,
                      ExpressionPtr& expression);
 
+  /// Processes Constant Expression definitions in input file.
+  /// @param[in] expr_element XML expression element containing the definition.
+  /// @param[out] expression Expression described in XML input expression node.
+  /// @returns true if expression was found and processed.
+  bool GetConstantExpression(const xmlpp::Element* expr_element,
+                             ExpressionPtr& expression);
+
+  /// Processes Prameter Expression definitions in input file.
+  /// @param[in] expr_element XML expression element containing the definition.
+  /// @param[out] expression Expression described in XML input expression node.
+  /// @returns true if expression was found and processed.
+  bool GetParameterExpression(const xmlpp::Element* expr_element,
+                              ExpressionPtr& expression);
+
+  /// Processes Distribution deviate expression definitions in input file.
+  /// @param[in] expr_element XML expression element containing the definition.
+  /// @param[out] expression Expression described in XML input expression node.
+  /// @returns true if expression was found and processed.
+  bool GetDeviateExpression(const xmlpp::Element* expr_element,
+                            ExpressionPtr& expression);
+
   /// Manages events that are defined late. That is, the id appears as
   /// [event name="id"] before any of definition inside a formula.
   /// The late definition should update if this event is a gate or primary
@@ -181,6 +202,21 @@ class RiskAnalysis {
   /// Processes model data with definitions of events and analysis.
   /// @param[in] model_data XML node with model data description.
   void ProcessModelData(const xmlpp::Element* model_data);
+
+  /// Validates if the initialization of the analysis is successful.
+  /// This validation process also generates optional warnings.
+  /// @throws ValidationError if the initialization contains mistakes.
+  void ValidateInitialization();
+
+  /// Checks for problems with gates, events, expressions, and parameters.
+  /// @throws ValidationError if the first layer members contain mistakes.
+  void CheckFirstLayer();
+
+  /// Checks for problems with analysis containers, such as fault trees,
+  /// event trees, common cause groups, and others that use the first layer
+  /// members.
+  /// @throws ValidationError if the second layer members contain mistakes.
+  void CheckSecondLayer();
 
   /// Verifies if gates are initialized correctly.
   /// @returns A warning message with a list of all bad gates with problems.
@@ -206,9 +242,10 @@ class RiskAnalysis {
   /// @returns An empty string for no problems detected.
   std::string CheckMissingParameters();
 
-  /// Validates if the initialization of the analysis is successful.
-  /// @throws ValidationError if the initialization contains mistakes.
-  void ValidateInitialization();
+  /// Validates expressions and anything that is dependent on them, such
+  /// as paramters and basic events.
+  /// @throws ValidationError if any problems detected with expressions.
+  void ValidateExpressions();
 
   /// Container of original names of to be determined events
   /// with capitalizations.

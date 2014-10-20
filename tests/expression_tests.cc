@@ -10,7 +10,7 @@ using namespace scram;
 // values and samples in a hard coded way.
 class OpenExpression : public Expression {
  public:
-  OpenExpression(double m = 1, double s = 1) : mean(m), sample(s) {}
+  explicit OpenExpression(double m = 1, double s = 1) : mean(m), sample(s) {}
   double mean;
   double sample;
   inline double Mean() { return mean; }
@@ -258,7 +258,7 @@ TEST(ExpressionTest, LogNormalDeviate) {
   ExpressionPtr dev;
   ASSERT_NO_THROW(dev = ExpressionPtr(new LogNormalDeviate(mean, ef, level)));
 
-  level->mean = 0.5; // Unsupported level.
+  level->mean = 0.5;  // Unsupported level.
   EXPECT_THROW(dev->Validate(), InvalidArgument);
   level->mean = 0.95;
   ASSERT_NO_THROW(dev->Validate());

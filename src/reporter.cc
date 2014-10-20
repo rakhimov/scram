@@ -221,7 +221,9 @@ void Reporter::ReportMcsProb(
     for (it_min = prob_analysis->min_cut_sets_.begin();
          it_min != prob_analysis->min_cut_sets_.end(); ++it_min) {
       if (it_min->size() == order) {
-        order_sets.insert(std::make_pair(prob_analysis->prob_of_min_sets_.find(*it_min)->second,
+        order_sets.insert(
+            std::make_pair(
+                prob_analysis->prob_of_min_sets_.find(*it_min)->second,
                             *it_min));
       }
     }
@@ -343,7 +345,8 @@ void Reporter::ReportImportance(
        it_contr != prob_analysis->ordered_primaries_.rend(); ++it_contr) {
     out << std::left;
     out << std::setw(40)
-        << prob_analysis->primary_events_.find(it_contr->second)->second->orig_id()
+        << prob_analysis->primary_events_.find(it_contr->second)->second
+              ->orig_id()
         << std::setw(20) << it_contr->first
         << 100 * it_contr->first / prob_analysis->p_total_ << "%\n";
     out.flush();
