@@ -13,6 +13,7 @@
 
 #include "fault_tree_analysis.h"
 #include "probability_analysis.h"
+#include "uncertainty_analysis.h"
 
 typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
 
@@ -25,15 +26,14 @@ class Reporter {
   /// @param[in] orphan_primary_events Container of orphan events.
   /// @param[out] out Output stream.
   void ReportOrphans(
-      const std::set<boost::shared_ptr<scram::PrimaryEvent> >&
-          orphan_primary_events,
+      const std::set<boost::shared_ptr<PrimaryEvent> >& orphan_primary_events,
       std::ostream& out);
 
   /// Reports the results of analysis to a specified output destination.
   /// @param[in] fta Fault Tree Analysis with results.
   /// @param[out] out Output stream.
   /// @note This function must be called only after analysis is done.
-  void ReportFta(const boost::shared_ptr<const scram::FaultTreeAnalysis>& fta,
+  void ReportFta(const boost::shared_ptr<const FaultTreeAnalysis>& fta,
                  std::ostream& out);
 
   /// Reports the results of probability analysis with minimal cut sets.
@@ -41,7 +41,15 @@ class Reporter {
   /// @param[out] out Output stream.
   /// @note This function must be called only after analysis is done.
   void ReportProbability(
-      const boost::shared_ptr<const scram::ProbabilityAnalysis>& prob_analysis,
+      const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
+      std::ostream& out);
+
+  /// Reports the results of uncertainty analysis with minimal cut sets.
+  /// @param[in] uncert_analysis UncertaintyAnalysis with results.
+  /// @param[out] out Output stream.
+  /// @note This function must be called only after analysis is done.
+  void ReportUncertainty(
+      const boost::shared_ptr<const UncertaintyAnalysis>& uncert_analysis,
       std::ostream& out);
 
  private:
@@ -58,7 +66,7 @@ class Reporter {
   /// @param[in] prob_analysis ProbabilityAnalysis with results.
   /// @param[out] out Output stream.
   void ReportMcsProb(
-      const boost::shared_ptr<const scram::ProbabilityAnalysis>& prob_analysis,
+      const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
       std::ostream& out);
 
   /// Reports results of importance analysis in probability analysis.
@@ -66,7 +74,7 @@ class Reporter {
   /// Reports as "Primary Event Analysis".
   /// @param[out] out Output stream.
   void ReportImportance(
-      const boost::shared_ptr<const scram::ProbabilityAnalysis>& prob_analysis,
+      const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
       std::ostream& out);
 };
 

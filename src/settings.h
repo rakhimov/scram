@@ -43,10 +43,20 @@ class Settings {
   Settings& approx(std::string approx);
 
   /// Sets the type of fault tree analysis.
-  /// @param[in] analysis A type of analysis:
+  /// @param[in] analysis A type of analysis: default or mc.
   /// @returns Rerefence to this object.
   /// @throws ValueError if the analysis is not recognized.
   Settings& fta_type(std::string analysis);
+
+  /// Sets the number of trials for Monte Carlo simulations.
+  /// @param[in] trials A positive number.
+  /// @returns Rerefence to this object.
+  Settings& trials(int trials);
+
+  /// Sets the system mission time.
+  /// @param[in] time A positive number in hours by default.
+  /// @returns Rerefence to this object.
+  Settings& mission_time(double time);
 
  private:
   /// Limit on the order of minimal cut sets.
@@ -63,6 +73,12 @@ class Settings {
 
   /// The type of fault tree analysis.
   std::string fta_type_;
+
+  /// The number of trials for Monte Carlo simulations.
+  int trials_;
+
+  /// System mission time.
+  double mission_time_;
 };
 
 }  // namespace scram

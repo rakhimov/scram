@@ -11,7 +11,6 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
-
 #include <boost/container/flat_set.hpp>
 
 #include <event.h>
@@ -37,8 +36,8 @@ class ProbabilityAnalysis {
   /// @param[in] approx The kind of approximation for probability calculations.
   /// @param[in] nsums The number of sums in the probability series.
   /// @param[in] cut_off The cut-off probability for cut sets.
-  /// @throws ValueError if any of the parameters are invalid.
-  ProbabilityAnalysis(std::string approx = "no", int nsums = 1000000,
+  /// @throws InvalidArgument if any of the parameters is invalid.
+  ProbabilityAnalysis(std::string approx = "no", int nsums = 7,
                       double cut_off = 1e-8);
 
   /// Set the databases of primary events with probabilities.
@@ -191,6 +190,11 @@ class ProbabilityAnalysis {
   std::vector<PrimaryEventPtr> int_to_primary_;  ///< Indices to primary events.
   /// Indices of primary events.
   boost::unordered_map<std::string, int> primary_to_int_;
+  /// Indices of house events with state true.
+  std::set<int> true_house_events_;
+  /// Indices of house events with state false.
+  std::set<int> false_house_events_;
+
   std::vector<double> iprobs_;  ///< Holds probabilities of primary events.
 
   /// Minimal cut sets passed for analysis.

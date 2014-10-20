@@ -6,11 +6,11 @@
 
 typedef boost::mt19937 RandomGenerator;
 
+boost::mt19937 scram::Random::rng_;
+
 namespace scram {
 
-Random::Random(int seed) {
-  rng_.seed(static_cast<unsigned>(seed));
-}
+void Random::seed(int seed) { Random::rng_.seed(static_cast<unsigned>(seed)); }
 
 double Random::UniformRealGenerator(double min, double max) {
   assert(min < max);
@@ -98,13 +98,13 @@ double Random::NormalGenerator(double mean, double sigma) {
   return generator();
 }
 
-double Random::LogNormalGenerator(double mean, double sigma) {
-  assert(sigma >= 0);
+double Random::LogNormalGenerator(double m, double s) {
+  assert(s >= 0);
   typedef boost::lognormal_distribution<double> LogNormalDistribution;
   typedef boost::variate_generator<RandomGenerator&, LogNormalDistribution>
       LogNormalGenerator;
 
-  LogNormalDistribution lognorm_dist(mean, sigma);
+  LogNormalDistribution lognorm_dist(m, s);
   LogNormalGenerator generator(rng_, lognorm_dist);
 
   return generator();

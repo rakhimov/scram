@@ -16,22 +16,22 @@ namespace scram {
 /// parameters are valid. For example, standard deviation cannot be negative.
 class Random {
  public:
-  /// The constructor for Random distibutions.
+  /// Sets the seet of the underlying random number generator.
   /// @param[in] seed The seed for RNGs.
-  explicit Random(int seed);
+  static void seed(int seed);
 
   /// Rng from uniform distribution.
   /// @param[in] min Lower bound.
   /// @param[in] max Upper bound.
   /// @returns A sampled value.
-  double UniformRealGenerator(double min, double max);
+  static double UniformRealGenerator(double min, double max);
 
   /// Rng from a triangular distribution.
   /// @param[in] lower Lower bound.
   /// @param[in] mode The peak of the distribution.
   /// @param[in] upper Upper bound.
   /// @returns A sampled value.
-  double TriangularGenerator(double lower, double mode, double upper);
+  static double TriangularGenerator(double lower, double mode, double upper);
 
   /// Rng from a piecewise linear distribution.
   /// @param[in] intervals Interval points for the distribution.
@@ -40,8 +40,8 @@ class Random {
   ///                    must be equal to the number of points.
   ///                    Extra weights are ignored.
   /// @returns A sampled value.
-  double PiecewiseLinearGenerator(const std::vector<double>& intervals,
-                                  const std::vector<double>& weights);
+  static double PiecewiseLinearGenerator(const std::vector<double>& intervals,
+                                         const std::vector<double>& weights);
 
   /// Rng from a histogram distribution.
   /// @param[in] intervals Interval points for the distribution.
@@ -50,8 +50,8 @@ class Random {
   ///                    must be one less than the number of points.
   ///                    Extra weights are ignored.
   /// @returns A sampled value.
-  double HistogramGenerator(const std::vector<double>& intervals,
-                            const std::vector<double>& weights);
+  static double HistogramGenerator(const std::vector<double>& intervals,
+                                   const std::vector<double>& weights);
 
   /// Rng from a discrete distribution.
   /// @param[in] values Discrete values.
@@ -59,8 +59,8 @@ class Random {
   ///                    be the same as the values vector size.
   /// @returns A sample Value from the value vector.
   template<class T>
-  inline T DiscreteGenerator(const std::vector<T>& values,
-                             const std::vector<double>& weights) {
+  static inline T DiscreteGenerator(const std::vector<T>& values,
+                                    const std::vector<double>& weights) {
     assert(values.size() == weights.size());
     return values[DiscreteGenerator(weights)];
   }
@@ -69,19 +69,19 @@ class Random {
   /// @param[in] n Number of trials.
   /// @param[in] p Probability of success.
   /// @returns Number of sucesses.
-  int BinomialGenerator(int n, double p);
+  static int BinomialGenerator(int n, double p);
 
   /// Rng from a normal distribution.
   /// @param[in] mean The mean of the distribution.
   /// @param[in] sigma The standard deviation of the distribution.
   /// @returns A sampled value.
-  double NormalGenerator(double mean, double sigma);
+  static double NormalGenerator(double mean, double sigma);
 
   /// Rng from lognormal distribution.
-  /// @param[in] mean The mean of the distribution.
-  /// @param[in] sigma The standard deviation of the distribution.
+  /// @param[in] m The m location parameter of the distribution.
+  /// @param[in] s The s scale factor of the distribution.
   /// @returns A sampled value.
-  double LogNormalGenerator(double mean, double sigma);
+  static double LogNormalGenerator(double m, double s);
 
   /// Rng from Gamma distribution.
   /// @param[in] k Shape parameter of Gamma distribution.
@@ -89,52 +89,52 @@ class Random {
   /// @returns A sampled value.
   /// @note The rate parameter is 1/theta, so for alpha/beta system, pass
   /// 1/beta as a second paramter for this generator.
-  double GammaGenerator(double k, double theta);
+  static double GammaGenerator(double k, double theta);
 
   /// Rng from Beta distribution.
   /// @param[in] alpha Alpha shape parameter of Beta distribution.
   /// @param[in] beta Beta shape parameter of Beta distribution.
   /// @returns A sampled value.
-  double BetaGenerator(double alpha, double beta);
+  static double BetaGenerator(double alpha, double beta);
 
   /// Rng from Weibull distribution.
   /// @param[in] k Shape parameter of Weibull distribution.
   /// @param[in] lambda Scale parameter of Weibull distribution.
   /// @returns A sampled value.
-  double WeibullGenerator(double k, double lambda);
+  static double WeibullGenerator(double k, double lambda);
 
   /// Rng from Exponential distribution.
   /// @param[in] lambda Rate parameter of Exponential distribution.
   /// @returns A sampled value.
-  double ExponentialGenerator(double lambda);
+  static double ExponentialGenerator(double lambda);
 
   /// Rng from Poisson distribution.
   /// @param[in] mean The mean value for Poisson distribution.
   /// @returns A sampled value.
-  double PoissonGenerator(double mean);
+  static double PoissonGenerator(double mean);
 
   /// Rng from log-uniform distribution.
   /// @param[in] min Lower bound.
   /// @param[in] max Upper bound.
   /// @returns A sampled value.
-  double LogUniformGenerator(double min, double max);
+  static double LogUniformGenerator(double min, double max);
 
   /// Rng from log-triangular distribution.
   /// @param[in] lower Lower bound.
   /// @param[in] mode The peak of the distribution.
   /// @param[in] upper Upper bound.
   /// @returns A sampled value.
-  double LogTriangularGenerator(double lower, double mode, double upper);
+  static double LogTriangularGenerator(double lower, double mode, double upper);
 
  private:
   /// Rng from a discrete distribution.
   /// @param[in] weights Weights for the range [0, n), where n is the size
   ///                    of the vector.
   /// @returns Integer in the range [0, 1).
-  int DiscreteGenerator(const std::vector<double>& weights);
+  static int DiscreteGenerator(const std::vector<double>& weights);
 
   /// The random number generator.
-  boost::mt19937 rng_;
+  static boost::mt19937 rng_;
 };
 
 }  // namespace scram

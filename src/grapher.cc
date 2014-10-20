@@ -42,7 +42,7 @@ void Grapher::GraphFaultTree(const FaultTreePtr& fault_tree,
                                  1, std::string::npos);
   std::ofstream out(output_path.c_str());
   if (!out.good()) {
-    throw scram::IOError(output_path +  " : Cannot write the graphing file.");
+    throw IOError(output_path +  " : Cannot write the graphing file.");
   }
 
   boost::to_upper(graph_name);
@@ -76,10 +76,16 @@ void Grapher::GraphFaultTree(const FaultTreePtr& fault_tree,
   gate_colors.insert(std::make_pair("nor", "magenta"));
   gate_colors.insert(std::make_pair("nand", "orange"));
   std::string gate = top_event_->type();
+
+  // Special case for inhibit gate.
+  if (gate == "and" && top_event_->HasAttribute("flavor"))
+    gate = top_event_->GetAttribute("flavor").value;
+
   std::string gate_color = "black";
   if (gate_colors.count(gate)) {
     gate_color = gate_colors.find(gate)->second;
   }
+
   boost::to_upper(gate);
   out << "\"" <<  top_event_->orig_id()
       << "_R0\" [shape=ellipse, "
@@ -96,6 +102,12 @@ void Grapher::GraphFaultTree(const FaultTreePtr& fault_tree,
   std::map<std::string, int>::iterator it;
   for (it = in_repeat.begin(); it != in_repeat.end(); ++it) {
     gate = inter_events_.find(it->first)->second->type();
+
+    if (inter_events_.find(it->first)->second->HasAttribute("flavor") &&
+        gate == "and")
+      gate =
+          inter_events_.find(it->first)->second->GetAttribute("flavor").value;
+
     std::string gate_color = "black";
     if (gate_colors.count(gate)) {
       gate_color = gate_colors.find(gate)->second;
@@ -116,7 +128,7 @@ void Grapher::GraphFaultTree(const FaultTreePtr& fault_tree,
           << "color=" << gate_color << ", "
           << "label=\"" << orig_name << "\\n"
           << "{ " << gate;
-      if (gate == "VOTE" || gate == "ATLEAST") {
+      if (gate == "ATLEAST") {
         out << " " << inter_events_.find(it->first)->second->vote_number()
             << "/" << inter_events_.find(it->first)->second->children().size();
       }
@@ -135,6 +147,12 @@ void Grapher::GraphFaultTree(const FaultTreePtr& fault_tree,
       std::string id = it->first;
       std::string type = primary_events_.find(id)->second->type();
       std::string orig_name = primary_events_.find(id)->second->orig_id();
+      // Detect undeveloped or conditional event.
+      if (type == "basic" &&
+          primary_events_.find(id)->second->HasAttribute("flavor")) {
+        type = primary_events_.find(id)->second->GetAttribute("flavor").value;
+      }
+
       out << "\"" << orig_name << "_R" << i
           << "\" [shape=circle, "
           << "height=1, fontsize=10, fixedsize=true, "

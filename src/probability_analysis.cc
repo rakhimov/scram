@@ -6,6 +6,7 @@
 #include <ctime>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/pointer_cast.hpp>
 
 #include "error.h"
 
@@ -22,7 +23,7 @@ ProbabilityAnalysis::ProbabilityAnalysis(std::string approx, int nsums,
   if (nsums < 1) {
     std::string msg = "The number of sums in the probability calculation "
                       "cannot be less than one";
-    throw scram::ValueError(msg);
+    throw InvalidArgument(msg);
   }
   nsums_ = nsums;
 
@@ -30,14 +31,14 @@ ProbabilityAnalysis::ProbabilityAnalysis(std::string approx, int nsums,
   if (cut_off < 0 || cut_off > 1) {
     std::string msg = "The cut-off probability cannot be negative or"
                       " more than 1.";
-    throw scram::ValueError(msg);
+    throw InvalidArgument(msg);
   }
   cut_off_ = cut_off;
 
   // Check the right approximation for probability calculations.
   if (approx != "no" && approx != "rare" && approx != "mcub") {
     std::string msg = "The probability approximation is not recognized.";
-    throw scram::ValueError(msg);
+    throw InvalidArgument(msg);
   }
   approx_ = approx;
 }
@@ -64,8 +65,19 @@ void ProbabilityAnalysis::Analyze(
   for (it_min = imcs_.begin(); it_min != imcs_.end(); ++it_min) {
     // Calculate a probability of a set with AND relationship.
     double p_sub_set = ProbabilityAnalysis::ProbAnd(*it_min);
-    if (p_sub_set > cut_off_) {
-      flat_set<int> mcs(it_min->begin(), it_min->end());
+    if (p_sub_set > cut_off_) {  // This also removes false state house events.
+      // Remove house events that have probability of 1.
+      flat_set<int> mcs;
+      std::set<int>::iterator it;
+      for (it = it_min->begin(); it != it_min->end(); ++it) {
+        if (*it > 0) {
+          if (true_house_events_.count(*it)) continue;
+          mcs.insert(mcs.end(), *it);
+        } else {
+          if (false_house_events_.count(-*it)) continue;
+          mcs.insert(mcs.end(), *it);
+        }
+      }
       mcs_for_prob.insert(mcs);
     }
 
@@ -141,6 +153,13 @@ void ProbabilityAnalysis::AssignIndices() {
   iprobs_.push_back(0);
   for (itp = primary_events_.begin(); itp != primary_events_.end(); ++itp) {
     int_to_primary_.push_back(itp->second);
+    if (boost::dynamic_pointer_cast<HouseEvent>(itp->second)) {
+      if (itp->second->p() == 0) {
+        false_house_events_.insert(false_house_events_.end(), j);
+      } else {
+        true_house_events_.insert(true_house_events_.end(), j);
+      }
+    }
     primary_to_int_.insert(std::make_pair(itp->second->id(), j));
     iprobs_.push_back(itp->second->p());
     ++j;
@@ -225,7 +244,8 @@ double ProbabilityAnalysis::ProbOr(
       ProbabilityAnalysis::ProbOr(nsums - 1, &combo_sets);
 }
 
-double ProbabilityAnalysis::ProbAnd(const boost::container::flat_set<int>& min_cut_set) {
+double ProbabilityAnalysis::ProbAnd(
+    const boost::container::flat_set<int>& min_cut_set) {
   // Test just in case the min cut set is empty.
   if (min_cut_set.empty()) return 0;
 

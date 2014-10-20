@@ -22,13 +22,12 @@ namespace pt = boost::posix_time;
 namespace scram {
 
 void Reporter::ReportOrphans(
-    const std::set<boost::shared_ptr<scram::PrimaryEvent> >&
-        orphan_primary_events,
+    const std::set<boost::shared_ptr<PrimaryEvent> >& orphan_primary_events,
     std::ostream& out) {
   if (orphan_primary_events.empty()) return;
 
   out << "WARNING! Found unused primary events:\n";
-  std::set<boost::shared_ptr<scram::PrimaryEvent> >::const_iterator it;
+  std::set<boost::shared_ptr<PrimaryEvent> >::const_iterator it;
   for (it = orphan_primary_events.begin(); it != orphan_primary_events.end();
        ++it) {
     out << "    " << (*it)->orig_id() << "\n";
@@ -37,7 +36,7 @@ void Reporter::ReportOrphans(
 }
 
 void Reporter::ReportFta(
-    const boost::shared_ptr<const scram::FaultTreeAnalysis>& fta,
+    const boost::shared_ptr<const FaultTreeAnalysis>& fta,
     std::ostream& out) {
   // An iterator for a set with ids of events.
   std::set<std::string>::const_iterator it_set;
@@ -130,7 +129,7 @@ void Reporter::ReportFta(
 }
 
 void Reporter::ReportProbability(
-    const boost::shared_ptr<const scram::ProbabilityAnalysis>& prob_analysis,
+    const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
     std::ostream& out) {
   // Print warnings of calculations.
   if (prob_analysis->warnings_ != "") {
@@ -157,10 +156,12 @@ void Reporter::ReportProbability(
 
   // Print total probability.
   out << "\n================================\n";
-  out <<  "Total Probability: " << std::setprecision(7) << prob_analysis->p_total_;
+  out <<  "Total Probability: " << std::setprecision(7)
+      << prob_analysis->p_total_;
   out << "\n================================\n\n";
 
-  if (prob_analysis->p_total_ > 1) out << "WARNING: Total Probability is invalid.\n\n";
+  if (prob_analysis->p_total_ > 1)
+    out << "WARNING: Total Probability is invalid.\n\n";
 
   out.flush();
 
@@ -173,8 +174,26 @@ void Reporter::ReportProbability(
   out.flush();
 }
 
+void Reporter::ReportUncertainty(
+    const boost::shared_ptr<const UncertaintyAnalysis>& uncert_analysis,
+    std::ostream& out) {
+  out << "\nMC time: " << uncert_analysis->p_time_ << "\n";
+  out << "Mean: " << uncert_analysis->mean() << "\n";
+  out << "Standard deviation: " << uncert_analysis->sigma() << "\n";
+  out << "Confidence range(0.95): " << "\n";
+  out << "Distribution:\n";
+  out << "Bin     Number\n";
+  std::vector<int>::const_iterator it;
+  int bin = 1;
+  for (it = uncert_analysis->distribution().begin();
+       it != uncert_analysis->distribution().end(); ++it) {
+    out << bin << "      " << *it << "\n";
+  }
+  out.flush();
+}
+
 void Reporter::ReportMcsProb(
-    const boost::shared_ptr<const scram::ProbabilityAnalysis>& prob_analysis,
+    const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
     std::ostream& out) {
   // An iterator for a set with ids of events.
   std::set<std::string>::const_iterator it_set;
@@ -209,9 +228,8 @@ void Reporter::ReportMcsProb(
     for (it_min = prob_analysis->min_cut_sets_.begin();
          it_min != prob_analysis->min_cut_sets_.end(); ++it_min) {
       if (it_min->size() == order) {
-        order_sets.insert(
-            std::make_pair(prob_analysis->prob_of_min_sets_.find(*it_min)->second,
-                           *it_min));
+        order_sets.insert(std::make_pair(prob_analysis->prob_of_min_sets_.find(*it_min)->second,
+                            *it_min));
       }
     }
     if (!order_sets.empty()) {
@@ -319,20 +337,20 @@ void Reporter::McsToPrint(
 }
 
 void Reporter::ReportImportance(
-    const boost::shared_ptr<const scram::ProbabilityAnalysis>& prob_analysis,
+    const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
     std::ostream& out) {
   // Primary event analysis.
   out << "\nPrimary Event Analysis:\n";
   out << "-----------------------\n";
   out << std::left;
-  out << std::setw(20) << "Event" << std::setw(20) << "Failure Contrib."
+  out << std::setw(40) << "Event" << std::setw(20) << "Failure Contrib."
       << "Importance\n\n";
   std::multimap < double, std::string >::const_reverse_iterator it_contr;
   for (it_contr = prob_analysis->ordered_primaries_.rbegin();
        it_contr != prob_analysis->ordered_primaries_.rend(); ++it_contr) {
     out << std::left;
-    out << std::setw(20)
-        << prob_analysis->primary_events_.find(it_contr->second) ->second->orig_id()
+    out << std::setw(40)
+        << prob_analysis->primary_events_.find(it_contr->second)->second->orig_id()
         << std::setw(20) << it_contr->first
         << 100 * it_contr->first / prob_analysis->p_total_ << "%\n";
     out.flush();

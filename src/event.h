@@ -9,6 +9,10 @@
 #include <boost/shared_ptr.hpp>
 
 #include "element.h"
+#include "expression.h"
+#include "error.h"
+
+typedef boost::shared_ptr<scram::Expression> ExpressionPtr;
 
 namespace scram {
 
@@ -36,11 +40,11 @@ class Event : public Element {
   /// Adds a parent into the parent map.
   /// @param[in] parent One of the gate parents of this event.
   /// @throws ValueError if the parent is being re-inserted.
-  void AddParent(const boost::shared_ptr<scram::Gate>& parent);
+  void AddParent(const boost::shared_ptr<Gate>& parent);
 
   /// @returns All the parents of this gate event.
   /// @throws ValueError if there are no parents for this gate event.
-  const std::map<std::string, boost::shared_ptr<scram::Gate> >& parents();
+  const std::map<std::string, boost::shared_ptr<Gate> >& parents();
 
   virtual ~Event() {}
 
@@ -52,12 +56,12 @@ class Event : public Element {
   std::string orig_id_;
 
   /// The parents of this primary event.
-  std::map<std::string, boost::shared_ptr<scram::Gate> > parents_;
+  std::map<std::string, boost::shared_ptr<Gate> > parents_;
 };
 
 /// @class Gate
 /// A representation of a gate in a fault tree.
-class Gate : public scram::Event {
+class Gate : public Event {
  public:
   /// Constructs with an id and a gate.
   /// @param[in] id The identifying name for this event.
@@ -86,16 +90,16 @@ class Gate : public scram::Event {
   /// Adds a child event into the children list.
   /// @param[in] child A pointer to a child event.
   /// @throws ValueError if the child is being re-inserted.
-  void AddChild(const boost::shared_ptr<scram::Event>& child);
+  void AddChild(const boost::shared_ptr<Event>& child);
 
   /// Adds children of another gate to this gate.
   /// If this gate exists as a child then it is removed from the children.
   /// @param[in] gate The gate which children are to be added to this gate.
-  void MergeGate(const boost::shared_ptr<scram::Gate>& gate);
+  void MergeGate(const boost::shared_ptr<Gate>& gate);
 
   /// @returns The children of this gate.
   /// @throws ValueError if there are no children.
-  const std::map<std::string, boost::shared_ptr<scram::Event> >& children();
+  const std::map<std::string, boost::shared_ptr<Event> >& children();
 
  private:
   /// Gate type.
@@ -105,68 +109,113 @@ class Gate : public scram::Event {
   int vote_number_;
 
   /// The children of this gate.
-  std::map<std::string, boost::shared_ptr<scram::Event> > children_;
+  std::map<std::string, boost::shared_ptr<Event> > children_;
 };
 
 /// @class PrimaryEvent
 /// This is a base class for events that can cause faults.
 /// This class represents Base, House, Undeveloped, and other events.
-class PrimaryEvent : public scram::Event {
+class PrimaryEvent : public Event {
  public:
   /// Constructs with id name and probability.
   /// @param[in] id The identifying name of this primary event.
   /// @param[in] type The type of the event.
-  explicit PrimaryEvent(std::string id, std::string type = "");
+  explicit PrimaryEvent(std::string id, std::string type = "")
+      : type_(type),
+        Event(id) {}
 
   virtual ~PrimaryEvent() {}
 
   /// @returns The type of the primary event.
   /// @throws ValueError if the type is not yet set.
-  const std::string& type();
+  inline const std::string& type() const { return type_; }
 
-  /// Sets the type.
-  /// @param[in] new_type The type for this event.
-  /// @throws ValueError if type is being re-assigned.
-  void type(std::string new_type);
+  /// @returns The mean probability of failure of this event.
+  /// @throws IllegalOperation if the base class function is called where
+  ///                          a derived class operation is meant.
+  virtual double p() const {
+    throw IllegalOperation("Primary event is not fully defined.");
+  }
 
-  /// @returns The probability of failure of this event.
-  /// @throws ValueError if probability is not yet set.
-  double p();
-
-  /// Sets the total probability for P-model.
-  /// @param[in] p The total failure probability.
-  /// @throws ValueError if probability is not a valid value or re-assigned.
-  virtual void p(double p);
+  /// Samples probability value from its probability distribution.
+  /// @returns Sampled value.
+  /// @throws IllegalOperation if the base class function is called where
+  ///                          a derived class operation is meant.
+  virtual double SampleProbability() {
+    throw IllegalOperation("Primary event is not fully defined.");
+  }
 
  private:
   /// The type of the primary event.
   std::string type_;
-
-  /// The total failure probability of the primary event.
-  double p_;
 };
 
 /// @class BasicEvent
 /// Representation of a basic event in a fault tree.
-class BasicEvent: public scram::PrimaryEvent {
+class BasicEvent: public PrimaryEvent {
  public:
   /// Constructs with id name.
   /// @param[in] id The identifying name of this basic event.
-  explicit BasicEvent(std::string id);
+  explicit BasicEvent(std::string id) : PrimaryEvent(id, "basic") {}
+
+  /// Sets the expression of this basic event.
+  /// @param[in] expression The expression to describe this event.
+  /// @todo Provide more tests that the expression is valid.
+  inline void expression(const ExpressionPtr& expression) {
+    expression_ = expression;
+  }
+
+  /// @returns The mean probability of this basic event.
+  /// @note The user of this function should make sure that the returned
+  ///       value is acceptable for calculations.
+  /// @warning Undefined behavior if the expression is not set.
+  inline double p() const {
+    assert(expression_);
+    return expression_->Mean();
+  }
+
+  /// Samples probability value from its probability distribution.
+  /// @returns Sampled value.
+  /// @note The user of this function should make sure that the returned
+  ///       value is acceptable for calculations.
+  /// @warning Undefined behavior if the expression is not set.
+  inline double SampleProbability() {
+    assert(expression_);
+    return expression_->Sample();
+  }
+
+  /// Resets the sampling.
+  inline void Reset() { expression_->Reset(); }
+
+  /// @returns Indication if this event does not have uncertainty.
+  inline bool IsConstant() { return expression_->IsConstant(); }
+
+ private:
+  /// Expression that describes this basic event and provides numerical
+  /// values for probability calculations.
+  ExpressionPtr expression_;
 };
 
 /// @class HouseEvent
 /// Representation of a house event in a fault tree.
-class HouseEvent: public scram::PrimaryEvent {
+class HouseEvent: public PrimaryEvent {
  public:
   /// Constructs with id name.
   /// @param[in] id The identifying name of this basic event.
-  explicit HouseEvent(std::string id);
+  explicit HouseEvent(std::string id)
+      : state_(false),
+        PrimaryEvent(id, "house") {}
 
-  /// Sets the total probability for House event.
-  /// @param[in] p 0 or 1 for False and True.
-  /// @throws ValueError if probability is not a valid value or re-assigned.
-  void p(double p);
+  /// Sets the state for House event.
+  /// @param[in] constant False or True for the state of this house event.
+  inline void state(bool constant) { state_ = constant; }
+
+  /// @returns The mean probability of this basic event.
+  inline double p() const { return state_ ? 1 : 0; }
+
+  /// The sample for house event is constant value.
+  /// @returns Sampled value.
+  inline double SampleProbability() { return state_ ? 1 : 0; }
 
  private:
   /// Represents the state of the house event.
