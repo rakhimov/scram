@@ -1,6 +1,6 @@
-############################################
+#########################
 SCRAM Fault Tree Graphing
-############################################
+#########################
 
 In order to make visual verification of a created tree, other diagram and
 graphing packages are employed. SCRAM writes a file with instructions for
