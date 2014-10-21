@@ -30,5 +30,5 @@ TEST_F(RiskAnalysisTest, SmallTree) {
   double delta_sqr = std::abs(mean() - 0.02495);
   EXPECT_TRUE(delta_sqr < 1e-3);
   delta_sqr = std::abs(sigma() - 0.0235);
-  EXPECT_TRUE(delta_sqr < 2e-4);
+  EXPECT_TRUE(delta_sqr < 1e-3);
 }
