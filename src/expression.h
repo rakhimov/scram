@@ -70,7 +70,6 @@ class Parameter : public Expression, public Element {
  public:
   /// Sets the expression of this basic event.
   /// @param[in] name The name of this variable (Case sensitive).
-  /// @param[in] expression The expression to describe this event.
   explicit Parameter(std::string name) : name_(name), unit_(kUnitless) {}
 
   /// Sets the expression of this parameter.
@@ -521,7 +520,7 @@ class BetaDeviate : public Expression {
   ExpressionPtr beta_;
 };
 
-/// @class Histrogram
+/// @class Histogram
 /// Histrogram distribution.
 class Histogram : public Expression {
  public:

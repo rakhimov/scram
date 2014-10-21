@@ -23,6 +23,9 @@ namespace scram {
 
 class Reporter;
 
+/// @class UncertaintyAnalysis
+/// Uncertainty analysis and statistics for top event or gate probabilities
+/// from minimal cut sets and probability distributions of basic events.
 class UncertaintyAnalysis {
 friend class ::UncertaintyAnalysisTest;
 friend class Reporter;
@@ -31,7 +34,7 @@ friend class Reporter;
   /// The main constructor of Uncertainty Analysis.
   /// @param[in] nsums The number of sums in the probability series.
   /// @param[in] cut_off The cut-off probability for cut sets.
-  /// @param[in] num_tirals The number of trials to perform.
+  /// @param[in] num_trials The number of trials to perform.
   /// @throws InvalidArgument if any of the parameters is invalid.
   explicit UncertaintyAnalysis(int nsums = 7, double cut_off = 1e-8,
                                int num_trials = 1e3);
