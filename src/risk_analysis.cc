@@ -1052,7 +1052,7 @@ void RiskAnalysis::ValidateInitialization() {
   for (it_p = primary_events_.begin(); it_p != primary_events_.end(); ++it_p) {
     try {
       it_p->second->parents();
-    } catch (ValueError& err) {
+    } catch (LogicError& err) {
       orphan_primary_events_.insert(it_p->second);
     }
   }
@@ -1118,7 +1118,7 @@ std::string RiskAnalysis::CheckGate(const GatePtr& event) {
   try {
     // This line throws an error if there are no children.
     size = event->children().size();
-  } catch (ValueError& err) {
+  } catch (LogicError& err) {
     msg << event->orig_id() << " : No children detected.";
     return msg.str();
   }

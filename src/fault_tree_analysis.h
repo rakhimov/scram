@@ -40,7 +40,7 @@ class FaultTreeAnalysis {
  public:
   /// The main constructor of Fault Tree Analysis.
   /// @param[in] limit_order The maximum limit on minimal cut sets' order.
-  /// @throws ValueError if any of the parameters are invalid.
+  /// @throws InvalidArgument if any of the parameters are invalid.
   explicit FaultTreeAnalysis(int limit_order = 20);
 
   /// Analyzes the fault tree and performs computations.

@@ -39,11 +39,11 @@ class Event : public Element {
 
   /// Adds a parent into the parent map.
   /// @param[in] parent One of the gate parents of this event.
-  /// @throws ValueError if the parent is being re-inserted.
+  /// @throws LogicError if the parent is being re-inserted.
   void AddParent(const boost::shared_ptr<Gate>& parent);
 
   /// @returns All the parents of this gate event.
-  /// @throws ValueError if there are no parents for this gate event.
+  /// @throws LogicError if there are no parents for this gate event.
   const std::map<std::string, boost::shared_ptr<Gate> >& parents();
 
   virtual ~Event() {}
@@ -69,27 +69,29 @@ class Gate : public Event {
   explicit Gate(std::string id, std::string type = "NONE");
 
   /// @returns The gate type.
-  /// @throws ValueError if the gate is not yet assigned.
+  /// @throws LogicError if the gate is not yet assigned.
   const std::string& type();
 
   /// Sets the gate type.
   /// @param[in] type The gate type for this event.
-  /// @throws ValueError if the gate type is being re-assigned.
+  /// @throws LogicError if the gate type is being re-assigned.
   void type(std::string type);
 
   /// @returns The vote number iff the gate is vote.
+  /// @throws LogicError if the vote number is not yet assigned.
   int vote_number();
 
   /// Sets the vote number only for a vote gate.
   /// @param[in] vnumber The vote number.
-  /// @throws ValueError if the vote number is invalid or being re-assigned.
-  /// @todo A better representation for varios gates as Vote might be a separte
-  /// class.
+  /// @throws InvalidArgument if the vote number is invalid.
+  /// @throws LogicError if the vote number is assigned illegally.
+  /// @note (Children number > vote number)should be checked outside of
+  ///        this class.
   void vote_number(int vnumber);
 
   /// Adds a child event into the children list.
   /// @param[in] child A pointer to a child event.
-  /// @throws ValueError if the child is being re-inserted.
+  /// @throws LogicError if the child is being re-inserted.
   void AddChild(const boost::shared_ptr<Event>& child);
 
   /// Adds children of another gate to this gate.
@@ -98,7 +100,8 @@ class Gate : public Event {
   void MergeGate(const boost::shared_ptr<Gate>& gate);
 
   /// @returns The children of this gate.
-  /// @throws ValueError if there are no children.
+  /// @throws LogicError if there are no children, which should be checked
+  ///                    at gate initialization.
   const std::map<std::string, boost::shared_ptr<Event> >& children();
 
  private:
@@ -127,7 +130,6 @@ class PrimaryEvent : public Event {
   virtual ~PrimaryEvent() {}
 
   /// @returns The type of the primary event.
-  /// @throws ValueError if the type is not yet set.
   inline const std::string& type() const { return type_; }
 
   /// @returns The mean probability of failure of this event.
@@ -160,7 +162,6 @@ class BasicEvent: public PrimaryEvent {
 
   /// Sets the expression of this basic event.
   /// @param[in] expression The expression to describe this event.
-  /// @todo Provide more tests that the expression is valid.
   inline void expression(const ExpressionPtr& expression) {
     expression_ = expression;
   }

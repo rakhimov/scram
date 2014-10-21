@@ -157,7 +157,8 @@ double Random::WeibullGenerator(double k, double lambda) {
 
 double Random::ExponentialGenerator(double lambda) {
   assert(lambda > 0);
-  typedef boost::random::exponential_distribution<double> ExponentialDistribution;
+  typedef boost::random::exponential_distribution<double>
+      ExponentialDistribution;
   typedef boost::variate_generator<RandomGenerator&, ExponentialDistribution>
       ExponentialGenerator;
 

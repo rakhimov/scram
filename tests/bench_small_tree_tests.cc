@@ -28,7 +28,7 @@ TEST_F(RiskAnalysisTest, SmallTree) {
   EXPECT_EQ(2, min_cut_sets().size());
   EXPECT_EQ(mcs, min_cut_sets());
   double delta_sqr = std::abs(mean() - 0.02495);
-  EXPECT_TRUE(delta_sqr < 1e-3);
-  delta_sqr = std::abs(sigma() - 0.0235);
-  EXPECT_TRUE(delta_sqr < 1e-3);
+  EXPECT_TRUE(delta_sqr < 5e-3);
+  delta_sqr = std::abs(sigma() - 0.023625);
+  EXPECT_TRUE(delta_sqr < 5e-3);
 }

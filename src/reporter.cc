@@ -11,6 +11,7 @@
 #include <iterator>
 #include <set>
 #include <sstream>
+#include <utility>
 #include <vector>
 
 #include <boost/algorithm/string.hpp>
@@ -175,6 +176,9 @@ void Reporter::ReportUncertainty(
     const boost::shared_ptr<const UncertaintyAnalysis>& uncert_analysis,
     std::ostream& out) {
   std::ios::fmtflags fmt(out.flags());  // Save the state to recover later.
+  if (uncert_analysis->warnings_ != "") {
+    out << "\n" << uncert_analysis->warnings_ << "\n";
+  }
   out << "\n" << "Uncertainty Analysis" << "\n";
   out << "====================\n\n";
   out << std::left;

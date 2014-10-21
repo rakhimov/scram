@@ -23,11 +23,11 @@ TEST(EventTest, Id) {
 TEST(GateTest, Gate) {
   GatePtr top(new Gate("top_event"));
   // No gate has been set, so the request is an error.
-  EXPECT_THROW(top->type(), ValueError);
+  EXPECT_THROW(top->type(), LogicError);
   // Setting the gate.
   EXPECT_NO_THROW(top->type("and"));
   // Trying to set the gate again should cause an error.
-  EXPECT_THROW(top->type("and"), ValueError);
+  EXPECT_THROW(top->type("and"), LogicError);
   // Requesting the gate should work without errors after setting.
   ASSERT_NO_THROW(top->type());
   EXPECT_EQ(top->type(), "and");
@@ -36,20 +36,20 @@ TEST(GateTest, Gate) {
 TEST(GateTest, VoteNumber) {
   GatePtr top(new Gate("top_event"));
   // No gate has been set, so the request is an error.
-  EXPECT_THROW(top->vote_number(), ValueError);
+  EXPECT_THROW(top->vote_number(), LogicError);
   // Setting the wrong AND gate.
   EXPECT_NO_THROW(top->type("and"));
   // Setting a vote number for non-Vote gate is an error.
-  EXPECT_THROW(top->vote_number(2), ValueError);
+  EXPECT_THROW(top->vote_number(2), LogicError);
   // Resetting to VOTE gate.
   top = GatePtr(new Gate("top_event"));
   EXPECT_NO_THROW(top->type("atleast"));
   // Illegal vote number.
-  EXPECT_THROW(top->vote_number(-2), ValueError);
+  EXPECT_THROW(top->vote_number(-2), InvalidArgument);
   // Legal vote number.
   EXPECT_NO_THROW(top->vote_number(2));
   // Trying to reset the vote number.
-  EXPECT_THROW(top->vote_number(2), ValueError);
+  EXPECT_THROW(top->vote_number(2), LogicError);
   // Requesting the vote number should succeed.
   ASSERT_NO_THROW(top->vote_number());
   EXPECT_EQ(top->vote_number(), 2);
@@ -61,11 +61,11 @@ TEST(GateTest, Children) {
   EventPtr first_child(new Event("first"));
   EventPtr second_child(new Event("second"));
   // Request for children when there are no children is an error.
-  EXPECT_THROW(top->children(), ValueError);
+  EXPECT_THROW(top->children(), LogicError);
   // Adding first child.
   EXPECT_NO_THROW(top->AddChild(first_child));
   // Readding a child must cause an error.
-  EXPECT_THROW(top->AddChild(first_child), ValueError);
+  EXPECT_THROW(top->AddChild(first_child), LogicError);
   // Check the contents of the children container.
   children.insert(std::make_pair(first_child->id(), first_child));
   EXPECT_EQ(top->children(), children);
@@ -80,10 +80,10 @@ TEST(GateTest, Parent) {
   GatePtr inter_event(new Gate("inter"));
   GatePtr parent_event(new Gate("parent"));
   // Request for the parent when it has not been set.
-  EXPECT_THROW(inter_event->parents(), ValueError);
+  EXPECT_THROW(inter_event->parents(), LogicError);
   // Setting a parent.
   EXPECT_NO_THROW(inter_event->AddParent(parent_event));
-  EXPECT_THROW(inter_event->AddParent(parent_event), ValueError);  // Re-adding.
+  EXPECT_THROW(inter_event->AddParent(parent_event), LogicError);  // Re-adding.
   EXPECT_NO_THROW(inter_event->parents());
   EXPECT_EQ(inter_event->parents().count(parent_event->id()), 1);
 }
@@ -105,17 +105,17 @@ TEST(PrimaryEventTest, Parent) {
   GatePtr second_parent(new Gate("traintwo"));
   std::map<std::string, GatePtr> parents;
   // Request for the parents when it has not been set.
-  EXPECT_THROW(primary->parents(), ValueError);
+  EXPECT_THROW(primary->parents(), LogicError);
   // Setting a parent. Note that there is no check if the parent is not a
   // primary event. This should be checked by a user creating this instance.
   EXPECT_NO_THROW(primary->AddParent(first_parent));
-  EXPECT_THROW(primary->AddParent(first_parent), ValueError);  // Resetting.
+  EXPECT_THROW(primary->AddParent(first_parent), LogicError);  // Resetting.
   EXPECT_NO_THROW(primary->parents());
   parents.insert(std::make_pair(first_parent->id(), first_parent));
   EXPECT_EQ(primary->parents(), parents);
   // Adding another parent.
   EXPECT_NO_THROW(primary->AddParent(second_parent));
-  EXPECT_THROW(primary->AddParent(second_parent), ValueError);  // Resetting.
+  EXPECT_THROW(primary->AddParent(second_parent), LogicError);  // Resetting.
   EXPECT_NO_THROW(primary->parents());
   parents.insert(std::make_pair(second_parent->id(), second_parent));
   EXPECT_EQ(primary->parents(), parents);

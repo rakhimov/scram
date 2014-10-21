@@ -56,7 +56,6 @@ else()
     )
 endif()
 
-
 add_executable(scram
   scram.cc
   )

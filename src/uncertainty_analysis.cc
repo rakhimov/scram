@@ -275,7 +275,7 @@ void UncertaintyAnalysis::CalculateStatistics() {
   typedef iterator_range<std::vector<std::pair<double, double> >::iterator >
       histogram_type;
   histogram_type hist = density(acc);
-  for( int i = 0; i < hist.size(); i++ ) {
+  for (int i = 0; i < hist.size(); i++) {
     distribution_.push_back(hist[i]);
   }
   mean_ = boost::accumulators::mean(acc);

@@ -530,14 +530,14 @@ class Histogram : public Expression {
   /// @param[in] weights The positive weights of intervals restricted by
   ///                    the upper boundaries. Therefore, the number of
   ///                    weights must be equal to the number of boundaries.
-  /// @todo This description is too flexible and ambiguous;
-  ///       It allows sampling both
+  /// @note This description of histogram sampling is for probabilities mostly.
+  ///       Therefore, it is not flexible. Currently, it allows sampling both
   ///       boundaries and weights. This behavior makes checking for valid
   ///       arrangement of the boundaries mandatory for each sampling.
   ///       Moreover, the first starting point is assumed but not defined.
   ///       The starting point is assumed to be 0, which leaves only positive
   ///       values for boundaries. This behavior is restrictive and should
-  ///       be handled differently.
+  ///       be handled accordingly.
   /// @throws InvalidArgument if boundaries container size is not equal to
   ///                         weights container size.
   Histogram(const std::vector<ExpressionPtr>& boundaries,
