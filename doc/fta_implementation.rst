@@ -50,33 +50,15 @@ of the event as shown in the description bellow.
 
 INHIBIT
 -------
-Add this XML line to AND gate description:
-
-.. highlight:: xml
-.. literal::
-    <attributes>
-        <attribute name="flavor" value="inhibit"/>
-    </attributes>
+Add this XML line to AND gate description: :literal:`<attributes> <attribute name="flavor" value="inhibit"/> </attributes>`
 
 Undeveloped
 -----------
-Add this XML line to basic event description:
-
-.. highlight:: xml
-.. literal::
-    <attributes>
-        <attribute name="flavor" value="undeveloped"/>
-    </attributes>
+Add this XML line to basic event description: :literal:`<attributes> <attribute name="flavor" value="undeveloped"/> </attributes>`
 
 Conditional
 -----------
-Add this XML line to basic event description:
-
-.. highlight:: xml
-.. literal::
-    <attributes>
-        <attribute name="flavor" value="conditional"/>
-    </attributes>
+Add this XML line to basic event description: :literal:`<attributes> <attribute name="flavor" value="conditional"/> </attributes>`
 
 
 The Algorithm to Generate Minimal Cut Sets
