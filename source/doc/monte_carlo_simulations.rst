@@ -16,16 +16,16 @@ for example, to test the analysis.
 Monte Carlo (MC) Analysis Implementation
 ========================================
 
-#. Initialization of events with distributions. *Not Supported*
+#. Initialization of events with distributions.
 
 #. If MC Analysis is not requested, perform the standard analysis with
-   average probabilities. *Not Supported*
+   average probabilities.
 
 #. Generation of an equation for MC analysis from minimal cut sets.
 
-#. Determine the number of samples. (Set by a user) *No Support*
+#. Determine the number of samples. (Set by a user)
 
-#. Definitions and parameters for various distributions. *Not Supported Yet*
+#. Definitions and parameters for various distributions.
 
     * May be specified by a user in an input file.
     * Distributions:
@@ -47,9 +47,7 @@ Monte Carlo (MC) Analysis Implementation
         - Log-Triangular
 
 #. Sampling probability distributions and calculating the total equation.
-   *Not Supported Yet*
-
-#. Statistical analysis. The resulting distributions. *Not Supported Yet*
+#. Statistical analysis. The resulting distributions.
 #. Sensitivity analysis. *Not Supported Yet*
 #. Bayesian statistics. *Not Supported Yet*
-#. Output the results of analysis: mean, sigma, probability density plot. *No*
+#. Output the results of analysis: mean, sigma, probability density histogram.

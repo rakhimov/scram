@@ -91,7 +91,8 @@ class InvalidArgument : public Error {
 };
 
 /// @class LogicError
-/// Signals internal logic errors, for example, pre-condition failure.
+/// Signals internal logic errors, for example, pre-condition failure
+/// or use of functionality in ways not designed to.
 class LogicError : public Error {
  public:
   /// Constructs a new logic error with a provided message.
@@ -102,7 +103,7 @@ class LogicError : public Error {
 /// @class IllegalOperation
 /// This error can be used to indicate that call for a method is not
 /// what is intended from an object derived from another class that actually
-/// supports the operation.
+/// supports the operation. This is a strong kind of logic error.
 class IllegalOperation : public Error {
  public:
   /// Constructs a new illegal operation error with a provided message.

@@ -25,7 +25,7 @@ FaultTreeAnalysis::FaultTreeAnalysis(int limit_order)
   if (limit_order < 1) {
     std::string msg = "The limit on the order of minimal cut sets "
                       "cannot be less than one.";
-    throw ValueError(msg);
+    throw InvalidArgument(msg);
   }
   limit_order_ = limit_order;
 
@@ -221,7 +221,7 @@ void FaultTreeAnalysis::ExpandPositiveGate(
   } else {
     boost::to_upper(gate);
     std::string msg = "No algorithm defined for " + gate;
-    throw ValueError(msg);
+    throw LogicError(msg);
   }
 }
 
@@ -266,7 +266,7 @@ void FaultTreeAnalysis::ExpandNegativeGate(
   } else {
     boost::to_upper(gate);
     std::string msg = "No algorithm defined for " + gate;
-    throw ValueError(msg);
+    throw LogicError(msg);
   }
 }
 
@@ -487,7 +487,6 @@ void FaultTreeAnalysis::FindMcs(
   FaultTreeAnalysis::FindMcs(temp_sets, temp_min_sets, min_order, imcs);
 }
 
-// -------------------- Algorithm for Cut Set Indexation -----------
 void FaultTreeAnalysis::AssignIndices(const FaultTreePtr& fault_tree) {
   // Getting events from the fault tree object.
   /// @note Direct assignment of the containers leads to very bad performance.

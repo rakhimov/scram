@@ -10,7 +10,6 @@
 #include <boost/shared_ptr.hpp>
 
 #include "element.h"
-#include "random.h"
 
 namespace scram {
 
@@ -52,6 +51,7 @@ typedef boost::shared_ptr<scram::Expression> ExpressionPtr;
 /// @enum Units
 /// Provides units for parameters.
 enum Units {
+  kUnitless,
   kBool,
   kInt,
   kFloat,
@@ -71,7 +71,7 @@ class Parameter : public Expression, public Element {
   /// Sets the expression of this basic event.
   /// @param[in] name The name of this variable (Case sensitive).
   /// @param[in] expression The expression to describe this event.
-  explicit Parameter(std::string name) : name_(name) {}
+  explicit Parameter(std::string name) : name_(name), unit_(kUnitless) {}
 
   /// Sets the expression of this parameter.
   /// @param[in] expression The expression to describe this parameter.
@@ -102,6 +102,11 @@ class Parameter : public Expression, public Element {
     return Expression::sampled_value_;
   }
 
+  inline void Reset() {
+    Expression::sampled_ = false;
+    expression_->Reset();
+  }
+
   inline bool IsConstant() { return expression_->IsConstant(); }
 
  private:
@@ -124,7 +129,7 @@ class Parameter : public Expression, public Element {
 /// This is for the system mission time.
 class MissionTime : public Expression {
  public:
-  MissionTime() : mission_time_(-1) {}
+  MissionTime() : mission_time_(-1), unit_(kHours) {}
 
   /// Sets the mission time only once.
   /// @param[in] time The mission time.
@@ -196,6 +201,12 @@ class ExponentialExpression : public Expression {
   /// @throws InvalidArgument if sampled failure rate or time is negative.
   double Sample();
 
+  inline void Reset() {
+    Expression::sampled_ = false;
+    lambda_->Reset();
+    time_->Reset();
+  }
+
   inline bool IsConstant() {
     return lambda_->IsConstant() && time_->IsConstant();
   }
@@ -237,6 +248,14 @@ class GlmExpression : public Expression {
   /// @returns A sampled value.
   /// @throws InvalidArgument if sampled values are invalid.
   double Sample();
+
+  inline void Reset() {
+    Expression::sampled_ = false;
+    gamma_->Reset();
+    lambda_->Reset();
+    time_->Reset();
+    mu_->Reset();
+  }
 
   inline bool IsConstant() {
     return gamma_->IsConstant() && lambda_->IsConstant() &&
@@ -285,6 +304,14 @@ class WeibullExpression : public Expression {
   /// @throws InvalidArgument if sampled values are invalid.
   double Sample();
 
+  inline void Reset() {
+    Expression::sampled_ = false;
+    alpha_->Reset();
+    beta_->Reset();
+    t0_->Reset();
+    time_->Reset();
+  }
+
   inline bool IsConstant() {
     return alpha_->IsConstant() && beta_->IsConstant() && t0_->IsConstant() &&
         time_->IsConstant();
@@ -325,6 +352,12 @@ class UniformDeviate : public Expression {
   /// @throws InvalidArgument if min value is more or equal to max value.
   double Sample();
 
+  inline void Reset() {
+    Expression::sampled_ = false;
+    min_->Reset();
+    max_->Reset();
+  }
+
  private:
   /// Minimum value of the distribution.
   ExpressionPtr min_;
@@ -353,6 +386,12 @@ class NormalDeviate : public Expression {
   /// @returns A sampled value.
   /// @throws InvalidArgument if the sampled sigma is negative or zero.
   double Sample();
+
+  inline void Reset() {
+    Expression::sampled_ = false;
+    mean_->Reset();
+    sigma_->Reset();
+  }
 
  private:
   /// Mean value of normal distribution.
@@ -392,6 +431,13 @@ class LogNormalDeviate : public Expression {
   /// @throws InvalidArgument if (mean <= 0) or (ef <= 0) or (level != 0.95)
   double Sample();
 
+  inline void Reset() {
+    Expression::sampled_ = false;
+    mean_->Reset();
+    ef_->Reset();
+    level_->Reset();
+  }
+
  private:
   /// Mean value of the log-normal distribution.
   ExpressionPtr mean_;
@@ -424,6 +470,12 @@ class GammaDeviate : public Expression {
   /// @throws InvalidArgument if (k <= 0) or (theta <= 0)
   double Sample();
 
+  inline void Reset() {
+    Expression::sampled_ = false;
+    k_->Reset();
+    theta_->Reset();
+  }
+
  private:
   /// The shape parameter of the gamma distribution.
   ExpressionPtr k_;
@@ -455,6 +507,12 @@ class BetaDeviate : public Expression {
   /// @throws InvalidArgument if (alpha <= 0) or (beta <= 0)
   double Sample();
 
+  inline void Reset() {
+    Expression::sampled_ = false;
+    alpha_->Reset();
+    beta_->Reset();
+  }
+
  private:
   /// The alpha shape parameter of the beta distribution.
   ExpressionPtr alpha_;
@@ -472,14 +530,14 @@ class Histogram : public Expression {
   /// @param[in] weights The positive weights of intervals restricted by
   ///                    the upper boundaries. Therefore, the number of
   ///                    weights must be equal to the number of boundaries.
-  /// @todo This description is too flexible and ambiguous;
-  ///       It allows sampling both
+  /// @note This description of histogram sampling is for probabilities mostly.
+  ///       Therefore, it is not flexible. Currently, it allows sampling both
   ///       boundaries and weights. This behavior makes checking for valid
   ///       arrangement of the boundaries mandatory for each sampling.
   ///       Moreover, the first starting point is assumed but not defined.
   ///       The starting point is assumed to be 0, which leaves only positive
   ///       values for boundaries. This behavior is restrictive and should
-  ///       be handled differently.
+  ///       be handled accordingly.
   /// @throws InvalidArgument if boundaries container size is not equal to
   ///                         weights container size.
   Histogram(const std::vector<ExpressionPtr>& boundaries,
@@ -497,6 +555,17 @@ class Histogram : public Expression {
   /// @throws InvalidArgument if the boundaries are not strictly increasing
   ///                         or weights are negative.
   double Sample();
+
+  inline void Reset() {
+    Expression::sampled_ = false;
+    std::vector<ExpressionPtr>::iterator it;
+    for (it = boundaries_.begin(); it != boundaries_.end(); ++it) {
+      (*it)->Reset();
+    }
+    for (it = weights_.begin(); it != weights_.end(); ++it) {
+      (*it)->Reset();
+    }
+  }
 
  private:
   /// Checks if mean values of expressions are stricly increasing.

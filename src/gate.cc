@@ -14,7 +14,7 @@ Gate::Gate(std::string id, std::string type)
 const std::string& Gate::type() {
   if (type_ == "NONE") {
     std::string msg = "Gate type is not set for " + this->orig_id() + " gate.";
-    throw ValueError(msg);
+    throw LogicError(msg);
   }
   return type_;
 }
@@ -23,7 +23,7 @@ void Gate::type(std::string type) {
   if (type_ != "NONE") {
     std::string msg = "Trying to re-assign a gate type for " +
                       this->orig_id() + " gate.";
-    throw ValueError(msg);
+    throw LogicError(msg);
   }
   type_ = type;
 }
@@ -32,7 +32,7 @@ int Gate::vote_number() {
   if (vote_number_ == -1) {
     std::string msg = "Vote number is not set for " +
                       this->orig_id() + " gate.";
-    throw ValueError(msg);
+    throw LogicError(msg);
   }
   return vote_number_;
 }
@@ -44,15 +44,15 @@ void Gate::vote_number(int vnumber) {
     std::string msg = "Vote number can only be defined for the ATLEAST gate. "
                       "The " + this->orig_id() + " gate is " +
                       this->type() + ".";
-    throw ValueError(msg);
+    throw LogicError(msg);
   } else if (vnumber < 2) {
     std::string msg = "Vote number cannot be less than 2.";
-    throw ValueError(msg);
+    throw InvalidArgument(msg);
   } else if (vote_number_ != -1) {
     std::string msg = "Trying to re-assign a vote number for " +
                       this->orig_id() + " gate.";
-    throw ValueError(msg);
-  }  // Children number should be checked outside of this class.
+    throw LogicError(msg);
+  }
   vote_number_ = vnumber;
 }
 
@@ -60,7 +60,7 @@ void Gate::AddChild(const boost::shared_ptr<Event>& child) {
   if (children_.count(child->id())) {
     std::string msg = "Trying to re-insert a child for " + this->orig_id() +
                       " gate.";
-    throw ValueError(msg);
+    throw LogicError(msg);
   }
   children_.insert(std::make_pair(child->id(), child));
 }
@@ -78,7 +78,7 @@ void Gate::MergeGate(const boost::shared_ptr<Gate>& gate) {
 const std::map<std::string, boost::shared_ptr<Event> >& Gate::children() {
   if (children_.empty()) {
     std::string msg = this->orig_id() + " gate does not have children.";
-    throw ValueError(msg);
+    throw LogicError(msg);
   }
   return children_;
 }

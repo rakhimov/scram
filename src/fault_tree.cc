@@ -25,7 +25,7 @@ void FaultTree::AddGate(const GatePtr& gate) {
     const std::map<std::string, GatePtr>* parents;
     try {
       parents = &gate->parents();
-    } catch (ValueError& err) {
+    } catch (LogicError& err) {
       // No parents here.
       throw ValidationError("Gate '" + gate->orig_id() +
                             "' is a dangling gate in" +
