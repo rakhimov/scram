@@ -61,6 +61,17 @@ class RiskAnalysisTest : public ::testing::Test {
     return (ran->CheckGate(event) == "") ? true : false;
   }
 
+  // Uncertainty analysis.
+  double mean() {
+    assert(!ran->uncertainty_analyses_.empty());
+    return ran->uncertainty_analyses_[0]->mean();
+  }
+
+  double sigma() {
+    assert(!ran->uncertainty_analyses_.empty());
+    return ran->uncertainty_analyses_[0]->sigma();
+  }
+
   // Members
   RiskAnalysis* ran;
   Settings settings;

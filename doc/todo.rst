@@ -10,8 +10,6 @@ Currently Low Hanging Fruits
 
 - `Issues on GitHub <https://github.com/rakhimov/scram/issues>`_
 
-- Uncertainty analysis. *Moderate*
-
 - XML based analysis configuration input file. *High*
 
   * Schema
@@ -79,6 +77,8 @@ Minor Enhancements and Capabilities
 
 - Create cut set generator. *Low*
 
+- Uncertainty analysis numbers for basic events and parameters. *Moderate*
+
 
 GUI Development: Moderate Importance
 ====================================
@@ -118,8 +118,6 @@ Coding Specific
 - Logging system. *Moderate*
 
 - Benchmark tests:
-
-  * Small Tree
 
   * HIPPS
 
