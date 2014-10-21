@@ -2,7 +2,7 @@
 Fault Tree Generator Python Script
 ###################################
 
-A description of python script to generate a tree of any size and complexity.
+A description of python script to generate a fault tree of any size and complexity.
 
 General Description
 ===================

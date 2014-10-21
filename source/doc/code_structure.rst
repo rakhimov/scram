@@ -11,11 +11,11 @@ Structure/Architecture of the Core Code
 
 - Loader of analysis configuration files. [not implemented]
 
-- Initializer of the analysis by constructing fault trees, event trees, CCF,
+- Initializer of the analysis that constructs fault trees, event trees, CCF,
   and other analysis entities.
   This initialization phase should validate the values and logic supplied from
   the input file. The construction and analysis are initialized according to
-  the configurations supplied from the configuration file.
+  the configurations supplied from the configuration file or command-line.
 
 - Risk analyzer is the main machine that operates with the initialized fault,
   event trees, and other entities to provide the requested results. It runs

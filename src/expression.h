@@ -276,7 +276,7 @@ class GlmExpression : public Expression {
 };
 
 /// @class WeibullExpression
-/// Weibull distribution with scale, shap, time shift, and time.
+/// Weibull distribution with scale, shape, time shift, and time.
 class WeibullExpression : public Expression {
  public:
   /// Constructor for Wibull distribution.

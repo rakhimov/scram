@@ -57,11 +57,18 @@ provides non-conservative estimation for non-coherent trees containing
 Probability Types
 =================
 
+Various probability types and distributions are accepted as described in
+OpenPSA Model Exchange Format, for example, constant values, exponential with
+two or four parameters, uniform, normal, log-normal distributions.
+
+Bellow is a brief example. For more information, please take a look at OpenPSA
+MEF format documentation on http://open-psa.org
+
 **P-model**
     The probability of an event occurring when the time to failure is
     unknown or unpredictable.
 
-**Lambda-model**
+**Lambda-model or Exponential with Two Parameters**
     The probability that a primary event will occur within
     a given period of time (t). Appropriate for events within
     systems that are continuously operating and have a known

@@ -5,9 +5,11 @@ Installation Instructions
 The project is currently under development phase and the installation packages
 are experimental, but your feedback is very welcome.
 
-Pre-build packages are on Sourceforge_ for various platforms.
+The fastest and easiest cross-platform option is to install a virtual
+machine with pre-build *SCRAM*.
+You can download the virtual machine from Sourceforge_.
 
-Please, follow more detailed instructions_ on GitHub.
+For other options, please follow more detailed instructions_ on GitHub.
 
 .. _Sourceforge:
     https://sourceforge.net/projects/iscram/files/?source=navbar

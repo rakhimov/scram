@@ -53,9 +53,15 @@ Currently Supported OpenPSA MEF Features
 
   * Non-nested gates (formula)
 
-- Basic Event Description:
+- Basic Event Description
 
-  * Float probability
+- Expressions:
+
+    * Constant expressions
+    * System mission time
+    * Parameter
+    * Random deviate (normal, log-normal, histogram, uniform, gamma, beta)
+    * Built-in expressions (exponential with two parameters, exponential with four parameters, Weibull)
 
 - House Event Description:
 
@@ -70,6 +76,7 @@ Deviations from OpenPSA MEF
 
 - Names are not case-sensitive.
 - House events do not default to false state implicitly. They must be defined.
+- Expressions are not optional for Basic events.
 - First gate for the fault tree must be a top event gate.
 - Fault tree input structure must be top-down. Parents must appear before
   children.
