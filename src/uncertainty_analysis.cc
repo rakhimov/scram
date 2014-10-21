@@ -3,6 +3,7 @@
 #include "uncertainty_analysis.h"
 
 #include <ctime>
+#include <cmath>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/accumulators/accumulators.hpp>
@@ -19,6 +20,7 @@ UncertaintyAnalysis::UncertaintyAnalysis(int nsums, double cut_off,
                                          int num_trials)
     : mean_(-1),
       sigma_(-1),
+      warnings_(""),
       p_time_(-1) {
   // Check for right number of sums.
   if (nsums < 1) {
@@ -218,8 +220,19 @@ void UncertaintyAnalysis::Sample() {
     /// @todo Sample only events that are in the minimal cut sets.
     /// @todo Do not sample constant values(i.e. events without distributions.)
     for (it_b = basic_events_.begin(); it_b != basic_events_.end(); ++it_b) {
-      iprobs_[primary_to_int_.find((*it_b)->id())->second] =
-          (*it_b)->SampleProbability();
+      double prob = (*it_b)->SampleProbability();
+      if (prob < 0) {
+        prob = 0;
+        if (warnings_ == "")
+          warnings_ = "Invalid probability was sampled but adjusted to"
+              " proper boundaries of 0 and 1.";
+      } else if (prob > 1) {
+        prob = 1;
+        if (warnings_ == "")
+          warnings_ = "Invalid probability was sampled but adjusted to"
+              " proper boundaries of 0 and 1.";
+      }
+      iprobs_[primary_to_int_.find((*it_b)->id())->second] = prob;
     }
     double pos = 0;
     std::vector< std::set<int> >::iterator it_s;
@@ -254,13 +267,21 @@ void UncertaintyAnalysis::CalculateStatistics() {
   using namespace boost;
   using namespace boost::accumulators;
   accumulator_set<double, stats<tag::mean, tag::variance, tag::density> >
-      acc(tag::density::num_bins = 20, tag::density::cache_size = 10);
+      acc(tag::density::num_bins = 20, tag::density::cache_size = num_trials_);
   std::vector<double>::iterator it;
   for (it = sampled_results_.begin(); it != sampled_results_.end(); ++it) {
     acc(*it);
   }
+  typedef iterator_range<std::vector<std::pair<double, double> >::iterator >
+      histogram_type;
+  histogram_type hist = density(acc);
+  for( int i = 0; i < hist.size(); i++ ) {
+    distribution_.push_back(hist[i]);
+  }
   mean_ = boost::accumulators::mean(acc);
-  sigma_ = variance(acc);
+  sigma_ = std::sqrt(variance(acc));
+  confidence_interval_.first = mean_ - sigma_ * 1.96 / std::sqrt(num_trials_);
+  confidence_interval_.second = mean_ + sigma_ * 1.96 / std::sqrt(num_trials_);
 }
 
 }  // namespace scram

@@ -56,6 +56,10 @@ void Reporter::ReportFta(
   out << std::setw(40) << std::left << "Top Event: "
       << fta->top_event_->orig_id() << "\n";
   out << std::setw(40) << "Time: " << pt::second_clock::local_time() << "\n\n";
+  out << std::setw(40) << "Gate Expansion Time: " << std::setprecision(5)
+      << fta->exp_time_ << "s\n";
+  out << std::setw(40) << "MCS Generation Time: " << std::setprecision(5)
+      << fta->mcs_time_ - fta->exp_time_ << "s\n";
   out << std::setw(40) << "Number of Primary Events: "
       << fta->primary_events_.size() << "\n";
   out << std::setw(40) << "Number of Gates: "
@@ -66,10 +70,6 @@ void Reporter::ReportFta(
       << fta->max_order_ << "\n";
   out << std::setw(40) << "Total number of MCS found: "
       << fta->min_cut_sets_.size() << "\n";
-  out << std::setw(40) << "Gate Expansion Time: " << std::setprecision(5)
-      << fta->exp_time_ << "s\n";
-  out << std::setw(40) << "MCS Generation Time: " << std::setprecision(5)
-      << fta->mcs_time_ - fta->exp_time_ << "s\n";
   out.flush();
 
   int order = 1;  // Order of minimal cut sets.
@@ -136,9 +136,11 @@ void Reporter::ReportProbability(
   out << "====================\n\n";
   out << std::left;
   out << std::setw(40) << "Time: " << pt::second_clock::local_time() << "\n\n";
+  out << std::setw(40) << "Probability Operations Time: "
+      << std::setprecision(5) << prob_analysis->p_time_ << "s\n\n";
   out << std::setw(40) << "Approximation:" << prob_analysis->approx_ << "\n";
   out << std::setw(40) << "Limit on series: " << prob_analysis->nsums_ << "\n";
-  out << std::setw(40) << "Cut-off probabilty for cut sets: "
+  out << std::setw(40) << "Cut-off probability for cut sets: "
       << prob_analysis->cut_off_ << "\n";
   out << std::setw(40) << "Total MCS provided: "
       << prob_analysis->min_cut_sets_.size() << "\n";
@@ -146,8 +148,6 @@ void Reporter::ReportProbability(
       << prob_analysis->num_prob_mcs_ << "\n";
   out << std::setw(40) << "Total Probability: "
       << prob_analysis->p_total_ << "\n";
-  out << std::setw(40) << "Probability Operations Time: "
-      << std::setprecision(5) << prob_analysis->p_time_ << "s\n\n";
   out.flush();
 
   // Print total probability.
@@ -174,19 +174,28 @@ void Reporter::ReportProbability(
 void Reporter::ReportUncertainty(
     const boost::shared_ptr<const UncertaintyAnalysis>& uncert_analysis,
     std::ostream& out) {
-  out << "\nMC time: " << uncert_analysis->p_time_ << "\n";
-  out << "Mean: " << uncert_analysis->mean() << "\n";
-  out << "Standard deviation: " << uncert_analysis->sigma() << "\n";
-  out << "Confidence range(0.95): " << "\n";
-  out << "Distribution:\n";
-  out << "Bin     Number\n";
-  std::vector<int>::const_iterator it;
-  int bin = 1;
+  std::ios::fmtflags fmt(out.flags());  // Save the state to recover later.
+  out << "\n" << "Uncertainty Analysis" << "\n";
+  out << "====================\n\n";
+  out << std::left;
+  out << std::setw(40) << "Time: " << pt::second_clock::local_time() << "\n\n";
+  out << std::setw(40) << "Uncertainty Calculation Time: "
+      << uncert_analysis->p_time_ << "\n";
+  out << std::setw(40) << "Mean: " << uncert_analysis->mean() << "\n";
+  out << std::setw(40) << "Standard deviation: "
+      << uncert_analysis->sigma() << "\n";
+  out << std::setw(40) << "Confidence range(95%): "
+      << uncert_analysis->confidence_interval().first
+      << " -:- " << uncert_analysis->confidence_interval().second << "\n";
+  out << "\nDistribution:\n";
+  out << std::setw(40) << "Bin Bounds (b(n), b(n+1)]" << "Value\n";
+  std::vector<std::pair<double, double> >::const_iterator it;
   for (it = uncert_analysis->distribution().begin();
        it != uncert_analysis->distribution().end(); ++it) {
-    out << bin << "      " << *it << "\n";
+    out << std::setw(40) << it->first << it->second << "\n";
   }
   out.flush();
+  out.flags(fmt);  // Restore the initial state.
 }
 
 void Reporter::ReportMcsProb(

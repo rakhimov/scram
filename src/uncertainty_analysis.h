@@ -55,8 +55,15 @@ friend class Reporter;
   /// @returns Standard deviation of the final distribution.
   inline double sigma() const { return sigma_; }
 
+  /// @returns 95% confidence interval. Normal distribution is assumed.
+  inline const std::pair<double, double>& confidence_interval() const {
+    return confidence_interval_;
+  }
+
   /// @returns The distribution histogram.
-  std::vector<int> distribution() const { return distribution_; }
+  const std::vector<std::pair<double, double> >& distribution() const {
+    return distribution_;
+  }
 
  private:
   /// Assigns an index to each primary event, and then populates with this
@@ -138,7 +145,12 @@ friend class Reporter;
 
   double mean_;  ///< The mean of the final distribution.
   double sigma_;  ///< The standard deviation of the final distribution.
-  std::vector<int> distribution_;  ///< The histogram of the distribution.
+  /// The confidence interval of the distribution.
+  std::pair<double, double> confidence_interval_;
+  /// The histogram density of the distribution with lower bounds and values.
+  std::vector<std::pair<double, double> > distribution_;
+
+  std::string warnings_;  ///< For warnings about invalid sampled probability.
 };
 
 }  // namespace scram
