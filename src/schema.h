@@ -1236,6 +1236,7 @@ std::string g_schema_content =
         <ref name=\"expression\"/>\
         <ref name=\"expression\"/>\
         <ref name=\"expression\"/>\
+        <ref name=\"expression\"/>\
       </element>\
     </define>\
 \

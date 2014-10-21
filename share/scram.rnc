@@ -557,7 +557,7 @@ case-operation = element case { expression, expression }
 # ***********************************************************
 exponential = element exponential { expression, expression }
 GLM = element GLM { expression, expression, expression, expression }
-Weibull = element Weibull { expression, expression, expression }
+Weibull = element Weibull { expression, expression, expression, expression }
 periodic-test =
   element periodic-test {
     expression, expression, expression, expression
