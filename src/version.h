@@ -5,8 +5,8 @@
 #define SCRAM_SRC_VERSION_H_
 
 #define SCRAM_VERSION_MAJOR 0
-#define SCRAM_VERSION_MINOR 3
-#define SCRAM_VERSION_MICRO 1
+#define SCRAM_VERSION_MINOR 4
+#define SCRAM_VERSION_MICRO 0
 
 namespace scram {
 namespace version {
