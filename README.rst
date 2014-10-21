@@ -13,9 +13,10 @@ SCRAM
 
 *SCRAM* : "Simplified Command-line Risk Analysis Multi-tool"
 
-This project attempts to build a simple command line tool for risk analysis.
-Static Fault Tree Analysis is implemented. The initial support for the OpenPSA_
-model exchange format is provided.
+This project attempts to build a simple command line tool for
+probabilistic risk analysis. *SCRAM* is currently capable to perform
+static fault tree analysis and uncertainty analysis.
+The initial support for the OpenPSA_ model exchange format is provided.
 
 SCRAM generates a Graphviz Dot instruction file for a graphical
 representation of a fault tree.
@@ -32,7 +33,7 @@ is in `documentation`_.
 .. _`documentation`: http://rakhimov.github.io/scram
 .. _`Qt`: http://qt-project.org/
 
-To get *SCRAM*, you can download pre-build packages or a virtual machine image
+To get *SCRAM*, you can download a virtual machine image
 on Sourceforge_ or follow the building and installing instructions bellow.
 
 .. _Sourceforge:
@@ -271,8 +272,6 @@ Windows.
 Currently only Cygwin_ 64bit has been tested to produce binaries on Windows.
 The dependencies listed for Linux systems must be installed with Cygwin64.
 Unfortunately, this method requires building `libxml++`_ from source.
-In order to avoid building the package, after installing Cygwin64,
-download a `pre-build SCRAM for Cygwin`_.
 
 .. _`Ubuntu 14.04`:
     http://www.ubuntu.com/download
@@ -284,8 +283,6 @@ download a `pre-build SCRAM for Cygwin`_.
     https://www.cygwin.com/
 .. _`libxml++`:
     http://libxmlplusplus.sourceforge.net/
-.. _`pre-build SCRAM for Cygwin`:
-    https://sourceforge.net/projects/iscram/files/
 .. _`Ubuntu image with SCRAM`:
     http://sourceforge.net/projects/iscram/files/ScramBox.ova/download
 
