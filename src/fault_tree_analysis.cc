@@ -63,7 +63,7 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
   FaultTreeAnalysis::AssignIndices(fault_tree);
 
   SupersetPtr top_set(new Superset());
-  top_set->InsertGate(top_event_index_);
+  top_set->InsertGate(top_event_index_ * indexed_tree_->top_event_sign());
 
   ExpandTree(top_set, &cut_sets);  // Cut set generation.
 
@@ -163,6 +163,8 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
   assert(sets->empty());
   assert(inter_index != 0);
 
+  if (indexed_tree_->GateState(std::abs(inter_index)) == "null") return;
+
   if (FaultTreeAnalysis::GetExpandedSets(inter_index, sets)) return;
 
   // Populate intermediate and primary events of the top.
@@ -254,7 +256,7 @@ void FaultTreeAnalysis::SetOr(int mult,
   for (it_child = events_children.begin();
        it_child != events_children.end(); ++it_child) {
     SupersetPtr tmp_set_c(new Superset());
-    if (*it_child > top_event_index_) {
+    if (std::abs(*it_child) > top_event_index_) {
       tmp_set_c->InsertGate(*it_child * mult);
     } else {
       tmp_set_c->InsertPrimary(*it_child * mult);
@@ -271,7 +273,7 @@ void FaultTreeAnalysis::SetAnd(int mult,
   std::set<int>::const_iterator it_child;
   for (it_child = events_children.begin();
        it_child != events_children.end(); ++it_child) {
-    if (*it_child > top_event_index_) {
+    if (std::abs(*it_child) > top_event_index_) {
       tmp_set_c->InsertGate(*it_child * mult);
     } else {
       tmp_set_c->InsertPrimary(*it_child * mult);
