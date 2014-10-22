@@ -71,12 +71,14 @@ class ProbabilityAnalysis {
   }
 
   /// @returns Container for minimal cut sets ordered by their probabilities.
+  /// @todo This should be post-processing.
   inline const std::multimap< double, std::set<std::string> >
       ordered_min_sets() {
     return ordered_min_sets_;
   }
 
   /// @returns Container for primary events ordered by their contribution.
+  /// @todo This should be post-processing.
   inline const std::multimap< double, std::string > ordered_primaries() {
     return ordered_primaries_;
   }
@@ -98,15 +100,6 @@ class ProbabilityAnalysis {
   /// turns non-coherent analysis.
   /// @param[in] min_cut_sets Minimal cut sets with event ids.
   void IndexMcs(const std::set<std::set<std::string> >& min_cut_sets);
-
-  /// Calculates a probability of a minimal cut set, whose members are in AND
-  /// relationship with each other. This function assumes independence of each
-  /// member. This functionality is provided for the rare event and MCUB,
-  /// so the method is not as optimized as the others.
-  /// @param[in] min_cut_set A set of indices of primary events.
-  /// @returns The total probability.
-  /// @note O_avg(N) where N is the size of the passed set.
-  double ProbAnd(const std::set<int>& min_cut_set);
 
   /// Calculates a probability of a set of minimal cut sets, which are in OR
   /// relationship with each other. This function is a brute force probability
@@ -173,7 +166,20 @@ class ProbabilityAnalysis {
       std::set< boost::container::flat_set<int> >* combo_set);
 
   /// Importance analysis of events.
-  void PerformImportanceAnalysis();
+  /// @param[in] min_cut_sets Minimal cut sets with indices of primary events.
+  /// @todo This function must aware of approximations.
+  void PerformImportanceAnalysis(
+      const std::set< boost::container::flat_set<int> >& min_cut_sets);
+
+  /// Performes Boolean operation (A and Minimal cut sets). However, this
+  /// method does not reduce the final results to minimal cut sets.
+  /// @param[in] event The index of an event.
+  /// @param[in] min_cut_sets Minimal cut sets with indices of primary events.
+  /// @param[out] final_cut_sets The result of combining with minimal cut sets.
+  void CombineEventAndSets(
+      int event,
+      const std::set< boost::container::flat_set<int> >& min_cut_sets,
+      std::set< boost::container::flat_set<int> >* final_cut_sets);
 
   /// Approximations for probability calculations.
   std::string approx_;
@@ -200,9 +206,11 @@ class ProbabilityAnalysis {
   /// Minimal cut sets passed for analysis.
   std::set< std::set<std::string> > min_cut_sets_;
 
-  std::vector< std::set<int> > imcs_;  ///< Min cut sets with indices of events.
+  /// Min cut sets with indices of events.
+  std::vector< boost::container::flat_set<int> > imcs_;
   /// Indices min cut sets to strings min cut sets mapping.
-  std::map< std::set<int>, std::set<std::string> > imcs_to_smcs_;
+  /// The same position as in imcs_ container is assumed.
+  std::vector< std::set<std::string> > imcs_to_smcs_;
 
   /// Total probability of the top event.
   double p_total_;
@@ -214,9 +222,14 @@ class ProbabilityAnalysis {
   std::multimap< double, std::set<std::string> > ordered_min_sets_;
 
   /// Container for primary events and their contribution.
-  std::map< std::string, double > imp_of_primaries_;
+  std::map<std::string, double> imp_of_primaries_;
 
-  /// Container for primary events ordered by their contribution.
+  /// Container for primary event importance types.
+  std::map< std::string, std::vector<double> > importance_;
+
+  /// Container for primary events ordered by their contribution of
+  /// Fussel-Vesely.
+  /// @todo This should a post processing in reporting.
   std::multimap< double, std::string > ordered_primaries_;
 
   /// Register warnings.
