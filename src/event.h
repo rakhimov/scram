@@ -94,11 +94,6 @@ class Gate : public Event {
   /// @throws LogicError if the child is being re-inserted.
   void AddChild(const boost::shared_ptr<Event>& child);
 
-  /// Adds children of another gate to this gate.
-  /// If this gate exists as a child then it is removed from the children.
-  /// @param[in] gate The gate which children are to be added to this gate.
-  void MergeGate(const boost::shared_ptr<Gate>& gate);
-
   /// @returns The children of this gate.
   /// @throws LogicError if there are no children, which should be checked
   ///                    at gate initialization.

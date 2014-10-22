@@ -178,7 +178,7 @@ void RiskAnalysis::Analyze() {
         ProbabilityAnalysisPtr pa(
             new ProbabilityAnalysis(settings_.approx_, settings_.num_sums_,
                                     settings_.cut_off_));
-        pa->UpdateDatabase(it->second->primary_events());
+        pa->UpdateDatabase(it->second->basic_events());
         pa->Analyze(fta->min_cut_sets());
         prob_analyses_.push_back(pa);
 

@@ -23,6 +23,7 @@ class PerformanceTest;
 typedef boost::shared_ptr<scram::Event> EventPtr;
 typedef boost::shared_ptr<scram::Gate> GatePtr;
 typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
+typedef boost::shared_ptr<scram::BasicEvent> BasicEventPtr;
 
 typedef boost::shared_ptr<scram::Superset> SupersetPtr;
 
@@ -63,12 +64,6 @@ class FaultTreeAnalysis {
   }
 
  private:
-  /// Preprocesses the fault tree.
-  /// Merges similar gates.
-  /// @param[in] gate The starting gate to traverse the tree. This is for
-  ///                 recursive purposes.
-  void PreprocessTree(const GatePtr& gate);
-
   /// Traverses the fault tree and expands it into sets of gates and events.
   /// @param[in] set_with_gates A superset with gates.
   /// @param[in] cut_sets Container for cut sets upon tree expansion.
@@ -130,20 +125,6 @@ class FaultTreeAnalysis {
   void SetAnd(int mult, const std::set<int>& events_children,
               std::vector<SupersetPtr>* sets);
 
-  /// Expands sets for XOR operator.
-  /// @param[in] inter_index The positive or negative gate event indicator.
-  /// @param[in] events_children The indices of the children of the event.
-  /// @param[out] sets The final Supersets generated for OR operator.
-  void SetXor(int inter_index, const std::vector<int>& events_children,
-              std::vector<SupersetPtr>* sets);
-
-  /// Expands sets for Vote or Atleat operator.
-  /// @param[in] inter_index The positive or negative gate event indicator.
-  /// @param[in] events_children The indices of the children of the event.
-  /// @param[out] sets The final Supersets generated for OR operator.
-  void SetAtleast(int inter_index, const std::vector<int>& events_children,
-                  std::vector<SupersetPtr>* sets);
-
   /// Finds minimal cut sets from cut sets.
   /// Applys rule 4 to reduce unique cut sets to minimal cut sets.
   /// @param[in] cut_sets Cut sets with primary events.
@@ -202,6 +183,9 @@ class FaultTreeAnalysis {
 
   /// Container for primary events.
   boost::unordered_map<std::string, PrimaryEventPtr> primary_events_;
+
+  /// Container for basic events.
+  boost::unordered_map<std::string, BasicEventPtr> basic_events_;
 
   /// Container for minimal cut sets.
   std::set< std::set<std::string> > min_cut_sets_;

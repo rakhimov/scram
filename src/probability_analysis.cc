@@ -44,10 +44,10 @@ ProbabilityAnalysis::ProbabilityAnalysis(std::string approx, int nsums,
 }
 
 void ProbabilityAnalysis::UpdateDatabase(
-    const boost::unordered_map<std::string, PrimaryEventPtr>& primary_events) {
+    const boost::unordered_map<std::string, BasicEventPtr>& basic_events) {
   /// @todo Strange bottleneck upon direct assignment.
-  primary_events_.clear();
-  primary_events_.insert(primary_events.begin(), primary_events.end());
+  basic_events_.clear();
+  basic_events_.insert(basic_events.begin(), basic_events.end());
   ProbabilityAnalysis::AssignIndices();
 }
 
@@ -67,19 +67,8 @@ void ProbabilityAnalysis::Analyze(
        ++i, ++it_min) {
     // Calculate a probability of a set with AND relationship.
     double p_sub_set = ProbabilityAnalysis::ProbAnd(*it_min);
-    if (p_sub_set > cut_off_) {  // This also removes false state house events.
-      // Remove house events that have probability of 1.
-      flat_set<int> mcs;
-      flat_set<int>::const_iterator it;
-      for (it = it_min->begin(); it != it_min->end(); ++it) {
-        if (*it > 0) {
-          if (true_house_events_.count(*it)) continue;
-          mcs.insert(mcs.end(), *it);
-        } else {
-          if (false_house_events_.count(-*it)) continue;
-          mcs.insert(mcs.end(), *it);
-        }
-      }
+    if (p_sub_set > cut_off_) {
+      flat_set<int> mcs(*it_min);
       mcs_for_prob.insert(mcs_for_prob.end(), mcs);
     }
 
@@ -147,25 +136,18 @@ void ProbabilityAnalysis::Analyze(
 
 void ProbabilityAnalysis::AssignIndices() {
   // Cleanup the previous information.
-  int_to_primary_.clear();
-  primary_to_int_.clear();
+  int_to_basic_.clear();
+  basic_to_int_.clear();
   iprobs_.clear();
   // Indexation of events.
   int j = 1;
-  boost::unordered_map<std::string, PrimaryEventPtr>::iterator itp;
-  // Dummy primary event at index 0.
-  int_to_primary_.push_back(PrimaryEventPtr(new PrimaryEvent("dummy")));
+  boost::unordered_map<std::string, BasicEventPtr>::iterator itp;
+  // Dummy basic event at index 0.
+  int_to_basic_.push_back(BasicEventPtr(new BasicEvent("dummy")));
   iprobs_.push_back(0);
-  for (itp = primary_events_.begin(); itp != primary_events_.end(); ++itp) {
-    int_to_primary_.push_back(itp->second);
-    if (boost::dynamic_pointer_cast<HouseEvent>(itp->second)) {
-      if (itp->second->p() == 0) {
-        false_house_events_.insert(false_house_events_.end(), j);
-      } else {
-        true_house_events_.insert(true_house_events_.end(), j);
-      }
-    }
-    primary_to_int_.insert(std::make_pair(itp->second->id(), j));
+  for (itp = basic_events_.begin(); itp != basic_events_.end(); ++itp) {
+    int_to_basic_.push_back(itp->second);
+    basic_to_int_.insert(std::make_pair(itp->second->id(), j));
     iprobs_.push_back(itp->second->p());
     ++j;
   }
@@ -185,18 +167,18 @@ void ProbabilityAnalysis::IndexMcs(
                    boost::token_compress_on);
       assert(names.size() == 1 || names.size() == 2);
       if (names.size() == 1) {
-        assert(primary_to_int_.count(names[0]));
+        assert(basic_to_int_.count(names[0]));
         mcs_with_indices.insert(mcs_with_indices.end(),
-                                primary_to_int_.find(names[0])->second);
+                                basic_to_int_.find(names[0])->second);
       } else {
         // This must be a complement of an event.
         assert(names[0] == "not");
-        assert(primary_to_int_.count(names[1]));
+        assert(basic_to_int_.count(names[1]));
 
         if (coherent_) coherent_ = false;  // Detected non-coherency.
 
         mcs_with_indices.insert(mcs_with_indices.begin(),
-                                -primary_to_int_.find(names[1])->second);
+                                -basic_to_int_.find(names[1])->second);
       }
     }
     imcs_.push_back(mcs_with_indices);
@@ -339,10 +321,10 @@ void ProbabilityAnalysis::CoherentCombineElAndSet(
 
 void ProbabilityAnalysis::PerformImportanceAnalysis(
     const std::set< boost::container::flat_set<int> >& min_cut_sets) {
-  // Calculate failure contributions of each primary event with very
+  // Calculate failure contributions of each basic event with very
   // simplified coherent algorithm.
-  boost::unordered_map<std::string, PrimaryEventPtr>::iterator it_p;
-  for (it_p = primary_events_.begin(); it_p != primary_events_.end();
+  boost::unordered_map<std::string, BasicEventPtr>::iterator it_p;
+  for (it_p = basic_events_.begin(); it_p != basic_events_.end();
        ++it_p) {
     double contrib_pos = 0;  // Total positive contribution of this event.
     std::map< std::set<std::string>, double >::iterator it_pr;
@@ -361,7 +343,7 @@ void ProbabilityAnalysis::PerformImportanceAnalysis(
   p_given_event.push_back(-100);  // Dummy importance with wrong value.
   // The main data for all the importance types is P(top/event) or
   // P(top/Not event).
-  for (int i = 1; i < int_to_primary_.size(); ++i) {
+  for (int i = 1; i < int_to_basic_.size(); ++i) {
     // Join i with minimal cut sets.
     // Minimize the cut sets.
     // Calculate probability of the remaining cut sets.

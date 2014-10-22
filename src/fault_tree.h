@@ -17,6 +17,7 @@
 typedef boost::shared_ptr<scram::Event> EventPtr;
 typedef boost::shared_ptr<scram::Gate> GatePtr;
 typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
+typedef boost::shared_ptr<scram::BasicEvent> BasicEventPtr;
 
 namespace scram {
 
@@ -68,6 +69,13 @@ class FaultTree : public Element {
     return primary_events_;
   }
 
+  /// @returns The container of basic events of this tree.
+  /// @warning Validate function must be called before this function.
+  inline const boost::unordered_map<std::string, BasicEventPtr>&
+      basic_events() {
+    return basic_events_;
+  }
+
  private:
   /// Traverses the tree to find any cyclicity.
   /// While traversing, this function observes implicitly defined gates, and
@@ -102,6 +110,10 @@ class FaultTree : public Element {
   /// Container for the primary events of the tree.
   /// This container is filled implicitly by traversing the tree.
   boost::unordered_map<std::string, PrimaryEventPtr> primary_events_;
+
+  /// Container for the basic events of the tree.
+  /// This container is filled implicitly by traversing the tree.
+  boost::unordered_map<std::string, BasicEventPtr> basic_events_;
 
   /// Implicitly added gates.
   /// This gates are not added through AddGate() function but by traversing

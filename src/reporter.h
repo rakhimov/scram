@@ -55,11 +55,11 @@ class Reporter {
  private:
   /// Produces lines for printing minimal cut sets.
   /// @param[in] min_cut_sets Minimal cut sets to print.
-  /// @param[in] primary_events Primary events in the minimal cut sets.
+  /// @param[in] basic_events Basic events in the minimal cut sets.
   /// @param[out] lines Lines representing minimal cut sets.
   void McsToPrint(
       const std::set< std::set<std::string> >& min_cut_sets,
-      const boost::unordered_map<std::string, PrimaryEventPtr>& primary_events,
+      const boost::unordered_map<std::string, BasicEventPtr>& basic_events,
       std::map< std::set<std::string>, std::vector<std::string> >* lines);
 
   /// Reports minimal cut sets' probabilities.

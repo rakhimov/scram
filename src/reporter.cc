@@ -43,7 +43,7 @@ void Reporter::ReportFta(
 
   // Convert MCS into representative strings.
   std::map< std::set<std::string>, std::vector<std::string> > lines;
-  Reporter::McsToPrint(fta->min_cut_sets_, fta->primary_events_, &lines);
+  Reporter::McsToPrint(fta->min_cut_sets_, fta->basic_events_, &lines);
 
   // Print warnings of calculations.
   if (fta->warnings_ != "") {
@@ -61,8 +61,8 @@ void Reporter::ReportFta(
       << fta->exp_time_ << "s\n";
   out << std::setw(40) << "MCS Generation Time: " << std::setprecision(5)
       << fta->mcs_time_ - fta->exp_time_ << "s\n";
-  out << std::setw(40) << "Number of Primary Events: "
-      << fta->primary_events_.size() << "\n";
+  out << std::setw(40) << "Number of Basic Events: "
+      << fta->basic_events_.size() << "\n";
   out << std::setw(40) << "Number of Gates: "
       << fta->inter_events_.size() + 1 << "\n";
   out << std::setw(40) << "Limit on order of cut sets: "
@@ -210,7 +210,7 @@ void Reporter::ReportMcsProb(
   // Convert MCS into representative strings.
   std::map< std::set<std::string>, std::vector<std::string> > lines;
   Reporter::McsToPrint(prob_analysis->min_cut_sets_,
-                       prob_analysis->primary_events_,
+                       prob_analysis->basic_events_,
                        &lines);
 
   out << "\nMinimal Cut Set Probabilities Sorted by Order:\n";
@@ -297,7 +297,7 @@ void Reporter::ReportMcsProb(
 
 void Reporter::McsToPrint(
     const std::set< std::set<std::string> >& min_cut_sets,
-    const boost::unordered_map<std::string, PrimaryEventPtr>& primary_events,
+    const boost::unordered_map<std::string, BasicEventPtr>& basic_events,
     std::map< std::set<std::string>, std::vector<std::string> >* lines) {
 
   std::set< std::set<std::string> >::const_iterator it_min;
@@ -318,9 +318,9 @@ void Reporter::McsToPrint(
       assert(names.size() > 0);
       std::string name = "";
       if (names.size() == 1) {
-        name = primary_events.find(names[0])->second->orig_id();
+        name = basic_events.find(names[0])->second->orig_id();
       } else if (names.size() == 2) {
-        name = "NOT " + primary_events.find(names[1])->second->orig_id();
+        name = "NOT " + basic_events.find(names[1])->second->orig_id();
       }
 
       if (line.length() + name.length() + 2 > 60) {
@@ -347,8 +347,8 @@ void Reporter::ReportImportance(
     const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
     std::ostream& out) {
   std::ios::fmtflags fmt(out.flags());  // Save the state to recover later.
-  // Primary event analysis.
-  out << "\nPrimary Event Analysis:\n";
+  // Basic event analysis.
+  out << "\nBasic Event Analysis:\n";
   out << "-----------------------\n";
   out << std::left;
   out << std::setw(40) << "Event" << std::setw(20) << "Failure Contrib."
@@ -358,7 +358,7 @@ void Reporter::ReportImportance(
        it_contr != prob_analysis->ordered_primaries_.rend(); ++it_contr) {
     out << std::left;
     out << std::setw(40)
-        << prob_analysis->primary_events_.find(it_contr->second)->second
+        << prob_analysis->basic_events_.find(it_contr->second)->second
               ->orig_id()
         << std::setw(20) << it_contr->first
         << 100 * it_contr->first / prob_analysis->p_total_ << "%\n";

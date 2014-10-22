@@ -54,9 +54,6 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
   start_time = std::clock();
   // End of Timing Initialization
 
-  // Pre-process the tree.
-  FaultTreeAnalysis::PreprocessTree(fault_tree->top_event());
-
   // Container for cut sets with primary events only.
   std::vector<SupersetPtr> cut_sets;
 
@@ -109,25 +106,6 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
   // Duration of MCS generation.
   mcs_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
   FaultTreeAnalysis::SetsToString(imcs);  // MCS with event ids.
-}
-
-void FaultTreeAnalysis::PreprocessTree(const GatePtr& gate) {
-  std::string parent = gate->type();
-  std::map<std::string, EventPtr>::const_iterator it;
-  for (it = gate->children().begin(); it != gate->children().end(); ++it) {
-    GatePtr child_gate = boost::dynamic_pointer_cast<Gate>(it->second);
-    if (!child_gate) continue;
-    std::string child = child_gate->type();
-    if (((parent == "and" || parent == "or") && parent == child) ||
-        (child == "null") ||
-        (parent == "nand" && child == "and") ||
-        (parent == "nor" && child == "or")) {
-      gate->MergeGate(child_gate);
-      it = gate->children().begin();
-    } else {
-      FaultTreeAnalysis::PreprocessTree(child_gate);
-    }
-  }
 }
 
 void FaultTreeAnalysis::ExpandTree(const SupersetPtr& set_with_gates,
@@ -341,6 +319,9 @@ void FaultTreeAnalysis::AssignIndices(const FaultTreePtr& fault_tree) {
                          fault_tree->primary_events().end());
   // primary_events_ = fault_tree->primary_events();
   inter_events_ = fault_tree->inter_events();
+
+  basic_events_.insert(fault_tree->basic_events().begin(),
+                       fault_tree->basic_events().end());
 
   // Assign an index to each primary event, and populate relevant
   // databases.
