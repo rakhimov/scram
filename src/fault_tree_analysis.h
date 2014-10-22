@@ -15,6 +15,8 @@
 #include "fault_tree.h"
 #include "superset.h"
 
+#include "indexed_fault_tree.h"
+
 class FaultTreeAnalysisTest;
 class PerformanceTest;
 
@@ -42,6 +44,8 @@ class FaultTreeAnalysis {
   /// @param[in] limit_order The maximum limit on minimal cut sets' order.
   /// @throws InvalidArgument if any of the parameters are invalid.
   explicit FaultTreeAnalysis(int limit_order = 20);
+
+  ~FaultTreeAnalysis() { delete indexed_tree_; }
 
   /// Analyzes the fault tree and performs computations.
   /// This function must be called only after initilizing the tree with or
@@ -79,12 +83,6 @@ class FaultTreeAnalysis {
   /// @note O_avg(N, N*logN) O_max(N^2, N^3*logN) where N is a children number.
   void ExpandSets(int inter_index, std::vector<SupersetPtr>* sets);
 
-  /// Converts a set of children into a vector of children indices.
-  /// @param[in] children A set of children of a gate.
-  /// @param[out] events_children The same children's indices in a vector.
-  void ConvertChildrenToVector(const std::map<std::string, EventPtr>& children,
-                               std::vector<int>* events_children);
-
   /// Populates the sets of supersets of a gate that has already been expanded.
   /// @param[in] inter_index The index number of the parent node.
   /// @param[out] sets The final Supersets from the children if there is a gate.
@@ -105,7 +103,7 @@ class FaultTreeAnalysis {
   /// @param[in] events_children The indices of the children of the event.
   /// @param[out] sets The final Supersets from the children if there is a gate.
   void ExpandPositiveGate(int inter_index,
-                          const std::vector<int>& events_children,
+                          const std::set<int>& events_children,
                           std::vector<SupersetPtr>* sets);
 
   /// Expands complement gate's children into supersets.
@@ -113,7 +111,7 @@ class FaultTreeAnalysis {
   /// @param[in] events_children The indices of the children of the event.
   /// @param[out] sets The final Supersets from the children if there is a gate.
   void ExpandNegativeGate(int inter_index,
-                          const std::vector<int>& events_children,
+                          const std::set<int>& events_children,
                           std::vector<SupersetPtr>* sets);
 
   /// Expands sets for OR operator.
@@ -121,7 +119,7 @@ class FaultTreeAnalysis {
   /// @param[in] events_children The indices of the children of the event.
   /// @param[out] sets The final Supersets generated for OR operator.
   /// @note O_avg(N) O_max(N^2)
-  void SetOr(int mult, const std::vector<int>& events_children,
+  void SetOr(int mult, const std::set<int>& events_children,
              std::vector<SupersetPtr>* sets);
 
   /// Expands sets for AND operator.
@@ -129,7 +127,7 @@ class FaultTreeAnalysis {
   /// @param[in] events_children The indices of the children of the event.
   /// @param[out] sets The final Supersets generated for OR operator.
   /// @note O_avg(N*logN) O_max(N*logN) where N is the number of children.
-  void SetAnd(int mult, const std::vector<int>& events_children,
+  void SetAnd(int mult, const std::set<int>& events_children,
               std::vector<SupersetPtr>* sets);
 
   /// Expands sets for XOR operator.
@@ -168,10 +166,14 @@ class FaultTreeAnalysis {
   void AssignIndices(const FaultTreePtr& fault_tree);
 
   /// Converts minimal cut sets from indices to strings for future reporting.
+  /// This function also removes house events from minimal cut sets.
   /// @param[in] imcs Min cut sets with indices of events.
+  /// @todo House events should be removed in pre-processing state.
   void SetsToString(const std::vector< std::set<int> >& imcs);
 
   std::vector<PrimaryEventPtr> int_to_primary_;  ///< Indices to primary events.
+  std::set<int> true_house_events_;  ///< Indices of true house events.
+  std::set<int> false_house_events_;  ///< Indices of false house events.
   /// Indices of primary events.
   boost::unordered_map<std::string, int> primary_to_int_;
 
@@ -180,6 +182,9 @@ class FaultTreeAnalysis {
   boost::unordered_map<int, GatePtr> int_to_inter_;
   /// Indices of intermediate events.
   boost::unordered_map<std::string, int> inter_to_int_;
+
+  /// Indices of all events.
+  boost::unordered_map<std::string, int> all_to_int_;
 
   /// This member is used to provide any warnings about assumptions,
   /// calculations, and settings. These warnings must be written into output
@@ -210,6 +215,9 @@ class FaultTreeAnalysis {
 
   /// Track if the gates are repeated upon expansion.
   boost::unordered_map<int, std::vector<SupersetPtr> > repeat_exp_;
+
+  /// Indexed fault tree.
+  IndexedFaultTree* indexed_tree_;
 };
 
 }  // namespace scram

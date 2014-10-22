@@ -10,13 +10,13 @@
     <define-gate name="TrainOne">
       <or>
         <basic-event name="ValveOne"/>
-        <house-event name="PumpOne"/>
+        <basic-event name="PumpOne"/>
       </or>
     </define-gate>
     <define-gate name="TrainTwo">
       <or>
         <basic-event name="ValveTwo"/>
-        <event name="PumpTwo"/>
+        <basic-event name="PumpTwo"/>
       </or>
     </define-gate>
   </define-fault-tree>

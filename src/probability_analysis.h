@@ -200,7 +200,8 @@ class ProbabilityAnalysis {
   std::set<int> true_house_events_;
   /// Indices of house events with state false.
   std::set<int> false_house_events_;
-
+  /// Indices of basic events.
+  std::vector<int> basic_events_;
   std::vector<double> iprobs_;  ///< Holds probabilities of primary events.
 
   /// Minimal cut sets passed for analysis.

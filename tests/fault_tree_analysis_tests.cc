@@ -2,6 +2,8 @@
 
 #include "error.h"
 
+/*
+
 TEST_F(FaultTreeAnalysisTest, NO_GATE) {
   std::vector<SupersetPtr> sets;
 
@@ -429,6 +431,7 @@ TEST_F(FaultTreeAnalysisTest, ATLEAST_GATE) {
   EXPECT_EQ(exp, output);
 }
 
+
 // ---------------------- Test Public Functions --------------------------
 // Invalid options for the constructor.
 TEST_F(FaultTreeAnalysisTest, Constructor) {
@@ -436,3 +439,4 @@ TEST_F(FaultTreeAnalysisTest, Constructor) {
   // Incorrect limit order for minmal cut sets.
   ASSERT_THROW(FaultTreeAnalysis(-1), InvalidArgument);
 }
+*/
