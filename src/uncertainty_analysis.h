@@ -16,7 +16,6 @@
 
 class UncertaintyAnalysisTest;
 
-typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
 typedef boost::shared_ptr<scram::BasicEvent> BasicEventPtr;
 
 namespace scram {
@@ -44,8 +43,9 @@ friend class Reporter;
   /// previous information. This information is the main source for
   /// calculations.
   /// Updates internal indexes for events.
-  void UpdateDatabase(const boost::unordered_map<std::string, PrimaryEventPtr>&
-                      primary_events);
+  /// @param[in] basic_events Basic events in cut sets.
+  void UpdateDatabase(
+      const boost::unordered_map<std::string, BasicEventPtr>& basic_events);
 
   /// Performs quantitative analysis on minimal cut sets containing primary
   /// events provided in the databases.
@@ -117,18 +117,11 @@ friend class Reporter;
   std::vector<double> sampled_results_;  ///< Storage for sampled values.
 
   /// Container for primary events.
-  boost::unordered_map<std::string, PrimaryEventPtr> primary_events_;
+  boost::unordered_map<std::string, BasicEventPtr> basic_events_;
 
-  std::vector<PrimaryEventPtr> int_to_primary_;  ///< Indices to primary events.
-  /// Indices of primary events.
-  boost::unordered_map<std::string, int> primary_to_int_;
-  /// Indices of house events with state true.
-  std::set<int> true_house_events_;
-  /// Indices of house events with state false.
-  std::set<int> false_house_events_;
-
-  /// Basic events.
-  std::vector<BasicEventPtr> basic_events_;
+  std::vector<BasicEventPtr> int_to_basic_;  ///< Indices to basic events.
+  /// Indices of basic events.
+  boost::unordered_map<std::string, int> basic_to_int_;
 
   /// This vector holds sampled probabilities of events.
   std::vector<double> iprobs_;

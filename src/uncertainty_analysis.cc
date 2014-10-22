@@ -48,8 +48,8 @@ UncertaintyAnalysis::UncertaintyAnalysis(int nsums, double cut_off,
 }
 
 void UncertaintyAnalysis::UpdateDatabase(
-    const boost::unordered_map<std::string, PrimaryEventPtr>& primary_events) {
-  primary_events_ = primary_events;
+    const boost::unordered_map<std::string, BasicEventPtr>& basic_events) {
+  basic_events_ = basic_events;
   UncertaintyAnalysis::AssignIndices();
 }
 
@@ -66,18 +66,7 @@ void UncertaintyAnalysis::Analyze(
     // Calculate a probability of a set with AND relationship.
     double p_sub_set = UncertaintyAnalysis::ProbAnd(*it_min);
     if (p_sub_set > cut_off_) {
-      // Remove house events that have probability of 1.
-      std::set<int> mcs;
-      std::set<int>::iterator it;
-      for (it = it_min->begin(); it != it_min->end(); ++it) {
-        if (*it > 0) {
-          if (true_house_events_.count(*it)) continue;
-          mcs.insert(mcs.end(), *it);
-        } else {
-          if (false_house_events_.count(-*it)) continue;
-          mcs.insert(mcs.end(), *it);
-        }
-      }
+      std::set<int> mcs(*it_min);
       iset.insert(mcs);
     }
   }
@@ -102,27 +91,17 @@ void UncertaintyAnalysis::Analyze(
 
 void UncertaintyAnalysis::AssignIndices() {
   // Cleanup the previous information.
-  int_to_primary_.clear();
-  primary_to_int_.clear();
+  int_to_basic_.clear();
+  basic_to_int_.clear();
   // Indexation of events.
   int j = 1;
-  boost::unordered_map<std::string, PrimaryEventPtr>::iterator itp;
-  // Dummy primary event at index 0.
-  int_to_primary_.push_back(PrimaryEventPtr(new PrimaryEvent("dummy")));
+  boost::unordered_map<std::string, BasicEventPtr>::iterator itp;
+  // Dummy basic event at index 0.
+  int_to_basic_.push_back(BasicEventPtr(new BasicEvent("dummy")));
   iprobs_.push_back(0);
-  for (itp = primary_events_.begin(); itp != primary_events_.end(); ++itp) {
-    int_to_primary_.push_back(itp->second);
-    if (boost::dynamic_pointer_cast<HouseEvent>(itp->second)) {
-      if (itp->second->p() == 0) {
-        false_house_events_.insert(false_house_events_.end(), j);
-      } else {
-        true_house_events_.insert(true_house_events_.end(), j);
-      }
-    } else {
-      basic_events_.push_back(
-          boost::dynamic_pointer_cast<BasicEvent>(itp->second));
-    }
-    primary_to_int_.insert(std::make_pair(itp->second->id(), j));
+  for (itp = basic_events_.begin(); itp != basic_events_.end(); ++itp) {
+    int_to_basic_.push_back(itp->second);
+    basic_to_int_.insert(std::make_pair(itp->second->id(), j));
     iprobs_.push_back(itp->second->p());
     ++j;
   }
@@ -141,13 +120,13 @@ void UncertaintyAnalysis::IndexMcs(
                    boost::token_compress_on);
       assert(names.size() == 1 || names.size() == 2);
       if (names.size() == 1) {
-        assert(primary_to_int_.count(names[0]));
-        mcs_with_indices.insert(primary_to_int_.find(names[0])->second);
+        assert(basic_to_int_.count(names[0]));
+        mcs_with_indices.insert(basic_to_int_.find(names[0])->second);
       } else {
         // This must be a complement of an event.
         assert(names[0] == "not");
-        assert(primary_to_int_.count(names[1]));
-        mcs_with_indices.insert(-primary_to_int_.find(names[1])->second);
+        assert(basic_to_int_.count(names[1]));
+        mcs_with_indices.insert(-basic_to_int_.find(names[1])->second);
       }
     }
     imcs_.push_back(mcs_with_indices);
@@ -212,14 +191,16 @@ void UncertaintyAnalysis::ProbOr(int sign, int nsums,
 void UncertaintyAnalysis::Sample() {
   for (int i = 0; i < num_trials_; ++i) {
     // Reset distributions.
-    std::vector<BasicEventPtr>::iterator it_b;
-    for (it_b = basic_events_.begin(); it_b != basic_events_.end(); ++it_b) {
+    std::vector<BasicEventPtr>::iterator it_b = int_to_basic_.begin();
+    // The first element is dummy.
+    for (++it_b; it_b != int_to_basic_.end(); ++it_b) {
       (*it_b)->Reset();
     }
     // Sample all basic events.
     /// @todo Sample only events that are in the minimal cut sets.
     /// @todo Do not sample constant values(i.e. events without distributions.)
-    for (it_b = basic_events_.begin(); it_b != basic_events_.end(); ++it_b) {
+    it_b = int_to_basic_.begin();
+    for (++it_b; it_b != int_to_basic_.end(); ++it_b) {
       double prob = (*it_b)->SampleProbability();
       if (prob < 0) {
         prob = 0;
@@ -232,7 +213,7 @@ void UncertaintyAnalysis::Sample() {
           warnings_ = "Invalid probability was sampled but adjusted to"
               " proper boundaries of 0 and 1.";
       }
-      iprobs_[primary_to_int_.find((*it_b)->id())->second] = prob;
+      iprobs_[basic_to_int_.find((*it_b)->id())->second] = prob;
     }
     double pos = 0;
     std::vector< std::set<int> >::iterator it_s;
