@@ -28,12 +28,6 @@ FaultTreeAnalysis::FaultTreeAnalysis(int limit_order)
     throw InvalidArgument(msg);
   }
   limit_order_ = limit_order;
-
-  // Pointer to the top event.
-  GatePtr top_event_;
-
-  // Initialize a fault tree with a default name.
-  FaultTreePtr fault_tree_;
 }
 
 /// @class SetPtrComp
@@ -309,58 +303,57 @@ void FaultTreeAnalysis::FindMcs(
 
 void FaultTreeAnalysis::AssignIndices(const FaultTreePtr& fault_tree) {
   // Getting events from the fault tree object.
-  /// @note Direct assignment of the containers leads to very bad performance.
-  /// @todo Very strange performance issue. Conflict between Expansion and
-  /// Probability calculations.
-  top_event_ = fault_tree->top_event();
-  // inter_events_.insert(fault_tree->inter_events().begin(),
-  //                      fault_tree->inter_events().end());
-  primary_events_.insert(fault_tree->primary_events().begin(),
-                         fault_tree->primary_events().end());
-  // primary_events_ = fault_tree->primary_events();
-  inter_events_ = fault_tree->inter_events();
+  top_event_name_ = fault_tree->top_event()->orig_id();
+  num_gates_ = fault_tree->inter_events().size() + 1;  // Include top event.
+  basic_events_ = fault_tree->basic_events();
 
-  basic_events_.insert(fault_tree->basic_events().begin(),
-                       fault_tree->basic_events().end());
+  std::set<int> true_house_events;  // Indices of true house events.
+  std::set<int> false_house_events;  // Indices of false house events.
 
   // Assign an index to each primary event, and populate relevant
   // databases.
   int j = 1;
-  boost::unordered_map<std::string, PrimaryEventPtr>::iterator itp;
+  boost::unordered_map<std::string, PrimaryEventPtr>::const_iterator itp;
   // Dummy primary event at index 0.
   int_to_primary_.push_back(PrimaryEventPtr(new PrimaryEvent("dummy")));
-  for (itp = primary_events_.begin(); itp != primary_events_.end(); ++itp) {
+  for (itp = fault_tree->primary_events().begin();
+       itp != fault_tree->primary_events().end(); ++itp) {
     if (boost::dynamic_pointer_cast<HouseEvent>(itp->second)) {
       if (itp->second->p() == 0) {
-        false_house_events_.insert(false_house_events_.end(), j);
+        false_house_events.insert(false_house_events.end(), j);
       } else {
-        true_house_events_.insert(true_house_events_.end(), j);
+        true_house_events.insert(true_house_events.end(), j);
       }
     }
     int_to_primary_.push_back(itp->second);
-    primary_to_int_.insert(std::make_pair(itp->first, j));
     all_to_int_.insert(std::make_pair(itp->first, j));
     ++j;
   }
 
+  // Intermediate events from indices.
+  boost::unordered_map<int, GatePtr> int_to_inter;
+  // Indices of intermediate events.
+  boost::unordered_map<std::string, int> inter_to_int;
+
   // Assign an index to each top and intermediate event and populate
   // relevant databases.
   top_event_index_ = j;
-  int_to_inter_.insert(std::make_pair(j, top_event_));
-  inter_to_int_.insert(std::make_pair(top_event_->id(), j));
-  all_to_int_.insert(std::make_pair(top_event_->id(), j));
+  int_to_inter.insert(std::make_pair(j, fault_tree->top_event()));
+  inter_to_int.insert(std::make_pair(fault_tree->top_event()->id(), j));
+  all_to_int_.insert(std::make_pair(fault_tree->top_event()->id(), j));
   ++j;
-  boost::unordered_map<std::string, GatePtr>::iterator iti;
-  for (iti = inter_events_.begin(); iti != inter_events_.end(); ++iti) {
-    int_to_inter_.insert(std::make_pair(j, iti->second));
-    inter_to_int_.insert(std::make_pair(iti->first, j));
+  boost::unordered_map<std::string, GatePtr>::const_iterator iti;
+  for (iti = fault_tree->inter_events().begin();
+       iti != fault_tree->inter_events().end(); ++iti) {
+    int_to_inter.insert(std::make_pair(j, iti->second));
+    inter_to_int.insert(std::make_pair(iti->first, j));
     all_to_int_.insert(std::make_pair(iti->first, j));
     ++j;
   }
 
-  indexed_tree_ = new IndexedFaultTree(top_event_index_, true_house_events_,
-                                       false_house_events_, inter_to_int_,
-                                       int_to_inter_, all_to_int_);
+  indexed_tree_ = new IndexedFaultTree(top_event_index_, true_house_events,
+                                       false_house_events, inter_to_int,
+                                       int_to_inter, all_to_int_);
   indexed_tree_->InitiateIndexedFaultTree();
   indexed_tree_->ProcessIndexedFaultTree();
 }

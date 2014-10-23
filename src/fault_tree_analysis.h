@@ -153,16 +153,10 @@ class FaultTreeAnalysis {
   void SetsToString(const std::vector< std::set<int> >& imcs);
 
   std::vector<PrimaryEventPtr> int_to_primary_;  ///< Indices to primary events.
-  std::set<int> true_house_events_;  ///< Indices of true house events.
-  std::set<int> false_house_events_;  ///< Indices of false house events.
-  /// Indices of primary events.
-  boost::unordered_map<std::string, int> primary_to_int_;
 
   int top_event_index_;  ///< The index of the top event.
-  /// Intermediate events from indices.
-  boost::unordered_map<int, GatePtr> int_to_inter_;
-  /// Indices of intermediate events.
-  boost::unordered_map<std::string, int> inter_to_int_;
+  std::string top_event_name_;  ///< The original name of the top event.
+  int num_gates_;  ///< The number of the gates.
 
   /// Indices of all events.
   boost::unordered_map<std::string, int> all_to_int_;
@@ -174,15 +168,6 @@ class FaultTreeAnalysis {
 
   /// Limit on the size of the minimal cut sets for performance reasons.
   int limit_order_;
-
-  /// Top event.
-  GatePtr top_event_;
-
-  /// Holder for intermediate events.
-  boost::unordered_map<std::string, GatePtr> inter_events_;
-
-  /// Container for primary events.
-  boost::unordered_map<std::string, PrimaryEventPtr> primary_events_;
 
   /// Container for basic events.
   boost::unordered_map<std::string, BasicEventPtr> basic_events_;

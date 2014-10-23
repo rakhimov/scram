@@ -41,10 +41,8 @@ class FaultTreeAnalysisTest : public ::testing::Test {
   }
 
   int GetIndex(std::string id) {
-    if (fta->primary_to_int_.count(id)) {
-      return fta->primary_to_int_.find(id)->second;
-    } else if (fta->inter_to_int_.count(id)) {
-      return fta->inter_to_int_.find(id)->second;
+    if (fta->all_to_int_.count(id)) {
+      return fta->all_to_int_.find(id)->second;
     }
     return 0;  // This event is not in the tree.
   }
