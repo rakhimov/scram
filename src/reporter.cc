@@ -137,7 +137,7 @@ void Reporter::ReportProbability(
   out << std::left;
   out << std::setw(40) << "Time: " << pt::second_clock::local_time() << "\n\n";
   out << std::setw(40) << "Probability Calculations Time: "
-      << std::setprecision(5) << prob_analysis->p_time_ << "s\n\n";
+      << std::setprecision(5) << prob_analysis->p_time_ << "s\n";
   out << std::setw(40) << "Importance Calculations Time: "
       << std::setprecision(5) << prob_analysis->imp_time_ << "s\n\n";
   out << std::setw(40) << "Approximation:" << prob_analysis->approx_ << "\n";
@@ -352,22 +352,22 @@ void Reporter::ReportImportance(
   out << "\nBasic Event Analysis:\n";
   out << "-----------------------\n";
   out << std::left;
-  out << std::setw(25) << "Event"
-      << std::setw(10) << "DIF"
-      << std::setw(10) << "MIF"
-      << std::setw(10) << "CIF"
-      << std::setw(10) << "RRW"
-      << std::setw(10) << "RAW"
+  out << std::setw(20) << "Event"
+      << std::setw(12) << "DIF"
+      << std::setw(12) << "MIF"
+      << std::setw(12) << "CIF"
+      << std::setw(12) << "RRW"
+      << std::setw(12) << "RAW"
       << "\n\n";
   std::multimap < double, std::string >::const_reverse_iterator it_contr;
   for (it_contr = prob_analysis->ordered_primaries_.rbegin();
        it_contr != prob_analysis->ordered_primaries_.rend(); ++it_contr) {
     out << std::left;
-    out << std::setw(25)
+    out << std::setw(20)
         << prob_analysis->basic_events_.find(it_contr->second)->second
               ->orig_id();
     for (int i = 0; i < 5; ++i) {
-        out << std::setw(10) << std::setprecision(5)
+        out << std::setw(12) << std::setprecision(4)
             << prob_analysis->importance_.find(it_contr->second)->second[i];
     }
     out << "\n";
