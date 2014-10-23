@@ -2,6 +2,8 @@
 
 #include <vector>
 
+#include <boost/assign/std/vector.hpp>
+
 #include "error.h"
 
 using namespace scram;
@@ -206,7 +208,7 @@ TEST_F(RiskAnalysisTest, GraphingInstructions) {
   EXPECT_THROW(ran->GraphingInstructions(), IOError);
 }
 
-// Test Analysis
+// Test Analysis of Two train system.
 TEST_F(RiskAnalysisTest, AnalyzeDefault) {
   std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
   std::string with_prob =
@@ -242,10 +244,65 @@ TEST_F(RiskAnalysisTest, AnalyzeDefault) {
   EXPECT_DOUBLE_EQ(0.28, prob_of_min_sets().find(mcs_3)->second);
   EXPECT_DOUBLE_EQ(0.2, prob_of_min_sets().find(mcs_4)->second);
 
-  EXPECT_DOUBLE_EQ(0.72, imp_of_primaries().find("pumpone")->second);
-  EXPECT_DOUBLE_EQ(0.7, imp_of_primaries().find("pumptwo")->second);
-  EXPECT_DOUBLE_EQ(0.48, imp_of_primaries().find("valveone")->second);
-  EXPECT_DOUBLE_EQ(0.5, imp_of_primaries().find("valvetwo")->second);
+  // Check importance values.
+  using namespace boost::assign;
+  std::vector<double> imp;
+  std::map< std::string, std::vector<double> > importance;
+  imp += 0.47368, 0.51, 0.9, 1.9, 1.315;
+  importance.insert(std::make_pair("pumpone", imp));
+  imp.clear();
+  imp += 0.41176, 0.38, 0.7, 1.7, 1.1765;
+  importance.insert(std::make_pair("pumptwo", imp));
+  imp.clear();
+  imp += 0.21053, 0.34, 0.26667, 1.2667, 1.3158;
+  importance.insert(std::make_pair("valveone", imp));
+  imp.clear();
+  imp += 0.17647, 0.228, 0.21429, 1.2143, 1.1765;
+  importance.insert(std::make_pair("valvetwo", imp));
+  double delta = 1e-3;
+
+  std::map< std::string, std::vector<double> >::iterator it;
+  for (it = importance.begin(); it != importance.end(); ++it) {
+    std::vector<double> results = RiskAnalysisTest::importance(it->first);
+    assert(results.size() == 5);
+    for (int i = 0; i < 5; ++i) {
+      EXPECT_NEAR(it->second[i], results[i], delta)
+          << it->first << ": Importance " << i;
+    }
+  }
+}
+
+TEST_F(RiskAnalysisTest, Importance) {
+  std::string tree_input = "./share/scram/input/fta/importance_test.xml";
+  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  EXPECT_DOUBLE_EQ(0.67, p_total());
+  // Check importance values with negative event.
+  using namespace boost::assign;
+  std::vector<double> imp;
+  std::map< std::string, std::vector<double> > importance;
+  imp += 0.40299, 0.45, 0.675, 1.675, 1.2687;
+  importance.insert(std::make_pair("pumpone", imp));
+  imp.clear();
+  imp += 0.31343, 0.3, 0.45652, 1.4565, 1.1343;
+  importance.insert(std::make_pair("pumptwo", imp));
+  imp.clear();
+  imp += 0.23881, 0.4, 0.31373, 1.3137, 1.3582;
+  importance.insert(std::make_pair("valveone", imp));
+  imp.clear();
+  imp += 0.13433, 0.18, 0.15517, 1.1552, 1.1343;
+  importance.insert(std::make_pair("valvetwo", imp));
+  double delta = 1e-3;
+
+  std::map< std::string, std::vector<double> >::iterator it;
+  for (it = importance.begin(); it != importance.end(); ++it) {
+    std::vector<double> results = RiskAnalysisTest::importance(it->first);
+    assert(results.size() == 5);
+    for (int i = 0; i < 5; ++i) {
+      EXPECT_NEAR(it->second[i], results[i], delta)
+          << it->first << ": Importance " << i;
+    }
+  }
 }
 
 // Apply the rare event approximation.

@@ -65,10 +65,11 @@ class ProbabilityAnalysis {
     return prob_of_min_sets_;
   }
 
-  /// @returns Map with primary events and their contribution.
+  /// @returns Map with primary events and their importance values.
+  ///          The associated vector contains DIF, MIF, CIF, RRW, RAW in order.
   /// @note The user should make sure that the analysis is actually done.
-  inline const std::map< std::string, double >& imp_of_primaries() {
-    return imp_of_primaries_;
+  inline const std::map< std::string, std::vector<double> >& importance() {
+    return importance_;
   }
 
   /// @returns Container for minimal cut sets ordered by their probabilities.
@@ -218,10 +219,8 @@ class ProbabilityAnalysis {
   /// Container for minimal cut sets ordered by their probabilities.
   std::multimap< double, std::set<std::string> > ordered_min_sets_;
 
-  /// Container for primary events and their contribution.
-  std::map<std::string, double> imp_of_primaries_;
-
-  /// Container for primary event importance types.
+  /// Container for basic event importance types.
+  /// The order is DIF, MIF, CIF, RRW, RAW.
   std::map< std::string, std::vector<double> > importance_;
 
   /// Container for primary events ordered by their contribution of
@@ -238,6 +237,7 @@ class ProbabilityAnalysis {
   bool coherent_;  ///< Indication of coherent optimized analysis.
 
   double p_time_;  ///< Time for probability calculations.
+  double imp_time_;  ///< Time for importance calculations.
 };
 
 }  // namespace scram

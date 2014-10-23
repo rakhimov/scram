@@ -136,8 +136,10 @@ void Reporter::ReportProbability(
   out << "====================\n\n";
   out << std::left;
   out << std::setw(40) << "Time: " << pt::second_clock::local_time() << "\n\n";
-  out << std::setw(40) << "Probability Operations Time: "
+  out << std::setw(40) << "Probability Calculations Time: "
       << std::setprecision(5) << prob_analysis->p_time_ << "s\n\n";
+  out << std::setw(40) << "Importance Calculations Time: "
+      << std::setprecision(5) << prob_analysis->imp_time_ << "s\n\n";
   out << std::setw(40) << "Approximation:" << prob_analysis->approx_ << "\n";
   out << std::setw(40) << "Limit on series: " << prob_analysis->nsums_ << "\n";
   out << std::setw(40) << "Cut-off probability for cut sets: "
@@ -350,18 +352,25 @@ void Reporter::ReportImportance(
   out << "\nBasic Event Analysis:\n";
   out << "-----------------------\n";
   out << std::left;
-  out << std::setw(40) << "Event" << std::setw(20) << "Failure Contrib."
-      << "Importance\n\n";
+  out << std::setw(25) << "Event"
+      << std::setw(10) << "DIF"
+      << std::setw(10) << "MIF"
+      << std::setw(10) << "CIF"
+      << std::setw(10) << "RRW"
+      << std::setw(10) << "RAW"
+      << "\n\n";
   std::multimap < double, std::string >::const_reverse_iterator it_contr;
   for (it_contr = prob_analysis->ordered_primaries_.rbegin();
        it_contr != prob_analysis->ordered_primaries_.rend(); ++it_contr) {
     out << std::left;
-    out << std::setw(40)
+    out << std::setw(25)
         << prob_analysis->basic_events_.find(it_contr->second)->second
-              ->orig_id()
-        << std::setw(20) << it_contr->first
-        << 100 * it_contr->first / prob_analysis->p_total_ << "%\n";
-    out.flush();
+              ->orig_id();
+    for (int i = 0; i < 5; ++i) {
+        out << std::setw(10) << std::setprecision(5)
+            << prob_analysis->importance_.find(it_contr->second)->second[i];
+    }
+    out << "\n";
   }
   out.flags(fmt);  // Restore the initial state.
 }

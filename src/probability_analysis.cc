@@ -18,7 +18,8 @@ ProbabilityAnalysis::ProbabilityAnalysis(std::string approx, int nsums,
       p_total_(0),
       num_prob_mcs_(-1),
       coherent_(true),
-      p_time_(-1) {
+      p_time_(-1),
+      imp_time_(-1) {
   // Check for right number of sums.
   if (nsums < 1) {
     std::string msg = "The number of sums in the probability calculation "
@@ -125,11 +126,14 @@ void ProbabilityAnalysis::Analyze(
       p_total_ = ProbabilityAnalysis::ProbOr(nsums_, &mcs_for_prob);
     }
   }
+  // Duration of the calculations.
+  p_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
 
   ProbabilityAnalysis::PerformImportanceAnalysis(mcs_for_imp);
 
   // Duration of the calculations.
-  p_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
+  imp_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
+  imp_time_ -= p_time_;
 }
 
 void ProbabilityAnalysis::AssignIndices() {
@@ -319,33 +323,36 @@ void ProbabilityAnalysis::CoherentCombineElAndSet(
 
 void ProbabilityAnalysis::PerformImportanceAnalysis(
     const std::set< boost::container::flat_set<int> >& min_cut_sets) {
-  // Calculate failure contributions of each basic event with very
-  // simplified coherent algorithm.
-  boost::unordered_map<std::string, BasicEventPtr>::iterator it_p;
-  for (it_p = basic_events_.begin(); it_p != basic_events_.end();
-       ++it_p) {
-    double contrib_pos = 0;  // Total positive contribution of this event.
-    std::map< std::set<std::string>, double >::iterator it_pr;
-    for (it_pr = prob_of_min_sets_.begin();
-         it_pr != prob_of_min_sets_.end(); ++it_pr) {
-      if (it_pr->first.count(it_p->first)) {
-        contrib_pos += it_pr->second;
-      }
-    }
-    imp_of_primaries_.insert(std::make_pair(it_p->first, contrib_pos));
-    ordered_primaries_.insert(std::make_pair(contrib_pos, it_p->first));
-  }
-  // Probability of top given enent with index.
-  // Zero index is dummy.
-  std::vector<double> p_given_event;
-  p_given_event.push_back(-100);  // Dummy importance with wrong value.
   // The main data for all the importance types is P(top/event) or
   // P(top/Not event).
   for (int i = 1; i < int_to_basic_.size(); ++i) {
-    // Join i with minimal cut sets.
-    // Minimize the cut sets.
-    // Calculate probability of the remaining cut sets.
-    // Devide that total probability by the events probability.
+    // Calculate P(top/event)
+    iprobs_[i] = 1;
+    std::set< boost::container::flat_set<int> > cut_sets(min_cut_sets);
+    double p_e = ProbabilityAnalysis::ProbOr(nsums_, &cut_sets);
+
+    // Calculate P(top/Not event)
+    iprobs_[i] = 0;
+    cut_sets = min_cut_sets;
+    double p_not_e = ProbabilityAnalysis::ProbOr(nsums_, &cut_sets);
+    // Restore the probability.
+    iprobs_[i] = int_to_basic_[i]->p();
+
+    // Mapped vector for importances.
+    std::vector<double> imp;
+    // Fussel-Vesely Diagnosis importance factor.
+    imp.push_back(1 - p_not_e / p_total_);
+    // Birnbaum Marginal importance factor.
+    imp.push_back(p_e - p_not_e);
+    // Critical Importance factor.
+    imp.push_back(imp[1] * iprobs_[i] / p_not_e);
+    // Risk Reduction Worth.
+    imp.push_back(p_total_ / p_not_e);
+    // Risk Achievement Worth.
+    imp.push_back(p_e / p_total_);
+
+    importance_.insert(std::make_pair(int_to_basic_[i]->id(), imp));
+    ordered_primaries_.insert(std::make_pair(imp[0], int_to_basic_[i]->id()));
   }
 }
 
