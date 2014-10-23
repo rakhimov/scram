@@ -45,9 +45,7 @@ ProbabilityAnalysis::ProbabilityAnalysis(std::string approx, int nsums,
 
 void ProbabilityAnalysis::UpdateDatabase(
     const boost::unordered_map<std::string, BasicEventPtr>& basic_events) {
-  /// @todo Strange bottleneck upon direct assignment.
-  basic_events_.clear();
-  basic_events_.insert(basic_events.begin(), basic_events.end());
+  basic_events_ = basic_events;
   ProbabilityAnalysis::AssignIndices();
 }
 
