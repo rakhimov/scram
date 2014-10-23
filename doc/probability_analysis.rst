@@ -108,3 +108,18 @@ probabilities:
     series should be around 4-8. The default value is conservative 7.
     There are N sums and :math:`2^N` terms for N minimal cut sets, so
     the N number of series for calculations can be enforced by a user.
+
+
+Importance Analysis
+===================
+
+Importance analysis is performed for basic events. Currently, for calculations
+the same configurations are applied as for probability analysis.
+The analysis is performed by default on command-line call with probability
+data. The following factors are calculated:
+
+    * Fussel-Vesely Diagnosis Importance Factor (DIF)
+    * Birnbaum Marginal Importance Factor (MIF)
+    * Critical Importance Factor (CIF)
+    * Risk Reduction Worth (RRW)
+    * Risk Achievement Worth (RAW)
