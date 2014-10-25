@@ -179,10 +179,10 @@ void LogNormalDeviate::Validate() {
   } else if (mean_->Mean() <= 0) {
     throw InvalidArgument("The mean of Log-Normal distribution cannot be"
                           " negative or zero.");
-  } else if (ef_->Mean() <= 1) {
+  } else if (ef_->Min() <= 1) {
     throw InvalidArgument("The Sampled Error Factor for Log-Normal"
                           " distribution cannot be less than 1.");
-  } else if (mean_->Mean() <= 0) {
+  } else if (mean_->Min() <= 0) {
     throw InvalidArgument("The sampled mean of Log-Normal distribution"
                           " cannot be negative or zero.");
   }

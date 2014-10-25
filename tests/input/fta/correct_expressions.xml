@@ -80,7 +80,7 @@ The input tries to utilize all the functionality including optional cases.
     <define-basic-event name="NormalDeviate">
       <normal-deviate>
         <float value="0.5"/>
-        <float value="0.2"/>
+        <float value="0.02"/>
       </normal-deviate>
     </define-basic-event>
     <define-basic-event name="LogNormalDeviate">
@@ -93,27 +93,27 @@ The input tries to utilize all the functionality including optional cases.
     <define-basic-event name="GammaDeviate">
       <gamma-deviate>
         <float value="0.2"/>
-        <float value="3"/>
+        <float value="0.3"/>
       </gamma-deviate>
     </define-basic-event>
     <define-basic-event name="BetaDeviate">
       <beta-deviate>
         <float value="3"/>
-        <float value="4"/>
+        <float value="400"/>
       </beta-deviate>
     </define-basic-event>
     <define-basic-event name="Histogram">
       <histogram>
         <bin>
-          <int value="1"/>
+          <float value="0.1"/>
           <float value="2"/>
         </bin>
         <bin>
-          <int value="3"/>
+          <float value="0.3"/>
           <float value="4"/>
         </bin>
         <bin>
-          <int value="5"/>
+          <float value="0.5"/>
           <float value="1"/>
         </bin>
       </histogram>
