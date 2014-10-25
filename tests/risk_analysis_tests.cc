@@ -200,12 +200,12 @@ TEST_F(RiskAnalysisTest, GraphingInstructions) {
     delete ran;
     ran = new RiskAnalysis();
     ASSERT_NO_THROW(ran->ProcessInput(*it));
-    ASSERT_NO_THROW(ran->GraphingInstructions());
+    ASSERT_NO_THROW(ran->GraphingInstructions("/dev/null"));
   }
 
   // Messing up the input file.
-  input_file() = "abracadabra.cadabraabra/share/scram/input/graphing.xml";
-  EXPECT_THROW(ran->GraphingInstructions(), IOError);
+  std::string output = "abracadabra.cadabraabra/graphing.dot";
+  EXPECT_THROW(ran->GraphingInstructions(output), IOError);
 }
 
 // Test Analysis of Two train system.
@@ -347,4 +347,8 @@ TEST_F(RiskAnalysisTest, Report) {
   ran->AddSettings(settings.approx("rare"));
   ASSERT_NO_THROW(ran->Analyze());
   ASSERT_NO_THROW(ran->Report("/dev/null"));
+
+  // Messing up the output file.
+  std::string output = "abracadabra.cadabraabra/output.txt";
+  EXPECT_THROW(ran->Report(output), IOError);
 }

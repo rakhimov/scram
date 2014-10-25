@@ -113,7 +113,8 @@ probabilities:
 Importance Analysis
 ===================
 
-Importance analysis is performed for basic events. Currently, for calculations
+Importance analysis is performed for basic events that appear in minimal
+cut sets. Currently, for calculations
 the same configurations are applied as for probability analysis.
 The analysis is performed by default on command-line call with probability
 data. The following factors are calculated:

@@ -5,14 +5,9 @@
 #include <algorithm>
 #include <cmath>
 #include <ctime>
-#include <fstream>
 #include <iomanip>
-#include <iostream>
-#include <iterator>
-#include <set>
 #include <sstream>
 #include <utility>
-#include <vector>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
@@ -356,8 +351,7 @@ void Reporter::ReportImportance(
       << std::setw(12) << "DIF"
       << std::setw(12) << "MIF"
       << std::setw(12) << "CIF"
-      << std::setw(12) << "RRW"
-      << std::setw(12) << "RAW"
+      << std::setw(12) << "RRW" << "RAW"
       << "\n\n";
   std::multimap < double, std::string >::const_reverse_iterator it_contr;
   for (it_contr = prob_analysis->ordered_primaries_.rbegin();
@@ -367,7 +361,8 @@ void Reporter::ReportImportance(
         << prob_analysis->basic_events_.find(it_contr->second)->second
               ->orig_id();
     for (int i = 0; i < 5; ++i) {
-        out << std::setw(12) << std::setprecision(4)
+        if (i < 4) out << std::setw(12);
+        out << std::setprecision(4)
             << prob_analysis->importance_.find(it_contr->second)->second[i];
     }
     out << "\n";

@@ -60,13 +60,13 @@ def test_fta_calls():
     yield assert_not_equal, 0, call(cmd)
 
     # Test graph only
-    cmd = ["scram", "-g", fta_input]
+    graph_file = "./input/fta/TwoTrains.dot"
+    cmd = ["scram", fta_input, "-g", "-o", graph_file]
     yield assert_equal, 0, call(cmd)
-    graph_file = "./input/fta/correct_tree_input_with_probs_TwoTrains.dot"
     # Changing permission
     cmd = ["chmod", "a-w", graph_file]
     call(cmd)
-    cmd = ["scram", "-g", fta_input]
+    cmd = ["scram", fta_input, "-g", "-o", graph_file]
     yield assert_not_equal, 0, call(cmd)
     if os.path.isfile(graph_file):
         os.remove(graph_file)

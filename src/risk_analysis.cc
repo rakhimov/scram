@@ -37,8 +37,7 @@ typedef boost::shared_ptr<scram::Histogram> HistogramPtr;
 namespace scram {
 
 RiskAnalysis::RiskAnalysis(std::string config_file)
-    : prob_requested_(false),
-      input_file_("") {
+    : prob_requested_(false) {
   // Add valid gate types.
   gate_types_.insert("and");
   gate_types_.insert("or");
@@ -72,53 +71,23 @@ RiskAnalysis::RiskAnalysis(std::string config_file)
 }
 
 void RiskAnalysis::ProcessInput(std::string xml_file) {
-  std::ifstream file_stream(xml_file.c_str());
-  if (!file_stream) {
-    throw IOError("The file '" + xml_file + "' could not be loaded.");
-  }
+  std::vector<std::string> single;
+  single.push_back(xml_file);
+  RiskAnalysis::ProcessInputFiles(single);
+}
 
+void RiskAnalysis::ProcessInputFiles(
+    const std::vector<std::string>& xml_files) {
   // Assume that setting are configured.
   mission_time_->mission_time(settings_.mission_time_);
 
-  input_file_ = xml_file;
-
-  std::stringstream stream;
-  stream << file_stream.rdbuf();
-  file_stream.close();
-
-  boost::shared_ptr<XMLParser> parser(new XMLParser());
-  parser->Init(stream);
-
-  std::stringstream schema;
-#if EMBED_SCHEMA
-  schema << g_schema_content;
-#else
-  std::string schema_path = Env::rng_schema();
-  std::ifstream schema_stream(schema_path.c_str());
-  schema << schema_stream.rdbuf();
-  schema_stream.close();
-#endif
-  parser->Validate(schema);
-
-  xmlpp::Document* doc = parser->Document();
-  const xmlpp::Node* root = doc->get_root_node();
-  assert(root->get_name() == "opsa-mef");
-  xmlpp::NodeSet roots_children = root->find("./*");
-  xmlpp::NodeSet::iterator it_ch;
-  for (it_ch = roots_children.begin(); it_ch != roots_children.end(); ++it_ch) {
-    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it_ch);
-    assert(element);
-
-    std::string name = element->get_name();
-    if (name == "define-fault-tree") {
-      // Handle the fault tree initialization.
-      RiskAnalysis::DefineFaultTree(element);
-    } else if (name == "model-data") {
-      // Handle the data.
-      RiskAnalysis::ProcessModelData(element);
-    } else {
-      // Not yet capable of handling other analysis.
-      throw(ValidationError("Cannot handle '" + name + "'"));
+  std::vector<std::string>::const_iterator it;
+  for (it = xml_files.begin(); it != xml_files.end(); ++it) {
+    try {
+      RiskAnalysis::ProcessInputFile(*it);
+    } catch (ValidationError& err) {
+      err.msg("In file '" + *it + "', " + err.msg());
+      throw err;
     }
   }
 
@@ -153,12 +122,25 @@ void RiskAnalysis::ProcessInput(std::string xml_file) {
   RiskAnalysis::ValidateInitialization();
 }
 
-void RiskAnalysis::GraphingInstructions() {
+void RiskAnalysis::GraphingInstructions(std::string output) {
   std::map<std::string, FaultTreePtr>::iterator it;
   for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
-    std::string output_file_name = input_file_;
+    // Check if output to file is requested.
+    std::streambuf* buf;
+    std::ofstream of;
+    if (output != "cli") {
+      of.open(output.c_str());
+      if (!of.good()) {
+        throw IOError(output +  " : Cannot write the graphing file.");
+      }
+      buf = of.rdbuf();
+
+    } else {
+      buf = std::cout.rdbuf();
+    }
+    std::ostream out(buf);
     Grapher gr = Grapher();
-    gr.GraphFaultTree(it->second, prob_requested_, output_file_name);
+    gr.GraphFaultTree(it->second, prob_requested_, out);
   }
 }
 
@@ -168,7 +150,6 @@ void RiskAnalysis::Analyze() {
 
   std::map<std::string, FaultTreePtr>::iterator it;
   for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
-    std::string output_file_name = input_file_ + "_" + it->second->name();
     FaultTreeAnalysisPtr fta(new FaultTreeAnalysis(settings_.limit_order_));
     fta->Analyze(it->second);
     ftas_.push_back(fta);
@@ -202,6 +183,9 @@ void RiskAnalysis::Report(std::string output) {
   std::ofstream of;
   if (output != "cli") {
     of.open(output.c_str());
+    if (!of.good()) {
+      throw IOError(output +  " : Cannot write the output file.");
+    }
     buf = of.rdbuf();
 
   } else {
@@ -230,8 +214,58 @@ void RiskAnalysis::Report(std::string output) {
   }
 }
 
-void RiskAnalysis::AttachLabelAndAttributes(const xmlpp::Element* element_node,
-                                            const ElementPtr& element) {
+void RiskAnalysis::ProcessInputFile(std::string xml_file) {
+  std::ifstream file_stream(xml_file.c_str());
+  if (!file_stream) {
+    throw IOError("The file '" + xml_file + "' could not be loaded.");
+  }
+
+  std::stringstream stream;
+  stream << file_stream.rdbuf();
+  file_stream.close();
+
+  boost::shared_ptr<XMLParser> parser(new XMLParser());
+  parser->Init(stream);
+
+  std::stringstream schema;
+#if EMBED_SCHEMA
+  schema << g_schema_content;
+#else
+  std::string schema_path = Env::rng_schema();
+  std::ifstream schema_stream(schema_path.c_str());
+  schema << schema_stream.rdbuf();
+  schema_stream.close();
+#endif
+  parser->Validate(schema);
+
+  xmlpp::Document* doc = parser->Document();
+  const xmlpp::Node* root = doc->get_root_node();
+  assert(root->get_name() == "opsa-mef");
+  xmlpp::NodeSet roots_children = root->find("./*");
+  xmlpp::NodeSet::iterator it_ch;
+  for (it_ch = roots_children.begin();
+       it_ch != roots_children.end(); ++it_ch) {
+    const xmlpp::Element* element =
+        dynamic_cast<const xmlpp::Element*>(*it_ch);
+    assert(element);
+
+    std::string name = element->get_name();
+    if (name == "define-fault-tree") {
+      // Handle the fault tree initialization.
+      RiskAnalysis::DefineFaultTree(element);
+    } else if (name == "model-data") {
+      // Handle the data.
+      RiskAnalysis::ProcessModelData(element);
+    } else {
+      // Not yet capable of handling other analysis.
+      throw(ValidationError("Cannot handle '" + name + "'"));
+    }
+  }
+}
+
+void RiskAnalysis::AttachLabelAndAttributes(
+    const xmlpp::Element* element_node,
+    const ElementPtr& element) {
   xmlpp::NodeSet labels = element_node->find("./*[name() = 'label']");
   if (!labels.empty()) {
     assert(labels.size() == 1);

@@ -3,11 +3,9 @@
 #ifndef SCRAM_SRC_REPORTER_H_
 #define SCRAM_SRC_REPORTER_H_
 
-#include <fstream>
 #include <iostream>
 #include <map>
 #include <set>
-#include <sstream>
 #include <string>
 #include <vector>
 

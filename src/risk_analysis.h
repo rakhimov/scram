@@ -59,24 +59,32 @@ class RiskAnalysis {
   /// @param[in] settings Configured settings for analysis.
   void AddSettings(const Settings& settings) { settings_ = settings; }
 
-  /// Reads input file with the structure of analysis entities.
+  /// Reads one input file with the structure of analysis entities.
   /// Initializes the analysis from the given input file.
   /// Puts all events into their appropriate containers.
   /// @param[in] xml_file The formatted xml input file.
   /// @throws ValidationError if input contains errors.
   /// @throws ValueError if input values are not valid.
-  /// @throws IOError if the input file is not accessable.
-  /// @todo May have default configurations for analysis off all input files.
+  /// @throws IOError if an input file is not accessable.
+  /// @deprecated Use multiple file processing method instead.
   void ProcessInput(std::string xml_file);
 
+  /// Reads input files with the structure of analysis entities.
+  /// Initializes the analysis from the given input files.
+  /// Puts all events into their appropriate containers.
+  /// @param[in] xml_files The formatted xml input files.
+  /// @throws ValidationError if input contains errors.
+  /// @throws ValueError if input values are not valid.
+  /// @throws IOError if an input file is not accessable.
+  /// @todo May have default configurations for analysis off all input files.
+  void ProcessInputFiles(const std::vector<std::string>& xml_files);
+
   /// Graphing or other visual resources for the analysis if applicable.
-  /// Outputs a file with instructions for graphviz dot to create a fault tree.
-  /// @note This function must be called only after initializing the tree.
-  /// @note The name of the output file is the same as the input file, but
-  /// the extensions are different.
-  /// @throws Error if called before tree initialization from an input file.
+  /// Outputs instructions for graphviz dot to create a fault tree.
+  /// param[out] output The output destination.
+  /// @note This function must be called only after initialization of the tree.
   /// @throws IOError if the output file is not accessable.
-  void GraphingInstructions();
+  void GraphingInstructions(std::string output);
 
   /// Performs the main analysis operations.
   /// Analyzes the fault tree and performs computations.
@@ -92,6 +100,16 @@ class RiskAnalysis {
   void Report(std::string output);
 
  private:
+  /// Reads one input file with the structure of analysis entities.
+  /// Initializes the analysis from the given input file.
+  /// Puts all events into their appropriate containers.
+  /// @param[in] xml_file The formatted xml input file.
+  /// @throws ValidationError if input contains errors.
+  /// @throws ValueError if input values are not valid.
+  /// @throws IOError if an input file is not accessable.
+  /// @todo May have default configurations for analysis off all input files.
+  void ProcessInputFile(std::string xml_file);
+
   /// Attaches attributes and label to the elements of the analysis.
   /// These attributes are not XML attributes but OpenPSA format defined
   /// arbitrary attributes and label that can be attached to many analysis
@@ -302,9 +320,6 @@ class RiskAnalysis {
 
   /// Uncertainty analyses that are performed.
   std::vector<UncertaintyAnalysisPtr> uncertainty_analyses_;
-
-  /// Input file path.
-  std::string input_file_;
 
   /// Indicator if probability calculations are requested.
   bool prob_requested_;
