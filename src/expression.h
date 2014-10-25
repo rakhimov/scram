@@ -8,6 +8,9 @@
 #include <vector>
 
 #include <boost/shared_ptr.hpp>
+#include <boost/math/special_functions/erf.hpp>
+#include <boost/math/special_functions/gamma.hpp>
+#include <boost/math/special_functions/beta.hpp>
 
 #include "element.h"
 
@@ -37,6 +40,12 @@ class Expression {
 
   /// Indication of constant expression.
   virtual inline bool IsConstant() { return false; }
+
+  /// Maximum value of this expression. This indication is for sampling cases.
+  virtual inline double Max() { return Mean(); }
+
+  /// Minimum value of this expression. This indication is for sampling cases.
+  virtual inline double Min() { return Mean(); }
 
  protected:
   /// Indication if the expression is already sampled.
@@ -107,6 +116,8 @@ class Parameter : public Expression, public Element {
   }
 
   inline bool IsConstant() { return expression_->IsConstant(); }
+  inline double Max() { return expression_->Max(); }
+  inline double Min() { return expression_->Min(); }
 
  private:
   /// Helper funciton to check for cyclic references in parameters.
@@ -210,6 +221,14 @@ class ExponentialExpression : public Expression {
     return lambda_->IsConstant() && time_->IsConstant();
   }
 
+  inline double Max() {
+    return 1 - std::exp(-(lambda_->Max() * time_->Max()));
+  }
+
+  inline double Min() {
+    return 1 - std::exp(-(lambda_->Min() * time_->Min()));
+  }
+
  private:
   /// Failure rate in hours.
   ExpressionPtr lambda_;
@@ -259,6 +278,16 @@ class GlmExpression : public Expression {
   inline bool IsConstant() {
     return gamma_->IsConstant() && lambda_->IsConstant() &&
         time_->IsConstant() && mu_->IsConstant();
+  }
+
+  inline double Max() {
+    /// @todo Find the maximum case.
+    return 1;
+  }
+
+  inline double Min() {
+    /// @todo Find the minimum case.
+    return 0;
   }
 
  private:
@@ -316,6 +345,16 @@ class WeibullExpression : public Expression {
         time_->IsConstant();
   }
 
+  inline double Max() {
+    return 1 - std::exp(-std::pow((time_->Max() - t0_->Min()) /
+                                  alpha_->Min(), beta_->Max()));
+  }
+
+  inline double Min() {
+    return 1 - std::exp(-std::pow((time_->Min() - t0_->Max()) /
+                                  alpha_->Max(), beta_->Min()));
+  }
+
  private:
   /// Scale parameter.
   ExpressionPtr alpha_;
@@ -357,6 +396,9 @@ class UniformDeviate : public Expression {
     max_->Reset();
   }
 
+  inline double Max() { return max_->Max(); }
+  inline double Min() { return min_->Min(); }
+
  private:
   /// Minimum value of the distribution.
   ExpressionPtr min_;
@@ -391,6 +433,11 @@ class NormalDeviate : public Expression {
     mean_->Reset();
     sigma_->Reset();
   }
+
+  /// @warning This is only an approximation.
+  inline double Max() { return mean_->Max() + 6 * sigma_->Max(); }
+  /// @warning This is only an approximation.
+  inline double Min() { return mean_->Min() - 6 * sigma_->Max(); }
 
  private:
   /// Mean value of normal distribution.
@@ -437,6 +484,16 @@ class LogNormalDeviate : public Expression {
     level_->Reset();
   }
 
+  /// 99 percentile estimate.
+  inline double Max() {
+    double sigma = std::log(ef_->Mean()) / 1.645;
+    double mu = std::log(mean_->Max()) - std::pow(sigma, 2) / 2;
+    return std::exp(std::sqrt(2) * std::pow(boost::math::erfc(1 / 50), -1) *
+                    sigma + mu);
+  }
+
+  inline double Min() { return 0; }
+
  private:
   /// Mean value of the log-normal distribution.
   ExpressionPtr mean_;
@@ -475,6 +532,16 @@ class GammaDeviate : public Expression {
     theta_->Reset();
   }
 
+  inline double Max() {
+    return theta_->Max() *
+        std::pow(boost::math::gamma_q(k_->Max(),
+                                      boost::math::gamma_q(k_->Max(), 0)
+                                      - 0.99),
+                 -1);
+  }
+
+  inline double Min() { return 0; }
+
  private:
   /// The shape parameter of the gamma distribution.
   ExpressionPtr k_;
@@ -511,6 +578,13 @@ class BetaDeviate : public Expression {
     alpha_->Reset();
     beta_->Reset();
   }
+
+  /// 99 percentile estimate.
+  inline double Max() {
+    return std::pow(boost::math::ibeta(alpha_->Max(), beta_->Max(), 0.99), -1);
+  }
+
+  inline double Min() { return 0; }
 
  private:
   /// The alpha shape parameter of the beta distribution.
@@ -566,22 +640,17 @@ class Histogram : public Expression {
     }
   }
 
+  inline double Max() { return boundaries_.back()->Max(); }
+  inline double Min() { return boundaries_.front()->Min(); }
+
  private:
   /// Checks if mean values of expressions are stricly increasing.
   /// @throws InvalidArgument if the mean values are not strictly increasing.
   void CheckBoundaries(const std::vector<ExpressionPtr>& boundaries);
 
-  /// Checks if values are stricly increasing for sampled values.
-  /// @throws InvalidArgument if the values are not strictly increasing.
-  void CheckBoundaries(const std::vector<double>& boundaries);
-
-  /// Checks if mean values of boundaries are non-negative.
+    /// Checks if mean values of boundaries are non-negative.
   /// @throws InvalidArgument if the mean values are negative.
   void CheckWeights(const std::vector<ExpressionPtr>& weights);
-
-  /// Checks if values are non-negative for sampled weights.
-  /// @throws InvalidArgument if the values are negative.
-  void CheckWeights(const std::vector<double>& weights);
 
   /// Upper boundaries of the histogram.
   std::vector<ExpressionPtr> boundaries_;

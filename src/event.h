@@ -142,6 +142,10 @@ class PrimaryEvent : public Event {
     throw IllegalOperation("Primary event is not fully defined.");
   }
 
+  /// Validates the probability expressions for the primary event.
+  /// @throws Validation error if anything is wrong.
+  virtual void Validate() {};
+
  private:
   /// The type of the primary event.
   std::string type_;
@@ -186,6 +190,12 @@ class BasicEvent: public PrimaryEvent {
   /// @returns Indication if this event does not have uncertainty.
   inline bool IsConstant() { return expression_->IsConstant(); }
 
+  void Validate() {
+    if (expression_->Min() < 0 || expression_->Max() > 1) {
+      throw ValidationError("Expression value is invalid.");
+    }
+  }
+
  private:
   /// Expression that describes this basic event and provides numerical
   /// values for probability calculations.
@@ -212,6 +222,8 @@ class HouseEvent: public PrimaryEvent {
   /// The sample for house event is constant value.
   /// @returns Sampled value.
   inline double SampleProbability() { return state_ ? 1 : 0; }
+
+  void Validate() {}
 
  private:
   /// Represents the state of the house event.

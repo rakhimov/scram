@@ -1320,8 +1320,11 @@ void RiskAnalysis::ValidateExpressions() {
     msg << "";
     boost::unordered_map<std::string, PrimaryEventPtr>::iterator it;
     for (it = primary_events_.begin(); it != primary_events_.end(); ++it) {
-      double p = it->second->p();
-      if (p < 0 || p > 1) msg << it->second->orig_id() << " : " << p << "\n";
+      try {
+        it->second->Validate();
+      } catch (ValidationError& err) {
+        msg << it->second->orig_id() << " : " << err.msg() << "\n";
+      }
     }
     if (msg.str() != "") {
       std::string head = "Invalid probabilities detected:\n";

@@ -71,30 +71,20 @@ void UncertaintyAnalysis::Analyze(
 
 void UncertaintyAnalysis::Sample() {
   using boost::container::flat_set;
+  std::vector<int> basic_events(mcs_basic_events_.begin(),
+                                mcs_basic_events_.end());
   for (int i = 0; i < num_trials_; ++i) {
     // Reset distributions.
-    std::set<int>::iterator it_b;
+    std::vector<int>::iterator it_b;
     // The first element is dummy.
-    for (it_b = mcs_basic_events_.begin(); it_b != mcs_basic_events_.end();
-         ++it_b) {
+    for (it_b = basic_events.begin(); it_b != basic_events.end(); ++it_b) {
       int_to_basic_[*it_b]->Reset();
     }
     // Sample all basic events.
     /// @todo Do not sample constant values(i.e. events without distributions.)
-    for (it_b = mcs_basic_events_.begin(); it_b != mcs_basic_events_.end();
-         ++it_b) {
+    for (it_b = basic_events.begin(); it_b != basic_events.end(); ++it_b) {
       double prob = int_to_basic_[*it_b]->SampleProbability();
-      if (prob < 0) {
-        prob = 0;
-        if (warnings_ == "")
-          warnings_ = "Invalid probability was sampled but adjusted to"
-              " proper boundaries of 0 and 1.";
-      } else if (prob > 1) {
-        prob = 1;
-        if (warnings_ == "")
-          warnings_ = "Invalid probability was sampled but adjusted to"
-              " proper boundaries of 0 and 1.";
-      }
+      assert(prob >= 0 && prob <= 1);
       iprobs_[*it_b] = prob;
     }
     double pos = 0;
