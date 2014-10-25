@@ -137,40 +137,6 @@ class ProbabilityAnalysis {
       const std::set< boost::container::flat_set<int> >& set,
       std::set< boost::container::flat_set<int> >* combo_set);
 
-  /// Generates positive and negative terms of probability equation expansion
-  /// from a coherent set of minimal cut sets,
-  /// which are in OR relationship with each other.
-  /// This function is a brute force probability
-  /// calculation without approximations. Coherency is the key assumption.
-  /// @param[in] sign The sign of the series. Negative or positive number.
-  /// @param[in] nsums The number of sums in the series.
-  /// @param[in] min_cut_sets Sets of indices of primary events.
-  /// @returns The total probability.
-  /// @note This function drastically modifies min_cut_sets by deleting
-  /// sets inside it. This is for better performance.
-  void CoherentProbOr(
-      int sign,
-      int nsums,
-      std::set< boost::container::flat_set<int> >* min_cut_sets);
-
-  /// Calculates a probability of a minimal cut set, whose members are in AND
-  /// relationship with each other. This function assumes independence of each
-  /// member. Coherency is the key assumption for optimization.
-  /// @param[in] min_cut_set A flat set of indices of primary events.
-  /// @returns The total probability.
-  /// @note O_avg(N) where N is the size of the passed set.
-  double CoherentProbAnd(const boost::container::flat_set<int>& min_cut_set);
-
-  /// Calculates A(and)( B(or)C ) relationship for coherent sets using set
-  /// algebra.
-  /// @param[in] el A set of indices of primary events.
-  /// @param[in] set Sets of indices of primary events.
-  /// @param[out] combo_set A final set resulting from joining el and sets.
-  void CoherentCombineElAndSet(
-      const boost::container::flat_set<int>& el,
-      const std::set< boost::container::flat_set<int> >& set,
-      std::set< boost::container::flat_set<int> >* combo_set);
-
   /// Calculates total probability from the generated probability equation.
   double CalculateTotalProbability();
 

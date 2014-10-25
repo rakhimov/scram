@@ -117,11 +117,7 @@ void ProbabilityAnalysis::Analyze(
     // Choose cut sets with high enough probabilities.
     num_prob_mcs_ = mcs_for_prob.size();
     if (nsums_ > mcs_for_prob.size()) nsums_ = mcs_for_prob.size();
-    if (coherent_) {
-      ProbabilityAnalysis::CoherentProbOr(1, nsums_, &mcs_for_prob);
-    } else {
-      ProbabilityAnalysis::ProbOr(1, nsums_, &mcs_for_prob);
-    }
+    ProbabilityAnalysis::ProbOr(1, nsums_, &mcs_for_prob);
     p_total_ = ProbabilityAnalysis::CalculateTotalProbability();
   }
   // Duration of the calculations.
@@ -202,25 +198,22 @@ void ProbabilityAnalysis::ProbOr(
 
   using boost::container::flat_set;
 
-  // Get one element.
-  std::set< flat_set<int> >::iterator it = min_cut_sets->begin();
-  flat_set<int> element_one(*it);
-
-  // Delete element from the original set.
-  min_cut_sets->erase(it);
-
   // Put this element into the equation.
   if (sign > 0) {
     // This is a positive member.
-    pos_terms_.push_back(element_one);
+    pos_terms_.push_back(*min_cut_sets->begin());
   } else {
     // This must be a negative member.
-    neg_terms_.push_back(element_one);
+    neg_terms_.push_back(*min_cut_sets->begin());
   }
 
+  // Delete element from the original set.
+  min_cut_sets->erase(min_cut_sets->begin());
+
   std::set< flat_set<int> > combo_sets;
-  ProbabilityAnalysis::CombineElAndSet(element_one,
-                                       *min_cut_sets, &combo_sets);
+  ProbabilityAnalysis::CombineElAndSet(
+      (sign > 0) ? pos_terms_.back() : neg_terms_.back(),
+      *min_cut_sets, &combo_sets);
 
   ProbabilityAnalysis::ProbOr(sign, nsums, min_cut_sets);
   ProbabilityAnalysis::ProbOr(-sign, nsums - 1, &combo_sets);
@@ -252,11 +245,13 @@ void ProbabilityAnalysis::CombineElAndSet(
   std::set< flat_set<int> >::iterator it_set;
   for (it_set = set.begin(); it_set != set.end(); ++it_set) {
     bool include = true;  // Indicates that the resultant set is not null.
-    flat_set<int>::const_iterator it;
-    for (it = el.begin(); it != el.end(); ++it) {
-      if (it_set->count(-*it)) {
-        include = false;
-        break;  // A complement is found; the set is null.
+    if (!coherent_) {
+      flat_set<int>::const_iterator it;
+      for (it = el.begin(); it != el.end(); ++it) {
+        if (it_set->count(-*it)) {
+          include = false;
+          break;  // A complement is found; the set is null.
+        }
       }
     }
     if (include) {
@@ -267,87 +262,16 @@ void ProbabilityAnalysis::CombineElAndSet(
   }
 }
 
-void ProbabilityAnalysis::CoherentProbOr(
-    int sign,
-    int nsums,
-    std::set< boost::container::flat_set<int> >* min_cut_sets) {
-  assert(sign != 0);
-  assert(nsums >= 0);
-
-  // Recursive implementation.
-  if (min_cut_sets->empty()) return;
-
-  if (nsums == 0) return;
-
-  using boost::container::flat_set;
-
-  // Put this element into the equation.
-  if (sign > 0) {
-    // This is a positive member.
-    pos_terms_.push_back(*min_cut_sets->begin());
-  } else {
-    // This must be a negative member.
-    neg_terms_.push_back(*min_cut_sets->begin());
-  }
-
-  // Delete element from the original set.
-  min_cut_sets->erase(min_cut_sets->begin());
-
-  std::set< flat_set<int> > combo_sets;
-  ProbabilityAnalysis::CoherentCombineElAndSet(
-      (sign > 0) ? pos_terms_.back() : neg_terms_.back(),
-      *min_cut_sets, &combo_sets);
-
-  ProbabilityAnalysis::CoherentProbOr(sign, nsums, min_cut_sets);
-  ProbabilityAnalysis::CoherentProbOr(-sign, nsums - 1, &combo_sets);
-}
-
-double ProbabilityAnalysis::CoherentProbAnd(
-    const boost::container::flat_set<int>& min_cut_set) {
-  // Test just in case the min cut set is empty.
-  if (min_cut_set.empty()) return 0;
-
-  using boost::container::flat_set;
-  double p_sub_set = 1;  // 1 is for multiplication.
-  flat_set<int>::const_iterator it_set;
-  for (it_set = min_cut_set.begin(); it_set != min_cut_set.end(); ++it_set) {
-      p_sub_set *= iprobs_[*it_set];
-  }
-  return p_sub_set;
-}
-
-void ProbabilityAnalysis::CoherentCombineElAndSet(
-    const boost::container::flat_set<int>& el,
-    const std::set< boost::container::flat_set<int> >& set,
-    std::set< boost::container::flat_set<int> >* combo_set) {
-  using boost::container::flat_set;
-  std::set< flat_set<int> >::iterator it_set;
-  for (it_set = set.begin(); it_set != set.end(); ++it_set) {
-    flat_set<int> member_set(*it_set);
-    member_set.insert(el.begin(), el.end());
-    combo_set->insert(combo_set->end(), member_set);
-  }
-}
-
 double ProbabilityAnalysis::CalculateTotalProbability() {
   using boost::container::flat_set;
   double pos = 0;
   double neg = 0;
   std::vector< flat_set<int> >::iterator it_s;
-  if (coherent_) {
-    for (it_s = pos_terms_.begin(); it_s != pos_terms_.end(); ++it_s) {
-      pos += ProbabilityAnalysis::CoherentProbAnd(*it_s);
-    }
-    for (it_s = neg_terms_.begin(); it_s != neg_terms_.end(); ++it_s) {
-      neg += ProbabilityAnalysis::CoherentProbAnd(*it_s);
-    }
-  } else {
-    for (it_s = pos_terms_.begin(); it_s != pos_terms_.end(); ++it_s) {
-      pos += ProbabilityAnalysis::ProbAnd(*it_s);
-    }
-    for (it_s = neg_terms_.begin(); it_s != neg_terms_.end(); ++it_s) {
-      neg += ProbabilityAnalysis::ProbAnd(*it_s);
-    }
+  for (it_s = pos_terms_.begin(); it_s != pos_terms_.end(); ++it_s) {
+    pos += ProbabilityAnalysis::ProbAnd(*it_s);
+  }
+  for (it_s = neg_terms_.begin(); it_s != neg_terms_.end(); ++it_s) {
+    neg += ProbabilityAnalysis::ProbAnd(*it_s);
   }
   return pos - neg;
 }

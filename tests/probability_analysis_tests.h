@@ -50,6 +50,7 @@ class ProbabilityAnalysisTest : public ::testing::Test {
   void CombineElAndSet(const std::set<int>& el,
                        const std::set< std::set<int> >& set,
                        std::set< std::set<int> >* combo_set) {
+    prob_analysis->coherent_ = false;  // General case.
     using boost::container::flat_set;
     std::set< flat_set<int> > mcs;
     std::set< std::set<int> >::const_iterator it;
