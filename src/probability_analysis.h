@@ -40,6 +40,8 @@ class ProbabilityAnalysis {
   ProbabilityAnalysis(std::string approx = "no", int nsums = 7,
                       double cut_off = 1e-8);
 
+  virtual ~ProbabilityAnalysis() {}
+
   /// Set the databases of primary events with probabilities.
   /// Resets the main primary events database and clears the
   /// previous information. This information is the main source for
@@ -53,7 +55,7 @@ class ProbabilityAnalysis {
   /// events provided in the databases.
   /// @param[in] min_cut_sets Minimal cut sets with string ids of events.
   ///                         Negative event is indicated by "'not' + id"
-  void Analyze(const std::set< std::set<std::string> >& min_cut_sets);
+  virtual void Analyze(const std::set< std::set<std::string> >& min_cut_sets);
 
   /// @returns The total probability calculated by the analysis.
   /// @note The user should make sure that the analysis is actually done.
@@ -90,7 +92,7 @@ class ProbabilityAnalysis {
     return warnings_;
   }
 
- private:
+ protected:
   /// Assigns an index to each primary event, and then populates with this
   /// indices new databases and primary to integer converting maps.
   /// The previous data are lost.
