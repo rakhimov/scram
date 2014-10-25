@@ -73,17 +73,17 @@ void UncertaintyAnalysis::Sample() {
   using boost::container::flat_set;
   for (int i = 0; i < num_trials_; ++i) {
     // Reset distributions.
-    std::vector<BasicEventPtr>::iterator it_b = int_to_basic_.begin();
+    std::set<int>::iterator it_b;
     // The first element is dummy.
-    for (++it_b; it_b != int_to_basic_.end(); ++it_b) {
-      (*it_b)->Reset();
+    for (it_b = mcs_basic_events_.begin(); it_b != mcs_basic_events_.end();
+         ++it_b) {
+      int_to_basic_[*it_b]->Reset();
     }
     // Sample all basic events.
-    /// @todo Sample only events that are in the minimal cut sets.
     /// @todo Do not sample constant values(i.e. events without distributions.)
-    it_b = int_to_basic_.begin();
-    for (++it_b; it_b != int_to_basic_.end(); ++it_b) {
-      double prob = (*it_b)->SampleProbability();
+    for (it_b = mcs_basic_events_.begin(); it_b != mcs_basic_events_.end();
+         ++it_b) {
+      double prob = int_to_basic_[*it_b]->SampleProbability();
       if (prob < 0) {
         prob = 0;
         if (warnings_ == "")
@@ -95,7 +95,7 @@ void UncertaintyAnalysis::Sample() {
           warnings_ = "Invalid probability was sampled but adjusted to"
               " proper boundaries of 0 and 1.";
       }
-      iprobs_[basic_to_int_.find((*it_b)->id())->second] = prob;
+      iprobs_[*it_b] = prob;
     }
     double pos = 0;
     std::vector< flat_set<int> >::iterator it_s;

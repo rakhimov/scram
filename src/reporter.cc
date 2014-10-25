@@ -181,6 +181,8 @@ void Reporter::ReportUncertainty(
   out << std::setw(40) << "Time: " << pt::second_clock::local_time() << "\n\n";
   out << std::setw(40) << "Uncertainty Calculation Time: "
       << uncert_analysis->p_time_ << "\n";
+  out << std::setw(40) << "Number of trials: "
+      << uncert_analysis->num_trials_ << "\n";
   out << std::setw(40) << "Mean: " << uncert_analysis->mean() << "\n";
   out << std::setw(40) << "Standard deviation: "
       << uncert_analysis->sigma() << "\n";

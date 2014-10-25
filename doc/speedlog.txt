@@ -19,16 +19,11 @@ Standard build:
 
 
 
------------ Chinese Tree -l 5 (p = 0.02115378) -------------
-Standard build:
----------------
-- Prob Calculation  0.230s  |
-- Importance Calc.
-
+----------- Chinese Tree -l 5 -s 3 (p = 0.02115378) ---------
 Release build:
 --------------
-- Prob Calculation  0.019s  |
-- Importance Calc.
+- Prob Calculation  34.50s  |
+- Importance Calc.  2.500s  |
 
 
 ---------- fta-200 -l 16 -r (mcs = 8351) ---------------
@@ -90,12 +85,7 @@ Release build:
 
 ==================== Uncertainty Analysis =================
 
------------ Chinese Tree -l 4 -a mc -------
-
-Standard build:
----------------
-- Calculation Time  102.0s  |
-
+----------- Chinese Tree -l 5 -s 3 -a mc -------
 Release build:
 --------------
-- Calculation Time  0.000s  |
+- Calculation Time  74.80s  |
