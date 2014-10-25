@@ -81,39 +81,33 @@ void ProbabilityAnalysis::Analyze(
   start_time = std::clock();
 
   // Get the total probability.
-  // Check if the rare event approximation is requested.
-  if (approx_ == "rare") {
-    warnings_ += "Using the rare event approximation\n";
-    bool rare_event_legit = true;
-    std::map< std::set<std::string>, double >::iterator it_pr;
-    for (it_pr = prob_of_min_sets_.begin();
-         it_pr != prob_of_min_sets_.end(); ++it_pr) {
-      // Check if a probability of a set does not exceed 0.1,
-      // which is required for the rare event approximation to hold.
-      if (rare_event_legit && (it_pr->second > 0.1)) {
-        rare_event_legit = false;
-        warnings_ += "The rare event approximation may be inaccurate for this"
-            "\nfault tree analysis because one of minimal cut sets'"
-            "\nprobability exceeded 0.1 threshold requirement.\n\n";
-      }
-      p_total_ += it_pr->second;
-    }
-
-  } else if (approx_ == "mcub") {
-    warnings_ += "Using the MCUB approximation\n";
+ if (approx_ == "mcub") {
     if (!coherent_) {
       warnings_ += " The cut sets are not coherent and contain negation."
           "\nThe MCUB approximation may not hold.\n\n";
     }
-    double m = 1;
-    std::map< std::set<std::string>, double >::iterator it;
-    for (it = prob_of_min_sets_.begin(); it != prob_of_min_sets_.end();
-         ++it) {
-      m *= 1 - it->second;
-    }
-    p_total_ = 1 - m;
+    nsums_ = 0;  // For reporting purposes.
+    num_prob_mcs_ = imcs_.size();
+    p_total_ = ProbabilityAnalysis::ProbMcub(imcs_);
 
-  } else {  // The default calculations.
+  } else {
+    // Check if the rare event approximation is requested.
+    if (approx_ == "rare") {
+      std::map< std::set<std::string>, double >::iterator it_pr;
+      for (it_pr = prob_of_min_sets_.begin();
+           it_pr != prob_of_min_sets_.end(); ++it_pr) {
+        // Check if a probability of a set does not exceed 0.1,
+        // which is required for the rare event approximation to hold.
+        if (it_pr->second > 0.1) {
+          warnings_ += "The rare event approximation may be inaccurate for this"
+              "\nfault tree analysis because one of minimal cut sets'"
+              "\nprobability exceeded 0.1 threshold requirement.\n\n";
+          break;
+        }
+      }
+      nsums_ = 1;  // Only first series is used for the rare event case.
+    }
+    // The default calculations.
     // Choose cut sets with high enough probabilities.
     num_prob_mcs_ = mcs_for_prob.size();
     if (nsums_ > mcs_for_prob.size()) nsums_ = mcs_for_prob.size();
@@ -182,6 +176,18 @@ void ProbabilityAnalysis::IndexMcs(
     imcs_.push_back(mcs_with_indices);
     imcs_to_smcs_.push_back(*it);
   }
+}
+
+double ProbabilityAnalysis::ProbMcub(
+    const std::vector< boost::container::flat_set<int> >& min_cut_sets) {
+  using boost::container::flat_set;
+  std::vector< flat_set<int> >::const_iterator it_min;
+  double m = 1;
+  for (it_min = min_cut_sets.begin(); it_min != min_cut_sets.end(); ++it_min) {
+    // Calculate a probability of a set with AND relationship.
+    m *= 1 - ProbabilityAnalysis::ProbAnd(*it_min);
+  }
+  return 1 - m;
 }
 
 void ProbabilityAnalysis::ProbOr(
@@ -283,11 +289,21 @@ void ProbabilityAnalysis::PerformImportanceAnalysis() {
   for (it = mcs_basic_events_.begin(); it != mcs_basic_events_.end(); ++it) {
     // Calculate P(top/event)
     iprobs_[*it] = 1;
-    double p_e = ProbabilityAnalysis::CalculateTotalProbability();
+    double p_e = 0;
+    if (approx_ == "mcub") {
+      p_e = ProbabilityAnalysis::ProbMcub(imcs_);
+    } else {  // For the rare event and default cases.
+      p_e = ProbabilityAnalysis::CalculateTotalProbability();
+    }
 
     // Calculate P(top/Not event)
     iprobs_[*it] = 0;
-    double p_not_e = ProbabilityAnalysis::CalculateTotalProbability();
+    double p_not_e = 0;
+    if (approx_ == "mcub") {
+      p_not_e = ProbabilityAnalysis::ProbMcub(imcs_);
+    } else {  // For the rare event and default cases.
+      p_not_e = ProbabilityAnalysis::CalculateTotalProbability();
+    }
     // Restore the probability.
     iprobs_[*it] = int_to_basic_[*it]->p();
 

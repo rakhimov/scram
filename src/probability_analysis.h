@@ -105,6 +105,12 @@ class ProbabilityAnalysis {
   /// @param[in] min_cut_sets Minimal cut sets with event ids.
   void IndexMcs(const std::set<std::set<std::string> >& min_cut_sets);
 
+  /// Calculates probabilities using the minimal cut set upper bound (MCUB)
+  /// approximation.
+  /// @param[in] min_cut_sets Sets of indices of primary events.
+  double ProbMcub(
+      const std::vector< boost::container::flat_set<int> >& min_cut_sets);
+
   /// Generates positive and negative terms of probability equation expansion
   /// a set of minimal cut sets, which are in OR
   /// relationship with each other. This function is a brute force probability
