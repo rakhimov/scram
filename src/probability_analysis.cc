@@ -281,25 +281,22 @@ void ProbabilityAnalysis::CoherentProbOr(
 
   using boost::container::flat_set;
 
-  // Get one element.
-  std::set< flat_set<int> >::iterator it = min_cut_sets->begin();
-  flat_set<int> element_one(*it);
-
-  // Delete element from the original set.
-  min_cut_sets->erase(it);
-
   // Put this element into the equation.
   if (sign > 0) {
     // This is a positive member.
-    pos_terms_.push_back(element_one);
+    pos_terms_.push_back(*min_cut_sets->begin());
   } else {
     // This must be a negative member.
-    neg_terms_.push_back(element_one);
+    neg_terms_.push_back(*min_cut_sets->begin());
   }
 
+  // Delete element from the original set.
+  min_cut_sets->erase(min_cut_sets->begin());
+
   std::set< flat_set<int> > combo_sets;
-  ProbabilityAnalysis::CoherentCombineElAndSet(element_one,
-                                               *min_cut_sets, &combo_sets);
+  ProbabilityAnalysis::CoherentCombineElAndSet(
+      (sign > 0) ? pos_terms_.back() : neg_terms_.back(),
+      *min_cut_sets, &combo_sets);
 
   ProbabilityAnalysis::CoherentProbOr(sign, nsums, min_cut_sets);
   ProbabilityAnalysis::CoherentProbOr(-sign, nsums - 1, &combo_sets);
@@ -337,11 +334,20 @@ double ProbabilityAnalysis::CalculateTotalProbability() {
   double pos = 0;
   double neg = 0;
   std::vector< flat_set<int> >::iterator it_s;
-  for (it_s = pos_terms_.begin(); it_s != pos_terms_.end(); ++it_s) {
-    pos += ProbabilityAnalysis::ProbAnd(*it_s);
-  }
-  for (it_s = neg_terms_.begin(); it_s != neg_terms_.end(); ++it_s) {
-    neg += ProbabilityAnalysis::ProbAnd(*it_s);
+  if (coherent_) {
+    for (it_s = pos_terms_.begin(); it_s != pos_terms_.end(); ++it_s) {
+      pos += ProbabilityAnalysis::CoherentProbAnd(*it_s);
+    }
+    for (it_s = neg_terms_.begin(); it_s != neg_terms_.end(); ++it_s) {
+      neg += ProbabilityAnalysis::CoherentProbAnd(*it_s);
+    }
+  } else {
+    for (it_s = pos_terms_.begin(); it_s != pos_terms_.end(); ++it_s) {
+      pos += ProbabilityAnalysis::ProbAnd(*it_s);
+    }
+    for (it_s = neg_terms_.begin(); it_s != neg_terms_.end(); ++it_s) {
+      neg += ProbabilityAnalysis::ProbAnd(*it_s);
+    }
   }
   return pos - neg;
 }

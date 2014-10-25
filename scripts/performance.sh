@@ -8,13 +8,6 @@
 # NOTE: It is recommended to have SCRAM built in Release mode because the
 #       tested cases in this script may take very long time.
 
-echo -e 'Three Motor -c 1e-8'
-scram ThreeMotor/three_motor.xml -c 1e-8 | grep 'Probability'
-
-echo -e '\n\n'
-echo -e 'Three Motor -c 0'
-scram ThreeMotor/three_motor.xml -c 0 | grep 'Probability'
-
 echo -e '\n\n'
 echo -e '200_Event -l 16'
 scram 200_Event/fta_tree.xml -l 16 -r | head -n 15
