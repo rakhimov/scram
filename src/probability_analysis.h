@@ -198,7 +198,6 @@ class ProbabilityAnalysis {
   std::vector<BasicEventPtr> int_to_basic_;  ///< Indices to basic events.
   /// Indices of basic events.
   boost::unordered_map<std::string, int> basic_to_int_;
-  /// Indices of basic events.
   std::vector<double> iprobs_;  ///< Holds probabilities of primary events.
 
   /// Minimal cut sets passed for analysis.
@@ -209,6 +208,8 @@ class ProbabilityAnalysis {
   /// Indices min cut sets to strings min cut sets mapping.
   /// The same position as in imcs_ container is assumed.
   std::vector< std::set<std::string> > imcs_to_smcs_;
+  /// Container for basic event indices that are in minimial cut sets.
+  std::set<int> mcs_basic_events_;
 
   /// Total probability of the top event.
   double p_total_;

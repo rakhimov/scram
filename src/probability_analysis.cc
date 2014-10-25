@@ -172,6 +172,7 @@ void ProbabilityAnalysis::IndexMcs(
         assert(basic_to_int_.count(names[0]));
         mcs_with_indices.insert(mcs_with_indices.end(),
                                 basic_to_int_.find(names[0])->second);
+        mcs_basic_events_.insert(basic_to_int_.find(names[0])->second);
       } else {
         // This must be a complement of an event.
         assert(names[0] == "not");
@@ -181,6 +182,7 @@ void ProbabilityAnalysis::IndexMcs(
 
         mcs_with_indices.insert(mcs_with_indices.begin(),
                                 -basic_to_int_.find(names[1])->second);
+        mcs_basic_events_.insert(basic_to_int_.find(names[1])->second);
       }
     }
     imcs_.push_back(mcs_with_indices);
@@ -325,18 +327,19 @@ void ProbabilityAnalysis::PerformImportanceAnalysis(
     const std::set< boost::container::flat_set<int> >& min_cut_sets) {
   // The main data for all the importance types is P(top/event) or
   // P(top/Not event).
-  for (int i = 1; i < int_to_basic_.size(); ++i) {
+  std::set<int>::iterator it;
+  for (it = mcs_basic_events_.begin(); it != mcs_basic_events_.end(); ++it) {
     // Calculate P(top/event)
-    iprobs_[i] = 1;
+    iprobs_[*it] = 1;
     std::set< boost::container::flat_set<int> > cut_sets(min_cut_sets);
     double p_e = ProbabilityAnalysis::ProbOr(nsums_, &cut_sets);
 
     // Calculate P(top/Not event)
-    iprobs_[i] = 0;
+    iprobs_[*it] = 0;
     cut_sets = min_cut_sets;
     double p_not_e = ProbabilityAnalysis::ProbOr(nsums_, &cut_sets);
     // Restore the probability.
-    iprobs_[i] = int_to_basic_[i]->p();
+    iprobs_[*it] = int_to_basic_[*it]->p();
 
     // Mapped vector for importances.
     std::vector<double> imp;
@@ -345,14 +348,15 @@ void ProbabilityAnalysis::PerformImportanceAnalysis(
     // Birnbaum Marginal importance factor.
     imp.push_back(p_e - p_not_e);
     // Critical Importance factor.
-    imp.push_back(imp[1] * iprobs_[i] / p_not_e);
+    imp.push_back(imp[1] * iprobs_[*it] / p_not_e);
     // Risk Reduction Worth.
     imp.push_back(p_total_ / p_not_e);
     // Risk Achievement Worth.
     imp.push_back(p_e / p_total_);
 
-    importance_.insert(std::make_pair(int_to_basic_[i]->id(), imp));
-    ordered_primaries_.insert(std::make_pair(imp[0], int_to_basic_[i]->id()));
+    importance_.insert(std::make_pair(int_to_basic_[*it]->id(), imp));
+    ordered_primaries_.insert(std::make_pair(imp[0],
+                                             int_to_basic_[*it]->id()));
   }
 }
 
