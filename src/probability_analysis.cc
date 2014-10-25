@@ -75,9 +75,6 @@ void ProbabilityAnalysis::Analyze(
     prob_of_min_sets_.insert(std::make_pair(imcs_to_smcs_[i], p_sub_set));
     ordered_min_sets_.insert(std::make_pair(p_sub_set, imcs_to_smcs_[i]));
   }
-  // Minimal cut sets with higher than cut-off probability for importance
-  // analysis.
-  std::set< flat_set<int> > mcs_for_imp(mcs_for_prob);
 
   // Timing Initialization
   std::clock_t start_time;
@@ -121,15 +118,16 @@ void ProbabilityAnalysis::Analyze(
     num_prob_mcs_ = mcs_for_prob.size();
     if (nsums_ > mcs_for_prob.size()) nsums_ = mcs_for_prob.size();
     if (coherent_) {
-      p_total_ = ProbabilityAnalysis::CoherentProbOr(nsums_, &mcs_for_prob);
+      ProbabilityAnalysis::CoherentProbOr(1, nsums_, &mcs_for_prob);
     } else {
-      p_total_ = ProbabilityAnalysis::ProbOr(nsums_, &mcs_for_prob);
+      ProbabilityAnalysis::ProbOr(1, nsums_, &mcs_for_prob);
     }
+    p_total_ = ProbabilityAnalysis::CalculateTotalProbability();
   }
   // Duration of the calculations.
   p_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
 
-  ProbabilityAnalysis::PerformImportanceAnalysis(mcs_for_imp);
+  ProbabilityAnalysis::PerformImportanceAnalysis();
 
   // Duration of the calculations.
   imp_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
@@ -190,21 +188,17 @@ void ProbabilityAnalysis::IndexMcs(
   }
 }
 
-double ProbabilityAnalysis::ProbOr(
+void ProbabilityAnalysis::ProbOr(
+    int sign,
     int nsums,
     std::set< boost::container::flat_set<int> >* min_cut_sets) {
+  assert(sign != 0);
   assert(nsums >= 0);
 
   // Recursive implementation.
-  if (min_cut_sets->empty()) return 0;
+  if (min_cut_sets->empty()) return;
 
-  if (nsums == 0) return 0;
-
-  // Base case.
-  if (min_cut_sets->size() == 1) {
-    // Get only element in this set.
-    return ProbabilityAnalysis::ProbAnd(*min_cut_sets->begin());
-  }
+  if (nsums == 0) return;
 
   using boost::container::flat_set;
 
@@ -214,12 +208,22 @@ double ProbabilityAnalysis::ProbOr(
 
   // Delete element from the original set.
   min_cut_sets->erase(it);
-  std::set< flat_set<int> > combo_sets;
-  ProbabilityAnalysis::CombineElAndSet(element_one, *min_cut_sets, &combo_sets);
 
-  return ProbabilityAnalysis::ProbAnd(element_one) +
-      ProbabilityAnalysis::ProbOr(nsums, min_cut_sets) -
-      ProbabilityAnalysis::ProbOr(nsums - 1, &combo_sets);
+  // Put this element into the equation.
+  if (sign > 0) {
+    // This is a positive member.
+    pos_terms_.push_back(element_one);
+  } else {
+    // This must be a negative member.
+    neg_terms_.push_back(element_one);
+  }
+
+  std::set< flat_set<int> > combo_sets;
+  ProbabilityAnalysis::CombineElAndSet(element_one,
+                                       *min_cut_sets, &combo_sets);
+
+  ProbabilityAnalysis::ProbOr(sign, nsums, min_cut_sets);
+  ProbabilityAnalysis::ProbOr(-sign, nsums - 1, &combo_sets);
 }
 
 double ProbabilityAnalysis::ProbAnd(
@@ -263,21 +267,17 @@ void ProbabilityAnalysis::CombineElAndSet(
   }
 }
 
-double ProbabilityAnalysis::CoherentProbOr(
+void ProbabilityAnalysis::CoherentProbOr(
+    int sign,
     int nsums,
     std::set< boost::container::flat_set<int> >* min_cut_sets) {
+  assert(sign != 0);
   assert(nsums >= 0);
 
   // Recursive implementation.
-  if (min_cut_sets->empty()) return 0;
+  if (min_cut_sets->empty()) return;
 
-  if (nsums == 0) return 0;
-
-  // Base case.
-  if (min_cut_sets->size() == 1) {
-    // Get only element in this set.
-    return ProbabilityAnalysis::CoherentProbAnd(*min_cut_sets->begin());
-  }
+  if (nsums == 0) return;
 
   using boost::container::flat_set;
 
@@ -287,13 +287,22 @@ double ProbabilityAnalysis::CoherentProbOr(
 
   // Delete element from the original set.
   min_cut_sets->erase(it);
+
+  // Put this element into the equation.
+  if (sign > 0) {
+    // This is a positive member.
+    pos_terms_.push_back(element_one);
+  } else {
+    // This must be a negative member.
+    neg_terms_.push_back(element_one);
+  }
+
   std::set< flat_set<int> > combo_sets;
   ProbabilityAnalysis::CoherentCombineElAndSet(element_one,
                                                *min_cut_sets, &combo_sets);
 
-  return ProbabilityAnalysis::CoherentProbAnd(element_one) +
-      ProbabilityAnalysis::CoherentProbOr(nsums, min_cut_sets) -
-      ProbabilityAnalysis::CoherentProbOr(nsums - 1, &combo_sets);
+  ProbabilityAnalysis::CoherentProbOr(sign, nsums, min_cut_sets);
+  ProbabilityAnalysis::CoherentProbOr(-sign, nsums - 1, &combo_sets);
 }
 
 double ProbabilityAnalysis::CoherentProbAnd(
@@ -323,21 +332,32 @@ void ProbabilityAnalysis::CoherentCombineElAndSet(
   }
 }
 
-void ProbabilityAnalysis::PerformImportanceAnalysis(
-    const std::set< boost::container::flat_set<int> >& min_cut_sets) {
+double ProbabilityAnalysis::CalculateTotalProbability() {
+  using boost::container::flat_set;
+  double pos = 0;
+  double neg = 0;
+  std::vector< flat_set<int> >::iterator it_s;
+  for (it_s = pos_terms_.begin(); it_s != pos_terms_.end(); ++it_s) {
+    pos += ProbabilityAnalysis::ProbAnd(*it_s);
+  }
+  for (it_s = neg_terms_.begin(); it_s != neg_terms_.end(); ++it_s) {
+    neg += ProbabilityAnalysis::ProbAnd(*it_s);
+  }
+  return pos - neg;
+}
+
+void ProbabilityAnalysis::PerformImportanceAnalysis() {
   // The main data for all the importance types is P(top/event) or
   // P(top/Not event).
   std::set<int>::iterator it;
   for (it = mcs_basic_events_.begin(); it != mcs_basic_events_.end(); ++it) {
     // Calculate P(top/event)
     iprobs_[*it] = 1;
-    std::set< boost::container::flat_set<int> > cut_sets(min_cut_sets);
-    double p_e = ProbabilityAnalysis::ProbOr(nsums_, &cut_sets);
+    double p_e = ProbabilityAnalysis::CalculateTotalProbability();
 
     // Calculate P(top/Not event)
     iprobs_[*it] = 0;
-    cut_sets = min_cut_sets;
-    double p_not_e = ProbabilityAnalysis::ProbOr(nsums_, &cut_sets);
+    double p_not_e = ProbabilityAnalysis::CalculateTotalProbability();
     // Restore the probability.
     iprobs_[*it] = int_to_basic_[*it]->p();
 
@@ -358,13 +378,6 @@ void ProbabilityAnalysis::PerformImportanceAnalysis(
     ordered_primaries_.insert(std::make_pair(imp[0],
                                              int_to_basic_[*it]->id()));
   }
-}
-
-void ProbabilityAnalysis::CombineEventAndSets(
-    int event,
-    const std::set< boost::container::flat_set<int> >& min_cut_sets,
-    std::set< boost::container::flat_set<int> >* final_cut_sets) {
-
 }
 
 }  // namespace scram

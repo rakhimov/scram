@@ -103,19 +103,20 @@ class ProbabilityAnalysis {
   /// @param[in] min_cut_sets Minimal cut sets with event ids.
   void IndexMcs(const std::set<std::set<std::string> >& min_cut_sets);
 
-  /// Calculates a probability of a set of minimal cut sets, which are in OR
+  /// Generates positive and negative terms of probability equation expansion
+  /// a set of minimal cut sets, which are in OR
   /// relationship with each other. This function is a brute force probability
   /// calculation without approximations.
+  /// @param[in] sign The sign of the series. Negative or positive number.
   /// @param[in] nsums The number of sums in the series.
   /// @param[in] min_cut_sets Sets of indices of primary events.
-  /// @returns The total probability.
   /// @note This function drastically modifies min_cut_sets by deleting
   /// sets inside it. This is for better performance.
   ///
   /// @note O_avg(M*logM*N*2^N) where N is the number of sets, and M is
   /// the average size of the sets.
-  double ProbOr(int nsums,
-                std::set< boost::container::flat_set<int> >* min_cut_sets);
+  void ProbOr(int sign, int nsums,
+              std::set< boost::container::flat_set<int> >* min_cut_sets);
 
   /// Calculates a probability of a minimal cut set, whose members are in AND
   /// relationship with each other. This function assumes independence of each
@@ -136,16 +137,19 @@ class ProbabilityAnalysis {
       const std::set< boost::container::flat_set<int> >& set,
       std::set< boost::container::flat_set<int> >* combo_set);
 
-  /// Calculates a probability of a coherent set of minimal cut sets,
+  /// Generates positive and negative terms of probability equation expansion
+  /// from a coherent set of minimal cut sets,
   /// which are in OR relationship with each other.
   /// This function is a brute force probability
   /// calculation without approximations. Coherency is the key assumption.
+  /// @param[in] sign The sign of the series. Negative or positive number.
   /// @param[in] nsums The number of sums in the series.
   /// @param[in] min_cut_sets Sets of indices of primary events.
   /// @returns The total probability.
   /// @note This function drastically modifies min_cut_sets by deleting
   /// sets inside it. This is for better performance.
-  double CoherentProbOr(
+  void CoherentProbOr(
+      int sign,
       int nsums,
       std::set< boost::container::flat_set<int> >* min_cut_sets);
 
@@ -167,21 +171,12 @@ class ProbabilityAnalysis {
       const std::set< boost::container::flat_set<int> >& set,
       std::set< boost::container::flat_set<int> >* combo_set);
 
-  /// Importance analysis of events.
-  /// @param[in] min_cut_sets Minimal cut sets with indices of primary events.
-  /// @todo This function must aware of approximations.
-  void PerformImportanceAnalysis(
-      const std::set< boost::container::flat_set<int> >& min_cut_sets);
+  /// Calculates total probability from the generated probability equation.
+  double CalculateTotalProbability();
 
-  /// Performes Boolean operation (A and Minimal cut sets). However, this
-  /// method does not reduce the final results to minimal cut sets.
-  /// @param[in] event The index of an event.
-  /// @param[in] min_cut_sets Minimal cut sets with indices of primary events.
-  /// @param[out] final_cut_sets The result of combining with minimal cut sets.
-  void CombineEventAndSets(
-      int event,
-      const std::set< boost::container::flat_set<int> >& min_cut_sets,
-      std::set< boost::container::flat_set<int> >* final_cut_sets);
+  /// Importance analysis of basic events that are in minimal cut sets.
+  /// @todo This function must aware of approximations.
+  void PerformImportanceAnalysis();
 
   /// Approximations for probability calculations.
   std::string approx_;
@@ -239,6 +234,11 @@ class ProbabilityAnalysis {
 
   double p_time_;  ///< Time for probability calculations.
   double imp_time_;  ///< Time for importance calculations.
+
+  /// Positive terms of the probability equation.
+  std::vector< boost::container::flat_set<int> > pos_terms_;
+  /// Negative terms of the probability equation.
+  std::vector< boost::container::flat_set<int> > neg_terms_;
 };
 
 }  // namespace scram

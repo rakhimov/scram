@@ -41,7 +41,10 @@ class ProbabilityAnalysisTest : public ::testing::Test {
       flat_set<int> fs(it->begin(), it->end());
       mcs.insert(mcs.end(), fs);
     }
-    return prob_analysis->ProbOr(nsums, &mcs);
+    prob_analysis->pos_terms_.clear();
+    prob_analysis->neg_terms_.clear();
+    prob_analysis->ProbOr(1, nsums, &mcs);
+    return prob_analysis->CalculateTotalProbability();
   }
 
   void CombineElAndSet(const std::set<int>& el,
