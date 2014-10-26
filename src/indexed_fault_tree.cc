@@ -4,62 +4,56 @@ typedef boost::shared_ptr<scram::Event> EventPtr;
 
 namespace scram {
 
-IndexedFaultTree::IndexedFaultTree(
-    int top_event_id,
-    const std::set<int>& true_house_events,
-    const std::set<int>& false_house_events,
-    const boost::unordered_map<std::string, int>& inter_to_int,
-    const boost::unordered_map<int, GatePtr>& int_to_inter,
-    const boost::unordered_map<std::string, int>& all_to_int) {
-
-  top_event_index_ = top_event_id;
-  true_house_events_ = &true_house_events;
-  false_house_events_ = &false_house_events;
-  inter_to_int_ = &inter_to_int;
-  int_to_inter_ = &int_to_inter;
-  all_to_int_ = &all_to_int;
-  new_gate_index_ = 0;
-  top_event_sign_ = 1;
-}
+IndexedFaultTree::IndexedFaultTree(int top_event_id)
+  : top_event_index_(top_event_id),
+    new_gate_index_(0),
+    top_event_sign_(1) {}
 
 IndexedFaultTree::~IndexedFaultTree() {
   boost::unordered_map<int, IndexedGate*>::iterator it;
   for (it = indexed_gates_.begin(); it != indexed_gates_.end(); ++it) {
     delete it->second;
   }
+  indexed_gates_.clear();
 }
 
-void IndexedFaultTree::InitiateIndexedFaultTree() {
+void IndexedFaultTree::InitiateIndexedFaultTree(
+    const boost::unordered_map<int, GatePtr>& int_to_inter,
+    const boost::unordered_map<std::string, int>& all_to_int) {
   boost::unordered_map<int, GatePtr>::const_iterator it;
-  for (it = int_to_inter_->begin(); it != int_to_inter_->end(); ++it) {
+  for (it = int_to_inter.begin(); it != int_to_inter.end(); ++it) {
     IndexedGate* gate = new IndexedGate(it->first);
     gate->string_type(it->second->type());  // Get the original gate type.
+    if (gate->string_type() == "atleast")
+      gate->vote_number(it->second->vote_number());
+
     const std::map<std::string, EventPtr>* children =
         &it->second->children();
     std::map<std::string, EventPtr>::const_iterator it_children;
     for (it_children = children->begin();
          it_children != children->end(); ++it_children) {
-      gate->InitiateWithChild(all_to_int_->find(it_children->first)->second);
+      gate->InitiateWithChild(all_to_int.find(it_children->first)->second);
     }
     indexed_gates_.insert(std::make_pair(it->first, gate));
     if (gate->index() > new_gate_index_) new_gate_index_ = gate->index() + 1;
   }
+
+  IndexedFaultTree::StartUnrollingGates();
+}
+void IndexedFaultTree::PropagateConstants(
+    const std::set<int>& true_house_events,
+    const std::set<int>& false_house_events) {
+  IndexedGate* top = indexed_gates_.find(top_event_index_)->second;
+  IndexedFaultTree::PropagateConstants(true_house_events, false_house_events,
+                                       top);
 }
 
-/// Performs processing of a fault tree.
 void IndexedFaultTree::ProcessIndexedFaultTree() {
-  IndexedFaultTree::StartUnrollingGates();
-
   IndexedGate* top = indexed_gates_.find(top_event_index_)->second;
-
-  IndexedFaultTree::PropagateConstants(top);
-
   IndexedFaultTree::PreprocessTree(top);
-
   IndexedFaultTree::ProcessNullGates(top);
 }
 
-/// Start unrolling gates.
 void IndexedFaultTree::StartUnrollingGates() {
   // Handle spacial case for a negative or one-child top event.
   IndexedGate* top_gate = indexed_gates_.find(top_event_index_)->second;
@@ -81,7 +75,6 @@ void IndexedFaultTree::StartUnrollingGates() {
   IndexedFaultTree::UnrollTopGate(top_gate);
 }
 
-/// Unrolls the top gate.
 void IndexedFaultTree::UnrollTopGate(IndexedGate* top_gate) {
   std::string type = top_gate->string_type();
   assert(type != "finished");
@@ -105,7 +98,6 @@ void IndexedFaultTree::UnrollTopGate(IndexedGate* top_gate) {
   }
 }
 
-/// Unrolls a gate.
 void IndexedFaultTree::UnrollGate(int gate_index, IndexedGate* parent_gate) {
   if (unrolled_gates_.count(std::abs(gate_index))) return;
   IndexedGate* gate = indexed_gates_.find(std::abs(gate_index))->second;
@@ -169,8 +161,7 @@ void IndexedFaultTree::UnrollXorGate(IndexedGate* gate) {
 }
 
 void IndexedFaultTree::UnrollAtleastGate(IndexedGate* gate) {
-  int vote_number =
-      int_to_inter_->find(gate->index())->second->vote_number();
+  int vote_number = gate->vote_number();
 
   assert(vote_number > 1);
   assert(gate->children().size() > vote_number);
@@ -217,8 +208,10 @@ void IndexedFaultTree::UnrollAtleastGate(IndexedGate* gate) {
   }
 }
 
-/// Remove all house events.
-void IndexedFaultTree::PropagateConstants(IndexedGate* gate) {
+void IndexedFaultTree::PropagateConstants(
+    const std::set<int>& true_house_events,
+    const std::set<int>& false_house_events,
+    IndexedGate* gate) {
   // True house event in AND gate is removed.
   // False house event in AND gate makes the gate NULL.
   // True house event in OR gate makes the gate Unity, and it shouldn't appear
@@ -231,7 +224,7 @@ void IndexedFaultTree::PropagateConstants(IndexedGate* gate) {
   for (it = gate->children().begin(); it != gate->children().end(); ++it) {
     if (std::abs(*it) > top_event_index_) {
       IndexedGate* child_gate = indexed_gates_.find(std::abs(*it))->second;
-      PropagateConstants(child_gate);
+      PropagateConstants(true_house_events, false_house_events, child_gate);
       if (*it > 0) {
         if (child_gate->state() == "null") {
           if (parent_type == 1) {
@@ -266,14 +259,14 @@ void IndexedFaultTree::PropagateConstants(IndexedGate* gate) {
       }
     } else {
       if (*it > 0) {
-        if (false_house_events_->count(*it)) {
+        if (false_house_events.count(*it)) {
           if (parent_type == 1) {
             gate->EraseChild(*it);  // OR gate with false house child.
           } else {
             // AND gate with false child.
             gate->Nullify();
           }
-        } else if (true_house_events_->count(*it)) {
+        } else if (true_house_events.count(*it)) {
           if (parent_type == 1) {
             gate->MakeUnity();
           } else {
@@ -281,13 +274,13 @@ void IndexedFaultTree::PropagateConstants(IndexedGate* gate) {
           }
         }
       } else {
-        if (false_house_events_->count(-*it)) {
+        if (false_house_events.count(-*it)) {
           if (parent_type == 1) {
             gate->MakeUnity();
           } else {
             gate->EraseChild(*it);
           }
-        } else if (true_house_events_->count(-*it)) {
+        } else if (true_house_events.count(-*it)) {
           if (parent_type == 1) {
             gate->EraseChild(*it);  // OR gate with false house child.
           } else {
@@ -300,8 +293,6 @@ void IndexedFaultTree::PropagateConstants(IndexedGate* gate) {
   }
 }
 
-/// This method pre-processes the tree by doing Boolean algebra.
-/// At this point all gates are expected to be either OR type or AND type.
 void IndexedFaultTree::PreprocessTree(IndexedGate* gate) {
   if (preprocessed_gates_.count(gate->index())) return;
   preprocessed_gates_.insert(gate->index());
@@ -340,7 +331,6 @@ void IndexedFaultTree::PreprocessTree(IndexedGate* gate) {
   }
 }
 
-/// Process null gates.
 void IndexedFaultTree::ProcessNullGates(IndexedGate* parent) {
   // NULL gates' parent: OR->Remove the child and AND->NULL the parent.
   if (parent->type() == 1) {

@@ -39,6 +39,12 @@ class IndexedGate {
   /// @returns String type of this gate.
   inline std::string string_type() { return string_type_; }
 
+  /// @returns Vote number.
+  inline int vote_number() { return vote_number_; }
+
+  /// Sets the vote number.
+  inline void vote_number(int number) { vote_number_ = number; }
+
   /// This function is used to initiate this gate with children.
   /// It is assumed that children are passed in ascending order.
   void InitiateWithChild(int child);
@@ -97,6 +103,9 @@ class IndexedGate {
 
   /// Indication if this gate is normal, null, or unity.
   std::string state_;
+
+  /// Vote number for atleast gate.
+  int vote_number_;
 };
 
 }  // namespace scram

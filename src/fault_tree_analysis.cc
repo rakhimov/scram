@@ -351,10 +351,9 @@ void FaultTreeAnalysis::AssignIndices(const FaultTreePtr& fault_tree) {
     ++j;
   }
 
-  indexed_tree_ = new IndexedFaultTree(top_event_index_, true_house_events,
-                                       false_house_events, inter_to_int,
-                                       int_to_inter, all_to_int_);
-  indexed_tree_->InitiateIndexedFaultTree();
+  indexed_tree_ = new IndexedFaultTree(top_event_index_);
+  indexed_tree_->InitiateIndexedFaultTree(int_to_inter, all_to_int_);
+  indexed_tree_->PropagateConstants(true_house_events, false_house_events);
   indexed_tree_->ProcessIndexedFaultTree();
 }
 

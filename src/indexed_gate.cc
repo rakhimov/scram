@@ -6,6 +6,7 @@ IndexedGate::IndexedGate(int index)
     : index_(index),
       type_(-1),
       state_("normal"),
+      vote_number_(-1),
       string_type_("finished") {}
 
 void IndexedGate::InitiateWithChild(int child) {
