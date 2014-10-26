@@ -156,18 +156,12 @@ void FaultTreeAnalysis::ExpandPositiveGate(
     const std::set<int>& events_children,
     std::vector<SupersetPtr>* sets) {
   assert(inter_index > 0);
-  std::string gate = indexed_tree_->GateType(inter_index);
   // Type dependent logic.
-  if (gate == "or") {
+  if (indexed_tree_->GateType(inter_index) == 1) {  // OR gate.
     FaultTreeAnalysis::SetOr(1, events_children, sets);
 
-  } else if (gate == "and") {
+  } else {  // AND gate.
     FaultTreeAnalysis::SetAnd(1, events_children, sets);
-
-  } else {
-    boost::to_upper(gate);
-    std::string msg = "No algorithm defined for " + gate;
-    throw LogicError(msg);
   }
 }
 
@@ -176,18 +170,12 @@ void FaultTreeAnalysis::ExpandNegativeGate(
     const std::set<int>& events_children,
     std::vector<SupersetPtr>* sets) {
   assert(inter_index > 0);
-  std::string gate = indexed_tree_->GateType(inter_index);
   // Type dependent logic.
-  if (gate == "or") {
+  if (indexed_tree_->GateType(inter_index) == 1) {  // Negative OR gate.
     FaultTreeAnalysis::SetAnd(-1, events_children, sets);
 
-  } else if (gate == "and") {
+  } else {  // Negative AND gate.
     FaultTreeAnalysis::SetOr(-1, events_children, sets);
-
-  } else {
-    boost::to_upper(gate);
-    std::string msg = "No algorithm defined for " + gate;
-    throw LogicError(msg);
   }
 }
 

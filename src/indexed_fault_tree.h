@@ -59,9 +59,9 @@ class IndexedFaultTree {
     return indexed_gates_.find(index)->second->children();
   }
 
-  /// @todo Return numbers instead.
-  inline std::string GateType(int index) {
-    return indexed_gates_.find(index)->second->string_type();
+  /// @returns Numbered type of the gate: 1 is OR, 2 is AND.
+  inline int GateType(int index) {
+    return indexed_gates_.find(index)->second->type();
   }
 
   /// @returns the state of a gate.
