@@ -49,6 +49,11 @@ class IndexedGate {
   /// It is assumed that children are passed in ascending order.
   void InitiateWithChild(int child);
 
+  /// This function is used to initiate this gate with children.
+  void InitiateWithChildren(const std::set<int>& children) {
+    children_ = children;
+  }
+
   /// Adds a child of this gate.
   /// @returns false If there is a complement of the added child.
   /// @returns true If the addition of this child successful.

@@ -14,7 +14,6 @@ IndexedFaultTree::~IndexedFaultTree() {
   for (it = indexed_gates_.begin(); it != indexed_gates_.end(); ++it) {
     delete it->second;
   }
-  indexed_gates_.clear();
 }
 
 void IndexedFaultTree::InitiateIndexedFaultTree(
@@ -52,6 +51,42 @@ void IndexedFaultTree::ProcessIndexedFaultTree() {
   IndexedGate* top = indexed_gates_.find(top_event_index_)->second;
   IndexedFaultTree::PreprocessTree(top);
   IndexedFaultTree::ProcessNullGates(top);
+}
+
+void IndexedFaultTree::FindMcs() {
+  // It is assumed that the tree is layered with OR and AND gates on each
+  // level. That is, one level contains only AND or OR gates.
+  // AND gates are operated; whereas, OR gates are left for later minimal
+  // cut set finding. This operations make a big tree consisting of
+  // only OR gates. The function assumes the tree is coherent.
+
+  // Two cases: Top gate is OR; Top gate is AND.
+  // If the gate is OR, proceed to AND gates.
+  // If the gate is AND, use OR gate children to expand the gate into OR.
+  // Save the information that the gate is already expanded, so that not
+  // to repeat in future.
+  // The expansion should be level by level.
+
+  // Expanding AND gate with basic event children and OR gate children.
+  IndexedGate* top = indexed_gates_.find(top_event_index_)->second;
+  if (top->type() == 2) {
+    // Check if all events are basic events.
+    if (*top->children().rbegin() < top_event_index_) return;
+    // Number of resultant sets after expansion of OR gate children.
+    int num_new_children = 1;  // For multiplication.
+    std::vector<IndexedGate*> new_children;
+    // This is prototype gate for storing initial children.
+    IndexedGate* proto = new IndexedGate(++new_gate_index_);
+    indexed_gates_.insert(std::make_pair(proto->index(), proto));
+    std::vector<int> gate_children;
+    // Children are sorted in ascending order.
+    std::set<int>::const_iterator it;
+    for (it = top->children().begin(); it != top->children().end(); ++it) {
+      if (*it < top_event_index_) {
+        proto->InitiateWithChild(*it);
+      }
+    }
+  }
 }
 
 void IndexedFaultTree::StartUnrollingGates() {

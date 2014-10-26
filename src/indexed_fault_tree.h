@@ -55,6 +55,10 @@ class IndexedFaultTree {
   /// Performs processing of a fault tree.
   void ProcessIndexedFaultTree();
 
+  /// Finds minimal cut sets.
+  /// @warning This is experimental for coherent trees only.
+  void FindMcs();
+
   inline const std::set<int>& GateChildren(int index) {
     return indexed_gates_.find(index)->second->children();
   }
