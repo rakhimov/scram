@@ -9,16 +9,16 @@ community.
 
 The initiative deals with the following issues in the current PSA:
 
-    - Quality assurance of calculations;
-    - Unfounded reliance on numerical approximations and truncation;
-    - Portability of the models between different software;
-    - Clarity of the models;
-    - Completeness of the models;
-    - Modeling of human actions;
-    - Better visualization of PSA results;
-    - Difficulty of different software working with the same PSA model;
-    - Lack of data and software backward and forward compatibility;
-    - No universal format for industry data.
+    - Quality assurance of calculations
+    - Unfounded reliance on numerical approximations and truncation
+    - Portability of the models between different software
+    - Clarity of the models
+    - Completeness of the models
+    - Modeling of human actions
+    - Better visualization of PSA results
+    - Difficulty of different software working with the same PSA model
+    - Lack of data and software backward and forward compatibility
+    - No universal format for industry data
 
 In order to facilitate information exchange and quality assurance, OpenPSA
 community has developed a model exchange format(MEF) for PSA that covers
