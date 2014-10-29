@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!--
+This input tests if NOT(AND(A, -A)) is equal to OR(A, -A).
+-->
+<opsa-mef>
+  <define-fault-tree name="NOT_AND_OR_EQUALITY">
+    <define-gate name="NotTopEvent">
+      <not>
+        <gate name="TopEvent"/>
+      </not>
+    </define-gate>
+    <define-gate name="TopEvent">
+      <and>
+        <basic-event name="A"/>
+        <gate name="NotGate"/>
+      </and>
+    </define-gate>
+    <define-gate name="NotGate">
+      <not>
+        <basic-event name="A"/>
+      </not>
+    </define-gate>
+    <define-basic-event name="A">
+      <float value="0.1"/>
+    </define-basic-event>
+    <define-basic-event name="B">
+      <float value="0.2"/>
+    </define-basic-event>
+    <define-basic-event name="C">
+      <float value="0.3"/>
+    </define-basic-event>
+  </define-fault-tree>
+</opsa-mef>
