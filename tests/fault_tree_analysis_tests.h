@@ -15,8 +15,6 @@ typedef boost::shared_ptr<scram::Event> EventPtr;
 typedef boost::shared_ptr<scram::Gate> GatePtr;
 typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
 
-typedef boost::shared_ptr<Superset> SupersetPtr;
-
 class FaultTreeAnalysisTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
@@ -30,10 +28,6 @@ class FaultTreeAnalysisTest : public ::testing::Test {
   void new_fta(FaultTreeAnalysis* f) {
     delete fta;
     fta = f;
-  }
-
-  void ExpandSets(int inter_index, std::vector< SupersetPtr >* sets) {
-    return fta->ExpandSets(inter_index, sets);
   }
 
   void AssignIndices() {

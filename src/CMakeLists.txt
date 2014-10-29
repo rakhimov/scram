@@ -23,7 +23,6 @@ set(SCRAM_CORE_SRC ${SCRAM_CORE_SRC}
   "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/indexed_gate.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/indexed_fault_tree.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/superset.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/random.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree_analysis.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/probability_analysis.cc"
