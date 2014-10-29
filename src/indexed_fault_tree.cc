@@ -2,6 +2,7 @@
 /// Implementation of IndexedFaultTree class.
 #include <functional>
 
+#include "logger.h"
 #include "indexed_fault_tree.h"
 
 typedef boost::shared_ptr<scram::Event> EventPtr;
@@ -89,6 +90,7 @@ struct SetPtrComp
 };
 
 void IndexedFaultTree::FindMcs() {
+  Logger::active() = true;
   // It is assumed that the tree is layered with OR and AND gates on each
   // level. That is, one level contains only AND or OR gates.
   // AND gates are operated; whereas, OR gates are left for later minimal
@@ -111,6 +113,7 @@ void IndexedFaultTree::FindMcs() {
   // Expanding AND gate with basic event children and OR gate children.
   IndexedGate* top = indexed_gates_.find(top_event_index_)->second;
   if (top->children().empty()) return;
+  LOG() << "IndexedFaultTree: Finding MCS for non-empty gate.";
   if (top->type() == 2) {
     new_top_gate = IndexedFaultTree::ExpandAndLayer(top, &next_layer);
     if (new_top_gate == 0) {
@@ -138,6 +141,7 @@ void IndexedFaultTree::FindMcs() {
       }
     }
   }
+  LOG() << "IndexedFaultTree: Processing next layer after top.";
 
   std::map<int, int> subs_tracker;  // Tracker of substitutions.
   while (!next_layer.empty()) {
@@ -147,6 +151,7 @@ void IndexedFaultTree::FindMcs() {
     for (it = next_layer.begin(); it != next_layer.end(); ++it) {
       int result = IndexedFaultTree::ExpandAndLayer(
           indexed_gates_.find(*it)->second, &new_layer);
+      if (result == -1) continue;
       if (result == 0) {
         cut_sets.push_back(*it);
       } else {
@@ -155,6 +160,9 @@ void IndexedFaultTree::FindMcs() {
     }
     next_layer = new_layer;
   }
+
+  LOG() << "IndexedFaultTree: Cut sets are generated.";
+  LOG() << "IndexedFaultTree: Minimizing the cut sets.";
 
   // At this point cut sets must be generated.
 
@@ -185,8 +193,10 @@ void IndexedFaultTree::FindMcs() {
 int IndexedFaultTree::ExpandAndLayer(const IndexedGate* gate,
                                      std::vector<int>* next_layer) {
   assert(gate->type() == 2);
+  if (gate->children().empty()) return -1;
   // Check if all events are basic events.
   if (*gate->children().rbegin() < top_event_index_) return 0;
+  LOG() << "Expanding AND layer with " << gate->index();
   // Create a new gate with OR logic instead of AND.
   IndexedGate* substitute = new IndexedGate(++new_gate_index_);
   indexed_gates_.insert(std::make_pair(substitute->index(), substitute));
@@ -209,6 +219,7 @@ int IndexedFaultTree::ExpandAndLayer(const IndexedGate* gate,
       gate_children.push_back(*it);
     }
   }
+  LOG() << "Cloning existing children.";
   int init_index = proto->index();
   assert(init_index == new_gate_index_);  // Needed for jumps.
   std::vector<int>::iterator it_v;
@@ -221,15 +232,18 @@ int IndexedFaultTree::ExpandAndLayer(const IndexedGate* gate,
     // cloned.
     for (int i = 1; i < child_gate->children().size(); ++i) {
       std::set<int>::const_iterator it;
-      for (it = substitute->children().begin();
-           it != substitute->children().end(); ++it) {
+      int j = 0;
+      for (it = substitute->children().begin(); j < init_size; ++it) {
         IndexedGate* new_gate =
             new IndexedGate(*indexed_gates_.find(*it)->second);
         new_gate->index(++new_gate_index_);
         substitute->InitiateWithChild(new_gate->index());
         indexed_gates_.insert(std::make_pair(new_gate->index(), new_gate));
+        ++j;
       }
     }
+    assert(substitute->children().size() ==
+           (init_size * child_gate->children().size()));
     // Multiply to the new sets.
     std::set<int>::const_iterator it;
     int i = 0;
@@ -242,6 +256,7 @@ int IndexedFaultTree::ExpandAndLayer(const IndexedGate* gate,
       }
       ++i;
     }
+    LOG() << "Joining the resulting expanded sets with the next AND sub-layer";
     std::vector<int> gates_to_delete;  // Null gates.
     // Join the resulting AND sets with the next layer of AND gates.
     for (it = substitute->children().begin();
@@ -251,7 +266,7 @@ int IndexedFaultTree::ExpandAndLayer(const IndexedGate* gate,
       std::set<int>::const_iterator it_child;
       for (it_child = child_gate->children().begin();
            it_child != child_gate->children().end(); ++it_child) {
-        if (*it_child > 0) {
+        if (*it_child > top_event_index_) {
           gates_to_merge.push_back(*it_child);
         }
       }
@@ -267,7 +282,7 @@ int IndexedFaultTree::ExpandAndLayer(const IndexedGate* gate,
         /// @todo Register the candidates for next level of expansions.
       }
       /// @todo Register only if not null.
-      if (include) {
+      if (include && !child_gate->children().empty()) {
         next_layer->push_back(child_gate->index());
       } else {
         gates_to_delete.push_back(child_gate->index());
@@ -279,6 +294,7 @@ int IndexedFaultTree::ExpandAndLayer(const IndexedGate* gate,
       substitute->EraseChild(*it_vec);
     }
   }
+  LOG() << "AND layer expansion job is done!";
   return substitute->index();
 }
 

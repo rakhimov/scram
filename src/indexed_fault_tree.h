@@ -142,6 +142,7 @@ class IndexedFaultTree {
   /// @returns the index of the new expanded gate that should go in place of
   ///          the provided gate.
   /// @returns 0 if the provided gate contains only basic events.
+  /// @returns -1 if the provided gate contains no children.
   int ExpandAndLayer(const IndexedGate* gate, std::vector<int>* next_layer);
 
   /// Finds minimal cut sets from cut sets.
