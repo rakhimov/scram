@@ -46,16 +46,13 @@ void IndexedFaultTree::PropagateConstants(
     const std::set<int>& true_house_events,
     const std::set<int>& false_house_events) {
   IndexedGate* top = indexed_gates_.find(top_event_index_)->second;
+  std::set<int> processed_gates;
   IndexedFaultTree::PropagateConstants(true_house_events, false_house_events,
-                                       top);
+                                       top, &processed_gates);
 }
 
 void IndexedFaultTree::ProcessIndexedFaultTree() {
   IndexedGate* top = indexed_gates_.find(top_event_index_)->second;
-  /// @todo There should be a step to eliminate gates that are complements.
-  ///       All complements should propagate down to basic events, so there
-  ///       are only gates of OR and AND without any negation of gates.
-
   // Upon unrolling the tree, the top event may be detected to be complement.
   // This fact is processed before giving the top event to complement
   // propagation function.
@@ -67,9 +64,14 @@ void IndexedFaultTree::ProcessIndexedFaultTree() {
   std::set<int> processed_gates;
   IndexedFaultTree::PropagateComplements(top, &complements, &processed_gates);
   // After this point there should not be any negative gates.
+
   processed_gates.clear();
   IndexedFaultTree::PreprocessTree(top, &processed_gates);
-  IndexedFaultTree::ProcessNullGates(top);
+  // After this point there might be null AND gates, and the tree structure
+  // should be repeating OR and AND.
+
+  processed_gates.clear();
+  IndexedFaultTree::ProcessNullGates(top, &processed_gates);
 }
 
 void IndexedFaultTree::FindMcs() {
@@ -268,7 +270,10 @@ void IndexedFaultTree::UnrollAtleastGate(IndexedGate* gate) {
 void IndexedFaultTree::PropagateConstants(
     const std::set<int>& true_house_events,
     const std::set<int>& false_house_events,
-    IndexedGate* gate) {
+    IndexedGate* gate,
+    std::set<int>* processed_gates) {
+  if (processed_gates->count(gate->index())) return;
+  processed_gates->insert(gate->index());
   // True house event in AND gate is removed.
   // False house event in AND gate makes the gate NULL.
   // True house event in OR gate makes the gate Unity, and it shouldn't appear
@@ -279,24 +284,39 @@ void IndexedFaultTree::PropagateConstants(
   std::set<int>::const_iterator it;
   int parent_type = gate->type();
   /// @todo This may have bad behavior due to erased children. Needs more
-  ///       testing.
-  for (it = gate->children().begin(); it != gate->children().end(); ++it) {
+  ///       testing. The function needs simplification.
+  for (it = gate->children().begin(); it != gate->children().end();) {
     if (std::abs(*it) > top_event_index_) {  // Processing a gate.
       IndexedGate* child_gate = indexed_gates_.find(std::abs(*it))->second;
-      PropagateConstants(true_house_events, false_house_events, child_gate);
+      PropagateConstants(true_house_events, false_house_events, child_gate,
+                         processed_gates);
       if (*it > 0) {
         if (child_gate->state() == "null") {
           if (parent_type == 1) {
             gate->EraseChild(*it);  // OR gate with null child.
+            if (gate->children().empty()) {
+              gate->Nullify();
+              return;
+            }
+            it = gate->children().begin();
+            continue;
           } else {
             // AND gate with null child.
             gate->Nullify();
+            return;
           }
         } else if (child_gate->state() == "unity") {
           if (parent_type == 1) {
             gate->MakeUnity();
+            return;
           } else {
             gate->EraseChild(*it);
+            if (gate->children().empty()) {
+              gate->MakeUnity();
+              return;
+            }
+            it = gate->children().begin();
+            continue;
           }
         }
       } else {
@@ -304,15 +324,29 @@ void IndexedFaultTree::PropagateConstants(
           if (parent_type == 1) {
             // Makes unity.
             gate->MakeUnity();
+            return;
           } else {
             gate->EraseChild(*it);  // AND gate with unity child.
+            if (gate->children().empty()) {
+              gate->MakeUnity();
+              return;
+            }
+            it = gate->children().begin();
+            continue;
           }
         } else if (child_gate->state() == "unity") {
           if (parent_type == 1) {
             gate->EraseChild(*it);  // OR gate with null child.
+            if (gate->children().empty()) {
+              gate->Nullify();
+              return;
+            }
+            it = gate->children().begin();
+            continue;
           } else {
             // AND gate with null child.
             gate->Nullify();
+            return;
           }
         }
       }
@@ -321,34 +355,63 @@ void IndexedFaultTree::PropagateConstants(
         if (false_house_events.count(*it)) {
           if (parent_type == 1) {
             gate->EraseChild(*it);  // OR gate with false house child.
+            if (gate->children().empty()) {
+              gate->Nullify();
+              return;
+            }
+            it = gate->children().begin();
+            continue;
           } else {
             // AND gate with false child.
             gate->Nullify();
+            return;
           }
         } else if (true_house_events.count(*it)) {
           if (parent_type == 1) {
             gate->MakeUnity();
+            return;
           } else {
             gate->EraseChild(*it);
+            if (gate->children().empty()) {
+              gate->MakeUnity();
+              return;
+            }
+            it = gate->children().begin();
+            continue;
           }
         }
       } else {
         if (false_house_events.count(-*it)) {
           if (parent_type == 1) {
             gate->MakeUnity();
+            return;
           } else {
             gate->EraseChild(*it);
+            if (gate->children().empty()) {
+              gate->MakeUnity();
+              return;
+            }
+            it = gate->children().begin();
+            continue;
           }
         } else if (true_house_events.count(-*it)) {
           if (parent_type == 1) {
             gate->EraseChild(*it);  // OR gate with false house child.
+            if (gate->children().empty()) {
+              gate->Nullify();
+              return;
+            }
+            it = gate->children().begin();
+            continue;
           } else {
             // AND gate with false child.
             gate->Nullify();
+            return;
           }
         }
       }
     }
+    ++it;
   }
 }
 
@@ -410,7 +473,6 @@ void IndexedFaultTree::PreprocessTree(IndexedGate* gate,
       int child = child_gate->type();
       if (parent == child) {
         if (!gate->MergeGate(indexed_gates_.find(*it)->second)) {
-          null_gates_.insert(gate->index());
           break;
         } else {
           it = gate->children().begin();
@@ -420,7 +482,6 @@ void IndexedFaultTree::PreprocessTree(IndexedGate* gate,
         // This must be from null, not, or some reduced gate.
         bool ret = gate->SwapChild(*it, *child_gate->children().begin());
         if (!ret) {
-          null_gates_.insert(gate->index());
           break;
         } else {
           it = gate->children().begin();
@@ -434,8 +495,54 @@ void IndexedFaultTree::PreprocessTree(IndexedGate* gate,
   }
 }
 
-void IndexedFaultTree::ProcessNullGates(IndexedGate* parent) {
+void IndexedFaultTree::ProcessNullGates(IndexedGate* gate,
+                                        std::set<int>* processed_gates) {
   // NULL gates' parent: OR->Remove the child and AND->NULL the parent.
+  // At this stage, only positive gates are left.
+  // The tree structure is repeating ...->OR->AND->OR->...
+
+  if (processed_gates->count(gate->index())) return;
+  processed_gates->insert(gate->index());
+
+  if (gate->state() == "null") {
+    assert(gate->type() == 2);
+    gate->EraseAllChildren();
+    return;
+  }
+
+  if (gate->type() == 1) {
+    assert(gate->state() != "null");
+    std::set<int>::const_iterator it;
+    for (it = gate->children().begin(); it != gate->children().end();) {
+      if (std::abs(*it) > top_event_index_) {
+        assert(*it > 0);
+        IndexedGate* child_gate = indexed_gates_.find(*it)->second;
+        assert(child_gate->type() == 2);
+        IndexedFaultTree::ProcessNullGates(child_gate, processed_gates);
+        if (child_gate->state() == "null") {
+          gate->EraseChild(*it);
+          it = gate->children().begin();
+          continue;
+        }
+      }
+      ++it;
+    }
+    if (gate->children().empty()) gate->Nullify();
+  } else {
+    std::set<int>::const_iterator it;
+    for (it = gate->children().begin(); it != gate->children().end(); ++it) {
+      if (std::abs(*it) > top_event_index_) {
+        assert(*it > 0);
+        IndexedGate* child_gate = indexed_gates_.find(*it)->second;
+        assert(child_gate->type() == 1);
+        IndexedFaultTree::ProcessNullGates(child_gate, processed_gates);
+        if (child_gate->state() == "null") {
+          gate->EraseAllChildren();
+          return;
+        }
+      }
+    }
+  }
 }
 
 }  // namespace scram

@@ -135,13 +135,12 @@ void FaultTreeAnalysis::ExpandSets(int inter_index,
   assert(sets->empty());
   assert(inter_index > 0);
 
-  if (indexed_tree_->GateState(std::abs(inter_index)) == "null") return;
-
   if (FaultTreeAnalysis::GetExpandedSets(inter_index, sets)) return;
 
   // Populate intermediate and primary events of the top.
   const std::set<int>* events_children =
       &indexed_tree_->GateChildren(inter_index);
+  if (events_children->empty()) return;
 
   FaultTreeAnalysis::ExpandPositiveGate(inter_index, *events_children, sets);
 

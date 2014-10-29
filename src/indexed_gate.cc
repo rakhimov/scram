@@ -24,7 +24,7 @@ bool IndexedGate::AddChild(int child) {
   if (children_.count(-child)) {
     if (type_ == 2) {
       state_ = "null";  // AND gate becomes NULL.
-      children_.insert(child);  // In case the gate type changes.
+      children_.clear();
       return false;
     }
   }

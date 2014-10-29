@@ -71,11 +71,6 @@ class IndexedFaultTree {
     return indexed_gates_.find(index)->second->type();
   }
 
-  /// @returns the state of a gate.
-  inline std::string GateState(int index) {
-    return indexed_gates_.find(index)->second->state();
-  }
-
  private:
   /// Start unrolling gates to simplify gates to OR and AND gates.
   void StartUnrollingGates();
@@ -98,12 +93,15 @@ class IndexedFaultTree {
   void UnrollAtleastGate(IndexedGate* gate);
 
   /// Remove all house events from a given gate.
+  /// After this method, there should not be any unity or null gates.
   /// @param[in] true_house_events House events with true state.
   /// @param[in] false_house_events House events with false state.
   /// @param[out] gate The final resultant processed gate.
+  /// @param[out] processed_gates The gates that has already been processed.
   void PropagateConstants(const std::set<int>& true_house_events,
                           const std::set<int>& false_house_events,
-                          IndexedGate* gate);
+                          IndexedGate* gate,
+                          std::set<int>* processed_gates);
 
   /// Propagates complements of child gates down to basic events
   /// in order to remove any NOR or NAND logic from the tree.
@@ -119,21 +117,23 @@ class IndexedFaultTree {
 
   /// This method pre-processes the tree by doing Boolean algebra.
   /// At this point all gates are expected to be either OR type or AND type.
-  /// Preprocesses the fault tree.
-  /// Merges similar gates.
+  /// This function merges similar gates and may produce null gates.
   /// @param[out] gate The starting gate to traverse the tree. This is for
   ///                 recursive purposes.
   /// @param[out] processed_gates The gates that has already been processed.
   void PreprocessTree(IndexedGate* gate, std::set<int>* processed_gates);
 
   /// Process null gates.
-  void ProcessNullGates(IndexedGate* parent);
+  /// After this function, there should not be null gates resulting
+  /// from previous processing steps.
+  /// @param[out] gate The starting gate to traverse the tree. This is for
+  ///                 recursive purposes.
+  /// @param[out] processed_gates The gates that has already been processed.
+  void ProcessNullGates(IndexedGate* gate, std::set<int>* processed_gates);
 
   int top_event_index_;  ///< The index of the top gate of this tree.
   /// All gates of this tree including newly created ones.
   boost::unordered_map<int, IndexedGate*> indexed_gates_;
-  /// To keep track for NULL pre-processed gates.
-  std::set<int> null_gates_;
   int top_event_sign_;  ///< The negative or positive sign of the top event.
   int new_gate_index_;  ///< Index for a new gate.
 };
