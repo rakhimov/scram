@@ -36,6 +36,7 @@ after_success:
       --exclude src/schema.h
       --exclude src/element.h
       --exclude src/expression.h
+      --exclude src/logger.h
       --exclude gui/
       > /dev/null
     - cp CTestCustom.cmake ./build/ && cd ./build && ctest -D Experimental

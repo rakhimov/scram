@@ -103,8 +103,6 @@ Platform Support
 Coding Specific
 ===============
 
-- Logging system. *Moderate*
-
 - More tests for expressions. *Moderate*
 
 - Benchmark tests:
