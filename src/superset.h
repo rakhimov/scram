@@ -77,9 +77,6 @@ class Superset {
   /// Container for primary events.
   std::set<int> p_events_;
 
-  /// The number of complement gates in the sets.
-  int neg_gates_;
-
   /// Indicator of complement primary events.
   bool neg_p_events_;
 

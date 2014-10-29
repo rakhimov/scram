@@ -71,20 +71,6 @@ TEST(SupersetTest, InsertGate) {
   EXPECT_NO_THROW(sset->InsertGate(new_gate));
   gates.insert(new_gate);
   EXPECT_EQ(sset->gates(), gates);
-
-  // Negative events assiciated with NOT logic.
-  int neg_gate = -11;
-  gates.insert(neg_gate);
-  EXPECT_NO_THROW(sset->InsertGate(neg_gate));
-  EXPECT_EQ(sset->gates(), gates);
-
-  // This is a use in not intended way.
-  // The user should only use this function for initialization.
-  int neg_existing = -100;  // This is a negation of an existing event.
-  gates.insert(neg_existing);
-  EXPECT_NO_THROW(sset->InsertGate(neg_existing));
-  EXPECT_TRUE(sset->p_events().empty());
-  EXPECT_EQ(sset->gates(), gates);
 }
 
 // Test Insert function
@@ -118,16 +104,6 @@ TEST(SupersetTest, InsertSet) {
   sset_one->InsertPrimary(-1 * p_event_two);
   EXPECT_FALSE(sset_one->InsertSet(sset_two));
   EXPECT_TRUE(sset_one->null());
-
-  sset_one = SupersetPtr(new Superset());
-  sset_one->InsertGate(-1 * gate_two);
-  sset_one->InsertGate(-1000);
-  sset_one->InsertGate(-100);
-  sset_one->InsertGate(-9);
-  sset_one->InsertGate(-7);
-  sset_one->InsertGate(7);
-  EXPECT_FALSE(sset_two->InsertSet(sset_one));
-  EXPECT_TRUE(sset_two->null());
 }
 
 // Test PopGate function

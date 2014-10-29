@@ -4,7 +4,7 @@
 
 namespace scram {
 
-Superset::Superset() : null_(false), neg_gates_(0), neg_p_events_(false) {}
+Superset::Superset() : null_(false), neg_p_events_(false) {}
 
 void Superset::InsertPrimary(int id) {
   if (id > 0) {
@@ -17,13 +17,8 @@ void Superset::InsertPrimary(int id) {
 }
 
 void Superset::InsertGate(int id) {
-  if (id > 0) {
-    gates_.insert(gates_.end(), id);
-
-  } else {
-    ++neg_gates_;
-    gates_.insert(gates_.begin(), id);
-  }
+  assert(id > 0);
+  gates_.insert(gates_.end(), id);
 }
 
 bool Superset::InsertSet(const boost::shared_ptr<Superset>& st) {
@@ -38,19 +33,7 @@ bool Superset::InsertSet(const boost::shared_ptr<Superset>& st) {
         return false;
       }
     }
-    if (!neg_p_events_) neg_p_events_ = false;  // New negative were included.
-  }
-
-  if (neg_gates_ || st->neg_gates_) {
-    for (it = st->gates_.begin(); it != st->gates_.end(); ++it) {
-      if (gates_.count(-*it)) {
-        p_events_.clear();
-        gates_.clear();
-        null_ = true;
-        return false;
-      }
-      if (*it < 0) ++neg_gates_;
-    }
+    if (!neg_p_events_) neg_p_events_ = false;  // New negative was included.
   }
 
   p_events_.insert(st->p_events_.begin(), st->p_events_.end());
@@ -63,8 +46,6 @@ int Superset::PopGate() {
   std::set<int>::iterator it = gates_.begin();
   int gate = *it;
   gates_.erase(it);
-  if (gate < 0) --neg_gates_;
-  assert(neg_gates_ >= 0);
   return gate;
 }
 
