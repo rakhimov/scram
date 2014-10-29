@@ -109,6 +109,9 @@ class IndexedGate {
     children_.clear();
   }
 
+  /// Sets the index of this gate.
+  inline void index(int index) { index_ = index; }
+
   /// @returns The index of this gate.
   inline int index() const { return index_; }
 

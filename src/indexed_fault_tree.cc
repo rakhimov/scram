@@ -1,5 +1,7 @@
 /// @file indexed_fault_tree.cc
 /// Implementation of IndexedFaultTree class.
+#include <functional>
+
 #include "indexed_fault_tree.h"
 
 typedef boost::shared_ptr<scram::Event> EventPtr;
@@ -74,12 +76,24 @@ void IndexedFaultTree::ProcessIndexedFaultTree() {
   IndexedFaultTree::ProcessNullGates(top, &processed_gates);
 }
 
+/// @class SetPtrComp
+/// Functor for set pointer comparison efficiency.
+struct SetPtrComp
+    : public std::binary_function<const std::set<int>*,
+                                  const std::set<int>*, bool> {
+  /// Operator overload.
+  /// Compares sets for sorting.
+  bool operator()(const std::set<int>* lhs, const std::set<int>* rhs) const {
+    return *lhs < *rhs;
+  }
+};
+
 void IndexedFaultTree::FindMcs() {
   // It is assumed that the tree is layered with OR and AND gates on each
   // level. That is, one level contains only AND or OR gates.
   // AND gates are operated; whereas, OR gates are left for later minimal
   // cut set finding. This operations make a big tree consisting of
-  // only OR gates. The function assumes the tree is coherent.
+  // only OR gates. The function assumes the tree contains only positive gates.
 
   // Two cases: Top gate is OR; Top gate is AND.
   // If the gate is OR, proceed to AND gates.
@@ -88,26 +102,229 @@ void IndexedFaultTree::FindMcs() {
   // to repeat in future.
   // The expansion should be level by level.
 
+  // Indices of gates that contain only basic events.
+  std::vector<int> cut_sets;
+
+  // To process layer by layer.
+  std::vector<int> next_layer;
+  int new_top_gate = 0;  // In case the top event is substituted.
   // Expanding AND gate with basic event children and OR gate children.
   IndexedGate* top = indexed_gates_.find(top_event_index_)->second;
+  if (top->children().empty()) return;
   if (top->type() == 2) {
-    // Check if all events are basic events.
-    if (*top->children().rbegin() < top_event_index_) return;
-    // Number of resultant sets after expansion of OR gate children.
-    int num_new_children = 1;  // For multiplication.
-    std::vector<IndexedGate*> new_children;
-    // This is prototype gate for storing initial children.
-    IndexedGate* proto = new IndexedGate(++new_gate_index_);
-    indexed_gates_.insert(std::make_pair(proto->index(), proto));
-    std::vector<int> gate_children;
-    // Children are sorted in ascending order.
-    std::set<int>::const_iterator it;
+    new_top_gate = IndexedFaultTree::ExpandAndLayer(top, &next_layer);
+    if (new_top_gate == 0) {
+      // This must be a top gate with basic events only.
+      // This is minimal cut set by default.
+      cut_sets.push_back(top->index());
+      assert(next_layer.empty());
+    }
+  } else if (top->type() == 1) {
+    // No expansion logic for OR gates.
+    // Only proceed with children AND gates.
+    // Also optionally detect cut sets if basic event children exist.
+    std::set<int>::iterator it;
     for (it = top->children().begin(); it != top->children().end(); ++it) {
-      if (*it < top_event_index_) {
-        proto->InitiateWithChild(*it);
+      if (*it > top_event_index_) {
+        // Do the business for AND gates.
+        next_layer.push_back(*it);
+      } else {
+        // This is a cut set.
+        IndexedGate* cut_set = new IndexedGate(++new_gate_index_);
+        cut_set->type(2);
+        cut_set->InitiateWithChild(*it);
+        indexed_gates_.insert(std::make_pair(cut_set->index(), cut_set));
+        cut_sets.push_back(cut_set->index());
       }
     }
   }
+
+  std::map<int, int> subs_tracker;  // Tracker of substitutions.
+  while (!next_layer.empty()) {
+    std::vector<int> new_layer;  // For the next layer.
+    // Proceed with the next levels until all required cut sets are generated.
+    std::vector<int>::iterator it;
+    for (it = next_layer.begin(); it != next_layer.end(); ++it) {
+      int result = IndexedFaultTree::ExpandAndLayer(
+          indexed_gates_.find(*it)->second, &new_layer);
+      if (result == 0) {
+        cut_sets.push_back(*it);
+      } else {
+        subs_tracker.insert(std::make_pair(*it, result));
+      }
+    }
+    next_layer = new_layer;
+  }
+
+  // At this point cut sets must be generated.
+
+  // Choose to convert vector to a set to get rid of any duplications.
+  SetPtrComp comp;
+  std::set< const std::set<int>*, SetPtrComp > unique_cut_sets(comp);
+  std::vector<int>::iterator it_c;
+  for (it_c = cut_sets.begin(); it_c != cut_sets.end(); ++it_c) {
+    unique_cut_sets.insert(&indexed_gates_.find(*it_c)->second->children());
+  }
+
+  imcs_.reserve(unique_cut_sets.size());
+  std::vector< const std::set<int>* > sets_unique;
+  std::set< const std::set<int>*, SetPtrComp >::iterator it_un;
+  for (it_un = unique_cut_sets.begin(); it_un != unique_cut_sets.end();
+       ++it_un) {
+    if ((*it_un)->size() == 1) {
+      // Minimal cut set is detected.
+      imcs_.push_back(**it_un);
+      continue;
+    }
+    sets_unique.push_back(*it_un);
+  }
+
+  IndexedFaultTree::FindMcs(sets_unique, imcs_, 2, &imcs_);
+}
+
+int IndexedFaultTree::ExpandAndLayer(const IndexedGate* gate,
+                                     std::vector<int>* next_layer) {
+  assert(gate->type() == 2);
+  // Check if all events are basic events.
+  if (*gate->children().rbegin() < top_event_index_) return 0;
+  // Create a new gate with OR logic instead of AND.
+  IndexedGate* substitute = new IndexedGate(++new_gate_index_);
+  indexed_gates_.insert(std::make_pair(substitute->index(), substitute));
+  substitute->type(1);
+
+  std::vector<IndexedGate*> new_children;
+  // This is prototype gate for storing initial children.
+  IndexedGate* proto = new IndexedGate(++new_gate_index_);
+  indexed_gates_.insert(std::make_pair(proto->index(), proto));
+  proto->type(2);
+  substitute->InitiateWithChild(proto->index());
+
+  std::vector<int> gate_children;
+  // Children are sorted in ascending order.
+  std::set<int>::const_iterator it;
+  for (it = gate->children().begin(); it != gate->children().end(); ++it) {
+    if (*it < top_event_index_) {
+      proto->InitiateWithChild(*it);
+    } else {
+      gate_children.push_back(*it);
+    }
+  }
+  int init_index = proto->index();
+  assert(init_index == new_gate_index_);  // Needed for jumps.
+  std::vector<int>::iterator it_v;
+  for (it_v = gate_children.begin(); it_v != gate_children.end(); ++it_v) {
+    IndexedGate* child_gate = indexed_gates_.find(*it_v)->second;
+    assert(child_gate->type() == 1);
+    int init_size = substitute->children().size();
+    // Create new sets for multiplication.
+    // Note that we already have one set of gates ready to be
+    // cloned.
+    for (int i = 1; i < child_gate->children().size(); ++i) {
+      std::set<int>::const_iterator it;
+      for (it = substitute->children().begin();
+           it != substitute->children().end(); ++it) {
+        IndexedGate* new_gate =
+            new IndexedGate(*indexed_gates_.find(*it)->second);
+        new_gate->index(++new_gate_index_);
+        substitute->InitiateWithChild(new_gate->index());
+        indexed_gates_.insert(std::make_pair(new_gate->index(), new_gate));
+      }
+    }
+    // Multiply to the new sets.
+    std::set<int>::const_iterator it;
+    int i = 0;
+    for (it = child_gate->children().begin();
+         it != child_gate->children().end(); ++it) {
+      for (int j = 0; j < init_size ; ++j) {
+        indexed_gates_.find(init_index + i * init_size + j)->second
+            ->AddChild(*it);
+        /// @todo Erase the child if the resultant set is null.
+      }
+      ++i;
+    }
+    std::vector<int> gates_to_delete;  // Null gates.
+    // Join the resulting AND sets with the next layer of AND gates.
+    for (it = substitute->children().begin();
+         it != substitute->children().end(); ++it) {
+      IndexedGate* child_gate = indexed_gates_.find(*it)->second;
+      std::vector<int> gates_to_merge;
+      std::set<int>::const_iterator it_child;
+      for (it_child = child_gate->children().begin();
+           it_child != child_gate->children().end(); ++it_child) {
+        if (*it_child > 0) {
+          gates_to_merge.push_back(*it_child);
+        }
+      }
+      bool include = true;  // Flag for null results.
+      std::vector<int>::iterator it_vec;
+      for (it_vec = gates_to_merge.begin(); it_vec != gates_to_merge.end();
+           ++it_vec) {
+        include = child_gate->MergeGate(indexed_gates_.find(*it_vec)->second);
+        if (!include) break;
+        /// @todo Detect null sets resulting from the merge.
+        /// @todo Detect the number of basic event for maximum order.
+        /// @todo Detect cut sets.
+        /// @todo Register the candidates for next level of expansions.
+      }
+      /// @todo Register only if not null.
+      if (include) {
+        next_layer->push_back(child_gate->index());
+      } else {
+        gates_to_delete.push_back(child_gate->index());
+      }
+    }
+    std::vector<int>::iterator it_vec;
+    for (it_vec = gates_to_delete.begin(); it_vec != gates_to_delete.end();
+         ++it_vec) {
+      substitute->EraseChild(*it_vec);
+    }
+  }
+  return substitute->index();
+}
+
+void IndexedFaultTree::FindMcs(
+    const std::vector< const std::set<int>* >& cut_sets,
+    const std::vector< std::set<int> >& mcs_lower_order,
+    int min_order,
+    std::vector< std::set<int> >* imcs) {
+  if (cut_sets.empty()) return;
+
+  // Iterator for cut_sets.
+  std::vector< const std::set<int>* >::const_iterator it_uniq;
+
+  // Iterator for minimal cut sets.
+  std::vector< std::set<int> >::const_iterator it_min;
+
+  std::vector< const std::set<int>* > temp_sets;  // For mcs of a level above.
+  std::vector< std::set<int> > temp_min_sets;  // For mcs of this level.
+
+  for (it_uniq = cut_sets.begin();
+       it_uniq != cut_sets.end(); ++it_uniq) {
+    bool include = true;  // Determine to keep or not.
+
+    for (it_min = mcs_lower_order.begin(); it_min != mcs_lower_order.end();
+         ++it_min) {
+      if (std::includes((*it_uniq)->begin(), (*it_uniq)->end(),
+                        it_min->begin(), it_min->end())) {
+        // Non-minimal cut set is detected.
+        include = false;
+        break;
+      }
+    }
+    // After checking for non-minimal cut sets,
+    // all minimum sized cut sets are guaranteed to be minimal.
+    if (include) {
+      if ((*it_uniq)->size() == min_order) {
+        temp_min_sets.push_back(**it_uniq);
+      } else {
+        temp_sets.push_back(*it_uniq);
+      }
+    }
+    // Ignore the cut set because include = false.
+  }
+  imcs->insert(imcs->end(), temp_min_sets.begin(), temp_min_sets.end());
+  min_order++;
+  IndexedFaultTree::FindMcs(temp_sets, temp_min_sets, min_order, imcs);
 }
 
 void IndexedFaultTree::StartUnrollingGates() {
@@ -537,7 +754,7 @@ void IndexedFaultTree::ProcessNullGates(IndexedGate* gate,
         assert(child_gate->type() == 1);
         IndexedFaultTree::ProcessNullGates(child_gate, processed_gates);
         if (child_gate->state() == "null") {
-          gate->EraseAllChildren();
+          gate->Nullify();
           return;
         }
       }

@@ -53,10 +53,11 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
 
   FaultTreeAnalysis::AssignIndices(fault_tree);
 
-  SupersetPtr top_set(new Superset());
-  top_set->InsertGate(top_event_index_);
+  indexed_tree_->FindMcs();
+  // SupersetPtr top_set(new Superset());
+  // top_set->InsertGate(top_event_index_);
 
-  ExpandTree(top_set, &cut_sets);  // Cut set generation.
+  // ExpandTree(top_set, &cut_sets);  // Cut set generation.
 
   // Duration of the expansion.
   exp_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
@@ -64,8 +65,9 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
   // At this point cut sets are generated.
   // Now we need to reduce them to minimal cut sets.
 
+  const std::vector< std::set<int> >* imcs = &indexed_tree_->GetGeneratedMcs();
   // First, defensive check if cut sets exist for the specified limit order.
-  if (cut_sets.empty()) {
+  if (imcs->empty()) {
     std::stringstream msg;
     msg << "No cut sets for the limit order " <<  limit_order_;
     warnings_ += msg.str();
@@ -73,33 +75,33 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
   }
 
   // An iterator for a vector with sets of ids of primary events.
-  std::vector< SupersetPtr >::iterator it_vec;
+  // std::vector< SupersetPtr >::iterator it_vec;
 
-  // Choose to convert vector to a set to get rid of any duplications.
-  SetPtrComp comp;
-  std::set< const std::set<int>*, SetPtrComp > unique_cut_sets(comp);
-  for (it_vec = cut_sets.begin(); it_vec != cut_sets.end(); ++it_vec) {
-    unique_cut_sets.insert(&(*it_vec)->p_events());
-  }
+  // // Choose to convert vector to a set to get rid of any duplications.
+  // SetPtrComp comp;
+  // std::set< const std::set<int>*, SetPtrComp > unique_cut_sets(comp);
+  // for (it_vec = cut_sets.begin(); it_vec != cut_sets.end(); ++it_vec) {
+  //   unique_cut_sets.insert(&(*it_vec)->p_events());
+  // }
 
-  std::vector< std::set<int> > imcs;  // Min cut sets with indexed events.
-  imcs.reserve(unique_cut_sets.size());
-  std::vector<const std::set<int>* > sets_unique;
-  std::set< const std::set<int>*, SetPtrComp >::iterator it_un;
-  for (it_un = unique_cut_sets.begin(); it_un != unique_cut_sets.end();
-       ++it_un) {
-    if ((*it_un)->size() == 1) {
-      // Minimal cut set is detected.
-      imcs.push_back(**it_un);
-      continue;
-    }
-    sets_unique.push_back(*it_un);
-  }
+  // std::vector< std::set<int> > imcs;  // Min cut sets with indexed events.
+  // imcs.reserve(unique_cut_sets.size());
+  // std::vector<const std::set<int>* > sets_unique;
+  // std::set< const std::set<int>*, SetPtrComp >::iterator it_un;
+  // for (it_un = unique_cut_sets.begin(); it_un != unique_cut_sets.end();
+  //      ++it_un) {
+  //   if ((*it_un)->size() == 1) {
+  //     // Minimal cut set is detected.
+  //     imcs.push_back(**it_un);
+  //     continue;
+  //   }
+  //   sets_unique.push_back(*it_un);
+  // }
 
-  FaultTreeAnalysis::FindMcs(sets_unique, imcs, 2, &imcs);
+  // FaultTreeAnalysis::FindMcs(sets_unique, imcs, 2, &imcs);
   // Duration of MCS generation.
   mcs_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
-  FaultTreeAnalysis::SetsToString(imcs);  // MCS with event ids.
+  FaultTreeAnalysis::SetsToString(*imcs);  // MCS with event ids.
 }
 
 void FaultTreeAnalysis::ExpandTree(const SupersetPtr& set_with_gates,
@@ -326,6 +328,7 @@ void FaultTreeAnalysis::AssignIndices(const FaultTreePtr& fault_tree) {
 void FaultTreeAnalysis::SetsToString(const std::vector< std::set<int> >& imcs) {
   std::vector< std::set<int> >::const_iterator it_min;
   for (it_min = imcs.begin(); it_min != imcs.end(); ++it_min) {
+    if (it_min->size() > max_order_) max_order_ = it_min->size();
     std::set<std::string> pr_set;
     std::set<int>::iterator it_set;
     for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {

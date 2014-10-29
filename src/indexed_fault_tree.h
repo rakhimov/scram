@@ -71,6 +71,11 @@ class IndexedFaultTree {
     return indexed_gates_.find(index)->second->type();
   }
 
+  /// @returns Generated minimal cut sets with basic event indices.
+  inline const std::vector< std::set<int> >& GetGeneratedMcs() {
+    return imcs_;
+  }
+
  private:
   /// Start unrolling gates to simplify gates to OR and AND gates.
   void StartUnrollingGates();
@@ -131,11 +136,32 @@ class IndexedFaultTree {
   /// @param[out] processed_gates The gates that has already been processed.
   void ProcessNullGates(IndexedGate* gate, std::set<int>* processed_gates);
 
+  /// Expands And layer in preprocessed fault tree.
+  /// @param[in] gate The AND gate to be processed.
+  /// @param[out] next_layer Container for processing next layer AND gates.
+  /// @returns the index of the new expanded gate that should go in place of
+  ///          the provided gate.
+  /// @returns 0 if the provided gate contains only basic events.
+  int ExpandAndLayer(const IndexedGate* gate, std::vector<int>* next_layer);
+
+  /// Finds minimal cut sets from cut sets.
+  /// Applys rule 4 to reduce unique cut sets to minimal cut sets.
+  /// @param[in] cut_sets Cut sets with primary events.
+  /// @param[in] mcs_lower_order Reference minimal cut sets of some order.
+  /// @param[in] min_order The order of sets to become minimal.
+  /// @param[out] imcs Min cut sets with indices of events.
+  /// @note T_avg(N^3 + N^2*logN + N*logN) = O_avg(N^3)
+  void FindMcs(const std::vector< const std::set<int>* >& cut_sets,
+               const std::vector< std::set<int> >& mcs_lower_order,
+               int min_order,
+               std::vector< std::set<int> >* imcs);
+
   int top_event_index_;  ///< The index of the top gate of this tree.
   /// All gates of this tree including newly created ones.
   boost::unordered_map<int, IndexedGate*> indexed_gates_;
   int top_event_sign_;  ///< The negative or positive sign of the top event.
   int new_gate_index_;  ///< Index for a new gate.
+  std::vector< std::set<int> > imcs_;  // Min cut sets with indexed events.
 };
 
 }  // namespace scram
