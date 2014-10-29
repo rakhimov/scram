@@ -1,3 +1,6 @@
+/// @file indexed_gate.h
+/// Representation of a gate with indexed children to use with
+/// IndexedFaultTree class.
 #ifndef SCRAM_SRC_INDEXED_GATE_H_
 #define SCRAM_SRC_INDEXED_GATE_H_
 
@@ -21,6 +24,7 @@ class IndexedGate {
   /// Sets the gate type information.
   /// 1 is for OR gate.
   /// 2 is for AND gate.
+  /// @param[in] t The type for this gate.
   inline void type(int t) {
     assert(t == 1 || t == 2);
     type_ = t;
@@ -58,9 +62,22 @@ class IndexedGate {
   /// @returns false If there is a complement of the added child.
   /// @returns true If the addition of this child successful.
   /// @warning This function does not indicate error for future additions.
+  ///          This logic is done because of the possible application of
+  ///          De Morgan's law.
   bool AddChild(int child);
 
+  /// Swaps an existing child to a new child. Mainly used for
+  /// changing the logic of this gate or complementing the child.
+  /// @param[in] existing_child An existing child to get swapped.
+  /// @param[in] new_child A new child.
+  /// @warning If there is an iterator for the children set, then
+  ///          it may become unusable.
   bool SwapChild(int existing_child, int new_child);
+
+  /// Makes all children complement of themselves.
+  /// This is a helper function to propagate the complement gate and apply
+  /// De Morgan's Law.
+  void InvertChildren();
 
   /// Adds children of another gate to this gate.
   /// If this gate exists as a child then it is removed from the children.
@@ -68,30 +85,43 @@ class IndexedGate {
   /// @returns false if the final set is null.
   bool MergeGate(IndexedGate* child_gate);
 
+  /// Clears all the children of this gate.
   inline void EraseAllChildren() { children_.clear(); }
 
+  /// Removes a child from the children container.
+  /// @param[in] child The positive or negative index of the existing child.
   inline void EraseChild(int child) {
     assert(children_.count(child));
     children_.erase(child);
   }
 
+  /// Sets the state of this gate to null.
   inline void Nullify() {
     assert(state_ == "normal");
     state_ = "null";
     children_.clear();
   }
 
+  /// Sets the state of this gate to unity.
   inline void MakeUnity() {
     assert(state_ == "normal");
     state_ = "unity";
     children_.clear();
   }
 
-  inline int index() { return index_; }
+  /// @returns The index of this gate.
+  inline int index() const { return index_; }
 
-  inline const std::set<int>& children() { return children_; }
+  /// Directly assigns children for this gate.
+  /// @param[in] children A new set of children for this gate.
+  inline void children(const std::set<int>& children) { children_ = children; }
 
-  inline std::string state() { return state_; }
+  /// @returns children of this gate.
+  inline const std::set<int>& children() const { return children_; }
+
+  /// @returns The state of this gate, which is either "null", or "unity", or
+  ///          "normal" by default.
+  inline std::string state() const { return state_; }
 
  private:
   /// Type of this gate. Only two choices are allowed: OR, AND.

@@ -101,28 +101,18 @@ class FaultTreeAnalysis {
                           const std::set<int>& events_children,
                           std::vector<SupersetPtr>* sets);
 
-  /// Expands complement gate's children into supersets.
-  /// @param[in] inter_index The index number of the parent node.
-  /// @param[in] events_children The indices of the children of the event.
-  /// @param[out] sets The final Supersets from the children if there is a gate.
-  void ExpandNegativeGate(int inter_index,
-                          const std::set<int>& events_children,
-                          std::vector<SupersetPtr>* sets);
-
   /// Expands sets for OR operator.
-  /// @param[in] mult The positive(1) or negative(-1) event indicator.
   /// @param[in] events_children The indices of the children of the event.
   /// @param[out] sets The final Supersets generated for OR operator.
   /// @note O_avg(N) O_max(N^2)
-  void SetOr(int mult, const std::set<int>& events_children,
+  void SetOr(const std::set<int>& events_children,
              std::vector<SupersetPtr>* sets);
 
   /// Expands sets for AND operator.
-  /// @param[in] mult The positive(1) or negative(-1) event indicator.
   /// @param[in] events_children The indices of the children of the event.
   /// @param[out] sets The final Supersets generated for OR operator.
   /// @note O_avg(N*logN) O_max(N*logN) where N is the number of children.
-  void SetAnd(int mult, const std::set<int>& events_children,
+  void SetAnd(const std::set<int>& events_children,
               std::vector<SupersetPtr>* sets);
 
   /// Finds minimal cut sets from cut sets.

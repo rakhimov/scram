@@ -54,7 +54,7 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
   FaultTreeAnalysis::AssignIndices(fault_tree);
 
   SupersetPtr top_set(new Superset());
-  top_set->InsertGate(top_event_index_ * indexed_tree_->top_event_sign());
+  top_set->InsertGate(top_event_index_);
 
   ExpandTree(top_set, &cut_sets);  // Cut set generation.
 
@@ -131,22 +131,19 @@ void FaultTreeAnalysis::ExpandTree(const SupersetPtr& set_with_gates,
 }
 
 void FaultTreeAnalysis::ExpandSets(int inter_index,
-                                   std::vector< SupersetPtr >* sets) {
+                                   std::vector<SupersetPtr>* sets) {
   assert(sets->empty());
-  assert(inter_index != 0);
+  assert(inter_index > 0);
 
   if (indexed_tree_->GateState(std::abs(inter_index)) == "null") return;
 
   if (FaultTreeAnalysis::GetExpandedSets(inter_index, sets)) return;
 
   // Populate intermediate and primary events of the top.
-  const std::set<int>* events_children = &indexed_tree_
-      ->GateChildren(std::abs(inter_index));
-  if (inter_index > 0) {
-    FaultTreeAnalysis::ExpandPositiveGate(inter_index, *events_children, sets);
-  } else {
-    FaultTreeAnalysis::ExpandNegativeGate(-inter_index, *events_children, sets);
-  }
+  const std::set<int>* events_children =
+      &indexed_tree_->GateChildren(inter_index);
+
+  FaultTreeAnalysis::ExpandPositiveGate(inter_index, *events_children, sets);
 
   SaveExpandedSets(inter_index, *sets);
 }
@@ -158,24 +155,10 @@ void FaultTreeAnalysis::ExpandPositiveGate(
   assert(inter_index > 0);
   // Type dependent logic.
   if (indexed_tree_->GateType(inter_index) == 1) {  // OR gate.
-    FaultTreeAnalysis::SetOr(1, events_children, sets);
+    FaultTreeAnalysis::SetOr(events_children, sets);
 
   } else {  // AND gate.
-    FaultTreeAnalysis::SetAnd(1, events_children, sets);
-  }
-}
-
-void FaultTreeAnalysis::ExpandNegativeGate(
-    int inter_index,
-    const std::set<int>& events_children,
-    std::vector<SupersetPtr>* sets) {
-  assert(inter_index > 0);
-  // Type dependent logic.
-  if (indexed_tree_->GateType(inter_index) == 1) {  // Negative OR gate.
-    FaultTreeAnalysis::SetAnd(-1, events_children, sets);
-
-  } else {  // Negative AND gate.
-    FaultTreeAnalysis::SetOr(-1, events_children, sets);
+    FaultTreeAnalysis::SetAnd(events_children, sets);
   }
 }
 
@@ -208,35 +191,31 @@ void FaultTreeAnalysis::SaveExpandedSets(int inter_index,
   repeat_exp_.insert(std::make_pair(inter_index, repeat_set));
 }
 
-void FaultTreeAnalysis::SetOr(int mult,
-                              const std::set<int>& events_children,
+void FaultTreeAnalysis::SetOr(const std::set<int>& events_children,
                               std::vector<SupersetPtr>* sets) {
-  assert(mult == 1 || mult == -1);
   std::set<int>::const_iterator it_child;
   for (it_child = events_children.begin();
        it_child != events_children.end(); ++it_child) {
     SupersetPtr tmp_set_c(new Superset());
     if (std::abs(*it_child) > top_event_index_) {
-      tmp_set_c->InsertGate(*it_child * mult);
+      tmp_set_c->InsertGate(*it_child);
     } else {
-      tmp_set_c->InsertPrimary(*it_child * mult);
+      tmp_set_c->InsertPrimary(*it_child);
     }
     sets->push_back(tmp_set_c);
   }
 }
 
-void FaultTreeAnalysis::SetAnd(int mult,
-                               const std::set<int>& events_children,
+void FaultTreeAnalysis::SetAnd(const std::set<int>& events_children,
                                std::vector<SupersetPtr>* sets) {
-  assert(mult == 1 || mult == -1);
   SupersetPtr tmp_set_c(new Superset());
   std::set<int>::const_iterator it_child;
   for (it_child = events_children.begin();
        it_child != events_children.end(); ++it_child) {
     if (std::abs(*it_child) > top_event_index_) {
-      tmp_set_c->InsertGate(*it_child * mult);
+      tmp_set_c->InsertGate(*it_child);
     } else {
-      tmp_set_c->InsertPrimary(*it_child * mult);
+      tmp_set_c->InsertPrimary(*it_child);
     }
   }
   sets->push_back(tmp_set_c);

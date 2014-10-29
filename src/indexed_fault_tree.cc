@@ -1,3 +1,5 @@
+/// @file indexed_fault_tree.cc
+/// Implementation of IndexedFaultTree class.
 #include "indexed_fault_tree.h"
 
 typedef boost::shared_ptr<scram::Event> EventPtr;
@@ -39,6 +41,7 @@ void IndexedFaultTree::InitiateIndexedFaultTree(
 
   IndexedFaultTree::StartUnrollingGates();
 }
+
 void IndexedFaultTree::PropagateConstants(
     const std::set<int>& true_house_events,
     const std::set<int>& false_house_events) {
@@ -49,7 +52,23 @@ void IndexedFaultTree::PropagateConstants(
 
 void IndexedFaultTree::ProcessIndexedFaultTree() {
   IndexedGate* top = indexed_gates_.find(top_event_index_)->second;
-  IndexedFaultTree::PreprocessTree(top);
+  /// @todo There should be a step to eliminate gates that are complements.
+  ///       All complements should propagate down to basic events, so there
+  ///       are only gates of OR and AND without any negation of gates.
+
+  // Upon unrolling the tree, the top event may be detected to be complement.
+  // This fact is processed before giving the top event to complement
+  // propagation function.
+  if (top_event_sign_ < 0) {
+    top->type(top->type() == 1 ? 2 : 1);
+    top->InvertChildren();
+  }
+  std::map<int, int> complements;
+  std::set<int> processed_gates;
+  IndexedFaultTree::PropagateComplements(top, &complements, &processed_gates);
+  // After this point there should not be any negative gates.
+  processed_gates.clear();
+  IndexedFaultTree::PreprocessTree(top, &processed_gates);
   IndexedFaultTree::ProcessNullGates(top);
 }
 
@@ -124,49 +143,52 @@ void IndexedFaultTree::UnrollTopGate(IndexedGate* top_gate) {
   } else {
     assert(false);
   }
-  std::set<int>::const_iterator it;
-  for (it = top_gate->children().begin(); it != top_gate->children().end();
-       ++it) {
-    if (std::abs(*it) > top_event_index_) {
-      IndexedFaultTree::UnrollGate(*it, top_gate);
-    }
-  }
+  std::set<int> unrolled_gates;
+  IndexedFaultTree::UnrollGates(top_gate, &unrolled_gates);
 }
 
-void IndexedFaultTree::UnrollGate(int gate_index, IndexedGate* parent_gate) {
-  if (unrolled_gates_.count(std::abs(gate_index))) return;
-  IndexedGate* gate = indexed_gates_.find(std::abs(gate_index))->second;
-  unrolled_gates_.insert(gate->index());
-  std::string type = gate->string_type();
-  assert(type != "finished");
-  if (type == "or") {
-    gate->type(1);
-  } else if (type == "and" || type == "null") {
-    gate->type(2);
-    gate->string_type("and");
-  } else if (type == "not" || type == "nand") {
-    gate->string_type("and");
-    gate->type(2);
-    bool ret = parent_gate->SwapChild(gate_index, -gate_index);
-    assert(ret);
-  } else if (type == "nor") {
-    gate->string_type("or");
-    gate->type(1);
-    bool ret = parent_gate->SwapChild(gate_index, -gate_index);
-    assert(ret);
-  } else if (type == "xor") {
-    IndexedFaultTree::UnrollXorGate(gate);
-  } else if (type == "atleast") {
-    IndexedFaultTree::UnrollAtleastGate(gate);
-  } else {
-    assert(false);
-  }
+void IndexedFaultTree::UnrollGates(IndexedGate* parent_gate,
+                                   std::set<int>* unrolled_gates) {
   std::set<int>::const_iterator it;
-  for (it = gate->children().begin(); it != gate->children().end();
-       ++it) {
-    if (std::abs(*it) > top_event_index_) {
-      IndexedFaultTree::UnrollGate(*it, gate);
+  for (it = parent_gate->children().begin();
+       it != parent_gate->children().end();) {
+    if (std::abs(*it) > top_event_index_ &&
+        !unrolled_gates->count(std::abs(*it))) {
+      IndexedGate* gate = indexed_gates_.find(std::abs(*it))->second;
+      unrolled_gates->insert(gate->index());
+      std::string type = gate->string_type();
+      assert(type != "finished");
+      if (type == "or") {
+        gate->type(1);
+      } else if (type == "and" || type == "null") {
+        gate->type(2);
+        gate->string_type("and");
+      } else if (type == "not" || type == "nand") {
+        gate->string_type("and");
+        gate->type(2);
+        int gate_index = *it;  // Might be negative.
+        bool ret = parent_gate->SwapChild(gate_index, -gate_index);
+        assert(ret);
+        it = parent_gate->children().begin();
+        continue;
+      } else if (type == "nor") {
+        gate->string_type("or");
+        gate->type(1);
+        int gate_index = *it;  // Might be negative.
+        bool ret = parent_gate->SwapChild(gate_index, -gate_index);
+        assert(ret);
+        it = parent_gate->children().begin();
+        continue;
+      } else if (type == "xor") {
+        IndexedFaultTree::UnrollXorGate(gate);
+      } else if (type == "atleast") {
+        IndexedFaultTree::UnrollAtleastGate(gate);
+      } else {
+        assert(false);
+      }
+      IndexedFaultTree::UnrollGates(gate, unrolled_gates);
     }
+    ++it;
   }
 }
 
@@ -256,8 +278,10 @@ void IndexedFaultTree::PropagateConstants(
   // Null can be due to house events or complement elments.
   std::set<int>::const_iterator it;
   int parent_type = gate->type();
+  /// @todo This may have bad behavior due to erased children. Needs more
+  ///       testing.
   for (it = gate->children().begin(); it != gate->children().end(); ++it) {
-    if (std::abs(*it) > top_event_index_) {
+    if (std::abs(*it) > top_event_index_) {  // Processing a gate.
       IndexedGate* child_gate = indexed_gates_.find(std::abs(*it))->second;
       PropagateConstants(true_house_events, false_house_events, child_gate);
       if (*it > 0) {
@@ -292,7 +316,7 @@ void IndexedFaultTree::PropagateConstants(
           }
         }
       }
-    } else {
+    } else {  // Process an event.
       if (*it > 0) {
         if (false_house_events.count(*it)) {
           if (parent_type == 1) {
@@ -328,51 +352,90 @@ void IndexedFaultTree::PropagateConstants(
   }
 }
 
-void IndexedFaultTree::PreprocessTree(IndexedGate* gate) {
-  if (preprocessed_gates_.count(gate->index())) return;
-  preprocessed_gates_.insert(gate->index());
+void IndexedFaultTree::PropagateComplements(
+    IndexedGate* gate,
+    std::map<int, int>* gate_complements,
+    std::set<int>* processed_gates) {
+  // If the child gate is complement, then create a new gate that propagates
+  // its sign to its children and itself becomes non-complement.
+  // Keep track of complement gates for optimization of repeted complements.
+  std::set<int>::const_iterator it;
+  for (it = gate->children().begin(); it != gate->children().end();) {
+    if (std::abs(*it) > top_event_index_) {
+      if (*it < 0) {
+        if (gate_complements->count(-*it)) {
+          gate->SwapChild(*it, gate_complements->find(-*it)->second);
+        } else {
+          IndexedGate* complement_gate = new IndexedGate(++new_gate_index_);
+          indexed_gates_.insert(std::make_pair(complement_gate->index(),
+                                               complement_gate));
+          gate_complements->insert(std::make_pair(-*it,
+                                                  complement_gate->index()));
+          int existing_type = indexed_gates_.find(-*it)->second->type();
+          complement_gate->type(existing_type == 1 ? 2 : 1);
+          complement_gate->children(
+              indexed_gates_.find(-*it)->second->children());
+          complement_gate->InvertChildren();
+          gate->SwapChild(*it, complement_gate->index());
+          processed_gates->insert(complement_gate->index());
+          IndexedFaultTree::PropagateComplements(complement_gate,
+                                                 gate_complements,
+                                                 processed_gates);
+        }
+        // Note that the iterator is invalid now.
+        it = gate->children().begin();  // The negative gates at the start.
+        continue;
+      } else if (!processed_gates->count(*it)) {
+        // Continue with the positive gate children.
+        processed_gates->insert(*it);
+        IndexedFaultTree::PropagateComplements(indexed_gates_.find(*it)->second,
+                                               gate_complements,
+                                               processed_gates);
+      }
+    }
+    ++it;
+  }
+}
+
+void IndexedFaultTree::PreprocessTree(IndexedGate* gate,
+                                      std::set<int>* processed_gates) {
+  if (processed_gates->count(gate->index())) return;
+  processed_gates->insert(gate->index());
   int parent = gate->type();
   std::set<int>::const_iterator it;
-  for (it = gate->children().begin(); it != gate->children().end(); ++it) {
-    if (std::abs(*it) < top_event_index_) continue;
-    IndexedGate* child_gate = indexed_gates_.find(std::abs(*it))->second;
-    int child = child_gate->type();
-    if (*it > 0 && (parent == child)) {
-      if (!gate->MergeGate(indexed_gates_.find(*it)->second)) {
-        null_gates_.insert(gate->index());
-        break;
+  for (it = gate->children().begin(); it != gate->children().end();) {
+    if (std::abs(*it) > top_event_index_) {
+      assert(*it > 0);  // All the gates must be positive.
+      IndexedGate* child_gate = indexed_gates_.find(std::abs(*it))->second;
+      int child = child_gate->type();
+      if (parent == child) {
+        if (!gate->MergeGate(indexed_gates_.find(*it)->second)) {
+          null_gates_.insert(gate->index());
+          break;
+        } else {
+          it = gate->children().begin();
+          continue;
+        }
+      } else if (child_gate->children().size() == 1) {
+        // This must be from null, not, or some reduced gate.
+        bool ret = gate->SwapChild(*it, *child_gate->children().begin());
+        if (!ret) {
+          null_gates_.insert(gate->index());
+          break;
+        } else {
+          it = gate->children().begin();
+          continue;
+        }
       } else {
-        it = gate->children().begin();
-        continue;
+        IndexedFaultTree::PreprocessTree(child_gate, processed_gates);
       }
-    } else if (child_gate->children().size() == 1) {
-      // This must be from null, not, or some reduced gate.
-      bool ret = true;
-      if (*it > 0) {
-        ret = gate->SwapChild(*it, *child_gate->children().begin());
-      } else {
-        ret = gate->SwapChild(*it, -*child_gate->children().begin());
-      }
-      if (!ret) {
-        null_gates_.insert(gate->index());
-        break;
-      } else {
-        it = gate->children().begin();
-        continue;
-      }
-    } else {
-      IndexedFaultTree::PreprocessTree(child_gate);
     }
+    ++it;
   }
 }
 
 void IndexedFaultTree::ProcessNullGates(IndexedGate* parent) {
   // NULL gates' parent: OR->Remove the child and AND->NULL the parent.
-  if (parent->type() == 1) {
-
-  } else {
-
-  }
 }
 
 }  // namespace scram

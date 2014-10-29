@@ -1,3 +1,5 @@
+/// @file indexed_gate.cc
+/// Implementation of IndexedGate class for use in IndexedFaultTree.
 #include "indexed_gate.h"
 
 namespace scram {
@@ -22,7 +24,7 @@ bool IndexedGate::AddChild(int child) {
   if (children_.count(-child)) {
     if (type_ == 2) {
       state_ = "null";  // AND gate becomes NULL.
-      children_.clear();
+      children_.insert(child);  // In case the gate type changes.
       return false;
     }
   }
@@ -36,7 +38,15 @@ bool IndexedGate::SwapChild(int existing_child, int new_child) {
   return IndexedGate::AddChild(new_child);
 }
 
-/// @returns false if the final set is null.
+void IndexedGate::InvertChildren() {
+  std::set<int> inverted_children;
+  std::set<int>::iterator it;
+  for (it = children_.begin(); it != children_.end(); ++it) {
+    inverted_children.insert(inverted_children.begin(), -*it);
+  }
+  children_ = inverted_children;  /// @todo Check swap() for performance.
+}
+
 bool IndexedGate::MergeGate(IndexedGate* child_gate) {
   assert(children_.count(child_gate->index()));
   children_.erase(child_gate->index());

@@ -1,6 +1,9 @@
+/// @file indexed_fault_tree.h
+/// A fault tree with event and gate indices instead of id names.
 #ifndef SCRAM_SRC_INDEXED_FAULT_TREE_H_
 #define SCRAM_SRC_INDEXED_FAULT_TREE_H_
 
+#include <map>
 #include <set>
 #include <string>
 
@@ -15,7 +18,7 @@ namespace scram {
 
 /// @class IndexedFaultTree
 /// This class should provide simpler representation of a fault tree
-/// that takes into account the indexes of events instead of ids and pointers.
+/// that takes into account the indices of events instead of ids and pointers.
 class IndexedFaultTree {
   // This class should:
   // 1. Use indices of events.
@@ -73,11 +76,6 @@ class IndexedFaultTree {
     return indexed_gates_.find(index)->second->state();
   }
 
-  inline int top_event_sign() {
-    assert(top_event_sign_ == 1 || top_event_sign_ == -1);
-    return top_event_sign_;
-  }
-
  private:
   /// Start unrolling gates to simplify gates to OR and AND gates.
   void StartUnrollingGates();
@@ -87,9 +85,9 @@ class IndexedFaultTree {
   void UnrollTopGate(IndexedGate* top_gate);
 
   /// Unrolls a gate.
-  /// @param[in] gate_index The index of the current gate.
-  /// @param[out] parent_gate The current parent of the gate to process.
-  void UnrollGate(int gate_index, IndexedGate* parent_gate);
+  /// @param[out] parent_gate The current parent of the gates to process.
+  /// @param[out] unrolled_gate To keep track of already unrolled gates.
+  void UnrollGates(IndexedGate* parent_gate, std::set<int>* unrolled_gates);
 
   /// Unrolls a gate with XOR logic.
   /// @param[out] gate The gate to unroll.
@@ -107,13 +105,26 @@ class IndexedFaultTree {
                           const std::set<int>& false_house_events,
                           IndexedGate* gate);
 
+  /// Propagates complements of child gates down to basic events
+  /// in order to remove any NOR or NAND logic from the tree.
+  /// @param[out] gate The starting gate to traverse the tree. This is for
+  ///                 recursive purposes. The sign of this passed gate
+  ///                 is unknown for the function, so it must be sanitized
+  ///                 for a top event to function correctly.
+  /// @param[out] gate_complements The complements of gates already processed.
+  /// @param[out] processed_gates The gates that has already been processed.
+  void PropagateComplements(IndexedGate* gate,
+                            std::map<int, int>* gate_complements,
+                            std::set<int>* processed_gates);
+
   /// This method pre-processes the tree by doing Boolean algebra.
   /// At this point all gates are expected to be either OR type or AND type.
   /// Preprocesses the fault tree.
   /// Merges similar gates.
-  /// @param[in] gate The starting gate to traverse the tree. This is for
+  /// @param[out] gate The starting gate to traverse the tree. This is for
   ///                 recursive purposes.
-  void PreprocessTree(IndexedGate* gate);
+  /// @param[out] processed_gates The gates that has already been processed.
+  void PreprocessTree(IndexedGate* gate, std::set<int>* processed_gates);
 
   /// Process null gates.
   void ProcessNullGates(IndexedGate* parent);
@@ -121,10 +132,6 @@ class IndexedFaultTree {
   int top_event_index_;  ///< The index of the top gate of this tree.
   /// All gates of this tree including newly created ones.
   boost::unordered_map<int, IndexedGate*> indexed_gates_;
-  /// To keep track for already unrolled gates.
-  std::set<int> unrolled_gates_;
-  /// To keep track for already pre-processed gates.
-  std::set<int> preprocessed_gates_;
   /// To keep track for NULL pre-processed gates.
   std::set<int> null_gates_;
   int top_event_sign_;  ///< The negative or positive sign of the top event.
