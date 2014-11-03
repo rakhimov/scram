@@ -4,16 +4,20 @@
 
 namespace scram {
 
+int IndexedGate::top_index_ = 0;
+
 IndexedGate::IndexedGate(int index)
     : index_(index),
       type_(-1),
       state_("normal"),
       vote_number_(-1),
+      num_primary_(0),
       string_type_("finished") {}
 
 void IndexedGate::InitiateWithChild(int child) {
   assert(child != 0);
   assert(state_ == "normal");
+  if (std::abs(child) < top_index_) ++num_primary_;
   children_.insert(children_.end(), child);
 }
 
@@ -25,8 +29,11 @@ bool IndexedGate::AddChild(int child) {
     if (type_ == 2) {
       state_ = "null";  // AND gate becomes NULL.
       children_.clear();
+      num_primary_ = 0;
       return false;
     }
+  } else if (!children_.count(child)) {
+    if (std::abs(child) < top_index_) ++num_primary_;
   }
   children_.insert(child);
   return true;
@@ -35,6 +42,7 @@ bool IndexedGate::AddChild(int child) {
 bool IndexedGate::SwapChild(int existing_child, int new_child) {
   assert(children_.count(existing_child));
   children_.erase(existing_child);
+  if (std::abs(existing_child) < top_index_) --num_primary_;
   return IndexedGate::AddChild(new_child);
 }
 

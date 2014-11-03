@@ -9,10 +9,14 @@ typedef boost::shared_ptr<scram::Event> EventPtr;
 
 namespace scram {
 
-IndexedFaultTree::IndexedFaultTree(int top_event_id)
+IndexedFaultTree::IndexedFaultTree(int top_event_id, int limit_order)
   : top_event_index_(top_event_id),
     new_gate_index_(0),
-    top_event_sign_(1) {}
+    limit_order_(limit_order),
+    top_event_sign_(1) {
+
+  IndexedGate::top_index(top_event_index_);
+}
 
 IndexedFaultTree::~IndexedFaultTree() {
   boost::unordered_map<int, IndexedGate*>::iterator it;
@@ -193,6 +197,7 @@ void IndexedFaultTree::FindMcs() {
 int IndexedFaultTree::ExpandAndLayer(const IndexedGate* gate,
                                      std::vector<int>* next_layer) {
   assert(gate->type() == 2);
+  if (gate->num_primary() > limit_order_) return -1;
   if (gate->children().empty()) return -1;
   // Check if all events are basic events.
   if (*gate->children().rbegin() < top_event_index_) return 0;
@@ -219,6 +224,7 @@ int IndexedFaultTree::ExpandAndLayer(const IndexedGate* gate,
       gate_children.push_back(*it);
     }
   }
+  assert(proto->children().size() < limit_order_);
   LOG() << "Cloning existing children.";
   int init_index = proto->index();
   assert(init_index == new_gate_index_);  // Needed for jumps.
@@ -237,6 +243,7 @@ int IndexedFaultTree::ExpandAndLayer(const IndexedGate* gate,
         IndexedGate* new_gate =
             new IndexedGate(*indexed_gates_.find(*it)->second);
         new_gate->index(++new_gate_index_);
+        assert(new_gate->type() == 2);
         substitute->InitiateWithChild(new_gate->index());
         indexed_gates_.insert(std::make_pair(new_gate->index(), new_gate));
         ++j;
@@ -250,9 +257,12 @@ int IndexedFaultTree::ExpandAndLayer(const IndexedGate* gate,
     for (it = child_gate->children().begin();
          it != child_gate->children().end(); ++it) {
       for (int j = 0; j < init_size ; ++j) {
-        indexed_gates_.find(init_index + i * init_size + j)->second
-            ->AddChild(*it);
-        /// @todo Erase the child if the resultant set is null.
+        IndexedGate* sub_gate =
+            indexed_gates_.find(init_index + i * init_size + j)->second;
+        bool ret = sub_gate->AddChild(*it);
+        if (!ret || sub_gate->num_primary() > limit_order_) {
+          /// @todo Erase the child if the resultant set is null.
+        }
       }
       ++i;
     }
@@ -275,6 +285,7 @@ int IndexedFaultTree::ExpandAndLayer(const IndexedGate* gate,
       for (it_vec = gates_to_merge.begin(); it_vec != gates_to_merge.end();
            ++it_vec) {
         include = child_gate->MergeGate(indexed_gates_.find(*it_vec)->second);
+        if (child_gate->num_primary() > limit_order_) include = false;
         if (!include) break;
         /// @todo Detect null sets resulting from the merge.
         /// @todo Detect the number of basic event for maximum order.

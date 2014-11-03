@@ -33,7 +33,7 @@ class IndexedFaultTree {
  public:
   /// Constructs a simplified fault tree.
   /// @param[in] top_event_id The index of the top event of this tree.
-  IndexedFaultTree(int top_event_id);
+  IndexedFaultTree(int top_event_id, int limit_order);
 
   /// Removes all newly allocated gates to describe the simplified tree.
   ~IndexedFaultTree();
@@ -163,6 +163,8 @@ class IndexedFaultTree {
   int top_event_sign_;  ///< The negative or positive sign of the top event.
   int new_gate_index_;  ///< Index for a new gate.
   std::vector< std::set<int> > imcs_;  // Min cut sets with indexed events.
+  /// Limit on the size of the minimal cut sets for performance reasons.
+  int limit_order_;
 };
 
 }  // namespace scram

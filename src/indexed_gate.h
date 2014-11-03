@@ -100,6 +100,7 @@ class IndexedGate {
     assert(state_ == "normal");
     state_ = "null";
     children_.clear();
+    num_primary_ = 0;
   }
 
   /// Sets the state of this gate to unity.
@@ -107,6 +108,7 @@ class IndexedGate {
     assert(state_ == "normal");
     state_ = "unity";
     children_.clear();
+    num_primary_ = 0;
   }
 
   /// Sets the index of this gate.
@@ -126,6 +128,13 @@ class IndexedGate {
   ///          "normal" by default.
   inline std::string state() const { return state_; }
 
+  /// Sets the discrimination index for primary events.
+  /// @param[in] top_gate The index below which consider primary events.
+  static void top_index(int top_gate) { top_index_ = top_gate; }
+
+  /// @returns The number of primary events.
+  inline int num_primary() const { return num_primary_; }
+
  private:
   /// Type of this gate. Only two choices are allowed: OR, AND.
   int type_;
@@ -144,6 +153,12 @@ class IndexedGate {
 
   /// Vote number for atleast gate.
   int vote_number_;
+
+  /// The index below which the event is considered primary.
+  static int top_index_;
+
+  /// The number of primary events.
+  int num_primary_;
 };
 
 }  // namespace scram
