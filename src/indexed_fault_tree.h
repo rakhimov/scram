@@ -57,19 +57,52 @@ class SimpleGate {
   /// This function assumes that the tree does not have complement gates.
   /// @param[in] gate The pointer to the child gate.
   inline void AddChildGate(const SimpleGatePtr& gate) {
-    gates_.push_back(gate);
+    gates_.insert(gate);
+  }
+
+  /// Merges two gate of the same kind. This is designed for two AND gates.
+  /// @returns true If the final gate is not null.
+  /// @returns false If the final set would be null upon addition.
+  inline bool MergeGate(const SimpleGatePtr& gate) {
+    assert(type_ == 2 && gate->type() == 2);
+    std::set<int>::const_iterator it;
+    for (it = gate->basic_events_.begin(); it != gate->basic_events_.end();
+         ++it) {
+      if (basic_events_.count(-*it)) return false;
+      basic_events_.insert(*it);
+    }
+    gates_.insert(gate->gates_.begin(), gate->gates_.end());
+    return true;
   }
 
   /// @returns The basic events of this gate.
   inline const std::set<int>& basic_events() const { return basic_events_; }
 
-  /// @returns The child gates of this gate.
-  inline const std::vector<SimpleGatePtr>& gates() const { return gates_; }
+  /// Assigns a container of basic events for this gate.
+  /// @param[in] basic_events The basic events for this gate.
+  inline void basic_events(const std::set<int>& basic_events) {
+    basic_events_ = basic_events;
+  }
+
+  /// @returns The child gates container of this gate.
+  inline std::set<SimpleGatePtr>& gates() { return gates_; }
 
  private:
   int type_;  ///< Type of this gate.
   std::set<int> basic_events_;  ///< Container of basic events' indices.
-  std::vector<SimpleGatePtr> gates_;  ///< Containter of child gates.
+  std::set<SimpleGatePtr> gates_;  ///< Containter of child gates.
+};
+
+/// @class SetPtrComp
+/// Functor for set pointer comparison.
+struct SetPtrComp
+    : public std::binary_function<const std::set<int>*,
+                                  const std::set<int>*, bool> {
+  /// Operator overload.
+  /// Compares sets for sorting.
+  bool operator()(const std::set<int>* lhs, const std::set<int>* rhs) const {
+    return *lhs < *rhs;
+  }
 };
 
 typedef boost::shared_ptr<scram::SimpleGate> SimpleGatePtr;
@@ -194,14 +227,19 @@ class IndexedFaultTree {
   /// @param[out] processed_gates The gates that has already been processed.
   void ProcessNullGates(IndexedGate* gate, std::set<int>* processed_gates);
 
-  /// Expands And layer in preprocessed fault tree.
-  /// @param[in] gate The AND gate to be processed.
-  /// @param[out] next_layer Container for processing next layer AND gates.
-  /// @returns the index of the new expanded gate that should go in place of
-  ///          the provided gate.
-  /// @returns 0 if the provided gate contains only basic events.
-  /// @returns -1 if the provided gate contains no children.
-  int ExpandAndLayer(const IndexedGate* gate, std::vector<int>* next_layer);
+  /// Expands OR layer in preprocessed fault tree.
+  /// @param[out] gate The OR gate to be processed.
+  void ExpandOrLayer(SimpleGatePtr& gate);
+
+  /// Expands AND layer in preprocessed fault tree.
+  /// @param[out] gate The AND gate to be processed into OR gate.
+  void ExpandAndLayer(SimpleGatePtr& gate);
+
+  /// Gathers cut sets from the final tree.
+  /// @param[in] gate The OR gate to start with.
+  /// @param[out] unique_sets The unique cut sets from the tree.
+  void GatherCutSets(const SimpleGatePtr& gate,
+                     std::set< const std::set<int>*, SetPtrComp >* unique_sets);
 
   /// Finds minimal cut sets from cut sets.
   /// Applys rule 4 to reduce unique cut sets to minimal cut sets.
@@ -228,6 +266,7 @@ class IndexedFaultTree {
   std::vector< std::set<int> > imcs_;  // Min cut sets with indexed events.
   /// Limit on the size of the minimal cut sets for performance reasons.
   int limit_order_;
+  std::set< std::set<int> > one_element_sets_;  // For one element cut sets.
 };
 
 }  // namespace scram
