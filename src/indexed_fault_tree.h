@@ -16,6 +16,64 @@ typedef boost::shared_ptr<scram::Gate> GatePtr;
 
 namespace scram {
 
+/// @class SimpleGate
+/// A helper class to be used in indexed fault tree. This gate represents
+/// only positive OR or AND gates with basic event indices and pointers to
+/// other simple gates.
+class SimpleGate {
+  typedef boost::shared_ptr<scram::SimpleGate> SimpleGatePtr;
+ public:
+  /// @param[in] type The type of this gate. 1 is OR; 2 is AND.
+  SimpleGate(int type) {
+    assert(type == 1 || type == 2);
+    type_ = type;
+  }
+
+  /// @returns The type of this gate. Either 1 or 2 for OR or AND, respectively.
+  inline int type() {
+    return type_;
+  }
+
+  /// Adds a basic event index at the end of this container.
+  /// This function is specificly given to initiate the gate.
+  /// @param[in] index The index of a basic event.
+  inline void InitiateWithBasic(int index) {
+    basic_events_.insert(basic_events_.end(), index);
+  }
+
+  /// Checks if there is a complement of a given basic event.
+  /// If not, adds a basic event index into children.
+  /// If the resulting set is null with AND gate, gives indication without
+  /// actual addition.
+  /// @returns true If the final gate is not null.
+  /// @returns false If the final set would be null upon addition.
+  inline bool AddBasic(int index) {
+    if (type_ == 2 && basic_events_.count(-index)) return false;
+    basic_events_.insert(index);
+    return true;
+  }
+
+  /// Add a pointer to a child gate.
+  /// This function assumes that the tree does not have complement gates.
+  /// @param[in] gate The pointer to the child gate.
+  inline void AddChildGate(const SimpleGatePtr& gate) {
+    gates_.push_back(gate);
+  }
+
+  /// @returns The basic events of this gate.
+  inline const std::set<int>& basic_events() const { return basic_events_; }
+
+  /// @returns The child gates of this gate.
+  inline const std::vector<SimpleGatePtr>& gates() const { return gates_; }
+
+ private:
+  int type_;  ///< Type of this gate.
+  std::set<int> basic_events_;  ///< Container of basic events' indices.
+  std::vector<SimpleGatePtr> gates_;  ///< Containter of child gates.
+};
+
+typedef boost::shared_ptr<scram::SimpleGate> SimpleGatePtr;
+
 /// @class IndexedFaultTree
 /// This class should provide simpler representation of a fault tree
 /// that takes into account the indices of events instead of ids and pointers.
@@ -156,6 +214,11 @@ class IndexedFaultTree {
                const std::vector< std::set<int> >& mcs_lower_order,
                int min_order,
                std::vector< std::set<int> >* imcs);
+
+  /// Traverses the fault tree to convert gates into simple gates.
+  /// @returns The top simple gate.
+  SimpleGatePtr CreateSimpleTree(int gate_index,
+                                 std::map<int, SimpleGatePtr>* processed_gates);
 
   int top_event_index_;  ///< The index of the top gate of this tree.
   /// All gates of this tree including newly created ones.

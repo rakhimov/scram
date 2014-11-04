@@ -13,7 +13,10 @@ namespace scram {
 
 /// @class IndexedGate
 /// This gate is for use in IndexedFaultTree.
-/// This gate can be only of OR and AND type.
+/// Intially this gate can represent any type of gate; however,
+/// this gate can be only of OR and AND type at the end of all simplifications
+/// and processing. This gate class helps to process the fault tree before
+/// any complex analysis is done.
 class IndexedGate {
  public:
   /// Creates a gate with its index.

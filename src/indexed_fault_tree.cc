@@ -93,8 +93,34 @@ struct SetPtrComp
   }
 };
 
+SimpleGatePtr IndexedFaultTree::CreateSimpleTree(
+    int gate_index,
+    std::map<int, SimpleGatePtr>* processed_gates) {
+  if (processed_gates->count(gate_index))
+    return processed_gates->find(gate_index)->second;
+  IndexedGate* gate = indexed_gates_.find(gate_index)->second;
+  SimpleGatePtr simple_gate(new SimpleGate(gate->type()));
+  processed_gates->insert(std::make_pair(gate_index, simple_gate));
+
+  std::set<int>::iterator it;
+  for (it = gate->children().begin(); it != gate->children().end(); ++it) {
+    if (*it < top_event_index_) {
+      simple_gate->InitiateWithBasic(*it);
+    } else {
+      simple_gate->AddChildGate(
+          IndexedFaultTree::CreateSimpleTree(*it, processed_gates));
+    }
+  }
+  return simple_gate;
+}
+
 void IndexedFaultTree::FindMcs() {
   Logger::active() = true;
+  LOG() << "IndexedFaultTree: Start creation of simple gates";
+  std::map<int, SimpleGatePtr> processed_gates;
+  SimpleGatePtr top_gate =
+      IndexedFaultTree::CreateSimpleTree(top_event_index_, &processed_gates);
+
   // It is assumed that the tree is layered with OR and AND gates on each
   // level. That is, one level contains only AND or OR gates.
   // AND gates are operated; whereas, OR gates are left for later minimal
