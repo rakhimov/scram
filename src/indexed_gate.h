@@ -56,11 +56,6 @@ class IndexedGate {
   /// It is assumed that children are passed in ascending order.
   void InitiateWithChild(int child);
 
-  /// This function is used to initiate this gate with children.
-  void InitiateWithChildren(const std::set<int>& children) {
-    children_ = children;
-  }
-
   /// Adds a child of this gate.
   /// @returns false If there is a complement of the added child.
   /// @returns true If the addition of this child successful.
@@ -103,7 +98,6 @@ class IndexedGate {
     assert(state_ == "normal");
     state_ = "null";
     children_.clear();
-    num_primary_ = 0;
   }
 
   /// Sets the state of this gate to unity.
@@ -111,7 +105,6 @@ class IndexedGate {
     assert(state_ == "normal");
     state_ = "unity";
     children_.clear();
-    num_primary_ = 0;
   }
 
   /// Sets the index of this gate.
@@ -135,9 +128,6 @@ class IndexedGate {
   /// @param[in] top_gate The index below which consider primary events.
   static void top_index(int top_gate) { top_index_ = top_gate; }
 
-  /// @returns The number of primary events.
-  inline int num_primary() const { return num_primary_; }
-
  private:
   /// Type of this gate. Only two choices are allowed: OR, AND.
   int type_;
@@ -159,9 +149,6 @@ class IndexedGate {
 
   /// The index below which the event is considered primary.
   static int top_index_;
-
-  /// The number of primary events.
-  int num_primary_;
 };
 
 }  // namespace scram

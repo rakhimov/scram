@@ -117,7 +117,6 @@ void IndexedFaultTree::FindMcs() {
   // to repeat in future.
   // The expansion should be level by level.
 
-  Logger::active() = true;
   LOG() << "IndexedFaultTree: Start creation of simple gates";
   std::map<int, SimpleGatePtr> processed_gates;
   SimpleGatePtr top_gate =
@@ -135,10 +134,8 @@ void IndexedFaultTree::FindMcs() {
       return;
     }
     IndexedFaultTree::ExpandAndLayer(top_gate);
-    IndexedFaultTree::ExpandOrLayer(top_gate);
-  } else {
-    IndexedFaultTree::ExpandOrLayer(top_gate);
   }
+  IndexedFaultTree::ExpandOrLayer(top_gate);
 
   LOG() << "IndexedFaultTree: Cut sets are generated.";
   LOG() << "Top gate's gate children: " << top_gate->gates().size();
@@ -227,13 +224,13 @@ void IndexedFaultTree::ExpandAndLayer(SimpleGatePtr& gate) {
       }
       std::set<SimpleGatePtr>::iterator it_g;
       for (it_g = (*it_v)->gates().begin();
-           it_g != (*it_v)->gates().begin(); ++it_g) {
+           it_g != (*it_v)->gates().end(); ++it_g) {
         SimpleGatePtr new_child(new SimpleGate(**it));
         if (new_child->MergeGate(*it_g) &&
             new_child->basic_events().size() <= limit_order_) {
           // This must be underlying AND layer.
           substitute->AddChildGate(new_child);
-        };
+        }
       }
     }
   }
