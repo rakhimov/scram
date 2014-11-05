@@ -8,9 +8,8 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include "event.h"
 #include "fault_tree.h"
-
-typedef boost::shared_ptr<scram::FaultTree> FaultTreePtr;
 
 namespace scram {
 
@@ -19,6 +18,8 @@ namespace scram {
 /// Currently operate with Fault Trees only.
 class Grapher {
  public:
+  typedef boost::shared_ptr<FaultTree> FaultTreePtr;
+
   /// Initializes gate and primary event colors.
   Grapher();
 
@@ -33,6 +34,10 @@ class Grapher {
                       std::ostream& out);
 
  private:
+  typedef boost::shared_ptr<Gate> GatePtr;
+  typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
+  typedef boost::shared_ptr<Event> EventPtr;
+
   /// Graphs one top or intermediate event with children.
   /// @param[in] t The top or intermediate event.
   /// @param[in] primary_events The container of primary events of the tree.

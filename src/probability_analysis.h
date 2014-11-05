@@ -18,8 +18,6 @@
 class ProbabilityAnalysisTest;
 class PerformanceTest;
 
-typedef boost::shared_ptr<scram::BasicEvent> BasicEventPtr;
-
 namespace scram {
 
 class Reporter;
@@ -32,6 +30,8 @@ class ProbabilityAnalysis {
   friend class Reporter;
 
  public:
+  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+
   /// The main constructor of Probability Analysis.
   /// @param[in] approx The kind of approximation for probability calculations.
   /// @param[in] nsums The number of sums in the probability series.

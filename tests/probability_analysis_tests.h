@@ -11,8 +11,6 @@
 
 using namespace scram;
 
-typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
-
 class ProbabilityAnalysisTest : public ::testing::Test {
  protected:
   virtual void SetUp() {

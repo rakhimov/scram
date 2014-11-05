@@ -12,8 +12,6 @@
 #include "expression.h"
 #include "error.h"
 
-typedef boost::shared_ptr<scram::Expression> ExpressionPtr;
-
 namespace scram {
 
 class Gate;  // Needed for being a parent of an event.
@@ -155,6 +153,8 @@ class PrimaryEvent : public Event {
 /// Representation of a basic event in a fault tree.
 class BasicEvent: public PrimaryEvent {
  public:
+  typedef boost::shared_ptr<Expression> ExpressionPtr;
+
   /// Constructs with id name.
   /// @param[in] id The identifying name of this basic event.
   explicit BasicEvent(std::string id) : PrimaryEvent(id, "basic") {}

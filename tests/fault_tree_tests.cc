@@ -6,6 +6,9 @@
 
 using namespace scram;
 
+typedef boost::shared_ptr<Gate> GatePtr;
+typedef boost::shared_ptr<Event> EventPtr;
+
 TEST(FaultTreeTest, AddGate) {
   FaultTree* ft = new FaultTree("never_fail");
   GatePtr gate(new Gate("Golden"));

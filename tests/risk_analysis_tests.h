@@ -11,9 +11,10 @@
 
 using namespace scram;
 
-typedef boost::shared_ptr<scram::Event> EventPtr;
-typedef boost::shared_ptr<scram::Gate> GatePtr;
-typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
+typedef boost::shared_ptr<Event> EventPtr;
+typedef boost::shared_ptr<Gate> GatePtr;
+typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
+typedef boost::shared_ptr<PrimaryEvent> BasicEventPtr;
 
 class RiskAnalysisTest : public ::testing::Test {
  protected:

@@ -14,17 +14,16 @@
 #include "element.h"
 #include "event.h"
 
-typedef boost::shared_ptr<scram::Event> EventPtr;
-typedef boost::shared_ptr<scram::Gate> GatePtr;
-typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
-typedef boost::shared_ptr<scram::BasicEvent> BasicEventPtr;
-
 namespace scram {
 
 /// @class FaultTree
 /// Fault tree representation.
 class FaultTree : public Element {
  public:
+  typedef boost::shared_ptr<Gate> GatePtr;
+  typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
+  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+
   /// The main constructor of the Fault Tree.
   /// @param[in] name The name identificator of this fault tree.
   explicit FaultTree(std::string name);
@@ -77,6 +76,8 @@ class FaultTree : public Element {
   }
 
  private:
+  typedef boost::shared_ptr<Event> EventPtr;
+
   /// Traverses the tree to find any cyclicity.
   /// While traversing, this function observes implicitly defined gates, and
   /// those gates are added into the gate containers.

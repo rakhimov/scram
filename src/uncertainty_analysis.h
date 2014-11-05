@@ -17,8 +17,6 @@
 
 class UncertaintyAnalysisTest;
 
-typedef boost::shared_ptr<scram::BasicEvent> BasicEventPtr;
-
 namespace scram {
 
 class Reporter;
@@ -31,6 +29,8 @@ friend class ::UncertaintyAnalysisTest;
 friend class Reporter;
 
  public:
+  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+
   /// The main constructor of Uncertainty Analysis.
   /// @param[in] nsums The number of sums in the probability series.
   /// @param[in] cut_off The cut-off probability for cut sets.

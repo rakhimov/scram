@@ -11,8 +11,6 @@
 
 using namespace scram;
 
-typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
-
 class UncertaintyAnalysisTest : public ::testing::Test {
  protected:
   virtual void SetUp() {

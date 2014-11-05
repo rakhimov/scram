@@ -8,8 +8,6 @@
 #include "error.h"
 #include "random.h"
 
-typedef boost::shared_ptr<scram::Parameter> ParameterPtr;
-
 namespace scram {
 
 void Parameter::Validate() {
@@ -32,7 +30,8 @@ void Parameter::CheckCyclicity(std::vector<std::string>* path) {
     throw ValidationError(msg);
   }
   path->push_back(name_);
-  ParameterPtr ptr = boost::dynamic_pointer_cast<Parameter>(expression_);
+  boost::shared_ptr<scram::Parameter> ptr =
+      boost::dynamic_pointer_cast<Parameter>(expression_);
   if (ptr) ptr->CheckCyclicity(path);
 }
 
