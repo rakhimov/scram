@@ -4,8 +4,6 @@
 
 namespace scram {
 
-int IndexedGate::top_index_ = 0;
-
 IndexedGate::IndexedGate(int index)
     : index_(index),
       type_(-1),

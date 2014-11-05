@@ -254,6 +254,8 @@ class IndexedFaultTree {
                std::vector< std::set<int> >* imcs);
 
   /// Traverses the fault tree to convert gates into simple gates.
+  /// @param[in] gate_index The index of a gate to start with.
+  /// @param[out] processed_gates Currently processed gates.
   /// @returns The top simple gate.
   SimpleGatePtr CreateSimpleTree(int gate_index,
                                  std::map<int, SimpleGatePtr>* processed_gates);

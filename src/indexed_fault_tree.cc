@@ -1,5 +1,6 @@
 /// @file indexed_fault_tree.cc
 /// Implementation of IndexedFaultTree class.
+#include <ctime>
 #include <functional>
 
 #include "logger.h"
@@ -13,10 +14,7 @@ IndexedFaultTree::IndexedFaultTree(int top_event_id, int limit_order)
   : top_event_index_(top_event_id),
     new_gate_index_(0),
     limit_order_(limit_order),
-    top_event_sign_(1) {
-
-  IndexedGate::top_index(top_event_index_);
-}
+    top_event_sign_(1) {}
 
 IndexedFaultTree::~IndexedFaultTree() {
   boost::unordered_map<int, IndexedGate*>::iterator it;
@@ -109,18 +107,18 @@ void IndexedFaultTree::FindMcs() {
   // AND gates are operated; whereas, OR gates are left for later minimal
   // cut set finding. This operations make a big tree consisting of
   // only OR gates. The function assumes the tree contains only positive gates.
-
-  // Two cases: Top gate is OR; Top gate is AND.
-  // If the gate is OR, proceed to AND gates.
-  // If the gate is AND, use OR gate children to expand the gate into OR.
-  // Save the information that the gate is already expanded, so that not
-  // to repeat in future.
-  // The expansion should be level by level.
+  std::clock_t start_time;
+  start_time = std::clock();
 
   LOG() << "IndexedFaultTree: Start creation of simple gates";
   std::map<int, SimpleGatePtr> processed_gates;
   SimpleGatePtr top_gate =
       IndexedFaultTree::CreateSimpleTree(top_event_index_, &processed_gates);
+
+  // Duration of simple tree generation.
+  double simple_tree_time = (std::clock() - start_time) /
+                            static_cast<double>(CLOCKS_PER_SEC);
+  LOG() << "Simple tree creation time: " << simple_tree_time;
 
   // Expanding AND gate with basic event children and OR gate children.
   if (top_gate->basic_events().empty() && top_gate->gates().empty()) return;
@@ -138,6 +136,9 @@ void IndexedFaultTree::FindMcs() {
   IndexedFaultTree::ExpandOrLayer(top_gate);
 
   LOG() << "IndexedFaultTree: Cut sets are generated.";
+  double cut_sets_time = (std::clock() - start_time) /
+                         static_cast<double>(CLOCKS_PER_SEC);
+  LOG() << "Cut set generation time: " << cut_sets_time - simple_tree_time;
   LOG() << "Top gate's gate children: " << top_gate->gates().size();
 
   // At this point cut sets must be generated.
@@ -169,6 +170,9 @@ void IndexedFaultTree::FindMcs() {
 
   LOG() << "IndexedFaultTree: Minimizing the cut sets.";
   IndexedFaultTree::FindMcs(sets_unique, imcs_, 2, &imcs_);
+  double mcs_time = (std::clock() - start_time) /
+                    static_cast<double>(CLOCKS_PER_SEC);
+  LOG() << "Minimal cut set finding time: " << mcs_time - cut_sets_time;
 }
 
 void IndexedFaultTree::ExpandOrLayer(SimpleGatePtr& gate) {
@@ -203,7 +207,6 @@ void IndexedFaultTree::ExpandAndLayer(SimpleGatePtr& gate) {
   child->basic_events(gate->basic_events());
   substitute->AddChildGate(child);
 
-  LOG() << "Cloning existing children.";
   std::set<SimpleGatePtr>::iterator it_v;
   for (it_v = gate->gates().begin(); it_v != gate->gates().end(); ++it_v) {
     assert((*it_v)->type() == 1);
@@ -235,7 +238,6 @@ void IndexedFaultTree::ExpandAndLayer(SimpleGatePtr& gate) {
     }
   }
   gate = substitute;
-  LOG() << "AND layer expansion job is done!";
 }
 
 void IndexedFaultTree::GatherCutSets(

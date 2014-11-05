@@ -124,10 +124,6 @@ class IndexedGate {
   ///          "normal" by default.
   inline std::string state() const { return state_; }
 
-  /// Sets the discrimination index for primary events.
-  /// @param[in] top_gate The index below which consider primary events.
-  static void top_index(int top_gate) { top_index_ = top_gate; }
-
  private:
   /// Type of this gate. Only two choices are allowed: OR, AND.
   int type_;
@@ -146,9 +142,6 @@ class IndexedGate {
 
   /// Vote number for atleast gate.
   int vote_number_;
-
-  /// The index below which the event is considered primary.
-  static int top_index_;
 };
 
 }  // namespace scram
