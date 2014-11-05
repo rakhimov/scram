@@ -1,12 +1,12 @@
 /// @file indexed_fault_tree.cc
 /// Implementation of IndexedFaultTree class.
-#include <ctime>
-#include <functional>
-
-#include "logger.h"
 #include "indexed_fault_tree.h"
 
-typedef boost::shared_ptr<scram::Event> EventPtr;
+#include <ctime>
+
+#include "event.h"
+#include "indexed_gate.h"
+#include "logger.h"
 
 namespace scram {
 
@@ -32,6 +32,8 @@ void IndexedFaultTree::InitiateIndexedFaultTree(
     gate->string_type(it->second->type());  // Get the original gate type.
     if (gate->string_type() == "atleast")
       gate->vote_number(it->second->vote_number());
+
+    typedef boost::shared_ptr<Event> EventPtr;
 
     const std::map<std::string, EventPtr>* children =
         &it->second->children();
@@ -79,7 +81,7 @@ void IndexedFaultTree::ProcessIndexedFaultTree() {
   IndexedFaultTree::ProcessNullGates(top, &processed_gates);
 }
 
-SimpleGatePtr IndexedFaultTree::CreateSimpleTree(
+boost::shared_ptr<SimpleGate> IndexedFaultTree::CreateSimpleTree(
     int gate_index,
     std::map<int, SimpleGatePtr>* processed_gates) {
   if (processed_gates->count(gate_index))
@@ -126,7 +128,7 @@ void IndexedFaultTree::FindMcs() {
   if (top_gate->type() == 2) {
     if (top_gate->basic_events().size() > limit_order_) {
       return;  // No cut set generation for this level.
-    } else if (top_gate->gates().empty()){
+    } else if (top_gate->gates().empty()) {
       // The special case of top gate is only cut set.
       imcs_.push_back(top_gate->basic_events());
       return;
@@ -176,7 +178,7 @@ void IndexedFaultTree::FindMcs() {
 }
 
 void IndexedFaultTree::ExpandOrLayer(SimpleGatePtr& gate) {
-  if(gate->gates().empty()) return;
+  if (gate->gates().empty()) return;
   std::vector<SimpleGatePtr> new_gates;
   std::set<SimpleGatePtr>::iterator it;
   for (it = gate->gates().begin(); it != gate->gates().end(); ++it) {
@@ -187,7 +189,7 @@ void IndexedFaultTree::ExpandOrLayer(SimpleGatePtr& gate) {
       continue;  // This may leave some larger cut sets for top event.
     }
     SimpleGatePtr new_gate(new SimpleGate(**it));
-    IndexedFaultTree::ExpandAndLayer(new_gate); // The gate becomes OR.
+    IndexedFaultTree::ExpandAndLayer(new_gate);  // The gate becomes OR.
     IndexedFaultTree::ExpandOrLayer(new_gate);
     new_gates.push_back(new_gate);
   }

@@ -144,7 +144,7 @@ class PrimaryEvent : public Event {
 
   /// Validates the probability expressions for the primary event.
   /// @throws Validation error if anything is wrong.
-  virtual void Validate() {};
+  virtual void Validate() {}
 
  private:
   /// The type of the primary event.

@@ -21,6 +21,7 @@ class OpenExpression : public Expression {
 };
 
 typedef boost::shared_ptr<OpenExpression> OpenExpressionPtr;
+typedef boost::shared_ptr<Expression> ExpressionPtr;
 
 TEST(ExpressionTest, Exponential) {
   OpenExpressionPtr lambda(new OpenExpression(10, 8));

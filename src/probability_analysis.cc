@@ -81,10 +81,10 @@ void ProbabilityAnalysis::Analyze(
   start_time = std::clock();
 
   // Get the total probability.
- if (approx_ == "mcub") {
+  if (approx_ == "mcub") {
     if (!coherent_) {
       warnings_ += " The cut sets are not coherent and contain negation."
-          "\nThe MCUB approximation may not hold.\n\n";
+                   "\nThe MCUB approximation may not hold.\n\n";
     }
     nsums_ = 0;  // For reporting purposes.
     num_prob_mcs_ = imcs_.size();
@@ -100,8 +100,8 @@ void ProbabilityAnalysis::Analyze(
         // which is required for the rare event approximation to hold.
         if (it_pr->second > 0.1) {
           warnings_ += "The rare event approximation may be inaccurate for this"
-              "\nfault tree analysis because one of minimal cut sets'"
-              "\nprobability exceeded 0.1 threshold requirement.\n\n";
+                       "\nfault tree analysis because one of minimal cut sets'"
+                       "\nprobability exceeded 0.1 threshold requirement.\n\n";
           break;
         }
       }

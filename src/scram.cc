@@ -5,11 +5,10 @@
 #include <vector>
 
 #include <boost/exception/all.hpp>
-#include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/program_options.hpp>
 
 #include "error.h"
-#include "fault_tree_analysis.h"
 #include "logger.h"
 #include "risk_analysis.h"
 #include "settings.h"

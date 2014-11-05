@@ -9,13 +9,17 @@
 #include <string>
 #include <vector>
 
-#include "fault_tree_analysis.h"
-#include "probability_analysis.h"
-#include "uncertainty_analysis.h"
-
-typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
+#include <boost/shared_ptr.hpp>
+#include <boost/unordered_map.hpp>
 
 namespace scram {
+
+class FaultTreeAnalysis;
+class ProbabilityAnalysis;
+class UncertaintyAnalysis;
+class PrimaryEvent;
+class BasicEvent;
+
 /// @class Reporter
 /// This class reports the findings of the analyses.
 class Reporter {
@@ -51,6 +55,8 @@ class Reporter {
       std::ostream& out);
 
  private:
+  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+
   /// Produces lines for printing minimal cut sets.
   /// @param[in] min_cut_sets Minimal cut sets to print.
   /// @param[in] basic_events Basic events in the minimal cut sets.

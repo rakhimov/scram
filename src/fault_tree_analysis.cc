@@ -3,15 +3,15 @@
 #include "fault_tree_analysis.h"
 
 #include <ctime>
-#include <iterator>
-#include <functional>
 #include <sstream>
-#include <vector>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/pointer_cast.hpp>
 
 #include "error.h"
+#include "event.h"
+#include "fault_tree.h"
+#include "indexed_fault_tree.h"
 
 namespace scram {
 
@@ -63,6 +63,7 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
     ++j;
   }
 
+  typedef boost::shared_ptr<Gate> GatePtr;
   // Intermediate events from indices.
   boost::unordered_map<int, GatePtr> int_to_inter;
   // Assign an index to each top and intermediate event and populate

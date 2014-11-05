@@ -4,10 +4,10 @@
 #ifndef SCRAM_SRC_INDEXED_GATE_H_
 #define SCRAM_SRC_INDEXED_GATE_H_
 
+#include <assert.h>
+
 #include <set>
 #include <string>
-
-#include "event.h"
 
 namespace scram {
 
@@ -22,7 +22,7 @@ class IndexedGate {
   /// Creates a gate with its index.
   /// @param[in] index An unique positive index of this gate.
   /// @warning The index is not validated upon instantiation.
-  IndexedGate(int index);
+  explicit IndexedGate(int index);
 
   /// Sets the gate type information.
   /// 1 is for OR gate.

@@ -11,23 +11,14 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 
-#include "event.h"
-#include "fault_tree.h"
-
-#include "indexed_fault_tree.h"
-
 class FaultTreeAnalysisTest;
 class PerformanceTest;
 
-typedef boost::shared_ptr<scram::Event> EventPtr;
-typedef boost::shared_ptr<scram::Gate> GatePtr;
-typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
-typedef boost::shared_ptr<scram::BasicEvent> BasicEventPtr;
-
-typedef boost::shared_ptr<scram::FaultTree> FaultTreePtr;
-
 namespace scram {
 
+class PrimaryEvent;
+class BasicEvent;
+class FaultTree;
 class Reporter;
 
 /// @class FaultTreeAnalysis
@@ -38,6 +29,8 @@ class FaultTreeAnalysis {
   friend class Reporter;
 
  public:
+  typedef boost::shared_ptr<FaultTree> FaultTreePtr;
+
   /// The main constructor of Fault Tree Analysis.
   /// @param[in] limit_order The maximum limit on minimal cut sets' order.
   /// @throws InvalidArgument if any of the parameters are invalid.
@@ -59,6 +52,9 @@ class FaultTreeAnalysis {
   }
 
  private:
+  typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
+  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+
   /// Converts minimal cut sets from indices to strings for future reporting.
   /// This function also removes house events from minimal cut sets.
   /// @param[in] imcs Min cut sets with indices of events.

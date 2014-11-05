@@ -12,12 +12,9 @@
 #include <boost/unordered_map.hpp>
 #include <libxml++/libxml++.h>
 
-#include "element.h"
 #include "event.h"
 #include "expression.h"
-#include "fault_tree.h"
 #include "fault_tree_analysis.h"
-#include "grapher.h"
 #include "probability_analysis.h"
 #include "settings.h"
 #include "uncertainty_analysis.h"
@@ -25,23 +22,10 @@
 class RiskAnalysisTest;
 class PerformanceTest;
 
-typedef boost::shared_ptr<scram::Element> ElementPtr;
-
-typedef boost::shared_ptr<scram::Event> EventPtr;
-typedef boost::shared_ptr<scram::Gate> GatePtr;
-typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
-typedef boost::shared_ptr<scram::BasicEvent> BasicEventPtr;
-typedef boost::shared_ptr<scram::HouseEvent> HouseEventPtr;
-
-typedef boost::shared_ptr<scram::Expression> ExpressionPtr;
-typedef boost::shared_ptr<scram::Parameter> ParameterPtr;
-
-typedef boost::shared_ptr<scram::FaultTree> FaultTreePtr;
-typedef boost::shared_ptr<scram::FaultTreeAnalysis> FaultTreeAnalysisPtr;
-typedef boost::shared_ptr<scram::ProbabilityAnalysis> ProbabilityAnalysisPtr;
-typedef boost::shared_ptr<scram::UncertaintyAnalysis> UncertaintyAnalysisPtr;
-
 namespace scram {
+
+class Element;
+class FaultTree;
 
 /// @class RiskAnalysis
 /// Main system that performs analyses.
@@ -100,6 +84,19 @@ class RiskAnalysis {
   void Report(std::string output);
 
  private:
+  typedef boost::shared_ptr<Element> ElementPtr;
+  typedef boost::shared_ptr<Event> EventPtr;
+  typedef boost::shared_ptr<Gate> GatePtr;
+  typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
+  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+  typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
+  typedef boost::shared_ptr<FaultTree> FaultTreePtr;
+  typedef boost::shared_ptr<Expression> ExpressionPtr;
+  typedef boost::shared_ptr<Parameter> ParameterPtr;
+  typedef boost::shared_ptr<FaultTreeAnalysis> FaultTreeAnalysisPtr;
+  typedef boost::shared_ptr<ProbabilityAnalysis> ProbabilityAnalysisPtr;
+  typedef boost::shared_ptr<UncertaintyAnalysis> UncertaintyAnalysisPtr;
+
   /// Reads one input file with the structure of analysis entities.
   /// Initializes the analysis from the given input file.
   /// Puts all events into their appropriate containers.

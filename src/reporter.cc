@@ -2,16 +2,17 @@
 /// Implements Reporter class.
 #include "reporter.h"
 
-#include <algorithm>
-#include <cmath>
-#include <ctime>
 #include <iomanip>
 #include <sstream>
 #include <utility>
 
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/date_time.hpp>
+
+#include "event.h"
+#include "fault_tree_analysis.h"
+#include "probability_analysis.h"
+#include "uncertainty_analysis.h"
 
 namespace pt = boost::posix_time;
 

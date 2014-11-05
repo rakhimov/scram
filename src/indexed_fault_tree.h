@@ -3,16 +3,14 @@
 #ifndef SCRAM_SRC_INDEXED_FAULT_TREE_H_
 #define SCRAM_SRC_INDEXED_FAULT_TREE_H_
 
+#include <functional>
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
+#include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
-
-#include "event.h"
-#include "indexed_gate.h"
-
-typedef boost::shared_ptr<scram::Gate> GatePtr;
 
 namespace scram {
 
@@ -21,10 +19,11 @@ namespace scram {
 /// only positive OR or AND gates with basic event indices and pointers to
 /// other simple gates.
 class SimpleGate {
-  typedef boost::shared_ptr<scram::SimpleGate> SimpleGatePtr;
  public:
+  typedef boost::shared_ptr<SimpleGate> SimpleGatePtr;
+
   /// @param[in] type The type of this gate. 1 is OR; 2 is AND.
-  SimpleGate(int type) {
+  explicit SimpleGate(int type) {
     assert(type == 1 || type == 2);
     type_ = type;
   }
@@ -105,7 +104,8 @@ struct SetPtrComp
   }
 };
 
-typedef boost::shared_ptr<scram::SimpleGate> SimpleGatePtr;
+class Gate;
+class IndexedGate;
 
 /// @class IndexedFaultTree
 /// This class should provide simpler representation of a fault tree
@@ -122,6 +122,8 @@ class IndexedFaultTree {
   // The indices of gates may change, but the indices of basic events must
   // not change.
  public:
+  typedef boost::shared_ptr<Gate> GatePtr;
+
   /// Constructs a simplified fault tree.
   /// @param[in] top_event_id The index of the top event of this tree.
   IndexedFaultTree(int top_event_id, int limit_order);
@@ -153,21 +155,14 @@ class IndexedFaultTree {
   /// @warning This is experimental for coherent trees only.
   void FindMcs();
 
-  inline const std::set<int>& GateChildren(int index) {
-    return indexed_gates_.find(index)->second->children();
-  }
-
-  /// @returns Numbered type of the gate: 1 is OR, 2 is AND.
-  inline int GateType(int index) {
-    return indexed_gates_.find(index)->second->type();
-  }
-
   /// @returns Generated minimal cut sets with basic event indices.
   inline const std::vector< std::set<int> >& GetGeneratedMcs() {
     return imcs_;
   }
 
  private:
+  typedef boost::shared_ptr<SimpleGate> SimpleGatePtr;
+
   /// Start unrolling gates to simplify gates to OR and AND gates.
   void StartUnrollingGates();
 

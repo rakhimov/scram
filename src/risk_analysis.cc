@@ -5,9 +5,7 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
-#include <iterator>
 #include <sstream>
-#include <vector>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
@@ -17,22 +15,13 @@
 #include <schema.h>  // For static building.
 #endif
 
+#include "element.h"
 #include "env.h"
 #include "error.h"
+#include "fault_tree.h"
+#include "grapher.h"
 #include "reporter.h"
 #include "xml_parser.h"
-
-typedef boost::shared_ptr<scram::ConstantExpression> ConstantExpressionPtr;
-typedef boost::shared_ptr<scram::ExponentialExpression>
-    ExponentialExpressionPtr;
-typedef boost::shared_ptr<scram::GlmExpression> GlmExpressionPtr;
-typedef boost::shared_ptr<scram::WeibullExpression> WeibullExpressionPtr;
-typedef boost::shared_ptr<scram::UniformDeviate> UniformDeviatePtr;
-typedef boost::shared_ptr<scram::NormalDeviate> NormalDeviatePtr;
-typedef boost::shared_ptr<scram::LogNormalDeviate> LogNormalDeviatePtr;
-typedef boost::shared_ptr<scram::GammaDeviate> GammaDeviatePtr;
-typedef boost::shared_ptr<scram::BetaDeviate> BetaDeviatePtr;
-typedef boost::shared_ptr<scram::Histogram> HistogramPtr;
 
 namespace scram {
 
@@ -749,6 +738,7 @@ void RiskAnalysis::GetExpression(const xmlpp::Element* expr_element,
 
 bool RiskAnalysis::GetConstantExpression(const xmlpp::Element* expr_element,
                                          ExpressionPtr& expression) {
+  typedef boost::shared_ptr<ConstantExpression> ConstantExpressionPtr;
   assert(expr_element);
   std::string expr_name = expr_element->get_name();
   if (expr_name == "float" || expr_name == "int") {
@@ -814,7 +804,8 @@ bool RiskAnalysis::GetDeviateExpression(const xmlpp::Element* expr_element,
     ExpressionPtr max;
     GetExpression(element, max);
 
-    expression = UniformDeviatePtr(new UniformDeviate(min, max));
+    expression = boost::shared_ptr<UniformDeviate>(
+        new UniformDeviate(min, max));
 
   } else if (expr_name == "normal-deviate") {
     assert(expr_element->find("./*").size() == 2);
@@ -830,7 +821,8 @@ bool RiskAnalysis::GetDeviateExpression(const xmlpp::Element* expr_element,
     ExpressionPtr sigma;
     GetExpression(element, sigma);
 
-    expression = NormalDeviatePtr(new NormalDeviate(mean, sigma));
+    expression = boost::shared_ptr<NormalDeviate>(
+        new NormalDeviate(mean, sigma));
 
   } else if (expr_name == "lognormal-deviate") {
     assert(expr_element->find("./*").size() == 3);
@@ -852,7 +844,8 @@ bool RiskAnalysis::GetDeviateExpression(const xmlpp::Element* expr_element,
     ExpressionPtr level;
     GetExpression(element, level);
 
-    expression = LogNormalDeviatePtr(new LogNormalDeviate(mean, ef, level));
+    expression = boost::shared_ptr<LogNormalDeviate>(
+        new LogNormalDeviate(mean, ef, level));
 
   } else if (expr_name == "gamma-deviate") {
     assert(expr_element->find("./*").size() == 2);
@@ -868,7 +861,7 @@ bool RiskAnalysis::GetDeviateExpression(const xmlpp::Element* expr_element,
     ExpressionPtr theta;
     GetExpression(element, theta);
 
-    expression = GammaDeviatePtr(new GammaDeviate(k, theta));
+    expression = boost::shared_ptr<GammaDeviate>(new GammaDeviate(k, theta));
 
   } else if (expr_name == "beta-deviate") {
     assert(expr_element->find("./*").size() == 2);
@@ -884,7 +877,7 @@ bool RiskAnalysis::GetDeviateExpression(const xmlpp::Element* expr_element,
     ExpressionPtr beta;
     GetExpression(element, beta);
 
-    expression = BetaDeviatePtr(new BetaDeviate(alpha, beta));
+    expression = boost::shared_ptr<BetaDeviate>(new BetaDeviate(alpha, beta));
 
   } else if (expr_name == "histogram") {
     std::vector<ExpressionPtr> boundaries;
@@ -908,7 +901,8 @@ bool RiskAnalysis::GetDeviateExpression(const xmlpp::Element* expr_element,
       GetExpression(element, weight);
       weights.push_back(weight);
     }
-    expression = HistogramPtr(new Histogram(boundaries, weights));
+    expression = boost::shared_ptr<Histogram>(
+        new Histogram(boundaries, weights));
 
   } else if (expr_name == "exponential") {
     assert(expr_element->find("./*").size() == 2);
@@ -924,8 +918,9 @@ bool RiskAnalysis::GetDeviateExpression(const xmlpp::Element* expr_element,
     ExpressionPtr time;
     GetExpression(element, time);
 
-    expression = ExponentialExpressionPtr(new ExponentialExpression(lambda,
-                                                                    time));
+    expression = boost::shared_ptr<ExponentialExpression>(
+        new ExponentialExpression(lambda, time));
+
   } else if (expr_name == "GLM") {
     assert(expr_element->find("./*").size() == 4);
     const xmlpp::Element* element =
@@ -952,7 +947,8 @@ bool RiskAnalysis::GetDeviateExpression(const xmlpp::Element* expr_element,
     ExpressionPtr time;
     GetExpression(element, time);
 
-    expression = GlmExpressionPtr(new GlmExpression(gamma, lambda, mu, time));
+    expression = boost::shared_ptr<GlmExpression>(
+        new GlmExpression(gamma, lambda, mu, time));
 
   } else if (expr_name == "Weibull") {
     assert(expr_element->find("./*").size() == 4);
@@ -980,8 +976,8 @@ bool RiskAnalysis::GetDeviateExpression(const xmlpp::Element* expr_element,
     ExpressionPtr time;
     GetExpression(element, time);
 
-    expression = WeibullExpressionPtr(new WeibullExpression(alpha, beta,
-                                                            t0, time));
+    expression = boost::shared_ptr<WeibullExpression>(
+        new WeibullExpression(alpha, beta, t0, time));
   } else {
     return false;
   }

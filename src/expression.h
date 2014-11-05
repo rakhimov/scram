@@ -20,6 +20,8 @@ namespace scram {
 /// The base class for all sorts of expressions to describe events.
 class Expression {
  public:
+  typedef boost::shared_ptr<Expression> ExpressionPtr;
+
   Expression() : sampled_(false), sampled_value_(0) {}
 
   virtual ~Expression() {}
@@ -54,8 +56,6 @@ class Expression {
   /// The sampled value.
   double sampled_value_;
 };
-
-typedef boost::shared_ptr<scram::Expression> ExpressionPtr;
 
 /// @enum Units
 /// Provides units for parameters.
