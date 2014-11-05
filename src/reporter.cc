@@ -52,10 +52,8 @@ void Reporter::ReportFta(
   out << std::setw(40) << std::left << "Top Event: " << fta->top_event_name_
       << "\n";
   out << std::setw(40) << "Time: " << pt::second_clock::local_time() << "\n\n";
-  out << std::setw(40) << "Gate Expansion Time: " << std::setprecision(5)
-      << fta->exp_time_ << "s\n";
-  out << std::setw(40) << "MCS Generation Time: " << std::setprecision(5)
-      << fta->mcs_time_ - fta->exp_time_ << "s\n";
+  out << std::setw(40) << "Core Analysis Time: " << std::setprecision(5)
+      << fta->analysis_time_ << "s\n";
   out << std::setw(40) << "Number of Basic Events: "
       << fta->basic_events_.size() << "\n";
   out << std::setw(40) << "Number of Gates: " << fta->num_gates_ << "\n";

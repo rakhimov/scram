@@ -43,8 +43,6 @@ class FaultTreeAnalysis {
   /// @throws InvalidArgument if any of the parameters are invalid.
   explicit FaultTreeAnalysis(int limit_order = 20);
 
-  ~FaultTreeAnalysis() { delete indexed_tree_; }
-
   /// Analyzes the fault tree and performs computations.
   /// This function must be called only after initilizing the tree with or
   /// without its probabilities. Underlying objects may throw errors
@@ -61,19 +59,9 @@ class FaultTreeAnalysis {
   }
 
  private:
-  /// Assigns an index to each primary event, and then populates with this
-  /// indices new databases of minimal cut sets and primary to integer
-  /// converting maps.
-  /// In addition, this function copies all events from
-  /// the fault tree for future reference.
-  /// @param[in] fault_tree Fault Tree with events and gates.
-  /// @note O_avg(N) O_max(N^2) where N is the total number of tree nodes.
-  void AssignIndices(const FaultTreePtr& fault_tree);
-
   /// Converts minimal cut sets from indices to strings for future reporting.
   /// This function also removes house events from minimal cut sets.
   /// @param[in] imcs Min cut sets with indices of events.
-  /// @todo House events should be removed in pre-processing state.
   void SetsToString(const std::vector< std::set<int> >& imcs);
 
   std::vector<PrimaryEventPtr> int_to_primary_;  ///< Indices to primary events.
@@ -102,12 +90,8 @@ class FaultTreeAnalysis {
   /// Maximum order of minimal cut sets.
   int max_order_;
 
-  // Time logging
-  double exp_time_;  ///< Expansion of tree gates time.
-  double mcs_time_;  ///< Time for MCS generation.
-
-  /// Indexed fault tree.
-  IndexedFaultTree* indexed_tree_;
+  /// Time taken by the core analysis.
+  double analysis_time_;
 };
 
 }  // namespace scram

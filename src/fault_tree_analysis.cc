@@ -19,8 +19,7 @@ FaultTreeAnalysis::FaultTreeAnalysis(int limit_order)
   : warnings_(""),
     top_event_index_(-1),
     max_order_(1),
-    exp_time_(0),
-    mcs_time_(0) {
+    analysis_time_(0) {
       // Check for right limit order.
   if (limit_order < 1) {
     std::string msg = "The limit on the order of minimal cut sets "
@@ -36,28 +35,6 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
   start_time = std::clock();
   // End of Timing Initialization
 
-  FaultTreeAnalysis::AssignIndices(fault_tree);
-
-  indexed_tree_->FindMcs();
-
-  // Duration of the expansion.
-  exp_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
-
-  const std::vector< std::set<int> >* imcs = &indexed_tree_->GetGeneratedMcs();
-  // First, defensive check if cut sets exist for the specified limit order.
-  if (imcs->empty()) {
-    std::stringstream msg;
-    msg << "No cut sets for the limit order " <<  limit_order_;
-    warnings_ += msg.str();
-    return;
-  }
-
-  // Duration of MCS generation.
-  mcs_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
-  FaultTreeAnalysis::SetsToString(*imcs);  // MCS with event ids.
-}
-
-void FaultTreeAnalysis::AssignIndices(const FaultTreePtr& fault_tree) {
   // Getting events from the fault tree object.
   top_event_name_ = fault_tree->top_event()->orig_id();
   num_gates_ = fault_tree->inter_events().size() + 1;  // Include top event.
@@ -88,29 +65,41 @@ void FaultTreeAnalysis::AssignIndices(const FaultTreePtr& fault_tree) {
 
   // Intermediate events from indices.
   boost::unordered_map<int, GatePtr> int_to_inter;
-  // Indices of intermediate events.
-  boost::unordered_map<std::string, int> inter_to_int;
-
   // Assign an index to each top and intermediate event and populate
   // relevant databases.
   top_event_index_ = j;
   int_to_inter.insert(std::make_pair(j, fault_tree->top_event()));
-  inter_to_int.insert(std::make_pair(fault_tree->top_event()->id(), j));
   all_to_int_.insert(std::make_pair(fault_tree->top_event()->id(), j));
   ++j;
   boost::unordered_map<std::string, GatePtr>::const_iterator iti;
   for (iti = fault_tree->inter_events().begin();
        iti != fault_tree->inter_events().end(); ++iti) {
     int_to_inter.insert(std::make_pair(j, iti->second));
-    inter_to_int.insert(std::make_pair(iti->first, j));
     all_to_int_.insert(std::make_pair(iti->first, j));
     ++j;
   }
 
-  indexed_tree_ = new IndexedFaultTree(top_event_index_, limit_order_);
-  indexed_tree_->InitiateIndexedFaultTree(int_to_inter, all_to_int_);
-  indexed_tree_->PropagateConstants(true_house_events, false_house_events);
-  indexed_tree_->ProcessIndexedFaultTree();
+  IndexedFaultTree* indexed_tree =
+      new IndexedFaultTree(top_event_index_, limit_order_);
+  indexed_tree->InitiateIndexedFaultTree(int_to_inter, all_to_int_);
+  indexed_tree->PropagateConstants(true_house_events, false_house_events);
+  indexed_tree->ProcessIndexedFaultTree();
+  indexed_tree->FindMcs();
+
+  const std::vector< std::set<int> >* imcs = &indexed_tree->GetGeneratedMcs();
+  // First, defensive check if cut sets exist for the specified limit order.
+  if (imcs->empty()) {
+    std::stringstream msg;
+    msg << "No cut sets for the limit order " <<  limit_order_;
+    warnings_ += msg.str();
+    return;
+  }
+
+  // Duration of MCS generation.
+  analysis_time_ = (std::clock() - start_time) /
+                   static_cast<double>(CLOCKS_PER_SEC);
+  FaultTreeAnalysis::SetsToString(*imcs);  // MCS with event ids.
+  delete indexed_tree;  // No exeptions are expected.
 }
 
 void FaultTreeAnalysis::SetsToString(const std::vector< std::set<int> >& imcs) {

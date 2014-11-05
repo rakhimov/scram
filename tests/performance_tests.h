@@ -31,16 +31,10 @@ class PerformanceTest : public ::testing::Test {
     return ran->ftas_[0]->min_cut_sets().size();
   }
 
-  // Returns the time that took to preprocess and expand the fault tree.
-  double TreeExpansionTime() {
-    assert(!ran->ftas_.empty());
-    return ran->ftas_[0]->exp_time_;
-  }
-
   // Time taken to find minimal cut sets.
   double McsGenerationTime() {
     assert(!ran->ftas_.empty());
-    return ran->ftas_[0]->mcs_time_ - ran->ftas_[0]->exp_time_;
+    return ran->ftas_[0]->analysis_time_;
   }
 
   // Time taken to calculate total probability.

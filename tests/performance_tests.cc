@@ -63,11 +63,9 @@ TEST_F(PerformanceTest, DISABLED_ThreeMotor_C0) {
 
 // Test performance of MCS generation.
 TEST_F(PerformanceTest, DISABLED_200Event_L16) {
-  double exp_time = 3.700;
-  double mcs_time = 1.100;
+  double mcs_time = 4.800;
 #ifdef NDEBUG
-  exp_time = 0.790;
-  mcs_time = 0.240;
+  mcs_time = 1.030;
 #endif
   std::string input = "./share/scram/input/benchmark/200_event.xml";
   settings.limit_order(16);
@@ -76,19 +74,15 @@ TEST_F(PerformanceTest, DISABLED_200Event_L16) {
   ASSERT_NO_THROW(ran->ProcessInput(input));
   ASSERT_NO_THROW(ran->Analyze());
   ASSERT_EQ(8351, NumOfMcs());
-  EXPECT_GT(TreeExpansionTime(), exp_time * (1 - delta));
-  EXPECT_LT(TreeExpansionTime(), exp_time * (1 + delta));
   EXPECT_GT(McsGenerationTime(), mcs_time * (1 - delta));
   EXPECT_LT(McsGenerationTime(), mcs_time * (1 + delta));
 }
 
 // Test performance of MCS generation.
 TEST_F(PerformanceTest, DISABLED_200Event_L17) {
-  double exp_time = 15.500;
-  double mcs_time = 90.400;
+  double mcs_time = 105.900;
 #ifdef NDEBUG
-  exp_time = 3.300;
-  mcs_time = 12.000;
+  mcs_time = 15.300;
 #endif
   std::string input = "./share/scram/input/benchmark/200_event.xml";
   settings.limit_order(17);
@@ -97,19 +91,15 @@ TEST_F(PerformanceTest, DISABLED_200Event_L17) {
   ASSERT_NO_THROW(ran->ProcessInput(input));
   ASSERT_NO_THROW(ran->Analyze());
   ASSERT_EQ(8487, NumOfMcs());
-  EXPECT_GT(TreeExpansionTime(), exp_time * (1 - delta));
-  EXPECT_LT(TreeExpansionTime(), exp_time * (1 + delta));
   EXPECT_GT(McsGenerationTime(), mcs_time * (1 - delta));
   EXPECT_LT(McsGenerationTime(), mcs_time * (1 + delta));
 }
 
 // Test performance of MCS generation.
 TEST_F(PerformanceTest, DISABLED_Baobab1_L6) {
-  double exp_time = 29.200;
-  double mcs_time = 0.500;
+  double mcs_time = 29.700;
 #ifdef NDEBUG
-  exp_time = 5.600;
-  mcs_time = 0.070;
+  mcs_time = 5.670;
 #endif
   std::string input = "./share/scram/input/benchmark/baobab1.xml";
   settings.limit_order(6);
@@ -118,8 +108,6 @@ TEST_F(PerformanceTest, DISABLED_Baobab1_L6) {
   ASSERT_NO_THROW(ran->ProcessInput(input));
   ASSERT_NO_THROW(ran->Analyze());
   ASSERT_EQ(2684, NumOfMcs());
-  EXPECT_GT(TreeExpansionTime(), exp_time * (1 - delta));
-  EXPECT_LT(TreeExpansionTime(), exp_time * (1 + delta));
   EXPECT_GT(McsGenerationTime(), mcs_time * (1 - delta));
   EXPECT_LT(McsGenerationTime(), mcs_time * (1 + delta));
 }
@@ -128,8 +116,7 @@ TEST_F(PerformanceTest, DISABLED_Baobab1_L6) {
 #ifdef NDEBUG
 // Test performance of MCS generation.
 TEST_F(PerformanceTest, DISABLED_Baobab1_L7) {
-  double exp_time = 86.800;
-  double mcs_time = 2.500;
+  double mcs_time = 87.300;
   std::string input = "./share/scram/input/benchmark/baobab1.xml";
   settings.limit_order(7);
   settings.num_sums(1);
@@ -137,15 +124,12 @@ TEST_F(PerformanceTest, DISABLED_Baobab1_L7) {
   ASSERT_NO_THROW(ran->ProcessInput(input));
   ASSERT_NO_THROW(ran->Analyze());
   ASSERT_EQ(17432, NumOfMcs());
-  EXPECT_GT(TreeExpansionTime(), exp_time * (1 - delta));
-  EXPECT_LT(TreeExpansionTime(), exp_time * (1 + delta));
   EXPECT_GT(McsGenerationTime(), mcs_time * (1 - delta));
   EXPECT_LT(McsGenerationTime(), mcs_time * (1 + delta));
 }
 
 TEST_F(PerformanceTest, DISABLED_CEA9601_L4) {
-  double exp_time = 19.500;
-  double mcs_time = 0.050;
+  double mcs_time = 19.550;
   std::string input = "./share/scram/input/benchmark/CEA9601.xml";
   settings.limit_order(4);
   settings.num_sums(1);
@@ -153,15 +137,12 @@ TEST_F(PerformanceTest, DISABLED_CEA9601_L4) {
   ASSERT_NO_THROW(ran->ProcessInput(input));
   ASSERT_NO_THROW(ran->Analyze());
   ASSERT_EQ(2732, NumOfMcs());
-  EXPECT_GT(TreeExpansionTime(), exp_time * (1 - delta));
-  EXPECT_LT(TreeExpansionTime(), exp_time * (1 + delta));
   EXPECT_GT(McsGenerationTime(), mcs_time * (1 - delta));
   EXPECT_LT(McsGenerationTime(), mcs_time * (1 + delta));
 }
 
 TEST_F(PerformanceTest, DISABLED_CEA9601_L5) {
-  double exp_time = 43.400;
-  double mcs_time = 0.130;
+  double mcs_time = 43.530;
   std::string input = "./share/scram/input/benchmark/CEA9601.xml";
   settings.limit_order(5);
   settings.num_sums(1);
@@ -169,8 +150,6 @@ TEST_F(PerformanceTest, DISABLED_CEA9601_L5) {
   ASSERT_NO_THROW(ran->ProcessInput(input));
   ASSERT_NO_THROW(ran->Analyze());
   ASSERT_EQ(3274, NumOfMcs());
-  EXPECT_GT(TreeExpansionTime(), exp_time * (1 - delta));
-  EXPECT_LT(TreeExpansionTime(), exp_time * (1 + delta));
   EXPECT_GT(McsGenerationTime(), mcs_time * (1 - delta));
   EXPECT_LT(McsGenerationTime(), mcs_time * (1 + delta));
 }
