@@ -224,17 +224,12 @@ class IndexedFaultTree {
 
   /// Expands OR layer in preprocessed fault tree.
   /// @param[out] gate The OR gate to be processed.
-  void ExpandOrLayer(SimpleGatePtr& gate);
+  /// @param[out] cut_sts Cut sets found while traversing the tree.
+  void ExpandOrLayer(SimpleGatePtr& gate, std::vector<SimpleGatePtr>* cut_sets);
 
   /// Expands AND layer in preprocessed fault tree.
   /// @param[out] gate The AND gate to be processed into OR gate.
   void ExpandAndLayer(SimpleGatePtr& gate);
-
-  /// Gathers cut sets from the final tree.
-  /// @param[in] gate The OR gate to start with.
-  /// @param[out] unique_sets The unique cut sets from the tree.
-  void GatherCutSets(const SimpleGatePtr& gate,
-                     std::set< const std::set<int>*, SetPtrComp >* unique_sets);
 
   /// Finds minimal cut sets from cut sets.
   /// Applys rule 4 to reduce unique cut sets to minimal cut sets.
@@ -263,7 +258,6 @@ class IndexedFaultTree {
   std::vector< std::set<int> > imcs_;  // Min cut sets with indexed events.
   /// Limit on the size of the minimal cut sets for performance reasons.
   int limit_order_;
-  std::set< std::set<int> > one_element_sets_;  // For one element cut sets.
 };
 
 }  // namespace scram

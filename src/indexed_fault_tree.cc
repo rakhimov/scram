@@ -135,7 +135,8 @@ void IndexedFaultTree::FindMcs() {
     }
     IndexedFaultTree::ExpandAndLayer(top_gate);
   }
-  IndexedFaultTree::ExpandOrLayer(top_gate);
+  std::vector<SimpleGatePtr> cut_sets;
+  IndexedFaultTree::ExpandOrLayer(top_gate, &cut_sets);
 
   LOG() << "IndexedFaultTree: Cut sets are generated.";
   double cut_sets_time = (std::clock() - start_time) /
@@ -146,29 +147,48 @@ void IndexedFaultTree::FindMcs() {
   // At this point cut sets must be generated.
   SetPtrComp comp;
   std::set< const std::set<int>*, SetPtrComp > unique_cut_sets(comp);
-  IndexedFaultTree::GatherCutSets(top_gate, &unique_cut_sets);
 
-  imcs_.reserve(unique_cut_sets.size() + one_element_sets_.size());
-  std::set< std::set<int> >::const_iterator it_s;
+  std::set< std::set<int> > one_element_sets;  // For one element cut sets.
+  // Special case when top gate OR has basic events.
+  std::set<int>::iterator it_b;
+  for (it_b = top_gate->basic_events().begin();
+       it_b != top_gate->basic_events().end(); ++it_b) {
+    std::set<int> one;
+    one.insert(*it_b);
+    one_element_sets.insert(one);
+  }
+  std::vector<SimpleGatePtr>::const_iterator it;
+  for (it = cut_sets.begin(); it != cut_sets.end(); ++it) {
+    assert((*it)->type() == 2);
+    assert((*it)->gates().empty());
+    if ((*it)->basic_events().size() == 1) {
+      one_element_sets.insert((*it)->basic_events());
+    } else {
+      unique_cut_sets.insert(&(*it)->basic_events());
+    }
+  }
+
+  imcs_.reserve(unique_cut_sets.size() + one_element_sets.size());
   std::vector< const std::set<int>* > sets_unique;
   std::set< const std::set<int>*, SetPtrComp >::iterator it_un;
   for (it_un = unique_cut_sets.begin(); it_un != unique_cut_sets.end();
        ++it_un) {
     assert(!(*it_un)->empty());
     if ((*it_un)->size() == 1) {
-      one_element_sets_.insert(**it_un);
+      one_element_sets.insert(**it_un);
       continue;
     }
     sets_unique.push_back(*it_un);
   }
 
-  for (it_s = one_element_sets_.begin(); it_s != one_element_sets_.end();
+  std::set< std::set<int> >::const_iterator it_s;
+  for (it_s = one_element_sets.begin(); it_s != one_element_sets.end();
        ++it_s) {
     imcs_.push_back(*it_s);
   }
 
   LOG() << "Unique cut sets size: " << sets_unique.size();
-  LOG() << "One element sets size: " << one_element_sets_.size();
+  LOG() << "One element sets size: " << imcs_.size();
 
   LOG() << "IndexedFaultTree: Minimizing the cut sets.";
   IndexedFaultTree::FindMcs(sets_unique, imcs_, 2, &imcs_);
@@ -177,7 +197,8 @@ void IndexedFaultTree::FindMcs() {
   LOG() << "Minimal cut set finding time: " << mcs_time - cut_sets_time;
 }
 
-void IndexedFaultTree::ExpandOrLayer(SimpleGatePtr& gate) {
+void IndexedFaultTree::ExpandOrLayer(SimpleGatePtr& gate,
+                                     std::vector<SimpleGatePtr>* cut_sets) {
   if (gate->gates().empty()) return;
   std::vector<SimpleGatePtr> new_gates;
   std::set<SimpleGatePtr>::iterator it;
@@ -185,12 +206,12 @@ void IndexedFaultTree::ExpandOrLayer(SimpleGatePtr& gate) {
     if ((*it)->basic_events().size() > limit_order_) {
       continue;
     } else if ((*it)->gates().empty()) {
-      new_gates.push_back(*it);
+      cut_sets->push_back(*it);
       continue;  // This may leave some larger cut sets for top event.
     }
     SimpleGatePtr new_gate(new SimpleGate(**it));
     IndexedFaultTree::ExpandAndLayer(new_gate);  // The gate becomes OR.
-    IndexedFaultTree::ExpandOrLayer(new_gate);
+    IndexedFaultTree::ExpandOrLayer(new_gate, cut_sets);
     new_gates.push_back(new_gate);
   }
   gate->gates().clear();
@@ -242,30 +263,6 @@ void IndexedFaultTree::ExpandAndLayer(SimpleGatePtr& gate) {
   gate = substitute;
 }
 
-void IndexedFaultTree::GatherCutSets(
-    const SimpleGatePtr& gate,
-    std::set< const std::set<int>*, SetPtrComp >* unique_sets) {
-  assert(gate->type() == 1);
-  std::set<int>::iterator it_b;
-  for (it_b = gate->basic_events().begin(); it_b != gate->basic_events().end();
-       ++it_b) {
-    std::set<int> one;
-    one.insert(*it_b);
-    one_element_sets_.insert(one);
-  }
-  std::set<SimpleGatePtr>::iterator it_g;
-  for (it_g = gate->gates().begin(); it_g != gate->gates().end(); ++it_g) {
-    if ((*it_g)->type() == 1) {
-      IndexedFaultTree::GatherCutSets(*it_g, unique_sets);
-    } else {
-      assert((*it_g)->gates().empty());
-      if ((*it_g)->basic_events().size() == 1)
-        one_element_sets_.insert((*it_g)->basic_events());
-      unique_sets->insert(&(*it_g)->basic_events());
-    }
-  }
-}
-
 void IndexedFaultTree::FindMcs(
     const std::vector< const std::set<int>* >& cut_sets,
     const std::vector< std::set<int> >& mcs_lower_order,
@@ -282,8 +279,7 @@ void IndexedFaultTree::FindMcs(
   std::vector< const std::set<int>* > temp_sets;  // For mcs of a level above.
   std::vector< std::set<int> > temp_min_sets;  // For mcs of this level.
 
-  for (it_uniq = cut_sets.begin();
-       it_uniq != cut_sets.end(); ++it_uniq) {
+  for (it_uniq = cut_sets.begin(); it_uniq != cut_sets.end(); ++it_uniq) {
     bool include = true;  // Determine to keep or not.
 
     for (it_min = mcs_lower_order.begin(); it_min != mcs_lower_order.end();
