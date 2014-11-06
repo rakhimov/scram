@@ -150,6 +150,10 @@ class IndexedGate {
     return visits_;
   }
 
+  const std::set<int>& parents() {
+    return parents_;
+  }
+
  private:
   /// Type of this gate. Only two choices are allowed: OR, AND.
   int type_;
@@ -171,6 +175,9 @@ class IndexedGate {
 
   /// This is a traversal vector containting first, second, and last visits.
   int visits_[3];
+
+  /// Parents of this gate.
+  std::set<int> parents_;
 };
 
 }  // namespace scram

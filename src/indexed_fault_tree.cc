@@ -54,12 +54,21 @@ void IndexedFaultTree::PropagateConstants(
     const std::set<int>& false_house_events) {
   IndexedGate* top = indexed_gates_.find(top_event_index_)->second;
   std::set<int> processed_gates;
+  LOG() << "Propagating constants in a fault tree.";
   IndexedFaultTree::PropagateConstants(true_house_events, false_house_events,
                                        top, &processed_gates);
+  LOG() << "Constant propagation is done.";
 }
 
 void IndexedFaultTree::ProcessIndexedFaultTree(int num_basic_events) {
   IndexedGate* top = indexed_gates_.find(top_event_index_)->second;
+  // Detect original modules for processing.
+  IndexedFaultTree::DetectModules(num_basic_events);
+
+  // Top event is the main default module.
+  // Preprocess complex gates.
+  IndexedFaultTree::UnrollComplexTopGate(top);
+
   // Upon unrolling the tree, the top event may be detected to be complement.
   // This fact is processed before giving the top event to complement
   // propagation function.
@@ -76,8 +85,6 @@ void IndexedFaultTree::ProcessIndexedFaultTree(int num_basic_events) {
   IndexedFaultTree::PreprocessTree(top, &processed_gates);
   // After this point there might be null AND gates, and the tree structure
   // should be repeating OR and AND.
-
-  IndexedFaultTree::DetectModules(num_basic_events);
 
   processed_gates.clear();
   IndexedFaultTree::ProcessNullGates(top, &processed_gates);
@@ -178,6 +185,7 @@ void IndexedFaultTree::FindMcs() {
 }
 
 void IndexedFaultTree::StartUnrollingGates() {
+  LOG() << "Unrolling basic gates.";
   // Handle spacial case for a negative or one-child top event.
   IndexedGate* top_gate = indexed_gates_.find(top_event_index_)->second;
   std::string type = top_gate->string_type();
@@ -196,6 +204,7 @@ void IndexedFaultTree::StartUnrollingGates() {
     top_event_sign_ = 1;
   }
   IndexedFaultTree::UnrollTopGate(top_gate);
+  LOG() << "Finished unrolling basic gates.";
 }
 
 void IndexedFaultTree::UnrollTopGate(IndexedGate* top_gate) {
@@ -248,12 +257,42 @@ void IndexedFaultTree::UnrollGates(IndexedGate* parent_gate,
         assert(ret);
         it = parent_gate->children().begin();
         continue;
-      } else if (type == "xor") {
+      }
+      IndexedFaultTree::UnrollGates(gate, unrolled_gates);
+    }
+    ++it;
+  }
+}
+
+void IndexedFaultTree::UnrollComplexTopGate(IndexedGate* top_gate) {
+  LOG() << "Unrolling complex gates.";
+  std::string type = top_gate->string_type();
+  assert(type != "finished");
+  if (type == "xor") {
+    IndexedFaultTree::UnrollXorGate(top_gate);
+  } else if (type == "atleast") {
+    IndexedFaultTree::UnrollAtleastGate(top_gate);
+  }
+  std::set<int> unrolled_gates;
+  IndexedFaultTree::UnrollComplexGates(top_gate, &unrolled_gates);
+  LOG() << "Finished unrolling complex gates.";
+}
+
+void IndexedFaultTree::UnrollComplexGates(IndexedGate* parent_gate,
+                                          std::set<int>* unrolled_gates) {
+  std::set<int>::const_iterator it;
+  for (it = parent_gate->children().begin();
+       it != parent_gate->children().end();) {
+    if (std::abs(*it) > top_event_index_ &&
+        !unrolled_gates->count(std::abs(*it))) {
+      IndexedGate* gate = indexed_gates_.find(std::abs(*it))->second;
+      unrolled_gates->insert(gate->index());
+      std::string type = gate->string_type();
+      assert(type != "finished");
+      if (type == "xor") {
         IndexedFaultTree::UnrollXorGate(gate);
       } else if (type == "atleast") {
         IndexedFaultTree::UnrollAtleastGate(gate);
-      } else {
-        assert(false);
       }
       IndexedFaultTree::UnrollGates(gate, unrolled_gates);
     }
@@ -348,137 +387,107 @@ void IndexedFaultTree::PropagateConstants(
   // False house event in OR gate is removed.
   // Unity must be only due to House event.
   // Null can be due to house events or complement elments.
+  // True and false house events are treated as well for XOR and ATLEAST gates.
   std::set<int>::const_iterator it;
-  int parent_type = gate->type();
   /// @todo This may have bad behavior due to erased children. Needs more
-  ///       testing. The function needs simplification.
+  ///       testing and optimization. The function needs simplification.
   for (it = gate->children().begin(); it != gate->children().end();) {
+    bool state = false;  // Null or Unity case.
     if (std::abs(*it) > top_event_index_) {  // Processing a gate.
       IndexedGate* child_gate = indexed_gates_.find(std::abs(*it))->second;
       PropagateConstants(true_house_events, false_house_events, child_gate,
                          processed_gates);
-      if (*it > 0) {
-        if (child_gate->state() == "null") {
-          if (parent_type == 1) {
-            gate->EraseChild(*it);  // OR gate with null child.
-            if (gate->children().empty()) {
-              gate->Nullify();
-              return;
-            }
-            it = gate->children().begin();
-            continue;
-          } else {
-            // AND gate with null child.
-            gate->Nullify();
-            return;
-          }
-        } else if (child_gate->state() == "unity") {
-          if (parent_type == 1) {
-            gate->MakeUnity();
-            return;
-          } else {
-            gate->EraseChild(*it);
-            if (gate->children().empty()) {
-              gate->MakeUnity();
-              return;
-            }
-            it = gate->children().begin();
-            continue;
-          }
-        }
-      } else {
-        if (child_gate->state() == "null") {
-          if (parent_type == 1) {
-            // Makes unity.
-            gate->MakeUnity();
-            return;
-          } else {
-            gate->EraseChild(*it);  // AND gate with unity child.
-            if (gate->children().empty()) {
-              gate->MakeUnity();
-              return;
-            }
-            it = gate->children().begin();
-            continue;
-          }
-        } else if (child_gate->state() == "unity") {
-          if (parent_type == 1) {
-            gate->EraseChild(*it);  // OR gate with null child.
-            if (gate->children().empty()) {
-              gate->Nullify();
-              return;
-            }
-            it = gate->children().begin();
-            continue;
-          } else {
-            // AND gate with null child.
-            gate->Nullify();
-            return;
-          }
-        }
+      std::string string_state = child_gate->state();
+      assert(string_state == "normal" || string_state == "null" ||
+             string_state == "unity");
+      if (string_state == "normal") {
+        ++it;
+        continue;
+      } else if (string_state == "null") {
+        state = *it > 0 ? false : true;
+      } else if (string_state == "unity") {
+        state = *it > 0 ? true : false;
       }
-    } else {  // Process an event.
-      if (*it > 0) {
-        if (false_house_events.count(*it)) {
-          if (parent_type == 1) {
-            gate->EraseChild(*it);  // OR gate with false house child.
-            if (gate->children().empty()) {
-              gate->Nullify();
-              return;
-            }
-            it = gate->children().begin();
-            continue;
-          } else {
-            // AND gate with false child.
-            gate->Nullify();
-            return;
-          }
-        } else if (true_house_events.count(*it)) {
-          if (parent_type == 1) {
-            gate->MakeUnity();
-            return;
-          } else {
-            gate->EraseChild(*it);
-            if (gate->children().empty()) {
-              gate->MakeUnity();
-              return;
-            }
-            it = gate->children().begin();
-            continue;
-          }
-        }
+    } else {  // Processing a primary event.
+      if (false_house_events.count(std::abs(*it))) {
+        state = *it > 0 ? false : true;
+      } else if (true_house_events.count(std::abs(*it))) {
+        state = *it > 0 ? true : false;
       } else {
-        if (false_house_events.count(-*it)) {
-          if (parent_type == 1) {
-            gate->MakeUnity();
-            return;
-          } else {
-            gate->EraseChild(*it);
-            if (gate->children().empty()) {
-              gate->MakeUnity();
-              return;
-            }
-            it = gate->children().begin();
-            continue;
-          }
-        } else if (true_house_events.count(-*it)) {
-          if (parent_type == 1) {
-            gate->EraseChild(*it);  // OR gate with false house child.
-            if (gate->children().empty()) {
-              gate->Nullify();
-              return;
-            }
-            it = gate->children().begin();
-            continue;
-          } else {
-            // AND gate with false child.
-            gate->Nullify();
-            return;
-          }
-        }
+        ++it;
+        continue;
       }
     }
-    ++it;
+
+    std::string parent_type = gate->string_type();
+    assert(parent_type == "or" || parent_type == "and" ||
+           parent_type == "xor" || parent_type == "atleast");
+
+    if (!state) {  // Null state.
+      if (parent_type == "or") {
+        gate->EraseChild(*it);  // OR gate with null child.
+        if (gate->children().empty()) {
+          gate->Nullify();
+          return;
+        }
+        it = gate->children().begin();
+        continue;
+      } else if (parent_type == "and") {
+        // AND gate with null child.
+        gate->Nullify();
+        return;
+      } else if (parent_type == "xor") {
+        assert(gate->children().size() == 2);
+        gate->EraseChild(*it);  // XOR gate with null child.
+        assert(!gate->children().empty());
+        gate->string_type("or");
+        gate->type(1);
+        it = gate->children().begin();
+        continue;
+      } else if (parent_type == "atleast") {
+        gate->EraseChild(*it);
+        if (gate->vote_number() == gate->children().size()) {
+          gate->string_type("and");
+          gate->type(2);
+        }
+        it = gate->children().begin();
+        continue;
+      }
+    } else {  // Unity state.
+      if (parent_type == "or") {
+        gate->MakeUnity();
+        return;
+      } else if (parent_type == "and"){
+        gate->EraseChild(*it);
+        if (gate->children().empty()) {
+          gate->MakeUnity();
+          return;
+        }
+        it = gate->children().begin();
+        continue;
+      } else if (parent_type == "xor") {
+        assert(gate->children().size() == 2);
+        gate->EraseChild(*it);
+        assert(!gate->children().empty());
+        gate->string_type("or");
+        gate->type(1);
+        int ch = *gate->children().begin();
+        gate->SwapChild(ch, -ch);
+        it = gate->children().begin();
+        continue;
+      } else if (parent_type == "atleast") {
+        assert(gate->vote_number() > 1);
+        assert(gate->children().size() > 2);
+        gate->EraseChild(*it);
+        gate->vote_number(gate->vote_number() - 1);
+        if (gate->vote_number() == 1) {
+          gate->type(1);
+          gate->string_type("or");
+        }
+        it = gate->children().begin();
+        continue;
+      }
+    }
   }
 }
 
@@ -517,7 +526,6 @@ void IndexedFaultTree::DetectModules(int num_basic_events) {
   assert(max_time == top_gate->visits()[2]);
 
   LOG() << "Detected number of original modules: " << modules.size();
-
 }
 
 int IndexedFaultTree::AssignTiming(int time, IndexedGate* gate,

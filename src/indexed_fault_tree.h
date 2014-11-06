@@ -166,17 +166,29 @@ class IndexedFaultTree {
  private:
   typedef boost::shared_ptr<SimpleGate> SimpleGatePtr;
 
-  /// Start unrolling gates to simplify gates to OR and AND gates.
+  /// Start unrolling gates to simplify gates to OR, AND, XOR, ATLEAST gates.
   void StartUnrollingGates();
 
   /// Unrolls the top gate.
   /// @param[out] top_gate The top gate to start unrolling with.
   void UnrollTopGate(IndexedGate* top_gate);
 
-  /// Unrolls a gate.
+  /// Unrolls children gates to make OR, AND, XOR, ATLEAST gates.
   /// @param[out] parent_gate The current parent of the gates to process.
   /// @param[out] unrolled_gate To keep track of already unrolled gates.
   void UnrollGates(IndexedGate* parent_gate, std::set<int>* unrolled_gates);
+
+  /// Starts unrolling complex XOR and ATLEAST gates from the top gate.
+  /// @param[out] top_gate The top gate to start unrolling with.
+  void UnrollComplexTopGate(IndexedGate* top_gate);
+
+  /// Further unrolling for XOR and ATLEAST gates to become OR and AND gates.
+  /// This function is different from previous simple unrolling functions
+  /// because it creates new gates.
+  /// @param[out] gate The gate to unroll.
+  /// @param[out] unrolled_gate To keep track of already unrolled gates.
+  void UnrollComplexGates(IndexedGate* parent_gate,
+                          std::set<int>* unrolled_gates);
 
   /// Unrolls a gate with XOR logic.
   /// @param[out] gate The gate to unroll.
