@@ -378,4 +378,4 @@ Best practices are encouraged:
 `Coding Style and Quality`_
 
 .. _`Coding Style and Quality`:
-    https://rakhimov.github.io/scram/doc/scram_coding_standards.html
+    https://rakhimov.github.io/scram/doc/coding_standards.html
