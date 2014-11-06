@@ -92,6 +92,7 @@ void RiskAnalysis::ProcessInputFiles(
     for (it_b = tbd_basic_events_.begin(); it_b != tbd_basic_events_.end();
          ++it_b) {
       primary_events_.insert(std::make_pair(it_b->first, it_b->second));
+      basic_events_.insert(std::make_pair(it_b->first, it_b->second));
     }
 
     boost::unordered_map<std::string, std::vector<GatePtr> >::iterator it_e;
@@ -99,6 +100,7 @@ void RiskAnalysis::ProcessInputFiles(
       BasicEventPtr child(new BasicEvent(it_e->first));
       child->orig_id(tbd_orig_ids_.find(it_e->first)->second);
       primary_events_.insert(std::make_pair(it_e->first, child));
+      basic_events_.insert(std::make_pair(it_e->first, child));
       std::vector<GatePtr>::iterator itvec = it_e->second.begin();
       for (; itvec != it_e->second.end(); ++itvec) {
         (*itvec)->AddChild(child);
@@ -575,12 +577,14 @@ void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node) {
   if (tbd_basic_events_.count(id)) {
     basic_event = tbd_basic_events_.find(id)->second;
     primary_events_.insert(std::make_pair(id, basic_event));
+    basic_events_.insert(std::make_pair(id, basic_event));
     tbd_basic_events_.erase(id);
 
   } else {
     basic_event = BasicEventPtr(new BasicEvent(id));
     basic_event->orig_id(orig_id);
     primary_events_.insert(std::make_pair(id, basic_event));
+    basic_events_.insert(std::make_pair(id, basic_event));
     RiskAnalysis::UpdateIfLateEvent(basic_event);
   }
 
@@ -1314,8 +1318,8 @@ void RiskAnalysis::ValidateExpressions() {
   if (prob_requested_) {
     std::stringstream msg;
     msg << "";
-    boost::unordered_map<std::string, PrimaryEventPtr>::iterator it;
-    for (it = primary_events_.begin(); it != primary_events_.end(); ++it) {
+    boost::unordered_map<std::string, BasicEventPtr>::iterator it;
+    for (it = basic_events_.begin(); it != basic_events_.end(); ++it) {
       try {
         it->second->Validate();
       } catch (ValidationError& err) {

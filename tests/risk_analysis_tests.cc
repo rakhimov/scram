@@ -173,19 +173,19 @@ TEST_F(RiskAnalysisTest, PopulateProbabilities) {
   std::string tree_input =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
-  ASSERT_EQ(4, primary_events().size());
-  ASSERT_EQ(1, primary_events().count("pumpone"));
-  ASSERT_EQ(1, primary_events().count("pumptwo"));
-  ASSERT_EQ(1, primary_events().count("valveone"));
-  ASSERT_EQ(1, primary_events().count("valvetwo"));
-  ASSERT_NO_THROW(primary_events().find("pumpone")->second->p());
-  ASSERT_NO_THROW(primary_events().find("pumptwo")->second->p());
-  ASSERT_NO_THROW(primary_events().find("valveone")->second->p());
-  ASSERT_NO_THROW(primary_events().find("valvetwo")->second->p());
-  EXPECT_EQ(0.6, primary_events().find("pumpone")->second->p());
-  EXPECT_EQ(0.7, primary_events().find("pumptwo")->second->p());
-  EXPECT_EQ(0.4, primary_events().find("valveone")->second->p());
-  EXPECT_EQ(0.5, primary_events().find("valvetwo")->second->p());
+  ASSERT_EQ(4, basic_events().size());
+  ASSERT_EQ(1, basic_events().count("pumpone"));
+  ASSERT_EQ(1, basic_events().count("pumptwo"));
+  ASSERT_EQ(1, basic_events().count("valveone"));
+  ASSERT_EQ(1, basic_events().count("valvetwo"));
+  ASSERT_NO_THROW(basic_events().find("pumpone")->second->p());
+  ASSERT_NO_THROW(basic_events().find("pumptwo")->second->p());
+  ASSERT_NO_THROW(basic_events().find("valveone")->second->p());
+  ASSERT_NO_THROW(basic_events().find("valvetwo")->second->p());
+  EXPECT_EQ(0.6, basic_events().find("pumpone")->second->p());
+  EXPECT_EQ(0.7, basic_events().find("pumptwo")->second->p());
+  EXPECT_EQ(0.4, basic_events().find("valveone")->second->p());
+  EXPECT_EQ(0.5, basic_events().find("valvetwo")->second->p());
 }
 
 // Test Graphing Intructions

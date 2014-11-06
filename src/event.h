@@ -125,25 +125,6 @@ class PrimaryEvent : public Event {
   /// @returns The type of the primary event.
   inline const std::string& type() const { return type_; }
 
-  /// @returns The mean probability of failure of this event.
-  /// @throws IllegalOperation if the base class function is called where
-  ///                          a derived class operation is meant.
-  virtual double p() const {
-    throw IllegalOperation("Primary event is not fully defined.");
-  }
-
-  /// Samples probability value from its probability distribution.
-  /// @returns Sampled value.
-  /// @throws IllegalOperation if the base class function is called where
-  ///                          a derived class operation is meant.
-  virtual double SampleProbability() {
-    throw IllegalOperation("Primary event is not fully defined.");
-  }
-
-  /// Validates the probability expressions for the primary event.
-  /// @throws Validation error if anything is wrong.
-  virtual void Validate() {}
-
  private:
   /// The type of the primary event.
   std::string type_;
@@ -190,6 +171,8 @@ class BasicEvent: public PrimaryEvent {
   /// @returns Indication if this event does not have uncertainty.
   inline bool IsConstant() { return expression_->IsConstant(); }
 
+  /// Validates the probability expressions for the primary event.
+  /// @throws Validation error if anything is wrong.
   void Validate() {
     if (expression_->Min() < 0 || expression_->Max() > 1) {
       throw ValidationError("Expression value is invalid.");
@@ -216,14 +199,8 @@ class HouseEvent: public PrimaryEvent {
   /// @param[in] constant False or True for the state of this house event.
   inline void state(bool constant) { state_ = constant; }
 
-  /// @returns The mean probability of this basic event.
-  inline double p() const { return state_ ? 1 : 0; }
-
-  /// The sample for house event is constant value.
-  /// @returns Sampled value.
-  inline double SampleProbability() { return state_ ? 1 : 0; }
-
-  void Validate() {}
+  /// @returns The true or false state of this house event.
+  inline bool state() const { return state_; }
 
  private:
   /// Represents the state of the house event.

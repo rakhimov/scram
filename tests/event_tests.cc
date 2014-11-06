@@ -91,12 +91,12 @@ TEST(GateTest, Parent) {
 TEST(PrimaryEventTest, HouseProbability) {
   // House primary event.
   HouseEventPtr primary(new HouseEvent("valve"));
-  EXPECT_EQ(primary->p(), 0);  // Default state.
+  EXPECT_FALSE(primary->state());  // Default state.
   // Setting with a valid values.
   EXPECT_NO_THROW(primary->state(true));
-  EXPECT_EQ(primary->p(), 1);
+  EXPECT_TRUE(primary->state());
   EXPECT_NO_THROW(primary->state(false));
-  EXPECT_EQ(primary->p(), 0);
+  EXPECT_FALSE(primary->state());
 }
 
 TEST(PrimaryEventTest, Parent) {

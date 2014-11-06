@@ -14,7 +14,7 @@ using namespace scram;
 typedef boost::shared_ptr<Event> EventPtr;
 typedef boost::shared_ptr<Gate> GatePtr;
 typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
-typedef boost::shared_ptr<PrimaryEvent> BasicEventPtr;
+typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
 
 class RiskAnalysisTest : public ::testing::Test {
  protected:
@@ -32,6 +32,10 @@ class RiskAnalysisTest : public ::testing::Test {
 
   boost::unordered_map<std::string, PrimaryEventPtr>& primary_events() {
     return ran->primary_events_;
+  }
+
+  boost::unordered_map<std::string, BasicEventPtr>& basic_events() {
+    return ran->basic_events_;
   }
 
   const std::set< std::set<std::string> >& min_cut_sets() {

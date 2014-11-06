@@ -278,6 +278,9 @@ class RiskAnalysis {
   /// Container for fully defined primary events.
   boost::unordered_map<std::string, PrimaryEventPtr> primary_events_;
 
+  /// Container for fully defined basic events.
+  boost::unordered_map<std::string, BasicEventPtr> basic_events_;
+
   /// Events to be defined with their parents saved for later.
   boost::unordered_map<std::string, std::vector<GatePtr> > tbd_events_;
 

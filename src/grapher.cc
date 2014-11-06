@@ -7,6 +7,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/date_time.hpp>
+#include <boost/pointer_cast.hpp>
 
 #include "error.h"
 
@@ -185,24 +186,35 @@ void Grapher::FormatPrimaryEvents(
   std::map<std::string, int>::const_iterator it;
   for (it = pr_repeat.begin(); it != pr_repeat.end(); ++it) {
     for (int i = 0; i < it->second + 1; ++i) {
-      std::string id = it->first;
-      std::string type = primary_events.find(id)->second->type();
-      std::string orig_name = primary_events.find(id)->second->orig_id();
+      PrimaryEventPtr primary_event = primary_events.find(it->first)->second;
+
+      std::string type = primary_event->type();
       // Detect undeveloped or conditional event.
-      if (type == "basic" &&
-          primary_events.find(id)->second->HasAttribute("flavor")) {
-        type = primary_events.find(id)->second->GetAttribute("flavor").value;
+      if (type == "basic" && primary_event->HasAttribute("flavor")) {
+        type = primary_event->GetAttribute("flavor").value;
       }
 
-      out << "\"" << orig_name << "_R" << i
+      out << "\"" << primary_event->orig_id() << "_R" << i
           << "\" [shape=circle, "
           << "height=1, fontsize=10, fixedsize=true, "
           << "fontcolor=" << event_colors_.find(type)->second
-          << ", " << "label=\"" << orig_name << "\\n["
+          << ", " << "label=\"" << primary_event->orig_id() << "\\n["
           << type << "]";
-      if (prob_requested) { out << "\\n"
-                                << primary_events.find(id)->second->p(); }
-      out << "\"]\n";
+
+      if (prob_requested) {
+        out << "\\n";
+        if (type == "house") {
+          std::string state =
+              boost::dynamic_pointer_cast<HouseEvent>(primary_event)->state() ?
+              "True" : "False";
+          out << state;
+        } else {
+          // Note that this might a flavored type of a basic event.
+          double p = boost::dynamic_pointer_cast<BasicEvent>(primary_event)->p();
+          out << p;
+        }
+        out << "\"]\n";
+      }
     }
   }
 }
