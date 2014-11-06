@@ -60,7 +60,7 @@ class FaultTreeAnalysis {
   /// @param[in] imcs Min cut sets with indices of events.
   void SetsToString(const std::vector< std::set<int> >& imcs);
 
-  std::vector<PrimaryEventPtr> int_to_primary_;  ///< Indices to primary events.
+  std::vector<PrimaryEventPtr> int_to_basic_;  ///< Indices to basic events.
 
   int top_event_index_;  ///< The index of the top event.
   std::string top_event_name_;  ///< The original name of the top event.

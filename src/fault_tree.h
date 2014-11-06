@@ -23,6 +23,7 @@ class FaultTree : public Element {
   typedef boost::shared_ptr<Gate> GatePtr;
   typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+  typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
 
   /// The main constructor of the Fault Tree.
   /// @param[in] name The name identificator of this fault tree.
@@ -75,6 +76,13 @@ class FaultTree : public Element {
     return basic_events_;
   }
 
+  /// @returns The container of house events of this tree.
+  /// @warning Validate function must be called before this function.
+  inline const boost::unordered_map<std::string, HouseEventPtr>&
+      house_events() {
+    return house_events_;
+  }
+
  private:
   typedef boost::shared_ptr<Event> EventPtr;
 
@@ -108,13 +116,17 @@ class FaultTree : public Element {
   /// Holder for intermediate events.
   boost::unordered_map<std::string, GatePtr> inter_events_;
 
-  /// Container for the primary events of the tree.
+  /// Container for primary events of the tree.
   /// This container is filled implicitly by traversing the tree.
   boost::unordered_map<std::string, PrimaryEventPtr> primary_events_;
 
-  /// Container for the basic events of the tree.
+  /// Container for basic events of the tree.
   /// This container is filled implicitly by traversing the tree.
   boost::unordered_map<std::string, BasicEventPtr> basic_events_;
+
+  /// Container for house events of the tree.
+  /// This container is filled implicitly by traversing the tree.
+  boost::unordered_map<std::string, HouseEventPtr> house_events_;
 
   /// Implicitly added gates.
   /// This gates are not added through AddGate() function but by traversing

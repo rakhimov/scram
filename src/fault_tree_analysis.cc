@@ -6,7 +6,6 @@
 #include <sstream>
 
 #include <boost/algorithm/string.hpp>
-#include <boost/pointer_cast.hpp>
 
 #include "error.h"
 #include "event.h"
@@ -40,26 +39,33 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
   num_gates_ = fault_tree->inter_events().size() + 1;  // Include top event.
   basic_events_ = fault_tree->basic_events();
 
+  // Assign an index to each basic event, and populate relevant
+  // databases.
+  int j = 1;  // Indices must be able to be negated, so 0 is excluded.
+  boost::unordered_map<std::string, BasicEventPtr>::const_iterator itp;
+  // Dummy basic event at index 0.
+  int_to_basic_.push_back(BasicEventPtr(new BasicEvent("dummy")));
+  for (itp = fault_tree->basic_events().begin();
+       itp != fault_tree->basic_events().end(); ++itp) {
+    int_to_basic_.push_back(itp->second);
+    all_to_int_.insert(std::make_pair(itp->first, j));
+    ++j;
+  }
+
+  // Detect true and false house events for constant propagation.
   std::set<int> true_house_events;  // Indices of true house events.
   std::set<int> false_house_events;  // Indices of false house events.
 
-  // Assign an index to each primary event, and populate relevant
-  // databases.
-  int j = 1;
-  boost::unordered_map<std::string, PrimaryEventPtr>::const_iterator itp;
-  // Dummy primary event at index 0.
-  int_to_primary_.push_back(PrimaryEventPtr(new PrimaryEvent("dummy")));
-  for (itp = fault_tree->primary_events().begin();
-       itp != fault_tree->primary_events().end(); ++itp) {
-    if (boost::dynamic_pointer_cast<HouseEvent>(itp->second)) {
-      if (itp->second->p() == 0) {
-        false_house_events.insert(false_house_events.end(), j);
-      } else {
-        true_house_events.insert(true_house_events.end(), j);
-      }
+  typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
+  boost::unordered_map<std::string, HouseEventPtr>::const_iterator ith;
+  for (ith = fault_tree->house_events().begin();
+       ith != fault_tree->house_events().end(); ++ith) {
+    if (ith->second->state()) {
+      true_house_events.insert(true_house_events.end(), j);
+    } else {
+      false_house_events.insert(false_house_events.end(), j);
     }
-    int_to_primary_.push_back(itp->second);
-    all_to_int_.insert(std::make_pair(itp->first, j));
+    all_to_int_.insert(std::make_pair(ith->first, j));
     ++j;
   }
 
@@ -111,9 +117,9 @@ void FaultTreeAnalysis::SetsToString(const std::vector< std::set<int> >& imcs) {
     std::set<int>::iterator it_set;
     for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
       if (*it_set < 0) {  // NOT logic.
-        pr_set.insert("not " + int_to_primary_[std::abs(*it_set)]->id());
+        pr_set.insert("not " + int_to_basic_[std::abs(*it_set)]->id());
       } else {
-        pr_set.insert(int_to_primary_[*it_set]->id());
+        pr_set.insert(int_to_basic_[*it_set]->id());
       }
     }
     min_cut_sets_.insert(pr_set);

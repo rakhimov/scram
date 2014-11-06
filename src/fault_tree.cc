@@ -121,8 +121,14 @@ void FaultTree::GetPrimaryEvents(const GatePtr& gate) {
       primary_events_.insert(std::make_pair(it->first, primary_event));
       BasicEventPtr basic_event =
           boost::dynamic_pointer_cast<BasicEvent>(primary_event);
-      if (basic_event)
+      if (basic_event) {
         basic_events_.insert(std::make_pair(it->first, basic_event));
+      } else {
+        HouseEventPtr house_event =
+            boost::dynamic_pointer_cast<HouseEvent>(primary_event);
+        assert(house_event);
+        house_events_.insert(std::make_pair(it->first, house_event));
+      }
     }
   }
 }
