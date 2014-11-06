@@ -251,7 +251,7 @@ class IndexedFaultTree {
   /// @param[out] gate The starting gate to traverse the tree. This is for
   ///                 recursive purposes.
   /// @param[out] processed_gates The gates that has already been processed.
-  void PreprocessTree(IndexedGate* gate, std::set<int>* processed_gates);
+  void JoinGates(IndexedGate* gate, std::set<int>* processed_gates);
 
   /// Process null gates.
   /// After this function, there should not be null gates resulting

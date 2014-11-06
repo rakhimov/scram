@@ -82,7 +82,7 @@ void IndexedFaultTree::ProcessIndexedFaultTree(int num_basic_events) {
   // After this point there should not be any negative gates.
 
   processed_gates.clear();
-  IndexedFaultTree::PreprocessTree(top, &processed_gates);
+  IndexedFaultTree::JoinGates(top, &processed_gates);
   // After this point there might be null AND gates, and the tree structure
   // should be repeating OR and AND.
 
@@ -294,7 +294,7 @@ void IndexedFaultTree::UnrollComplexGates(IndexedGate* parent_gate,
       } else if (type == "atleast") {
         IndexedFaultTree::UnrollAtleastGate(gate);
       }
-      IndexedFaultTree::UnrollGates(gate, unrolled_gates);
+      IndexedFaultTree::UnrollComplexGates(gate, unrolled_gates);
     }
     ++it;
   }
@@ -643,8 +643,8 @@ void IndexedFaultTree::PropagateComplements(
   }
 }
 
-void IndexedFaultTree::PreprocessTree(IndexedGate* gate,
-                                      std::set<int>* processed_gates) {
+void IndexedFaultTree::JoinGates(IndexedGate* gate,
+                                 std::set<int>* processed_gates) {
   if (processed_gates->count(gate->index())) return;
   processed_gates->insert(gate->index());
   int parent = gate->type();
@@ -671,7 +671,7 @@ void IndexedFaultTree::PreprocessTree(IndexedGate* gate,
           continue;
         }
       } else {
-        IndexedFaultTree::PreprocessTree(child_gate, processed_gates);
+        IndexedFaultTree::JoinGates(child_gate, processed_gates);
       }
     }
     ++it;
