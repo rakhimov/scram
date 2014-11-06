@@ -264,7 +264,7 @@ TEST_F(RiskAnalysisTest, AnalyzeDefault) {
   std::map< std::string, std::vector<double> >::iterator it;
   for (it = importance.begin(); it != importance.end(); ++it) {
     std::vector<double> results = RiskAnalysisTest::importance(it->first);
-    assert(results.size() == 5);
+    ASSERT_TRUE(results.size() == 5);
     for (int i = 0; i < 5; ++i) {
       EXPECT_NEAR(it->second[i], results[i], delta)
           << it->first << ": Importance " << i;

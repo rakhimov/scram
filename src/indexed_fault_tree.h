@@ -33,11 +33,18 @@ class SimpleGate {
     return type_;
   }
 
-  /// Adds a basic event index at the end of this container.
+  /// Adds a basic event index at the end of a container.
   /// This function is specificly given to initiate the gate.
   /// @param[in] index The index of a basic event.
   inline void InitiateWithBasic(int index) {
     basic_events_.insert(basic_events_.end(), index);
+  }
+
+  /// Adds a module index at the end of a container.
+  /// This function is specificly given to initiate the gate.
+  /// @param[in] index The index of a module.
+  inline void InitiateWithModule(int index) {
+    modules_.insert(modules_.end(), index);
   }
 
   /// Checks if there is a complement of a given basic event.
@@ -52,6 +59,18 @@ class SimpleGate {
     return true;
   }
 
+  /// Checks if there is a complement of a given module.
+  /// If not, adds a module event index into children.
+  /// If the resulting set is null with AND gate, gives indication without
+  /// actual addition.
+  /// @returns true If the final gate is not null.
+  /// @returns false If the final set would be null upon addition.
+  inline bool AddModule(int index) {
+    if (type_ == 2 && modules_.count(-index)) return false;
+    modules_.insert(index);
+    return true;
+  }
+
   /// Add a pointer to a child gate.
   /// This function assumes that the tree does not have complement gates.
   /// @param[in] gate The pointer to the child gate.
@@ -60,6 +79,7 @@ class SimpleGate {
   }
 
   /// Merges two gate of the same kind. This is designed for two AND gates.
+  /// Gates containers asserted to contain only positive indices.
   /// @returns true If the final gate is not null.
   /// @returns false If the final set would be null upon addition.
   inline bool MergeGate(const SimpleGatePtr& gate) {
@@ -68,8 +88,13 @@ class SimpleGate {
     for (it = gate->basic_events_.begin(); it != gate->basic_events_.end();
          ++it) {
       if (basic_events_.count(-*it)) return false;
-      basic_events_.insert(*it);
     }
+    for (it = gate->modules_.begin(); it != gate->modules_.end(); ++it) {
+      if (modules_.count(-*it)) return false;
+    }
+    basic_events_.insert(gate->basic_events_.begin(),
+                         gate->basic_events_.end());
+    modules_.insert(gate->modules_.begin(), gate->modules_.end());
     gates_.insert(gate->gates_.begin(), gate->gates_.end());
     return true;
   }
@@ -83,6 +108,15 @@ class SimpleGate {
     basic_events_ = basic_events;
   }
 
+  /// @returns The modules for this gate.
+  inline const std::set<int>&  modules() { return modules_; }
+
+  /// Assigns a container of modules for this gate.
+  /// @param[in] modules The modules for this gate.
+  inline void modules(const std::set<int>& modules) {
+    modules_ = modules;
+  }
+
   /// @returns The child gates container of this gate.
   inline std::set<SimpleGatePtr>& gates() { return gates_; }
 
@@ -93,15 +127,22 @@ class SimpleGate {
   std::set<SimpleGatePtr> gates_;  ///< Containter of child gates.
 };
 
+typedef boost::shared_ptr<SimpleGate> SimpleGatePtr;
 /// @class SetPtrComp
-/// Functor for set pointer comparison.
-struct SetPtrComp
-    : public std::binary_function<const std::set<int>*,
-                                  const std::set<int>*, bool> {
+/// Functor for cut set pointer comparison.
+struct SetPtrComp : public std::binary_function<const SimpleGatePtr,
+                                                const SimpleGatePtr, bool> {
   /// Operator overload.
-  /// Compares sets for sorting.
-  bool operator()(const std::set<int>* lhs, const std::set<int>* rhs) const {
-    return *lhs < *rhs;
+  /// Compares cut sets for sorting.
+  bool operator()(const SimpleGatePtr& lhs, const SimpleGatePtr& rhs) const {
+    if (lhs->basic_events() < rhs->basic_events()) {
+      return true;
+    } else if (lhs->basic_events() > rhs->basic_events()) {
+      return false;
+    } else if (lhs->modules() < rhs->modules()) {
+      return true;
+    }
+    return false;
   }
 };
 
@@ -232,13 +273,11 @@ class IndexedFaultTree {
   /// @param[in] gate The gate to test for modularity.
   /// @param[in] visit_basics The recordings for basic events.
   /// @param[out] visited_gates Container of already visited gates.
-  /// @param[out] modules Detected modules in traversal.
   /// @param[out] min_time The min time of visit for gate and its children.
   /// @param[out] max_time The max time of visit for gate and its children.
   void FindOriginalModules(IndexedGate* gate,
                            const int visit_basics[][2],
                            std::map<int, std::pair<int, int> >* visited_gates,
-                           std::vector<int>* modules,
                            int* min_time, int* max_time);
 
   /// Propagates complements of child gates down to basic events
@@ -285,10 +324,10 @@ class IndexedFaultTree {
   /// @param[in] min_order The order of sets to become minimal.
   /// @param[out] imcs Min cut sets with indices of events.
   /// @note T_avg(N^3 + N^2*logN + N*logN) = O_avg(N^3)
-  void FindMcs(const std::vector< const std::set<int>* >& cut_sets,
-               const std::vector< std::set<int> >& mcs_lower_order,
+  void FindMcs(const std::vector<SimpleGatePtr>& cut_sets,
+               const std::vector<SimpleGatePtr>& mcs_lower_order,
                int min_order,
-               std::vector< std::set<int> >* imcs);
+               std::vector<SimpleGatePtr>* imcs);
 
   /// Traverses the fault tree to convert gates into simple gates.
   /// @param[in] gate_index The index of a gate to start with.
@@ -300,6 +339,7 @@ class IndexedFaultTree {
   int top_event_index_;  ///< The index of the top gate of this tree.
   /// All gates of this tree including newly created ones.
   boost::unordered_map<int, IndexedGate*> indexed_gates_;
+  std::set<int> modules_;  ///< Modules in the tree.
   int top_event_sign_;  ///< The negative or positive sign of the top event.
   int new_gate_index_;  ///< Index for a new gate.
   std::vector< std::set<int> > imcs_;  // Min cut sets with indexed events.
