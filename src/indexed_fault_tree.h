@@ -89,6 +89,7 @@ class SimpleGate {
  private:
   int type_;  ///< Type of this gate.
   std::set<int> basic_events_;  ///< Container of basic events' indices.
+  std::set<int> modules_;  ///< Container for modules.
   std::set<SimpleGatePtr> gates_;  ///< Containter of child gates.
 };
 
@@ -185,7 +186,7 @@ class IndexedFaultTree {
   /// Further unrolling for XOR and ATLEAST gates to become OR and AND gates.
   /// This function is different from previous simple unrolling functions
   /// because it creates new gates.
-  /// @param[out] gate The gate to unroll.
+  /// @param[out] parent_gate The gate to unroll.
   /// @param[out] unrolled_gate To keep track of already unrolled gates.
   void UnrollComplexGates(IndexedGate* parent_gate,
                           std::set<int>* unrolled_gates);
@@ -208,6 +209,13 @@ class IndexedFaultTree {
                           const std::set<int>& false_house_events,
                           IndexedGate* gate,
                           std::set<int>* processed_gates);
+
+  /// Traverses the tree to gather populate information about parents of
+  /// gates.
+  /// @param[in] parent_gate The parent to start information gathering.
+  /// @param[out] processed_gates The gates that has already been processed.
+  void GatherParentInformation(const IndexedGate* parent_gate,
+                               std::set<int>* processed_gates);
 
   /// This method traverses the indexed fault tree to detect modules.
   /// @param[in] num_basic_events The number of basic events in the tree.

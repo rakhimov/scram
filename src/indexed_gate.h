@@ -107,6 +107,11 @@ class IndexedGate {
     children_.clear();
   }
 
+  inline void AddParent(int index) {
+    assert(index > 0);
+    parents_.insert(index);
+  }
+
   /// Sets the index of this gate.
   inline void index(int index) { index_ = index; }
 
@@ -123,6 +128,9 @@ class IndexedGate {
   /// @returns The state of this gate, which is either "null", or "unity", or
   ///          "normal" by default.
   inline std::string state() const { return state_; }
+
+  /// @returns parents of this gate.
+  inline const std::set<int>& parents() { return parents_; }
 
   /// @param[in] time The visit time of this gate.
   /// @returns true If this gate was previously visited.
@@ -148,10 +156,6 @@ class IndexedGate {
       visits_[2] = visits_[1];
     }
     return visits_;
-  }
-
-  const std::set<int>& parents() {
-    return parents_;
   }
 
  private:

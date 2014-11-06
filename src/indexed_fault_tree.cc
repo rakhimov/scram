@@ -62,6 +62,10 @@ void IndexedFaultTree::PropagateConstants(
 
 void IndexedFaultTree::ProcessIndexedFaultTree(int num_basic_events) {
   IndexedGate* top = indexed_gates_.find(top_event_index_)->second;
+
+  std::set<int> processed_gates;
+  IndexedFaultTree::GatherParentInformation(top, &processed_gates);
+
   // Detect original modules for processing.
   IndexedFaultTree::DetectModules(num_basic_events);
 
@@ -77,7 +81,7 @@ void IndexedFaultTree::ProcessIndexedFaultTree(int num_basic_events) {
     top->InvertChildren();
   }
   std::map<int, int> complements;
-  std::set<int> processed_gates;
+  processed_gates.clear();
   IndexedFaultTree::PropagateComplements(top, &complements, &processed_gates);
   // After this point there should not be any negative gates.
 
@@ -214,12 +218,6 @@ void IndexedFaultTree::UnrollTopGate(IndexedGate* top_gate) {
     top_gate->type(1);
   } else if (type == "and") {
     top_gate->type(2);
-  } else if (type == "xor") {
-    IndexedFaultTree::UnrollXorGate(top_gate);
-  } else if (type == "atleast") {
-    IndexedFaultTree::UnrollAtleastGate(top_gate);
-  } else {
-    assert(false);
   }
   std::set<int> unrolled_gates;
   IndexedFaultTree::UnrollGates(top_gate, &unrolled_gates);
@@ -487,6 +485,24 @@ void IndexedFaultTree::PropagateConstants(
         it = gate->children().begin();
         continue;
       }
+    }
+  }
+}
+
+void IndexedFaultTree::GatherParentInformation(
+    const IndexedGate* parent_gate,
+    std::set<int>* processed_gates) {
+  if (processed_gates->count(parent_gate->index())) return;
+  processed_gates->insert(parent_gate->index());
+
+  std::set<int>::const_iterator it;
+  for (it = parent_gate->children().begin();
+       it != parent_gate->children().end(); ++it) {
+    int index = std::abs(*it);
+    if (index > top_event_index_) {
+      IndexedGate* child = indexed_gates_.find(index)->second;
+      child->AddParent(parent_gate->index());
+      IndexedFaultTree::GatherParentInformation(child, processed_gates);
     }
   }
 }
