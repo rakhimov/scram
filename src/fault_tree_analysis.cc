@@ -90,7 +90,7 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
       new IndexedFaultTree(top_event_index_, limit_order_);
   indexed_tree->InitiateIndexedFaultTree(int_to_inter, all_to_int_);
   indexed_tree->PropagateConstants(true_house_events, false_house_events);
-  indexed_tree->ProcessIndexedFaultTree();
+  indexed_tree->ProcessIndexedFaultTree(int_to_basic_.size());
   indexed_tree->FindMcs();
 
   const std::vector< std::set<int> >* imcs = &indexed_tree->GetGeneratedMcs();

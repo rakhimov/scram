@@ -9,7 +9,9 @@ IndexedGate::IndexedGate(int index)
       type_(-1),
       state_("normal"),
       vote_number_(-1),
-      string_type_("finished") {}
+      string_type_("finished") {
+  std::fill(visits_, visits_ + 3, 0);
+}
 
 void IndexedGate::InitiateWithChild(int child) {
   assert(child != 0);

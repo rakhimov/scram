@@ -149,7 +149,10 @@ class IndexedFaultTree {
                           const std::set<int>& false_house_events);
 
   /// Performs processing of a fault tree.
-  void ProcessIndexedFaultTree();
+  /// @param[in] num_basic_events The number of basic events. This information
+  ///                             is needed to optimize the tree traversel
+  ///                             with certain expectation.
+  void ProcessIndexedFaultTree(int num_basic_events);
 
   /// Finds minimal cut sets.
   /// @warning This is experimental for coherent trees only.
@@ -193,6 +196,30 @@ class IndexedFaultTree {
                           const std::set<int>& false_house_events,
                           IndexedGate* gate,
                           std::set<int>* processed_gates);
+
+  /// This method traverses the indexed fault tree to detect modules.
+  /// @param[in] num_basic_events The number of basic events in the tree.
+  void DetectModules(int num_basic_events);
+
+  /// Traverses the given gate and assigns time of visit to nodes.
+  /// @param[in] time The current time.
+  /// @param[out] gate The gate to traverse and assign time to.
+  /// @param[out] visit_basics The recordings for basic events.
+  /// @returns The time final time of traversing.
+  int AssignTiming(int time, IndexedGate* gate, int visit_basics[][2]);
+
+  /// Determines modules from original gates that have been already timed.
+  /// @param[in] gate The gate to test for modularity.
+  /// @param[in] visit_basics The recordings for basic events.
+  /// @param[out] visited_gates Container of already visited gates.
+  /// @param[out] modules Detected modules in traversal.
+  /// @param[out] min_time The min time of visit for gate and its children.
+  /// @param[out] max_time The max time of visit for gate and its children.
+  void FindOriginalModules(IndexedGate* gate,
+                           const int visit_basics[][2],
+                           std::map<int, std::pair<int, int> >* visited_gates,
+                           std::vector<int>* modules,
+                           int* min_time, int* max_time);
 
   /// Propagates complements of child gates down to basic events
   /// in order to remove any NOR or NAND logic from the tree.

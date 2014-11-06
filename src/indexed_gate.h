@@ -124,6 +124,32 @@ class IndexedGate {
   ///          "normal" by default.
   inline std::string state() const { return state_; }
 
+  /// @param[in] time The visit time of this gate.
+  /// @returns true If this gate was previously visited.
+  /// @returns false If this is visited and re-visited only once.
+  bool Visit(int time) {
+    assert(time > 0);
+    if (!visits_[0]) {
+      visits_[0] = time;
+    } else if (!visits_[1]) {
+      visits_[1] = time;
+    } else {
+      visits_[2] = time;
+      return true;
+    }
+    return false;
+  }
+
+  /// @returns Visits ordered first, second, and last.
+  const int (&visits())[3] {
+    assert(visits_[0]);
+    assert(visits_[1]);
+    if (!visits_[2]) {
+      visits_[2] = visits_[1];
+    }
+    return visits_;
+  }
+
  private:
   /// Type of this gate. Only two choices are allowed: OR, AND.
   int type_;
@@ -142,6 +168,9 @@ class IndexedGate {
 
   /// Vote number for atleast gate.
   int vote_number_;
+
+  /// This is a traversal vector containting first, second, and last visits.
+  int visits_[3];
 };
 
 }  // namespace scram
