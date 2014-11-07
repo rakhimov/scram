@@ -99,6 +99,20 @@ class SimpleGate {
     return true;
   }
 
+  /// If this gate emulates minimal cut sets, and there is a guarantee of
+  /// mutual exclusivity of joining of another minimal cut set, then this
+  /// function does the joining operation more efficiently.
+  inline void JoinAsMcs(const SimpleGatePtr& gate) {
+    assert(gate->type() == 2);
+    assert(type_ == 2);
+    assert(gate->gates_.empty());
+    assert(gates_.empty());
+    /// @todo Optimize with lazy ordering and constant time insertion.
+    basic_events_.insert(gate->basic_events_.begin(),
+                         gate->basic_events_.end());
+    modules_.insert(gate->modules_.begin(), gate->modules_.end());
+  }
+
   /// @returns The basic events of this gate.
   inline const std::set<int>& basic_events() const { return basic_events_; }
 
@@ -197,7 +211,6 @@ class IndexedFaultTree {
   void ProcessIndexedFaultTree(int num_basic_events);
 
   /// Finds minimal cut sets.
-  /// @warning This is experimental for coherent trees only.
   void FindMcs();
 
   /// @returns Generated minimal cut sets with basic event indices.
@@ -280,6 +293,17 @@ class IndexedFaultTree {
                            std::map<int, std::pair<int, int> >* visited_gates,
                            int* min_time, int* max_time);
 
+  /// Finds minimal cut sets of a module.
+  /// @param[in] index The positive or negative index of a module.
+  /// @param[out] min_gates Simple gates containing minimal cut sets.
+  void FindMcsFromModule(int index, std::vector<SimpleGatePtr>* min_gates);
+
+  /// Finds minimal cut sets of a simple gate.
+  /// @param[out] gate The simple gate as a parent for processing.
+  /// @param[out] min_gates Simple gates containing minimal cut sets.
+  void FindMcsFromSimpleGate(SimpleGatePtr& gate,
+                             std::vector<SimpleGatePtr>* min_gates);
+
   /// Propagates complements of child gates down to basic events
   /// in order to remove any NOR or NAND logic from the tree.
   /// @param[out] gate The starting gate to traverse the tree. This is for
@@ -322,12 +346,12 @@ class IndexedFaultTree {
   /// @param[in] cut_sets Cut sets with primary events.
   /// @param[in] mcs_lower_order Reference minimal cut sets of some order.
   /// @param[in] min_order The order of sets to become minimal.
-  /// @param[out] imcs Min cut sets with indices of events.
+  /// @param[out] min_gates Min cut sets in simple gates.
   /// @note T_avg(N^3 + N^2*logN + N*logN) = O_avg(N^3)
-  void FindMcs(const std::vector<SimpleGatePtr>& cut_sets,
-               const std::vector<SimpleGatePtr>& mcs_lower_order,
-               int min_order,
-               std::vector<SimpleGatePtr>* imcs);
+  void MinimizeCutSets(const std::vector<SimpleGatePtr>& cut_sets,
+                       const std::vector<SimpleGatePtr>& mcs_lower_order,
+                       int min_order,
+                       std::vector<SimpleGatePtr>* min_gates);
 
   /// Traverses the fault tree to convert gates into simple gates.
   /// @param[in] gate_index The index of a gate to start with.

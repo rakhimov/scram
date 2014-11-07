@@ -68,30 +68,6 @@ void IndexedFaultTree::ProcessIndexedFaultTree(int num_basic_events) {
 
   // Detect original modules for processing.
   IndexedFaultTree::DetectModules(num_basic_events);
-
-  // Top event is the main default module.
-  // Preprocess complex gates.
-  IndexedFaultTree::UnrollComplexTopGate(top);
-
-  // Upon unrolling the tree, the top event may be detected to be complement.
-  // This fact is processed before giving the top event to complement
-  // propagation function.
-  if (top_event_sign_ < 0) {
-    top->type(top->type() == 1 ? 2 : 1);
-    top->InvertChildren();
-  }
-  std::map<int, int> complements;
-  processed_gates.clear();
-  IndexedFaultTree::PropagateComplements(top, &complements, &processed_gates);
-  // After this point there should not be any negative gates.
-
-  processed_gates.clear();
-  IndexedFaultTree::JoinGates(top, &processed_gates);
-  // After this point there might be null AND gates, and the tree structure
-  // should be repeating OR and AND.
-
-  processed_gates.clear();
-  IndexedFaultTree::ProcessNullGates(top, &processed_gates);
 }
 
 void IndexedFaultTree::FindMcs() {
@@ -103,37 +79,179 @@ void IndexedFaultTree::FindMcs() {
   std::clock_t start_time;
   start_time = std::clock();
 
-  LOG() << "IndexedFaultTree: Start creation of simple gates";
-  std::map<int, SimpleGatePtr> processed_gates;
-  SimpleGatePtr top_gate =
-      IndexedFaultTree::CreateSimpleTree(top_event_index_, &processed_gates);
+  LOG() << "Start minimal cut set generation.";
+
+  std::vector<SimpleGatePtr> min_gates;  // This AND gates are minimal.
+  // Generate main minimal cut set gates from top modue.
+  IndexedFaultTree::FindMcsFromModule(top_event_sign_ * top_event_index_,
+                                      &min_gates);
+
+  // Container of already processed modules. Note that the sign of
+  // indices matter because positive module is not the same as negative.
+  // Top module is not expected to re-occur in minimal cut sets.
+  std::map<int, std::vector<SimpleGatePtr> > processed_modules;
+
+  while(!min_gates.empty()) {
+    SimpleGatePtr cut_set = min_gates.back();
+    min_gates.pop_back();
+    assert(cut_set->gates().empty());
+
+    if (cut_set->modules().empty()) {
+      imcs_.push_back(cut_set->basic_events());
+
+    } else {
+      /// @todo Optimize to detect already expanded modules to get in first.
+      /// @todo Optimize to handle faster modules with basic events only.
+      std::vector<SimpleGatePtr> new_sets;
+      SimpleGatePtr proto_set(new SimpleGate(2));
+      proto_set->basic_events(cut_set->basic_events());
+      new_sets.push_back(proto_set);
+      std::set<int>::const_iterator it;
+      for (it = cut_set->modules().begin(); it != cut_set->modules().end();
+           ++it) {
+        if (!processed_modules.count(*it)) {
+          std::vector<SimpleGatePtr> module_mcs;  // For new MCS of a module.
+          if (processed_modules.count(-*it)) {
+            // The negation of this module has already been expanded.
+            // This means that the original module cannot be treated again
+            // because it was transformed upon traversal that may make another
+            // traversal invalid.
+
+            // Complement of OR gate.
+            SimpleGatePtr complement(new SimpleGate(2));
+            std::vector<SimpleGatePtr>* mcs =
+                &processed_modules.find(-*it)->second;
+            std::vector<SimpleGatePtr>::const_iterator it_mcs;
+            for (it_mcs = mcs->begin(); it_mcs != mcs->end(); ++it_mcs) {
+              SimpleGatePtr child(new SimpleGate(1));  // Complement of AND.
+              complement->AddChildGate(child);
+              // Reverse iterator is for optimization of inverting sorted
+              // range by chaning the sign.
+              std::set<int>::reverse_iterator it_r;
+              for (it_r = (*it_mcs)->basic_events().rbegin();
+                   it_r != (*it_mcs)->basic_events().rend(); ++it_r) {
+                child->InitiateWithBasic(-*it_r);
+              }
+              for (it_r = (*it_mcs)->modules().rbegin();
+                   it_r != (*it_mcs)->modules().rend(); ++it_r) {
+                child->InitiateWithModule(-*it_r);
+              }
+            }
+            IndexedFaultTree::FindMcsFromSimpleGate(complement, &module_mcs);
+
+          } else {
+            IndexedFaultTree::FindMcsFromModule(*it, &module_mcs);
+          }
+          processed_modules.insert(std::make_pair(*it, module_mcs));
+        }
+        std::vector<SimpleGatePtr>* module_mcs =
+            &processed_modules.find(*it)->second;
+        if (module_mcs->empty()) continue;  // This is a null set.
+        std::vector<SimpleGatePtr> joined_sets;
+        std::vector<SimpleGatePtr>::const_iterator it_n;
+        for (it_n = new_sets.begin(); it_n != new_sets.end(); ++it_n) {
+          std::vector<SimpleGatePtr>::iterator it_m;
+          for (it_m = module_mcs->begin(); it_m != module_mcs->end();
+               ++it_m) {
+            SimpleGatePtr new_set(new SimpleGate(**it_n));
+            new_set->JoinAsMcs(*it_m);
+            joined_sets.push_back(new_set);
+          }
+        }
+        new_sets = joined_sets;
+      }
+      /// @todo Optimize to detect basic-events-only cut sets earlier.
+      min_gates.insert(min_gates.end(), new_sets.begin(), new_sets.end());
+    }
+  }
+
+  double mcs_time = (std::clock() - start_time) /
+                    static_cast<double>(CLOCKS_PER_SEC);
+  LOG() << "The number of MCS found: " << imcs_.size();
+  LOG() << "Minimal cut set finding time: " << mcs_time;
+}
+
+void IndexedFaultTree::FindMcsFromModule(
+    int index,
+    std::vector<SimpleGatePtr>* min_gates) {
+  std::clock_t start_time;
+  start_time = std::clock();
+
+  LOG() << "IndexedFaultTree: Start post-processing gate to simple gate.";
+
+  assert(index != 0);
+  IndexedGate* gate = indexed_gates_.find(std::abs(index))->second;
+
+  // This gate is a top event of an independent sub-tree.
+  // Preprocess complex gates.
+  IndexedFaultTree::UnrollComplexTopGate(gate);
+
+  // Upon unrolling the tree, the top event may be detected to be complement.
+  // This fact is processed before giving the top event to complement
+  // propagation function.
+  if (index < 0) {
+    gate->type(gate->type() == 1 ? 2 : 1);
+    gate->InvertChildren();
+  }
+  std::map<int, int> complements;
+  std::set<int> processed_gates;
+  IndexedFaultTree::PropagateComplements(gate, &complements,
+                                         &processed_gates);
+  // After this point there should not be any negative gates.
+
+  processed_gates.clear();
+  IndexedFaultTree::JoinGates(gate, &processed_gates);
+  // After this point there might be null AND gates, and the tree structure
+  // should be repeating OR and AND.
+
+  processed_gates.clear();
+  IndexedFaultTree::ProcessNullGates(gate, &processed_gates);
+  /// @todo Consider joining if there has been removal and one child gates.
+
+  std::map<int, SimpleGatePtr> processed_simple_gates;
+  SimpleGatePtr simple_gate =
+      IndexedFaultTree::CreateSimpleTree(std::abs(index),
+                                         &processed_simple_gates);
 
   // Duration of simple tree generation.
   double simple_tree_time = (std::clock() - start_time) /
                             static_cast<double>(CLOCKS_PER_SEC);
   LOG() << "Simple tree creation time: " << simple_tree_time;
 
+  IndexedFaultTree::FindMcsFromSimpleGate(simple_gate, min_gates);
+}
+
+void IndexedFaultTree::FindMcsFromSimpleGate(
+    SimpleGatePtr& gate,
+    std::vector<SimpleGatePtr>* min_gates) {
+  std::clock_t start_time;
+  start_time = std::clock();
+
   // Expanding AND gate with basic event children and OR gate children.
-  if (top_gate->basic_events().empty() && top_gate->gates().empty()) return;
+  if (gate->basic_events().empty() && gate->gates().empty() &&
+      gate->modules().empty()) return;
   LOG() << "IndexedFaultTree: Finding MCS for non-empty gate.";
-  if (top_gate->type() == 2) {
-    if (top_gate->basic_events().size() > limit_order_) {
+  if (gate->type() == 2) {
+    if (gate->basic_events().size() > limit_order_) {
       return;  // No cut set generation for this level.
-    } else if (top_gate->gates().empty()) {
-      // The special case of top gate is only cut set.
-      imcs_.push_back(top_gate->basic_events());
+    } else if (gate->gates().empty()) {
+      // The special case of the gate is only cut set.
+      /// @todo This may be removed by early detection optimization or
+      ///       reusing the passed gate as a minimal cut set.
+      SimpleGatePtr only_set(new SimpleGate(*gate));
+      min_gates->push_back(only_set);
       return;
     }
-    IndexedFaultTree::ExpandAndLayer(top_gate);
+    IndexedFaultTree::ExpandAndLayer(gate);
   }
   std::vector<SimpleGatePtr> cut_sets;
-  IndexedFaultTree::ExpandOrLayer(top_gate, &cut_sets);
+  IndexedFaultTree::ExpandOrLayer(gate, &cut_sets);
 
   LOG() << "Non-Unique cut sets generated: " << cut_sets.size();
   double cut_sets_time = (std::clock() - start_time) /
                          static_cast<double>(CLOCKS_PER_SEC);
-  LOG() << "Cut set generation time: " << cut_sets_time - simple_tree_time;
-  LOG() << "Top gate's gate children: " << top_gate->gates().size();
+  LOG() << "Cut set generation time: " << cut_sets_time;
+  LOG() << "Top gate's gate children: " << gate->gates().size();
 
   // At this point cut sets must be generated.
   SetPtrComp comp;
@@ -142,14 +260,14 @@ void IndexedFaultTree::FindMcs() {
   std::set<SimpleGatePtr, SetPtrComp>  one_element_sets;
   // Special case when top gate OR has basic events and modules.
   std::set<int>::iterator it_b;
-  for (it_b = top_gate->basic_events().begin();
-       it_b != top_gate->basic_events().end(); ++it_b) {
+  for (it_b = gate->basic_events().begin();
+       it_b != gate->basic_events().end(); ++it_b) {
     SimpleGatePtr new_set(new SimpleGate(2));
     new_set->InitiateWithBasic(*it_b);
     one_element_sets.insert(one_element_sets.end(), new_set);
   }
-  for (it_b = top_gate->modules().begin();
-       it_b != top_gate->modules().end(); ++it_b) {
+  for (it_b = gate->modules().begin();
+       it_b != gate->modules().end(); ++it_b) {
     SimpleGatePtr new_set(new SimpleGate(2));
     new_set->InitiateWithModule(*it_b);
     one_element_sets.insert(one_element_sets.end(), new_set);
@@ -182,22 +300,18 @@ void IndexedFaultTree::FindMcs() {
     }
   }
 
-  std::vector<SimpleGatePtr> min_gates;  // This AND gates are minimal.
-  min_gates.reserve(sets_unique.size() + one_element_sets.size());
+  min_gates->reserve(sets_unique.size() + one_element_sets.size());
   std::set<SimpleGatePtr, SetPtrComp>::const_iterator it_s;
   for (it_s = one_element_sets.begin(); it_s != one_element_sets.end();
        ++it_s) {
-    min_gates.push_back(*it_s);
+    min_gates->push_back(*it_s);
   }
 
   LOG() << "Unique cut sets size: " << sets_unique.size();
-  LOG() << "One element sets size: " << min_gates.size();
+  LOG() << "One element sets size: " << min_gates->size();
 
   LOG() << "IndexedFaultTree: Minimizing the cut sets.";
-  IndexedFaultTree::FindMcs(sets_unique, min_gates, 2, &min_gates);
-  double mcs_time = (std::clock() - start_time) /
-                    static_cast<double>(CLOCKS_PER_SEC);
-  LOG() << "Minimal cut set finding time: " << mcs_time - cut_sets_time;
+  IndexedFaultTree::MinimizeCutSets(sets_unique, *min_gates, 2, min_gates);
 }
 
 void IndexedFaultTree::StartUnrollingGates() {
@@ -757,6 +871,7 @@ void IndexedFaultTree::ProcessNullGates(IndexedGate* gate,
 boost::shared_ptr<SimpleGate> IndexedFaultTree::CreateSimpleTree(
     int gate_index,
     std::map<int, SimpleGatePtr>* processed_gates) {
+  assert(gate_index > 0);
   if (processed_gates->count(gate_index))
     return processed_gates->find(gate_index)->second;
   IndexedGate* gate = indexed_gates_.find(gate_index)->second;
@@ -855,11 +970,11 @@ void IndexedFaultTree::ExpandAndLayer(SimpleGatePtr& gate) {
   gate = substitute;
 }
 
-void IndexedFaultTree::FindMcs(
+void IndexedFaultTree::MinimizeCutSets(
     const std::vector<SimpleGatePtr>& cut_sets,
     const std::vector<SimpleGatePtr>& mcs_lower_order,
     int min_order,
-    std::vector<SimpleGatePtr>* imcs) {
+    std::vector<SimpleGatePtr>* min_gates) {
   if (cut_sets.empty()) return;
 
   std::vector<SimpleGatePtr> temp_sets;  // For mcs of a level above.
@@ -897,9 +1012,11 @@ void IndexedFaultTree::FindMcs(
     }
     // Ignore the cut set because include = false.
   }
-  imcs->insert(imcs->end(), temp_min_sets.begin(), temp_min_sets.end());
+  min_gates->insert(min_gates->end(), temp_min_sets.begin(),
+                    temp_min_sets.end());
   min_order++;
-  IndexedFaultTree::FindMcs(temp_sets, temp_min_sets, min_order, imcs);
+  IndexedFaultTree::MinimizeCutSets(temp_sets, temp_min_sets, min_order,
+                                    min_gates);
 }
 
 }  // namespace scram
