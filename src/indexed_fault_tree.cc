@@ -153,9 +153,12 @@ void IndexedFaultTree::FindMcs() {
           std::vector<SimpleGatePtr>::iterator it_m;
           for (it_m = module_mcs->begin(); it_m != module_mcs->end();
                ++it_m) {
-            SimpleGatePtr new_set(new SimpleGate(**it_n));
-            new_set->JoinAsMcs(*it_m);
-            joined_sets.push_back(new_set);
+            if (((*it_n)->basic_events().size() +
+                 (*it_m)->basic_events().size()) <= limit_order_) {
+              SimpleGatePtr new_set(new SimpleGate(**it_n));
+              new_set->JoinAsMcs(*it_m);
+              joined_sets.push_back(new_set);
+            }
           }
         }
         new_sets = joined_sets;
