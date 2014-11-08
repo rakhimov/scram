@@ -108,12 +108,25 @@ TEST_F(RiskAnalysisTest, A_OR_NOT_AB) {
 TEST_F(RiskAnalysisTest, MC_A_OR_NOT_B) {
   ran->AddSettings(settings.fta_type("mc"));
   std::string tree_input = "./share/scram/input/benchmark/a_or_not_b.xml";
-  std::set< std::set<int> > p_terms;
-  std::set< std::set<int> > n_terms;
-  std::set<int> cut_set;
-  std::set< std::set<int> > temp_sets;
+  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(ran->Report("/dev/null"));
+}
+
+// Repeated negative gate expansion.
+TEST_F(RiskAnalysisTest, RepeatedNegativeGate) {
+  std::string tree_input = "./share/scram/input/benchmark/"
+                           "multiple_parent_negative_gate.xml";
+  std::string A = "a";
+  std::set<std::string> cut_set;
+  std::set< std::set<std::string> > mcs;  // For expected min cut sets.
 
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   ASSERT_NO_THROW(ran->Report("/dev/null"));
+  // Minimal cut set check.
+  cut_set.insert("not " + A);
+  mcs.insert(cut_set);
+  EXPECT_EQ(1, min_cut_sets().size());
+  EXPECT_EQ(mcs, min_cut_sets());
 }
