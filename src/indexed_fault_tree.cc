@@ -46,7 +46,12 @@ void IndexedFaultTree::InitiateIndexedFaultTree(
     if (gate->index() > new_gate_index_) new_gate_index_ = gate->index() + 1;
   }
 
-  IndexedFaultTree::StartUnrollingGates();
+  assert(top_event_index_ == indexed_gates_.begin()->first);
+  IndexedGate* top = indexed_gates_.find(top_event_index_)->second;
+  std::set<int> processed_gates;
+  IndexedFaultTree::GatherParentInformation(top, &processed_gates);
+
+  IndexedFaultTree::UnrollGates();
 }
 
 void IndexedFaultTree::PropagateConstants(
@@ -61,11 +66,6 @@ void IndexedFaultTree::PropagateConstants(
 }
 
 void IndexedFaultTree::ProcessIndexedFaultTree(int num_basic_events) {
-  IndexedGate* top = indexed_gates_.find(top_event_index_)->second;
-
-  std::set<int> processed_gates;
-  IndexedFaultTree::GatherParentInformation(top, &processed_gates);
-
   // Detect original modules for processing.
   IndexedFaultTree::DetectModules(num_basic_events);
 }
@@ -317,11 +317,12 @@ void IndexedFaultTree::FindMcsFromSimpleGate(
   IndexedFaultTree::MinimizeCutSets(sets_unique, *min_gates, 2, min_gates);
 }
 
-void IndexedFaultTree::StartUnrollingGates() {
+void IndexedFaultTree::UnrollGates() {
   LOG() << "Unrolling basic gates.";
-  // Handle spacial case for a negative or one-child top event.
+  // Handle spacial case for a top event.
   IndexedGate* top_gate = indexed_gates_.find(top_event_index_)->second;
   std::string type = top_gate->string_type();
+  assert(type != "undefined");
   top_event_sign_ = 1;  // For positive gates.
   if (type == "nor") {
     top_gate->string_type("or");
@@ -335,66 +336,58 @@ void IndexedFaultTree::StartUnrollingGates() {
   } else if (type == "null") {
     top_gate->string_type("and");
     top_event_sign_ = 1;
-  }
-  IndexedFaultTree::UnrollTopGate(top_gate);
-  LOG() << "Finished unrolling basic gates.";
-}
-
-void IndexedFaultTree::UnrollTopGate(IndexedGate* top_gate) {
-  std::string type = top_gate->string_type();
-  assert(type != "finished");
-  if (type == "or") {
+  } else if (type == "or") {
     top_gate->type(1);
   } else if (type == "and") {
     top_gate->type(2);
   }
-  std::set<int> unrolled_gates;
-  IndexedFaultTree::UnrollGates(top_gate, &unrolled_gates);
+  // Assumes that all gates are in indexed_gates_ container.
+  boost::unordered_map<int, IndexedGate*>::iterator it
+      = indexed_gates_.begin();
+  assert(top_event_index_ == it->first);
+  for (++it; it != indexed_gates_.end(); ++it) {
+    IndexedFaultTree::UnrollGate(it->second);
+  }
+  LOG() << "Finished unrolling basic gates.";
 }
 
-void IndexedFaultTree::UnrollGates(IndexedGate* parent_gate,
-                                   std::set<int>* unrolled_gates) {
-  std::set<int>::const_iterator it;
-  for (it = parent_gate->children().begin();
-       it != parent_gate->children().end();) {
-    if (std::abs(*it) > top_event_index_ &&
-        !unrolled_gates->count(std::abs(*it))) {
-      IndexedGate* gate = indexed_gates_.find(std::abs(*it))->second;
-      unrolled_gates->insert(gate->index());
-      std::string type = gate->string_type();
-      assert(type != "finished");
-      if (type == "or") {
-        gate->type(1);
-      } else if (type == "and" || type == "null") {
-        gate->type(2);
-        gate->string_type("and");
-      } else if (type == "not" || type == "nand") {
-        gate->string_type("and");
-        gate->type(2);
-        int gate_index = *it;  // Might be negative.
-        bool ret = parent_gate->SwapChild(gate_index, -gate_index);
+void IndexedFaultTree::UnrollGate(IndexedGate* gate) {
+  std::string type = gate->string_type();
+  assert(type != "undefined");
+  // Deal with negative gate.
+  if (type == "nor" || type == "not" || type == "nand") {
+    int child_index = gate->index();
+    std::set<int>::const_iterator it;
+    for (it = gate->parents().begin(); it != gate->parents().end(); ++it) {
+      IndexedGate* parent = indexed_gates_.find(*it)->second;
+      if (parent->children().count(child_index)) {  // Positive child.
+        bool ret = parent->SwapChild(child_index, -child_index);
         assert(ret);
-        it = parent_gate->children().begin();
-        continue;
-      } else if (type == "nor") {
-        gate->string_type("or");
-        gate->type(1);
-        int gate_index = *it;  // Might be negative.
-        bool ret = parent_gate->SwapChild(gate_index, -gate_index);
+      } else {  // Negative child.
+        bool ret = parent->SwapChild(-child_index, child_index);
         assert(ret);
-        it = parent_gate->children().begin();
-        continue;
       }
-      IndexedFaultTree::UnrollGates(gate, unrolled_gates);
     }
-    ++it;
   }
+  if (type == "or") {
+    gate->type(1);
+  } else if (type == "and" || type == "null") {
+    gate->type(2);
+    gate->string_type("and");
+  } else if (type == "not" || type == "nand") {
+    gate->string_type("and");
+    gate->type(2);
+  } else if (type == "nor") {
+    gate->string_type("or");
+    gate->type(1);
+  }
+  // Do not touch XOR or ATLEAST gates. Leave them undefined.
 }
 
 void IndexedFaultTree::UnrollComplexTopGate(IndexedGate* top_gate) {
   LOG() << "Unrolling complex gates.";
   std::string type = top_gate->string_type();
-  assert(type != "finished");
+  assert(type != "undefined");
   if (type == "xor") {
     IndexedFaultTree::UnrollXorGate(top_gate);
   } else if (type == "atleast") {
@@ -416,7 +409,7 @@ void IndexedFaultTree::UnrollComplexGates(IndexedGate* parent_gate,
       IndexedGate* gate = indexed_gates_.find(std::abs(*it))->second;
       unrolled_gates->insert(gate->index());
       std::string type = gate->string_type();
-      assert(type != "finished");
+      assert(type != "undefined");
       if (type == "xor") {
         IndexedFaultTree::UnrollXorGate(gate);
       } else if (type == "atleast") {

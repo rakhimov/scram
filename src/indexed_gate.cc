@@ -9,7 +9,7 @@ IndexedGate::IndexedGate(int index)
       type_(-1),
       state_("normal"),
       vote_number_(-1),
-      string_type_("finished") {
+      string_type_("undefined") {
   std::fill(visits_, visits_ + 3, 0);
 }
 
@@ -23,12 +23,10 @@ bool IndexedGate::AddChild(int child) {
   assert(type_ == 1 || type_ == 2);  // Type must be already defined.
   assert(child != 0);
   assert(state_ == "normal");
-  if (children_.count(-child)) {
-    if (type_ == 2) {
-      state_ = "null";  // AND gate becomes NULL.
-      children_.clear();
-      return false;
-    }
+  if (children_.count(-child) && type_ == 2) {
+    state_ = "null";  // AND gate becomes NULL.
+    children_.clear();
+    return false;
   }
   children_.insert(child);
   return true;
@@ -37,7 +35,14 @@ bool IndexedGate::AddChild(int child) {
 bool IndexedGate::SwapChild(int existing_child, int new_child) {
   assert(children_.count(existing_child));
   children_.erase(existing_child);
-  return IndexedGate::AddChild(new_child);
+  assert(state_ == "normal");
+  if (children_.count(-new_child) && type_ == 2) {
+    state_ = "null";  // AND gate becomes NULL.
+    children_.clear();
+    return false;
+  }
+  children_.insert(new_child);
+  return true;
 }
 
 void IndexedGate::InvertChildren() {
