@@ -114,7 +114,7 @@ TEST_F(RiskAnalysisTest, MC_A_OR_NOT_B) {
 }
 
 // Repeated negative gate expansion.
-TEST_F(RiskAnalysisTest, RepeatedNegativeGate) {
+TEST_F(RiskAnalysisTest, MultipleParentNegativeGate) {
   std::string tree_input = "./share/scram/input/benchmark/"
                            "multiple_parent_negative_gate.xml";
   std::string A = "a";
