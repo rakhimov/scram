@@ -184,9 +184,6 @@ class IndexedFaultTree {
   /// @param[in] top_event_id The index of the top event of this tree.
   IndexedFaultTree(int top_event_id, int limit_order);
 
-  /// Removes all newly allocated gates to describe the simplified tree.
-  ~IndexedFaultTree();
-
   /// Creates indexed gates with basic and house event indices as children.
   /// This function also simplifies the tree to simple gates.
   /// @param[in] int_to_inter Container of gates and thier indices including
@@ -220,11 +217,12 @@ class IndexedFaultTree {
 
  private:
   typedef boost::shared_ptr<SimpleGate> SimpleGatePtr;
+  typedef boost::shared_ptr<IndexedGate> IndexedGatePtr;
 
   /// Traverses the tree to gather information about parents of indexed gates.
   /// @param[in] parent_gate The parent to start information gathering.
   /// @param[out] processed_gates The gates that has already been processed.
-  void GatherParentInformation(const IndexedGate* parent_gate,
+  void GatherParentInformation(const IndexedGatePtr& parent_gate,
                                std::set<int>* processed_gates);
 
   /// Starts unrolling gates to simplify gates to OR, AND, XOR, ATLEAST gates.
@@ -235,27 +233,27 @@ class IndexedFaultTree {
   /// Unrolls a gate to make OR, AND, XOR, ATLEAST gates. The parents of the
   /// gate are notified about the change if needed.
   /// @param[out] gate The gate to be processed.
-  void UnrollGate(IndexedGate* gate);
+  void UnrollGate(IndexedGatePtr& gate);
 
   /// Starts unrolling complex XOR and ATLEAST gates from the top gate.
   /// @param[out] top_gate The top gate to start unrolling with.
-  void UnrollComplexTopGate(IndexedGate* top_gate);
+  void UnrollComplexTopGate(IndexedGatePtr& top_gate);
 
   /// Further unrolling for XOR and ATLEAST gates to become OR and AND gates.
   /// This function is different from previous simple unrolling functions
   /// because it creates new gates.
   /// @param[out] parent_gate The gate to unroll.
   /// @param[out] unrolled_gate To keep track of already unrolled gates.
-  void UnrollComplexGates(IndexedGate* parent_gate,
+  void UnrollComplexGates(IndexedGatePtr& parent_gate,
                           std::set<int>* unrolled_gates);
 
   /// Unrolls a gate with XOR logic.
   /// @param[out] gate The gate to unroll.
-  void UnrollXorGate(IndexedGate* gate);
+  void UnrollXorGate(IndexedGatePtr& gate);
 
   /// Unrolls a gate with "atleast" gate and vote number.
   /// @param[out] gate The atleast gate to unroll.
-  void UnrollAtleastGate(IndexedGate* gate);
+  void UnrollAtleastGate(IndexedGatePtr& gate);
 
   /// Remove all house events from a given gate.
   /// After this function, there should not be any unity or null gates.
@@ -265,7 +263,7 @@ class IndexedFaultTree {
   /// @param[out] processed_gates The gates that has already been processed.
   void PropagateConstants(const std::set<int>& true_house_events,
                           const std::set<int>& false_house_events,
-                          IndexedGate* gate,
+                          IndexedGatePtr& gate,
                           std::set<int>* processed_gates);
 
   /// Traverses the indexed fault tree to detect modules.
@@ -277,7 +275,7 @@ class IndexedFaultTree {
   /// @param[out] gate The gate to traverse and assign time to.
   /// @param[out] visit_basics The recordings for basic events.
   /// @returns The time final time of traversing.
-  int AssignTiming(int time, IndexedGate* gate, int visit_basics[][2]);
+  int AssignTiming(int time, IndexedGatePtr& gate, int visit_basics[][2]);
 
   /// Determines modules from original gates that have been already timed.
   /// @param[in] gate The gate to test for modularity.
@@ -285,7 +283,7 @@ class IndexedFaultTree {
   /// @param[out] visited_gates Container of already visited gates.
   /// @param[out] min_time The min time of visit for gate and its children.
   /// @param[out] max_time The max time of visit for gate and its children.
-  void FindOriginalModules(IndexedGate* gate,
+  void FindOriginalModules(IndexedGatePtr& gate,
                            const int visit_basics[][2],
                            std::map<int, std::pair<int, int> >* visited_gates,
                            int* min_time, int* max_time);
@@ -296,7 +294,7 @@ class IndexedFaultTree {
   /// @param[in] gate The gate to test its children for modularity.
   /// @param[out] visited_gates Container of already visited gates.
   void CreateNewModules(const int visit_basics[][2],
-                        IndexedGate* gate,
+                        IndexedGatePtr& gate,
                         std::set<int>* visited_gates);
 
   /// Finds minimal cut sets of a module.
@@ -318,7 +316,7 @@ class IndexedFaultTree {
   ///                 for a top event to function correctly.
   /// @param[out] gate_complements The complements of gates already processed.
   /// @param[out] processed_gates The gates that has already been processed.
-  void PropagateComplements(IndexedGate* gate,
+  void PropagateComplements(IndexedGatePtr& gate,
                             std::map<int, int>* gate_complements,
                             std::set<int>* processed_gates);
 
@@ -328,7 +326,7 @@ class IndexedFaultTree {
   /// @param[out] gate The starting gate to traverse the tree. This is for
   ///                 recursive purposes.
   /// @param[out] processed_gates The gates that has already been processed.
-  void JoinGates(IndexedGate* gate, std::set<int>* processed_gates);
+  void JoinGates(IndexedGatePtr& gate, std::set<int>* processed_gates);
 
   /// Processes null gates.
   /// After this function, there should not be null gates resulting
@@ -336,7 +334,7 @@ class IndexedFaultTree {
   /// @param[out] gate The starting gate to traverse the tree. This is for
   ///                 recursive purposes.
   /// @param[out] processed_gates The gates that has already been processed.
-  void ProcessNullGates(IndexedGate* gate, std::set<int>* processed_gates);
+  void ProcessNullGates(IndexedGatePtr& gate, std::set<int>* processed_gates);
 
   /// Expands OR layer in preprocessed fault tree.
   /// @param[out] gate The OR gate to be processed.
@@ -368,7 +366,7 @@ class IndexedFaultTree {
 
   int top_event_index_;  ///< The index of the top gate of this tree.
   /// All gates of this tree including newly created ones.
-  boost::unordered_map<int, IndexedGate*> indexed_gates_;
+  boost::unordered_map<int, IndexedGatePtr> indexed_gates_;
   std::set<int> modules_;  ///< Modules in the tree.
   int top_event_sign_;  ///< The negative or positive sign of the top event.
   int new_gate_index_;  ///< Index for a new gate.
