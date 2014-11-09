@@ -290,6 +290,15 @@ class IndexedFaultTree {
                            std::map<int, std::pair<int, int> >* visited_gates,
                            int* min_time, int* max_time);
 
+  /// Creates new modules in a fault tree. The information about original
+  /// existing modules should be available.
+  /// @param[in] visit_basics The recordings for basic events.
+  /// @param[in] gate The gate to test its children for modularity.
+  /// @param[out] visited_gates Container of already visited gates.
+  void CreateNewModules(const int visit_basics[][2],
+                        IndexedGate* gate,
+                        std::set<int>* visited_gates);
+
   /// Finds minimal cut sets of a module.
   /// @param[in] index The positive or negative index of a module.
   /// @param[out] min_gates Simple gates containing minimal cut sets.

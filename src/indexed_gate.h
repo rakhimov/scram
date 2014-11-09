@@ -44,10 +44,10 @@ class IndexedGate {
   inline void string_type(std::string type) { string_type_ = type; }
 
   /// @returns String type of this gate.
-  inline std::string string_type() { return string_type_; }
+  inline std::string string_type() const { return string_type_; }
 
   /// @returns Vote number.
-  inline int vote_number() { return vote_number_; }
+  inline int vote_number() const { return vote_number_; }
 
   /// Sets the vote number.
   inline void vote_number(int number) { vote_number_ = number; }

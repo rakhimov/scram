@@ -46,7 +46,6 @@ void IndexedFaultTree::InitiateIndexedFaultTree(
     if (gate->index() > new_gate_index_) new_gate_index_ = gate->index() + 1;
   }
 
-  assert(top_event_index_ == indexed_gates_.begin()->first);
   IndexedGate* top = indexed_gates_.find(top_event_index_)->second;
   std::set<int> processed_gates;
   IndexedFaultTree::GatherParentInformation(top, &processed_gates);
@@ -342,10 +341,9 @@ void IndexedFaultTree::UnrollGates() {
     top_gate->type(2);
   }
   // Assumes that all gates are in indexed_gates_ container.
-  boost::unordered_map<int, IndexedGate*>::iterator it
-      = indexed_gates_.begin();
-  assert(top_event_index_ == it->first);
-  for (++it; it != indexed_gates_.end(); ++it) {
+  boost::unordered_map<int, IndexedGate*>::iterator it;
+  for (it = indexed_gates_.begin(); it != indexed_gates_.end(); ++it) {
+    if (it->first == top_event_index_) continue;
     IndexedFaultTree::UnrollGate(it->second);
   }
   LOG() << "Finished unrolling basic gates.";
@@ -662,7 +660,13 @@ void IndexedFaultTree::DetectModules(int num_basic_events) {
   assert(min_time == 1);
   assert(max_time == top_gate->visits()[2]);
 
+  int orig_mod = modules_.size();
   LOG() << "Detected number of original modules: " << modules_.size();
+
+  std::set<int> visited_gates_new;
+  IndexedFaultTree::CreateNewModules(visit_basics, top_gate,
+                                     &visited_gates_new);
+  LOG() << "The number of new modules created: " << modules_.size() - orig_mod;
 }
 
 int IndexedFaultTree::AssignTiming(int time, IndexedGate* gate,
@@ -732,6 +736,55 @@ void IndexedFaultTree::FindOriginalModules(
   if (gate->visits()[2] > *max_time) *max_time = gate->visits()[2];
   visited_gates->insert(std::make_pair(gate->index(),
                                        std::make_pair(*min_time, *max_time)));
+}
+
+void IndexedFaultTree::CreateNewModules(const int visit_basics[][2],
+                                        IndexedGate* gate,
+                                        std::set<int>* visited_gates) {
+  if (visited_gates->count(gate->index())) return;
+  visited_gates->insert(gate->index());
+  // Children that can be grouped in a module.
+  std::vector<int> modular_children;
+  std::set<int>::const_iterator it;
+  for (it = gate->children().begin(); it != gate->children().end(); ++it) {
+    if (std::abs(*it) > top_event_index_) {
+      IndexedGate* child_gate = indexed_gates_.find(std::abs(*it))->second;
+      IndexedFaultTree::CreateNewModules(visit_basics, child_gate,
+                                         visited_gates);
+      /// @todo Deal with XOR and ATLEAST gates.
+      if (!modules_.count(std::abs(*it)) ||
+          gate->string_type() == "xor" ||
+          gate->string_type() == "atleast") continue;
+      if ((gate->visits()[1] > child_gate->visits()[2]) &&
+          (gate->visits()[0] < child_gate->visits()[0])) {
+        modular_children.push_back(*it);
+      }
+    } else if ((visit_basics[std::abs(*it)][0] ==
+                visit_basics[std::abs(*it)][1]) &&
+               (gate->visits()[1] > visit_basics[std::abs(*it)][1]) &&
+               (gate->visits()[0] < visit_basics[std::abs(*it)][0])) {
+        modular_children.push_back(*it);
+    }
+  }
+  // Check if this gate is pure module itself.
+  // That is, its children are all modules themselves and not shared with
+  // other gates.
+  if (gate->string_type() == "xor" || gate->string_type() == "atleast") return;
+  if (modular_children.size() == gate->children().size()) return;
+  if (modular_children.size() > 1) {
+    IndexedGate* new_module = new IndexedGate(++new_gate_index_);
+    indexed_gates_.insert(std::make_pair(new_gate_index_, new_module));
+    modules_.insert(new_gate_index_);
+    std::vector<int>::iterator it_g;
+    for (it_g = modular_children.begin(); it_g != modular_children.end();
+         ++it_g) {
+      gate->EraseChild(*it_g);
+      new_module->InitiateWithChild(*it_g);
+    }
+    new_module->type(gate->type());
+    new_module->string_type(gate->string_type());
+    gate->InitiateWithChild(new_module->index());
+  }
 }
 
 void IndexedFaultTree::PropagateComplements(
