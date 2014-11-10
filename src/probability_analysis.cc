@@ -58,6 +58,8 @@ void ProbabilityAnalysis::Analyze(
   if (min_cut_sets_.size() == 1 && min_cut_sets_.begin()->empty()) {
     warnings_ += "Probability for UNITY case.";
     p_total_ = 1;
+    prob_of_min_sets_.insert(std::make_pair(*min_cut_sets_.begin(), 1));
+    ordered_min_sets_.insert(std::make_pair(1, *min_cut_sets_.begin()));
     return;
   }
 

@@ -66,7 +66,7 @@ void Reporter::ReportFta(
       << fta->min_cut_sets_.size() << "\n";
   out.flush();
 
-  int order = 1;  // Order of minimal cut sets.
+  int order = 0;  // Order of minimal cut sets.
   std::vector<int> order_numbers;  // Number of sets per order.
   while (order < fta->max_order_ + 1) {
     std::set< std::set<std::string> >::const_iterator it_min;
@@ -109,8 +109,8 @@ void Reporter::ReportFta(
   out << std::left;
   out << std::setw(20) << "Order" << "Number\n";
   out << std::setw(20) << "-----" << "------\n";
-  for (int i = 1; i < fta->max_order_ + 1; ++i) {
-    out << "  " << std::setw(18) << i << order_numbers[i-1] << "\n";
+  for (int i = 0; i < fta->max_order_ + 1; ++i) {
+    out << "  " << std::setw(18) << i << order_numbers[i] << "\n";
   }
   out << "  " << std::setw(18) << "ALL" << fta->min_cut_sets_.size() << "\n";
   out.flush();
@@ -214,8 +214,8 @@ void Reporter::ReportMcsProb(
   out << "----------------------------------------------\n";
   out.flush();
 
-  int order = 1;  // Order of minimal cut sets.
-  int max_order = 1;
+  int order = 0;  // Order of minimal cut sets.
+  int max_order = 0;
 
   std::set< std::set<std::string> >::const_iterator it_min;
   // Find max order
