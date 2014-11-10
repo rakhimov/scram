@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-This input tests if NOT(AND(A, -A)) is equal to OR(A, -A).
+This input tests if NOT(AND(A, -A)) is equal to OR(A, -A), which is unity.
 -->
 <opsa-mef>
   <define-fault-tree name="NOT_AND_OR_EQUALITY">

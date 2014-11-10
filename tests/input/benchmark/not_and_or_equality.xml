@@ -1,14 +1,19 @@
 <?xml version="1.0"?>
 <!--
-This input tests if NAND(A, -A) is equal to OR(A, -A) which should be unity.
+This input tests if NOT(AND(A, -A)) is equal to OR(A, -A).
 -->
 <opsa-mef>
-  <define-fault-tree name="NAND_OR_EQUALITY">
+  <define-fault-tree name="NOT_AND_OR_EQUALITY">
+    <define-gate name="NotTopEvent">
+      <not>
+        <gate name="TopEvent"/>
+      </not>
+    </define-gate>
     <define-gate name="TopEvent">
-      <nand>
+      <and>
         <basic-event name="A"/>
         <gate name="NotGate"/>
-      </nand>
+      </and>
     </define-gate>
     <define-gate name="NotGate">
       <not>

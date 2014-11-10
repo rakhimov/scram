@@ -312,6 +312,7 @@ class IndexedFaultTree {
 
   /// Propagates complements of child gates down to basic events
   /// in order to remove any NOR or NAND logic from the tree.
+  /// This function also processes NOT and NULL gates.
   /// @param[out] gate The starting gate to traverse the tree. This is for
   ///                 recursive purposes. The sign of this passed gate
   ///                 is unknown for the function, so it must be sanitized
@@ -323,8 +324,8 @@ class IndexedFaultTree {
                             std::set<int>* processed_gates);
 
   /// Pre-processes the tree by doing Boolean algebra.
-  /// At this point all gates are expected to be either OR, AND, NOT, NULL.
-  /// There might be negative children.
+  /// At this point all gates are expected to be either OR or AND.
+  /// There should not be negative gate children.
   /// This function merges similar gates and may produce null or unity gates.
   /// @param[out] gate The starting gate to traverse the tree. This is for
   ///                 recursive purposes. This gate must be AND or OR.
@@ -332,7 +333,7 @@ class IndexedFaultTree {
   void JoinGates(IndexedGatePtr& gate, std::set<int>* processed_gates);
 
   /// Processes null and unity gates.
-  /// There might be negative children.
+  /// There should not be negative gate children.
   /// After this function, there should not be null or unity gates resulting
   /// from previous processing steps.
   /// @param[out] gate The starting gate to traverse the tree. This is for
@@ -369,6 +370,7 @@ class IndexedFaultTree {
                                  std::map<int, SimpleGatePtr>* processed_gates);
 
   int top_event_index_;  ///< The index of the top gate of this tree.
+  int gate_index_;  ///< The starting gate index for gate identification.
   /// All gates of this tree including newly created ones.
   boost::unordered_map<int, IndexedGatePtr> indexed_gates_;
   std::set<int> modules_;  ///< Modules in the tree.
@@ -377,6 +379,8 @@ class IndexedFaultTree {
   std::vector< std::set<int> > imcs_;  // Min cut sets with indexed events.
   /// Limit on the size of the minimal cut sets for performance reasons.
   int limit_order_;
+  /// Indicator if the tree has been changed due to operations on it.
+  bool changed_tree_;
 };
 
 }  // namespace scram
