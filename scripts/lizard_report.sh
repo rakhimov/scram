@@ -8,11 +8,13 @@ lizard -s cyclomatic_complexity \
   element.cc \
   error.cc \
   event.cc \
+  expression.cc \
   fault_tree_analysis.cc \
   fault_tree.cc \
   gate.cc \
   grapher.cc \
-  primary_event.cc \
+  indexed_fault_tree.cc \
+  indexed_gate.cc \
   probability_analysis.cc \
   random.cc \
   relax_ng_validator.cc \
@@ -20,6 +22,5 @@ lizard -s cyclomatic_complexity \
   risk_analysis.cc \
   scram.cc \
   settings.cc \
-  superset.cc \
   uncertainty_analysis.cc \
   xml_parser.cc
