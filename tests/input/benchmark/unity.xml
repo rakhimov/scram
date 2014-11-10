@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <define-fault-tree name="TwoTrains">
+    <define-gate name="TopEvent">
+      <or>
+        <event name="ValveOne"/>
+        <event name="ValveTwo"/>
+      </or>
+    </define-gate>
+    <define-house-event name="ValveOne">
+      <constant value="true"/>
+    </define-house-event>
+    <define-basic-event name="ValveTwo">
+      <float value="0.5"/>
+    </define-basic-event>
+  </define-fault-tree>
+</opsa-mef>
