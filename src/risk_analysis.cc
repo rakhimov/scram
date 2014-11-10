@@ -366,6 +366,7 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
 
 void RiskAnalysis::ProcessFormula(const GatePtr& gate,
                                   const xmlpp::NodeSet& events) {
+  std::set<std::string> children_id;  // To detect repeated children.
   xmlpp::NodeSet::const_iterator it;
   for (it = events.begin(); it != events.end(); ++it) {
     const xmlpp::Element* event = dynamic_cast<const xmlpp::Element*>(*it);
@@ -374,6 +375,15 @@ void RiskAnalysis::ProcessFormula(const GatePtr& gate,
     boost::trim(orig_id);
     std::string id = orig_id;
     boost::to_lower(id);
+
+    if (children_id.count(id)) {
+      std::stringstream msg;
+      msg << "Line " << event->get_line() << ":\n";
+      msg << "Detected a repeated child " << orig_id;
+      throw ValidationError(msg.str());
+    } else {
+      children_id.insert(id);
+    }
 
     std::string name = event->get_name();
     assert(name == "event" || name == "gate" || name == "basic-event" ||
@@ -402,8 +412,8 @@ void RiskAnalysis::ProcessFormula(const GatePtr& gate,
       RiskAnalysis::ProcessFormulaHouseEvent(event, gate, child);
     }
 
-    child->AddParent(gate);
     gate->AddChild(child);
+    child->AddParent(gate);
   }
 }
 

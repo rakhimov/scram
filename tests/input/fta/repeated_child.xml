@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <define-fault-tree name="TwoTrains">
+    <define-gate name="TopEvent">
+      <and>
+        <event name="ValveOne"/>
+        <basic-event name="ValveOne"/>
+      </and>
+    </define-gate>
+  </define-fault-tree>
+</opsa-mef>

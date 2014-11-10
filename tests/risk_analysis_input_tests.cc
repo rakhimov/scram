@@ -127,6 +127,7 @@ TEST(RiskAnalysisInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back(dir + "cyclic_parameter.xml");
   incorrect_inputs.push_back(dir + "invalid_probability.xml");
   incorrect_inputs.push_back(dir + "invalid_expression.xml");
+  incorrect_inputs.push_back(dir + "repeated_child.xml");
   RiskAnalysis* ran;
   std::vector<std::string>::iterator it;
   for (it = ioerror_inputs.begin(); it != ioerror_inputs.end(); ++it) {
