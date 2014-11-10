@@ -39,6 +39,16 @@ void UncertaintyAnalysis::Analyze(
     const std::set< std::set<std::string> >& min_cut_sets) {
   min_cut_sets_ = min_cut_sets;
 
+  // Special case of unity with empty sets.
+  if (min_cut_sets_.size() == 1 && min_cut_sets_.begin()->empty()) {
+    warnings_ += "Uncertainty for UNITY case.";
+    mean_ = 1;
+    sigma_ = 0;
+    confidence_interval_ = std::make_pair(1, 1);
+    distribution_.push_back(std::make_pair(1, 1));
+    return;
+  }
+
   ProbabilityAnalysis::IndexMcs(min_cut_sets_);
 
   using boost::container::flat_set;
