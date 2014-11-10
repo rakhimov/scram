@@ -60,16 +60,11 @@ class SimpleGate {
     return true;
   }
 
-  /// Checks if there is a complement of a given module.
-  /// If not, adds a module event index into children.
-  /// If the resulting set is null with AND gate, gives indication without
-  /// actual addition.
-  /// @returns true If the final gate is not null.
-  /// @returns false If the final set would be null upon addition.
-  inline bool AddModule(int index) {
-    if (type_ == 2 && modules_.count(-index)) return false;
+  /// Adds a module event index into children.
+  /// All modules assumed to be positive.
+  inline void AddModule(int index) {
+    assert(index > 0);
     modules_.insert(index);
-    return true;
   }
 
   /// Add a pointer to a child gate.
@@ -89,9 +84,6 @@ class SimpleGate {
     for (it = gate->basic_events_.begin(); it != gate->basic_events_.end();
          ++it) {
       if (basic_events_.count(-*it)) return false;
-    }
-    for (it = gate->modules_.begin(); it != gate->modules_.end(); ++it) {
-      if (modules_.count(-*it)) return false;
     }
     basic_events_.insert(gate->basic_events_.begin(),
                          gate->basic_events_.end());

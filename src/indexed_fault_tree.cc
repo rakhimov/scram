@@ -79,6 +79,7 @@ void IndexedFaultTree::ProcessIndexedFaultTree(int num_basic_events) {
   } while (changed_tree_);
   // After this point there should not be null AND or unity OR gates,
   // and the tree structure should be repeating OR and AND.
+  // All gates are positive, and each gate has atleast two children.
   if (top->children().empty()) return;  // This is null or unity.
   // Detect original modules for processing.
   IndexedFaultTree::DetectModules(num_basic_events);
@@ -135,44 +136,16 @@ void IndexedFaultTree::FindMcs() {
       std::set<int>::const_iterator it;
       for (it = cut_set->modules().begin(); it != cut_set->modules().end();
            ++it) {
+        assert(*it > 0);
         if (!processed_modules.count(*it)) {
           std::vector<SimpleGatePtr> module_mcs;  // For new MCS of a module.
-          if (processed_modules.count(-*it)) {
-            // The negation of this module has already been expanded.
-            // This means that the original module cannot be treated again
-            // because it was transformed upon traversal that may make another
-            // traversal invalid.
-
-            // Complement of OR gate.
-            SimpleGatePtr complement(new SimpleGate(2));
-            std::vector<SimpleGatePtr>* mcs =
-                &processed_modules.find(-*it)->second;
-            std::vector<SimpleGatePtr>::const_iterator it_mcs;
-            for (it_mcs = mcs->begin(); it_mcs != mcs->end(); ++it_mcs) {
-              SimpleGatePtr child(new SimpleGate(1));  // Complement of AND.
-              complement->AddChildGate(child);
-              // Reverse iterator is for optimization of inverting sorted
-              // range by chaning the sign.
-              std::set<int>::reverse_iterator it_r;
-              for (it_r = (*it_mcs)->basic_events().rbegin();
-                   it_r != (*it_mcs)->basic_events().rend(); ++it_r) {
-                child->InitiateWithBasic(-*it_r);
-              }
-              for (it_r = (*it_mcs)->modules().rbegin();
-                   it_r != (*it_mcs)->modules().rend(); ++it_r) {
-                child->InitiateWithModule(-*it_r);
-              }
-            }
-            IndexedFaultTree::FindMcsFromSimpleGate(complement, &module_mcs);
-
-          } else {
-            IndexedFaultTree::FindMcsFromModule(*it, &module_mcs);
-          }
+          IndexedFaultTree::FindMcsFromModule(*it, &module_mcs);
           processed_modules.insert(std::make_pair(*it, module_mcs));
         }
         std::vector<SimpleGatePtr>* module_mcs =
             &processed_modules.find(*it)->second;
         if (module_mcs->empty()) continue;  // This is a null set.
+        /// @todo Treat Unity cases.
         std::vector<SimpleGatePtr> joined_sets;
         std::vector<SimpleGatePtr>::const_iterator it_n;
         for (it_n = new_sets.begin(); it_n != new_sets.end(); ++it_n) {
@@ -716,13 +689,11 @@ void IndexedFaultTree::CreateNewModules(const int visit_basics[][2],
   std::set<int>::const_iterator it;
   for (it = gate->children().begin(); it != gate->children().end(); ++it) {
     if (std::abs(*it) > gate_index_) {
+      assert(*it > 0);
       IndexedGatePtr child_gate = indexed_gates_.find(std::abs(*it))->second;
       IndexedFaultTree::CreateNewModules(visit_basics, child_gate,
                                          visited_gates);
-      /// @todo Deal with XOR and ATLEAST gates.
-      if (!modules_.count(std::abs(*it)) ||
-          gate->string_type() == "xor" ||
-          gate->string_type() == "atleast") continue;
+      if (!modules_.count(std::abs(*it))) continue;
       if ((gate->visits()[1] > child_gate->visits()[2]) &&
           (gate->visits()[0] < child_gate->visits()[0])) {
         modular_children.push_back(*it);
@@ -737,7 +708,6 @@ void IndexedFaultTree::CreateNewModules(const int visit_basics[][2],
   // Check if this gate is pure module itself.
   // That is, its children are all modules themselves and not shared with
   // other gates.
-  if (gate->string_type() == "xor" || gate->string_type() == "atleast") return;
   if (modular_children.size() == gate->children().size()) return;
   if (modular_children.size() > 1) {
     IndexedGatePtr new_module(new IndexedGate(++new_gate_index_));
@@ -918,15 +888,15 @@ boost::shared_ptr<SimpleGate> IndexedFaultTree::CreateSimpleTree(
 
   std::set<int>::iterator it;
   for (it = gate->children().begin(); it != gate->children().end(); ++it) {
-    if (std::abs(*it) > gate_index_) {
-      if (modules_.count(std::abs(*it))) {
+    if (*it > gate_index_) {
+      if (modules_.count(*it)) {
         simple_gate->InitiateWithModule(*it);
       } else {
         simple_gate->AddChildGate(
             IndexedFaultTree::CreateSimpleTree(*it, processed_gates));
       }
     } else {
-      assert(std::abs(*it) < top_event_index_);  // No negative gates.
+      assert(std::abs(*it) < gate_index_);  // No negative gates.
       simple_gate->InitiateWithBasic(*it);
     }
   }
@@ -990,7 +960,8 @@ void IndexedFaultTree::ExpandAndLayer(SimpleGatePtr& gate) {
       for (it_m = (*it_v)->modules().begin();
            it_m != (*it_v)->modules().end(); ++it_m) {
         SimpleGatePtr new_child(new SimpleGate(**it));
-        if (new_child->AddModule(*it_m)) substitute->AddChildGate(new_child);
+        new_child->AddModule(*it_m);
+        substitute->AddChildGate(new_child);
       }
       // Join underlying AND layer gates.
       std::set<SimpleGatePtr>::iterator it_g;
