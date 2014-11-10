@@ -4,6 +4,7 @@
 
 // Bechmark tests for NOT gate.
 // [A OR NOT A]
+// This produces UNITY top gate.
 TEST_F(RiskAnalysisTest, A_OR_NOT_A) {
   std::string tree_input = "./share/scram/input/benchmark/a_or_not_a.xml";
   std::string A = "a";  // 0.1
@@ -15,12 +16,9 @@ TEST_F(RiskAnalysisTest, A_OR_NOT_A) {
   ASSERT_NO_THROW(ran->Report("/dev/null"));
   EXPECT_DOUBLE_EQ(1, p_total());  // Total prob check.
   // Minimal cut set check.
-  cut_set.insert(A);
+  // Special case of one empty cut set in a container.
   mcs.insert(cut_set);
-  cut_set.clear();
-  cut_set.insert("not " + A);
-  mcs.insert(cut_set);
-  EXPECT_EQ(2, min_cut_sets().size());
+  EXPECT_EQ(1, min_cut_sets().size());
   EXPECT_EQ(mcs, min_cut_sets());
 }
 

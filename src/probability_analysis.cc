@@ -16,7 +16,7 @@ ProbabilityAnalysis::ProbabilityAnalysis(std::string approx, int nsums,
                                          double cut_off)
     : warnings_(""),
       p_total_(0),
-      num_prob_mcs_(-1),
+      num_prob_mcs_(0),
       coherent_(true),
       p_time_(-1),
       imp_time_(-1) {
@@ -53,6 +53,13 @@ void ProbabilityAnalysis::UpdateDatabase(
 void ProbabilityAnalysis::Analyze(
     const std::set< std::set<std::string> >& min_cut_sets) {
   min_cut_sets_ = min_cut_sets;
+
+  // Special case of unity with empty sets.
+  if (min_cut_sets_.size() == 1 && min_cut_sets_.begin()->empty()) {
+    warnings_ += "Probability for UNITY case.";
+    p_total_ = 1;
+    return;
+  }
 
   ProbabilityAnalysis::IndexMcs(min_cut_sets_);
 

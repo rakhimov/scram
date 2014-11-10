@@ -17,7 +17,7 @@ namespace scram {
 FaultTreeAnalysis::FaultTreeAnalysis(int limit_order)
   : warnings_(""),
     top_event_index_(-1),
-    max_order_(1),
+    max_order_(0),
     analysis_time_(0) {
       // Check for right limit order.
   if (limit_order < 1) {
@@ -100,6 +100,11 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
     msg << "No cut sets for the limit order " <<  limit_order_;
     warnings_ += msg.str();
     return;
+  } else if (imcs->size() == 1 && imcs->back().empty()) {
+    // Special case of unity of a top event.
+    std::stringstream msg;
+    msg << "The top event is UNITY. Failure is guaranteed.";
+    warnings_ += msg.str();
   }
 
   // Duration of MCS generation.

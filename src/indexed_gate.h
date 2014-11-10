@@ -112,6 +112,12 @@ class IndexedGate {
     parents_.insert(index);
   }
 
+  inline void EraseParent(int index) {
+    assert(index > 0);
+    assert(parents_.count(index));
+    parents_.erase(index);
+  }
+
   /// Sets the index of this gate.
   inline void index(int index) { index_ = index; }
 

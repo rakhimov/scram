@@ -23,8 +23,8 @@ bool IndexedGate::AddChild(int child) {
   assert(type_ == 1 || type_ == 2);  // Type must be already defined.
   assert(child != 0);
   assert(state_ == "normal");
-  if (children_.count(-child) && type_ == 2) {
-    state_ = "null";  // AND gate becomes NULL.
+  if (children_.count(-child)) {
+    state_ = type_ == 2 ? "null" : "unity";  // AND gate becomes NULL.
     children_.clear();
     return false;
   }
@@ -35,14 +35,7 @@ bool IndexedGate::AddChild(int child) {
 bool IndexedGate::SwapChild(int existing_child, int new_child) {
   assert(children_.count(existing_child));
   children_.erase(existing_child);
-  assert(state_ == "normal");
-  if (children_.count(-new_child) && type_ == 2) {
-    state_ = "null";  // AND gate becomes NULL.
-    children_.clear();
-    return false;
-  }
-  children_.insert(new_child);
-  return true;
+  return IndexedGate::AddChild(new_child);
 }
 
 void IndexedGate::InvertChildren() {

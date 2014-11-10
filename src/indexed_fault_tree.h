@@ -1,5 +1,6 @@
 /// @file indexed_fault_tree.h
-/// A fault tree with event and gate indices instead of id names.
+/// A fault tree analysis facility with event and gate indices instead
+/// of id names.
 #ifndef SCRAM_SRC_INDEXED_FAULT_TREE_H_
 #define SCRAM_SRC_INDEXED_FAULT_TREE_H_
 
@@ -219,33 +220,32 @@ class IndexedFaultTree {
   typedef boost::shared_ptr<SimpleGate> SimpleGatePtr;
   typedef boost::shared_ptr<IndexedGate> IndexedGatePtr;
 
+  /// Starts unrolling gates to simplify gates to OR, AND gates.
+  /// NOT and NUll are dealt with specificly.
+  /// This function uses parent information of each gate, so the tree must
+  /// be initialized before a call of this function.
+  /// New gates are created upon unrolling complex gates.
+  void UnrollGates();
+
   /// Traverses the tree to gather information about parents of indexed gates.
   /// @param[in] parent_gate The parent to start information gathering.
   /// @param[out] processed_gates The gates that has already been processed.
   void GatherParentInformation(const IndexedGatePtr& parent_gate,
                                std::set<int>* processed_gates);
 
-  /// Starts unrolling gates to simplify gates to OR, AND, XOR, ATLEAST gates.
-  /// This function uses parent information of each gate, so the tree must
-  /// be initialized before a call of this function.
-  void UnrollGates();
+  /// Notifies all parents of negative gates, such as NOR and NAND before
+  /// transforming this gates into basic gates of OR and AND.
+  /// The parent information should be available. This function does not
+  /// change the type of the given gate.
+  /// @param[in] gate The gate to be start processing.
+  void NotifyParentsOfNegativeGates(const IndexedGatePtr& gate);
 
-  /// Unrolls a gate to make OR, AND, XOR, ATLEAST gates. The parents of the
-  /// gate are notified about the change if needed.
+  /// Unrolls a gate to make OR, AND gates. The parents of the
+  /// gate are not notified. This means that negative gates must be dealt
+  /// separately. However, NOT and NULL gates are left untouched for later
+  /// special processing.
   /// @param[out] gate The gate to be processed.
   void UnrollGate(IndexedGatePtr& gate);
-
-  /// Starts unrolling complex XOR and ATLEAST gates from the top gate.
-  /// @param[out] top_gate The top gate to start unrolling with.
-  void UnrollComplexTopGate(IndexedGatePtr& top_gate);
-
-  /// Further unrolling for XOR and ATLEAST gates to become OR and AND gates.
-  /// This function is different from previous simple unrolling functions
-  /// because it creates new gates.
-  /// @param[out] parent_gate The gate to unroll.
-  /// @param[out] unrolled_gate To keep track of already unrolled gates.
-  void UnrollComplexGates(IndexedGatePtr& parent_gate,
-                          std::set<int>* unrolled_gates);
 
   /// Unrolls a gate with XOR logic.
   /// @param[out] gate The gate to unroll.
@@ -256,7 +256,8 @@ class IndexedFaultTree {
   void UnrollAtleastGate(IndexedGatePtr& gate);
 
   /// Remove all house events from a given gate.
-  /// After this function, there should not be any unity or null gates.
+  /// After this function, there should not be any unity or null gates because
+  /// of house events.
   /// @param[in] true_house_events House events with true state.
   /// @param[in] false_house_events House events with false state.
   /// @param[out] gate The final resultant processed gate.
@@ -298,6 +299,7 @@ class IndexedFaultTree {
                         std::set<int>* visited_gates);
 
   /// Finds minimal cut sets of a module.
+  /// Module gate can only be AND or OR.
   /// @param[in] index The positive or negative index of a module.
   /// @param[out] min_gates Simple gates containing minimal cut sets.
   void FindMcsFromModule(int index, std::vector<SimpleGatePtr>* min_gates);
@@ -321,20 +323,22 @@ class IndexedFaultTree {
                             std::set<int>* processed_gates);
 
   /// Pre-processes the tree by doing Boolean algebra.
-  /// At this point all gates are expected to be either OR type or AND type.
-  /// This function merges similar gates and may produce null gates.
+  /// At this point all gates are expected to be either OR, AND, NOT, NULL.
+  /// There might be negative children.
+  /// This function merges similar gates and may produce null or unity gates.
   /// @param[out] gate The starting gate to traverse the tree. This is for
-  ///                 recursive purposes.
+  ///                 recursive purposes. This gate must be AND or OR.
   /// @param[out] processed_gates The gates that has already been processed.
   void JoinGates(IndexedGatePtr& gate, std::set<int>* processed_gates);
 
-  /// Processes null gates.
-  /// After this function, there should not be null gates resulting
+  /// Processes null and unity gates.
+  /// There might be negative children.
+  /// After this function, there should not be null or unity gates resulting
   /// from previous processing steps.
   /// @param[out] gate The starting gate to traverse the tree. This is for
-  ///                 recursive purposes.
+  ///                  recursive purposes.
   /// @param[out] processed_gates The gates that has already been processed.
-  void ProcessNullGates(IndexedGatePtr& gate, std::set<int>* processed_gates);
+  void ProcessConstGates(IndexedGatePtr& gate, std::set<int>* processed_gates);
 
   /// Expands OR layer in preprocessed fault tree.
   /// @param[out] gate The OR gate to be processed.
