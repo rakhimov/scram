@@ -213,8 +213,8 @@ void Grapher::FormatPrimaryEvents(
           double p = boost::dynamic_pointer_cast<BasicEvent>(primary_event)->p();
           out << p;
         }
-        out << "\"]\n";
       }
+      out << "\"]\n";
     }
   }
 }
