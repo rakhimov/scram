@@ -75,6 +75,13 @@ friend class Reporter;
   /// and providing the final sampled values of the final probability.
   void Sample();
 
+  /// Gathers basic events that have distributions. Other constant, certain
+  /// basic events removed from sampling.
+  /// These constant events are removed from the probability equation, and
+  /// the members of the equation are given a corresponding multiplier.
+  /// @param[out] basic_events The gathered uncertain basic events.
+  void FilterUncertainEvents(std::vector<int>* basic_events);
+
   /// Calculates statistical values from the final distribution.
   void CalculateStatistics();
 

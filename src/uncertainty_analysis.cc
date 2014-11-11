@@ -83,47 +83,7 @@ void UncertaintyAnalysis::Sample() {
   using boost::container::flat_set;
   // Detect constant basic events.
   std::vector<int> basic_events;
-  std::set<int> const_events;
-  std::set<int>::const_iterator it;
-  for (it = mcs_basic_events_.begin(); it != mcs_basic_events_.end(); ++it) {
-    if (int_to_basic_[*it]->IsConstant()) {
-      const_events.insert(const_events.end(), *it);
-    } else {
-      basic_events.push_back(*it);
-    }
-  }
-  // Precalculate for constant events and remove them from sets.
-  std::vector< flat_set<int> >::iterator it_set;
-  for (it_set = pos_terms_.begin(); it_set != pos_terms_.end(); ++it_set) {
-    double const_prob = 1;  // 1 is for multiplication.
-    flat_set<int>::iterator it_f;
-    for (it_f = it_set->begin(); it_f != it_set->end();) {
-      if (const_events.count(std::abs(*it_f))) {
-        const_prob *= *it_f > 0 ? iprobs_[*it_f] : 1 - iprobs_[-*it_f];
-        it_set->erase(*it_f);
-        it_f = it_set->begin();
-        continue;
-      }
-      ++it_f;
-    }
-    pos_const_.push_back(const_prob);
-  }
-
-  for (it_set = neg_terms_.begin(); it_set != neg_terms_.end(); ++it_set) {
-    double const_prob = 1;  // 1 is for multiplication.
-    flat_set<int>::iterator it_f;
-    for (it_f = it_set->begin(); it_f != it_set->end();) {
-      if (const_events.count(std::abs(*it_f))) {
-        const_prob *= *it_f > 0 ? iprobs_[*it_f] : 1 - iprobs_[-*it_f];
-        it_set->erase(*it_f);
-        it_f = it_set->begin();
-        continue;
-      }
-      ++it_f;
-    }
-    neg_const_.push_back(const_prob);
-  }
-
+  UncertaintyAnalysis::FilterUncertainEvents(&basic_events);
   for (int i = 0; i < num_trials_; ++i) {
     // Reset distributions.
     std::vector<int>::iterator it_b;
@@ -159,6 +119,51 @@ void UncertaintyAnalysis::Sample() {
       ++j;
     }
     sampled_results_.push_back(pos - neg);
+  }
+}
+
+void UncertaintyAnalysis::FilterUncertainEvents(
+    std::vector<int>* basic_events) {
+  using boost::container::flat_set;
+  std::set<int> const_events;
+  std::set<int>::const_iterator it;
+  for (it = mcs_basic_events_.begin(); it != mcs_basic_events_.end(); ++it) {
+    if (int_to_basic_[*it]->IsConstant()) {
+      const_events.insert(const_events.end(), *it);
+    } else {
+      basic_events->push_back(*it);
+    }
+  }
+  // Precalculate for constant events and remove them from sets.
+  std::vector< flat_set<int> >::iterator it_set;
+  for (it_set = pos_terms_.begin(); it_set != pos_terms_.end(); ++it_set) {
+    double const_prob = 1;  // 1 is for multiplication.
+    flat_set<int>::iterator it_f;
+    for (it_f = it_set->begin(); it_f != it_set->end();) {
+      if (const_events.count(std::abs(*it_f))) {
+        const_prob *= *it_f > 0 ? iprobs_[*it_f] : 1 - iprobs_[-*it_f];
+        it_set->erase(*it_f);
+        it_f = it_set->begin();
+        continue;
+      }
+      ++it_f;
+    }
+    pos_const_.push_back(const_prob);
+  }
+
+  for (it_set = neg_terms_.begin(); it_set != neg_terms_.end(); ++it_set) {
+    double const_prob = 1;  // 1 is for multiplication.
+    flat_set<int>::iterator it_f;
+    for (it_f = it_set->begin(); it_f != it_set->end();) {
+      if (const_events.count(std::abs(*it_f))) {
+        const_prob *= *it_f > 0 ? iprobs_[*it_f] : 1 - iprobs_[-*it_f];
+        it_set->erase(*it_f);
+        it_f = it_set->begin();
+        continue;
+      }
+      ++it_f;
+    }
+    neg_const_.push_back(const_prob);
   }
 }
 
