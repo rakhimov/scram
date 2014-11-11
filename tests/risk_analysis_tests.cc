@@ -327,6 +327,17 @@ TEST_F(RiskAnalysisTest, MCUB) {
   EXPECT_DOUBLE_EQ(0.766144, p_total());
 }
 
+// Apply the minimal cut set upper bound approximation for non-coherent tree.
+// This should be a warning.
+TEST_F(RiskAnalysisTest, McubNonCoherent) {
+  std::string with_prob = "./share/scram/input/benchmark/a_and_not_b.xml";
+  // Probability calculations with the MCUB approximation.
+  ran->AddSettings(settings.approx("mcub"));
+  ASSERT_NO_THROW(ran->ProcessInput(with_prob));
+  ASSERT_NO_THROW(ran->Analyze());
+  EXPECT_NEAR(0.08, p_total(), 1e-5);
+}
+
 // Test Monte Carlo Analysis
 TEST_F(RiskAnalysisTest, AnalyzeMC) {
   ran->AddSettings(settings.fta_type("mc"));
