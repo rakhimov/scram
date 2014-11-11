@@ -90,6 +90,12 @@ friend class Reporter;
   std::pair<double, double> confidence_interval_;
   /// The histogram density of the distribution with lower bounds and values.
   std::vector<std::pair<double, double> > distribution_;
+  /// Storage for constant part of the positive equation.
+  /// The same mapping as postitive sets.
+  std::vector<double> pos_const_;
+  /// Storage for constant part of the negative equation.
+  /// The same mapping as negative sets.
+  std::vector<double> neg_const_;
 };
 
 }  // namespace scram
