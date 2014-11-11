@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<!--
+Many house events are propagated in this tree.
+-->
+<opsa-mef>
+  <define-fault-tree name="HouseEvents">
+    <define-gate name="Root">
+      <or>
+        <gate name="g1"/>  <!-- This gate is removed. -->
+        <gate name="g2"/>  <!-- This gate is removed. -->
+        <gate name="g3"/>
+      </or>
+    </define-gate>
+    <define-gate name="g1">
+      <not>
+        <event name="h1"/>
+      </not>
+    </define-gate>
+    <define-gate name="g2">
+      <or>
+        <event name="h2"/>
+        <gate name="g1"/>
+      </or>
+    </define-gate>
+    <define-gate name="g3">
+      <and>
+        <event name="A"/>
+        <event name="B"/>
+        <gate name="g4"/>
+      </and>
+    </define-gate>
+    <define-gate name="g4">
+      <not>
+        <event name="h2"/>
+      </not>
+    </define-gate>
+    <define-house-event name="h1">
+      <constant value="true"/>
+    </define-house-event>
+    <define-house-event name="h2">
+      <constant value="false"/>
+    </define-house-event>
+    <define-basic-event name="A">
+      <float value="0.1"/>
+    </define-basic-event>
+    <define-basic-event name="B">
+      <float value="0.2"/>
+    </define-basic-event>
+    <define-basic-event name="C">
+      <float value="0.3"/>
+    </define-basic-event>
+  </define-fault-tree>
+</opsa-mef>

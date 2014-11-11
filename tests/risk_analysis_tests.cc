@@ -381,3 +381,15 @@ TEST_F(RiskAnalysisTest, ChildNandNorGates) {
   EXPECT_EQ(1, min_cut_sets().count(mcs_1));
   EXPECT_EQ(1, min_cut_sets().count(mcs_2));
 }
+
+// Simple test for several house event propagation.
+TEST_F(RiskAnalysisTest, ManyHouseEvents) {
+  std::string tree_input = "./share/scram/input/fta/constant_propagation.xml";
+  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  std::set<std::string> mcs_1;
+  mcs_1.insert("a");
+  mcs_1.insert("b");
+  EXPECT_EQ(1, min_cut_sets().size());
+  EXPECT_EQ(1, min_cut_sets().count(mcs_1));
+}
