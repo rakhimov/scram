@@ -878,9 +878,8 @@ void IndexedFaultTree::FindMcsFromSimpleGate(
   for (it_un = unique_cut_sets.begin(); it_un != unique_cut_sets.end();
        ++it_un) {
     assert(!(*it_un)->modules().empty() || !(*it_un)->basic_events().empty());
-    if ((*it_un)->basic_events().size() == 1 &&
-        (*it_un)->modules().empty()) {
-      one_element_sets.insert(*it);
+    if ((*it_un)->basic_events().size() == 1 && (*it_un)->modules().empty()) {
+      one_element_sets.insert(*it_un);
     } else if ((*it_un)->modules().size() == 1 &&
                (*it_un)->basic_events().empty()) {
       one_element_sets.insert(*it_un);
