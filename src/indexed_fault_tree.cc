@@ -207,14 +207,13 @@ void IndexedFaultTree::UnrollGates() {
     IndexedFaultTree::UnrollXorGate(top_gate);
   } else if (type == "atleast") {
     IndexedFaultTree::UnrollAtleastGate(top_gate);
-  } else {
-    assert(false);
   }
   // Gather parent information for negative gate processing.
   std::set<int> processed_gates;
   IndexedFaultTree::GatherParentInformation(top_gate, &processed_gates);
   // Process negative gates except for NOT. Note that top event's negative
   // gate is processed in the above lines.
+  // All children are assumed to be positive at this point.
   boost::unordered_map<int, IndexedGatePtr>::iterator it;
   for (it = indexed_gates_.begin(); it != indexed_gates_.end(); ++it) {
     if (it->first == top_event_index_) continue;
@@ -258,13 +257,9 @@ void IndexedFaultTree::NotifyParentsOfNegativeGates(
     std::set<int>::const_iterator it;
     for (it = gate->parents().begin(); it != gate->parents().end(); ++it) {
       IndexedGatePtr parent = indexed_gates_.find(*it)->second;
-      if (parent->children().count(child_index)) {  // Positive child.
-        bool ret = parent->SwapChild(child_index, -child_index);
-        assert(ret);
-      } else {  // Negative child.
-        bool ret = parent->SwapChild(-child_index, child_index);
-        assert(ret);
-      }
+      assert(parent->children().count(child_index));  // Positive child.
+      bool ret = parent->SwapChild(child_index, -child_index);
+      assert(ret);
     }
   }
 }

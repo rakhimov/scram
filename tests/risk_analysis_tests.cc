@@ -352,3 +352,21 @@ TEST_F(RiskAnalysisTest, Report) {
   std::string output = "abracadabra.cadabraabra/output.txt";
   EXPECT_THROW(ran->Report(output), IOError);
 }
+
+// NAND and NOR as a child cases.
+TEST_F(RiskAnalysisTest, ChildNandNorGates) {
+  std::string tree_input = "./share/scram/input/fta/children_nand_nor.xml";
+  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  std::set<std::string> mcs_1;
+  std::set<std::string> mcs_2;
+  mcs_1.insert("not pumpone");
+  mcs_1.insert("not pumptwo");
+  mcs_1.insert("not valveone");
+  mcs_2.insert("not pumpone");
+  mcs_2.insert("not valvetwo");
+  mcs_2.insert("not valveone");
+  EXPECT_EQ(2, min_cut_sets().size());
+  EXPECT_EQ(1, min_cut_sets().count(mcs_1));
+  EXPECT_EQ(1, min_cut_sets().count(mcs_2));
+}
