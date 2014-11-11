@@ -13,7 +13,7 @@ Basic event tries to define gate.
     <define-gate name="TrainOne">
       <or>
         <event name="ValveOne"/>
-        <house-event name="PumpOne"/>  <!-- Here -->
+        <house-event name="PumpOne"/>
       </or>
     </define-gate>
     <define-gate name="TrainTwo">
@@ -28,7 +28,7 @@ Basic event tries to define gate.
     <define-basic-event name="ValveTwo">
       <float value="0.5"/>
     </define-basic-event>
-    <define-basic-event name="PumpOne">  <!-- Here -->
+    <define-basic-event name="PumpOne">
       <float value="0.6"/>
     </define-basic-event>
     <define-basic-event name="PumpTwo">

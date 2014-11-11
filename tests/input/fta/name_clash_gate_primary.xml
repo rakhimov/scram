@@ -12,7 +12,6 @@ Gate re-uses id of a primary event.
     </define-gate>
     <define-gate name="TrainOne">
       <or>
-        <basic-event name="ValveOne"/>
         <house-event name="PumpOne"/>
         <gate name="ValveOne"/>
       </or>
