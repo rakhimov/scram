@@ -259,6 +259,37 @@ class IndexedFaultTree {
                           IndexedGatePtr& gate,
                           std::set<int>* processed_gates);
 
+  /// Propagates complements of child gates down to basic events
+  /// in order to remove any NOR or NAND logic from the tree.
+  /// This function also processes NOT and NULL gates.
+  /// @param[out] gate The starting gate to traverse the tree. This is for
+  ///                 recursive purposes. The sign of this passed gate
+  ///                 is unknown for the function, so it must be sanitized
+  ///                 for a top event to function correctly.
+  /// @param[out] gate_complements The complements of gates already processed.
+  /// @param[out] processed_gates The gates that has already been processed.
+  void PropagateComplements(IndexedGatePtr& gate,
+                            std::map<int, int>* gate_complements,
+                            std::set<int>* processed_gates);
+
+  /// Processes null and unity gates.
+  /// There should not be negative gate children.
+  /// After this function, there should not be null or unity gates resulting
+  /// from previous processing steps.
+  /// @param[out] gate The starting gate to traverse the tree. This is for
+  ///                  recursive purposes.
+  /// @param[out] processed_gates The gates that has already been processed.
+  void ProcessConstGates(IndexedGatePtr& gate, std::set<int>* processed_gates);
+
+  /// Pre-processes the tree by doing Boolean algebra.
+  /// At this point all gates are expected to be either OR or AND.
+  /// There should not be negative gate children.
+  /// This function merges similar gates and may produce null or unity gates.
+  /// @param[out] gate The starting gate to traverse the tree. This is for
+  ///                 recursive purposes. This gate must be AND or OR.
+  /// @param[out] processed_gates The gates that has already been processed.
+  void JoinGates(IndexedGatePtr& gate, std::set<int>* processed_gates);
+
   /// Traverses the indexed fault tree to detect modules.
   /// @param[in] num_basic_events The number of basic events in the tree.
   void DetectModules(int num_basic_events);
@@ -296,42 +327,18 @@ class IndexedFaultTree {
   /// @param[out] min_gates Simple gates containing minimal cut sets.
   void FindMcsFromModule(int index, std::vector<SimpleGatePtr>* min_gates);
 
+  /// Traverses the fault tree to convert gates into simple gates.
+  /// @param[in] gate_index The index of a gate to start with.
+  /// @param[out] processed_gates Currently processed gates.
+  /// @returns The top simple gate.
+  SimpleGatePtr CreateSimpleTree(int gate_index,
+                                 std::map<int, SimpleGatePtr>* processed_gates);
+
   /// Finds minimal cut sets of a simple gate.
   /// @param[out] gate The simple gate as a parent for processing.
   /// @param[out] min_gates Simple gates containing minimal cut sets.
   void FindMcsFromSimpleGate(SimpleGatePtr& gate,
                              std::vector<SimpleGatePtr>* min_gates);
-
-  /// Propagates complements of child gates down to basic events
-  /// in order to remove any NOR or NAND logic from the tree.
-  /// This function also processes NOT and NULL gates.
-  /// @param[out] gate The starting gate to traverse the tree. This is for
-  ///                 recursive purposes. The sign of this passed gate
-  ///                 is unknown for the function, so it must be sanitized
-  ///                 for a top event to function correctly.
-  /// @param[out] gate_complements The complements of gates already processed.
-  /// @param[out] processed_gates The gates that has already been processed.
-  void PropagateComplements(IndexedGatePtr& gate,
-                            std::map<int, int>* gate_complements,
-                            std::set<int>* processed_gates);
-
-  /// Pre-processes the tree by doing Boolean algebra.
-  /// At this point all gates are expected to be either OR or AND.
-  /// There should not be negative gate children.
-  /// This function merges similar gates and may produce null or unity gates.
-  /// @param[out] gate The starting gate to traverse the tree. This is for
-  ///                 recursive purposes. This gate must be AND or OR.
-  /// @param[out] processed_gates The gates that has already been processed.
-  void JoinGates(IndexedGatePtr& gate, std::set<int>* processed_gates);
-
-  /// Processes null and unity gates.
-  /// There should not be negative gate children.
-  /// After this function, there should not be null or unity gates resulting
-  /// from previous processing steps.
-  /// @param[out] gate The starting gate to traverse the tree. This is for
-  ///                  recursive purposes.
-  /// @param[out] processed_gates The gates that has already been processed.
-  void ProcessConstGates(IndexedGatePtr& gate, std::set<int>* processed_gates);
 
   /// Expands OR layer in preprocessed fault tree.
   /// @param[out] gate The OR gate to be processed.
@@ -353,13 +360,6 @@ class IndexedFaultTree {
                        const std::vector<SimpleGatePtr>& mcs_lower_order,
                        int min_order,
                        std::vector<SimpleGatePtr>* min_gates);
-
-  /// Traverses the fault tree to convert gates into simple gates.
-  /// @param[in] gate_index The index of a gate to start with.
-  /// @param[out] processed_gates Currently processed gates.
-  /// @returns The top simple gate.
-  SimpleGatePtr CreateSimpleTree(int gate_index,
-                                 std::map<int, SimpleGatePtr>* processed_gates);
 
   int top_event_index_;  ///< The index of the top gate of this tree.
   int gate_index_;  ///< The starting gate index for gate identification.
