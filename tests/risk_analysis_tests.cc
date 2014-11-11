@@ -393,3 +393,13 @@ TEST_F(RiskAnalysisTest, ManyHouseEvents) {
   EXPECT_EQ(1, min_cut_sets().size());
   EXPECT_EQ(1, min_cut_sets().count(mcs_1));
 }
+
+// Simple test for several constant gate propagation.
+TEST_F(RiskAnalysisTest, ConstantGates) {
+  std::string tree_input = "./share/scram/input/fta/constant_gates.xml";
+  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  std::set<std::string> mcs_1;
+  EXPECT_EQ(1, min_cut_sets().size());
+  EXPECT_EQ(1, min_cut_sets().count(mcs_1));
+}

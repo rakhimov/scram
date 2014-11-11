@@ -309,7 +309,6 @@ void IndexedFaultTree::UnrollAtleastGate(IndexedGatePtr& gate) {
   assert(gate->children().size() > vote_number);
   std::set< std::set<int> > all_sets;
   const std::set<int>* children = &gate->children();
-  int size = children->size();
 
   std::set<int>::iterator it;
   for (it = children->begin(); it != children->end(); ++it) {
