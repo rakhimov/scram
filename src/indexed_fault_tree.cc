@@ -203,10 +203,6 @@ void IndexedFaultTree::UnrollGates() {
     top_event_sign_ *= type == "not" ? -1 : 1;  // The change for sign.
     IndexedFaultTree::UnrollGates();  // This should handle NOT->NOT cases.
     return;
-  } else if (type == "xor") {
-    IndexedFaultTree::UnrollXorGate(top_gate);
-  } else if (type == "atleast") {
-    IndexedFaultTree::UnrollAtleastGate(top_gate);
   }
   // Gather parent information for negative gate processing.
   std::set<int> processed_gates;
@@ -223,7 +219,6 @@ void IndexedFaultTree::UnrollGates() {
   // Assumes that all gates are in indexed_gates_ container.
   boost::unordered_map<int, IndexedGatePtr> original_gates(indexed_gates_);
   for (it = original_gates.begin(); it != original_gates.end(); ++it) {
-    if (it->first == top_event_index_) continue;
     IndexedFaultTree::UnrollGate(it->second);
   }
   // Note that parent information is invalid from this point.
