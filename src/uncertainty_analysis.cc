@@ -81,8 +81,14 @@ void UncertaintyAnalysis::Analyze(
 
 void UncertaintyAnalysis::Sample() {
   using boost::container::flat_set;
-  std::vector<int> basic_events(mcs_basic_events_.begin(),
-                                mcs_basic_events_.end());
+  // Detect constant basic events.
+  std::vector<int> basic_events;
+  std::set<int>::const_iterator it;
+  for (it = mcs_basic_events_.begin(); it != mcs_basic_events_.end(); ++it) {
+    if (!int_to_basic_[*it]->IsConstant()) {
+      basic_events.push_back(*it);
+    }
+  }
   for (int i = 0; i < num_trials_; ++i) {
     // Reset distributions.
     std::vector<int>::iterator it_b;
@@ -90,8 +96,7 @@ void UncertaintyAnalysis::Sample() {
     for (it_b = basic_events.begin(); it_b != basic_events.end(); ++it_b) {
       int_to_basic_[*it_b]->Reset();
     }
-    // Sample all basic events.
-    /// @todo Do not sample constant values(i.e. events without distributions.)
+    // Sample all basic events with distributions.
     for (it_b = basic_events.begin(); it_b != basic_events.end(); ++it_b) {
       double prob = int_to_basic_[*it_b]->SampleProbability();
       assert(prob >= 0 && prob <= 1);
