@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<!--
+The generated minimal cut set is very long, so it must be reported by
+dividing into chunks.
+-->
+<opsa-mef>
+  <define-fault-tree name="TwoTrains">
+    <define-gate name="TopEvent">
+      <and>
+        <event name="ValveOne"/>
+        <event name="PumpOne"/>
+        <event name="ValveTwo"/>
+        <event name="PumpTwo"/>
+        <event name="ValveOneLong"/>
+        <event name="PumpOneLong"/>
+        <event name="ValveTwoLong"/>
+        <event name="PumpTwoLong"/>
+      </and>
+    </define-gate>
+    <define-basic-event name="ValveOne">
+      <float value="0.4"/>
+    </define-basic-event>
+    <define-basic-event name="ValveTwo">
+      <float value="0.5"/>
+    </define-basic-event>
+    <define-basic-event name="PumpOne">
+      <float value="0.6"/>
+    </define-basic-event>
+    <define-basic-event name="PumpTwo">
+      <float value="0.7"/>
+    </define-basic-event>
+    <define-basic-event name="ValveOneLong">
+      <float value="0.4"/>
+    </define-basic-event>
+    <define-basic-event name="ValveTwoLong">
+      <float value="0.5"/>
+    </define-basic-event>
+    <define-basic-event name="PumpOneLong">
+      <float value="0.6"/>
+    </define-basic-event>
+    <define-basic-event name="PumpTwoLong">
+      <float value="0.7"/>
+    </define-basic-event>
+  </define-fault-tree>
+</opsa-mef>

@@ -60,6 +60,7 @@ TEST(RiskAnalysisInputTest, CorrectFTAInputs) {
   correct_inputs.push_back(dir + "orphan_primary_event.xml");
   correct_inputs.push_back(dir + "correct_expressions.xml");
   correct_inputs.push_back(dir + "flavored_types.xml");
+  correct_inputs.push_back(dir + "very_long_mcs.xml");
 
   RiskAnalysis* ran;
 
