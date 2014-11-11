@@ -183,6 +183,7 @@ TEST_F(RiskAnalysisTest, HOUSE_UNITY) {
   std::set< std::set<std::string> > mcs;  // For expected min cut sets.
 
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->GraphingInstructions("/dev/null"));
   ASSERT_NO_THROW(ran->Analyze());
   ASSERT_NO_THROW(ran->Report("/dev/null"));
   EXPECT_DOUBLE_EQ(1, p_total());  // Total prob check.
@@ -191,4 +192,18 @@ TEST_F(RiskAnalysisTest, HOUSE_UNITY) {
   mcs.insert(cut_set);
   EXPECT_EQ(1, min_cut_sets().size());
   EXPECT_EQ(mcs, min_cut_sets());
+}
+
+// Checks for NULL due to house event.
+TEST_F(RiskAnalysisTest, HOUSE_NULL) {
+  std::string tree_input =
+      "./share/scram/input/benchmark/null.xml";
+  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->GraphingInstructions("/dev/null"));
+  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(ran->Report("/dev/null"));
+  EXPECT_DOUBLE_EQ(0, p_total());  // Total prob check.
+  // Minimal cut set check.
+  // Special case of one empty cut set in a container.
+  EXPECT_EQ(0, min_cut_sets().size());
 }
