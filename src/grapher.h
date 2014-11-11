@@ -8,9 +8,8 @@
 
 #include <boost/shared_ptr.hpp>
 
+#include "event.h"
 #include "fault_tree.h"
-
-typedef boost::shared_ptr<scram::FaultTree> FaultTreePtr;
 
 namespace scram {
 
@@ -19,6 +18,8 @@ namespace scram {
 /// Currently operate with Fault Trees only.
 class Grapher {
  public:
+  typedef boost::shared_ptr<FaultTree> FaultTreePtr;
+
   /// Initializes gate and primary event colors.
   Grapher();
 
@@ -26,13 +27,17 @@ class Grapher {
   /// This function must be called only after initializing the tree.
   /// @param[in] fault_tree Fault Tree to draw.
   /// @param[in] prob_requested Should probabilities be included.
-  /// @param[out] output Output destination.
+  /// @param[out] out The output stream.
   /// @throws IOError if the output file is not accessable.
   void GraphFaultTree(const FaultTreePtr& fault_tree,
-                      bool prob_requested = false,
-                      std::string output = "");
+                      bool prob_requested,
+                      std::ostream& out);
 
  private:
+  typedef boost::shared_ptr<Gate> GatePtr;
+  typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
+  typedef boost::shared_ptr<Event> EventPtr;
+
   /// Graphs one top or intermediate event with children.
   /// @param[in] t The top or intermediate event.
   /// @param[in] primary_events The container of primary events of the tree.
@@ -45,12 +50,12 @@ class Grapher {
       const boost::unordered_map<std::string, PrimaryEventPtr>& primary_events,
       std::map<std::string, int>* pr_repeat,
       std::map<std::string, int>* in_repeat,
-      std::ofstream& out);
+      std::ostream& out);
 
   /// Provides formatting information for top gate.
   /// @param[in] top_event The top event to be formatted.
   /// @param[out] out The output stream.
-  void FormatTopEvent(const GatePtr& top_event, std::ofstream& out);
+  void FormatTopEvent(const GatePtr& top_event, std::ostream& out);
 
   /// Provides formatting information for each gate intermediate event.
   /// @param[in] inter_events The intermediate events to be formatted.
@@ -59,7 +64,7 @@ class Grapher {
   void FormatIntermediateEvents(
       const boost::unordered_map<std::string, GatePtr>& inter_events,
       const std::map<std::string, int>& in_repeat,
-      std::ofstream& out);
+      std::ostream& out);
 
   /// Provides formatting information for each primary event.
   /// @param[in] primary_events The primary events to be formatted.
@@ -70,7 +75,7 @@ class Grapher {
       const boost::unordered_map<std::string, PrimaryEventPtr>& primary_events,
       const std::map<std::string, int>& pr_repeat,
       bool prob_requested,
-      std::ofstream& out);
+      std::ostream& out);
 
   /// Gate colors.
   std::map<std::string, std::string> gate_colors_;

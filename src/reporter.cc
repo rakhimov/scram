@@ -2,21 +2,17 @@
 /// Implements Reporter class.
 #include "reporter.h"
 
-#include <algorithm>
-#include <cmath>
-#include <ctime>
-#include <fstream>
 #include <iomanip>
-#include <iostream>
-#include <iterator>
-#include <set>
 #include <sstream>
 #include <utility>
-#include <vector>
 
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/date_time.hpp>
+
+#include "event.h"
+#include "fault_tree_analysis.h"
+#include "probability_analysis.h"
+#include "uncertainty_analysis.h"
 
 namespace pt = boost::posix_time;
 
@@ -43,7 +39,7 @@ void Reporter::ReportFta(
 
   // Convert MCS into representative strings.
   std::map< std::set<std::string>, std::vector<std::string> > lines;
-  Reporter::McsToPrint(fta->min_cut_sets_, fta->primary_events_, &lines);
+  Reporter::McsToPrint(fta->min_cut_sets_, fta->basic_events_, &lines);
 
   // Print warnings of calculations.
   if (fta->warnings_ != "") {
@@ -54,17 +50,14 @@ void Reporter::ReportFta(
   out << "\n" << "Minimal Cut Sets" << "\n";
   out << "================\n\n";
   out << std::left;
-  out << std::setw(40) << std::left << "Top Event: "
-      << fta->top_event_->orig_id() << "\n";
+  out << std::setw(40) << std::left << "Top Event: " << fta->top_event_name_
+      << "\n";
   out << std::setw(40) << "Time: " << pt::second_clock::local_time() << "\n\n";
-  out << std::setw(40) << "Gate Expansion Time: " << std::setprecision(5)
-      << fta->exp_time_ << "s\n";
-  out << std::setw(40) << "MCS Generation Time: " << std::setprecision(5)
-      << fta->mcs_time_ - fta->exp_time_ << "s\n";
-  out << std::setw(40) << "Number of Primary Events: "
-      << fta->primary_events_.size() << "\n";
-  out << std::setw(40) << "Number of Gates: "
-      << fta->inter_events_.size() + 1 << "\n";
+  out << std::setw(40) << "Core Analysis Time: " << std::setprecision(5)
+      << fta->analysis_time_ << "s\n";
+  out << std::setw(40) << "Number of Basic Events: "
+      << fta->basic_events_.size() << "\n";
+  out << std::setw(40) << "Number of Gates: " << fta->num_gates_ << "\n";
   out << std::setw(40) << "Limit on order of cut sets: "
       << fta->limit_order_ << "\n";
   out << std::setw(40) << "Minimal Cut Set Maximum Order: "
@@ -73,7 +66,7 @@ void Reporter::ReportFta(
       << fta->min_cut_sets_.size() << "\n";
   out.flush();
 
-  int order = 1;  // Order of minimal cut sets.
+  int order = 0;  // Order of minimal cut sets.
   std::vector<int> order_numbers;  // Number of sets per order.
   while (order < fta->max_order_ + 1) {
     std::set< std::set<std::string> >::const_iterator it_min;
@@ -116,8 +109,8 @@ void Reporter::ReportFta(
   out << std::left;
   out << std::setw(20) << "Order" << "Number\n";
   out << std::setw(20) << "-----" << "------\n";
-  for (int i = 1; i < fta->max_order_ + 1; ++i) {
-    out << "  " << std::setw(18) << i << order_numbers[i-1] << "\n";
+  for (int i = 0; i < fta->max_order_ + 1; ++i) {
+    out << "  " << std::setw(18) << i << order_numbers[i] << "\n";
   }
   out << "  " << std::setw(18) << "ALL" << fta->min_cut_sets_.size() << "\n";
   out.flush();
@@ -137,8 +130,10 @@ void Reporter::ReportProbability(
   out << "====================\n\n";
   out << std::left;
   out << std::setw(40) << "Time: " << pt::second_clock::local_time() << "\n\n";
-  out << std::setw(40) << "Probability Operations Time: "
-      << std::setprecision(5) << prob_analysis->p_time_ << "s\n\n";
+  out << std::setw(40) << "Probability Calculations Time: "
+      << std::setprecision(5) << prob_analysis->p_time_ << "s\n";
+  out << std::setw(40) << "Importance Calculations Time: "
+      << std::setprecision(5) << prob_analysis->imp_time_ << "s\n\n";
   out << std::setw(40) << "Approximation:" << prob_analysis->approx_ << "\n";
   out << std::setw(40) << "Limit on series: " << prob_analysis->nsums_ << "\n";
   out << std::setw(40) << "Cut-off probability for cut sets: "
@@ -185,6 +180,8 @@ void Reporter::ReportUncertainty(
   out << std::setw(40) << "Time: " << pt::second_clock::local_time() << "\n\n";
   out << std::setw(40) << "Uncertainty Calculation Time: "
       << uncert_analysis->p_time_ << "\n";
+  out << std::setw(40) << "Number of trials: "
+      << uncert_analysis->num_trials_ << "\n";
   out << std::setw(40) << "Mean: " << uncert_analysis->mean() << "\n";
   out << std::setw(40) << "Standard deviation: "
       << uncert_analysis->sigma() << "\n";
@@ -210,15 +207,15 @@ void Reporter::ReportMcsProb(
   // Convert MCS into representative strings.
   std::map< std::set<std::string>, std::vector<std::string> > lines;
   Reporter::McsToPrint(prob_analysis->min_cut_sets_,
-                       prob_analysis->primary_events_,
+                       prob_analysis->basic_events_,
                        &lines);
 
   out << "\nMinimal Cut Set Probabilities Sorted by Order:\n";
   out << "----------------------------------------------\n";
   out.flush();
 
-  int order = 1;  // Order of minimal cut sets.
-  int max_order = 1;
+  int order = 0;  // Order of minimal cut sets.
+  int max_order = 0;
 
   std::set< std::set<std::string> >::const_iterator it_min;
   // Find max order
@@ -297,7 +294,7 @@ void Reporter::ReportMcsProb(
 
 void Reporter::McsToPrint(
     const std::set< std::set<std::string> >& min_cut_sets,
-    const boost::unordered_map<std::string, PrimaryEventPtr>& primary_events,
+    const boost::unordered_map<std::string, BasicEventPtr>& basic_events,
     std::map< std::set<std::string>, std::vector<std::string> >* lines) {
 
   std::set< std::set<std::string> >::const_iterator it_min;
@@ -318,9 +315,9 @@ void Reporter::McsToPrint(
       assert(names.size() > 0);
       std::string name = "";
       if (names.size() == 1) {
-        name = primary_events.find(names[0])->second->orig_id();
+        name = basic_events.find(names[0])->second->orig_id();
       } else if (names.size() == 2) {
-        name = "NOT " + primary_events.find(names[1])->second->orig_id();
+        name = "NOT " + basic_events.find(names[1])->second->orig_id();
       }
 
       if (line.length() + name.length() + 2 > 60) {
@@ -347,22 +344,29 @@ void Reporter::ReportImportance(
     const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
     std::ostream& out) {
   std::ios::fmtflags fmt(out.flags());  // Save the state to recover later.
-  // Primary event analysis.
-  out << "\nPrimary Event Analysis:\n";
+  // Basic event analysis.
+  out << "\nBasic Event Analysis:\n";
   out << "-----------------------\n";
   out << std::left;
-  out << std::setw(40) << "Event" << std::setw(20) << "Failure Contrib."
-      << "Importance\n\n";
+  out << std::setw(20) << "Event"
+      << std::setw(12) << "DIF"
+      << std::setw(12) << "MIF"
+      << std::setw(12) << "CIF"
+      << std::setw(12) << "RRW" << "RAW"
+      << "\n\n";
   std::multimap < double, std::string >::const_reverse_iterator it_contr;
   for (it_contr = prob_analysis->ordered_primaries_.rbegin();
        it_contr != prob_analysis->ordered_primaries_.rend(); ++it_contr) {
     out << std::left;
-    out << std::setw(40)
-        << prob_analysis->primary_events_.find(it_contr->second)->second
-              ->orig_id()
-        << std::setw(20) << it_contr->first
-        << 100 * it_contr->first / prob_analysis->p_total_ << "%\n";
-    out.flush();
+    out << std::setw(20)
+        << prob_analysis->basic_events_.find(it_contr->second)->second
+              ->orig_id();
+    for (int i = 0; i < 5; ++i) {
+        if (i < 4) out << std::setw(12);
+        out << std::setprecision(4)
+            << prob_analysis->importance_.find(it_contr->second)->second[i];
+    }
+    out << "\n";
   }
   out.flags(fmt);  // Restore the initial state.
 }

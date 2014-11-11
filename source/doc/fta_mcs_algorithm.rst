@@ -16,7 +16,7 @@ The second operation is to find modules of the tree. Modules are defined as
 gates or group of events that do not share events or modules with other gates.
 Modules are expanded to get the number of primary events of the module. If
 the module appears in the final minimal cut sets, then the cut sets are
-populated with the event of the module. [not implemented]
+populated with the event of the module.
 
 
 Minimal Cut Set (MCS) Generation Algorithm
@@ -43,15 +43,12 @@ so Rule 3 is satisfied automatically. Elements in a set have AND relationship
 with each other; whereas sets in a set of sets have OR relationship with
 each other. Therefore, sets of elements represent cut sets.
 
-A special Superset class is implemented to deal with various types of
-events in the set. It separates intermediate and primary events.
-
 Gates of intermediate events affect cut sets. Each OR gate adds new sets into
 the set of sets, while each AND gate adds additional elements into one
 specific set inside the set of sets.
 
 In the first pass, the fault tree is traversed from the top to down, and all
-cut sets are generated. In this step, Superset class may cancel cut sets if
+cut sets are generated. In this step, the analysis may cancel cut sets if
 the fault tree is non-coherent and contains NOT elements. Also, if a cut set
 is larger than the limit set by a user, it is discarded.
 
@@ -85,7 +82,7 @@ The MOCUS algorithm is used by many FTA tools, such as RiskSpectrum,
 SAPHIRE and XFTA.
 
 The second algorithm uses various types of the Binary Decision Diagram (BDD)
-for Boolean operations. This is a bottom-up algorithm and seems to be
+for Boolean operations. This is a bottom-up algorithm that is
 mature and well tuned for PRA and other applications like electronics.
 This method consists of many complex algorithms of BDD to find MCS.
 The BDD algorithms tend to be faster than MOCUS and other algorithms; however,

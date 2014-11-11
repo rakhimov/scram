@@ -70,4 +70,12 @@ The Algorithm to Generate Minimal Cut Sets
 - Remove cut sets that are larger than the specified maximum order.
 - Remove cut sets with lower than cutoff probability. [not implemented]
 
+UNITY and NULL Cases
+====================
+
+The analyzed minimal cut sets may result in NULL or UNITY state, which may
+indicate guaranteed success or failure. This cases are handled as special and
+given an appropriate messages and probabilities. For example, UNITY state will
+show only one minimal cut set of order 0 but probability 1.
+
 More information in :ref:`mcs_algorithm`.

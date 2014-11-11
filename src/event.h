@@ -12,8 +12,6 @@
 #include "expression.h"
 #include "error.h"
 
-typedef boost::shared_ptr<scram::Expression> ExpressionPtr;
-
 namespace scram {
 
 class Gate;  // Needed for being a parent of an event.
@@ -94,11 +92,6 @@ class Gate : public Event {
   /// @throws LogicError if the child is being re-inserted.
   void AddChild(const boost::shared_ptr<Event>& child);
 
-  /// Adds children of another gate to this gate.
-  /// If this gate exists as a child then it is removed from the children.
-  /// @param[in] gate The gate which children are to be added to this gate.
-  void MergeGate(const boost::shared_ptr<Gate>& gate);
-
   /// @returns The children of this gate.
   /// @throws LogicError if there are no children, which should be checked
   ///                    at gate initialization.
@@ -132,21 +125,6 @@ class PrimaryEvent : public Event {
   /// @returns The type of the primary event.
   inline const std::string& type() const { return type_; }
 
-  /// @returns The mean probability of failure of this event.
-  /// @throws IllegalOperation if the base class function is called where
-  ///                          a derived class operation is meant.
-  virtual double p() const {
-    throw IllegalOperation("Primary event is not fully defined.");
-  }
-
-  /// Samples probability value from its probability distribution.
-  /// @returns Sampled value.
-  /// @throws IllegalOperation if the base class function is called where
-  ///                          a derived class operation is meant.
-  virtual double SampleProbability() {
-    throw IllegalOperation("Primary event is not fully defined.");
-  }
-
  private:
   /// The type of the primary event.
   std::string type_;
@@ -156,6 +134,8 @@ class PrimaryEvent : public Event {
 /// Representation of a basic event in a fault tree.
 class BasicEvent: public PrimaryEvent {
  public:
+  typedef boost::shared_ptr<Expression> ExpressionPtr;
+
   /// Constructs with id name.
   /// @param[in] id The identifying name of this basic event.
   explicit BasicEvent(std::string id) : PrimaryEvent(id, "basic") {}
@@ -191,6 +171,14 @@ class BasicEvent: public PrimaryEvent {
   /// @returns Indication if this event does not have uncertainty.
   inline bool IsConstant() { return expression_->IsConstant(); }
 
+  /// Validates the probability expressions for the primary event.
+  /// @throws Validation error if anything is wrong.
+  void Validate() {
+    if (expression_->Min() < 0 || expression_->Max() > 1) {
+      throw ValidationError("Expression value is invalid.");
+    }
+  }
+
  private:
   /// Expression that describes this basic event and provides numerical
   /// values for probability calculations.
@@ -211,12 +199,8 @@ class HouseEvent: public PrimaryEvent {
   /// @param[in] constant False or True for the state of this house event.
   inline void state(bool constant) { state_ = constant; }
 
-  /// @returns The mean probability of this basic event.
-  inline double p() const { return state_ ? 1 : 0; }
-
-  /// The sample for house event is constant value.
-  /// @returns Sampled value.
-  inline double SampleProbability() { return state_ ? 1 : 0; }
+  /// @returns The true or false state of this house event.
+  inline bool state() const { return state_; }
 
  private:
   /// Represents the state of the house event.

@@ -14,16 +14,17 @@
 #include "element.h"
 #include "event.h"
 
-typedef boost::shared_ptr<scram::Event> EventPtr;
-typedef boost::shared_ptr<scram::Gate> GatePtr;
-typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
-
 namespace scram {
 
 /// @class FaultTree
 /// Fault tree representation.
 class FaultTree : public Element {
  public:
+  typedef boost::shared_ptr<Gate> GatePtr;
+  typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
+  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+  typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
+
   /// The main constructor of the Fault Tree.
   /// @param[in] name The name identificator of this fault tree.
   explicit FaultTree(std::string name);
@@ -68,7 +69,23 @@ class FaultTree : public Element {
     return primary_events_;
   }
 
+  /// @returns The container of basic events of this tree.
+  /// @warning Validate function must be called before this function.
+  inline const boost::unordered_map<std::string, BasicEventPtr>&
+      basic_events() {
+    return basic_events_;
+  }
+
+  /// @returns The container of house events of this tree.
+  /// @warning Validate function must be called before this function.
+  inline const boost::unordered_map<std::string, HouseEventPtr>&
+      house_events() {
+    return house_events_;
+  }
+
  private:
+  typedef boost::shared_ptr<Event> EventPtr;
+
   /// Traverses the tree to find any cyclicity.
   /// While traversing, this function observes implicitly defined gates, and
   /// those gates are added into the gate containers.
@@ -99,9 +116,17 @@ class FaultTree : public Element {
   /// Holder for intermediate events.
   boost::unordered_map<std::string, GatePtr> inter_events_;
 
-  /// Container for the primary events of the tree.
+  /// Container for primary events of the tree.
   /// This container is filled implicitly by traversing the tree.
   boost::unordered_map<std::string, PrimaryEventPtr> primary_events_;
+
+  /// Container for basic events of the tree.
+  /// This container is filled implicitly by traversing the tree.
+  boost::unordered_map<std::string, BasicEventPtr> basic_events_;
+
+  /// Container for house events of the tree.
+  /// This container is filled implicitly by traversing the tree.
+  boost::unordered_map<std::string, HouseEventPtr> house_events_;
 
   /// Implicitly added gates.
   /// This gates are not added through AddGate() function but by traversing

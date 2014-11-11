@@ -61,18 +61,6 @@ Minor Enhancements and Capabilities
 
   * Expressions for basic events. *Moderate*
 
-- Importance Analysis: *High*
-
-  * Fussel-Vesely
-
-  * Birnbaum
-
-  * Critical
-
-  * Risk Reduction Worth
-
-  * Risk Achievement Worth
-
 - Improve fault tree generator. *Low*
 
 - Create cut set generator. *Low*
@@ -114,8 +102,6 @@ Platform Support
 
 Coding Specific
 ===============
-
-- Logging system. *Moderate*
 
 - More tests for expressions. *Moderate*
 

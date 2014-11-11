@@ -2,13 +2,14 @@
 /// Main entrance.
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include <boost/exception/all.hpp>
-#include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/program_options.hpp>
 
 #include "error.h"
-#include "fault_tree_analysis.h"
+#include "logger.h"
 #include "risk_analysis.h"
 #include "settings.h"
 #include "version.h"
@@ -26,15 +27,17 @@ using namespace scram;
 /// @returns 1 for errored state.
 /// @returns -1 for information only state like help and version.
 int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
-  std::string usage = "Usage:    scram [input-file] [opts]";
+  std::string usage = "Usage:    scram [input-files] [opts]";
   po::options_description desc("Allowed options");
 
   try {
     desc.add_options()
         ("help,h", "display this help message")
         ("version", "display version information")
-        ("input-file", po::value<std::string>(),
-         "xml input file with analysis entities")
+        ("input-file", po::value< std::vector<std::string> >(),
+         "XML input files with analysis entities")
+        ("config,C", po::value<std::string>(),
+         "XML configuration file for analysis (NOT SUPPERTED)")
         ("validate,v", "only validate input files")
         ("graph-only,g", "produce graph without analysis")
         ("analysis,a", po::value<std::string>()->default_value("default"),
@@ -52,6 +55,7 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
         ("trials,S", po::value<int>()->default_value(1e3),
          "number of trials for Monte Carlo simulations")
         ("output,o", po::value<std::string>(), "output file")
+        ("log,L", "Turn on logging system")
         ;
 
     po::store(po::parse_command_line(argc, argv, desc), *vm);
@@ -63,7 +67,7 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
   po::notify(*vm);
 
   po::positional_options_description p;
-  p.add("input-file", 1);
+  p.add("input-file", -1);
 
   po::store(po::command_line_parser(argc, argv).options(desc).positional(p).
             run(), *vm);
@@ -136,15 +140,13 @@ Settings ConstructSettings(const po::variables_map& vm) {
 /// @returns 0 for success.
 /// @returns 1 for errored state.
 int RunScram(const po::variables_map& vm) {
+  if (vm.count("log")) Logger::active() = true;
   // Initiate risk analysis.
   RiskAnalysis* ran = new RiskAnalysis();
   ran->AddSettings(ConstructSettings(vm));
 
-  // Read input files and setup.
-  std::string input_file = vm["input-file"].as<std::string>();
-
-  // Process input and validate it.
-  ran->ProcessInput(input_file);
+  // Process input files and validate it.
+  ran->ProcessInputFiles(vm["input-file"].as< std::vector<std::string> >());
 
   // Stop if only validation is requested.
   if (vm.count("validate")) {
@@ -152,19 +154,20 @@ int RunScram(const po::variables_map& vm) {
     return 0;
   }
 
+  // Output destination.
+  std::string output = "cli";  // Output to command line by default.
+  if (vm.count("output")) {
+    output = vm["output"].as<std::string>();
+  }
+
   // Graph if requested.
   if (vm.count("graph-only")) {
-    ran->GraphingInstructions();
+    ran->GraphingInstructions(output);
     return 0;
   }
 
   ran->Analyze();
 
-  // Report results.
-  std::string output = "cli";  // Output to command line by default.
-  if (vm.count("output")) {
-    output = vm["output"].as<std::string>();
-  }
   ran->Report(output);  // May throw boost exceptions according to Coverity.
 
   delete ran;

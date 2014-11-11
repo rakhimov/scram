@@ -11,24 +11,19 @@ If the current performance is not listed, then the best is the current.
               Best Achieved | Current Performance
 
 
------------ Three Motor -c 1e-8 (p = 0.02115378) -------
+----------- Chinese Tree (mcs = 392) ----------------------
 Standard build:
 ---------------
-- Prob Calculation  0.230s  |
+- Tree Expansion    5.400s  |
+- MCS Generation    5.850s  |
 
+
+
+----------- Chinese Tree -l 5 -s 3 (p = 0.02115378) ---------
 Release build:
 --------------
-- Prob Calculation  0.019s  |
-
-
------------ Three Motor -c 0 (p = 0.02115378) ----------
-Standard build:
----------------
-- Prob Calculation  4.100s  |
-
-Release build:
---------------
-- Prob Calculation  0.320s  |
+- Prob Calculation  34.50s  |
+- Importance Calc.  2.500s  |
 
 
 ---------- fta-200 -l 16 -r (mcs = 8351) ---------------
@@ -58,44 +53,39 @@ Release build:
 ---------- Baobab -l 6 (mcs = 2684) ----------------
 Standard build:
 ---------------
-- Tree Expansion    29.20s  |
-- MCS Generation    0.500s  |
+- Tree Expansion    29.20s  |  infinity
+- MCS Generation    0.500s  |  infinity
 
 Release build:
 --------------
-- Tree Expansion    5.600s  |
-- MCS Generation    0.070s  |
+- Tree Expansion    5.600s  |  infinity
+- MCS Generation    0.070s  |  infinity
 
 
 ---------- Baobab -l 7 (mcs = 17432) ----------------
 Release build:
 --------------
-- Tree Expansion    86.80s  |
-- MCS Generation    2.500s  |
+- Tree Expansion    86.80s  |  infinity
+- MCS Generation    2.500s  |  infinity
 
 
 ---------- CEA9601 -l 4 (mcs = 2732) ----------------
 Release build:
 --------------
-- Tree Expansion    19.50s  |
-- MCS Generation    0.050s  |
+- Tree Expansion    19.50s  |  infinity
+- MCS Generation    0.050s  |  infinity
 
 
 ---------- CEA9601 -l 5 (mcs = 3274) ----------------
 Release build:
 --------------
-- Tree Expansion    43.40s  |
-- MCS Generation    0.130s  |
+- Tree Expansion    43.40s  |  infinity
+- MCS Generation    0.130s  |  infinity
 
 
 ==================== Uncertainty Analysis =================
 
------------ Three Motor -c 1e-8 -a mc -s 6 -------
-
-Standard build:
----------------
-- Calculation Time  47.60s  |
-
+----------- Chinese Tree -l 5 -s 3 -a mc -------
 Release build:
 --------------
-- Calculation Time  0.000s  |
+- Calculation Time  74.80s  |

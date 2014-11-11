@@ -2,15 +2,12 @@
 /// Implements Grapher.
 #include "grapher.h"
 
-#include <fstream>
-#include <iomanip>
 #include <iostream>
-#include <iterator>
-#include <sstream>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/date_time.hpp>
+#include <boost/pointer_cast.hpp>
 
 #include "error.h"
 
@@ -37,26 +34,13 @@ Grapher::Grapher() {
 
 void Grapher::GraphFaultTree(const FaultTreePtr& fault_tree,
                              bool prob_requested,
-                             std::string output) {
+                             std::ostream& out) {
   // The structure of the output:
   // List gates with their children following the tree structure.
   // List reused intermediate events as transfer gates.
   // List gates and primary events' descriptions.
-  assert(output != "");
-  std::string graph_name = output;
-  graph_name.erase(graph_name.find_last_of("."), std::string::npos);
 
-  std::string output_path = graph_name + "_" + fault_tree->name() + ".dot";
-
-  graph_name = graph_name.substr(graph_name.find_last_of("/") +
-                                 1, std::string::npos);
-  std::ofstream out(output_path.c_str());
-  if (!out.good()) {
-    throw IOError(output_path +  " : Cannot write the graphing file.");
-  }
-
-  boost::to_upper(graph_name);
-  out << "digraph " << graph_name << " {\n";
+  out << "digraph " << fault_tree->name() << " {\n";
 
   // Write top event.
   // Keep track of number of repetitions of the primary events.
@@ -91,7 +75,7 @@ void Grapher::GraphNode(
     const boost::unordered_map<std::string, PrimaryEventPtr>& primary_events,
     std::map<std::string, int>* pr_repeat,
     std::map<std::string, int>* in_repeat,
-    std::ofstream& out) {
+    std::ostream& out) {
   // Populate intermediate and primary events of the input inter event.
   std::map<std::string, EventPtr> events_children = t->children();
   std::map<std::string, EventPtr>::iterator it_child;
@@ -126,7 +110,7 @@ void Grapher::GraphNode(
   }
 }
 
-void Grapher::FormatTopEvent(const GatePtr& top_event, std::ofstream& out) {
+void Grapher::FormatTopEvent(const GatePtr& top_event, std::ostream& out) {
   std::string gate = top_event->type();
 
   // Special case for inhibit gate.
@@ -155,7 +139,7 @@ void Grapher::FormatTopEvent(const GatePtr& top_event, std::ofstream& out) {
 void Grapher::FormatIntermediateEvents(
     const boost::unordered_map<std::string, GatePtr>& inter_events,
     const std::map<std::string, int>& in_repeat,
-    std::ofstream& out) {
+    std::ostream& out) {
   std::map<std::string, int>::const_iterator it;
   for (it = in_repeat.begin(); it != in_repeat.end(); ++it) {
     std::string gate = inter_events.find(it->first)->second->type();
@@ -198,27 +182,38 @@ void Grapher::FormatPrimaryEvents(
     const boost::unordered_map<std::string, PrimaryEventPtr>& primary_events,
     const std::map<std::string, int>& pr_repeat,
     bool prob_requested,
-    std::ofstream& out) {
+    std::ostream& out) {
   std::map<std::string, int>::const_iterator it;
   for (it = pr_repeat.begin(); it != pr_repeat.end(); ++it) {
     for (int i = 0; i < it->second + 1; ++i) {
-      std::string id = it->first;
-      std::string type = primary_events.find(id)->second->type();
-      std::string orig_name = primary_events.find(id)->second->orig_id();
+      PrimaryEventPtr primary_event = primary_events.find(it->first)->second;
+
+      std::string type = primary_event->type();
       // Detect undeveloped or conditional event.
-      if (type == "basic" &&
-          primary_events.find(id)->second->HasAttribute("flavor")) {
-        type = primary_events.find(id)->second->GetAttribute("flavor").value;
+      if (type == "basic" && primary_event->HasAttribute("flavor")) {
+        type = primary_event->GetAttribute("flavor").value;
       }
 
-      out << "\"" << orig_name << "_R" << i
+      out << "\"" << primary_event->orig_id() << "_R" << i
           << "\" [shape=circle, "
           << "height=1, fontsize=10, fixedsize=true, "
           << "fontcolor=" << event_colors_.find(type)->second
-          << ", " << "label=\"" << orig_name << "\\n["
+          << ", " << "label=\"" << primary_event->orig_id() << "\\n["
           << type << "]";
-      if (prob_requested) { out << "\\n"
-                                << primary_events.find(id)->second->p(); }
+
+      if (prob_requested) {
+        out << "\\n";
+        if (type == "house") {
+          std::string state =
+              boost::dynamic_pointer_cast<HouseEvent>(primary_event)->state() ?
+              "True" : "False";
+          out << state;
+        } else {
+          // Note that this might a flavored type of a basic event.
+          double p = boost::dynamic_pointer_cast<BasicEvent>(primary_event)->p();
+          out << p;
+        }
+      }
       out << "\"]\n";
     }
   }

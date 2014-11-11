@@ -12,12 +12,9 @@
 #include <boost/unordered_map.hpp>
 #include <libxml++/libxml++.h>
 
-#include "element.h"
 #include "event.h"
 #include "expression.h"
-#include "fault_tree.h"
 #include "fault_tree_analysis.h"
-#include "grapher.h"
 #include "probability_analysis.h"
 #include "settings.h"
 #include "uncertainty_analysis.h"
@@ -25,23 +22,10 @@
 class RiskAnalysisTest;
 class PerformanceTest;
 
-typedef boost::shared_ptr<scram::Element> ElementPtr;
-
-typedef boost::shared_ptr<scram::Event> EventPtr;
-typedef boost::shared_ptr<scram::Gate> GatePtr;
-typedef boost::shared_ptr<scram::PrimaryEvent> PrimaryEventPtr;
-typedef boost::shared_ptr<scram::BasicEvent> BasicEventPtr;
-typedef boost::shared_ptr<scram::HouseEvent> HouseEventPtr;
-
-typedef boost::shared_ptr<scram::Expression> ExpressionPtr;
-typedef boost::shared_ptr<scram::Parameter> ParameterPtr;
-
-typedef boost::shared_ptr<scram::FaultTree> FaultTreePtr;
-typedef boost::shared_ptr<scram::FaultTreeAnalysis> FaultTreeAnalysisPtr;
-typedef boost::shared_ptr<scram::ProbabilityAnalysis> ProbabilityAnalysisPtr;
-typedef boost::shared_ptr<scram::UncertaintyAnalysis> UncertaintyAnalysisPtr;
-
 namespace scram {
+
+class Element;
+class FaultTree;
 
 /// @class RiskAnalysis
 /// Main system that performs analyses.
@@ -59,24 +43,32 @@ class RiskAnalysis {
   /// @param[in] settings Configured settings for analysis.
   void AddSettings(const Settings& settings) { settings_ = settings; }
 
-  /// Reads input file with the structure of analysis entities.
+  /// Reads one input file with the structure of analysis entities.
   /// Initializes the analysis from the given input file.
   /// Puts all events into their appropriate containers.
   /// @param[in] xml_file The formatted xml input file.
   /// @throws ValidationError if input contains errors.
   /// @throws ValueError if input values are not valid.
-  /// @throws IOError if the input file is not accessable.
-  /// @todo May have default configurations for analysis off all input files.
+  /// @throws IOError if an input file is not accessable.
+  /// @deprecated Use multiple file processing method instead.
   void ProcessInput(std::string xml_file);
 
+  /// Reads input files with the structure of analysis entities.
+  /// Initializes the analysis from the given input files.
+  /// Puts all events into their appropriate containers.
+  /// @param[in] xml_files The formatted xml input files.
+  /// @throws ValidationError if input contains errors.
+  /// @throws ValueError if input values are not valid.
+  /// @throws IOError if an input file is not accessable.
+  /// @todo May have default configurations for analysis off all input files.
+  void ProcessInputFiles(const std::vector<std::string>& xml_files);
+
   /// Graphing or other visual resources for the analysis if applicable.
-  /// Outputs a file with instructions for graphviz dot to create a fault tree.
-  /// @note This function must be called only after initializing the tree.
-  /// @note The name of the output file is the same as the input file, but
-  /// the extensions are different.
-  /// @throws Error if called before tree initialization from an input file.
+  /// Outputs instructions for graphviz dot to create a fault tree.
+  /// param[out] output The output destination.
+  /// @note This function must be called only after initialization of the tree.
   /// @throws IOError if the output file is not accessable.
-  void GraphingInstructions();
+  void GraphingInstructions(std::string output);
 
   /// Performs the main analysis operations.
   /// Analyzes the fault tree and performs computations.
@@ -92,6 +84,29 @@ class RiskAnalysis {
   void Report(std::string output);
 
  private:
+  typedef boost::shared_ptr<Element> ElementPtr;
+  typedef boost::shared_ptr<Event> EventPtr;
+  typedef boost::shared_ptr<Gate> GatePtr;
+  typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
+  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+  typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
+  typedef boost::shared_ptr<FaultTree> FaultTreePtr;
+  typedef boost::shared_ptr<Expression> ExpressionPtr;
+  typedef boost::shared_ptr<Parameter> ParameterPtr;
+  typedef boost::shared_ptr<FaultTreeAnalysis> FaultTreeAnalysisPtr;
+  typedef boost::shared_ptr<ProbabilityAnalysis> ProbabilityAnalysisPtr;
+  typedef boost::shared_ptr<UncertaintyAnalysis> UncertaintyAnalysisPtr;
+
+  /// Reads one input file with the structure of analysis entities.
+  /// Initializes the analysis from the given input file.
+  /// Puts all events into their appropriate containers.
+  /// @param[in] xml_file The formatted xml input file.
+  /// @throws ValidationError if input contains errors.
+  /// @throws ValueError if input values are not valid.
+  /// @throws IOError if an input file is not accessable.
+  /// @todo May have default configurations for analysis off all input files.
+  void ProcessInputFile(std::string xml_file);
+
   /// Attaches attributes and label to the elements of the analysis.
   /// These attributes are not XML attributes but OpenPSA format defined
   /// arbitrary attributes and label that can be attached to many analysis
@@ -263,6 +278,9 @@ class RiskAnalysis {
   /// Container for fully defined primary events.
   boost::unordered_map<std::string, PrimaryEventPtr> primary_events_;
 
+  /// Container for fully defined basic events.
+  boost::unordered_map<std::string, BasicEventPtr> basic_events_;
+
   /// Events to be defined with their parents saved for later.
   boost::unordered_map<std::string, std::vector<GatePtr> > tbd_events_;
 
@@ -302,9 +320,6 @@ class RiskAnalysis {
 
   /// Uncertainty analyses that are performed.
   std::vector<UncertaintyAnalysisPtr> uncertainty_analyses_;
-
-  /// Input file path.
-  std::string input_file_;
 
   /// Indicator if probability calculations are requested.
   bool prob_requested_;

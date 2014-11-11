@@ -5,9 +5,7 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
-#include <iterator>
 #include <sstream>
-#include <vector>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
@@ -17,28 +15,18 @@
 #include <schema.h>  // For static building.
 #endif
 
+#include "element.h"
 #include "env.h"
 #include "error.h"
+#include "fault_tree.h"
+#include "grapher.h"
 #include "reporter.h"
 #include "xml_parser.h"
-
-typedef boost::shared_ptr<scram::ConstantExpression> ConstantExpressionPtr;
-typedef boost::shared_ptr<scram::ExponentialExpression>
-    ExponentialExpressionPtr;
-typedef boost::shared_ptr<scram::GlmExpression> GlmExpressionPtr;
-typedef boost::shared_ptr<scram::WeibullExpression> WeibullExpressionPtr;
-typedef boost::shared_ptr<scram::UniformDeviate> UniformDeviatePtr;
-typedef boost::shared_ptr<scram::NormalDeviate> NormalDeviatePtr;
-typedef boost::shared_ptr<scram::LogNormalDeviate> LogNormalDeviatePtr;
-typedef boost::shared_ptr<scram::GammaDeviate> GammaDeviatePtr;
-typedef boost::shared_ptr<scram::BetaDeviate> BetaDeviatePtr;
-typedef boost::shared_ptr<scram::Histogram> HistogramPtr;
 
 namespace scram {
 
 RiskAnalysis::RiskAnalysis(std::string config_file)
-    : prob_requested_(false),
-      input_file_("") {
+    : prob_requested_(false) {
   // Add valid gate types.
   gate_types_.insert("and");
   gate_types_.insert("or");
@@ -72,53 +60,23 @@ RiskAnalysis::RiskAnalysis(std::string config_file)
 }
 
 void RiskAnalysis::ProcessInput(std::string xml_file) {
-  std::ifstream file_stream(xml_file.c_str());
-  if (!file_stream) {
-    throw IOError("The file '" + xml_file + "' could not be loaded.");
-  }
+  std::vector<std::string> single;
+  single.push_back(xml_file);
+  RiskAnalysis::ProcessInputFiles(single);
+}
 
+void RiskAnalysis::ProcessInputFiles(
+    const std::vector<std::string>& xml_files) {
   // Assume that setting are configured.
   mission_time_->mission_time(settings_.mission_time_);
 
-  input_file_ = xml_file;
-
-  std::stringstream stream;
-  stream << file_stream.rdbuf();
-  file_stream.close();
-
-  boost::shared_ptr<XMLParser> parser(new XMLParser());
-  parser->Init(stream);
-
-  std::stringstream schema;
-#if EMBED_SCHEMA
-  schema << g_schema_content;
-#else
-  std::string schema_path = Env::rng_schema();
-  std::ifstream schema_stream(schema_path.c_str());
-  schema << schema_stream.rdbuf();
-  schema_stream.close();
-#endif
-  parser->Validate(schema);
-
-  xmlpp::Document* doc = parser->Document();
-  const xmlpp::Node* root = doc->get_root_node();
-  assert(root->get_name() == "opsa-mef");
-  xmlpp::NodeSet roots_children = root->find("./*");
-  xmlpp::NodeSet::iterator it_ch;
-  for (it_ch = roots_children.begin(); it_ch != roots_children.end(); ++it_ch) {
-    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it_ch);
-    assert(element);
-
-    std::string name = element->get_name();
-    if (name == "define-fault-tree") {
-      // Handle the fault tree initialization.
-      RiskAnalysis::DefineFaultTree(element);
-    } else if (name == "model-data") {
-      // Handle the data.
-      RiskAnalysis::ProcessModelData(element);
-    } else {
-      // Not yet capable of handling other analysis.
-      throw(ValidationError("Cannot handle '" + name + "'"));
+  std::vector<std::string>::const_iterator it;
+  for (it = xml_files.begin(); it != xml_files.end(); ++it) {
+    try {
+      RiskAnalysis::ProcessInputFile(*it);
+    } catch (ValidationError& err) {
+      err.msg("In file '" + *it + "', " + err.msg());
+      throw err;
     }
   }
 
@@ -134,6 +92,7 @@ void RiskAnalysis::ProcessInput(std::string xml_file) {
     for (it_b = tbd_basic_events_.begin(); it_b != tbd_basic_events_.end();
          ++it_b) {
       primary_events_.insert(std::make_pair(it_b->first, it_b->second));
+      basic_events_.insert(std::make_pair(it_b->first, it_b->second));
     }
 
     boost::unordered_map<std::string, std::vector<GatePtr> >::iterator it_e;
@@ -141,6 +100,7 @@ void RiskAnalysis::ProcessInput(std::string xml_file) {
       BasicEventPtr child(new BasicEvent(it_e->first));
       child->orig_id(tbd_orig_ids_.find(it_e->first)->second);
       primary_events_.insert(std::make_pair(it_e->first, child));
+      basic_events_.insert(std::make_pair(it_e->first, child));
       std::vector<GatePtr>::iterator itvec = it_e->second.begin();
       for (; itvec != it_e->second.end(); ++itvec) {
         (*itvec)->AddChild(child);
@@ -153,12 +113,25 @@ void RiskAnalysis::ProcessInput(std::string xml_file) {
   RiskAnalysis::ValidateInitialization();
 }
 
-void RiskAnalysis::GraphingInstructions() {
+void RiskAnalysis::GraphingInstructions(std::string output) {
   std::map<std::string, FaultTreePtr>::iterator it;
   for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
-    std::string output_file_name = input_file_;
+    // Check if output to file is requested.
+    std::streambuf* buf;
+    std::ofstream of;
+    if (output != "cli") {
+      of.open(output.c_str());
+      if (!of.good()) {
+        throw IOError(output +  " : Cannot write the graphing file.");
+      }
+      buf = of.rdbuf();
+
+    } else {
+      buf = std::cout.rdbuf();
+    }
+    std::ostream out(buf);
     Grapher gr = Grapher();
-    gr.GraphFaultTree(it->second, prob_requested_, output_file_name);
+    gr.GraphFaultTree(it->second, prob_requested_, out);
   }
 }
 
@@ -168,7 +141,6 @@ void RiskAnalysis::Analyze() {
 
   std::map<std::string, FaultTreePtr>::iterator it;
   for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
-    std::string output_file_name = input_file_ + "_" + it->second->name();
     FaultTreeAnalysisPtr fta(new FaultTreeAnalysis(settings_.limit_order_));
     fta->Analyze(it->second);
     ftas_.push_back(fta);
@@ -178,7 +150,7 @@ void RiskAnalysis::Analyze() {
         ProbabilityAnalysisPtr pa(
             new ProbabilityAnalysis(settings_.approx_, settings_.num_sums_,
                                     settings_.cut_off_));
-        pa->UpdateDatabase(it->second->primary_events());
+        pa->UpdateDatabase(it->second->basic_events());
         pa->Analyze(fta->min_cut_sets());
         prob_analyses_.push_back(pa);
 
@@ -186,7 +158,7 @@ void RiskAnalysis::Analyze() {
         UncertaintyAnalysisPtr ua(new UncertaintyAnalysis(settings_.num_sums_,
                                                           settings_.cut_off_,
                                                           settings_.trials_));
-        ua->UpdateDatabase(it->second->primary_events());
+        ua->UpdateDatabase(it->second->basic_events());
         ua->Analyze(fta->min_cut_sets());
         uncertainty_analyses_.push_back(ua);
       }
@@ -202,6 +174,9 @@ void RiskAnalysis::Report(std::string output) {
   std::ofstream of;
   if (output != "cli") {
     of.open(output.c_str());
+    if (!of.good()) {
+      throw IOError(output +  " : Cannot write the output file.");
+    }
     buf = of.rdbuf();
 
   } else {
@@ -230,8 +205,58 @@ void RiskAnalysis::Report(std::string output) {
   }
 }
 
-void RiskAnalysis::AttachLabelAndAttributes(const xmlpp::Element* element_node,
-                                            const ElementPtr& element) {
+void RiskAnalysis::ProcessInputFile(std::string xml_file) {
+  std::ifstream file_stream(xml_file.c_str());
+  if (!file_stream) {
+    throw IOError("The file '" + xml_file + "' could not be loaded.");
+  }
+
+  std::stringstream stream;
+  stream << file_stream.rdbuf();
+  file_stream.close();
+
+  boost::shared_ptr<XMLParser> parser(new XMLParser());
+  parser->Init(stream);
+
+  std::stringstream schema;
+#if EMBED_SCHEMA
+  schema << g_schema_content;
+#else
+  std::string schema_path = Env::rng_schema();
+  std::ifstream schema_stream(schema_path.c_str());
+  schema << schema_stream.rdbuf();
+  schema_stream.close();
+#endif
+  parser->Validate(schema);
+
+  xmlpp::Document* doc = parser->Document();
+  const xmlpp::Node* root = doc->get_root_node();
+  assert(root->get_name() == "opsa-mef");
+  xmlpp::NodeSet roots_children = root->find("./*");
+  xmlpp::NodeSet::iterator it_ch;
+  for (it_ch = roots_children.begin();
+       it_ch != roots_children.end(); ++it_ch) {
+    const xmlpp::Element* element =
+        dynamic_cast<const xmlpp::Element*>(*it_ch);
+    assert(element);
+
+    std::string name = element->get_name();
+    if (name == "define-fault-tree") {
+      // Handle the fault tree initialization.
+      RiskAnalysis::DefineFaultTree(element);
+    } else if (name == "model-data") {
+      // Handle the data.
+      RiskAnalysis::ProcessModelData(element);
+    } else {
+      // Not yet capable of handling other analysis.
+      throw(ValidationError("Cannot handle '" + name + "'"));
+    }
+  }
+}
+
+void RiskAnalysis::AttachLabelAndAttributes(
+    const xmlpp::Element* element_node,
+    const ElementPtr& element) {
   xmlpp::NodeSet labels = element_node->find("./*[name() = 'label']");
   if (!labels.empty()) {
     assert(labels.size() == 1);
@@ -341,6 +366,7 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
 
 void RiskAnalysis::ProcessFormula(const GatePtr& gate,
                                   const xmlpp::NodeSet& events) {
+  std::set<std::string> children_id;  // To detect repeated children.
   xmlpp::NodeSet::const_iterator it;
   for (it = events.begin(); it != events.end(); ++it) {
     const xmlpp::Element* event = dynamic_cast<const xmlpp::Element*>(*it);
@@ -349,6 +375,15 @@ void RiskAnalysis::ProcessFormula(const GatePtr& gate,
     boost::trim(orig_id);
     std::string id = orig_id;
     boost::to_lower(id);
+
+    if (children_id.count(id)) {
+      std::stringstream msg;
+      msg << "Line " << event->get_line() << ":\n";
+      msg << "Detected a repeated child " << orig_id;
+      throw ValidationError(msg.str());
+    } else {
+      children_id.insert(id);
+    }
 
     std::string name = event->get_name();
     assert(name == "event" || name == "gate" || name == "basic-event" ||
@@ -377,8 +412,8 @@ void RiskAnalysis::ProcessFormula(const GatePtr& gate,
       RiskAnalysis::ProcessFormulaHouseEvent(event, gate, child);
     }
 
-    child->AddParent(gate);
     gate->AddChild(child);
+    child->AddParent(gate);
   }
 }
 
@@ -552,12 +587,14 @@ void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node) {
   if (tbd_basic_events_.count(id)) {
     basic_event = tbd_basic_events_.find(id)->second;
     primary_events_.insert(std::make_pair(id, basic_event));
+    basic_events_.insert(std::make_pair(id, basic_event));
     tbd_basic_events_.erase(id);
 
   } else {
     basic_event = BasicEventPtr(new BasicEvent(id));
     basic_event->orig_id(orig_id);
     primary_events_.insert(std::make_pair(id, basic_event));
+    basic_events_.insert(std::make_pair(id, basic_event));
     RiskAnalysis::UpdateIfLateEvent(basic_event);
   }
 
@@ -715,6 +752,7 @@ void RiskAnalysis::GetExpression(const xmlpp::Element* expr_element,
 
 bool RiskAnalysis::GetConstantExpression(const xmlpp::Element* expr_element,
                                          ExpressionPtr& expression) {
+  typedef boost::shared_ptr<ConstantExpression> ConstantExpressionPtr;
   assert(expr_element);
   std::string expr_name = expr_element->get_name();
   if (expr_name == "float" || expr_name == "int") {
@@ -780,7 +818,8 @@ bool RiskAnalysis::GetDeviateExpression(const xmlpp::Element* expr_element,
     ExpressionPtr max;
     GetExpression(element, max);
 
-    expression = UniformDeviatePtr(new UniformDeviate(min, max));
+    expression = boost::shared_ptr<UniformDeviate>(
+        new UniformDeviate(min, max));
 
   } else if (expr_name == "normal-deviate") {
     assert(expr_element->find("./*").size() == 2);
@@ -796,7 +835,8 @@ bool RiskAnalysis::GetDeviateExpression(const xmlpp::Element* expr_element,
     ExpressionPtr sigma;
     GetExpression(element, sigma);
 
-    expression = NormalDeviatePtr(new NormalDeviate(mean, sigma));
+    expression = boost::shared_ptr<NormalDeviate>(
+        new NormalDeviate(mean, sigma));
 
   } else if (expr_name == "lognormal-deviate") {
     assert(expr_element->find("./*").size() == 3);
@@ -818,7 +858,8 @@ bool RiskAnalysis::GetDeviateExpression(const xmlpp::Element* expr_element,
     ExpressionPtr level;
     GetExpression(element, level);
 
-    expression = LogNormalDeviatePtr(new LogNormalDeviate(mean, ef, level));
+    expression = boost::shared_ptr<LogNormalDeviate>(
+        new LogNormalDeviate(mean, ef, level));
 
   } else if (expr_name == "gamma-deviate") {
     assert(expr_element->find("./*").size() == 2);
@@ -834,7 +875,7 @@ bool RiskAnalysis::GetDeviateExpression(const xmlpp::Element* expr_element,
     ExpressionPtr theta;
     GetExpression(element, theta);
 
-    expression = GammaDeviatePtr(new GammaDeviate(k, theta));
+    expression = boost::shared_ptr<GammaDeviate>(new GammaDeviate(k, theta));
 
   } else if (expr_name == "beta-deviate") {
     assert(expr_element->find("./*").size() == 2);
@@ -850,7 +891,7 @@ bool RiskAnalysis::GetDeviateExpression(const xmlpp::Element* expr_element,
     ExpressionPtr beta;
     GetExpression(element, beta);
 
-    expression = BetaDeviatePtr(new BetaDeviate(alpha, beta));
+    expression = boost::shared_ptr<BetaDeviate>(new BetaDeviate(alpha, beta));
 
   } else if (expr_name == "histogram") {
     std::vector<ExpressionPtr> boundaries;
@@ -874,7 +915,8 @@ bool RiskAnalysis::GetDeviateExpression(const xmlpp::Element* expr_element,
       GetExpression(element, weight);
       weights.push_back(weight);
     }
-    expression = HistogramPtr(new Histogram(boundaries, weights));
+    expression = boost::shared_ptr<Histogram>(
+        new Histogram(boundaries, weights));
 
   } else if (expr_name == "exponential") {
     assert(expr_element->find("./*").size() == 2);
@@ -890,8 +932,9 @@ bool RiskAnalysis::GetDeviateExpression(const xmlpp::Element* expr_element,
     ExpressionPtr time;
     GetExpression(element, time);
 
-    expression = ExponentialExpressionPtr(new ExponentialExpression(lambda,
-                                                                    time));
+    expression = boost::shared_ptr<ExponentialExpression>(
+        new ExponentialExpression(lambda, time));
+
   } else if (expr_name == "GLM") {
     assert(expr_element->find("./*").size() == 4);
     const xmlpp::Element* element =
@@ -918,7 +961,8 @@ bool RiskAnalysis::GetDeviateExpression(const xmlpp::Element* expr_element,
     ExpressionPtr time;
     GetExpression(element, time);
 
-    expression = GlmExpressionPtr(new GlmExpression(gamma, lambda, mu, time));
+    expression = boost::shared_ptr<GlmExpression>(
+        new GlmExpression(gamma, lambda, mu, time));
 
   } else if (expr_name == "Weibull") {
     assert(expr_element->find("./*").size() == 4);
@@ -946,8 +990,8 @@ bool RiskAnalysis::GetDeviateExpression(const xmlpp::Element* expr_element,
     ExpressionPtr time;
     GetExpression(element, time);
 
-    expression = WeibullExpressionPtr(new WeibullExpression(alpha, beta,
-                                                            t0, time));
+    expression = boost::shared_ptr<WeibullExpression>(
+        new WeibullExpression(alpha, beta, t0, time));
   } else {
     return false;
   }
@@ -1284,10 +1328,13 @@ void RiskAnalysis::ValidateExpressions() {
   if (prob_requested_) {
     std::stringstream msg;
     msg << "";
-    boost::unordered_map<std::string, PrimaryEventPtr>::iterator it;
-    for (it = primary_events_.begin(); it != primary_events_.end(); ++it) {
-      double p = it->second->p();
-      if (p < 0 || p > 1) msg << it->second->orig_id() << " : " << p << "\n";
+    boost::unordered_map<std::string, BasicEventPtr>::iterator it;
+    for (it = basic_events_.begin(); it != basic_events_.end(); ++it) {
+      try {
+        it->second->Validate();
+      } catch (ValidationError& err) {
+        msg << it->second->orig_id() << " : " << err.msg() << "\n";
+      }
     }
     if (msg.str() != "") {
       std::string head = "Invalid probabilities detected:\n";
