@@ -17,6 +17,7 @@ class OpenExpression : public Expression {
   inline double Sample() { return sample; }
   inline double Max() { return sample; }
   inline double Min() { return sample; }
+  inline bool IsConstant() { return true; }
   void Validate() {}
 };
 
@@ -50,6 +51,11 @@ TEST(ExpressionTest, Exponential) {
   EXPECT_THROW(dev->Validate(), InvalidArgument);
   time->sample = 5;
   ASSERT_NO_THROW(dev->Validate());
+
+  double sampled_value = 0;
+  ASSERT_NO_THROW(sampled_value = dev->Sample());
+  EXPECT_EQ(sampled_value, dev->Sample());  // Resampling without resetting.
+  ASSERT_TRUE(dev->IsConstant());
 }
 
 TEST(ExpressionTest, GLM) {
@@ -108,6 +114,11 @@ TEST(ExpressionTest, GLM) {
   EXPECT_THROW(dev->Validate(), InvalidArgument);
   time->sample = 5;
   ASSERT_NO_THROW(dev->Validate());
+
+  double sampled_value = 0;
+  ASSERT_NO_THROW(sampled_value = dev->Sample());
+  EXPECT_EQ(sampled_value, dev->Sample());  // Resampling without resetting.
+  ASSERT_TRUE(dev->IsConstant());
 }
 
 TEST(ExpressionTest, Weibull) {
@@ -174,6 +185,11 @@ TEST(ExpressionTest, Weibull) {
   EXPECT_THROW(dev->Validate(), InvalidArgument);
   time->sample = 50;
   ASSERT_NO_THROW(dev->Validate());
+
+  double sampled_value = 0;
+  ASSERT_TRUE(dev->IsConstant());
+  ASSERT_NO_THROW(sampled_value = dev->Sample());
+  EXPECT_EQ(sampled_value, dev->Sample());  // Resampling without resetting.
 }
 
 // Uniform deviate test for invalid minimum and maximum values.
@@ -194,6 +210,13 @@ TEST(ExpressionTest, UniformDeviate) {
   EXPECT_THROW(dev->Validate(), InvalidArgument);  // min > max
   min->sample = 1;
   ASSERT_NO_THROW(dev->Validate());
+
+  double sampled_value = 0;
+  ASSERT_FALSE(dev->IsConstant());
+  ASSERT_NO_THROW(sampled_value = dev->Sample());
+  EXPECT_EQ(sampled_value, dev->Sample());  // Resampling without resetting.
+  ASSERT_NO_THROW(dev->Reset());
+  EXPECT_NE(sampled_value, dev->Sample());
 }
 
 // Normal deviate test for invalid standard deviation.
@@ -217,6 +240,13 @@ TEST(ExpressionTest, NormalDeviate) {
   EXPECT_THROW(dev->Validate(), InvalidArgument);  // sigma = 0
   sigma->sample = 1;
   EXPECT_NO_THROW(dev->Validate());
+
+  double sampled_value = 0;
+  ASSERT_FALSE(dev->IsConstant());
+  ASSERT_NO_THROW(sampled_value = dev->Sample());
+  EXPECT_EQ(sampled_value, dev->Sample());  // Resampling without resetting.
+  ASSERT_NO_THROW(dev->Reset());
+  EXPECT_NE(sampled_value, dev->Sample());
 }
 
 // Log-Normal deviate test for invalid mean, error factor, and level.
@@ -260,6 +290,13 @@ TEST(ExpressionTest, LogNormalDeviate) {
   EXPECT_THROW(dev->Validate(), InvalidArgument);
   ef->sample = 3;
   ASSERT_NO_THROW(dev->Validate());
+
+  double sampled_value = 0;
+  ASSERT_FALSE(dev->IsConstant());
+  ASSERT_NO_THROW(sampled_value = dev->Sample());
+  EXPECT_EQ(sampled_value, dev->Sample());  // Resampling without resetting.
+  ASSERT_NO_THROW(dev->Reset());
+  EXPECT_NE(sampled_value, dev->Sample());
 }
 
 // Gamma deviate test for invalid arguments.
@@ -298,6 +335,13 @@ TEST(ExpressionTest, GammaDeviate) {
   EXPECT_THROW(dev->Validate(), InvalidArgument);
   theta->sample = 1;
   ASSERT_NO_THROW(dev->Validate());
+
+  double sampled_value = 0;
+  ASSERT_FALSE(dev->IsConstant());
+  ASSERT_NO_THROW(sampled_value = dev->Sample());
+  EXPECT_EQ(sampled_value, dev->Sample());  // Resampling without resetting.
+  ASSERT_NO_THROW(dev->Reset());
+  EXPECT_NE(sampled_value, dev->Sample());
 }
 
 // Beta deviate test for invalid arguments.
@@ -336,6 +380,13 @@ TEST(ExpressionTest, BetaDeviate) {
   EXPECT_THROW(dev->Validate(), InvalidArgument);
   beta->sample = 1;
   ASSERT_NO_THROW(dev->Validate());
+
+  double sampled_value = 0;
+  ASSERT_FALSE(dev->IsConstant());
+  ASSERT_NO_THROW(sampled_value = dev->Sample());
+  EXPECT_EQ(sampled_value, dev->Sample());  // Resampling without resetting.
+  ASSERT_NO_THROW(dev->Reset());
+  EXPECT_NE(sampled_value, dev->Sample());
 }
 
 // Test for histogram distribution arguments and sampling.
@@ -393,4 +444,11 @@ TEST(ExpressionTest, Histogram) {
   EXPECT_THROW(dev->Validate(), InvalidArgument);
   w1->sample = 2;
   ASSERT_NO_THROW(dev->Validate());
+
+  double sampled_value = 0;
+  ASSERT_FALSE(dev->IsConstant());
+  ASSERT_NO_THROW(sampled_value = dev->Sample());
+  EXPECT_EQ(sampled_value, dev->Sample());  // Resampling without resetting.
+  ASSERT_NO_THROW(dev->Reset());
+  EXPECT_NE(sampled_value, dev->Sample());
 }
