@@ -115,8 +115,6 @@ Coding Specific
 
   * HIPPS
 
-  * Chinese
-
   * Baobab1
 
   * Baobab2

@@ -43,6 +43,21 @@ class RiskAnalysisTest : public ::testing::Test {
     return ran->ftas_[0]->min_cut_sets();
   }
 
+  // Provides the number of minimal cut sets per order of sets.
+  // The order starts from 0.
+  std::vector<int> McsDistribution() {
+    assert(!ran->ftas_.empty());
+    std::vector<int> distr(ran->ftas_[0]->max_order() + 1, 0);
+    std::set< std::set<std::string> >::const_iterator it;
+    const std::set< std::set<std::string> >* mcs =
+        &ran->ftas_[0]->min_cut_sets();
+    for (it = mcs->begin(); it != mcs->end(); ++it) {
+      int order = it->size();
+      distr[order]++;
+    }
+    return distr;
+  }
+
   double p_total() {
     assert(!ran->prob_analyses_.empty());
     return ran->prob_analyses_[0]->p_total();
