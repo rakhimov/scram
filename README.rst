@@ -1,6 +1,6 @@
-###########
+#####
 SCRAM
-###########
+#####
 
 .. image:: https://travis-ci.org/rakhimov/scram.svg?branch=develop
     :target: https://travis-ci.org/rakhimov/scram
@@ -16,10 +16,13 @@ SCRAM
 This project attempts to build a simple command line tool for
 probabilistic risk analysis. *SCRAM* is currently capable to perform
 static fault tree analysis, probability calculations with importance analysis,
-and uncertainty analysis using Monte Carlo simulations.
-The initial support for the OpenPSA_ model exchange format is provided.
+and uncertainty analysis using Monte Carlo simulations. This tool can handle
+non-coherent fault trees, containing NOT logic.
 
-SCRAM generates a Graphviz Dot instruction file for a graphical
+*SCRAM* partially supports the OpenPSA_ model exchange format. Its input
+files are based on this format.
+
+*SCRAM* generates a Graphviz Dot instruction file for a graphical
 representation of a fault tree.
 
 An experimental GUI front-end is under development using `Qt`_.
@@ -40,9 +43,9 @@ on Sourceforge_ or follow the building and installing instructions bellow.
 .. _Sourceforge:
     https://sourceforge.net/projects/iscram/files/
 
-******************************
+***********************
 Building and Installing
-******************************
+***********************
 
 A list of dependencies:
 
@@ -345,16 +348,16 @@ On command line, run help to get running options:
 
 More information about use and input files for SCRAM in `documentation`_.
 
-****************************
+**********************
 Documentation Building
-****************************
+**********************
 
 Documentation can be generated following the instruction in
 the *gh-source* branch. The raw documentation files are in *doc/* directory.
 
-*****************************
+**************
 Note to a User
-*****************************
+**************
 
 The development follows the Documentation Driven Development paradigm.
 Therefore, some documentation may refer to not yet developed features or the
@@ -362,9 +365,9 @@ features under current development.
 
 For any questions, don't hesitate to ask the mailing list (https://groups.google.com/forum/#!forum/scram-dev, scram-dev@googlegroups.com).
 
-*****************************
+*****************
 How to Contribute
-*****************************
+*****************
 
 Contributions are through `GitHub <https://github.com>`_ Pull Requests and
 Issue Tracker.

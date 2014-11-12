@@ -78,8 +78,8 @@ In addition, MOCUS-like algorithms may incorporate approximations to speed
 up their calculations; however, this may lead to inaccuracies in overall
 analysis. There seem not to be overall consensus on these approximations
 over all the tools that use this algorithm.
-The MOCUS algorithm is used by many FTA tools, such as RiskSpectrum,
-SAPHIRE and XFTA.
+The MOCUS algorithm is used by many FTA tools, such as RiskSpectrum and
+SAPHIRE.
 
 The second algorithm uses various types of the Binary Decision Diagram (BDD)
 for Boolean operations. This is a bottom-up algorithm that is
@@ -87,5 +87,8 @@ mature and well tuned for PRA and other applications like electronics.
 This method consists of many complex algorithms of BDD to find MCS.
 The BDD algorithms tend to be faster than MOCUS and other algorithms; however,
 this algorithm is subject to combinatorial explosion for very large models with
-thousands of basic events and gates with many replicated events.
-This algorithm is used in CAFTA and RiskMan.
+thousands of basic events and gates with many replicated events. One more
+important advantage of BDD based analysis is that BDD allows fast and exact
+calculation of probabilities, which makes Probability, Importance,
+Uncertainty analyses fast as well.
+This algorithm is used in CAFTA, RiskA, and RiskMan.

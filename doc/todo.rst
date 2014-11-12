@@ -51,6 +51,10 @@ Major Enhancements and Capabilities
 
 - Sensitivity analysis. *Moderate*
 
+- Binary Decision Diagram (BDD) based Algorithms. *High*
+
+- Zero-Suppressed BDD (ZBDD) based Algorithms. *High*
+
 
 Minor Enhancements and Capabilities
 ===================================
@@ -60,6 +64,8 @@ Minor Enhancements and Capabilities
   * Nested formula for gates. *Moderate*
 
   * Expressions for basic events. *Moderate*
+
+  * Include directive in input files to include other input files. *Low*
 
 - Improve fault tree generator. *Low*
 
