@@ -50,9 +50,15 @@ void SimpleGate::GenerateCutSets(std::set<int> cut_set,
 
     // Generate cut sets from child gates of AND type.
     std::vector<SimpleGatePtr>::iterator it_g;
+    std::set<std::set<int> > local_sets;
     for (it_g = gates_.begin(); it_g != gates_.end(); ++it_g) {
-      (*it_g)->GenerateCutSets(cut_set, new_cut_sets);
+      (*it_g)->GenerateCutSets(cut_set, &local_sets);
+      if (local_sets.begin()->size() == cut_set.size()) {
+        new_cut_sets->insert(cut_set);
+        return;
+      }
     }
+    new_cut_sets->insert(local_sets.begin(), local_sets.end());
   } else {
     // Check for null case.
     std::vector<int>::iterator it;
@@ -81,7 +87,11 @@ void SimpleGate::GenerateCutSets(std::set<int> cut_set,
       }
       arguments = results;
     }
-    new_cut_sets->insert(arguments.begin(), arguments.end());
+    if (arguments.begin()->size() == cut_set.size()) {
+      new_cut_sets->insert(cut_set);
+    } else {
+      new_cut_sets->insert(arguments.begin(), arguments.end());
+    }
   }
 }
 
@@ -163,11 +173,11 @@ void IndexedFaultTree::ProcessIndexedFaultTree(int num_basic_events) {
 void IndexedFaultTree::FindMcs() {
   // It is assumed that the tree is layered with OR and AND gates on each
   // level. That is, one level contains only AND or OR gates.
-  // AND gates are operated; whereas, OR gates are left for later minimal
-  // cut set finding. This operations make a big tree consisting of
-  // only OR gates. The function assumes the tree contains only positive gates.
-
-  // The description of the algorithm. Turn all gates into simple gates
+  // The function assumes the tree contains only positive gates.
+  //
+  // The description of the algorithm.
+  //
+  // Turn all existing gates in the tree into simple gates
   // with pointers to the children gates but not modules.
   // Leave minimal cut set modules to the last moment till all the gates
   // are operated. Those modules' minimal cut sets can be joined without
@@ -182,19 +192,18 @@ void IndexedFaultTree::FindMcs() {
   //
   // Upon walking from top to children gates, there are two types: OR and AND.
   // The generated sets are passed to child gates, which use the passed set
-  // to generate new sets. AND gate will simpley add its basic events and
+  // to generate new sets. AND gate will simply add its basic events and
   // modules to the set and pass the resultant sets into its OR child, which
   // will generate a lot more sets. These generated sets are passed to the
   // next gate child to generate even more.
+  //
   // For OR gates, the passed set is checked to have basic events of the gate.
   // If so, this is a local minimum cut set, so generation of the sets stops
-  // on this gate. No new sets should be generated in this case.
+  // on this gate. No new sets should be generated in this case. This condition
+  // is also applicable if the child AND gate keeps the input set as output and
+  // generates only additional supersets.
   //
-  // There might be a good optimization to keep the generated sets unique so
-  // that the exponantial growth of sets is optimized.
-  //
-  // There could be an optimization to remove gates that were eliminated
-  // in preprocessing stage for further optimization.
+  // The generated sets are kept unique by storing them in a set.
   std::clock_t start_time;
   start_time = std::clock();
 

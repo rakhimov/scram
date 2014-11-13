@@ -16,7 +16,7 @@ If the current performance is not listed, then the best is the current.
 ----------- Chinese Tree (mcs = 392) ----------------------
 Standard build:
 ---------------
-- Cut Set Generation      0.450s  |
+- Cut Set Generation      0.400s  |
 - Cut Set Minimization    0.240s  |
 
 
@@ -44,7 +44,7 @@ Release build:
 Standard build:
 ---------------
 - Cut Set Generation      1.000s  |
-- Cut Set Minimization    9.000s  |
+- Cut Set Minimization    8.000s  |
 
 Release build:
 --------------
@@ -54,43 +54,43 @@ Release build:
 ---------- fta-200 -l 24 -r (mcs = 16951) ---------------
 Standard build:
 ---------------
-- Cut Set Generation      2.500s  |
-- Cut Set Minimization    45.00s  |
+- Cut Set Generation      1.900s  |
+- Cut Set Minimization    25.00s  |
 
 Release build:
 --------------
 - Cut Set Generation      0.500s  |
-- Cut Set Minimization    9.000s  |
+- Cut Set Minimization    8.000s  |
 
 
 ---------- Baobab -l 6 (mcs = 2684) ----------------
 Standard build:
 ---------------
-- Cut Set Generation      9.000s  |
+- Cut Set Generation      2.500s  |
 - Cut Set Minimization    0.300s  |
 
 Release build:
 --------------
-- Cut Set Generation      0.750s  |
+- Cut Set Generation      0.650s  |
 - Cut Set Minimization    0.040s  |
 
 
 ---------- Baobab -l 7 (mcs = 17432) ----------------
 Standard build:
 ---------------
-- Cut Set Generation      28.00s  |
+- Cut Set Generation      20.00s  |
 - Cut Set Minimization    10.00s  |
 
 Release build:
 --------------
-- Cut Set Generation      7.500s  |
+- Cut Set Generation      5.500s  |
 - Cut Set Minimization    1.000s  |
 
 
 ---------- CEA9601 -l 7 (mcs = 4578) ----------------
 Release build:
 --------------
-- Cut Set Generation      25.00s  |
+- Cut Set Generation      25.00s  |  32.00s
 - Cut Set Minimization    0.050s  |
 
 
