@@ -31,6 +31,7 @@ class SimpleGate {
 
   /// @returns The type of this gate. Either 1 or 2 for OR or AND, respectively.
   inline int type() {
+    assert(type_ == 1 || type_ == 2);
     return type_;
   }
 
@@ -43,115 +44,56 @@ class SimpleGate {
 
   /// Adds a module index at the end of a container.
   /// This function is specificly given to initiate the gate.
+  /// Note that modules are treated just like basic events.
   /// @param[in] index The index of a module.
   inline void InitiateWithModule(int index) {
-    modules_.insert(modules_.end(), index);
-  }
-
-  /// Checks if there is a complement of a given basic event.
-  /// If not, adds a basic event index into children.
-  /// If the resulting set is null with AND gate, gives indication without
-  /// actual addition.
-  /// @returns true If the final gate is not null.
-  /// @returns false If the final set would be null upon addition.
-  inline bool AddBasic(int index) {
-    if (type_ == 2 && basic_events_.count(-index)) return false;
-    basic_events_.insert(index);
-    return true;
-  }
-
-  /// Adds a module event index into children.
-  /// All modules assumed to be positive.
-  inline void AddModule(int index) {
     assert(index > 0);
-    modules_.insert(index);
+    modules_.insert(modules_.end(), index);
   }
 
   /// Add a pointer to a child gate.
   /// This function assumes that the tree does not have complement gates.
   /// @param[in] gate The pointer to the child gate.
   inline void AddChildGate(const SimpleGatePtr& gate) {
+    assert(gate->type() != type_);
     gates_.insert(gate);
   }
 
-  /// Merges two gate of the same kind. This is designed for two AND gates.
-  /// Gates containers asserted to contain only positive indices.
-  /// @returns true If the final gate is not null.
-  /// @returns false If the final set would be null upon addition.
-  inline bool MergeGate(const SimpleGatePtr& gate) {
-    assert(type_ == 2 && gate->type() == 2);
-    std::set<int>::const_iterator it;
-    for (it = gate->basic_events_.begin(); it != gate->basic_events_.end();
-         ++it) {
-      if (basic_events_.count(-*it)) return false;
-    }
-    basic_events_.insert(gate->basic_events_.begin(),
-                         gate->basic_events_.end());
-    modules_.insert(gate->modules_.begin(), gate->modules_.end());
-    gates_.insert(gate->gates_.begin(), gate->gates_.end());
-    return true;
-  }
+  /// Generates cut sets by using a provided set.
+  /// @param[in] cut_set The base cut set to work with.
+  /// @param[out] new_cut_sets Generated cut sets by adding the gate's children.
+  void GenerateCutSets(std::set<int> cut_set,
+                       std::set< std::set<int> >* new_cut_sets);
 
-  /// If this gate emulates minimal cut sets, and there is a guarantee of
-  /// mutual exclusivity of joining of another minimal cut set, then this
-  /// function does the joining operation more efficiently.
-  inline void JoinAsMcs(const SimpleGatePtr& gate) {
-    assert(gate->type() == 2);
-    assert(type_ == 2);
-    assert(gate->gates_.empty());
-    assert(gates_.empty());
-    /// @todo Optimize with lazy ordering and constant time insertion.
-    basic_events_.insert(gate->basic_events_.begin(),
-                         gate->basic_events_.end());
-    modules_.insert(gate->modules_.begin(), gate->modules_.end());
-  }
-
-  /// @returns The basic events of this gate.
-  inline const std::set<int>& basic_events() const { return basic_events_; }
-
-  /// Assigns a container of basic events for this gate.
-  /// @param[in] basic_events The basic events for this gate.
-  inline void basic_events(const std::set<int>& basic_events) {
-    basic_events_ = basic_events;
-  }
-
-  /// @returns The modules for this gate.
-  inline const std::set<int>&  modules() { return modules_; }
-
-  /// Assigns a container of modules for this gate.
-  /// @param[in] modules The modules for this gate.
-  inline void modules(const std::set<int>& modules) {
-    modules_ = modules;
-  }
-
-  /// @returns The child gates container of this gate.
-  inline std::set<SimpleGatePtr>& gates() { return gates_; }
+  /// Sets the limit order for all analysis with simple gates.
+  static void limit_order(int limit) { limit_order_ = limit; }
 
  private:
   int type_;  ///< Type of this gate.
   std::set<int> basic_events_;  ///< Container of basic events' indices.
-  std::set<int> modules_;  ///< Container for modules.
+  std::set<int> modules_;  ///< Container of modules' indices.
   std::set<SimpleGatePtr> gates_;  ///< Containter of child gates.
+  static int limit_order_;  ///< The limit on the order of minimal cut sets.
 };
 
 typedef boost::shared_ptr<SimpleGate> SimpleGatePtr;
 /// @class SetPtrComp
 /// Functor for cut set pointer comparison.
-struct SetPtrComp : public std::binary_function<const SimpleGatePtr,
-                                                const SimpleGatePtr, bool> {
-  /// Operator overload.
-  /// Compares cut sets for sorting.
-  bool operator()(const SimpleGatePtr& lhs, const SimpleGatePtr& rhs) const {
-    if (lhs->basic_events() < rhs->basic_events()) {
-      return true;
-    } else if (lhs->basic_events() > rhs->basic_events()) {
-      return false;
-    } else if (lhs->modules() < rhs->modules()) {
-      return true;
-    }
-    return false;
-  }
-};
+// struct SetPtrComp : public std::binary_function<const SimpleGatePtr,
+//                                                 const SimpleGatePtr, bool> {
+//   /// Operator overload.
+//   /// Compares cut sets for sorting.
+//   bool operator()(const SimpleGatePtr& lhs, const SimpleGatePtr& rhs) const {
+//     if (lhs->basic_events() < rhs->basic_events()) {
+//       return true;
+//     } else if (lhs->basic_events() > rhs->basic_events()) {
+//       return false;
+//     } else if (lhs->modules() < rhs->modules()) {
+//       return true;
+//     }
+//     return false;
+//   }
+// };
 
 class Gate;
 class IndexedGate;
@@ -321,45 +263,29 @@ class IndexedFaultTree {
                         IndexedGatePtr& gate,
                         std::set<int>* visited_gates);
 
-  /// Finds minimal cut sets of a module.
-  /// Module gate can only be AND or OR.
-  /// @param[in] index The positive or negative index of a module.
-  /// @param[out] min_gates Simple gates containing minimal cut sets.
-  void FindMcsFromModule(int index, std::vector<SimpleGatePtr>* min_gates);
-
   /// Traverses the fault tree to convert gates into simple gates.
   /// @param[in] gate_index The index of a gate to start with.
-  /// @param[out] processed_gates Currently processed gates.
-  /// @returns The top simple gate.
-  SimpleGatePtr CreateSimpleTree(int gate_index,
-                                 std::map<int, SimpleGatePtr>* processed_gates);
+  /// @param[out] processed_gates Gates turned into simple gates.
+  void CreateSimpleTree(int gate_index,
+                        std::map<int, SimpleGatePtr>* processed_gates);
 
   /// Finds minimal cut sets of a simple gate.
   /// @param[out] gate The simple gate as a parent for processing.
-  /// @param[out] min_gates Simple gates containing minimal cut sets.
-  void FindMcsFromSimpleGate(SimpleGatePtr& gate,
-                             std::vector<SimpleGatePtr>* min_gates);
-
-  /// Expands OR layer in preprocessed fault tree.
-  /// @param[out] gate The OR gate to be processed.
-  /// @param[out] cut_sts Cut sets found while traversing the tree.
-  void ExpandOrLayer(SimpleGatePtr& gate, std::vector<SimpleGatePtr>* cut_sets);
-
-  /// Expands AND layer in preprocessed fault tree.
-  /// @param[out] gate The AND gate to be processed into OR gate.
-  void ExpandAndLayer(SimpleGatePtr& gate);
+  /// @param[out] mcs Minimal cut sets.
+  void FindMcsFromSimpleGate(const SimpleGatePtr& gate,
+                             std::vector< std::set<int> >* mcs);
 
   /// Finds minimal cut sets from cut sets.
   /// Applys rule 4 to reduce unique cut sets to minimal cut sets.
   /// @param[in] cut_sets Cut sets with primary events.
   /// @param[in] mcs_lower_order Reference minimal cut sets of some order.
   /// @param[in] min_order The order of sets to become minimal.
-  /// @param[out] min_gates Min cut sets in simple gates.
+  /// @param[out] mcs Min cut sets.
   /// @note T_avg(N^3 + N^2*logN + N*logN) = O_avg(N^3)
-  void MinimizeCutSets(const std::vector<SimpleGatePtr>& cut_sets,
-                       const std::vector<SimpleGatePtr>& mcs_lower_order,
+  void MinimizeCutSets(const std::vector<std::set<int> >& cut_sets,
+                       const std::vector<std::set<int> >& mcs_lower_order,
                        int min_order,
-                       std::vector<SimpleGatePtr>* min_gates);
+                       std::vector<std::set<int> >* mcs);
 
   int top_event_index_;  ///< The index of the top gate of this tree.
   int gate_index_;  ///< The starting gate index for gate identification.
