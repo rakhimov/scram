@@ -39,7 +39,7 @@ class SimpleGate {
   /// This function is specificly given to initiate the gate.
   /// @param[in] index The index of a basic event.
   inline void InitiateWithBasic(int index) {
-    basic_events_.insert(basic_events_.end(), index);
+    basic_events_.push_back(index);
   }
 
   /// Adds a module index at the end of a container.
@@ -48,7 +48,7 @@ class SimpleGate {
   /// @param[in] index The index of a module.
   inline void InitiateWithModule(int index) {
     assert(index > 0);
-    modules_.insert(modules_.end(), index);
+    modules_.push_back(index);
   }
 
   /// Add a pointer to a child gate.
@@ -56,7 +56,7 @@ class SimpleGate {
   /// @param[in] gate The pointer to the child gate.
   inline void AddChildGate(const SimpleGatePtr& gate) {
     assert(gate->type() != type_);
-    gates_.insert(gate);
+    gates_.push_back(gate);
   }
 
   /// Generates cut sets by using a provided set.
@@ -70,9 +70,9 @@ class SimpleGate {
 
  private:
   int type_;  ///< Type of this gate.
-  std::set<int> basic_events_;  ///< Container of basic events' indices.
-  std::set<int> modules_;  ///< Container of modules' indices.
-  std::set<SimpleGatePtr> gates_;  ///< Containter of child gates.
+  std::vector<int> basic_events_;  ///< Container of basic events' indices.
+  std::vector<int> modules_;  ///< Container of modules' indices.
+  std::vector<SimpleGatePtr> gates_;  ///< Containter of child gates.
   static int limit_order_;  ///< The limit on the order of minimal cut sets.
 };
 

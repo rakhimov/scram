@@ -17,7 +17,7 @@ void SimpleGate::GenerateCutSets(std::set<int> cut_set,
   assert(cut_set.size() <= limit_order_);
   if (type_ == 1) {  // OR gate operations.
     // Check for local minimality.
-    std::set<int>::iterator it;
+    std::vector<int>::iterator it;
     for (it = basic_events_.begin(); it != basic_events_.end(); ++it) {
       if (cut_set.count(*it)) {
         new_cut_sets->insert(cut_set);
@@ -49,13 +49,13 @@ void SimpleGate::GenerateCutSets(std::set<int> cut_set,
     }
 
     // Generate cut sets from child gates of AND type.
-    std::set<SimpleGatePtr>::iterator it_g;
+    std::vector<SimpleGatePtr>::iterator it_g;
     for (it_g = gates_.begin(); it_g != gates_.end(); ++it_g) {
       (*it_g)->GenerateCutSets(cut_set, new_cut_sets);
     }
   } else {
     // Check for null case.
-    std::set<int>::iterator it;
+    std::vector<int>::iterator it;
     for (it = basic_events_.begin(); it != basic_events_.end(); ++it) {
       if (cut_set.count(-*it)) return;
     }
@@ -72,7 +72,7 @@ void SimpleGate::GenerateCutSets(std::set<int> cut_set,
     // Deal with many OR gate children.
     std::set< std::set<int> > arguments;  // Input to OR gates.
     arguments.insert(cut_set);
-    std::set<SimpleGatePtr>::iterator it_g;
+    std::vector<SimpleGatePtr>::iterator it_g;
     for (it_g = gates_.begin(); it_g != gates_.end(); ++it_g) {
       std::set< std::set<int> >::iterator it_s;
       std::set< std::set<int> > results;
