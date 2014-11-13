@@ -887,10 +887,19 @@ void IndexedFaultTree::FindMcsFromSimpleGate(
 
   // std::set<SimpleGatePtr, SetPtrComp>  one_element_sets;
   LOG() << "Minimizing the cut sets.";
-  std::vector<std::set<int> > cut_sets_vector(cut_sets.begin(),
-                                              cut_sets.end());
-  std::vector<std::set<int> > mcs_lower_order;
-  IndexedFaultTree::MinimizeCutSets(cut_sets_vector, mcs_lower_order, 1, mcs);
+  std::vector<const std::set<int>* > cut_sets_vector;
+  cut_sets_vector.reserve(cut_sets.size());
+  std::set<std::set<int> >::iterator it;
+  for (it = cut_sets.begin(); it != cut_sets.end(); ++it) {
+    assert(!it->empty());
+    if (it->size() == 1) {
+      mcs->push_back(*it);
+    } else {
+      cut_sets_vector.push_back(&*it);
+    }
+  }
+  IndexedFaultTree::MinimizeCutSets(cut_sets_vector, *mcs, 2, mcs);
+
   LOG() << "The number of local MCS: " << mcs->size();
   double mcs_time = (std::clock() - start_time) /
       static_cast<double>(CLOCKS_PER_SEC);
@@ -898,23 +907,23 @@ void IndexedFaultTree::FindMcsFromSimpleGate(
 }
 
 void IndexedFaultTree::MinimizeCutSets(
-    const std::vector<std::set<int> >& cut_sets,
+    const std::vector<const std::set<int>* >& cut_sets,
     const std::vector<std::set<int> >& mcs_lower_order,
     int min_order,
     std::vector<std::set<int> >* mcs) {
   if (cut_sets.empty()) return;
 
-  std::vector<std::set<int> > temp_sets;  // For mcs of a level above.
+  std::vector<const std::set<int>* > temp_sets;  // For mcs of a level above.
   std::vector<std::set<int> > temp_min_sets;  // For mcs of this level.
 
-  std::vector<std::set<int> >::const_iterator it_uniq;
+  std::vector<const std::set<int>* >::const_iterator it_uniq;
   for (it_uniq = cut_sets.begin(); it_uniq != cut_sets.end(); ++it_uniq) {
     bool include = true;  // Determine to keep or not.
 
     std::vector<std::set<int> >::const_iterator it_min;
     for (it_min = mcs_lower_order.begin(); it_min != mcs_lower_order.end();
          ++it_min) {
-      if (std::includes(it_uniq->begin(), it_uniq->end(),
+      if (std::includes((*it_uniq)->begin(), (*it_uniq)->end(),
                         it_min->begin(), it_min->end())) {
         // Non-minimal cut set is detected.
         include = false;
@@ -924,9 +933,8 @@ void IndexedFaultTree::MinimizeCutSets(
     // After checking for non-minimal cut sets,
     // all minimum sized cut sets are guaranteed to be minimal.
     if (include) {
-      assert(!it_uniq->empty());
-      if (it_uniq->size() == min_order) {
-        temp_min_sets.push_back(*it_uniq);
+      if ((*it_uniq)->size() == min_order) {
+        temp_min_sets.push_back(**it_uniq);
       } else {
         temp_sets.push_back(*it_uniq);
       }

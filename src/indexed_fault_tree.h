@@ -282,10 +282,11 @@ class IndexedFaultTree {
   /// @param[in] min_order The order of sets to become minimal.
   /// @param[out] mcs Min cut sets.
   /// @note T_avg(N^3 + N^2*logN + N*logN) = O_avg(N^3)
-  void MinimizeCutSets(const std::vector<std::set<int> >& cut_sets,
-                       const std::vector<std::set<int> >& mcs_lower_order,
-                       int min_order,
-                       std::vector<std::set<int> >* mcs);
+  void MinimizeCutSets(
+      const std::vector<const std::set<int>* >& cut_sets,
+      const std::vector<std::set<int> >& mcs_lower_order,
+      int min_order,
+      std::vector<std::set<int> >* mcs);
 
   int top_event_index_;  ///< The index of the top gate of this tree.
   int gate_index_;  ///< The starting gate index for gate identification.
