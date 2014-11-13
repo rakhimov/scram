@@ -19,6 +19,7 @@ namespace scram {
 /// A helper class to be used in indexed fault tree. This gate represents
 /// only positive OR or AND gates with basic event indices and pointers to
 /// other simple gates.
+/// All the gate children of this gate must of opposite type.
 class SimpleGate {
  public:
   typedef boost::shared_ptr<SimpleGate> SimpleGatePtr;
@@ -66,6 +67,7 @@ class SimpleGate {
                        std::set< std::set<int> >* new_cut_sets);
 
   /// Sets the limit order for all analysis with simple gates.
+  /// @param[in] limit The limit order for minimal cut sets.
   static void limit_order(int limit) { limit_order_ = limit; }
 
  private:
@@ -76,47 +78,21 @@ class SimpleGate {
   static int limit_order_;  ///< The limit on the order of minimal cut sets.
 };
 
-typedef boost::shared_ptr<SimpleGate> SimpleGatePtr;
-/// @class SetPtrComp
-/// Functor for cut set pointer comparison.
-// struct SetPtrComp : public std::binary_function<const SimpleGatePtr,
-//                                                 const SimpleGatePtr, bool> {
-//   /// Operator overload.
-//   /// Compares cut sets for sorting.
-//   bool operator()(const SimpleGatePtr& lhs, const SimpleGatePtr& rhs) const {
-//     if (lhs->basic_events() < rhs->basic_events()) {
-//       return true;
-//     } else if (lhs->basic_events() > rhs->basic_events()) {
-//       return false;
-//     } else if (lhs->modules() < rhs->modules()) {
-//       return true;
-//     }
-//     return false;
-//   }
-// };
-
 class Gate;
 class IndexedGate;
 
 /// @class IndexedFaultTree
-/// This class should provide simpler representation of a fault tree
+/// This class provides simpler representation of a fault tree
 /// that takes into account the indices of events instead of ids and pointers.
+/// The class provides main operations over a fault tree to generate minmal
+/// cut sets.
 class IndexedFaultTree {
-  // This class should:
-  // 1. Use indices of events.
-  // 2. Propagate fault tree constants (House events).
-  // 3. Unroll complex gates like XOR and VOTE.
-  // 4. Pre-process the tree to simplify the structure.
-  // 5. Take into account non-coherent logic for the fault tree.
-  // Ideally, the resulting tree should have only OR and AND gates with
-  // basic event and gate indices only.
-  // The indices of gates may change, but the indices of basic events must
-  // not change.
  public:
   typedef boost::shared_ptr<Gate> GatePtr;
 
-  /// Constructs a simplified fault tree.
+  /// Constructs a simplified fault tree with indices of nodes.
   /// @param[in] top_event_id The index of the top event of this tree.
+  /// @param[in] limit_order The limit on the size of minimal cut sets.
   IndexedFaultTree(int top_event_id, int limit_order);
 
   /// Creates indexed gates with basic and house event indices as children.
@@ -142,7 +118,7 @@ class IndexedFaultTree {
   ///                             with certain expectation.
   void ProcessIndexedFaultTree(int num_basic_events);
 
-  /// Finds minimal cut sets.
+  /// Finds minimal cut sets from the initiated fault tree with indices.
   void FindMcs();
 
   /// @returns Generated minimal cut sets with basic event indices.
@@ -158,17 +134,19 @@ class IndexedFaultTree {
   /// NOT and NUll are dealt with specificly.
   /// This function uses parent information of each gate, so the tree must
   /// be initialized before a call of this function.
-  /// New gates are created upon unrolling complex gates.
+  /// New gates are created upon unrolling complex gates, such as XOR.
   void UnrollGates();
 
   /// Traverses the tree to gather information about parents of indexed gates.
+  /// This information might be needed for other algorithms because
+  /// due to processing of the tree, the shape and nodes may change.
   /// @param[in] parent_gate The parent to start information gathering.
   /// @param[out] processed_gates The gates that has already been processed.
   void GatherParentInformation(const IndexedGatePtr& parent_gate,
                                std::set<int>* processed_gates);
 
   /// Notifies all parents of negative gates, such as NOR and NAND before
-  /// transforming this gates into basic gates of OR and AND.
+  /// transforming these gates into basic gates of OR and AND.
   /// The parent information should be available. This function does not
   /// change the type of the given gate.
   /// @param[in] gate The gate to be start processing.
@@ -185,7 +163,7 @@ class IndexedFaultTree {
   /// @param[out] gate The gate to unroll.
   void UnrollXorGate(IndexedGatePtr& gate);
 
-  /// Unrolls a gate with "atleast" gate and vote number.
+  /// Unrolls an ATLEAST gate with a vote number.
   /// @param[out] gate The atleast gate to unroll.
   void UnrollAtleastGate(IndexedGatePtr& gate);
 
@@ -204,33 +182,37 @@ class IndexedFaultTree {
   /// Propagates complements of child gates down to basic events
   /// in order to remove any NOR or NAND logic from the tree.
   /// This function also processes NOT and NULL gates.
+  /// The resulting tree will contain only positive gates, OR and AND.
   /// @param[out] gate The starting gate to traverse the tree. This is for
-  ///                 recursive purposes. The sign of this passed gate
-  ///                 is unknown for the function, so it must be sanitized
-  ///                 for a top event to function correctly.
+  ///                  recursive purposes. The sign of this passed gate
+  ///                  is unknown for the function, so it must be sanitized
+  ///                  for a top event to function correctly.
   /// @param[out] gate_complements The complements of gates already processed.
   /// @param[out] processed_gates The gates that has already been processed.
   void PropagateComplements(IndexedGatePtr& gate,
                             std::map<int, int>* gate_complements,
                             std::set<int>* processed_gates);
 
-  /// Processes null and unity gates.
-  /// There should not be negative gate children.
+  /// Removes null and unity gates. There should not be negative gate children.
   /// After this function, there should not be null or unity gates resulting
   /// from previous processing steps.
   /// @param[out] gate The starting gate to traverse the tree. This is for
   ///                  recursive purposes.
   /// @param[out] processed_gates The gates that has already been processed.
-  void ProcessConstGates(IndexedGatePtr& gate, std::set<int>* processed_gates);
+  /// @returns true if the given tree has been changed by this function.
+  /// @returns false if no change has been made.
+  bool ProcessConstGates(IndexedGatePtr& gate, std::set<int>* processed_gates);
 
-  /// Pre-processes the tree by doing Boolean algebra.
+  /// Pre-processes the tree by doing simple Boolean algebra.
   /// At this point all gates are expected to be either OR or AND.
   /// There should not be negative gate children.
   /// This function merges similar gates and may produce null or unity gates.
   /// @param[out] gate The starting gate to traverse the tree. This is for
-  ///                 recursive purposes. This gate must be AND or OR.
+  ///                  recursive purposes. This gate must be AND or OR.
   /// @param[out] processed_gates The gates that has already been processed.
-  void JoinGates(IndexedGatePtr& gate, std::set<int>* processed_gates);
+  /// @returns true if the given tree has been changed by this function.
+  /// @returns false if no change has been made.
+  bool JoinGates(IndexedGatePtr& gate, std::set<int>* processed_gates);
 
   /// Traverses the indexed fault tree to detect modules.
   /// @param[in] num_basic_events The number of basic events in the tree.
@@ -276,7 +258,7 @@ class IndexedFaultTree {
                              std::vector< std::set<int> >* mcs);
 
   /// Finds minimal cut sets from cut sets.
-  /// Applys rule 4 to reduce unique cut sets to minimal cut sets.
+  /// Applys the rule 4 to reduce unique cut sets to minimal cut sets.
   /// @param[in] cut_sets Cut sets with primary events.
   /// @param[in] mcs_lower_order Reference minimal cut sets of some order.
   /// @param[in] min_order The order of sets to become minimal.
@@ -298,8 +280,6 @@ class IndexedFaultTree {
   std::vector< std::set<int> > imcs_;  // Min cut sets with indexed events.
   /// Limit on the size of the minimal cut sets for performance reasons.
   int limit_order_;
-  /// Indicator if the tree has been changed due to operations on it.
-  bool changed_tree_;
 };
 
 }  // namespace scram
