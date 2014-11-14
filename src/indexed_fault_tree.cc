@@ -756,6 +756,7 @@ void IndexedFaultTree::FindOriginalModules(
   *min_time = enter_time;
   *max_time = exit_time;
 
+  std::vector<int> non_shared_children;  // Children that this gate's only.
   std::vector<int> modular_children;  // Children that satisfy modularity.
   std::set<int>::const_iterator it;
   for (it = gate->children().begin(); it != gate->children().end(); ++it) {
@@ -765,11 +766,24 @@ void IndexedFaultTree::FindOriginalModules(
     if (index < top_event_index_) {
       min = visit_basics[index][0];
       max = visit_basics[index][1];
-
+      if (min == max) {
+        assert (min > enter_time && max < exit_time);
+        non_shared_children.push_back(*it);
+        continue;
+      }
     } else {
-      IndexedFaultTree::FindOriginalModules(indexed_gates_.find(index)->second,
-                                            visit_basics, visited_gates,
-                                            &min, &max);
+      assert(*it > 0);
+      IndexedGatePtr child_gate = indexed_gates_.find(index)->second;
+      IndexedFaultTree::FindOriginalModules(child_gate, visit_basics,
+                                            visited_gates, &min, &max);
+      if (modules_.count(index) &&
+          child_gate->visits()[1] == child_gate->visits()[2]) {
+        if (enter_time < child_gate->visits()[0] &&
+            exit_time > child_gate->visits()[2]) {
+          non_shared_children.push_back(*it);
+          continue;
+        }
+      }
     }
     assert(min != 0);
     assert(max != 0);
@@ -780,9 +794,41 @@ void IndexedFaultTree::FindOriginalModules(
 
   // Determine if this gate is module itself.
   if (*min_time == enter_time && *max_time == exit_time) {
+    LOG() << "Original module: " << gate->index();
+    assert((modular_children.size() + non_shared_children.size()) ==
+           gate->children().size());
     modules_.insert(gate->index());
 
-  } else if (modular_children.size() > 1) {
+  }
+  if (non_shared_children.size() > 1) {
+    if (non_shared_children.size() == gate->children().size()) {
+      assert(modules_.count(gate->index()));
+    } else {
+      IndexedGatePtr new_module(new IndexedGate(++new_gate_index_));
+      indexed_gates_.insert(std::make_pair(new_gate_index_, new_module));
+      modules_.insert(new_gate_index_);
+      new_module->type( gate->type());
+      new_module->string_type(gate->string_type());
+      std::vector<int>::iterator it_g;
+      for (it_g = non_shared_children.begin(); it_g != non_shared_children.end();
+           ++it_g) {
+        gate->EraseChild(*it_g);
+        new_module->InitiateWithChild(*it_g);
+      }
+      assert(!gate->children().empty());
+      gate->InitiateWithChild(new_module->index());
+      LOG() << "New module of " << gate->index() << ": " << new_gate_index_
+          << " with NON-SHARED children number " << non_shared_children.size();
+    }
+  }
+  // There might be cases when in one level couple of child gates can be
+  // grouped into a module but they may share an event with another non-module
+  // gate which in turn shares an event with the outside world. This leads
+  // to a chain that needs to be considered. Formula rewriting might be helpful
+  // in this case.
+  if (modules_.count(gate->index()) && modular_children.size() > 0 &&
+      modular_children.size() != gate->children().size()) {
+    assert(modular_children.size() != 1);  // One modular child is non-shared.
     IndexedGatePtr new_module(new IndexedGate(++new_gate_index_));
     indexed_gates_.insert(std::make_pair(new_gate_index_, new_module));
     modules_.insert(new_gate_index_);
@@ -796,6 +842,9 @@ void IndexedFaultTree::FindOriginalModules(
     }
     assert(!gate->children().empty());
     gate->InitiateWithChild(new_module->index());
+    LOG() << "New module of " << gate->index() << ": " << new_gate_index_
+        << " with MODULAR children number " << modular_children.size();
+
   }
   if (gate->visits()[2] > *max_time) *max_time = gate->visits()[2];
   visited_gates->insert(std::make_pair(gate->index(),
