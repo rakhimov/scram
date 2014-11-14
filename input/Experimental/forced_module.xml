@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <define-fault-tree name="r">
+    <define-gate name="r">
+      <or>
+        <event name="e1"/>
+        <gate name="g1"/>
+      </or>
+    </define-gate>
+    <define-gate name="g1">
+      <and>
+        <gate name="g2"/>
+        <gate name="g3"/>
+        <gate name="g4"/>
+      </and>
+    </define-gate>
+    <define-gate name="g2">
+      <or>
+        <event name="e2"/>
+        <event name="e3"/>
+      </or>
+    </define-gate>
+    <define-gate name="g3">
+      <or>
+        <event name="e2"/>
+        <event name="e4"/>
+      </or>
+    </define-gate>
+    <define-gate name="g4">
+      <or>
+        <event name="e5"/>
+        <event name="e1"/>
+      </or>
+    </define-gate>
+  </define-fault-tree>
+</opsa-mef>
