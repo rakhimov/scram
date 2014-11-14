@@ -712,11 +712,6 @@ void IndexedFaultTree::DetectModules(int num_basic_events) {
 
   int orig_mod = modules_.size();
   LOG() << "Detected number of original modules: " << modules_.size();
-
-  std::set<int> visited_gates_new;
-  IndexedFaultTree::CreateNewModules(visit_basics, top_gate,
-                                     &visited_gates_new);
-  LOG() << "The number of new modules created: " << modules_.size() - orig_mod;
 }
 
 int IndexedFaultTree::AssignTiming(int time, IndexedGatePtr& gate,
@@ -756,9 +751,12 @@ void IndexedFaultTree::FindOriginalModules(
     *max_time = visited_gates->find(gate->index())->second.second;
     return;
   }
-  *min_time = gate->visits()[0];
-  *max_time = gate->visits()[1];
+  int enter_time = gate->visits()[0];
+  int exit_time = gate->visits()[1];
+  *min_time = enter_time;
+  *max_time = exit_time;
 
+  std::vector<int> modular_children;  // Children that satisfy modularity.
   std::set<int>::const_iterator it;
   for (it = gate->children().begin(); it != gate->children().end(); ++it) {
     int index = std::abs(*it);
@@ -775,63 +773,33 @@ void IndexedFaultTree::FindOriginalModules(
     }
     assert(min != 0);
     assert(max != 0);
+    if (min > enter_time && max < exit_time) modular_children.push_back(*it);
     if (min < *min_time) *min_time = min;
     if (max > *max_time) *max_time = max;
   }
 
   // Determine if this gate is module itself.
-  if (*min_time == gate->visits()[0] && *max_time == gate->visits()[1]) {
+  if (*min_time == enter_time && *max_time == exit_time) {
     modules_.insert(gate->index());
-  }
-  if (gate->visits()[2] > *max_time) *max_time = gate->visits()[2];
-  visited_gates->insert(std::make_pair(gate->index(),
-                                       std::make_pair(*min_time, *max_time)));
-}
 
-void IndexedFaultTree::CreateNewModules(const int visit_basics[][2],
-                                        IndexedGatePtr& gate,
-                                        std::set<int>* visited_gates) {
-  if (visited_gates->count(gate->index())) return;
-  visited_gates->insert(gate->index());
-  // Children that can be grouped in a module.
-  std::vector<int> modular_children;
-  std::set<int>::const_iterator it;
-  for (it = gate->children().begin(); it != gate->children().end(); ++it) {
-    if (std::abs(*it) > gate_index_) {
-      assert(*it > 0);
-      IndexedGatePtr child_gate = indexed_gates_.find(std::abs(*it))->second;
-      IndexedFaultTree::CreateNewModules(visit_basics, child_gate,
-                                         visited_gates);
-      if (!modules_.count(std::abs(*it))) continue;
-      if ((gate->visits()[1] > child_gate->visits()[2]) &&
-          (gate->visits()[0] < child_gate->visits()[0])) {
-        modular_children.push_back(*it);
-      }
-    } else if ((visit_basics[std::abs(*it)][0] ==
-                visit_basics[std::abs(*it)][1]) &&
-               (gate->visits()[1] > visit_basics[std::abs(*it)][1]) &&
-               (gate->visits()[0] < visit_basics[std::abs(*it)][0])) {
-      modular_children.push_back(*it);
-    }
-  }
-  // Check if this gate is pure module itself.
-  // That is, its children are all modules themselves and not shared with
-  // other gates.
-  if (modular_children.size() == gate->children().size()) return;
-  if (modular_children.size() > 1) {
+  } else if (modular_children.size() > 1) {
     IndexedGatePtr new_module(new IndexedGate(++new_gate_index_));
     indexed_gates_.insert(std::make_pair(new_gate_index_, new_module));
     modules_.insert(new_gate_index_);
+    new_module->type( gate->type());
+    new_module->string_type(gate->string_type());
     std::vector<int>::iterator it_g;
     for (it_g = modular_children.begin(); it_g != modular_children.end();
          ++it_g) {
       gate->EraseChild(*it_g);
       new_module->InitiateWithChild(*it_g);
     }
-    new_module->type(gate->type());
-    new_module->string_type(gate->string_type());
+    assert(!gate->children().empty());
     gate->InitiateWithChild(new_module->index());
   }
+  if (gate->visits()[2] > *max_time) *max_time = gate->visits()[2];
+  visited_gates->insert(std::make_pair(gate->index(),
+                                       std::make_pair(*min_time, *max_time)));
 }
 
 void IndexedFaultTree::CreateSimpleTree(

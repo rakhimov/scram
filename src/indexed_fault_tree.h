@@ -226,6 +226,7 @@ class IndexedFaultTree {
   int AssignTiming(int time, IndexedGatePtr& gate, int visit_basics[][2]);
 
   /// Determines modules from original gates that have been already timed.
+  /// This function can also create new modules from the existing tree.
   /// @param[in] gate The gate to test for modularity.
   /// @param[in] visit_basics The recordings for basic events.
   /// @param[out] visited_gates Container of already visited gates.
@@ -235,15 +236,6 @@ class IndexedFaultTree {
                            const int visit_basics[][2],
                            std::map<int, std::pair<int, int> >* visited_gates,
                            int* min_time, int* max_time);
-
-  /// Creates new modules in a fault tree. The information about original
-  /// existing modules should be available.
-  /// @param[in] visit_basics The recordings for basic events.
-  /// @param[in] gate The gate to test its children for modularity.
-  /// @param[out] visited_gates Container of already visited gates.
-  void CreateNewModules(const int visit_basics[][2],
-                        IndexedGatePtr& gate,
-                        std::set<int>* visited_gates);
 
   /// Traverses the fault tree to convert gates into simple gates.
   /// @param[in] gate_index The index of a gate to start with.
@@ -258,7 +250,7 @@ class IndexedFaultTree {
                              std::vector< std::set<int> >* mcs);
 
   /// Finds minimal cut sets from cut sets.
-  /// Applys the rule 4 to reduce unique cut sets to minimal cut sets.
+  /// Reduces unique cut sets to minimal cut sets.
   /// @param[in] cut_sets Cut sets with primary events.
   /// @param[in] mcs_lower_order Reference minimal cut sets of some order.
   /// @param[in] min_order The order of sets to become minimal.
