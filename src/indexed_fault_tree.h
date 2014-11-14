@@ -15,6 +15,19 @@
 
 namespace scram {
 
+typedef boost::shared_ptr<std::set<int> > SetPtr;
+
+/// @class SetPtrComp
+/// Functor for set pointer comparison efficiency.
+struct SetPtrComp
+    : public std::binary_function<const SetPtr, const SetPtr, bool> {
+  /// Operator overload.
+  /// Compares sets for sorting.
+  bool operator()(const SetPtr& lhs, const SetPtr& rhs) const {
+    return *lhs < *rhs;
+  }
+};
+
 /// @class SimpleGate
 /// A helper class to be used in indexed fault tree. This gate represents
 /// only positive OR or AND gates with basic event indices and pointers to
@@ -63,8 +76,8 @@ class SimpleGate {
   /// Generates cut sets by using a provided set.
   /// @param[in] cut_set The base cut set to work with.
   /// @param[out] new_cut_sets Generated cut sets by adding the gate's children.
-  void GenerateCutSets(std::set<int> cut_set,
-                       std::set< std::set<int> >* new_cut_sets);
+  void GenerateCutSets(const SetPtr& cut_set,
+                       std::set<SetPtr, SetPtrComp>* new_cut_sets);
 
   /// Sets the limit order for all analysis with simple gates.
   /// @param[in] limit The limit order for minimal cut sets.
