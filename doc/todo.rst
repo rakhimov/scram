@@ -24,6 +24,8 @@ Currently Low Hanging Fruits
 Major Enhancements and Capabilities
 ===================================
 
+- Boolean formula rewriting for fault trees. *High*
+
 - Incorporation of an event tree analysis. *Moderate*
 
 - Dynamic Fault Tree Analysis. *Moderate*
@@ -115,8 +117,4 @@ Coding Specific
 
   * HIPPS
 
-  * Baobab1
-
-  * Baobab2
-
-  * CEA9601
+  * BSCU
