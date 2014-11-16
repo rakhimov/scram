@@ -18,6 +18,7 @@ FaultTreeAnalysis::FaultTreeAnalysis(int limit_order)
   : warnings_(""),
     top_event_index_(-1),
     max_order_(0),
+    num_gates_(0),
     analysis_time_(0) {
       // Check for right limit order.
   if (limit_order < 1) {

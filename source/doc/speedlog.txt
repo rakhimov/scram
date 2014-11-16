@@ -1,4 +1,6 @@
-Speed recordings for scram.
+Speed recordings for SCRAM. Only cases that help to detect bottlenecks are
+recorded in this file. If the performance becomes good enough to make the
+running times negligible, the case is removed.
 
 System specs: Core i5-2410M, Ubuntu 14.04 64bit
 GCC version: 4.8.2
@@ -8,79 +10,82 @@ If the current performance is not listed, then the best is the current.
 
 ----------- Input name [flags] [(results)] -----------
 
-              Best Achieved | Current Performance
+                    Best Achieved | Current Performance
 
 
 ----------- Chinese Tree (mcs = 392) ----------------------
 Standard build:
 ---------------
-- Tree Expansion    5.400s  |
-- MCS Generation    5.850s  |
+- Cut Set Generation      0.400s  |
+- Cut Set Minimization    0.240s  |
 
 
 
------------ Chinese Tree -l 5 -s 3 (p = 0.02115378) ---------
+----------- Chinese Tree High Prob -l 5 -s 3 (p = 0.02115378) ---
 Release build:
 --------------
 - Prob Calculation  34.50s  |
 - Importance Calc.  2.500s  |
 
 
----------- fta-200 -l 16 -r (mcs = 8351) ---------------
-Standard build:
----------------
-- Tree Expansion    3.700s  |
-- MCS Generation    1.100s  |
-
-Release build:
---------------
-- Tree Expansion    0.790s  |
-- MCS Generation    0.240s  |
-
-
 ---------- fta-200 -l 17 -r (mcs = 8487) ---------------
 Standard build:
 ---------------
-- Tree Expansion    15.50s  |
-- MCS Generation    90.40s  |
+- Cut Set Generation      0.700s  |
+- Cut Set Minimization    8.000s  |
 
 Release build:
 --------------
-- Tree Expansion    3.300s  |
-- MCS Generation    12.00s  |
+- Cut Set Generation      0.170s  |
+- Cut Set Minimization    2.00s   |  2.40s
+
+---------- fta-200 -l 24 -r (mcs = 16951) ---------------
+Standard build:
+---------------
+- Cut Set Generation      1.200s  |
+- Cut Set Minimization    25.00s  |
+
+Release build:
+--------------
+- Cut Set Generation      0.250s  |
+- Cut Set Minimization    6.000s  |  7.80s
 
 
 ---------- Baobab -l 6 (mcs = 2684) ----------------
 Standard build:
 ---------------
-- Tree Expansion    29.20s  |  infinity
-- MCS Generation    0.500s  |  infinity
+- Cut Set Generation      1.400s  |
+- Cut Set Minimization    0.300s  |
 
 Release build:
 --------------
-- Tree Expansion    5.600s  |  infinity
-- MCS Generation    0.070s  |  infinity
+- Cut Set Generation      0.250s  |
+- Cut Set Minimization    0.030s  |
 
 
 ---------- Baobab -l 7 (mcs = 17432) ----------------
+Standard build:
+---------------
+- Cut Set Generation      10.50s  |
+- Cut Set Minimization    10.00s  |
+
 Release build:
 --------------
-- Tree Expansion    86.80s  |  infinity
-- MCS Generation    2.500s  |  infinity
+- Cut Set Generation      1.900s  |
+- Cut Set Minimization    0.800s  |  1.57s
 
-
----------- CEA9601 -l 4 (mcs = 2732) ----------------
+---------- Baobab -l 8 (mcs = 25892) ----------------
 Release build:
 --------------
-- Tree Expansion    19.50s  |  infinity
-- MCS Generation    0.050s  |  infinity
+- Cut Set Generation      15.00s  |
+- Cut Set Minimization    20.00s  |  50.4
 
 
----------- CEA9601 -l 5 (mcs = 3274) ----------------
+---------- CEA9601 -l 7 (mcs = 4578) ----------------
 Release build:
 --------------
-- Tree Expansion    43.40s  |  infinity
-- MCS Generation    0.130s  |  infinity
+- Cut Set Generation      10.50s  |
+- Cut Set Minimization    0.050s  |
 
 
 ==================== Uncertainty Analysis =================

@@ -23,6 +23,8 @@ Monte Carlo (MC) Analysis Implementation
 
 #. Generation of an equation for MC analysis from minimal cut sets.
 
+#. Set the seed for the PRNG. (Set by a user) *no support*
+
 #. Determine the number of samples. (Set by a user)
 
 #. Definitions and parameters for various distributions.

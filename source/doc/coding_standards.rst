@@ -1,6 +1,6 @@
-#################################################
+##############################
 SCRAM Coding Style and Quality
-#################################################
+##############################
 
 This project follows the following coding styles:
 =================================================
@@ -26,8 +26,8 @@ Currently nonconforming cases in the source code:
 * GUI front-end source files are a mix of the Qt style and Google style.
 * C++11 features are not allowed. Only Boost features are used instead.
 
-The quality of the code is checked by the following tools:
-==========================================================
+The quality of the code is checked with the following tools:
+============================================================
 #. Performance profiling with `Gprof`_.
 #. Test coverage check with `Gcov`_ and reporting with `Coveralls`_.
 #. Test status is tracked on `CDash`_.

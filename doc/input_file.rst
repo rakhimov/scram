@@ -40,6 +40,7 @@ Steps in XML Input Validation
 #. Additional validation of fault trees and values of parameters is performed:
 
     - Each gate has a correct number of children.
+    - No the same two children of the same parent.
     - All intermediate events have at least one parent.
     - Values of parameters are correct, i.e., non-negative for probabilities.
     - All events must be defined for probability calculations.

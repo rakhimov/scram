@@ -15,3 +15,6 @@ Minor Issues
 
 - The current algorithms are not optimized for complex analysis, but
   more optimization is planned after main features are implemented.
+
+- Non-coherent trees may not guarantee valid results. Non-coherent trees are
+  not fully tested yet.

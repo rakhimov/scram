@@ -39,8 +39,9 @@ class IndexedGate {
     return type_;
   }
 
-  /// Any legal string type of original gate.
+  /// Sets any legal string type of original gate.
   /// This can be helpful for initialization and additional information.
+  /// @param[in] type The string (OR, AND, ...) type for this gate.
   inline void string_type(std::string type) { string_type_ = type; }
 
   /// @returns String type of this gate.
@@ -49,19 +50,26 @@ class IndexedGate {
   /// @returns Vote number.
   inline int vote_number() const { return vote_number_; }
 
-  /// Sets the vote number.
+  /// Sets the vote number for this gate. The function does not check if
+  /// the gate type is ATLEAST.
+  /// @param[in] number The vote number of ATLEAST gate.
   inline void vote_number(int number) { vote_number_ = number; }
 
   /// This function is used to initiate this gate with children.
-  /// It is assumed that children are passed in ascending order.
+  /// It is assumed that children are passed in ascending order from another
+  /// children set.
+  /// @param[in] child A positive or negative index of a child.
   void InitiateWithChild(int child);
 
-  /// Adds a child of this gate.
-  /// @returns false If there is a complement of the added child.
-  /// @returns true If the addition of this child successful.
-  /// @warning This function does not indicate error for future additions.
-  ///          This logic is done because of the possible application of
-  ///          De Morgan's law.
+  /// Adds a child to this gate. Before adding the child, the existing
+  /// children are checked for complements. If there is a complement,
+  /// the gate changes its state and clears its children. This functionality
+  /// only works with OR and AND gates.
+  /// @param[in] child A positive or negative index of a child.
+  /// @returns false If there is a complement of the child being added.
+  /// @returns true If the addition of this child is successful.
+  /// @warning This function does not indicate error for future additions in
+  ///          case the state is nulled or becomes unity.
   bool AddChild(int child);
 
   /// Swaps an existing child to a new child. Mainly used for
@@ -69,49 +77,55 @@ class IndexedGate {
   /// @param[in] existing_child An existing child to get swapped.
   /// @param[in] new_child A new child.
   /// @warning If there is an iterator for the children set, then
-  ///          it may become unusable.
+  ///          it may become unusable because the children set is manipulated.
   bool SwapChild(int existing_child, int new_child);
 
   /// Makes all children complement of themselves.
-  /// This is a helper function to propagate the complement gate and apply
+  /// This is a helper function to propagate a complement gate and apply
   /// De Morgan's Law.
   void InvertChildren();
 
   /// Adds children of another gate to this gate.
   /// If this gate exists as a child then it is removed from the children.
   /// @param[in] child_gate The gate which children to be added to this gate.
-  /// @returns false if the final set is null.
+  /// @returns false if the final set is null or unity.
+  /// @returns true if the addition is successful with a normal final state.
   bool MergeGate(IndexedGate* child_gate);
 
   /// Clears all the children of this gate.
   inline void EraseAllChildren() { children_.clear(); }
 
-  /// Removes a child from the children container.
+  /// Removes a child from the children container. The passed child index
+  /// must be in this gate's children conatainer and initialized.
   /// @param[in] child The positive or negative index of the existing child.
   inline void EraseChild(int child) {
     assert(children_.count(child));
     children_.erase(child);
   }
 
-  /// Sets the state of this gate to null.
+  /// Sets the state of this gate to null and clears all its children.
   inline void Nullify() {
     assert(state_ == "normal");
     state_ = "null";
     children_.clear();
   }
 
-  /// Sets the state of this gate to unity.
+  /// Sets the state of this gate to unity and clears all its children.
   inline void MakeUnity() {
     assert(state_ == "normal");
     state_ = "unity";
     children_.clear();
   }
 
+  /// Adds a parent of this gate.
+  /// @param[in] index Positive index of the parent.
   inline void AddParent(int index) {
     assert(index > 0);
     parents_.insert(index);
   }
 
+  /// Removes a parent of this gate.
+  /// @param[in] index Positive index of the existing parent.
   inline void EraseParent(int index) {
     assert(index > 0);
     assert(parents_.count(index));
@@ -119,7 +133,11 @@ class IndexedGate {
   }
 
   /// Sets the index of this gate.
-  inline void index(int index) { index_ = index; }
+  /// @param[in] index Positive index of this gate.
+  inline void index(int index) {
+    assert(index > 0);
+    index_ = index;
+  }
 
   /// @returns The index of this gate.
   inline int index() const { return index_; }
@@ -138,6 +156,8 @@ class IndexedGate {
   /// @returns parents of this gate.
   inline const std::set<int>& parents() { return parents_; }
 
+  /// Registers the visit time for this gate upon tree traversal.
+  /// This information can be used to detect dependencies.
   /// @param[in] time The visit time of this gate.
   /// @returns true If this gate was previously visited.
   /// @returns false If this is visited and re-visited only once.
@@ -154,15 +174,18 @@ class IndexedGate {
     return false;
   }
 
-  /// @returns Visits ordered first, second, and last.
-  const int (&visits())[3] {
-    assert(visits_[0]);
-    assert(visits_[1]);
-    if (!visits_[2]) {
-      visits_[2] = visits_[1];
-    }
-    return visits_;
-  }
+  /// @returns The time when this gate was first encountered or entered.
+  inline int EnterTime() { return visits_[0]; }
+
+  /// @returns The exit time upon traversal of the tree.
+  inline int ExitTime() { return visits_[1]; }
+
+  /// @returns The last time this gate was visited.
+  inline int LastVisit() { return visits_[2] ? visits_[2] : visits_[1]; }
+
+  /// @returns false if this gate was only visited once upon tree traversal.
+  /// @returns true if this gate was revisited at one more time.
+  inline bool Revisited() { return visits_[2] ? true : false; }
 
  private:
   /// Type of this gate. Only two choices are allowed: OR, AND.

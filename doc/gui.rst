@@ -35,3 +35,6 @@ GUI Features
 - Separate editors for analysis components
 - Convenient review of results
 - Context menu
+- Smart defaults
+- Cut set editor
+- Revision control

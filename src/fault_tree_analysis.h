@@ -47,9 +47,12 @@ class FaultTreeAnalysis {
 
   /// @returns Set with minimal cut sets.
   /// @note The user should make sure that the analysis is actually done.
-  inline const std::set< std::set<std::string> >& min_cut_sets() {
+  inline const std::set< std::set<std::string> >& min_cut_sets() const {
     return min_cut_sets_;
   }
+
+  /// @returns The maximum order of the found minimal cut sets.
+  inline int max_order() const { return max_order_; }
 
  private:
   typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;

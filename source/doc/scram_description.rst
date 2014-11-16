@@ -2,11 +2,13 @@
 SCRAM Description
 #################
 
-This is a general description of SCRAM and possible future additions.
-The features under development and may not be fully functional.
+SCRAM is a command-line tool that performs probabilistic risk assessment
+using fault trees.
+The documentation may be ahead of software development and describe
+features that will be introduced in future versions.
 
 Command-line Call of SCRAM by a User
-=====================================
+====================================
 
 The user supplies input files and analysis configurations via command-line.
 Various types of analyses can be performed on the input files, for example,
@@ -20,25 +22,25 @@ be enough for initial runs.
 
 Fault Tree Analysis
 ===================
-
-#. Read input files. Verification of the input. Optional visual tool.
-
-#. (*Optional*) Upon users' request output instruction file for graphing
-   the tree. This is for visual verification of the input.
-   Stop execution of the program.
-
-#. Instantiate the analysis. Create the trees for the analysis.
-
-#. Perform cut set generation or other analysis.
-
-#. Perform numerical analysis:
-   Rare event approximation and independence of events.
-   Rare event approximation is used only if enforced by a user.
-
 #. Output the user specified analysis results. The output is sorted by
    the order of minimal cut sets, their probabilities. In addition,
    the contribution of each primary event is given in the output.
 
+#. Validate XML input files against RelaxNG.
+#. Validate the input analysis specifications and instantiations.
+#. Output a graphing dot file. *No probability definition required*
+#. Instantiate the analysis. Create the trees for the analysis.
+#. Find minimal cut sets. *No probability definition required*
+
+   - May specify maximum order for cut sets for faster calculations.
+
+#. Find the total probability of the top event and importance values for
+   basic events.
+
+   - May specify cut-off probability for cut sets.
+   - May specify the limit on the number of sums in the probability equation.
+   - May specify the rare event approximation or MCUB for faster calculations.
+   - May specify mission time that is used to calculate probabilities.
 
 Uncertainty Analysis
 ====================
@@ -62,7 +64,7 @@ Event Tree Analysis *Not implemented*
 
 
 Future Additions
-=================
+================
 #. Common-cause analysis.
 #. Importance analysis.
 #. Event tree analysis.
@@ -71,9 +73,13 @@ Future Additions
 
 
 General Information for Users
-==============================
+=============================
 #. Run 'scram -h' to see all the flags and parameters for analysis.
 
 #. The minimum cut set generation for a fault tree and probability calculations
    may use a lot of time and computing power depending on the complexity of
    the tree. You can adjust SCRAM flags and parameters to reduce these demands.
+
+#. All analysis can be run with logging of steps. The logging outputs useful
+   information for figuring out limiting bottlenecks and the source of errors
+   in analysis. This information can be used for debugging and tests.

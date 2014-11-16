@@ -1,8 +1,16 @@
-###################################
+##################################
 Fault Tree Generator Python Script
-###################################
+##################################
 
-A description of python script to generate a fault tree of any size and complexity.
+The complexity of a fault tree depends on many factors, such as types of gates,
+the number of shared nodes, the number of nodes, and the structure or the
+arrangement of the tree. It is best to craft a tree to test complex and most
+demanding cases, but it requires good understanding of fault trees and
+may be time consuming to design large trees.
+In order to facilitate the creation of complex trees,
+a python script is written that takes into account the factors that make
+a fault tree complex for analysis. More features for this script will
+be introduced as SCRAM becomes capable of handling more complex trees.
 
 General Description
 ===================

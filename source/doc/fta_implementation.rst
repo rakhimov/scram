@@ -1,9 +1,16 @@
-#########################
-SCRAM Fault Tree Analysis
-#########################
+#################################
+SCRAM Fault Tree Analysis Support
+#################################
 
-This is a short description of the fault tree analysis implemented in
-SCRAM.
+Fault trees have various types of gates and events to represent Boolean
+formula and the system under analysis. However, some extra information
+may be irrelevant for the core analysis tool and used only for visual or
+informative purposes for an analyst. Support for more advanced types
+and event descriptions will be introduces as needed in SCRAM.
+
+There are many algorithms that can be used in the fault tree analysis, and each
+has its own advantages and drawbacks. More advanced algorithms will be
+implemented for complex analysis.
 
 Currently Supported Gate Types
 ==============================
@@ -19,7 +26,7 @@ Currently Supported Gate Types
 - ATLEAST
 
 Currently Supported Symbols
-==============================
+===========================
 
 - TransferIn
 - TransferOut
@@ -61,14 +68,25 @@ Conditional
 Add this XML line to basic event description: :literal:`<attributes> <attribute name="flavor" value="conditional"/> </attributes>`
 
 
-The Algorithm to Generate Minimal Cut Sets
-===========================================
+Algorithms to Generate Minimal Cut Sets
+=======================================
 
-- Walk through the tree level by level starting from the root to leaves.
-- Update cut sets after each level.
-- Remove non-minimal cut sets according to rules.
-- Remove cut sets that are larger than the specified maximum order.
-- Remove cut sets with lower than cutoff probability. [not implemented]
+- MOCUS-like algebraic algorithm:
+
+    * Walk through the tree gate by gate starting from the root to leaves.
+    * Gather cut sets after each gate.
+    * Remove non-minimal cut sets.
+    * Remove cut sets that are larger than the specified maximum order.
+    * Remove cut sets with lower than cutoff probability. [not implemented]
+
+Algorithms to Calculate Probabilities
+=====================================
+
+- Algebraic expansion of the probability equation.
+
+    * Consider only cut sets above the cut-off probability.
+    * Generate Sylvester-Poincaré expansion.
+    * Plug-in basic event probabilities.
 
 UNITY and NULL Cases
 ====================
