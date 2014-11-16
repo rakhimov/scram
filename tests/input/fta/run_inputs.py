@@ -15,6 +15,7 @@ def main():
             "orphan_primary_event.xml",
             "correct_expressions.xml",
             "flavored_types.xml",
+            "very_long_mcs.xml",
             ]
 
     pass_probs = [
@@ -61,6 +62,7 @@ def main():
             "cyclic_parameter.xml",
             "invalid_probability.xml",
             "invalid_expression.xml",
+            "repeated_child.xml",
             ]
 
     # Run correct inputs
