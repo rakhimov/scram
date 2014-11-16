@@ -22,10 +22,6 @@ be enough for initial runs.
 
 Fault Tree Analysis
 ===================
-#. Output the user specified analysis results. The output is sorted by
-   the order of minimal cut sets, their probabilities. In addition,
-   the contribution of each primary event is given in the output.
-
 #. Validate XML input files against RelaxNG.
 #. Validate the input analysis specifications and instantiations.
 #. Output a graphing dot file. *No probability definition required*
@@ -41,6 +37,10 @@ Fault Tree Analysis
    - May specify the limit on the number of sums in the probability equation.
    - May specify the rare event approximation or MCUB for faster calculations.
    - May specify mission time that is used to calculate probabilities.
+
+#. Output the user specified analysis results. The output is sorted by
+   the order of minimal cut sets, their probabilities. In addition,
+   the contribution of each primary event is given in the output.
 
 Uncertainty Analysis
 ====================
