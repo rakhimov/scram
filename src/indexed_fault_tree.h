@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <boost/shared_ptr.hpp>
@@ -170,15 +171,15 @@ class IndexedFaultTree {
   /// separately. However, NOT and NULL gates are left untouched for later
   /// special processing.
   /// @param[out] gate The gate to be processed.
-  void UnrollGate(IndexedGatePtr& gate);
+  void UnrollGate(const IndexedGatePtr& gate);
 
   /// Unrolls a gate with XOR logic.
   /// @param[out] gate The gate to unroll.
-  void UnrollXorGate(IndexedGatePtr& gate);
+  void UnrollXorGate(const IndexedGatePtr& gate);
 
   /// Unrolls an ATLEAST gate with a vote number.
   /// @param[out] gate The atleast gate to unroll.
-  void UnrollAtleastGate(IndexedGatePtr& gate);
+  void UnrollAtleastGate(const IndexedGatePtr& gate);
 
   /// Remove all house events from a given gate.
   /// After this function, there should not be any unity or null gates because
@@ -189,7 +190,7 @@ class IndexedFaultTree {
   /// @param[out] processed_gates The gates that has already been processed.
   void PropagateConstants(const std::set<int>& true_house_events,
                           const std::set<int>& false_house_events,
-                          IndexedGatePtr& gate,
+                          const IndexedGatePtr& gate,
                           std::set<int>* processed_gates);
 
   /// Propagates complements of child gates down to basic events
@@ -202,7 +203,7 @@ class IndexedFaultTree {
   ///                  for a top event to function correctly.
   /// @param[out] gate_complements The complements of gates already processed.
   /// @param[out] processed_gates The gates that has already been processed.
-  void PropagateComplements(IndexedGatePtr& gate,
+  void PropagateComplements(const IndexedGatePtr& gate,
                             std::map<int, int>* gate_complements,
                             std::set<int>* processed_gates);
 
@@ -214,7 +215,8 @@ class IndexedFaultTree {
   /// @param[out] processed_gates The gates that has already been processed.
   /// @returns true if the given tree has been changed by this function.
   /// @returns false if no change has been made.
-  bool ProcessConstGates(IndexedGatePtr& gate, std::set<int>* processed_gates);
+  bool ProcessConstGates(const IndexedGatePtr& gate,
+                         std::set<int>* processed_gates);
 
   /// Pre-processes the tree by doing simple Boolean algebra.
   /// At this point all gates are expected to be either OR or AND.
@@ -225,7 +227,7 @@ class IndexedFaultTree {
   /// @param[out] processed_gates The gates that has already been processed.
   /// @returns true if the given tree has been changed by this function.
   /// @returns false if no change has been made.
-  bool JoinGates(IndexedGatePtr& gate, std::set<int>* processed_gates);
+  bool JoinGates(const IndexedGatePtr& gate, std::set<int>* processed_gates);
 
   /// Traverses the indexed fault tree to detect modules.
   /// @param[in] num_basic_events The number of basic events in the tree.
@@ -236,7 +238,7 @@ class IndexedFaultTree {
   /// @param[out] gate The gate to traverse and assign time to.
   /// @param[out] visit_basics The recordings for basic events.
   /// @returns The time final time of traversing.
-  int AssignTiming(int time, IndexedGatePtr& gate, int visit_basics[][2]);
+  int AssignTiming(int time, const IndexedGatePtr& gate, int visit_basics[][2]);
 
   /// Determines modules from original gates that have been already timed.
   /// This function can also create new modules from the existing tree.
@@ -245,7 +247,7 @@ class IndexedFaultTree {
   /// @param[out] visited_gates Container of already visited gates.
   /// @param[out] min_time The min time of visit for gate and its children.
   /// @param[out] max_time The max time of visit for gate and its children.
-  void FindOriginalModules(IndexedGatePtr& gate,
+  void FindOriginalModules(const IndexedGatePtr& gate,
                            const int visit_basics[][2],
                            std::map<int, std::pair<int, int> >* visited_gates,
                            int* min_time, int* max_time);

@@ -5,8 +5,8 @@
 #include <iostream>
 
 #include <boost/algorithm/string.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/date_time.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/pointer_cast.hpp>
 
 #include "error.h"
@@ -210,7 +210,8 @@ void Grapher::FormatPrimaryEvents(
           out << state;
         } else {
           // Note that this might a flavored type of a basic event.
-          double p = boost::dynamic_pointer_cast<BasicEvent>(primary_event)->p();
+          double p =
+              boost::dynamic_pointer_cast<BasicEvent>(primary_event)->p();
           out << p;
         }
       }

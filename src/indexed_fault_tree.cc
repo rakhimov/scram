@@ -1,7 +1,9 @@
 /// @file indexed_fault_tree.cc
-/// Implementation of IndexedFaultTree class.
+/// Implementation of IndexedFaultTree class and helper functions to
+/// efficiently find minimal cut sets from a fault tree.
 #include "indexed_fault_tree.h"
 
+#include <algorithm>
 #include <ctime>
 
 #include "event.h"
@@ -36,14 +38,14 @@ void SimpleGate::GenerateCutSets(const SetPtr& cut_set,
       for (it = basic_events_.begin(); it != basic_events_.end(); ++it) {
         if (!cut_set->count(-*it)) {
           SetPtr new_set(new std::set<int>(*cut_set));
-          new_set->insert(*it) ;
+          new_set->insert(*it);
           new_cut_sets->insert(new_set);
         }
       }
       for (it = modules_.begin(); it != modules_.end(); ++it) {
         // No check for complements. The modules are assumed to be positive.
         SetPtr new_set(new std::set<int>(*cut_set));
-        new_set->insert(*it) ;
+        new_set->insert(*it);
         new_cut_sets->insert(new_set);
       }
     }
@@ -370,7 +372,7 @@ void IndexedFaultTree::NotifyParentsOfNegativeGates(
   }
 }
 
-void IndexedFaultTree::UnrollGate(IndexedGatePtr& gate) {
+void IndexedFaultTree::UnrollGate(const IndexedGatePtr& gate) {
   std::string type = gate->string_type();
   assert(type != "undefined");
   if (type == "or" || type == "nor") {
@@ -388,7 +390,7 @@ void IndexedFaultTree::UnrollGate(IndexedGatePtr& gate) {
   }
 }
 
-void IndexedFaultTree::UnrollXorGate(IndexedGatePtr& gate) {
+void IndexedFaultTree::UnrollXorGate(const IndexedGatePtr& gate) {
   assert(gate->children().size() == 2);
   std::set<int>::const_iterator it = gate->children().begin();
   IndexedGatePtr gate_one(new IndexedGate(++new_gate_index_));
@@ -413,7 +415,7 @@ void IndexedFaultTree::UnrollXorGate(IndexedGatePtr& gate) {
   gate->AddChild(gate_two->index());
 }
 
-void IndexedFaultTree::UnrollAtleastGate(IndexedGatePtr& gate) {
+void IndexedFaultTree::UnrollAtleastGate(const IndexedGatePtr& gate) {
   int vote_number = gate->vote_number();
 
   assert(vote_number > 1);
@@ -463,7 +465,7 @@ void IndexedFaultTree::UnrollAtleastGate(IndexedGatePtr& gate) {
 void IndexedFaultTree::PropagateConstants(
     const std::set<int>& true_house_events,
     const std::set<int>& false_house_events,
-    IndexedGatePtr& gate,
+    const IndexedGatePtr& gate,
     std::set<int>* processed_gates) {
   if (processed_gates->count(gate->index())) return;
   processed_gates->insert(gate->index());
@@ -474,10 +476,9 @@ void IndexedFaultTree::PropagateConstants(
   // False house event in OR gate is removed.
   // Unity must be only due to House event.
   // Null can be due to house events or complement elments.
-  // True and false house events are treated as well for XOR and ATLEAST gates.
   std::set<int>::const_iterator it;
-  /// @todo This may have bad behavior due to erased children. Needs more
-  ///       testing and optimization. The function needs simplification.
+  /// @todo This may have bad behavior and is smelly due to erased children.
+  ///       Needs more testing, refactoring, and optimization.
   for (it = gate->children().begin(); it != gate->children().end();) {
     bool state = false;  // Null or Unity case.
     if (std::abs(*it) > gate_index_) {  // Processing a gate.
@@ -548,7 +549,7 @@ void IndexedFaultTree::PropagateConstants(
 }
 
 void IndexedFaultTree::PropagateComplements(
-    IndexedGatePtr& gate,
+    const IndexedGatePtr& gate,
     std::map<int, int>* gate_complements,
     std::set<int>* processed_gates) {
   // If the child gate is complement, then create a new gate that propagates
@@ -604,7 +605,7 @@ void IndexedFaultTree::PropagateComplements(
   }
 }
 
-bool IndexedFaultTree::ProcessConstGates(IndexedGatePtr& gate,
+bool IndexedFaultTree::ProcessConstGates(const IndexedGatePtr& gate,
                                          std::set<int>* processed_gates) {
   // Null state gates' parent: OR->Remove the child and AND->NULL the parent.
   // Unity state gates' parent: OR->Unity the parent and AND->Remove the child.
@@ -654,7 +655,7 @@ bool IndexedFaultTree::ProcessConstGates(IndexedGatePtr& gate,
   return changed;
 }
 
-bool IndexedFaultTree::JoinGates(IndexedGatePtr& gate,
+bool IndexedFaultTree::JoinGates(const IndexedGatePtr& gate,
                                  std::set<int>* processed_gates) {
   if (processed_gates->count(gate->index())) return false;
   processed_gates->insert(gate->index());
@@ -721,13 +722,14 @@ void IndexedFaultTree::DetectModules(int num_basic_events) {
                                         &visited_gates,
                                         &min_time, &max_time);
   assert(min_time == 1);
-  assert(max_time == top_gate->visits()[2]);
+  assert(!top_gate->Revisited());
+  assert(max_time == top_gate->ExitTime());
 
   int orig_mod = modules_.size();
   LOG() << "Detected number of original modules: " << modules_.size();
 }
 
-int IndexedFaultTree::AssignTiming(int time, IndexedGatePtr& gate,
+int IndexedFaultTree::AssignTiming(int time, const IndexedGatePtr& gate,
                                    int visit_basics[][2]) {
   if (gate->Visit(++time)) return time;  // Revisited gate.
 
@@ -753,7 +755,7 @@ int IndexedFaultTree::AssignTiming(int time, IndexedGatePtr& gate,
 }
 
 void IndexedFaultTree::FindOriginalModules(
-    IndexedGatePtr& gate,
+    const IndexedGatePtr& gate,
     const int visit_basics[][2],
     std::map<int, std::pair<int, int> >* visited_gates,
     int* min_time,
@@ -764,8 +766,8 @@ void IndexedFaultTree::FindOriginalModules(
     *max_time = visited_gates->find(gate->index())->second.second;
     return;
   }
-  int enter_time = gate->visits()[0];
-  int exit_time = gate->visits()[1];
+  int enter_time = gate->EnterTime();
+  int exit_time = gate->ExitTime();
   *min_time = enter_time;
   *max_time = exit_time;
 
@@ -781,7 +783,7 @@ void IndexedFaultTree::FindOriginalModules(
       min = visit_basics[index][0];
       max = visit_basics[index][1];
       if (min == max) {
-        assert (min > enter_time && max < exit_time);
+        assert(min > enter_time && max < exit_time);
         non_shared_children.push_back(*it);
         continue;
       }
@@ -790,10 +792,9 @@ void IndexedFaultTree::FindOriginalModules(
       IndexedGatePtr child_gate = indexed_gates_.find(index)->second;
       IndexedFaultTree::FindOriginalModules(child_gate, visit_basics,
                                             visited_gates, &min, &max);
-      if (modules_.count(index) &&
-          child_gate->visits()[1] == child_gate->visits()[2]) {
-        if (enter_time < child_gate->visits()[0] &&
-            exit_time > child_gate->visits()[2]) {
+      if (modules_.count(index) && !child_gate->Revisited()) {
+        if (enter_time < child_gate->EnterTime() &&
+            exit_time > child_gate->ExitTime()) {
           non_shared_children.push_back(*it);
           continue;
         }
@@ -814,7 +815,6 @@ void IndexedFaultTree::FindOriginalModules(
     assert((modular_children.size() + non_shared_children.size()) ==
            gate->children().size());
     modules_.insert(gate->index());
-
   }
   if (non_shared_children.size() > 1) {
     if (non_shared_children.size() == gate->children().size()) {
@@ -823,7 +823,7 @@ void IndexedFaultTree::FindOriginalModules(
       IndexedGatePtr new_module(new IndexedGate(++new_gate_index_));
       indexed_gates_.insert(std::make_pair(new_gate_index_, new_module));
       modules_.insert(new_gate_index_);
-      new_module->type( gate->type());
+      new_module->type(gate->type());
       new_module->string_type(gate->string_type());
       std::vector<int>::iterator it_g;
       for (it_g = non_shared_children.begin();
@@ -896,7 +896,7 @@ void IndexedFaultTree::FindOriginalModules(
     IndexedGatePtr new_module(new IndexedGate(++new_gate_index_));
     indexed_gates_.insert(std::make_pair(new_gate_index_, new_module));
     modules_.insert(new_gate_index_);
-    new_module->type( gate->type());
+    new_module->type(gate->type());
     new_module->string_type(gate->string_type());
     std::vector<int>::iterator it_g;
     for (it_g = modular_children.begin(); it_g != modular_children.end();
@@ -911,7 +911,7 @@ void IndexedFaultTree::FindOriginalModules(
         << " with children number " << modular_children.size();
   }
 
-  if (gate->visits()[2] > *max_time) *max_time = gate->visits()[2];
+  if (gate->LastVisit() > *max_time) *max_time = gate->LastVisit();
   visited_gates->insert(std::make_pair(gate->index(),
                                        std::make_pair(*min_time, *max_time)));
 }

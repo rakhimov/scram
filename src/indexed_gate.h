@@ -156,7 +156,7 @@ class IndexedGate {
   /// @returns parents of this gate.
   inline const std::set<int>& parents() { return parents_; }
 
-  /// Registers the visiting time for this gate upon tree traversal.
+  /// Registers the visit time for this gate upon tree traversal.
   /// This information can be used to detect dependencies.
   /// @param[in] time The visit time of this gate.
   /// @returns true If this gate was previously visited.
@@ -174,15 +174,18 @@ class IndexedGate {
     return false;
   }
 
-  /// @returns Visits ordered first, second, and last.
-  const int (&visits())[3] {
-    assert(visits_[0]);
-    assert(visits_[1]);
-    if (!visits_[2]) {
-      visits_[2] = visits_[1];
-    }
-    return visits_;
-  }
+  /// @returns The time when this gate was first encountered or entered.
+  inline int EnterTime() { return visits_[0]; }
+
+  /// @returns The exit time upon traversal of the tree.
+  inline int ExitTime() { return visits_[1]; }
+
+  /// @returns The last time this gate was visited.
+  inline int LastVisit() { return visits_[2] ? visits_[2] : visits_[1]; }
+
+  /// @returns false if this gate was only visited once upon tree traversal.
+  /// @returns true if this gate was revisited at one more time.
+  inline bool Revisited() { return visits_[2] ? true : false; }
 
  private:
   /// Type of this gate. Only two choices are allowed: OR, AND.
