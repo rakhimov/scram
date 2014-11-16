@@ -1,9 +1,8 @@
-#########################
-SCRAM Fault Tree Analysis
-#########################
+#################################
+SCRAM Fault Tree Analysis Support
+#################################
 
-This is a short description of the fault tree analysis implemented in
-SCRAM.
+This is a short description of the fault tree analysis support in SCRAM.
 
 Currently Supported Gate Types
 ==============================
@@ -61,14 +60,16 @@ Conditional
 Add this XML line to basic event description: :literal:`<attributes> <attribute name="flavor" value="conditional"/> </attributes>`
 
 
-The Algorithm to Generate Minimal Cut Sets
+The Algorithms to Generate Minimal Cut Sets
 ===========================================
 
-- Walk through the tree level by level starting from the root to leaves.
-- Update cut sets after each level.
-- Remove non-minimal cut sets according to rules.
-- Remove cut sets that are larger than the specified maximum order.
-- Remove cut sets with lower than cutoff probability. [not implemented]
+- MOCUS-like algebraic algorithm:
+
+    * Walk through the tree level by level starting from the root to leaves.
+    * Gather cut sets after each gate.
+    * Remove non-minimal cut sets.
+    * Remove cut sets that are larger than the specified maximum order.
+    * Remove cut sets with lower than cutoff probability. [not implemented]
 
 UNITY and NULL Cases
 ====================

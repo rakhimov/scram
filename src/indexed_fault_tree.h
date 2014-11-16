@@ -264,6 +264,8 @@ class IndexedFaultTree {
 
   /// Finds minimal cut sets from cut sets.
   /// Reduces unique cut sets to minimal cut sets.
+  /// The performance is highly dependent on the passed sets. If the sets
+  /// share many events, it takes more time to remove supersets.
   /// @param[in] cut_sets Cut sets with primary events.
   /// @param[in] mcs_lower_order Reference minimal cut sets of some order.
   /// @param[in] min_order The order of sets to become minimal.

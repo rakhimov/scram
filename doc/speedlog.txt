@@ -28,18 +28,6 @@ Release build:
 - Importance Calc.  2.500s  |
 
 
----------- fta-200 -l 16 -r (mcs = 8351) ---------------
-Standard build:
----------------
-- Cut Set Generation      0.700s  |
-- Cut Set Minimization    1.100s  |  7.000
-
-Release build:
---------------
-- Cut Set Generation      0.200s  |
-- Cut Set Minimization    0.240s  |  1.800
-
-
 ---------- fta-200 -l 17 -r (mcs = 8487) ---------------
 Standard build:
 ---------------
@@ -48,8 +36,8 @@ Standard build:
 
 Release build:
 --------------
-- Cut Set Generation      0.300s  |
-- Cut Set Minimization    2.00s   |
+- Cut Set Generation      0.170s  |
+- Cut Set Minimization    2.00s   |  2.40s
 
 ---------- fta-200 -l 24 -r (mcs = 16951) ---------------
 Standard build:
@@ -59,8 +47,8 @@ Standard build:
 
 Release build:
 --------------
-- Cut Set Generation      0.500s  |
-- Cut Set Minimization    6.000s  |
+- Cut Set Generation      0.250s  |
+- Cut Set Minimization    6.000s  |  7.80s
 
 
 ---------- Baobab -l 6 (mcs = 2684) ----------------
@@ -71,7 +59,7 @@ Standard build:
 
 Release build:
 --------------
-- Cut Set Generation      0.550s  |
+- Cut Set Generation      0.250s  |
 - Cut Set Minimization    0.030s  |
 
 
@@ -83,20 +71,20 @@ Standard build:
 
 Release build:
 --------------
-- Cut Set Generation      4.500s  |
-- Cut Set Minimization    0.800s  |
+- Cut Set Generation      1.900s  |
+- Cut Set Minimization    0.800s  |  1.57s
 
 ---------- Baobab -l 8 (mcs = 25892) ----------------
 Release build:
 --------------
-- Cut Set Generation      34.50s  |
-- Cut Set Minimization    20.00s  |
+- Cut Set Generation      15.00s  |
+- Cut Set Minimization    20.00s  |  50.4
 
 
 ---------- CEA9601 -l 7 (mcs = 4578) ----------------
 Release build:
 --------------
-- Cut Set Generation      23.00s  |
+- Cut Set Generation      10.50s  |
 - Cut Set Minimization    0.050s  |
 
 
