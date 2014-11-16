@@ -50,6 +50,7 @@ set(SCRAM_CORE_TEST_SOURCE ${SCRAM_CORE_TEST_SOURCE}
   "${CMAKE_CURRENT_SOURCE_DIR}/bench_200_event_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/bench_small_tree_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/bench_chinese_tree_tests.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/bench_baobab1_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/performance_tests.cc"
   )
 
