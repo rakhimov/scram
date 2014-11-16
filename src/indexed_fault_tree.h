@@ -286,7 +286,7 @@ class IndexedFaultTree {
   std::set<int> modules_;  ///< Modules in the tree.
   int top_event_sign_;  ///< The negative or positive sign of the top event.
   int new_gate_index_;  ///< Index for a new gate.
-  std::vector< std::set<int> > imcs_;  // Min cut sets with indexed events.
+  std::vector< std::set<int> > imcs_;  ///< Min cut sets with indexed events.
   /// Limit on the size of the minimal cut sets for performance reasons.
   int limit_order_;
 };
