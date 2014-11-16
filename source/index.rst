@@ -16,12 +16,15 @@ SCRAM
 SCRAM: "Simplified Command-line Risk Analysis Multi-tool"
 
 SCRAM is under development to be a free and open source (`GPL license`_)
-probabilistic risk analysis tool to perform fault tree analysis, event tree analysis,
-uncertainty analysis, importance analysis, common-cause analysis, and other
-probabilistic analysis types.
+probabilistic risk analysis tool to perform fault tree analysis,
+event tree analysis, uncertainty analysis, importance analysis,
+common-cause analysis, and other probabilistic analysis types.
 
-This project currently contains a static fault tree analysis, uncertainty
-analysis, fault tree generator, and fault tree graphing with Graphviz Dot tool.
+This project currently contains a static fault tree analysis, probability
+calculations with importance analysis, uncertainty analysis with Monte Carlo
+simulations, fault tree generator, and fault tree graphing with
+Graphviz Dot tool. SCRAM supports non-coherent analyses containing NOT
+logic or complements.
 
 .. _`GPL license`:
     https://github.com/rakhimov/scram/blob/master/LICENSE
@@ -44,7 +47,6 @@ Documentation:
     doc/input_file
     doc/opsa_support
     doc/gui
-    doc/fta_calls
     doc/fta_implementation
     doc/fta_mcs_algorithm
     doc/probability_analysis
