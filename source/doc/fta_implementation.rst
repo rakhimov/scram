@@ -6,7 +6,7 @@ Fault trees have various types of gates and events to represent Boolean
 formula and the system under analysis. However, some extra information
 may be irrelevant for the core analysis tool and used only for visual or
 informative purposes for an analyst. Support for more advanced types
-and event descriptions will be introduces as needed in SCRAM.
+and event descriptions will be introduced as needed in SCRAM.
 
 There are many algorithms that can be used in the fault tree analysis, and each
 has its own advantages and drawbacks. More advanced algorithms will be
