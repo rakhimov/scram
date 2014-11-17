@@ -183,7 +183,7 @@ class IndexedFaultTree {
 
   /// Remove all house events from a given gate.
   /// After this function, there should not be any unity or null gates because
-  /// of house events.
+  ///  of house events.
   /// @param[in] true_house_events House events with true state.
   /// @param[in] false_house_events House events with false state.
   /// @param[out] gate The final resultant processed gate.
@@ -192,6 +192,31 @@ class IndexedFaultTree {
                           const std::set<int>& false_house_events,
                           const IndexedGatePtr& gate,
                           std::set<int>* processed_gates);
+
+  /// Removes null and unity gates. There should not be negative gate children.
+  /// After this function, there should not be null or unity gates resulting
+  /// from previous processing steps.
+  /// @param[out] gate The starting gate to traverse the tree. This is for
+  ///                  recursive purposes.
+  /// @param[out] processed_gates The gates that has already been processed.
+  /// @returns true if the given tree has been changed by this function.
+  /// @returns false if no change has been made.
+  bool ProcessConstGates(const IndexedGatePtr& gate,
+                         std::set<int>* processed_gates);
+
+  /// Changes the state of a gate or passes a constant child to be removed
+  /// later. The function determines its actions depending on the type of
+  /// a gate and state of a child,
+  /// @param[in] gate The parent gate that contains the child to be considered.
+  /// @param[in] child The constant child under consideration.
+  /// @param[in] state False or True constant state of the child.
+  /// @param[out] to_erase The set of children to erase from the above gate.
+  /// @returns true if the passed gate has become a constant due to its child.
+  /// @returns false if the parent still valid for kurther operations.
+  bool ProcessConstantChild(const IndexedGatePtr& gate,
+                            int child,
+                            bool state,
+                            std::vector<int>* to_erase);
 
   /// Propagates complements of child gates down to basic events
   /// in order to remove any NOR or NAND logic from the tree.
@@ -207,16 +232,15 @@ class IndexedFaultTree {
                             std::map<int, int>* gate_complements,
                             std::set<int>* processed_gates);
 
-  /// Removes null and unity gates. There should not be negative gate children.
-  /// After this function, there should not be null or unity gates resulting
-  /// from previous processing steps.
-  /// @param[out] gate The starting gate to traverse the tree. This is for
-  ///                  recursive purposes.
-  /// @param[out] processed_gates The gates that has already been processed.
-  /// @returns true if the given tree has been changed by this function.
-  /// @returns false if no change has been made.
-  bool ProcessConstGates(const IndexedGatePtr& gate,
-                         std::set<int>* processed_gates);
+  /// Removes a set of children from an OR/AND gate.
+  /// This is a helper function for NULL and UNITY propagation on the tree.
+  /// If the final gate is empty, it is turned into NULL for OR gates and
+  /// UNITY for AND and other gates.
+  /// This function may also update the children parent information if needed.
+  /// @param[in] gate The gate that contains the children to be removed.
+  /// @param[in] to_erase The set of children to erase from the above gate.
+  void RemoveChildren(const IndexedGatePtr& gate,
+                      const std::vector<int>& to_erase);
 
   /// Pre-processes the tree by doing simple Boolean algebra.
   /// At this point all gates are expected to be either OR or AND.

@@ -474,76 +474,86 @@ void IndexedFaultTree::PropagateConstants(
   // True house event in OR gate makes the gate Unity, and it shouldn't appear
   // in minimal cut sets.
   // False house event in OR gate is removed.
-  // Unity must be only due to House event.
+  // Unity may occur due to House event.
   // Null can be due to house events or complement elments.
   std::set<int>::const_iterator it;
-  /// @todo This may have bad behavior and is smelly due to erased children.
-  ///       Needs more testing, refactoring, and optimization.
-  for (it = gate->children().begin(); it != gate->children().end();) {
-    bool state = false;  // Null or Unity case.
+  std::vector<int> to_erase;  // Children to erase.
+  for (it = gate->children().begin(); it != gate->children().end(); ++it) {
+    bool state = false;  // Null or Unity case. Null indication by default.
     if (std::abs(*it) > gate_index_) {  // Processing a gate.
       IndexedGatePtr child_gate = indexed_gates_.find(std::abs(*it))->second;
-      PropagateConstants(true_house_events, false_house_events, child_gate,
-                         processed_gates);
+      IndexedFaultTree::PropagateConstants(true_house_events,
+                                           false_house_events,
+                                           child_gate,
+                                           processed_gates);
       std::string string_state = child_gate->state();
       assert(string_state == "normal" || string_state == "null" ||
              string_state == "unity");
-      if (string_state == "normal") {
-        ++it;
-        continue;
-      } else if (string_state == "null") {
-        state = *it > 0 ? false : true;
-      } else if (string_state == "unity") {
-        state = *it > 0 ? true : false;
-      }
+      if (string_state == "normal") continue;
+      state = string_state == "null" ? false : true;
     } else {  // Processing a primary event.
       if (false_house_events.count(std::abs(*it))) {
-        state = *it > 0 ? false : true;
+        state = false;
       } else if (true_house_events.count(std::abs(*it))) {
-        state = *it > 0 ? true : false;
+        state = true;
       } else {
-        ++it;
-        continue;  // Not a house event.
+        continue;  // This must be a basic event.
       }
     }
+    if (*it < 0) state = !state;  // Complement event.
 
-    std::string parent_type = gate->string_type();
-    assert(parent_type == "or" || parent_type == "and" ||
-           parent_type == "not" || parent_type == "null");
+    if (IndexedFaultTree::ProcessConstantChild(gate, *it, state, &to_erase))
+      return;
+  }
+  IndexedFaultTree::RemoveChildren(gate, to_erase);
+}
 
-    if (!state) {  // Null state.
-      if (parent_type == "or") {
-        gate->EraseChild(*it);  // OR gate with null child.
-        if (gate->children().empty()) {
-          gate->Nullify();
-          return;
-        }
-        it = gate->children().begin();
-        continue;
-      } else if (parent_type == "and" || parent_type == "null") {
-        // AND gate with null child.
-        gate->Nullify();
-        return;
-      } else if (parent_type == "not") {
-        gate->MakeUnity();
-        return;
-      }
-    } else {  // Unity state.
-      if (parent_type == "or") {
-        gate->MakeUnity();
-        return;
-      } else if (parent_type == "and" || parent_type == "null") {
-        gate->EraseChild(*it);
-        if (gate->children().empty()) {
-          gate->MakeUnity();
-          return;
-        }
-        it = gate->children().begin();
-        continue;
-      } else if (parent_type == "not") {
-        gate->Nullify();
-        return;
-      }
+bool IndexedFaultTree::ProcessConstantChild(const IndexedGatePtr& gate,
+                                            int child,
+                                            bool state,
+                                            std::vector<int>* to_erase) {
+  std::string parent_type = gate->string_type();
+  assert(parent_type == "or" || parent_type == "and" ||
+         parent_type == "not" || parent_type == "null");
+
+  if (!state) {  // Null state.
+    if (parent_type == "or") {
+      to_erase->push_back(child);
+      return false;
+
+    } else if (parent_type == "and" || parent_type == "null") {
+      // AND gate with null child.
+      gate->Nullify();
+
+    } else if (parent_type == "not") {
+      gate->MakeUnity();
+    }
+  } else {  // Unity state.
+    if (parent_type == "or") {
+      gate->MakeUnity();
+
+    } else if (parent_type == "and" || parent_type == "null") {
+      to_erase->push_back(child);
+      return false;
+
+    } else if (parent_type == "not") {
+      gate->Nullify();
+    }
+  }
+  return true;  // Becomes constant most of the time or cases.
+}
+
+void IndexedFaultTree::RemoveChildren(const IndexedGatePtr& gate,
+                                      const std::vector<int>& to_erase) {
+  std::vector<int>::const_iterator it_v;
+  for (it_v = to_erase.begin(); it_v != to_erase.end(); ++it_v) {
+    gate->EraseChild(*it_v);
+  }
+  if (gate->children().empty()) {
+    if (gate->string_type() == "or") {
+      gate->Nullify();
+    } else {  // The default operation for AND gate.
+      gate->MakeUnity();
     }
   }
 }
@@ -609,7 +619,7 @@ bool IndexedFaultTree::ProcessConstGates(const IndexedGatePtr& gate,
                                          std::set<int>* processed_gates) {
   // Null state gates' parent: OR->Remove the child and AND->NULL the parent.
   // Unity state gates' parent: OR->Unity the parent and AND->Remove the child.
-  // The tree structure is only AND and OR gates.
+  // The tree structure is only positive AND and OR gates.
   if (processed_gates->count(gate->index())) return false;
   processed_gates->insert(gate->index());
 
@@ -627,31 +637,16 @@ bool IndexedFaultTree::ProcessConstGates(const IndexedGatePtr& gate,
       if (!changed && ret) changed = true;
       std::string state = child_gate->state();
       if (state == "normal") continue;  // Only three states are possible.
-      if (((state == "null") && (type == 1)) ||
-          ((state == "unity") && (type == 2))) {
-        to_erase.push_back(*it);
-      } else if (state == "null") {
-        gate->Nullify();
+      if (IndexedFaultTree::ProcessConstantChild(
+              gate,
+              *it,
+              state == "null" ? false : true,
+              &to_erase))
         return true;
-      } else {
-        assert(state == "unity");
-        gate->MakeUnity();
-        return true;
-      }
     }
   }
   if (!changed && !to_erase.empty()) changed = true;
-  std::vector<int>::iterator it_v;
-  for (it_v = to_erase.begin(); it_v != to_erase.end(); ++it_v) {
-    gate->EraseChild(*it_v);
-  }
-  if (gate->children().empty()) {
-    if (type == 1) {
-      gate->Nullify();
-    } else {
-      gate->MakeUnity();
-    }
-  }
+  IndexedFaultTree::RemoveChildren(gate, to_erase);
   return changed;
 }
 
@@ -882,9 +877,7 @@ void IndexedFaultTree::FindOriginalModules(
             break;
           }
         }
-        if (modular) {
-          still_modular.push_back(*it);
-        }
+        if (modular) still_modular.push_back(*it);
       }
       modular_children = still_modular;
       non_modular_children = new_non_modular;
@@ -906,9 +899,8 @@ void IndexedFaultTree::FindOriginalModules(
     }
     assert(!gate->children().empty());
     gate->InitiateWithChild(new_module->index());
-    LOG() << "New module of gate " << gate->index() << ": "
-        << new_gate_index_
-        << " with children number " << modular_children.size();
+    LOG() << "New module of gate " << gate->index() << ": " << new_gate_index_
+          << " with children number " << modular_children.size();
   }
 
   if (gate->LastVisit() > *max_time) *max_time = gate->LastVisit();
