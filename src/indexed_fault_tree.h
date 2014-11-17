@@ -268,17 +268,41 @@ class IndexedFaultTree {
   /// This function can also create new modules from the existing tree.
   /// @param[in] gate The gate to test for modularity.
   /// @param[in] visit_basics The recordings for basic events.
-  /// @param[out] visited_gates Container of already visited gates.
-  /// @param[out] min_time The min time of visit for gate and its children.
-  /// @param[out] max_time The max time of visit for gate and its children.
+  /// @param[in,out] visited_gates Container of visited gates with
+  ///                              min and max time of visits of the subtree.
   void FindOriginalModules(const IndexedGatePtr& gate,
                            const int visit_basics[][2],
-                           std::map<int, std::pair<int, int> >* visited_gates,
-                           int* min_time, int* max_time);
+                           std::map<int, std::pair<int, int> >* visited_gates);
+
+  /// Creates a new module as a child of an existing gate. The existing
+  /// children of the original gate are used to create the new module.
+  /// The module is added in the module and gate databases.
+  /// If the new module must contain all the children, the original gate is
+  /// turned into a module.
+  /// @param[in,out] gate The parent gate for a module.
+  /// @param[in] children Modular children to be added into the new module.
+  void CreateNewModule(const IndexedGatePtr& gate,
+                       const std::vector<int>& children);
+
+  /// Checks if a group of modular children share anything with non-modular
+  /// children. If so, then the modular children are not actually modular, and
+  /// that children are removed from modular containers.
+  /// This is due to chain of events that are shared between modular and
+  /// non-modular children.
+  /// @param[in] visit_basics The recordings for basic events.
+  /// @param[in] visited_gates Vist max and min time recordings for gates.
+  /// @param[in,out] modular_children Candidates for modular grouping.
+  /// @param[in,out] non_modular_children Non modular children.
+  void FilterModularChildren(
+      const int visit_basics[][2],
+      const std::map<int, std::pair<int, int> >& visited_gates,
+      std::vector<int>* modular_children,
+      std::vector<int>* non_modular_children);
+
 
   /// Traverses the fault tree to convert gates into simple gates.
   /// @param[in] gate_index The index of a gate to start with.
-  /// @param[out] processed_gates Gates turned into simple gates.
+  /// @param[in,out] processed_gates Gates turned into simple gates.
   void CreateSimpleTree(int gate_index,
                         std::map<int, SimpleGatePtr>* processed_gates);
 
