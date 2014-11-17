@@ -117,7 +117,7 @@ class ProbabilityAnalysis {
   /// calculation without approximations.
   /// @param[in] sign The sign of the series. Negative or positive number.
   /// @param[in] nsums The number of sums in the series.
-  /// @param[in] min_cut_sets Sets of indices of primary events.
+  /// @param[in,out] min_cut_sets Sets of indices of primary events.
   /// @note This function drastically modifies min_cut_sets by deleting
   /// sets inside it. This is for better performance.
   ///
@@ -149,7 +149,6 @@ class ProbabilityAnalysis {
   double CalculateTotalProbability();
 
   /// Importance analysis of basic events that are in minimal cut sets.
-  /// @todo This function must aware of approximations.
   void PerformImportanceAnalysis();
 
   /// Approximations for probability calculations.
