@@ -85,6 +85,20 @@ class SimpleGate {
   static void limit_order(int limit) { limit_order_ = limit; }
 
  private:
+  /// Generates cut sets for AND gate children using already generated sets.
+  /// The tree is assumed to be layered with OR children of AND gates.
+  /// @param[in] cut_set The base cut set to work with.
+  /// @param[out] new_cut_sets Generated cut sets by using the gate's children.
+  void AndGateCutSets(const SetPtr& cut_set,
+                      std::set<SetPtr, SetPtrComp>* new_cut_sets);
+
+  /// Generates cut sets for OR gate children using already generated sets.
+  /// The tree is assumed to be layered with AND children of OR gates.
+  /// @param[in] cut_set The base cut set to work with.
+  /// @param[out] new_cut_sets Generated cut sets by using the gate's children.
+  void OrGateCutSets(const SetPtr& cut_set,
+                      std::set<SetPtr, SetPtrComp>* new_cut_sets);
+
   int type_;  ///< Type of this gate.
   std::vector<int> basic_events_;  ///< Container of basic events' indices.
   std::vector<int> modules_;  ///< Container of modules' indices.
@@ -155,7 +169,7 @@ class IndexedFaultTree {
   /// This information might be needed for other algorithms because
   /// due to processing of the tree, the shape and nodes may change.
   /// @param[in] parent_gate The parent to start information gathering.
-  /// @param[out] processed_gates The gates that has already been processed.
+  /// @param[in,out] processed_gates The gates that has already been processed.
   void GatherParentInformation(const IndexedGatePtr& parent_gate,
                                std::set<int>* processed_gates);
 
@@ -170,61 +184,85 @@ class IndexedFaultTree {
   /// gate are not notified. This means that negative gates must be dealt
   /// separately. However, NOT and NULL gates are left untouched for later
   /// special processing.
-  /// @param[out] gate The gate to be processed.
+  /// @param[in,out] gate The gate to be processed.
   void UnrollGate(const IndexedGatePtr& gate);
 
   /// Unrolls a gate with XOR logic.
-  /// @param[out] gate The gate to unroll.
+  /// @param[in,out] gate The gate to unroll.
   void UnrollXorGate(const IndexedGatePtr& gate);
 
   /// Unrolls an ATLEAST gate with a vote number.
-  /// @param[out] gate The atleast gate to unroll.
+  /// @param[in,out] gate The atleast gate to unroll.
   void UnrollAtleastGate(const IndexedGatePtr& gate);
 
   /// Remove all house events from a given gate.
   /// After this function, there should not be any unity or null gates because
-  /// of house events.
+  ///  of house events.
   /// @param[in] true_house_events House events with true state.
   /// @param[in] false_house_events House events with false state.
-  /// @param[out] gate The final resultant processed gate.
-  /// @param[out] processed_gates The gates that has already been processed.
+  /// @param[in,out] gate The final resultant processed gate.
+  /// @param[in,out] processed_gates The gates that has already been processed.
   void PropagateConstants(const std::set<int>& true_house_events,
                           const std::set<int>& false_house_events,
                           const IndexedGatePtr& gate,
                           std::set<int>* processed_gates);
 
-  /// Propagates complements of child gates down to basic events
-  /// in order to remove any NOR or NAND logic from the tree.
-  /// This function also processes NOT and NULL gates.
-  /// The resulting tree will contain only positive gates, OR and AND.
-  /// @param[out] gate The starting gate to traverse the tree. This is for
-  ///                  recursive purposes. The sign of this passed gate
-  ///                  is unknown for the function, so it must be sanitized
-  ///                  for a top event to function correctly.
-  /// @param[out] gate_complements The complements of gates already processed.
-  /// @param[out] processed_gates The gates that has already been processed.
-  void PropagateComplements(const IndexedGatePtr& gate,
-                            std::map<int, int>* gate_complements,
-                            std::set<int>* processed_gates);
-
   /// Removes null and unity gates. There should not be negative gate children.
   /// After this function, there should not be null or unity gates resulting
   /// from previous processing steps.
-  /// @param[out] gate The starting gate to traverse the tree. This is for
-  ///                  recursive purposes.
-  /// @param[out] processed_gates The gates that has already been processed.
+  /// @param[in,out] gate The starting gate to traverse the tree. This is for
+  ///                     recursive purposes.
+  /// @param[in,out] processed_gates The gates that has already been processed.
   /// @returns true if the given tree has been changed by this function.
   /// @returns false if no change has been made.
   bool ProcessConstGates(const IndexedGatePtr& gate,
                          std::set<int>* processed_gates);
 
+  /// Changes the state of a gate or passes a constant child to be removed
+  /// later. The function determines its actions depending on the type of
+  /// a gate and state of a child,
+  /// @param[in,out] gate The parent gate that contains the children.
+  /// @param[in] child The constant child under consideration.
+  /// @param[in] state False or True constant state of the child.
+  /// @param[out] to_erase The set of children to erase from the above gate.
+  /// @returns true if the passed gate has become a constant due to its child.
+  /// @returns false if the parent still valid for kurther operations.
+  bool ProcessConstantChild(const IndexedGatePtr& gate,
+                            int child,
+                            bool state,
+                            std::vector<int>* to_erase);
+
+  /// Propagates complements of child gates down to basic events
+  /// in order to remove any NOR or NAND logic from the tree.
+  /// This function also processes NOT and NULL gates.
+  /// The resulting tree will contain only positive gates, OR and AND.
+  /// @param[in,out] gate The starting gate to traverse the tree. This is for
+  ///                     recursive purposes. The sign of this passed gate
+  ///                     is unknown for the function, so it must be sanitized
+  ///                     for a top event to function correctly.
+  /// @param[in,out] gate_complements The complements of gates already processed.
+  /// @param[in,out] processed_gates The gates that has already been processed.
+  void PropagateComplements(const IndexedGatePtr& gate,
+                            std::map<int, int>* gate_complements,
+                            std::set<int>* processed_gates);
+
+  /// Removes a set of children from an OR/AND gate.
+  /// This is a helper function for NULL and UNITY propagation on the tree.
+  /// If the final gate is empty, it is turned into NULL for OR gates and
+  /// UNITY for AND and other gates.
+  /// This function may also update the children parent information if needed.
+  /// @param[in,out] gate The gate that contains the children to be removed.
+  /// @param[in] to_erase The set of children to erase from the above gate.
+  void RemoveChildren(const IndexedGatePtr& gate,
+                      const std::vector<int>& to_erase);
+
   /// Pre-processes the tree by doing simple Boolean algebra.
   /// At this point all gates are expected to be either OR or AND.
   /// There should not be negative gate children.
   /// This function merges similar gates and may produce null or unity gates.
-  /// @param[out] gate The starting gate to traverse the tree. This is for
-  ///                  recursive purposes. This gate must be AND or OR.
-  /// @param[out] processed_gates The gates that has already been processed.
+  /// @param[in,out] gate The starting gate to traverse the tree. This is for
+  ///                     recursive purposes. This gate must be AND or OR.
+  /// @param[in,out] processed_gates The gates that has already been processed.
   /// @returns true if the given tree has been changed by this function.
   /// @returns false if no change has been made.
   bool JoinGates(const IndexedGatePtr& gate, std::set<int>* processed_gates);
@@ -235,31 +273,55 @@ class IndexedFaultTree {
 
   /// Traverses the given gate and assigns time of visit to nodes.
   /// @param[in] time The current time.
-  /// @param[out] gate The gate to traverse and assign time to.
-  /// @param[out] visit_basics The recordings for basic events.
+  /// @param[in,out] gate The gate to traverse and assign time to.
+  /// @param[in,out] visit_basics The recordings for basic events.
   /// @returns The time final time of traversing.
   int AssignTiming(int time, const IndexedGatePtr& gate, int visit_basics[][2]);
 
   /// Determines modules from original gates that have been already timed.
   /// This function can also create new modules from the existing tree.
-  /// @param[in] gate The gate to test for modularity.
+  /// @param[in,out] gate The gate to test for modularity.
   /// @param[in] visit_basics The recordings for basic events.
-  /// @param[out] visited_gates Container of already visited gates.
-  /// @param[out] min_time The min time of visit for gate and its children.
-  /// @param[out] max_time The max time of visit for gate and its children.
+  /// @param[in,out] visited_gates Container of visited gates with
+  ///                              min and max time of visits of the subtree.
   void FindOriginalModules(const IndexedGatePtr& gate,
                            const int visit_basics[][2],
-                           std::map<int, std::pair<int, int> >* visited_gates,
-                           int* min_time, int* max_time);
+                           std::map<int, std::pair<int, int> >* visited_gates);
+
+  /// Creates a new module as a child of an existing gate. The existing
+  /// children of the original gate are used to create the new module.
+  /// The module is added in the module and gate databases.
+  /// If the new module must contain all the children, the original gate is
+  /// turned into a module.
+  /// @param[in,out] gate The parent gate for a module.
+  /// @param[in] children Modular children to be added into the new module.
+  void CreateNewModule(const IndexedGatePtr& gate,
+                       const std::vector<int>& children);
+
+  /// Checks if a group of modular children share anything with non-modular
+  /// children. If so, then the modular children are not actually modular, and
+  /// that children are removed from modular containers.
+  /// This is due to chain of events that are shared between modular and
+  /// non-modular children.
+  /// @param[in] visit_basics The recordings for basic events.
+  /// @param[in] visited_gates Vist max and min time recordings for gates.
+  /// @param[in,out] modular_children Candidates for modular grouping.
+  /// @param[in,out] non_modular_children Non modular children.
+  void FilterModularChildren(
+      const int visit_basics[][2],
+      const std::map<int, std::pair<int, int> >& visited_gates,
+      std::vector<int>* modular_children,
+      std::vector<int>* non_modular_children);
+
 
   /// Traverses the fault tree to convert gates into simple gates.
   /// @param[in] gate_index The index of a gate to start with.
-  /// @param[out] processed_gates Gates turned into simple gates.
+  /// @param[in,out] processed_gates Gates turned into simple gates.
   void CreateSimpleTree(int gate_index,
                         std::map<int, SimpleGatePtr>* processed_gates);
 
   /// Finds minimal cut sets of a simple gate.
-  /// @param[out] gate The simple gate as a parent for processing.
+  /// @param[in] gate The simple gate as a parent for processing.
   /// @param[out] mcs Minimal cut sets.
   void FindMcsFromSimpleGate(const SimpleGatePtr& gate,
                              std::vector< std::set<int> >* mcs);

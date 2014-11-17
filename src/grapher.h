@@ -28,7 +28,6 @@ class Grapher {
   /// @param[in] fault_tree Fault Tree to draw.
   /// @param[in] prob_requested Should probabilities be included.
   /// @param[out] out The output stream.
-  /// @throws IOError if the output file is not accessable.
   void GraphFaultTree(const FaultTreePtr& fault_tree,
                       bool prob_requested,
                       std::ostream& out);

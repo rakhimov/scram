@@ -18,96 +18,109 @@ void SimpleGate::GenerateCutSets(const SetPtr& cut_set,
                                  std::set<SetPtr, SetPtrComp>* new_cut_sets) {
   assert(cut_set->size() <= limit_order_);
   if (type_ == 1) {  // OR gate operations.
-    // Check for local minimality.
-    std::vector<int>::iterator it;
+    SimpleGate::OrGateCutSets(cut_set, new_cut_sets);
+
+  } else {  // AND gate operations.
+    SimpleGate::AndGateCutSets(cut_set, new_cut_sets);
+  }
+}
+
+void SimpleGate::AndGateCutSets(const SetPtr& cut_set,
+                                std::set<SetPtr, SetPtrComp>* new_cut_sets) {
+  assert(cut_set->size() <= limit_order_);
+  // Check for null case.
+  std::vector<int>::iterator it;
+  for (it = basic_events_.begin(); it != basic_events_.end(); ++it) {
+    if (cut_set->count(-*it)) return;
+  }
+  // Limit order checks before other expensive operations.
+  int order = cut_set->size();
+  for (it = basic_events_.begin(); it != basic_events_.end(); ++it) {
+    if (!cut_set->count(*it)) ++order;
+    if (order > limit_order_) return;
+  }
+  for (it = modules_.begin(); it != modules_.end(); ++it) {
+    if (!cut_set->count(*it)) ++order;
+    if (order > limit_order_) return;
+  }
+  SetPtr cut_set_copy(new std::set<int>(*cut_set));
+  // Include all basic events and modules into the set.
+  for (it = basic_events_.begin(); it != basic_events_.end(); ++it) {
+    cut_set_copy->insert(*it);
+  }
+  for (it = modules_.begin(); it != modules_.end(); ++it) {
+    cut_set_copy->insert(*it);
+  }
+
+  // Deal with many OR gate children.
+  SetPtrComp comp;
+  std::set<SetPtr, SetPtrComp> arguments;  // Input to OR gates.
+  arguments.insert(cut_set_copy);
+  std::vector<SimpleGatePtr>::iterator it_g;
+  for (it_g = gates_.begin(); it_g != gates_.end(); ++it_g) {
+    std::set<SetPtr, SetPtrComp>::iterator it_s;
+    std::set<SetPtr, SetPtrComp> results(comp);
+    for (it_s = arguments.begin(); it_s != arguments.end(); ++it_s) {
+      (*it_g)->OrGateCutSets(*it_s, &results);
+    }
+    arguments = results;
+  }
+  if (!arguments.empty() &&
+      (*arguments.begin())->size() == cut_set_copy->size()) {
+    new_cut_sets->insert(cut_set_copy);
+  } else {
+    new_cut_sets->insert(arguments.begin(), arguments.end());
+  }
+}
+
+void SimpleGate::OrGateCutSets(const SetPtr& cut_set,
+                               std::set<SetPtr, SetPtrComp>* new_cut_sets) {
+  assert(cut_set->size() <= limit_order_);
+  // Check for local minimality.
+  std::vector<int>::iterator it;
+  for (it = basic_events_.begin(); it != basic_events_.end(); ++it) {
+    if (cut_set->count(*it)) {
+      new_cut_sets->insert(cut_set);
+      return;
+    }
+  }
+  for (it = modules_.begin(); it != modules_.end(); ++it) {
+    if (cut_set->count(*it)) {
+      new_cut_sets->insert(cut_set);
+      return;
+    }
+  }
+  // There is a guarantee of a size increase of a cut set.
+  if (cut_set->size() < limit_order_) {
+    // Create new cut sets from basic events and modules.
     for (it = basic_events_.begin(); it != basic_events_.end(); ++it) {
-      if (cut_set->count(*it)) {
-        new_cut_sets->insert(cut_set);
-        return;
-      }
-    }
-    for (it = modules_.begin(); it != modules_.end(); ++it) {
-      if (cut_set->count(*it)) {
-        new_cut_sets->insert(cut_set);
-        return;
-      }
-    }
-    // There is a guarantee of a size increase of a cut set.
-    if (cut_set->size() < limit_order_) {
-      // Create new cut sets from basic events and modules.
-      for (it = basic_events_.begin(); it != basic_events_.end(); ++it) {
-        if (!cut_set->count(-*it)) {
-          SetPtr new_set(new std::set<int>(*cut_set));
-          new_set->insert(*it);
-          new_cut_sets->insert(new_set);
-        }
-      }
-      for (it = modules_.begin(); it != modules_.end(); ++it) {
-        // No check for complements. The modules are assumed to be positive.
+      if (!cut_set->count(-*it)) {
         SetPtr new_set(new std::set<int>(*cut_set));
         new_set->insert(*it);
         new_cut_sets->insert(new_set);
       }
     }
-
-    // Generate cut sets from child gates of AND type.
-    std::vector<SimpleGatePtr>::iterator it_g;
-    SetPtrComp comp;
-    std::set<SetPtr, SetPtrComp> local_sets(comp);
-    for (it_g = gates_.begin(); it_g != gates_.end(); ++it_g) {
-      (*it_g)->GenerateCutSets(cut_set, &local_sets);
-      if (!local_sets.empty() &&
-          (*local_sets.begin())->size() == cut_set->size()) {
-        new_cut_sets->insert(cut_set);
-        return;
-      }
-    }
-    new_cut_sets->insert(local_sets.begin(), local_sets.end());
-  } else {
-    // Check for null case.
-    std::vector<int>::iterator it;
-    for (it = basic_events_.begin(); it != basic_events_.end(); ++it) {
-      if (cut_set->count(-*it)) return;
-    }
-    // Limit order checks before other expensive operations.
-    int order = cut_set->size();
-    for (it = basic_events_.begin(); it != basic_events_.end(); ++it) {
-      if (!cut_set->count(*it)) ++order;
-      if (order > limit_order_) return;
-    }
     for (it = modules_.begin(); it != modules_.end(); ++it) {
-      if (!cut_set->count(*it)) ++order;
-      if (order > limit_order_) return;
-    }
-    SetPtr cut_set_copy(new std::set<int>(*cut_set));
-    // Include all basic events and modules into the set.
-    for (it = basic_events_.begin(); it != basic_events_.end(); ++it) {
-      cut_set_copy->insert(*it);
-    }
-    for (it = modules_.begin(); it != modules_.end(); ++it) {
-      cut_set_copy->insert(*it);
-    }
-
-    // Deal with many OR gate children.
-    SetPtrComp comp;
-    std::set<SetPtr, SetPtrComp> arguments;  // Input to OR gates.
-    arguments.insert(cut_set_copy);
-    std::vector<SimpleGatePtr>::iterator it_g;
-    for (it_g = gates_.begin(); it_g != gates_.end(); ++it_g) {
-      std::set<SetPtr, SetPtrComp>::iterator it_s;
-      std::set<SetPtr, SetPtrComp> results(comp);
-      for (it_s = arguments.begin(); it_s != arguments.end(); ++it_s) {
-        (*it_g)->GenerateCutSets(*it_s, &results);
-      }
-      arguments = results;
-    }
-    if (!arguments.empty() &&
-        (*arguments.begin())->size() == cut_set_copy->size()) {
-      new_cut_sets->insert(cut_set_copy);
-    } else {
-      new_cut_sets->insert(arguments.begin(), arguments.end());
+      // No check for complements. The modules are assumed to be positive.
+      SetPtr new_set(new std::set<int>(*cut_set));
+      new_set->insert(*it);
+      new_cut_sets->insert(new_set);
     }
   }
+
+  // Generate cut sets from child gates of AND type.
+  std::vector<SimpleGatePtr>::iterator it_g;
+  SetPtrComp comp;
+  std::set<SetPtr, SetPtrComp> local_sets(comp);
+  for (it_g = gates_.begin(); it_g != gates_.end(); ++it_g) {
+    (*it_g)->AndGateCutSets(cut_set, &local_sets);
+    if (!local_sets.empty() &&
+        (*local_sets.begin())->size() == cut_set->size()) {
+      new_cut_sets->insert(cut_set);
+      return;
+    }
+  }
+  new_cut_sets->insert(local_sets.begin(), local_sets.end());
 }
 
 IndexedFaultTree::IndexedFaultTree(int top_event_id, int limit_order)
@@ -474,76 +487,86 @@ void IndexedFaultTree::PropagateConstants(
   // True house event in OR gate makes the gate Unity, and it shouldn't appear
   // in minimal cut sets.
   // False house event in OR gate is removed.
-  // Unity must be only due to House event.
+  // Unity may occur due to House event.
   // Null can be due to house events or complement elments.
   std::set<int>::const_iterator it;
-  /// @todo This may have bad behavior and is smelly due to erased children.
-  ///       Needs more testing, refactoring, and optimization.
-  for (it = gate->children().begin(); it != gate->children().end();) {
-    bool state = false;  // Null or Unity case.
+  std::vector<int> to_erase;  // Children to erase.
+  for (it = gate->children().begin(); it != gate->children().end(); ++it) {
+    bool state = false;  // Null or Unity case. Null indication by default.
     if (std::abs(*it) > gate_index_) {  // Processing a gate.
       IndexedGatePtr child_gate = indexed_gates_.find(std::abs(*it))->second;
-      PropagateConstants(true_house_events, false_house_events, child_gate,
-                         processed_gates);
+      IndexedFaultTree::PropagateConstants(true_house_events,
+                                           false_house_events,
+                                           child_gate,
+                                           processed_gates);
       std::string string_state = child_gate->state();
       assert(string_state == "normal" || string_state == "null" ||
              string_state == "unity");
-      if (string_state == "normal") {
-        ++it;
-        continue;
-      } else if (string_state == "null") {
-        state = *it > 0 ? false : true;
-      } else if (string_state == "unity") {
-        state = *it > 0 ? true : false;
-      }
+      if (string_state == "normal") continue;
+      state = string_state == "null" ? false : true;
     } else {  // Processing a primary event.
       if (false_house_events.count(std::abs(*it))) {
-        state = *it > 0 ? false : true;
+        state = false;
       } else if (true_house_events.count(std::abs(*it))) {
-        state = *it > 0 ? true : false;
+        state = true;
       } else {
-        ++it;
-        continue;  // Not a house event.
+        continue;  // This must be a basic event.
       }
     }
+    if (*it < 0) state = !state;  // Complement event.
 
-    std::string parent_type = gate->string_type();
-    assert(parent_type == "or" || parent_type == "and" ||
-           parent_type == "not" || parent_type == "null");
+    if (IndexedFaultTree::ProcessConstantChild(gate, *it, state, &to_erase))
+      return;
+  }
+  IndexedFaultTree::RemoveChildren(gate, to_erase);
+}
 
-    if (!state) {  // Null state.
-      if (parent_type == "or") {
-        gate->EraseChild(*it);  // OR gate with null child.
-        if (gate->children().empty()) {
-          gate->Nullify();
-          return;
-        }
-        it = gate->children().begin();
-        continue;
-      } else if (parent_type == "and" || parent_type == "null") {
-        // AND gate with null child.
-        gate->Nullify();
-        return;
-      } else if (parent_type == "not") {
-        gate->MakeUnity();
-        return;
-      }
-    } else {  // Unity state.
-      if (parent_type == "or") {
-        gate->MakeUnity();
-        return;
-      } else if (parent_type == "and" || parent_type == "null") {
-        gate->EraseChild(*it);
-        if (gate->children().empty()) {
-          gate->MakeUnity();
-          return;
-        }
-        it = gate->children().begin();
-        continue;
-      } else if (parent_type == "not") {
-        gate->Nullify();
-        return;
-      }
+bool IndexedFaultTree::ProcessConstantChild(const IndexedGatePtr& gate,
+                                            int child,
+                                            bool state,
+                                            std::vector<int>* to_erase) {
+  std::string parent_type = gate->string_type();
+  assert(parent_type == "or" || parent_type == "and" ||
+         parent_type == "not" || parent_type == "null");
+
+  if (!state) {  // Null state.
+    if (parent_type == "or") {
+      to_erase->push_back(child);
+      return false;
+
+    } else if (parent_type == "and" || parent_type == "null") {
+      // AND gate with null child.
+      gate->Nullify();
+
+    } else if (parent_type == "not") {
+      gate->MakeUnity();
+    }
+  } else {  // Unity state.
+    if (parent_type == "or") {
+      gate->MakeUnity();
+
+    } else if (parent_type == "and" || parent_type == "null") {
+      to_erase->push_back(child);
+      return false;
+
+    } else if (parent_type == "not") {
+      gate->Nullify();
+    }
+  }
+  return true;  // Becomes constant most of the time or cases.
+}
+
+void IndexedFaultTree::RemoveChildren(const IndexedGatePtr& gate,
+                                      const std::vector<int>& to_erase) {
+  std::vector<int>::const_iterator it_v;
+  for (it_v = to_erase.begin(); it_v != to_erase.end(); ++it_v) {
+    gate->EraseChild(*it_v);
+  }
+  if (gate->children().empty()) {
+    if (gate->string_type() == "or") {
+      gate->Nullify();
+    } else {  // The default operation for AND gate.
+      gate->MakeUnity();
     }
   }
 }
@@ -609,7 +632,7 @@ bool IndexedFaultTree::ProcessConstGates(const IndexedGatePtr& gate,
                                          std::set<int>* processed_gates) {
   // Null state gates' parent: OR->Remove the child and AND->NULL the parent.
   // Unity state gates' parent: OR->Unity the parent and AND->Remove the child.
-  // The tree structure is only AND and OR gates.
+  // The tree structure is only positive AND and OR gates.
   if (processed_gates->count(gate->index())) return false;
   processed_gates->insert(gate->index());
 
@@ -627,31 +650,16 @@ bool IndexedFaultTree::ProcessConstGates(const IndexedGatePtr& gate,
       if (!changed && ret) changed = true;
       std::string state = child_gate->state();
       if (state == "normal") continue;  // Only three states are possible.
-      if (((state == "null") && (type == 1)) ||
-          ((state == "unity") && (type == 2))) {
-        to_erase.push_back(*it);
-      } else if (state == "null") {
-        gate->Nullify();
+      if (IndexedFaultTree::ProcessConstantChild(
+              gate,
+              *it,
+              state == "null" ? false : true,
+              &to_erase))
         return true;
-      } else {
-        assert(state == "unity");
-        gate->MakeUnity();
-        return true;
-      }
     }
   }
   if (!changed && !to_erase.empty()) changed = true;
-  std::vector<int>::iterator it_v;
-  for (it_v = to_erase.begin(); it_v != to_erase.end(); ++it_v) {
-    gate->EraseChild(*it_v);
-  }
-  if (gate->children().empty()) {
-    if (type == 1) {
-      gate->Nullify();
-    } else {
-      gate->MakeUnity();
-    }
-  }
+  IndexedFaultTree::RemoveChildren(gate, to_erase);
   return changed;
 }
 
@@ -715,15 +723,14 @@ void IndexedFaultTree::DetectModules(int num_basic_events) {
 
   LOG() << "Timings are assigned to nodes.";
 
-  int min_time = 0;
-  int max_time = 0;
   std::map<int, std::pair<int, int> > visited_gates;
   IndexedFaultTree::FindOriginalModules(top_gate, visit_basics,
-                                        &visited_gates,
-                                        &min_time, &max_time);
-  assert(min_time == 1);
+                                        &visited_gates);
+  assert(visited_gates.count(top_event_index_));
+  assert(visited_gates.find(top_event_index_)->second.first == 1);
   assert(!top_gate->Revisited());
-  assert(max_time == top_gate->ExitTime());
+  assert(visited_gates.find(top_event_index_)->second.second ==
+         top_gate->ExitTime());
 
   int orig_mod = modules_.size();
   LOG() << "Detected number of original modules: " << modules_.size();
@@ -757,21 +764,14 @@ int IndexedFaultTree::AssignTiming(int time, const IndexedGatePtr& gate,
 void IndexedFaultTree::FindOriginalModules(
     const IndexedGatePtr& gate,
     const int visit_basics[][2],
-    std::map<int, std::pair<int, int> >* visited_gates,
-    int* min_time,
-    int* max_time) {
-  /// @todo This must get optimized if needed.
-  if (visited_gates->count(gate->index())) {
-    *min_time = visited_gates->find(gate->index())->second.first;
-    *max_time = visited_gates->find(gate->index())->second.second;
-    return;
-  }
+    std::map<int, std::pair<int, int> >* visited_gates) {
+  if (visited_gates->count(gate->index())) return;
   int enter_time = gate->EnterTime();
   int exit_time = gate->ExitTime();
-  *min_time = enter_time;
-  *max_time = exit_time;
+  int min_time = enter_time;
+  int max_time = exit_time;
 
-  std::vector<int> non_shared_children;  // Children that this gate's only.
+  std::vector<int> non_shared_children;  // Non-shared module children.
   std::vector<int> modular_children;  // Children that satisfy modularity.
   std::vector<int> non_modular_children;  // Cannot be grouped into a module.
   std::set<int>::const_iterator it;
@@ -791,129 +791,132 @@ void IndexedFaultTree::FindOriginalModules(
       assert(*it > 0);
       IndexedGatePtr child_gate = indexed_gates_.find(index)->second;
       IndexedFaultTree::FindOriginalModules(child_gate, visit_basics,
-                                            visited_gates, &min, &max);
+                                            visited_gates);
+      min = visited_gates->find(index)->second.first;
+      max = visited_gates->find(index)->second.second;
       if (modules_.count(index) && !child_gate->Revisited()) {
-        if (enter_time < child_gate->EnterTime() &&
-            exit_time > child_gate->ExitTime()) {
-          non_shared_children.push_back(*it);
-          continue;
-        }
+        non_shared_children.push_back(*it);
+        continue;
       }
     }
     assert(min != 0);
     assert(max != 0);
-    if (min > enter_time && max < exit_time) modular_children.push_back(*it);
-    if (min < enter_time || max > exit_time)
+    if (min > enter_time && max < exit_time) {
+      modular_children.push_back(*it);
+    } else {
       non_modular_children.push_back(*it);
-    if (min < *min_time) *min_time = min;
-    if (max > *max_time) *max_time = max;
+    }
+    min_time = std::min(min_time, min);
+    max_time = std::max(max_time, max);
   }
 
   // Determine if this gate is module itself.
-  if (*min_time == enter_time && *max_time == exit_time) {
-    LOG() << "Original module: " << gate->index();
+  if (min_time == enter_time && max_time == exit_time) {
+    LOG() << "Found original module: " << gate->index();
     assert((modular_children.size() + non_shared_children.size()) ==
            gate->children().size());
     modules_.insert(gate->index());
   }
   if (non_shared_children.size() > 1) {
-    if (non_shared_children.size() == gate->children().size()) {
-      assert(modules_.count(gate->index()));
-    } else {
-      IndexedGatePtr new_module(new IndexedGate(++new_gate_index_));
-      indexed_gates_.insert(std::make_pair(new_gate_index_, new_module));
-      modules_.insert(new_gate_index_);
-      new_module->type(gate->type());
-      new_module->string_type(gate->string_type());
-      std::vector<int>::iterator it_g;
-      for (it_g = non_shared_children.begin();
-           it_g != non_shared_children.end(); ++it_g) {
-        gate->EraseChild(*it_g);
-        new_module->InitiateWithChild(*it_g);
-      }
-      assert(!gate->children().empty());
-      gate->InitiateWithChild(new_module->index());
-      LOG() << "New module of " << gate->index() << ": " << new_gate_index_
-          << " with NON-SHARED children number " << non_shared_children.size();
-    }
+    IndexedFaultTree::CreateNewModule(gate, non_shared_children);
+    LOG() << "New module of " << gate->index() << ": " << new_gate_index_
+        << " with NON-SHARED children number " << non_shared_children.size();
   }
   // There might be cases when in one level couple of child gates can be
   // grouped into a module but they may share an event with another non-module
   // gate which in turn shares an event with the outside world. This leads
   // to a chain that needs to be considered. Formula rewriting might be helpful
   // in this case.
+  IndexedFaultTree::FilterModularChildren(visit_basics,
+                                          *visited_gates,
+                                          &modular_children,
+                                          &non_modular_children);
   if (modular_children.size() > 0) {
-    while (!non_modular_children.empty()) {
-      std::vector<int> new_non_modular;
-      std::vector<int> still_modular;
-      std::vector<int>::iterator it;
-      for (it = modular_children.begin(); it != modular_children.end(); ++it) {
-        int index = std::abs(*it);
-        int min = 0;
-        int max = 0;
-        if (index < gate_index_) {
-          min = visit_basics[index][0];
-          max = visit_basics[index][1];
-        } else {
-          assert(*it > 0);
-          min = visited_gates->find(index)->second.first;
-          max = visited_gates->find(index)->second.second;
-        }
-        bool modular = true;
-        std::vector<int>::iterator it_n;
-        for (it_n = non_modular_children.begin();
-             it_n != non_modular_children.end(); ++it_n) {
-          int index = std::abs(*it_n);
-          int lower = 0;
-          int upper = 0;
-          if (index < gate_index_) {
-            lower = visit_basics[index][0];
-            upper = visit_basics[index][1];
-          } else {
-            assert(*it_n > 0);
-            lower = visited_gates->find(index)->second.first;
-            upper = visited_gates->find(index)->second.second;
-          }
-          int a = std::max(min, lower);
-          int b = std::min(max, upper);
-          if (a <= b) {  // There's some overlap between the ranges.
-            new_non_modular.push_back(*it);
-            modular = false;
-            break;
-          }
-        }
-        if (modular) {
-          still_modular.push_back(*it);
-        }
-      }
-      modular_children = still_modular;
-      non_modular_children = new_non_modular;
-    }
-  }
-  if (modular_children.size() > 0 &&
-      modular_children.size() != gate->children().size()) {
     assert(modular_children.size() != 1);  // One modular child is non-shared.
-    IndexedGatePtr new_module(new IndexedGate(++new_gate_index_));
-    indexed_gates_.insert(std::make_pair(new_gate_index_, new_module));
-    modules_.insert(new_gate_index_);
-    new_module->type(gate->type());
-    new_module->string_type(gate->string_type());
-    std::vector<int>::iterator it_g;
-    for (it_g = modular_children.begin(); it_g != modular_children.end();
-         ++it_g) {
-      gate->EraseChild(*it_g);
-      new_module->InitiateWithChild(*it_g);
-    }
-    assert(!gate->children().empty());
-    gate->InitiateWithChild(new_module->index());
-    LOG() << "New module of gate " << gate->index() << ": "
-        << new_gate_index_
-        << " with children number " << modular_children.size();
+    IndexedFaultTree::CreateNewModule(gate, modular_children);
+    LOG() << "New module of gate " << gate->index() << ": " << new_gate_index_
+          << " with children number " << modular_children.size();
   }
 
-  if (gate->LastVisit() > *max_time) *max_time = gate->LastVisit();
+  max_time = std::max(max_time, gate->LastVisit());
   visited_gates->insert(std::make_pair(gate->index(),
-                                       std::make_pair(*min_time, *max_time)));
+                                       std::make_pair(min_time, max_time)));
+}
+
+void IndexedFaultTree::CreateNewModule(const IndexedGatePtr& gate,
+                                       const std::vector<int>& children) {
+  assert(children.size() > 1);
+  assert(children.size() <= gate->children().size());
+  if (children.size() == gate->children().size()) {
+    if (modules_.count(gate->index())) return;
+    modules_.insert(gate->index());
+    return;
+  }
+  IndexedGatePtr new_module(new IndexedGate(++new_gate_index_));
+  indexed_gates_.insert(std::make_pair(new_gate_index_, new_module));
+  modules_.insert(new_gate_index_);
+  new_module->type(gate->type());
+  new_module->string_type(gate->string_type());
+  std::vector<int>::const_iterator it_g;
+  for (it_g = children.begin(); it_g != children.end(); ++it_g) {
+    gate->EraseChild(*it_g);
+    new_module->InitiateWithChild(*it_g);
+  }
+  assert(!gate->children().empty());
+  gate->InitiateWithChild(new_module->index());
+}
+
+void IndexedFaultTree::FilterModularChildren(
+    const int visit_basics[][2],
+    const std::map<int, std::pair<int, int> >& visited_gates,
+    std::vector<int>* modular_children,
+    std::vector<int>* non_modular_children) {
+  if (modular_children->empty() || non_modular_children->empty()) return;
+  std::vector<int> new_non_modular;
+  std::vector<int> still_modular;
+  std::vector<int>::iterator it;
+  for (it = modular_children->begin(); it != modular_children->end(); ++it) {
+    int index = std::abs(*it);
+    int min = 0;
+    int max = 0;
+    if (index < gate_index_) {
+      min = visit_basics[index][0];
+      max = visit_basics[index][1];
+    } else {
+      assert(*it > 0);
+      min = visited_gates.find(index)->second.first;
+      max = visited_gates.find(index)->second.second;
+    }
+    bool modular = true;
+    std::vector<int>::iterator it_n;
+    for (it_n = non_modular_children->begin();
+         it_n != non_modular_children->end(); ++it_n) {
+      int index = std::abs(*it_n);
+      int lower = 0;
+      int upper = 0;
+      if (index < gate_index_) {
+        lower = visit_basics[index][0];
+        upper = visit_basics[index][1];
+      } else {
+        assert(*it_n > 0);
+        lower = visited_gates.find(index)->second.first;
+        upper = visited_gates.find(index)->second.second;
+      }
+      int a = std::max(min, lower);
+      int b = std::min(max, upper);
+      if (a <= b) {  // There's some overlap between the ranges.
+        new_non_modular.push_back(*it);
+        modular = false;
+        break;
+      }
+    }
+    if (modular) still_modular.push_back(*it);
+  }
+  IndexedFaultTree::FilterModularChildren(visit_basics, visited_gates,
+                                          &still_modular, &new_non_modular);
+  *modular_children = still_modular;
+  non_modular_children->insert(non_modular_children->end(),
+                               new_non_modular.begin(), new_non_modular.end());
 }
 
 void IndexedFaultTree::CreateSimpleTree(

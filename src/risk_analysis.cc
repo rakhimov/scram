@@ -114,25 +114,11 @@ void RiskAnalysis::ProcessInputFiles(
 }
 
 void RiskAnalysis::GraphingInstructions(std::string output) {
-  std::map<std::string, FaultTreePtr>::iterator it;
-  for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
-    // Check if output to file is requested.
-    std::streambuf* buf;
-    std::ofstream of;
-    if (output != "cli") {
-      of.open(output.c_str());
-      if (!of.good()) {
-        throw IOError(output +  " : Cannot write the graphing file.");
-      }
-      buf = of.rdbuf();
-
-    } else {
-      buf = std::cout.rdbuf();
-    }
-    std::ostream out(buf);
-    Grapher gr = Grapher();
-    gr.GraphFaultTree(it->second, prob_requested_, out);
+  std::ofstream of(output.c_str());
+  if (!of.good()) {
+    throw IOError(output +  " : Cannot write the graphing file.");
   }
+  RiskAnalysis::GraphingInstructions(of);
 }
 
 void RiskAnalysis::Analyze() {
@@ -167,42 +153,11 @@ void RiskAnalysis::Analyze() {
 }
 
 void RiskAnalysis::Report(std::string output) {
-  Reporter rp = Reporter();
-
-  // Check if output to file is requested.
-  std::streambuf* buf;
-  std::ofstream of;
-  if (output != "cli") {
-    of.open(output.c_str());
-    if (!of.good()) {
-      throw IOError(output +  " : Cannot write the output file.");
-    }
-    buf = of.rdbuf();
-
-  } else {
-    buf = std::cout.rdbuf();
+  std::ofstream of(output.c_str());
+  if (!of.good()) {
+    throw IOError(output +  " : Cannot write the output file.");
   }
-  std::ostream out(buf);
-
-  if (!orphan_primary_events_.empty())
-    rp.ReportOrphans(orphan_primary_events_, out);
-
-  std::vector<FaultTreeAnalysisPtr>::iterator it;
-  for (it = ftas_.begin(); it != ftas_.end(); ++it) {
-    rp.ReportFta(*it, out);
-  }
-
-  if (prob_requested_) {
-    std::vector<ProbabilityAnalysisPtr>::iterator it_p;
-    for (it_p = prob_analyses_.begin(); it_p != prob_analyses_.end(); ++it_p) {
-      rp.ReportProbability(*it_p, out);
-    }
-    std::vector<UncertaintyAnalysisPtr>::iterator it_u;
-    for (it_u = uncertainty_analyses_.begin();
-         it_u != uncertainty_analyses_.end(); ++it_u) {
-      rp.ReportUncertainty(*it_u, out);
-    }
-  }
+  RiskAnalysis::Report(of);
 }
 
 void RiskAnalysis::ProcessInputFile(std::string xml_file) {
@@ -1339,6 +1294,38 @@ void RiskAnalysis::ValidateExpressions() {
     if (msg.str() != "") {
       std::string head = "Invalid probabilities detected:\n";
       throw ValidationError(head + msg.str());
+    }
+  }
+}
+
+void RiskAnalysis::GraphingInstructions(std::ostream& out) {
+  std::map<std::string, FaultTreePtr>::iterator it;
+  for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
+    Grapher gr = Grapher();
+    gr.GraphFaultTree(it->second, prob_requested_, out);
+  }
+}
+
+void RiskAnalysis::Report(std::ostream& out) {
+  Reporter rp = Reporter();
+
+  if (!orphan_primary_events_.empty())
+    rp.ReportOrphans(orphan_primary_events_, out);
+
+  std::vector<FaultTreeAnalysisPtr>::iterator it;
+  for (it = ftas_.begin(); it != ftas_.end(); ++it) {
+    rp.ReportFta(*it, out);
+  }
+
+  if (prob_requested_) {
+    std::vector<ProbabilityAnalysisPtr>::iterator it_p;
+    for (it_p = prob_analyses_.begin(); it_p != prob_analyses_.end(); ++it_p) {
+      rp.ReportProbability(*it_p, out);
+    }
+    std::vector<UncertaintyAnalysisPtr>::iterator it_u;
+    for (it_u = uncertainty_analyses_.begin();
+         it_u != uncertainty_analyses_.end(); ++it_u) {
+      rp.ReportUncertainty(*it_u, out);
     }
   }
 }
