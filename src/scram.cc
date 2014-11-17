@@ -154,21 +154,23 @@ int RunScram(const po::variables_map& vm) {
     return 0;
   }
 
-  // Output destination.
-  std::string output = "cli";  // Output to command line by default.
-  if (vm.count("output")) {
-    output = vm["output"].as<std::string>();
-  }
-
   // Graph if requested.
   if (vm.count("graph-only")) {
-    ran->GraphingInstructions(output);
+    if (vm.count("output")) {
+      ran->GraphingInstructions(vm["output"].as<std::string>());
+    } else {
+      ran->GraphingInstructions();
+    }
     return 0;
   }
 
   ran->Analyze();
 
-  ran->Report(output);  // May throw boost exceptions according to Coverity.
+  if (vm.count("output")) {
+    ran->Report(vm["output"].as<std::string>());
+  } else {
+    ran->Report();
+  }
 
   delete ran;
   return 0;
