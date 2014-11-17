@@ -32,7 +32,7 @@ Release build:
 Standard build:
 ---------------
 - Cut Set Generation      0.700s  |
-- Cut Set Minimization    8.000s  |
+- Cut Set Minimization    8.000s  |  8.50s
 
 Release build:
 --------------
@@ -48,7 +48,7 @@ Standard build:
 Release build:
 --------------
 - Cut Set Generation      0.250s  |
-- Cut Set Minimization    6.000s  |  7.80s
+- Cut Set Minimization    6.000s  |  8.50s
 
 
 ---------- Baobab -l 6 (mcs = 2684) ----------------
