@@ -18,96 +18,109 @@ void SimpleGate::GenerateCutSets(const SetPtr& cut_set,
                                  std::set<SetPtr, SetPtrComp>* new_cut_sets) {
   assert(cut_set->size() <= limit_order_);
   if (type_ == 1) {  // OR gate operations.
-    // Check for local minimality.
-    std::vector<int>::iterator it;
+    SimpleGate::OrGateCutSets(cut_set, new_cut_sets);
+
+  } else {  // AND gate operations.
+    SimpleGate::AndGateCutSets(cut_set, new_cut_sets);
+  }
+}
+
+void SimpleGate::AndGateCutSets(const SetPtr& cut_set,
+                                std::set<SetPtr, SetPtrComp>* new_cut_sets) {
+  assert(cut_set->size() <= limit_order_);
+  // Check for null case.
+  std::vector<int>::iterator it;
+  for (it = basic_events_.begin(); it != basic_events_.end(); ++it) {
+    if (cut_set->count(-*it)) return;
+  }
+  // Limit order checks before other expensive operations.
+  int order = cut_set->size();
+  for (it = basic_events_.begin(); it != basic_events_.end(); ++it) {
+    if (!cut_set->count(*it)) ++order;
+    if (order > limit_order_) return;
+  }
+  for (it = modules_.begin(); it != modules_.end(); ++it) {
+    if (!cut_set->count(*it)) ++order;
+    if (order > limit_order_) return;
+  }
+  SetPtr cut_set_copy(new std::set<int>(*cut_set));
+  // Include all basic events and modules into the set.
+  for (it = basic_events_.begin(); it != basic_events_.end(); ++it) {
+    cut_set_copy->insert(*it);
+  }
+  for (it = modules_.begin(); it != modules_.end(); ++it) {
+    cut_set_copy->insert(*it);
+  }
+
+  // Deal with many OR gate children.
+  SetPtrComp comp;
+  std::set<SetPtr, SetPtrComp> arguments;  // Input to OR gates.
+  arguments.insert(cut_set_copy);
+  std::vector<SimpleGatePtr>::iterator it_g;
+  for (it_g = gates_.begin(); it_g != gates_.end(); ++it_g) {
+    std::set<SetPtr, SetPtrComp>::iterator it_s;
+    std::set<SetPtr, SetPtrComp> results(comp);
+    for (it_s = arguments.begin(); it_s != arguments.end(); ++it_s) {
+      (*it_g)->OrGateCutSets(*it_s, &results);
+    }
+    arguments = results;
+  }
+  if (!arguments.empty() &&
+      (*arguments.begin())->size() == cut_set_copy->size()) {
+    new_cut_sets->insert(cut_set_copy);
+  } else {
+    new_cut_sets->insert(arguments.begin(), arguments.end());
+  }
+}
+
+void SimpleGate::OrGateCutSets(const SetPtr& cut_set,
+                               std::set<SetPtr, SetPtrComp>* new_cut_sets) {
+  assert(cut_set->size() <= limit_order_);
+  // Check for local minimality.
+  std::vector<int>::iterator it;
+  for (it = basic_events_.begin(); it != basic_events_.end(); ++it) {
+    if (cut_set->count(*it)) {
+      new_cut_sets->insert(cut_set);
+      return;
+    }
+  }
+  for (it = modules_.begin(); it != modules_.end(); ++it) {
+    if (cut_set->count(*it)) {
+      new_cut_sets->insert(cut_set);
+      return;
+    }
+  }
+  // There is a guarantee of a size increase of a cut set.
+  if (cut_set->size() < limit_order_) {
+    // Create new cut sets from basic events and modules.
     for (it = basic_events_.begin(); it != basic_events_.end(); ++it) {
-      if (cut_set->count(*it)) {
-        new_cut_sets->insert(cut_set);
-        return;
-      }
-    }
-    for (it = modules_.begin(); it != modules_.end(); ++it) {
-      if (cut_set->count(*it)) {
-        new_cut_sets->insert(cut_set);
-        return;
-      }
-    }
-    // There is a guarantee of a size increase of a cut set.
-    if (cut_set->size() < limit_order_) {
-      // Create new cut sets from basic events and modules.
-      for (it = basic_events_.begin(); it != basic_events_.end(); ++it) {
-        if (!cut_set->count(-*it)) {
-          SetPtr new_set(new std::set<int>(*cut_set));
-          new_set->insert(*it);
-          new_cut_sets->insert(new_set);
-        }
-      }
-      for (it = modules_.begin(); it != modules_.end(); ++it) {
-        // No check for complements. The modules are assumed to be positive.
+      if (!cut_set->count(-*it)) {
         SetPtr new_set(new std::set<int>(*cut_set));
         new_set->insert(*it);
         new_cut_sets->insert(new_set);
       }
     }
-
-    // Generate cut sets from child gates of AND type.
-    std::vector<SimpleGatePtr>::iterator it_g;
-    SetPtrComp comp;
-    std::set<SetPtr, SetPtrComp> local_sets(comp);
-    for (it_g = gates_.begin(); it_g != gates_.end(); ++it_g) {
-      (*it_g)->GenerateCutSets(cut_set, &local_sets);
-      if (!local_sets.empty() &&
-          (*local_sets.begin())->size() == cut_set->size()) {
-        new_cut_sets->insert(cut_set);
-        return;
-      }
-    }
-    new_cut_sets->insert(local_sets.begin(), local_sets.end());
-  } else {
-    // Check for null case.
-    std::vector<int>::iterator it;
-    for (it = basic_events_.begin(); it != basic_events_.end(); ++it) {
-      if (cut_set->count(-*it)) return;
-    }
-    // Limit order checks before other expensive operations.
-    int order = cut_set->size();
-    for (it = basic_events_.begin(); it != basic_events_.end(); ++it) {
-      if (!cut_set->count(*it)) ++order;
-      if (order > limit_order_) return;
-    }
     for (it = modules_.begin(); it != modules_.end(); ++it) {
-      if (!cut_set->count(*it)) ++order;
-      if (order > limit_order_) return;
-    }
-    SetPtr cut_set_copy(new std::set<int>(*cut_set));
-    // Include all basic events and modules into the set.
-    for (it = basic_events_.begin(); it != basic_events_.end(); ++it) {
-      cut_set_copy->insert(*it);
-    }
-    for (it = modules_.begin(); it != modules_.end(); ++it) {
-      cut_set_copy->insert(*it);
-    }
-
-    // Deal with many OR gate children.
-    SetPtrComp comp;
-    std::set<SetPtr, SetPtrComp> arguments;  // Input to OR gates.
-    arguments.insert(cut_set_copy);
-    std::vector<SimpleGatePtr>::iterator it_g;
-    for (it_g = gates_.begin(); it_g != gates_.end(); ++it_g) {
-      std::set<SetPtr, SetPtrComp>::iterator it_s;
-      std::set<SetPtr, SetPtrComp> results(comp);
-      for (it_s = arguments.begin(); it_s != arguments.end(); ++it_s) {
-        (*it_g)->GenerateCutSets(*it_s, &results);
-      }
-      arguments = results;
-    }
-    if (!arguments.empty() &&
-        (*arguments.begin())->size() == cut_set_copy->size()) {
-      new_cut_sets->insert(cut_set_copy);
-    } else {
-      new_cut_sets->insert(arguments.begin(), arguments.end());
+      // No check for complements. The modules are assumed to be positive.
+      SetPtr new_set(new std::set<int>(*cut_set));
+      new_set->insert(*it);
+      new_cut_sets->insert(new_set);
     }
   }
+
+  // Generate cut sets from child gates of AND type.
+  std::vector<SimpleGatePtr>::iterator it_g;
+  SetPtrComp comp;
+  std::set<SetPtr, SetPtrComp> local_sets(comp);
+  for (it_g = gates_.begin(); it_g != gates_.end(); ++it_g) {
+    (*it_g)->AndGateCutSets(cut_set, &local_sets);
+    if (!local_sets.empty() &&
+        (*local_sets.begin())->size() == cut_set->size()) {
+      new_cut_sets->insert(cut_set);
+      return;
+    }
+  }
+  new_cut_sets->insert(local_sets.begin(), local_sets.end());
 }
 
 IndexedFaultTree::IndexedFaultTree(int top_event_id, int limit_order)

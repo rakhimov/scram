@@ -85,6 +85,20 @@ class SimpleGate {
   static void limit_order(int limit) { limit_order_ = limit; }
 
  private:
+  /// Generates cut sets for AND gate children using already generated sets.
+  /// The tree is assumed to be layered with OR children of AND gates.
+  /// @param[in] cut_set The base cut set to work with.
+  /// @param[out] new_cut_sets Generated cut sets by using the gate's children.
+  void AndGateCutSets(const SetPtr& cut_set,
+                      std::set<SetPtr, SetPtrComp>* new_cut_sets);
+
+  /// Generates cut sets for OR gate children using already generated sets.
+  /// The tree is assumed to be layered with AND children of OR gates.
+  /// @param[in] cut_set The base cut set to work with.
+  /// @param[out] new_cut_sets Generated cut sets by using the gate's children.
+  void OrGateCutSets(const SetPtr& cut_set,
+                      std::set<SetPtr, SetPtrComp>* new_cut_sets);
+
   int type_;  ///< Type of this gate.
   std::vector<int> basic_events_;  ///< Container of basic events' indices.
   std::vector<int> modules_;  ///< Container of modules' indices.
