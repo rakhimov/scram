@@ -360,8 +360,8 @@ Note to a User
 **************
 
 The development follows the Documentation Driven Development paradigm.
-Therefore, some documentation may refer to not yet developed features or the
-features under current development.
+Therefore, some documentation may be ahead of the actual development and
+describe features under current development.
 
 For any questions, don't hesitate to ask the mailing list (https://groups.google.com/forum/#!forum/scram-dev, scram-dev@googlegroups.com).
 
