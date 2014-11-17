@@ -60,6 +60,8 @@ def test_fta_calls():
     yield assert_not_equal, 0, call(cmd)
 
     # Test graph only
+    cmd = ["scram", fta_input, "-g"]
+    yield assert_equal, 0, call(cmd)
     graph_file = "./input/fta/TwoTrains.dot"
     cmd = ["scram", fta_input, "-g", "-o", graph_file]
     yield assert_equal, 0, call(cmd)
