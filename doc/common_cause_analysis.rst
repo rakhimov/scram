@@ -2,34 +2,29 @@
 SCRAM FTA: Common Cause Failure (CCF)
 #####################################
 
-.. note:: This functionality is not yet present.
-
 #. Define groups of basic events that share common cause failure.
 
-    - Can groups share members?
+    - Groups must not share members.
+    - All members of a CCF group have the same description for failure.
 
-#. Choose a model for analysis: MGL, alpha, beta, etc.
+#. Choose a model for analysis: MGL, alpha-factor, beta-factor, and phi-factor.
 
-    - Factors must be provided by a user
-    - Calculation must be performed with only with provided factors, or
+    - Factors must be provided by a user.
+    - Calculation must be performed only with provided factors, or
       a user may specify the maximum number of common cause members
       in a group for analysis. Alternatively, for some types of
       CCF analysis methods, the maximum number of events for a set can be
       inferred by the number of provided factors.
 
-#. After constructing the main tree, calculate CCF sub groups for each event.
+#. After construction of the tree, calculate CCF sub groups for each event.
 
-#. Then, convert CCF grouped primary events into intermediate events with
+#. Convert CCF grouped primary events into intermediate events with
    OR logic with children as CCF sub groups. Give specific names to
    CCF sub groups that identify independent and common cause failures.
-   This will require removing the primary event from primary events database
-   and creating a respective intermediate event with CCF groups.
-   May consider re-assigning pointers, or getting parents of the basic event
-   and re-assigning their children to the newly created intermediate event.
+   This operation will change the CCF-grouped primary events to OR gates.
 
-#. Assigning probabilities should be handled in a similar way, replacing
-   basic event probability with calculated probabilities for sub-sets.
+#. Assign calculated probabilities to the newly created CCF sub-events.
 
-#. Perform usual analysis on the updated tree.
+#. Perform usual analysis on the updated fault tree.
 
-#. Output formatting may change to indicate CCF.
+#. Report CCF specific information.
