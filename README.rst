@@ -43,6 +43,9 @@ on Sourceforge_ or follow the building and installing instructions bellow.
 .. _Sourceforge:
     https://sourceforge.net/projects/iscram/files/
 
+.. contents:: **Table of Contents**
+    :depth: 2
+
 ***********************
 Building and Installing
 ***********************
