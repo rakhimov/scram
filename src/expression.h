@@ -691,6 +691,7 @@ class Add : public Expression {
  public:
   /// Construct a new expression that add given argument expressions.
   /// @param[in] arguments The arguments of the addition equation.
+  /// @note It is assumed that arguments contain at least one element.
   Add(const std::vector<ExpressionPtr>& arguments) : args_(arguments) {}
 
   inline double Mean() {
@@ -744,7 +745,73 @@ class Add : public Expression {
   }
 
  private:
-  /// Expression that is used for negation.
+  /// Expressions that are used for addition.
+  std::vector<ExpressionPtr> args_;
+};
+
+/// @class Sub
+/// This expression performs subtraction operation.
+/// First expression minus the rest of the given expressions' values.
+class Sub : public Expression {
+ public:
+  /// Construct a new expression that subtracts given argument expressions
+  /// from the first argument expression.
+  /// @param[in] arguments The arguments of the addition equation.
+  /// @note It is assumed that arguments contain at least one element.
+  Sub(const std::vector<ExpressionPtr>& arguments) : args_(arguments) {}
+
+  inline double Mean() {
+    std::vector<ExpressionPtr>::iterator it = args_.begin();
+    double mean = (*it)->Mean();
+    for (++it; it != args_.end(); ++it) {
+      mean -= (*it)->Mean();
+    }
+    return mean;
+  }
+  inline double Sample() {
+    if (!Expression::sampled_) {
+      Expression::sampled_ = true;
+      std::vector<ExpressionPtr>::iterator it = args_.begin();
+      Expression::sampled_value_ = (*it)->Sample();
+      for (++it; it != args_.end(); ++it) {
+        Expression::sampled_value_ -= (*it)->Sample();
+      }
+    }
+    return Expression::sampled_value_;
+  }
+  inline void Reset() {
+    Expression::sampled_ = false;
+    std::vector<ExpressionPtr>::iterator it;
+    for (it = args_.begin(); it != args_.end(); ++it) {
+      (*it)->Reset();
+    }
+  }
+  inline bool IsConstant() {
+    std::vector<ExpressionPtr>::iterator it;
+    for (it = args_.begin(); it != args_.end(); ++it) {
+      if (!(*it)->IsConstant()) return false;
+    }
+    return true;
+  }
+  inline double Max() {
+    std::vector<ExpressionPtr>::iterator it = args_.begin();
+    double max = (*it)->Max();
+    for (++it; it != args_.end(); ++it) {
+      max -= (*it)->Min();
+    }
+    return max;
+  }
+  inline double Min() {
+    std::vector<ExpressionPtr>::iterator it = args_.begin();
+    double min = (*it)->Min();
+    for (++it; it != args_.end(); ++it) {
+      min -= (*it)->Max();
+    }
+    return min;
+  }
+
+ private:
+  /// Expressions that are used for subtraction.
   std::vector<ExpressionPtr> args_;
 };
 
