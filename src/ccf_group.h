@@ -19,7 +19,7 @@ namespace scram {
 
 /// @class CcfGroup
 /// Base class for all common cause failure models.
-class CcfGroup : Element {
+class CcfGroup : public Element {
  public:
   typedef boost::shared_ptr<Expression> ExpressionPtr;
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
@@ -81,6 +81,36 @@ class CcfGroup : Element {
   ExpressionPtr distribution_;  ///< The probability distribution of the group.
   /// CCF factors for models to get CCF probabilities.
   std::vector<std::pair<int, ExpressionPtr> > factors_;
+};
+
+/// @class BetaFactorModel
+/// Common cause failure model that assumes, if common cause failure occurs,
+/// then all components or members fail simultaneously or within short time.
+class BetaFactorModel : public CcfGroup {
+
+};
+
+/// @class MglModel
+/// Multiple Greek Letters model characterizes failure of sub-groups of
+/// the group due to common cause. The factor for k-component group defines
+/// fraction of failure k or more members given that (k-1) members failed.
+class MglModel : public CcfGroup {
+
+};
+
+/// @class AlphaFactorModel
+/// Alpha factor model characterizes failure of exactly k members of
+/// the group due to common cause.
+class AlphaFactorModel : public CcfGroup {
+
+};
+
+/// @class PhiFactorModel
+/// Phi factor model is a simplification, where fractions of k-member group
+/// failure is given directly. Thus, Q_k = phi_k * Q_total.
+/// This model is described in OpenPSA Model Exchange Format.
+class PhiFactorModel : public CcfGroup {
+
 };
 
 }  // namespace scram
