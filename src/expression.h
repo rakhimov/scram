@@ -685,6 +685,69 @@ class Neg : public Expression {
   ExpressionPtr expression_;
 };
 
+/// @class Add
+/// This expression adds all the given expressions' values.
+class Add : public Expression {
+ public:
+  /// Construct a new expression that add given argument expressions.
+  /// @param[in] arguments The arguments of the addition equation.
+  Add(const std::vector<ExpressionPtr>& arguments) : args_(arguments) {}
+
+  inline double Mean() {
+    double mean = 0;
+    std::vector<ExpressionPtr>::iterator it;
+    for (it = args_.begin(); it != args_.end(); ++it) {
+      mean += (*it)->Mean();
+    }
+    return mean;
+  }
+  inline double Sample() {
+    if (!Expression::sampled_) {
+      Expression::sampled_ = true;
+      Expression::sampled_value_ = 0;
+      std::vector<ExpressionPtr>::iterator it;
+      for (it = args_.begin(); it != args_.end(); ++it) {
+        Expression::sampled_value_ += (*it)->Sample();
+      }
+    }
+    return Expression::sampled_value_;
+  }
+  inline void Reset() {
+    Expression::sampled_ = false;
+    std::vector<ExpressionPtr>::iterator it;
+    for (it = args_.begin(); it != args_.end(); ++it) {
+      (*it)->Reset();
+    }
+  }
+  inline bool IsConstant() {
+    std::vector<ExpressionPtr>::iterator it;
+    for (it = args_.begin(); it != args_.end(); ++it) {
+      if (!(*it)->IsConstant()) return false;
+    }
+    return true;
+  }
+  inline double Max() {
+    double max = 0;
+    std::vector<ExpressionPtr>::iterator it;
+    for (it = args_.begin(); it != args_.end(); ++it) {
+      max += (*it)->Max();
+    }
+    return max;
+  }
+  inline double Min() {
+    double min = 0;
+    std::vector<ExpressionPtr>::iterator it;
+    for (it = args_.begin(); it != args_.end(); ++it) {
+      min += (*it)->Min();
+    }
+    return min;
+  }
+
+ private:
+  /// Expression that is used for negation.
+  std::vector<ExpressionPtr> args_;
+};
+
 }  // namespace scram
 
 #endif  // SCRAM_SRC_EXPRESSION_H_

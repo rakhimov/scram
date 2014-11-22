@@ -471,3 +471,17 @@ TEST(ExpressionTest, Neg) {
   EXPECT_DOUBLE_EQ(-1, dev->Max());
   EXPECT_DOUBLE_EQ(-100, dev->Min());
 }
+
+// Test for negation of an expression.
+TEST(ExpressionTest, Add) {
+  std::vector<ExpressionPtr> arguments;
+  arguments.push_back(OpenExpressionPtr(new OpenExpression(10, 20)));
+  arguments.push_back(OpenExpressionPtr(new OpenExpression(30, 40)));
+  arguments.push_back(OpenExpressionPtr(new OpenExpression(50, 60)));
+  ExpressionPtr dev;
+  ASSERT_NO_THROW(dev = ExpressionPtr(new Add(arguments)));
+  EXPECT_DOUBLE_EQ(90, dev->Mean());
+  EXPECT_DOUBLE_EQ(120, dev->Sample());
+  EXPECT_DOUBLE_EQ(120, dev->Max());
+  EXPECT_DOUBLE_EQ(120, dev->Min());
+}
