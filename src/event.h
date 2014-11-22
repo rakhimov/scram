@@ -143,6 +143,7 @@ class BasicEvent: public PrimaryEvent {
   /// Sets the expression of this basic event.
   /// @param[in] expression The expression to describe this event.
   inline void expression(const ExpressionPtr& expression) {
+    assert(!expression_);
     expression_ = expression;
   }
 

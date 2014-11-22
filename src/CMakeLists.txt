@@ -20,6 +20,7 @@ set(SCRAM_CORE_SRC ${SCRAM_CORE_SRC}
   "${CMAKE_CURRENT_SOURCE_DIR}/expression.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/event.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/gate.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/ccf_group.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/indexed_gate.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/indexed_fault_tree.cc"
