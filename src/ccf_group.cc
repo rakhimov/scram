@@ -49,6 +49,52 @@ void CcfGroup::Validate() {
   }
 }
 
+void BetaFactorModel::ApplyModel() {
+  std::string common_name = "[";  // Event name for common failure group.
+  std::string common_id = "[";  // Event id for common failure group.
+
+  // Create indipendent events.
+  std::map<std::string, BasicEventPtr>::const_iterator it;
+  for (it = CcfGroup::members_.begin(); it != CcfGroup::members_.end();) {
+    std::string independent_orig_id = "[" + it->second->orig_id() + "]";
+    std::string independent_id = "[" + it->second->id() + "]";
+    GatePtr replacement(new Gate(it->first, "or"));
+    CcfGroup::gates_.insert(std::make_pair(it->first, replacement));
+
+    BasicEventPtr independent(new BasicEvent(independent_id));
+    independent->orig_id(independent_orig_id);
+    CcfGroup::new_events_.push_back(independent);
+
+    replacement->AddChild(independent);
+
+    common_name += it->second->orig_id();
+    common_id += it->second->id();
+    ++it;
+    if (it != CcfGroup::members_.end()) {
+      common_name += " ";
+      common_id += " ";
+    }
+  }
+  common_id += "]";
+  common_name += "]";
+  BasicEventPtr common_failure(new BasicEvent(common_id));
+  common_failure->orig_id(common_name);
+  CcfGroup::new_events_.push_back(common_failure);
+  std::map<std::string, GatePtr>::iterator it_g;
+  for (it_g = CcfGroup::gates_.begin(); it_g != CcfGroup::gates_.end();
+       ++it_g) {
+    it_g->second->AddChild(common_failure);
+  }
+}
+
+void MglModel::ApplyModel() {
+
+}
+
+void AlphaFactorModel::ApplyModel() {
+
+}
+
 void PhiFactorModel::Validate() {
   CcfGroup::Validate();
   int sum = 0;
@@ -66,6 +112,10 @@ void PhiFactorModel::Validate() {
     throw ValidationError("The factors for Phi model " + CcfGroup::name() +
                           " CCF group must sum to 1.");
   }
+}
+
+void PhiFactorModel::ApplyModel() {
+
 }
 
 }  // namespace scram

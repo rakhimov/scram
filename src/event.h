@@ -25,11 +25,13 @@ class Event : public Element {
   /// @param[in] orig_id The identifying name with caps preserved.
   explicit Event(std::string id, std::string orig_id = "");
 
+  virtual ~Event() {}
+
   /// @returns The id that is set upon the construction of this event.
-  inline const std::string& id() { return id_; }
+  inline const std::string& id() const { return id_; }
 
   /// @returns The original id with capitalizations.
-  inline const std::string& orig_id() { return orig_id_; }
+  inline const std::string& orig_id() const { return orig_id_; }
 
   /// Sets the original id name with capitalizations preserved.
   /// @param[in] id_with_caps The id name with capitalizations.
@@ -43,8 +45,6 @@ class Event : public Element {
   /// @returns All the parents of this gate event.
   /// @throws LogicError if there are no parents for this gate event.
   const std::map<std::string, boost::shared_ptr<Gate> >& parents();
-
-  virtual ~Event() {}
 
  private:
   /// Id name of a event. It is in lower case.
