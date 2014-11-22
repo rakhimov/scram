@@ -49,4 +49,23 @@ void CcfGroup::Validate() {
   }
 }
 
+void PhiFactorModel::Validate() {
+  CcfGroup::Validate();
+  int sum = 0;
+  std::vector<std::pair<int, ExpressionPtr> >::iterator it;
+  for (it = CcfGroup::factors_.begin(); it != CcfGroup::factors_.end(); ++it) {
+    if (!it->second->IsConstant()) {
+      throw ValidationError("Phi Factor Model " + CcfGroup::name() +
+                            " CCF group accepts only constant expressions.");
+
+    }
+    sum += it->second->Mean();
+  }
+  /// @todo Problems with floating point number comparison.
+  if (sum != 1.0) {
+    throw ValidationError("The factors for Phi model " + CcfGroup::name() +
+                          " CCF group must sum to 1.");
+  }
+}
+
 }  // namespace scram

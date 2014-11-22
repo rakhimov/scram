@@ -66,6 +66,11 @@ class CcfGroup : public Element {
   /// @param[in] model CCF model of this group.
   CcfGroup(std::string name, std::string model);
 
+  std::map<std::string, BasicEventPtr> members_;  ///< Members of CCF groups.
+  ExpressionPtr distribution_;  ///< The probability distribution of the group.
+  /// CCF factors for models to get CCF probabilities.
+  std::vector<std::pair<int, ExpressionPtr> > factors_;
+
  private:
   /// Default constructor should not be used.
   /// All CCF models should be instantiated explicitly.
@@ -77,17 +82,15 @@ class CcfGroup : public Element {
 
   std::string name_;  ///< The name of CCF group.
   std::string model_;  ///< Common cause model type.
-  std::map<std::string, BasicEventPtr> members_;  ///< Members of CCF groups.
-  ExpressionPtr distribution_;  ///< The probability distribution of the group.
-  /// CCF factors for models to get CCF probabilities.
-  std::vector<std::pair<int, ExpressionPtr> > factors_;
 };
 
 /// @class BetaFactorModel
 /// Common cause failure model that assumes, if common cause failure occurs,
 /// then all components or members fail simultaneously or within short time.
 class BetaFactorModel : public CcfGroup {
-
+  /// Constructs the group and sets the model.
+  /// @param[in] name The name for the group.
+  BetaFactorModel(std::string name) : CcfGroup(name, "beta-factor") {}
 };
 
 /// @class MglModel
@@ -95,14 +98,18 @@ class BetaFactorModel : public CcfGroup {
 /// the group due to common cause. The factor for k-component group defines
 /// fraction of failure k or more members given that (k-1) members failed.
 class MglModel : public CcfGroup {
-
+  /// Constructs the group and sets the model.
+  /// @param[in] name The name for the group.
+  MglModel(std::string name) : CcfGroup(name, "MGL") {}
 };
 
 /// @class AlphaFactorModel
 /// Alpha factor model characterizes failure of exactly k members of
 /// the group due to common cause.
 class AlphaFactorModel : public CcfGroup {
-
+  /// Constructs the group and sets the model.
+  /// @param[in] name The name for the group.
+  AlphaFactorModel(std::string name) : CcfGroup(name, "alpha-factor") {}
 };
 
 /// @class PhiFactorModel
@@ -110,7 +117,16 @@ class AlphaFactorModel : public CcfGroup {
 /// failure is given directly. Thus, Q_k = phi_k * Q_total.
 /// This model is described in OpenPSA Model Exchange Format.
 class PhiFactorModel : public CcfGroup {
+ public:
+  /// Constructs the group and sets the model.
+  /// @param[in] name The name for the group.
+  PhiFactorModel(std::string name) : CcfGroup(name, "phi-factor") {}
 
+  /// In addition to the default validation of CcfGroup, checks if
+  /// the given factors' sum is 1.
+  /// @todo Problem with sampling the factors and not getting exactly 1.
+  ///       Currently only accepts constant expressions.
+  void Validate();
 };
 
 }  // namespace scram
