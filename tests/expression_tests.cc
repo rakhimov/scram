@@ -10,13 +10,19 @@ using namespace scram;
 // values and samples in a hard coded way.
 class OpenExpression : public Expression {
  public:
-  explicit OpenExpression(double m = 1, double s = 1) : mean(m), sample(s) {}
+  explicit OpenExpression(double m = 1, double s = 1)
+      : mean(m),
+        sample(s),
+        min(0),
+        max(0) {}
   double mean;
   double sample;
+  double min;  // This value is used only if explicitly set.
+  double max;  // This value is used only if explicitly set.
   inline double Mean() { return mean; }
   inline double Sample() { return sample; }
-  inline double Max() { return sample; }
-  inline double Min() { return sample; }
+  inline double Max() { return max ? max : sample; }
+  inline double Min() { return min ? min : sample; }
   inline bool IsConstant() { return true; }
   void Validate() {}
 };
@@ -451,4 +457,17 @@ TEST(ExpressionTest, Histogram) {
   EXPECT_EQ(sampled_value, dev->Sample());  // Resampling without resetting.
   ASSERT_NO_THROW(dev->Reset());
   EXPECT_NE(sampled_value, dev->Sample());
+}
+
+// Test for negation of an expression.
+TEST(ExpressionTest, Neg) {
+  OpenExpressionPtr expression(new OpenExpression(10, 8));
+  ExpressionPtr dev;
+  ASSERT_NO_THROW(dev = ExpressionPtr(new Neg(expression)));
+  EXPECT_DOUBLE_EQ(-10, dev->Mean());
+  EXPECT_DOUBLE_EQ(-8, dev->Sample());
+  expression->max = 100;
+  expression->min = 1;
+  EXPECT_DOUBLE_EQ(-1, dev->Max());
+  EXPECT_DOUBLE_EQ(-100, dev->Min());
 }

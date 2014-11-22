@@ -29,7 +29,7 @@ class Expression {
   /// Validates the expression.
   /// This late validation is due to parameters that are defined late.
   /// @throws InvalidArgument if arguments are invalid for setup.
-  virtual void Validate() = 0;
+  virtual void Validate() {}
 
   /// @returns The mean value of this expression.
   virtual double Mean() = 0;
@@ -148,8 +148,6 @@ class MissionTime : public Expression {
     mission_time_ = time;
   }
 
-  void Validate() {}
-
   /// Sets the unit of this parameter.
   /// @param[in] unit A valid unit.
   inline void unit(const Units& unit) { unit_ = unit; }
@@ -178,7 +176,6 @@ class ConstantExpression : public Expression {
   /// @param[in] val true for 1 and false for 0 value of this constant.
   explicit ConstantExpression(bool val) : value_(val ? 1 : 0) {}
 
-  void Validate() {}
   inline double Mean() { return value_; }
   inline double Sample() { return value_; }
   inline bool IsConstant() { return true; }
@@ -657,6 +654,35 @@ class Histogram : public Expression {
 
   /// Weights of intervals described by boundaries.
   std::vector<ExpressionPtr> weights_;
+};
+
+/// @class Neg
+/// This class for negation of numerical value or another expression.
+class Neg : public Expression {
+ public:
+  /// Construct a new expression that negates a given argument expression.
+  /// @param[in] expression The expression to be negated.
+  Neg(const ExpressionPtr& expression) : expression_(expression) {}
+
+  inline double Mean() { return -expression_->Mean(); }
+  inline double Sample() {
+    if (!Expression::sampled_) {
+      Expression::sampled_ = true;
+      Expression::sampled_value_ = -expression_->Sample();
+    }
+    return Expression::sampled_value_;
+  }
+  inline void Reset() {
+    Expression::sampled_ = false;
+    expression_->Reset();
+  }
+  inline bool IsConstant() { return expression_->IsConstant(); }
+  inline double Max() { return -expression_->Min(); }
+  inline double Min() { return -expression_->Max(); }
+
+ private:
+  /// Expression that is used for negation.
+  ExpressionPtr expression_;
 };
 
 }  // namespace scram
