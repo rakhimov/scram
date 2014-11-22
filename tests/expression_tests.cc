@@ -10,21 +10,21 @@ using namespace scram;
 // values and samples in a hard coded way.
 class OpenExpression : public Expression {
  public:
-  explicit OpenExpression(double m = 1, double s = 1)
+  explicit OpenExpression(double m = 1, double s = 1, double mn = 0,
+                          double mx = 0)
       : mean(m),
         sample(s),
-        min(0),
-        max(0) {}
+        min(mn),
+        max(mx) {}
   double mean;
   double sample;
-  double min;  // This value is used only if explicitly set.
-  double max;  // This value is used only if explicitly set.
+  double min;  // This value is used only if explicitly set non-zero.
+  double max;  // This value is used only if explicitly set non-zero.
   inline double Mean() { return mean; }
   inline double Sample() { return sample; }
   inline double Max() { return max ? max : sample; }
   inline double Min() { return min ? min : sample; }
   inline bool IsConstant() { return true; }
-  void Validate() {}
 };
 
 typedef boost::shared_ptr<OpenExpression> OpenExpressionPtr;
@@ -498,4 +498,18 @@ TEST(ExpressionTest, Sub) {
   EXPECT_DOUBLE_EQ(-80, dev->Sample());
   EXPECT_DOUBLE_EQ(-80, dev->Max());
   EXPECT_DOUBLE_EQ(-80, dev->Min());
+}
+
+// Test for multiplication of expressions.
+TEST(ExpressionTest, Mul) {
+  std::vector<ExpressionPtr> arguments;
+  arguments.push_back(OpenExpressionPtr(new OpenExpression(1, 2, 0.1, 10)));
+  arguments.push_back(OpenExpressionPtr(new OpenExpression(3, 4, 1, 5)));
+  arguments.push_back(OpenExpressionPtr(new OpenExpression(5, 6, 2, 6)));
+  ExpressionPtr dev;
+  ASSERT_NO_THROW(dev = ExpressionPtr(new Mul(arguments)));
+  EXPECT_DOUBLE_EQ(15, dev->Mean());
+  EXPECT_DOUBLE_EQ(48, dev->Sample());
+  EXPECT_DOUBLE_EQ(0.2, dev->Min());
+  EXPECT_DOUBLE_EQ(300, dev->Max());
 }

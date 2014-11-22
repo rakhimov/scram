@@ -695,6 +695,7 @@ class Add : public Expression {
   Add(const std::vector<ExpressionPtr>& arguments) : args_(arguments) {}
 
   inline double Mean() {
+    assert(!args_.empty());
     double mean = 0;
     std::vector<ExpressionPtr>::iterator it;
     for (it = args_.begin(); it != args_.end(); ++it) {
@@ -703,6 +704,7 @@ class Add : public Expression {
     return mean;
   }
   inline double Sample() {
+    assert(!args_.empty());
     if (!Expression::sampled_) {
       Expression::sampled_ = true;
       Expression::sampled_value_ = 0;
@@ -714,6 +716,7 @@ class Add : public Expression {
     return Expression::sampled_value_;
   }
   inline void Reset() {
+    assert(!args_.empty());
     Expression::sampled_ = false;
     std::vector<ExpressionPtr>::iterator it;
     for (it = args_.begin(); it != args_.end(); ++it) {
@@ -728,6 +731,7 @@ class Add : public Expression {
     return true;
   }
   inline double Max() {
+    assert(!args_.empty());
     double max = 0;
     std::vector<ExpressionPtr>::iterator it;
     for (it = args_.begin(); it != args_.end(); ++it) {
@@ -736,6 +740,7 @@ class Add : public Expression {
     return max;
   }
   inline double Min() {
+    assert(!args_.empty());
     double min = 0;
     std::vector<ExpressionPtr>::iterator it;
     for (it = args_.begin(); it != args_.end(); ++it) {
@@ -756,11 +761,12 @@ class Sub : public Expression {
  public:
   /// Construct a new expression that subtracts given argument expressions
   /// from the first argument expression.
-  /// @param[in] arguments The arguments of the addition equation.
+  /// @param[in] arguments The arguments for operation.
   /// @note It is assumed that arguments contain at least one element.
   Sub(const std::vector<ExpressionPtr>& arguments) : args_(arguments) {}
 
   inline double Mean() {
+    assert(!args_.empty());
     std::vector<ExpressionPtr>::iterator it = args_.begin();
     double mean = (*it)->Mean();
     for (++it; it != args_.end(); ++it) {
@@ -769,6 +775,7 @@ class Sub : public Expression {
     return mean;
   }
   inline double Sample() {
+    assert(!args_.empty());
     if (!Expression::sampled_) {
       Expression::sampled_ = true;
       std::vector<ExpressionPtr>::iterator it = args_.begin();
@@ -780,6 +787,7 @@ class Sub : public Expression {
     return Expression::sampled_value_;
   }
   inline void Reset() {
+    assert(!args_.empty());
     Expression::sampled_ = false;
     std::vector<ExpressionPtr>::iterator it;
     for (it = args_.begin(); it != args_.end(); ++it) {
@@ -787,6 +795,7 @@ class Sub : public Expression {
     }
   }
   inline bool IsConstant() {
+    assert(!args_.empty());
     std::vector<ExpressionPtr>::iterator it;
     for (it = args_.begin(); it != args_.end(); ++it) {
       if (!(*it)->IsConstant()) return false;
@@ -794,6 +803,7 @@ class Sub : public Expression {
     return true;
   }
   inline double Max() {
+    assert(!args_.empty());
     std::vector<ExpressionPtr>::iterator it = args_.begin();
     double max = (*it)->Max();
     for (++it; it != args_.end(); ++it) {
@@ -802,6 +812,7 @@ class Sub : public Expression {
     return max;
   }
   inline double Min() {
+    assert(!args_.empty());
     std::vector<ExpressionPtr>::iterator it = args_.begin();
     double min = (*it)->Min();
     for (++it; it != args_.end(); ++it) {
@@ -812,6 +823,76 @@ class Sub : public Expression {
 
  private:
   /// Expressions that are used for subtraction.
+  std::vector<ExpressionPtr> args_;
+};
+
+/// @class Mul
+/// This expression performs multiplication operation.
+class Mul : public Expression {
+ public:
+  /// Construct a new expression that multiplies given argument expressions.
+  /// @param[in] arguments The arguments for operation.
+  /// @note It is assumed that arguments contain at least one element.
+  Mul(const std::vector<ExpressionPtr>& arguments) : args_(arguments) {}
+
+  inline double Mean() {
+    assert(!args_.empty());
+    double mean = 1;
+    std::vector<ExpressionPtr>::iterator it;
+    for (it = args_.begin(); it != args_.end(); ++it) {
+      mean *= (*it)->Mean();
+    }
+    return mean;
+  }
+  inline double Sample() {
+    assert(!args_.empty());
+    if (!Expression::sampled_) {
+      Expression::sampled_ = true;
+      Expression::sampled_value_ = 1;
+      std::vector<ExpressionPtr>::iterator it;
+      for (it = args_.begin(); it != args_.end(); ++it) {
+        Expression::sampled_value_ *= (*it)->Sample();
+      }
+    }
+    return Expression::sampled_value_;
+  }
+  inline void Reset() {
+    assert(!args_.empty());
+    Expression::sampled_ = false;
+    std::vector<ExpressionPtr>::iterator it;
+    for (it = args_.begin(); it != args_.end(); ++it) {
+      (*it)->Reset();
+    }
+  }
+  inline bool IsConstant() {
+    assert(!args_.empty());
+    std::vector<ExpressionPtr>::iterator it;
+    for (it = args_.begin(); it != args_.end(); ++it) {
+      if (!(*it)->IsConstant()) return false;
+    }
+    return true;
+  }
+  inline double Max() {
+    assert(!args_.empty());
+    double max = 1;
+    std::vector<ExpressionPtr>::iterator it;
+    for (it = args_.begin(); it != args_.end(); ++it) {
+      max *= (*it)->Max();
+    }
+    return max;
+  }
+  inline double Min() {
+    assert(!args_.empty());
+    double min = 1;
+    std::vector<ExpressionPtr>::iterator it;
+    for (it = args_.begin(); it != args_.end(); ++it) {
+      min *= (*it)->Min();
+    }
+    return min;
+  }
+
+ private:
+  /// Expressions for operation.
   std::vector<ExpressionPtr> args_;
 };
 
