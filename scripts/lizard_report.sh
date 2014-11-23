@@ -5,6 +5,7 @@
 # This script must be run in scram/src directory
 
 lizard -s cyclomatic_complexity \
+  ccf_group.cc \
   element.cc \
   error.cc \
   event.cc \

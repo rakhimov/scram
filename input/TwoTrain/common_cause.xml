@@ -22,29 +22,29 @@ This input contains groupings for common cause analysis.
         <event name="PumpTwo"/>
       </or>
     </define-gate>
-    <define-CCF-group name="Pumps" model="beta-factor">
-      <members>
-        <basic-event name="PumpOne"/>
-        <basic-event name="PumpTwo"/>
-      </members>
-      <distribution>
-        <float value="0.1"/>
-      </distribution>
-      <factor>
-        <float value="0.2"/>
-      </factor>
-    </define-CCF-group>
-    <define-CCF-group name="Valves" model="beta-factor">
-      <members>
-        <basic-event name="ValveOne"/>
-        <basic-event name="ValveTwo"/>
-      </members>
-      <distribution>
-        <float value="0.5"/>
-      </distribution>
-      <factor>
-        <float value="0.2"/>
-      </factor>
-    </define-CCF-group>
   </define-fault-tree>
+  <define-CCF-group name="Pumps" model="beta-factor">
+    <members>
+      <basic-event name="PumpOne"/>
+      <basic-event name="PumpTwo"/>
+    </members>
+    <distribution>
+      <float value="0.1"/>
+    </distribution>
+    <factor>
+      <float value="0.2"/>
+    </factor>
+  </define-CCF-group>
+  <define-CCF-group name="Valves" model="beta-factor">
+    <members>
+      <basic-event name="ValveOne"/>
+      <basic-event name="ValveTwo"/>
+    </members>
+    <distribution>
+      <float value="0.5"/>
+    </distribution>
+    <factor>
+      <float value="0.2"/>
+    </factor>
+  </define-CCF-group>
 </opsa-mef>
