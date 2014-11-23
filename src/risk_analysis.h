@@ -292,6 +292,13 @@ class RiskAnalysis {
   /// @throws ValidationError if any problems detected with expressions.
   void ValidateExpressions();
 
+  /// Applies the input information to set up for future analysis.
+  /// This step is crucial to get correct fault tree structures and
+  /// basic events with correct expresions.
+  /// Meta-logical layer of analysis, such as CCF groups and substitutions,
+  /// is applied to analysis.
+  void SetupForAnalysis();
+
   /// Provides graphing instructions for each fault tree initialized in
   /// the analysis.
   /// @param[out] out The output stream.

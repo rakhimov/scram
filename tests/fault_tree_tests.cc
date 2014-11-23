@@ -26,14 +26,28 @@ TEST(FaultTreeTest, AddGate) {
   delete ft;
 }
 
-TEST(FaultTreeTest, Validate) {
+TEST(FaultTreeTest, CyclicTree) {
+  FaultTree* ft = new FaultTree("never_fail");
+  GatePtr top(new Gate("Top"));
+  GatePtr middle(new Gate("Middle"));
+  GatePtr bottom(new Gate("Bottom"));
+  top->AddChild(middle);
+  middle->AddChild(bottom);
+  bottom->AddChild(top);  // Looping here.
+  EXPECT_NO_THROW(ft->AddGate(top));
+  EXPECT_THROW(ft->Validate(), ValidationError);
+  delete ft;
+}
+
+TEST(FaultTreeTest, SetupForAnalysis) {
   FaultTree* ft = new FaultTree("never_fail");
   GatePtr top(new Gate("Golden"));
-  EventPtr gate(new Event("Iron"));
+  EventPtr gate(new Event("Iron"));  // This is not a gate but a generic event.
   top->AddChild(gate);
   EXPECT_NO_THROW(ft->AddGate(top));
+  EXPECT_NO_THROW(ft->Validate());
 
-  // Not events are defined to be either primary or gates.
-  EXPECT_THROW(ft->Validate(), ValidationError);
+  // Undefined event. Nodes must be gates or primary events.
+  EXPECT_THROW(ft->SetupForAnalysis(), LogicError);
   delete ft;
 }

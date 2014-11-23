@@ -55,8 +55,16 @@ void FaultTree::Validate() {
   std::vector<std::string> path;
   std::set<std::string> visited;
   FaultTree::CheckCyclicity(top_event_, path, visited);
+}
+
+void FaultTree::SetupForAnalysis() {
+  /// @todo This function may be more flexible and gather information
+  ///       about the changed tree structure. Databases of gates might
+  ///       updates optionally.
 
   // Assumes that the tree is fully developed.
+  // Assumes that there is no change in gate structure of the tree. If there
+  // is change in gate structure, then the gate information is invalid.
   primary_events_.clear();
   // Gather all primary events belonging to this tree.
   FaultTree::GatherPrimaryEvents();
@@ -114,8 +122,8 @@ void FaultTree::GetPrimaryEvents(const GatePtr& gate) {
           boost::dynamic_pointer_cast<PrimaryEvent>(it->second);
 
       if (primary_event == 0) {  // The tree must be fully defined.
-        throw ValidationError("Node with id '" + it->second->orig_id() +
-                              "' was not defined in '" + name_+ "' tree");
+        throw LogicError("Node with id '" + it->second->orig_id() +
+                         "' was not defined in '" + name_+ "' tree");
       }
 
       primary_events_.insert(std::make_pair(it->first, primary_event));

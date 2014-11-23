@@ -37,11 +37,21 @@ class FaultTree : public Element {
 
   /// Validates this tree's structure and events.
   /// Checks the tree for cyclicity.
-  /// Populates necessary primary event and gate container.
   /// @throws ValidationError if there are issues with this tree.
   /// @note This is expensive function, but it must be called at least
   /// once after finilizing fault tree instantiation.
   void Validate();
+
+  /// Gathers information about the initialized fault tree. Databases
+  /// for events are manipulated to best reflect the state and structure
+  /// of the fault tree. This function must be called after validation.
+  /// This function must be called before any analysis is performed because
+  /// there would not be necessary information available for analysis like
+  /// primary events of this fault tree. Moreover, all the nodes of this
+  /// fault tree are expected to be defined fully and correctly.
+  /// @throws LogicError if the fault tree is not fully defined or some
+  ///                    information is mission.
+  void SetupForAnalysis();
 
   /// @returns The name of this tree.
   inline const std::string& name() { return name_; }

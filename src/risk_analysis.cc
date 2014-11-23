@@ -112,6 +112,9 @@ void RiskAnalysis::ProcessInputFiles(
 
   // Check if the initialization is successful.
   RiskAnalysis::ValidateInitialization();
+
+  // Perform setup for analysis using configurations from the input files.
+  RiskAnalysis::SetupForAnalysis();
 }
 
 void RiskAnalysis::GraphingInstructions(std::string output) {
@@ -1457,6 +1460,23 @@ void RiskAnalysis::ValidateExpressions() {
     if (msg.str() != "") {
       std::string head = "Invalid probabilities detected:\n";
       throw ValidationError(head + msg.str());
+    }
+  }
+}
+
+void RiskAnalysis::SetupForAnalysis() {
+  // CCF groups.
+  if (!ccf_groups_.empty()) {
+    std::map<std::string, CcfGroupPtr>::iterator it;
+    for (it = ccf_groups_.begin(); it != ccf_groups_.end(); ++it) {
+      it->second->ApplyModel();
+    }
+  }
+  // Configure fault trees.
+  if (!fault_trees_.empty()) {
+    std::map<std::string, FaultTreePtr>::iterator it;
+    for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
+      it->second->SetupForAnalysis();
     }
   }
 }
