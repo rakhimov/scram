@@ -1057,8 +1057,7 @@ void RiskAnalysis::DefineCcfGroup(const xmlpp::Element* ccf_node) {
   if (ccf_groups_.count(id)) {
     std::stringstream msg;
     msg << "Line " << ccf_node->get_line() << ":\n";
-    msg << "The CCF group " << name
-        << " is already defined.";
+    msg << "The CCF group " << name << " is already defined.";
     throw ValidationError(msg.str());
   }
   std::string model = ccf_node->get_attribute_value("model");
@@ -1104,7 +1103,26 @@ void RiskAnalysis::DefineCcfGroup(const xmlpp::Element* ccf_node) {
       RiskAnalysis::GetExpression(expr_node, expression);
       ccf_group->AddDistribution(expression);
 
-    } else if (name == "factors" || name == "factor") {
+    } else if (name == "factor") {
+      // Checking the level for one factor input.
+      std::string level = element->get_attribute_value("level");
+      boost::trim(level);
+      if ((level != "") && (level != "2")) {
+        std::stringstream msg;
+        msg << "Line " << element->get_line() << ":\n";
+        msg << "The CCF group " << name
+            << " level number is not as expected for one factor model."
+            << " The expected level is 2.";
+        throw ValidationError(msg.str());
+      }
+      assert(element->find("./*").size() == 1);
+      const xmlpp::Element* expr_node =
+          dynamic_cast<const xmlpp::Element*>(*element->find("./*").begin());
+      ExpressionPtr expression;
+      RiskAnalysis::GetExpression(expr_node, expression);
+      ccf_group->AddFactor(expression, 2);
+
+    } else if (name == "factors") {
       RiskAnalysis::ProcessCcfFactors(element, ccf_group);
     }
   }
@@ -1164,6 +1182,37 @@ void RiskAnalysis::ProcessCcfMembers(const xmlpp::Element* members_node,
 
 void RiskAnalysis::ProcessCcfFactors(const xmlpp::Element* factors_node,
                                      const CcfGroupPtr& ccf_group) {
+  xmlpp::NodeSet children = factors_node->find("./*");
+  assert(!children.empty());
+  int current_level = 2;  // To keep track of CCF group factor levels.
+  xmlpp::NodeSet::iterator it;
+  for (it = children.begin(); it != children.end(); ++it) {
+    const xmlpp::Element* factor_node =
+        dynamic_cast<const xmlpp::Element*>(*it);
+    assert(factor_node);
+    // Checking the level for one factor input.
+    std::string level = factor_node->get_attribute_value("level");
+    boost::trim(level);
+    if (level != "") {
+      int level_num = boost::lexical_cast<int>(level);
+      if (level_num != current_level) {
+        std::stringstream msg;
+        msg << "Line " << factor_node->get_line() << ":\n";
+        msg << "The CCF group " << ccf_group->name()
+            << " level number is not as expected."
+            << " The expected level is " << current_level << ".";
+        throw ValidationError(msg.str());
+      }
+    } else {
+      ++current_level;
+    }
+    assert(factor_node->find("./*").size() == 1);
+    const xmlpp::Element* expr_node =
+        dynamic_cast<const xmlpp::Element*>(*factor_node->find("./*").begin());
+    ExpressionPtr expression;
+    RiskAnalysis::GetExpression(expr_node, expression);
+    ccf_group->AddFactor(expression, current_level);
+  }
 }
 
 void RiskAnalysis::CheckFirstLayer() {

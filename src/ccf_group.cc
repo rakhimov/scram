@@ -32,6 +32,8 @@ void CcfGroup::AddDistribution(const ExpressionPtr& distr) {
 
 void CcfGroup::AddFactor(const ExpressionPtr& factor, int level) {
   assert(level >= 0);
+  assert((factors_.empty() && level == 2) ||
+         (level == factors_.back().first + 1));  // Sequential order.
   factors_.push_back(std::make_pair(level, factor));
 }
 

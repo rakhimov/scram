@@ -41,7 +41,7 @@ This input contains groupings for common cause analysis.
       <basic-event name="ValveTwo"/>
     </members>
     <distribution>
-      <float value="0.5"/>
+      <float value="0.1"/>
     </distribution>
     <factor>
       <float value="0.2"/>
