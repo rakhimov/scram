@@ -113,6 +113,11 @@ class BetaFactorModel : public CcfGroup {
   /// @param[in] name The name for the group.
   BetaFactorModel(std::string name) : CcfGroup(name, "beta-factor") {}
 
+  /// In addition to the default validation of CcfGroup, checks if
+  /// the there is only one factor.
+  /// @throws ValidationError if there is an issue with the setup.
+  void Validate();
+
   void ApplyModel();
 };
 
@@ -153,6 +158,7 @@ class PhiFactorModel : public CcfGroup {
 
   /// In addition to the default validation of CcfGroup, checks if
   /// the given factors' sum is 1.
+  /// @throws ValidationError if there is an issue with the setup.
   /// @todo Problem with sampling the factors and not getting exactly 1.
   ///       Currently only accepts constant expressions.
   void Validate();

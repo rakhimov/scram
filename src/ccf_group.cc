@@ -31,16 +31,24 @@ void CcfGroup::AddDistribution(const ExpressionPtr& distr) {
 }
 
 void CcfGroup::AddFactor(const ExpressionPtr& factor, int level) {
-  assert(level >= 0);
-  assert((factors_.empty() && level == 2) ||
-         (level == factors_.back().first + 1));  // Sequential order.
+  assert(level > 1);
+  if (factors_.empty()) assert(level == 2);
+  if (!factors_.empty()) assert(level == factors_.back().first + 1);
   factors_.push_back(std::make_pair(level, factor));
 }
 
 void CcfGroup::Validate() {
+  if (members_.size() < 2) {
+    throw ValidationError(name_ + " CCF group must have at least 2 members.");
+  }
+
   if (distribution_->Min() < 0 || distribution_->Max() > 1) {
     throw ValidationError("Distribution for " + name_ + " CCF group" +
                           " has illegal values.");
+  }
+  if (factors_.size() > members_.size() - 1) {
+    throw ValidationError("The number of factors for " + name_ + " CCF group" +
+                          " cannot be more than (# of members - 1).");
   }
   std::vector<std::pair<int, ExpressionPtr> >::iterator it;
   for (it = factors_.begin(); it != factors_.end(); ++it) {
@@ -49,6 +57,14 @@ void CcfGroup::Validate() {
                             " have illegal values.");
     }
   }
+}
+
+void BetaFactorModel::Validate() {
+  if (factors_.size() != 1) {
+    throw ValidationError("Beta-Factor Model " + this->name() + " CCF group" +
+                          " must have exactly one factor.");
+  }
+  CcfGroup::Validate();
 }
 
 void BetaFactorModel::ApplyModel() {

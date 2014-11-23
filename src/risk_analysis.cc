@@ -1203,8 +1203,6 @@ void RiskAnalysis::ProcessCcfFactors(const xmlpp::Element* factors_node,
             << " The expected level is " << current_level << ".";
         throw ValidationError(msg.str());
       }
-    } else {
-      ++current_level;
     }
     assert(factor_node->find("./*").size() == 1);
     const xmlpp::Element* expr_node =
@@ -1212,6 +1210,7 @@ void RiskAnalysis::ProcessCcfFactors(const xmlpp::Element* factors_node,
     ExpressionPtr expression;
     RiskAnalysis::GetExpression(expr_node, expression);
     ccf_group->AddFactor(expression, current_level);
+    ++current_level;
   }
 }
 
@@ -1250,6 +1249,13 @@ void RiskAnalysis::CheckSecondLayer() {
   if (!fault_trees_.empty()) {
     std::map<std::string, FaultTreePtr>::iterator it;
     for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
+      it->second->Validate();
+    }
+  }
+
+  if (!ccf_groups_.empty()) {
+    std::map<std::string, CcfGroupPtr>::iterator it;
+    for (it = ccf_groups_.begin(); it != ccf_groups_.end(); ++it) {
       it->second->Validate();
     }
   }
