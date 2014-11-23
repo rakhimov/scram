@@ -513,3 +513,47 @@ TEST(ExpressionTest, Mul) {
   EXPECT_DOUBLE_EQ(0.2, dev->Min());
   EXPECT_DOUBLE_EQ(300, dev->Max());
 }
+
+// Test for the special case of finding maximum and minimum multiplication.
+TEST(ExpressionTest, MultiplicationMaxAndMin) {
+  std::vector<ExpressionPtr> arguments;
+  arguments.push_back(OpenExpressionPtr(new OpenExpression(1, 2, -1, 2)));
+  arguments.push_back(OpenExpressionPtr(new OpenExpression(3, 4, -7, -4)));
+  arguments.push_back(OpenExpressionPtr(new OpenExpression(5, 6, 1, 5)));
+  arguments.push_back(OpenExpressionPtr(new OpenExpression(4, 3, -2, 4)));
+  ExpressionPtr dev;
+  ASSERT_NO_THROW(dev = ExpressionPtr(new Mul(arguments)));
+  EXPECT_DOUBLE_EQ(60, dev->Mean());
+  EXPECT_DOUBLE_EQ(144, dev->Sample());
+  EXPECT_DOUBLE_EQ(2 * -7 * 5 * 4, dev->Min());
+  EXPECT_DOUBLE_EQ(2 * -7 * 5 * -2, dev->Max());  // Sign matters.
+}
+
+// Test for division of expressions.
+TEST(ExpressionTest, Div) {
+  std::vector<ExpressionPtr> arguments;
+  arguments.push_back(OpenExpressionPtr(new OpenExpression(1, 2, 0.1, 10)));
+  arguments.push_back(OpenExpressionPtr(new OpenExpression(3, 4, 1, 5)));
+  arguments.push_back(OpenExpressionPtr(new OpenExpression(5, 6, 2, 6)));
+  ExpressionPtr dev;
+  ASSERT_NO_THROW(dev = ExpressionPtr(new Div(arguments)));
+  EXPECT_DOUBLE_EQ(1.0 / 3 / 5, dev->Mean());
+  EXPECT_DOUBLE_EQ(2.0 / 4 / 6, dev->Sample());
+  EXPECT_DOUBLE_EQ(0.1 / 5 / 6, dev->Min());
+  EXPECT_DOUBLE_EQ(10.0 / 1 / 2, dev->Max());
+}
+
+// Test for the special case of finding maximum and minimum division.
+TEST(ExpressionTest, DivisionMaxAndMin) {
+  std::vector<ExpressionPtr> arguments;
+  arguments.push_back(OpenExpressionPtr(new OpenExpression(1, 2, -1, 2)));
+  arguments.push_back(OpenExpressionPtr(new OpenExpression(3, 4, -7, -4)));
+  arguments.push_back(OpenExpressionPtr(new OpenExpression(5, 6, 1, 5)));
+  arguments.push_back(OpenExpressionPtr(new OpenExpression(4, 3, -2, 4)));
+  ExpressionPtr dev;
+  ASSERT_NO_THROW(dev = ExpressionPtr(new Div(arguments)));
+  EXPECT_DOUBLE_EQ(1.0 / 3 / 5 / 4, dev->Mean());
+  EXPECT_DOUBLE_EQ(2.0 / 4 / 6 / 3, dev->Sample());
+  EXPECT_DOUBLE_EQ(-1.0 / -4 / 1 / -2, dev->Min());
+  EXPECT_DOUBLE_EQ(2.0 / -4 / 1 / -2, dev->Max());
+}
