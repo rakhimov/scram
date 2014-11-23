@@ -53,6 +53,20 @@ void BetaFactorModel::ApplyModel() {
   std::string common_name = "[";  // Event name for common failure group.
   std::string common_id = "[";  // Event id for common failure group.
 
+  std::vector<ExpressionPtr> args;  // For expression arguments.
+
+  // Getting the probability equation for independent events.
+  assert(CcfGroup::factors_.size() == 1);
+  ExpressionPtr one(new ConstantExpression(1.0));
+  args.push_back(one);
+  ExpressionPtr beta = CcfGroup::factors_.begin()->second;
+  args.push_back(beta);
+  ExpressionPtr indep_factor(new Sub(args));  // (1 - beta)
+  args.clear();
+  args.push_back(indep_factor);
+  args.push_back(CcfGroup::distribution_);
+  ExpressionPtr indep_prob(new Mul(args));  // (1 - beta) * Q
+
   // Create indipendent events.
   std::map<std::string, BasicEventPtr>::const_iterator it;
   for (it = CcfGroup::members_.begin(); it != CcfGroup::members_.end();) {
@@ -63,6 +77,7 @@ void BetaFactorModel::ApplyModel() {
 
     BasicEventPtr independent(new BasicEvent(independent_id));
     independent->orig_id(independent_orig_id);
+    independent->expression(indep_prob);
     CcfGroup::new_events_.push_back(independent);
 
     replacement->AddChild(independent);
@@ -79,7 +94,12 @@ void BetaFactorModel::ApplyModel() {
   common_name += "]";
   BasicEventPtr common_failure(new BasicEvent(common_id));
   common_failure->orig_id(common_name);
+  args.clear();
+  args.push_back(beta);
+  args.push_back(CcfGroup::distribution_);
+  common_failure->expression(ExpressionPtr(new Mul(args)));
   CcfGroup::new_events_.push_back(common_failure);
+
   std::map<std::string, GatePtr>::iterator it_g;
   for (it_g = CcfGroup::gates_.begin(); it_g != CcfGroup::gates_.end();
        ++it_g) {

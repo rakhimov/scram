@@ -15,6 +15,7 @@
 #include <schema.h>  // For static building.
 #endif
 
+#include "ccf_group.h"
 #include "element.h"
 #include "env.h"
 #include "error.h"
@@ -197,11 +198,14 @@ void RiskAnalysis::ProcessInputFile(std::string xml_file) {
 
     std::string name = element->get_name();
     if (name == "define-fault-tree") {
-      // Handle the fault tree initialization.
       RiskAnalysis::DefineFaultTree(element);
+
+    } else if (name == "define-CCF-group") {
+      RiskAnalysis::DefineCcfGroup(element);
+
     } else if (name == "model-data") {
-      // Handle the data.
       RiskAnalysis::ProcessModelData(element);
+
     } else {
       // Not yet capable of handling other analysis.
       throw(ValidationError("Cannot handle '" + name + "'"));
@@ -1012,6 +1016,9 @@ void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
 
     } else if (name == "define-parameter") {
       RiskAnalysis::DefineParameter(element);
+
+    } else if (name == "define-CCF-group") {
+      RiskAnalysis::DefineCcfGroup(element);
     }
   }
 }
@@ -1055,6 +1062,76 @@ void RiskAnalysis::ValidateInitialization() {
       orphan_primary_events_.insert(it_p->second);
     }
   }
+}
+
+void RiskAnalysis::DefineCcfGroup(const xmlpp::Element* ccf_node) {
+  std::string name = ccf_node->get_attribute_value("name");
+  std::string id = name;
+  boost::to_lower(id);
+
+  if (ccf_groups_.count(id)) {
+    std::stringstream msg;
+    msg << "Line " << ccf_node->get_line() << ":\n";
+    msg << "The CCF group " << name
+        << " is already defined.";
+    throw ValidationError(msg.str());
+  }
+  std::string model = ccf_node->get_attribute_value("model");
+  assert(model == "beta-factor" || model == "alpha-factor" ||
+         model == "MGL" || model == "phi-factor");
+
+  CcfGroupPtr ccf_group;
+  if (model == "beta-factor") {
+    ccf_group = CcfGroupPtr(new BetaFactorModel(name));
+
+  } else if (model == "MGL") {
+    ccf_group = CcfGroupPtr(new MglModel(name));
+
+  } else if (model == "alpha-factor") {
+    ccf_group = CcfGroupPtr(new AlphaFactorModel(name));
+
+  } else if (model == "phi-factor") {
+    ccf_group = CcfGroupPtr(new PhiFactorModel(name));
+  }
+
+  ccf_groups_.insert(std::make_pair(id, ccf_group));
+
+  if (!prob_requested_) prob_requested_ = true;
+
+  RiskAnalysis::AttachLabelAndAttributes(ccf_node, ccf_group);
+
+  xmlpp::NodeSet children = ccf_node->find("./*");
+  xmlpp::NodeSet::iterator it;
+  for (it = children.begin(); it != children.end(); ++it) {
+    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
+
+    assert(element);
+    std::string name = element->get_name();
+
+    if (name == "members") {
+      RiskAnalysis::ProcessCcfMembers(element, ccf_group);
+
+    } else if (name == "distribution") {
+      assert(element->find("./*").size() == 1);
+      const xmlpp::Element* expr_node =
+          dynamic_cast<const xmlpp::Element*>(*element->find("./*").begin());
+      ExpressionPtr expression;
+      RiskAnalysis::GetExpression(expr_node, expression);
+      ccf_group->AddDistribution(expression);
+
+    } else if (name == "factors" || name == "factor") {
+      RiskAnalysis::ProcessCcfFactors(element, ccf_group);
+    }
+  }
+}
+
+void RiskAnalysis::ProcessCcfMembers(const xmlpp::Element* members_node,
+                                     const CcfGroupPtr& ccf_group) {
+
+}
+
+void RiskAnalysis::ProcessCcfFactors(const xmlpp::Element* factors_node,
+                                     const CcfGroupPtr& ccf_group) {
 }
 
 void RiskAnalysis::CheckFirstLayer() {

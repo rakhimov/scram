@@ -108,6 +108,7 @@ class CcfGroup : public Element {
 /// Common cause failure model that assumes, if common cause failure occurs,
 /// then all components or members fail simultaneously or within short time.
 class BetaFactorModel : public CcfGroup {
+ public:
   /// Constructs the group and sets the model.
   /// @param[in] name The name for the group.
   BetaFactorModel(std::string name) : CcfGroup(name, "beta-factor") {}
@@ -120,6 +121,7 @@ class BetaFactorModel : public CcfGroup {
 /// the group due to common cause. The factor for k-component group defines
 /// fraction of failure k or more members given that (k-1) members failed.
 class MglModel : public CcfGroup {
+ public:
   /// Constructs the group and sets the model.
   /// @param[in] name The name for the group.
   MglModel(std::string name) : CcfGroup(name, "MGL") {}
@@ -131,6 +133,7 @@ class MglModel : public CcfGroup {
 /// Alpha factor model characterizes failure of exactly k members of
 /// the group due to common cause.
 class AlphaFactorModel : public CcfGroup {
+ public:
   /// Constructs the group and sets the model.
   /// @param[in] name The name for the group.
   AlphaFactorModel(std::string name) : CcfGroup(name, "alpha-factor") {}
