@@ -67,9 +67,12 @@ void BetaFactorModel::ApplyModel() {
   args.push_back(CcfGroup::distribution_);
   ExpressionPtr indep_prob(new Mul(args));  // (1 - beta) * Q
 
-  // Create indipendent events.
   std::map<std::string, BasicEventPtr>::const_iterator it;
   for (it = CcfGroup::members_.begin(); it != CcfGroup::members_.end();) {
+    // Assign default probability without CCF.
+    it->second->expression(CcfGroup::distribution_);
+
+    // Create indipendent events.
     std::string independent_orig_id = "[" + it->second->orig_id() + "]";
     std::string independent_id = "[" + it->second->id() + "]";
     GatePtr replacement(new Gate(it->first, "or"));

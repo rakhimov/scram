@@ -269,8 +269,7 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
       tbd_house_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << gate_node->get_line() << ":\n";
-    msg << "The id " << orig_id
-        << " is already assigned to a primary event.";
+    msg << "The id " << orig_id << " is already assigned to a primary event.";
     throw ValidationError(msg.str());
   }
 
@@ -417,15 +416,13 @@ void RiskAnalysis::ProcessFormulaBasicEvent(const xmlpp::Element* event,
   if (gates_.count(id) || tbd_gates_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event->get_line() << ":\n";
-    msg << "The id " << orig_id
-        << " is already assigned to a gate.";
+    msg << "The id " << orig_id << " is already assigned to a gate.";
     throw ValidationError(msg.str());
   }
   if (tbd_house_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event->get_line() << ":\n";
-    msg << "The id " << orig_id
-        << " is already used by a house event.";
+    msg << "The id " << orig_id << " is already used by a house event.";
     throw ValidationError(msg.str());
   }
   if (primary_events_.count(id)) {
@@ -433,8 +430,7 @@ void RiskAnalysis::ProcessFormulaBasicEvent(const xmlpp::Element* event,
     if (boost::dynamic_pointer_cast<BasicEvent>(child) == 0) {
       std::stringstream msg;
       msg << "Line " << event->get_line() << ":\n";
-      msg << "The id " << orig_id
-          << " is already assigned to a house event.";
+      msg << "The id " << orig_id << " is already assigned to a house event.";
       throw ValidationError(msg.str());
     }
   } else if (tbd_basic_events_.count(id)) {
@@ -456,15 +452,13 @@ void RiskAnalysis::ProcessFormulaHouseEvent(const xmlpp::Element* event,
   if (gates_.count(id) || tbd_gates_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event->get_line() << ":\n";
-    msg << "The id " << orig_id
-        << " is already assigned to a gate.";
+    msg << "The id " << orig_id << " is already assigned to a gate.";
     throw ValidationError(msg.str());
   }
   if (tbd_basic_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event->get_line() << ":\n";
-    msg << "The id " << orig_id
-        << " is already used by a basic event.";
+    msg << "The id " << orig_id << " is already used by a basic event.";
     throw ValidationError(msg.str());
   }
   if (primary_events_.count(id)) {
@@ -472,8 +466,7 @@ void RiskAnalysis::ProcessFormulaHouseEvent(const xmlpp::Element* event,
     if (boost::dynamic_pointer_cast<HouseEvent>(child) == 0) {
       std::stringstream msg;
       msg << "Line " << event->get_line() << ":\n";
-      msg << "The id " << orig_id
-          << " is already assigned to a basic event.";
+      msg << "The id " << orig_id << " is already assigned to a basic event.";
       throw ValidationError(msg.str());
     }
   } else if (tbd_house_events_.count(id)) {
@@ -496,8 +489,7 @@ void RiskAnalysis::ProcessFormulaGate(const xmlpp::Element* event,
       tbd_house_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event->get_line() << ":\n";
-    msg << "The id " << orig_id
-        << " is already assigned to a primary event.";
+    msg << "The id " << orig_id << " is already assigned to a primary event.";
     throw ValidationError(msg.str());
   }
   if (gates_.count(id)) {
@@ -522,22 +514,19 @@ void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node) {
   if (gates_.count(id) || tbd_gates_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << "The id " << orig_id
-        << " is already assigned to a gate.";
+    msg << "The id " << orig_id << " is already assigned to a gate.";
     throw ValidationError(msg.str());
   }
   if (primary_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << "The id " << orig_id
-        << " is doubly defined.";
+    msg << "The id " << orig_id << " is doubly defined.";
     throw ValidationError(msg.str());
   }
   if (tbd_house_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << "The id " << orig_id
-        << " is already used by a house event.";
+    msg << "The id " << orig_id << " is already used by a house event.";
     throw ValidationError(msg.str());
   }
 
@@ -571,8 +560,7 @@ void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node) {
   } else {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << "The " << orig_id
-        << " basic event does not have an expression.";
+    msg << "The " << orig_id << " basic event does not have an expression.";
     throw ValidationError(msg.str());
   }
 
@@ -588,22 +576,19 @@ void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node) {
   if (gates_.count(id) || tbd_gates_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << "The id " << orig_id
-        << " is already assigned to a gate.";
+    msg << "The id " << orig_id << " is already assigned to a gate.";
     throw ValidationError(msg.str());
   }
   if (primary_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << "The id " << orig_id
-        << " is doubly defined.";
+    msg << "The id " << orig_id << " is doubly defined.";
     throw ValidationError(msg.str());
   }
   if (tbd_basic_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << "The id " << orig_id
-        << " is already used by a basic event.";
+    msg << "The id " << orig_id << " is already used by a basic event.";
     throw ValidationError(msg.str());
   }
   // Only boolean for now.
@@ -1127,7 +1112,54 @@ void RiskAnalysis::DefineCcfGroup(const xmlpp::Element* ccf_node) {
 
 void RiskAnalysis::ProcessCcfMembers(const xmlpp::Element* members_node,
                                      const CcfGroupPtr& ccf_group) {
+  xmlpp::NodeSet children = members_node->find("./*");
+  assert(!children.empty());
+  xmlpp::NodeSet::iterator it;
+  for (it = children.begin(); it != children.end(); ++it) {
+    const xmlpp::Element* event_node =
+        dynamic_cast<const xmlpp::Element*>(*it);
+    assert(event_node);
+    assert("basic-event" == event_node->get_name());
+    std::string orig_id = event_node->get_attribute_value("name");
+    boost::trim(orig_id);
+    std::string id = orig_id;
+    boost::to_lower(id);
+    // Detect name clashes.
+    if (gates_.count(id) || tbd_gates_.count(id)) {
+      std::stringstream msg;
+      msg << "Line " << event_node->get_line() << ":\n";
+      msg << "The id " << orig_id << " is already assigned to a gate.";
+      throw ValidationError(msg.str());
+    }
+    if (primary_events_.count(id)) {
+      std::stringstream msg;
+      msg << "Line " << event_node->get_line() << ":\n";
+      msg << "The id " << orig_id << " is doubly defined.";
+      throw ValidationError(msg.str());
+    }
+    if (tbd_house_events_.count(id)) {
+      std::stringstream msg;
+      msg << "Line " << event_node->get_line() << ":\n";
+      msg << "The id " << orig_id << " is already used by a house event.";
+      throw ValidationError(msg.str());
+    }
 
+    BasicEventPtr basic_event;
+    if (tbd_basic_events_.count(id)) {
+      basic_event = tbd_basic_events_.find(id)->second;
+      primary_events_.insert(std::make_pair(id, basic_event));
+      basic_events_.insert(std::make_pair(id, basic_event));
+      tbd_basic_events_.erase(id);
+
+    } else {
+      basic_event = BasicEventPtr(new BasicEvent(id));
+      basic_event->orig_id(orig_id);
+      primary_events_.insert(std::make_pair(id, basic_event));
+      basic_events_.insert(std::make_pair(id, basic_event));
+      RiskAnalysis::UpdateIfLateEvent(basic_event);
+    }
+    ccf_group->AddMember(basic_event);
+  }
 }
 
 void RiskAnalysis::ProcessCcfFactors(const xmlpp::Element* factors_node,
@@ -1221,8 +1253,7 @@ std::string RiskAnalysis::CheckGate(const GatePtr& event) {
   if (two_or_more.count(gate)) {
     if (size < 2) {
       boost::to_upper(gate);
-      msg << event->orig_id() << " : " << gate
-          << " gate must have 2 or more "
+      msg << event->orig_id() << " : " << gate << " gate must have 2 or more "
           << "children.\n";
     }
   } else if (single.count(gate)) {
