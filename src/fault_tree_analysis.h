@@ -68,6 +68,7 @@ class FaultTreeAnalysis {
   int top_event_index_;  ///< The index of the top event.
   std::string top_event_name_;  ///< The original name of the top event.
   int num_gates_;  ///< The number of the gates.
+  int num_basic_events_;  ///< The number of the basic events.
 
   /// Indices of all events.
   boost::unordered_map<std::string, int> all_to_int_;
@@ -82,6 +83,9 @@ class FaultTreeAnalysis {
 
   /// Container for basic events.
   boost::unordered_map<std::string, BasicEventPtr> basic_events_;
+
+  /// Basic events in CCF groups.
+  boost::unordered_map<std::string, BasicEventPtr> ccf_events_;
 
   /// Container for minimal cut sets.
   std::set< std::set<std::string> > min_cut_sets_;

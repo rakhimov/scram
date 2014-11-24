@@ -127,10 +127,13 @@ class IndexedFaultTree {
   /// This function also simplifies the tree to simple gates.
   /// @param[in] int_to_inter Container of gates and thier indices including
   ///                         the top gate.
+  /// @param[in] ccf_basic_to_gates CCF basic events that are converted to
+  ///                               gates.
   /// @param[in] all_to_int Container of all events in this tree to index
   ///                       children of the gates.
   void InitiateIndexedFaultTree(
       const boost::unordered_map<int, GatePtr>& int_to_inter,
+      const std::map<std::string, int>& ccf_basic_to_gates,
       const boost::unordered_map<std::string, int>& all_to_int);
 
   /// Remove all house events by propagating them as constants in Boolean

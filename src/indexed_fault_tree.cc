@@ -134,6 +134,7 @@ IndexedFaultTree::IndexedFaultTree(int top_event_id, int limit_order)
 
 void IndexedFaultTree::InitiateIndexedFaultTree(
     const boost::unordered_map<int, GatePtr>& int_to_inter,
+    const std::map<std::string, int>& ccf_basic_to_gates,
     const boost::unordered_map<std::string, int>& all_to_int) {
   boost::unordered_map<int, GatePtr>::const_iterator it;
   for (it = int_to_inter.begin(); it != int_to_inter.end(); ++it) {
@@ -149,7 +150,11 @@ void IndexedFaultTree::InitiateIndexedFaultTree(
     std::map<std::string, EventPtr>::const_iterator it_children;
     for (it_children = children->begin();
          it_children != children->end(); ++it_children) {
-      gate->InitiateWithChild(all_to_int.find(it_children->first)->second);
+      int child_index = all_to_int.find(it_children->first)->second;
+      // Replace CCF basic events with the corresponding events.
+      if (ccf_basic_to_gates.count(it_children->first))
+        child_index = ccf_basic_to_gates.find(it_children->first)->second;
+      gate->InitiateWithChild(child_index);
     }
     indexed_gates_.insert(std::make_pair(it->first, gate));
     if (gate->index() > new_gate_index_) new_gate_index_ = gate->index() + 1;

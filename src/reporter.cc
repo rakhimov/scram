@@ -56,7 +56,7 @@ void Reporter::ReportFta(
   out << std::setw(40) << "Core Analysis Time: " << std::setprecision(5)
       << fta->analysis_time_ << "s\n";
   out << std::setw(40) << "Number of Basic Events: "
-      << fta->basic_events_.size() << "\n";
+      << fta->num_basic_events_ << "\n";
   out << std::setw(40) << "Number of Gates: " << fta->num_gates_ << "\n";
   out << std::setw(40) << "Limit on order of cut sets: "
       << fta->limit_order_ << "\n";
@@ -311,13 +311,14 @@ void Reporter::McsToPrint(
       std::string full_name = *it_set;
       boost::split(names, full_name, boost::is_any_of(" "),
                    boost::token_compress_on);
-      assert(names.size() < 3);
-      assert(names.size() > 0);
+      assert(names.size() >= 1);
       std::string name = "";
-      if (names.size() == 1) {
-        name = basic_events.find(names[0])->second->orig_id();
-      } else if (names.size() == 2) {
-        name = "NOT " + basic_events.find(names[1])->second->orig_id();
+      if (names[0] == "not") {
+        std::string comp_name = full_name;
+        boost::replace_first(comp_name, "not ", "");
+        name = "NOT " + basic_events.find(comp_name)->second->orig_id();
+      } else {
+        name = basic_events.find(full_name)->second->orig_id();
       }
 
       if (line.length() + name.length() + 2 > 60) {
