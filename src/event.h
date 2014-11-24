@@ -180,10 +180,34 @@ class BasicEvent: public PrimaryEvent {
     }
   }
 
+  /// Indicates if this basic event has been set to be in a CCF group.
+  /// @returns true if in a CCF group.
+  /// @returns false otherwise.
+  bool HasCcf() { return ccf_gate_ ? true : false; }
+
+  /// Sets the common cause failure group gate that can represent this basic
+  /// event in analysis with common cause information. This information is
+  /// expected to be provided by CCF group application.
+  /// @param[in] gate CCF group gate.
+  void ccf_gate(const boost::shared_ptr<Gate>& gate) {
+    assert(!ccf_gate_);
+    ccf_gate_ = gate;
+  }
+
+  /// @returns CCF group gate representing this basic event.
+  const boost::shared_ptr<Gate>& ccf_gate() {
+    assert(ccf_gate_);
+    return ccf_gate_;
+  }
+
  private:
   /// Expression that describes this basic event and provides numerical
   /// values for probability calculations.
   ExpressionPtr expression_;
+
+  /// If this basic event is in a common cause group, CCF gate can serve
+  /// as a replacement for the basic event for common cause analysis.
+  boost::shared_ptr<Gate> ccf_gate_;
 };
 
 /// @class HouseEvent

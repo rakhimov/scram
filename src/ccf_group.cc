@@ -90,14 +90,15 @@ void BetaFactorModel::ApplyModel() {
     // Create indipendent events.
     std::string independent_orig_id = "[" + it->second->orig_id() + "]";
     std::string independent_id = "[" + it->second->id() + "]";
-    GatePtr replacement(new Gate(it->first, "or"));
-    CcfGroup::gates_.insert(std::make_pair(it->first, replacement));
 
     BasicEventPtr independent(new BasicEvent(independent_id));
     independent->orig_id(independent_orig_id);
     independent->expression(indep_prob);
     CcfGroup::new_events_.push_back(independent);
 
+    GatePtr replacement(new Gate(it->first, "or"));
+    CcfGroup::gates_.insert(std::make_pair(it->first, replacement));
+    it->second->ccf_gate(replacement);
     replacement->AddChild(independent);
 
     common_name += it->second->orig_id();
