@@ -66,8 +66,14 @@ void FaultTree::SetupForAnalysis() {
   // Assumes that there is no change in gate structure of the tree. If there
   // is change in gate structure, then the gate information is invalid.
   primary_events_.clear();
+  basic_events_.clear();
+  ccf_events_.clear();
+  house_events_.clear();
   // Gather all primary events belonging to this tree.
   FaultTree::GatherPrimaryEvents();
+
+  // Gather CCF generated basic events.
+  FaultTree::GatherCcfBasicEvents();
 }
 
 void FaultTree::CheckCyclicity(const GatePtr& parent,
@@ -107,9 +113,9 @@ void FaultTree::CheckCyclicity(const GatePtr& parent,
 void FaultTree::GatherPrimaryEvents() {
   FaultTree::GetPrimaryEvents(top_event_);
 
-  boost::unordered_map<std::string, GatePtr>::iterator git;
-  for (git = inter_events_.begin(); git != inter_events_.end(); ++git) {
-    FaultTree::GetPrimaryEvents(git->second);
+  boost::unordered_map<std::string, GatePtr>::iterator it;
+  for (it = inter_events_.begin(); it != inter_events_.end(); ++it) {
+    FaultTree::GetPrimaryEvents(it->second);
   }
 }
 
@@ -131,12 +137,31 @@ void FaultTree::GetPrimaryEvents(const GatePtr& gate) {
           boost::dynamic_pointer_cast<BasicEvent>(primary_event);
       if (basic_event) {
         basic_events_.insert(std::make_pair(it->first, basic_event));
+        if (basic_event->HasCcf())
+          ccf_events_.insert(std::make_pair(it->first, basic_event));
       } else {
         HouseEventPtr house_event =
             boost::dynamic_pointer_cast<HouseEvent>(primary_event);
         assert(house_event);
         house_events_.insert(std::make_pair(it->first, house_event));
       }
+    }
+  }
+}
+
+void FaultTree::GatherCcfBasicEvents() {
+  boost::unordered_map<std::string, BasicEventPtr>::iterator it_b;
+  for (it_b = ccf_events_.begin(); it_b != ccf_events_.end(); ++it_b) {
+    assert(it_b->second->HasCcf());
+    const std::map<std::string, EventPtr>* children =
+        &it_b->second->ccf_gate()->children();
+    std::map<std::string, EventPtr>::const_iterator it;
+    for (it = children->begin(); it != children->end(); ++it) {
+      BasicEventPtr basic_event =
+          boost::dynamic_pointer_cast<BasicEvent>(it->second);
+      assert(basic_event);
+      basic_events_.insert(std::make_pair(basic_event->id(), basic_event));
+      primary_events_.insert(std::make_pair(basic_event->id(), basic_event));
     }
   }
 }
