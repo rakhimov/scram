@@ -57,3 +57,15 @@ TEST_F(RiskAnalysisTest, BetaFactorCCF) {
   EXPECT_EQ(10, min_cut_sets().size());
   EXPECT_EQ(mcs, min_cut_sets());
 }
+
+// Benchmark Tests for Phi factor common cause failure calculations.
+// Test Minimal cut sets and total probabilty.
+TEST_F(RiskAnalysisTest, PhiFactorCCF) {
+  std::string tree_input = "./share/scram/input/benchmark/phi_factor_ccf.xml";
+  ASSERT_NO_THROW(ran->AddSettings(settings.num_sums(3)));
+  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(ran->Report("/dev/null"));
+  EXPECT_NEAR(0.04109, p_total(), 1e-5);  // Total prob check.
+  EXPECT_EQ(34, min_cut_sets().size());
+}
