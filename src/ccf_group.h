@@ -6,6 +6,7 @@
 #define SCRAM_SRC_COMMON_CAUSE_GROUP_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <utility>
 
@@ -79,6 +80,14 @@ class CcfGroup : public Element {
   /// @param[in] name The name of a CCF group.
   /// @param[in] model CCF model of this group.
   CcfGroup(std::string name, std::string model);
+
+  /// Creates new basic events from members. The new basic events
+  /// are included in the database of new events.
+  /// @param[in] max_level The max level for grouping.
+  /// @param[out] new_events New basic events and their parents.
+  void ConstructCcfBasicEvents(
+      int max_level,
+      std::map<BasicEventPtr, std::set<std::string> >* new_events);
 
   std::map<std::string, BasicEventPtr> members_;  ///< Members of CCF groups.
   ExpressionPtr distribution_;  ///< The probability distribution of the group.

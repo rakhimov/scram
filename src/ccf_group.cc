@@ -31,8 +31,10 @@ void CcfGroup::AddDistribution(const ExpressionPtr& distr) {
 }
 
 void CcfGroup::AddFactor(const ExpressionPtr& factor, int level) {
-  assert(level > 1);
-  if (factors_.empty()) assert(level == 2);
+  assert(level > 0);
+  /// @todo Beta factor model may start from level 1.
+  if (factors_.empty() && model_ == "phi-factor") assert(level == 1);
+  if (factors_.empty() && model_ != "phi-factor") assert(level == 2);
   if (!factors_.empty()) assert(level == factors_.back().first + 1);
   factors_.push_back(std::make_pair(level, factor));
 }
@@ -46,9 +48,9 @@ void CcfGroup::Validate() {
     throw ValidationError("Distribution for " + name_ + " CCF group" +
                           " has illegal values.");
   }
-  if (factors_.size() > members_.size() - 1) {
-    throw ValidationError("The number of factors for " + name_ + " CCF group" +
-                          " cannot be more than (# of members - 1).");
+  if (factors_.back().first > members_.size()) {
+    throw ValidationError("The level of factors for " + name_ + " CCF group" +
+                          " cannot be more than # of members.");
   }
   std::vector<std::pair<int, ExpressionPtr> >::iterator it;
   for (it = factors_.begin(); it != factors_.end(); ++it) {
@@ -56,6 +58,55 @@ void CcfGroup::Validate() {
       throw ValidationError("Factors for " + name_ + " CCF group" +
                             " have illegal values.");
     }
+  }
+}
+
+void CcfGroup::ConstructCcfBasicEvents(
+    int max_level,
+    std::map<BasicEventPtr, std::set<std::string> >* new_events) {
+  assert(max_level > 1);
+  assert(members_.size() > 1);
+  assert(max_level <= members_.size());
+  assert(new_events->empty());
+
+  std::set<std::set<std::string> > combinations;
+  std::set<std::string> comb;
+  combinations.insert(comb);  // Empty set is needed for iteration.
+
+  for (int i = 0; i < max_level; ++i) {
+    std::set<std::set<std::string> > next_level;
+    std::set<std::set<std::string> >::iterator it;
+    for (it = combinations.begin(); it != combinations.end(); ++it) {
+      std::map<std::string, BasicEventPtr>::const_iterator it_m;
+      for (it_m = members_.begin(); it_m != members_.end(); ++it_m) {
+        std::set<std::string> comb(*it);
+        comb.insert(it_m->first);
+        if (comb.size() > i) {
+          next_level.insert(comb);
+        }
+      }
+    }
+    for (it = next_level.begin(); it != next_level.end(); ++it) {
+      std::string id = "[";
+      std::string orig_id = "[";
+      std::set<std::string>::const_iterator it_s;
+      for (it_s = it->begin(); it_s != it->end();) {
+        id += *it_s;
+        orig_id += members_.find(*it_s)->second->orig_id();
+        ++it_s;
+        if (it_s != it->end()) {
+          id += " ";
+          orig_id += " ";
+        }
+      }
+      id += "]";
+      orig_id += "]";
+      BasicEventPtr new_basic_event(new BasicEvent(id));
+      new_basic_event->orig_id(orig_id);
+      new_events->insert(std::make_pair(new_basic_event, *it));
+      new_events_.push_back(new_basic_event);
+    }
+    combinations = next_level;
   }
 }
 
@@ -136,25 +187,67 @@ void AlphaFactorModel::ApplyModel() {
 
 void PhiFactorModel::Validate() {
   CcfGroup::Validate();
-  int sum = 0;
+  double sum = 0;
+  double sum_min = 0;
+  double sum_max = 0;
+  /// @todo How to assure that the sum will be 1 in sampling.
+  ///       Is it allowed to have a factor sampling for Uncertainty analysis.
   std::vector<std::pair<int, ExpressionPtr> >::iterator it;
   for (it = CcfGroup::factors_.begin(); it != CcfGroup::factors_.end(); ++it) {
-    if (!it->second->IsConstant()) {
-      throw ValidationError("Phi Factor Model " + CcfGroup::name() +
-                            " CCF group accepts only constant expressions.");
-
-    }
     sum += it->second->Mean();
+    sum_min += it->second->Min();
+    sum_max += it->second->Max();
   }
   /// @todo Problems with floating point number comparison.
-  if (sum != 1.0) {
+  double epsilon = 1e-4;
+  double diff = std::abs(sum - 1);
+  double diff_min = std::abs(sum_min - 1);
+  double diff_max = std::abs(sum_max - 1);
+  if (diff_min > epsilon || diff > epsilon || diff_max > epsilon) {
     throw ValidationError("The factors for Phi model " + CcfGroup::name() +
                           " CCF group must sum to 1.");
   }
 }
 
 void PhiFactorModel::ApplyModel() {
+  // Construct replacement gates for member basic events.
+  // Create new basic events representing CCF.
+  // Calculate CCF probabilities from the given factor.
+  // Assign the CCF probabilities to the corresponding new basic events.
+  // Add the new basic events to the replacement gates. These children
+  // basic events must contain the parent gate id in its id.
+  int max_level = factors_.back().first;  // Assumes that factors are
+                                          // sequential.
+  assert(gates_.empty());
+  std::map<std::string, BasicEventPtr>::const_iterator it_m;
+  for (it_m = members_.begin(); it_m != members_.end(); ++it_m) {
+    GatePtr new_gate(new Gate(it_m->first, "or"));
+    gates_.insert(std::make_pair(new_gate->id(), new_gate));
+    it_m->second->ccf_gate(new_gate);
+  }
 
+  std::vector<ExpressionPtr> probabilities;  // The level is position + 1.
+  std::vector<std::pair<int, ExpressionPtr> >::iterator it_f;
+  for (it_f = factors_.begin(); it_f != factors_.end(); ++it_f) {
+    std::vector<ExpressionPtr> args;
+    args.push_back(it_f->second);
+    args.push_back(distribution_);
+    ExpressionPtr prob(new Mul(args));
+    probabilities.push_back(prob);
+  }
+
+  // Mapping of new basic events and their parents.
+  std::map<BasicEventPtr, std::set<std::string> > new_events;
+  CcfGroup::ConstructCcfBasicEvents(max_level, &new_events);
+  std::map<BasicEventPtr, std::set<std::string> >::iterator it;
+  for (it = new_events.begin(); it != new_events.end(); ++it) {
+    it->first->expression(probabilities[it->second.size() - 1]);
+    // Add this basic event to the parent gates.
+    std::set<std::string>::iterator it_l;
+    for (it_l = it->second.begin(); it_l != it->second.end(); ++it_l) {
+      gates_.find(*it_l)->second->AddChild(it->first);
+    }
+  }
 }
 
 }  // namespace scram

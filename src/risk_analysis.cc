@@ -1126,7 +1126,7 @@ void RiskAnalysis::DefineCcfGroup(const xmlpp::Element* ccf_node) {
       ccf_group->AddFactor(expression, 2);
 
     } else if (name == "factors") {
-      RiskAnalysis::ProcessCcfFactors(element, ccf_group);
+      RiskAnalysis::ProcessCcfFactors(element, model, ccf_group);
     }
   }
 }
@@ -1184,10 +1184,12 @@ void RiskAnalysis::ProcessCcfMembers(const xmlpp::Element* members_node,
 }
 
 void RiskAnalysis::ProcessCcfFactors(const xmlpp::Element* factors_node,
+                                     std::string model,
                                      const CcfGroupPtr& ccf_group) {
   xmlpp::NodeSet children = factors_node->find("./*");
   assert(!children.empty());
-  int current_level = 2;  // To keep track of CCF group factor levels.
+  // To keep track of CCF group factor levels.
+  int current_level = model == "phi-factor" ? 1 : 2;
   xmlpp::NodeSet::iterator it;
   for (it = children.begin(); it != children.end(); ++it) {
     const xmlpp::Element* factor_node =

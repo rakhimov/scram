@@ -244,8 +244,10 @@ class RiskAnalysis {
 
   /// Attaches factors to a given common cause failure group.
   /// @param[in] factors_node XML element containing all factors.
+  /// @param[in] model Model name for factor level detection.
   /// @param[in,out] ccf_group CCF group to be defined by the given factors.
   void ProcessCcfFactors(const xmlpp::Element* factors_node,
+                         std::string model,
                          const CcfGroupPtr& ccf_group);
 
   /// Validates if the initialization of the analysis is successful.
