@@ -1189,7 +1189,9 @@ void RiskAnalysis::ProcessCcfFactors(const xmlpp::Element* factors_node,
   xmlpp::NodeSet children = factors_node->find("./*");
   assert(!children.empty());
   // To keep track of CCF group factor levels.
-  int current_level = model == "phi-factor" ? 1 : 2;
+  /// @todo Get rid of this hackish way of checking for the CCF levels.
+  int current_level = 2;
+  if (model == "phi-factor" || model == "alpha-factor") current_level = 1;
   xmlpp::NodeSet::iterator it;
   for (it = children.begin(); it != children.end(); ++it) {
     const xmlpp::Element* factor_node =

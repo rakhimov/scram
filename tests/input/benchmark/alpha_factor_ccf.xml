@@ -1,0 +1,76 @@
+<?xml version="1.0"?>
+<!--
+This input contains groupings for common cause analysis for Three Train system.
+CCF is represented with alpha factor that assigns factors for exact failures.
+-->
+<opsa-mef>
+  <define-fault-tree name="AlphaFactorCCF">
+    <define-gate name="TopEvent">
+      <and>
+        <event name="TrainOne"/>
+        <event name="TrainTwo"/>
+        <event name="TrainThree"/>
+      </and>
+    </define-gate>
+    <define-gate name="TrainOne">
+      <or>
+        <event name="ValveOne"/>
+        <event name="PumpOne"/>
+      </or>
+    </define-gate>
+    <define-gate name="TrainTwo">
+      <or>
+        <event name="ValveTwo"/>
+        <event name="PumpTwo"/>
+      </or>
+    </define-gate>
+    <define-gate name="TrainThree">
+      <or>
+        <event name="ValveThree"/>
+        <event name="PumpThree"/>
+      </or>
+    </define-gate>
+  </define-fault-tree>
+  <define-CCF-group name="Pumps" model="alpha-factor">
+    <members>
+      <basic-event name="PumpOne"/>
+      <basic-event name="PumpTwo"/>
+      <basic-event name="PumpThree"/>
+    </members>
+    <distribution>
+      <float value="0.1"/>
+    </distribution>
+    <factors>
+      <factor level="1">
+        <float value="0.7"/>
+      </factor>
+      <factor level="2">
+        <float value="0.2"/>
+      </factor>
+      <factor level="3">
+        <float value="0.1"/>
+      </factor>
+    </factors>
+  </define-CCF-group>
+  <define-CCF-group name="Valves" model="alpha-factor">
+    <members>
+      <basic-event name="ValveOne"/>
+      <basic-event name="ValveTwo"/>
+      <basic-event name="ValveThree"/>
+    </members>
+    <distribution>
+      <float value="0.1"/>
+    </distribution>
+    <factors>
+      <factor level="1">
+        <float value="0.7"/>
+      </factor>
+      <factor level="2">
+        <float value="0.2"/>
+      </factor>
+      <factor level="3">
+        <float value="0.1"/>
+      </factor>
+    </factors>
+  </define-CCF-group>
+</opsa-mef>
