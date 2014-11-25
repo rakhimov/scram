@@ -164,13 +164,17 @@ class MissionTime : public Expression {
   Units unit_;
 };
 
-/// @class ConstantExpression
+/// @class 1.0 * ConstantExpression
 /// Indicates a constant value.
 class ConstantExpression : public Expression {
  public:
-  /// Constructor for integer and float values.
-  /// @param[in] val Any numerical value.
+  /// Constructor for float values.
+  /// @param[in] val Float numerical value.
   explicit ConstantExpression(double val) : value_(val) {}
+
+  /// Constructor for integer values.
+  /// @param[in] val Integer numerical value.
+  explicit ConstantExpression(int val) : value_(val) {}
 
   /// Constructor for boolean values.
   /// @param[in] val true for 1 and false for 0 value of this constant.

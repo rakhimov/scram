@@ -89,6 +89,11 @@ class CcfGroup : public Element {
       int max_level,
       std::map<BasicEventPtr, std::set<std::string> >* new_events);
 
+  /// Simple factorial calculation.
+  /// @param[in] n Positive number for factorial calculation.
+  /// @returns n factorial.
+  int Factorial(int n) { return n ? n * Factorial(n - 1) : 1; }
+
   std::map<std::string, BasicEventPtr> members_;  ///< Members of CCF groups.
   ExpressionPtr distribution_;  ///< The probability distribution of the group.
   /// CCF factors for models to get CCF probabilities.

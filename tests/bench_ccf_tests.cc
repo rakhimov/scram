@@ -69,3 +69,15 @@ TEST_F(RiskAnalysisTest, PhiFactorCCF) {
   EXPECT_NEAR(0.04109, p_total(), 1e-5);  // Total prob check.
   EXPECT_EQ(34, min_cut_sets().size());
 }
+
+// Benchmark Tests for MGL factor common cause failure calculations.
+// Test Minimal cut sets and total probabilty.
+TEST_F(RiskAnalysisTest, MGLFactorCCF) {
+  std::string tree_input = "./share/scram/input/benchmark/mgl_ccf.xml";
+  ASSERT_NO_THROW(ran->AddSettings(settings.num_sums(3)));
+  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  ASSERT_NO_THROW(ran->Report("/dev/null"));
+  EXPECT_NEAR(0.12233, p_total(), 1e-5);  // Total prob check.
+  EXPECT_EQ(34, min_cut_sets().size());
+}
