@@ -101,6 +101,10 @@ class FaultTree : public Element {
     return house_events_;
   }
 
+  /// @returns The original number of basic events without new CCF basic events.
+  /// @warning The tree must be validated and ready for analysis.
+  inline int num_basic_events() { return num_basic_events_; }
+
  private:
   typedef boost::shared_ptr<Event> EventPtr;
 
@@ -159,6 +163,9 @@ class FaultTree : public Element {
   /// This gates are not added through AddGate() function but by traversing
   /// the tree as a postprocess.
   boost::unordered_map<std::string, GatePtr> implicit_gates_;
+
+  /// The number of original basic events without new CCF basic events.
+  int num_basic_events_;
 };
 
 }  // namespace scram
