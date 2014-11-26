@@ -31,6 +31,7 @@ set(SCRAM_CORE_TEST_SOURCE ${SCRAM_CORE_TEST_SOURCE}
   "${CMAKE_CURRENT_SOURCE_DIR}/xml_parser_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/random_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/expression_tests.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/ccf_group_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree_analysis_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/probability_analysis_tests.cc"
