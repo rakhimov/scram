@@ -70,6 +70,10 @@ def main():
             "alpha_ccf_level_error.xml",
             "beta_ccf_level_error.xml",
             "mgl_ccf_level_error.xml",
+            "phi_ccf_wrong_sum.xml",
+            "ccf_negative_factor.xml",
+            "ccf_wrong_distribution.xml",
+            "ccf_more_factors_than_needed.xml",
             ]
 
     # Run correct inputs

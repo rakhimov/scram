@@ -1411,6 +1411,16 @@ void RiskAnalysis::ValidateExpressions() {
   if (prob_requested_) {
     std::stringstream msg;
     msg << "";
+    if (!ccf_groups_.empty()) {
+      std::map<std::string, CcfGroupPtr>::iterator it;
+      for (it = ccf_groups_.begin(); it != ccf_groups_.end(); ++it) {
+        try {
+          it->second->ValidateDistribution();
+        } catch (ValidationError& err) {
+          msg << it->second->name() << " : " << err.msg() << "\n";
+        }
+      }
+    }
     boost::unordered_map<std::string, BasicEventPtr>::iterator it;
     for (it = basic_events_.begin(); it != basic_events_.end(); ++it) {
       try {

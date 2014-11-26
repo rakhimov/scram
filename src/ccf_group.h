@@ -58,6 +58,12 @@ class CcfGroup : public Element {
   /// @throws ValidationError if level is not what is expected.
   virtual void AddFactor(const ExpressionPtr& factor, int level);
 
+  /// Checks if the provided distribution is between 0 and 1.
+  /// This check must be performed before validating basic events that are
+  /// members of this CCF group to give more precise error messages.
+  /// @throws ValidationError if there is an issue with the distribution.
+  void ValidateDistribution();
+
   /// Validates the setup for the CCF model and group.
   /// The passed expressions must be checked for circular logic before
   /// initiating the CCF validation.

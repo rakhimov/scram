@@ -136,6 +136,10 @@ TEST(RiskAnalysisInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back(dir + "alpha_ccf_level_error.xml");
   incorrect_inputs.push_back(dir + "beta_ccf_level_error.xml");
   incorrect_inputs.push_back(dir + "mgl_ccf_level_error.xml");
+  incorrect_inputs.push_back(dir + "phi_ccf_wrong_sum.xml");
+  incorrect_inputs.push_back(dir + "ccf_wrong_distribution.xml");
+  incorrect_inputs.push_back(dir + "ccf_negative_factor.xml");
+  incorrect_inputs.push_back(dir + "ccf_more_factors_than_needed.xml");
   RiskAnalysis* ran;
   std::vector<std::string>::iterator it;
   for (it = ioerror_inputs.begin(); it != ioerror_inputs.end(); ++it) {

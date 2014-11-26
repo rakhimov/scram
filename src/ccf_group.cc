@@ -43,15 +43,18 @@ void CcfGroup::AddFactor(const ExpressionPtr& factor, int level) {
   factors_.push_back(std::make_pair(level, factor));
 }
 
+void CcfGroup::ValidateDistribution() {
+  if (distribution_->Min() < 0 || distribution_->Max() > 1) {
+    throw ValidationError("Distribution for " + name_ + " CCF group" +
+                          " has illegal values.");
+  }
+}
+
 void CcfGroup::Validate() {
   if (members_.size() < 2) {
     throw ValidationError(name_ + " CCF group must have at least 2 members.");
   }
 
-  if (distribution_->Min() < 0 || distribution_->Max() > 1) {
-    throw ValidationError("Distribution for " + name_ + " CCF group" +
-                          " has illegal values.");
-  }
   if (factors_.back().first > members_.size()) {
     throw ValidationError("The level of factors for " + name_ + " CCF group" +
                           " cannot be more than # of members.");
