@@ -10,19 +10,21 @@ Currently Low Hanging Fruits
 
 - `Issues on GitHub <https://github.com/rakhimov/scram/issues>`_
 
-- XML based analysis configuration input file. *High*
+- `Todo list in the code <https://rakhimov.github.io/scram/api/todo.html>`_
 
+- XML based analysis configuration input file. *High*
   * Schema
+  * Tests
 
 - XML based output file. *High*
-
   * Schema
+  * Tests
 
 - Minimal cut set input file as an alternative to a tree file. *Moderate*
 
 - Option to set the seed for Monte Carlo simulations. *Low*
 
-- Probability calculations only by explicit requests. *Moderate*
+- Option to run analysis without full basic events description. *Moderate*
 
 
 Major Enhancements and Capabilities
@@ -30,43 +32,38 @@ Major Enhancements and Capabilities
 
 - Boolean formula rewriting for fault trees. *High*
 
-- Incorporation of an event tree analysis. *Moderate*
-
-- Dynamic Fault Tree Analysis. *Moderate*
-
 - Incorporation of alignments. *Moderate*
-
     * Maintenance
     * Guaranteed Success/Failure
 
 - OpenPSA-like XML input format. *High*
-
   * Reduce tests for input format and parser.
   * Create Include feature.
-
     + Test for non-existent file, circular inclusion(direct, indirect).
-
   * Subtree Analysis of a Fault Tree.
-
-- Sensitivity analysis. *Moderate*
 
 - Binary Decision Diagram (BDD) based Algorithms. *High*
 
 - Zero-Suppressed BDD (ZBDD) based Algorithms. *High*
+
+- Sensitivity analysis. *Moderate*
+
+- Incorporation of an event tree analysis. *Moderate*
+
+- Dynamic Fault Tree Analysis. *Moderate*
 
 
 Minor Enhancements and Capabilities
 ===================================
 
 - OpenPSA MEF Support:
-
   * Nested formula for gates. *Moderate*
-
   * Expressions for basic events. *Moderate*
-
   * Include directive in input files to include other input files. *Low*
 
 - Improve fault tree generator. *Low*
+  * Advanced gates
+  * CCF groups
 
 - Create cut set generator. *Low*
 
@@ -76,9 +73,15 @@ GUI Development: Moderate Importance
 
 - Layout
 
-- Fault Tree Construction
+- Fault Tree Construction and Representation
 
-- Event Tree Construction
+- Description of events
+
+- Event Tree Construction and Representation
+
+- Analysis configuration
+
+- Running analyses
 
 - View of analysis results
 
@@ -109,7 +112,5 @@ Coding Specific
 - More tests for expressions. *Moderate*
 
 - Benchmark tests:
-
   * HIPPS
-
   * BSCU
