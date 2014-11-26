@@ -19,8 +19,9 @@ FaultTreeAnalysis::FaultTreeAnalysis(int limit_order)
     top_event_index_(-1),
     max_order_(0),
     num_gates_(0),
+    num_basic_events_(0),
     analysis_time_(0) {
-      // Check for right limit order.
+  // Check for the right limit order.
   if (limit_order < 1) {
     std::string msg = "The limit on the order of minimal cut sets "
                       "cannot be less than one.";
@@ -39,6 +40,9 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
   top_event_name_ = fault_tree->top_event()->orig_id();
   num_gates_ = fault_tree->inter_events().size() + 1;  // Include top event.
   basic_events_ = fault_tree->basic_events();
+  ccf_events_ = fault_tree->ccf_events();
+  /// @todo Must keep track of CCF introduced basic events.
+  num_basic_events_ = basic_events_.size();
 
   // Assign an index to each basic event, and populate relevant
   // databases.
@@ -87,9 +91,21 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
     ++j;
   }
 
+  std::map<std::string, int> ccf_basic_to_gates;
+  // Include CCF gates instead of basic events.
+  boost::unordered_map<std::string, BasicEventPtr>::const_iterator itc;
+  for (itc = fault_tree->ccf_events().begin();
+       itc != fault_tree->ccf_events().end(); ++itc) {
+    assert(itc->second->HasCcf());
+    int_to_inter.insert(std::make_pair(j, itc->second->ccf_gate()));
+    ccf_basic_to_gates.insert(std::make_pair(itc->first, j));
+    ++j;
+  }
+
   IndexedFaultTree* indexed_tree =
       new IndexedFaultTree(top_event_index_, limit_order_);
-  indexed_tree->InitiateIndexedFaultTree(int_to_inter, all_to_int_);
+  indexed_tree->InitiateIndexedFaultTree(int_to_inter, ccf_basic_to_gates,
+                                         all_to_int_);
   indexed_tree->PropagateConstants(true_house_events, false_house_events);
   indexed_tree->ProcessIndexedFaultTree(int_to_basic_.size());
   indexed_tree->FindMcs();

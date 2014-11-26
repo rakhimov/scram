@@ -9,7 +9,6 @@ features that will be introduced in future versions.
 
 Command-line Call of SCRAM by a User
 ====================================
-
 The user supplies input files and analysis configurations via command-line.
 Various types of analyses can be performed on the input files, for example,
 fault tree, even tree, Markov chain, etc. The user
@@ -42,6 +41,13 @@ Fault Tree Analysis
    the order of minimal cut sets, their probabilities. In addition,
    the contribution of each primary event is given in the output.
 
+Analysis with Common Cause Failure Groups
+=========================================
+#. Get description of basic events' dependent failures using CCF models.
+#. Incorporate CCF information into fault trees by creating new basic events.
+#. Perform requested analyses with the new basic events.
+#. Report the analysis results indicating the CCF events in square brackets.
+
 Uncertainty Analysis
 ====================
 
@@ -65,11 +71,8 @@ Event Tree Analysis *Not implemented*
 
 Future Additions
 ================
-#. Common-cause analysis.
-#. Importance analysis.
 #. Event tree analysis.
 #. Dynamic fault tree analysis.
-#. Markov analysis.
 
 
 General Information for Users

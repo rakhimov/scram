@@ -37,11 +37,21 @@ class FaultTree : public Element {
 
   /// Validates this tree's structure and events.
   /// Checks the tree for cyclicity.
-  /// Populates necessary primary event and gate container.
   /// @throws ValidationError if there are issues with this tree.
-  /// @note This is expensive function, but it must be called at least
+  /// @note This is an expensive function, but it must be called at least
   /// once after finilizing fault tree instantiation.
   void Validate();
+
+  /// Gathers information about the initialized fault tree. Databases
+  /// for events are manipulated to best reflect the state and structure
+  /// of the fault tree. This function must be called after validation.
+  /// This function must be called before any analysis is performed because
+  /// there would not be necessary information available for analysis like
+  /// primary events of this fault tree. Moreover, all the nodes of this
+  /// fault tree are expected to be defined fully and correctly.
+  /// @throws LogicError if the fault tree is not fully defined or some
+  ///                    information is mission.
+  void SetupForAnalysis();
 
   /// @returns The name of this tree.
   inline const std::string& name() { return name_; }
@@ -50,34 +60,42 @@ class FaultTree : public Element {
   inline GatePtr& top_event() { return top_event_; }
 
   /// @returns The container of intermediate events.
-  /// @warning Validate function must be called before this function.
+  /// @warning The tree must be validated and ready for analysis.
   inline const boost::unordered_map<std::string, GatePtr>& inter_events() {
     return inter_events_;
   }
 
   /// @returns The container of intermediate events that are defined implicitly
   ///          by traversing the tree instead of initiating AddGate() function.
-  /// @warning Validate function must be called before this function.
+  /// @warning The tree must be validated and ready for analysis.
   inline const boost::unordered_map<std::string, GatePtr>& implicit_gates() {
     return implicit_gates_;
   }
 
   /// @returns The container of primary events of this tree.
-  /// @warning Validate function must be called before this function.
+  /// @warning The tree must be validated and ready for analysis.
   inline const boost::unordered_map<std::string, PrimaryEventPtr>&
       primary_events() {
     return primary_events_;
   }
 
-  /// @returns The container of basic events of this tree.
-  /// @warning Validate function must be called before this function.
+  /// @returns The container of all basic events of this tree. This includes
+  ///          basic events created to represent common cause failure.
+  /// @warning The tree must be validated and ready for analysis.
   inline const boost::unordered_map<std::string, BasicEventPtr>&
       basic_events() {
     return basic_events_;
   }
 
+  /// @returns Basic events that are in some CCF groups.
+  /// @warning The tree must be validated and ready for analysis.
+  inline const boost::unordered_map<std::string, BasicEventPtr>&
+      ccf_events() {
+    return ccf_events_;
+  }
+
   /// @returns The container of house events of this tree.
-  /// @warning Validate function must be called before this function.
+  /// @warning The tree must be validated and ready for analysis.
   inline const boost::unordered_map<std::string, HouseEventPtr>&
       house_events() {
     return house_events_;
@@ -104,6 +122,10 @@ class FaultTree : public Element {
   /// @param[in] gate The gate to get primary events from.
   void GetPrimaryEvents(const GatePtr& gate);
 
+  /// Picks basic events created by CCF groups.
+  /// Populates the container of basic and primary events.
+  void GatherCcfBasicEvents();
+
   /// The name of this fault tree.
   std::string name_;
 
@@ -122,7 +144,12 @@ class FaultTree : public Element {
 
   /// Container for basic events of the tree.
   /// This container is filled implicitly by traversing the tree.
+  /// In addition, common cause failure basic events are included.
   boost::unordered_map<std::string, BasicEventPtr> basic_events_;
+
+  /// Container for basic events that are identified to be in some CCF group.
+  /// This basic events are not necessarily in the same CCF group.
+  boost::unordered_map<std::string, BasicEventPtr> ccf_events_;
 
   /// Container for house events of the tree.
   /// This container is filled implicitly by traversing the tree.

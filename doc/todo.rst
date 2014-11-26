@@ -20,6 +20,10 @@ Currently Low Hanging Fruits
 
 - Minimal cut set input file as an alternative to a tree file. *Moderate*
 
+- Option to set the seed for Monte Carlo simulations. *Low*
+
+- Probability calculations only by explicit requests. *Moderate*
+
 
 Major Enhancements and Capabilities
 ===================================
@@ -29,13 +33,6 @@ Major Enhancements and Capabilities
 - Incorporation of an event tree analysis. *Moderate*
 
 - Dynamic Fault Tree Analysis. *Moderate*
-
-- Incorporation of CCF. *High*
-
-    * Multiple Greek Letter system
-    * Alpha system
-    * Beta system
-    * Phi system
 
 - Incorporation of alignments. *Moderate*
 
@@ -72,8 +69,6 @@ Minor Enhancements and Capabilities
 - Improve fault tree generator. *Low*
 
 - Create cut set generator. *Low*
-
-- Uncertainty analysis numbers for basic events and parameters. *Moderate*
 
 
 GUI Development: Moderate Importance

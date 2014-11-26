@@ -29,7 +29,7 @@ class Expression {
   /// Validates the expression.
   /// This late validation is due to parameters that are defined late.
   /// @throws InvalidArgument if arguments are invalid for setup.
-  virtual void Validate() = 0;
+  virtual void Validate() {}
 
   /// @returns The mean value of this expression.
   virtual double Mean() = 0;
@@ -148,8 +148,6 @@ class MissionTime : public Expression {
     mission_time_ = time;
   }
 
-  void Validate() {}
-
   /// Sets the unit of this parameter.
   /// @param[in] unit A valid unit.
   inline void unit(const Units& unit) { unit_ = unit; }
@@ -166,19 +164,22 @@ class MissionTime : public Expression {
   Units unit_;
 };
 
-/// @class ConstantExpression
+/// @class 1.0 * ConstantExpression
 /// Indicates a constant value.
 class ConstantExpression : public Expression {
  public:
-  /// Constructor for integer and float values.
-  /// @param[in] val Any numerical value.
+  /// Constructor for float values.
+  /// @param[in] val Float numerical value.
   explicit ConstantExpression(double val) : value_(val) {}
+
+  /// Constructor for integer values.
+  /// @param[in] val Integer numerical value.
+  explicit ConstantExpression(int val) : value_(val) {}
 
   /// Constructor for boolean values.
   /// @param[in] val true for 1 and false for 0 value of this constant.
   explicit ConstantExpression(bool val) : value_(val ? 1 : 0) {}
 
-  void Validate() {}
   inline double Mean() { return value_; }
   inline double Sample() { return value_; }
   inline bool IsConstant() { return true; }
@@ -197,7 +198,7 @@ class ExponentialExpression : public Expression {
   /// @param[in] t Mission time in hours.
   ExponentialExpression(const ExpressionPtr& lambda, const ExpressionPtr& t)
       : lambda_(lambda),
-        time_(t) {}
+      time_(t) {}
 
   /// @throws InvalidArgument if failure rate or time is negative.
   void Validate();
@@ -250,16 +251,16 @@ class GlmExpression : public Expression {
   GlmExpression(const ExpressionPtr& gamma, const ExpressionPtr& lambda,
                 const ExpressionPtr& mu, const ExpressionPtr& t)
       : gamma_(gamma),
-        lambda_(lambda),
-        mu_(mu),
-        time_(t) {}
+      lambda_(lambda),
+      mu_(mu),
+      time_(t) {}
 
   void Validate();
 
   inline double Mean() {
     double r = lambda_->Mean() + mu_->Mean();
     return (lambda_->Mean() - (lambda_->Mean() - gamma_->Mean() * r) *
-                               std::exp(-r * time_->Mean())) / r;
+            std::exp(-r * time_->Mean())) / r;
   }
 
   /// Samples the underlying distributions.
@@ -316,9 +317,9 @@ class WeibullExpression : public Expression {
   WeibullExpression(const ExpressionPtr& alpha, const ExpressionPtr& beta,
                     const ExpressionPtr& t0, const ExpressionPtr& time)
       : alpha_(alpha),
-        beta_(beta),
-        t0_(t0),
-        time_(time) {}
+      beta_(beta),
+      t0_(t0),
+      time_(time) {}
 
   void Validate();
 
@@ -378,7 +379,7 @@ class UniformDeviate : public Expression {
   /// @param[in] max Maximum value of the distribution.
   UniformDeviate(const ExpressionPtr& min, const ExpressionPtr& max)
       : min_(min),
-        max_(max) {}
+      max_(max) {}
 
   /// @throws InvalidArgument if min value is more or equal to max value.
   void Validate();
@@ -416,7 +417,7 @@ class NormalDeviate : public Expression {
   /// @param[in] sigma The standard deviation of the distribution.
   NormalDeviate(const ExpressionPtr& mean, const ExpressionPtr& sigma)
       : mean_(mean),
-        sigma_(sigma) {}
+      sigma_(sigma) {}
 
   /// @throws InvalidArgument if sigma is negative or zero.
   void Validate();
@@ -464,8 +465,8 @@ class LogNormalDeviate : public Expression {
   LogNormalDeviate(const ExpressionPtr& mean, const ExpressionPtr& ef,
                    const ExpressionPtr& level)
       : mean_(mean),
-        ef_(ef),
-        level_(level) {}
+      ef_(ef),
+      level_(level) {}
 
   /// @throws InvalidArgument if (mean <= 0) or (ef <= 0) or (level != 0.95)
   void Validate();
@@ -514,7 +515,7 @@ class GammaDeviate : public Expression {
   /// @param[in] theta Scale parameter of Gamma distribution.
   GammaDeviate(const ExpressionPtr& k, const ExpressionPtr& theta)
       : k_(k),
-        theta_(theta) {}
+      theta_(theta) {}
 
   /// @throws InvalidArgument if (k <= 0) or (theta <= 0)
   void Validate();
@@ -559,7 +560,7 @@ class BetaDeviate : public Expression {
   /// @param[in] beta Beta shape parameter of Gamma distribution.
   BetaDeviate(const ExpressionPtr& alpha, const ExpressionPtr& beta)
       : alpha_(alpha),
-        beta_(beta) {}
+      beta_(beta) {}
 
   /// @throws InvalidArgument if (alpha <= 0) or (beta <= 0)
   void Validate();
@@ -648,7 +649,7 @@ class Histogram : public Expression {
   /// @throws InvalidArgument if the mean values are not strictly increasing.
   void CheckBoundaries(const std::vector<ExpressionPtr>& boundaries);
 
-    /// Checks if mean values of boundaries are non-negative.
+  /// Checks if mean values of boundaries are non-negative.
   /// @throws InvalidArgument if the mean values are negative.
   void CheckWeights(const std::vector<ExpressionPtr>& weights);
 
@@ -657,6 +658,365 @@ class Histogram : public Expression {
 
   /// Weights of intervals described by boundaries.
   std::vector<ExpressionPtr> weights_;
+};
+
+/// @class Neg
+/// This class for negation of numerical value or another expression.
+class Neg : public Expression {
+ public:
+  /// Construct a new expression that negates a given argument expression.
+  /// @param[in] expression The expression to be negated.
+  Neg(const ExpressionPtr& expression) : expression_(expression) {}
+
+  inline double Mean() { return -expression_->Mean(); }
+  inline double Sample() {
+    if (!Expression::sampled_) {
+      Expression::sampled_ = true;
+      Expression::sampled_value_ = -expression_->Sample();
+    }
+    return Expression::sampled_value_;
+  }
+  inline void Reset() {
+    Expression::sampled_ = false;
+    expression_->Reset();
+  }
+  inline bool IsConstant() { return expression_->IsConstant(); }
+  inline double Max() { return -expression_->Min(); }
+  inline double Min() { return -expression_->Max(); }
+
+ private:
+  /// Expression that is used for negation.
+  ExpressionPtr expression_;
+};
+
+/// @class Add
+/// This expression adds all the given expressions' values.
+class Add : public Expression {
+ public:
+  /// Construct a new expression that add given argument expressions.
+  /// @param[in] arguments The arguments of the addition equation.
+  /// @note It is assumed that arguments contain at least one element.
+  Add(const std::vector<ExpressionPtr>& arguments) : args_(arguments) {}
+
+  inline double Mean() {
+    assert(!args_.empty());
+    double mean = 0;
+    std::vector<ExpressionPtr>::iterator it;
+    for (it = args_.begin(); it != args_.end(); ++it) {
+      mean += (*it)->Mean();
+    }
+    return mean;
+  }
+  inline double Sample() {
+    assert(!args_.empty());
+    if (!Expression::sampled_) {
+      Expression::sampled_ = true;
+      Expression::sampled_value_ = 0;
+      std::vector<ExpressionPtr>::iterator it;
+      for (it = args_.begin(); it != args_.end(); ++it) {
+        Expression::sampled_value_ += (*it)->Sample();
+      }
+    }
+    return Expression::sampled_value_;
+  }
+  inline void Reset() {
+    assert(!args_.empty());
+    Expression::sampled_ = false;
+    std::vector<ExpressionPtr>::iterator it;
+    for (it = args_.begin(); it != args_.end(); ++it) {
+      (*it)->Reset();
+    }
+  }
+  inline bool IsConstant() {
+    std::vector<ExpressionPtr>::iterator it;
+    for (it = args_.begin(); it != args_.end(); ++it) {
+      if (!(*it)->IsConstant()) return false;
+    }
+    return true;
+  }
+  inline double Max() {
+    assert(!args_.empty());
+    double max = 0;
+    std::vector<ExpressionPtr>::iterator it;
+    for (it = args_.begin(); it != args_.end(); ++it) {
+      max += (*it)->Max();
+    }
+    return max;
+  }
+  inline double Min() {
+    assert(!args_.empty());
+    double min = 0;
+    std::vector<ExpressionPtr>::iterator it;
+    for (it = args_.begin(); it != args_.end(); ++it) {
+      min += (*it)->Min();
+    }
+    return min;
+  }
+
+ private:
+  /// Expressions that are used for addition.
+  std::vector<ExpressionPtr> args_;
+};
+
+/// @class Sub
+/// This expression performs subtraction operation.
+/// First expression minus the rest of the given expressions' values.
+class Sub : public Expression {
+ public:
+  /// Construct a new expression that subtracts given argument expressions
+  /// from the first argument expression.
+  /// @param[in] arguments The arguments for operation.
+  /// @note It is assumed that arguments contain at least one element.
+  Sub(const std::vector<ExpressionPtr>& arguments) : args_(arguments) {}
+
+  inline double Mean() {
+    assert(!args_.empty());
+    std::vector<ExpressionPtr>::iterator it = args_.begin();
+    double mean = (*it)->Mean();
+    for (++it; it != args_.end(); ++it) {
+      mean -= (*it)->Mean();
+    }
+    return mean;
+  }
+  inline double Sample() {
+    assert(!args_.empty());
+    if (!Expression::sampled_) {
+      Expression::sampled_ = true;
+      std::vector<ExpressionPtr>::iterator it = args_.begin();
+      Expression::sampled_value_ = (*it)->Sample();
+      for (++it; it != args_.end(); ++it) {
+        Expression::sampled_value_ -= (*it)->Sample();
+      }
+    }
+    return Expression::sampled_value_;
+  }
+  inline void Reset() {
+    assert(!args_.empty());
+    Expression::sampled_ = false;
+    std::vector<ExpressionPtr>::iterator it;
+    for (it = args_.begin(); it != args_.end(); ++it) {
+      (*it)->Reset();
+    }
+  }
+  inline bool IsConstant() {
+    assert(!args_.empty());
+    std::vector<ExpressionPtr>::iterator it;
+    for (it = args_.begin(); it != args_.end(); ++it) {
+      if (!(*it)->IsConstant()) return false;
+    }
+    return true;
+  }
+  inline double Max() {
+    assert(!args_.empty());
+    std::vector<ExpressionPtr>::iterator it = args_.begin();
+    double max = (*it)->Max();
+    for (++it; it != args_.end(); ++it) {
+      max -= (*it)->Min();
+    }
+    return max;
+  }
+  inline double Min() {
+    assert(!args_.empty());
+    std::vector<ExpressionPtr>::iterator it = args_.begin();
+    double min = (*it)->Min();
+    for (++it; it != args_.end(); ++it) {
+      min -= (*it)->Max();
+    }
+    return min;
+  }
+
+ private:
+  /// Expressions that are used for subtraction.
+  std::vector<ExpressionPtr> args_;
+};
+
+/// @class Mul
+/// This expression performs multiplication operation.
+class Mul : public Expression {
+ public:
+  /// Construct a new expression that multiplies given argument expressions.
+  /// @param[in] arguments The arguments for operation.
+  /// @note It is assumed that arguments contain at least one element.
+  Mul(const std::vector<ExpressionPtr>& arguments) : args_(arguments) {}
+
+  inline double Mean() {
+    assert(!args_.empty());
+    double mean = 1;
+    std::vector<ExpressionPtr>::iterator it;
+    for (it = args_.begin(); it != args_.end(); ++it) {
+      mean *= (*it)->Mean();
+    }
+    return mean;
+  }
+  inline double Sample() {
+    assert(!args_.empty());
+    if (!Expression::sampled_) {
+      Expression::sampled_ = true;
+      Expression::sampled_value_ = 1;
+      std::vector<ExpressionPtr>::iterator it;
+      for (it = args_.begin(); it != args_.end(); ++it) {
+        Expression::sampled_value_ *= (*it)->Sample();
+      }
+    }
+    return Expression::sampled_value_;
+  }
+  inline void Reset() {
+    assert(!args_.empty());
+    Expression::sampled_ = false;
+    std::vector<ExpressionPtr>::iterator it;
+    for (it = args_.begin(); it != args_.end(); ++it) {
+      (*it)->Reset();
+    }
+  }
+  inline bool IsConstant() {
+    assert(!args_.empty());
+    std::vector<ExpressionPtr>::iterator it;
+    for (it = args_.begin(); it != args_.end(); ++it) {
+      if (!(*it)->IsConstant()) return false;
+    }
+    return true;
+  }
+  /// Finds maximum product from the given arguments' minimum and maximum
+  /// values. Negative values may introduce sign cancellation.
+  /// @returns Maximum possible value of the product.
+  inline double Max() {
+    assert(!args_.empty());
+    std::vector<ExpressionPtr>::iterator it = args_.begin();
+    double max = (*it)->Max();  // Maximum possible product.
+    double min = (*it)->Min();  // Minimum possible product.
+    for (++it; it != args_.end(); ++it) {
+      double mult_max = (*it)->Max();
+      double mult_min = (*it)->Min();
+      double max_max = max * mult_max;
+      double max_min = max * mult_min;
+      double min_max = min * mult_max;
+      double min_min = min * mult_min;
+      max = std::max(std::max(max_max, max_min), std::max(min_max, min_min));
+      min = std::min(std::min(max_max, max_min), std::min(min_max, min_min));
+    }
+    return max;
+  }
+  /// Finds minimum product from the given arguments' minimum and maximum
+  /// values. Negative values may introduce sign cancellation.
+  /// @returns Minimum possible value of the product.
+  inline double Min() {
+    assert(!args_.empty());
+    std::vector<ExpressionPtr>::iterator it = args_.begin();
+    double max = (*it)->Max();  // Maximum possible product.
+    double min = (*it)->Min();  // Minimum possible product.
+    for (++it; it != args_.end(); ++it) {
+      double mult_max = (*it)->Max();
+      double mult_min = (*it)->Min();
+      double max_max = max * mult_max;
+      double max_min = max * mult_min;
+      double min_max = min * mult_max;
+      double min_min = min * mult_min;
+      max = std::max(std::max(max_max, max_min), std::max(min_max, min_min));
+      min = std::min(std::min(max_max, max_min), std::min(min_max, min_min));
+    }
+    return min;
+  }
+
+ private:
+  /// Expressions for operation.
+  std::vector<ExpressionPtr> args_;
+};
+
+/// @class Div
+/// This expression performs division operation.
+class Div : public Expression {
+ public:
+  /// Construct a new expression that divides the first given argument
+  /// by the rest of argument expressions.
+  /// @param[in] arguments The arguments for operation.
+  /// @note It is assumed that arguments contain at least one element.
+  ///       No arguments except the first should be 0. The bevaior may be
+  ///       undefined if the value is 0 for division.
+  Div(const std::vector<ExpressionPtr>& arguments) : args_(arguments) {}
+
+  inline double Mean() {
+    assert(!args_.empty());
+    std::vector<ExpressionPtr>::iterator it = args_.begin();
+    double mean = (*it)->Mean();
+    for (++it; it != args_.end(); ++it) {
+      mean /= (*it)->Mean();
+    }
+    return mean;
+  }
+  inline double Sample() {
+    assert(!args_.empty());
+    if (!Expression::sampled_) {
+      Expression::sampled_ = true;
+      std::vector<ExpressionPtr>::iterator it = args_.begin();
+      Expression::sampled_value_ = (*it)->Sample();
+      for (++it; it != args_.end(); ++it) {
+        Expression::sampled_value_ /= (*it)->Sample();
+      }
+    }
+    return Expression::sampled_value_;
+  }
+  inline void Reset() {
+    assert(!args_.empty());
+    Expression::sampled_ = false;
+    std::vector<ExpressionPtr>::iterator it;
+    for (it = args_.begin(); it != args_.end(); ++it) {
+      (*it)->Reset();
+    }
+  }
+  inline bool IsConstant() {
+    assert(!args_.empty());
+    std::vector<ExpressionPtr>::iterator it;
+    for (it = args_.begin(); it != args_.end(); ++it) {
+      if (!(*it)->IsConstant()) return false;
+    }
+    return true;
+  }
+  /// Finds maximum results of division of the given arguments'
+  /// minimum and maximum values.
+  /// Negative values may introduce sign cancellation.
+  /// @returns Maximum value for division of arguments.
+  inline double Max() {
+    assert(!args_.empty());
+    std::vector<ExpressionPtr>::iterator it = args_.begin();
+    double max = (*it)->Max();  // Maximum possible result.
+    double min = (*it)->Min();  // Minimum possible result.
+    for (++it; it != args_.end(); ++it) {
+      double mult_max = (*it)->Max();
+      double mult_min = (*it)->Min();
+      double max_max = max / mult_max;
+      double max_min = max / mult_min;
+      double min_max = min / mult_max;
+      double min_min = min / mult_min;
+      max = std::max(std::max(max_max, max_min), std::max(min_max, min_min));
+      min = std::min(std::min(max_max, max_min), std::min(min_max, min_min));
+    }
+    return max;
+  }
+  /// Finds minimum results of division of the given arguments'
+  /// minimum and maximum values.
+  /// Negative values may introduce sign cancellation.
+  /// @returns Minimum value for division of arguments.
+  inline double Min() {
+    assert(!args_.empty());
+    std::vector<ExpressionPtr>::iterator it = args_.begin();
+    double max = (*it)->Max();  // Maximum possible result.
+    double min = (*it)->Min();  // Minimum possible result.
+    for (++it; it != args_.end(); ++it) {
+      double mult_max = (*it)->Max();
+      double mult_min = (*it)->Min();
+      double max_max = max / mult_max;
+      double max_min = max / mult_min;
+      double min_max = min / mult_max;
+      double min_min = min / mult_min;
+      max = std::max(std::max(max_max, max_min), std::max(min_max, min_min));
+      min = std::min(std::min(max_max, max_min), std::min(min_max, min_min));
+    }
+    return min;
+  }
+
+ private:
+  /// Expressions for operation.
+  std::vector<ExpressionPtr> args_;
 };
 
 }  // namespace scram

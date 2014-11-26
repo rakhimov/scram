@@ -27,6 +27,7 @@ namespace scram {
 
 class Element;
 class FaultTree;
+class CcfGroup;
 
 /// @class RiskAnalysis
 /// Main system that performs analyses.
@@ -101,6 +102,7 @@ class RiskAnalysis {
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
   typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
   typedef boost::shared_ptr<FaultTree> FaultTreePtr;
+  typedef boost::shared_ptr<CcfGroup> CcfGroupPtr;
   typedef boost::shared_ptr<Expression> ExpressionPtr;
   typedef boost::shared_ptr<Parameter> ParameterPtr;
   typedef boost::shared_ptr<FaultTreeAnalysis> FaultTreeAnalysisPtr;
@@ -228,6 +230,26 @@ class RiskAnalysis {
   /// @param[in] model_data XML node with model data description.
   void ProcessModelData(const xmlpp::Element* model_data);
 
+  /// Defines a common cause failure group for the analysis.
+  /// @param[in] ccf_node XML element defining CCF group.
+  void DefineCcfGroup(const xmlpp::Element* ccf_node);
+
+  /// Processes common cause failure group members as defined basic events.
+  /// @param[in] members_node XML element containing all members.
+  /// @param[in,out] ccf_group CCF group of the given members.
+  /// @throws ValidationError if members are redefined, or there are other
+  ///                         setup issues with the CCF group.
+  void ProcessCcfMembers(const xmlpp::Element* members_node,
+                         const CcfGroupPtr& ccf_group);
+
+  /// Attaches factors to a given common cause failure group.
+  /// @param[in] factors_node XML element containing all factors.
+  /// @param[in] model Model name for factor level detection.
+  /// @param[in,out] ccf_group CCF group to be defined by the given factors.
+  void ProcessCcfFactors(const xmlpp::Element* factors_node,
+                         std::string model,
+                         const CcfGroupPtr& ccf_group);
+
   /// Validates if the initialization of the analysis is successful.
   /// This validation process also generates optional warnings.
   /// @throws ValidationError if the initialization contains mistakes.
@@ -271,6 +293,13 @@ class RiskAnalysis {
   /// as paramters and basic events.
   /// @throws ValidationError if any problems detected with expressions.
   void ValidateExpressions();
+
+  /// Applies the input information to set up for future analysis.
+  /// This step is crucial to get correct fault tree structures and
+  /// basic events with correct expresions.
+  /// Meta-logical layer of analysis, such as CCF groups and substitutions,
+  /// is applied to analysis.
+  void SetupForAnalysis();
 
   /// Provides graphing instructions for each fault tree initialized in
   /// the analysis.
@@ -330,6 +359,9 @@ class RiskAnalysis {
 
   /// A collection of fault trees for analysis.
   std::map<std::string, FaultTreePtr> fault_trees_;
+
+  /// A collection of common cause failure groups.
+  std::map<std::string, CcfGroupPtr> ccf_groups_;
 
   /// Fault tree analyses that are performed.
   std::vector<FaultTreeAnalysisPtr> ftas_;

@@ -15,6 +15,7 @@
 #include <schema.h>  // For static building.
 #endif
 
+#include "ccf_group.h"
 #include "element.h"
 #include "env.h"
 #include "error.h"
@@ -111,6 +112,9 @@ void RiskAnalysis::ProcessInputFiles(
 
   // Check if the initialization is successful.
   RiskAnalysis::ValidateInitialization();
+
+  // Perform setup for analysis using configurations from the input files.
+  RiskAnalysis::SetupForAnalysis();
 }
 
 void RiskAnalysis::GraphingInstructions(std::string output) {
@@ -197,11 +201,14 @@ void RiskAnalysis::ProcessInputFile(std::string xml_file) {
 
     std::string name = element->get_name();
     if (name == "define-fault-tree") {
-      // Handle the fault tree initialization.
       RiskAnalysis::DefineFaultTree(element);
+
+    } else if (name == "define-CCF-group") {
+      RiskAnalysis::DefineCcfGroup(element);
+
     } else if (name == "model-data") {
-      // Handle the data.
       RiskAnalysis::ProcessModelData(element);
+
     } else {
       // Not yet capable of handling other analysis.
       throw(ValidationError("Cannot handle '" + name + "'"));
@@ -265,8 +272,7 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
       tbd_house_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << gate_node->get_line() << ":\n";
-    msg << "The id " << orig_id
-        << " is already assigned to a primary event.";
+    msg << "The id " << orig_id << " is already assigned to a primary event.";
     throw ValidationError(msg.str());
   }
 
@@ -413,15 +419,13 @@ void RiskAnalysis::ProcessFormulaBasicEvent(const xmlpp::Element* event,
   if (gates_.count(id) || tbd_gates_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event->get_line() << ":\n";
-    msg << "The id " << orig_id
-        << " is already assigned to a gate.";
+    msg << "The id " << orig_id << " is already assigned to a gate.";
     throw ValidationError(msg.str());
   }
   if (tbd_house_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event->get_line() << ":\n";
-    msg << "The id " << orig_id
-        << " is already used by a house event.";
+    msg << "The id " << orig_id << " is already used by a house event.";
     throw ValidationError(msg.str());
   }
   if (primary_events_.count(id)) {
@@ -429,8 +433,7 @@ void RiskAnalysis::ProcessFormulaBasicEvent(const xmlpp::Element* event,
     if (boost::dynamic_pointer_cast<BasicEvent>(child) == 0) {
       std::stringstream msg;
       msg << "Line " << event->get_line() << ":\n";
-      msg << "The id " << orig_id
-          << " is already assigned to a house event.";
+      msg << "The id " << orig_id << " is already assigned to a house event.";
       throw ValidationError(msg.str());
     }
   } else if (tbd_basic_events_.count(id)) {
@@ -452,15 +455,13 @@ void RiskAnalysis::ProcessFormulaHouseEvent(const xmlpp::Element* event,
   if (gates_.count(id) || tbd_gates_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event->get_line() << ":\n";
-    msg << "The id " << orig_id
-        << " is already assigned to a gate.";
+    msg << "The id " << orig_id << " is already assigned to a gate.";
     throw ValidationError(msg.str());
   }
   if (tbd_basic_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event->get_line() << ":\n";
-    msg << "The id " << orig_id
-        << " is already used by a basic event.";
+    msg << "The id " << orig_id << " is already used by a basic event.";
     throw ValidationError(msg.str());
   }
   if (primary_events_.count(id)) {
@@ -468,8 +469,7 @@ void RiskAnalysis::ProcessFormulaHouseEvent(const xmlpp::Element* event,
     if (boost::dynamic_pointer_cast<HouseEvent>(child) == 0) {
       std::stringstream msg;
       msg << "Line " << event->get_line() << ":\n";
-      msg << "The id " << orig_id
-          << " is already assigned to a basic event.";
+      msg << "The id " << orig_id << " is already assigned to a basic event.";
       throw ValidationError(msg.str());
     }
   } else if (tbd_house_events_.count(id)) {
@@ -492,8 +492,7 @@ void RiskAnalysis::ProcessFormulaGate(const xmlpp::Element* event,
       tbd_house_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event->get_line() << ":\n";
-    msg << "The id " << orig_id
-        << " is already assigned to a primary event.";
+    msg << "The id " << orig_id << " is already assigned to a primary event.";
     throw ValidationError(msg.str());
   }
   if (gates_.count(id)) {
@@ -518,22 +517,19 @@ void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node) {
   if (gates_.count(id) || tbd_gates_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << "The id " << orig_id
-        << " is already assigned to a gate.";
+    msg << "The id " << orig_id << " is already assigned to a gate.";
     throw ValidationError(msg.str());
   }
   if (primary_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << "The id " << orig_id
-        << " is doubly defined.";
+    msg << "The id " << orig_id << " is doubly defined.";
     throw ValidationError(msg.str());
   }
   if (tbd_house_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << "The id " << orig_id
-        << " is already used by a house event.";
+    msg << "The id " << orig_id << " is already used by a house event.";
     throw ValidationError(msg.str());
   }
 
@@ -567,8 +563,7 @@ void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node) {
   } else {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << "The " << orig_id
-        << " basic event does not have an expression.";
+    msg << "The " << orig_id << " basic event does not have an expression.";
     throw ValidationError(msg.str());
   }
 
@@ -584,22 +579,19 @@ void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node) {
   if (gates_.count(id) || tbd_gates_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << "The id " << orig_id
-        << " is already assigned to a gate.";
+    msg << "The id " << orig_id << " is already assigned to a gate.";
     throw ValidationError(msg.str());
   }
   if (primary_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << "The id " << orig_id
-        << " is doubly defined.";
+    msg << "The id " << orig_id << " is doubly defined.";
     throw ValidationError(msg.str());
   }
   if (tbd_basic_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << "The id " << orig_id
-        << " is already used by a basic event.";
+    msg << "The id " << orig_id << " is already used by a basic event.";
     throw ValidationError(msg.str());
   }
   // Only boolean for now.
@@ -1012,6 +1004,9 @@ void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
 
     } else if (name == "define-parameter") {
       RiskAnalysis::DefineParameter(element);
+
+    } else if (name == "define-CCF-group") {
+      RiskAnalysis::DefineCcfGroup(element);
     }
   }
 }
@@ -1057,6 +1052,175 @@ void RiskAnalysis::ValidateInitialization() {
   }
 }
 
+void RiskAnalysis::DefineCcfGroup(const xmlpp::Element* ccf_node) {
+  std::string name = ccf_node->get_attribute_value("name");
+  std::string id = name;
+  boost::to_lower(id);
+
+  if (ccf_groups_.count(id)) {
+    std::stringstream msg;
+    msg << "Line " << ccf_node->get_line() << ":\n";
+    msg << "The CCF group " << name << " is already defined.";
+    throw ValidationError(msg.str());
+  }
+  std::string model = ccf_node->get_attribute_value("model");
+  assert(model == "beta-factor" || model == "alpha-factor" ||
+         model == "MGL" || model == "phi-factor");
+
+  CcfGroupPtr ccf_group;
+  if (model == "beta-factor") {
+    ccf_group = CcfGroupPtr(new BetaFactorModel(name));
+
+  } else if (model == "MGL") {
+    ccf_group = CcfGroupPtr(new MglModel(name));
+
+  } else if (model == "alpha-factor") {
+    ccf_group = CcfGroupPtr(new AlphaFactorModel(name));
+
+  } else if (model == "phi-factor") {
+    ccf_group = CcfGroupPtr(new PhiFactorModel(name));
+  }
+
+  ccf_groups_.insert(std::make_pair(id, ccf_group));
+
+  if (!prob_requested_) prob_requested_ = true;
+
+  RiskAnalysis::AttachLabelAndAttributes(ccf_node, ccf_group);
+
+  xmlpp::NodeSet children = ccf_node->find("./*");
+  xmlpp::NodeSet::iterator it;
+  for (it = children.begin(); it != children.end(); ++it) {
+    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
+
+    assert(element);
+    std::string name = element->get_name();
+
+    if (name == "members") {
+      RiskAnalysis::ProcessCcfMembers(element, ccf_group);
+
+    } else if (name == "distribution") {
+      assert(element->find("./*").size() == 1);
+      const xmlpp::Element* expr_node =
+          dynamic_cast<const xmlpp::Element*>(*element->find("./*").begin());
+      ExpressionPtr expression;
+      RiskAnalysis::GetExpression(expr_node, expression);
+      ccf_group->AddDistribution(expression);
+
+    } else if (name == "factor") {
+      // Checking the level for one factor input.
+      std::string level = element->get_attribute_value("level");
+      boost::trim(level);
+      if ((level != "") && (level != "2")) {
+        std::stringstream msg;
+        msg << "Line " << element->get_line() << ":\n";
+        msg << "The CCF group " << name
+            << " level number is not as expected for one factor model."
+            << " The expected level is 2.";
+        throw ValidationError(msg.str());
+      }
+      assert(element->find("./*").size() == 1);
+      const xmlpp::Element* expr_node =
+          dynamic_cast<const xmlpp::Element*>(*element->find("./*").begin());
+      ExpressionPtr expression;
+      RiskAnalysis::GetExpression(expr_node, expression);
+      ccf_group->AddFactor(expression, 2);
+
+    } else if (name == "factors") {
+      RiskAnalysis::ProcessCcfFactors(element, model, ccf_group);
+    }
+  }
+}
+
+void RiskAnalysis::ProcessCcfMembers(const xmlpp::Element* members_node,
+                                     const CcfGroupPtr& ccf_group) {
+  xmlpp::NodeSet children = members_node->find("./*");
+  assert(!children.empty());
+  xmlpp::NodeSet::iterator it;
+  for (it = children.begin(); it != children.end(); ++it) {
+    const xmlpp::Element* event_node =
+        dynamic_cast<const xmlpp::Element*>(*it);
+    assert(event_node);
+    assert("basic-event" == event_node->get_name());
+    std::string orig_id = event_node->get_attribute_value("name");
+    boost::trim(orig_id);
+    std::string id = orig_id;
+    boost::to_lower(id);
+    // Detect name clashes.
+    if (gates_.count(id) || tbd_gates_.count(id)) {
+      std::stringstream msg;
+      msg << "Line " << event_node->get_line() << ":\n";
+      msg << "The id " << orig_id << " is already assigned to a gate.";
+      throw ValidationError(msg.str());
+    }
+    if (primary_events_.count(id)) {
+      std::stringstream msg;
+      msg << "Line " << event_node->get_line() << ":\n";
+      msg << "The id " << orig_id << " is doubly defined.";
+      throw ValidationError(msg.str());
+    }
+    if (tbd_house_events_.count(id)) {
+      std::stringstream msg;
+      msg << "Line " << event_node->get_line() << ":\n";
+      msg << "The id " << orig_id << " is already used by a house event.";
+      throw ValidationError(msg.str());
+    }
+
+    BasicEventPtr basic_event;
+    if (tbd_basic_events_.count(id)) {
+      basic_event = tbd_basic_events_.find(id)->second;
+      primary_events_.insert(std::make_pair(id, basic_event));
+      basic_events_.insert(std::make_pair(id, basic_event));
+      tbd_basic_events_.erase(id);
+
+    } else {
+      basic_event = BasicEventPtr(new BasicEvent(id));
+      basic_event->orig_id(orig_id);
+      primary_events_.insert(std::make_pair(id, basic_event));
+      basic_events_.insert(std::make_pair(id, basic_event));
+      RiskAnalysis::UpdateIfLateEvent(basic_event);
+    }
+    ccf_group->AddMember(basic_event);
+  }
+}
+
+void RiskAnalysis::ProcessCcfFactors(const xmlpp::Element* factors_node,
+                                     std::string model,
+                                     const CcfGroupPtr& ccf_group) {
+  xmlpp::NodeSet children = factors_node->find("./*");
+  assert(!children.empty());
+  // To keep track of CCF group factor levels.
+  /// @todo Get rid of this hackish way of checking for the CCF levels.
+  int current_level = 2;
+  if (model == "phi-factor" || model == "alpha-factor") current_level = 1;
+  xmlpp::NodeSet::iterator it;
+  for (it = children.begin(); it != children.end(); ++it) {
+    const xmlpp::Element* factor_node =
+        dynamic_cast<const xmlpp::Element*>(*it);
+    assert(factor_node);
+    // Checking the level for one factor input.
+    std::string level = factor_node->get_attribute_value("level");
+    boost::trim(level);
+    if (level != "") {
+      int level_num = boost::lexical_cast<int>(level);
+      if (level_num != current_level) {
+        std::stringstream msg;
+        msg << "Line " << factor_node->get_line() << ":\n";
+        msg << "The CCF group " << ccf_group->name()
+            << " level number is not as expected."
+            << " The expected level is " << current_level << ".";
+        throw ValidationError(msg.str());
+      }
+    }
+    assert(factor_node->find("./*").size() == 1);
+    const xmlpp::Element* expr_node =
+        dynamic_cast<const xmlpp::Element*>(*factor_node->find("./*").begin());
+    ExpressionPtr expression;
+    RiskAnalysis::GetExpression(expr_node, expression);
+    ccf_group->AddFactor(expression, current_level);
+    ++current_level;
+  }
+}
+
 void RiskAnalysis::CheckFirstLayer() {
   std::stringstream error_messages;
   // Checking uninitialized gates.
@@ -1092,6 +1256,13 @@ void RiskAnalysis::CheckSecondLayer() {
   if (!fault_trees_.empty()) {
     std::map<std::string, FaultTreePtr>::iterator it;
     for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
+      it->second->Validate();
+    }
+  }
+
+  if (!ccf_groups_.empty()) {
+    std::map<std::string, CcfGroupPtr>::iterator it;
+    for (it = ccf_groups_.begin(); it != ccf_groups_.end(); ++it) {
       it->second->Validate();
     }
   }
@@ -1144,8 +1315,7 @@ std::string RiskAnalysis::CheckGate(const GatePtr& event) {
   if (two_or_more.count(gate)) {
     if (size < 2) {
       boost::to_upper(gate);
-      msg << event->orig_id() << " : " << gate
-          << " gate must have 2 or more "
+      msg << event->orig_id() << " : " << gate << " gate must have 2 or more "
           << "children.\n";
     }
   } else if (single.count(gate)) {
@@ -1294,6 +1464,23 @@ void RiskAnalysis::ValidateExpressions() {
     if (msg.str() != "") {
       std::string head = "Invalid probabilities detected:\n";
       throw ValidationError(head + msg.str());
+    }
+  }
+}
+
+void RiskAnalysis::SetupForAnalysis() {
+  // CCF groups.
+  if (!ccf_groups_.empty()) {
+    std::map<std::string, CcfGroupPtr>::iterator it;
+    for (it = ccf_groups_.begin(); it != ccf_groups_.end(); ++it) {
+      it->second->ApplyModel();
+    }
+  }
+  // Configure fault trees.
+  if (!fault_trees_.empty()) {
+    std::map<std::string, FaultTreePtr>::iterator it;
+    for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
+      it->second->SetupForAnalysis();
     }
   }
 }

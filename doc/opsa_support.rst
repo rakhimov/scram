@@ -69,6 +69,8 @@ Currently Supported OpenPSA MEF Features
 
 - Model data
 
+- Common Cause Failure Groups (beta-factor, MGL, alpha-factor, phi-factor)
+
 
 ***************************
 Deviations from OpenPSA MEF
@@ -83,3 +85,4 @@ Deviations from OpenPSA MEF
 - The correct number of a gate's children is required.
 - Unused primary events are ignored but reported as warning.
 - Double definition of events is considered an error instead of warning.
+- Common cause model levels for factors must be strictly sequential.

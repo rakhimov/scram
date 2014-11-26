@@ -25,11 +25,13 @@ class Event : public Element {
   /// @param[in] orig_id The identifying name with caps preserved.
   explicit Event(std::string id, std::string orig_id = "");
 
+  virtual ~Event() {}
+
   /// @returns The id that is set upon the construction of this event.
-  inline const std::string& id() { return id_; }
+  inline const std::string& id() const { return id_; }
 
   /// @returns The original id with capitalizations.
-  inline const std::string& orig_id() { return orig_id_; }
+  inline const std::string& orig_id() const { return orig_id_; }
 
   /// Sets the original id name with capitalizations preserved.
   /// @param[in] id_with_caps The id name with capitalizations.
@@ -43,8 +45,6 @@ class Event : public Element {
   /// @returns All the parents of this gate event.
   /// @throws LogicError if there are no parents for this gate event.
   const std::map<std::string, boost::shared_ptr<Gate> >& parents();
-
-  virtual ~Event() {}
 
  private:
   /// Id name of a event. It is in lower case.
@@ -143,6 +143,7 @@ class BasicEvent: public PrimaryEvent {
   /// Sets the expression of this basic event.
   /// @param[in] expression The expression to describe this event.
   inline void expression(const ExpressionPtr& expression) {
+    assert(!expression_);
     expression_ = expression;
   }
 
@@ -179,10 +180,34 @@ class BasicEvent: public PrimaryEvent {
     }
   }
 
+  /// Indicates if this basic event has been set to be in a CCF group.
+  /// @returns true if in a CCF group.
+  /// @returns false otherwise.
+  bool HasCcf() { return ccf_gate_ ? true : false; }
+
+  /// Sets the common cause failure group gate that can represent this basic
+  /// event in analysis with common cause information. This information is
+  /// expected to be provided by CCF group application.
+  /// @param[in] gate CCF group gate.
+  void ccf_gate(const boost::shared_ptr<Gate>& gate) {
+    assert(!ccf_gate_);
+    ccf_gate_ = gate;
+  }
+
+  /// @returns CCF group gate representing this basic event.
+  const boost::shared_ptr<Gate>& ccf_gate() {
+    assert(ccf_gate_);
+    return ccf_gate_;
+  }
+
  private:
   /// Expression that describes this basic event and provides numerical
   /// values for probability calculations.
   ExpressionPtr expression_;
+
+  /// If this basic event is in a common cause group, CCF gate can serve
+  /// as a replacement for the basic event for common cause analysis.
+  boost::shared_ptr<Gate> ccf_gate_;
 };
 
 /// @class HouseEvent

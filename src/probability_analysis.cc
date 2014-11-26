@@ -164,22 +164,24 @@ void ProbabilityAnalysis::IndexMcs(
       std::vector<std::string> names;
       boost::split(names, *it_set, boost::is_any_of(" "),
                    boost::token_compress_on);
-      assert(names.size() == 1 || names.size() == 2);
-      if (names.size() == 1) {
-        assert(basic_to_int_.count(names[0]));
-        mcs_with_indices.insert(mcs_with_indices.end(),
-                                basic_to_int_.find(names[0])->second);
-        mcs_basic_events_.insert(basic_to_int_.find(names[0])->second);
-      } else {
+      assert(names.size() >= 1);
+      if (names[0] == "not") {
+        std::string comp_name = *it_set;
+        boost::replace_first(comp_name, "not ", "");
         // This must be a complement of an event.
-        assert(names[0] == "not");
-        assert(basic_to_int_.count(names[1]));
+        assert(basic_to_int_.count(comp_name));
 
         if (coherent_) coherent_ = false;  // Detected non-coherency.
 
         mcs_with_indices.insert(mcs_with_indices.begin(),
-                                -basic_to_int_.find(names[1])->second);
-        mcs_basic_events_.insert(basic_to_int_.find(names[1])->second);
+                                -basic_to_int_.find(comp_name)->second);
+        mcs_basic_events_.insert(basic_to_int_.find(comp_name)->second);
+
+      } else {
+        assert(basic_to_int_.count(*it_set));
+        mcs_with_indices.insert(mcs_with_indices.end(),
+                                basic_to_int_.find(*it_set)->second);
+        mcs_basic_events_.insert(basic_to_int_.find(*it_set)->second);
       }
     }
     imcs_.push_back(mcs_with_indices);
