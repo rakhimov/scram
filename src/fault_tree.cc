@@ -10,7 +10,10 @@
 
 namespace scram {
 
-FaultTree::FaultTree(std::string name) : name_(name), top_event_id_("") {}
+FaultTree::FaultTree(std::string name)
+    : name_(name),
+      num_basic_events_(0),
+      top_event_id_("") {}
 
 void FaultTree::AddGate(const GatePtr& gate) {
   if (top_event_id_ == "") {
@@ -71,6 +74,9 @@ void FaultTree::SetupForAnalysis() {
   house_events_.clear();
   // Gather all primary events belonging to this tree.
   FaultTree::GatherPrimaryEvents();
+
+  // Recording number of original basic events before putting new CCF events.
+  num_basic_events_ = basic_events_.size();
 
   // Gather CCF generated basic events.
   FaultTree::GatherCcfBasicEvents();

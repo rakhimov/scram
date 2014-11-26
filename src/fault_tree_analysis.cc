@@ -40,9 +40,7 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
   top_event_name_ = fault_tree->top_event()->orig_id();
   num_gates_ = fault_tree->inter_events().size() + 1;  // Include top event.
   basic_events_ = fault_tree->basic_events();
-  ccf_events_ = fault_tree->ccf_events();
-  /// @todo Must keep track of CCF introduced basic events.
-  num_basic_events_ = basic_events_.size();
+  num_basic_events_ = fault_tree->num_basic_events();
 
   // Assign an index to each basic event, and populate relevant
   // databases.

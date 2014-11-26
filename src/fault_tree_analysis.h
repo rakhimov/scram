@@ -84,9 +84,6 @@ class FaultTreeAnalysis {
   /// Container for basic events.
   boost::unordered_map<std::string, BasicEventPtr> basic_events_;
 
-  /// Basic events in CCF groups.
-  boost::unordered_map<std::string, BasicEventPtr> ccf_events_;
-
   /// Container for minimal cut sets.
   std::set< std::set<std::string> > min_cut_sets_;
 
