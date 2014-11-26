@@ -11,7 +11,7 @@
     </div>
 
 SCRAM
-========
+=====
 
 SCRAM: "Simplified Command-line Risk Analysis Multi-tool"
 
@@ -20,25 +20,29 @@ probabilistic risk analysis tool to perform fault tree analysis,
 event tree analysis, uncertainty analysis, importance analysis,
 common-cause analysis, and other probabilistic analysis types.
 
-This project currently contains a static fault tree analysis, probability
-calculations with importance analysis, uncertainty analysis with Monte Carlo
-simulations, fault tree generator, and fault tree graphing with
-Graphviz Dot tool. SCRAM supports non-coherent analyses containing NOT
-logic or complements.
-
 .. _`GPL license`:
     https://github.com/rakhimov/scram/blob/master/LICENSE
 
-Installation:
--------------
+Implemented Features
+--------------------
+- Static fault tree analysis
+- Non-coherent analysis containing NOT logic or complements
+- Analysis with common-cause failure models
+- Probability calculations with importance analysis
+- Uncertainty analysis with Monte Carlo simulations
+- Fault tree generator
+- Fault tree graphing with Graphviz Dot tool.
+
+Installation
+------------
 
 .. toctree::
     :maxdepth: 2
 
     doc/installation.rst
 
-Documentation:
---------------
+Documentation
+-------------
 
 .. toctree::
     :maxdepth: 1
@@ -61,8 +65,8 @@ Documentation:
     doc/xml_comments
     doc/todo
 
-Theoretical Background:
------------------------
+Theoretical Background
+----------------------
 
 .. toctree::
     :maxdepth: 2

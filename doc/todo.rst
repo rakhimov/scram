@@ -13,10 +13,12 @@ Currently Low Hanging Fruits
 - `Todo list in the code <https://rakhimov.github.io/scram/api/todo.html>`_
 
 - XML based analysis configuration input file. *High*
+
   * Schema
   * Tests
 
 - XML based output file. *High*
+
   * Schema
   * Tests
 
@@ -33,13 +35,17 @@ Major Enhancements and Capabilities
 - Boolean formula rewriting for fault trees. *High*
 
 - Incorporation of alignments. *Moderate*
+
     * Maintenance
     * Guaranteed Success/Failure
 
 - OpenPSA-like XML input format. *High*
+
   * Reduce tests for input format and parser.
   * Create Include feature.
+
     + Test for non-existent file, circular inclusion(direct, indirect).
+
   * Subtree Analysis of a Fault Tree.
 
 - Binary Decision Diagram (BDD) based Algorithms. *High*
@@ -57,11 +63,13 @@ Minor Enhancements and Capabilities
 ===================================
 
 - OpenPSA MEF Support:
+
   * Nested formula for gates. *Moderate*
   * Expressions for basic events. *Moderate*
   * Include directive in input files to include other input files. *Low*
 
 - Improve fault tree generator. *Low*
+
   * Advanced gates
   * CCF groups
 
@@ -112,5 +120,6 @@ Coding Specific
 - More tests for expressions. *Moderate*
 
 - Benchmark tests:
+
   * HIPPS
   * BSCU
