@@ -194,10 +194,13 @@ void MglModel::ApplyModel() {
   std::vector<ExpressionPtr> probabilities;  // The level is position + 1.
   for (int i = 0; i < max_level; ++i) {
     int num_members = members_.size();
-    ExpressionPtr k(
-        new ConstantExpression(CcfGroup::Factorial(num_members - i) *
-                               CcfGroup::Factorial(i) /
-                               CcfGroup::Factorial(num_members - 1)));
+    // (n - 1) choose (k - 1) element in the equation.
+    int mult = CcfGroup::Factorial(num_members - 1) /
+               CcfGroup::Factorial(num_members - i - 1) /
+               CcfGroup::Factorial(i);
+
+    ExpressionPtr k(new ConstantExpression(1.0 / mult));
+
     std::vector<ExpressionPtr> args;
     args.push_back(k);
     for (int j = 0; j < i; ++j) {
@@ -254,10 +257,13 @@ void AlphaFactorModel::ApplyModel() {
   std::vector<ExpressionPtr> probabilities;  // The level is position + 1.
   for (int i = 0; i < max_level; ++i) {
     int num_members = members_.size();
-    ExpressionPtr k(
-        new ConstantExpression(CcfGroup::Factorial(num_members - i) *
-                               CcfGroup::Factorial(i) /
-                               CcfGroup::Factorial(num_members - 1)));
+    // (n - 1) choose (k - 1) element in the equation.
+    int mult = CcfGroup::Factorial(num_members - 1) /
+               CcfGroup::Factorial(num_members - i - 1) /
+               CcfGroup::Factorial(i);
+
+    ExpressionPtr k(new ConstantExpression(1.0 / mult));
+
     std::vector<ExpressionPtr> args;
     args.push_back(k);
     std::vector<ExpressionPtr> div_args;

@@ -68,6 +68,11 @@ TEST_F(RiskAnalysisTest, PhiFactorCCF) {
   ASSERT_NO_THROW(ran->Report("/dev/null"));
   EXPECT_NEAR(0.04109, p_total(), 1e-5);  // Total prob check.
   EXPECT_EQ(34, min_cut_sets().size());
+  std::vector<int> distr(4, 0);
+  distr[1] = 2;
+  distr[2] = 24;
+  distr[3] = 8;
+  EXPECT_EQ(distr, McsDistribution());
 }
 
 // Benchmark Tests for MGL factor common cause failure calculations.
@@ -78,8 +83,13 @@ TEST_F(RiskAnalysisTest, MGLFactorCCF) {
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   ASSERT_NO_THROW(ran->Report("/dev/null"));
-  EXPECT_NEAR(0.12233, p_total(), 1e-3);  // Total prob check.
+  EXPECT_NEAR(0.01631, p_total(), 1e-5);  // Total prob check.
   EXPECT_EQ(34, min_cut_sets().size());
+  std::vector<int> distr(4, 0);
+  distr[1] = 2;
+  distr[2] = 24;
+  distr[3] = 8;
+  EXPECT_EQ(distr, McsDistribution());
 }
 
 // Benchmark Tests for Alpha factor common cause failure calculations.
@@ -90,6 +100,11 @@ TEST_F(RiskAnalysisTest, AlphaFactorCCF) {
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   ASSERT_NO_THROW(ran->Report("/dev/null"));
-  EXPECT_NEAR(0.11427, p_total(), 1e-3);  // Total prob check.
+  EXPECT_NEAR(0.03093, p_total(), 1e-5);  // Total prob check.
   EXPECT_EQ(34, min_cut_sets().size());
+  std::vector<int> distr(4, 0);
+  distr[1] = 2;
+  distr[2] = 24;
+  distr[3] = 8;
+  EXPECT_EQ(distr, McsDistribution());
 }
