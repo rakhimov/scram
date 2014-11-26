@@ -100,6 +100,7 @@ TEST(RiskAnalysisInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back(dir + "doubly_defined_house.xml");
   incorrect_inputs.push_back(dir + "doubly_defined_basic.xml");
   incorrect_inputs.push_back(dir + "doubly_defined_parameter.xml");
+  incorrect_inputs.push_back(dir + "doubly_defined_ccf_group.xml");
   incorrect_inputs.push_back(dir + "missing_event_definition.xml");
   incorrect_inputs.push_back(dir + "missing_basic_event_definition.xml");
   incorrect_inputs.push_back(dir + "missing_house_event_definition.xml");

@@ -34,6 +34,7 @@ def main():
             "doubly_defined_house.xml",
             "doubly_defined_basic.xml",
             "doubly_defined_parameter.xml",
+            "doubly_defined_ccf_group.xml",
             "missing_event_definition.xml",
             "missing_basic_event_definition.xml",
             "missing_house_event_definition.xml",
