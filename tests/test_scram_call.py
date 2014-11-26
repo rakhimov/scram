@@ -79,7 +79,7 @@ def test_fta_calls():
     out_temp = "./output_temp.txt"
     cmd.append("-o")
     cmd.append(out_temp)
-    yield assert_equal, 0, call(cmd)  # Report into an outupt file
+    yield assert_equal, 0, call(cmd)  # Report into an output file
     if os.path.isfile(out_temp):
         os.remove(out_temp)
 
@@ -95,4 +95,8 @@ def test_fta_calls():
 
     # Test the MCUB approximation
     cmd = ["scram", fta_input, "-m"]
+    yield assert_equal, 0, call(cmd)
+
+    # Run with logging
+    cmd = ["scram", fta_input, "-L"]
     yield assert_equal, 0, call(cmd)
