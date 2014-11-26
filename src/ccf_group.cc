@@ -2,6 +2,8 @@
 /// Implementation of various common cause failure models.
 #include "ccf_group.h"
 
+#include <sstream>
+
 namespace scram {
 
 CcfGroup::CcfGroup(std::string name, std::string model)
@@ -32,6 +34,12 @@ void CcfGroup::AddDistribution(const ExpressionPtr& distr) {
 
 void CcfGroup::AddFactor(const ExpressionPtr& factor, int level) {
   assert(level > 0);
+  if (level != factors_.size() + 1) {
+    std::stringstream msg;
+    msg << name_ << " " << model_ << " CCF group level expected "
+        << factors_.size() + 1 << ". Instead was given " << level;
+    throw ValidationError(msg.str());
+  }
   factors_.push_back(std::make_pair(level, factor));
 }
 
@@ -137,12 +145,17 @@ void CcfGroup::ConstructCcfBasicEvents(
   }
 }
 
-void BetaFactorModel::Validate() {
-  if (factors_.size() != 1) {
+void BetaFactorModel::AddFactor(const ExpressionPtr& factor, int level) {
+  if (!factors_.empty()) {
     throw ValidationError("Beta-Factor Model " + this->name() + " CCF group" +
                           " must have exactly one factor.");
   }
-  CcfGroup::Validate();
+  if (level != members_.size()) {
+    throw ValidationError("Beta-Factor Model " + this->name() + " CCF group" +
+                          " must have the level matching the number of" +
+                          " its members.");
+  }
+  CcfGroup::factors_.push_back(std::make_pair(level, factor));
 }
 
 void BetaFactorModel::ConstructCcfBasicEvents(
@@ -207,6 +220,17 @@ void BetaFactorModel::CalculateProb(
   args.push_back(CcfGroup::distribution_);  // beta * Q
   probabilities->insert(std::make_pair(max_level,
                                        ExpressionPtr(new Mul(args))));
+}
+
+void MglModel::AddFactor(const ExpressionPtr& factor, int level) {
+  assert(level > 0);
+  if (level != factors_.size() + 2) {
+    std::stringstream msg;
+    msg << this->name() << " MGL model CCF group level expected "
+        << factors_.size() + 2 << ". Instead was given " << level;
+    throw ValidationError(msg.str());
+  }
+  CcfGroup::factors_.push_back(std::make_pair(level, factor));
 }
 
 void MglModel::CalculateProb(int max_level,

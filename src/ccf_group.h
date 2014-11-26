@@ -50,11 +50,13 @@ class CcfGroup : public Element {
   /// @param[in] distr The probability distribution of this group.
   void AddDistribution(const ExpressionPtr& distr);
 
-  /// Adds a CCF factor for the specified model.
+  /// Adds a CCF factor for the specified model. The addition of factors
+  /// must be in ascending level order and no gaps are allowed between levels.
+  /// The default case is to start from 1.
   /// @param[in] factor A factor for the CCF model.
   /// @param[in] level The level of the passed factor.
-  /// @todo Verify the level and the factor. Define the default level.
-  void AddFactor(const ExpressionPtr& factor, int level);
+  /// @throws ValidationError if level is not what is expected.
+  virtual void AddFactor(const ExpressionPtr& factor, int level);
 
   /// Validates the setup for the CCF model and group.
   /// The passed expressions must be checked for circular logic before
@@ -135,10 +137,11 @@ class BetaFactorModel : public CcfGroup {
   /// @param[in] name The name for the group.
   BetaFactorModel(std::string name) : CcfGroup(name, "beta-factor") {}
 
-  /// In addition to the default validation of CcfGroup, checks if
-  /// the there is only one factor.
-  /// @throws ValidationError if there is an issue with the setup.
-  void Validate();
+  /// Adds a CCF factor for the beta model. Only one factor is expected.
+  /// @param[in] factor A factor for the CCF model.
+  /// @param[in] level The level of the passed factor.
+  /// @throws ValidationError if level is not what is expected.
+  void AddFactor(const ExpressionPtr& factor, int level);
 
   void ConstructCcfBasicEvents(
       int max_level,
@@ -157,6 +160,13 @@ class MglModel : public CcfGroup {
   /// Constructs the group and sets the model.
   /// @param[in] name The name for the group.
   MglModel(std::string name) : CcfGroup(name, "MGL") {}
+
+  /// Adds a CCF factor for the MGL model. The factor level must start
+  /// from 2.
+  /// @param[in] factor A factor for the CCF model.
+  /// @param[in] level The level of the passed factor.
+  /// @throws ValidationError if level is not what is expected.
+  void AddFactor(const ExpressionPtr& factor, int level);
 
   void CalculateProb(int max_level, std::map<int, ExpressionPtr>* probabilities);
 };

@@ -39,7 +39,7 @@ This input contains groupings for common cause analysis for Three Train system.
     <distribution>
       <float value="0.1"/>
     </distribution>
-    <factor>
+    <factor level="3">
       <float value="0.2"/>
     </factor>
   </define-CCF-group>
@@ -52,7 +52,7 @@ This input contains groupings for common cause analysis for Three Train system.
     <distribution>
       <float value="0.1"/>
     </distribution>
-    <factor>
+    <factor level="3">
       <float value="0.2"/>
     </factor>
   </define-CCF-group>
