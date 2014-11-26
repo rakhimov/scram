@@ -2,13 +2,14 @@
 /// Functional containers for basic events grouped by common cause failure.
 /// Common cause failure can be modeled using alpha, beta, MGL, or direct
 /// parameter assigment in phi model.
-#ifndef SCRAM_SRC_COMMON_CAUSE_GROUP_H_
-#define SCRAM_SRC_COMMON_CAUSE_GROUP_H_
+#ifndef SCRAM_SRC_CCF_GROUP_H_
+#define SCRAM_SRC_CCF_GROUP_H_
 
 #include <map>
 #include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include <boost/shared_ptr.hpp>
 
@@ -141,7 +142,7 @@ class BetaFactorModel : public CcfGroup {
  public:
   /// Constructs the group and sets the model.
   /// @param[in] name The name for the group.
-  BetaFactorModel(std::string name) : CcfGroup(name, "beta-factor") {}
+  explicit BetaFactorModel(std::string name) : CcfGroup(name, "beta-factor") {}
 
   /// Adds a CCF factor for the beta model. Only one factor is expected.
   /// @param[in] factor A factor for the CCF model.
@@ -149,12 +150,13 @@ class BetaFactorModel : public CcfGroup {
   /// @throws ValidationError if level is not what is expected.
   void AddFactor(const ExpressionPtr& factor, int level);
 
+ private:
   void ConstructCcfBasicEvents(
       int max_level,
       std::map<BasicEventPtr, std::set<std::string> >* new_events);
 
   void CalculateProb(int max_level,
-                             std::map<int, ExpressionPtr>* probabilities);
+                     std::map<int, ExpressionPtr>* probabilities);
 };
 
 /// @class MglModel
@@ -165,7 +167,7 @@ class MglModel : public CcfGroup {
  public:
   /// Constructs the group and sets the model.
   /// @param[in] name The name for the group.
-  MglModel(std::string name) : CcfGroup(name, "MGL") {}
+  explicit MglModel(std::string name) : CcfGroup(name, "MGL") {}
 
   /// Adds a CCF factor for the MGL model. The factor level must start
   /// from 2.
@@ -174,7 +176,9 @@ class MglModel : public CcfGroup {
   /// @throws ValidationError if level is not what is expected.
   void AddFactor(const ExpressionPtr& factor, int level);
 
-  void CalculateProb(int max_level, std::map<int, ExpressionPtr>* probabilities);
+ private:
+  void CalculateProb(int max_level,
+                     std::map<int, ExpressionPtr>* probabilities);
 };
 
 /// @class AlphaFactorModel
@@ -184,9 +188,12 @@ class AlphaFactorModel : public CcfGroup {
  public:
   /// Constructs the group and sets the model.
   /// @param[in] name The name for the group.
-  AlphaFactorModel(std::string name) : CcfGroup(name, "alpha-factor") {}
+  explicit AlphaFactorModel(std::string name)
+      : CcfGroup(name, "alpha-factor") {}
 
-  void CalculateProb(int max_level, std::map<int, ExpressionPtr>* probabilities);
+ private:
+  void CalculateProb(int max_level,
+                     std::map<int, ExpressionPtr>* probabilities);
 };
 
 /// @class PhiFactorModel
@@ -197,7 +204,7 @@ class PhiFactorModel : public CcfGroup {
  public:
   /// Constructs the group and sets the model.
   /// @param[in] name The name for the group.
-  PhiFactorModel(std::string name) : CcfGroup(name, "phi-factor") {}
+  explicit PhiFactorModel(std::string name) : CcfGroup(name, "phi-factor") {}
 
   /// In addition to the default validation of CcfGroup, checks if
   /// the given factors' sum is 1.
@@ -206,9 +213,11 @@ class PhiFactorModel : public CcfGroup {
   ///       Currently only accepts constant expressions.
   void Validate();
 
-  void CalculateProb(int max_level, std::map<int, ExpressionPtr>* probabilities);
+ private:
+  void CalculateProb(int max_level,
+                     std::map<int, ExpressionPtr>* probabilities);
 };
 
 }  // namespace scram
 
-#endif  // SCRAM_SRC_COMMON_CAUSE_GROUP_H_
+#endif  // SCRAM_SRC_CCF_GROUP_H_

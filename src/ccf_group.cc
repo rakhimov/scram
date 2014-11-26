@@ -215,7 +215,7 @@ void BetaFactorModel::CalculateProb(
   ExpressionPtr indep_factor(new Sub(args));  // (1 - beta)
   args.clear();
   args.push_back(indep_factor);
-  args.push_back(CcfGroup::distribution_); // (1 - beta) * Q
+  args.push_back(CcfGroup::distribution_);  // (1 - beta) * Q
   probabilities->insert(std::make_pair(1, ExpressionPtr(new Mul(args))));
 
   args.clear();

@@ -3,6 +3,7 @@
 #ifndef SCRAM_SRC_EXPRESSION_H_
 #define SCRAM_SRC_EXPRESSION_H_
 
+#include <algorithm>
 #include <cmath>
 #include <string>
 #include <vector>
@@ -666,7 +667,7 @@ class Neg : public Expression {
  public:
   /// Construct a new expression that negates a given argument expression.
   /// @param[in] expression The expression to be negated.
-  Neg(const ExpressionPtr& expression) : expression_(expression) {}
+  explicit Neg(const ExpressionPtr& expression) : expression_(expression) {}
 
   inline double Mean() { return -expression_->Mean(); }
   inline double Sample() {
@@ -696,7 +697,8 @@ class Add : public Expression {
   /// Construct a new expression that add given argument expressions.
   /// @param[in] arguments The arguments of the addition equation.
   /// @note It is assumed that arguments contain at least one element.
-  Add(const std::vector<ExpressionPtr>& arguments) : args_(arguments) {}
+  explicit Add(const std::vector<ExpressionPtr>& arguments)
+      : args_(arguments) {}
 
   inline double Mean() {
     assert(!args_.empty());
@@ -767,7 +769,8 @@ class Sub : public Expression {
   /// from the first argument expression.
   /// @param[in] arguments The arguments for operation.
   /// @note It is assumed that arguments contain at least one element.
-  Sub(const std::vector<ExpressionPtr>& arguments) : args_(arguments) {}
+  explicit Sub(const std::vector<ExpressionPtr>& arguments)
+      : args_(arguments) {}
 
   inline double Mean() {
     assert(!args_.empty());
@@ -837,7 +840,8 @@ class Mul : public Expression {
   /// Construct a new expression that multiplies given argument expressions.
   /// @param[in] arguments The arguments for operation.
   /// @note It is assumed that arguments contain at least one element.
-  Mul(const std::vector<ExpressionPtr>& arguments) : args_(arguments) {}
+  explicit Mul(const std::vector<ExpressionPtr>& arguments)
+      : args_(arguments) {}
 
   inline double Mean() {
     assert(!args_.empty());
@@ -932,7 +936,8 @@ class Div : public Expression {
   /// @note It is assumed that arguments contain at least one element.
   ///       No arguments except the first should be 0. The bevaior may be
   ///       undefined if the value is 0 for division.
-  Div(const std::vector<ExpressionPtr>& arguments) : args_(arguments) {}
+  explicit Div(const std::vector<ExpressionPtr>& arguments)
+      : args_(arguments) {}
 
   inline double Mean() {
     assert(!args_.empty());
