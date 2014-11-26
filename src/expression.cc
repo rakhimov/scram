@@ -3,8 +3,6 @@
 /// description.
 #include "expression.h"
 
-#include <algorithm>
-
 #include "error.h"
 #include "random.h"
 

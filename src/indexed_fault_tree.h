@@ -243,7 +243,7 @@ class IndexedFaultTree {
   ///                     recursive purposes. The sign of this passed gate
   ///                     is unknown for the function, so it must be sanitized
   ///                     for a top event to function correctly.
-  /// @param[in,out] gate_complements The complements of gates already processed.
+  /// @param[in,out] gate_complements The processed complements of gates.
   /// @param[in,out] processed_gates The gates that has already been processed.
   void PropagateComplements(const IndexedGatePtr& gate,
                             std::map<int, int>* gate_complements,

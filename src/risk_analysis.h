@@ -173,10 +173,23 @@ class RiskAnalysis {
 
   /// Defines and adds a basic event for this analysis.
   /// @param[in] event_node XML element defining the event.
+  /// @throws ValidationError if name clash or redefinition is detected, of
+  ///                         if there is no expression for this basic event.
   void DefineBasicEvent(const xmlpp::Element* event_node);
+
+  /// Instantiates or returns the basic event that is waiting to be defined.
+  /// This function also performs checks for validation issues.
+  /// The new basic event will not have an expression assigned to it.
+  /// @param[in] event_node XML element defining the event.
+  /// @param[out] basic_event New or to-be-defined basic event.
+  /// @throws ValidationError if name clash or redefinition is detected.
+  void GetBasicEvent(const xmlpp::Element* event_node,
+                     BasicEventPtr& basic_event);
 
   /// Defines and adds a house event for this analysis.
   /// @param[in] event_node XML element defining the event.
+  /// @throws ValidationError if name clash or redefinition is detected, or if
+  ///                         there is no constant expression for this event.
   void DefineHouseEvent(const xmlpp::Element* event_node);
 
   /// Defines a variable or parameter.
@@ -244,11 +257,15 @@ class RiskAnalysis {
 
   /// Attaches factors to a given common cause failure group.
   /// @param[in] factors_node XML element containing all factors.
-  /// @param[in] model Model name for factor level detection.
   /// @param[in,out] ccf_group CCF group to be defined by the given factors.
   void ProcessCcfFactors(const xmlpp::Element* factors_node,
-                         std::string model,
                          const CcfGroupPtr& ccf_group);
+
+  /// Defines factor and adds it to CCF group.
+  /// @param[in] factor_node XML element containing one factor.
+  /// @param[in,out] ccf_group CCF group to be defined by the given factors.
+  void DefineCcfFactor(const xmlpp::Element* factor_node,
+                       const CcfGroupPtr& ccf_group);
 
   /// Validates if the initialization of the analysis is successful.
   /// This validation process also generates optional warnings.
