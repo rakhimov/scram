@@ -42,6 +42,7 @@ def main():
             "missing_bool_constant.xml",
             "missing_parameter.xml",
             "missing_gate_definition.xml",
+            "missing_ccf_level_number.xml",
             "name_clash_basic_gate.xml",
             "name_clash_house_gate.xml",
             "name_clash_gate_primary.xml",

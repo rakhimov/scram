@@ -108,6 +108,7 @@ TEST(RiskAnalysisInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back(dir + "missing_bool_constant.xml");
   incorrect_inputs.push_back(dir + "missing_parameter.xml");
   incorrect_inputs.push_back(dir + "missing_gate_definition.xml");
+  incorrect_inputs.push_back(dir + "missing_ccf_level_number.xml");
   incorrect_inputs.push_back(dir + "name_clash_basic_gate.xml");
   incorrect_inputs.push_back(dir + "name_clash_house_gate.xml");
   incorrect_inputs.push_back(dir + "name_clash_gate_primary.xml");

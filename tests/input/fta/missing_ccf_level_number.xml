@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-This input contains repeated defintion of a CCF group.
+CCF level number is missing in the group description.
 -->
 <opsa-mef>
   <define-fault-tree name="TwoTrains">
@@ -30,23 +30,11 @@ This input contains repeated defintion of a CCF group.
       <distribution>
         <float value="0.1"/>
       </distribution>
-      <factor level="2">
+      <factor>
         <float value="0.2"/>
       </factor>
     </define-CCF-group>
   </define-fault-tree>
-  <define-CCF-group name="PUMPS" model="beta-factor">
-    <members>
-      <basic-event name="PumpOne"/>
-      <basic-event name="PumpTwo"/>
-    </members>
-    <distribution>
-      <float value="0.1"/>
-    </distribution>
-    <factor level="2">
-      <float value="0.2"/>
-    </factor>
-  </define-CCF-group>
   <define-CCF-group name="Valves" model="beta-factor">
     <members>
       <basic-event name="ValveOne"/>
