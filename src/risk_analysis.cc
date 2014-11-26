@@ -1128,7 +1128,7 @@ void RiskAnalysis::DefineCcfGroup(const xmlpp::Element* ccf_node) {
           dynamic_cast<const xmlpp::Element*>(*element->find("./*").begin());
       ExpressionPtr expression;
       RiskAnalysis::GetExpression(expr_node, expression);
-      ccf_group->AddFactor(expression, 2);
+      ccf_group->AddFactor(expression, 3);
 
     } else if (name == "factors") {
       RiskAnalysis::ProcessCcfFactors(element, model, ccf_group);

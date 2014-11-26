@@ -65,7 +65,7 @@ class CcfGroup : public Element {
   /// Processes the given factors and members to create common cause failure
   /// probabilities and new events that can replace the members in a fault
   /// tree.
-  virtual void ApplyModel();
+  void ApplyModel();
 
   /// @returns gates that can substitute CCF members.
   const std::map<std::string, GatePtr>& gates() { return gates_; }
@@ -85,7 +85,7 @@ class CcfGroup : public Element {
   /// are included in the database of new events.
   /// @param[in] max_level The max level for grouping.
   /// @param[out] new_events New basic events and their parents.
-  void ConstructCcfBasicEvents(
+  virtual void ConstructCcfBasicEvents(
       int max_level,
       std::map<BasicEventPtr, std::set<std::string> >* new_events);
 
@@ -95,7 +95,7 @@ class CcfGroup : public Element {
   /// @param[out] probabilities Expressions representing probabilities for
   ///                           each level of groupings for CCF events.
   virtual void CalculateProb(int max_level,
-                             std::vector<ExpressionPtr>* probabilities) {}
+                             std::map<int, ExpressionPtr>* probabilities) = 0;
 
   /// Simple factorial calculation.
   /// @param[in] n Positive number for factorial calculation.
@@ -140,7 +140,12 @@ class BetaFactorModel : public CcfGroup {
   /// @throws ValidationError if there is an issue with the setup.
   void Validate();
 
-  void ApplyModel();
+  void ConstructCcfBasicEvents(
+      int max_level,
+      std::map<BasicEventPtr, std::set<std::string> >* new_events);
+
+  void CalculateProb(int max_level,
+                             std::map<int, ExpressionPtr>* probabilities);
 };
 
 /// @class MglModel
@@ -153,7 +158,7 @@ class MglModel : public CcfGroup {
   /// @param[in] name The name for the group.
   MglModel(std::string name) : CcfGroup(name, "MGL") {}
 
-  void CalculateProb(int max_level, std::vector<ExpressionPtr>* probabilities);
+  void CalculateProb(int max_level, std::map<int, ExpressionPtr>* probabilities);
 };
 
 /// @class AlphaFactorModel
@@ -165,7 +170,7 @@ class AlphaFactorModel : public CcfGroup {
   /// @param[in] name The name for the group.
   AlphaFactorModel(std::string name) : CcfGroup(name, "alpha-factor") {}
 
-  void CalculateProb(int max_level, std::vector<ExpressionPtr>* probabilities);
+  void CalculateProb(int max_level, std::map<int, ExpressionPtr>* probabilities);
 };
 
 /// @class PhiFactorModel
@@ -185,7 +190,7 @@ class PhiFactorModel : public CcfGroup {
   ///       Currently only accepts constant expressions.
   void Validate();
 
-  void CalculateProb(int max_level, std::vector<ExpressionPtr>* probabilities);
+  void CalculateProb(int max_level, std::map<int, ExpressionPtr>* probabilities);
 };
 
 }  // namespace scram
