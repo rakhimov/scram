@@ -35,6 +35,7 @@ def main():
             "doubly_defined_basic.xml",
             "doubly_defined_parameter.xml",
             "doubly_defined_ccf_group.xml",
+            "extra_ccf_level_beta_factor.xml",
             "missing_event_definition.xml",
             "missing_basic_event_definition.xml",
             "missing_house_event_definition.xml",
@@ -43,6 +44,7 @@ def main():
             "missing_parameter.xml",
             "missing_gate_definition.xml",
             "missing_ccf_level_number.xml",
+            "missing_ccf_members.xml",
             "name_clash_basic_gate.xml",
             "name_clash_house_gate.xml",
             "name_clash_gate_primary.xml",
@@ -65,6 +67,9 @@ def main():
             "invalid_probability.xml",
             "invalid_expression.xml",
             "repeated_child.xml",
+            "alpha_ccf_level_error.xml",
+            "beta_ccf_level_error.xml",
+            "mgl_ccf_level_error.xml",
             ]
 
     # Run correct inputs

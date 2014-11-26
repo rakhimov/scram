@@ -1169,7 +1169,14 @@ void RiskAnalysis::DefineCcfFactor(const xmlpp::Element* factor_node,
       dynamic_cast<const xmlpp::Element*>(*factor_node->find("./*").begin());
   ExpressionPtr expression;
   RiskAnalysis::GetExpression(expr_node, expression);
-  ccf_group->AddFactor(expression, level_num);
+  try {
+    ccf_group->AddFactor(expression, level_num);
+  } catch (ValidationError& err) {
+    std::stringstream msg;
+    msg << "Line " << factor_node->get_line() << ":\n";
+    msg << err.msg();
+    throw ValidationError(msg.str());
+  }
 }
 
 void RiskAnalysis::CheckFirstLayer() {
