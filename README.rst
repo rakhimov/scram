@@ -15,7 +15,8 @@ SCRAM
 
 This project aims to build a simple command line tool for
 probabilistic risk analysis. *SCRAM* is currently capable of performing
-static fault tree analysis, probability calculations with importance analysis,
+static fault tree analysis, analysis with common cause failure models,
+probability calculations with importance analysis,
 and uncertainty analysis using Monte Carlo simulations. This tool can handle
 non-coherent fault trees, containing NOT logic.
 

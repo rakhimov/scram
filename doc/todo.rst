@@ -34,13 +34,6 @@ Major Enhancements and Capabilities
 
 - Dynamic Fault Tree Analysis. *Moderate*
 
-- Incorporation of CCF. *High*
-
-    * Multiple Greek Letter system
-    * Alpha system
-    * Beta system
-    * Phi system
-
 - Incorporation of alignments. *Moderate*
 
     * Maintenance

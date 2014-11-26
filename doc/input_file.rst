@@ -1,6 +1,6 @@
-##################
+#################
 SCRAM Input Files
-##################
+#################
 
 SCRAM uses XML input files to describe analysis. See :ref:`xml_tools` for
 more convenient writing of XML input files.
@@ -31,6 +31,8 @@ Steps in XML Input Validation
     - Trailing white spaces are ignored.
     - Names should conform to 'XML NCName datatype' not contain spaces
       and some other special characters.
+    - Users are advised not to use special words and characters,
+      such as "NOT", "-", ".", ",", "[", "]".
     - Names must be unique if they are public by default.
     - Names must be unique only locally if they are private. [not supported]
     - Primary and intermediate events with several parents are allowed.

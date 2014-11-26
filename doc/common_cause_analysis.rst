@@ -11,13 +11,11 @@ SCRAM FTA: Common Cause Failure (CCF)
 #. Choose a model for analysis: MGL, alpha-factor, beta-factor, and phi-factor.
 
     - Factors must be provided by a user.
-    - Calculation must be performed only with provided factors, or
-      a user may specify the maximum number of common cause members
-      in a group for analysis. Alternatively, for some types of
-      CCF analysis methods, the maximum number of events for a set can be
-      inferred by the number of provided factors.
-    - There should be at least one and at most (N - 1) factors for
-      MGL, alpha and phi-factor models. N is the number of members of the CCF
+    - Calculation must be performed only with the provided factors.
+      The maximum number of events for grouping into new CCF events can be
+      inferred from the number and levels of provided factors.
+    - There should be at least one and at most N factors for
+      CCF models. N is the number of members of the CCF
       group. For the beta-factor model, only one factor is required.
     - CCF grouping level numbers are optional, but it helps with input
       clarity and error-checking.
@@ -25,19 +23,20 @@ SCRAM FTA: Common Cause Failure (CCF)
       sequentially. If a factor for any level is omitted, it is not implicitly
       assumed to be 0. The factors must be set to 0 explicitly. The exception
       is the factors that are above the last input level. In other words,
-      only provided factors are used without requiring exactly (N - 1) factors.
+      only provided factors are used without requiring exactly maximum
+      possible number of factors.
 
 #. After construction of the tree, calculate CCF sub groups for each event.
 
     - Validate groups.
+    - Calculate CCF model specific probabilities for new CCF events.
     - Assign calculated probabilities to the newly created CCF sub-events.
-
 
 #. Substitute CCF grouped primary events with OR gates
    with children as CCF-calculated sub groups. Give specific names to
    CCF sub groups that identify independent and common cause failures.
 
-    - Events that are grouped by a common cause are listed in square brackets.
+    - Events that are grouped by common cause are listed in square brackets.
 
 #. Perform usual analysis on the fault tree with CCF groups.
 
