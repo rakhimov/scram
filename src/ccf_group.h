@@ -65,7 +65,7 @@ class CcfGroup : public Element {
   /// Processes the given factors and members to create common cause failure
   /// probabilities and new events that can replace the members in a fault
   /// tree.
-  virtual void ApplyModel() = 0;
+  virtual void ApplyModel();
 
   /// @returns gates that can substitute CCF members.
   const std::map<std::string, GatePtr>& gates() { return gates_; }
@@ -88,6 +88,14 @@ class CcfGroup : public Element {
   void ConstructCcfBasicEvents(
       int max_level,
       std::map<BasicEventPtr, std::set<std::string> >* new_events);
+
+  /// Calculates probabilities for new basic events representing failures
+  /// due to common cause.
+  /// @param[in] max_level The max level of grouping.
+  /// @param[out] probabilities Expressions representing probabilities for
+  ///                           each level of groupings for CCF events.
+  virtual void CalculateProb(int max_level,
+                             std::vector<ExpressionPtr>* probabilities) {}
 
   /// Simple factorial calculation.
   /// @param[in] n Positive number for factorial calculation.
@@ -145,7 +153,7 @@ class MglModel : public CcfGroup {
   /// @param[in] name The name for the group.
   MglModel(std::string name) : CcfGroup(name, "MGL") {}
 
-  void ApplyModel();
+  void CalculateProb(int max_level, std::vector<ExpressionPtr>* probabilities);
 };
 
 /// @class AlphaFactorModel
@@ -157,7 +165,7 @@ class AlphaFactorModel : public CcfGroup {
   /// @param[in] name The name for the group.
   AlphaFactorModel(std::string name) : CcfGroup(name, "alpha-factor") {}
 
-  void ApplyModel();
+  void CalculateProb(int max_level, std::vector<ExpressionPtr>* probabilities);
 };
 
 /// @class PhiFactorModel
@@ -177,7 +185,7 @@ class PhiFactorModel : public CcfGroup {
   ///       Currently only accepts constant expressions.
   void Validate();
 
-  void ApplyModel();
+  void CalculateProb(int max_level, std::vector<ExpressionPtr>* probabilities);
 };
 
 }  // namespace scram
