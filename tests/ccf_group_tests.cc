@@ -17,6 +17,7 @@ TEST(CcfGroupTest, AddMemberRepeated) {
   BasicEventPtr member(new BasicEvent("id"));
   ASSERT_NO_THROW(ccf_group->AddMember(member));
   EXPECT_THROW(ccf_group->AddMember(member), LogicError);
+  delete ccf_group;
 }
 
 TEST(CcfGroupTest, AddMemberAfterDistribution) {
@@ -30,4 +31,5 @@ TEST(CcfGroupTest, AddMemberAfterDistribution) {
 
   BasicEventPtr member_two(new BasicEvent("two"));
   EXPECT_THROW(ccf_group->AddMember(member), IllegalOperation);
+  delete ccf_group;
 }
