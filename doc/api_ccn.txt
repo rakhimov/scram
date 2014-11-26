@@ -1,6 +1,22 @@
 ========================================
   NLOC    CCN   token  PARAM  location  
 ----------------------------------------
+       3      1     26      2 CcfGroup::CcfGroup@9-11@ccf_group.cc
+      10      3     84      1 CcfGroup::AddMember@13-23@ccf_group.cc
+       8      2     69      1 CcfGroup::AddDistribution@25-33@ccf_group.cc
+      10      2     86      2 CcfGroup::AddFactor@35-44@ccf_group.cc
+       6      3     41      0 CcfGroup::ValidateDistribution@46-51@ccf_group.cc
+      16      6    137      0 CcfGroup::Validate@53-69@ccf_group.cc
+      23      4    297      0 CcfGroup::ApplyModel@71-100@ccf_group.cc
+      46      8    421      2 CcfGroup::ConstructCcfBasicEvents@102-149@ccf_group.cc
+      12      3     89      2 BetaFactorModel::AddFactor@151-162@ccf_group.cc
+      34      3    333      2 BetaFactorModel::ConstructCcfBasicEvents@164-204@ccf_group.cc
+      20      1    176      2 BetaFactorModel::CalculateProb@206-226@ccf_group.cc
+      10      2     89      2 MglModel::AddFactor@228-237@ccf_group.cc
+      28      4    257      2 MglModel::CalculateProb@239-270@ccf_group.cc
+      30      3    283      2 AlphaFactorModel::CalculateProb@272-305@ccf_group.cc
+      20      5    181      0 PhiFactorModel::Validate@307-329@ccf_group.cc
+      14      2    135      2 PhiFactorModel::CalculateProb@331-344@ccf_group.cc
        1      1     22      0 Attribute::Attribute@11-11@element.cc
        1      1     12      0 Element::Element@13-13@element.cc
        9      3     45      1 Element::label@15-23@element.cc
@@ -12,39 +28,41 @@
        3      1     26      2 Event::Event@7-9@event.cc
        8      2     71      1 Event::AddParent@11-18@event.cc
        7      2     40      0 Event::parents@20-26@event.cc
-       4      1     25      0 Parameter::Validate@13-16@expression.cc
-      19      4    156      1 Parameter::CheckCyclicity@18-36@expression.cc
-      11      5     86      0 ExponentialExpression::Validate@38-48@expression.cc
-       8      2     55      0 ExponentialExpression::Sample@50-57@expression.cc
-      19     11    184      0 GlmExpression::Validate@59-77@expression.cc
-      13      2    102      0 GlmExpression::Sample@79-91@expression.cc
-      28     11    221      0 WeibullExpression::Validate@93-120@expression.cc
-      12      2     94      0 WeibullExpression::Sample@122-134@expression.cc
-       9      3     58      0 UniformDeviate::Validate@136-144@expression.cc
-       8      2     50      0 UniformDeviate::Sample@146-153@expression.cc
-       7      3     46      0 NormalDeviate::Validate@155-161@expression.cc
-       8      2     50      0 NormalDeviate::Sample@163-170@expression.cc
-      17      6    112      0 LogNormalDeviate::Validate@172-188@expression.cc
-       9      2     85      0 LogNormalDeviate::Sample@190-198@expression.cc
-      15      5     90      0 GammaDeviate::Validate@200-214@expression.cc
-       8      2     50      0 GammaDeviate::Sample@216-223@expression.cc
-      15      5     90      0 BetaDeviate::Validate@225-239@expression.cc
-       8      2     50      0 BetaDeviate::Sample@241-248@expression.cc
-       9      2     57      2 Histogram::Histogram@250-258@expression.cc
-       4      1     17      0 Histogram::Validate@260-263@expression.cc
-      12      2    101      0 Histogram::Mean@265-276@expression.cc
-      14      3    113      0 Histogram::Sample@278-291@expression.cc
-      16      6    148      1 Histogram::CheckBoundaries@293-308@expression.cc
-       9      4     81      1 Histogram::CheckWeights@310-318@expression.cc
-      13      2     61      1 FaultTreeAnalysis::FaultTreeAnalysis@17-30@fault_tree_analysis.cc
-      64      8    625      1 FaultTreeAnalysis::Analyze@32-116@fault_tree_analysis.cc
-      16      5    182      1 FaultTreeAnalysis::SetsToString@118-133@fault_tree_analysis.cc
-       1      1     21      1 FaultTree::FaultTree@13-13@fault_tree.cc
-      35      9    253      1 FaultTree::AddGate@15-51@fault_tree.cc
-       7      1     50      0 FaultTree::Validate@53-63@fault_tree.cc
-      31      6    330      3 FaultTree::CheckCyclicity@65-97@fault_tree.cc
-       7      2     61      0 FaultTree::GatherPrimaryEvents@99-106@fault_tree.cc
-      25      5    224      1 FaultTree::GetPrimaryEvents@108-134@fault_tree.cc
+       4      1     25      0 Parameter::Validate@11-14@expression.cc
+      19      4    156      1 Parameter::CheckCyclicity@16-34@expression.cc
+      11      5     86      0 ExponentialExpression::Validate@36-46@expression.cc
+       8      2     55      0 ExponentialExpression::Sample@48-55@expression.cc
+      19     11    184      0 GlmExpression::Validate@57-75@expression.cc
+      13      2    102      0 GlmExpression::Sample@77-89@expression.cc
+      28     11    221      0 WeibullExpression::Validate@91-118@expression.cc
+      12      2     94      0 WeibullExpression::Sample@120-132@expression.cc
+       9      3     58      0 UniformDeviate::Validate@134-142@expression.cc
+       8      2     50      0 UniformDeviate::Sample@144-151@expression.cc
+       7      3     46      0 NormalDeviate::Validate@153-159@expression.cc
+       8      2     50      0 NormalDeviate::Sample@161-168@expression.cc
+      17      6    112      0 LogNormalDeviate::Validate@170-186@expression.cc
+       9      2     85      0 LogNormalDeviate::Sample@188-196@expression.cc
+      15      5     90      0 GammaDeviate::Validate@198-212@expression.cc
+       8      2     50      0 GammaDeviate::Sample@214-221@expression.cc
+      15      5     90      0 BetaDeviate::Validate@223-237@expression.cc
+       8      2     50      0 BetaDeviate::Sample@239-246@expression.cc
+       9      2     57      2 Histogram::Histogram@248-256@expression.cc
+       4      1     17      0 Histogram::Validate@258-261@expression.cc
+      12      2    101      0 Histogram::Mean@263-274@expression.cc
+      14      3    113      0 Histogram::Sample@276-289@expression.cc
+      16      6    148      1 Histogram::CheckBoundaries@291-306@expression.cc
+       9      4     81      1 Histogram::CheckWeights@308-316@expression.cc
+      14      2     66      1 FaultTreeAnalysis::FaultTreeAnalysis@17-31@fault_tree_analysis.cc
+      75      9    750      1 FaultTreeAnalysis::Analyze@33-130@fault_tree_analysis.cc
+      16      5    182      1 FaultTreeAnalysis::SetsToString@132-147@fault_tree_analysis.cc
+       4      1     26      1 FaultTree::FaultTree@13-16@fault_tree.cc
+      35      9    253      1 FaultTree::AddGate@18-54@fault_tree.cc
+       5      1     38      0 FaultTree::Validate@56-61@fault_tree.cc
+       9      1     51      0 FaultTree::SetupForAnalysis@63-83@fault_tree.cc
+      31      6    330      3 FaultTree::CheckCyclicity@85-117@fault_tree.cc
+       7      2     61      0 FaultTree::GatherPrimaryEvents@119-126@fault_tree.cc
+      27      6    250      1 FaultTree::GetPrimaryEvents@128-156@fault_tree.cc
+      16      3    185      0 FaultTree::GatherCcfBasicEvents@158-173@fault_tree.cc
        4      1     32      2 Gate::Gate@9-12@gate.cc
        7      2     40      0 Gate::type@14-20@gate.cc
        8      2     45      1 Gate::type@22-29@gate.cc
@@ -62,30 +80,30 @@
       42     15    444      2 SimpleGate::AndGateCutSets@28-74@indexed_fault_tree.cc
       43     12    399      2 SimpleGate::OrGateCutSets@76-124@indexed_fault_tree.cc
        8      1     44      2 IndexedFaultTree::IndexedFaultTree@126-133@indexed_fault_tree.cc
-      25      5    279      2 IndexedFaultTree::InitiateIndexedFaultTree@135-162@indexed_fault_tree.cc
-      10      1     73      2 IndexedFaultTree::PropagateConstants@164-173@indexed_fault_tree.cc
-      20      6    172      1 IndexedFaultTree::ProcessIndexedFaultTree@175-199@indexed_fault_tree.cc
-      60      9    531      0 IndexedFaultTree::FindMcs@201-306@indexed_fault_tree.cc
-      35     13    341      0 IndexedFaultTree::UnrollGates@308-351@indexed_fault_tree.cc
-      16      4    147      2 IndexedFaultTree::GatherParentInformation@353-369@indexed_fault_tree.cc
-      15      4    143      1 IndexedFaultTree::NotifyParentsOfNegativeGates@371-386@indexed_fault_tree.cc
-      17      8    133      1 IndexedFaultTree::UnrollGate@388-404@indexed_fault_tree.cc
-      22      1    230      1 IndexedFaultTree::UnrollXorGate@406-429@indexed_fault_tree.cc
-      43      8    440      1 IndexedFaultTree::UnrollAtleastGate@431-476@indexed_fault_tree.cc
-      37     12    308      4 IndexedFaultTree::PropagateConstants@478-522@indexed_fault_tree.cc
-      28     13    180      4 IndexedFaultTree::ProcessConstantChild@524-557@indexed_fault_tree.cc
-      14      4    108      2 IndexedFaultTree::RemoveChildren@559-572@indexed_fault_tree.cc
-      50     12    481      3 IndexedFaultTree::PropagateComplements@574-629@indexed_fault_tree.cc
-      30     13    273      2 IndexedFaultTree::ProcessConstGates@631-664@indexed_fault_tree.cc
-      35     12    319      2 IndexedFaultTree::JoinGates@666-701@indexed_fault_tree.cc
-      22      2    209      1 IndexedFaultTree::DetectModules@703-737@indexed_fault_tree.cc
-      23      5    191      3 IndexedFaultTree::AssignTiming@739-762@indexed_fault_tree.cc
-      72     14    618      3 IndexedFaultTree::FindOriginalModules@764-844@indexed_fault_tree.cc
-      22      4    240      2 IndexedFaultTree::CreateNewModule@846-867@indexed_fault_tree.cc
-      52      9    440      4 IndexedFaultTree::FilterModularChildren@869-920@indexed_fault_tree.cc
-      24      5    221      2 IndexedFaultTree::CreateSimpleTree@922-946@indexed_fault_tree.cc
-      32      3    300      2 IndexedFaultTree::FindMcsFromSimpleGate@948-984@indexed_fault_tree.cc
-      32      7    307      4 IndexedFaultTree::MinimizeCutSets@986-1024@indexed_fault_tree.cc
+      29      6    325      3 IndexedFaultTree::InitiateIndexedFaultTree@135-167@indexed_fault_tree.cc
+      10      1     73      2 IndexedFaultTree::PropagateConstants@169-178@indexed_fault_tree.cc
+      20      6    172      1 IndexedFaultTree::ProcessIndexedFaultTree@180-204@indexed_fault_tree.cc
+      60      9    531      0 IndexedFaultTree::FindMcs@206-311@indexed_fault_tree.cc
+      35     13    341      0 IndexedFaultTree::UnrollGates@313-356@indexed_fault_tree.cc
+      16      4    147      2 IndexedFaultTree::GatherParentInformation@358-374@indexed_fault_tree.cc
+      15      4    143      1 IndexedFaultTree::NotifyParentsOfNegativeGates@376-391@indexed_fault_tree.cc
+      17      8    133      1 IndexedFaultTree::UnrollGate@393-409@indexed_fault_tree.cc
+      22      1    230      1 IndexedFaultTree::UnrollXorGate@411-434@indexed_fault_tree.cc
+      43      8    440      1 IndexedFaultTree::UnrollAtleastGate@436-481@indexed_fault_tree.cc
+      37     12    308      4 IndexedFaultTree::PropagateConstants@483-527@indexed_fault_tree.cc
+      28     13    180      4 IndexedFaultTree::ProcessConstantChild@529-562@indexed_fault_tree.cc
+      14      4    108      2 IndexedFaultTree::RemoveChildren@564-577@indexed_fault_tree.cc
+      50     12    481      3 IndexedFaultTree::PropagateComplements@579-634@indexed_fault_tree.cc
+      30     13    273      2 IndexedFaultTree::ProcessConstGates@636-669@indexed_fault_tree.cc
+      35     12    319      2 IndexedFaultTree::JoinGates@671-706@indexed_fault_tree.cc
+      22      2    209      1 IndexedFaultTree::DetectModules@708-742@indexed_fault_tree.cc
+      23      5    191      3 IndexedFaultTree::AssignTiming@744-767@indexed_fault_tree.cc
+      72     14    618      3 IndexedFaultTree::FindOriginalModules@769-849@indexed_fault_tree.cc
+      22      4    240      2 IndexedFaultTree::CreateNewModule@851-872@indexed_fault_tree.cc
+      52      9    440      4 IndexedFaultTree::FilterModularChildren@874-925@indexed_fault_tree.cc
+      24      5    221      2 IndexedFaultTree::CreateSimpleTree@927-951@indexed_fault_tree.cc
+      32      3    300      2 IndexedFaultTree::FindMcsFromSimpleGate@953-989@indexed_fault_tree.cc
+      32      7    307      4 IndexedFaultTree::MinimizeCutSets@991-1029@indexed_fault_tree.cc
        8      1     49      1 IndexedGate::IndexedGate@7-14@indexed_gate.cc
        5      1     36      1 IndexedGate::InitiateWithChild@16-20@indexed_gate.cc
       12      4     75      1 IndexedGate::AddChild@22-33@indexed_gate.cc
@@ -96,13 +114,13 @@
        5      1     30      1 ProbabilityAnalysis::UpdateDatabase@47-51@probability_analysis.cc
       59     11    471      1 ProbabilityAnalysis::Analyze@53-134@probability_analysis.cc
       15      2    138      0 ProbabilityAnalysis::AssignIndices@136-153@probability_analysis.cc
-      30      6    322      1 ProbabilityAnalysis::IndexMcs@155-188@probability_analysis.cc
-      10      2     88      1 ProbabilityAnalysis::ProbMcub@190-200@probability_analysis.cc
-      22      5    184      3 ProbabilityAnalysis::ProbOr@202-235@probability_analysis.cc
-      15      4    110      1 ProbabilityAnalysis::ProbAnd@237-253@probability_analysis.cc
-      24      6    205      3 ProbabilityAnalysis::CombineElAndSet@255-278@probability_analysis.cc
-      13      3    108      0 ProbabilityAnalysis::CalculateTotalProbability@280-292@probability_analysis.cc
-      29      4    252      0 ProbabilityAnalysis::PerformImportanceAnalysis@294-336@probability_analysis.cc
+      31      5    307      1 ProbabilityAnalysis::IndexMcs@155-190@probability_analysis.cc
+      10      2     88      1 ProbabilityAnalysis::ProbMcub@192-202@probability_analysis.cc
+      22      5    184      3 ProbabilityAnalysis::ProbOr@204-237@probability_analysis.cc
+      15      4    110      1 ProbabilityAnalysis::ProbAnd@239-255@probability_analysis.cc
+      24      6    205      3 ProbabilityAnalysis::CombineElAndSet@257-280@probability_analysis.cc
+      13      3    108      0 ProbabilityAnalysis::CalculateTotalProbability@282-294@probability_analysis.cc
+      29      4    252      0 ProbabilityAnalysis::PerformImportanceAnalysis@296-338@probability_analysis.cc
        1      1     24      1 Random::seed@13-13@random.cc
        9      1     61      2 Random::UniformRealGenerator@15-25@random.cc
       10      1     75      3 Random::TriangularGenerator@27-38@random.cc
@@ -126,47 +144,53 @@
       10      3     37      0 RelaxNGValidator::release_underlying@41-51@relax_ng_validator.cc
       24      7    122      1 RelaxNGValidator::Validate@53-83@relax_ng_validator.cc
       12      3    101      2 Reporter::ReportOrphans@21-33@reporter.cc
-      76     10    717      2 Reporter::ReportFta@35-118@reporter.cc
+      76     10    713      2 Reporter::ReportFta@35-118@reporter.cc
       39      3    346      2 Reporter::ReportProbability@120-168@reporter.cc
       31      3    308      2 Reporter::ReportUncertainty@170-200@reporter.cc
       84     13    729      2 Reporter::ReportMcsProb@202-293@reporter.cc
-      43      7    392      3 Reporter::McsToPrint@295-341@reporter.cc
-      29      4    251      2 Reporter::ReportImportance@343-372@reporter.cc
-      26      1    248      1 RiskAnalysis::RiskAnalysis@28-60@risk_analysis.cc
-       5      1     35      1 RiskAnalysis::ProcessInput@62-66@risk_analysis.cc
-      39      8    416      1 RiskAnalysis::ProcessInputFiles@68-114@risk_analysis.cc
-       7      2     49      1 RiskAnalysis::GraphingInstructions@116-122@risk_analysis.cc
-      26      5    223      0 RiskAnalysis::Analyze@124-153@risk_analysis.cc
-       7      2     49      1 RiskAnalysis::Report@155-161@risk_analysis.cc
-      37      6    300      1 RiskAnalysis::ProcessInputFile@163-210@risk_analysis.cc
-      32      4    281      2 RiskAnalysis::AttachLabelAndAttributes@212-244@risk_analysis.cc
-      56      9    457      2 RiskAnalysis::DefineGate@246-320@risk_analysis.cc
-      44     14    366      2 RiskAnalysis::ProcessFormula@322-373@risk_analysis.cc
-      27      7    239      2 RiskAnalysis::ProcessFormulaEvent@375-406@risk_analysis.cc
-      38      7    297      3 RiskAnalysis::ProcessFormulaBasicEvent@408-445@risk_analysis.cc
-      38      7    297      3 RiskAnalysis::ProcessFormulaHouseEvent@447-484@risk_analysis.cc
-      25      6    205      3 RiskAnalysis::ProcessFormulaGate@486-510@risk_analysis.cc
-      57      7    433      1 RiskAnalysis::DefineBasicEvent@512-576@risk_analysis.cc
-      57     10    457      1 RiskAnalysis::DefineHouseEvent@578-645@risk_analysis.cc
-      34      4    283      1 RiskAnalysis::DefineParameter@647-689@risk_analysis.cc
-      15      4    111      2 RiskAnalysis::GetExpression@691-706@risk_analysis.cc
-      20      5    161      2 RiskAnalysis::GetConstantExpression@708-728@risk_analysis.cc
-      22      5    155      2 RiskAnalysis::GetParameterExpression@730-756@risk_analysis.cc
-     167     11   1460      2 RiskAnalysis::GetDeviateExpression@758-954@risk_analysis.cc
-      16      3    126      1 RiskAnalysis::UpdateIfLateEvent@956-971@risk_analysis.cc
-      35     10    288      1 RiskAnalysis::DefineFaultTree@973-1017@risk_analysis.cc
+      44      6    382      3 Reporter::McsToPrint@295-342@reporter.cc
+      29      4    251      2 Reporter::ReportImportance@344-373@reporter.cc
+      26      1    248      1 RiskAnalysis::RiskAnalysis@29-61@risk_analysis.cc
+       5      1     35      1 RiskAnalysis::ProcessInput@63-67@risk_analysis.cc
+      40      8    422      1 RiskAnalysis::ProcessInputFiles@69-118@risk_analysis.cc
+       7      2     49      1 RiskAnalysis::GraphingInstructions@120-126@risk_analysis.cc
+      26      5    223      0 RiskAnalysis::Analyze@128-157@risk_analysis.cc
+       7      2     49      1 RiskAnalysis::Report@159-165@risk_analysis.cc
+      39      7    316      1 RiskAnalysis::ProcessInputFile@167-217@risk_analysis.cc
+      32      4    281      2 RiskAnalysis::AttachLabelAndAttributes@219-251@risk_analysis.cc
+      55      9    457      2 RiskAnalysis::DefineGate@253-326@risk_analysis.cc
+      44     14    366      2 RiskAnalysis::ProcessFormula@328-379@risk_analysis.cc
+      27      7    239      2 RiskAnalysis::ProcessFormulaEvent@381-412@risk_analysis.cc
+      35      7    297      3 RiskAnalysis::ProcessFormulaBasicEvent@414-448@risk_analysis.cc
+      35      7    297      3 RiskAnalysis::ProcessFormulaHouseEvent@450-484@risk_analysis.cc
+      24      6    205      3 RiskAnalysis::ProcessFormulaGate@486-509@risk_analysis.cc
+      21      2    150      1 RiskAnalysis::DefineBasicEvent@511-535@risk_analysis.cc
+      37      6    314      2 RiskAnalysis::GetBasicEvent@537-576@risk_analysis.cc
+      54     10    457      1 RiskAnalysis::DefineHouseEvent@578-642@risk_analysis.cc
+      34      4    283      1 RiskAnalysis::DefineParameter@644-686@risk_analysis.cc
+      15      4    111      2 RiskAnalysis::GetExpression@688-703@risk_analysis.cc
+      20      5    161      2 RiskAnalysis::GetConstantExpression@705-725@risk_analysis.cc
+      22      5    155      2 RiskAnalysis::GetParameterExpression@727-753@risk_analysis.cc
+     167     11   1460      2 RiskAnalysis::GetDeviateExpression@755-951@risk_analysis.cc
+      16      3    126      1 RiskAnalysis::UpdateIfLateEvent@953-968@risk_analysis.cc
+      37     11    304      1 RiskAnalysis::DefineFaultTree@970-1017@risk_analysis.cc
       17      5    144      1 RiskAnalysis::ProcessModelData@1019-1040@risk_analysis.cc
       12      3     87      0 RiskAnalysis::ValidateInitialization@1042-1058@risk_analysis.cc
-      22      6    159      0 RiskAnalysis::CheckFirstLayer@1060-1089@risk_analysis.cc
-       8      3     65      0 RiskAnalysis::CheckSecondLayer@1091-1098@risk_analysis.cc
-       9      2     72      0 RiskAnalysis::CheckAllGates@1100-1110@risk_analysis.cc
-      58     14    411      1 RiskAnalysis::CheckGate@1112-1180@risk_analysis.cc
-      32      8    227      1 RiskAnalysis::CheckInhibitGate@1182-1214@risk_analysis.cc
-      27      7    223      0 RiskAnalysis::CheckMissingEvents@1216-1245@risk_analysis.cc
-      12      3     78      0 RiskAnalysis::CheckMissingParameters@1247-1259@risk_analysis.cc
-      34     10    266      0 RiskAnalysis::ValidateExpressions@1261-1299@risk_analysis.cc
-       7      2     70      1 RiskAnalysis::GraphingInstructions@1301-1307@risk_analysis.cc
-      20      6    172      1 RiskAnalysis::Report@1309-1331@risk_analysis.cc
+      48     14    437      1 RiskAnalysis::DefineCcfGroup@1060-1121@risk_analysis.cc
+      15      2    128      2 RiskAnalysis::ProcessCcfMembers@1123-1139@risk_analysis.cc
+      12      2    105      2 RiskAnalysis::ProcessCcfFactors@1141-1153@risk_analysis.cc
+      25      3    207      2 RiskAnalysis::DefineCcfFactor@1155-1180@risk_analysis.cc
+      22      6    159      0 RiskAnalysis::CheckFirstLayer@1182-1211@risk_analysis.cc
+      14      5    123      0 RiskAnalysis::CheckSecondLayer@1213-1227@risk_analysis.cc
+       9      2     72      0 RiskAnalysis::CheckAllGates@1229-1239@risk_analysis.cc
+      57     14    411      1 RiskAnalysis::CheckGate@1241-1308@risk_analysis.cc
+      32      8    227      1 RiskAnalysis::CheckInhibitGate@1310-1342@risk_analysis.cc
+      27      7    223      0 RiskAnalysis::CheckMissingEvents@1344-1373@risk_analysis.cc
+      12      3     78      0 RiskAnalysis::CheckMissingParameters@1375-1387@risk_analysis.cc
+      44     13    357      0 RiskAnalysis::ValidateExpressions@1389-1437@risk_analysis.cc
+      14      5    123      0 RiskAnalysis::SetupForAnalysis@1439-1454@risk_analysis.cc
+       7      2     70      1 RiskAnalysis::GraphingInstructions@1456-1462@risk_analysis.cc
+      20      6    172      1 RiskAnalysis::Report@1464-1486@risk_analysis.cc
       69      7    564      3 ParseArguments@29-107@scram.cc
       16      3    159      1 ConstructSettings@113-133@scram.cc
       26      6    206      1 RunScram@142-177@scram.cc
@@ -190,25 +214,26 @@
        5      1     39      1 XMLParser::Validate@26-30@xml_parser.cc
        4      1     23      0 XMLParser::Document@32-35@xml_parser.cc
 --------------------------------------------------------------
-19 file analyzed.
+20 file analyzed.
 ==============================================================
 NLOC    Avg.NLOC AvgCCN Avg.ttoken  function_cnt    file
 --------------------------------------------------------------
+    294     18    3.0       169        16     ccf_group.cc
      33      4    1.0        34         6     element.cc
       8      2    1.0        21         2     error.cc
      21      6    1.0        45         3     event.cc
-    288     11    3.0        88        24     expression.cc
-    103     31    5.0       289         3     fault_tree_analysis.cc
-    112     17    4.0       156         6     fault_tree.cc
+    287     11    3.0        88        24     expression.cc
+    115     35    5.0       332         3     fault_tree_analysis.cc
+    140     16    3.0       149         8     fault_tree.cc
      62      8    2.0        54         7     gate.cc
     180     28    4.0       266         6     grapher.cc
-    847     29    7.0       272        28     indexed_fault_tree.cc
+    851     30    7.0       274        28     indexed_fault_tree.cc
      51      8    2.0        59         6     indexed_gate.cc
-    255     22    4.0       186        11     probability_analysis.cc
+    256     22    4.0       184        11     probability_analysis.cc
     141      8    1.0        62        16     random.cc
      55      8    2.0        42         6     relax_ng_validator.cc
-    327     44    6.0       406         7     reporter.cc
-   1106     31    5.0       254        35     risk_analysis.cc
+    328     45    6.0       404         7     reporter.cc
+   1231     29    5.0       247        41     risk_analysis.cc
     173     39    7.0       326         4     scram.cc
      71      8    2.0        41         8     settings.cc
     157     24    5.0       207         6     uncertainty_analysis.cc
@@ -222,4 +247,4 @@ NLOC    Avg.NLOC AvgCCN Avg.ttoken  function_cnt    file
 ==========================================================================================
 Total nloc  Avg.nloc  Avg CCN  Avg token  Fun Cnt  Warning cnt   Fun Rt   nloc Rt  
 ------------------------------------------------------------------------------------------
-      4016        20     4.37     172.18      188            0      0.00    0.00
+      4480        20     4.31     173.08      212            0      0.00    0.00

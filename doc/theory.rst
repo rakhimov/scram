@@ -185,8 +185,8 @@ Beta systems assumes that if common cause failure occurs, all components
 in the group fail. The components can fail independently, but multiple
 independent failures are ignored.
 
-Multiple Greek Letter(MGL) System
----------------------------------
+Multiple Greek Letters(MGL) System
+----------------------------------
 
 MGL is a generalization of Beta system. MGL describes several conditional
 factors that quantify the failure of the certain number of components
