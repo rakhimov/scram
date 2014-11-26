@@ -509,6 +509,33 @@ void RiskAnalysis::ProcessFormulaGate(const xmlpp::Element* event,
 }
 
 void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node) {
+  xmlpp::NodeSet expressions =
+     event_node->find("./*[name() != 'attributes' and name() != 'label']");
+
+  BasicEventPtr basic_event;
+  RiskAnalysis::GetBasicEvent(event_node, basic_event);
+
+  if (!expressions.empty()) {
+    const xmlpp::Element* expr_node =
+        dynamic_cast<const xmlpp::Element*>(expressions.back());
+    assert(expr_node);
+
+    ExpressionPtr expression;
+    RiskAnalysis::GetExpression(expr_node, expression);
+    basic_event->expression(expression);
+  } else {
+    std::stringstream msg;
+    msg << "Line " << event_node->get_line() << ":\n";
+    msg << "The " << basic_event->orig_id()
+        << " basic event does not have an expression.";
+    throw ValidationError(msg.str());
+  }
+
+  RiskAnalysis::AttachLabelAndAttributes(event_node, basic_event);
+}
+
+void RiskAnalysis::GetBasicEvent(const xmlpp::Element* event_node,
+                                 BasicEventPtr& basic_event) {
   std::string orig_id = event_node->get_attribute_value("name");
   boost::trim(orig_id);
   std::string id = orig_id;
@@ -533,8 +560,6 @@ void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node) {
     throw ValidationError(msg.str());
   }
 
-  BasicEventPtr basic_event;
-
   if (tbd_basic_events_.count(id)) {
     basic_event = tbd_basic_events_.find(id)->second;
     primary_events_.insert(std::make_pair(id, basic_event));
@@ -548,26 +573,6 @@ void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node) {
     basic_events_.insert(std::make_pair(id, basic_event));
     RiskAnalysis::UpdateIfLateEvent(basic_event);
   }
-
-  xmlpp::NodeSet expressions =
-     event_node->find("./*[name() != 'attributes' and name() != 'label']");
-
-  if (!expressions.empty()) {
-    const xmlpp::Element* expr_node =
-        dynamic_cast<const xmlpp::Element*>(expressions.back());
-    assert(expr_node);
-
-    ExpressionPtr expression;
-    RiskAnalysis::GetExpression(expr_node, expression);
-    basic_event->expression(expression);
-  } else {
-    std::stringstream msg;
-    msg << "Line " << event_node->get_line() << ":\n";
-    msg << "The " << orig_id << " basic event does not have an expression.";
-    throw ValidationError(msg.str());
-  }
-
-  RiskAnalysis::AttachLabelAndAttributes(event_node, basic_event);
 }
 
 void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node) {
@@ -1141,44 +1146,10 @@ void RiskAnalysis::ProcessCcfMembers(const xmlpp::Element* members_node,
         dynamic_cast<const xmlpp::Element*>(*it);
     assert(event_node);
     assert("basic-event" == event_node->get_name());
-    std::string orig_id = event_node->get_attribute_value("name");
-    boost::trim(orig_id);
-    std::string id = orig_id;
-    boost::to_lower(id);
-    // Detect name clashes.
-    if (gates_.count(id) || tbd_gates_.count(id)) {
-      std::stringstream msg;
-      msg << "Line " << event_node->get_line() << ":\n";
-      msg << "The id " << orig_id << " is already assigned to a gate.";
-      throw ValidationError(msg.str());
-    }
-    if (primary_events_.count(id)) {
-      std::stringstream msg;
-      msg << "Line " << event_node->get_line() << ":\n";
-      msg << "The id " << orig_id << " is doubly defined.";
-      throw ValidationError(msg.str());
-    }
-    if (tbd_house_events_.count(id)) {
-      std::stringstream msg;
-      msg << "Line " << event_node->get_line() << ":\n";
-      msg << "The id " << orig_id << " is already used by a house event.";
-      throw ValidationError(msg.str());
-    }
 
     BasicEventPtr basic_event;
-    if (tbd_basic_events_.count(id)) {
-      basic_event = tbd_basic_events_.find(id)->second;
-      primary_events_.insert(std::make_pair(id, basic_event));
-      basic_events_.insert(std::make_pair(id, basic_event));
-      tbd_basic_events_.erase(id);
+    RiskAnalysis::GetBasicEvent(event_node, basic_event);
 
-    } else {
-      basic_event = BasicEventPtr(new BasicEvent(id));
-      basic_event->orig_id(orig_id);
-      primary_events_.insert(std::make_pair(id, basic_event));
-      basic_events_.insert(std::make_pair(id, basic_event));
-      RiskAnalysis::UpdateIfLateEvent(basic_event);
-    }
     ccf_group->AddMember(basic_event);
   }
 }
