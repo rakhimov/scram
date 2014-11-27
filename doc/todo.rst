@@ -3,7 +3,7 @@ TODO list for SCRAM Project
 #################################
 
 .. note::
-    Relative importances within groups are given in *italics*.
+    Relative subjective importances within groups are given in *italics*.
 
 Currently Low Hanging Fruits
 ============================
@@ -13,10 +13,12 @@ Currently Low Hanging Fruits
 - `Todo list in the code <https://rakhimov.github.io/scram/api/todo.html>`_
 
 - XML based analysis configuration input file. *High*
+
   * Schema
   * Tests
 
 - XML based output file. *High*
+
   * Schema
   * Tests
 
@@ -32,14 +34,13 @@ Major Enhancements and Capabilities
 
 - Boolean formula rewriting for fault trees. *High*
 
-- Incorporation of alignments. *Moderate*
-    * Maintenance
-    * Guaranteed Success/Failure
-
 - OpenPSA-like XML input format. *High*
+
   * Reduce tests for input format and parser.
   * Create Include feature.
+
     + Test for non-existent file, circular inclusion(direct, indirect).
+
   * Subtree Analysis of a Fault Tree.
 
 - Binary Decision Diagram (BDD) based Algorithms. *High*
@@ -50,6 +51,19 @@ Major Enhancements and Capabilities
 
 - Incorporation of an event tree analysis. *Moderate*
 
+- Event tree chaining. *Moderate*
+
+- Event tree fault tree linking. *High*
+
+- Incorporation of alignments. *Moderate*
+
+    * Maintenance
+    * Guaranteed Success/Failure
+
+- Consequences and Consequence groups. *Moderate*
+
+- Substitutions to represent Delete Terms, Recovery Rules, and Exchange Event. *Moderate*
+
 - Dynamic Fault Tree Analysis. *Moderate*
 
 
@@ -57,15 +71,21 @@ Minor Enhancements and Capabilities
 ===================================
 
 - OpenPSA MEF Support:
-  * Nested formula for gates. *Moderate*
-  * Expressions for basic events. *Moderate*
+
+  * Boolean formula. *Moderate*
+  * Expressions. *Moderate*
   * Include directive in input files to include other input files. *Low*
 
 - Improve fault tree generator. *Low*
+
   * Advanced gates
   * CCF groups
 
 - Create cut set generator. *Low*
+
+- Public and private scopes for names of events and other elements. *Low*
+
+- Cardinality/Imply/IFF gates. *Low*
 
 
 GUI Development: Moderate Importance
@@ -112,5 +132,6 @@ Coding Specific
 - More tests for expressions. *Moderate*
 
 - Benchmark tests:
+
   * HIPPS
   * BSCU
