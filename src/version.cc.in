@@ -4,8 +4,8 @@
 /// Some information is filled by CMake and Git.
 #include "version.h"
 
-#include "boost/version.hpp"
-#include "libxml/xmlversion.h"
+#include <boost/version.hpp>
+#include <libxml/xmlversion.h>
 
 #define INNER(x) #x
 #define SVER(x,y,z) INNER(x.y.z)

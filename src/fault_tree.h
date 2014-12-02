@@ -3,7 +3,6 @@
 #ifndef SCRAM_SRC_FAULT_TREE_H_
 #define SCRAM_SRC_FAULT_TREE_H_
 
-#include <map>
 #include <string>
 #include <set>
 #include <vector>

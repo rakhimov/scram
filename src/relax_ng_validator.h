@@ -13,9 +13,9 @@
 #ifndef SCRAM_SRC_RELAX_NG_VALIDATOR_H_
 #define SCRAM_SRC_RELAX_NG_VALIDATOR_H_
 
-#include <libxml/relaxng.h>
-#include <libxml++/document.h>
 #include <glibmm/ustring.h>
+#include <libxml++/document.h>
+#include <libxml/relaxng.h>
 
 namespace scram {
 

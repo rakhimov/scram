@@ -9,8 +9,8 @@
 #include <boost/shared_ptr.hpp>
 
 #include "element.h"
-#include "expression.h"
 #include "error.h"
+#include "expression.h"
 
 namespace scram {
 

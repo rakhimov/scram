@@ -5,8 +5,8 @@
 
 #include <sstream>
 
-#include <libxml++/libxml++.h>
 #include <boost/shared_ptr.hpp>
+#include <libxml++/libxml++.h>
 
 namespace scram {
 

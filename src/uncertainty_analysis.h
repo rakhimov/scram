@@ -12,8 +12,8 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 
-#include <event.h>
-#include <probability_analysis.h>
+#include "event.h"
+#include "probability_analysis.h"
 
 class UncertaintyAnalysisTest;
 

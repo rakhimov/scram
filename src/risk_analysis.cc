@@ -4,7 +4,6 @@
 
 #include <algorithm>
 #include <fstream>
-#include <iostream>
 #include <sstream>
 
 #include <boost/algorithm/string.hpp>
@@ -12,7 +11,7 @@
 #include <boost/pointer_cast.hpp>
 
 #if EMBED_SCHEMA
-#include <schema.h>  // For static building.
+#include "schema.h"  // For static building.
 #endif
 
 #include "ccf_group.h"

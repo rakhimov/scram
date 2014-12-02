@@ -12,7 +12,6 @@ lizard -s cyclomatic_complexity \
   expression.cc \
   fault_tree_analysis.cc \
   fault_tree.cc \
-  gate.cc \
   grapher.cc \
   indexed_fault_tree.cc \
   indexed_gate.cc \
