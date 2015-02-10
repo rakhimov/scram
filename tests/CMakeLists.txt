@@ -100,7 +100,7 @@ add_custom_command(TARGET ${tgt}
 
 # copy input files into build directory for testing
 install(DIRECTORY
-    "${CMAKE_CURRENT_SOURCE_DIR}/input"
-    DESTINATION share/scram
-    COMPONENT testing
-    )
+  "${CMAKE_CURRENT_SOURCE_DIR}/input"
+  DESTINATION share/scram
+  COMPONENT testing
+  )

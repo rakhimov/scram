@@ -112,9 +112,9 @@ find_package(Boost ${BOOST_MIN_VERSION} COMPONENTS
   REQUIRED)
 
 if(USE_STATIC_LIBS)
-   message(STATUS "Linking against boost static libraries")
+  message(STATUS "Linking against boost static libraries")
 else()
-   message(STATUS "Linking against boost dynamic libraries")
+  message(STATUS "Linking against boost dynamic libraries")
 endif()
 
 message("--    Boost Root: ${Boost_ROOT}")

@@ -5,10 +5,10 @@ CONFIGURE_FILE(version.cc.in "${CMAKE_CURRENT_SOURCE_DIR}/version.cc" @ONLY)
 
 SET(scram_install_dir "${CMAKE_INSTALL_PREFIX}")
 CONFIGURE_FILE(
-    "${CMAKE_CURRENT_SOURCE_DIR}/env.cc.in"
-    "${CMAKE_CURRENT_SOURCE_DIR}/env.cc"
-    @ONLY
-    )
+  "${CMAKE_CURRENT_SOURCE_DIR}/env.cc.in"
+  "${CMAKE_CURRENT_SOURCE_DIR}/env.cc"
+  @ONLY
+  )
 ################### End File Configurations ####################
 
 set(SCRAM_CORE_SRC ${SCRAM_CORE_SRC}
