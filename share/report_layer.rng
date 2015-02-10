@@ -1,0 +1,31 @@
+<grammar xmlns="http://relaxng.org/ns/structure/1.0"
+  datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+
+<!-- ############################################################### -->
+<!-- Report Layer -->
+<!-- ############################################################### -->
+
+  <start>
+    <element name="report">
+      <ref name="information-layer"/>
+      <ref name="results-layer"/>
+    </element>
+  </start>
+
+  <!-- =============================================================== -->
+  <!-- I. Information Layer -->
+  <!-- =============================================================== -->
+
+  <define name="information-layer">
+
+  </define>
+
+  <!-- =============================================================== -->
+  <!-- II. Results Layer -->
+  <!-- =============================================================== -->
+
+  <define name="results-layer">
+
+  </define>
+
+</grammar>

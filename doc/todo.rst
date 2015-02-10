@@ -1,6 +1,6 @@
-#################################
+###########################
 TODO list for SCRAM Project
-#################################
+###########################
 
 .. note::
     Relative subjective importances within groups are given in *italics*.
