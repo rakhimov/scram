@@ -1,5 +1,5 @@
 /// @file schema.h
-/// Contains the RelaxNG schema for static builds.
+/// Contains RelaxNG schemas for static builds.
 #ifndef SCRAM_SRC_SCHEMA_H_
 #define SCRAM_SRC_SCHEMA_H_
 
