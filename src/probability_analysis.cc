@@ -59,7 +59,6 @@ void ProbabilityAnalysis::Analyze(
     warnings_ += "Probability for UNITY case.";
     p_total_ = 1;
     prob_of_min_sets_.insert(std::make_pair(*min_cut_sets_.begin(), 1));
-    ordered_min_sets_.insert(std::make_pair(1, *min_cut_sets_.begin()));
     return;
   }
 
@@ -82,7 +81,6 @@ void ProbabilityAnalysis::Analyze(
 
     // Update a container with minimal cut sets and probabilities.
     prob_of_min_sets_.insert(std::make_pair(imcs_to_smcs_[i], p_sub_set));
-    ordered_min_sets_.insert(std::make_pair(p_sub_set, imcs_to_smcs_[i]));
   }
 
   // Timing Initialization

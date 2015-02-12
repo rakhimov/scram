@@ -57,22 +57,6 @@ class Reporter {
  private:
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
 
-  /// Produces lines for printing minimal cut sets.
-  /// @param[in] min_cut_sets Minimal cut sets to print.
-  /// @param[in] basic_events Basic events in the minimal cut sets.
-  /// @param[out] lines Lines representing minimal cut sets.
-  void McsToPrint(
-      const std::set< std::set<std::string> >& min_cut_sets,
-      const boost::unordered_map<std::string, BasicEventPtr>& basic_events,
-      std::map< std::set<std::string>, std::vector<std::string> >* lines);
-
-  /// Reports minimal cut sets' probabilities.
-  /// @param[in] prob_analysis ProbabilityAnalysis with results.
-  /// @param[out] out Output stream.
-  void ReportMcsProb(
-      const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
-      std::ostream& out);
-
   /// Reports results of importance analysis in probability analysis.
   /// @param[in] prob_analysis ProbabilityAnalysis with results.
   /// Reports as "Primary Event Analysis".

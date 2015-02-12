@@ -74,13 +74,6 @@ class ProbabilityAnalysis {
     return importance_;
   }
 
-  /// @returns Container for minimal cut sets ordered by their probabilities.
-  /// @todo This should be post-processing.
-  inline const std::multimap< double, std::set<std::string> >
-      ordered_min_sets() {
-    return ordered_min_sets_;
-  }
-
   /// @returns Container for primary events ordered by their contribution.
   /// @todo This should be post-processing.
   inline const std::multimap< double, std::string > ordered_primaries() {
@@ -184,9 +177,6 @@ class ProbabilityAnalysis {
 
   /// Container for minimal cut sets and their respective probabilities.
   std::map< std::set<std::string>, double > prob_of_min_sets_;
-
-  /// Container for minimal cut sets ordered by their probabilities.
-  std::multimap< double, std::set<std::string> > ordered_min_sets_;
 
   /// Container for basic event importance types.
   /// The order is DIF, MIF, CIF, RRW, RAW.
