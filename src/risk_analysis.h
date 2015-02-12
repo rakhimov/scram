@@ -88,7 +88,7 @@ class RiskAnalysis {
   /// @note This function must be called only after Analyze() function.
   inline void Report() { Report(std::cout); }
 
-  /// Reports the results of analysis to a specified output destination.
+  /// Reports the results of analyses to a specified output destination.
   /// @note This function must be called only after Analyze() function.
   /// param[out] output The output destination.
   /// @throws IOError if the output file is not accessable.

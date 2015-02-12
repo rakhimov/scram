@@ -28,6 +28,9 @@
         </element>
       </optional>
       <optional>
+        <element name="time"> <text/> </element>
+      </optional>
+      <optional>
         <element name="calculated-quantities">
           <attribute name="name"> <text/> </attribute>
           <attribute name="definition"> <text/> </attribute>
@@ -38,16 +41,64 @@
         <element name="calculation-methods">
           <attribute name="name"> <text/> </attribute>
           <optional>
-            <attribute name="calculation-time"> <data type="float"/> </attribute>
+            <element name="limits">
+              <optional>
+                <element name="number-of-basic-events">
+                  <data type="nonNegativeInteger"/>
+                </element>
+              </optional>
+            </element>
           </optional>
           <optional>
-            <attribute name="warning"> <text/> </attribute>
+            <element name="calculation-time">
+              <data type="float"/>
+            </element>
+          </optional>
+          <optional>
+            <element name="warning"> <text/> </element>
           </optional>
         </element>
       </optional>
       <optional>
         <element name="model-features">
-          <attribute name="name"> <text/> </attribute>
+          <optional>
+            <attribute name="name"> <text/> </attribute>
+          </optional>
+          <optional>
+            <element name="gates">
+              <data type="nonNegativeInteger"/>
+            </element>
+          </optional>
+          <optional>
+            <element name="basic-events">
+              <data type="nonNegativeInteger"/>
+            </element>
+          </optional>
+          <optional>
+            <element name="house-events">
+              <data type="nonNegativeInteger"/>
+            </element>
+          </optional>
+          <optional>
+            <element name="fault-trees">
+              <data type="nonNegativeInteger"/>
+            </element>
+          </optional>
+          <optional>
+            <element name="event-trees">
+              <data type="nonNegativeInteger"/>
+            </element>
+          </optional>
+          <optional>
+            <element name="functional-events">
+              <data type="nonNegativeInteger"/>
+            </element>
+          </optional>
+          <optional>
+            <element name="initiating-events">
+              <data type="nonNegativeInteger"/>
+            </element>
+          </optional>
         </element>
       </optional>
       <optional>
@@ -96,6 +147,9 @@
           <data type="nonNegativeInteger"/>
         </attribute>
       </optional>
+      <optional>
+        <attribute name="probability"> <data type="float"/> </attribute>
+      </optional>
       <zeroOrMore>
         <ref name="product"/>
       </zeroOrMore>
@@ -108,6 +162,9 @@
         <attribute name="order">
           <data type="nonNegativeInteger"/>
         </attribute>
+      </optional>
+      <optional>
+        <attribute name="probability"> <data type="float"/> </attribute>
       </optional>
       <zeroOrMore>
         <ref name="literal"/>
