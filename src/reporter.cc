@@ -215,20 +215,7 @@ void Reporter::ReportImportance(
       << std::setw(12) << "CIF"
       << std::setw(12) << "RRW" << "RAW"
       << "\n\n";
-  std::multimap < double, std::string >::const_reverse_iterator it_contr;
-  for (it_contr = prob_analysis->ordered_primaries_.rbegin();
-       it_contr != prob_analysis->ordered_primaries_.rend(); ++it_contr) {
-    out << std::left;
-    out << std::setw(20)
-        << prob_analysis->basic_events_.find(it_contr->second)->second
-              ->orig_id();
-    for (int i = 0; i < 5; ++i) {
-        if (i < 4) out << std::setw(12);
-        out << std::setprecision(4)
-            << prob_analysis->importance_.find(it_contr->second)->second[i];
-    }
-    out << "\n";
-  }
+  // Set the precision to 4.
   out.flags(fmt);  // Restore the initial state.
 }
 

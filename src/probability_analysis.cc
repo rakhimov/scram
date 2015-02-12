@@ -330,8 +330,6 @@ void ProbabilityAnalysis::PerformImportanceAnalysis() {
     imp.push_back(p_e / p_total_);
 
     importance_.insert(std::make_pair(int_to_basic_[*it]->id(), imp));
-    ordered_primaries_.insert(std::make_pair(imp[0],
-                                             int_to_basic_[*it]->id()));
   }
 }
 

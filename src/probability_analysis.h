@@ -74,12 +74,6 @@ class ProbabilityAnalysis {
     return importance_;
   }
 
-  /// @returns Container for primary events ordered by their contribution.
-  /// @todo This should be post-processing.
-  inline const std::multimap< double, std::string > ordered_primaries() {
-    return ordered_primaries_;
-  }
-
   /// @returns Warnings generated upon analysis.
   inline const std::string warnings() {
     return warnings_;
@@ -181,11 +175,6 @@ class ProbabilityAnalysis {
   /// Container for basic event importance types.
   /// The order is DIF, MIF, CIF, RRW, RAW.
   std::map< std::string, std::vector<double> > importance_;
-
-  /// Container for primary events ordered by their contribution of
-  /// Fussel-Vesely.
-  /// @todo This should a post processing in reporting.
-  std::multimap< double, std::string > ordered_primaries_;
 
   /// Register warnings.
   std::string warnings_;
