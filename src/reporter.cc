@@ -9,17 +9,52 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/date_time.hpp>
 #include <boost/lexical_cast.hpp>
-#include <libxml++/libxml++.h>
 
 #include "event.h"
+#include "error.h"
 #include "fault_tree_analysis.h"
 #include "probability_analysis.h"
+#include "settings.h"
 #include "uncertainty_analysis.h"
 #include "version.h"
 
 namespace pt = boost::posix_time;
 
 namespace scram {
+
+void Reporter::SetupReport(const Settings& settings, xmlpp::Document* doc) {
+  if (doc->get_root_node() != 0) {
+    throw LogicError("The passed document is not empty for reporting");
+  }
+  xmlpp::Node* root = doc->create_root_node("report");
+  // Add an information node.
+  xmlpp::Element* information = root->add_child("information");
+  xmlpp::Element* software = information->add_child("software");
+  software->set_attribute("name", "SCRAM");
+  software->set_attribute("version", version::core());
+  std::stringstream time;
+  time << pt::second_clock::local_time();
+  information->add_child("time")->add_child_text(time.str());
+
+  xmlpp::Element* quant = information->add_child("calculated-quantity");
+  quant->set_attribute("name", "Minimal cut sets from fault trees");
+  quant->set_attribute("definition", "Minimal groups of events for failure");
+  quant->set_attribute("approximation", "None");
+
+  xmlpp::Element* methods = information->add_child("calculation-method");
+  methods->set_attribute("name", "MOCUS");
+  methods->add_child("limits")->add_child("number-of-basic-events")
+      ->add_child_text(boost::lexical_cast<std::string>(settings.limit_order_));
+
+  /// @todo Verify the total number of unique gates for each model.
+  /// @todo Verify the total number of unique basic events for each model.
+  /// @todo Report the total number of house events and fault trees.
+  /// @todo Report the performance metrics.
+  /// @todo Report warnings.
+
+  root->add_child("results");
+  /// @todo Analysis depended report of settings.
+}
 
 void Reporter::ReportOrphans(
     const std::set<boost::shared_ptr<PrimaryEvent> >& orphan_primary_events,
@@ -37,49 +72,12 @@ void Reporter::ReportOrphans(
 
 void Reporter::ReportFta(
     const boost::shared_ptr<const FaultTreeAnalysis>& fta,
-    std::ostream& out) {
-  // Create XML or use already created document.
-  xmlpp::Document* doc = new xmlpp::Document();
-  doc->create_root_node("report");
+    xmlpp::Document* doc) {
   xmlpp::Node* root = doc->get_root_node();
-  // Add an information node.
-  xmlpp::Element* information = root->add_child("information");
-  xmlpp::Element* software = information->add_child("software");
-  software->set_attribute("name", "SCRAM");
-  software->set_attribute("version", version::core());
-  std::stringstream time;
-  time << pt::second_clock::local_time();
-  information->add_child("time")->add_child_text(time.str());
-
-  xmlpp::Element* quant = information->add_child("calculated_quantities");
-  quant->set_attribute("name", "MCS");
-  quant->set_attribute("definition", "Minimal groups of events for failure");
-  quant->set_attribute("approximation", "None");
-
-  xmlpp::Element* methods = information->add_child("calculation-methods");
-  methods->set_attribute("name", "MOCUS");
-  methods->add_child("limits")->add_child("number-of-basic-events")
-      ->add_child_text(boost::lexical_cast<std::string>(fta->limit_order_));
-
-  xmlpp::Element* features = information->add_child("model-features");
-  /// @todo Verify the total number of unique gates for each model.
-  features->add_child("gates")
-      ->add_child_text(boost::lexical_cast<std::string>(fta->num_gates_));
-
-  /// @todo Verify the total number of unique basic events for each model.
-  features->add_child("basic-events")
-      ->add_child_text(boost::lexical_cast<std::string>(fta->num_basic_events_));
-  /// @todo Report the total number of house events and fault trees.
-
-  std::stringstream calc_time;
-  calc_time << std::setprecision(5) << fta->analysis_time_;
-  methods->add_child("calculation-time")->add_child_text(calc_time.str());
-  if (fta->warnings_ != "") {
-    methods->add_child("warning")->add_child_text(fta->warnings_);
-  }
-
-  // Add results.
-  xmlpp::Element* results = root->add_child("results");
+  xmlpp::NodeSet res = root->find("./results");
+  assert(res.size() == 1);
+  xmlpp::Element* results = dynamic_cast<xmlpp::Element*>(res[0]);
+  // xmlpp::Element* results = root->add_child("results");
   xmlpp::Element* sum_of_products = results->add_child("sum-of-products");
   sum_of_products->set_attribute("name", fta->top_event_name_);
   /// @todo Find the number of basic events that are in the cut sets.
@@ -117,10 +115,6 @@ void Reporter::ReportFta(
       }
     }
   }
-
-  // Write and cleanup the document
-  doc->write_to_stream_formatted(out);
-  delete doc;
 }
 
 void Reporter::ReportProbability(
@@ -135,7 +129,6 @@ void Reporter::ReportProbability(
   out << "\n" << "Probability Analysis" << "\n";
   out << "====================\n\n";
   out << std::left;
-  out << std::setw(40) << "Time: " << pt::second_clock::local_time() << "\n\n";
   out << std::setw(40) << "Probability Calculations Time: "
       << std::setprecision(5) << prob_analysis->p_time_ << "s\n";
   out << std::setw(40) << "Importance Calculations Time: "
@@ -179,7 +172,6 @@ void Reporter::ReportUncertainty(
   out << "\n" << "Uncertainty Analysis" << "\n";
   out << "====================\n\n";
   out << std::left;
-  out << std::setw(40) << "Time: " << pt::second_clock::local_time() << "\n\n";
   out << std::setw(40) << "Uncertainty Calculation Time: "
       << uncert_analysis->p_time_ << "\n";
   out << std::setw(40) << "Number of trials: "

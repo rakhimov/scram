@@ -1463,13 +1463,21 @@ void RiskAnalysis::GraphingInstructions(std::ostream& out) {
 void RiskAnalysis::Report(std::ostream& out) {
   Reporter rp = Reporter();
 
-  if (!orphan_primary_events_.empty())
-    rp.ReportOrphans(orphan_primary_events_, out);
+  // Create XML or use already created document.
+  xmlpp::Document* doc = new xmlpp::Document();
+  rp.SetupReport(settings_, doc);
+
+  ///@todo Report orphans in XML.
+  /// if (!orphan_primary_events_.empty())
+  ///   rp.ReportOrphans(orphan_primary_events_, out);
 
   std::vector<FaultTreeAnalysisPtr>::iterator it;
   for (it = ftas_.begin(); it != ftas_.end(); ++it) {
-    rp.ReportFta(*it, out);
+    rp.ReportFta(*it, doc);
   }
+
+  doc->write_to_stream_formatted(out);
+  delete doc;
 
   if (prob_requested_) {
     std::vector<ProbabilityAnalysisPtr>::iterator it_p;

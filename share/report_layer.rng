@@ -30,15 +30,15 @@
       <optional>
         <element name="time"> <text/> </element>
       </optional>
-      <optional>
-        <element name="calculated-quantities">
+      <zeroOrMore>
+        <element name="calculated-quantity">
           <attribute name="name"> <text/> </attribute>
           <attribute name="definition"> <text/> </attribute>
           <attribute name="approximations"> <text/> </attribute>
         </element>
-      </optional>
-      <optional>
-        <element name="calculation-methods">
+      </zeroOrMore>
+      <zeroOrMore>
+        <element name="calculation-method">
           <attribute name="name"> <text/> </attribute>
           <optional>
             <element name="limits">
@@ -58,7 +58,7 @@
             <element name="warning"> <text/> </element>
           </optional>
         </element>
-      </optional>
+      </zeroOrMore>
       <optional>
         <element name="model-features">
           <optional>
@@ -113,15 +113,13 @@
 
   <define name="results-layer">
     <element name="results">
-      <optional>
-        <ref name="minimal-cut-sets"/>
-      </optional>
-      <optional>
-        <ref name="statistical-measures"/>
-      </optional>
-      <optional>
-        <ref name="curves"/>
-      </optional>
+      <oneOrMore>
+        <choice>
+          <ref name="minimal-cut-sets"/>
+          <ref name="statistical-measure"/>
+          <ref name="curve"/>
+        </choice>
+      </oneOrMore>
     </element>
   </define>
 
@@ -189,7 +187,7 @@
   <!-- II.2. Statistical Measures -->
   <!-- ============================================================= -->
 
-  <define name="statistical-measures">
+  <define name="statistical-measure">
     <element name="measure">
       <optional>
         <attribute name="name"> <data type="NCName"/> </attribute>
@@ -254,7 +252,7 @@
   <!-- II.3. Curves -->
   <!-- ============================================================= -->
 
-  <define name="curves">
+  <define name="curve">
     <element name="curve">
       <optional>
         <attribute name="name"> <data type="NCName"/> </attribute>

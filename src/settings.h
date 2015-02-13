@@ -13,6 +13,7 @@ class RiskAnalysis;
 /// Builder for analysis settings.
 class Settings {
   friend class RiskAnalysis;
+  friend class Reporter;
 
  public:
   Settings();
