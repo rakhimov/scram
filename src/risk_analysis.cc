@@ -1476,9 +1476,6 @@ void RiskAnalysis::Report(std::ostream& out) {
     rp.ReportFta(*it, doc);
   }
 
-  doc->write_to_stream_formatted(out);
-  delete doc;
-
   if (prob_requested_) {
     std::vector<ProbabilityAnalysisPtr>::iterator it_p;
     for (it_p = prob_analyses_.begin(); it_p != prob_analyses_.end(); ++it_p) {
@@ -1487,9 +1484,12 @@ void RiskAnalysis::Report(std::ostream& out) {
     std::vector<UncertaintyAnalysisPtr>::iterator it_u;
     for (it_u = uncertainty_analyses_.begin();
          it_u != uncertainty_analyses_.end(); ++it_u) {
-      rp.ReportUncertainty(*it_u, out);
+      rp.ReportUncertainty(*it_u, doc);
     }
   }
+
+  doc->write_to_stream_formatted(out);
+  delete doc;
 }
 
 }  // namespace scram

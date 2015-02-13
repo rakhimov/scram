@@ -60,15 +60,13 @@ class Reporter {
 
   /// Reports the results of uncertainty analysis with minimal cut sets.
   /// @param[in] uncert_analysis UncertaintyAnalysis with results.
-  /// @param[out] out Output stream.
+  /// @param[in/out] doc Preformatted XML document.
   /// @note This function must be called only after analysis is done.
   void ReportUncertainty(
       const boost::shared_ptr<const UncertaintyAnalysis>& uncert_analysis,
-      std::ostream& out);
+      xmlpp::Document* doc);
 
  private:
-  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
-
   /// Reports results of importance analysis in probability analysis.
   /// @param[in] prob_analysis ProbabilityAnalysis with results.
   /// Reports as "Primary Event Analysis".

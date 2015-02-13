@@ -36,15 +36,34 @@ void Reporter::SetupReport(const Settings& settings, xmlpp::Document* doc) {
   time << pt::second_clock::local_time();
   information->add_child("time")->add_child_text(time.str());
 
+  // Report the setup for main minimal cut set analysis.
   xmlpp::Element* quant = information->add_child("calculated-quantity");
-  quant->set_attribute("name", "Minimal cut sets from fault trees");
-  quant->set_attribute("definition", "Minimal groups of events for failure");
-  quant->set_attribute("approximation", "None");
+  quant->set_attribute("name", "Minimal Cut Set Analysis");
+  quant->set_attribute(
+      "definition",
+      "Groups of events sufficient for a top event failure");
 
   xmlpp::Element* methods = information->add_child("calculation-method");
   methods->set_attribute("name", "MOCUS");
   methods->add_child("limits")->add_child("number-of-basic-events")
       ->add_child_text(boost::lexical_cast<std::string>(settings.limit_order_));
+
+  // Report the setup for probability analysis.
+  // Report the setup for optional uncertainty analysis.
+  if (settings.fta_type_ == "mc") {
+    xmlpp::Element* quant = information->add_child("calculated-quantity");
+    quant->set_attribute("name", "Uncertainty Analysis");
+    quant->set_attribute(
+        "definition",
+        "Calculation of uncertainties with the Monte Carlo method");
+
+    xmlpp::Element* methods = information->add_child("calculation-method");
+    methods->set_attribute("name", "Monte Carlo");
+    xmlpp::Element* limits = methods->add_child("limits");
+    limits->add_child("number-of-trials")
+        ->add_child_text(boost::lexical_cast<std::string>(settings.trials_));
+    /// @todo Report the seed and rng.
+  }
 
   /// @todo Verify the total number of unique gates for each model.
   /// @todo Verify the total number of unique basic events for each model.
@@ -164,33 +183,42 @@ void Reporter::ReportProbability(
 
 void Reporter::ReportUncertainty(
     const boost::shared_ptr<const UncertaintyAnalysis>& uncert_analysis,
-    std::ostream& out) {
-  std::ios::fmtflags fmt(out.flags());  // Save the state to recover later.
-  if (uncert_analysis->warnings_ != "") {
-    out << "\n" << uncert_analysis->warnings_ << "\n";
+    xmlpp::Document* doc) {
+  xmlpp::Node* root = doc->get_root_node();
+  xmlpp::NodeSet res = root->find("./results");
+  assert(res.size() == 1);
+  xmlpp::Element* results = dynamic_cast<xmlpp::Element*>(res[0]);
+  xmlpp::Element* measure = results->add_child("measure");
+  measure->add_child("mean")->set_attribute("value",
+      boost::lexical_cast<std::string>(uncert_analysis->mean()));
+  measure->add_child("standard-deviation")->set_attribute("value",
+      boost::lexical_cast<std::string>(uncert_analysis->sigma()));
+  xmlpp::Element* confidence = measure->add_child("confidence-range");
+  confidence->set_attribute("percentage", "95");
+  confidence->set_attribute("lower-bound",
+      boost::lexical_cast<std::string>(
+          uncert_analysis->confidence_interval().first));
+  confidence->set_attribute("upper-bound",
+      boost::lexical_cast<std::string>(
+          uncert_analysis->confidence_interval().second));
+  /// @todo Error factor reporting.
+  xmlpp::Element* quantiles = measure->add_child("quantiles");
+  int num_bins = uncert_analysis->distribution().size() - 1;
+  quantiles->set_attribute("number",
+                           boost::lexical_cast<std::string>(num_bins));
+  for (int i = 0; i < num_bins; ++i) {
+    xmlpp::Element* quant = quantiles->add_child("quantile");
+    quant->set_attribute("number", boost::lexical_cast<std::string>(i + 1));
+    double lower = uncert_analysis->distribution()[i].first;
+    double upper = uncert_analysis->distribution()[i + 1].first;
+    double value = uncert_analysis->distribution()[i + 1].second;
+    quant->set_attribute("mean",
+                         boost::lexical_cast<std::string>(value));
+    quant->set_attribute("lower-bound",
+                         boost::lexical_cast<std::string>(lower));
+    quant->set_attribute("upper-bound",
+                         boost::lexical_cast<std::string>(upper));
   }
-  out << "\n" << "Uncertainty Analysis" << "\n";
-  out << "====================\n\n";
-  out << std::left;
-  out << std::setw(40) << "Uncertainty Calculation Time: "
-      << uncert_analysis->p_time_ << "\n";
-  out << std::setw(40) << "Number of trials: "
-      << uncert_analysis->num_trials_ << "\n";
-  out << std::setw(40) << "Mean: " << uncert_analysis->mean() << "\n";
-  out << std::setw(40) << "Standard deviation: "
-      << uncert_analysis->sigma() << "\n";
-  out << std::setw(40) << "Confidence range(95%): "
-      << uncert_analysis->confidence_interval().first
-      << " -:- " << uncert_analysis->confidence_interval().second << "\n";
-  out << "\nDistribution:\n";
-  out << std::setw(40) << "Bin Bounds (b(n), b(n+1)]" << "Value\n";
-  std::vector<std::pair<double, double> >::const_iterator it;
-  for (it = uncert_analysis->distribution().begin();
-       it != uncert_analysis->distribution().end(); ++it) {
-    out << std::setw(40) << it->first << it->second << "\n";
-  }
-  out.flush();
-  out.flags(fmt);  // Restore the initial state.
 }
 
 void Reporter::ReportImportance(

@@ -34,7 +34,9 @@
         <element name="calculated-quantity">
           <attribute name="name"> <text/> </attribute>
           <attribute name="definition"> <text/> </attribute>
-          <attribute name="approximations"> <text/> </attribute>
+          <optional>
+            <attribute name="approximations"> <text/> </attribute>
+          </optional>
         </element>
       </zeroOrMore>
       <zeroOrMore>
