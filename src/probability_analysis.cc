@@ -13,8 +13,10 @@
 namespace scram {
 
 ProbabilityAnalysis::ProbabilityAnalysis(std::string approx, int nsums,
-                                         double cut_off)
-    : warnings_(""),
+                                         double cut_off,
+                                         bool importance_analysis)
+    : importance_analysis_(importance_analysis),
+      warnings_(""),
       p_total_(0),
       num_prob_mcs_(0),
       coherent_(true),
@@ -124,7 +126,7 @@ void ProbabilityAnalysis::Analyze(
   // Duration of the calculations.
   p_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
 
-  ProbabilityAnalysis::PerformImportanceAnalysis();
+  if (importance_analysis_) ProbabilityAnalysis::PerformImportanceAnalysis();
 
   // Duration of the calculations.
   imp_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);

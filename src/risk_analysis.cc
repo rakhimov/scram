@@ -136,7 +136,8 @@ void RiskAnalysis::Analyze() {
     if (settings_.probability_analysis_) {
       ProbabilityAnalysisPtr pa(
           new ProbabilityAnalysis(settings_.approx_, settings_.num_sums_,
-                                  settings_.cut_off_));
+                                  settings_.cut_off_,
+                                  settings_.importance_analysis_));
       pa->UpdateDatabase(it->second->basic_events());
       pa->Analyze(fta->min_cut_sets());
       prob_analyses_.insert(std::make_pair(it->first, pa));

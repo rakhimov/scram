@@ -36,9 +36,10 @@ class ProbabilityAnalysis {
   /// @param[in] approx The kind of approximation for probability calculations.
   /// @param[in] nsums The number of sums in the probability series.
   /// @param[in] cut_off The cut-off probability for cut sets.
+  /// @param[in] importance_analysis To perform importance analysis.
   /// @throws InvalidArgument if any of the parameters is invalid.
   ProbabilityAnalysis(std::string approx = "no", int nsums = 7,
-                      double cut_off = 1e-8);
+                      double cut_off = 1e-8, bool importance_analysis = false);
 
   virtual ~ProbabilityAnalysis() {}
 
@@ -146,6 +147,9 @@ class ProbabilityAnalysis {
 
   /// Cut-off probability for minimal cut sets.
   double cut_off_;
+
+  /// A flag for importance analysis.
+  bool importance_analysis_;
 
   /// Container for basic events.
   boost::unordered_map<std::string, BasicEventPtr> basic_events_;
