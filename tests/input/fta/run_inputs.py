@@ -7,19 +7,19 @@ def main():
     # Correct corner case inputs
     pass_inputs = [
             "correct_tree_input.xml",
+            "two_trees.xml",
+            ]
+
+    pass_probs = [
+            "correct_tree_input_with_probs.xml",
             "mixed_definitions.xml",
             "model_data_mixed_definitions.xml",
             "trailing_spaces.xml",
-            "two_trees.xml",
             "labels_and_attributes.xml",
             "orphan_primary_event.xml",
             "correct_expressions.xml",
             "flavored_types.xml",
             "very_long_mcs.xml",
-            ]
-
-    pass_probs = [
-            "correct_tree_input_with_probs.xml",
             ]
 
     # Wrong input files in the current directory
@@ -87,7 +87,7 @@ def main():
     print("\n\nRUNNING CORRECT PROBABILITY INPUTS\n")
     for p in pass_probs:
         print("\nRUNNING : " + p + "\n")
-        args = ["scram", p]
+        args = ["scram", p, "--probability", "1"]
         subprocess.call(args)
 
     # Run incorrect inputs
@@ -95,7 +95,7 @@ def main():
     for i in bad_inputs:
         print("\nRUNNING : " + i + "\n")
         msg = ""
-        args = ["scram", i]
+        args = ["scram", i, "--probability", "1"]
         try:
             subprocess.call(args)
         except:

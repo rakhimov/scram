@@ -55,10 +55,6 @@ def test_fta_calls():
     cmd = ["scram", fta_input, "-r", "-m"]
     yield assert_not_equal, 0, call(cmd)
 
-    # Test incorrect type of analysis
-    cmd = ["scram", fta_input, "-a", "fta-nonexistent-analysis"]
-    yield assert_not_equal, 0, call(cmd)
-
     # Test graph only
     cmd = ["scram", fta_input, "-g"]
     yield assert_equal, 0, call(cmd)
@@ -82,12 +78,6 @@ def test_fta_calls():
     yield assert_equal, 0, call(cmd)  # Report into an output file
     if os.path.isfile(out_temp):
         os.remove(out_temp)
-
-    # Test MC
-    cmd = ["scram", fta_input, "-a", "mc"]
-    yield assert_equal, 0, call(cmd)
-    cmd = ["scram", fta_no_prob, "-a", "mc"]
-    yield assert_equal, 0, call(cmd)
 
     # Test the rare event approximation
     cmd = ["scram", fta_input, "-r"]
