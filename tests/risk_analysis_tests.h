@@ -41,17 +41,19 @@ class RiskAnalysisTest : public ::testing::Test {
 
   const std::set< std::set<std::string> >& min_cut_sets() {
     assert(!ran->ftas_.empty());
-    return ran->ftas_[0]->min_cut_sets();
+    assert(ran->ftas_.size() == 1);
+    return ran->ftas_.begin()->second->min_cut_sets();
   }
 
   // Provides the number of minimal cut sets per order of sets.
   // The order starts from 0.
   std::vector<int> McsDistribution() {
     assert(!ran->ftas_.empty());
-    std::vector<int> distr(ran->ftas_[0]->max_order() + 1, 0);
+    assert(ran->ftas_.size() == 1);
+    std::vector<int> distr(ran->ftas_.begin()->second->max_order() + 1, 0);
     std::set< std::set<std::string> >::const_iterator it;
     const std::set< std::set<std::string> >* mcs =
-        &ran->ftas_[0]->min_cut_sets();
+        &ran->ftas_.begin()->second->min_cut_sets();
     for (it = mcs->begin(); it != mcs->end(); ++it) {
       int order = it->size();
       distr[order]++;
@@ -61,17 +63,20 @@ class RiskAnalysisTest : public ::testing::Test {
 
   double p_total() {
     assert(!ran->prob_analyses_.empty());
-    return ran->prob_analyses_[0]->p_total();
+    assert(ran->prob_analyses_.size() == 1);
+    return ran->prob_analyses_.begin()->second->p_total();
   }
 
   const std::map< std::set<std::string>, double >& prob_of_min_sets() {
     assert(!ran->prob_analyses_.empty());
-    return ran->prob_analyses_[0]->prob_of_min_sets();
+    assert(ran->prob_analyses_.size() == 1);
+    return ran->prob_analyses_.begin()->second->prob_of_min_sets();
   }
 
   const std::vector<double>& importance(std::string id) {
     assert(!ran->prob_analyses_.empty());
-    return ran->prob_analyses_[0]->importance().find(id)->second;
+    assert(ran->prob_analyses_.size() == 1);
+    return ran->prob_analyses_.begin()->second->importance().find(id)->second;
   }
 
   bool CheckGate(GatePtr event) {
@@ -81,12 +86,14 @@ class RiskAnalysisTest : public ::testing::Test {
   // Uncertainty analysis.
   double mean() {
     assert(!ran->uncertainty_analyses_.empty());
-    return ran->uncertainty_analyses_[0]->mean();
+    assert(ran->uncertainty_analyses_.size() == 1);
+    return ran->uncertainty_analyses_.begin()->second->mean();
   }
 
   double sigma() {
     assert(!ran->uncertainty_analyses_.empty());
-    return ran->uncertainty_analyses_[0]->sigma();
+    assert(ran->uncertainty_analyses_.size() == 1);
+    return ran->uncertainty_analyses_.begin()->second->sigma();
   }
 
   // Members

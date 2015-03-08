@@ -236,6 +236,8 @@ TEST_F(RiskAnalysisTest, AnalyzeDefault) {
   // Probability calculations.
   delete ran;
   ran = new RiskAnalysis();
+  ran->AddSettings(settings.probability_analysis(true)
+                           .importance_analysis(true));
   ASSERT_NO_THROW(ran->ProcessInput(with_prob));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(0.646, p_total());
@@ -274,6 +276,7 @@ TEST_F(RiskAnalysisTest, AnalyzeDefault) {
 
 TEST_F(RiskAnalysisTest, Importance) {
   std::string tree_input = "./share/scram/input/fta/importance_test.xml";
+  ran->AddSettings(settings.importance_analysis(true));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(0.67, p_total());
@@ -310,7 +313,7 @@ TEST_F(RiskAnalysisTest, RareEvent) {
   std::string with_prob =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   // Probability calculations with the rare event approximation.
-  ran->AddSettings(settings.approx("rare"));
+  ran->AddSettings(settings.approx("rare").probability_analysis(true));
   ASSERT_NO_THROW(ran->ProcessInput(with_prob));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(1.2, p_total());
@@ -321,7 +324,7 @@ TEST_F(RiskAnalysisTest, MCUB) {
   std::string with_prob =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   // Probability calculations with the MCUB approximation.
-  ran->AddSettings(settings.approx("mcub"));
+  ran->AddSettings(settings.approx("mcub").probability_analysis(true));
   ASSERT_NO_THROW(ran->ProcessInput(with_prob));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(0.766144, p_total());
@@ -332,16 +335,18 @@ TEST_F(RiskAnalysisTest, MCUB) {
 TEST_F(RiskAnalysisTest, McubNonCoherent) {
   std::string with_prob = "./share/scram/input/benchmark/a_and_not_b.xml";
   // Probability calculations with the MCUB approximation.
-  ran->AddSettings(settings.approx("mcub"));
+  ran->AddSettings(settings.approx("mcub").probability_analysis(true));
   ASSERT_NO_THROW(ran->ProcessInput(with_prob));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_NEAR(0.08, p_total(), 1e-5);
 }
 
 // Test Monte Carlo Analysis
+/// @todo Expand this test.
 TEST_F(RiskAnalysisTest, AnalyzeMC) {
   ran->AddSettings(settings.uncertainty_analysis(true));
-  std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
+  std::string tree_input =
+      "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
 }
@@ -350,6 +355,7 @@ TEST_F(RiskAnalysisTest, AnalyzeMC) {
 TEST_F(RiskAnalysisTest, Report) {
   std::string tree_input =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
+  ran->AddSettings(settings.probability_analysis(true));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   ASSERT_NO_THROW(ran->Report("/dev/null"));

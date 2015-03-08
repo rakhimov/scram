@@ -1462,6 +1462,8 @@ void RiskAnalysis::Report(std::ostream& out) {
   /// if (!orphan_primary_events_.empty())
   ///   rp.ReportOrphans(orphan_primary_events_, out);
 
+  assert(ftas_.size() == fault_trees_.size());  // All trees are analyzed.
+
   std::map<std::string, FaultTreePtr>::iterator it;
   for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
     ProbabilityAnalysisPtr prob_analysis;  // Null pointer if no analysis.

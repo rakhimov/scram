@@ -19,6 +19,7 @@ TEST_F(RiskAnalysisTest, BetaFactorCCF) {
   std::set<std::string> cut_set;
   std::set< std::set<std::string> > mcs;  // For expected min cut sets.
 
+  ran->AddSettings(settings.ccf_analysis(true).probability_analysis(true));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   ASSERT_NO_THROW(ran->Report("/dev/null"));
@@ -62,7 +63,8 @@ TEST_F(RiskAnalysisTest, BetaFactorCCF) {
 // Test Minimal cut sets and total probabilty.
 TEST_F(RiskAnalysisTest, PhiFactorCCF) {
   std::string tree_input = "./share/scram/input/benchmark/phi_factor_ccf.xml";
-  ASSERT_NO_THROW(ran->AddSettings(settings.num_sums(3)));
+  ASSERT_NO_THROW(ran->AddSettings(settings.ccf_analysis(true).num_sums(3)
+                                           .probability_analysis(true)));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   ASSERT_NO_THROW(ran->Report("/dev/null"));
@@ -79,7 +81,8 @@ TEST_F(RiskAnalysisTest, PhiFactorCCF) {
 // Test Minimal cut sets and total probabilty.
 TEST_F(RiskAnalysisTest, MGLFactorCCF) {
   std::string tree_input = "./share/scram/input/benchmark/mgl_ccf.xml";
-  ASSERT_NO_THROW(ran->AddSettings(settings.num_sums(3)));
+  ASSERT_NO_THROW(ran->AddSettings(settings.ccf_analysis(true).num_sums(3)
+                                           .probability_analysis(true)));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   ASSERT_NO_THROW(ran->Report("/dev/null"));
@@ -96,7 +99,8 @@ TEST_F(RiskAnalysisTest, MGLFactorCCF) {
 // Test Minimal cut sets and total probabilty.
 TEST_F(RiskAnalysisTest, AlphaFactorCCF) {
   std::string tree_input = "./share/scram/input/benchmark/alpha_factor_ccf.xml";
-  ASSERT_NO_THROW(ran->AddSettings(settings.num_sums(3)));
+  ASSERT_NO_THROW(ran->AddSettings(settings.ccf_analysis(true).num_sums(3)
+                                           .probability_analysis(true)));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   ASSERT_NO_THROW(ran->Report("/dev/null"));

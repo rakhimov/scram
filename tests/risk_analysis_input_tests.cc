@@ -6,6 +6,7 @@
 
 #include "error.h"
 #include "risk_analysis.h"
+#include "settings.h"
 
 using namespace scram;
 
@@ -48,7 +49,7 @@ TEST(RiskAnalysisInputTest, UnsupportedFeature) {
 }
 
 // Test correct tree inputs
-TEST(RiskAnalysisInputTest, CorrectFTAInputs) {
+TEST(RiskAnalysisInputTest, CorrectFTAInputsWithoutProbability) {
   std::vector<std::string> correct_inputs;
   std::string dir = "./share/scram/input/fta/";
   correct_inputs.push_back(dir + "correct_tree_input.xml");
@@ -68,21 +69,36 @@ TEST(RiskAnalysisInputTest, CorrectFTAInputs) {
   for (it = correct_inputs.begin(); it != correct_inputs.end(); ++it) {
     ran = new RiskAnalysis();
     EXPECT_NO_THROW(ran->ProcessInput(*it)) << " Filename: " << *it;
-    EXPECT_NO_THROW(ran->Report("/dev/null")) << " Filename: " << *it;
     delete ran;
   }
   /// @todo Create include tests.
 }
 
 // Test correct probability inputs
-TEST(RiskAnalysisInputTest, CorrectFTAProbability) {
-  std::string input_correct =
-      "./share/scram/input/fta/correct_tree_input_with_probs.xml";
+TEST(RiskAnalysisInputTest, CorrectFTAInputsWithProbability) {
+  std::vector<std::string> correct_inputs;
+  std::string dir = "./share/scram/input/fta/";
+  correct_inputs.push_back(dir + "correct_tree_input_with_probs.xml");
+  correct_inputs.push_back(dir + "mixed_definitions.xml");
+  correct_inputs.push_back(dir + "model_data_mixed_definitions.xml");
+  correct_inputs.push_back(dir + "trailing_spaces.xml");
+  correct_inputs.push_back(dir + "labels_and_attributes.xml");
+  correct_inputs.push_back(dir + "orphan_primary_event.xml");
+  correct_inputs.push_back(dir + "correct_expressions.xml");
+  correct_inputs.push_back(dir + "flavored_types.xml");
+  correct_inputs.push_back(dir + "very_long_mcs.xml");
 
   RiskAnalysis* ran;
-  ran = new RiskAnalysis();
-  EXPECT_NO_THROW(ran->ProcessInput(input_correct));  // Create the fault tree.
-  delete ran;
+  Settings settings;
+  settings.probability_analysis(true);
+
+  std::vector<std::string>::iterator it;
+  for (it = correct_inputs.begin(); it != correct_inputs.end(); ++it) {
+    ran = new RiskAnalysis();
+    ran->AddSettings(settings);
+    EXPECT_NO_THROW(ran->ProcessInput(*it)) << " Filename: " << *it;
+    delete ran;
+  }
 }
 
 // Test incorrect fault tree inputs
@@ -140,7 +156,11 @@ TEST(RiskAnalysisInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back(dir + "ccf_wrong_distribution.xml");
   incorrect_inputs.push_back(dir + "ccf_negative_factor.xml");
   incorrect_inputs.push_back(dir + "ccf_more_factors_than_needed.xml");
+
   RiskAnalysis* ran;
+  Settings settings;
+  settings.probability_analysis(true);
+
   std::vector<std::string>::iterator it;
   for (it = ioerror_inputs.begin(); it != ioerror_inputs.end(); ++it) {
     ran = new RiskAnalysis();
@@ -150,6 +170,7 @@ TEST(RiskAnalysisInputTest, IncorrectFTAInputs) {
 
   for (it = incorrect_inputs.begin(); it != incorrect_inputs.end(); ++it) {
     ran = new RiskAnalysis();
+    ran->AddSettings(settings);
     EXPECT_THROW(ran->ProcessInput(*it), ValidationError)
         << " Filename:  " << *it;
     delete ran;
