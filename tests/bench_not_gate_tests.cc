@@ -104,7 +104,7 @@ TEST_F(RiskAnalysisTest, A_OR_NOT_AB) {
 // Uncertainty report for Unity case.
 TEST_F(RiskAnalysisTest, MC_A_OR_NOT_A) {
   std::string tree_input = "./share/scram/input/benchmark/a_or_not_a.xml";
-  ran->AddSettings(settings.fta_type("mc"));
+  ran->AddSettings(settings.uncertainty_analysis(true));
   std::set<std::string> cut_set;
   std::set< std::set<std::string> > mcs;  // For expected min cut sets.
 
@@ -115,7 +115,7 @@ TEST_F(RiskAnalysisTest, MC_A_OR_NOT_A) {
 
 // [A OR NOT B] FTA MC
 TEST_F(RiskAnalysisTest, MC_A_OR_NOT_B) {
-  ran->AddSettings(settings.fta_type("mc"));
+  ran->AddSettings(settings.uncertainty_analysis(true));
   std::string tree_input = "./share/scram/input/benchmark/a_or_not_b.xml";
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());

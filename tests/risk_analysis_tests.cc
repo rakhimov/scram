@@ -340,7 +340,7 @@ TEST_F(RiskAnalysisTest, McubNonCoherent) {
 
 // Test Monte Carlo Analysis
 TEST_F(RiskAnalysisTest, AnalyzeMC) {
-  ran->AddSettings(settings.fta_type("mc"));
+  ran->AddSettings(settings.uncertainty_analysis(true));
   std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());

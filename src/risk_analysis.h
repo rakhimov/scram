@@ -380,17 +380,14 @@ class RiskAnalysis {
   /// A collection of common cause failure groups.
   std::map<std::string, CcfGroupPtr> ccf_groups_;
 
-  /// Fault tree analyses that are performed.
-  std::vector<FaultTreeAnalysisPtr> ftas_;
+  /// Fault tree analyses that are performed on a specific fault tree.
+  std::map<std::string, FaultTreeAnalysisPtr> ftas_;
 
-  /// Probability analyses that are performed.
-  std::vector<ProbabilityAnalysisPtr> prob_analyses_;
+  /// Probability analyses that are performed on a specific fault tree.
+  std::map<std::string, ProbabilityAnalysisPtr> prob_analyses_;
 
-  /// Uncertainty analyses that are performed.
-  std::vector<UncertaintyAnalysisPtr> uncertainty_analyses_;
-
-  /// Indicator if probability calculations are requested.
-  bool prob_requested_;
+  /// Uncertainty analyses that are performed on a specific fault tree.
+  std::map<std::string, UncertaintyAnalysisPtr> uncertainty_analyses_;
 
   /// Settings for analysis.
   Settings settings_;

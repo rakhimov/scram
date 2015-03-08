@@ -26,7 +26,6 @@ class Reporter;
 /// from minimal cut sets and probability distributions of basic events.
 class UncertaintyAnalysis : private ProbabilityAnalysis {
 friend class ::UncertaintyAnalysisTest;
-friend class Reporter;
 
  public:
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;

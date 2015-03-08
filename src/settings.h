@@ -43,12 +43,6 @@ class Settings {
   /// @throws ValueError if the approximation is not recognized.
   Settings& approx(std::string approx);
 
-  /// Sets the type of fault tree analysis.
-  /// @param[in] analysis A type of analysis: default or mc.
-  /// @returns Rerefence to this object.
-  /// @throws ValueError if the analysis is not recognized.
-  Settings& fta_type(std::string analysis);
-
   /// Sets the number of trials for Monte Carlo simulations.
   /// @param[in] trials A positive number.
   /// @returns Rerefence to this object.
@@ -59,7 +53,55 @@ class Settings {
   /// @returns Rerefence to this object.
   Settings& mission_time(double time);
 
+  /// Sets the flag for probability analysis.
+  /// @param[in] flag True or false for turning on or off the analysis.
+  /// @returns Rerefence to this object.
+  Settings& probability_analysis(bool flag) {
+    probability_analysis_ = flag;
+    return *this;
+  }
+
+  /// Sets the flag for importance analysis. Importance analysis is performed
+  /// together with probability analysis.
+  /// @param[in] flag True or false for turning on or off the analysis.
+  /// @returns Rerefence to this object.
+  Settings& importance_analysis(bool flag) {
+    importance_analysis_ = flag;
+    if (importance_analysis_) probability_analysis_ = true;
+    return *this;
+  }
+
+  /// Sets the flag for uncertainty analysis. Uncertainty analysis implies
+  /// probability analysis.
+  /// @param[in] flag True or false for turning on or off the analysis.
+  /// @returns Rerefence to this object.
+  Settings& uncertainty_analysis(bool flag) {
+    uncertainty_analysis_ = flag;
+    if (uncertainty_analysis_) probability_analysis_ = true;
+    return *this;
+  }
+
+  /// Sets the flag for ccf analysis.
+  /// @param[in] flag True or false for turning on or off the analysis.
+  /// @returns Rerefence to this object.
+  Settings& ccf_analysis(bool flag) {
+    ccf_analysis_ = flag;
+    return *this;
+  }
+
  private:
+  /// A flag for probability analysis.
+  bool probability_analysis_;
+
+  /// A flag for importance analysis.
+  bool importance_analysis_;
+
+  /// A flag for uncertainty analysis.
+  bool uncertainty_analysis_;
+
+  /// A flag for common-cause analysis.
+  bool ccf_analysis_;
+
   /// Limit on the order of minimal cut sets.
   int limit_order_;
 
@@ -71,9 +113,6 @@ class Settings {
 
   /// The approximation to be applied for calculations.
   std::string approx_;
-
-  /// The type of fault tree analysis.
-  std::string fta_type_;
 
   /// The number of trials for Monte Carlo simulations.
   int trials_;

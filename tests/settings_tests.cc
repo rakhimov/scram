@@ -7,8 +7,6 @@ using namespace scram;
 
 TEST(SettingsTest, IncorrectSetup) {
   Settings s;
-  // Incorrect analysis type.
-  ASSERT_THROW(s.fta_type("analysis"), InvalidArgument);
   // Incorrect approximation argument.
   ASSERT_THROW(s.approx("approx"), InvalidArgument);
   // Incorrect limit order for minmal cut sets.

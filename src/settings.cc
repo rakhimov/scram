@@ -13,7 +13,10 @@ Settings::Settings()
       cut_off_(1e-8),
       mission_time_(8760),
       trials_(1e3),
-      fta_type_("default") {}
+      probability_analysis_(false),
+      importance_analysis_(false),
+      uncertainty_analysis_(false),
+      ccf_analysis_(false) {}
 
 Settings& Settings::limit_order(int order) {
   if (order < 1) {
@@ -51,15 +54,6 @@ Settings& Settings::approx(std::string approx) {
     throw InvalidArgument(msg);
   }
   approx_ = approx;
-  return *this;
-}
-
-Settings& Settings::fta_type(std::string analysis) {
-  if (analysis != "default" && analysis != "mc") {
-    std::string msg = "The analysis type is not recognized.";
-    throw InvalidArgument(msg);
-  }
-  fta_type_ = analysis;
   return *this;
 }
 

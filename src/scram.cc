@@ -40,8 +40,14 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
          "XML configuration file for analysis (NOT SUPPERTED)")
         ("validate,v", "only validate input files")
         ("graph-only,g", "produce graph without analysis")
-        ("analysis,a", po::value<std::string>()->default_value("default"),
-         "type of analysis to be performed on this input")
+        ("probability", po::value<bool>()->default_value(false),
+         "perform probability analysis")
+        ("importance", po::value<bool>()->default_value(false),
+         "perform importance analysis")
+        ("uncertainty", po::value<bool>()->default_value(false),
+         "perform uncertainty analysis")
+        ("ccf", po::value<bool>()->default_value(false),
+         "perform common-cause failure analysis")
         ("rare-event,r", "use the rare event approximation")
         ("mcub,m", "use the MCUB approximation for probability calculations")
         ("limit-order,l", po::value<int>()->default_value(20),
@@ -127,7 +133,10 @@ Settings ConstructSettings(const po::variables_map& vm) {
       .cut_off(vm["cut-off"].as<double>())
       .mission_time(vm["mission-time"].as<double>())
       .trials(vm["trials"].as<int>())
-      .fta_type(vm["analysis"].as<std::string>());
+      .probability_analysis(vm["probability"].as<bool>())
+      .importance_analysis(vm["importance"].as<bool>())
+      .uncertainty_analysis(vm["uncertainty"].as<bool>())
+      .ccf_analysis(vm["ccf"].as<bool>());
 
   return settings;
 }

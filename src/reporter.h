@@ -44,36 +44,37 @@ class Reporter {
       std::ostream& out);
 
   /// Reports the results of analysis to a specified output destination.
+  /// @param[in] ft_name The original name of a fault tree.
   /// @param[in] fta Fault Tree Analysis with results.
+  /// @param[in] prob_analysis ProbabilityAnalysis with results. Null pointer
+  ///                          if there is no probability analysis.
   /// @param[in/out] doc Preformatted XML document.
   /// @note This function must be called only after analysis is done.
-  void ReportFta(const boost::shared_ptr<const FaultTreeAnalysis>& fta,
-                 xmlpp::Document* doc);
+  void ReportFta(
+      std::string ft_name,
+      const boost::shared_ptr<const FaultTreeAnalysis>& fta,
+      const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
+      xmlpp::Document* doc);
 
-  /// Reports the results of probability analysis with minimal cut sets.
+  /// Reports results of importance analysis in probability analysis.
+  /// @param[in] ft_name The original name of a fault tree.
   /// @param[in] prob_analysis ProbabilityAnalysis with results.
   /// @param[out] out Output stream.
   /// @note This function must be called only after analysis is done.
-  void ReportProbability(
+  void ReportImportance(
+      std::string ft_name,
       const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
       std::ostream& out);
 
   /// Reports the results of uncertainty analysis with minimal cut sets.
+  /// @param[in] ft_name The original name of a fault tree.
   /// @param[in] uncert_analysis UncertaintyAnalysis with results.
   /// @param[in/out] doc Preformatted XML document.
   /// @note This function must be called only after analysis is done.
   void ReportUncertainty(
+      std::string ft_name,
       const boost::shared_ptr<const UncertaintyAnalysis>& uncert_analysis,
       xmlpp::Document* doc);
-
- private:
-  /// Reports results of importance analysis in probability analysis.
-  /// @param[in] prob_analysis ProbabilityAnalysis with results.
-  /// Reports as "Primary Event Analysis".
-  /// @param[out] out Output stream.
-  void ReportImportance(
-      const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
-      std::ostream& out);
 };
 
 }  // namespace scram

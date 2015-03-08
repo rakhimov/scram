@@ -48,8 +48,8 @@ class ProbabilityAnalysis {
   /// calculations.
   /// Updates internal indexes for events.
   /// @param[in] basic_events The database of basic event in cut sets.
-  void UpdateDatabase(const boost::unordered_map<std::string, BasicEventPtr>&
-                      basic_events);
+  void UpdateDatabase(
+      const boost::unordered_map<std::string, BasicEventPtr>& basic_events);
 
   /// Performs quantitative analysis on minimal cut sets containing primary
   /// events provided in the databases.
@@ -59,25 +59,25 @@ class ProbabilityAnalysis {
 
   /// @returns The total probability calculated by the analysis.
   /// @note The user should make sure that the analysis is actually done.
-  inline double p_total() { return p_total_; }
+  inline double p_total() const { return p_total_; }
 
   /// @returns Map with minimal cut sets and their probabilities.
   /// @note The user should make sure that the analysis is actually done.
-  inline const std::map< std::set<std::string>, double >& prob_of_min_sets() {
+  inline const std::map< std::set<std::string>, double >&
+      prob_of_min_sets() const {
     return prob_of_min_sets_;
   }
 
   /// @returns Map with primary events and their importance values.
   ///          The associated vector contains DIF, MIF, CIF, RRW, RAW in order.
   /// @note The user should make sure that the analysis is actually done.
-  inline const std::map< std::string, std::vector<double> >& importance() {
+  inline const std::map< std::string, std::vector<double> >&
+      importance() const {
     return importance_;
   }
 
   /// @returns Warnings generated upon analysis.
-  inline const std::string warnings() {
-    return warnings_;
-  }
+  inline const std::string warnings() const { return warnings_; }
 
  protected:
   /// Assigns an index to each primary event, and then populates with this

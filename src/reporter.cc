@@ -49,8 +49,32 @@ void Reporter::SetupReport(const Settings& settings, xmlpp::Document* doc) {
       ->add_child_text(boost::lexical_cast<std::string>(settings.limit_order_));
 
   // Report the setup for probability analysis.
+  if (settings.probability_analysis_) {
+    quant = information->add_child("calculated-quantity");
+    quant->set_attribute("name", "Probability Analysis");
+    quant->set_attribute("definition",
+                         "Quantitative analysis of failure probability");
+    quant->set_attribute("approximation", settings.approx_);
+
+    methods = information->add_child("calculation-method");
+    methods->set_attribute("name", "Numerical Probability");
+    methods->add_child("limits")->add_child("cut-off")
+        ->add_child_text(boost::lexical_cast<std::string>(settings.cut_off_));
+    methods->add_child("limits")->add_child("number-of-sums")
+        ->add_child_text(boost::lexical_cast<std::string>(settings.num_sums_));
+  }
+
+  // Report the setup for optional importance analysis.
+  if (settings.importance_analysis_) {
+    quant = information->add_child("calculated-quantity");
+    quant->set_attribute("name", "Importance Analysis");
+    quant->set_attribute("definition",
+                         "Quantitative analysis of contributions and "\
+                         "importance of events.");
+  }
+
   // Report the setup for optional uncertainty analysis.
-  if (settings.fta_type_ == "mc") {
+  if (settings.uncertainty_analysis_) {
     xmlpp::Element* quant = information->add_child("calculated-quantity");
     quant->set_attribute("name", "Uncertainty Analysis");
     quant->set_attribute(
@@ -90,7 +114,9 @@ void Reporter::ReportOrphans(
 }
 
 void Reporter::ReportFta(
+    std::string ft_name,
     const boost::shared_ptr<const FaultTreeAnalysis>& fta,
+    const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
     xmlpp::Document* doc) {
   xmlpp::Node* root = doc->get_root_node();
   xmlpp::NodeSet res = root->find("./results");
@@ -98,7 +124,7 @@ void Reporter::ReportFta(
   xmlpp::Element* results = dynamic_cast<xmlpp::Element*>(res[0]);
   // xmlpp::Element* results = root->add_child("results");
   xmlpp::Element* sum_of_products = results->add_child("sum-of-products");
-  sum_of_products->set_attribute("name", fta->top_event_name_);
+  sum_of_products->set_attribute("name", ft_name);
   /// @todo Find the number of basic events that are in the cut sets.
   sum_of_products->set_attribute(
       "basic-events",
@@ -107,12 +133,25 @@ void Reporter::ReportFta(
       "products",
       boost::lexical_cast<std::string>(fta->min_cut_sets_.size()));
 
+  if (prob_analysis) {
+    sum_of_products->set_attribute(
+        "probability",
+        boost::lexical_cast<std::string>(prob_analysis->p_total()));
+  }
+
   std::set< std::set<std::string> >::const_iterator it_min;
   for (it_min = fta->min_cut_sets_.begin(); it_min != fta->min_cut_sets_.end();
        ++it_min) {
     xmlpp::Element* product = sum_of_products->add_child("product");
     product->set_attribute("order",
                            boost::lexical_cast<std::string>(it_min->size()));
+
+    if (prob_analysis) {
+      product->set_attribute(
+          "probability",
+          boost::lexical_cast<std::string>(
+              prob_analysis->prob_of_min_sets().find(*it_min)->second));
+    }
 
     std::set<std::string>::const_iterator it_set;
     for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
@@ -136,52 +175,29 @@ void Reporter::ReportFta(
   }
 }
 
-void Reporter::ReportProbability(
+void Reporter::ReportImportance(
+    std::string ft_name,
     const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
     std::ostream& out) {
   std::ios::fmtflags fmt(out.flags());  // Save the state to recover later.
-  // Print warnings of calculations.
-  if (prob_analysis->warnings_ != "") {
-    out << "\n" << prob_analysis->warnings_ << "\n";
-  }
-
-  out << "\n" << "Probability Analysis" << "\n";
-  out << "====================\n\n";
+  // Basic event analysis.
+  out << "\nBasic Event Analysis:\n";
+  out << "-----------------------\n";
   out << std::left;
-  out << std::setw(40) << "Probability Calculations Time: "
-      << std::setprecision(5) << prob_analysis->p_time_ << "s\n";
-  out << std::setw(40) << "Importance Calculations Time: "
-      << std::setprecision(5) << prob_analysis->imp_time_ << "s\n\n";
-  out << std::setw(40) << "Approximation:" << prob_analysis->approx_ << "\n";
-  out << std::setw(40) << "Limit on series: " << prob_analysis->nsums_ << "\n";
-  out << std::setw(40) << "Cut-off probability for cut sets: "
-      << prob_analysis->cut_off_ << "\n";
-  out << std::setw(40) << "Total MCS provided: "
-      << prob_analysis->min_cut_sets_.size() << "\n";
-  out << std::setw(40) << "Number of Cut Sets Used: "
-      << prob_analysis->num_prob_mcs_ << "\n";
-  out << std::setw(40) << "Total Probability: "
-      << prob_analysis->p_total_ << "\n";
-  out.flush();
-
-  // Print total probability.
-  out << "\n================================\n";
-  out <<  "Total Probability: " << std::setprecision(7)
-      << prob_analysis->p_total_;
-  out << "\n================================\n\n";
-
-  if (prob_analysis->p_total_ > 1)
-    out << "WARNING: Total Probability is invalid.\n\n";
-
-  out.flush();
-
-  Reporter::ReportImportance(prob_analysis, out);
+  out << std::setw(20) << "Event"
+      << std::setw(12) << "DIF"
+      << std::setw(12) << "MIF"
+      << std::setw(12) << "CIF"
+      << std::setw(12) << "RRW" << "RAW"
+      << "\n\n";
+  // Set the precision to 4.
 
   out.flush();
   out.flags(fmt);  // Restore the initial state.
 }
 
 void Reporter::ReportUncertainty(
+    std::string ft_name,
     const boost::shared_ptr<const UncertaintyAnalysis>& uncert_analysis,
     xmlpp::Document* doc) {
   xmlpp::Node* root = doc->get_root_node();
@@ -189,6 +205,7 @@ void Reporter::ReportUncertainty(
   assert(res.size() == 1);
   xmlpp::Element* results = dynamic_cast<xmlpp::Element*>(res[0]);
   xmlpp::Element* measure = results->add_child("measure");
+  measure->set_attribute("name", ft_name);
   measure->add_child("mean")->set_attribute("value",
       boost::lexical_cast<std::string>(uncert_analysis->mean()));
   measure->add_child("standard-deviation")->set_attribute("value",
@@ -219,24 +236,6 @@ void Reporter::ReportUncertainty(
     quant->set_attribute("upper-bound",
                          boost::lexical_cast<std::string>(upper));
   }
-}
-
-void Reporter::ReportImportance(
-    const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
-    std::ostream& out) {
-  std::ios::fmtflags fmt(out.flags());  // Save the state to recover later.
-  // Basic event analysis.
-  out << "\nBasic Event Analysis:\n";
-  out << "-----------------------\n";
-  out << std::left;
-  out << std::setw(20) << "Event"
-      << std::setw(12) << "DIF"
-      << std::setw(12) << "MIF"
-      << std::setw(12) << "CIF"
-      << std::setw(12) << "RRW" << "RAW"
-      << "\n\n";
-  // Set the precision to 4.
-  out.flags(fmt);  // Restore the initial state.
 }
 
 }  // namespace scram
