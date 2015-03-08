@@ -33,7 +33,9 @@
       <zeroOrMore>
         <element name="calculated-quantity">
           <attribute name="name"> <text/> </attribute>
-          <attribute name="definition"> <text/> </attribute>
+          <optional>
+            <attribute name="definition"> <text/> </attribute>
+          </optional>
           <optional>
             <attribute name="approximations"> <text/> </attribute>
           </optional>
@@ -46,6 +48,14 @@
             <element name="limits">
               <optional>
                 <element name="number-of-basic-events">
+                  <data type="nonNegativeInteger"/>
+                </element>
+              </optional>
+              <optional>
+                <element name="cut-off"> <data type="float"/> </element>
+              </optional>
+              <optional>
+                <element name="number-of-sums">
                   <data type="nonNegativeInteger"/>
                 </element>
               </optional>
@@ -118,6 +128,7 @@
       <oneOrMore>
         <choice>
           <ref name="minimal-cut-sets"/>
+          <ref name="importance"/>
           <ref name="statistical-measure"/>
           <ref name="curve"/>
         </choice>
@@ -293,6 +304,46 @@
       <value>seconds</value>
       <value>hours</value>
     </choice>
+  </define>
+
+  <!-- ============================================================= -->
+  <!-- II.4. Importance -->
+  <!-- ============================================================= -->
+
+  <define name="importance">
+    <element name="importance">
+      <optional>
+        <attribute name="name"> <data type="NCName"/> </attribute>
+      </optional>
+      <optional>
+        <attribute name="description"> <text/> </attribute>
+      </optional>
+      <optional>
+        <attribute name="basic-events">
+          <data type="nonNegativeInteger"/>
+        </attribute>
+      </optional>
+    </element>
+    <zeroOrMore>
+      <element name="basic-event">
+        <attribute name="name"> <data type="NCName"/> </attribute>
+        <optional>
+          <attribute name="DIF"> <data type="float"/> </attribute>
+        </optional>
+        <optional>
+          <attribute name="MIF"> <data type="float"/> </attribute>
+        </optional>
+        <optional>
+          <attribute name="CIF"> <data type="float"/> </attribute>
+        </optional>
+        <optional>
+          <attribute name="RRW"> <data type="float"/> </attribute>
+        </optional>
+        <optional>
+          <attribute name="RAW"> <data type="float"/> </attribute>
+        </optional>
+      </element>
+    </zeroOrMore>
   </define>
 
 </grammar>
