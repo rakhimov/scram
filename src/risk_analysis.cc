@@ -1471,7 +1471,7 @@ void RiskAnalysis::Report(std::ostream& out) {
 
     if (settings_.importance_analysis_) {
       rp.ReportImportance(it->second->name(),
-                          prob_analyses_.find(it->first)->second, out);
+                          prob_analyses_.find(it->first)->second, doc);
     }
 
     if (settings_.uncertainty_analysis_) {

@@ -178,22 +178,40 @@ void Reporter::ReportFta(
 void Reporter::ReportImportance(
     std::string ft_name,
     const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
-    std::ostream& out) {
-  std::ios::fmtflags fmt(out.flags());  // Save the state to recover later.
-  // Basic event analysis.
-  out << "\nBasic Event Analysis:\n";
-  out << "-----------------------\n";
-  out << std::left;
-  out << std::setw(20) << "Event"
-      << std::setw(12) << "DIF"
-      << std::setw(12) << "MIF"
-      << std::setw(12) << "CIF"
-      << std::setw(12) << "RRW" << "RAW"
-      << "\n\n";
-  // Set the precision to 4.
+    xmlpp::Document* doc) {
+  xmlpp::Node* root = doc->get_root_node();
+  xmlpp::NodeSet res = root->find("./results");
+  assert(res.size() == 1);
+  xmlpp::Element* results = dynamic_cast<xmlpp::Element*>(res[0]);
+  xmlpp::Element* importance = results->add_child("importance");
+  importance->set_attribute("name", ft_name);
+  importance->set_attribute(
+      "basic-events",
+      boost::lexical_cast<std::string>(prob_analysis->importance().size()));
 
-  out.flush();
-  out.flags(fmt);  // Restore the initial state.
+  std::map< std::string, std::vector<double> >::const_iterator it;
+  for (it = prob_analysis->importance().begin();
+       it != prob_analysis->importance().end(); ++it) {
+    xmlpp::Element* basic_event = importance->add_child("basic-event");
+    basic_event->set_attribute(
+        "name",
+        prob_analysis->basic_events_.find(it->first)->second->orig_id());
+    basic_event->set_attribute(
+        "DIF",
+        boost::lexical_cast<std::string>(it->second[0]));
+    basic_event->set_attribute(
+        "MIF",
+        boost::lexical_cast<std::string>(it->second[1]));
+    basic_event->set_attribute(
+        "CIF",
+        boost::lexical_cast<std::string>(it->second[2]));
+    basic_event->set_attribute(
+        "RRW",
+        boost::lexical_cast<std::string>(it->second[3]));
+    basic_event->set_attribute(
+        "RAW",
+        boost::lexical_cast<std::string>(it->second[4]));
+  }
 }
 
 void Reporter::ReportUncertainty(

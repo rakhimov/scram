@@ -59,12 +59,12 @@ class Reporter {
   /// Reports results of importance analysis in probability analysis.
   /// @param[in] ft_name The original name of a fault tree.
   /// @param[in] prob_analysis ProbabilityAnalysis with results.
-  /// @param[out] out Output stream.
+  /// @param[in/out] doc Preformatted XML document.
   /// @note This function must be called only after analysis is done.
   void ReportImportance(
       std::string ft_name,
       const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
-      std::ostream& out);
+      xmlpp::Document* doc);
 
   /// Reports the results of uncertainty analysis with minimal cut sets.
   /// @param[in] ft_name The original name of a fault tree.
