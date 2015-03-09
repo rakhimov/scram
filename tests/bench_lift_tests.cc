@@ -25,7 +25,6 @@ TEST_F(RiskAnalysisTest, Lift) {
   ran->AddSettings(settings.probability_analysis(true));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  ASSERT_NO_THROW(ran->Report("/dev/null"));
   EXPECT_NEAR(1.19999e-5, p_total(), 1e-5);
   // Minimal cut set check.
   std::vector<std::string>::iterator it;

@@ -16,7 +16,6 @@ TEST_F(RiskAnalysisTest, SmallTree) {
   ran->AddSettings(settings);
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  ASSERT_NO_THROW(ran->Report("/dev/null"));
   // Minimal cut set check.
   cut_set.insert(e1);
   cut_set.insert(e2);

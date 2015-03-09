@@ -155,6 +155,44 @@ void RiskAnalysis::Analyze() {
   }
 }
 
+void RiskAnalysis::Report(std::ostream& out) {
+  Reporter rp = Reporter();
+
+  // Create XML or use already created document.
+  xmlpp::Document* doc = new xmlpp::Document();
+  rp.SetupReport(settings_, doc);
+
+  /// @todo Report orphans in XML.
+  /// if (!orphan_primary_events_.empty())
+  ///   rp.ReportOrphans(orphan_primary_events_, out);
+
+  assert(ftas_.size() == fault_trees_.size());  // All trees are analyzed.
+
+  std::map<std::string, FaultTreePtr>::iterator it;
+  for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
+    ProbabilityAnalysisPtr prob_analysis;  // Null pointer if no analysis.
+    if (settings_.probability_analysis_) {
+      prob_analysis = prob_analyses_.find(it->first)->second;
+    }
+    rp.ReportFta(it->second->name(), ftas_.find(it->first)->second,
+                 prob_analysis, doc);
+
+    if (settings_.importance_analysis_) {
+      rp.ReportImportance(it->second->name(),
+                          prob_analyses_.find(it->first)->second, doc);
+    }
+
+    if (settings_.uncertainty_analysis_) {
+        rp.ReportUncertainty(it->second->name(),
+                             uncertainty_analyses_.find(it->first)->second,
+                             doc);
+    }
+  }
+
+  doc->write_to_stream_formatted(out);
+  delete doc;
+}
+
 void RiskAnalysis::Report(std::string output) {
   std::ofstream of(output.c_str());
   if (!of.good()) {
@@ -180,7 +218,7 @@ void RiskAnalysis::ProcessInputFile(std::string xml_file) {
 #if EMBED_SCHEMA
   schema << g_schema_content;
 #else
-  std::string schema_path = Env::rng_schema();
+  std::string schema_path = Env::input_schema();
   std::ifstream schema_stream(schema_path.c_str());
   schema << schema_stream.rdbuf();
   schema_stream.close();
@@ -1449,44 +1487,6 @@ void RiskAnalysis::GraphingInstructions(std::ostream& out) {
     Grapher gr = Grapher();
     gr.GraphFaultTree(it->second, settings_.probability_analysis_, out);
   }
-}
-
-void RiskAnalysis::Report(std::ostream& out) {
-  Reporter rp = Reporter();
-
-  // Create XML or use already created document.
-  xmlpp::Document* doc = new xmlpp::Document();
-  rp.SetupReport(settings_, doc);
-
-  /// @todo Report orphans in XML.
-  /// if (!orphan_primary_events_.empty())
-  ///   rp.ReportOrphans(orphan_primary_events_, out);
-
-  assert(ftas_.size() == fault_trees_.size());  // All trees are analyzed.
-
-  std::map<std::string, FaultTreePtr>::iterator it;
-  for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
-    ProbabilityAnalysisPtr prob_analysis;  // Null pointer if no analysis.
-    if (settings_.probability_analysis_) {
-      prob_analysis = prob_analyses_.find(it->first)->second;
-    }
-    rp.ReportFta(it->second->name(), ftas_.find(it->first)->second,
-                 prob_analysis, doc);
-
-    if (settings_.importance_analysis_) {
-      rp.ReportImportance(it->second->name(),
-                          prob_analyses_.find(it->first)->second, doc);
-    }
-
-    if (settings_.uncertainty_analysis_) {
-        rp.ReportUncertainty(it->second->name(),
-                             uncertainty_analyses_.find(it->first)->second,
-                             doc);
-    }
-  }
-
-  doc->write_to_stream_formatted(out);
-  delete doc;
 }
 
 }  // namespace scram

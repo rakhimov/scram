@@ -15,7 +15,6 @@ TEST_F(RiskAnalysisTest, Theatre) {
   ran->AddSettings(settings.probability_analysis(true));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  ASSERT_NO_THROW(ran->Report("/dev/null"));
   EXPECT_DOUBLE_EQ(0.00207, p_total());  // Total prob check.
   // Minimal cut set check.
   cut_set.insert(GEN_FAIL);

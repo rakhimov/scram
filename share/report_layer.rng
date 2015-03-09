@@ -30,47 +30,52 @@
       <optional>
         <element name="time"> <text/> </element>
       </optional>
-      <zeroOrMore>
+      <oneOrMore>
         <element name="calculated-quantity">
           <attribute name="name"> <text/> </attribute>
           <optional>
             <attribute name="definition"> <text/> </attribute>
           </optional>
-          <optional>
-            <attribute name="approximations"> <text/> </attribute>
-          </optional>
+          <zeroOrMore>
+            <attribute name="approximation"> <text/> </attribute>
+          </zeroOrMore>
         </element>
-      </zeroOrMore>
-      <zeroOrMore>
-        <element name="calculation-method">
-          <attribute name="name"> <text/> </attribute>
-          <optional>
-            <element name="limits">
-              <optional>
-                <element name="number-of-basic-events">
-                  <data type="nonNegativeInteger"/>
-                </element>
-              </optional>
-              <optional>
-                <element name="cut-off"> <data type="float"/> </element>
-              </optional>
-              <optional>
-                <element name="number-of-sums">
-                  <data type="nonNegativeInteger"/>
-                </element>
-              </optional>
-            </element>
-          </optional>
-          <optional>
-            <element name="calculation-time">
-              <data type="float"/>
-            </element>
-          </optional>
-          <optional>
-            <element name="warning"> <text/> </element>
-          </optional>
-        </element>
-      </zeroOrMore>
+        <optional>
+          <element name="calculation-method">
+            <attribute name="name"> <text/> </attribute>
+            <optional>
+              <element name="limits">
+                <optional>
+                  <element name="number-of-basic-events">
+                    <data type="nonNegativeInteger"/>
+                  </element>
+                </optional>
+                <optional>
+                  <element name="cut-off"> <data type="float"/> </element>
+                </optional>
+                <optional>
+                  <element name="number-of-sums">
+                    <data type="nonNegativeInteger"/>
+                  </element>
+                </optional>
+                <optional>
+                  <element name="number-of-trials">
+                    <data type="nonNegativeInteger"/>
+                  </element>
+                </optional>
+              </element>
+            </optional>
+            <optional>
+              <element name="calculation-time">
+                <data type="float"/>
+              </element>
+            </optional>
+            <optional>
+              <element name="warning"> <text/> </element>
+            </optional>
+          </element>
+        </optional>
+      </oneOrMore>
       <optional>
         <element name="model-features">
           <optional>
@@ -323,27 +328,27 @@
           <data type="nonNegativeInteger"/>
         </attribute>
       </optional>
+      <zeroOrMore>
+        <element name="basic-event">
+          <attribute name="name"> <data type="NCName"/> </attribute>
+          <optional>
+            <attribute name="DIF"> <data type="float"/> </attribute>
+          </optional>
+          <optional>
+            <attribute name="MIF"> <data type="float"/> </attribute>
+          </optional>
+          <optional>
+            <attribute name="CIF"> <data type="float"/> </attribute>
+          </optional>
+          <optional>
+            <attribute name="RRW"> <data type="float"/> </attribute>
+          </optional>
+          <optional>
+            <attribute name="RAW"> <data type="float"/> </attribute>
+          </optional>
+        </element>
+      </zeroOrMore>
     </element>
-    <zeroOrMore>
-      <element name="basic-event">
-        <attribute name="name"> <data type="NCName"/> </attribute>
-        <optional>
-          <attribute name="DIF"> <data type="float"/> </attribute>
-        </optional>
-        <optional>
-          <attribute name="MIF"> <data type="float"/> </attribute>
-        </optional>
-        <optional>
-          <attribute name="CIF"> <data type="float"/> </attribute>
-        </optional>
-        <optional>
-          <attribute name="RRW"> <data type="float"/> </attribute>
-        </optional>
-        <optional>
-          <attribute name="RAW"> <data type="float"/> </attribute>
-        </optional>
-      </element>
-    </zeroOrMore>
   </define>
 
 </grammar>

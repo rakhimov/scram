@@ -9,7 +9,6 @@ TEST_F(RiskAnalysisTest, Baobab_1_Test) {
   ran->AddSettings(settings.limit_order(6));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  ASSERT_NO_THROW(ran->Report("/dev/null"));
   // Minimal cut set check.
   EXPECT_EQ(2684, min_cut_sets().size());
   std::vector<int> distr(7, 0);

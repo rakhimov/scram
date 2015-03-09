@@ -11,7 +11,6 @@ TEST_F(RiskAnalysisTest, ChineseTree) {
                            .num_sums(3));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  ASSERT_NO_THROW(ran->Report("/dev/null"));
   EXPECT_NEAR(0.0045691, p_total(), 1e-5);
   // Minimal cut set check.
   EXPECT_EQ(392, min_cut_sets().size());

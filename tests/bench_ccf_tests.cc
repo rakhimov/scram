@@ -22,7 +22,6 @@ TEST_F(RiskAnalysisTest, BetaFactorCCF) {
   ran->AddSettings(settings.ccf_analysis(true).probability_analysis(true));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  ASSERT_NO_THROW(ran->Report("/dev/null"));
   EXPECT_NEAR(0.04308, p_total(), 1e-5);  // Total prob check.
   // Minimal cut set check.
   using namespace boost::assign;
@@ -67,7 +66,6 @@ TEST_F(RiskAnalysisTest, PhiFactorCCF) {
                                            .probability_analysis(true)));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  ASSERT_NO_THROW(ran->Report("/dev/null"));
   EXPECT_NEAR(0.04109, p_total(), 1e-5);  // Total prob check.
   EXPECT_EQ(34, min_cut_sets().size());
   std::vector<int> distr(4, 0);
@@ -85,7 +83,6 @@ TEST_F(RiskAnalysisTest, MGLFactorCCF) {
                                            .probability_analysis(true)));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  ASSERT_NO_THROW(ran->Report("/dev/null"));
   EXPECT_NEAR(0.01631, p_total(), 1e-5);  // Total prob check.
   EXPECT_EQ(34, min_cut_sets().size());
   std::vector<int> distr(4, 0);
@@ -103,7 +100,6 @@ TEST_F(RiskAnalysisTest, AlphaFactorCCF) {
                                            .probability_analysis(true)));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  ASSERT_NO_THROW(ran->Report("/dev/null"));
   EXPECT_NEAR(0.03093, p_total(), 1e-5);  // Total prob check.
   EXPECT_EQ(34, min_cut_sets().size());
   std::vector<int> distr(4, 0);

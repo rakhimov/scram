@@ -9,7 +9,6 @@ TEST_F(RiskAnalysisTest, CEA9601_Test) {
   ran->AddSettings(settings.limit_order(4));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  ASSERT_NO_THROW(ran->Report("/dev/null"));
   // Minimal cut set check.
   EXPECT_EQ(2732, min_cut_sets().size());
   std::vector<int> distr(5, 0);

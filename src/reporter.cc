@@ -58,9 +58,10 @@ void Reporter::SetupReport(const Settings& settings, xmlpp::Document* doc) {
 
     methods = information->add_child("calculation-method");
     methods->set_attribute("name", "Numerical Probability");
-    methods->add_child("limits")->add_child("cut-off")
+    xmlpp::Element* limits = methods->add_child("limits");
+    limits->add_child("cut-off")
         ->add_child_text(boost::lexical_cast<std::string>(settings.cut_off_));
-    methods->add_child("limits")->add_child("number-of-sums")
+    limits->add_child("number-of-sums")
         ->add_child_text(boost::lexical_cast<std::string>(settings.num_sums_));
   }
 

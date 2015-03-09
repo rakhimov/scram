@@ -178,7 +178,7 @@ int RunScram(const po::variables_map& vm) {
   if (vm.count("output")) {
     ran->Report(vm["output"].as<std::string>());
   } else {
-    ran->Report();
+    ran->Report(std::cout);
   }
 
   delete ran;

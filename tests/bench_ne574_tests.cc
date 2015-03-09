@@ -20,7 +20,6 @@ TEST_F(RiskAnalysisTest, ne574) {
   ran->AddSettings(settings.probability_analysis(true));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  ASSERT_NO_THROW(ran->Report("/dev/null"));
   EXPECT_NEAR(0.662208, p_total(), 1e-6);  // Total prob check.
   // Minimal cut set check.
   cut_set.insert(C);
