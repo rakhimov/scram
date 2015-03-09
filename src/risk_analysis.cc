@@ -189,7 +189,7 @@ void RiskAnalysis::Report(std::ostream& out) {
     }
   }
 
-  doc->write_to_stream_formatted(out);
+  doc->write_to_stream_formatted(out, "UTF-8");
   delete doc;
 }
 
