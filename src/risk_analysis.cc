@@ -160,7 +160,7 @@ void RiskAnalysis::Report(std::ostream& out) {
 
   // Create XML or use already created document.
   xmlpp::Document* doc = new xmlpp::Document();
-  rp.SetupReport(settings_, doc);
+  rp.SetupReport(this, settings_, doc);
 
   if (!orphan_primary_events_.empty())
     rp.ReportOrphans(orphan_primary_events_, doc);

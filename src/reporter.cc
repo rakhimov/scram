@@ -14,6 +14,7 @@
 #include "error.h"
 #include "fault_tree_analysis.h"
 #include "probability_analysis.h"
+#include "risk_analysis.h"
 #include "settings.h"
 #include "uncertainty_analysis.h"
 #include "version.h"
@@ -22,7 +23,8 @@ namespace pt = boost::posix_time;
 
 namespace scram {
 
-void Reporter::SetupReport(const Settings& settings, xmlpp::Document* doc) {
+void Reporter::SetupReport(const RiskAnalysis* risk_an,
+                           const Settings& settings, xmlpp::Document* doc) {
   if (doc->get_root_node() != 0) {
     throw LogicError("The passed document is not empty for reporting");
   }
@@ -92,12 +94,25 @@ void Reporter::SetupReport(const Settings& settings, xmlpp::Document* doc) {
     /// @todo Report the seed and rng.
   }
 
-  /// @todo Verify the total number of unique gates for each model.
-  /// @todo Verify the total number of unique basic events for each model.
-  /// @todo Report the total number of house events and fault trees.
+  xmlpp::Element* model = information->add_child("model-features");
+  model->add_child("gates")
+      ->add_child_text(
+          boost::lexical_cast<std::string>(risk_an->gates_.size()));
+  model->add_child("basic-events")
+      ->add_child_text(
+          boost::lexical_cast<std::string>(risk_an->basic_events_.size()));
+  model->add_child("house-events")
+      ->add_child_text(boost::lexical_cast<std::string>(
+              risk_an->primary_events_.size() - risk_an->basic_events_.size()));
+  model->add_child("ccf-groups")
+      ->add_child_text(
+          boost::lexical_cast<std::string>(risk_an->ccf_groups_.size()));
+  model->add_child("fault-trees")
+      ->add_child_text(
+          boost::lexical_cast<std::string>(risk_an->fault_trees_.size()));
 
+  // Setup for results.
   root->add_child("results");
-  /// @todo Analysis depended report of settings.
 }
 
 void Reporter::ReportOrphans(

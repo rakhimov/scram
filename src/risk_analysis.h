@@ -28,12 +28,14 @@ namespace scram {
 class Element;
 class FaultTree;
 class CcfGroup;
+class Reporter;
 
 /// @class RiskAnalysis
 /// Main system that performs analyses.
 class RiskAnalysis {
   friend class ::RiskAnalysisTest;
   friend class ::PerformanceTest;
+  friend class Reporter;
 
  public:
   /// This constructor with configurations with the analysis.

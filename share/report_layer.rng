@@ -126,6 +126,11 @@
             </element>
           </optional>
           <optional>
+            <element name="ccf-groups">
+              <data type="nonNegativeInteger"/>
+            </element>
+          </optional>
+          <optional>
             <element name="fault-trees">
               <data type="nonNegativeInteger"/>
             </element>

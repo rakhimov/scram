@@ -15,6 +15,7 @@
 
 namespace scram {
 
+class RiskAnalysis;
 class FaultTreeAnalysis;
 class ProbabilityAnalysis;
 class UncertaintyAnalysis;
@@ -31,10 +32,12 @@ class Reporter {
   /// time, methods, and model. In addition, the function forms the
   /// structure of the overall report for use by other reporting functions.
   /// This function must be called before other reporting functions.
+  /// @param[in] risk_an The main risk analysis with all the model data.
   /// @param[in] settings Configured settings for analysis.
   /// @param[in/out] doc An empty document.
   /// @throws LogicError if the document is not empty.
-  void SetupReport(const Settings& settings, xmlpp::Document* doc);
+  void SetupReport(const RiskAnalysis* risk_an, const Settings& settings,
+                   xmlpp::Document* doc);
 
   /// Reports orphan primary events as warnings of the top level.
   /// The warning section of the report should not be initialized.
