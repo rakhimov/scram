@@ -35,6 +35,8 @@ void Reporter::SetupReport(const Settings& settings, xmlpp::Document* doc) {
   std::stringstream time;
   time << pt::second_clock::local_time();
   information->add_child("time")->add_child_text(time.str());
+  // Setup for performance information.
+  information->add_child("performance");
 
   // Report the setup for main minimal cut set analysis.
   xmlpp::Element* quant = information->add_child("calculated-quantity");
@@ -93,7 +95,6 @@ void Reporter::SetupReport(const Settings& settings, xmlpp::Document* doc) {
   /// @todo Verify the total number of unique gates for each model.
   /// @todo Verify the total number of unique basic events for each model.
   /// @todo Report the total number of house events and fault trees.
-  /// @todo Report the performance metrics.
 
   root->add_child("results");
   /// @todo Analysis depended report of settings.
@@ -183,6 +184,21 @@ void Reporter::ReportFta(
       }
     }
   }
+
+  // Report calculation time in the information section.
+  // It is assumed that MCS reporting is the default and the first thing
+  // to be reported.
+  xmlpp::NodeSet perf = root->find("./information/performance");
+  assert(perf.size() == 1);
+  xmlpp::Element* performance = dynamic_cast<xmlpp::Element*>(perf[0]);
+  xmlpp::Element* calc_time = performance->add_child("calculation-time");
+  calc_time->set_attribute("name", ft_name);
+  calc_time->add_child("minimal-cut-set")->add_child_text(
+      boost::lexical_cast<std::string>(fta->analysis_time_));
+  if (prob_analysis) {
+    calc_time->add_child("probability")->add_child_text(
+      boost::lexical_cast<std::string>(prob_analysis->p_time_));
+  }
 }
 
 void Reporter::ReportImportance(
@@ -228,6 +244,12 @@ void Reporter::ReportImportance(
         "RAW",
         boost::lexical_cast<std::string>(it->second[4]));
   }
+  xmlpp::NodeSet calc_times =
+      root->find("./information/performance/calculation-time");
+  assert(!calc_times.empty());
+  xmlpp::Element* calc_time = dynamic_cast<xmlpp::Element*>(calc_times.back());
+  calc_time->add_child("importance")->add_child_text(
+      boost::lexical_cast<std::string>(prob_analysis->imp_time_));
 }
 
 void Reporter::ReportUncertainty(
@@ -277,6 +299,12 @@ void Reporter::ReportUncertainty(
     quant->set_attribute("upper-bound",
                          boost::lexical_cast<std::string>(upper));
   }
+  xmlpp::NodeSet calc_times =
+      root->find("./information/performance/calculation-time");
+  assert(!calc_times.empty());
+  xmlpp::Element* calc_time = dynamic_cast<xmlpp::Element*>(calc_times.back());
+  calc_time->add_child("uncertainty")->add_child_text(
+      boost::lexical_cast<std::string>(uncert_analysis->p_time_));
 }
 
 }  // namespace scram

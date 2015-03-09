@@ -19,11 +19,14 @@ class UncertaintyAnalysisTest;
 
 namespace scram {
 
+class Reporter;
+
 /// @class UncertaintyAnalysis
 /// Uncertainty analysis and statistics for top event or gate probabilities
 /// from minimal cut sets and probability distributions of basic events.
 class UncertaintyAnalysis : private ProbabilityAnalysis {
 friend class ::UncertaintyAnalysisTest;
+friend class Reporter;
 
  public:
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
