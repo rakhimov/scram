@@ -115,13 +115,13 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
   // First, defensive check if cut sets exist for the specified limit order.
   if (imcs->empty()) {
     std::stringstream msg;
-    msg << "No cut sets for the limit order " <<  limit_order_;
+    msg << " No cut sets for the limit order " <<  limit_order_;
     warnings_ += msg.str();
     return;
   } else if (imcs->size() == 1 && imcs->back().empty()) {
     // Special case of unity of a top event.
     std::stringstream msg;
-    msg << "The top event is UNITY. Failure is guaranteed.";
+    msg << " The top event is UNITY. Failure is guaranteed.";
     warnings_ += msg.str();
   }
 

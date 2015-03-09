@@ -94,7 +94,6 @@ void Reporter::SetupReport(const Settings& settings, xmlpp::Document* doc) {
   /// @todo Verify the total number of unique basic events for each model.
   /// @todo Report the total number of house events and fault trees.
   /// @todo Report the performance metrics.
-  /// @todo Report warnings.
 
   root->add_child("results");
   /// @todo Analysis depended report of settings.
@@ -102,16 +101,20 @@ void Reporter::SetupReport(const Settings& settings, xmlpp::Document* doc) {
 
 void Reporter::ReportOrphans(
     const std::set<boost::shared_ptr<PrimaryEvent> >& orphan_primary_events,
-    std::ostream& out) {
-  if (orphan_primary_events.empty()) return;
-
-  out << "WARNING! Found unused primary events:\n";
+    xmlpp::Document* doc) {
+  assert(!orphan_primary_events.empty());
+  std::string out = "";
+  out += "WARNING! Found unused primary events: ";
   std::set<boost::shared_ptr<PrimaryEvent> >::const_iterator it;
   for (it = orphan_primary_events.begin(); it != orphan_primary_events.end();
        ++it) {
-    out << "    " << (*it)->orig_id() << "\n";
+    out += (*it)->orig_id() + " ";
   }
-  out.flush();
+  xmlpp::Node* root = doc->get_root_node();
+  xmlpp::NodeSet inf = root->find("./information");
+  assert(inf.size() == 1);
+  xmlpp::Element* information = dynamic_cast<xmlpp::Element*>(inf[0]);
+  information->add_child("warning")->add_child_text(out);
 }
 
 void Reporter::ReportFta(
@@ -123,7 +126,6 @@ void Reporter::ReportFta(
   xmlpp::NodeSet res = root->find("./results");
   assert(res.size() == 1);
   xmlpp::Element* results = dynamic_cast<xmlpp::Element*>(res[0]);
-  // xmlpp::Element* results = root->add_child("results");
   xmlpp::Element* sum_of_products = results->add_child("sum-of-products");
   sum_of_products->set_attribute("name", ft_name);
   /// @todo Find the number of basic events that are in the cut sets.
@@ -138,6 +140,13 @@ void Reporter::ReportFta(
     sum_of_products->set_attribute(
         "probability",
         boost::lexical_cast<std::string>(prob_analysis->p_total()));
+  }
+
+  std::string warning = "";
+  warning += fta->warnings();
+  if (prob_analysis) warning += prob_analysis->warnings();
+  if (warning != "") {
+    sum_of_products->add_child("warning")->add_child_text(warning);
   }
 
   std::set< std::set<std::string> >::const_iterator it_min;
@@ -190,6 +199,12 @@ void Reporter::ReportImportance(
       "basic-events",
       boost::lexical_cast<std::string>(prob_analysis->importance().size()));
 
+  std::string warning = "";
+  warning += prob_analysis->warnings();
+  if (warning != "") {
+    importance->add_child("warning")->add_child_text(warning);
+  }
+
   std::map< std::string, std::vector<double> >::const_iterator it;
   for (it = prob_analysis->importance().begin();
        it != prob_analysis->importance().end(); ++it) {
@@ -225,6 +240,13 @@ void Reporter::ReportUncertainty(
   xmlpp::Element* results = dynamic_cast<xmlpp::Element*>(res[0]);
   xmlpp::Element* measure = results->add_child("measure");
   measure->set_attribute("name", ft_name);
+
+  std::string warning = "";
+  warning += uncert_analysis->warnings();
+  if (warning != "") {
+    measure->add_child("warning")->add_child_text(warning);
+  }
+
   measure->add_child("mean")->set_attribute("value",
       boost::lexical_cast<std::string>(uncert_analysis->mean()));
   measure->add_child("standard-deviation")->set_attribute("value",

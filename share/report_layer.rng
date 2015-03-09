@@ -119,6 +119,9 @@
         </element>
       </optional>
       <optional>
+        <element name="warning"> <text/> </element>
+      </optional>
+      <optional>
         <element name="feedback"> <text/> </element>
       </optional>
     </element>
@@ -166,6 +169,9 @@
       <optional>
         <attribute name="probability"> <data type="float"/> </attribute>
       </optional>
+      <optional>
+        <element name="warning"> <text/> </element>
+      </optional>
       <zeroOrMore>
         <ref name="product"/>
       </zeroOrMore>
@@ -212,6 +218,9 @@
       </optional>
       <optional>
         <attribute name="description"> <text/> </attribute>
+      </optional>
+      <optional>
+        <element name="warning"> <text/> </element>
       </optional>
       <optional>
         <element name="mean">
@@ -327,6 +336,9 @@
         <attribute name="basic-events">
           <data type="nonNegativeInteger"/>
         </attribute>
+      </optional>
+      <optional>
+        <element name="warning"> <text/> </element>
       </optional>
       <zeroOrMore>
         <element name="basic-event">

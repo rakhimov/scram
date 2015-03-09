@@ -36,12 +36,13 @@ class Reporter {
   /// @throws LogicError if the document is not empty.
   void SetupReport(const Settings& settings, xmlpp::Document* doc);
 
-  /// Reports orphan primary events.
+  /// Reports orphan primary events as warnings of the top level.
+  /// The warning section of the report should not be initialized.
   /// @param[in] orphan_primary_events Container of orphan events.
-  /// @param[out] out Output stream.
+  /// @param[in/out] doc Preformatted XML document.
   void ReportOrphans(
       const std::set<boost::shared_ptr<PrimaryEvent> >& orphan_primary_events,
-      std::ostream& out);
+      xmlpp::Document* doc);
 
   /// Reports the results of analysis to a specified output destination.
   /// @param[in] ft_name The original name of a fault tree.

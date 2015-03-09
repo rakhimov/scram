@@ -162,9 +162,8 @@ void RiskAnalysis::Report(std::ostream& out) {
   xmlpp::Document* doc = new xmlpp::Document();
   rp.SetupReport(settings_, doc);
 
-  /// @todo Report orphans in XML.
-  /// if (!orphan_primary_events_.empty())
-  ///   rp.ReportOrphans(orphan_primary_events_, out);
+  if (!orphan_primary_events_.empty())
+    rp.ReportOrphans(orphan_primary_events_, doc);
 
   assert(ftas_.size() == fault_trees_.size());  // All trees are analyzed.
 

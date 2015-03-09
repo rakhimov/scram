@@ -55,6 +55,9 @@ class FaultTreeAnalysis {
   /// @returns The maximum order of the found minimal cut sets.
   inline int max_order() const { return max_order_; }
 
+  /// @returns Warnings generated upon analysis.
+  inline const std::string warnings() const { return warnings_; }
+
  private:
   typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;

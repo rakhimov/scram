@@ -93,7 +93,7 @@ void ProbabilityAnalysis::Analyze(
   if (approx_ == "mcub") {
     if (!coherent_) {
       warnings_ += " The cut sets are not coherent and contain negation."
-                   "\nThe MCUB approximation may not hold.\n\n";
+                   " The MCUB approximation may not hold.";
     }
     nsums_ = 0;  // For reporting purposes.
     num_prob_mcs_ = imcs_.size();
@@ -108,9 +108,9 @@ void ProbabilityAnalysis::Analyze(
         // Check if a probability of a set does not exceed 0.1,
         // which is required for the rare event approximation to hold.
         if (it_pr->second > 0.1) {
-          warnings_ += "The rare event approximation may be inaccurate for this"
-                       "\nfault tree analysis because one of minimal cut sets'"
-                       "\nprobability exceeded 0.1 threshold requirement.\n\n";
+          warnings_ += " The rare event approximation may be inaccurate for this"
+                       " fault tree analysis because one of minimal cut sets'"
+                       " probability exceeded 0.1 threshold requirement.";
           break;
         }
       }

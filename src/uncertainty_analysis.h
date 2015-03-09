@@ -67,6 +67,11 @@ friend class ::UncertaintyAnalysisTest;
     return distribution_;
   }
 
+  /// @returns Warnings generated upon analysis.
+  inline const std::string warnings() const {
+    return ProbabilityAnalysis::warnings();
+  }
+
  private:
   /// Performs Monte Carlo Simulation by sampling the probability distributions
   /// and providing the final sampled values of the final probability.
