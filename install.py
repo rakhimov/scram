@@ -31,7 +31,7 @@ def install_scram(args):
 
         if args.build_type:
             cmake_cmd += ['-DCMAKE_BUILD_TYPE=' + args.build_type]
-        elif args.optimize:
+        elif args.release:
             cmake_cmd += ["-DCMAKE_BUILD_TYPE=Release"]
         elif args.debug:
             cmake_cmd += ["-DCMAKE_BUILD_TYPE=Debug"]
@@ -68,8 +68,9 @@ def uninstall_scram(args):
 def main():
     localdir = absexpanduser("~/.local")
 
-    description = "A scram installation helper script. " +\
-                  "For more information, please see scram.github.com."
+    description = "A SCRAM installation helper script. " +\
+                  "For more information, please see " +\
+                  "rakhimov.github.io/scram"
     parser = ap.ArgumentParser(description=description)
 
     build_dir = "where to place the build directory"
@@ -105,8 +106,8 @@ def main():
     parser.add_argument("-p", "--profile", help=profile, action="store_true",
                         default=False)
 
-    optimize = "apply maximum optimizations"
-    parser.add_argument("-o", "--optimize", help=optimize, action="store_true",
+    release = "build for release with optimizations"
+    parser.add_argument("-r", "--release", help=release, action="store_true",
                         default=False)
 
     args = parser.parse_args()
