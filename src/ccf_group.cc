@@ -70,11 +70,11 @@ void CcfGroup::Validate() {
 
 void CcfGroup::ApplyModel() {
   // Construct replacement gates for member basic events.
-  assert(gates_.empty());
+  std::map<std::string, GatePtr> gates;
   std::map<std::string, BasicEventPtr>::const_iterator it_m;
   for (it_m = members_.begin(); it_m != members_.end(); ++it_m) {
     GatePtr new_gate(new Gate(it_m->first, "or"));
-    gates_.insert(std::make_pair(new_gate->id(), new_gate));
+    gates.insert(std::make_pair(new_gate->id(), new_gate));
     it_m->second->ccf_gate(new_gate);
   }
 
@@ -94,7 +94,7 @@ void CcfGroup::ApplyModel() {
     // Add this basic event to the parent gates.
     std::set<std::string>::iterator it_l;
     for (it_l = it->second.begin(); it_l != it->second.end(); ++it_l) {
-      gates_.find(*it_l)->second->AddChild(it->first);
+      gates.find(*it_l)->second->AddChild(it->first);
     }
   }
 }
@@ -142,7 +142,6 @@ void CcfGroup::ConstructCcfBasicEvents(
       BasicEventPtr new_basic_event(new BasicEvent(id));
       new_basic_event->orig_id(orig_id);
       new_events->insert(std::make_pair(new_basic_event, *it));
-      new_events_.push_back(new_basic_event);
     }
     combinations = next_level;
   }
@@ -178,7 +177,6 @@ void BetaFactorModel::ConstructCcfBasicEvents(
 
     BasicEventPtr independent(new BasicEvent(independent_id));
     independent->orig_id(independent_orig_id);
-    CcfGroup::new_events_.push_back(independent);
 
     std::set<std::string> one_event;
     one_event.insert(it->second->id());
@@ -198,7 +196,6 @@ void BetaFactorModel::ConstructCcfBasicEvents(
   common_name += "]";
   BasicEventPtr common_failure(new BasicEvent(common_id));
   common_failure->orig_id(common_name);
-  CcfGroup::new_events_.push_back(common_failure);
   assert(all_events.size() == max_level);
   new_events->insert(std::make_pair(common_failure, all_events));
 }

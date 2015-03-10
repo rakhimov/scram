@@ -76,14 +76,6 @@ class CcfGroup : public Element {
   /// tree.
   void ApplyModel();
 
-  /// @returns gates that can substitute CCF members.
-  const std::map<std::string, GatePtr>& gates() { return gates_; }
-
-  /// @returns new basic events generated for common cause failure
-  ///          representation. The names of basic events use square brakets
-  ///          to indicate common cause groupings of the original members.
-  const std::vector<BasicEventPtr>& new_events() { return new_events_; }
-
  protected:
   /// Constructor to be used by derived classes.
   /// @param[in] name The name of a CCF group.
@@ -115,12 +107,6 @@ class CcfGroup : public Element {
   ExpressionPtr distribution_;  ///< The probability distribution of the group.
   /// CCF factors for models to get CCF probabilities.
   std::vector<std::pair<int, ExpressionPtr> > factors_;
-  /// Replacement gates for the members of this CCF group.
-  /// The gate ids are the same of the replaced members.
-  std::map<std::string, GatePtr> gates_;
-  /// The container of all new basic events created for representing
-  /// multiple failures due to common cause.
-  std::vector<BasicEventPtr> new_events_;
 
  private:
   /// Default constructor should not be used.
