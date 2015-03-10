@@ -5,6 +5,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include <boost/shared_ptr.hpp>
 
@@ -252,12 +253,6 @@ class CcfEvent : public BasicEvent {
         ccf_group_name_(ccf_group_name),
         ccf_group_size_(ccf_group_size) {}
 
-  /// Adds member name to report.
-  /// @param[in] orig_id The original name of a member basic event.
-  inline void AddMemberName(std::string orig_id) {
-    member_names_.push_back(orig_id);
-  }
-
   /// @returns The name of the original CCF group.
   inline const std::string ccf_group_name() { return ccf_group_name_; }
 
@@ -267,6 +262,12 @@ class CcfEvent : public BasicEvent {
   /// @returns Original names of members of this CCF event.
   inline const std::vector<std::string>& member_names() {
     return member_names_;
+  }
+
+  /// Sets original names of members.
+  /// @param[in] orig_ids A container of original names of basic events.
+  inline const void member_names(const std::vector<std::string>& orig_ids) {
+    member_names_ = orig_ids;
   }
 
  private:

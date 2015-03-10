@@ -102,6 +102,8 @@ void CcfGroup::ApplyModel() {
 void CcfGroup::ConstructCcfBasicEvents(
     int max_level,
     std::map<BasicEventPtr, std::set<std::string> >* new_events) {
+  typedef boost::shared_ptr<CcfEvent> CcfEventPtr;
+
   assert(max_level > 1);
   assert(members_.size() > 1);
   assert(max_level <= members_.size());
@@ -127,6 +129,7 @@ void CcfGroup::ConstructCcfBasicEvents(
     for (it = next_level.begin(); it != next_level.end(); ++it) {
       std::string id = "[";
       std::string orig_id = "[";
+      std::vector<std::string> orig_ids;
       std::set<std::string>::const_iterator it_s;
       for (it_s = it->begin(); it_s != it->end();) {
         id += *it_s;
@@ -135,12 +138,14 @@ void CcfGroup::ConstructCcfBasicEvents(
         if (it_s != it->end()) {
           id += " ";
           orig_id += " ";
+          orig_ids.push_back(orig_id);
         }
       }
       id += "]";
       orig_id += "]";
-      BasicEventPtr new_basic_event(new BasicEvent(id));
+      CcfEventPtr new_basic_event(new CcfEvent(id, name_, members_.size()));
       new_basic_event->orig_id(orig_id);
+      new_basic_event->member_names(orig_ids);
       new_events->insert(std::make_pair(new_basic_event, *it));
     }
     combinations = next_level;
@@ -163,19 +168,27 @@ void BetaFactorModel::AddFactor(const ExpressionPtr& factor, int level) {
 void BetaFactorModel::ConstructCcfBasicEvents(
     int max_level,
     std::map<BasicEventPtr, std::set<std::string> >* new_events) {
+  typedef boost::shared_ptr<CcfEvent> CcfEventPtr;
 
   // Getting the probability equation for independent events.
   assert(CcfGroup::factors_.size() == 1);
   std::string common_name = "[";  // Event name for common failure group.
   std::string common_id = "[";  // Event id for common failure group.
   std::set<std::string> all_events;  // Common failure group.
+  std::vector<std::string> orig_ids;  // Original names for CcfEvent.
+
   std::map<std::string, BasicEventPtr>::const_iterator it;
   for (it = CcfGroup::members_.begin(); it != CcfGroup::members_.end();) {
     // Create indipendent events.
     std::string independent_orig_id = "[" + it->second->orig_id() + "]";
     std::string independent_id = "[" + it->second->id() + "]";
 
-    BasicEventPtr independent(new BasicEvent(independent_id));
+    CcfEventPtr independent(new CcfEvent(independent_id, name_,
+                                         members_.size()));
+    std::vector<std::string> single_orig_id;
+    single_orig_id.push_back(it->second->orig_id());
+    independent->member_names(single_orig_id);
+
     independent->orig_id(independent_orig_id);
 
     std::set<std::string> one_event;
@@ -183,6 +196,7 @@ void BetaFactorModel::ConstructCcfBasicEvents(
     new_events->insert(std::make_pair(independent, one_event));
 
     all_events.insert(it->second->id());
+    orig_ids.push_back(it->second->orig_id());
 
     common_name += it->second->orig_id();
     common_id += it->second->id();
@@ -194,7 +208,8 @@ void BetaFactorModel::ConstructCcfBasicEvents(
   }
   common_id += "]";
   common_name += "]";
-  BasicEventPtr common_failure(new BasicEvent(common_id));
+  CcfEventPtr common_failure(new CcfEvent(common_id, name_, members_.size()));
+  common_failure->member_names(orig_ids);
   common_failure->orig_id(common_name);
   assert(all_events.size() == max_level);
   new_events->insert(std::make_pair(common_failure, all_events));

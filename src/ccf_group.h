@@ -103,6 +103,7 @@ class CcfGroup : public Element {
   /// @returns n factorial.
   int Factorial(int n) { return n ? n * Factorial(n - 1) : 1; }
 
+  std::string name_;  ///< The name of CCF group.
   std::map<std::string, BasicEventPtr> members_;  ///< Members of CCF groups.
   ExpressionPtr distribution_;  ///< The probability distribution of the group.
   /// CCF factors for models to get CCF probabilities.
@@ -117,7 +118,6 @@ class CcfGroup : public Element {
   /// Restrict copy assignment.
   CcfGroup& operator=(const CcfGroup&);
 
-  std::string name_;  ///< The name of CCF group.
   std::string model_;  ///< Common cause model type.
 };
 
