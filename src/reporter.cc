@@ -52,6 +52,14 @@ void Reporter::SetupReport(const RiskAnalysis* risk_an,
   methods->add_child("limits")->add_child("number-of-basic-events")
       ->add_child_text(boost::lexical_cast<std::string>(settings.limit_order_));
 
+  // Report the setup for CCF analysis.
+  if (settings.ccf_analysis_) {
+    xmlpp::Element* ccf_an = information->add_child("calculated-quantity");
+    ccf_an->set_attribute("name", "CCF Analysis");
+    ccf_an->set_attribute("definition",
+                         "Failure of multiple elements due to a common cause");
+  }
+
   // Report the setup for probability analysis.
   if (settings.probability_analysis_) {
     quant = information->add_child("calculated-quantity");
@@ -179,6 +187,9 @@ void Reporter::ReportFta(
               prob_analysis->prob_of_min_sets().find(*it_min)->second));
     }
 
+    // List elements of minimal cut sets.
+    typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+    typedef boost::shared_ptr<CcfEvent> CcfEventPtr;
     std::set<std::string>::const_iterator it_set;
     for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
       std::vector<std::string> names;
@@ -190,12 +201,50 @@ void Reporter::ReportFta(
       if (names[0] == "not") {
         std::string comp_name = full_name;
         boost::replace_first(comp_name, "not ", "");
-        name = fta->basic_events_.find(comp_name)->second->orig_id();
-        product->add_child("not")->add_child("basic-event")
-            ->set_attribute("name", name);
+        BasicEventPtr basic_event = fta->basic_events_.find(comp_name)->second;
+        CcfEventPtr ccf_event =
+            boost::dynamic_pointer_cast<CcfEvent>(basic_event);
+        if (!ccf_event) {
+          product->add_child("not")->add_child("basic-event")
+              ->set_attribute("name", basic_event->orig_id());
+        } else {
+          xmlpp::Element* ccf_element =
+              product->add_child("not")->add_child("ccf-event");
+          ccf_element->set_attribute("ccf-group", ccf_event->ccf_group_name());
+          ccf_element->set_attribute(
+              "order",
+              boost::lexical_cast<std::string>(ccf_event->member_names().size()));
+          ccf_element->set_attribute(
+              "group-size",
+              boost::lexical_cast<std::string>(ccf_event->ccf_group_size()));
+          std::vector<std::string>::const_iterator it;
+          for (it = ccf_event->member_names().begin();
+               it != ccf_event->member_names().end(); ++it) {
+            ccf_element->add_child("basic-event")->set_attribute("name", *it);
+          }
+        }
       } else {
-        name = fta->basic_events_.find(full_name)->second->orig_id();
-        product->add_child("basic-event")->set_attribute("name", name);
+        BasicEventPtr basic_event = fta->basic_events_.find(full_name)->second;
+        CcfEventPtr ccf_event =
+            boost::dynamic_pointer_cast<CcfEvent>(basic_event);
+        if (!ccf_event) {
+          product->add_child("basic-event")
+              ->set_attribute("name", basic_event->orig_id());
+        } else {
+          xmlpp::Element* ccf_element = product->add_child("ccf-event");
+          ccf_element->set_attribute("ccf-group", ccf_event->ccf_group_name());
+          ccf_element->set_attribute(
+              "order",
+              boost::lexical_cast<std::string>(ccf_event->member_names().size()));
+          ccf_element->set_attribute(
+              "group-size",
+              boost::lexical_cast<std::string>(ccf_event->ccf_group_size()));
+          std::vector<std::string>::const_iterator it;
+          for (it = ccf_event->member_names().begin();
+               it != ccf_event->member_names().end(); ++it) {
+            ccf_element->add_child("basic-event")->set_attribute("name", *it);
+          }
+        }
       }
     }
   }
