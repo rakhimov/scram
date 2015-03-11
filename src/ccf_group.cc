@@ -134,11 +134,11 @@ void CcfGroup::ConstructCcfBasicEvents(
       for (it_s = it->begin(); it_s != it->end();) {
         id += *it_s;
         orig_id += members_.find(*it_s)->second->orig_id();
+        orig_ids.push_back(members_.find(*it_s)->second->orig_id());
         ++it_s;
         if (it_s != it->end()) {
           id += " ";
           orig_id += " ";
-          orig_ids.push_back(orig_id);
         }
       }
       id += "]";

@@ -288,23 +288,47 @@ void Reporter::ReportImportance(
   std::map< std::string, std::vector<double> >::const_iterator it;
   for (it = prob_analysis->importance().begin();
        it != prob_analysis->importance().end(); ++it) {
-    xmlpp::Element* basic_event = importance->add_child("basic-event");
-    basic_event->set_attribute(
-        "name",
-        prob_analysis->basic_events_.find(it->first)->second->orig_id());
-    basic_event->set_attribute(
+    typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+    typedef boost::shared_ptr<CcfEvent> CcfEventPtr;
+    BasicEventPtr basic_event =
+        prob_analysis->basic_events_.find(it->first)->second;
+    CcfEventPtr ccf_event =
+        boost::dynamic_pointer_cast<CcfEvent>(basic_event);
+    xmlpp::Element* element;
+    if (!ccf_event) {
+      element = importance->add_child("basic-event");
+      element->set_attribute(
+          "name",
+          prob_analysis->basic_events_.find(it->first)->second->orig_id());
+    } else {
+      element = importance->add_child("ccf-event");
+      element->set_attribute("ccf-group", ccf_event->ccf_group_name());
+      element->set_attribute(
+          "order",
+          boost::lexical_cast<std::string>(ccf_event->member_names().size()));
+      element->set_attribute(
+          "group-size",
+          boost::lexical_cast<std::string>(ccf_event->ccf_group_size()));
+      std::vector<std::string>::const_iterator it;
+      for (it = ccf_event->member_names().begin();
+           it != ccf_event->member_names().end(); ++it) {
+        element->add_child("basic-event")->set_attribute("name", *it);
+      }
+    }
+
+    element->set_attribute(
         "DIF",
         boost::lexical_cast<std::string>(it->second[0]));
-    basic_event->set_attribute(
+    element->set_attribute(
         "MIF",
         boost::lexical_cast<std::string>(it->second[1]));
-    basic_event->set_attribute(
+    element->set_attribute(
         "CIF",
         boost::lexical_cast<std::string>(it->second[2]));
-    basic_event->set_attribute(
+    element->set_attribute(
         "RRW",
         boost::lexical_cast<std::string>(it->second[3]));
-    basic_event->set_attribute(
+    element->set_attribute(
         "RAW",
         boost::lexical_cast<std::string>(it->second[4]));
   }

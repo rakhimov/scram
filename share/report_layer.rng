@@ -391,10 +391,27 @@
         <element name="warning"> <text/> </element>
       </optional>
       <zeroOrMore>
-        <element name="basic-event">
-          <attribute name="name"> <data type="NCName"/> </attribute>
-          <ref name="importance-factors"/>
-        </element>
+        <choice>
+          <element name="basic-event">
+            <attribute name="name"> <data type="NCName"/> </attribute>
+            <ref name="importance-factors"/>
+          </element>
+          <element name="ccf-event">
+            <attribute name="ccf-group"> <data type="NCName"/> </attribute>
+            <attribute name="order">
+              <data type="nonNegativeInteger"/>
+            </attribute>
+            <attribute name="group-size">
+              <data type="nonNegativeInteger"/>
+            </attribute>
+            <ref name="importance-factors"/>
+            <oneOrMore>
+              <element name="basic-event">
+                <attribute name="name"> <data type="NCName"/> </attribute>
+              </element>
+            </oneOrMore>
+          </element>
+        </choice>
       </zeroOrMore>
     </element>
   </define>

@@ -456,8 +456,7 @@ TEST_F(RiskAnalysisTest, ReportUncertaintyResults) {
 }
 
 // Reporting of CCF analysis.
-/// @todo Change CCF event nameing that is correspondent to NCName format.
-TEST_F(RiskAnalysisTest, DISABLED_ReportCCF) {
+TEST_F(RiskAnalysisTest, ReportCCF) {
   std::string tree_input =
       "./share/scram/input/benchmark/mgl_ccf.xml";
 
@@ -468,7 +467,8 @@ TEST_F(RiskAnalysisTest, DISABLED_ReportCCF) {
   schema_stream.close();
 
   ASSERT_NO_THROW(ran->AddSettings(settings.ccf_analysis(true)
-                                           .importance_analysis(true)));
+                                           .importance_analysis(true)
+                                           .num_sums(3)));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
 
