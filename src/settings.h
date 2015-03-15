@@ -53,16 +53,19 @@ class Settings {
   /// @returns Rerefence to this object.
   Settings& mission_time(double time);
 
-  /// Sets the flag for probability analysis.
+  /// Sets the flag for probability analysis. If another analysis requires
+  /// probability analysis, it won't be possible to turn off probability
+  /// analysis before the parent analysis.
   /// @param[in] flag True or false for turning on or off the analysis.
   /// @returns Rerefence to this object.
   Settings& probability_analysis(bool flag) {
-    probability_analysis_ = flag;
+    if (!importance_analysis_ && !uncertainty_analysis_)
+      probability_analysis_ = flag;
     return *this;
   }
 
   /// Sets the flag for importance analysis. Importance analysis is performed
-  /// together with probability analysis.
+  /// together with probability analysis. Appropriate flags are turned on.
   /// @param[in] flag True or false for turning on or off the analysis.
   /// @returns Rerefence to this object.
   Settings& importance_analysis(bool flag) {
@@ -72,7 +75,7 @@ class Settings {
   }
 
   /// Sets the flag for uncertainty analysis. Uncertainty analysis implies
-  /// probability analysis.
+  /// probability analysis, so the probability analysis is turned on implicitly.
   /// @param[in] flag True or false for turning on or off the analysis.
   /// @returns Rerefence to this object.
   Settings& uncertainty_analysis(bool flag) {
