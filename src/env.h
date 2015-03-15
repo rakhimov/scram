@@ -11,6 +11,9 @@ namespace scram {
 /// Provides environmental variables.
 class Env {
  public:
+  /// @returns the location of the RelaxNG schema for configuration files.
+  static const std::string config_schema();
+
   /// @returns the location of the RelaxNG schema for input files.
   static const std::string input_schema();
 

@@ -37,7 +37,7 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
         ("input-file", po::value< std::vector<std::string> >(),
          "XML input files with analysis entities")
         ("config,C", po::value<std::string>(),
-         "XML configuration file for analysis (NOT SUPPERTED)")
+         "XML configuration file for analysis")
         ("validate,v", "only validate input files")
         ("graph-only,g", "produce graph without analysis")
         ("probability", po::value<bool>()->default_value(false),
@@ -94,8 +94,8 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
     return -1;
   }
 
-  if (!vm->count("input-file")) {
-    std::string msg = "No input file given.\n";
+  if (!vm->count("input-file") && !vm->count("config")) {
+    std::string msg = "No input or configuration file is given.\n";
     std::cout << msg << std::endl;
     std::cout << usage << "\n\n" << desc << "\n";
     return 1;
@@ -151,11 +151,19 @@ Settings ConstructSettings(const po::variables_map& vm) {
 int RunScram(const po::variables_map& vm) {
   if (vm.count("log")) Logger::active() = true;
   // Initiate risk analysis.
-  RiskAnalysis* ran = new RiskAnalysis();
+  RiskAnalysis* ran;
+  if (vm.count("config")) {
+    ran = new RiskAnalysis(vm["config"].as<std::string>());
+  } else {
+    ran = new RiskAnalysis();
+  }
+
   ran->AddSettings(ConstructSettings(vm));
 
   // Process input files and validate it.
-  ran->ProcessInputFiles(vm["input-file"].as< std::vector<std::string> >());
+  if (vm.count("input-file")) {
+    ran->ProcessInputFiles(vm["input-file"].as< std::vector<std::string> >());
+  }
 
   // Stop if only validation is requested.
   if (vm.count("validate")) {

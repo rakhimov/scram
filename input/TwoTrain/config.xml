@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<config>
+  <inputs>
+    <file> two_train.xml </file>
+  </inputs>
+  <options>
+    <analysis importance="1" uncertainty="0" ccf="0"/>
+    <limits>
+      <limit-order>10</limit-order>
+      <cut-off>0.001</cut-off>
+      <number-of-sums>20</number-of-sums>
+      <mission-time>8760</mission-time>
+    </limits>
+  </options>
+</config>

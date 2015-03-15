@@ -11,21 +11,12 @@
       <optional>
         <element name="output"> <data type="string"/> </element>
       </optional>
-      <optional>
-        <element name="log"> <empty/> </element>
-      </optional>
       <ref name="options"/>
     </element>
   </start>
 
   <define name="options">
     <element name="options">
-      <optional>
-        <choice>
-          <element name="validate-only"> <empty/> </element>
-          <element name="graph-only"> <empty/> </element>
-        </choice>
-      </optional>
       <optional>
         <element name="analysis">
           <optional>
