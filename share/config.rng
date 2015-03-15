@@ -1,0 +1,95 @@
+<grammar xmlns="http://relaxng.org/ns/structure/1.0"
+  datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+
+  <start>
+    <element name="config">
+      <element name="inputs">
+        <oneOrMore>
+          <element name="file"> <data type="string"/> </element>
+        </oneOrMore>
+      </element>
+      <optional>
+        <element name="output"> <data type="string"/> </element>
+      </optional>
+      <optional>
+        <element name="log"> <empty/> </element>
+      </optional>
+      <ref name="options"/>
+    </element>
+  </start>
+
+  <define name="options">
+    <element name="options">
+      <optional>
+        <choice>
+          <element name="validate-only"> <empty/> </element>
+          <element name="graph-only"> <empty/> </element>
+        </choice>
+      </optional>
+      <optional>
+        <element name="analysis">
+          <optional>
+            <attribute name="probability">
+              <data type="nonNegativeInteger"/>
+            </attribute>
+          </optional>
+          <optional>
+            <attribute name="importance">
+              <data type="nonNegativeInteger"/>
+            </attribute>
+          </optional>
+          <optional>
+            <attribute name="uncertainty">
+              <data type="nonNegativeInteger"/>
+            </attribute>
+          </optional>
+          <optional>
+            <attribute name="ccf">
+              <data type="nonNegativeInteger"/>
+            </attribute>
+          </optional>
+        </element>
+      </optional>
+      <optional>
+        <element name="approximations">
+          <optional>
+            <choice>
+              <element name="rare-event"> <empty/> </element>
+              <element name="mcub"> <empty/> </element>
+            </choice>
+          </optional>
+        </element>
+      </optional>
+      <optional>
+        <element name="limits">
+          <optional>
+            <element name="limit-order">
+              <data type="nonNegativeInteger"/>
+            </element>
+          </optional>
+          <optional>
+            <element name="cut-off">
+              <data type="float"/>
+            </element>
+          </optional>
+          <optional>
+            <element name="number-of-sums">
+              <data type="nonNegativeInteger"/>
+            </element>
+          </optional>
+          <optional>
+            <element name="mission-time">
+              <data type="float"/>
+            </element>
+          </optional>
+          <optional>
+            <element name="number-of-trials">
+              <data type="nonNegativeInteger"/>
+            </element>
+          </optional>
+        </element>
+      </optional>
+    </element>
+  </define>
+
+</grammar>
