@@ -224,8 +224,9 @@ A python script is provided to make the installation process easier.
 If there are dependency issues, the CMake output should guide with errors.
 CMake can be used directly without the python script to configure the build.
 
-The default build is DEBUG. There default installation directory is the user's
-.local. The default linkage is dynamic.
+There default installation directory is the user's
+.local. The default linkage is dynamic; however, tests are statically linked
+against GoogleTest.
 
 .. code-block:: bash
 
@@ -235,11 +236,11 @@ The main and test binaries are installed in *installation/directory/bin*
 directory. Also, the test input files and RelaxNG schema are copied in
 *installation/directory/share/scram/*.
 
-For better performance run the building with the optimization flag:
+For better performance run the building with the release flag:
 
 .. code-block:: bash
 
-    .../scram$ python install.py -o --prefix=path/to/installation/directory
+    .../scram$ python install.py -r --prefix=path/to/installation/directory
 
 Various other flags are described by the script's help prompt.
 
@@ -248,10 +249,6 @@ Various other flags are described by the script's help prompt.
     .../scram$ python install.py -h
 
 The optional GUI front-end is built using Qt Creator and qmake.
-
-In order to build statically and link statically, change two variables in
-*CMakeList.txt*: **BUILD_SHARED_LIBS** and **USE_STATIC_LIBS**.
-GoogleTest is always build statically irrespective to the above variables.
 
 Windows
 =======

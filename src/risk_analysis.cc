@@ -10,10 +10,6 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/pointer_cast.hpp>
 
-#if EMBED_SCHEMA
-#include "schema.h"  // For static building.
-#endif
-
 #include "ccf_group.h"
 #include "element.h"
 #include "env.h"
@@ -246,14 +242,11 @@ void RiskAnalysis::ProcessInputFile(std::string xml_file) {
   parser->Init(stream);
 
   std::stringstream schema;
-#if EMBED_SCHEMA
-  schema << g_schema_content;
-#else
   std::string schema_path = Env::input_schema();
   std::ifstream schema_stream(schema_path.c_str());
   schema << schema_stream.rdbuf();
   schema_stream.close();
-#endif
+
   parser->Validate(schema);
 
   xmlpp::Document* doc = parser->Document();

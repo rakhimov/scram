@@ -20,12 +20,7 @@ set(SCRAM_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src")
 set(SCRAM_SHARE_DIR "${PROJECT_SOURCE_DIR}/share")
 set(SCRAM_TEST_DIR "${PROJECT_SOURCE_DIR}/tests")
 
-# This makes all the libraries build as SHARED for Linux/Unix only
 set(BUILD_SHARED_LIBS TRUE)  # Change this for static building.
-if(CYGWIN)
-  set(BUILD_SHARED_LIBS FALSE)
-  add_definitions(-DEMBED_SCHEMA)
-endif()
 
 # Linking of external libraries, such as BOOST.
 set(USE_STATIC_LIBS OFF)  # Change this for static building
