@@ -12,21 +12,9 @@ Currently Low Hanging Fruits
 
 - `Todo list in the code <https://rakhimov.github.io/scram/api/todo.html>`_
 
-- XML based analysis configuration input file. *High*
-
-  * Schema
-  * Tests
-
-- XML based output file. *High*
-
-  * Schema
-  * Tests
-
-- Minimal cut set input file as an alternative to a tree file. *Moderate*
-
 - Option to set the seed for Monte Carlo simulations. *Low*
 
-- Option to run analysis without full basic events description. *Moderate*
+- Option to run analysis without full basic event description. *Moderate*
 
 
 Major Enhancements and Capabilities
