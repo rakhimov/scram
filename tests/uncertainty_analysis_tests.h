@@ -1,13 +1,13 @@
 #ifndef SCRAM_TESTS_UNCERTAINTY_ANALYSIS_TESTS_H_
 #define SCRAM_TESTS_UNCERTAINTY_ANALYSIS_TESTS_H_
 
+#include "uncertainty_analysis.h"
+
 #include <set>
 #include <string>
 #include <vector>
 
 #include <gtest/gtest.h>
-
-#include "uncertainty_analysis.h"
 
 using namespace scram;
 

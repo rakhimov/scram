@@ -1,6 +1,6 @@
-#include <gtest/gtest.h>
-
 #include "expression.h"
+
+#include <gtest/gtest.h>
 
 #include "error.h"
 

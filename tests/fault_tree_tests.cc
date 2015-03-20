@@ -1,6 +1,6 @@
-#include <gtest/gtest.h>
-
 #include "fault_tree.h"
+
+#include <gtest/gtest.h>
 
 #include "error.h"
 

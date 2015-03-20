@@ -1,7 +1,8 @@
+#include "fault_tree_analysis.h"
+
 #include <gtest/gtest.h>
 
 #include "error.h"
-#include "fault_tree_analysis.h"
 
 using namespace scram;
 

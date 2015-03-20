@@ -1,8 +1,6 @@
-#include <gtest/gtest.h>
+#include "performance_tests.h"
 
 #include <string>
-
-#include "performance_tests.h"
 
 using namespace scram;
 

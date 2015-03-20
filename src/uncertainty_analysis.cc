@@ -2,8 +2,8 @@
 /// Implements the functionality to run Monte Carlo uncertainty analysis.
 #include "uncertainty_analysis.h"
 
-#include <ctime>
 #include <cmath>
+#include <ctime>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/accumulators/accumulators.hpp>

@@ -1,6 +1,7 @@
+#include "settings.h"
+
 #include <gtest/gtest.h>
 
-#include "settings.h"
 #include "error.h"
 
 using namespace scram;

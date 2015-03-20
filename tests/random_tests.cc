@@ -1,4 +1,4 @@
-#include <gtest/gtest.h>
+#include "random.h"
 
 #include <algorithm>
 #include <ctime>
@@ -7,8 +7,7 @@
 #include <set>
 
 #include <boost/assign/std/vector.hpp>
-
-#include "random.h"
+#include <gtest/gtest.h>
 
 using namespace scram;
 

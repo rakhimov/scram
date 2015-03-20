@@ -1,13 +1,13 @@
 #ifndef SCRAM_TESTS_PROBABILITY_ANALYSIS_TESTS_H_
 #define SCRAM_TESTS_PROBABILITY_ANALYSIS_TESTS_H_
 
+#include "probability_analysis.h"
+
 #include <set>
 #include <string>
 #include <vector>
 
 #include <gtest/gtest.h>
-
-#include "probability_analysis.h"
 
 using namespace scram;
 

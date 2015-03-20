@@ -1,9 +1,9 @@
-#include <gtest/gtest.h>
+#include "event.h"
 
 #include <boost/shared_ptr.hpp>
+#include <gtest/gtest.h>
 
 #include "error.h"
-#include "event.h"
 
 using namespace scram;
 

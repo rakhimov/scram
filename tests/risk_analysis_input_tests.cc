@@ -1,8 +1,8 @@
-#include <gtest/gtest.h>
-
 #include <unistd.h>
 
 #include <vector>
+
+#include <gtest/gtest.h>
 
 #include "error.h"
 #include "risk_analysis.h"

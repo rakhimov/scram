@@ -1,12 +1,12 @@
 #ifndef SCRAM_TESTS_XML_PARSER_TESTS_H_
 #define SCRAM_TESTS_XML_PARSER_TESTS_H_
 
+#include "xml_parser.h"
+
 #include <sstream>
 #include <string>
 
 #include <gtest/gtest.h>
-
-#include "xml_parser.h"
 
 class XMLParserTests : public ::testing::Test {
  public:

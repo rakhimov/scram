@@ -1,14 +1,14 @@
 #ifndef SCRAM_TESTS_RISK_ANALYSIS_TESTS_H_
 #define SCRAM_TESTS_RISK_ANALYSIS_TESTS_H_
 
+#include "risk_analysis.h"
+
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
 
 #include <gtest/gtest.h>
-
-#include "risk_analysis.h"
 
 using namespace scram;
 
