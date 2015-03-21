@@ -9,10 +9,11 @@ namespace scram {
 Settings::Settings()
     : num_sums_(7),
       limit_order_(20),
-      approx_("no"),
+      approx_("no"),  // The default value indicates no setting.
       cut_off_(1e-8),
       mission_time_(8760),
       num_trials_(1e3),
+      seed_(-1),  // The negative value indicates no setting.
       probability_analysis_(false),
       importance_analysis_(false),
       uncertainty_analysis_(false),
@@ -63,6 +64,15 @@ Settings& Settings::num_trials(int n) {
     throw InvalidArgument(msg);
   }
   num_trials_ = n;
+  return *this;
+}
+
+Settings& Settings::seed(int s) {
+  if (s < 0) {
+    std::string msg = "The seed for PRNG cannot be negative.";
+    throw InvalidArgument(msg);
+  }
+  seed_ = s;
   return *this;
 }
 

@@ -16,6 +16,7 @@
 #include "error.h"
 #include "fault_tree.h"
 #include "grapher.h"
+#include "random.h"
 #include "reporter.h"
 #include "xml_parser.h"
 
@@ -125,6 +126,10 @@ void RiskAnalysis::GraphingInstructions(std::string output) {
 void RiskAnalysis::Analyze() {
   // Set system mission time for all analysis.
   mission_time_->mission_time(settings_.mission_time_);
+
+  // Set the seed for the pseudo-random number generator if given explicitly.
+  // Otherwise it defaults to the current time.
+  if (settings_.seed_ >=0 ) Random::seed(settings_.seed_);
 
   std::map<std::string, FaultTreePtr>::iterator it;
   for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {

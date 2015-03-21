@@ -92,6 +92,11 @@
                     <data type="nonNegativeInteger"/>
                   </element>
                 </optional>
+                <optional>
+                  <element name="seed">
+                    <data type="nonNegativeInteger"/>
+                  </element>
+                </optional>
               </element>
             </optional>
             <optional>

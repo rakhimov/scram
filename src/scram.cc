@@ -61,13 +61,15 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
          "System mission time in hours")
         ("num-trials", po::value<int>()->default_value(1e3),
          "Number of trials for Monte Carlo simulations")
+        ("seed", po::value<int>(),
+         "Seed for the pseudo-random number generator")
         ("output-path,o", po::value<std::string>(), "Output path")
-        ("log", "Turn on logging system")
+        ("log", "Turn on the logging system")
         ;
 
     po::store(po::parse_command_line(argc, argv, desc), *vm);
   } catch (std::exception& err) {
-    std::cout << "Invalid arguments.\n"
+    std::cout << "Options error: " << err.what() << "\n\n"
         << usage << "\n\n" << desc << "\n";
     return 1;
   }
@@ -128,6 +130,8 @@ Settings ConstructSettings(const po::variables_map& vm) {
   } else if (vm.count("mcub")) {
     settings.approx("mcub");
   }
+
+  if (vm.count("seed")) settings.seed(vm["seed"].as<int>());
 
   settings.limit_order(vm["limit-order"].as<int>())
       .num_sums(vm["num-sums"].as<int>())

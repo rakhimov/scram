@@ -97,28 +97,26 @@ void Reporter::SetupReport(const RiskAnalysis* risk_an,
     xmlpp::Element* methods = information->add_child("calculation-method");
     methods->set_attribute("name", "Monte Carlo");
     xmlpp::Element* limits = methods->add_child("limits");
-    limits->add_child("number-of-trials")
-        ->add_child_text(
-            boost::lexical_cast<std::string>(settings.num_trials_));
-    /// @todo Report the seed and rng.
+    limits->add_child("number-of-trials")->add_child_text(
+        boost::lexical_cast<std::string>(settings.num_trials_));
+    if (settings.seed_ >= 0) {
+      limits->add_child("seed")->add_child_text(
+          boost::lexical_cast<std::string>(settings.seed_));
+    }
   }
 
   xmlpp::Element* model = information->add_child("model-features");
-  model->add_child("gates")
-      ->add_child_text(
-          boost::lexical_cast<std::string>(risk_an->gates_.size()));
-  model->add_child("basic-events")
-      ->add_child_text(
-          boost::lexical_cast<std::string>(risk_an->basic_events_.size()));
+  model->add_child("gates")->add_child_text(
+      boost::lexical_cast<std::string>(risk_an->gates_.size()));
+  model->add_child("basic-events")->add_child_text(
+      boost::lexical_cast<std::string>(risk_an->basic_events_.size()));
   model->add_child("house-events")
       ->add_child_text(boost::lexical_cast<std::string>(
               risk_an->primary_events_.size() - risk_an->basic_events_.size()));
-  model->add_child("ccf-groups")
-      ->add_child_text(
-          boost::lexical_cast<std::string>(risk_an->ccf_groups_.size()));
-  model->add_child("fault-trees")
-      ->add_child_text(
-          boost::lexical_cast<std::string>(risk_an->fault_trees_.size()));
+  model->add_child("ccf-groups")->add_child_text(
+      boost::lexical_cast<std::string>(risk_an->ccf_groups_.size()));
+  model->add_child("fault-trees")->add_child_text(
+      boost::lexical_cast<std::string>(risk_an->fault_trees_.size()));
 
   // Setup for results.
   root->add_child("results");

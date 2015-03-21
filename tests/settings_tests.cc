@@ -21,6 +21,8 @@ TEST(SettingsTest, IncorrectSetup) {
   // Incorrect number of trials.
   ASSERT_THROW(s.num_trials(-10), InvalidArgument);
   ASSERT_THROW(s.num_trials(0), InvalidArgument);
+  // Incorrect seed.
+  ASSERT_THROW(s.seed(-1), InvalidArgument);
   // Incorrect mission time.
   ASSERT_THROW(s.mission_time(-10), InvalidArgument);
 }

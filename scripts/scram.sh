@@ -44,7 +44,8 @@ _scram()
       _filedir
       return
       ;;
-    -l|--limit-order|-s|--num-sums|--cut-off|--mission-time|--num-trials)
+    -l|--limit-order|-s|--num-sums|--cut-off|--mission-time|--num-trials|\
+    --seed)
       # argument required but no completions available
       return
       ;;

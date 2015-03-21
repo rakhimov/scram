@@ -49,6 +49,12 @@ class Settings {
   /// @throws ValueError if the number is less than 1.
   Settings& num_trials(int n);
 
+  /// Sets the seed for the pseudo-random number generator.
+  /// @param[in] s A positive number.
+  /// @returns Rerefence to this object.
+  /// @throws ValueError if the number is negative.
+  Settings& seed(int s);
+
   /// Sets the system mission time.
   /// @param[in] time A positive number in hours by default.
   /// @returns Rerefence to this object.
@@ -120,6 +126,9 @@ class Settings {
 
   /// The number of trials for Monte Carlo simulations.
   int num_trials_;
+
+  /// The seed for the pseudo-random number generator.
+  int seed_;
 
   /// System mission time.
   double mission_time_;
