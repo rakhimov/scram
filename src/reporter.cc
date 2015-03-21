@@ -98,7 +98,8 @@ void Reporter::SetupReport(const RiskAnalysis* risk_an,
     methods->set_attribute("name", "Monte Carlo");
     xmlpp::Element* limits = methods->add_child("limits");
     limits->add_child("number-of-trials")
-        ->add_child_text(boost::lexical_cast<std::string>(settings.trials_));
+        ->add_child_text(
+            boost::lexical_cast<std::string>(settings.num_trials_));
     /// @todo Report the seed and rng.
   }
 

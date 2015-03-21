@@ -12,7 +12,7 @@ Settings::Settings()
       approx_("no"),
       cut_off_(1e-8),
       mission_time_(8760),
-      trials_(1e3),
+      num_trials_(1e3),
       probability_analysis_(false),
       importance_analysis_(false),
       uncertainty_analysis_(false),
@@ -57,12 +57,12 @@ Settings& Settings::approx(std::string approx) {
   return *this;
 }
 
-Settings& Settings::trials(int trials) {
-  if (trials < 0) {
-    std::string msg = "The number of trials cannot be negative.";
+Settings& Settings::num_trials(int n) {
+  if (n < 1) {
+    std::string msg = "The number of trials cannot be less than 1.";
     throw InvalidArgument(msg);
   }
-  trials_ = trials;
+  num_trials_ = n;
   return *this;
 }
 

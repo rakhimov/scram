@@ -32,36 +32,37 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
 
   try {
     desc.add_options()
-        ("help,h", "display this help message")
-        ("version", "display version information")
-        ("input-file", po::value< std::vector<std::string> >(),
+        ("help", "Display this help message")
+        ("version", "Display version information")
+        ("input-files", po::value< std::vector<std::string> >(),
          "XML input files with analysis entities")
-        ("config,C", po::value<std::string>(),
+        ("config-file", po::value<std::string>(),
          "XML configuration file for analysis")
-        ("validate,v", "only validate input files")
-        ("graph-only,g", "produce graph without analysis")
+        ("validate-only,v", "Validate input files without analysis")
+        ("graph-only,g", "Validate and produce graph without analysis")
         ("probability", po::value<bool>()->default_value(false),
-         "perform probability analysis")
+         "Perform probability analysis")
         ("importance", po::value<bool>()->default_value(false),
-         "perform importance analysis")
+         "Perform importance analysis")
         ("uncertainty", po::value<bool>()->default_value(false),
-         "perform uncertainty analysis")
+         "Perform uncertainty analysis")
         ("ccf", po::value<bool>()->default_value(false),
-         "perform common-cause failure analysis")
-        ("rare-event,r", "use the rare event approximation")
-        ("mcub,m", "use the MCUB approximation for probability calculations")
+         "Perform common-cause failure analysis")
+        ("rare-event",
+         "Use the rare event approximation for probability calculations")
+        ("mcub", "Use the MCUB approximation for probability calculations")
         ("limit-order,l", po::value<int>()->default_value(20),
-         "upper limit for cut set order")
-        ("nsums,s", po::value<int>()->default_value(7),
-         "number of sums in series expansion for probability calculations")
-        ("cut-off,c", po::value<double>()->default_value(1e-8),
-         "cut-off probability for cut sets")
-        ("mission-time,t", po::value<double>()->default_value(8760),
-         "system mission time in hours")
-        ("trials,S", po::value<int>()->default_value(1e3),
-         "number of trials for Monte Carlo simulations")
-        ("output,o", po::value<std::string>(), "output file")
-        ("log,L", "Turn on logging system")
+         "Upper limit for cut set order")
+        ("num-sums,s", po::value<int>()->default_value(7),
+         "Number of sums in series expansion for probability calculations")
+        ("cut-off", po::value<double>()->default_value(1e-8),
+         "Cut-off probability for cut sets")
+        ("mission-time", po::value<double>()->default_value(8760),
+         "System mission time in hours")
+        ("num-trials", po::value<int>()->default_value(1e3),
+         "Number of trials for Monte Carlo simulations")
+        ("output-path,o", po::value<std::string>(), "Output path")
+        ("log", "Turn on logging system")
         ;
 
     po::store(po::parse_command_line(argc, argv, desc), *vm);
@@ -73,7 +74,7 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
   po::notify(*vm);
 
   po::positional_options_description p;
-  p.add("input-file", -1);
+  p.add("input-files", -1);
 
   po::store(po::command_line_parser(argc, argv).options(desc).positional(p).
             run(), *vm);
@@ -94,7 +95,7 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
     return -1;
   }
 
-  if (!vm->count("input-file") && !vm->count("config")) {
+  if (!vm->count("input-files") && !vm->count("config-file")) {
     std::string msg = "No input or configuration file is given.\n";
     std::cout << msg << std::endl;
     std::cout << usage << "\n\n" << desc << "\n";
@@ -129,10 +130,10 @@ Settings ConstructSettings(const po::variables_map& vm) {
   }
 
   settings.limit_order(vm["limit-order"].as<int>())
-      .num_sums(vm["nsums"].as<int>())
+      .num_sums(vm["num-sums"].as<int>())
       .cut_off(vm["cut-off"].as<double>())
       .mission_time(vm["mission-time"].as<double>())
-      .trials(vm["trials"].as<int>())
+      .num_trials(vm["num-trials"].as<int>())
       .probability_analysis(vm["probability"].as<bool>())
       .importance_analysis(vm["importance"].as<bool>())
       .uncertainty_analysis(vm["uncertainty"].as<bool>())
@@ -152,8 +153,8 @@ int RunScram(const po::variables_map& vm) {
   if (vm.count("log")) Logger::active() = true;
   // Initiate risk analysis.
   RiskAnalysis* ran;
-  if (vm.count("config")) {
-    ran = new RiskAnalysis(vm["config"].as<std::string>());
+  if (vm.count("config-file")) {
+    ran = new RiskAnalysis(vm["config-file"].as<std::string>());
   } else {
     ran = new RiskAnalysis();
   }
@@ -161,8 +162,8 @@ int RunScram(const po::variables_map& vm) {
   ran->AddSettings(ConstructSettings(vm));
 
   // Process input files and validate it.
-  if (vm.count("input-file")) {
-    ran->ProcessInputFiles(vm["input-file"].as< std::vector<std::string> >());
+  if (vm.count("input-files")) {
+    ran->ProcessInputFiles(vm["input-files"].as< std::vector<std::string> >());
   }
 
   // Stop if only validation is requested.
@@ -173,8 +174,8 @@ int RunScram(const po::variables_map& vm) {
 
   // Graph if requested.
   if (vm.count("graph-only")) {
-    if (vm.count("output")) {
-      ran->GraphingInstructions(vm["output"].as<std::string>());
+    if (vm.count("output-path")) {
+      ran->GraphingInstructions(vm["output-path"].as<std::string>());
     } else {
       ran->GraphingInstructions();
     }
@@ -183,8 +184,8 @@ int RunScram(const po::variables_map& vm) {
 
   ran->Analyze();
 
-  if (vm.count("output")) {
-    ran->Report(vm["output"].as<std::string>());
+  if (vm.count("output-path")) {
+    ran->Report(vm["output-path"].as<std::string>());
   } else {
     ran->Report(std::cout);
   }

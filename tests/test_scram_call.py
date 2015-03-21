@@ -3,7 +3,7 @@
 import os
 from subprocess import call
 
-from nose.tools import assert_equal, assert_not_equal
+from nose.tools import assert_true, assert_equal, assert_not_equal
 
 def test_fta_calls():
     """Tests all possible calls from the cli."""
@@ -13,7 +13,7 @@ def test_fta_calls():
     fta_no_prob = "./input/fta/correct_tree_input.xml"
 
     # Test help
-    cmd = ["scram", "-h"]
+    cmd = ["scram", "--help"]
     yield assert_equal, 0, call(cmd)
 
     # Test version information
@@ -51,8 +51,8 @@ def test_fta_calls():
     cmd = ["scram", fta_input, "-s", "-1"]
     yield assert_not_equal, 0, call(cmd)
 
-    # Test the application of the rare event and MCUB at the same time.
-    cmd = ["scram", fta_input, "-r", "-m"]
+    # Test the application of the rare event and MCUB at the same time
+    cmd = ["scram", fta_input, "--rare-event", "--mcub"]
     yield assert_not_equal, 0, call(cmd)
 
     # Test graph only
@@ -61,6 +61,8 @@ def test_fta_calls():
     graph_file = "./input/fta/TwoTrains.dot"
     cmd = ["scram", fta_input, "-g", "-o", graph_file]
     yield assert_equal, 0, call(cmd)
+    # Test if output is created
+    yield assert_true, os.path.isfile(graph_file)
     # Changing permission
     cmd = ["chmod", "a-w", graph_file]
     call(cmd)
@@ -80,13 +82,13 @@ def test_fta_calls():
         os.remove(out_temp)
 
     # Test the rare event approximation
-    cmd = ["scram", fta_input, "-r"]
+    cmd = ["scram", fta_input, "--rare-event"]
     yield assert_equal, 0, call(cmd)
 
     # Test the MCUB approximation
-    cmd = ["scram", fta_input, "-m"]
+    cmd = ["scram", fta_input, "--mcub"]
     yield assert_equal, 0, call(cmd)
 
     # Run with logging
-    cmd = ["scram", fta_input, "-L"]
+    cmd = ["scram", fta_input, "--log"]
     yield assert_equal, 0, call(cmd)

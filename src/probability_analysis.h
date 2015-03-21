@@ -34,12 +34,14 @@ class ProbabilityAnalysis {
 
   /// The main constructor of Probability Analysis.
   /// @param[in] approx The kind of approximation for probability calculations.
-  /// @param[in] nsums The number of sums in the probability series.
+  /// @param[in] num_sums The number of sums in the probability series.
   /// @param[in] cut_off The cut-off probability for cut sets.
   /// @param[in] importance_analysis To perform importance analysis.
   /// @throws InvalidArgument if any of the parameters is invalid.
-  ProbabilityAnalysis(std::string approx = "no", int nsums = 7,
-                      double cut_off = 1e-8, bool importance_analysis = false);
+  explicit ProbabilityAnalysis(std::string approx = "no",
+                               int num_sums = 7,
+                               double cut_off = 1e-8,
+                               bool importance_analysis = false);
 
   virtual ~ProbabilityAnalysis() {}
 
@@ -104,14 +106,14 @@ class ProbabilityAnalysis {
   /// relationship with each other. This function is a brute force probability
   /// calculation without approximations.
   /// @param[in] sign The sign of the series. Negative or positive number.
-  /// @param[in] nsums The number of sums in the series.
+  /// @param[in] num_sums The number of sums in the series.
   /// @param[in,out] min_cut_sets Sets of indices of primary events.
   /// @note This function drastically modifies min_cut_sets by deleting
   /// sets inside it. This is for better performance.
   ///
   /// @note O_avg(M*logM*N*2^N) where N is the number of sets, and M is
   /// the average size of the sets.
-  void ProbOr(int sign, int nsums,
+  void ProbOr(int sign, int num_sums,
               std::set< boost::container::flat_set<int> >* min_cut_sets);
 
   /// Calculates a probability of a minimal cut set, whose members are in AND
@@ -143,7 +145,7 @@ class ProbabilityAnalysis {
   std::string approx_;
 
   /// Number of sums in series expansion for probability calculations.
-  int nsums_;
+  int num_sums_;
 
   /// Cut-off probability for minimal cut sets.
   double cut_off_;

@@ -12,7 +12,8 @@
 
 namespace scram {
 
-ProbabilityAnalysis::ProbabilityAnalysis(std::string approx, int nsums,
+ProbabilityAnalysis::ProbabilityAnalysis(std::string approx,
+                                         int num_sums,
                                          double cut_off,
                                          bool importance_analysis)
     : importance_analysis_(importance_analysis),
@@ -23,12 +24,12 @@ ProbabilityAnalysis::ProbabilityAnalysis(std::string approx, int nsums,
       p_time_(-1),
       imp_time_(-1) {
   // Check for right number of sums.
-  if (nsums < 1) {
+  if (num_sums < 1) {
     std::string msg = "The number of sums in the probability calculation "
                       "cannot be less than one";
     throw InvalidArgument(msg);
   }
-  nsums_ = nsums;
+  num_sums_ = num_sums;
 
   // Check for valid cut-off probability.
   if (cut_off < 0 || cut_off > 1) {
@@ -95,7 +96,7 @@ void ProbabilityAnalysis::Analyze(
       warnings_ += " The cut sets are not coherent and contain negation."
                    " The MCUB approximation may not hold.";
     }
-    nsums_ = 0;  // For reporting purposes.
+    num_sums_ = 0;  // For reporting purposes.
     num_prob_mcs_ = imcs_.size();
     p_total_ = ProbabilityAnalysis::ProbMcub(imcs_);
 
@@ -114,13 +115,13 @@ void ProbabilityAnalysis::Analyze(
           break;
         }
       }
-      nsums_ = 1;  // Only first series is used for the rare event case.
+      num_sums_ = 1;  // Only first series is used for the rare event case.
     }
     // The default calculations.
     // Choose cut sets with high enough probabilities.
     num_prob_mcs_ = mcs_for_prob.size();
-    if (nsums_ > mcs_for_prob.size()) nsums_ = mcs_for_prob.size();
-    ProbabilityAnalysis::ProbOr(1, nsums_, &mcs_for_prob);
+    if (num_sums_ > mcs_for_prob.size()) num_sums_ = mcs_for_prob.size();
+    ProbabilityAnalysis::ProbOr(1, num_sums_, &mcs_for_prob);
     p_total_ = ProbabilityAnalysis::CalculateTotalProbability();
   }
   // Duration of the calculations.
@@ -203,15 +204,15 @@ double ProbabilityAnalysis::ProbMcub(
 
 void ProbabilityAnalysis::ProbOr(
     int sign,
-    int nsums,
+    int num_sums,
     std::set< boost::container::flat_set<int> >* min_cut_sets) {
   assert(sign != 0);
-  assert(nsums >= 0);
+  assert(num_sums >= 0);
 
   // Recursive implementation.
   if (min_cut_sets->empty()) return;
 
-  if (nsums == 0) return;
+  if (num_sums == 0) return;
 
   using boost::container::flat_set;
 
@@ -232,8 +233,8 @@ void ProbabilityAnalysis::ProbOr(
       (sign > 0) ? pos_terms_.back() : neg_terms_.back(),
       *min_cut_sets, &combo_sets);
 
-  ProbabilityAnalysis::ProbOr(sign, nsums, min_cut_sets);
-  ProbabilityAnalysis::ProbOr(-sign, nsums - 1, &combo_sets);
+  ProbabilityAnalysis::ProbOr(sign, num_sums, min_cut_sets);
+  ProbabilityAnalysis::ProbOr(-sign, num_sums - 1, &combo_sets);
 }
 
 double ProbabilityAnalysis::ProbAnd(

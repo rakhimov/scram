@@ -342,7 +342,7 @@ On command line, run help to get running options:
 
 .. code-block:: bash
 
-    path/to/installation/directory/bin/scram -h
+    path/to/installation/directory/bin/scram --help
 
 .. note::
     For Windows, the binary is **scram.exe**

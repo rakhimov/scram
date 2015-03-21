@@ -40,12 +40,11 @@ _scram()
   _init_completion -n = || return
 
   case "$prev" in
-    -o|--output|--input-file|-C|--config)
+    -o|--output-path|--input-files|--config-file)
       _filedir
       return
       ;;
-    -l|--limit-order|-s|--nsums|-c|--cut-off|-t|--mission-time|\
-      -S|--trials)
+    -l|--limit-order|-s|--num-sums|--cut-off|--mission-time|--num-trials)
       # argument required but no completions available
       return
       ;;

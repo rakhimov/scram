@@ -27,7 +27,7 @@ class Settings {
   /// Limits the number of sums in probability calculations.
   /// @param[in] n A natural number for the number of sums.
   /// @returns Rerefence to this object.
-  /// @throws ValueError if the number is not more than 0.
+  /// @throws ValueError if the number is less than 1.
   Settings& num_sums(int n);
 
   /// Sets the cut-off probability for minimal cut sets to be considered
@@ -44,9 +44,10 @@ class Settings {
   Settings& approx(std::string approx);
 
   /// Sets the number of trials for Monte Carlo simulations.
-  /// @param[in] trials A positive number.
+  /// @param[in] n A natural number for the number of trials.
   /// @returns Rerefence to this object.
-  Settings& trials(int trials);
+  /// @throws ValueError if the number is less than 1.
+  Settings& num_trials(int n);
 
   /// Sets the system mission time.
   /// @param[in] time A positive number in hours by default.
@@ -118,7 +119,7 @@ class Settings {
   std::string approx_;
 
   /// The number of trials for Monte Carlo simulations.
-  int trials_;
+  int num_trials_;
 
   /// System mission time.
   double mission_time_;

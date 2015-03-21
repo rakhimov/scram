@@ -76,7 +76,7 @@ Future Additions
 
 General Information for Users
 =============================
-#. Run 'scram -h' to see all the flags and parameters for analysis.
+#. Run 'scram --help' to see all the flags and options for analysis.
 
 #. The minimum cut set generation for a fault tree and probability calculations
    may use a lot of time and computing power depending on the complexity of

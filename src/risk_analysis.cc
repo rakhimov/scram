@@ -144,9 +144,9 @@ void RiskAnalysis::Analyze() {
     }
 
     if (settings_.uncertainty_analysis_) {
-      UncertaintyAnalysisPtr ua(new UncertaintyAnalysis(settings_.num_sums_,
-                                                        settings_.cut_off_,
-                                                        settings_.trials_));
+      UncertaintyAnalysisPtr ua(
+          new UncertaintyAnalysis(settings_.num_sums_, settings_.cut_off_,
+                                  settings_.num_trials_));
       ua->UpdateDatabase(it->second->basic_events());
       ua->Analyze(fta->min_cut_sets());
       uncertainty_analyses_.insert(std::make_pair(it->first, ua));
