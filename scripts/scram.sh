@@ -1,78 +1,89 @@
-# bash completion for scram
-# run 'source scram.sh' or put this file in /etc/bash_completion.d/
+# Bash completion for scram.
+# Run 'source scram.sh' or put this file in /etc/bash_completion.d/
 
-__parse_desc_options()
-{
-  local option option2 i
-
-  option=
-  option2=
-
-  for i in $1; do
-      case $i in
-          --?*) option=$i ; continue ;;
-          -?*)  [[ $option ]] || option2=$i ;;
-          *)    continue ;;
-      esac
+########################################
+# Searches for short and long options
+# starting with "-" and prints them
+#
+# Globals:
+#   None
+# Arguments:
+#   A line containing options
+# Returns:
+#   Short option
+#   Long option
+########################################
+_scram_parse_options() {
+  local short_option long_option w
+  for w in $1; do
+    case "${w}" in
+      -?) [[ -n "${short_option}" ]] || short_option="${w}" ;;
+      --*) [[ -n "${long_option}" ]] || long_option="${w}" ;;
+    esac
   done
 
-  [[ $option ]] || [[ $option2 ]] || return 0
-
-  printf '%s\n' $option
-
-  printf '%s\n' $option2
+  [[ -n "${short_option}" ]] && printf "%s\n" "${short_option}"
+  [[ -n "${long_option}" ]] && printf "%s\n" "${long_option}"
 }
 
-_parse_desc()
-{
+########################################
+# Parses Scram's Boost program options
+# generated help description to find
+# options
+#
+# Globals:
+#   None
+# Arguments:
+#   None
+# Returns:
+#   Options
+########################################
+_scram_parse_help() {
   local line
   scram --help | while read -r line; do
-
-      [[ $line == *([ $'\t'])-* ]] || continue
-      __parse_desc_options "$line"
-
+    [[ "${line}" == *-* ]] || continue
+    _scram_parse_options "${line}"
   done
 }
 
-_scram()
-{
-  local cur prev words cword
+########################################
+# Bash completion function for Scram
+#
+# Globals:
+#   COMPREPLY
+# Arguments:
+#   None
+# Returns:
+#   Completion suggestions
+########################################
+_scram() {
+  local cur prev
   _init_completion -n = || return
 
-  case "$prev" in
+  case "${prev}" in
     -o|--output-path|--input-files|--config-file)
       _filedir
       return
       ;;
-    -l|--limit-order|-s|--num-sums|--cut-off|--mission-time|--num-trials|\
+    -l|--limit-order|-s|--num-sums|--cut-off|--mission-time|--num-trials| \
     --seed)
-      # argument required but no completions available
+      # An argument is required.
       return
       ;;
-    --probability)
-      COMPREPLY=( $( compgen -W '0 1' -- "$cur" ) )
-      return
-      ;;
-    --importance)
-      COMPREPLY=( $( compgen -W '0 1' -- "$cur" ) )
-      return
-      ;;
-    --ccf)
-      COMPREPLY=( $( compgen -W '0 1' -- "$cur" ) )
-      return
-      ;;
-    --uncertainty)
-      COMPREPLY=( $( compgen -W '0 1' -- "$cur" ) )
+    --probability|--importance|--ccf|--uncertainty)
+      COMPREPLY=($(compgen -W "on off yes no true false 1 0" -- "${cur}"))
       return
       ;;
   esac
 
-  if [[ "$cur" == -* ]]; then
-    COMPREPLY=( $(compgen -W '$( _parse_desc )' -- ${cur}) )
-    [[ $COMPREPLY == *= ]] && compopt -o nospace
-    [[ $COMPREPLY ]] && return
+  # Start parsing the help for option suggestions.
+  if [[ "${cur}" == -* ]]; then
+    COMPREPLY=($(compgen -W "$(_scram_parse_help)" -- "${cur}"))
+    [[ -n "${COMPREPLY}" ]] && return
   fi
 
+  # Default to input files.
   _filedir
-} &&
+}
+
 complete -F _scram scram
