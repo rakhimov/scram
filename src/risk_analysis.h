@@ -38,10 +38,7 @@ class RiskAnalysis {
   friend class Reporter;
 
  public:
-  /// This constructor with configurations with the analysis.
-  /// @param[in] config_file XML file with configurations.
-  /// @todo Should be able to accept configurations from XML files.
-  explicit RiskAnalysis(std::string config_file = "");
+  RiskAnalysis();
 
   /// Add set of settings for analysis.
   /// @param[in] settings Configured settings for analysis.
@@ -113,14 +110,6 @@ class RiskAnalysis {
   typedef boost::shared_ptr<FaultTreeAnalysis> FaultTreeAnalysisPtr;
   typedef boost::shared_ptr<ProbabilityAnalysis> ProbabilityAnalysisPtr;
   typedef boost::shared_ptr<UncertaintyAnalysis> UncertaintyAnalysisPtr;
-
-  /// Reads an analysis configuration file.
-  /// Initializes the provided information and settings.
-  /// @param[in] xml_file The formatted xml analysis configuration file.
-  /// @throws ValidationError if the configuration input contains errors.
-  /// @throws ValueError if input values are not valid.
-  /// @throws IOError if the file is not accessable.
-  void ProcessConfigFile(std::string xml_file);
 
   /// Reads one input file with the structure of analysis entities.
   /// Initializes the analysis from the given input file.

@@ -22,7 +22,7 @@
 
 namespace scram {
 
-RiskAnalysis::RiskAnalysis(std::string config_file) {
+RiskAnalysis::RiskAnalysis() {
   // Add valid gate types.
   gate_types_.insert("and");
   gate_types_.insert("or");
@@ -53,9 +53,6 @@ RiskAnalysis::RiskAnalysis(std::string config_file) {
 
   // Initialize the mission time with any value.
   mission_time_ = boost::shared_ptr<MissionTime>(new MissionTime());
-
-  // Process configuration file if given.
-  if (config_file != "") RiskAnalysis::ProcessConfigFile(config_file);
 }
 
 void RiskAnalysis::ProcessInput(std::string xml_file) {
@@ -202,35 +199,6 @@ void RiskAnalysis::Report(std::string output) {
     throw IOError(output +  " : Cannot write the output file.");
   }
   RiskAnalysis::Report(of);
-}
-
-void RiskAnalysis::ProcessConfigFile(std::string xml_file) {
-  std::ifstream file_stream(xml_file.c_str());
-  if (!file_stream) {
-    throw IOError("The file '" + xml_file + "' could not be loaded.");
-  }
-
-  std::stringstream stream;
-  stream << file_stream.rdbuf();
-  file_stream.close();
-
-  boost::shared_ptr<XMLParser> parser(new XMLParser());
-  try {
-    parser->Init(stream);
-    std::stringstream schema;
-    std::string schema_path = Env::config_schema();
-    std::ifstream schema_stream(schema_path.c_str());
-    schema << schema_stream.rdbuf();
-    schema_stream.close();
-    parser->Validate(schema);
-
-  } catch (ValidationError& err) {
-    err.msg("In file '" + xml_file + "', " + err.msg());
-    throw err;
-  }
-  xmlpp::Document* doc = parser->Document();
-  const xmlpp::Node* root = doc->get_root_node();
-  assert(root->get_name() == "config");
 }
 
 void RiskAnalysis::ProcessInputFile(std::string xml_file) {

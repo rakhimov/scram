@@ -8,6 +8,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
+#include "config.h"
 #include "error.h"
 #include "logger.h"
 #include "risk_analysis.h"
@@ -156,13 +157,12 @@ Settings ConstructSettings(const po::variables_map& vm) {
 int RunScram(const po::variables_map& vm) {
   if (vm.count("log")) Logger::active() = true;
   // Initiate risk analysis.
-  RiskAnalysis* ran;
+  RiskAnalysis* ran = new RiskAnalysis();
+  // Get configurations if any.
+  Config* config;
   if (vm.count("config-file")) {
-    ran = new RiskAnalysis(vm["config-file"].as<std::string>());
-  } else {
-    ran = new RiskAnalysis();
+    config = new Config(vm["config-file"].as<std::string>());
   }
-
   ran->AddSettings(ConstructSettings(vm));
 
   // Process input files and validate it.
