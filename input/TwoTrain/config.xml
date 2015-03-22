@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <config>
-  <inputs>
+  <input-files>
     <file> two_train.xml </file>
-  </inputs>
+  </input-files>
   <options>
-    <analysis importance="1" uncertainty="0" ccf="0"/>
+    <analysis importance="true" uncertainty="false" ccf="false"/>
     <limits>
       <limit-order>10</limit-order>
       <cut-off>0.001</cut-off>

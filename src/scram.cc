@@ -27,8 +27,8 @@ using namespace scram;
 /// @returns 1 for errored state.
 /// @returns -1 for information only state like help and version.
 int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
-  std::string usage = "Usage:    scram [input-files] [opts]";
-  po::options_description desc("Allowed options");
+  std::string usage = "Usage:    scram [input-files] [options]";
+  po::options_description desc("Options");
 
   try {
     desc.add_options()
@@ -69,7 +69,7 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
 
     po::store(po::parse_command_line(argc, argv, desc), *vm);
   } catch (std::exception& err) {
-    std::cout << "Options error: " << err.what() << "\n\n"
+    std::cout << "Option error: " << err.what() << "\n\n"
         << usage << "\n\n" << desc << "\n";
     return 1;
   }

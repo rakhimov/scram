@@ -3,13 +3,13 @@
 
   <start>
     <element name="config">
-      <element name="inputs">
+      <element name="input-files">
         <oneOrMore>
           <element name="file"> <data type="string"/> </element>
         </oneOrMore>
       </element>
       <optional>
-        <element name="output"> <data type="string"/> </element>
+        <element name="output-path"> <data type="string"/> </element>
       </optional>
       <ref name="options"/>
     </element>
@@ -21,22 +21,22 @@
         <element name="analysis">
           <optional>
             <attribute name="probability">
-              <data type="nonNegativeInteger"/>
+              <data type="boolean"/>
             </attribute>
           </optional>
           <optional>
             <attribute name="importance">
-              <data type="nonNegativeInteger"/>
+              <data type="boolean"/>
             </attribute>
           </optional>
           <optional>
             <attribute name="uncertainty">
-              <data type="nonNegativeInteger"/>
+              <data type="boolean"/>
             </attribute>
           </optional>
           <optional>
             <attribute name="ccf">
-              <data type="nonNegativeInteger"/>
+              <data type="boolean"/>
             </attribute>
           </optional>
         </element>
@@ -75,6 +75,11 @@
           </optional>
           <optional>
             <element name="number-of-trials">
+              <data type="nonNegativeInteger"/>
+            </element>
+          </optional>
+          <optional>
+            <element name="seed">
               <data type="nonNegativeInteger"/>
             </element>
           </optional>
