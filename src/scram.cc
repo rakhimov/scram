@@ -116,25 +116,23 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
   return 0;
 }
 
-/// Constructs analysis settings from command-line arguments.
+/// Updates analysis settings from command-line arguments.
 /// @param[in] vm Variables map of program options.
+/// @param[in/out] settings Pre-configured or default settings.
 /// @throws std::exception if vm does not contain a required option.
 ///                        At least defaults are expected.
-Settings ConstructSettings(const po::variables_map& vm) {
-  // Analysis settings.
-  Settings settings;
-
+void ConstructSettings(const po::variables_map& vm, Settings* settings) {
   // Determine if the probability approximation is requested.
   if (vm.count("rare-event")) {
     assert(!vm.count("mcub"));
-    settings.approx("rare");
+    settings->approx("rare");
   } else if (vm.count("mcub")) {
-    settings.approx("mcub");
+    settings->approx("mcub");
   }
 
-  if (vm.count("seed")) settings.seed(vm["seed"].as<int>());
+  if (vm.count("seed")) settings->seed(vm["seed"].as<int>());
 
-  settings.limit_order(vm["limit-order"].as<int>())
+  settings->limit_order(vm["limit-order"].as<int>())
       .num_sums(vm["num-sums"].as<int>())
       .cut_off(vm["cut-off"].as<double>())
       .mission_time(vm["mission-time"].as<double>())
@@ -143,8 +141,6 @@ Settings ConstructSettings(const po::variables_map& vm) {
       .importance_analysis(vm["importance"].as<bool>())
       .uncertainty_analysis(vm["uncertainty"].as<bool>())
       .ccf_analysis(vm["ccf"].as<bool>());
-
-  return settings;
 }
 
 /// Main body of commond-line entrance to run the program.
@@ -158,17 +154,38 @@ int RunScram(const po::variables_map& vm) {
   if (vm.count("log")) Logger::active() = true;
   // Initiate risk analysis.
   RiskAnalysis* ran = new RiskAnalysis();
+  // Analysis settings.
+  Settings settings;
+  std::vector<std::string> input_files;
+  std::string output_path = "";
   // Get configurations if any.
-  Config* config;
   if (vm.count("config-file")) {
-    config = new Config(vm["config-file"].as<std::string>());
+    Config* config = new Config(vm["config-file"].as<std::string>());
+    settings = config->settings();
+    input_files = config->input_files();
+    output_path = config->output_path();
+    delete config;
   }
-  ran->AddSettings(ConstructSettings(vm));
+
+  // Command-line settings overwrites the settings from the configurations.
+  ConstructSettings(vm, &settings);
+  ran->AddSettings(settings);
+
+  // Add input files from the comand line.
+  if (vm.count("input-files")) {
+    input_files.insert(
+        input_files.end(),
+        vm["input-files"].as< std::vector<std::string> >().begin(),
+        vm["input-files"].as< std::vector<std::string> >().end());
+  }
+
+  // Overwrite output path if it is given from the command-line.
+  if (vm.count("output-path")) {
+    output_path = vm["output-path"].as<std::string>();
+  }
 
   // Process input files and validate it.
-  if (vm.count("input-files")) {
-    ran->ProcessInputFiles(vm["input-files"].as< std::vector<std::string> >());
-  }
+  ran->ProcessInputFiles(input_files);
 
   // Stop if only validation is requested.
   if (vm.count("validate")) {
@@ -178,8 +195,8 @@ int RunScram(const po::variables_map& vm) {
 
   // Graph if requested.
   if (vm.count("graph-only")) {
-    if (vm.count("output-path")) {
-      ran->GraphingInstructions(vm["output-path"].as<std::string>());
+    if (output_path != "") {
+      ran->GraphingInstructions(output_path);
     } else {
       ran->GraphingInstructions();
     }
@@ -188,8 +205,8 @@ int RunScram(const po::variables_map& vm) {
 
   ran->Analyze();
 
-  if (vm.count("output-path")) {
-    ran->Report(vm["output-path"].as<std::string>());
+  if (output_path != "") {
+    ran->Report(output_path);
   } else {
     ran->Report(std::cout);
   }
