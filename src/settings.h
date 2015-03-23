@@ -99,6 +99,22 @@ class Settings {
     return *this;
   }
 
+  /// This comparison is primarily for testing.
+  /// @param[in] rhs Another Settings object to be compared.
+  bool operator==(const Settings& rhs) const {
+    return (probability_analysis_ == rhs.probability_analysis_) &&
+        (importance_analysis_ == rhs.importance_analysis_) &&
+        (uncertainty_analysis_ == rhs.uncertainty_analysis_) &&
+        (ccf_analysis_ == rhs.ccf_analysis_) &&
+        (limit_order_ == rhs.limit_order_) &&
+        (num_sums_ == rhs.num_sums_) &&
+        (cut_off_ == rhs.cut_off_) &&
+        (approx_ == rhs.approx_) &&
+        (num_trials_ == rhs.num_trials_) &&
+        (seed_ == rhs.seed_) &&
+        (mission_time_ == rhs.mission_time_);
+  }
+
  private:
   /// A flag for probability analysis.
   bool probability_analysis_;

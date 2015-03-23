@@ -50,7 +50,7 @@ Settings& Settings::cut_off(double prob) {
 }
 
 Settings& Settings::approx(std::string approx) {
-  if (approx != "no" && approx != "rare" && approx != "mcub") {
+  if (approx != "no" && approx != "rare-event" && approx != "mcub") {
     std::string msg = "The probability approximation is not recognized.";
     throw InvalidArgument(msg);
   }

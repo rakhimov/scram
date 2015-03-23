@@ -26,6 +26,7 @@ include_directories(${SCRAM_CORE_INCLUDE_DIRS})
 # added to ctest.
 set(SCRAM_CORE_TEST_SOURCE ${SCRAM_CORE_TEST_SOURCE}
   "${CMAKE_CURRENT_SOURCE_DIR}/settings_tests.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/config_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/element_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/event_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/xml_parser_tests.cc"

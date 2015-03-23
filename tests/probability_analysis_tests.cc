@@ -166,7 +166,7 @@ TEST_F(ProbabilityAnalysisTest, Constructor) {
   // Incorrect number of series in the probability equation.
   ASSERT_NO_THROW(ProbabilityAnalysis("no"));
   ASSERT_NO_THROW(ProbabilityAnalysis("mcub"));
-  ASSERT_NO_THROW(ProbabilityAnalysis("rare"));
+  ASSERT_NO_THROW(ProbabilityAnalysis("rare-event"));
   ASSERT_THROW(ProbabilityAnalysis("no", -1), InvalidArgument);
   // Incorrect cut-off probability.
   ASSERT_NO_THROW(ProbabilityAnalysis("no", 1));

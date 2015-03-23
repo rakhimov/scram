@@ -109,14 +109,12 @@ void Config::SetAnalysis(const xmlpp::Element* analysis) {
 
 void Config::SetApprox(const xmlpp::Element* approx) {
   xmlpp::NodeSet elements = approx->find("./*");
+  assert(elements.size() == 1);
   xmlpp::NodeSet::iterator it;
   for (it = elements.begin(); it != elements.end(); ++it) {
     std::string name = (*it)->get_name();
-    if (name == "rare-event") {
-      settings_.approx("rare");
-    } else if (name == "mcub") {
-      settings_.approx("mcub");
-    }
+    assert(name == "rare-event" || name == "mcub");
+    settings_.approx(name);
   }
 }
 

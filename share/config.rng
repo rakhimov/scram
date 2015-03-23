@@ -59,6 +59,11 @@
             </element>
           </optional>
           <optional>
+            <element name="mission-time">
+              <data type="float"/>
+            </element>
+          </optional>
+          <optional>
             <element name="cut-off">
               <data type="float"/>
             </element>
@@ -66,11 +71,6 @@
           <optional>
             <element name="number-of-sums">
               <data type="nonNegativeInteger"/>
-            </element>
-          </optional>
-          <optional>
-            <element name="mission-time">
-              <data type="float"/>
             </element>
           </optional>
           <optional>

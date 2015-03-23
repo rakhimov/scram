@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<config>
+  <input-files>
+    <file>input/fta/correct_tree_input_with_probs.xml</file>
+  </input-files>
+  <output-path>temp_results.xml</output-path>
+  <options>
+    <analysis probability="true" importance="true" uncertainty="true" ccf="true"/>
+    <approximations>
+      <rare-event/>
+    </approximations>
+    <limits>
+      <limit-order>11</limit-order>
+      <mission-time>48</mission-time>
+      <cut-off>0.009</cut-off>
+      <number-of-sums>42</number-of-sums>
+      <number-of-trials>777</number-of-trials>
+      <seed>97531</seed>
+    </limits>
+  </options>
+</config>

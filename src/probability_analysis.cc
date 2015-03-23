@@ -40,7 +40,7 @@ ProbabilityAnalysis::ProbabilityAnalysis(std::string approx,
   cut_off_ = cut_off;
 
   // Check the right approximation for probability calculations.
-  if (approx != "no" && approx != "rare" && approx != "mcub") {
+  if (approx != "no" && approx != "rare-event" && approx != "mcub") {
     std::string msg = "The probability approximation is not recognized.";
     throw InvalidArgument(msg);
   }
@@ -102,7 +102,7 @@ void ProbabilityAnalysis::Analyze(
 
   } else {
     // Check if the rare event approximation is requested.
-    if (approx_ == "rare") {
+    if (approx_ == "rare-event") {
       std::map< std::set<std::string>, double >::iterator it_pr;
       for (it_pr = prob_of_min_sets_.begin();
            it_pr != prob_of_min_sets_.end(); ++it_pr) {

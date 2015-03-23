@@ -317,7 +317,7 @@ TEST_F(RiskAnalysisTest, RareEvent) {
   std::string with_prob =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   // Probability calculations with the rare event approximation.
-  ran->AddSettings(settings.approx("rare").probability_analysis(true));
+  ran->AddSettings(settings.approx("rare-event").probability_analysis(true));
   ASSERT_NO_THROW(ran->ProcessInput(with_prob));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(1.2, p_total());

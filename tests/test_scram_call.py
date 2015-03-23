@@ -74,10 +74,17 @@ def test_fta_calls():
     # Test calculation calls
     cmd = ["scram", fta_no_prob]
     yield assert_equal, 0, call(cmd)
-    out_temp = "./output_temp.txt"
+    out_temp = "./output_temp.xml"
     cmd.append("-o")
     cmd.append(out_temp)
     yield assert_equal, 0, call(cmd)  # Report into an output file
+    if os.path.isfile(out_temp):
+        os.remove(out_temp)
+
+    # Test with a configuration file
+    config_file = "./input/fta/full_configuration.xml"
+    cmd = ["scram", "--config-file", config_file, "-o", out_temp]
+    yield assert_equal, 0, call(cmd)
     if os.path.isfile(out_temp):
         os.remove(out_temp)
 

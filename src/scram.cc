@@ -118,7 +118,7 @@ void ConstructSettings(const po::variables_map& vm, Settings* settings) {
   // Determine if the probability approximation is requested.
   if (vm.count("rare-event")) {
     assert(!vm.count("mcub"));
-    settings->approx("rare");
+    settings->approx("rare-event");
   } else if (vm.count("mcub")) {
     settings->approx("mcub");
   }
