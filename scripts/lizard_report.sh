@@ -6,6 +6,7 @@
 
 lizard -s cyclomatic_complexity \
   ccf_group.cc \
+  config.cc \
   element.cc \
   error.cc \
   event.cc \
