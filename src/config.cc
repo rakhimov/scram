@@ -38,6 +38,32 @@ Config::Config(std::string config_file) : output_path_("") {
   xmlpp::Document* doc = parser->Document();
   const xmlpp::Node* root = doc->get_root_node();
   assert(root->get_name() == "config");
+  xmlpp::NodeSet roots_children = root->find("./*");
+  xmlpp::NodeSet::iterator it_ch;
+  for (it_ch = roots_children.begin();
+       it_ch != roots_children.end(); ++it_ch) {
+    const xmlpp::Element* element =
+        dynamic_cast<const xmlpp::Element*>(*it_ch);
+    assert(element);
+
+    std::string name = element->get_name();
+    if (name == "input-files") {
+      xmlpp::NodeSet input_files = element->find("./*");
+      assert(!input_files.empty());
+      xmlpp::NodeSet::iterator it_if;
+      for (it_if = input_files.begin(); it_if != input_files.end(); ++it_if) {
+        const xmlpp::Element* file =
+            dynamic_cast<const xmlpp::Element*>(*it_if);
+        assert(file);
+        assert(file->get_name() == "file");
+        input_files_.push_back(file->get_child_text()->get_content());
+      }
+    } else if (name == "output-path") {
+
+    } else if (name == "options") {
+
+    }
+  }
 }
 
 }  // namespace scram
