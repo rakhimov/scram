@@ -5,6 +5,8 @@
 #include <fstream>
 #include <sstream>
 
+#include <boost/lexical_cast.hpp>
+
 #include "env.h"
 #include "error.h"
 #include "xml_parser.h"
@@ -109,6 +111,12 @@ void Config::SetApprox(const xmlpp::Element* approx) {
   xmlpp::NodeSet elements = approx->find("./*");
   xmlpp::NodeSet::iterator it;
   for (it = elements.begin(); it != elements.end(); ++it) {
+    std::string name = (*it)->get_name();
+    if (name == "rare-event") {
+      settings_.approx("rare");
+    } else if (name == "mcub") {
+      settings_.approx("mcub");
+    }
   }
 }
 
@@ -116,8 +124,30 @@ void Config::SetLimits(const xmlpp::Element* limits) {
   xmlpp::NodeSet elements = limits->find("./*");
   xmlpp::NodeSet::iterator it;
   for (it = elements.begin(); it != elements.end(); ++it) {
-  }
+    const xmlpp::Element* limit =
+        dynamic_cast<const xmlpp::Element*>(*it);
+    assert(limit);
+    std::string name = limit->get_name();
+    std::string content = limit->get_child_text()->get_content();
+    if (name == "limit-order") {
+      settings_.limit_order(boost::lexical_cast<int>(content));
 
+    } else if (name == "cut-off") {
+      settings_.cut_off(boost::lexical_cast<double>(content));
+
+    } else if (name == "number-of-sums") {
+      settings_.num_sums(boost::lexical_cast<int>(content));
+
+    } else if (name == "mission-time") {
+      settings_.mission_time(boost::lexical_cast<double>(content));
+
+    } else if (name == "number-of-trials") {
+      settings_.num_trials(boost::lexical_cast<int>(content));
+
+    } else if (name == "seed") {
+      settings_.seed(boost::lexical_cast<int>(content));
+    }
+  }
 }
 
 bool Config::GetBoolFromString(std::string flag) {
