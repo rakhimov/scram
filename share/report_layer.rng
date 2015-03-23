@@ -80,6 +80,11 @@
                   </element>
                 </optional>
                 <optional>
+                  <element name="mission-time">
+                    <data type="nonNegativeInteger"/>
+                  </element>
+                </optional>
+                <optional>
                   <element name="cut-off"> <data type="float"/> </element>
                 </optional>
                 <optional>

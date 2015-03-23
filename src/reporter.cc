@@ -71,6 +71,9 @@ void Reporter::SetupReport(const RiskAnalysis* risk_an,
     methods = information->add_child("calculation-method");
     methods->set_attribute("name", "Numerical Probability");
     xmlpp::Element* limits = methods->add_child("limits");
+    limits->add_child("mission-time")
+        ->add_child_text(
+            boost::lexical_cast<std::string>(settings.mission_time_));
     limits->add_child("cut-off")
         ->add_child_text(boost::lexical_cast<std::string>(settings.cut_off_));
     limits->add_child("number-of-sums")
