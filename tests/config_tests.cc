@@ -7,9 +7,9 @@
 using namespace scram;
 
 // Test with a wrong input.
-TEST(ConfigTest, FullSettings) {
+TEST(ConfigTest, IOError) {
   std::string config_file = "./nonexistent_configurations.xml";
-  ASSERT_THROW(Config(config_file), IOError);
+  ASSERT_THROW(Config config(config_file), IOError);
 }
 
 // Tests all settings with one file.
@@ -18,10 +18,10 @@ TEST(ConfigTest, FullSettings) {
   Config* config = new Config(config_file);
   // Check the input files.
   ASSERT_EQ(config->input_files().size(), 1);
-  EXPECT_EQ(config->input_files().back(),
-            "./input/fta/correct_tree_input_with_probs.xml");
+  EXPECT_EQ("input/fta/correct_tree_input_with_probs.xml",
+            config->input_files().back());
   // Check the output destination.
-  EXPECT_EQ(config->output_path(), "temp_results.xml");
+  EXPECT_EQ("temp_results.xml", config->output_path());
   // Check options.
   Settings settings;
   settings.probability_analysis(true).importance_analysis(true)
