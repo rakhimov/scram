@@ -59,10 +59,72 @@ Config::Config(std::string config_file) : output_path_("") {
         input_files_.push_back(file->get_child_text()->get_content());
       }
     } else if (name == "output-path") {
+      output_path_ = element->get_child_text()->get_content();
 
     } else if (name == "options") {
+      xmlpp::NodeSet options = element->find("./*");
+      xmlpp::NodeSet::iterator it_op;
+      for (it_op = options.begin(); it_op != options.end(); ++it_op) {
+        const xmlpp::Element* option_group =
+            dynamic_cast<const xmlpp::Element*>(*it_op);
+        assert(option_group);
+        std::string name = option_group->get_name();
+        if (name == "analysis") {
+          Config::SetAnalysis(option_group);
 
+        } else if (name == "approximations") {
+          Config::SetApprox(option_group);
+
+        } else if (name == "limits") {
+          Config::SetLimits(option_group);
+        }
+      }
     }
+  }
+}
+
+void Config::SetAnalysis(const xmlpp::Element* analysis) {
+  const xmlpp::Element::AttributeList attr = analysis->get_attributes();
+  xmlpp::Element::AttributeList::const_iterator it;
+  for (it = attr.begin(); it != attr.end(); ++it) {
+    const xmlpp::Attribute* type = *it;
+    std::string name = type->get_name();
+    bool flag = Config::GetBoolFromString(type->get_value());
+    if (name == "probability") {
+      settings_.probability_analysis(flag);
+
+    } else if (name == "importance") {
+      settings_.importance_analysis(flag);
+
+    } else if (name == "uncertainty") {
+      settings_.uncertainty_analysis(flag);
+
+    } else if (name == "ccf") {
+      settings_.ccf_analysis(flag);
+    }
+  }
+}
+
+void Config::SetApprox(const xmlpp::Element* approx) {
+  xmlpp::NodeSet elements = approx->find("./*");
+  xmlpp::NodeSet::iterator it;
+  for (it = elements.begin(); it != elements.end(); ++it) {
+  }
+}
+
+void Config::SetLimits(const xmlpp::Element* limits) {
+  xmlpp::NodeSet elements = limits->find("./*");
+  xmlpp::NodeSet::iterator it;
+  for (it = elements.begin(); it != elements.end(); ++it) {
+  }
+
+}
+
+bool Config::GetBoolFromString(std::string flag) {
+  if (flag == "1" || flag == "true") {
+    return true;
+  } else if (flag == "0" || flag == "false") {
+    return false;
   }
 }
 

@@ -8,6 +8,8 @@
 #include <string>
 #include <vector>
 
+#include <libxml++/libxml++.h>
+
 #include "settings.h"
 
 namespace scram {
@@ -34,6 +36,23 @@ class Config {
   inline std::string output_path() const { return output_path_; }
 
  private:
+  /// Extracts analysis types to be performed from analysis element.
+  /// @param[in] analysis Analysis element node.
+  void SetAnalysis(const xmlpp::Element* analysis);
+
+  /// Extracts approximations from the configurations.
+  /// @param[in] approx Approximation element node.
+  void SetApprox(const xmlpp::Element* approx);
+
+  /// Extracts limits for analysis.
+  /// @param[in] limits An XML element containing various limits.
+  void SetLimits(const xmlpp::Element* limits);
+
+  /// Interprets the given string into a boolean value.
+  /// @param[in] flag A flag that can be 0, 1, true, or false.
+  /// @returns The interpreted boolean.
+  bool GetBoolFromString(std::string flag);
+
   /// Container for input files for analysis.
   /// These input files contain fault trees, events, etc.
   std::vector<std::string> input_files_;

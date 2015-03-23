@@ -41,26 +41,19 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
          "XML configuration file for analysis")
         ("validate-only,v", "Validate input files without analysis")
         ("graph-only,g", "Validate and produce graph without analysis")
-        ("probability", po::value<bool>()->default_value(false),
-         "Perform probability analysis")
-        ("importance", po::value<bool>()->default_value(false),
-         "Perform importance analysis")
-        ("uncertainty", po::value<bool>()->default_value(false),
-         "Perform uncertainty analysis")
-        ("ccf", po::value<bool>()->default_value(false),
-         "Perform common-cause failure analysis")
+        ("probability", po::value<bool>(), "Perform probability analysis")
+        ("importance", po::value<bool>(), "Perform importance analysis")
+        ("uncertainty", po::value<bool>(), "Perform uncertainty analysis")
+        ("ccf", po::value<bool>(), "Perform common-cause failure analysis")
         ("rare-event",
          "Use the rare event approximation for probability calculations")
         ("mcub", "Use the MCUB approximation for probability calculations")
-        ("limit-order,l", po::value<int>()->default_value(20),
-         "Upper limit for cut set order")
-        ("num-sums,s", po::value<int>()->default_value(7),
+        ("limit-order,l", po::value<int>(), "Upper limit for cut set order")
+        ("num-sums,s", po::value<int>(),
          "Number of sums in series expansion for probability calculations")
-        ("cut-off", po::value<double>()->default_value(1e-8),
-         "Cut-off probability for cut sets")
-        ("mission-time", po::value<double>()->default_value(8760),
-         "System mission time in hours")
-        ("num-trials", po::value<int>()->default_value(1e3),
+        ("cut-off", po::value<double>(), "Cut-off probability for cut sets")
+        ("mission-time", po::value<double>(), "System mission time in hours")
+        ("num-trials", po::value<int>(),
          "Number of trials for Monte Carlo simulations")
         ("seed", po::value<int>(),
          "Seed for the pseudo-random number generator")
@@ -129,18 +122,21 @@ void ConstructSettings(const po::variables_map& vm, Settings* settings) {
   } else if (vm.count("mcub")) {
     settings->approx("mcub");
   }
-
   if (vm.count("seed")) settings->seed(vm["seed"].as<int>());
-
-  settings->limit_order(vm["limit-order"].as<int>())
-      .num_sums(vm["num-sums"].as<int>())
-      .cut_off(vm["cut-off"].as<double>())
-      .mission_time(vm["mission-time"].as<double>())
-      .num_trials(vm["num-trials"].as<int>())
-      .probability_analysis(vm["probability"].as<bool>())
-      .importance_analysis(vm["importance"].as<bool>())
-      .uncertainty_analysis(vm["uncertainty"].as<bool>())
-      .ccf_analysis(vm["ccf"].as<bool>());
+  if (vm.count("limit-order"))
+    settings->limit_order(vm["limit-order"].as<int>());
+  if (vm.count("num-sums")) settings->num_sums(vm["num-sums"].as<int>());
+  if (vm.count("cut-off")) settings->cut_off(vm["cut-off"].as<double>());
+  if (vm.count("mission-time"))
+    settings->mission_time(vm["mission-time"].as<double>());
+  if (vm.count("num-trials")) settings->num_trials(vm["num-trials"].as<int>());
+  if (vm.count("importance"))
+    settings->importance_analysis(vm["importance"].as<bool>());
+  if (vm.count("uncertainty"))
+    settings->uncertainty_analysis(vm["uncertainty"].as<bool>());
+  if (vm.count("probability"))
+    settings->probability_analysis(vm["probability"].as<bool>());
+  if (vm.count("ccf")) settings->ccf_analysis(vm["ccf"].as<bool>());;
 }
 
 /// Main body of commond-line entrance to run the program.
