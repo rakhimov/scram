@@ -22,25 +22,25 @@ class PerformanceTest : public ::testing::Test {
   // Total probability as a result of analysis.
   double p_total() {
     assert(!ran->prob_analyses_.empty());
-    return ran->prob_analyses_[0]->p_total();
+    return ran->prob_analyses_.begin()->second->p_total();
   }
 
   // The number of MCS as a result of analysis.
   int NumOfMcs() {
     assert(!ran->ftas_.empty());
-    return ran->ftas_[0]->min_cut_sets().size();
+    return ran->ftas_.begin()->second->min_cut_sets().size();
   }
 
   // Time taken to find minimal cut sets.
   double McsGenerationTime() {
     assert(!ran->ftas_.empty());
-    return ran->ftas_[0]->analysis_time_;
+    return ran->ftas_.begin()->second->analysis_time_;
   }
 
   // Time taken to calculate total probability.
   double ProbCalcTime() {
     assert(!ran->prob_analyses_.empty());
-    return ran->prob_analyses_[0]->p_time_;
+    return ran->prob_analyses_.begin()->second->p_time_;
   }
 
   RiskAnalysis* ran;
