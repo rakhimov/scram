@@ -9,11 +9,15 @@ namespace scram {
 Settings::Settings()
     : num_sums_(7),
       limit_order_(20),
-      approx_("no"),
+      approx_("no"),  // The default value indicates no setting.
       cut_off_(1e-8),
       mission_time_(8760),
-      trials_(1e3),
-      fta_type_("default") {}
+      num_trials_(1e3),
+      seed_(-1),  // The negative value indicates no setting.
+      probability_analysis_(false),
+      importance_analysis_(false),
+      uncertainty_analysis_(false),
+      ccf_analysis_(false) {}
 
 Settings& Settings::limit_order(int order) {
   if (order < 1) {
@@ -46,7 +50,7 @@ Settings& Settings::cut_off(double prob) {
 }
 
 Settings& Settings::approx(std::string approx) {
-  if (approx != "no" && approx != "rare" && approx != "mcub") {
+  if (approx != "no" && approx != "rare-event" && approx != "mcub") {
     std::string msg = "The probability approximation is not recognized.";
     throw InvalidArgument(msg);
   }
@@ -54,21 +58,21 @@ Settings& Settings::approx(std::string approx) {
   return *this;
 }
 
-Settings& Settings::fta_type(std::string analysis) {
-  if (analysis != "default" && analysis != "mc") {
-    std::string msg = "The analysis type is not recognized.";
+Settings& Settings::num_trials(int n) {
+  if (n < 1) {
+    std::string msg = "The number of trials cannot be less than 1.";
     throw InvalidArgument(msg);
   }
-  fta_type_ = analysis;
+  num_trials_ = n;
   return *this;
 }
 
-Settings& Settings::trials(int trials) {
-  if (trials < 0) {
-    std::string msg = "The number of trials cannot be negative.";
+Settings& Settings::seed(int s) {
+  if (s < 0) {
+    std::string msg = "The seed for PRNG cannot be negative.";
     throw InvalidArgument(msg);
   }
-  trials_ = trials;
+  seed_ = s;
   return *this;
 }
 

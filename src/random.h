@@ -16,7 +16,7 @@ namespace scram {
 /// parameters are valid. For example, standard deviation cannot be negative.
 class Random {
  public:
-  /// Sets the seet of the underlying random number generator.
+  /// Sets the seed of the underlying random number generator.
   /// @param[in] seed The seed for RNGs.
   static void seed(int seed);
 

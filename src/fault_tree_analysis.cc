@@ -14,13 +14,14 @@
 
 namespace scram {
 
-FaultTreeAnalysis::FaultTreeAnalysis(int limit_order)
-  : warnings_(""),
-    top_event_index_(-1),
-    max_order_(0),
-    num_gates_(0),
-    num_basic_events_(0),
-    analysis_time_(0) {
+FaultTreeAnalysis::FaultTreeAnalysis(int limit_order, bool ccf_analysis)
+    : ccf_analysis_(ccf_analysis),
+      warnings_(""),
+      top_event_index_(-1),
+      max_order_(0),
+      num_gates_(0),
+      num_basic_events_(0),
+      analysis_time_(0) {
   // Check for the right limit order.
   if (limit_order < 1) {
     std::string msg = "The limit on the order of minimal cut sets "
@@ -90,14 +91,16 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
   }
 
   std::map<std::string, int> ccf_basic_to_gates;
-  // Include CCF gates instead of basic events.
-  boost::unordered_map<std::string, BasicEventPtr>::const_iterator itc;
-  for (itc = fault_tree->ccf_events().begin();
-       itc != fault_tree->ccf_events().end(); ++itc) {
-    assert(itc->second->HasCcf());
-    int_to_inter.insert(std::make_pair(j, itc->second->ccf_gate()));
-    ccf_basic_to_gates.insert(std::make_pair(itc->first, j));
-    ++j;
+  if (ccf_analysis_) {
+    // Include CCF gates instead of basic events.
+    boost::unordered_map<std::string, BasicEventPtr>::const_iterator itc;
+    for (itc = fault_tree->ccf_events().begin();
+         itc != fault_tree->ccf_events().end(); ++itc) {
+      assert(itc->second->HasCcf());
+      int_to_inter.insert(std::make_pair(j, itc->second->ccf_gate()));
+      ccf_basic_to_gates.insert(std::make_pair(itc->first, j));
+      ++j;
+    }
   }
 
   IndexedFaultTree* indexed_tree =
@@ -112,13 +115,13 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
   // First, defensive check if cut sets exist for the specified limit order.
   if (imcs->empty()) {
     std::stringstream msg;
-    msg << "No cut sets for the limit order " <<  limit_order_;
+    msg << " No cut sets for the limit order " <<  limit_order_;
     warnings_ += msg.str();
     return;
   } else if (imcs->size() == 1 && imcs->back().empty()) {
     // Special case of unity of a top event.
     std::stringstream msg;
-    msg << "The top event is UNITY. Failure is guaranteed.";
+    msg << " The top event is UNITY. Failure is guaranteed.";
     warnings_ += msg.str();
   }
 

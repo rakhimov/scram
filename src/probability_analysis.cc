@@ -12,21 +12,24 @@
 
 namespace scram {
 
-ProbabilityAnalysis::ProbabilityAnalysis(std::string approx, int nsums,
-                                         double cut_off)
-    : warnings_(""),
+ProbabilityAnalysis::ProbabilityAnalysis(std::string approx,
+                                         int num_sums,
+                                         double cut_off,
+                                         bool importance_analysis)
+    : importance_analysis_(importance_analysis),
+      warnings_(""),
       p_total_(0),
       num_prob_mcs_(0),
       coherent_(true),
       p_time_(-1),
       imp_time_(-1) {
   // Check for right number of sums.
-  if (nsums < 1) {
+  if (num_sums < 1) {
     std::string msg = "The number of sums in the probability calculation "
                       "cannot be less than one";
     throw InvalidArgument(msg);
   }
-  nsums_ = nsums;
+  num_sums_ = num_sums;
 
   // Check for valid cut-off probability.
   if (cut_off < 0 || cut_off > 1) {
@@ -37,7 +40,7 @@ ProbabilityAnalysis::ProbabilityAnalysis(std::string approx, int nsums,
   cut_off_ = cut_off;
 
   // Check the right approximation for probability calculations.
-  if (approx != "no" && approx != "rare" && approx != "mcub") {
+  if (approx != "no" && approx != "rare-event" && approx != "mcub") {
     std::string msg = "The probability approximation is not recognized.";
     throw InvalidArgument(msg);
   }
@@ -59,7 +62,6 @@ void ProbabilityAnalysis::Analyze(
     warnings_ += "Probability for UNITY case.";
     p_total_ = 1;
     prob_of_min_sets_.insert(std::make_pair(*min_cut_sets_.begin(), 1));
-    ordered_min_sets_.insert(std::make_pair(1, *min_cut_sets_.begin()));
     return;
   }
 
@@ -82,7 +84,6 @@ void ProbabilityAnalysis::Analyze(
 
     // Update a container with minimal cut sets and probabilities.
     prob_of_min_sets_.insert(std::make_pair(imcs_to_smcs_[i], p_sub_set));
-    ordered_min_sets_.insert(std::make_pair(p_sub_set, imcs_to_smcs_[i]));
   }
 
   // Timing Initialization
@@ -93,40 +94,40 @@ void ProbabilityAnalysis::Analyze(
   if (approx_ == "mcub") {
     if (!coherent_) {
       warnings_ += " The cut sets are not coherent and contain negation."
-                   "\nThe MCUB approximation may not hold.\n\n";
+                   " The MCUB approximation may not hold.";
     }
-    nsums_ = 0;  // For reporting purposes.
+    num_sums_ = 0;  // For reporting purposes.
     num_prob_mcs_ = imcs_.size();
     p_total_ = ProbabilityAnalysis::ProbMcub(imcs_);
 
   } else {
     // Check if the rare event approximation is requested.
-    if (approx_ == "rare") {
+    if (approx_ == "rare-event") {
       std::map< std::set<std::string>, double >::iterator it_pr;
       for (it_pr = prob_of_min_sets_.begin();
            it_pr != prob_of_min_sets_.end(); ++it_pr) {
         // Check if a probability of a set does not exceed 0.1,
         // which is required for the rare event approximation to hold.
         if (it_pr->second > 0.1) {
-          warnings_ += "The rare event approximation may be inaccurate for this"
-                       "\nfault tree analysis because one of minimal cut sets'"
-                       "\nprobability exceeded 0.1 threshold requirement.\n\n";
+          warnings_ += " The rare event approximation may be inaccurate for this"
+                       " fault tree analysis because one of minimal cut sets'"
+                       " probability exceeded 0.1 threshold requirement.";
           break;
         }
       }
-      nsums_ = 1;  // Only first series is used for the rare event case.
+      num_sums_ = 1;  // Only first series is used for the rare event case.
     }
     // The default calculations.
     // Choose cut sets with high enough probabilities.
     num_prob_mcs_ = mcs_for_prob.size();
-    if (nsums_ > mcs_for_prob.size()) nsums_ = mcs_for_prob.size();
-    ProbabilityAnalysis::ProbOr(1, nsums_, &mcs_for_prob);
+    if (num_sums_ > mcs_for_prob.size()) num_sums_ = mcs_for_prob.size();
+    ProbabilityAnalysis::ProbOr(1, num_sums_, &mcs_for_prob);
     p_total_ = ProbabilityAnalysis::CalculateTotalProbability();
   }
   // Duration of the calculations.
   p_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
 
-  ProbabilityAnalysis::PerformImportanceAnalysis();
+  if (importance_analysis_) ProbabilityAnalysis::PerformImportanceAnalysis();
 
   // Duration of the calculations.
   imp_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
@@ -203,15 +204,15 @@ double ProbabilityAnalysis::ProbMcub(
 
 void ProbabilityAnalysis::ProbOr(
     int sign,
-    int nsums,
+    int num_sums,
     std::set< boost::container::flat_set<int> >* min_cut_sets) {
   assert(sign != 0);
-  assert(nsums >= 0);
+  assert(num_sums >= 0);
 
   // Recursive implementation.
   if (min_cut_sets->empty()) return;
 
-  if (nsums == 0) return;
+  if (num_sums == 0) return;
 
   using boost::container::flat_set;
 
@@ -232,8 +233,8 @@ void ProbabilityAnalysis::ProbOr(
       (sign > 0) ? pos_terms_.back() : neg_terms_.back(),
       *min_cut_sets, &combo_sets);
 
-  ProbabilityAnalysis::ProbOr(sign, nsums, min_cut_sets);
-  ProbabilityAnalysis::ProbOr(-sign, nsums - 1, &combo_sets);
+  ProbabilityAnalysis::ProbOr(sign, num_sums, min_cut_sets);
+  ProbabilityAnalysis::ProbOr(-sign, num_sums - 1, &combo_sets);
 }
 
 double ProbabilityAnalysis::ProbAnd(
@@ -332,8 +333,6 @@ void ProbabilityAnalysis::PerformImportanceAnalysis() {
     imp.push_back(p_e / p_total_);
 
     importance_.insert(std::make_pair(int_to_basic_[*it]->id(), imp));
-    ordered_primaries_.insert(std::make_pair(imp[0],
-                                             int_to_basic_[*it]->id()));
   }
 }
 

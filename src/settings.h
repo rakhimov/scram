@@ -13,6 +13,7 @@ class RiskAnalysis;
 /// Builder for analysis settings.
 class Settings {
   friend class RiskAnalysis;
+  friend class Reporter;
 
  public:
   Settings();
@@ -26,7 +27,7 @@ class Settings {
   /// Limits the number of sums in probability calculations.
   /// @param[in] n A natural number for the number of sums.
   /// @returns Rerefence to this object.
-  /// @throws ValueError if the number is not more than 0.
+  /// @throws ValueError if the number is less than 1.
   Settings& num_sums(int n);
 
   /// Sets the cut-off probability for minimal cut sets to be considered
@@ -42,23 +43,91 @@ class Settings {
   /// @throws ValueError if the approximation is not recognized.
   Settings& approx(std::string approx);
 
-  /// Sets the type of fault tree analysis.
-  /// @param[in] analysis A type of analysis: default or mc.
-  /// @returns Rerefence to this object.
-  /// @throws ValueError if the analysis is not recognized.
-  Settings& fta_type(std::string analysis);
-
   /// Sets the number of trials for Monte Carlo simulations.
-  /// @param[in] trials A positive number.
+  /// @param[in] n A natural number for the number of trials.
   /// @returns Rerefence to this object.
-  Settings& trials(int trials);
+  /// @throws ValueError if the number is less than 1.
+  Settings& num_trials(int n);
+
+  /// Sets the seed for the pseudo-random number generator.
+  /// @param[in] s A positive number.
+  /// @returns Rerefence to this object.
+  /// @throws ValueError if the number is negative.
+  Settings& seed(int s);
 
   /// Sets the system mission time.
   /// @param[in] time A positive number in hours by default.
   /// @returns Rerefence to this object.
   Settings& mission_time(double time);
 
+  /// Sets the flag for probability analysis. If another analysis requires
+  /// probability analysis, it won't be possible to turn off probability
+  /// analysis before the parent analysis.
+  /// @param[in] flag True or false for turning on or off the analysis.
+  /// @returns Rerefence to this object.
+  Settings& probability_analysis(bool flag) {
+    if (!importance_analysis_ && !uncertainty_analysis_)
+      probability_analysis_ = flag;
+    return *this;
+  }
+
+  /// Sets the flag for importance analysis. Importance analysis is performed
+  /// together with probability analysis. Appropriate flags are turned on.
+  /// @param[in] flag True or false for turning on or off the analysis.
+  /// @returns Rerefence to this object.
+  Settings& importance_analysis(bool flag) {
+    importance_analysis_ = flag;
+    if (importance_analysis_) probability_analysis_ = true;
+    return *this;
+  }
+
+  /// Sets the flag for uncertainty analysis. Uncertainty analysis implies
+  /// probability analysis, so the probability analysis is turned on implicitly.
+  /// @param[in] flag True or false for turning on or off the analysis.
+  /// @returns Rerefence to this object.
+  Settings& uncertainty_analysis(bool flag) {
+    uncertainty_analysis_ = flag;
+    if (uncertainty_analysis_) probability_analysis_ = true;
+    return *this;
+  }
+
+  /// Sets the flag for ccf analysis.
+  /// @param[in] flag True or false for turning on or off the analysis.
+  /// @returns Rerefence to this object.
+  Settings& ccf_analysis(bool flag) {
+    ccf_analysis_ = flag;
+    return *this;
+  }
+
+  /// This comparison is primarily for testing.
+  /// @param[in] rhs Another Settings object to be compared.
+  bool operator==(const Settings& rhs) const {
+    return (probability_analysis_ == rhs.probability_analysis_) &&
+        (importance_analysis_ == rhs.importance_analysis_) &&
+        (uncertainty_analysis_ == rhs.uncertainty_analysis_) &&
+        (ccf_analysis_ == rhs.ccf_analysis_) &&
+        (limit_order_ == rhs.limit_order_) &&
+        (num_sums_ == rhs.num_sums_) &&
+        (cut_off_ == rhs.cut_off_) &&
+        (approx_ == rhs.approx_) &&
+        (num_trials_ == rhs.num_trials_) &&
+        (seed_ == rhs.seed_) &&
+        (mission_time_ == rhs.mission_time_);
+  }
+
  private:
+  /// A flag for probability analysis.
+  bool probability_analysis_;
+
+  /// A flag for importance analysis.
+  bool importance_analysis_;
+
+  /// A flag for uncertainty analysis.
+  bool uncertainty_analysis_;
+
+  /// A flag for common-cause analysis.
+  bool ccf_analysis_;
+
   /// Limit on the order of minimal cut sets.
   int limit_order_;
 
@@ -71,11 +140,11 @@ class Settings {
   /// The approximation to be applied for calculations.
   std::string approx_;
 
-  /// The type of fault tree analysis.
-  std::string fta_type_;
-
   /// The number of trials for Monte Carlo simulations.
-  int trials_;
+  int num_trials_;
+
+  /// The seed for the pseudo-random number generator.
+  int seed_;
 
   /// System mission time.
   double mission_time_;

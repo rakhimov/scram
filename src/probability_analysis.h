@@ -9,11 +9,11 @@
 #include <string>
 #include <vector>
 
+#include <boost/container/flat_set.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
-#include <boost/container/flat_set.hpp>
 
-#include <event.h>
+#include "event.h"
 
 class ProbabilityAnalysisTest;
 class PerformanceTest;
@@ -34,11 +34,14 @@ class ProbabilityAnalysis {
 
   /// The main constructor of Probability Analysis.
   /// @param[in] approx The kind of approximation for probability calculations.
-  /// @param[in] nsums The number of sums in the probability series.
+  /// @param[in] num_sums The number of sums in the probability series.
   /// @param[in] cut_off The cut-off probability for cut sets.
+  /// @param[in] importance_analysis To perform importance analysis.
   /// @throws InvalidArgument if any of the parameters is invalid.
-  ProbabilityAnalysis(std::string approx = "no", int nsums = 7,
-                      double cut_off = 1e-8);
+  explicit ProbabilityAnalysis(std::string approx = "no",
+                               int num_sums = 7,
+                               double cut_off = 1e-8,
+                               bool importance_analysis = false);
 
   virtual ~ProbabilityAnalysis() {}
 
@@ -48,8 +51,8 @@ class ProbabilityAnalysis {
   /// calculations.
   /// Updates internal indexes for events.
   /// @param[in] basic_events The database of basic event in cut sets.
-  void UpdateDatabase(const boost::unordered_map<std::string, BasicEventPtr>&
-                      basic_events);
+  void UpdateDatabase(
+      const boost::unordered_map<std::string, BasicEventPtr>& basic_events);
 
   /// Performs quantitative analysis on minimal cut sets containing primary
   /// events provided in the databases.
@@ -59,38 +62,25 @@ class ProbabilityAnalysis {
 
   /// @returns The total probability calculated by the analysis.
   /// @note The user should make sure that the analysis is actually done.
-  inline double p_total() { return p_total_; }
+  inline double p_total() const { return p_total_; }
 
   /// @returns Map with minimal cut sets and their probabilities.
   /// @note The user should make sure that the analysis is actually done.
-  inline const std::map< std::set<std::string>, double >& prob_of_min_sets() {
+  inline const std::map< std::set<std::string>, double >&
+      prob_of_min_sets() const {
     return prob_of_min_sets_;
   }
 
   /// @returns Map with primary events and their importance values.
   ///          The associated vector contains DIF, MIF, CIF, RRW, RAW in order.
   /// @note The user should make sure that the analysis is actually done.
-  inline const std::map< std::string, std::vector<double> >& importance() {
+  inline const std::map< std::string, std::vector<double> >&
+      importance() const {
     return importance_;
   }
 
-  /// @returns Container for minimal cut sets ordered by their probabilities.
-  /// @todo This should be post-processing.
-  inline const std::multimap< double, std::set<std::string> >
-      ordered_min_sets() {
-    return ordered_min_sets_;
-  }
-
-  /// @returns Container for primary events ordered by their contribution.
-  /// @todo This should be post-processing.
-  inline const std::multimap< double, std::string > ordered_primaries() {
-    return ordered_primaries_;
-  }
-
   /// @returns Warnings generated upon analysis.
-  inline const std::string warnings() {
-    return warnings_;
-  }
+  inline const std::string warnings() const { return warnings_; }
 
  protected:
   /// Assigns an index to each primary event, and then populates with this
@@ -116,14 +106,14 @@ class ProbabilityAnalysis {
   /// relationship with each other. This function is a brute force probability
   /// calculation without approximations.
   /// @param[in] sign The sign of the series. Negative or positive number.
-  /// @param[in] nsums The number of sums in the series.
+  /// @param[in] num_sums The number of sums in the series.
   /// @param[in,out] min_cut_sets Sets of indices of primary events.
   /// @note This function drastically modifies min_cut_sets by deleting
   /// sets inside it. This is for better performance.
   ///
   /// @note O_avg(M*logM*N*2^N) where N is the number of sets, and M is
   /// the average size of the sets.
-  void ProbOr(int sign, int nsums,
+  void ProbOr(int sign, int num_sums,
               std::set< boost::container::flat_set<int> >* min_cut_sets);
 
   /// Calculates a probability of a minimal cut set, whose members are in AND
@@ -155,10 +145,13 @@ class ProbabilityAnalysis {
   std::string approx_;
 
   /// Number of sums in series expansion for probability calculations.
-  int nsums_;
+  int num_sums_;
 
   /// Cut-off probability for minimal cut sets.
   double cut_off_;
+
+  /// A flag for importance analysis.
+  bool importance_analysis_;
 
   /// Container for basic events.
   boost::unordered_map<std::string, BasicEventPtr> basic_events_;
@@ -185,17 +178,9 @@ class ProbabilityAnalysis {
   /// Container for minimal cut sets and their respective probabilities.
   std::map< std::set<std::string>, double > prob_of_min_sets_;
 
-  /// Container for minimal cut sets ordered by their probabilities.
-  std::multimap< double, std::set<std::string> > ordered_min_sets_;
-
   /// Container for basic event importance types.
   /// The order is DIF, MIF, CIF, RRW, RAW.
   std::map< std::string, std::vector<double> > importance_;
-
-  /// Container for primary events ordered by their contribution of
-  /// Fussel-Vesely.
-  /// @todo This should a post processing in reporting.
-  std::multimap< double, std::string > ordered_primaries_;
 
   /// Register warnings.
   std::string warnings_;

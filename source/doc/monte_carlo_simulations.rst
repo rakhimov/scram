@@ -6,7 +6,7 @@ For Monte Carlo simulations, `MT 19937`_ Mersenne Twister Pseudo-random number
 generator is provided by Boost_. Mersenne Twister PRNG is well tested and
 well suited for Monte Carlo simulations. The seed of the PRNG is usually
 the system time at the runtime, but this parameter can be fixed by a user,
-for example, to test the analysis.
+for example, to test the analysis tool.
 
 .. _`MT 19937`:
     https://en.wikipedia.org/wiki/Mersenne_twister
@@ -23,9 +23,9 @@ Monte Carlo (MC) Analysis Implementation
 
 #. Generation of an equation for MC analysis from minimal cut sets.
 
-#. Set the seed for the PRNG. (Set by a user) *no support*
+#. Set the seed for the PRNG for entire analysis. (Can be set by a user)
 
-#. Determine the number of samples. (Set by a user)
+#. Determine the number of samples. (Can be set by a user)
 
 #. Definitions and parameters for various distributions.
 

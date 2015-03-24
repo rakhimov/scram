@@ -3,7 +3,6 @@
 #ifndef SCRAM_SRC_FAULT_TREE_H_
 #define SCRAM_SRC_FAULT_TREE_H_
 
-#include <map>
 #include <string>
 #include <set>
 #include <vector>
@@ -152,7 +151,7 @@ class FaultTree : public Element {
   boost::unordered_map<std::string, BasicEventPtr> basic_events_;
 
   /// Container for basic events that are identified to be in some CCF group.
-  /// This basic events are not necessarily in the same CCF group.
+  /// These basic events are not necessarily in the same CCF group.
   boost::unordered_map<std::string, BasicEventPtr> ccf_events_;
 
   /// Container for house events of the tree.

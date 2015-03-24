@@ -8,303 +8,190 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/date_time.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "event.h"
+#include "error.h"
 #include "fault_tree_analysis.h"
 #include "probability_analysis.h"
+#include "risk_analysis.h"
+#include "settings.h"
 #include "uncertainty_analysis.h"
+#include "version.h"
 
 namespace pt = boost::posix_time;
 
 namespace scram {
 
+void Reporter::SetupReport(const RiskAnalysis* risk_an,
+                           const Settings& settings, xmlpp::Document* doc) {
+  if (doc->get_root_node() != 0) {
+    throw LogicError("The passed document is not empty for reporting");
+  }
+  xmlpp::Node* root = doc->create_root_node("report");
+  // Add an information node.
+  xmlpp::Element* information = root->add_child("information");
+  xmlpp::Element* software = information->add_child("software");
+  software->set_attribute("name", "SCRAM");
+  software->set_attribute("version", version::core());
+  std::stringstream time;
+  time << pt::second_clock::local_time();
+  information->add_child("time")->add_child_text(time.str());
+  // Setup for performance information.
+  information->add_child("performance");
+
+  // Report the setup for main minimal cut set analysis.
+  xmlpp::Element* quant = information->add_child("calculated-quantity");
+  quant->set_attribute("name", "Minimal Cut Set Analysis");
+  quant->set_attribute(
+      "definition",
+      "Groups of events sufficient for a top event failure");
+
+  xmlpp::Element* methods = information->add_child("calculation-method");
+  methods->set_attribute("name", "MOCUS");
+  methods->add_child("limits")->add_child("number-of-basic-events")
+      ->add_child_text(boost::lexical_cast<std::string>(settings.limit_order_));
+
+  // Report the setup for CCF analysis.
+  if (settings.ccf_analysis_) {
+    xmlpp::Element* ccf_an = information->add_child("calculated-quantity");
+    ccf_an->set_attribute("name", "CCF Analysis");
+    ccf_an->set_attribute("definition",
+                         "Failure of multiple elements due to a common cause");
+  }
+
+  // Report the setup for probability analysis.
+  if (settings.probability_analysis_) {
+    quant = information->add_child("calculated-quantity");
+    quant->set_attribute("name", "Probability Analysis");
+    quant->set_attribute("definition",
+                         "Quantitative analysis of failure probability");
+    quant->set_attribute("approximation", settings.approx_);
+
+    methods = information->add_child("calculation-method");
+    methods->set_attribute("name", "Numerical Probability");
+    xmlpp::Element* limits = methods->add_child("limits");
+    limits->add_child("mission-time")
+        ->add_child_text(
+            boost::lexical_cast<std::string>(settings.mission_time_));
+    limits->add_child("cut-off")
+        ->add_child_text(boost::lexical_cast<std::string>(settings.cut_off_));
+    limits->add_child("number-of-sums")
+        ->add_child_text(boost::lexical_cast<std::string>(settings.num_sums_));
+  }
+
+  // Report the setup for optional importance analysis.
+  if (settings.importance_analysis_) {
+    quant = information->add_child("calculated-quantity");
+    quant->set_attribute("name", "Importance Analysis");
+    quant->set_attribute("definition",
+                         "Quantitative analysis of contributions and "\
+                         "importance of events.");
+  }
+
+  // Report the setup for optional uncertainty analysis.
+  if (settings.uncertainty_analysis_) {
+    xmlpp::Element* quant = information->add_child("calculated-quantity");
+    quant->set_attribute("name", "Uncertainty Analysis");
+    quant->set_attribute(
+        "definition",
+        "Calculation of uncertainties with the Monte Carlo method");
+
+    xmlpp::Element* methods = information->add_child("calculation-method");
+    methods->set_attribute("name", "Monte Carlo");
+    xmlpp::Element* limits = methods->add_child("limits");
+    limits->add_child("number-of-trials")->add_child_text(
+        boost::lexical_cast<std::string>(settings.num_trials_));
+    if (settings.seed_ >= 0) {
+      limits->add_child("seed")->add_child_text(
+          boost::lexical_cast<std::string>(settings.seed_));
+    }
+  }
+
+  xmlpp::Element* model = information->add_child("model-features");
+  model->add_child("gates")->add_child_text(
+      boost::lexical_cast<std::string>(risk_an->gates_.size()));
+  model->add_child("basic-events")->add_child_text(
+      boost::lexical_cast<std::string>(risk_an->basic_events_.size()));
+  model->add_child("house-events")
+      ->add_child_text(boost::lexical_cast<std::string>(
+              risk_an->primary_events_.size() - risk_an->basic_events_.size()));
+  model->add_child("ccf-groups")->add_child_text(
+      boost::lexical_cast<std::string>(risk_an->ccf_groups_.size()));
+  model->add_child("fault-trees")->add_child_text(
+      boost::lexical_cast<std::string>(risk_an->fault_trees_.size()));
+
+  // Setup for results.
+  root->add_child("results");
+}
+
 void Reporter::ReportOrphans(
     const std::set<boost::shared_ptr<PrimaryEvent> >& orphan_primary_events,
-    std::ostream& out) {
-  if (orphan_primary_events.empty()) return;
-
-  out << "WARNING! Found unused primary events:\n";
+    xmlpp::Document* doc) {
+  assert(!orphan_primary_events.empty());
+  std::string out = "";
+  out += "WARNING! Found unused primary events: ";
   std::set<boost::shared_ptr<PrimaryEvent> >::const_iterator it;
   for (it = orphan_primary_events.begin(); it != orphan_primary_events.end();
        ++it) {
-    out << "    " << (*it)->orig_id() << "\n";
+    out += (*it)->orig_id() + " ";
   }
-  out.flush();
+  xmlpp::Node* root = doc->get_root_node();
+  xmlpp::NodeSet inf = root->find("./information");
+  assert(inf.size() == 1);
+  xmlpp::Element* information = dynamic_cast<xmlpp::Element*>(inf[0]);
+  information->add_child("warning")->add_child_text(out);
 }
 
 void Reporter::ReportFta(
+    std::string ft_name,
     const boost::shared_ptr<const FaultTreeAnalysis>& fta,
-    std::ostream& out) {
-  std::ios::fmtflags fmt(out.flags());  // Save the state to recover later.
-
-  // Convert MCS into representative strings.
-  std::map< std::set<std::string>, std::vector<std::string> > lines;
-  Reporter::McsToPrint(fta->min_cut_sets_, fta->basic_events_, &lines);
-
-  // Print warnings of calculations.
-  if (fta->warnings_ != "") {
-    out << "\n" << fta->warnings_ << "\n";
-  }
-
-  // Print minimal cut sets by their order.
-  out << "\n" << "Minimal Cut Sets" << "\n";
-  out << "================\n\n";
-  out << std::left;
-  out << std::setw(40) << std::left << "Top Event: " << fta->top_event_name_
-      << "\n";
-  out << std::setw(40) << "Time: " << pt::second_clock::local_time() << "\n\n";
-  out << std::setw(40) << "Core Analysis Time: " << std::setprecision(5)
-      << fta->analysis_time_ << "s\n";
-  out << std::setw(40) << "Number of Basic Events: "
-      << fta->num_basic_events_ << "\n";
-  out << std::setw(40) << "Number of Gates: " << fta->num_gates_ << "\n";
-  out << std::setw(40) << "Limit on order of cut sets: "
-      << fta->limit_order_ << "\n";
-  out << std::setw(40) << "Minimal Cut Set Maximum Order: "
-      << fta->max_order_ << "\n";
-  out << std::setw(40) << "Total number of MCS found: "
-      << fta->min_cut_sets_.size() << "\n";
-  out.flush();
-
-  int order = 0;  // Order of minimal cut sets.
-  std::vector<int> order_numbers;  // Number of sets per order.
-  while (order < fta->max_order_ + 1) {
-    std::set< std::set<std::string> >::const_iterator it_min;
-    std::set< std::set<std::string> > order_sets;
-    for (it_min = fta->min_cut_sets_.begin();
-         it_min != fta->min_cut_sets_.end(); ++it_min) {
-      if (it_min->size() == order) {
-        order_sets.insert(*it_min);
-      }
-    }
-    order_numbers.push_back(order_sets.size());
-    if (!order_sets.empty()) {
-      out << "\nOrder " << order << ":\n";
-      int i = 1;
-      for (it_min = order_sets.begin(); it_min != order_sets.end(); ++it_min) {
-        std::stringstream number;
-        number << i << ") ";
-        out << std::left;
-        std::vector<std::string>::iterator it;
-        int j = 0;
-        for (it = lines.find(*it_min)->second.begin();
-             it != lines.find(*it_min)->second.end(); ++it) {
-          if (j == 0) {
-            out << number.str() <<  *it << "\n";
-          } else {
-            out << "  " << std::setw(number.str().length()) << " "
-                << *it << "\n";
-          }
-          ++j;
-        }
-        out.flush();
-        i++;
-      }
-    }
-    order++;
-  }
-
-  out << "\nQualitative Importance Analysis:" << "\n";
-  out << "--------------------------------\n";
-  out << std::left;
-  out << std::setw(20) << "Order" << "Number\n";
-  out << std::setw(20) << "-----" << "------\n";
-  for (int i = 0; i < fta->max_order_ + 1; ++i) {
-    out << "  " << std::setw(18) << i << order_numbers[i] << "\n";
-  }
-  out << "  " << std::setw(18) << "ALL" << fta->min_cut_sets_.size() << "\n";
-  out.flush();
-  out.flags(fmt);  // Restore the initial state.
-}
-
-void Reporter::ReportProbability(
     const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
-    std::ostream& out) {
-  std::ios::fmtflags fmt(out.flags());  // Save the state to recover later.
-  // Print warnings of calculations.
-  if (prob_analysis->warnings_ != "") {
-    out << "\n" << prob_analysis->warnings_ << "\n";
+    xmlpp::Document* doc) {
+  xmlpp::Node* root = doc->get_root_node();
+  xmlpp::NodeSet res = root->find("./results");
+  assert(res.size() == 1);
+  xmlpp::Element* results = dynamic_cast<xmlpp::Element*>(res[0]);
+  xmlpp::Element* sum_of_products = results->add_child("sum-of-products");
+  sum_of_products->set_attribute("name", ft_name);
+  /// @todo Find the number of basic events that are in the cut sets.
+  sum_of_products->set_attribute(
+      "basic-events",
+      boost::lexical_cast<std::string>(fta->num_basic_events_));
+  sum_of_products->set_attribute(
+      "products",
+      boost::lexical_cast<std::string>(fta->min_cut_sets_.size()));
+
+  if (prob_analysis) {
+    sum_of_products->set_attribute(
+        "probability",
+        boost::lexical_cast<std::string>(prob_analysis->p_total()));
   }
 
-  out << "\n" << "Probability Analysis" << "\n";
-  out << "====================\n\n";
-  out << std::left;
-  out << std::setw(40) << "Time: " << pt::second_clock::local_time() << "\n\n";
-  out << std::setw(40) << "Probability Calculations Time: "
-      << std::setprecision(5) << prob_analysis->p_time_ << "s\n";
-  out << std::setw(40) << "Importance Calculations Time: "
-      << std::setprecision(5) << prob_analysis->imp_time_ << "s\n\n";
-  out << std::setw(40) << "Approximation:" << prob_analysis->approx_ << "\n";
-  out << std::setw(40) << "Limit on series: " << prob_analysis->nsums_ << "\n";
-  out << std::setw(40) << "Cut-off probability for cut sets: "
-      << prob_analysis->cut_off_ << "\n";
-  out << std::setw(40) << "Total MCS provided: "
-      << prob_analysis->min_cut_sets_.size() << "\n";
-  out << std::setw(40) << "Number of Cut Sets Used: "
-      << prob_analysis->num_prob_mcs_ << "\n";
-  out << std::setw(40) << "Total Probability: "
-      << prob_analysis->p_total_ << "\n";
-  out.flush();
-
-  // Print total probability.
-  out << "\n================================\n";
-  out <<  "Total Probability: " << std::setprecision(7)
-      << prob_analysis->p_total_;
-  out << "\n================================\n\n";
-
-  if (prob_analysis->p_total_ > 1)
-    out << "WARNING: Total Probability is invalid.\n\n";
-
-  out.flush();
-
-  Reporter::ReportMcsProb(prob_analysis, out);
-
-  out.flush();
-
-  Reporter::ReportImportance(prob_analysis, out);
-
-  out.flush();
-  out.flags(fmt);  // Restore the initial state.
-}
-
-void Reporter::ReportUncertainty(
-    const boost::shared_ptr<const UncertaintyAnalysis>& uncert_analysis,
-    std::ostream& out) {
-  std::ios::fmtflags fmt(out.flags());  // Save the state to recover later.
-  if (uncert_analysis->warnings_ != "") {
-    out << "\n" << uncert_analysis->warnings_ << "\n";
+  std::string warning = "";
+  warning += fta->warnings();
+  if (prob_analysis) warning += prob_analysis->warnings();
+  if (warning != "") {
+    sum_of_products->add_child("warning")->add_child_text(warning);
   }
-  out << "\n" << "Uncertainty Analysis" << "\n";
-  out << "====================\n\n";
-  out << std::left;
-  out << std::setw(40) << "Time: " << pt::second_clock::local_time() << "\n\n";
-  out << std::setw(40) << "Uncertainty Calculation Time: "
-      << uncert_analysis->p_time_ << "\n";
-  out << std::setw(40) << "Number of trials: "
-      << uncert_analysis->num_trials_ << "\n";
-  out << std::setw(40) << "Mean: " << uncert_analysis->mean() << "\n";
-  out << std::setw(40) << "Standard deviation: "
-      << uncert_analysis->sigma() << "\n";
-  out << std::setw(40) << "Confidence range(95%): "
-      << uncert_analysis->confidence_interval().first
-      << " -:- " << uncert_analysis->confidence_interval().second << "\n";
-  out << "\nDistribution:\n";
-  out << std::setw(40) << "Bin Bounds (b(n), b(n+1)]" << "Value\n";
-  std::vector<std::pair<double, double> >::const_iterator it;
-  for (it = uncert_analysis->distribution().begin();
-       it != uncert_analysis->distribution().end(); ++it) {
-    out << std::setw(40) << it->first << it->second << "\n";
-  }
-  out.flush();
-  out.flags(fmt);  // Restore the initial state.
-}
-
-void Reporter::ReportMcsProb(
-    const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
-    std::ostream& out) {
-  std::ios::fmtflags fmt(out.flags());  // Save the state to recover later.
-
-  // Convert MCS into representative strings.
-  std::map< std::set<std::string>, std::vector<std::string> > lines;
-  Reporter::McsToPrint(prob_analysis->min_cut_sets_,
-                       prob_analysis->basic_events_,
-                       &lines);
-
-  out << "\nMinimal Cut Set Probabilities Sorted by Order:\n";
-  out << "----------------------------------------------\n";
-  out.flush();
-
-  int order = 0;  // Order of minimal cut sets.
-  int max_order = 0;
 
   std::set< std::set<std::string> >::const_iterator it_min;
-  // Find max order
-  for (it_min = prob_analysis->min_cut_sets_.begin();
-       it_min != prob_analysis->min_cut_sets_.end(); ++it_min) {
-    if (it_min->size() > max_order) max_order = it_min->size();
-  }
-
-  std::multimap < double, std::set<std::string> >::const_reverse_iterator
-      it_or;
-  while (order < max_order + 1) {
-    std::multimap< double, std::set<std::string> > order_sets;
-    for (it_min = prob_analysis->min_cut_sets_.begin();
-         it_min != prob_analysis->min_cut_sets_.end(); ++it_min) {
-      if (it_min->size() == order) {
-        order_sets.insert(
-            std::make_pair(
-                prob_analysis->prob_of_min_sets_.find(*it_min)->second,
-                            *it_min));
-      }
-    }
-    if (!order_sets.empty()) {
-      out << "\nOrder " << order << ":\n";
-      int i = 1;
-      for (it_or = order_sets.rbegin(); it_or != order_sets.rend(); ++it_or) {
-        std::stringstream number;
-        number << i << ") ";
-        out << std::left;
-        std::vector<std::string>::iterator it;
-        int j = 0;
-        for (it = lines.find(it_or->second)->second.begin();
-             it != lines.find(it_or->second)->second.end(); ++it) {
-          if (j == 0) {
-            out << number.str() << std::setw(70 - number.str().length())
-                << *it << std::setprecision(7) << it_or->first << "\n";
-          } else {
-            out << "  " << std::setw(number.str().length()) << " "
-                << *it << "\n";
-          }
-          ++j;
-        }
-        out.flush();
-        i++;
-      }
-    }
-    order++;
-  }
-
-  out << "\nMinimal Cut Set Probabilities Sorted by Probability:\n";
-  out << "----------------------------------------------------\n";
-  out.flush();
-  int i = 1;
-  for (it_or = prob_analysis->ordered_min_sets_.rbegin();
-       it_or != prob_analysis->ordered_min_sets_.rend(); ++it_or) {
-    std::stringstream number;
-    number << i << ") ";
-    out << std::left;
-    std::vector<std::string>::iterator it;
-    int j = 0;
-    for (it = lines.find(it_or->second)->second.begin();
-         it != lines.find(it_or->second)->second.end(); ++it) {
-      if (j == 0) {
-        out << number.str() << std::setw(70 - number.str().length())
-            << *it << std::setprecision(7) << it_or->first << "\n";
-      } else {
-        out << "  " << std::setw(number.str().length()) << " "
-            << *it << "\n";
-      }
-      ++j;
-    }
-    i++;
-    out.flush();
-  }
-  out.flags(fmt);  // Restore the initial state.
-}
-
-void Reporter::McsToPrint(
-    const std::set< std::set<std::string> >& min_cut_sets,
-    const boost::unordered_map<std::string, BasicEventPtr>& basic_events,
-    std::map< std::set<std::string>, std::vector<std::string> >* lines) {
-
-  std::set< std::set<std::string> >::const_iterator it_min;
-  for (it_min = min_cut_sets.begin(); it_min != min_cut_sets.end();
+  for (it_min = fta->min_cut_sets_.begin(); it_min != fta->min_cut_sets_.end();
        ++it_min) {
-    std::string line = "{ ";
-    std::vector<std::string> vec_line;
-    int j = 1;
-    int size = it_min->size();
+    xmlpp::Element* product = sum_of_products->add_child("product");
+    product->set_attribute("order",
+                           boost::lexical_cast<std::string>(it_min->size()));
 
+    if (prob_analysis) {
+      product->set_attribute(
+          "probability",
+          boost::lexical_cast<std::string>(
+              prob_analysis->prob_of_min_sets().find(*it_min)->second));
+    }
+
+    // List elements of minimal cut sets.
+    typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+    typedef boost::shared_ptr<CcfEvent> CcfEventPtr;
     std::set<std::string>::const_iterator it_set;
     for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
       std::vector<std::string> names;
@@ -316,60 +203,198 @@ void Reporter::McsToPrint(
       if (names[0] == "not") {
         std::string comp_name = full_name;
         boost::replace_first(comp_name, "not ", "");
-        name = "NOT " + basic_events.find(comp_name)->second->orig_id();
+        BasicEventPtr basic_event = fta->basic_events_.find(comp_name)->second;
+        CcfEventPtr ccf_event =
+            boost::dynamic_pointer_cast<CcfEvent>(basic_event);
+        if (!ccf_event) {
+          product->add_child("not")->add_child("basic-event")
+              ->set_attribute("name", basic_event->orig_id());
+        } else {
+          xmlpp::Element* ccf_element =
+              product->add_child("not")->add_child("ccf-event");
+          ccf_element->set_attribute("ccf-group", ccf_event->ccf_group_name());
+          ccf_element->set_attribute(
+              "order",
+              boost::lexical_cast<std::string>(ccf_event->member_names().size()));
+          ccf_element->set_attribute(
+              "group-size",
+              boost::lexical_cast<std::string>(ccf_event->ccf_group_size()));
+          std::vector<std::string>::const_iterator it;
+          for (it = ccf_event->member_names().begin();
+               it != ccf_event->member_names().end(); ++it) {
+            ccf_element->add_child("basic-event")->set_attribute("name", *it);
+          }
+        }
       } else {
-        name = basic_events.find(full_name)->second->orig_id();
+        BasicEventPtr basic_event = fta->basic_events_.find(full_name)->second;
+        CcfEventPtr ccf_event =
+            boost::dynamic_pointer_cast<CcfEvent>(basic_event);
+        if (!ccf_event) {
+          product->add_child("basic-event")
+              ->set_attribute("name", basic_event->orig_id());
+        } else {
+          xmlpp::Element* ccf_element = product->add_child("ccf-event");
+          ccf_element->set_attribute("ccf-group", ccf_event->ccf_group_name());
+          ccf_element->set_attribute(
+              "order",
+              boost::lexical_cast<std::string>(ccf_event->member_names().size()));
+          ccf_element->set_attribute(
+              "group-size",
+              boost::lexical_cast<std::string>(ccf_event->ccf_group_size()));
+          std::vector<std::string>::const_iterator it;
+          for (it = ccf_event->member_names().begin();
+               it != ccf_event->member_names().end(); ++it) {
+            ccf_element->add_child("basic-event")->set_attribute("name", *it);
+          }
+        }
       }
-
-      if (line.length() + name.length() + 2 > 60) {
-        vec_line.push_back(line);
-        line = name;
-      } else {
-        line += name;
-      }
-
-      if (j < size) {
-        line += ", ";
-      } else {
-        line += " ";
-      }
-      ++j;
     }
-    line += "}";
-    vec_line.push_back(line);
-    lines->insert(std::make_pair(*it_min, vec_line));
+  }
+
+  // Report calculation time in the information section.
+  // It is assumed that MCS reporting is the default and the first thing
+  // to be reported.
+  xmlpp::NodeSet perf = root->find("./information/performance");
+  assert(perf.size() == 1);
+  xmlpp::Element* performance = dynamic_cast<xmlpp::Element*>(perf[0]);
+  xmlpp::Element* calc_time = performance->add_child("calculation-time");
+  calc_time->set_attribute("name", ft_name);
+  calc_time->add_child("minimal-cut-set")->add_child_text(
+      boost::lexical_cast<std::string>(fta->analysis_time_));
+  if (prob_analysis) {
+    calc_time->add_child("probability")->add_child_text(
+      boost::lexical_cast<std::string>(prob_analysis->p_time_));
   }
 }
 
 void Reporter::ReportImportance(
+    std::string ft_name,
     const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
-    std::ostream& out) {
-  std::ios::fmtflags fmt(out.flags());  // Save the state to recover later.
-  // Basic event analysis.
-  out << "\nBasic Event Analysis:\n";
-  out << "-----------------------\n";
-  out << std::left;
-  out << std::setw(20) << "Event"
-      << std::setw(12) << "DIF"
-      << std::setw(12) << "MIF"
-      << std::setw(12) << "CIF"
-      << std::setw(12) << "RRW" << "RAW"
-      << "\n\n";
-  std::multimap < double, std::string >::const_reverse_iterator it_contr;
-  for (it_contr = prob_analysis->ordered_primaries_.rbegin();
-       it_contr != prob_analysis->ordered_primaries_.rend(); ++it_contr) {
-    out << std::left;
-    out << std::setw(20)
-        << prob_analysis->basic_events_.find(it_contr->second)->second
-              ->orig_id();
-    for (int i = 0; i < 5; ++i) {
-        if (i < 4) out << std::setw(12);
-        out << std::setprecision(4)
-            << prob_analysis->importance_.find(it_contr->second)->second[i];
-    }
-    out << "\n";
+    xmlpp::Document* doc) {
+  xmlpp::Node* root = doc->get_root_node();
+  xmlpp::NodeSet res = root->find("./results");
+  assert(res.size() == 1);
+  xmlpp::Element* results = dynamic_cast<xmlpp::Element*>(res[0]);
+  xmlpp::Element* importance = results->add_child("importance");
+  importance->set_attribute("name", ft_name);
+  importance->set_attribute(
+      "basic-events",
+      boost::lexical_cast<std::string>(prob_analysis->importance().size()));
+
+  std::string warning = "";
+  warning += prob_analysis->warnings();
+  if (warning != "") {
+    importance->add_child("warning")->add_child_text(warning);
   }
-  out.flags(fmt);  // Restore the initial state.
+
+  std::map< std::string, std::vector<double> >::const_iterator it;
+  for (it = prob_analysis->importance().begin();
+       it != prob_analysis->importance().end(); ++it) {
+    typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+    typedef boost::shared_ptr<CcfEvent> CcfEventPtr;
+    BasicEventPtr basic_event =
+        prob_analysis->basic_events_.find(it->first)->second;
+    CcfEventPtr ccf_event =
+        boost::dynamic_pointer_cast<CcfEvent>(basic_event);
+    xmlpp::Element* element;
+    if (!ccf_event) {
+      element = importance->add_child("basic-event");
+      element->set_attribute(
+          "name",
+          prob_analysis->basic_events_.find(it->first)->second->orig_id());
+    } else {
+      element = importance->add_child("ccf-event");
+      element->set_attribute("ccf-group", ccf_event->ccf_group_name());
+      element->set_attribute(
+          "order",
+          boost::lexical_cast<std::string>(ccf_event->member_names().size()));
+      element->set_attribute(
+          "group-size",
+          boost::lexical_cast<std::string>(ccf_event->ccf_group_size()));
+      std::vector<std::string>::const_iterator it;
+      for (it = ccf_event->member_names().begin();
+           it != ccf_event->member_names().end(); ++it) {
+        element->add_child("basic-event")->set_attribute("name", *it);
+      }
+    }
+
+    element->set_attribute(
+        "DIF",
+        boost::lexical_cast<std::string>(it->second[0]));
+    element->set_attribute(
+        "MIF",
+        boost::lexical_cast<std::string>(it->second[1]));
+    element->set_attribute(
+        "CIF",
+        boost::lexical_cast<std::string>(it->second[2]));
+    element->set_attribute(
+        "RRW",
+        boost::lexical_cast<std::string>(it->second[3]));
+    element->set_attribute(
+        "RAW",
+        boost::lexical_cast<std::string>(it->second[4]));
+  }
+  xmlpp::NodeSet calc_times =
+      root->find("./information/performance/calculation-time");
+  assert(!calc_times.empty());
+  xmlpp::Element* calc_time = dynamic_cast<xmlpp::Element*>(calc_times.back());
+  calc_time->add_child("importance")->add_child_text(
+      boost::lexical_cast<std::string>(prob_analysis->imp_time_));
+}
+
+void Reporter::ReportUncertainty(
+    std::string ft_name,
+    const boost::shared_ptr<const UncertaintyAnalysis>& uncert_analysis,
+    xmlpp::Document* doc) {
+  xmlpp::Node* root = doc->get_root_node();
+  xmlpp::NodeSet res = root->find("./results");
+  assert(res.size() == 1);
+  xmlpp::Element* results = dynamic_cast<xmlpp::Element*>(res[0]);
+  xmlpp::Element* measure = results->add_child("measure");
+  measure->set_attribute("name", ft_name);
+
+  std::string warning = "";
+  warning += uncert_analysis->warnings();
+  if (warning != "") {
+    measure->add_child("warning")->add_child_text(warning);
+  }
+
+  measure->add_child("mean")->set_attribute("value",
+      boost::lexical_cast<std::string>(uncert_analysis->mean()));
+  measure->add_child("standard-deviation")->set_attribute("value",
+      boost::lexical_cast<std::string>(uncert_analysis->sigma()));
+  xmlpp::Element* confidence = measure->add_child("confidence-range");
+  confidence->set_attribute("percentage", "95");
+  confidence->set_attribute("lower-bound",
+      boost::lexical_cast<std::string>(
+          uncert_analysis->confidence_interval().first));
+  confidence->set_attribute("upper-bound",
+      boost::lexical_cast<std::string>(
+          uncert_analysis->confidence_interval().second));
+  /// @todo Error factor reporting.
+  xmlpp::Element* quantiles = measure->add_child("quantiles");
+  int num_bins = uncert_analysis->distribution().size() - 1;
+  quantiles->set_attribute("number",
+                           boost::lexical_cast<std::string>(num_bins));
+  for (int i = 0; i < num_bins; ++i) {
+    xmlpp::Element* quant = quantiles->add_child("quantile");
+    quant->set_attribute("number", boost::lexical_cast<std::string>(i + 1));
+    double lower = uncert_analysis->distribution()[i].first;
+    double upper = uncert_analysis->distribution()[i + 1].first;
+    double value = uncert_analysis->distribution()[i + 1].second;
+    quant->set_attribute("mean",
+                         boost::lexical_cast<std::string>(value));
+    quant->set_attribute("lower-bound",
+                         boost::lexical_cast<std::string>(lower));
+    quant->set_attribute("upper-bound",
+                         boost::lexical_cast<std::string>(upper));
+  }
+  xmlpp::NodeSet calc_times =
+      root->find("./information/performance/calculation-time");
+  assert(!calc_times.empty());
+  xmlpp::Element* calc_time = dynamic_cast<xmlpp::Element*>(calc_times.back());
+  calc_time->add_child("uncertainty")->add_child_text(
+      boost::lexical_cast<std::string>(uncert_analysis->p_time_));
 }
 
 }  // namespace scram

@@ -8,22 +8,28 @@ This project follows the following coding styles:
 #. `Google Python Style Guide (GPSG)`_.
 #. `PEP 8 -- Style Guide for Python Code (PEP8)`_.
 #. `KDE CMake Coding Style`_.
+#. `Qt Coding Style`_ for GUI.
+#. `Google Shell Style Guide`_.
 
 .. _`Google C++ Style Guide (GCSG)`:
-    http://google-styleguide.googlecode.com/svn/trunk/cppguide.xml
+    http://google-styleguide.googlecode.com/svn/trunk/cppguide.html
 .. _`Google Python Style Guide (GPSG)`:
     http://google-styleguide.googlecode.com/svn/trunk/pyguide.html
 .. _`PEP 8 -- Style Guide for Python Code (PEP8)`:
     http://legacy.python.org/dev/peps/pep-0008/
 .. _`KDE CMake Coding Style`:
     https://techbase.kde.org/Policies/CMake_Coding_Style
+.. _`Qt Coding Style`:
+    http://qt-project.org/wiki/Qt_Coding_Style
+.. _`Google Shell Style Guide`:
+    https://google-styleguide.googlecode.com/svn/trunk/shell.xml
 
 Currently nonconforming cases in the source code:
 -------------------------------------------------
 
 * Exceptions are used. (This is not recommended by GCSG.)
 * Streams are used instead of *printf-like routines*.
-* GUI front-end source files are a mix of the Qt style and Google style.
+* Naming of mutator functions without *set* prefix.
 * C++11 features are not allowed. Only Boost features are used instead.
 
 The quality of the code is checked with the following tools:

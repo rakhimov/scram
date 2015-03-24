@@ -12,8 +12,8 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 
-#include <event.h>
-#include <probability_analysis.h>
+#include "event.h"
+#include "probability_analysis.h"
 
 class UncertaintyAnalysisTest;
 
@@ -32,11 +32,11 @@ friend class Reporter;
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
 
   /// The main constructor of Uncertainty Analysis.
-  /// @param[in] nsums The number of sums in the probability series.
+  /// @param[in] num_sums The number of sums in the probability series.
   /// @param[in] cut_off The cut-off probability for cut sets.
   /// @param[in] num_trials The number of trials to perform.
   /// @throws InvalidArgument if any of the parameters is invalid.
-  explicit UncertaintyAnalysis(int nsums = 7, double cut_off = 1e-8,
+  explicit UncertaintyAnalysis(int num_sums = 7, double cut_off = 1e-8,
                                int num_trials = 1e3);
 
   /// Set the databases of primary events with probabilities.
@@ -68,6 +68,11 @@ friend class Reporter;
   /// @returns The distribution histogram.
   const std::vector<std::pair<double, double> >& distribution() const {
     return distribution_;
+  }
+
+  /// @returns Warnings generated upon analysis.
+  inline const std::string warnings() const {
+    return ProbabilityAnalysis::warnings();
   }
 
  private:

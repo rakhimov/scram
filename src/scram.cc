@@ -8,6 +8,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
+#include "config.h"
 #include "error.h"
 #include "logger.h"
 #include "risk_analysis.h"
@@ -27,47 +28,49 @@ using namespace scram;
 /// @returns 1 for errored state.
 /// @returns -1 for information only state like help and version.
 int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
-  std::string usage = "Usage:    scram [input-files] [opts]";
-  po::options_description desc("Allowed options");
+  std::string usage = "Usage:    scram [input-files] [options]";
+  po::options_description desc("Options");
 
   try {
     desc.add_options()
-        ("help,h", "display this help message")
-        ("version", "display version information")
-        ("input-file", po::value< std::vector<std::string> >(),
+        ("help", "Display this help message")
+        ("version", "Display version information")
+        ("input-files", po::value< std::vector<std::string> >(),
          "XML input files with analysis entities")
-        ("config,C", po::value<std::string>(),
-         "XML configuration file for analysis (NOT SUPPERTED)")
-        ("validate,v", "only validate input files")
-        ("graph-only,g", "produce graph without analysis")
-        ("analysis,a", po::value<std::string>()->default_value("default"),
-         "type of analysis to be performed on this input")
-        ("rare-event,r", "use the rare event approximation")
-        ("mcub,m", "use the MCUB approximation for probability calculations")
-        ("limit-order,l", po::value<int>()->default_value(20),
-         "upper limit for cut set order")
-        ("nsums,s", po::value<int>()->default_value(7),
-         "number of sums in series expansion for probability calculations")
-        ("cut-off,c", po::value<double>()->default_value(1e-8),
-         "cut-off probability for cut sets")
-        ("mission-time,t", po::value<double>()->default_value(8760),
-         "system mission time in hours")
-        ("trials,S", po::value<int>()->default_value(1e3),
-         "number of trials for Monte Carlo simulations")
-        ("output,o", po::value<std::string>(), "output file")
-        ("log,L", "Turn on logging system")
+        ("config-file", po::value<std::string>(),
+         "XML configuration file for analysis")
+        ("validate-only,v", "Validate input files without analysis")
+        ("graph-only,g", "Validate and produce graph without analysis")
+        ("probability", po::value<bool>(), "Perform probability analysis")
+        ("importance", po::value<bool>(), "Perform importance analysis")
+        ("uncertainty", po::value<bool>(), "Perform uncertainty analysis")
+        ("ccf", po::value<bool>(), "Perform common-cause failure analysis")
+        ("rare-event",
+         "Use the rare event approximation for probability calculations")
+        ("mcub", "Use the MCUB approximation for probability calculations")
+        ("limit-order,l", po::value<int>(), "Upper limit for cut set order")
+        ("num-sums,s", po::value<int>(),
+         "Number of sums in series expansion for probability calculations")
+        ("cut-off", po::value<double>(), "Cut-off probability for cut sets")
+        ("mission-time", po::value<double>(), "System mission time in hours")
+        ("num-trials", po::value<int>(),
+         "Number of trials for Monte Carlo simulations")
+        ("seed", po::value<int>(),
+         "Seed for the pseudo-random number generator")
+        ("output-path,o", po::value<std::string>(), "Output path")
+        ("log", "Turn on the logging system")
         ;
 
     po::store(po::parse_command_line(argc, argv, desc), *vm);
   } catch (std::exception& err) {
-    std::cout << "Invalid arguments.\n"
+    std::cout << "Option error: " << err.what() << "\n\n"
         << usage << "\n\n" << desc << "\n";
     return 1;
   }
   po::notify(*vm);
 
   po::positional_options_description p;
-  p.add("input-file", -1);
+  p.add("input-files", -1);
 
   po::store(po::command_line_parser(argc, argv).options(desc).positional(p).
             run(), *vm);
@@ -88,8 +91,8 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
     return -1;
   }
 
-  if (!vm->count("input-file")) {
-    std::string msg = "No input file given.\n";
+  if (!vm->count("input-files") && !vm->count("config-file")) {
+    std::string msg = "No input or configuration file is given.\n";
     std::cout << msg << std::endl;
     std::cout << usage << "\n\n" << desc << "\n";
     return 1;
@@ -106,30 +109,34 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
   return 0;
 }
 
-/// Constructs analysis settings from command-line arguments.
+/// Updates analysis settings from command-line arguments.
 /// @param[in] vm Variables map of program options.
+/// @param[in/out] settings Pre-configured or default settings.
 /// @throws std::exception if vm does not contain a required option.
 ///                        At least defaults are expected.
-Settings ConstructSettings(const po::variables_map& vm) {
-  // Analysis settings.
-  Settings settings;
-
+void ConstructSettings(const po::variables_map& vm, Settings* settings) {
   // Determine if the probability approximation is requested.
   if (vm.count("rare-event")) {
     assert(!vm.count("mcub"));
-    settings.approx("rare");
+    settings->approx("rare-event");
   } else if (vm.count("mcub")) {
-    settings.approx("mcub");
+    settings->approx("mcub");
   }
-
-  settings.limit_order(vm["limit-order"].as<int>())
-      .num_sums(vm["nsums"].as<int>())
-      .cut_off(vm["cut-off"].as<double>())
-      .mission_time(vm["mission-time"].as<double>())
-      .trials(vm["trials"].as<int>())
-      .fta_type(vm["analysis"].as<std::string>());
-
-  return settings;
+  if (vm.count("seed")) settings->seed(vm["seed"].as<int>());
+  if (vm.count("limit-order"))
+    settings->limit_order(vm["limit-order"].as<int>());
+  if (vm.count("num-sums")) settings->num_sums(vm["num-sums"].as<int>());
+  if (vm.count("cut-off")) settings->cut_off(vm["cut-off"].as<double>());
+  if (vm.count("mission-time"))
+    settings->mission_time(vm["mission-time"].as<double>());
+  if (vm.count("num-trials")) settings->num_trials(vm["num-trials"].as<int>());
+  if (vm.count("importance"))
+    settings->importance_analysis(vm["importance"].as<bool>());
+  if (vm.count("uncertainty"))
+    settings->uncertainty_analysis(vm["uncertainty"].as<bool>());
+  if (vm.count("probability"))
+    settings->probability_analysis(vm["probability"].as<bool>());
+  if (vm.count("ccf")) settings->ccf_analysis(vm["ccf"].as<bool>());;
 }
 
 /// Main body of commond-line entrance to run the program.
@@ -143,10 +150,37 @@ int RunScram(const po::variables_map& vm) {
   if (vm.count("log")) Logger::active() = true;
   // Initiate risk analysis.
   RiskAnalysis* ran = new RiskAnalysis();
-  ran->AddSettings(ConstructSettings(vm));
+  // Analysis settings.
+  Settings settings;
+  std::vector<std::string> input_files;
+  std::string output_path = "";
+  // Get configurations if any.
+  if (vm.count("config-file")) {
+    Config* config = new Config(vm["config-file"].as<std::string>());
+    settings = config->settings();
+    input_files = config->input_files();
+    output_path = config->output_path();
+    delete config;
+  }
+
+  // Command-line settings overwrites the settings from the configurations.
+  ConstructSettings(vm, &settings);
+  ran->AddSettings(settings);
+
+  // Add input files from the comand line.
+  if (vm.count("input-files")) {
+    std::vector<std::string> cmd_input =
+        vm["input-files"].as< std::vector<std::string> >();
+    input_files.insert(input_files.end(), cmd_input.begin(), cmd_input.end());
+  }
+
+  // Overwrite output path if it is given from the command-line.
+  if (vm.count("output-path")) {
+    output_path = vm["output-path"].as<std::string>();
+  }
 
   // Process input files and validate it.
-  ran->ProcessInputFiles(vm["input-file"].as< std::vector<std::string> >());
+  ran->ProcessInputFiles(input_files);
 
   // Stop if only validation is requested.
   if (vm.count("validate")) {
@@ -156,8 +190,8 @@ int RunScram(const po::variables_map& vm) {
 
   // Graph if requested.
   if (vm.count("graph-only")) {
-    if (vm.count("output")) {
-      ran->GraphingInstructions(vm["output"].as<std::string>());
+    if (output_path != "") {
+      ran->GraphingInstructions(output_path);
     } else {
       ran->GraphingInstructions();
     }
@@ -166,10 +200,10 @@ int RunScram(const po::variables_map& vm) {
 
   ran->Analyze();
 
-  if (vm.count("output")) {
-    ran->Report(vm["output"].as<std::string>());
+  if (output_path != "") {
+    ran->Report(output_path);
   } else {
-    ran->Report();
+    ran->Report(std::cout);
   }
 
   delete ran;

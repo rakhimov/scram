@@ -5,12 +5,13 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include <boost/shared_ptr.hpp>
 
 #include "element.h"
-#include "expression.h"
 #include "error.h"
+#include "expression.h"
 
 namespace scram {
 
@@ -132,13 +133,15 @@ class PrimaryEvent : public Event {
 
 /// @class BasicEvent
 /// Representation of a basic event in a fault tree.
-class BasicEvent: public PrimaryEvent {
+class BasicEvent : public PrimaryEvent {
  public:
   typedef boost::shared_ptr<Expression> ExpressionPtr;
 
   /// Constructs with id name.
   /// @param[in] id The identifying name of this basic event.
   explicit BasicEvent(std::string id) : PrimaryEvent(id, "basic") {}
+
+  virtual ~BasicEvent() {}
 
   /// Sets the expression of this basic event.
   /// @param[in] expression The expression to describe this event.
@@ -212,10 +215,10 @@ class BasicEvent: public PrimaryEvent {
 
 /// @class HouseEvent
 /// Representation of a house event in a fault tree.
-class HouseEvent: public PrimaryEvent {
+class HouseEvent : public PrimaryEvent {
  public:
   /// Constructs with id name.
-  /// @param[in] id The identifying name of this basic event.
+  /// @param[in] id The identifying name of this house event.
   explicit HouseEvent(std::string id)
       : state_(false),
         PrimaryEvent(id, "house") {}
@@ -231,6 +234,51 @@ class HouseEvent: public PrimaryEvent {
   /// Represents the state of the house event.
   /// Implies On or Off for True or False values of the probability.
   bool state_;
+};
+
+/// @class CcfEvent
+/// A basic event that represents a multiple failure of a group of events due to
+/// a common cause. This event is generated out of a common cause group.
+/// This class is a helper to report correctly the CCF events.
+class CcfEvent : public BasicEvent {
+ public:
+  /// Constructs CCF event with id name that is used for internal purposes.
+  /// This id is formatted by CcfGroup. The original id is also formatted by
+  /// CcfGroup, but the original id may not be suitable for reporting.
+  /// @param[in] id The identifying name of this CCF event.
+  /// @param[in] ccf_group_name The name of CCF group for reporting.
+  /// @param[in] ccf_group_size The total size of CCF group for reporting.
+  CcfEvent(std::string id, std::string ccf_group_name, int ccf_group_size)
+      : BasicEvent(id),
+        ccf_group_name_(ccf_group_name),
+        ccf_group_size_(ccf_group_size) {}
+
+  /// @returns The name of the original CCF group.
+  inline const std::string ccf_group_name() { return ccf_group_name_; }
+
+  /// @returns The total size of the original CCF group.
+  inline int ccf_group_size() { return ccf_group_size_; }
+
+  /// @returns Original names of members of this CCF event.
+  inline const std::vector<std::string>& member_names() {
+    return member_names_;
+  }
+
+  /// Sets original names of members.
+  /// @param[in] orig_ids A container of original names of basic events.
+  inline const void member_names(const std::vector<std::string>& orig_ids) {
+    member_names_ = orig_ids;
+  }
+
+ private:
+  /// CCF group that this CCF event is constructed from.
+  std::string ccf_group_name_;
+
+  /// CCF group size.
+  int ccf_group_size_;
+
+  /// Original names of basic events in this CCF event.
+  std::vector<std::string> member_names_;
 };
 
 }  // namespace scram

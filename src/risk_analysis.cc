@@ -4,16 +4,11 @@
 
 #include <algorithm>
 #include <fstream>
-#include <iostream>
 #include <sstream>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/pointer_cast.hpp>
-
-#if EMBED_SCHEMA
-#include <schema.h>  // For static building.
-#endif
 
 #include "ccf_group.h"
 #include "element.h"
@@ -21,13 +16,13 @@
 #include "error.h"
 #include "fault_tree.h"
 #include "grapher.h"
+#include "random.h"
 #include "reporter.h"
 #include "xml_parser.h"
 
 namespace scram {
 
-RiskAnalysis::RiskAnalysis(std::string config_file)
-    : prob_requested_(false) {
+RiskAnalysis::RiskAnalysis() {
   // Add valid gate types.
   gate_types_.insert("and");
   gate_types_.insert("or");
@@ -68,7 +63,7 @@ void RiskAnalysis::ProcessInput(std::string xml_file) {
 
 void RiskAnalysis::ProcessInputFiles(
     const std::vector<std::string>& xml_files) {
-  // Assume that setting are configured.
+  // Assume that settings are configured.
   mission_time_->mission_time(settings_.mission_time_);
 
   std::vector<std::string>::const_iterator it;
@@ -81,7 +76,7 @@ void RiskAnalysis::ProcessInputFiles(
     }
   }
 
-  if (!prob_requested_) {  // Only MCS analysis without probabilities.
+  if (!settings_.probability_analysis_) {
     // Put all undefined events as primary events.
     boost::unordered_map<std::string, HouseEventPtr>::iterator it_h;
     for (it_h = tbd_house_events_.begin(); it_h != tbd_house_events_.end();
@@ -129,31 +124,73 @@ void RiskAnalysis::Analyze() {
   // Set system mission time for all analysis.
   mission_time_->mission_time(settings_.mission_time_);
 
+  // Set the seed for the pseudo-random number generator if given explicitly.
+  // Otherwise it defaults to the current time.
+  if (settings_.seed_ >=0 ) Random::seed(settings_.seed_);
+
   std::map<std::string, FaultTreePtr>::iterator it;
   for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
-    FaultTreeAnalysisPtr fta(new FaultTreeAnalysis(settings_.limit_order_));
+    FaultTreeAnalysisPtr fta(new FaultTreeAnalysis(settings_.limit_order_,
+                                                   settings_.ccf_analysis_));
     fta->Analyze(it->second);
-    ftas_.push_back(fta);
+    ftas_.insert(std::make_pair(it->first, fta));
 
-    if (prob_requested_) {
-      if (settings_.fta_type_ == "default") {
-        ProbabilityAnalysisPtr pa(
-            new ProbabilityAnalysis(settings_.approx_, settings_.num_sums_,
-                                    settings_.cut_off_));
-        pa->UpdateDatabase(it->second->basic_events());
-        pa->Analyze(fta->min_cut_sets());
-        prob_analyses_.push_back(pa);
+    if (settings_.probability_analysis_) {
+      ProbabilityAnalysisPtr pa(
+          new ProbabilityAnalysis(settings_.approx_, settings_.num_sums_,
+                                  settings_.cut_off_,
+                                  settings_.importance_analysis_));
+      pa->UpdateDatabase(it->second->basic_events());
+      pa->Analyze(fta->min_cut_sets());
+      prob_analyses_.insert(std::make_pair(it->first, pa));
+    }
 
-      } else if (settings_.fta_type_ == "mc") {
-        UncertaintyAnalysisPtr ua(new UncertaintyAnalysis(settings_.num_sums_,
-                                                          settings_.cut_off_,
-                                                          settings_.trials_));
-        ua->UpdateDatabase(it->second->basic_events());
-        ua->Analyze(fta->min_cut_sets());
-        uncertainty_analyses_.push_back(ua);
-      }
+    if (settings_.uncertainty_analysis_) {
+      UncertaintyAnalysisPtr ua(
+          new UncertaintyAnalysis(settings_.num_sums_, settings_.cut_off_,
+                                  settings_.num_trials_));
+      ua->UpdateDatabase(it->second->basic_events());
+      ua->Analyze(fta->min_cut_sets());
+      uncertainty_analyses_.insert(std::make_pair(it->first, ua));
     }
   }
+}
+
+void RiskAnalysis::Report(std::ostream& out) {
+  Reporter rp = Reporter();
+
+  // Create XML or use already created document.
+  xmlpp::Document* doc = new xmlpp::Document();
+  rp.SetupReport(this, settings_, doc);
+
+  if (!orphan_primary_events_.empty())
+    rp.ReportOrphans(orphan_primary_events_, doc);
+
+  assert(ftas_.size() == fault_trees_.size());  // All trees are analyzed.
+
+  std::map<std::string, FaultTreePtr>::iterator it;
+  for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
+    ProbabilityAnalysisPtr prob_analysis;  // Null pointer if no analysis.
+    if (settings_.probability_analysis_) {
+      prob_analysis = prob_analyses_.find(it->first)->second;
+    }
+    rp.ReportFta(it->second->name(), ftas_.find(it->first)->second,
+                 prob_analysis, doc);
+
+    if (settings_.importance_analysis_) {
+      rp.ReportImportance(it->second->name(),
+                          prob_analyses_.find(it->first)->second, doc);
+    }
+
+    if (settings_.uncertainty_analysis_) {
+        rp.ReportUncertainty(it->second->name(),
+                             uncertainty_analyses_.find(it->first)->second,
+                             doc);
+    }
+  }
+
+  doc->write_to_stream_formatted(out, "UTF-8");
+  delete doc;
 }
 
 void RiskAnalysis::Report(std::string output) {
@@ -178,14 +215,11 @@ void RiskAnalysis::ProcessInputFile(std::string xml_file) {
   parser->Init(stream);
 
   std::stringstream schema;
-#if EMBED_SCHEMA
-  schema << g_schema_content;
-#else
-  std::string schema_path = Env::rng_schema();
+  std::string schema_path = Env::input_schema();
   std::ifstream schema_stream(schema_path.c_str());
   schema << schema_stream.rdbuf();
   schema_stream.close();
-#endif
+
   parser->Validate(schema);
 
   xmlpp::Document* doc = parser->Document();
@@ -993,11 +1027,6 @@ void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
     assert(element);
     std::string name = element->get_name();
 
-    if (!prob_requested_ &&
-        (name == "define-basic-event" || name == "define-house-event")) {
-      prob_requested_ = true;
-    }
-
     if (name == "define-gate") {
       RiskAnalysis::DefineGate(element, fault_tree);
 
@@ -1017,8 +1046,6 @@ void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
 }
 
 void RiskAnalysis::ProcessModelData(const xmlpp::Element* model_data) {
-  prob_requested_ = true;
-
   xmlpp::NodeSet children = model_data->find("./*");
   xmlpp::NodeSet::iterator it;
   for (it = children.begin(); it != children.end(); ++it) {
@@ -1087,8 +1114,6 @@ void RiskAnalysis::DefineCcfGroup(const xmlpp::Element* ccf_node) {
   }
 
   ccf_groups_.insert(std::make_pair(id, ccf_group));
-
-  prob_requested_ = true;
 
   RiskAnalysis::AttachLabelAndAttributes(ccf_node, ccf_group);
 
@@ -1198,7 +1223,7 @@ void RiskAnalysis::CheckFirstLayer() {
   }
 
   // Check if all events are initialized.
-  if (prob_requested_) {
+  if (settings_.probability_analysis_) {
     // Check if some members are missing definitions.
     error_messages << RiskAnalysis::CheckMissingEvents();
     error_messages << RiskAnalysis::CheckMissingParameters();
@@ -1408,7 +1433,7 @@ void RiskAnalysis::ValidateExpressions() {
   }
 
   // Check probability values for primary events.
-  if (prob_requested_) {
+  if (settings_.probability_analysis_) {
     std::stringstream msg;
     msg << "";
     if (!ccf_groups_.empty()) {
@@ -1457,31 +1482,7 @@ void RiskAnalysis::GraphingInstructions(std::ostream& out) {
   std::map<std::string, FaultTreePtr>::iterator it;
   for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
     Grapher gr = Grapher();
-    gr.GraphFaultTree(it->second, prob_requested_, out);
-  }
-}
-
-void RiskAnalysis::Report(std::ostream& out) {
-  Reporter rp = Reporter();
-
-  if (!orphan_primary_events_.empty())
-    rp.ReportOrphans(orphan_primary_events_, out);
-
-  std::vector<FaultTreeAnalysisPtr>::iterator it;
-  for (it = ftas_.begin(); it != ftas_.end(); ++it) {
-    rp.ReportFta(*it, out);
-  }
-
-  if (prob_requested_) {
-    std::vector<ProbabilityAnalysisPtr>::iterator it_p;
-    for (it_p = prob_analyses_.begin(); it_p != prob_analyses_.end(); ++it_p) {
-      rp.ReportProbability(*it_p, out);
-    }
-    std::vector<UncertaintyAnalysisPtr>::iterator it_u;
-    for (it_u = uncertainty_analyses_.begin();
-         it_u != uncertainty_analyses_.end(); ++it_u) {
-      rp.ReportUncertainty(*it_u, out);
-    }
+    gr.GraphFaultTree(it->second, settings_.probability_analysis_, out);
   }
 }
 

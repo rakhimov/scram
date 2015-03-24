@@ -2,8 +2,8 @@
 /// Implements the functionality to run Monte Carlo uncertainty analysis.
 #include "uncertainty_analysis.h"
 
-#include <ctime>
 #include <cmath>
+#include <ctime>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/accumulators/accumulators.hpp>
@@ -16,9 +16,9 @@
 
 namespace scram {
 
-UncertaintyAnalysis::UncertaintyAnalysis(int nsums, double cut_off,
+UncertaintyAnalysis::UncertaintyAnalysis(int num_sums, double cut_off,
                                          int num_trials)
-    : ProbabilityAnalysis::ProbabilityAnalysis("no", nsums, cut_off),
+    : ProbabilityAnalysis::ProbabilityAnalysis("no", num_sums, cut_off),
       mean_(-1),
       sigma_(-1),
       p_time_(-1) {
@@ -66,9 +66,9 @@ void UncertaintyAnalysis::Analyze(
   start_time = std::clock();
 
   // Maximum number of sums in the series.
-  if (nsums_ > iset.size()) nsums_ = iset.size();
+  if (num_sums_ > iset.size()) num_sums_ = iset.size();
   // Generate the equation.
-  ProbabilityAnalysis::ProbOr(1, nsums_, &iset);
+  ProbabilityAnalysis::ProbOr(1, num_sums_, &iset);
   // Sample probabilities and generate data.
   UncertaintyAnalysis::Sample();
 

@@ -33,8 +33,9 @@ class FaultTreeAnalysis {
 
   /// The main constructor of Fault Tree Analysis.
   /// @param[in] limit_order The maximum limit on minimal cut sets' order.
+  /// @param[in] ccf_analysis Whether or not expand CCF group basic events.
   /// @throws InvalidArgument if any of the parameters are invalid.
-  explicit FaultTreeAnalysis(int limit_order = 20);
+  FaultTreeAnalysis(int limit_order = 20, bool ccf_analysis = false);
 
   /// Analyzes the fault tree and performs computations.
   /// This function must be called only after initilizing the tree with or
@@ -53,6 +54,9 @@ class FaultTreeAnalysis {
 
   /// @returns The maximum order of the found minimal cut sets.
   inline int max_order() const { return max_order_; }
+
+  /// @returns Warnings generated upon analysis.
+  inline const std::string warnings() const { return warnings_; }
 
  private:
   typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
@@ -77,6 +81,9 @@ class FaultTreeAnalysis {
   /// calculations, and settings. These warnings must be written into output
   /// file.
   std::string warnings_;
+
+  /// A flag to include CCF groups in fault trees.
+  bool ccf_analysis_;
 
   /// Limit on the size of the minimal cut sets for performance reasons.
   int limit_order_;

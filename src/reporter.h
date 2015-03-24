@@ -11,75 +11,74 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
+#include <libxml++/libxml++.h>
 
 namespace scram {
 
+class RiskAnalysis;
 class FaultTreeAnalysis;
 class ProbabilityAnalysis;
 class UncertaintyAnalysis;
 class PrimaryEvent;
 class BasicEvent;
+class Settings;
 
 /// @class Reporter
 /// This class reports the findings of the analyses.
 class Reporter {
  public:
-  /// Reports orphan primary events.
+  /// Sets up XML report document according to a specific standards.
+  /// This function populates information about the software, settings,
+  /// time, methods, and model. In addition, the function forms the
+  /// structure of the overall report for use by other reporting functions.
+  /// This function must be called before other reporting functions.
+  /// @param[in] risk_an The main risk analysis with all the model data.
+  /// @param[in] settings Configured settings for analysis.
+  /// @param[in/out] doc An empty document.
+  /// @throws LogicError if the document is not empty.
+  void SetupReport(const RiskAnalysis* risk_an, const Settings& settings,
+                   xmlpp::Document* doc);
+
+  /// Reports orphan primary events as warnings of the top level.
+  /// The warning section of the report should not be initialized.
   /// @param[in] orphan_primary_events Container of orphan events.
-  /// @param[out] out Output stream.
+  /// @param[in/out] doc Preformatted XML document.
   void ReportOrphans(
       const std::set<boost::shared_ptr<PrimaryEvent> >& orphan_primary_events,
-      std::ostream& out);
+      xmlpp::Document* doc);
 
   /// Reports the results of analysis to a specified output destination.
+  /// @param[in] ft_name The original name of a fault tree.
   /// @param[in] fta Fault Tree Analysis with results.
-  /// @param[out] out Output stream.
+  /// @param[in] prob_analysis ProbabilityAnalysis with results. Null pointer
+  ///                          if there is no probability analysis.
+  /// @param[in/out] doc Preformatted XML document.
   /// @note This function must be called only after analysis is done.
-  void ReportFta(const boost::shared_ptr<const FaultTreeAnalysis>& fta,
-                 std::ostream& out);
-
-  /// Reports the results of probability analysis with minimal cut sets.
-  /// @param[in] prob_analysis ProbabilityAnalysis with results.
-  /// @param[out] out Output stream.
-  /// @note This function must be called only after analysis is done.
-  void ReportProbability(
+  void ReportFta(
+      std::string ft_name,
+      const boost::shared_ptr<const FaultTreeAnalysis>& fta,
       const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
-      std::ostream& out);
-
-  /// Reports the results of uncertainty analysis with minimal cut sets.
-  /// @param[in] uncert_analysis UncertaintyAnalysis with results.
-  /// @param[out] out Output stream.
-  /// @note This function must be called only after analysis is done.
-  void ReportUncertainty(
-      const boost::shared_ptr<const UncertaintyAnalysis>& uncert_analysis,
-      std::ostream& out);
-
- private:
-  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
-
-  /// Produces lines for printing minimal cut sets.
-  /// @param[in] min_cut_sets Minimal cut sets to print.
-  /// @param[in] basic_events Basic events in the minimal cut sets.
-  /// @param[out] lines Lines representing minimal cut sets.
-  void McsToPrint(
-      const std::set< std::set<std::string> >& min_cut_sets,
-      const boost::unordered_map<std::string, BasicEventPtr>& basic_events,
-      std::map< std::set<std::string>, std::vector<std::string> >* lines);
-
-  /// Reports minimal cut sets' probabilities.
-  /// @param[in] prob_analysis ProbabilityAnalysis with results.
-  /// @param[out] out Output stream.
-  void ReportMcsProb(
-      const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
-      std::ostream& out);
+      xmlpp::Document* doc);
 
   /// Reports results of importance analysis in probability analysis.
+  /// @param[in] ft_name The original name of a fault tree.
   /// @param[in] prob_analysis ProbabilityAnalysis with results.
-  /// Reports as "Primary Event Analysis".
-  /// @param[out] out Output stream.
+  /// @param[in/out] doc Preformatted XML document.
+  /// @note This function must be called only after analysis is done.
   void ReportImportance(
+      std::string ft_name,
       const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
-      std::ostream& out);
+      xmlpp::Document* doc);
+
+  /// Reports the results of uncertainty analysis with minimal cut sets.
+  /// @param[in] ft_name The original name of a fault tree.
+  /// @param[in] uncert_analysis UncertaintyAnalysis with results.
+  /// @param[in/out] doc Preformatted XML document.
+  /// @note This function must be called only after analysis is done.
+  void ReportUncertainty(
+      std::string ft_name,
+      const boost::shared_ptr<const UncertaintyAnalysis>& uncert_analysis,
+      xmlpp::Document* doc);
 };
 
 }  // namespace scram
