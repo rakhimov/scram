@@ -7,9 +7,9 @@
     <analysis importance="true" uncertainty="false" ccf="false"/>
     <limits>
       <limit-order>10</limit-order>
+      <mission-time>8760</mission-time>
       <cut-off>0.001</cut-off>
       <number-of-sums>20</number-of-sums>
-      <mission-time>8760</mission-time>
     </limits>
   </options>
 </config>

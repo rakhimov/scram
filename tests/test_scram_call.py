@@ -88,6 +88,12 @@ def test_fta_calls():
     if os.path.isfile(out_temp):
         os.remove(out_temp)
 
+    # Test the clash of files from configuration and command-line
+    config_file = "./input/fta/full_configuration.xml"
+    cmd = ["scram", "--config-file", config_file,
+            "input/fta/correct_tree_input_with_probs.xml"]
+    yield assert_not_equal, 0, call(cmd)
+
     # Test the rare event approximation
     cmd = ["scram", fta_input, "--rare-event"]
     yield assert_equal, 0, call(cmd)

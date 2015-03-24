@@ -12,14 +12,21 @@ TEST(ConfigTest, IOError) {
   ASSERT_THROW(Config config(config_file), IOError);
 }
 
+// Test with XML content validation issues.
+TEST(ConfigTest, ValidationError) {
+  std::string config_file = "./share/scram/input/fta/invalid_configuration.xml";
+  ASSERT_THROW(Config config(config_file), ValidationError);
+}
+
 // Tests all settings with one file.
 TEST(ConfigTest, FullSettings) {
   std::string config_file = "./share/scram/input/fta/full_configuration.xml";
   Config* config = new Config(config_file);
   // Check the input files.
-  ASSERT_EQ(config->input_files().size(), 1);
-  EXPECT_EQ("input/fta/correct_tree_input_with_probs.xml",
-            config->input_files().back());
+  EXPECT_EQ(config->input_files().size(), 1);
+  if (!config->input_files().empty())
+    EXPECT_EQ("input/fta/correct_tree_input_with_probs.xml",
+              config->input_files().back());
   // Check the output destination.
   EXPECT_EQ("temp_results.xml", config->output_path());
   // Check options.

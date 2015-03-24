@@ -149,11 +149,9 @@ void Config::SetLimits(const xmlpp::Element* limits) {
 }
 
 bool Config::GetBoolFromString(std::string flag) {
-  if (flag == "1" || flag == "true") {
-    return true;
-  } else if (flag == "0" || flag == "false") {
+  assert(flag == "1" || flag == "true" || flag == "0" || flag == "false");
+  if (flag == "1" || flag == "true") return true;
     return false;
-  }
 }
 
 }  // namespace scram

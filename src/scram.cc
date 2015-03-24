@@ -169,10 +169,9 @@ int RunScram(const po::variables_map& vm) {
 
   // Add input files from the comand line.
   if (vm.count("input-files")) {
-    input_files.insert(
-        input_files.end(),
-        vm["input-files"].as< std::vector<std::string> >().begin(),
-        vm["input-files"].as< std::vector<std::string> >().end());
+    std::vector<std::string> cmd_input =
+        vm["input-files"].as< std::vector<std::string> >();
+    input_files.insert(input_files.end(), cmd_input.begin(), cmd_input.end());
   }
 
   // Overwrite output path if it is given from the command-line.
