@@ -298,34 +298,18 @@ Running SCRAM and Tests
 To run tests
 =============
 
-For dynamic builds (default):
+To run the unit and benchmark tests:
 
 .. code-block:: bash
 
     path/to/installation/directory/bin/scram_tests
-
-For static builds (default Windows prepackages):
-
-    #. Switch to the installation directory.
-    #. Run the tests.
-
-.. code-block:: bash
-
-    cd path/to/installation/directory
-
-.. code-block:: bash
-
-    ./bin/scram_tests
-
-.. note::
-    For Windows, the test binary is **scram_tests.exe**
 
 To run performance tests
 ========================
 
 A set of performance tests is provided to approximate the host's performance
 in comparison to a reference computer with Ubuntu 14.04 with i5-2410M
-processor. These tests can be helpful for developers to check for regression.
+processor. These tests can be helpful for developers to check for regressions.
 More details can be found in performance test source files.
 
 To run all the performance tests (may take considerable time):
@@ -338,16 +322,18 @@ To run all the performance tests (may take considerable time):
 To run SCRAM
 ============
 
-On command line, run help to get running options:
+Example configuration and input files are provided in the *input* directory.
+
+.. code-block:: bash
+
+    path/to/installation/directory/bin/scram path/to/input/files
+
+
+On command line, run help to get more detailed information:
 
 .. code-block:: bash
 
     path/to/installation/directory/bin/scram --help
-
-.. note::
-    For Windows, the binary is **scram.exe**
-
-More information about use and input files for SCRAM in `documentation`_.
 
 **********************
 Documentation Building

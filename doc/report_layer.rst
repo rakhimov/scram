@@ -2,9 +2,6 @@
 Report Layer
 ############
 
-.. note::
-    This feature is under development.
-
 The results of calculations are reported in the XML format suggested by
 `OpenPSA Model Exchange Format v2.0d`_. It is expected that the standardized
 report format be used by other tools to further analyze and operate on
