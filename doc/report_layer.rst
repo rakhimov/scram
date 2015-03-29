@@ -57,3 +57,15 @@ Validation Schemas
 ==================
 
 - `RelaxNG Schema <https://github.com/rakhimov/scram/blob/master/share/report_layer.rng>`_
+
+Post-processing
+===============
+
+It is expected that the results of analysis are processed by other tools than
+SCRAM. Python scripts and XML query tools are better suited to filter, group,
+sort, and do other data manipulations and visualization.
+
+Some suggestions:
+
+    - `BaseX <http://basex.org>`_
+    - Python with `lxml <http://lxml.de/>`_

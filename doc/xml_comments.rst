@@ -30,3 +30,5 @@ Some of the recommended tools:
 - `xmllint <http://xmlsoft.org/xmllint.html>`_ with RelaxNG schema
 
 - `w3 Recommendations <http://www.w3schools.com/xml/xml_editors.asp>`_
+
+- `BaseX <http://basex.org>`_
