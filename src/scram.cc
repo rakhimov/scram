@@ -183,7 +183,7 @@ int RunScram(const po::variables_map& vm) {
   ran->ProcessInputFiles(input_files);
 
   // Stop if only validation is requested.
-  if (vm.count("validate")) {
+  if (vm.count("validate-only")) {
     std::cout << "The files are VALID." << std::endl;
     return 0;
   }
