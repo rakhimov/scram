@@ -21,6 +21,7 @@ FaultTreeAnalysis::FaultTreeAnalysis(int limit_order, bool ccf_analysis)
       max_order_(0),
       num_gates_(0),
       num_basic_events_(0),
+      num_mcs_events_(0),
       analysis_time_(0) {
   // Check for the right limit order.
   if (limit_order < 1) {
