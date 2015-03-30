@@ -3,14 +3,12 @@
 #ifndef SCRAM_SRC_REPORTER_H_
 #define SCRAM_SRC_REPORTER_H_
 
-#include <iostream>
-#include <map>
+#include <iomanip>
 #include <set>
+#include <sstream>
 #include <string>
-#include <vector>
 
 #include <boost/shared_ptr.hpp>
-#include <boost/unordered_map.hpp>
 #include <libxml++/libxml++.h>
 
 namespace scram {
@@ -79,6 +77,26 @@ class Reporter {
       std::string ft_name,
       const boost::shared_ptr<const UncertaintyAnalysis>& uncert_analysis,
       xmlpp::Document* doc);
+
+ private:
+  /// Detects if a given basic event is a CCF event, and reports it
+  /// with a specific formatting.
+  /// @param[in] basic_event A basic event to be reported.
+  /// @param[in,out] parent A parent element node to have this basic event.
+  /// @returns A newly created element node with the event description.
+  xmlpp::Element* ReportBasicEvent(
+      const boost::shared_ptr<BasicEvent>& basic_event,
+      xmlpp::Element* parent);
+
+  /// A helper function to convert a number to a string.
+  /// @param[in] num The number to be converted.
+  /// @param[in] precision Decimal precision for reporting.
+  /// @returns Formatted string that represents the number.
+  inline std::string ToString(double num, int precision) {
+    std::stringstream ss;
+    ss << std::setprecision(precision) << num;
+    return ss.str();
+  }
 };
 
 }  // namespace scram

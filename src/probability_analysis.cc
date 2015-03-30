@@ -109,9 +109,9 @@ void ProbabilityAnalysis::Analyze(
         // Check if a probability of a set does not exceed 0.1,
         // which is required for the rare event approximation to hold.
         if (it_pr->second > 0.1) {
-          warnings_ += " The rare event approximation may be inaccurate for this"
-                       " fault tree analysis because one of minimal cut sets'"
-                       " probability exceeded 0.1 threshold requirement.";
+          warnings_ += " The rare event approximation may be inaccurate for"
+                       " this analysis because one of minimal cut sets'"
+                       " probability exceeds the 0.1 threshold requirement.";
           break;
         }
       }

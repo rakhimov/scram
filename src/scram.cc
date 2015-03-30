@@ -136,7 +136,7 @@ void ConstructSettings(const po::variables_map& vm, Settings* settings) {
     settings->uncertainty_analysis(vm["uncertainty"].as<bool>());
   if (vm.count("probability"))
     settings->probability_analysis(vm["probability"].as<bool>());
-  if (vm.count("ccf")) settings->ccf_analysis(vm["ccf"].as<bool>());;
+  if (vm.count("ccf")) settings->ccf_analysis(vm["ccf"].as<bool>());
 }
 
 /// Main body of commond-line entrance to run the program.

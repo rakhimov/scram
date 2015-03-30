@@ -61,7 +61,6 @@ class RiskAnalysis {
   /// @throws ValidationError if input contains errors.
   /// @throws ValueError if input values are not valid.
   /// @throws IOError if an input file is not accessable.
-  /// @todo May have default configurations for analysis off all input files.
   void ProcessInputFiles(const std::vector<std::string>& xml_files);
 
   /// Graphing or other visual resources for the analysis if applicable.

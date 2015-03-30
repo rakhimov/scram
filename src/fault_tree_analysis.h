@@ -35,7 +35,7 @@ class FaultTreeAnalysis {
   /// @param[in] limit_order The maximum limit on minimal cut sets' order.
   /// @param[in] ccf_analysis Whether or not expand CCF group basic events.
   /// @throws InvalidArgument if any of the parameters are invalid.
-  FaultTreeAnalysis(int limit_order = 20, bool ccf_analysis = false);
+  explicit FaultTreeAnalysis(int limit_order = 20, bool ccf_analysis = false);
 
   /// Analyzes the fault tree and performs computations.
   /// This function must be called only after initilizing the tree with or
@@ -99,6 +99,10 @@ class FaultTreeAnalysis {
 
   /// Time taken by the core analysis.
   double analysis_time_;
+
+  /// The number of unique events in the minimal cut sets.
+  /// CCF events are treated as separate events from their group members.
+  int num_mcs_events_;
 };
 
 }  // namespace scram

@@ -7,16 +7,21 @@
       10      2     86      2 CcfGroup::AddFactor@35-44@ccf_group.cc
        6      3     41      0 CcfGroup::ValidateDistribution@46-51@ccf_group.cc
       16      6    137      0 CcfGroup::Validate@53-69@ccf_group.cc
-      23      4    297      0 CcfGroup::ApplyModel@71-100@ccf_group.cc
-      46      8    421      2 CcfGroup::ConstructCcfBasicEvents@102-149@ccf_group.cc
-      12      3     89      2 BetaFactorModel::AddFactor@151-162@ccf_group.cc
-      34      3    333      2 BetaFactorModel::ConstructCcfBasicEvents@164-204@ccf_group.cc
-      20      1    176      2 BetaFactorModel::CalculateProb@206-226@ccf_group.cc
-      10      2     89      2 MglModel::AddFactor@228-237@ccf_group.cc
-      28      4    257      2 MglModel::CalculateProb@239-270@ccf_group.cc
-      30      3    283      2 AlphaFactorModel::CalculateProb@272-305@ccf_group.cc
-      20      5    181      0 PhiFactorModel::Validate@307-329@ccf_group.cc
-      14      2    135      2 PhiFactorModel::CalculateProb@331-344@ccf_group.cc
+      23      4    300      0 CcfGroup::ApplyModel@71-100@ccf_group.cc
+      49      8    470      2 CcfGroup::ConstructCcfBasicEvents@102-153@ccf_group.cc
+      12      3     89      2 BetaFactorModel::AddFactor@155-166@ccf_group.cc
+      40      3    406      2 BetaFactorModel::ConstructCcfBasicEvents@168-216@ccf_group.cc
+      20      1    176      2 BetaFactorModel::CalculateProb@218-238@ccf_group.cc
+      10      2     89      2 MglModel::AddFactor@240-249@ccf_group.cc
+      28      4    257      2 MglModel::CalculateProb@251-282@ccf_group.cc
+      30      3    283      2 AlphaFactorModel::CalculateProb@284-317@ccf_group.cc
+      20      5    181      0 PhiFactorModel::Validate@319-341@ccf_group.cc
+      14      2    135      2 PhiFactorModel::CalculateProb@343-356@ccf_group.cc
+      64     12    560      1 Config::Config@16-85@config.cc
+      18      6    160      1 Config::SetAnalysis@87-107@config.cc
+      10      3    100      1 Config::SetApprox@109-118@config.cc
+      24      8    253      1 Config::SetLimits@120-148@config.cc
+       5      6     46      1 Config::GetBoolFromString@150-154@config.cc
        1      1     22      0 Attribute::Attribute@11-11@element.cc
        1      1     12      0 Element::Element@13-13@element.cc
        9      3     45      1 Element::label@15-23@element.cc
@@ -28,6 +33,13 @@
        3      1     26      2 Event::Event@7-9@event.cc
        8      2     71      1 Event::AddParent@11-18@event.cc
        7      2     40      0 Event::parents@20-26@event.cc
+       4      1     32      2 Gate::Gate@28-31@event.cc
+       7      2     40      0 Gate::type@33-39@event.cc
+       8      2     45      1 Gate::type@41-48@event.cc
+       8      2     41      0 Gate::vote_number@50-57@event.cc
+      16      4    107      1 Gate::vote_number@59-76@event.cc
+       8      2     73      1 Gate::AddChild@78-85@event.cc
+       7      2     40      0 Gate::children@87-93@event.cc
        4      1     25      0 Parameter::Validate@11-14@expression.cc
       19      4    156      1 Parameter::CheckCyclicity@16-34@expression.cc
       11      5     86      0 ExponentialExpression::Validate@36-46@expression.cc
@@ -52,24 +64,17 @@
       14      3    113      0 Histogram::Sample@276-289@expression.cc
       16      6    148      1 Histogram::CheckBoundaries@291-306@expression.cc
        9      4     81      1 Histogram::CheckWeights@308-316@expression.cc
-      14      2     66      1 FaultTreeAnalysis::FaultTreeAnalysis@17-31@fault_tree_analysis.cc
-      75      9    750      1 FaultTreeAnalysis::Analyze@33-130@fault_tree_analysis.cc
-      16      5    182      1 FaultTreeAnalysis::SetsToString@132-147@fault_tree_analysis.cc
-       4      1     26      1 FaultTree::FaultTree@13-16@fault_tree.cc
-      35      9    253      1 FaultTree::AddGate@18-54@fault_tree.cc
-       5      1     38      0 FaultTree::Validate@56-61@fault_tree.cc
-       9      1     51      0 FaultTree::SetupForAnalysis@63-83@fault_tree.cc
-      31      6    330      3 FaultTree::CheckCyclicity@85-117@fault_tree.cc
-       7      2     61      0 FaultTree::GatherPrimaryEvents@119-126@fault_tree.cc
-      27      6    250      1 FaultTree::GetPrimaryEvents@128-156@fault_tree.cc
-      16      3    185      0 FaultTree::GatherCcfBasicEvents@158-173@fault_tree.cc
-       4      1     32      2 Gate::Gate@9-12@gate.cc
-       7      2     40      0 Gate::type@14-20@gate.cc
-       8      2     45      1 Gate::type@22-29@gate.cc
-       8      2     41      0 Gate::vote_number@31-38@gate.cc
-      16      4    107      1 Gate::vote_number@40-57@gate.cc
-       8      2     73      1 Gate::AddChild@59-66@gate.cc
-       7      2     40      0 Gate::children@68-74@gate.cc
+      15      2     74      2 FaultTreeAnalysis::FaultTreeAnalysis@17-32@fault_tree_analysis.cc
+      77     10    756      1 FaultTreeAnalysis::Analyze@34-133@fault_tree_analysis.cc
+      20      5    215      1 FaultTreeAnalysis::SetsToString@135-154@fault_tree_analysis.cc
+       4      1     26      1 FaultTree::FaultTree@14-17@fault_tree.cc
+      35      9    253      1 FaultTree::AddGate@19-55@fault_tree.cc
+       5      1     38      0 FaultTree::Validate@57-62@fault_tree.cc
+       9      1     51      0 FaultTree::SetupForAnalysis@64-84@fault_tree.cc
+      31      6    330      3 FaultTree::CheckCyclicity@86-118@fault_tree.cc
+       7      2     61      0 FaultTree::GatherPrimaryEvents@120-127@fault_tree.cc
+      27      6    250      1 FaultTree::GetPrimaryEvents@129-157@fault_tree.cc
+      16      3    185      0 FaultTree::GatherCcfBasicEvents@159-174@fault_tree.cc
       15      1    189      0 Grapher::Grapher@18-33@grapher.cc
       23      2    214      3 Grapher::GraphFaultTree@35-71@grapher.cc
       37      5    386      5 Grapher::GraphNode@73-111@grapher.cc
@@ -110,17 +115,17 @@
        5      1     37      2 IndexedGate::SwapChild@35-39@indexed_gate.cc
        8      2     67      0 IndexedGate::InvertChildren@41-48@indexed_gate.cc
       10      3     93      1 IndexedGate::MergeGate@50-59@indexed_gate.cc
-      26      7    138      3 ProbabilityAnalysis::ProbabilityAnalysis@15-45@probability_analysis.cc
-       5      1     30      1 ProbabilityAnalysis::UpdateDatabase@47-51@probability_analysis.cc
-      59     11    471      1 ProbabilityAnalysis::Analyze@53-134@probability_analysis.cc
-      15      2    138      0 ProbabilityAnalysis::AssignIndices@136-153@probability_analysis.cc
-      31      5    307      1 ProbabilityAnalysis::IndexMcs@155-190@probability_analysis.cc
-      10      2     88      1 ProbabilityAnalysis::ProbMcub@192-202@probability_analysis.cc
-      22      5    184      3 ProbabilityAnalysis::ProbOr@204-237@probability_analysis.cc
-      15      4    110      1 ProbabilityAnalysis::ProbAnd@239-255@probability_analysis.cc
-      24      6    205      3 ProbabilityAnalysis::CombineElAndSet@257-280@probability_analysis.cc
-      13      3    108      0 ProbabilityAnalysis::CalculateTotalProbability@282-294@probability_analysis.cc
-      29      4    252      0 ProbabilityAnalysis::PerformImportanceAnalysis@296-338@probability_analysis.cc
+      29      7    146      4 ProbabilityAnalysis::ProbabilityAnalysis@15-48@probability_analysis.cc
+       5      1     30      1 ProbabilityAnalysis::UpdateDatabase@50-54@probability_analysis.cc
+      57     12    439      1 ProbabilityAnalysis::Analyze@56-135@probability_analysis.cc
+      15      2    138      0 ProbabilityAnalysis::AssignIndices@137-154@probability_analysis.cc
+      31      5    307      1 ProbabilityAnalysis::IndexMcs@156-191@probability_analysis.cc
+      10      2     88      1 ProbabilityAnalysis::ProbMcub@193-203@probability_analysis.cc
+      22      5    184      3 ProbabilityAnalysis::ProbOr@205-238@probability_analysis.cc
+      15      4    110      1 ProbabilityAnalysis::ProbAnd@240-256@probability_analysis.cc
+      24      6    205      3 ProbabilityAnalysis::CombineElAndSet@258-281@probability_analysis.cc
+      13      3    108      0 ProbabilityAnalysis::CalculateTotalProbability@283-295@probability_analysis.cc
+      27      4    226      0 ProbabilityAnalysis::PerformImportanceAnalysis@297-337@probability_analysis.cc
        1      1     24      1 Random::seed@13-13@random.cc
        9      1     61      2 Random::UniformRealGenerator@15-25@random.cc
       10      1     75      3 Random::TriangularGenerator@27-38@random.cc
@@ -143,66 +148,65 @@
        5      1     36      1 RelaxNGValidator::parse_memory@35-39@relax_ng_validator.cc
       10      3     37      0 RelaxNGValidator::release_underlying@41-51@relax_ng_validator.cc
       24      7    122      1 RelaxNGValidator::Validate@53-83@relax_ng_validator.cc
-      12      3    101      2 Reporter::ReportOrphans@21-33@reporter.cc
-      76     10    713      2 Reporter::ReportFta@35-118@reporter.cc
-      39      3    346      2 Reporter::ReportProbability@120-168@reporter.cc
-      31      3    308      2 Reporter::ReportUncertainty@170-200@reporter.cc
-      84     13    729      2 Reporter::ReportMcsProb@202-293@reporter.cc
-      44      6    382      3 Reporter::McsToPrint@295-342@reporter.cc
-      29      4    251      2 Reporter::ReportImportance@344-373@reporter.cc
-      26      1    248      1 RiskAnalysis::RiskAnalysis@29-61@risk_analysis.cc
-       5      1     35      1 RiskAnalysis::ProcessInput@63-67@risk_analysis.cc
-      40      8    422      1 RiskAnalysis::ProcessInputFiles@69-118@risk_analysis.cc
-       7      2     49      1 RiskAnalysis::GraphingInstructions@120-126@risk_analysis.cc
-      26      5    223      0 RiskAnalysis::Analyze@128-157@risk_analysis.cc
-       7      2     49      1 RiskAnalysis::Report@159-165@risk_analysis.cc
-      39      7    316      1 RiskAnalysis::ProcessInputFile@167-217@risk_analysis.cc
-      32      4    281      2 RiskAnalysis::AttachLabelAndAttributes@219-251@risk_analysis.cc
-      55      9    457      2 RiskAnalysis::DefineGate@253-326@risk_analysis.cc
-      44     14    366      2 RiskAnalysis::ProcessFormula@328-379@risk_analysis.cc
-      27      7    239      2 RiskAnalysis::ProcessFormulaEvent@381-412@risk_analysis.cc
-      35      7    297      3 RiskAnalysis::ProcessFormulaBasicEvent@414-448@risk_analysis.cc
-      35      7    297      3 RiskAnalysis::ProcessFormulaHouseEvent@450-484@risk_analysis.cc
-      24      6    205      3 RiskAnalysis::ProcessFormulaGate@486-509@risk_analysis.cc
-      21      2    150      1 RiskAnalysis::DefineBasicEvent@511-535@risk_analysis.cc
-      37      6    314      2 RiskAnalysis::GetBasicEvent@537-576@risk_analysis.cc
-      54     10    457      1 RiskAnalysis::DefineHouseEvent@578-642@risk_analysis.cc
-      34      4    283      1 RiskAnalysis::DefineParameter@644-686@risk_analysis.cc
-      15      4    111      2 RiskAnalysis::GetExpression@688-703@risk_analysis.cc
-      20      5    161      2 RiskAnalysis::GetConstantExpression@705-725@risk_analysis.cc
-      22      5    155      2 RiskAnalysis::GetParameterExpression@727-753@risk_analysis.cc
-     167     11   1460      2 RiskAnalysis::GetDeviateExpression@755-951@risk_analysis.cc
-      16      3    126      1 RiskAnalysis::UpdateIfLateEvent@953-968@risk_analysis.cc
-      37     11    304      1 RiskAnalysis::DefineFaultTree@970-1017@risk_analysis.cc
-      17      5    144      1 RiskAnalysis::ProcessModelData@1019-1040@risk_analysis.cc
-      12      3     87      0 RiskAnalysis::ValidateInitialization@1042-1058@risk_analysis.cc
-      48     14    437      1 RiskAnalysis::DefineCcfGroup@1060-1121@risk_analysis.cc
-      15      2    128      2 RiskAnalysis::ProcessCcfMembers@1123-1139@risk_analysis.cc
-      12      2    105      2 RiskAnalysis::ProcessCcfFactors@1141-1153@risk_analysis.cc
-      25      3    207      2 RiskAnalysis::DefineCcfFactor@1155-1180@risk_analysis.cc
-      22      6    159      0 RiskAnalysis::CheckFirstLayer@1182-1211@risk_analysis.cc
-      14      5    123      0 RiskAnalysis::CheckSecondLayer@1213-1227@risk_analysis.cc
-       9      2     72      0 RiskAnalysis::CheckAllGates@1229-1239@risk_analysis.cc
-      57     14    411      1 RiskAnalysis::CheckGate@1241-1308@risk_analysis.cc
-      32      8    227      1 RiskAnalysis::CheckInhibitGate@1310-1342@risk_analysis.cc
-      27      7    223      0 RiskAnalysis::CheckMissingEvents@1344-1373@risk_analysis.cc
-      12      3     78      0 RiskAnalysis::CheckMissingParameters@1375-1387@risk_analysis.cc
-      44     13    357      0 RiskAnalysis::ValidateExpressions@1389-1437@risk_analysis.cc
-      14      5    123      0 RiskAnalysis::SetupForAnalysis@1439-1454@risk_analysis.cc
-       7      2     70      1 RiskAnalysis::GraphingInstructions@1456-1462@risk_analysis.cc
-      20      6    172      1 RiskAnalysis::Report@1464-1486@risk_analysis.cc
-      69      7    564      3 ParseArguments@29-107@scram.cc
-      16      3    159      1 ConstructSettings@113-133@scram.cc
-      26      6    206      1 RunScram@142-177@scram.cc
-      48     13    377      2 main@182-238@scram.cc
-       8      1     44      0 Settings::Settings@9-16@settings.cc
-       9      2     39      1 Settings::limit_order@18-26@settings.cc
-       9      2     39      1 Settings::num_sums@28-36@settings.cc
-       9      3     43      1 Settings::cut_off@38-46@settings.cc
-       8      4     48      1 Settings::approx@48-55@settings.cc
-       8      3     44      1 Settings::fta_type@57-64@settings.cc
-       8      2     38      1 Settings::trials@66-73@settings.cc
-       8      2     38      1 Settings::mission_time@75-82@settings.cc
+      83      7    812      3 Reporter::SetupReport@23-123@reporter.cc
+      17      2    171      2 Reporter::ReportOrphans@125-141@reporter.cc
+      71      9    653      4 Reporter::ReportFta@143-223@reporter.cc
+      38      3    454      3 Reporter::ReportImportance@225-264@reporter.cc
+      47      3    541      3 Reporter::ReportUncertainty@266-315@reporter.cc
+      26      3    225      2 Reporter::ReportBasicEvent@317-342@reporter.cc
+      25      1    239      0 RiskAnalysis::RiskAnalysis@25-56@risk_analysis.cc
+       5      1     35      1 RiskAnalysis::ProcessInput@58-62@risk_analysis.cc
+      40      8    424      1 RiskAnalysis::ProcessInputFiles@64-113@risk_analysis.cc
+       7      2     49      1 RiskAnalysis::GraphingInstructions@115-121@risk_analysis.cc
+      28      5    267      0 RiskAnalysis::Analyze@123-157@risk_analysis.cc
+      28      6    260      1 RiskAnalysis::Report@159-194@risk_analysis.cc
+       7      2     49      1 RiskAnalysis::Report@196-202@risk_analysis.cc
+      38      6    312      1 RiskAnalysis::ProcessInputFile@204-251@risk_analysis.cc
+      32      4    281      2 RiskAnalysis::AttachLabelAndAttributes@253-285@risk_analysis.cc
+      55      9    457      2 RiskAnalysis::DefineGate@287-360@risk_analysis.cc
+      44     14    366      2 RiskAnalysis::ProcessFormula@362-413@risk_analysis.cc
+      27      7    239      2 RiskAnalysis::ProcessFormulaEvent@415-446@risk_analysis.cc
+      35      7    297      3 RiskAnalysis::ProcessFormulaBasicEvent@448-482@risk_analysis.cc
+      35      7    297      3 RiskAnalysis::ProcessFormulaHouseEvent@484-518@risk_analysis.cc
+      24      6    205      3 RiskAnalysis::ProcessFormulaGate@520-543@risk_analysis.cc
+      21      2    150      1 RiskAnalysis::DefineBasicEvent@545-569@risk_analysis.cc
+      37      6    314      2 RiskAnalysis::GetBasicEvent@571-610@risk_analysis.cc
+      54     10    457      1 RiskAnalysis::DefineHouseEvent@612-676@risk_analysis.cc
+      34      4    283      1 RiskAnalysis::DefineParameter@678-720@risk_analysis.cc
+      15      4    111      2 RiskAnalysis::GetExpression@722-737@risk_analysis.cc
+      20      5    161      2 RiskAnalysis::GetConstantExpression@739-759@risk_analysis.cc
+      22      5    155      2 RiskAnalysis::GetParameterExpression@761-787@risk_analysis.cc
+     167     11   1460      2 RiskAnalysis::GetDeviateExpression@789-985@risk_analysis.cc
+      16      3    126      1 RiskAnalysis::UpdateIfLateEvent@987-1002@risk_analysis.cc
+      33      8    283      1 RiskAnalysis::DefineFaultTree@1004-1046@risk_analysis.cc
+      16      5    140      1 RiskAnalysis::ProcessModelData@1048-1067@risk_analysis.cc
+      12      3     87      0 RiskAnalysis::ValidateInitialization@1069-1085@risk_analysis.cc
+      47     14    433      1 RiskAnalysis::DefineCcfGroup@1087-1146@risk_analysis.cc
+      15      2    128      2 RiskAnalysis::ProcessCcfMembers@1148-1164@risk_analysis.cc
+      12      2    105      2 RiskAnalysis::ProcessCcfFactors@1166-1178@risk_analysis.cc
+      25      3    207      2 RiskAnalysis::DefineCcfFactor@1180-1205@risk_analysis.cc
+      22      6    161      0 RiskAnalysis::CheckFirstLayer@1207-1236@risk_analysis.cc
+      14      5    123      0 RiskAnalysis::CheckSecondLayer@1238-1252@risk_analysis.cc
+       9      2     72      0 RiskAnalysis::CheckAllGates@1254-1264@risk_analysis.cc
+      57     14    411      1 RiskAnalysis::CheckGate@1266-1333@risk_analysis.cc
+      32      8    227      1 RiskAnalysis::CheckInhibitGate@1335-1367@risk_analysis.cc
+      27      7    223      0 RiskAnalysis::CheckMissingEvents@1369-1398@risk_analysis.cc
+      12      3     78      0 RiskAnalysis::CheckMissingParameters@1400-1412@risk_analysis.cc
+      44     13    359      0 RiskAnalysis::ValidateExpressions@1414-1462@risk_analysis.cc
+      14      5    123      0 RiskAnalysis::SetupForAnalysis@1464-1479@risk_analysis.cc
+       7      2     72      1 RiskAnalysis::GraphingInstructions@1481-1487@risk_analysis.cc
+      71      8    597      3 ParseArguments@30-110@scram.cc
+      23     13    335      2 ConstructSettings@117-140@scram.cc
+      45      9    340      1 RunScram@149-211@scram.cc
+      48     13    377      2 main@216-272@scram.cc
+      12      1     65      0 Settings::Settings@9-20@settings.cc
+       9      2     39      1 Settings::limit_order@22-30@settings.cc
+       9      2     39      1 Settings::num_sums@32-40@settings.cc
+       9      3     43      1 Settings::cut_off@42-50@settings.cc
+       8      4     48      1 Settings::approx@52-59@settings.cc
+       8      2     38      1 Settings::num_trials@61-68@settings.cc
+       8      2     38      1 Settings::seed@70-77@settings.cc
+       8      2     38      1 Settings::mission_time@79-86@settings.cc
       13      2     70      3 UncertaintyAnalysis::UncertaintyAnalysis@19-31@uncertainty_analysis.cc
        4      1     27      1 UncertaintyAnalysis::UpdateDatabase@33-36@uncertainty_analysis.cc
       28      6    247      1 UncertaintyAnalysis::Analyze@38-80@uncertainty_analysis.cc
@@ -218,24 +222,24 @@
 ==============================================================
 NLOC    Avg.NLOC AvgCCN Avg.ttoken  function_cnt    file
 --------------------------------------------------------------
-    294     18    3.0       169        16     ccf_group.cc
+    303     18    3.0       176        16     ccf_group.cc
+    130     24    7.0       223         5     config.cc
      33      4    1.0        34         6     element.cc
       8      2    1.0        21         2     error.cc
-     21      6    1.0        45         3     event.cc
+     79      7    2.0        51        10     event.cc
     287     11    3.0        88        24     expression.cc
-    115     35    5.0       332         3     fault_tree_analysis.cc
-    140     16    3.0       149         8     fault_tree.cc
-     62      8    2.0        54         7     gate.cc
+    122     37    5.0       348         3     fault_tree_analysis.cc
+    141     16    3.0       149         8     fault_tree.cc
     180     28    4.0       266         6     grapher.cc
     851     30    7.0       274        28     indexed_fault_tree.cc
      51      8    2.0        59         6     indexed_gate.cc
-    256     22    4.0       184        11     probability_analysis.cc
+    255     22    4.0       180        11     probability_analysis.cc
     141      8    1.0        62        16     random.cc
      55      8    2.0        42         6     relax_ng_validator.cc
-    328     45    6.0       404         7     reporter.cc
-   1231     29    5.0       247        41     risk_analysis.cc
-    173     39    7.0       326         4     scram.cc
-     71      8    2.0        41         8     settings.cc
+    298     47    4.0       476         6     reporter.cc
+   1232     29    5.0       249        41     risk_analysis.cc
+    202     46   10.0       412         4     scram.cc
+     75      8    2.0        43         8     settings.cc
     157     24    5.0       207         6     uncertainty_analysis.cc
      26      4    1.0        40         4     xml_parser.cc
 
@@ -247,4 +251,4 @@ NLOC    Avg.NLOC AvgCCN Avg.ttoken  function_cnt    file
 ==========================================================================================
 Total nloc  Avg.nloc  Avg CCN  Avg token  Fun Cnt  Warning cnt   Fun Rt   nloc Rt  
 ------------------------------------------------------------------------------------------
-      4480        20     4.31     173.08      212            0      0.00    0.00
+      4626        20     4.37     177.85      216            0      0.00    0.00
