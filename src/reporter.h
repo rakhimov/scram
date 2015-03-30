@@ -79,6 +79,16 @@ class Reporter {
       std::string ft_name,
       const boost::shared_ptr<const UncertaintyAnalysis>& uncert_analysis,
       xmlpp::Document* doc);
+
+ private:
+  /// Detects if a given basic event is a CCF event, and reports it
+  /// with a specific formatting.
+  /// @param[in] basic_event A basic event to be reported.
+  /// @param[in,out] parent A parent element node to have this basic event.
+  /// @returns A newly created element node with the event description.
+  xmlpp::Element* ReportBasicEvent(
+      const boost::shared_ptr<BasicEvent>& basic_event,
+      xmlpp::Element* parent);
 };
 
 }  // namespace scram

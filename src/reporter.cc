@@ -19,8 +19,6 @@
 #include "uncertainty_analysis.h"
 #include "version.h"
 
-namespace pt = boost::posix_time;
-
 namespace scram {
 
 void Reporter::SetupReport(const RiskAnalysis* risk_an,
@@ -35,7 +33,7 @@ void Reporter::SetupReport(const RiskAnalysis* risk_an,
   software->set_attribute("name", "SCRAM");
   software->set_attribute("version", version::core());
   std::stringstream time;
-  time << pt::second_clock::local_time();
+  time << boost::posix_time::second_clock::local_time();
   information->add_child("time")->add_child_text(time.str());
   // Setup for performance information.
   information->add_child("performance");
@@ -168,8 +166,7 @@ void Reporter::ReportFta(
         boost::lexical_cast<std::string>(prob_analysis->p_total()));
   }
 
-  std::string warning = "";
-  warning += fta->warnings();
+  std::string warning = fta->warnings();
   if (prob_analysis) warning += prob_analysis->warnings();
   if (warning != "") {
     sum_of_products->add_child("warning")->add_child_text(warning);
@@ -190,8 +187,6 @@ void Reporter::ReportFta(
     }
 
     // List elements of minimal cut sets.
-    typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
-    typedef boost::shared_ptr<CcfEvent> CcfEventPtr;
     std::set<std::string>::const_iterator it_set;
     for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
       std::vector<std::string> names;
@@ -199,55 +194,16 @@ void Reporter::ReportFta(
       boost::split(names, full_name, boost::is_any_of(" "),
                    boost::token_compress_on);
       assert(names.size() >= 1);
-      std::string name = "";
-      if (names[0] == "not") {
+      xmlpp::Element* parent = product;
+      std::string name = full_name;  // Id of a basic event.
+      if (names[0] == "not") {  // Detect negation.
         std::string comp_name = full_name;
         boost::replace_first(comp_name, "not ", "");
-        BasicEventPtr basic_event = fta->basic_events_.find(comp_name)->second;
-        CcfEventPtr ccf_event =
-            boost::dynamic_pointer_cast<CcfEvent>(basic_event);
-        if (!ccf_event) {
-          product->add_child("not")->add_child("basic-event")
-              ->set_attribute("name", basic_event->orig_id());
-        } else {
-          xmlpp::Element* ccf_element =
-              product->add_child("not")->add_child("ccf-event");
-          ccf_element->set_attribute("ccf-group", ccf_event->ccf_group_name());
-          ccf_element->set_attribute(
-              "order",
-              boost::lexical_cast<std::string>(ccf_event->member_names().size()));
-          ccf_element->set_attribute(
-              "group-size",
-              boost::lexical_cast<std::string>(ccf_event->ccf_group_size()));
-          std::vector<std::string>::const_iterator it;
-          for (it = ccf_event->member_names().begin();
-               it != ccf_event->member_names().end(); ++it) {
-            ccf_element->add_child("basic-event")->set_attribute("name", *it);
-          }
-        }
-      } else {
-        BasicEventPtr basic_event = fta->basic_events_.find(full_name)->second;
-        CcfEventPtr ccf_event =
-            boost::dynamic_pointer_cast<CcfEvent>(basic_event);
-        if (!ccf_event) {
-          product->add_child("basic-event")
-              ->set_attribute("name", basic_event->orig_id());
-        } else {
-          xmlpp::Element* ccf_element = product->add_child("ccf-event");
-          ccf_element->set_attribute("ccf-group", ccf_event->ccf_group_name());
-          ccf_element->set_attribute(
-              "order",
-              boost::lexical_cast<std::string>(ccf_event->member_names().size()));
-          ccf_element->set_attribute(
-              "group-size",
-              boost::lexical_cast<std::string>(ccf_event->ccf_group_size()));
-          std::vector<std::string>::const_iterator it;
-          for (it = ccf_event->member_names().begin();
-               it != ccf_event->member_names().end(); ++it) {
-            ccf_element->add_child("basic-event")->set_attribute("name", *it);
-          }
-        }
+        name = comp_name;
+        parent = product->add_child("not");
       }
+      Reporter::ReportBasicEvent(fta->basic_events_.find(name)->second,
+                                 parent);
     }
   }
 
@@ -281,8 +237,7 @@ void Reporter::ReportImportance(
       "basic-events",
       boost::lexical_cast<std::string>(prob_analysis->importance().size()));
 
-  std::string warning = "";
-  warning += prob_analysis->warnings();
+  std::string warning = prob_analysis->warnings();
   if (warning != "") {
     importance->add_child("warning")->add_child_text(warning);
   }
@@ -292,32 +247,9 @@ void Reporter::ReportImportance(
        it != prob_analysis->importance().end(); ++it) {
     typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
     typedef boost::shared_ptr<CcfEvent> CcfEventPtr;
-    BasicEventPtr basic_event =
-        prob_analysis->basic_events_.find(it->first)->second;
-    CcfEventPtr ccf_event =
-        boost::dynamic_pointer_cast<CcfEvent>(basic_event);
-    xmlpp::Element* element;
-    if (!ccf_event) {
-      element = importance->add_child("basic-event");
-      element->set_attribute(
-          "name",
-          prob_analysis->basic_events_.find(it->first)->second->orig_id());
-    } else {
-      element = importance->add_child("ccf-event");
-      element->set_attribute("ccf-group", ccf_event->ccf_group_name());
-      element->set_attribute(
-          "order",
-          boost::lexical_cast<std::string>(ccf_event->member_names().size()));
-      element->set_attribute(
-          "group-size",
-          boost::lexical_cast<std::string>(ccf_event->ccf_group_size()));
-      std::vector<std::string>::const_iterator it;
-      for (it = ccf_event->member_names().begin();
-           it != ccf_event->member_names().end(); ++it) {
-        element->add_child("basic-event")->set_attribute("name", *it);
-      }
-    }
-
+    xmlpp::Element* element = Reporter::ReportBasicEvent(
+        prob_analysis->basic_events_.find(it->first)->second,
+        importance);
     element->set_attribute(
         "DIF",
         boost::lexical_cast<std::string>(it->second[0]));
@@ -353,8 +285,7 @@ void Reporter::ReportUncertainty(
   xmlpp::Element* measure = results->add_child("measure");
   measure->set_attribute("name", ft_name);
 
-  std::string warning = "";
-  warning += uncert_analysis->warnings();
+  std::string warning = uncert_analysis->warnings();
   if (warning != "") {
     measure->add_child("warning")->add_child_text(warning);
   }
@@ -395,6 +326,33 @@ void Reporter::ReportUncertainty(
   xmlpp::Element* calc_time = dynamic_cast<xmlpp::Element*>(calc_times.back());
   calc_time->add_child("uncertainty")->add_child_text(
       boost::lexical_cast<std::string>(uncert_analysis->p_time_));
+}
+
+xmlpp::Element* Reporter::ReportBasicEvent(
+    const boost::shared_ptr<BasicEvent>& basic_event,
+    xmlpp::Element* parent) {
+  boost::shared_ptr<CcfEvent> ccf_event =
+      boost::dynamic_pointer_cast<CcfEvent>(basic_event);
+  xmlpp::Element* element;
+  if (!ccf_event) {
+    element = parent->add_child("basic-event");
+    element->set_attribute("name", basic_event->orig_id());
+  } else {
+    element = parent->add_child("ccf-event");
+    element->set_attribute("ccf-group", ccf_event->ccf_group_name());
+    element->set_attribute(
+        "order",
+        boost::lexical_cast<std::string>(ccf_event->member_names().size()));
+    element->set_attribute(
+        "group-size",
+        boost::lexical_cast<std::string>(ccf_event->ccf_group_size()));
+    std::vector<std::string>::const_iterator it;
+    for (it = ccf_event->member_names().begin();
+         it != ccf_event->member_names().end(); ++it) {
+      element->add_child("basic-event")->set_attribute("name", *it);
+    }
+  }
+  return element;
 }
 
 }  // namespace scram
