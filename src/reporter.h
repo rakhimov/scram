@@ -3,14 +3,12 @@
 #ifndef SCRAM_SRC_REPORTER_H_
 #define SCRAM_SRC_REPORTER_H_
 
-#include <iostream>
-#include <map>
+#include <iomanip>
 #include <set>
+#include <sstream>
 #include <string>
-#include <vector>
 
 #include <boost/shared_ptr.hpp>
-#include <boost/unordered_map.hpp>
 #include <libxml++/libxml++.h>
 
 namespace scram {
@@ -89,6 +87,16 @@ class Reporter {
   xmlpp::Element* ReportBasicEvent(
       const boost::shared_ptr<BasicEvent>& basic_event,
       xmlpp::Element* parent);
+
+  /// A helper function to convert a number to a string.
+  /// @param[in] num The number to be converted.
+  /// @param[in] precision Decimal precision for reporting.
+  /// @returns Formatted string that represents the number.
+  inline std::string ToString(double num, int precision) {
+    std::stringstream ss;
+    ss << std::setprecision(precision) << num;
+    return ss.str();
+  }
 };
 
 }  // namespace scram

@@ -2,9 +2,8 @@
 /// Implements Reporter class.
 #include "reporter.h"
 
-#include <iomanip>
-#include <sstream>
-#include <utility>
+#include <map>
+#include <vector>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/date_time.hpp>
@@ -55,7 +54,7 @@ void Reporter::SetupReport(const RiskAnalysis* risk_an,
     xmlpp::Element* ccf_an = information->add_child("calculated-quantity");
     ccf_an->set_attribute("name", "CCF Analysis");
     ccf_an->set_attribute("definition",
-                         "Failure of multiple elements due to a common cause");
+                          "Failure of multiple elements due to a common cause");
   }
 
   // Report the setup for probability analysis.
@@ -162,7 +161,7 @@ void Reporter::ReportFta(
   if (prob_analysis) {
     sum_of_products->set_attribute(
         "probability",
-        boost::lexical_cast<std::string>(prob_analysis->p_total()));
+        Reporter::ToString(prob_analysis->p_total(), 7));
   }
 
   std::string warning = fta->warnings();
@@ -181,8 +180,9 @@ void Reporter::ReportFta(
     if (prob_analysis) {
       product->set_attribute(
           "probability",
-          boost::lexical_cast<std::string>(
-              prob_analysis->prob_of_min_sets().find(*it_min)->second));
+          Reporter::ToString(
+              prob_analysis->prob_of_min_sets().find(*it_min)->second,
+              7));
     }
 
     // List elements of minimal cut sets.
@@ -215,10 +215,10 @@ void Reporter::ReportFta(
   xmlpp::Element* calc_time = performance->add_child("calculation-time");
   calc_time->set_attribute("name", ft_name);
   calc_time->add_child("minimal-cut-set")->add_child_text(
-      boost::lexical_cast<std::string>(fta->analysis_time_));
+      Reporter::ToString(fta->analysis_time_, 5));
   if (prob_analysis) {
     calc_time->add_child("probability")->add_child_text(
-      boost::lexical_cast<std::string>(prob_analysis->p_time_));
+      Reporter::ToString(prob_analysis->p_time_, 5));
   }
 }
 
@@ -249,28 +249,18 @@ void Reporter::ReportImportance(
     xmlpp::Element* element = Reporter::ReportBasicEvent(
         prob_analysis->basic_events_.find(it->first)->second,
         importance);
-    element->set_attribute(
-        "DIF",
-        boost::lexical_cast<std::string>(it->second[0]));
-    element->set_attribute(
-        "MIF",
-        boost::lexical_cast<std::string>(it->second[1]));
-    element->set_attribute(
-        "CIF",
-        boost::lexical_cast<std::string>(it->second[2]));
-    element->set_attribute(
-        "RRW",
-        boost::lexical_cast<std::string>(it->second[3]));
-    element->set_attribute(
-        "RAW",
-        boost::lexical_cast<std::string>(it->second[4]));
+    element->set_attribute("DIF", Reporter::ToString(it->second[0], 4));
+    element->set_attribute("MIF", Reporter::ToString(it->second[1], 4));
+    element->set_attribute("CIF", Reporter::ToString(it->second[2], 4));
+    element->set_attribute("RRW", Reporter::ToString(it->second[3], 4));
+    element->set_attribute("RAW", Reporter::ToString(it->second[4], 4));
   }
   xmlpp::NodeSet calc_times =
       root->find("./information/performance/calculation-time");
   assert(!calc_times.empty());
   xmlpp::Element* calc_time = dynamic_cast<xmlpp::Element*>(calc_times.back());
   calc_time->add_child("importance")->add_child_text(
-      boost::lexical_cast<std::string>(prob_analysis->imp_time_));
+      Reporter::ToString(prob_analysis->imp_time_, 5));
 }
 
 void Reporter::ReportUncertainty(
@@ -289,18 +279,18 @@ void Reporter::ReportUncertainty(
     measure->add_child("warning")->add_child_text(warning);
   }
 
-  measure->add_child("mean")->set_attribute("value",
-      boost::lexical_cast<std::string>(uncert_analysis->mean()));
-  measure->add_child("standard-deviation")->set_attribute("value",
-      boost::lexical_cast<std::string>(uncert_analysis->sigma()));
+  measure->add_child("mean")
+      ->set_attribute("value", Reporter::ToString(uncert_analysis->mean(), 7));
+  measure->add_child("standard-deviation")
+      ->set_attribute("value", Reporter::ToString(uncert_analysis->sigma(), 7));
   xmlpp::Element* confidence = measure->add_child("confidence-range");
   confidence->set_attribute("percentage", "95");
-  confidence->set_attribute("lower-bound",
-      boost::lexical_cast<std::string>(
-          uncert_analysis->confidence_interval().first));
-  confidence->set_attribute("upper-bound",
-      boost::lexical_cast<std::string>(
-          uncert_analysis->confidence_interval().second));
+  confidence->set_attribute(
+      "lower-bound",
+      Reporter::ToString(uncert_analysis->confidence_interval().first, 7));
+  confidence->set_attribute(
+      "upper-bound",
+      Reporter::ToString(uncert_analysis->confidence_interval().second, 7));
   /// @todo Error factor reporting.
   xmlpp::Element* quantiles = measure->add_child("quantiles");
   int num_bins = uncert_analysis->distribution().size() - 1;
@@ -312,19 +302,16 @@ void Reporter::ReportUncertainty(
     double lower = uncert_analysis->distribution()[i].first;
     double upper = uncert_analysis->distribution()[i + 1].first;
     double value = uncert_analysis->distribution()[i + 1].second;
-    quant->set_attribute("mean",
-                         boost::lexical_cast<std::string>(value));
-    quant->set_attribute("lower-bound",
-                         boost::lexical_cast<std::string>(lower));
-    quant->set_attribute("upper-bound",
-                         boost::lexical_cast<std::string>(upper));
+    quant->set_attribute("mean", Reporter::ToString(value, 7));
+    quant->set_attribute("lower-bound", Reporter::ToString(lower, 7));
+    quant->set_attribute("upper-bound", Reporter::ToString(upper, 7));
   }
   xmlpp::NodeSet calc_times =
       root->find("./information/performance/calculation-time");
   assert(!calc_times.empty());
   xmlpp::Element* calc_time = dynamic_cast<xmlpp::Element*>(calc_times.back());
   calc_time->add_child("uncertainty")->add_child_text(
-      boost::lexical_cast<std::string>(uncert_analysis->p_time_));
+      Reporter::ToString(uncert_analysis->p_time_, 5));
 }
 
 xmlpp::Element* Reporter::ReportBasicEvent(
