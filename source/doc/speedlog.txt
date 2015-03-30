@@ -17,75 +17,75 @@ If the current performance is not listed, then the best is the current.
 ----------- Chinese Tree (mcs = 392) ----------------------
 Standard build:
 ---------------
-- Cut Set Generation      0.35s  |
-- Cut Set Minimization    0.23s  |
+- Cut Set Generation      0.25s  |
+- Cut Set Minimization    0.25s  |
 
 
 
 ----------- Chinese Tree High Prob -l 5 -s 3 (p = 0.02115378) ---
 Release build:
 --------------
-- Prob Calculation  34.5s  |  46.5s
-- Importance Calc.  2.25s  |
+- Prob Calculation  34.5s  |
+- Importance Calc.  2.0s   |
 
 
 ---------- fta-200 -l 17 (mcs = 8487) ---------------
 Standard build:
 ---------------
-- Cut Set Generation      0.70s  |  0.80s
-- Cut Set Minimization    8.00s  |  9.70s
+- Cut Set Generation      0.60s  |
+- Cut Set Minimization    7.50s  |
 
 Release build:
 --------------
-- Cut Set Generation      0.14s  |
-- Cut Set Minimization    2.0s   |  2.8s
+- Cut Set Generation      0.12s  |
+- Cut Set Minimization    1.8s   |
 
 ---------- fta-200 -l 24 (mcs = 16951) ---------------
 Standard build:
 ---------------
-- Cut Set Generation      1.20s  |  1.35s
-- Cut Set Minimization    25.0s  |  35.0s
+- Cut Set Generation      1.10s  |
+- Cut Set Minimization    25.5s  |
 
 Release build:
 --------------
-- Cut Set Generation      0.25s  |
-- Cut Set Minimization    6.0s   |  9.0s
+- Cut Set Generation      0.23s  |
+- Cut Set Minimization    6.0s   |
 
 
 ---------- Baobab -l 6 (mcs = 2684) ----------------
 Standard build:
 ---------------
-- Cut Set Generation      1.40s  |  2.00s
+- Cut Set Generation      1.40s  |
 - Cut Set Minimization    0.30s  |
 
 Release build:
 --------------
-- Cut Set Generation      0.25s  |  0.30s
+- Cut Set Generation      0.23s  |
 - Cut Set Minimization    0.03s  |
 
 
 ---------- Baobab -l 7 (mcs = 17432) ----------------
 Standard build:
 ---------------
-- Cut Set Generation      10.5s  |  15.0s
-- Cut Set Minimization    10.0s  |  12.5s
+- Cut Set Generation      10s   |
+- Cut Set Minimization    9.5s  |
 
 Release build:
 --------------
-- Cut Set Generation      1.90s  |  2.40s
-- Cut Set Minimization    0.80s  |  1.30s
+- Cut Set Generation      1.80s  |
+- Cut Set Minimization    0.80s  |  1.0s
 
 ---------- Baobab -l 8 (mcs = 25892) ----------------
 Release build:
 --------------
-- Cut Set Generation      15s  |  19s
-- Cut Set Minimization    20s  |  45s
+- Cut Set Generation      14s  |
+- Cut Set Minimization    20s  |  30s
 
 
 ---------- CEA9601 -l 7 (mcs = 4578) ----------------
 Release build:
 --------------
-- Cut Set Generation      10.5s  |  17s
+- Cut Set Generation      9.8s  |
 - Cut Set Minimization    0.05s  |
 
 
@@ -94,4 +94,4 @@ Release build:
 ----------- Chinese Tree -l 5 -s 3 --uncertainty true -------
 Release build:
 --------------
-- Calculation Time  75s  |  95s
+- Calculation Time  65s  |

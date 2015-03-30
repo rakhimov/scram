@@ -4,7 +4,7 @@
 XML Input File Helper Tools
 ###########################
 
-SCRAM project uses XML input files for analyses. These input files must be
+SCRAM project uses XML files for analyses. These input files must be
 formatted according to `OpenPSA Model Exchange Format v2.0d`_ or later.
 
 .. _`OpenPSA Model Exchange Format v2.0d`:
@@ -30,3 +30,5 @@ Some of the recommended tools:
 - `xmllint <http://xmlsoft.org/xmllint.html>`_ with RelaxNG schema
 
 - `w3 Recommendations <http://www.w3schools.com/xml/xml_editors.asp>`_
+
+- `BaseX <http://basex.org>`_

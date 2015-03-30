@@ -2,9 +2,6 @@
 Installation Instructions
 #########################
 
-The project is currently under development phase and the installation packages
-are experimental, and your feedback is very welcome.
-
 The fastest and easiest cross-platform option is to install a virtual
 machine with pre-build *SCRAM*.
 You can download the virtual machine from Sourceforge_.

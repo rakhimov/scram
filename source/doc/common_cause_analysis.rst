@@ -36,9 +36,7 @@ SCRAM FTA: Common Cause Failure (CCF)
    with children as CCF-calculated sub groups. Give specific names to
    CCF sub groups that identify independent and common cause failures.
 
-    - Events that are grouped by common cause are listed in square brackets.
-
 #. Perform usual analysis on the fault tree with CCF groups.
 
 #. Report CCF specific information with common cause events grouped in
-   square brackets.
+   a special manner.

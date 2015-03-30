@@ -12,7 +12,7 @@ Currently Low Hanging Fruits
 
 - `Todo list in the code <https://rakhimov.github.io/scram/api/todo.html>`_
 
-- Option to run analysis without full basic event description. *Moderate*
+- Option to run analysis without full basic event description. *Low*
 
 
 Major Enhancements and Capabilities
@@ -23,9 +23,9 @@ Major Enhancements and Capabilities
 - OpenPSA-like XML input format. *High*
 
   * Reduce tests for input format and parser.
-  * Create Include feature.
+  * Create the Include feature.
 
-    + Test for non-existent file, circular inclusion(direct, indirect).
+    + Test for a non-existent file, circular inclusion(direct, indirect).
 
   * Subtree Analysis of a Fault Tree.
 
@@ -63,12 +63,12 @@ Minor Enhancements and Capabilities
   * Expressions. *Moderate*
   * Include directive in input files to include other input files. *Low*
 
-- Improve fault tree generator. *Low*
+- Improve the fault tree generator. *Low*
 
   * Advanced gates
   * CCF groups
 
-- Create cut set generator. *Low*
+- Create a cut-set generator. *Low*
 
 - Public and private scopes for names of events and other elements. *Low*
 

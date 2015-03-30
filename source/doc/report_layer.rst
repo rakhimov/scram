@@ -2,9 +2,6 @@
 Report Layer
 ############
 
-.. note::
-    This feature is under development.
-
 The results of calculations are reported in the XML format suggested by
 `OpenPSA Model Exchange Format v2.0d`_. It is expected that the standardized
 report format be used by other tools to further analyze and operate on
@@ -60,3 +57,15 @@ Validation Schemas
 ==================
 
 - `RelaxNG Schema <https://github.com/rakhimov/scram/blob/master/share/report_layer.rng>`_
+
+Post-processing
+===============
+
+It is expected that the results of analysis are processed by other tools than
+SCRAM. Python scripts and XML query tools are better suited to filter, group,
+sort, and do other data manipulations and visualization.
+
+Some suggestions:
+
+    - `BaseX <http://basex.org>`_
+    - Python with `lxml <http://lxml.de/>`_
