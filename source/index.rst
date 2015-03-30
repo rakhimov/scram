@@ -20,6 +20,9 @@ probabilistic risk analysis tool to perform fault tree analysis,
 event tree analysis, uncertainty analysis, importance analysis,
 common-cause analysis, and other probabilistic analysis types.
 
+The source code and issue/bug tracker are located at
+`GitHub <https://github.com/rakhimov/scram>`_.
+
 .. _`GPL license`:
     https://github.com/rakhimov/scram/blob/master/LICENSE
 
@@ -32,6 +35,7 @@ Implemented Features
 - Uncertainty analysis with Monte Carlo simulations
 - Fault tree generator
 - Fault tree graphing with Graphviz Dot tool.
+- OpenPSA Model Exchange Format
 
 Installation
 ------------
@@ -49,21 +53,23 @@ Documentation
 
     doc/scram_description
     doc/input_file
-    doc/opsa_support
-    doc/gui
+    doc/config_file
     doc/fta_implementation
     doc/fta_mcs_algorithm
     doc/probability_analysis
-    doc/fta_graphing
-    doc/fault_tree_generator
     doc/monte_carlo_simulations
     doc/common_cause_analysis
+    doc/fta_graphing
+    doc/gui
     doc/code_structure
     doc/coding_standards
-    doc/references
     doc/bugs
-    doc/xml_comments
     doc/todo
+    doc/opsa_support
+    doc/report_layer
+    doc/fault_tree_generator
+    doc/references
+    doc/xml_comments
 
 Theoretical Background
 ----------------------
