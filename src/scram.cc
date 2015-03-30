@@ -111,7 +111,7 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
 
 /// Updates analysis settings from command-line arguments.
 /// @param[in] vm Variables map of program options.
-/// @param[in/out] settings Pre-configured or default settings.
+/// @param[in,out] settings Pre-configured or default settings.
 /// @throws std::exception if vm does not contain a required option.
 ///                        At least defaults are expected.
 void ConstructSettings(const po::variables_map& vm, Settings* settings) {

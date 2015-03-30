@@ -14,9 +14,13 @@
 
 namespace scram {
 
+/// @class Config
+/// This class processes configuration files for analysis.
+/// The class contains all the setup and state to initialize general
+/// analysis.
 class Config {
  public:
-  /// A constructor with configurations for the analysis.
+  /// A constructor with configurations for analysis.
   /// Reads and validates the configurations.
   /// @param[in] config_file XML file with configurations.
   /// @throws ValidationError if the configurations have problems.
@@ -24,7 +28,7 @@ class Config {
   /// @throws IOError if the file is not accessable.
   explicit Config(std::string config_file);
 
-  /// @retuns input files for analysis.
+  /// @returns input files for analysis.
   inline const std::vector<std::string>& input_files() const {
     return input_files_;
   }

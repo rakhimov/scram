@@ -34,7 +34,7 @@ class Reporter {
   /// This function must be called before other reporting functions.
   /// @param[in] risk_an The main risk analysis with all the model data.
   /// @param[in] settings Configured settings for analysis.
-  /// @param[in/out] doc An empty document.
+  /// @param[in,out] doc An empty document.
   /// @throws LogicError if the document is not empty.
   void SetupReport(const RiskAnalysis* risk_an, const Settings& settings,
                    xmlpp::Document* doc);
@@ -42,7 +42,7 @@ class Reporter {
   /// Reports orphan primary events as warnings of the top level.
   /// The warning section of the report should not be initialized.
   /// @param[in] orphan_primary_events Container of orphan events.
-  /// @param[in/out] doc Preformatted XML document.
+  /// @param[in,out] doc Preformatted XML document.
   void ReportOrphans(
       const std::set<boost::shared_ptr<PrimaryEvent> >& orphan_primary_events,
       xmlpp::Document* doc);
@@ -52,7 +52,7 @@ class Reporter {
   /// @param[in] fta Fault Tree Analysis with results.
   /// @param[in] prob_analysis ProbabilityAnalysis with results. Null pointer
   ///                          if there is no probability analysis.
-  /// @param[in/out] doc Preformatted XML document.
+  /// @param[in,out] doc Preformatted XML document.
   /// @note This function must be called only after analysis is done.
   void ReportFta(
       std::string ft_name,
@@ -63,7 +63,7 @@ class Reporter {
   /// Reports results of importance analysis in probability analysis.
   /// @param[in] ft_name The original name of a fault tree.
   /// @param[in] prob_analysis ProbabilityAnalysis with results.
-  /// @param[in/out] doc Preformatted XML document.
+  /// @param[in,out] doc Preformatted XML document.
   /// @note This function must be called only after analysis is done.
   void ReportImportance(
       std::string ft_name,
@@ -73,7 +73,7 @@ class Reporter {
   /// Reports the results of uncertainty analysis with minimal cut sets.
   /// @param[in] ft_name The original name of a fault tree.
   /// @param[in] uncert_analysis UncertaintyAnalysis with results.
-  /// @param[in/out] doc Preformatted XML document.
+  /// @param[in,out] doc Preformatted XML document.
   /// @note This function must be called only after analysis is done.
   void ReportUncertainty(
       std::string ft_name,
