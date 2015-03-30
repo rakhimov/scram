@@ -99,6 +99,10 @@ class FaultTreeAnalysis {
 
   /// Time taken by the core analysis.
   double analysis_time_;
+
+  /// The number of unique events in the minimal cut sets.
+  /// CCF events are treated as separate events from their group members.
+  int num_mcs_events_;
 };
 
 }  // namespace scram

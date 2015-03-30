@@ -152,10 +152,9 @@ void Reporter::ReportFta(
   xmlpp::Element* results = dynamic_cast<xmlpp::Element*>(res[0]);
   xmlpp::Element* sum_of_products = results->add_child("sum-of-products");
   sum_of_products->set_attribute("name", ft_name);
-  /// @todo Find the number of basic events that are in the cut sets.
   sum_of_products->set_attribute(
       "basic-events",
-      boost::lexical_cast<std::string>(fta->num_basic_events_));
+      boost::lexical_cast<std::string>(fta->num_mcs_events_));
   sum_of_products->set_attribute(
       "products",
       boost::lexical_cast<std::string>(fta->min_cut_sets_.size()));

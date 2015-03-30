@@ -133,6 +133,7 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
 }
 
 void FaultTreeAnalysis::SetsToString(const std::vector< std::set<int> >& imcs) {
+  std::set<int> unique_events;
   std::vector< std::set<int> >::const_iterator it_min;
   for (it_min = imcs.begin(); it_min != imcs.end(); ++it_min) {
     if (it_min->size() > max_order_) max_order_ = it_min->size();
@@ -141,12 +142,15 @@ void FaultTreeAnalysis::SetsToString(const std::vector< std::set<int> >& imcs) {
     for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
       if (*it_set < 0) {  // NOT logic.
         pr_set.insert("not " + int_to_basic_[std::abs(*it_set)]->id());
+        unique_events.insert(-*it_set);
       } else {
         pr_set.insert(int_to_basic_[*it_set]->id());
+        unique_events.insert(*it_set);
       }
     }
     min_cut_sets_.insert(pr_set);
   }
+  num_mcs_events_ = unique_events.size();
 }
 
 }  // namespace scram
