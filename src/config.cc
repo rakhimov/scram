@@ -32,7 +32,6 @@ Config::Config(std::string config_file) : output_path_("") {
     schema << schema_stream.rdbuf();
     schema_stream.close();
     parser->Validate(schema);
-
   } catch (ValidationError& err) {
     err.msg("In file '" + config_file + "', " + err.msg());
     throw err;
@@ -151,7 +150,7 @@ void Config::SetLimits(const xmlpp::Element* limits) {
 bool Config::GetBoolFromString(std::string flag) {
   assert(flag == "1" || flag == "true" || flag == "0" || flag == "false");
   if (flag == "1" || flag == "true") return true;
-    return false;
+  return false;
 }
 
 }  // namespace scram
