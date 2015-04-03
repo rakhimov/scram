@@ -10,6 +10,9 @@ SCRAM
     :target: https://scan.coverity.com/projects/2555
 .. image:: doc/cdash.png
     :target: http://my.cdash.org/index.php?project=SCRAM
+.. image:: https://badge.waffle.io/rakhimov/scram.png?label=ready&title=Ready
+    :target: https://waffle.io/rakhimov/scram
+    :alt: 'Stories in Ready'
 
 *SCRAM* : "Simplified Command-line Risk Analysis Multi-tool"
 
