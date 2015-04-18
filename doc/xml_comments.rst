@@ -1,8 +1,8 @@
 .. _xml_tools:
 
-###########################
-XML Input File Helper Tools
-###########################
+#####################
+XML File Helper Tools
+#####################
 
 SCRAM project uses XML files for analyses. These input files must be
 formatted according to `OpenPSA Model Exchange Format v2.0d`_ or later.
