@@ -1,10 +1,15 @@
 #!/usr/bin/env python
+"""run_inputs.py
 
-import sys
+Runs Scram with test inputs to examine the output visually.
+"""
+from __future__ import print_function
+
 import subprocess
+import sys
 
 def main():
-    # Correct corner case inputs
+    # Correct corner case inputs.
     pass_inputs = [
             "correct_tree_input.xml",
             "two_trees.xml",
@@ -22,7 +27,7 @@ def main():
             "very_long_mcs.xml",
             ]
 
-    # Wrong input files in the current directory
+    # Wrong input files in the current directory.
     bad_inputs = [
             "../xml_formatting_error.xml",
             "../schema_fail.xml",
@@ -76,31 +81,45 @@ def main():
             "ccf_more_factors_than_needed.xml",
             ]
 
-    # Run correct inputs
-    print("\n\nRUNNING CORRECT INPUTS\n")
-    for ic in pass_inputs:
-        print("\nRUNNING : " + ic + "\n")
-        args = ["scram", ic]
-        subprocess.call(args)
+    # Visual delimeters.
+    block_delim = "=" * 80
+    file_delim = "-" * 80
 
-    # Run correct probabilities
-    print("\n\nRUNNING CORRECT PROBABILITY INPUTS\n")
-    for p in pass_probs:
-        print("\nRUNNING : " + p + "\n")
-        args = ["scram", p, "--probability", "1"]
+    # Run correct inputs.
+    print("\nRUNNING CORRECT INPUTS")
+    print(block_delim)
+    for i in pass_inputs:
+        print("\nRUNNING : " + i)
+        print(file_delim)
+        args = ["scram", i]
         subprocess.call(args)
+        print(file_delim)
+    print(block_delim)
 
-    # Run incorrect inputs
-    print("\n\nRUNNING INCORRECT INPUTS\n")
+    # Run correct inputs with probabilities.
+    print("\nRUNNING CORRECT PROBABILITY INPUTS")
+    print(block_delim)
+    for i in pass_probs:
+        print("\nRUNNING : " + i)
+        print(file_delim)
+        args = ["scram", i, "--probability", "1"]
+        subprocess.call(args)
+        print(file_delim)
+    print(block_delim)
+
+    # Run incorrect inputs.
+    print("\nRUNNING INCORRECT INPUTS")
+    print(block_delim)
     for i in bad_inputs:
-        print("\nRUNNING : " + i + "\n")
-        msg = ""
+        print("\nRUNNING : " + i)
+        print(file_delim)
         args = ["scram", i, "--probability", "1"]
         try:
-            subprocess.call(args)
-        except:
-            msg = sys.exc_info()[0]
-        print(msg)
+            subprocess.check_call(args)
+        except subprocess.CalledProcessError:
+            print(sys.exc_info()[0])
+        print(file_delim)
+    print(block_delim)
 
 if __name__ == "__main__":
     main()

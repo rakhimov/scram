@@ -1,17 +1,22 @@
-#!usr/bin/env python
+#!/usr/bin/env python
+"""test_scram_call.py
+
+A set of tests to invoke command-line Scram with correct and
+incorrect arguments.
+"""
 
 import os
 from subprocess import call
 
 from nose.tools import assert_true, assert_equal, assert_not_equal
 
-def test_fta_calls():
-    """Tests all possible calls from the cli."""
+def test_empty_call():
+    """Tests a command-line call without any arguments."""
+    cmd = ["scram"]
+    yield assert_equal, 1, call(cmd)
 
-    # Correct inputs
-    fta_input = "./input/fta/correct_tree_input_with_probs.xml"
-    fta_no_prob = "./input/fta/correct_tree_input.xml"
-
+def test_info_calls():
+    """Tests general information calls about Scram."""
     # Test help
     cmd = ["scram", "--help"]
     yield assert_equal, 0, call(cmd)
@@ -20,9 +25,22 @@ def test_fta_calls():
     cmd = ["scram", "--version"]
     yield assert_equal, 0, call(cmd)
 
-    # Empty call
-    cmd = ["scram"]
-    yield assert_equal, 1, call(cmd)
+def test_fta_no_prob():
+    """Tests calls for fault tree analysis without probability information."""
+    fta_no_prob = "./input/fta/correct_tree_input.xml"
+    # Test calculation calls
+    cmd = ["scram", fta_no_prob]
+    yield assert_equal, 0, call(cmd)
+    out_temp = "./output_temp.xml"
+    cmd.append("-o")
+    cmd.append(out_temp)
+    yield assert_equal, 0, call(cmd)  # Report into an output file
+    if os.path.isfile(out_temp):
+        os.remove(out_temp)
+
+def test_fta_calls():
+    """Tests calls for full fault tree analysis."""
+    fta_input = "./input/fta/correct_tree_input_with_probs.xml"
 
     # Test the validation a fta tree file
     cmd = ["scram", "-v", fta_input]
@@ -55,6 +73,39 @@ def test_fta_calls():
     cmd = ["scram", fta_input, "--rare-event", "--mcub"]
     yield assert_not_equal, 0, call(cmd)
 
+    # Test the rare event approximation
+    cmd = ["scram", fta_input, "--rare-event"]
+    yield assert_equal, 0, call(cmd)
+
+    # Test the MCUB approximation
+    cmd = ["scram", fta_input, "--mcub"]
+    yield assert_equal, 0, call(cmd)
+
+def test_config_file():
+    """Tests calls with configuration files."""
+    # Test with a configuration file
+    config_file = "./input/fta/full_configuration.xml"
+    out_temp = "./output_temp.xml"
+    cmd = ["scram", "--config-file", config_file, "-o", out_temp]
+    yield assert_equal, 0, call(cmd)
+    if os.path.isfile(out_temp):
+        os.remove(out_temp)
+
+    # Test the clash of files from configuration and command-line
+    config_file = "./input/fta/full_configuration.xml"
+    cmd = ["scram", "--config-file", config_file,
+            "input/fta/correct_tree_input_with_probs.xml"]
+    yield assert_not_equal, 0, call(cmd)
+
+def test_logging():
+    """Tests invokation with logging."""
+    fta_input = "./input/fta/correct_tree_input_with_probs.xml"
+    cmd = ["scram", fta_input, "--log"]
+    yield assert_equal, 0, call(cmd)
+
+def test_graph_call():
+    """Tests the calls for graphing instructions for a fault tree."""
+    fta_input = "./input/fta/correct_tree_input_with_probs.xml"
     # Test graph only
     cmd = ["scram", fta_input, "-g"]
     yield assert_equal, 0, call(cmd)
@@ -70,38 +121,3 @@ def test_fta_calls():
     yield assert_not_equal, 0, call(cmd)
     if os.path.isfile(graph_file):
         os.remove(graph_file)
-
-    # Test calculation calls
-    cmd = ["scram", fta_no_prob]
-    yield assert_equal, 0, call(cmd)
-    out_temp = "./output_temp.xml"
-    cmd.append("-o")
-    cmd.append(out_temp)
-    yield assert_equal, 0, call(cmd)  # Report into an output file
-    if os.path.isfile(out_temp):
-        os.remove(out_temp)
-
-    # Test with a configuration file
-    config_file = "./input/fta/full_configuration.xml"
-    cmd = ["scram", "--config-file", config_file, "-o", out_temp]
-    yield assert_equal, 0, call(cmd)
-    if os.path.isfile(out_temp):
-        os.remove(out_temp)
-
-    # Test the clash of files from configuration and command-line
-    config_file = "./input/fta/full_configuration.xml"
-    cmd = ["scram", "--config-file", config_file,
-            "input/fta/correct_tree_input_with_probs.xml"]
-    yield assert_not_equal, 0, call(cmd)
-
-    # Test the rare event approximation
-    cmd = ["scram", fta_input, "--rare-event"]
-    yield assert_equal, 0, call(cmd)
-
-    # Test the MCUB approximation
-    cmd = ["scram", fta_input, "--mcub"]
-    yield assert_equal, 0, call(cmd)
-
-    # Run with logging
-    cmd = ["scram", fta_input, "--log"]
-    yield assert_equal, 0, call(cmd)
