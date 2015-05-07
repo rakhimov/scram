@@ -21,13 +21,10 @@ General Description
 * Names of events in the tree must be randomly chosen between creating a
   new event or re-using an already created event.
 * Probabilities for primary events are generated randomly.
-* Names are assigned sequentially. E# and P#.
+* Names are assigned sequentially. E# and G#.
 * The tree is deterministic upon setting the same parameters.
 * The exact ratios are not guaranteed.
-* No support for CCF is expected.
 * The output should be an input tree file.
-* Probabilities for events should be optional. [not implemented]
-
 
 Script arguments
 =================
@@ -42,12 +39,6 @@ Script arguments
 * Fixed number of children for the root node of the tree.
 * Output file name.
 * Optional use of more complex gates and primary event types. [not implemented]
-
-.. warning::
-    Some values for the script arguments are not tested for validity. The
-    output tree will be validated by SCRAM.
-    For some invalid values the python script may scream itself.
-
 
 Algorithm
 ==========
