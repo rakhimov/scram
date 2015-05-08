@@ -33,17 +33,18 @@ class Gate(Node):
         num_gates: Total number of gates created.
         p_children: Children of this gate that are primary events.
         g_children: Children of this gate that are gates.
-        gate: Type of the gate.
+        gate: Type of the gate. Chosen randomly.
         ancestors: Ancestor gates of this gate.
     """
-    num_gates = 0  # To keep track of gates and to name them
+    num_gates = 0  # To keep track of gates and to name them.
+    gate_types = ["or", "and"] # Supported types of gates.
     def __init__(self):
         super(Gate, self).__init__("G" + str(Gate.num_gates))
         Gate.num_gates += 1  # Post-decrement to account for the root gate
         self.p_children = set()  # Children that are primary events
         self.g_children = set()  # Children that are gates
         self.ancestors = set()
-        self.gate = ""  # Type of a gate
+        self.gate = random.choice(Gate.gate_types)  # Type of a gate
 
 class PrimaryEvent(Node):
     """Representation of a primary event in a fault tree.
@@ -51,14 +52,55 @@ class PrimaryEvent(Node):
         Names are assigned sequentially starting from E1.
 
     Attributes:
-        num_prime: Total number of primary events created.
-        prob: Probability of failure of this primary event.
+        num_primary: Total number of primary events created.
+        min_prob: Lower bound of the distribution.
+        max_prob: Upper bound of the distribution.
+        prob: Probability of failure of this primary event. Assigned randomly.
     """
-    num_primary = 0  # Number of primary events
+    num_primary = 0
+    min_prob = 0
+    max_prob = 1
     def __init__(self):
         PrimaryEvent.num_primary += 1
         super(PrimaryEvent, self).__init__("E" + str(PrimaryEvent.num_primary))
-        self.prob = 0
+        self.prob = random.uniform(PrimaryEvent.min_prob,
+                                   PrimaryEvent.max_prob)
+
+def create_gate(parent):
+    """Handles proper creation of gates.
+
+    The new gate is created with type, parent, and ancestor information.
+    The type is chosen randomly.
+
+    Args:
+        parent: The parent gate for the new gate.
+
+    Returns:
+        A newly created gate.
+    """
+    gate = Gate()
+    parent.g_children.add(gate)
+    gate.parents.add(parent)
+    gate.ancestors.add(gate)
+    gate.ancestors.update(parent.ancestors)
+    return gate
+
+def create_primary(parent):
+    """Handles proper creation of primary events
+
+    The new primary event is given a random probability. The parent and
+    child information is updated.
+
+    Args:
+        parent: The parent gate of the new primary event.
+
+    Returns:
+        A newly created primary event.
+    """
+    primary_event = PrimaryEvent()
+    parent.p_children.add(primary_event)
+    primary_event.parents.add(parent)
+    return primary_event
 
 def generate_fault_tree(args):
     """Generates a fault tree of specified complexity from command-line
@@ -70,90 +112,48 @@ def generate_fault_tree(args):
     Returns:
         Top event and a container with primary events.
     """
-    # Container for created primary events.
-    primary_events = []
+    primary_events = []  # Container for created primary events.
+    PrimaryEvent.min_prob = args.minprob
+    PrimaryEvent.max_prob = args.maxprob
 
-    # Supported types of gates.
-    gate_types = ["or", "and"]
+    gates = set()  # Container for all created gates.
 
-    # Minimum number of children per intermediate event.
-    min_children = 2
-
-    # Maximum number of children.
+    min_children = 2  # Minimum number of children per gate.
     max_children = args.nchildren * 2 - min_children
 
-    # Tree generation.
     # Start with a top event.
     top_event = Gate()
     top_event.name = args.root
-    top_event.gate = random.choice(gate_types)
-    child_size = random.randint(min_children, max_children)
+    num_children = random.randint(min_children, max_children)
 
-    # Configuring child size for the top event.
+    # Configuring the number of children for the top event.
     if args.ctop:
-        child_size = args.ctop
-    elif child_size < args.ptop:
-        child_size = args.ptop
+        num_children = args.ctop
+    elif num_children < args.ptop:
+        num_children = args.ptop
 
-    # Container for not yet initialized intermediate events.
+    # Container for not yet initialized gates.
+    # Queue is used to traverse the tree breadth-first.
     gates_queue = Queue.Queue()
 
-    def create_gate(parent):
-        """Handles proper creation of gates.
-
-        The new gate is created with type, parent, and ancestor information.
-        The type is chosen randomly.
-
-        Args:
-            parent: The parent gate for the new gate.
-
-        Returns:
-            A newly created gate.
-        """
-        gate = Gate()
-        gate.gate = random.choice(gate_types)
-        parent.g_children.add(gate)
-        gate.parents.add(parent)
-        gate.ancestors.add(gate)
-        gate.ancestors.update(parent.ancestors)
-        return gate
-
-    def create_primary(parent):
-        """Handles proper creation of primary events
-
-        The new primary event is given a random probability. The parent and
-        child information is updated.
-
-        Args:
-            parent: The parent gate of the new primary event.
-
-        Returns:
-            A newly created primary event.
-        """
-        primary_event = PrimaryEvent()
-        primary_event.prob = random.uniform(args.minprob, args.maxprob)
-        parent.p_children.add(primary_event)
-        primary_event.parents.add(parent)
-        return primary_event
-
-
     # Initialize the top root node.
-    while (len(top_event.p_children) + len(top_event.g_children)) < child_size:
-        while len(top_event.p_children) < args.ptop:
-            primary_events.append(create_primary(top_event))
+    while len(top_event.p_children) < args.ptop:
+        primary_events.append(create_primary(top_event))
+    while (len(top_event.p_children) +
+           len(top_event.g_children)) < num_children:
         gates_queue.put(create_gate(top_event))
 
-    # Initialize intermediate events.
+    # Initialize intermediate gates.
     while not gates_queue.empty():
         # Get the intermediate event to intialize
         init_inter = gates_queue.get()
 
         # Sample children size
-        child_size = random.randint(min_children, max_children)
+        num_children = random.randint(min_children, max_children)
 
         while (len(init_inter.p_children) +
-               len(init_inter.g_children)) < child_size:
-            # Case when the number of primary events is already satisfied
+               len(init_inter.g_children)) < num_children:
+            # Case when the number of primary events is already satisfied.
             if len(primary_events) == args.nprimary:
                 # Reuse already initialized events only
                 init_inter.p_children.add(random.choice(primary_events))
@@ -167,14 +167,14 @@ def generate_fault_tree(args):
                 # Create a primary event
                 # Sample reuse_p
                 s_reuse = random.random()
-                if s_reuse < args.reuse_p and not primary_events:
+                if s_reuse < args.reuse_p and primary_events:
                     # Reuse an already initialized primary event
                     init_inter.p_children.add(random.choice(primary_events))
                 else:
                     primary_events.append(create_primary(init_inter))
 
             # Corner case when not enough new primary events initialized, but
-            # ther are no more intemediate events due to low ratio.
+            # ther are no more intemediate events due to the low ratio.
             if gates_queue.empty() and (len(primary_events) < args.nprimary):
                 # Initialize one more intermediate event.
                 # This is a naive implementation, so
@@ -196,6 +196,9 @@ def write_info(args):
     t_file.write(
             "<!--\nThis is an autogenerated fault tree description\n"
             "with the following parameters:\n\n"
+            "The output file name: " + str(args.out) + "\n"
+            "The fault tree name: " + args.ft_name + "\n"
+            "The root gate name: " + args.root + "\n\n"
             "The seed of a random number generator: " + str(args.seed) + "\n"
             "The number of unique primary events: " + str(args.nprimary) + "\n"
             "The average number of children per gate: " +
@@ -212,7 +215,6 @@ def write_info(args):
             str(args.minprob) + "\n"
             "Minimal number of primary events for the root node: " +
             str(args.ptop) + "\n"
-            "Name of a file to write the fault tree: " + str(args.out) + "\n"
             "-->\n"
             )
     t_file.write(
@@ -234,9 +236,9 @@ def write_model_data(t_file, primary_events):
     """
     # Print probabilities of primary events
     t_file.write("<model-data>\n")
-    for p in primary_events:
-        t_file.write("<define-basic-event name=\"" + p.name + "\">\n"
-                     "<float value=\"" + str(p.prob) + "\"/>\n"
+    for primary in primary_events:
+        t_file.write("<define-basic-event name=\"" + primary.name + "\">\n"
+                     "<float value=\"" + str(primary.prob) + "\"/>\n"
                      "</define-basic-event>\n")
 
     t_file.write("</model-data>\n")
@@ -263,34 +265,39 @@ def write_results(args, top_event, primary_events):
     # Container for not yet initialized intermediate events.
     gates_queue = Queue.Queue()
 
-    def write_node(inter_event, o_file):
-        """Print children for the intermediate event.
-        Note that it also updates the queue for intermediate events.
+    def write_gate(gate, o_file):
+        """Print children for the gate.
+
+        Note that it also updates the queue of gates.
+
+        Args:
+            gate: The gate to be printed.
+            o_file: The output file stream.
         """
 
-        o_file.write("<define-gate name=\"" + inter_event.name + "\">\n")
-        o_file.write("<" + inter_event.gate + ">\n")
+        o_file.write("<define-gate name=\"" + gate.name + "\">\n")
+        o_file.write("<" + gate.gate + ">\n")
         # Print primary events
-        for p in inter_event.p_children:
-            o_file.write("<basic-event name=\"" + p.name + "\"/>\n")
+        for p_child in gate.p_children:
+            o_file.write("<basic-event name=\"" + p_child.name + "\"/>\n")
 
         # Print intermediate events
-        for i in inter_event.g_children:
-            o_file.write("<gate name=\"" + i.name + "\"/>\n")
+        for g_child in gate.g_children:
+            o_file.write("<gate name=\"" + g_child.name + "\"/>\n")
             # Update the queue
-            gates_queue.put(i)
+            gates_queue.put(g_child)
 
-        o_file.write("</" + inter_event.gate + ">\n")
+        o_file.write("</" + gate.gate + ">\n")
         o_file.write("</define-gate>\n")
 
     # Write top event and update queue of intermediate events
     # Write top event and update queue of intermediate events
-    write_node(top_event, t_file)
+    write_gate(top_event, t_file)
 
     # Proceed with intermediate events
     while not gates_queue.empty():
-        i_event = gates_queue.get()
-        write_node(i_event, t_file)
+        gate = gates_queue.get()
+        write_gate(gate, t_file)
 
     t_file.write("</define-fault-tree>\n")
 
@@ -410,6 +417,10 @@ def main():
 
     if args.ptop > args.ctop:
         raise ap.ArgumentTypeError("ptop > # of children for top")
+
+    if args.ptop == args.ctop and args.nprimary > args.ptop:
+        raise ap.ArgumentTypeError("(ctop > ptop) is required to expand "
+                                   "the tree")
 
     # Set the seed for this tree generator.
     random.seed(args.seed)
