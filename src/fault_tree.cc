@@ -64,7 +64,7 @@ void FaultTree::Validate() {
 void FaultTree::SetupForAnalysis() {
   /// @todo This function may be more flexible and gather information
   ///       about the changed tree structure. Databases of gates might
-  ///       updates optionally.
+  ///       update optionally.
 
   // Assumes that the tree is fully developed.
   // Assumes that there is no change in gate structure of the tree. If there
@@ -93,7 +93,7 @@ void FaultTree::CheckCyclicity(const GatePtr& parent,
                                                       path.end(),
                                                       parent->id());
     msg += parent->orig_id();
-    for (; it != path.end(); ++it) {
+    for (++it; it != path.end(); ++it) {
       assert(inter_events_.count(*it));
       msg += "->" + inter_events_.find(*it)->second->orig_id();
     }
