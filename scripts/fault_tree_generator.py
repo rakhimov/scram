@@ -5,7 +5,7 @@ A script to generate a fault tree of various complexities. The generated
 fault tree is put into XML file with OpenPSA MEF ready for analysis.
 This script should help create complex fault trees to test analysis tools.
 """
-from __future__ import print_function
+from __future__ import print_function, division
 
 import Queue
 import random
@@ -26,7 +26,7 @@ class Node(object):
 
     def is_shared(self):
         """Indicates if this node appears in several places."""
-        return self.parents > 1
+        return len(self.parents) > 1
 
     def num_parents(self):
         """Returns the number of unique parents."""
@@ -66,6 +66,22 @@ class Gate(Node):
         """Returns the number of children."""
         return len(self.p_children) + len(self.g_children)
 
+    def add_child(self, child):
+        """Adds child into a collection of gate or primary event children.
+
+        Note that this function also updates the parent set of the child.
+
+        Args:
+            child: Gate or PrimaryEvent child.
+        """
+        assert type(child) is Gate or type(child) is PrimaryEvent
+        child.parents.add(self)
+        if type(child) is Gate:
+            self.g_children.add(child)
+            child.ancestors.update(self.ancestors)
+        else:
+            self.p_children.add(child)
+
 
 class PrimaryEvent(Node):
     """Representation of a primary event in a fault tree.
@@ -104,9 +120,7 @@ def create_gate(parent):
         A newly created gate.
     """
     gate = Gate()
-    parent.g_children.add(gate)
-    gate.parents.add(parent)
-    gate.ancestors.update(parent.ancestors)
+    parent.add_child(gate)
     return gate
 
 def create_primary(parent):
@@ -122,8 +136,7 @@ def create_primary(parent):
         A newly created primary event.
     """
     primary_event = PrimaryEvent()
-    parent.p_children.add(primary_event)
-    primary_event.parents.add(parent)
+    parent.add_child(primary_event)
     return primary_event
 
 def generate_fault_tree(args):
@@ -162,7 +175,7 @@ def generate_fault_tree(args):
             # Case when the number of primary events is already satisfied
             if len(PrimaryEvent.primary_events) == args.nprimary:
                 # Reuse already initialized primary events
-                gate.p_children.add(random.choice(PrimaryEvent.primary_events))
+                gate.add_child(random.choice(PrimaryEvent.primary_events))
                 continue
 
             # Sample inter events vs. primary events
@@ -175,20 +188,19 @@ def generate_fault_tree(args):
                 s_reuse = random.random()
                 if s_reuse < args.reuse_p and PrimaryEvent.primary_events:
                     # Reuse an already initialized primary event
-                    gate.p_children.add(
-                            random.choice(PrimaryEvent.primary_events))
+                    gate.add_child(random.choice(PrimaryEvent.primary_events))
                 else:
                     create_primary(gate)
 
         # Corner case when not enough new primary events initialized, but
-        # there are no more intemediate gates to use due to the low ratio
+        # there are no more intemediate gates to use due to a big ratio
         # or just random accident.
         if (gates_queue.empty() and
                 len(PrimaryEvent.primary_events) < args.nprimary):
             # Initialize more gates by randomly choosing places in the
-            # fault tree. The number of new gates depends on the required
-            # number of new primary events.
-            gates_queue.put(create_gate(gate))
+            # fault tree.
+            random_gate = random.choice(tuple(Gate.gates))
+            gates_queue.put(create_gate(random_gate))
 
         init_gates(args, gates_queue)
 
@@ -253,15 +265,33 @@ def write_info(args):
             str(args.ptop) + "\n"
             "-->\n"
             )
+
+    shared_p = [x for x in PrimaryEvent.primary_events if x.is_shared()]
+    shared_g = [x for x in Gate.gates if x.is_shared()]
     t_file.write(
             "<!--\nThe generated fault tree has the following metrics:\n\n"
             "The number of primary events: " +
             str(PrimaryEvent.num_primary) + "\n"
             "The number of gates: " + str(Gate.num_gates) + "\n"
             "Primary events to gates ratio: " +
-            str(PrimaryEvent.num_primary * 1.0 / Gate.num_gates) + "\n"
-            "-->\n\n"
+            str(PrimaryEvent.num_primary / Gate.num_gates) + "\n"
+            "The number of shared primary events: " + str(len(shared_p)) + "\n"
+            "The number of shared gates: " + str(len(shared_g)) + "\n"
             )
+    if shared_p:
+        t_file.write(
+                "The avg. number of parents of shared primary events: " +
+                str(sum(x.num_parents() for x in shared_p) / len(shared_p)) +
+                "\n"
+                )
+    if shared_g:
+        t_file.write(
+                "The avg. number of parents of shared gates: " +
+                str(sum(x.num_parents() for x in shared_g) / len(shared_g)) +
+                "\n"
+                )
+
+    t_file.write("-->\n\n")
 
 def write_model_data(t_file, primary_events):
     """Appends model data with primary event descriptions.
