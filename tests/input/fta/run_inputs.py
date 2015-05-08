@@ -9,7 +9,7 @@ import subprocess
 import sys
 
 def main():
-    # Correct corner case inputs.
+    # Correct corner case inputs
     pass_inputs = [
             "correct_tree_input.xml",
             "two_trees.xml",
@@ -27,7 +27,7 @@ def main():
             "very_long_mcs.xml",
             ]
 
-    # Wrong input files in the current directory.
+    # Wrong input files in the current directory
     bad_inputs = [
             "../xml_formatting_error.xml",
             "../schema_fail.xml",
@@ -81,11 +81,11 @@ def main():
             "ccf_more_factors_than_needed.xml",
             ]
 
-    # Visual delimeters.
+    # Visual delimeters
     block_delim = "=" * 80
     file_delim = "-" * 80
 
-    # Run correct inputs.
+    # Run correct inputs
     print("\nRUNNING CORRECT INPUTS")
     print(block_delim)
     for i in pass_inputs:
@@ -96,7 +96,7 @@ def main():
         print(file_delim)
     print(block_delim)
 
-    # Run correct inputs with probabilities.
+    # Run correct inputs with probabilities
     print("\nRUNNING CORRECT PROBABILITY INPUTS")
     print(block_delim)
     for i in pass_probs:
@@ -107,7 +107,7 @@ def main():
         print(file_delim)
     print(block_delim)
 
-    # Run incorrect inputs.
+    # Run incorrect inputs
     print("\nRUNNING INCORRECT INPUTS")
     print(block_delim)
     for i in bad_inputs:

@@ -34,7 +34,7 @@ def test_fta_no_prob():
     out_temp = "./output_temp.xml"
     cmd.append("-o")
     cmd.append(out_temp)
-    yield assert_equal, 0, call(cmd)  # Report into an output file
+    yield assert_equal, 0, call(cmd)  # report into an output file
     if os.path.isfile(out_temp):
         os.remove(out_temp)
 
