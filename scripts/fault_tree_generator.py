@@ -7,10 +7,14 @@ This script should help create complex fault trees to test analysis tools.
 """
 from __future__ import print_function, division
 
+import sys
+
 import Queue
 import random
 
 import argparse as ap
+
+sys.setrecursionlimit(int(1e6))  # heavy use of recursion for big trees
 
 
 class Node(object):
@@ -20,9 +24,11 @@ class Node(object):
         name: A specific name that identifies this node.
         parents: A set of parents of this node.
     """
-    def __init__(self, name=""):
+    def __init__(self, name="", parent=None):
         self.name = name
         self.parents = set()
+        if parent:
+            parent.add_child(self)
 
     def is_shared(self):
         """Indicates if this node appears in several places."""
@@ -31,6 +37,27 @@ class Node(object):
     def num_parents(self):
         """Returns the number of unique parents."""
         return len(self.parents)
+
+    def has_ancestor(self, gate):
+        """Finds if the given gate is an ancestor of the node.
+
+        Args:
+            gate: A potential ancestor gate.
+
+        Returns:
+            True or false.
+        """
+        if gate is self:
+            return True
+
+        if gate in self.parents:
+            return True
+
+        for parent in self.parents:
+            if parent.has_ancestor(gate):
+                return True
+
+        return False
 
 
 class Gate(Node):
@@ -46,20 +73,17 @@ class Gate(Node):
         p_children: Children of this gate that are primary events.
         g_children: Children of this gate that are gates.
         gate_type: Type of the gate. Chosen randomly.
-        ancestors: Ancestor gates of this gate.
     """
     num_gates = 0  # to keep track of gates and to name them
     gate_types = ["or", "and"]  # supported types of gates
     gates = set()  # container for all created gates
 
-    def __init__(self):
-        super(Gate, self).__init__("G" + str(Gate.num_gates))
+    def __init__(self, parent=None):
+        super(Gate, self).__init__("G" + str(Gate.num_gates), parent)
         Gate.num_gates += 1  # post-decrement to account for the root gate
         self.p_children = set()  # children that are primary events
         self.g_children = set()  # children that are gates
         self.gate_type = random.choice(Gate.gate_types)  # type of a gate
-        self.ancestors = set()
-        self.ancestors.add(self)
         Gate.gates.add(self)  # keep track of all gates
 
     def num_children(self):
@@ -78,7 +102,6 @@ class Gate(Node):
         child.parents.add(self)
         if type(child) is Gate:
             self.g_children.add(child)
-            child.ancestors.update(self.ancestors)
         else:
             self.p_children.add(child)
 
@@ -99,45 +122,14 @@ class PrimaryEvent(Node):
     min_prob = 0
     max_prob = 1
     primary_events = []  # container for created primary events
-    def __init__(self):
+    def __init__(self, parent=None):
         PrimaryEvent.num_primary += 1
-        super(PrimaryEvent, self).__init__("E" + str(PrimaryEvent.num_primary))
+        super(PrimaryEvent, self).__init__("E" + str(PrimaryEvent.num_primary),
+                                           parent)
         self.prob = random.uniform(PrimaryEvent.min_prob,
                                    PrimaryEvent.max_prob)
         PrimaryEvent.primary_events.append(self)
 
-
-def create_gate(parent):
-    """Handles proper creation of gates.
-
-    The new gate is created with type, parent, and ancestor information.
-    The type is chosen randomly.
-
-    Args:
-        parent: The parent gate for the new gate.
-
-    Returns:
-        A newly created gate.
-    """
-    gate = Gate()
-    parent.add_child(gate)
-    return gate
-
-def create_primary(parent):
-    """Handles proper creation of primary events
-
-    The new primary event is given a random probability. The parent and
-    child information is updated.
-
-    Args:
-        parent: The parent gate of the new primary event.
-
-    Returns:
-        A newly created primary event.
-    """
-    primary_event = PrimaryEvent()
-    parent.add_child(primary_event)
-    return primary_event
 
 def generate_fault_tree(args):
     """Generates a fault tree of specified complexity from command-line
@@ -180,27 +172,38 @@ def generate_fault_tree(args):
 
             # Sample inter events vs. primary events
             s_ratio = random.random()
+            s_reuse = random.random()  # sample the reuse frequency
             if s_ratio < (1.0 / (1 + args.ratio)):
                 # Create a new gate or reuse an existing one
-                gates_queue.put(create_gate(gate))
+                if s_reuse < args.reuse_g and Gate.gates:
+                    potential_gates = list(Gate.gates)
+                    potential_gates.sort()  # for determinism
+                    random.shuffle(potential_gates)
+                    for random_gate in potential_gates:
+                        if not gate.has_ancestor(random_gate):
+                            gate.add_child(random_gate)
+                            break
+                else:
+                    gates_queue.put(Gate(gate))
             else:
                 # Create a new primary event or reuse an existing one
-                s_reuse = random.random()
                 if s_reuse < args.reuse_p and PrimaryEvent.primary_events:
                     # Reuse an already initialized primary event
                     gate.add_child(random.choice(PrimaryEvent.primary_events))
                 else:
-                    create_primary(gate)
+                    PrimaryEvent(gate)
 
         # Corner case when not enough new primary events initialized, but
-        # there are no more intemediate gates to use due to a big ratio
+        # there are no more intermediate gates to use due to a big ratio
         # or just random accident.
         if (gates_queue.empty() and
                 len(PrimaryEvent.primary_events) < args.nprimary):
             # Initialize more gates by randomly choosing places in the
             # fault tree.
-            random_gate = random.choice(tuple(Gate.gates))
-            gates_queue.put(create_gate(random_gate))
+            deterministic_list = list(Gate.gates)
+            deterministic_list.sort()
+            random_gate = random.choice(deterministic_list)
+            gates_queue.put(Gate(random_gate))
 
         init_gates(args, gates_queue)
 
@@ -221,9 +224,9 @@ def generate_fault_tree(args):
 
     # Initialize the top root node
     while len(top_event.p_children) < args.ptop:
-        create_primary(top_event)
+        PrimaryEvent(top_event)
     while top_event.num_children() < num_children:
-        gates_queue.put(create_gate(top_event))
+        gates_queue.put(Gate(top_event))
 
     # Procede with children gates
     init_gates(args, gates_queue)
@@ -275,6 +278,9 @@ def write_info(args):
             "The number of gates: " + str(Gate.num_gates) + "\n"
             "Primary events to gates ratio: " +
             str(PrimaryEvent.num_primary / Gate.num_gates) + "\n"
+            "The average number of children per gate: " +
+            str(sum(x.num_children() for x in Gate.gates) / len(Gate.gates)) +
+            "\n"
             "The number of shared primary events: " + str(len(shared_p)) + "\n"
             "The number of shared gates: " + str(len(shared_g)) + "\n"
             )
@@ -359,10 +365,14 @@ def write_results(args, top_event, primary_events):
     # Write top event and update queue of intermediate gates
     write_gate(top_event, t_file)
 
+    written_gates = set()
+
     # Proceed with intermediate gates
     while not gates_queue.empty():
         gate = gates_queue.get()
-        write_gate(gate, t_file)
+        if gate not in written_gates:
+            written_gates.add(gate)
+            write_gate(gate, t_file)
 
     t_file.write("</define-fault-tree>\n")
 

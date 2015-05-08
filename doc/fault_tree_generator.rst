@@ -33,7 +33,7 @@ Script arguments
 * Approximate ratio primary events to gates. Average.
 * Approximate ratio of re-used primary events. This events may show up
   in several places in the tree.
-* Approximate ratio of re-used gates. The acyclic property should be ensured. [not implemented]
+* Approximate ratio of re-used gates. The acyclic property is ensured.
 * Minimum and maximum probabilities for primary events.
 * Number of primary events for the root node of the tree.
 * Fixed number of children for the root node of the tree.
