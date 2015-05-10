@@ -1,0 +1,745 @@
+<?xml version="1.0"?>
+<opsa-mef>
+<define-fault-tree name="European1">
+<define-gate name="root">
+<and>
+<gate name="g126"/>
+<gate name="g138"/>
+<gate name="g144"/>
+</and>
+</define-gate>
+<define-gate name="g126">
+<or>
+<gate name="g111"/>
+<gate name="g112"/>
+<gate name="g125"/>
+<basic-event name="c053"/>
+</or>
+</define-gate>
+<define-gate name="g138">
+<or>
+<gate name="g106"/>
+<gate name="g119"/>
+<gate name="g137"/>
+</or>
+</define-gate>
+<define-gate name="g144">
+<or>
+<gate name="g111"/>
+<gate name="g112"/>
+<gate name="g143"/>
+<basic-event name="c053"/>
+</or>
+</define-gate>
+<define-gate name="g111">
+<atleast min="3">
+<gate name="g094"/>
+<gate name="g095"/>
+<gate name="g096"/>
+<gate name="g097"/>
+</atleast>
+</define-gate>
+<define-gate name="g112">
+<atleast min="3">
+<gate name="g098"/>
+<gate name="g099"/>
+<gate name="g100"/>
+<gate name="g101"/>
+</atleast>
+</define-gate>
+<define-gate name="g125">
+<atleast min="2">
+<gate name="g121"/>
+<gate name="g123"/>
+<gate name="g122"/>
+<gate name="g124"/>
+</atleast>
+</define-gate>
+<define-gate name="g106">
+<atleast min="3">
+<gate name="g070"/>
+<gate name="g071"/>
+<gate name="g072"/>
+<gate name="g073"/>
+</atleast>
+</define-gate>
+<define-gate name="g119">
+<or>
+<gate name="g107"/>
+<gate name="g108"/>
+<basic-event name="c052"/>
+</or>
+</define-gate>
+<define-gate name="g137">
+<atleast min="3">
+<gate name="g133"/>
+<gate name="g134"/>
+<gate name="g135"/>
+<gate name="g136"/>
+</atleast>
+</define-gate>
+<define-gate name="g143">
+<and>
+<gate name="g139"/>
+<gate name="g140"/>
+<gate name="g141"/>
+<gate name="g142"/>
+</and>
+</define-gate>
+<define-gate name="g094">
+<or>
+<gate name="g066"/>
+<basic-event name="c034"/>
+</or>
+</define-gate>
+<define-gate name="g095">
+<or>
+<gate name="g068"/>
+<basic-event name="c035"/>
+</or>
+</define-gate>
+<define-gate name="g096">
+<or>
+<gate name="g067"/>
+<basic-event name="c036"/>
+</or>
+</define-gate>
+<define-gate name="g097">
+<or>
+<gate name="g069"/>
+<basic-event name="c037"/>
+</or>
+</define-gate>
+<define-gate name="g098">
+<or>
+<gate name="g066"/>
+<basic-event name="c038"/>
+</or>
+</define-gate>
+<define-gate name="g099">
+<or>
+<gate name="g068"/>
+<basic-event name="c039"/>
+</or>
+</define-gate>
+<define-gate name="g100">
+<or>
+<gate name="g067"/>
+<basic-event name="c040"/>
+</or>
+</define-gate>
+<define-gate name="g101">
+<or>
+<gate name="g069"/>
+<basic-event name="c041"/>
+</or>
+</define-gate>
+<define-gate name="g121">
+<or>
+<gate name="g066"/>
+<gate name="g117"/>
+<basic-event name="c048"/>
+</or>
+</define-gate>
+<define-gate name="g123">
+<or>
+<gate name="g067"/>
+<gate name="g117"/>
+<basic-event name="c050"/>
+</or>
+</define-gate>
+<define-gate name="g122">
+<or>
+<gate name="g068"/>
+<gate name="g118"/>
+<basic-event name="c049"/>
+</or>
+</define-gate>
+<define-gate name="g124">
+<or>
+<gate name="g069"/>
+<gate name="g118"/>
+<basic-event name="c051"/>
+</or>
+</define-gate>
+<define-gate name="g070">
+<or>
+<gate name="g062"/>
+<basic-event name="c010"/>
+</or>
+</define-gate>
+<define-gate name="g071">
+<or>
+<gate name="g063"/>
+<basic-event name="c011"/>
+</or>
+</define-gate>
+<define-gate name="g072">
+<or>
+<gate name="g064"/>
+<basic-event name="c012"/>
+</or>
+</define-gate>
+<define-gate name="g073">
+<or>
+<gate name="g065"/>
+<basic-event name="c013"/>
+</or>
+</define-gate>
+<define-gate name="g107">
+<atleast min="3">
+<gate name="g074"/>
+<gate name="g075"/>
+<gate name="g076"/>
+<gate name="g077"/>
+</atleast>
+</define-gate>
+<define-gate name="g108">
+<atleast min="3">
+<gate name="g078"/>
+<gate name="g079"/>
+<gate name="g080"/>
+<gate name="g081"/>
+</atleast>
+</define-gate>
+<define-gate name="g133">
+<or>
+<gate name="g062"/>
+<gate name="g129"/>
+<basic-event name="c058"/>
+</or>
+</define-gate>
+<define-gate name="g134">
+<or>
+<gate name="g063"/>
+<gate name="g130"/>
+<basic-event name="c059"/>
+</or>
+</define-gate>
+<define-gate name="g135">
+<or>
+<gate name="g064"/>
+<gate name="g131"/>
+<basic-event name="c060"/>
+</or>
+</define-gate>
+<define-gate name="g136">
+<or>
+<gate name="g065"/>
+<gate name="g132"/>
+<basic-event name="c061"/>
+</or>
+</define-gate>
+<define-gate name="g139">
+<or>
+<gate name="g062"/>
+<gate name="g066"/>
+<gate name="g117"/>
+<gate name="g129"/>
+<basic-event name="c048"/>
+</or>
+</define-gate>
+<define-gate name="g140">
+<or>
+<gate name="g063"/>
+<gate name="g068"/>
+<gate name="g118"/>
+<gate name="g130"/>
+<basic-event name="c049"/>
+</or>
+</define-gate>
+<define-gate name="g141">
+<or>
+<gate name="g064"/>
+<gate name="g067"/>
+<gate name="g117"/>
+<gate name="g131"/>
+<basic-event name="c050"/>
+</or>
+</define-gate>
+<define-gate name="g142">
+<or>
+<gate name="g065"/>
+<gate name="g069"/>
+<gate name="g118"/>
+<gate name="g132"/>
+<basic-event name="c051"/>
+</or>
+</define-gate>
+<define-gate name="g066">
+<and>
+<basic-event name="c001"/>
+<basic-event name="c006"/>
+</and>
+</define-gate>
+<define-gate name="g068">
+<and>
+<basic-event name="c001"/>
+<basic-event name="c008"/>
+</and>
+</define-gate>
+<define-gate name="g067">
+<and>
+<basic-event name="c001"/>
+<basic-event name="c007"/>
+</and>
+</define-gate>
+<define-gate name="g069">
+<and>
+<basic-event name="c001"/>
+<basic-event name="c009"/>
+</and>
+</define-gate>
+<define-gate name="g117">
+<or>
+<gate name="g113"/>
+<basic-event name="c046"/>
+</or>
+</define-gate>
+<define-gate name="g118">
+<or>
+<gate name="g114"/>
+<basic-event name="c047"/>
+</or>
+</define-gate>
+<define-gate name="g062">
+<and>
+<basic-event name="c001"/>
+<basic-event name="c002"/>
+</and>
+</define-gate>
+<define-gate name="g063">
+<and>
+<basic-event name="c001"/>
+<basic-event name="c003"/>
+</and>
+</define-gate>
+<define-gate name="g064">
+<and>
+<basic-event name="c001"/>
+<basic-event name="c004"/>
+</and>
+</define-gate>
+<define-gate name="g065">
+<and>
+<basic-event name="c001"/>
+<basic-event name="c005"/>
+</and>
+</define-gate>
+<define-gate name="g074">
+<or>
+<gate name="g062"/>
+<basic-event name="c014"/>
+</or>
+</define-gate>
+<define-gate name="g075">
+<or>
+<gate name="g063"/>
+<basic-event name="c015"/>
+</or>
+</define-gate>
+<define-gate name="g076">
+<or>
+<gate name="g064"/>
+<basic-event name="c016"/>
+</or>
+</define-gate>
+<define-gate name="g077">
+<or>
+<gate name="g065"/>
+<basic-event name="c017"/>
+</or>
+</define-gate>
+<define-gate name="g078">
+<or>
+<gate name="g062"/>
+<basic-event name="c018"/>
+</or>
+</define-gate>
+<define-gate name="g079">
+<or>
+<gate name="g063"/>
+<basic-event name="c019"/>
+</or>
+</define-gate>
+<define-gate name="g080">
+<or>
+<gate name="g064"/>
+<basic-event name="c020"/>
+</or>
+</define-gate>
+<define-gate name="g081">
+<or>
+<gate name="g065"/>
+<basic-event name="c021"/>
+</or>
+</define-gate>
+<define-gate name="g129">
+<or>
+<gate name="g062"/>
+<gate name="g127"/>
+<basic-event name="c054"/>
+</or>
+</define-gate>
+<define-gate name="g130">
+<or>
+<gate name="g063"/>
+<gate name="g128"/>
+<basic-event name="c055"/>
+</or>
+</define-gate>
+<define-gate name="g131">
+<or>
+<gate name="g064"/>
+<gate name="g127"/>
+<basic-event name="c056"/>
+</or>
+</define-gate>
+<define-gate name="g132">
+<or>
+<gate name="g065"/>
+<gate name="g128"/>
+<basic-event name="c057"/>
+</or>
+</define-gate>
+<define-gate name="g113">
+<and>
+<gate name="g090"/>
+<gate name="g092"/>
+</and>
+</define-gate>
+<define-gate name="g114">
+<and>
+<gate name="g091"/>
+<gate name="g093"/>
+</and>
+</define-gate>
+<define-gate name="g127">
+<and>
+<gate name="g115"/>
+<gate name="g120"/>
+</and>
+</define-gate>
+<define-gate name="g128">
+<and>
+<gate name="g116"/>
+<gate name="g120"/>
+</and>
+</define-gate>
+<define-gate name="g090">
+<or>
+<gate name="g066"/>
+<basic-event name="c030"/>
+</or>
+</define-gate>
+<define-gate name="g092">
+<or>
+<gate name="g067"/>
+<basic-event name="c032"/>
+</or>
+</define-gate>
+<define-gate name="g091">
+<or>
+<gate name="g068"/>
+<basic-event name="c031"/>
+</or>
+</define-gate>
+<define-gate name="g093">
+<or>
+<gate name="g069"/>
+<basic-event name="c033"/>
+</or>
+</define-gate>
+<define-gate name="g115">
+<and>
+<gate name="g102"/>
+<gate name="g104"/>
+</and>
+</define-gate>
+<define-gate name="g120">
+<or>
+<gate name="g109"/>
+<gate name="g110"/>
+</or>
+</define-gate>
+<define-gate name="g116">
+<and>
+<gate name="g103"/>
+<gate name="g105"/>
+</and>
+</define-gate>
+<define-gate name="g102">
+<or>
+<gate name="g066"/>
+<basic-event name="c042"/>
+</or>
+</define-gate>
+<define-gate name="g104">
+<or>
+<gate name="g067"/>
+<basic-event name="c044"/>
+</or>
+</define-gate>
+<define-gate name="g109">
+<atleast min="3">
+<gate name="g082"/>
+<gate name="g083"/>
+<gate name="g084"/>
+<gate name="g085"/>
+</atleast>
+</define-gate>
+<define-gate name="g110">
+<atleast min="3">
+<gate name="g086"/>
+<gate name="g087"/>
+<gate name="g088"/>
+<gate name="g089"/>
+</atleast>
+</define-gate>
+<define-gate name="g103">
+<or>
+<gate name="g068"/>
+<basic-event name="c043"/>
+</or>
+</define-gate>
+<define-gate name="g105">
+<or>
+<gate name="g069"/>
+<basic-event name="c045"/>
+</or>
+</define-gate>
+<define-gate name="g082">
+<or>
+<gate name="g062"/>
+<basic-event name="c022"/>
+</or>
+</define-gate>
+<define-gate name="g083">
+<or>
+<gate name="g063"/>
+<basic-event name="c023"/>
+</or>
+</define-gate>
+<define-gate name="g084">
+<or>
+<gate name="g064"/>
+<basic-event name="c024"/>
+</or>
+</define-gate>
+<define-gate name="g085">
+<or>
+<gate name="g065"/>
+<basic-event name="c025"/>
+</or>
+</define-gate>
+<define-gate name="g086">
+<or>
+<gate name="g062"/>
+<basic-event name="c026"/>
+</or>
+</define-gate>
+<define-gate name="g087">
+<or>
+<gate name="g063"/>
+<basic-event name="c027"/>
+</or>
+</define-gate>
+<define-gate name="g088">
+<or>
+<gate name="g064"/>
+<basic-event name="c028"/>
+</or>
+</define-gate>
+<define-gate name="g089">
+<or>
+<gate name="g065"/>
+<basic-event name="c029"/>
+</or>
+</define-gate>
+</define-fault-tree>
+<model-data>
+<define-basic-event name="c005">
+<float value="0.051"/>
+</define-basic-event>
+<define-basic-event name="c004">
+<float value="0.051"/>
+</define-basic-event>
+<define-basic-event name="c007">
+<float value="0.112"/>
+</define-basic-event>
+<define-basic-event name="c006">
+<float value="0.112"/>
+</define-basic-event>
+<define-basic-event name="c001">
+<float value="0.01"/>
+</define-basic-event>
+<define-basic-event name="c003">
+<float value="0.051"/>
+</define-basic-event>
+<define-basic-event name="c002">
+<float value="0.051"/>
+</define-basic-event>
+<define-basic-event name="c041">
+<float value="0.016"/>
+</define-basic-event>
+<define-basic-event name="c040">
+<float value="0.016"/>
+</define-basic-event>
+<define-basic-event name="c043">
+<float value="0.0038"/>
+</define-basic-event>
+<define-basic-event name="c042">
+<float value="0.0038"/>
+</define-basic-event>
+<define-basic-event name="c009">
+<float value="0.112"/>
+</define-basic-event>
+<define-basic-event name="c008">
+<float value="0.112"/>
+</define-basic-event>
+<define-basic-event name="c047">
+<float value="0.00052"/>
+</define-basic-event>
+<define-basic-event name="c046">
+<float value="0.00052"/>
+</define-basic-event>
+<define-basic-event name="c012">
+<float value="0.016"/>
+</define-basic-event>
+<define-basic-event name="c060">
+<float value="0.0188"/>
+</define-basic-event>
+<define-basic-event name="c029">
+<float value="0.015"/>
+</define-basic-event>
+<define-basic-event name="c028">
+<float value="0.015"/>
+</define-basic-event>
+<define-basic-event name="c027">
+<float value="0.015"/>
+</define-basic-event>
+<define-basic-event name="c026">
+<float value="0.015"/>
+</define-basic-event>
+<define-basic-event name="c025">
+<float value="0.016"/>
+</define-basic-event>
+<define-basic-event name="c024">
+<float value="0.016"/>
+</define-basic-event>
+<define-basic-event name="c023">
+<float value="0.016"/>
+</define-basic-event>
+<define-basic-event name="c036">
+<float value="0.016"/>
+</define-basic-event>
+<define-basic-event name="c021">
+<float value="0.015"/>
+</define-basic-event>
+<define-basic-event name="c020">
+<float value="0.015"/>
+</define-basic-event>
+<define-basic-event name="c037">
+<float value="0.016"/>
+</define-basic-event>
+<define-basic-event name="c061">
+<float value="0.0188"/>
+</define-basic-event>
+<define-basic-event name="c016">
+<float value="0.0218"/>
+</define-basic-event>
+<define-basic-event name="c051">
+<float value="0.018"/>
+</define-basic-event>
+<define-basic-event name="c031">
+<float value="0.0137"/>
+</define-basic-event>
+<define-basic-event name="c014">
+<float value="0.0218"/>
+</define-basic-event>
+<define-basic-event name="c057">
+<float value="0.015"/>
+</define-basic-event>
+<define-basic-event name="c015">
+<float value="0.0218"/>
+</define-basic-event>
+<define-basic-event name="c048">
+<float value="0.018"/>
+</define-basic-event>
+<define-basic-event name="c058">
+<float value="0.0188"/>
+</define-basic-event>
+<define-basic-event name="c059">
+<float value="0.0188"/>
+</define-basic-event>
+<define-basic-event name="c056">
+<float value="0.015"/>
+</define-basic-event>
+<define-basic-event name="c045">
+<float value="0.0117"/>
+</define-basic-event>
+<define-basic-event name="c054">
+<float value="0.015"/>
+</define-basic-event>
+<define-basic-event name="c055">
+<float value="0.015"/>
+</define-basic-event>
+<define-basic-event name="c052">
+<float value="0.000008"/>
+</define-basic-event>
+<define-basic-event name="c053">
+<float value="0.000072"/>
+</define-basic-event>
+<define-basic-event name="c050">
+<float value="0.018"/>
+</define-basic-event>
+<define-basic-event name="c044">
+<float value="0.0117"/>
+</define-basic-event>
+<define-basic-event name="c018">
+<float value="0.015"/>
+</define-basic-event>
+<define-basic-event name="c019">
+<float value="0.015"/>
+</define-basic-event>
+<define-basic-event name="c038">
+<float value="0.016"/>
+</define-basic-event>
+<define-basic-event name="c039">
+<float value="0.016"/>
+</define-basic-event>
+<define-basic-event name="c034">
+<float value="0.016"/>
+</define-basic-event>
+<define-basic-event name="c013">
+<float value="0.016"/>
+</define-basic-event>
+<define-basic-event name="c010">
+<float value="0.016"/>
+</define-basic-event>
+<define-basic-event name="c011">
+<float value="0.016"/>
+</define-basic-event>
+<define-basic-event name="c030">
+<float value="0.0137"/>
+</define-basic-event>
+<define-basic-event name="c017">
+<float value="0.0218"/>
+</define-basic-event>
+<define-basic-event name="c032">
+<float value="0.0137"/>
+</define-basic-event>
+<define-basic-event name="c033">
+<float value="0.0137"/>
+</define-basic-event>
+<define-basic-event name="c035">
+<float value="0.016"/>
+</define-basic-event>
+<define-basic-event name="c022">
+<float value="0.016"/>
+</define-basic-event>
+<define-basic-event name="c049">
+<float value="0.018"/>
+</define-basic-event>
+</model-data>
+</opsa-mef>
