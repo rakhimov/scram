@@ -3,6 +3,24 @@
 
 This script converts the shorthand notation for fault trees into an
 XML file. The output file is formatted according to OpenPSA MEF.
+
+The shorthand notation is described as follows:
+AND gates:                       gate_name := (child1 & child2 & ...)
+OR gates:                        gate_name := (child1 | child2 | ...)
+ATLEAST(k/n) gates:              gate_name := @(k, [child1, child2, ...])
+Probabilities of primary events: p(event_name) = probability
+
+Some requirements to the shorthand input file:
+0. The names are not case-sensitive.
+1. The fault tree name must be formatted according to 'XML NCNAME datatype'.
+2. No requirement for the structure of the input, i.e. topologically sorted.
+3. Undefined nodes are processed as 'events' to the final XML output. However,
+    warnings will be emitted in case it is the user's mistake.
+4. Name clashes or redefinitions are errors.
+5. Cyclic trees are detected by the script.
+6. The top gate is detected by the script. Only one top gate is allowed.
+7. Repeated children are considered an error.
+8. The script is flexibile with white spaces in the input file.
 """
 from __future__ import print_function
 
@@ -16,16 +34,37 @@ import argparse as ap
 
 
 class Node(object):
+    """Representation of a base class for a node in a fault tree.
+
+    Attributes:
+        name: A specific name that identifies this node.
+        parents: A set of parents of this node.
+    """
     def __init__(self, name=None):
         self.name = name
         self.parents = set()
 
 class PrimaryEvent(Node):
+    """Representation of a primary event in a fault tree.
+
+    Attributes:
+        prob: Probability of failure of this primary event.
+    """
     def __init__(self, name=None, prob=None):
         super(PrimaryEvent, self).__init__(name)
         self.prob = prob
 
 class Gate(Node):
+    """Representation of a gate of a fault tree.
+
+    Attributes:
+        children: A list of children names.
+        g_children: Children of this gate that are gates.
+        p_children: Children of this gate that are primary events.
+        u_children: Children that are undefined from the input.
+        gate_type: Type of the gate. Chosen randomly.
+        k_num: Min number for a combination gate.
+    """
     def __init__(self, name=None, gate_type=None, k_num=None):
         super(Gate, self).__init__(name)
         self.gate_type = gate_type
@@ -36,6 +75,16 @@ class Gate(Node):
         self.u_children = []  # undefined children
 
 class FaultTree(object):
+    """Representation of a fault tree for shorthand to XML purposes.
+
+    Attributes:
+        name: The name of a fault tree.
+        gates: A collection of gates of a fault tree.
+        primary_events: A collection of primary events of a fault tree.
+        undef_nodes: Nodes that are not explicitly defined as gates or
+            primary events.
+        top_gate: The top gate of a fault tree.
+    """
     def __init__(self, name=None):
         self.name = name
         self.gates = {}
@@ -44,13 +93,25 @@ class FaultTree(object):
         self.top_gate = None
 
     def __check_redefinition(self, name):
+        """Checks if a node is being redefined.
+
+        Args:
+            name: The name under investigation.
+        """
         if (self.primary_events.has_key(name.lower()) or
             self.gates.has_key(name.lower())):
             sys.exit("Redefinition of a node: " + name)
 
     def __check_cyclicity(self):
+        """Checks if the fault tree has cycles."""
         visited = set()
         def check(gate, path):
+            """Recursively traverses the given gate to detect cycles.
+
+            Args:
+                gate: The current gate.
+                path: The path to the current gate.
+            """
             if gate in path:
                 path.append(gate)  # for printing
                 sys.exit("Detected a cycle: " +
@@ -66,6 +127,7 @@ class FaultTree(object):
             check(gate, [])
 
     def __detect_top(self):
+        """Detects the top gate of the developed fault tree."""
         top_gates = [x for x in self.gates.itervalues() if not x.parents]
         if len(top_gates) > 1:
             names = [x.name for x in top_gates]
@@ -73,10 +135,24 @@ class FaultTree(object):
         self.top_gate = top_gates[0]
 
     def add_primary(self, name, prob):
+        """Creates and adds a new primary event into the fault tree.
+
+        Args:
+            name: A name for the new primary event.
+            prob: The probability of the new primary event.
+        """
         self.__check_redefinition(name)
         self.primary_events.update({name.lower(): PrimaryEvent(name, prob)})
 
-    def add_gate(self, name, gate_type, children=None, k_num=None):
+    def add_gate(self, name, gate_type, children, k_num=None):
+        """Creates and adds a new gate into the fault tree.
+
+        Args:
+            name: A name for the new gate.
+            gate_type: A gate type for the new gate.
+            children: Collection of children names of the new gate.
+            k_num: K number is required for a combination type of a gate.
+        """
         self.__check_redefinition(name)
         gate = Gate(name, gate_type, k_num)
         gate.children = children
@@ -107,6 +183,14 @@ class FaultTree(object):
 
 
 def parse_input_file(input_file):
+    """Parses an input file with a shorthand description of a fault tree.
+
+    Args:
+        input_file: The path to the input file.
+
+    Returns:
+        The fault tree described in the input file.
+    """
     short_file = open(input_file, "r")
     # Fault tree name
     ft_name_re = re.compile(r"^\s*(\w+)\s*$")
@@ -132,8 +216,14 @@ def parse_input_file(input_file):
 
         If a repeated child is found, halts the script with a message.
 
+        Args:
+            children_string: String contaning children names.
+            splitter: Splitter specific to the parent gate, i.e. "&", "|", ','.
+            line: The line containing the string. It is needed for error
+                messages.
+
         Returns:
-            Children from the string.
+            Children list from the input string.
         """
         children = children_string.split(splitter)
         children = [x.strip() for x in children]
@@ -177,6 +267,13 @@ def parse_input_file(input_file):
 
 def write_to_xml_file(fault_tree, output_file):
     """Writes the fault tree into an XML file.
+
+    The file is formatted according to OpenPSA MEF but without indentations
+    for human readability.
+
+    Args:
+        fault_tree: A full fault tree.
+        output_file: The output destination.
     """
     t_file = open(output_file, "w")
     t_file.write("<?xml version=\"1.0\"?>\n")
@@ -236,9 +333,7 @@ def write_to_xml_file(fault_tree, output_file):
         t_file.write("<define-basic-event name=\"" + primary.name + "\">\n"
                      "<float value=\"" + str(primary.prob) + "\"/>\n"
                      "</define-basic-event>\n")
-
     t_file.write("</model-data>\n")
-
     t_file.write("</opsa-mef>")
     t_file.close()
 

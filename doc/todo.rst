@@ -64,8 +64,15 @@ Minor Enhancements and Capabilities
 
 - Improve the fault tree generator. *Low*
 
-  * Advanced gates
+  * Performance (100,000-basic-event-tree <= 1 min): PyPy, Cython.
+  * Advanced gates (ATLEAST, NOT)
   * CCF groups
+
+- Shorthand format to XML converter. *Low*
+
+  * Nested gates
+  * NOT gate
+  * Multiple top events
 
 - Create a cut-set generator. *Low*
 

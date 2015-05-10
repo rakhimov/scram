@@ -13,6 +13,8 @@ However, not all OpenPSA formatting is supported, and some additional
 assumptions/restrictions are made by SCRAM. See :ref:`opsa_support` for
 the format description and current implementation with differences.
 
+In addition to the XML format, the `shorthand_format` is supported indirectly.
+
 .. _`OpenPSA Model Exchange Format v2.0d`:
     http://open-psa.org/joomla1.5/index.php?option=com_content&view=category&id=4&Itemid=19
 
@@ -25,7 +27,7 @@ Steps in XML Input Validation
     - The hierarchical structure of a fault tree must be strict:
 
         + The top event is the first gate in the input file fault tree description.
-        + The parent must be defined before its children.
+        + Gates must appear as children before they are defined.
 
     - Event names are not case sensitive.
     - Trailing white spaces are ignored.
@@ -66,6 +68,20 @@ Validation Schemas
 - `RelaxNG Compact <https://github.com/rakhimov/scram/blob/master/share/input.rnc>`_
 - `DTD Schema <https://github.com/rakhimov/scram/blob/master/doc/open-psa/mef.dtd>`_
 
+.. _shorthand_format:
+
+Shorthand Input Format
+======================
+
+A more convenient format than the XML for writing simple fault trees utilizes
+a shorter notation for gates ('&', '|', '@') and basic events to create
+a collection of Boolean equations.
+The shorthand format can be converted into the XML format with `this script`_.
+
+.. _`this script`:
+    https://github.com/rakhimov/scram/blob/master/scripts/shorthand_to_xml.py
+
+
 Input File Examples
 ===================
 
@@ -73,6 +89,10 @@ Fault Tree Input File
 ---------------------
 .. highlight:: xml
 .. literalinclude:: two_train.xml
+
+Shorthand version
+-----------------
+.. literalinclude:: shorthand_two_train.txt
 
 
 .. _RelaxNG: http://relaxng.org/

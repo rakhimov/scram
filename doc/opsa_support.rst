@@ -87,3 +87,13 @@ Deviations from OpenPSA MEF
 - Double definition of events is considered an error instead of warning.
 - Common cause model levels for factors are required and must be strictly
   sequential in ascending order.
+
+
+**********************
+OpenPSA MEF Converters
+**********************
+
+- `Python script`_ for `shorthand_format` to OpenPSA MEF XML conversion.
+
+.. _`Python script`:
+    https://github.com/rakhimov/scram/blob/master/scripts/shorthand_to_xml.py
