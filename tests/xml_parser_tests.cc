@@ -7,7 +7,6 @@
 
 #include "error.h"
 #include "relax_ng_validator.h"
-#include "tools.h"
 
 using namespace std;
 using namespace scram;
