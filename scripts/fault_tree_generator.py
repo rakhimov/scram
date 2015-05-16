@@ -76,6 +76,7 @@ class Gate(Node):
     """
     num_gates = 0  # to keep track of gates and to name them
     gate_types = ["and", "or"]  # supported types of gates
+    gate_weights = [1, 1]  # weights for the random choice
     gates = []  # container for all created gates
 
     def __init__(self, parent=None):
@@ -83,8 +84,19 @@ class Gate(Node):
         Gate.num_gates += 1  # post-decrement to account for the root gate
         self.p_children = set()  # children that are primary events
         self.g_children = set()  # children that are gates
-        self.gate_type = random.choice(Gate.gate_types)  # type of a gate
+        self.gate_type = self.get_random_type()
         Gate.gates.append(self)  # keep track of all gates
+
+    def get_random_type(self):
+        cum_dist = [x / sum(Gate.gate_weights) for x in Gate.gate_weights]
+        cum_dist.insert(0, 0)
+        for i in range(1, len(cum_dist)):
+            cum_dist[i] += cum_dist[i - 1]
+        r = random.random()
+        bin_num = [i - 1 for i in range(1, len(cum_dist))
+                    if cum_dist[i - 1] <= r and r < cum_dist[i]]
+        assert(len(bin_num) == 1)
+        return Gate.gate_types[bin_num[0]]
 
     def num_children(self):
         """Returns the number of children."""
@@ -246,12 +258,14 @@ def write_info(args):
             "The output file name: " + str(args.out) + "\n"
             "The fault tree name: " + args.ft_name + "\n"
             "The root gate name: " + args.root + "\n\n"
-            "The seed of a random number generator: " + str(args.seed) + "\n"
+            "The seed of the random number generator: " + str(args.seed) + "\n"
             "The number of unique primary events: " + str(args.nprimary) + "\n"
             "The average number of children per gate: " +
             str(args.nchildren) + "\n"
             "Primary events to gates ratio per new node: " +
             str(args.ratio) + "\n"
+            "The weights of gate types [AND, OR]: " +
+            str(Gate.gate_weights) + "\n"
             "Approximate percentage of repeated primary events in the tree: " +
             str(args.reuse_p) + "\n"
             "Approximate percentage of repeated gates in the tree: " +
@@ -267,11 +281,16 @@ def write_info(args):
 
     shared_p = [x for x in PrimaryEvent.primary_events if x.is_shared()]
     shared_g = [x for x in Gate.gates if x.is_shared()]
+    and_gates = [x for x in Gate.gates if x.gate_type == "and"]
+    or_gates = [x for x in Gate.gates if x.gate_type == "or"]
+
     t_file.write(
             "<!--\nThe generated fault tree has the following metrics:\n\n"
-            "The number of primary events: " +
+            "The total number of primary events: " +
             str(PrimaryEvent.num_primary) + "\n"
-            "The number of gates: " + str(Gate.num_gates) + "\n"
+            "The total number of gates: " + str(Gate.num_gates) + "\n"
+            "    AND gates: " + str(len(and_gates)) + "\n"
+            "    OR gates: " + str(len(or_gates)) + "\n"
             "Primary events to gates ratio: " +
             str(PrimaryEvent.num_primary / Gate.num_gates) + "\n"
             "The average number of children per gate: " +
@@ -439,6 +458,9 @@ def main():
     ratio = "primary events to gates ratio per a new gate"
     parser.add_argument("--ratio", type=float, help=ratio, default=2)
 
+    gate_weights = "weights for samling AND, OR gate types"
+    parser.add_argument("--weights-g", type=str, nargs="*", help=gate_weights)
+
     reuse_p = "approximate percentage of repeated primary events in the tree"
     parser.add_argument("--reuse-p", type=float, help=reuse_p, default=0.1)
 
@@ -494,6 +516,19 @@ def main():
     if args.ptop and args.ptop == args.ctop and args.nprimary > args.ptop:
         raise ap.ArgumentTypeError("(ctop > ptop) is required to expand "
                                    "the tree")
+
+    if [i for i in args.weights_g if float(i) < 0]:
+        raise ap.ArgumentTypeError("weights cannot be negative")
+
+    if len(args.weights_g) > len(Gate.gate_weights):
+        raise ap.ArgumentTypeError("too many weights are provided")
+
+    if args.weights_g:
+        weights_float = [float(i) for i in args.weights_g]
+        for i in range(len(Gate.gate_weights) - len(weights_float)):
+            weights_float.append(0)
+        Gate.gate_weights = weights_float
+
 
     # Set the seed for this tree generator
     random.seed(args.seed)
