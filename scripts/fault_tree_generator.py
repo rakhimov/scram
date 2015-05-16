@@ -75,8 +75,8 @@ class Gate(Node):
         gate_type: Type of the gate. Chosen randomly.
     """
     num_gates = 0  # to keep track of gates and to name them
-    gate_types = ["and", "or"]  # supported types of gates
-    gate_weights = [1, 1]  # weights for the random choice
+    gate_types = ["and", "or", "atleast", "not", "xor"]
+    gate_weights = [1, 1, 0, 0, 0]  # weights for the random choice
     gates = []  # container for all created gates
 
     def __init__(self, parent=None):
@@ -84,6 +84,7 @@ class Gate(Node):
         Gate.num_gates += 1  # post-decrement to account for the root gate
         self.p_children = set()  # children that are primary events
         self.g_children = set()  # children that are gates
+        self.k_num = None
         self.gate_type = self.get_random_type()
         Gate.gates.append(self)  # keep track of all gates
 
@@ -175,6 +176,14 @@ def generate_fault_tree(args):
         # Sample children size
         num_children = random.randint(min_children, max_children)
 
+        if gate.gate_type == "not":
+            num_children = 1
+        elif gate.gate_type == "xor":
+            num_children = 2
+        elif gate.gate_type == "atleast":
+            num_children = num_children if num_children > 2 else 3
+            gate.k_num = random.randint(2, num_children - 1)
+
         while gate.num_children() < num_children:
             # Case when the number of primary events is already satisfied
             if len(PrimaryEvent.primary_events) == args.nprimary:
@@ -211,12 +220,17 @@ def generate_fault_tree(args):
             # Initialize more gates by randomly choosing places in the
             # fault tree.
             random_gate = random.choice(Gate.gates)
+            while (random_gate.gate_type == "not" or
+                   random_gate.gate_type == "xor"):
+                random_gate = random.choice(Gate.gates)
             gates_queue.put(Gate(random_gate))
 
         init_gates(args, gates_queue)
 
     # Start with a top event
     top_event = Gate()
+    while top_event.gate_type != "and" and top_event.gate_type != "or":
+        top_event.gate_type = top_event.get_random_type()
     top_event.name = args.root
     num_children = random.randint(min_children, max_children)
 
@@ -264,7 +278,7 @@ def write_info(args):
             str(args.nchildren) + "\n"
             "Primary events to gates ratio per new node: " +
             str(args.ratio) + "\n"
-            "The weights of gate types [AND, OR]: " +
+            "The weights of gate types [AND, OR, K/N, NOT, XOR]: " +
             str(Gate.gate_weights) + "\n"
             "Approximate percentage of repeated primary events in the tree: " +
             str(args.reuse_p) + "\n"
@@ -283,6 +297,9 @@ def write_info(args):
     shared_g = [x for x in Gate.gates if x.is_shared()]
     and_gates = [x for x in Gate.gates if x.gate_type == "and"]
     or_gates = [x for x in Gate.gates if x.gate_type == "or"]
+    atleast_gates = [x for x in Gate.gates if x.gate_type == "atleast"]
+    not_gates = [x for x in Gate.gates if x.gate_type == "not"]
+    xor_gates = [x for x in Gate.gates if x.gate_type == "xor"]
 
     t_file.write(
             "<!--\nThe generated fault tree has the following metrics:\n\n"
@@ -291,6 +308,9 @@ def write_info(args):
             "The total number of gates: " + str(Gate.num_gates) + "\n"
             "    AND gates: " + str(len(and_gates)) + "\n"
             "    OR gates: " + str(len(or_gates)) + "\n"
+            "    K/N gates: " + str(len(atleast_gates)) + "\n"
+            "    NOT gates: " + str(len(not_gates)) + "\n"
+            "    XOR gates: " + str(len(xor_gates)) + "\n"
             "Primary events to gates ratio: " +
             str(PrimaryEvent.num_primary / Gate.num_gates) + "\n"
             "The average number of children per gate: " +
@@ -363,7 +383,10 @@ def write_results(args, top_event, primary_events):
         """
 
         o_file.write("<define-gate name=\"" + gate.name + "\">\n")
-        o_file.write("<" + gate.gate_type + ">\n")
+        o_file.write("<" + gate.gate_type)
+        if gate.gate_type == "atleast":
+            o_file.write(" min=\"" + str(gate.k_num) +"\"")
+        o_file.write(">\n")
         # Print primary events
         for p_child in gate.p_children:
             o_file.write("<basic-event name=\"" + p_child.name + "\"/>\n")
@@ -458,7 +481,7 @@ def main():
     ratio = "primary events to gates ratio per a new gate"
     parser.add_argument("--ratio", type=float, help=ratio, default=2)
 
-    gate_weights = "weights for samling AND, OR gate types"
+    gate_weights = "weights for samling [AND, OR, K/N, NOT, XOR] gate types"
     parser.add_argument("--weights-g", type=str, nargs="*", help=gate_weights)
 
     reuse_p = "approximate percentage of repeated primary events in the tree"
@@ -517,13 +540,13 @@ def main():
         raise ap.ArgumentTypeError("(ctop > ptop) is required to expand "
                                    "the tree")
 
-    if [i for i in args.weights_g if float(i) < 0]:
-        raise ap.ArgumentTypeError("weights cannot be negative")
-
-    if len(args.weights_g) > len(Gate.gate_weights):
-        raise ap.ArgumentTypeError("too many weights are provided")
-
     if args.weights_g:
+        if [i for i in args.weights_g if float(i) < 0]:
+            raise ap.ArgumentTypeError("weights cannot be negative")
+
+        if len(args.weights_g) > len(Gate.gate_weights):
+            raise ap.ArgumentTypeError("too many weights are provided")
+
         weights_float = [float(i) for i in args.weights_g]
         for i in range(len(Gate.gate_weights) - len(weights_float)):
             weights_float.append(0)
