@@ -75,8 +75,8 @@ class Gate(Node):
         gate_type: Type of the gate. Chosen randomly.
     """
     num_gates = 0  # to keep track of gates and to name them
-    gate_types = ["or", "and"]  # supported types of gates
-    gates = set()  # container for all created gates
+    gate_types = ["and", "or"]  # supported types of gates
+    gates = []  # container for all created gates
 
     def __init__(self, parent=None):
         super(Gate, self).__init__("G" + str(Gate.num_gates), parent)
@@ -84,7 +84,7 @@ class Gate(Node):
         self.p_children = set()  # children that are primary events
         self.g_children = set()  # children that are gates
         self.gate_type = random.choice(Gate.gate_types)  # type of a gate
-        Gate.gates.add(self)  # keep track of all gates
+        Gate.gates.append(self)  # keep track of all gates
 
     def num_children(self):
         """Returns the number of children."""
@@ -175,11 +175,9 @@ def generate_fault_tree(args):
             s_reuse = random.random()  # sample the reuse frequency
             if s_ratio < (1.0 / (1 + args.ratio)):
                 # Create a new gate or reuse an existing one
-                if s_reuse < args.reuse_g and Gate.gates:
-                    potential_gates = list(Gate.gates)
-                    potential_gates.sort()  # for determinism
-                    random.shuffle(potential_gates)
-                    for random_gate in potential_gates:
+                if s_reuse < args.reuse_g:
+                    random.shuffle(Gate.gates)
+                    for random_gate in Gate.gates:
                         if not gate.has_ancestor(random_gate):
                             gate.add_child(random_gate)
                             break
@@ -200,9 +198,7 @@ def generate_fault_tree(args):
                 len(PrimaryEvent.primary_events) < args.nprimary):
             # Initialize more gates by randomly choosing places in the
             # fault tree.
-            deterministic_list = list(Gate.gates)
-            deterministic_list.sort()
-            random_gate = random.choice(deterministic_list)
+            random_gate = random.choice(Gate.gates)
             gates_queue.put(Gate(random_gate))
 
         init_gates(args, gates_queue)
