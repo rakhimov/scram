@@ -460,6 +460,79 @@ def write_results(args, top_event, basic_events):
     t_file.write("</opsa-mef>")
     t_file.close()
 
+def write_shorthand(args, top_event):
+    t_file = open(args.out, "w")
+    t_file.write(args.ft_name + "\n\n")
+    # Container for not yet initialized intermediate events
+    gates_queue = Queue.Queue()
+
+    def write_gate(gate, o_file):
+        """Print children for the gate.
+
+        Note that it also updates the queue of gates.
+
+        Args:
+            gate: The gate to be printed.
+            o_file: The output file stream.
+        """
+        line = [gate.name]
+        line.append(" := ")
+        div = ""
+        line_end = ""
+        if gate.gate_type == "and":
+            line.append("(")
+            line_end = ")"
+            div = " & "
+        elif gate.gate_type == "or":
+            line.append("(")
+            line_end = ")"
+            div = " | "
+        elif gate.gate_type == "atleast":
+            line.append("@(" + str(gate.k_num) + ", [")
+            line_end = "])"
+            div = ", "
+
+        first_child = True
+        # Print children that are gates.
+        for g_child in gate.g_children:
+            if first_child:
+                line.append(g_child.name)
+                first_child = False
+            else:
+                line.append(div + g_child.name)
+            # Update the queue
+            gates_queue.put(g_child)
+
+        # Print children that are basic events.
+        for b_child in gate.b_children:
+            if first_child:
+                line.append(b_child.name)
+                first_child = False
+            else:
+                line.append(div + b_child.name)
+
+        line.append(line_end)
+        o_file.write("".join(line))
+        o_file.write("\n")
+
+    # Write top event and update queue of intermediate gates
+    write_gate(top_event, t_file)
+
+    written_gates = set()
+
+    # Proceed with intermediate gates
+    while not gates_queue.empty():
+        gate = gates_queue.get()
+        if gate not in written_gates:
+            written_gates.add(gate)
+            write_gate(gate, t_file)
+
+    # Write basic events
+    t_file.write("\n")
+    for basic in BasicEvent.basic_events:
+        t_file.write("p(" + basic.name + ") = " + str(basic.prob) + "\n")
+
+
 
 def check_if_positive(desc, val):
     """Verifies that the value is potive or zero for the supplied argument.
@@ -547,11 +620,14 @@ def main():
     parser.add_argument("--ctop", type=int, help=ctop,
                         default=0)  # 0 indicates that the number is not set.
 
-    house = "the number of house events in primary events"
+    house = "the number of house events"
     parser.add_argument("--house", type=int, help=house, default=0)
 
     out = "output file to write the generated fault tree"
     parser.add_argument("-o", "--out", help=out, default="fault_tree.xml")
+
+    shorthand = "shorthand format for the output"
+    parser.add_argument("--shorthand", action="store_true", help=shorthand)
 
     args = parser.parse_args()
 
@@ -600,6 +676,15 @@ def main():
             weights_float.append(0)
         Gate.gate_weights = weights_float
 
+    if args.shorthand:
+        if args.out == "fault_tree.xml":
+            args.out = "fault_tree.txt"
+        if args.weights_g and len(args.weights_g) > 3:
+            raise ap.ArgumentTypeError("No complex gate type representation "
+                                       "for the shorthand format")
+        if args.house:
+            raise ap.ArgumentTypeError("No house event representation "
+                                       "for the shorthand format")
 
     # Set the seed for this tree generator
     random.seed(args.seed)
@@ -607,7 +692,10 @@ def main():
     top_event = generate_fault_tree(args)
 
     # Write output files
-    write_results(args, top_event, BasicEvent.basic_events)
+    if args.shorthand:
+        write_shorthand(args, top_event)
+    else:
+        write_results(args, top_event, BasicEvent.basic_events)
 
 
 if __name__ == "__main__":
