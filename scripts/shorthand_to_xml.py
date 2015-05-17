@@ -8,7 +8,7 @@ The shorthand notation is described as follows:
 AND gates:                       gate_name := (child1 & child2 & ...)
 OR gates:                        gate_name := (child1 | child2 | ...)
 ATLEAST(k/n) gates:              gate_name := @(k, [child1, child2, ...])
-Probabilities of primary events: p(event_name) = probability
+Probabilities of basic events:   p(event_name) = probability
 
 Some requirements to the shorthand input file:
 0. The names are not case-sensitive.
@@ -44,14 +44,14 @@ class Node(object):
         self.name = name
         self.parents = set()
 
-class PrimaryEvent(Node):
-    """Representation of a primary event in a fault tree.
+class BasicEvent(Node):
+    """Representation of a basic event in a fault tree.
 
     Attributes:
-        prob: Probability of failure of this primary event.
+        prob: Probability of failure of this basic event.
     """
     def __init__(self, name=None, prob=None):
-        super(PrimaryEvent, self).__init__(name)
+        super(BasicEvent, self).__init__(name)
         self.prob = prob
 
 class Gate(Node):
@@ -60,7 +60,7 @@ class Gate(Node):
     Attributes:
         children: A list of children names.
         g_children: Children of this gate that are gates.
-        p_children: Children of this gate that are primary events.
+        p_children: Children of this gate that are basic events.
         u_children: Children that are undefined from the input.
         gate_type: Type of the gate. Chosen randomly.
         k_num: Min number for a combination gate.
@@ -80,15 +80,15 @@ class FaultTree(object):
     Attributes:
         name: The name of a fault tree.
         gates: A collection of gates of a fault tree.
-        primary_events: A collection of primary events of a fault tree.
+        basic_events: A collection of basic events of a fault tree.
         undef_nodes: Nodes that are not explicitly defined as gates or
-            primary events.
+            basic events.
         top_gate: The top gate of a fault tree.
     """
     def __init__(self, name=None):
         self.name = name
         self.gates = {}
-        self.primary_events = {}
+        self.basic_events = {}
         self.undef_nodes = {}
         self.top_gate = None
 
@@ -98,7 +98,7 @@ class FaultTree(object):
         Args:
             name: The name under investigation.
         """
-        if (self.primary_events.has_key(name.lower()) or
+        if (self.basic_events.has_key(name.lower()) or
             self.gates.has_key(name.lower())):
             sys.exit("Redefinition of a node: " + name)
 
@@ -134,15 +134,15 @@ class FaultTree(object):
             sys.exit("Detected multiple top gates:\n" + str(names))
         self.top_gate = top_gates[0]
 
-    def add_primary(self, name, prob):
-        """Creates and adds a new primary event into the fault tree.
+    def add_basic(self, name, prob):
+        """Creates and adds a new basic event into the fault tree.
 
         Args:
-            name: A name for the new primary event.
-            prob: The probability of the new primary event.
+            name: A name for the new basic event.
+            prob: The probability of the new basic event.
         """
         self.__check_redefinition(name)
-        self.primary_events.update({name.lower(): PrimaryEvent(name, prob)})
+        self.basic_events.update({name.lower(): BasicEvent(name, prob)})
 
     def add_gate(self, name, gate_type, children, k_num=None):
         """Creates and adds a new gate into the fault tree.
@@ -166,8 +166,8 @@ class FaultTree(object):
                 if self.gates.has_key(child.lower()):
                     child_node = self.gates[child.lower()]
                     gate.g_children.append(child_node)
-                elif self.primary_events.has_key(child.lower()):
-                    child_node = self.primary_events[child.lower()]
+                elif self.basic_events.has_key(child.lower()):
+                    child_node = self.basic_events[child.lower()]
                     gate.p_children.append(child_node)
                 elif self.undef_nodes.has_key(child.lower()):
                     child_node = self.undef_nodes[child.lower()]
@@ -254,7 +254,7 @@ def parse_input_file(input_file):
             fault_tree.add_gate(gate_name, "atleast", children, k_num)
         elif prob_re.match(line):
             event_name, prob = prob_re.match(line).group(1, 2)
-            fault_tree.add_primary(event_name, prob)
+            fault_tree.add_basic(event_name, prob)
         else:
             sys.exit("Cannot interpret the following line:\n" + line)
 
@@ -303,7 +303,7 @@ def write_to_xml_file(fault_tree, output_file):
             # Update the queue
             gates_queue.put(g_child)
 
-        # Print primary events
+        # Print basic events
         for p_child in gate.p_children:
             o_file.write("<basic-event name=\"" + p_child.name + "\"/>\n")
 
@@ -329,9 +329,9 @@ def write_to_xml_file(fault_tree, output_file):
     t_file.write("</define-fault-tree>\n")
 
     t_file.write("<model-data>\n")
-    for primary in fault_tree.primary_events.itervalues():
-        t_file.write("<define-basic-event name=\"" + primary.name + "\">\n"
-                     "<float value=\"" + str(primary.prob) + "\"/>\n"
+    for basic in fault_tree.basic_events.itervalues():
+        t_file.write("<define-basic-event name=\"" + basic.name + "\">\n"
+                     "<float value=\"" + str(basic.prob) + "\"/>\n"
                      "</define-basic-event>\n")
     t_file.write("</model-data>\n")
     t_file.write("</opsa-mef>")

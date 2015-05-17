@@ -70,7 +70,8 @@ class Gate(Node):
         num_gates: Total number of gates created.
         gate_types: Types of gates that are allowed in the fault tree.
         gates: A set of all gates that are created for the fault tree.
-        p_children: Children of this gate that are primary events.
+        b_children: Children of this gate that are basic events.
+        h_children: Children of this gate that are house events.
         g_children: Children of this gate that are gates.
         gate_type: Type of the gate. Chosen randomly.
     """
@@ -82,7 +83,8 @@ class Gate(Node):
     def __init__(self, parent=None):
         super(Gate, self).__init__("G" + str(Gate.num_gates), parent)
         Gate.num_gates += 1  # post-decrement to account for the root gate
-        self.p_children = set()  # children that are primary events
+        self.b_children = set()  # children that are basic events
+        self.h_children = set()  # children that are house events
         self.g_children = set()  # children that are gates
         self.k_num = None
         self.gate_type = self.get_random_type()
@@ -101,7 +103,8 @@ class Gate(Node):
 
     def num_children(self):
         """Returns the number of children."""
-        return len(self.p_children) + len(self.g_children)
+        return (len(self.b_children) + len(self.h_children) +
+                len(self.g_children))
 
     def add_child(self, child):
         """Adds child into a collection of gate or primary event children.
@@ -109,39 +112,61 @@ class Gate(Node):
         Note that this function also updates the parent set of the child.
 
         Args:
-            child: Gate or PrimaryEvent child.
+            child: Gate, HouseEvent, or BasicEvent child.
         """
-        assert type(child) is Gate or type(child) is PrimaryEvent
         child.parents.add(self)
         if type(child) is Gate:
             self.g_children.add(child)
+        elif type(child) is BasicEvent:
+            self.b_children.add(child)
+        elif type(child) is HouseEvent:
+            self.h_children.add(child)
         else:
-            self.p_children.add(child)
+            sys.exit("Illegal child type for a gate.")
 
 
-class PrimaryEvent(Node):
-    """Representation of a primary event in a fault tree.
+class BasicEvent(Node):
+    """Representation of a basic event in a fault tree.
 
         Names are assigned sequentially starting from E1.
 
     Attributes:
-        num_primary: Total number of primary events created.
+        num_basic: Total number of basic events created.
         min_prob: Lower bound of the distribution.
         max_prob: Upper bound of the distribution.
-        prob: Probability of failure of this primary event. Assigned randomly.
-        primary_events: A set of all primary events created for the fault tree.
+        prob: Probability of failure of this basic event. Assigned randomly.
+        basic_events: A set of all basic events created for the fault tree.
     """
-    num_primary = 0
+    num_basic = 0
     min_prob = 0
     max_prob = 1
-    primary_events = []  # container for created primary events
+    basic_events = []  # container for created basic events
     def __init__(self, parent=None):
-        PrimaryEvent.num_primary += 1
-        super(PrimaryEvent, self).__init__("E" + str(PrimaryEvent.num_primary),
+        BasicEvent.num_basic += 1
+        super(BasicEvent, self).__init__("E" + str(BasicEvent.num_basic),
                                            parent)
-        self.prob = random.uniform(PrimaryEvent.min_prob,
-                                   PrimaryEvent.max_prob)
-        PrimaryEvent.primary_events.append(self)
+        self.prob = random.uniform(BasicEvent.min_prob, BasicEvent.max_prob)
+        BasicEvent.basic_events.append(self)
+
+
+class HouseEvent(Node):
+    """Representation of a house event in a fault tree.
+
+        Names are assigned sequentially starting from H1.
+
+    Attributes:
+        num_house: Total number of house events created.
+        state: The state of the house event.
+        house_events: A set of all house events created for the fault tree.
+    """
+    num_house = 0
+    house_events = []  # container for created house events
+    def __init__(self, parent=None):
+        HouseEvent.num_house += 1
+        super(HouseEvent, self).__init__("H" + str(HouseEvent.num_house),
+                                         parent)
+        self.state = random.choice(["true", "false"])
+        HouseEvent.house_events.append(self)
 
 
 def generate_fault_tree(args):
@@ -154,8 +179,8 @@ def generate_fault_tree(args):
     Returns:
         Top gate of the created fault tree.
     """
-    PrimaryEvent.min_prob = args.minprob
-    PrimaryEvent.max_prob = args.maxprob
+    BasicEvent.min_prob = args.minprob
+    BasicEvent.max_prob = args.maxprob
 
     min_children = 2  # minimum number of children per gate
     max_children = args.nchildren * 2 - min_children
@@ -186,12 +211,12 @@ def generate_fault_tree(args):
 
         while gate.num_children() < num_children:
             # Case when the number of primary events is already satisfied
-            if len(PrimaryEvent.primary_events) == args.nprimary:
+            if len(BasicEvent.basic_events) == args.nprimary:
                 # Reuse already initialized primary events
-                gate.add_child(random.choice(PrimaryEvent.primary_events))
+                gate.add_child(random.choice(BasicEvent.basic_events))
                 continue
 
-            # Sample inter events vs. primary events
+            # Sample gates vs. primary events
             s_ratio = random.random()
             s_reuse = random.random()  # sample the reuse frequency
             if s_ratio < (1.0 / (1 + args.ratio)):
@@ -206,17 +231,17 @@ def generate_fault_tree(args):
                     gates_queue.put(Gate(gate))
             else:
                 # Create a new primary event or reuse an existing one
-                if s_reuse < args.reuse_p and PrimaryEvent.primary_events:
+                if s_reuse < args.reuse_p and BasicEvent.basic_events:
                     # Reuse an already initialized primary event
-                    gate.add_child(random.choice(PrimaryEvent.primary_events))
+                    gate.add_child(random.choice(BasicEvent.basic_events))
                 else:
-                    PrimaryEvent(gate)
+                    BasicEvent(gate)
 
         # Corner case when not enough new primary events initialized, but
         # there are no more intermediate gates to use due to a big ratio
         # or just random accident.
         if (gates_queue.empty() and
-                len(PrimaryEvent.primary_events) < args.nprimary):
+            len(BasicEvent.basic_events) < args.nprimary):
             # Initialize more gates by randomly choosing places in the
             # fault tree.
             random_gate = random.choice(Gate.gates)
@@ -245,13 +270,19 @@ def generate_fault_tree(args):
     gates_queue = Queue.Queue()
 
     # Initialize the top root node
-    while len(top_event.p_children) < args.ptop:
-        PrimaryEvent(top_event)
+    while len(top_event.b_children) < args.ptop:
+        BasicEvent(top_event)
     while top_event.num_children() < num_children:
         gates_queue.put(Gate(top_event))
 
     # Procede with children gates
     init_gates(args, gates_queue)
+
+    # Distribute house events
+    while len(HouseEvent.house_events) < args.house:
+        target_gate = random.choice(Gate.gates)
+        if target_gate is not top_event:
+            HouseEvent(target_gate)
 
     return top_event
 
@@ -273,10 +304,10 @@ def write_info(args):
             "The fault tree name: " + args.ft_name + "\n"
             "The root gate name: " + args.root + "\n\n"
             "The seed of the random number generator: " + str(args.seed) + "\n"
-            "The number of unique primary events: " + str(args.nprimary) + "\n"
+            "The number of basic events: " + str(args.nprimary) + "\n"
             "The average number of children per gate: " +
             str(args.nchildren) + "\n"
-            "Primary events to gates ratio per new node: " +
+            "Basic events to gates ratio per new node: " +
             str(args.ratio) + "\n"
             "The weights of gate types [AND, OR, K/N, NOT, XOR]: " +
             str(Gate.gate_weights) + "\n"
@@ -284,16 +315,16 @@ def write_info(args):
             str(args.reuse_p) + "\n"
             "Approximate percentage of repeated gates in the tree: " +
             str(args.reuse_g) + "\n"
-            "Maximum probability for primary events: " +
+            "Maximum probability for basic events: " +
             str(args.maxprob) + "\n"
-            "Minimum probability for primary events: " +
+            "Minimum probability for basic events: " +
             str(args.minprob) + "\n"
             "Minimal number of primary events for the root node: " +
             str(args.ptop) + "\n"
             "-->\n"
             )
 
-    shared_p = [x for x in PrimaryEvent.primary_events if x.is_shared()]
+    shared_p = [x for x in BasicEvent.basic_events if x.is_shared()]
     shared_g = [x for x in Gate.gates if x.is_shared()]
     and_gates = [x for x in Gate.gates if x.gate_type == "and"]
     or_gates = [x for x in Gate.gates if x.gate_type == "or"]
@@ -303,25 +334,26 @@ def write_info(args):
 
     t_file.write(
             "<!--\nThe generated fault tree has the following metrics:\n\n"
-            "The total number of primary events: " +
-            str(PrimaryEvent.num_primary) + "\n"
-            "The total number of gates: " + str(Gate.num_gates) + "\n"
+            "The number of basic events: " +
+            str(BasicEvent.num_basic) + "\n"
+            "The number of house events: " + str(HouseEvent.num_house) + "\n"
+            "The number of gates: " + str(Gate.num_gates) + "\n"
             "    AND gates: " + str(len(and_gates)) + "\n"
             "    OR gates: " + str(len(or_gates)) + "\n"
             "    K/N gates: " + str(len(atleast_gates)) + "\n"
             "    NOT gates: " + str(len(not_gates)) + "\n"
             "    XOR gates: " + str(len(xor_gates)) + "\n"
-            "Primary events to gates ratio: " +
-            str(PrimaryEvent.num_primary / Gate.num_gates) + "\n"
+            "Basic events to gates ratio: " +
+            str(BasicEvent.num_basic / Gate.num_gates) + "\n"
             "The average number of children per gate: " +
             str(sum(x.num_children() for x in Gate.gates) / len(Gate.gates)) +
             "\n"
-            "The number of shared primary events: " + str(len(shared_p)) + "\n"
+            "The number of shared basic events: " + str(len(shared_p)) + "\n"
             "The number of shared gates: " + str(len(shared_g)) + "\n"
             )
     if shared_p:
         t_file.write(
-                "The avg. number of parents of shared primary events: " +
+                "The avg. number of parents of shared basic events: " +
                 str(sum(x.num_parents() for x in shared_p) / len(shared_p)) +
                 "\n"
                 )
@@ -334,23 +366,28 @@ def write_info(args):
 
     t_file.write("-->\n\n")
 
-def write_model_data(t_file, primary_events):
+def write_model_data(t_file, basic_events):
     """Appends model data with primary event descriptions.
 
     Args:
         t_file: The output stream.
-        primary_events: A set of primary events.
+        basic_events: A set of basic events.
     """
-    # Print probabilities of primary events
+    # Print probabilities of basic events
     t_file.write("<model-data>\n")
-    for primary in primary_events:
-        t_file.write("<define-basic-event name=\"" + primary.name + "\">\n"
-                     "<float value=\"" + str(primary.prob) + "\"/>\n"
+    for basic in basic_events:
+        t_file.write("<define-basic-event name=\"" + basic.name + "\">\n"
+                     "<float value=\"" + str(basic.prob) + "\"/>\n"
                      "</define-basic-event>\n")
+
+    for house in HouseEvent.house_events:
+        t_file.write("<define-house-event name=\"" + house.name + "\">\n"
+                     "<constant value=\"" + house.state + "\"/>\n"
+                     "</define-house-event>\n")
 
     t_file.write("</model-data>\n")
 
-def write_results(args, top_event, primary_events):
+def write_results(args, top_event, basic_events):
     """Writes results of a generated fault tree.
 
     Writes the information about the fault tree in an XML file.
@@ -360,7 +397,7 @@ def write_results(args, top_event, primary_events):
     Args:
         args: Configurations of this fault tree generation process.
         top_event: Top gate of the generated fault tree.
-        primary_events: A set of primary events of the fault tree.
+        basic_events: A set of basic events of the fault tree.
     """
     # Plane text is used instead of any XML tools for performance reasons.
     write_info(args)
@@ -387,15 +424,19 @@ def write_results(args, top_event, primary_events):
         if gate.gate_type == "atleast":
             o_file.write(" min=\"" + str(gate.k_num) +"\"")
         o_file.write(">\n")
-        # Print primary events
-        for p_child in gate.p_children:
-            o_file.write("<basic-event name=\"" + p_child.name + "\"/>\n")
-
-        # Print intermediate events
+        # Print children that are gates.
         for g_child in gate.g_children:
             o_file.write("<gate name=\"" + g_child.name + "\"/>\n")
             # Update the queue
             gates_queue.put(g_child)
+
+        # Print children that are basic events.
+        for b_child in gate.b_children:
+            o_file.write("<basic-event name=\"" + b_child.name + "\"/>\n")
+
+        # Print children that are house events.
+        for h_child in gate.h_children:
+            o_file.write("<house-event name=\"" + h_child.name + "\"/>\n")
 
         o_file.write("</" + gate.gate_type+ ">\n")
         o_file.write("</define-gate>\n")
@@ -414,7 +455,7 @@ def write_results(args, top_event, primary_events):
 
     t_file.write("</define-fault-tree>\n")
 
-    write_model_data(t_file, primary_events)
+    write_model_data(t_file, basic_events)
 
     t_file.write("</opsa-mef>")
     t_file.close()
@@ -470,7 +511,7 @@ def main():
     seed = "the seed of a random number generator"
     parser.add_argument("--seed", type=int, help=seed, default=123)
 
-    nprimary = "the number of unique primary events"
+    nprimary = "the number of primary events"
     parser.add_argument("-p", "--nprimary", type=int, help=nprimary,
                         default=10)
 
@@ -506,6 +547,9 @@ def main():
     parser.add_argument("--ctop", type=int, help=ctop,
                         default=0)  # 0 indicates that the number is not set.
 
+    house = "the number of house events in primary events"
+    parser.add_argument("--house", type=int, help=house, default=0)
+
     out = "output file to write the generated fault tree"
     parser.add_argument("-o", "--out", help=out, default="fault_tree.xml")
 
@@ -521,6 +565,7 @@ def main():
     check_if_positive(maxprob, args.maxprob)
     check_if_positive(reuse_p, args.reuse_p)
     check_if_positive(reuse_g, args.reuse_g)
+    check_if_positive(house, args.house)
 
     check_if_less(reuse_p, args.reuse_p, 0.9)
     check_if_less(reuse_g, args.reuse_p, 0.9)
@@ -539,6 +584,9 @@ def main():
     if args.ptop and args.ptop == args.ctop and args.nprimary > args.ptop:
         raise ap.ArgumentTypeError("(ctop > ptop) is required to expand "
                                    "the tree")
+
+    if args.house >= args.nprimary or args.nprimary - args.house <= args.ptop:
+        raise ap.ArgumentTypeError("Too many house events")
 
     if args.weights_g:
         if [i for i in args.weights_g if float(i) < 0]:
@@ -559,7 +607,7 @@ def main():
     top_event = generate_fault_tree(args)
 
     # Write output files
-    write_results(args, top_event, PrimaryEvent.primary_events)
+    write_results(args, top_event, BasicEvent.basic_events)
 
 
 if __name__ == "__main__":
