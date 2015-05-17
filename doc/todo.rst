@@ -62,16 +62,12 @@ Minor Enhancements and Capabilities
   * Expressions. *Moderate*
   * Include directive in input files to include other input files. *Low*
 
-- Improve the fault tree generator. *Low*
-
-  * Performance (100,000-basic-event-tree <= 1 min): PyPy, Cython.
-  * Advanced gates (ATLEAST, NOT)
-  * CCF groups
+- Improve the fault tree generator performance (100,000 basic events). *Low*
 
 - Shorthand format to XML converter. *Low*
 
   * Nested gates
-  * NOT gate
+  * NOT gate or Negation
   * Multiple top events
 
 - Create a cut-set generator. *Low*
@@ -126,5 +122,5 @@ Coding Specific
 
 - Benchmark tests:
 
-  * HIPPS
-  * BSCU
+  * HIPPS (periodic tests)
+  * BSCU (numerical expressions)

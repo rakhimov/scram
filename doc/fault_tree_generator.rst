@@ -9,50 +9,49 @@ demanding cases, but it requires good understanding of fault trees and
 may be time consuming to design large trees.
 In order to facilitate the creation of complex trees,
 a python script is written that takes into account the factors that make
-a fault tree complex for analysis. More features for this script will
-be introduced as SCRAM becomes capable of handling more complex trees.
+a fault tree complex for analysis.
 
 General Description
 ===================
-* Use random numbers to determine the structure of the tree.
-* Number of primary events is specified by a user.
+* Uses random numbers to determine the structure of the tree.
+* Number of basic events is specified by a user.
 * The seed of the random number generator may be fixed and specified as
   well.
-* Names of events in the tree must be randomly chosen between creating a
+* Nodes in the tree are randomly chosen between creating a
   new event or re-using an already created event.
-* Probabilities for primary events are generated randomly.
-* Names are assigned sequentially. E# and G#.
-* The tree is deterministic upon setting the same parameters.
-* The exact ratios are not guaranteed.
-* The output should be an input tree file.
+* Probabilities for basic events are generated randomly.
+* Names are assigned sequentially. E#, H#, CCF#, and G#.
+* The tree is reproducible with the same parameters and the seed.
+* The exact ratios and expected results are not guaranteed.
+* The output is a valid input file for analysis tools.
 
 Script arguments
-=================
+================
 * Random number generator seed.
 * Number of primary events.
-* Approximate ratio primary events to gates. Average.
-* Approximate ratio of re-used primary events. This events may show up
+* Number of house events.
+* Number of CCF (MGL only) groups.
+* Approximate ratio of basic events to gates.
+* Approximate ratio of re-used basic events. This events may show up
   in several places in the tree.
 * Approximate ratio of re-used gates. The acyclic property is ensured.
 * Minimum and maximum probabilities for primary events.
-* Number of primary events for the root node of the tree.
+* Number of basic events for the root node of the tree.
 * Fixed number of children for the root node of the tree.
+* Weights for the gate types: AND, OR, K/N, NOT, XOR.
+* Optional use of more complex gates (K/N, NOT, XOR) only if the weights
+  are given.
 * Output file name.
-* Optional use of more complex gates and primary event types. [not implemented]
+* Output formats: shorthand or XML(default).
 
-Algorithm
-==========
+Note on Performance
+===================
+To generate complex fault trees faster, it is recommended to use PyPy_
+interpreter or Cython_.
+Cython can convert the fault tree generator script into C code, which can be
+compiled into a much faster executable.
 
-1) Generate databases with intermediate and basic events.
-
-    * Top event do not have children primary events, by default,
-      for the higher complexity of the tree. The number of primary events for
-      the root node may be set by a user.
-    * Random choice between creating a new intermediate or
-      primary event, or re-using an existing primary or intermediate event.
-    * Limiting factors: the average number of primary events per intermediate
-      event, and the total number of primary events.
-
-2) Generate probabilities.
-
-3) Write the tree description into an output tree file.
+.. _PyPy:
+    http://pypy.org/
+.. _Cython:
+    http://cython.org/

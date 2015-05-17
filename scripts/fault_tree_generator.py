@@ -340,6 +340,8 @@ def write_info(args):
             "The root gate name: " + args.root + "\n\n"
             "The seed of the random number generator: " + str(args.seed) + "\n"
             "The number of basic events: " + str(args.nprimary) + "\n"
+            "The number of house events: " + str(args.house) + "\n"
+            "The number of CCF groups: " + str(args.ccf) + "\n"
             "The average number of children per gate: " +
             str(args.nchildren) + "\n"
             "Basic events to gates ratio per new node: " +
@@ -372,6 +374,7 @@ def write_info(args):
             "The number of basic events: " +
             str(BasicEvent.num_basic) + "\n"
             "The number of house events: " + str(HouseEvent.num_house) + "\n"
+            "The number of CCF groups: " + str(CcfGroup.num_ccf) + "\n"
             "The number of gates: " + str(Gate.num_gates) + "\n"
             "    AND gates: " + str(len(and_gates)) + "\n"
             "    OR gates: " + str(len(or_gates)) + "\n"
@@ -651,7 +654,7 @@ def main():
     parser.add_argument("-c", "--nchildren", type=int, help=nchildren,
                         default=3)
 
-    ratio = "primary events to gates ratio per a new gate"
+    ratio = "basic events to gates ratio per a new gate"
     parser.add_argument("--ratio", type=float, help=ratio, default=2)
 
     gate_weights = "weights for samling [AND, OR, K/N, NOT, XOR] gate types"

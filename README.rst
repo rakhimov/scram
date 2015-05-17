@@ -31,7 +31,7 @@ representation of a fault tree.
 
 An experimental GUI front-end is under development using `Qt`_.
 
-In addition, a random fault tree generator script is provided to explore the
+In addition, a complex-fault-tree-generator script is provided to explore the
 performance of *SCRAM*.
 
 A full description of *SCRAM* and its current capabilities
