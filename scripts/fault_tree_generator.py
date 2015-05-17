@@ -141,6 +141,7 @@ class BasicEvent(Node):
     min_prob = 0
     max_prob = 1
     basic_events = []  # container for created basic events
+    non_ccf_events = []  # basic events that are not in ccf groups
     def __init__(self, parent=None):
         BasicEvent.num_basic += 1
         super(BasicEvent, self).__init__("E" + str(BasicEvent.num_basic),
@@ -167,6 +168,26 @@ class HouseEvent(Node):
                                          parent)
         self.state = random.choice(["true", "false"])
         HouseEvent.house_events.append(self)
+
+
+class CcfGroup(object):
+    num_ccf = 0
+    ccf_groups = []
+    def __init__(self):
+        CcfGroup.num_ccf += 1
+        self.name = "CCF" + str(CcfGroup.num_ccf)
+        self.members = []
+        self.prob = random.uniform(BasicEvent.min_prob, BasicEvent.max_prob)
+        self.model = "MGL"
+        CcfGroup.ccf_groups.append(self)
+
+    def get_factors(self):
+        assert(len(self.members) > 1)
+        levels = random.randint(2, len(self.members))
+        factors = []
+        for i in range(levels - 1):
+            factors.append(random.uniform(0.1, 1))
+        return factors
 
 
 def generate_fault_tree(args):
@@ -284,6 +305,20 @@ def generate_fault_tree(args):
         if target_gate is not top_event:
             HouseEvent(target_gate)
 
+    # Create CCF groups from the existing basic events.
+    if args.ccf:
+        members = BasicEvent.basic_events[:]
+        random.shuffle(members)
+        first_mem = 0
+        last_mem = 0
+        while len(CcfGroup.ccf_groups) < args.ccf:
+            last_mem = first_mem + random.randint(2, 5)
+            if last_mem > len(members):
+                break
+            CcfGroup().members = members[first_mem : last_mem]
+            first_mem = last_mem
+        BasicEvent.non_ccf_events = members[first_mem : ]
+
     return top_event
 
 
@@ -375,6 +410,7 @@ def write_model_data(t_file, basic_events):
     """
     # Print probabilities of basic events
     t_file.write("<model-data>\n")
+
     for basic in basic_events:
         t_file.write("<define-basic-event name=\"" + basic.name + "\">\n"
                      "<float value=\"" + str(basic.prob) + "\"/>\n"
@@ -384,6 +420,7 @@ def write_model_data(t_file, basic_events):
         t_file.write("<define-house-event name=\"" + house.name + "\">\n"
                      "<constant value=\"" + house.state + "\"/>\n"
                      "</define-house-event>\n")
+
 
     t_file.write("</model-data>\n")
 
@@ -453,9 +490,32 @@ def write_results(args, top_event, basic_events):
             written_gates.add(gate)
             write_gate(gate, t_file)
 
+    # Proceed with ccf groups
+    for ccf_group in CcfGroup.ccf_groups:
+        t_file.write("<define-CCF-group name=\"" + ccf_group.name + "\""
+                     " model=\"" + ccf_group.model + "\">\n"
+                     "<members>\n")
+        for member in ccf_group.members:
+            t_file.write("<basic-event name=\"" + member.name + "\"/>\n")
+        t_file.write("</members>\n<distribution>\n<float value=\"" +
+                     str(ccf_group.prob) + "\"/>\n</distribution>\n")
+        t_file.write("<factors>\n")
+        factors = ccf_group.get_factors()
+        level = 2
+        for factor in factors:
+            t_file.write("<factor level=\"" + str(level) + "\">\n"
+                         "<float value=\"" + str(factor) + "\"/>\n</factor>\n")
+            level += 1
+
+        t_file.write("</factors>\n")
+        t_file.write("</define-CCF-group>\n")
+
     t_file.write("</define-fault-tree>\n")
 
-    write_model_data(t_file, basic_events)
+    if args.ccf:
+        write_model_data(t_file, BasicEvent.non_ccf_events)
+    else:
+        write_model_data(t_file, BasicEvent.basic_events)
 
     t_file.write("</opsa-mef>")
     t_file.close()
@@ -531,7 +591,6 @@ def write_shorthand(args, top_event):
     t_file.write("\n")
     for basic in BasicEvent.basic_events:
         t_file.write("p(" + basic.name + ") = " + str(basic.prob) + "\n")
-
 
 
 def check_if_positive(desc, val):
@@ -623,6 +682,9 @@ def main():
     house = "the number of house events"
     parser.add_argument("--house", type=int, help=house, default=0)
 
+    ccf = "the number of ccf groups"
+    parser.add_argument("--ccf", type=int, help=ccf, default=0)
+
     out = "output file to write the generated fault tree"
     parser.add_argument("-o", "--out", help=out, default="fault_tree.xml")
 
@@ -642,6 +704,7 @@ def main():
     check_if_positive(reuse_p, args.reuse_p)
     check_if_positive(reuse_g, args.reuse_g)
     check_if_positive(house, args.house)
+    check_if_positive(ccf, args.ccf)
 
     check_if_less(reuse_p, args.reuse_p, 0.9)
     check_if_less(reuse_g, args.reuse_p, 0.9)
@@ -663,6 +726,9 @@ def main():
 
     if args.house >= args.nprimary or args.nprimary - args.house <= args.ptop:
         raise ap.ArgumentTypeError("Too many house events")
+
+    if args.ccf > args.nprimary / 2:
+        raise ap.ArgumentTypeError("Too many ccf groups")
 
     if args.weights_g:
         if [i for i in args.weights_g if float(i) < 0]:
