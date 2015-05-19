@@ -7,12 +7,11 @@ This script should help create complex fault trees to test analysis tools.
 """
 from __future__ import print_function, division
 
-import sys
-
 import Queue
-import random
-
 import argparse as ap
+import random
+import sys
+import time
 
 sys.setrecursionlimit(int(1e6))  # heavy use of recursion for big trees
 
@@ -37,27 +36,6 @@ class Node(object):
     def num_parents(self):
         """Returns the number of unique parents."""
         return len(self.parents)
-
-    def has_ancestor(self, gate):
-        """Finds if the given gate is an ancestor of the node.
-
-        Args:
-            gate: A potential ancestor gate.
-
-        Returns:
-            True or false.
-        """
-        if gate is self:
-            return True
-
-        if gate in self.parents:
-            return True
-
-        for parent in self.parents:
-            if parent.has_ancestor(gate):
-                return True
-
-        return False
 
 
 class Gate(Node):
@@ -95,10 +73,10 @@ class Gate(Node):
         cum_dist.insert(0, 0)
         for i in range(1, len(cum_dist)):
             cum_dist[i] += cum_dist[i - 1]
-        r = random.random()
+        r_num = random.random()
         bin_num = [i - 1 for i in range(1, len(cum_dist))
-                    if cum_dist[i - 1] <= r and r < cum_dist[i]]
-        assert(len(bin_num) == 1)
+                    if cum_dist[i - 1] <= r_num < cum_dist[i]]
+        assert len(bin_num) == 1
         return Gate.gate_types[bin_num[0]]
 
     def num_children(self):
@@ -123,6 +101,27 @@ class Gate(Node):
             self.h_children.add(child)
         else:
             sys.exit("Illegal child type for a gate.")
+
+    def has_ancestor(self, gate):
+        """Finds if the given gate is an ancestor of the node.
+
+        Args:
+            gate: A potential ancestor gate.
+
+        Returns:
+            True or false.
+        """
+        if gate is self:
+            return True
+
+        if gate in self.parents:
+            return True
+
+        for parent in self.parents:
+            if parent.has_ancestor(gate):
+                return True
+
+        return False
 
 
 class BasicEvent(Node):
@@ -182,11 +181,9 @@ class CcfGroup(object):
         CcfGroup.ccf_groups.append(self)
 
     def get_factors(self):
-        assert(len(self.members) > 1)
+        assert len(self.members) > 1
         levels = random.randint(2, len(self.members))
-        factors = []
-        for i in range(levels - 1):
-            factors.append(random.uniform(0.1, 1))
+        factors = [random.uniform(0.1, 1) for i in range(levels - 1)]
         return factors
 
 
@@ -245,7 +242,10 @@ def generate_fault_tree(args):
                 if s_reuse < args.reuse_g:
                     random.shuffle(Gate.gates)
                     for random_gate in Gate.gates:
-                        if not gate.has_ancestor(random_gate):
+                        if random_gate in gate.g_children:
+                            continue
+                        if (not random_gate.g_children or
+                                not gate.has_ancestor(random_gate)):
                             gate.add_child(random_gate)
                             break
                 else:
@@ -262,7 +262,7 @@ def generate_fault_tree(args):
         # there are no more intermediate gates to use due to a big ratio
         # or just random accident.
         if (gates_queue.empty() and
-            len(BasicEvent.basic_events) < args.nprimary):
+                len(BasicEvent.basic_events) < args.nprimary):
             # Initialize more gates by randomly choosing places in the
             # fault tree.
             random_gate = random.choice(Gate.gates)
@@ -302,7 +302,9 @@ def generate_fault_tree(args):
     # Distribute house events
     while len(HouseEvent.house_events) < args.house:
         target_gate = random.choice(Gate.gates)
-        if target_gate is not top_event:
+        if (target_gate is not top_event and
+                target_gate.gate_type != "xor" and
+                target_gate.gate_type != "not"):
             HouseEvent(target_gate)
 
     # Create CCF groups from the existing basic events.
@@ -427,7 +429,7 @@ def write_model_data(t_file, basic_events):
 
     t_file.write("</model-data>\n")
 
-def write_results(args, top_event, basic_events):
+def write_results(args, top_event):
     """Writes results of a generated fault tree.
 
     Writes the information about the fault tree in an XML file.
@@ -437,7 +439,6 @@ def write_results(args, top_event, basic_events):
     Args:
         args: Configurations of this fault tree generation process.
         top_event: Top gate of the generated fault tree.
-        basic_events: A set of basic events of the fault tree.
     """
     # Plane text is used instead of any XML tools for performance reasons.
     write_info(args)
@@ -624,9 +625,61 @@ def check_if_less(desc, val, ref):
     if val > ref:
         raise ap.ArgumentTypeError(desc + " is more than " + str(ref))
 
+def check_valid_setup(args):
+    """Checks if the relationships between arguments are valid for use.
 
-def main():
-    """Verifies arguments and calls fault tree generator functions.
+    These checks are important to ensure that the requested fault tree is
+    producible and realistic to achieve in reasonable time.
+
+    Raises:
+        ArgumentTypeError: There are problemns with the arguments.
+    """
+    if args.maxprob < args.minprob:
+        raise ap.ArgumentTypeError("Max probability < Min probability")
+
+    if args.ptop > args.nprimary:
+        raise ap.ArgumentTypeError("ptop > # of total primary events")
+
+    if args.ptop > args.ctop:
+        raise ap.ArgumentTypeError("ptop > # of children for top")
+
+    if args.ptop and args.ptop == args.ctop and args.nprimary > args.ptop:
+        raise ap.ArgumentTypeError("(ctop > ptop) is required to expand "
+                                   "the tree")
+
+    if args.house >= args.nprimary or args.nprimary - args.house <= args.ptop:
+        raise ap.ArgumentTypeError("Too many house events")
+
+    if args.ccf > args.nprimary / 2:
+        raise ap.ArgumentTypeError("Too many ccf groups")
+
+    if args.weights_g:
+        if [i for i in args.weights_g if float(i) < 0]:
+            raise ap.ArgumentTypeError("weights cannot be negative")
+
+        if len(args.weights_g) > len(Gate.gate_weights):
+            raise ap.ArgumentTypeError("too many weights are provided")
+
+        weights_float = [float(i) for i in args.weights_g]
+        for i in range(len(Gate.gate_weights) - len(weights_float)):
+            weights_float.append(0)
+        Gate.gate_weights = weights_float
+
+    if args.shorthand:
+        if args.out == "fault_tree.xml":
+            args.out = "fault_tree.txt"
+        if args.weights_g and len(args.weights_g) > 3:
+            raise ap.ArgumentTypeError("No complex gate type representation "
+                                       "for the shorthand format")
+        if args.house:
+            raise ap.ArgumentTypeError("No house event representation "
+                                       "for the shorthand format")
+
+def manage_cmd_args():
+    """Manages command-line description and arguments.
+
+    Returns:
+        Arguments that are collected from the command line.
 
     Raises:
         ArgumentTypeError: There are problemns with the arguments.
@@ -714,47 +767,17 @@ def main():
     check_if_less(maxprob, args.maxprob, 1)
     check_if_less(minprob, args.minprob, 1)
 
-    if args.maxprob < args.minprob:
-        raise ap.ArgumentTypeError("Max probability < Min probability")
+    check_valid_setup(args)
+    return args
 
-    if args.ptop > args.nprimary:
-        raise ap.ArgumentTypeError("ptop > # of total primary events")
 
-    if args.ptop > args.ctop:
-        raise ap.ArgumentTypeError("ptop > # of children for top")
+def main():
+    """The main fuction of the fault tree generator.
 
-    if args.ptop and args.ptop == args.ctop and args.nprimary > args.ptop:
-        raise ap.ArgumentTypeError("(ctop > ptop) is required to expand "
-                                   "the tree")
-
-    if args.house >= args.nprimary or args.nprimary - args.house <= args.ptop:
-        raise ap.ArgumentTypeError("Too many house events")
-
-    if args.ccf > args.nprimary / 2:
-        raise ap.ArgumentTypeError("Too many ccf groups")
-
-    if args.weights_g:
-        if [i for i in args.weights_g if float(i) < 0]:
-            raise ap.ArgumentTypeError("weights cannot be negative")
-
-        if len(args.weights_g) > len(Gate.gate_weights):
-            raise ap.ArgumentTypeError("too many weights are provided")
-
-        weights_float = [float(i) for i in args.weights_g]
-        for i in range(len(Gate.gate_weights) - len(weights_float)):
-            weights_float.append(0)
-        Gate.gate_weights = weights_float
-
-    if args.shorthand:
-        if args.out == "fault_tree.xml":
-            args.out = "fault_tree.txt"
-        if args.weights_g and len(args.weights_g) > 3:
-            raise ap.ArgumentTypeError("No complex gate type representation "
-                                       "for the shorthand format")
-        if args.house:
-            raise ap.ArgumentTypeError("No house event representation "
-                                       "for the shorthand format")
-
+    Raises:
+        ArgumentTypeError: There are problemns with the arguments.
+    """
+    args = manage_cmd_args()
     # Set the seed for this tree generator
     random.seed(args.seed)
 
@@ -764,8 +787,7 @@ def main():
     if args.shorthand:
         write_shorthand(args, top_event)
     else:
-        write_results(args, top_event, BasicEvent.basic_events)
-
+        write_results(args, top_event)
 
 if __name__ == "__main__":
     try:
