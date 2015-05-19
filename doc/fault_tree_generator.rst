@@ -3,8 +3,9 @@ Fault Tree Generator Python Script
 ##################################
 
 The complexity of a fault tree depends on many factors, such as types of gates,
-the number of shared nodes, the number of nodes, and the structure or the
-arrangement of the tree. It is best to craft a tree to test complex and most
+the number of shared nodes, the number of nodes, and the structure of the tree
+or the arrangement of the nodes.
+It is best to craft a tree to test complex and most
 demanding cases, but it requires good understanding of fault trees and
 may be time consuming to design large trees.
 In order to facilitate the creation of complex trees,
@@ -22,7 +23,8 @@ General Description
 * Probabilities for basic events are generated randomly.
 * Names are assigned sequentially. E#, H#, CCF#, and G#.
 * The tree is reproducible with the same parameters and the seed.
-* The exact ratios and expected results are not guaranteed.
+* The exact ratios and expected results are not guaranteed except for the
+  number of basic events.
 * The output is a valid input file for analysis tools.
 
 Script arguments
@@ -32,9 +34,10 @@ Script arguments
 * Number of house events.
 * Number of CCF (MGL only) groups.
 * Approximate ratio of basic events to gates.
-* Approximate ratio of re-used basic events. This events may show up
+* Approximate ratio of reused basic events. This events may show up
   in several places in the tree.
-* Approximate ratio of re-used gates. The acyclic property is ensured.
+* Approximate ratio of reused gates. The acyclic property is ensured.
+* Maximum number of children per gate. The average is around (Max+2)/2.
 * Minimum and maximum probabilities for primary events.
 * Number of basic events for the root node of the tree.
 * Fixed number of children for the root node of the tree.
@@ -46,12 +49,24 @@ Script arguments
 
 Note on Performance
 ===================
-To generate complex fault trees faster, it is recommended to use PyPy_
-interpreter or Cython_.
-Cython can convert the fault tree generator script into C code, which can be
-compiled into a much faster executable.
+Depending on the provided arguments for the script, the execution time
+varies greatly. The number of gates and their reuse in the fault tree
+generation tend to greatly increase the execution time because of the need to
+check for cycles. If the number of gates and their reuse are kept constant,
+the generation time scales linearly with the number of basic events.
 
-.. _PyPy:
-    http://pypy.org/
+The total time complexity is approximately
+
+    .. math::
+
+        O(N*(N/Ratio)^2*ReuseG*\exp(ReuseP)*\exp(-MaxChildren/Ratio))
+
+It is possible to generate a 100,000 basic event tree in less than a minute;
+however, the Python interpreter may require additional
+resources(stack size and recursion limit).
+To generate more complex fault trees, it is recommended to use Cython_.
+Cython can convert the fault tree generator script into C code, which can be
+compiled into a faster executable.
+
 .. _Cython:
     http://cython.org/

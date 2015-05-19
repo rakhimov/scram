@@ -62,8 +62,6 @@ Minor Enhancements and Capabilities
   * Expressions. *Moderate*
   * Include directive in input files to include other input files. *Low*
 
-- Improve the fault tree generator performance (100,000 basic events). *Low*
-
 - Shorthand format to XML converter. *Low*
 
   * Nested gates

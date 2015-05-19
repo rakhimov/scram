@@ -11,9 +11,8 @@ import Queue
 import argparse as ap
 import random
 import sys
-import time
 
-sys.setrecursionlimit(int(1e6))  # heavy use of recursion for big trees
+sys.setrecursionlimit(int(1e5))  # heavy use of recursion for big trees
 
 
 class Node(object):
@@ -102,26 +101,24 @@ class Gate(Node):
         else:
             sys.exit("Illegal child type for a gate.")
 
-    def has_ancestor(self, gate):
-        """Finds if the given gate is an ancestor of the node.
+    def __get_ancestors(self, ancestors):
+        """Collects ancestors from parents."""
+        for parent in self.parents:
+            if parent in ancestors:
+                continue
+            else:
+                ancestors.add(parent)
+                parent.__get_ancestors(ancestors)
 
-        Args:
-            gate: A potential ancestor gate.
+    def get_ancestors(self):
+        """Collects ancestors from this gate.
 
         Returns:
-            True or false.
+            A set of ancestors.
         """
-        if gate is self:
-            return True
-
-        if gate in self.parents:
-            return True
-
-        for parent in self.parents:
-            if parent.has_ancestor(gate):
-                return True
-
-        return False
+        ancestors = set([self])
+        self.__get_ancestors(ancestors)
+        return ancestors
 
 
 class BasicEvent(Node):
@@ -197,12 +194,6 @@ def generate_fault_tree(args):
     Returns:
         Top gate of the created fault tree.
     """
-    BasicEvent.min_prob = args.minprob
-    BasicEvent.max_prob = args.maxprob
-
-    min_children = 2  # minimum number of children per gate
-    max_children = args.nchildren * 2 - min_children
-
     def init_gates(args, gates_queue):
         """Initialize intermediate gates and other primary events.
 
@@ -217,7 +208,7 @@ def generate_fault_tree(args):
         gate = gates_queue.get()
 
         # Sample children size
-        num_children = random.randint(min_children, max_children)
+        num_children = random.randint(2, args.nchildren)
 
         if gate.gate_type == "not":
             num_children = 1
@@ -226,6 +217,9 @@ def generate_fault_tree(args):
         elif gate.gate_type == "atleast":
             num_children = num_children if num_children > 2 else 3
             gate.k_num = random.randint(2, num_children - 1)
+
+        ancestors = None  # needed for cycle prevention
+        no_reuse_g = False  # special corner case with no reuse of gates
 
         while gate.num_children() < num_children:
             # Case when the number of primary events is already satisfied
@@ -239,15 +233,19 @@ def generate_fault_tree(args):
             s_reuse = random.random()  # sample the reuse frequency
             if s_ratio < (1.0 / (1 + args.ratio)):
                 # Create a new gate or reuse an existing one
-                if s_reuse < args.reuse_g:
+                if s_reuse < args.reuse_g and not no_reuse_g:
+                    if not ancestors:
+                        ancestors = gate.get_ancestors()
                     random.shuffle(Gate.gates)
                     for random_gate in Gate.gates:
-                        if random_gate in gate.g_children:
+                        if (random_gate in gate.g_children or
+                                random_gate is gate):
                             continue
                         if (not random_gate.g_children or
-                                not gate.has_ancestor(random_gate)):
+                                random_gate not in ancestors):
                             gate.add_child(random_gate)
                             break
+                    no_reuse_g = True
                 else:
                     gates_queue.put(Gate(gate))
             else:
@@ -278,7 +276,7 @@ def generate_fault_tree(args):
     while top_event.gate_type != "and" and top_event.gate_type != "or":
         top_event.gate_type = top_event.get_random_type()
     top_event.name = args.root
-    num_children = random.randint(min_children, max_children)
+    num_children = random.randint(2, args.nchildren)
 
     # Configuring the number of children for the top event
     if args.ctop:
@@ -344,7 +342,7 @@ def write_info(args):
             "The number of basic events: " + str(args.nprimary) + "\n"
             "The number of house events: " + str(args.house) + "\n"
             "The number of CCF groups: " + str(args.ccf) + "\n"
-            "The average number of children per gate: " +
+            "The maximum number of children per gate: " +
             str(args.nchildren) + "\n"
             "Basic events to gates ratio per new node: " +
             str(args.ratio) + "\n"
@@ -625,6 +623,21 @@ def check_if_less(desc, val, ref):
     if val > ref:
         raise ap.ArgumentTypeError(desc + " is more than " + str(ref))
 
+def check_if_more(desc, val, ref):
+    """Verifies that the value is more than some reference for
+    the supplied argument.
+
+    Args:
+        desc: The description of the argument from the command-line.
+        val: The value of the argument.
+        ref: The reference value.
+
+    Raises:
+        ArgumentTypeError: The value is less than the reference.
+    """
+    if val < ref:
+        raise ap.ArgumentTypeError(desc + " is less than " + str(ref))
+
 def check_valid_setup(args):
     """Checks if the relationships between arguments are valid for use.
 
@@ -703,9 +716,9 @@ def manage_cmd_args():
     parser.add_argument("-p", "--nprimary", type=int, help=nprimary,
                         default=10)
 
-    nchildren = "the average number of children per gate"
+    nchildren = "the maximum number of children per gate"
     parser.add_argument("-c", "--nchildren", type=int, help=nchildren,
-                        default=3)
+                        default=4)
 
     ratio = "basic events to gates ratio per a new gate"
     parser.add_argument("--ratio", type=float, help=ratio, default=2)
@@ -767,6 +780,8 @@ def manage_cmd_args():
     check_if_less(maxprob, args.maxprob, 1)
     check_if_less(minprob, args.minprob, 1)
 
+    check_if_more(nchildren, args.nchildren, 2)
+
     check_valid_setup(args)
     return args
 
@@ -780,6 +795,9 @@ def main():
     args = manage_cmd_args()
     # Set the seed for this tree generator
     random.seed(args.seed)
+
+    BasicEvent.min_prob = args.minprob
+    BasicEvent.max_prob = args.maxprob
 
     top_event = generate_fault_tree(args)
 
