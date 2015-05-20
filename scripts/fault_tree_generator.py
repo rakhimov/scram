@@ -2,17 +2,17 @@
 """fault_tree_generator.py
 
 A script to generate a fault tree of various complexities. The generated
-fault tree is put into XML file with OpenPSA MEF ready for analysis.
-This script should help create complex fault trees to test analysis tools.
+fault tree can be put into XML file with OpenPSA MEF ready for analysis
+or into a shorthand format file.
+This script helps create complex fault trees in a short time
+to test other analysis tools.
 """
 from __future__ import print_function, division
 
-import Queue
 import argparse as ap
+from collections import deque
+from math import log
 import random
-import sys
-
-sys.setrecursionlimit(int(1e5))  # heavy use of recursion for big trees
 
 
 class Node(object):
@@ -51,6 +51,7 @@ class Gate(Node):
         h_children: Children of this gate that are house events.
         g_children: Children of this gate that are gates.
         gate_type: Type of the gate. Chosen randomly.
+        k_num: K number for a K/N combination gate. Chosen randomly.
     """
     num_gates = 0  # to keep track of gates and to name them
     gate_types = ["and", "or", "atleast", "not", "xor"]
@@ -67,7 +68,13 @@ class Gate(Node):
         self.gate_type = self.get_random_type()
         Gate.gates.append(self)  # keep track of all gates
 
-    def get_random_type(self):
+    @staticmethod
+    def get_random_type():
+        """Samples the gate type.
+
+        Returns:
+            A randomly chosen gate type.
+        """
         cum_dist = [x / sum(Gate.gate_weights) for x in Gate.gate_weights]
         cum_dist.insert(0, 0)
         for i in range(1, len(cum_dist)):
@@ -98,17 +105,6 @@ class Gate(Node):
             self.b_children.add(child)
         elif type(child) is HouseEvent:
             self.h_children.add(child)
-        else:
-            sys.exit("Illegal child type for a gate.")
-
-    def __get_ancestors(self, ancestors):
-        """Collects ancestors from parents."""
-        for parent in self.parents:
-            if parent in ancestors:
-                continue
-            else:
-                ancestors.add(parent)
-                parent.__get_ancestors(ancestors)
 
     def get_ancestors(self):
         """Collects ancestors from this gate.
@@ -117,7 +113,12 @@ class Gate(Node):
             A set of ancestors.
         """
         ancestors = set([self])
-        self.__get_ancestors(ancestors)
+        parents = deque(self.parents)
+        while parents:
+            parent = parents.popleft()
+            if parent not in ancestors:
+                ancestors.add(parent)
+                parents.extend(parent.parents)
         return ancestors
 
 
@@ -131,7 +132,8 @@ class BasicEvent(Node):
         min_prob: Lower bound of the distribution.
         max_prob: Upper bound of the distribution.
         prob: Probability of failure of this basic event. Assigned randomly.
-        basic_events: A set of all basic events created for the fault tree.
+        basic_events: A list of all basic events created for the fault tree.
+        non_ccf_events: A list of basic events that not in CCF groups.
     """
     num_basic = 0
     min_prob = 0
@@ -149,12 +151,12 @@ class BasicEvent(Node):
 class HouseEvent(Node):
     """Representation of a house event in a fault tree.
 
-        Names are assigned sequentially starting from H1.
+    Names are assigned sequentially starting from H1.
 
     Attributes:
         num_house: Total number of house events created.
         state: The state of the house event.
-        house_events: A set of all house events created for the fault tree.
+        house_events: A list of all house events created for the fault tree.
     """
     num_house = 0
     house_events = []  # container for created house events
@@ -167,6 +169,18 @@ class HouseEvent(Node):
 
 
 class CcfGroup(object):
+    """Representation of CCF groups in a fault tree.
+
+    Names are assinged sequentially starting from CCF1.
+
+    Attributes:
+        num_ccf: The total number of CCF groups.
+        ccf_groups: A collection of created CCF groups.
+        name: The name of an instance CCF group.
+        prob: Probability for a CCF group.
+        model: The CCF model chosen for a group.
+        members: A collection of members in a CCF group.
+    """
     num_ccf = 0
     ccf_groups = []
     def __init__(self):
@@ -178,11 +192,93 @@ class CcfGroup(object):
         CcfGroup.ccf_groups.append(self)
 
     def get_factors(self):
+        """Generates CCF factors.
+
+        Returns:
+            A list of CCF factors.
+        """
         assert len(self.members) > 1
         levels = random.randint(2, len(self.members))
-        factors = [random.uniform(0.1, 1) for i in range(levels - 1)]
+        factors = [random.uniform(0.1, 1) for _ in range(levels - 1)]
         return factors
 
+
+def init_gates(args, gates_queue):
+    """Initializes gates and other primary events.
+
+    Args:
+        args: Configurations for the fault tree.
+        gates_queue: A deque of gates to be initialized.
+    """
+    # Get an intermediate gate to intialize breadth-first
+    gate = gates_queue.popleft()
+
+    # Sample children size
+    num_children = random.randint(2, args.nchildren)
+
+    if gate.gate_type == "not":
+        num_children = 1
+    elif gate.gate_type == "xor":
+        num_children = 2
+    elif gate.gate_type == "atleast":
+        num_children = num_children if num_children > 2 else 3
+        gate.k_num = random.randint(2, num_children - 1)
+
+    ancestors = None  # needed for cycle prevention
+    no_reuse_g = False  # special corner case with no reuse of gates
+    exp_ratio = 1.0 / (1 + args.ratio)  # out of loop for optimization
+    avg_gate = (args.nchildren + 2) / 2 / (args.ratio + 1)
+    avg_gate = avg_gate if avg_gate > 1 else 2
+    max_trials = int(log(len(Gate.gates), avg_gate))
+    max_trials = len(Gate.gates) if max_trials < 2 else max_trials
+
+    while gate.num_children() < num_children:
+        # Case when the number of primary events is already satisfied
+        if len(BasicEvent.basic_events) == args.nprimary:
+            # Reuse already initialized primary events
+            gate.add_child(random.choice(BasicEvent.basic_events))
+            continue
+
+        # Sample gates vs. primary events
+        s_ratio = random.random()
+        s_reuse = random.random()  # sample the reuse frequency
+        if s_ratio < exp_ratio:
+            # Create a new gate or reuse an existing one
+            if s_reuse < args.reuse_g and not no_reuse_g:
+                if not ancestors:
+                    ancestors = gate.get_ancestors()
+
+                for _ in range(max_trials):
+                    random_gate = random.choice(Gate.gates)
+                    if (random_gate in gate.g_children or
+                            random_gate is gate):
+                        continue
+                    if (not random_gate.g_children or
+                            random_gate not in ancestors):
+                        gate.add_child(random_gate)
+                        break
+                no_reuse_g = True
+            else:
+                gates_queue.append(Gate(gate))
+        else:
+            # Create a new primary event or reuse an existing one
+            if s_reuse < args.reuse_p and BasicEvent.basic_events:
+                # Reuse an already initialized primary event
+                gate.add_child(random.choice(BasicEvent.basic_events))
+            else:
+                BasicEvent(gate)
+
+    # Corner case when not enough new primary events initialized, but
+    # there are no more intermediate gates to use due to a big ratio
+    # or just random accident.
+    if not gates_queue and len(BasicEvent.basic_events) < args.nprimary:
+        # Initialize more gates by randomly choosing places in the
+        # fault tree.
+        random_gate = random.choice(Gate.gates)
+        while (random_gate.gate_type == "not" or
+                random_gate.gate_type == "xor"):
+            random_gate = random.choice(Gate.gates)
+        gates_queue.append(Gate(random_gate))
 
 def generate_fault_tree(args):
     """Generates a fault tree of specified complexity from command-line
@@ -194,83 +290,6 @@ def generate_fault_tree(args):
     Returns:
         Top gate of the created fault tree.
     """
-    def init_gates(args, gates_queue):
-        """Initialize intermediate gates and other primary events.
-
-        Args:
-            args: Configurations for the fault tree.
-            gates_queue: Queue of gates to be initialized.
-        """
-        if gates_queue.empty():
-            return
-
-        # Get an intermediate gate to intialize breadth-first
-        gate = gates_queue.get()
-
-        # Sample children size
-        num_children = random.randint(2, args.nchildren)
-
-        if gate.gate_type == "not":
-            num_children = 1
-        elif gate.gate_type == "xor":
-            num_children = 2
-        elif gate.gate_type == "atleast":
-            num_children = num_children if num_children > 2 else 3
-            gate.k_num = random.randint(2, num_children - 1)
-
-        ancestors = None  # needed for cycle prevention
-        no_reuse_g = False  # special corner case with no reuse of gates
-
-        while gate.num_children() < num_children:
-            # Case when the number of primary events is already satisfied
-            if len(BasicEvent.basic_events) == args.nprimary:
-                # Reuse already initialized primary events
-                gate.add_child(random.choice(BasicEvent.basic_events))
-                continue
-
-            # Sample gates vs. primary events
-            s_ratio = random.random()
-            s_reuse = random.random()  # sample the reuse frequency
-            if s_ratio < (1.0 / (1 + args.ratio)):
-                # Create a new gate or reuse an existing one
-                if s_reuse < args.reuse_g and not no_reuse_g:
-                    if not ancestors:
-                        ancestors = gate.get_ancestors()
-                    random.shuffle(Gate.gates)
-                    for random_gate in Gate.gates:
-                        if (random_gate in gate.g_children or
-                                random_gate is gate):
-                            continue
-                        if (not random_gate.g_children or
-                                random_gate not in ancestors):
-                            gate.add_child(random_gate)
-                            break
-                    no_reuse_g = True
-                else:
-                    gates_queue.put(Gate(gate))
-            else:
-                # Create a new primary event or reuse an existing one
-                if s_reuse < args.reuse_p and BasicEvent.basic_events:
-                    # Reuse an already initialized primary event
-                    gate.add_child(random.choice(BasicEvent.basic_events))
-                else:
-                    BasicEvent(gate)
-
-        # Corner case when not enough new primary events initialized, but
-        # there are no more intermediate gates to use due to a big ratio
-        # or just random accident.
-        if (gates_queue.empty() and
-                len(BasicEvent.basic_events) < args.nprimary):
-            # Initialize more gates by randomly choosing places in the
-            # fault tree.
-            random_gate = random.choice(Gate.gates)
-            while (random_gate.gate_type == "not" or
-                   random_gate.gate_type == "xor"):
-                random_gate = random.choice(Gate.gates)
-            gates_queue.put(Gate(random_gate))
-
-        init_gates(args, gates_queue)
-
     # Start with a top event
     top_event = Gate()
     while top_event.gate_type != "and" and top_event.gate_type != "or":
@@ -285,17 +304,18 @@ def generate_fault_tree(args):
         num_children = args.ptop
 
     # Container for not yet initialized gates
-    # Queue is used to traverse the tree breadth-first
-    gates_queue = Queue.Queue()
+    # A deque is used to traverse the tree breadth-first
+    gates_queue = deque()
 
     # Initialize the top root node
     while len(top_event.b_children) < args.ptop:
         BasicEvent(top_event)
     while top_event.num_children() < num_children:
-        gates_queue.put(Gate(top_event))
+        gates_queue.append(Gate(top_event))
 
     # Procede with children gates
-    init_gates(args, gates_queue)
+    while gates_queue:
+        init_gates(args, gates_queue)
 
     # Distribute house events
     while len(HouseEvent.house_events) < args.house:
@@ -312,7 +332,7 @@ def generate_fault_tree(args):
         first_mem = 0
         last_mem = 0
         while len(CcfGroup.ccf_groups) < args.ccf:
-            last_mem = first_mem + random.randint(2, 5)
+            last_mem = first_mem + random.randint(2, args.nchildren)
             if last_mem > len(members):
                 break
             CcfGroup().members = members[first_mem : last_mem]
@@ -428,7 +448,7 @@ def write_model_data(t_file, basic_events):
     t_file.write("</model-data>\n")
 
 def write_results(args, top_event):
-    """Writes results of a generated fault tree.
+    """Writes results of a generated fault tree into an XML file.
 
     Writes the information about the fault tree in an XML file.
     The fault tree is printed breadth-first.
@@ -446,7 +466,7 @@ def write_results(args, top_event):
     t_file.write("<define-fault-tree name=\"%s\">\n" % args.ft_name)
 
     # Container for not yet initialized intermediate events
-    gates_queue = Queue.Queue()
+    gates_queue = deque()
 
     def write_gate(gate, o_file):
         """Print children for the gate.
@@ -467,7 +487,7 @@ def write_results(args, top_event):
         for g_child in gate.g_children:
             o_file.write("<gate name=\"" + g_child.name + "\"/>\n")
             # Update the queue
-            gates_queue.put(g_child)
+            gates_queue.append(g_child)
 
         # Print children that are basic events.
         for b_child in gate.b_children:
@@ -486,8 +506,8 @@ def write_results(args, top_event):
     written_gates = set()
 
     # Proceed with intermediate gates
-    while not gates_queue.empty():
-        gate = gates_queue.get()
+    while gates_queue:
+        gate = gates_queue.popleft()
         if gate not in written_gates:
             written_gates.add(gate)
             write_gate(gate, t_file)
@@ -523,10 +543,18 @@ def write_results(args, top_event):
     t_file.close()
 
 def write_shorthand(args, top_event):
+    """Writes the results into the shorthand format file.
+
+    Note that the shorthand format does not support advanced gates and groups.
+
+    Args:
+        args: Configurations for the generation.
+        top_event: The top gate of the generated fault tree.
+    """
     t_file = open(args.out, "w")
     t_file.write(args.ft_name + "\n\n")
     # Container for not yet initialized intermediate events
-    gates_queue = Queue.Queue()
+    gates_queue = deque()
 
     def write_gate(gate, o_file):
         """Print children for the gate.
@@ -563,7 +591,7 @@ def write_shorthand(args, top_event):
             else:
                 line.append(div + g_child.name)
             # Update the queue
-            gates_queue.put(g_child)
+            gates_queue.append(g_child)
 
         # Print children that are basic events.
         for b_child in gate.b_children:
@@ -583,8 +611,8 @@ def write_shorthand(args, top_event):
     written_gates = set()
 
     # Proceed with intermediate gates
-    while not gates_queue.empty():
-        gate = gates_queue.get()
+    while gates_queue:
+        gate = gates_queue.popleft()
         if gate not in written_gates:
             written_gates.add(gate)
             write_gate(gate, t_file)
@@ -660,10 +688,10 @@ def check_valid_setup(args):
         raise ap.ArgumentTypeError("(ctop > ptop) is required to expand "
                                    "the tree")
 
-    if args.house >= args.nprimary or args.nprimary - args.house <= args.ptop:
+    if args.house >= args.nprimary:
         raise ap.ArgumentTypeError("Too many house events")
 
-    if args.ccf > args.nprimary / 2:
+    if args.ccf > 2 * args.nprimary / (2 + args.nchildren):
         raise ap.ArgumentTypeError("Too many ccf groups")
 
     if args.weights_g:

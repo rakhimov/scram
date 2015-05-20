@@ -14,7 +14,7 @@ a fault tree complex for analysis.
 
 General Description
 ===================
-* Uses random numbers to determine the structure of the tree.
+* Use of pseudo-random numbers to determine the structure of the tree.
 * Number of basic events is specified by a user.
 * The seed of the random number generator may be fixed and specified as
   well.
@@ -55,18 +55,18 @@ generation tend to greatly increase the execution time because of the need to
 check for cycles. If the number of gates and their reuse are kept constant,
 the generation time scales linearly with the number of basic events.
 
-The total time complexity is approximately
+The average time complexity is approximately
 
     .. math::
 
         O(N*(N/Ratio)^2*ReuseG*\exp(ReuseP)*\exp(-MaxChildren/Ratio))
 
 It is possible to generate a 100,000 basic event tree in less than a minute;
-however, the Python interpreter may require additional
-resources(stack size and recursion limit).
-To generate more complex fault trees, it is recommended to use Cython_.
+however, to generate more complex fault trees,
+it is recommended to use Cython_.
 Cython can convert the fault tree generator script into C code, which can be
-compiled into a faster executable.
+compiled into a faster executable. This faster executable is capable of
+generating million-basic-event fault trees in few minutes.
 
 .. _Cython:
     http://cython.org/
