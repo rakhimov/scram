@@ -9,10 +9,11 @@ to test other analysis tools.
 """
 from __future__ import print_function, division
 
-import argparse as ap
 from collections import deque
 from math import log
 import random
+
+import argparse as ap
 
 
 class Node(object):
@@ -22,7 +23,7 @@ class Node(object):
         name: A specific name that identifies this node.
         parents: A set of parents of this node.
     """
-    def __init__(self, name="", parent=None):
+    def __init__(self, name, parent=None):
         self.name = name
         self.parents = set()
         if parent:
@@ -45,18 +46,19 @@ class Gate(Node):
 
     Attributes:
         num_gates: Total number of gates created.
-        gate_types: Types of gates that are allowed in the fault tree.
         gates: A set of all gates that are created for the fault tree.
         b_children: Children of this gate that are basic events.
         h_children: Children of this gate that are house events.
         g_children: Children of this gate that are gates.
         gate_type: Type of the gate. Chosen randomly.
         k_num: K number for a K/N combination gate. Chosen randomly.
+        type_weights: The weights for sampling gate types.
     """
     num_gates = 0  # to keep track of gates and to name them
-    gate_types = ["and", "or", "atleast", "not", "xor"]
-    gate_weights = [1, 1, 0, 0, 0]  # weights for the random choice
     gates = []  # container for all created gates
+    __gate_types = ["and", "or", "atleast", "not", "xor"]
+    type_weights = [1, 1, 0, 0, 0]  # weights for the random choice
+    __cum_dist = [0, 0.5, 1, 1, 1]  # CDF from the weights of the gate types
 
     def __init__(self, parent=None):
         super(Gate, self).__init__("G" + str(Gate.num_gates), parent)
@@ -69,21 +71,32 @@ class Gate(Node):
         Gate.gates.append(self)  # keep track of all gates
 
     @staticmethod
+    def set_type_weights(weights):
+        """Updates gate type weights.
+
+        Args:
+            weights: Weights of gate types.
+        """
+        assert len(weights) == len(Gate.type_weights)
+        assert sum(weights) > 0
+        Gate.type_weights = weights[:]
+        Gate.__cum_dist = [x / sum(weights) for x in weights]
+        Gate.__cum_dist.insert(0, 0)
+        for i in range(1, len(Gate.__cum_dist)):
+            Gate.__cum_dist[i] += Gate.__cum_dist[i - 1]
+
+    @staticmethod
     def get_random_type():
         """Samples the gate type.
 
         Returns:
             A randomly chosen gate type.
         """
-        cum_dist = [x / sum(Gate.gate_weights) for x in Gate.gate_weights]
-        cum_dist.insert(0, 0)
-        for i in range(1, len(cum_dist)):
-            cum_dist[i] += cum_dist[i - 1]
         r_num = random.random()
-        bin_num = [i - 1 for i in range(1, len(cum_dist))
-                    if cum_dist[i - 1] <= r_num < cum_dist[i]]
-        assert len(bin_num) == 1
-        return Gate.gate_types[bin_num[0]]
+        bin_num = 1
+        while Gate.__cum_dist[bin_num] <= r_num:
+            bin_num += 1
+        return Gate.__gate_types[bin_num - 1]
 
     def num_children(self):
         """Returns the number of children."""
@@ -367,7 +380,7 @@ def write_info(args):
             "Basic events to gates ratio per new node: " +
             str(args.ratio) + "\n"
             "The weights of gate types [AND, OR, K/N, NOT, XOR]: " +
-            str(Gate.gate_weights) + "\n"
+            str(Gate.type_weights) + "\n"
             "Approximate percentage of repeated primary events in the tree: " +
             str(args.reuse_p) + "\n"
             "Approximate percentage of repeated gates in the tree: " +
@@ -698,13 +711,16 @@ def check_valid_setup(args):
         if [i for i in args.weights_g if float(i) < 0]:
             raise ap.ArgumentTypeError("weights cannot be negative")
 
-        if len(args.weights_g) > len(Gate.gate_weights):
+        if len(args.weights_g) > len(Gate.type_weights):
             raise ap.ArgumentTypeError("too many weights are provided")
 
         weights_float = [float(i) for i in args.weights_g]
-        for i in range(len(Gate.gate_weights) - len(weights_float)):
+        if sum(weights_float) == 0:
+            raise ap.ArgumentTypeError("atleast one non-zero weight is needed")
+
+        for i in range(len(Gate.type_weights) - len(weights_float)):
             weights_float.append(0)
-        Gate.gate_weights = weights_float
+        Gate.set_type_weights(weights_float)
 
     if args.shorthand:
         if args.out == "fault_tree.xml":
@@ -751,8 +767,8 @@ def manage_cmd_args():
     ratio = "basic events to gates ratio per a new gate"
     parser.add_argument("--ratio", type=float, help=ratio, default=2)
 
-    gate_weights = "weights for samling [AND, OR, K/N, NOT, XOR] gate types"
-    parser.add_argument("--weights-g", type=str, nargs="*", help=gate_weights)
+    type_weights = "weights for samling [AND, OR, K/N, NOT, XOR] gate types"
+    parser.add_argument("--weights-g", type=str, nargs="+", help=type_weights)
 
     reuse_p = "approximate percentage of repeated primary events in the tree"
     parser.add_argument("--reuse-p", type=float, help=reuse_p, default=0.1)

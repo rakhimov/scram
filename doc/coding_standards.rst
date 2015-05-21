@@ -44,6 +44,7 @@ The quality of the code is checked with the following tools:
 #. Google style conformance check with `Cpplint`_.
 #. Common C++ code problem check with cppclean_.
 #. Python code quality check with `Pylint`_.
+#. Python code profiling with `PyVmMonitor`_.
 
 .. _`Gprof`:
     https://www.cs.utah.edu/dept/old/texinfo/as/gprof.html
@@ -65,6 +66,8 @@ The quality of the code is checked with the following tools:
     https://github.com/myint/cppclean
 .. _`Pylint`:
     http://www.pylint.org/
+.. _`PyVmMonitor`:
+    http://www.pyvmmonitor.com/
 
 Testing and Continuous Integration
 ==================================
