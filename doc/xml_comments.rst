@@ -14,10 +14,10 @@ formatted according to `OpenPSA Model Exchange Format v2.0d`_ or later.
 XML Editors
 ===========
 
-For better experience and productivity with writing XML input files,
-it is recommended to use advanced text editors and tools that provide XML
-specific automation and help, i.e. tag auto-completion, folding, schema
-validation.
+For better experience and productivity with writing and reading
+XML input files, it is recommended to use advanced text editors and
+tools that provide XML specific automation and help, i.e. tag auto-completion,
+folding, schema validation.
 
 Some of the recommended tools:
 
@@ -29,6 +29,8 @@ Some of the recommended tools:
 
 - `xmllint <http://xmlsoft.org/xmllint.html>`_ with RelaxNG schema
 
-- `w3 Recommendations <http://www.w3schools.com/xml/xml_editors.asp>`_
-
 - `BaseX <http://basex.org>`_
+
+- `Eclipse XML Editors and Tools <http://www.eclipse.org/webtools/sse/>`_
+
+- `w3 Recommendations <http://www.w3schools.com/xml/xml_editors.asp>`_

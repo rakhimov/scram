@@ -181,12 +181,10 @@ path =
   }
 end-state =
   element sequence {
-    attribute name { xsd:NCName },
-    empty
+    attribute name { xsd:NCName }
   }
   | element branch {
-      attribute name { xsd:NCName },
-      empty
+      attribute name { xsd:NCName }
     }
 # =============================================================
 
@@ -227,13 +225,11 @@ collect-expression = element collect-expression { expression }
 block = element block { instruction* }
 rule =
   element rule {
-    attribute name { xsd:NCName },
-    empty
+    attribute name { xsd:NCName }
   }
 link =
   element event-tree {
-    attribute name { xsd:NCName },
-    empty
+    attribute name { xsd:NCName }
   }
 rule-definition =
   element define-rule {
@@ -557,7 +553,8 @@ case-operation = element case { expression, expression }
 # ***********************************************************
 exponential = element exponential { expression, expression }
 GLM = element GLM { expression, expression, expression, expression }
-Weibull = element Weibull { expression, expression, expression, expression }
+Weibull =
+  element Weibull { expression, expression, expression, expression }
 periodic-test =
   element periodic-test {
     expression, expression, expression, expression

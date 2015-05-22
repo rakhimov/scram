@@ -331,11 +331,9 @@
     <choice>
       <element name="sequence">
         <attribute name="name"> <data type="NCName"/> </attribute>
-        <empty/>
       </element>
       <element name="branch">
         <attribute name="name"> <data type="NCName"/> </attribute>
-        <empty/>
       </element>
     </choice>
   </define>
@@ -460,14 +458,12 @@
   <define name="rule">
     <element name="rule">
       <attribute name="name"> <data type="NCName"/> </attribute>
-      <empty/>
     </element>
   </define>
 
   <define name="link">
     <element name="event-tree">
       <attribute name="name"> <data type="NCName"/> </attribute>
-      <empty/>
     </element>
   </define>
 

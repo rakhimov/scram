@@ -66,7 +66,7 @@ Validation Schemas
 
 - `RelaxNG Schema <https://github.com/rakhimov/scram/blob/master/share/input.rng>`_
 - `RelaxNG Compact <https://github.com/rakhimov/scram/blob/master/share/input.rnc>`_
-- `DTD Schema <https://github.com/rakhimov/scram/blob/master/doc/open-psa/mef.dtd>`_
+- `DTD Schema <https://github.com/rakhimov/scram/blob/master/share/open-psa/mef.dtd>`_
 
 .. _shorthand_format:
 
