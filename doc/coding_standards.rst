@@ -16,7 +16,7 @@ This project follows the following coding styles:
 .. _`Google Python Style Guide (GPSG)`:
     http://google-styleguide.googlecode.com/svn/trunk/pyguide.html
 .. _`PEP 8 -- Style Guide for Python Code (PEP8)`:
-    http://legacy.python.org/dev/peps/pep-0008/
+    https://www.python.org/dev/peps/pep-0008/
 .. _`KDE CMake Coding Style`:
     https://techbase.kde.org/Policies/CMake_Coding_Style
 .. _`Qt Coding Style`:
@@ -24,13 +24,14 @@ This project follows the following coding styles:
 .. _`Google Shell Style Guide`:
     https://google-styleguide.googlecode.com/svn/trunk/shell.xml
 
-Currently nonconforming cases in the source code:
--------------------------------------------------
+Currently nonconforming cases in the C++ source code:
+-----------------------------------------------------
 
 * Exceptions are used. (This is not recommended by GCSG.)
 * Streams are used instead of *printf-like routines*.
 * Naming of mutator functions without *set* prefix.
 * C++11 features are not allowed. Only Boost features are used instead.
+* License boilerplate is not included unless the code is from other projects.
 
 The quality of the code is checked with the following tools:
 ============================================================
@@ -43,6 +44,7 @@ The quality of the code is checked with the following tools:
 #. Google style conformance check with `Cpplint`_.
 #. Common C++ code problem check with cppclean_.
 #. Python code quality check with `Pylint`_.
+#. Python code profiling with `PyVmMonitor`_.
 
 .. _`Gprof`:
     https://www.cs.utah.edu/dept/old/texinfo/as/gprof.html
@@ -64,6 +66,8 @@ The quality of the code is checked with the following tools:
     https://github.com/myint/cppclean
 .. _`Pylint`:
     http://www.pylint.org/
+.. _`PyVmMonitor`:
+    http://www.pyvmmonitor.com/
 
 Testing and Continuous Integration
 ==================================

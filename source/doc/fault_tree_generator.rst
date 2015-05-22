@@ -3,65 +3,70 @@ Fault Tree Generator Python Script
 ##################################
 
 The complexity of a fault tree depends on many factors, such as types of gates,
-the number of shared nodes, the number of nodes, and the structure or the
-arrangement of the tree. It is best to craft a tree to test complex and most
+the number of shared nodes, the number of nodes, and the structure of the tree
+or the arrangement of the nodes.
+It is best to craft a tree to test complex and most
 demanding cases, but it requires good understanding of fault trees and
 may be time consuming to design large trees.
 In order to facilitate the creation of complex trees,
 a python script is written that takes into account the factors that make
-a fault tree complex for analysis. More features for this script will
-be introduced as SCRAM becomes capable of handling more complex trees.
+a fault tree complex for analysis.
 
 General Description
 ===================
-* Use random numbers to determine the structure of the tree.
-* Number of primary events is specified by a user.
+* Use of pseudo-random numbers to determine the structure of the tree.
+* Number of basic events is specified by a user.
 * The seed of the random number generator may be fixed and specified as
   well.
-* Names of events in the tree must be randomly chosen between creating a
+* Nodes in the tree are randomly chosen between creating a
   new event or re-using an already created event.
-* Probabilities for primary events are generated randomly.
-* Names are assigned sequentially. E# and P#.
-* The tree is deterministic upon setting the same parameters.
-* The exact ratios are not guaranteed.
-* No support for CCF is expected.
-* The output should be an input tree file.
-* Probabilities for events should be optional. [not implemented]
-
+* Probabilities for basic events are generated randomly.
+* Names are assigned sequentially. E#, H#, CCF#, and G#.
+* The tree is reproducible with the same parameters and the seed.
+* The exact ratios and expected results are not guaranteed except for the
+  number of basic events.
+* The output is a valid input file for analysis tools.
 
 Script arguments
-=================
+================
 * Random number generator seed.
 * Number of primary events.
-* Approximate ratio primary events to gates. Average.
-* Approximate ratio of re-used primary events. This events may show up
+* Number of house events.
+* Number of CCF (MGL only) groups.
+* Approximate ratio of basic events to gates.
+* Approximate ratio of reused basic events. This events may show up
   in several places in the tree.
-* Approximate ratio of re-used gates. The acyclic property should be ensured. [not implemented]
+* Approximate ratio of reused gates. The acyclic property is ensured.
+* Maximum number of children per gate. The average is around (Max+2)/2.
 * Minimum and maximum probabilities for primary events.
-* Number of primary events for the root node of the tree.
+* Number of basic events for the root node of the tree.
 * Fixed number of children for the root node of the tree.
+* Weights for the gate types: AND, OR, K/N, NOT, XOR.
+* Optional use of more complex gates (K/N, NOT, XOR) only if the weights
+  are given.
 * Output file name.
-* Optional use of more complex gates and primary event types. [not implemented]
+* Output formats: shorthand or XML(default).
 
-.. warning::
-    Some values for the script arguments are not tested for validity. The
-    output tree will be validated by SCRAM.
-    For some invalid values the python script may scream itself.
+Note on Performance
+===================
+Depending on the provided arguments for the script, the execution time
+varies greatly. The number of gates and their reuse in the fault tree
+generation tend to greatly increase the execution time because of the need to
+check for cycles. If the number of gates and their reuse are kept constant,
+the generation time scales linearly with the number of basic events.
 
+The average time complexity is approximately
 
-Algorithm
-==========
+    .. math::
 
-1) Generate databases with intermediate and basic events.
+        O(N*(N/Ratio)^2*ReuseG*\exp(ReuseP)*\exp(-MaxChildren/Ratio))
 
-    * Top event do not have children primary events, by default,
-      for the higher complexity of the tree. The number of primary events for
-      the root node may be set by a user.
-    * Random choice between creating a new intermediate or
-      primary event, or re-using an existing primary or intermediate event.
-    * Limiting factors: the average number of primary events per intermediate
-      event, and the total number of primary events.
+It is possible to generate a 100,000 basic event tree in less than a minute;
+however, to generate more complex fault trees,
+it is recommended to use Cython_.
+Cython can convert the fault tree generator script into C code, which can be
+compiled into a faster executable. This faster executable is capable of
+generating million-basic-event fault trees in few minutes.
 
-2) Generate probabilities.
-
-3) Write the tree description into an output tree file.
+.. _Cython:
+    http://cython.org/

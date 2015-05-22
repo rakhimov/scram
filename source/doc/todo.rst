@@ -63,10 +63,11 @@ Minor Enhancements and Capabilities
   * Expressions. *Moderate*
   * Include directive in input files to include other input files. *Low*
 
-- Improve the fault tree generator. *Low*
+- Shorthand format to XML converter. *Low*
 
-  * Advanced gates
-  * CCF groups
+  * Nested gates
+  * NOT gate or Negation
+  * Multiple top events
 
 - Create a cut-set generator. *Low*
 
@@ -120,5 +121,5 @@ Coding Specific
 
 - Benchmark tests:
 
-  * HIPPS
-  * BSCU
+  * HIPPS (periodic tests)
+  * BSCU (numerical expressions)

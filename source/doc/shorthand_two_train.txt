@@ -1,0 +1,10 @@
+TwoTrains
+
+TopEvent := (TrainOne & TrainTwo)
+TrainOne := (ValveOne | PumpOne)
+TrainTwo := (ValveTwo | PumpTwo)
+
+p(ValveOne) = 0.5
+p(ValveTwo) = 0.5
+p(PumpOne) = 0.7
+p(PumpTwo) = 0.7
