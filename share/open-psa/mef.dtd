@@ -1,3 +1,9 @@
+<!--
+     WARNING: This DTD will fail to validate Boolean operations
+        involving AND, OR, NOT due to the redefinition conflict
+        with Formulae AND, OR, NOT.
+-->
+
 <!-- Advance declaration of ENTITIES -->
 
 <!-- IV.3. Formulae -->
@@ -12,7 +18,8 @@
     "(neg | add | sub | mul | div | pi | abs | acos | asin | atan | cos
 | cosh | exp | log | log10 | mod | pow | sin | sinh | tan | tanh
 | sqrt | ceil | floor | min | max | mean)">
-<!ENTITY % Boolean-operation "(not | and | or | eq | df | lt | gt | leq | geq)">
+<!ENTITY % Boolean-operation "(bool_not | bool_and | bool_or | eq | df
+| lt | gt | leq | geq)">
 <!ENTITY % conditional-operation "(ite | switch)">
 <!ENTITY % operation
     "(%numerical-operation; | %Boolean-operation; | %conditional-operation;)">
@@ -402,6 +409,7 @@
 
 <!-- V.2.4. Boolean Expressions -->
 
+<!-- NOTE: Boolean AND, OR, NOT are renamed to avoid redefinition. -->
 <!ELEMENT bool_not (%expression;)>
 <!ELEMENT bool_and ((%expression;)+)>
 <!ELEMENT bool_or ((%expression;)+)>
