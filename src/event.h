@@ -76,7 +76,7 @@ class Gate : public Event {
   /// @throws LogicError if the gate type is being re-assigned.
   void type(std::string type);
 
-  /// @returns The vote number iff the gate is vote.
+  /// @returns The vote number if and only if the gate is vote.
   /// @throws LogicError if the vote number is not yet assigned.
   int vote_number();
 

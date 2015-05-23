@@ -76,7 +76,7 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
             run(), *vm);
   po::notify(*vm);
 
-  // Process command line args.
+  // Process command-line arguments.
   if (vm->count("help")) {
     std::cout << usage << "\n\n" << desc << "\n";
     return -1;
@@ -139,7 +139,7 @@ void ConstructSettings(const po::variables_map& vm, Settings* settings) {
   if (vm.count("ccf")) settings->ccf_analysis(vm["ccf"].as<bool>());
 }
 
-/// Main body of commond-line entrance to run the program.
+/// Main body of command-line entrance to run the program.
 /// @param[in] vm Variables map of program options.
 /// @throws Error for any type of internal problems like validation.
 /// @throws boost::exception for possible Boost usage errors.
@@ -167,7 +167,7 @@ int RunScram(const po::variables_map& vm) {
   ConstructSettings(vm, &settings);
   ran->AddSettings(settings);
 
-  // Add input files from the comand line.
+  // Add input files from the command-line.
   if (vm.count("input-files")) {
     std::vector<std::string> cmd_input =
         vm["input-files"].as< std::vector<std::string> >();
@@ -210,11 +210,11 @@ int RunScram(const po::variables_map& vm) {
   return 0;
 }
 
-/// Command line SCRAM entrance.
+/// Command-line SCRAM entrance.
 /// @returns 0 for success.
 /// @returns 1 for errored state.
 int main(int argc, char* argv[]) {
-  // Parse command line options.
+  // Parse command-line options.
   po::variables_map vm;
   int ret = ParseArguments(argc, argv, &vm);
   if (ret == 1) return 1;

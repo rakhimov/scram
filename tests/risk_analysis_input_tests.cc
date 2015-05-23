@@ -10,7 +10,7 @@
 
 using namespace scram;
 
-// Test if the xml is well formed.
+// Test if the XML is well formed.
 TEST(RiskAnalysisInputTest, XMLFormatting) {
   std::string input_incorrect= "./share/scram/input/xml_formatting_error.xml";
   RiskAnalysis* ran;

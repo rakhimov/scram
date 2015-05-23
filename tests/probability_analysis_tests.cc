@@ -67,10 +67,10 @@ TEST_F(ProbabilityAnalysisTest, CombineElAndSet) {
   EXPECT_EQ(set_two, combo_set);  // Expected (1,2,3)
   combo_set.clear();
 
-  // Multi element checks
+  // Multi-element checks
   set_one.insert(el_one);  // Insert (1, 2)
 
-  // After the above intantiation the set_one is [(1), (3), (1,2), (1,3)].
+  // After the above instantiation the set_one is [(1), (3), (1,2), (1,3)].
   // The result of [ el_one AND set_one ] is [(1,2), (1,2,3)].
   EXPECT_EQ(4, set_one.size());
   EXPECT_EQ(2, el_one.size());

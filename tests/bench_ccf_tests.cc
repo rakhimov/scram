@@ -76,7 +76,7 @@ TEST_F(RiskAnalysisTest, PhiFactorCCF) {
 }
 
 // Benchmark Tests for MGL factor common cause failure calculations.
-// Test Minimal cut sets and total probabilty.
+// Test Minimal cut sets and total probability.
 TEST_F(RiskAnalysisTest, MGLFactorCCF) {
   std::string tree_input = "./share/scram/input/benchmark/mgl_ccf.xml";
   ASSERT_NO_THROW(ran->AddSettings(settings.ccf_analysis(true).num_sums(3)
@@ -93,7 +93,7 @@ TEST_F(RiskAnalysisTest, MGLFactorCCF) {
 }
 
 // Benchmark Tests for Alpha factor common cause failure calculations.
-// Test Minimal cut sets and total probabilty.
+// Test Minimal cut sets and total probability.
 TEST_F(RiskAnalysisTest, AlphaFactorCCF) {
   std::string tree_input = "./share/scram/input/benchmark/alpha_factor_ccf.xml";
   ASSERT_NO_THROW(ran->AddSettings(settings.ccf_analysis(true).num_sums(3)

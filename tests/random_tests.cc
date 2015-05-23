@@ -39,7 +39,7 @@ void PlotDistribution(const std::multiset<double>& series) {
   for (int i = 0; i < num_bins; ++i) {
     int num_x = screen_hight * bin_hight[i] / static_cast<double>(max_size) +
                 0.5;
-    bin_hight[i] = num_x;  // Hight in characters.
+    bin_hight[i] = num_x;  // Height in characters.
   }
   std::string hight_char = "x";
   for (int i = screen_hight; i > 0; --i) {

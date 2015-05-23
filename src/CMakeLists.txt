@@ -1,10 +1,10 @@
 ################### File Configurations #######################
-EXECUTE_PROCESS(COMMAND git describe --tags OUTPUT_VARIABLE core_version
+execute_process(COMMAND git describe --tags OUTPUT_VARIABLE core_version
   OUTPUT_STRIP_TRAILING_WHITESPACE)
-CONFIGURE_FILE(version.cc.in "${CMAKE_CURRENT_SOURCE_DIR}/version.cc" @ONLY)
+configure_file(version.cc.in "${CMAKE_CURRENT_SOURCE_DIR}/version.cc" @ONLY)
 
-SET(scram_install_dir "${CMAKE_INSTALL_PREFIX}")
-CONFIGURE_FILE(
+set(scram_install_dir "${CMAKE_INSTALL_PREFIX}")
+configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/env.cc.in"
   "${CMAKE_CURRENT_SOURCE_DIR}/env.cc"
   @ONLY

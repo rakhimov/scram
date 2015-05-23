@@ -18,7 +18,7 @@ void Parameter::CheckCyclicity(std::vector<std::string>* path) {
                                                     path->end(),
                                                     name_);
   if (it != path->end()) {
-    std::string msg = "Detected a cyclicity through '" + name_ +
+    std::string msg = "Detected a cycle through '" + name_ +
                       "' parameter:\n";
     msg += name_;
     for (++it; it != path->end(); ++it) {
@@ -60,7 +60,7 @@ void GlmExpression::Validate() {
   } else if (mu_->Mean() < 0) {
     throw InvalidArgument("The rate of repair cannot be negative.");
   } else if (gamma_->Mean() < 0 || gamma_->Mean() > 1) {
-    throw InvalidArgument("Invalid value for probabilty.");
+    throw InvalidArgument("Invalid value for probability.");
   } else if (time_->Mean() < 0) {
     throw InvalidArgument("The mission time cannot be negative.");
   } else if (lambda_->Min() < 0) {
@@ -68,7 +68,7 @@ void GlmExpression::Validate() {
   } else if (mu_->Min() < 0) {
     throw InvalidArgument("The sampled rate of repair cannot be negative.");
   } else if (gamma_->Min() < 0 || gamma_->Max() > 1) {
-    throw InvalidArgument("Invalid sampled gamma value for probabilty.");
+    throw InvalidArgument("Invalid sampled gamma value for probability.");
   } else if (time_->Min() < 0) {
     throw InvalidArgument("The sampled mission time cannot be negative.");
   }

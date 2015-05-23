@@ -17,9 +17,9 @@ void XMLParser::Init(const std::stringstream& xml_input_snippet) {
   try {
     parser_->parse_memory(xml_input_snippet.str());
 
-    if (!parser_) { throw ValidationError("Could not parse xml file."); }
+    if (!parser_) { throw ValidationError("Could not parse XML file."); }
   } catch (std::exception& ex) {
-    throw ValidationError("Error loading xml file: " + std::string(ex.what()));
+    throw ValidationError("Error loading XML file: " + std::string(ex.what()));
   }
 }
 

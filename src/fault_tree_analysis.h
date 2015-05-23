@@ -38,10 +38,10 @@ class FaultTreeAnalysis {
   explicit FaultTreeAnalysis(int limit_order = 20, bool ccf_analysis = false);
 
   /// Analyzes the fault tree and performs computations.
-  /// This function must be called only after initilizing the tree with or
+  /// This function must be called only after initializing the tree with or
   /// without its probabilities. Underlying objects may throw errors
   /// if the fault tree has initialization issues. However, there is no
-  /// quarantee for that.
+  /// guarantee for that.
   /// @param[in] fault_tree Valid Fault Tree.
   /// @note Cut set generator: O_avg(N) O_max(N)
   void Analyze(const FaultTreePtr& fault_tree);

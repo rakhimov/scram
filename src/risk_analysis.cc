@@ -1412,7 +1412,7 @@ std::string RiskAnalysis::CheckMissingParameters() {
 }
 
 void RiskAnalysis::ValidateExpressions() {
-  // Check for cyclicity in parameters.
+  // Check for cycles in parameters.
   if (!parameters_.empty()) {
     boost::unordered_map<std::string, ParameterPtr>::iterator it;
     for (it = parameters_.begin(); it != parameters_.end(); ++it) {

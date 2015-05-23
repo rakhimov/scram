@@ -13,7 +13,7 @@ namespace scram {
 
 /// @class IndexedGate
 /// This gate is for use in IndexedFaultTree.
-/// Intially this gate can represent any type of gate; however,
+/// Initially this gate can represent any type of gate; however,
 /// this gate can be only of OR and AND type at the end of all simplifications
 /// and processing. This gate class helps to process the fault tree before
 /// any complex analysis is done.
@@ -206,7 +206,7 @@ class IndexedGate {
   /// Vote number for atleast gate.
   int vote_number_;
 
-  /// This is a traversal vector containting first, second, and last visits.
+  /// This is a traversal vector containing first, second, and last visits.
   int visits_[3];
 
   /// Parents of this gate.

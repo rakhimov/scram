@@ -1,7 +1,7 @@
 /// @file ccf_group.h
 /// Functional containers for basic events grouped by common cause failure.
 /// Common cause failure can be modeled using alpha, beta, MGL, or direct
-/// parameter assigment in phi model.
+/// parameter assignment in phi model.
 #ifndef SCRAM_SRC_CCF_GROUP_H_
 #define SCRAM_SRC_CCF_GROUP_H_
 

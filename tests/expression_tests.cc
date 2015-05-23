@@ -123,7 +123,7 @@ TEST(ExpressionTest, GLM) {
 
   double sampled_value = 0;
   ASSERT_NO_THROW(sampled_value = dev->Sample());
-  EXPECT_EQ(sampled_value, dev->Sample());  // Resampling without resetting.
+  EXPECT_EQ(sampled_value, dev->Sample());  // Re-sampling without resetting.
   ASSERT_TRUE(dev->IsConstant());
 }
 
@@ -220,7 +220,7 @@ TEST(ExpressionTest, UniformDeviate) {
   double sampled_value = 0;
   ASSERT_FALSE(dev->IsConstant());
   ASSERT_NO_THROW(sampled_value = dev->Sample());
-  EXPECT_EQ(sampled_value, dev->Sample());  // Resampling without resetting.
+  EXPECT_EQ(sampled_value, dev->Sample());  // Re-sampling without resetting.
   ASSERT_NO_THROW(dev->Reset());
   EXPECT_NE(sampled_value, dev->Sample());
 }
@@ -250,7 +250,7 @@ TEST(ExpressionTest, NormalDeviate) {
   double sampled_value = 0;
   ASSERT_FALSE(dev->IsConstant());
   ASSERT_NO_THROW(sampled_value = dev->Sample());
-  EXPECT_EQ(sampled_value, dev->Sample());  // Resampling without resetting.
+  EXPECT_EQ(sampled_value, dev->Sample());  // Re-sampling without resetting.
   ASSERT_NO_THROW(dev->Reset());
   EXPECT_NE(sampled_value, dev->Sample());
 }
@@ -300,7 +300,7 @@ TEST(ExpressionTest, LogNormalDeviate) {
   double sampled_value = 0;
   ASSERT_FALSE(dev->IsConstant());
   ASSERT_NO_THROW(sampled_value = dev->Sample());
-  EXPECT_EQ(sampled_value, dev->Sample());  // Resampling without resetting.
+  EXPECT_EQ(sampled_value, dev->Sample());  // Re-sampling without resetting.
   ASSERT_NO_THROW(dev->Reset());
   EXPECT_NE(sampled_value, dev->Sample());
 }
@@ -345,7 +345,7 @@ TEST(ExpressionTest, GammaDeviate) {
   double sampled_value = 0;
   ASSERT_FALSE(dev->IsConstant());
   ASSERT_NO_THROW(sampled_value = dev->Sample());
-  EXPECT_EQ(sampled_value, dev->Sample());  // Resampling without resetting.
+  EXPECT_EQ(sampled_value, dev->Sample());  // Re-sampling without resetting.
   ASSERT_NO_THROW(dev->Reset());
   EXPECT_NE(sampled_value, dev->Sample());
 }
@@ -390,7 +390,7 @@ TEST(ExpressionTest, BetaDeviate) {
   double sampled_value = 0;
   ASSERT_FALSE(dev->IsConstant());
   ASSERT_NO_THROW(sampled_value = dev->Sample());
-  EXPECT_EQ(sampled_value, dev->Sample());  // Resampling without resetting.
+  EXPECT_EQ(sampled_value, dev->Sample());  // Re-sampling without resetting.
   ASSERT_NO_THROW(dev->Reset());
   EXPECT_NE(sampled_value, dev->Sample());
 }
@@ -454,7 +454,7 @@ TEST(ExpressionTest, Histogram) {
   double sampled_value = 0;
   ASSERT_FALSE(dev->IsConstant());
   ASSERT_NO_THROW(sampled_value = dev->Sample());
-  EXPECT_EQ(sampled_value, dev->Sample());  // Resampling without resetting.
+  EXPECT_EQ(sampled_value, dev->Sample());  // Re-sampling without resetting.
   ASSERT_NO_THROW(dev->Reset());
   EXPECT_NE(sampled_value, dev->Sample());
 }

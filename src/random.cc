@@ -1,5 +1,5 @@
 /// @file random.cc
-/// Implementation for various Rngs.
+/// Implementation for various RNGs.
 #include "random.h"
 
 #include <cmath>

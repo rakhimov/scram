@@ -172,7 +172,7 @@ void ProbabilityAnalysis::IndexMcs(
         // This must be a complement of an event.
         assert(basic_to_int_.count(comp_name));
 
-        if (coherent_) coherent_ = false;  // Detected non-coherency.
+        if (coherent_) coherent_ = false;  // Detected non-coherence.
 
         mcs_with_indices.insert(mcs_with_indices.begin(),
                                 -basic_to_int_.find(comp_name)->second);

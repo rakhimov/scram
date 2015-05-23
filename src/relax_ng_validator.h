@@ -20,28 +20,28 @@
 namespace scram {
 
 /// @class RelaxNGValidator
-/// This class provides a simple interface to validate xml documents
+/// This class provides a simple interface to validate XML documents
 /// against a given RelaxNG schema.
 class RelaxNGValidator {
  public:
   RelaxNGValidator();
 
-  /// Releases xml related memory by calling release_underlying().
+  /// Releases XML related memory by calling release_underlying().
   ~RelaxNGValidator();
 
-  /// Parse a relaxng schema xml file.
-  /// @param[in] contents The contents of the xml file.
+  /// Parse a RelaxNG schema XML file.
+  /// @param[in] contents The contents of the XML file.
   void parse_memory(const Glib::ustring& contents);
 
-  /// Validate an xml file against the given schema.
-  /// @param[in] doc The xml file document.
+  /// Validate an XML file against the given schema.
+  /// @param[in] doc The XML file document.
   bool Validate(const xmlpp::Document* doc);
 
  protected:
-  /// Free xml-related memory.
+  /// Free XML-related memory.
   void release_underlying();
 
-  /// Parse a relaxng schema context.
+  /// Parse a RelaxNG schema context.
   /// @param[in] context The context.
   void parse_context(xmlRelaxNGParserCtxtPtr context);
 

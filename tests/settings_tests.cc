@@ -10,7 +10,7 @@ TEST(SettingsTest, IncorrectSetup) {
   Settings s;
   // Incorrect approximation argument.
   ASSERT_THROW(s.approx("approx"), InvalidArgument);
-  // Incorrect limit order for minmal cut sets.
+  // Incorrect limit order for minimal cut sets.
   ASSERT_THROW(s.limit_order(-1), InvalidArgument);
   // Incorrect number of series in the probability equation.
   ASSERT_THROW(s.num_sums(-1), InvalidArgument);

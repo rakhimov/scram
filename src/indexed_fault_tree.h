@@ -51,14 +51,14 @@ class SimpleGate {
   }
 
   /// Adds a basic event index at the end of a container.
-  /// This function is specificly given to initiate the gate.
+  /// This function is specifically given to initiate the gate.
   /// @param[in] index The index of a basic event.
   inline void InitiateWithBasic(int index) {
     basic_events_.push_back(index);
   }
 
   /// Adds a module index at the end of a container.
-  /// This function is specificly given to initiate the gate.
+  /// This function is specifically given to initiate the gate.
   /// Note that modules are treated just like basic events.
   /// @param[in] index The index of a module.
   inline void InitiateWithModule(int index) {
@@ -125,7 +125,7 @@ class IndexedFaultTree {
 
   /// Creates indexed gates with basic and house event indices as children.
   /// This function also simplifies the tree to simple gates.
-  /// @param[in] int_to_inter Container of gates and thier indices including
+  /// @param[in] int_to_inter Container of gates and their indices including
   ///                         the top gate.
   /// @param[in] ccf_basic_to_gates CCF basic events that are converted to
   ///                               gates.
@@ -145,7 +145,7 @@ class IndexedFaultTree {
 
   /// Performs processing of a fault tree.
   /// @param[in] num_basic_events The number of basic events. This information
-  ///                             is needed to optimize the tree traversel
+  ///                             is needed to optimize the tree traversal
   ///                             with certain expectation.
   void ProcessIndexedFaultTree(int num_basic_events);
 
@@ -162,7 +162,7 @@ class IndexedFaultTree {
   typedef boost::shared_ptr<IndexedGate> IndexedGatePtr;
 
   /// Starts unrolling gates to simplify gates to OR, AND gates.
-  /// NOT and NUll are dealt with specificly.
+  /// NOT and NUll are dealt with specifically.
   /// This function uses parent information of each gate, so the tree must
   /// be initialized before a call of this function.
   /// New gates are created upon unrolling complex gates, such as XOR.
@@ -229,7 +229,7 @@ class IndexedFaultTree {
   /// @param[in] state False or True constant state of the child.
   /// @param[out] to_erase The set of children to erase from the above gate.
   /// @returns true if the passed gate has become a constant due to its child.
-  /// @returns false if the parent still valid for kurther operations.
+  /// @returns false if the parent still valid for further operations.
   bool ProcessConstantChild(const IndexedGatePtr& gate,
                             int child,
                             bool state,
@@ -307,7 +307,7 @@ class IndexedFaultTree {
   /// This is due to chain of events that are shared between modular and
   /// non-modular children.
   /// @param[in] visit_basics The recordings for basic events.
-  /// @param[in] visited_gates Vist max and min time recordings for gates.
+  /// @param[in] visited_gates Visit max and min time recordings for gates.
   /// @param[in,out] modular_children Candidates for modular grouping.
   /// @param[in,out] non_modular_children Non modular children.
   void FilterModularChildren(

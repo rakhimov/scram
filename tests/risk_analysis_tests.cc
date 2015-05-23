@@ -137,7 +137,7 @@ TEST_F(RiskAnalysisTest, CheckGate) {
 
 // ---------------------- Test Public Functions --------------------------
 // Test Input Processing for Risk Analysis.
-// Note that there are tests specificly for correct and incorrect inputs
+// Note that there are tests specifically for correct and incorrect inputs
 // in risk_analysis_input_tests.cc, so this test is only concerned with
 // actual changes after processing the input.
 TEST_F(RiskAnalysisTest, ProcessInput) {

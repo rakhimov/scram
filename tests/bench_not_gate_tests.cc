@@ -2,7 +2,7 @@
 
 #include "risk_analysis_tests.h"
 
-// Bechmark tests for NOT gate.
+// Benchmark tests for NOT gate.
 // [A OR NOT A]
 // This produces UNITY top gate.
 TEST_F(RiskAnalysisTest, A_OR_NOT_A) {
