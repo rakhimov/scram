@@ -4,6 +4,7 @@ SCRAM Coding Style and Quality
 
 This project follows the following coding styles:
 =================================================
+
 #. `Google C++ Style Guide (GCSG)`_.
 #. `Google Python Style Guide (GPSG)`_.
 #. `PEP 8 -- Style Guide for Python Code (PEP8)`_.
@@ -35,6 +36,7 @@ Currently nonconforming cases in the C++ source code:
 
 The quality of the code is checked with the following tools:
 ============================================================
+
 #. Performance profiling with `Gprof`_.
 #. Test coverage check with `Gcov`_ and reporting with `Coveralls`_.
 #. Test status is tracked on `CDash`_.
@@ -100,3 +102,23 @@ Good references for testing and quality information
     http://www.tutorialspoint.com/software_testing/
 .. _`ISO Standards for Software Testing`:
     http://softwaretestingstandard.org/
+
+Version control and Versioning
+==============================
+
+- `Git SCM`_
+- `Branching Model`_
+- `Writing Good Commit Messages`_
+- `On Commit Messages`_
+- `Semantic Versioning`_
+
+.. _`Git SCM`:
+    http://git-scm.com/
+.. _`Branching Model`:
+    http://nvie.com/posts/a-successful-git-branching-model/
+.. _`Writing Good Commit Messages`:
+    https://github.com/erlang/otp/wiki/Writing-good-commit-messages
+.. _`On Commit Messages`:
+    http://who-t.blogspot.com/2009/12/on-commit-messages.html
+.. _`Semantic Versioning`:
+    http://semver.org/

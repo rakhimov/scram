@@ -20,15 +20,6 @@ Major Enhancements and Capabilities
 
 - Boolean formula rewriting for fault trees. *High*
 
-- OpenPSA-like XML input format. *High*
-
-  * Reduce tests for input format and parser.
-  * Create the Include feature.
-
-    + Test for a non-existent file, circular inclusion(direct, indirect).
-
-  * Subtree Analysis of a Fault Tree.
-
 - Binary Decision Diagram (BDD) based Algorithms. *High*
 
 - Zero-Suppressed BDD (ZBDD) based Algorithms. *High*
@@ -61,6 +52,8 @@ Minor Enhancements and Capabilities
   * Boolean formula. *Moderate*
   * Expressions. *Moderate*
   * Include directive in input files to include other input files. *Low*
+  * Public and private scopes for names of events and other elements. *Low*
+  * Cardinality/Imply/IFF gates. *Low*
 
 - Shorthand format to XML converter. *Low*
 
@@ -69,11 +62,6 @@ Minor Enhancements and Capabilities
   * Multiple top events
 
 - Create a cut-set generator. *Low*
-
-- Public and private scopes for names of events and other elements. *Low*
-
-- Cardinality/Imply/IFF gates. *Low*
-
 
 GUI Development: Moderate Importance
 ====================================
