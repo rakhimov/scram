@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """install.py
 
-An installation script for Scram. This script automates the building and
+An installation script for SCRAM. This script automates the building and
 installation processes for various purposes like release and debug.
 """
 
@@ -24,7 +24,7 @@ def absexpanduser(rel_path):
     return os.path.abspath(os.path.expanduser(rel_path))
 
 def install_scram(args):
-    """Installs Scram with the specified configurations.
+    """Installs SCRAM with the specified configurations.
 
     The process may exit abruptly with an error message.
 
@@ -81,7 +81,7 @@ def install_scram(args):
                           shell=(os.name == "nt"))
 
 def uninstall_scram(args):
-    """Uninstalls Scram if it is installed.
+    """Uninstalls SCRAM if it is installed.
 
     The process may exit abruptly with an error message.
 

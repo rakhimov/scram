@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """run_inputs.py
 
-Runs Scram with test inputs to examine the output visually.
+Runs SCRAM with test inputs to examine the output visually.
 """
 from __future__ import print_function
 

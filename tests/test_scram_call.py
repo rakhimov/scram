@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """test_scram_call.py
 
-A set of tests to invoke command-line Scram with correct and
+A set of tests to invoke command-line SCRAM with correct and
 incorrect arguments.
 """
 
@@ -16,7 +16,7 @@ def test_empty_call():
     yield assert_equal, 1, call(cmd)
 
 def test_info_calls():
-    """Tests general information calls about Scram."""
+    """Tests general information calls about SCRAM."""
     # Test help
     cmd = ["scram", "--help"]
     yield assert_equal, 0, call(cmd)

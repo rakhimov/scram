@@ -27,7 +27,7 @@ _scram_parse_options() {
 }
 
 ########################################
-# Parses Scram's Boost program options
+# Parses SCRAM's Boost program options
 # generated help description to find
 # options
 #
@@ -47,7 +47,7 @@ _scram_parse_help() {
 }
 
 ########################################
-# Bash completion function for Scram
+# Bash completion function for SCRAM
 #
 # Globals:
 #   COMPREPLY
