@@ -25,7 +25,7 @@ class Logger {
   /// Flashes all the logs into standard output upon destruction.
   virtual ~Logger() {
     os << std::endl;
-    // fprintf used for thread safety
+    // fprintf used for thread safety.
     fprintf(stdout, "%s", os.str().c_str());
     fflush(stdout);
   }

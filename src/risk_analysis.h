@@ -47,24 +47,24 @@ class RiskAnalysis {
   /// Reads one input file with the structure of analysis entities.
   /// Initializes the analysis from the given input file.
   /// Puts all events into their appropriate containers.
-  /// @param[in] xml_file The formatted xml input file.
+  /// @param[in] xml_file The formatted XML input file.
   /// @throws ValidationError if input contains errors.
   /// @throws ValueError if input values are not valid.
-  /// @throws IOError if an input file is not accessable.
+  /// @throws IOError if an input file is not accessible.
   /// @deprecated Use multiple file processing method instead.
   void ProcessInput(std::string xml_file);
 
   /// Reads input files with the structure of analysis entities.
   /// Initializes the analysis from the given input files.
   /// Puts all events into their appropriate containers.
-  /// @param[in] xml_files The formatted xml input files.
+  /// @param[in] xml_files The formatted XML input files.
   /// @throws ValidationError if input contains errors.
   /// @throws ValueError if input values are not valid.
-  /// @throws IOError if an input file is not accessable.
+  /// @throws IOError if an input file is not accessible.
   void ProcessInputFiles(const std::vector<std::string>& xml_files);
 
   /// Graphing or other visual resources for the analysis if applicable.
-  /// Outputs instructions for graphviz dot to create a fault tree.
+  /// Outputs instructions for Graphviz dot to create a fault tree.
   /// Uses the standard output as destination.
   /// @note This function must be called only after initialization of the tree.
   inline void GraphingInstructions() { GraphingInstructions(std::cout); }
@@ -72,12 +72,12 @@ class RiskAnalysis {
   /// Outputs graphing instructions to a specified file.
   /// param[out] output The output destination.
   /// @note This function must be called only after initialization of the tree.
-  /// @throws IOError if the output file is not accessable.
+  /// @throws IOError if the output file is not accessible.
   void GraphingInstructions(std::string output);
 
   /// Performs the main analysis operations.
   /// Analyzes the fault tree and performs computations.
-  /// This function must be called only after initilizing the tree with or
+  /// This function must be called only after initializing the tree with or
   /// without its probabilities.
   /// @note Cut set generator: O_avg(N) O_max(N)
   void Analyze();
@@ -92,7 +92,7 @@ class RiskAnalysis {
   /// This function overwrites the file.
   /// @note This function must be called only after Analyze() function.
   /// param[out] output The output destination.
-  /// @throws IOError if the output file is not accessable.
+  /// @throws IOError if the output file is not accessible.
   void Report(std::string output);
 
  private:
@@ -113,10 +113,10 @@ class RiskAnalysis {
   /// Reads one input file with the structure of analysis entities.
   /// Initializes the analysis from the given input file.
   /// Puts all events into their appropriate containers.
-  /// @param[in] xml_file The formatted xml input file.
+  /// @param[in] xml_file The formatted XML input file.
   /// @throws ValidationError if input contains errors.
   /// @throws ValueError if input values are not valid.
-  /// @throws IOError if an input file is not accessable.
+  /// @throws IOError if an input file is not accessible.
   void ProcessInputFile(std::string xml_file);
 
   /// Attaches attributes and label to the elements of the analysis.
@@ -136,7 +136,7 @@ class RiskAnalysis {
   /// Processes the formula of a gate to be defined.
   /// Currently only one layer formula is supported.
   /// @param[in] gate The main gate to be defined with the formula.
-  /// @param[in] events The xml node list of children of the gate definition.
+  /// @param[in] events The XML node list of children of the gate definition.
   void ProcessFormula(const GatePtr& gate, const xmlpp::NodeSet& events);
 
   /// Process [event name=id] cases inside of a one layer gate description.
@@ -210,7 +210,7 @@ class RiskAnalysis {
   bool GetConstantExpression(const xmlpp::Element* expr_element,
                              ExpressionPtr& expression);
 
-  /// Processes Prameter Expression definitions in input file.
+  /// Processes Parameter Expression definitions in input file.
   /// @param[in] expr_element XML expression element containing the definition.
   /// @param[out] expression Expression described in XML input expression node.
   /// @returns true if expression was found and processed.
@@ -307,13 +307,13 @@ class RiskAnalysis {
   std::string CheckMissingParameters();
 
   /// Validates expressions and anything that is dependent on them, such
-  /// as paramters and basic events.
+  /// as parameters and basic events.
   /// @throws ValidationError if any problems detected with expressions.
   void ValidateExpressions();
 
   /// Applies the input information to set up for future analysis.
   /// This step is crucial to get correct fault tree structures and
-  /// basic events with correct expresions.
+  /// basic events with correct expressions.
   /// Meta-logical layer of analysis, such as CCF groups and substitutions,
   /// is applied to analysis.
   void SetupForAnalysis();

@@ -1,5 +1,5 @@
 /// @file probability_analysis.h
-/// Contains funcitonality to do numerical analysis of probabilities and
+/// Contains functionality to do numerical analysis of probabilities and
 /// importances.
 #ifndef SCRAM_SRC_PROBABILITY_ANALYSIS_H_
 #define SCRAM_SRC_PROBABILITY_ANALYSIS_H_
@@ -164,12 +164,12 @@ class ProbabilityAnalysis {
   /// Minimal cut sets passed for analysis.
   std::set< std::set<std::string> > min_cut_sets_;
 
-  /// Min cut sets with indices of events.
+  /// Minimal cut sets with indices of events.
   std::vector< boost::container::flat_set<int> > imcs_;
   /// Indices min cut sets to strings min cut sets mapping.
   /// The same position as in imcs_ container is assumed.
   std::vector< std::set<std::string> > imcs_to_smcs_;
-  /// Container for basic event indices that are in minimial cut sets.
+  /// Container for basic event indices that are in minimal cut sets.
   std::set<int> mcs_basic_events_;
 
   /// Total probability of the top event.

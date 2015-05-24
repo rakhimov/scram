@@ -88,7 +88,7 @@ class Parameter : public Expression, public Element {
     expression_ = expression;
   }
 
-  /// Cyclicity detection invoked.
+  /// Cycle detection invoked.
   /// @throws ValidationError if any cyclic reference is found.
   void Validate();
 
@@ -121,9 +121,10 @@ class Parameter : public Expression, public Element {
   inline double Min() { return expression_->Min(); }
 
  private:
-  /// Helper funciton to check for cyclic references in parameters.
-  /// @param[out] path The current path of names in cyclicity search.
+  /// Helper function to check for cyclic references in parameters.
+  /// @param[out] path The current path of names in cycle detection.
   /// @throws ValidationError if any cyclic reference is found.
+  /// @todo Rename to DetectCycles.
   void CheckCyclicity(std::vector<std::string>* path);
 
   /// Name of this parameter or variable.
@@ -199,7 +200,7 @@ class ExponentialExpression : public Expression {
   /// @param[in] t Mission time in hours.
   ExponentialExpression(const ExpressionPtr& lambda, const ExpressionPtr& t)
       : lambda_(lambda),
-      time_(t) {}
+        time_(t) {}
 
   /// @throws InvalidArgument if failure rate or time is negative.
   void Validate();
@@ -252,9 +253,9 @@ class GlmExpression : public Expression {
   GlmExpression(const ExpressionPtr& gamma, const ExpressionPtr& lambda,
                 const ExpressionPtr& mu, const ExpressionPtr& t)
       : gamma_(gamma),
-      lambda_(lambda),
-      mu_(mu),
-      time_(t) {}
+        lambda_(lambda),
+        mu_(mu),
+        time_(t) {}
 
   void Validate();
 
@@ -310,7 +311,7 @@ class GlmExpression : public Expression {
 /// Weibull distribution with scale, shape, time shift, and time.
 class WeibullExpression : public Expression {
  public:
-  /// Constructor for Wibull distribution.
+  /// Constructor for Weibull distribution.
   /// @param[in] alpha Scale parameter.
   /// @param[in] beta Shape parameter.
   /// @param[in] t0 Time shift.
@@ -318,9 +319,9 @@ class WeibullExpression : public Expression {
   WeibullExpression(const ExpressionPtr& alpha, const ExpressionPtr& beta,
                     const ExpressionPtr& t0, const ExpressionPtr& time)
       : alpha_(alpha),
-      beta_(beta),
-      t0_(t0),
-      time_(time) {}
+        beta_(beta),
+        t0_(t0),
+        time_(time) {}
 
   void Validate();
 
@@ -380,7 +381,7 @@ class UniformDeviate : public Expression {
   /// @param[in] max Maximum value of the distribution.
   UniformDeviate(const ExpressionPtr& min, const ExpressionPtr& max)
       : min_(min),
-      max_(max) {}
+        max_(max) {}
 
   /// @throws InvalidArgument if min value is more or equal to max value.
   void Validate();
@@ -418,7 +419,7 @@ class NormalDeviate : public Expression {
   /// @param[in] sigma The standard deviation of the distribution.
   NormalDeviate(const ExpressionPtr& mean, const ExpressionPtr& sigma)
       : mean_(mean),
-      sigma_(sigma) {}
+        sigma_(sigma) {}
 
   /// @throws InvalidArgument if sigma is negative or zero.
   void Validate();
@@ -466,8 +467,8 @@ class LogNormalDeviate : public Expression {
   LogNormalDeviate(const ExpressionPtr& mean, const ExpressionPtr& ef,
                    const ExpressionPtr& level)
       : mean_(mean),
-      ef_(ef),
-      level_(level) {}
+        ef_(ef),
+        level_(level) {}
 
   /// @throws InvalidArgument if (mean <= 0) or (ef <= 0) or (level != 0.95)
   void Validate();
@@ -516,7 +517,7 @@ class GammaDeviate : public Expression {
   /// @param[in] theta Scale parameter of Gamma distribution.
   GammaDeviate(const ExpressionPtr& k, const ExpressionPtr& theta)
       : k_(k),
-      theta_(theta) {}
+        theta_(theta) {}
 
   /// @throws InvalidArgument if (k <= 0) or (theta <= 0)
   void Validate();
@@ -561,7 +562,7 @@ class BetaDeviate : public Expression {
   /// @param[in] beta Beta shape parameter of Gamma distribution.
   BetaDeviate(const ExpressionPtr& alpha, const ExpressionPtr& beta)
       : alpha_(alpha),
-      beta_(beta) {}
+        beta_(beta) {}
 
   /// @throws InvalidArgument if (alpha <= 0) or (beta <= 0)
   void Validate();

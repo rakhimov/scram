@@ -31,14 +31,14 @@ class FaultTree : public Element {
   /// Adds a gate into this tree.
   /// The first gate is assumed to be a top event.
   /// @param[in] gate The gate to be added to this tree.
-  /// @throws ValidationError for readded gates and out-of-order addition.
+  /// @throws ValidationError for re-added gates and out-of-order addition.
   void AddGate(const GatePtr& gate);
 
   /// Validates this tree's structure and events.
-  /// Checks the tree for cyclicity.
+  /// Checks the tree for cycles.
   /// @throws ValidationError if there are issues with this tree.
   /// @note This is an expensive function, but it must be called at least
-  /// once after finilizing fault tree instantiation.
+  /// once after finalizing fault tree instantiation.
   void Validate();
 
   /// Gathers information about the initialized fault tree. Databases
@@ -107,7 +107,7 @@ class FaultTree : public Element {
  private:
   typedef boost::shared_ptr<Event> EventPtr;
 
-  /// Traverses the tree to find any cyclicity.
+  /// Traverses the tree to find any cycles.
   /// While traversing, this function observes implicitly defined gates, and
   /// those gates are added into the gate containers.
   /// @param[in] parent The gate to start with.
@@ -121,7 +121,7 @@ class FaultTree : public Element {
   void GatherPrimaryEvents();
 
   /// Picks primary events of the specified gate.
-  /// The primary events are put into the approriate container.
+  /// The primary events are put into the appropriate container.
   /// @param[in] gate The gate to get primary events from.
   void GetPrimaryEvents(const GatePtr& gate);
 
@@ -160,7 +160,7 @@ class FaultTree : public Element {
 
   /// Implicitly added gates.
   /// This gates are not added through AddGate() function but by traversing
-  /// the tree as a postprocess.
+  /// the tree as a post-process.
   boost::unordered_map<std::string, GatePtr> implicit_gates_;
 
   /// The number of original basic events without new CCF basic events.

@@ -130,7 +130,7 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
   analysis_time_ = (std::clock() - start_time) /
                    static_cast<double>(CLOCKS_PER_SEC);
   FaultTreeAnalysis::SetsToString(*imcs);  // MCS with event ids.
-  delete indexed_tree;  // No exeptions are expected.
+  delete indexed_tree;  // No exceptions are expected.
 }
 
 void FaultTreeAnalysis::SetsToString(const std::vector< std::set<int> >& imcs) {

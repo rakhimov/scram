@@ -45,7 +45,7 @@ void FaultTree::AddGate(const GatePtr& gate) {
     }
     if (!parent_found) {
       throw ValidationError("Gate '" + gate->orig_id() +
-                            "' has no pre-decleared" +
+                            "' has no pre-declared" +
                             " parent gate in '" + name_ +
                             "' fault tree. This gate is a dangling gate." +
                             " The tree structure input might be malformed.");
@@ -88,7 +88,7 @@ void FaultTree::CheckCyclicity(const GatePtr& parent,
                                std::set<std::string> visited) {
   path.push_back(parent->id());
   if (visited.count(parent->id())) {
-    std::string msg = "Detected a cyclicity in '" + name_ + "' fault tree:\n";
+    std::string msg = "Detected a cycle in '" + name_ + "' fault tree:\n";
     std::vector<std::string>::iterator it = std::find(path.begin(),
                                                       path.end(),
                                                       parent->id());

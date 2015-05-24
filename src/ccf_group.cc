@@ -179,7 +179,7 @@ void BetaFactorModel::ConstructCcfBasicEvents(
 
   std::map<std::string, BasicEventPtr>::const_iterator it;
   for (it = CcfGroup::members_.begin(); it != CcfGroup::members_.end();) {
-    // Create indipendent events.
+    // Create independent events.
     std::string independent_orig_id = "[" + it->second->orig_id() + "]";
     std::string independent_id = "[" + it->second->id() + "]";
 

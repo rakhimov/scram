@@ -25,7 +25,7 @@ class Config {
   /// @param[in] config_file XML file with configurations.
   /// @throws ValidationError if the configurations have problems.
   /// @throws ValueError if input values are not valid.
-  /// @throws IOError if the file is not accessable.
+  /// @throws IOError if the file is not accessible.
   explicit Config(std::string config_file);
 
   /// @returns input files for analysis.

@@ -1,11 +1,12 @@
 Speed recordings of SCRAM for optimization and regression-detection purposes.
-Only cases that help to detect bottlenecks are recorded in this file.
+Only cases that help detect bottlenecks are recorded in this file.
 If the performance becomes good enough to make the running times negligible,
-the case is removed.
+the case is removed. The running times are taken from the logs.
 
 System specs: Core i5-2410M, Ubuntu 14.04 64bit
 GCC version: 4.8.2
 Boost version: 1.55
+Libxml2: 2.9.1
 
 If the current performance is not listed, then the best is the current.
 
@@ -13,6 +14,16 @@ If the current performance is not listed, then the best is the current.
 
                     Best Achieved | Current Performance
 
+==================== Probability/Importance Analysis ======
+
+----------- Chinese Tree High Prob -l 5 -s 3 (p = 0.02115378) ---
+Release build:
+--------------
+- Prob Calculation  35s   |
+- Importance Calc.  2.0s  |
+
+
+==================== MCS Analysis =========================
 
 ----------- Chinese Tree (mcs = 392) ----------------------
 Standard build:
@@ -21,19 +32,11 @@ Standard build:
 - Cut Set Minimization    0.25s  |
 
 
-
------------ Chinese Tree High Prob -l 5 -s 3 (p = 0.02115378) ---
-Release build:
---------------
-- Prob Calculation  34.5s  |
-- Importance Calc.  2.0s   |
-
-
 ---------- fta-200 -l 17 (mcs = 8487) ---------------
 Standard build:
 ---------------
 - Cut Set Generation      0.60s  |
-- Cut Set Minimization    7.50s  |
+- Cut Set Minimization    7.5s   |
 
 Release build:
 --------------
@@ -43,8 +46,8 @@ Release build:
 ---------- fta-200 -l 24 (mcs = 16951) ---------------
 Standard build:
 ---------------
-- Cut Set Generation      1.10s  |
-- Cut Set Minimization    25.5s  |
+- Cut Set Generation      1.1s  |
+- Cut Set Minimization    26s   |
 
 Release build:
 --------------
@@ -55,14 +58,13 @@ Release build:
 ---------- Baobab1 -l 6 (mcs = 2684) ----------------
 Standard build:
 ---------------
-- Cut Set Generation      1.40s  |
+- Cut Set Generation      1.4s   |
 - Cut Set Minimization    0.30s  |
 
 Release build:
 --------------
 - Cut Set Generation      0.23s  |
 - Cut Set Minimization    0.03s  |
-
 
 ---------- Baobab1 -l 7 (mcs = 17432) ----------------
 Standard build:
@@ -72,7 +74,7 @@ Standard build:
 
 Release build:
 --------------
-- Cut Set Generation      1.80s  |
+- Cut Set Generation      1.8s   |
 - Cut Set Minimization    0.80s  |  1.0s
 
 ---------- Baobab1 -l 8 (mcs = 25892) ----------------
@@ -85,7 +87,7 @@ Release build:
 ---------- CEA9601 -l 7 (mcs = 4578) ----------------
 Release build:
 --------------
-- Cut Set Generation      9.8s  |
+- Cut Set Generation      9.8s   |
 - Cut Set Minimization    0.05s  |
 
 
@@ -95,3 +97,19 @@ Release build:
 Release build:
 --------------
 - Calculation Time  65s  |
+
+
+==================== Fault Tree Generation ================
+
+---| -p 100000 -c 4 --ratio 2 --reuse_g 0.1 --reuse_p 0.1 |---
+Python script:
+--------------
+- Generation Time  8.7s  |
+
+
+==================== Fault Tree Validation================
+
+---| -p 7000 -c 4 --ratio 2 --reuse_g 0.1 --reuse_p 0.1 |---
+Standard build:
+---------------
+- Validation Time      32s  |

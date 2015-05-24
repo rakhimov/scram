@@ -11,14 +11,14 @@
 namespace scram {
 
 /// @class XMLParser
-/// A helper class to hold xml file data and provide automatic validation.
+/// A helper class to hold XML file data and provide automatic validation.
 class XMLParser {
  public:
   /// Resets the parser.
   ~XMLParser();
 
-  /// Initializes a parser with an xml snippet.
-  /// @param[in] input An xml snippet to be used as input.
+  /// Initializes a parser with an XML snippet.
+  /// @param[in] input An XML snippet to be used as input.
   void Init(const std::stringstream& input);
 
   /// Validates the file against a schema.
