@@ -1,6 +1,6 @@
-###################
-SCRAM API Structure
-###################
+#############
+API Structure
+#############
 
 Structure/Architecture of the Core Code
 =======================================

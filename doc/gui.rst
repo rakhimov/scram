@@ -1,6 +1,6 @@
-###################
-SCRAM GUI Front-End
-###################
+#############
+GUI Front-End
+#############
 
 .. note::
     This feature is under development.

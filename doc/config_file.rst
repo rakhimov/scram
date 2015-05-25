@@ -1,6 +1,6 @@
-#########################
-SCRAM Configuration Files
-#########################
+###################
+Configuration Files
+###################
 
 In order to work with complex analysis with several input files and tailored
 configurations, it is more convenient to use a configuration file than

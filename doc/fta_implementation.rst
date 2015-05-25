@@ -1,6 +1,6 @@
-#################################
-SCRAM Fault Tree Analysis Support
-#################################
+###########################
+Fault Tree Analysis Support
+###########################
 
 Fault trees have various types of gates and events to represent Boolean
 formula and the system under analysis. However, some extra information

@@ -1,6 +1,6 @@
-##############################
-SCRAM Coding Style and Quality
-##############################
+########################
+Coding Style and Quality
+########################
 
 This project follows the following coding styles:
 =================================================
