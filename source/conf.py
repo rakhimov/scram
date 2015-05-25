@@ -51,7 +51,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'SCRAM'
-copyright = u'2015, Olzhas Rakhimov'
+copyright = u'2015, Olzhas Rakhimov, CC BY-SA 4.0'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
