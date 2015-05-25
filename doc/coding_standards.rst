@@ -1,9 +1,9 @@
-########################
-Coding Style and Quality
-########################
+##################################
+Coding Style and Quality Assurance
+##################################
 
-This project follows the following coding styles:
-=================================================
+This project adheres to the following coding styles
+===================================================
 
 #. `Google C++ Style Guide (GCSG)`_.
 #. `Google Python Style Guide (GPSG)`_.
@@ -25,8 +25,8 @@ This project follows the following coding styles:
 .. _`Google Shell Style Guide`:
     https://google-styleguide.googlecode.com/svn/trunk/shell.xml
 
-Currently nonconforming cases in the C++ source code:
------------------------------------------------------
+Currently nonconforming cases in the C++ source code
+----------------------------------------------------
 
 * Exceptions are used. (This is not recommended by GCSG.)
 * Streams are used instead of *printf-like routines*.
@@ -34,8 +34,8 @@ Currently nonconforming cases in the C++ source code:
 * C++11 features are not allowed. Only Boost features are used instead.
 * License boilerplate is not included unless the code is from other projects.
 
-The quality of the code is checked with the following tools:
-============================================================
+The quality of the code is checked with the following tools
+===========================================================
 
 #. Performance profiling with `Gprof`_.
 #. Test coverage check with `Gcov`_ and reporting with `Coveralls`_.
@@ -89,12 +89,13 @@ These tests are automated, and continuous integration is provided by `Travis CI`
 .. _`Travis CI`:
     https://travis-ci.org/rakhimov/scram
 
-Good references for testing and quality information
----------------------------------------------------
+Good references for testing and quality assurance
+-------------------------------------------------
 
 - `Software Testing Fundamentals`_
 - `Software Testing Tutorial`_
 - `ISO Standards for Software Testing`_
+- `Introduction to Test Driven Development`_
 
 .. _`Software Testing Fundamentals`:
     http://softwaretestingfundamentals.com/
@@ -102,6 +103,8 @@ Good references for testing and quality information
     http://www.tutorialspoint.com/software_testing/
 .. _`ISO Standards for Software Testing`:
     http://softwaretestingstandard.org/
+.. _`Introduction to Test Driven Development`:
+    http://agiledata.org/essays/tdd.html
 
 Version control and Versioning
 ==============================
@@ -122,3 +125,28 @@ Version control and Versioning
     http://who-t.blogspot.com/2009/12/on-commit-messages.html
 .. _`Semantic Versioning`:
     http://semver.org/
+
+Documentation
+=============
+
+Good documentation of the code and functionality is the requirement for
+maintainability and evolution of the project and its acceptance by users.
+
+The project adheres to the Documentation Driven Development model (`DDD talk by Corey Oordt`_) following the best practices of `Agile Documentation`_ as well.
+
+Documentation for the project is maintained in the reStructuredText_ format,
+and the final representations are dynamically generated with Sphinx_ in various
+formats (html, pdf, LaTeX).
+
+Documentation for the code is checked and generated dynamically with Doxygen_.
+
+.. _Doxygen:
+    http://doxygen.org/
+.. _Sphinx:
+    http://sphinx-doc.org/
+.. _reStructuredText:
+    http://docutils.sourceforge.net/rst.html
+.. _`DDD talk by Corey Oordt`:
+    http://pyvideo.org/video/441/pycon-2011--documentation-driven-development
+.. _`Agile Documentation`:
+    http://www.agilemodeling.com/essays/agileDocumentationBestPractices.htm

@@ -343,15 +343,18 @@ Documentation Building
 **********************
 
 Documentation can be generated following the instruction in
-the *gh-source* branch. The raw documentation files are in *doc/* directory.
+the `gh-source`_ branch. The raw documentation files are in *doc/* directory.
+
+.. _`gh-source`:
+    https://github.com/rakhimov/scram/tree/gh-source
 
 **************
 Note to a User
 **************
 
-The development follows the Documentation Driven Development paradigm.
-Therefore, some documentation may be ahead of the actual development and
-describe features under current development.
+The development may follow the Documentation Driven Development paradigm for
+some new features. Therefore, some documentation may be ahead of the actual
+development and describe features under current development or consideration.
 
 For any questions, don't hesitate to ask the mailing list (https://groups.google.com/forum/#!forum/scram-dev, scram-dev@googlegroups.com).
 
@@ -359,16 +362,7 @@ For any questions, don't hesitate to ask the mailing list (https://groups.google
 How to Contribute
 *****************
 
-Contributions are through `GitHub <https://github.com>`_ Pull Requests and
-Issue Tracker.
-Best practices are encouraged:
+Please follow instructions in `How to Contribute`_.
 
-    - `Git SCM <http://git-scm.com/>`_
-    - `Branching Model <http://nvie.com/posts/a-successful-git-branching-model/>`_
-    - `Writing Good Commit Messages <https://github.com/erlang/otp/wiki/Writing-good-commit-messages>`_
-    - `On Commit Messages <http://who-t.blogspot.com/2009/12/on-commit-messages.html>`_
-
-`Coding Style and Quality`_
-
-.. _`Coding Style and Quality`:
-    https://rakhimov.github.io/scram/doc/coding_standards.html
+.. _`How to Contribute`:
+    https://github.com/rakhimov/scram/blob/develop/CONTRIBUTING.md
