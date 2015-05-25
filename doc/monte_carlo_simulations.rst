@@ -1,6 +1,6 @@
-######################################
-SCRAM Monte Carlo Uncertainty Analysis
-######################################
+################################
+Monte Carlo Uncertainty Analysis
+################################
 
 For Monte Carlo simulations, `MT 19937`_ Mersenne Twister Pseudo-random number
 generator is provided by Boost_. Mersenne Twister PRNG is well tested and

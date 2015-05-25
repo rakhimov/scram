@@ -1,6 +1,6 @@
-#################
-SCRAM Description
-#################
+###########
+Description
+###########
 
 SCRAM is a command-line tool that performs probabilistic risk assessment.
 The documentation may be ahead of software development and may describe

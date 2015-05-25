@@ -1,6 +1,6 @@
-#####################################
-SCRAM FTA: Common Cause Failure (CCF)
-#####################################
+###############################
+FTA: Common Cause Failure (CCF)
+###############################
 
 #. Define groups of basic events that share common cause failure.
 

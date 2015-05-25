@@ -1,8 +1,8 @@
 .. _prob_calc:
 
-##########################
-SCRAM Probability Analysis
-##########################
+####################
+Probability Analysis
+####################
 
 Since minimal cut sets may neither be mutually exclusive
 nor independent, direct use of the sets' total probabilities may be inaccurate.

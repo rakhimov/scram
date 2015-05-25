@@ -1,8 +1,8 @@
 .. _mcs_algorithm:
 
-###################################
-SCRAM FTA: Finding Minimal Cut Sets
-###################################
+#############################
+FTA: Finding Minimal Cut Sets
+#############################
 
 Fault Tree Constant Propagation
 ===============================

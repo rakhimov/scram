@@ -1,6 +1,6 @@
-#################
-SCRAM Input Files
-#################
+###########
+Input Files
+###########
 
 SCRAM uses XML input files to describe analysis. See :ref:`xml_tools` for
 more convenient writing and reading of XML input files.

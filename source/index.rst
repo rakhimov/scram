@@ -52,7 +52,7 @@ Documentation
 .. toctree::
     :maxdepth: 1
 
-    doc/scram_description
+    doc/description
     doc/input_file
     doc/config_file
     doc/fta_implementation
