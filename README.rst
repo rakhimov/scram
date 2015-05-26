@@ -239,11 +239,13 @@ The main and test binaries are installed in *installation/directory/bin*
 directory. Also, the test input files and RelaxNG schema are copied in
 *installation/directory/share/scram/*.
 
-For better performance run the building with the release flag:
+The default build type is Debug, but it can overridden by "--release",
+"--profile", or "--build-type" flags. For performance testing and distribution,
+run the building with the release flag:
 
 .. code-block:: bash
 
-    .../scram$ python install.py -r --prefix=path/to/installation/directory
+    .../scram$ python install.py --prefix=path/to/installation/directory -r
 
 Various other flags are described by the script's help prompt.
 

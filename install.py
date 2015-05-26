@@ -62,6 +62,9 @@ def install_scram(args):
             cmake_cmd += ["-DCMAKE_CXX_FLAGS=-pg"]
             cmake_cmd += ["-DCMAKE_CXX_FLAGS='-Wall -fprofile-arcs "
                           "-ftest-coverage'"]
+        else:
+            cmake_cmd += ["-DCMAKE_BUILD_TYPE=Debug"]  # default build type
+
         subprocess.check_call(cmake_cmd, cwd=args.build_dir,
                               shell=(os.name == 'nt'))
 
@@ -127,7 +130,7 @@ def main():
     parser.add_argument("--test", action="store_true", help=test)
 
     build_type = "the CMAKE_BUILD_TYPE"
-    parser.add_argument('--build_type', help=build_type)
+    parser.add_argument('--build-type', help=build_type)
 
     debug = "build for debugging"
     parser.add_argument("-d", "--debug", help=debug, action="store_true",
