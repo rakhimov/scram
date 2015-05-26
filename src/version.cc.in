@@ -17,6 +17,10 @@ const char* describe() {
   return "@core_version@";
 }
 
+const char* build() {
+  return "@CMAKE_BUILD_TYPE@";
+}
+
 const char* core() {
   return SVER(SCRAM_VERSION_MAJOR, SCRAM_VERSION_MINOR, SCRAM_VERSION_MICRO);
 }
