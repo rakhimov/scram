@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 """fault_tree_generator.py
 
-A script to generate a fault tree of various complexities. The generated
+This script generates a fault tree of various complexities. The generated
 fault tree can be put into XML file with OpenPSA MEF ready for analysis
-or into a shorthand format file.
+or into a shorthand format file. The resulting fault tree is topologically
+sorted.
+
 This script helps create complex fault trees in a short time
-to test other analysis tools.
+to test other analysis tools, for example, input dependent performance
+analysis.
 """
 from __future__ import print_function, division
 
@@ -14,6 +17,8 @@ from math import log
 import random
 
 import argparse as ap
+
+from shorthand_to_xml import toposort_gates
 
 
 class Node(object):
@@ -53,6 +58,7 @@ class Gate(Node):
         gate_type: Type of the gate. Chosen randomly.
         k_num: K number for a K/N combination gate. Chosen randomly.
         type_weights: The weights for sampling gate types.
+        mark: Marking for various algorithms.
     """
     num_gates = 0  # to keep track of gates and to name them
     gates = []  # container for all created gates
@@ -69,6 +75,7 @@ class Gate(Node):
         self.k_num = None
         self.gate_type = self.get_random_type()
         Gate.gates.append(self)  # keep track of all gates
+        self.mark = None
 
     @staticmethod
     def set_type_weights(weights):
@@ -252,12 +259,13 @@ def init_gates(args, gates_queue):
             gate.add_child(random.choice(BasicEvent.basic_events))
             continue
 
-        # Sample gates vs. primary events
+        # Sample gates-to-primary-events ratio
         s_ratio = random.random()
         s_reuse = random.random()  # sample the reuse frequency
         if s_ratio < exp_ratio:
             # Create a new gate or reuse an existing one
             if s_reuse < args.reuse_g and not no_reuse_g:
+                # Lazy evaluation of ancestors
                 if not ancestors:
                     ancestors = gate.get_ancestors()
 
@@ -478,9 +486,6 @@ def write_results(args, top_event):
     t_file.write("<opsa-mef>\n")
     t_file.write("<define-fault-tree name=\"%s\">\n" % args.ft_name)
 
-    # Container for not yet initialized intermediate events
-    gates_queue = deque()
-
     def write_gate(gate, o_file):
         """Print children for the gate.
 
@@ -499,8 +504,6 @@ def write_results(args, top_event):
         # Print children that are gates.
         for g_child in gate.g_children:
             o_file.write("<gate name=\"" + g_child.name + "\"/>\n")
-            # Update the queue
-            gates_queue.append(g_child)
 
         # Print children that are basic events.
         for b_child in gate.b_children:
@@ -513,17 +516,9 @@ def write_results(args, top_event):
         o_file.write("</" + gate.gate_type+ ">\n")
         o_file.write("</define-gate>\n")
 
-    # Write top event and update queue of intermediate gates
-    write_gate(top_event, t_file)
-
-    written_gates = set()
-
-    # Proceed with intermediate gates
-    while gates_queue:
-        gate = gates_queue.popleft()
-        if gate not in written_gates:
-            written_gates.add(gate)
-            write_gate(gate, t_file)
+    sorted_gates = toposort_gates(top_event, Gate.gates)
+    for gate in sorted_gates:
+        write_gate(gate, t_file)
 
     # Proceed with ccf groups
     for ccf_group in CcfGroup.ccf_groups:
@@ -566,8 +561,6 @@ def write_shorthand(args, top_event):
     """
     t_file = open(args.out, "w")
     t_file.write(args.ft_name + "\n\n")
-    # Container for not yet initialized intermediate events
-    gates_queue = deque()
 
     def write_gate(gate, o_file):
         """Print children for the gate.
@@ -603,8 +596,6 @@ def write_shorthand(args, top_event):
                 first_child = False
             else:
                 line.append(div + g_child.name)
-            # Update the queue
-            gates_queue.append(g_child)
 
         # Print children that are basic events.
         for b_child in gate.b_children:
@@ -618,17 +609,9 @@ def write_shorthand(args, top_event):
         o_file.write("".join(line))
         o_file.write("\n")
 
-    # Write top event and update queue of intermediate gates
-    write_gate(top_event, t_file)
-
-    written_gates = set()
-
-    # Proceed with intermediate gates
-    while gates_queue:
-        gate = gates_queue.popleft()
-        if gate not in written_gates:
-            written_gates.add(gate)
-            write_gate(gate, t_file)
+    sorted_gates = toposort_gates(top_event, Gate.gates)
+    for gate in sorted_gates:
+        write_gate(gate, t_file)
 
     # Write basic events
     t_file.write("\n")
@@ -758,7 +741,7 @@ def manage_cmd_args():
 
     nprimary = "the number of primary events"
     parser.add_argument("-p", "--nprimary", type=int, help=nprimary,
-                        default=10)
+                        default=100)
 
     nchildren = "the maximum number of children per gate"
     parser.add_argument("-c", "--nchildren", type=int, help=nchildren,

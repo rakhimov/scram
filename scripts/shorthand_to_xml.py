@@ -26,11 +26,10 @@ Some requirements to the shorthand input file:
 """
 from __future__ import print_function
 
+from collections import deque
 import os
 import re
 import sys
-
-import Queue
 
 import argparse as ap
 
@@ -66,6 +65,7 @@ class Gate(Node):
         u_children: Children that are undefined from the input.
         gate_type: Type of the gate. Chosen randomly.
         k_num: Min number for a combination gate.
+        mark: Marking for various algorithms like toposort.
     """
     def __init__(self, name=None, gate_type=None, k_num=None):
         super(Gate, self).__init__(name)
@@ -107,9 +107,8 @@ class FaultTree(object):
 
     def __detect_cycle(self):
         """Checks if the fault tree has a cycle."""
-        visited = set()
         def visit(gate):
-            """Recursively visits the give gate sub-tree to detect a cycle.
+            """Recursively visits the given gate sub-tree to detect a cycle.
 
             Upon visiting the children gates, their marks are changed from
             temporary to permanent.
@@ -315,6 +314,37 @@ def parse_input_file(input_file):
     return fault_tree
 
 
+def toposort_gates(top_gate, gates):
+    """Sorts gates topologically starting from the root gate.
+
+    Args:
+        top_gate: The root gate of the fault tree.
+        gates: Gates to be sorted.
+
+    Returns:
+        A deque of sorted gates.
+    """
+    for gate in gates:
+        gate.mark = ""
+    def visit(gate, final_list):
+        """Recursively visits the given gate sub-tree to include into the list.
+
+        Args:
+            gate: The current gate.
+            final_list: A deque of sorted gates.
+        """
+        assert gate.mark != "temp"
+        if not gate.mark:
+            gate.mark = "temp"
+            for child in gate.g_children:
+                visit(child, final_list)
+            gate.mark = "perm"
+            final_list.appendleft(gate)
+    sorted_gates = deque()
+    visit(top_gate, sorted_gates)
+    assert len(sorted_gates) == len(gates)
+    return sorted_gates
+
 def write_to_xml_file(fault_tree, output_file):
     """Writes the fault tree into an XML file.
 
@@ -329,13 +359,9 @@ def write_to_xml_file(fault_tree, output_file):
     t_file.write("<?xml version=\"1.0\"?>\n")
     t_file.write("<opsa-mef>\n")
     t_file.write("<define-fault-tree name=\"%s\">\n" % fault_tree.name)
-    # Container for not yet initialized intermediate events
-    gates_queue = Queue.Queue()
 
     def write_gate(gate, o_file):
         """Print children for the gate.
-
-        Note that it also updates the queue of gates.
 
         Args:
             gate: The gate to be printed.
@@ -350,8 +376,6 @@ def write_to_xml_file(fault_tree, output_file):
         # Print intermediate gates
         for g_child in gate.g_children:
             o_file.write("<gate name=\"" + g_child.name + "\"/>\n")
-            # Update the queue
-            gates_queue.put(g_child)
 
         # Print basic events
         for p_child in gate.p_children:
@@ -364,17 +388,11 @@ def write_to_xml_file(fault_tree, output_file):
         o_file.write("</" + gate.gate_type+ ">\n")
         o_file.write("</define-gate>\n")
 
-    # Write top event and update queue of intermediate gates
-    write_gate(fault_tree.top_gate, t_file)
+    sorted_gates = toposort_gates(fault_tree.top_gate,
+                                  fault_tree.gates.values())
 
-    written_gates = set()
-
-    # Proceed with intermediate gates
-    while not gates_queue.empty():
-        gate = gates_queue.get()
-        if gate not in written_gates:
-            written_gates.add(gate)
-            write_gate(gate, t_file)
+    for gate in sorted_gates:
+        write_gate(gate, t_file)
 
     t_file.write("</define-fault-tree>\n")
 

@@ -25,7 +25,7 @@ General Description
 * The tree is reproducible with the same parameters and the seed.
 * The exact ratios and expected results are not guaranteed except for the
   number of basic events.
-* The output is a valid input file for analysis tools.
+* The output is topologically sorted and a valid input for analysis tools.
 
 Script arguments
 ================
