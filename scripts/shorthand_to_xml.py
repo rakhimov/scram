@@ -75,6 +75,7 @@ class Gate(Node):
         self.g_children = []
         self.p_children = []
         self.u_children = []  # undefined children
+        self.mark = None  # marking for various algorithms
 
 class FaultTree(object):
     """Representation of a fault tree for shorthand to XML purposes.
@@ -104,29 +105,60 @@ class FaultTree(object):
             self.gates.has_key(name.lower())):
             sys.exit("Redefinition of a node: " + name)
 
-    def __check_cyclicity(self):
-        """Checks if the fault tree has cycles."""
+    def __detect_cycle(self):
+        """Checks if the fault tree has a cycle."""
         visited = set()
-        def check(gate, path):
-            """Recursively traverses the given gate to detect cycles.
+        def visit(gate):
+            """Recursively visits the give gate sub-tree to detect a cycle.
+
+            Upon visiting the children gates, their marks are changed from
+            temporary to permanent.
 
             Args:
                 gate: The current gate.
-                path: The path to the current gate.
-            """
-            if gate in path:
-                path.append(gate)  # for printing
-                sys.exit("Detected a cycle: " +
-                         str([x.name for x in path[path.index(gate):]]))
-            if gate in visited:
-                return
-            visited.add(gate)
-            path.append(gate)
-            for child in gate.g_children:
-                check(child, path[:])
 
-        for gate in self.gates.itervalues():
-            check(gate, [])
+            Returns:
+                None if no cycle is found.
+                A list of node names in a detected cycle path in reverse order.
+            """
+            if not gate.mark:
+                gate.mark = "temp"
+                for child in gate.g_children:
+                    cycle = visit(child)
+                    if cycle:
+                        cycle.append(gate.name)
+                        return cycle
+                gate.mark = "perm"
+            elif gate.mark == "temp":
+                return [gate.name]  # a cycle is detected
+            return None  # the permanent mark
+
+        def print_cycle(cycle):
+            """Prints the detected cycle.
+
+            Args:
+                cycle: A list of gate names in the cycle path in reverse order.
+            """
+            start = cycle[0]
+            cycle.reverse()
+            sys.exit("Detected a cycle: " +
+                     str([x for x in cycle[cycle.index(start):]]))
+
+        assert self.top_gate is not None
+        cycle = visit(self.top_gate)
+        if cycle:
+            print_cycle(cycle)
+
+        detached_gates = [x for x in self.gates.itervalues() if not x.mark]
+        if detached_gates:
+            error_msg = "Detected detached gates that may be in a cycle\n"
+            error_msg += str([x.name for x in detached_gates])
+            print(error_msg)
+            for gate in detached_gates:
+                cycle = visit(gate)
+                if cycle:
+                    print_cycle(cycle)
+            sys.exit()
 
     def __detect_top(self):
         """Detects the top gate of the developed fault tree."""
@@ -134,6 +166,8 @@ class FaultTree(object):
         if len(top_gates) > 1:
             names = [x.name for x in top_gates]
             sys.exit("Detected multiple top gates:\n" + str(names))
+        elif not top_gates:
+            sys.exit("No top gate is detected")
         self.top_gate = top_gates[0]
 
     def add_basic(self, name, prob):
@@ -180,8 +214,8 @@ class FaultTree(object):
                     self.undef_nodes.update({child.lower(): child_node})
                     gate.u_children.append(child_node)
                 child_node.parents.add(gate)
-        self.__check_cyclicity()
         self.__detect_top()
+        self.__detect_cycle()
 
 
 def parse_input_file(input_file):
@@ -197,6 +231,7 @@ def parse_input_file(input_file):
     # Fault tree name
     ft_name_re = re.compile(r"^\s*(\w+)\s*$")
     gate_sig = r"^\s*(\w+)\s*:=\s*"
+    gate_re = re.compile(gate_sig + r".*")
     # AND gate identification
     and_re = re.compile(gate_sig + r"\((\s*\w+(\s*&\s*\w+\s*)+)\)\s*$")
     # OR gate identification
@@ -240,35 +275,36 @@ def parse_input_file(input_file):
     for line in short_file:
         if blank_line.match(line):
             continue
+        elif gate_re.match(line):
+            if and_re.match(line):
+                gate_name, children = and_re.match(line).group(1, 2)
+                children = get_gate_children(children, "&", line)
+                fault_tree.add_gate(gate_name, "and", children)
+            elif or_re.match(line):
+                gate_name, children = or_re.match(line).group(1, 2)
+                children = get_gate_children(children, "|", line)
+                fault_tree.add_gate(gate_name, "or", children)
+            elif comb_re.match(line):
+                gate_name, k_num, children = comb_re.match(line).group(1, 2, 3)
+                children = get_gate_children(children, ",", line)
+                if int(k_num) >= len(children):
+                    sys.exit("Invalid k/n for a combination gate:\n" + line)
+                fault_tree.add_gate(gate_name, "atleast", children, k_num)
+            elif not_re.match(line):
+                gate_name, children = not_re.match(line).group(1, 2)
+                children = get_gate_children(children, "~", line)
+                fault_tree.add_gate(gate_name, "not", children)
+            elif xor_re.match(line):
+                gate_name, children = xor_re.match(line).group(1, 2)
+                children = get_gate_children(children, "^", line)
+                fault_tree.add_gate(gate_name, "xor", children)
+        elif prob_re.match(line):
+            event_name, prob = prob_re.match(line).group(1, 2)
+            fault_tree.add_basic(event_name, prob)
         elif ft_name_re.match(line):
             if ft_name:
                 sys.exit("Redefinition of the fault tree name:\n" + line)
             ft_name = ft_name_re.match(line).group(1)
-        elif and_re.match(line):
-            gate_name, children = and_re.match(line).group(1, 2)
-            children = get_gate_children(children, "&", line)
-            fault_tree.add_gate(gate_name, "and", children)
-        elif or_re.match(line):
-            gate_name, children = or_re.match(line).group(1, 2)
-            children = get_gate_children(children, "|", line)
-            fault_tree.add_gate(gate_name, "or", children)
-        elif comb_re.match(line):
-            gate_name, k_num, children = comb_re.match(line).group(1, 2, 3)
-            children = get_gate_children(children, ",", line)
-            if int(k_num) >= len(children):
-                sys.exit("Invalid k/n for a combination gate:\n" + line)
-            fault_tree.add_gate(gate_name, "atleast", children, k_num)
-        elif prob_re.match(line):
-            event_name, prob = prob_re.match(line).group(1, 2)
-            fault_tree.add_basic(event_name, prob)
-        elif not_re.match(line):
-            gate_name, children = not_re.match(line).group(1, 2)
-            children = get_gate_children(children, "~", line)
-            fault_tree.add_gate(gate_name, "not", children)
-        elif xor_re.match(line):
-            gate_name, children = xor_re.match(line).group(1, 2)
-            children = get_gate_children(children, "^", line)
-            fault_tree.add_gate(gate_name, "xor", children)
         else:
             sys.exit("Cannot interpret the following line:\n" + line)
 
