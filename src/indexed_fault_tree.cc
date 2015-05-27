@@ -160,7 +160,7 @@ void IndexedFaultTree::InitiateIndexedFaultTree(
     if (gate->index() > new_gate_index_) new_gate_index_ = gate->index() + 1;
   }
 
-  LOG() << "Unrolling basic gates.";
+  LOG() << "Unrolling gates.";
   assert(top_event_sign_ == 1);
   IndexedFaultTree::UnrollGates();
   LOG() << "Finished unrolling gates.";
@@ -708,7 +708,7 @@ bool IndexedFaultTree::JoinGates(const IndexedGatePtr& gate,
 void IndexedFaultTree::DetectModules(int num_basic_events) {
   // At this stage only AND/OR gates are present.
   // All one element gates and non-coherent gates are converted and processed.
-  // All constants are propagated and there is only gates and basic events.
+  // All constants are propagated and there are only gates and basic events.
   // First stage, traverse the tree depth-first for gates and indicate
   // visit time for each node.
 

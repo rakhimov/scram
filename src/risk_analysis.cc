@@ -128,7 +128,7 @@ void RiskAnalysis::Analyze() {
 
   // Set the seed for the pseudo-random number generator if given explicitly.
   // Otherwise it defaults to the current time.
-  if (settings_.seed_ >=0 ) Random::seed(settings_.seed_);
+  if (settings_.seed_ >= 0) Random::seed(settings_.seed_);
 
   std::map<std::string, FaultTreePtr>::iterator it;
   for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
@@ -1072,15 +1072,8 @@ void RiskAnalysis::ValidateInitialization() {
   // Validation of essential members of analysis in the first layer.
   RiskAnalysis::CheckFirstLayer();
 
-  std::clock_t start_time;
-  start_time = std::clock();
-
   // Validation of fault trees.
   RiskAnalysis::CheckSecondLayer();
-
-  double valid_time = (std::clock() - start_time) /
-      static_cast<double>(CLOCKS_PER_SEC);
-  std::cout << "Cycle detection time: " << valid_time << std::endl;
 
   // Gather orphan primary events for warning.
   boost::unordered_map<std::string, PrimaryEventPtr>::iterator it_p;
