@@ -125,7 +125,7 @@ class Parameter : public Expression, public Element {
   /// @param[out] path The current path of names in cycle detection.
   /// @throws ValidationError if any cyclic reference is found.
   /// @todo Rename to DetectCycles.
-  void CheckCyclicity(std::vector<std::string>* path);
+  void DetectCycle(std::vector<std::string>* path);
 
   /// Name of this parameter or variable.
   std::string name_;

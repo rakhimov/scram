@@ -56,9 +56,13 @@ void FaultTree::AddGate(const GatePtr& gate) {
 
 void FaultTree::Validate() {
   // The gate structure must be checked first.
-  std::vector<std::string> path;
-  std::set<std::string> visited;
-  FaultTree::CheckCyclicity(top_event_, path, visited);
+  std::vector<std::string> cycle;
+  FaultTree::DetectCycle(top_event_, &cycle);
+  if (!cycle.empty()) {
+    std::string msg = "Detected a cycle in '" + name_ + "' fault tree:\n";
+    msg += FaultTree::PrintCycle(cycle);
+    throw ValidationError(msg);
+  }
 }
 
 void FaultTree::SetupForAnalysis() {
@@ -68,7 +72,7 @@ void FaultTree::SetupForAnalysis() {
 
   // Assumes that the tree is fully developed.
   // Assumes that there is no change in gate structure of the tree. If there
-  // is change in gate structure, then the gate information is invalid.
+  // is a change in gate structure, then the gate information is invalid.
   primary_events_.clear();
   basic_events_.clear();
   ccf_events_.clear();
@@ -83,38 +87,43 @@ void FaultTree::SetupForAnalysis() {
   FaultTree::GatherCcfBasicEvents();
 }
 
-void FaultTree::CheckCyclicity(const GatePtr& parent,
-                               std::vector<std::string> path,
-                               std::set<std::string> visited) {
-  path.push_back(parent->id());
-  if (visited.count(parent->id())) {
-    std::string msg = "Detected a cycle in '" + name_ + "' fault tree:\n";
-    std::vector<std::string>::iterator it = std::find(path.begin(),
-                                                      path.end(),
-                                                      parent->id());
-    msg += parent->orig_id();
-    for (++it; it != path.end(); ++it) {
-      assert(inter_events_.count(*it));
-      msg += "->" + inter_events_.find(*it)->second->orig_id();
-    }
-    throw ValidationError(msg);
-
-  } else {
-    visited.insert(parent->id());
-  }
-
-  const std::map<std::string, EventPtr>* children = &parent->children();
-  std::map<std::string, EventPtr>::const_iterator it;
-  for (it = children->begin(); it != children->end(); ++it) {
-    GatePtr child_gate = boost::dynamic_pointer_cast<Gate>(it->second);
-    if (child_gate) {
-      if (!inter_events_.count(child_gate->id())) {
-        implicit_gates_.insert(std::make_pair(child_gate->id(), child_gate));
-        inter_events_.insert(std::make_pair(child_gate->id(), child_gate));
+bool FaultTree::DetectCycle(const GatePtr& gate,
+                            std::vector<std::string>* cycle) {
+  if (gate->mark() == "") {
+    gate->mark("temporary");
+    const std::map<std::string, EventPtr>* children = &gate->children();
+    std::map<std::string, EventPtr>::const_iterator it;
+    for (it = children->begin(); it != children->end(); ++it) {
+      GatePtr child_gate = boost::dynamic_pointer_cast<Gate>(it->second);
+      if (child_gate) {
+        if (!inter_events_.count(child_gate->id())) {
+          implicit_gates_.insert(std::make_pair(child_gate->id(), child_gate));
+          inter_events_.insert(std::make_pair(child_gate->id(), child_gate));
+        }
+        if (FaultTree::DetectCycle(child_gate, cycle)) {
+          cycle->push_back(gate->orig_id());
+          return true;
+        }
       }
-      CheckCyclicity(child_gate, path, visited);
     }
+    gate->mark("permanent");
+  } else if (gate->mark() == "temporary") {
+    cycle->push_back(gate->orig_id());
+    return true;
   }
+  return false;  // This also covers permanently marked gates.
+}
+
+std::string FaultTree::PrintCycle(const std::vector<std::string>& cycle) {
+  assert(!cycle.empty());
+  std::vector<std::string>::const_iterator it = cycle.begin();
+  std::string cycle_start = *it;
+  std::string result = "->" + cycle_start;
+  for (++it; *it != cycle_start; ++it) {
+    result = "->" + *it + result;
+  }
+  result = cycle_start + result;
+  return result;
 }
 
 void FaultTree::GatherPrimaryEvents() {

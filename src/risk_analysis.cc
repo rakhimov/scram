@@ -2,6 +2,8 @@
 /// Implementation of risk analysis handler.
 #include "risk_analysis.h"
 
+#include <ctime>
+
 #include <algorithm>
 #include <fstream>
 #include <sstream>
@@ -1070,8 +1072,15 @@ void RiskAnalysis::ValidateInitialization() {
   // Validation of essential members of analysis in the first layer.
   RiskAnalysis::CheckFirstLayer();
 
+  std::clock_t start_time;
+  start_time = std::clock();
+
   // Validation of fault trees.
   RiskAnalysis::CheckSecondLayer();
+
+  double valid_time = (std::clock() - start_time) /
+      static_cast<double>(CLOCKS_PER_SEC);
+  std::cout << "Cycle detection time: " << valid_time << std::endl;
 
   // Gather orphan primary events for warning.
   boost::unordered_map<std::string, PrimaryEventPtr>::iterator it_p;

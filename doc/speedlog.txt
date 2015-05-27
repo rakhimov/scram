@@ -101,15 +101,15 @@ Release build:
 
 ==================== Fault Tree Generation ================
 
----| -p 100000 -c 4 --ratio 2 --reuse_g 0.1 --reuse_p 0.1 |---
+---| -p 100000 -c 4 --ratio 2 --reuse-g 0.1 --reuse-p 0.1 |---
 Python script:
 --------------
 - Generation Time  8.7s  |
 
 
-==================== Fault Tree Validation================
+==================== Fault Tree Validation ================
 
----| -p 7000 -c 4 --ratio 2 --reuse_g 0.1 --reuse_p 0.1 |---
+---| -p 300000 -c 4 --ratio 2 --reuse-g 0.1 --reuse-p 0.1 |---
 Standard build:
 ---------------
-- Validation Time      32s  |
+- Validation Time      43s  |

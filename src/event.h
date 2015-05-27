@@ -88,6 +88,12 @@ class Gate : public Event {
   ///        this class.
   void vote_number(int vnumber);
 
+  /// @returns The mark of this gate node. Empty string for no mark.
+  inline std::string mark() { return mark_; }
+
+  /// Sets the mark for this gate node.
+  inline void mark(std::string new_mark) { mark_ = new_mark; }
+
   /// Adds a child event into the children list.
   /// @param[in] child A pointer to a child event.
   /// @throws LogicError if the child is being re-inserted.
@@ -104,6 +110,9 @@ class Gate : public Event {
 
   /// Vote number for the vote gate.
   int vote_number_;
+
+  /// The mark for traversal. This mark is useful for toposort.
+  std::string mark_;
 
   /// The children of this gate.
   std::map<std::string, boost::shared_ptr<Event> > children_;

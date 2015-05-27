@@ -28,7 +28,8 @@ const std::map<std::string, boost::shared_ptr<Gate> >& Event::parents() {
 Gate::Gate(std::string id, std::string type)
     : Event(id),
       type_(type),
-      vote_number_(-1) {}
+      vote_number_(-1),
+      mark_("") {}
 
 const std::string& Gate::type() {
   if (type_ == "NONE") {

@@ -10,10 +10,10 @@ namespace scram {
 
 void Parameter::Validate() {
   std::vector<std::string> path;
-  Parameter::CheckCyclicity(&path);
+  Parameter::DetectCycle(&path);
 }
 
-void Parameter::CheckCyclicity(std::vector<std::string>* path) {
+void Parameter::DetectCycle(std::vector<std::string>* path) {
   std::vector<std::string>::iterator it = std::find(path->begin(),
                                                     path->end(),
                                                     name_);
@@ -30,7 +30,7 @@ void Parameter::CheckCyclicity(std::vector<std::string>* path) {
   path->push_back(name_);
   boost::shared_ptr<scram::Parameter> ptr =
       boost::dynamic_pointer_cast<Parameter>(expression_);
-  if (ptr) ptr->CheckCyclicity(path);
+  if (ptr) ptr->DetectCycle(path);
 }
 
 void ExponentialExpression::Validate() {
