@@ -8,6 +8,8 @@ The shorthand notation is described as follows:
 AND gates:                       gate_name := (child1 & child2 & ...)
 OR gates:                        gate_name := (child1 | child2 | ...)
 ATLEAST(k/n) gates:              gate_name := @(k, [child1, child2, ...])
+NOT gates:                       gate_name := ~child
+XOR gates:                       gate_name := (child1 ^ child2)
 Probabilities of basic events:   p(event_name) = probability
 
 Some requirements to the shorthand input file:
@@ -203,6 +205,10 @@ def parse_input_file(input_file):
     comb_children = r"\[(\s*\w+(\s*,\s*\w+\s*){2,})\]"
     comb_re = re.compile(gate_sig + r"@\(([2-9])\s*,\s*" + comb_children +
                          r"\s*\)\s*$")
+    # NOT gate identification
+    not_re = re.compile(gate_sig + r"~\s*(\w+)")
+    # XOR gate identification
+    xor_re = re.compile(gate_sig + r"\((\s*\w+\s*\^\s*\w+\s*)\)")
     # Probability description for a basic event
     prob_re = re.compile(r"^\s*p\(\s*(\w+)\s*\)\s*=\s*(0\.\d+)\s*$")
 
@@ -255,6 +261,14 @@ def parse_input_file(input_file):
         elif prob_re.match(line):
             event_name, prob = prob_re.match(line).group(1, 2)
             fault_tree.add_basic(event_name, prob)
+        elif not_re.match(line):
+            gate_name, children = not_re.match(line).group(1, 2)
+            children = get_gate_children(children, "~", line)
+            fault_tree.add_gate(gate_name, "not", children)
+        elif xor_re.match(line):
+            gate_name, children = xor_re.match(line).group(1, 2)
+            children = get_gate_children(children, "^", line)
+            fault_tree.add_gate(gate_name, "xor", children)
         else:
             sys.exit("Cannot interpret the following line:\n" + line)
 
