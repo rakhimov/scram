@@ -19,26 +19,28 @@
     <element name="options">
       <optional>
         <element name="analysis">
-          <optional>
-            <attribute name="probability">
-              <data type="boolean"/>
-            </attribute>
-          </optional>
-          <optional>
-            <attribute name="importance">
-              <data type="boolean"/>
-            </attribute>
-          </optional>
-          <optional>
-            <attribute name="uncertainty">
-              <data type="boolean"/>
-            </attribute>
-          </optional>
-          <optional>
-            <attribute name="ccf">
-              <data type="boolean"/>
-            </attribute>
-          </optional>
+          <interleave>
+            <optional>
+              <attribute name="probability">
+                <data type="boolean"/>
+              </attribute>
+            </optional>
+            <optional>
+              <attribute name="importance">
+                <data type="boolean"/>
+              </attribute>
+            </optional>
+            <optional>
+              <attribute name="uncertainty">
+                <data type="boolean"/>
+              </attribute>
+            </optional>
+            <optional>
+              <attribute name="ccf">
+                <data type="boolean"/>
+              </attribute>
+            </optional>
+          </interleave>
         </element>
       </optional>
       <optional>
@@ -53,36 +55,38 @@
       </optional>
       <optional>
         <element name="limits">
-          <optional>
-            <element name="limit-order">
-              <data type="nonNegativeInteger"/>
-            </element>
-          </optional>
-          <optional>
-            <element name="mission-time">
-              <data type="float"/>
-            </element>
-          </optional>
-          <optional>
-            <element name="cut-off">
-              <data type="float"/>
-            </element>
-          </optional>
-          <optional>
-            <element name="number-of-sums">
-              <data type="nonNegativeInteger"/>
-            </element>
-          </optional>
-          <optional>
-            <element name="number-of-trials">
-              <data type="nonNegativeInteger"/>
-            </element>
-          </optional>
-          <optional>
-            <element name="seed">
-              <data type="nonNegativeInteger"/>
-            </element>
-          </optional>
+          <interleave>
+            <optional>
+              <element name="limit-order">
+                <data type="nonNegativeInteger"/>
+              </element>
+            </optional>
+            <optional>
+              <element name="mission-time">
+                <data type="float"/>
+              </element>
+            </optional>
+            <optional>
+              <element name="cut-off">
+                <data type="float"/>
+              </element>
+            </optional>
+            <optional>
+              <element name="number-of-sums">
+                <data type="nonNegativeInteger"/>
+              </element>
+            </optional>
+            <optional>
+              <element name="number-of-trials">
+                <data type="nonNegativeInteger"/>
+              </element>
+            </optional>
+            <optional>
+              <element name="seed">
+                <data type="nonNegativeInteger"/>
+              </element>
+            </optional>
+          </interleave>
         </element>
       </optional>
     </element>
