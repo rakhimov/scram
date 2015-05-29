@@ -224,7 +224,7 @@ class CcfGroup(object):
 
 
 def init_gates(args, gates_queue):
-    """Initializes gates and other primary events.
+    """Initializes gates and other basic events.
 
     Args:
         args: Configurations for the fault tree.
@@ -233,8 +233,9 @@ def init_gates(args, gates_queue):
     # Get an intermediate gate to intialize breadth-first
     gate = gates_queue.popleft()
 
+    max_children = 2 * args.nchildren - 2
     # Sample children size
-    num_children = random.randint(2, args.nchildren)
+    num_children = random.randint(2, max_children)
 
     if gate.gate_type == "not":
         num_children = 1
@@ -245,26 +246,28 @@ def init_gates(args, gates_queue):
         gate.k_num = random.randint(2, num_children - 1)
 
     ancestors = None  # needed for cycle prevention
-    no_reuse_g = False  # special corner case with no reuse of gates
-    exp_ratio = 1.0 / (1 + args.ratio)  # out of loop for optimization
-    avg_gate = (args.nchildren + 2) / 2 / (args.ratio + 1)
+    no_common_g = False  # special corner case with no reuse of gates
+    avg_children = args.nchildren
+    ratio = avg_children * (1 - args.common_g) - 1
+    exp_ratio = 1 / (1 + ratio)  # out of loop for optimization
+    avg_gate = avg_children / (ratio + 1)
     avg_gate = avg_gate if avg_gate > 1 else 2
     max_trials = int(log(len(Gate.gates), avg_gate))
     max_trials = len(Gate.gates) if max_trials < 2 else max_trials
 
     while gate.num_children() < num_children:
-        # Case when the number of primary events is already satisfied
-        if len(BasicEvent.basic_events) == args.nprimary:
-            # Reuse already initialized primary events
+        # Case when the number of basic events is already satisfied
+        if len(BasicEvent.basic_events) == args.nbasic:
+            # Reuse already initialized basic events
             gate.add_child(random.choice(BasicEvent.basic_events))
             continue
 
-        # Sample gates-to-primary-events ratio
+        # Sample gates-to-basic-events ratio
         s_ratio = random.random()
         s_reuse = random.random()  # sample the reuse frequency
         if s_ratio < exp_ratio:
             # Create a new gate or reuse an existing one
-            if s_reuse < args.reuse_g and not no_reuse_g:
+            if s_reuse < args.common_g and not no_common_g:
                 # Lazy evaluation of ancestors
                 if not ancestors:
                     ancestors = gate.get_ancestors()
@@ -278,21 +281,21 @@ def init_gates(args, gates_queue):
                             random_gate not in ancestors):
                         gate.add_child(random_gate)
                         break
-                no_reuse_g = True
+                # no_common_g = True
             else:
                 gates_queue.append(Gate(gate))
         else:
-            # Create a new primary event or reuse an existing one
-            if s_reuse < args.reuse_p and BasicEvent.basic_events:
-                # Reuse an already initialized primary event
+            # Create a new basic event or reuse an existing one
+            if s_reuse < args.common_b and BasicEvent.basic_events:
+                # Reuse an already initialized basic event
                 gate.add_child(random.choice(BasicEvent.basic_events))
             else:
                 BasicEvent(gate)
 
-    # Corner case when not enough new primary events initialized, but
+    # Corner case when not enough new basic events initialized, but
     # there are no more intermediate gates to use due to a big ratio
     # or just random accident.
-    if not gates_queue and len(BasicEvent.basic_events) < args.nprimary:
+    if not gates_queue and len(BasicEvent.basic_events) < args.nbasic:
         # Initialize more gates by randomly choosing places in the
         # fault tree.
         random_gate = random.choice(Gate.gates)
@@ -316,23 +319,11 @@ def generate_fault_tree(args):
     while top_event.gate_type != "and" and top_event.gate_type != "or":
         top_event.gate_type = top_event.get_random_type()
     top_event.name = args.root
-    num_children = random.randint(2, args.nchildren)
-
-    # Configuring the number of children for the top event
-    if args.ctop:
-        num_children = args.ctop
-    elif num_children < args.ptop:
-        num_children = args.ptop
 
     # Container for not yet initialized gates
     # A deque is used to traverse the tree breadth-first
     gates_queue = deque()
-
-    # Initialize the top root node
-    while len(top_event.b_children) < args.ptop:
-        BasicEvent(top_event)
-    while top_event.num_children() < num_children:
-        gates_queue.append(Gate(top_event))
+    gates_queue.append(top_event)
 
     # Procede with children gates
     while gates_queue:
@@ -353,7 +344,7 @@ def generate_fault_tree(args):
         first_mem = 0
         last_mem = 0
         while len(CcfGroup.ccf_groups) < args.ccf:
-            last_mem = first_mem + random.randint(2, args.nchildren)
+            last_mem = first_mem + random.randint(2, 2 * args.nchildren - 2)
             if last_mem > len(members):
                 break
             CcfGroup().members = members[first_mem : last_mem]
@@ -376,29 +367,26 @@ def write_info(args):
     t_file.write(
             "<!--\nThis is an autogenerated fault tree description\n"
             "with the following parameters:\n\n"
-            "The output file name: " + str(args.out) + "\n"
+            "The output file name: " + args.out + "\n"
             "The fault tree name: " + args.ft_name + "\n"
             "The root gate name: " + args.root + "\n\n"
             "The seed of the random number generator: " + str(args.seed) + "\n"
-            "The number of basic events: " + str(args.nprimary) + "\n"
+            "The number of basic events: " + str(args.nbasic) + "\n"
             "The number of house events: " + str(args.house) + "\n"
             "The number of CCF groups: " + str(args.ccf) + "\n"
-            "The maximum number of children per gate: " +
+            "The average number of children for gates: " +
             str(args.nchildren) + "\n"
-            "Basic events to gates ratio per new node: " +
-            str(args.ratio) + "\n"
             "The weights of gate types [AND, OR, K/N, NOT, XOR]: " +
             str(Gate.type_weights) + "\n"
-            "Approximate percentage of repeated primary events in the tree: " +
-            str(args.reuse_p) + "\n"
-            "Approximate percentage of repeated gates in the tree: " +
-            str(args.reuse_g) + "\n"
-            "Maximum probability for basic events: " +
-            str(args.maxprob) + "\n"
-            "Minimum probability for basic events: " +
-            str(args.minprob) + "\n"
-            "Minimal number of primary events for the root node: " +
-            str(args.ptop) + "\n"
+            "Percentage of common basic events per gate: " +
+            str(args.common_b) + "\n"
+            "Percentage of common gates per gate: " + str(args.common_g) + "\n"
+            "The avg. number of parents for common basic events: " +
+            str(args.parents_b) + "\n"
+            "The avg. number of parents for common gates: " +
+            str(args.parents_g) + "\n"
+            "Maximum probability for basic events: " + str(args.maxprob) + "\n"
+            "Minimum probability for basic events: " + str(args.minprob) + "\n"
             "-->\n"
             )
 
@@ -410,38 +398,53 @@ def write_info(args):
     not_gates = [x for x in Gate.gates if x.gate_type == "not"]
     xor_gates = [x for x in Gate.gates if x.gate_type == "xor"]
 
+    frac_b = 0  # fraction of basic events in children per gate
+    common_b = 0
+    common_g = 0
+    for gate in Gate.gates:
+        frac_b += len(gate.b_children) / \
+                (len(gate.g_children) + len(gate.b_children))
+        if gate.b_children:
+            common_b += len([x for x in gate.b_children if x.is_shared()]) / \
+                    len(gate.b_children)
+        if gate.g_children:
+            common_g += len([x for x in gate.g_children if x.is_shared()]) / \
+                    len(gate.g_children)
+    ng = len(Gate.gates)
+    common_b = common_b / ng
+    common_g = common_g / ng
+    frac_b = frac_b / ng
+
     t_file.write(
             "<!--\nThe generated fault tree has the following metrics:\n\n"
-            "The number of basic events: " +
-            str(BasicEvent.num_basic) + "\n"
-            "The number of house events: " + str(HouseEvent.num_house) + "\n"
-            "The number of CCF groups: " + str(CcfGroup.num_ccf) + "\n"
-            "The number of gates: " + str(Gate.num_gates) + "\n"
-            "    AND gates: " + str(len(and_gates)) + "\n"
-            "    OR gates: " + str(len(or_gates)) + "\n"
-            "    K/N gates: " + str(len(atleast_gates)) + "\n"
-            "    NOT gates: " + str(len(not_gates)) + "\n"
-            "    XOR gates: " + str(len(xor_gates)) + "\n"
-            "Basic events to gates ratio: " +
-            str(BasicEvent.num_basic / Gate.num_gates) + "\n"
-            "The average number of children per gate: " +
-            str(sum(x.num_children() for x in Gate.gates) / len(Gate.gates)) +
-            "\n"
-            "The number of shared basic events: " + str(len(shared_p)) + "\n"
-            "The number of shared gates: " + str(len(shared_g)) + "\n"
+            "The number of basic events: %d" % BasicEvent.num_basic + "\n"
+            "The number of house events: %d" % HouseEvent.num_house + "\n"
+            "The number of CCF groups: %d" % CcfGroup.num_ccf + "\n"
+            "The number of gates: %d" % Gate.num_gates + "\n"
+            "    AND gates: %d" % len(and_gates) + "\n"
+            "    OR gates: %d" % len(or_gates) + "\n"
+            "    K/N gates: %d" % len(atleast_gates) + "\n"
+            "    NOT gates: %d" % len(not_gates) + "\n"
+            "    XOR gates: %d" % len(xor_gates) + "\n"
+            "Basic events to gates ratio: %f" %
+            (BasicEvent.num_basic / Gate.num_gates) + "\n"
+            "The average number of children for gates: %f" %
+            (sum(x.num_children() for x in Gate.gates) / len(Gate.gates)) + "\n"
+            "The number of common basic events: %d" % len(shared_p) + "\n"
+            "The number of common gates: %d" % len(shared_g) + "\n"
+            "Percentage of common basic events per gate: %f" % common_b + "\n"
+            "Percentage of common gates per gate: %f" % common_g + "\n"
+            "Percentage of children that are basic events per gate: %f" %
+            frac_b + "\n"
             )
     if shared_p:
         t_file.write(
-                "The avg. number of parents of shared basic events: " +
-                str(sum(x.num_parents() for x in shared_p) / len(shared_p)) +
-                "\n"
-                )
+                "The avg. number of parents for common basic events: %f" %
+                (sum(x.num_parents() for x in shared_p) / len(shared_p)) + "\n")
     if shared_g:
         t_file.write(
-                "The avg. number of parents of shared gates: " +
-                str(sum(x.num_parents() for x in shared_g) / len(shared_g)) +
-                "\n"
-                )
+                "The avg. number of parents for common gates: %f" %
+                (sum(x.num_parents() for x in shared_g) / len(shared_g)) + "\n")
 
     t_file.write("-->\n\n")
 
@@ -674,20 +677,10 @@ def check_valid_setup(args):
     if args.maxprob < args.minprob:
         raise ap.ArgumentTypeError("Max probability < Min probability")
 
-    if args.ptop > args.nprimary:
-        raise ap.ArgumentTypeError("ptop > # of total primary events")
-
-    if args.ptop > args.ctop:
-        raise ap.ArgumentTypeError("ptop > # of children for top")
-
-    if args.ptop and args.ptop == args.ctop and args.nprimary > args.ptop:
-        raise ap.ArgumentTypeError("(ctop > ptop) is required to expand "
-                                   "the tree")
-
-    if args.house >= args.nprimary:
+    if args.house >= args.nbasic:
         raise ap.ArgumentTypeError("Too many house events")
 
-    if args.ccf > 2 * args.nprimary / (2 + args.nchildren):
+    if args.ccf > args.nbasic / args.nchildren:
         raise ap.ArgumentTypeError("Too many ccf groups")
 
     if args.weights_g:
@@ -724,90 +717,85 @@ def manage_cmd_args():
     Raises:
         ArgumentTypeError: There are problemns with the arguments.
     """
-    description = "A script to create a fault tree of an arbitrary size and"\
+    description = "This script creates a fault tree of an arbitrary size and"\
                   " complexity."
 
     parser = ap.ArgumentParser(description=description)
 
-    ft_name = "the name for the fault tree"
+    ft_name = "name for the fault tree"
     parser.add_argument("--ft-name", type=str, help=ft_name,
                         default="Autogenerated")
 
-    root = "the name for the root gate"
+    root = "name for the root gate"
     parser.add_argument("--root", type=str, help=root, default="root")
 
-    seed = "the seed of a random number generator"
+    seed = "seed of the pseudo-random number generator"
     parser.add_argument("--seed", type=int, help=seed, default=123)
 
-    nprimary = "the number of primary events"
-    parser.add_argument("-p", "--nprimary", type=int, help=nprimary,
+    nbasic = "number of basic events"
+    parser.add_argument("-b", "--nbasic", type=int, help=nbasic,
                         default=100)
 
-    nchildren = "the maximum number of children per gate"
-    parser.add_argument("-c", "--nchildren", type=int, help=nchildren,
-                        default=4)
-
-    ratio = "basic events to gates ratio per a new gate"
-    parser.add_argument("--ratio", type=float, help=ratio, default=2)
+    nchildren = "average number of children gates"
+    parser.add_argument("-c", "--nchildren", type=float, help=nchildren,
+                        default=3)
 
     type_weights = "weights for samling [AND, OR, K/N, NOT, XOR] gate types"
     parser.add_argument("--weights-g", type=str, nargs="+", help=type_weights)
 
-    reuse_p = "approximate percentage of repeated primary events in the tree"
-    parser.add_argument("--reuse-p", type=float, help=reuse_p, default=0.1)
+    common_b = "percentage of common basic events per gate"
+    parser.add_argument("--common-b", type=float, help=common_b, default=0.1)
 
-    reuse_g = "approximate percentage of repeated gates in the tree"
-    parser.add_argument("--reuse-g", type=float, help=reuse_g, default=0.1)
+    common_g = "percentage of common gates per gate"
+    parser.add_argument("--common-g", type=float, help=common_g, default=0.1)
 
-    maxprob = "maximum probability for primary events"
-    parser.add_argument("--maxprob", type=float, help=maxprob,
-                        default=0.1)
+    parents_b = "average number of parents for common basic events"
+    parser.add_argument("--parents-b", type=float, help=parents_b, default=2)
 
-    minprob = "minimum probability for primary events"
-    parser.add_argument("--minprob", type=float, help=minprob,
-                        default=0.001)
+    parents_g = "average number of parents for common gates"
+    parser.add_argument("--parents-g", type=float, help=parents_g, default=2)
 
-    ptop = "minimal number of primary events for a root node"
-    parser.add_argument("--ptop", type=int, help=ptop,
-                        default=0)
+    maxprob = "maximum probability for basic events"
+    parser.add_argument("--maxprob", type=float, help=maxprob, default=0.1)
 
-    ctop = "minimal number of children for a root node"
-    parser.add_argument("--ctop", type=int, help=ctop,
-                        default=0)  # 0 indicates that the number is not set.
+    minprob = "minimum probability for basic events"
+    parser.add_argument("--minprob", type=float, help=minprob, default=0.001)
 
-    house = "the number of house events"
+    house = "number of house events"
     parser.add_argument("--house", type=int, help=house, default=0)
 
-    ccf = "the number of ccf groups"
+    ccf = "number of ccf groups"
     parser.add_argument("--ccf", type=int, help=ccf, default=0)
 
-    out = "output file to write the generated fault tree"
-    parser.add_argument("-o", "--out", help=out, default="fault_tree.xml")
+    out = "specify the output file to write the generated fault tree"
+    parser.add_argument("-o", "--out", help=out, type=str,
+                        default="fault_tree.xml")
 
-    shorthand = "shorthand format for the output"
+    shorthand = "apply the shorthand format to the output"
     parser.add_argument("--shorthand", action="store_true", help=shorthand)
 
     args = parser.parse_args()
 
     # Check for validity of arguments
-    check_if_positive(ctop, args.ctop)
-    check_if_positive(ptop, args.ptop)
-    check_if_positive(ratio, args.ratio)
     check_if_positive(nchildren, args.nchildren)
-    check_if_positive(nprimary, args.nprimary)
+    check_if_positive(nbasic, args.nbasic)
     check_if_positive(minprob, args.minprob)
     check_if_positive(maxprob, args.maxprob)
-    check_if_positive(reuse_p, args.reuse_p)
-    check_if_positive(reuse_g, args.reuse_g)
+    check_if_positive(common_b, args.common_b)
+    check_if_positive(common_g, args.common_g)
+    check_if_positive(parents_b, args.parents_b)
+    check_if_positive(parents_g, args.parents_g)
     check_if_positive(house, args.house)
     check_if_positive(ccf, args.ccf)
 
-    check_if_less(reuse_p, args.reuse_p, 0.9)
-    check_if_less(reuse_g, args.reuse_p, 0.9)
+    check_if_less(common_b, args.common_b, 0.9)
+    check_if_less(common_g, args.common_g, 0.9)
     check_if_less(maxprob, args.maxprob, 1)
     check_if_less(minprob, args.minprob, 1)
 
     check_if_more(nchildren, args.nchildren, 2)
+    check_if_more(parents_b, args.parents_b, 2)
+    check_if_more(parents_g, args.parents_g, 2)
 
     check_valid_setup(args)
     return args
