@@ -5,12 +5,13 @@ This script converts the shorthand notation for fault trees into an
 XML file. The output file is formatted according to OpenPSA MEF.
 
 The shorthand notation is described as follows:
-AND gates:                       gate_name := (child1 & child2 & ...)
-OR gates:                        gate_name := (child1 | child2 | ...)
-ATLEAST(k/n) gates:              gate_name := @(k, [child1, child2, ...])
-NOT gates:                       gate_name := ~child
-XOR gates:                       gate_name := (child1 ^ child2)
-Probabilities of basic events:   p(event_name) = probability
+AND gate:                          gate_name := (child1 & child2 & ...)
+OR gate:                           gate_name := (child1 | child2 | ...)
+ATLEAST(k/n) gate:                 gate_name := @(k, [child1, child2, ...])
+NOT gate:                          gate_name := ~child
+XOR gate:                          gate_name := (child1 ^ child2)
+Probability of a basic event:      p(event_name) = probability
+Boolean state of a house event:    s(event_name) = state
 
 Some requirements to the shorthand input file:
 0. The names are not case-sensitive.
@@ -56,13 +57,24 @@ class BasicEvent(Node):
         super(BasicEvent, self).__init__(name)
         self.prob = prob
 
+class HouseEvent(Node):
+    """Representation of a house event in a fault tree.
+
+    Attributes:
+        state: State of the house event ("true" or "false").
+    """
+    def __init__(self, name=None, state=None):
+        super(HouseEvent, self).__init__(name)
+        self.state = state
+
 class Gate(Node):
     """Representation of a gate of a fault tree.
 
     Attributes:
         children: A list of children names.
         g_children: Children of this gate that are gates.
-        p_children: Children of this gate that are basic events.
+        b_children: Children of this gate that are basic events.
+        h_children: Children of this gate that are house events.
         u_children: Children that are undefined from the input.
         gate_type: Type of the gate. Chosen randomly.
         k_num: Min number for a combination gate.
@@ -74,7 +86,8 @@ class Gate(Node):
         self.k_num = k_num
         self.children = []
         self.g_children = []
-        self.p_children = []
+        self.b_children = []
+        self.h_children = []
         self.u_children = []  # undefined children
         self.mark = None  # marking for various algorithms
 
@@ -85,6 +98,7 @@ class FaultTree(object):
         name: The name of a fault tree.
         gates: A collection of gates of a fault tree.
         basic_events: A collection of basic events of a fault tree.
+        house_events: A collection of house events of a fault tree.
         undef_nodes: Nodes that are not explicitly defined as gates or
             basic events.
         top_gate: The top gate of a fault tree.
@@ -93,6 +107,7 @@ class FaultTree(object):
         self.name = name
         self.gates = {}
         self.basic_events = {}
+        self.house_events = {}
         self.undef_nodes = {}
         self.top_gate = None
 
@@ -180,6 +195,16 @@ class FaultTree(object):
         self.__check_redefinition(name)
         self.basic_events.update({name.lower(): BasicEvent(name, prob)})
 
+    def add_house(self, name, state):
+        """Creates and adds a new house event into the fault tree.
+
+        Args:
+            name: A name for the new house event.
+            state: The state of the new house event ("true" or "false").
+        """
+        self.__check_redefinition(name)
+        self.house_events.update({name.lower(): HouseEvent(name, state)})
+
     def add_gate(self, name, gate_type, children, k_num=None):
         """Creates and adds a new gate into the fault tree.
 
@@ -204,7 +229,10 @@ class FaultTree(object):
                     gate.g_children.append(child_node)
                 elif self.basic_events.has_key(child.lower()):
                     child_node = self.basic_events[child.lower()]
-                    gate.p_children.append(child_node)
+                    gate.b_children.append(child_node)
+                elif self.house_events.has_key(child.lower()):
+                    child_node = self.house_events[child.lower()]
+                    gate.h_children.append(child_node)
                 elif self.undef_nodes.has_key(child.lower()):
                     child_node = self.undef_nodes[child.lower()]
                     gate.u_children.append(child_node)
@@ -247,6 +275,8 @@ def parse_input_file(input_file):
     xor_re = re.compile(r"(\s*\w+\s*\^\s*\w+\s*)$")
     # Probability description for a basic event
     prob_re = re.compile(r"^\s*p\(\s*(\w+)\s*\)\s*=\s*(0\.\d+)\s*$")
+    # State description for a house event
+    state_re = re.compile(r"^\s*s\(\s*(\w+)\s*\)\s*=\s*(true|false)\s*$")
 
     blank_line = re.compile(r"^\s*$")
 
@@ -307,6 +337,9 @@ def parse_input_file(input_file):
         elif prob_re.match(line):
             event_name, prob = prob_re.match(line).group(1, 2)
             fault_tree.add_basic(event_name, prob)
+        elif state_re.match(line):
+            event_name, state = state_re.match(line).group(1, 2)
+            fault_tree.add_house(event_name, state)
         elif ft_name_re.match(line):
             if ft_name:
                 sys.exit("Redefinition of the fault tree name:\n" + line)
@@ -385,8 +418,12 @@ def write_to_xml_file(fault_tree, output_file):
             o_file.write("<gate name=\"" + g_child.name + "\"/>\n")
 
         # Print basic events
-        for p_child in gate.p_children:
-            o_file.write("<basic-event name=\"" + p_child.name + "\"/>\n")
+        for b_child in gate.b_children:
+            o_file.write("<basic-event name=\"" + b_child.name + "\"/>\n")
+
+        # Print house events
+        for h_child in gate.h_children:
+            o_file.write("<house-event name=\"" + h_child.name + "\"/>\n")
 
         # Print undefined events
         for u_child in gate.u_children:
@@ -408,6 +445,12 @@ def write_to_xml_file(fault_tree, output_file):
         t_file.write("<define-basic-event name=\"" + basic.name + "\">\n"
                      "<float value=\"" + str(basic.prob) + "\"/>\n"
                      "</define-basic-event>\n")
+
+    for house in fault_tree.house_events.itervalues():
+        t_file.write("<define-house-event name=\"" + house.name + "\">\n"
+                     "<constant value=\"" + str(house.state) + "\"/>\n"
+                     "</define-house-event>\n")
+
     t_file.write("</model-data>\n")
     t_file.write("</opsa-mef>")
     t_file.close()
