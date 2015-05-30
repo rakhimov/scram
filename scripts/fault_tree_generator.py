@@ -20,7 +20,6 @@ import argparse as ap
 
 from shorthand_to_xml import toposort_gates
 
-
 class Node(object):
     """Representation of a base class for a node in a fault tree.
 
@@ -229,6 +228,9 @@ class Factors(object):
     def __calculate_max_children(avg_children, weights):
         """Calculates the maximum number of children for sampling.
 
+        The result may have a fractional part that must be adjusted in
+        sampling accordingly.
+
         Args:
             avg_children: The average number of children for gates.
             weights: Normalized weights for gate types.
@@ -246,6 +248,7 @@ class Factors(object):
         var_children = min_children[:3]
         var_weights = weights[:3]
         var_contrib = [x * y for x, y in zip(var_children, var_weights)]
+
         # AND, OR, K/N gate types can have the varying number of children.
         # Since the distribution is symmetric, the average is (max + min) / 2.
         return ((2*avg_children - sum(var_contrib) - 2*sum(const_contrib)) /
@@ -355,7 +358,7 @@ class Factors(object):
         Returns:
             The number of gates needed for the given basic events.
         """
-        return (num_basics /
+        return int(num_basics /
                 (Factors.__percent_basics * Factors.avg_children *
                     (1 - Factors.common_b)))
 
@@ -372,7 +375,7 @@ class Factors(object):
         Returns:
             The estimated number of common basic events.
         """
-        return (Factors.common_b * Factors.__percent_basics *
+        return int(Factors.common_b * Factors.__percent_basics *
                 Factors.avg_children * num_gates / Factors.parents_b)
 
     @staticmethod
@@ -388,8 +391,8 @@ class Factors(object):
         Returns:
             The estimated number of common gates.
         """
-        return (Factors.common_g * Factors.__percent_gates *
-                Factors.avg_children * num_gates / Factors.parents_g)
+        return int(Factors.common_g * Factors.__percent_gates *
+                   Factors.avg_children * num_gates / Factors.parents_g)
 
 
 def init_gates(args, gates_queue):
@@ -473,6 +476,11 @@ def generate_fault_tree(args):
         top_event.gate_type = Factors.get_random_type()
     top_event.name = args.root
 
+    # Estimating the parameters
+    num_gates = Factors.get_num_gates(Factors.num_basics)
+    num_common_basics = Factors.get_num_common_basics(num_gates)
+    num_common_gates = Factors.get_num_common_gates(num_gates)
+
     # Container for not yet initialized gates
     # A deque is used to traverse the tree breadth-first
     gates_queue = deque()
@@ -497,7 +505,7 @@ def generate_fault_tree(args):
         first_mem = 0
         last_mem = 0
         while len(CcfGroup.ccf_groups) < args.ccf:
-            last_mem = first_mem + random.randint(2, 2 * args.children - 2)
+            last_mem = first_mem + random.randint(2, int(2*args.children - 2))
             if last_mem > len(members):
                 break
             CcfGroup().members = members[first_mem : last_mem]
@@ -958,6 +966,9 @@ def validate_setup(args):
         weights_float = [float(i) for i in args.weights_g]
         if sum(weights_float) == 0:
             raise ap.ArgumentTypeError("atleast one non-zero weight is needed")
+
+        if len(weights_float) > 3 and not sum(weights_float[:3]):
+            raise ap.ArgumentTypeError("cannot work with only XOR or NOT gates")
 
     if args.shorthand:
         if args.out == "fault_tree.xml":
