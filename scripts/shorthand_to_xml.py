@@ -20,8 +20,9 @@ Some requirements to the shorthand input file:
 3. Undefined nodes are processed as 'events' to the final XML output. However,
     warnings will be emitted in case it is the user's mistake.
 4. Name clashes or redefinitions are errors.
-5. Cyclic trees are detected by the script.
-6. The top gate is detected by the script. Only one top gate is allowed.
+5. Cyclic trees are detected by the script as errors.
+6. The top gate is detected by the script. Only one top gate is allowed
+    unless otherwise specified by the user.
 7. Repeated children are considered an error.
 8. The script is flexible with white spaces in the input file.
 9. Parentheses are optional for AND, OR, NOT, XOR gates.
@@ -101,15 +102,17 @@ class FaultTree(object):
         house_events: A collection of house events of a fault tree.
         undef_nodes: Nodes that are not explicitly defined as gates or
             basic events.
-        top_gate: The top gate of a fault tree.
+        top_gates: The top gates of a fault tree. Single one is the default.
+        multi_top: A flag to indicate to allow multiple top gates.
     """
-    def __init__(self, name=None):
+    def __init__(self, name=None, multi_top=False):
         self.name = name
         self.gates = {}
         self.basic_events = {}
         self.house_events = {}
         self.undef_nodes = {}
-        self.top_gate = None
+        self.top_gates = None
+        self.multi_top = multi_top
 
     def __check_redefinition(self, name):
         """Checks if a node is being redefined.
@@ -159,10 +162,11 @@ class FaultTree(object):
             sys.exit("Detected a cycle: " +
                      str([x for x in cycle[cycle.index(start):]]))
 
-        assert self.top_gate is not None
-        cycle = visit(self.top_gate)
-        if cycle:
-            print_cycle(cycle)
+        assert self.top_gates is not None
+        for top_gate in self.top_gates:
+            cycle = visit(top_gate)
+            if cycle:
+                print_cycle(cycle)
 
         detached_gates = [x for x in self.gates.itervalues() if not x.mark]
         if detached_gates:
@@ -178,12 +182,12 @@ class FaultTree(object):
     def __detect_top(self):
         """Detects the top gate of the developed fault tree."""
         top_gates = [x for x in self.gates.itervalues() if not x.parents]
-        if len(top_gates) > 1:
+        if len(top_gates) > 1 and not self.multi_top:
             names = [x.name for x in top_gates]
             sys.exit("Detected multiple top gates:\n" + str(names))
         elif not top_gates:
             sys.exit("No top gate is detected")
-        self.top_gate = top_gates[0]
+        self.top_gates = top_gates
 
     def add_basic(self, name, prob):
         """Creates and adds a new basic event into the fault tree.
@@ -242,15 +246,22 @@ class FaultTree(object):
                     self.undef_nodes.update({child.lower(): child_node})
                     gate.u_children.append(child_node)
                 child_node.parents.add(gate)
+        for basic in self.basic_events.itervalues():
+            if not basic.parents:
+                print("Warning. Orphan basic event: " + basic.name)
+        for house in self.house_events.itervalues():
+            if not house.parents:
+                print("Warning. Orphan house event: " + house.name)
         self.__detect_top()
         self.__detect_cycle()
 
 
-def parse_input_file(input_file):
+def parse_input_file(input_file, multi_top=False):
     """Parses an input file with a shorthand description of a fault tree.
 
     Args:
         input_file: The path to the input file.
+        multi_top: If the input contains a fault tree with multiple top gates.
 
     Returns:
         The fault tree described in the input file.
@@ -260,7 +271,7 @@ def parse_input_file(input_file):
     ft_name_re = re.compile(r"^\s*(\w+)\s*$")
     gate_sig = r"^\s*(\w+)\s*:=\s*"
     gate_re = re.compile(gate_sig + r"(.*)$")
-    # Optional parentheses
+    # Optional parentheses for gates
     paren_re = re.compile(r"\s*\((.*)\)\s*$")
     # AND gate identification
     and_re = re.compile(r"(\s*\w+(\s*&\s*\w+\s*)+)$")
@@ -274,7 +285,7 @@ def parse_input_file(input_file):
     # XOR gate identification
     xor_re = re.compile(r"(\s*\w+\s*\^\s*\w+\s*)$")
     # Probability description for a basic event
-    prob_re = re.compile(r"^\s*p\(\s*(\w+)\s*\)\s*=\s*(0\.\d+)\s*$")
+    prob_re = re.compile(r"^\s*p\(\s*(\w+)\s*\)\s*=\s*(1|0|0\.\d+)\s*$")
     # State description for a house event
     state_re = re.compile(r"^\s*s\(\s*(\w+)\s*\)\s*=\s*(true|false)\s*$")
 
@@ -350,15 +361,16 @@ def parse_input_file(input_file):
     if ft_name is None:
         sys.exit("The fault tree name is not given.")
     fault_tree.name = ft_name
+    fault_tree.multi_top = multi_top
     fault_tree.populate()
     return fault_tree
 
 
-def toposort_gates(top_gate, gates):
+def toposort_gates(top_gates, gates):
     """Sorts gates topologically starting from the root gate.
 
     Args:
-        top_gate: The root gate of the fault tree.
+        top_gates: The top gates of the fault tree.
         gates: Gates to be sorted.
 
     Returns:
@@ -381,7 +393,8 @@ def toposort_gates(top_gate, gates):
             gate.mark = "perm"
             final_list.appendleft(gate)
     sorted_gates = deque()
-    visit(top_gate, sorted_gates)
+    for top_gate in top_gates:
+        visit(top_gate, sorted_gates)
     assert len(sorted_gates) == len(gates)
     return sorted_gates
 
@@ -432,7 +445,7 @@ def write_to_xml_file(fault_tree, output_file):
         o_file.write("</" + gate.gate_type+ ">\n")
         o_file.write("</define-gate>\n")
 
-    sorted_gates = toposort_gates(fault_tree.top_gate,
+    sorted_gates = toposort_gates(fault_tree.top_gates,
                                   fault_tree.gates.values())
 
     for gate in sorted_gates:
@@ -470,6 +483,9 @@ def main():
     input_file = "input file with the shorthand notation"
     parser.add_argument("input_file", type=str, nargs="?", help=input_file)
 
+    multi_top = "multiple top events"
+    parser.add_argument("--multi-top", help=multi_top, action="store_true")
+
     out = "output file to write the converted input"
     parser.add_argument("-o", "--out", help=out)
 
@@ -478,7 +494,7 @@ def main():
     if not args.input_file:
         raise ap.ArgumentTypeError("No input file is provided.")
 
-    fault_tree = parse_input_file(args.input_file)
+    fault_tree = parse_input_file(args.input_file, args.multi_top)
     out = args.out
     if not out:
         out = os.path.basename(args.input_file)

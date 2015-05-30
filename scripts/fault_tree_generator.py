@@ -683,7 +683,7 @@ def write_results(args, top_event):
         o_file.write("</" + gate.gate_type+ ">\n")
         o_file.write("</define-gate>\n")
 
-    sorted_gates = toposort_gates(top_event, Gate.gates)
+    sorted_gates = toposort_gates([top_event], Gate.gates)
     for gate in sorted_gates:
         write_gate(gate, t_file)
 
@@ -784,7 +784,7 @@ def write_shorthand(args, top_event):
         o_file.write("".join(line))
         o_file.write("\n")
 
-    sorted_gates = toposort_gates(top_event, Gate.gates)
+    sorted_gates = toposort_gates([top_event], Gate.gates)
     for gate in sorted_gates:
         write_gate(gate, t_file)
 
