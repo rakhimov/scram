@@ -22,7 +22,8 @@ Some requirements to the shorthand input file:
 5. Cyclic trees are detected by the script.
 6. The top gate is detected by the script. Only one top gate is allowed.
 7. Repeated children are considered an error.
-8. The script is flexibile with white spaces in the input file.
+8. The script is flexible with white spaces in the input file.
+9. Parentheses are optional for AND, OR, NOT, XOR gates.
 """
 from __future__ import print_function
 
@@ -230,19 +231,20 @@ def parse_input_file(input_file):
     # Fault tree name
     ft_name_re = re.compile(r"^\s*(\w+)\s*$")
     gate_sig = r"^\s*(\w+)\s*:=\s*"
-    gate_re = re.compile(gate_sig + r".*")
+    gate_re = re.compile(gate_sig + r"(.*)$")
+    # Optional parentheses
+    paren_re = re.compile(r"\s*\((.*)\)\s*$")
     # AND gate identification
-    and_re = re.compile(gate_sig + r"\((\s*\w+(\s*&\s*\w+\s*)+)\)\s*$")
+    and_re = re.compile(r"(\s*\w+(\s*&\s*\w+\s*)+)$")
     # OR gate identification
-    or_re = re.compile(gate_sig + r"\((\s*\w+(\s*\|\s*\w+\s*)+)\)\s*$")
+    or_re = re.compile(r"(\s*\w+(\s*\|\s*\w+\s*)+)$")
     # Combination gate identification
     comb_children = r"\[(\s*\w+(\s*,\s*\w+\s*){2,})\]"
-    comb_re = re.compile(gate_sig + r"@\(([2-9])\s*,\s*" + comb_children +
-                         r"\s*\)\s*$")
+    comb_re = re.compile(r"@\(([2-9])\s*,\s*" + comb_children + r"\s*\)\s*$")
     # NOT gate identification
-    not_re = re.compile(gate_sig + r"~\s*(\w+)")
+    not_re = re.compile(r"~\s*(\w+)$")
     # XOR gate identification
-    xor_re = re.compile(gate_sig + r"\((\s*\w+\s*\^\s*\w+\s*)\)")
+    xor_re = re.compile(r"(\s*\w+\s*\^\s*\w+\s*)$")
     # Probability description for a basic event
     prob_re = re.compile(r"^\s*p\(\s*(\w+)\s*\)\s*=\s*(0\.\d+)\s*$")
 
@@ -275,28 +277,33 @@ def parse_input_file(input_file):
         if blank_line.match(line):
             continue
         elif gate_re.match(line):
-            if and_re.match(line):
-                gate_name, children = and_re.match(line).group(1, 2)
+            gate_name, formula = gate_re.match(line).group(1, 2)
+            if paren_re.match(formula):
+                formula = paren_re.match(formula).group(1)
+            if and_re.match(formula):
+                children = and_re.match(formula).group(1)
                 children = get_gate_children(children, "&", line)
                 fault_tree.add_gate(gate_name, "and", children)
-            elif or_re.match(line):
-                gate_name, children = or_re.match(line).group(1, 2)
+            elif or_re.match(formula):
+                children = or_re.match(formula).group(1)
                 children = get_gate_children(children, "|", line)
                 fault_tree.add_gate(gate_name, "or", children)
-            elif comb_re.match(line):
-                gate_name, k_num, children = comb_re.match(line).group(1, 2, 3)
+            elif comb_re.match(formula):
+                k_num, children = comb_re.match(formula).group(1, 2)
                 children = get_gate_children(children, ",", line)
                 if int(k_num) >= len(children):
                     sys.exit("Invalid k/n for a combination gate:\n" + line)
                 fault_tree.add_gate(gate_name, "atleast", children, k_num)
-            elif not_re.match(line):
-                gate_name, children = not_re.match(line).group(1, 2)
+            elif not_re.match(formula):
+                children = not_re.match(formula).group(1)
                 children = get_gate_children(children, "~", line)
                 fault_tree.add_gate(gate_name, "not", children)
-            elif xor_re.match(line):
-                gate_name, children = xor_re.match(line).group(1, 2)
+            elif xor_re.match(formula):
+                children = xor_re.match(formula).group(1)
                 children = get_gate_children(children, "^", line)
                 fault_tree.add_gate(gate_name, "xor", children)
+            else:
+                sys.exit("Cannot interpret the following line:\n" + line)
         elif prob_re.match(line):
             event_name, prob = prob_re.match(line).group(1, 2)
             fault_tree.add_basic(event_name, prob)

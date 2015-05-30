@@ -332,6 +332,7 @@ class Factors(object):
                 max_children = 3
             num_children = random.randint(3, max_children)
             gate.k_num = random.randint(2, num_children - 1)
+            return num_children
 
         return random.randint(2, max_children)
 
