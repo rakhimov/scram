@@ -395,7 +395,7 @@ class Factors(object):
                    Factors.avg_children * num_gates / Factors.parents_g)
 
 
-def init_gates(args, gates_queue):
+def init_gates(gates_queue):
     """Initializes gates and other basic events.
 
     Args:
@@ -412,18 +412,21 @@ def init_gates(args, gates_queue):
     max_trials = len(Gate.gates)
 
     while gate.num_children() < num_children:
-        # Case when the number of basic events is already satisfied
-        if len(BasicEvent.basic_events) == args.basics:
-            # Reuse already initialized basic events
-            gate.add_child(random.choice(BasicEvent.basic_events))
-            continue
+        s_percent = random.random()  # sample percentage of gates
+        s_common = random.random()  # sample the reuse frequency
 
-        # Sample gates-to-basic-events ratio
-        s_ratio = random.random()
-        s_reuse = random.random()  # sample the reuse frequency
-        if s_ratio < Factors.get_percent_gates():
+        # Case when the number of basic events is already satisfied
+        if len(BasicEvent.basic_events) == Factors.num_basics:
+            if not Factors.common_g and not Factors.common_b:
+                # Reuse already initialized basic events
+                gate.add_child(random.choice(BasicEvent.basic_events))
+                continue
+            else:
+                s_common = 0
+
+        if s_percent < Factors.get_percent_gates():
             # Create a new gate or reuse an existing one
-            if s_reuse < args.common_g and not no_common_g:
+            if s_common < Factors.common_g and not no_common_g:
                 # Lazy evaluation of ancestors
                 if not ancestors:
                     ancestors = gate.get_ancestors()
@@ -442,7 +445,7 @@ def init_gates(args, gates_queue):
                 gates_queue.append(Gate(gate))
         else:
             # Create a new basic event or reuse an existing one
-            if s_reuse < args.common_b and BasicEvent.basic_events:
+            if s_common < Factors.common_b and BasicEvent.basic_events:
                 # Reuse an already initialized basic event
                 gate.add_child(random.choice(BasicEvent.basic_events))
             else:
@@ -451,7 +454,7 @@ def init_gates(args, gates_queue):
     # Corner case when not enough new basic events initialized, but
     # there are no more intermediate gates to use due to a big ratio
     # or just random accident.
-    if not gates_queue and len(BasicEvent.basic_events) < args.basics:
+    if not gates_queue and len(BasicEvent.basic_events) < Factors.num_basics:
         # Initialize more gates by randomly choosing places in the
         # fault tree.
         random_gate = random.choice(Gate.gates)
@@ -488,7 +491,7 @@ def generate_fault_tree(args):
 
     # Procede with children gates
     while gates_queue:
-        init_gates(args, gates_queue)
+        init_gates(gates_queue)
 
     # Distribute house events
     while len(HouseEvent.house_events) < args.house:
