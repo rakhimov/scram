@@ -3,6 +3,7 @@
 
 This script converts the shorthand notation for fault trees into an
 XML file. The output file is formatted according to OpenPSA MEF.
+The default output file name is the input file name with the XML extension.
 
 The shorthand notation is described as follows:
 AND gate:                          gate_name := (child1 & child2 & ...)
@@ -42,11 +43,25 @@ class Node(object):
 
     Attributes:
         name: A specific name that identifies this node.
-        parents: A set of parents of this node.
     """
-    def __init__(self, name=None):
+    def __init__(self, name):
         self.name = name
-        self.parents = set()
+        self.__parents = set()
+
+    def add_parent(self, formula):
+        """Adds a formula as a parent of the node.
+
+        Args:
+            formula: The formula where this node appears.
+        """
+        assert formula not in self.__parents
+        assert type(formula) is Formula
+        self.__parents.add(formula)
+
+    def is_orphan(self):
+        """Determines if the node is parentless."""
+        return len(self.__parents) == 0
+
 
 class BasicEvent(Node):
     """Representation of a basic event in a fault tree.
@@ -54,9 +69,10 @@ class BasicEvent(Node):
     Attributes:
         prob: Probability of failure of this basic event.
     """
-    def __init__(self, name=None, prob=None):
+    def __init__(self, name, prob):
         super(BasicEvent, self).__init__(name)
         self.prob = prob
+
 
 class HouseEvent(Node):
     """Representation of a house event in a fault tree.
@@ -64,33 +80,51 @@ class HouseEvent(Node):
     Attributes:
         state: State of the house event ("true" or "false").
     """
-    def __init__(self, name=None, state=None):
+    def __init__(self, name, state):
         super(HouseEvent, self).__init__(name)
         self.state = state
+
 
 class Gate(Node):
     """Representation of a gate of a fault tree.
 
     Attributes:
-        children: A list of children names.
-        g_children: Children of this gate that are gates.
-        b_children: Children of this gate that are basic events.
-        h_children: Children of this gate that are house events.
-        u_children: Children that are undefined from the input.
-        gate_type: Type of the gate. Chosen randomly.
-        k_num: Min number for a combination gate.
         mark: Marking for various algorithms like toposort.
+        formula: The formula of this gate.
     """
-    def __init__(self, name=None, gate_type=None, k_num=None):
+    def __init__(self, name, formula):
         super(Gate, self).__init__(name)
-        self.gate_type = gate_type
-        self.k_num = k_num
-        self.children = []
-        self.g_children = []
-        self.b_children = []
-        self.h_children = []
-        self.u_children = []  # undefined children
         self.mark = None  # marking for various algorithms
+        self.formula = formula  # the formula of this gate
+
+
+class Formula(object):
+    """Boolean formula with arguments.
+
+    Attributes:
+        operator: Logical operator of this formula.
+        k_num: Min number for the combination operator.
+        node_arguments: String names of non-formula arguments like basic events.
+        f_arguments: arguments that are formulas.
+        g_arguments: arguments that are gates.
+        b_arguments: arguments that are basic events.
+        h_arguments: arguments that are house events.
+        u_arguments: arguments that are undefined from the input.
+    """
+    def __init__(self, operator=None, k_num=None):
+        self.operator = operator
+        self.k_num = k_num
+        self.node_arguments = []
+        self.f_arguments = []
+        self.g_arguments = []
+        self.b_arguments = []
+        self.h_arguments = []
+        self.u_arguments = []
+
+    def num_arguments(self):
+        """Returns the number of arguments."""
+        return len(self.f_arguments) + len(self.node_arguments)
+
 
 class FaultTree(object):
     """Representation of a fault tree for shorthand to XML purposes.
@@ -121,15 +155,38 @@ class FaultTree(object):
             name: The name under investigation.
         """
         if (self.basic_events.has_key(name.lower()) or
-            self.gates.has_key(name.lower())):
+            self.gates.has_key(name.lower()) or
+            self.house_events.has_key(name.lower())):
             sys.exit("Redefinition of a node: " + name)
 
     def __detect_cycle(self):
         """Checks if the fault tree has a cycle."""
+        def continue_formula(formula):
+            """Continues visiting gates in the formula.
+
+            This is a helper function of visit(gate) function.
+
+            Args:
+                formula: The formula to be visited further.
+
+            Returns:
+                None if no cycle is found.
+                A list of node names in a detected cycle path in reverse order.
+            """
+            for gate in formula.g_arguments:
+                cycle = visit(gate)
+                if cycle:
+                    return cycle
+            for arg in formula.f_arguments:
+                cycle = continue_formula(arg)
+                if cycle:
+                    return cycle
+            return None
+
         def visit(gate):
             """Recursively visits the given gate sub-tree to detect a cycle.
 
-            Upon visiting the children gates, their marks are changed from
+            Upon visiting the descendant gates, their marks are changed from
             temporary to permanent.
 
             Args:
@@ -141,11 +198,10 @@ class FaultTree(object):
             """
             if not gate.mark:
                 gate.mark = "temp"
-                for child in gate.g_children:
-                    cycle = visit(child)
-                    if cycle:
-                        cycle.append(gate.name)
-                        return cycle
+                cycle = continue_formula(gate.formula)
+                if cycle:
+                    cycle.append(gate.name)
+                    return cycle
                 gate.mark = "perm"
             elif gate.mark == "temp":
                 return [gate.name]  # a cycle is detected
@@ -181,7 +237,7 @@ class FaultTree(object):
 
     def __detect_top(self):
         """Detects the top gate of the developed fault tree."""
-        top_gates = [x for x in self.gates.itervalues() if not x.parents]
+        top_gates = [x for x in self.gates.itervalues() if x.is_orphan()]
         if len(top_gates) > 1 and not self.multi_top:
             names = [x.name for x in top_gates]
             sys.exit("Detected multiple top gates:\n" + str(names))
@@ -209,7 +265,7 @@ class FaultTree(object):
         self.__check_redefinition(name)
         self.house_events.update({name.lower(): HouseEvent(name, state)})
 
-    def add_gate(self, name, gate_type, children, k_num=None):
+    def add_gate(self, name, formula):
         """Creates and adds a new gate into the fault tree.
 
         Args:
@@ -219,38 +275,50 @@ class FaultTree(object):
             k_num: K number is required for a combination type of a gate.
         """
         self.__check_redefinition(name)
-        gate = Gate(name, gate_type, k_num)
-        gate.children = children
+        gate = Gate(name, formula)
         self.gates.update({name.lower(): gate})
 
     def populate(self):
         """Assigns children to gates and parents to children."""
-        for gate in self.gates.itervalues():
-            for child in gate.children:
+        def populate_formula(formula):
+            """Assigns children to formula.
+
+            Args:
+                formula: A formula with arguments.
+            """
+            assert formula.num_arguments() > 0
+            for child in formula.node_arguments:
                 child_node = None
                 if self.gates.has_key(child.lower()):
                     child_node = self.gates[child.lower()]
-                    gate.g_children.append(child_node)
+                    formula.g_arguments.append(child_node)
                 elif self.basic_events.has_key(child.lower()):
                     child_node = self.basic_events[child.lower()]
-                    gate.b_children.append(child_node)
+                    formula.b_arguments.append(child_node)
                 elif self.house_events.has_key(child.lower()):
                     child_node = self.house_events[child.lower()]
-                    gate.h_children.append(child_node)
+                    formula.h_arguments.append(child_node)
                 elif self.undef_nodes.has_key(child.lower()):
                     child_node = self.undef_nodes[child.lower()]
-                    gate.u_children.append(child_node)
+                    formula.u_arguments.append(child_node)
                 else:
                     print("Warning. Unidentified node: " + child)
                     child_node = Node(child)
                     self.undef_nodes.update({child.lower(): child_node})
-                    gate.u_children.append(child_node)
-                child_node.parents.add(gate)
+                    formula.u_arguments.append(child_node)
+                child_node.add_parent(formula)
+
+            for child_formula in formula.f_arguments:
+                populate_formula(child_formula)
+
+        for gate in self.gates.itervalues():
+            populate_formula(gate.formula)
+
         for basic in self.basic_events.itervalues():
-            if not basic.parents:
+            if basic.is_orphan():
                 print("Warning. Orphan basic event: " + basic.name)
         for house in self.house_events.itervalues():
-            if not house.parents:
+            if house.is_orphan():
                 print("Warning. Orphan house event: " + house.name)
         self.__detect_top()
         self.__detect_cycle()
@@ -269,21 +337,24 @@ def parse_input_file(input_file, multi_top=False):
     short_file = open(input_file, "r")
     # Fault tree name
     ft_name_re = re.compile(r"^\s*(\w+)\s*$")
+    # Node names
+    name_re = re.compile(r"\s*(\w+)\s*$")
+    # General gate name and pattern
     gate_sig = r"^\s*(\w+)\s*:=\s*"
     gate_re = re.compile(gate_sig + r"(.*)$")
     # Optional parentheses for gates
     paren_re = re.compile(r"\s*\((.*)\)\s*$")
     # AND gate identification
-    and_re = re.compile(r"(\s*\w+(\s*&\s*\w+\s*)+)$")
+    and_re = re.compile(r"(\s*[^\(\)]+(\s*&\s*[^\(\)]+\s*)+)$")
     # OR gate identification
-    or_re = re.compile(r"(\s*\w+(\s*\|\s*\w+\s*)+)$")
+    or_re = re.compile(r"(\s*[^\(\)]+(\s*\|\s*[^\(\)]+\s*)+)$")
     # Combination gate identification
-    comb_children = r"\[(\s*\w+(\s*,\s*\w+\s*){2,})\]"
+    comb_children = r"\[(\s*.+(\s*,\s*.+\s*){2,})\]"
     comb_re = re.compile(r"@\(([2-9])\s*,\s*" + comb_children + r"\s*\)\s*$")
     # NOT gate identification
-    not_re = re.compile(r"~\s*(\w+)$")
+    not_re = re.compile(r"~\s*(.+)$")
     # XOR gate identification
-    xor_re = re.compile(r"(\s*\w+\s*\^\s*\w+\s*)$")
+    xor_re = re.compile(r"(\s*.+\s*\^\s*.+\s*)$")
     # Probability description for a basic event
     prob_re = re.compile(r"^\s*p\(\s*(\w+)\s*\)\s*=\s*(1|0|0\.\d+)\s*$")
     # State description for a house event
@@ -294,57 +365,80 @@ def parse_input_file(input_file, multi_top=False):
     ft_name = None
     fault_tree = FaultTree()
 
-    def get_gate_children(children_string, splitter, line):
-        """Splits the input string into children of a gate.
+    def get_arguments(arguments_string, splitter):
+        """Splits the input string into arguments of a formula.
 
-        If a repeated child is found, halts the script with a message.
+        If a repeated argument is found, halts the script with a message.
 
         Args:
-            children_string: String contaning children names.
-            splitter: Splitter specific to the parent gate, i.e. "&", "|", ','.
-            line: The line containing the string. It is needed for error
-                messages.
+            arguments_string: String contaning arguments.
+            splitter: Splitter specific to the operator, i.e. "&", "|", ','.
 
         Returns:
-            Children list from the input string.
+            arguments list from the input string.
         """
-        children = children_string.split(splitter)
-        children = [x.strip() for x in children]
-        if len(children) > len(set([x.lower() for x in children])):
-            sys.exit("Repeated children:\n" + line)
-        return children
+        arguments = arguments_string.split(splitter)
+        arguments = [x.strip() for x in arguments]
+        if len(arguments) > len(set([x.lower() for x in arguments])):
+            sys.exit("Repeated arguments:\n" + arguments_string)
+        return arguments
+
+    def get_formula(line):
+        """Constructs formula from the given line.
+
+        Args:
+            line: A string containing a Boolean equation.
+
+        Returns:
+            A Formula object.
+        """
+        if paren_re.match(line):
+            formula_line = paren_re.match(line).group(1)
+            return get_formula(formula_line)
+        arguments = None
+        operator = None
+        k_num = None
+        if or_re.match(line):
+            print("Got OR")
+            arguments = or_re.match(line).group(1)
+            arguments = get_arguments(arguments, "|")
+            operator = "or"
+        elif xor_re.match(line):
+            arguments = xor_re.match(line).group(1)
+            arguments = get_arguments(arguments, "^")
+            operator = "xor"
+        elif and_re.match(line):
+            print("Got AND")
+            arguments = and_re.match(line).group(1)
+            arguments = get_arguments(arguments, "&")
+            operator = "and"
+        elif comb_re.match(line):
+            k_num, arguments = comb_re.match(line).group(1, 2)
+            arguments = get_arguments(arguments, ",")
+            if int(k_num) >= len(arguments):
+                sys.exit("Invalid k/n for the combination formula:\n" + line)
+            operator = "atleast"
+        elif not_re.match(line):
+            arguments = not_re.match(line).group(1)
+            arguments = get_arguments(arguments, "~")
+            operator = "not"
+        else:
+            sys.exit("Cannot interpret the following line:\n" + line)
+        formula = Formula(operator, k_num)
+        for arg in arguments:
+            if name_re.match(arg):
+                formula.node_arguments.append(arg)
+            else:
+                formula.f_arguments.append(get_formula(arg))
+        return formula
 
     for line in short_file:
         if blank_line.match(line):
             continue
         elif gate_re.match(line):
-            gate_name, formula = gate_re.match(line).group(1, 2)
-            if paren_re.match(formula):
-                formula = paren_re.match(formula).group(1)
-            if and_re.match(formula):
-                children = and_re.match(formula).group(1)
-                children = get_gate_children(children, "&", line)
-                fault_tree.add_gate(gate_name, "and", children)
-            elif or_re.match(formula):
-                children = or_re.match(formula).group(1)
-                children = get_gate_children(children, "|", line)
-                fault_tree.add_gate(gate_name, "or", children)
-            elif comb_re.match(formula):
-                k_num, children = comb_re.match(formula).group(1, 2)
-                children = get_gate_children(children, ",", line)
-                if int(k_num) >= len(children):
-                    sys.exit("Invalid k/n for a combination gate:\n" + line)
-                fault_tree.add_gate(gate_name, "atleast", children, k_num)
-            elif not_re.match(formula):
-                children = not_re.match(formula).group(1)
-                children = get_gate_children(children, "~", line)
-                fault_tree.add_gate(gate_name, "not", children)
-            elif xor_re.match(formula):
-                children = xor_re.match(formula).group(1)
-                children = get_gate_children(children, "^", line)
-                fault_tree.add_gate(gate_name, "xor", children)
-            else:
-                sys.exit("Cannot interpret the following line:\n" + line)
+            print("Got Gate")
+            gate_name, formula_line = gate_re.match(line).group(1, 2)
+            fault_tree.add_gate(gate_name, get_formula(formula_line))
         elif prob_re.match(line):
             event_name, prob = prob_re.match(line).group(1, 2)
             fault_tree.add_basic(event_name, prob)
@@ -357,7 +451,6 @@ def parse_input_file(input_file, multi_top=False):
             ft_name = ft_name_re.match(line).group(1)
         else:
             sys.exit("Cannot interpret the following line:\n" + line)
-
     if ft_name is None:
         sys.exit("The fault tree name is not given.")
     fault_tree.name = ft_name
@@ -378,6 +471,20 @@ def toposort_gates(top_gates, gates):
     """
     for gate in gates:
         gate.mark = ""
+    def continue_formula(formula, final_list):
+        """Continues visiting gates in the formula.
+
+        This is a helper function of visit(gate) function.
+
+        Args:
+            formula: The formula to be visited further.
+            final_list: A deque of sorted gates.
+        """
+        for gate in formula.g_arguments:
+            visit(gate, final_list)
+        for arg in formula.f_arguments:
+            continue_formula(arg, final_list)
+
     def visit(gate, final_list):
         """Recursively visits the given gate sub-tree to include into the list.
 
@@ -388,10 +495,10 @@ def toposort_gates(top_gates, gates):
         assert gate.mark != "temp"
         if not gate.mark:
             gate.mark = "temp"
-            for child in gate.g_children:
-                visit(child, final_list)
+            continue_formula(gate.formula, final_list)
             gate.mark = "perm"
             final_list.appendleft(gate)
+
     sorted_gates = deque()
     for top_gate in top_gates:
         visit(top_gate, sorted_gates)
@@ -413,58 +520,70 @@ def write_to_xml_file(fault_tree, output_file):
     t_file.write("<opsa-mef>\n")
     t_file.write("<define-fault-tree name=\"%s\">\n" % fault_tree.name)
 
+    def write_formula(formula, o_file):
+        """Write the formula in OpenPSA MEF XML.
+
+        Args:
+            formula: The formula to be printed.
+            o_file: The output file stream.
+        """
+        o_file.write("<" + formula.operator)
+        if formula.operator == "atleast":
+            o_file.write(" min=\"" + formula.k_num + "\"")
+        o_file.write(">\n")
+        # Print gates
+        for g_child in formula.g_arguments:
+            o_file.write("<gate name=\"" + g_child.name + "\"/>\n")
+
+        # Print basic events
+        for b_child in formula.b_arguments:
+            o_file.write("<basic-event name=\"" + b_child.name + "\"/>\n")
+
+        # Print house events
+        for h_child in formula.h_arguments:
+            o_file.write("<house-event name=\"" + h_child.name + "\"/>\n")
+
+        # Print undefined events
+        for u_child in formula.u_arguments:
+            o_file.write("<event name=\"" + u_child.name + "\"/>\n")
+
+        # Print formulas
+        for f_child in formula.f_arguments:
+            write_formula(f_child, o_file)
+
+        o_file.write("</" + formula.operator+ ">\n")
+
     def write_gate(gate, o_file):
-        """Print children for the gate.
+        """Write the gate in OpenPSA MEF XML.
 
         Args:
             gate: The gate to be printed.
             o_file: The output file stream.
         """
-
         o_file.write("<define-gate name=\"" + gate.name + "\">\n")
-        o_file.write("<" + gate.gate_type)
-        if gate.gate_type == "atleast":
-            o_file.write(" min=\"" + gate.k_num + "\"")
-        o_file.write(">\n")
-        # Print intermediate gates
-        for g_child in gate.g_children:
-            o_file.write("<gate name=\"" + g_child.name + "\"/>\n")
-
-        # Print basic events
-        for b_child in gate.b_children:
-            o_file.write("<basic-event name=\"" + b_child.name + "\"/>\n")
-
-        # Print house events
-        for h_child in gate.h_children:
-            o_file.write("<house-event name=\"" + h_child.name + "\"/>\n")
-
-        # Print undefined events
-        for u_child in gate.u_children:
-            o_file.write("<event name=\"" + u_child.name + "\"/>\n")
-
-        o_file.write("</" + gate.gate_type+ ">\n")
+        write_formula(gate.formula, o_file)
         o_file.write("</define-gate>\n")
 
     sorted_gates = toposort_gates(fault_tree.top_gates,
                                   fault_tree.gates.values())
-
     for gate in sorted_gates:
         write_gate(gate, t_file)
 
     t_file.write("</define-fault-tree>\n")
 
-    t_file.write("<model-data>\n")
-    for basic in fault_tree.basic_events.itervalues():
-        t_file.write("<define-basic-event name=\"" + basic.name + "\">\n"
-                     "<float value=\"" + str(basic.prob) + "\"/>\n"
-                     "</define-basic-event>\n")
+    if fault_tree.basic_events or fault_tree.house_events:
+        t_file.write("<model-data>\n")
+        for basic in fault_tree.basic_events.itervalues():
+            t_file.write("<define-basic-event name=\"" + basic.name + "\">\n"
+                        "<float value=\"" + str(basic.prob) + "\"/>\n"
+                        "</define-basic-event>\n")
 
-    for house in fault_tree.house_events.itervalues():
-        t_file.write("<define-house-event name=\"" + house.name + "\">\n"
-                     "<constant value=\"" + str(house.state) + "\"/>\n"
-                     "</define-house-event>\n")
+        for house in fault_tree.house_events.itervalues():
+            t_file.write("<define-house-event name=\"" + house.name + "\">\n"
+                        "<constant value=\"" + str(house.state) + "\"/>\n"
+                        "</define-house-event>\n")
+        t_file.write("</model-data>\n")
 
-    t_file.write("</model-data>\n")
     t_file.write("</opsa-mef>")
     t_file.close()
 
