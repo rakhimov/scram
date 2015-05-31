@@ -381,6 +381,14 @@ def parse_input_file(input_file, multi_top=False):
         arguments = [x.strip() for x in arguments]
         if len(arguments) > len(set([x.lower() for x in arguments])):
             sys.exit("Repeated arguments:\n" + arguments_string)
+        # TODO: This is a hack for XOR with more than 2 arguments.
+        if splitter == "^" and len(arguments) > 2:
+            hacked_args = arguments[1:]
+            joined_args = hacked_args[0]
+            for i in range(1, len(hacked_args)):
+                joined_args += "^" + hacked_args[i]
+            arguments = [arguments[0], joined_args]
+
         return arguments
 
     def get_formula(line):
