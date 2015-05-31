@@ -18,7 +18,6 @@ import random
 
 import argparse as ap
 
-from shorthand_to_xml import toposort_gates
 
 class Node(object):
     """Representation of a base class for a node in a fault tree.
@@ -33,7 +32,7 @@ class Node(object):
         if parent:
             parent.add_child(self)
 
-    def is_shared(self):
+    def is_common(self):
         """Indicates if this node appears in several places."""
         return len(self.parents) > 1
 
@@ -518,6 +517,39 @@ def generate_fault_tree(args):
     return top_event
 
 
+def toposort_gates(top_gate, gates):
+    """Sorts gates topologically starting from the root gate.
+
+    Args:
+        top_gate: The root gate of the fault tree.
+        gates: Gates to be sorted.
+
+    Returns:
+        A deque of sorted gates.
+    """
+    for gate in gates:
+        gate.mark = ""
+
+    def visit(gate, final_list):
+        """Recursively visits the given gate sub-tree to include into the list.
+
+        Args:
+            gate: The current gate.
+            final_list: A deque of sorted gates.
+        """
+        assert gate.mark != "temp"
+        if not gate.mark:
+            gate.mark = "temp"
+            for child in gate.g_children:
+                visit(child, final_list)
+            gate.mark = "perm"
+            final_list.appendleft(gate)
+
+    sorted_gates = deque()
+    visit(top_gate, sorted_gates)
+    assert len(sorted_gates) == len(gates)
+    return sorted_gates
+
 def write_info(args):
     """Writes the information about the setup and generated fault tree.
 
@@ -554,8 +586,8 @@ def write_info(args):
             "-->\n"
             )
 
-    shared_p = [x for x in BasicEvent.basic_events if x.is_shared()]
-    shared_g = [x for x in Gate.gates if x.is_shared()]
+    shared_p = [x for x in BasicEvent.basic_events if x.is_common()]
+    shared_g = [x for x in Gate.gates if x.is_common()]
     and_gates = [x for x in Gate.gates if x.gate_type == "and"]
     or_gates = [x for x in Gate.gates if x.gate_type == "or"]
     atleast_gates = [x for x in Gate.gates if x.gate_type == "atleast"]
@@ -569,10 +601,10 @@ def write_info(args):
         frac_b += len(gate.b_children) / \
                 (len(gate.g_children) + len(gate.b_children))
         if gate.b_children:
-            common_b += len([x for x in gate.b_children if x.is_shared()]) / \
+            common_b += len([x for x in gate.b_children if x.is_common()]) / \
                     len(gate.b_children)
         if gate.g_children:
-            common_g += len([x for x in gate.g_children if x.is_shared()]) / \
+            common_g += len([x for x in gate.g_children if x.is_common()]) / \
                     len(gate.g_children)
     num_gates = len(Gate.gates)
     common_b = common_b / num_gates
@@ -683,7 +715,7 @@ def write_results(args, top_event):
         o_file.write("</" + gate.gate_type+ ">\n")
         o_file.write("</define-gate>\n")
 
-    sorted_gates = toposort_gates([top_event], Gate.gates)
+    sorted_gates = toposort_gates(top_event, Gate.gates)
     for gate in sorted_gates:
         write_gate(gate, t_file)
 
@@ -784,7 +816,7 @@ def write_shorthand(args, top_event):
         o_file.write("".join(line))
         o_file.write("\n")
 
-    sorted_gates = toposort_gates([top_event], Gate.gates)
+    sorted_gates = toposort_gates(top_event, Gate.gates)
     for gate in sorted_gates:
         write_gate(gate, t_file)
 
