@@ -26,6 +26,7 @@ class Node(object):
         name: A specific name that identifies this node.
         parents: A set of parents of this node.
     """
+
     def __init__(self, name, parent=None):
         self.name = name
         self.parents = set()
@@ -57,6 +58,7 @@ class Gate(Node):
         k_num: K number for a K/N combination gate. Chosen randomly.
         mark: Marking for various algorithms.
     """
+
     num_gates = 0  # to keep track of gates and to name them
     gates = []  # container for all created gates
 
@@ -121,11 +123,13 @@ class BasicEvent(Node):
         basic_events: A list of all basic events created for the fault tree.
         non_ccf_events: A list of basic events that not in CCF groups.
     """
+
     num_basic = 0
     min_prob = 0
     max_prob = 1
     basic_events = []  # container for created basic events
     non_ccf_events = []  # basic events that are not in ccf groups
+
     def __init__(self, parent=None):
         BasicEvent.num_basic += 1
         super(BasicEvent, self).__init__("E" + str(BasicEvent.num_basic),
@@ -144,8 +148,10 @@ class HouseEvent(Node):
         state: The state of the house event.
         house_events: A list of all house events created for the fault tree.
     """
+
     num_house = 0
     house_events = []  # container for created house events
+
     def __init__(self, parent=None):
         HouseEvent.num_house += 1
         super(HouseEvent, self).__init__("H" + str(HouseEvent.num_house),
@@ -167,8 +173,10 @@ class CcfGroup(object):
         model: The CCF model chosen for a group.
         members: A collection of members in a CCF group.
     """
+
     num_ccf = 0
     ccf_groups = []
+
     def __init__(self):
         CcfGroup.num_ccf += 1
         self.name = "CCF" + str(CcfGroup.num_ccf)
@@ -203,6 +211,7 @@ class Factors(object):
         parents_b: The average number of parents for common basic events.
         parents_g: The average number of parents for common gates.
     """
+
     # Factors from the arguments
     num_basics = None
     common_b = None
