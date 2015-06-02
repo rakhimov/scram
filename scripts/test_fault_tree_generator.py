@@ -6,13 +6,9 @@ Tests for the fault tree generator.
 
 from subprocess import call
 from tempfile import NamedTemporaryFile
-from unittest import TestCase
 
 from lxml import etree
-from nose.tools import assert_raises, assert_is_not_none, assert_equal, \
-        assert_true
-
-from fault_tree_generator import *
+from nose.tools import assert_equal, assert_true
 
 def test_xml_output():
     """Checks if the XML output passes the schema validation."""

@@ -11,7 +11,8 @@ from lxml import etree
 from nose.tools import assert_raises, assert_is_not_none, assert_equal, \
         assert_true
 
-from shorthand_to_xml import *
+from shorthand_to_xml import ParsingError, FormatError, FaultTreeError, \
+        parse_input_file, write_to_xml_file
 
 def test_correct():
     """Tests the valid overall process."""
@@ -32,6 +33,10 @@ def test_correct():
     tmp.flush()
     fault_tree = parse_input_file(tmp.name)
     assert_is_not_none(fault_tree)
+    yield assert_equal, 7, len(fault_tree.gates)
+    yield assert_equal, 3, len(fault_tree.basic_events)
+    yield assert_equal, 2, len(fault_tree.house_events)
+    yield assert_equal, 1, len(fault_tree.undef_nodes)
     out = NamedTemporaryFile()
     write_to_xml_file(fault_tree, out.name)
     relaxng_doc = etree.parse("../share/input.rng")
@@ -104,7 +109,8 @@ def test_parenthesis_count():
     tmp.write("WrongParentheses\n")
     tmp.write("g1 := (a | b & c")  # missing the closing parenthesis
     tmp.flush()
-    assert_raises(FormatError, parse_input_file, tmp.name)
+    yield assert_raises, FormatError, parse_input_file, tmp.name
+    # Other errors: (a|)b&c; ()a|b&c; a(|b&c); )a|b(&c;
 
 def test_combination_gate_children():
     """K/N or Combination gate/operator should have its K < its N."""
@@ -220,6 +226,7 @@ class OperatorPrecedenceTestCase(TestCase):
             args.append("e%d" % i)
 
         fault_tree = parse_input_file(self.tmp.name)
+        assert_is_not_none(fault_tree)
         assert_equal(len(fault_tree.gates), 1)
         gate = fault_tree.gates["g1"].formula
         assert_equal(gate.num_arguments(), 2)
@@ -296,19 +303,120 @@ class OperatorPrecedenceTestCase(TestCase):
         self.tmp.flush()
         self.two_operators("and", "not", 2)
 
+    def test_not_not(self):
+        """Formula with NOT and NOT operators.
+
+        This is a special case. It is considered an error without parentheses.
+        """
+        self.tmp.write("g1 := ~~e1\n")
+        self.tmp.flush()
+        assert_raises(ParsingError, parse_input_file, self.tmp.name)
+
+
 class ParenthesesTestCase(TestCase):
     """Application of parentheses tests."""
-
+    # TODO: This test cases must be addressed. Currently, they are not tested.
     def setUp(self):
         self.tmp = NamedTemporaryFile()
         self.tmp.write("FT\n")
 
-    def test_atleast_not(self):
-        """Formula with K/N containing NOT operator."""
-        self.tmp.write("g1 := @(2, [~e1, e2, e3])\n")
+    def two_operators(self, op_one, op_two, num_args=3):
+        """Common operations for two operator tests with parentheses.
+
+        The requirement for the input is to have g1 gate with a nested formula
+        with num_args arguments. Only the last argument is associated with
+        the first operator, and the rest of arguments are associated with the
+        second operator. The arguments must be named e1, e2, e3, ...
+
+        Args:
+            op_one: The first operator of higher precedence.
+            op_two: The second operator of lower precedence.
+            num_args: The number of arguments in the nested formula.
+        """
+        args = []
+        for i in range(1, num_args + 1):
+            args.append("e%d" % i)
+
+        fault_tree = parse_input_file(self.tmp.name)
+        assert_is_not_none(fault_tree)
+        assert_equal(len(fault_tree.gates), 1)
+        gate = fault_tree.gates["g1"].formula
+        assert_equal(gate.num_arguments(), 2)
+        assert_equal(gate.operator, op_one)
+        assert_equal(gate.node_arguments, args[-1:])
+        assert_equal(len(gate.f_arguments), 1)
+        child_f = gate.f_arguments[0]
+        assert_equal(child_f.num_arguments(), num_args - 1)
+        assert_equal(child_f.operator, op_two)
+        assert_equal(child_f.node_arguments, args[:-1])
+
+    def test_or_xor(self):
+        """Application of parentheses to OR and XOR operators."""
+        return
+        self.tmp.write("g1 := (e1 | e2) ^ e3\n")
+        self.tmp.flush()
+        self.two_operators("xor", "or")
+
+    def test_or_and(self):
+        """Application of parentheses to OR and AND operators."""
+        return
+        self.tmp.write("g1 := (e1 | e2) & e3\n")
+        self.tmp.flush()
+        self.two_operators("and", "or")
+
+    def test_xor_and(self):
+        """Application of parentheses to XOR and AND operators."""
+        return
+        self.tmp.write("g1 := (e1 ^ e2) & e3\n")
+        self.tmp.flush()
+        self.two_operators("and", "xor")
+
+    def test_not_or(self):
+        """Application of parentheses to OR and NOT operators."""
+        self.tmp.write("g1 := ~(e1 | e2)\n")
+        self.tmp.flush()
+
+    def test_not_xor(self):
+        """Application of parentheses to XOR and NOT operators."""
+        self.tmp.write("g1 := ~(e1 | e2)\n")
+        self.tmp.flush()
+
+    def test_not_and(self):
+        """Application of parentheses to AND and NOT operators."""
+        self.tmp.write("g1 := ~(e1 & e2)\n")
         self.tmp.flush()
 
     def test_not_atleast(self):
         """Formula with negation of K/N operator."""
         self.tmp.write("g1 := ~@(2, [e1, e2, e3])\n")
+        self.tmp.flush()
+
+    def test_not_not(self):
+        """Formula with negation of NOT operator."""
+        self.tmp.write("g1 := ~(~e1)\n")
+        self.tmp.flush()
+
+    def test_atleast_or(self):
+        """Formula with K/N containing OR operator."""
+        self.tmp.write("g1 := @(2, [e1, e2, e3 | e4])\n")
+        self.tmp.flush()
+
+    def test_atleast_xor(self):
+        """Formula with K/N containing XOR operator."""
+        self.tmp.write("g1 := @(2, [e1, e2, e3 ^ e4])\n")
+        self.tmp.flush()
+
+    def test_atleast_and(self):
+        """Formula with K/N containing AND operator."""
+        self.tmp.write("g1 := @(2, [e1, e2, e3 & e4])\n")
+        self.tmp.flush()
+
+    def test_atleast_not(self):
+        """Formula with K/N containing NOT operator."""
+        self.tmp.write("g1 := @(2, [e1, e2, ~e3])\n")
+        self.tmp.flush()
+
+    def test_atleast_atleast(self):
+        """Formula with K/N containing K/N operator."""
+        self.tmp.write("g1 := @(2, [e1, e2, @(2, [e3, e4, e5])])\n")
         self.tmp.flush()
