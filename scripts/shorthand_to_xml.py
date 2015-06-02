@@ -33,9 +33,21 @@ from __future__ import print_function
 from collections import deque
 import os
 import re
-import sys
 
 import argparse as ap
+
+
+class ParsingError(Exception):
+    """General parsing errors."""
+    pass
+
+class FormatError(Exception):
+    """Common errors in writing the shorthand format."""
+    pass
+
+class FaultTreeError(Exception):
+    """Indication of problems in the fault tree."""
+    pass
 
 
 class Node(object):
@@ -153,14 +165,21 @@ class FaultTree(object):
 
         Args:
             name: The name under investigation.
+
+        Raises:
+            FaultTreeError: The given name already exists.
         """
         if (self.basic_events.has_key(name.lower()) or
             self.gates.has_key(name.lower()) or
             self.house_events.has_key(name.lower())):
-            sys.exit("Redefinition of a node: " + name)
+            raise FaultTreeError("Redefinition of a node: " + name)
 
     def __detect_cycle(self):
-        """Checks if the fault tree has a cycle."""
+        """Checks if the fault tree has a cycle.
+
+        Raises:
+            FaultTreeError: There is a cycle in the fault tree.
+        """
         def continue_formula(formula):
             """Continues visiting gates in the formula.
 
@@ -212,11 +231,14 @@ class FaultTree(object):
 
             Args:
                 cycle: A list of gate names in the cycle path in reverse order.
+
+            Raises:
+                FaultTreeError: There is a cycle in the fault tree.
             """
             start = cycle[0]
             cycle.reverse()
-            sys.exit("Detected a cycle: " +
-                     str([x for x in cycle[cycle.index(start):]]))
+            raise FaultTreeError("Detected a cycle: " +
+                                 str([x for x in cycle[cycle.index(start):]]))
 
         assert self.top_gates is not None
         for top_gate in self.top_gates:
@@ -228,21 +250,27 @@ class FaultTree(object):
         if detached_gates:
             error_msg = "Detected detached gates that may be in a cycle\n"
             error_msg += str([x.name for x in detached_gates])
-            print(error_msg)
-            for gate in detached_gates:
-                cycle = visit(gate)
-                if cycle:
-                    print_cycle(cycle)
-            sys.exit()
+            try:
+                for gate in detached_gates:
+                    cycle = visit(gate)
+                    if cycle:
+                        print_cycle(cycle)
+            except FaultTreeError as error:
+                error_msg += "\n" + str(error)
+                raise FaultTreeError(error_msg)
 
     def __detect_top(self):
-        """Detects the top gate of the developed fault tree."""
+        """Detects the top gate of the developed fault tree.
+
+        Raises:
+            FaultTreeError: Multiple or no top gates are detected.
+        """
         top_gates = [x for x in self.gates.itervalues() if x.is_orphan()]
         if len(top_gates) > 1 and not self.multi_top:
             names = [x.name for x in top_gates]
-            sys.exit("Detected multiple top gates:\n" + str(names))
+            raise FaultTreeError("Detected multiple top gates:\n" + str(names))
         elif not top_gates:
-            sys.exit("No top gate is detected")
+            raise FaultTreeError("No top gate is detected")
         self.top_gates = top_gates
 
     def add_basic(self, name, prob):
@@ -251,6 +279,9 @@ class FaultTree(object):
         Args:
             name: A name for the new basic event.
             prob: The probability of the new basic event.
+
+        Raises:
+            FaultTreeError: The given name already exists.
         """
         self.__check_redefinition(name)
         self.basic_events.update({name.lower(): BasicEvent(name, prob)})
@@ -261,6 +292,9 @@ class FaultTree(object):
         Args:
             name: A name for the new house event.
             state: The state of the new house event ("true" or "false").
+
+        Raises:
+            FaultTreeError: The given name already exists.
         """
         self.__check_redefinition(name)
         self.house_events.update({name.lower(): HouseEvent(name, state)})
@@ -273,13 +307,20 @@ class FaultTree(object):
             gate_type: A gate type for the new gate.
             children: Collection of children names of the new gate.
             k_num: K number is required for a combination type of a gate.
+
+        Raises:
+            FaultTreeError: The given name already exists.
         """
         self.__check_redefinition(name)
         gate = Gate(name, formula)
         self.gates.update({name.lower(): gate})
 
     def populate(self):
-        """Assigns children to gates and parents to children."""
+        """Assigns children to gates and parents to children.
+
+        Raises:
+            FaultTreeError: There are problems with the fault tree.
+        """
         def populate_formula(formula):
             """Assigns children to formula.
 
@@ -333,6 +374,11 @@ def parse_input_file(input_file, multi_top=False):
 
     Returns:
         The fault tree described in the input file.
+
+    Raises:
+        ParsingError: Parsing is unsuccessful.
+        FormatError: Formatting problems in the input.
+        FaultTreeError: Problems in the structure of the fault tree.
     """
     short_file = open(input_file, "r")
     # Fault tree name
@@ -376,11 +422,14 @@ def parse_input_file(input_file, multi_top=False):
 
         Returns:
             arguments list from the input string.
+
+        Raises:
+            FaultTreeError: Repeated arguments for the node.
         """
         arguments = arguments_string.split(splitter)
         arguments = [x.strip() for x in arguments]
         if len(arguments) > len(set([x.lower() for x in arguments])):
-            sys.exit("Repeated arguments:\n" + arguments_string)
+            raise FaultTreeError("Repeated arguments:\n" + arguments_string)
         # TODO: This is a hack for XOR with more than 2 arguments.
         if splitter == "^" and len(arguments) > 2:
             hacked_args = arguments[1:]
@@ -399,6 +448,11 @@ def parse_input_file(input_file, multi_top=False):
 
         Returns:
             A Formula object.
+
+        Raises:
+            ParsingError: Parsing is unsuccessful.
+            FormatError: Formatting problems in the input.
+            FaultTreeError: Problems in the structure of the formula.
         """
         if paren_re.match(line):
             formula_line = paren_re.match(line).group(1)
@@ -407,7 +461,6 @@ def parse_input_file(input_file, multi_top=False):
         operator = None
         k_num = None
         if or_re.match(line):
-            print("Got OR")
             arguments = or_re.match(line).group(1)
             arguments = get_arguments(arguments, "|")
             operator = "or"
@@ -416,7 +469,6 @@ def parse_input_file(input_file, multi_top=False):
             arguments = get_arguments(arguments, "^")
             operator = "xor"
         elif and_re.match(line):
-            print("Got AND")
             arguments = and_re.match(line).group(1)
             arguments = get_arguments(arguments, "&")
             operator = "and"
@@ -424,14 +476,15 @@ def parse_input_file(input_file, multi_top=False):
             k_num, arguments = comb_re.match(line).group(1, 2)
             arguments = get_arguments(arguments, ",")
             if int(k_num) >= len(arguments):
-                sys.exit("Invalid k/n for the combination formula:\n" + line)
+                raise FaultTreeError(
+                        "Invalid k/n for the combination formula:\n" + line)
             operator = "atleast"
         elif not_re.match(line):
             arguments = not_re.match(line).group(1)
             arguments = get_arguments(arguments, "~")
             operator = "not"
         else:
-            sys.exit("Cannot interpret the following line:\n" + line)
+            raise ParsingError("Cannot interpret the formula:\n" + line)
         formula = Formula(operator, k_num)
         for arg in arguments:
             if name_re.match(arg):
@@ -441,26 +494,29 @@ def parse_input_file(input_file, multi_top=False):
         return formula
 
     for line in short_file:
-        if blank_line.match(line):
-            continue
-        elif gate_re.match(line):
-            print("Got Gate")
-            gate_name, formula_line = gate_re.match(line).group(1, 2)
-            fault_tree.add_gate(gate_name, get_formula(formula_line))
-        elif prob_re.match(line):
-            event_name, prob = prob_re.match(line).group(1, 2)
-            fault_tree.add_basic(event_name, prob)
-        elif state_re.match(line):
-            event_name, state = state_re.match(line).group(1, 2)
-            fault_tree.add_house(event_name, state)
-        elif ft_name_re.match(line):
-            if ft_name:
-                sys.exit("Redefinition of the fault tree name:\n" + line)
-            ft_name = ft_name_re.match(line).group(1)
-        else:
-            sys.exit("Cannot interpret the following line:\n" + line)
+        try:
+            if blank_line.match(line):
+                continue
+            elif gate_re.match(line):
+                gate_name, formula_line = gate_re.match(line).group(1, 2)
+                fault_tree.add_gate(gate_name, get_formula(formula_line))
+            elif prob_re.match(line):
+                event_name, prob = prob_re.match(line).group(1, 2)
+                fault_tree.add_basic(event_name, prob)
+            elif state_re.match(line):
+                event_name, state = state_re.match(line).group(1, 2)
+                fault_tree.add_house(event_name, state)
+            elif ft_name_re.match(line):
+                if ft_name:
+                    raise FormatError(
+                            "Redefinition of the fault tree name:\n" + line)
+                ft_name = ft_name_re.match(line).group(1)
+            else:
+                raise ParsingError("Cannot interpret the line.")
+        except ParsingError as err:
+            raise ParsingError(str(err) + "\nIn the following line:\n" + line)
     if ft_name is None:
-        sys.exit("The fault tree name is not given.")
+        raise FormatError("The fault tree name is not given.")
     fault_tree.name = ft_name
     fault_tree.multi_top = multi_top
     fault_tree.populate()
@@ -631,6 +687,15 @@ def main():
 if __name__ == "__main__":
     try:
         main()
-    except ap.ArgumentTypeError as error:
+    except ap.ArgumentTypeError as arg_error:
         print("Argument Error:")
-        print(error)
+        print(arg_error)
+    except ParsingError as parsing_error:
+        print("Parsing Error:")
+        print(parsing_error)
+    except FormatError as format_error:
+        print("Format Error:")
+        print(format_error)
+    except FaultTreeError as fault_tree_error:
+        print("Error in the fault tree:")
+        print(fault_tree_error)
