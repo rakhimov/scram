@@ -265,14 +265,13 @@ TEST_F(RiskAnalysisTest, AnalyzeDefault) {
   imp.clear();
   imp += 0.17647, 0.228, 0.21429, 1.2143, 1.1765;
   importance.insert(std::make_pair("valvetwo", imp));
-  double delta = 1e-3;
 
   std::map< std::string, std::vector<double> >::iterator it;
   for (it = importance.begin(); it != importance.end(); ++it) {
     std::vector<double> results = RiskAnalysisTest::importance(it->first);
     ASSERT_EQ(5, results.size());
     for (int i = 0; i < 5; ++i) {
-      EXPECT_NEAR(it->second[i], results[i], delta)
+      EXPECT_NEAR(it->second[i], results[i], 1e-3)
           << it->first << ": Importance " << i;
     }
   }
@@ -299,14 +298,13 @@ TEST_F(RiskAnalysisTest, Importance) {
   imp.clear();
   imp += 0.13433, 0.18, 0.15517, 1.1552, 1.1343;
   importance.insert(std::make_pair("valvetwo", imp));
-  double delta = 1e-3;
 
   std::map< std::string, std::vector<double> >::iterator it;
   for (it = importance.begin(); it != importance.end(); ++it) {
     std::vector<double> results = RiskAnalysisTest::importance(it->first);
     assert(results.size() == 5);
     for (int i = 0; i < 5; ++i) {
-      EXPECT_NEAR(it->second[i], results[i], delta)
+      EXPECT_NEAR(it->second[i], results[i], 1e-3)
           << it->first << ": Importance " << i;
     }
   }
