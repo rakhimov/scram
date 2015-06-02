@@ -78,6 +78,17 @@ Package                Minimum Version
 ====================   ==================
 
 
+Optional Python modules:
+
+====================   ==================
+Package                Tested Version
+====================   ==================
+`argparse`             1.2.1
+`nose`                 1.3.1
+`lxml`                 3.3.3
+====================   ==================
+
+
 Compilers (Tested and Supported in CMake setup):
 
 ====================   ==================
