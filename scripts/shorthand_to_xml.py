@@ -33,8 +33,10 @@ from __future__ import print_function
 from collections import deque
 import os
 import re
+from tempfile import NamedTemporaryFile
 
 import argparse as ap
+from nose.tools import assert_raises
 
 
 class ParsingError(Exception):
@@ -380,7 +382,7 @@ def parse_input_file(input_file, multi_top=False):
         FormatError: Formatting problems in the input.
         FaultTreeError: Problems in the structure of the fault tree.
     """
-    short_file = open(input_file, "r")
+    shorthand_file = open(input_file, "r")
     # Fault tree name
     ft_name_re = re.compile(r"^\s*(\w+)\s*$")
     # Node names
@@ -410,6 +412,19 @@ def parse_input_file(input_file, multi_top=False):
 
     ft_name = None
     fault_tree = FaultTree()
+
+    def check_parentheses(line):
+        """Verifies correct formatting for closing and opening parentheses.
+
+        Args:
+            line: A string containing a Boolean formula.
+
+        Raises:
+            FormatError: There are problems with parentheses.
+        """
+        # The simplest check
+        if line.count("(") != line.count(")"):
+            raise FormatError("Opening and closing parentheses do not match.")
 
     def get_arguments(arguments_string, splitter):
         """Splits the input string into arguments of a formula.
@@ -493,12 +508,13 @@ def parse_input_file(input_file, multi_top=False):
                 formula.f_arguments.append(get_formula(arg))
         return formula
 
-    for line in short_file:
+    for line in shorthand_file:
         try:
             if blank_line.match(line):
                 continue
             elif gate_re.match(line):
                 gate_name, formula_line = gate_re.match(line).group(1, 2)
+                check_parentheses(formula_line)
                 fault_tree.add_gate(gate_name, get_formula(formula_line))
             elif prob_re.match(line):
                 event_name, prob = prob_re.match(line).group(1, 2)
@@ -509,12 +525,15 @@ def parse_input_file(input_file, multi_top=False):
             elif ft_name_re.match(line):
                 if ft_name:
                     raise FormatError(
-                            "Redefinition of the fault tree name:\n" + line)
+                            "Redefinition of the fault tree name:\n%s to %s" %
+                            (ft_name, line))
                 ft_name = ft_name_re.match(line).group(1)
             else:
                 raise ParsingError("Cannot interpret the line.")
         except ParsingError as err:
             raise ParsingError(str(err) + "\nIn the following line:\n" + line)
+        except FormatError as err:
+            raise FormatError(str(err) + "\nIn the following line:\n" + line)
     if ft_name is None:
         raise FormatError("The fault tree name is not given.")
     fault_tree.name = ft_name
@@ -699,3 +718,43 @@ if __name__ == "__main__":
     except FaultTreeError as fault_tree_error:
         print("Error in the fault tree:")
         print(fault_tree_error)
+
+def test_ft_name_redefinition():
+    """Tests the redefinition of the fault tree name."""
+    tmp = NamedTemporaryFile()
+    tmp.write("FaultTreeName\n")
+    tmp.write("AnotherFaultTree\n")
+    tmp.flush()
+    assert_raises(FormatError, parse_input_file, tmp.name)
+
+def test_ncname_ft():
+    """The name of the fault tree must conform to NCNAME format."""
+    tmp = NamedTemporaryFile()
+    tmp.write("NOT NCNAME Fault tree.\n")
+    tmp.flush()
+    assert_raises(ParsingError, parse_input_file, tmp.name)
+    tmp = NamedTemporaryFile()
+    tmp.write("NOT-NCNAME-Fault-tree.\n")
+    tmp.flush()
+    assert_raises(ParsingError, parse_input_file, tmp.name)
+
+def test_parenthesis_count():
+    """Tests cases with missing parenthesis."""
+    tmp = NamedTemporaryFile()
+    tmp.write("WrongParentheses\n")
+    tmp.write("g1 := (a | b & c")  # missing the closing parenthesis
+    tmp.flush()
+    assert_raises(FormatError, parse_input_file, tmp.name)
+
+def test_combination_gate_children():
+    """K/N or Combination gate/operator should have its K < its N."""
+    tmp = NamedTemporaryFile()
+    tmp.write("FT\n")
+    tmp.write("g1 := @(3, [a, b, c])")  # K = N
+    tmp.flush()
+    assert_raises(FaultTreeError, parse_input_file, tmp.name)
+    tmp = NamedTemporaryFile()
+    tmp.write("FT\n")
+    tmp.write("g1 := @(4, [a, b, c])")  # K > N
+    tmp.flush()
+    assert_raises(FaultTreeError, parse_input_file, tmp.name)
