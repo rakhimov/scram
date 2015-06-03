@@ -839,6 +839,14 @@ def write_shorthand(top_event):
             else:
                 line.append(div + b_child.name)
 
+        # Print children that are house events.
+        for h_child in gate.h_children:
+            if first_child:
+                line.append(h_child.name)
+                first_child = False
+            else:
+                line.append(div + h_child.name)
+
         line.append(line_end)
         o_file.write("".join(line))
         o_file.write("\n")
@@ -851,6 +859,11 @@ def write_shorthand(top_event):
     t_file.write("\n")
     for basic in BasicEvent.basic_events:
         t_file.write("p(" + basic.name + ") = " + str(basic.prob) + "\n")
+
+    # Write house events
+    t_file.write("\n")
+    for house in HouseEvent.house_events:
+        t_file.write("s(" + house.name + ") = " + str(house.state) + "\n")
 
 
 def check_if_positive(desc, val):
@@ -1032,12 +1045,8 @@ def validate_setup(args):
         if len(weights_float) > 3 and not sum(weights_float[:3]):
             raise ap.ArgumentTypeError("cannot work with only XOR or NOT gates")
 
-    if args.shorthand:
-        if args.out == "fault_tree.xml":
-            args.out = "fault_tree.txt"
-        if args.house:
-            raise ap.ArgumentTypeError("No house event representation "
-                                       "for the shorthand format")
+    if args.shorthand and args.out == "fault_tree.xml":
+        args.out = "fault_tree.txt"
 
 def setup_factors(args):
     """Configures the fault generation by assigning factors.
