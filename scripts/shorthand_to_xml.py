@@ -14,7 +14,7 @@ XOR gate:                          gate_name := (child1 ^ child2)
 Probability of a basic event:      p(event_name) = probability
 Boolean state of a house event:    s(event_name) = state
 
-Some requirements to the shorthand input file:
+Some requirements and additions to the shorthand format:
 0. The names are not case-sensitive.
 1. The fault tree name must be formatted according to 'XML NCNAME datatype'.
 2. No requirement for the structure of the input, i.e. topologically sorted.
@@ -27,6 +27,7 @@ Some requirements to the shorthand input file:
 7. Repeated children are considered an error.
 8. The script is flexible with white spaces in the input file.
 9. Parentheses are optional for AND, OR, NOT, XOR gates.
+10. Boolean formula can be nested. For example, "g1 := a & b | c ^ ~d | (e | f)"
 """
 from __future__ import print_function
 
@@ -395,20 +396,22 @@ def parse_input_file(input_file, multi_top=False):
     name_re = re.compile(r"\s*(\w+)\s*$")
     # General gate name and pattern
     gate_sig = r"^\s*(\w+)\s*:=\s*"
-    gate_re = re.compile(gate_sig + r"(.*)$")
-    # Optional parentheses for gates
-    paren_re = re.compile(r"\s*\((.*)\)\s*$")
+    gate_re = re.compile(gate_sig + r"(.+)$")
+    # Optional parentheses for formulas
+    paren_re = re.compile(r"\s*\((.+)\)\s*$")
+    # Formula
+    form = r"([^()]*\(.+\)[^()]*|[^()]+)"
     # AND gate identification
-    and_re = re.compile(r"(\s*.+(\s*&\s*.+\s*)+)$")
+    and_re = re.compile(r"(\s*" + form + r"(\s*&\s*" + form + r"\s*)+)$")
     # OR gate identification
-    or_re = re.compile(r"(\s*.+(\s*\|\s*.+\s*)+)$")
+    or_re = re.compile(r"(\s*" + form + r"(\s*\|\s*" + form + r"\s*)+)$")
     # Combination gate identification
     comb_children = r"\[(\s*.+(\s*,\s*.+\s*){2,})\]"
     comb_re = re.compile(r"@\(([2-9])\s*,\s*" + comb_children + r"\s*\)\s*$")
     # NOT gate identification
-    not_re = re.compile(r"~\s*(.+)$")
+    not_re = re.compile(r"~\s*(\w+|@?\(.+\))$")
     # XOR gate identification
-    xor_re = re.compile(r"(\s*.+\s*\^\s*.+\s*)$")
+    xor_re = re.compile(r"(\s*" + form + r"\s*\^\s*" + form + r"\s*)$")
     # Probability description for a basic event
     prob_re = re.compile(r"^\s*p\(\s*(\w+)\s*\)\s*=\s*(1|0|0\.\d+)\s*$")
     # State description for a house event
@@ -447,12 +450,14 @@ def parse_input_file(input_file, multi_top=False):
         Raises:
             FaultTreeError: Repeated arguments for the node.
         """
-        arguments = arguments_string.split(splitter)
+        splitter = "\\" + splitter
+        split_re = re.compile(r"(?!\([^)]*)" + splitter + r"(?![^(]*\))")
+        arguments = split_re.split(arguments_string)
         arguments = [x.strip() for x in arguments]
         if len(arguments) > len(set([x.lower() for x in arguments])):
             raise FaultTreeError("Repeated arguments:\n" + arguments_string)
-        # TODO: This is a hack for XOR with more than 2 arguments.
-        if splitter == "^" and len(arguments) > 2:
+        # This is a hack for XOR with more than 2 arguments.
+        if splitter == "\\^" and len(arguments) > 2:
             hacked_args = arguments[1:]
             joined_args = hacked_args[0]
             for i in range(1, len(hacked_args)):
@@ -540,6 +545,8 @@ def parse_input_file(input_file, multi_top=False):
             raise ParsingError(str(err) + "\nIn the following line:\n" + line)
         except FormatError as err:
             raise FormatError(str(err) + "\nIn the following line:\n" + line)
+        except FaultTreeError as err:
+            raise FaultTreeError(str(err) + "\nIn the following line:\n" + line)
     if ft_name is None:
         raise FormatError("The fault tree name is not given.")
     fault_tree.name = ft_name

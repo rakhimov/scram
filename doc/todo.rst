@@ -58,7 +58,6 @@ Minor Enhancements and Capabilities
 - Shorthand format to XML converter. *Low*
 
     * Arithmetic equation interpreter for basic events.
-    * Tests
 
 - Create a cut-set generator. *Low*
 
