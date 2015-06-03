@@ -406,6 +406,7 @@ class Factors(object):
         return int(Factors.common_g * Factors.__percent_gates *
                    Factors.avg_children * num_gates / Factors.parents_g)
 
+
 class Settings(object):
     """Collection of settings specific to this script per run.
 
@@ -417,12 +418,14 @@ class Settings(object):
         root_name: The name of the root gate of the fault tree.
         seed: The seed for the pseudo-random number generator.
         output: The output destination.
+        nested: A flag for the nested Boolean formula.
     """
 
     ft_name = None
     root_name = None
     seed = None
     output = None
+    nested = None
 
 
 def init_gates(gates_queue):
@@ -713,38 +716,57 @@ def write_results(top_event):
     t_file.write("<opsa-mef>\n")
     t_file.write("<define-fault-tree name=\"%s\">\n" % Settings.ft_name)
 
+    nested_gates = set()  # collection of gates that got nested
+
     def write_gate(gate, o_file):
         """Print children for the gate.
-
-        Note that it also updates the queue of gates.
 
         Args:
             gate: The gate to be printed.
             o_file: The output file stream.
         """
+        def write_formula(gate, o_file):
+            """Prints the formula of a gate.
+
+            Args:
+                gate: The gate to be printed.
+                o_file: The output file stream.
+            """
+            o_file.write("<" + gate.gate_type)
+            if gate.gate_type == "atleast":
+                o_file.write(" min=\"" + str(gate.k_num) +"\"")
+            o_file.write(">\n")
+            # Print children that are house events.
+            for h_child in gate.h_children:
+                o_file.write("<house-event name=\"" + h_child.name + "\"/>\n")
+
+            # Print children that are basic events.
+            for b_child in gate.b_children:
+                o_file.write("<basic-event name=\"" + b_child.name + "\"/>\n")
+
+            # Print children that are gates.
+            if not Settings.nested:
+                for g_child in gate.g_children:
+                    o_file.write("<gate name=\"" + g_child.name + "\"/>\n")
+            else:
+                to_nest = [x for x in gate.g_children if not x.is_common()]
+                not_nest = [x for x in gate.g_children if x.is_common()]
+                for g_child in not_nest:
+                    o_file.write("<gate name=\"" + g_child.name + "\"/>\n")
+                for g_child in to_nest:
+                    write_formula(g_child, o_file)
+                nested_gates.update(to_nest)
+
+            o_file.write("</" + gate.gate_type+ ">\n")
 
         o_file.write("<define-gate name=\"" + gate.name + "\">\n")
-        o_file.write("<" + gate.gate_type)
-        if gate.gate_type == "atleast":
-            o_file.write(" min=\"" + str(gate.k_num) +"\"")
-        o_file.write(">\n")
-        # Print children that are gates.
-        for g_child in gate.g_children:
-            o_file.write("<gate name=\"" + g_child.name + "\"/>\n")
-
-        # Print children that are basic events.
-        for b_child in gate.b_children:
-            o_file.write("<basic-event name=\"" + b_child.name + "\"/>\n")
-
-        # Print children that are house events.
-        for h_child in gate.h_children:
-            o_file.write("<house-event name=\"" + h_child.name + "\"/>\n")
-
-        o_file.write("</" + gate.gate_type+ ">\n")
+        write_formula(gate, o_file)
         o_file.write("</define-gate>\n")
 
     sorted_gates = toposort_gates(top_event, Gate.gates)
     for gate in sorted_gates:
+        if Settings.nested and gate in nested_gates:
+            continue
         write_gate(gate, t_file)
 
     # Proceed with ccf groups
@@ -791,8 +813,6 @@ def write_shorthand(top_event):
     def write_gate(gate, o_file):
         """Print children for the gate.
 
-        Note that it also updates the queue of gates.
-
         Args:
             gate: The gate to be printed.
             o_file: The output file stream.
@@ -823,13 +843,13 @@ def write_shorthand(top_event):
             div = " ^ "
 
         first_child = True
-        # Print children that are gates.
-        for g_child in gate.g_children:
+        # Print children that are house events.
+        for h_child in gate.h_children:
             if first_child:
-                line.append(g_child.name)
+                line.append(h_child.name)
                 first_child = False
             else:
-                line.append(div + g_child.name)
+                line.append(div + h_child.name)
 
         # Print children that are basic events.
         for b_child in gate.b_children:
@@ -839,13 +859,13 @@ def write_shorthand(top_event):
             else:
                 line.append(div + b_child.name)
 
-        # Print children that are house events.
-        for h_child in gate.h_children:
+        # Print children that are gates.
+        for g_child in gate.g_children:
             if first_child:
-                line.append(h_child.name)
+                line.append(g_child.name)
                 first_child = False
             else:
-                line.append(div + h_child.name)
+                line.append(div + g_child.name)
 
         line.append(line_end)
         o_file.write("".join(line))
@@ -986,6 +1006,9 @@ def manage_cmd_args():
     shorthand = "apply the shorthand format to the output"
     parser.add_argument("--shorthand", action="store_true", help=shorthand)
 
+    nested = "join gates into a nested Boolean formula in the output"
+    parser.add_argument("--nested", action="store_true", help=nested)
+
     args = parser.parse_args()
 
     # Check for validity of arguments
@@ -1063,6 +1086,7 @@ def setup_factors(args):
     Settings.ft_name = args.ft_name
     Settings.root_name = args.root
     Settings.output = args.out
+    Settings.nested = args.nested
     BasicEvent.min_prob = args.minprob
     BasicEvent.max_prob = args.maxprob
     Factors.num_basics = args.basics
