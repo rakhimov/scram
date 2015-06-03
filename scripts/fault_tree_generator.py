@@ -810,6 +810,8 @@ def write_shorthand(top_event):
     t_file = open(Settings.output, "w")
     t_file.write(Settings.ft_name + "\n\n")
 
+    nested_gates = set()
+
     def write_gate(gate, o_file):
         """Print children for the gate.
 
@@ -817,62 +819,91 @@ def write_shorthand(top_event):
             gate: The gate to be printed.
             o_file: The output file stream.
         """
+        def write_formula(gate, line):
+            """Prints the formula of a gate in the shorthand format.
+
+            Args:
+                gate: The gate to be printed.
+                line: The array containing strings to be joined for printing.
+            """
+            div = ""
+            line_end = ""
+            if gate.gate_type == "and":
+                line.append("(")
+                line_end = ")"
+                div = " & "
+            elif gate.gate_type == "or":
+                line.append("(")
+                line_end = ")"
+                div = " | "
+            elif gate.gate_type == "atleast":
+                line.append("@(" + str(gate.k_num) + ", [")
+                line_end = "])"
+                div = ", "
+            elif gate.gate_type == "not":
+                line.append("~")
+                line_end = ""
+                div = ""
+            elif gate.gate_type == "xor":
+                line.append("(")
+                line_end = ")"
+                div = " ^ "
+
+            first_child = True
+            # Print children that are house events.
+            for h_child in gate.h_children:
+                if first_child:
+                    line.append(h_child.name)
+                    first_child = False
+                else:
+                    line.append(div + h_child.name)
+
+            # Print children that are basic events.
+            for b_child in gate.b_children:
+                if first_child:
+                    line.append(b_child.name)
+                    first_child = False
+                else:
+                    line.append(div + b_child.name)
+
+            # Print children that are gates.
+            if not Settings.nested:
+                for g_child in gate.g_children:
+                    if first_child:
+                        line.append(g_child.name)
+                        first_child = False
+                    else:
+                        line.append(div + g_child.name)
+            else:
+                to_nest = [x for x in gate.g_children if not x.is_common()]
+                not_nest = [x for x in gate.g_children if x.is_common()]
+                for g_child in not_nest:
+                    if first_child:
+                        line.append(g_child.name)
+                        first_child = False
+                    else:
+                        line.append(div + g_child.name)
+                for g_child in to_nest:
+                    if first_child:
+                        write_formula(g_child, line)
+                        first_child = False
+                    else:
+                        line.append(div)
+                        write_formula(g_child, line)
+                nested_gates.update(to_nest)
+
+            line.append(line_end)
+
         line = [gate.name]
         line.append(" := ")
-        div = ""
-        line_end = ""
-        if gate.gate_type == "and":
-            line.append("(")
-            line_end = ")"
-            div = " & "
-        elif gate.gate_type == "or":
-            line.append("(")
-            line_end = ")"
-            div = " | "
-        elif gate.gate_type == "atleast":
-            line.append("@(" + str(gate.k_num) + ", [")
-            line_end = "])"
-            div = ", "
-        elif gate.gate_type == "not":
-            line.append("~")
-            line_end = ""
-            div = ""
-        elif gate.gate_type == "xor":
-            line.append("(")
-            line_end = ")"
-            div = " ^ "
-
-        first_child = True
-        # Print children that are house events.
-        for h_child in gate.h_children:
-            if first_child:
-                line.append(h_child.name)
-                first_child = False
-            else:
-                line.append(div + h_child.name)
-
-        # Print children that are basic events.
-        for b_child in gate.b_children:
-            if first_child:
-                line.append(b_child.name)
-                first_child = False
-            else:
-                line.append(div + b_child.name)
-
-        # Print children that are gates.
-        for g_child in gate.g_children:
-            if first_child:
-                line.append(g_child.name)
-                first_child = False
-            else:
-                line.append(div + g_child.name)
-
-        line.append(line_end)
+        write_formula(gate, line)
         o_file.write("".join(line))
         o_file.write("\n")
 
     sorted_gates = toposort_gates(top_event, Gate.gates)
     for gate in sorted_gates:
+        if Settings.nested and gate in nested_gates:
+            continue
         write_gate(gate, t_file)
 
     # Write basic events

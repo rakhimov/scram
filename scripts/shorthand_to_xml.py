@@ -438,8 +438,6 @@ def parse_input_file(input_file, multi_top=False):
     def get_arguments(arguments_string, splitter):
         """Splits the input string into arguments of a formula.
 
-        If a repeated argument is found, halts the script with a message.
-
         Args:
             arguments_string: String contaning arguments.
             splitter: Splitter specific to the operator, i.e. "&", "|", ','.
@@ -627,21 +625,21 @@ def write_to_xml_file(fault_tree, output_file):
         if formula.operator == "atleast":
             o_file.write(" min=\"" + formula.k_num + "\"")
         o_file.write(">\n")
-        # Print gates
-        for g_child in formula.g_arguments:
-            o_file.write("<gate name=\"" + g_child.name + "\"/>\n")
+        # Print house events
+        for h_child in formula.h_arguments:
+            o_file.write("<house-event name=\"" + h_child.name + "\"/>\n")
 
         # Print basic events
         for b_child in formula.b_arguments:
             o_file.write("<basic-event name=\"" + b_child.name + "\"/>\n")
 
-        # Print house events
-        for h_child in formula.h_arguments:
-            o_file.write("<house-event name=\"" + h_child.name + "\"/>\n")
-
         # Print undefined events
         for u_child in formula.u_arguments:
             o_file.write("<event name=\"" + u_child.name + "\"/>\n")
+
+        # Print gates
+        for g_child in formula.g_arguments:
+            o_file.write("<gate name=\"" + g_child.name + "\"/>\n")
 
         # Print formulas
         for f_child in formula.f_arguments:
