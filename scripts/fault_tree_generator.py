@@ -275,7 +275,9 @@ class Factors(object):
         Factors.__max_children = Factors.__calculate_max_children(
                 Factors.avg_children,
                 Factors.__norm_weights)
-        Factors.__ratio = Factors.avg_children * (1 - Factors.common_g) - 1
+        Factors.__ratio = Factors.avg_children * \
+                (1 - Factors.common_g +
+                        Factors.common_g / Factors.parents_g) - 1
         Factors.__percent_basics = Factors.__ratio / (1 + Factors.__ratio)
         Factors.__percent_gates = 1 / (1 + Factors.__ratio)
 
@@ -372,7 +374,7 @@ class Factors(object):
         """
         return int(num_basics /
                 (Factors.__percent_basics * Factors.avg_children *
-                    (1 - Factors.common_b)))
+                    (1 - Factors.common_b + Factors.common_b / Factors.parents_b)))
 
     @staticmethod
     def get_num_common_basics(num_gates):
@@ -428,11 +430,12 @@ class Settings(object):
     nested = None
 
 
-def init_gates(gates_queue):
+def init_gates(gates_queue, common_basics):
     """Initializes gates and other basic events.
 
     Args:
         gates_queue: A deque of gates to be initialized.
+        common_basics: A list of common basic events.
     """
     # Get an intermediate gate to initialize breadth-first
     gate = gates_queue.popleft()
@@ -454,10 +457,10 @@ def init_gates(gates_queue):
                 gate.add_child(random.choice(BasicEvent.basic_events))
                 continue
             else:
-                s_common = 0
+                s_common = 0  # use only common nodes
 
         if s_percent < Factors.get_percent_gates():
-            # Create a new gate or reuse an existing one
+            # Create a new gate or use a common one
             if s_common < Factors.common_g and not no_common_g:
                 # Lazy evaluation of ancestors
                 if not ancestors:
@@ -476,12 +479,19 @@ def init_gates(gates_queue):
             else:
                 gates_queue.append(Gate(gate))
         else:
-            # Create a new basic event or reuse an existing one
-            if s_common < Factors.common_b and BasicEvent.basic_events:
-                # Reuse an already initialized basic event
-                gate.add_child(random.choice(BasicEvent.basic_events))
+            # Create a new basic event or use a common one
+            if s_common < Factors.common_b and common_basics:
+                orphans = [x for x in common_basics if not x.parents]
+                single_parent = [x for x in common_basics
+                                 if len(x.parents) == 1]
+                if orphans:
+                    gate.add_child(random.choice(orphans))
+                elif single_parent:
+                    gate.add_child(random.choice(single_parent))
+                else:
+                    gate.add_child(random.choice(common_basics))
             else:
-                BasicEvent(gate)
+                BasicEvent(gate)  # create a new basic event
 
     # Corner case when not enough new basic events initialized, but
     # there are no more intermediate gates to use due to a big ratio
@@ -496,8 +506,8 @@ def init_gates(gates_queue):
         gates_queue.append(Gate(random_gate))
 
 def generate_fault_tree():
-    """Generates a fault tree of specified complexity from command-line
-    arguments.
+    """Generates a fault tree of specified complexity from Factors class
+    attributes.
 
     Returns:
         Top gate of the created fault tree.
@@ -512,6 +522,7 @@ def generate_fault_tree():
     num_gates = Factors.get_num_gates(Factors.num_basics)
     num_common_basics = Factors.get_num_common_basics(num_gates)
     num_common_gates = Factors.get_num_common_gates(num_gates)
+    common_basics = [BasicEvent() for _ in range(num_common_basics)]
 
     # Container for not yet initialized gates
     # A deque is used to traverse the tree breadth-first
@@ -520,7 +531,7 @@ def generate_fault_tree():
 
     # Proceed with children gates
     while gates_queue:
-        init_gates(gates_queue)
+        init_gates(gates_queue, common_basics)
 
     # Distribute house events
     while len(HouseEvent.house_events) < Factors.num_house:
