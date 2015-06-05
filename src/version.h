@@ -14,6 +14,9 @@ namespace version {
 /// @returns Git generated tag recent version.
 const char* describe();
 
+/// @returns Build type.
+const char* build();
+
 /// @returns The core version.
 const char* core();
 

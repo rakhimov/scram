@@ -74,8 +74,8 @@ Shorthand Input Format
 ======================
 
 A more convenient format than the XML for writing simple fault trees utilizes
-a shorter notation for gates ('&', '|', '@') and basic events to create
-a collection of Boolean equations.
+a shorter notation for gates ('&', '|', '@', '~', '^') and
+basic events to create a collection of Boolean equations.
 The shorthand format can be converted into the XML format with `this script`_.
 
 .. _`this script`:

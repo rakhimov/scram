@@ -62,7 +62,7 @@ Documentation
     doc/common_cause_analysis
     doc/fta_graphing
     doc/gui
-    doc/code_structure
+    doc/design_description
     doc/coding_standards
     doc/bugs
     doc/todo

@@ -107,14 +107,21 @@ class FaultTree : public Element {
  private:
   typedef boost::shared_ptr<Event> EventPtr;
 
-  /// Traverses the tree to find any cycles.
-  /// While traversing, this function observes implicitly defined gates, and
+  /// Traverses the tree to find a cycle. Interrups the detection at first
+  /// cycle. This function has a side effect.
+  /// While traversing, this function observes implicitly-defined gates, and
   /// those gates are added into the gate containers.
-  /// @param[in] parent The gate to start with.
-  /// @param[in] path The current path from the start gate.
-  /// @param[in] visited The gates that are already visited in the path.
-  void CheckCyclicity(const GatePtr& parent, std::vector<std::string> path,
-                      std::set<std::string> visited);
+  /// @param[in] gate The gate to start with.
+  /// @param[out] cycle If a cycle is detected, it is given in reverse,
+  ///                   ending with the input gate original name.
+  ///                   This is for printing errors and efficiency.
+  /// @returns True if a cycle is found.
+  /// @todo Refactor the side effect of finding gates of the fault tree.
+  bool DetectCycle(const GatePtr& gate, std::vector<std::string>* cycle);
+
+  /// @param[in] cycle Cycle containing names in reverse order.
+  /// @returns String representation of the cycle.
+  std::string PrintCycle(const std::vector<std::string>& cycle);
 
   /// Picks primary events of this tree.
   /// Populates the container of primary events.

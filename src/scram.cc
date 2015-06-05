@@ -83,9 +83,15 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
   }
 
   if (vm->count("version")) {
+    std::string build_type =
+        strlen(version::build()) ? version::build() : "Non-Debug";
+
     std::cout << "SCRAM " << version::core()
-        << " (" << version::describe() << ")"
-        << "\n\nDependencies:\n";
+              << " (" << version::describe() << ")";
+    if (build_type != "Release") {
+      std::cout << " " << build_type << " Build";
+    }
+    std::cout << "\n\nDependencies:\n";
     std::cout << "   Boost    " << version::boost() << "\n";
     std::cout << "   xml2     " << version::xml2() << "\n";
     return -1;

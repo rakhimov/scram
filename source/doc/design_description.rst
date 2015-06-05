@@ -1,6 +1,6 @@
-#############
-API Structure
-#############
+##################
+Design Description
+##################
 
 Structure/Architecture of the Core Code
 =======================================

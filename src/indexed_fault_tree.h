@@ -33,7 +33,7 @@ struct SetPtrComp
 /// A helper class to be used in indexed fault tree. This gate represents
 /// only positive OR or AND gates with basic event indices and pointers to
 /// other simple gates.
-/// All the gate children of this gate must of opposite type.
+/// All the gate children of this gate must be of opposite type.
 class SimpleGate {
  public:
   typedef boost::shared_ptr<SimpleGate> SimpleGatePtr;

@@ -58,9 +58,7 @@ Minor Enhancements and Capabilities
 
 - Shorthand format to XML converter. *Low*
 
-  * Nested gates
-  * NOT gate or Negation
-  * Multiple top events
+    * Arithmetic equation interpreter for basic events.
 
 - Create a cut-set generator. *Low*
 
