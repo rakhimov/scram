@@ -429,13 +429,13 @@ class Settings(object):
     output = None
     nested = None
 
-
-def init_gates(gates_queue, common_basics):
+def init_gates(gates_queue, common_basics, common_gates):
     """Initializes gates and other basic events.
 
     Args:
         gates_queue: A deque of gates to be initialized.
         common_basics: A list of common basic events.
+        common_gates: A list of common gates.
     """
     # Get an intermediate gate to initialize breadth-first
     gate = gates_queue.popleft()
@@ -443,8 +443,27 @@ def init_gates(gates_queue, common_basics):
     num_children = Factors.get_num_children(gate)
 
     ancestors = None  # needed for cycle prevention
-    no_common_g = False  # special corner case with no reuse of gates
-    max_trials = len(Gate.gates)
+    candidates = None  # candidates for common gate children
+    index = 0  # index for candidates
+
+    def get_candidates():
+        """Lazy calculation for candidates.
+
+        Returns:
+            A list of randomized common_gates grouped by the number of parents.
+        """
+        orphans = [x for x in common_gates if not x.parents]
+        random.shuffle(orphans)
+        single_parent = [x for x in common_gates
+                            if len(x.parents) == 1]
+        random.shuffle(single_parent)
+        multi_parent = [x for x in common_gates
+                        if len(x.parents) > 1]
+        random.shuffle(multi_parent)
+        candidates = orphans
+        candidates.extend(single_parent)
+        candidates.extend(multi_parent)
+        return candidates
 
     while gate.num_children() < num_children:
         s_percent = random.random()  # sample percentage of gates
@@ -461,21 +480,26 @@ def init_gates(gates_queue, common_basics):
 
         if s_percent < Factors.get_percent_gates():
             # Create a new gate or use a common one
-            if s_common < Factors.common_g and not no_common_g:
+            if s_common < Factors.common_g and index < len(common_gates):
                 # Lazy evaluation of ancestors
                 if not ancestors:
                     ancestors = gate.get_ancestors()
 
-                for _ in range(max_trials):
-                    random_gate = random.choice(Gate.gates)
+                if not candidates:
+                    candidates = get_candidates()
+
+                while index < len(candidates):
+                    random_gate = candidates[index]
+                    index += 1
                     if (random_gate in gate.g_children or
                             random_gate is gate):
                         continue
                     if (not random_gate.g_children or
                             random_gate not in ancestors):
+                        if not random_gate.parents:
+                            gates_queue.append(random_gate)
                         gate.add_child(random_gate)
                         break
-                # no_common_g = True
             else:
                 gates_queue.append(Gate(gate))
         else:
@@ -501,7 +525,8 @@ def init_gates(gates_queue, common_basics):
         # fault tree.
         random_gate = random.choice(Gate.gates)
         while (random_gate.gate_type == "not" or
-                random_gate.gate_type == "xor"):
+                random_gate.gate_type == "xor" or
+                random_gate in common_gates):
             random_gate = random.choice(Gate.gates)
         gates_queue.append(Gate(random_gate))
 
@@ -523,6 +548,7 @@ def generate_fault_tree():
     num_common_basics = Factors.get_num_common_basics(num_gates)
     num_common_gates = Factors.get_num_common_gates(num_gates)
     common_basics = [BasicEvent() for _ in range(num_common_basics)]
+    common_gates = [Gate() for _ in range(num_common_gates)]
 
     # Container for not yet initialized gates
     # A deque is used to traverse the tree breadth-first
@@ -531,7 +557,10 @@ def generate_fault_tree():
 
     # Proceed with children gates
     while gates_queue:
-        init_gates(gates_queue, common_basics)
+        init_gates(gates_queue, common_basics, common_gates)
+
+    assert(not [x for x in BasicEvent.basic_events if not x.parents])
+    assert(not [x for x in Gate.gates if not x.parents and not x is top_event])
 
     # Distribute house events
     while len(HouseEvent.house_events) < Factors.num_house:
