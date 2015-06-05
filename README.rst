@@ -115,7 +115,7 @@ installing established libraries.
 Linux Systems
 -------------
 
-This process is tested using `Travis CI`_
+This process is tested on `Travis CI`_
 Ubuntu 12.04 LTS using apt-get as a package manager.
 
 The command to install a dependency takes the form of:
@@ -238,8 +238,8 @@ A python script is provided to make the installation process easier.
 If there are dependency issues, the CMake output should guide with errors.
 CMake can be used directly without the python script to configure the build.
 
-There default installation directory is the user's
-.local. The default linkage is dynamic; however, tests are statically linked
+If not specified, the installation directory might be the user's *.local* or
+*/usr/*. The default linkage is dynamic; however, tests are statically linked
 against GoogleTest.
 
 .. code-block:: bash
@@ -263,6 +263,10 @@ Various other flags are described by the script's help prompt.
 .. code-block:: bash
 
     .../scram$ python install.py -h
+
+Other tools, such as the fault tree generator and shorthand-to-XML converter,
+can be found in the *scripts* directory. These tools do not need compilation or
+installation.
 
 The optional GUI front-end is built using Qt Creator and qmake.
 
@@ -320,6 +324,18 @@ To run the unit and benchmark tests:
 
     path/to/installation/directory/bin/scram_tests
 
+To test the tools in the *scripts* directory:
+
+.. code-block:: bash
+
+    nosetests -w scripts/
+
+To test the command-line call of *SCRAM*:
+
+.. code-block:: bash
+
+    nosetests -w tests/
+
 To run performance tests
 ========================
 
@@ -328,7 +344,7 @@ in comparison to a reference computer with Ubuntu 14.04 with i5-2410M
 processor. These tests can be helpful for developers to check for regressions.
 More details can be found in performance test source files.
 
-To run all the performance tests (may take considerable time):
+To run all performance tests (may take considerable time):
 
 .. code-block:: bash
 
@@ -351,12 +367,16 @@ On command line, run help to get more detailed information:
 
     path/to/installation/directory/bin/scram --help
 
+Various other tools, such as the fault tree generator and shorthand-to-XML
+converter, can be found in the *scripts* directory. Help prompts and
+documentation have more details how to use these tools.
+
 **********************
 Documentation Building
 **********************
 
 Documentation can be generated following the instruction in
-the `gh-source`_ branch. The raw documentation files are in *doc/* directory.
+the `gh-source`_ branch. The raw documentation files are in *doc* directory.
 
 .. _`gh-source`:
     https://github.com/rakhimov/scram/tree/gh-source

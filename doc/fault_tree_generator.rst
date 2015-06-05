@@ -6,8 +6,8 @@ The complexity of a fault tree depends on many factors, such as types of gates,
 the number of common nodes, the total number of nodes,
 and the structure of the tree or the arrangement of the nodes.
 It is best to craft fault trees to test complex and most
-demanding cases, but it is time consuming to design large non-trivial fault trees.
-In order to facilitate the creation of complex fault trees,
+demanding cases, but it is time consuming to design large non-trivial fault
+trees. In order to facilitate the creation of complex fault trees,
 a python script is written that takes into account the factors that make
 a fault tree complex for analysis or other types of processing, such as
 graphical representation and validation.
@@ -43,6 +43,7 @@ Script arguments
   are given.
 * Output file name.
 * Output formats: shorthand or XML(default).
+* An option to merge gates into nested formulas for output.
 
 Note on Performance
 ===================
