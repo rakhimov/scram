@@ -10,14 +10,9 @@
 #include <iostream>
 
 namespace scram {
-/// @def LOG()
-/// General logging for information purposes.
-#define LOG()  if (INFO > scram::Logger::level()); \
-  else scram::Logger().Get(INFO)
-
 /// @def LOG(level)
 /// Logging with the level defined.
-#define LLOG(level) if (level > scram::Logger::level()); \
+#define LOG(level) if (level > scram::Logger::ReportLevel()); \
   else scram::Logger().Get(level)
 
 /// @enum LogLevel
@@ -63,14 +58,14 @@ class Logger {
 
   /// This function can be to get and set the cut-off level for logging.
   /// @returns The cut-off level for reporting.
-  static LogLevel& level();
+  static LogLevel& ReportLevel();
 
   /// Returns a string stream by reference that is flushed to stderr by
   /// the Logger class destructor.
   /// @param[in] level The log level for the information.
   inline std::ostringstream& Get(LogLevel level) {
     os_ << Logger::level_to_string_[level] << ": ";
-    os_ << std::string(level >= DEBUG1 ? 0 : level - DEBUG1 + 1, '\t');
+    os_ << std::string(level < DEBUG1 ? 0 : level - DEBUG1 + 1, '\t');
     return os_;
   }
 
@@ -85,7 +80,7 @@ class Logger {
   std::ostringstream os_;
 
   /// Cut-off log level for the entire logging session.
-  static LogLevel level_;
+  static LogLevel report_level_;
 
   /// Translates the logging level into a string. The index is the value
   /// of the enum.
@@ -95,9 +90,9 @@ class Logger {
 const char* Logger::level_to_string_[] = {"ERROR", "WARNING", "INFO", "DEBUG1",
                                           "DEBUG2", "DEBUG3", "DEBUG4",
                                           "DEBUG5"};
-LogLevel Logger::level_ = ERROR;
+LogLevel Logger::report_level_ = ERROR;
 
-LogLevel& Logger::level() { return level_; }
+LogLevel& Logger::ReportLevel() { return report_level_; }
 
 }  // namespace scram
 

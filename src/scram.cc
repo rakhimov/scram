@@ -164,7 +164,7 @@ void ConstructSettings(const po::variables_map& vm, Settings* settings) {
 /// @returns 1 for errored state.
 int RunScram(const po::variables_map& vm) {
   if (vm.count("verbosity")) {
-    Logger::level() = static_cast<LogLevel>(vm["verbosity"].as<int>());
+    Logger::ReportLevel() = static_cast<LogLevel>(vm["verbosity"].as<int>());
   }
   // Initiate risk analysis.
   RiskAnalysis* ran = new RiskAnalysis();

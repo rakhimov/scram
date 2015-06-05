@@ -160,10 +160,10 @@ void IndexedFaultTree::InitiateIndexedFaultTree(
     if (gate->index() > new_gate_index_) new_gate_index_ = gate->index() + 1;
   }
 
-  LOG() << "Unrolling gates.";
+  LOG(DEBUG2) << "Unrolling gates.";
   assert(top_event_sign_ == 1);
   IndexedFaultTree::UnrollGates();
-  LOG() << "Finished unrolling gates.";
+  LOG(DEBUG2) << "Finished unrolling gates.";
 }
 
 void IndexedFaultTree::PropagateConstants(
@@ -171,10 +171,10 @@ void IndexedFaultTree::PropagateConstants(
     const std::set<int>& false_house_events) {
   IndexedGatePtr top = indexed_gates_.find(top_event_index_)->second;
   std::set<int> processed_gates;
-  LOG() << "Propagating constants in a fault tree.";
+  LOG(DEBUG2) << "Propagating constants in a fault tree.";
   IndexedFaultTree::PropagateConstants(true_house_events, false_house_events,
                                        top, &processed_gates);
-  LOG() << "Constant propagation is done.";
+  LOG(DEBUG2) << "Constant propagation is done.";
 }
 
 void IndexedFaultTree::ProcessIndexedFaultTree(int num_basic_events) {
@@ -240,7 +240,7 @@ void IndexedFaultTree::FindMcs() {
   std::clock_t start_time;
   start_time = std::clock();
 
-  LOG() << "Start minimal cut set generation.";
+  LOG(DEBUG2) << "Start minimal cut set generation.";
 
   // Special case of empty top gate.
   IndexedGatePtr top = indexed_gates_.find(top_event_index_)->second;
@@ -259,15 +259,15 @@ void IndexedFaultTree::FindMcs() {
   std::map<int, SimpleGatePtr> simple_gates;
   IndexedFaultTree::CreateSimpleTree(top_event_index_, &simple_gates);
 
-  LOG() << "Finding MCS from top module: " << top_event_index_;
+  LOG(DEBUG3) << "Finding MCS from top module: " << top_event_index_;
   std::vector<std::set<int> > mcs;
   IndexedFaultTree::FindMcsFromSimpleGate(
       simple_gates.find(top_event_index_)->second, &mcs);
 
-  LOG() << "Top gate cut sets are generated.";
+  LOG(DEBUG3) << "Top gate cut sets are generated.";
 
   // The next is to join all other modules.
-  LOG() << "Joining modules.";
+  LOG(DEBUG3) << "Joining modules.";
   // Save minimal cut sets of analyzed modules.
   std::map<int, std::vector< std::set<int> > > module_mcs;
   std::vector< std::set<int> >::iterator it;
@@ -285,7 +285,7 @@ void IndexedFaultTree::FindMcs() {
       if (module_mcs.count(module_index)) {
         sub_mcs = module_mcs.find(module_index)->second;
       } else {
-        LOG() << "Finding MCS from module index: " << module_index;
+        LOG(DEBUG3) << "Finding MCS from module index: " << module_index;
         IndexedFaultTree::FindMcsFromSimpleGate(
             simple_gates.find(module_index)->second, &sub_mcs);
         module_mcs.insert(std::make_pair(module_index, sub_mcs));
@@ -306,8 +306,8 @@ void IndexedFaultTree::FindMcs() {
   assert(state != "unity");
   double mcs_time = (std::clock() - start_time) /
       static_cast<double>(CLOCKS_PER_SEC);
-  LOG() << "The number of MCS found: " << imcs_.size();
-  LOG() << "Minimal cut set finding time: " << mcs_time;
+  LOG(DEBUG2) << "The number of MCS found: " << imcs_.size();
+  LOG(DEBUG2) << "Minimal cut set finding time: " << mcs_time;
 }
 
 void IndexedFaultTree::UnrollGates() {
@@ -712,7 +712,7 @@ void IndexedFaultTree::DetectModules(int num_basic_events) {
   // First stage, traverse the tree depth-first for gates and indicate
   // visit time for each node.
 
-  LOG() << "Detecting modules in a fault tree.";
+  LOG(DEBUG2) << "Detecting modules in a fault tree.";
 
   // First and last visits of basic events.
   // Basic events are indexed 1 to the number of basic events sequentially.
@@ -726,7 +726,7 @@ void IndexedFaultTree::DetectModules(int num_basic_events) {
   int time = 0;
   IndexedFaultTree::AssignTiming(time, top_gate, visit_basics);
 
-  LOG() << "Timings are assigned to nodes.";
+  LOG(DEBUG3) << "Timings are assigned to nodes.";
 
   std::map<int, std::pair<int, int> > visited_gates;
   IndexedFaultTree::FindOriginalModules(top_gate, visit_basics,
@@ -738,7 +738,7 @@ void IndexedFaultTree::DetectModules(int num_basic_events) {
          top_gate->ExitTime());
 
   int orig_mod = modules_.size();
-  LOG() << "Detected number of original modules: " << modules_.size();
+  LOG(DEBUG2) << "Detected number of original modules: " << modules_.size();
 }
 
 int IndexedFaultTree::AssignTiming(int time, const IndexedGatePtr& gate,
@@ -817,14 +817,14 @@ void IndexedFaultTree::FindOriginalModules(
 
   // Determine if this gate is module itself.
   if (min_time == enter_time && max_time == exit_time) {
-    LOG() << "Found original module: " << gate->index();
+    LOG(DEBUG3) << "Found original module: " << gate->index();
     assert((modular_children.size() + non_shared_children.size()) ==
            gate->children().size());
     modules_.insert(gate->index());
   }
   if (non_shared_children.size() > 1) {
     IndexedFaultTree::CreateNewModule(gate, non_shared_children);
-    LOG() << "New module of " << gate->index() << ": " << new_gate_index_
+    LOG(DEBUG3) << "New module of " << gate->index() << ": " << new_gate_index_
         << " with NON-SHARED children number " << non_shared_children.size();
   }
   // There might be cases when in one level couple of child gates can be
@@ -839,8 +839,9 @@ void IndexedFaultTree::FindOriginalModules(
   if (modular_children.size() > 0) {
     assert(modular_children.size() != 1);  // One modular child is non-shared.
     IndexedFaultTree::CreateNewModule(gate, modular_children);
-    LOG() << "New module of gate " << gate->index() << ": " << new_gate_index_
-          << " with children number " << modular_children.size();
+    LOG(DEBUG3) << "New module of gate " << gate->index() << ": "
+        << new_gate_index_
+        << " with children number " << modular_children.size();
   }
 
   max_time = std::max(max_time, gate->LastVisit());
@@ -962,13 +963,13 @@ void IndexedFaultTree::FindMcsFromSimpleGate(
   // Generate main minimal cut set gates from top module.
   gate->GenerateCutSets(cut_set, &cut_sets);
 
-  LOG() << "Unique cut sets generated: " << cut_sets.size();
+  LOG(DEBUG4) << "Unique cut sets generated: " << cut_sets.size();
   double cut_sets_time = (std::clock() - start_time) /
       static_cast<double>(CLOCKS_PER_SEC);
   start_time = std::clock();
-  LOG() << "Cut set generation time: " << cut_sets_time;
+  LOG(DEBUG4) << "Cut set generation time: " << cut_sets_time;
 
-  LOG() << "Minimizing the cut sets.";
+  LOG(DEBUG4) << "Minimizing the cut sets.";
   std::vector<const std::set<int>* > cut_sets_vector;
   cut_sets_vector.reserve(cut_sets.size());
   std::set<SetPtr, SetPtrComp>::iterator it;
@@ -982,10 +983,10 @@ void IndexedFaultTree::FindMcsFromSimpleGate(
   }
   IndexedFaultTree::MinimizeCutSets(cut_sets_vector, *mcs, 2, mcs);
 
-  LOG() << "The number of local MCS: " << mcs->size();
+  LOG(DEBUG4) << "The number of local MCS: " << mcs->size();
   double mcs_time = (std::clock() - start_time) /
       static_cast<double>(CLOCKS_PER_SEC);
-  LOG() << "Cut set minimization time: " << mcs_time;
+  LOG(DEBUG4) << "Cut set minimization time: " << mcs_time;
 }
 
 void IndexedFaultTree::MinimizeCutSets(
