@@ -153,7 +153,7 @@ void ConstructSettings(const po::variables_map& vm, Settings* settings) {
 /// @returns 0 for success.
 /// @returns 1 for errored state.
 int RunScram(const po::variables_map& vm) {
-  if (vm.count("log")) Logger::active() = true;
+  if (vm.count("log")) Logger::level() = INFO;
   // Initiate risk analysis.
   RiskAnalysis* ran = new RiskAnalysis();
   // Analysis settings.
