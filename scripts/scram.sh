@@ -74,6 +74,10 @@ _scram() {
       COMPREPLY=($(compgen -W "on off yes no true false 1 0" -- "${cur}"))
       return
       ;;
+    --verbosity)
+      COMPREPLY=($(compgen -W "0 1 2 3 4 5 6 7" -- "${cur}"))
+      return
+      ;;
   esac
 
   # Start parsing the help for option suggestions.

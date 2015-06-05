@@ -43,7 +43,7 @@ def test_fta_calls():
     fta_input = "./input/fta/correct_tree_input_with_probs.xml"
 
     # Test the validation a fta tree file
-    cmd = ["scram", "-v", fta_input]
+    cmd = ["scram", "--validate", fta_input]
     yield assert_equal, 0, call(cmd)
 
     # Test the incorrect limit order
@@ -100,24 +100,28 @@ def test_config_file():
 def test_logging():
     """Tests invokation with logging."""
     fta_input = "./input/fta/correct_tree_input_with_probs.xml"
-    cmd = ["scram", fta_input, "--log"]
+    cmd = ["scram", fta_input, "--verbosity", "-1"]
+    yield assert_equal, 1, call(cmd)
+    cmd = ["scram", fta_input, "--verbosity", "8"]
+    yield assert_equal, 1, call(cmd)
+    cmd = ["scram", fta_input, "--verbosity", "2"]
     yield assert_equal, 0, call(cmd)
 
 def test_graph_call():
     """Tests the calls for graphing instructions for a fault tree."""
     fta_input = "./input/fta/correct_tree_input_with_probs.xml"
     # Test graph only
-    cmd = ["scram", fta_input, "-g"]
+    cmd = ["scram", fta_input, "--graph"]
     yield assert_equal, 0, call(cmd)
     graph_file = "./input/fta/TwoTrains.dot"
-    cmd = ["scram", fta_input, "-g", "-o", graph_file]
+    cmd = ["scram", fta_input, "--graph", "-o", graph_file]
     yield assert_equal, 0, call(cmd)
     # Test if output is created
     yield assert_true, os.path.isfile(graph_file)
     # Changing permission
     cmd = ["chmod", "a-w", graph_file]
     call(cmd)
-    cmd = ["scram", fta_input, "-g", "-o", graph_file]
+    cmd = ["scram", fta_input, "--graph", "-o", graph_file]
     yield assert_not_equal, 0, call(cmd)
     if os.path.isfile(graph_file):
         os.remove(graph_file)
