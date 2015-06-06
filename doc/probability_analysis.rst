@@ -119,8 +119,8 @@ the same configurations are applied as for probability analysis.
 The analysis is performed by default on command-line call with probability
 data. The following factors are calculated:
 
-    * Fussel-Vesely Diagnosis Importance Factor (DIF)
-    * Birnbaum Marginal Importance Factor (MIF)
-    * Critical Importance Factor (CIF)
-    * Risk Reduction Worth (RRW)
-    * Risk Achievement Worth (RAW)
+    - Fussel-Vesely Diagnosis Importance Factor (DIF)
+    - Birnbaum Marginal Importance Factor (MIF)
+    - Critical Importance Factor (CIF)
+    - Risk Reduction Worth (RRW)
+    - Risk Achievement Worth (RAW)

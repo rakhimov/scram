@@ -13,6 +13,7 @@ SCRAM Fault Tree Graphing Specifics
 #. Gate repetition is graphed with a transfer symbol.
 #. Tries to make the tree look compact.
 #. Assign colors for clarity:
+
     1. Gates and Node Colors:
 
         :OR:          Blue
@@ -35,7 +36,7 @@ SCRAM Fault Tree Graphing Specifics
 
 Currently Supported Graphing Tools
 ==================================
-* `Graphviz DOT`_ (*Prefer SVG output for complex trees*)
+- `Graphviz DOT`_ (*Prefer SVG output for complex trees*)
 
 .. _`Graphviz DOT`: http://www.graphviz.org
 

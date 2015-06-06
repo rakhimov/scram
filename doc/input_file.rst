@@ -26,8 +26,8 @@ Steps in XML Input Validation
 
     - The hierarchical structure of a fault tree must be strict:
 
-        + The top event is the first gate in the input file fault tree description.
-        + Gates must appear as children before they are defined.
+        * The top event is the first gate in the input file fault tree description.
+        * Gates must appear as children before they are defined.
 
     - Event names are not case sensitive.
     - Trailing white spaces are ignored.
@@ -93,6 +93,5 @@ Fault Tree Input File
 Shorthand version
 -----------------
 .. literalinclude:: shorthand_two_train.txt
-
 
 .. _RelaxNG: http://relaxng.org/

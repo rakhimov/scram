@@ -28,11 +28,11 @@ This project adheres to the following coding styles
 Currently nonconforming cases in the C++ source code
 ----------------------------------------------------
 
-* Exceptions are used. (This is not recommended by GCSG.)
-* Streams are used instead of *printf-like routines*.
-* Naming of mutator functions without *set* prefix.
-* C++11 features are not allowed. Only Boost features are used instead.
-* License boilerplate is not included unless the code is from other projects.
+- Exceptions are used. (This is not recommended by GCSG.)
+- Streams are used instead of *printf-like routines*.
+- Naming of mutator functions without *set* prefix.
+- C++11 features are not allowed. Only Boost features are used instead.
+- License boilerplate is not included unless the code is from other projects.
 
 The quality of the code is checked with the following tools
 ===========================================================
