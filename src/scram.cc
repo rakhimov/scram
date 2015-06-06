@@ -232,15 +232,15 @@ int RunScram(const po::variables_map& vm) {
 /// @returns 0 for success.
 /// @returns 1 for errored state.
 int main(int argc, char* argv[]) {
-  // Parse command-line options.
-  po::variables_map vm;
-  int ret = ParseArguments(argc, argv, &vm);
-  if (ret == 1) return 1;
-  if (ret == -1) return 0;
-
 #ifdef NDEBUG
   try {  // Catch exceptions only for non-debug builds.
 #endif
+
+    // Parse command-line options.
+    po::variables_map vm;
+    int ret = ParseArguments(argc, argv, &vm);
+    if (ret == 1) return 1;
+    if (ret == -1) return 0;
 
     return RunScram(vm);
 
@@ -276,10 +276,14 @@ int main(int argc, char* argv[]) {
     std::cerr << iarg_err.what() << std::endl;
     return 1;
   } catch (boost::exception& boost_err) {
+    std::cerr << "Bad, bad news. Please report this error. Thank you!\n"
+        << std::endl;
     std::cerr << "Boost Exception:\n" << std::endl;
     std::cerr << boost::diagnostic_information(boost_err) << std::endl;
     return 1;
   } catch (std::exception& std_err) {
+    std::cerr << "Bad, bad news. Please report this error. Thank you!\n"
+        << std::endl;
     std::cerr << "Standard Exception:\n" << std::endl;
     std::cerr << std_err.what() << std::endl;
     return 1;
