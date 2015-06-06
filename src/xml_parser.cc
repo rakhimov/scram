@@ -29,8 +29,8 @@ void XMLParser::Validate(const std::stringstream& xml_schema_snippet) {
   validator.Validate(this->Document());
 }
 
-xmlpp::Document* XMLParser::Document() {
-  xmlpp::Document* doc = parser_->get_document();
+const xmlpp::Document* XMLParser::Document() {
+  const xmlpp::Document* doc = parser_->get_document();
   return doc;
 }
 

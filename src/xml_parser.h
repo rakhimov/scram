@@ -26,7 +26,7 @@ class XMLParser {
   void Validate(const std::stringstream& schema);
 
   /// @return The parser's document.
-  xmlpp::Document* Document();
+  const xmlpp::Document* Document();
 
  private:
   /// File parser.

@@ -68,7 +68,7 @@ TEST_F(XMLParserTests, RelaxNGValidator) {
   EXPECT_NO_THROW(parser.Init(snippet));
 
   RelaxNGValidator validator;
-  xmlpp::Document* doc = 0;
+  const xmlpp::Document* doc = 0;
   EXPECT_NO_THROW(validator.parse_memory(schema.str()));
   EXPECT_THROW(validator.Validate(doc), ValidationError);
 

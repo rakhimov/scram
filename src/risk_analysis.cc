@@ -224,7 +224,7 @@ void RiskAnalysis::ProcessInputFile(std::string xml_file) {
 
   parser->Validate(schema);
 
-  xmlpp::Document* doc = parser->Document();
+  const xmlpp::Document* doc = parser->Document();
   const xmlpp::Node* root = doc->get_root_node();
   assert(root->get_name() == "opsa-mef");
   xmlpp::NodeSet roots_children = root->find("./*");
