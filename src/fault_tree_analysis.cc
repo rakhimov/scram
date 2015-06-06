@@ -2,7 +2,6 @@
 /// Implementation of fault tree analysis.
 #include "fault_tree_analysis.h"
 
-#include <ctime>
 #include <sstream>
 
 #include <boost/algorithm/string.hpp>
@@ -11,6 +10,7 @@
 #include "event.h"
 #include "fault_tree.h"
 #include "indexed_fault_tree.h"
+#include "logger.h"
 
 namespace scram {
 
@@ -33,11 +33,7 @@ FaultTreeAnalysis::FaultTreeAnalysis(int limit_order, bool ccf_analysis)
 }
 
 void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
-  // Timing Initialization
-  std::clock_t start_time;
-  start_time = std::clock();
-  // End of Timing Initialization
-
+  CLOCK(analysis_time);
   // Getting events from the fault tree object.
   top_event_name_ = fault_tree->top_event()->orig_id();
   num_gates_ = fault_tree->inter_events().size() + 1;  // Include top event.
@@ -126,9 +122,7 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
     warnings_ += msg.str();
   }
 
-  // Duration of MCS generation.
-  analysis_time_ = (std::clock() - start_time) /
-                   static_cast<double>(CLOCKS_PER_SEC);
+  analysis_time_ = DUR(analysis_time);  // Duration of MCS generation.
   FaultTreeAnalysis::SetsToString(*imcs);  // MCS with event ids.
   delete indexed_tree;  // No exceptions are expected.
 }

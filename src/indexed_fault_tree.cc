@@ -4,7 +4,6 @@
 #include "indexed_fault_tree.h"
 
 #include <algorithm>
-#include <ctime>
 
 #include "event.h"
 #include "indexed_gate.h"
@@ -12,7 +11,7 @@
 
 namespace scram {
 
-int SimpleGate::limit_order_  = 20;
+int SimpleGate::limit_order_ = 20;
 
 void SimpleGate::GenerateCutSets(const SetPtr& cut_set,
                                  std::set<SetPtr, SetPtrComp>* new_cut_sets) {
@@ -237,9 +236,7 @@ void IndexedFaultTree::FindMcs() {
   // generates only additional supersets.
   //
   // The generated sets are kept unique by storing them in a set.
-  std::clock_t start_time;
-  start_time = std::clock();
-
+  CLOCK(mcs_time);
   LOG(DEBUG2) << "Start minimal cut set generation.";
 
   // Special case of empty top gate.
@@ -304,10 +301,8 @@ void IndexedFaultTree::FindMcs() {
   /// @todo Detect unity in modules.
   std::string state = indexed_gates_.find(top_event_index_)->second->state();
   assert(state != "unity");
-  double mcs_time = (std::clock() - start_time) /
-      static_cast<double>(CLOCKS_PER_SEC);
   LOG(DEBUG2) << "The number of MCS found: " << imcs_.size();
-  LOG(DEBUG2) << "Minimal cut set finding time: " << mcs_time;
+  LOG(DEBUG2) << "Minimal cut set finding time: " << DUR(mcs_time);
 }
 
 void IndexedFaultTree::UnrollGates() {
@@ -954,8 +949,7 @@ void IndexedFaultTree::CreateSimpleTree(
 void IndexedFaultTree::FindMcsFromSimpleGate(
     const SimpleGatePtr& gate,
     std::vector< std::set<int> >* mcs) {
-  std::clock_t start_time;
-  start_time = std::clock();
+  CLOCK(gen_time);
 
   SetPtrComp comp;
   std::set<SetPtr, SetPtrComp> cut_sets(comp);
@@ -964,12 +958,11 @@ void IndexedFaultTree::FindMcsFromSimpleGate(
   gate->GenerateCutSets(cut_set, &cut_sets);
 
   LOG(DEBUG4) << "Unique cut sets generated: " << cut_sets.size();
-  double cut_sets_time = (std::clock() - start_time) /
-      static_cast<double>(CLOCKS_PER_SEC);
-  start_time = std::clock();
-  LOG(DEBUG4) << "Cut set generation time: " << cut_sets_time;
+  LOG(DEBUG4) << "Cut set generation time: " << DUR(gen_time);
 
+  CLOCK(min_time);
   LOG(DEBUG4) << "Minimizing the cut sets.";
+
   std::vector<const std::set<int>* > cut_sets_vector;
   cut_sets_vector.reserve(cut_sets.size());
   std::set<SetPtr, SetPtrComp>::iterator it;
@@ -984,9 +977,7 @@ void IndexedFaultTree::FindMcsFromSimpleGate(
   IndexedFaultTree::MinimizeCutSets(cut_sets_vector, *mcs, 2, mcs);
 
   LOG(DEBUG4) << "The number of local MCS: " << mcs->size();
-  double mcs_time = (std::clock() - start_time) /
-      static_cast<double>(CLOCKS_PER_SEC);
-  LOG(DEBUG4) << "Cut set minimization time: " << mcs_time;
+  LOG(DEBUG4) << "Cut set minimization time: " << DUR(min_time);
 }
 
 void IndexedFaultTree::MinimizeCutSets(

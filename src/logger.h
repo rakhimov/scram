@@ -7,13 +7,23 @@
 #define SCRAM_SRC_LOGGER_H_
 
 #include <cstdio>
-#include <iostream>
+#include <ctime>
+#include <sstream>
 
 namespace scram {
 /// @def LOG(level)
 /// Logging with the level defined.
 #define LOG(level) if (level > scram::Logger::ReportLevel()); \
   else scram::Logger().Get(level)
+
+/// @def CLOCK(var)
+/// Starts the timing where var is the unique variable for the clock.
+#define CLOCK(var) std::clock_t var = std::clock()
+
+/// @def DUR(var)
+/// Calculates the time duration from the start of the clock with variable name
+/// var. This macro must be in the same scope as CLOCK(var).
+#define DUR(var) (std::clock() - var) / static_cast<double>(CLOCKS_PER_SEC)
 
 /// @enum LogLevel
 /// Levels for log statements.
@@ -86,13 +96,6 @@ class Logger {
   /// of the enum.
   static const char* level_to_string_[];
 };
-
-const char* Logger::level_to_string_[] = {"ERROR", "WARNING", "INFO", "DEBUG1",
-                                          "DEBUG2", "DEBUG3", "DEBUG4",
-                                          "DEBUG5"};
-LogLevel Logger::report_level_ = ERROR;
-
-LogLevel& Logger::ReportLevel() { return report_level_; }
 
 }  // namespace scram
 

@@ -3,12 +3,11 @@
 /// informations.
 #include "probability_analysis.h"
 
-#include <ctime>
-
 #include <boost/algorithm/string.hpp>
 #include <boost/pointer_cast.hpp>
 
 #include "error.h"
+#include "logger.h"
 
 namespace scram {
 
@@ -86,10 +85,7 @@ void ProbabilityAnalysis::Analyze(
     prob_of_min_sets_.insert(std::make_pair(imcs_to_smcs_[i], p_sub_set));
   }
 
-  // Timing Initialization
-  std::clock_t start_time;
-  start_time = std::clock();
-
+  CLOCK(p_time);
   // Get the total probability.
   if (approx_ == "mcub") {
     if (!coherent_) {
@@ -124,14 +120,10 @@ void ProbabilityAnalysis::Analyze(
     ProbabilityAnalysis::ProbOr(1, num_sums_, &mcs_for_prob);
     p_total_ = ProbabilityAnalysis::CalculateTotalProbability();
   }
-  // Duration of the calculations.
-  p_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
-
+  p_time_ = DUR(p_time);
+  CLOCK(imp_time);
   if (importance_analysis_) ProbabilityAnalysis::PerformImportanceAnalysis();
-
-  // Duration of the calculations.
-  imp_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
-  imp_time_ -= p_time_;
+  imp_time_ = DUR(imp_time);
 }
 
 void ProbabilityAnalysis::AssignIndices() {
