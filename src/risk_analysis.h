@@ -30,6 +30,7 @@ class Model;
 class FaultTree;
 class CcfGroup;
 class Reporter;
+class XMLParser;
 
 /// @class RiskAnalysis
 /// Main system that performs analyses.
@@ -115,11 +116,18 @@ class RiskAnalysis {
   /// Reads one input file with the structure of analysis entities.
   /// Initializes the analysis from the given input file.
   /// Puts all events into their appropriate containers.
+  /// This function mostly registers element definitions, but it may leave
+  /// them to be defined later because of possible undefined dependencies of
+  /// those elements.
   /// @param[in] xml_file The formatted XML input file.
   /// @throws ValidationError if input contains errors.
   /// @throws ValueError if input values are not valid.
   /// @throws IOError if an input file is not accessible.
   void ProcessInputFile(std::string xml_file);
+
+  /// Processes definitions of elements that are left to be determined later.
+  /// @throws ValidationError if elements contain undefined dependencies.
+  void ProcessTbdElements();
 
   /// Attaches attributes and label to the elements of the analysis.
   /// These attributes are not XML attributes but OpenPSA format defined
@@ -245,9 +253,15 @@ class RiskAnalysis {
   /// @returns false if the given event is not late and no action was taken.
   bool UpdateIfLateEvent(const EventPtr& event);
 
+  /// Registers a common cause failure group for later definition.
+  /// @param[in] ccf_node XML element defining CCF group.
+  void RegisterCcfGroup(const xmlpp::Element* ccf_node);
+
   /// Defines a common cause failure group for the analysis.
   /// @param[in] ccf_node XML element defining CCF group.
-  void DefineCcfGroup(const xmlpp::Element* ccf_node);
+  /// @param[in/out] ccf_group Registered CCF group to be defined.
+  void DefineCcfGroup(const xmlpp::Element* ccf_node,
+                      const CcfGroupPtr& ccf_group);
 
   /// Processes common cause failure group members as defined basic events.
   /// @param[in] members_node XML element containing all members.
@@ -360,6 +374,9 @@ class RiskAnalysis {
   /// Container for to-be-defined parameters or variables.
   boost::unordered_map<std::string, ParameterPtr> tbd_parameters_;
 
+  /// Elements that are defined on the second pass.
+  std::vector<std::pair<ElementPtr, const xmlpp::Element*> > tbd_elements_;
+
   /// Map of valid units for parameters.
   static std::map<std::string, Units> units_;
 
@@ -392,6 +409,9 @@ class RiskAnalysis {
 
   /// Collection of input file locations in canonical path.
   std::set<std::string> input_path_;
+
+  /// Parsers with all documents saved for access.
+  std::vector<boost::shared_ptr<XMLParser> > parsers_;
 };
 
 }  // namespace scram

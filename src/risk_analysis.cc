@@ -60,6 +60,7 @@ void RiskAnalysis::ProcessInputFiles(
       throw err;
     }
   }
+  RiskAnalysis::ProcessTbdElements();
   LOG(DEBUG1) << "Input files are processed in " << DUR(input_time);
 
   if (!settings_.probability_analysis_) {
@@ -219,6 +220,7 @@ void RiskAnalysis::ProcessInputFile(std::string xml_file) {
   schema_stream.close();
 
   parser->Validate(schema);
+  parsers_.push_back(parser);
 
   const xmlpp::Document* doc = parser->Document();
   const xmlpp::Node* root = doc->get_root_node();
@@ -250,7 +252,7 @@ void RiskAnalysis::ProcessInputFile(std::string xml_file) {
   for (it_ch = ccf_groups.begin(); it_ch != ccf_groups.end(); ++it_ch) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it_ch);
     assert(element);
-    RiskAnalysis::DefineCcfGroup(element);
+    RiskAnalysis::RegisterCcfGroup(element);
   }
 
   xmlpp::NodeSet model_data = root->find("./model-data");
@@ -258,6 +260,14 @@ void RiskAnalysis::ProcessInputFile(std::string xml_file) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it_ch);
     assert(element);
     RiskAnalysis::ProcessModelData(element);
+  }
+}
+
+void RiskAnalysis::ProcessTbdElements() {
+  std::vector< std::pair<ElementPtr, const xmlpp::Element*> >::iterator it;
+  for (it = tbd_elements_.begin(); it != tbd_elements_.end(); ++it) {
+    CcfGroupPtr ccf_group = boost::dynamic_pointer_cast<CcfGroup>(it->first);
+    DefineCcfGroup(it->second, ccf_group);
   }
 }
 
@@ -347,7 +357,7 @@ void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
   for (it = ccf_groups.begin(); it != ccf_groups.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
-    RiskAnalysis::DefineCcfGroup(element);
+    RiskAnalysis::RegisterCcfGroup(element);
   }
 }
 
@@ -1081,7 +1091,7 @@ bool RiskAnalysis::UpdateIfLateEvent(const EventPtr& event) {
   }
 }
 
-void RiskAnalysis::DefineCcfGroup(const xmlpp::Element* ccf_node) {
+void RiskAnalysis::RegisterCcfGroup(const xmlpp::Element* ccf_node) {
   std::string name = ccf_node->get_attribute_value("name");
   std::string id = name;
   boost::to_lower(id);
@@ -1114,6 +1124,11 @@ void RiskAnalysis::DefineCcfGroup(const xmlpp::Element* ccf_node) {
 
   RiskAnalysis::AttachLabelAndAttributes(ccf_node, ccf_group);
 
+  tbd_elements_.push_back(std::make_pair(ccf_group, ccf_node));
+}
+
+void RiskAnalysis::DefineCcfGroup(const xmlpp::Element* ccf_node,
+                                  const CcfGroupPtr& ccf_group) {
   xmlpp::NodeSet children = ccf_node->find("./*");
   xmlpp::NodeSet::iterator it;
   for (it = children.begin(); it != children.end(); ++it) {
