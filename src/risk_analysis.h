@@ -353,7 +353,7 @@ class RiskAnalysis {
 
   /// Container of original names of to be determined events
   /// with capitalizations.
-  std::map<std::string, std::string> tbd_orig_ids_;
+  std::map<std::string, std::string> tbd_names_;
 
   /// Container for fully defined gates.
   boost::unordered_map<std::string, GatePtr> gates_;

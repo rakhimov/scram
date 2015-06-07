@@ -85,8 +85,8 @@ void Grapher::GraphNode(
       } else {
         pr_repeat->insert(std::make_pair(it_child->first, 0));
       }
-      out << "\"" << t->orig_id() << "_R0\" -> "
-          << "\"" << it_child->second->orig_id() <<"_R"
+      out << "\"" << t->name() << "_R0\" -> "
+          << "\"" << it_child->second->name() <<"_R"
           << pr_repeat->find(it_child->first)->second << "\";\n";
     } else {  // This must be an intermediate event.
       if (in_repeat->count(it_child->first)) {
@@ -97,8 +97,8 @@ void Grapher::GraphNode(
       } else {
         in_repeat->insert(std::make_pair(it_child->first, 0));
       }
-      out << "\"" << t->orig_id() << "_R0\" -> "
-          << "\"" << it_child->second->orig_id() <<"_R"
+      out << "\"" << t->name() << "_R0\" -> "
+          << "\"" << it_child->second->name() <<"_R"
           << in_repeat->find(it_child->first)->second << "\";\n";
     }
   }
@@ -117,11 +117,11 @@ void Grapher::FormatTopEvent(const GatePtr& top_event, std::ostream& out) {
   }
 
   boost::to_upper(gate);
-  out << "\"" <<  top_event->orig_id()
+  out << "\"" <<  top_event->name()
       << "_R0\" [shape=ellipse, "
       << "fontsize=12, fontcolor=black, fontname=\"times-bold\", "
       << "color=" << gate_color << ", "
-      << "label=\"" << top_event->orig_id() << "\\n"
+      << "label=\"" << top_event->name() << "\\n"
       << "{ " << gate;
   if (gate == "ATLEAST") {
     out << " " << top_event->vote_number() << "/"
@@ -149,7 +149,7 @@ void Grapher::FormatIntermediateEvents(
     }
     boost::to_upper(gate);  // This is for graphing.
     std::string type = inter_events.find(it->first)->second->type();
-    std::string orig_name = inter_events.find(it->first)->second->orig_id();
+    std::string orig_name = inter_events.find(it->first)->second->name();
     for (int i = 0; i <= it->second; ++i) {
       if (i == 0) {
         out << "\"" <<  orig_name << "_R" << i
@@ -188,11 +188,11 @@ void Grapher::FormatPrimaryEvents(
         type = primary_event->GetAttribute("flavor").value;
       }
 
-      out << "\"" << primary_event->orig_id() << "_R" << i
+      out << "\"" << primary_event->name() << "_R" << i
           << "\" [shape=circle, "
           << "height=1, fontsize=10, fixedsize=true, "
           << "fontcolor=" << event_colors_.find(type)->second
-          << ", " << "label=\"" << primary_event->orig_id() << "\\n["
+          << ", " << "label=\"" << primary_event->name() << "\\n["
           << type << "]";
 
       if (prob_requested) {

@@ -49,7 +49,7 @@ class FaultTree : public Element {
   /// primary events of this fault tree. Moreover, all the nodes of this
   /// fault tree are expected to be defined fully and correctly.
   /// @throws LogicError if the fault tree is not fully defined or some
-  ///                    information is mission.
+  ///                    information is missing.
   void SetupForAnalysis();
 
   /// @returns The name of this tree.

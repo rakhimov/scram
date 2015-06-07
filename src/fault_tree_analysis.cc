@@ -35,7 +35,7 @@ FaultTreeAnalysis::FaultTreeAnalysis(int limit_order, bool ccf_analysis)
 void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
   CLOCK(analysis_time);
   // Getting events from the fault tree object.
-  top_event_name_ = fault_tree->top_event()->orig_id();
+  top_event_name_ = fault_tree->top_event()->name();
   num_gates_ = fault_tree->inter_events().size() + 1;  // Include top event.
   basic_events_ = fault_tree->basic_events();
   num_basic_events_ = fault_tree->num_basic_events();

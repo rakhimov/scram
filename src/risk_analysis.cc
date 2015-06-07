@@ -81,7 +81,7 @@ void RiskAnalysis::ProcessInputFiles(
     boost::unordered_map<std::string, std::vector<GatePtr> >::iterator it_e;
     for (it_e = tbd_events_.begin(); it_e != tbd_events_.end(); ++it_e) {
       BasicEventPtr child(new BasicEvent(it_e->first));
-      child->orig_id(tbd_orig_ids_.find(it_e->first)->second);
+      child->name(tbd_names_.find(it_e->first)->second);
       primary_events_.insert(std::make_pair(it_e->first, child));
       basic_events_.insert(std::make_pair(it_e->first, child));
       std::vector<GatePtr>::iterator itvec = it_e->second.begin();
@@ -201,8 +201,8 @@ void RiskAnalysis::ProcessInputFile(std::string xml_file) {
   }
   fs::path file_path = fs::canonical(xml_file);
   if (input_path_.count(file_path.native())) {
-    throw ValidationError("Trying to pass the same file twice: "
-                          + file_path.native());
+    throw ValidationError("Trying to pass the same file twice: " +
+                          file_path.native());
   }
   input_path_.insert(file_path.native());
 
@@ -398,10 +398,10 @@ void RiskAnalysis::ProcessModelData(const xmlpp::Element* model_data) {
 
 void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
                               const FaultTreePtr& ft) {
-  // Only one child element is expected, which is formulae.
-  std::string orig_id = gate_node->get_attribute_value("name");
-  boost::trim(orig_id);
-  std::string id = orig_id;
+  // Only one child element is expected, which is a formula.
+  std::string name = gate_node->get_attribute_value("name");
+  boost::trim(name);
+  std::string id = name;
   boost::to_lower(id);
 
   /// @todo This should take private/public roles into account.
@@ -409,7 +409,7 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
     // Doubly defined gate.
     std::stringstream msg;
     msg << "Line " << gate_node->get_line() << ":\n";
-    msg << orig_id << " gate is doubly defined.";
+    msg << name << " gate is doubly defined.";
     throw ValidationError(msg.str());
   }
 
@@ -418,7 +418,7 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
       tbd_house_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << gate_node->get_line() << ":\n";
-    msg << "The id " << orig_id << " is already assigned to a primary event.";
+    msg << "The id " << name << " is already assigned to a primary event.";
     throw ValidationError(msg.str());
   }
 
@@ -440,7 +440,7 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
   }
 
   GatePtr i_event(new Gate(id));
-  i_event->orig_id(orig_id);
+  i_event->name(name);
 
   // Update to be defined events.
   if (tbd_gates_.count(id)) {
@@ -471,44 +471,44 @@ void RiskAnalysis::ProcessFormula(const GatePtr& gate,
   for (it = events.begin(); it != events.end(); ++it) {
     const xmlpp::Element* event = dynamic_cast<const xmlpp::Element*>(*it);
     assert(event);
-    std::string orig_id = event->get_attribute_value("name");
-    boost::trim(orig_id);
-    std::string id = orig_id;
+    std::string name = event->get_attribute_value("name");
+    boost::trim(name);
+    std::string id = name;
     boost::to_lower(id);
 
     if (children_id.count(id)) {
       std::stringstream msg;
       msg << "Line " << event->get_line() << ":\n";
-      msg << "Detected a repeated child " << orig_id;
+      msg << "Detected a repeated child " << name;
       throw ValidationError(msg.str());
     } else {
       children_id.insert(id);
     }
 
-    std::string name = event->get_name();
-    assert(name == "event" || name == "gate" || name == "basic-event" ||
-           name == "house-event");
+    std::string element_type = event->get_name();
+    assert(element_type == "event" || element_type == "gate" ||
+           element_type == "basic-event" || element_type == "house-event");
     // This is for a case "<event name="id" type="type"/>".
     std::string type = event->get_attribute_value("type");
     boost::trim(type);
     if (type != "") {
       assert(type == "gate" || type == "basic-event" ||
              type == "house-event");
-      name = type;  // Event type is defined.
+      element_type = type;  // Event type is defined.
     }
 
     EventPtr child(new Event(id));
-    child->orig_id(orig_id);
-    if (name == "event") {  // Undefined type yet.
+    child->name(name);
+    if (element_type == "event") {  // Undefined type yet.
       if (!RiskAnalysis::ProcessFormulaEvent(gate, child)) continue;
 
-    } else if (name == "gate") {
+    } else if (element_type == "gate") {
       RiskAnalysis::ProcessFormulaGate(event, gate, child);
 
-    } else if (name == "basic-event") {
+    } else if (element_type == "basic-event") {
       RiskAnalysis::ProcessFormulaBasicEvent(event, gate, child);
 
-    } else if (name == "house-event") {
+    } else if (element_type == "house-event") {
       RiskAnalysis::ProcessFormulaHouseEvent(event, gate, child);
     }
 
@@ -520,7 +520,7 @@ void RiskAnalysis::ProcessFormula(const GatePtr& gate,
 bool RiskAnalysis::ProcessFormulaEvent(const GatePtr& gate,
                                        EventPtr& child) {
   std::string id = child->id();
-  std::string orig_id = child->orig_id();
+  std::string name = child->name();
   if (primary_events_.count(id)) {
     child = primary_events_.find(id)->second;
 
@@ -543,7 +543,7 @@ bool RiskAnalysis::ProcessFormulaEvent(const GatePtr& gate,
       std::vector<GatePtr> parents;
       parents.push_back(gate);
       tbd_events_.insert(std::make_pair(id, parents));
-      tbd_orig_ids_.insert(std::make_pair(id, orig_id));
+      tbd_names_.insert(std::make_pair(id, name));
     }
     return false;
   }
@@ -554,17 +554,17 @@ void RiskAnalysis::ProcessFormulaBasicEvent(const xmlpp::Element* event,
                                             const GatePtr& gate,
                                             EventPtr& child) {
   std::string id = child->id();
-  std::string orig_id = child->orig_id();
+  std::string name = child->name();
   if (gates_.count(id) || tbd_gates_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event->get_line() << ":\n";
-    msg << "The id " << orig_id << " is already assigned to a gate.";
+    msg << "The id " << name << " is already assigned to a gate.";
     throw ValidationError(msg.str());
   }
   if (tbd_house_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event->get_line() << ":\n";
-    msg << "The id " << orig_id << " is already used by a house event.";
+    msg << "The id " << name << " is already used by a house event.";
     throw ValidationError(msg.str());
   }
   if (primary_events_.count(id)) {
@@ -572,14 +572,14 @@ void RiskAnalysis::ProcessFormulaBasicEvent(const xmlpp::Element* event,
     if (boost::dynamic_pointer_cast<BasicEvent>(child) == 0) {
       std::stringstream msg;
       msg << "Line " << event->get_line() << ":\n";
-      msg << "The id " << orig_id << " is already assigned to a house event.";
+      msg << "The id " << name << " is already assigned to a house event.";
       throw ValidationError(msg.str());
     }
   } else if (tbd_basic_events_.count(id)) {
     child = tbd_basic_events_.find(id)->second;
   } else {
     child = BasicEventPtr(new BasicEvent(id));
-    child->orig_id(orig_id);
+    child->name(name);
     tbd_basic_events_.insert(
         std::make_pair(id, boost::dynamic_pointer_cast <BasicEvent>(child)));
     RiskAnalysis::UpdateIfLateEvent(child);
@@ -590,17 +590,17 @@ void RiskAnalysis::ProcessFormulaHouseEvent(const xmlpp::Element* event,
                                             const GatePtr& gate,
                                             EventPtr& child) {
   std::string id = child->id();
-  std::string orig_id = child->orig_id();
+  std::string name = child->name();
   if (gates_.count(id) || tbd_gates_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event->get_line() << ":\n";
-    msg << "The id " << orig_id << " is already assigned to a gate.";
+    msg << "The id " << name << " is already assigned to a gate.";
     throw ValidationError(msg.str());
   }
   if (tbd_basic_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event->get_line() << ":\n";
-    msg << "The id " << orig_id << " is already used by a basic event.";
+    msg << "The id " << name << " is already used by a basic event.";
     throw ValidationError(msg.str());
   }
   if (primary_events_.count(id)) {
@@ -608,14 +608,14 @@ void RiskAnalysis::ProcessFormulaHouseEvent(const xmlpp::Element* event,
     if (boost::dynamic_pointer_cast<HouseEvent>(child) == 0) {
       std::stringstream msg;
       msg << "Line " << event->get_line() << ":\n";
-      msg << "The id " << orig_id << " is already assigned to a basic event.";
+      msg << "The id " << name << " is already assigned to a basic event.";
       throw ValidationError(msg.str());
     }
   } else if (tbd_house_events_.count(id)) {
     child = tbd_house_events_.find(id)->second;
   } else {
     child = HouseEventPtr(new HouseEvent(id));
-    child->orig_id(orig_id);
+    child->name(name);
     tbd_house_events_.insert(
         std::make_pair(id, boost::dynamic_pointer_cast<HouseEvent>(child)));
     RiskAnalysis::UpdateIfLateEvent(child);
@@ -626,12 +626,12 @@ void RiskAnalysis::ProcessFormulaGate(const xmlpp::Element* event,
                                       const GatePtr& gate,
                                       EventPtr& child) {
   std::string id = child->id();
-  std::string orig_id = child->orig_id();
+  std::string name = child->name();
   if (primary_events_.count(id) || tbd_basic_events_.count(id) ||
       tbd_house_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event->get_line() << ":\n";
-    msg << "The id " << orig_id << " is already assigned to a primary event.";
+    msg << "The id " << name << " is already assigned to a primary event.";
     throw ValidationError(msg.str());
   }
   if (gates_.count(id)) {
@@ -640,7 +640,7 @@ void RiskAnalysis::ProcessFormulaGate(const xmlpp::Element* event,
     child = tbd_gates_.find(id)->second;
   } else {
     child = GatePtr(new Gate(id));
-    child->orig_id(orig_id);
+    child->name(name);
     tbd_gates_.insert(
         std::make_pair(id, boost::dynamic_pointer_cast<Gate>(child)));
     RiskAnalysis::UpdateIfLateEvent(child);
@@ -670,7 +670,7 @@ void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node,
   } else {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << "The " << basic_event->orig_id()
+    msg << "The " << basic_event->name()
         << " basic event does not have an expression.";
     throw ValidationError(msg.str());
   }
@@ -678,27 +678,27 @@ void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node,
 
 void RiskAnalysis::GetBasicEvent(const xmlpp::Element* event_node,
                                  BasicEventPtr& basic_event) {
-  std::string orig_id = event_node->get_attribute_value("name");
-  boost::trim(orig_id);
-  std::string id = orig_id;
+  std::string name = event_node->get_attribute_value("name");
+  boost::trim(name);
+  std::string id = name;
   boost::to_lower(id);
   // Detect name clashes.
   if (gates_.count(id) || tbd_gates_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << "The id " << orig_id << " is already assigned to a gate.";
+    msg << "The id " << name << " is already assigned to a gate.";
     throw ValidationError(msg.str());
   }
   if (primary_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << "The id " << orig_id << " is doubly defined.";
+    msg << "The id " << name << " is doubly defined.";
     throw ValidationError(msg.str());
   }
   if (tbd_house_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << "The id " << orig_id << " is already used by a house event.";
+    msg << "The id " << name << " is already used by a house event.";
     throw ValidationError(msg.str());
   }
 
@@ -710,7 +710,7 @@ void RiskAnalysis::GetBasicEvent(const xmlpp::Element* event_node,
 
   } else {
     basic_event = BasicEventPtr(new BasicEvent(id));
-    basic_event->orig_id(orig_id);
+    basic_event->name(name);
     primary_events_.insert(std::make_pair(id, basic_event));
     basic_events_.insert(std::make_pair(id, basic_event));
     RiskAnalysis::UpdateIfLateEvent(basic_event);
@@ -718,27 +718,27 @@ void RiskAnalysis::GetBasicEvent(const xmlpp::Element* event_node,
 }
 
 void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node) {
-  std::string orig_id = event_node->get_attribute_value("name");
-  boost::trim(orig_id);
-  std::string id = orig_id;
+  std::string name = event_node->get_attribute_value("name");
+  boost::trim(name);
+  std::string id = name;
   boost::to_lower(id);
   // Detect name clashes.
   if (gates_.count(id) || tbd_gates_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << "The id " << orig_id << " is already assigned to a gate.";
+    msg << "The id " << name << " is already assigned to a gate.";
     throw ValidationError(msg.str());
   }
   if (primary_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << "The id " << orig_id << " is doubly defined.";
+    msg << "The id " << name << " is doubly defined.";
     throw ValidationError(msg.str());
   }
   if (tbd_basic_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << "The id " << orig_id << " is already used by a basic event.";
+    msg << "The id " << name << " is already used by a basic event.";
     throw ValidationError(msg.str());
   }
   // Only boolean for now.
@@ -747,7 +747,7 @@ void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node) {
   if (expression.empty()) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << "The " << orig_id
+    msg << "The " << name
         << " house event does not have a Boolean constant expression.";
     throw ValidationError(msg.str());
   }
@@ -774,7 +774,7 @@ void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node) {
 
   } else {
     house_event = HouseEventPtr(new HouseEvent(id));
-    house_event->orig_id(orig_id);
+    house_event->name(name);
     house_event->state(state);
     primary_events_.insert(std::make_pair(id, house_event));
     RiskAnalysis::UpdateIfLateEvent(house_event);
@@ -1102,7 +1102,7 @@ bool RiskAnalysis::UpdateIfLateEvent(const EventPtr& event) {
       event->AddParent(*it);
     }
     tbd_events_.erase(id);
-    tbd_orig_ids_.erase(id);
+    tbd_names_.erase(id);
     return true;
   } else {
     return false;
@@ -1259,7 +1259,7 @@ void RiskAnalysis::CheckFirstLayer() {
     error_messages << "Undefined gates:\n";
     boost::unordered_map<std::string, GatePtr>::iterator it;
     for (it = tbd_gates_.begin(); it != tbd_gates_.end(); ++it) {
-      error_messages << it->second->orig_id() << "\n";
+      error_messages << it->second->name() << "\n";
     }
   }
 
@@ -1320,7 +1320,7 @@ std::string RiskAnalysis::CheckGate(const GatePtr& event) {
     // This line throws an error if there are no children.
     size = event->children().size();
   } catch (LogicError& err) {
-    msg << event->orig_id() << " : No children detected.";
+    msg << event->name() << " : No children detected.";
     return msg.str();
   }
 
@@ -1346,19 +1346,19 @@ std::string RiskAnalysis::CheckGate(const GatePtr& event) {
   if (two_or_more.count(gate)) {
     if (size < 2) {
       boost::to_upper(gate);
-      msg << event->orig_id() << " : " << gate << " gate must have 2 or more "
+      msg << event->name() << " : " << gate << " gate must have 2 or more "
           << "children.\n";
     }
   } else if (single.count(gate)) {
     if (size != 1) {
       boost::to_upper(gate);
-      msg << event->orig_id() << " : " << gate
+      msg << event->name() << " : " << gate
           << " gate must have exactly one child.";
     }
   } else if (gate == "xor") {
     if (size != 2) {
       boost::to_upper(gate);
-      msg << event->orig_id() << " : " << gate
+      msg << event->name() << " : " << gate
           << " gate must have exactly 2 children.\n";
     }
   } else if (gate == "inhibit") {
@@ -1367,13 +1367,13 @@ std::string RiskAnalysis::CheckGate(const GatePtr& event) {
   } else if (gate == "atleast") {
     if (size <= event->vote_number()) {
       boost::to_upper(gate);
-      msg << event->orig_id() << " : " << gate
+      msg << event->name() << " : " << gate
           << " gate must have more children than its vote number "
           << event->vote_number() << ".";
     }
   } else {
     boost::to_upper(gate);
-    msg << event->orig_id()
+    msg << event->name()
         << " : Gate Check failure. No check for " << gate << " gate.";
   }
 
@@ -1385,7 +1385,7 @@ std::string RiskAnalysis::CheckInhibitGate(const GatePtr& event) {
   msg << "";  // An empty default message is the indicator of no problems.
 
   if (event->children().size() != 2) {
-    msg << event->orig_id() << " : "
+    msg << event->name() << " : "
         << "INHIBIT gate must have exactly 2 children.\n";
   } else {
     bool conditional_found = false;
@@ -1399,7 +1399,7 @@ std::string RiskAnalysis::CheckInhibitGate(const GatePtr& event) {
             if (!conditional_found) {
               conditional_found = true;
             } else {
-              msg << event->orig_id() << " : " << "INHIBIT"
+              msg << event->name() << " : " << "INHIBIT"
                   << " gate must have exactly one conditional event.\n";
             }
           }
@@ -1407,7 +1407,7 @@ std::string RiskAnalysis::CheckInhibitGate(const GatePtr& event) {
       }
     }
     if (!conditional_found) {
-      msg << event->orig_id() << " : " << "INHIBIT"
+      msg << event->name() << " : " << "INHIBIT"
           << " gate is missing a conditional event.\n";
     }
   }
@@ -1421,7 +1421,7 @@ std::string RiskAnalysis::CheckMissingEvents() {
     boost::unordered_map<std::string, HouseEventPtr>::iterator it;
     for (it = tbd_house_events_.begin(); it != tbd_house_events_.end();
          ++it) {
-      msg += it->second->orig_id() + "\n";
+      msg += it->second->name() + "\n";
     }
   }
 
@@ -1430,7 +1430,7 @@ std::string RiskAnalysis::CheckMissingEvents() {
     boost::unordered_map<std::string, BasicEventPtr>::iterator it;
     for (it = tbd_basic_events_.begin(); it != tbd_basic_events_.end();
          ++it) {
-      msg += it->second->orig_id() + "\n";
+      msg += it->second->name() + "\n";
     }
   }
 
@@ -1438,7 +1438,7 @@ std::string RiskAnalysis::CheckMissingEvents() {
     msg += "\nMissing definitions for Untyped events:\n";
     boost::unordered_map<std::string, std::vector<GatePtr> >::iterator it;
     for (it = tbd_events_.begin(); it != tbd_events_.end(); ++it) {
-      msg += tbd_orig_ids_.find(it->first)->second + "\n";
+      msg += tbd_names_.find(it->first)->second + "\n";
     }
   }
 
@@ -1499,7 +1499,7 @@ void RiskAnalysis::ValidateExpressions() {
       try {
         it->second->Validate();
       } catch (ValidationError& err) {
-        msg << it->second->orig_id() << " : " << err.msg() << "\n";
+        msg << it->second->name() << " : " << err.msg() << "\n";
       }
     }
     if (msg.str() != "") {

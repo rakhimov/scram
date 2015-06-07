@@ -131,7 +131,7 @@ void Reporter::ReportOrphans(
   std::set<boost::shared_ptr<PrimaryEvent> >::const_iterator it;
   for (it = orphan_primary_events.begin(); it != orphan_primary_events.end();
        ++it) {
-    out += (*it)->orig_id() + " ";
+    out += (*it)->name() + " ";
   }
   xmlpp::Node* root = doc->get_root_node();
   xmlpp::NodeSet inf = root->find("./information");
@@ -322,7 +322,7 @@ xmlpp::Element* Reporter::ReportBasicEvent(
   xmlpp::Element* element;
   if (!ccf_event) {
     element = parent->add_child("basic-event");
-    element->set_attribute("name", basic_event->orig_id());
+    element->set_attribute("name", basic_event->name());
   } else {
     element = parent->add_child("ccf-event");
     element->set_attribute("ccf-group", ccf_event->ccf_group_name());

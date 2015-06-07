@@ -4,14 +4,11 @@
 
 namespace scram {
 
-Event::Event(std::string id, std::string orig_id)
-    : id_(id),
-      orig_id_(orig_id) {}
+Event::Event(std::string id, std::string name) : id_(id), name_(name) {}
 
 void Event::AddParent(const boost::shared_ptr<Gate>& parent) {
   if (parents_.count(parent->id())) {
-    std::string msg = "Trying to re-insert existing parent for " +
-                      this->orig_id();
+    std::string msg = "Trying to re-insert existing parent for " + this->name();
     throw LogicError(msg);
   }
   parents_.insert(std::make_pair(parent->id(), parent));
@@ -19,7 +16,7 @@ void Event::AddParent(const boost::shared_ptr<Gate>& parent) {
 
 const std::map<std::string, boost::shared_ptr<Gate> >& Event::parents() {
   if (parents_.empty()) {
-    std::string msg = this->orig_id() + " does not have parents.";
+    std::string msg = this->name() + " does not have parents.";
     throw LogicError(msg);
   }
   return parents_;
@@ -33,7 +30,7 @@ Gate::Gate(std::string id, std::string type)
 
 const std::string& Gate::type() {
   if (type_ == "NONE") {
-    std::string msg = "Gate type is not set for " + this->orig_id() + " gate.";
+    std::string msg = "Gate type is not set for " + this->name() + " gate.";
     throw LogicError(msg);
   }
   return type_;
@@ -42,7 +39,7 @@ const std::string& Gate::type() {
 void Gate::type(std::string type) {
   if (type_ != "NONE") {
     std::string msg = "Trying to re-assign a gate type for " +
-                      this->orig_id() + " gate.";
+                      this->name() + " gate.";
     throw LogicError(msg);
   }
   type_ = type;
@@ -50,8 +47,7 @@ void Gate::type(std::string type) {
 
 int Gate::vote_number() {
   if (vote_number_ == -1) {
-    std::string msg = "Vote number is not set for " +
-                      this->orig_id() + " gate.";
+    std::string msg = "Vote number is not set for " + this->name() + " gate.";
     throw LogicError(msg);
   }
   return vote_number_;
@@ -62,15 +58,14 @@ void Gate::vote_number(int vnumber) {
     // This line calls type() function which may throw an exception if
     // the type of this gate is not yet set.
     std::string msg = "Vote number can only be defined for the ATLEAST gate. "
-                      "The " + this->orig_id() + " gate is " +
-                      this->type() + ".";
+                      "The " + this->name() + " gate is " + this->type() + ".";
     throw LogicError(msg);
   } else if (vnumber < 2) {
     std::string msg = "Vote number cannot be less than 2.";
     throw InvalidArgument(msg);
   } else if (vote_number_ != -1) {
     std::string msg = "Trying to re-assign a vote number for " +
-                      this->orig_id() + " gate.";
+                      this->name() + " gate.";
     throw LogicError(msg);
   }
   vote_number_ = vnumber;
@@ -78,7 +73,7 @@ void Gate::vote_number(int vnumber) {
 
 void Gate::AddChild(const boost::shared_ptr<Event>& child) {
   if (children_.count(child->id())) {
-    std::string msg = "Trying to re-insert a child for " + this->orig_id() +
+    std::string msg = "Trying to re-insert a child for " + this->name() +
                       " gate.";
     throw LogicError(msg);
   }
@@ -87,7 +82,7 @@ void Gate::AddChild(const boost::shared_ptr<Event>& child) {
 
 const std::map<std::string, boost::shared_ptr<Event> >& Gate::children() {
   if (children_.empty()) {
-    std::string msg = this->orig_id() + " gate does not have children.";
+    std::string msg = this->name() + " gate does not have children.";
     throw LogicError(msg);
   }
   return children_;

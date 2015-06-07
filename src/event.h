@@ -23,20 +23,20 @@ class Event : public Element {
  public:
   /// Constructs a fault tree event with a specific id.
   /// @param[in] id The identifying name for the event.
-  /// @param[in] orig_id The identifying name with caps preserved.
-  explicit Event(std::string id, std::string orig_id = "");
+  /// @param[in] name The identifying name with caps preserved.
+  explicit Event(std::string id, std::string name = "");
 
   virtual ~Event() {}
 
   /// @returns The id that is set upon the construction of this event.
   inline const std::string& id() const { return id_; }
 
-  /// @returns The original id with capitalizations.
-  inline const std::string& orig_id() const { return orig_id_; }
+  /// @returns The original name with capitalizations.
+  inline const std::string& name() const { return name_; }
 
-  /// Sets the original id name with capitalizations preserved.
+  /// Sets the original name with capitalizations preserved.
   /// @param[in] id_with_caps The id name with capitalizations.
-  void orig_id(std::string id_with_caps) { orig_id_ = id_with_caps; }
+  void name(std::string id_with_caps) { name_ = id_with_caps; }
 
   /// Adds a parent into the parent map.
   /// @param[in] parent One of the gate parents of this event.
@@ -51,10 +51,10 @@ class Event : public Element {
   /// Id name of a event. It is in lower case.
   std::string id_;
 
-  /// Id name with capitalizations preserved of a event.
-  std::string orig_id_;
+  /// Original name with capitalizations preserved.
+  std::string name_;
 
-  /// The parents of this primary event.
+  /// The parents of this event.
   std::map<std::string, boost::shared_ptr<Gate> > parents_;
 };
 
@@ -252,8 +252,8 @@ class HouseEvent : public PrimaryEvent {
 class CcfEvent : public BasicEvent {
  public:
   /// Constructs CCF event with id name that is used for internal purposes.
-  /// This id is formatted by CcfGroup. The original id is also formatted by
-  /// CcfGroup, but the original id may not be suitable for reporting.
+  /// This id is formatted by CcfGroup. The original name is also formatted by
+  /// CcfGroup, but the original name may not be suitable for reporting.
   /// @param[in] id The identifying name of this CCF event.
   /// @param[in] ccf_group_name The name of CCF group for reporting.
   /// @param[in] ccf_group_size The total size of CCF group for reporting.
@@ -274,9 +274,9 @@ class CcfEvent : public BasicEvent {
   }
 
   /// Sets original names of members.
-  /// @param[in] orig_ids A container of original names of basic events.
-  inline const void member_names(const std::vector<std::string>& orig_ids) {
-    member_names_ = orig_ids;
+  /// @param[in] names A container of original names of basic events.
+  inline const void member_names(const std::vector<std::string>& names) {
+    member_names_ = names;
   }
 
  private:

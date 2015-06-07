@@ -23,7 +23,7 @@ void FaultTree::AddGate(const GatePtr& gate) {
   } else {
     if (inter_events_.count(gate->id()) || gate->id() == top_event_id_) {
       throw ValidationError("Trying to doubly define a gate '" +
-                            gate->orig_id() + "'.");
+                            gate->name() + "'.");
     }
     // Check if this gate has a valid parent in this tree.
     const std::map<std::string, GatePtr>* parents;
@@ -31,7 +31,7 @@ void FaultTree::AddGate(const GatePtr& gate) {
       parents = &gate->parents();
     } catch (LogicError& err) {
       // No parents here.
-      throw ValidationError("Gate '" + gate->orig_id() +
+      throw ValidationError("Gate '" + gate->name() +
                             "' is a dangling gate in" +
                             " a malformed tree input structure. " + err.msg());
     }
@@ -44,7 +44,7 @@ void FaultTree::AddGate(const GatePtr& gate) {
       }
     }
     if (!parent_found) {
-      throw ValidationError("Gate '" + gate->orig_id() +
+      throw ValidationError("Gate '" + gate->name() +
                             "' has no pre-declared" +
                             " parent gate in '" + name_ +
                             "' fault tree. This gate is a dangling gate." +
@@ -101,14 +101,14 @@ bool FaultTree::DetectCycle(const GatePtr& gate,
           inter_events_.insert(std::make_pair(child_gate->id(), child_gate));
         }
         if (FaultTree::DetectCycle(child_gate, cycle)) {
-          cycle->push_back(gate->orig_id());
+          cycle->push_back(gate->name());
           return true;
         }
       }
     }
     gate->mark("permanent");
   } else if (gate->mark() == "temporary") {
-    cycle->push_back(gate->orig_id());
+    cycle->push_back(gate->name());
     return true;
   }
   return false;  // This also covers permanently marked gates.
@@ -144,7 +144,7 @@ void FaultTree::GetPrimaryEvents(const GatePtr& gate) {
           boost::dynamic_pointer_cast<PrimaryEvent>(it->second);
 
       if (primary_event == 0) {  // The tree must be fully defined.
-        throw LogicError("Node with id '" + it->second->orig_id() +
+        throw LogicError("Node with id '" + it->second->name() +
                          "' was not defined in '" + name_+ "' tree");
       }
 
