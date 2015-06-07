@@ -189,11 +189,17 @@ class RiskAnalysis {
   void ProcessFormulaGate(const xmlpp::Element* event, const GatePtr& gate,
                           EventPtr& child);
 
-  /// Defines and adds a basic event for this analysis.
+  /// Registers a basic event for later definition.
   /// @param[in] event_node XML element defining the event.
-  /// @throws ValidationError if name clash or redefinition is detected, of
-  ///                         if there is no expression for this basic event.
-  void DefineBasicEvent(const xmlpp::Element* event_node);
+  /// @throws ValidationError if redefinition is detected.
+  void RegisterBasicEvent(const xmlpp::Element* event_node);
+
+  /// Defines a basic event for this analysis.
+  /// @param[in] event_node XML element defining the event.
+  /// @param[in/out] basic_event Registered basic event ready to be defined.
+  /// @throws ValidationError if there is no expression for this basic event.
+  void DefineBasicEvent(const xmlpp::Element* event_node,
+                        const BasicEventPtr& basic_event);
 
   /// Instantiates or returns the basic event that is waiting to be defined.
   /// This function also performs checks for validation issues.

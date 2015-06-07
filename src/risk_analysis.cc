@@ -272,6 +272,10 @@ void RiskAnalysis::ProcessTbdElements() {
     } else if (boost::dynamic_pointer_cast<Parameter>(it->first)) {
       ParameterPtr param = boost::dynamic_pointer_cast<Parameter>(it->first);
       DefineParameter(it->second, param);
+    } else if (boost::dynamic_pointer_cast<BasicEvent>(it->first)) {
+      BasicEventPtr basic_event =
+          boost::dynamic_pointer_cast<BasicEvent>(it->first);
+      DefineBasicEvent(it->second, basic_event);
     }
   }
 }
@@ -351,7 +355,7 @@ void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
   for (it = basic_events.begin(); it != basic_events.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
-    RiskAnalysis::DefineBasicEvent(element);
+    RiskAnalysis::RegisterBasicEvent(element);
   }
   LOG(DEBUG2) << "Basic event definition time " << DUR(basic_time);
   for (it = parameters.begin(); it != parameters.end(); ++it) {
@@ -382,7 +386,7 @@ void RiskAnalysis::ProcessModelData(const xmlpp::Element* model_data) {
   for (it = basic_events.begin(); it != basic_events.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
-    RiskAnalysis::DefineBasicEvent(element);
+    RiskAnalysis::RegisterBasicEvent(element);
   }
   LOG(DEBUG2) << "Basic event definition time " << DUR(basic_time);
   for (it = parameters.begin(); it != parameters.end(); ++it) {
@@ -643,12 +647,17 @@ void RiskAnalysis::ProcessFormulaGate(const xmlpp::Element* event,
   }
 }
 
-void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node) {
-  xmlpp::NodeSet expressions =
-     event_node->find("./*[name() != 'attributes' and name() != 'label']");
-
+void RiskAnalysis::RegisterBasicEvent(const xmlpp::Element* event_node) {
   BasicEventPtr basic_event;
   RiskAnalysis::GetBasicEvent(event_node, basic_event);
+  tbd_elements_.push_back(std::make_pair(basic_event, event_node));
+  RiskAnalysis::AttachLabelAndAttributes(event_node, basic_event);
+}
+
+void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node,
+                                    const BasicEventPtr& basic_event) {
+  xmlpp::NodeSet expressions =
+     event_node->find("./*[name() != 'attributes' and name() != 'label']");
 
   if (!expressions.empty()) {
     const xmlpp::Element* expr_node =
@@ -665,8 +674,6 @@ void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node) {
         << " basic event does not have an expression.";
     throw ValidationError(msg.str());
   }
-
-  RiskAnalysis::AttachLabelAndAttributes(event_node, basic_event);
 }
 
 void RiskAnalysis::GetBasicEvent(const xmlpp::Element* event_node,
