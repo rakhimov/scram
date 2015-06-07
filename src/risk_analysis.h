@@ -359,7 +359,7 @@ class RiskAnalysis {
   boost::unordered_map<std::string, ParameterPtr> tbd_parameters_;
 
   /// Map of valid units for parameters.
-  std::map<std::string, Units> units_;
+  static std::map<std::string, Units> units_;
 
   /// Container for defined expressions.
   std::set<ExpressionPtr> expressions_;

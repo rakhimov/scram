@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/assign.hpp>
 #include <boost/date_time.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/pointer_cast.hpp>
@@ -15,22 +16,15 @@ namespace fs = boost::filesystem;
 
 namespace scram {
 
-Grapher::Grapher() {
-  gate_colors_.insert(std::make_pair("or", "blue"));
-  gate_colors_.insert(std::make_pair("and", "green"));
-  gate_colors_.insert(std::make_pair("not", "red"));
-  gate_colors_.insert(std::make_pair("xor", "brown"));
-  gate_colors_.insert(std::make_pair("inhibit", "yellow"));
-  gate_colors_.insert(std::make_pair("atleast", "cyan"));
-  gate_colors_.insert(std::make_pair("null", "gray"));
-  gate_colors_.insert(std::make_pair("nor", "magenta"));
-  gate_colors_.insert(std::make_pair("nand", "orange"));
+std::map<std::string, std::string> Grapher::gate_colors_ =
+    boost::assign::map_list_of ("or", "blue") ("and", "green") ("not", "red")
+                               ("xor", "brown") ("inhibit", "yellow")
+                               ("atleast", "cyan") ("null", "gray")
+                               ("nor", "magenta") ("nand", "orange");
 
-  event_colors_.insert(std::make_pair("basic", "black"));
-  event_colors_.insert(std::make_pair("undeveloped", "blue"));
-  event_colors_.insert(std::make_pair("house", "green"));
-  event_colors_.insert(std::make_pair("conditional", "red"));
-}
+std::map<std::string, std::string> Grapher::event_colors_ =
+    boost::assign::map_list_of ("basic", "black") ("undeveloped", "blue")
+                               ("house", "green") ("conditional", "red");
 
 void Grapher::GraphFaultTree(const FaultTreePtr& fault_tree,
                              bool prob_requested,

@@ -9,6 +9,7 @@
 #include <sstream>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/assign.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/pointer_cast.hpp>
 
@@ -25,18 +26,13 @@
 
 namespace scram {
 
-RiskAnalysis::RiskAnalysis() {
-  // Add valid units.
-  units_.insert(std::make_pair("bool", kBool));
-  units_.insert(std::make_pair("int", kInt));
-  units_.insert(std::make_pair("float", kFloat));
-  units_.insert(std::make_pair("hours", kHours));
-  units_.insert(std::make_pair("hours-1", kInverseHours));
-  units_.insert(std::make_pair("years", kYears));
-  units_.insert(std::make_pair("years-1", kInverseYears));
-  units_.insert(std::make_pair("fit", kFit));
-  units_.insert(std::make_pair("demands", kDemands));
+std::map<std::string, Units> RiskAnalysis::units_ =
+    boost::assign::map_list_of ("bool", kBool) ("int", kInt) ("float", kFloat)
+                               ("hours", kHours) ("hours-1", kInverseHours)
+                               ("years", kYears) ("years-1", kInverseYears)
+                               ("fit", kFit) ("demands", kDemands);
 
+RiskAnalysis::RiskAnalysis() {
   // Initialize the mission time with any value.
   mission_time_ = boost::shared_ptr<MissionTime>(new MissionTime());
 }
@@ -63,7 +59,7 @@ void RiskAnalysis::ProcessInputFiles(
       throw err;
     }
   }
-  LOG(DEBUG1) << "Inputs are processed in " << DUR(input_time);
+  LOG(DEBUG1) << "Input files are processed in " << DUR(input_time);
 
   if (!settings_.probability_analysis_) {
     // Put all undefined events as primary events.
