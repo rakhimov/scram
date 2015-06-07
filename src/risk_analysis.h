@@ -40,7 +40,7 @@ class RiskAnalysis {
  public:
   RiskAnalysis();
 
-  /// Add set of settings for analysis.
+  /// Add a set of settings for analysis.
   /// @param[in] settings Configured settings for analysis.
   void AddSettings(const Settings& settings) { settings_ = settings; }
 
@@ -329,9 +329,6 @@ class RiskAnalysis {
 
   /// List of all valid gates.
   std::set<std::string> gate_types_;
-
-  /// List of all valid types of primary events.
-  std::set<std::string> types_;
 
   /// Container for fully defined gates.
   boost::unordered_map<std::string, GatePtr> gates_;

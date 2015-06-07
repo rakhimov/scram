@@ -18,6 +18,7 @@
 #include "error.h"
 #include "fault_tree.h"
 #include "grapher.h"
+#include "logger.h"
 #include "random.h"
 #include "reporter.h"
 #include "xml_parser.h"
@@ -35,12 +36,6 @@ RiskAnalysis::RiskAnalysis() {
   gate_types_.insert("null");
   gate_types_.insert("inhibit");
   gate_types_.insert("atleast");
-
-  // Add valid primary event types.
-  types_.insert("basic");
-  types_.insert("undeveloped");
-  types_.insert("house");
-  types_.insert("conditional");
 
   // Add valid units.
   units_.insert(std::make_pair("bool", kBool));
@@ -68,6 +63,8 @@ void RiskAnalysis::ProcessInputFiles(
   // Assume that settings are configured.
   mission_time_->mission_time(settings_.mission_time_);
 
+  CLOCK(input_time);
+  LOG(DEBUG1) << "Processing input files";
   std::vector<std::string>::const_iterator it;
   for (it = xml_files.begin(); it != xml_files.end(); ++it) {
     try {
@@ -77,6 +74,7 @@ void RiskAnalysis::ProcessInputFiles(
       throw err;
     }
   }
+  LOG(DEBUG1) << "Inputs are processed in " << DUR(input_time);
 
   if (!settings_.probability_analysis_) {
     // Put all undefined events as primary events.
@@ -107,11 +105,17 @@ void RiskAnalysis::ProcessInputFiles(
     }
   }
 
+  CLOCK(valid_time);
+  LOG(DEBUG1) << "Validating the input files";
   // Check if the initialization is successful.
   RiskAnalysis::ValidateInitialization();
+  LOG(DEBUG1) << "Validatation is finished in " << DUR(valid_time);
 
+  CLOCK(setup_time);
+  LOG(DEBUG1) << "Seting up for the analysis";
   // Perform setup for analysis using configurations from the input files.
   RiskAnalysis::SetupForAnalysis();
+  LOG(DEBUG1) << "Setup time " << DUR(setup_time);
 }
 
 void RiskAnalysis::GraphingInstructions(std::string output) {
@@ -268,7 +272,7 @@ void RiskAnalysis::AttachLabelAndAttributes(
 
   xmlpp::NodeSet attributes = element_node->find("./*[name() = 'attributes']");
   if (!attributes.empty()) {
-    assert(attributes.size() == 1);  // Only on big element 'attributes'.
+    assert(attributes.size() == 1);  // Only one big element 'attributes'.
     const xmlpp::Element* attributes_element =
         dynamic_cast<const xmlpp::Element*>(attributes.front());
     xmlpp::NodeSet attribute_list =
