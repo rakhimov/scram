@@ -378,10 +378,6 @@ class RiskAnalysis {
   /// House events to be defined.
   boost::unordered_map<std::string, HouseEventPtr> tbd_house_events_;
 
-  /// Container for excess primary events not in the analysis.
-  /// This container is for warning in case the input is formed not as intended.
-  std::set<PrimaryEventPtr> orphan_primary_events_;
-
   /// Container for defined parameters or variables.
   boost::unordered_map<std::string, ParameterPtr> parameters_;
 

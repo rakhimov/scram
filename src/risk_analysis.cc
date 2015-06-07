@@ -156,8 +156,20 @@ void RiskAnalysis::Report(std::ostream& out) {
   xmlpp::Document* doc = new xmlpp::Document();
   rp.SetupReport(this, settings_, doc);
 
-  if (!orphan_primary_events_.empty())
-    rp.ReportOrphans(orphan_primary_events_, doc);
+  /// Container for excess primary events not in the analysis.
+  /// This container is for warning in case the input is formed not as intended.
+  std::set<PrimaryEventPtr> orphan_primary_events;
+
+  // Gather orphan primary events for warning.
+  boost::unordered_map<std::string, PrimaryEventPtr>::iterator it_p;
+  for (it_p = primary_events_.begin(); it_p != primary_events_.end(); ++it_p) {
+    if (it_p->second->IsOrphan()) {
+      orphan_primary_events.insert(it_p->second);
+    }
+  }
+
+  if (!orphan_primary_events.empty())
+    rp.ReportOrphans(orphan_primary_events, doc);
 
   assert(ftas_.size() == fault_trees_.size());  // All trees are analyzed.
 
@@ -1234,16 +1246,6 @@ void RiskAnalysis::ValidateInitialization() {
 
   // Validation of fault trees.
   RiskAnalysis::CheckSecondLayer();
-
-  // Gather orphan primary events for warning.
-  boost::unordered_map<std::string, PrimaryEventPtr>::iterator it_p;
-  for (it_p = primary_events_.begin(); it_p != primary_events_.end(); ++it_p) {
-    try {
-      it_p->second->parents();
-    } catch (LogicError& err) {
-      orphan_primary_events_.insert(it_p->second);
-    }
-  }
 }
 
 void RiskAnalysis::CheckFirstLayer() {
