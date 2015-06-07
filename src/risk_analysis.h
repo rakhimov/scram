@@ -327,9 +327,6 @@ class RiskAnalysis {
   /// with capitalizations.
   std::map<std::string, std::string> tbd_orig_ids_;
 
-  /// List of all valid gates.
-  std::set<std::string> gate_types_;
-
   /// Container for fully defined gates.
   boost::unordered_map<std::string, GatePtr> gates_;
 

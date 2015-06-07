@@ -26,17 +26,6 @@
 namespace scram {
 
 RiskAnalysis::RiskAnalysis() {
-  // Add valid gate types.
-  gate_types_.insert("and");
-  gate_types_.insert("or");
-  gate_types_.insert("not");
-  gate_types_.insert("nor");
-  gate_types_.insert("nand");
-  gate_types_.insert("xor");
-  gate_types_.insert("null");
-  gate_types_.insert("inhibit");
-  gate_types_.insert("atleast");
-
   // Add valid units.
   units_.insert(std::make_pair("bool", kBool));
   units_.insert(std::make_pair("int", kInt));
@@ -248,10 +237,6 @@ void RiskAnalysis::ProcessInputFile(std::string xml_file) {
 
     } else if (name == "model-data") {
       RiskAnalysis::ProcessModelData(element);
-
-    } else {
-      // Not yet capable of handling other analysis.
-      throw(ValidationError("Cannot handle '" + name + "'"));
     }
   }
 }
@@ -323,13 +308,6 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
   // Check if the gate type is supported.
   const xmlpp::Node* gate_type = gates.front();
   std::string type = gate_type->get_name();
-  if (!gate_types_.count(type)) {
-    std::stringstream msg;
-    msg << "Line " << gate_type->get_line() << ":\n";
-    msg << "Invalid input arguments. '" << orig_id
-        << "' gate formulae is not supported.";
-    throw ValidationError(msg.str());
-  }
 
   int vote_number = -1;  // For atleast/vote gates.
   if (type == "atleast") {
@@ -732,13 +710,7 @@ void RiskAnalysis::GetExpression(const xmlpp::Element* expr_element,
   if (GetConstantExpression(expr_element, expression)) {
   } else if (GetParameterExpression(expr_element, expression)) {
   } else if (GetDeviateExpression(expr_element, expression)) {
-  } else {
-    std::stringstream msg;
-    msg << "Line " << expr_element->get_line() << ":\n";
-    msg << "Unsupported expression: " << expr_element->get_name();
-    throw ValidationError(msg.str());
   }
-
   expressions_.insert(expression);
 }
 
