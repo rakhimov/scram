@@ -800,17 +800,8 @@ void RiskAnalysis::RegisterParameter(const xmlpp::Element* param_node) {
     throw ValidationError(msg.str());
   }
 
-  ParameterPtr parameter;
-
-  if (tbd_parameters_.count(name)) {
-    parameter = tbd_parameters_.find(name)->second;
-    parameters_.insert(std::make_pair(name, parameter));
-    tbd_parameters_.erase(name);
-
-  } else {
-    parameter = ParameterPtr(new Parameter(name));
-    parameters_.insert(std::make_pair(name, parameter));
-  }
+  ParameterPtr parameter = ParameterPtr(new Parameter(name));
+  parameters_.insert(std::make_pair(name, parameter));
 
   tbd_elements_.push_back(std::make_pair(parameter, param_node));
 
@@ -881,14 +872,11 @@ bool RiskAnalysis::GetParameterExpression(const xmlpp::Element* expr_element,
     /// @todo check for possible unit clashes.
     if (parameters_.count(name)) {
       expression = parameters_.find(name)->second;
-
-    } else if (tbd_parameters_.count(name)) {
-      expression = tbd_parameters_.find(name)->second;
-
     } else {
-      ParameterPtr param(new Parameter(name));
-      tbd_parameters_.insert(std::make_pair(name, param));
-      expression = param;
+      std::stringstream msg;
+      msg << "Line " << expr_element->get_line() << ":\n";
+      msg << "Undefined parameter: " << name;
+      throw ValidationError(msg.str());
     }
   } else if (expr_name == "system-mission-time") {
     /// @todo check for possible unit clashes.
@@ -1280,7 +1268,6 @@ void RiskAnalysis::CheckFirstLayer() {
   if (settings_.probability_analysis_) {
     // Check if some members are missing definitions.
     error_messages << RiskAnalysis::CheckMissingEvents();
-    error_messages << RiskAnalysis::CheckMissingParameters();
   }
 
   if (!error_messages.str().empty()) {
@@ -1445,20 +1432,6 @@ std::string RiskAnalysis::CheckMissingEvents() {
     boost::unordered_map<std::string, std::vector<GatePtr> >::iterator it;
     for (it = tbd_events_.begin(); it != tbd_events_.end(); ++it) {
       msg += tbd_names_.find(it->first)->second + "\n";
-    }
-  }
-
-  return msg;
-}
-
-std::string RiskAnalysis::CheckMissingParameters() {
-  std::string msg = "";
-  if (!tbd_parameters_.empty()) {
-    msg += "\nMissing parameter definitions:\n";
-    boost::unordered_map<std::string, ParameterPtr>::iterator it;
-    for (it = tbd_parameters_.begin(); it != tbd_parameters_.end();
-         ++it) {
-      msg += it->first + "\n";
     }
   }
 

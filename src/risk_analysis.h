@@ -223,6 +223,7 @@ class RiskAnalysis {
 
   /// Registers a variable or parameter.
   /// @param[in] param_node XML element defining the parameter.
+  /// @throws ValidationError if the parameter is already registered.
   void RegisterParameter(const xmlpp::Element* param_node);
 
   /// Defines a variable or parameter.
@@ -335,10 +336,6 @@ class RiskAnalysis {
   /// @returns An empty string for no problems detected.
   std::string CheckMissingEvents();
 
-  /// @returns Formatted error message with missing parameter names.
-  /// @returns An empty string for no problems detected.
-  std::string CheckMissingParameters();
-
   /// Validates expressions and anything that is dependent on them, such
   /// as parameters and basic events.
   /// @throws ValidationError if any problems detected with expressions.
@@ -387,9 +384,6 @@ class RiskAnalysis {
 
   /// Container for defined parameters or variables.
   boost::unordered_map<std::string, ParameterPtr> parameters_;
-
-  /// Container for to-be-defined parameters or variables.
-  boost::unordered_map<std::string, ParameterPtr> tbd_parameters_;
 
   /// Elements that are defined on the second pass.
   std::vector<std::pair<ElementPtr, const xmlpp::Element*> > tbd_elements_;
