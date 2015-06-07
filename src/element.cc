@@ -12,6 +12,8 @@ Attribute::Attribute() : name(""), value(""), type("") {}
 
 Element::Element() : label_("") {}
 
+Model::Model(std::string file, std::string name) : file_(file), name_(name) {}
+
 void Element::label(std::string new_label) {
   if (label_ != "") {
     throw LogicError("Trying to reset the label: " + label_);

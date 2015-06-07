@@ -26,6 +26,7 @@ class PerformanceTest;
 namespace scram {
 
 class Element;
+class Model;
 class FaultTree;
 class CcfGroup;
 class Reporter;
@@ -102,6 +103,7 @@ class RiskAnalysis {
   typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
   typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
+  typedef boost::shared_ptr<Model> ModelPtr;
   typedef boost::shared_ptr<FaultTree> FaultTreePtr;
   typedef boost::shared_ptr<CcfGroup> CcfGroupPtr;
   typedef boost::shared_ptr<Expression> ExpressionPtr;
@@ -363,6 +365,9 @@ class RiskAnalysis {
 
   /// Container for defined expressions.
   std::set<ExpressionPtr> expressions_;
+
+  /// A collection of models from input files.
+  std::map<std::string, ModelPtr> models_;
 
   /// A collection of fault trees for analysis.
   std::map<std::string, FaultTreePtr> fault_trees_;

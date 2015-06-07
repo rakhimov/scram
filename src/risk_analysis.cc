@@ -216,6 +216,20 @@ void RiskAnalysis::ProcessInputFile(std::string xml_file) {
   const xmlpp::Document* doc = parser->Document();
   const xmlpp::Node* root = doc->get_root_node();
   assert(root->get_name() == "opsa-mef");
+  xmlpp::NodeSet name_attr = root->find("./@name");
+  std::string model_name = "";
+  if (!name_attr.empty()) {
+    assert(name_attr.size() == 1);
+    const xmlpp::Attribute* attr =
+        dynamic_cast<const xmlpp::Attribute*>(*name_attr.begin());
+    model_name = attr->get_value();
+  }
+  ModelPtr new_model(new Model(xml_file, model_name));
+  RiskAnalysis::AttachLabelAndAttributes(
+      dynamic_cast<const xmlpp::Element*>(root),
+      new_model);
+  models_.insert(std::make_pair(xml_file, new_model));
+
   xmlpp::NodeSet::iterator it_ch;  // Iterator for all children.
 
   xmlpp::NodeSet fault_trees = root->find("./define-fault-tree");
