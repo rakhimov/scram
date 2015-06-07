@@ -163,12 +163,11 @@ class RiskAnalysis {
   void ProcessFormula(const GatePtr& gate, const xmlpp::NodeSet& events);
 
   /// Process [event name=id] cases inside of a one layer gate description.
+  /// @param[in] event XML element defining this event.
   /// @param[in] gate The main gate to be defined with the event as its child.
   /// @param[out] child The child the currently processed gate.
-  /// @returns true if the child type is identified and it is update.
-  /// @returns false if child type cannot be identified and it is saved for
-  ///                late definition.
-  bool ProcessFormulaEvent(const GatePtr& gate, EventPtr& child);
+  void ProcessFormulaEvent(const xmlpp::Element* event,
+                           const GatePtr& gate, EventPtr& child);
 
   /// Process [basic-event name=id] cases inside of a one layer
   /// gate description.
@@ -205,15 +204,6 @@ class RiskAnalysis {
   /// @throws ValidationError if there is no expression for this basic event.
   void DefineBasicEvent(const xmlpp::Element* event_node,
                         const BasicEventPtr& basic_event);
-
-  /// Instantiates or returns the basic event that is waiting to be defined.
-  /// This function also performs checks for validation issues.
-  /// The new basic event will not have an expression assigned to it.
-  /// @param[in] event_node XML element defining the event.
-  /// @param[out] basic_event New or to-be-defined basic event.
-  /// @throws ValidationError if name clash or redefinition is detected.
-  void GetBasicEvent(const xmlpp::Element* event_node,
-                     BasicEventPtr& basic_event);
 
   /// Defines and adds a house event for this analysis.
   /// @param[in] event_node XML element defining the event.
@@ -259,17 +249,6 @@ class RiskAnalysis {
   /// @returns true if expression was found and processed.
   bool GetDeviateExpression(const xmlpp::Element* expr_element,
                             ExpressionPtr& expression);
-
-  /// Manages events that are defined late. That is, the id appears as
-  /// [event name="id"] before any of definition inside a formula.
-  /// The late definition should update if this event is a gate or primary
-  /// event. In addition, all the parents of this late defined event are
-  /// notified to include one child.
-  /// @param[in] event Event that is defined late.
-  /// @returns true if the given event is indeed a late one and
-  ///               database update operations are performed accordingly.
-  /// @returns false if the given event is not late and no action was taken.
-  bool UpdateIfLateEvent(const EventPtr& event);
 
   /// Registers a common cause failure group for later definition.
   /// @param[in] ccf_node XML element defining CCF group.
@@ -331,11 +310,6 @@ class RiskAnalysis {
   /// @returns An empty string for no problems detected.
   std::string CheckInhibitGate(const GatePtr& event);
 
-  /// @returns Formatted error message with house, basic, or other events
-  /// that are not defined.
-  /// @returns An empty string for no problems detected.
-  std::string CheckMissingEvents();
-
   /// Validates expressions and anything that is dependent on them, such
   /// as parameters and basic events.
   /// @throws ValidationError if any problems detected with expressions.
@@ -353,10 +327,6 @@ class RiskAnalysis {
   /// @param[out] out The output stream.
   void GraphingInstructions(std::ostream& out);
 
-  /// Container of original names of to be determined events
-  /// with capitalizations.
-  std::map<std::string, std::string> tbd_names_;
-
   /// Container for fully defined gates.
   boost::unordered_map<std::string, GatePtr> gates_;
 
@@ -365,18 +335,6 @@ class RiskAnalysis {
 
   /// Container for fully defined basic events.
   boost::unordered_map<std::string, BasicEventPtr> basic_events_;
-
-  /// Events to be defined with their parents saved for later.
-  boost::unordered_map<std::string, std::vector<GatePtr> > tbd_events_;
-
-  /// Gates to be defined.
-  boost::unordered_map<std::string, GatePtr> tbd_gates_;
-
-  /// Basic events to be defined.
-  boost::unordered_map<std::string, BasicEventPtr> tbd_basic_events_;
-
-  /// House events to be defined.
-  boost::unordered_map<std::string, HouseEventPtr> tbd_house_events_;
 
   /// Container for defined parameters or variables.
   boost::unordered_map<std::string, ParameterPtr> parameters_;

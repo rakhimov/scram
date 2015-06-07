@@ -21,5 +21,11 @@ The expansion of a multiple parent negative gate.
         <event name="B"/>
       </and>
     </define-gate>
+    <define-basic-event name="A">
+      <float value="0.1"/>
+    </define-basic-event>
+    <define-basic-event name="B">
+      <float value="0.1"/>
+    </define-basic-event>
   </define-fault-tree>
 </opsa-mef>
