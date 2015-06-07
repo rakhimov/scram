@@ -216,24 +216,27 @@ void RiskAnalysis::ProcessInputFile(std::string xml_file) {
   const xmlpp::Document* doc = parser->Document();
   const xmlpp::Node* root = doc->get_root_node();
   assert(root->get_name() == "opsa-mef");
-  xmlpp::NodeSet roots_children = root->find("./*");
-  xmlpp::NodeSet::iterator it_ch;
-  for (it_ch = roots_children.begin();
-       it_ch != roots_children.end(); ++it_ch) {
-    const xmlpp::Element* element =
-        dynamic_cast<const xmlpp::Element*>(*it_ch);
+  xmlpp::NodeSet::iterator it_ch;  // Iterator for all children.
+
+  xmlpp::NodeSet fault_trees = root->find("./define-fault-tree");
+  for (it_ch = fault_trees.begin(); it_ch != fault_trees.end(); ++it_ch) {
+    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it_ch);
     assert(element);
+    RiskAnalysis::DefineFaultTree(element);
+  }
 
-    std::string name = element->get_name();
-    if (name == "define-fault-tree") {
-      RiskAnalysis::DefineFaultTree(element);
+  xmlpp::NodeSet ccf_groups = root->find("./define-CCF-group");
+  for (it_ch = ccf_groups.begin(); it_ch != ccf_groups.end(); ++it_ch) {
+    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it_ch);
+    assert(element);
+    RiskAnalysis::DefineCcfGroup(element);
+  }
 
-    } else if (name == "define-CCF-group") {
-      RiskAnalysis::DefineCcfGroup(element);
-
-    } else if (name == "model-data") {
-      RiskAnalysis::ProcessModelData(element);
-    }
+  xmlpp::NodeSet model_data = root->find("./model-data");
+  for (it_ch = model_data.begin(); it_ch != model_data.end(); ++it_ch) {
+    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it_ch);
+    assert(element);
+    RiskAnalysis::ProcessModelData(element);
   }
 }
 
