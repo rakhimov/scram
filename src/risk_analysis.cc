@@ -266,16 +266,20 @@ void RiskAnalysis::ProcessInputFile(std::string xml_file) {
 void RiskAnalysis::ProcessTbdElements() {
   std::vector< std::pair<ElementPtr, const xmlpp::Element*> >::iterator it;
   for (it = tbd_elements_.begin(); it != tbd_elements_.end(); ++it) {
-    if (boost::dynamic_pointer_cast<CcfGroup>(it->first)) {
+    if (boost::dynamic_pointer_cast<BasicEvent>(it->first)) {
+      BasicEventPtr basic_event =
+          boost::dynamic_pointer_cast<BasicEvent>(it->first);
+      DefineBasicEvent(it->second, basic_event);
+    } else if (boost::dynamic_pointer_cast<Gate>(it->first)) {
+      GatePtr gate =
+          boost::dynamic_pointer_cast<Gate>(it->first);
+      DefineGate(it->second, gate);
+    } else if (boost::dynamic_pointer_cast<CcfGroup>(it->first)) {
       CcfGroupPtr ccf_group = boost::dynamic_pointer_cast<CcfGroup>(it->first);
       DefineCcfGroup(it->second, ccf_group);
     } else if (boost::dynamic_pointer_cast<Parameter>(it->first)) {
       ParameterPtr param = boost::dynamic_pointer_cast<Parameter>(it->first);
       DefineParameter(it->second, param);
-    } else if (boost::dynamic_pointer_cast<BasicEvent>(it->first)) {
-      BasicEventPtr basic_event =
-          boost::dynamic_pointer_cast<BasicEvent>(it->first);
-      DefineBasicEvent(it->second, basic_event);
     }
   }
 }
@@ -343,7 +347,7 @@ void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
   for (it = gates.begin(); it != gates.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
-    RiskAnalysis::DefineGate(element, fault_tree);
+    RiskAnalysis::RegisterGate(element, fault_tree);
   }
   LOG(DEBUG2) << "Gate definition time " << DUR(gate_time);
   for (it = house_events.begin(); it != house_events.end(); ++it) {
@@ -396,8 +400,8 @@ void RiskAnalysis::ProcessModelData(const xmlpp::Element* model_data) {
   }
 }
 
-void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
-                              const FaultTreePtr& ft) {
+void RiskAnalysis::RegisterGate(const xmlpp::Element* gate_node,
+                                const FaultTreePtr& ft) {
   // Only one child element is expected, which is a formula.
   std::string name = gate_node->get_attribute_value("name");
   boost::trim(name);
@@ -422,6 +426,26 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
     throw ValidationError(msg.str());
   }
 
+  GatePtr gate(new Gate(id));
+  gate->name(name);
+
+  // Update to be defined events.
+  if (tbd_gates_.count(id)) {
+    gate = tbd_gates_.find(id)->second;
+    tbd_gates_.erase(id);
+  } else {
+    RiskAnalysis::UpdateIfLateEvent(gate);
+  }
+  tbd_elements_.push_back(std::make_pair(gate, gate_node));
+  gates_.insert(std::make_pair(id, gate));
+
+  RiskAnalysis::AttachLabelAndAttributes(gate_node, gate);
+
+  ft->AddGate(gate);
+}
+
+void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
+                              const GatePtr& gate) {
   xmlpp::NodeSet gates =
       gate_node->find("./*[name() != 'attributes' and name() != 'label']");
   // Assumes that there are no attributes and labels.
@@ -439,29 +463,11 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
     vote_number = boost::lexical_cast<int>(min_num);
   }
 
-  GatePtr i_event(new Gate(id));
-  i_event->name(name);
-
-  // Update to be defined events.
-  if (tbd_gates_.count(id)) {
-    i_event = tbd_gates_.find(id)->second;
-    tbd_gates_.erase(id);
-  } else {
-    RiskAnalysis::UpdateIfLateEvent(i_event);
-  }
-
-  assert(!gates_.count(id));
-  gates_.insert(std::make_pair(id, i_event));
-
-  RiskAnalysis::AttachLabelAndAttributes(gate_node, i_event);
-
-  ft->AddGate(i_event);
-
-  i_event->type(type);  // Setting the gate type.
-  if (type == "atleast") i_event->vote_number(vote_number);
+  gate->type(type);  // Setting the gate type.
+  if (type == "atleast") gate->vote_number(vote_number);
 
   // Process children formula of this gate.
-  RiskAnalysis::ProcessFormula(i_event, gate_type->find("./*"));
+  RiskAnalysis::ProcessFormula(gate, gate_type->find("./*"));
 }
 
 void RiskAnalysis::ProcessFormula(const GatePtr& gate,

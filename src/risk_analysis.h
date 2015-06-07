@@ -146,10 +146,15 @@ class RiskAnalysis {
   /// @param[in] model_data XML node with model data description.
   void ProcessModelData(const xmlpp::Element* model_data);
 
-  /// Defines and adds a gate for this analysis.
+  /// Registers a gate for later definition.
   /// @param[in] gate_node XML element defining the gate.
-  /// @param[out] ft FaultTree under which this gate is defined.
-  void DefineGate(const xmlpp::Element* gate_node, const FaultTreePtr& ft);
+  /// @param[in/out] ft FaultTree under which this gate is defined.
+  void RegisterGate(const xmlpp::Element* gate_node, const FaultTreePtr& ft);
+
+  /// Defines a gate for this analysis.
+  /// @param[in] gate_node XML element defining the gate.
+  /// @param[in/out] gate Registered gate ready to be defined.
+  void DefineGate(const xmlpp::Element* gate_node, const GatePtr& gate);
 
   /// Processes the formula of a gate to be defined.
   /// Currently only one layer formula is supported.
