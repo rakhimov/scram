@@ -2,14 +2,13 @@
 /// Implementation of risk analysis handler.
 #include "risk_analysis.h"
 
-#include <ctime>
-
 #include <algorithm>
 #include <fstream>
 #include <sstream>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/assign.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/pointer_cast.hpp>
 
@@ -23,6 +22,8 @@
 #include "random.h"
 #include "reporter.h"
 #include "xml_parser.h"
+
+namespace fs = boost::filesystem;
 
 namespace scram {
 
@@ -197,6 +198,12 @@ void RiskAnalysis::ProcessInputFile(std::string xml_file) {
   if (!file_stream) {
     throw IOError("The file '" + xml_file + "' could not be loaded.");
   }
+  fs::path file_path = fs::canonical(xml_file);
+  if (input_path_.count(file_path.native())) {
+    throw ValidationError("Trying to pass the same file twice: "
+                          + file_path.native());
+  }
+  input_path_.insert(file_path.native());
 
   std::stringstream stream;
   stream << file_stream.rdbuf();
@@ -313,22 +320,25 @@ void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
   xmlpp::NodeSet ccf_groups = ft_node->find("./define-CCF-group");
 
   xmlpp::NodeSet::iterator it;
-
+  CLOCK(gate_time);
   for (it = gates.begin(); it != gates.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
     RiskAnalysis::DefineGate(element, fault_tree);
   }
+  LOG(DEBUG2) << "Gate definition time " << DUR(gate_time);
   for (it = house_events.begin(); it != house_events.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
     RiskAnalysis::DefineHouseEvent(element);
   }
+  CLOCK(basic_time);
   for (it = basic_events.begin(); it != basic_events.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
     RiskAnalysis::DefineBasicEvent(element);
   }
+  LOG(DEBUG2) << "Basic event definition time " << DUR(basic_time);
   for (it = parameters.begin(); it != parameters.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
@@ -353,11 +363,13 @@ void RiskAnalysis::ProcessModelData(const xmlpp::Element* model_data) {
     assert(element);
     RiskAnalysis::DefineHouseEvent(element);
   }
+  CLOCK(basic_time);
   for (it = basic_events.begin(); it != basic_events.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
     RiskAnalysis::DefineBasicEvent(element);
   }
+  LOG(DEBUG2) << "Basic event definition time " << DUR(basic_time);
   for (it = parameters.begin(); it != parameters.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);

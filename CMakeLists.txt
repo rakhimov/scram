@@ -96,7 +96,7 @@ message(${LIBS})
 # Include the boost header files and the program_options library
 # Please be sure to use Boost rather than BOOST.
 # Capitalization matters on some platforms
-set(BOOST_MIN_VERSION "1.47.0")
+set(BOOST_MIN_VERSION "1.48.0")
 set(Boost_USE_STATIC_LIBS ${USE_STATIC_LIBS})
 set(Boost_USE_STATIC_RUNTIME ${USE_STATIC_LIBS})
 set(Boost_USE_MULTITHREADED OFF)

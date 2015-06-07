@@ -71,7 +71,7 @@ class Model : public Element {
   /// This information can be used to detect duplications.
   /// @param[in] file The file where this model is defined.
   /// @param[in] name The optional name for the model.
-  Model(std::string file, std::string name = "");
+  explicit Model(std::string file, std::string name = "");
 
   /// @returns The file of this model.
   inline std::string file() const { return file_; }

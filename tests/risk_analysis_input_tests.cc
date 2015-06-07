@@ -12,10 +12,22 @@ using namespace scram;
 
 // Test if the XML is well formed.
 TEST(RiskAnalysisInputTest, XMLFormatting) {
-  std::string input_incorrect= "./share/scram/input/xml_formatting_error.xml";
+  std::string input_incorrect = "./share/scram/input/xml_formatting_error.xml";
   RiskAnalysis* ran;
   ran = new RiskAnalysis();
   EXPECT_THROW(ran->ProcessInput(input_incorrect), ValidationError);
+  delete ran;
+}
+
+// Test if passing the same file twice causing an error.
+TEST(RiskAnalysisInputTest, PassTheSameFileTwice) {
+  std::string input_correct = "./share/scram/input/fta/correct_tree_input.xml";
+  std::string the_same_path = "./share/.."
+                              "/share/scram/input/fta/correct_tree_input.xml";
+  RiskAnalysis* ran;
+  ran = new RiskAnalysis();
+  EXPECT_NO_THROW(ran->ProcessInput(input_correct));
+  EXPECT_THROW(ran->ProcessInput(the_same_path), ValidationError);
   delete ran;
 }
 
@@ -23,7 +35,7 @@ TEST(RiskAnalysisInputTest, XMLFormatting) {
 // This is trusted to XML libraries and the correctness of the RelaxNG schema,
 // so the test is very basic calls.
 TEST(RiskAnalysisInputTest, FailSchemaValidation) {
-  std::string input_incorrect= "./share/scram/input/schema_fail.xml";
+  std::string input_incorrect = "./share/scram/input/schema_fail.xml";
   RiskAnalysis* ran;
   ran = new RiskAnalysis();
   EXPECT_THROW(ran->ProcessInput(input_incorrect), ValidationError);

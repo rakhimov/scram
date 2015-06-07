@@ -389,6 +389,9 @@ class RiskAnalysis {
 
   /// Mission time expression.
   boost::shared_ptr<MissionTime> mission_time_;
+
+  /// Collection of input file locations in canonical path.
+  std::set<std::string> input_path_;
 };
 
 }  // namespace scram

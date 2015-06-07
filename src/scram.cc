@@ -5,7 +5,6 @@
 #include <vector>
 
 #include <boost/exception/all.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
 #include "config.h"
@@ -16,7 +15,6 @@
 #include "version.h"
 
 namespace po = boost::program_options;
-namespace fs = boost::filesystem;
 
 using namespace scram;
 
