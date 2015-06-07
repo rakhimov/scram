@@ -39,11 +39,24 @@ structured programming techniques.
 More information about the initiative and format can be found on
 http://open-psa.org
 
+.. _opsa_mef_schema:
+
+OpenPSA MEF Schemas
+===================
+
+- `MEF RelaxNG Schema <https://github.com/rakhimov/scram/blob/master/share/open-psa/mef.rng>`_
+- `MEF RelaxNG Compact Schema <https://github.com/rakhimov/scram/blob/master/share/open-psa/mef.rnc>`_
+- `MEF DTD <https://github.com/rakhimov/scram/blob/master/share/open-psa/mef.dtd>`_
+
+
 .. _opsa_support:
 
 ****************************************
 Currently Supported OpenPSA MEF Features
 ****************************************
+
+The difference between `opsa_mef_schema` and `schema` can be used to identify
+the supported and unsupported features.
 
 - Label for elements
 

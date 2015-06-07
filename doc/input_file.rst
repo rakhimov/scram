@@ -37,14 +37,14 @@ Steps in XML Input Validation
       such as "NOT", "-", ".", ",", "[", "]".
     - Names must be unique if they are public by default.
     - Names must be unique only locally if they are private. [not supported]
-    - Primary and intermediate events with several parents are allowed.
-      These events may appear in several places in the tree.
+    - Primary events and gates with several parents are allowed.
+      These events may appear in several places in the fault tree.
     - Proper 'include directive' formatting. [not supported]
 
 #. Additional validation of fault trees and values of parameters is performed:
 
     - Each gate has a correct number of children.
-    - No the same two children of the same parent.
+    - The same child appearing twice or more for one parent is an error.
     - All intermediate events have at least one parent.
     - Values of parameters are correct, i.e., non-negative for probabilities.
     - All events must be defined for probability calculations.
@@ -54,9 +54,11 @@ Steps in XML Input Validation
     - Report a cyclic tree.
     - Report unsupported gates and events.
     - Report missing event descriptions.
-    - Throw an error if an event is defined doubly.
-    - Ignore primary events that are not initialized in the tree when assigning
-      model data. (Default warning)
+    - Throw an error if an event is being redefined.
+
+#. Warnings for potential errors:
+
+    - Orphan primary events.
 
 
 .. _schema:
@@ -65,8 +67,6 @@ Validation Schemas
 ==================
 
 - `RelaxNG Schema <https://github.com/rakhimov/scram/blob/master/share/input.rng>`_
-- `RelaxNG Compact <https://github.com/rakhimov/scram/blob/master/share/input.rnc>`_
-- `DTD Schema <https://github.com/rakhimov/scram/blob/master/share/open-psa/mef.dtd>`_
 
 .. _shorthand_format:
 
