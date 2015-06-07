@@ -11,50 +11,34 @@
 
 namespace scram {
 
-FaultTree::FaultTree(std::string name)
-    : name_(name),
-      num_basic_events_(0),
-      top_event_id_("") {}
+FaultTree::FaultTree(std::string name) : name_(name), num_basic_events_(0) {}
 
 void FaultTree::AddGate(const GatePtr& gate) {
-  if (top_event_id_ == "") {
-    top_event_ = gate;
-    top_event_id_ = gate->id();
-  } else {
-    if (inter_events_.count(gate->id()) || gate->id() == top_event_id_) {
-      throw ValidationError("Trying to doubly define a gate '" +
-                            gate->name() + "'.");
-    }
-    // Check if this gate has a valid parent in this tree.
-    const std::map<std::string, GatePtr>* parents;
-    try {
-      parents = &gate->parents();
-    } catch (LogicError& err) {
-      // No parents here.
-      throw ValidationError("Gate '" + gate->name() +
-                            "' is a dangling gate in" +
-                            " a malformed tree input structure. " + err.msg());
-    }
-    std::map<std::string, GatePtr>::const_iterator it;
-    bool parent_found = false;
-    for (it = parents->begin(); it != parents->end(); ++it) {
-      if (inter_events_.count(it->first) || top_event_id_ == it->first) {
-        parent_found = true;
-        break;
-      }
-    }
-    if (!parent_found) {
-      throw ValidationError("Gate '" + gate->name() +
-                            "' has no pre-declared" +
-                            " parent gate in '" + name_ +
-                            "' fault tree. This gate is a dangling gate." +
-                            " The tree structure input might be malformed.");
-    }
-    inter_events_.insert(std::make_pair(gate->id(), gate));
+  if (gates_.count(gate->id())) {
+    throw ValidationError("Trying to doubly define a gate '" +
+                          gate->name() + "'.");
   }
+  gates_.insert(std::make_pair(gate->id(), gate));
 }
 
 void FaultTree::Validate() {
+  // Detects the top event. Currently only one top event is allowed.
+  /// @todo Add support for multiple top event.
+  boost::unordered_map<std::string, GatePtr>::iterator it;
+  for (it = gates_.begin(); it != gates_.end(); ++it) {
+    if (!it->second->IsOrphan()) {
+      inter_events_.insert(*it);
+    } else {
+      if (top_event_) {
+        throw ValidationError("Multiple top events are detected: " +
+                              top_event_->name() + " and " +
+                              it->second->name() + " in " + name_ +
+                              " fault tree.");
+      }
+      top_event_ = it->second;
+    }
+  }
+
   // The gate structure must be checked first.
   std::vector<std::string> cycle;
   FaultTree::DetectCycle(top_event_, &cycle);

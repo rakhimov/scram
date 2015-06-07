@@ -74,6 +74,8 @@ TEST(RiskAnalysisInputTest, CorrectFTAInputs) {
   correct_inputs.push_back(dir + "correct_expressions.xml");
   correct_inputs.push_back(dir + "flavored_types.xml");
   correct_inputs.push_back(dir + "very_long_mcs.xml");
+  correct_inputs.push_back(dir + "unordered_structure.xml");
+  correct_inputs.push_back(dir + "non_top_gate.xml");
 
   RiskAnalysis* ran;
 
@@ -149,9 +151,7 @@ TEST(RiskAnalysisInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back(dir + "def_name_house_basic.xml");
   incorrect_inputs.push_back(dir + "def_name_basic_house.xml");
   incorrect_inputs.push_back(dir + "atleast_gate.xml");
-  incorrect_inputs.push_back(dir + "unordered_structure.xml");
   incorrect_inputs.push_back(dir + "dangling_gate.xml");
-  incorrect_inputs.push_back(dir + "non_top_gate.xml");
   incorrect_inputs.push_back(dir + "cyclic_tree.xml");
   incorrect_inputs.push_back(dir + "cyclic_parameter.xml");
   incorrect_inputs.push_back(dir + "invalid_expression.xml");

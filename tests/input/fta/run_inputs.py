@@ -13,6 +13,8 @@ def main():
     pass_inputs = [
             "correct_tree_input.xml",
             "two_trees.xml",
+            "unordered_structure.xml",
+            "non_top_gate.xml",
             ]
 
     pass_probs = [
@@ -64,9 +66,7 @@ def main():
             "def_name_house_basic.xml",
             "def_name_basic_house.xml",
             "atleast_gate.xml",
-            "unordered_structure.xml",
             "dangling_gate.xml",
-            "non_top_gate.xml",
             "cyclic_tree.xml",
             "cyclic_parameter.xml",
             "invalid_probability.xml",

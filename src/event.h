@@ -47,6 +47,9 @@ class Event : public Element {
   /// @throws LogicError if there are no parents for this gate event.
   const std::map<std::string, boost::shared_ptr<Gate> >& parents();
 
+  /// @returns True if this event is orphan.
+  inline bool IsOrphan() { return parents_.empty(); }
+
  private:
   /// Id name of a event. It is in lower case.
   std::string id_;

@@ -24,11 +24,6 @@ Steps in XML Input Validation
 #. An XML input file is validated by RelaxNG_ against the :ref:`schema`.
 #. The fault tree validation assumptions/requirements:
 
-    - The hierarchical structure of a fault tree must be strict:
-
-        * The top event is the first gate in the input file fault tree description.
-        * Gates must appear as children before they are defined.
-
     - Event names are not case sensitive.
     - Trailing white spaces are ignored.
     - Names should conform to 'XML NCName datatype' not contain spaces

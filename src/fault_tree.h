@@ -136,11 +136,11 @@ class FaultTree : public Element {
   /// Populates the container of basic and primary events.
   void GatherCcfBasicEvents();
 
+  /// Holder for gates defined in this fault tree container.
+  boost::unordered_map<std::string, GatePtr> gates_;
+
   /// The name of this fault tree.
   std::string name_;
-
-  /// Id of a top event.
-  std::string top_event_id_;
 
   /// Top event.
   GatePtr top_event_;
@@ -167,7 +167,7 @@ class FaultTree : public Element {
 
   /// Implicitly added gates.
   /// This gates are not added through AddGate() function but by traversing
-  /// the tree as a post-process.
+  /// the tree as a post-process. This gates may belong to other fault trees.
   boost::unordered_map<std::string, GatePtr> implicit_gates_;
 
   /// The number of original basic events without new CCF basic events.
