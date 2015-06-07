@@ -288,6 +288,83 @@ void RiskAnalysis::AttachLabelAndAttributes(
   }
 }
 
+void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
+  std::string name = ft_node->get_attribute_value("name");
+  std::string id = name;
+  boost::to_lower(id);
+
+  if (fault_trees_.count(id)) {
+    std::stringstream msg;
+    msg << "Line " << ft_node->get_line() << ":\n";
+    msg << "The fault tree " << name
+        << " is already defined.";
+    throw ValidationError(msg.str());
+  }
+
+  FaultTreePtr fault_tree = FaultTreePtr(new FaultTree(name));
+  fault_trees_.insert(std::make_pair(id, fault_tree));
+
+  RiskAnalysis::AttachLabelAndAttributes(ft_node, fault_tree);
+
+  xmlpp::NodeSet gates = ft_node->find("./define-gate");
+  xmlpp::NodeSet house_events = ft_node->find("./define-house-event");
+  xmlpp::NodeSet basic_events = ft_node->find("./define-basic-event");
+  xmlpp::NodeSet parameters = ft_node->find("./define-parameter");
+  xmlpp::NodeSet ccf_groups = ft_node->find("./define-CCF-group");
+
+  xmlpp::NodeSet::iterator it;
+
+  for (it = gates.begin(); it != gates.end(); ++it) {
+    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
+    assert(element);
+    RiskAnalysis::DefineGate(element, fault_tree);
+  }
+  for (it = house_events.begin(); it != house_events.end(); ++it) {
+    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
+    assert(element);
+    RiskAnalysis::DefineHouseEvent(element);
+  }
+  for (it = basic_events.begin(); it != basic_events.end(); ++it) {
+    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
+    assert(element);
+    RiskAnalysis::DefineBasicEvent(element);
+  }
+  for (it = parameters.begin(); it != parameters.end(); ++it) {
+    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
+    assert(element);
+    RiskAnalysis::DefineParameter(element);
+  }
+  for (it = ccf_groups.begin(); it != ccf_groups.end(); ++it) {
+    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
+    assert(element);
+    RiskAnalysis::DefineCcfGroup(element);
+  }
+}
+
+void RiskAnalysis::ProcessModelData(const xmlpp::Element* model_data) {
+  xmlpp::NodeSet house_events = model_data->find("./define-house-event");
+  xmlpp::NodeSet basic_events = model_data->find("./define-basic-event");
+  xmlpp::NodeSet parameters = model_data->find("./define-parameter");
+
+  xmlpp::NodeSet::iterator it;
+
+  for (it = house_events.begin(); it != house_events.end(); ++it) {
+    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
+    assert(element);
+    RiskAnalysis::DefineHouseEvent(element);
+  }
+  for (it = basic_events.begin(); it != basic_events.end(); ++it) {
+    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
+    assert(element);
+    RiskAnalysis::DefineBasicEvent(element);
+  }
+  for (it = parameters.begin(); it != parameters.end(); ++it) {
+    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
+    assert(element);
+    RiskAnalysis::DefineParameter(element);
+  }
+}
+
 void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
                               const FaultTreePtr& ft) {
   // Only one child element is expected, which is formulae.
@@ -992,101 +1069,6 @@ bool RiskAnalysis::UpdateIfLateEvent(const EventPtr& event) {
   }
 }
 
-void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
-  std::string name = ft_node->get_attribute_value("name");
-  std::string id = name;
-  boost::to_lower(id);
-
-  if (fault_trees_.count(id)) {
-    std::stringstream msg;
-    msg << "Line " << ft_node->get_line() << ":\n";
-    msg << "The fault tree " << name
-        << " is already defined.";
-    throw ValidationError(msg.str());
-  }
-
-  FaultTreePtr fault_tree = FaultTreePtr(new FaultTree(name));
-  fault_trees_.insert(std::make_pair(id, fault_tree));
-
-  RiskAnalysis::AttachLabelAndAttributes(ft_node, fault_tree);
-
-  xmlpp::NodeSet gates = ft_node->find("./define-gate");
-  xmlpp::NodeSet house_events = ft_node->find("./define-house-event");
-  xmlpp::NodeSet basic_events = ft_node->find("./define-basic-event");
-  xmlpp::NodeSet parameters = ft_node->find("./define-parameter");
-  xmlpp::NodeSet ccf_groups = ft_node->find("./define-CCF-group");
-
-  xmlpp::NodeSet::iterator it;
-
-  for (it = gates.begin(); it != gates.end(); ++it) {
-    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
-    assert(element);
-    RiskAnalysis::DefineGate(element, fault_tree);
-  }
-  for (it = house_events.begin(); it != house_events.end(); ++it) {
-    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
-    assert(element);
-    RiskAnalysis::DefineHouseEvent(element);
-  }
-  for (it = basic_events.begin(); it != basic_events.end(); ++it) {
-    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
-    assert(element);
-    RiskAnalysis::DefineBasicEvent(element);
-  }
-  for (it = parameters.begin(); it != parameters.end(); ++it) {
-    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
-    assert(element);
-    RiskAnalysis::DefineParameter(element);
-  }
-  for (it = ccf_groups.begin(); it != ccf_groups.end(); ++it) {
-    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
-    assert(element);
-    RiskAnalysis::DefineCcfGroup(element);
-  }
-}
-
-void RiskAnalysis::ProcessModelData(const xmlpp::Element* model_data) {
-  xmlpp::NodeSet house_events = model_data->find("./define-house-event");
-  xmlpp::NodeSet basic_events = model_data->find("./define-basic-event");
-  xmlpp::NodeSet parameters = model_data->find("./define-parameter");
-
-  xmlpp::NodeSet::iterator it;
-
-  for (it = house_events.begin(); it != house_events.end(); ++it) {
-    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
-    assert(element);
-    RiskAnalysis::DefineHouseEvent(element);
-  }
-  for (it = basic_events.begin(); it != basic_events.end(); ++it) {
-    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
-    assert(element);
-    RiskAnalysis::DefineBasicEvent(element);
-  }
-  for (it = parameters.begin(); it != parameters.end(); ++it) {
-    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
-    assert(element);
-    RiskAnalysis::DefineParameter(element);
-  }
-}
-
-void RiskAnalysis::ValidateInitialization() {
-  // Validation of essential members of analysis in the first layer.
-  RiskAnalysis::CheckFirstLayer();
-
-  // Validation of fault trees.
-  RiskAnalysis::CheckSecondLayer();
-
-  // Gather orphan primary events for warning.
-  boost::unordered_map<std::string, PrimaryEventPtr>::iterator it_p;
-  for (it_p = primary_events_.begin(); it_p != primary_events_.end(); ++it_p) {
-    try {
-      it_p->second->parents();
-    } catch (LogicError& err) {
-      orphan_primary_events_.insert(it_p->second);
-    }
-  }
-}
-
 void RiskAnalysis::DefineCcfGroup(const xmlpp::Element* ccf_node) {
   std::string name = ccf_node->get_attribute_value("name");
   std::string id = name;
@@ -1204,6 +1186,24 @@ void RiskAnalysis::DefineCcfFactor(const xmlpp::Element* factor_node,
     msg << "Line " << factor_node->get_line() << ":\n";
     msg << err.msg();
     throw ValidationError(msg.str());
+  }
+}
+
+void RiskAnalysis::ValidateInitialization() {
+  // Validation of essential members of analysis in the first layer.
+  RiskAnalysis::CheckFirstLayer();
+
+  // Validation of fault trees.
+  RiskAnalysis::CheckSecondLayer();
+
+  // Gather orphan primary events for warning.
+  boost::unordered_map<std::string, PrimaryEventPtr>::iterator it_p;
+  for (it_p = primary_events_.begin(); it_p != primary_events_.end(); ++it_p) {
+    try {
+      it_p->second->parents();
+    } catch (LogicError& err) {
+      orphan_primary_events_.insert(it_p->second);
+    }
   }
 }
 

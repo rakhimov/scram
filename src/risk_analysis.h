@@ -130,6 +130,14 @@ class RiskAnalysis {
   void AttachLabelAndAttributes(const xmlpp::Element* element_node,
                                 const ElementPtr& element);
 
+  /// Defines a fault tree for the analysis.
+  /// @param[in] ft_node XML element defining the fault tree.
+  void DefineFaultTree(const xmlpp::Element* ft_node);
+
+  /// Processes model data with definitions of events and analysis.
+  /// @param[in] model_data XML node with model data description.
+  void ProcessModelData(const xmlpp::Element* model_data);
+
   /// Defines and adds a gate for this analysis.
   /// @param[in] gate_node XML element defining the gate.
   /// @param[out] ft FaultTree under which this gate is defined.
@@ -236,14 +244,6 @@ class RiskAnalysis {
   ///               database update operations are performed accordingly.
   /// @returns false if the given event is not late and no action was taken.
   bool UpdateIfLateEvent(const EventPtr& event);
-
-  /// Defines a fault tree for the analysis.
-  /// @param[in] ft_node XML element defining the fault tree.
-  void DefineFaultTree(const xmlpp::Element* ft_node);
-
-  /// Processes model data with definitions of events and analysis.
-  /// @param[in] model_data XML node with model data description.
-  void ProcessModelData(const xmlpp::Element* model_data);
 
   /// Defines a common cause failure group for the analysis.
   /// @param[in] ccf_node XML element defining CCF group.
