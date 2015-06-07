@@ -1010,50 +1010,62 @@ void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
 
   RiskAnalysis::AttachLabelAndAttributes(ft_node, fault_tree);
 
-  xmlpp::NodeSet children = ft_node->find("./*");
+  xmlpp::NodeSet gates = ft_node->find("./define-gate");
+  xmlpp::NodeSet house_events = ft_node->find("./define-house-event");
+  xmlpp::NodeSet basic_events = ft_node->find("./define-basic-event");
+  xmlpp::NodeSet parameters = ft_node->find("./define-parameter");
+  xmlpp::NodeSet ccf_groups = ft_node->find("./define-CCF-group");
+
   xmlpp::NodeSet::iterator it;
-  for (it = children.begin(); it != children.end(); ++it) {
+
+  for (it = gates.begin(); it != gates.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
-
     assert(element);
-    std::string name = element->get_name();
-
-    if (name == "define-gate") {
-      RiskAnalysis::DefineGate(element, fault_tree);
-
-    } else if (name == "define-basic-event") {
-      RiskAnalysis::DefineBasicEvent(element);
-
-    } else if (name == "define-house-event") {
-      RiskAnalysis::DefineHouseEvent(element);
-
-    } else if (name == "define-parameter") {
-      RiskAnalysis::DefineParameter(element);
-
-    } else if (name == "define-CCF-group") {
-      RiskAnalysis::DefineCcfGroup(element);
-    }
+    RiskAnalysis::DefineGate(element, fault_tree);
+  }
+  for (it = house_events.begin(); it != house_events.end(); ++it) {
+    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
+    assert(element);
+    RiskAnalysis::DefineHouseEvent(element);
+  }
+  for (it = basic_events.begin(); it != basic_events.end(); ++it) {
+    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
+    assert(element);
+    RiskAnalysis::DefineBasicEvent(element);
+  }
+  for (it = parameters.begin(); it != parameters.end(); ++it) {
+    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
+    assert(element);
+    RiskAnalysis::DefineParameter(element);
+  }
+  for (it = ccf_groups.begin(); it != ccf_groups.end(); ++it) {
+    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
+    assert(element);
+    RiskAnalysis::DefineCcfGroup(element);
   }
 }
 
 void RiskAnalysis::ProcessModelData(const xmlpp::Element* model_data) {
-  xmlpp::NodeSet children = model_data->find("./*");
+  xmlpp::NodeSet house_events = model_data->find("./define-house-event");
+  xmlpp::NodeSet basic_events = model_data->find("./define-basic-event");
+  xmlpp::NodeSet parameters = model_data->find("./define-parameter");
+
   xmlpp::NodeSet::iterator it;
-  for (it = children.begin(); it != children.end(); ++it) {
+
+  for (it = house_events.begin(); it != house_events.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
-
-    std::string name = element->get_name();
-
-    if (name == "define-basic-event") {
-      RiskAnalysis::DefineBasicEvent(element);
-
-    } else if (name == "define-house-event") {
-      RiskAnalysis::DefineHouseEvent(element);
-
-    } else if (name == "define-parameter") {
-      RiskAnalysis::DefineParameter(element);
-    }
+    RiskAnalysis::DefineHouseEvent(element);
+  }
+  for (it = basic_events.begin(); it != basic_events.end(); ++it) {
+    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
+    assert(element);
+    RiskAnalysis::DefineBasicEvent(element);
+  }
+  for (it = parameters.begin(); it != parameters.end(); ++it) {
+    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
+    assert(element);
+    RiskAnalysis::DefineParameter(element);
   }
 }
 
