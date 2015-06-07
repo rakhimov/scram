@@ -266,8 +266,13 @@ void RiskAnalysis::ProcessInputFile(std::string xml_file) {
 void RiskAnalysis::ProcessTbdElements() {
   std::vector< std::pair<ElementPtr, const xmlpp::Element*> >::iterator it;
   for (it = tbd_elements_.begin(); it != tbd_elements_.end(); ++it) {
-    CcfGroupPtr ccf_group = boost::dynamic_pointer_cast<CcfGroup>(it->first);
-    DefineCcfGroup(it->second, ccf_group);
+    if (boost::dynamic_pointer_cast<CcfGroup>(it->first)) {
+      CcfGroupPtr ccf_group = boost::dynamic_pointer_cast<CcfGroup>(it->first);
+      DefineCcfGroup(it->second, ccf_group);
+    } else if (boost::dynamic_pointer_cast<Parameter>(it->first)) {
+      ParameterPtr param = boost::dynamic_pointer_cast<Parameter>(it->first);
+      DefineParameter(it->second, param);
+    }
   }
 }
 
@@ -352,7 +357,7 @@ void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
   for (it = parameters.begin(); it != parameters.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
-    RiskAnalysis::DefineParameter(element);
+    RiskAnalysis::RegisterParameter(element);
   }
   for (it = ccf_groups.begin(); it != ccf_groups.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
@@ -383,7 +388,7 @@ void RiskAnalysis::ProcessModelData(const xmlpp::Element* model_data) {
   for (it = parameters.begin(); it != parameters.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
-    RiskAnalysis::DefineParameter(element);
+    RiskAnalysis::RegisterParameter(element);
   }
 }
 
@@ -771,7 +776,7 @@ void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node) {
   RiskAnalysis::AttachLabelAndAttributes(event_node, house_event);
 }
 
-void RiskAnalysis::DefineParameter(const xmlpp::Element* param_node) {
+void RiskAnalysis::RegisterParameter(const xmlpp::Element* param_node) {
   std::string name = param_node->get_attribute_value("name");
   boost::trim(name);
   // Detect case sensitive name clashes.
@@ -794,6 +799,8 @@ void RiskAnalysis::DefineParameter(const xmlpp::Element* param_node) {
     parameters_.insert(std::make_pair(name, parameter));
   }
 
+  tbd_elements_.push_back(std::make_pair(parameter, param_node));
+
   // Attach units.
   std::string unit = param_node->get_attribute_value("unit");
   if (unit != "") {
@@ -801,6 +808,11 @@ void RiskAnalysis::DefineParameter(const xmlpp::Element* param_node) {
     /// @todo Check for parameter unit clash or double definition.
     parameter->unit(units_.find(unit)->second);
   }
+  RiskAnalysis::AttachLabelAndAttributes(param_node, parameter);
+}
+
+void RiskAnalysis::DefineParameter(const xmlpp::Element* param_node,
+                                   const ParameterPtr& parameter) {
   // Assuming that expression is the last child of the parameter definition.
   xmlpp::NodeSet expressions =
       param_node->find("./*[name() != 'attributes' and name() != 'label']");
@@ -812,7 +824,6 @@ void RiskAnalysis::DefineParameter(const xmlpp::Element* param_node) {
   RiskAnalysis::GetExpression(expr_node, expression);
 
   parameter->expression(expression);
-  RiskAnalysis::AttachLabelAndAttributes(param_node, parameter);
 }
 
 void RiskAnalysis::GetExpression(const xmlpp::Element* expr_element,

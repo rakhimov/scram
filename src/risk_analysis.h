@@ -210,9 +210,15 @@ class RiskAnalysis {
   ///                         there is no constant expression for this event.
   void DefineHouseEvent(const xmlpp::Element* event_node);
 
+  /// Registers a variable or parameter.
+  /// @param[in] param_node XML element defining the parameter.
+  void RegisterParameter(const xmlpp::Element* param_node);
+
   /// Defines a variable or parameter.
   /// @param[in] param_node XML element defining the parameter.
-  void DefineParameter(const xmlpp::Element* param_node);
+  /// @param[in/out] parameter Registered parameter to be defined.
+  void DefineParameter(const xmlpp::Element* param_node,
+                       const ParameterPtr& parameter);
 
   /// Processes Expression definitions in input file.
   /// @param[in] expr_element XML expression element containing the definition.
