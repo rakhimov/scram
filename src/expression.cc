@@ -253,6 +253,10 @@ Histogram::Histogram(const std::vector<ExpressionPtr>& boundaries,
   }
   boundaries_ = boundaries;
   weights_ = weights;
+  Expression::args_.insert(Expression::args_.end(), boundaries.begin(),
+                           boundaries.end());
+  Expression::args_.insert(Expression::args_.end(), weights.begin(),
+                           weights.end());
 }
 
 void Histogram::Validate() {
