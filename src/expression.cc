@@ -9,28 +9,68 @@
 namespace scram {
 
 void Parameter::Validate() {
-  std::vector<std::string> path;
-  Parameter::DetectCycle(&path);
-}
-
-void Parameter::DetectCycle(std::vector<std::string>* path) {
-  std::vector<std::string>::iterator it = std::find(path->begin(),
-                                                    path->end(),
-                                                    name_);
-  if (it != path->end()) {
-    std::string msg = "Detected a cycle through '" + name_ +
-                      "' parameter:\n";
-    msg += name_;
-    for (++it; it != path->end(); ++it) {
-      msg += "->" + *it;
-    }
-    msg += "->" + name_;
+  if (mark_ == "permanent") return;
+  std::vector<std::string> cycle;
+  Parameter::DetectCycle(this, &cycle);
+  if (!cycle.empty()) {
+    std::string msg = "Detected a cycle in " + name_ + " parameter:\n";
+    msg += Parameter::PrintCycle(cycle);
     throw ValidationError(msg);
   }
-  path->push_back(name_);
-  boost::shared_ptr<scram::Parameter> ptr =
-      boost::dynamic_pointer_cast<Parameter>(expression_);
-  if (ptr) ptr->DetectCycle(path);
+}
+
+bool Parameter::DetectCycle(Parameter* parameter,
+                            std::vector<std::string>* cycle) {
+  if (parameter->mark_ == "") {
+    parameter->mark_ = "temporary";
+    boost::shared_ptr<Parameter> ptr =
+        boost::dynamic_pointer_cast<Parameter>(parameter->expression_);
+    if (ptr) {
+      if (Parameter::DetectCycle(&*ptr, cycle)) {
+        cycle->push_back(parameter->name());
+        return true;
+      }
+    } else {
+      if (Parameter::ContinueExpression(parameter->expression_, cycle)) {
+        cycle->push_back(parameter->name());
+        return true;
+      }
+    }
+    parameter->mark_ = "permanent";
+  } else if (parameter->mark_ == "temporary") {
+    cycle->push_back(parameter->name());
+    return true;
+  }
+  assert(parameter->mark_ == "permanent");
+  return false;  // This also covers permanently marked gates.
+}
+
+bool Parameter::ContinueExpression(const ExpressionPtr& expression,
+                                   std::vector<std::string>* cycle) {
+  std::vector<ExpressionPtr>::const_iterator it;
+  for (it = expression->args_.begin(); it != expression->args_.end(); ++it) {
+    boost::shared_ptr<Parameter> ptr =
+        boost::dynamic_pointer_cast<Parameter>(*it);
+    if (ptr) {
+      if (Parameter::DetectCycle(&*ptr, cycle)) return true;
+    } else {
+      if (Parameter::ContinueExpression(*it, cycle)) return true;
+    }
+  }
+  return false;
+}
+
+std::string Parameter::PrintCycle(const std::vector<std::string>& cycle) {
+  assert(!cycle.empty());
+  assert(cycle.size() > 1);
+  std::vector<std::string>::const_iterator it = cycle.begin();
+  std::string cycle_start = *it;
+  std::string result = "->" + cycle_start;
+  for (++it; *it != cycle_start; ++it) {
+    result = "->" + *it + result;
+  }
+  result = cycle_start + result;
+  return result;
 }
 
 void ExponentialExpression::Validate() {

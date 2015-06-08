@@ -145,6 +145,7 @@ TEST(RiskAnalysisInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back(dir + "two_top_events.xml");
   incorrect_inputs.push_back(dir + "cyclic_tree.xml");
   incorrect_inputs.push_back(dir + "cyclic_parameter.xml");
+  incorrect_inputs.push_back(dir + "cyclic_expression.xml");
   incorrect_inputs.push_back(dir + "invalid_expression.xml");
   incorrect_inputs.push_back(dir + "repeated_child.xml");
   incorrect_inputs.push_back(dir + "alpha_ccf_level_error.xml");

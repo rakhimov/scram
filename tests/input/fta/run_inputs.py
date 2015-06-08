@@ -63,6 +63,7 @@ def main():
             "two_top_events.xml",
             "cyclic_tree.xml",
             "cyclic_parameter.xml",
+            "cyclic_expression.xml",
             "invalid_expression.xml",
             "repeated_child.xml",
             "alpha_ccf_level_error.xml",

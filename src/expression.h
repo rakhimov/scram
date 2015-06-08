@@ -18,9 +18,13 @@
 
 namespace scram {
 
+class Parameter;  // This is for cycle detection through expressions.
+
 /// @class Expression
 /// The base class for all sorts of expressions to describe events.
 class Expression {
+  friend class Parameter;  // This is for cycle detection through expressions.
+
  public:
   typedef boost::shared_ptr<Expression> ExpressionPtr;
 
@@ -82,6 +86,7 @@ class Parameter : public Expression, public Element {
   /// @param[in] name The name of this variable (Case sensitive).
   explicit Parameter(std::string name)
       : name_(name),
+        mark_(""),
         unused_(true),
         unit_(kUnitless) {}
 
@@ -132,15 +137,29 @@ class Parameter : public Expression, public Element {
   inline double Min() { return expression_->Min(); }
 
  private:
+  typedef boost::shared_ptr<Parameter> ParameterPtr;
+
   /// Helper function to check for cyclic references in parameters.
-  /// @param[out] path The current path of names in cycle detection.
-  /// @throws ValidationError if any cyclic reference is found.
-  /// @todo Rename to DetectCycles.
-  void DetectCycle(std::vector<std::string>* path);
+  /// @param[in] parameter Parameter to check for cycles.
+  /// @param[out] cycle The cycle path if detected.
+  /// @returns True if a cycle is detected.
+  bool DetectCycle(Parameter* parameter, std::vector<std::string>* cycle);
+
+  /// Helper function to check for cyclic references through expressions.
+  /// @param[in] expression Expression to be traversed.
+  /// @param[out] cycle The cycle path if detected.
+  /// @returns True if a cycle is detected.
+  bool ContinueExpression(const ExpressionPtr& expression,
+                          std::vector<std::string>* cycle);
+
+  /// @param[in] cycle Cycle containing names in reverse order.
+  /// @returns String representation of the cycle.
+  std::string PrintCycle(const std::vector<std::string>& cycle);
 
   std::string name_;  ///< Name of this parameter or variable.
   Units unit_;  ///< Units of this parameter.
   ExpressionPtr expression_;  ///< Expression for this parameter.
+  std::string mark_;  ///< The mark for traversal in cycle detection.
   bool unused_;  ///< Usage state.
 };
 
