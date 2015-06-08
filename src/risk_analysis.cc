@@ -1019,6 +1019,7 @@ void RiskAnalysis::ProcessCcfMembers(const xmlpp::Element* members_node,
                                      const CcfGroupPtr& ccf_group) {
   xmlpp::NodeSet children = members_node->find("./*");
   assert(!children.empty());
+  std::set<std::string> member_ids;
   xmlpp::NodeSet::iterator it;
   for (it = children.begin(); it != children.end(); ++it) {
     const xmlpp::Element* event_node =
@@ -1030,6 +1031,12 @@ void RiskAnalysis::ProcessCcfMembers(const xmlpp::Element* members_node,
     boost::trim(name);
     std::string id = name;
     boost::to_lower(id);
+    if (member_ids.count(id)) {
+      std::stringstream msg;
+      msg << "Line " << event_node->get_line() << ":\n";
+      msg << name << " is already in CCF group " << ccf_group->name() << ".";
+      throw ValidationError(msg.str());
+    }
     if (gates_.count(id)) {
       std::stringstream msg;
       msg << "Line " << event_node->get_line() << ":\n";
@@ -1042,6 +1049,7 @@ void RiskAnalysis::ProcessCcfMembers(const xmlpp::Element* members_node,
       msg << name << " is being redefined.";
       throw ValidationError(msg.str());
     }
+    member_ids.insert(id);
     BasicEventPtr basic_event = BasicEventPtr(new BasicEvent(id));
     basic_event->name(name);
     primary_events_.insert(std::make_pair(id, basic_event));

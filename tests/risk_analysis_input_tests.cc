@@ -153,6 +153,7 @@ TEST(RiskAnalysisInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back(dir + "phi_ccf_wrong_sum.xml");
   incorrect_inputs.push_back(dir + "ccf_negative_factor.xml");
   incorrect_inputs.push_back(dir + "ccf_more_factors_than_needed.xml");
+  incorrect_inputs.push_back(dir + "repeated_ccf_members.xml");
 
   std::vector<std::string>::iterator it;
   for (it = incorrect_inputs.begin(); it != incorrect_inputs.end(); ++it) {
