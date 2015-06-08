@@ -131,12 +131,20 @@ class PrimaryEvent : public Event {
   /// @param[in] type The type of the event.
   explicit PrimaryEvent(std::string id, std::string type = "")
       : type_(type),
+        has_expression_(false),
         Event(id) {}
 
   virtual ~PrimaryEvent() {}
 
   /// @returns The type of the primary event.
   inline const std::string& type() const { return type_; }
+
+  /// @returns A flag indicating if the event's expression is set.
+  inline bool has_expression() const { return has_expression_; }
+
+ protected:
+  /// Flag to notify that expression for the event is defined.
+  bool has_expression_;
 
  private:
   /// The type of the primary event.
@@ -159,6 +167,7 @@ class BasicEvent : public PrimaryEvent {
   /// @param[in] expression The expression to describe this event.
   inline void expression(const ExpressionPtr& expression) {
     assert(!expression_);
+    PrimaryEvent::has_expression_ = true;
     expression_ = expression;
   }
 
@@ -237,7 +246,10 @@ class HouseEvent : public PrimaryEvent {
 
   /// Sets the state for House event.
   /// @param[in] constant False or True for the state of this house event.
-  inline void state(bool constant) { state_ = constant; }
+  inline void state(bool constant) {
+    PrimaryEvent::has_expression_ = true;
+    state_ = constant;
+  }
 
   /// @returns The true or false state of this house event.
   inline bool state() const { return state_; }

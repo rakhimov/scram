@@ -12,8 +12,6 @@ Currently Low Hanging Fruits
 
 - `Todo list in the code <https://rakhimov.github.io/scram/api/todo.html>`_
 
-- Option to run analysis without full basic event description. *Low*
-
 
 Major Enhancements and Capabilities
 ===================================

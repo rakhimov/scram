@@ -47,7 +47,7 @@ set probabilities are high, the total probability may exceed 1.0.
 The Min-Cut-Upper Bound (MCUB) Approximation
 =============================================
 This method calculates the total probability by subtracting the probability
-of all minimal cut sets being successful from 1.0; thus, the total probability
+of all minimal cut sets' being successful from 1.0; thus, the total probability
 never exceeds 1.0. Non-independence of the minimal cut sets introduce
 the major discrepancy for this technique. However, the MCUB approximation
 provides non-conservative estimation for non-coherent trees containing

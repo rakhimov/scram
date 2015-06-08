@@ -1,9 +1,8 @@
 <?xml version="1.0"?>
 <!--
 This input describes a house event that doesn't have Boolean constant.
-This input is valid OpenPSA input but is not valid for SCRAM input.
-This does not default to false state, and house event must be
-explicitly described.
+This input is valid input for analysis without probability calculations.
+However, if the state is not defined, it defaults to false.
 -->
 <opsa-mef>
   <define-fault-tree name="TwoTrains">
@@ -25,7 +24,7 @@ explicitly described.
         <event name="PumpTwo"/>
       </or>
     </define-gate>
-    <define-house-event name="ValveOne"/>  <!-- This event is missing expr. -->
+    <define-house-event name="ValveOne"/>  <!-- No expression. -->
     <define-basic-event name="ValveTwo">
       <float value="0.5"/>
     </define-basic-event>

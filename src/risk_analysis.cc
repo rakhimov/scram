@@ -132,9 +132,7 @@ void RiskAnalysis::Report(std::ostream& out) {
   std::set<PrimaryEventPtr> orphan_primary_events;
   boost::unordered_map<std::string, PrimaryEventPtr>::iterator it_p;
   for (it_p = primary_events_.begin(); it_p != primary_events_.end(); ++it_p) {
-    if (it_p->second->IsOrphan()) {
-      orphan_primary_events.insert(it_p->second);
-    }
+    if (it_p->second->IsOrphan()) orphan_primary_events.insert(it_p->second);
   }
   if (!orphan_primary_events.empty())
     rp.ReportOrphanPrimaryEvents(orphan_primary_events, doc);
@@ -144,9 +142,7 @@ void RiskAnalysis::Report(std::ostream& out) {
   std::set<ParameterPtr> unused_parameters;
   boost::unordered_map<std::string, ParameterPtr>::iterator it_v;
   for (it_v = parameters_.begin(); it_v != parameters_.end(); ++it_v) {
-    if (it_v->second->users().empty()) {
-      unused_parameters.insert(it_v->second);
-    }
+    if (it_v->second->users().empty()) unused_parameters.insert(it_v->second);
   }
 
   if (!unused_parameters.empty())
@@ -610,16 +606,9 @@ void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node,
     const xmlpp::Element* expr_node =
         dynamic_cast<const xmlpp::Element*>(expressions.back());
     assert(expr_node);
-
     ExpressionPtr expression;
     RiskAnalysis::GetExpression(expr_node, expression);
     basic_event->expression(expression);
-  } else {
-    std::stringstream msg;
-    msg << "Line " << event_node->get_line() << ":\n";
-    msg << "The " << basic_event->name()
-        << " basic event does not have an expression.";
-    throw ValidationError(msg.str());
   }
 }
 
@@ -641,30 +630,22 @@ void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node) {
     msg << "The id " << name << " is being redefined.";
     throw ValidationError(msg.str());
   }
-  // Only Boolean constant.
-  xmlpp::NodeSet expression = event_node->find("./*[name() = 'constant']");
-  if (expression.empty()) {
-    std::stringstream msg;
-    msg << "Line " << event_node->get_line() << ":\n";
-    msg << "The " << name
-        << " house event does not have a Boolean constant expression.";
-    throw ValidationError(msg.str());
-  }
-
-  assert(expression.size() == 1);
-  const xmlpp::Element* constant =
-      dynamic_cast<const xmlpp::Element*>(expression.front());
-  if (!constant) assert(false);
-
-  std::string val = constant->get_attribute_value("value");
-  boost::trim(val);
-  assert(val == "true" || val == "false");
-
-  bool state = (val == "true") ? true : false;
-
   HouseEventPtr house_event = HouseEventPtr(new HouseEvent(id));
   house_event->name(name);
-  house_event->state(state);
+  // Only Boolean constant.
+  xmlpp::NodeSet expression = event_node->find("./*[name() = 'constant']");
+  if (!expression.empty()) {
+    assert(expression.size() == 1);
+    const xmlpp::Element* constant =
+        dynamic_cast<const xmlpp::Element*>(expression.front());
+    if (!constant) assert(false);
+
+    std::string val = constant->get_attribute_value("value");
+    boost::trim(val);
+    assert(val == "true" || val == "false");
+    bool state = (val == "true") ? true : false;
+    house_event->state(state);
+  }
   primary_events_.insert(std::make_pair(id, house_event));
   RiskAnalysis::AttachLabelAndAttributes(event_node, house_event);
 }
@@ -1128,6 +1109,18 @@ void RiskAnalysis::CheckFirstLayer() {
   if (!bad_gates.empty()) {
     error_messages << "\nThere are problems with the initialized gates:\n"
                    << bad_gates;
+  }
+  // Check if all primary events have expressions for probability analysis.
+  if (settings_.probability_analysis_) {
+    std::string msg = "";
+    boost::unordered_map<std::string, PrimaryEventPtr>::iterator it;
+    for (it = primary_events_.begin(); it != primary_events_.end(); ++it) {
+      if (!it->second->has_expression()) msg += it->second->name() + "\n";
+    }
+    if (!msg.empty()) {
+      error_messages << "\nThese primary events do not have expressions:\n"
+                     << msg;
+    }
   }
 
   if (!error_messages.str().empty()) {

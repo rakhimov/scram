@@ -77,6 +77,8 @@ TEST(RiskAnalysisInputTest, CorrectFTAInputs) {
   correct_inputs.push_back(dir + "unordered_structure.xml");
   correct_inputs.push_back(dir + "non_top_gate.xml");
   correct_inputs.push_back(dir + "unused_parameter.xml");
+  correct_inputs.push_back(dir + "missing_bool_constant.xml");
+  correct_inputs.push_back(dir + "missing_expression.xml");
 
   RiskAnalysis* ran;
 
@@ -133,8 +135,6 @@ TEST(RiskAnalysisInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back(dir + "doubly_defined_parameter.xml");
   incorrect_inputs.push_back(dir + "doubly_defined_ccf_group.xml");
   incorrect_inputs.push_back(dir + "extra_ccf_level_beta_factor.xml");
-  incorrect_inputs.push_back(dir + "missing_expression.xml");
-  incorrect_inputs.push_back(dir + "missing_bool_constant.xml");
   incorrect_inputs.push_back(dir + "missing_gate_definition.xml");
   incorrect_inputs.push_back(dir + "missing_ccf_level_number.xml");
   incorrect_inputs.push_back(dir + "missing_ccf_members.xml");
@@ -188,6 +188,8 @@ TEST(RiskAnalysisInputTest, IncorrectProbInputs) {
   incorrect_inputs.push_back(dir + "missing_event_definition.xml");
   incorrect_inputs.push_back(dir + "missing_basic_event_definition.xml");
   incorrect_inputs.push_back(dir + "missing_house_event_definition.xml");
+  incorrect_inputs.push_back(dir + "missing_bool_constant.xml");
+  incorrect_inputs.push_back(dir + "missing_expression.xml");
   incorrect_inputs.push_back(dir + "missing_parameter.xml");
   incorrect_inputs.push_back(dir + "ccf_wrong_distribution.xml");
 

@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <!--
 This input describes a basic event that doesn't have expression.
-This input is valid OpenPSA input but is not valid for SCRAM input.
-Every primary event must be explicitly described.
+This input is valid input for analysis without probability calculations.
+Every primary event must be explicitly described for probability calculations.
 -->
 <opsa-mef>
   <define-fault-tree name="TwoTrains">

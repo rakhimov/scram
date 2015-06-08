@@ -32,28 +32,26 @@ Steps in XML Input Validation
       such as "NOT", "-", ".", ",", "[", "]".
     - Names must be unique if they are public by default.
     - Names must be unique only locally if they are private. [not supported]
-    - Primary events and gates with several parents are allowed.
-      These events may appear in several places in the fault tree.
     - Proper 'include directive' formatting. [not supported]
 
 #. Additional validation of fault trees and values of parameters is performed:
 
     - Each gate has a correct number of children.
     - The same child appearing twice or more for one parent is an error.
-    - All intermediate events have at least one parent.
     - Values of parameters are correct, i.e., non-negative for probabilities.
-    - All events must be defined for probability calculations.
+    - All events must be explicitly defined for probability calculations.
 
-#. Throw an error with a message (a file name, line numbers, types of errors):
+#. Error messages (a file name, line numbers, types of errors):
 
     - Report a cyclic tree.
-    - Report unsupported gates and events.
-    - Report missing event descriptions.
+    - Report a cyclic parameter.
+    - Report missing element descriptions.
     - Throw an error if an event is being redefined.
 
 #. Warnings for potential errors:
 
     - Orphan primary events.
+    - Unused parameters.
 
 
 .. _schema:

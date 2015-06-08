@@ -90,11 +90,12 @@ Deviations from OpenPSA MEF
 ***************************
 
 - Names are not case-sensitive.
-- House events do not default to false state implicitly. They must be defined.
-- Expressions are not optional for Basic events.
+- House events must be defined explicitly for analysis with probability
+  information.
 - The correct number of a gate's children is required.
-- Unused primary events are ignored but reported as warning.
-- Double definition of events is considered an error instead of warning.
+- Orphan primary events are reported as warning.
+- Unused parameters are reported as warning.
+- Redefinition of events is considered an error instead of warning.
 - Common cause model levels for factors are required and must be strictly
   sequential in ascending order.
 
