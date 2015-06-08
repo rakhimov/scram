@@ -48,8 +48,8 @@ TEST(RiskAnalysisInputTest, UnsupportedFeature) {
 
   std::string dir = "./share/scram/input/fta/";
   incorrect_inputs.push_back(dir + "../unsupported_feature.xml");
-  incorrect_inputs.push_back(dir + "unsupported_gate.xml");
-  incorrect_inputs.push_back(dir + "unsupported_expression.xml");
+  incorrect_inputs.push_back(dir + "../unsupported_gate.xml");
+  incorrect_inputs.push_back(dir + "../unsupported_expression.xml");
   RiskAnalysis* ran;
   std::vector<std::string>::iterator it;
   for (it = incorrect_inputs.begin(); it != incorrect_inputs.end(); ++it) {
@@ -60,25 +60,20 @@ TEST(RiskAnalysisInputTest, UnsupportedFeature) {
   }
 }
 
-// Test correct tree inputs
+// Test correct inputs without probability information.
 TEST(RiskAnalysisInputTest, CorrectFTAInputs) {
   std::vector<std::string> correct_inputs;
   std::string dir = "./share/scram/input/fta/";
   correct_inputs.push_back(dir + "correct_tree_input.xml");
   correct_inputs.push_back(dir + "mixed_definitions.xml");
   correct_inputs.push_back(dir + "model_data_mixed_definitions.xml");
-  correct_inputs.push_back(dir + "trailing_spaces.xml");
   correct_inputs.push_back(dir + "two_trees.xml");
   correct_inputs.push_back(dir + "labels_and_attributes.xml");
   correct_inputs.push_back(dir + "orphan_primary_event.xml");
-  correct_inputs.push_back(dir + "correct_expressions.xml");
-  correct_inputs.push_back(dir + "flavored_types.xml");
   correct_inputs.push_back(dir + "very_long_mcs.xml");
   correct_inputs.push_back(dir + "unordered_structure.xml");
   correct_inputs.push_back(dir + "non_top_gate.xml");
   correct_inputs.push_back(dir + "unused_parameter.xml");
-  correct_inputs.push_back(dir + "missing_bool_constant.xml");
-  correct_inputs.push_back(dir + "missing_expression.xml");
 
   RiskAnalysis* ran;
 
@@ -88,22 +83,16 @@ TEST(RiskAnalysisInputTest, CorrectFTAInputs) {
     EXPECT_NO_THROW(ran->ProcessInput(*it)) << " Filename: " << *it;
     delete ran;
   }
-  /// @todo Create include tests.
 }
 
-// Test correct probability inputs
+// Test correct inputs with probability information.
 TEST(RiskAnalysisInputTest, CorrectProbInputs) {
   std::vector<std::string> correct_inputs;
   std::string dir = "./share/scram/input/fta/";
   correct_inputs.push_back(dir + "correct_tree_input_with_probs.xml");
-  correct_inputs.push_back(dir + "mixed_definitions.xml");
-  correct_inputs.push_back(dir + "model_data_mixed_definitions.xml");
   correct_inputs.push_back(dir + "trailing_spaces.xml");
-  correct_inputs.push_back(dir + "labels_and_attributes.xml");
-  correct_inputs.push_back(dir + "orphan_primary_event.xml");
   correct_inputs.push_back(dir + "correct_expressions.xml");
   correct_inputs.push_back(dir + "flavored_types.xml");
-  correct_inputs.push_back(dir + "very_long_mcs.xml");
 
   RiskAnalysis* ran;
   Settings settings;
@@ -120,13 +109,16 @@ TEST(RiskAnalysisInputTest, CorrectProbInputs) {
 
 // Test incorrect fault tree inputs
 TEST(RiskAnalysisInputTest, IncorrectFTAInputs) {
-  std::vector<std::string> ioerror_inputs;
   std::vector<std::string> incorrect_inputs;
 
   std::string dir = "./share/scram/input/fta/";
 
   // Access issues. IOErrors
-  ioerror_inputs.push_back(dir + "nonexistent_file.xml");
+  std::string ioerror_input = dir + "nonexistent_file.xml";
+  RiskAnalysis* ran = new RiskAnalysis();
+  EXPECT_THROW(ran->ProcessInput(ioerror_input), IOError)
+      << " Filename:  " << ioerror_input;
+  delete ran;
 
   // Other issues.
   incorrect_inputs.push_back(dir + "doubly_defined_gate.xml");
@@ -138,21 +130,19 @@ TEST(RiskAnalysisInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back(dir + "missing_gate_definition.xml");
   incorrect_inputs.push_back(dir + "missing_ccf_level_number.xml");
   incorrect_inputs.push_back(dir + "missing_ccf_members.xml");
-  incorrect_inputs.push_back(dir + "name_clash_basic_gate.xml");
-  incorrect_inputs.push_back(dir + "name_clash_house_gate.xml");
-  incorrect_inputs.push_back(dir + "name_clash_gate_primary.xml");
-  incorrect_inputs.push_back(dir + "name_clash_basic_house.xml");
-  incorrect_inputs.push_back(dir + "name_clash_house_basic.xml");
+  incorrect_inputs.push_back(dir + "undefined_event.xml");
+  incorrect_inputs.push_back(dir + "undefined_basic_event.xml");
+  incorrect_inputs.push_back(dir + "undefined_house_event.xml");
+  incorrect_inputs.push_back(dir + "undefined_gate.xml");
+  incorrect_inputs.push_back(dir + "undefined_parameter.xml");
   incorrect_inputs.push_back(dir + "name_clash_two_trees.xml");
   incorrect_inputs.push_back(dir + "def_clash_basic_gate.xml");
   incorrect_inputs.push_back(dir + "def_clash_house_gate.xml");
   incorrect_inputs.push_back(dir + "def_clash_gate_primary.xml");
   incorrect_inputs.push_back(dir + "def_clash_basic_house.xml");
   incorrect_inputs.push_back(dir + "def_clash_house_basic.xml");
-  incorrect_inputs.push_back(dir + "def_name_house_basic.xml");
-  incorrect_inputs.push_back(dir + "def_name_basic_house.xml");
   incorrect_inputs.push_back(dir + "atleast_gate.xml");
-  incorrect_inputs.push_back(dir + "dangling_gate.xml");
+  incorrect_inputs.push_back(dir + "two_top_events.xml");
   incorrect_inputs.push_back(dir + "cyclic_tree.xml");
   incorrect_inputs.push_back(dir + "cyclic_parameter.xml");
   incorrect_inputs.push_back(dir + "invalid_expression.xml");
@@ -164,15 +154,7 @@ TEST(RiskAnalysisInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back(dir + "ccf_negative_factor.xml");
   incorrect_inputs.push_back(dir + "ccf_more_factors_than_needed.xml");
 
-  RiskAnalysis* ran;
-
   std::vector<std::string>::iterator it;
-  for (it = ioerror_inputs.begin(); it != ioerror_inputs.end(); ++it) {
-    ran = new RiskAnalysis();
-    EXPECT_THROW(ran->ProcessInput(*it), IOError) << " Filename:  " << *it;
-    delete ran;
-  }
-
   for (it = incorrect_inputs.begin(); it != incorrect_inputs.end(); ++it) {
     ran = new RiskAnalysis();
     EXPECT_THROW(ran->ProcessInput(*it), ValidationError)
@@ -185,12 +167,8 @@ TEST(RiskAnalysisInputTest, IncorrectProbInputs) {
   std::vector<std::string> incorrect_inputs;
   std::string dir = "./share/scram/input/fta/";
   incorrect_inputs.push_back(dir + "invalid_probability.xml");
-  incorrect_inputs.push_back(dir + "missing_event_definition.xml");
-  incorrect_inputs.push_back(dir + "missing_basic_event_definition.xml");
-  incorrect_inputs.push_back(dir + "missing_house_event_definition.xml");
   incorrect_inputs.push_back(dir + "missing_bool_constant.xml");
   incorrect_inputs.push_back(dir + "missing_expression.xml");
-  incorrect_inputs.push_back(dir + "missing_parameter.xml");
   incorrect_inputs.push_back(dir + "ccf_wrong_distribution.xml");
 
   RiskAnalysis* ran;

@@ -7,5 +7,6 @@
         <basic-event name="ValveOne"/>
       </and>
     </define-gate>
+    <define-basic-event name="ValveOne"/>
   </define-fault-tree>
 </opsa-mef>

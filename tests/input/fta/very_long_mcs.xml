@@ -17,29 +17,13 @@ dividing into chunks.
         <event name="PumpTwoLong"/>
       </and>
     </define-gate>
-    <define-basic-event name="ValveOne">
-      <float value="0.4"/>
-    </define-basic-event>
-    <define-basic-event name="ValveTwo">
-      <float value="0.5"/>
-    </define-basic-event>
-    <define-basic-event name="PumpOne">
-      <float value="0.6"/>
-    </define-basic-event>
-    <define-basic-event name="PumpTwo">
-      <float value="0.7"/>
-    </define-basic-event>
-    <define-basic-event name="ValveOneLong">
-      <float value="0.4"/>
-    </define-basic-event>
-    <define-basic-event name="ValveTwoLong">
-      <float value="0.5"/>
-    </define-basic-event>
-    <define-basic-event name="PumpOneLong">
-      <float value="0.6"/>
-    </define-basic-event>
-    <define-basic-event name="PumpTwoLong">
-      <float value="0.7"/>
-    </define-basic-event>
+    <define-basic-event name="ValveOne"/>
+    <define-basic-event name="ValveTwo"/>
+    <define-basic-event name="PumpOne"/>
+    <define-basic-event name="PumpTwo"/>
+    <define-basic-event name="ValveOneLong"/>
+    <define-basic-event name="ValveTwoLong"/>
+    <define-basic-event name="PumpOneLong"/>
+    <define-basic-event name="PumpTwoLong"/>
   </define-fault-tree>
 </opsa-mef>

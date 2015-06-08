@@ -29,17 +29,9 @@ The structure of the tree is not ordered top to down.
         <event name="PumpTwo"/>
       </or>
     </define-gate>
-    <define-basic-event name="ValveOne">
-      <float value="0.4"/>
-    </define-basic-event>
-    <define-basic-event name="ValveTwo">
-      <float value="0.5"/>
-    </define-basic-event>
-    <define-house-event name="PumpOne">
-      <constant value="true"/>
-    </define-house-event>
-    <define-basic-event name="PumpTwo">
-      <float value="0.7"/>
-    </define-basic-event>
+    <define-basic-event name="ValveOne"/>
+    <define-basic-event name="ValveTwo"/>
+    <define-house-event name="PumpOne"/>
+    <define-basic-event name="PumpTwo"/>
   </define-fault-tree>
 </opsa-mef>

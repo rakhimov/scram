@@ -186,7 +186,7 @@ void RiskAnalysis::Report(std::string output) {
 void RiskAnalysis::ProcessInputFile(std::string xml_file) {
   std::ifstream file_stream(xml_file.c_str());
   if (!file_stream) {
-    throw IOError("The file '" + xml_file + "' could not be loaded.");
+    throw IOError("File '" + xml_file + "' could not be loaded.");
   }
   fs::path file_path = fs::canonical(xml_file);
   if (input_path_.count(file_path.native())) {
@@ -315,8 +315,7 @@ void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
   if (fault_trees_.count(id)) {
     std::stringstream msg;
     msg << "Line " << ft_node->get_line() << ":\n";
-    msg << "The fault tree " << name
-        << " is already defined.";
+    msg << "Fault tree " << name << " is already defined.";
     throw ValidationError(msg.str());
   }
 
@@ -397,9 +396,8 @@ void RiskAnalysis::RegisterGate(const xmlpp::Element* gate_node,
   std::string id = name;
   boost::to_lower(id);
 
-  /// @todo This should take private/public roles into account.
   if (gates_.count(id)) {
-    // Doubly defined gate.
+    // Redefined gate.
     std::stringstream msg;
     msg << "Line " << gate_node->get_line() << ":\n";
     msg << name << " gate is being redefined.";
@@ -410,7 +408,7 @@ void RiskAnalysis::RegisterGate(const xmlpp::Element* gate_node,
   if (primary_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << gate_node->get_line() << ":\n";
-    msg << "The id " << name << " is already assigned to a primary event.";
+    msg << name << " is already assigned to a primary event.";
     throw ValidationError(msg.str());
   }
 
@@ -580,13 +578,13 @@ void RiskAnalysis::RegisterBasicEvent(const xmlpp::Element* event_node) {
   if (gates_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << "The id " << name << " is already assigned to a gate.";
+    msg << name << " is already assigned to a gate.";
     throw ValidationError(msg.str());
   }
   if (primary_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << "The id " << name << " is being redefined.";
+    msg << name << " is being redefined.";
     throw ValidationError(msg.str());
   }
   BasicEventPtr basic_event = BasicEventPtr(new BasicEvent(id));
@@ -621,13 +619,13 @@ void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node) {
   if (gates_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << "The id " << name << " is already assigned to a gate.";
+    msg << name << " is already assigned to a gate.";
     throw ValidationError(msg.str());
   }
   if (primary_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << "The id " << name << " is being redefined.";
+    msg << name << " is being redefined.";
     throw ValidationError(msg.str());
   }
   HouseEventPtr house_event = HouseEventPtr(new HouseEvent(id));
@@ -657,7 +655,7 @@ void RiskAnalysis::RegisterParameter(const xmlpp::Element* param_node) {
   if (parameters_.count(name)) {
     std::stringstream msg;
     msg << "Line " << param_node->get_line() << ":\n";
-    msg << "The " << name << " parameter is doubly defined.";
+    msg << name << " parameter is being redefined.";
     throw ValidationError(msg.str());
   }
 
@@ -955,7 +953,7 @@ void RiskAnalysis::RegisterCcfGroup(const xmlpp::Element* ccf_node) {
   if (ccf_groups_.count(id)) {
     std::stringstream msg;
     msg << "Line " << ccf_node->get_line() << ":\n";
-    msg << "The CCF group " << name << " is already defined.";
+    msg << "CCF group " << name << " is already defined.";
     throw ValidationError(msg.str());
   }
   std::string model = ccf_node->get_attribute_value("model");
@@ -1035,13 +1033,13 @@ void RiskAnalysis::ProcessCcfMembers(const xmlpp::Element* members_node,
     if (gates_.count(id)) {
       std::stringstream msg;
       msg << "Line " << event_node->get_line() << ":\n";
-      msg << "The id " << name << " is already assigned to a gate.";
+      msg << name << " is already assigned to a gate.";
       throw ValidationError(msg.str());
     }
     if (primary_events_.count(id)) {
       std::stringstream msg;
       msg << "Line " << event_node->get_line() << ":\n";
-      msg << "The id " << name << " is being redefined.";
+      msg << name << " is being redefined.";
       throw ValidationError(msg.str());
     }
     BasicEventPtr basic_event = BasicEventPtr(new BasicEvent(id));
@@ -1075,7 +1073,7 @@ void RiskAnalysis::DefineCcfFactor(const xmlpp::Element* factor_node,
   if (level == "") {
     std::stringstream msg;
     msg << "Line " << factor_node->get_line() << ":\n";
-    msg << "The CCF group factor level number is not provided.";
+    msg << "CCF group factor level number is not provided.";
     throw ValidationError(msg.str());
   }
   int level_num = boost::lexical_cast<int>(level);

@@ -22,18 +22,10 @@ This input describes a paremeter that is not used.
         <event name="PumpTwo"/>
       </or>
     </define-gate>
-    <define-basic-event name="ValveOne">
-      <float value="0.1"/>
-    </define-basic-event>
-    <define-basic-event name="ValveTwo">
-      <float value="0.5"/>
-    </define-basic-event>
-    <define-basic-event name="PumpOne">
-      <float value="0.6"/>
-    </define-basic-event>
-    <define-basic-event name="PumpTwo">
-      <float value="0.7"/>
-    </define-basic-event>
+    <define-basic-event name="ValveOne"/>
+    <define-basic-event name="ValveTwo"/>
+    <define-basic-event name="PumpOne"/>
+    <define-basic-event name="PumpTwo"/>
     <define-parameter name="UnusedParameter">
       <float value="0.2"/>
     </define-parameter>

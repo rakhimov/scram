@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!-- Incorrect input:
-Missing a basic event definition.
+Missing an event definition.
 -->
 <opsa-mef>
   <define-fault-tree name="TwoTrains">
@@ -12,7 +12,7 @@ Missing a basic event definition.
     </define-gate>
     <define-gate name="TrainOne">
       <or>
-        <basic-event name="ValveOne"/>
+        <event name="ValveOne"/>  <!-- Here -->
         <event name="PumpOne"/>
       </or>
     </define-gate>
@@ -22,21 +22,8 @@ Missing a basic event definition.
         <event name="PumpTwo"/>
       </or>
     </define-gate>
-
-    <!--  Here: Commented out ValveOne definition.
-    <define-basic-event name="ValveOne">
-      <float value="0.4"/>
-    </define-basic-event>
-    -->
-
-    <define-basic-event name="ValveTwo">
-      <float value="0.5"/>
-    </define-basic-event>
-    <define-basic-event name="PumpOne">
-      <float value="0.6"/>
-    </define-basic-event>
-    <define-basic-event name="PumpTwo">
-      <float value="0.7"/>
-    </define-basic-event>
+    <define-basic-event name="ValveTwo"/>
+    <define-basic-event name="PumpOne"/>
+    <define-basic-event name="PumpTwo"/>
   </define-fault-tree>
 </opsa-mef>

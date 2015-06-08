@@ -7,8 +7,10 @@ Not enough children
     <define-gate name="TopEvent">
       <atleast min="2">
         <basic-event name="ValveOne"/>
-        <house-event name="PumpOne"/>
+        <basic-event name="PumpOne"/>
       </atleast>
     </define-gate>
+    <define-basic-event name="ValveOne"/>
+    <define-basic-event name="PumpOne"/>
   </define-fault-tree>
 </opsa-mef>

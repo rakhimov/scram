@@ -1,22 +1,22 @@
 <?xml version="1.0"?>
-<!-- Incorrect input:
-Basic event tries to define house event.
+<!--
+The tree contains two top events.
 -->
 <opsa-mef>
   <define-fault-tree name="TwoTrains">
     <define-gate name="TopEvent">
       <and>
-        <event name="TrainOne"/>
-        <event name="TrainTwo"/>
+        <gate name="TrainOne"/>
+        <event name="PumpOne"/>
       </and>
     </define-gate>
     <define-gate name="TrainOne">
       <or>
         <event name="ValveOne"/>
-        <event name="PumpOne"/>  <!-- Here -->
+        <event name="PumpOne"/>
       </or>
     </define-gate>
-    <define-gate name="TrainTwo">
+    <define-gate name="TrainTwo">  <!-- This gate is top as well -->
       <or>
         <event name="ValveTwo"/>
         <event name="PumpTwo"/>
@@ -24,8 +24,7 @@ Basic event tries to define house event.
     </define-gate>
     <define-basic-event name="ValveOne"/>
     <define-basic-event name="ValveTwo"/>
-    <define-house-event name="PumpOne"/>  <!-- Here -->
-    <define-basic-event name="PumpOne"/>  <!-- Here -->
+    <define-basic-event name="PumpOne"/>
     <define-basic-event name="PumpTwo"/>
   </define-fault-tree>
 </opsa-mef>

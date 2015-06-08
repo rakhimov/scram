@@ -22,17 +22,10 @@ House event tries to define gate.
         <event name="PumpTwo"/>
       </or>
     </define-gate>
-    <define-house-event name="TrainOne">
-      <constant value="false"/>
-    </define-house-event>
-    <define-basic-event name="ValveTwo">
-      <float value="0.5"/>
-    </define-basic-event>
-    <define-basic-event name="PumpOne">
-      <float value="0.6"/>
-    </define-basic-event>
-    <define-basic-event name="PumpTwo">
-      <float value="0.7"/>
-    </define-basic-event>
+    <define-house-event name="TrainOne"/>
+    <define-basic-event name="ValveOne"/>
+    <define-basic-event name="ValveTwo"/>
+    <define-basic-event name="PumpOne"/>
+    <define-basic-event name="PumpTwo"/>
   </define-fault-tree>
 </opsa-mef>

@@ -1,31 +1,28 @@
 <?xml version="1.0"?>
-<!-- Incorrect input:
-Basic event tries to define house event.
--->
-<opsa-mef>
+<opsa-mef name="SuperModel">
   <define-fault-tree name="TwoTrains">
     <define-gate name="TopEvent">
       <and>
-        <event name="TrainOne"/>
+        <gate name="TrainOne"/>
         <event name="TrainTwo"/>
+        <house-event name="UndefinedHouseEvent"/>  <!-- No definition. -->
       </and>
     </define-gate>
     <define-gate name="TrainOne">
       <or>
-        <event name="ValveOne"/>
-        <event name="PumpOne"/>  <!-- Here -->
+        <basic-event name="ValveOne"/>
+        <basic-event name="PumpOne"/>
       </or>
     </define-gate>
     <define-gate name="TrainTwo">
       <or>
-        <event name="ValveTwo"/>
-        <event name="PumpTwo"/>
+        <basic-event name="ValveTwo"/>
+        <basic-event name="PumpTwo"/>
       </or>
     </define-gate>
     <define-basic-event name="ValveOne"/>
     <define-basic-event name="ValveTwo"/>
-    <define-house-event name="PumpOne"/>  <!-- Here -->
-    <define-basic-event name="PumpOne"/>  <!-- Here -->
+    <define-basic-event name="PumpOne"/>
     <define-basic-event name="PumpTwo"/>
   </define-fault-tree>
 </opsa-mef>

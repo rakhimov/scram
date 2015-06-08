@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-This input contains parameters that have cyclicity.
+This input contains parameters that are in a cycle.
 -->
 
 <opsa-mef>

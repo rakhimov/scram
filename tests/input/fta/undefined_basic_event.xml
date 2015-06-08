@@ -1,8 +1,5 @@
 <?xml version="1.0"?>
-<!-- Incorrect Input
-Basic event re-uses id of a house event.
--->
-<opsa-mef>
+<opsa-mef name="SuperModel">
   <define-fault-tree name="TwoTrains">
     <define-gate name="TopEvent">
       <and>
@@ -12,15 +9,18 @@ Basic event re-uses id of a house event.
     </define-gate>
     <define-gate name="TrainOne">
       <or>
-        <basic-event name="ValveOne"/>
-        <house-event name="PumpOne"/>
+        <basic-event name="UndefinedBasic"/>  <!-- Missing the definition. -->
+        <basic-event name="PumpOne"/>
       </or>
     </define-gate>
     <define-gate name="TrainTwo">
       <or>
-        <basic-event name="PumpOne"/>
-        <event name="PumpTwo"/>
+        <basic-event name="ValveTwo"/>
+        <basic-event name="PumpTwo"/>
       </or>
     </define-gate>
+    <define-basic-event name="ValveTwo"/>
+    <define-basic-event name="PumpOne"/>
+    <define-basic-event name="PumpTwo"/>
   </define-fault-tree>
 </opsa-mef>

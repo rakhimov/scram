@@ -153,56 +153,22 @@ define-house-event :: define-house-event
     </define-gate>
   </define-fault-tree>
   <model-data>
-    <define-basic-event name="define-basic-eventANDevent">
-      <float value="0.5"/>
-    </define-basic-event>
-    <define-house-event name="define-house-eventANDevent">
-      <constant value="true"/>
-    </define-house-event>
-    <define-basic-event name="define-basic-eventANDbasic-event">
-      <float value="0.5"/>
-    </define-basic-event>
-    <define-house-event name="define-house-eventANDhouse-event">
-      <constant value="true"/>
-    </define-house-event>
-    <define-basic-event name="eventANDevent">
-      <float value="0.5"/>
-    </define-basic-event>
-    <define-basic-event name="eventANDdefine-basic-event">
-      <float value="0.4"/>
-    </define-basic-event>
-    <define-house-event name="eventANDdefine-house-event">
-      <constant value="true"/>
-    </define-house-event>
-    <define-basic-event name="basic-eventANDdefine-basic-event">
-      <float value="0.5"/>
-    </define-basic-event>
-    <define-house-event name="house-eventANDdefine-house-event">
-      <constant value="true"/>
-    </define-house-event>
-    <define-basic-event name="basic-eventANDevent">
-      <float value="0.5"/>
-    </define-basic-event>
-    <define-house-event name="house-eventANDevent">
-      <constant value="true"/>
-    </define-house-event>
-    <define-basic-event name="basic-eventANDbasic-event">
-      <float value="0.5"/>
-    </define-basic-event>
-    <define-house-event name="house-eventANDhouse-event">
-      <constant value="true"/>
-    </define-house-event>
-    <define-basic-event name="eventANDbasic-event">
-      <float value="0.5"/>
-    </define-basic-event>
-    <define-house-event name="eventANDhouse-event">
-      <constant value="true"/>
-    </define-house-event>
-    <define-basic-event name="extra-basic">
-      <float value="0.5"/>
-    </define-basic-event>
-    <define-house-event name="extra-house">
-      <constant value="true"/>
-    </define-house-event>
+    <define-basic-event name="define-basic-eventANDevent"/>
+    <define-house-event name="define-house-eventANDevent"/>
+    <define-basic-event name="define-basic-eventANDbasic-event"/>
+    <define-house-event name="define-house-eventANDhouse-event"/>
+    <define-basic-event name="eventANDevent"/>
+    <define-basic-event name="eventANDdefine-basic-event"/>
+    <define-house-event name="eventANDdefine-house-event"/>
+    <define-basic-event name="basic-eventANDdefine-basic-event"/>
+    <define-house-event name="house-eventANDdefine-house-event"/>
+    <define-basic-event name="basic-eventANDevent"/>
+    <define-house-event name="house-eventANDevent"/>
+    <define-basic-event name="basic-eventANDbasic-event"/>
+    <define-house-event name="house-eventANDhouse-event"/>
+    <define-basic-event name="eventANDbasic-event"/>
+    <define-house-event name="eventANDhouse-event"/>
+    <define-basic-event name="extra-basic"/>
+    <define-house-event name="extra-house"/>
   </model-data>
 </opsa-mef>
