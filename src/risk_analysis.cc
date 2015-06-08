@@ -325,9 +325,6 @@ void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
   RiskAnalysis::AttachLabelAndAttributes(ft_node, fault_tree);
 
   xmlpp::NodeSet gates = ft_node->find("./define-gate");
-  xmlpp::NodeSet house_events = ft_node->find("./define-house-event");
-  xmlpp::NodeSet basic_events = ft_node->find("./define-basic-event");
-  xmlpp::NodeSet parameters = ft_node->find("./define-parameter");
   xmlpp::NodeSet ccf_groups = ft_node->find("./define-CCF-group");
 
   xmlpp::NodeSet::iterator it;
@@ -338,28 +335,13 @@ void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
     RiskAnalysis::RegisterGate(element, fault_tree);
   }
   LOG(DEBUG2) << "Gate definition time " << DUR(gate_time);
-  for (it = house_events.begin(); it != house_events.end(); ++it) {
-    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
-    assert(element);
-    RiskAnalysis::DefineHouseEvent(element);
-  }
-  CLOCK(basic_time);
-  for (it = basic_events.begin(); it != basic_events.end(); ++it) {
-    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
-    assert(element);
-    RiskAnalysis::RegisterBasicEvent(element);
-  }
-  LOG(DEBUG2) << "Basic event definition time " << DUR(basic_time);
-  for (it = parameters.begin(); it != parameters.end(); ++it) {
-    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
-    assert(element);
-    RiskAnalysis::RegisterParameter(element);
-  }
   for (it = ccf_groups.begin(); it != ccf_groups.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
     RiskAnalysis::RegisterCcfGroup(element);
   }
+  // Handle house events, basic events, and parameters.
+  RiskAnalysis::ProcessModelData(ft_node);
 }
 
 void RiskAnalysis::ProcessModelData(const xmlpp::Element* model_data) {
