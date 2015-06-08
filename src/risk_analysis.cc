@@ -130,17 +130,27 @@ void RiskAnalysis::Report(std::ostream& out) {
   /// Container for excess primary events not in the analysis.
   /// This container is for warning in case the input is formed not as intended.
   std::set<PrimaryEventPtr> orphan_primary_events;
-
-  // Gather orphan primary events for warning.
   boost::unordered_map<std::string, PrimaryEventPtr>::iterator it_p;
   for (it_p = primary_events_.begin(); it_p != primary_events_.end(); ++it_p) {
     if (it_p->second->IsOrphan()) {
       orphan_primary_events.insert(it_p->second);
     }
   }
-
   if (!orphan_primary_events.empty())
-    rp.ReportOrphans(orphan_primary_events, doc);
+    rp.ReportOrphanPrimaryEvents(orphan_primary_events, doc);
+
+  /// Container for unused parameters not in the analysis.
+  /// This container is for warning in case the input is formed not as intended.
+  std::set<ParameterPtr> unused_parameters;
+  boost::unordered_map<std::string, ParameterPtr>::iterator it_v;
+  for (it_v = parameters_.begin(); it_v != parameters_.end(); ++it_v) {
+    if (it_v->second->users().empty()) {
+      unused_parameters.insert(it_v->second);
+    }
+  }
+
+  if (!unused_parameters.empty())
+    rp.ReportUnusedParameters(unused_parameters, doc);
 
   assert(ftas_.size() == fault_trees_.size());  // All trees are analyzed.
 

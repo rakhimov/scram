@@ -76,6 +76,7 @@ TEST(RiskAnalysisInputTest, CorrectFTAInputs) {
   correct_inputs.push_back(dir + "very_long_mcs.xml");
   correct_inputs.push_back(dir + "unordered_structure.xml");
   correct_inputs.push_back(dir + "non_top_gate.xml");
+  correct_inputs.push_back(dir + "unused_parameter.xml");
 
   RiskAnalysis* ran;
 

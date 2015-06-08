@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -93,14 +94,23 @@ class Parameter : public Expression, public Element {
   void Validate();
 
   /// @returns The name of this variable.
-  inline const std::string& name() { return name_; }
+  inline const std::string& name() const { return name_; }
 
   /// Sets the unit of this parameter.
   /// @param[in] unit A valid unit.
   inline void unit(const Units& unit) { unit_ = unit; }
 
   /// @returns The unit of this parameter.
-  inline const Units& unit() { return unit_; }
+  inline const Units& unit() const { return unit_; }
+
+  /// @returns The users of this variable.
+  inline const std::set<ExpressionPtr> users() const { return users_; }
+
+  /// Adds a user for this parameter.
+  /// @param[in] user The expression that uses this parameter.
+  inline void AddUser(const ExpressionPtr& user) {
+    users_.insert(user);
+  }
 
   inline double Mean() { return expression_->Mean(); }
   inline double Sample() {
@@ -135,6 +145,9 @@ class Parameter : public Expression, public Element {
 
   /// Expression for this parameter.
   ExpressionPtr expression_;
+
+  /// Users of this parameter.
+  std::set<ExpressionPtr> users_;
 };
 
 /// @class MissionTime

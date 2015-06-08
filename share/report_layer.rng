@@ -162,9 +162,9 @@
           </optional>
         </element>
       </optional>
-      <optional>
+      <zeroOrMore>
         <element name="warning"> <text/> </element>
-      </optional>
+      </zeroOrMore>
       <optional>
         <element name="feedback"> <text/> </element>
       </optional>
