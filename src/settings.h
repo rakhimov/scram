@@ -116,38 +116,17 @@ class Settings {
   }
 
  private:
-  /// A flag for probability analysis.
-  bool probability_analysis_;
-
-  /// A flag for importance analysis.
-  bool importance_analysis_;
-
-  /// A flag for uncertainty analysis.
-  bool uncertainty_analysis_;
-
-  /// A flag for common-cause analysis.
-  bool ccf_analysis_;
-
-  /// Limit on the order of minimal cut sets.
-  int limit_order_;
-
-  /// The number of sums in probability calculation series.
-  int num_sums_;
-
-  /// The cut-off probability for minimal cut sets to be in calculations.
-  double cut_off_;
-
-  /// The approximation to be applied for calculations.
-  std::string approx_;
-
-  /// The number of trials for Monte Carlo simulations.
-  int num_trials_;
-
-  /// The seed for the pseudo-random number generator.
-  int seed_;
-
-  /// System mission time.
-  double mission_time_;
+  bool probability_analysis_;  ///< A flag for probability analysis.
+  bool importance_analysis_;  ///< A flag for importance analysis.
+  bool uncertainty_analysis_;  ///< A flag for uncertainty analysis.
+  bool ccf_analysis_;  ///< A flag for common-cause analysis.
+  int limit_order_;  ///< Limit on the order of minimal cut sets.
+  int num_sums_;  ///< The number of sums in probability calculation series.
+  double cut_off_;  ///< The cut-off probability for cut sets.
+  std::string approx_;  ///< The approximation to be applied for calculations.
+  int num_trials_;  ///< The number of trials for Monte Carlo simulations.
+  int seed_;  ///< The seed for the pseudo-random number generator.
+  double mission_time_;  ///< System mission time.
 };
 
 }  // namespace scram

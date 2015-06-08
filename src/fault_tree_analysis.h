@@ -94,11 +94,8 @@ class FaultTreeAnalysis {
   /// Container for minimal cut sets.
   std::set< std::set<std::string> > min_cut_sets_;
 
-  /// Maximum order of minimal cut sets.
-  int max_order_;
-
-  /// Time taken by the core analysis.
-  double analysis_time_;
+  int max_order_;  ///< Maximum order of minimal cut sets.
+  double analysis_time_;  ///< Time taken by the core analysis.
 
   /// The number of unique events in the minimal cut sets.
   /// CCF events are treated as separate events from their group members.

@@ -82,16 +82,11 @@ class Logger {
  private:
   /// Restrict copy construction.
   Logger(const Logger&);
-
   /// Restrict copy assignment.
   Logger& operator=(const Logger&);
 
-  /// Main stringstream to gather the logs.
-  std::ostringstream os_;
-
-  /// Cut-off log level for the entire logging session.
-  static LogLevel report_level_;
-
+  std::ostringstream os_;  ///< Main stringstream to gather the logs.
+  static LogLevel report_level_;  ///< Cut-off log level for reporting.
   /// Translates the logging level into a string. The index is the value
   /// of the enum.
   static const char* level_to_string_[];

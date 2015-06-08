@@ -13,14 +13,9 @@ namespace scram {
 struct Attribute {
   Attribute();
 
-  /// The name that identifies this attribute.
-  std::string name;
-
-  /// Value of this attributes.
-  std::string value;
-
-  /// Optional type of the attribute.
-  std::string type;
+  std::string name;  ///< The name that identifies this attribute.
+  std::string value;  ///< Value of this attributes.
+  std::string type;  ///< Optional type of the attribute.
 };
 
 /// @class Element
@@ -56,11 +51,8 @@ class Element {
   virtual ~Element() {}
 
  private:
-  /// The label for the element.
-  std::string label_;
-
-  /// Collection of attributes.
-  std::map<std::string, Attribute> attributes_;
+  std::string label_;  ///< The label for the element.
+  std::map<std::string, Attribute> attributes_;  ///< Collection of attributes.
 };
 
 /// @class Model
@@ -80,11 +72,8 @@ class Model : public Element {
   inline std::string name() const { return name_; }
 
  private:
-  /// The file where this model is retrieved from.
-  std::string file_;
-
-  /// The name of the model.
-  std::string name_;
+  std::string file_;  ///< The file where this model is retrieved from.
+  std::string name_;  ///< The name of the model.
 };
 
 }  // namespace scram

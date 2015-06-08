@@ -51,13 +51,9 @@ class Event : public Element {
   inline bool IsOrphan() { return parents_.empty(); }
 
  private:
-  /// Id name of a event. It is in lower case.
-  std::string id_;
-
-  /// Original name with capitalizations preserved.
-  std::string name_;
-
-  /// The parents of this event.
+  std::string id_;  ///< Id name of a event. It is in lower case.
+  std::string name_;  ///< Original name with capitalizations preserved.
+  ///< The parents of this event.
   std::map<std::string, boost::shared_ptr<Gate> > parents_;
 };
 
@@ -108,16 +104,10 @@ class Gate : public Event {
   const std::map<std::string, boost::shared_ptr<Event> >& children();
 
  private:
-  /// Gate type.
-  std::string type_;
-
-  /// Vote number for the vote gate.
-  int vote_number_;
-
-  /// The mark for traversal. This mark is useful for toposort.
-  std::string mark_;
-
-  /// The children of this gate.
+  std::string type_;  ///< Gate type.
+  int vote_number_;  ///< Vote number for the vote gate.
+  std::string mark_;  ///< The mark for traversal or toposort.
+  ///< The children of this gate.
   std::map<std::string, boost::shared_ptr<Event> > children_;
 };
 
@@ -147,8 +137,7 @@ class PrimaryEvent : public Event {
   bool has_expression_;
 
  private:
-  /// The type of the primary event.
-  std::string type_;
+  std::string type_;  ///< The type of the primary event.
 };
 
 /// @class BasicEvent
@@ -295,12 +284,9 @@ class CcfEvent : public BasicEvent {
   }
 
  private:
-  /// CCF group that this CCF event is constructed from.
+  /// The name of the CCF group that this CCF event is constructed from.
   std::string ccf_group_name_;
-
-  /// CCF group size.
-  int ccf_group_size_;
-
+  int ccf_group_size_;  ///< CCF group size.
   /// Original names of basic events in this CCF event.
   std::vector<std::string> member_names_;
 };

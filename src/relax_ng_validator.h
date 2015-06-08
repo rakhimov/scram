@@ -45,11 +45,8 @@ class RelaxNGValidator {
   /// @param[in] context The context.
   void parse_context(xmlRelaxNGParserCtxtPtr context);
 
-  /// The schema.
-  xmlRelaxNGPtr schema_;
-
-  /// The validated context.
-  xmlRelaxNGValidCtxtPtr valid_context_;
+  xmlRelaxNGPtr schema_;  ///< The schema.
+  xmlRelaxNGValidCtxtPtr valid_context_;  ///< The validated context.
 };
 
 }  // namespace scram

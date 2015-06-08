@@ -29,8 +29,7 @@ class XMLParser {
   const xmlpp::Document* Document();
 
  private:
-  /// File parser.
-  boost::shared_ptr<xmlpp::DomParser> parser_;
+  boost::shared_ptr<xmlpp::DomParser> parser_;  ///< File parser.
 };
 
 }  // namespace scram

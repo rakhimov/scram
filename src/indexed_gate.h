@@ -188,29 +188,15 @@ class IndexedGate {
   inline bool Revisited() { return visits_[2] ? true : false; }
 
  private:
-  /// Type of this gate. Only two choices are allowed: OR, AND.
-  int type_;
-
-  /// Children of a gate.
-  std::set<int> children_;
-
-  /// Index of this gate.
-  int index_;
-
-  /// String type of this gate, such as NOR, OR, NAND, XOR.
-  std::string string_type_;
-
-  /// Indication if this gate is normal, null, or unity.
-  std::string state_;
-
-  /// Vote number for atleast gate.
-  int vote_number_;
-
+  int type_;  ///< Type of this gate. Only two choices are allowed: OR, AND.
+  std::set<int> children_;  ///< Children of a gate.
+  int index_;  ///< Index of this gate.
+  std::string string_type_;  ///< String type of this gate, such as NOR, OR.
+  std::string state_;  ///< Indication if this gate is normal, null, or unity.
+  int vote_number_;  ///< Vote number for atleast gate.
+  std::set<int> parents_;  ///< Parents of this gate.
   /// This is a traversal vector containing first, second, and last visits.
   int visits_[3];
-
-  /// Parents of this gate.
-  std::set<int> parents_;
 };
 
 }  // namespace scram

@@ -139,11 +139,8 @@ class FaultTree : public Element {
   /// Holder for gates defined in this fault tree container.
   boost::unordered_map<std::string, GatePtr> gates_;
 
-  /// The name of this fault tree.
-  std::string name_;
-
-  /// Top event.
-  GatePtr top_event_;
+  std::string name_;  ///< The name of this fault tree.
+  GatePtr top_event_;  ///< Top event of this fault tree.
 
   /// Holder for intermediate events.
   boost::unordered_map<std::string, GatePtr> inter_events_;
