@@ -22,12 +22,9 @@ This input contains expression that have a cycle through parameters.
     </define-parameter>
     <define-parameter name="Middle">
       <exponential>
-        <parameter name="End"/>
+        <parameter name="Head"/>
         <system-mission-time/>
       </exponential>
-    </define-parameter>
-    <define-parameter name="End">
-      <parameter name="Head"/>
     </define-parameter>
   </define-fault-tree>
 </opsa-mef>

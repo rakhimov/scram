@@ -142,7 +142,7 @@ void RiskAnalysis::Report(std::ostream& out) {
   std::set<ParameterPtr> unused_parameters;
   boost::unordered_map<std::string, ParameterPtr>::iterator it_v;
   for (it_v = parameters_.begin(); it_v != parameters_.end(); ++it_v) {
-    if (it_v->second->users().empty()) unused_parameters.insert(it_v->second);
+    if (it_v->second->unused()) unused_parameters.insert(it_v->second);
   }
 
   if (!unused_parameters.empty())
@@ -713,6 +713,7 @@ bool RiskAnalysis::GetParameterExpression(const xmlpp::Element* expr_element,
     /// @todo check for possible unit clashes.
     if (parameters_.count(name)) {
       expression = parameters_.find(name)->second;
+      parameters_.find(name)->second->unused(false);
     } else {
       std::stringstream msg;
       msg << "Line " << expr_element->get_line() << ":\n";
@@ -1060,7 +1061,7 @@ void RiskAnalysis::DefineCcfFactor(const xmlpp::Element* factor_node,
   // Checking the level for one factor input.
   std::string level = factor_node->get_attribute_value("level");
   boost::trim(level);
-  if (level == "") {
+  if (level.empty()) {
     std::stringstream msg;
     msg << "Line " << factor_node->get_line() << ":\n";
     msg << "CCF group factor level number is not provided.";
@@ -1249,7 +1250,7 @@ std::string RiskAnalysis::CheckInhibitGate(const GatePtr& event) {
 }
 
 void RiskAnalysis::ValidateExpressions() {
-  // Check for cycles in parameters.
+  // Check for cycles in parameters. This must be done before expressions.
   if (!parameters_.empty()) {
     boost::unordered_map<std::string, ParameterPtr>::iterator it;
     for (it = parameters_.begin(); it != parameters_.end(); ++it) {
@@ -1291,7 +1292,7 @@ void RiskAnalysis::ValidateExpressions() {
         msg << it->second->name() << " : " << err.msg() << "\n";
       }
     }
-    if (msg.str() != "") {
+    if (!msg.str().empty()) {
       std::string head = "Invalid probabilities detected:\n";
       throw ValidationError(head + msg.str());
     }

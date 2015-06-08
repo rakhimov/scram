@@ -15,8 +15,7 @@ FaultTree::FaultTree(std::string name) : name_(name), num_basic_events_(0) {}
 
 void FaultTree::AddGate(const GatePtr& gate) {
   if (gates_.count(gate->id())) {
-    throw ValidationError("Trying to doubly define a gate '" +
-                          gate->name() + "'.");
+    throw ValidationError("Trying to redefine gate " + gate->name() + ".");
   }
   gates_.insert(std::make_pair(gate->id(), gate));
 }

@@ -52,11 +52,8 @@ class Expression {
   virtual inline double Min() { return Mean(); }
 
  protected:
-  /// Indication if the expression is already sampled.
-  bool sampled_;
-
-  /// The sampled value.
-  double sampled_value_;
+  bool sampled_;  ///< Indication if the expression is already sampled.
+  double sampled_value_;  ///< The sampled value.
 };
 
 /// @enum Units
@@ -81,7 +78,10 @@ class Parameter : public Expression, public Element {
  public:
   /// Sets the expression of this basic event.
   /// @param[in] name The name of this variable (Case sensitive).
-  explicit Parameter(std::string name) : name_(name), unit_(kUnitless) {}
+  explicit Parameter(std::string name)
+      : name_(name),
+        unused_(true),
+        unit_(kUnitless) {}
 
   /// Sets the expression of this parameter.
   /// @param[in] expression The expression to describe this parameter.
@@ -103,14 +103,12 @@ class Parameter : public Expression, public Element {
   /// @returns The unit of this parameter.
   inline const Units& unit() const { return unit_; }
 
-  /// @returns The users of this variable.
-  inline const std::set<ExpressionPtr> users() const { return users_; }
+  /// Sets the usage state for this parameter.
+  /// @param[in] state The usage state for this parameter.
+  inline void unused(bool state) { unused_ = state; }
 
-  /// Adds a user for this parameter.
-  /// @param[in] user The expression that uses this parameter.
-  inline void AddUser(const ExpressionPtr& user) {
-    users_.insert(user);
-  }
+  /// @returns The usage state of this parameter.
+  inline bool unused() { return unused_; }
 
   inline double Mean() { return expression_->Mean(); }
   inline double Sample() {
@@ -137,17 +135,10 @@ class Parameter : public Expression, public Element {
   /// @todo Rename to DetectCycles.
   void DetectCycle(std::vector<std::string>* path);
 
-  /// Name of this parameter or variable.
-  std::string name_;
-
-  /// Units of this parameter.
-  Units unit_;
-
-  /// Expression for this parameter.
-  ExpressionPtr expression_;
-
-  /// Users of this parameter.
-  std::set<ExpressionPtr> users_;
+  std::string name_;  ///< Name of this parameter or variable.
+  Units unit_;  ///< Units of this parameter.
+  ExpressionPtr expression_;  ///< Expression for this parameter.
+  bool unused_;  ///< Usage state.
 };
 
 /// @class MissionTime
@@ -172,11 +163,8 @@ class MissionTime : public Expression {
   inline bool IsConstant() { return true; }
 
  private:
-  /// The constant's value.
-  double mission_time_;
-
-  /// Units of this parameter.
-  Units unit_;
+  double mission_time_;  ///< The constant's value.
+  Units unit_;  ///< Units of this parameter.
 };
 
 /// @class 1.0 * ConstantExpression
@@ -200,8 +188,7 @@ class ConstantExpression : public Expression {
   inline bool IsConstant() { return true; }
 
  private:
-  /// The constant's value.
-  double value_;
+  double value_;  ///< The constant's value.
 };
 
 /// @class ExponentialExpression
@@ -246,11 +233,8 @@ class ExponentialExpression : public Expression {
   }
 
  private:
-  /// Failure rate in hours.
-  ExpressionPtr lambda_;
-
-  /// Mission time in hours.
-  ExpressionPtr time_;
+  ExpressionPtr lambda_;  ///< Failure rate in hours.
+  ExpressionPtr time_;  ///< Mission time in hours.
 };
 
 /// @class GlmExpression
@@ -307,17 +291,10 @@ class GlmExpression : public Expression {
   }
 
  private:
-  /// Failure rate in hours.
-  ExpressionPtr gamma_;
-
-  /// Failure rate in hours.
-  ExpressionPtr lambda_;
-
-  /// Mission time in hours.
-  ExpressionPtr time_;
-
-  /// Mission time in hours.
-  ExpressionPtr mu_;
+  ExpressionPtr gamma_;  ///< Failure rate in hours.
+  ExpressionPtr lambda_;  ///< Failure rate in hours.
+  ExpressionPtr time_;  ///< Mission time in hours.
+  ExpressionPtr mu_;  ///< Mission time in hours.
 };
 
 /// @class WeibullExpression
@@ -372,17 +349,10 @@ class WeibullExpression : public Expression {
   }
 
  private:
-  /// Scale parameter.
-  ExpressionPtr alpha_;
-
-  /// Shape parameter.
-  ExpressionPtr beta_;
-
-  /// Time shift in hours.
-  ExpressionPtr t0_;
-
-  /// Mission time in hours.
-  ExpressionPtr time_;
+  ExpressionPtr alpha_;  ///< Scale parameter.
+  ExpressionPtr beta_;  ///< Shape parameter.
+  ExpressionPtr t0_;  ///< Time shift in hours.
+  ExpressionPtr time_;  ///< Mission time in hours.
 };
 
 /// @class UniformDeviate
@@ -416,11 +386,8 @@ class UniformDeviate : public Expression {
   inline double Min() { return min_->Min(); }
 
  private:
-  /// Minimum value of the distribution.
-  ExpressionPtr min_;
-
-  /// Maximum value of the distribution.
-  ExpressionPtr max_;
+  ExpressionPtr min_;  ///< Minimum value of the distribution.
+  ExpressionPtr max_;  ///< Maximum value of the distribution.
 };
 
 /// @class NormalDeviate
@@ -456,11 +423,8 @@ class NormalDeviate : public Expression {
   inline double Min() { return mean_->Min() - 6 * sigma_->Max(); }
 
  private:
-  /// Mean value of normal distribution.
-  ExpressionPtr mean_;
-
-  /// Standard deviation of normal distribution.
-  ExpressionPtr sigma_;
+  ExpressionPtr mean_;  ///< Mean value of normal distribution.
+  ExpressionPtr sigma_;  ///< Standard deviation of normal distribution.
 };
 
 /// @class LogNormalDeviate
@@ -511,14 +475,9 @@ class LogNormalDeviate : public Expression {
   inline double Min() { return 0; }
 
  private:
-  /// Mean value of the log-normal distribution.
-  ExpressionPtr mean_;
-
-  /// Error factor of the log-normal distribution.
-  ExpressionPtr ef_;
-
-  /// Confidence level of the log-normal distribution.
-  ExpressionPtr level_;
+  ExpressionPtr mean_;  ///< Mean value of the log-normal distribution.
+  ExpressionPtr ef_;  ///< Error factor of the log-normal distribution.
+  ExpressionPtr level_;  ///< Confidence level of the log-normal distribution.
 };
 
 /// @class GammaDeviate
@@ -559,11 +518,8 @@ class GammaDeviate : public Expression {
   inline double Min() { return 0; }
 
  private:
-  /// The shape parameter of the gamma distribution.
-  ExpressionPtr k_;
-
-  /// The scale factor of the gamma distribution.
-  ExpressionPtr theta_;
+  ExpressionPtr k_;  ///< The shape parameter of the gamma distribution.
+  ExpressionPtr theta_;  ///< The scale factor of the gamma distribution.
 };
 
 /// @class BetaDeviate
@@ -603,11 +559,8 @@ class BetaDeviate : public Expression {
   inline double Min() { return 0; }
 
  private:
-  /// The alpha shape parameter of the beta distribution.
-  ExpressionPtr alpha_;
-
-  /// The beta shape parameter of the beta distribution.
-  ExpressionPtr beta_;
+  ExpressionPtr alpha_;  ///< The alpha shape parameter.
+  ExpressionPtr beta_;  ///< The beta shape parameter.
 };
 
 /// @class Histogram
@@ -700,8 +653,7 @@ class Neg : public Expression {
   inline double Min() { return -expression_->Max(); }
 
  private:
-  /// Expression that is used for negation.
-  ExpressionPtr expression_;
+  ExpressionPtr expression_;  ///< Expression that is used for negation.
 };
 
 /// @class Add
