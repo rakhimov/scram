@@ -3,62 +3,26 @@
 /// description.
 #include "expression.h"
 
-#include "cycle.h"
+#include <boost/pointer_cast.hpp>
+
 #include "error.h"
 #include "random.h"
 
 namespace scram {
 
-void Parameter::Validate() {
-  if (mark_ == "permanent") return;
-  std::vector<std::string> cycle;
-  Parameter::DetectCycle(this, &cycle);
-  if (!cycle.empty()) {
-    std::string msg = "Detected a cycle in " + name_ + " parameter:\n";
-    msg += cycle::PrintCycle(cycle);
-    throw ValidationError(msg);
-  }
-}
-
-bool Parameter::DetectCycle(Parameter* parameter,
-                            std::vector<std::string>* cycle) {
-  if (parameter->mark_ == "") {
-    parameter->mark_ = "temporary";
-    boost::shared_ptr<Parameter> ptr =
-        boost::dynamic_pointer_cast<Parameter>(parameter->expression_);
+void Expression::GatherNodesAndConnectors() {
+  assert(nodes_.empty());
+  assert(connectors_.empty());
+  std::vector<ExpressionPtr>::iterator it;
+  for (it = args_.begin(); it != args_.end(); ++it) {
+    Parameter* ptr = dynamic_cast<Parameter*>(&**it);
     if (ptr) {
-      if (Parameter::DetectCycle(&*ptr, cycle)) {
-        cycle->push_back(parameter->name());
-        return true;
-      }
+      nodes_.push_back(ptr);
     } else {
-      if (Parameter::ContinueExpression(parameter->expression_, cycle)) {
-        cycle->push_back(parameter->name());
-        return true;
-      }
-    }
-    parameter->mark_ = "permanent";
-  } else if (parameter->mark_ == "temporary") {
-    cycle->push_back(parameter->name());
-    return true;
-  }
-  assert(parameter->mark_ == "permanent");
-  return false;  // This also covers permanently marked gates.
-}
-
-bool Parameter::ContinueExpression(const ExpressionPtr& expression,
-                                   std::vector<std::string>* cycle) {
-  std::vector<ExpressionPtr>::const_iterator it;
-  for (it = expression->args_.begin(); it != expression->args_.end(); ++it) {
-    boost::shared_ptr<Parameter> ptr =
-        boost::dynamic_pointer_cast<Parameter>(*it);
-    if (ptr) {
-      if (Parameter::DetectCycle(&*ptr, cycle)) return true;
-    } else {
-      if (Parameter::ContinueExpression(*it, cycle)) return true;
+      connectors_.push_back(&**it);
     }
   }
-  return false;
+  gather_ = false;
 }
 
 void ExponentialExpression::Validate() {

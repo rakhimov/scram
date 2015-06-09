@@ -11,6 +11,7 @@ std::string PrintCycle(const std::vector<std::string>& cycle) {
   std::string cycle_start = *it;
   std::string result = "->" + cycle_start;
   for (++it; *it != cycle_start; ++it) {
+    assert(it != cycle.end());
     result = "->" + *it + result;
   }
   result = cycle_start + result;

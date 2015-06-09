@@ -22,13 +22,15 @@ class Parameter;  // This is for cycle detection through expressions.
 
 /// @class Expression
 /// The base class for all sorts of expressions to describe events.
+/// This class also acts like a connector for parameter nodes and may
+/// create cycles. Expressions are not expected to be shared except for
+/// parameters. In addition, expressions are not expected to be changed
+/// after validation phases.
 class Expression {
-  friend class Parameter;  // This is for cycle detection through expressions.
-
  public:
   typedef boost::shared_ptr<Expression> ExpressionPtr;
 
-  Expression() : sampled_(false), sampled_value_(0) {}
+  Expression() : sampled_(false), sampled_value_(0), gather_(true) {}
 
   virtual ~Expression() {}
 
@@ -55,11 +57,30 @@ class Expression {
   /// Minimum value of this expression. This indication is for sampling cases.
   virtual inline double Min() { return Mean(); }
 
+  /// @returns Parameters as nodes.
+  inline const std::vector<Parameter*>& nodes() {
+    if (gather_) Expression::GatherNodesAndConnectors();
+    return nodes_;
+  }
+
+  /// @returns Non-Parameter Expressions as connectors.
+  inline const std::vector<Expression*>& connectors() {
+    if (gather_) Expression::GatherNodesAndConnectors();
+    return connectors_;
+  }
+
  protected:
   bool sampled_;  ///< Indication if the expression is already sampled.
   double sampled_value_;  ///< The sampled value.
-  /// Expressions arguments.
-  std::vector<ExpressionPtr> args_;
+  std::vector<ExpressionPtr> args_;  ///< Expressions arguments.
+
+ private:
+  /// Gathers nodes and connectors from arguments of the expression.
+  void GatherNodesAndConnectors();
+
+  std::vector<Parameter*> nodes_;  ///< Parameters as nodes.
+  std::vector<Expression*> connectors_;  ///< Expressions as connectors.
+  bool gather_;  ///< A flag to gather nodes and connectors.
 };
 
 /// @enum Units
@@ -97,10 +118,6 @@ class Parameter : public Expression, public Element {
     Expression::args_.push_back(expression);
   }
 
-  /// Cycle detection invoked.
-  /// @throws ValidationError if any cyclic reference is found.
-  void Validate();
-
   /// @returns The name of this variable.
   inline const std::string& name() const { return name_; }
 
@@ -135,6 +152,17 @@ class Parameter : public Expression, public Element {
   inline bool IsConstant() { return expression_->IsConstant(); }
   inline double Max() { return expression_->Max(); }
   inline double Min() { return expression_->Min(); }
+
+  /// This function is for cycle detection.
+  /// @returns The connector between parameters.
+  inline Expression* connector() { return this; }
+
+  /// Sets the mark for this node.
+  /// @param[in] label The specific label for the node.
+  inline void mark(const std::string& label) { mark_ = label; }
+
+  /// @returns The mark of this node.
+  inline const std::string& mark() const { return mark_; }
 
  private:
   typedef boost::shared_ptr<Parameter> ParameterPtr;

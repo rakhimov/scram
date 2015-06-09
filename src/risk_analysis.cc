@@ -13,6 +13,7 @@
 #include <boost/pointer_cast.hpp>
 
 #include "ccf_group.h"
+#include "cycle.h"
 #include "element.h"
 #include "env.h"
 #include "error.h"
@@ -1270,7 +1271,13 @@ void RiskAnalysis::ValidateExpressions() {
   if (!parameters_.empty()) {
     boost::unordered_map<std::string, ParameterPtr>::iterator it;
     for (it = parameters_.begin(); it != parameters_.end(); ++it) {
-      it->second->Validate();
+      std::vector<std::string> cycle;
+      if (cycle::DetectCycle<Parameter, Expression>(&*it->second, &cycle)) {
+        std::string msg = "Detected a cycle in " + it->second->name() +
+                          " parameter:\n";
+        msg += cycle::PrintCycle(cycle);
+        throw ValidationError(msg);
+      }
     }
   }
 
