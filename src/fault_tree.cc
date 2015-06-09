@@ -36,15 +36,6 @@ void FaultTree::Validate() {
       top_event_ = it->second;
     }
   }
-
-  // The gate structure must be checked first.
-  std::vector<std::string> cycle;
-  FaultTree::DetectCycle(top_event_, &cycle);
-  if (!cycle.empty()) {
-    std::string msg = "Detected a cycle in '" + name_ + "' fault tree:\n";
-    msg += cycle::PrintCycle(cycle);
-    throw ValidationError(msg);
-  }
 }
 
 void FaultTree::SetupForAnalysis() {
@@ -61,29 +52,6 @@ void FaultTree::SetupForAnalysis() {
   num_basic_events_ = basic_events_.size();
   // Gather CCF generated basic events.
   FaultTree::GatherCcfBasicEvents();
-}
-
-bool FaultTree::DetectCycle(const GatePtr& gate,
-                            std::vector<std::string>* cycle) {
-  if (gate->mark() == "") {
-    gate->mark("temporary");
-    const std::map<std::string, EventPtr>* children = &gate->children();
-    std::map<std::string, EventPtr>::const_iterator it;
-    for (it = children->begin(); it != children->end(); ++it) {
-      GatePtr child_gate = boost::dynamic_pointer_cast<Gate>(it->second);
-      if (child_gate) {
-        if (FaultTree::DetectCycle(child_gate, cycle)) {
-          cycle->push_back(gate->name());
-          return true;
-        }
-      }
-    }
-    gate->mark("permanent");
-  } else if (gate->mark() == "temporary") {
-    cycle->push_back(gate->name());
-    return true;
-  }
-  return false;  // This also covers permanently marked gates.
 }
 
 void FaultTree::GatherInterEvents(const GatePtr& gate) {

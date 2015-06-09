@@ -1110,7 +1110,7 @@ void RiskAnalysis::ValidateInitialization() {
 
 void RiskAnalysis::CheckFirstLayer() {
   std::stringstream error_messages;
-  // Check if all initialized gates have the right number of children.
+  // Check if all gates have the right number of children and no cycles.
   std::string bad_gates = RiskAnalysis::CheckAllGates();
   if (!bad_gates.empty()) {
     error_messages << "\nThere are problems with the initialized gates:\n"
@@ -1157,6 +1157,13 @@ std::string RiskAnalysis::CheckAllGates() {
 
   boost::unordered_map<std::string, GatePtr>::iterator it;
   for (it = gates_.begin(); it != gates_.end(); ++it) {
+    std::vector<std::string> cycle;
+    if (cycle::DetectCycle<Gate, Gate>(&*it->second, &cycle)) {
+      std::string msg = "Detected a cycle in " + it->second->name() +
+                        " gate:\n";
+      msg += cycle::PrintCycle(cycle);
+      throw ValidationError(msg);
+    }
     msg << RiskAnalysis::CheckGate(it->second);
   }
 

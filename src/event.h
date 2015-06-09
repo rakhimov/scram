@@ -87,12 +87,6 @@ class Gate : public Event {
   ///        this class.
   void vote_number(int vnumber);
 
-  /// @returns The mark of this gate node. Empty string for no mark.
-  inline std::string mark() { return mark_; }
-
-  /// Sets the mark for this gate node.
-  inline void mark(std::string new_mark) { mark_ = new_mark; }
-
   /// Adds a child event into the children list.
   /// @param[in] child A pointer to a child event.
   /// @throws LogicError if the child is being re-inserted.
@@ -103,12 +97,40 @@ class Gate : public Event {
   ///                    at gate initialization.
   const std::map<std::string, boost::shared_ptr<Event> >& children();
 
+  /// This function is for cycle detection.
+  /// @returns The connector between gates.
+  inline Gate* connector() { return this; }
+
+  /// @returns The mark of this gate node. Empty string for no mark.
+  inline const std::string& mark() const { return mark_; }
+
+  /// Sets the mark for this gate node.
+  inline void mark(const std::string& new_mark) { mark_ = new_mark; }
+
+  /// @returns Parameters as nodes.
+  inline const std::vector<Gate*>& nodes() {
+    if (gather_) Gate::GatherNodesAndConnectors();
+    return nodes_;
+  }
+
+  /// @returns Non-Parameter Expressions as connectors.
+  inline const std::vector<Gate*>& connectors() {
+    if (gather_) Gate::GatherNodesAndConnectors();
+    return connectors_;
+  }
+
  private:
+  /// Gathers nodes and connectors from children of the gate.
+  void GatherNodesAndConnectors();
+
   std::string type_;  ///< Gate type.
   int vote_number_;  ///< Vote number for the vote gate.
   std::string mark_;  ///< The mark for traversal or toposort.
-  ///< The children of this gate.
+  /// The children of this gate.
   std::map<std::string, boost::shared_ptr<Event> > children_;
+  std::vector<Gate*> nodes_;  ///< Gate children as nodes.
+  std::vector<Gate*> connectors_;  ///< Formulae as connectors.
+  bool gather_;  ///< A flag to gather nodes and connectors.
 };
 
 /// @class PrimaryEvent

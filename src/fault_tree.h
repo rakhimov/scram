@@ -100,15 +100,6 @@ class FaultTree : public Element {
  private:
   typedef boost::shared_ptr<Event> EventPtr;
 
-  /// Traverses the tree to find a cycle. Interrups the detection at first
-  /// cycle.
-  /// @param[in] gate The gate to start with.
-  /// @param[out] cycle If a cycle is detected, it is given in reverse,
-  ///                   ending with the input gate original name.
-  ///                   This is for printing errors and efficiency.
-  /// @returns True if a cycle is found.
-  bool DetectCycle(const GatePtr& gate, std::vector<std::string>* cycle);
-
   /// Traverses gates recursively to find all intermediate events.
   /// Gates are marked upon visit.
   /// @param[in] gate The gate to start traversal from.

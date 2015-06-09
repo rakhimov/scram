@@ -3,6 +3,7 @@
 #include <boost/shared_ptr.hpp>
 #include <gtest/gtest.h>
 
+#include "cycle.h"
 #include "error.h"
 
 using namespace scram;
@@ -86,6 +87,18 @@ TEST(GateTest, Parent) {
   EXPECT_THROW(inter_event->AddParent(parent_event), LogicError);  // Re-adding.
   EXPECT_NO_THROW(inter_event->parents());
   EXPECT_EQ(inter_event->parents().count(parent_event->id()), 1);
+}
+
+TEST(GateTest, Cycle) {
+  GatePtr top(new Gate("Top"));
+  GatePtr middle(new Gate("Middle"));
+  GatePtr bottom(new Gate("Bottom"));
+  top->AddChild(middle);
+  middle->AddChild(bottom);
+  bottom->AddChild(top);  // Looping here.
+  std::vector<std::string> cycle;
+  bool ret = cycle::DetectCycle<Gate, Gate>(&*top, &cycle);
+  EXPECT_TRUE(ret);
 }
 
 TEST(PrimaryEventTest, HouseProbability) {

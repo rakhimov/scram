@@ -36,19 +36,6 @@ TEST(FaultTreeTest, MultipleTopEvents) {
   delete ft;
 }
 
-TEST(FaultTreeTest, CyclicTree) {
-  FaultTree* ft = new FaultTree("never_fail");
-  GatePtr top(new Gate("Top"));
-  GatePtr middle(new Gate("Middle"));
-  GatePtr bottom(new Gate("Bottom"));
-  top->AddChild(middle);
-  middle->AddChild(bottom);
-  bottom->AddChild(top);  // Looping here.
-  EXPECT_NO_THROW(ft->AddGate(top));
-  EXPECT_THROW(ft->Validate(), ValidationError);
-  delete ft;
-}
-
 TEST(FaultTreeTest, SetupForAnalysis) {
   FaultTree* ft = new FaultTree("never_fail");
   GatePtr top(new Gate("Golden"));

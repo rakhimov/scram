@@ -26,6 +26,7 @@ Gate::Gate(std::string id, std::string type)
     : Event(id),
       type_(type),
       vote_number_(-1),
+      gather_(true),
       mark_("") {}
 
 const std::string& Gate::type() {
@@ -86,6 +87,19 @@ const std::map<std::string, boost::shared_ptr<Event> >& Gate::children() {
     throw LogicError(msg);
   }
   return children_;
+}
+
+void Gate::GatherNodesAndConnectors() {
+  assert(nodes_.empty());
+  assert(connectors_.empty());
+  std::map<std::string, boost::shared_ptr<Event> >::iterator it;
+  for (it = children_.begin(); it != children_.end(); ++it) {
+    Gate* ptr = dynamic_cast<Gate*>(&*it->second);
+    if (ptr) {
+      nodes_.push_back(ptr);
+    }
+  }
+  gather_ = false;
 }
 
 }  // namespace scram
