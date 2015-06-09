@@ -79,10 +79,6 @@ class RiskAnalysisTest : public ::testing::Test {
     return ran->prob_analyses_.begin()->second->importance().find(id)->second;
   }
 
-  bool CheckGate(GatePtr event) {
-    return (ran->CheckGate(event) == "") ? true : false;
-  }
-
   // Uncertainty analysis.
   double mean() {
     assert(!ran->uncertainty_analyses_.empty());

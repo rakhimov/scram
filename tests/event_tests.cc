@@ -101,6 +101,118 @@ TEST(GateTest, Cycle) {
   EXPECT_TRUE(ret);
 }
 
+// Test gate type validation.
+TEST(GateTest, Validate) {
+  GatePtr top(new Gate("top", "and"));  // AND gate.
+  BasicEventPtr A(new BasicEvent("a"));
+  BasicEventPtr B(new BasicEvent("b"));
+  BasicEventPtr C(new BasicEvent("c"));
+
+  EXPECT_THROW(top->Validate(), ValidationError);
+  // AND Gate tests.
+  EXPECT_THROW(top->Validate(), ValidationError);
+  top->AddChild(A);
+  EXPECT_THROW(top->Validate(), ValidationError);
+  top->AddChild(B);
+  EXPECT_NO_THROW(top->Validate());
+  top->AddChild(C);
+  EXPECT_NO_THROW(top->Validate());
+
+  // OR Gate tests.
+  top = GatePtr(new Gate("top", "or"));
+  EXPECT_THROW(top->Validate(), ValidationError);
+  top->AddChild(A);
+  EXPECT_THROW(top->Validate(), ValidationError);
+  top->AddChild(B);
+  EXPECT_NO_THROW(top->Validate());
+  top->AddChild(C);
+  EXPECT_NO_THROW(top->Validate());
+
+  // NOT Gate tests.
+  top = GatePtr(new Gate("top", "not"));
+  EXPECT_THROW(top->Validate(), ValidationError);
+  top->AddChild(A);
+  EXPECT_NO_THROW(top->Validate());
+  top->AddChild(B);
+  EXPECT_THROW(top->Validate(), ValidationError);
+
+  // NULL Gate tests.
+  top = GatePtr(new Gate("top", "null"));
+  EXPECT_THROW(top->Validate(), ValidationError);
+  top->AddChild(A);
+  EXPECT_NO_THROW(top->Validate());
+  top->AddChild(B);
+  EXPECT_THROW(top->Validate(), ValidationError);
+
+  // NOR Gate tests.
+  top = GatePtr(new Gate("top", "nor"));
+  EXPECT_THROW(top->Validate(), ValidationError);
+  top->AddChild(A);
+  EXPECT_THROW(top->Validate(), ValidationError);
+  top->AddChild(B);
+  EXPECT_NO_THROW(top->Validate());
+  top->AddChild(C);
+  EXPECT_NO_THROW(top->Validate());
+
+  // NAND Gate tests.
+  top = GatePtr(new Gate("top", "nand"));
+  EXPECT_THROW(top->Validate(), ValidationError);
+  top->AddChild(A);
+  EXPECT_THROW(top->Validate(), ValidationError);
+  top->AddChild(B);
+  EXPECT_NO_THROW(top->Validate());
+  top->AddChild(C);
+  EXPECT_NO_THROW(top->Validate());
+
+  // XOR Gate tests.
+  top = GatePtr(new Gate("top", "xor"));
+  EXPECT_THROW(top->Validate(), ValidationError);
+  top->AddChild(A);
+  EXPECT_THROW(top->Validate(), ValidationError);
+  top->AddChild(B);
+  EXPECT_NO_THROW(top->Validate());
+  top->AddChild(C);
+  EXPECT_THROW(top->Validate(), ValidationError);
+
+  // VOTE/ATLEAST gate tests.
+  top = GatePtr(new Gate("top", "atleast"));
+  top->vote_number(2);
+  EXPECT_THROW(top->Validate(), ValidationError);
+  top->AddChild(A);
+  EXPECT_THROW(top->Validate(), ValidationError);
+  top->AddChild(B);
+  EXPECT_THROW(top->Validate(), ValidationError);
+  top->AddChild(C);
+  EXPECT_NO_THROW(top->Validate());
+
+  // INHIBIT Gate tests.
+  Attribute inh_attr;
+  inh_attr.name="flavor";
+  inh_attr.value="inhibit";
+  top = GatePtr(new Gate("top", "and"));
+  top->AddAttribute(inh_attr);
+  EXPECT_THROW(top->Validate(), ValidationError);
+  top->AddChild(A);
+  EXPECT_THROW(top->Validate(), ValidationError);
+  top->AddChild(B);
+  EXPECT_THROW(top->Validate(), ValidationError);
+  top->AddChild(C);
+  EXPECT_THROW(top->Validate(), ValidationError);
+
+  top = GatePtr(new Gate("top", "and"));  // Re-initialize.
+  top->AddAttribute(inh_attr);
+
+  Attribute cond;
+  cond.name = "flavor";
+  cond.value = "conditional";
+  C->AddAttribute(cond);
+  top->AddChild(A);  // Basic event.
+  top->AddChild(C);  // Conditional event.
+  EXPECT_NO_THROW(top->Validate());
+  A->AddAttribute(cond);
+  EXPECT_THROW(top->Validate(), ValidationError);
+}
+
 TEST(PrimaryEventTest, HouseProbability) {
   // House primary event.
   HouseEventPtr primary(new HouseEvent("valve"));

@@ -298,17 +298,8 @@ class RiskAnalysis {
   /// Verifies if gates are initialized correctly.
   /// @returns A warning message with a list of all bad gates with problems.
   /// @returns An empty string for no problems detected.
+  /// @throws ValidationError if major problem like a cycle is found.
   std::string CheckAllGates();
-
-  /// Checks if a gate is initialized correctly.
-  /// @returns A warning message with the problem description.
-  /// @returns An empty string for no problems detected.
-  std::string CheckGate(const GatePtr& event);
-
-  /// Checks if an Inhibit gate is initialized correctly.
-  /// @returns A warning message with the problem description.
-  /// @returns An empty string for no problems detected.
-  std::string CheckInhibitGate(const GatePtr& event);
 
   /// Validates expressions and anything that is dependent on them, such
   /// as parameters and basic events.

@@ -97,6 +97,10 @@ class Gate : public Event {
   ///                    at gate initialization.
   const std::map<std::string, boost::shared_ptr<Event> >& children();
 
+  /// Checks if a gate is initialized correctly.
+  /// @throws Validation error if anything is wrong.
+  void Validate();
+
   /// This function is for cycle detection.
   /// @returns The connector between gates.
   inline Gate* connector() { return this; }
@@ -122,6 +126,11 @@ class Gate : public Event {
  private:
   /// Gathers nodes and connectors from children of the gate.
   void GatherNodesAndConnectors();
+
+  /// Checks if an Inhibit gate is initialized correctly.
+  /// @returns A warning message with the problem description.
+  /// @returns An empty string for no problems detected.
+  std::string CheckInhibitGate();
 
   std::string type_;  ///< Gate type.
   int vote_number_;  ///< Vote number for the vote gate.
