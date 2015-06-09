@@ -2,7 +2,6 @@
 /// Implementation of fault tree analysis.
 #include "fault_tree.h"
 
-#include <algorithm>
 #include <map>
 
 #include <boost/pointer_cast.hpp>

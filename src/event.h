@@ -142,6 +142,81 @@ class Gate : public Event {
   bool gather_;  ///< A flag to gather nodes and connectors.
 };
 
+/// @class Formula
+/// Boolean formula with operators and arguments.
+/// Formulas are not expected to be shared.
+class Formula {
+  /// Constructs a formula.
+  /// @param[in] type The logical operator for this Boolean formula.
+  /// @param[in] vote Vote number if the operator is atleast.
+  explicit Formula(std::string type)
+      : type_(type),
+        vote_number_(-1),
+        gather_(true) {}
+
+  /// @returns The gate type.
+  /// @throws LogicError if the gate is not yet assigned.
+  inline const std::string& type() { return type_; }
+
+  /// @returns The vote number if and only if the operator is atleast.
+  /// @throws LogicError if the vote number is not yet assigned.
+  int vote_number();
+
+  /// Sets the vote number only for an atleast gate.
+  /// @param[in] vnumber The vote number.
+  /// @throws InvalidArgument if the vote number is invalid.
+  /// @throws LogicError if the vote number is assigned illegally.
+  /// @note (Children number > vote number)should be checked outside of
+  ///        this class.
+  void vote_number(int vnumber);
+
+  /// Adds an event into the arguments list.
+  /// @param[in] event A pointer to an argument event.
+  /// @throws LogicError if the argument is being re-inserted.
+  void AddArgument(const boost::shared_ptr<Event>& event);
+
+  /// Adds a formula into the arguments list.
+  /// @param[in] formula A pointer to an argument formula.
+  /// @throws LogicError if the formula is being re-inserted.
+  void AddArgument(const boost::shared_ptr<Formula>& formula);
+
+  /// @returns The event arguments of this formula.
+  /// @throws LogicError if there are no event or formula arguments,
+  ///                    which should have been checked at initialization.
+  const std::map<std::string, boost::shared_ptr<Event> >& event_args();
+
+  /// @returns The formula arguments of this formula.
+  /// @throws LogicError if there are no event or formula arguments,
+  ///                    which should have been checked at initialization.
+  const std::set<boost::shared_ptr<Formula> >& formula_args();
+
+  /// @returns Gates as nodes.
+  inline const std::vector<Gate*>& nodes() {
+    if (gather_) Formula::GatherNodesAndConnectors();
+    return nodes_;
+  }
+
+  /// @returns Formulae as connectors.
+  inline const std::vector<Formula*>& connectors() {
+    if (gather_) Formula::GatherNodesAndConnectors();
+    return connectors_;
+  }
+
+ private:
+  /// Gathers nodes and connectors from arguments of the gate.
+  void GatherNodesAndConnectors();
+
+  std::string type_;  ///< Logical operator.
+  int vote_number_;  ///< Vote number for atleast operator.
+  /// Arguments that are events, such as gates, basic and house events.
+  std::map<std::string, boost::shared_ptr<Event> > event_args_;
+  /// Arguments that are formulas if this formula is nested.
+  std::set<boost::shared_ptr<Formula> > formula_args_;
+  std::vector<Gate*> nodes_;  ///< Gate arguments as nodes.
+  std::vector<Formula*> connectors_;  ///< Formulae as connectors.
+  bool gather_;  ///< A flag to gather nodes and connectors.
+};
+
 /// @class PrimaryEvent
 /// This is a base class for events that can cause faults.
 /// This class represents Base, House, Undeveloped, and other events.

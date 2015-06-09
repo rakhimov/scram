@@ -35,10 +35,7 @@ class FaultTree : public Element {
   void AddGate(const GatePtr& gate);
 
   /// Validates this tree's structure and events.
-  /// Checks the tree for cycles.
   /// @throws ValidationError if there are issues with this tree.
-  /// @note This is an expensive function, but it must be called at least
-  /// once after finalizing fault tree instantiation.
   void Validate();
 
   /// Gathers information about the initialized fault tree. Databases
