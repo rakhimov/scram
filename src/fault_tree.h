@@ -64,13 +64,6 @@ class FaultTree : public Element {
     return inter_events_;
   }
 
-  /// @returns The container of intermediate events that are defined implicitly
-  ///          by traversing the tree instead of initiating AddGate() function.
-  /// @warning The tree must be validated and ready for analysis.
-  inline const boost::unordered_map<std::string, GatePtr>& implicit_gates() {
-    return implicit_gates_;
-  }
-
   /// @returns The container of primary events of this tree.
   /// @warning The tree must be validated and ready for analysis.
   inline const boost::unordered_map<std::string, PrimaryEventPtr>&
@@ -108,16 +101,18 @@ class FaultTree : public Element {
   typedef boost::shared_ptr<Event> EventPtr;
 
   /// Traverses the tree to find a cycle. Interrups the detection at first
-  /// cycle. This function has a side effect.
-  /// While traversing, this function observes implicitly-defined gates, and
-  /// those gates are added into the gate containers.
+  /// cycle.
   /// @param[in] gate The gate to start with.
   /// @param[out] cycle If a cycle is detected, it is given in reverse,
   ///                   ending with the input gate original name.
   ///                   This is for printing errors and efficiency.
   /// @returns True if a cycle is found.
-  /// @todo Refactor the side effect of finding gates of the fault tree.
   bool DetectCycle(const GatePtr& gate, std::vector<std::string>* cycle);
+
+  /// Traverses gates recursively to find all intermediate events.
+  /// Gates are marked upon visit.
+  /// @param[in] gate The gate to start traversal from.
+  void GatherInterEvents(const GatePtr& gate);
 
   /// Picks primary events of this tree.
   /// Populates the container of primary events.
@@ -157,11 +152,6 @@ class FaultTree : public Element {
   /// Container for house events of the tree.
   /// This container is filled implicitly by traversing the tree.
   boost::unordered_map<std::string, HouseEventPtr> house_events_;
-
-  /// Implicitly added gates.
-  /// This gates are not added through AddGate() function but by traversing
-  /// the tree as a post-process. This gates may belong to other fault trees.
-  boost::unordered_map<std::string, GatePtr> implicit_gates_;
 
   /// The number of original basic events without new CCF basic events.
   int num_basic_events_;

@@ -23,12 +23,10 @@ void FaultTree::AddGate(const GatePtr& gate) {
 
 void FaultTree::Validate() {
   // Detects the top event. Currently only one top event is allowed.
-  /// @todo Add support for multiple top event.
+  /// @todo Add support for multiple top events.
   boost::unordered_map<std::string, GatePtr>::iterator it;
   for (it = gates_.begin(); it != gates_.end(); ++it) {
-    if (!it->second->IsOrphan()) {
-      inter_events_.insert(*it);
-    } else {
+    if (it->second->IsOrphan()) {
       if (top_event_) {
         throw ValidationError("Multiple top events are detected: " +
                               top_event_->name() + " and " +
@@ -50,23 +48,17 @@ void FaultTree::Validate() {
 }
 
 void FaultTree::SetupForAnalysis() {
-  /// @todo This function may be more flexible and gather information
-  ///       about the changed tree structure. Databases of gates might
-  ///       update optionally.
-
-  // Assumes that the tree is fully developed.
-  // Assumes that there is no change in gate structure of the tree. If there
-  // is a change in gate structure, then the gate information is invalid.
+  // Assumes that the tree is fully developed and validated.
   primary_events_.clear();
   basic_events_.clear();
   ccf_events_.clear();
   house_events_.clear();
-  // Gather all primary events belonging to this tree.
-  FaultTree::GatherPrimaryEvents();
+  inter_events_.clear();
 
+  FaultTree::GatherInterEvents(top_event_);
+  FaultTree::GatherPrimaryEvents();
   // Recording number of original basic events before putting new CCF events.
   num_basic_events_ = basic_events_.size();
-
   // Gather CCF generated basic events.
   FaultTree::GatherCcfBasicEvents();
 }
@@ -80,10 +72,6 @@ bool FaultTree::DetectCycle(const GatePtr& gate,
     for (it = children->begin(); it != children->end(); ++it) {
       GatePtr child_gate = boost::dynamic_pointer_cast<Gate>(it->second);
       if (child_gate) {
-        if (!inter_events_.count(child_gate->id())) {
-          implicit_gates_.insert(std::make_pair(child_gate->id(), child_gate));
-          inter_events_.insert(std::make_pair(child_gate->id(), child_gate));
-        }
         if (FaultTree::DetectCycle(child_gate, cycle)) {
           cycle->push_back(gate->name());
           return true;
@@ -98,11 +86,26 @@ bool FaultTree::DetectCycle(const GatePtr& gate,
   return false;  // This also covers permanently marked gates.
 }
 
+void FaultTree::GatherInterEvents(const GatePtr& gate) {
+  if (gate->mark() == "visited") return;
+  gate->mark("visited");
+  const std::map<std::string, EventPtr>* children = &gate->children();
+  std::map<std::string, EventPtr>::const_iterator it;
+  for (it = children->begin(); it != children->end(); ++it) {
+    GatePtr child_gate = boost::dynamic_pointer_cast<Gate>(it->second);
+    if (child_gate) {
+      inter_events_.insert(std::make_pair(child_gate->id(), child_gate));
+      FaultTree::GatherInterEvents(child_gate);
+    }
+  }
+}
+
 void FaultTree::GatherPrimaryEvents() {
   FaultTree::GetPrimaryEvents(top_event_);
 
   boost::unordered_map<std::string, GatePtr>::iterator it;
   for (it = inter_events_.begin(); it != inter_events_.end(); ++it) {
+    it->second->mark("");
     FaultTree::GetPrimaryEvents(it->second);
   }
 }
