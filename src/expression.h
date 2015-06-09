@@ -65,7 +65,7 @@ class Expression {
 /// @enum Units
 /// Provides units for parameters.
 enum Units {
-  kUnitless,
+  kUnitless = 0,
   kBool,
   kInt,
   kFloat,
@@ -179,6 +179,9 @@ class MissionTime : public Expression {
   /// Sets the unit of this parameter.
   /// @param[in] unit A valid unit.
   inline void unit(const Units& unit) { unit_ = unit; }
+
+  /// @returns The unit of the system mission time.
+  inline const Units& unit() const { return unit_; }
 
   inline double Mean() { return mission_time_; }
   inline double Sample() { return mission_time_; }

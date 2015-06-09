@@ -345,6 +345,9 @@ class RiskAnalysis {
   /// Map of valid units for parameters.
   static std::map<std::string, Units> units_;
 
+  /// String representation of units.
+  static const char* unit_to_string_[];
+
   /// Container for defined expressions.
   std::set<ExpressionPtr> expressions_;
 

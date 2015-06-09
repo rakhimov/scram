@@ -33,6 +33,11 @@ std::map<std::string, Units> RiskAnalysis::units_ =
                                ("years", kYears) ("years-1", kInverseYears)
                                ("fit", kFit) ("demands", kDemands);
 
+const char* RiskAnalysis::unit_to_string_[] = {"unitless", "bool", "int",
+                                               "float", "hours", "hours-1",
+                                               "years", "years-1", "fit",
+                                               "demands"};
+
 RiskAnalysis::RiskAnalysis() {
   // Initialize the mission time with any value.
   mission_time_ = boost::shared_ptr<MissionTime>(new MissionTime());
@@ -650,7 +655,6 @@ void RiskAnalysis::RegisterParameter(const xmlpp::Element* param_node) {
   std::string unit = param_node->get_attribute_value("unit");
   if (unit != "") {
     assert(units_.count(unit));
-    /// @todo Check for parameter unit clash or double definition.
     parameter->unit(units_.find(unit)->second);
   }
   RiskAnalysis::AttachLabelAndAttributes(param_node, parameter);
@@ -708,12 +712,14 @@ bool RiskAnalysis::GetParameterExpression(const xmlpp::Element* expr_element,
                                           ExpressionPtr& expression) {
   assert(expr_element);
   std::string expr_name = expr_element->get_name();
+  std::string param_unit = "";  // The expected unit.
   if (expr_name == "parameter") {
     std::string name = expr_element->get_attribute_value("name");
-    /// @todo check for possible unit clashes.
     if (parameters_.count(name)) {
-      expression = parameters_.find(name)->second;
-      parameters_.find(name)->second->unused(false);
+      ParameterPtr param = parameters_.find(name)->second;
+      param->unused(false);
+      param_unit = unit_to_string_[param->unit()];
+      expression = param;
     } else {
       std::stringstream msg;
       msg << "Line " << expr_element->get_line() << ":\n";
@@ -721,11 +727,21 @@ bool RiskAnalysis::GetParameterExpression(const xmlpp::Element* expr_element,
       throw ValidationError(msg.str());
     }
   } else if (expr_name == "system-mission-time") {
-    /// @todo check for possible unit clashes.
+    param_unit = unit_to_string_[mission_time_->unit()];
     expression = mission_time_;
 
   } else {
     return false;
+  }
+  // Check units.
+  std::string unit = expr_element->get_attribute_value("unit");
+  boost::trim(unit);
+  if (!unit.empty() && unit != param_unit) {
+    std::stringstream msg;
+    msg << "Line " << expr_element->get_line() << ":\n";
+    msg << "Parameter unit mismatch.\nExpected: " << param_unit
+        << "\nGiven: " << unit;
+    throw ValidationError(msg.str());
   }
   return true;
 }

@@ -252,7 +252,6 @@
   <define name="formula">
     <choice>
       <ref name="event"/>
-      <ref name="Boolean-constant"/>
       <element name="and">
         <oneOrMore>
           <ref name="formula"/>

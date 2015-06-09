@@ -53,6 +53,7 @@ def main():
             "undefined_house_event.xml",
             "undefined_gate.xml",
             "undefined_parameter.xml",
+            "wrong_parameter_unit.xml",
             "name_clash_two_trees.xml",
             "def_clash_basic_gate.xml",
             "def_clash_house_gate.xml",
