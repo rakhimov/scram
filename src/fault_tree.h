@@ -119,10 +119,6 @@ class FaultTree : public Element {
   /// @todo Refactor the side effect of finding gates of the fault tree.
   bool DetectCycle(const GatePtr& gate, std::vector<std::string>* cycle);
 
-  /// @param[in] cycle Cycle containing names in reverse order.
-  /// @returns String representation of the cycle.
-  std::string PrintCycle(const std::vector<std::string>& cycle);
-
   /// Picks primary events of this tree.
   /// Populates the container of primary events.
   void GatherPrimaryEvents();

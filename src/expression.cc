@@ -3,6 +3,7 @@
 /// description.
 #include "expression.h"
 
+#include "cycle.h"
 #include "error.h"
 #include "random.h"
 
@@ -14,7 +15,7 @@ void Parameter::Validate() {
   Parameter::DetectCycle(this, &cycle);
   if (!cycle.empty()) {
     std::string msg = "Detected a cycle in " + name_ + " parameter:\n";
-    msg += Parameter::PrintCycle(cycle);
+    msg += cycle::PrintCycle(cycle);
     throw ValidationError(msg);
   }
 }
@@ -58,19 +59,6 @@ bool Parameter::ContinueExpression(const ExpressionPtr& expression,
     }
   }
   return false;
-}
-
-std::string Parameter::PrintCycle(const std::vector<std::string>& cycle) {
-  assert(!cycle.empty());
-  assert(cycle.size() > 1);
-  std::vector<std::string>::const_iterator it = cycle.begin();
-  std::string cycle_start = *it;
-  std::string result = "->" + cycle_start;
-  for (++it; *it != cycle_start; ++it) {
-    result = "->" + *it + result;
-  }
-  result = cycle_start + result;
-  return result;
 }
 
 void ExponentialExpression::Validate() {

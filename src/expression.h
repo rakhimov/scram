@@ -152,10 +152,6 @@ class Parameter : public Expression, public Element {
   bool ContinueExpression(const ExpressionPtr& expression,
                           std::vector<std::string>* cycle);
 
-  /// @param[in] cycle Cycle containing names in reverse order.
-  /// @returns String representation of the cycle.
-  std::string PrintCycle(const std::vector<std::string>& cycle);
-
   std::string name_;  ///< Name of this parameter or variable.
   Units unit_;  ///< Units of this parameter.
   ExpressionPtr expression_;  ///< Expression for this parameter.

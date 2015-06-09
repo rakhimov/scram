@@ -7,6 +7,7 @@
 
 #include <boost/pointer_cast.hpp>
 
+#include "cycle.h"
 #include "error.h"
 
 namespace scram {
@@ -43,7 +44,7 @@ void FaultTree::Validate() {
   FaultTree::DetectCycle(top_event_, &cycle);
   if (!cycle.empty()) {
     std::string msg = "Detected a cycle in '" + name_ + "' fault tree:\n";
-    msg += FaultTree::PrintCycle(cycle);
+    msg += cycle::PrintCycle(cycle);
     throw ValidationError(msg);
   }
 }
@@ -95,18 +96,6 @@ bool FaultTree::DetectCycle(const GatePtr& gate,
     return true;
   }
   return false;  // This also covers permanently marked gates.
-}
-
-std::string FaultTree::PrintCycle(const std::vector<std::string>& cycle) {
-  assert(!cycle.empty());
-  std::vector<std::string>::const_iterator it = cycle.begin();
-  std::string cycle_start = *it;
-  std::string result = "->" + cycle_start;
-  for (++it; *it != cycle_start; ++it) {
-    result = "->" + *it + result;
-  }
-  result = cycle_start + result;
-  return result;
 }
 
 void FaultTree::GatherPrimaryEvents() {
