@@ -209,7 +209,7 @@ TEST_F(RiskAnalysisTest, MCUB) {
 // Apply the minimal cut set upper bound approximation for non-coherent tree.
 // This should be a warning.
 TEST_F(RiskAnalysisTest, McubNonCoherent) {
-  std::string with_prob = "./share/scram/input/benchmark/a_and_not_b.xml";
+  std::string with_prob = "./share/scram/input/core/a_and_not_b.xml";
   // Probability calculations with the MCUB approximation.
   ran->AddSettings(settings.approx("mcub").probability_analysis(true));
   ASSERT_NO_THROW(ran->ProcessInput(with_prob));
@@ -238,8 +238,7 @@ TEST_F(RiskAnalysisTest, ReportIOError) {
 
 // Reporting of the default analysis for MCS only without probabilities.
 TEST_F(RiskAnalysisTest, ReportDefaultMCS) {
-  std::string tree_input =
-      "./share/scram/input/fta/correct_tree_input.xml";
+  std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
 
   std::stringstream schema;
   std::string schema_path = Env::report_schema();
@@ -329,8 +328,7 @@ TEST_F(RiskAnalysisTest, ReportUncertaintyResults) {
 
 // Reporting of CCF analysis.
 TEST_F(RiskAnalysisTest, ReportCCF) {
-  std::string tree_input =
-      "./share/scram/input/benchmark/mgl_ccf.xml";
+  std::string tree_input = "./share/scram/input/core/mgl_ccf.xml";
 
   std::stringstream schema;
   std::string schema_path = Env::report_schema();
@@ -354,8 +352,7 @@ TEST_F(RiskAnalysisTest, ReportCCF) {
 
 // Reporting of Negative events in MCS.
 TEST_F(RiskAnalysisTest, ReportNegativeEvent) {
-  std::string tree_input =
-      "./share/scram/input/benchmark/a_or_not_b.xml";
+  std::string tree_input = "./share/scram/input/core/a_or_not_b.xml";
 
   std::stringstream schema;
   std::string schema_path = Env::report_schema();
@@ -402,8 +399,7 @@ TEST_F(RiskAnalysisTest, ReportAll) {
 
 // Reporting of orphan primary events.
 TEST_F(RiskAnalysisTest, ReportOrphanPrimaryEvents) {
-  std::string tree_input =
-      "./share/scram/input/fta/orphan_primary_event.xml";
+  std::string tree_input = "./share/scram/input/fta/orphan_primary_event.xml";
 
   std::stringstream schema;
   std::string schema_path = Env::report_schema();
@@ -424,8 +420,7 @@ TEST_F(RiskAnalysisTest, ReportOrphanPrimaryEvents) {
 
 // Reporting of unused parameters.
 TEST_F(RiskAnalysisTest, ReportUnusedParameters) {
-  std::string tree_input =
-      "./share/scram/input/fta/unused_parameter.xml";
+  std::string tree_input = "./share/scram/input/fta/unused_parameter.xml";
 
   std::stringstream schema;
   std::string schema_path = Env::report_schema();
