@@ -5,7 +5,7 @@
 // Benchmark Tests for Small Tree fault tree from XFTA.
 // This benchmark is for uncertainty analysis.
 TEST_F(RiskAnalysisTest, SmallTree) {
-  std::string tree_input = "./share/scram/input/benchmark/SmallTree.xml";
+  std::string tree_input = "./share/scram/input/SmallTree/SmallTree.xml";
   std::string e1 = "e1";
   std::string e2 = "e2";
   std::string e3 = "e3";

@@ -6,7 +6,7 @@
 // Valves.
 // Test Minimal cut sets and total probabilty.
 TEST_F(RiskAnalysisTest, TwoTrain) {
-  std::string tree_input = "./share/scram/input/benchmark/two_train.xml";
+  std::string tree_input = "./share/scram/input/TwoTrain/two_train.xml";
   std::string ValveOne = "valveone";  // 0.5
   std::string ValveTwo = "valvetwo";  // 0.5
   std::string PumpOne = "pumpone";  // 0.7

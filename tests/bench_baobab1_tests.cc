@@ -5,9 +5,11 @@
 // Benchmark Tests for Baobab 1 fault tree from XFTA.
 // Test Minimal cut sets.
 TEST_F(RiskAnalysisTest, Baobab_1_Test) {
-  std::string tree_input = "./share/scram/input/benchmark/baobab1.xml";
+  std::vector<std::string> input_files;
+  input_files.push_back("./share/scram/input/Baobab/baobab1.xml");
+  input_files.push_back("./share/scram/input/Baobab/baobab1-basic-events.xml");
   ran->AddSettings(settings.limit_order(6));
-  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->ProcessInputFiles(input_files));
   ASSERT_NO_THROW(ran->Analyze());
   // Minimal cut set check.
   EXPECT_EQ(2684, min_cut_sets().size());

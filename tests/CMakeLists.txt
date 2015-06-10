@@ -22,8 +22,8 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 
 include_directories(${SCRAM_CORE_INCLUDE_DIRS})
 
-# To add a new file, just add it to this list.  Any GoogleTests inside will be automatically
-# added to ctest.
+# To add a new file, just add it to this list.
+# Any GoogleTests inside will be automatically added to ctest.
 set(SCRAM_CORE_TEST_SOURCE ${SCRAM_CORE_TEST_SOURCE}
   "${CMAKE_CURRENT_SOURCE_DIR}/random_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/xml_parser_tests.cc"
@@ -82,7 +82,7 @@ install(FILES ${header_files}
   COMPONENT testing
   )
 
-# read tests after building the driver, and add them to ctest
+# Read tests after building the driver, and add them to ctest.
 set(tgt "scram_tests")
 add_custom_command(TARGET ${tgt}
   POST_BUILD
@@ -94,7 +94,7 @@ add_custom_command(TARGET ${tgt}
   VERBATIM
   )
 
-# copy input files into build directory for testing
+# Copy test input files into the shared directory for testing.
 install(DIRECTORY
   "${CMAKE_CURRENT_SOURCE_DIR}/input"
   DESTINATION share/scram

@@ -19,6 +19,7 @@ set(PROJECT_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(SCRAM_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src")
 set(SCRAM_SHARE_DIR "${PROJECT_SOURCE_DIR}/share")
 set(SCRAM_TEST_DIR "${PROJECT_SOURCE_DIR}/tests")
+set(SCRAM_INPUT_DIR "${PROJECT_SOURCE_DIR}/input")
 
 set(BUILD_SHARED_LIBS TRUE)  # Change this for static building.
 
@@ -137,6 +138,7 @@ include_directories("${SCRAM_SOURCE_DIR}")
 add_subdirectory("${SCRAM_SOURCE_DIR}")
 add_subdirectory("${SCRAM_SHARE_DIR}")
 add_subdirectory("${SCRAM_TEST_DIR}")
+add_subdirectory("${SCRAM_INPUT_DIR}")
 
 ####################### end includes ####################################
 
