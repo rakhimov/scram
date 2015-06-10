@@ -223,10 +223,7 @@ class RiskAnalysis {
 
   /// Processes Expression definitions in input file.
   /// @param[in] expr_element XML expression element containing the definition.
-  /// @param[out] expression Expression described in XML input expression node.
-  /// @throws ValidationError if the expression is not supported.
-  void GetExpression(const xmlpp::Element* expr_element,
-                     ExpressionPtr& expression);
+  ExpressionPtr GetExpression(const xmlpp::Element* expr_element);
 
   /// Processes Constant Expression definitions in input file.
   /// @param[in] expr_element XML expression element containing the definition.
@@ -314,9 +311,6 @@ class RiskAnalysis {
   /// Container for fully defined gates.
   boost::unordered_map<std::string, GatePtr> gates_;
 
-  /// Container for fully defined Boolean formulas.
-  std::vector<FormulaPtr> formulas_;
-
   /// Container for fully defined primary events.
   boost::unordered_map<std::string, PrimaryEventPtr> primary_events_;
 
@@ -336,7 +330,7 @@ class RiskAnalysis {
   static const char* unit_to_string_[];
 
   /// Container for defined expressions.
-  std::set<ExpressionPtr> expressions_;
+  std::vector<ExpressionPtr> expressions_;
 
   /// A collection of models from input files.
   std::map<std::string, ModelPtr> models_;

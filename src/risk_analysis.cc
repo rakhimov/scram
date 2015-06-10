@@ -66,7 +66,9 @@ void RiskAnalysis::ProcessInputFiles(
       throw err;
     }
   }
+  CLOCK(def_time);
   RiskAnalysis::ProcessTbdElements();
+  LOG(DEBUG2) << "Element definition time " << DUR(def_time);
   LOG(DEBUG1) << "Input files are processed in " << DUR(input_time);
 
   CLOCK(valid_time);
@@ -225,7 +227,7 @@ void RiskAnalysis::ProcessInputFile(std::string xml_file) {
   if (!name_attr.empty()) {
     assert(name_attr.size() == 1);
     const xmlpp::Attribute* attr =
-        dynamic_cast<const xmlpp::Attribute*>(*name_attr.begin());
+        dynamic_cast<const xmlpp::Attribute*>(name_attr[0]);
     model_name = attr->get_value();
   }
   ModelPtr new_model(new Model(xml_file, model_name));
@@ -340,7 +342,7 @@ void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
     assert(element);
     RiskAnalysis::RegisterGate(element, fault_tree);
   }
-  LOG(DEBUG2) << "Gate definition time " << DUR(gate_time);
+  LOG(DEBUG2) << "Gate registration time " << DUR(gate_time);
   for (it = ccf_groups.begin(); it != ccf_groups.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
@@ -368,7 +370,7 @@ void RiskAnalysis::ProcessModelData(const xmlpp::Element* model_data) {
     assert(element);
     RiskAnalysis::RegisterBasicEvent(element);
   }
-  LOG(DEBUG2) << "Basic event definition time " << DUR(basic_time);
+  LOG(DEBUG2) << "Basic event registration time " << DUR(basic_time);
   for (it = parameters.begin(); it != parameters.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
@@ -433,7 +435,6 @@ boost::shared_ptr<Formula> RiskAnalysis::GetFormula(
     const xmlpp::Element* formula_node) {
   std::string type = formula_node->get_name();
   FormulaPtr formula(new Formula(type));
-  formulas_.push_back(formula);
   if (type == "atleast") {
     std::string min_num = formula_node->get_attribute_value("min");
     boost::trim(min_num);
@@ -605,8 +606,7 @@ void RiskAnalysis::DefineBasicEvent(const xmlpp::Element* event_node,
     const xmlpp::Element* expr_node =
         dynamic_cast<const xmlpp::Element*>(expressions.back());
     assert(expr_node);
-    ExpressionPtr expression;
-    RiskAnalysis::GetExpression(expr_node, expression);
+    ExpressionPtr expression = RiskAnalysis::GetExpression(expr_node);
     basic_event->expression(expression);
   }
 }
@@ -683,24 +683,25 @@ void RiskAnalysis::DefineParameter(const xmlpp::Element* param_node,
   const xmlpp::Element* expr_node =
       dynamic_cast<const xmlpp::Element*>(expressions.back());
   assert(expr_node);
-  ExpressionPtr expression;
-  RiskAnalysis::GetExpression(expr_node, expression);
+  ExpressionPtr expression = RiskAnalysis::GetExpression(expr_node);
 
   parameter->expression(expression);
 }
 
-void RiskAnalysis::GetExpression(const xmlpp::Element* expr_element,
-                                 ExpressionPtr& expression) {
+boost::shared_ptr<Expression> RiskAnalysis::GetExpression(
+    const xmlpp::Element* expr_element) {
   using scram::RiskAnalysis;
-  ExpressionPtr expression2;
+  ExpressionPtr expression;
+  bool not_parameter = true;  // Parameters are saved in a different container.
   if (GetConstantExpression(expr_element, expression)) {
   } else if (GetParameterExpression(expr_element, expression)) {
+    not_parameter = false;
   } else {
     GetDeviateExpression(expr_element, expression);
   }
   assert(expression);
-  expressions_.insert(expression);
-  // return expression;
+  if (not_parameter) expressions_.push_back(expression);
+  return expression;
 }
 
 bool RiskAnalysis::GetConstantExpression(const xmlpp::Element* expr_element,
@@ -767,191 +768,155 @@ bool RiskAnalysis::GetDeviateExpression(const xmlpp::Element* expr_element,
                                         ExpressionPtr& expression) {
   assert(expr_element);
   std::string expr_name = expr_element->get_name();
+  xmlpp::NodeSet args = expr_element->find("./*");
   if (expr_name == "uniform-deviate") {
-    assert(expr_element->find("./*").size() == 2);
+    assert(args.size() == 2);
     const xmlpp::Element* element =
-        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[0]);
+        dynamic_cast<const xmlpp::Element*>(args[0]);
     assert(element);
-    ExpressionPtr min;
-    GetExpression(element, min);
+    ExpressionPtr min = GetExpression(element);
 
-    element =
-        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[1]);
+    element = dynamic_cast<const xmlpp::Element*>(args[1]);
     assert(element);
-    ExpressionPtr max;
-    GetExpression(element, max);
+    ExpressionPtr max = GetExpression(element);
 
     expression = boost::shared_ptr<UniformDeviate>(
         new UniformDeviate(min, max));
 
   } else if (expr_name == "normal-deviate") {
-    assert(expr_element->find("./*").size() == 2);
+    assert(args.size() == 2);
     const xmlpp::Element* element =
-        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[0]);
+        dynamic_cast<const xmlpp::Element*>(args[0]);
     assert(element);
-    ExpressionPtr mean;
-    GetExpression(element, mean);
+    ExpressionPtr mean = GetExpression(element);
 
-    element =
-        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[1]);
+    element = dynamic_cast<const xmlpp::Element*>(args[1]);
     assert(element);
-    ExpressionPtr sigma;
-    GetExpression(element, sigma);
+    ExpressionPtr sigma = GetExpression(element);
 
     expression = boost::shared_ptr<NormalDeviate>(
         new NormalDeviate(mean, sigma));
 
   } else if (expr_name == "lognormal-deviate") {
-    assert(expr_element->find("./*").size() == 3);
+    assert(args.size() == 3);
     const xmlpp::Element* element =
-        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[0]);
+        dynamic_cast<const xmlpp::Element*>(args[0]);
     assert(element);
-    ExpressionPtr mean;
-    GetExpression(element, mean);
+    ExpressionPtr mean = GetExpression(element);
 
-    element =
-        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[1]);
+    element = dynamic_cast<const xmlpp::Element*>(args[1]);
     assert(element);
-    ExpressionPtr ef;
-    GetExpression(element, ef);
+    ExpressionPtr ef = GetExpression(element);
 
-    element =
-        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[2]);
+    element = dynamic_cast<const xmlpp::Element*>(args[2]);
     assert(element);
-    ExpressionPtr level;
-    GetExpression(element, level);
+    ExpressionPtr level = GetExpression(element);
 
     expression = boost::shared_ptr<LogNormalDeviate>(
         new LogNormalDeviate(mean, ef, level));
 
   } else if (expr_name == "gamma-deviate") {
-    assert(expr_element->find("./*").size() == 2);
+    assert(args.size() == 2);
     const xmlpp::Element* element =
-        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[0]);
+        dynamic_cast<const xmlpp::Element*>(args[0]);
     assert(element);
-    ExpressionPtr k;
-    GetExpression(element, k);
+    ExpressionPtr k = GetExpression(element);
 
-    element =
-        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[1]);
+    element = dynamic_cast<const xmlpp::Element*>(args[1]);
     assert(element);
-    ExpressionPtr theta;
-    GetExpression(element, theta);
+    ExpressionPtr theta = GetExpression(element);
 
     expression = boost::shared_ptr<GammaDeviate>(new GammaDeviate(k, theta));
 
   } else if (expr_name == "beta-deviate") {
-    assert(expr_element->find("./*").size() == 2);
+    assert(args.size() == 2);
     const xmlpp::Element* element =
-        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[0]);
+        dynamic_cast<const xmlpp::Element*>(args[0]);
     assert(element);
-    ExpressionPtr alpha;
-    GetExpression(element, alpha);
+    ExpressionPtr alpha = GetExpression(element);
 
-    element =
-        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[1]);
+    element = dynamic_cast<const xmlpp::Element*>(args[1]);
     assert(element);
-    ExpressionPtr beta;
-    GetExpression(element, beta);
+    ExpressionPtr beta = GetExpression(element);
 
     expression = boost::shared_ptr<BetaDeviate>(new BetaDeviate(alpha, beta));
 
   } else if (expr_name == "histogram") {
     std::vector<ExpressionPtr> boundaries;
     std::vector<ExpressionPtr> weights;
-    xmlpp::NodeSet bins = expr_element->find("./*");
     xmlpp::NodeSet::iterator it;
-    for (it = bins.begin(); it != bins.end(); ++it) {
+    for (it = args.begin(); it != args.end(); ++it) {
       const xmlpp::Element* el = dynamic_cast<const xmlpp::Element*>(*it);
-      assert(el->find("./*").size() == 2);
+      xmlpp::NodeSet pair = el->find("./*");
+      assert(pair.size() == 2);
       const xmlpp::Element* element =
-          dynamic_cast<const xmlpp::Element*>(el->find("./*")[0]);
+          dynamic_cast<const xmlpp::Element*>(pair[0]);
       assert(element);
-      ExpressionPtr bound;
-      GetExpression(element, bound);
+      ExpressionPtr bound = GetExpression(element);
       boundaries.push_back(bound);
 
-      element =
-          dynamic_cast<const xmlpp::Element*>(el->find("./*")[1]);
+      element = dynamic_cast<const xmlpp::Element*>(pair[1]);
       assert(element);
-      ExpressionPtr weight;
-      GetExpression(element, weight);
+      ExpressionPtr weight = GetExpression(element);
       weights.push_back(weight);
     }
     expression = boost::shared_ptr<Histogram>(
         new Histogram(boundaries, weights));
 
   } else if (expr_name == "exponential") {
-    assert(expr_element->find("./*").size() == 2);
+    assert(args.size() == 2);
     const xmlpp::Element* element =
-        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[0]);
+        dynamic_cast<const xmlpp::Element*>(args[0]);
     assert(element);
-    ExpressionPtr lambda;
-    GetExpression(element, lambda);
+    ExpressionPtr lambda = GetExpression(element);
 
-    element =
-        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[1]);
+    element = dynamic_cast<const xmlpp::Element*>(args[1]);
     assert(element);
-    ExpressionPtr time;
-    GetExpression(element, time);
+    ExpressionPtr time = GetExpression(element);
 
     expression = boost::shared_ptr<ExponentialExpression>(
         new ExponentialExpression(lambda, time));
 
   } else if (expr_name == "GLM") {
-    assert(expr_element->find("./*").size() == 4);
+    assert(args.size() == 4);
     const xmlpp::Element* element =
-        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[0]);
+        dynamic_cast<const xmlpp::Element*>(args[0]);
     assert(element);
-    ExpressionPtr gamma;
-    GetExpression(element, gamma);
+    ExpressionPtr gamma = GetExpression(element);
 
-    element =
-        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[1]);
+    element = dynamic_cast<const xmlpp::Element*>(args[1]);
     assert(element);
-    ExpressionPtr lambda;
-    GetExpression(element, lambda);
+    ExpressionPtr lambda = GetExpression(element);
 
-    element =
-        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[2]);
+    element = dynamic_cast<const xmlpp::Element*>(args[2]);
     assert(element);
-    ExpressionPtr mu;
-    GetExpression(element, mu);
+    ExpressionPtr mu = GetExpression(element);
 
-    element =
-        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[3]);
+    element = dynamic_cast<const xmlpp::Element*>(args[3]);
     assert(element);
-    ExpressionPtr time;
-    GetExpression(element, time);
+    ExpressionPtr time = GetExpression(element);
 
     expression = boost::shared_ptr<GlmExpression>(
         new GlmExpression(gamma, lambda, mu, time));
 
   } else if (expr_name == "Weibull") {
-    assert(expr_element->find("./*").size() == 4);
+    assert(args.size() == 4);
     const xmlpp::Element* element =
-        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[0]);
+        dynamic_cast<const xmlpp::Element*>(args[0]);
     assert(element);
-    ExpressionPtr alpha;
-    GetExpression(element, alpha);
+    ExpressionPtr alpha = GetExpression(element);
 
-    element =
-        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[1]);
+    element = dynamic_cast<const xmlpp::Element*>(args[1]);
     assert(element);
-    ExpressionPtr beta;
-    GetExpression(element, beta);
+    ExpressionPtr beta = GetExpression(element);
 
-    element =
-        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[2]);
+    element = dynamic_cast<const xmlpp::Element*>(args[2]);
     assert(element);
-    ExpressionPtr t0;
-    GetExpression(element, t0);
+    ExpressionPtr t0 = GetExpression(element);
 
-    element =
-        dynamic_cast<const xmlpp::Element*>(expr_element->find("./*")[3]);
+    element = dynamic_cast<const xmlpp::Element*>(args[3]);
     assert(element);
-    ExpressionPtr time;
-    GetExpression(element, time);
+    ExpressionPtr time = GetExpression(element);
 
     expression = boost::shared_ptr<WeibullExpression>(
         new WeibullExpression(alpha, beta, t0, time));
@@ -993,7 +958,7 @@ void RiskAnalysis::RegisterCcfGroup(const xmlpp::Element* ccf_node) {
   xmlpp::NodeSet members = ccf_node->find("./members");
   assert(members.size() == 1);
   const xmlpp::Element* element =
-      dynamic_cast<const xmlpp::Element*>(*members.begin());
+      dynamic_cast<const xmlpp::Element*>(members[0]);
 
   RiskAnalysis::ProcessCcfMembers(element, ccf_group);
 
@@ -1017,9 +982,8 @@ void RiskAnalysis::DefineCcfGroup(const xmlpp::Element* ccf_node,
     if (name == "distribution") {
       assert(element->find("./*").size() == 1);
       const xmlpp::Element* expr_node =
-          dynamic_cast<const xmlpp::Element*>(*element->find("./*").begin());
-      ExpressionPtr expression;
-      RiskAnalysis::GetExpression(expr_node, expression);
+          dynamic_cast<const xmlpp::Element*>(element->find("./*")[0]);
+      ExpressionPtr expression = RiskAnalysis::GetExpression(expr_node);
       ccf_group->AddDistribution(expression);
 
     } else if (name == "factor") {
@@ -1103,9 +1067,8 @@ void RiskAnalysis::DefineCcfFactor(const xmlpp::Element* factor_node,
   int level_num = boost::lexical_cast<int>(level);
   assert(factor_node->find("./*").size() == 1);
   const xmlpp::Element* expr_node =
-      dynamic_cast<const xmlpp::Element*>(*factor_node->find("./*").begin());
-  ExpressionPtr expression;
-  RiskAnalysis::GetExpression(expr_node, expression);
+      dynamic_cast<const xmlpp::Element*>(factor_node->find("./*")[0]);
+  ExpressionPtr expression = RiskAnalysis::GetExpression(expr_node);
   try {
     ccf_group->AddFactor(expression, level_num);
   } catch (ValidationError& err) {
@@ -1190,7 +1153,7 @@ void RiskAnalysis::ValidateExpressions() {
   // Validate expressions.
   if (!expressions_.empty()) {
     try {
-      std::set<ExpressionPtr>::iterator it;
+      std::vector<ExpressionPtr>::iterator it;
       for (it = expressions_.begin(); it != expressions_.end(); ++it) {
         (*it)->Validate();
       }
