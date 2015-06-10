@@ -149,12 +149,12 @@ class RiskAnalysis {
 
   /// Registers a gate for later definition.
   /// @param[in] gate_node XML element defining the gate.
-  /// @param[in/out] ft FaultTree under which this gate is defined.
+  /// @param[in,out] ft FaultTree under which this gate is defined.
   void RegisterGate(const xmlpp::Element* gate_node, const FaultTreePtr& ft);
 
   /// Defines a gate for this analysis.
   /// @param[in] gate_node XML element defining the gate.
-  /// @param[in/out] gate Registered gate ready to be defined.
+  /// @param[in,out] gate Registered gate ready to be defined.
   void DefineGate(const xmlpp::Element* gate_node, const GatePtr& gate);
 
   /// Creates a Boolean from the XML elements.
@@ -199,7 +199,7 @@ class RiskAnalysis {
 
   /// Defines a basic event for this analysis.
   /// @param[in] event_node XML element defining the event.
-  /// @param[in/out] basic_event Registered basic event ready to be defined.
+  /// @param[in,out] basic_event Registered basic event ready to be defined.
   /// @throws ValidationError if there is no expression for this basic event.
   void DefineBasicEvent(const xmlpp::Element* event_node,
                         const BasicEventPtr& basic_event);
@@ -217,7 +217,7 @@ class RiskAnalysis {
 
   /// Defines a variable or parameter.
   /// @param[in] param_node XML element defining the parameter.
-  /// @param[in/out] parameter Registered parameter to be defined.
+  /// @param[in,out] parameter Registered parameter to be defined.
   void DefineParameter(const xmlpp::Element* param_node,
                        const ParameterPtr& parameter);
 
@@ -252,7 +252,7 @@ class RiskAnalysis {
 
   /// Defines a common cause failure group for the analysis.
   /// @param[in] ccf_node XML element defining CCF group.
-  /// @param[in/out] ccf_group Registered CCF group to be defined.
+  /// @param[in,out] ccf_group Registered CCF group to be defined.
   void DefineCcfGroup(const xmlpp::Element* ccf_node,
                       const CcfGroupPtr& ccf_group);
 

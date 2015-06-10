@@ -19,7 +19,7 @@ bool ContinueConnector(C* connector, std::vector<std::string>* cycle);
 
 /// Traverses nodes with connectors to find a cycle.
 /// Interrups the detection at first cycle. Nodes get marked.
-/// @param[in/out] node The node to start with.
+/// @param[in,out] node The node to start with.
 /// @param[out] cycle If a cycle is detected, it is given in reverse,
 ///                   ending with the input node's original name.
 ///                   This is for printing errors and efficiency.
@@ -43,7 +43,7 @@ bool DetectCycle(N* node, std::vector<std::string>* cycle) {
 
 /// Helper function to check for cyclic references through connectors.
 /// Connecters may get market upon traversal.
-/// @param[in/out] connector Connector to nodes.
+/// @param[in,out] connector Connector to nodes.
 /// @param[out] cycle The cycle path if detected.
 /// @returns True if a cycle is detected.
 template<class N, class C>

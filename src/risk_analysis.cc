@@ -434,6 +434,10 @@ void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
 boost::shared_ptr<Formula> RiskAnalysis::GetFormula(
     const xmlpp::Element* formula_node) {
   std::string type = formula_node->get_name();
+  if (type == "event" || type == "basic-event" || type == "gate" ||
+      type == "house-event") {
+    type = "null";
+  }
   FormulaPtr formula(new Formula(type));
   if (type == "atleast") {
     std::string min_num = formula_node->get_attribute_value("min");
@@ -441,9 +445,15 @@ boost::shared_ptr<Formula> RiskAnalysis::GetFormula(
     int vote_number = boost::lexical_cast<int>(min_num);
     formula->vote_number(vote_number);
   }
-
+  xmlpp::NodeSet args;
+  if (type == "null") {
+    args = formula_node->get_parent()->find("./*");
+    assert(args.size() == 1);
+  } else {
+    args = formula_node->find("./*");
+  }
   // Process arguments of this formula.
-  RiskAnalysis::ProcessFormula(formula, formula_node->find("./*"));
+  RiskAnalysis::ProcessFormula(formula, args);
   try {
     formula->Validate();
   } catch (ValidationError& err) {

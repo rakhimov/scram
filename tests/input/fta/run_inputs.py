@@ -9,18 +9,22 @@ import subprocess
 import sys
 
 def main():
+    # Input that must be analyzed with the results printed.
+    print_inputs = [
+            "orphan_primary_event.xml",
+            "unused_parameter.xml",
+            "two_trees.xml",
+            ]
+
     # Correct corner case inputs without probability information
     pass_inputs = [
             "correct_tree_input.xml",
             "mixed_definitions.xml",
             "model_data_mixed_definitions.xml",
-            "two_trees.xml",
             "labels_and_attributes.xml",
-            "orphan_primary_event.xml",
             "very_long_mcs.xml",
             "unordered_structure.xml",
             "non_top_gate.xml",
-            "unused_parameter.xml",
             ]
 
     # Correct corner cases with probability information
@@ -88,9 +92,9 @@ def main():
     file_delim = "-" * 80
 
     # Run correct inputs
-    print("\nRUNNING CORRECT INPUTS WITHOUT PROBABILITY CALCULATION")
+    print("\nRUNNING CORRECT INPUTS WITH OUTPUT")
     print(block_delim)
-    for i in pass_inputs:
+    for i in print_inputs:
         print("\nRUNNING : " + i)
         print(file_delim)
         args = ["scram", i]
@@ -98,13 +102,24 @@ def main():
         print(file_delim)
     print(block_delim)
 
+    # Run correct inputs
+    print("\nVALIDATING CORRECT INPUTS WITHOUT PROBABILITY CALCULATION")
+    print(block_delim)
+    for i in pass_inputs:
+        print("\nVALIDATING : " + i)
+        print(file_delim)
+        args = ["scram", i, "--validate"]
+        subprocess.call(args)
+        print(file_delim)
+    print(block_delim)
+
     # Run incorrect inputs
-    print("\nRUNNING INCORRECT INPUTS WITHOUT PROBABILITY CALCULATION")
+    print("\nVALIDATING INCORRECT INPUTS WITHOUT PROBABILITY CALCULATION")
     print(block_delim)
     for i in bad_inputs:
-        print("\nRUNNING : " + i)
+        print("\nVALIDATING : " + i)
         print(file_delim)
-        args = ["scram", i]
+        args = ["scram", i, "--validate"]
         try:
             subprocess.check_call(args)
         except subprocess.CalledProcessError:
@@ -113,23 +128,23 @@ def main():
     print(block_delim)
 
     # Run correct inputs with probabilities
-    print("\nRUNNING CORRECT PROBABILITY INPUTS")
+    print("\nVALIDATING CORRECT PROBABILITY INPUTS")
     print(block_delim)
     for i in pass_probs:
-        print("\nRUNNING : " + i)
+        print("\nVALIDATING : " + i)
         print(file_delim)
-        args = ["scram", i, "--probability", "1"]
+        args = ["scram", i, "--probability", "1", "--validate"]
         subprocess.call(args)
         print(file_delim)
     print(block_delim)
 
     # Run incorrect inputs with probability calculations
-    print("\nRUNNING INCORRECT PROBABILITY INPUTS")
+    print("\nVALIDATING INCORRECT PROBABILITY INPUTS")
     print(block_delim)
     for i in bad_probs:
-        print("\nRUNNING : " + i)
+        print("\nVALIDATING : " + i)
         print(file_delim)
-        args = ["scram", i, "--probability", "1"]
+        args = ["scram", i, "--probability", "1", "--validate"]
         try:
             subprocess.check_call(args)
         except subprocess.CalledProcessError:
