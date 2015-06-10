@@ -58,31 +58,36 @@ Currently Supported OpenPSA MEF Features
 The difference between `opsa_mef_schema` and `schema` can be used to identify
 the supported and unsupported features.
 
-- Label for elements
+- Label
+- Attributes
+- Fault Tree Layer
 
-- Attributes list
+    * Basic events
+    * House events
 
-- Fault Tree Description:
+        + Boolean constant
 
-  * Non-nested gates (formula)
+    * Gates
 
-- Basic Event Description
+        + Non-nested formulae
 
-- Expressions:
+- Model data
+- Common Cause Failure Groups
+
+    * beta-factor
+    * MGL
+    * alpha-factor
+    * phi-factor
+
+- Parameters
+- Expressions
 
     * Constant expressions
     * System mission time
     * Parameter
     * Random deviate (normal, log-normal, histogram, uniform, gamma, beta)
-    * Built-in expressions (exponential with two parameters, exponential with four parameters, Weibull)
-
-- House Event Description:
-
-  * Boolean probability description
-
-- Model data
-
-- Common Cause Failure Groups (beta-factor, MGL, alpha-factor, phi-factor)
+    * Built-in expressions (exponential with two parameters,
+      exponential with four parameters, Weibull)
 
 
 ***************************

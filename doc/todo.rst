@@ -3,10 +3,10 @@ TODO list for the SCRAM Project
 ###############################
 
 .. note::
-    Relative subjective importances within groups are given in *italics*.
+    Relative, subjective importance within groups is given in *italics*.
 
-Currently Low Hanging Fruits
-============================
+Low Hanging Fruits
+==================
 
 - `Issues on GitHub <https://github.com/rakhimov/scram/issues>`_
 
@@ -37,7 +37,8 @@ Major Enhancements and Capabilities
 
 - Consequences and Consequence groups. *Moderate*
 
-- Substitutions to represent Delete Terms, Recovery Rules, and Exchange Event. *Moderate*
+- Substitutions to represent Delete Terms, Recovery Rules,
+  and Exchange Event. *Moderate*
 
 - Dynamic Fault Tree Analysis. *Moderate*
 

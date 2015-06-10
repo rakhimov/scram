@@ -2,15 +2,17 @@
 Coding Style and Quality Assurance
 ##################################
 
-This project adheres to the following coding styles
-===================================================
+Coding Styles
+=============
 
-#. `Google C++ Style Guide (GCSG)`_.
-#. `Google Python Style Guide (GPSG)`_.
-#. `PEP 8 -- Style Guide for Python Code (PEP8)`_.
-#. `KDE CMake Coding Style`_.
-#. `Qt Coding Style`_ for GUI.
-#. `Google Shell Style Guide`_.
+This project adheres to the following coding styles:
+
+    #. `Google C++ Style Guide (GCSG)`_.
+    #. `Google Python Style Guide (GPSG)`_.
+    #. `PEP 8 -- Style Guide for Python Code (PEP8)`_.
+    #. `KDE CMake Coding Style`_.
+    #. `Qt Coding Style`_ for GUI.
+    #. `Google Shell Style Guide`_.
 
 .. _`Google C++ Style Guide (GCSG)`:
     http://google-styleguide.googlecode.com/svn/trunk/cppguide.html
@@ -25,8 +27,8 @@ This project adheres to the following coding styles
 .. _`Google Shell Style Guide`:
     https://google-styleguide.googlecode.com/svn/trunk/shell.xml
 
-Currently nonconforming cases in the C++ source code
-----------------------------------------------------
+Coding Style Violations
+-----------------------
 
 - Exceptions are used. (This is not recommended by GCSG.)
 - Streams are used instead of *printf-like routines*.
@@ -34,20 +36,20 @@ Currently nonconforming cases in the C++ source code
 - C++11 features are not allowed. Only Boost features are used instead.
 - License boilerplate is not included unless the code is from other projects.
 
-The quality of the code is checked with the following tools
-===========================================================
+Monitoring Code Quality
+=======================
+
+C++
+---
 
 #. Performance profiling with Gprof_.
-#. Test coverage check with Gcov_ and reporting with Coveralls_.
+#. Code coverage check with Gcov_ and reporting with Coveralls_.
 #. Test status is tracked on CDash_.
 #. Memory management bugs and leaks with Valgrind_.
 #. Static code analysis with Coverity_.
 #. Cyclomatic complexity analysis with Lizard_.
 #. Google style conformance check with Cpplint_.
 #. Common C++ code problem check with cppclean_.
-#. Python code quality check with Pylint_.
-#. Python code profiling with PyVmMonitor_.
-#. Python code coverage check with coverage_.
 
 .. _Gprof:
     https://www.cs.utah.edu/dept/old/texinfo/as/gprof.html
@@ -67,6 +69,14 @@ The quality of the code is checked with the following tools
     https://google-styleguide.googlecode.com/svn/trunk/cpplint/
 .. _cppclean:
     https://github.com/myint/cppclean
+
+Python
+------
+
+#. Code quality and style check with Pylint_.
+#. Profiling with PyVmMonitor_.
+#. Code coverage check with coverage_.
+
 .. _Pylint:
     http://www.pylint.org/
 .. _PyVmMonitor:
@@ -74,8 +84,23 @@ The quality of the code is checked with the following tools
 .. _coverage:
     http://nedbatchelder.com/code/coverage/
 
+Targets
+-------
+
+====================   ==================   ==================
+Metric                 Before Release       On Release
+====================   ==================   ==================
+C++ Code Coverage      80%                  95%
+C++ Defect Density     0.5 per 1000 SLOC    0.35 per 1000 SLOC
+CCN                    15                   15
+Python Code Coverage   80%                  90%
+Pylint Score           9.0                  9.5
+Documentation          Full                 Full
+====================   ==================   ==================
+
 Testing and Continuous Integration
 ==================================
+
 In order to facilitate better software quality and quality assurance, full
 test coverage is attempted through unit, integration, regression, and
 benchmarking tests. The following tools are used for this purpose:
@@ -92,8 +117,8 @@ These tests are automated, and continuous integration is provided by `Travis CI`
 .. _`Travis CI`:
     https://travis-ci.org/rakhimov/scram
 
-Good references for testing and quality assurance
--------------------------------------------------
+References for testing and quality assurance
+--------------------------------------------
 
 - `Software Testing Fundamentals`_
 - `Software Testing Tutorial`_
@@ -135,7 +160,9 @@ Documentation
 Good documentation of the code and functionality is the requirement for
 maintainability and evolution of the project and its acceptance by users.
 
-The project adheres to the Documentation Driven Development model (`DDD talk by Corey Oordt`_) following the best practices of `Agile Documentation`_ as well.
+The project adheres to the Documentation Driven Development model
+(`DDD talk by Corey Oordt`_),
+following the best practices of `Agile Documentation`_ as well.
 
 Documentation for the project is maintained in the reStructuredText_ format,
 and the final representations are dynamically generated with Sphinx_ in various
