@@ -70,8 +70,8 @@ void Grapher::GraphNode(
     std::map<std::string, int>* pr_repeat,
     std::map<std::string, int>* in_repeat,
     std::ostream& out) {
-  // Populate intermediate and primary events of the input inter event.
-  std::map<std::string, EventPtr> events_children = t->children();
+  // Populate intermediate and primary events of the input intermediate event.
+  std::map<std::string, EventPtr> events_children = t->formula()->event_args();
   std::map<std::string, EventPtr>::iterator it_child;
   for (it_child = events_children.begin(); it_child != events_children.end();
        ++it_child) {
@@ -105,7 +105,7 @@ void Grapher::GraphNode(
 }
 
 void Grapher::FormatTopEvent(const GatePtr& top_event, std::ostream& out) {
-  std::string gate = top_event->type();
+  std::string gate = top_event->formula()->type();
 
   // Special case for inhibit gate.
   if (gate == "and" && top_event->HasAttribute("flavor"))
@@ -124,8 +124,8 @@ void Grapher::FormatTopEvent(const GatePtr& top_event, std::ostream& out) {
       << "label=\"" << top_event->name() << "\\n"
       << "{ " << gate;
   if (gate == "ATLEAST") {
-    out << " " << top_event->vote_number() << "/"
-        << top_event->children().size();
+    out << " " << top_event->formula()->vote_number() << "/"
+        << top_event->formula()->num_args();
   }
   out << " }\"]\n";
 }
@@ -136,7 +136,7 @@ void Grapher::FormatIntermediateEvents(
     std::ostream& out) {
   std::map<std::string, int>::const_iterator it;
   for (it = in_repeat.begin(); it != in_repeat.end(); ++it) {
-    std::string gate = inter_events.find(it->first)->second->type();
+    std::string gate = inter_events.find(it->first)->second->formula()->type();
 
     if (inter_events.find(it->first)->second->HasAttribute("flavor") &&
         gate == "and")
@@ -148,7 +148,7 @@ void Grapher::FormatIntermediateEvents(
       gate_color = gate_colors_.find(gate)->second;
     }
     boost::to_upper(gate);  // This is for graphing.
-    std::string type = inter_events.find(it->first)->second->type();
+    std::string type = inter_events.find(it->first)->second->formula()->type();
     std::string orig_name = inter_events.find(it->first)->second->name();
     for (int i = 0; i <= it->second; ++i) {
       if (i == 0) {
@@ -164,8 +164,10 @@ void Grapher::FormatIntermediateEvents(
           << "label=\"" << orig_name << "\\n"
           << "{ " << gate;
       if (gate == "ATLEAST") {
-        out << " " << inter_events.find(it->first)->second->vote_number()
-            << "/" << inter_events.find(it->first)->second->children().size();
+        out << " " << inter_events.find(it->first)->second
+                                                  ->formula()->vote_number()
+            << "/" << inter_events.find(it->first)->second
+                                                  ->formula()->num_args();
       }
       out << " }\"]\n";
     }

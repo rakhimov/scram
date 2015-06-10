@@ -10,6 +10,7 @@ using namespace scram;
 
 typedef boost::shared_ptr<Event> EventPtr;
 typedef boost::shared_ptr<Gate> GatePtr;
+typedef boost::shared_ptr<Formula> FormulaPtr;
 typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
 typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
 typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
@@ -20,31 +21,37 @@ TEST(EventTest, Id) {
   EXPECT_EQ(event->id(), "event_name");
 }
 
-// Test Gate class
-TEST(GateTest, Gate) {
-  GatePtr top(new Gate("top_event"));
-  // No gate has been set, so the request is an error.
-  EXPECT_THROW(top->type(), LogicError);
-  // Setting the gate.
-  EXPECT_NO_THROW(top->type("and"));
-  // Trying to set the gate again should cause an error.
-  EXPECT_THROW(top->type("and"), LogicError);
-  // Requesting the gate should work without errors after setting.
-  ASSERT_NO_THROW(top->type());
-  EXPECT_EQ(top->type(), "and");
+TEST(EventTest, Parent) {
+  PrimaryEventPtr primary(new PrimaryEvent("valve"));
+  FormulaPtr first_parent(new Formula("trainone"));
+  FormulaPtr second_parent(new Formula("traintwo"));
+  std::set<FormulaPtr> parents;
+  // Request for the parents when it has not been set.
+  EXPECT_THROW(primary->parents(), LogicError);
+  // Setting a parent. Note that there is no check if the parent is not a
+  // primary event. This should be checked by a user creating this instance.
+  EXPECT_NO_THROW(primary->AddParent(first_parent));
+  EXPECT_THROW(primary->AddParent(first_parent), LogicError);  // Resetting.
+  EXPECT_NO_THROW(primary->parents());
+  parents.insert(first_parent);
+  // Adding another parent.
+  EXPECT_NO_THROW(primary->AddParent(second_parent));
+  EXPECT_THROW(primary->AddParent(second_parent), LogicError);  // Resetting.
+  EXPECT_NO_THROW(primary->parents());
+  parents.insert(second_parent);
+  EXPECT_EQ(parents, primary->parents());
 }
 
-TEST(GateTest, VoteNumber) {
-  GatePtr top(new Gate("top_event"));
-  // No gate has been set, so the request is an error.
-  EXPECT_THROW(top->vote_number(), LogicError);
-  // Setting the wrong AND gate.
-  EXPECT_NO_THROW(top->type("and"));
-  // Setting a vote number for non-Vote gate is an error.
+TEST(FormulaTest, VoteNumber) {
+  FormulaPtr top(new Formula("and"));
+  EXPECT_EQ("and", top->type());
+  // Setting a vote number for non-Vote fromula is an error.
   EXPECT_THROW(top->vote_number(2), LogicError);
-  // Resetting to VOTE gate.
-  top = GatePtr(new Gate("top_event"));
-  EXPECT_NO_THROW(top->type("atleast"));
+  // Resetting to VOTE formula.
+  top = FormulaPtr(new Formula("atleast"));
+  EXPECT_EQ("atleast", top->type());
+  // No vote number.
+  EXPECT_THROW(top->vote_number(), LogicError);
   // Illegal vote number.
   EXPECT_THROW(top->vote_number(-2), InvalidArgument);
   // Legal vote number.
@@ -53,161 +60,173 @@ TEST(GateTest, VoteNumber) {
   EXPECT_THROW(top->vote_number(2), LogicError);
   // Requesting the vote number should succeed.
   ASSERT_NO_THROW(top->vote_number());
-  EXPECT_EQ(top->vote_number(), 2);
+  EXPECT_EQ(2, top->vote_number());
 }
 
-TEST(GateTest, Children) {
-  GatePtr top(new Gate("top_event"));
+TEST(FormulaTest, Arguments) {
+  FormulaPtr top(new Formula("and"));
   std::map<std::string, EventPtr> children;
   EventPtr first_child(new Event("first"));
   EventPtr second_child(new Event("second"));
   // Request for children when there are no children is an error.
-  EXPECT_THROW(top->children(), LogicError);
+  EXPECT_THROW(top->event_args(), LogicError);
   // Adding first child.
-  EXPECT_NO_THROW(top->AddChild(first_child));
-  // Readding a child must cause an error.
-  EXPECT_THROW(top->AddChild(first_child), LogicError);
+  EXPECT_NO_THROW(top->AddArgument(first_child));
+  // Re-adding a child must cause an error.
+  EXPECT_THROW(top->AddArgument(first_child), LogicError);
   // Check the contents of the children container.
   children.insert(std::make_pair(first_child->id(), first_child));
-  EXPECT_EQ(top->children(), children);
+  EXPECT_EQ(children, top->event_args());
   // Adding another child.
-  EXPECT_NO_THROW(top->AddChild(second_child));
+  EXPECT_NO_THROW(top->AddArgument(second_child));
   children.insert(std::make_pair(second_child->id(), second_child));
-  EXPECT_EQ(top->children(), children);
-}
-
-// Test Gate class
-TEST(GateTest, Parent) {
-  GatePtr inter_event(new Gate("inter"));
-  GatePtr parent_event(new Gate("parent"));
-  // Request for the parent when it has not been set.
-  EXPECT_THROW(inter_event->parents(), LogicError);
-  // Setting a parent.
-  EXPECT_NO_THROW(inter_event->AddParent(parent_event));
-  EXPECT_THROW(inter_event->AddParent(parent_event), LogicError);  // Re-adding.
-  EXPECT_NO_THROW(inter_event->parents());
-  EXPECT_EQ(inter_event->parents().count(parent_event->id()), 1);
+  EXPECT_EQ(children, top->event_args());
 }
 
 TEST(GateTest, Cycle) {
   GatePtr top(new Gate("Top"));
+  top->name("Top");
+  FormulaPtr formula_one(new Formula("not"));
+  top->formula(formula_one);
   GatePtr middle(new Gate("Middle"));
+  middle->name("Middle");
+  FormulaPtr formula_two(new Formula("not"));
+  middle->formula(formula_two);
   GatePtr bottom(new Gate("Bottom"));
-  top->AddChild(middle);
-  middle->AddChild(bottom);
-  bottom->AddChild(top);  // Looping here.
+  bottom->name("Bottom");
+  FormulaPtr formula_three(new Formula("not"));
+  bottom->formula(formula_three);
+  formula_one->AddArgument(middle);
+  formula_two->AddArgument(bottom);
+  formula_three->AddArgument(top);  // Looping here.
   std::vector<std::string> cycle;
-  bool ret = cycle::DetectCycle<Gate, Gate>(&*top, &cycle);
+  bool ret = cycle::DetectCycle<Gate, Formula>(&*top, &cycle);
   EXPECT_TRUE(ret);
+  std::vector<std::string> print_cycle;
+  print_cycle.push_back("Top");
+  print_cycle.push_back("Bottom");
+  print_cycle.push_back("Middle");
+  print_cycle.push_back("Top");
+  EXPECT_EQ(print_cycle, cycle);
+  EXPECT_EQ("Top->Middle->Bottom->Top", cycle::PrintCycle(cycle));
 }
 
 // Test gate type validation.
-TEST(GateTest, Validate) {
-  GatePtr top(new Gate("top", "and"));  // AND gate.
+TEST(FormulaTest, Validate) {
+  FormulaPtr top(new Formula("and"));
   BasicEventPtr A(new BasicEvent("a"));
   BasicEventPtr B(new BasicEvent("b"));
   BasicEventPtr C(new BasicEvent("c"));
 
+  // AND Formula tests.
   EXPECT_THROW(top->Validate(), ValidationError);
-  // AND Gate tests.
+  top->AddArgument(A);
   EXPECT_THROW(top->Validate(), ValidationError);
-  top->AddChild(A);
-  EXPECT_THROW(top->Validate(), ValidationError);
-  top->AddChild(B);
+  top->AddArgument(B);
   EXPECT_NO_THROW(top->Validate());
-  top->AddChild(C);
-  EXPECT_NO_THROW(top->Validate());
-
-  // OR Gate tests.
-  top = GatePtr(new Gate("top", "or"));
-  EXPECT_THROW(top->Validate(), ValidationError);
-  top->AddChild(A);
-  EXPECT_THROW(top->Validate(), ValidationError);
-  top->AddChild(B);
-  EXPECT_NO_THROW(top->Validate());
-  top->AddChild(C);
+  top->AddArgument(C);
   EXPECT_NO_THROW(top->Validate());
 
-  // NOT Gate tests.
-  top = GatePtr(new Gate("top", "not"));
+  // OR Formula tests.
+  top = FormulaPtr(new Formula("or"));
   EXPECT_THROW(top->Validate(), ValidationError);
-  top->AddChild(A);
+  top->AddArgument(A);
+  EXPECT_THROW(top->Validate(), ValidationError);
+  top->AddArgument(B);
   EXPECT_NO_THROW(top->Validate());
-  top->AddChild(B);
-  EXPECT_THROW(top->Validate(), ValidationError);
-
-  // NULL Gate tests.
-  top = GatePtr(new Gate("top", "null"));
-  EXPECT_THROW(top->Validate(), ValidationError);
-  top->AddChild(A);
-  EXPECT_NO_THROW(top->Validate());
-  top->AddChild(B);
-  EXPECT_THROW(top->Validate(), ValidationError);
-
-  // NOR Gate tests.
-  top = GatePtr(new Gate("top", "nor"));
-  EXPECT_THROW(top->Validate(), ValidationError);
-  top->AddChild(A);
-  EXPECT_THROW(top->Validate(), ValidationError);
-  top->AddChild(B);
-  EXPECT_NO_THROW(top->Validate());
-  top->AddChild(C);
+  top->AddArgument(C);
   EXPECT_NO_THROW(top->Validate());
 
-  // NAND Gate tests.
-  top = GatePtr(new Gate("top", "nand"));
+  // NOT Formula tests.
+  top = FormulaPtr(new Formula("not"));
   EXPECT_THROW(top->Validate(), ValidationError);
-  top->AddChild(A);
-  EXPECT_THROW(top->Validate(), ValidationError);
-  top->AddChild(B);
+  top->AddArgument(A);
   EXPECT_NO_THROW(top->Validate());
-  top->AddChild(C);
-  EXPECT_NO_THROW(top->Validate());
-
-  // XOR Gate tests.
-  top = GatePtr(new Gate("top", "xor"));
-  EXPECT_THROW(top->Validate(), ValidationError);
-  top->AddChild(A);
-  EXPECT_THROW(top->Validate(), ValidationError);
-  top->AddChild(B);
-  EXPECT_NO_THROW(top->Validate());
-  top->AddChild(C);
+  top->AddArgument(B);
   EXPECT_THROW(top->Validate(), ValidationError);
 
-  // VOTE/ATLEAST gate tests.
-  top = GatePtr(new Gate("top", "atleast"));
+  // NULL Formula tests.
+  top = FormulaPtr(new Formula("null"));
+  EXPECT_THROW(top->Validate(), ValidationError);
+  top->AddArgument(A);
+  EXPECT_NO_THROW(top->Validate());
+  top->AddArgument(B);
+  EXPECT_THROW(top->Validate(), ValidationError);
+
+  // NOR Formula tests.
+  top = FormulaPtr(new Formula("nor"));
+  EXPECT_THROW(top->Validate(), ValidationError);
+  top->AddArgument(A);
+  EXPECT_THROW(top->Validate(), ValidationError);
+  top->AddArgument(B);
+  EXPECT_NO_THROW(top->Validate());
+  top->AddArgument(C);
+  EXPECT_NO_THROW(top->Validate());
+
+  // NAND Formula tests.
+  top = FormulaPtr(new Formula("nand"));
+  EXPECT_THROW(top->Validate(), ValidationError);
+  top->AddArgument(A);
+  EXPECT_THROW(top->Validate(), ValidationError);
+  top->AddArgument(B);
+  EXPECT_NO_THROW(top->Validate());
+  top->AddArgument(C);
+  EXPECT_NO_THROW(top->Validate());
+
+  // XOR Formula tests.
+  top = FormulaPtr(new Formula("xor"));
+  EXPECT_THROW(top->Validate(), ValidationError);
+  top->AddArgument(A);
+  EXPECT_THROW(top->Validate(), ValidationError);
+  top->AddArgument(B);
+  EXPECT_NO_THROW(top->Validate());
+  top->AddArgument(C);
+  EXPECT_THROW(top->Validate(), ValidationError);
+
+  // VOTE/ATLEAST formula tests.
+  top = FormulaPtr(new Formula("atleast"));
   top->vote_number(2);
   EXPECT_THROW(top->Validate(), ValidationError);
-  top->AddChild(A);
+  top->AddArgument(A);
   EXPECT_THROW(top->Validate(), ValidationError);
-  top->AddChild(B);
+  top->AddArgument(B);
   EXPECT_THROW(top->Validate(), ValidationError);
-  top->AddChild(C);
+  top->AddArgument(C);
   EXPECT_NO_THROW(top->Validate());
+}
 
+TEST(GateTest, Inhibit) {
+  BasicEventPtr A(new BasicEvent("a"));
+  BasicEventPtr B(new BasicEvent("b"));
+  BasicEventPtr C(new BasicEvent("c"));
   // INHIBIT Gate tests.
   Attribute inh_attr;
   inh_attr.name="flavor";
   inh_attr.value="inhibit";
-  top = GatePtr(new Gate("top", "and"));
+  GatePtr top(new Gate("top"));
+  FormulaPtr formula(new Formula("and"));
+  top->formula(formula);
   top->AddAttribute(inh_attr);
   EXPECT_THROW(top->Validate(), ValidationError);
-  top->AddChild(A);
+  top->formula()->AddArgument(A);
   EXPECT_THROW(top->Validate(), ValidationError);
-  top->AddChild(B);
-  EXPECT_THROW(top->Validate(), ValidationError);
-  top->AddChild(C);
+  top->formula()->AddArgument(B);
   EXPECT_THROW(top->Validate(), ValidationError);
 
-  top = GatePtr(new Gate("top", "and"));  // Re-initialize.
+  top->formula()->AddArgument(C);
+  EXPECT_THROW(top->Validate(), ValidationError);
+
+  top = GatePtr(new Gate("top"));
+  formula = FormulaPtr(new Formula("and"));  // Re-initialize.
+  top->formula(formula);
   top->AddAttribute(inh_attr);
 
   Attribute cond;
   cond.name = "flavor";
   cond.value = "conditional";
   C->AddAttribute(cond);
-  top->AddChild(A);  // Basic event.
-  top->AddChild(C);  // Conditional event.
+  top->formula()->AddArgument(A);  // Basic event.
+  top->formula()->AddArgument(C);  // Conditional event.
   EXPECT_NO_THROW(top->Validate());
   A->AddAttribute(cond);
   EXPECT_THROW(top->Validate(), ValidationError);
@@ -222,26 +241,4 @@ TEST(PrimaryEventTest, HouseProbability) {
   EXPECT_TRUE(primary->state());
   EXPECT_NO_THROW(primary->state(false));
   EXPECT_FALSE(primary->state());
-}
-
-TEST(PrimaryEventTest, Parent) {
-  PrimaryEventPtr primary(new PrimaryEvent("valve"));
-  GatePtr first_parent(new Gate("trainone"));
-  GatePtr second_parent(new Gate("traintwo"));
-  std::map<std::string, GatePtr> parents;
-  // Request for the parents when it has not been set.
-  EXPECT_THROW(primary->parents(), LogicError);
-  // Setting a parent. Note that there is no check if the parent is not a
-  // primary event. This should be checked by a user creating this instance.
-  EXPECT_NO_THROW(primary->AddParent(first_parent));
-  EXPECT_THROW(primary->AddParent(first_parent), LogicError);  // Resetting.
-  EXPECT_NO_THROW(primary->parents());
-  parents.insert(std::make_pair(first_parent->id(), first_parent));
-  EXPECT_EQ(primary->parents(), parents);
-  // Adding another parent.
-  EXPECT_NO_THROW(primary->AddParent(second_parent));
-  EXPECT_THROW(primary->AddParent(second_parent), LogicError);  // Resetting.
-  EXPECT_NO_THROW(primary->parents());
-  parents.insert(std::make_pair(second_parent->id(), second_parent));
-  EXPECT_EQ(primary->parents(), parents);
 }

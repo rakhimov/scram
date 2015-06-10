@@ -73,7 +73,9 @@ void CcfGroup::ApplyModel() {
   std::map<std::string, GatePtr> gates;
   std::map<std::string, BasicEventPtr>::const_iterator it_m;
   for (it_m = members_.begin(); it_m != members_.end(); ++it_m) {
-    GatePtr new_gate(new Gate(it_m->first, "or"));
+    GatePtr new_gate(new Gate(it_m->first));
+    FormulaPtr formula(new Formula("or"));
+    new_gate->formula(formula);
     gates.insert(std::make_pair(new_gate->id(), new_gate));
     it_m->second->ccf_gate(new_gate);
   }
@@ -94,7 +96,7 @@ void CcfGroup::ApplyModel() {
     // Add this basic event to the parent gates.
     std::set<std::string>::iterator it_l;
     for (it_l = it->second.begin(); it_l != it->second.end(); ++it_l) {
-      gates.find(*it_l)->second->AddChild(it->first);
+      gates.find(*it_l)->second->formula()->AddArgument(it->first);
     }
   }
 }

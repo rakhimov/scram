@@ -56,7 +56,8 @@ void FaultTree::SetupForAnalysis() {
 void FaultTree::GatherInterEvents(const GatePtr& gate) {
   if (gate->mark() == "visited") return;
   gate->mark("visited");
-  const std::map<std::string, EventPtr>* children = &gate->children();
+  const std::map<std::string, EventPtr>* children =
+      &gate->formula()->event_args();
   std::map<std::string, EventPtr>::const_iterator it;
   for (it = children->begin(); it != children->end(); ++it) {
     GatePtr child_gate = boost::dynamic_pointer_cast<Gate>(it->second);
@@ -78,7 +79,8 @@ void FaultTree::GatherPrimaryEvents() {
 }
 
 void FaultTree::GetPrimaryEvents(const GatePtr& gate) {
-  const std::map<std::string, EventPtr>* children = &gate->children();
+  const std::map<std::string, EventPtr>* children =
+      &gate->formula()->event_args();
   std::map<std::string, EventPtr>::const_iterator it;
   for (it = children->begin(); it != children->end(); ++it) {
     if (!inter_events_.count(it->first)) {
@@ -112,7 +114,7 @@ void FaultTree::GatherCcfBasicEvents() {
   for (it_b = ccf_events_.begin(); it_b != ccf_events_.end(); ++it_b) {
     assert(it_b->second->HasCcf());
     const std::map<std::string, EventPtr>* children =
-        &it_b->second->ccf_gate()->children();
+        &it_b->second->ccf_gate()->formula()->event_args();
     std::map<std::string, EventPtr>::const_iterator it;
     for (it = children->begin(); it != children->end(); ++it) {
       BasicEventPtr basic_event =

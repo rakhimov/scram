@@ -7,13 +7,14 @@
 using namespace scram;
 
 typedef boost::shared_ptr<Gate> GatePtr;
+typedef boost::shared_ptr<Formula> FormulaPtr;
 typedef boost::shared_ptr<Event> EventPtr;
 
 TEST(FaultTreeTest, AddGate) {
   FaultTree* ft = new FaultTree("never_fail");
   GatePtr gate(new Gate("Golden"));
   EXPECT_NO_THROW(ft->AddGate(gate));
-  EXPECT_THROW(ft->AddGate(gate), ValidationError);  // Trying to readd.
+  EXPECT_THROW(ft->AddGate(gate), ValidationError);  // Trying to re-add.
 
   GatePtr gate_two(new Gate("Iron"));
   EXPECT_NO_THROW(ft->AddGate(gate_two));  // No parent.
@@ -26,8 +27,12 @@ TEST(FaultTreeTest, MultipleTopEvents) {
   GatePtr second_top(new Gate("SecondTop"));
   GatePtr middle(new Gate("Middle"));
   GatePtr bottom(new Gate("Bottom"));
-  top->AddChild(middle);
-  middle->AddChild(bottom);
+  top->formula(FormulaPtr(new Formula("not")));
+  top->formula()->AddArgument(middle);
+  middle->AddParent(top->formula());
+  middle->formula(FormulaPtr(new Formula("not")));
+  middle->formula()->AddArgument(bottom);
+  bottom->AddParent(middle->formula());
   EXPECT_NO_THROW(ft->AddGate(top));
   EXPECT_NO_THROW(ft->AddGate(middle));
   EXPECT_NO_THROW(ft->AddGate(bottom));
@@ -40,7 +45,9 @@ TEST(FaultTreeTest, SetupForAnalysis) {
   FaultTree* ft = new FaultTree("never_fail");
   GatePtr top(new Gate("Golden"));
   EventPtr gate(new Event("Iron"));  // This is not a gate but a generic event.
-  top->AddChild(gate);
+  top->formula(FormulaPtr(new Formula("not")));
+  top->formula()->AddArgument(gate);
+  gate->AddParent(top->formula());
   EXPECT_NO_THROW(ft->AddGate(top));
   EXPECT_NO_THROW(ft->Validate());
 

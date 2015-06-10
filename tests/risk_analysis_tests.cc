@@ -27,17 +27,19 @@ TEST_F(RiskAnalysisTest, ProcessInput) {
   if (gates().count("trainone")) {
     GatePtr inter = gates().find("trainone")->second;
     EXPECT_EQ("trainone", inter->id());
-    ASSERT_NO_THROW(inter->type());
-    EXPECT_EQ("or", inter->type());
+    ASSERT_NO_THROW(inter->formula()->type());
+    EXPECT_EQ("or", inter->formula()->type());
     ASSERT_NO_THROW(inter->parents());
-    EXPECT_EQ("topevent", inter->parents().begin()->first);
+    EXPECT_EQ(gates().find("topevent")->second->formula(),
+              *inter->parents().begin());
   }
   if (primary_events().count("valveone")) {
     PrimaryEventPtr primary = primary_events().find("valveone")->second;
     EXPECT_EQ("valveone", primary->id());
     ASSERT_NO_THROW(primary->parents());
     EXPECT_EQ(1, primary->parents().size());
-    EXPECT_EQ(1, primary->parents().count("trainone"));
+    EXPECT_EQ(gates().find("trainone")->second->formula(),
+              *primary->parents().begin());
     ASSERT_NO_THROW(primary->type());
     EXPECT_EQ("basic", primary->type());
   }

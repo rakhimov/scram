@@ -413,31 +413,47 @@ void RiskAnalysis::RegisterGate(const xmlpp::Element* gate_node,
 
 void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,
                               const GatePtr& gate) {
-  xmlpp::NodeSet gates =
+  xmlpp::NodeSet formulas =
       gate_node->find("./*[name() != 'attributes' and name() != 'label']");
   // Assumes that there are no attributes and labels.
-  assert(gates.size() == 1);
-  // Check if the gate type is supported.
-  const xmlpp::Node* gate_type = gates.front();
-  std::string type = gate_type->get_name();
-
-  int vote_number = -1;  // For atleast/vote gates.
-  if (type == "atleast") {
-    const xmlpp::Element* gate =
-        dynamic_cast<const xmlpp::Element*>(gate_type);
-    std::string min_num = gate->get_attribute_value("min");
-    boost::trim(min_num);
-    vote_number = boost::lexical_cast<int>(min_num);
+  assert(formulas.size() == 1);
+  const xmlpp::Element* formula_node =
+      dynamic_cast<const xmlpp::Element*>(formulas.front());
+  gate->formula(RiskAnalysis::GetFormula(formula_node));
+  try {
+    gate->Validate();
+  } catch (ValidationError& err) {
+    std::stringstream msg;
+    msg << "Line " << gate_node->get_line() << ":\n";
+    throw ValidationError(msg.str() + err.msg());
   }
-
-  gate->type(type);  // Setting the gate type.
-  if (type == "atleast") gate->vote_number(vote_number);
-
-  // Process children formula of this gate.
-  RiskAnalysis::ProcessFormula(gate, gate_type->find("./*"));
 }
 
-void RiskAnalysis::ProcessFormula(const GatePtr& gate,
+boost::shared_ptr<Formula> RiskAnalysis::GetFormula(
+    const xmlpp::Element* formula_node) {
+  std::string type = formula_node->get_name();
+  FormulaPtr formula(new Formula(type));
+  formulas_.push_back(formula);
+  if (type == "atleast") {
+    std::string min_num = formula_node->get_attribute_value("min");
+    boost::trim(min_num);
+    int vote_number = boost::lexical_cast<int>(min_num);
+    formula->vote_number(vote_number);
+  }
+
+  // Process arguments of this formula.
+  RiskAnalysis::ProcessFormula(formula, formula_node->find("./*"));
+  try {
+    formula->Validate();
+  } catch (ValidationError& err) {
+    std::stringstream msg;
+    msg << "Line " << formula_node->get_line() << ":\n";
+    throw ValidationError(msg.str() + err.msg());
+  }
+  return formula;
+}
+
+void RiskAnalysis::ProcessFormula(const FormulaPtr& formula,
                                   const xmlpp::NodeSet& events) {
   std::set<std::string> children_id;  // To detect repeated children.
   xmlpp::NodeSet::const_iterator it;
@@ -473,25 +489,25 @@ void RiskAnalysis::ProcessFormula(const GatePtr& gate,
     EventPtr child(new Event(id));
     child->name(name);
     if (element_type == "event") {  // Undefined type yet.
-      RiskAnalysis::ProcessFormulaEvent(event, gate, child);
+      RiskAnalysis::ProcessFormulaEvent(event, child);
 
     } else if (element_type == "gate") {
-      RiskAnalysis::ProcessFormulaGate(event, gate, child);
+      RiskAnalysis::ProcessFormulaGate(event, child);
 
     } else if (element_type == "basic-event") {
-      RiskAnalysis::ProcessFormulaBasicEvent(event, gate, child);
+      RiskAnalysis::ProcessFormulaBasicEvent(event, child);
 
     } else if (element_type == "house-event") {
-      RiskAnalysis::ProcessFormulaHouseEvent(event, gate, child);
+      RiskAnalysis::ProcessFormulaHouseEvent(event, child);
     }
 
-    gate->AddChild(child);
-    child->AddParent(gate);
+    formula->AddArgument(child);
+    child->AddParent(formula);
   }
 }
 
 void RiskAnalysis::ProcessFormulaEvent(const xmlpp::Element* event,
-                                       const GatePtr& gate, EventPtr& child) {
+                                       EventPtr& child) {
   std::string id = child->id();
   std::string name = child->name();
   if (primary_events_.count(id)) {
@@ -509,7 +525,6 @@ void RiskAnalysis::ProcessFormulaEvent(const xmlpp::Element* event,
 }
 
 void RiskAnalysis::ProcessFormulaBasicEvent(const xmlpp::Element* event,
-                                            const GatePtr& gate,
                                             EventPtr& child) {
   std::string id = child->id();
   std::string name = child->name();
@@ -523,7 +538,6 @@ void RiskAnalysis::ProcessFormulaBasicEvent(const xmlpp::Element* event,
 }
 
 void RiskAnalysis::ProcessFormulaHouseEvent(const xmlpp::Element* event,
-                                            const GatePtr& gate,
                                             EventPtr& child) {
   std::string id = child->id();
   std::string name = child->name();
@@ -544,7 +558,6 @@ void RiskAnalysis::ProcessFormulaHouseEvent(const xmlpp::Element* event,
 }
 
 void RiskAnalysis::ProcessFormulaGate(const xmlpp::Element* event,
-                                      const GatePtr& gate,
                                       EventPtr& child) {
   std::string id = child->id();
   std::string name = child->name();
@@ -679,12 +692,15 @@ void RiskAnalysis::DefineParameter(const xmlpp::Element* param_node,
 void RiskAnalysis::GetExpression(const xmlpp::Element* expr_element,
                                  ExpressionPtr& expression) {
   using scram::RiskAnalysis;
-  assert(expr_element);
+  ExpressionPtr expression2;
   if (GetConstantExpression(expr_element, expression)) {
   } else if (GetParameterExpression(expr_element, expression)) {
-  } else if (GetDeviateExpression(expr_element, expression)) {
+  } else {
+    GetDeviateExpression(expr_element, expression);
   }
+  assert(expression);
   expressions_.insert(expression);
+  // return expression;
 }
 
 bool RiskAnalysis::GetConstantExpression(const xmlpp::Element* expr_element,
@@ -1109,13 +1125,18 @@ void RiskAnalysis::ValidateInitialization() {
 }
 
 void RiskAnalysis::CheckFirstLayer() {
-  std::stringstream error_messages;
-  // Check if all gates have the right number of children and no cycles.
-  std::string bad_gates = RiskAnalysis::CheckAllGates();
-  if (!bad_gates.empty()) {
-    error_messages << "\nThere are problems with the initialized gates:\n"
-                   << bad_gates;
+  // Check if all gates have no cycles.
+  boost::unordered_map<std::string, GatePtr>::iterator it;
+  for (it = gates_.begin(); it != gates_.end(); ++it) {
+    std::vector<std::string> cycle;
+    if (cycle::DetectCycle<Gate, Formula>(&*it->second, &cycle)) {
+      std::string msg = "Detected a cycle in " + it->second->name() +
+                        " gate:\n";
+      msg += cycle::PrintCycle(cycle);
+      throw ValidationError(msg);
+    }
   }
+  std::stringstream error_messages;
   // Check if all primary events have expressions for probability analysis.
   if (settings_.probability_analysis_) {
     std::string msg = "";
@@ -1149,29 +1170,6 @@ void RiskAnalysis::CheckSecondLayer() {
       it->second->Validate();
     }
   }
-}
-
-std::string RiskAnalysis::CheckAllGates() {
-  std::stringstream msg;
-  msg << "";  // An empty default message is the indicator of no problems.
-
-  boost::unordered_map<std::string, GatePtr>::iterator it;
-  for (it = gates_.begin(); it != gates_.end(); ++it) {
-    std::vector<std::string> cycle;
-    if (cycle::DetectCycle<Gate, Gate>(&*it->second, &cycle)) {
-      std::string msg = "Detected a cycle in " + it->second->name() +
-                        " gate:\n";
-      msg += cycle::PrintCycle(cycle);
-      throw ValidationError(msg);
-    }
-    try {
-      it->second->Validate();
-    } catch (ValidationError& err) {
-      msg << err.msg() << "\n";
-    }
-  }
-
-  return msg.str();
 }
 
 void RiskAnalysis::ValidateExpressions() {

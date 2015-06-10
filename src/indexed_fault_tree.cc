@@ -138,14 +138,14 @@ void IndexedFaultTree::InitiateIndexedFaultTree(
   boost::unordered_map<int, GatePtr>::const_iterator it;
   for (it = int_to_inter.begin(); it != int_to_inter.end(); ++it) {
     IndexedGatePtr gate(new IndexedGate(it->first));
-    gate->string_type(it->second->type());  // Get the original gate type.
+    gate->string_type(it->second->formula()->type());
     if (gate->string_type() == "atleast")
-      gate->vote_number(it->second->vote_number());
+      gate->vote_number(it->second->formula()->vote_number());
 
     typedef boost::shared_ptr<Event> EventPtr;
 
     const std::map<std::string, EventPtr>* children =
-        &it->second->children();
+        &it->second->formula()->event_args();
     std::map<std::string, EventPtr>::const_iterator it_children;
     for (it_children = children->begin();
          it_children != children->end(); ++it_children) {
