@@ -14,36 +14,36 @@ graphical representation and validation.
 
 General Description
 ===================
-* Use of pseudo-random numbers to determine the structure of the tree.
-* The number of basic events is set by a user.
-* The seed of the pseudo-random number generator is fixed and set by a user.
-* Nodes in the fault tree are randomly chosen between a new or common nodes.
-* Names are assigned sequentially. E#, H#, CCF#, and G#.
-* Probabilities for basic events are generated randomly.
-* The fault tree is reproducible with the same parameters and the seed.
-* The larger the fault tree is, the closer its characteristics are to the
+- Use of pseudo-random numbers to determine the structure of the tree.
+- The number of basic events is set by a user.
+- The seed of the pseudo-random number generator is fixed and set by a user.
+- Nodes in the fault tree are randomly chosen between a new or common nodes.
+- Names are assigned sequentially. E#, H#, CCF#, and G#.
+- Probabilities for basic events are generated randomly.
+- The fault tree is reproducible with the same parameters and the seed.
+- The larger the fault tree is, the closer its characteristics are to the
   user-supplied parameters.
-* The output is topologically sorted and valid for other analysis tools.
+- The output is topologically sorted and valid for other analysis tools.
 
 Script arguments
 ================
-* The seed for the pseudo-random number generator.
-* The number of basic events.
-* The number of house events.
-* The number of CCF (MGL only) groups.
-* The average number of children for gates.
-* Percentage of common basic events. This events may show up in several places
+- The seed for the pseudo-random number generator.
+- The number of basic events.
+- The number of house events.
+- The number of CCF (MGL only) groups.
+- The average number of children for gates.
+- Percentage of common basic events. This events may show up in several places
   in the resulting fault tree.
-* Percentage of common gates per gate. The acyclic property is ensured.
-* The average number of parents for common basic events.
-* The average number of parents for common gates.
-* Minimum and maximum probabilities for basic events.
-* Weights for the gate types: AND, OR, K/N, NOT, XOR.
-* Optional use of more complex gates (K/N, NOT, XOR) only if the weights
+- Percentage of common gates per gate. The acyclic property is ensured.
+- The average number of parents for common basic events.
+- The average number of parents for common gates.
+- Minimum and maximum probabilities for basic events.
+- Weights for the gate types: AND, OR, K/N, NOT, XOR.
+- Optional use of more complex gates (K/N, NOT, XOR) only if the weights
   are given.
-* Output file name.
-* Output formats: shorthand or XML(default).
-* An option to merge gates into nested formulas for output.
+- Output file name.
+- Output formats: shorthand or XML(default).
+- An option to merge gates into nested formulas for output.
 
 Note on Performance
 ===================

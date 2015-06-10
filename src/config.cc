@@ -36,7 +36,7 @@ Config::Config(std::string config_file) : output_path_("") {
     err.msg("In file '" + config_file + "', " + err.msg());
     throw err;
   }
-  xmlpp::Document* doc = parser->Document();
+  const xmlpp::Document* doc = parser->Document();
   const xmlpp::Node* root = doc->get_root_node();
   assert(root->get_name() == "config");
   xmlpp::NodeSet roots_children = root->find("./*");

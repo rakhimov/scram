@@ -20,9 +20,6 @@ class Grapher {
  public:
   typedef boost::shared_ptr<FaultTree> FaultTreePtr;
 
-  /// Initializes gate and primary event colors.
-  Grapher();
-
   /// Outputs a file with instructions for graphviz dot to create a fault tree.
   /// This function must be called only after initializing the tree.
   /// @param[in] fault_tree Fault Tree to draw.
@@ -76,10 +73,8 @@ class Grapher {
       bool prob_requested,
       std::ostream& out);
 
-  /// Gate colors.
-  std::map<std::string, std::string> gate_colors_;
-  /// Primary event colors.
-  std::map<std::string, std::string> event_colors_;
+  static std::map<std::string, std::string> gate_colors_;  ///< Gate colors.
+  static std::map<std::string, std::string> event_colors_;  ///< Event colors.
 };
 
 }  // namespace scram

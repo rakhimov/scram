@@ -21,8 +21,7 @@ class Env {
   static const std::string report_schema();
 
  private:
-  /// Installation directory.
-  static std::string instdir_;
+  static std::string instdir_;  ///< Installation directory.
 };
 
 }  // namespace scram

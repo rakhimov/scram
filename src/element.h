@@ -13,14 +13,9 @@ namespace scram {
 struct Attribute {
   Attribute();
 
-  /// The name that identifies this attribute.
-  std::string name;
-
-  /// Value of this attributes.
-  std::string value;
-
-  /// Optional type of the attribute.
-  std::string type;
+  std::string name;  ///< The name that identifies this attribute.
+  std::string value;  ///< Value of this attributes.
+  std::string type;  ///< Optional type of the attribute.
 };
 
 /// @class Element
@@ -56,11 +51,29 @@ class Element {
   virtual ~Element() {}
 
  private:
-  /// The label for the element.
-  std::string label_;
+  std::string label_;  ///< The label for the element.
+  std::map<std::string, Attribute> attributes_;  ///< Collection of attributes.
+};
 
-  /// Collection of attributes.
-  std::map<std::string, Attribute> attributes_;
+/// @class Model
+/// This class represents a model that is defined in one input file.
+class Model : public Element {
+ public:
+  /// Creates a model from with the input file and name as identifiers.
+  /// This information can be used to detect duplications.
+  /// @param[in] file The file where this model is defined.
+  /// @param[in] name The optional name for the model.
+  explicit Model(std::string file, std::string name = "");
+
+  /// @returns The file of this model.
+  inline std::string file() const { return file_; }
+
+  /// @returns The name of the model.
+  inline std::string name() const { return name_; }
+
+ private:
+  std::string file_;  ///< The file where this model is retrieved from.
+  std::string name_;  ///< The name of the model.
 };
 
 }  // namespace scram

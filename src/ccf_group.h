@@ -25,7 +25,6 @@ class CcfGroup : public Element {
  public:
   typedef boost::shared_ptr<Expression> ExpressionPtr;
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
-  typedef boost::shared_ptr<Gate> GatePtr;
 
   virtual ~CcfGroup() {}
 
@@ -77,6 +76,9 @@ class CcfGroup : public Element {
   void ApplyModel();
 
  protected:
+  typedef boost::shared_ptr<Gate> GatePtr;
+  typedef boost::shared_ptr<Formula> FormulaPtr;
+
   /// Constructor to be used by derived classes.
   /// @param[in] name The name of a CCF group.
   /// @param[in] model CCF model of this group.

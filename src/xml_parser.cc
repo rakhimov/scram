@@ -16,8 +16,7 @@ void XMLParser::Init(const std::stringstream& xml_input_snippet) {
   parser_ = boost::shared_ptr<xmlpp::DomParser>(new xmlpp::DomParser());
   try {
     parser_->parse_memory(xml_input_snippet.str());
-
-    if (!parser_) { throw ValidationError("Could not parse XML file."); }
+    if (!parser_) throw ValidationError("Could not parse XML file.");
   } catch (std::exception& ex) {
     throw ValidationError("Error loading XML file: " + std::string(ex.what()));
   }
@@ -29,8 +28,8 @@ void XMLParser::Validate(const std::stringstream& xml_schema_snippet) {
   validator.Validate(this->Document());
 }
 
-xmlpp::Document* XMLParser::Document() {
-  xmlpp::Document* doc = parser_->get_document();
+const xmlpp::Document* XMLParser::Document() {
+  const xmlpp::Document* doc = parser_->get_document();
   return doc;
 }
 

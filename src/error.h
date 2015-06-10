@@ -37,11 +37,8 @@ class Error : public std::exception {
   std::string msg_;
 
  private:
-  /// SCRAM prefix specific to the application.
-  static const std::string kPrefix_;
-
-  /// The message to throw with the prefix.
-  std::string thrown_;
+  static const std::string kPrefix_;  ///< Prefix specific to SCRAM.
+  std::string thrown_;  ///< The message to throw with the prefix.
 };
 
 /// @class ValueError

@@ -24,11 +24,6 @@ Steps in XML Input Validation
 #. An XML input file is validated by RelaxNG_ against the :ref:`schema`.
 #. The fault tree validation assumptions/requirements:
 
-    - The hierarchical structure of a fault tree must be strict:
-
-        + The top event is the first gate in the input file fault tree description.
-        + Gates must appear as children before they are defined.
-
     - Event names are not case sensitive.
     - Trailing white spaces are ignored.
     - Names should conform to 'XML NCName datatype' not contain spaces
@@ -37,26 +32,26 @@ Steps in XML Input Validation
       such as "NOT", "-", ".", ",", "[", "]".
     - Names must be unique if they are public by default.
     - Names must be unique only locally if they are private. [not supported]
-    - Primary and intermediate events with several parents are allowed.
-      These events may appear in several places in the tree.
     - Proper 'include directive' formatting. [not supported]
 
 #. Additional validation of fault trees and values of parameters is performed:
 
     - Each gate has a correct number of children.
-    - No the same two children of the same parent.
-    - All intermediate events have at least one parent.
+    - The same child appearing twice or more for one parent is an error.
     - Values of parameters are correct, i.e., non-negative for probabilities.
-    - All events must be defined for probability calculations.
+    - All events must be explicitly defined for probability calculations.
 
-#. Throw an error with a message (a file name, line numbers, types of errors):
+#. Error messages (a file name, line numbers, types of errors):
 
     - Report a cyclic tree.
-    - Report unsupported gates and events.
-    - Report missing event descriptions.
-    - Throw an error if an event is defined doubly.
-    - Ignore primary events that are not initialized in the tree when assigning
-      model data. (Default warning)
+    - Report a cyclic parameter.
+    - Report missing element descriptions.
+    - Throw an error if an event is being redefined.
+
+#. Warnings for potential errors:
+
+    - Orphan primary events.
+    - Unused parameters.
 
 
 .. _schema:
@@ -65,8 +60,6 @@ Validation Schemas
 ==================
 
 - `RelaxNG Schema <https://github.com/rakhimov/scram/blob/master/share/input.rng>`_
-- `RelaxNG Compact <https://github.com/rakhimov/scram/blob/master/share/input.rnc>`_
-- `DTD Schema <https://github.com/rakhimov/scram/blob/master/share/open-psa/mef.dtd>`_
 
 .. _shorthand_format:
 
@@ -93,6 +86,5 @@ Fault Tree Input File
 Shorthand version
 -----------------
 .. literalinclude:: shorthand_two_train.txt
-
 
 .. _RelaxNG: http://relaxng.org/

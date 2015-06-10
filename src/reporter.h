@@ -19,6 +19,7 @@ class ProbabilityAnalysis;
 class UncertaintyAnalysis;
 class PrimaryEvent;
 class BasicEvent;
+class Parameter;
 class Settings;
 
 /// @class Reporter
@@ -37,12 +38,18 @@ class Reporter {
   void SetupReport(const RiskAnalysis* risk_an, const Settings& settings,
                    xmlpp::Document* doc);
 
-  /// Reports orphan primary events as warnings of the top level.
-  /// The warning section of the report should not be initialized.
+  /// Reports orphan primary events as warnings of the top information level.
   /// @param[in] orphan_primary_events Container of orphan events.
   /// @param[in,out] doc Pre-formatted XML document.
-  void ReportOrphans(
+  void ReportOrphanPrimaryEvents(
       const std::set<boost::shared_ptr<PrimaryEvent> >& orphan_primary_events,
+      xmlpp::Document* doc);
+
+  /// Reports unused parameters as warnings of the top information level.
+  /// @param[in] unused_paramters Container of unused parameters.
+  /// @param[in,out] doc Pre-formatted XML document.
+  void ReportUnusedParameters(
+      const std::set<boost::shared_ptr<Parameter> >& unused_parameters,
       xmlpp::Document* doc);
 
   /// Reports the results of analysis to a specified output destination.

@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -17,13 +18,19 @@
 
 namespace scram {
 
+class Parameter;  // This is for cycle detection through expressions.
+
 /// @class Expression
 /// The base class for all sorts of expressions to describe events.
+/// This class also acts like a connector for parameter nodes and may
+/// create cycles. Expressions are not expected to be shared except for
+/// parameters. In addition, expressions are not expected to be changed
+/// after validation phases.
 class Expression {
  public:
   typedef boost::shared_ptr<Expression> ExpressionPtr;
 
-  Expression() : sampled_(false), sampled_value_(0) {}
+  Expression() : sampled_(false), sampled_value_(0), gather_(true) {}
 
   virtual ~Expression() {}
 
@@ -50,18 +57,36 @@ class Expression {
   /// Minimum value of this expression. This indication is for sampling cases.
   virtual inline double Min() { return Mean(); }
 
- protected:
-  /// Indication if the expression is already sampled.
-  bool sampled_;
+  /// @returns Parameters as nodes.
+  inline const std::vector<Parameter*>& nodes() {
+    if (gather_) Expression::GatherNodesAndConnectors();
+    return nodes_;
+  }
 
-  /// The sampled value.
-  double sampled_value_;
+  /// @returns Non-Parameter Expressions as connectors.
+  inline const std::vector<Expression*>& connectors() {
+    if (gather_) Expression::GatherNodesAndConnectors();
+    return connectors_;
+  }
+
+ protected:
+  bool sampled_;  ///< Indication if the expression is already sampled.
+  double sampled_value_;  ///< The sampled value.
+  std::vector<ExpressionPtr> args_;  ///< Expressions arguments.
+
+ private:
+  /// Gathers nodes and connectors from arguments of the expression.
+  void GatherNodesAndConnectors();
+
+  std::vector<Parameter*> nodes_;  ///< Parameters as nodes.
+  std::vector<Expression*> connectors_;  ///< Expressions as connectors.
+  bool gather_;  ///< A flag to gather nodes and connectors.
 };
 
 /// @enum Units
 /// Provides units for parameters.
 enum Units {
-  kUnitless,
+  kUnitless = 0,
   kBool,
   kInt,
   kFloat,
@@ -80,27 +105,35 @@ class Parameter : public Expression, public Element {
  public:
   /// Sets the expression of this basic event.
   /// @param[in] name The name of this variable (Case sensitive).
-  explicit Parameter(std::string name) : name_(name), unit_(kUnitless) {}
+  explicit Parameter(std::string name)
+      : name_(name),
+        mark_(""),
+        unused_(true),
+        unit_(kUnitless) {}
 
   /// Sets the expression of this parameter.
   /// @param[in] expression The expression to describe this parameter.
   inline void expression(const ExpressionPtr& expression) {
     expression_ = expression;
+    Expression::args_.push_back(expression);
   }
 
-  /// Cycle detection invoked.
-  /// @throws ValidationError if any cyclic reference is found.
-  void Validate();
-
   /// @returns The name of this variable.
-  inline const std::string& name() { return name_; }
+  inline const std::string& name() const { return name_; }
 
   /// Sets the unit of this parameter.
   /// @param[in] unit A valid unit.
   inline void unit(const Units& unit) { unit_ = unit; }
 
   /// @returns The unit of this parameter.
-  inline const Units& unit() { return unit_; }
+  inline const Units& unit() const { return unit_; }
+
+  /// Sets the usage state for this parameter.
+  /// @param[in] state The usage state for this parameter.
+  inline void unused(bool state) { unused_ = state; }
+
+  /// @returns The usage state of this parameter.
+  inline bool unused() { return unused_; }
 
   inline double Mean() { return expression_->Mean(); }
   inline double Sample() {
@@ -120,21 +153,38 @@ class Parameter : public Expression, public Element {
   inline double Max() { return expression_->Max(); }
   inline double Min() { return expression_->Min(); }
 
+  /// This function is for cycle detection.
+  /// @returns The connector between parameters.
+  inline Expression* connector() { return this; }
+
+  /// Sets the mark for this node.
+  /// @param[in] label The specific label for the node.
+  inline void mark(const std::string& label) { mark_ = label; }
+
+  /// @returns The mark of this node.
+  inline const std::string& mark() const { return mark_; }
+
  private:
+  typedef boost::shared_ptr<Parameter> ParameterPtr;
+
   /// Helper function to check for cyclic references in parameters.
-  /// @param[out] path The current path of names in cycle detection.
-  /// @throws ValidationError if any cyclic reference is found.
-  /// @todo Rename to DetectCycles.
-  void DetectCycle(std::vector<std::string>* path);
+  /// @param[in] parameter Parameter to check for cycles.
+  /// @param[out] cycle The cycle path if detected.
+  /// @returns True if a cycle is detected.
+  bool DetectCycle(Parameter* parameter, std::vector<std::string>* cycle);
 
-  /// Name of this parameter or variable.
-  std::string name_;
+  /// Helper function to check for cyclic references through expressions.
+  /// @param[in] expression Expression to be traversed.
+  /// @param[out] cycle The cycle path if detected.
+  /// @returns True if a cycle is detected.
+  bool ContinueExpression(const ExpressionPtr& expression,
+                          std::vector<std::string>* cycle);
 
-  /// Units of this parameter.
-  Units unit_;
-
-  /// Expression for this parameter.
-  ExpressionPtr expression_;
+  std::string name_;  ///< Name of this parameter or variable.
+  Units unit_;  ///< Units of this parameter.
+  ExpressionPtr expression_;  ///< Expression for this parameter.
+  std::string mark_;  ///< The mark for traversal in cycle detection.
+  bool unused_;  ///< Usage state.
 };
 
 /// @class MissionTime
@@ -154,19 +204,19 @@ class MissionTime : public Expression {
   /// @param[in] unit A valid unit.
   inline void unit(const Units& unit) { unit_ = unit; }
 
+  /// @returns The unit of the system mission time.
+  inline const Units& unit() const { return unit_; }
+
   inline double Mean() { return mission_time_; }
   inline double Sample() { return mission_time_; }
   inline bool IsConstant() { return true; }
 
  private:
-  /// The constant's value.
-  double mission_time_;
-
-  /// Units of this parameter.
-  Units unit_;
+  double mission_time_;  ///< The constant's value.
+  Units unit_;  ///< Units of this parameter.
 };
 
-/// @class 1.0 * ConstantExpression
+/// @class ConstantExpression
 /// Indicates a constant value.
 class ConstantExpression : public Expression {
  public:
@@ -187,8 +237,7 @@ class ConstantExpression : public Expression {
   inline bool IsConstant() { return true; }
 
  private:
-  /// The constant's value.
-  double value_;
+  double value_;  ///< The constant's value.
 };
 
 /// @class ExponentialExpression
@@ -200,7 +249,10 @@ class ExponentialExpression : public Expression {
   /// @param[in] t Mission time in hours.
   ExponentialExpression(const ExpressionPtr& lambda, const ExpressionPtr& t)
       : lambda_(lambda),
-        time_(t) {}
+        time_(t) {
+    Expression::args_.push_back(lambda);
+    Expression::args_.push_back(t);
+  }
 
   /// @throws InvalidArgument if failure rate or time is negative.
   void Validate();
@@ -233,11 +285,8 @@ class ExponentialExpression : public Expression {
   }
 
  private:
-  /// Failure rate in hours.
-  ExpressionPtr lambda_;
-
-  /// Mission time in hours.
-  ExpressionPtr time_;
+  ExpressionPtr lambda_;  ///< Failure rate in hours.
+  ExpressionPtr time_;  ///< Mission time in hours.
 };
 
 /// @class GlmExpression
@@ -255,7 +304,12 @@ class GlmExpression : public Expression {
       : gamma_(gamma),
         lambda_(lambda),
         mu_(mu),
-        time_(t) {}
+        time_(t) {
+    Expression::args_.push_back(gamma);
+    Expression::args_.push_back(lambda);
+    Expression::args_.push_back(mu);
+    Expression::args_.push_back(t);
+  }
 
   void Validate();
 
@@ -294,17 +348,10 @@ class GlmExpression : public Expression {
   }
 
  private:
-  /// Failure rate in hours.
-  ExpressionPtr gamma_;
-
-  /// Failure rate in hours.
-  ExpressionPtr lambda_;
-
-  /// Mission time in hours.
-  ExpressionPtr time_;
-
-  /// Mission time in hours.
-  ExpressionPtr mu_;
+  ExpressionPtr gamma_;  ///< Failure rate in hours.
+  ExpressionPtr lambda_;  ///< Failure rate in hours.
+  ExpressionPtr time_;  ///< Mission time in hours.
+  ExpressionPtr mu_;  ///< Mission time in hours.
 };
 
 /// @class WeibullExpression
@@ -321,7 +368,12 @@ class WeibullExpression : public Expression {
       : alpha_(alpha),
         beta_(beta),
         t0_(t0),
-        time_(time) {}
+        time_(time) {
+    Expression::args_.push_back(alpha);
+    Expression::args_.push_back(beta);
+    Expression::args_.push_back(t0);
+    Expression::args_.push_back(time);
+  }
 
   void Validate();
 
@@ -359,17 +411,10 @@ class WeibullExpression : public Expression {
   }
 
  private:
-  /// Scale parameter.
-  ExpressionPtr alpha_;
-
-  /// Shape parameter.
-  ExpressionPtr beta_;
-
-  /// Time shift in hours.
-  ExpressionPtr t0_;
-
-  /// Mission time in hours.
-  ExpressionPtr time_;
+  ExpressionPtr alpha_;  ///< Scale parameter.
+  ExpressionPtr beta_;  ///< Shape parameter.
+  ExpressionPtr t0_;  ///< Time shift in hours.
+  ExpressionPtr time_;  ///< Mission time in hours.
 };
 
 /// @class UniformDeviate
@@ -381,7 +426,10 @@ class UniformDeviate : public Expression {
   /// @param[in] max Maximum value of the distribution.
   UniformDeviate(const ExpressionPtr& min, const ExpressionPtr& max)
       : min_(min),
-        max_(max) {}
+        max_(max) {
+    Expression::args_.push_back(min);
+    Expression::args_.push_back(max);
+  }
 
   /// @throws InvalidArgument if min value is more or equal to max value.
   void Validate();
@@ -403,11 +451,8 @@ class UniformDeviate : public Expression {
   inline double Min() { return min_->Min(); }
 
  private:
-  /// Minimum value of the distribution.
-  ExpressionPtr min_;
-
-  /// Maximum value of the distribution.
-  ExpressionPtr max_;
+  ExpressionPtr min_;  ///< Minimum value of the distribution.
+  ExpressionPtr max_;  ///< Maximum value of the distribution.
 };
 
 /// @class NormalDeviate
@@ -419,7 +464,10 @@ class NormalDeviate : public Expression {
   /// @param[in] sigma The standard deviation of the distribution.
   NormalDeviate(const ExpressionPtr& mean, const ExpressionPtr& sigma)
       : mean_(mean),
-        sigma_(sigma) {}
+        sigma_(sigma) {
+    Expression::args_.push_back(mean);
+    Expression::args_.push_back(sigma);
+  }
 
   /// @throws InvalidArgument if sigma is negative or zero.
   void Validate();
@@ -443,11 +491,8 @@ class NormalDeviate : public Expression {
   inline double Min() { return mean_->Min() - 6 * sigma_->Max(); }
 
  private:
-  /// Mean value of normal distribution.
-  ExpressionPtr mean_;
-
-  /// Standard deviation of normal distribution.
-  ExpressionPtr sigma_;
+  ExpressionPtr mean_;  ///< Mean value of normal distribution.
+  ExpressionPtr sigma_;  ///< Standard deviation of normal distribution.
 };
 
 /// @class LogNormalDeviate
@@ -468,7 +513,11 @@ class LogNormalDeviate : public Expression {
                    const ExpressionPtr& level)
       : mean_(mean),
         ef_(ef),
-        level_(level) {}
+        level_(level) {
+    Expression::args_.push_back(mean);
+    Expression::args_.push_back(ef);
+    Expression::args_.push_back(level);
+  }
 
   /// @throws InvalidArgument if (mean <= 0) or (ef <= 0) or (level != 0.95)
   void Validate();
@@ -498,14 +547,9 @@ class LogNormalDeviate : public Expression {
   inline double Min() { return 0; }
 
  private:
-  /// Mean value of the log-normal distribution.
-  ExpressionPtr mean_;
-
-  /// Error factor of the log-normal distribution.
-  ExpressionPtr ef_;
-
-  /// Confidence level of the log-normal distribution.
-  ExpressionPtr level_;
+  ExpressionPtr mean_;  ///< Mean value of the log-normal distribution.
+  ExpressionPtr ef_;  ///< Error factor of the log-normal distribution.
+  ExpressionPtr level_;  ///< Confidence level of the log-normal distribution.
 };
 
 /// @class GammaDeviate
@@ -517,7 +561,10 @@ class GammaDeviate : public Expression {
   /// @param[in] theta Scale parameter of Gamma distribution.
   GammaDeviate(const ExpressionPtr& k, const ExpressionPtr& theta)
       : k_(k),
-        theta_(theta) {}
+        theta_(theta) {
+    Expression::args_.push_back(k);
+    Expression::args_.push_back(theta);
+  }
 
   /// @throws InvalidArgument if (k <= 0) or (theta <= 0)
   void Validate();
@@ -546,11 +593,8 @@ class GammaDeviate : public Expression {
   inline double Min() { return 0; }
 
  private:
-  /// The shape parameter of the gamma distribution.
-  ExpressionPtr k_;
-
-  /// The scale factor of the gamma distribution.
-  ExpressionPtr theta_;
+  ExpressionPtr k_;  ///< The shape parameter of the gamma distribution.
+  ExpressionPtr theta_;  ///< The scale factor of the gamma distribution.
 };
 
 /// @class BetaDeviate
@@ -562,7 +606,10 @@ class BetaDeviate : public Expression {
   /// @param[in] beta Beta shape parameter of Gamma distribution.
   BetaDeviate(const ExpressionPtr& alpha, const ExpressionPtr& beta)
       : alpha_(alpha),
-        beta_(beta) {}
+        beta_(beta) {
+    Expression::args_.push_back(alpha);
+    Expression::args_.push_back(beta);
+  }
 
   /// @throws InvalidArgument if (alpha <= 0) or (beta <= 0)
   void Validate();
@@ -590,11 +637,8 @@ class BetaDeviate : public Expression {
   inline double Min() { return 0; }
 
  private:
-  /// The alpha shape parameter of the beta distribution.
-  ExpressionPtr alpha_;
-
-  /// The beta shape parameter of the beta distribution.
-  ExpressionPtr beta_;
+  ExpressionPtr alpha_;  ///< The alpha shape parameter.
+  ExpressionPtr beta_;  ///< The beta shape parameter.
 };
 
 /// @class Histogram
@@ -668,7 +712,9 @@ class Neg : public Expression {
  public:
   /// Construct a new expression that negates a given argument expression.
   /// @param[in] expression The expression to be negated.
-  explicit Neg(const ExpressionPtr& expression) : expression_(expression) {}
+  explicit Neg(const ExpressionPtr& expression) : expression_(expression) {
+    Expression::args_.push_back(expression);
+  }
 
   inline double Mean() { return -expression_->Mean(); }
   inline double Sample() {
@@ -687,8 +733,7 @@ class Neg : public Expression {
   inline double Min() { return -expression_->Max(); }
 
  private:
-  /// Expression that is used for negation.
-  ExpressionPtr expression_;
+  ExpressionPtr expression_;  ///< Expression that is used for negation.
 };
 
 /// @class Add
@@ -698,8 +743,9 @@ class Add : public Expression {
   /// Construct a new expression that add given argument expressions.
   /// @param[in] arguments The arguments of the addition equation.
   /// @note It is assumed that arguments contain at least one element.
-  explicit Add(const std::vector<ExpressionPtr>& arguments)
-      : args_(arguments) {}
+  explicit Add(const std::vector<ExpressionPtr>& arguments) {
+    Expression::args_ = arguments;
+  }
 
   inline double Mean() {
     assert(!args_.empty());
@@ -755,10 +801,6 @@ class Add : public Expression {
     }
     return min;
   }
-
- private:
-  /// Expressions that are used for addition.
-  std::vector<ExpressionPtr> args_;
 };
 
 /// @class Sub
@@ -770,8 +812,9 @@ class Sub : public Expression {
   /// from the first argument expression.
   /// @param[in] arguments The arguments for operation.
   /// @note It is assumed that arguments contain at least one element.
-  explicit Sub(const std::vector<ExpressionPtr>& arguments)
-      : args_(arguments) {}
+  explicit Sub(const std::vector<ExpressionPtr>& arguments) {
+    Expression::args_ = arguments;
+  }
 
   inline double Mean() {
     assert(!args_.empty());
@@ -828,10 +871,6 @@ class Sub : public Expression {
     }
     return min;
   }
-
- private:
-  /// Expressions that are used for subtraction.
-  std::vector<ExpressionPtr> args_;
 };
 
 /// @class Mul
@@ -841,8 +880,9 @@ class Mul : public Expression {
   /// Construct a new expression that multiplies given argument expressions.
   /// @param[in] arguments The arguments for operation.
   /// @note It is assumed that arguments contain at least one element.
-  explicit Mul(const std::vector<ExpressionPtr>& arguments)
-      : args_(arguments) {}
+  explicit Mul(const std::vector<ExpressionPtr>& arguments) {
+    Expression::args_ = arguments;
+  }
 
   inline double Mean() {
     assert(!args_.empty());
@@ -921,10 +961,6 @@ class Mul : public Expression {
     }
     return min;
   }
-
- private:
-  /// Expressions for operation.
-  std::vector<ExpressionPtr> args_;
 };
 
 /// @class Div
@@ -937,8 +973,9 @@ class Div : public Expression {
   /// @note It is assumed that arguments contain at least one element.
   ///       No arguments except the first should be 0. The bevaior may be
   ///       undefined if the value is 0 for division.
-  explicit Div(const std::vector<ExpressionPtr>& arguments)
-      : args_(arguments) {}
+  explicit Div(const std::vector<ExpressionPtr>& arguments) {
+    Expression::args_ = arguments;
+  }
 
   inline double Mean() {
     assert(!args_.empty());
@@ -1019,10 +1056,6 @@ class Div : public Expression {
     }
     return min;
   }
-
- private:
-  /// Expressions for operation.
-  std::vector<ExpressionPtr> args_;
 };
 
 }  // namespace scram

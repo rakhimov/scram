@@ -133,8 +133,7 @@ class Random {
   /// @returns Integer in the range [0, 1).
   static int DiscreteGenerator(const std::vector<double>& weights);
 
-  /// The random number generator.
-  static boost::mt19937 rng_;
+  static boost::mt19937 rng_;  ///< The random number generator.
 };
 
 }  // namespace scram

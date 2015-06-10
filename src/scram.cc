@@ -5,7 +5,6 @@
 #include <vector>
 
 #include <boost/exception/all.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
 #include "config.h"
@@ -16,7 +15,6 @@
 #include "version.h"
 
 namespace po = boost::program_options;
-namespace fs = boost::filesystem;
 
 using namespace scram;
 
@@ -39,8 +37,8 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
          "XML input files with analysis entities")
         ("config-file", po::value<std::string>(),
          "XML configuration file for analysis")
-        ("validate-only,v", "Validate input files without analysis")
-        ("graph-only,g", "Validate and produce graph without analysis")
+        ("validate", "Validate input files without analysis")
+        ("graph", "Validate and produce graph without analysis")
         ("probability", po::value<bool>(), "Perform probability analysis")
         ("importance", po::value<bool>(), "Perform importance analysis")
         ("uncertainty", po::value<bool>(), "Perform uncertainty analysis")
@@ -58,7 +56,7 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
         ("seed", po::value<int>(),
          "Seed for the pseudo-random number generator")
         ("output-path,o", po::value<std::string>(), "Output path")
-        ("log", "Turn on the logging system")
+        ("verbosity", po::value<int>(), "Set log verbosity")
         ;
 
     po::store(po::parse_command_line(argc, argv, desc), *vm);
@@ -112,6 +110,16 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
     return 1;
   }
 
+  if (vm->count("verbosity")) {
+    int verb = (*vm)["verbosity"].as<int>();
+    if (verb < 0 || verb > 7) {
+      std::string msg = "Log verbosity must be between 0 and 7.";
+      std::cout << msg << "\n" << std::endl;
+      std::cout << usage << "\n\n" << desc << std::endl;
+      return 1;
+    }
+  }
+
   return 0;
 }
 
@@ -153,7 +161,9 @@ void ConstructSettings(const po::variables_map& vm, Settings* settings) {
 /// @returns 0 for success.
 /// @returns 1 for errored state.
 int RunScram(const po::variables_map& vm) {
-  if (vm.count("log")) Logger::active() = true;
+  if (vm.count("verbosity")) {
+    Logger::ReportLevel() = static_cast<LogLevel>(vm["verbosity"].as<int>());
+  }
   // Initiate risk analysis.
   RiskAnalysis* ran = new RiskAnalysis();
   // Analysis settings.
@@ -189,13 +199,13 @@ int RunScram(const po::variables_map& vm) {
   ran->ProcessInputFiles(input_files);
 
   // Stop if only validation is requested.
-  if (vm.count("validate-only")) {
+  if (vm.count("validate")) {
     std::cout << "The files are VALID." << std::endl;
     return 0;
   }
 
   // Graph if requested.
-  if (vm.count("graph-only")) {
+  if (vm.count("graph")) {
     if (output_path != "") {
       ran->GraphingInstructions(output_path);
     } else {
@@ -220,15 +230,15 @@ int RunScram(const po::variables_map& vm) {
 /// @returns 0 for success.
 /// @returns 1 for errored state.
 int main(int argc, char* argv[]) {
-  // Parse command-line options.
-  po::variables_map vm;
-  int ret = ParseArguments(argc, argv, &vm);
-  if (ret == 1) return 1;
-  if (ret == -1) return 0;
-
 #ifdef NDEBUG
   try {  // Catch exceptions only for non-debug builds.
 #endif
+
+    // Parse command-line options.
+    po::variables_map vm;
+    int ret = ParseArguments(argc, argv, &vm);
+    if (ret == 1) return 1;
+    if (ret == -1) return 0;
 
     return RunScram(vm);
 
@@ -264,10 +274,14 @@ int main(int argc, char* argv[]) {
     std::cerr << iarg_err.what() << std::endl;
     return 1;
   } catch (boost::exception& boost_err) {
+    std::cerr << "Bad, bad news. Please report this error. Thank you!\n"
+        << std::endl;
     std::cerr << "Boost Exception:\n" << std::endl;
     std::cerr << boost::diagnostic_information(boost_err) << std::endl;
     return 1;
   } catch (std::exception& std_err) {
+    std::cerr << "Bad, bad news. Please report this error. Thank you!\n"
+        << std::endl;
     std::cerr << "Standard Exception:\n" << std::endl;
     std::cerr << std_err.what() << std::endl;
     return 1;

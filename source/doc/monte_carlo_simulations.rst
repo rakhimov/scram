@@ -29,24 +29,24 @@ Monte Carlo (MC) Analysis Implementation
 
 #. Definitions and parameters for various distributions.
 
-    * May be specified by a user in an input file.
-    * Distributions:
+    - May be specified by a user in an input file.
+    - Distributions:
 
-        - Uniform
-        - Triangular
-        - Piecewise Linear
-        - Histogram
-        - Discrete
-        - Normal
-        - Log-Normal
-        - Poisson
-        - Binomial
-        - Beta
-        - Gamma
-        - Weibull
-        - Exponential
-        - Log-Uniform
-        - Log-Triangular
+        * Uniform
+        * Triangular
+        * Piecewise Linear
+        * Histogram
+        * Discrete
+        * Normal
+        * Log-Normal
+        * Poisson
+        * Binomial
+        * Beta
+        * Gamma
+        * Weibull
+        * Exponential
+        * Log-Uniform
+        * Log-Triangular
 
 #. Sampling probability distributions and calculating the total equation.
 #. Statistical analysis. The resulting distributions.

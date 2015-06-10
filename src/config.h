@@ -60,12 +60,8 @@ class Config {
   /// Container for input files for analysis.
   /// These input files contain fault trees, events, etc.
   std::vector<std::string> input_files_;
-
-  /// Settings for specific analysis.
-  Settings settings_;
-
-  /// The output destination.
-  std::string output_path_;
+  Settings settings_;  ///< Settings for specific analysis.
+  std::string output_path_;  ///< The output destination.
 };
 
 }  // namespace scram

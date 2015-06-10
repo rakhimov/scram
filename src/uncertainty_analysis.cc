@@ -3,7 +3,6 @@
 #include "uncertainty_analysis.h"
 
 #include <cmath>
-#include <ctime>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/accumulators/accumulators.hpp>
@@ -13,6 +12,7 @@
 #include <boost/accumulators/statistics/density.hpp>
 
 #include "error.h"
+#include "logger.h"
 
 namespace scram {
 
@@ -61,10 +61,7 @@ void UncertaintyAnalysis::Analyze(
     }
   }
 
-  // Timing Initialization
-  std::clock_t start_time;
-  start_time = std::clock();
-
+  CLOCK(p_time);
   // Maximum number of sums in the series.
   if (num_sums_ > iset.size()) num_sums_ = iset.size();
   // Generate the equation.
@@ -75,8 +72,7 @@ void UncertaintyAnalysis::Analyze(
   // Perform statistical analysis.
   UncertaintyAnalysis::CalculateStatistics();
 
-  // Duration of the calculations.
-  p_time_ = (std::clock() - start_time) / static_cast<double>(CLOCKS_PER_SEC);
+  p_time_ = DUR(p_time);
 }
 
 void UncertaintyAnalysis::Sample() {

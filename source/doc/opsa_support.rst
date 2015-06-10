@@ -39,37 +39,55 @@ structured programming techniques.
 More information about the initiative and format can be found on
 http://open-psa.org
 
+.. _opsa_mef_schema:
+
+OpenPSA MEF Schemas
+===================
+
+- `MEF RelaxNG Schema <https://github.com/rakhimov/scram/blob/master/share/open-psa/mef.rng>`_
+- `MEF RelaxNG Compact Schema <https://github.com/rakhimov/scram/blob/master/share/open-psa/mef.rnc>`_
+- `MEF DTD <https://github.com/rakhimov/scram/blob/master/share/open-psa/mef.dtd>`_
+
+
 .. _opsa_support:
 
 ****************************************
 Currently Supported OpenPSA MEF Features
 ****************************************
 
-- Label for elements
+The difference between `opsa_mef_schema` and `schema` can be used to identify
+the supported and unsupported features.
 
-- Attributes list
+- Label
+- Attributes
+- Fault Tree Layer
 
-- Fault Tree Description:
+    * Basic events
+    * House events
 
-  * Non-nested gates (formula)
+        + Boolean constant
 
-- Basic Event Description
+    * Gates
 
-- Expressions:
+        + Non-nested formulae
+
+- Model data
+- Common Cause Failure Groups
+
+    * beta-factor
+    * MGL
+    * alpha-factor
+    * phi-factor
+
+- Parameters
+- Expressions
 
     * Constant expressions
     * System mission time
     * Parameter
     * Random deviate (normal, log-normal, histogram, uniform, gamma, beta)
-    * Built-in expressions (exponential with two parameters, exponential with four parameters, Weibull)
-
-- House Event Description:
-
-  * Boolean probability description
-
-- Model data
-
-- Common Cause Failure Groups (beta-factor, MGL, alpha-factor, phi-factor)
+    * Built-in expressions (exponential with two parameters,
+      exponential with four parameters, Weibull)
 
 
 ***************************
@@ -77,14 +95,12 @@ Deviations from OpenPSA MEF
 ***************************
 
 - Names are not case-sensitive.
-- House events do not default to false state implicitly. They must be defined.
-- Expressions are not optional for Basic events.
-- First gate for the fault tree must be a top event gate.
-- Fault tree input structure must be top-down. Parents must appear before
-  children.
+- House events must be defined explicitly for analysis with probability
+  information.
 - The correct number of a gate's children is required.
-- Unused primary events are ignored but reported as warning.
-- Double definition of events is considered an error instead of warning.
+- Orphan primary events are reported as warning.
+- Unused parameters are reported as warning.
+- Redefinition of events is considered an error instead of warning.
 - Common cause model levels for factors are required and must be strictly
   sequential in ascending order.
 

@@ -11,6 +11,7 @@
 
 #include "event.h"
 #include "error.h"
+#include "expression.h"
 #include "fault_tree_analysis.h"
 #include "probability_analysis.h"
 #include "risk_analysis.h"
@@ -122,16 +123,34 @@ void Reporter::SetupReport(const RiskAnalysis* risk_an,
   root->add_child("results");
 }
 
-void Reporter::ReportOrphans(
+void Reporter::ReportOrphanPrimaryEvents(
     const std::set<boost::shared_ptr<PrimaryEvent> >& orphan_primary_events,
     xmlpp::Document* doc) {
   assert(!orphan_primary_events.empty());
   std::string out = "";
-  out += "WARNING! Found unused primary events: ";
+  out += "WARNING! Orphan Primary Events: ";
   std::set<boost::shared_ptr<PrimaryEvent> >::const_iterator it;
   for (it = orphan_primary_events.begin(); it != orphan_primary_events.end();
        ++it) {
-    out += (*it)->orig_id() + " ";
+    out += (*it)->name() + " ";
+  }
+  xmlpp::Node* root = doc->get_root_node();
+  xmlpp::NodeSet inf = root->find("./information");
+  assert(inf.size() == 1);
+  xmlpp::Element* information = dynamic_cast<xmlpp::Element*>(inf[0]);
+  information->add_child("warning")->add_child_text(out);
+}
+
+void Reporter::ReportUnusedParameters(
+    const std::set<boost::shared_ptr<Parameter> >& unused_parameters,
+    xmlpp::Document* doc) {
+  assert(!unused_parameters.empty());
+  std::string out = "";
+  out += "WARNING! Unused Parameters: ";
+  std::set<boost::shared_ptr<Parameter> >::const_iterator it;
+  for (it = unused_parameters.begin(); it != unused_parameters.end();
+       ++it) {
+    out += (*it)->name() + " ";
   }
   xmlpp::Node* root = doc->get_root_node();
   xmlpp::NodeSet inf = root->find("./information");
@@ -322,7 +341,7 @@ xmlpp::Element* Reporter::ReportBasicEvent(
   xmlpp::Element* element;
   if (!ccf_event) {
     element = parent->add_child("basic-event");
-    element->set_attribute("name", basic_event->orig_id());
+    element->set_attribute("name", basic_event->name());
   } else {
     element = parent->add_child("ccf-event");
     element->set_attribute("ccf-group", ccf_event->ccf_group_name());

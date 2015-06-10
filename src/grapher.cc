@@ -5,6 +5,7 @@
 #include <iostream>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/assign.hpp>
 #include <boost/date_time.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/pointer_cast.hpp>
@@ -15,22 +16,15 @@ namespace fs = boost::filesystem;
 
 namespace scram {
 
-Grapher::Grapher() {
-  gate_colors_.insert(std::make_pair("or", "blue"));
-  gate_colors_.insert(std::make_pair("and", "green"));
-  gate_colors_.insert(std::make_pair("not", "red"));
-  gate_colors_.insert(std::make_pair("xor", "brown"));
-  gate_colors_.insert(std::make_pair("inhibit", "yellow"));
-  gate_colors_.insert(std::make_pair("atleast", "cyan"));
-  gate_colors_.insert(std::make_pair("null", "gray"));
-  gate_colors_.insert(std::make_pair("nor", "magenta"));
-  gate_colors_.insert(std::make_pair("nand", "orange"));
+std::map<std::string, std::string> Grapher::gate_colors_ =
+    boost::assign::map_list_of ("or", "blue") ("and", "green") ("not", "red")
+                               ("xor", "brown") ("inhibit", "yellow")
+                               ("atleast", "cyan") ("null", "gray")
+                               ("nor", "magenta") ("nand", "orange");
 
-  event_colors_.insert(std::make_pair("basic", "black"));
-  event_colors_.insert(std::make_pair("undeveloped", "blue"));
-  event_colors_.insert(std::make_pair("house", "green"));
-  event_colors_.insert(std::make_pair("conditional", "red"));
-}
+std::map<std::string, std::string> Grapher::event_colors_ =
+    boost::assign::map_list_of ("basic", "black") ("undeveloped", "blue")
+                               ("house", "green") ("conditional", "red");
 
 void Grapher::GraphFaultTree(const FaultTreePtr& fault_tree,
                              bool prob_requested,
@@ -76,8 +70,8 @@ void Grapher::GraphNode(
     std::map<std::string, int>* pr_repeat,
     std::map<std::string, int>* in_repeat,
     std::ostream& out) {
-  // Populate intermediate and primary events of the input inter event.
-  std::map<std::string, EventPtr> events_children = t->children();
+  // Populate intermediate and primary events of the input intermediate event.
+  std::map<std::string, EventPtr> events_children = t->formula()->event_args();
   std::map<std::string, EventPtr>::iterator it_child;
   for (it_child = events_children.begin(); it_child != events_children.end();
        ++it_child) {
@@ -91,8 +85,8 @@ void Grapher::GraphNode(
       } else {
         pr_repeat->insert(std::make_pair(it_child->first, 0));
       }
-      out << "\"" << t->orig_id() << "_R0\" -> "
-          << "\"" << it_child->second->orig_id() <<"_R"
+      out << "\"" << t->name() << "_R0\" -> "
+          << "\"" << it_child->second->name() <<"_R"
           << pr_repeat->find(it_child->first)->second << "\";\n";
     } else {  // This must be an intermediate event.
       if (in_repeat->count(it_child->first)) {
@@ -103,15 +97,15 @@ void Grapher::GraphNode(
       } else {
         in_repeat->insert(std::make_pair(it_child->first, 0));
       }
-      out << "\"" << t->orig_id() << "_R0\" -> "
-          << "\"" << it_child->second->orig_id() <<"_R"
+      out << "\"" << t->name() << "_R0\" -> "
+          << "\"" << it_child->second->name() <<"_R"
           << in_repeat->find(it_child->first)->second << "\";\n";
     }
   }
 }
 
 void Grapher::FormatTopEvent(const GatePtr& top_event, std::ostream& out) {
-  std::string gate = top_event->type();
+  std::string gate = top_event->formula()->type();
 
   // Special case for inhibit gate.
   if (gate == "and" && top_event->HasAttribute("flavor"))
@@ -123,15 +117,15 @@ void Grapher::FormatTopEvent(const GatePtr& top_event, std::ostream& out) {
   }
 
   boost::to_upper(gate);
-  out << "\"" <<  top_event->orig_id()
+  out << "\"" <<  top_event->name()
       << "_R0\" [shape=ellipse, "
       << "fontsize=12, fontcolor=black, fontname=\"times-bold\", "
       << "color=" << gate_color << ", "
-      << "label=\"" << top_event->orig_id() << "\\n"
+      << "label=\"" << top_event->name() << "\\n"
       << "{ " << gate;
   if (gate == "ATLEAST") {
-    out << " " << top_event->vote_number() << "/"
-        << top_event->children().size();
+    out << " " << top_event->formula()->vote_number() << "/"
+        << top_event->formula()->num_args();
   }
   out << " }\"]\n";
 }
@@ -142,7 +136,7 @@ void Grapher::FormatIntermediateEvents(
     std::ostream& out) {
   std::map<std::string, int>::const_iterator it;
   for (it = in_repeat.begin(); it != in_repeat.end(); ++it) {
-    std::string gate = inter_events.find(it->first)->second->type();
+    std::string gate = inter_events.find(it->first)->second->formula()->type();
 
     if (inter_events.find(it->first)->second->HasAttribute("flavor") &&
         gate == "and")
@@ -154,8 +148,8 @@ void Grapher::FormatIntermediateEvents(
       gate_color = gate_colors_.find(gate)->second;
     }
     boost::to_upper(gate);  // This is for graphing.
-    std::string type = inter_events.find(it->first)->second->type();
-    std::string orig_name = inter_events.find(it->first)->second->orig_id();
+    std::string type = inter_events.find(it->first)->second->formula()->type();
+    std::string orig_name = inter_events.find(it->first)->second->name();
     for (int i = 0; i <= it->second; ++i) {
       if (i == 0) {
         out << "\"" <<  orig_name << "_R" << i
@@ -170,8 +164,10 @@ void Grapher::FormatIntermediateEvents(
           << "label=\"" << orig_name << "\\n"
           << "{ " << gate;
       if (gate == "ATLEAST") {
-        out << " " << inter_events.find(it->first)->second->vote_number()
-            << "/" << inter_events.find(it->first)->second->children().size();
+        out << " " << inter_events.find(it->first)->second
+                                                  ->formula()->vote_number()
+            << "/" << inter_events.find(it->first)->second
+                                                  ->formula()->num_args();
       }
       out << " }\"]\n";
     }
@@ -194,11 +190,11 @@ void Grapher::FormatPrimaryEvents(
         type = primary_event->GetAttribute("flavor").value;
       }
 
-      out << "\"" << primary_event->orig_id() << "_R" << i
+      out << "\"" << primary_event->name() << "_R" << i
           << "\" [shape=circle, "
           << "height=1, fontsize=10, fixedsize=true, "
           << "fontcolor=" << event_colors_.find(type)->second
-          << ", " << "label=\"" << primary_event->orig_id() << "\\n["
+          << ", " << "label=\"" << primary_event->name() << "\\n["
           << type << "]";
 
       if (prob_requested) {

@@ -3,34 +3,26 @@
 /// description.
 #include "expression.h"
 
+#include <boost/pointer_cast.hpp>
+
 #include "error.h"
 #include "random.h"
 
 namespace scram {
 
-void Parameter::Validate() {
-  std::vector<std::string> path;
-  Parameter::DetectCycle(&path);
-}
-
-void Parameter::DetectCycle(std::vector<std::string>* path) {
-  std::vector<std::string>::iterator it = std::find(path->begin(),
-                                                    path->end(),
-                                                    name_);
-  if (it != path->end()) {
-    std::string msg = "Detected a cycle through '" + name_ +
-                      "' parameter:\n";
-    msg += name_;
-    for (++it; it != path->end(); ++it) {
-      msg += "->" + *it;
+void Expression::GatherNodesAndConnectors() {
+  assert(nodes_.empty());
+  assert(connectors_.empty());
+  std::vector<ExpressionPtr>::iterator it;
+  for (it = args_.begin(); it != args_.end(); ++it) {
+    Parameter* ptr = dynamic_cast<Parameter*>(&**it);
+    if (ptr) {
+      nodes_.push_back(ptr);
+    } else {
+      connectors_.push_back(&**it);
     }
-    msg += "->" + name_;
-    throw ValidationError(msg);
   }
-  path->push_back(name_);
-  boost::shared_ptr<scram::Parameter> ptr =
-      boost::dynamic_pointer_cast<Parameter>(expression_);
-  if (ptr) ptr->DetectCycle(path);
+  gather_ = false;
 }
 
 void ExponentialExpression::Validate() {
@@ -253,6 +245,10 @@ Histogram::Histogram(const std::vector<ExpressionPtr>& boundaries,
   }
   boundaries_ = boundaries;
   weights_ = weights;
+  Expression::args_.insert(Expression::args_.end(), boundaries.begin(),
+                           boundaries.end());
+  Expression::args_.insert(Expression::args_.end(), weights.begin(),
+                           weights.end());
 }
 
 void Histogram::Validate() {

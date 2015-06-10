@@ -3,16 +3,14 @@ TODO list for the SCRAM Project
 ###############################
 
 .. note::
-    Relative subjective importances within groups are given in *italics*.
+    Relative, subjective importance within groups is given in *italics*.
 
-Currently Low Hanging Fruits
-============================
+Low Hanging Fruits
+==================
 
 - `Issues on GitHub <https://github.com/rakhimov/scram/issues>`_
 
 - `Todo list in the code <https://rakhimov.github.io/scram/api/todo.html>`_
-
-- Option to run analysis without full basic event description. *Low*
 
 
 Major Enhancements and Capabilities
@@ -39,7 +37,8 @@ Major Enhancements and Capabilities
 
 - Consequences and Consequence groups. *Moderate*
 
-- Substitutions to represent Delete Terms, Recovery Rules, and Exchange Event. *Moderate*
+- Substitutions to represent Delete Terms, Recovery Rules,
+  and Exchange Event. *Moderate*
 
 - Dynamic Fault Tree Analysis. *Moderate*
 
@@ -49,12 +48,11 @@ Minor Enhancements and Capabilities
 
 - OpenPSA MEF Support:
 
-  * Nested formula for gates. *Moderate*
-  * Boolean formula. *Moderate*
-  * Expressions. *Moderate*
-  * Include directive in input files to include other input files. *Low*
-  * Public and private scopes for names of events and other elements. *Low*
-  * Cardinality/Imply/IFF gates. *Low*
+    * Boolean formula. *Moderate*
+    * Expressions. *Moderate*
+    * Include directive in input files to include other input files. *Low*
+    * Public and private scopes for names of events and other elements. *Low*
+    * Cardinality/Imply/IFF gates. *Low*
 
 - Shorthand format to XML converter. *Low*
 
@@ -107,5 +105,5 @@ Coding Specific
 
 - Benchmark tests:
 
-  * HIPPS (periodic tests)
-  * BSCU (numerical expressions)
+    * HIPPS (periodic tests)
+    * BSCU (numerical expressions)
