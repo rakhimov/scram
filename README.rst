@@ -14,7 +14,7 @@ SCRAM
     :target: https://waffle.io/rakhimov/scram
     :alt: 'Stories in Ready'
 
-*SCRAM* : "Simplified Command-line Risk Analysis Multi-tool"
+**SCRAM** is a **C**\ommand-line **R**\isk **A**\nalysis **M**\ulti-tool.
 
 This project aims to build a simple command line tool for
 probabilistic risk analysis. *SCRAM* is currently capable of performing
