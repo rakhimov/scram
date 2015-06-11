@@ -3,7 +3,7 @@ Fault Tree Analysis Support
 ###########################
 
 Fault trees have various types of gates and events to represent Boolean
-formula and the system under analysis. However, some extra information
+equation and the system under analysis. However, some extra information
 may be irrelevant for the core analysis tool and used only for visual or
 informative purposes for an analyst. Support for more advanced types
 and event descriptions will be introduced as needed in SCRAM.
@@ -11,6 +11,7 @@ and event descriptions will be introduced as needed in SCRAM.
 There are many algorithms that can be used in the fault tree analysis, and each
 has its own advantages and drawbacks. More advanced algorithms will be
 implemented for complex analysis.
+
 
 Currently Supported Gate Types
 ==============================
@@ -24,6 +25,7 @@ Currently Supported Gate Types
 - NULL
 - INHIBIT
 - ATLEAST
+
 
 Currently Supported Symbols
 ===========================
@@ -43,29 +45,39 @@ Currently Supported Event Types
 - Conditional
 
 .. note::
-    Top and intermediate events are gates of the acyclic fault tree.
+    Top and intermediate events are gates of an acyclic fault tree.
+
 
 Representation of INHIBIT, Undeveloped, and Conditional
 =======================================================
 
-This gate and event types are not directly supported by the input format
+These gate and event types are not directly supported by the input format
 based on OpenPSA MEF. Indeed, these types are treated just like AND gate and
-Basic event respectively; therefore, the description of these types is
-supported through OpenPSA MEF "attribute" element for gates and events.
+Basic event respectively; therefore, the description of these types can be
+given through OpenPSA MEF "attribute" element for gates and events.
 The attribute name "flavor" is used to indicated the different representation
-of the event as shown in the description bellow.
+of an event as shown in the description bellow.
+
 
 INHIBIT
 -------
-Add this XML line to AND gate description: :literal:`<attributes> <attribute name="flavor" value="inhibit"/> </attributes>`
+
+Add this XML line to AND gate description:
+:literal:`<attributes> <attribute name="flavor" value="inhibit"/> </attributes>`
+
 
 Undeveloped
 -----------
-Add this XML line to basic event description: :literal:`<attributes> <attribute name="flavor" value="undeveloped"/> </attributes>`
+
+Add this XML line to basic event description:
+:literal:`<attributes> <attribute name="flavor" value="undeveloped"/> </attributes>`
+
 
 Conditional
 -----------
-Add this XML line to basic event description: :literal:`<attributes> <attribute name="flavor" value="conditional"/> </attributes>`
+
+Add this XML line to basic event description:
+:literal:`<attributes> <attribute name="flavor" value="conditional"/> </attributes>`
 
 
 Algorithms to Generate Minimal Cut Sets
@@ -79,6 +91,7 @@ Algorithms to Generate Minimal Cut Sets
     * Remove cut sets that are larger than the specified maximum order.
     * Remove cut sets with lower than cutoff probability. [not implemented]
 
+
 Algorithms to Calculate Probabilities
 =====================================
 
@@ -87,6 +100,7 @@ Algorithms to Calculate Probabilities
     * Consider only cut sets above the cut-off probability.
     * Generate Sylvester-Poincaré expansion.
     * Plug-in basic event probabilities.
+
 
 UNITY and NULL Cases
 ====================

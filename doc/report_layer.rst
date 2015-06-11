@@ -37,7 +37,7 @@ the results of PSA tools. The report contains two constructs:
 
             + Name
             + Number of gates, basic events, house events, fault trees, event
-                trees, functional events, initiating events
+              trees, functional events, initiating events
 
         * Feedback
 
@@ -53,10 +53,12 @@ the results of PSA tools. The report contains two constructs:
 .. _`OpenPSA Model Exchange Format v2.0d`:
     http://open-psa.org/joomla1.5/index.php?option=com_content&view=category&id=4&Itemid=19
 
+
 Validation Schemas
 ==================
 
 - `RelaxNG Schema <https://github.com/rakhimov/scram/blob/master/share/report_layer.rng>`_
+
 
 Post-processing
 ===============

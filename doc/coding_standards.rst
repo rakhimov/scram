@@ -27,6 +27,7 @@ This project adheres to the following coding styles:
 .. _`Google Shell Style Guide`:
     https://google-styleguide.googlecode.com/svn/trunk/shell.xml
 
+
 Coding Style Violations
 -----------------------
 
@@ -35,6 +36,7 @@ Coding Style Violations
 - Naming of mutator functions without *set* prefix.
 - C++11 features are not allowed. Only Boost features are used instead.
 - License boilerplate is not included unless the code is from other projects.
+
 
 Monitoring Code Quality
 =======================
@@ -70,6 +72,7 @@ C++
 .. _cppclean:
     https://github.com/myint/cppclean
 
+
 Python
 ------
 
@@ -84,6 +87,7 @@ Python
 .. _coverage:
     http://nedbatchelder.com/code/coverage/
 
+
 Targets
 -------
 
@@ -97,6 +101,7 @@ Python Code Coverage   80%                  90%
 Pylint Score           9.0                  9.5
 Documentation          Full                 Full
 ====================   ==================   ==================
+
 
 Testing and Continuous Integration
 ==================================
@@ -117,6 +122,7 @@ These tests are automated, and continuous integration is provided by `Travis CI`
 .. _`Travis CI`:
     https://travis-ci.org/rakhimov/scram
 
+
 References for testing and quality assurance
 --------------------------------------------
 
@@ -133,6 +139,7 @@ References for testing and quality assurance
     http://softwaretestingstandard.org/
 .. _`Introduction to Test Driven Development`:
     http://agiledata.org/essays/tdd.html
+
 
 Version control and Versioning
 ==============================
@@ -153,6 +160,7 @@ Version control and Versioning
     http://who-t.blogspot.com/2009/12/on-commit-messages.html
 .. _`Semantic Versioning`:
     http://semver.org/
+
 
 Documentation
 =============

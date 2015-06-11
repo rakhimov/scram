@@ -14,16 +14,17 @@ formatted according to `OpenPSA Model Exchange Format v2.0d`_ or later.
 XML Editors
 ===========
 
-For better experience and productivity with writing and reading
-XML input files, it is recommended to use advanced text editors and
-tools that provide XML specific automation and help, i.e. tag auto-completion,
-folding, schema validation.
+For better experience and productivity with writing and reading XML input
+files, it is recommended to use advanced text editors and tools that provide
+XML specific automation and help, i.e. tag auto-completion, folding, schema
+validation.
 
 Some of the recommended tools:
 
 - `Vim <http://www.vim.org/>`_ with `xmledit <https://github.com/sukima/xmledit>`_
 
-- `Emacs <http://www.gnu.org/software/emacs/>`_ with `nXML mode <http://www.gnu.org/software/emacs/manual/html_mono/nxml-mode.html>`_
+- `Emacs <http://www.gnu.org/software/emacs/>`_ with
+  `nXML mode <http://www.gnu.org/software/emacs/manual/html_mono/nxml-mode.html>`_
 
 - `Notepad++ <http://notepad-plus-plus.org/>`_ with XML Tools plug-in
 

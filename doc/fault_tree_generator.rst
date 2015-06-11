@@ -3,17 +3,18 @@ Fault Tree Generator Python Script
 ##################################
 
 The complexity of a fault tree depends on many factors, such as types of gates,
-the number of common nodes, the total number of nodes,
-and the structure of the tree or the arrangement of the nodes.
-It is best to craft fault trees to test complex and most
-demanding cases, but it is time consuming to design large non-trivial fault
-trees. In order to facilitate the creation of complex fault trees,
-a python script is written that takes into account the factors that make
+the number of common nodes, the total number of nodes, and the structure of the
+tree or the arrangement of the nodes. It is best to craft fault trees to test
+complex and most demanding cases, but it is time consuming to design large and
+non-trivial fault trees. In order to facilitate the creation of complex fault
+trees, a python script is written that takes into account the factors that make
 a fault tree complex for analysis or other types of processing, such as
 graphical representation and validation.
 
+
 General Description
 ===================
+
 - Use of pseudo-random numbers to determine the structure of the tree.
 - The number of basic events is set by a user.
 - The seed of the pseudo-random number generator is fixed and set by a user.
@@ -25,8 +26,10 @@ General Description
   user-supplied parameters.
 - The output is topologically sorted and valid for other analysis tools.
 
+
 Script arguments
 ================
+
 - The seed for the pseudo-random number generator.
 - The number of basic events.
 - The number of house events.
@@ -45,8 +48,10 @@ Script arguments
 - Output formats: shorthand or XML(default).
 - An option to merge gates into nested formulas for output.
 
+
 Note on Performance
 ===================
+
 Depending on the provided arguments for the script, the execution time
 varies greatly. The number of gates and common gates in the fault tree
 generation tend to greatly increase the execution time because of the need to
