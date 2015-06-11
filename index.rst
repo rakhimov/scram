@@ -62,7 +62,7 @@ Documentation
     doc/fta_implementation
     doc/fta_mcs_algorithm
     doc/probability_analysis
-    doc/monte_carlo_simulations
+    doc/uncertainty_analysis
     doc/common_cause_analysis
     doc/fta_graphing
     doc/gui

@@ -4,8 +4,7 @@ OpenPSA Model Exchange Format
 
 Open Probabilistic Safety Assessment Initiative hopes to bring international
 community of PSA together to improve the tools, techniques, and quality
-of PSA in an non-competitive and open manner for the benefit of the
-community.
+of PSA in a non-competitive and open manner for the benefit of the community.
 
 The initiative deals with the following issues in the current PSA:
 
@@ -39,6 +38,7 @@ structured programming techniques.
 More information about the initiative and format can be found on
 http://open-psa.org
 
+
 .. _opsa_mef_schema:
 
 OpenPSA MEF Schemas
@@ -51,12 +51,11 @@ OpenPSA MEF Schemas
 
 .. _opsa_support:
 
-****************************************
 Currently Supported OpenPSA MEF Features
-****************************************
+========================================
 
-The difference between `opsa_mef_schema` and `schema` can be used to identify
-the supported and unsupported features.
+The difference between :ref:`opsa_mef_schema` and :ref:`schema` can be used
+to identify the supported and unsupported features.
 
 - Label
 - Attributes
@@ -90,9 +89,8 @@ the supported and unsupported features.
       exponential with four parameters, Weibull)
 
 
-***************************
 Deviations from OpenPSA MEF
-***************************
+===========================
 
 - Names are not case-sensitive.
 - House events must be defined explicitly for analysis with probability
@@ -105,11 +103,10 @@ Deviations from OpenPSA MEF
   sequential in ascending order.
 
 
-**********************
 OpenPSA MEF Converters
-**********************
+======================
 
-- `Python script`_ for `shorthand_format` to OpenPSA MEF XML conversion.
+- `Python script`_ for :ref:`shorthand_format` to OpenPSA MEF XML conversion.
 
 .. _`Python script`:
     https://github.com/rakhimov/scram/blob/master/scripts/shorthand_to_xml.py

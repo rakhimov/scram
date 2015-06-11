@@ -5,6 +5,7 @@ TODO list for the SCRAM Project
 .. note::
     Relative, subjective importance within groups is given in *italics*.
 
+
 Low Hanging Fruits
 ==================
 
@@ -17,29 +18,20 @@ Major Enhancements and Capabilities
 ===================================
 
 - Boolean formula rewriting for fault trees. *High*
-
 - Binary Decision Diagram (BDD) based Algorithms. *High*
-
 - Zero-Suppressed BDD (ZBDD) based Algorithms. *High*
-
 - Sensitivity analysis. *Moderate*
-
 - Incorporation of an event tree analysis. *Moderate*
-
 - Event tree chaining. *Moderate*
-
 - Event tree fault tree linking. *High*
-
 - Incorporation of alignments. *Moderate*
 
     * Maintenance
     * Guaranteed Success/Failure
 
 - Consequences and Consequence groups. *Moderate*
-
 - Substitutions to represent Delete Terms, Recovery Rules,
   and Exchange Event. *Moderate*
-
 - Dynamic Fault Tree Analysis. *Moderate*
 
 
@@ -60,23 +52,17 @@ Minor Enhancements and Capabilities
 
 - Create a cut-set generator. *Low*
 
+
 GUI Development: Moderate Importance
 ====================================
 
 - Layout
-
 - Fault Tree Construction and Representation
-
 - Description of events
-
 - Event Tree Construction and Representation
-
 - Analysis configuration
-
 - Running analyses
-
 - View of analysis results
-
 - Common cause group construction
 
 
@@ -90,11 +76,8 @@ Platform Support
 ================
 
 - Compiling with Mingw-w64 for Windows. *High*
-
 - Installation Package for Windows. *High*
-
 - Installation Package for Mac OS X. *Moderate*
-
 - Installation Package for Ubuntu (PPA/DEB). *Low*
 
 
@@ -102,7 +85,6 @@ Coding Specific
 ===============
 
 - More tests for expressions. *Moderate*
-
 - Benchmark tests:
 
     * HIPPS (periodic tests)

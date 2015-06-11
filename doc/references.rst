@@ -14,9 +14,8 @@ References
 #. E.Petrosean, "Fault Tree Analysis for Energy Grid"
 #. D.Wakefield, "You Can't Just Build Trees and Call It PSA"
 
-**************
 Web Resources
-**************
+=============
 
 #. `OpenPSA Initiative <http://open-psa.org>`_
 #. `PRA Wiki Page <https://en.wikipedia.org/wiki/Probabilistic_risk_assessment>`_
