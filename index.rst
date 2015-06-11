@@ -14,7 +14,7 @@
 SCRAM
 =====
 
-SCRAM: "Simplified Command-line Risk Analysis Multi-tool"
+**SCRAM** is a **C**\ommand-line **R**\isk **A**\nalysis **M**\ulti-tool.
 
 SCRAM is under development to be a free and open source probabilistic risk
 analysis tool to perform fault tree analysis, event tree analysis, uncertainty
