@@ -29,12 +29,11 @@ class FaultTree : public Element {
   explicit FaultTree(std::string name);
 
   /// Adds a gate into this tree.
-  /// The first gate is assumed to be a top event.
   /// @param[in] gate The gate to be added to this tree.
   /// @throws ValidationError for re-added gates and out-of-order addition.
   void AddGate(const GatePtr& gate);
 
-  /// Validates this tree's structure and events.
+  /// Validates this fault tree's structure and events.
   /// @throws ValidationError if there are issues with this tree.
   void Validate();
 

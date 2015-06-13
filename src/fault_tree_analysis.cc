@@ -7,7 +7,6 @@
 #include <boost/algorithm/string.hpp>
 
 #include "error.h"
-#include "event.h"
 #include "fault_tree.h"
 #include "indexed_fault_tree.h"
 #include "logger.h"
@@ -30,6 +29,27 @@ FaultTreeAnalysis::FaultTreeAnalysis(int limit_order, bool ccf_analysis)
     throw InvalidArgument(msg);
   }
   limit_order_ = limit_order;
+}
+
+FaultTreeAnalysis::FaultTreeAnalysis(const GatePtr& root, int limit_order,
+                                     bool ccf_analysis)
+    : ccf_analysis_(ccf_analysis),
+      warnings_(""),
+      top_event_index_(-1),
+      max_order_(0),
+      num_gates_(0),
+      num_basic_events_(0),
+      num_mcs_events_(0),
+      analysis_time_(0) {
+  // Check for the right limit order.
+  if (limit_order < 1) {
+    std::string msg = "The limit on the order of minimal cut sets "
+                      "cannot be less than one.";
+    throw InvalidArgument(msg);
+  }
+  limit_order_ = limit_order;
+  top_event_ = root;
+  FaultTreeAnalysis::SetupForAnalysis();
 }
 
 void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
@@ -126,6 +146,89 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
   FaultTreeAnalysis::SetsToString(*imcs);  // MCS with event ids.
   delete indexed_tree;  // No exceptions are expected.
 }
+
+void FaultTreeAnalysis::SetupForAnalysis() {
+  FaultTreeAnalysis::GatherInterEvents(top_event_);
+  FaultTreeAnalysis::GatherPrimaryEvents();
+  // Recording number of original basic events before putting new CCF events.
+  num_basic_events_ = basic_events_.size();
+  // Gather CCF generated basic events.
+  FaultTreeAnalysis::GatherCcfBasicEvents();
+}
+
+void FaultTreeAnalysis::GatherInterEvents(const GatePtr& gate) {
+  if (gate->mark() == "visited") return;
+  gate->mark("visited");
+  const std::map<std::string, EventPtr>* children =
+      &gate->formula()->event_args();
+  std::map<std::string, EventPtr>::const_iterator it;
+  for (it = children->begin(); it != children->end(); ++it) {
+    GatePtr child_gate = boost::dynamic_pointer_cast<Gate>(it->second);
+    if (child_gate) {
+      inter_events_.insert(std::make_pair(child_gate->id(), child_gate));
+      FaultTreeAnalysis::GatherInterEvents(child_gate);
+    }
+  }
+}
+
+void FaultTreeAnalysis::GatherPrimaryEvents() {
+  FaultTreeAnalysis::GetPrimaryEvents(top_event_);
+
+  boost::unordered_map<std::string, GatePtr>::iterator it;
+  for (it = inter_events_.begin(); it != inter_events_.end(); ++it) {
+    it->second->mark("");
+    FaultTreeAnalysis::GetPrimaryEvents(it->second);
+  }
+}
+
+void FaultTreeAnalysis::GetPrimaryEvents(const GatePtr& gate) {
+  const std::map<std::string, EventPtr>* children =
+      &gate->formula()->event_args();
+  std::map<std::string, EventPtr>::const_iterator it;
+  for (it = children->begin(); it != children->end(); ++it) {
+    if (!inter_events_.count(it->first)) {
+      PrimaryEventPtr primary_event =
+          boost::dynamic_pointer_cast<PrimaryEvent>(it->second);
+
+      if (primary_event == 0) {  // The tree must be fully defined.
+        throw LogicError("Node " + it->second->name() +
+                         " is not fully defined.");
+      }
+
+      primary_events_.insert(std::make_pair(it->first, primary_event));
+      BasicEventPtr basic_event =
+          boost::dynamic_pointer_cast<BasicEvent>(primary_event);
+      if (basic_event) {
+        basic_events_.insert(std::make_pair(it->first, basic_event));
+        if (basic_event->HasCcf())
+          ccf_events_.insert(std::make_pair(it->first, basic_event));
+      } else {
+        HouseEventPtr house_event =
+            boost::dynamic_pointer_cast<HouseEvent>(primary_event);
+        assert(house_event);
+        house_events_.insert(std::make_pair(it->first, house_event));
+      }
+    }
+  }
+}
+
+void FaultTreeAnalysis::GatherCcfBasicEvents() {
+  boost::unordered_map<std::string, BasicEventPtr>::iterator it_b;
+  for (it_b = ccf_events_.begin(); it_b != ccf_events_.end(); ++it_b) {
+    assert(it_b->second->HasCcf());
+    const std::map<std::string, EventPtr>* children =
+        &it_b->second->ccf_gate()->formula()->event_args();
+    std::map<std::string, EventPtr>::const_iterator it;
+    for (it = children->begin(); it != children->end(); ++it) {
+      BasicEventPtr basic_event =
+          boost::dynamic_pointer_cast<BasicEvent>(it->second);
+      assert(basic_event);
+      basic_events_.insert(std::make_pair(basic_event->id(), basic_event));
+      primary_events_.insert(std::make_pair(basic_event->id(), basic_event));
+    }
+  }
+}
+
 
 void FaultTreeAnalysis::SetsToString(const std::vector< std::set<int> >& imcs) {
   std::set<int> unique_events;

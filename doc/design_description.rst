@@ -27,9 +27,10 @@ Structure/Architecture of the Core Code
   to produce final results. These analyzers may share functionalities
   and be able to cooperate or be used by other analyzers.
 
-    * Fault Tree Analyzer operates on one fault tree and may provide minimal
-      cut sets as output or other information about the passed fault tree.
-      This fault tree analyzer uses many other helper facilities specifically
+    * Fault Tree Analyzer operates on one fault tree with a single top event,
+      and may provide, primary events, intermediate events, and  minimal cut
+      sets as output or other information about the passed fault tree. This
+      fault tree analyzer uses many other helper facilities specifically
       designed to make the analysis efficient and fast.
 
     * Probability calculator accepts cut sets to generate total probability,
