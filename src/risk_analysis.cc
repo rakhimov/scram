@@ -113,7 +113,7 @@ void RiskAnalysis::Analyze() {
           new ProbabilityAnalysis(settings_.approx_, settings_.num_sums_,
                                   settings_.cut_off_,
                                   settings_.importance_analysis_));
-      pa->UpdateDatabase(it->second->basic_events());
+      pa->UpdateDatabase(fta->basic_events());
       pa->Analyze(fta->min_cut_sets());
       prob_analyses_.insert(std::make_pair(it->first, pa));
     }
@@ -122,7 +122,7 @@ void RiskAnalysis::Analyze() {
       UncertaintyAnalysisPtr ua(
           new UncertaintyAnalysis(settings_.num_sums_, settings_.cut_off_,
                                   settings_.num_trials_));
-      ua->UpdateDatabase(it->second->basic_events());
+      ua->UpdateDatabase(fta->basic_events());
       ua->Analyze(fta->min_cut_sets());
       uncertainty_analyses_.insert(std::make_pair(it->first, ua));
     }
@@ -1208,13 +1208,6 @@ void RiskAnalysis::SetupForAnalysis() {
     std::map<std::string, CcfGroupPtr>::iterator it;
     for (it = ccf_groups_.begin(); it != ccf_groups_.end(); ++it) {
       it->second->ApplyModel();
-    }
-  }
-  // Configure fault trees.
-  if (!fault_trees_.empty()) {
-    std::map<std::string, FaultTreePtr>::iterator it;
-    for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
-      it->second->SetupForAnalysis();
     }
   }
 }

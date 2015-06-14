@@ -7,11 +7,13 @@
 #include <string>
 
 #include <boost/shared_ptr.hpp>
+#include <boost/unordered_map.hpp>
 
 #include "event.h"
-#include "fault_tree.h"
 
 namespace scram {
+
+class FaultTree;
 
 /// @class Grapher
 /// Provides graphing instruction output to other tools.

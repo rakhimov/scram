@@ -11,6 +11,8 @@
 #include <boost/pointer_cast.hpp>
 
 #include "error.h"
+#include "fault_tree.h"
+#include "fault_tree_analysis.h"
 
 namespace fs = boost::filesystem;
 
@@ -35,33 +37,34 @@ void Grapher::GraphFaultTree(const FaultTreePtr& fault_tree,
   // List gates and primary events' descriptions.
 
   out << "digraph " << fault_tree->name() << " {\n";
-
+  FaultTreeAnalysis* fta = new FaultTreeAnalysis(fault_tree->top_event());
   // Write top event.
   // Keep track of number of repetitions of the primary events.
   std::map<std::string, int> pr_repeat;
   // Keep track of number of repetitions of the intermediate events.
   std::map<std::string, int> in_repeat;
+  boost::unordered_map<std::string, PrimaryEventPtr> primary_events;
+  primary_events.insert(fta->basic_events().begin(), fta->basic_events().end());
+  primary_events.insert(fta->house_events().begin(), fta->house_events().end());
   // Populate intermediate and primary events of the top.
-  Grapher::GraphNode(fault_tree->top_event(), fault_tree->primary_events(),
-                     &pr_repeat, &in_repeat, out);
+  Grapher::GraphNode(fta->top_event(), primary_events, &pr_repeat, &in_repeat,
+                     out);
   // Do the same for all intermediate events.
   boost::unordered_map<std::string, GatePtr>::const_iterator it_inter;
-  for (it_inter = fault_tree->inter_events().begin();
-       it_inter != fault_tree->inter_events().end();
-       ++it_inter) {
-    Grapher::GraphNode(it_inter->second, fault_tree->primary_events(),
-                       &pr_repeat, &in_repeat, out);
+  for (it_inter = fta->inter_events().begin();
+       it_inter != fta->inter_events().end(); ++it_inter) {
+    Grapher::GraphNode(it_inter->second, primary_events, &pr_repeat,
+                       &in_repeat, out);
   }
 
   // Format events.
-  Grapher::FormatTopEvent(fault_tree->top_event(), out);
-  Grapher::FormatIntermediateEvents(fault_tree->inter_events(),
-                                    in_repeat, out);
-  Grapher::FormatPrimaryEvents(fault_tree->primary_events(), pr_repeat,
-                               prob_requested, out);
+  Grapher::FormatTopEvent(fta->top_event(), out);
+  Grapher::FormatIntermediateEvents(fta->inter_events(), in_repeat, out);
+  Grapher::FormatPrimaryEvents(primary_events, pr_repeat, prob_requested, out);
 
   out << "}";
   out.flush();
+  delete fta;
 }
 
 void Grapher::GraphNode(
