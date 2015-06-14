@@ -8,7 +8,8 @@ using namespace scram;
 
 // Invalid options for the constructor.
 TEST(FaultTreeAnalysisTest, Constructor) {
-  ASSERT_NO_THROW(FaultTreeAnalysis(1));
+  typedef boost::shared_ptr<Gate> GatePtr;
   // Incorrect limit order for minimal cut sets.
-  ASSERT_THROW(FaultTreeAnalysis(-1), InvalidArgument);
+  ASSERT_THROW(FaultTreeAnalysis(GatePtr(new Gate("dummy")), -1),
+               InvalidArgument);
 }

@@ -7,29 +7,10 @@
 #include <boost/algorithm/string.hpp>
 
 #include "error.h"
-#include "fault_tree.h"
 #include "indexed_fault_tree.h"
 #include "logger.h"
 
 namespace scram {
-
-FaultTreeAnalysis::FaultTreeAnalysis(int limit_order, bool ccf_analysis)
-    : ccf_analysis_(ccf_analysis),
-      warnings_(""),
-      top_event_index_(-1),
-      max_order_(0),
-      num_gates_(0),
-      num_basic_events_(0),
-      num_mcs_events_(0),
-      analysis_time_(0) {
-  // Check for the right limit order.
-  if (limit_order < 1) {
-    std::string msg = "The limit on the order of minimal cut sets "
-                      "cannot be less than one.";
-    throw InvalidArgument(msg);
-  }
-  limit_order_ = limit_order;
-}
 
 FaultTreeAnalysis::FaultTreeAnalysis(const GatePtr& root, int limit_order,
                                      bool ccf_analysis)
@@ -52,22 +33,15 @@ FaultTreeAnalysis::FaultTreeAnalysis(const GatePtr& root, int limit_order,
   FaultTreeAnalysis::SetupForAnalysis();
 }
 
-void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
+void FaultTreeAnalysis::Analyze() {
   CLOCK(analysis_time);
-  // Getting events from the fault tree object.
-  top_event_name_ = fault_tree->top_event()->name();
-  num_gates_ = fault_tree->inter_events().size() + 1;  // Include top event.
-  basic_events_ = fault_tree->basic_events();
-  num_basic_events_ = fault_tree->num_basic_events();
-
   // Assign an index to each basic event, and populate relevant
   // databases.
   int j = 1;  // Indices must be able to be negated, so 0 is excluded.
   boost::unordered_map<std::string, BasicEventPtr>::const_iterator itp;
   // Dummy basic event at index 0.
   int_to_basic_.push_back(BasicEventPtr(new BasicEvent("dummy")));
-  for (itp = fault_tree->basic_events().begin();
-       itp != fault_tree->basic_events().end(); ++itp) {
+  for (itp = basic_events_.begin(); itp != basic_events_.end(); ++itp) {
     int_to_basic_.push_back(itp->second);
     all_to_int_.insert(std::make_pair(itp->first, j));
     ++j;
@@ -79,8 +53,7 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
 
   typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
   boost::unordered_map<std::string, HouseEventPtr>::const_iterator ith;
-  for (ith = fault_tree->house_events().begin();
-       ith != fault_tree->house_events().end(); ++ith) {
+  for (ith = house_events_.begin(); ith != house_events_.end(); ++ith) {
     if (ith->second->state()) {
       true_house_events.insert(true_house_events.end(), j);
     } else {
@@ -90,18 +63,16 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
     ++j;
   }
 
-  typedef boost::shared_ptr<Gate> GatePtr;
   // Intermediate events from indices.
   boost::unordered_map<int, GatePtr> int_to_inter;
   // Assign an index to each top and intermediate event and populate
   // relevant databases.
   top_event_index_ = j;
-  int_to_inter.insert(std::make_pair(j, fault_tree->top_event()));
-  all_to_int_.insert(std::make_pair(fault_tree->top_event()->id(), j));
+  int_to_inter.insert(std::make_pair(j, top_event_));
+  all_to_int_.insert(std::make_pair(top_event_->id(), j));
   ++j;
   boost::unordered_map<std::string, GatePtr>::const_iterator iti;
-  for (iti = fault_tree->inter_events().begin();
-       iti != fault_tree->inter_events().end(); ++iti) {
+  for (iti = inter_events_.begin(); iti != inter_events_.end(); ++iti) {
     int_to_inter.insert(std::make_pair(j, iti->second));
     all_to_int_.insert(std::make_pair(iti->first, j));
     ++j;
@@ -111,8 +82,7 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
   if (ccf_analysis_) {
     // Include CCF gates instead of basic events.
     boost::unordered_map<std::string, BasicEventPtr>::const_iterator itc;
-    for (itc = fault_tree->ccf_events().begin();
-         itc != fault_tree->ccf_events().end(); ++itc) {
+    for (itc = ccf_events_.begin(); itc != ccf_events_.end(); ++itc) {
       assert(itc->second->HasCcf());
       int_to_inter.insert(std::make_pair(j, itc->second->ccf_gate()));
       ccf_basic_to_gates.insert(std::make_pair(itc->first, j));
@@ -149,6 +119,7 @@ void FaultTreeAnalysis::Analyze(const FaultTreePtr& fault_tree) {
 
 void FaultTreeAnalysis::SetupForAnalysis() {
   FaultTreeAnalysis::GatherInterEvents(top_event_);
+  num_gates_ = inter_events_.size() + 1;  // Include the top event.
   FaultTreeAnalysis::GatherPrimaryEvents();
   // Recording number of original basic events before putting new CCF events.
   num_basic_events_ = basic_events_.size();
@@ -173,10 +144,11 @@ void FaultTreeAnalysis::GatherInterEvents(const GatePtr& gate) {
 
 void FaultTreeAnalysis::GatherPrimaryEvents() {
   FaultTreeAnalysis::GetPrimaryEvents(top_event_);
+  top_event_->mark("");  // Unmarking.
 
   boost::unordered_map<std::string, GatePtr>::iterator it;
   for (it = inter_events_.begin(); it != inter_events_.end(); ++it) {
-    it->second->mark("");
+    it->second->mark("");  // Unmarking.
     FaultTreeAnalysis::GetPrimaryEvents(it->second);
   }
 }
@@ -186,28 +158,18 @@ void FaultTreeAnalysis::GetPrimaryEvents(const GatePtr& gate) {
       &gate->formula()->event_args();
   std::map<std::string, EventPtr>::const_iterator it;
   for (it = children->begin(); it != children->end(); ++it) {
-    if (!inter_events_.count(it->first)) {
-      PrimaryEventPtr primary_event =
-          boost::dynamic_pointer_cast<PrimaryEvent>(it->second);
-
-      if (primary_event == 0) {  // The tree must be fully defined.
-        throw LogicError("Node " + it->second->name() +
-                         " is not fully defined.");
-      }
-
-      primary_events_.insert(std::make_pair(it->first, primary_event));
-      BasicEventPtr basic_event =
-          boost::dynamic_pointer_cast<BasicEvent>(primary_event);
-      if (basic_event) {
-        basic_events_.insert(std::make_pair(it->first, basic_event));
-        if (basic_event->HasCcf())
-          ccf_events_.insert(std::make_pair(it->first, basic_event));
-      } else {
-        HouseEventPtr house_event =
-            boost::dynamic_pointer_cast<HouseEvent>(primary_event);
-        assert(house_event);
-        house_events_.insert(std::make_pair(it->first, house_event));
-      }
+    BasicEventPtr basic_event =
+        boost::dynamic_pointer_cast<BasicEvent>(it->second);
+    HouseEventPtr house_event =
+        boost::dynamic_pointer_cast<HouseEvent>(it->second);
+    if (basic_event) {
+      assert(!house_event);
+      basic_events_.insert(std::make_pair(it->first, basic_event));
+      if (basic_event->HasCcf())
+        ccf_events_.insert(std::make_pair(it->first, basic_event));
+    } else if (house_event) {
+      assert(!basic_event);
+      house_events_.insert(std::make_pair(it->first, house_event));
     }
   }
 }
@@ -224,7 +186,6 @@ void FaultTreeAnalysis::GatherCcfBasicEvents() {
           boost::dynamic_pointer_cast<BasicEvent>(it->second);
       assert(basic_event);
       basic_events_.insert(std::make_pair(basic_event->id(), basic_event));
-      primary_events_.insert(std::make_pair(basic_event->id(), basic_event));
     }
   }
 }

@@ -70,6 +70,7 @@ void FaultTree::GatherInterEvents(const GatePtr& gate) {
 
 void FaultTree::GatherPrimaryEvents() {
   FaultTree::GetPrimaryEvents(top_event_);
+  top_event_->mark("");
 
   boost::unordered_map<std::string, GatePtr>::iterator it;
   for (it = inter_events_.begin(); it != inter_events_.end(); ++it) {

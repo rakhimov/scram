@@ -18,7 +18,6 @@ class PerformanceTest;
 
 namespace scram {
 
-class FaultTree;
 class Reporter;
 
 /// @class FaultTreeAnalysis
@@ -29,16 +28,9 @@ class FaultTreeAnalysis {
   friend class Reporter;
 
  public:
-  typedef boost::shared_ptr<FaultTree> FaultTreePtr;
   typedef boost::shared_ptr<Gate> GatePtr;
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
   typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
-
-  /// The main constructor of Fault Tree Analysis.
-  /// @param[in] limit_order The maximum limit on minimal cut sets' order.
-  /// @param[in] ccf_analysis Whether or not expand CCF group basic events.
-  /// @throws InvalidArgument if any of the parameters are invalid.
-  explicit FaultTreeAnalysis(int limit_order = 20, bool ccf_analysis = false);
 
   /// Traverses a valid fault tree from the root gate to collect
   /// databases of events, gates, and other members of the fault tree.
@@ -48,8 +40,6 @@ class FaultTreeAnalysis {
   /// @param[in] limit_order The maximum limit on minimal cut sets' order.
   /// @param[in] ccf_analysis Whether or not expand CCF group basic events.
   /// @throws InvalidArgument if any of the parameters are invalid.
-  /// @throws LogicError if the fault tree is not fully defined or some
-  ///                    information is missing.
   explicit FaultTreeAnalysis(const GatePtr& root, int limit_order = 20,
                              bool ccf_analysis = false);
 
@@ -58,9 +48,42 @@ class FaultTreeAnalysis {
   /// without its probabilities. Underlying objects may throw errors
   /// if the fault tree has initialization issues. However, there is no
   /// guarantee for that.
-  /// @param[in] fault_tree Valid Fault Tree.
-  /// @note Cut set generator: O_avg(N) O_max(N)
-  void Analyze(const FaultTreePtr& fault_tree);
+  void Analyze();
+
+  /// @returns The top gate.
+  inline GatePtr& top_event() { return top_event_; }
+
+  /// @returns The container of intermediate events.
+  /// @warning The tree must be validated and ready for analysis.
+  inline const boost::unordered_map<std::string, GatePtr>& inter_events() {
+    return inter_events_;
+  }
+
+  /// @returns The container of all basic events of this tree. This includes
+  ///          basic events created to represent common cause failure.
+  /// @warning The tree must be validated and ready for analysis.
+  inline const boost::unordered_map<std::string, BasicEventPtr>&
+      basic_events() {
+    return basic_events_;
+  }
+
+  /// @returns Basic events that are in some CCF groups.
+  /// @warning The tree must be validated and ready for analysis.
+  inline const boost::unordered_map<std::string, BasicEventPtr>&
+      ccf_events() {
+    return ccf_events_;
+  }
+
+  /// @returns The container of house events of this tree.
+  /// @warning The tree must be validated and ready for analysis.
+  inline const boost::unordered_map<std::string, HouseEventPtr>&
+      house_events() {
+    return house_events_;
+  }
+
+  /// @returns The original number of basic events without new CCF basic events.
+  /// @warning The tree must be validated and ready for analysis.
+  inline int num_basic_events() { return num_basic_events_; }
 
   /// @returns Set with minimal cut sets.
   /// @note The user should make sure that the analysis is actually done.
@@ -115,7 +138,6 @@ class FaultTreeAnalysis {
   std::vector<PrimaryEventPtr> int_to_basic_;  ///< Indices to basic events.
 
   int top_event_index_;  ///< The index of the top event.
-  std::string top_event_name_;  ///< The original name of the top event.
   int num_gates_;  ///< The number of the gates.
   int num_basic_events_;  ///< The number of the basic events.
 
@@ -137,10 +159,6 @@ class FaultTreeAnalysis {
 
   /// Container for intermediate events.
   boost::unordered_map<std::string, GatePtr> inter_events_;
-
-  /// Container for primary events of the tree.
-  /// @todo Delete this container. It is redundant.
-  boost::unordered_map<std::string, PrimaryEventPtr> primary_events_;
 
   /// Container for basic events.
   boost::unordered_map<std::string, BasicEventPtr> basic_events_;

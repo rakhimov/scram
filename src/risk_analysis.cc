@@ -102,9 +102,10 @@ void RiskAnalysis::Analyze() {
 
   std::map<std::string, FaultTreePtr>::iterator it;
   for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
-    FaultTreeAnalysisPtr fta(new FaultTreeAnalysis(settings_.limit_order_,
+    FaultTreeAnalysisPtr fta(new FaultTreeAnalysis(it->second->top_event(),
+                                                   settings_.limit_order_,
                                                    settings_.ccf_analysis_));
-    fta->Analyze(it->second);
+    fta->Analyze();
     ftas_.insert(std::make_pair(it->first, fta));
 
     if (settings_.probability_analysis_) {
