@@ -187,3 +187,17 @@ TEST(RiskAnalysisInputTest, IncorrectProbInputs) {
     delete ran;
   }
 }
+
+// Test the case when a top event is not orphan. The top event of one fault
+// tree can be a child of a gate of another fault tree.
+TEST(RiskAnalysisInputTest, NonOrphanTopEvent) {
+  std::string dir = "./share/scram/input/fta/";
+  std::vector<std::string> input_files;
+
+  input_files.push_back(dir + "correct_tree_input.xml");
+  input_files.push_back(dir + "second_fault_tree.xml");
+
+  RiskAnalysis* ran = new RiskAnalysis();
+  EXPECT_NO_THROW(ran->ProcessInputFiles(input_files));
+  delete ran;
+}

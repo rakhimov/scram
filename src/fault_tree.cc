@@ -50,14 +50,30 @@ void FaultTree::Validate() {
   /// @todo Add support for multiple top events.
   boost::unordered_map<std::string, GatePtr>::iterator it;
   for (it = gates_.begin(); it != gates_.end(); ++it) {
-    if (it->second->IsOrphan()) {
-      if (top_event_) {
-        throw ValidationError("Multiple top events are detected: " +
-                              top_event_->name() + " and " +
-                              it->second->name() + " in " + name_ +
-                              " fault tree.");
-      }
-      top_event_ = it->second;
+    FaultTree::MarkNonTopGates(it->second);
+  }
+  for (it = gates_.begin(); it != gates_.end(); ++it) {
+    if (it->second->mark() != "non-top") top_events_.push_back(it->second);
+  }
+  if (top_events_.size() > 1) {
+    throw ValidationError("Multiple top events are detected: " +
+                          top_events_.front()->name() + " and " +
+                          top_events_.back()->name() + " in " + name_ +
+                          " fault tree.");
+  }
+}
+
+void FaultTree::MarkNonTopGates(const GatePtr& gate) {
+  typedef boost::shared_ptr<Event> EventPtr;
+  if (gate->mark() == "non-top") return;
+  std::map<std::string, EventPtr>::const_iterator it;
+  const std::map<std::string, EventPtr>* children =
+      &gate->formula()->event_args();
+  for (it = children->begin(); it != children->end(); ++it) {
+    GatePtr child_gate = boost::dynamic_pointer_cast<Gate>(it->second);
+    if (child_gate && child_gate->container() == name_) {
+      FaultTree::MarkNonTopGates(child_gate);
+      child_gate->mark("non-top");
     }
   }
 }

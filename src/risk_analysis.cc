@@ -75,10 +75,10 @@ void RiskAnalysis::ProcessInputFiles(
   LOG(DEBUG1) << "Validating the input files";
   // Check if the initialization is successful.
   RiskAnalysis::ValidateInitialization();
-  LOG(DEBUG1) << "Validatation is finished in " << DUR(valid_time);
+  LOG(DEBUG1) << "Validation is finished in " << DUR(valid_time);
 
   CLOCK(setup_time);
-  LOG(DEBUG1) << "Seting up for the analysis";
+  LOG(DEBUG1) << "Setting up for the analysis";
   // Perform setup for analysis using configurations from the input files.
   RiskAnalysis::SetupForAnalysis();
   LOG(DEBUG1) << "Setup time " << DUR(setup_time);
@@ -412,6 +412,7 @@ void RiskAnalysis::RegisterGate(const xmlpp::Element* gate_node,
   RiskAnalysis::AttachLabelAndAttributes(gate_node, gate);
 
   ft->AddGate(gate);
+  gate->container(ft->name());
 }
 
 void RiskAnalysis::DefineGate(const xmlpp::Element* gate_node,

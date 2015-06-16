@@ -39,6 +39,13 @@ class Event : public Element {
   /// @param[in] id_with_caps The id name with capitalizations.
   void name(std::string id_with_caps) { name_ = id_with_caps; }
 
+  /// Sets the container this event is defined in.
+  /// @param[in] id_with_caps The id name with capitalizations.
+  void container(std::string container) { container_ = container; }
+
+  /// @returns The container this event belongs to.
+  const std::string& container() { return container_; }
+
   /// Adds a parent formula that uses this event.
   /// @param[in] parent Formula where event is used.
   /// @throws LogicError if the parent is being re-inserted.
@@ -54,6 +61,7 @@ class Event : public Element {
  private:
   std::string id_;  ///< Id name of a event. It is in lower case.
   std::string name_;  ///< Original name with capitalizations preserved.
+  std::string container_;  ///< The container this event belongs to.
   /// @todo This is a circular reference in shared pointers. Memory leak.
   ///< The parents of this event.
   std::set<boost::shared_ptr<Formula> > parents_;

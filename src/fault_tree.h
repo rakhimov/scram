@@ -3,8 +3,8 @@
 #ifndef SCRAM_SRC_FAULT_TREE_H_
 #define SCRAM_SRC_FAULT_TREE_H_
 
-#include <string>
 #include <set>
+#include <string>
 #include <vector>
 
 #include <boost/shared_ptr.hpp>
@@ -59,7 +59,7 @@ class FaultTree : public Element {
   inline const std::string& name() { return name_; }
 
   /// @returns The top gate.
-  inline GatePtr& top_event() { return top_event_; }
+  inline GatePtr& top_event() { return top_events_.front(); }
 
   /// @returns The container of all basic events of this fault tree.
   inline const boost::unordered_map<std::string, BasicEventPtr>&
@@ -80,11 +80,16 @@ class FaultTree : public Element {
   }
 
  private:
+  /// Recursively marks descendant gates as "non-top". These gates belong
+  /// to this fault tree only.
+  /// @param[in] gate The ancestor gate.
+  void MarkNonTopGates(const GatePtr& gate);
+
   /// Holder for gates defined in this fault tree container.
   boost::unordered_map<std::string, GatePtr> gates_;
 
   std::string name_;  ///< The name of this fault tree.
-  GatePtr top_event_;  ///< Top event of this fault tree.
+  std::vector<GatePtr> top_events_;  ///< Top events of this fault tree.
 
   /// Container for basic events of the tree.
   boost::unordered_map<std::string, BasicEventPtr> basic_events_;

@@ -19,23 +19,3 @@ TEST(FaultTreeTest, AddGate) {
   EXPECT_NO_THROW(ft->AddGate(gate_two));  // No parent.
   delete ft;
 }
-
-TEST(FaultTreeTest, MultipleTopEvents) {
-  FaultTree* ft = new FaultTree("never_fail");
-  GatePtr top(new Gate("Top"));
-  GatePtr second_top(new Gate("SecondTop"));
-  GatePtr middle(new Gate("Middle"));
-  GatePtr bottom(new Gate("Bottom"));
-  top->formula(FormulaPtr(new Formula("not")));
-  top->formula()->AddArgument(middle);
-  middle->AddParent(top->formula());
-  middle->formula(FormulaPtr(new Formula("not")));
-  middle->formula()->AddArgument(bottom);
-  bottom->AddParent(middle->formula());
-  EXPECT_NO_THROW(ft->AddGate(top));
-  EXPECT_NO_THROW(ft->AddGate(middle));
-  EXPECT_NO_THROW(ft->AddGate(bottom));
-  EXPECT_NO_THROW(ft->AddGate(second_top));
-  EXPECT_THROW(ft->Validate(), ValidationError);
-  delete ft;
-}

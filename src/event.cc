@@ -9,7 +9,10 @@
 
 namespace scram {
 
-Event::Event(std::string id, std::string name) : id_(id), name_(name) {}
+Event::Event(std::string id, std::string name)
+    : id_(id),
+      name_(name),
+      container_("") {}
 
 void Event::AddParent(const boost::shared_ptr<Formula>& parent) {
   if (parents_.count(parent)) {
