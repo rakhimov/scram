@@ -7,7 +7,6 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/date_time.hpp>
-#include <boost/lexical_cast.hpp>
 
 #include "event.h"
 #include "error.h"
@@ -48,7 +47,7 @@ void Reporter::SetupReport(const RiskAnalysis* risk_an,
   xmlpp::Element* methods = information->add_child("calculation-method");
   methods->set_attribute("name", "MOCUS");
   methods->add_child("limits")->add_child("number-of-basic-events")
-      ->add_child_text(boost::lexical_cast<std::string>(settings.limit_order_));
+      ->add_child_text(ToString(settings.limit_order_));
 
   // Report the setup for CCF analysis.
   if (settings.ccf_analysis_) {
@@ -70,12 +69,10 @@ void Reporter::SetupReport(const RiskAnalysis* risk_an,
     methods->set_attribute("name", "Numerical Probability");
     xmlpp::Element* limits = methods->add_child("limits");
     limits->add_child("mission-time")
-        ->add_child_text(
-            boost::lexical_cast<std::string>(settings.mission_time_));
-    limits->add_child("cut-off")
-        ->add_child_text(boost::lexical_cast<std::string>(settings.cut_off_));
+        ->add_child_text(ToString(settings.mission_time_));
+    limits->add_child("cut-off")->add_child_text(ToString(settings.cut_off_));
     limits->add_child("number-of-sums")
-        ->add_child_text(boost::lexical_cast<std::string>(settings.num_sums_));
+        ->add_child_text(ToString(settings.num_sums_));
   }
 
   // Report the setup for optional importance analysis.
@@ -98,26 +95,23 @@ void Reporter::SetupReport(const RiskAnalysis* risk_an,
     xmlpp::Element* methods = information->add_child("calculation-method");
     methods->set_attribute("name", "Monte Carlo");
     xmlpp::Element* limits = methods->add_child("limits");
-    limits->add_child("number-of-trials")->add_child_text(
-        boost::lexical_cast<std::string>(settings.num_trials_));
+    limits->add_child("number-of-trials")
+        ->add_child_text(ToString(settings.num_trials_));
     if (settings.seed_ >= 0) {
-      limits->add_child("seed")->add_child_text(
-          boost::lexical_cast<std::string>(settings.seed_));
+      limits->add_child("seed")->add_child_text(ToString(settings.seed_));
     }
   }
 
   xmlpp::Element* model = information->add_child("model-features");
-  model->add_child("gates")->add_child_text(
-      boost::lexical_cast<std::string>(risk_an->gates_.size()));
-  model->add_child("basic-events")->add_child_text(
-      boost::lexical_cast<std::string>(risk_an->basic_events_.size()));
+  model->add_child("gates")->add_child_text(ToString(risk_an->gates_.size()));
+  model->add_child("basic-events")
+      ->add_child_text(ToString(risk_an->basic_events_.size()));
   model->add_child("house-events")
-      ->add_child_text(boost::lexical_cast<std::string>(
-              risk_an->house_events_.size()));
-  model->add_child("ccf-groups")->add_child_text(
-      boost::lexical_cast<std::string>(risk_an->ccf_groups_.size()));
-  model->add_child("fault-trees")->add_child_text(
-      boost::lexical_cast<std::string>(risk_an->fault_trees_.size()));
+      ->add_child_text(ToString(risk_an->house_events_.size()));
+  model->add_child("ccf-groups")
+      ->add_child_text(ToString(risk_an->ccf_groups_.size()));
+  model->add_child("fault-trees")
+      ->add_child_text(ToString(risk_an->fault_trees_.size()));
 
   // Setup for results.
   root->add_child("results");
@@ -170,12 +164,10 @@ void Reporter::ReportFta(
   xmlpp::Element* results = dynamic_cast<xmlpp::Element*>(res[0]);
   xmlpp::Element* sum_of_products = results->add_child("sum-of-products");
   sum_of_products->set_attribute("name", ft_name);
-  sum_of_products->set_attribute(
-      "basic-events",
-      boost::lexical_cast<std::string>(fta->num_mcs_events_));
-  sum_of_products->set_attribute(
-      "products",
-      boost::lexical_cast<std::string>(fta->min_cut_sets_.size()));
+  sum_of_products->set_attribute("basic-events",
+                                 ToString(fta->num_mcs_events_));
+  sum_of_products->set_attribute("products",
+                                 ToString(fta->min_cut_sets_.size()));
 
   if (prob_analysis) {
     sum_of_products->set_attribute(
@@ -194,7 +186,7 @@ void Reporter::ReportFta(
        ++it_min) {
     xmlpp::Element* product = sum_of_products->add_child("product");
     product->set_attribute("order",
-                           boost::lexical_cast<std::string>(it_min->size()));
+                           ToString(it_min->size()));
 
     if (prob_analysis) {
       product->set_attribute(
@@ -251,9 +243,8 @@ void Reporter::ReportImportance(
   xmlpp::Element* results = dynamic_cast<xmlpp::Element*>(res[0]);
   xmlpp::Element* importance = results->add_child("importance");
   importance->set_attribute("name", ft_name);
-  importance->set_attribute(
-      "basic-events",
-      boost::lexical_cast<std::string>(prob_analysis->importance().size()));
+  importance->set_attribute("basic-events",
+                            ToString(prob_analysis->importance().size()));
 
   std::string warning = prob_analysis->warnings();
   if (warning != "") {
@@ -313,11 +304,10 @@ void Reporter::ReportUncertainty(
   /// @todo Error factor reporting.
   xmlpp::Element* quantiles = measure->add_child("quantiles");
   int num_bins = uncert_analysis->distribution().size() - 1;
-  quantiles->set_attribute("number",
-                           boost::lexical_cast<std::string>(num_bins));
+  quantiles->set_attribute("number", ToString(num_bins));
   for (int i = 0; i < num_bins; ++i) {
     xmlpp::Element* quant = quantiles->add_child("quantile");
-    quant->set_attribute("number", boost::lexical_cast<std::string>(i + 1));
+    quant->set_attribute("number", ToString(i + 1));
     double lower = uncert_analysis->distribution()[i].first;
     double upper = uncert_analysis->distribution()[i + 1].first;
     double value = uncert_analysis->distribution()[i + 1].second;
@@ -345,12 +335,8 @@ xmlpp::Element* Reporter::ReportBasicEvent(
   } else {
     element = parent->add_child("ccf-event");
     element->set_attribute("ccf-group", ccf_event->ccf_group_name());
-    element->set_attribute(
-        "order",
-        boost::lexical_cast<std::string>(ccf_event->member_names().size()));
-    element->set_attribute(
-        "group-size",
-        boost::lexical_cast<std::string>(ccf_event->ccf_group_size()));
+    element->set_attribute("order", ToString(ccf_event->member_names().size()));
+    element->set_attribute("group-size", ToString(ccf_event->ccf_group_size()));
     std::vector<std::string>::const_iterator it;
     for (it = ccf_event->member_names().begin();
          it != ccf_event->member_names().end(); ++it) {

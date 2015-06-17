@@ -95,10 +95,20 @@ class Reporter {
       const boost::shared_ptr<BasicEvent>& basic_event,
       xmlpp::Element* parent);
 
-  /// A helper function to convert a number to a string.
+  /// A generic function to convert numbers to string.
+  /// @param[in] num The number to be converted.
+  /// @returns Formatted string that represents the number.
+  template<class T>
+  inline std::string ToString(T num) {
+    std::stringstream ss;
+    ss << num;
+    return ss.str();
+  }
+
+  /// A helper function to convert a floating point number to string.
   /// @param[in] num The number to be converted.
   /// @param[in] precision Decimal precision for reporting.
-  /// @returns Formatted string that represents the number.
+  /// @returns Formatted string that represents the floating point number.
   inline std::string ToString(double num, int precision) {
     std::stringstream ss;
     ss << std::setprecision(precision) << num;
