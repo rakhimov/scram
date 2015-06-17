@@ -106,7 +106,7 @@ void RiskAnalysis::Analyze() {
                                                    settings_.limit_order_,
                                                    settings_.ccf_analysis_));
     fta->Analyze();
-    ftas_.insert(std::make_pair(it->first, fta));
+    ftas_.insert(std::make_pair(fta->top_event()->name(), fta));
 
     if (settings_.probability_analysis_) {
       ProbabilityAnalysisPtr pa(
@@ -115,7 +115,7 @@ void RiskAnalysis::Analyze() {
                                   settings_.importance_analysis_));
       pa->UpdateDatabase(fta->basic_events());
       pa->Analyze(fta->min_cut_sets());
-      prob_analyses_.insert(std::make_pair(it->first, pa));
+      prob_analyses_.insert(std::make_pair(fta->top_event()->name(), pa));
     }
 
     if (settings_.uncertainty_analysis_) {
@@ -124,7 +124,8 @@ void RiskAnalysis::Analyze() {
                                   settings_.num_trials_));
       ua->UpdateDatabase(fta->basic_events());
       ua->Analyze(fta->min_cut_sets());
-      uncertainty_analyses_.insert(std::make_pair(it->first, ua));
+      uncertainty_analyses_.insert(
+          std::make_pair(fta->top_event()->name(), ua));
     }
   }
 }
@@ -163,22 +164,21 @@ void RiskAnalysis::Report(std::ostream& out) {
 
   assert(ftas_.size() == fault_trees_.size());  // All trees are analyzed.
 
-  std::map<std::string, FaultTreePtr>::iterator it;
-  for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
+  std::map<std::string, FaultTreeAnalysisPtr>::iterator it;
+  for (it = ftas_.begin(); it != ftas_.end(); ++it) {
     ProbabilityAnalysisPtr prob_analysis;  // Null pointer if no analysis.
     if (settings_.probability_analysis_) {
       prob_analysis = prob_analyses_.find(it->first)->second;
     }
-    rp.ReportFta(it->second->name(), ftas_.find(it->first)->second,
-                 prob_analysis, doc);
+    rp.ReportFta(it->first, ftas_.find(it->first)->second, prob_analysis, doc);
 
     if (settings_.importance_analysis_) {
-      rp.ReportImportance(it->second->name(),
+      rp.ReportImportance(it->first,
                           prob_analyses_.find(it->first)->second, doc);
     }
 
     if (settings_.uncertainty_analysis_) {
-        rp.ReportUncertainty(it->second->name(),
+        rp.ReportUncertainty(it->first,
                              uncertainty_analyses_.find(it->first)->second,
                              doc);
     }
