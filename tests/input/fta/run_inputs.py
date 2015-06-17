@@ -67,6 +67,7 @@ def main():
             "def_clash_house_basic.xml",
             "atleast_gate.xml",
             "cyclic_tree.xml",
+            "cyclic_formula.xml",
             "cyclic_parameter.xml",
             "cyclic_expression.xml",
             "invalid_expression.xml",

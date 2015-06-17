@@ -455,15 +455,13 @@ boost::shared_ptr<Formula> RiskAnalysis::GetFormula(
     int vote_number = boost::lexical_cast<int>(min_num);
     formula->vote_number(vote_number);
   }
-  xmlpp::NodeSet args;
-  if (type == "null") {
-    args = formula_node->get_parent()->find("./*");
-    assert(args.size() == 1);
-  } else {
-    args = formula_node->find("./*");
-  }
   // Process arguments of this formula.
-  RiskAnalysis::ProcessFormula(formula, args);
+  if (type == "null") {
+    RiskAnalysis::ProcessFormula(formula_node->get_parent(), formula);
+  } else {
+    RiskAnalysis::ProcessFormula(formula_node, formula);
+  }
+
   try {
     formula->Validate();
   } catch (ValidationError& err) {
@@ -474,8 +472,12 @@ boost::shared_ptr<Formula> RiskAnalysis::GetFormula(
   return formula;
 }
 
-void RiskAnalysis::ProcessFormula(const FormulaPtr& formula,
-                                  const xmlpp::NodeSet& events) {
+void RiskAnalysis::ProcessFormula(const xmlpp::Element* formula_node,
+                                  const FormulaPtr& formula) {
+  xmlpp::NodeSet events = formula_node->find("./*[name() = 'event' or "
+                                             "name() = 'gate' or "
+                                             "name() = 'basic-event' or "
+                                             "name() = 'house-event']");
   std::set<std::string> children_id;  // To detect repeated children.
   xmlpp::NodeSet::const_iterator it;
   for (it = events.begin(); it != events.end(); ++it) {
@@ -496,8 +498,6 @@ void RiskAnalysis::ProcessFormula(const FormulaPtr& formula,
     }
 
     std::string element_type = event->get_name();
-    assert(element_type == "event" || element_type == "gate" ||
-           element_type == "basic-event" || element_type == "house-event");
     // This is for a case "<event name="id" type="type"/>".
     std::string type = event->get_attribute_value("type");
     boost::trim(type);
@@ -524,6 +524,17 @@ void RiskAnalysis::ProcessFormula(const FormulaPtr& formula,
 
     formula->AddArgument(child);
     child->orphan(false);
+  }
+
+  xmlpp::NodeSet formulas = formula_node->find("./*[name() != 'event' and "
+                                               "name() != 'gate' and "
+                                               "name() != 'basic-event' and "
+                                               "name() != 'house-event']");
+  for (it = formulas.begin(); it != formulas.end(); ++it) {
+    const xmlpp::Element* nested_formula =
+        dynamic_cast<const xmlpp::Element*>(*it);
+    assert(nested_formula);
+    formula->AddArgument(RiskAnalysis::GetFormula(nested_formula));
   }
 }
 

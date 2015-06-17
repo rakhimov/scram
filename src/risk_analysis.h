@@ -152,17 +152,19 @@ class RiskAnalysis {
   /// @param[in,out] gate Registered gate ready to be defined.
   void DefineGate(const xmlpp::Element* gate_node, const GatePtr& gate);
 
-  /// Creates a Boolean from the XML elements.
+  /// Creates a Boolean formula from the XML elements describing the formula
+  /// with events and other nested formulas.
   /// @param[in] gate_node XML element defining the formula.
   /// @returns Boolean formula that is registered.
+  /// @throws ValidationError if the defined formula is not valid.
   FormulaPtr GetFormula(const xmlpp::Element* formula_node);
 
-  /// Processes the formula with nodes.
-  /// Currently only one layer formula is supported.
-  /// @todo Support nested formula.
-  /// @param[in] formula The formula to be defined.
-  /// @param[in] events The XML node list of arguments of the formula.
-  void ProcessFormula(const FormulaPtr& formula, const xmlpp::NodeSet& events);
+  /// Processes the arguments of a formula with nodes and formulas.
+  /// @param[in] formula_node The XML element with children as arguments.
+  /// @param[in/out] formula The formula to be defined by the arguments.
+  /// @throws ValidationError if repeated arguments are identified.
+  void ProcessFormula(const xmlpp::Element* formula_node,
+                      const FormulaPtr& formula);
 
   /// Process [event name=id] cases inside of a one layer formula description.
   /// @param[in] event XML element defining this event.
