@@ -11,7 +11,6 @@ using namespace scram;
 typedef boost::shared_ptr<Event> EventPtr;
 typedef boost::shared_ptr<Gate> GatePtr;
 typedef boost::shared_ptr<Formula> FormulaPtr;
-typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
 typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
 typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
 

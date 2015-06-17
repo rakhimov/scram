@@ -311,8 +311,8 @@ class RiskAnalysis {
   /// Container for fully defined gates.
   boost::unordered_map<std::string, GatePtr> gates_;
 
-  /// Container for fully defined primary events.
-  boost::unordered_map<std::string, PrimaryEventPtr> primary_events_;
+  /// Container for fully defined house events.
+  boost::unordered_map<std::string, HouseEventPtr> house_events_;
 
   /// Container for fully defined basic events.
   boost::unordered_map<std::string, BasicEventPtr> basic_events_;

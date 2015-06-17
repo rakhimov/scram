@@ -14,7 +14,7 @@ using namespace scram;
 
 typedef boost::shared_ptr<Event> EventPtr;
 typedef boost::shared_ptr<Gate> GatePtr;
-typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
+typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
 typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
 
 class RiskAnalysisTest : public ::testing::Test {
@@ -31,8 +31,8 @@ class RiskAnalysisTest : public ::testing::Test {
     return ran->gates_;
   }
 
-  boost::unordered_map<std::string, PrimaryEventPtr>& primary_events() {
-    return ran->primary_events_;
+  boost::unordered_map<std::string, HouseEventPtr>& house_events() {
+    return ran->house_events_;
   }
 
   boost::unordered_map<std::string, BasicEventPtr>& basic_events() {

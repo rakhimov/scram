@@ -113,7 +113,7 @@ void Reporter::SetupReport(const RiskAnalysis* risk_an,
       boost::lexical_cast<std::string>(risk_an->basic_events_.size()));
   model->add_child("house-events")
       ->add_child_text(boost::lexical_cast<std::string>(
-              risk_an->primary_events_.size() - risk_an->basic_events_.size()));
+              risk_an->house_events_.size()));
   model->add_child("ccf-groups")->add_child_text(
       boost::lexical_cast<std::string>(risk_an->ccf_groups_.size()));
   model->add_child("fault-trees")->add_child_text(

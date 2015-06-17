@@ -139,9 +139,13 @@ void RiskAnalysis::Report(std::ostream& out) {
   /// Container for excess primary events not in the analysis.
   /// This container is for warning in case the input is formed not as intended.
   std::set<PrimaryEventPtr> orphan_primary_events;
-  boost::unordered_map<std::string, PrimaryEventPtr>::iterator it_p;
-  for (it_p = primary_events_.begin(); it_p != primary_events_.end(); ++it_p) {
-    if (it_p->second->orphan()) orphan_primary_events.insert(it_p->second);
+  boost::unordered_map<std::string, BasicEventPtr>::iterator it_b;
+  for (it_b = basic_events_.begin(); it_b != basic_events_.end(); ++it_b) {
+    if (it_b->second->orphan()) orphan_primary_events.insert(it_b->second);
+  }
+  boost::unordered_map<std::string, HouseEventPtr>::iterator it_h;
+  for (it_h = house_events_.begin(); it_h != house_events_.end(); ++it_h) {
+    if (it_h->second->orphan()) orphan_primary_events.insert(it_h->second);
   }
   if (!orphan_primary_events.empty())
     rp.ReportOrphanPrimaryEvents(orphan_primary_events, doc);
@@ -387,19 +391,11 @@ void RiskAnalysis::RegisterGate(const xmlpp::Element* gate_node,
   std::string id = name;
   boost::to_lower(id);
 
-  if (gates_.count(id)) {
-    // Redefined gate.
+  if (gates_.count(id) || basic_events_.count(id) || house_events_.count(id)) {
+    // Redefined event.
     std::stringstream msg;
     msg << "Line " << gate_node->get_line() << ":\n";
-    msg << name << " gate is being redefined.";
-    throw ValidationError(msg.str());
-  }
-
-  // Detect name clashes.
-  if (primary_events_.count(id)) {
-    std::stringstream msg;
-    msg << "Line " << gate_node->get_line() << ":\n";
-    msg << name << " is already assigned to a primary event.";
+    msg << name << " event is being redefined.";
     throw ValidationError(msg.str());
   }
 
@@ -522,17 +518,19 @@ void RiskAnalysis::ProcessFormula(const FormulaPtr& formula,
 void RiskAnalysis::ProcessFormulaEvent(const xmlpp::Element* event,
                                        EventPtr& child) {
   std::string id = child->id();
-  std::string name = child->name();
-  if (primary_events_.count(id)) {
-    child = primary_events_.find(id)->second;
+  if (basic_events_.count(id)) {
+    child = basic_events_.find(id)->second;
 
   } else if (gates_.count(id)) {
     child = gates_.find(id)->second;
 
+  } else if (house_events_.count(id)) {
+    child = house_events_.find(id)->second;
+
   } else {
     std::stringstream msg;
     msg << "Line " << event->get_line() << ":\n";
-    msg << "Undefined event: " << name;
+    msg << "Undefined event: " << child->name();
     throw ValidationError(msg.str());
   }
 }
@@ -553,19 +551,13 @@ void RiskAnalysis::ProcessFormulaBasicEvent(const xmlpp::Element* event,
 void RiskAnalysis::ProcessFormulaHouseEvent(const xmlpp::Element* event,
                                             EventPtr& child) {
   std::string id = child->id();
-  std::string name = child->name();
-  if (primary_events_.count(id)) {
-    child = primary_events_.find(id)->second;
-    if (boost::dynamic_pointer_cast<HouseEvent>(child) == 0) {
-      std::stringstream msg;
-      msg << "Line " << event->get_line() << ":\n";
-      msg << "Undefined house event: " << name;
-      throw ValidationError(msg.str());
-    }
+  if (house_events_.count(id)) {
+    child = house_events_.find(id)->second;
+
   } else {
     std::stringstream msg;
     msg << "Line " << event->get_line() << ":\n";
-    msg << "Undefined house event: " << name;
+    msg << "Undefined house event: " << child->name();
     throw ValidationError(msg.str());
   }
 }
@@ -589,21 +581,14 @@ void RiskAnalysis::RegisterBasicEvent(const xmlpp::Element* event_node) {
   std::string id = name;
   boost::to_lower(id);
   // Detect name clashes.
-  if (gates_.count(id)) {
+  if (gates_.count(id) || basic_events_.count(id) || house_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << name << " is already assigned to a gate.";
-    throw ValidationError(msg.str());
-  }
-  if (primary_events_.count(id)) {
-    std::stringstream msg;
-    msg << "Line " << event_node->get_line() << ":\n";
-    msg << name << " is being redefined.";
+    msg << name << " event is being redefined.";
     throw ValidationError(msg.str());
   }
   BasicEventPtr basic_event = BasicEventPtr(new BasicEvent(id));
   basic_event->name(name);
-  primary_events_.insert(std::make_pair(id, basic_event));
   basic_events_.insert(std::make_pair(id, basic_event));
   tbd_elements_.push_back(std::make_pair(basic_event, event_node));
   RiskAnalysis::AttachLabelAndAttributes(event_node, basic_event);
@@ -629,16 +614,10 @@ void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node) {
   std::string id = name;
   boost::to_lower(id);
   // Detect name clashes.
-  if (gates_.count(id)) {
+  if (gates_.count(id) || basic_events_.count(id) || house_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << name << " is already assigned to a gate.";
-    throw ValidationError(msg.str());
-  }
-  if (primary_events_.count(id)) {
-    std::stringstream msg;
-    msg << "Line " << event_node->get_line() << ":\n";
-    msg << name << " is being redefined.";
+    msg << name << " event is being redefined.";
     throw ValidationError(msg.str());
   }
   HouseEventPtr house_event = HouseEventPtr(new HouseEvent(id));
@@ -657,7 +636,7 @@ void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node) {
     bool state = (val == "true") ? true : false;
     house_event->state(state);
   }
-  primary_events_.insert(std::make_pair(id, house_event));
+  house_events_.insert(std::make_pair(id, house_event));
   RiskAnalysis::AttachLabelAndAttributes(event_node, house_event);
 }
 
@@ -1029,22 +1008,16 @@ void RiskAnalysis::ProcessCcfMembers(const xmlpp::Element* members_node,
       msg << name << " is already in CCF group " << ccf_group->name() << ".";
       throw ValidationError(msg.str());
     }
-    if (gates_.count(id)) {
+    if (gates_.count(id) || basic_events_.count(id) ||
+        house_events_.count(id)) {
       std::stringstream msg;
       msg << "Line " << event_node->get_line() << ":\n";
-      msg << name << " is already assigned to a gate.";
-      throw ValidationError(msg.str());
-    }
-    if (primary_events_.count(id)) {
-      std::stringstream msg;
-      msg << "Line " << event_node->get_line() << ":\n";
-      msg << name << " is being redefined.";
+      msg << name << " event is being redefined.";
       throw ValidationError(msg.str());
     }
     member_ids.insert(id);
     BasicEventPtr basic_event = BasicEventPtr(new BasicEvent(id));
     basic_event->name(name);
-    primary_events_.insert(std::make_pair(id, basic_event));
     basic_events_.insert(std::make_pair(id, basic_event));
 
     ccf_group->AddMember(basic_event);
@@ -1115,9 +1088,13 @@ void RiskAnalysis::CheckFirstLayer() {
   // Check if all primary events have expressions for probability analysis.
   if (settings_.probability_analysis_) {
     std::string msg = "";
-    boost::unordered_map<std::string, PrimaryEventPtr>::iterator it;
-    for (it = primary_events_.begin(); it != primary_events_.end(); ++it) {
-      if (!it->second->has_expression()) msg += it->second->name() + "\n";
+    boost::unordered_map<std::string, BasicEventPtr>::iterator it_b;
+    for (it_b = basic_events_.begin(); it_b != basic_events_.end(); ++it_b) {
+      if (!it_b->second->has_expression()) msg += it_b->second->name() + "\n";
+    }
+    boost::unordered_map<std::string, HouseEventPtr>::iterator it_h;
+    for (it_h = house_events_.begin(); it_h != house_events_.end(); ++it_h) {
+      if (!it_h->second->has_expression()) msg += it_h->second->name() + "\n";
     }
     if (!msg.empty()) {
       error_messages << "\nThese primary events do not have expressions:\n"
