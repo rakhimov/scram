@@ -113,15 +113,15 @@ def test_graph_call():
     # Test graph only
     cmd = ["scram", fta_input, "--graph"]
     yield assert_equal, 0, call(cmd)
-    graph_file = "./input/fta/TwoTrains.dot"
-    cmd = ["scram", fta_input, "--graph", "-o", graph_file]
+    graph_file = "TwoTrains_TopEvent.dot"
+    cmd = ["scram", fta_input, "--graph"]
     yield assert_equal, 0, call(cmd)
     # Test if output is created
     yield assert_true, os.path.isfile(graph_file)
     # Changing permission
     cmd = ["chmod", "a-w", graph_file]
     call(cmd)
-    cmd = ["scram", fta_input, "--graph", "-o", graph_file]
+    cmd = ["scram", fta_input, "--graph"]
     yield assert_not_equal, 0, call(cmd)
     if os.path.isfile(graph_file):
         os.remove(graph_file)
