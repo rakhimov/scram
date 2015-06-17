@@ -69,6 +69,7 @@ TEST(RiskAnalysisInputTest, CorrectFTAInputs) {
   correct_inputs.push_back(dir + "mixed_definitions.xml");
   correct_inputs.push_back(dir + "model_data_mixed_definitions.xml");
   correct_inputs.push_back(dir + "two_trees.xml");
+  correct_inputs.push_back(dir + "two_top_events.xml");
   correct_inputs.push_back(dir + "labels_and_attributes.xml");
   correct_inputs.push_back(dir + "orphan_primary_event.xml");
   correct_inputs.push_back(dir + "very_long_mcs.xml");
@@ -144,7 +145,6 @@ TEST(RiskAnalysisInputTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back(dir + "def_clash_basic_house.xml");
   incorrect_inputs.push_back(dir + "def_clash_house_basic.xml");
   incorrect_inputs.push_back(dir + "atleast_gate.xml");
-  incorrect_inputs.push_back(dir + "two_top_events.xml");
   incorrect_inputs.push_back(dir + "cyclic_tree.xml");
   incorrect_inputs.push_back(dir + "cyclic_parameter.xml");
   incorrect_inputs.push_back(dir + "cyclic_expression.xml");

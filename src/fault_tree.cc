@@ -46,20 +46,13 @@ void FaultTree::AddCcfGroup(const CcfGroupPtr& ccf_group) {
 }
 
 void FaultTree::Validate() {
-  // Detects the top event. Currently only one top event is allowed.
-  /// @todo Add support for multiple top events.
+  // Detects top events.
   boost::unordered_map<std::string, GatePtr>::iterator it;
   for (it = gates_.begin(); it != gates_.end(); ++it) {
     FaultTree::MarkNonTopGates(it->second);
   }
   for (it = gates_.begin(); it != gates_.end(); ++it) {
     if (it->second->mark() != "non-top") top_events_.push_back(it->second);
-  }
-  if (top_events_.size() > 1) {
-    throw ValidationError("Multiple top events are detected: " +
-                          top_events_.front()->name() + " and " +
-                          top_events_.back()->name() + " in " + name_ +
-                          " fault tree.");
   }
 }
 

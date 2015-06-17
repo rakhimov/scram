@@ -87,15 +87,18 @@ void RiskAnalysis::ProcessInputFiles(
 void RiskAnalysis::GraphingInstructions() {
   std::map<std::string, FaultTreePtr>::iterator it;
   for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
-    std::string output =
-        it->second->name() + "_" + it->second->top_event()->name() + ".dot";
-    std::ofstream of(output.c_str());
-    if (!of.good()) {
-      throw IOError(output +  " : Cannot write the graphing file.");
+    const std::vector<GatePtr>* top_events = &it->second->top_events();
+    std::vector<GatePtr>::const_iterator it_top;
+    for (it_top = top_events->begin(); it_top != top_events->end(); ++it_top) {
+      std::string output =
+          it->second->name() + "_" + (*it_top)->name() + ".dot";
+      std::ofstream of(output.c_str());
+      if (!of.good()) {
+        throw IOError(output +  " : Cannot write the graphing file.");
+      }
+      Grapher gr = Grapher();
+      gr.GraphFaultTree(*it_top, settings_.probability_analysis_, of);
     }
-    Grapher gr = Grapher();
-    gr.GraphFaultTree(it->second->top_event(),
-                      settings_.probability_analysis_, of);
   }
 }
 
@@ -109,30 +112,34 @@ void RiskAnalysis::Analyze() {
 
   std::map<std::string, FaultTreePtr>::iterator it;
   for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
-    FaultTreeAnalysisPtr fta(new FaultTreeAnalysis(it->second->top_event(),
-                                                   settings_.limit_order_,
-                                                   settings_.ccf_analysis_));
-    fta->Analyze();
-    ftas_.insert(std::make_pair(fta->top_event()->name(), fta));
+    const std::vector<GatePtr>* top_events = &it->second->top_events();
+    std::vector<GatePtr>::const_iterator it_top;
+    for (it_top = top_events->begin(); it_top != top_events->end(); ++it_top) {
+      FaultTreeAnalysisPtr fta(new FaultTreeAnalysis(*it_top,
+                                                     settings_.limit_order_,
+                                                     settings_.ccf_analysis_));
+      fta->Analyze();
+      ftas_.insert(std::make_pair(fta->top_event()->name(), fta));
 
-    if (settings_.probability_analysis_) {
-      ProbabilityAnalysisPtr pa(
-          new ProbabilityAnalysis(settings_.approx_, settings_.num_sums_,
-                                  settings_.cut_off_,
-                                  settings_.importance_analysis_));
-      pa->UpdateDatabase(fta->basic_events());
-      pa->Analyze(fta->min_cut_sets());
-      prob_analyses_.insert(std::make_pair(fta->top_event()->name(), pa));
-    }
+      if (settings_.probability_analysis_) {
+        ProbabilityAnalysisPtr pa(
+            new ProbabilityAnalysis(settings_.approx_, settings_.num_sums_,
+                                    settings_.cut_off_,
+                                    settings_.importance_analysis_));
+        pa->UpdateDatabase(fta->basic_events());
+        pa->Analyze(fta->min_cut_sets());
+        prob_analyses_.insert(std::make_pair(fta->top_event()->name(), pa));
+      }
 
-    if (settings_.uncertainty_analysis_) {
-      UncertaintyAnalysisPtr ua(
-          new UncertaintyAnalysis(settings_.num_sums_, settings_.cut_off_,
-                                  settings_.num_trials_));
-      ua->UpdateDatabase(fta->basic_events());
-      ua->Analyze(fta->min_cut_sets());
-      uncertainty_analyses_.insert(
-          std::make_pair(fta->top_event()->name(), ua));
+      if (settings_.uncertainty_analysis_) {
+        UncertaintyAnalysisPtr ua(
+            new UncertaintyAnalysis(settings_.num_sums_, settings_.cut_off_,
+                                    settings_.num_trials_));
+        ua->UpdateDatabase(fta->basic_events());
+        ua->Analyze(fta->min_cut_sets());
+        uncertainty_analyses_.insert(
+            std::make_pair(fta->top_event()->name(), ua));
+      }
     }
   }
 }
@@ -168,8 +175,6 @@ void RiskAnalysis::Report(std::ostream& out) {
 
   if (!unused_parameters.empty())
     rp.ReportUnusedParameters(unused_parameters, doc);
-
-  assert(ftas_.size() == fault_trees_.size());  // All trees are analyzed.
 
   std::map<std::string, FaultTreeAnalysisPtr>::iterator it;
   for (it = ftas_.begin(); it != ftas_.end(); ++it) {

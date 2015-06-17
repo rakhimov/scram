@@ -14,6 +14,7 @@ def main():
             "orphan_primary_event.xml",
             "unused_parameter.xml",
             "two_trees.xml",
+            "two_top_events.xml",
             ]
 
     # Correct corner case inputs without probability information
@@ -65,7 +66,6 @@ def main():
             "def_clash_basic_house.xml",
             "def_clash_house_basic.xml",
             "atleast_gate.xml",
-            "two_top_events.xml",
             "cyclic_tree.xml",
             "cyclic_parameter.xml",
             "cyclic_expression.xml",

@@ -52,14 +52,16 @@ class FaultTree : public Element {
   void AddCcfGroup(const CcfGroupPtr& ccf_group);
 
   /// Validates this fault tree's structure and events.
-  /// @throws ValidationError if there are issues with this tree.
+  /// This step must be called before any other function that requests member
+  /// containers of top events, gates, basic events, house events, and so on.
+  /// @throws ValidationError if there are issues with this fault tree.
   void Validate();
 
-  /// @returns The name of this tree.
+  /// @returns The name of this fault tree.
   inline const std::string& name() { return name_; }
 
-  /// @returns The top gate.
-  inline GatePtr& top_event() { return top_events_.front(); }
+  /// @returns The top events of this fault tree.
+  inline const std::vector<GatePtr>& top_events() { return top_events_; }
 
   /// @returns The container of all basic events of this fault tree.
   inline const boost::unordered_map<std::string, BasicEventPtr>&
