@@ -79,12 +79,8 @@ TEST_F(RiskAnalysisTest, GraphingInstructions) {
     delete ran;
     ran = new RiskAnalysis();
     ASSERT_NO_THROW(ran->ProcessInput(*it));
-    ASSERT_NO_THROW(ran->GraphingInstructions("/dev/null"));
+    ASSERT_NO_THROW(ran->GraphingInstructions());
   }
-
-  // Messing up the input file.
-  std::string output = "abracadabra.cadabraabra/graphing.dot";
-  EXPECT_THROW(ran->GraphingInstructions(output), IOError);
 }
 
 // Test Analysis of Two train system.

@@ -11,7 +11,6 @@
 #include <boost/pointer_cast.hpp>
 
 #include "error.h"
-#include "fault_tree.h"
 #include "fault_tree_analysis.h"
 
 namespace fs = boost::filesystem;
@@ -28,16 +27,15 @@ std::map<std::string, std::string> Grapher::event_colors_ =
     boost::assign::map_list_of ("basic", "black") ("undeveloped", "blue")
                                ("house", "green") ("conditional", "red");
 
-void Grapher::GraphFaultTree(const FaultTreePtr& fault_tree,
-                             bool prob_requested,
+void Grapher::GraphFaultTree(const GatePtr& top_event, bool prob_requested,
                              std::ostream& out) {
   // The structure of the output:
   // List gates with their children following the tree structure.
   // List reused intermediate events as transfer gates.
   // List gates and primary events' descriptions.
 
-  out << "digraph " << fault_tree->name() << " {\n";
-  FaultTreeAnalysis* fta = new FaultTreeAnalysis(fault_tree->top_event());
+  out << "digraph " << top_event->name() << " {\n";
+  FaultTreeAnalysis* fta = new FaultTreeAnalysis(top_event);
   // Write top event.
   // Keep track of number of repetitions of the primary events.
   std::map<std::string, int> pr_repeat;
@@ -62,7 +60,7 @@ void Grapher::GraphFaultTree(const FaultTreePtr& fault_tree,
   Grapher::FormatIntermediateEvents(fta->inter_events(), in_repeat, out);
   Grapher::FormatPrimaryEvents(primary_events, pr_repeat, prob_requested, out);
 
-  out << "}";
+  out << "}\n";
   out.flush();
   delete fta;
 }

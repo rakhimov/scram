@@ -84,12 +84,19 @@ void RiskAnalysis::ProcessInputFiles(
   LOG(DEBUG1) << "Setup time " << DUR(setup_time);
 }
 
-void RiskAnalysis::GraphingInstructions(std::string output) {
-  std::ofstream of(output.c_str());
-  if (!of.good()) {
-    throw IOError(output +  " : Cannot write the graphing file.");
+void RiskAnalysis::GraphingInstructions() {
+  std::map<std::string, FaultTreePtr>::iterator it;
+  for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
+    std::string output =
+        it->second->name() + "_" + it->second->top_event()->name() + ".dot";
+    std::ofstream of(output.c_str());
+    if (!of.good()) {
+      throw IOError(output +  " : Cannot write the graphing file.");
+    }
+    Grapher gr = Grapher();
+    gr.GraphFaultTree(it->second->top_event(),
+                      settings_.probability_analysis_, of);
   }
-  RiskAnalysis::GraphingInstructions(of);
 }
 
 void RiskAnalysis::Analyze() {
@@ -1187,14 +1194,6 @@ void RiskAnalysis::SetupForAnalysis() {
     for (it = ccf_groups_.begin(); it != ccf_groups_.end(); ++it) {
       it->second->ApplyModel();
     }
-  }
-}
-
-void RiskAnalysis::GraphingInstructions(std::ostream& out) {
-  std::map<std::string, FaultTreePtr>::iterator it;
-  for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
-    Grapher gr = Grapher();
-    gr.GraphFaultTree(it->second, settings_.probability_analysis_, out);
   }
 }
 

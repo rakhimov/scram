@@ -266,7 +266,7 @@ TEST_F(RiskAnalysisTest, HOUSE_UNITY) {
 
   ran->AddSettings(settings.probability_analysis(true));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
-  ASSERT_NO_THROW(ran->GraphingInstructions("/dev/null"));
+  ASSERT_NO_THROW(ran->GraphingInstructions());
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(1, p_total());  // Total prob check.
   // Minimal cut set check.
@@ -282,7 +282,7 @@ TEST_F(RiskAnalysisTest, HOUSE_NULL) {
       "./share/scram/input/core/null.xml";
   ran->AddSettings(settings.probability_analysis(true));
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
-  ASSERT_NO_THROW(ran->GraphingInstructions("/dev/null"));
+  ASSERT_NO_THROW(ran->GraphingInstructions());
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(0, p_total());  // Total prob check.
   // Minimal cut set check.

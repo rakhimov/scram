@@ -206,11 +206,7 @@ int RunScram(const po::variables_map& vm) {
 
   // Graph if requested.
   if (vm.count("graph")) {
-    if (output_path != "") {
-      ran->GraphingInstructions(output_path);
-    } else {
-      ran->GraphingInstructions();
-    }
+    ran->GraphingInstructions();
     return 0;
   }
 

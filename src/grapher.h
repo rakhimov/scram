@@ -13,26 +13,22 @@
 
 namespace scram {
 
-class FaultTree;
-
 /// @class Grapher
 /// Provides graphing instruction output to other tools.
 /// Currently operate with Fault Trees only.
 class Grapher {
  public:
-  typedef boost::shared_ptr<FaultTree> FaultTreePtr;
+  typedef boost::shared_ptr<Gate> GatePtr;
 
-  /// Outputs a file with instructions for graphviz dot to create a fault tree.
-  /// This function must be called only after initializing the tree.
-  /// @param[in] fault_tree Fault Tree to draw.
+  /// Outputs instructions for graphviz dot to create a fault tree.
+  /// This function must be called only with fully initialized fault tree.
+  /// @param[in] top_event The root node for the fault tree to draw.
   /// @param[in] prob_requested Should probabilities be included.
   /// @param[out] out The output stream.
-  void GraphFaultTree(const FaultTreePtr& fault_tree,
-                      bool prob_requested,
+  void GraphFaultTree(const GatePtr& top_event, bool prob_requested,
                       std::ostream& out);
 
  private:
-  typedef boost::shared_ptr<Gate> GatePtr;
   typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
   typedef boost::shared_ptr<Event> EventPtr;
 

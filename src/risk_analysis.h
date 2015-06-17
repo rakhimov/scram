@@ -65,17 +65,12 @@ class RiskAnalysis {
   /// @throws IOError if an input file is not accessible.
   void ProcessInputFiles(const std::vector<std::string>& xml_files);
 
-  /// Graphing or other visual resources for the analysis if applicable.
-  /// Outputs instructions for Graphviz dot to create a fault tree.
-  /// Uses the standard output as destination.
+  /// Provides graphing instructions for each fault tree initialized in
+  /// the analysis. All top events from fault trees are processed into output
+  /// files named with fault tree and top event names.
+  /// @throws IOError if any output file cannot be accessed for writing.
   /// @note This function must be called only after initialization of the tree.
-  inline void GraphingInstructions() { GraphingInstructions(std::cout); }
-
-  /// Outputs graphing instructions to a specified file.
-  /// param[out] output The output destination.
-  /// @note This function must be called only after initialization of the tree.
-  /// @throws IOError if the output file is not accessible.
-  void GraphingInstructions(std::string output);
+  void GraphingInstructions();
 
   /// Performs the main analysis operations.
   /// Analyzes the fault tree and performs computations.
@@ -302,11 +297,6 @@ class RiskAnalysis {
   /// Meta-logical layer of analysis, such as CCF groups and substitutions,
   /// is applied to analysis.
   void SetupForAnalysis();
-
-  /// Provides graphing instructions for each fault tree initialized in
-  /// the analysis.
-  /// @param[out] out The output stream.
-  void GraphingInstructions(std::ostream& out);
 
   /// Container for fully defined gates.
   boost::unordered_map<std::string, GatePtr> gates_;
