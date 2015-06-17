@@ -24,22 +24,23 @@ TEST_F(RiskAnalysisTest, ProcessInput) {
   EXPECT_EQ(1, primary_events().count("pumptwo"));
   EXPECT_EQ(1, primary_events().count("valveone"));
   EXPECT_EQ(1, primary_events().count("valvetwo"));
+  if (gates().count("topevent")) {
+    GatePtr top = gates().find("topevent")->second;
+    EXPECT_EQ("topevent", top->id());
+    ASSERT_NO_THROW(top->formula()->type());
+    EXPECT_EQ("and", top->formula()->type());
+    EXPECT_EQ(2, top->formula()->event_args().size());
+  }
   if (gates().count("trainone")) {
     GatePtr inter = gates().find("trainone")->second;
     EXPECT_EQ("trainone", inter->id());
     ASSERT_NO_THROW(inter->formula()->type());
     EXPECT_EQ("or", inter->formula()->type());
-    ASSERT_NO_THROW(inter->parents());
-    EXPECT_EQ(gates().find("topevent")->second->formula(),
-              *inter->parents().begin());
+    EXPECT_EQ(2, inter->formula()->event_args().size());
   }
   if (primary_events().count("valveone")) {
     PrimaryEventPtr primary = primary_events().find("valveone")->second;
     EXPECT_EQ("valveone", primary->id());
-    ASSERT_NO_THROW(primary->parents());
-    EXPECT_EQ(1, primary->parents().size());
-    EXPECT_EQ(gates().find("trainone")->second->formula(),
-              *primary->parents().begin());
     ASSERT_NO_THROW(primary->type());
     EXPECT_EQ("basic", primary->type());
   }

@@ -141,7 +141,7 @@ void RiskAnalysis::Report(std::ostream& out) {
   std::set<PrimaryEventPtr> orphan_primary_events;
   boost::unordered_map<std::string, PrimaryEventPtr>::iterator it_p;
   for (it_p = primary_events_.begin(); it_p != primary_events_.end(); ++it_p) {
-    if (it_p->second->IsOrphan()) orphan_primary_events.insert(it_p->second);
+    if (it_p->second->orphan()) orphan_primary_events.insert(it_p->second);
   }
   if (!orphan_primary_events.empty())
     rp.ReportOrphanPrimaryEvents(orphan_primary_events, doc);
@@ -515,7 +515,7 @@ void RiskAnalysis::ProcessFormula(const FormulaPtr& formula,
     }
 
     formula->AddArgument(child);
-    child->AddParent(formula);
+    child->orphan(false);
   }
 }
 

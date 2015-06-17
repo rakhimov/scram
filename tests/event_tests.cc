@@ -21,27 +21,6 @@ TEST(EventTest, Id) {
   EXPECT_EQ(event->id(), "event_name");
 }
 
-TEST(EventTest, Parent) {
-  PrimaryEventPtr primary(new PrimaryEvent("valve"));
-  FormulaPtr first_parent(new Formula("trainone"));
-  FormulaPtr second_parent(new Formula("traintwo"));
-  std::set<FormulaPtr> parents;
-  // Request for the parents when it has not been set.
-  EXPECT_THROW(primary->parents(), LogicError);
-  // Setting a parent. Note that there is no check if the parent is not a
-  // primary event. This should be checked by a user creating this instance.
-  EXPECT_NO_THROW(primary->AddParent(first_parent));
-  EXPECT_THROW(primary->AddParent(first_parent), LogicError);  // Resetting.
-  EXPECT_NO_THROW(primary->parents());
-  parents.insert(first_parent);
-  // Adding another parent.
-  EXPECT_NO_THROW(primary->AddParent(second_parent));
-  EXPECT_THROW(primary->AddParent(second_parent), LogicError);  // Resetting.
-  EXPECT_NO_THROW(primary->parents());
-  parents.insert(second_parent);
-  EXPECT_EQ(parents, primary->parents());
-}
-
 TEST(FormulaTest, VoteNumber) {
   FormulaPtr top(new Formula("and"));
   EXPECT_EQ("and", top->type());
