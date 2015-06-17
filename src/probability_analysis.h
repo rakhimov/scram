@@ -166,6 +166,7 @@ class ProbabilityAnalysis {
   std::set<int> mcs_basic_events_;
 
   double p_total_;  ///< Total probability of the top event.
+  double p_rare_;  ///< Total probability applying the rare-event approximation.
 
   /// Container for minimal cut sets and their respective probabilities.
   std::map< std::set<std::string>, double > prob_of_min_sets_;

@@ -18,6 +18,7 @@ ProbabilityAnalysis::ProbabilityAnalysis(std::string approx,
     : importance_analysis_(importance_analysis),
       warnings_(""),
       p_total_(0),
+      p_rare_(0),
       num_prob_mcs_(0),
       coherent_(true),
       p_time_(-1),
@@ -72,8 +73,7 @@ void ProbabilityAnalysis::Analyze(
   // Iterate minimal cut sets and find probabilities for each set.
   std::vector< flat_set<int> >::const_iterator it_min;
   int i = 0;  // Indices for minimal cut sets in the vector.
-  for (it_min = imcs_.begin(); it_min != imcs_.end();
-       ++i, ++it_min) {
+  for (it_min = imcs_.begin(); it_min != imcs_.end(); ++i, ++it_min) {
     // Calculate a probability of a set with AND relationship.
     double p_sub_set = ProbabilityAnalysis::ProbAnd(*it_min);
     if (p_sub_set > cut_off_) {
@@ -83,6 +83,7 @@ void ProbabilityAnalysis::Analyze(
 
     // Update a container with minimal cut sets and probabilities.
     prob_of_min_sets_.insert(std::make_pair(imcs_to_smcs_[i], p_sub_set));
+    p_rare_ += p_sub_set;
   }
 
   CLOCK(p_time);

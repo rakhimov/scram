@@ -232,6 +232,9 @@
       <optional>
         <attribute name="probability"> <data type="float"/> </attribute>
       </optional>
+      <optional>
+        <attribute name="contribution"> <data type="float"/> </attribute>
+      </optional>
       <zeroOrMore>
         <ref name="literal"/>
       </zeroOrMore>

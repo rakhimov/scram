@@ -189,11 +189,11 @@ void Reporter::ReportFta(
                            ToString(it_min->size()));
 
     if (prob_analysis) {
+      double mcs_prob = prob_analysis->prob_of_min_sets().find(*it_min)->second;
+      product->set_attribute("probability", Reporter::ToString(mcs_prob, 7));
       product->set_attribute(
-          "probability",
-          Reporter::ToString(
-              prob_analysis->prob_of_min_sets().find(*it_min)->second,
-              7));
+          "contribution",
+          Reporter::ToString(mcs_prob / prob_analysis->p_rare_, 7));
     }
 
     // List elements of minimal cut sets.
