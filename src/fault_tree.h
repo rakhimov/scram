@@ -82,10 +82,16 @@ class FaultTree : public Element {
   }
 
  private:
+  typedef boost::shared_ptr<Formula> FormulaPtr;
+
   /// Recursively marks descendant gates as "non-top". These gates belong
   /// to this fault tree only.
   /// @param[in] gate The ancestor gate.
   void MarkNonTopGates(const GatePtr& gate);
+
+  /// Recursively marks descendant gates in formulas as "non-top"
+  /// @param[in] formula The formula of a gate or another formula.
+  void MarkNonTopGates(const FormulaPtr& formula);
 
   /// Holder for gates defined in this fault tree container.
   boost::unordered_map<std::string, GatePtr> gates_;

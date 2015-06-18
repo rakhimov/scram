@@ -15,6 +15,7 @@ def main():
             "unused_parameter.xml",
             "two_trees.xml",
             "two_top_events.xml",
+            "two_top_through_formula.xml",
             ]
 
     # Correct corner case inputs without probability information

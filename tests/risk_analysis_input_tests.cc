@@ -70,6 +70,7 @@ TEST(RiskAnalysisInputTest, CorrectFTAInputs) {
   correct_inputs.push_back(dir + "model_data_mixed_definitions.xml");
   correct_inputs.push_back(dir + "two_trees.xml");
   correct_inputs.push_back(dir + "two_top_events.xml");
+  correct_inputs.push_back(dir + "two_top_through_formula.xml");
   correct_inputs.push_back(dir + "labels_and_attributes.xml");
   correct_inputs.push_back(dir + "orphan_primary_event.xml");
   correct_inputs.push_back(dir + "very_long_mcs.xml");

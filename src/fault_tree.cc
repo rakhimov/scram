@@ -59,15 +59,24 @@ void FaultTree::Validate() {
 void FaultTree::MarkNonTopGates(const GatePtr& gate) {
   typedef boost::shared_ptr<Event> EventPtr;
   if (gate->mark() == "non-top") return;
+  FaultTree::MarkNonTopGates(gate->formula());
+}
+
+void FaultTree::MarkNonTopGates(const FormulaPtr& formula) {
+  typedef boost::shared_ptr<Event> EventPtr;
   std::map<std::string, EventPtr>::const_iterator it;
-  const std::map<std::string, EventPtr>* children =
-      &gate->formula()->event_args();
+  const std::map<std::string, EventPtr>* children = &formula->event_args();
   for (it = children->begin(); it != children->end(); ++it) {
     GatePtr child_gate = boost::dynamic_pointer_cast<Gate>(it->second);
     if (child_gate && child_gate->container() == name_) {
       FaultTree::MarkNonTopGates(child_gate);
       child_gate->mark("non-top");
     }
+  }
+  const std::set<FormulaPtr>* formula_args = &formula->formula_args();
+  std::set<FormulaPtr>::const_iterator it_f;
+  for (it_f = formula_args->begin(); it_f != formula_args->end(); ++it_f) {
+    FaultTree::MarkNonTopGates(*it_f);
   }
 }
 
