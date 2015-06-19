@@ -59,30 +59,27 @@ class FaultTreeAnalysis {
     return inter_events_;
   }
 
-  /// @returns The container of all basic events of this tree. This includes
-  ///          basic events created to represent common cause failure.
-  /// @warning The tree must be validated and ready for analysis.
+  /// @returns The container of all basic events of this tree. If CCF analysis
+  ///          is requested, this container includes the basic events that
+  ///          represent common cause failure.
   inline const boost::unordered_map<std::string, BasicEventPtr>&
       basic_events() {
     return basic_events_;
   }
 
   /// @returns Basic events that are in some CCF groups.
-  /// @warning The tree must be validated and ready for analysis.
   inline const boost::unordered_map<std::string, BasicEventPtr>&
       ccf_events() {
     return ccf_events_;
   }
 
   /// @returns The container of house events of this tree.
-  /// @warning The tree must be validated and ready for analysis.
   inline const boost::unordered_map<std::string, HouseEventPtr>&
       house_events() {
     return house_events_;
   }
 
   /// @returns The original number of basic events without new CCF basic events.
-  /// @warning The tree must be validated and ready for analysis.
   inline int num_basic_events() { return num_basic_events_; }
 
   /// @returns Set with minimal cut sets.

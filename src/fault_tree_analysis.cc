@@ -124,7 +124,7 @@ void FaultTreeAnalysis::SetupForAnalysis() {
   // Recording number of original basic events before putting new CCF events.
   num_basic_events_ = basic_events_.size();
   // Gather CCF generated basic events.
-  FaultTreeAnalysis::GatherCcfBasicEvents();
+  if (ccf_analysis_) FaultTreeAnalysis::GatherCcfBasicEvents();
 }
 
 void FaultTreeAnalysis::GatherInterEvents(const GatePtr& gate) {
