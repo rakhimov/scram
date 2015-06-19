@@ -33,7 +33,7 @@ void Grapher::GraphFaultTree(const GatePtr& top_event, bool prob_requested,
   // Keep track of number of repetitions of nodes.
   // These repetitions are needed so that the graph links to separate nodes
   // with the same display name.
-  boost::unordered_map<std::string, int> node_repeat;
+  boost::unordered_map<EventPtr, int> node_repeat;
 
   // Populate intermediate and primary events of the top.
   Grapher::GraphGate(fta->top_event(), &node_repeat, out);
@@ -56,24 +56,21 @@ void Grapher::GraphFaultTree(const GatePtr& top_event, bool prob_requested,
 }
 
 void Grapher::GraphGate(const GatePtr& gate,
-                        boost::unordered_map<std::string, int>* node_repeat,
+                        boost::unordered_map<EventPtr, int>* node_repeat,
                         std::ostream& out) {
   // Populate intermediate and primary events of the input gate.
   const std::map<std::string, EventPtr>* events =
       &gate->formula()->event_args();
   std::map<std::string, EventPtr>::const_iterator it_child;
   for (it_child = events->begin(); it_child != events->end(); ++it_child) {
-    if (node_repeat->count(it_child->first)) {
-      int rep = node_repeat->find(it_child->first)->second;
-      rep++;
-      node_repeat->erase(it_child->first);
-      node_repeat->insert(std::make_pair(it_child->first, rep));
+    if (node_repeat->count(it_child->second)) {
+      node_repeat->find(it_child->second)->second++;
     } else {
-      node_repeat->insert(std::make_pair(it_child->first, 0));
+      node_repeat->insert(std::make_pair(it_child->second, 0));
     }
     out << "\"" << gate->name() << "_R0\" -> "
         << "\"" << it_child->second->name() <<"_R"
-        << node_repeat->find(it_child->first)->second << "\";\n";
+        << node_repeat->find(it_child->second)->second << "\";\n";
   }
 }
 
@@ -105,7 +102,7 @@ void Grapher::FormatTopEvent(const GatePtr& top_event, std::ostream& out) {
 
 void Grapher::FormatIntermediateEvents(
     const boost::unordered_map<std::string, GatePtr>& inter_events,
-    const boost::unordered_map<std::string, int>& node_repeat,
+    const boost::unordered_map<EventPtr, int>& node_repeat,
     std::ostream& out) {
   boost::unordered_map<std::string, GatePtr>::const_iterator it;
   for (it = inter_events.begin(); it != inter_events.end(); ++it) {
@@ -117,7 +114,7 @@ void Grapher::FormatIntermediateEvents(
     std::string gate_color = gate_colors_.find(gate)->second;
     boost::to_upper(gate);  // This is for graphing.
     std::string name = it->second->name();
-    int repetition = node_repeat.find(it->first)->second;
+    int repetition = node_repeat.find(it->second)->second;
     for (int i = 0; i <= repetition; ++i) {
         out << "\"" << name << "_R" << i << "\"";
       if (i == 0) {
@@ -141,7 +138,7 @@ void Grapher::FormatIntermediateEvents(
 
 void Grapher::FormatBasicEvents(
     const boost::unordered_map<std::string, BasicEventPtr>& basic_events,
-    const boost::unordered_map<std::string, int>& node_repeat,
+    const boost::unordered_map<EventPtr, int>& node_repeat,
     bool prob_requested,
     std::ostream& out) {
   boost::unordered_map<std::string, BasicEventPtr>::const_iterator it;
@@ -153,14 +150,14 @@ void Grapher::FormatBasicEvents(
       prob_msg = "\\n";
       prob_msg += snippet.str();
     }
-    int repetition = node_repeat.find(it->first)->second;
+    int repetition = node_repeat.find(it->second)->second;
     Grapher::FormatPrimaryEvent(it->second, repetition, prob_msg, out);
   }
 }
 
 void Grapher::FormatHouseEvents(
     const boost::unordered_map<std::string, HouseEventPtr>& house_events,
-    const boost::unordered_map<std::string, int>& node_repeat,
+    const boost::unordered_map<EventPtr, int>& node_repeat,
     bool prob_requested,
     std::ostream& out) {
   boost::unordered_map<std::string, HouseEventPtr>::const_iterator it;
@@ -170,7 +167,7 @@ void Grapher::FormatHouseEvents(
       prob_msg = "\\n";
       prob_msg += it->second->state() ? "True" : "False";
     }
-    int repetition = node_repeat.find(it->first)->second;
+    int repetition = node_repeat.find(it->second)->second;
     Grapher::FormatPrimaryEvent(it->second, repetition, prob_msg, out);
   }
 }

@@ -41,7 +41,7 @@ class Grapher {
   /// @param[out] out The output stream.
   /// @note The repetition information is important to avoid clashes.
   void GraphGate(const GatePtr& gate,
-                 boost::unordered_map<std::string, int>* node_repeat,
+                 boost::unordered_map<EventPtr, int>* node_repeat,
                  std::ostream& out);
 
   /// Provides formatting information for top gate.
@@ -55,7 +55,7 @@ class Grapher {
   /// @param[out] out The output stream.
   void FormatIntermediateEvents(
       const boost::unordered_map<std::string, GatePtr>& inter_events,
-      const boost::unordered_map<std::string, int>& node_repeat,
+      const boost::unordered_map<EventPtr, int>& node_repeat,
       std::ostream& out);
 
   /// Provides formatting information for basic events.
@@ -65,7 +65,7 @@ class Grapher {
   /// @param[out] out The output stream.
   void FormatBasicEvents(
       const boost::unordered_map<std::string, BasicEventPtr>& basic_events,
-      const boost::unordered_map<std::string, int>& node_repeat,
+      const boost::unordered_map<EventPtr, int>& node_repeat,
       bool prob_requested,
       std::ostream& out);
 
@@ -76,7 +76,7 @@ class Grapher {
   /// @param[out] out The output stream.
   void FormatHouseEvents(
       const boost::unordered_map<std::string, HouseEventPtr>& house_events,
-      const boost::unordered_map<std::string, int>& node_repeat,
+      const boost::unordered_map<EventPtr, int>& node_repeat,
       bool prob_requested,
       std::ostream& out);
 
