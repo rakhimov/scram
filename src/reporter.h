@@ -26,6 +26,9 @@ class Settings;
 /// This class reports the findings of the analyses.
 class Reporter {
  public:
+  typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
+  typedef boost::shared_ptr<Parameter> ParameterPtr;
+
   /// Sets up XML report document according to a specific standards.
   /// This function populates information about the software, settings,
   /// time, methods, and model. In addition, the function forms the
@@ -42,15 +45,14 @@ class Reporter {
   /// @param[in] orphan_primary_events Container of orphan events.
   /// @param[in,out] doc Pre-formatted XML document.
   void ReportOrphanPrimaryEvents(
-      const std::set<boost::shared_ptr<PrimaryEvent> >& orphan_primary_events,
+      const std::set<PrimaryEventPtr>& orphan_primary_events,
       xmlpp::Document* doc);
 
   /// Reports unused parameters as warnings of the top information level.
   /// @param[in] unused_paramters Container of unused parameters.
   /// @param[in,out] doc Pre-formatted XML document.
-  void ReportUnusedParameters(
-      const std::set<boost::shared_ptr<Parameter> >& unused_parameters,
-      xmlpp::Document* doc);
+  void ReportUnusedParameters(const std::set<ParameterPtr>& unused_parameters,
+                              xmlpp::Document* doc);
 
   /// Reports the results of analysis to a specified output destination.
   /// @param[in] ft_name The original name of a fault tree.
@@ -86,14 +88,15 @@ class Reporter {
       xmlpp::Document* doc);
 
  private:
+  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+
   /// Detects if a given basic event is a CCF event, and reports it
   /// with a specific formatting.
   /// @param[in] basic_event A basic event to be reported.
   /// @param[in,out] parent A parent element node to have this basic event.
   /// @returns A newly created element node with the event description.
-  xmlpp::Element* ReportBasicEvent(
-      const boost::shared_ptr<BasicEvent>& basic_event,
-      xmlpp::Element* parent);
+  xmlpp::Element* ReportBasicEvent(const BasicEventPtr& basic_event,
+                                   xmlpp::Element* parent);
 
   /// A generic function to convert numbers to string.
   /// @param[in] num The number to be converted.

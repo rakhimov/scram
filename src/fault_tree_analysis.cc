@@ -20,7 +20,6 @@ FaultTreeAnalysis::FaultTreeAnalysis(const GatePtr& root, int limit_order,
       max_order_(0),
       num_gates_(0),
       num_basic_events_(0),
-      num_mcs_events_(0),
       analysis_time_(0) {
   // Check for the right limit order.
   if (limit_order < 1) {
@@ -195,21 +194,23 @@ void FaultTreeAnalysis::SetsToString(const std::vector< std::set<int> >& imcs) {
   std::set<int> unique_events;
   std::vector< std::set<int> >::const_iterator it_min;
   for (it_min = imcs.begin(); it_min != imcs.end(); ++it_min) {
+    bool unique = false;
     if (it_min->size() > max_order_) max_order_ = it_min->size();
     std::set<std::string> pr_set;
     std::set<int>::iterator it_set;
     for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
+      BasicEventPtr basic_event = int_to_basic_[std::abs(*it_set)];
       if (*it_set < 0) {  // NOT logic.
-        pr_set.insert("not " + int_to_basic_[std::abs(*it_set)]->id());
-        unique_events.insert(-*it_set);
+        pr_set.insert("not " + basic_event->id());
+        unique = unique_events.insert(-*it_set).second;
       } else {
-        pr_set.insert(int_to_basic_[*it_set]->id());
-        unique_events.insert(*it_set);
+        pr_set.insert(basic_event->id());
+        unique = unique_events.insert(*it_set).second;
       }
+      if (unique) mcs_basic_events_.push_back(basic_event);
     }
     min_cut_sets_.insert(pr_set);
   }
-  num_mcs_events_ = unique_events.size();
 }
 
 }  // namespace scram

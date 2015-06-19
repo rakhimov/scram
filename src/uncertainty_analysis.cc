@@ -31,7 +31,7 @@ UncertaintyAnalysis::UncertaintyAnalysis(int num_sums, double cut_off,
 }
 
 void UncertaintyAnalysis::UpdateDatabase(
-    const boost::unordered_map<std::string, BasicEventPtr>& basic_events) {
+    const std::vector<BasicEventPtr>& basic_events) {
   ProbabilityAnalysis::UpdateDatabase(basic_events);
 }
 

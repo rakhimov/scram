@@ -39,19 +39,21 @@ friend class Reporter;
   explicit UncertaintyAnalysis(int num_sums = 7, double cut_off = 1e-8,
                                int num_trials = 1e3);
 
-  /// Set the databases of primary events with probabilities.
-  /// Resets the main primary events database and clears the
+  /// Sets the databases of basic events with probabilities.
+  /// Resets the main basic event database and clears the
   /// previous information. This information is the main source for
-  /// calculations.
-  /// Updates internal indexes for events.
-  /// @param[in] basic_events The database of basic event in cut sets.
-  void UpdateDatabase(const boost::unordered_map<std::string, BasicEventPtr>&
-                      basic_events);
+  /// calculations and internal indexes for basic events.
+  /// @param[in] basic_events The database of basic events in cut sets.
+  /// @note  If not enough information is provided, the analysis behavior
+  ///        is undefined.
+  void UpdateDatabase(const std::vector<BasicEventPtr>& basic_events);
 
-  /// Performs quantitative analysis on minimal cut sets containing primary
-  /// events provided in the databases.
+  /// Performs quantitative analysis on minimal cut sets containing basic
+  /// events provided in the databases. It is assumed that the analysis is
+  /// called only once.
   /// @param[in] min_cut_sets Minimal cut sets with string ids of events.
   ///                         Negative event is indicated by "'not' + id"
+  /// @note  Undefined behavior if analysis called two or more times.
   void Analyze(const std::set< std::set<std::string> >& min_cut_sets);
 
   /// @returns Mean of the final distribution.

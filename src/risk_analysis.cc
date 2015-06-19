@@ -119,30 +119,31 @@ void RiskAnalysis::Analyze() {
     const std::vector<GatePtr>* top_events = &it->second->top_events();
     std::vector<GatePtr>::const_iterator it_top;
     for (it_top = top_events->begin(); it_top != top_events->end(); ++it_top) {
+      std::string name = (*it_top)->name();  // Analysis identifier.
+
       FaultTreeAnalysisPtr fta(new FaultTreeAnalysis(*it_top,
                                                      settings_.limit_order_,
                                                      settings_.ccf_analysis_));
       fta->Analyze();
-      ftas_.insert(std::make_pair(fta->top_event()->name(), fta));
+      ftas_.insert(std::make_pair(name, fta));
 
       if (settings_.probability_analysis_) {
         ProbabilityAnalysisPtr pa(
             new ProbabilityAnalysis(settings_.approx_, settings_.num_sums_,
                                     settings_.cut_off_,
                                     settings_.importance_analysis_));
-        pa->UpdateDatabase(fta->basic_events());
+        pa->UpdateDatabase(fta->mcs_basic_events());
         pa->Analyze(fta->min_cut_sets());
-        prob_analyses_.insert(std::make_pair(fta->top_event()->name(), pa));
+        prob_analyses_.insert(std::make_pair(name, pa));
       }
 
       if (settings_.uncertainty_analysis_) {
         UncertaintyAnalysisPtr ua(
             new UncertaintyAnalysis(settings_.num_sums_, settings_.cut_off_,
                                     settings_.num_trials_));
-        ua->UpdateDatabase(fta->basic_events());
+        ua->UpdateDatabase(fta->mcs_basic_events());
         ua->Analyze(fta->min_cut_sets());
-        uncertainty_analyses_.insert(
-            std::make_pair(fta->top_event()->name(), ua));
+        uncertainty_analyses_.insert(std::make_pair(name, ua));
       }
     }
   }

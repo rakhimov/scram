@@ -35,7 +35,8 @@ class FaultTreeAnalysis {
   /// Traverses a valid fault tree from the root gate to collect
   /// databases of events, gates, and other members of the fault tree.
   /// The passed fault tree must be pre-validated without cycles, and
-  /// its events must be fully initialized.
+  /// its events must be fully initialized. It is assumed that analysis
+  /// is done only once.
   /// @param[in] root The top event of the fault tree to analyze.
   /// @param[in] limit_order The maximum limit on minimal cut sets' order.
   /// @param[in] ccf_analysis Whether or not expand CCF group basic events.
@@ -47,7 +48,7 @@ class FaultTreeAnalysis {
   /// This function must be called only after initializing the tree with or
   /// without its probabilities. Underlying objects may throw errors
   /// if the fault tree has initialization issues. However, there is no
-  /// guarantee for that.
+  /// guarantee for that. This function is expected to be called only once.
   void Analyze();
 
   /// @returns The top gate.
@@ -88,6 +89,11 @@ class FaultTreeAnalysis {
     return min_cut_sets_;
   }
 
+  /// @returns Collection of basic events that are in the minimal cut sets.
+  inline const std::vector<BasicEventPtr>& mcs_basic_events() const {
+    return mcs_basic_events_;
+  }
+
   /// @returns The maximum order of the found minimal cut sets.
   inline int max_order() const { return max_order_; }
 
@@ -95,7 +101,6 @@ class FaultTreeAnalysis {
   inline const std::string& warnings() const { return warnings_; }
 
  private:
-  typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
   typedef boost::shared_ptr<Event> EventPtr;
 
   /// Gathers information about the correctly initialized fault tree. Databases
@@ -128,11 +133,11 @@ class FaultTreeAnalysis {
   void GatherCcfBasicEvents();
 
   /// Converts minimal cut sets from indices to strings for future reporting.
-  /// This function also removes house events from minimal cut sets.
+  /// This function also detects basic events in minimal cut sets.
   /// @param[in] imcs Min cut sets with indices of events.
   void SetsToString(const std::vector< std::set<int> >& imcs);
 
-  std::vector<PrimaryEventPtr> int_to_basic_;  ///< Indices to basic events.
+  std::vector<BasicEventPtr> int_to_basic_;  ///< Indices to basic events.
 
   int top_event_index_;  ///< The index of the top event.
   int num_gates_;  ///< The number of the gates.
@@ -170,12 +175,11 @@ class FaultTreeAnalysis {
   /// Container for minimal cut sets.
   std::set< std::set<std::string> > min_cut_sets_;
 
+  /// Container for basic events in minimal cut sets.
+  std::vector<BasicEventPtr> mcs_basic_events_;
+
   int max_order_;  ///< Maximum order of minimal cut sets.
   double analysis_time_;  ///< Time taken by the core analysis.
-
-  /// The number of unique events in the minimal cut sets.
-  /// CCF events are treated as separate events from their group members.
-  int num_mcs_events_;
 };
 
 }  // namespace scram

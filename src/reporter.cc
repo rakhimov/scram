@@ -118,12 +118,12 @@ void Reporter::SetupReport(const RiskAnalysis* risk_an,
 }
 
 void Reporter::ReportOrphanPrimaryEvents(
-    const std::set<boost::shared_ptr<PrimaryEvent> >& orphan_primary_events,
+    const std::set<PrimaryEventPtr>& orphan_primary_events,
     xmlpp::Document* doc) {
   assert(!orphan_primary_events.empty());
   std::string out = "";
   out += "WARNING! Orphan Primary Events: ";
-  std::set<boost::shared_ptr<PrimaryEvent> >::const_iterator it;
+  std::set<PrimaryEventPtr>::const_iterator it;
   for (it = orphan_primary_events.begin(); it != orphan_primary_events.end();
        ++it) {
     out += (*it)->name() + " ";
@@ -136,12 +136,12 @@ void Reporter::ReportOrphanPrimaryEvents(
 }
 
 void Reporter::ReportUnusedParameters(
-    const std::set<boost::shared_ptr<Parameter> >& unused_parameters,
+    const std::set<ParameterPtr>& unused_parameters,
     xmlpp::Document* doc) {
   assert(!unused_parameters.empty());
   std::string out = "";
   out += "WARNING! Unused Parameters: ";
-  std::set<boost::shared_ptr<Parameter> >::const_iterator it;
+  std::set<ParameterPtr>::const_iterator it;
   for (it = unused_parameters.begin(); it != unused_parameters.end();
        ++it) {
     out += (*it)->name() + " ";
@@ -165,7 +165,7 @@ void Reporter::ReportFta(
   xmlpp::Element* sum_of_products = results->add_child("sum-of-products");
   sum_of_products->set_attribute("name", ft_name);
   sum_of_products->set_attribute("basic-events",
-                                 ToString(fta->num_mcs_events_));
+                                 ToString(fta->mcs_basic_events().size()));
   sum_of_products->set_attribute("products",
                                  ToString(fta->min_cut_sets_.size()));
 
@@ -254,8 +254,6 @@ void Reporter::ReportImportance(
   std::map< std::string, std::vector<double> >::const_iterator it;
   for (it = prob_analysis->importance().begin();
        it != prob_analysis->importance().end(); ++it) {
-    typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
-    typedef boost::shared_ptr<CcfEvent> CcfEventPtr;
     xmlpp::Element* element = Reporter::ReportBasicEvent(
         prob_analysis->basic_events_.find(it->first)->second,
         importance);
@@ -323,9 +321,8 @@ void Reporter::ReportUncertainty(
       Reporter::ToString(uncert_analysis->p_time_, 5));
 }
 
-xmlpp::Element* Reporter::ReportBasicEvent(
-    const boost::shared_ptr<BasicEvent>& basic_event,
-    xmlpp::Element* parent) {
+xmlpp::Element* Reporter::ReportBasicEvent(const BasicEventPtr& basic_event,
+                                           xmlpp::Element* parent) {
   boost::shared_ptr<CcfEvent> ccf_event =
       boost::dynamic_pointer_cast<CcfEvent>(basic_event);
   xmlpp::Element* element;

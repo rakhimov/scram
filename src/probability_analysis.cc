@@ -48,8 +48,11 @@ ProbabilityAnalysis::ProbabilityAnalysis(std::string approx,
 }
 
 void ProbabilityAnalysis::UpdateDatabase(
-    const boost::unordered_map<std::string, BasicEventPtr>& basic_events) {
-  basic_events_ = basic_events;
+    const std::vector<BasicEventPtr>& basic_events) {
+  std::vector<BasicEventPtr>::const_iterator it;
+  for (it = basic_events.begin(); it != basic_events.end(); ++it) {
+    basic_events_.insert(std::make_pair((*it)->id(), *it));
+  }
   ProbabilityAnalysis::AssignIndices();
 }
 
