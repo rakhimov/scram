@@ -85,6 +85,8 @@ void RiskAnalysis::ProcessInputFiles(
 }
 
 void RiskAnalysis::GraphingInstructions() {
+  CLOCK(graph_time);
+  LOG(DEBUG1) << "Producing graphing instructions";
   std::map<std::string, FaultTreePtr>::iterator it;
   for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
     const std::vector<GatePtr>* top_events = &it->second->top_events();
@@ -100,6 +102,7 @@ void RiskAnalysis::GraphingInstructions() {
       gr.GraphFaultTree(*it_top, settings_.probability_analysis_, of);
     }
   }
+  LOG(DEBUG1) << "Graphing instructions are produced in " << DUR(graph_time);
 }
 
 void RiskAnalysis::Analyze() {
