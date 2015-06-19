@@ -33,17 +33,14 @@ class Grapher {
   typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
   typedef boost::shared_ptr<Event> EventPtr;
 
-  /// Graphs one top or intermediate event with children.
-  /// @param[in] t The top or intermediate event.
-  /// @param[in] primary_events The container of primary events of the tree.
+  /// Graphs one gate with children.
+  /// @param[in] gate The gate to be graphed.
   /// @param[out] node_repeat The number of times a node is repeated.
   /// @param[out] out The output stream.
   /// @note The repetition information is important to avoid clashes.
-  void GraphNode(
-      const GatePtr& t,
-      const boost::unordered_map<std::string, PrimaryEventPtr>& primary_events,
-      boost::unordered_map<std::string, int>* node_repeat,
-      std::ostream& out);
+  void GraphGate(const GatePtr& gate,
+                 boost::unordered_map<std::string, int>* node_repeat,
+                 std::ostream& out);
 
   /// Provides formatting information for top gate.
   /// @param[in] top_event The top event to be formatted.

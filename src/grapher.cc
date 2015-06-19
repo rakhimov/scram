@@ -4,7 +4,6 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/assign.hpp>
-#include <boost/date_time.hpp>
 #include <boost/pointer_cast.hpp>
 
 #include "fault_tree_analysis.h"
@@ -24,8 +23,8 @@ std::map<std::string, std::string> Grapher::event_colors_ =
 void Grapher::GraphFaultTree(const GatePtr& top_event, bool prob_requested,
                              std::ostream& out) {
   // The structure of the output:
-  // List gates with their children following the tree structure.
-  // List reused intermediate events as transfer gates.
+  // List gates with their children.
+  // List common intermediate events as transfer symbols.
   // List gates and primary events' descriptions.
 
   out << "digraph " << top_event->name() << " {\n";
@@ -42,12 +41,12 @@ void Grapher::GraphFaultTree(const GatePtr& top_event, bool prob_requested,
   primary_events.insert(fta->house_events().begin(), fta->house_events().end());
 
   // Populate intermediate and primary events of the top.
-  Grapher::GraphNode(fta->top_event(), primary_events, &node_repeat, out);
+  Grapher::GraphGate(fta->top_event(), &node_repeat, out);
   // Do the same for all intermediate events.
   boost::unordered_map<std::string, GatePtr>::const_iterator it_inter;
   for (it_inter = fta->inter_events().begin();
        it_inter != fta->inter_events().end(); ++it_inter) {
-    Grapher::GraphNode(it_inter->second, primary_events, &node_repeat, out);
+    Grapher::GraphGate(it_inter->second, &node_repeat, out);
   }
 
   // Format events.
@@ -61,42 +60,25 @@ void Grapher::GraphFaultTree(const GatePtr& top_event, bool prob_requested,
   delete fta;
 }
 
-void Grapher::GraphNode(
-    const GatePtr& t,
-    const boost::unordered_map<std::string, PrimaryEventPtr>& primary_events,
-    boost::unordered_map<std::string, int>* node_repeat,
-    std::ostream& out) {
-  // Populate intermediate and primary events of the input intermediate event.
-  std::map<std::string, EventPtr> events_children = t->formula()->event_args();
-  std::map<std::string, EventPtr>::iterator it_child;
-  for (it_child = events_children.begin(); it_child != events_children.end();
-       ++it_child) {
-    // Deal with repeated primary events.
-    if (primary_events.count(it_child->first)) {
-      if (node_repeat->count(it_child->first)) {
-        int rep = node_repeat->find(it_child->first)->second;
-        rep++;
-        node_repeat->erase(it_child->first);
-        node_repeat->insert(std::make_pair(it_child->first, rep));
-      } else {
-        node_repeat->insert(std::make_pair(it_child->first, 0));
-      }
-      out << "\"" << t->name() << "_R0\" -> "
-          << "\"" << it_child->second->name() <<"_R"
-          << node_repeat->find(it_child->first)->second << "\";\n";
-    } else {  // This must be an intermediate event.
-      if (node_repeat->count(it_child->first)) {
-        int rep = node_repeat->find(it_child->first)->second;
-        rep++;
-        node_repeat->erase(it_child->first);
-        node_repeat->insert(std::make_pair(it_child->first, rep));
-      } else {
-        node_repeat->insert(std::make_pair(it_child->first, 0));
-      }
-      out << "\"" << t->name() << "_R0\" -> "
-          << "\"" << it_child->second->name() <<"_R"
-          << node_repeat->find(it_child->first)->second << "\";\n";
+void Grapher::GraphGate(const GatePtr& gate,
+                        boost::unordered_map<std::string, int>* node_repeat,
+                        std::ostream& out) {
+  // Populate intermediate and primary events of the input gate.
+  const std::map<std::string, EventPtr>* events =
+      &gate->formula()->event_args();
+  std::map<std::string, EventPtr>::const_iterator it_child;
+  for (it_child = events->begin(); it_child != events->end(); ++it_child) {
+    if (node_repeat->count(it_child->first)) {
+      int rep = node_repeat->find(it_child->first)->second;
+      rep++;
+      node_repeat->erase(it_child->first);
+      node_repeat->insert(std::make_pair(it_child->first, rep));
+    } else {
+      node_repeat->insert(std::make_pair(it_child->first, 0));
     }
+    out << "\"" << gate->name() << "_R0\" -> "
+        << "\"" << it_child->second->name() <<"_R"
+        << node_repeat->find(it_child->first)->second << "\";\n";
   }
 }
 
@@ -120,8 +102,8 @@ void Grapher::FormatTopEvent(const GatePtr& top_event, std::ostream& out) {
       << "label=\"" << top_event->name() << "\\n"
       << "{ " << gate;
   if (gate == "ATLEAST") {
-    out << " " << top_event->formula()->vote_number() << "/"
-        << top_event->formula()->num_args();
+    out << " " << top_event->formula()->vote_number()
+        << "/" << top_event->formula()->num_args();
   }
   out << " }\"]\n";
 }
