@@ -4,7 +4,6 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/assign.hpp>
-#include <boost/pointer_cast.hpp>
 
 #include "fault_tree_analysis.h"
 
@@ -36,10 +35,6 @@ void Grapher::GraphFaultTree(const GatePtr& top_event, bool prob_requested,
   // with the same display name.
   boost::unordered_map<std::string, int> node_repeat;
 
-  boost::unordered_map<std::string, PrimaryEventPtr> primary_events;
-  primary_events.insert(fta->basic_events().begin(), fta->basic_events().end());
-  primary_events.insert(fta->house_events().begin(), fta->house_events().end());
-
   // Populate intermediate and primary events of the top.
   Grapher::GraphGate(fta->top_event(), &node_repeat, out);
   // Do the same for all intermediate events.
@@ -52,11 +47,11 @@ void Grapher::GraphFaultTree(const GatePtr& top_event, bool prob_requested,
   // Format events.
   Grapher::FormatTopEvent(fta->top_event(), out);
   Grapher::FormatIntermediateEvents(fta->inter_events(), node_repeat, out);
-  Grapher::FormatPrimaryEvents(primary_events, node_repeat, prob_requested,
-                               out);
-
+  Grapher::FormatBasicEvents(fta->basic_events(), node_repeat, prob_requested,
+                             out);
+  Grapher::FormatHouseEvents(fta->house_events(), node_repeat, prob_requested,
+                             out);
   out << "}\n";
-  out.flush();
   delete fta;
 }
 
@@ -144,48 +139,59 @@ void Grapher::FormatIntermediateEvents(
   }
 }
 
-void Grapher::FormatPrimaryEvents(
-    const boost::unordered_map<std::string, PrimaryEventPtr>& primary_events,
+void Grapher::FormatBasicEvents(
+    const boost::unordered_map<std::string, BasicEventPtr>& basic_events,
     const boost::unordered_map<std::string, int>& node_repeat,
     bool prob_requested,
     std::ostream& out) {
-  boost::unordered_map<std::string, PrimaryEventPtr>::const_iterator it;
-  for (it = primary_events.begin(); it != primary_events.end(); ++it) {
-    PrimaryEventPtr primary_event = it->second;
-    std::string type = primary_event->type();
-    // Detect undeveloped or conditional event.
-    if (type == "basic" && primary_event->HasAttribute("flavor")) {
-      type = primary_event->GetAttribute("flavor").value;
-    }
-    std::string prob = "";
+  boost::unordered_map<std::string, BasicEventPtr>::const_iterator it;
+  for (it = basic_events.begin(); it != basic_events.end(); ++it) {
+    std::string prob_msg = "";
     if (prob_requested) {
       std::stringstream snippet;
-      snippet << "\\n";
-      if (type == "house") {
-        std::string state =
-            boost::dynamic_pointer_cast<HouseEvent>(primary_event)->state() ?
-            "True" : "False";
-        snippet << state;
-      } else {
-        // Note that this might be a flavored type of a basic event.
-        snippet << boost::dynamic_pointer_cast<BasicEvent>(primary_event)->p();
-      }
-      prob = snippet.str();
+      snippet << it->second->p();
+      prob_msg = "\\n";
+      prob_msg += snippet.str();
     }
-
     int repetition = node_repeat.find(it->first)->second;
-    for (int i = 0; i <= repetition; ++i) {
-      out << "\"" << primary_event->name() << "_R" << i
-          << "\" [shape=circle, "
-          << "height=1, fontsize=10, fixedsize=true, "
-          << "fontcolor=" << event_colors_.find(type)->second
-          << ", " << "label=\"" << primary_event->name() << "\\n["
-          << type << "]";
+    Grapher::FormatPrimaryEvent(it->second, repetition, prob_msg, out);
+  }
+}
 
-      if (prob_requested) out << prob;
-
-      out << "\"]\n";
+void Grapher::FormatHouseEvents(
+    const boost::unordered_map<std::string, HouseEventPtr>& house_events,
+    const boost::unordered_map<std::string, int>& node_repeat,
+    bool prob_requested,
+    std::ostream& out) {
+  boost::unordered_map<std::string, HouseEventPtr>::const_iterator it;
+  for (it = house_events.begin(); it != house_events.end(); ++it) {
+    std::string prob_msg = "";
+    if (prob_requested) {
+      prob_msg = "\\n";
+      prob_msg += it->second->state() ? "True" : "False";
     }
+    int repetition = node_repeat.find(it->first)->second;
+    Grapher::FormatPrimaryEvent(it->second, repetition, prob_msg, out);
+  }
+}
+
+void Grapher::FormatPrimaryEvent(const PrimaryEventPtr& primary_event,
+                                 int repetition,
+                                 std::string prob_msg,
+                                 std::ostream& out) {
+  std::string type = primary_event->type();
+  // Detect undeveloped or conditional event.
+  if (type == "basic" && primary_event->HasAttribute("flavor")) {
+    type = primary_event->GetAttribute("flavor").value;
+  }
+  std::string color = event_colors_.find(type)->second;
+  for (int i = 0; i <= repetition; ++i) {
+    out << "\"" << primary_event->name() << "_R" << i
+        << "\" [shape=circle, "
+        << "height=1, fontsize=10, fixedsize=true, "
+        << "fontcolor=" << color
+        << ", " << "label=\"" << primary_event->name() << "\\n["
+        << type << "]" << prob_msg << "\"]\n";
   }
 }
 

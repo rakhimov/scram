@@ -30,8 +30,10 @@ class Grapher {
                       std::ostream& out);
 
  private:
-  typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
   typedef boost::shared_ptr<Event> EventPtr;
+  typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
+  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+  typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
 
   /// Graphs one gate with children.
   /// @param[in] gate The gate to be graphed.
@@ -56,16 +58,37 @@ class Grapher {
       const boost::unordered_map<std::string, int>& node_repeat,
       std::ostream& out);
 
-  /// Provides formatting information for each primary event.
-  /// @param[in] primary_events The primary events to be formatted.
+  /// Provides formatting information for basic events.
+  /// @param[in] basic_events The basic events to be formatted.
   /// @param[in] node_repeat The number of times a node is repeated.
   /// @param[in] prob_requested Indication to include probability numbers.
   /// @param[out] out The output stream.
-  void FormatPrimaryEvents(
-      const boost::unordered_map<std::string, PrimaryEventPtr>& primary_events,
+  void FormatBasicEvents(
+      const boost::unordered_map<std::string, BasicEventPtr>& basic_events,
       const boost::unordered_map<std::string, int>& node_repeat,
       bool prob_requested,
       std::ostream& out);
+
+  /// Provides formatting information for house events.
+  /// @param[in] house_events The house events to be formatted.
+  /// @param[in] node_repeat The number of times a node is repeated.
+  /// @param[in] prob_requested Indication to include probability numbers.
+  /// @param[out] out The output stream.
+  void FormatHouseEvents(
+      const boost::unordered_map<std::string, HouseEventPtr>& house_events,
+      const boost::unordered_map<std::string, int>& node_repeat,
+      bool prob_requested,
+      std::ostream& out);
+
+  /// Provides formatting information for each primary event.
+  /// @param[in] primary_event The primary event to be formatted.
+  /// @param[in] repetition The repetition number of the node.
+  /// @param[in] prob_msg Probability information message.
+  /// @param[out] out The output stream.
+  void FormatPrimaryEvent(const PrimaryEventPtr& primary_event,
+                          int repetition,
+                          std::string prob_msg,
+                          std::ostream& out);
 
   static std::map<std::string, std::string> gate_colors_;  ///< Gate colors.
   static std::map<std::string, std::string> event_colors_;  ///< Event colors.

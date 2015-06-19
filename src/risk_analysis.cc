@@ -100,6 +100,7 @@ void RiskAnalysis::GraphingInstructions() {
       }
       Grapher gr = Grapher();
       gr.GraphFaultTree(*it_top, settings_.probability_analysis_, of);
+      of.flush();
     }
   }
   LOG(DEBUG1) << "Graphing instructions are produced in " << DUR(graph_time);
