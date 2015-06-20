@@ -16,10 +16,7 @@ FaultTreeAnalysis::FaultTreeAnalysis(const GatePtr& root, int limit_order,
                                      bool ccf_analysis)
     : ccf_analysis_(ccf_analysis),
       warnings_(""),
-      top_event_index_(-1),
       max_order_(0),
-      num_gates_(0),
-      num_basic_events_(0),
       analysis_time_(0) {
   // Check for the right limit order.
   if (limit_order < 1) {
@@ -46,11 +43,19 @@ void FaultTreeAnalysis::Analyze() {
     ++j;
   }
 
+  // Gather CCF generated basic events.
+  boost::unordered_map<std::string, BasicEventPtr> ccf_basic_events;
+  if (ccf_analysis_) FaultTreeAnalysis::GatherCcfBasicEvents(&ccf_basic_events);
+  for (itp = ccf_basic_events.begin(); itp != ccf_basic_events.end(); ++itp) {
+    int_to_basic_.push_back(itp->second);
+    all_to_int_.insert(std::make_pair(itp->first, j));
+    ++j;
+  }
+
   // Detect true and false house events for constant propagation.
   std::set<int> true_house_events;  // Indices of true house events.
   std::set<int> false_house_events;  // Indices of false house events.
 
-  typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
   boost::unordered_map<std::string, HouseEventPtr>::const_iterator ith;
   for (ith = house_events_.begin(); ith != house_events_.end(); ++ith) {
     if (ith->second->state()) {
@@ -66,7 +71,7 @@ void FaultTreeAnalysis::Analyze() {
   boost::unordered_map<int, GatePtr> int_to_inter;
   // Assign an index to each top and intermediate event and populate
   // relevant databases.
-  top_event_index_ = j;
+  int top_event_index = j;
   int_to_inter.insert(std::make_pair(j, top_event_));
   all_to_int_.insert(std::make_pair(top_event_->id(), j));
   ++j;
@@ -90,7 +95,7 @@ void FaultTreeAnalysis::Analyze() {
   }
 
   IndexedFaultTree* indexed_tree =
-      new IndexedFaultTree(top_event_index_, limit_order_);
+      new IndexedFaultTree(top_event_index, limit_order_);
   indexed_tree->InitiateIndexedFaultTree(int_to_inter, ccf_basic_to_gates,
                                          all_to_int_);
   indexed_tree->PropagateConstants(true_house_events, false_house_events);
@@ -118,12 +123,7 @@ void FaultTreeAnalysis::Analyze() {
 
 void FaultTreeAnalysis::SetupForAnalysis() {
   FaultTreeAnalysis::GatherInterEvents(top_event_);
-  num_gates_ = inter_events_.size() + 1;  // Include the top event.
   FaultTreeAnalysis::GatherPrimaryEvents();
-  // Recording number of original basic events before putting new CCF events.
-  num_basic_events_ = basic_events_.size();
-  // Gather CCF generated basic events.
-  if (ccf_analysis_) FaultTreeAnalysis::GatherCcfBasicEvents();
 }
 
 void FaultTreeAnalysis::GatherInterEvents(const GatePtr& gate) {
@@ -173,7 +173,8 @@ void FaultTreeAnalysis::GetPrimaryEvents(const GatePtr& gate) {
   }
 }
 
-void FaultTreeAnalysis::GatherCcfBasicEvents() {
+void FaultTreeAnalysis::GatherCcfBasicEvents(
+    boost::unordered_map<std::string, BasicEventPtr>* basic_events) {
   boost::unordered_map<std::string, BasicEventPtr>::iterator it_b;
   for (it_b = ccf_events_.begin(); it_b != ccf_events_.end(); ++it_b) {
     assert(it_b->second->HasCcf());
@@ -184,14 +185,12 @@ void FaultTreeAnalysis::GatherCcfBasicEvents() {
       BasicEventPtr basic_event =
           boost::dynamic_pointer_cast<BasicEvent>(it->second);
       assert(basic_event);
-      basic_events_.insert(std::make_pair(basic_event->id(), basic_event));
+      basic_events->insert(std::make_pair(basic_event->id(), basic_event));
     }
   }
 }
 
-
 void FaultTreeAnalysis::SetsToString(const std::vector< std::set<int> >& imcs) {
-  std::set<int> unique_events;
   std::vector< std::set<int> >::const_iterator it_min;
   for (it_min = imcs.begin(); it_min != imcs.end(); ++it_min) {
     bool unique = false;
@@ -202,12 +201,10 @@ void FaultTreeAnalysis::SetsToString(const std::vector< std::set<int> >& imcs) {
       BasicEventPtr basic_event = int_to_basic_[std::abs(*it_set)];
       if (*it_set < 0) {  // NOT logic.
         pr_set.insert("not " + basic_event->id());
-        unique = unique_events.insert(-*it_set).second;
       } else {
         pr_set.insert(basic_event->id());
-        unique = unique_events.insert(*it_set).second;
       }
-      if (unique) mcs_basic_events_.push_back(basic_event);
+      mcs_basic_events_.insert(std::make_pair(basic_event->id(), basic_event));
     }
     min_cut_sets_.insert(pr_set);
   }

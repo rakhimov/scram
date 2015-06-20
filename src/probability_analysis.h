@@ -52,7 +52,8 @@ class ProbabilityAnalysis {
   /// @param[in] basic_events The database of basic events in cut sets.
   /// @note  If not enough information is provided, the analysis behavior
   ///        is undefined.
-  void UpdateDatabase(const std::vector<BasicEventPtr>& basic_events);
+  void UpdateDatabase(
+      const boost::unordered_map<std::string, BasicEventPtr>& basic_events);
 
   /// Performs quantitative analysis on minimal cut sets containing basic
   /// events provided in the databases. It is assumed that the analysis is

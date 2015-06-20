@@ -167,7 +167,7 @@ void Reporter::ReportFta(
   sum_of_products->set_attribute("basic-events",
                                  ToString(fta->mcs_basic_events().size()));
   sum_of_products->set_attribute("products",
-                                 ToString(fta->min_cut_sets_.size()));
+                                 ToString(fta->min_cut_sets().size()));
 
   if (prob_analysis) {
     sum_of_products->set_attribute(
@@ -212,7 +212,8 @@ void Reporter::ReportFta(
         name = comp_name;
         parent = product->add_child("not");
       }
-      Reporter::ReportBasicEvent(fta->basic_events_.find(name)->second,
+      assert(fta->mcs_basic_events().count(name));
+      Reporter::ReportBasicEvent(fta->mcs_basic_events().find(name)->second,
                                  parent);
     }
   }
