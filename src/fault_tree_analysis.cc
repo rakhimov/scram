@@ -26,7 +26,8 @@ FaultTreeAnalysis::FaultTreeAnalysis(const GatePtr& root, int limit_order,
   }
   limit_order_ = limit_order;
   top_event_ = root;
-  FaultTreeAnalysis::SetupForAnalysis();
+  FaultTreeAnalysis::GatherEvents(top_event_);
+  FaultTreeAnalysis::CleanMarks();
 }
 
 void FaultTreeAnalysis::Analyze() {
@@ -121,55 +122,47 @@ void FaultTreeAnalysis::Analyze() {
   delete indexed_tree;  // No exceptions are expected.
 }
 
-void FaultTreeAnalysis::SetupForAnalysis() {
-  FaultTreeAnalysis::GatherInterEvents(top_event_);
-  FaultTreeAnalysis::GatherPrimaryEvents();
-}
-
-void FaultTreeAnalysis::GatherInterEvents(const GatePtr& gate) {
+void FaultTreeAnalysis::GatherEvents(const GatePtr& gate) {
   if (gate->mark() == "visited") return;
   gate->mark("visited");
-  const std::map<std::string, EventPtr>* children =
-      &gate->formula()->event_args();
+  FaultTreeAnalysis::GatherEvents(gate->formula());
+}
+
+void FaultTreeAnalysis::GatherEvents(const FormulaPtr& formula) {
+  const std::map<std::string, EventPtr>* children = &formula->event_args();
   std::map<std::string, EventPtr>::const_iterator it;
   for (it = children->begin(); it != children->end(); ++it) {
     GatePtr child_gate = boost::dynamic_pointer_cast<Gate>(it->second);
-    if (child_gate) {
-      inter_events_.insert(std::make_pair(child_gate->id(), child_gate));
-      FaultTreeAnalysis::GatherInterEvents(child_gate);
-    }
-  }
-}
-
-void FaultTreeAnalysis::GatherPrimaryEvents() {
-  FaultTreeAnalysis::GetPrimaryEvents(top_event_);
-  top_event_->mark("");  // Unmarking.
-
-  boost::unordered_map<std::string, GatePtr>::iterator it;
-  for (it = inter_events_.begin(); it != inter_events_.end(); ++it) {
-    it->second->mark("");  // Unmarking.
-    FaultTreeAnalysis::GetPrimaryEvents(it->second);
-  }
-}
-
-void FaultTreeAnalysis::GetPrimaryEvents(const GatePtr& gate) {
-  const std::map<std::string, EventPtr>* children =
-      &gate->formula()->event_args();
-  std::map<std::string, EventPtr>::const_iterator it;
-  for (it = children->begin(); it != children->end(); ++it) {
     BasicEventPtr basic_event =
         boost::dynamic_pointer_cast<BasicEvent>(it->second);
     HouseEventPtr house_event =
         boost::dynamic_pointer_cast<HouseEvent>(it->second);
-    if (basic_event) {
+    if (child_gate) {
+      inter_events_.insert(std::make_pair(child_gate->id(), child_gate));
+      FaultTreeAnalysis::GatherEvents(child_gate);
+
+    } else if (basic_event) {
       assert(!house_event);
       basic_events_.insert(std::make_pair(it->first, basic_event));
       if (basic_event->HasCcf())
         ccf_events_.insert(std::make_pair(it->first, basic_event));
-    } else if (house_event) {
-      assert(!basic_event);
+    } else {
+      assert(house_event);
       house_events_.insert(std::make_pair(it->first, house_event));
     }
+  }
+  const std::set<FormulaPtr>* formulas = &formula->formula_args();
+  std::set<FormulaPtr>::const_iterator it_f;
+  for (it_f = formulas->begin(); it_f != formulas->end(); ++it_f) {
+    FaultTreeAnalysis::GatherEvents(*it_f);
+  }
+}
+
+void FaultTreeAnalysis::CleanMarks() {
+  top_event_->mark("");
+  boost::unordered_map<std::string, GatePtr>::iterator it;
+  for (it = inter_events_.begin(); it != inter_events_.end(); ++it) {
+    it->second->mark("");
   }
 }
 

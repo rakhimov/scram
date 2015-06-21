@@ -100,6 +100,7 @@ class FaultTreeAnalysis {
 
  private:
   typedef boost::shared_ptr<Event> EventPtr;
+  typedef boost::shared_ptr<Formula> FormulaPtr;
 
   /// Gathers information about the correctly initialized fault tree. Databases
   /// for events are manipulated to best reflect the state and structure
@@ -108,21 +109,18 @@ class FaultTreeAnalysis {
   /// there would not be necessary information available for analysis like
   /// primary events of this fault tree. Moreover, all the nodes of this
   /// fault tree are expected to be defined fully and correctly.
-  void SetupForAnalysis();
-
-  /// Traverses gates recursively to find all intermediate events.
-  /// Gates are marked upon visit.
+  /// Gates are marked upon visit. The mark is checked to prevent revisiting.
   /// @param[in] gate The gate to start traversal from.
-  void GatherInterEvents(const GatePtr& gate);
+  void GatherEvents(const GatePtr& gate);
 
-  /// Picks basic and house events of this tree.
-  /// Populates the container of primary events.
-  void GatherPrimaryEvents();
+  /// Traverses formulas recursively to find all events.
+  /// @param[in] formula The formula to get events from.
+  void GatherEvents(const FormulaPtr& formula);
 
-  /// Picks basic and house events of the specified gate.
-  /// The primary events are put into the appropriate container.
-  /// @param[in] gate The gate to get primary events from.
-  void GetPrimaryEvents(const GatePtr& gate);
+  /// Cleans marks from nodes that were traversed.
+  /// Marks are set to empty strings. This is important because other code
+  /// may assume that marks are empty.
+  void CleanMarks();
 
   /// Picks basic events created by CCF groups.
   /// param[out] basic_events Container for newly created basic events.
