@@ -89,6 +89,7 @@ TEST_F(RiskAnalysisTest, AnalyzeDefault) {
   std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
   std::string with_prob =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
+  std::string nested_input = "./share/scram/input/fta/nested_formula.xml";
   ASSERT_NO_THROW(ran->ProcessInput(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   std::set<std::string> mcs_1;
@@ -103,6 +104,17 @@ TEST_F(RiskAnalysisTest, AnalyzeDefault) {
   mcs_3.insert("valveone");
   mcs_4.insert("valveone");
   mcs_4.insert("valvetwo");
+  EXPECT_EQ(4, min_cut_sets().size());
+  EXPECT_EQ(1, min_cut_sets().count(mcs_1));
+  EXPECT_EQ(1, min_cut_sets().count(mcs_2));
+  EXPECT_EQ(1, min_cut_sets().count(mcs_3));
+  EXPECT_EQ(1, min_cut_sets().count(mcs_4));
+
+  // Nested version.
+  delete ran;
+  ran = new RiskAnalysis();
+  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
   EXPECT_EQ(4, min_cut_sets().size());
   EXPECT_EQ(1, min_cut_sets().count(mcs_1));
   EXPECT_EQ(1, min_cut_sets().count(mcs_2));

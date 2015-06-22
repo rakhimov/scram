@@ -40,7 +40,6 @@ Minor Enhancements and Capabilities
 
 - OpenPSA MEF Support:
 
-    * Boolean formula. *Moderate*
     * Expressions. *Moderate*
     * Include directive in input files to include other input files. *Low*
     * Public and private scopes for names of events and other elements. *Low*

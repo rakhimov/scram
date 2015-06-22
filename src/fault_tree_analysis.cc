@@ -88,6 +88,8 @@ void FaultTreeAnalysis::Analyze() {
     // Include CCF gates instead of basic events.
     boost::unordered_map<std::string, BasicEventPtr>::const_iterator itc;
     for (itc = ccf_events_.begin(); itc != ccf_events_.end(); ++itc) {
+      // Does not add ccf gates into all_to_int container because the same
+      // ids are used for basic events representing the members of CCF groups.
       assert(itc->second->HasCcf());
       int_to_inter.insert(std::make_pair(j, itc->second->ccf_gate()));
       ccf_basic_to_gates.insert(std::make_pair(itc->first, j));

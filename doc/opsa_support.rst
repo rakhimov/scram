@@ -68,7 +68,7 @@ to identify the supported and unsupported features.
 
     * Gates
 
-        + Non-nested formulae
+        + Nested formulae
 
 - Model data
 - Common Cause Failure Groups
