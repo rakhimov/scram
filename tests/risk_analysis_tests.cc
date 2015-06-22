@@ -73,6 +73,7 @@ TEST_F(RiskAnalysisTest, GraphingInstructions) {
   tree_input.push_back("./share/scram/input/fta/correct_tree_input.xml");
   tree_input.push_back("./share/scram/input/fta/graphing.xml");
   tree_input.push_back("./share/scram/input/fta/flavored_types.xml");
+  tree_input.push_back("./share/scram/input/fta/nested_formula.xml");
 
   std::vector<std::string>::iterator it;
   for (it = tree_input.begin(); it != tree_input.end(); ++it) {

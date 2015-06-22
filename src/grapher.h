@@ -6,6 +6,7 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <vector>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
@@ -34,15 +35,20 @@ class Grapher {
   typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
   typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
+  typedef boost::shared_ptr<Formula> FormulaPtr;
 
-  /// Graphs one gate with children.
-  /// @param[in] gate The gate to be graphed.
+  /// Graphs one formula with arguments.
+  /// @param[in] formula_name Unique name for the formula.
+  /// @param[in] formula The formula to be graphed.
+  /// @param[out] formulas The container with registered nested formulas.
   /// @param[out] node_repeat The number of times a node is repeated.
   /// @param[out] out The output stream.
   /// @note The repetition information is important to avoid clashes.
-  void GraphGate(const GatePtr& gate,
-                 boost::unordered_map<EventPtr, int>* node_repeat,
-                 std::ostream& out);
+  void GraphFormula(const std::string& formula_name,
+                    const FormulaPtr& formula,
+                    std::vector<std::pair<std::string, FormulaPtr> >* formulas,
+                    boost::unordered_map<EventPtr, int>* node_repeat,
+                    std::ostream& out);
 
   /// Provides formatting information for top gate.
   /// @param[in] top_event The top event to be formatted.
@@ -89,6 +95,14 @@ class Grapher {
                           int repetition,
                           std::string prob_msg,
                           std::ostream& out);
+
+  /// Format formulas gathered from nested formulas of gate descriptions.
+  /// The name is empty for these formulas. Formulas are expected to be unique.
+  /// @param[in] formulas The container with registered nested formulas.
+  /// @param[out] out The output stream.
+  void FormatFormulas(
+      const std::vector<std::pair<std::string, FormulaPtr> >& formulas,
+      std::ostream& out);
 
   static std::map<std::string, std::string> gate_colors_;  ///< Gate colors.
   static std::map<std::string, std::string> event_colors_;  ///< Event colors.
