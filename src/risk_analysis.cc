@@ -20,6 +20,7 @@
 #include "fault_tree.h"
 #include "grapher.h"
 #include "logger.h"
+#include "model.h"
 #include "random.h"
 #include "reporter.h"
 #include "xml_parser.h"
