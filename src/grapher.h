@@ -37,6 +37,9 @@ class Grapher {
   typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
   typedef boost::shared_ptr<Formula> FormulaPtr;
 
+  static const std::map<std::string, std::string> gate_colors_;  ///< Colors.
+  static const std::map<std::string, std::string> event_colors_;  ///< Colors.
+
   /// Graphs one formula with arguments.
   /// @param[in] formula_name Unique name for the formula.
   /// @param[in] formula The formula to be graphed.
@@ -103,9 +106,6 @@ class Grapher {
   void FormatFormulas(
       const std::vector<std::pair<std::string, FormulaPtr> >& formulas,
       std::ostream& out);
-
-  static std::map<std::string, std::string> gate_colors_;  ///< Gate colors.
-  static std::map<std::string, std::string> event_colors_;  ///< Event colors.
 };
 
 }  // namespace scram

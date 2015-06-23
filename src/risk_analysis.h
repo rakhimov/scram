@@ -109,6 +109,11 @@ class RiskAnalysis {
   typedef boost::shared_ptr<ProbabilityAnalysis> ProbabilityAnalysisPtr;
   typedef boost::shared_ptr<UncertaintyAnalysis> UncertaintyAnalysisPtr;
 
+  /// Map of valid units for parameters.
+  static const std::map<std::string, Units> units_;
+  /// String representation of units.
+  static const char* const unit_to_string_[];
+
   /// Reads one input file with the structure of analysis entities.
   /// Initializes the analysis from the given input file.
   /// Puts all events into their appropriate containers.
@@ -314,12 +319,6 @@ class RiskAnalysis {
 
   /// Elements that are defined on the second pass.
   std::vector<std::pair<ElementPtr, const xmlpp::Element*> > tbd_elements_;
-
-  /// Map of valid units for parameters.
-  static std::map<std::string, Units> units_;
-
-  /// String representation of units.
-  static const char* unit_to_string_[];
 
   /// Container for defined expressions.
   std::vector<ExpressionPtr> expressions_;

@@ -29,16 +29,17 @@ namespace fs = boost::filesystem;
 
 namespace scram {
 
-std::map<std::string, Units> RiskAnalysis::units_ =
+const std::map<std::string, Units> RiskAnalysis::units_ =
     boost::assign::map_list_of ("bool", kBool) ("int", kInt) ("float", kFloat)
                                ("hours", kHours) ("hours-1", kInverseHours)
                                ("years", kYears) ("years-1", kInverseYears)
                                ("fit", kFit) ("demands", kDemands);
 
-const char* RiskAnalysis::unit_to_string_[] = {"unitless", "bool", "int",
-                                               "float", "hours", "hours-1",
-                                               "years", "years-1", "fit",
-                                               "demands"};
+const char* const RiskAnalysis::unit_to_string_[] = {"unitless", "bool", "int",
+                                                     "float", "hours",
+                                                     "hours-1", "years",
+                                                     "years-1", "fit",
+                                                     "demands"};
 
 RiskAnalysis::RiskAnalysis() {
   // Initialize the mission time with any value.
