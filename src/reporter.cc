@@ -103,6 +103,8 @@ void Reporter::SetupReport(const RiskAnalysis* risk_an,
   }
 
   xmlpp::Element* model = information->add_child("model-features");
+  if (!risk_an->model_->name().empty())
+    model->set_attribute("name", risk_an->model_->name());
   model->add_child("gates")->add_child_text(ToString(risk_an->gates_.size()));
   model->add_child("basic-events")
       ->add_child_text(ToString(risk_an->basic_events_.size()));

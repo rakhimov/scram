@@ -4,6 +4,6 @@
 
 namespace scram {
 
-Model::Model(std::string file, std::string name) : file_(file), name_(name) {}
+Model::Model(std::string name) : name_(name) {}
 
 }  // namespace scram

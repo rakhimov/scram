@@ -14,8 +14,8 @@
 #include <libxml++/libxml++.h>
 
 #include "event.h"
-#include "expression.h"
 #include "fault_tree_analysis.h"
+#include "model.h"
 #include "probability_analysis.h"
 #include "settings.h"
 #include "uncertainty_analysis.h"
@@ -26,11 +26,13 @@ class PerformanceTest;
 namespace scram {
 
 class Element;
-class Model;
 class FaultTree;
 class CcfGroup;
+class Expression;
+class Formula;
 class Reporter;
 class XMLParser;
+enum Units;
 
 /// @class RiskAnalysis
 /// Main system that performs analyses.
@@ -323,8 +325,8 @@ class RiskAnalysis {
   /// Container for defined expressions.
   std::vector<ExpressionPtr> expressions_;
 
-  /// A collection of models from input files.
-  std::map<std::string, ModelPtr> models_;
+  /// A model from input files.
+  ModelPtr model_;
 
   /// A collection of fault trees for analysis.
   std::map<std::string, FaultTreePtr> fault_trees_;
