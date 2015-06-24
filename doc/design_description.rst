@@ -2,20 +2,25 @@
 Design Description
 ##################
 
-Structure/Architecture of the Core Code
-=======================================
-
-- Validator of XML configuration and input files using RelaxNG
+- Validator of XML configuration and input files using RelaxNG schema.
+  Validation against the schema is an integral part of the initialization.
+  Values that passed the validation against the schema are not re-checked by
+  users of those values.
 
 - Loader of analysis configuration files.
 
 - Loader of input files.
 
-- Initializer of the analysis that constructs fault trees, event trees, CCF,
-  and other analysis entities. This initialization phase validates the values
-  and logic supplied from the input files. The construction and analysis are
-  initialized according to the configurations supplied from the configuration
-  file and command-line.
+- Containers: models, fault trees, event trees, components.
+
+- Constructs: anything that is stored in containers and can be input for
+  analysis. Note that some containers are constructs as well.
+
+- Initializer of the analysis that initializes a model with fault trees, event
+  trees, CCF, and other analysis containers and constructs. This initialization
+  phase validates the values and logic supplied from the input files. The
+  construction and analysis are initialized according to the configurations
+  supplied from the configuration file and command-line.
 
 - Risk analyzer is the main object that operates with the initialized fault,
   event trees, and other entities to provide the requested results. It runs
@@ -33,7 +38,7 @@ Structure/Architecture of the Core Code
       fault tree analyzer uses many other helper facilities specifically
       designed to make the analysis efficient and fast.
 
-    * Probability calculator accepts cut sets to generate total probability,
+    * Probability calculator accepts cut sets to generate the total probability,
       individual probabilities of cut sets, contributions, importances.
 
     * Uncertainty Analyzer uses probability calculator facilities to sample
@@ -44,7 +49,7 @@ Structure/Architecture of the Core Code
 - Supporting classes: Formula, Expressions.
 
 - Reporter outputs the results of the work of Risk Analyzer to specified files
-  or streams with certain formatting.
+  or streams in XML format.
 
 - Grapher outputs a fault tree graphing instruction file for Graphviz Dot tool.
   This can be used before any analysis, but a valid fault tree with or without

@@ -5,13 +5,13 @@ Input Files
 SCRAM uses XML input files to describe analysis. See :ref:`xml_tools` for
 more convenient writing and reading of XML input files.
 
-Currently, only fault trees are accepted for analysis. The input file format
-follows `OpenPSA Model Exchange Format v2.0d`_ or later. The extensive
-description is given in the above format documentation by OpenPSA,
-and input files should be straightforward to create and understand.
+Currently, only fault trees are accepted for analysis, and one model per run is
+assumed. The input file format follows `OpenPSA Model Exchange Format v2.0d`_
+or later. The extensive description is given in the above format documentation
+by OpenPSA, and input files should be straightforward to create and understand.
 However, not all OpenPSA formatting is supported, and some additional
-assumptions/restrictions are made by SCRAM. See :ref:`opsa_support` for
-the format description and current implementation with differences.
+assumptions/restrictions are made by SCRAM. See :ref:`opsa_support` for the
+format description and current implementation with differences.
 
 In addition to the XML format, the :ref:`shorthand_format` is supported
 indirectly.
@@ -23,7 +23,13 @@ indirectly.
 Steps in XML Input Validation
 =============================
 
-#. Several input files can be accepted.
+#. Several input files are accepted that describe one model.
+
+    - The first file must define the name, label, and attributes of the model.
+      Other files with this kind of information are ignored without a warning.
+      This feature allows reuse of files from other models without the need for
+      include directives.
+
 #. An XML input file is validated by RelaxNG_ against the :ref:`schema`.
 #. The fault tree validation assumptions/requirements:
 
