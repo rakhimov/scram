@@ -406,25 +406,23 @@ void RiskAnalysis::ProcessModelData(const xmlpp::Element* model_data) {
 
 void RiskAnalysis::RegisterGate(const xmlpp::Element* gate_node,
                                 const FaultTreePtr& ft) {
-  // Only one child element is expected, which is a formula.
   std::string name = gate_node->get_attribute_value("name");
   boost::trim(name);
   std::string id = name;
   boost::to_lower(id);
-
-  if (gates_.count(id) || basic_events_.count(id) || house_events_.count(id)) {
-    // Redefined event.
-    std::stringstream msg;
-    msg << "Line " << gate_node->get_line() << ":\n";
-    msg << name << " event is being redefined.";
-    throw ValidationError(msg.str());
-  }
-
   GatePtr gate(new Gate(id));
   gate->name(name);
 
+  try {
+    model_->AddGate(gate);
+  } catch (ValidationError& err) {
+    std::stringstream msg;
+    msg << "Line " << gate_node->get_line() << ":\n";
+    msg << err.msg();
+    throw ValidationError(msg.str());
+  }
+
   tbd_elements_.push_back(std::make_pair(gate, gate_node));
-  gates_.insert(std::make_pair(id, gate));
 
   RiskAnalysis::AttachLabelAndAttributes(gate_node, gate);
 
@@ -553,8 +551,8 @@ void RiskAnalysis::ProcessFormulaEvent(const xmlpp::Element* event,
   if (basic_events_.count(id)) {
     child = basic_events_.find(id)->second;
 
-  } else if (gates_.count(id)) {
-    child = gates_.find(id)->second;
+  } else if (model_->gates().count(id)) {
+    child = model_->gates().find(id)->second;
 
   } else if (house_events_.count(id)) {
     child = house_events_.find(id)->second;
@@ -598,13 +596,13 @@ void RiskAnalysis::ProcessFormulaGate(const xmlpp::Element* event,
                                       EventPtr& child) {
   std::string id = child->id();
   std::string name = child->name();
-  if (!gates_.count(id)) {
+  if (!model_->gates().count(id)) {
     std::stringstream msg;
     msg << "Line " << event->get_line() << ":\n";
     msg << "Undefined gate: " << name;
     throw ValidationError(msg.str());
   }
-  child = gates_.find(id)->second;
+  child = model_->gates().find(id)->second;
 }
 
 void RiskAnalysis::RegisterBasicEvent(const xmlpp::Element* event_node) {
@@ -613,7 +611,8 @@ void RiskAnalysis::RegisterBasicEvent(const xmlpp::Element* event_node) {
   std::string id = name;
   boost::to_lower(id);
   // Detect name clashes.
-  if (gates_.count(id) || basic_events_.count(id) || house_events_.count(id)) {
+  if (model_->gates().count(id) || basic_events_.count(id) ||
+      house_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
     msg << name << " event is being redefined.";
@@ -646,7 +645,7 @@ void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node) {
   std::string id = name;
   boost::to_lower(id);
   // Detect name clashes.
-  if (gates_.count(id) || basic_events_.count(id) || house_events_.count(id)) {
+  if (model_->gates().count(id) || basic_events_.count(id) || house_events_.count(id)) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
     msg << name << " event is being redefined.";
@@ -1042,7 +1041,7 @@ void RiskAnalysis::ProcessCcfMembers(const xmlpp::Element* members_node,
       msg << name << " is already in CCF group " << ccf_group->name() << ".";
       throw ValidationError(msg.str());
     }
-    if (gates_.count(id) || basic_events_.count(id) ||
+    if (model_->gates().count(id) || basic_events_.count(id) ||
         house_events_.count(id)) {
       std::stringstream msg;
       msg << "Line " << event_node->get_line() << ":\n";
@@ -1108,8 +1107,8 @@ void RiskAnalysis::ValidateInitialization() {
 
 void RiskAnalysis::CheckFirstLayer() {
   // Check if all gates have no cycles.
-  boost::unordered_map<std::string, GatePtr>::iterator it;
-  for (it = gates_.begin(); it != gates_.end(); ++it) {
+  boost::unordered_map<std::string, GatePtr>::const_iterator it;
+  for (it = model_->gates().begin(); it != model_->gates().end(); ++it) {
     std::vector<std::string> cycle;
     if (cycle::DetectCycle<Gate, Formula>(&*it->second, &cycle)) {
       std::string msg = "Detected a cycle in " + it->second->name() +

@@ -33,6 +33,18 @@ void Model::AddParameter(const ParameterPtr& parameter) {
   parameters_.insert(std::make_pair(name, parameter));
 }
 
+void Model::AddGate(const GatePtr& gate) {
+  std::string name = gate->name();
+  boost::to_lower(name);
+
+  if (gates_.count(name) || basic_events_.count(name) ||
+      house_events_.count(name)) {
+    std::string msg = "Event " + gate->name() + " already exists.";
+    throw ValidationError(msg);
+  }
+  gates_.insert(std::make_pair(name, gate));
+}
+
 void Model::AddCcfGroup(const CcfGroupPtr& ccf_group) {
   std::string name = ccf_group->name();
   boost::to_lower(name);

@@ -151,7 +151,8 @@ class RiskAnalysis {
 
   /// Registers a gate for later definition.
   /// @param[in] gate_node XML element defining the gate.
-  /// @param[in,out] ft FaultTree under which this gate is defined.
+  /// @param[in,out] ft FaultTree under which this gate belongs to.
+  /// @throws ValidationError if an event with the same name is already defined.
   void RegisterGate(const xmlpp::Element* gate_node, const FaultTreePtr& ft);
 
   /// Defines a gate for this analysis.
@@ -306,9 +307,6 @@ class RiskAnalysis {
   /// Meta-logical layer of analysis, such as CCF groups and substitutions,
   /// is applied to analysis.
   void SetupForAnalysis();
-
-  /// Container for fully defined gates.
-  boost::unordered_map<std::string, GatePtr> gates_;
 
   /// Container for fully defined house events.
   boost::unordered_map<std::string, HouseEventPtr> house_events_;

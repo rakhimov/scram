@@ -22,6 +22,7 @@ class FaultTree;
 class Model : public Element {
  public:
   typedef boost::shared_ptr<Parameter> ParameterPtr;
+  typedef boost::shared_ptr<Gate> GatePtr;
   typedef boost::shared_ptr<CcfGroup> CcfGroupPtr;
   typedef boost::shared_ptr<FaultTree> FaultTreePtr;
 
@@ -42,7 +43,7 @@ class Model : public Element {
     return fault_trees_;
   }
 
-  /// Adds a parameter that is used in this model.
+  /// Adds a parameter that is used in this model's expressions.
   /// @param[in] parameter A parameter defined in this model.
   /// @throws ValidationError if a parameter with the same name already exists.
   void AddParameter(const ParameterPtr& parameter);
@@ -53,7 +54,18 @@ class Model : public Element {
     return parameters_;
   }
 
-  /// Adds a CCF group that is used in this model.
+  /// Adds a gate that is used in this model's fault trees or components.
+  /// @param[in] gate A gate defined in this model.
+  /// @throws ValidationError if an event with the same name already exists.
+  void AddGate(const GatePtr& gate);
+
+  /// @returns Gates defined for this model.
+  inline const boost::unordered_map<std::string, GatePtr>&
+      gates() const {
+    return gates_;
+  }
+
+  /// Adds a CCF group that is used in this model's fault trees.
   /// @param[in] ccf_group A CCF group defined in this model.
   /// @throws ValidationError if a CCF group with the same name already exists.
   void AddCcfGroup(const CcfGroupPtr& ccf_group);
@@ -64,7 +76,6 @@ class Model : public Element {
   }
 
  private:
-  typedef boost::shared_ptr<Gate> GatePtr;
   typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
   typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
