@@ -21,12 +21,24 @@ class FaultTree;
 /// This class represents a model that is defined in one input file.
 class Model : public Element {
  public:
+  typedef boost::shared_ptr<FaultTree> FaultTreePtr;
+
   /// Creates a model container.
   /// @param[in] name The optional name for the model.
   explicit Model(std::string name = "");
 
   /// @returns The name of the model.
   inline std::string name() const { return name_; }
+
+  /// Adds a fault tree into the model container.
+  /// @param[in] fault_tree A fault tree defined in this model.
+  /// @throws ValidationError if a container with the same name already exists.
+  void AddFaultTree(const FaultTreePtr& fault_tree);
+
+  /// @returns Defined fault trees in the model.
+  inline const std::map<std::string, FaultTreePtr>& fault_trees() const {
+    return fault_trees_;
+  }
 
  private:
   typedef boost::shared_ptr<Parameter> ParameterPtr;
@@ -35,7 +47,6 @@ class Model : public Element {
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
   typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
   typedef boost::shared_ptr<CcfGroup> CcfGroupPtr;
-  typedef boost::shared_ptr<FaultTree> FaultTreePtr;
 
   std::string name_;  ///< The name of the model.
 

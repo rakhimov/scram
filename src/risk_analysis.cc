@@ -89,8 +89,9 @@ void RiskAnalysis::ProcessInputFiles(
 void RiskAnalysis::GraphingInstructions() {
   CLOCK(graph_time);
   LOG(DEBUG1) << "Producing graphing instructions";
-  std::map<std::string, FaultTreePtr>::iterator it;
-  for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
+  std::map<std::string, FaultTreePtr>::const_iterator it;
+  for (it = model_->fault_trees().begin(); it != model_->fault_trees().end();
+       ++it) {
     const std::vector<GatePtr>* top_events = &it->second->top_events();
     std::vector<GatePtr>::const_iterator it_top;
     for (it_top = top_events->begin(); it_top != top_events->end(); ++it_top) {
@@ -116,8 +117,9 @@ void RiskAnalysis::Analyze() {
   // Otherwise it defaults to the current time.
   if (settings_.seed_ >= 0) Random::seed(settings_.seed_);
 
-  std::map<std::string, FaultTreePtr>::iterator it;
-  for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
+  std::map<std::string, FaultTreePtr>::const_iterator it;
+  for (it = model_->fault_trees().begin(); it != model_->fault_trees().end();
+       ++it) {
     const std::vector<GatePtr>* top_events = &it->second->top_events();
     std::vector<GatePtr>::const_iterator it_top;
     for (it_top = top_events->begin(); it_top != top_events->end(); ++it_top) {
@@ -342,18 +344,16 @@ void RiskAnalysis::AttachLabelAndAttributes(
 
 void RiskAnalysis::DefineFaultTree(const xmlpp::Element* ft_node) {
   std::string name = ft_node->get_attribute_value("name");
-  std::string id = name;
-  boost::to_lower(id);
-
-  if (fault_trees_.count(id)) {
+  assert(!name.empty());
+  FaultTreePtr fault_tree = FaultTreePtr(new FaultTree(name));
+  try {
+    model_->AddFaultTree(fault_tree);
+  } catch (ValidationError& err) {
     std::stringstream msg;
     msg << "Line " << ft_node->get_line() << ":\n";
-    msg << "Fault tree " << name << " is already defined.";
+    msg << err.msg();
     throw ValidationError(msg.str());
   }
-
-  FaultTreePtr fault_tree = FaultTreePtr(new FaultTree(name));
-  fault_trees_.insert(std::make_pair(id, fault_tree));
 
   RiskAnalysis::AttachLabelAndAttributes(ft_node, fault_tree);
 
@@ -1140,9 +1140,10 @@ void RiskAnalysis::CheckFirstLayer() {
 }
 
 void RiskAnalysis::CheckSecondLayer() {
-  if (!fault_trees_.empty()) {
-    std::map<std::string, FaultTreePtr>::iterator it;
-    for (it = fault_trees_.begin(); it != fault_trees_.end(); ++it) {
+  if (!model_->fault_trees().empty()) {
+    std::map<std::string, FaultTreePtr>::const_iterator it;
+    for (it = model_->fault_trees().begin(); it != model_->fault_trees().end();
+         ++it) {
       it->second->Validate();
     }
   }

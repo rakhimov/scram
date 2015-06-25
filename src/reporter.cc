@@ -113,7 +113,7 @@ void Reporter::SetupReport(const RiskAnalysis* risk_an,
   model->add_child("ccf-groups")
       ->add_child_text(ToString(risk_an->ccf_groups_.size()));
   model->add_child("fault-trees")
-      ->add_child_text(ToString(risk_an->fault_trees_.size()));
+      ->add_child_text(ToString(risk_an->model_->fault_trees().size()));
 
   // Setup for results.
   root->add_child("results");

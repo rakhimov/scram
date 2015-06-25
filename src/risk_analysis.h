@@ -328,9 +328,6 @@ class RiskAnalysis {
   /// A model from input files.
   ModelPtr model_;
 
-  /// A collection of fault trees for analysis.
-  std::map<std::string, FaultTreePtr> fault_trees_;
-
   /// A collection of common cause failure groups.
   std::map<std::string, CcfGroupPtr> ccf_groups_;
 
