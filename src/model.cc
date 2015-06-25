@@ -21,4 +21,15 @@ void Model::AddFaultTree(const FaultTreePtr& fault_tree) {
   fault_trees_.insert(std::make_pair(name, fault_tree));
 }
 
+void Model::AddParameter(const ParameterPtr& parameter) {
+  std::string name = parameter->name();
+  boost::to_lower(name);
+
+  if (parameters_.count(name)) {
+    std::string msg = "Parameter " + parameter->name() + " already exists.";
+    throw ValidationError(msg);
+  }
+  parameters_.insert(std::make_pair(name, parameter));
+}
+
 }  // namespace scram

@@ -316,9 +316,6 @@ class RiskAnalysis {
   /// Container for fully defined basic events.
   boost::unordered_map<std::string, BasicEventPtr> basic_events_;
 
-  /// Container for defined parameters or variables.
-  boost::unordered_map<std::string, ParameterPtr> parameters_;
-
   /// Elements that are defined on the second pass.
   std::vector<std::pair<ElementPtr, const xmlpp::Element*> > tbd_elements_;
 

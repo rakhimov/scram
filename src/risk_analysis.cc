@@ -177,8 +177,9 @@ void RiskAnalysis::Report(std::ostream& out) {
   /// Container for unused parameters not in the analysis.
   /// This container is for warning in case the input is formed not as intended.
   std::set<ParameterPtr> unused_parameters;
-  boost::unordered_map<std::string, ParameterPtr>::iterator it_v;
-  for (it_v = parameters_.begin(); it_v != parameters_.end(); ++it_v) {
+  boost::unordered_map<std::string, ParameterPtr>::const_iterator it_v;
+  for (it_v = model_->parameters().begin(); it_v != model_->parameters().end();
+       ++it_v) {
     if (it_v->second->unused()) unused_parameters.insert(it_v->second);
   }
 
@@ -674,21 +675,20 @@ void RiskAnalysis::DefineHouseEvent(const xmlpp::Element* event_node) {
 void RiskAnalysis::RegisterParameter(const xmlpp::Element* param_node) {
   std::string name = param_node->get_attribute_value("name");
   boost::trim(name);
-  // Detect case sensitive name clashes.
-  if (parameters_.count(name)) {
+  ParameterPtr parameter = ParameterPtr(new Parameter(name));
+  try {
+    model_->AddParameter(parameter);
+  } catch (ValidationError& err) {
     std::stringstream msg;
     msg << "Line " << param_node->get_line() << ":\n";
-    msg << name << " parameter is being redefined.";
+    msg << err.msg();
     throw ValidationError(msg.str());
   }
-
-  ParameterPtr parameter = ParameterPtr(new Parameter(name));
-  parameters_.insert(std::make_pair(name, parameter));
-
   tbd_elements_.push_back(std::make_pair(parameter, param_node));
 
   // Attach units.
   std::string unit = param_node->get_attribute_value("unit");
+  boost::trim(unit);
   if (unit != "") {
     assert(units_.count(unit));
     parameter->unit(units_.find(unit)->second);
@@ -755,8 +755,11 @@ bool RiskAnalysis::GetParameterExpression(const xmlpp::Element* expr_element,
   std::string param_unit = "";  // The expected unit.
   if (expr_name == "parameter") {
     std::string name = expr_element->get_attribute_value("name");
-    if (parameters_.count(name)) {
-      ParameterPtr param = parameters_.find(name)->second;
+    boost::trim(name);
+    std::string id = name;
+    boost::to_lower(id);
+    if (model_->parameters().count(id)) {
+      ParameterPtr param = model_->parameters().find(id)->second;
       param->unused(false);
       param_unit = unit_to_string_[param->unit()];
       expression = param;
@@ -1158,9 +1161,10 @@ void RiskAnalysis::CheckSecondLayer() {
 
 void RiskAnalysis::ValidateExpressions() {
   // Check for cycles in parameters. This must be done before expressions.
-  if (!parameters_.empty()) {
-    boost::unordered_map<std::string, ParameterPtr>::iterator it;
-    for (it = parameters_.begin(); it != parameters_.end(); ++it) {
+  if (!model_->parameters().empty()) {
+    boost::unordered_map<std::string, ParameterPtr>::const_iterator it;
+    for (it = model_->parameters().begin(); it != model_->parameters().end();
+         ++it) {
       std::vector<std::string> cycle;
       if (cycle::DetectCycle<Parameter, Expression>(&*it->second, &cycle)) {
         std::string msg = "Detected a cycle in " + it->second->name() +

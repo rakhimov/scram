@@ -21,6 +21,7 @@ class FaultTree;
 /// This class represents a model that is defined in one input file.
 class Model : public Element {
  public:
+  typedef boost::shared_ptr<Parameter> ParameterPtr;
   typedef boost::shared_ptr<FaultTree> FaultTreePtr;
 
   /// Creates a model container.
@@ -40,8 +41,18 @@ class Model : public Element {
     return fault_trees_;
   }
 
+  /// Adds a parameter that is used in this model.
+  /// @param[in] parameter A parameter defined in this model.
+  /// @throws ValidationError if a parameter with the same name already exists.
+  void AddParameter(const ParameterPtr& parameter);
+
+  /// @returns Parameters defined for this model.
+  inline const boost::unordered_map<std::string, ParameterPtr>&
+      parameters() const {
+    return parameters_;
+  }
+
  private:
-  typedef boost::shared_ptr<Parameter> ParameterPtr;
   typedef boost::shared_ptr<Gate> GatePtr;
   typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
