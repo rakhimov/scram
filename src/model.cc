@@ -2,6 +2,7 @@
 /// Implementation of functions in Model class.
 #include "model.h"
 
+#include "ccf_group.h"
 #include "fault_tree.h"
 
 #include <boost/algorithm/string.hpp>
@@ -30,6 +31,17 @@ void Model::AddParameter(const ParameterPtr& parameter) {
     throw ValidationError(msg);
   }
   parameters_.insert(std::make_pair(name, parameter));
+}
+
+void Model::AddCcfGroup(const CcfGroupPtr& ccf_group) {
+  std::string name = ccf_group->name();
+  boost::to_lower(name);
+
+  if (ccf_groups_.count(name)) {
+    std::string msg = "CCF group " + ccf_group->name() + " already exists.";
+    throw ValidationError(msg);
+  }
+  ccf_groups_.insert(std::make_pair(name, ccf_group));
 }
 
 }  // namespace scram

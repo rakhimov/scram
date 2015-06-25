@@ -953,16 +953,9 @@ bool RiskAnalysis::GetDeviateExpression(const xmlpp::Element* expr_element,
 
 void RiskAnalysis::RegisterCcfGroup(const xmlpp::Element* ccf_node) {
   std::string name = ccf_node->get_attribute_value("name");
-  std::string id = name;
-  boost::to_lower(id);
-
-  if (ccf_groups_.count(id)) {
-    std::stringstream msg;
-    msg << "Line " << ccf_node->get_line() << ":\n";
-    msg << "CCF group " << name << " is already defined.";
-    throw ValidationError(msg.str());
-  }
+  boost::trim(name);
   std::string model = ccf_node->get_attribute_value("model");
+  boost::trim(model);
   assert(model == "beta-factor" || model == "alpha-factor" ||
          model == "MGL" || model == "phi-factor");
 
@@ -980,14 +973,21 @@ void RiskAnalysis::RegisterCcfGroup(const xmlpp::Element* ccf_node) {
     ccf_group = CcfGroupPtr(new PhiFactorModel(name));
   }
 
+  try {
+    model_->AddCcfGroup(ccf_group);
+  } catch (ValidationError& err) {
+    std::stringstream msg;
+    msg << "Line " << ccf_node->get_line() << ":\n";
+    msg << err.msg();
+    throw ValidationError(msg.str());
+  }
+
   xmlpp::NodeSet members = ccf_node->find("./members");
   assert(members.size() == 1);
   const xmlpp::Element* element =
       dynamic_cast<const xmlpp::Element*>(members[0]);
 
   RiskAnalysis::ProcessCcfMembers(element, ccf_group);
-
-  ccf_groups_.insert(std::make_pair(id, ccf_group));
 
   RiskAnalysis::AttachLabelAndAttributes(ccf_node, ccf_group);
 
@@ -1151,9 +1151,10 @@ void RiskAnalysis::CheckSecondLayer() {
     }
   }
 
-  if (!ccf_groups_.empty()) {
-    std::map<std::string, CcfGroupPtr>::iterator it;
-    for (it = ccf_groups_.begin(); it != ccf_groups_.end(); ++it) {
+  if (!model_->ccf_groups().empty()) {
+    std::map<std::string, CcfGroupPtr>::const_iterator it;
+    for (it = model_->ccf_groups().begin(); it != model_->ccf_groups().end();
+         ++it) {
       it->second->Validate();
     }
   }
@@ -1191,9 +1192,9 @@ void RiskAnalysis::ValidateExpressions() {
   if (settings_.probability_analysis_) {
     std::stringstream msg;
     msg << "";
-    if (!ccf_groups_.empty()) {
-      std::map<std::string, CcfGroupPtr>::iterator it;
-      for (it = ccf_groups_.begin(); it != ccf_groups_.end(); ++it) {
+    if (!model_->ccf_groups().empty()) {
+      std::map<std::string, CcfGroupPtr>::const_iterator it;
+      for (it = model_->ccf_groups().begin(); it != model_->ccf_groups().end(); ++it) {
         try {
           it->second->ValidateDistribution();
         } catch (ValidationError& err) {
@@ -1218,9 +1219,10 @@ void RiskAnalysis::ValidateExpressions() {
 
 void RiskAnalysis::SetupForAnalysis() {
   // CCF groups.
-  if (!ccf_groups_.empty()) {
-    std::map<std::string, CcfGroupPtr>::iterator it;
-    for (it = ccf_groups_.begin(); it != ccf_groups_.end(); ++it) {
+  if (!model_->ccf_groups().empty()) {
+    std::map<std::string, CcfGroupPtr>::const_iterator it;
+    for (it = model_->ccf_groups().begin(); it != model_->ccf_groups().end();
+         ++it) {
       it->second->ApplyModel();
     }
   }

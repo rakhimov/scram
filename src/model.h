@@ -22,6 +22,7 @@ class FaultTree;
 class Model : public Element {
  public:
   typedef boost::shared_ptr<Parameter> ParameterPtr;
+  typedef boost::shared_ptr<CcfGroup> CcfGroupPtr;
   typedef boost::shared_ptr<FaultTree> FaultTreePtr;
 
   /// Creates a model container.
@@ -52,12 +53,21 @@ class Model : public Element {
     return parameters_;
   }
 
+  /// Adds a CCF group that is used in this model.
+  /// @param[in] ccf_group A CCF group defined in this model.
+  /// @throws ValidationError if a CCF group with the same name already exists.
+  void AddCcfGroup(const CcfGroupPtr& ccf_group);
+
+  /// @returns CCF groups defined for this model.
+  inline const std::map<std::string, CcfGroupPtr>& ccf_groups() const {
+    return ccf_groups_;
+  }
+
  private:
   typedef boost::shared_ptr<Gate> GatePtr;
   typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
   typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
-  typedef boost::shared_ptr<CcfGroup> CcfGroupPtr;
 
   std::string name_;  ///< The name of the model.
 
