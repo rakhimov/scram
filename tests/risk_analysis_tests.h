@@ -31,8 +31,8 @@ class RiskAnalysisTest : public ::testing::Test {
     return ran->model_->gates();
   }
 
-  boost::unordered_map<std::string, HouseEventPtr>& house_events() {
-    return ran->house_events_;
+  const boost::unordered_map<std::string, HouseEventPtr>& house_events() {
+    return ran->model_->house_events();
   }
 
   boost::unordered_map<std::string, BasicEventPtr>& basic_events() {

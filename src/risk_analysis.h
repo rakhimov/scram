@@ -211,8 +211,7 @@ class RiskAnalysis {
 
   /// Defines and adds a house event for this analysis.
   /// @param[in] event_node XML element defining the event.
-  /// @throws ValidationError if name clash or redefinition is detected, or if
-  ///                         there is no constant expression for this event.
+  /// @throws ValidationError if an event with the same name is already defined.
   void DefineHouseEvent(const xmlpp::Element* event_node);
 
   /// Registers a variable or parameter.
@@ -307,9 +306,6 @@ class RiskAnalysis {
   /// Meta-logical layer of analysis, such as CCF groups and substitutions,
   /// is applied to analysis.
   void SetupForAnalysis();
-
-  /// Container for fully defined house events.
-  boost::unordered_map<std::string, HouseEventPtr> house_events_;
 
   /// Container for fully defined basic events.
   boost::unordered_map<std::string, BasicEventPtr> basic_events_;

@@ -22,6 +22,7 @@ class FaultTree;
 class Model : public Element {
  public:
   typedef boost::shared_ptr<Parameter> ParameterPtr;
+  typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
   typedef boost::shared_ptr<Gate> GatePtr;
   typedef boost::shared_ptr<CcfGroup> CcfGroupPtr;
   typedef boost::shared_ptr<FaultTree> FaultTreePtr;
@@ -54,14 +55,24 @@ class Model : public Element {
     return parameters_;
   }
 
+  /// Adds a house event that is used in this model.
+  /// @param[in] house_event A house event defined in this model.
+  /// @throws ValidationError if an event with the same name already exists.
+  void AddHouseEvent(const HouseEventPtr& house_event);
+
+  /// @returns House events defined for this model.
+  inline const boost::unordered_map<std::string, HouseEventPtr>&
+      house_events() const {
+    return house_events_;
+  }
+
   /// Adds a gate that is used in this model's fault trees or components.
   /// @param[in] gate A gate defined in this model.
   /// @throws ValidationError if an event with the same name already exists.
   void AddGate(const GatePtr& gate);
 
   /// @returns Gates defined for this model.
-  inline const boost::unordered_map<std::string, GatePtr>&
-      gates() const {
+  inline const boost::unordered_map<std::string, GatePtr>& gates() const {
     return gates_;
   }
 
@@ -78,7 +89,6 @@ class Model : public Element {
  private:
   typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
-  typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
 
   std::string name_;  ///< The name of the model.
 
