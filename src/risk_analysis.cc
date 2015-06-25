@@ -163,8 +163,9 @@ void RiskAnalysis::Report(std::ostream& out) {
   /// Container for excess primary events not in the analysis.
   /// This container is for warning in case the input is formed not as intended.
   std::set<PrimaryEventPtr> orphan_primary_events;
-  boost::unordered_map<std::string, BasicEventPtr>::iterator it_b;
-  for (it_b = basic_events_.begin(); it_b != basic_events_.end(); ++it_b) {
+  boost::unordered_map<std::string, BasicEventPtr>::const_iterator it_b;
+  for (it_b = model_->basic_events().begin();
+       it_b != model_->basic_events().end(); ++it_b) {
     if (it_b->second->orphan()) orphan_primary_events.insert(it_b->second);
   }
   boost::unordered_map<std::string, HouseEventPtr>::const_iterator it_h;
@@ -549,8 +550,8 @@ void RiskAnalysis::ProcessFormula(const xmlpp::Element* formula_node,
 void RiskAnalysis::ProcessFormulaEvent(const xmlpp::Element* event,
                                        EventPtr& child) {
   std::string id = child->id();
-  if (basic_events_.count(id)) {
-    child = basic_events_.find(id)->second;
+  if (model_->basic_events().count(id)) {
+    child = model_->basic_events().find(id)->second;
 
   } else if (model_->gates().count(id)) {
     child = model_->gates().find(id)->second;
@@ -570,13 +571,13 @@ void RiskAnalysis::ProcessFormulaBasicEvent(const xmlpp::Element* event,
                                             EventPtr& child) {
   std::string id = child->id();
   std::string name = child->name();
-  if (!basic_events_.count(id)) {
+  if (!model_->basic_events().count(id)) {
     std::stringstream msg;
     msg << "Line " << event->get_line() << ":\n";
     msg << "Undefined basic event: " << name;
     throw ValidationError(msg.str());
   }
-  child = basic_events_.find(id)->second;
+  child = model_->basic_events().find(id)->second;
 }
 
 void RiskAnalysis::ProcessFormulaHouseEvent(const xmlpp::Element* event,
@@ -611,17 +612,16 @@ void RiskAnalysis::RegisterBasicEvent(const xmlpp::Element* event_node) {
   boost::trim(name);
   std::string id = name;
   boost::to_lower(id);
-  // Detect name clashes.
-  if (model_->gates().count(id) || basic_events_.count(id) ||
-      model_->house_events().count(id)) {
-    std::stringstream msg;
-    msg << "Line " << event_node->get_line() << ":\n";
-    msg << name << " event is being redefined.";
-    throw ValidationError(msg.str());
-  }
   BasicEventPtr basic_event = BasicEventPtr(new BasicEvent(id));
   basic_event->name(name);
-  basic_events_.insert(std::make_pair(id, basic_event));
+  try {
+    model_->AddBasicEvent(basic_event);
+  } catch (ValidationError& err) {
+    std::stringstream msg;
+    msg << "Line " << event_node->get_line() << ":\n";
+    msg << err.msg();
+    throw ValidationError(msg.str());
+  }
   tbd_elements_.push_back(std::make_pair(basic_event, event_node));
   RiskAnalysis::AttachLabelAndAttributes(event_node, basic_event);
 }
@@ -1043,17 +1043,17 @@ void RiskAnalysis::ProcessCcfMembers(const xmlpp::Element* members_node,
       msg << name << " is already in CCF group " << ccf_group->name() << ".";
       throw ValidationError(msg.str());
     }
-    if (model_->gates().count(id) || basic_events_.count(id) ||
-        model_->house_events().count(id)) {
-      std::stringstream msg;
-      msg << "Line " << event_node->get_line() << ":\n";
-      msg << name << " event is being redefined.";
-      throw ValidationError(msg.str());
-    }
     member_ids.insert(id);
     BasicEventPtr basic_event = BasicEventPtr(new BasicEvent(id));
     basic_event->name(name);
-    basic_events_.insert(std::make_pair(id, basic_event));
+    try {
+      model_->AddBasicEvent(basic_event);
+    } catch (ValidationError& err) {
+      std::stringstream msg;
+      msg << "Line " << event_node->get_line() << ":\n";
+      msg << err.msg();
+      throw ValidationError(msg.str());
+    }
 
     ccf_group->AddMember(basic_event);
   }
@@ -1123,8 +1123,9 @@ void RiskAnalysis::CheckFirstLayer() {
   // Check if all primary events have expressions for probability analysis.
   if (settings_.probability_analysis_) {
     std::string msg = "";
-    boost::unordered_map<std::string, BasicEventPtr>::iterator it_b;
-    for (it_b = basic_events_.begin(); it_b != basic_events_.end(); ++it_b) {
+    boost::unordered_map<std::string, BasicEventPtr>::const_iterator it_b;
+    for (it_b = model_->basic_events().begin();
+         it_b != model_->basic_events().end(); ++it_b) {
       if (!it_b->second->has_expression()) msg += it_b->second->name() + "\n";
     }
     boost::unordered_map<std::string, HouseEventPtr>::const_iterator it_h;
@@ -1205,8 +1206,9 @@ void RiskAnalysis::ValidateExpressions() {
         }
       }
     }
-    boost::unordered_map<std::string, BasicEventPtr>::iterator it;
-    for (it = basic_events_.begin(); it != basic_events_.end(); ++it) {
+    boost::unordered_map<std::string, BasicEventPtr>::const_iterator it;
+    for (it = model_->basic_events().begin();
+         it != model_->basic_events().end(); ++it) {
       try {
         it->second->Validate();
       } catch (ValidationError& err) {

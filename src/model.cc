@@ -45,6 +45,18 @@ void Model::AddHouseEvent(const HouseEventPtr& house_event) {
   house_events_.insert(std::make_pair(name, house_event));
 }
 
+void Model::AddBasicEvent(const BasicEventPtr& basic_event) {
+  std::string name = basic_event->name();
+  boost::to_lower(name);
+
+  if (gates_.count(name) || basic_events_.count(name) ||
+      house_events_.count(name)) {
+    std::string msg = "Event " + basic_event->name() + " already exists.";
+    throw ValidationError(msg);
+  }
+  basic_events_.insert(std::make_pair(name, basic_event));
+}
+
 void Model::AddGate(const GatePtr& gate) {
   std::string name = gate->name();
   boost::to_lower(name);

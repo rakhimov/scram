@@ -35,8 +35,8 @@ class RiskAnalysisTest : public ::testing::Test {
     return ran->model_->house_events();
   }
 
-  boost::unordered_map<std::string, BasicEventPtr>& basic_events() {
-    return ran->basic_events_;
+  const boost::unordered_map<std::string, BasicEventPtr>& basic_events() {
+    return ran->model_->basic_events();
   }
 
   const std::set< std::set<std::string> >& min_cut_sets() {

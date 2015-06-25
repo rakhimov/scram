@@ -199,13 +199,12 @@ class RiskAnalysis {
 
   /// Registers a basic event for later definition.
   /// @param[in] event_node XML element defining the event.
-  /// @throws ValidationError if redefinition is detected.
+  /// @throws ValidationError if an event with the same name is already defined.
   void RegisterBasicEvent(const xmlpp::Element* event_node);
 
   /// Defines a basic event for this analysis.
   /// @param[in] event_node XML element defining the event.
   /// @param[in,out] basic_event Registered basic event ready to be defined.
-  /// @throws ValidationError if there is no expression for this basic event.
   void DefineBasicEvent(const xmlpp::Element* event_node,
                         const BasicEventPtr& basic_event);
 
@@ -306,9 +305,6 @@ class RiskAnalysis {
   /// Meta-logical layer of analysis, such as CCF groups and substitutions,
   /// is applied to analysis.
   void SetupForAnalysis();
-
-  /// Container for fully defined basic events.
-  boost::unordered_map<std::string, BasicEventPtr> basic_events_;
 
   /// Elements that are defined on the second pass.
   std::vector<std::pair<ElementPtr, const xmlpp::Element*> > tbd_elements_;
