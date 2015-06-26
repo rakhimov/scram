@@ -13,17 +13,11 @@
 
 #include "event.h"
 
-class FaultTreeAnalysisTest;
-class PerformanceTest;
-
 namespace scram {
 
 /// @class FaultTreeAnalysis
 /// Fault tree analysis functionality.
 class FaultTreeAnalysis {
-  friend class ::FaultTreeAnalysisTest;
-  friend class ::PerformanceTest;
-
  public:
   typedef boost::shared_ptr<Gate> GatePtr;
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;

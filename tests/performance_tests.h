@@ -51,7 +51,7 @@ class PerformanceTest : public ::testing::Test {
   // Time taken to find minimal cut sets.
   double McsGenerationTime() {
     assert(!ran->fault_tree_analyses().empty());
-    return ran->fault_tree_analyses().begin()->second->analysis_time_;
+    return ran->fault_tree_analyses().begin()->second->analysis_time();
   }
 
   // Time taken to calculate total probability.
