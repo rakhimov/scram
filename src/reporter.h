@@ -13,19 +13,21 @@
 
 namespace scram {
 
+class Model;
+class Settings;
+class Parameter;
+class PrimaryEvent;
+class BasicEvent;
 class RiskAnalysis;
 class FaultTreeAnalysis;
 class ProbabilityAnalysis;
 class UncertaintyAnalysis;
-class PrimaryEvent;
-class BasicEvent;
-class Parameter;
-class Settings;
 
 /// @class Reporter
 /// This class reports the findings of the analyses.
 class Reporter {
  public:
+  typedef boost::shared_ptr<Model> ModelPtr;
   typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
   typedef boost::shared_ptr<Parameter> ParameterPtr;
 
@@ -34,11 +36,11 @@ class Reporter {
   /// time, methods, and model. In addition, the function forms the
   /// structure of the overall report for use by other reporting functions.
   /// This function must be called before other reporting functions.
-  /// @param[in] risk_an The main risk analysis with all the model data.
+  /// @param[in] model The main model container.
   /// @param[in] settings Configured settings for analysis.
   /// @param[in,out] doc An empty document.
   /// @throws LogicError if the document is not empty.
-  void SetupReport(const RiskAnalysis* risk_an, const Settings& settings,
+  void SetupReport(const ModelPtr& model, const Settings& settings,
                    xmlpp::Document* doc);
 
   /// Reports orphan primary events as warnings of the top information level.

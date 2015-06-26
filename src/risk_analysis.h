@@ -11,7 +11,6 @@
 #include <boost/shared_ptr.hpp>
 
 #include "fault_tree_analysis.h"
-#include "model.h"
 #include "probability_analysis.h"
 #include "settings.h"
 #include "uncertainty_analysis.h"
@@ -23,14 +22,13 @@ namespace scram {
 
 class Gate;
 class FaultTree;
-class Reporter;
+class Model;
 
 /// @class RiskAnalysis
 /// Main system that performs analyses.
 class RiskAnalysis {
   friend class ::RiskAnalysisTest;
   friend class ::PerformanceTest;
-  friend class Reporter;
 
  public:
   typedef boost::shared_ptr<Model> ModelPtr;

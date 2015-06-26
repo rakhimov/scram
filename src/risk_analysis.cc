@@ -12,6 +12,7 @@
 #include "fault_tree.h"
 #include "grapher.h"
 #include "logger.h"
+#include "model.h"
 #include "random.h"
 #include "reporter.h"
 
@@ -91,7 +92,7 @@ void RiskAnalysis::Report(std::ostream& out) {
 
   // Create XML or use already created document.
   xmlpp::Document* doc = new xmlpp::Document();
-  rp.SetupReport(this, settings_, doc);
+  rp.SetupReport(model_, settings_, doc);
 
   /// Container for excess primary events not in the analysis.
   /// This container is for warning in case the input is formed not as intended.

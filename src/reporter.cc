@@ -8,10 +8,11 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/date_time.hpp>
 
-#include "event.h"
 #include "error.h"
+#include "event.h"
 #include "expression.h"
 #include "fault_tree_analysis.h"
+#include "model.h"
 #include "probability_analysis.h"
 #include "risk_analysis.h"
 #include "settings.h"
@@ -20,8 +21,8 @@
 
 namespace scram {
 
-void Reporter::SetupReport(const RiskAnalysis* risk_an,
-                           const Settings& settings, xmlpp::Document* doc) {
+void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
+                           xmlpp::Document* doc) {
   if (doc->get_root_node() != 0) {
     throw LogicError("The passed document is not empty for reporting");
   }
@@ -102,19 +103,19 @@ void Reporter::SetupReport(const RiskAnalysis* risk_an,
     }
   }
 
-  xmlpp::Element* model = information->add_child("model-features");
-  if (!risk_an->model_->name().empty())
-    model->set_attribute("name", risk_an->model_->name());
-  model->add_child("gates")
-      ->add_child_text(ToString(risk_an->model_->gates().size()));
-  model->add_child("basic-events")
-      ->add_child_text(ToString(risk_an->model_->basic_events().size()));
-  model->add_child("house-events")
-      ->add_child_text(ToString(risk_an->model_->house_events().size()));
-  model->add_child("ccf-groups")
-      ->add_child_text(ToString(risk_an->model_->ccf_groups().size()));
-  model->add_child("fault-trees")
-      ->add_child_text(ToString(risk_an->model_->fault_trees().size()));
+  xmlpp::Element* model_features = information->add_child("model-features");
+  if (!model->name().empty())
+    model_features->set_attribute("name", model->name());
+  model_features->add_child("gates")
+      ->add_child_text(ToString(model->gates().size()));
+  model_features->add_child("basic-events")
+      ->add_child_text(ToString(model->basic_events().size()));
+  model_features->add_child("house-events")
+      ->add_child_text(ToString(model->house_events().size()));
+  model_features->add_child("ccf-groups")
+      ->add_child_text(ToString(model->ccf_groups().size()));
+  model_features->add_child("fault-trees")
+      ->add_child_text(ToString(model->fault_trees().size()));
 
   // Setup for results.
   root->add_child("results");
