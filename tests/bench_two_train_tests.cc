@@ -14,8 +14,8 @@ TEST_F(RiskAnalysisTest, TwoTrain) {
   std::set<std::string> cut_set;
   std::set< std::set<std::string> > mcs;  // For expected min cut sets.
 
-  ran->AddSettings(settings.probability_analysis(true));
-  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  settings.probability_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(0.7225, p_total());  // Total prob check.
   // Minimal cut set check.

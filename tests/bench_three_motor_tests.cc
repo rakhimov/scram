@@ -24,8 +24,8 @@ TEST_F(RiskAnalysisTest, ThreeMotor) {
   std::string T4inc = "t4inc";
 
   // Adjust settings for number of sums.
-  ran->AddSettings(settings.probability_analysis(true).num_sums(3));
-  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  settings.probability_analysis(true).num_sums(3);
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_NEAR(0.0211538, p_total(), 1e-5);
   // Minimal cut set check.

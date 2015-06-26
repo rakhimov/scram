@@ -9,6 +9,7 @@
 
 #include "config.h"
 #include "error.h"
+#include "initializer.h"
 #include "logger.h"
 #include "risk_analysis.h"
 #include "settings.h"
@@ -164,8 +165,6 @@ int RunScram(const po::variables_map& vm) {
   if (vm.count("verbosity")) {
     Logger::ReportLevel() = static_cast<LogLevel>(vm["verbosity"].as<int>());
   }
-  // Initiate risk analysis.
-  RiskAnalysis* ran = new RiskAnalysis();
   // Analysis settings.
   Settings settings;
   std::vector<std::string> input_files;
@@ -181,7 +180,6 @@ int RunScram(const po::variables_map& vm) {
 
   // Command-line settings overwrites the settings from the configurations.
   ConstructSettings(vm, &settings);
-  ran->AddSettings(settings);
 
   // Add input files from the command-line.
   if (vm.count("input-files")) {
@@ -189,24 +187,28 @@ int RunScram(const po::variables_map& vm) {
         vm["input-files"].as< std::vector<std::string> >();
     input_files.insert(input_files.end(), cmd_input.begin(), cmd_input.end());
   }
-
   // Overwrite output path if it is given from the command-line.
   if (vm.count("output-path")) {
     output_path = vm["output-path"].as<std::string>();
   }
-
-  // Process input files and validate it.
-  ran->ProcessInputFiles(input_files);
+  // Process input files into valid analysis containers and constructs.
+  Initializer* init = new Initializer(settings);
+  init->ProcessInputFiles(input_files);
+  // Initiate risk analysis with the given information.
+  RiskAnalysis* ran = new RiskAnalysis(init->model(), settings);
+  delete init;
 
   // Stop if only validation is requested.
   if (vm.count("validate")) {
     std::cout << "The files are VALID." << std::endl;
+    delete ran;
     return 0;
   }
 
   // Graph if requested.
   if (vm.count("graph")) {
     ran->GraphingInstructions();
+    delete ran;
     return 0;
   }
 

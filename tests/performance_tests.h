@@ -4,6 +4,8 @@
 #include <gtest/gtest.h>
 
 #include "fault_tree_analysis.h"
+#include "initializer.h"
+#include "probability_analysis.h"
 #include "risk_analysis.h"
 
 using namespace scram;
@@ -12,11 +14,26 @@ class PerformanceTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
     delta = 0.10;  // % variation of values.
-    ran = new RiskAnalysis();
   }
 
   virtual void TearDown() {
     delete ran;
+  }
+
+  // Convenient function to manage analysis of one model in input files.
+  void Analyze(const std::vector<std::string>& input_files) {
+    Initializer* init = new Initializer(settings);
+    init->ProcessInputFiles(input_files);
+    ran = new RiskAnalysis(init->model(), settings);
+    delete init;
+    ran->Analyze();
+  }
+
+  // Convenient function to manage analysis of one model in one input file.
+  void Analyze(const std::string& input_file) {
+    std::vector<std::string> input_files;
+    input_files.push_back(input_file);
+    Analyze(input_files);
   }
 
   // Total probability as a result of analysis.
@@ -45,7 +62,7 @@ class PerformanceTest : public ::testing::Test {
 
   RiskAnalysis* ran;
   Settings settings;
-  double delta;  // the range indicator for values.
+  double delta;  // The range indicator for values.
 };
 
 #endif  // SCRAM_TESTS_PERFORMANCE_TESTS_H_

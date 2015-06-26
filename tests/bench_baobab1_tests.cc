@@ -8,8 +8,8 @@ TEST_F(RiskAnalysisTest, Baobab_1_Test) {
   std::vector<std::string> input_files;
   input_files.push_back("./share/scram/input/Baobab/baobab1.xml");
   input_files.push_back("./share/scram/input/Baobab/baobab1-basic-events.xml");
-  ran->AddSettings(settings.limit_order(6));
-  ASSERT_NO_THROW(ran->ProcessInputFiles(input_files));
+  settings.limit_order(6);
+  ASSERT_NO_THROW(ProcessInputFiles(input_files));
   ASSERT_NO_THROW(ran->Analyze());
   // Minimal cut set check.
   EXPECT_EQ(2684, min_cut_sets().size());

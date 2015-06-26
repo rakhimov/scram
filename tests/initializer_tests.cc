@@ -1,67 +1,78 @@
-#include <unistd.h>
+#include "initializer.h"
 
 #include <vector>
 
 #include <gtest/gtest.h>
 
 #include "error.h"
-#include "risk_analysis.h"
 #include "settings.h"
 
 using namespace scram;
 
 // Test if the XML is well formed.
-TEST(RiskAnalysisInputTest, XMLFormatting) {
-  std::string input_incorrect = "./share/scram/input/xml_formatting_error.xml";
-  RiskAnalysis* ran;
-  ran = new RiskAnalysis();
-  EXPECT_THROW(ran->ProcessInput(input_incorrect), ValidationError);
-  delete ran;
+TEST(InitializerTest, XMLFormatting) {
+  std::vector<std::string> input_files;
+  input_files.push_back("./share/scram/input/xml_formatting_error.xml");
+  Initializer* init = new Initializer(Settings());
+  EXPECT_THROW(init->ProcessInputFiles(input_files), ValidationError);
+  delete init;
+}
+
+// Test the response for non-existent file.
+TEST(InitializerTest, NonExistentFile) {
+  // Access issues. IOErrors
+  std::vector<std::string> input_files;
+  input_files.push_back("./share/scram/input/nonexistent_file.xml");
+  Initializer* init = new Initializer(Settings());
+  EXPECT_THROW(init->ProcessInputFiles(input_files), IOError);
+  delete init;
 }
 
 // Test if passing the same file twice causing an error.
-TEST(RiskAnalysisInputTest, PassTheSameFileTwice) {
+TEST(InitializerTest, PassTheSameFileTwice) {
   std::string input_correct = "./share/scram/input/fta/correct_tree_input.xml";
   std::string the_same_path = "./share/.."
                               "/share/scram/input/fta/correct_tree_input.xml";
   std::vector<std::string> input_files;
   input_files.push_back(input_correct);
   input_files.push_back(the_same_path);
-  RiskAnalysis* ran = new RiskAnalysis();
-  EXPECT_THROW(ran->ProcessInputFiles(input_files), ValidationError);
-  delete ran;
+  Initializer* init = new Initializer(Settings());
+  EXPECT_THROW(init->ProcessInputFiles(input_files), ValidationError);
+  delete init;
 }
 
 // Test if the schema catches errors.
 // This is trusted to XML libraries and the correctness of the RelaxNG schema,
 // so the test is very basic calls.
-TEST(RiskAnalysisInputTest, FailSchemaValidation) {
-  std::string input_incorrect = "./share/scram/input/schema_fail.xml";
-  RiskAnalysis* ran = new RiskAnalysis();
-  EXPECT_THROW(ran->ProcessInput(input_incorrect), ValidationError);
-  delete ran;
+TEST(InitializerTest, FailSchemaValidation) {
+  std::vector<std::string> input_files;
+  input_files.push_back("./share/scram/input/schema_fail.xml");
+  Initializer* init = new Initializer(Settings());
+  EXPECT_THROW(init->ProcessInputFiles(input_files), ValidationError);
+  delete init;
 }
 
 // Unsupported operations.
-TEST(RiskAnalysisInputTest, UnsupportedFeature) {
+TEST(InitializerTest, UnsupportedFeature) {
   std::vector<std::string> incorrect_inputs;
 
   std::string dir = "./share/scram/input/fta/";
   incorrect_inputs.push_back(dir + "../unsupported_feature.xml");
   incorrect_inputs.push_back(dir + "../unsupported_gate.xml");
   incorrect_inputs.push_back(dir + "../unsupported_expression.xml");
-  RiskAnalysis* ran;
   std::vector<std::string>::iterator it;
   for (it = incorrect_inputs.begin(); it != incorrect_inputs.end(); ++it) {
-    ran = new RiskAnalysis();
-    EXPECT_THROW(ran->ProcessInput(*it), ValidationError)
+    Initializer* init = new Initializer(Settings());
+    std::vector<std::string> input_files;
+    input_files.push_back(*it);
+    EXPECT_THROW(init->ProcessInputFiles(input_files), ValidationError)
         << " Filename:  " << *it;
-    delete ran;
+    delete init;
   }
 }
 
 // Test correct inputs without probability information.
-TEST(RiskAnalysisInputTest, CorrectFTAInputs) {
+TEST(InitializerTest, CorrectFTAInputs) {
   std::vector<std::string> correct_inputs;
   std::string dir = "./share/scram/input/fta/";
   correct_inputs.push_back(dir + "correct_tree_input.xml");
@@ -78,18 +89,19 @@ TEST(RiskAnalysisInputTest, CorrectFTAInputs) {
   correct_inputs.push_back(dir + "non_top_gate.xml");
   correct_inputs.push_back(dir + "unused_parameter.xml");
 
-  RiskAnalysis* ran;
-
   std::vector<std::string>::iterator it;
   for (it = correct_inputs.begin(); it != correct_inputs.end(); ++it) {
-    ran = new RiskAnalysis();
-    EXPECT_NO_THROW(ran->ProcessInput(*it)) << " Filename: " << *it;
-    delete ran;
+    Initializer* init = new Initializer(Settings());
+    std::vector<std::string> input_files;
+    input_files.push_back(*it);
+    EXPECT_NO_THROW(init->ProcessInputFiles(input_files))
+        << " Filename: " << *it;
+    delete init;
   }
 }
 
 // Test correct inputs with probability information.
-TEST(RiskAnalysisInputTest, CorrectProbInputs) {
+TEST(InitializerTest, CorrectProbInputs) {
   std::vector<std::string> correct_inputs;
   std::string dir = "./share/scram/input/fta/";
   correct_inputs.push_back(dir + "correct_tree_input_with_probs.xml");
@@ -97,33 +109,26 @@ TEST(RiskAnalysisInputTest, CorrectProbInputs) {
   correct_inputs.push_back(dir + "correct_expressions.xml");
   correct_inputs.push_back(dir + "flavored_types.xml");
 
-  RiskAnalysis* ran;
   Settings settings;
   settings.probability_analysis(true);
 
   std::vector<std::string>::iterator it;
   for (it = correct_inputs.begin(); it != correct_inputs.end(); ++it) {
-    ran = new RiskAnalysis();
-    ran->AddSettings(settings);
-    EXPECT_NO_THROW(ran->ProcessInput(*it)) << " Filename: " << *it;
-    delete ran;
+    Initializer* init = new Initializer(settings);
+    std::vector<std::string> input_files;
+    input_files.push_back(*it);
+    EXPECT_NO_THROW(init->ProcessInputFiles(input_files))
+        << " Filename: " << *it;
+    delete init;
   }
 }
 
 // Test incorrect fault tree inputs
-TEST(RiskAnalysisInputTest, IncorrectFTAInputs) {
+TEST(InitializerTest, IncorrectFTAInputs) {
   std::vector<std::string> incorrect_inputs;
 
   std::string dir = "./share/scram/input/fta/";
 
-  // Access issues. IOErrors
-  std::string ioerror_input = dir + "nonexistent_file.xml";
-  RiskAnalysis* ran = new RiskAnalysis();
-  EXPECT_THROW(ran->ProcessInput(ioerror_input), IOError)
-      << " Filename:  " << ioerror_input;
-  delete ran;
-
-  // Other issues.
   incorrect_inputs.push_back(dir + "doubly_defined_gate.xml");
   incorrect_inputs.push_back(dir + "doubly_defined_house.xml");
   incorrect_inputs.push_back(dir + "doubly_defined_basic.xml");
@@ -162,14 +167,16 @@ TEST(RiskAnalysisInputTest, IncorrectFTAInputs) {
 
   std::vector<std::string>::iterator it;
   for (it = incorrect_inputs.begin(); it != incorrect_inputs.end(); ++it) {
-    ran = new RiskAnalysis();
-    EXPECT_THROW(ran->ProcessInput(*it), ValidationError)
+    Initializer* init = new Initializer(Settings());
+    std::vector<std::string> input_files;
+    input_files.push_back(*it);
+    EXPECT_THROW(init->ProcessInputFiles(input_files), ValidationError)
         << " Filename:  " << *it;
-    delete ran;
+    delete init;
   }
 }
 
-TEST(RiskAnalysisInputTest, IncorrectProbInputs) {
+TEST(InitializerTest, IncorrectProbInputs) {
   std::vector<std::string> incorrect_inputs;
   std::string dir = "./share/scram/input/fta/";
   incorrect_inputs.push_back(dir + "invalid_probability.xml");
@@ -177,29 +184,30 @@ TEST(RiskAnalysisInputTest, IncorrectProbInputs) {
   incorrect_inputs.push_back(dir + "missing_expression.xml");
   incorrect_inputs.push_back(dir + "ccf_wrong_distribution.xml");
 
-  RiskAnalysis* ran;
   Settings settings;
   settings.probability_analysis(true);
+
   std::vector<std::string>::iterator it;
   for (it = incorrect_inputs.begin(); it != incorrect_inputs.end(); ++it) {
-    ran = new RiskAnalysis();
-    ran->AddSettings(settings);
-    EXPECT_THROW(ran->ProcessInput(*it), ValidationError)
+    Initializer* init = new Initializer(settings);
+    std::vector<std::string> input_files;
+    input_files.push_back(*it);
+    EXPECT_THROW(init->ProcessInputFiles(input_files), ValidationError)
         << " Filename:  " << *it;
-    delete ran;
+    delete init;
   }
 }
 
 // Test the case when a top event is not orphan. The top event of one fault
 // tree can be a child of a gate of another fault tree.
-TEST(RiskAnalysisInputTest, NonOrphanTopEvent) {
+TEST(InitializerTest, NonOrphanTopEvent) {
   std::string dir = "./share/scram/input/fta/";
   std::vector<std::string> input_files;
 
   input_files.push_back(dir + "correct_tree_input.xml");
   input_files.push_back(dir + "second_fault_tree.xml");
 
-  RiskAnalysis* ran = new RiskAnalysis();
-  EXPECT_NO_THROW(ran->ProcessInputFiles(input_files));
-  delete ran;
+  Initializer* init = new Initializer(Settings());
+  EXPECT_NO_THROW(init->ProcessInputFiles(input_files));
+  delete init;
 }

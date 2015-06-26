@@ -38,22 +38,14 @@ const char* const Initializer::unit_to_string_[] = {"unitless", "bool", "int",
                                                      "years-1", "fit",
                                                      "demands"};
 
-Initializer::Initializer() {
-  // Initialize the mission time with any value.
+Initializer::Initializer(const Settings& settings) {
+  settings_ = settings;
   mission_time_ = boost::shared_ptr<MissionTime>(new MissionTime());
-}
-
-void Initializer::ProcessInput(std::string xml_file) {
-  std::vector<std::string> single;
-  single.push_back(xml_file);
-  Initializer::ProcessInputFiles(single);
+  mission_time_->mission_time(settings_.mission_time_);
 }
 
 void Initializer::ProcessInputFiles(
     const std::vector<std::string>& xml_files) {
-  // Assume that settings are configured.
-  mission_time_->mission_time(settings_.mission_time_);
-
   CLOCK(input_time);
   LOG(DEBUG1) << "Processing input files";
   std::vector<std::string>::const_iterator it;
@@ -88,12 +80,14 @@ void Initializer::ProcessInputFile(std::string xml_file) {
   if (!file_stream) {
     throw IOError("File '" + xml_file + "' could not be loaded.");
   }
+  /// Collection of input file locations in canonical path.
+  std::set<std::string> input_paths;
   fs::path file_path = fs::canonical(xml_file);
-  if (input_path_.count(file_path.native())) {
+  if (input_paths.count(file_path.native())) {
     throw ValidationError("Trying to pass the same file twice: " +
                           file_path.native());
   }
-  input_path_.insert(file_path.native());
+  input_paths.insert(file_path.native());
 
   std::stringstream stream;
   stream << file_stream.rdbuf();

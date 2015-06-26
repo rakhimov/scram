@@ -8,8 +8,8 @@ TEST_F(RiskAnalysisTest, CEA9601_Test) {
   std::vector<std::string> input_files;
   input_files.push_back("./share/scram/input/CEA9601/CEA9601.xml");
   input_files.push_back("./share/scram/input/CEA9601/CEA9601-basic-events.xml");
-  ran->AddSettings(settings.limit_order(4));
-  ASSERT_NO_THROW(ran->ProcessInputFiles(input_files));
+  settings.limit_order(4);
+  ASSERT_NO_THROW(ProcessInputFiles(input_files));
   ASSERT_NO_THROW(ran->Analyze());
   // Minimal cut set check.
   EXPECT_EQ(2732, min_cut_sets().size());

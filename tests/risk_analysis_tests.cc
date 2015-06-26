@@ -14,7 +14,7 @@ using namespace scram;
 
 TEST_F(RiskAnalysisTest, ProcessInput) {
   std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
-  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
   EXPECT_EQ(3, gates().size());
   EXPECT_EQ(1, gates().count("trainone"));
   EXPECT_EQ(1, gates().count("traintwo"));
@@ -51,7 +51,7 @@ TEST_F(RiskAnalysisTest, PopulateProbabilities) {
   // Input with probabilities
   std::string tree_input =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
-  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_EQ(4, basic_events().size());
   ASSERT_EQ(1, basic_events().count("pumpone"));
   ASSERT_EQ(1, basic_events().count("pumptwo"));
@@ -69,28 +69,28 @@ TEST_F(RiskAnalysisTest, PopulateProbabilities) {
 
 // Test Graphing Intructions
 TEST_F(RiskAnalysisTest, GraphingInstructions) {
-  std::vector<std::string> tree_input;
-  tree_input.push_back("./share/scram/input/fta/correct_tree_input.xml");
-  tree_input.push_back("./share/scram/input/fta/graphing.xml");
-  tree_input.push_back("./share/scram/input/fta/flavored_types.xml");
-  tree_input.push_back("./share/scram/input/fta/nested_formula.xml");
+  settings.probability_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFile("./share/scram/input/fta/graphing.xml"));
+  ASSERT_NO_THROW(ran->GraphingInstructions());
+}
 
-  std::vector<std::string>::iterator it;
-  for (it = tree_input.begin(); it != tree_input.end(); ++it) {
-    delete ran;
-    ran = new RiskAnalysis();
-    ASSERT_NO_THROW(ran->ProcessInput(*it));
-    ASSERT_NO_THROW(ran->GraphingInstructions());
-  }
+TEST_F(RiskAnalysisTest, GraphingFlavoredTypes) {
+  settings.probability_analysis(true);
+  ASSERT_NO_THROW(
+      ProcessInputFile("./share/scram/input/fta/flavored_types.xml"));
+  ASSERT_NO_THROW(ran->GraphingInstructions());
+}
+
+TEST_F(RiskAnalysisTest, GraphingNestedFormula) {
+  ASSERT_NO_THROW(
+      ProcessInputFile("./share/scram/input/fta/nested_formula.xml"));
+  ASSERT_NO_THROW(ran->GraphingInstructions());
 }
 
 // Test Analysis of Two train system.
 TEST_F(RiskAnalysisTest, AnalyzeDefault) {
   std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
-  std::string with_prob =
-      "./share/scram/input/fta/correct_tree_input_with_probs.xml";
-  std::string nested_input = "./share/scram/input/fta/nested_formula.xml";
-  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   std::set<std::string> mcs_1;
   std::set<std::string> mcs_2;
@@ -109,25 +109,34 @@ TEST_F(RiskAnalysisTest, AnalyzeDefault) {
   EXPECT_EQ(1, min_cut_sets().count(mcs_2));
   EXPECT_EQ(1, min_cut_sets().count(mcs_3));
   EXPECT_EQ(1, min_cut_sets().count(mcs_4));
+}
 
-  // Nested version.
-  delete ran;
-  ran = new RiskAnalysis();
-  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+TEST_F(RiskAnalysisTest, AnalyzeWithProbability) {
+  std::string with_prob =
+      "./share/scram/input/fta/correct_tree_input_with_probs.xml";
+  std::set<std::string> mcs_1;
+  std::set<std::string> mcs_2;
+  std::set<std::string> mcs_3;
+  std::set<std::string> mcs_4;
+  mcs_1.insert("pumpone");
+  mcs_1.insert("pumptwo");
+  mcs_2.insert("pumpone");
+  mcs_2.insert("valvetwo");
+  mcs_3.insert("pumptwo");
+  mcs_3.insert("valveone");
+  mcs_4.insert("valveone");
+  mcs_4.insert("valvetwo");
+
+  settings.probability_analysis(true).importance_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFile(with_prob));
   ASSERT_NO_THROW(ran->Analyze());
+
   EXPECT_EQ(4, min_cut_sets().size());
   EXPECT_EQ(1, min_cut_sets().count(mcs_1));
   EXPECT_EQ(1, min_cut_sets().count(mcs_2));
   EXPECT_EQ(1, min_cut_sets().count(mcs_3));
   EXPECT_EQ(1, min_cut_sets().count(mcs_4));
 
-  // Probability calculations.
-  delete ran;
-  ran = new RiskAnalysis();
-  ran->AddSettings(settings.probability_analysis(true)
-                           .importance_analysis(true));
-  ASSERT_NO_THROW(ran->ProcessInput(with_prob));
-  ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(0.646, p_total());
   EXPECT_DOUBLE_EQ(0.42, prob_of_min_sets().find(mcs_1)->second);
   EXPECT_DOUBLE_EQ(0.3, prob_of_min_sets().find(mcs_2)->second);
@@ -161,10 +170,34 @@ TEST_F(RiskAnalysisTest, AnalyzeDefault) {
   }
 }
 
+TEST_F(RiskAnalysisTest, AnalyzeNestedFormula) {
+  std::string nested_input = "./share/scram/input/fta/nested_formula.xml";
+  std::set<std::string> mcs_1;
+  std::set<std::string> mcs_2;
+  std::set<std::string> mcs_3;
+  std::set<std::string> mcs_4;
+  mcs_1.insert("pumpone");
+  mcs_1.insert("pumptwo");
+  mcs_2.insert("pumpone");
+  mcs_2.insert("valvetwo");
+  mcs_3.insert("pumptwo");
+  mcs_3.insert("valveone");
+  mcs_4.insert("valveone");
+  mcs_4.insert("valvetwo");
+
+  ASSERT_NO_THROW(ProcessInputFile(nested_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  EXPECT_EQ(4, min_cut_sets().size());
+  EXPECT_EQ(1, min_cut_sets().count(mcs_1));
+  EXPECT_EQ(1, min_cut_sets().count(mcs_2));
+  EXPECT_EQ(1, min_cut_sets().count(mcs_3));
+  EXPECT_EQ(1, min_cut_sets().count(mcs_4));
+}
+
 TEST_F(RiskAnalysisTest, Importance) {
   std::string tree_input = "./share/scram/input/fta/importance_test.xml";
-  ran->AddSettings(settings.importance_analysis(true));
-  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  settings.importance_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(0.67, p_total());
   // Check importance values with negative event.
@@ -199,8 +232,8 @@ TEST_F(RiskAnalysisTest, RareEvent) {
   std::string with_prob =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   // Probability calculations with the rare event approximation.
-  ran->AddSettings(settings.approx("rare-event").probability_analysis(true));
-  ASSERT_NO_THROW(ran->ProcessInput(with_prob));
+  settings.approx("rare-event").probability_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFile(with_prob));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(1.2, p_total());
 }
@@ -210,8 +243,8 @@ TEST_F(RiskAnalysisTest, MCUB) {
   std::string with_prob =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   // Probability calculations with the MCUB approximation.
-  ran->AddSettings(settings.approx("mcub").probability_analysis(true));
-  ASSERT_NO_THROW(ran->ProcessInput(with_prob));
+  settings.approx("mcub").probability_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFile(with_prob));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(0.766144, p_total());
 }
@@ -221,8 +254,8 @@ TEST_F(RiskAnalysisTest, MCUB) {
 TEST_F(RiskAnalysisTest, McubNonCoherent) {
   std::string with_prob = "./share/scram/input/core/a_and_not_b.xml";
   // Probability calculations with the MCUB approximation.
-  ran->AddSettings(settings.approx("mcub").probability_analysis(true));
-  ASSERT_NO_THROW(ran->ProcessInput(with_prob));
+  settings.approx("mcub").probability_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFile(with_prob));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_NEAR(0.08, p_total(), 1e-5);
 }
@@ -230,10 +263,10 @@ TEST_F(RiskAnalysisTest, McubNonCoherent) {
 // Test Monte Carlo Analysis
 /// @todo Expand this test.
 TEST_F(RiskAnalysisTest, AnalyzeMC) {
-  ran->AddSettings(settings.uncertainty_analysis(true));
+  settings.uncertainty_analysis(true);
   std::string tree_input =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
-  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
 }
 
@@ -241,8 +274,11 @@ TEST_F(RiskAnalysisTest, AnalyzeMC) {
 // Tests the output against the schema. However the contents of the
 // output are not verified or validated.
 TEST_F(RiskAnalysisTest, ReportIOError) {
+  std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
   // Messing up the output file.
   std::string output = "abracadabra.cadabraabra/output.txt";
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
   EXPECT_THROW(ran->Report(output), IOError);
 }
 
@@ -256,7 +292,7 @@ TEST_F(RiskAnalysisTest, ReportDefaultMCS) {
   schema << schema_stream.rdbuf();
   schema_stream.close();
 
-  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
 
   std::stringstream output;
@@ -278,8 +314,8 @@ TEST_F(RiskAnalysisTest, ReportProbability) {
   schema << schema_stream.rdbuf();
   schema_stream.close();
 
-  ASSERT_NO_THROW(ran->AddSettings(settings.probability_analysis(true)));
-  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  settings.probability_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
 
   std::stringstream output;
@@ -301,8 +337,8 @@ TEST_F(RiskAnalysisTest, ReportImportanceFactors) {
   schema << schema_stream.rdbuf();
   schema_stream.close();
 
-  ASSERT_NO_THROW(ran->AddSettings(settings.importance_analysis(true)));
-  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  settings.importance_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
 
   std::stringstream output;
@@ -324,8 +360,8 @@ TEST_F(RiskAnalysisTest, ReportUncertaintyResults) {
   schema << schema_stream.rdbuf();
   schema_stream.close();
 
-  ASSERT_NO_THROW(ran->AddSettings(settings.uncertainty_analysis(true)));
-  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  settings.uncertainty_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
 
   std::stringstream output;
@@ -346,10 +382,8 @@ TEST_F(RiskAnalysisTest, ReportCCF) {
   schema << schema_stream.rdbuf();
   schema_stream.close();
 
-  ASSERT_NO_THROW(ran->AddSettings(settings.ccf_analysis(true)
-                                           .importance_analysis(true)
-                                           .num_sums(3)));
-  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  settings.ccf_analysis(true).importance_analysis(true).num_sums(3);
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
 
   std::stringstream output;
@@ -370,8 +404,8 @@ TEST_F(RiskAnalysisTest, ReportNegativeEvent) {
   schema << schema_stream.rdbuf();
   schema_stream.close();
 
-  ASSERT_NO_THROW(ran->AddSettings(settings.probability_analysis(true)));
-  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  settings.probability_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
 
   std::stringstream output;
@@ -393,10 +427,9 @@ TEST_F(RiskAnalysisTest, ReportAll) {
   schema << schema_stream.rdbuf();
   schema_stream.close();
 
-  ASSERT_NO_THROW(ran->AddSettings(settings.importance_analysis(true)
-                                           .uncertainty_analysis(true)
-                                           .ccf_analysis(true)));
-  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  settings.importance_analysis(true).uncertainty_analysis(true)
+      .ccf_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
 
   std::stringstream output;
@@ -417,7 +450,7 @@ TEST_F(RiskAnalysisTest, ReportOrphanPrimaryEvents) {
   schema << schema_stream.rdbuf();
   schema_stream.close();
 
-  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
 
   std::stringstream output;
@@ -438,7 +471,7 @@ TEST_F(RiskAnalysisTest, ReportUnusedParameters) {
   schema << schema_stream.rdbuf();
   schema_stream.close();
 
-  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
 
   std::stringstream output;
@@ -452,7 +485,7 @@ TEST_F(RiskAnalysisTest, ReportUnusedParameters) {
 // NAND and NOR as a child cases.
 TEST_F(RiskAnalysisTest, ChildNandNorGates) {
   std::string tree_input = "./share/scram/input/fta/children_nand_nor.xml";
-  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   std::set<std::string> mcs_1;
   std::set<std::string> mcs_2;
@@ -470,7 +503,7 @@ TEST_F(RiskAnalysisTest, ChildNandNorGates) {
 // Simple test for several house event propagation.
 TEST_F(RiskAnalysisTest, ManyHouseEvents) {
   std::string tree_input = "./share/scram/input/fta/constant_propagation.xml";
-  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   std::set<std::string> mcs_1;
   mcs_1.insert("a");
@@ -482,7 +515,7 @@ TEST_F(RiskAnalysisTest, ManyHouseEvents) {
 // Simple test for several constant gate propagation.
 TEST_F(RiskAnalysisTest, ConstantGates) {
   std::string tree_input = "./share/scram/input/fta/constant_gates.xml";
-  ASSERT_NO_THROW(ran->ProcessInput(tree_input));
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   std::set<std::string> mcs_1;
   EXPECT_EQ(1, min_cut_sets().size());

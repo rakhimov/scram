@@ -1,6 +1,7 @@
 #ifndef SCRAM_TESTS_RISK_ANALYSIS_TESTS_H_
 #define SCRAM_TESTS_RISK_ANALYSIS_TESTS_H_
 
+#include "initializer.h"
 #include "risk_analysis.h"
 
 #include <map>
@@ -19,24 +20,37 @@ typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
 
 class RiskAnalysisTest : public ::testing::Test {
  protected:
-  virtual void SetUp() {
-    ran = new RiskAnalysis();
-  }
+  virtual void SetUp() {}
 
   virtual void TearDown() {
+    delete init;
     delete ran;
   }
 
+  // Parsing multiple input files.
+  void ProcessInputFiles(const std::vector<std::string>& input_files) {
+    init = new Initializer(settings);
+    init->ProcessInputFiles(input_files);
+    ran = new RiskAnalysis(init->model(), settings);
+  }
+
+  // Parsing an input file to get the model.
+  void ProcessInputFile(const std::string& input_file) {
+    std::vector<std::string> input_files;
+    input_files.push_back(input_file);
+    ProcessInputFiles(input_files);
+  }
+
   const boost::unordered_map<std::string, GatePtr>& gates() {
-    return ran->model_->gates();
+    return init->model()->gates();
   }
 
   const boost::unordered_map<std::string, HouseEventPtr>& house_events() {
-    return ran->model_->house_events();
+    return init->model()->house_events();
   }
 
   const boost::unordered_map<std::string, BasicEventPtr>& basic_events() {
-    return ran->model_->basic_events();
+    return init->model()->basic_events();
   }
 
   const std::set< std::set<std::string> >& min_cut_sets() {
@@ -94,6 +108,7 @@ class RiskAnalysisTest : public ::testing::Test {
 
   // Members
   RiskAnalysis* ran;
+  Initializer* init;
   Settings settings;
 };
 

@@ -11,26 +11,15 @@
 #include "event.h"
 #include "fault_tree.h"
 #include "grapher.h"
-#include "initializer.h"
 #include "logger.h"
 #include "random.h"
 #include "reporter.h"
 
 namespace scram {
 
-void RiskAnalysis::ProcessInput(std::string xml_file) {
-  std::vector<std::string> single;
-  single.push_back(xml_file);
-  RiskAnalysis::ProcessInputFiles(single);
-}
-
-void RiskAnalysis::ProcessInputFiles(
-    const std::vector<std::string>& xml_files) {
-  Initializer* init = new Initializer();
-  init->settings(settings_);
-  init->ProcessInputFiles(xml_files);
-  model_ = init->model();
-  delete init;
+RiskAnalysis::RiskAnalysis(const ModelPtr& model, const Settings& settings) {
+  model_ = model;
+  settings_ = settings;
 }
 
 void RiskAnalysis::GraphingInstructions() {

@@ -33,30 +33,19 @@ class Initializer {
  public:
   typedef boost::shared_ptr<Model> ModelPtr;
 
-  Initializer();
+  /// Prepares common information to be used by the future input file
+  /// constructs, for example, mission time.
+  /// @param[in] settings Analysis settings.
+  Initializer(const Settings& settings);
 
-  /// Reads one input file with the structure of analysis entities.
-  /// Initializes the analysis from the given input file.
-  /// Puts all events into their appropriate containers.
-  /// @param[in] xml_file The formatted XML input file.
-  /// @throws ValidationError if input contains errors.
-  /// @throws ValueError if input values are not valid.
-  /// @throws IOError if an input file is not accessible.
-  /// @deprecated Use multiple file processing method instead.
-  void ProcessInput(std::string xml_file);
-
-  /// Reads input files with the structure of analysis entities.
-  /// Initializes the analysis from the given input files.
-  /// Puts all events into their appropriate containers.
+  /// Reads input files with the structure of analysis constructs.
+  /// Initializes the analysis model from the given input files.
+  /// Puts all events into their appropriate containers in the model.
   /// @param[in] xml_files The formatted XML input files.
   /// @throws ValidationError if input contains errors.
   /// @throws ValueError if input values are not valid.
   /// @throws IOError if an input file is not accessible.
   void ProcessInputFiles(const std::vector<std::string>& xml_files);
-
-  /// Sets the settings member that manages analysis settings.
-  /// @param[in] settings Analysis settings.
-  inline void settings(const Settings& settings) { settings_ = settings; }
 
   /// @returns The model build from the input files.
   inline ModelPtr model() { return model_; }
@@ -269,26 +258,18 @@ class Initializer {
   /// is applied to analysis.
   void SetupForAnalysis();
 
+  ModelPtr model_;  ///< Analysis model with constructs.
+  Settings settings_;  ///< Settings for analysis.
+  boost::shared_ptr<MissionTime> mission_time_;  ///< Mission time expression.
+
+  /// Parsers with all documents saved for later access.
+  std::vector<boost::shared_ptr<XMLParser> > parsers_;
+
   /// Elements that are defined on the second pass.
   std::vector<std::pair<ElementPtr, const xmlpp::Element*> > tbd_elements_;
 
-  /// Container for defined expressions.
+  /// Container for defined expressions for later validation.
   std::vector<ExpressionPtr> expressions_;
-
-  /// A model from input files.
-  ModelPtr model_;
-
-  /// Collection of input file locations in canonical path.
-  std::set<std::string> input_path_;
-
-  /// Parsers with all documents saved for access.
-  std::vector<boost::shared_ptr<XMLParser> > parsers_;
-
-  /// Settings for analysis.
-  Settings settings_;
-
-  /// Mission time expression.
-  boost::shared_ptr<MissionTime> mission_time_;
 };
 
 }  // namespace scram
