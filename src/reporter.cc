@@ -323,7 +323,7 @@ void Reporter::ReportUncertainty(
   assert(!calc_times.empty());
   xmlpp::Element* calc_time = dynamic_cast<xmlpp::Element*>(calc_times.back());
   calc_time->add_child("uncertainty")->add_child_text(
-      Reporter::ToString(uncert_analysis->p_time_, 5));
+      Reporter::ToString(uncert_analysis->analysis_time(), 5));
 }
 
 xmlpp::Element* Reporter::ReportBasicEvent(const BasicEventPtr& basic_event,

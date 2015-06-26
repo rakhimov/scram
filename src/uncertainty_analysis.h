@@ -19,14 +19,11 @@ class UncertaintyAnalysisTest;
 
 namespace scram {
 
-class Reporter;
-
 /// @class UncertaintyAnalysis
 /// Uncertainty analysis and statistics for top event or gate probabilities
 /// from minimal cut sets and probability distributions of basic events.
 class UncertaintyAnalysis : private ProbabilityAnalysis {
-friend class ::UncertaintyAnalysisTest;
-friend class Reporter;
+  friend class ::UncertaintyAnalysisTest;
 
  public:
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
@@ -78,6 +75,9 @@ friend class Reporter;
     return ProbabilityAnalysis::warnings();
   }
 
+  /// @returns Analysis time spent on sampling and simulations.
+  inline double analysis_time() const { return analysis_time_; }
+
  private:
   /// Performs Monte Carlo Simulation by sampling the probability distributions
   /// and providing the final sampled values of the final probability.
@@ -97,7 +97,7 @@ friend class Reporter;
 
   int num_trials_;  ///< The number of trials to perform.
 
-  double p_time_;  ///< Time for probability calculations.
+  double analysis_time_;  ///< Time for uncertainty calculations and sampling.
 
   double mean_;  ///< The mean of the final distribution.
   double sigma_;  ///< The standard deviation of the final distribution.
