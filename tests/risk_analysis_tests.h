@@ -54,20 +54,21 @@ class RiskAnalysisTest : public ::testing::Test {
   }
 
   const std::set< std::set<std::string> >& min_cut_sets() {
-    assert(!ran->ftas_.empty());
-    assert(ran->ftas_.size() == 1);
-    return ran->ftas_.begin()->second->min_cut_sets();
+    assert(!ran->fault_tree_analyses().empty());
+    assert(ran->fault_tree_analyses().size() == 1);
+    return ran->fault_tree_analyses().begin()->second->min_cut_sets();
   }
 
   // Provides the number of minimal cut sets per order of sets.
   // The order starts from 0.
   std::vector<int> McsDistribution() {
-    assert(!ran->ftas_.empty());
-    assert(ran->ftas_.size() == 1);
-    std::vector<int> distr(ran->ftas_.begin()->second->max_order() + 1, 0);
+    assert(!ran->fault_tree_analyses().empty());
+    assert(ran->fault_tree_analyses().size() == 1);
+    std::vector<int> distr(
+        ran->fault_tree_analyses().begin()->second->max_order() + 1, 0);
     std::set< std::set<std::string> >::const_iterator it;
     const std::set< std::set<std::string> >* mcs =
-        &ran->ftas_.begin()->second->min_cut_sets();
+        &ran->fault_tree_analyses().begin()->second->min_cut_sets();
     for (it = mcs->begin(); it != mcs->end(); ++it) {
       int order = it->size();
       distr[order]++;
@@ -76,34 +77,35 @@ class RiskAnalysisTest : public ::testing::Test {
   }
 
   double p_total() {
-    assert(!ran->prob_analyses_.empty());
-    assert(ran->prob_analyses_.size() == 1);
-    return ran->prob_analyses_.begin()->second->p_total();
+    assert(!ran->probability_analyses().empty());
+    assert(ran->probability_analyses().size() == 1);
+    return ran->probability_analyses().begin()->second->p_total();
   }
 
   const std::map< std::set<std::string>, double >& prob_of_min_sets() {
-    assert(!ran->prob_analyses_.empty());
-    assert(ran->prob_analyses_.size() == 1);
-    return ran->prob_analyses_.begin()->second->prob_of_min_sets();
+    assert(!ran->probability_analyses().empty());
+    assert(ran->probability_analyses().size() == 1);
+    return ran->probability_analyses().begin()->second->prob_of_min_sets();
   }
 
   const std::vector<double>& importance(std::string id) {
-    assert(!ran->prob_analyses_.empty());
-    assert(ran->prob_analyses_.size() == 1);
-    return ran->prob_analyses_.begin()->second->importance().find(id)->second;
+    assert(!ran->probability_analyses().empty());
+    assert(ran->probability_analyses().size() == 1);
+    return ran->probability_analyses().begin()->second
+        ->importance().find(id)->second;
   }
 
   // Uncertainty analysis.
   double mean() {
-    assert(!ran->uncertainty_analyses_.empty());
-    assert(ran->uncertainty_analyses_.size() == 1);
-    return ran->uncertainty_analyses_.begin()->second->mean();
+    assert(!ran->uncertainty_analyses().empty());
+    assert(ran->uncertainty_analyses().size() == 1);
+    return ran->uncertainty_analyses().begin()->second->mean();
   }
 
   double sigma() {
-    assert(!ran->uncertainty_analyses_.empty());
-    assert(ran->uncertainty_analyses_.size() == 1);
-    return ran->uncertainty_analyses_.begin()->second->sigma();
+    assert(!ran->uncertainty_analyses().empty());
+    assert(ran->uncertainty_analyses().size() == 1);
+    return ran->uncertainty_analyses().begin()->second->sigma();
   }
 
   // Members

@@ -63,7 +63,7 @@ void RiskAnalysis::Analyze() {
                                                      settings_.limit_order_,
                                                      settings_.ccf_analysis_));
       fta->Analyze();
-      ftas_.insert(std::make_pair(name, fta));
+      fault_tree_analyses_.insert(std::make_pair(name, fta));
 
       if (settings_.probability_analysis_) {
         ProbabilityAnalysisPtr pa(
@@ -72,7 +72,7 @@ void RiskAnalysis::Analyze() {
                                     settings_.importance_analysis_));
         pa->UpdateDatabase(fta->mcs_basic_events());
         pa->Analyze(fta->min_cut_sets());
-        prob_analyses_.insert(std::make_pair(name, pa));
+        probability_analyses_.insert(std::make_pair(name, pa));
       }
 
       if (settings_.uncertainty_analysis_) {
@@ -127,16 +127,18 @@ void RiskAnalysis::Report(std::ostream& out) {
     rp.ReportUnusedParameters(unused_parameters, doc);
 
   std::map<std::string, FaultTreeAnalysisPtr>::iterator it;
-  for (it = ftas_.begin(); it != ftas_.end(); ++it) {
+  for (it = fault_tree_analyses_.begin(); it != fault_tree_analyses_.end();
+       ++it) {
     ProbabilityAnalysisPtr prob_analysis;  // Null pointer if no analysis.
     if (settings_.probability_analysis_) {
-      prob_analysis = prob_analyses_.find(it->first)->second;
+      prob_analysis = probability_analyses_.find(it->first)->second;
     }
-    rp.ReportFta(it->first, ftas_.find(it->first)->second, prob_analysis, doc);
+    rp.ReportFta(it->first, fault_tree_analyses_.find(it->first)->second,
+                 prob_analysis, doc);
 
     if (settings_.importance_analysis_) {
       rp.ReportImportance(it->first,
-                          prob_analyses_.find(it->first)->second, doc);
+                          probability_analyses_.find(it->first)->second, doc);
     }
 
     if (settings_.uncertainty_analysis_) {
