@@ -18,14 +18,11 @@ class PerformanceTest;
 
 namespace scram {
 
-class Reporter;
-
 /// @class FaultTreeAnalysis
 /// Fault tree analysis functionality.
 class FaultTreeAnalysis {
   friend class ::FaultTreeAnalysisTest;
   friend class ::PerformanceTest;
-  friend class Reporter;
 
  public:
   typedef boost::shared_ptr<Gate> GatePtr;
@@ -52,11 +49,12 @@ class FaultTreeAnalysis {
   void Analyze();
 
   /// @returns The top gate.
-  inline GatePtr& top_event() { return top_event_; }
+  inline const GatePtr& top_event() const { return top_event_; }
 
   /// @returns The container of intermediate events.
   /// @warning The tree must be validated and ready for analysis.
-  inline const boost::unordered_map<std::string, GatePtr>& inter_events() {
+  inline const boost::unordered_map<std::string, GatePtr>&
+      inter_events() const {
     return inter_events_;
   }
 
@@ -64,19 +62,19 @@ class FaultTreeAnalysis {
   ///          is requested, this container includes the basic events that
   ///          represent common cause failure.
   inline const boost::unordered_map<std::string, BasicEventPtr>&
-      basic_events() {
+      basic_events() const {
     return basic_events_;
   }
 
   /// @returns Basic events that are in some CCF groups.
   inline const boost::unordered_map<std::string, BasicEventPtr>&
-      ccf_events() {
+      ccf_events() const {
     return ccf_events_;
   }
 
   /// @returns The container of house events of this tree.
   inline const boost::unordered_map<std::string, HouseEventPtr>&
-      house_events() {
+      house_events() const {
     return house_events_;
   }
 
@@ -97,6 +95,9 @@ class FaultTreeAnalysis {
 
   /// @returns Warnings generated upon analysis.
   inline const std::string& warnings() const { return warnings_; }
+
+  /// @returns Analysis time spent on finding minimal cut sets.
+  inline double analysis_time() const { return analysis_time_; }
 
  private:
   typedef boost::shared_ptr<Event> EventPtr;

@@ -186,8 +186,8 @@ void Reporter::ReportFta(
   }
 
   std::set< std::set<std::string> >::const_iterator it_min;
-  for (it_min = fta->min_cut_sets_.begin(); it_min != fta->min_cut_sets_.end();
-       ++it_min) {
+  for (it_min = fta->min_cut_sets().begin();
+       it_min != fta->min_cut_sets().end(); ++it_min) {
     xmlpp::Element* product = sum_of_products->add_child("product");
     product->set_attribute("order",
                            ToString(it_min->size()));
@@ -231,7 +231,7 @@ void Reporter::ReportFta(
   xmlpp::Element* calc_time = performance->add_child("calculation-time");
   calc_time->set_attribute("name", ft_name);
   calc_time->add_child("minimal-cut-set")->add_child_text(
-      Reporter::ToString(fta->analysis_time_, 5));
+      Reporter::ToString(fta->analysis_time(), 5));
   if (prob_analysis) {
     calc_time->add_child("probability")->add_child_text(
       Reporter::ToString(prob_analysis->p_time_, 5));
