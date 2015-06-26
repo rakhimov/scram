@@ -24,10 +24,11 @@ TEST(RiskAnalysisInputTest, PassTheSameFileTwice) {
   std::string input_correct = "./share/scram/input/fta/correct_tree_input.xml";
   std::string the_same_path = "./share/.."
                               "/share/scram/input/fta/correct_tree_input.xml";
-  RiskAnalysis* ran;
-  ran = new RiskAnalysis();
-  EXPECT_NO_THROW(ran->ProcessInput(input_correct));
-  EXPECT_THROW(ran->ProcessInput(the_same_path), ValidationError);
+  std::vector<std::string> input_files;
+  input_files.push_back(input_correct);
+  input_files.push_back(the_same_path);
+  RiskAnalysis* ran = new RiskAnalysis();
+  EXPECT_THROW(ran->ProcessInputFiles(input_files), ValidationError);
   delete ran;
 }
 
@@ -36,8 +37,7 @@ TEST(RiskAnalysisInputTest, PassTheSameFileTwice) {
 // so the test is very basic calls.
 TEST(RiskAnalysisInputTest, FailSchemaValidation) {
   std::string input_incorrect = "./share/scram/input/schema_fail.xml";
-  RiskAnalysis* ran;
-  ran = new RiskAnalysis();
+  RiskAnalysis* ran = new RiskAnalysis();
   EXPECT_THROW(ran->ProcessInput(input_incorrect), ValidationError);
   delete ran;
 }

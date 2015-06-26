@@ -2,46 +2,48 @@
 Design Description
 ##################
 
-- Validator of XML configuration and input files using RelaxNG schema.
-  Validation against the schema is an integral part of the initialization.
-  Values that passed the validation against the schema are not re-checked by
-  users of those values.
+- XML Parser leverages external libraries to process XML files.
 
-- Loader of analysis configuration files.
+- Validator validates XML configuration and input files against the RelaxNG
+  schema. The validation against the schema is an integral part of the
+  initialization. Values that passed the validation against the schema are not
+  re-checked by users of those values.
 
-- Loader of input files.
+- Settings manages overall analysis settings per run.
+
+- Config manages program configurations and analysis settings from a
+  configuration file.
 
 - Containers: models, fault trees, event trees, components.
 
-- Constructs: anything that is stored in containers and can be input for
+- Constructs: anything that is stored in containers and can be an input for
   analysis. Note that some containers are constructs as well.
 
-- Initializer of the analysis that initializes a model with fault trees, event
-  trees, CCF, and other analysis containers and constructs. This initialization
-  phase validates the values and logic supplied from the input files. The
-  construction and analysis are initialized according to the configurations
-  supplied from the configuration file and command-line.
+- Initializer processes input files to construct a model with fault trees,
+  event trees, CCF, and other analysis containers and constructs. This
+  initialization phase validates the values and logic supplied from the input
+  files. The constructs and analysis are initialized according to the
+  configurations supplied from the configuration file and command-line.
 
-- Risk analyzer is the main object that operates with the initialized fault,
-  event trees, and other entities to provide the requested results. It runs
-  after the initialization phase. Risk Analyzer keeps track of all the events,
-  configurations, entities of analysis by having them in appropriate databases.
+- Risk Analyzer operates on the valid model with the initialized fault, event
+  trees, and other constructs to provide the requested results. It runs after
+  the initialization phase with the user-specified analysis settings.
 
-- Entity analyzers are analyzers of fault trees, event trees, CCF, uncertainty,
-  and other analysis kinds. These analyzers are used by the main Risk Analyzer
-  to produce final results. These analyzers may share functionalities
-  and be able to cooperate or be used by other analyzers.
+- Analyzers of fault trees, event trees, CCF, uncertainty, and other analysis
+  kinds. These analyzers are employed by the main Risk Analyzer to produce final
+  results. Common functionalities may be shared among these analyzers.
 
     * Fault Tree Analyzer operates on one fault tree with a single top event,
-      and may provide, primary events, intermediate events, and  minimal cut
-      sets as output or other information about the passed fault tree. This
+      and may provide primary events, intermediate events, and  minimal cut
+      sets as output, or other information about the passed fault tree. This
       fault tree analyzer uses many other helper facilities specifically
       designed to make the analysis efficient and fast.
 
-    * Probability calculator accepts cut sets to generate the total probability,
-      individual probabilities of cut sets, contributions, importances.
+    * Probability Calculator accepts cut sets and member basic events to
+      generate the total probability, individual probabilities of cut sets,
+      contributions, importances.
 
-    * Uncertainty Analyzer uses probability calculator facilities to sample
+    * Uncertainty Analyzer uses Probability Calculator facilities to sample
       basic event probabilities and calculate the total probability.
       Sampled results are processed to find statistical information, such as
       mean, confidence ranges, standard deviation, and distributions.

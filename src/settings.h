@@ -12,6 +12,7 @@ class RiskAnalysis;
 /// @class Settings
 /// Builder for analysis settings.
 class Settings {
+  friend class Initializer;
   friend class RiskAnalysis;
   friend class Reporter;
 
