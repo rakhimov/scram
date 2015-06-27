@@ -54,37 +54,52 @@ void FaultTree::AddComponent(const ComponentPtr& component) {
 }
 
 void FaultTree::Validate() {
+  boost::unordered_set<GatePtr> gates;
+  FaultTree::GatherGates(&gates);
   // Detects top events.
+  boost::unordered_set<GatePtr>::iterator it;
+  for (it = gates.begin(); it != gates.end(); ++it) {
+    FaultTree::MarkNonTopGates(*it, gates);
+  }
+  for (it = gates.begin(); it != gates.end(); ++it) {
+    if ((*it)->mark() != "non-top") top_events_.push_back(*it);
+    (*it)->mark("");
+  }
+}
+
+void FaultTree::GatherGates(boost::unordered_set<GatePtr>* gates) {
   boost::unordered_map<std::string, GatePtr>::iterator it;
   for (it = gates_.begin(); it != gates_.end(); ++it) {
-    FaultTree::MarkNonTopGates(it->second);
+    gates->insert(it->second);
   }
-  for (it = gates_.begin(); it != gates_.end(); ++it) {
-    if (it->second->mark() != "non-top") top_events_.push_back(it->second);
+  boost::unordered_map<std::string, ComponentPtr>::iterator it_comp;
+  for (it_comp = components_.begin(); it_comp != components_.end(); ++it_comp) {
+    it_comp->second->GatherGates(gates);
   }
 }
 
-void FaultTree::MarkNonTopGates(const GatePtr& gate) {
-  typedef boost::shared_ptr<Event> EventPtr;
+void FaultTree::MarkNonTopGates(const GatePtr& gate,
+                                const boost::unordered_set<GatePtr>& gates) {
   if (gate->mark() == "non-top") return;
-  FaultTree::MarkNonTopGates(gate->formula());
+  FaultTree::MarkNonTopGates(gate->formula(), gates);
 }
 
-void FaultTree::MarkNonTopGates(const FormulaPtr& formula) {
+void FaultTree::MarkNonTopGates(const FormulaPtr& formula,
+                                const boost::unordered_set<GatePtr>& gates) {
   typedef boost::shared_ptr<Event> EventPtr;
   std::map<std::string, EventPtr>::const_iterator it;
   const std::map<std::string, EventPtr>* children = &formula->event_args();
   for (it = children->begin(); it != children->end(); ++it) {
     GatePtr child_gate = boost::dynamic_pointer_cast<Gate>(it->second);
-    if (child_gate && gates_.count(child_gate->id())) {
-      FaultTree::MarkNonTopGates(child_gate);
+    if (child_gate && gates.count(child_gate)) {
+      FaultTree::MarkNonTopGates(child_gate, gates);
       child_gate->mark("non-top");
     }
   }
   const std::set<FormulaPtr>* formula_args = &formula->formula_args();
   std::set<FormulaPtr>::const_iterator it_f;
   for (it_f = formula_args->begin(); it_f != formula_args->end(); ++it_f) {
-    FaultTree::MarkNonTopGates(*it_f);
+    FaultTree::MarkNonTopGates(*it_f, gates);
   }
 }
 

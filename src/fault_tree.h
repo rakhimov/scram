@@ -9,6 +9,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/unordered_set.hpp>
 
 #include "element.h"
 #include "event.h"
@@ -94,17 +95,27 @@ class FaultTree : public Element {
     return components_;
   }
 
+ protected:
+  /// Recusively traverses components to gather gates relevant to
+  /// the whole fault tree.
+  /// @param[out] gates Gates belonging to this component and its subcomponents.
+  void GatherGates(boost::unordered_set<GatePtr>* gates);
+
  private:
   typedef boost::shared_ptr<Formula> FormulaPtr;
 
   /// Recursively marks descendant gates as "non-top". These gates belong
   /// to this fault tree only.
   /// @param[in] gate The ancestor gate.
-  void MarkNonTopGates(const GatePtr& gate);
+  /// @param[in] gates Gates belonging to the whole fault tree with components.
+  void MarkNonTopGates(const GatePtr& gate,
+                       const boost::unordered_set<GatePtr>& gates);
 
   /// Recursively marks descendant gates in formulas as "non-top"
   /// @param[in] formula The formula of a gate or another formula.
-  void MarkNonTopGates(const FormulaPtr& formula);
+  /// @param[in] gates Gates belonging to the whole fault tree with components.
+  void MarkNonTopGates(const FormulaPtr& formula,
+                       const boost::unordered_set<GatePtr>& gates);
 
   /// Holder for gates defined in this fault tree container.
   boost::unordered_map<std::string, GatePtr> gates_;
