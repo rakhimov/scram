@@ -290,7 +290,6 @@ void Initializer::RegisterGate(const xmlpp::Element* gate_node,
   Initializer::AttachLabelAndAttributes(gate_node, gate);
 
   ft->AddGate(gate);
-  gate->container(ft->name());
 }
 
 void Initializer::DefineGate(const xmlpp::Element* gate_node,

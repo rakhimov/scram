@@ -39,27 +39,15 @@ class Event : public Element {
   /// @param[in] id_with_caps The id name with capitalizations.
   void name(std::string id_with_caps) { name_ = id_with_caps; }
 
-  /// Sets the container this event is defined in.
-  /// @param[in] id_with_caps The id name with capitalizations.
-  void container(std::string container) { container_ = container; }
-
-  /// @returns The container this event belongs to.
-  const std::string& container() { return container_; }
-
-  /// @returns All the parent formulas where event is used.
-  /// @throws LogicError if there are no parents for this gate event.
-  const std::set<boost::shared_ptr<Formula> >& parents();
-
   /// Sets the orphanage state.
   inline void orphan(bool state) { orphan_ = state; }
 
   /// @returns True if this node is orphan.
-  inline bool orphan() { return orphan_; }
+  inline bool orphan() const { return orphan_; }
 
  private:
   std::string id_;  ///< Id name of a event. It is in lower case.
   std::string name_;  ///< Original name with capitalizations preserved.
-  std::string container_;  ///< The container this event belongs to.
   bool orphan_;  ///< Indication of an orphan node.
 };
 

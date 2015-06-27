@@ -68,7 +68,7 @@ void FaultTree::MarkNonTopGates(const FormulaPtr& formula) {
   const std::map<std::string, EventPtr>* children = &formula->event_args();
   for (it = children->begin(); it != children->end(); ++it) {
     GatePtr child_gate = boost::dynamic_pointer_cast<Gate>(it->second);
-    if (child_gate && child_gate->container() == name_) {
+    if (child_gate && gates_.count(child_gate->id())) {
       FaultTree::MarkNonTopGates(child_gate);
       child_gate->mark("non-top");
     }

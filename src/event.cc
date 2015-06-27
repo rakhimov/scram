@@ -12,8 +12,7 @@ namespace scram {
 Event::Event(std::string id, std::string name)
     : id_(id),
       name_(name),
-      orphan_(true),
-      container_("") {}
+      orphan_(true) {}
 
 Gate::Gate(std::string id)
     : Event(id),
