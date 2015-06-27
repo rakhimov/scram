@@ -183,6 +183,27 @@
         <choice>
           <ref name="CCF-group-definition"/>
           <ref name="event-definition"/>
+          <ref name="component-definition"/>
+          <ref name="parameter-definition"/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
+
+  <define name="component-definition">
+    <element name="define-component">
+      <attribute name="name"> <data type="NCName"/> </attribute>
+      <optional>
+        <ref name="label"/>
+      </optional>
+      <optional>
+        <ref name="attributes"/>
+      </optional>
+      <zeroOrMore>
+        <choice>
+          <ref name="CCF-group-definition"/>
+          <ref name="event-definition"/>
+          <ref name="component-definition"/>
           <ref name="parameter-definition"/>
         </choice>
       </zeroOrMore>
