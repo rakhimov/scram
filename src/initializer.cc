@@ -33,10 +33,10 @@ const std::map<std::string, Units> Initializer::units_ =
                                ("fit", kFit) ("demands", kDemands);
 
 const char* const Initializer::unit_to_string_[] = {"unitless", "bool", "int",
-                                                     "float", "hours",
-                                                     "hours-1", "years",
-                                                     "years-1", "fit",
-                                                     "demands"};
+                                                    "float", "hours",
+                                                    "hours-1", "years",
+                                                    "years-1", "fit",
+                                                    "demands"};
 
 Initializer::Initializer(const Settings& settings) {
   settings_ = settings;
@@ -44,8 +44,7 @@ Initializer::Initializer(const Settings& settings) {
   mission_time_->mission_time(settings_.mission_time_);
 }
 
-void Initializer::ProcessInputFiles(
-    const std::vector<std::string>& xml_files) {
+void Initializer::ProcessInputFiles(const std::vector<std::string>& xml_files) {
   CLOCK(input_time);
   LOG(DEBUG1) << "Processing input files";
   std::vector<std::string>::const_iterator it;
@@ -168,9 +167,8 @@ void Initializer::ProcessTbdElements() {
   }
 }
 
-void Initializer::AttachLabelAndAttributes(
-    const xmlpp::Element* element_node,
-    const ElementPtr& element) {
+void Initializer::AttachLabelAndAttributes(const xmlpp::Element* element_node,
+                                           const ElementPtr& element) {
   xmlpp::NodeSet labels = element_node->find("./*[name() = 'label']");
   if (!labels.empty()) {
     assert(labels.size() == 1);
@@ -268,7 +266,7 @@ void Initializer::ProcessModelData(const xmlpp::Element* model_data) {
 }
 
 void Initializer::RegisterGate(const xmlpp::Element* gate_node,
-                                const FaultTreePtr& ft) {
+                               const FaultTreePtr& ft) {
   std::string name = gate_node->get_attribute_value("name");
   boost::trim(name);
   std::string id = name;
@@ -293,7 +291,7 @@ void Initializer::RegisterGate(const xmlpp::Element* gate_node,
 }
 
 void Initializer::DefineGate(const xmlpp::Element* gate_node,
-                              const GatePtr& gate) {
+                             const GatePtr& gate) {
   xmlpp::NodeSet formulas =
       gate_node->find("./*[name() != 'attributes' and name() != 'label']");
   // Assumes that there are no attributes and labels.
@@ -342,7 +340,7 @@ boost::shared_ptr<Formula> Initializer::GetFormula(
 }
 
 void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
-                                  const FormulaPtr& formula) {
+                                 const FormulaPtr& formula) {
   xmlpp::NodeSet events = formula_node->find("./*[name() = 'event' or "
                                              "name() = 'gate' or "
                                              "name() = 'basic-event' or "
@@ -408,7 +406,7 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
 }
 
 void Initializer::ProcessFormulaEvent(const xmlpp::Element* event,
-                                       EventPtr& child) {
+                                      EventPtr& child) {
   std::string id = child->id();
   if (model_->basic_events().count(id)) {
     child = model_->basic_events().find(id)->second;
@@ -428,7 +426,7 @@ void Initializer::ProcessFormulaEvent(const xmlpp::Element* event,
 }
 
 void Initializer::ProcessFormulaBasicEvent(const xmlpp::Element* event,
-                                            EventPtr& child) {
+                                           EventPtr& child) {
   std::string id = child->id();
   std::string name = child->name();
   if (!model_->basic_events().count(id)) {
@@ -441,7 +439,7 @@ void Initializer::ProcessFormulaBasicEvent(const xmlpp::Element* event,
 }
 
 void Initializer::ProcessFormulaHouseEvent(const xmlpp::Element* event,
-                                            EventPtr& child) {
+                                           EventPtr& child) {
   std::string id = child->id();
   if (model_->house_events().count(id)) {
     child = model_->house_events().find(id)->second;
@@ -455,7 +453,7 @@ void Initializer::ProcessFormulaHouseEvent(const xmlpp::Element* event,
 }
 
 void Initializer::ProcessFormulaGate(const xmlpp::Element* event,
-                                      EventPtr& child) {
+                                     EventPtr& child) {
   std::string id = child->id();
   std::string name = child->name();
   if (!model_->gates().count(id)) {
@@ -487,7 +485,7 @@ void Initializer::RegisterBasicEvent(const xmlpp::Element* event_node) {
 }
 
 void Initializer::DefineBasicEvent(const xmlpp::Element* event_node,
-                                    const BasicEventPtr& basic_event) {
+                                   const BasicEventPtr& basic_event) {
   xmlpp::NodeSet expressions =
      event_node->find("./*[name() != 'attributes' and name() != 'label']");
 
@@ -558,7 +556,7 @@ void Initializer::RegisterParameter(const xmlpp::Element* param_node) {
 }
 
 void Initializer::DefineParameter(const xmlpp::Element* param_node,
-                                   const ParameterPtr& parameter) {
+                                  const ParameterPtr& parameter) {
   // Assuming that expression is the last child of the parameter definition.
   xmlpp::NodeSet expressions =
       param_node->find("./*[name() != 'attributes' and name() != 'label']");
@@ -588,7 +586,7 @@ boost::shared_ptr<Expression> Initializer::GetExpression(
 }
 
 bool Initializer::GetConstantExpression(const xmlpp::Element* expr_element,
-                                         ExpressionPtr& expression) {
+                                        ExpressionPtr& expression) {
   typedef boost::shared_ptr<ConstantExpression> ConstantExpressionPtr;
   assert(expr_element);
   std::string expr_name = expr_element->get_name();
@@ -610,7 +608,7 @@ bool Initializer::GetConstantExpression(const xmlpp::Element* expr_element,
 }
 
 bool Initializer::GetParameterExpression(const xmlpp::Element* expr_element,
-                                          ExpressionPtr& expression) {
+                                         ExpressionPtr& expression) {
   assert(expr_element);
   std::string expr_name = expr_element->get_name();
   std::string param_unit = "";  // The expected unit.
@@ -651,7 +649,7 @@ bool Initializer::GetParameterExpression(const xmlpp::Element* expr_element,
 }
 
 bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
-                                        ExpressionPtr& expression) {
+                                       ExpressionPtr& expression) {
   assert(expr_element);
   std::string expr_name = expr_element->get_name();
   xmlpp::NodeSet args = expr_element->find("./*");
@@ -856,7 +854,7 @@ void Initializer::RegisterCcfGroup(const xmlpp::Element* ccf_node) {
 }
 
 void Initializer::DefineCcfGroup(const xmlpp::Element* ccf_node,
-                                  const CcfGroupPtr& ccf_group) {
+                                 const CcfGroupPtr& ccf_group) {
   xmlpp::NodeSet children = ccf_node->find("./*");
   xmlpp::NodeSet::iterator it;
   for (it = children.begin(); it != children.end(); ++it) {
@@ -882,7 +880,7 @@ void Initializer::DefineCcfGroup(const xmlpp::Element* ccf_node,
 }
 
 void Initializer::ProcessCcfMembers(const xmlpp::Element* members_node,
-                                     const CcfGroupPtr& ccf_group) {
+                                    const CcfGroupPtr& ccf_group) {
   xmlpp::NodeSet children = members_node->find("./*");
   assert(!children.empty());
   std::set<std::string> member_ids;
@@ -920,7 +918,7 @@ void Initializer::ProcessCcfMembers(const xmlpp::Element* members_node,
 }
 
 void Initializer::ProcessCcfFactors(const xmlpp::Element* factors_node,
-                                     const CcfGroupPtr& ccf_group) {
+                                    const CcfGroupPtr& ccf_group) {
   xmlpp::NodeSet children = factors_node->find("./*");
   assert(!children.empty());
   // To keep track of CCF group factor levels.
@@ -934,7 +932,7 @@ void Initializer::ProcessCcfFactors(const xmlpp::Element* factors_node,
 }
 
 void Initializer::DefineCcfFactor(const xmlpp::Element* factor_node,
-                                   const CcfGroupPtr& ccf_group) {
+                                  const CcfGroupPtr& ccf_group) {
   // Checking the level for one factor input.
   std::string level = factor_node->get_attribute_value("level");
   boost::trim(level);
