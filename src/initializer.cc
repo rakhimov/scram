@@ -195,8 +195,11 @@ void Initializer::AttachLabelAndAttributes(
           dynamic_cast<const xmlpp::Element*>(*it);
       Attribute attr;
       attr.name = attribute->get_attribute_value("name");
+      boost::trim(attr.name);
       attr.value = attribute->get_attribute_value("value");
+      boost::trim(attr.value);
       attr.type = attribute->get_attribute_value("type");
+      boost::trim(attr.type);
       element->AddAttribute(attr);
     }
   }
@@ -204,6 +207,7 @@ void Initializer::AttachLabelAndAttributes(
 
 void Initializer::DefineFaultTree(const xmlpp::Element* ft_node) {
   std::string name = ft_node->get_attribute_value("name");
+  boost::trim(name);
   assert(!name.empty());
   FaultTreePtr fault_tree = FaultTreePtr(new FaultTree(name));
   try {
