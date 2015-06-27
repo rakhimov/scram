@@ -9,23 +9,11 @@
 
 namespace scram {
 
-Event::Event(std::string id, std::string name) : id_(id), name_(name) {}
-
-void Event::AddParent(const boost::shared_ptr<Formula>& parent) {
-  if (parents_.count(parent)) {
-    std::string msg = "Trying to re-insert existing parent for " + this->name();
-    throw LogicError(msg);
-  }
-  parents_.insert(parent);
-}
-
-const std::set<boost::shared_ptr<Formula> >& Event::parents() {
-  if (parents_.empty()) {
-    std::string msg = this->name() + " does not have parents.";
-    throw LogicError(msg);
-  }
-  return parents_;
-}
+Event::Event(std::string id, std::string name)
+    : id_(id),
+      name_(name),
+      orphan_(true),
+      container_("") {}
 
 Gate::Gate(std::string id)
     : Event(id),

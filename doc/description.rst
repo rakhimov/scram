@@ -26,9 +26,9 @@ Fault Tree Analysis
 
 #. Validate XML input files against RelaxNG.
 #. Validate the input analysis specifications and instantiations.
-#. Output a graphing dot file. *No probability definition required*
+#. Output a graphing dot file per fault tree. *Probability input is optional*
 #. Instantiate the analysis. Create the trees for the analysis.
-#. Find minimal cut sets. *No probability definition required*
+#. Find minimal cut sets. *Probability input is optional*
 
    - May specify maximum order for cut sets for faster calculations.
 

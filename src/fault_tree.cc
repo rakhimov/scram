@@ -6,123 +6,77 @@
 
 #include <boost/pointer_cast.hpp>
 
+#include "ccf_group.h"
 #include "cycle.h"
 #include "error.h"
 
 namespace scram {
 
-FaultTree::FaultTree(std::string name) : name_(name), num_basic_events_(0) {}
+FaultTree::FaultTree(std::string name) : name_(name) {}
 
 void FaultTree::AddGate(const GatePtr& gate) {
   if (gates_.count(gate->id())) {
-    throw ValidationError("Trying to redefine gate " + gate->name() + ".");
+    throw ValidationError("Trying to re-add gate " + gate->name() + ".");
   }
   gates_.insert(std::make_pair(gate->id(), gate));
 }
 
+void FaultTree::AddBasicEvent(const BasicEventPtr& basic_event) {
+  if (basic_events_.count(basic_event->id())) {
+    throw ValidationError("Trying to re-add basic event " +
+                          basic_event->name() + ".");
+  }
+  basic_events_.insert(std::make_pair(basic_event->id(), basic_event));
+}
+
+void FaultTree::AddHouseEvent(const HouseEventPtr& house_event) {
+  if (house_events_.count(house_event->id())) {
+    throw ValidationError("Trying to re-add house event " +
+                          house_event->name() + ".");
+  }
+  house_events_.insert(std::make_pair(house_event->id(), house_event));
+}
+
+void FaultTree::AddCcfGroup(const CcfGroupPtr& ccf_group) {
+  if (ccf_groups_.count(ccf_group->name())) {
+    throw ValidationError("Trying to re-add ccf group " +
+                          ccf_group->name() + ".");
+  }
+  ccf_groups_.insert(std::make_pair(ccf_group->name(), ccf_group));
+}
+
 void FaultTree::Validate() {
-  // Detects the top event. Currently only one top event is allowed.
-  /// @todo Add support for multiple top events.
+  // Detects top events.
   boost::unordered_map<std::string, GatePtr>::iterator it;
   for (it = gates_.begin(); it != gates_.end(); ++it) {
-    if (it->second->IsOrphan()) {
-      if (top_event_) {
-        throw ValidationError("Multiple top events are detected: " +
-                              top_event_->name() + " and " +
-                              it->second->name() + " in " + name_ +
-                              " fault tree.");
-      }
-      top_event_ = it->second;
-    }
+    FaultTree::MarkNonTopGates(it->second);
+  }
+  for (it = gates_.begin(); it != gates_.end(); ++it) {
+    if (it->second->mark() != "non-top") top_events_.push_back(it->second);
   }
 }
 
-void FaultTree::SetupForAnalysis() {
-  // Assumes that the tree is fully developed and validated.
-  primary_events_.clear();
-  basic_events_.clear();
-  ccf_events_.clear();
-  house_events_.clear();
-  inter_events_.clear();
-
-  FaultTree::GatherInterEvents(top_event_);
-  FaultTree::GatherPrimaryEvents();
-  // Recording number of original basic events before putting new CCF events.
-  num_basic_events_ = basic_events_.size();
-  // Gather CCF generated basic events.
-  FaultTree::GatherCcfBasicEvents();
+void FaultTree::MarkNonTopGates(const GatePtr& gate) {
+  typedef boost::shared_ptr<Event> EventPtr;
+  if (gate->mark() == "non-top") return;
+  FaultTree::MarkNonTopGates(gate->formula());
 }
 
-void FaultTree::GatherInterEvents(const GatePtr& gate) {
-  if (gate->mark() == "visited") return;
-  gate->mark("visited");
-  const std::map<std::string, EventPtr>* children =
-      &gate->formula()->event_args();
+void FaultTree::MarkNonTopGates(const FormulaPtr& formula) {
+  typedef boost::shared_ptr<Event> EventPtr;
   std::map<std::string, EventPtr>::const_iterator it;
+  const std::map<std::string, EventPtr>* children = &formula->event_args();
   for (it = children->begin(); it != children->end(); ++it) {
     GatePtr child_gate = boost::dynamic_pointer_cast<Gate>(it->second);
-    if (child_gate) {
-      inter_events_.insert(std::make_pair(child_gate->id(), child_gate));
-      FaultTree::GatherInterEvents(child_gate);
+    if (child_gate && child_gate->container() == name_) {
+      FaultTree::MarkNonTopGates(child_gate);
+      child_gate->mark("non-top");
     }
   }
-}
-
-void FaultTree::GatherPrimaryEvents() {
-  FaultTree::GetPrimaryEvents(top_event_);
-
-  boost::unordered_map<std::string, GatePtr>::iterator it;
-  for (it = inter_events_.begin(); it != inter_events_.end(); ++it) {
-    it->second->mark("");
-    FaultTree::GetPrimaryEvents(it->second);
-  }
-}
-
-void FaultTree::GetPrimaryEvents(const GatePtr& gate) {
-  const std::map<std::string, EventPtr>* children =
-      &gate->formula()->event_args();
-  std::map<std::string, EventPtr>::const_iterator it;
-  for (it = children->begin(); it != children->end(); ++it) {
-    if (!inter_events_.count(it->first)) {
-      PrimaryEventPtr primary_event =
-          boost::dynamic_pointer_cast<PrimaryEvent>(it->second);
-
-      if (primary_event == 0) {  // The tree must be fully defined.
-        throw LogicError("Node with id '" + it->second->name() +
-                         "' was not defined in '" + name_+ "' tree");
-      }
-
-      primary_events_.insert(std::make_pair(it->first, primary_event));
-      BasicEventPtr basic_event =
-          boost::dynamic_pointer_cast<BasicEvent>(primary_event);
-      if (basic_event) {
-        basic_events_.insert(std::make_pair(it->first, basic_event));
-        if (basic_event->HasCcf())
-          ccf_events_.insert(std::make_pair(it->first, basic_event));
-      } else {
-        HouseEventPtr house_event =
-            boost::dynamic_pointer_cast<HouseEvent>(primary_event);
-        assert(house_event);
-        house_events_.insert(std::make_pair(it->first, house_event));
-      }
-    }
-  }
-}
-
-void FaultTree::GatherCcfBasicEvents() {
-  boost::unordered_map<std::string, BasicEventPtr>::iterator it_b;
-  for (it_b = ccf_events_.begin(); it_b != ccf_events_.end(); ++it_b) {
-    assert(it_b->second->HasCcf());
-    const std::map<std::string, EventPtr>* children =
-        &it_b->second->ccf_gate()->formula()->event_args();
-    std::map<std::string, EventPtr>::const_iterator it;
-    for (it = children->begin(); it != children->end(); ++it) {
-      BasicEventPtr basic_event =
-          boost::dynamic_pointer_cast<BasicEvent>(it->second);
-      assert(basic_event);
-      basic_events_.insert(std::make_pair(basic_event->id(), basic_event));
-      primary_events_.insert(std::make_pair(basic_event->id(), basic_event));
-    }
+  const std::set<FormulaPtr>* formula_args = &formula->formula_args();
+  std::set<FormulaPtr>::const_iterator it_f;
+  for (it_f = formula_args->begin(); it_f != formula_args->end(); ++it_f) {
+    FaultTree::MarkNonTopGates(*it_f);
   }
 }
 

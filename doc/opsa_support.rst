@@ -68,7 +68,7 @@ to identify the supported and unsupported features.
 
     * Gates
 
-        + Non-nested formulae
+        + Nested formulae
 
 - Model data
 - Common Cause Failure Groups
@@ -101,6 +101,7 @@ Deviations from OpenPSA MEF
 - Redefinition of events is considered an error instead of warning.
 - Common cause model levels for factors are required and must be strictly
   sequential in ascending order.
+- Attributes are not inherited.
 
 
 OpenPSA MEF Converters

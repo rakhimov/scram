@@ -10,7 +10,7 @@ these external graphing tools.
 SCRAM Fault Tree Graphing Specifics
 ===================================
 
-#. Should be called after tree initiation steps.
+#. Called after tree initiation steps.
 #. May operate without probability information.
 #. Gate repetition is graphed with a transfer symbol.
 #. Tries to make the tree look compact.
@@ -42,6 +42,10 @@ Currently Supported Graphing Tools
 - `Graphviz DOT`_ (*Prefer SVG output for complex trees*)
 
 .. _`Graphviz DOT`: http://www.graphviz.org
+
+
+.. note::
+    One file per top event is produced with the fault tree and top event names.
 
 
 Example Fault Tree Images

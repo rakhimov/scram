@@ -80,6 +80,10 @@ class Logger {
   }
 
  private:
+  /// Translates the logging level into a string. The index is the value
+  /// of the enum.
+  static const char* const level_to_string_[];
+
   /// Restrict copy construction.
   Logger(const Logger&);
   /// Restrict copy assignment.
@@ -87,9 +91,6 @@ class Logger {
 
   std::ostringstream os_;  ///< Main stringstream to gather the logs.
   static LogLevel report_level_;  ///< Cut-off log level for reporting.
-  /// Translates the logging level into a string. The index is the value
-  /// of the enum.
-  static const char* level_to_string_[];
 };
 
 }  // namespace scram

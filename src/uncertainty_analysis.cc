@@ -21,7 +21,7 @@ UncertaintyAnalysis::UncertaintyAnalysis(int num_sums, double cut_off,
     : ProbabilityAnalysis::ProbabilityAnalysis("no", num_sums, cut_off),
       mean_(-1),
       sigma_(-1),
-      p_time_(-1) {
+      analysis_time_(-1) {
   if (num_trials < 1) {
     std::string msg = "The number of trials for uncertainty analysis cannot"
                       " be fewer than 1.";
@@ -61,7 +61,7 @@ void UncertaintyAnalysis::Analyze(
     }
   }
 
-  CLOCK(p_time);
+  CLOCK(analysis_time);
   // Maximum number of sums in the series.
   if (num_sums_ > iset.size()) num_sums_ = iset.size();
   // Generate the equation.
@@ -72,7 +72,7 @@ void UncertaintyAnalysis::Analyze(
   // Perform statistical analysis.
   UncertaintyAnalysis::CalculateStatistics();
 
-  p_time_ = DUR(p_time);
+  analysis_time_ = DUR(analysis_time);
 }
 
 void UncertaintyAnalysis::Sample() {

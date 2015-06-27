@@ -1,6 +1,6 @@
 /// @file indexed_fault_tree.h
 /// A fault tree analysis facility with event and gate indices instead
-/// of id names.
+/// of id names. This facility is designed to work with FaultTreeAnalysis class.
 #ifndef SCRAM_SRC_INDEXED_FAULT_TREE_H_
 #define SCRAM_SRC_INDEXED_FAULT_TREE_H_
 
@@ -107,6 +107,7 @@ class SimpleGate {
 };
 
 class Gate;
+class Formula;
 class IndexedGate;
 
 /// @class IndexedFaultTree
@@ -124,7 +125,9 @@ class IndexedFaultTree {
   IndexedFaultTree(int top_event_id, int limit_order);
 
   /// Creates indexed gates with basic and house event indices as children.
-  /// This function also simplifies the tree to simple gates.
+  /// It is assumed that indices are sequential starting from 1.
+  /// This function also simplifies the tree to simple gates with flattened
+  /// formulas.
   /// @param[in] int_to_inter Container of gates and their indices including
   ///                         the top gate.
   /// @param[in] ccf_basic_to_gates CCF basic events that are converted to
@@ -160,6 +163,19 @@ class IndexedFaultTree {
  private:
   typedef boost::shared_ptr<SimpleGate> SimpleGatePtr;
   typedef boost::shared_ptr<IndexedGate> IndexedGatePtr;
+  typedef boost::shared_ptr<Formula> FormulaPtr;
+
+  /// Processes a formula into a new indexed gates.
+  /// @param[in] index The index to be assigned to the new indexed gate.
+  /// @param[in] formula The formula to be converted into a gate.
+  /// @param[in] ccf_basic_to_gates CCF basic events that are converted to
+  ///                               gates.
+  /// @param[in] all_to_int Container of all events in this tree to index
+  ///                       children of the gates.
+  void ProcessFormula(int index,
+                      const FormulaPtr& formula,
+                      const std::map<std::string, int>& ccf_basic_to_gates,
+                      const boost::unordered_map<std::string, int>& all_to_int);
 
   /// Starts unrolling gates to simplify gates to OR, AND gates.
   /// NOT and NUll are dealt with specifically.

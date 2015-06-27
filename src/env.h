@@ -12,16 +12,16 @@ namespace scram {
 class Env {
  public:
   /// @returns the location of the RelaxNG schema for configuration files.
-  static const std::string config_schema();
+  static std::string config_schema();
 
   /// @returns the location of the RelaxNG schema for input files.
-  static const std::string input_schema();
+  static std::string input_schema();
 
   /// @returns the location of the RelaxNG schema for output report files.
-  static const std::string report_schema();
+  static std::string report_schema();
 
  private:
-  static std::string instdir_;  ///< Installation directory.
+  static const std::string instdir_;  ///< Installation directory.
 };
 
 }  // namespace scram

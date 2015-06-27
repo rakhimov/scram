@@ -19,14 +19,11 @@ class UncertaintyAnalysisTest;
 
 namespace scram {
 
-class Reporter;
-
 /// @class UncertaintyAnalysis
 /// Uncertainty analysis and statistics for top event or gate probabilities
 /// from minimal cut sets and probability distributions of basic events.
 class UncertaintyAnalysis : private ProbabilityAnalysis {
-friend class ::UncertaintyAnalysisTest;
-friend class Reporter;
+  friend class ::UncertaintyAnalysisTest;
 
  public:
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
@@ -39,19 +36,22 @@ friend class Reporter;
   explicit UncertaintyAnalysis(int num_sums = 7, double cut_off = 1e-8,
                                int num_trials = 1e3);
 
-  /// Set the databases of primary events with probabilities.
-  /// Resets the main primary events database and clears the
+  /// Sets the databases of basic events with probabilities.
+  /// Resets the main basic event database and clears the
   /// previous information. This information is the main source for
-  /// calculations.
-  /// Updates internal indexes for events.
-  /// @param[in] basic_events The database of basic event in cut sets.
-  void UpdateDatabase(const boost::unordered_map<std::string, BasicEventPtr>&
-                      basic_events);
+  /// calculations and internal indexes for basic events.
+  /// @param[in] basic_events The database of basic events in cut sets.
+  /// @note  If not enough information is provided, the analysis behavior
+  ///        is undefined.
+  void UpdateDatabase(
+      const boost::unordered_map<std::string, BasicEventPtr>& basic_events);
 
-  /// Performs quantitative analysis on minimal cut sets containing primary
-  /// events provided in the databases.
+  /// Performs quantitative analysis on minimal cut sets containing basic
+  /// events provided in the databases. It is assumed that the analysis is
+  /// called only once.
   /// @param[in] min_cut_sets Minimal cut sets with string ids of events.
   ///                         Negative event is indicated by "'not' + id"
+  /// @note  Undefined behavior if analysis called two or more times.
   void Analyze(const std::set< std::set<std::string> >& min_cut_sets);
 
   /// @returns Mean of the final distribution.
@@ -75,6 +75,9 @@ friend class Reporter;
     return ProbabilityAnalysis::warnings();
   }
 
+  /// @returns Analysis time spent on sampling and simulations.
+  inline double analysis_time() const { return analysis_time_; }
+
  private:
   /// Performs Monte Carlo Simulation by sampling the probability distributions
   /// and providing the final sampled values of the final probability.
@@ -94,7 +97,7 @@ friend class Reporter;
 
   int num_trials_;  ///< The number of trials to perform.
 
-  double p_time_;  ///< Time for probability calculations.
+  double analysis_time_;  ///< Time for uncertainty calculations and sampling.
 
   double mean_;  ///< The mean of the final distribution.
   double sigma_;  ///< The standard deviation of the final distribution.

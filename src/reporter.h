@@ -13,44 +13,48 @@
 
 namespace scram {
 
+class Model;
+class Settings;
+class Parameter;
+class PrimaryEvent;
+class BasicEvent;
 class RiskAnalysis;
 class FaultTreeAnalysis;
 class ProbabilityAnalysis;
 class UncertaintyAnalysis;
-class PrimaryEvent;
-class BasicEvent;
-class Parameter;
-class Settings;
 
 /// @class Reporter
 /// This class reports the findings of the analyses.
 class Reporter {
  public:
+  typedef boost::shared_ptr<Model> ModelPtr;
+  typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
+  typedef boost::shared_ptr<Parameter> ParameterPtr;
+
   /// Sets up XML report document according to a specific standards.
   /// This function populates information about the software, settings,
   /// time, methods, and model. In addition, the function forms the
   /// structure of the overall report for use by other reporting functions.
   /// This function must be called before other reporting functions.
-  /// @param[in] risk_an The main risk analysis with all the model data.
+  /// @param[in] model The main model container.
   /// @param[in] settings Configured settings for analysis.
   /// @param[in,out] doc An empty document.
   /// @throws LogicError if the document is not empty.
-  void SetupReport(const RiskAnalysis* risk_an, const Settings& settings,
+  void SetupReport(const ModelPtr& model, const Settings& settings,
                    xmlpp::Document* doc);
 
   /// Reports orphan primary events as warnings of the top information level.
   /// @param[in] orphan_primary_events Container of orphan events.
   /// @param[in,out] doc Pre-formatted XML document.
   void ReportOrphanPrimaryEvents(
-      const std::set<boost::shared_ptr<PrimaryEvent> >& orphan_primary_events,
+      const std::set<PrimaryEventPtr>& orphan_primary_events,
       xmlpp::Document* doc);
 
   /// Reports unused parameters as warnings of the top information level.
   /// @param[in] unused_paramters Container of unused parameters.
   /// @param[in,out] doc Pre-formatted XML document.
-  void ReportUnusedParameters(
-      const std::set<boost::shared_ptr<Parameter> >& unused_parameters,
-      xmlpp::Document* doc);
+  void ReportUnusedParameters(const std::set<ParameterPtr>& unused_parameters,
+                              xmlpp::Document* doc);
 
   /// Reports the results of analysis to a specified output destination.
   /// @param[in] ft_name The original name of a fault tree.
@@ -86,19 +90,30 @@ class Reporter {
       xmlpp::Document* doc);
 
  private:
+  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+
   /// Detects if a given basic event is a CCF event, and reports it
   /// with a specific formatting.
   /// @param[in] basic_event A basic event to be reported.
   /// @param[in,out] parent A parent element node to have this basic event.
   /// @returns A newly created element node with the event description.
-  xmlpp::Element* ReportBasicEvent(
-      const boost::shared_ptr<BasicEvent>& basic_event,
-      xmlpp::Element* parent);
+  xmlpp::Element* ReportBasicEvent(const BasicEventPtr& basic_event,
+                                   xmlpp::Element* parent);
 
-  /// A helper function to convert a number to a string.
+  /// A generic function to convert numbers to string.
+  /// @param[in] num The number to be converted.
+  /// @returns Formatted string that represents the number.
+  template<class T>
+  inline std::string ToString(T num) {
+    std::stringstream ss;
+    ss << num;
+    return ss.str();
+  }
+
+  /// A helper function to convert a floating point number to string.
   /// @param[in] num The number to be converted.
   /// @param[in] precision Decimal precision for reporting.
-  /// @returns Formatted string that represents the number.
+  /// @returns Formatted string that represents the floating point number.
   inline std::string ToString(double num, int precision) {
     std::stringstream ss;
     ss << std::setprecision(precision) << num;

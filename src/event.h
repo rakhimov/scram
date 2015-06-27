@@ -39,24 +39,28 @@ class Event : public Element {
   /// @param[in] id_with_caps The id name with capitalizations.
   void name(std::string id_with_caps) { name_ = id_with_caps; }
 
-  /// Adds a parent formula that uses this event.
-  /// @param[in] parent Formula where event is used.
-  /// @throws LogicError if the parent is being re-inserted.
-  void AddParent(const boost::shared_ptr<Formula>& parent);
+  /// Sets the container this event is defined in.
+  /// @param[in] id_with_caps The id name with capitalizations.
+  void container(std::string container) { container_ = container; }
+
+  /// @returns The container this event belongs to.
+  const std::string& container() { return container_; }
 
   /// @returns All the parent formulas where event is used.
   /// @throws LogicError if there are no parents for this gate event.
   const std::set<boost::shared_ptr<Formula> >& parents();
 
-  /// @returns True if this event is orphan.
-  inline bool IsOrphan() { return parents_.empty(); }
+  /// Sets the orphanage state.
+  inline void orphan(bool state) { orphan_ = state; }
+
+  /// @returns True if this node is orphan.
+  inline bool orphan() { return orphan_; }
 
  private:
   std::string id_;  ///< Id name of a event. It is in lower case.
   std::string name_;  ///< Original name with capitalizations preserved.
-  /// @todo This is a circular reference in shared pointers. Memory leak.
-  ///< The parents of this event.
-  std::set<boost::shared_ptr<Formula> > parents_;
+  std::string container_;  ///< The container this event belongs to.
+  bool orphan_;  ///< Indication of an orphan node.
 };
 
 /// @class Gate
