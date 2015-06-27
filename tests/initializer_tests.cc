@@ -77,6 +77,7 @@ TEST(InitializerTest, CorrectFTAInputs) {
   std::string dir = "./share/scram/input/fta/";
   correct_inputs.push_back(dir + "correct_tree_input.xml");
   correct_inputs.push_back(dir + "correct_formulas.xml");
+  correct_inputs.push_back(dir + "component_definition.xml");
   correct_inputs.push_back(dir + "mixed_definitions.xml");
   correct_inputs.push_back(dir + "model_data_mixed_definitions.xml");
   correct_inputs.push_back(dir + "two_trees.xml");
@@ -134,6 +135,7 @@ TEST(InitializerTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back(dir + "doubly_defined_basic.xml");
   incorrect_inputs.push_back(dir + "doubly_defined_parameter.xml");
   incorrect_inputs.push_back(dir + "doubly_defined_ccf_group.xml");
+  incorrect_inputs.push_back(dir + "doubly_defined_component.xml");
   incorrect_inputs.push_back(dir + "extra_ccf_level_beta_factor.xml");
   incorrect_inputs.push_back(dir + "missing_gate_definition.xml");
   incorrect_inputs.push_back(dir + "missing_ccf_level_number.xml");

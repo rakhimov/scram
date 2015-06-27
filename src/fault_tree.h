@@ -16,6 +16,7 @@
 namespace scram {
 
 class CcfGroup;
+class Component;
 
 /// @class FaultTree
 /// Fault tree representation as a container of gates, basic and house events,
@@ -26,6 +27,7 @@ class FaultTree : public Element {
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
   typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
   typedef boost::shared_ptr<CcfGroup> CcfGroupPtr;
+  typedef boost::shared_ptr<Component> ComponentPtr;
 
   /// The main constructor of the Fault Tree.
   /// @param[in] name The name identificator of this fault tree.
@@ -50,6 +52,11 @@ class FaultTree : public Element {
   /// @param[in] ccf_group The ccf group to be added to this container.
   /// @throws ValidationError for re-added ccf groups.
   void AddCcfGroup(const CcfGroupPtr& ccf_group);
+
+  /// Adds a component container into this fault tree containter.
+  /// @param[in] component The ccf group to be added to this container.
+  /// @throws ValidationError for re-added components.
+  void AddComponent(const ComponentPtr& component);
 
   /// Validates this fault tree's structure and events.
   /// This step must be called before any other function that requests member
@@ -81,6 +88,12 @@ class FaultTree : public Element {
     return ccf_groups_;
   }
 
+  /// @returns Components in this fault tree container.
+  inline const boost::unordered_map<std::string, ComponentPtr>&
+      components() {
+    return components_;
+  }
+
  private:
   typedef boost::shared_ptr<Formula> FormulaPtr;
 
@@ -107,6 +120,17 @@ class FaultTree : public Element {
 
   /// Container for CCF groups.
   boost::unordered_map<std::string, CcfGroupPtr> ccf_groups_;
+
+  /// Container for components defined in this fault tree.
+  boost::unordered_map<std::string, ComponentPtr> components_;
+};
+
+/// @class Component
+/// Component is for logical grouping of events, gates, and other components.
+class Component : public FaultTree {
+ public:
+  /// @param[in] name The name identificator for the component.
+  explicit Component(std::string name);
 };
 
 }  // namespace scram

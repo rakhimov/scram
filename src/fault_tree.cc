@@ -45,6 +45,14 @@ void FaultTree::AddCcfGroup(const CcfGroupPtr& ccf_group) {
   ccf_groups_.insert(std::make_pair(ccf_group->name(), ccf_group));
 }
 
+void FaultTree::AddComponent(const ComponentPtr& component) {
+  if (components_.count(component->name())) {
+    throw ValidationError("Component " +
+                          component->name() + " already exists at this level.");
+  }
+  components_.insert(std::make_pair(component->name(), component));
+}
+
 void FaultTree::Validate() {
   // Detects top events.
   boost::unordered_map<std::string, GatePtr>::iterator it;
@@ -79,5 +87,7 @@ void FaultTree::MarkNonTopGates(const FormulaPtr& formula) {
     FaultTree::MarkNonTopGates(*it_f);
   }
 }
+
+Component::Component(std::string name) : FaultTree::FaultTree(name) {}
 
 }  // namespace scram

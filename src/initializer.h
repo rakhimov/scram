@@ -19,6 +19,7 @@ namespace scram {
 
 class Element;
 class FaultTree;
+class Component;
 class CcfGroup;
 class Expression;
 class Formula;
@@ -58,8 +59,9 @@ class Initializer {
   typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
   typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
-  typedef boost::shared_ptr<FaultTree> FaultTreePtr;
   typedef boost::shared_ptr<CcfGroup> CcfGroupPtr;
+  typedef boost::shared_ptr<FaultTree> FaultTreePtr;
+  typedef boost::shared_ptr<Component> ComponentPtr;
   typedef boost::shared_ptr<Expression> ExpressionPtr;
   typedef boost::shared_ptr<Parameter> ParameterPtr;
 
@@ -96,6 +98,14 @@ class Initializer {
   /// Defines a fault tree for the analysis.
   /// @param[in] ft_node XML element defining the fault tree.
   void DefineFaultTree(const xmlpp::Element* ft_node);
+
+  /// Defines a component container.
+  /// @param[in] component_node XML element defining the component.
+  /// @param[in,out] parent_component Parent FaultTree or Component.
+  /// @throws ValidationError if a component with the same name already exists
+  ///                         for the parent component container.
+  void DefineComponent(const xmlpp::Element* component_node,
+                       const FaultTreePtr& parent_component);
 
   /// Processes model data with definitions of events and analysis.
   /// @param[in] model_data XML node with model data description.
