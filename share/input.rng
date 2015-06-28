@@ -12,7 +12,7 @@
   <start>
     <element name="opsa-mef">
       <optional>
-        <attribute name="name"> <data type="NCName"/> </attribute>
+        <ref name="name"/>
       </optional>
       <optional>
         <ref name="label"/>
@@ -40,6 +40,24 @@
     </element>
   </start>
 
+  <define name="Identifier">
+    <data type="NCName">
+      <param name="pattern">[^-.]+(-[^-.]+)*</param>
+    </data>
+  </define>
+
+  <define name="name">
+    <attribute name="name"> <ref name="Identifier"/> </attribute>
+  </define>
+
+  <define name="reference">
+    <attribute name="name">
+      <data type="NCName">
+        <param name="pattern">([^-.]+(-[^-.]+)*)(\.\i[^-.]*(-[^-.]+)*)*</param>
+      </data>
+    </attribute>
+  </define>
+
   <define name="label">
     <element name="label"> <text/> </element>
   </define>
@@ -48,7 +66,7 @@
     <element name="attributes">
       <zeroOrMore>
         <element name="attribute">
-          <attribute name="name"> <data type="string"/> </attribute>
+          <ref name="name"/>
           <attribute name="value"> <data type="string"/> </attribute>
           <optional>
             <attribute name="type"> <data type="string"/> </attribute>
@@ -98,7 +116,7 @@
 
   <define name="CCF-group-definition">
     <element name="define-CCF-group">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
       <attribute name="model">
         <ref name="CCF-model"/>
       </attribute>
@@ -172,7 +190,7 @@
 
   <define name="fault-tree-definition">
     <element name="define-fault-tree">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
       <optional>
         <ref name="label"/>
       </optional>
@@ -192,7 +210,7 @@
 
   <define name="component-definition">
     <element name="define-component">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
       <optional>
         <ref name="label"/>
       </optional>
@@ -224,7 +242,7 @@
 
   <define name="gate-definition">
     <element name="define-gate">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
       <optional>
         <ref name="label"/>
       </optional>
@@ -237,7 +255,7 @@
 
   <define name="house-event-definition">
     <element name="define-house-event">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
       <optional>
         <ref name="label"/>
       </optional>
@@ -252,7 +270,7 @@
 
   <define name="basic-event-definition">
     <element name="define-basic-event">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
       <optional>
         <ref name="label"/>
       </optional>
@@ -313,7 +331,7 @@
   <define name="event">
     <choice>
       <element name="event">
-        <attribute name="name"> <data type="NCName"/> </attribute>
+        <ref name="reference"/>
         <optional>
           <attribute name="type">
             <ref name="event-type"/>
@@ -336,19 +354,19 @@
 
   <define name="gate">
     <element name="gate">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="reference"/>
     </element>
   </define>
 
   <define name="house-event">
     <element name="house-event">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="reference"/>
     </element>
   </define>
 
   <define name="basic-event">
     <element name="basic-event">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="reference"/>
     </element>
   </define>
 
@@ -378,7 +396,7 @@
 
   <define name="parameter-definition">
     <element name="define-parameter">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
       <optional>
         <attribute name="unit">
           <ref name="units"/>
@@ -436,7 +454,7 @@
   <define name="parameter">
     <choice>
       <element name="parameter">
-        <attribute name="name"> <data type="NCName"/> </attribute>
+        <ref name="reference"/>
         <optional>
           <attribute name="unit">
             <ref name="units"/>

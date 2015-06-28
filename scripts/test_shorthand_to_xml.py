@@ -55,13 +55,30 @@ def test_ft_name_redefinition():
 def test_ncname_ft():
     """The name of the fault tree must conform to NCNAME format."""
     tmp = NamedTemporaryFile()
-    tmp.write("NOT NCNAME Fault tree.\n")
+    tmp.write("Contains Whitespace Characters\n")
     tmp.flush()
     yield assert_raises, ParsingError, parse_input_file, tmp.name
     tmp = NamedTemporaryFile()
-    tmp.write("NOT-NCNAME-Fault-tree.\n")
+    tmp.write("Peri.od\n")
     tmp.flush()
     yield assert_raises, ParsingError, parse_input_file, tmp.name
+    tmp = NamedTemporaryFile()
+    tmp.write("EndWithDash-\n")
+    tmp.flush()
+    yield assert_raises, ParsingError, parse_input_file, tmp.name
+    tmp = NamedTemporaryFile()
+    tmp.write("Double--Dash\n")
+    tmp.flush()
+    yield assert_raises, ParsingError, parse_input_file, tmp.name
+    tmp = NamedTemporaryFile()
+    tmp.write("42StartWithNumbers\n")
+    tmp.flush()
+    yield assert_raises, ParsingError, parse_input_file, tmp.name
+    tmp = NamedTemporaryFile()
+    tmp.write("Correct-Name_42\n")
+    tmp.write("g1 := e1 & e2\n")  # dummy gate
+    tmp.flush()
+    yield parse_input_file, tmp.name
 
 def test_no_ft_name():
     """Tests the case where no fault tree name is provided."""

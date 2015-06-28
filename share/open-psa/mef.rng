@@ -12,7 +12,7 @@
   <start>
     <element name="opsa-mef">
       <optional>
-        <attribute name="name"> <data type="NCName"/> </attribute>
+        <ref name="name"/>
       </optional>
       <optional>
         <ref name="label"/>
@@ -50,6 +50,24 @@
     </element>
   </start>
 
+  <define name="Identifier">
+    <data type="NCName">
+      <param name="pattern">[^-.]+(-[^-.]+)*</param>
+    </data>
+  </define>
+
+  <define name="name">
+    <attribute name="name"> <ref name="Identifier"/> </attribute>
+  </define>
+
+  <define name="reference">
+    <attribute name="name">
+      <data type="NCName">
+        <param name="pattern">([^-.]+(-[^-.]+)*)(\.\i[^-.]*(-[^-.]+)*)*</param>
+      </data>
+    </attribute>
+  </define>
+
   <define name="label">
     <element name="label"> <text/> </element>
   </define>
@@ -58,7 +76,7 @@
     <element name="attributes">
       <zeroOrMore>
         <element name="attribute">
-          <attribute name="name"> <data type="string"/> </attribute>
+          <ref name="name"/>
           <attribute name="value"> <data type="string"/> </attribute>
           <optional>
             <attribute name="type"> <data type="string"/> </attribute>
@@ -81,7 +99,7 @@
 
   <define name="consequence-definition">
     <element name="define-consequence">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
       <optional>
         <ref name="label"/>
       </optional>
@@ -89,17 +107,17 @@
         <ref name="attributes"/>
       </optional>
       <element name="initiating-event">
-        <attribute name="name"> <data type="NCName"/> </attribute>
+        <ref name="name"/>
       </element>
       <element name="sequence">
-        <attribute name="name"> <data type="NCName"/> </attribute>
+        <ref name="name"/>
       </element>
     </element>
   </define>
 
   <define name="consequence-group-definition">
     <element name="define-consequence-group">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
       <optional>
         <ref name="label"/>
       </optional>
@@ -115,13 +133,13 @@
 
   <define name="consequence">
     <element name="consequence">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
     </element>
   </define>
 
   <define name="consequence-group">
     <element name="consequence-group">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
     </element>
   </define>
 
@@ -131,7 +149,7 @@
 
   <define name="alignment-definition">
     <element name="define-alignment">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
       <optional>
         <ref name="label"/>
       </optional>
@@ -146,7 +164,7 @@
 
   <define name="phase-definition">
     <element name="define-phase">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
       <attribute name="time-fraction"> <data type="float"/> </attribute>
       <optional>
         <ref name="label"/>
@@ -171,9 +189,9 @@
 
   <define name="initiating-event-definition">
     <element name="define-initiating-event">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
       <optional>
-        <attribute name="event-tree"> <data type="NCName"/> </attribute>
+        <attribute name="event-tree"> <ref name="Identifier"/> </attribute>
       </optional>
       <optional>
         <ref name="label"/>
@@ -193,9 +211,9 @@
 
   <define name="initiating-event-group-definition">
     <element name="define-initiating-event-group">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
       <optional>
-        <attribute name="event-tree"> <data type="NCName"/> </attribute>
+        <attribute name="event-tree"> <ref name="Identifier"/> </attribute>
       </optional>
       <optional>
         <ref name="label"/>
@@ -212,10 +230,10 @@
   <define name="initiating-event">
     <choice>
       <element name="initiating-event">
-        <attribute name="name"> <data type="NCName"/> </attribute>
+        <ref name="name"/>
       </element>
       <element name="initiating-event-group">
-        <attribute name="name"> <data type="NCName"/> </attribute>
+        <ref name="name"/>
       </element>
     </choice>
   </define>
@@ -235,7 +253,7 @@
 
   <define name="event-tree-definition">
     <element name="define-event-tree">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
       <optional>
         <ref name="label"/>
       </optional>
@@ -257,7 +275,7 @@
 
   <define name="functional-event-definition">
     <element name="define-functional-event">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
       <optional>
         <ref name="label"/>
       </optional>
@@ -269,7 +287,7 @@
 
   <define name="sequence-definition">
     <element name="define-sequence">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
       <optional>
         <ref name="label"/>
       </optional>
@@ -284,7 +302,7 @@
 
   <define name="branch-definition">
     <element name="define-branch">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
       <optional>
         <ref name="label"/>
       </optional>
@@ -313,7 +331,7 @@
 
   <define name="fork">
     <element name="fork">
-      <attribute name="functional-event"> <data type="NCName"/> </attribute>
+      <attribute name="functional-event"> <ref name="Identifier"/> </attribute>
       <oneOrMore>
         <ref name="path"/>
       </oneOrMore>
@@ -322,7 +340,7 @@
 
   <define name="path">
     <element name="path">
-      <attribute name="state"> <data type="NCName"/> </attribute>
+      <attribute name="state"> <ref name="Identifier"/> </attribute>
       <ref name="branch"/>
     </element>
   </define>
@@ -330,10 +348,10 @@
   <define name="end-state">
     <choice>
       <element name="sequence">
-        <attribute name="name"> <data type="NCName"/> </attribute>
+        <ref name="name"/>
       </element>
       <element name="branch">
-        <attribute name="name"> <data type="NCName"/> </attribute>
+        <ref name="name"/>
       </element>
     </choice>
   </define>
@@ -364,7 +382,7 @@
 
   <define name="set-gate">
     <element name="set-gate">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
       <optional>
         <attribute name="direction">
           <ref name="direction"/>
@@ -376,7 +394,7 @@
 
   <define name="set-house-event">
     <element name="set-house-event">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
       <optional>
         <attribute name="direction">
           <ref name="direction"/>
@@ -388,7 +406,7 @@
 
   <define name="set-basic-event">
     <element name="set-basic-event">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
       <optional>
         <attribute name="direction">
           <ref name="direction"/>
@@ -400,7 +418,7 @@
 
   <define name="set-parameter">
     <element name="set-parameter">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
       <optional>
         <attribute name="direction">
           <ref name="direction"/>
@@ -457,19 +475,19 @@
 
   <define name="rule">
     <element name="rule">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
     </element>
   </define>
 
   <define name="link">
     <element name="event-tree">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
     </element>
   </define>
 
   <define name="rule-definition">
     <element name="define-rule">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
       <optional>
         <ref name="label"/>
       </optional>
@@ -493,7 +511,7 @@
 
   <define name="CCF-group-definition">
     <element name="define-CCF-group">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
       <attribute name="model">
         <ref name="CCF-model"/>
       </attribute>
@@ -559,7 +577,7 @@
   <define name="substitution-definition">
     <element name="define-substitution">
       <optional>
-        <attribute name="name"> <data type="NCName"/> </attribute>
+        <ref name="name"/>
       </optional>
       <optional>
         <attribute name="type"> <data type="string"/> </attribute>
@@ -602,7 +620,7 @@
 
   <define name="fault-tree-definition">
     <element name="define-fault-tree">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
       <optional>
         <ref name="label"/>
       </optional>
@@ -624,7 +642,7 @@
 
   <define name="component-definition">
     <element name="define-component">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
       <optional>
         <attribute name="role">
           <choice>
@@ -666,7 +684,7 @@
 
   <define name="gate-definition">
     <element name="define-gate">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
       <optional>
         <attribute name="role">
           <choice>
@@ -687,7 +705,7 @@
 
   <define name="house-event-definition">
     <element name="define-house-event">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
       <optional>
         <attribute name="role">
           <choice>
@@ -710,7 +728,7 @@
 
   <define name="basic-event-definition">
     <element name="define-basic-event">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
       <optional>
         <attribute name="role">
           <choice>
@@ -796,7 +814,7 @@
   <define name="event">
     <choice>
       <element name="event">
-        <attribute name="name"> <data type="NCName"/> </attribute>
+        <ref name="reference"/>
         <optional>
           <attribute name="type">
             <ref name="event-type"/>
@@ -819,19 +837,19 @@
 
   <define name="gate">
     <element name="gate">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="reference"/>
     </element>
   </define>
 
   <define name="house-event">
     <element name="house-event">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="reference"/>
     </element>
   </define>
 
   <define name="basic-event">
     <element name="basic-event">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="reference"/>
     </element>
   </define>
 
@@ -861,7 +879,7 @@
 
   <define name="parameter-definition">
     <element name="define-parameter">
-      <attribute name="name"> <data type="NCName"/> </attribute>
+      <ref name="name"/>
       <optional>
         <attribute name="role">
           <choice>
@@ -929,7 +947,7 @@
   <define name="parameter">
     <choice>
       <element name="parameter">
-        <attribute name="name"> <data type="NCName"/> </attribute>
+        <ref name="reference"/>
         <optional>
           <attribute name="unit">
             <ref name="units"/>
@@ -1257,7 +1275,7 @@
 
     <define name="extern-function">
       <element name="extern-function">
-        <attribute name="name"> <data type="NCName"/> </attribute>
+        <ref name="name"/>
         <zeroOrMore>
           <ref name="expression"/>
         </zeroOrMore>
@@ -1325,13 +1343,13 @@
 
     <define name="test-initiating-event">
       <element name="test-initiating-event">
-        <attribute name="name"> <data type="NCName"/> </attribute>
+        <ref name="name"/>
       </element>
     </define>
 
     <define name="test-functional-event">
       <element name="test-functional-event">
-        <attribute name="name"> <data type="NCName"/> </attribute>
+        <ref name="name"/>
         <attribute name="state"> <data type="string"/> </attribute>
       </element>
     </define>

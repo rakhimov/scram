@@ -15,19 +15,20 @@ Probability of a basic event:      p(event_name) = probability
 Boolean state of a house event:    s(event_name) = state
 
 Some requirements and additions to the shorthand format:
-0. The names are not case-sensitive.
-1. The fault tree name must be formatted according to 'XML NCNAME datatype'.
+1. The names and references are not case-sensitive and must be formatted
+   according to 'XML NCNAME datatype' without double dashes('--'), period('.'),
+   and trailing '-'.
 2. No requirement for the structure of the input, i.e. topologically sorted.
 3. Undefined nodes are processed as 'events' to the final XML output. However,
-    warnings will be emitted in case it is the user's mistake.
+   warnings will be emitted in case it is the user's mistake.
 4. Name clashes or redefinitions are errors.
 5. Cyclic trees are detected by the script as errors.
 6. The top gate is detected by the script. Only one top gate is allowed
-    unless otherwise specified by the user.
+   unless otherwise specified by the user.
 7. Repeated children are considered an error.
-8. The script is flexible with white spaces in the input file.
-9. Parentheses are optional for AND, OR, NOT, XOR gates.
-10. Boolean formula can be nested. For example, "g1 := a & b | c ^ ~d | (e | f)"
+8. The script is flexible with whitespace characters in the input file.
+9. Parentheses are optional for logical operators except for ATLEAST.
+10. Boolean formula can be nested. For example, "g1 := a & b | c ^ ~d | ~(e|f)"
 """
 from __future__ import print_function
 
@@ -389,11 +390,12 @@ def parse_input_file(input_file, multi_top=False):
         FormatError: Formatting problems in the input.
         FaultTreeError: Problems in the structure of the fault tree.
     """
-    shorthand_file = open(input_file, "r")
+    # Pattern for names and references
+    name_sig = r"[a-zA-Z]\w*(-\w+)*"
     # Fault tree name
-    ft_name_re = re.compile(r"^\s*(\w+)\s*$")
+    ft_name_re = re.compile(r"^\s*(" + name_sig + r")\s*$")
     # Node names
-    name_re = re.compile(r"\s*(\w+)\s*$")
+    name_re = re.compile(r"\s*(" + name_sig + r")\s*$")
     # General gate name and pattern
     gate_sig = r"^\s*(\w+)\s*:=\s*"
     gate_re = re.compile(gate_sig + r"(.+)$")
@@ -517,6 +519,7 @@ def parse_input_file(input_file, multi_top=False):
                 formula.f_arguments.append(get_formula(arg))
         return formula
 
+    shorthand_file = open(input_file, "r")
     for line in shorthand_file:
         try:
             if blank_line.match(line):

@@ -92,7 +92,9 @@ to identify the supported and unsupported features.
 Deviations from OpenPSA MEF
 ===========================
 
-- Names are not case-sensitive.
+- Names and references are not case-sensitive and restricted to fewer
+  characters and combinations. :ref:`naming_rules` section contains more
+  information on these restrictions.
 - House events must be defined explicitly for analysis with probability
   information.
 - The correct number of a gate's children is required.
