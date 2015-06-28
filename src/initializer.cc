@@ -216,7 +216,21 @@ void Initializer::DefineFaultTree(const xmlpp::Element* ft_node) {
     msg << err.msg();
     throw ValidationError(msg.str());
   }
+  Initializer::RegisterFaultTreeData(ft_node, fault_tree);
+}
 
+boost::shared_ptr<Component> Initializer::DefineComponent(
+    const xmlpp::Element* component_node) {
+  std::string name = component_node->get_attribute_value("name");
+  boost::trim(name);
+  assert(!name.empty());
+  ComponentPtr component = ComponentPtr(new Component(name));
+  Initializer::RegisterFaultTreeData(component_node, component);
+  return component;
+}
+
+void Initializer::RegisterFaultTreeData(const xmlpp::Element* ft_node,
+                                        const FaultTreePtr& fault_tree) {
   Initializer::AttachLabelAndAttributes(ft_node, fault_tree);
 
   xmlpp::NodeSet gates = ft_node->find("./define-gate");
@@ -239,53 +253,18 @@ void Initializer::DefineFaultTree(const xmlpp::Element* ft_node) {
   for (it = components.begin(); it != components.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
-    Initializer::DefineComponent(element, fault_tree);
+    ComponentPtr component = Initializer::DefineComponent(element);
+    try {
+      fault_tree->AddComponent(component);
+    } catch (ValidationError& err) {
+      std::stringstream msg;
+      msg << "Line " << element->get_line() << ":\n";
+      msg << err.msg();
+      throw ValidationError(msg.str());
+    }
   }
   // Handle house events, basic events, and parameters.
   Initializer::ProcessModelData(ft_node);
-}
-
-void Initializer::DefineComponent(const xmlpp::Element* component_node,
-                                  const FaultTreePtr& parent_component) {
-  std::string name = component_node->get_attribute_value("name");
-  boost::trim(name);
-  assert(!name.empty());
-  ComponentPtr component = ComponentPtr(new Component(name));
-  try {
-    parent_component->AddComponent(component);
-  } catch (ValidationError& err) {
-    std::stringstream msg;
-    msg << "Line " << component_node->get_line() << ":\n";
-    msg << err.msg();
-    throw ValidationError(msg.str());
-  }
-
-  Initializer::AttachLabelAndAttributes(component_node, component);
-
-  xmlpp::NodeSet gates = component_node->find("./define-gate");
-  xmlpp::NodeSet ccf_groups = component_node->find("./define-CCF-group");
-  xmlpp::NodeSet components = component_node->find("./define-component");
-
-  xmlpp::NodeSet::iterator it;
-  CLOCK(gate_time);
-  for (it = gates.begin(); it != gates.end(); ++it) {
-    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
-    assert(element);
-    component->AddGate(Initializer::RegisterGate(element));
-  }
-  LOG(DEBUG2) << "Gate registration time " << DUR(gate_time);
-  for (it = ccf_groups.begin(); it != ccf_groups.end(); ++it) {
-    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
-    assert(element);
-    Initializer::RegisterCcfGroup(element);
-  }
-  for (it = components.begin(); it != components.end(); ++it) {
-    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
-    assert(element);
-    Initializer::DefineComponent(element, component);
-  }
-  // Handle house events, basic events, and parameters.
-  Initializer::ProcessModelData(component_node);
 }
 
 void Initializer::ProcessModelData(const xmlpp::Element* model_data) {

@@ -97,15 +97,25 @@ class Initializer {
 
   /// Defines a fault tree for the analysis.
   /// @param[in] ft_node XML element defining the fault tree.
+  /// @throws ValidationError if there are issues with registering and defining
+  ///                         the fault tree and its data like gates and events.
   void DefineFaultTree(const xmlpp::Element* ft_node);
 
   /// Defines a component container.
   /// @param[in] component_node XML element defining the component.
-  /// @param[in,out] parent_component Parent FaultTree or Component.
-  /// @throws ValidationError if a component with the same name already exists
-  ///                         for the parent component container.
-  void DefineComponent(const xmlpp::Element* component_node,
-                       const FaultTreePtr& parent_component);
+  /// @returns Component that is ready for registration.
+  /// @throws ValidationError if there are issues with registering and defining
+  ///                         the component and its data like gates and events.
+  ComponentPtr DefineComponent(const xmlpp::Element* component_node);
+
+  /// Registers fault tree and component data like gates, events, parameters.
+  /// @param[in] ft_node XML element defining the fault tree or component.
+  /// @param[in/out] fault_tree The component or fault tree container that is
+  ///                           the owner of the data.
+  /// @throws ValidationError if there are issues with registering and defining
+  ///                         the component's data like gates and events.
+  void RegisterFaultTreeData(const xmlpp::Element* ft_node,
+                             const FaultTreePtr& fault_tree);
 
   /// Processes model data with definitions of events and analysis.
   /// @param[in] model_data XML node with model data description.
