@@ -113,9 +113,9 @@ class Initializer {
 
   /// Registers a gate for later definition.
   /// @param[in] gate_node XML element defining the gate.
-  /// @param[in,out] ft FaultTree under which this gate belongs to.
+  /// @returns Pointer to the registered gate.
   /// @throws ValidationError if an event with the same name is already defined.
-  void RegisterGate(const xmlpp::Element* gate_node, const FaultTreePtr& ft);
+  GatePtr RegisterGate(const xmlpp::Element* gate_node);
 
   /// Defines a gate for this analysis.
   /// @param[in] gate_node XML element defining the gate.

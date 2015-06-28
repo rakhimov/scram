@@ -228,7 +228,7 @@ void Initializer::DefineFaultTree(const xmlpp::Element* ft_node) {
   for (it = gates.begin(); it != gates.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
-    Initializer::RegisterGate(element, fault_tree);
+    fault_tree->AddGate(Initializer::RegisterGate(element));
   }
   LOG(DEBUG2) << "Gate registration time " << DUR(gate_time);
   for (it = ccf_groups.begin(); it != ccf_groups.end(); ++it) {
@@ -271,7 +271,7 @@ void Initializer::DefineComponent(const xmlpp::Element* component_node,
   for (it = gates.begin(); it != gates.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
-    Initializer::RegisterGate(element, component);
+    component->AddGate(Initializer::RegisterGate(element));
   }
   LOG(DEBUG2) << "Gate registration time " << DUR(gate_time);
   for (it = ccf_groups.begin(); it != ccf_groups.end(); ++it) {
@@ -314,8 +314,8 @@ void Initializer::ProcessModelData(const xmlpp::Element* model_data) {
   }
 }
 
-void Initializer::RegisterGate(const xmlpp::Element* gate_node,
-                               const FaultTreePtr& ft) {
+boost::shared_ptr<Gate> Initializer::RegisterGate(
+    const xmlpp::Element* gate_node) {
   std::string name = gate_node->get_attribute_value("name");
   boost::trim(name);
   std::string id = name;
@@ -336,7 +336,7 @@ void Initializer::RegisterGate(const xmlpp::Element* gate_node,
 
   Initializer::AttachLabelAndAttributes(gate_node, gate);
 
-  ft->AddGate(gate);
+  return gate;
 }
 
 void Initializer::DefineGate(const xmlpp::Element* gate_node,
