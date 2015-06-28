@@ -233,11 +233,31 @@ void Initializer::RegisterFaultTreeData(const xmlpp::Element* ft_node,
                                         const FaultTreePtr& fault_tree) {
   Initializer::AttachLabelAndAttributes(ft_node, fault_tree);
 
+  xmlpp::NodeSet house_events = ft_node->find("./define-house-event");
+  xmlpp::NodeSet basic_events = ft_node->find("./define-basic-event");
+  xmlpp::NodeSet parameters = ft_node->find("./define-parameter");
   xmlpp::NodeSet gates = ft_node->find("./define-gate");
   xmlpp::NodeSet ccf_groups = ft_node->find("./define-CCF-group");
   xmlpp::NodeSet components = ft_node->find("./define-component");
 
   xmlpp::NodeSet::iterator it;
+  for (it = house_events.begin(); it != house_events.end(); ++it) {
+    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
+    assert(element);
+    fault_tree->AddHouseEvent(Initializer::DefineHouseEvent(element));
+  }
+  CLOCK(basic_time);
+  for (it = basic_events.begin(); it != basic_events.end(); ++it) {
+    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
+    assert(element);
+    fault_tree->AddBasicEvent(Initializer::RegisterBasicEvent(element));
+  }
+  LOG(DEBUG2) << "Basic event registration time " << DUR(basic_time);
+  for (it = parameters.begin(); it != parameters.end(); ++it) {
+    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
+    assert(element);
+    fault_tree->AddParameter(Initializer::RegisterParameter(element));
+  }
   CLOCK(gate_time);
   for (it = gates.begin(); it != gates.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
@@ -248,7 +268,7 @@ void Initializer::RegisterFaultTreeData(const xmlpp::Element* ft_node,
   for (it = ccf_groups.begin(); it != ccf_groups.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
-    Initializer::RegisterCcfGroup(element);
+    fault_tree->AddCcfGroup(Initializer::RegisterCcfGroup(element));
   }
   for (it = components.begin(); it != components.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
@@ -263,8 +283,6 @@ void Initializer::RegisterFaultTreeData(const xmlpp::Element* ft_node,
       throw ValidationError(msg.str());
     }
   }
-  // Handle house events, basic events, and parameters.
-  Initializer::ProcessModelData(ft_node);
 }
 
 void Initializer::ProcessModelData(const xmlpp::Element* model_data) {
@@ -493,7 +511,8 @@ void Initializer::ProcessFormulaGate(const xmlpp::Element* event,
   child = model_->gates().find(id)->second;
 }
 
-void Initializer::RegisterBasicEvent(const xmlpp::Element* event_node) {
+boost::shared_ptr<BasicEvent> Initializer::RegisterBasicEvent(
+    const xmlpp::Element* event_node) {
   std::string name = event_node->get_attribute_value("name");
   boost::trim(name);
   std::string id = name;
@@ -510,6 +529,7 @@ void Initializer::RegisterBasicEvent(const xmlpp::Element* event_node) {
   }
   tbd_elements_.push_back(std::make_pair(basic_event, event_node));
   Initializer::AttachLabelAndAttributes(event_node, basic_event);
+  return basic_event;
 }
 
 void Initializer::DefineBasicEvent(const xmlpp::Element* event_node,
@@ -526,7 +546,8 @@ void Initializer::DefineBasicEvent(const xmlpp::Element* event_node,
   }
 }
 
-void Initializer::DefineHouseEvent(const xmlpp::Element* event_node) {
+boost::shared_ptr<HouseEvent> Initializer::DefineHouseEvent(
+    const xmlpp::Element* event_node) {
   std::string name = event_node->get_attribute_value("name");
   boost::trim(name);
   std::string id = name;
@@ -557,9 +578,11 @@ void Initializer::DefineHouseEvent(const xmlpp::Element* event_node) {
     house_event->state(state);
   }
   Initializer::AttachLabelAndAttributes(event_node, house_event);
+  return house_event;
 }
 
-void Initializer::RegisterParameter(const xmlpp::Element* param_node) {
+boost::shared_ptr<Parameter> Initializer::RegisterParameter(
+    const xmlpp::Element* param_node) {
   std::string name = param_node->get_attribute_value("name");
   boost::trim(name);
   ParameterPtr parameter = ParameterPtr(new Parameter(name));
@@ -581,6 +604,7 @@ void Initializer::RegisterParameter(const xmlpp::Element* param_node) {
     parameter->unit(units_.find(unit)->second);
   }
   Initializer::AttachLabelAndAttributes(param_node, parameter);
+  return parameter;
 }
 
 void Initializer::DefineParameter(const xmlpp::Element* param_node,
@@ -838,7 +862,8 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
   return true;
 }
 
-void Initializer::RegisterCcfGroup(const xmlpp::Element* ccf_node) {
+boost::shared_ptr<CcfGroup> Initializer::RegisterCcfGroup(
+    const xmlpp::Element* ccf_node) {
   std::string name = ccf_node->get_attribute_value("name");
   boost::trim(name);
   std::string model = ccf_node->get_attribute_value("model");
@@ -879,6 +904,7 @@ void Initializer::RegisterCcfGroup(const xmlpp::Element* ccf_node) {
   Initializer::AttachLabelAndAttributes(ccf_node, ccf_group);
 
   tbd_elements_.push_back(std::make_pair(ccf_group, ccf_node));
+  return ccf_group;
 }
 
 void Initializer::DefineCcfGroup(const xmlpp::Element* ccf_node,

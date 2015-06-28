@@ -18,6 +18,7 @@ namespace scram {
 
 class CcfGroup;
 class Component;
+class Parameter;
 
 /// @class FaultTree
 /// Fault tree representation as a container of gates, basic and house events,
@@ -27,6 +28,7 @@ class FaultTree : public Element {
   typedef boost::shared_ptr<Gate> GatePtr;
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
   typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
+  typedef boost::shared_ptr<Parameter> ParameterPtr;
   typedef boost::shared_ptr<CcfGroup> CcfGroupPtr;
   typedef boost::shared_ptr<Component> ComponentPtr;
 
@@ -49,6 +51,11 @@ class FaultTree : public Element {
   /// @throws ValidationError for re-added house events.
   void AddHouseEvent(const HouseEventPtr& house_event);
 
+  /// Adds a parameter into this fault tree containter.
+  /// @param[in] parameter The parameter to be added to this tree.
+  /// @throws ValidationError for re-added parameter.
+  void AddParameter(const ParameterPtr& parameter);
+
   /// Adds a ccf group into this fault tree containter.
   /// @param[in] ccf_group The ccf group to be added to this container.
   /// @throws ValidationError for re-added ccf groups.
@@ -66,32 +73,38 @@ class FaultTree : public Element {
   void Validate();
 
   /// @returns The name of this fault tree.
-  inline const std::string& name() { return name_; }
+  inline const std::string& name() const { return name_; }
 
   /// @returns The top events of this fault tree.
-  inline const std::vector<GatePtr>& top_events() { return top_events_; }
+  inline const std::vector<GatePtr>& top_events() const { return top_events_; }
 
   /// @returns The container of all basic events of this fault tree.
   inline const boost::unordered_map<std::string, BasicEventPtr>&
-      basic_events() {
+      basic_events() const {
     return basic_events_;
   }
 
   /// @returns The container of house events of this fault tree.
   inline const boost::unordered_map<std::string, HouseEventPtr>&
-      house_events() {
+      house_events() const {
     return house_events_;
+  }
+
+  /// @returns The container of parameters of this fault tree.
+  inline const boost::unordered_map<std::string, ParameterPtr>&
+      parameters() const {
+    return parameters_;
   }
 
   /// @returns CCF groups belonging to this fault tree.
   inline const boost::unordered_map<std::string, CcfGroupPtr>&
-      ccf_groups() {
+      ccf_groups() const {
     return ccf_groups_;
   }
 
   /// @returns Components in this fault tree container.
   inline const boost::unordered_map<std::string, ComponentPtr>&
-      components() {
+      components() const {
     return components_;
   }
 
@@ -117,17 +130,20 @@ class FaultTree : public Element {
   void MarkNonTopGates(const FormulaPtr& formula,
                        const boost::unordered_set<GatePtr>& gates);
 
-  /// Holder for gates defined in this fault tree container.
-  boost::unordered_map<std::string, GatePtr> gates_;
-
   std::string name_;  ///< The name of this fault tree.
   std::vector<GatePtr> top_events_;  ///< Top events of this fault tree.
+
+  /// Holder for gates defined in this fault tree container.
+  boost::unordered_map<std::string, GatePtr> gates_;
 
   /// Container for basic events of the tree.
   boost::unordered_map<std::string, BasicEventPtr> basic_events_;
 
   /// Container for house events of the tree.
   boost::unordered_map<std::string, HouseEventPtr> house_events_;
+
+  /// Container for parameters of the tree.
+  boost::unordered_map<std::string, ParameterPtr> parameters_;
 
   /// Container for CCF groups.
   boost::unordered_map<std::string, CcfGroupPtr> ccf_groups_;

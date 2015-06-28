@@ -171,8 +171,9 @@ class Initializer {
 
   /// Registers a basic event for later definition.
   /// @param[in] event_node XML element defining the event.
+  /// @returns Pointer to the registered basic event.
   /// @throws ValidationError if an event with the same name is already defined.
-  void RegisterBasicEvent(const xmlpp::Element* event_node);
+  BasicEventPtr RegisterBasicEvent(const xmlpp::Element* event_node);
 
   /// Defines a basic event for this analysis.
   /// @param[in] event_node XML element defining the event.
@@ -182,13 +183,15 @@ class Initializer {
 
   /// Defines and adds a house event for this analysis.
   /// @param[in] event_node XML element defining the event.
+  /// @returns Pointer to the registered house event.
   /// @throws ValidationError if an event with the same name is already defined.
-  void DefineHouseEvent(const xmlpp::Element* event_node);
+  HouseEventPtr DefineHouseEvent(const xmlpp::Element* event_node);
 
   /// Registers a variable or parameter.
   /// @param[in] param_node XML element defining the parameter.
+  /// @returns Pointer to the registered parameter.
   /// @throws ValidationError if the parameter is already registered.
-  void RegisterParameter(const xmlpp::Element* param_node);
+  ParameterPtr RegisterParameter(const xmlpp::Element* param_node);
 
   /// Defines a variable or parameter.
   /// @param[in] param_node XML element defining the parameter.
@@ -223,7 +226,8 @@ class Initializer {
 
   /// Registers a common cause failure group for later definition.
   /// @param[in] ccf_node XML element defining CCF group.
-  void RegisterCcfGroup(const xmlpp::Element* ccf_node);
+  /// @returns Pointer to the registered CCF group.
+  CcfGroupPtr RegisterCcfGroup(const xmlpp::Element* ccf_node);
 
   /// Defines a common cause failure group for the analysis.
   /// @param[in] ccf_node XML element defining CCF group.

@@ -4,11 +4,13 @@
 
 #include <map>
 
+#include <boost/algorithm/string.hpp>
 #include <boost/pointer_cast.hpp>
 
 #include "ccf_group.h"
 #include "cycle.h"
 #include "error.h"
+#include "expression.h"
 
 namespace scram {
 
@@ -37,20 +39,34 @@ void FaultTree::AddHouseEvent(const HouseEventPtr& house_event) {
   house_events_.insert(std::make_pair(house_event->id(), house_event));
 }
 
+void FaultTree::AddParameter(const ParameterPtr& parameter) {
+  std::string name = parameter->name();
+  boost::to_lower(name);
+  if (parameters_.count(name)) {
+    throw ValidationError("Trying to re-add parameter " +
+                          parameter->name() + ".");
+  }
+  parameters_.insert(std::make_pair(name, parameter));
+}
+
 void FaultTree::AddCcfGroup(const CcfGroupPtr& ccf_group) {
-  if (ccf_groups_.count(ccf_group->name())) {
+  std::string name = ccf_group->name();
+  boost::to_lower(name);
+  if (ccf_groups_.count(name)) {
     throw ValidationError("Trying to re-add ccf group " +
                           ccf_group->name() + ".");
   }
-  ccf_groups_.insert(std::make_pair(ccf_group->name(), ccf_group));
+  ccf_groups_.insert(std::make_pair(name, ccf_group));
 }
 
 void FaultTree::AddComponent(const ComponentPtr& component) {
-  if (components_.count(component->name())) {
+  std::string name = component->name();
+  boost::to_lower(name);
+  if (components_.count(name)) {
     throw ValidationError("Component " +
                           component->name() + " already exists at this level.");
   }
-  components_.insert(std::make_pair(component->name(), component));
+  components_.insert(std::make_pair(name, component));
 }
 
 void FaultTree::Validate() {
