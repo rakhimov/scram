@@ -644,12 +644,7 @@
     <element name="define-component">
       <ref name="name"/>
       <optional>
-        <attribute name="role">
-          <choice>
-            <value>private</value>
-            <value>public</value>
-          </choice>
-        </attribute>
+        <ref name="role"/>
       </optional>
       <optional>
         <ref name="label"/>
@@ -670,6 +665,15 @@
     </element>
   </define>
 
+  <define name="role">
+    <attribute name="role">
+      <choice>
+        <value>private</value>
+        <value>public</value>
+      </choice>
+    </attribute>
+  </define>
+
   <define name="event-definition">
     <choice>
       <ref name="gate-definition"/>
@@ -686,12 +690,7 @@
     <element name="define-gate">
       <ref name="name"/>
       <optional>
-        <attribute name="role">
-          <choice>
-            <value>private</value>
-            <value>public</value>
-          </choice>
-        </attribute>
+        <ref name="role"/>
       </optional>
       <optional>
         <ref name="label"/>
@@ -707,12 +706,7 @@
     <element name="define-house-event">
       <ref name="name"/>
       <optional>
-        <attribute name="role">
-          <choice>
-            <value>private</value>
-            <value>public</value>
-          </choice>
-        </attribute>
+        <ref name="role"/>
       </optional>
       <optional>
         <ref name="label"/>
@@ -730,12 +724,7 @@
     <element name="define-basic-event">
       <ref name="name"/>
       <optional>
-        <attribute name="role">
-          <choice>
-            <value>private</value>
-            <value>public</value>
-          </choice>
-        </attribute>
+        <ref name="role"/>
       </optional>
       <optional>
         <ref name="label"/>
@@ -881,12 +870,7 @@
     <element name="define-parameter">
       <ref name="name"/>
       <optional>
-        <attribute name="role">
-          <choice>
-            <value>private</value>
-            <value>public</value>
-          </choice>
-        </attribute>
+        <ref name="role"/>
       </optional>
       <optional>
         <attribute name="unit">

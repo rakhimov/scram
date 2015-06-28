@@ -212,6 +212,9 @@
     <element name="define-component">
       <ref name="name"/>
       <optional>
+        <ref name="role"/>
+      </optional>
+      <optional>
         <ref name="label"/>
       </optional>
       <optional>
@@ -226,6 +229,15 @@
         </choice>
       </zeroOrMore>
     </element>
+  </define>
+
+  <define name="role">
+    <attribute name="role">
+      <choice>
+        <value>private</value>
+        <value>public</value>
+      </choice>
+    </attribute>
   </define>
 
   <define name="event-definition">
@@ -244,6 +256,9 @@
     <element name="define-gate">
       <ref name="name"/>
       <optional>
+        <ref name="role"/>
+      </optional>
+      <optional>
         <ref name="label"/>
       </optional>
       <optional>
@@ -256,6 +271,9 @@
   <define name="house-event-definition">
     <element name="define-house-event">
       <ref name="name"/>
+      <optional>
+        <ref name="role"/>
+      </optional>
       <optional>
         <ref name="label"/>
       </optional>
@@ -271,6 +289,9 @@
   <define name="basic-event-definition">
     <element name="define-basic-event">
       <ref name="name"/>
+      <optional>
+        <ref name="role"/>
+      </optional>
       <optional>
         <ref name="label"/>
       </optional>
@@ -397,6 +418,9 @@
   <define name="parameter-definition">
     <element name="define-parameter">
       <ref name="name"/>
+      <optional>
+        <ref name="role"/>
+      </optional>
       <optional>
         <attribute name="unit">
           <ref name="units"/>
