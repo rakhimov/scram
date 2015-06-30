@@ -397,10 +397,10 @@ def parse_input_file(input_file, multi_top=False):
     # Node names
     name_re = re.compile(r"\s*(" + name_sig + r")\s*$")
     # General gate name and pattern
-    gate_sig = r"^\s*(\w+)\s*:=\s*"
-    gate_re = re.compile(gate_sig + r"(.+)$")
-    # Optional parentheses for formulas
-    paren_re = re.compile(r"\s*\((.+)\)\s*$")
+    gate_sig = r"^\s*(?P<name>" + name_sig + r")\s*:=\s*"
+    gate_re = re.compile(gate_sig + r"(?P<formula>.+)$")
+    # Parentheses for formulas
+    paren_re = re.compile(r"\s*\((([^()]*(\(.+\))?[^()]*)+)\)\s*$")
     # Formula
     form = r"([^()]*\(.+\)[^()]*|[^()]+)"
     # AND gate identification
@@ -409,15 +409,17 @@ def parse_input_file(input_file, multi_top=False):
     or_re = re.compile(r"(\s*" + form + r"(\s*\|\s*" + form + r"\s*)+)$")
     # Combination gate identification
     comb_children = r"\[(\s*.+(\s*,\s*.+\s*){2,})\]"
-    comb_re = re.compile(r"@\(([2-9])\s*,\s*" + comb_children + r"\s*\)\s*$")
+    comb_re = re.compile(r"@\(\s*([2-9])\s*,\s*" + comb_children + r"\s*\)\s*$")
     # NOT gate identification
-    not_re = re.compile(r"~\s*(\w+|@?\(.+\))$")
+    not_re = re.compile(r"~\s*(" + name_sig + r"|@?\(.+\))$")
     # XOR gate identification
     xor_re = re.compile(r"(\s*" + form + r"\s*\^\s*" + form + r"\s*)$")
     # Probability description for a basic event
-    prob_re = re.compile(r"^\s*p\(\s*(\w+)\s*\)\s*=\s*(1|0|0\.\d+)\s*$")
+    prob_re = re.compile(r"^\s*p\(\s*(?P<name>" + name_sig +
+                         r")\s*\)\s*=\s*(?P<prob>1|0|0\.\d+)\s*$")
     # State description for a house event
-    state_re = re.compile(r"^\s*s\(\s*(\w+)\s*\)\s*=\s*(true|false)\s*$")
+    state_re = re.compile(r"^\s*s\(\s*(?P<name>" + name_sig +
+                          r")\s*\)\s*=\s*(?P<state>true|false)\s*$")
 
     blank_line = re.compile(r"^\s*$")
 
@@ -525,14 +527,15 @@ def parse_input_file(input_file, multi_top=False):
             if blank_line.match(line):
                 continue
             elif gate_re.match(line):
-                gate_name, formula_line = gate_re.match(line).group(1, 2)
+                gate_name, formula_line = \
+                        gate_re.match(line).group("name", "formula")
                 check_parentheses(formula_line)
                 fault_tree.add_gate(gate_name, get_formula(formula_line))
             elif prob_re.match(line):
-                event_name, prob = prob_re.match(line).group(1, 2)
+                event_name, prob = prob_re.match(line).group("name", "prob")
                 fault_tree.add_basic(event_name, prob)
             elif state_re.match(line):
-                event_name, state = state_re.match(line).group(1, 2)
+                event_name, state = state_re.match(line).group("name", "state")
                 fault_tree.add_house(event_name, state)
             elif ft_name_re.match(line):
                 if ft_name:
