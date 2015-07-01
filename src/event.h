@@ -127,7 +127,7 @@ class Formula {
   /// @throws LogicError if the formula is being re-inserted.
   void AddArgument(const boost::shared_ptr<Formula>& formula);
 
-  /// Checks if a formula is initialized correctly.
+  /// Checks if a formula is initialized correctly with the number of arguments.
   /// @throws Validation error if anything is wrong.
   void Validate();
 
@@ -157,6 +157,11 @@ class Formula {
   }
 
  private:
+  /// Formula types that require two or more argumets.
+  static const std::set<std::string> two_or_more_;
+  /// Formula types that require exacly one argument.
+  static const std::set<std::string> single_;
+
   /// Gathers nodes and connectors from arguments of the gate.
   void GatherNodesAndConnectors();
 

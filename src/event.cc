@@ -5,9 +5,16 @@
 #include <sstream>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/assign.hpp>
 #include <boost/pointer_cast.hpp>
 
 namespace scram {
+
+const std::set<std::string> Formula::two_or_more_ =
+    boost::assign::list_of ("and") ("or") ("nand") ("nor");
+
+const std::set<std::string> Formula::single_ =
+    boost::assign::list_of ("not") ("null");
 
 Event::Event(std::string id, std::string name)
     : id_(id),
@@ -24,7 +31,8 @@ void Gate::Validate() {
     const Attribute* attr = &this->GetAttribute("flavor");
     if (attr->value == "inhibit") {
       if (formula_->num_args() != 2) {
-        throw ValidationError(this->name() + "INHIBIT gate must have only 2 children");
+        throw ValidationError(this->name() +
+                              "INHIBIT gate must have only 2 children");
       }
 
       std::stringstream msg;
@@ -51,45 +59,6 @@ void Gate::Validate() {
       if (!msg.str().empty()) throw ValidationError(msg.str());
     }
   }
-}
-
-void Formula::Validate() {
-  // Formulas that should have two or more arguments.
-  std::set<std::string> two_or_more;
-  two_or_more.insert("and");
-  two_or_more.insert("or");
-  two_or_more.insert("nand");
-  two_or_more.insert("nor");
-
-  // Formulas that should have only one argument.
-  std::set<std::string> single;
-  single.insert("null");
-  single.insert("not");
-  assert(two_or_more.count(type_) || single.count(type_) ||
-         type_ == "atleast" || type_ == "xor");
-
-  std::string form = type_;  // Copying for manipulations.
-
-  int size = formula_args_.size() + event_args_.size();
-  std::stringstream msg;
-  if (two_or_more.count(form) && size < 2) {
-    boost::to_upper(form);
-    msg << form << " formula must have 2 or more arguments.";
-
-  } else if (single.count(form) && size != 1) {
-    boost::to_upper(form);
-    msg << form << " formula must have only one argument.";
-
-  } else if (form == "xor" && size != 2) {
-    boost::to_upper(form);
-    msg << form << " formula must have exactly 2 arguments.";
-
-  } else if (form == "atleast" && size <= vote_number_) {
-    boost::to_upper(form);
-    msg << form << " formula must have more arguments than its vote number "
-        << vote_number_ << ".";
-  }
-  if (!msg.str().empty()) throw ValidationError(msg.str());
 }
 
 int Formula::vote_number() {
@@ -129,6 +98,34 @@ void Formula::AddArgument(const boost::shared_ptr<Formula>& formula) {
     throw LogicError(msg);
   }
   formula_args_.insert(formula);
+}
+
+void Formula::Validate() {
+  assert(two_or_more_.count(type_) || single_.count(type_) ||
+         type_ == "atleast" || type_ == "xor");
+
+  std::string form = type_;  // Copying for manipulations.
+
+  int size = formula_args_.size() + event_args_.size();
+  std::stringstream msg;
+  if (two_or_more_.count(form) && size < 2) {
+    boost::to_upper(form);
+    msg << form << " formula must have 2 or more arguments.";
+
+  } else if (single_.count(form) && size != 1) {
+    boost::to_upper(form);
+    msg << form << " formula must have only one argument.";
+
+  } else if (form == "xor" && size != 2) {
+    boost::to_upper(form);
+    msg << form << " formula must have exactly 2 arguments.";
+
+  } else if (form == "atleast" && size <= vote_number_) {
+    boost::to_upper(form);
+    msg << form << " formula must have more arguments than its vote number "
+        << vote_number_ << ".";
+  }
+  if (!msg.str().empty()) throw ValidationError(msg.str());
 }
 
 const std::map<std::string, boost::shared_ptr<Event> >& Formula::event_args() {
