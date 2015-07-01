@@ -22,6 +22,7 @@ class FaultTree;
 class Model : public Element {
  public:
   typedef boost::shared_ptr<Parameter> ParameterPtr;
+  typedef boost::shared_ptr<Event> EventPtr;
   typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
   typedef boost::shared_ptr<Gate> GatePtr;
@@ -50,16 +51,38 @@ class Model : public Element {
   /// @throws ValidationError if a parameter with the same name already exists.
   void AddParameter(const ParameterPtr& parameter);
 
+  /// Finds a parameter from a reference. The reference is not case sensitive
+  /// and can contain the identifier, full path, or local path.
+  /// @param[in] reference Reference string to the parameter.
+  /// @returns Pointer to the parameter found by following the given reference.
+  /// @throws ValidationError if there are problems with referencing.
+  ParameterPtr GetParameter(const std::string& reference);
+
   /// @returns Parameters defined for this model.
   inline const boost::unordered_map<std::string, ParameterPtr>&
       parameters() const {
     return parameters_;
   }
 
+  /// Finds an event from a reference. The reference is not case sensitive and
+  /// can contain the identifier, full path, or local path. The returned event
+  /// may be a basic event, house event, or gate.
+  /// @param[in] reference Reference string to the event.
+  /// @returns Pointer to the event found by following the given reference.
+  /// @throws ValidationError if there are problems with referencing.
+  EventPtr GetEvent(const std::string& reference);
+
   /// Adds a house event that is used in this model.
   /// @param[in] house_event A house event defined in this model.
   /// @throws ValidationError if an event with the same name already exists.
   void AddHouseEvent(const HouseEventPtr& house_event);
+
+  /// Finds a house event from a reference. The reference is not case sensitive
+  /// and can contain the identifier, full path, or local path.
+  /// @param[in] reference Reference string to the house event.
+  /// @returns Pointer to the house event found by following the reference.
+  /// @throws ValidationError if there are problems with referencing.
+  HouseEventPtr GetHouseEvent(const std::string& reference);
 
   /// @returns House events defined for this model.
   inline const boost::unordered_map<std::string, HouseEventPtr>&
@@ -72,6 +95,13 @@ class Model : public Element {
   /// @throws ValidationError if an event with the same name already exists.
   void AddBasicEvent(const BasicEventPtr& basic_event);
 
+  /// Finds a basic event from a reference. The reference is not case sensitive
+  /// and can contain the identifier, full path, or local path.
+  /// @param[in] reference Reference string to the basic event.
+  /// @returns Pointer to the basic event found by following the reference.
+  /// @throws ValidationError if there are problems with referencing.
+  BasicEventPtr GetBasicEvent(const std::string& reference);
+
   /// @returns Basic events defined for this model.
   inline const boost::unordered_map<std::string, BasicEventPtr>&
       basic_events() const {
@@ -82,6 +112,13 @@ class Model : public Element {
   /// @param[in] gate A gate defined in this model.
   /// @throws ValidationError if an event with the same name already exists.
   void AddGate(const GatePtr& gate);
+
+  /// Finds a gate from a reference. The reference is not case sensitive
+  /// and can contain the identifier, full path, or local path.
+  /// @param[in] reference Reference string to the gate.
+  /// @returns Pointer to the gate found by following the reference.
+  /// @throws ValidationError if there are problems with referencing.
+  GatePtr GetGate(const std::string& reference);
 
   /// @returns Gates defined for this model.
   inline const boost::unordered_map<std::string, GatePtr>& gates() const {

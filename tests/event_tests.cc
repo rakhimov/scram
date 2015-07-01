@@ -51,7 +51,7 @@ TEST(FormulaTest, Arguments) {
   // Adding first child.
   EXPECT_NO_THROW(top->AddArgument(first_child));
   // Re-adding a child must cause an error.
-  EXPECT_THROW(top->AddArgument(first_child), LogicError);
+  EXPECT_THROW(top->AddArgument(first_child), ValidationError);
   // Check the contents of the children container.
   children.insert(std::make_pair(first_child->id(), first_child));
   EXPECT_EQ(children, top->event_args());

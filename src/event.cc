@@ -117,8 +117,8 @@ void Formula::vote_number(int vnumber) {
 
 void Formula::AddArgument(const boost::shared_ptr<Event>& event) {
   if (event_args_.count(event->id())) {
-    std::string msg = "Trying to re-insert an event as an argument";
-    throw LogicError(msg);
+    std::string msg = "Detected a repeated argument: " + event->name();
+    throw ValidationError(msg);
   }
   event_args_.insert(std::make_pair(event->id(), event));
 }

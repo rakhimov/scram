@@ -33,6 +33,36 @@ void Model::AddParameter(const ParameterPtr& parameter) {
   parameters_.insert(std::make_pair(name, parameter));
 }
 
+boost::shared_ptr<Parameter> Model::GetParameter(const std::string& reference) {
+  std::string id = reference;
+  boost::to_lower(id);
+  if (parameters_.count(id)) {
+    return parameters_.find(id)->second;
+
+  } else {
+    std::string msg = "Undefined parameter: " + reference;
+    throw ValidationError(msg);
+  }
+}
+
+boost::shared_ptr<Event> Model::GetEvent(const std::string& reference) {
+  std::string id = reference;
+  boost::to_lower(id);
+  if (basic_events_.count(id)) {
+    return basic_events_.find(id)->second;
+
+  } else if (gates_.count(id)) {
+    return gates_.find(id)->second;
+
+  } else if (house_events_.count(id)) {
+    return house_events_.find(id)->second;
+
+  } else {
+    std::string msg = "Undefined event: " + reference;
+    throw ValidationError(msg);
+  }
+}
+
 void Model::AddHouseEvent(const HouseEventPtr& house_event) {
   std::string name = house_event->name();
   boost::to_lower(name);
@@ -43,6 +73,19 @@ void Model::AddHouseEvent(const HouseEventPtr& house_event) {
     throw ValidationError(msg);
   }
   house_events_.insert(std::make_pair(name, house_event));
+}
+
+boost::shared_ptr<HouseEvent> Model::GetHouseEvent(
+    const std::string& reference) {
+  std::string id = reference;
+  boost::to_lower(id);
+  if (house_events_.count(id)) {
+    return house_events_.find(id)->second;
+
+  } else {
+    std::string msg = "Undefined house event: " + reference;
+    throw ValidationError(msg);
+  }
 }
 
 void Model::AddBasicEvent(const BasicEventPtr& basic_event) {
@@ -57,6 +100,19 @@ void Model::AddBasicEvent(const BasicEventPtr& basic_event) {
   basic_events_.insert(std::make_pair(name, basic_event));
 }
 
+boost::shared_ptr<BasicEvent> Model::GetBasicEvent(
+    const std::string& reference) {
+  std::string id = reference;
+  boost::to_lower(id);
+  if (basic_events_.count(id)) {
+    return basic_events_.find(id)->second;
+
+  } else {
+    std::string msg = "Undefined basic event: " + reference;
+    throw ValidationError(msg);
+  }
+}
+
 void Model::AddGate(const GatePtr& gate) {
   std::string name = gate->name();
   boost::to_lower(name);
@@ -67,6 +123,18 @@ void Model::AddGate(const GatePtr& gate) {
     throw ValidationError(msg);
   }
   gates_.insert(std::make_pair(name, gate));
+}
+
+boost::shared_ptr<Gate> Model::GetGate(const std::string& reference) {
+  std::string id = reference;
+  boost::to_lower(id);
+  if (gates_.count(id)) {
+    return gates_.find(id)->second;
+
+  } else {
+    std::string msg = "Undefined gate: " + reference;
+    throw ValidationError(msg);
+  }
 }
 
 void Model::AddCcfGroup(const CcfGroupPtr& ccf_group) {

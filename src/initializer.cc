@@ -154,8 +154,7 @@ void Initializer::ProcessTbdElements() {
           boost::dynamic_pointer_cast<BasicEvent>(it->first);
       DefineBasicEvent(it->second, basic_event);
     } else if (boost::dynamic_pointer_cast<Gate>(it->first)) {
-      GatePtr gate =
-          boost::dynamic_pointer_cast<Gate>(it->first);
+      GatePtr gate = boost::dynamic_pointer_cast<Gate>(it->first);
       DefineGate(it->second, gate);
     } else if (boost::dynamic_pointer_cast<CcfGroup>(it->first)) {
       CcfGroupPtr ccf_group = boost::dynamic_pointer_cast<CcfGroup>(it->first);
@@ -391,52 +390,44 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
                                              "name() = 'gate' or "
                                              "name() = 'basic-event' or "
                                              "name() = 'house-event']");
-  std::set<std::string> children_id;  // To detect repeated children.
   xmlpp::NodeSet::const_iterator it;
   for (it = events.begin(); it != events.end(); ++it) {
     const xmlpp::Element* event = dynamic_cast<const xmlpp::Element*>(*it);
     assert(event);
     std::string name = event->get_attribute_value("name");
     boost::trim(name);
-    std::string id = name;
-    boost::to_lower(id);
-
-    if (children_id.count(id)) {
-      std::stringstream msg;
-      msg << "Line " << event->get_line() << ":\n";
-      msg << "Detected a repeated child " << name;
-      throw ValidationError(msg.str());
-    } else {
-      children_id.insert(id);
-    }
 
     std::string element_type = event->get_name();
-    // This is for a case "<event name="id" type="type"/>".
+    // This is for the case "<event name="id" type="type"/>".
     std::string type = event->get_attribute_value("type");
     boost::trim(type);
     if (type != "") {
-      assert(type == "gate" || type == "basic-event" ||
-             type == "house-event");
+      assert(type == "gate" || type == "basic-event" || type == "house-event");
       element_type = type;  // Event type is defined.
     }
 
-    EventPtr child(new Event(id));
-    child->name(name);
-    if (element_type == "event") {  // Undefined type yet.
-      Initializer::ProcessFormulaEvent(event, child);
+    try {
+      EventPtr child;
+      if (element_type == "event") {  // Undefined type yet.
+        child = model_->GetEvent(name);
 
-    } else if (element_type == "gate") {
-      Initializer::ProcessFormulaGate(event, child);
+      } else if (element_type == "gate") {
+        child = model_->GetGate(name);
 
-    } else if (element_type == "basic-event") {
-      Initializer::ProcessFormulaBasicEvent(event, child);
+      } else if (element_type == "basic-event") {
+        child = model_->GetBasicEvent(name);
 
-    } else if (element_type == "house-event") {
-      Initializer::ProcessFormulaHouseEvent(event, child);
+      } else if (element_type == "house-event") {
+        child = model_->GetHouseEvent(name);
+      }
+      formula->AddArgument(child);
+      child->orphan(false);
+    } catch (ValidationError& err) {
+      std::stringstream msg;
+      msg << "Line " << event->get_line() << ":\n";
+      msg << err.msg();
+      throw ValidationError(msg.str());
     }
-
-    formula->AddArgument(child);
-    child->orphan(false);
   }
 
   xmlpp::NodeSet formulas = formula_node->find("./*[name() != 'event' and "
@@ -449,66 +440,6 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
     assert(nested_formula);
     formula->AddArgument(Initializer::GetFormula(nested_formula));
   }
-}
-
-void Initializer::ProcessFormulaEvent(const xmlpp::Element* event,
-                                      EventPtr& child) {
-  std::string id = child->id();
-  if (model_->basic_events().count(id)) {
-    child = model_->basic_events().find(id)->second;
-
-  } else if (model_->gates().count(id)) {
-    child = model_->gates().find(id)->second;
-
-  } else if (model_->house_events().count(id)) {
-    child = model_->house_events().find(id)->second;
-
-  } else {
-    std::stringstream msg;
-    msg << "Line " << event->get_line() << ":\n";
-    msg << "Undefined event: " << child->name();
-    throw ValidationError(msg.str());
-  }
-}
-
-void Initializer::ProcessFormulaBasicEvent(const xmlpp::Element* event,
-                                           EventPtr& child) {
-  std::string id = child->id();
-  std::string name = child->name();
-  if (!model_->basic_events().count(id)) {
-    std::stringstream msg;
-    msg << "Line " << event->get_line() << ":\n";
-    msg << "Undefined basic event: " << name;
-    throw ValidationError(msg.str());
-  }
-  child = model_->basic_events().find(id)->second;
-}
-
-void Initializer::ProcessFormulaHouseEvent(const xmlpp::Element* event,
-                                           EventPtr& child) {
-  std::string id = child->id();
-  if (model_->house_events().count(id)) {
-    child = model_->house_events().find(id)->second;
-
-  } else {
-    std::stringstream msg;
-    msg << "Line " << event->get_line() << ":\n";
-    msg << "Undefined house event: " << child->name();
-    throw ValidationError(msg.str());
-  }
-}
-
-void Initializer::ProcessFormulaGate(const xmlpp::Element* event,
-                                     EventPtr& child) {
-  std::string id = child->id();
-  std::string name = child->name();
-  if (!model_->gates().count(id)) {
-    std::stringstream msg;
-    msg << "Line " << event->get_line() << ":\n";
-    msg << "Undefined gate: " << name;
-    throw ValidationError(msg.str());
-  }
-  child = model_->gates().find(id)->second;
 }
 
 boost::shared_ptr<BasicEvent> Initializer::RegisterBasicEvent(
@@ -667,17 +598,15 @@ bool Initializer::GetParameterExpression(const xmlpp::Element* expr_element,
   if (expr_name == "parameter") {
     std::string name = expr_element->get_attribute_value("name");
     boost::trim(name);
-    std::string id = name;
-    boost::to_lower(id);
-    if (model_->parameters().count(id)) {
-      ParameterPtr param = model_->parameters().find(id)->second;
+    try {
+      ParameterPtr param = model_->GetParameter(name);
       param->unused(false);
       param_unit = unit_to_string_[param->unit()];
       expression = param;
-    } else {
+    } catch (ValidationError& err) {
       std::stringstream msg;
       msg << "Line " << expr_element->get_line() << ":\n";
-      msg << "Undefined parameter: " << name;
+      msg << err.msg();
       throw ValidationError(msg.str());
     }
   } else if (expr_name == "system-mission-time") {

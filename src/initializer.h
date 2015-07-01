@@ -146,29 +146,6 @@ class Initializer {
   void ProcessFormula(const xmlpp::Element* formula_node,
                       const FormulaPtr& formula);
 
-  /// Process [event name=id] cases inside of a one layer formula description.
-  /// @param[in] event XML element defining this event.
-  /// @param[out] child The child the currently processed formula.
-  void ProcessFormulaEvent(const xmlpp::Element* event, EventPtr& child);
-
-  /// Process [basic-event name=id] cases inside of a one layer
-  /// formula description.
-  /// @param[in] event XML element defining this event.
-  /// @param[out] child The child the currently processed formula.
-  void ProcessFormulaBasicEvent(const xmlpp::Element* event, EventPtr& child);
-
-  /// Process [house-event name=id] cases inside of a one layer
-  /// formula description.
-  /// @param[in] event XML element defining this event.
-  /// @param[out] child The child the currently processed formula.
-  void ProcessFormulaHouseEvent(const xmlpp::Element* event, EventPtr& child);
-
-  /// Process [gate name=id]cases inside of a one layer
-  /// formula description.
-  /// @param[in] event XML element defining this event.
-  /// @param[out] child The child the currently processed formula.
-  void ProcessFormulaGate(const xmlpp::Element* event, EventPtr& child);
-
   /// Registers a basic event for later definition.
   /// @param[in] event_node XML element defining the event.
   /// @returns Pointer to the registered basic event.

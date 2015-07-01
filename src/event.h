@@ -119,7 +119,7 @@ class Formula {
 
   /// Adds an event into the arguments list.
   /// @param[in] event A pointer to an argument event.
-  /// @throws LogicError if the argument is being re-inserted.
+  /// @throws ValidationError if the argument is being re-inserted.
   void AddArgument(const boost::shared_ptr<Event>& event);
 
   /// Adds a formula into the arguments list.
