@@ -4,11 +4,19 @@
 
 #include <sstream>
 
+#include <boost/algorithm/string.hpp>
+
 namespace scram {
 
-CcfGroup::CcfGroup(std::string name, std::string model)
-    : name_(name),
-      model_(model) {}
+CcfGroup::CcfGroup(const std::string& name, const std::string& model,
+                   const std::string& base_path, bool is_public)
+    : Role::Role(is_public, base_path),
+      name_(name),
+      model_(model) {
+  assert(name != "");
+  id_ = is_public ? name : base_path + "." + name;  // Unique combination.
+  boost::to_lower(id_);
+}
 
 void CcfGroup::AddMember(const BasicEventPtr& basic_event) {
   if (distribution_) {

@@ -50,7 +50,7 @@ void FaultTree::AddParameter(const ParameterPtr& parameter) {
 }
 
 void FaultTree::AddCcfGroup(const CcfGroupPtr& ccf_group) {
-  std::string name = ccf_group->name();
+  std::string name = ccf_group->id();
   boost::to_lower(name);
   if (ccf_groups_.count(name)) {
     throw ValidationError("Trying to re-add ccf group " +

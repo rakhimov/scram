@@ -128,8 +128,7 @@ boost::shared_ptr<Gate> Model::GetGate(const std::string& reference) {
 }
 
 void Model::AddCcfGroup(const CcfGroupPtr& ccf_group) {
-  std::string name = ccf_group->name();
-  boost::to_lower(name);
+  std::string name = ccf_group->id();
   if (ccf_groups_.count(name)) {
     std::string msg = "CCF group " + ccf_group->name() + " already exists.";
     throw ValidationError(msg);

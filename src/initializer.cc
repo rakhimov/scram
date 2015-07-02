@@ -800,16 +800,16 @@ boost::shared_ptr<CcfGroup> Initializer::RegisterCcfGroup(
 
   CcfGroupPtr ccf_group;
   if (model == "beta-factor") {
-    ccf_group = CcfGroupPtr(new BetaFactorModel(name));
+    ccf_group = CcfGroupPtr(new BetaFactorModel(name, base_path));
 
   } else if (model == "MGL") {
-    ccf_group = CcfGroupPtr(new MglModel(name));
+    ccf_group = CcfGroupPtr(new MglModel(name, base_path));
 
   } else if (model == "alpha-factor") {
-    ccf_group = CcfGroupPtr(new AlphaFactorModel(name));
+    ccf_group = CcfGroupPtr(new AlphaFactorModel(name, base_path));
 
   } else if (model == "phi-factor") {
-    ccf_group = CcfGroupPtr(new PhiFactorModel(name));
+    ccf_group = CcfGroupPtr(new PhiFactorModel(name, base_path));
   }
 
   try {
