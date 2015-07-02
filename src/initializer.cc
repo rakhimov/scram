@@ -215,21 +215,24 @@ void Initializer::DefineFaultTree(const xmlpp::Element* ft_node) {
     msg << err.msg();
     throw ValidationError(msg.str());
   }
-  Initializer::RegisterFaultTreeData(ft_node, fault_tree);
+  Initializer::RegisterFaultTreeData(ft_node, fault_tree, name);
 }
 
 boost::shared_ptr<Component> Initializer::DefineComponent(
-    const xmlpp::Element* component_node) {
+    const xmlpp::Element* component_node,
+    const std::string& base_path) {
   std::string name = component_node->get_attribute_value("name");
   boost::trim(name);
   assert(!name.empty());
   ComponentPtr component = ComponentPtr(new Component(name));
-  Initializer::RegisterFaultTreeData(component_node, component);
+  Initializer::RegisterFaultTreeData(component_node, component,
+                                     base_path + "." + name);
   return component;
 }
 
 void Initializer::RegisterFaultTreeData(const xmlpp::Element* ft_node,
-                                        const FaultTreePtr& fault_tree) {
+                                        const FaultTreePtr& fault_tree,
+                                        const std::string& base_path) {
   Initializer::AttachLabelAndAttributes(ft_node, fault_tree);
 
   xmlpp::NodeSet house_events = ft_node->find("./define-house-event");
@@ -243,36 +246,39 @@ void Initializer::RegisterFaultTreeData(const xmlpp::Element* ft_node,
   for (it = house_events.begin(); it != house_events.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
-    fault_tree->AddHouseEvent(Initializer::DefineHouseEvent(element));
+    fault_tree->AddHouseEvent(Initializer::DefineHouseEvent(element,
+                                                            base_path));
   }
   CLOCK(basic_time);
   for (it = basic_events.begin(); it != basic_events.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
-    fault_tree->AddBasicEvent(Initializer::RegisterBasicEvent(element));
+    fault_tree->AddBasicEvent(Initializer::RegisterBasicEvent(element,
+                                                              base_path));
   }
   LOG(DEBUG2) << "Basic event registration time " << DUR(basic_time);
   for (it = parameters.begin(); it != parameters.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
-    fault_tree->AddParameter(Initializer::RegisterParameter(element));
+    fault_tree->AddParameter(Initializer::RegisterParameter(element,
+                                                            base_path));
   }
   CLOCK(gate_time);
   for (it = gates.begin(); it != gates.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
-    fault_tree->AddGate(Initializer::RegisterGate(element));
+    fault_tree->AddGate(Initializer::RegisterGate(element, base_path));
   }
   LOG(DEBUG2) << "Gate registration time " << DUR(gate_time);
   for (it = ccf_groups.begin(); it != ccf_groups.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
-    fault_tree->AddCcfGroup(Initializer::RegisterCcfGroup(element));
+    fault_tree->AddCcfGroup(Initializer::RegisterCcfGroup(element, base_path));
   }
   for (it = components.begin(); it != components.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
-    ComponentPtr component = Initializer::DefineComponent(element);
+    ComponentPtr component = Initializer::DefineComponent(element, base_path);
     try {
       fault_tree->AddComponent(component);
     } catch (ValidationError& err) {
@@ -311,13 +317,11 @@ void Initializer::ProcessModelData(const xmlpp::Element* model_data) {
 }
 
 boost::shared_ptr<Gate> Initializer::RegisterGate(
-    const xmlpp::Element* gate_node) {
+    const xmlpp::Element* gate_node,
+    const std::string& base_path) {
   std::string name = gate_node->get_attribute_value("name");
   boost::trim(name);
-  std::string id = name;
-  boost::to_lower(id);
-  GatePtr gate(new Gate(name));
-
+  GatePtr gate(new Gate(name, base_path));
   try {
     model_->AddGate(gate);
   } catch (ValidationError& err) {
@@ -326,11 +330,8 @@ boost::shared_ptr<Gate> Initializer::RegisterGate(
     msg << err.msg();
     throw ValidationError(msg.str());
   }
-
   tbd_elements_.push_back(std::make_pair(gate, gate_node));
-
   Initializer::AttachLabelAndAttributes(gate_node, gate);
-
   return gate;
 }
 
@@ -442,12 +443,11 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
 }
 
 boost::shared_ptr<BasicEvent> Initializer::RegisterBasicEvent(
-    const xmlpp::Element* event_node) {
+    const xmlpp::Element* event_node,
+    const std::string& base_path) {
   std::string name = event_node->get_attribute_value("name");
   boost::trim(name);
-  std::string id = name;
-  boost::to_lower(id);
-  BasicEventPtr basic_event = BasicEventPtr(new BasicEvent(name));
+  BasicEventPtr basic_event(new BasicEvent(name, base_path));
   try {
     model_->AddBasicEvent(basic_event);
   } catch (ValidationError& err) {
@@ -476,12 +476,11 @@ void Initializer::DefineBasicEvent(const xmlpp::Element* event_node,
 }
 
 boost::shared_ptr<HouseEvent> Initializer::DefineHouseEvent(
-    const xmlpp::Element* event_node) {
+    const xmlpp::Element* event_node,
+    const std::string& base_path) {
   std::string name = event_node->get_attribute_value("name");
   boost::trim(name);
-  std::string id = name;
-  boost::to_lower(id);
-  HouseEventPtr house_event = HouseEventPtr(new HouseEvent(name));
+  HouseEventPtr house_event(new HouseEvent(name, base_path));
   try {
     model_->AddHouseEvent(house_event);
   } catch (ValidationError& err) {
@@ -510,10 +509,11 @@ boost::shared_ptr<HouseEvent> Initializer::DefineHouseEvent(
 }
 
 boost::shared_ptr<Parameter> Initializer::RegisterParameter(
-    const xmlpp::Element* param_node) {
+    const xmlpp::Element* param_node,
+    const std::string& base_path) {
   std::string name = param_node->get_attribute_value("name");
   boost::trim(name);
-  ParameterPtr parameter = ParameterPtr(new Parameter(name));
+  ParameterPtr parameter(new Parameter(name, base_path));
   try {
     model_->AddParameter(parameter);
   } catch (ValidationError& err) {
@@ -789,7 +789,8 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
 }
 
 boost::shared_ptr<CcfGroup> Initializer::RegisterCcfGroup(
-    const xmlpp::Element* ccf_node) {
+    const xmlpp::Element* ccf_node,
+    const std::string& base_path) {
   std::string name = ccf_node->get_attribute_value("name");
   boost::trim(name);
   std::string model = ccf_node->get_attribute_value("model");

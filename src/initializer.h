@@ -103,19 +103,23 @@ class Initializer {
 
   /// Defines a component container.
   /// @param[in] component_node XML element defining the component.
+  /// @param[in] base_path Series of ancestor containers in the path with dots.
   /// @returns Component that is ready for registration.
   /// @throws ValidationError if there are issues with registering and defining
   ///                         the component and its data like gates and events.
-  ComponentPtr DefineComponent(const xmlpp::Element* component_node);
+  ComponentPtr DefineComponent(const xmlpp::Element* component_node,
+                               const std::string& base_path);
 
   /// Registers fault tree and component data like gates, events, parameters.
   /// @param[in] ft_node XML element defining the fault tree or component.
   /// @param[in/out] fault_tree The component or fault tree container that is
   ///                           the owner of the data.
+  /// @param[in] base_path Series of ancestor containers in the path with dots.
   /// @throws ValidationError if there are issues with registering and defining
   ///                         the component's data like gates and events.
   void RegisterFaultTreeData(const xmlpp::Element* ft_node,
-                             const FaultTreePtr& fault_tree);
+                             const FaultTreePtr& fault_tree,
+                             const std::string& base_path);
 
   /// Processes model data with definitions of events and analysis.
   /// @param[in] model_data XML node with model data description.
@@ -123,9 +127,11 @@ class Initializer {
 
   /// Registers a gate for later definition.
   /// @param[in] gate_node XML element defining the gate.
+  /// @param[in] base_path Series of ancestor containers in the path with dots.
   /// @returns Pointer to the registered gate.
   /// @throws ValidationError if an event with the same name is already defined.
-  GatePtr RegisterGate(const xmlpp::Element* gate_node);
+  GatePtr RegisterGate(const xmlpp::Element* gate_node,
+                       const std::string& base_path = "");
 
   /// Defines a gate for this analysis.
   /// @param[in] gate_node XML element defining the gate.
@@ -148,9 +154,11 @@ class Initializer {
 
   /// Registers a basic event for later definition.
   /// @param[in] event_node XML element defining the event.
+  /// @param[in] base_path Series of ancestor containers in the path with dots.
   /// @returns Pointer to the registered basic event.
   /// @throws ValidationError if an event with the same name is already defined.
-  BasicEventPtr RegisterBasicEvent(const xmlpp::Element* event_node);
+  BasicEventPtr RegisterBasicEvent(const xmlpp::Element* event_node,
+                                   const std::string& base_path = "");
 
   /// Defines a basic event for this analysis.
   /// @param[in] event_node XML element defining the event.
@@ -160,15 +168,19 @@ class Initializer {
 
   /// Defines and adds a house event for this analysis.
   /// @param[in] event_node XML element defining the event.
+  /// @param[in] base_path Series of ancestor containers in the path with dots.
   /// @returns Pointer to the registered house event.
   /// @throws ValidationError if an event with the same name is already defined.
-  HouseEventPtr DefineHouseEvent(const xmlpp::Element* event_node);
+  HouseEventPtr DefineHouseEvent(const xmlpp::Element* event_node,
+                                 const std::string& base_path = "");
 
   /// Registers a variable or parameter.
   /// @param[in] param_node XML element defining the parameter.
+  /// @param[in] base_path Series of ancestor containers in the path with dots.
   /// @returns Pointer to the registered parameter.
   /// @throws ValidationError if the parameter is already registered.
-  ParameterPtr RegisterParameter(const xmlpp::Element* param_node);
+  ParameterPtr RegisterParameter(const xmlpp::Element* param_node,
+                                 const std::string& base_path = "");
 
   /// Defines a variable or parameter.
   /// @param[in] param_node XML element defining the parameter.
@@ -203,8 +215,10 @@ class Initializer {
 
   /// Registers a common cause failure group for later definition.
   /// @param[in] ccf_node XML element defining CCF group.
+  /// @param[in] base_path Series of ancestor containers in the path with dots.
   /// @returns Pointer to the registered CCF group.
-  CcfGroupPtr RegisterCcfGroup(const xmlpp::Element* ccf_node);
+  CcfGroupPtr RegisterCcfGroup(const xmlpp::Element* ccf_node,
+                               const std::string& base_path = "");
 
   /// Defines a common cause failure group for the analysis.
   /// @param[in] ccf_node XML element defining CCF group.
