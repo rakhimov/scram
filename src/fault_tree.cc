@@ -17,44 +17,49 @@ namespace scram {
 FaultTree::FaultTree(std::string name) : name_(name) {}
 
 void FaultTree::AddGate(const GatePtr& gate) {
-  if (gates_.count(gate->id())) {
-    throw ValidationError("Trying to re-add gate " + gate->name() + ".");
+  std::string name = gate->name();
+  boost::to_lower(name);
+  if (gates_.count(name) || basic_events_.count(name) ||
+      house_events_.count(name)) {
+    throw ValidationError("Duplicate event " + gate->name() + ".");
   }
-  gates_.insert(std::make_pair(gate->id(), gate));
+  gates_.insert(std::make_pair(name, gate));
 }
 
 void FaultTree::AddBasicEvent(const BasicEventPtr& basic_event) {
-  if (basic_events_.count(basic_event->id())) {
-    throw ValidationError("Trying to re-add basic event " +
-                          basic_event->name() + ".");
+  std::string name = basic_event->name();
+  boost::to_lower(name);
+  if (gates_.count(name) || basic_events_.count(name) ||
+      house_events_.count(name)) {
+    throw ValidationError("Duplicate event " + basic_event->name() + ".");
   }
-  basic_events_.insert(std::make_pair(basic_event->id(), basic_event));
+  basic_events_.insert(std::make_pair(name, basic_event));
 }
 
 void FaultTree::AddHouseEvent(const HouseEventPtr& house_event) {
-  if (house_events_.count(house_event->id())) {
-    throw ValidationError("Trying to re-add house event " +
-                          house_event->name() + ".");
+  std::string name = house_event->name();
+  boost::to_lower(name);
+  if (gates_.count(name) || basic_events_.count(name) ||
+      house_events_.count(name)) {
+    throw ValidationError("Duplicate event " + house_event->name() + ".");
   }
-  house_events_.insert(std::make_pair(house_event->id(), house_event));
+  house_events_.insert(std::make_pair(name, house_event));
 }
 
 void FaultTree::AddParameter(const ParameterPtr& parameter) {
   std::string name = parameter->name();
   boost::to_lower(name);
   if (parameters_.count(name)) {
-    throw ValidationError("Trying to re-add parameter " +
-                          parameter->name() + ".");
+    throw ValidationError("Duplicate parameter " + parameter->name() + ".");
   }
   parameters_.insert(std::make_pair(name, parameter));
 }
 
 void FaultTree::AddCcfGroup(const CcfGroupPtr& ccf_group) {
-  std::string name = ccf_group->id();
+  std::string name = ccf_group->name();
   boost::to_lower(name);
   if (ccf_groups_.count(name)) {
-    throw ValidationError("Trying to re-add ccf group " +
-                          ccf_group->name() + ".");
+    throw ValidationError("Duplicate ccf group " + ccf_group->name() + ".");
   }
   ccf_groups_.insert(std::make_pair(name, ccf_group));
 }
@@ -63,8 +68,7 @@ void FaultTree::AddComponent(const ComponentPtr& component) {
   std::string name = component->name();
   boost::to_lower(name);
   if (components_.count(name)) {
-    throw ValidationError("Component " +
-                          component->name() + " already exists at this level.");
+    throw ValidationError("Duplicate component " + component->name() + " .");
   }
   components_.insert(std::make_pair(name, component));
 }
