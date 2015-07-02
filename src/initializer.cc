@@ -206,7 +206,7 @@ void Initializer::DefineFaultTree(const xmlpp::Element* ft_node) {
   std::string name = ft_node->get_attribute_value("name");
   boost::trim(name);
   assert(!name.empty());
-  FaultTreePtr fault_tree = FaultTreePtr(new FaultTree(name));
+  FaultTreePtr fault_tree(new FaultTree(name));
   try {
     model_->AddFaultTree(fault_tree);
   } catch (ValidationError& err) {
@@ -224,7 +224,7 @@ boost::shared_ptr<Component> Initializer::DefineComponent(
   std::string name = component_node->get_attribute_value("name");
   boost::trim(name);
   assert(!name.empty());
-  ComponentPtr component = ComponentPtr(new Component(name));
+  ComponentPtr component(new Component(name, base_path));
   Initializer::RegisterFaultTreeData(component_node, component,
                                      base_path + "." + name);
   return component;

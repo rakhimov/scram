@@ -119,6 +119,9 @@ void FaultTree::MarkNonTopGates(const FormulaPtr& formula,
   }
 }
 
-Component::Component(std::string name) : FaultTree::FaultTree(name) {}
+Component::Component(const std::string& name, const std::string& base_path,
+                     bool is_public)
+    : FaultTree::FaultTree(name),
+      Role::Role(is_public, base_path) {}
 
 }  // namespace scram

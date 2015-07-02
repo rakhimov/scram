@@ -156,10 +156,18 @@ class FaultTree : public Element {
 
 /// @class Component
 /// Component is for logical grouping of events, gates, and other components.
-class Component : public FaultTree {
+class Component : public FaultTree, public Role {
  public:
+  /// Constructs a component assuming that exists within some fault tree.
+  /// The public or private role of a component is not for the components
+  /// itself, but for the events and parameters of the component. Component name
+  /// is not meant to be public; however, it must be unique with the parent
+  /// fault tree or component.
   /// @param[in] name The name identificator for the component.
-  explicit Component(std::string name);
+  /// @param[in] base_path The series of containers to get this container.
+  /// @param[in] is_public A flag to define public or private role for members.
+  explicit Component(const std::string& name, const std::string& base_path = "",
+                     bool is_public = true);
 };
 
 }  // namespace scram
