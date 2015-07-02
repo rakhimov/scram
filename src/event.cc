@@ -16,13 +16,20 @@ const std::set<std::string> Formula::two_or_more_ =
 const std::set<std::string> Formula::single_ =
     boost::assign::list_of ("not") ("null");
 
-Event::Event(std::string id, std::string name)
-    : id_(id),
+Event::Event(const std::string& name, const std::string& base_path,
+             bool is_public)
+    : Role::Role(is_public),
       name_(name),
-      orphan_(true) {}
+      base_path_(base_path),
+      orphan_(true) {
+  assert(name != "");
+  id_ = is_public ? name : base_path + "." + name;  // Unique combination.
+  boost::to_lower(id_);
+}
 
-Gate::Gate(std::string id)
-    : Event(id),
+Gate::Gate(const std::string& name, const std::string& base_path,
+           bool is_public)
+    : Event(name, base_path, is_public),
       mark_("") {}
 
 void Gate::Validate() {

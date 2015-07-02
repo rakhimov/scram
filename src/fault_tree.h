@@ -36,6 +36,8 @@ class FaultTree : public Element {
   /// @param[in] name The name identificator of this fault tree.
   explicit FaultTree(std::string name);
 
+  virtual ~FaultTree() {}
+
   /// Adds a gate into this fault tree container.
   /// @param[in] gate The gate to be added to this tree.
   /// @throws ValidationError for re-added gates.

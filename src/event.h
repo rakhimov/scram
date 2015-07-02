@@ -20,12 +20,15 @@ class Formula;  // Needed for being used by events.
 
 /// @class Event
 /// General fault tree event base class.
-class Event : public Element {
+class Event : public Element, public Role {
  public:
-  /// Constructs a fault tree event with a specific id.
-  /// @param[in] id The identifying name for the event.
+  /// Constructs a fault tree event with a specific id. It is assumed that names
+  /// and other strings do not have leading and trailing whitespace characters.
   /// @param[in] name The identifying name with caps preserved.
-  explicit Event(std::string id, std::string name = "");
+  /// @param[in] base_path The series of containers to get this event.
+  /// @param[in] is_public Whether or not the event is public.
+  explicit Event(const std::string& name, const std::string& base_path = "",
+                 bool is_public = true);
 
   virtual ~Event() {}
 
@@ -35,9 +38,8 @@ class Event : public Element {
   /// @returns The original name with capitalizations.
   inline const std::string& name() const { return name_; }
 
-  /// Sets the original name with capitalizations preserved.
-  /// @param[in] id_with_caps The id name with capitalizations.
-  void name(std::string id_with_caps) { name_ = id_with_caps; }
+  /// @returns The base path containing ancestor container names.
+  inline const std::string& base_path() const { return base_path_; }
 
   /// Sets the orphanage state.
   inline void orphan(bool state) { orphan_ = state; }
@@ -48,6 +50,7 @@ class Event : public Element {
  private:
   std::string id_;  ///< Id name of a event. It is in lower case.
   std::string name_;  ///< Original name with capitalizations preserved.
+  std::string base_path_;  ///< A series of containters leading to this event.
   bool orphan_;  ///< Indication of an orphan node.
 };
 
@@ -56,8 +59,11 @@ class Event : public Element {
 class Gate : public Event {
  public:
   /// Constructs with an id and a gate.
-  /// @param[in] id The identifying name for this event.
-  explicit Gate(std::string id);
+  /// @param[in] name The identifying name with caps preserved.
+  /// @param[in] base_path The series of containers to get this event.
+  /// @param[in] is_public Whether or not the event is public.
+  explicit Gate(const std::string& name, const std::string& base_path = "",
+                bool is_public = true);
 
   /// Sets the formula of this gate.
   /// @param[in] formula Boolean formula of this gate.
@@ -184,10 +190,13 @@ class PrimaryEvent : public Event {
   /// Constructs with id name and probability.
   /// @param[in] id The identifying name of this primary event.
   /// @param[in] type The type of the event.
-  explicit PrimaryEvent(std::string id, std::string type = "")
-      : type_(type),
-        has_expression_(false),
-        Event(id) {}
+  explicit PrimaryEvent(const std::string& name,
+                        const std::string& base_path = "",
+                        bool is_public = true,
+                        const std::string& type = "")
+      : Event(name, base_path, is_public),
+        type_(type),
+        has_expression_(false) {}
 
   virtual ~PrimaryEvent() {}
 
@@ -213,7 +222,10 @@ class BasicEvent : public PrimaryEvent {
 
   /// Constructs with id name.
   /// @param[in] id The identifying name of this basic event.
-  explicit BasicEvent(std::string id) : PrimaryEvent(id, "basic") {}
+  explicit BasicEvent(const std::string& name,
+                      const std::string& base_path = "",
+                      bool is_public = true)
+      : PrimaryEvent(name, base_path, is_public, "basic") {}
 
   virtual ~BasicEvent() {}
 
@@ -294,9 +306,11 @@ class HouseEvent : public PrimaryEvent {
  public:
   /// Constructs with id name.
   /// @param[in] id The identifying name of this house event.
-  explicit HouseEvent(std::string id)
+  explicit HouseEvent(const std::string& name,
+                      const std::string& base_path = "",
+                      bool is_public = true)
       : state_(false),
-        PrimaryEvent(id, "house") {}
+        PrimaryEvent(name, base_path, is_public, "house") {}
 
   /// Sets the state for House event.
   /// @param[in] constant False or True for the state of this house event.
@@ -323,11 +337,11 @@ class CcfEvent : public BasicEvent {
   /// Constructs CCF event with id name that is used for internal purposes.
   /// This id is formatted by CcfGroup. The original name is also formatted by
   /// CcfGroup, but the original name may not be suitable for reporting.
-  /// @param[in] id The identifying name of this CCF event.
+  /// @param[in] name The identifying name of this CCF event.
   /// @param[in] ccf_group_name The name of CCF group for reporting.
   /// @param[in] ccf_group_size The total size of CCF group for reporting.
-  CcfEvent(std::string id, std::string ccf_group_name, int ccf_group_size)
-      : BasicEvent(id),
+  CcfEvent(std::string name, std::string ccf_group_name, int ccf_group_size)
+      : BasicEvent(name),
         ccf_group_name_(ccf_group_name),
         ccf_group_size_(ccf_group_size) {}
 

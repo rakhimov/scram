@@ -63,15 +63,12 @@ TEST(FormulaTest, Arguments) {
 
 TEST(GateTest, Cycle) {
   GatePtr top(new Gate("Top"));
-  top->name("Top");
   FormulaPtr formula_one(new Formula("not"));
   top->formula(formula_one);
   GatePtr middle(new Gate("Middle"));
-  middle->name("Middle");
   FormulaPtr formula_two(new Formula("not"));
   middle->formula(formula_two);
   GatePtr bottom(new Gate("Bottom"));
-  bottom->name("Bottom");
   FormulaPtr formula_three(new Formula("not"));
   bottom->formula(formula_three);
   formula_one->AddArgument(middle);

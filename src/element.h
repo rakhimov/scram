@@ -25,6 +25,8 @@ class Element {
  public:
   Element();
 
+  virtual ~Element() {}
+
   /// @returns The empty or preset label.
   /// @returns Empty string if the label has not been set.
   inline std::string label() { return label_; }
@@ -48,11 +50,27 @@ class Element {
   /// @throws LogicError if there is no such attribute.
   const Attribute& GetAttribute(const std::string& id);
 
-  virtual ~Element() {}
-
  private:
   std::string label_;  ///< The label for the element.
   std::map<std::string, Attribute> attributes_;  ///< Collection of attributes.
+};
+
+/// @class Role
+/// Private or public roles for elements as needed. Public is the default
+/// assumption. It is expected to set only once and never changes.
+class Role {
+ public:
+  /// Sets the role of an element upon creation.
+  /// @param[in] is_public A flag to define public or private role.
+  explicit Role(bool is_public = true) : is_public_(is_public) {}
+
+  virtual ~Role() {}
+
+  /// @returns True for public roles, or False for private roles.
+  inline bool is_public() { return is_public_; }
+
+ private:
+  bool is_public_;  ///< A flag for public and private roles.
 };
 
 }  // namespace scram

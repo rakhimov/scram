@@ -316,8 +316,7 @@ boost::shared_ptr<Gate> Initializer::RegisterGate(
   boost::trim(name);
   std::string id = name;
   boost::to_lower(id);
-  GatePtr gate(new Gate(id));
-  gate->name(name);
+  GatePtr gate(new Gate(name));
 
   try {
     model_->AddGate(gate);
@@ -448,8 +447,7 @@ boost::shared_ptr<BasicEvent> Initializer::RegisterBasicEvent(
   boost::trim(name);
   std::string id = name;
   boost::to_lower(id);
-  BasicEventPtr basic_event = BasicEventPtr(new BasicEvent(id));
-  basic_event->name(name);
+  BasicEventPtr basic_event = BasicEventPtr(new BasicEvent(name));
   try {
     model_->AddBasicEvent(basic_event);
   } catch (ValidationError& err) {
@@ -483,8 +481,7 @@ boost::shared_ptr<HouseEvent> Initializer::DefineHouseEvent(
   boost::trim(name);
   std::string id = name;
   boost::to_lower(id);
-  HouseEventPtr house_event = HouseEventPtr(new HouseEvent(id));
-  house_event->name(name);
+  HouseEventPtr house_event = HouseEventPtr(new HouseEvent(name));
   try {
     model_->AddHouseEvent(house_event);
   } catch (ValidationError& err) {
@@ -885,8 +882,7 @@ void Initializer::ProcessCcfMembers(const xmlpp::Element* members_node,
       throw ValidationError(msg.str());
     }
     member_ids.insert(id);
-    BasicEventPtr basic_event = BasicEventPtr(new BasicEvent(id));
-    basic_event->name(name);
+    BasicEventPtr basic_event = BasicEventPtr(new BasicEvent(name));
     try {
       model_->AddBasicEvent(basic_event);
     } catch (ValidationError& err) {
