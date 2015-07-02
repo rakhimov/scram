@@ -58,9 +58,10 @@ class FaultTree : public Element {
   /// @throws ValidationError for re-added parameter.
   void AddParameter(const ParameterPtr& parameter);
 
-  /// Adds a ccf group into this fault tree containter.
+  /// Adds a ccf group and its members into this fault tree containter.
   /// @param[in] ccf_group The ccf group to be added to this container.
-  /// @throws ValidationError for re-added ccf groups.
+  /// @throws ValidationError for re-added ccf groups or duplicate basic event
+  ///         members.
   void AddCcfGroup(const CcfGroupPtr& ccf_group);
 
   /// Adds a component container into this fault tree containter.

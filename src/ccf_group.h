@@ -37,6 +37,11 @@ class CcfGroup : public Element, public Role {
   /// @returns The CCF model applied to this group.
   inline const std::string& model() const { return model_; }
 
+  /// @returns Members of the CCF group with lower-case names as keys.
+  inline const std::map<std::string, BasicEventPtr>& members() const {
+    return members_;
+  }
+
   /// Adds a basic event into this CCF group.
   /// This function asserts that each basic event has unique string id.
   /// @param[in] basic_event A member basic event.

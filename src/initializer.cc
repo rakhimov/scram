@@ -153,12 +153,15 @@ void Initializer::ProcessTbdElements() {
       BasicEventPtr basic_event =
           boost::dynamic_pointer_cast<BasicEvent>(it->first);
       DefineBasicEvent(it->second, basic_event);
+
     } else if (boost::dynamic_pointer_cast<Gate>(it->first)) {
       GatePtr gate = boost::dynamic_pointer_cast<Gate>(it->first);
       DefineGate(it->second, gate);
+
     } else if (boost::dynamic_pointer_cast<CcfGroup>(it->first)) {
       CcfGroupPtr ccf_group = boost::dynamic_pointer_cast<CcfGroup>(it->first);
       DefineCcfGroup(it->second, ccf_group);
+
     } else if (boost::dynamic_pointer_cast<Parameter>(it->first)) {
       ParameterPtr param = boost::dynamic_pointer_cast<Parameter>(it->first);
       DefineParameter(it->second, param);

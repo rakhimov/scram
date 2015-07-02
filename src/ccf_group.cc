@@ -19,15 +19,17 @@ CcfGroup::CcfGroup(const std::string& name, const std::string& model,
 }
 
 void CcfGroup::AddMember(const BasicEventPtr& basic_event) {
+  std::string name = basic_event->name();
+  boost::to_lower(name);
   if (distribution_) {
     throw IllegalOperation("No more members accepted. The distribution for " +
                            name_ + " CCF group has already been defined.");
 
-  } else if (members_.count(basic_event->id())) {
+  } else if (members_.count(name)) {
     throw LogicError("Basic event " + basic_event->name() + " is already" +
                      " in " + name_ + " CCF group.");
   }
-  members_.insert(std::make_pair(basic_event->id(), basic_event));
+  members_.insert(std::make_pair(name, basic_event));
 }
 
 void CcfGroup::AddDistribution(const ExpressionPtr& distr) {
@@ -149,6 +151,7 @@ void CcfGroup::ConstructCcfBasicEvents(
         }
       }
       name += "]";
+      name = this->is_public() ? name : this->base_path() + "." + name_ + name;
       CcfEventPtr new_basic_event(new CcfEvent(name, name_, members_.size()));
       new_basic_event->member_names(names);
       new_events->insert(std::make_pair(new_basic_event, *it));
@@ -177,7 +180,7 @@ void BetaFactorModel::ConstructCcfBasicEvents(
 
   // Getting the probability equation for independent events.
   assert(CcfGroup::factors_.size() == 1);
-  std::string common_name = "[";  // Event name for common failure group.
+  std::string name = "[";  // Event name for common failure group.
   std::set<std::string> all_events;  // Common failure group.
   std::vector<std::string> names;  // Original names for CcfEvent.
 
@@ -186,6 +189,9 @@ void BetaFactorModel::ConstructCcfBasicEvents(
     // Create independent events.
     std::string independent_name = "[" + it->second->name() + "]";
 
+    if (!this->is_public()) {
+      independent_name =  this->base_path() + "." + name_ + independent_name;
+    }
     CcfEventPtr independent(new CcfEvent(independent_name, name_,
                                          members_.size()));
     std::vector<std::string> single_name;
@@ -199,14 +205,15 @@ void BetaFactorModel::ConstructCcfBasicEvents(
     all_events.insert(it->second->id());
     names.push_back(it->second->name());
 
-    common_name += it->second->name();
+    name += it->second->name();
     ++it;
     if (it != CcfGroup::members_.end()) {
-      common_name += " ";
+      name += " ";
     }
   }
-  common_name += "]";
-  CcfEventPtr common_failure(new CcfEvent(common_name, name_, members_.size()));
+  name += "]";
+  name = this->is_public() ? name : this->base_path() + "." + name_ + name;
+  CcfEventPtr common_failure(new CcfEvent(name, name_, members_.size()));
   common_failure->member_names(names);
   assert(all_events.size() == max_level);
   new_events->insert(std::make_pair(common_failure, all_events));

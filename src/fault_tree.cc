@@ -62,6 +62,16 @@ void FaultTree::AddCcfGroup(const CcfGroupPtr& ccf_group) {
     throw ValidationError("Duplicate ccf group " + ccf_group->name() + ".");
   }
   ccf_groups_.insert(std::make_pair(name, ccf_group));
+  std::map<std::string, BasicEventPtr>::const_iterator it;
+  for (it = ccf_group->members().begin(); it != ccf_group->members().end();
+       ++it) {
+    if (gates_.count(it->first) || basic_events_.count(it->first) ||
+        house_events_.count(it->first)) {
+      throw ValidationError("Duplicate event " + it->second->name() +
+                            " from CCF group " + ccf_group->name() + ".");
+    }
+    basic_events_.insert(*it);
+  }
 }
 
 void FaultTree::AddComponent(const ComponentPtr& component) {

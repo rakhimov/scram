@@ -217,6 +217,8 @@ class Initializer {
   /// @param[in] ccf_node XML element defining CCF group.
   /// @param[in] base_path Series of ancestor containers in the path with dots.
   /// @returns Pointer to the registered CCF group.
+  /// @throws ValidationError for problems with registering the group and
+  ///         its members, for example, duplication or missing information.
   CcfGroupPtr RegisterCcfGroup(const xmlpp::Element* ccf_node,
                                const std::string& base_path = "");
 
@@ -243,6 +245,8 @@ class Initializer {
   /// Defines factor and adds it to CCF group.
   /// @param[in] factor_node XML element containing one factor.
   /// @param[in,out] ccf_group CCF group to be defined by the given factors.
+  /// @throws ValidationError if there are problems with level numbers or
+  ///         factors for specific CCF models.
   void DefineCcfFactor(const xmlpp::Element* factor_node,
                        const CcfGroupPtr& ccf_group);
 
