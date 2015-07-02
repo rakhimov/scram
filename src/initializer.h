@@ -104,21 +104,23 @@ class Initializer {
   /// Defines a component container.
   /// @param[in] component_node XML element defining the component.
   /// @param[in] base_path Series of ancestor containers in the path with dots.
+  /// @param[in] public_container A flag for the parent container's role.
   /// @returns Component that is ready for registration.
   /// @throws ValidationError if there are issues with registering and defining
   ///                         the component and its data like gates and events.
   ComponentPtr DefineComponent(const xmlpp::Element* component_node,
-                               const std::string& base_path);
+                               const std::string& base_path,
+                               bool public_container = true);
 
   /// Registers fault tree and component data like gates, events, parameters.
   /// @param[in] ft_node XML element defining the fault tree or component.
-  /// @param[in/out] fault_tree The component or fault tree container that is
-  ///                           the owner of the data.
+  /// @param[in/out] component The component or fault tree container that is
+  ///                          the owner of the data.
   /// @param[in] base_path Series of ancestor containers in the path with dots.
   /// @throws ValidationError if there are issues with registering and defining
   ///                         the component's data like gates and events.
   void RegisterFaultTreeData(const xmlpp::Element* ft_node,
-                             const FaultTreePtr& fault_tree,
+                             const ComponentPtr& component,
                              const std::string& base_path);
 
   /// Processes model data with definitions of events and analysis.
@@ -128,10 +130,12 @@ class Initializer {
   /// Registers a gate for later definition.
   /// @param[in] gate_node XML element defining the gate.
   /// @param[in] base_path Series of ancestor containers in the path with dots.
+  /// @param[in] public_container A flag for the parent container's role.
   /// @returns Pointer to the registered gate.
   /// @throws ValidationError if an event with the same name is already defined.
   GatePtr RegisterGate(const xmlpp::Element* gate_node,
-                       const std::string& base_path = "");
+                       const std::string& base_path = "",
+                       bool public_container = true);
 
   /// Defines a gate for this analysis.
   /// @param[in] gate_node XML element defining the gate.

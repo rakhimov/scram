@@ -1,5 +1,5 @@
 /// @file fault_tree.cc
-/// Implementation of fault tree analysis.
+/// Implementation of fault tree and component containers.
 #include "fault_tree.h"
 
 #include <map>
@@ -14,9 +14,12 @@
 
 namespace scram {
 
-FaultTree::FaultTree(std::string name) : name_(name) {}
+Component::Component(const std::string& name, const std::string& base_path,
+                     bool is_public)
+    : name_(name),
+      Role::Role(is_public, base_path) {}
 
-void FaultTree::AddGate(const GatePtr& gate) {
+void Component::AddGate(const GatePtr& gate) {
   std::string name = gate->name();
   boost::to_lower(name);
   if (gates_.count(name) || basic_events_.count(name) ||
@@ -26,7 +29,7 @@ void FaultTree::AddGate(const GatePtr& gate) {
   gates_.insert(std::make_pair(name, gate));
 }
 
-void FaultTree::AddBasicEvent(const BasicEventPtr& basic_event) {
+void Component::AddBasicEvent(const BasicEventPtr& basic_event) {
   std::string name = basic_event->name();
   boost::to_lower(name);
   if (gates_.count(name) || basic_events_.count(name) ||
@@ -36,7 +39,7 @@ void FaultTree::AddBasicEvent(const BasicEventPtr& basic_event) {
   basic_events_.insert(std::make_pair(name, basic_event));
 }
 
-void FaultTree::AddHouseEvent(const HouseEventPtr& house_event) {
+void Component::AddHouseEvent(const HouseEventPtr& house_event) {
   std::string name = house_event->name();
   boost::to_lower(name);
   if (gates_.count(name) || basic_events_.count(name) ||
@@ -46,7 +49,7 @@ void FaultTree::AddHouseEvent(const HouseEventPtr& house_event) {
   house_events_.insert(std::make_pair(name, house_event));
 }
 
-void FaultTree::AddParameter(const ParameterPtr& parameter) {
+void Component::AddParameter(const ParameterPtr& parameter) {
   std::string name = parameter->name();
   boost::to_lower(name);
   if (parameters_.count(name)) {
@@ -55,7 +58,7 @@ void FaultTree::AddParameter(const ParameterPtr& parameter) {
   parameters_.insert(std::make_pair(name, parameter));
 }
 
-void FaultTree::AddCcfGroup(const CcfGroupPtr& ccf_group) {
+void Component::AddCcfGroup(const CcfGroupPtr& ccf_group) {
   std::string name = ccf_group->name();
   boost::to_lower(name);
   if (ccf_groups_.count(name)) {
@@ -74,18 +77,31 @@ void FaultTree::AddCcfGroup(const CcfGroupPtr& ccf_group) {
   }
 }
 
-void FaultTree::AddComponent(const ComponentPtr& component) {
+void Component::AddComponent(const ComponentPtr& component) {
   std::string name = component->name();
   boost::to_lower(name);
   if (components_.count(name)) {
-    throw ValidationError("Duplicate component " + component->name() + " .");
+    throw ValidationError("Duplicate component " + component->name() + ".");
   }
   components_.insert(std::make_pair(name, component));
 }
 
+void Component::GatherGates(boost::unordered_set<GatePtr>* gates) {
+  boost::unordered_map<std::string, GatePtr>::iterator it;
+  for (it = gates_.begin(); it != gates_.end(); ++it) {
+    gates->insert(it->second);
+  }
+  boost::unordered_map<std::string, ComponentPtr>::iterator it_comp;
+  for (it_comp = components_.begin(); it_comp != components_.end(); ++it_comp) {
+    it_comp->second->GatherGates(gates);
+  }
+}
+
+FaultTree::FaultTree(const std::string& name) : Component::Component(name) {}
+
 void FaultTree::Validate() {
   boost::unordered_set<GatePtr> gates;
-  FaultTree::GatherGates(&gates);
+  Component::GatherGates(&gates);
   // Detects top events.
   boost::unordered_set<GatePtr>::iterator it;
   for (it = gates.begin(); it != gates.end(); ++it) {
@@ -94,17 +110,6 @@ void FaultTree::Validate() {
   for (it = gates.begin(); it != gates.end(); ++it) {
     if ((*it)->mark() != "non-top") top_events_.push_back(*it);
     (*it)->mark("");
-  }
-}
-
-void FaultTree::GatherGates(boost::unordered_set<GatePtr>* gates) {
-  boost::unordered_map<std::string, GatePtr>::iterator it;
-  for (it = gates_.begin(); it != gates_.end(); ++it) {
-    gates->insert(it->second);
-  }
-  boost::unordered_map<std::string, ComponentPtr>::iterator it_comp;
-  for (it_comp = components_.begin(); it_comp != components_.end(); ++it_comp) {
-    it_comp->second->GatherGates(gates);
   }
 }
 
@@ -132,10 +137,5 @@ void FaultTree::MarkNonTopGates(const FormulaPtr& formula,
     FaultTree::MarkNonTopGates(*it_f, gates);
   }
 }
-
-Component::Component(const std::string& name, const std::string& base_path,
-                     bool is_public)
-    : FaultTree::FaultTree(name),
-      Role::Role(is_public, base_path) {}
 
 }  // namespace scram

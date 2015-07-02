@@ -153,20 +153,20 @@ class Model : public Element {
   /// @param[in] base_path The series of containers to get the container.
   /// @returns A fault tree or component from the base path if any.
   /// @throws LogicError if there's missing container in the path.
-  FaultTreePtr GetContainer(const std::string& base_path);
+  ComponentPtr GetContainer(const std::string& base_path);
 
   /// Helper function to find the local container for references.
   /// @param[in] reference The reference to the target element.
   /// @param[in] scope The fault tree or component as a scope.
   /// @returns A fault tree or component from the reference if any.
-  FaultTreePtr GetLocalContainer(const std::string& reference,
-                                 const FaultTreePtr& scope);
+  ComponentPtr GetLocalContainer(const std::string& reference,
+                                 const ComponentPtr& scope);
 
   /// Helper function to find the global container for references.
   /// @param[in] reference The reference to the target element.
   /// @returns A fault tree or component from the reference.
   /// @throws ValidationError if there's missing container in the path.
-  FaultTreePtr GetGlobalContainer(const std::string& reference);
+  ComponentPtr GetGlobalContainer(const std::string& reference);
 
   std::string name_;  ///< The name of the model.
 

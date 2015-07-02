@@ -38,8 +38,8 @@ boost::shared_ptr<Parameter> Model::GetParameter(const std::string& reference,
   std::string target_name = path.back();
   boost::to_lower(target_name);
   if (base_path != "") {
-    FaultTreePtr scope = Model::GetContainer(base_path);
-    FaultTreePtr container = Model::GetLocalContainer(reference, scope);
+    ComponentPtr scope = Model::GetContainer(base_path);
+    ComponentPtr container = Model::GetLocalContainer(reference, scope);
     if (container) {
       if (container->parameters().count(target_name))
         return container->parameters().find(target_name)->second;
@@ -48,7 +48,7 @@ boost::shared_ptr<Parameter> Model::GetParameter(const std::string& reference,
   const boost::unordered_map<std::string, ParameterPtr>* parameters =
       &parameters_;
   if (path.size() > 1) {
-    FaultTreePtr container = Model::GetGlobalContainer(reference);
+    ComponentPtr container = Model::GetGlobalContainer(reference);
     parameters = &container->parameters();
   }
 
@@ -69,8 +69,8 @@ boost::shared_ptr<Event> Model::GetEvent(const std::string& reference,
   std::string target_name = path.back();
   boost::to_lower(target_name);
   if (base_path != "") {
-    FaultTreePtr scope = Model::GetContainer(base_path);
-    FaultTreePtr container = Model::GetLocalContainer(reference, scope);
+    ComponentPtr scope = Model::GetContainer(base_path);
+    ComponentPtr container = Model::GetLocalContainer(reference, scope);
     if (container) {
       if (container->basic_events().count(target_name))
         return container->basic_events().find(target_name)->second;
@@ -88,7 +88,7 @@ boost::shared_ptr<Event> Model::GetEvent(const std::string& reference,
   const boost::unordered_map<std::string, BasicEventPtr>* basic_events =
       &basic_events_;
   if (path.size() > 1) {
-    FaultTreePtr container = Model::GetGlobalContainer(reference);
+    ComponentPtr container = Model::GetGlobalContainer(reference);
     gates = &container->gates();
     basic_events = &container->basic_events();
     house_events = &container->house_events();
@@ -128,8 +128,8 @@ boost::shared_ptr<HouseEvent> Model::GetHouseEvent(
   std::string target_name = path.back();
   boost::to_lower(target_name);
   if (base_path != "") {
-    FaultTreePtr scope = Model::GetContainer(base_path);
-    FaultTreePtr container = Model::GetLocalContainer(reference, scope);
+    ComponentPtr scope = Model::GetContainer(base_path);
+    ComponentPtr container = Model::GetLocalContainer(reference, scope);
     if (container) {
       if (container->house_events().count(target_name))
         return container->house_events().find(target_name)->second;
@@ -138,7 +138,7 @@ boost::shared_ptr<HouseEvent> Model::GetHouseEvent(
   const boost::unordered_map<std::string, HouseEventPtr>* house_events =
       &house_events_;
   if (path.size() > 1) {
-    FaultTreePtr container = Model::GetGlobalContainer(reference);
+    ComponentPtr container = Model::GetGlobalContainer(reference);
     house_events = &container->house_events();
   }
 
@@ -170,8 +170,8 @@ boost::shared_ptr<BasicEvent> Model::GetBasicEvent(
   std::string target_name = path.back();
   boost::to_lower(target_name);
   if (base_path != "") {
-    FaultTreePtr scope = Model::GetContainer(base_path);
-    FaultTreePtr container = Model::GetLocalContainer(reference, scope);
+    ComponentPtr scope = Model::GetContainer(base_path);
+    ComponentPtr container = Model::GetLocalContainer(reference, scope);
     if (container) {
       if (container->basic_events().count(target_name))
         return container->basic_events().find(target_name)->second;
@@ -180,7 +180,7 @@ boost::shared_ptr<BasicEvent> Model::GetBasicEvent(
   const boost::unordered_map<std::string, BasicEventPtr>* basic_events =
       &basic_events_;
   if (path.size() > 1) {
-    FaultTreePtr container = Model::GetGlobalContainer(reference);
+    ComponentPtr container = Model::GetGlobalContainer(reference);
     basic_events = &container->basic_events();
   }
 
@@ -211,8 +211,8 @@ boost::shared_ptr<Gate> Model::GetGate(const std::string& reference,
   std::string target_name = path.back();
   boost::to_lower(target_name);
   if (base_path != "") {
-    FaultTreePtr scope = Model::GetContainer(base_path);
-    FaultTreePtr container = Model::GetLocalContainer(reference, scope);
+    ComponentPtr scope = Model::GetContainer(base_path);
+    ComponentPtr container = Model::GetLocalContainer(reference, scope);
     if (container) {
       if (container->gates().count(target_name))
         return container->gates().find(target_name)->second;
@@ -220,7 +220,7 @@ boost::shared_ptr<Gate> Model::GetGate(const std::string& reference,
   }
   const boost::unordered_map<std::string, GatePtr>* gates = &gates_;
   if (path.size() > 1) {
-    FaultTreePtr container = Model::GetGlobalContainer(reference);
+    ComponentPtr container = Model::GetGlobalContainer(reference);
     gates = &container->gates();
   }
 
@@ -241,7 +241,7 @@ void Model::AddCcfGroup(const CcfGroupPtr& ccf_group) {
   ccf_groups_.insert(std::make_pair(name, ccf_group));
 }
 
-boost::shared_ptr<FaultTree> Model::GetContainer(const std::string& base_path) {
+boost::shared_ptr<Component> Model::GetContainer(const std::string& base_path) {
   assert(base_path != "");
   std::vector<std::string> path;
   boost::split(path, base_path, boost::is_any_of("."),
@@ -250,7 +250,7 @@ boost::shared_ptr<FaultTree> Model::GetContainer(const std::string& base_path) {
   std::string name = *it;
   boost::to_lower(name);
   if (!fault_trees_.count(name)) throw LogicError("Missing fault tree " + *it);
-  FaultTreePtr container = fault_trees_.find(name)->second;
+  ComponentPtr container = fault_trees_.find(name)->second;
   const boost::unordered_map<std::string, ComponentPtr>* candidates;
   for(++it; it != path.end(); ++it) {
     name = *it;
@@ -264,14 +264,14 @@ boost::shared_ptr<FaultTree> Model::GetContainer(const std::string& base_path) {
   return container;
 }
 
-boost::shared_ptr<FaultTree> Model::GetLocalContainer(
+boost::shared_ptr<Component> Model::GetLocalContainer(
     const std::string& reference,
-    const FaultTreePtr& scope) {
+    const ComponentPtr& scope) {
   assert(reference != "");
   std::vector<std::string> path;
   boost::split(path, reference, boost::is_any_of("."),
                boost::token_compress_on);
-  FaultTreePtr container = scope;
+  ComponentPtr container = scope;
   if (path.size() > 1) {
     const boost::unordered_map<std::string, ComponentPtr>* candidates;
     for (int i = 0; i < path.size() - 1; ++i) {
@@ -279,7 +279,7 @@ boost::shared_ptr<FaultTree> Model::GetLocalContainer(
       boost::to_lower(name);
       candidates = &container->components();
       if (!candidates->count(name)) {  // No container available.
-        FaultTreePtr undefined;
+        ComponentPtr undefined;
         return undefined;  // Not possible to reach locally.
       }
       container = candidates->find(name)->second;
@@ -288,7 +288,7 @@ boost::shared_ptr<FaultTree> Model::GetLocalContainer(
   return container;
 }
 
-boost::shared_ptr<FaultTree> Model::GetGlobalContainer(
+boost::shared_ptr<Component> Model::GetGlobalContainer(
     const std::string& reference) {
   assert(reference != "");
   std::vector<std::string> path;
@@ -301,7 +301,7 @@ boost::shared_ptr<FaultTree> Model::GetGlobalContainer(
     throw ValidationError("Undefined fault tree " + path.front() +
                           " in reference " + reference);
   }
-  FaultTreePtr container = fault_trees_.find(name)->second;
+  ComponentPtr container = fault_trees_.find(name)->second;
   const boost::unordered_map<std::string, ComponentPtr>* candidates;
   for (int i = 1; i < path.size() - 1; ++i) {
     std::string name = path[i];
