@@ -255,37 +255,46 @@ void Initializer::RegisterFaultTreeData(const xmlpp::Element* ft_node,
   for (it = house_events.begin(); it != house_events.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
-    component->AddHouseEvent(Initializer::DefineHouseEvent(element, base_path));
+    component->AddHouseEvent(
+        Initializer::DefineHouseEvent(element, base_path,
+                                      component->is_public()));
   }
   CLOCK(basic_time);
   for (it = basic_events.begin(); it != basic_events.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
-    component->AddBasicEvent(Initializer::RegisterBasicEvent(element,
-                                                             base_path));
+    component->AddBasicEvent(
+        Initializer::RegisterBasicEvent(element, base_path,
+                                        component->is_public()));
   }
   LOG(DEBUG2) << "Basic event registration time " << DUR(basic_time);
   for (it = parameters.begin(); it != parameters.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
-    component->AddParameter(Initializer::RegisterParameter(element, base_path));
+    component->AddParameter(
+        Initializer::RegisterParameter(element, base_path,
+                                       component->is_public()));
   }
   CLOCK(gate_time);
   for (it = gates.begin(); it != gates.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
-    component->AddGate(Initializer::RegisterGate(element, base_path));
+    component->AddGate(Initializer::RegisterGate(element, base_path,
+                                                 component->is_public()));
   }
   LOG(DEBUG2) << "Gate registration time " << DUR(gate_time);
   for (it = ccf_groups.begin(); it != ccf_groups.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
-    component->AddCcfGroup(Initializer::RegisterCcfGroup(element, base_path));
+    component->AddCcfGroup(
+        Initializer::RegisterCcfGroup(element, base_path,
+                                      component->is_public()));
   }
   for (it = components.begin(); it != components.end(); ++it) {
     const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
     assert(element);
-    ComponentPtr sub = Initializer::DefineComponent(element, base_path);
+    ComponentPtr sub = Initializer::DefineComponent(element, base_path,
+                                                    component->is_public());
     try {
       component->AddComponent(sub);
     } catch (ValidationError& err) {
@@ -329,7 +338,11 @@ boost::shared_ptr<Gate> Initializer::RegisterGate(
     bool public_container) {
   std::string name = gate_node->get_attribute_value("name");
   boost::trim(name);
-  GatePtr gate(new Gate(name, base_path));
+  std::string role = gate_node->get_attribute_value("role");
+  boost::trim(role);
+  bool gate_role = public_container;  // Inherited role by default.
+  if (role != "") gate_role = role == "public" ? true : false;
+  GatePtr gate(new Gate(name, base_path, gate_role));
   try {
     model_->AddGate(gate);
   } catch (ValidationError& err) {
@@ -454,10 +467,15 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
 
 boost::shared_ptr<BasicEvent> Initializer::RegisterBasicEvent(
     const xmlpp::Element* event_node,
-    const std::string& base_path) {
+    const std::string& base_path,
+    bool public_container) {
   std::string name = event_node->get_attribute_value("name");
   boost::trim(name);
-  BasicEventPtr basic_event(new BasicEvent(name, base_path));
+  std::string role = event_node->get_attribute_value("role");
+  boost::trim(role);
+  bool event_role = public_container;  // Inherited role by default.
+  if (role != "") event_role = role == "public" ? true : false;
+  BasicEventPtr basic_event(new BasicEvent(name, base_path, event_role));
   try {
     model_->AddBasicEvent(basic_event);
   } catch (ValidationError& err) {
@@ -488,10 +506,15 @@ void Initializer::DefineBasicEvent(const xmlpp::Element* event_node,
 
 boost::shared_ptr<HouseEvent> Initializer::DefineHouseEvent(
     const xmlpp::Element* event_node,
-    const std::string& base_path) {
+    const std::string& base_path,
+    bool public_container) {
   std::string name = event_node->get_attribute_value("name");
   boost::trim(name);
-  HouseEventPtr house_event(new HouseEvent(name, base_path));
+  std::string role = event_node->get_attribute_value("role");
+  boost::trim(role);
+  bool event_role = public_container;  // Inherited role by default.
+  if (role != "") event_role = role == "public" ? true : false;
+  HouseEventPtr house_event(new HouseEvent(name, base_path, event_role));
   try {
     model_->AddHouseEvent(house_event);
   } catch (ValidationError& err) {
@@ -521,10 +544,15 @@ boost::shared_ptr<HouseEvent> Initializer::DefineHouseEvent(
 
 boost::shared_ptr<Parameter> Initializer::RegisterParameter(
     const xmlpp::Element* param_node,
-    const std::string& base_path) {
+    const std::string& base_path,
+    bool public_container) {
   std::string name = param_node->get_attribute_value("name");
   boost::trim(name);
-  ParameterPtr parameter(new Parameter(name, base_path));
+  std::string role = param_node->get_attribute_value("role");
+  boost::trim(role);
+  bool param_role = public_container;  // Inherited role by default.
+  if (role != "") param_role = role == "public" ? true : false;
+  ParameterPtr parameter(new Parameter(name, base_path, param_role));
   try {
     model_->AddParameter(parameter);
   } catch (ValidationError& err) {
@@ -806,7 +834,8 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
 
 boost::shared_ptr<CcfGroup> Initializer::RegisterCcfGroup(
     const xmlpp::Element* ccf_node,
-    const std::string& base_path) {
+    const std::string& base_path,
+    bool public_container) {
   std::string name = ccf_node->get_attribute_value("name");
   boost::trim(name);
   std::string model = ccf_node->get_attribute_value("model");
@@ -816,16 +845,19 @@ boost::shared_ptr<CcfGroup> Initializer::RegisterCcfGroup(
 
   CcfGroupPtr ccf_group;
   if (model == "beta-factor") {
-    ccf_group = CcfGroupPtr(new BetaFactorModel(name, base_path));
+    ccf_group = CcfGroupPtr(new BetaFactorModel(name, base_path,
+                                                public_container));
 
   } else if (model == "MGL") {
-    ccf_group = CcfGroupPtr(new MglModel(name, base_path));
+    ccf_group = CcfGroupPtr(new MglModel(name, base_path, public_container));
 
   } else if (model == "alpha-factor") {
-    ccf_group = CcfGroupPtr(new AlphaFactorModel(name, base_path));
+    ccf_group = CcfGroupPtr(new AlphaFactorModel(name, base_path,
+                                                 public_container));
 
   } else if (model == "phi-factor") {
-    ccf_group = CcfGroupPtr(new PhiFactorModel(name, base_path));
+    ccf_group = CcfGroupPtr(new PhiFactorModel(name, base_path,
+                                               public_container));
   }
 
   try {
@@ -881,27 +913,18 @@ void Initializer::ProcessCcfMembers(const xmlpp::Element* members_node,
                                     const CcfGroupPtr& ccf_group) {
   xmlpp::NodeSet children = members_node->find("./*");
   assert(!children.empty());
-  std::set<std::string> member_ids;
   xmlpp::NodeSet::iterator it;
   for (it = children.begin(); it != children.end(); ++it) {
-    const xmlpp::Element* event_node =
-        dynamic_cast<const xmlpp::Element*>(*it);
+    const xmlpp::Element* event_node = dynamic_cast<const xmlpp::Element*>(*it);
     assert(event_node);
     assert("basic-event" == event_node->get_name());
 
     std::string name = event_node->get_attribute_value("name");
     boost::trim(name);
-    std::string id = name;
-    boost::to_lower(id);
-    if (member_ids.count(id)) {
-      std::stringstream msg;
-      msg << "Line " << event_node->get_line() << ":\n";
-      msg << name << " is already in CCF group " << ccf_group->name() << ".";
-      throw ValidationError(msg.str());
-    }
-    member_ids.insert(id);
-    BasicEventPtr basic_event = BasicEventPtr(new BasicEvent(name));
+    BasicEventPtr basic_event(new BasicEvent(name, ccf_group->base_path(),
+                                             ccf_group->is_public()));
     try {
+      ccf_group->AddMember(basic_event);
       model_->AddBasicEvent(basic_event);
     } catch (ValidationError& err) {
       std::stringstream msg;
@@ -909,8 +932,6 @@ void Initializer::ProcessCcfMembers(const xmlpp::Element* members_node,
       msg << err.msg();
       throw ValidationError(msg.str());
     }
-
-    ccf_group->AddMember(basic_event);
   }
 }
 

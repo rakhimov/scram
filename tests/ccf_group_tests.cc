@@ -16,7 +16,7 @@ TEST(CcfGroupTest, AddMemberRepeated) {
   CcfGroup* ccf_group = new BetaFactorModel("general");
   BasicEventPtr member(new BasicEvent("id"));
   ASSERT_NO_THROW(ccf_group->AddMember(member));
-  EXPECT_THROW(ccf_group->AddMember(member), LogicError);
+  EXPECT_THROW(ccf_group->AddMember(member), ValidationError);
   delete ccf_group;
 }
 

@@ -163,10 +163,12 @@ class Initializer {
   /// Registers a basic event for later definition.
   /// @param[in] event_node XML element defining the event.
   /// @param[in] base_path Series of ancestor containers in the path with dots.
+  /// @param[in] public_container A flag for the parent container's role.
   /// @returns Pointer to the registered basic event.
   /// @throws ValidationError if an event with the same name is already defined.
   BasicEventPtr RegisterBasicEvent(const xmlpp::Element* event_node,
-                                   const std::string& base_path = "");
+                                   const std::string& base_path = "",
+                                   bool public_container = true);
 
   /// Defines a basic event for this analysis.
   /// @param[in] event_node XML element defining the event.
@@ -177,18 +179,22 @@ class Initializer {
   /// Defines and adds a house event for this analysis.
   /// @param[in] event_node XML element defining the event.
   /// @param[in] base_path Series of ancestor containers in the path with dots.
+  /// @param[in] public_container A flag for the parent container's role.
   /// @returns Pointer to the registered house event.
   /// @throws ValidationError if an event with the same name is already defined.
   HouseEventPtr DefineHouseEvent(const xmlpp::Element* event_node,
-                                 const std::string& base_path = "");
+                                 const std::string& base_path = "",
+                                 bool public_container = true);
 
   /// Registers a variable or parameter.
   /// @param[in] param_node XML element defining the parameter.
   /// @param[in] base_path Series of ancestor containers in the path with dots.
+  /// @param[in] public_container A flag for the parent container's role.
   /// @returns Pointer to the registered parameter.
   /// @throws ValidationError if the parameter is already registered.
   ParameterPtr RegisterParameter(const xmlpp::Element* param_node,
-                                 const std::string& base_path = "");
+                                 const std::string& base_path = "",
+                                 bool public_container = true);
 
   /// Defines a variable or parameter.
   /// @param[in] param_node XML element defining the parameter.
@@ -234,11 +240,13 @@ class Initializer {
   /// Registers a common cause failure group for later definition.
   /// @param[in] ccf_node XML element defining CCF group.
   /// @param[in] base_path Series of ancestor containers in the path with dots.
+  /// @param[in] public_container A flag for the parent container's role.
   /// @returns Pointer to the registered CCF group.
   /// @throws ValidationError for problems with registering the group and
   ///         its members, for example, duplication or missing information.
   CcfGroupPtr RegisterCcfGroup(const xmlpp::Element* ccf_node,
-                               const std::string& base_path = "");
+                               const std::string& base_path = "",
+                               bool public_container = true);
 
   /// Defines a common cause failure group for the analysis.
   /// @param[in] ccf_node XML element defining CCF group.

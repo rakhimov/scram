@@ -26,8 +26,8 @@ void CcfGroup::AddMember(const BasicEventPtr& basic_event) {
                            name_ + " CCF group has already been defined.");
 
   } else if (members_.count(name)) {
-    throw LogicError("Basic event " + basic_event->name() + " is already" +
-                     " in " + name_ + " CCF group.");
+    throw ValidationError("Basic event " + basic_event->name() + " is already" +
+                          " in " + name_ + " CCF group.");
   }
   members_.insert(std::make_pair(name, basic_event));
 }
