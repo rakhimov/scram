@@ -62,15 +62,22 @@ class Role {
  public:
   /// Sets the role of an element upon creation.
   /// @param[in] is_public A flag to define public or private role.
-  explicit Role(bool is_public = true) : is_public_(is_public) {}
+  /// @param[in] base_path The series of containers to get this event.
+  explicit Role(bool is_public = true, const std::string& base_path = "")
+      : is_public_(is_public),
+        base_path_(base_path) {}
 
   virtual ~Role() {}
 
   /// @returns True for public roles, or False for private roles.
   inline bool is_public() { return is_public_; }
 
+  /// @returns The base path containing ancestor container names.
+  inline const std::string& base_path() const { return base_path_; }
+
  private:
   bool is_public_;  ///< A flag for public and private roles.
+  std::string base_path_;  ///< A series of containters leading to this event.
 };
 
 }  // namespace scram

@@ -18,9 +18,8 @@ const std::set<std::string> Formula::single_ =
 
 Event::Event(const std::string& name, const std::string& base_path,
              bool is_public)
-    : Role::Role(is_public),
+    : Role::Role(is_public, base_path),
       name_(name),
-      base_path_(base_path),
       orphan_(true) {
   assert(name != "");
   id_ = is_public ? name : base_path + "." + name;  // Unique combination.

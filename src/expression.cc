@@ -28,8 +28,8 @@ void Expression::GatherNodesAndConnectors() {
 
 Parameter::Parameter(const std::string& name, const std::string& base_path,
                      bool is_public)
-      : name_(name),
-        base_path_(base_path),
+      : Role::Role(is_public, base_path),
+        name_(name),
         mark_(""),
         unused_(true),
         unit_(kUnitless) {

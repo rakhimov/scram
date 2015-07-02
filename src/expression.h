@@ -124,9 +124,6 @@ class Parameter : public Expression, public Element, public Role {
   /// @returns The unique identifier  of this parameter.
   inline const std::string& id() const { return id_; }
 
-  /// @returns The base path containing ancestor container names.
-  inline const std::string& base_path() const { return base_path_; }
-
   /// Sets the unit of this parameter.
   /// @param[in] unit A valid unit.
   inline void unit(const Units& unit) { unit_ = unit; }
@@ -188,7 +185,6 @@ class Parameter : public Expression, public Element, public Role {
 
   std::string name_;  ///< Name of this parameter or variable.
   std::string id_;  ///< Identifier of this parameter or variable.
-  std::string base_path_;  ///< Series of ancestor containers.
   Units unit_;  ///< Units of this parameter.
   ExpressionPtr expression_;  ///< Expression for this parameter.
   std::string mark_;  ///< The mark for traversal in cycle detection.

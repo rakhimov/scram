@@ -38,9 +38,6 @@ class Event : public Element, public Role {
   /// @returns The original name with capitalizations.
   inline const std::string& name() const { return name_; }
 
-  /// @returns The base path containing ancestor container names.
-  inline const std::string& base_path() const { return base_path_; }
-
   /// Sets the orphanage state.
   inline void orphan(bool state) { orphan_ = state; }
 
@@ -50,7 +47,6 @@ class Event : public Element, public Role {
  private:
   std::string id_;  ///< Id name of a event. It is in lower case.
   std::string name_;  ///< Original name with capitalizations preserved.
-  std::string base_path_;  ///< A series of containters leading to this event.
   bool orphan_;  ///< Indication of an orphan node.
 };
 
