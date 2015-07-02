@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<!--
+Examples of all forms of possible references.
+-->
+<opsa-mef name="RefernceExamples">
+  <define-fault-tree name="TwoTrains">
+    <define-gate name="TopEvent">
+      <and>
+        <gate name="TrainOne"/>
+        <event name="Trains.TrainTwo"/>
+      </and>
+    </define-gate>
+    <define-component name="Trains">
+      <define-gate name="TrainOne">
+        <or>
+          <basic-event name="ValveOne"/>
+          <basic-event name="TwoTrains.PumpOne"/>
+        </or>
+      </define-gate>
+      <define-gate name="TrainTwo">
+        <or>
+          <basic-event name="ValveTwo"/>
+          <basic-event name="TwoTrains.PumpTwo"/>
+        </or>
+      </define-gate>
+      <define-basic-event name="ValveOne"/>
+      <define-basic-event name="ValveTwo"/>
+    </define-component>
+    <define-basic-event name="PumpOne"/>
+    <define-basic-event name="PumpTwo"/>
+  </define-fault-tree>
+</opsa-mef>

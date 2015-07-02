@@ -141,16 +141,20 @@ class Initializer {
   /// Creates a Boolean formula from the XML elements describing the formula
   /// with events and other nested formulas.
   /// @param[in] gate_node XML element defining the formula.
-  /// @returns Boolean formula that is registered.
+  /// @param[in] base_path Series of ancestor containers in the path with dots.
+  /// @returns Boolean formula that is defined.
   /// @throws ValidationError if the defined formula is not valid.
-  FormulaPtr GetFormula(const xmlpp::Element* formula_node);
+  FormulaPtr GetFormula(const xmlpp::Element* formula_node,
+                        const std::string& base_path);
 
   /// Processes the arguments of a formula with nodes and formulas.
   /// @param[in] formula_node The XML element with children as arguments.
   /// @param[in/out] formula The formula to be defined by the arguments.
+  /// @param[in] base_path Series of ancestor containers in the path with dots.
   /// @throws ValidationError if repeated arguments are identified.
   void ProcessFormula(const xmlpp::Element* formula_node,
-                      const FormulaPtr& formula);
+                      const FormulaPtr& formula,
+                      const std::string& base_path);
 
   /// Registers a basic event for later definition.
   /// @param[in] event_node XML element defining the event.

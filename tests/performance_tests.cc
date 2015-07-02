@@ -15,7 +15,7 @@ using namespace scram;
 // Performance testing values are taken from a computer with the following
 // specs:
 //   Core i5-2410M, Ubuntu 14.04 64bit
-//   Compilation with GCC 4.8.2 and Boost 1.55
+//   Compilation with GCC 4.8.4 and Boost 1.55
 //
 // The values for performance are expected to have some random variation.
 // Better as well as worse performance are reported as test failures to

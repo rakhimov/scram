@@ -3,7 +3,6 @@
 #ifndef SCRAM_SRC_MODEL_H_
 #define SCRAM_SRC_MODEL_H_
 
-#include <map>
 #include <string>
 
 #include <boost/unordered_map.hpp>
@@ -16,6 +15,7 @@ namespace scram {
 class CcfGroup;
 class Parameter;
 class FaultTree;
+class Component;
 
 /// @class Model
 /// This class represents a model that is defined in one input file.
@@ -42,7 +42,8 @@ class Model : public Element {
   void AddFaultTree(const FaultTreePtr& fault_tree);
 
   /// @returns Defined fault trees in the model.
-  inline const std::map<std::string, FaultTreePtr>& fault_trees() const {
+  inline const boost::unordered_map<std::string, FaultTreePtr>&
+      fault_trees() const {
     return fault_trees_;
   }
 
@@ -68,9 +69,11 @@ class Model : public Element {
   /// can contain the identifier, full path, or local path. The returned event
   /// may be a basic event, house event, or gate.
   /// @param[in] reference Reference string to the event.
+  /// @param[in] base_path The series of containers indicating the scope.
   /// @returns Pointer to the event found by following the given reference.
   /// @throws ValidationError if there are problems with referencing.
-  EventPtr GetEvent(const std::string& reference);
+  /// @throws LogicError if the given base path is invalid.
+  EventPtr GetEvent(const std::string& reference, const std::string& base_path);
 
   /// Adds a house event that is used in this model.
   /// @param[in] house_event A house event defined in this model.
@@ -80,9 +83,11 @@ class Model : public Element {
   /// Finds a house event from a reference. The reference is not case sensitive
   /// and can contain the identifier, full path, or local path.
   /// @param[in] reference Reference string to the house event.
+  /// @param[in] base_path The series of containers indicating the scope.
   /// @returns Pointer to the house event found by following the reference.
   /// @throws ValidationError if there are problems with referencing.
-  HouseEventPtr GetHouseEvent(const std::string& reference);
+  HouseEventPtr GetHouseEvent(const std::string& reference,
+                              const std::string& base_path);
 
   /// @returns House events defined for this model.
   inline const boost::unordered_map<std::string, HouseEventPtr>&
@@ -98,9 +103,11 @@ class Model : public Element {
   /// Finds a basic event from a reference. The reference is not case sensitive
   /// and can contain the identifier, full path, or local path.
   /// @param[in] reference Reference string to the basic event.
+  /// @param[in] base_path The series of containers indicating the scope.
   /// @returns Pointer to the basic event found by following the reference.
   /// @throws ValidationError if there are problems with referencing.
-  BasicEventPtr GetBasicEvent(const std::string& reference);
+  BasicEventPtr GetBasicEvent(const std::string& reference,
+                              const std::string& base_path);
 
   /// @returns Basic events defined for this model.
   inline const boost::unordered_map<std::string, BasicEventPtr>&
@@ -116,9 +123,10 @@ class Model : public Element {
   /// Finds a gate from a reference. The reference is not case sensitive
   /// and can contain the identifier, full path, or local path.
   /// @param[in] reference Reference string to the gate.
+  /// @param[in] base_path The series of containers indicating the scope.
   /// @returns Pointer to the gate found by following the reference.
   /// @throws ValidationError if there are problems with referencing.
-  GatePtr GetGate(const std::string& reference);
+  GatePtr GetGate(const std::string& reference, const std::string& base_path);
 
   /// @returns Gates defined for this model.
   inline const boost::unordered_map<std::string, GatePtr>& gates() const {
@@ -131,11 +139,33 @@ class Model : public Element {
   void AddCcfGroup(const CcfGroupPtr& ccf_group);
 
   /// @returns CCF groups defined for this model.
-  inline const std::map<std::string, CcfGroupPtr>& ccf_groups() const {
+  inline const boost::unordered_map<std::string, CcfGroupPtr>&
+      ccf_groups() const {
     return ccf_groups_;
   }
 
  private:
+  typedef boost::shared_ptr<Component> ComponentPtr;
+
+  /// Helper function to find the scope container for references.
+  /// @param[in] base_path The series of containers to get the container.
+  /// @returns A fault tree or component from the base path if any.
+  /// @throws LogicError if there's missing container in the path.
+  FaultTreePtr GetContainer(const std::string& base_path);
+
+  /// Helper function to find the local container for references.
+  /// @param[in] reference The reference to the target element.
+  /// @param[in] scope The fault tree or component as a scope.
+  /// @returns A fault tree or component from the reference if any.
+  FaultTreePtr GetLocalContainer(const std::string& reference,
+                                 const FaultTreePtr& scope);
+
+  /// Helper function to find the global container for references.
+  /// @param[in] reference The reference to the target element.
+  /// @returns A fault tree or component from the reference.
+  /// @throws ValidationError if there's missing container in the path.
+  FaultTreePtr GetGlobalContainer(const std::string& reference);
+
   std::string name_;  ///< The name of the model.
 
   /// Container for fully defined gates.
@@ -151,10 +181,10 @@ class Model : public Element {
   boost::unordered_map<std::string, ParameterPtr> parameters_;
 
   /// A collection of fault trees.
-  std::map<std::string, FaultTreePtr> fault_trees_;
+  boost::unordered_map<std::string, FaultTreePtr> fault_trees_;
 
   /// A collection of common cause failure groups.
-  std::map<std::string, CcfGroupPtr> ccf_groups_;
+  boost::unordered_map<std::string, CcfGroupPtr> ccf_groups_;
 };
 
 }  // namespace scram

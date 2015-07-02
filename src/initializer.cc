@@ -346,7 +346,7 @@ void Initializer::DefineGate(const xmlpp::Element* gate_node,
   assert(formulas.size() == 1);
   const xmlpp::Element* formula_node =
       dynamic_cast<const xmlpp::Element*>(formulas.front());
-  gate->formula(Initializer::GetFormula(formula_node));
+  gate->formula(Initializer::GetFormula(formula_node, gate->base_path()));
   try {
     gate->Validate();
   } catch (ValidationError& err) {
@@ -357,7 +357,8 @@ void Initializer::DefineGate(const xmlpp::Element* gate_node,
 }
 
 boost::shared_ptr<Formula> Initializer::GetFormula(
-    const xmlpp::Element* formula_node) {
+    const xmlpp::Element* formula_node,
+    const std::string& base_path) {
   std::string type = formula_node->get_name();
   if (type == "event" || type == "basic-event" || type == "gate" ||
       type == "house-event") {
@@ -372,9 +373,9 @@ boost::shared_ptr<Formula> Initializer::GetFormula(
   }
   // Process arguments of this formula.
   if (type == "null") {
-    Initializer::ProcessFormula(formula_node->get_parent(), formula);
+    Initializer::ProcessFormula(formula_node->get_parent(), formula, base_path);
   } else {
-    Initializer::ProcessFormula(formula_node, formula);
+    Initializer::ProcessFormula(formula_node, formula, base_path);
   }
 
   try {
@@ -388,7 +389,8 @@ boost::shared_ptr<Formula> Initializer::GetFormula(
 }
 
 void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
-                                 const FormulaPtr& formula) {
+                                 const FormulaPtr& formula,
+                                 const std::string& base_path) {
   xmlpp::NodeSet events = formula_node->find("./*[name() = 'event' or "
                                              "name() = 'gate' or "
                                              "name() = 'basic-event' or "
@@ -412,16 +414,16 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
     try {
       EventPtr child;
       if (element_type == "event") {  // Undefined type yet.
-        child = model_->GetEvent(name);
+        child = model_->GetEvent(name, base_path);
 
       } else if (element_type == "gate") {
-        child = model_->GetGate(name);
+        child = model_->GetGate(name, base_path);
 
       } else if (element_type == "basic-event") {
-        child = model_->GetBasicEvent(name);
+        child = model_->GetBasicEvent(name, base_path);
 
       } else if (element_type == "house-event") {
-        child = model_->GetHouseEvent(name);
+        child = model_->GetHouseEvent(name, base_path);
       }
       formula->AddArgument(child);
       child->orphan(false);
@@ -441,7 +443,7 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
     const xmlpp::Element* nested_formula =
         dynamic_cast<const xmlpp::Element*>(*it);
     assert(nested_formula);
-    formula->AddArgument(Initializer::GetFormula(nested_formula));
+    formula->AddArgument(Initializer::GetFormula(nested_formula, base_path));
   }
 }
 
@@ -988,7 +990,7 @@ void Initializer::CheckFirstLayer() {
 
 void Initializer::CheckSecondLayer() {
   if (!model_->fault_trees().empty()) {
-    std::map<std::string, FaultTreePtr>::const_iterator it;
+    boost::unordered_map<std::string, FaultTreePtr>::const_iterator it;
     for (it = model_->fault_trees().begin(); it != model_->fault_trees().end();
          ++it) {
       it->second->Validate();
@@ -996,7 +998,7 @@ void Initializer::CheckSecondLayer() {
   }
 
   if (!model_->ccf_groups().empty()) {
-    std::map<std::string, CcfGroupPtr>::const_iterator it;
+    boost::unordered_map<std::string, CcfGroupPtr>::const_iterator it;
     for (it = model_->ccf_groups().begin(); it != model_->ccf_groups().end();
          ++it) {
       it->second->Validate();
@@ -1037,7 +1039,7 @@ void Initializer::ValidateExpressions() {
     std::stringstream msg;
     msg << "";
     if (!model_->ccf_groups().empty()) {
-      std::map<std::string, CcfGroupPtr>::const_iterator it;
+      boost::unordered_map<std::string, CcfGroupPtr>::const_iterator it;
       for (it = model_->ccf_groups().begin(); it != model_->ccf_groups().end();
            ++it) {
         try {
@@ -1066,7 +1068,7 @@ void Initializer::ValidateExpressions() {
 void Initializer::SetupForAnalysis() {
   // CCF groups.
   if (!model_->ccf_groups().empty()) {
-    std::map<std::string, CcfGroupPtr>::const_iterator it;
+    boost::unordered_map<std::string, CcfGroupPtr>::const_iterator it;
     for (it = model_->ccf_groups().begin(); it != model_->ccf_groups().end();
          ++it) {
       it->second->ApplyModel();

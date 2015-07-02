@@ -26,7 +26,7 @@ RiskAnalysis::RiskAnalysis(const ModelPtr& model, const Settings& settings) {
 void RiskAnalysis::GraphingInstructions() {
   CLOCK(graph_time);
   LOG(DEBUG1) << "Producing graphing instructions";
-  std::map<std::string, FaultTreePtr>::const_iterator it;
+  boost::unordered_map<std::string, FaultTreePtr>::const_iterator it;
   for (it = model_->fault_trees().begin(); it != model_->fault_trees().end();
        ++it) {
     const std::vector<GatePtr>* top_events = &it->second->top_events();
@@ -51,7 +51,7 @@ void RiskAnalysis::Analyze() {
   // Otherwise it defaults to the current time.
   if (settings_.seed_ >= 0) Random::seed(settings_.seed_);
 
-  std::map<std::string, FaultTreePtr>::const_iterator it;
+  boost::unordered_map<std::string, FaultTreePtr>::const_iterator it;
   for (it = model_->fault_trees().begin(); it != model_->fault_trees().end();
        ++it) {
     const std::vector<GatePtr>* top_events = &it->second->top_events();
