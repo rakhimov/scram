@@ -14,7 +14,6 @@ Model::Model(std::string name) : name_(name) {}
 void Model::AddFaultTree(const FaultTreePtr& fault_tree) {
   std::string name = fault_tree->name();
   boost::to_lower(name);
-
   if (fault_trees_.count(name)) {
     std::string msg = "Fault tree " + fault_tree->name() + " already exists.";
     throw ValidationError(msg);
@@ -23,14 +22,11 @@ void Model::AddFaultTree(const FaultTreePtr& fault_tree) {
 }
 
 void Model::AddParameter(const ParameterPtr& parameter) {
-  std::string name = parameter->name();
-  boost::to_lower(name);
-
-  if (parameters_.count(name)) {
+  if (parameters_.count(parameter->id())) {
     std::string msg = "Parameter " + parameter->name() + " already exists.";
     throw ValidationError(msg);
   }
-  parameters_.insert(std::make_pair(name, parameter));
+  parameters_.insert(std::make_pair(parameter->id(), parameter));
 }
 
 boost::shared_ptr<Parameter> Model::GetParameter(const std::string& reference) {
@@ -64,9 +60,7 @@ boost::shared_ptr<Event> Model::GetEvent(const std::string& reference) {
 }
 
 void Model::AddHouseEvent(const HouseEventPtr& house_event) {
-  std::string name = house_event->name();
-  boost::to_lower(name);
-
+  std::string name = house_event->id();
   if (gates_.count(name) || basic_events_.count(name) ||
       house_events_.count(name)) {
     std::string msg = "Event " + house_event->name() + " already exists.";
@@ -89,9 +83,7 @@ boost::shared_ptr<HouseEvent> Model::GetHouseEvent(
 }
 
 void Model::AddBasicEvent(const BasicEventPtr& basic_event) {
-  std::string name = basic_event->name();
-  boost::to_lower(name);
-
+  std::string name = basic_event->id();
   if (gates_.count(name) || basic_events_.count(name) ||
       house_events_.count(name)) {
     std::string msg = "Event " + basic_event->name() + " already exists.";
@@ -114,9 +106,7 @@ boost::shared_ptr<BasicEvent> Model::GetBasicEvent(
 }
 
 void Model::AddGate(const GatePtr& gate) {
-  std::string name = gate->name();
-  boost::to_lower(name);
-
+  std::string name = gate->id();
   if (gates_.count(name) || basic_events_.count(name) ||
       house_events_.count(name)) {
     std::string msg = "Event " + gate->name() + " already exists.";
@@ -140,7 +130,6 @@ boost::shared_ptr<Gate> Model::GetGate(const std::string& reference) {
 void Model::AddCcfGroup(const CcfGroupPtr& ccf_group) {
   std::string name = ccf_group->name();
   boost::to_lower(name);
-
   if (ccf_groups_.count(name)) {
     std::string msg = "CCF group " + ccf_group->name() + " already exists.";
     throw ValidationError(msg);

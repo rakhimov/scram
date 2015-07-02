@@ -101,15 +101,15 @@ enum Units {
 /// @class Parameter
 /// This class provides a representation of a variable in basic event
 /// description. It is both expression and element description.
-class Parameter : public Expression, public Element {
+class Parameter : public Expression, public Element, public Role {
  public:
   /// Sets the expression of this basic event.
   /// @param[in] name The name of this variable (Case sensitive).
-  explicit Parameter(std::string name)
-      : name_(name),
-        mark_(""),
-        unused_(true),
-        unit_(kUnitless) {}
+  /// @param[in] base_path The series of containers to get this parameter.
+  /// @param[in] is_public Whether or not the parameter is public.
+  explicit Parameter(const std::string& name,
+                     const std::string& base_path = "",
+                     bool is_public = true);
 
   /// Sets the expression of this parameter.
   /// @param[in] expression The expression to describe this parameter.
@@ -120,6 +120,12 @@ class Parameter : public Expression, public Element {
 
   /// @returns The name of this variable.
   inline const std::string& name() const { return name_; }
+
+  /// @returns The unique identifier  of this parameter.
+  inline const std::string& id() const { return id_; }
+
+  /// @returns The base path containing ancestor container names.
+  inline const std::string& base_path() const { return base_path_; }
 
   /// Sets the unit of this parameter.
   /// @param[in] unit A valid unit.
@@ -181,6 +187,8 @@ class Parameter : public Expression, public Element {
                           std::vector<std::string>* cycle);
 
   std::string name_;  ///< Name of this parameter or variable.
+  std::string id_;  ///< Identifier of this parameter or variable.
+  std::string base_path_;  ///< Series of ancestor containers.
   Units unit_;  ///< Units of this parameter.
   ExpressionPtr expression_;  ///< Expression for this parameter.
   std::string mark_;  ///< The mark for traversal in cycle detection.
