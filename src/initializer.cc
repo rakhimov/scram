@@ -475,7 +475,8 @@ void Initializer::DefineBasicEvent(const xmlpp::Element* event_node,
     const xmlpp::Element* expr_node =
         dynamic_cast<const xmlpp::Element*>(expressions.back());
     assert(expr_node);
-    ExpressionPtr expression = Initializer::GetExpression(expr_node);
+    ExpressionPtr expression =
+        Initializer::GetExpression(expr_node, basic_event->base_path());
     basic_event->expression(expression);
   }
 }
@@ -549,21 +550,23 @@ void Initializer::DefineParameter(const xmlpp::Element* param_node,
   const xmlpp::Element* expr_node =
       dynamic_cast<const xmlpp::Element*>(expressions.back());
   assert(expr_node);
-  ExpressionPtr expression = Initializer::GetExpression(expr_node);
+  ExpressionPtr expression =
+      Initializer::GetExpression(expr_node, parameter->base_path());
 
   parameter->expression(expression);
 }
 
 boost::shared_ptr<Expression> Initializer::GetExpression(
-    const xmlpp::Element* expr_element) {
+    const xmlpp::Element* expr_element,
+    const std::string& base_path) {
   using scram::Initializer;
   ExpressionPtr expression;
   bool not_parameter = true;  // Parameters are saved in a different container.
-  if (GetConstantExpression(expr_element, expression)) {
-  } else if (GetParameterExpression(expr_element, expression)) {
+  if (GetConstantExpression(expr_element, base_path, expression)) {
+  } else if (GetParameterExpression(expr_element, base_path, expression)) {
     not_parameter = false;
   } else {
-    GetDeviateExpression(expr_element, expression);
+    GetDeviateExpression(expr_element, base_path, expression);
   }
   assert(expression);
   if (not_parameter) expressions_.push_back(expression);
@@ -571,6 +574,7 @@ boost::shared_ptr<Expression> Initializer::GetExpression(
 }
 
 bool Initializer::GetConstantExpression(const xmlpp::Element* expr_element,
+                                        const std::string& base_path,
                                         ExpressionPtr& expression) {
   typedef boost::shared_ptr<ConstantExpression> ConstantExpressionPtr;
   assert(expr_element);
@@ -593,6 +597,7 @@ bool Initializer::GetConstantExpression(const xmlpp::Element* expr_element,
 }
 
 bool Initializer::GetParameterExpression(const xmlpp::Element* expr_element,
+                                         const std::string& base_path,
                                          ExpressionPtr& expression) {
   assert(expr_element);
   std::string expr_name = expr_element->get_name();
@@ -601,7 +606,7 @@ bool Initializer::GetParameterExpression(const xmlpp::Element* expr_element,
     std::string name = expr_element->get_attribute_value("name");
     boost::trim(name);
     try {
-      ParameterPtr param = model_->GetParameter(name);
+      ParameterPtr param = model_->GetParameter(name, base_path);
       param->unused(false);
       param_unit = unit_to_string_[param->unit()];
       expression = param;
@@ -632,6 +637,7 @@ bool Initializer::GetParameterExpression(const xmlpp::Element* expr_element,
 }
 
 bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
+                                       const std::string& base_path,
                                        ExpressionPtr& expression) {
   assert(expr_element);
   std::string expr_name = expr_element->get_name();
@@ -641,11 +647,11 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
     const xmlpp::Element* element =
         dynamic_cast<const xmlpp::Element*>(args[0]);
     assert(element);
-    ExpressionPtr min = GetExpression(element);
+    ExpressionPtr min = GetExpression(element, base_path);
 
     element = dynamic_cast<const xmlpp::Element*>(args[1]);
     assert(element);
-    ExpressionPtr max = GetExpression(element);
+    ExpressionPtr max = GetExpression(element, base_path);
 
     expression = boost::shared_ptr<UniformDeviate>(
         new UniformDeviate(min, max));
@@ -655,11 +661,11 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
     const xmlpp::Element* element =
         dynamic_cast<const xmlpp::Element*>(args[0]);
     assert(element);
-    ExpressionPtr mean = GetExpression(element);
+    ExpressionPtr mean = GetExpression(element, base_path);
 
     element = dynamic_cast<const xmlpp::Element*>(args[1]);
     assert(element);
-    ExpressionPtr sigma = GetExpression(element);
+    ExpressionPtr sigma = GetExpression(element, base_path);
 
     expression = boost::shared_ptr<NormalDeviate>(
         new NormalDeviate(mean, sigma));
@@ -669,15 +675,15 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
     const xmlpp::Element* element =
         dynamic_cast<const xmlpp::Element*>(args[0]);
     assert(element);
-    ExpressionPtr mean = GetExpression(element);
+    ExpressionPtr mean = GetExpression(element, base_path);
 
     element = dynamic_cast<const xmlpp::Element*>(args[1]);
     assert(element);
-    ExpressionPtr ef = GetExpression(element);
+    ExpressionPtr ef = GetExpression(element, base_path);
 
     element = dynamic_cast<const xmlpp::Element*>(args[2]);
     assert(element);
-    ExpressionPtr level = GetExpression(element);
+    ExpressionPtr level = GetExpression(element, base_path);
 
     expression = boost::shared_ptr<LogNormalDeviate>(
         new LogNormalDeviate(mean, ef, level));
@@ -687,11 +693,11 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
     const xmlpp::Element* element =
         dynamic_cast<const xmlpp::Element*>(args[0]);
     assert(element);
-    ExpressionPtr k = GetExpression(element);
+    ExpressionPtr k = GetExpression(element, base_path);
 
     element = dynamic_cast<const xmlpp::Element*>(args[1]);
     assert(element);
-    ExpressionPtr theta = GetExpression(element);
+    ExpressionPtr theta = GetExpression(element, base_path);
 
     expression = boost::shared_ptr<GammaDeviate>(new GammaDeviate(k, theta));
 
@@ -700,11 +706,11 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
     const xmlpp::Element* element =
         dynamic_cast<const xmlpp::Element*>(args[0]);
     assert(element);
-    ExpressionPtr alpha = GetExpression(element);
+    ExpressionPtr alpha = GetExpression(element, base_path);
 
     element = dynamic_cast<const xmlpp::Element*>(args[1]);
     assert(element);
-    ExpressionPtr beta = GetExpression(element);
+    ExpressionPtr beta = GetExpression(element, base_path);
 
     expression = boost::shared_ptr<BetaDeviate>(new BetaDeviate(alpha, beta));
 
@@ -719,12 +725,12 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
       const xmlpp::Element* element =
           dynamic_cast<const xmlpp::Element*>(pair[0]);
       assert(element);
-      ExpressionPtr bound = GetExpression(element);
+      ExpressionPtr bound = GetExpression(element, base_path);
       boundaries.push_back(bound);
 
       element = dynamic_cast<const xmlpp::Element*>(pair[1]);
       assert(element);
-      ExpressionPtr weight = GetExpression(element);
+      ExpressionPtr weight = GetExpression(element, base_path);
       weights.push_back(weight);
     }
     expression = boost::shared_ptr<Histogram>(
@@ -735,11 +741,11 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
     const xmlpp::Element* element =
         dynamic_cast<const xmlpp::Element*>(args[0]);
     assert(element);
-    ExpressionPtr lambda = GetExpression(element);
+    ExpressionPtr lambda = GetExpression(element, base_path);
 
     element = dynamic_cast<const xmlpp::Element*>(args[1]);
     assert(element);
-    ExpressionPtr time = GetExpression(element);
+    ExpressionPtr time = GetExpression(element, base_path);
 
     expression = boost::shared_ptr<ExponentialExpression>(
         new ExponentialExpression(lambda, time));
@@ -749,19 +755,19 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
     const xmlpp::Element* element =
         dynamic_cast<const xmlpp::Element*>(args[0]);
     assert(element);
-    ExpressionPtr gamma = GetExpression(element);
+    ExpressionPtr gamma = GetExpression(element, base_path);
 
     element = dynamic_cast<const xmlpp::Element*>(args[1]);
     assert(element);
-    ExpressionPtr lambda = GetExpression(element);
+    ExpressionPtr lambda = GetExpression(element, base_path);
 
     element = dynamic_cast<const xmlpp::Element*>(args[2]);
     assert(element);
-    ExpressionPtr mu = GetExpression(element);
+    ExpressionPtr mu = GetExpression(element, base_path);
 
     element = dynamic_cast<const xmlpp::Element*>(args[3]);
     assert(element);
-    ExpressionPtr time = GetExpression(element);
+    ExpressionPtr time = GetExpression(element, base_path);
 
     expression = boost::shared_ptr<GlmExpression>(
         new GlmExpression(gamma, lambda, mu, time));
@@ -771,19 +777,19 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
     const xmlpp::Element* element =
         dynamic_cast<const xmlpp::Element*>(args[0]);
     assert(element);
-    ExpressionPtr alpha = GetExpression(element);
+    ExpressionPtr alpha = GetExpression(element, base_path);
 
     element = dynamic_cast<const xmlpp::Element*>(args[1]);
     assert(element);
-    ExpressionPtr beta = GetExpression(element);
+    ExpressionPtr beta = GetExpression(element, base_path);
 
     element = dynamic_cast<const xmlpp::Element*>(args[2]);
     assert(element);
-    ExpressionPtr t0 = GetExpression(element);
+    ExpressionPtr t0 = GetExpression(element, base_path);
 
     element = dynamic_cast<const xmlpp::Element*>(args[3]);
     assert(element);
-    ExpressionPtr time = GetExpression(element);
+    ExpressionPtr time = GetExpression(element, base_path);
 
     expression = boost::shared_ptr<WeibullExpression>(
         new WeibullExpression(alpha, beta, t0, time));
@@ -853,7 +859,8 @@ void Initializer::DefineCcfGroup(const xmlpp::Element* ccf_node,
       assert(element->find("./*").size() == 1);
       const xmlpp::Element* expr_node =
           dynamic_cast<const xmlpp::Element*>(element->find("./*")[0]);
-      ExpressionPtr expression = Initializer::GetExpression(expr_node);
+      ExpressionPtr expression =
+          Initializer::GetExpression(expr_node, ccf_group->base_path());
       ccf_group->AddDistribution(expression);
 
     } else if (name == "factor") {
@@ -931,7 +938,8 @@ void Initializer::DefineCcfFactor(const xmlpp::Element* factor_node,
   assert(factor_node->find("./*").size() == 1);
   const xmlpp::Element* expr_node =
       dynamic_cast<const xmlpp::Element*>(factor_node->find("./*")[0]);
-  ExpressionPtr expression = Initializer::GetExpression(expr_node);
+  ExpressionPtr expression =
+      Initializer::GetExpression(expr_node, ccf_group->base_path());
   try {
     ccf_group->AddFactor(expression, level_num);
   } catch (ValidationError& err) {

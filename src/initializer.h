@@ -194,27 +194,37 @@ class Initializer {
 
   /// Processes Expression definitions in input file.
   /// @param[in] expr_element XML expression element containing the definition.
-  ExpressionPtr GetExpression(const xmlpp::Element* expr_element);
+  /// @param[in] base_path Series of ancestor containers in the path with dots.
+  /// @throws ValidationError if there are problems with getting the expression.
+  ExpressionPtr GetExpression(const xmlpp::Element* expr_element,
+                              const std::string& base_path);
 
   /// Processes Constant Expression definitions in input file.
   /// @param[in] expr_element XML expression element containing the definition.
+  /// @param[in] base_path Series of ancestor containers in the path with dots.
   /// @param[out] expression Expression described in XML input expression node.
   /// @returns true if expression was found and processed.
   bool GetConstantExpression(const xmlpp::Element* expr_element,
+                             const std::string& base_path,
                              ExpressionPtr& expression);
 
   /// Processes Parameter Expression definitions in input file.
   /// @param[in] expr_element XML expression element containing the definition.
+  /// @param[in] base_path Series of ancestor containers in the path with dots.
   /// @param[out] expression Expression described in XML input expression node.
   /// @returns true if expression was found and processed.
+  /// @throws ValidationError if the parameter variable is not reachable.
   bool GetParameterExpression(const xmlpp::Element* expr_element,
+                              const std::string& base_path,
                               ExpressionPtr& expression);
 
   /// Processes Distribution deviate expression definitions in input file.
   /// @param[in] expr_element XML expression element containing the definition.
+  /// @param[in] base_path Series of ancestor containers in the path with dots.
   /// @param[out] expression Expression described in XML input expression node.
   /// @returns true if expression was found and processed.
   bool GetDeviateExpression(const xmlpp::Element* expr_element,
+                            const std::string& base_path,
                             ExpressionPtr& expression);
 
   /// Registers a common cause failure group for later definition.

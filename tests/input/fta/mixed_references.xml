@@ -25,8 +25,14 @@ Examples of all forms of possible references.
       </define-gate>
       <define-basic-event name="ValveOne"/>
       <define-basic-event name="ValveTwo"/>
+      <define-parameter name="ParamValve">
+        <float value="0.5"/>
+      </define-parameter>
     </define-component>
     <define-basic-event name="PumpOne"/>
     <define-basic-event name="PumpTwo"/>
+    <define-parameter name="ParamPump">
+      <parameter name="Trains.ParamValve"/>
+    </define-parameter>
   </define-fault-tree>
 </opsa-mef>

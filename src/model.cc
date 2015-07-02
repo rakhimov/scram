@@ -29,16 +29,35 @@ void Model::AddParameter(const ParameterPtr& parameter) {
   parameters_.insert(std::make_pair(parameter->id(), parameter));
 }
 
-boost::shared_ptr<Parameter> Model::GetParameter(const std::string& reference) {
-  std::string id = reference;
-  boost::to_lower(id);
-  if (parameters_.count(id)) {
-    return parameters_.find(id)->second;
-
-  } else {
-    std::string msg = "Undefined parameter: " + reference;
-    throw ValidationError(msg);
+boost::shared_ptr<Parameter> Model::GetParameter(const std::string& reference,
+                                                 const std::string& base_path) {
+  assert(reference != "");
+  std::vector<std::string> path;
+  boost::split(path, reference, boost::is_any_of("."),
+               boost::token_compress_on);
+  std::string target_name = path.back();
+  boost::to_lower(target_name);
+  if (base_path != "") {
+    FaultTreePtr scope = Model::GetContainer(base_path);
+    FaultTreePtr container = Model::GetLocalContainer(reference, scope);
+    if (container) {
+      if (container->parameters().count(target_name))
+        return container->parameters().find(target_name)->second;
+    }
   }
+  const boost::unordered_map<std::string, ParameterPtr>* parameters =
+      &parameters_;
+  if (path.size() > 1) {
+    FaultTreePtr container = Model::GetGlobalContainer(reference);
+    parameters = &container->parameters();
+  }
+
+  if (parameters->count(target_name))
+    return parameters->find(target_name)->second;
+
+  std::string msg = "Undefined parameter " + path.back() + " in reference " +
+                    reference + " with base path " + base_path;
+  throw ValidationError(msg);
 }
 
 boost::shared_ptr<Event> Model::GetEvent(const std::string& reference,

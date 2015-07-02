@@ -55,9 +55,11 @@ class Model : public Element {
   /// Finds a parameter from a reference. The reference is not case sensitive
   /// and can contain the identifier, full path, or local path.
   /// @param[in] reference Reference string to the parameter.
+  /// @param[in] base_path The series of containers indicating the scope.
   /// @returns Pointer to the parameter found by following the given reference.
   /// @throws ValidationError if there are problems with referencing.
-  ParameterPtr GetParameter(const std::string& reference);
+  ParameterPtr GetParameter(const std::string& reference,
+                            const std::string& base_path);
 
   /// @returns Parameters defined for this model.
   inline const boost::unordered_map<std::string, ParameterPtr>&
