@@ -44,4 +44,6 @@ const Attribute& Element::GetAttribute(const std::string& id) {
   return attributes_.find(id)->second;
 }
 
+Role::~Role() {}  // Empty body for pure virtual destructor.
+
 }  // namespace scram

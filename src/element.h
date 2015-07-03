@@ -56,8 +56,9 @@ class Element {
 };
 
 /// @class Role
-/// Private or public roles for elements as needed. Public is the default
-/// assumption. It is expected to set only once and never changes.
+/// Abstract class that manages private or public roles for elements as needed.
+/// Public is the default assumption. It is expected to set only once and never
+/// changes.
 class Role {
  public:
   /// Sets the role of an element upon creation.
@@ -67,7 +68,7 @@ class Role {
       : is_public_(is_public),
         base_path_(base_path) {}
 
-  virtual ~Role() {}
+  virtual ~Role() = 0;  ///< Abstract class;
 
   /// @returns True for public roles, or False for private roles.
   inline bool is_public() { return is_public_; }
