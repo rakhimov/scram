@@ -20,11 +20,19 @@
 namespace scram {
 
 /// @class CcfGroup
-/// Base class for all common cause failure models.
+/// Abstract base class for all common cause failure models.
 class CcfGroup : public Element, public Role {
  public:
   typedef boost::shared_ptr<Expression> ExpressionPtr;
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+
+  /// Constructor to be used by derived classes.
+  /// @param[in] name The name of a CCF group.
+  /// @param[in] model CCF model of this group.
+  /// @param[in] base_path The series of containers to get this group.
+  /// @param[in] is_public Whether or not the group is public.
+  CcfGroup(const std::string& name, const std::string& model,
+           const std::string& base_path = "", bool is_public = true);
 
   virtual ~CcfGroup() {}
 
@@ -87,14 +95,6 @@ class CcfGroup : public Element, public Role {
   typedef boost::shared_ptr<Gate> GatePtr;
   typedef boost::shared_ptr<Formula> FormulaPtr;
 
-  /// Constructor to be used by derived classes.
-  /// @param[in] name The name of a CCF group.
-  /// @param[in] model CCF model of this group.
-  /// @param[in] base_path The series of containers to get this group.
-  /// @param[in] is_public Whether or not the group is public.
-  CcfGroup(const std::string& name, const std::string& model,
-           const std::string& base_path = "", bool is_public = true);
-
   /// Creates new basic events from members. The new basic events
   /// are included in the database of new events.
   /// @param[in] max_level The max level for grouping.
@@ -104,7 +104,8 @@ class CcfGroup : public Element, public Role {
       std::map<BasicEventPtr, std::set<std::string> >* new_events);
 
   /// Calculates probabilities for new basic events representing failures
-  /// due to common cause.
+  /// due to common cause. Each derived common cause failure model must
+  /// implement this function with its own specific formulas and assumptions.
   /// @param[in] max_level The max level of grouping.
   /// @param[out] probabilities Expressions representing probabilities for
   ///                           each level of groupings for CCF events.
@@ -124,14 +125,6 @@ class CcfGroup : public Element, public Role {
   std::vector<std::pair<int, ExpressionPtr> > factors_;
 
  private:
-  /// Default constructor should not be used.
-  /// All CCF models should be instantiated explicitly.
-  CcfGroup();
-  /// Restrict copy construction.
-  CcfGroup(const CcfGroup&);
-  /// Restrict copy assignment.
-  CcfGroup& operator=(const CcfGroup&);
-
   std::string model_;  ///< Common cause model type.
 };
 
