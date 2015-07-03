@@ -37,9 +37,11 @@ Steps in XML Input Validation
     - Leading and trailing whitespace characters are trimmed.
     - Names and references should conform to the rules defined in
       :ref:`naming_rules` section.
-    - Names must be unique if they are public by default.
-    - Names must be unique only locally if they are private. [not supported]
-    - Proper 'include directive' formatting. [not supported]
+    - Public names must be unique globally, and private names must be unique
+      locally within containers.
+    - References are followed according to the public and private roles
+      described in the OpenPSA MEF section
+      "IV.3.2. Solving Name Conflicts: Public versus Private Elements".
 
 #. Additional validation of fault trees and values of parameters is performed:
 
@@ -83,7 +85,7 @@ the intersection of the following rules.
 
 References to constructs, such as gates, events, and parameters, may include
 names of fault trees or components to access public or private members. This
-feature requires a period (".") between names; thus references follow the
+feature requires a period (".") between names; thus references may follow the
 pattern ("fault_tree.component.event").
 
 .. _`XML NCName datatype`:

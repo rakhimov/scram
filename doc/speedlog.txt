@@ -113,3 +113,7 @@ Python script:
 Standard build:
 ---------------
 - Parsing and Validation    37s  |  55s
+
+Release build:
+--------------
+- Parsing and Validation    34s  |

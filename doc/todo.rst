@@ -42,7 +42,6 @@ Minor Enhancements and Capabilities
 
     * Expressions. *Moderate*
     * Include directive in input files to include other input files. *Low*
-    * Public and private scopes for names of events and other elements. *Low*
     * Cardinality/Imply/IFF gates. *Low*
 
 - Shorthand format to XML converter. *Low*
