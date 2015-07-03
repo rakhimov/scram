@@ -19,13 +19,13 @@ struct Attribute {
 };
 
 /// @class Element
-/// This class represents any element of analysis that can have some extra
-/// descriptions.
+/// This abstract class represents any element of analysis that can have some
+/// extra descriptions, such as attributes and a label.
 class Element {
  public:
   Element();
 
-  virtual ~Element() {}
+  virtual ~Element() = 0;  ///< Abstract class.
 
   /// @returns The empty or preset label.
   /// @returns Empty string if the label has not been set.

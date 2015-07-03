@@ -12,6 +12,8 @@ Attribute::Attribute() : name(""), value(""), type("") {}
 
 Element::Element() : label_("") {}
 
+Element::~Element() {}  // Empty body for pure virtual destructor.
+
 void Element::label(std::string new_label) {
   if (label_ != "") {
     throw LogicError("Trying to reset the label: " + label_);
