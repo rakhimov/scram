@@ -17,31 +17,31 @@ SCRAM
 **SCRAM** is a **C**\ommand-line **R**\isk **A**\nalysis **M**\ulti-tool.
 
 This project aims to build a simple command line tool for
-probabilistic risk analysis. *SCRAM* is currently capable of performing
+probabilistic risk analysis. SCRAM is currently capable of performing
 static fault tree analysis, analysis with common cause failure models,
 probability calculations with importance analysis,
 and uncertainty analysis using Monte Carlo simulations. This tool can handle
 non-coherent fault trees, containing NOT logic.
 
-*SCRAM* partially supports the OpenPSA_ model exchange format. Its input
+SCRAM partially supports the OpenPSA_ model exchange format. Its input
 files are based on this format.
 
-*SCRAM* generates a Graphviz Dot instruction file for a graphical
+SCRAM generates a Graphviz Dot instruction file for a graphical
 representation of a fault tree.
 
 An experimental GUI front-end is under development using `Qt`_.
 
-In addition, a complex-fault-tree-generator script is provided to explore the
-performance of *SCRAM*.
+In addition, a complex-fault-tree-generator script is provided to create
+hard-to-analyze fault trees and to explore the performance of SCRAM.
 
-A full description of *SCRAM* and its current capabilities
+A full description of SCRAM and its current capabilities
 is in `documentation`_.
 
 .. _OpenPSA: http://open-psa.org
 .. _`documentation`: http://rakhimov.github.io/scram
 .. _`Qt`: http://qt-project.org/
 
-To get *SCRAM*, you can download a virtual machine image
+To get SCRAM, you can download a virtual machine image
 on Sourceforge_ or follow the building and installing instructions bellow.
 
 .. _Sourceforge:
@@ -152,7 +152,7 @@ For example, in order to install *graphviz* on your system, type:
     sudo apt-get install graphviz
 
 If you'd prefer to copy/paste, the following line will install all major
-*SCRAM* dependencies and GCC/G++ compiler:
+SCRAM dependencies and GCC/G++ compiler:
 
 .. code-block:: bash
 
@@ -215,7 +215,7 @@ For example, in order to install *graphviz* on your system, type:
     sudo port install graphviz
 
 If you'd prefer to copy/paste, the following line will install all major
-*SCRAM* dependencies:
+SCRAM dependencies:
 
 .. code-block:: bash
 
@@ -330,7 +330,7 @@ To test the tools in the *scripts* directory:
 
     nosetests -w scripts/
 
-To test the command-line call of *SCRAM*:
+To test the command-line call of SCRAM:
 
 .. code-block:: bash
 
