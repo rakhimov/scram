@@ -62,7 +62,7 @@ void Component::AddCcfGroup(const CcfGroupPtr& ccf_group) {
   std::string name = ccf_group->name();
   boost::to_lower(name);
   if (ccf_groups_.count(name)) {
-    throw ValidationError("Duplicate ccf group " + ccf_group->name() + ".");
+    throw ValidationError("Duplicate CCF group " + ccf_group->name() + ".");
   }
   ccf_groups_.insert(std::make_pair(name, ccf_group));
   std::map<std::string, BasicEventPtr>::const_iterator it;

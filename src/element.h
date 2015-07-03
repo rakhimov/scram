@@ -78,7 +78,7 @@ class Role {
 
  private:
   bool is_public_;  ///< A flag for public and private roles.
-  std::string base_path_;  ///< A series of containters leading to this event.
+  std::string base_path_;  ///< A series of containers leading to this event.
 };
 
 }  // namespace scram

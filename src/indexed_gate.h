@@ -120,7 +120,7 @@ class IndexedGate {
   inline void EraseAllChildren() { children_.clear(); }
 
   /// Removes a child from the children container. The passed child index
-  /// must be in this gate's children conatainer and initialized.
+  /// must be in this gate's children container and initialized.
   /// @param[in] child The positive or negative index of the existing child.
   inline void EraseChild(int child) {
     assert(children_.count(child));

@@ -507,7 +507,7 @@ void IndexedFaultTree::PropagateConstants(
   // in minimal cut sets.
   // False house event in OR gate is removed.
   // Unity may occur due to House event.
-  // Null can be due to house events or complement elments.
+  // Null can be due to house events or complement elements.
   std::set<int>::const_iterator it;
   std::vector<int> to_erase;  // Children to erase.
   for (it = gate->children().begin(); it != gate->children().end(); ++it) {

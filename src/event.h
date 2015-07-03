@@ -41,7 +41,7 @@ class Event : public Element, public Role {
   /// @returns True if this node is orphan.
   inline bool orphan() const { return orphan_; }
 
-  /// Sets the orphanage state.
+  /// Sets the orphan state.
   inline void orphan(bool state) { orphan_ = state; }
 
  private:
@@ -161,9 +161,9 @@ class Formula {
   }
 
  private:
-  /// Formula types that require two or more argumets.
+  /// Formula types that require two or more arguments.
   static const std::set<std::string> two_or_more_;
-  /// Formula types that require exacly one argument.
+  /// Formula types that require exactly one argument.
   static const std::set<std::string> single_;
 
   /// Gathers nodes and connectors from arguments of the gate.
@@ -273,6 +273,12 @@ class BasicEvent : public PrimaryEvent {
   /// @returns false otherwise.
   inline bool HasCcf() const { return ccf_gate_ ? true : false; }
 
+  /// @returns CCF group gate representing this basic event.
+  inline const boost::shared_ptr<Gate>& ccf_gate() const {
+    assert(ccf_gate_);
+    return ccf_gate_;
+  }
+
   /// Sets the common cause failure group gate that can represent this basic
   /// event in analysis with common cause information. This information is
   /// expected to be provided by CCF group application.
@@ -280,12 +286,6 @@ class BasicEvent : public PrimaryEvent {
   void ccf_gate(const boost::shared_ptr<Gate>& gate) {
     assert(!ccf_gate_);
     ccf_gate_ = gate;
-  }
-
-  /// @returns CCF group gate representing this basic event.
-  inline const boost::shared_ptr<Gate>& ccf_gate() const {
-    assert(ccf_gate_);
-    return ccf_gate_;
   }
 
  private:

@@ -92,34 +92,34 @@ class Component : public Element, public Role {
   /// @throws ValidationError for re-added gates.
   void AddGate(const GatePtr& gate);
 
-  /// Adds a basic event into this component containter.
+  /// Adds a basic event into this component container.
   /// @param[in] basic_event The basic event to be added to this tree.
   /// @throws ValidationError for re-added basic events.
   void AddBasicEvent(const BasicEventPtr& basic_event);
 
-  /// Adds a house event into this component containter.
+  /// Adds a house event into this component container.
   /// @param[in] house_event The house event to be added to this tree.
   /// @throws ValidationError for re-added house events.
   void AddHouseEvent(const HouseEventPtr& house_event);
 
-  /// Adds a parameter into this component containter.
+  /// Adds a parameter into this component container.
   /// @param[in] parameter The parameter to be added to this tree.
   /// @throws ValidationError for re-added parameter.
   void AddParameter(const ParameterPtr& parameter);
 
-  /// Adds a ccf group and its members into this component containter.
-  /// @param[in] ccf_group The ccf group to be added to this container.
-  /// @throws ValidationError for re-added ccf groups or duplicate basic event
+  /// Adds a CCF group and its members into this component container.
+  /// @param[in] ccf_group The CCF group to be added to this container.
+  /// @throws ValidationError for re-added CCF groups or duplicate basic event
   ///         members.
   void AddCcfGroup(const CcfGroupPtr& ccf_group);
 
-  /// Adds a component container into this component containter.
-  /// @param[in] component The ccf group to be added to this container.
+  /// Adds a component container into this component container.
+  /// @param[in] component The CCF group to be added to this container.
   /// @throws ValidationError for re-added components.
   void AddComponent(const ComponentPtr& component);
 
  protected:
-  /// Recusively traverses components to gather gates relevant to
+  /// Recursively traverses components to gather gates relevant to
   /// the whole component.
   /// @param[out] gates Gates belonging to this component and its subcomponents.
   void GatherGates(boost::unordered_set<GatePtr>* gates);

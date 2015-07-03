@@ -88,7 +88,7 @@ void Grapher::GraphFormula(
   // Deal with formulas.
   const std::set<FormulaPtr>* formula_args = &formula->formula_args();
   std::set<FormulaPtr>::const_iterator it_f;
-  int i = 1;  // Count fomulas for unique naming.
+  int i = 1;  // Count formulas for unique naming.
   for (it_f = formula_args->begin(); it_f != formula_args->end(); ++it_f) {
     std::stringstream unique_name;
     unique_name << formula_name << "._F" << i;  // Unique name.

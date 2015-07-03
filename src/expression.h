@@ -632,7 +632,7 @@ class BetaDeviate : public Expression {
 };
 
 /// @class Histogram
-/// Histrogram distribution.
+/// Histogram distribution.
 class Histogram : public Expression {
  public:
   /// Histogram distribution setup.
@@ -681,7 +681,7 @@ class Histogram : public Expression {
   inline double Min() { return boundaries_.front()->Min(); }
 
  private:
-  /// Checks if mean values of expressions are stricly increasing.
+  /// Checks if mean values of expressions are strictly increasing.
   /// @throws InvalidArgument if the mean values are not strictly increasing.
   void CheckBoundaries(const std::vector<ExpressionPtr>& boundaries);
 
