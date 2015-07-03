@@ -19,7 +19,7 @@ namespace scram {
 class Formula;  // Needed for being used by events.
 
 /// @class Event
-/// General fault tree event base class.
+/// Abstract base class for general fault tree events.
 class Event : public Element, public Role {
  public:
   /// Constructs a fault tree event with a specific id. It is assumed that names
@@ -30,7 +30,7 @@ class Event : public Element, public Role {
   explicit Event(const std::string& name, const std::string& base_path = "",
                  bool is_public = true);
 
-  virtual ~Event() {}
+  virtual ~Event() = 0;  ///< Abstract class.
 
   /// @returns The id that is set upon the construction of this event.
   inline const std::string& id() const { return id_; }
@@ -181,7 +181,7 @@ class Formula {
 };
 
 /// @class PrimaryEvent
-/// This is a base class for events that can cause faults.
+/// This is an abstract base class for events that can cause faults.
 /// This class represents Base, House, Undeveloped, and other events.
 class PrimaryEvent : public Event {
  public:
@@ -196,7 +196,7 @@ class PrimaryEvent : public Event {
         type_(type),
         has_expression_(false) {}
 
-  virtual ~PrimaryEvent() {}
+  virtual ~PrimaryEvent() = 0;  ///< Abstract class.
 
   /// @returns The type of the primary event.
   inline const std::string& type() const { return type_; }

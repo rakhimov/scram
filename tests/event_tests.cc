@@ -16,7 +16,7 @@ typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
 
 // Test for Event base class.
 TEST(EventTest, Id) {
-  EventPtr event(new Event("event_name"));
+  EventPtr event(new BasicEvent("event_name"));
   EXPECT_EQ(event->id(), "event_name");
 }
 
@@ -44,8 +44,8 @@ TEST(FormulaTest, VoteNumber) {
 TEST(FormulaTest, Arguments) {
   FormulaPtr top(new Formula("and"));
   std::map<std::string, EventPtr> children;
-  EventPtr first_child(new Event("first"));
-  EventPtr second_child(new Event("second"));
+  EventPtr first_child(new BasicEvent("first"));
+  EventPtr second_child(new BasicEvent("second"));
   // Request for children when there are no children is an error.
   EXPECT_THROW(top->event_args(), LogicError);
   // Adding first child.

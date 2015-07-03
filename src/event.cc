@@ -26,6 +26,8 @@ Event::Event(const std::string& name, const std::string& base_path,
   boost::to_lower(id_);
 }
 
+Event::~Event() {}  // Empty body for pure virtual destructor.
+
 Gate::Gate(const std::string& name, const std::string& base_path,
            bool is_public)
     : Event(name, base_path, is_public),
@@ -166,5 +168,7 @@ void Formula::GatherNodesAndConnectors() {
   }
   gather_ = false;
 }
+
+PrimaryEvent::~PrimaryEvent() {}  // Empty body for pure virtual destructor.
 
 }  // namespace scram
