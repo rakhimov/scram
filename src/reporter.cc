@@ -48,7 +48,7 @@ void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
   xmlpp::Element* methods = information->add_child("calculation-method");
   methods->set_attribute("name", "MOCUS");
   methods->add_child("limits")->add_child("number-of-basic-events")
-      ->add_child_text(ToString(settings.limit_order_));
+      ->add_child_text(Reporter::ToString(settings.limit_order_));
 
   // Report the setup for CCF analysis.
   if (settings.ccf_analysis_) {
@@ -70,10 +70,11 @@ void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
     methods->set_attribute("name", "Numerical Probability");
     xmlpp::Element* limits = methods->add_child("limits");
     limits->add_child("mission-time")
-        ->add_child_text(ToString(settings.mission_time_));
-    limits->add_child("cut-off")->add_child_text(ToString(settings.cut_off_));
+        ->add_child_text(Reporter::ToString(settings.mission_time_));
+    limits->add_child("cut-off")
+        ->add_child_text(Reporter::ToString(settings.cut_off_));
     limits->add_child("number-of-sums")
-        ->add_child_text(ToString(settings.num_sums_));
+        ->add_child_text(Reporter::ToString(settings.num_sums_));
   }
 
   // Report the setup for optional importance analysis.
@@ -97,9 +98,10 @@ void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
     methods->set_attribute("name", "Monte Carlo");
     xmlpp::Element* limits = methods->add_child("limits");
     limits->add_child("number-of-trials")
-        ->add_child_text(ToString(settings.num_trials_));
+        ->add_child_text(Reporter::ToString(settings.num_trials_));
     if (settings.seed_ >= 0) {
-      limits->add_child("seed")->add_child_text(ToString(settings.seed_));
+      limits->add_child("seed")
+          ->add_child_text(Reporter::ToString(settings.seed_));
     }
   }
 
@@ -107,15 +109,15 @@ void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
   if (!model->name().empty())
     model_features->set_attribute("name", model->name());
   model_features->add_child("gates")
-      ->add_child_text(ToString(model->gates().size()));
+      ->add_child_text(Reporter::ToString(model->gates().size()));
   model_features->add_child("basic-events")
-      ->add_child_text(ToString(model->basic_events().size()));
+      ->add_child_text(Reporter::ToString(model->basic_events().size()));
   model_features->add_child("house-events")
-      ->add_child_text(ToString(model->house_events().size()));
+      ->add_child_text(Reporter::ToString(model->house_events().size()));
   model_features->add_child("ccf-groups")
-      ->add_child_text(ToString(model->ccf_groups().size()));
+      ->add_child_text(Reporter::ToString(model->ccf_groups().size()));
   model_features->add_child("fault-trees")
-      ->add_child_text(ToString(model->fault_trees().size()));
+      ->add_child_text(Reporter::ToString(model->fault_trees().size()));
 
   // Setup for results.
   root->add_child("results");
@@ -130,7 +132,10 @@ void Reporter::ReportOrphanPrimaryEvents(
   std::set<PrimaryEventPtr>::const_iterator it;
   for (it = orphan_primary_events.begin(); it != orphan_primary_events.end();
        ++it) {
-    out += (*it)->name() + " ";
+    PrimaryEventPtr event = *it;
+    out += event->is_public() ? "" : event->base_path() + ".";
+    out += event->name();
+    out += " ";
   }
   xmlpp::Node* root = doc->get_root_node();
   xmlpp::NodeSet inf = root->find("./information");
@@ -148,7 +153,10 @@ void Reporter::ReportUnusedParameters(
   std::set<ParameterPtr>::const_iterator it;
   for (it = unused_parameters.begin(); it != unused_parameters.end();
        ++it) {
-    out += (*it)->name() + " ";
+    ParameterPtr param = *it;
+    out += param->is_public() ? "" : param->base_path() + ".";
+    out += param->name();
+    out += " ";
   }
   xmlpp::Node* root = doc->get_root_node();
   xmlpp::NodeSet inf = root->find("./information");
@@ -168,10 +176,12 @@ void Reporter::ReportFta(
   xmlpp::Element* results = dynamic_cast<xmlpp::Element*>(res[0]);
   xmlpp::Element* sum_of_products = results->add_child("sum-of-products");
   sum_of_products->set_attribute("name", ft_name);
-  sum_of_products->set_attribute("basic-events",
-                                 ToString(fta->mcs_basic_events().size()));
-  sum_of_products->set_attribute("products",
-                                 ToString(fta->min_cut_sets().size()));
+  sum_of_products->set_attribute(
+      "basic-events",
+      Reporter::ToString(fta->mcs_basic_events().size()));
+  sum_of_products->set_attribute(
+      "products",
+      Reporter::ToString(fta->min_cut_sets().size()));
 
   if (prob_analysis) {
     sum_of_products->set_attribute(
@@ -190,7 +200,7 @@ void Reporter::ReportFta(
        it_min != fta->min_cut_sets().end(); ++it_min) {
     xmlpp::Element* product = sum_of_products->add_child("product");
     product->set_attribute("order",
-                           ToString(it_min->size()));
+                           Reporter::ToString(it_min->size()));
 
     if (prob_analysis) {
       double mcs_prob = prob_analysis->prob_of_min_sets().find(*it_min)->second;
@@ -207,7 +217,7 @@ void Reporter::ReportFta(
       std::string full_name = *it_set;
       boost::split(names, full_name, boost::is_any_of(" "),
                    boost::token_compress_on);
-      assert(names.size() >= 1);
+      assert(!names.empty());
       xmlpp::Element* parent = product;
       std::string name = full_name;  // Id of a basic event.
       if (names[0] == "not") {  // Detect negation.
@@ -272,8 +282,8 @@ void Reporter::ReportImportance(
       root->find("./information/performance/calculation-time");
   assert(!calc_times.empty());
   xmlpp::Element* calc_time = dynamic_cast<xmlpp::Element*>(calc_times.back());
-  calc_time->add_child("importance")->add_child_text(
-      Reporter::ToString(prob_analysis->imp_time_, 5));
+  calc_time->add_child("importance")
+      ->add_child_text(Reporter::ToString(prob_analysis->imp_time_, 5));
 }
 
 void Reporter::ReportUncertainty(
@@ -307,10 +317,10 @@ void Reporter::ReportUncertainty(
   /// @todo Error factor reporting.
   xmlpp::Element* quantiles = measure->add_child("quantiles");
   int num_bins = uncert_analysis->distribution().size() - 1;
-  quantiles->set_attribute("number", ToString(num_bins));
+  quantiles->set_attribute("number", Reporter::ToString(num_bins));
   for (int i = 0; i < num_bins; ++i) {
     xmlpp::Element* quant = quantiles->add_child("quantile");
-    quant->set_attribute("number", ToString(i + 1));
+    quant->set_attribute("number", Reporter::ToString(i + 1));
     double lower = uncert_analysis->distribution()[i].first;
     double upper = uncert_analysis->distribution()[i + 1].first;
     double value = uncert_analysis->distribution()[i + 1].second;
@@ -328,15 +338,21 @@ void Reporter::ReportUncertainty(
 
 xmlpp::Element* Reporter::ReportBasicEvent(const BasicEventPtr& basic_event,
                                            xmlpp::Element* parent) {
+  xmlpp::Element* element;
   boost::shared_ptr<CcfEvent> ccf_event =
       boost::dynamic_pointer_cast<CcfEvent>(basic_event);
-  xmlpp::Element* element;
   if (!ccf_event) {
+    std::string name =
+        basic_event->is_public() ? "" : basic_event->base_path() + ".";
+    name += basic_event->name();
     element = parent->add_child("basic-event");
-    element->set_attribute("name", basic_event->name());
+    element->set_attribute("name", name);
   } else {
     element = parent->add_child("ccf-event");
-    element->set_attribute("ccf-group", ccf_event->ccf_group_name());
+    std::string group_name =
+        basic_event->is_public() ? "" : basic_event->base_path() + ".";
+    group_name += ccf_event->ccf_group_name();
+    element->set_attribute("ccf-group", group_name);
     element->set_attribute("order", ToString(ccf_event->member_names().size()));
     element->set_attribute("group-size", ToString(ccf_event->ccf_group_size()));
     std::vector<std::string>::const_iterator it;

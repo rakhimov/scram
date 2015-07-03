@@ -440,6 +440,27 @@ TEST_F(RiskAnalysisTest, ReportAll) {
   ASSERT_NO_THROW(parser->Validate(schema));
 }
 
+// Reporting with public or private roles.
+TEST_F(RiskAnalysisTest, ReportRoles) {
+  std::string tree_input = "./share/scram/input/fta/mixed_roles.xml";
+
+  std::stringstream schema;
+  std::string schema_path = Env::report_schema();
+  std::ifstream schema_stream(schema_path.c_str());
+  schema << schema_stream.rdbuf();
+  schema_stream.close();
+
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
+
+  std::stringstream output;
+  ASSERT_NO_THROW(ran->Report(output));
+
+  boost::shared_ptr<XMLParser> parser(new XMLParser());
+  ASSERT_NO_THROW(parser->Init(output));
+  ASSERT_NO_THROW(parser->Validate(schema));
+}
+
 // Reporting of orphan primary events.
 TEST_F(RiskAnalysisTest, ReportOrphanPrimaryEvents) {
   std::string tree_input = "./share/scram/input/fta/orphan_primary_event.xml";

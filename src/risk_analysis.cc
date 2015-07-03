@@ -57,7 +57,10 @@ void RiskAnalysis::Analyze() {
     const std::vector<GatePtr>* top_events = &it->second->top_events();
     std::vector<GatePtr>::const_iterator it_top;
     for (it_top = top_events->begin(); it_top != top_events->end(); ++it_top) {
-      std::string name = (*it_top)->name();  // Analysis identifier.
+      GatePtr target = *it_top;
+      std::string base_path =
+          target->is_public() ? "" : target->base_path() + ".";
+      std::string name = base_path + target->name();  // Analysis ID.
 
       FaultTreeAnalysisPtr fta(new FaultTreeAnalysis(*it_top,
                                                      settings_.limit_order_,

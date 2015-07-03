@@ -80,6 +80,7 @@ TEST(InitializerTest, CorrectFTAInputs) {
   correct_inputs.push_back(dir + "component_definition.xml");
   correct_inputs.push_back(dir + "mixed_definitions.xml");
   correct_inputs.push_back(dir + "mixed_references.xml");
+  correct_inputs.push_back(dir + "mixed_roles.xml");
   correct_inputs.push_back(dir + "model_data_mixed_definitions.xml");
   correct_inputs.push_back(dir + "two_trees.xml");
   correct_inputs.push_back(dir + "two_top_events.xml");

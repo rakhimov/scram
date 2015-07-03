@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<!--
+Examples of all forms of possible roles.
+-->
+<opsa-mef name="RoleExamples">
+  <define-fault-tree name="TwoTrains">
+    <define-gate name="TopEvent" role="private">
+      <and>
+        <gate name="TrainOne"/>
+        <event name="Trains.TrainTwo"/>
+      </and>
+    </define-gate>
+    <define-component name="Trains" role="private">
+      <define-gate name="TrainOne" role="public">
+        <or>
+          <basic-event name="ValveOne"/>
+          <basic-event name="TwoTrains.PumpOne"/>
+        </or>
+      </define-gate>
+      <define-gate name="TrainTwo">
+        <or>
+          <basic-event name="ValveTwo"/>
+          <basic-event name="PumpOne"/>
+        </or>
+      </define-gate>
+      <define-basic-event name="ValveOne"/>
+      <define-basic-event name="ValveTwo"/>
+      <define-basic-event name="PumpOne"/>
+      <define-basic-event name="UnusedEvent"/>
+      <define-parameter name="ParamValve">
+        <float value="0.5"/>
+      </define-parameter>
+      <define-parameter name="UnusedParam">
+        <parameter name="ParamPump"/>
+      </define-parameter>
+    </define-component>
+    <define-basic-event name="PumpOne"/>
+    <define-basic-event name="PumpTwo"/>
+    <define-parameter name="ParamPump">
+      <parameter name="Trains.ParamValve"/>
+    </define-parameter>
+  </define-fault-tree>
+</opsa-mef>
