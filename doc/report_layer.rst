@@ -71,3 +71,10 @@ Some suggestions:
 
     - `BaseX <http://basex.org>`_
     - Python with `lxml <http://lxml.de/>`_
+
+
+Report File Example
+===================
+
+.. highlight:: xml
+.. literalinclude:: report.xml
