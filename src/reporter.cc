@@ -207,7 +207,7 @@ void Reporter::ReportFta(
       product->set_attribute("probability", Reporter::ToString(mcs_prob, 7));
       product->set_attribute(
           "contribution",
-          Reporter::ToString(mcs_prob / prob_analysis->p_rare_, 7));
+          Reporter::ToString(mcs_prob / prob_analysis->p_rare(), 7));
     }
 
     // List elements of minimal cut sets.
@@ -244,7 +244,7 @@ void Reporter::ReportFta(
       Reporter::ToString(fta->analysis_time(), 5));
   if (prob_analysis) {
     calc_time->add_child("probability")->add_child_text(
-      Reporter::ToString(prob_analysis->p_time_, 5));
+      Reporter::ToString(prob_analysis->prob_analysis_time(), 5));
   }
 }
 
@@ -270,7 +270,7 @@ void Reporter::ReportImportance(
   for (it = prob_analysis->importance().begin();
        it != prob_analysis->importance().end(); ++it) {
     xmlpp::Element* element = Reporter::ReportBasicEvent(
-        prob_analysis->basic_events_.find(it->first)->second,
+        prob_analysis->basic_events().find(it->first)->second,
         importance);
     element->set_attribute("DIF", Reporter::ToString(it->second[0], 4));
     element->set_attribute("MIF", Reporter::ToString(it->second[1], 4));
@@ -283,7 +283,8 @@ void Reporter::ReportImportance(
   assert(!calc_times.empty());
   xmlpp::Element* calc_time = dynamic_cast<xmlpp::Element*>(calc_times.back());
   calc_time->add_child("importance")
-      ->add_child_text(Reporter::ToString(prob_analysis->imp_time_, 5));
+      ->add_child_text(
+          Reporter::ToString(prob_analysis->imp_analysis_time(), 5));
 }
 
 void Reporter::ReportUncertainty(
