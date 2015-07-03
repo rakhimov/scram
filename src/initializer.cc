@@ -27,10 +27,10 @@ namespace fs = boost::filesystem;
 namespace scram {
 
 const std::map<std::string, Units> Initializer::units_ =
-    boost::assign::map_list_of ("bool", kBool) ("int", kInt) ("float", kFloat)
-                               ("hours", kHours) ("hours-1", kInverseHours)
-                               ("years", kYears) ("years-1", kInverseYears)
-                               ("fit", kFit) ("demands", kDemands);
+    boost::assign::map_list_of("bool", kBool) ("int", kInt) ("float", kFloat)
+                              ("hours", kHours) ("hours-1", kInverseHours)
+                              ("years", kYears) ("years-1", kInverseYears)
+                              ("fit", kFit) ("demands", kDemands);
 
 const char* const Initializer::unit_to_string_[] = {"unitless", "bool", "int",
                                                     "float", "hours",

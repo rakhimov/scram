@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <ctime>
 #include <sstream>
+#include <string>
 
 namespace scram {
 /// @def LOG(level)

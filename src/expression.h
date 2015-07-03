@@ -21,7 +21,7 @@ namespace scram {
 class Parameter;  // This is for cycle detection through expressions.
 
 /// @class Expression
-/// The base class for all sorts of expressions to describe events.
+/// Abstract base class for all sorts of expressions to describe events.
 /// This class also acts like a connector for parameter nodes and may
 /// create cycles. Expressions are not expected to be shared except for
 /// parameters. In addition, expressions are not expected to be changed
@@ -124,21 +124,22 @@ class Parameter : public Expression, public Element, public Role {
   /// @returns The unique identifier  of this parameter.
   inline const std::string& id() const { return id_; }
 
+  /// @returns The unit of this parameter.
+  inline const Units& unit() const { return unit_; }
+
   /// Sets the unit of this parameter.
   /// @param[in] unit A valid unit.
   inline void unit(const Units& unit) { unit_ = unit; }
 
-  /// @returns The unit of this parameter.
-  inline const Units& unit() const { return unit_; }
+  /// @returns The usage state of this parameter.
+  inline bool unused() { return unused_; }
 
   /// Sets the usage state for this parameter.
   /// @param[in] state The usage state for this parameter.
   inline void unused(bool state) { unused_ = state; }
 
-  /// @returns The usage state of this parameter.
-  inline bool unused() { return unused_; }
-
   inline double Mean() { return expression_->Mean(); }
+
   inline double Sample() {
     if (!Expression::sampled_) {
       Expression::sampled_ = true;
@@ -160,29 +161,14 @@ class Parameter : public Expression, public Element, public Role {
   /// @returns The connector between parameters.
   inline Expression* connector() { return this; }
 
+  /// @returns The mark of this node.
+  inline const std::string& mark() const { return mark_; }
+
   /// Sets the mark for this node.
   /// @param[in] label The specific label for the node.
   inline void mark(const std::string& label) { mark_ = label; }
 
-  /// @returns The mark of this node.
-  inline const std::string& mark() const { return mark_; }
-
  private:
-  typedef boost::shared_ptr<Parameter> ParameterPtr;
-
-  /// Helper function to check for cyclic references in parameters.
-  /// @param[in] parameter Parameter to check for cycles.
-  /// @param[out] cycle The cycle path if detected.
-  /// @returns True if a cycle is detected.
-  bool DetectCycle(Parameter* parameter, std::vector<std::string>* cycle);
-
-  /// Helper function to check for cyclic references through expressions.
-  /// @param[in] expression Expression to be traversed.
-  /// @param[out] cycle The cycle path if detected.
-  /// @returns True if a cycle is detected.
-  bool ContinueExpression(const ExpressionPtr& expression,
-                          std::vector<std::string>* cycle);
-
   std::string name_;  ///< Name of this parameter or variable.
   std::string id_;  ///< Identifier of this parameter or variable.
   Units unit_;  ///< Units of this parameter.
@@ -204,12 +190,12 @@ class MissionTime : public Expression {
     mission_time_ = time;
   }
 
+  /// @returns The unit of the system mission time.
+  inline const Units& unit() const { return unit_; }
+
   /// Sets the unit of this parameter.
   /// @param[in] unit A valid unit.
   inline void unit(const Units& unit) { unit_ = unit; }
-
-  /// @returns The unit of the system mission time.
-  inline const Units& unit() const { return unit_; }
 
   inline double Mean() { return mission_time_; }
   inline double Sample() { return mission_time_; }

@@ -18,7 +18,6 @@ class Settings;
 class Parameter;
 class PrimaryEvent;
 class BasicEvent;
-class RiskAnalysis;
 class FaultTreeAnalysis;
 class ProbabilityAnalysis;
 class UncertaintyAnalysis;

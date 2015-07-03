@@ -128,19 +128,11 @@ class FaultTreeAnalysis {
   void SetsToString(const std::vector< std::set<int> >& imcs);
 
   std::vector<BasicEventPtr> int_to_basic_;  ///< Indices to basic events.
-  /// Indices of all events.
-  boost::unordered_map<std::string, int> all_to_int_;
-
-  /// This member is used to provide any warnings about assumptions,
-  /// calculations, and settings. These warnings must be written into output
-  /// file.
-  std::string warnings_;
-
-  /// A flag to include CCF groups in fault trees.
-  bool ccf_analysis_;
+  boost::unordered_map<std::string, int> all_to_int_;  ///< All event indices.
 
   /// Limit on the size of the minimal cut sets for performance reasons.
   int limit_order_;
+  bool ccf_analysis_;  ///< A flag to include CCF groups in fault trees.
 
   GatePtr top_event_;  ///< Top event of this fault tree.
 
@@ -164,6 +156,7 @@ class FaultTreeAnalysis {
   boost::unordered_map<std::string, BasicEventPtr> mcs_basic_events_;
 
   int max_order_;  ///< Maximum order of minimal cut sets.
+  std::string warnings_;  ///< Generated warnings in analysis.
   double analysis_time_;  ///< Time taken by the core analysis.
 };
 

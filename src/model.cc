@@ -2,14 +2,16 @@
 /// Implementation of functions in Model class.
 #include "model.h"
 
-#include "ccf_group.h"
-#include "fault_tree.h"
+#include <vector>
 
 #include <boost/algorithm/string.hpp>
 
+#include "ccf_group.h"
+#include "fault_tree.h"
+
 namespace scram {
 
-Model::Model(std::string name) : name_(name) {}
+Model::Model(const std::string& name) : name_(name) {}
 
 void Model::AddFaultTree(const FaultTreePtr& fault_tree) {
   std::string name = fault_tree->name();
@@ -252,7 +254,7 @@ boost::shared_ptr<Component> Model::GetContainer(const std::string& base_path) {
   if (!fault_trees_.count(name)) throw LogicError("Missing fault tree " + *it);
   ComponentPtr container = fault_trees_.find(name)->second;
   const boost::unordered_map<std::string, ComponentPtr>* candidates;
-  for(++it; it != path.end(); ++it) {
+  for (++it; it != path.end(); ++it) {
     name = *it;
     boost::to_lower(name);
     candidates = &container->components();

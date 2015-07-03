@@ -31,21 +31,50 @@ class Model : public Element {
 
   /// Creates a model container.
   /// @param[in] name The optional name for the model.
-  explicit Model(std::string name = "");
+  explicit Model(const std::string& name = "");
 
   /// @returns The name of the model.
-  inline std::string name() const { return name_; }
-
-  /// Adds a fault tree into the model container.
-  /// @param[in] fault_tree A fault tree defined in this model.
-  /// @throws ValidationError if a container with the same name already exists.
-  void AddFaultTree(const FaultTreePtr& fault_tree);
+  inline const std::string& name() const { return name_; }
 
   /// @returns Defined fault trees in the model.
   inline const boost::unordered_map<std::string, FaultTreePtr>&
       fault_trees() const {
     return fault_trees_;
   }
+
+  /// @returns Parameters defined for this model.
+  inline const boost::unordered_map<std::string, ParameterPtr>&
+      parameters() const {
+    return parameters_;
+  }
+
+  /// @returns House events defined for this model.
+  inline const boost::unordered_map<std::string, HouseEventPtr>&
+      house_events() const {
+    return house_events_;
+  }
+
+  /// @returns Basic events defined for this model.
+  inline const boost::unordered_map<std::string, BasicEventPtr>&
+      basic_events() const {
+    return basic_events_;
+  }
+
+  /// @returns Gates defined for this model.
+  inline const boost::unordered_map<std::string, GatePtr>& gates() const {
+    return gates_;
+  }
+
+  /// @returns CCF groups defined for this model.
+  inline const boost::unordered_map<std::string, CcfGroupPtr>&
+      ccf_groups() const {
+    return ccf_groups_;
+  }
+
+  /// Adds a fault tree into the model container.
+  /// @param[in] fault_tree A fault tree defined in this model.
+  /// @throws ValidationError if a container with the same name already exists.
+  void AddFaultTree(const FaultTreePtr& fault_tree);
 
   /// Adds a parameter that is used in this model's expressions.
   /// @param[in] parameter A parameter defined in this model.
@@ -60,12 +89,6 @@ class Model : public Element {
   /// @throws ValidationError if there are problems with referencing.
   ParameterPtr GetParameter(const std::string& reference,
                             const std::string& base_path);
-
-  /// @returns Parameters defined for this model.
-  inline const boost::unordered_map<std::string, ParameterPtr>&
-      parameters() const {
-    return parameters_;
-  }
 
   /// Finds an event from a reference. The reference is not case sensitive and
   /// can contain the identifier, full path, or local path. The returned event
@@ -91,12 +114,6 @@ class Model : public Element {
   HouseEventPtr GetHouseEvent(const std::string& reference,
                               const std::string& base_path);
 
-  /// @returns House events defined for this model.
-  inline const boost::unordered_map<std::string, HouseEventPtr>&
-      house_events() const {
-    return house_events_;
-  }
-
   /// Adds a basic event that is used in this model.
   /// @param[in] basic_event A basic event defined in this model.
   /// @throws ValidationError if an event with the same name already exists.
@@ -111,12 +128,6 @@ class Model : public Element {
   BasicEventPtr GetBasicEvent(const std::string& reference,
                               const std::string& base_path);
 
-  /// @returns Basic events defined for this model.
-  inline const boost::unordered_map<std::string, BasicEventPtr>&
-      basic_events() const {
-    return basic_events_;
-  }
-
   /// Adds a gate that is used in this model's fault trees or components.
   /// @param[in] gate A gate defined in this model.
   /// @throws ValidationError if an event with the same name already exists.
@@ -130,21 +141,10 @@ class Model : public Element {
   /// @throws ValidationError if there are problems with referencing.
   GatePtr GetGate(const std::string& reference, const std::string& base_path);
 
-  /// @returns Gates defined for this model.
-  inline const boost::unordered_map<std::string, GatePtr>& gates() const {
-    return gates_;
-  }
-
   /// Adds a CCF group that is used in this model's fault trees.
   /// @param[in] ccf_group A CCF group defined in this model.
   /// @throws ValidationError if a CCF group with the same name already exists.
   void AddCcfGroup(const CcfGroupPtr& ccf_group);
-
-  /// @returns CCF groups defined for this model.
-  inline const boost::unordered_map<std::string, CcfGroupPtr>&
-      ccf_groups() const {
-    return ccf_groups_;
-  }
 
  private:
   typedef boost::shared_ptr<Component> ComponentPtr;
@@ -170,6 +170,9 @@ class Model : public Element {
 
   std::string name_;  ///< The name of the model.
 
+  /// A collection of fault trees.
+  boost::unordered_map<std::string, FaultTreePtr> fault_trees_;
+
   /// Container for fully defined gates.
   boost::unordered_map<std::string, GatePtr> gates_;
 
@@ -181,9 +184,6 @@ class Model : public Element {
 
   /// Container for defined parameters or variables.
   boost::unordered_map<std::string, ParameterPtr> parameters_;
-
-  /// A collection of fault trees.
-  boost::unordered_map<std::string, FaultTreePtr> fault_trees_;
 
   /// A collection of common cause failure groups.
   boost::unordered_map<std::string, CcfGroupPtr> ccf_groups_;

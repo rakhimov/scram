@@ -26,7 +26,7 @@ class Config {
   /// @throws ValidationError if the configurations have problems.
   /// @throws ValueError if input values are not valid.
   /// @throws IOError if the file is not accessible.
-  explicit Config(std::string config_file);
+  explicit Config(const std::string& config_file);
 
   /// @returns input files for analysis.
   inline const std::vector<std::string>& input_files() const {
@@ -37,7 +37,7 @@ class Config {
   inline const Settings& settings() const { return settings_; }
 
   /// @returns the output destination if any.
-  inline std::string output_path() const { return output_path_; }
+  inline const std::string& output_path() const { return output_path_; }
 
  private:
   /// Extracts analysis types to be performed from analysis element.
@@ -55,7 +55,7 @@ class Config {
   /// Interprets the given string into a boolean value.
   /// @param[in] flag A flag that can be 0, 1, true, or false.
   /// @returns The interpreted boolean.
-  bool GetBoolFromString(std::string flag);
+  bool GetBoolFromString(const std::string& flag);
 
   /// Container for input files for analysis.
   /// These input files contain fault trees, events, etc.

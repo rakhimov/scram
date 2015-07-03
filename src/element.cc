@@ -14,7 +14,7 @@ Element::Element() : label_("") {}
 
 Element::~Element() {}  // Empty body for pure virtual destructor.
 
-void Element::label(std::string new_label) {
+void Element::label(const std::string& new_label) {
   if (label_ != "") {
     throw LogicError("Trying to reset the label: " + label_);
   }
@@ -33,11 +33,11 @@ void Element::AddAttribute(const Attribute& attr) {
   attributes_.insert(std::make_pair(id, attr));
 }
 
-bool Element::HasAttribute(const std::string& id) {
+bool Element::HasAttribute(const std::string& id) const {
   return attributes_.count(id);
 }
 
-const Attribute& Element::GetAttribute(const std::string& id) {
+const Attribute& Element::GetAttribute(const std::string& id) const {
   if (!attributes_.count(id)) {
     throw LogicError("Element does not have attribute: " + id);
   }

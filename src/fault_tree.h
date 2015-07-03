@@ -43,37 +43,6 @@ class Component : public Element, public Role {
 
   virtual ~Component() {}
 
-  /// Adds a gate into this component container.
-  /// @param[in] gate The gate to be added to this tree.
-  /// @throws ValidationError for re-added gates.
-  void AddGate(const GatePtr& gate);
-
-  /// Adds a basic event into this component containter.
-  /// @param[in] basic_event The basic event to be added to this tree.
-  /// @throws ValidationError for re-added basic events.
-  void AddBasicEvent(const BasicEventPtr& basic_event);
-
-  /// Adds a house event into this component containter.
-  /// @param[in] house_event The house event to be added to this tree.
-  /// @throws ValidationError for re-added house events.
-  void AddHouseEvent(const HouseEventPtr& house_event);
-
-  /// Adds a parameter into this component containter.
-  /// @param[in] parameter The parameter to be added to this tree.
-  /// @throws ValidationError for re-added parameter.
-  void AddParameter(const ParameterPtr& parameter);
-
-  /// Adds a ccf group and its members into this component containter.
-  /// @param[in] ccf_group The ccf group to be added to this container.
-  /// @throws ValidationError for re-added ccf groups or duplicate basic event
-  ///         members.
-  void AddCcfGroup(const CcfGroupPtr& ccf_group);
-
-  /// Adds a component container into this component containter.
-  /// @param[in] component The ccf group to be added to this container.
-  /// @throws ValidationError for re-added components.
-  void AddComponent(const ComponentPtr& component);
-
   /// @returns The name of this component.
   inline const std::string& name() const { return name_; }
 
@@ -118,6 +87,37 @@ class Component : public Element, public Role {
     return components_;
   }
 
+  /// Adds a gate into this component container.
+  /// @param[in] gate The gate to be added to this tree.
+  /// @throws ValidationError for re-added gates.
+  void AddGate(const GatePtr& gate);
+
+  /// Adds a basic event into this component containter.
+  /// @param[in] basic_event The basic event to be added to this tree.
+  /// @throws ValidationError for re-added basic events.
+  void AddBasicEvent(const BasicEventPtr& basic_event);
+
+  /// Adds a house event into this component containter.
+  /// @param[in] house_event The house event to be added to this tree.
+  /// @throws ValidationError for re-added house events.
+  void AddHouseEvent(const HouseEventPtr& house_event);
+
+  /// Adds a parameter into this component containter.
+  /// @param[in] parameter The parameter to be added to this tree.
+  /// @throws ValidationError for re-added parameter.
+  void AddParameter(const ParameterPtr& parameter);
+
+  /// Adds a ccf group and its members into this component containter.
+  /// @param[in] ccf_group The ccf group to be added to this container.
+  /// @throws ValidationError for re-added ccf groups or duplicate basic event
+  ///         members.
+  void AddCcfGroup(const CcfGroupPtr& ccf_group);
+
+  /// Adds a component container into this component containter.
+  /// @param[in] component The ccf group to be added to this container.
+  /// @throws ValidationError for re-added components.
+  void AddComponent(const ComponentPtr& component);
+
  protected:
   /// Recusively traverses components to gather gates relevant to
   /// the whole component.
@@ -159,14 +159,14 @@ class FaultTree : public Component {
   /// @param[in] name The name identificator of this fault tree.
   explicit FaultTree(const std::string& name);
 
+  /// @returns The top events of this fault tree.
+  inline const std::vector<GatePtr>& top_events() const { return top_events_; }
+
   /// Validates this fault tree's structure and events.
   /// This step must be called before any other function that requests member
   /// containers of top events, gates, basic events, house events, and so on.
   /// @throws ValidationError if there are issues with this fault tree.
   void Validate();
-
-  /// @returns The top events of this fault tree.
-  inline const std::vector<GatePtr>& top_events() const { return top_events_; }
 
  private:
   typedef boost::shared_ptr<Formula> FormulaPtr;

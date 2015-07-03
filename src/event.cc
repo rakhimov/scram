@@ -11,10 +11,10 @@
 namespace scram {
 
 const std::set<std::string> Formula::two_or_more_ =
-    boost::assign::list_of ("and") ("or") ("nand") ("nor");
+    boost::assign::list_of("and") ("or") ("nand") ("nor");
 
 const std::set<std::string> Formula::single_ =
-    boost::assign::list_of ("not") ("null");
+    boost::assign::list_of("not") ("null");
 
 Event::Event(const std::string& name, const std::string& base_path,
              bool is_public)
@@ -67,7 +67,7 @@ void Gate::Validate() {
   }
 }
 
-int Formula::vote_number() {
+int Formula::vote_number() const {
   if (vote_number_ == -1) {
     std::string msg = "Vote number is not set for this formula.";
     throw LogicError(msg);
@@ -88,6 +88,21 @@ void Formula::vote_number(int vnumber) {
     throw LogicError(msg);
   }
   vote_number_ = vnumber;
+}
+
+const std::map<std::string, boost::shared_ptr<Event> >& Formula::event_args()
+  const {
+  if (event_args_.empty() && formula_args_.empty()) {
+    throw LogicError("Formula does not have arguments.");
+  }
+  return event_args_;
+}
+
+const std::set<boost::shared_ptr<Formula> >& Formula::formula_args() const {
+  if (event_args_.empty() && formula_args_.empty()) {
+    throw LogicError("Formula does not have arguments.");
+  }
+  return formula_args_;
 }
 
 void Formula::AddArgument(const boost::shared_ptr<Event>& event) {
@@ -132,20 +147,6 @@ void Formula::Validate() {
         << vote_number_ << ".";
   }
   if (!msg.str().empty()) throw ValidationError(msg.str());
-}
-
-const std::map<std::string, boost::shared_ptr<Event> >& Formula::event_args() {
-  if (event_args_.empty() && formula_args_.empty()) {
-    throw LogicError("Formula does not have arguments.");
-  }
-  return event_args_;
-}
-
-const std::set<boost::shared_ptr<Formula> >& Formula::formula_args() {
-  if (event_args_.empty() && formula_args_.empty()) {
-    throw LogicError("Formula does not have arguments.");
-  }
-  return formula_args_;
 }
 
 void Formula::GatherNodesAndConnectors() {

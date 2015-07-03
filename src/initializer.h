@@ -6,6 +6,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <boost/shared_ptr.hpp>
@@ -37,7 +38,7 @@ class Initializer {
   /// Prepares common information to be used by the future input file
   /// constructs, for example, mission time.
   /// @param[in] settings Analysis settings.
-  Initializer(const Settings& settings);
+  explicit Initializer(const Settings& settings);
 
   /// Reads input files with the structure of analysis constructs.
   /// Initializes the analysis model from the given input files.
@@ -49,7 +50,7 @@ class Initializer {
   void ProcessInputFiles(const std::vector<std::string>& xml_files);
 
   /// @returns The model build from the input files.
-  inline ModelPtr model() { return model_; }
+  inline ModelPtr model() const { return model_; }
 
  private:
   typedef boost::shared_ptr<Element> ElementPtr;

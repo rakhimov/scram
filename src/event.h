@@ -38,11 +38,11 @@ class Event : public Element, public Role {
   /// @returns The original name with capitalizations.
   inline const std::string& name() const { return name_; }
 
-  /// Sets the orphanage state.
-  inline void orphan(bool state) { orphan_ = state; }
-
   /// @returns True if this node is orphan.
   inline bool orphan() const { return orphan_; }
+
+  /// Sets the orphanage state.
+  inline void orphan(bool state) { orphan_ = state; }
 
  private:
   std::string id_;  ///< Id name of a event. It is in lower case.
@@ -61,6 +61,9 @@ class Gate : public Event {
   explicit Gate(const std::string& name, const std::string& base_path = "",
                 bool is_public = true);
 
+  /// @returns The formula of this gate.
+  inline const boost::shared_ptr<Formula>& formula() const { return formula_; }
+
   /// Sets the formula of this gate.
   /// @param[in] formula Boolean formula of this gate.
   inline void formula(const boost::shared_ptr<Formula>& formula) {
@@ -68,12 +71,9 @@ class Gate : public Event {
     formula_ = formula;
   }
 
-  /// @returns The formula of this gate.
-  inline const boost::shared_ptr<Formula>& formula() { return formula_; }
-
   /// This function is for cycle detection.
   /// @returns The connector between gates.
-  inline Formula* connector() { return &*formula_; }
+  inline Formula* connector() const { return &*formula_; }
 
   /// Checks if a gate is initialized correctly.
   /// @throws Validation error if anything is wrong.
@@ -105,11 +105,11 @@ class Formula {
 
   /// @returns The type of this formula.
   /// @throws LogicError if the gate is not yet assigned.
-  inline const std::string& type() { return type_; }
+  inline const std::string& type() const { return type_; }
 
   /// @returns The vote number if and only if the operator is atleast.
   /// @throws LogicError if the vote number is not yet assigned.
-  int vote_number();
+  int vote_number() const;
 
   /// Sets the vote number only for an atleast formula.
   /// @param[in] vnumber The vote number.
@@ -118,6 +118,21 @@ class Formula {
   /// @note (Children number > vote number)should be checked outside of
   ///        this class.
   void vote_number(int vnumber);
+
+  /// @returns The event arguments of this formula.
+  /// @throws LogicError if there are no event or formula arguments,
+  ///                    which should have been checked at initialization.
+  const std::map<std::string, boost::shared_ptr<Event> >& event_args() const;
+
+  /// @returns The formula arguments of this formula.
+  /// @throws LogicError if there are no event or formula arguments,
+  ///                    which should have been checked at initialization.
+  const std::set<boost::shared_ptr<Formula> >& formula_args() const;
+
+  /// @returns The number of arguments.
+  inline int num_args() const {
+    return event_args_.size() + formula_args_.size();
+  }
 
   /// Adds an event into the arguments list.
   /// @param[in] event A pointer to an argument event.
@@ -132,19 +147,6 @@ class Formula {
   /// Checks if a formula is initialized correctly with the number of arguments.
   /// @throws Validation error if anything is wrong.
   void Validate();
-
-  /// @returns The event arguments of this formula.
-  /// @throws LogicError if there are no event or formula arguments,
-  ///                    which should have been checked at initialization.
-  const std::map<std::string, boost::shared_ptr<Event> >& event_args();
-
-  /// @returns The formula arguments of this formula.
-  /// @throws LogicError if there are no event or formula arguments,
-  ///                    which should have been checked at initialization.
-  const std::set<boost::shared_ptr<Formula> >& formula_args();
-
-  /// @returns The number of arguments.
-  inline int num_args() { return event_args_.size() + formula_args_.size(); }
 
   /// @returns Gates as nodes.
   inline const std::vector<Gate*>& nodes() {
@@ -269,7 +271,7 @@ class BasicEvent : public PrimaryEvent {
   /// Indicates if this basic event has been set to be in a CCF group.
   /// @returns true if in a CCF group.
   /// @returns false otherwise.
-  bool HasCcf() { return ccf_gate_ ? true : false; }
+  inline bool HasCcf() const { return ccf_gate_ ? true : false; }
 
   /// Sets the common cause failure group gate that can represent this basic
   /// event in analysis with common cause information. This information is
@@ -281,7 +283,7 @@ class BasicEvent : public PrimaryEvent {
   }
 
   /// @returns CCF group gate representing this basic event.
-  const boost::shared_ptr<Gate>& ccf_gate() {
+  inline const boost::shared_ptr<Gate>& ccf_gate() const {
     assert(ccf_gate_);
     return ccf_gate_;
   }
@@ -342,19 +344,19 @@ class CcfEvent : public BasicEvent {
         ccf_group_size_(ccf_group_size) {}
 
   /// @returns The name of the original CCF group.
-  inline const std::string ccf_group_name() { return ccf_group_name_; }
+  inline const std::string ccf_group_name() const { return ccf_group_name_; }
 
   /// @returns The total size of the original CCF group.
-  inline int ccf_group_size() { return ccf_group_size_; }
+  inline int ccf_group_size() const { return ccf_group_size_; }
 
   /// @returns Original names of members of this CCF event.
-  inline const std::vector<std::string>& member_names() {
+  inline const std::vector<std::string>& member_names() const {
     return member_names_;
   }
 
   /// Sets original names of members.
   /// @param[in] names A container of original names of basic events.
-  inline const void member_names(const std::vector<std::string>& names) {
+  inline void member_names(const std::vector<std::string>& names) {
     member_names_ = names;
   }
 
