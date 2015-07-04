@@ -98,7 +98,7 @@ class Formula {
   /// Constructs a formula.
   /// @param[in] type The logical operator for this Boolean formula.
   /// @param[in] vote Vote number if the operator is atleast.
-  explicit Formula(std::string type)
+  explicit Formula(const std::string& type)
       : type_(type),
         vote_number_(-1),
         gather_(true) {}
@@ -136,7 +136,7 @@ class Formula {
 
   /// Adds an event into the arguments list.
   /// @param[in] event A pointer to an argument event.
-  /// @throws ValidationError if the argument is being re-inserted.
+  /// @throws DuplicateArgumentError if the argument is duplicate.
   void AddArgument(const boost::shared_ptr<Event>& event);
 
   /// Adds a formula into the arguments list.

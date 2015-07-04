@@ -25,9 +25,10 @@ void CcfGroup::AddMember(const BasicEventPtr& basic_event) {
     throw IllegalOperation("No more members accepted. The distribution for " +
                            name_ + " CCF group has already been defined.");
 
-  } else if (members_.count(name)) {
-    throw ValidationError("Basic event " + basic_event->name() + " is already" +
-                          " in " + name_ + " CCF group.");
+  }
+  if (members_.count(name)) {
+    throw DuplicateArgumentError("Duplicate member " + basic_event->name() +
+                                 " in " + name_ + " CCF group.");
   }
   members_.insert(std::make_pair(name, basic_event));
 }

@@ -111,16 +111,14 @@ const std::set<boost::shared_ptr<Formula> >& Formula::formula_args() const {
 
 void Formula::AddArgument(const boost::shared_ptr<Event>& event) {
   if (event_args_.count(event->id())) {
-    std::string msg = "Detected a repeated argument: " + event->name();
-    throw ValidationError(msg);
+    throw DuplicateArgumentError("Duplicate argument " + event->name());
   }
   event_args_.insert(std::make_pair(event->id(), event));
 }
 
 void Formula::AddArgument(const boost::shared_ptr<Formula>& formula) {
   if (formula_args_.count(formula)) {
-    std::string msg = "Trying to re-insert a formula as an argument";
-    throw LogicError(msg);
+    throw LogicError("Trying to re-insert a formula as an argument");
   }
   formula_args_.insert(formula);
 }

@@ -45,7 +45,7 @@ class Element {
   /// @param[in] id The identification name of the attribute in lower case.
   bool HasAttribute(const std::string& id) const;
 
-  /// @return Pointer to the attribute if it exists.
+  /// @returns Pointer to the attribute if it exists.
   /// @param[in] id The id name of the attribute in lower case.
   /// @throws LogicError if there is no such attribute.
   const Attribute& GetAttribute(const std::string& id) const;

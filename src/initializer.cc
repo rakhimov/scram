@@ -926,7 +926,7 @@ void Initializer::ProcessCcfMembers(const xmlpp::Element* members_node,
     try {
       ccf_group->AddMember(basic_event);
       model_->AddBasicEvent(basic_event);
-    } catch (ValidationError& err) {
+    } catch (DuplicateArgumentError& err) {
       std::stringstream msg;
       msg << "Line " << event_node->get_line() << ":\n";
       msg << err.msg();

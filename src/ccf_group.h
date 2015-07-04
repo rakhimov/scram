@@ -53,7 +53,7 @@ class CcfGroup : public Element, public Role {
   /// Adds a basic event into this CCF group.
   /// This function asserts that each basic event has unique string id.
   /// @param[in] basic_event A member basic event.
-  /// @throws ValidationError if the passed basic event already in the group.
+  /// @throws DuplicateArgumentError if the basic event is already in the group.
   /// @throws IllegalOperation if the probability distribution for this
   ///                          CCF group is already defined. No more members
   ///                          are accepted.
