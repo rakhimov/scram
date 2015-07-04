@@ -60,6 +60,22 @@ class ValidationError : public Error {
   explicit ValidationError(std::string msg) : Error(msg) {}
 };
 
+/// @class RedefinitionError
+/// For cases when events or practically anything is redefined.
+class RedefinitionError : public ValidationError {
+ public:
+  /// Constructs a new redefinition error with a provided message.
+  /// @param[in] msg The message to be passed with this error.
+  explicit RedefinitionError(std::string msg) : ValidationError(msg) {}
+};
+
+/// @class DuplicateArgumentError
+/// This error indicates that arguments must be unique.
+class DuplicateArgumentError : public ValidationError {
+ public:
+  explicit DuplicateArgumentError(std::string msg) : ValidationError(msg) {}
+};
+
 /// @class IOError
 /// For input/output related errors.
 class IOError : public Error {
@@ -67,15 +83,6 @@ class IOError : public Error {
   /// Constructs a new io error with a provided message.
   /// @param[in] msg The message to be passed with this error.
   explicit IOError(std::string msg) : Error(msg) {}
-};
-
-/// @class DoubleDefinition
-/// For cases when events or practically anything is defined several times.
-class DoubleDefinition : public Error {
- public:
-  /// Constructs a new double definition error with a provided message.
-  /// @param[in] msg The message to be passed with this error.
-  explicit DoubleDefinition(std::string msg) : Error(msg) {}
 };
 
 /// @class InvalidArgument
