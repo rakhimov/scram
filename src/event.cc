@@ -8,6 +8,8 @@
 #include <boost/assign.hpp>
 #include <boost/pointer_cast.hpp>
 
+#include "ccf_group.h"
+
 namespace scram {
 
 const std::set<std::string> Formula::two_or_more_ =
@@ -170,5 +172,12 @@ void Formula::GatherNodesAndConnectors() {
 }
 
 PrimaryEvent::~PrimaryEvent() {}  // Empty body for pure virtual destructor.
+
+CcfEvent::CcfEvent(const std::string& name,
+                   const CcfGroup* ccf_group,
+                   const std::vector<std::string>& member_names)
+    : BasicEvent(name, ccf_group->base_path(), ccf_group->is_public()),
+      ccf_group_(ccf_group),
+      member_names_(member_names) {}
 
 }  // namespace scram

@@ -83,11 +83,12 @@ void CcfGroup::ApplyModel() {
   std::map<std::string, GatePtr> gates;
   std::map<std::string, BasicEventPtr>::const_iterator it_m;
   for (it_m = members_.begin(); it_m != members_.end(); ++it_m) {
-    GatePtr new_gate(new Gate(it_m->first));
-    FormulaPtr formula(new Formula("or"));
-    new_gate->formula(formula);
-    gates.insert(std::make_pair(new_gate->id(), new_gate));
-    it_m->second->ccf_gate(new_gate);
+    BasicEventPtr member = it_m->second;
+    GatePtr new_gate(
+        new Gate(member->name(), member->base_path(), member->is_public()));
+    new_gate->formula(FormulaPtr(new Formula("or")));
+    gates.insert(std::make_pair(it_m->first, new_gate));
+    member->ccf_gate(new_gate);
   }
 
   int max_level = factors_.back().first;  // Assumes that factors are
@@ -102,11 +103,14 @@ void CcfGroup::ApplyModel() {
   assert(!new_events.empty());
   std::map<BasicEventPtr, std::set<std::string> >::iterator it;
   for (it = new_events.begin(); it != new_events.end(); ++it) {
-    it->first->expression(probabilities.find(it->second.size())->second);
+    int level = it->second.size();
+    ExpressionPtr prob = probabilities.find(level)->second;
+    BasicEventPtr new_event = it->first;
+    new_event->expression(prob);
     // Add this basic event to the parent gates.
     std::set<std::string>::iterator it_l;
     for (it_l = it->second.begin(); it_l != it->second.end(); ++it_l) {
-      gates.find(*it_l)->second->formula()->AddArgument(it->first);
+      gates.find(*it_l)->second->formula()->AddArgument(new_event);
     }
   }
 }
@@ -122,7 +126,7 @@ void CcfGroup::ConstructCcfBasicEvents(
   assert(new_events->empty());
 
   std::set<std::set<std::string> > combinations;
-  std::set<std::string> comb;
+  std::set<std::string> comb;  // One combination.
   combinations.insert(comb);  // Empty set is needed for iteration.
 
   for (int i = 0; i < max_level; ++i) {
@@ -151,9 +155,7 @@ void CcfGroup::ConstructCcfBasicEvents(
         }
       }
       name += "]";
-      name = this->is_public() ? name : this->base_path() + "." + name_ + name;
-      CcfEventPtr new_basic_event(new CcfEvent(name, name_, members_.size()));
-      new_basic_event->member_names(names);
+      CcfEventPtr new_basic_event(new CcfEvent(name, this, names));
       new_events->insert(std::make_pair(new_basic_event, *it));
     }
     combinations = next_level;
@@ -189,20 +191,15 @@ void BetaFactorModel::ConstructCcfBasicEvents(
     // Create independent events.
     std::string independent_name = "[" + it->second->name() + "]";
 
-    if (!this->is_public()) {
-      independent_name =  this->base_path() + "." + name_ + independent_name;
-    }
-    CcfEventPtr independent(new CcfEvent(independent_name, name_,
-                                         members_.size()));
     std::vector<std::string> single_name;
     single_name.push_back(it->second->name());
-    independent->member_names(single_name);
+    CcfEventPtr independent(new CcfEvent(independent_name, this, single_name));
 
     std::set<std::string> one_event;
-    one_event.insert(it->second->id());
+    one_event.insert(it->first);
     new_events->insert(std::make_pair(independent, one_event));
 
-    all_events.insert(it->second->id());
+    all_events.insert(it->first);
     names.push_back(it->second->name());
 
     name += it->second->name();
@@ -212,9 +209,7 @@ void BetaFactorModel::ConstructCcfBasicEvents(
     }
   }
   name += "]";
-  name = this->is_public() ? name : this->base_path() + "." + name_ + name;
-  CcfEventPtr common_failure(new CcfEvent(name, name_, members_.size()));
-  common_failure->member_names(names);
+  CcfEventPtr common_failure(new CcfEvent(name, this, names));
   assert(all_events.size() == max_level);
   new_events->insert(std::make_pair(common_failure, all_events));
 }

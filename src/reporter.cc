@@ -8,6 +8,7 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/date_time.hpp>
 
+#include "ccf_group.h"
 #include "error.h"
 #include "event.h"
 #include "expression.h"
@@ -342,20 +343,21 @@ xmlpp::Element* Reporter::ReportBasicEvent(const BasicEventPtr& basic_event,
   xmlpp::Element* element;
   boost::shared_ptr<CcfEvent> ccf_event =
       boost::dynamic_pointer_cast<CcfEvent>(basic_event);
-  if (!ccf_event) {
-    std::string name =
+  std::string prefix =
         basic_event->is_public() ? "" : basic_event->base_path() + ".";
-    name += basic_event->name();
+  if (!ccf_event) {
+    std::string name = prefix + basic_event->name();
     element = parent->add_child("basic-event");
     element->set_attribute("name", name);
   } else {
     element = parent->add_child("ccf-event");
-    std::string group_name =
-        basic_event->is_public() ? "" : basic_event->base_path() + ".";
-    group_name += ccf_event->ccf_group_name();
+    const CcfGroup* ccf_group = ccf_event->ccf_group();
+    std::string group_name = prefix + ccf_group->name();
     element->set_attribute("ccf-group", group_name);
-    element->set_attribute("order", ToString(ccf_event->member_names().size()));
-    element->set_attribute("group-size", ToString(ccf_event->ccf_group_size()));
+    int order = ccf_event->member_names().size();
+    element->set_attribute("order", Reporter::ToString(order));
+    int group_size = ccf_group->members().size();
+    element->set_attribute("group-size", Reporter::ToString(group_size));
     std::vector<std::string>::const_iterator it;
     for (it = ccf_event->member_names().begin();
          it != ccf_event->member_names().end(); ++it) {

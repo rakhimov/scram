@@ -326,44 +326,36 @@ class HouseEvent : public PrimaryEvent {
   bool state_;
 };
 
+class CcfGroup;
+
 /// @class CcfEvent
 /// A basic event that represents a multiple failure of a group of events due to
 /// a common cause. This event is generated out of a common cause group.
 /// This class is a helper to report correctly the CCF events.
 class CcfEvent : public BasicEvent {
  public:
-  /// Constructs CCF event with id name that is used for internal purposes.
-  /// This id is formatted by CcfGroup. The original name is also formatted by
-  /// CcfGroup, but the original name may not be suitable for reporting.
+  /// Constructs CCF event with specific name that is used for internal
+  /// purposes. This name is formatted by the CcfGroup. The creator CCF group
+  /// and names of the member events of this specific CCF event are saved for
+  /// reporting.
   /// @param[in] name The identifying name of this CCF event.
-  /// @param[in] ccf_group_name The name of CCF group for reporting.
-  /// @param[in] ccf_group_size The total size of CCF group for reporting.
-  CcfEvent(std::string name, std::string ccf_group_name, int ccf_group_size)
-      : BasicEvent(name),
-        ccf_group_name_(ccf_group_name),
-        ccf_group_size_(ccf_group_size) {}
+  /// @param[in] ccf_group The CCF group that created this event.
+  /// @param[in] member_names The names of members that this CCF event
+  ///                         represents as multiple failure.
+  CcfEvent(const std::string& name,
+           const CcfGroup* ccf_group,
+           const std::vector<std::string>& member_names);
 
-  /// @returns The name of the original CCF group.
-  inline const std::string ccf_group_name() const { return ccf_group_name_; }
-
-  /// @returns The total size of the original CCF group.
-  inline int ccf_group_size() const { return ccf_group_size_; }
+  /// @returns Pointer to the CCF group that created this CCF event.
+  inline const CcfGroup* ccf_group() const { return ccf_group_; }
 
   /// @returns Original names of members of this CCF event.
   inline const std::vector<std::string>& member_names() const {
     return member_names_;
   }
 
-  /// Sets original names of members.
-  /// @param[in] names A container of original names of basic events.
-  inline void member_names(const std::vector<std::string>& names) {
-    member_names_ = names;
-  }
-
  private:
-  /// The name of the CCF group that this CCF event is constructed from.
-  std::string ccf_group_name_;
-  int ccf_group_size_;  ///< CCF group size.
+  const CcfGroup* ccf_group_;  ///< Pointer to the CCF group.
   /// Original names of basic events in this CCF event.
   std::vector<std::string> member_names_;
 };
