@@ -16,17 +16,22 @@ def main():
             "two_trees.xml",
             "two_top_events.xml",
             "two_top_through_formula.xml",
+            "mixed_roles.xml",
             ]
 
     # Correct corner case inputs without probability information
     pass_inputs = [
             "correct_tree_input.xml",
+            "correct_formulas.xml",
+            "component_definition.xml",
             "mixed_definitions.xml",
+            "mixed_references.xml",
             "model_data_mixed_definitions.xml",
             "labels_and_attributes.xml",
             "very_long_mcs.xml",
             "unordered_structure.xml",
             "non_top_gate.xml",
+            "nested_formula.xml"
             ]
 
     # Correct corner cases with probability information
@@ -79,13 +84,14 @@ def main():
             "phi_ccf_wrong_sum.xml",
             "ccf_negative_factor.xml",
             "ccf_more_factors_than_needed.xml",
+            "repeated_ccf_members.xml",
             ]
 
     # Incorrect input files with probability calculations
     bad_probs = [
             "invalid_probability.xml",
-            "missing_expression.xml",
             "missing_bool_constant.xml",
+            "missing_expression.xml",
             "ccf_wrong_distribution.xml"
             ]
 

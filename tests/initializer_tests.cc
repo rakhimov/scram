@@ -91,6 +91,7 @@ TEST(InitializerTest, CorrectFTAInputs) {
   correct_inputs.push_back(dir + "unordered_structure.xml");
   correct_inputs.push_back(dir + "non_top_gate.xml");
   correct_inputs.push_back(dir + "unused_parameter.xml");
+  correct_inputs.push_back(dir + "nested_formula.xml");
 
   std::vector<std::string>::iterator it;
   for (it = correct_inputs.begin(); it != correct_inputs.end(); ++it) {
