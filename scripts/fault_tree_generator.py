@@ -9,11 +9,14 @@ sorted.
 This script helps create complex fault trees in a short time
 to test other analysis tools, for example, input dependent performance
 analysis.
+
+The time complexity is approximately:
+
+    O(N) + O((N/Ratio)^2*exp(-AvgChildren/Ratio)) + O(CommonG*exp(CommonB))
 """
 from __future__ import print_function, division
 
 from collections import deque
-from math import log
 import random
 
 import argparse as ap
@@ -374,7 +377,8 @@ class Factors(object):
         """
         return int(num_basics /
                 (Factors.__percent_basics * Factors.avg_children *
-                    (1 - Factors.common_b + Factors.common_b / Factors.parents_b)))
+                    (1 - Factors.common_b +
+                        Factors.common_b / Factors.parents_b)))
 
     @staticmethod
     def get_num_common_basics(num_gates):
@@ -429,6 +433,7 @@ class Settings(object):
     output = None
     nested = None
 
+
 def init_gates(gates_queue, common_basics, common_gates):
     """Initializes gates and other basic events.
 
@@ -443,27 +448,35 @@ def init_gates(gates_queue, common_basics, common_gates):
     num_children = Factors.get_num_children(gate)
 
     ancestors = None  # needed for cycle prevention
-    candidates = None  # candidates for common gate children
-    index = 0  # index for candidates
+    max_tries = len(common_gates)  # the number of maximum tries
+    num_trials = 0  # the number of trials to get common gate
 
-    def get_candidates():
-        """Lazy calculation for candidates.
+    def candidate_gates():
+        """Lazy generator of candidates for common gates.
 
         Returns:
-            A list of randomized common_gates grouped by the number of parents.
+            A gate candidate from common gates container.
         """
+        index = 0
         orphans = [x for x in common_gates if not x.parents]
         random.shuffle(orphans)
-        single_parent = [x for x in common_gates
-                            if len(x.parents) == 1]
+        while index < len(orphans):
+            yield orphans[index]
+            index += 1
+
+        index = 0
+        single_parent = [x for x in common_gates if len(x.parents) == 1]
         random.shuffle(single_parent)
-        multi_parent = [x for x in common_gates
-                        if len(x.parents) > 1]
+        while index < len(single_parent):
+            yield single_parent[index]
+            index += 1
+
+        index = 0
+        multi_parent = [x for x in common_gates if len(x.parents) > 1]
         random.shuffle(multi_parent)
-        candidates = orphans
-        candidates.extend(single_parent)
-        candidates.extend(multi_parent)
-        return candidates
+        while index < len(multi_parent):
+            yield multi_parent[index]
+            index += 1
 
     while gate.num_children() < num_children:
         s_percent = random.random()  # sample percentage of gates
@@ -480,19 +493,16 @@ def init_gates(gates_queue, common_basics, common_gates):
 
         if s_percent < Factors.get_percent_gates():
             # Create a new gate or use a common one
-            if s_common < Factors.common_g and index < len(common_gates):
+            if s_common < Factors.common_g and num_trials < max_tries:
                 # Lazy evaluation of ancestors
                 if not ancestors:
                     ancestors = gate.get_ancestors()
 
-                if not candidates:
-                    candidates = get_candidates()
-
-                while index < len(candidates):
-                    random_gate = candidates[index]
-                    index += 1
-                    if (random_gate in gate.g_children or
-                            random_gate is gate):
+                for random_gate in candidate_gates():
+                    num_trials += 1
+                    if num_trials >= max_tries:
+                        break
+                    if random_gate in gate.g_children or random_gate is gate:
                         continue
                     if (not random_gate.g_children or
                             random_gate not in ancestors):
@@ -506,11 +516,13 @@ def init_gates(gates_queue, common_basics, common_gates):
             # Create a new basic event or use a common one
             if s_common < Factors.common_b and common_basics:
                 orphans = [x for x in common_basics if not x.parents]
-                single_parent = [x for x in common_basics
-                                 if len(x.parents) == 1]
                 if orphans:
                     gate.add_child(random.choice(orphans))
-                elif single_parent:
+                    continue
+
+                single_parent = [x for x in common_basics
+                                 if len(x.parents) == 1]
+                if single_parent:
                     gate.add_child(random.choice(single_parent))
                 else:
                     gate.add_child(random.choice(common_basics))
@@ -560,7 +572,7 @@ def generate_fault_tree():
         init_gates(gates_queue, common_basics, common_gates)
 
     assert(not [x for x in BasicEvent.basic_events if not x.parents])
-    assert(not [x for x in Gate.gates if not x.parents and not x is top_event])
+    assert(not [x for x in Gate.gates if not x.parents and x is not top_event])
 
     # Distribute house events
     while len(HouseEvent.house_events) < Factors.num_house:
@@ -635,12 +647,12 @@ def write_info():
             "The fault tree name: " + Settings.ft_name + "\n"
             "The root gate name: " + Settings.root_name + "\n\n"
             "The seed of the random number generator: " +
-            str(Settings.seed) + "\n"
-            "The number of basic events: %d" % Factors.num_basics + "\n"
+            str(Settings.seed)+ "\n"
+            "The number of basic events: " + str(Factors.num_basics) + "\n"
             "The number of house events: " + str(Factors.num_house) + "\n"
             "The number of CCF groups: " + str(Factors.num_ccf) + "\n"
-            "The average number of children for gates: %d" %
-            Factors.avg_children + "\n"
+            "The average number of children for gates: " +
+            str(Factors.avg_children) + "\n"
             "The weights of gate types [AND, OR, K/N, NOT, XOR]: " +
             str(Factors.get_weights()) + "\n"
             "Percentage of common basic events per gate: " +
@@ -658,7 +670,7 @@ def write_info():
             "-->\n"
             )
 
-    shared_p = [x for x in BasicEvent.basic_events if x.is_common()]
+    shared_b = [x for x in BasicEvent.basic_events if x.is_common()]
     shared_g = [x for x in Gate.gates if x.is_common()]
     and_gates = [x for x in Gate.gates if x.gate_type == "and"]
     or_gates = [x for x in Gate.gates if x.gate_type == "or"]
@@ -667,8 +679,8 @@ def write_info():
     xor_gates = [x for x in Gate.gates if x.gate_type == "xor"]
 
     frac_b = 0  # fraction of basic events in children per gate
-    common_b = 0
-    common_g = 0
+    common_b = 0  # fraction of common basic events in basic events per gate
+    common_g = 0  # fraction of common gates in gates per gate
     for gate in Gate.gates:
         frac_b += len(gate.b_children) / \
                 (len(gate.g_children) + len(gate.b_children))
@@ -679,9 +691,9 @@ def write_info():
             common_g += len([x for x in gate.g_children if x.is_common()]) / \
                     len(gate.g_children)
     num_gates = len(Gate.gates)
-    common_b = common_b / num_gates
-    common_g = common_g / num_gates
-    frac_b = frac_b / num_gates
+    common_b /= len([x for x in Gate.gates if x.b_children])
+    common_g /= len([x for x in Gate.gates if x.g_children])
+    frac_b /= num_gates
 
     t_file.write(
             "<!--\nThe generated fault tree has the following metrics:\n\n"
@@ -698,17 +710,17 @@ def write_info():
             (BasicEvent.num_basic / Gate.num_gates) + "\n"
             "The average number of children for gates: %f" %
             (sum(x.num_children() for x in Gate.gates) / len(Gate.gates)) + "\n"
-            "The number of common basic events: %d" % len(shared_p) + "\n"
+            "The number of common basic events: %d" % len(shared_b) + "\n"
             "The number of common gates: %d" % len(shared_g) + "\n"
             "Percentage of common basic events per gate: %f" % common_b + "\n"
             "Percentage of common gates per gate: %f" % common_g + "\n"
             "Percentage of children that are basic events per gate: %f" %
             frac_b + "\n"
             )
-    if shared_p:
+    if shared_b:
         t_file.write(
                 "The avg. number of parents for common basic events: %f" %
-                (sum(x.num_parents() for x in shared_p) / len(shared_p)) + "\n")
+                (sum(x.num_parents() for x in shared_b) / len(shared_b)) + "\n")
     if shared_g:
         t_file.write(
                 "The avg. number of parents for common gates: %f" %
