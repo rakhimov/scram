@@ -81,7 +81,7 @@ class Initializer {
   /// @throws ValidationError if input contains errors.
   /// @throws ValueError if input values are not valid.
   /// @throws IOError if an input file is not accessible.
-  void ProcessInputFile(std::string xml_file);
+  void ProcessInputFile(const std::string& xml_file);
 
   /// Processes definitions of elements that are left to be determined later.
   /// @throws ValidationError if elements contain undefined dependencies.
@@ -310,6 +310,9 @@ class Initializer {
 
   /// Parsers with all documents saved for later access.
   std::vector<boost::shared_ptr<XMLParser> > parsers_;
+
+  /// Map roots of documents to files. This is for error reporting.
+  std::map<const xmlpp::Node*, std::string> doc_to_file_;
 
   /// Elements that are defined on the second pass.
   std::vector<std::pair<ElementPtr, const xmlpp::Element*> > tbd_elements_;

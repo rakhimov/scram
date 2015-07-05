@@ -48,13 +48,13 @@ void Initializer::ProcessInputFiles(const std::vector<std::string>& xml_files) {
   CLOCK(input_time);
   LOG(DEBUG1) << "Processing input files";
   std::vector<std::string>::const_iterator it;
-  for (it = xml_files.begin(); it != xml_files.end(); ++it) {
-    try {
+  try {
+    for (it = xml_files.begin(); it != xml_files.end(); ++it) {
       Initializer::ProcessInputFile(*it);
-    } catch (ValidationError& err) {
-      err.msg("In file '" + *it + "', " + err.msg());
-      throw err;
     }
+  } catch (ValidationError& err) {
+    err.msg("In file '" + *it + "', " + err.msg());
+    throw err;
   }
   CLOCK(def_time);
   Initializer::ProcessTbdElements();
@@ -74,7 +74,7 @@ void Initializer::ProcessInputFiles(const std::vector<std::string>& xml_files) {
   LOG(DEBUG1) << "Setup time " << DUR(setup_time);
 }
 
-void Initializer::ProcessInputFile(std::string xml_file) {
+void Initializer::ProcessInputFile(const std::string& xml_file) {
   std::ifstream file_stream(xml_file.c_str());
   if (!file_stream) {
     throw IOError("File '" + xml_file + "' could not be loaded.");
@@ -107,19 +107,16 @@ void Initializer::ProcessInputFile(std::string xml_file) {
   const xmlpp::Document* doc = parser->Document();
   const xmlpp::Node* root = doc->get_root_node();
   assert(root->get_name() == "opsa-mef");
-  if (!model_) {
-    xmlpp::NodeSet name_attr = root->find("./@name");
-    std::string model_name = "";
-    if (!name_attr.empty()) {
-      assert(name_attr.size() == 1);
-      const xmlpp::Attribute* attr =
-          dynamic_cast<const xmlpp::Attribute*>(name_attr[0]);
-      model_name = attr->get_value();
-    }
+  doc_to_file_.insert(std::make_pair(root, xml_file));  // Save for later.
+
+  if (!model_) {  // Create only one model for multiple files.
+    const xmlpp::Element* root_element =
+        dynamic_cast<const xmlpp::Element*>(root);
+    assert(root_element);
+    std::string model_name = root_element->get_attribute_value("name");
+    boost::trim(model_name);  // The name may be empty. It is optional.
     model_ = ModelPtr(new Model(model_name));
-    Initializer::AttachLabelAndAttributes(
-        dynamic_cast<const xmlpp::Element*>(root),
-        model_);
+    Initializer::AttachLabelAndAttributes(root_element, model_);
   }
 
   xmlpp::NodeSet::iterator it_ch;  // Iterator for all children.
@@ -148,30 +145,37 @@ void Initializer::ProcessInputFile(std::string xml_file) {
 
 void Initializer::ProcessTbdElements() {
   std::vector< std::pair<ElementPtr, const xmlpp::Element*> >::iterator it;
-  for (it = tbd_elements_.begin(); it != tbd_elements_.end(); ++it) {
-    if (boost::dynamic_pointer_cast<BasicEvent>(it->first)) {
-      BasicEventPtr basic_event =
-          boost::dynamic_pointer_cast<BasicEvent>(it->first);
-      DefineBasicEvent(it->second, basic_event);
+  try {
+    for (it = tbd_elements_.begin(); it != tbd_elements_.end(); ++it) {
+      if (boost::dynamic_pointer_cast<BasicEvent>(it->first)) {
+        BasicEventPtr basic_event =
+            boost::dynamic_pointer_cast<BasicEvent>(it->first);
+        Initializer::DefineBasicEvent(it->second, basic_event);
 
-    } else if (boost::dynamic_pointer_cast<Gate>(it->first)) {
-      GatePtr gate = boost::dynamic_pointer_cast<Gate>(it->first);
-      DefineGate(it->second, gate);
+      } else if (boost::dynamic_pointer_cast<Gate>(it->first)) {
+        GatePtr gate = boost::dynamic_pointer_cast<Gate>(it->first);
+        Initializer::DefineGate(it->second, gate);
 
-    } else if (boost::dynamic_pointer_cast<CcfGroup>(it->first)) {
-      CcfGroupPtr ccf_group = boost::dynamic_pointer_cast<CcfGroup>(it->first);
-      DefineCcfGroup(it->second, ccf_group);
+      } else if (boost::dynamic_pointer_cast<CcfGroup>(it->first)) {
+        CcfGroupPtr ccf_group =
+            boost::dynamic_pointer_cast<CcfGroup>(it->first);
+        Initializer::DefineCcfGroup(it->second, ccf_group);
 
-    } else if (boost::dynamic_pointer_cast<Parameter>(it->first)) {
-      ParameterPtr param = boost::dynamic_pointer_cast<Parameter>(it->first);
-      DefineParameter(it->second, param);
+      } else if (boost::dynamic_pointer_cast<Parameter>(it->first)) {
+        ParameterPtr param = boost::dynamic_pointer_cast<Parameter>(it->first);
+        Initializer::DefineParameter(it->second, param);
+      }
     }
+  } catch (ValidationError& err) {
+    const xmlpp::Node* root = it->second->find("/opsa-mef")[0];
+    err.msg("In file '" + doc_to_file_.find(root)->second + "', " + err.msg());
+    throw err;
   }
 }
 
 void Initializer::AttachLabelAndAttributes(const xmlpp::Element* element_node,
                                            const ElementPtr& element) {
-  xmlpp::NodeSet labels = element_node->find("./*[name() = 'label']");
+  xmlpp::NodeSet labels = element_node->find("./label");
   if (!labels.empty()) {
     assert(labels.size() == 1);
     const xmlpp::Element* label =
@@ -182,13 +186,13 @@ void Initializer::AttachLabelAndAttributes(const xmlpp::Element* element_node,
     element->label(text->get_content());
   }
 
-  xmlpp::NodeSet attributes = element_node->find("./*[name() = 'attributes']");
+  xmlpp::NodeSet attributes = element_node->find("./attributes");
   if (!attributes.empty()) {
     assert(attributes.size() == 1);  // Only one big element 'attributes'.
     const xmlpp::Element* attributes_element =
         dynamic_cast<const xmlpp::Element*>(attributes.front());
     xmlpp::NodeSet attribute_list =
-        attributes_element->find("./*[name() = 'attribute']");
+        attributes_element->find("./attribute");
     xmlpp::NodeSet::iterator it;
     for (it = attribute_list.begin(); it != attribute_list.end(); ++it) {
       const xmlpp::Element* attribute =
@@ -215,8 +219,8 @@ void Initializer::DefineFaultTree(const xmlpp::Element* ft_node) {
   } catch (ValidationError& err) {
     std::stringstream msg;
     msg << "Line " << ft_node->get_line() << ":\n";
-    msg << err.msg();
-    throw ValidationError(msg.str());
+    err.msg(msg.str() + err.msg());
+    throw err;
   }
   Initializer::RegisterFaultTreeData(ft_node, fault_tree, name);
 }
@@ -300,8 +304,8 @@ void Initializer::RegisterFaultTreeData(const xmlpp::Element* ft_node,
     } catch (ValidationError& err) {
       std::stringstream msg;
       msg << "Line " << element->get_line() << ":\n";
-      msg << err.msg();
-      throw ValidationError(msg.str());
+      err.msg(msg.str() + err.msg());
+      throw err;
     }
   }
 }
@@ -348,8 +352,8 @@ boost::shared_ptr<Gate> Initializer::RegisterGate(
   } catch (ValidationError& err) {
     std::stringstream msg;
     msg << "Line " << gate_node->get_line() << ":\n";
-    msg << err.msg();
-    throw ValidationError(msg.str());
+    err.msg(msg.str() + err.msg());
+    throw err;
   }
   tbd_elements_.push_back(std::make_pair(gate, gate_node));
   Initializer::AttachLabelAndAttributes(gate_node, gate);
@@ -370,7 +374,8 @@ void Initializer::DefineGate(const xmlpp::Element* gate_node,
   } catch (ValidationError& err) {
     std::stringstream msg;
     msg << "Line " << gate_node->get_line() << ":\n";
-    throw ValidationError(msg.str() + err.msg());
+    err.msg(msg.str() + err.msg());
+    throw err;
   }
 }
 
@@ -401,7 +406,8 @@ boost::shared_ptr<Formula> Initializer::GetFormula(
   } catch (ValidationError& err) {
     std::stringstream msg;
     msg << "Line " << formula_node->get_line() << ":\n";
-    throw ValidationError(msg.str() + err.msg());
+    err.msg(msg.str() + err.msg());
+    throw err;
   }
   return formula;
 }
@@ -448,8 +454,8 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
     } catch (ValidationError& err) {
       std::stringstream msg;
       msg << "Line " << event->get_line() << ":\n";
-      msg << err.msg();
-      throw ValidationError(msg.str());
+      err.msg(msg.str() + err.msg());
+      throw err;
     }
   }
 
@@ -481,8 +487,8 @@ boost::shared_ptr<BasicEvent> Initializer::RegisterBasicEvent(
   } catch (ValidationError& err) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << err.msg();
-    throw ValidationError(msg.str());
+    err.msg(msg.str() + err.msg());
+    throw err;
   }
   tbd_elements_.push_back(std::make_pair(basic_event, event_node));
   Initializer::AttachLabelAndAttributes(event_node, basic_event);
@@ -520,12 +526,12 @@ boost::shared_ptr<HouseEvent> Initializer::DefineHouseEvent(
   } catch (ValidationError& err) {
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
-    msg << err.msg();
-    throw ValidationError(msg.str());
+    err.msg(msg.str() + err.msg());
+    throw err;
   }
 
   // Only Boolean constant.
-  xmlpp::NodeSet expression = event_node->find("./*[name() = 'constant']");
+  xmlpp::NodeSet expression = event_node->find("./constant");
   if (!expression.empty()) {
     assert(expression.size() == 1);
     const xmlpp::Element* constant =
@@ -558,8 +564,8 @@ boost::shared_ptr<Parameter> Initializer::RegisterParameter(
   } catch (ValidationError& err) {
     std::stringstream msg;
     msg << "Line " << param_node->get_line() << ":\n";
-    msg << err.msg();
-    throw ValidationError(msg.str());
+    err.msg(msg.str() + err.msg());
+    throw err;
   }
   tbd_elements_.push_back(std::make_pair(parameter, param_node));
 
@@ -646,8 +652,8 @@ bool Initializer::GetParameterExpression(const xmlpp::Element* expr_element,
     } catch (ValidationError& err) {
       std::stringstream msg;
       msg << "Line " << expr_element->get_line() << ":\n";
-      msg << err.msg();
-      throw ValidationError(msg.str());
+      err.msg(msg.str() + err.msg());
+      throw err;
     }
   } else if (expr_name == "system-mission-time") {
     param_unit = unit_to_string_[mission_time_->unit()];
@@ -865,8 +871,8 @@ boost::shared_ptr<CcfGroup> Initializer::RegisterCcfGroup(
   } catch (ValidationError& err) {
     std::stringstream msg;
     msg << "Line " << ccf_node->get_line() << ":\n";
-    msg << err.msg();
-    throw ValidationError(msg.str());
+    err.msg(msg.str() + err.msg());
+    throw err;
   }
 
   xmlpp::NodeSet members = ccf_node->find("./members");
@@ -929,8 +935,8 @@ void Initializer::ProcessCcfMembers(const xmlpp::Element* members_node,
     } catch (DuplicateArgumentError& err) {
       std::stringstream msg;
       msg << "Line " << event_node->get_line() << ":\n";
-      msg << err.msg();
-      throw ValidationError(msg.str());
+      err.msg(msg.str() + err.msg());
+      throw err;
     }
   }
 }
@@ -971,8 +977,8 @@ void Initializer::DefineCcfFactor(const xmlpp::Element* factor_node,
   } catch (ValidationError& err) {
     std::stringstream msg;
     msg << "Line " << factor_node->get_line() << ":\n";
-    msg << err.msg();
-    throw ValidationError(msg.str());
+    err.msg(msg.str() + err.msg());
+    throw err;
   }
 }
 
@@ -1017,7 +1023,8 @@ void Initializer::CheckFirstLayer() {
   }
 
   if (!error_messages.str().empty()) {
-    throw ValidationError(error_messages.str()); }
+    throw ValidationError(error_messages.str());
+  }
 
   Initializer::ValidateExpressions();
 }

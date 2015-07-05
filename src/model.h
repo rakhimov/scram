@@ -73,12 +73,12 @@ class Model : public Element {
 
   /// Adds a fault tree into the model container.
   /// @param[in] fault_tree A fault tree defined in this model.
-  /// @throws ValidationError if a container with the same name already exists.
+  /// @throws RedefinitionError if the model has a container with the same name.
   void AddFaultTree(const FaultTreePtr& fault_tree);
 
   /// Adds a parameter that is used in this model's expressions.
   /// @param[in] parameter A parameter defined in this model.
-  /// @throws ValidationError if a parameter with the same name already exists.
+  /// @throws RedefinitionError if the model has a parameter with the same name.
   void AddParameter(const ParameterPtr& parameter);
 
   /// Finds a parameter from a reference. The reference is not case sensitive
@@ -102,7 +102,7 @@ class Model : public Element {
 
   /// Adds a house event that is used in this model.
   /// @param[in] house_event A house event defined in this model.
-  /// @throws ValidationError if an event with the same name already exists.
+  /// @throws RedefinitionError if an event with the same name already exists.
   void AddHouseEvent(const HouseEventPtr& house_event);
 
   /// Finds a house event from a reference. The reference is not case sensitive
@@ -116,7 +116,7 @@ class Model : public Element {
 
   /// Adds a basic event that is used in this model.
   /// @param[in] basic_event A basic event defined in this model.
-  /// @throws ValidationError if an event with the same name already exists.
+  /// @throws RedefinitionError if an event with the same name already exists.
   void AddBasicEvent(const BasicEventPtr& basic_event);
 
   /// Finds a basic event from a reference. The reference is not case sensitive
@@ -130,7 +130,7 @@ class Model : public Element {
 
   /// Adds a gate that is used in this model's fault trees or components.
   /// @param[in] gate A gate defined in this model.
-  /// @throws ValidationError if an event with the same name already exists.
+  /// @throws RedefinitionError if an event with the same name already exists.
   void AddGate(const GatePtr& gate);
 
   /// Finds a gate from a reference. The reference is not case sensitive
@@ -143,7 +143,7 @@ class Model : public Element {
 
   /// Adds a CCF group that is used in this model's fault trees.
   /// @param[in] ccf_group A CCF group defined in this model.
-  /// @throws ValidationError if a CCF group with the same name already exists.
+  /// @throws RedefinitionError if the model has a CCF group with the same name.
   void AddCcfGroup(const CcfGroupPtr& ccf_group);
 
  private:

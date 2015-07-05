@@ -24,7 +24,7 @@ void Component::AddGate(const GatePtr& gate) {
   boost::to_lower(name);
   if (gates_.count(name) || basic_events_.count(name) ||
       house_events_.count(name)) {
-    throw ValidationError("Duplicate event " + gate->name() + ".");
+    throw ValidationError("Duplicate event " + gate->name());
   }
   gates_.insert(std::make_pair(name, gate));
 }
@@ -34,7 +34,7 @@ void Component::AddBasicEvent(const BasicEventPtr& basic_event) {
   boost::to_lower(name);
   if (gates_.count(name) || basic_events_.count(name) ||
       house_events_.count(name)) {
-    throw ValidationError("Duplicate event " + basic_event->name() + ".");
+    throw ValidationError("Duplicate event " + basic_event->name());
   }
   basic_events_.insert(std::make_pair(name, basic_event));
 }
@@ -44,7 +44,7 @@ void Component::AddHouseEvent(const HouseEventPtr& house_event) {
   boost::to_lower(name);
   if (gates_.count(name) || basic_events_.count(name) ||
       house_events_.count(name)) {
-    throw ValidationError("Duplicate event " + house_event->name() + ".");
+    throw ValidationError("Duplicate event " + house_event->name());
   }
   house_events_.insert(std::make_pair(name, house_event));
 }
@@ -53,7 +53,7 @@ void Component::AddParameter(const ParameterPtr& parameter) {
   std::string name = parameter->name();
   boost::to_lower(name);
   if (parameters_.count(name)) {
-    throw ValidationError("Duplicate parameter " + parameter->name() + ".");
+    throw ValidationError("Duplicate parameter " + parameter->name());
   }
   parameters_.insert(std::make_pair(name, parameter));
 }
@@ -62,7 +62,7 @@ void Component::AddCcfGroup(const CcfGroupPtr& ccf_group) {
   std::string name = ccf_group->name();
   boost::to_lower(name);
   if (ccf_groups_.count(name)) {
-    throw ValidationError("Duplicate CCF group " + ccf_group->name() + ".");
+    throw ValidationError("Duplicate CCF group " + ccf_group->name());
   }
   ccf_groups_.insert(std::make_pair(name, ccf_group));
   std::map<std::string, BasicEventPtr>::const_iterator it;
@@ -71,7 +71,7 @@ void Component::AddCcfGroup(const CcfGroupPtr& ccf_group) {
     if (gates_.count(it->first) || basic_events_.count(it->first) ||
         house_events_.count(it->first)) {
       throw ValidationError("Duplicate event " + it->second->name() +
-                            " from CCF group " + ccf_group->name() + ".");
+                            " from CCF group " + ccf_group->name());
     }
     basic_events_.insert(*it);
   }
@@ -81,7 +81,7 @@ void Component::AddComponent(const ComponentPtr& component) {
   std::string name = component->name();
   boost::to_lower(name);
   if (components_.count(name)) {
-    throw ValidationError("Duplicate component " + component->name() + ".");
+    throw ValidationError("Duplicate component " + component->name());
   }
   components_.insert(std::make_pair(name, component));
 }

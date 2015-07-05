@@ -17,16 +17,16 @@ void Model::AddFaultTree(const FaultTreePtr& fault_tree) {
   std::string name = fault_tree->name();
   boost::to_lower(name);
   if (fault_trees_.count(name)) {
-    std::string msg = "Fault tree " + fault_tree->name() + " already exists.";
-    throw ValidationError(msg);
+    std::string msg = "Redefinition of fault tree " + fault_tree->name();
+    throw RedefinitionError(msg);
   }
   fault_trees_.insert(std::make_pair(name, fault_tree));
 }
 
 void Model::AddParameter(const ParameterPtr& parameter) {
   if (parameters_.count(parameter->id())) {
-    std::string msg = "Parameter " + parameter->name() + " already exists.";
-    throw ValidationError(msg);
+    std::string msg = "Redefinition of parameter " + parameter->name();
+    throw RedefinitionError(msg);
   }
   parameters_.insert(std::make_pair(parameter->id(), parameter));
 }
@@ -114,8 +114,8 @@ void Model::AddHouseEvent(const HouseEventPtr& house_event) {
   std::string name = house_event->id();
   if (gates_.count(name) || basic_events_.count(name) ||
       house_events_.count(name)) {
-    std::string msg = "Event " + house_event->name() + " already exists.";
-    throw ValidationError(msg);
+    std::string msg = "Redefinition of event " + house_event->name();
+    throw RedefinitionError(msg);
   }
   house_events_.insert(std::make_pair(name, house_event));
 }
@@ -156,8 +156,8 @@ void Model::AddBasicEvent(const BasicEventPtr& basic_event) {
   std::string name = basic_event->id();
   if (gates_.count(name) || basic_events_.count(name) ||
       house_events_.count(name)) {
-    std::string msg = "Event " + basic_event->name() + " already exists.";
-    throw ValidationError(msg);
+    std::string msg = "Redefinition of event " + basic_event->name();
+    throw RedefinitionError(msg);
   }
   basic_events_.insert(std::make_pair(name, basic_event));
 }
@@ -198,8 +198,8 @@ void Model::AddGate(const GatePtr& gate) {
   std::string name = gate->id();
   if (gates_.count(name) || basic_events_.count(name) ||
       house_events_.count(name)) {
-    std::string msg = "Event " + gate->name() + " already exists.";
-    throw ValidationError(msg);
+    std::string msg = "Redefinition of event " + gate->name();
+    throw RedefinitionError(msg);
   }
   gates_.insert(std::make_pair(name, gate));
 }
@@ -237,8 +237,8 @@ boost::shared_ptr<Gate> Model::GetGate(const std::string& reference,
 void Model::AddCcfGroup(const CcfGroupPtr& ccf_group) {
   std::string name = ccf_group->id();
   if (ccf_groups_.count(name)) {
-    std::string msg = "CCF group " + ccf_group->name() + " already exists.";
-    throw ValidationError(msg);
+    std::string msg = "Redefinition of CCF group " + ccf_group->name();
+    throw RedefinitionError(msg);
   }
   ccf_groups_.insert(std::make_pair(name, ccf_group));
 }
