@@ -148,6 +148,8 @@ TEST(InitializerTest, IncorrectFTAInputs) {
   incorrect_inputs.push_back(dir + "undefined_house_event.xml");
   incorrect_inputs.push_back(dir + "undefined_gate.xml");
   incorrect_inputs.push_back(dir + "undefined_parameter.xml");
+  incorrect_inputs.push_back(dir + "reference_missing_fault_tree.xml");
+  incorrect_inputs.push_back(dir + "reference_missing_component.xml");
   incorrect_inputs.push_back(dir + "wrong_parameter_unit.xml");
   incorrect_inputs.push_back(dir + "name_clash_two_trees.xml");
   incorrect_inputs.push_back(dir + "def_clash_basic_gate.xml");

@@ -243,7 +243,7 @@ TEST_F(RiskAnalysisTest, MCUB) {
   std::string with_prob =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   // Probability calculations with the MCUB approximation.
-  settings.approx("mcub").probability_analysis(true);
+  settings.approx("mcub").probability_analysis(true).importance_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(with_prob));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(0.766144, p_total());

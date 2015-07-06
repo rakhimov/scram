@@ -41,7 +41,7 @@ TEST(FormulaTest, VoteNumber) {
   EXPECT_EQ(2, top->vote_number());
 }
 
-TEST(FormulaTest, Arguments) {
+TEST(FormulaTest, EventArguments) {
   FormulaPtr top(new Formula("and"));
   std::map<std::string, EventPtr> children;
   EventPtr first_child(new BasicEvent("first"));
@@ -59,6 +59,17 @@ TEST(FormulaTest, Arguments) {
   EXPECT_NO_THROW(top->AddArgument(second_child));
   children.insert(std::make_pair(second_child->id(), second_child));
   EXPECT_EQ(children, top->event_args());
+}
+
+TEST(FormulaTest, FormulaArguments) {
+  FormulaPtr top(new Formula("and"));
+  FormulaPtr arg(new Formula("or"));
+  EXPECT_THROW(top->formula_args(), LogicError);
+  // Adding first child.
+  EXPECT_NO_THROW(top->AddArgument(arg));
+  // Re-adding a child must cause an error.
+  EXPECT_THROW(top->AddArgument(arg), LogicError);
+  EXPECT_EQ(arg, *top->formula_args().begin());
 }
 
 TEST(GateTest, Cycle) {
