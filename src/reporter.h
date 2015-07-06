@@ -50,7 +50,7 @@ class Reporter {
       xmlpp::Document* doc);
 
   /// Reports unused parameters as warnings of the top information level.
-  /// @param[in] unused_paramters Container of unused parameters.
+  /// @param[in] unused_parameters Container of unused parameters.
   /// @param[in,out] doc Pre-formatted XML document.
   void ReportUnusedParameters(const std::set<ParameterPtr>& unused_parameters,
                               xmlpp::Document* doc);

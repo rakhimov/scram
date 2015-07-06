@@ -73,6 +73,8 @@ class RedefinitionError : public ValidationError {
 /// This error indicates that arguments must be unique.
 class DuplicateArgumentError : public ValidationError {
  public:
+  /// Constructs a new duplicate argument error with a provided message.
+  /// @param[in] msg The message to be passed with this error.
   explicit DuplicateArgumentError(std::string msg) : ValidationError(msg) {}
 };
 

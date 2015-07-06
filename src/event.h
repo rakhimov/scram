@@ -97,7 +97,6 @@ class Formula {
  public:
   /// Constructs a formula.
   /// @param[in] type The logical operator for this Boolean formula.
-  /// @param[in] vote Vote number if the operator is atleast.
   explicit Formula(const std::string& type)
       : type_(type),
         vote_number_(-1),
@@ -186,7 +185,9 @@ class Formula {
 class PrimaryEvent : public Event {
  public:
   /// Constructs with id name and probability.
-  /// @param[in] id The identifying name of this primary event.
+  /// @param[in] name The identifying name of this primary event.
+  /// @param[in] base_path The series of containers to get this event.
+  /// @param[in] is_public Whether or not the event is public.
   /// @param[in] type The type of the event.
   explicit PrimaryEvent(const std::string& name,
                         const std::string& base_path = "",
@@ -219,7 +220,9 @@ class BasicEvent : public PrimaryEvent {
   typedef boost::shared_ptr<Expression> ExpressionPtr;
 
   /// Constructs with id name.
-  /// @param[in] id The identifying name of this basic event.
+  /// @param[in] name The identifying name of this basic event.
+  /// @param[in] base_path The series of containers to get this event.
+  /// @param[in] is_public Whether or not the event is public.
   explicit BasicEvent(const std::string& name,
                       const std::string& base_path = "",
                       bool is_public = true)
@@ -303,7 +306,9 @@ class BasicEvent : public PrimaryEvent {
 class HouseEvent : public PrimaryEvent {
  public:
   /// Constructs with id name.
-  /// @param[in] id The identifying name of this house event.
+  /// @param[in] name The identifying name of this house event.
+  /// @param[in] base_path The series of containers to get this event.
+  /// @param[in] is_public Whether or not the event is public.
   explicit HouseEvent(const std::string& name,
                       const std::string& base_path = "",
                       bool is_public = true)
