@@ -28,7 +28,7 @@ Some requirements and additions to the shorthand format:
 7. Repeated children are considered an error.
 8. The script is flexible with whitespace characters in the input file.
 9. Parentheses are optional for logical operators except for ATLEAST.
-10. Boolean formula can be nested. For example, "g1 := a & b | c ^ ~d | ~(e|f)"
+10. (Experimental) Boolean formula can be nested: g1 := a & b | c ^ ~d | ~(e|f)
 """
 from __future__ import print_function
 
@@ -396,6 +396,12 @@ def parse_input_file(input_file, multi_top=False):
     ft_name_re = re.compile(r"^\s*(" + name_sig + r")\s*$")
     # Node names
     name_re = re.compile(r"\s*(" + name_sig + r")\s*$")
+    # Probability description for a basic event
+    prob_re = re.compile(r"^\s*p\(\s*(?P<name>" + name_sig +
+                         r")\s*\)\s*=\s*(?P<prob>1|0|0\.\d+)\s*$")
+    # State description for a house event
+    state_re = re.compile(r"^\s*s\(\s*(?P<name>" + name_sig +
+                          r")\s*\)\s*=\s*(?P<state>true|false)\s*$")
     # General gate name and pattern
     gate_sig = r"^\s*(?P<name>" + name_sig + r")\s*:=\s*"
     gate_re = re.compile(gate_sig + r"(?P<formula>.+)$")
@@ -410,16 +416,10 @@ def parse_input_file(input_file, multi_top=False):
     # Combination gate identification
     comb_children = r"\[(\s*.+(\s*,\s*.+\s*){2,})\]"
     comb_re = re.compile(r"@\(\s*([2-9])\s*,\s*" + comb_children + r"\s*\)\s*$")
-    # NOT gate identification
-    not_re = re.compile(r"~\s*(" + name_sig + r"|@?\(.+\))$")
     # XOR gate identification
     xor_re = re.compile(r"(\s*" + form + r"\s*\^\s*" + form + r"\s*)$")
-    # Probability description for a basic event
-    prob_re = re.compile(r"^\s*p\(\s*(?P<name>" + name_sig +
-                         r")\s*\)\s*=\s*(?P<prob>1|0|0\.\d+)\s*$")
-    # State description for a house event
-    state_re = re.compile(r"^\s*s\(\s*(?P<name>" + name_sig +
-                          r")\s*\)\s*=\s*(?P<state>true|false)\s*$")
+    # NOT gate identification
+    not_re = re.compile(r"~\s*(" + name_sig + r"|@?\(.+\))$")
 
     blank_line = re.compile(r"^\s*$")
 
@@ -435,9 +435,21 @@ def parse_input_file(input_file, multi_top=False):
         Raises:
             FormatError: There are problems with parentheses.
         """
-        # The simplest check
-        if line.count("(") != line.count(")"):
-            raise FormatError("Opening and closing parentheses do not match.")
+        pos = 0
+        count = 0
+        for char in line:
+            pos += 1
+            if char == "(":
+                count += 1
+            elif char == ")":
+                if count == 0:
+                    msg = "Extra closing parenthesis at position %d:\n" % pos
+                    msg += line
+                    msg += " " * (pos - 1) + "^"
+                    raise FormatError(msg)
+                count -= 1
+        if count > 0:
+            raise FormatError("Missing %d closing parentheses" % count)
 
     def get_arguments(arguments_string, splitter):
         """Splits the input string into arguments of a formula.
@@ -521,15 +533,17 @@ def parse_input_file(input_file, multi_top=False):
                 formula.f_arguments.append(get_formula(arg))
         return formula
 
+    line_num = 0
     shorthand_file = open(input_file, "r")
     for line in shorthand_file:
+        line_num += 1
         try:
             if blank_line.match(line):
                 continue
             elif gate_re.match(line):
                 gate_name, formula_line = \
                         gate_re.match(line).group("name", "formula")
-                check_parentheses(formula_line)
+                check_parentheses(line)
                 fault_tree.add_gate(gate_name, get_formula(formula_line))
             elif prob_re.match(line):
                 event_name, prob = prob_re.match(line).group("name", "prob")
@@ -546,11 +560,11 @@ def parse_input_file(input_file, multi_top=False):
             else:
                 raise ParsingError("Cannot interpret the line.")
         except ParsingError as err:
-            raise ParsingError(str(err) + "\nIn the following line:\n" + line)
+            raise ParsingError(str(err) + "\nIn line %d:\n" % line_num + line)
         except FormatError as err:
-            raise FormatError(str(err) + "\nIn the following line:\n" + line)
+            raise FormatError(str(err) + "\nIn line %d:\n" % line_num + line)
         except FaultTreeError as err:
-            raise FaultTreeError(str(err) + "\nIn the following line:\n" + line)
+            raise FaultTreeError(str(err) + "\nIn line %d:\n" % line_num + line)
     if ft_name is None:
         raise FormatError("The fault tree name is not given.")
     fault_tree.name = ft_name
