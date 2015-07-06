@@ -115,7 +115,7 @@ class Initializer {
 
   /// Registers fault tree and component data like gates, events, parameters.
   /// @param[in] ft_node XML element defining the fault tree or component.
-  /// @param[in/out] component The component or fault tree container that is
+  /// @param[in,out] component The component or fault tree container that is
   ///                          the owner of the data.
   /// @param[in] base_path Series of ancestor containers in the path with dots.
   /// @throws ValidationError if there are issues with registering and defining
@@ -145,7 +145,7 @@ class Initializer {
 
   /// Creates a Boolean formula from the XML elements describing the formula
   /// with events and other nested formulas.
-  /// @param[in] gate_node XML element defining the formula.
+  /// @param[in] formula_node XML element defining the formula.
   /// @param[in] base_path Series of ancestor containers in the path with dots.
   /// @returns Boolean formula that is defined.
   /// @throws ValidationError if the defined formula is not valid.
@@ -154,7 +154,7 @@ class Initializer {
 
   /// Processes the arguments of a formula with nodes and formulas.
   /// @param[in] formula_node The XML element with children as arguments.
-  /// @param[in/out] formula The formula to be defined by the arguments.
+  /// @param[in,out] formula The formula to be defined by the arguments.
   /// @param[in] base_path Series of ancestor containers in the path with dots.
   /// @throws ValidationError if repeated arguments are identified.
   void ProcessFormula(const xmlpp::Element* formula_node,
