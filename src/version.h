@@ -5,7 +5,7 @@
 #define SCRAM_SRC_VERSION_H_
 
 #define SCRAM_VERSION_MAJOR 0  ///< Indicate major API change after 1.0.0
-#define SCRAM_VERSION_MINOR 7  ///< New features and improvement.
+#define SCRAM_VERSION_MINOR 8  ///< New features and improvement.
 #define SCRAM_VERSION_MICRO 0  ///< Bug fixes.
 
 namespace scram {
