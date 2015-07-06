@@ -6,6 +6,7 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <boost/shared_ptr.hpp>
@@ -17,7 +18,7 @@ namespace scram {
 
 /// @class Grapher
 /// Provides graphing instruction output to other tools.
-/// Currently operate with Fault Trees only.
+/// Currently operates with Fault Trees only.
 class Grapher {
  public:
   typedef boost::shared_ptr<Gate> GatePtr;

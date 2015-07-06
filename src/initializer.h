@@ -6,6 +6,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <boost/shared_ptr.hpp>
@@ -19,6 +20,7 @@ namespace scram {
 
 class Element;
 class FaultTree;
+class Component;
 class CcfGroup;
 class Expression;
 class Formula;
@@ -36,7 +38,7 @@ class Initializer {
   /// Prepares common information to be used by the future input file
   /// constructs, for example, mission time.
   /// @param[in] settings Analysis settings.
-  Initializer(const Settings& settings);
+  explicit Initializer(const Settings& settings);
 
   /// Reads input files with the structure of analysis constructs.
   /// Initializes the analysis model from the given input files.
@@ -48,7 +50,7 @@ class Initializer {
   void ProcessInputFiles(const std::vector<std::string>& xml_files);
 
   /// @returns The model build from the input files.
-  inline ModelPtr model() { return model_; }
+  inline ModelPtr model() const { return model_; }
 
  private:
   typedef boost::shared_ptr<Element> ElementPtr;
@@ -58,8 +60,9 @@ class Initializer {
   typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
   typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
-  typedef boost::shared_ptr<FaultTree> FaultTreePtr;
   typedef boost::shared_ptr<CcfGroup> CcfGroupPtr;
+  typedef boost::shared_ptr<FaultTree> FaultTreePtr;
+  typedef boost::shared_ptr<Component> ComponentPtr;
   typedef boost::shared_ptr<Expression> ExpressionPtr;
   typedef boost::shared_ptr<Parameter> ParameterPtr;
 
@@ -78,7 +81,7 @@ class Initializer {
   /// @throws ValidationError if input contains errors.
   /// @throws ValueError if input values are not valid.
   /// @throws IOError if an input file is not accessible.
-  void ProcessInputFile(std::string xml_file);
+  void ProcessInputFile(const std::string& xml_file);
 
   /// Processes definitions of elements that are left to be determined later.
   /// @throws ValidationError if elements contain undefined dependencies.
@@ -95,7 +98,31 @@ class Initializer {
 
   /// Defines a fault tree for the analysis.
   /// @param[in] ft_node XML element defining the fault tree.
+  /// @throws ValidationError if there are issues with registering and defining
+  ///                         the fault tree and its data like gates and events.
   void DefineFaultTree(const xmlpp::Element* ft_node);
+
+  /// Defines a component container.
+  /// @param[in] component_node XML element defining the component.
+  /// @param[in] base_path Series of ancestor containers in the path with dots.
+  /// @param[in] public_container A flag for the parent container's role.
+  /// @returns Component that is ready for registration.
+  /// @throws ValidationError if there are issues with registering and defining
+  ///                         the component and its data like gates and events.
+  ComponentPtr DefineComponent(const xmlpp::Element* component_node,
+                               const std::string& base_path,
+                               bool public_container = true);
+
+  /// Registers fault tree and component data like gates, events, parameters.
+  /// @param[in] ft_node XML element defining the fault tree or component.
+  /// @param[in/out] component The component or fault tree container that is
+  ///                          the owner of the data.
+  /// @param[in] base_path Series of ancestor containers in the path with dots.
+  /// @throws ValidationError if there are issues with registering and defining
+  ///                         the component's data like gates and events.
+  void RegisterFaultTreeData(const xmlpp::Element* ft_node,
+                             const ComponentPtr& component,
+                             const std::string& base_path);
 
   /// Processes model data with definitions of events and analysis.
   /// @param[in] model_data XML node with model data description.
@@ -103,9 +130,13 @@ class Initializer {
 
   /// Registers a gate for later definition.
   /// @param[in] gate_node XML element defining the gate.
-  /// @param[in,out] ft FaultTree under which this gate belongs to.
+  /// @param[in] base_path Series of ancestor containers in the path with dots.
+  /// @param[in] public_container A flag for the parent container's role.
+  /// @returns Pointer to the registered gate.
   /// @throws ValidationError if an event with the same name is already defined.
-  void RegisterGate(const xmlpp::Element* gate_node, const FaultTreePtr& ft);
+  GatePtr RegisterGate(const xmlpp::Element* gate_node,
+                       const std::string& base_path = "",
+                       bool public_container = true);
 
   /// Defines a gate for this analysis.
   /// @param[in] gate_node XML element defining the gate.
@@ -115,44 +146,30 @@ class Initializer {
   /// Creates a Boolean formula from the XML elements describing the formula
   /// with events and other nested formulas.
   /// @param[in] gate_node XML element defining the formula.
-  /// @returns Boolean formula that is registered.
+  /// @param[in] base_path Series of ancestor containers in the path with dots.
+  /// @returns Boolean formula that is defined.
   /// @throws ValidationError if the defined formula is not valid.
-  FormulaPtr GetFormula(const xmlpp::Element* formula_node);
+  FormulaPtr GetFormula(const xmlpp::Element* formula_node,
+                        const std::string& base_path);
 
   /// Processes the arguments of a formula with nodes and formulas.
   /// @param[in] formula_node The XML element with children as arguments.
   /// @param[in/out] formula The formula to be defined by the arguments.
+  /// @param[in] base_path Series of ancestor containers in the path with dots.
   /// @throws ValidationError if repeated arguments are identified.
   void ProcessFormula(const xmlpp::Element* formula_node,
-                      const FormulaPtr& formula);
-
-  /// Process [event name=id] cases inside of a one layer formula description.
-  /// @param[in] event XML element defining this event.
-  /// @param[out] child The child the currently processed formula.
-  void ProcessFormulaEvent(const xmlpp::Element* event, EventPtr& child);
-
-  /// Process [basic-event name=id] cases inside of a one layer
-  /// formula description.
-  /// @param[in] event XML element defining this event.
-  /// @param[out] child The child the currently processed formula.
-  void ProcessFormulaBasicEvent(const xmlpp::Element* event, EventPtr& child);
-
-  /// Process [house-event name=id] cases inside of a one layer
-  /// formula description.
-  /// @param[in] event XML element defining this event.
-  /// @param[out] child The child the currently processed formula.
-  void ProcessFormulaHouseEvent(const xmlpp::Element* event, EventPtr& child);
-
-  /// Process [gate name=id]cases inside of a one layer
-  /// formula description.
-  /// @param[in] event XML element defining this event.
-  /// @param[out] child The child the currently processed formula.
-  void ProcessFormulaGate(const xmlpp::Element* event, EventPtr& child);
+                      const FormulaPtr& formula,
+                      const std::string& base_path);
 
   /// Registers a basic event for later definition.
   /// @param[in] event_node XML element defining the event.
+  /// @param[in] base_path Series of ancestor containers in the path with dots.
+  /// @param[in] public_container A flag for the parent container's role.
+  /// @returns Pointer to the registered basic event.
   /// @throws ValidationError if an event with the same name is already defined.
-  void RegisterBasicEvent(const xmlpp::Element* event_node);
+  BasicEventPtr RegisterBasicEvent(const xmlpp::Element* event_node,
+                                   const std::string& base_path = "",
+                                   bool public_container = true);
 
   /// Defines a basic event for this analysis.
   /// @param[in] event_node XML element defining the event.
@@ -162,13 +179,23 @@ class Initializer {
 
   /// Defines and adds a house event for this analysis.
   /// @param[in] event_node XML element defining the event.
+  /// @param[in] base_path Series of ancestor containers in the path with dots.
+  /// @param[in] public_container A flag for the parent container's role.
+  /// @returns Pointer to the registered house event.
   /// @throws ValidationError if an event with the same name is already defined.
-  void DefineHouseEvent(const xmlpp::Element* event_node);
+  HouseEventPtr DefineHouseEvent(const xmlpp::Element* event_node,
+                                 const std::string& base_path = "",
+                                 bool public_container = true);
 
   /// Registers a variable or parameter.
   /// @param[in] param_node XML element defining the parameter.
+  /// @param[in] base_path Series of ancestor containers in the path with dots.
+  /// @param[in] public_container A flag for the parent container's role.
+  /// @returns Pointer to the registered parameter.
   /// @throws ValidationError if the parameter is already registered.
-  void RegisterParameter(const xmlpp::Element* param_node);
+  ParameterPtr RegisterParameter(const xmlpp::Element* param_node,
+                                 const std::string& base_path = "",
+                                 bool public_container = true);
 
   /// Defines a variable or parameter.
   /// @param[in] param_node XML element defining the parameter.
@@ -178,32 +205,49 @@ class Initializer {
 
   /// Processes Expression definitions in input file.
   /// @param[in] expr_element XML expression element containing the definition.
-  ExpressionPtr GetExpression(const xmlpp::Element* expr_element);
+  /// @param[in] base_path Series of ancestor containers in the path with dots.
+  /// @throws ValidationError if there are problems with getting the expression.
+  ExpressionPtr GetExpression(const xmlpp::Element* expr_element,
+                              const std::string& base_path);
 
   /// Processes Constant Expression definitions in input file.
   /// @param[in] expr_element XML expression element containing the definition.
+  /// @param[in] base_path Series of ancestor containers in the path with dots.
   /// @param[out] expression Expression described in XML input expression node.
   /// @returns true if expression was found and processed.
   bool GetConstantExpression(const xmlpp::Element* expr_element,
+                             const std::string& base_path,
                              ExpressionPtr& expression);
 
   /// Processes Parameter Expression definitions in input file.
   /// @param[in] expr_element XML expression element containing the definition.
+  /// @param[in] base_path Series of ancestor containers in the path with dots.
   /// @param[out] expression Expression described in XML input expression node.
   /// @returns true if expression was found and processed.
+  /// @throws ValidationError if the parameter variable is not reachable.
   bool GetParameterExpression(const xmlpp::Element* expr_element,
+                              const std::string& base_path,
                               ExpressionPtr& expression);
 
   /// Processes Distribution deviate expression definitions in input file.
   /// @param[in] expr_element XML expression element containing the definition.
+  /// @param[in] base_path Series of ancestor containers in the path with dots.
   /// @param[out] expression Expression described in XML input expression node.
   /// @returns true if expression was found and processed.
   bool GetDeviateExpression(const xmlpp::Element* expr_element,
+                            const std::string& base_path,
                             ExpressionPtr& expression);
 
   /// Registers a common cause failure group for later definition.
   /// @param[in] ccf_node XML element defining CCF group.
-  void RegisterCcfGroup(const xmlpp::Element* ccf_node);
+  /// @param[in] base_path Series of ancestor containers in the path with dots.
+  /// @param[in] public_container A flag for the parent container's role.
+  /// @returns Pointer to the registered CCF group.
+  /// @throws ValidationError for problems with registering the group and
+  ///         its members, for example, duplication or missing information.
+  CcfGroupPtr RegisterCcfGroup(const xmlpp::Element* ccf_node,
+                               const std::string& base_path = "",
+                               bool public_container = true);
 
   /// Defines a common cause failure group for the analysis.
   /// @param[in] ccf_node XML element defining CCF group.
@@ -228,6 +272,8 @@ class Initializer {
   /// Defines factor and adds it to CCF group.
   /// @param[in] factor_node XML element containing one factor.
   /// @param[in,out] ccf_group CCF group to be defined by the given factors.
+  /// @throws ValidationError if there are problems with level numbers or
+  ///         factors for specific CCF models.
   void DefineCcfFactor(const xmlpp::Element* factor_node,
                        const CcfGroupPtr& ccf_group);
 
@@ -264,6 +310,9 @@ class Initializer {
 
   /// Parsers with all documents saved for later access.
   std::vector<boost::shared_ptr<XMLParser> > parsers_;
+
+  /// Map roots of documents to files. This is for error reporting.
+  std::map<const xmlpp::Node*, std::string> doc_to_file_;
 
   /// Elements that are defined on the second pass.
   std::vector<std::pair<ElementPtr, const xmlpp::Element*> > tbd_elements_;

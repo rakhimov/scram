@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<report>
+  <information>
+    <software name="SCRAM" version="0.7.0"/>
+    <time>2015-Jul-03 12:08:46</time>
+    <performance>
+      <calculation-time name="TopEvent">
+        <minimal-cut-set>0.000693</minimal-cut-set>
+        <probability>6.9e-05</probability>
+        <importance>8.2e-05</importance>
+      </calculation-time>
+    </performance>
+    <calculated-quantity name="Minimal Cut Set Analysis" definition="Groups of events sufficient for a top event failure"/>
+    <calculation-method name="MOCUS">
+      <limits>
+        <number-of-basic-events>20</number-of-basic-events>
+      </limits>
+    </calculation-method>
+    <calculated-quantity name="Probability Analysis" definition="Quantitative analysis of failure probability" approximation="no"/>
+    <calculation-method name="Numerical Probability">
+      <limits>
+        <mission-time>8760</mission-time>
+        <cut-off>1e-08</cut-off>
+        <number-of-sums>7</number-of-sums>
+      </limits>
+    </calculation-method>
+    <calculated-quantity name="Importance Analysis" definition="Quantitative analysis of contributions and importance of events."/>
+    <model-features>
+      <gates>3</gates>
+      <basic-events>4</basic-events>
+      <house-events>0</house-events>
+      <ccf-groups>0</ccf-groups>
+      <fault-trees>1</fault-trees>
+    </model-features>
+  </information>
+  <results>
+    <sum-of-products name="TopEvent" basic-events="4" products="4" probability="0.7225">
+      <product order="2" probability="0.49" contribution="0.3402778">
+        <basic-event name="PumpOne"/>
+        <basic-event name="PumpTwo"/>
+      </product>
+      <product order="2" probability="0.35" contribution="0.2430556">
+        <basic-event name="PumpOne"/>
+        <basic-event name="ValveTwo"/>
+      </product>
+      <product order="2" probability="0.35" contribution="0.2430556">
+        <basic-event name="PumpTwo"/>
+        <basic-event name="ValveOne"/>
+      </product>
+      <product order="2" probability="0.25" contribution="0.1736111">
+        <basic-event name="ValveOne"/>
+        <basic-event name="ValveTwo"/>
+      </product>
+    </sum-of-products>
+    <importance name="TopEvent" basic-events="4">
+      <basic-event name="PumpOne" DIF="0.4118" MIF="0.425" CIF="0.7" RRW="1.7" RAW="1.176"/>
+      <basic-event name="PumpTwo" DIF="0.4118" MIF="0.425" CIF="0.7" RRW="1.7" RAW="1.176"/>
+      <basic-event name="ValveOne" DIF="0.1765" MIF="0.255" CIF="0.2143" RRW="1.214" RAW="1.176"/>
+      <basic-event name="ValveTwo" DIF="0.1765" MIF="0.255" CIF="0.2143" RRW="1.214" RAW="1.176"/>
+    </importance>
+  </results>
+</report>

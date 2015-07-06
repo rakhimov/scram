@@ -312,7 +312,7 @@ void ProbabilityAnalysis::PerformImportanceAnalysis() {
     // Restore the probability.
     iprobs_[*it] = int_to_basic_[*it]->p();
 
-    // Mapped vector for importances.
+    // Mapped vector for importance factors.
     std::vector<double> imp;
     // Fussel-Vesely Diagnosis importance factor.
     imp.push_back(1 - p_not_e / p_total_);

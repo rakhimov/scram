@@ -58,16 +58,10 @@ generation tend to greatly increase the execution time because of the need to
 check for cycles. If the number of gates and common gates are kept constant,
 the generation time scales linearly with the number of basic events.
 
-The average time complexity is approximately
-
-    .. math::
-
-        O(N) + O((N/Ratio)^2*\exp(-AvgChildren/Ratio)) + O(CommonG*\exp(CommonB))
-
-It is possible to generate a 100,000-basic-event fault tree in less than a minute;
-however, to generate more complex fault trees, it is recommended to use Cython_.
-Cython can convert the fault tree generator script into C code, which can be
-compiled into a faster executable. This faster executable is capable of
+It is possible to generate a 100,000-basic-event fault tree in less than a
+minute; however, to generate more complex fault trees, it is recommended to use
+Cython_. Cython can convert the fault tree generator script into C code, which
+can be compiled into a faster executable. This faster executable is capable of
 generating million-basic-event fault trees in few minutes.
 
 .. _Cython:

@@ -5,18 +5,34 @@
 #include <sstream>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/assign.hpp>
 #include <boost/pointer_cast.hpp>
+
+#include "ccf_group.h"
 
 namespace scram {
 
-Event::Event(std::string id, std::string name)
-    : id_(id),
-      name_(name),
-      orphan_(true),
-      container_("") {}
+const std::set<std::string> Formula::two_or_more_ =
+    boost::assign::list_of("and") ("or") ("nand") ("nor");
 
-Gate::Gate(std::string id)
-    : Event(id),
+const std::set<std::string> Formula::single_ =
+    boost::assign::list_of("not") ("null");
+
+Event::Event(const std::string& name, const std::string& base_path,
+             bool is_public)
+    : Role::Role(is_public, base_path),
+      name_(name),
+      orphan_(true) {
+  assert(name != "");
+  id_ = is_public ? name : base_path + "." + name;  // Unique combination.
+  boost::to_lower(id_);
+}
+
+Event::~Event() {}  // Empty body for pure virtual destructor.
+
+Gate::Gate(const std::string& name, const std::string& base_path,
+           bool is_public)
+    : Event(name, base_path, is_public),
       mark_("") {}
 
 void Gate::Validate() {
@@ -25,7 +41,8 @@ void Gate::Validate() {
     const Attribute* attr = &this->GetAttribute("flavor");
     if (attr->value == "inhibit") {
       if (formula_->num_args() != 2) {
-        throw ValidationError(this->name() + "INHIBIT gate must have only 2 children");
+        throw ValidationError(this->name() +
+                              "INHIBIT gate must have only 2 children");
       }
 
       std::stringstream msg;
@@ -54,46 +71,7 @@ void Gate::Validate() {
   }
 }
 
-void Formula::Validate() {
-  // Formulas that should have two or more arguments.
-  std::set<std::string> two_or_more;
-  two_or_more.insert("and");
-  two_or_more.insert("or");
-  two_or_more.insert("nand");
-  two_or_more.insert("nor");
-
-  // Formulas that should have only one argument.
-  std::set<std::string> single;
-  single.insert("null");
-  single.insert("not");
-  assert(two_or_more.count(type_) || single.count(type_) ||
-         type_ == "atleast" || type_ == "xor");
-
-  std::string form = type_;  // Copying for manipulations.
-
-  int size = formula_args_.size() + event_args_.size();
-  std::stringstream msg;
-  if (two_or_more.count(form) && size < 2) {
-    boost::to_upper(form);
-    msg << form << " formula must have 2 or more arguments.";
-
-  } else if (single.count(form) && size != 1) {
-    boost::to_upper(form);
-    msg << form << " formula must have only one argument.";
-
-  } else if (form == "xor" && size != 2) {
-    boost::to_upper(form);
-    msg << form << " formula must have exactly 2 arguments.";
-
-  } else if (form == "atleast" && size <= vote_number_) {
-    boost::to_upper(form);
-    msg << form << " formula must have more arguments than its vote number "
-        << vote_number_ << ".";
-  }
-  if (!msg.str().empty()) throw ValidationError(msg.str());
-}
-
-int Formula::vote_number() {
+int Formula::vote_number() const {
   if (vote_number_ == -1) {
     std::string msg = "Vote number is not set for this formula.";
     throw LogicError(msg);
@@ -116,34 +94,61 @@ void Formula::vote_number(int vnumber) {
   vote_number_ = vnumber;
 }
 
-void Formula::AddArgument(const boost::shared_ptr<Event>& event) {
-  if (event_args_.count(event->id())) {
-    std::string msg = "Trying to re-insert an event as an argument";
-    throw LogicError(msg);
-  }
-  event_args_.insert(std::make_pair(event->id(), event));
-}
-
-void Formula::AddArgument(const boost::shared_ptr<Formula>& formula) {
-  if (formula_args_.count(formula)) {
-    std::string msg = "Trying to re-insert a formula as an argument";
-    throw LogicError(msg);
-  }
-  formula_args_.insert(formula);
-}
-
-const std::map<std::string, boost::shared_ptr<Event> >& Formula::event_args() {
+const std::map<std::string, boost::shared_ptr<Event> >& Formula::event_args()
+  const {
   if (event_args_.empty() && formula_args_.empty()) {
     throw LogicError("Formula does not have arguments.");
   }
   return event_args_;
 }
 
-const std::set<boost::shared_ptr<Formula> >& Formula::formula_args() {
+const std::set<boost::shared_ptr<Formula> >& Formula::formula_args() const {
   if (event_args_.empty() && formula_args_.empty()) {
     throw LogicError("Formula does not have arguments.");
   }
   return formula_args_;
+}
+
+void Formula::AddArgument(const boost::shared_ptr<Event>& event) {
+  if (event_args_.count(event->id())) {
+    throw DuplicateArgumentError("Duplicate argument " + event->name());
+  }
+  event_args_.insert(std::make_pair(event->id(), event));
+}
+
+void Formula::AddArgument(const boost::shared_ptr<Formula>& formula) {
+  if (formula_args_.count(formula)) {
+    throw LogicError("Trying to re-insert a formula as an argument");
+  }
+  formula_args_.insert(formula);
+}
+
+void Formula::Validate() {
+  assert(two_or_more_.count(type_) || single_.count(type_) ||
+         type_ == "atleast" || type_ == "xor");
+
+  std::string form = type_;  // Copying for manipulations.
+
+  int size = formula_args_.size() + event_args_.size();
+  std::stringstream msg;
+  if (two_or_more_.count(form) && size < 2) {
+    boost::to_upper(form);
+    msg << form << " formula must have 2 or more arguments.";
+
+  } else if (single_.count(form) && size != 1) {
+    boost::to_upper(form);
+    msg << form << " formula must have only one argument.";
+
+  } else if (form == "xor" && size != 2) {
+    boost::to_upper(form);
+    msg << form << " formula must have exactly 2 arguments.";
+
+  } else if (form == "atleast" && size <= vote_number_) {
+    boost::to_upper(form);
+    msg << form << " formula must have more arguments than its vote number "
+        << vote_number_ << ".";
+  }
+  if (!msg.str().empty()) throw ValidationError(msg.str());
 }
 
 void Formula::GatherNodesAndConnectors() {
@@ -163,5 +168,14 @@ void Formula::GatherNodesAndConnectors() {
   }
   gather_ = false;
 }
+
+PrimaryEvent::~PrimaryEvent() {}  // Empty body for pure virtual destructor.
+
+CcfEvent::CcfEvent(const std::string& name,
+                   const CcfGroup* ccf_group,
+                   const std::vector<std::string>& member_names)
+    : BasicEvent(name, ccf_group->base_path(), ccf_group->is_public()),
+      ccf_group_(ccf_group),
+      member_names_(member_names) {}
 
 }  // namespace scram

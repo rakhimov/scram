@@ -33,21 +33,22 @@ Steps in XML Input Validation
 #. An XML input file is validated by RelaxNG_ against the :ref:`schema`.
 #. The fault tree validation assumptions/requirements:
 
-    - Event names are not case sensitive.
-    - Trailing white spaces are ignored.
-    - Names should conform to 'XML NCName datatype' not contain spaces
-      and some other special characters.
-    - Users are advised not to use special words and characters,
-      such as "NOT", "-", ".", ",", "[", "]".
-    - Names must be unique if they are public by default.
-    - Names must be unique only locally if they are private. [not supported]
-    - Proper 'include directive' formatting. [not supported]
+    - Event names and references are not case sensitive.
+    - Leading and trailing whitespace characters are trimmed.
+    - Names and references should conform to the rules defined in
+      :ref:`naming_rules` section.
+    - Public names must be unique globally, and private names must be unique
+      locally within containers.
+    - References are followed according to the public and private roles
+      described in the OpenPSA MEF section
+      "IV.3.2. Solving Name Conflicts: Public versus Private Elements".
 
 #. Additional validation of fault trees and values of parameters is performed:
 
-    - Each gate has a correct number of children.
-    - The same child appearing twice or more for one parent is an error.
-    - Values of parameters are correct, i.e., non-negative for probabilities.
+    - Each gate has the correct number of children.
+    - The same child appearing two or more time for one parent is an error.
+    - Values of expressions and parameters are correct, i.e., non-negative for
+      probabilities.
     - All events must be explicitly defined for probability calculations.
 
 #. Error messages (a file name, line numbers, types of errors):
@@ -61,6 +62,34 @@ Steps in XML Input Validation
 
     - Orphan primary events.
     - Unused parameters.
+
+
+.. _naming_rules:
+
+Identifiers and References
+--------------------------
+
+Names are used as identifiers for many constructs, such as events and
+parameters. To avoid ambiguity and achieve consistency, names must conform to
+the intersection of the following rules.
+
+- Consistent with `XML NCName datatype`_
+
+    * The first character must be alphabetic.
+    * May contain alphanumeric characters and special characters like "_", "-".
+    * No whitespace or other special characters like ":", ",", "/", etc.
+
+- No double dashes ("--")
+- No trailing dash
+- No periods (".")
+
+References to constructs, such as gates, events, and parameters, may include
+names of fault trees or components to access public or private members. This
+feature requires a period (".") between names; thus references may follow the
+pattern ("fault_tree.component.event").
+
+.. _`XML NCName datatype`:
+    http://stackoverflow.com/questions/1631396/what-is-an-xsncname-type-and-when-should-it-be-used
 
 
 .. _schema:

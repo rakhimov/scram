@@ -59,8 +59,10 @@ to identify the supported and unsupported features.
 
 - Label
 - Attributes
+- Public and Private Roles
 - Fault Tree Layer
 
+    * Components
     * Basic events
     * House events
 
@@ -70,7 +72,7 @@ to identify the supported and unsupported features.
 
         + Nested formulae
 
-- Model data
+- Model Data
 - Common Cause Failure Groups
 
     * beta-factor
@@ -92,13 +94,15 @@ to identify the supported and unsupported features.
 Deviations from OpenPSA MEF
 ===========================
 
-- Names are not case-sensitive.
+- Names and references are not case-sensitive and restricted to fewer
+  characters and combinations. :ref:`naming_rules` section contains more
+  information on these restrictions.
 - House events must be defined explicitly for analysis with probability
   information.
 - The correct number of a gate's children is required.
 - Orphan primary events are reported as warning.
 - Unused parameters are reported as warning.
-- Redefinition of events is considered an error instead of warning.
+- Redefinition of containers, events, and parameters is considered an error.
 - Common cause model levels for factors are required and must be strictly
   sequential in ascending order.
 - Attributes are not inherited.

@@ -102,7 +102,7 @@ class SimpleGate {
   int type_;  ///< Type of this gate.
   std::vector<int> basic_events_;  ///< Container of basic events' indices.
   std::vector<int> modules_;  ///< Container of modules' indices.
-  std::vector<SimpleGatePtr> gates_;  ///< Containter of child gates.
+  std::vector<SimpleGatePtr> gates_;  ///< Container of child gates.
   static int limit_order_;  ///< The limit on the order of minimal cut sets.
 };
 
@@ -113,7 +113,7 @@ class IndexedGate;
 /// @class IndexedFaultTree
 /// This class provides simpler representation of a fault tree
 /// that takes into account the indices of events instead of ids and pointers.
-/// The class provides main operations over a fault tree to generate minmal
+/// The class provides main operations over a fault tree to generate minimal
 /// cut sets.
 class IndexedFaultTree {
  public:

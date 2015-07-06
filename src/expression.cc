@@ -3,6 +3,7 @@
 /// description.
 #include "expression.h"
 
+#include <boost/algorithm/string.hpp>
 #include <boost/pointer_cast.hpp>
 
 #include "error.h"
@@ -23,6 +24,18 @@ void Expression::GatherNodesAndConnectors() {
     }
   }
   gather_ = false;
+}
+
+Parameter::Parameter(const std::string& name, const std::string& base_path,
+                     bool is_public)
+      : Role::Role(is_public, base_path),
+        name_(name),
+        mark_(""),
+        unused_(true),
+        unit_(kUnitless) {
+  assert(name != "");
+  id_ = is_public ? name : base_path + "." + name;  // Unique combination.
+  boost::to_lower(id_);
 }
 
 void ExponentialExpression::Validate() {

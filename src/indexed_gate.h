@@ -24,6 +24,12 @@ class IndexedGate {
   /// @warning The index is not validated upon instantiation.
   explicit IndexedGate(int index);
 
+  /// @returns Type of this gate. 1 is OR, 2 is AND.
+  inline int type() const {
+    assert(type_ == 1 || type_ == 2);
+    return type_;
+  }
+
   /// Sets the gate type information.
   /// 1 is for OR gate.
   /// 2 is for AND gate.
@@ -33,19 +39,13 @@ class IndexedGate {
     type_ = t;
   }
 
-  /// @returns Type of this gate. 1 is OR, 2 is AND.
-  inline int type() const {
-    assert(type_ == 1 || type_ == 2);
-    return type_;
-  }
+  /// @returns String type of this gate.
+  inline const std::string& string_type() const { return string_type_; }
 
   /// Sets any legal string type of original gate.
   /// This can be helpful for initialization and additional information.
   /// @param[in] type The string (OR, AND, ...) type for this gate.
-  inline void string_type(std::string type) { string_type_ = type; }
-
-  /// @returns String type of this gate.
-  inline std::string string_type() const { return string_type_; }
+  inline void string_type(const std::string& type) { string_type_ = type; }
 
   /// @returns Vote number.
   inline int vote_number() const { return vote_number_; }
@@ -54,6 +54,30 @@ class IndexedGate {
   /// the gate type is ATLEAST.
   /// @param[in] number The vote number of ATLEAST gate.
   inline void vote_number(int number) { vote_number_ = number; }
+
+  /// @returns The index of this gate.
+  inline int index() const { return index_; }
+
+  /// Sets the index of this gate.
+  /// @param[in] index Positive index of this gate.
+  inline void index(int index) {
+    assert(index > 0);
+    index_ = index;
+  }
+
+  /// @returns children of this gate.
+  inline const std::set<int>& children() const { return children_; }
+
+  /// Directly assigns children for this gate.
+  /// @param[in] children A new set of children for this gate.
+  inline void children(const std::set<int>& children) { children_ = children; }
+
+  /// @returns The state of this gate, which is either "null", or "unity", or
+  ///          "normal" by default.
+  inline const std::string& state() const { return state_; }
+
+  /// @returns parents of this gate.
+  inline const std::set<int>& parents() { return parents_; }
 
   /// This function is used to initiate this gate with children.
   /// It is assumed that children are passed in ascending order from another
@@ -96,7 +120,7 @@ class IndexedGate {
   inline void EraseAllChildren() { children_.clear(); }
 
   /// Removes a child from the children container. The passed child index
-  /// must be in this gate's children conatainer and initialized.
+  /// must be in this gate's children container and initialized.
   /// @param[in] child The positive or negative index of the existing child.
   inline void EraseChild(int child) {
     assert(children_.count(child));
@@ -132,30 +156,6 @@ class IndexedGate {
     parents_.erase(index);
   }
 
-  /// Sets the index of this gate.
-  /// @param[in] index Positive index of this gate.
-  inline void index(int index) {
-    assert(index > 0);
-    index_ = index;
-  }
-
-  /// @returns The index of this gate.
-  inline int index() const { return index_; }
-
-  /// Directly assigns children for this gate.
-  /// @param[in] children A new set of children for this gate.
-  inline void children(const std::set<int>& children) { children_ = children; }
-
-  /// @returns children of this gate.
-  inline const std::set<int>& children() const { return children_; }
-
-  /// @returns The state of this gate, which is either "null", or "unity", or
-  ///          "normal" by default.
-  inline std::string state() const { return state_; }
-
-  /// @returns parents of this gate.
-  inline const std::set<int>& parents() { return parents_; }
-
   /// Registers the visit time for this gate upon tree traversal.
   /// This information can be used to detect dependencies.
   /// @param[in] time The visit time of this gate.
@@ -175,17 +175,17 @@ class IndexedGate {
   }
 
   /// @returns The time when this gate was first encountered or entered.
-  inline int EnterTime() { return visits_[0]; }
+  inline int EnterTime() const { return visits_[0]; }
 
   /// @returns The exit time upon traversal of the tree.
-  inline int ExitTime() { return visits_[1]; }
+  inline int ExitTime() const { return visits_[1]; }
 
   /// @returns The last time this gate was visited.
-  inline int LastVisit() { return visits_[2] ? visits_[2] : visits_[1]; }
+  inline int LastVisit() const { return visits_[2] ? visits_[2] : visits_[1]; }
 
   /// @returns false if this gate was only visited once upon tree traversal.
   /// @returns true if this gate was revisited at one more time.
-  inline bool Revisited() { return visits_[2] ? true : false; }
+  inline bool Revisited() const { return visits_[2] ? true : false; }
 
  private:
   int type_;  ///< Type of this gate. Only two choices are allowed: OR, AND.
@@ -195,7 +195,7 @@ class IndexedGate {
   std::string state_;  ///< Indication if this gate is normal, null, or unity.
   int vote_number_;  ///< Vote number for atleast gate.
   std::set<int> parents_;  ///< Parents of this gate.
-  /// This is a traversal vector containing first, second, and last visits.
+  /// This is a traversal array containing first, second, and last visits.
   int visits_[3];
 };
 

@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <ctime>
 #include <sstream>
+#include <string>
 
 namespace scram {
 /// @def LOG(level)
@@ -28,7 +29,7 @@ namespace scram {
 /// @enum LogLevel
 /// Levels for log statements.
 enum LogLevel {  // The numbers are used for array indices.
-  ERROR = 0,  ///< Noncritical errors only.
+  ERROR = 0,  ///< Non-critical errors only.
   WARNING,  ///< Warnings for users, such as assumptions and corrections.
   INFO,  ///< Information for users, such as running time and complexity.
   // Debugging logs are structured depending on the code under execution.

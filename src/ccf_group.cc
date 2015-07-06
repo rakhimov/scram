@@ -4,22 +4,33 @@
 
 #include <sstream>
 
+#include <boost/algorithm/string.hpp>
+
 namespace scram {
 
-CcfGroup::CcfGroup(std::string name, std::string model)
-    : name_(name),
-      model_(model) {}
+CcfGroup::CcfGroup(const std::string& name, const std::string& model,
+                   const std::string& base_path, bool is_public)
+    : Role::Role(is_public, base_path),
+      name_(name),
+      model_(model) {
+  assert(name != "");
+  id_ = is_public ? name : base_path + "." + name;  // Unique combination.
+  boost::to_lower(id_);
+}
 
 void CcfGroup::AddMember(const BasicEventPtr& basic_event) {
+  std::string name = basic_event->name();
+  boost::to_lower(name);
   if (distribution_) {
     throw IllegalOperation("No more members accepted. The distribution for " +
                            name_ + " CCF group has already been defined.");
 
-  } else if (members_.count(basic_event->id())) {
-    throw LogicError("Basic event " + basic_event->name() + " is already" +
-                     " in " + name_ + " CCF group.");
   }
-  members_.insert(std::make_pair(basic_event->id(), basic_event));
+  if (members_.count(name)) {
+    throw DuplicateArgumentError("Duplicate member " + basic_event->name() +
+                                 " in " + name_ + " CCF group.");
+  }
+  members_.insert(std::make_pair(name, basic_event));
 }
 
 void CcfGroup::AddDistribution(const ExpressionPtr& distr) {
@@ -73,11 +84,12 @@ void CcfGroup::ApplyModel() {
   std::map<std::string, GatePtr> gates;
   std::map<std::string, BasicEventPtr>::const_iterator it_m;
   for (it_m = members_.begin(); it_m != members_.end(); ++it_m) {
-    GatePtr new_gate(new Gate(it_m->first));
-    FormulaPtr formula(new Formula("or"));
-    new_gate->formula(formula);
-    gates.insert(std::make_pair(new_gate->id(), new_gate));
-    it_m->second->ccf_gate(new_gate);
+    BasicEventPtr member = it_m->second;
+    GatePtr new_gate(
+        new Gate(member->name(), member->base_path(), member->is_public()));
+    new_gate->formula(FormulaPtr(new Formula("or")));
+    gates.insert(std::make_pair(it_m->first, new_gate));
+    member->ccf_gate(new_gate);
   }
 
   int max_level = factors_.back().first;  // Assumes that factors are
@@ -92,11 +104,14 @@ void CcfGroup::ApplyModel() {
   assert(!new_events.empty());
   std::map<BasicEventPtr, std::set<std::string> >::iterator it;
   for (it = new_events.begin(); it != new_events.end(); ++it) {
-    it->first->expression(probabilities.find(it->second.size())->second);
+    int level = it->second.size();
+    ExpressionPtr prob = probabilities.find(level)->second;
+    BasicEventPtr new_event = it->first;
+    new_event->expression(prob);
     // Add this basic event to the parent gates.
     std::set<std::string>::iterator it_l;
     for (it_l = it->second.begin(); it_l != it->second.end(); ++it_l) {
-      gates.find(*it_l)->second->formula()->AddArgument(it->first);
+      gates.find(*it_l)->second->formula()->AddArgument(new_event);
     }
   }
 }
@@ -112,7 +127,7 @@ void CcfGroup::ConstructCcfBasicEvents(
   assert(new_events->empty());
 
   std::set<std::set<std::string> > combinations;
-  std::set<std::string> comb;
+  std::set<std::string> comb;  // One combination.
   combinations.insert(comb);  // Empty set is needed for iteration.
 
   for (int i = 0; i < max_level; ++i) {
@@ -121,33 +136,26 @@ void CcfGroup::ConstructCcfBasicEvents(
     for (it = combinations.begin(); it != combinations.end(); ++it) {
       std::map<std::string, BasicEventPtr>::const_iterator it_m;
       for (it_m = members_.begin(); it_m != members_.end(); ++it_m) {
-        std::set<std::string> comb(*it);
-        comb.insert(it_m->first);
-        if (comb.size() > i) {
+        if (!it->count(it_m->first)) {
+          std::set<std::string> comb(*it);
+          comb.insert(it_m->first);
           next_level.insert(comb);
         }
       }
     }
     for (it = next_level.begin(); it != next_level.end(); ++it) {
-      std::string id = "[";
       std::string name = "[";
       std::vector<std::string> names;
       std::set<std::string>::const_iterator it_s;
       for (it_s = it->begin(); it_s != it->end();) {
-        id += *it_s;
-        name += members_.find(*it_s)->second->name();
-        names.push_back(members_.find(*it_s)->second->name());
+        std::string member_name = members_.find(*it_s)->second->name();
+        name += member_name;
+        names.push_back(member_name);
         ++it_s;
-        if (it_s != it->end()) {
-          id += " ";
-          name += " ";
-        }
+        if (it_s != it->end()) name += " ";
       }
-      id += "]";
       name += "]";
-      CcfEventPtr new_basic_event(new CcfEvent(id, name_, members_.size()));
-      new_basic_event->name(name);
-      new_basic_event->member_names(names);
+      CcfEventPtr new_basic_event(new CcfEvent(name, this, names));
       new_events->insert(std::make_pair(new_basic_event, *it));
     }
     combinations = next_level;
@@ -170,51 +178,16 @@ void BetaFactorModel::AddFactor(const ExpressionPtr& factor, int level) {
 void BetaFactorModel::ConstructCcfBasicEvents(
     int max_level,
     std::map<BasicEventPtr, std::set<std::string> >* new_events) {
-  typedef boost::shared_ptr<CcfEvent> CcfEventPtr;
-
-  // Getting the probability equation for independent events.
+  // This function is not optimized or efficient for beta-factor models.
   assert(CcfGroup::factors_.size() == 1);
-  std::string common_name = "[";  // Event name for common failure group.
-  std::string common_id = "[";  // Event id for common failure group.
-  std::set<std::string> all_events;  // Common failure group.
-  std::vector<std::string> names;  // Original names for CcfEvent.
+  std::map<BasicEventPtr, std::set<std::string> > all_events;
+  CcfGroup::ConstructCcfBasicEvents(max_level, &all_events);  // Standard case.
 
-  std::map<std::string, BasicEventPtr>::const_iterator it;
-  for (it = CcfGroup::members_.begin(); it != CcfGroup::members_.end();) {
-    // Create independent events.
-    std::string independent_name = "[" + it->second->name() + "]";
-    std::string independent_id = "[" + it->second->id() + "]";
-
-    CcfEventPtr independent(new CcfEvent(independent_id, name_,
-                                         members_.size()));
-    std::vector<std::string> single_name;
-    single_name.push_back(it->second->name());
-    independent->member_names(single_name);
-
-    independent->name(independent_name);
-
-    std::set<std::string> one_event;
-    one_event.insert(it->second->id());
-    new_events->insert(std::make_pair(independent, one_event));
-
-    all_events.insert(it->second->id());
-    names.push_back(it->second->name());
-
-    common_name += it->second->name();
-    common_id += it->second->id();
-    ++it;
-    if (it != CcfGroup::members_.end()) {
-      common_name += " ";
-      common_id += " ";
-    }
+  std::map<BasicEventPtr, std::set<std::string> >::iterator it;
+  for (it = all_events.begin(); it != all_events.end(); ++it) {
+    int level = it->second.size();  // Filter out only relevant levels.
+    if (level == 1 || level == max_level) new_events->insert(*it);
   }
-  common_id += "]";
-  common_name += "]";
-  CcfEventPtr common_failure(new CcfEvent(common_id, name_, members_.size()));
-  common_failure->member_names(names);
-  common_failure->name(common_name);
-  assert(all_events.size() == max_level);
-  new_events->insert(std::make_pair(common_failure, all_events));
 }
 
 void BetaFactorModel::CalculateProb(

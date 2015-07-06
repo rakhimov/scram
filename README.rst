@@ -15,7 +15,7 @@ After building the website and API documentation, they are uploaded to the
 The example merging steps with the *develop* branch:
 
     #. Run 'git merge develop'. Conflicts are expected.
-    #. Delete with 'git rm ' anything that is not in *doc/*, *src/*
+    #. Delete with 'git rm ' any new file that is not in *doc/*, *src/*
     #. Solve the other merge conflicts. (*README.rst*, for example)
     #. Finish merging.
 

@@ -4,13 +4,13 @@ If the performance becomes good enough to make the running times negligible,
 the case is removed. The running times are taken from the logs.
 
 System specs: Core i5-2410M, Ubuntu 14.04 64bit
-GCC version: 4.8.2
+GCC version: 4.8.4
 Boost version: 1.55
 Libxml2: 2.9.1
 
 If the current performance is not listed, then the best is the current.
 
------------ Input name [flags] [(results)] -----------
+----------- Input name [flags] (results) -----------
 
                     Best Achieved | Current Performance
 
@@ -101,10 +101,10 @@ Release build:
 
 ==================== Fault Tree Generation ================
 
----| -p 100000 -c 4 --reuse-g 0.1 --reuse-p 0.1 |---
+---| -p 100000 -c 3 --reuse-g 0.1 --reuse-p 0.1 |---
 Python script:
 --------------
-- Generation Time  8.7s  |
+- Generation Time  8.7s  |  20s
 
 
 ==================== Fault Tree Validation ================
@@ -112,4 +112,8 @@ Python script:
 ---| -p 300000 -c 4 --reuse-g 0.1 --reuse-p 0.1 |---
 Standard build:
 ---------------
-- Validation Time      37s  |
+- Parsing and Validation    37s  |  55s
+
+Release build:
+--------------
+- Parsing and Validation    34s  |

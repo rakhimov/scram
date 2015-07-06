@@ -15,16 +15,12 @@
 #include "event.h"
 #include "probability_analysis.h"
 
-class UncertaintyAnalysisTest;
-
 namespace scram {
 
 /// @class UncertaintyAnalysis
 /// Uncertainty analysis and statistics for top event or gate probabilities
 /// from minimal cut sets and probability distributions of basic events.
 class UncertaintyAnalysis : private ProbabilityAnalysis {
-  friend class ::UncertaintyAnalysisTest;
-
  public:
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
 

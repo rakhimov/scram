@@ -16,18 +16,13 @@
 #include "event.h"
 
 class ProbabilityAnalysisTest;
-class PerformanceTest;
 
 namespace scram {
-
-class Reporter;
 
 /// @class ProbabilityAnalysis
 /// Main quantitative analysis.
 class ProbabilityAnalysis {
   friend class ::ProbabilityAnalysisTest;
-  friend class ::PerformanceTest;
-  friend class Reporter;
 
  public:
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
@@ -84,6 +79,22 @@ class ProbabilityAnalysis {
 
   /// @returns Warnings generated upon analysis.
   inline const std::string warnings() const { return warnings_; }
+
+  /// @returns The container of basic events of supplied for the analysis.
+  inline const boost::unordered_map<std::string, BasicEventPtr>&
+      basic_events() const {
+    return basic_events_;
+  }
+
+  /// @returns The probability with the rare-event approximation.
+  /// @note The user should make sure that the analysis is actually done.
+  inline double p_rare() const { return p_rare_; }
+
+  /// @returns Analysis time spent on calculating the total probability.
+  inline double prob_analysis_time() const { return p_time_; }
+
+  /// @returns Analysis time spent on calculating the importance factors.
+  inline double imp_analysis_time() const { return imp_time_; }
 
  protected:
   /// Assigns an index to each basic event, and then populates with this

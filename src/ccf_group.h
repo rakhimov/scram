@@ -20,24 +20,40 @@
 namespace scram {
 
 /// @class CcfGroup
-/// Base class for all common cause failure models.
-class CcfGroup : public Element {
+/// Abstract base class for all common cause failure models.
+class CcfGroup : public Element, public Role {
  public:
   typedef boost::shared_ptr<Expression> ExpressionPtr;
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
 
+  /// Constructor to be used by derived classes.
+  /// @param[in] name The name of a CCF group.
+  /// @param[in] model CCF model of this group.
+  /// @param[in] base_path The series of containers to get this group.
+  /// @param[in] is_public Whether or not the group is public.
+  CcfGroup(const std::string& name, const std::string& model,
+           const std::string& base_path = "", bool is_public = true);
+
   virtual ~CcfGroup() {}
 
   /// @returns The name of this CCF group.
-  inline std::string name() { return name_; }
+  inline const std::string& name() const { return name_; }
+
+  /// @returns The identifier of this CCF group.
+  inline const std::string& id() const { return id_; }
 
   /// @returns The CCF model applied to this group.
-  inline std::string model() { return model_; }
+  inline const std::string& model() const { return model_; }
+
+  /// @returns Members of the CCF group with lower-case names as keys.
+  inline const std::map<std::string, BasicEventPtr>& members() const {
+    return members_;
+  }
 
   /// Adds a basic event into this CCF group.
   /// This function asserts that each basic event has unique string id.
   /// @param[in] basic_event A member basic event.
-  /// @throws LogicError if the passed basic event already in the group.
+  /// @throws DuplicateArgumentError if the basic event is already in the group.
   /// @throws IllegalOperation if the probability distribution for this
   ///                          CCF group is already defined. No more members
   ///                          are accepted.
@@ -79,11 +95,6 @@ class CcfGroup : public Element {
   typedef boost::shared_ptr<Gate> GatePtr;
   typedef boost::shared_ptr<Formula> FormulaPtr;
 
-  /// Constructor to be used by derived classes.
-  /// @param[in] name The name of a CCF group.
-  /// @param[in] model CCF model of this group.
-  CcfGroup(std::string name, std::string model);
-
   /// Creates new basic events from members. The new basic events
   /// are included in the database of new events.
   /// @param[in] max_level The max level for grouping.
@@ -93,7 +104,8 @@ class CcfGroup : public Element {
       std::map<BasicEventPtr, std::set<std::string> >* new_events);
 
   /// Calculates probabilities for new basic events representing failures
-  /// due to common cause.
+  /// due to common cause. Each derived common cause failure model must
+  /// implement this function with its own specific formulas and assumptions.
   /// @param[in] max_level The max level of grouping.
   /// @param[out] probabilities Expressions representing probabilities for
   ///                           each level of groupings for CCF events.
@@ -105,21 +117,14 @@ class CcfGroup : public Element {
   /// @returns n factorial.
   int Factorial(int n) { return n ? n * Factorial(n - 1) : 1; }
 
-  std::string name_;  ///< The name of CCF group.
+  std::string name_;  ///< The name of the CCF group.
+  std::string id_;  ///< The unique identifier of the CCF group.
   std::map<std::string, BasicEventPtr> members_;  ///< Members of CCF groups.
   ExpressionPtr distribution_;  ///< The probability distribution of the group.
   /// CCF factors for models to get CCF probabilities.
   std::vector<std::pair<int, ExpressionPtr> > factors_;
 
  private:
-  /// Default constructor should not be used.
-  /// All CCF models should be instantiated explicitly.
-  CcfGroup();
-  /// Restrict copy construction.
-  CcfGroup(const CcfGroup&);
-  /// Restrict copy assignment.
-  CcfGroup& operator=(const CcfGroup&);
-
   std::string model_;  ///< Common cause model type.
 };
 
@@ -130,7 +135,12 @@ class BetaFactorModel : public CcfGroup {
  public:
   /// Constructs the group and sets the model.
   /// @param[in] name The name for the group.
-  explicit BetaFactorModel(std::string name) : CcfGroup(name, "beta-factor") {}
+  /// @param[in] base_path The series of containers to get this group.
+  /// @param[in] is_public Whether or not the group is public.
+  explicit BetaFactorModel(const std::string& name,
+                           const std::string& base_path = "",
+                           bool is_public = true)
+      : CcfGroup(name, "beta-factor", base_path, is_public) {}
 
   /// Adds a CCF factor for the beta model. Only one factor is expected.
   /// @param[in] factor A factor for the CCF model.
@@ -155,7 +165,12 @@ class MglModel : public CcfGroup {
  public:
   /// Constructs the group and sets the model.
   /// @param[in] name The name for the group.
-  explicit MglModel(std::string name) : CcfGroup(name, "MGL") {}
+  /// @param[in] base_path The series of containers to get this group.
+  /// @param[in] is_public Whether or not the group is public.
+  explicit MglModel(const std::string& name,
+                    const std::string& base_path = "",
+                    bool is_public = true)
+      : CcfGroup(name, "MGL", base_path, is_public) {}
 
   /// Adds a CCF factor for the MGL model. The factor level must start
   /// from 2.
@@ -176,8 +191,12 @@ class AlphaFactorModel : public CcfGroup {
  public:
   /// Constructs the group and sets the model.
   /// @param[in] name The name for the group.
-  explicit AlphaFactorModel(std::string name)
-      : CcfGroup(name, "alpha-factor") {}
+  /// @param[in] base_path The series of containers to get this group.
+  /// @param[in] is_public Whether or not the group is public.
+  explicit AlphaFactorModel(const std::string& name,
+                            const std::string& base_path = "",
+                            bool is_public = true)
+      : CcfGroup(name, "alpha-factor", base_path, is_public) {}
 
  private:
   void CalculateProb(int max_level,
@@ -192,7 +211,12 @@ class PhiFactorModel : public CcfGroup {
  public:
   /// Constructs the group and sets the model.
   /// @param[in] name The name for the group.
-  explicit PhiFactorModel(std::string name) : CcfGroup(name, "phi-factor") {}
+  /// @param[in] base_path The series of containers to get this group.
+  /// @param[in] is_public Whether or not the group is public.
+  explicit PhiFactorModel(const std::string& name,
+                          const std::string& base_path = "",
+                          bool is_public = true)
+      : CcfGroup(name, "phi-factor", base_path, is_public) {}
 
   /// In addition to the default validation of CcfGroup, checks if
   /// the given factors' sum is 1.

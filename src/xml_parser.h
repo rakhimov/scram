@@ -25,7 +25,7 @@ class XMLParser {
   /// @param[in] schema The schema to validate against.
   void Validate(const std::stringstream& schema);
 
-  /// @return The parser's document.
+  /// @returns The parser's document.
   const xmlpp::Document* Document();
 
  private:

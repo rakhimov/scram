@@ -13,7 +13,7 @@
 
 namespace scram {
 
-Config::Config(std::string config_file) : output_path_("") {
+Config::Config(const std::string& config_file) : output_path_("") {
   std::ifstream file_stream(config_file.c_str());
   if (!file_stream) {
     throw IOError("The file '" + config_file + "' could not be loaded.");
@@ -147,7 +147,7 @@ void Config::SetLimits(const xmlpp::Element* limits) {
   }
 }
 
-bool Config::GetBoolFromString(std::string flag) {
+bool Config::GetBoolFromString(const std::string& flag) {
   assert(flag == "1" || flag == "true" || flag == "0" || flag == "false");
   if (flag == "1" || flag == "true") return true;
   return false;

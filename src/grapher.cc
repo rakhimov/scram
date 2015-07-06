@@ -2,6 +2,8 @@
 /// Implements Grapher.
 #include "grapher.h"
 
+#include <set>
+
 #include <boost/algorithm/string.hpp>
 #include <boost/assign.hpp>
 
@@ -10,14 +12,14 @@
 namespace scram {
 
 const std::map<std::string, std::string> Grapher::gate_colors_ =
-    boost::assign::map_list_of ("or", "blue") ("and", "green") ("not", "red")
-                               ("xor", "brown") ("inhibit", "yellow")
-                               ("atleast", "cyan") ("null", "gray")
-                               ("nor", "magenta") ("nand", "orange");
+    boost::assign::map_list_of("or", "blue") ("and", "green") ("not", "red")
+                              ("xor", "brown") ("inhibit", "yellow")
+                              ("atleast", "cyan") ("null", "gray")
+                              ("nor", "magenta") ("nand", "orange");
 
 const std::map<std::string, std::string> Grapher::event_colors_ =
-    boost::assign::map_list_of ("basic", "black") ("undeveloped", "blue")
-                               ("house", "green") ("conditional", "red");
+    boost::assign::map_list_of("basic", "black") ("undeveloped", "blue")
+                              ("house", "green") ("conditional", "red");
 
 void Grapher::GraphFaultTree(const GatePtr& top_event, bool prob_requested,
                              std::ostream& out) {
@@ -39,14 +41,14 @@ void Grapher::GraphFaultTree(const GatePtr& top_event, bool prob_requested,
   boost::unordered_map<EventPtr, int> node_repeat;
 
   // Populate intermediate and primary events of the top.
-  Grapher::GraphFormula(fta->top_event()->name() + "_R0",
+  Grapher::GraphFormula(fta->top_event()->id() + "_R0",
                         fta->top_event()->formula(),
                         &formulas, &node_repeat, out);
   // Do the same for all intermediate events.
   boost::unordered_map<std::string, GatePtr>::const_iterator it_inter;
   for (it_inter = fta->inter_events().begin();
        it_inter != fta->inter_events().end(); ++it_inter) {
-    std::string name = it_inter->second->name() + "_R0";
+    std::string name = it_inter->second->id() + "_R0";
     FormulaPtr formula = it_inter->second->formula();
     Grapher::GraphFormula(name, formula, &formulas, &node_repeat, out);
   }
@@ -80,13 +82,13 @@ void Grapher::GraphFormula(
       node_repeat->insert(std::make_pair(it_child->second, 0));
     }
     out << "\"" << formula_name << "\" -> "
-        << "\"" << it_child->second->name() << "_R"
+        << "\"" << it_child->second->id() << "_R"
         << node_repeat->find(it_child->second)->second << "\";\n";
   }
   // Deal with formulas.
   const std::set<FormulaPtr>* formula_args = &formula->formula_args();
   std::set<FormulaPtr>::const_iterator it_f;
-  int i = 1;  // Count fomulas for unique naming.
+  int i = 1;  // Count formulas for unique naming.
   for (it_f = formula_args->begin(); it_f != formula_args->end(); ++it_f) {
     std::stringstream unique_name;
     unique_name << formula_name << "._F" << i;  // Unique name.
@@ -111,12 +113,13 @@ void Grapher::FormatTopEvent(const GatePtr& top_event, std::ostream& out) {
   }
 
   boost::to_upper(gate);
-  out << "\"" <<  top_event->name()
+  out << "\"" <<  top_event->id()
       << "_R0\" [shape=ellipse, "
       << "fontsize=12, fontcolor=black, fontname=\"times-bold\", "
       << "color=" << gate_color << ", "
-      << "label=\"" << top_event->name() << "\\n"
-      << "{ " << gate;
+      << "label=\"" << top_event->name() << "\\n";
+  if (!top_event->is_public()) out << "-- private --\\n";
+  out << "{ " << gate;
   if (gate == "ATLEAST") {
     out << " " << top_event->formula()->vote_number()
         << "/" << top_event->formula()->num_args();
@@ -137,10 +140,11 @@ void Grapher::FormatIntermediateEvents(
 
     std::string gate_color = gate_colors_.find(gate)->second;
     boost::to_upper(gate);  // This is for graphing.
+    std::string id = it->second->id();
     std::string name = it->second->name();
     int repetition = node_repeat.find(it->second)->second;
     for (int i = 0; i <= repetition; ++i) {
-        out << "\"" << name << "_R" << i << "\"";
+        out << "\"" << id << "_R" << i << "\"";
       if (i == 0) {
         out << " [shape=box, ";
       } else {
@@ -149,8 +153,9 @@ void Grapher::FormatIntermediateEvents(
       }
       out << "fontsize=10, fontcolor=black, "
           << "color=" << gate_color << ", "
-          << "label=\"" << name << "\\n"  // This is a new line in the label.
-          << "{ " << gate;
+          << "label=\"" << name << "\\n";  // This is a new line in the label.
+      if (!it->second->is_public()) out << "-- private --\\n";
+      out << "{ " << gate;
       if (gate == "ATLEAST") {
         out << " " << it->second->formula()->vote_number()
             << "/" << it->second->formula()->num_args();
@@ -207,12 +212,13 @@ void Grapher::FormatPrimaryEvent(const PrimaryEventPtr& primary_event,
   }
   std::string color = event_colors_.find(type)->second;
   for (int i = 0; i <= repetition; ++i) {
-    out << "\"" << primary_event->name() << "_R" << i
+    out << "\"" << primary_event->id() << "_R" << i
         << "\" [shape=circle, "
         << "height=1, fontsize=10, fixedsize=true, "
         << "fontcolor=" << color
-        << ", " << "label=\"" << primary_event->name() << "\\n["
-        << type << "]" << prob_msg << "\"]\n";
+        << ", " << "label=\"" << primary_event->name() << "\\n";
+    if (!primary_event->is_public()) out << "-- private --\\n";
+    out << "[" << type << "]" << prob_msg << "\"]\n";
   }
 }
 
