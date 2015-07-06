@@ -52,7 +52,7 @@
 
   <define name="Identifier">
     <data type="NCName">
-      <param name="pattern">[^-.]+(-[^-.]+)*</param>
+      <param name="pattern">[^\-.]+(-[^\-.]+)*</param>
     </data>
   </define>
 
@@ -63,7 +63,7 @@
   <define name="reference">
     <attribute name="name">
       <data type="NCName">
-        <param name="pattern">([^-.]+(-[^-.]+)*)(\.\i[^-.]*(-[^-.]+)*)*</param>
+        <param name="pattern">([^\-.]+(-[^\-.]+)*)(\.\i[^\-.]*(-[^\-.]+)*)*</param>
       </data>
     </attribute>
   </define>
