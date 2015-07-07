@@ -50,6 +50,7 @@ on Sourceforge_ or follow the building and installing instructions bellow.
 .. contents:: **Table of Contents**
     :depth: 2
 
+
 ***********************
 Building and Installing
 ***********************
@@ -111,6 +112,7 @@ The following installation instructions and scripts are taken from
 This guide assumes that the user has root access (to issue sudo commands) and
 access to a package manager or has some other suitable method of automatically
 installing established libraries.
+
 
 Linux Systems
 -------------
@@ -175,6 +177,7 @@ be needed. The optional installation for GUI:
 .. _`Travis CI`:
     https://travis-ci.org/rakhimov/scram
 
+
 Mac Systems
 -----------
 
@@ -231,6 +234,7 @@ The optional installation for GUI building:
 .. _macports:
     http://www.macports.org/
 
+
 Installing SCRAM (Linux and Unix)
 =================================
 
@@ -269,6 +273,7 @@ can be found in the *scripts* directory. These tools do not need compilation or
 installation.
 
 The optional GUI front-end is built using Qt Creator and qmake.
+
 
 Windows
 =======
@@ -311,6 +316,7 @@ Unfortunately, this method requires building `libxml++`_ from source.
 .. _`Ubuntu image with SCRAM`:
     http://sourceforge.net/projects/iscram/files/ScramBox.ova/download
 
+
 ***********************
 Running SCRAM and Tests
 ***********************
@@ -335,6 +341,7 @@ To test the command-line call of SCRAM:
 .. code-block:: bash
 
     nosetests -w tests/
+
 
 To run performance tests
 ========================
@@ -371,6 +378,7 @@ Various other tools, such as the fault tree generator and shorthand-to-XML
 converter, can be found in the *scripts* directory. Help prompts and
 documentation have more details how to use these tools.
 
+
 **********************
 Documentation Building
 **********************
@@ -381,6 +389,7 @@ the `gh-source`_ branch. The raw documentation files are in *doc* directory.
 .. _`gh-source`:
     https://github.com/rakhimov/scram/tree/gh-source
 
+
 **************
 Note to a User
 **************
@@ -389,7 +398,9 @@ The development may follow the Documentation Driven Development paradigm for
 some new features. Therefore, some documentation may be ahead of the actual
 development and describe features under current development or consideration.
 
-For any questions, don't hesitate to ask the mailing list (https://groups.google.com/forum/#!forum/scram-dev, scram-dev@googlegroups.com).
+For any questions, don't hesitate to ask the mailing list
+(https://groups.google.com/forum/#!forum/scram-dev, scram-dev@googlegroups.com).
+
 
 *****************
 How to Contribute
