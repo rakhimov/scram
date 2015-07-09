@@ -7,7 +7,7 @@ namespace scram {
 IndexedGate::IndexedGate(int index)
     : index_(index),
       type_(-1),
-      state_("normal"),
+      state_(kNormalState),
       vote_number_(-1),
       string_type_("undefined") {
   std::fill(visits_, visits_ + 3, 0);
@@ -15,16 +15,16 @@ IndexedGate::IndexedGate(int index)
 
 void IndexedGate::InitiateWithChild(int child) {
   assert(child != 0);
-  assert(state_ == "normal");
+  assert(state_ == kNormalState);
   children_.insert(children_.end(), child);
 }
 
 bool IndexedGate::AddChild(int child) {
   assert(type_ == 1 || type_ == 2);  // Type must be already defined.
   assert(child != 0);
-  assert(state_ == "normal");
+  assert(state_ == kNormalState);
   if (children_.count(-child)) {
-    state_ = type_ == 2 ? "null" : "unity";  // AND gate becomes NULL.
+    state_ = type_ == 2 ? kNullState : kUnityState;  // AND gate becomes NULL.
     children_.clear();
     return false;
   }

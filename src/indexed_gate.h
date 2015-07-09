@@ -11,6 +11,16 @@
 
 namespace scram {
 
+/// @enum State
+/// State of a gate as a set of events with a logical operator.
+/// This state helps detect null and unity sets that formed upon Boolean
+/// operations.
+enum State {
+  kNormalState,  ///< The default case with any set that is not null or unity.
+  kNullState,  ///< The set is null. This indicates no failure.
+  kUnityState  ///< The set is unity. This set guarantees failure.
+};
+
 /// @class IndexedGate
 /// This gate is for use in IndexedFaultTree.
 /// Initially this gate can represent any type of gate; however,
@@ -74,7 +84,7 @@ class IndexedGate {
 
   /// @returns The state of this gate, which is either "null", or "unity", or
   ///          "normal" by default.
-  inline const std::string& state() const { return state_; }
+  inline const State& state() const { return state_; }
 
   /// @returns parents of this gate.
   inline const std::set<int>& parents() { return parents_; }
@@ -128,16 +138,18 @@ class IndexedGate {
   }
 
   /// Sets the state of this gate to null and clears all its children.
+  /// This function is expected to be used only once.
   inline void Nullify() {
-    assert(state_ == "normal");
-    state_ = "null";
+    assert(state_ == kNormalState);
+    state_ = kNullState;
     children_.clear();
   }
 
   /// Sets the state of this gate to unity and clears all its children.
+  /// This function is expected to be used only once.
   inline void MakeUnity() {
-    assert(state_ == "normal");
-    state_ = "unity";
+    assert(state_ == kNormalState);
+    state_ = kUnityState;
     children_.clear();
   }
 
@@ -192,7 +204,7 @@ class IndexedGate {
   std::set<int> children_;  ///< Children of a gate.
   int index_;  ///< Index of this gate.
   std::string string_type_;  ///< String type of this gate, such as NOR, OR.
-  std::string state_;  ///< Indication if this gate is normal, null, or unity.
+  State state_;  ///< Indication if this gate's set is normal, null, or unity.
   int vote_number_;  ///< Vote number for atleast gate.
   std::set<int> parents_;  ///< Parents of this gate.
   /// This is a traversal array containing first, second, and last visits.

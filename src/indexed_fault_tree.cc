@@ -227,12 +227,12 @@ void IndexedFaultTree::FindMcs() {
   // Special case of empty top gate.
   IndexedGatePtr top = indexed_gates_.find(top_event_index_)->second;
   if (top->children().empty()) {
-    std::string state = top->state();
-    assert(state == "null" || state == "unity");
+    State state = top->state();
+    assert(state == kNullState || state == kUnityState);
     assert(top_event_sign_ > 0);
-    if (state == "unity") {
+    if (state == kUnityState) {
       std::set<int> empty_set;
-      imcs_.push_back(empty_set);
+      imcs_.push_back(empty_set);  // Special indication of unity set.
     }  // Other cases are null.
     return;
   }
@@ -284,8 +284,8 @@ void IndexedFaultTree::FindMcs() {
 
   // Special case of unity with empty sets.
   /// @todo Detect unity in modules.
-  std::string state = indexed_gates_.find(top_event_index_)->second->state();
-  assert(state != "unity");
+  State state = indexed_gates_.find(top_event_index_)->second->state();
+  assert(state != kUnityState);
   LOG(DEBUG2) << "The number of MCS found: " << imcs_.size();
   LOG(DEBUG2) << "Minimal cut set finding time: " << DUR(mcs_time);
 }
@@ -518,11 +518,10 @@ void IndexedFaultTree::PropagateConstants(
                                            false_house_events,
                                            child_gate,
                                            processed_gates);
-      std::string string_state = child_gate->state();
-      assert(string_state == "normal" || string_state == "null" ||
-             string_state == "unity");
-      if (string_state == "normal") continue;
-      state = string_state == "null" ? false : true;
+      State gate_state = child_gate->state();
+      if (gate_state == kNormalState) continue;
+      state = gate_state == kNullState ? false : true;
+
     } else {  // Processing a primary event.
       if (false_house_events.count(std::abs(*it))) {
         state = false;
@@ -655,7 +654,7 @@ bool IndexedFaultTree::ProcessConstGates(const IndexedGatePtr& gate,
   if (processed_gates->count(gate->index())) return false;
   processed_gates->insert(gate->index());
 
-  if (gate->state() == "null" || gate->state() == "unity") return false;
+  if (gate->state() == kNullState || gate->state() == kUnityState) return false;
   bool changed = false;  // Indication if this operation changed the gate.
   std::vector<int> to_erase;  // Keep track of children to erase.
   int type = gate->type();  // Only two types are possible, 1 or 2.
@@ -667,12 +666,12 @@ bool IndexedFaultTree::ProcessConstGates(const IndexedGatePtr& gate,
       bool ret  =
           IndexedFaultTree::ProcessConstGates(child_gate, processed_gates);
       if (!changed && ret) changed = true;
-      std::string state = child_gate->state();
-      if (state == "normal") continue;  // Only three states are possible.
+      State state = child_gate->state();
+      if (state == kNormalState) continue;  // Only three states are possible.
       if (IndexedFaultTree::ProcessConstantChild(
               gate,
               *it,
-              state == "null" ? false : true,
+              state == kNullState ? false : true,
               &to_erase))
         return true;
     }
