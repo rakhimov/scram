@@ -457,26 +457,20 @@ def init_gates(gates_queue, common_basics, common_gates):
         Returns:
             A gate candidate from common gates container.
         """
-        index = 0
         orphans = [x for x in common_gates if not x.parents]
         random.shuffle(orphans)
-        while index < len(orphans):
-            yield orphans[index]
-            index += 1
+        for i in orphans:
+            yield i
 
-        index = 0
         single_parent = [x for x in common_gates if len(x.parents) == 1]
         random.shuffle(single_parent)
-        while index < len(single_parent):
-            yield single_parent[index]
-            index += 1
+        for i in single_parent:
+            yield i
 
-        index = 0
         multi_parent = [x for x in common_gates if len(x.parents) > 1]
         random.shuffle(multi_parent)
-        while index < len(multi_parent):
-            yield multi_parent[index]
-            index += 1
+        for i in multi_parent:
+            yield i
 
     while gate.num_children() < num_children:
         s_percent = random.random()  # sample percentage of gates
