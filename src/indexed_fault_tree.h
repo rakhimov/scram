@@ -29,6 +29,13 @@ struct SetPtrComp
   }
 };
 
+/// @enum GateType
+/// Types of gates for analysis purposes.
+enum GateType {
+  kAndGate,
+  kOrGate
+};
+
 /// @class SimpleGate
 /// A helper class to be used in indexed fault tree. This gate represents
 /// only positive OR or AND gates with basic event indices and pointers to
@@ -38,17 +45,11 @@ class SimpleGate {
  public:
   typedef boost::shared_ptr<SimpleGate> SimpleGatePtr;
 
-  /// @param[in] type The type of this gate. 1 is OR; 2 is AND.
-  explicit SimpleGate(int type) {
-    assert(type == 1 || type == 2);
-    type_ = type;
-  }
+  /// @param[in] type The type of this gate.
+  explicit SimpleGate(const GateType& type) : type_(type) {}
 
-  /// @returns The type of this gate. Either 1 or 2 for OR or AND, respectively.
-  inline int type() {
-    assert(type_ == 1 || type_ == 2);
-    return type_;
-  }
+  /// @returns The type of this gate.
+  inline const GateType& type() const { return type_; }
 
   /// Adds a basic event index at the end of a container.
   /// This function is specifically given to initiate the gate.
@@ -99,7 +100,7 @@ class SimpleGate {
   void OrGateCutSets(const SetPtr& cut_set,
                       std::set<SetPtr, SetPtrComp>* new_cut_sets);
 
-  int type_;  ///< Type of this gate.
+  GateType type_;  ///< Type of this gate.
   std::vector<int> basic_events_;  ///< Container of basic events' indices.
   std::vector<int> modules_;  ///< Container of modules' indices.
   std::vector<SimpleGatePtr> gates_;  ///< Container of child gates.
@@ -188,7 +189,7 @@ class IndexedFaultTree {
   /// This information might be needed for other algorithms because
   /// due to processing of the tree, the shape and nodes may change.
   /// @param[in] parent_gate The parent to start information gathering.
-  /// @param[in,out] processed_gates The gates that has already been processed.
+  /// @param[in,out] processed_gates The gates that have already been processed.
   void GatherParentInformation(const IndexedGatePtr& parent_gate,
                                std::set<int>* processed_gates);
 
@@ -216,11 +217,11 @@ class IndexedFaultTree {
 
   /// Remove all house events from a given gate.
   /// After this function, there should not be any unity or null gates because
-  ///  of house events.
+  /// of house events.
   /// @param[in] true_house_events House events with true state.
   /// @param[in] false_house_events House events with false state.
   /// @param[in,out] gate The final resultant processed gate.
-  /// @param[in,out] processed_gates The gates that has already been processed.
+  /// @param[in,out] processed_gates The gates that have already been processed.
   void PropagateConstants(const std::set<int>& true_house_events,
                           const std::set<int>& false_house_events,
                           const IndexedGatePtr& gate,
@@ -231,7 +232,7 @@ class IndexedFaultTree {
   /// from previous processing steps.
   /// @param[in,out] gate The starting gate to traverse the tree. This is for
   ///                     recursive purposes.
-  /// @param[in,out] processed_gates The gates that has already been processed.
+  /// @param[in,out] processed_gates The gates that have already been processed.
   /// @returns true if the given tree has been changed by this function.
   /// @returns false if no change has been made.
   bool ProcessConstGates(const IndexedGatePtr& gate,
@@ -260,7 +261,7 @@ class IndexedFaultTree {
   ///                     is unknown for the function, so it must be sanitized
   ///                     for a top event to function correctly.
   /// @param[in,out] gate_complements The processed complements of gates.
-  /// @param[in,out] processed_gates The gates that has already been processed.
+  /// @param[in,out] processed_gates The gates that have already been processed.
   void PropagateComplements(const IndexedGatePtr& gate,
                             std::map<int, int>* gate_complements,
                             std::set<int>* processed_gates);
@@ -281,7 +282,7 @@ class IndexedFaultTree {
   /// This function merges similar gates and may produce null or unity gates.
   /// @param[in,out] gate The starting gate to traverse the tree. This is for
   ///                     recursive purposes. This gate must be AND or OR.
-  /// @param[in,out] processed_gates The gates that has already been processed.
+  /// @param[in,out] processed_gates The gates that have already been processed.
   /// @returns true if the given tree has been changed by this function.
   /// @returns false if no change has been made.
   bool JoinGates(const IndexedGatePtr& gate, std::set<int>* processed_gates);

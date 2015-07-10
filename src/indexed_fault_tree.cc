@@ -16,7 +16,7 @@ int SimpleGate::limit_order_ = 20;
 void SimpleGate::GenerateCutSets(const SetPtr& cut_set,
                                  std::set<SetPtr, SetPtrComp>* new_cut_sets) {
   assert(cut_set->size() <= limit_order_);
-  if (type_ == 1) {  // OR gate operations.
+  if (type_ == kOrGate) {  // OR gate operations.
     SimpleGate::OrGateCutSets(cut_set, new_cut_sets);
 
   } else {  // AND gate operations.
@@ -944,7 +944,8 @@ void IndexedFaultTree::CreateSimpleTree(
   assert(gate_index > 0);
   if (processed_gates->count(gate_index)) return;
   IndexedGatePtr gate = indexed_gates_.find(gate_index)->second;
-  SimpleGatePtr simple_gate(new SimpleGate(gate->type()));
+  GateType simple_type = gate->type() == 2 ? kAndGate : kOrGate;
+  SimpleGatePtr simple_gate(new SimpleGate(simple_type));
   processed_gates->insert(std::make_pair(gate_index, simple_gate));
 
   std::set<int>::iterator it;
