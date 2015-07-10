@@ -4,7 +4,6 @@
 #ifndef SCRAM_SRC_INDEXED_FAULT_TREE_H_
 #define SCRAM_SRC_INDEXED_FAULT_TREE_H_
 
-#include <functional>
 #include <map>
 #include <set>
 #include <string>
@@ -16,100 +15,10 @@
 
 namespace scram {
 
-typedef boost::shared_ptr<std::set<int> > SetPtr;
-
-/// @class SetPtrComp
-/// Functor for set pointer comparison efficiency.
-struct SetPtrComp
-    : public std::binary_function<const SetPtr, const SetPtr, bool> {
-  /// Operator overload.
-  /// Compares sets for sorting.
-  bool operator()(const SetPtr& lhs, const SetPtr& rhs) const {
-    return *lhs < *rhs;
-  }
-};
-
-/// @enum GateType
-/// Types of gates for analysis purposes.
-enum GateType {
-  kAndGate,
-  kOrGate
-};
-
-/// @class SimpleGate
-/// A helper class to be used in indexed fault tree. This gate represents
-/// only positive OR or AND gates with basic event indices and pointers to
-/// other simple gates.
-/// All the gate children of this gate must be of opposite type.
-class SimpleGate {
- public:
-  typedef boost::shared_ptr<SimpleGate> SimpleGatePtr;
-
-  /// @param[in] type The type of this gate.
-  explicit SimpleGate(const GateType& type) : type_(type) {}
-
-  /// @returns The type of this gate.
-  inline const GateType& type() const { return type_; }
-
-  /// Adds a basic event index at the end of a container.
-  /// This function is specifically given to initiate the gate.
-  /// @param[in] index The index of a basic event.
-  inline void InitiateWithBasic(int index) {
-    basic_events_.push_back(index);
-  }
-
-  /// Adds a module index at the end of a container.
-  /// This function is specifically given to initiate the gate.
-  /// Note that modules are treated just like basic events.
-  /// @param[in] index The index of a module.
-  inline void InitiateWithModule(int index) {
-    assert(index > 0);
-    modules_.push_back(index);
-  }
-
-  /// Add a pointer to a child gate.
-  /// This function assumes that the tree does not have complement gates.
-  /// @param[in] gate The pointer to the child gate.
-  inline void AddChildGate(const SimpleGatePtr& gate) {
-    assert(gate->type() != type_);
-    gates_.push_back(gate);
-  }
-
-  /// Generates cut sets by using a provided set.
-  /// @param[in] cut_set The base cut set to work with.
-  /// @param[out] new_cut_sets Generated cut sets by adding the gate's children.
-  void GenerateCutSets(const SetPtr& cut_set,
-                       std::set<SetPtr, SetPtrComp>* new_cut_sets);
-
-  /// Sets the limit order for all analysis with simple gates.
-  /// @param[in] limit The limit order for minimal cut sets.
-  static void limit_order(int limit) { limit_order_ = limit; }
-
- private:
-  /// Generates cut sets for AND gate children using already generated sets.
-  /// The tree is assumed to be layered with OR children of AND gates.
-  /// @param[in] cut_set The base cut set to work with.
-  /// @param[out] new_cut_sets Generated cut sets by using the gate's children.
-  void AndGateCutSets(const SetPtr& cut_set,
-                      std::set<SetPtr, SetPtrComp>* new_cut_sets);
-
-  /// Generates cut sets for OR gate children using already generated sets.
-  /// The tree is assumed to be layered with AND children of OR gates.
-  /// @param[in] cut_set The base cut set to work with.
-  /// @param[out] new_cut_sets Generated cut sets by using the gate's children.
-  void OrGateCutSets(const SetPtr& cut_set,
-                      std::set<SetPtr, SetPtrComp>* new_cut_sets);
-
-  GateType type_;  ///< Type of this gate.
-  std::vector<int> basic_events_;  ///< Container of basic events' indices.
-  std::vector<int> modules_;  ///< Container of modules' indices.
-  std::vector<SimpleGatePtr> gates_;  ///< Container of child gates.
-  static int limit_order_;  ///< The limit on the order of minimal cut sets.
-};
-
 class Gate;
 class Formula;
 class IndexedGate;
+class Mocus;
 
 /// @class IndexedFaultTree
 /// This class provides simpler representation of a fault tree
@@ -117,13 +26,14 @@ class IndexedGate;
 /// The class provides main operations over a fault tree to generate minimal
 /// cut sets.
 class IndexedFaultTree {
+  friend class Mocus;
+
  public:
   typedef boost::shared_ptr<Gate> GatePtr;
 
   /// Constructs a simplified fault tree with indices of nodes.
   /// @param[in] top_event_id The index of the top event of this tree.
-  /// @param[in] limit_order The limit on the size of minimal cut sets.
-  IndexedFaultTree(int top_event_id, int limit_order);
+  explicit IndexedFaultTree(int top_event_id);
 
   /// Creates indexed gates with basic and house event indices as children.
   /// It is assumed that indices are sequential starting from 1.
@@ -153,16 +63,7 @@ class IndexedFaultTree {
   ///                             with certain expectation.
   void ProcessIndexedFaultTree(int num_basic_events);
 
-  /// Finds minimal cut sets from the initiated fault tree with indices.
-  void FindMcs();
-
-  /// @returns Generated minimal cut sets with basic event indices.
-  inline const std::vector< std::set<int> >& GetGeneratedMcs() {
-    return imcs_;
-  }
-
  private:
-  typedef boost::shared_ptr<SimpleGate> SimpleGatePtr;
   typedef boost::shared_ptr<IndexedGate> IndexedGatePtr;
   typedef boost::shared_ptr<Formula> FormulaPtr;
 
@@ -295,7 +196,7 @@ class IndexedFaultTree {
   /// @param[in] time The current time.
   /// @param[in,out] gate The gate to traverse and assign time to.
   /// @param[in,out] visit_basics The recordings for basic events.
-  /// @returns The time final time of traversing.
+  /// @returns The final time of traversing.
   int AssignTiming(int time, const IndexedGatePtr& gate, int visit_basics[][2]);
 
   /// Determines modules from original gates that have been already timed.
@@ -333,34 +234,6 @@ class IndexedFaultTree {
       std::vector<int>* modular_children,
       std::vector<int>* non_modular_children);
 
-
-  /// Traverses the fault tree to convert gates into simple gates.
-  /// @param[in] gate_index The index of a gate to start with.
-  /// @param[in,out] processed_gates Gates turned into simple gates.
-  void CreateSimpleTree(int gate_index,
-                        std::map<int, SimpleGatePtr>* processed_gates);
-
-  /// Finds minimal cut sets of a simple gate.
-  /// @param[in] gate The simple gate as a parent for processing.
-  /// @param[out] mcs Minimal cut sets.
-  void FindMcsFromSimpleGate(const SimpleGatePtr& gate,
-                             std::vector< std::set<int> >* mcs);
-
-  /// Finds minimal cut sets from cut sets.
-  /// Reduces unique cut sets to minimal cut sets.
-  /// The performance is highly dependent on the passed sets. If the sets
-  /// share many events, it takes more time to remove supersets.
-  /// @param[in] cut_sets Cut sets with primary events.
-  /// @param[in] mcs_lower_order Reference minimal cut sets of some order.
-  /// @param[in] min_order The order of sets to become minimal.
-  /// @param[out] mcs Min cut sets.
-  /// @note T_avg(N^3 + N^2*logN + N*logN) = O_avg(N^3)
-  void MinimizeCutSets(
-      const std::vector<const std::set<int>* >& cut_sets,
-      const std::vector<std::set<int> >& mcs_lower_order,
-      int min_order,
-      std::vector<std::set<int> >* mcs);
-
   int top_event_index_;  ///< The index of the top gate of this tree.
   int gate_index_;  ///< The starting gate index for gate identification.
   /// All gates of this tree including newly created ones.
@@ -368,9 +241,6 @@ class IndexedFaultTree {
   std::set<int> modules_;  ///< Modules in the tree.
   int top_event_sign_;  ///< The negative or positive sign of the top event.
   int new_gate_index_;  ///< Index for a new gate.
-  std::vector< std::set<int> > imcs_;  ///< Min cut sets with indexed events.
-  /// Limit on the size of the minimal cut sets for performance reasons.
-  int limit_order_;
 };
 
 }  // namespace scram

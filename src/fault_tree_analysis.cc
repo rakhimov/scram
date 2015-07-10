@@ -9,6 +9,7 @@
 #include "error.h"
 #include "indexed_fault_tree.h"
 #include "logger.h"
+#include "mocus.h"
 
 namespace scram {
 
@@ -97,15 +98,15 @@ void FaultTreeAnalysis::Analyze() {
     }
   }
 
-  IndexedFaultTree* indexed_tree =
-      new IndexedFaultTree(top_event_index, limit_order_);
+  IndexedFaultTree* indexed_tree = new IndexedFaultTree(top_event_index);
   indexed_tree->InitiateIndexedFaultTree(int_to_inter, ccf_basic_to_gates,
                                          all_to_int_);
   indexed_tree->PropagateConstants(true_house_events, false_house_events);
   indexed_tree->ProcessIndexedFaultTree(int_to_basic_.size());
-  indexed_tree->FindMcs();
+  Mocus* mocus = new Mocus(indexed_tree, limit_order_);
+  mocus->FindMcs();
 
-  const std::vector< std::set<int> >* imcs = &indexed_tree->GetGeneratedMcs();
+  const std::vector< std::set<int> >* imcs = &mocus->GetGeneratedMcs();
   // First, defensive check if cut sets exist for the specified limit order.
   if (imcs->empty()) {
     std::stringstream msg;
@@ -122,6 +123,7 @@ void FaultTreeAnalysis::Analyze() {
   analysis_time_ = DUR(analysis_time);  // Duration of MCS generation.
   FaultTreeAnalysis::SetsToString(*imcs);  // MCS with event ids.
   delete indexed_tree;  // No exceptions are expected.
+  delete mocus;  // No exceptions are expected.
 }
 
 void FaultTreeAnalysis::GatherEvents(const GatePtr& gate) {
