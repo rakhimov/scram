@@ -24,8 +24,8 @@ class Mocus;
 /// @class IndexedFaultTree
 /// This class provides simpler representation of a fault tree
 /// that takes into account the indices of events instead of ids and pointers.
-/// The class provides main operations over a fault tree to generate minimal
-/// cut sets.
+/// The class provides main preprocessing operations over a fault tree
+/// to generate minimal cut sets.
 class IndexedFaultTree {
   friend class Mocus;
 

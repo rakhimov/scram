@@ -46,6 +46,8 @@ void IndexedFaultTree::InitiateIndexedFaultTree(
 void IndexedFaultTree::PropagateConstants(
     const std::set<int>& true_house_events,
     const std::set<int>& false_house_events) {
+  if (true_house_events.empty() && false_house_events.empty())
+    return;  // No need to prune constants when there are no constants.
   IndexedGatePtr top = indexed_gates_.find(top_event_index_)->second;
   std::set<int> processed_gates;
   LOG(DEBUG2) << "Propagating constants in a fault tree.";
@@ -505,7 +507,6 @@ void IndexedFaultTree::DetectModules(int num_basic_events) {
   // All constants are propagated and there are only gates and basic events.
   // First stage, traverse the tree depth-first for gates and indicate
   // visit time for each node.
-
   LOG(DEBUG2) << "Detecting modules in a fault tree.";
 
   // First and last visits of basic events.
