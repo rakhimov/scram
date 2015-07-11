@@ -4,12 +4,11 @@
 
 namespace scram {
 
-IndexedGate::IndexedGate(int index)
+IndexedGate::IndexedGate(int index, const GateType& type)
     : index_(index),
-      type_(-1),
+      type_(type),
       state_(kNormalState),
-      vote_number_(-1),
-      string_type_("undefined") {
+      vote_number_(-1) {
   std::fill(visits_, visits_ + 3, 0);
 }
 
@@ -20,11 +19,11 @@ void IndexedGate::InitiateWithChild(int child) {
 }
 
 bool IndexedGate::AddChild(int child) {
-  assert(type_ == 1 || type_ == 2);  // Type must be already defined.
+  assert(type_ == kAndGate || type_ == kOrGate);  // Must be normalized.
   assert(child != 0);
   assert(state_ == kNormalState);
   if (children_.count(-child)) {
-    state_ = type_ == 2 ? kNullState : kUnityState;  // AND gate becomes NULL.
+    state_ = type_ == kAndGate ? kNullState : kUnityState;
     children_.clear();
     return false;
   }

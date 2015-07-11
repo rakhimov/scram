@@ -13,11 +13,12 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 
+#include "indexed_gate.h"
+
 namespace scram {
 
 class Gate;
 class Formula;
-class IndexedGate;
 class Mocus;
 
 /// @class IndexedFaultTree
@@ -66,6 +67,9 @@ class IndexedFaultTree {
  private:
   typedef boost::shared_ptr<IndexedGate> IndexedGatePtr;
   typedef boost::shared_ptr<Formula> FormulaPtr;
+
+  /// Mapping to string gate types to enum gate types.
+  static const std::map<std::string, GateType> string_to_type_;
 
   /// Processes a formula into a new indexed gates.
   /// @param[in] index The index to be assigned to the new indexed gate.

@@ -5,11 +5,18 @@
 
 #include <algorithm>
 
+#include <boost/assign.hpp>
+
 #include "event.h"
-#include "indexed_gate.h"
 #include "logger.h"
 
 namespace scram {
+
+const std::map<std::string, GateType> IndexedFaultTree::string_to_type_ =
+    boost::assign::map_list_of("and", kAndGate) ("or", kOrGate)
+                              ("atleast", kAtleastGate) ("xor", kXorGate)
+                              ("not", kNotGate) ("nand", kNandGate)
+                              ("nor", kNorGate) ("null", kNullGate);
 
 IndexedFaultTree::IndexedFaultTree(int top_event_id)
     : top_event_index_(top_event_id),
@@ -50,7 +57,8 @@ void IndexedFaultTree::PropagateConstants(
 void IndexedFaultTree::ProcessIndexedFaultTree(int num_basic_events) {
   IndexedGatePtr top = indexed_gates_.find(top_event_index_)->second;
   if (top_event_sign_ < 0) {
-    top->type(top->type() == 1 ? 2 : 1);
+    assert(top->type() == kOrGate || top->type() == kAndGate);
+    top->type(top->type() == kOrGate ? kAndGate : kOrGate);
     top->InvertChildren();
     top_event_sign_ = 1;
   }
@@ -79,9 +87,9 @@ void IndexedFaultTree::ProcessFormula(
     const std::map<std::string, int>& ccf_basic_to_gates,
     const boost::unordered_map<std::string, int>& all_to_int) {
   assert(!indexed_gates_.count(index));
-  IndexedGatePtr gate(new IndexedGate(index));
-  gate->string_type(formula->type());
-  if (gate->string_type() == "atleast")
+  GateType type = string_to_type_.find(formula->type())->second;
+  IndexedGatePtr gate(new IndexedGate(index, type));
+  if (type == kAtleastGate)
     gate->vote_number(formula->vote_number());
 
   typedef boost::shared_ptr<Event> EventPtr;
@@ -110,17 +118,14 @@ void IndexedFaultTree::ProcessFormula(
 void IndexedFaultTree::UnrollGates() {
   // Handle special case for a top event.
   IndexedGatePtr top_gate = indexed_gates_.find(top_event_index_)->second;
-  std::string type = top_gate->string_type();
-  assert(type != "undefined");
-  if (type == "nor" || type == "or") {
-    top_event_sign_ *= type == "nor" ? -1 : 1;  // For negative gates.
-    top_gate->string_type("or");
-    top_gate->type(1);
-  } else if (type == "nand" || type == "and") {
-    top_event_sign_ *= type == "nand" ? -1 : 1;
-    top_gate->string_type("and");
-    top_gate->type(2);
-  } else if (type == "not" || type == "null") {
+  GateType type = top_gate->type();
+  if (type == kNorGate || type == kOrGate) {
+    top_event_sign_ *= type == kNorGate ? -1 : 1;  // For negative gates.
+    top_gate->type(kOrGate);
+  } else if (type == kNandGate || type == kAndGate) {
+    top_event_sign_ *= type == kNandGate ? -1 : 1;
+    top_gate->type(kAndGate);
+  } else if (type == kNotGate || type == kNullGate) {
     // Change the top event to the negative child.
     assert(top_gate->children().size() == 1);
     int child_index = *top_gate->children().begin();
@@ -128,7 +133,7 @@ void IndexedFaultTree::UnrollGates() {
     top_gate = indexed_gates_.find(std::abs(child_index))->second;
     indexed_gates_.erase(top_event_index_);
     top_event_index_ = top_gate->index();
-    top_event_sign_ *= type == "not" ? -1 : 1;  // The change for sign.
+    top_event_sign_ *= type == kNotGate ? -1 : 1;  // The change for sign.
     IndexedFaultTree::UnrollGates();  // This should handle NOT->NOT cases.
     return;
   }
@@ -172,10 +177,9 @@ void IndexedFaultTree::GatherParentInformation(
 
 void IndexedFaultTree::NotifyParentsOfNegativeGates(
     const IndexedGatePtr& gate) {
-  std::string type = gate->string_type();
-  assert(type != "undefined");
+  GateType type = gate->type();
   // Deal with negative gate.
-  if (type == "nor" || type == "nand") {
+  if (type == kNorGate || type == kNandGate) {
     int child_index = gate->index();
     std::set<int>::const_iterator it;
     for (it = gate->parents().begin(); it != gate->parents().end(); ++it) {
@@ -188,35 +192,27 @@ void IndexedFaultTree::NotifyParentsOfNegativeGates(
 }
 
 void IndexedFaultTree::UnrollGate(const IndexedGatePtr& gate) {
-  std::string type = gate->string_type();
-  assert(type != "undefined");
-  if (type == "or" || type == "nor") {
-    gate->string_type("or");  // Negative is already processed.
-    gate->type(1);
-  } else if (type == "and" || type == "nand") {
-    gate->type(2);
-    gate->string_type("and");  // Negative is already processed.
-  } else if (type == "xor") {
+  GateType type = gate->type();
+  if (type == kOrGate || type == kNorGate) {  // Negation is already processed.
+    gate->type(kOrGate);
+  } else if (type == kAndGate || type == kNandGate) {
+    gate->type(kAndGate);  // Negation is already processed.
+  } else if (type == kXorGate) {
     IndexedFaultTree::UnrollXorGate(gate);
-  } else if (type == "atleast") {
+  } else if (type == kAtleastGate) {
     IndexedFaultTree::UnrollAtleastGate(gate);
   } else {
-    assert(type == "not" || type == "null");  // Dealt in gate joining.
+    assert(type == kNotGate || type == kNullGate);  // Dealt in the coalescing.
   }
 }
 
 void IndexedFaultTree::UnrollXorGate(const IndexedGatePtr& gate) {
   assert(gate->children().size() == 2);
   std::set<int>::const_iterator it = gate->children().begin();
-  IndexedGatePtr gate_one(new IndexedGate(++new_gate_index_));
-  IndexedGatePtr gate_two(new IndexedGate(++new_gate_index_));
+  IndexedGatePtr gate_one(new IndexedGate(++new_gate_index_, kAndGate));
+  IndexedGatePtr gate_two(new IndexedGate(++new_gate_index_, kAndGate));
 
-  gate->type(1);
-  gate->string_type("or");
-  gate_one->type(2);
-  gate_two->type(2);
-  gate_one->string_type("and");
-  gate_two->string_type("and");
+  gate->type(kOrGate);
   indexed_gates_.insert(std::make_pair(gate_one->index(), gate_one));
   indexed_gates_.insert(std::make_pair(gate_two->index(), gate_two));
 
@@ -259,14 +255,11 @@ void IndexedFaultTree::UnrollAtleastGate(const IndexedGatePtr& gate) {
     all_sets = tmp_sets;
   }
 
-  gate->type(1);
-  gate->string_type("or");
+  gate->type(kOrGate);
   gate->EraseAllChildren();
   std::set< std::set<int> >::iterator it_sets;
   for (it_sets = all_sets.begin(); it_sets != all_sets.end(); ++it_sets) {
-    IndexedGatePtr gate_one(new IndexedGate(++new_gate_index_));
-    gate_one->type(2);
-    gate_one->string_type("and");
+    IndexedGatePtr gate_one(new IndexedGate(++new_gate_index_, kAndGate));
     std::set<int>::iterator it;
     for (it = it_sets->begin(); it != it_sets->end(); ++it) {
       bool ret = gate_one->AddChild(*it);
@@ -326,31 +319,31 @@ bool IndexedFaultTree::ProcessConstantChild(const IndexedGatePtr& gate,
                                             int child,
                                             bool state,
                                             std::vector<int>* to_erase) {
-  std::string parent_type = gate->string_type();
-  assert(parent_type == "or" || parent_type == "and" ||
-         parent_type == "not" || parent_type == "null");
+  GateType parent_type = gate->type();
+  assert(parent_type == kOrGate || parent_type == kAndGate ||
+         parent_type == kNotGate || parent_type == kNullGate);
 
   if (!state) {  // Null state.
-    if (parent_type == "or") {
+    if (parent_type == kOrGate) {
       to_erase->push_back(child);
       return false;
 
-    } else if (parent_type == "and" || parent_type == "null") {
+    } else if (parent_type == kAndGate || parent_type == kNullGate) {
       // AND gate with null child.
       gate->Nullify();
 
-    } else if (parent_type == "not") {
+    } else if (parent_type == kNotGate) {
       gate->MakeUnity();
     }
   } else {  // Unity state.
-    if (parent_type == "or") {
+    if (parent_type == kOrGate) {
       gate->MakeUnity();
 
-    } else if (parent_type == "and" || parent_type == "null") {
+    } else if (parent_type == kAndGate || parent_type == kNullGate) {
       to_erase->push_back(child);
       return false;
 
-    } else if (parent_type == "not") {
+    } else if (parent_type == kNotGate) {
       gate->Nullify();
     }
   }
@@ -364,7 +357,8 @@ void IndexedFaultTree::RemoveChildren(const IndexedGatePtr& gate,
     gate->EraseChild(*it_v);
   }
   if (gate->children().empty()) {
-    if (gate->string_type() == "or") {
+    assert(gate->type() == kOrGate || gate->type() == kAndGate);
+    if (gate->type() == kOrGate) {
       gate->Nullify();
     } else {  // The default operation for AND gate.
       gate->MakeUnity();
@@ -384,10 +378,9 @@ void IndexedFaultTree::PropagateComplements(
     if (std::abs(*it) > gate_index_) {
       // Deal with NOT and NULL gates.
       IndexedGatePtr child_gate = indexed_gates_.find(std::abs(*it))->second;
-      if (child_gate->string_type() == "not" ||
-          child_gate->string_type() == "null") {
+      if (child_gate->type() == kNotGate || child_gate->type() == kNullGate) {
         assert(child_gate->children().size() == 1);
-        int mult = child_gate->string_type() == "not" ? -1 : 1;
+        int mult = child_gate->type() == kNotGate ? -1 : 1;
         mult *= *it > 0 ? 1 : -1;
         if (!gate->SwapChild(*it, *child_gate->children().begin() * mult))
           return;
@@ -398,13 +391,15 @@ void IndexedFaultTree::PropagateComplements(
         if (gate_complements->count(-*it)) {
           gate->SwapChild(*it, gate_complements->find(-*it)->second);
         } else {
-          IndexedGatePtr complement_gate(new IndexedGate(++new_gate_index_));
+          GateType type = indexed_gates_.find(-*it)->second->type();
+          assert(type == kAndGate || type == kOrGate);
+          GateType complement_type = type == kOrGate ? kAndGate : kOrGate;
+          IndexedGatePtr complement_gate(new IndexedGate(++new_gate_index_,
+                                                         complement_type));
           indexed_gates_.insert(std::make_pair(complement_gate->index(),
                                                complement_gate));
           gate_complements->insert(std::make_pair(-*it,
                                                   complement_gate->index()));
-          int existing_type = indexed_gates_.find(-*it)->second->type();
-          complement_gate->type(existing_type == 1 ? 2 : 1);
           complement_gate->children(
               indexed_gates_.find(-*it)->second->children());
           complement_gate->InvertChildren();
@@ -440,7 +435,8 @@ bool IndexedFaultTree::ProcessConstGates(const IndexedGatePtr& gate,
   if (gate->state() == kNullState || gate->state() == kUnityState) return false;
   bool changed = false;  // Indication if this operation changed the gate.
   std::vector<int> to_erase;  // Keep track of children to erase.
-  int type = gate->type();  // Only two types are possible, 1 or 2.
+  GateType type = gate->type();
+  assert(type == kAndGate || type == kOrGate);  // Only two types are possible.
   std::set<int>::const_iterator it;
   for (it = gate->children().begin(); it != gate->children().end(); ++it) {
     if (std::abs(*it) > gate_index_) {
@@ -468,14 +464,16 @@ bool IndexedFaultTree::JoinGates(const IndexedGatePtr& gate,
                                  std::set<int>* processed_gates) {
   if (processed_gates->count(gate->index())) return false;
   processed_gates->insert(gate->index());
-  int parent = gate->type();
+  GateType parent = gate->type();
+  assert(parent == kAndGate || parent == kOrGate);
   std::set<int>::const_iterator it;
   bool changed = false;  // Indication if the tree is changed.
   for (it = gate->children().begin(); it != gate->children().end();) {
     if (std::abs(*it) > gate_index_) {
       assert(*it > 0);
       IndexedGatePtr child_gate = indexed_gates_.find(std::abs(*it))->second;
-      int child = child_gate->type();
+      GateType child = child_gate->type();
+      assert(child == kAndGate || child == kOrGate);
       if (parent == child) {  // Parent is not NULL or NOT.
         if (!changed) changed = true;
         if (!gate->MergeGate(&*indexed_gates_.find(*it)->second)) {
@@ -654,11 +652,10 @@ void IndexedFaultTree::CreateNewModule(const IndexedGatePtr& gate,
     modules_.insert(gate->index());
     return;
   }
-  IndexedGatePtr new_module(new IndexedGate(++new_gate_index_));
+  assert(gate->type() == kAndGate || gate->type() == kOrGate);
+  IndexedGatePtr new_module(new IndexedGate(++new_gate_index_, gate->type()));
   indexed_gates_.insert(std::make_pair(new_gate_index_, new_module));
   modules_.insert(new_gate_index_);
-  new_module->type(gate->type());
-  new_module->string_type(gate->string_type());
   std::vector<int>::const_iterator it_g;
   for (it_g = children.begin(); it_g != children.end(); ++it_g) {
     gate->EraseChild(*it_g);

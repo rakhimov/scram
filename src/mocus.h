@@ -11,6 +11,8 @@
 #include <set>
 #include <vector>
 
+#include "indexed_gate.h"
+
 #include <boost/shared_ptr.hpp>
 
 namespace scram {
@@ -28,13 +30,6 @@ struct SetPtrComp
   }
 };
 
-/// @enum GateType
-/// Types of gates for analysis purposes.
-enum GateType {
-  kAndGate,
-  kOrGate
-};
-
 /// @class SimpleGate
 /// A helper class to be used in indexed fault tree. This gate represents
 /// only positive OR or AND gates with basic event indices and pointers to
@@ -44,7 +39,7 @@ class SimpleGate {
  public:
   typedef boost::shared_ptr<SimpleGate> SimpleGatePtr;
 
-  /// @param[in] type The type of this gate.
+  /// @param[in] type The type of this gate. AND or OR types are expected.
   explicit SimpleGate(const GateType& type) : type_(type) {}
 
   /// @returns The type of this gate.
@@ -70,6 +65,7 @@ class SimpleGate {
   /// This function assumes that the tree does not have complement gates.
   /// @param[in] gate The pointer to the child gate.
   inline void AddChildGate(const SimpleGatePtr& gate) {
+    assert(gate->type() == kAndGate || gate->type() == kOrGate);
     assert(gate->type() != type_);
     gates_.push_back(gate);
   }
@@ -107,7 +103,6 @@ class SimpleGate {
 };
 
 class IndexedFaultTree;
-class IndexedGate;
 
 /// @class Mocus
 /// This class analyzes normalized, preprocessed, and indexed fault trees to

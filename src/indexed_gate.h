@@ -7,9 +7,21 @@
 #include <assert.h>
 
 #include <set>
-#include <string>
 
 namespace scram {
+
+/// @enum GateType
+/// Types of gates for representation, preprocessing, and analysis purposes.
+enum GateType {
+  kAndGate,  ///< Simple AND gate.
+  kOrGate,  ///< Simple OR gate.
+  kAtleastGate,  ///< Combination or Vote gate representation.
+  kXorGate,  ///< Exclusive OR gate with two inputs.
+  kNotGate,  ///< Boolean negation.
+  kNandGate,  ///< NAND gate.
+  kNorGate,  ///< NOR gate.
+  kNullGate  ///< Special pass-through or NULL gate. This is not NULL set.
+};
 
 /// @enum State
 /// State of a gate as a set of events with a logical operator.
@@ -31,31 +43,20 @@ class IndexedGate {
  public:
   /// Creates a gate with its index.
   /// @param[in] index An unique positive index of this gate.
+  /// @param[in] type The type of this gate.
   /// @warning The index is not validated upon instantiation.
-  explicit IndexedGate(int index);
+  IndexedGate(int index, const GateType& type);
 
-  /// @returns Type of this gate. 1 is OR, 2 is AND.
-  inline int type() const {
-    assert(type_ == 1 || type_ == 2);
-    return type_;
-  }
+  /// @returns Type of this gate.
+  inline const GateType& type() const { return type_; }
 
-  /// Sets the gate type information.
-  /// 1 is for OR gate.
-  /// 2 is for AND gate.
-  /// @param[in] t The type for this gate.
-  inline void type(int t) {
-    assert(t == 1 || t == 2);
+  /// Changes the gate type information. This function is expected to be used
+  /// with only simple AND and OR gates.
+  /// @param[in] t The type for this gate. AND or OR gates only.
+  inline void type(const GateType& t) {
+    assert(t == kAndGate || t == kOrGate);
     type_ = t;
   }
-
-  /// @returns String type of this gate.
-  inline const std::string& string_type() const { return string_type_; }
-
-  /// Sets any legal string type of original gate.
-  /// This can be helpful for initialization and additional information.
-  /// @param[in] type The string (OR, AND, ...) type for this gate.
-  inline void string_type(const std::string& type) { string_type_ = type; }
 
   /// @returns Vote number.
   inline int vote_number() const { return vote_number_; }
@@ -200,12 +201,11 @@ class IndexedGate {
   inline bool Revisited() const { return visits_[2] ? true : false; }
 
  private:
-  int type_;  ///< Type of this gate. Only two choices are allowed: OR, AND.
-  std::set<int> children_;  ///< Children of a gate.
   int index_;  ///< Index of this gate.
-  std::string string_type_;  ///< String type of this gate, such as NOR, OR.
+  GateType type_;  ///< Type of this gate. Only OR and AND are allowed.
   State state_;  ///< Indication if this gate's set is normal, null, or unity.
   int vote_number_;  ///< Vote number for atleast gate.
+  std::set<int> children_;  ///< Children of a gate.
   std::set<int> parents_;  ///< Parents of this gate.
   /// This is a traversal array containing first, second, and last visits.
   int visits_[3];

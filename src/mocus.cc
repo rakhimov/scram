@@ -35,10 +35,10 @@
 /// The generated sets are kept unique by storing them in a set.
 #include "mocus.h"
 
+#include <algorithm>
 #include <utility>
 
 #include "indexed_fault_tree.h"
-#include "indexed_gate.h"
 #include "logger.h"
 
 namespace scram {
@@ -48,6 +48,7 @@ int SimpleGate::limit_order_ = 20;
 void SimpleGate::GenerateCutSets(const SetPtr& cut_set,
                                  std::set<SetPtr, SetPtrComp>* new_cut_sets) {
   assert(cut_set->size() <= limit_order_);
+  assert(type_ == kOrGate || type_ == kAndGate);
   if (type_ == kOrGate) {  // OR gate operations.
     SimpleGate::OrGateCutSets(cut_set, new_cut_sets);
 
@@ -236,8 +237,8 @@ void Mocus::CreateSimpleTree(int gate_index,
   if (processed_gates->count(gate_index)) return;
   IndexedGatePtr gate =
       fault_tree_->indexed_gates_.find(gate_index)->second;
-  GateType simple_type = gate->type() == 2 ? kAndGate : kOrGate;
-  SimpleGatePtr simple_gate(new SimpleGate(simple_type));
+  assert(gate->type() == kAndGate || gate->type() == kOrGate);
+  SimpleGatePtr simple_gate(new SimpleGate(gate->type()));
   processed_gates->insert(std::make_pair(gate_index, simple_gate));
 
   std::set<int>::iterator it;
