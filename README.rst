@@ -126,7 +126,7 @@ The command to install a dependency takes the form of:
 
   sudo apt-get install package
 
-where "package" is replaced by the correct package name. The minimal list of
+Where "package" is replaced by the correct package name. The minimal list of
 required library package names is:
 
 #. make
@@ -184,7 +184,7 @@ Mac Systems
 If on a Mac system, a good manager to use is macports_. It is assumed that
 some dependencies are provided by Xcode, for example, *make*.
 The following instructions are tested on OS X 10.9.2, but it should work
-for other systems also.
+for other systems as well.
 
 Using macports_, the command to install a dependency takes the form of:
 
@@ -254,7 +254,7 @@ The main and test binaries are installed in *installation/directory/bin*
 directory. Also, the test input files and RelaxNG schema are copied in
 *installation/directory/share/scram/*.
 
-The default build type is Debug, but it can overridden by "--release",
+The default build type is Debug, but it can be overridden by "--release",
 "--profile", or "--build-type" flags. For performance testing and distribution,
 run the building with the release flag:
 

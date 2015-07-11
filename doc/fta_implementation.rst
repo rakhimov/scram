@@ -83,7 +83,7 @@ Add this XML line to basic event description:
 Algorithms to Generate Minimal Cut Sets
 =======================================
 
-- MOCUS-like algebraic algorithm:
+- MOCUS-like algorithm:
 
     * Walk through the tree gate by gate starting from the root to leaves.
     * Gather cut sets after each gate.

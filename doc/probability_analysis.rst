@@ -16,7 +16,7 @@ in the fault tree.
 
 
 The Exact Probability Calculation Implementation
-=================================================
+================================================
 
 The general probability formula for sets is expanded recursively. In each
 iteration, some sets are merged in order to account for common members in
@@ -25,7 +25,7 @@ Sylvester-Poincaré expansion.
 
 
 The Approximate Probability Calculation Implementation
-=======================================================
+======================================================
 
 Approximate calculations are implemented in order to reduce calculation time.
 The series expansion of the exact formula is applied. This feature is the
@@ -37,7 +37,7 @@ low probabilities. The default cut-off is 1e-8.
 
 
 The Rare-Event Approximation
-=============================
+============================
 
 Given that probabilities of events are very small value less than 0.1, only the
 first series in the probability equation may be used as a conservative
@@ -48,7 +48,7 @@ set probabilities are high, the total probability may exceed 1.0.
 
 
 The Min-Cut-Upper Bound (MCUB) Approximation
-=============================================
+============================================
 
 This method calculates the total probability by subtracting the probability
 of all minimal cut sets' being successful from 1.0; thus, the total probability
@@ -74,11 +74,10 @@ MEF format documentation on http://open-psa.org
     unknown or unpredictable.
 
 **Lambda-model or Exponential with Two Parameters**
-    The probability that a primary event will occur within
-    a given period of time (t). Appropriate for events within
-    systems that are continuously operating and have a known
-    probability of failure during a unit time period (:math:`\lambda`).
-    The event probability is equal to
+    The probability that a primary event will occur within given time (t).
+    Appropriate for events within systems that are continuously operating and
+    have a known probability of failure during a unit time period
+    (:math:`\lambda`). The event probability is equal to
 
     .. math::
 

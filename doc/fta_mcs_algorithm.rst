@@ -32,25 +32,25 @@ find modules in the tree.
 
 The second operation is to find modules (independent sub-trees) of the tree.
 Modules are defined as gates or group of events that do not have common events
-or modules with other gates. Modules are analyzed as a separate and
-independent fault trees. If a module appears in the final minimal cut sets,
-then the cut sets are populated with the minimal cut sets of the module.
-This operation guarantees that the final joint cut sets are minimal, and no
-expensive check for minimality is needed. However, most complex fault trees
-do not contain big modules in their original Boolean formula.
+or modules with other gates. Modules are analyzed as separate and independent
+fault trees. If a module appears in the final minimal cut sets, then the cut
+sets are populated with the minimal cut sets of the module. This operation
+guarantees that the final joint cut sets are minimal, and no expensive check
+for minimality is needed. However, most complex fault trees do not contain big
+modules in their original Boolean formula.
 
 In order to simplify the Boolean formula of a fault tree and group independent
 subtrees, formula rewriting can be attempted. One of the goals of this
 procedure is to reduce the number of common events and gates. This procedure
-may also help to isolate those events and gates that appear in multiple
-places in a fault tree, making the modularization process more effective.
+may also help isolate those events and gates that appear in multiple places in
+a fault tree, making the modularization process more effective.
 
 
 Minimal Cut Set (MCS) Generation Algorithm
 ==========================================
 
 Steps in the algorithm for minimal cut set generation from a fault tree.
-This algorithm is similar to the algebraic method or MOCUS expansion.
+This algorithm is similar to the MOCUS algorithm.
 
 **Rule 1.** Each OR gate generates new rows(sets) in the table(set) of cut sets
 
@@ -64,7 +64,7 @@ After finishing or each of the above steps:
 
 
 MCS Generation Implementation Specifics
-========================================
+=======================================
 
 The implemented algorithm is similar to the MOCUS algorithm, but it is not
 yet formally verified as a MOCUS-like algorithm. The actual implementation

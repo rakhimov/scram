@@ -4,8 +4,8 @@
 XML File Helper Tools
 #####################
 
-SCRAM project uses XML files for analyses. These input files must be
-formatted according to `OpenPSA Model Exchange Format v2.0d`_ or later.
+SCRAM uses XML files for analyses. These input files must be formatted
+according to `OpenPSA Model Exchange Format v2.0d`_ or later.
 
 .. _`OpenPSA Model Exchange Format v2.0d`:
     http://open-psa.org/joomla1.5/index.php?option=com_content&view=category&id=4&Itemid=19
@@ -19,7 +19,7 @@ files, it is recommended to use advanced text editors and tools that provide
 XML specific automation and help, i.e. tag auto-completion, folding, schema
 validation.
 
-Some of the recommended tools:
+Some recommended tools:
 
 - `Vim <http://www.vim.org/>`_ with `xmledit <https://github.com/sukima/xmledit>`_
 
