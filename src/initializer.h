@@ -25,7 +25,6 @@ class CcfGroup;
 class Expression;
 class Formula;
 class XMLParser;
-enum Units;
 
 /// @class Initializer
 /// This class operates on input files to initialize analysis constructs like
