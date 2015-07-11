@@ -37,10 +37,10 @@ void IndexedFaultTree::InitiateIndexedFaultTree(
                                      ccf_basic_to_gates, all_to_int);
   }
 
-  LOG(DEBUG2) << "Unrolling gates.";
+  LOG(DEBUG2) << "Normalizing gates.";
   assert(top_event_sign_ == 1);
-  IndexedFaultTree::UnrollGates();
-  LOG(DEBUG2) << "Finished unrolling gates.";
+  IndexedFaultTree::NormalizeGates();
+  LOG(DEBUG2) << "Finished normalizing gates.";
 }
 
 void IndexedFaultTree::PropagateConstants(
@@ -115,7 +115,7 @@ void IndexedFaultTree::ProcessFormula(
   indexed_gates_.insert(std::make_pair(gate->index(), gate));
 }
 
-void IndexedFaultTree::UnrollGates() {
+void IndexedFaultTree::NormalizeGates() {
   // Handle special case for a top event.
   IndexedGatePtr top_gate = indexed_gates_.find(top_event_index_)->second;
   GateType type = top_gate->type();
@@ -134,7 +134,7 @@ void IndexedFaultTree::UnrollGates() {
     indexed_gates_.erase(top_event_index_);
     top_event_index_ = top_gate->index();
     top_event_sign_ *= type == kNotGate ? -1 : 1;  // The change for sign.
-    IndexedFaultTree::UnrollGates();  // This should handle NOT->NOT cases.
+    IndexedFaultTree::NormalizeGates();  // This should handle NOT->NOT cases.
     return;
   }
   // Gather parent information for negative gate processing.
@@ -152,7 +152,7 @@ void IndexedFaultTree::UnrollGates() {
   // Assumes that all gates are in indexed_gates_ container.
   boost::unordered_map<int, IndexedGatePtr> original_gates(indexed_gates_);
   for (it = original_gates.begin(); it != original_gates.end(); ++it) {
-    IndexedFaultTree::UnrollGate(it->second);
+    IndexedFaultTree::NormalizeGate(it->second);
   }
   // Note that parent information is invalid from this point.
 }
@@ -191,22 +191,22 @@ void IndexedFaultTree::NotifyParentsOfNegativeGates(
   }
 }
 
-void IndexedFaultTree::UnrollGate(const IndexedGatePtr& gate) {
+void IndexedFaultTree::NormalizeGate(const IndexedGatePtr& gate) {
   GateType type = gate->type();
   if (type == kOrGate || type == kNorGate) {  // Negation is already processed.
     gate->type(kOrGate);
   } else if (type == kAndGate || type == kNandGate) {
     gate->type(kAndGate);  // Negation is already processed.
   } else if (type == kXorGate) {
-    IndexedFaultTree::UnrollXorGate(gate);
+    IndexedFaultTree::NormalizeXorGate(gate);
   } else if (type == kAtleastGate) {
-    IndexedFaultTree::UnrollAtleastGate(gate);
+    IndexedFaultTree::NormalizeAtleastGate(gate);
   } else {
     assert(type == kNotGate || type == kNullGate);  // Dealt in the coalescing.
   }
 }
 
-void IndexedFaultTree::UnrollXorGate(const IndexedGatePtr& gate) {
+void IndexedFaultTree::NormalizeXorGate(const IndexedGatePtr& gate) {
   assert(gate->children().size() == 2);
   std::set<int>::const_iterator it = gate->children().begin();
   IndexedGatePtr gate_one(new IndexedGate(++new_gate_index_, kAndGate));
@@ -226,7 +226,7 @@ void IndexedFaultTree::UnrollXorGate(const IndexedGatePtr& gate) {
   gate->AddChild(gate_two->index());
 }
 
-void IndexedFaultTree::UnrollAtleastGate(const IndexedGatePtr& gate) {
+void IndexedFaultTree::NormalizeAtleastGate(const IndexedGatePtr& gate) {
   int vote_number = gate->vote_number();
 
   assert(vote_number > 1);

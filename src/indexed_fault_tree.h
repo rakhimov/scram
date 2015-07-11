@@ -83,12 +83,12 @@ class IndexedFaultTree {
                       const std::map<std::string, int>& ccf_basic_to_gates,
                       const boost::unordered_map<std::string, int>& all_to_int);
 
-  /// Starts unrolling gates to simplify gates to OR, AND gates.
+  /// Starts normalizing gates to simplify gates to OR, AND gates.
   /// NOT and NUll are dealt with specifically.
   /// This function uses parent information of each gate, so the tree must
   /// be initialized before a call of this function.
-  /// New gates are created upon unrolling complex gates, such as XOR.
-  void UnrollGates();
+  /// New gates are created upon normalizing complex gates, such as XOR.
+  void NormalizeGates();
 
   /// Traverses the tree to gather information about parents of indexed gates.
   /// This information might be needed for other algorithms because
@@ -105,20 +105,20 @@ class IndexedFaultTree {
   /// @param[in] gate The gate to be start processing.
   void NotifyParentsOfNegativeGates(const IndexedGatePtr& gate);
 
-  /// Unrolls a gate to make OR, AND gates. The parents of the
-  /// gate are not notified. This means that negative gates must be dealt
+  /// Normalizes a gate to make OR, AND gates. The parents of the
+  /// gates are not notified. This means that negative gates must be dealt
   /// separately. However, NOT and NULL gates are left untouched for later
   /// special processing.
   /// @param[in,out] gate The gate to be processed.
-  void UnrollGate(const IndexedGatePtr& gate);
+  void NormalizeGate(const IndexedGatePtr& gate);
 
-  /// Unrolls a gate with XOR logic.
-  /// @param[in,out] gate The gate to unroll.
-  void UnrollXorGate(const IndexedGatePtr& gate);
+  /// Normalizes a gate with XOR logic.
+  /// @param[in,out] gate The gate to normalize.
+  void NormalizeXorGate(const IndexedGatePtr& gate);
 
-  /// Unrolls an ATLEAST gate with a vote number.
-  /// @param[in,out] gate The atleast gate to unroll.
-  void UnrollAtleastGate(const IndexedGatePtr& gate);
+  /// Normalizes an ATLEAST gate with a vote number.
+  /// @param[in,out] gate The atleast gate to normalize.
+  void NormalizeAtleastGate(const IndexedGatePtr& gate);
 
   /// Remove all house events from a given gate.
   /// After this function, there should not be any unity or null gates because
