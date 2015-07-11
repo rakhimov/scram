@@ -1,6 +1,6 @@
 /// @file indexed_fault_tree.cc
 /// Implementation of IndexedFaultTree class and helper functions to
-/// efficiently find minimal cut sets from a fault tree.
+/// efficiently preprocess and find minimal cut sets from a fault tree.
 #include "indexed_fault_tree.h"
 
 #include <algorithm>
@@ -91,8 +91,7 @@ void IndexedFaultTree::ProcessFormula(
   assert(!indexed_gates_.count(index));
   GateType type = kStringToType_.find(formula->type())->second;
   IndexedGatePtr gate(new IndexedGate(index, type));
-  if (type == kAtleastGate)
-    gate->vote_number(formula->vote_number());
+  if (type == kAtleastGate) gate->vote_number(formula->vote_number());
 
   typedef boost::shared_ptr<Event> EventPtr;
 
@@ -121,23 +120,28 @@ void IndexedFaultTree::NormalizeGates() {
   // Handle special case for a top event.
   IndexedGatePtr top_gate = indexed_gates_.find(top_event_index_)->second;
   GateType type = top_gate->type();
-  if (type == kNorGate || type == kOrGate) {
-    top_event_sign_ *= type == kNorGate ? -1 : 1;  // For negative gates.
-    top_gate->type(kOrGate);
-  } else if (type == kNandGate || type == kAndGate) {
-    top_event_sign_ *= type == kNandGate ? -1 : 1;
-    top_gate->type(kAndGate);
-  } else if (type == kNotGate || type == kNullGate) {
-    // Change the top event to the negative child.
-    assert(top_gate->children().size() == 1);
-    int child_index = *top_gate->children().begin();
-    assert(child_index > 0);
-    top_gate = indexed_gates_.find(std::abs(child_index))->second;
-    indexed_gates_.erase(top_event_index_);
-    top_event_index_ = top_gate->index();
-    top_event_sign_ *= type == kNotGate ? -1 : 1;  // The change for sign.
-    IndexedFaultTree::NormalizeGates();  // This should handle NOT->NOT cases.
-    return;
+  switch (type) {
+    case kNorGate:
+      top_event_sign_ *= -1;  // For negative gates. Fall-through to OR case.
+    case kOrGate:
+      top_gate->type(kOrGate);
+      break;
+    case kNandGate:
+      top_event_sign_ *= -1;  // For negative gates. Fall-through to AND case.
+    case kAndGate:
+      top_gate->type(kAndGate);
+      break;
+    case kNotGate:
+      top_event_sign_ *= -1;  // Change the sign. Fall-through to NULL case.
+    case kNullGate:
+      assert(top_gate->children().size() == 1);
+      int child_index = *top_gate->children().begin();
+      assert(child_index > 0);
+      top_gate = indexed_gates_.find(std::abs(child_index))->second;
+      indexed_gates_.erase(top_event_index_);
+      top_event_index_ = top_gate->index();
+      IndexedFaultTree::NormalizeGates();  // This should handle NOT->NOT cases.
+      return;
   }
   // Gather parent information for negative gate processing.
   std::set<int> processed_gates;
@@ -195,16 +199,23 @@ void IndexedFaultTree::NotifyParentsOfNegativeGates(
 
 void IndexedFaultTree::NormalizeGate(const IndexedGatePtr& gate) {
   GateType type = gate->type();
-  if (type == kOrGate || type == kNorGate) {  // Negation is already processed.
-    gate->type(kOrGate);
-  } else if (type == kAndGate || type == kNandGate) {
-    gate->type(kAndGate);  // Negation is already processed.
-  } else if (type == kXorGate) {
-    IndexedFaultTree::NormalizeXorGate(gate);
-  } else if (type == kAtleastGate) {
-    IndexedFaultTree::NormalizeAtleastGate(gate);
-  } else {
-    assert(type == kNotGate || type == kNullGate);  // Dealt in the coalescing.
+  switch (type) {  // Negation is already processed.
+    case kNorGate:
+    case kOrGate:
+      gate->type(kOrGate);
+      break;
+    case kNandGate:
+    case kAndGate:
+      gate->type(kAndGate);
+      break;
+    case kXorGate:
+      IndexedFaultTree::NormalizeXorGate(gate);
+      break;
+    case kAtleastGate:
+      IndexedFaultTree::NormalizeAtleastGate(gate);
+      break;
+    default:
+      assert(type == kNotGate || type == kNullGate);  // Dealt in coalescing.
   }
 }
 
@@ -325,31 +336,34 @@ bool IndexedFaultTree::ProcessConstantChild(const IndexedGatePtr& gate,
   assert(parent_type == kOrGate || parent_type == kAndGate ||
          parent_type == kNotGate || parent_type == kNullGate);
 
-  if (!state) {  // Null state.
-    if (parent_type == kOrGate) {
-      to_erase->push_back(child);
-      return false;
-
-    } else if (parent_type == kAndGate || parent_type == kNullGate) {
-      // AND gate with null child.
-      gate->Nullify();
-
-    } else if (parent_type == kNotGate) {
-      gate->MakeUnity();
+  if (!state) {  // Null state child.
+    switch (parent_type) {
+      case kOrGate:
+        to_erase->push_back(child);
+        return false;
+      case kNullGate:
+      case kAndGate:
+        gate->Nullify();
+        break;
+      case kNotGate:
+        gate->MakeUnity();
+        break;
     }
-  } else {  // Unity state.
-    if (parent_type == kOrGate) {
-      gate->MakeUnity();
-
-    } else if (parent_type == kAndGate || parent_type == kNullGate) {
-      to_erase->push_back(child);
-      return false;
-
-    } else if (parent_type == kNotGate) {
-      gate->Nullify();
+  } else {  // Unity state child.
+    switch (parent_type) {
+      case kNullGate:
+      case kOrGate:
+        gate->MakeUnity();
+        break;
+      case kAndGate:
+        to_erase->push_back(child);
+        return false;
+      case kNotGate:
+        gate->Nullify();
+        break;
     }
   }
-  return true;  // Becomes constant most of the time or cases.
+  return true;  // Becomes constant NULL or UNITY most of the time or cases.
 }
 
 void IndexedFaultTree::RemoveChildren(const IndexedGatePtr& gate,
@@ -449,11 +463,9 @@ bool IndexedFaultTree::ProcessConstGates(const IndexedGatePtr& gate,
       if (!changed && ret) changed = true;
       State state = child_gate->state();
       if (state == kNormalState) continue;  // Only three states are possible.
-      if (IndexedFaultTree::ProcessConstantChild(
-              gate,
-              *it,
-              state == kNullState ? false : true,
-              &to_erase))
+      bool state_flag = state == kNullState ? false : true;
+      if (IndexedFaultTree::ProcessConstantChild(gate, *it, state_flag,
+                                                 &to_erase))
         return true;
     }
   }

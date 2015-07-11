@@ -49,11 +49,13 @@ void SimpleGate::GenerateCutSets(const SetPtr& cut_set,
                                  std::set<SetPtr, SetPtrComp>* new_cut_sets) {
   assert(cut_set->size() <= limit_order_);
   assert(type_ == kOrGate || type_ == kAndGate);
-  if (type_ == kOrGate) {  // OR gate operations.
-    SimpleGate::OrGateCutSets(cut_set, new_cut_sets);
-
-  } else {  // AND gate operations.
-    SimpleGate::AndGateCutSets(cut_set, new_cut_sets);
+  switch (type_) {
+    case kOrGate:
+      SimpleGate::OrGateCutSets(cut_set, new_cut_sets);
+      break;
+    case kAndGate:
+      SimpleGate::AndGateCutSets(cut_set, new_cut_sets);
+      break;
   }
 }
 

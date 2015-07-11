@@ -50,8 +50,8 @@ bool IndexedGate::MergeGate(IndexedGate* child_gate) {
   assert(children_.count(child_gate->index()));
   children_.erase(child_gate->index());
   std::set<int>::const_iterator it;
-  for (it = child_gate->children_.begin();
-       it != child_gate->children_.end(); ++it) {
+  for (it = child_gate->children_.begin(); it != child_gate->children_.end();
+       ++it) {
     if (!IndexedGate::AddChild(*it)) return false;
   }
   return true;
