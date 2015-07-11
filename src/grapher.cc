@@ -11,13 +11,13 @@
 
 namespace scram {
 
-const std::map<std::string, std::string> Grapher::gate_colors_ =
+const std::map<std::string, std::string> Grapher::kGateColors_ =
     boost::assign::map_list_of("or", "blue") ("and", "green") ("not", "red")
                               ("xor", "brown") ("inhibit", "yellow")
                               ("atleast", "cyan") ("null", "gray")
                               ("nor", "magenta") ("nand", "orange");
 
-const std::map<std::string, std::string> Grapher::event_colors_ =
+const std::map<std::string, std::string> Grapher::kEventColors_ =
     boost::assign::map_list_of("basic", "black") ("undeveloped", "blue")
                               ("house", "green") ("conditional", "red");
 
@@ -108,8 +108,8 @@ void Grapher::FormatTopEvent(const GatePtr& top_event, std::ostream& out) {
     gate = top_event->GetAttribute("flavor").value;
 
   std::string gate_color = "black";
-  if (gate_colors_.count(gate)) {
-    gate_color = gate_colors_.find(gate)->second;
+  if (kGateColors_.count(gate)) {
+    gate_color = kGateColors_.find(gate)->second;
   }
 
   boost::to_upper(gate);
@@ -138,7 +138,7 @@ void Grapher::FormatIntermediateEvents(
     if (it->second->HasAttribute("flavor") && gate == "and")
       gate = it->second->GetAttribute("flavor").value;
 
-    std::string gate_color = gate_colors_.find(gate)->second;
+    std::string gate_color = kGateColors_.find(gate)->second;
     boost::to_upper(gate);  // This is for graphing.
     std::string id = it->second->id();
     std::string name = it->second->name();
@@ -210,7 +210,7 @@ void Grapher::FormatPrimaryEvent(const PrimaryEventPtr& primary_event,
   if (type == "basic" && primary_event->HasAttribute("flavor")) {
     type = primary_event->GetAttribute("flavor").value;
   }
-  std::string color = event_colors_.find(type)->second;
+  std::string color = kEventColors_.find(type)->second;
   for (int i = 0; i <= repetition; ++i) {
     out << "\"" << primary_event->id() << "_R" << i
         << "\" [shape=circle, "
@@ -229,7 +229,7 @@ void Grapher::FormatFormulas(
   for (it = formulas.begin(); it != formulas.end(); ++it) {
     std::string gate = it->second->type();
 
-    std::string gate_color = gate_colors_.find(gate)->second;
+    std::string gate_color = kGateColors_.find(gate)->second;
     boost::to_upper(gate);  // This is for graphing.
     out << "\"" << it->first << "\"";
     out << " [shape=box, ";

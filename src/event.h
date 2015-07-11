@@ -161,9 +161,9 @@ class Formula {
 
  private:
   /// Formula types that require two or more arguments.
-  static const std::set<std::string> two_or_more_;
+  static const std::set<std::string> kTwoOrMore_;
   /// Formula types that require exactly one argument.
-  static const std::set<std::string> single_;
+  static const std::set<std::string> kSingle_;
 
   /// Gathers nodes and connectors from arguments of the gate.
   void GatherNodesAndConnectors();

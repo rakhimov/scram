@@ -26,17 +26,16 @@ namespace fs = boost::filesystem;
 
 namespace scram {
 
-const std::map<std::string, Units> Initializer::units_ =
+const std::map<std::string, Units> Initializer::kUnits_ =
     boost::assign::map_list_of("bool", kBool) ("int", kInt) ("float", kFloat)
                               ("hours", kHours) ("hours-1", kInverseHours)
                               ("years", kYears) ("years-1", kInverseYears)
                               ("fit", kFit) ("demands", kDemands);
 
-const char* const Initializer::unit_to_string_[] = {"unitless", "bool", "int",
-                                                    "float", "hours",
-                                                    "hours-1", "years",
-                                                    "years-1", "fit",
-                                                    "demands"};
+const char* const Initializer::kUnitToString_[] = {"unitless", "bool", "int",
+                                                   "float", "hours", "hours-1",
+                                                   "years", "years-1", "fit",
+                                                   "demands"};
 
 Initializer::Initializer(const Settings& settings) {
   settings_ = settings;
@@ -573,8 +572,8 @@ boost::shared_ptr<Parameter> Initializer::RegisterParameter(
   std::string unit = param_node->get_attribute_value("unit");
   boost::trim(unit);
   if (unit != "") {
-    assert(units_.count(unit));
-    parameter->unit(units_.find(unit)->second);
+    assert(kUnits_.count(unit));
+    parameter->unit(kUnits_.find(unit)->second);
   }
   Initializer::AttachLabelAndAttributes(param_node, parameter);
   return parameter;
@@ -647,7 +646,7 @@ bool Initializer::GetParameterExpression(const xmlpp::Element* expr_element,
     try {
       ParameterPtr param = model_->GetParameter(name, base_path);
       param->unused(false);
-      param_unit = unit_to_string_[param->unit()];
+      param_unit = kUnitToString_[param->unit()];
       expression = param;
     } catch (ValidationError& err) {
       std::stringstream msg;
@@ -656,7 +655,7 @@ bool Initializer::GetParameterExpression(const xmlpp::Element* expr_element,
       throw err;
     }
   } else if (expr_name == "system-mission-time") {
-    param_unit = unit_to_string_[mission_time_->unit()];
+    param_unit = kUnitToString_[mission_time_->unit()];
     expression = mission_time_;
 
   } else {

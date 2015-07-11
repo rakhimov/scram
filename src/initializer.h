@@ -66,9 +66,9 @@ class Initializer {
   typedef boost::shared_ptr<Parameter> ParameterPtr;
 
   /// Map of valid units for parameters.
-  static const std::map<std::string, Units> units_;
+  static const std::map<std::string, Units> kUnits_;
   /// String representation of units.
-  static const char* const unit_to_string_[];
+  static const char* const kUnitToString_[];
 
   /// Reads one input file with the structure of analysis entities.
   /// Initializes the analysis from the given input file.

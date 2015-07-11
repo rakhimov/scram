@@ -12,10 +12,10 @@
 
 namespace scram {
 
-const std::set<std::string> Formula::two_or_more_ =
+const std::set<std::string> Formula::kTwoOrMore_ =
     boost::assign::list_of("and") ("or") ("nand") ("nor");
 
-const std::set<std::string> Formula::single_ =
+const std::set<std::string> Formula::kSingle_ =
     boost::assign::list_of("not") ("null");
 
 Event::Event(const std::string& name, const std::string& base_path,
@@ -124,18 +124,18 @@ void Formula::AddArgument(const boost::shared_ptr<Formula>& formula) {
 }
 
 void Formula::Validate() {
-  assert(two_or_more_.count(type_) || single_.count(type_) ||
+  assert(kTwoOrMore_.count(type_) || kSingle_.count(type_) ||
          type_ == "atleast" || type_ == "xor");
 
   std::string form = type_;  // Copying for manipulations.
 
   int size = formula_args_.size() + event_args_.size();
   std::stringstream msg;
-  if (two_or_more_.count(form) && size < 2) {
+  if (kTwoOrMore_.count(form) && size < 2) {
     boost::to_upper(form);
     msg << form << " formula must have 2 or more arguments.";
 
-  } else if (single_.count(form) && size != 1) {
+  } else if (kSingle_.count(form) && size != 1) {
     boost::to_upper(form);
     msg << form << " formula must have only one argument.";
 

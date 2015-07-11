@@ -12,7 +12,7 @@
 
 namespace scram {
 
-const std::map<std::string, GateType> IndexedFaultTree::string_to_type_ =
+const std::map<std::string, GateType> IndexedFaultTree::kStringToType_ =
     boost::assign::map_list_of("and", kAndGate) ("or", kOrGate)
                               ("atleast", kAtleastGate) ("xor", kXorGate)
                               ("not", kNotGate) ("nand", kNandGate)
@@ -89,7 +89,7 @@ void IndexedFaultTree::ProcessFormula(
     const std::map<std::string, int>& ccf_basic_to_gates,
     const boost::unordered_map<std::string, int>& all_to_int) {
   assert(!indexed_gates_.count(index));
-  GateType type = string_to_type_.find(formula->type())->second;
+  GateType type = kStringToType_.find(formula->type())->second;
   IndexedGatePtr gate(new IndexedGate(index, type));
   if (type == kAtleastGate)
     gate->vote_number(formula->vote_number());

@@ -69,7 +69,7 @@ class IndexedFaultTree {
   typedef boost::shared_ptr<Formula> FormulaPtr;
 
   /// Mapping to string gate types to enum gate types.
-  static const std::map<std::string, GateType> string_to_type_;
+  static const std::map<std::string, GateType> kStringToType_;
 
   /// Processes a formula into a new indexed gates.
   /// @param[in] index The index to be assigned to the new indexed gate.

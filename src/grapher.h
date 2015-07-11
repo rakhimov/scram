@@ -38,8 +38,8 @@ class Grapher {
   typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
   typedef boost::shared_ptr<Formula> FormulaPtr;
 
-  static const std::map<std::string, std::string> gate_colors_;  ///< Colors.
-  static const std::map<std::string, std::string> event_colors_;  ///< Colors.
+  static const std::map<std::string, std::string> kGateColors_;  ///< Colors.
+  static const std::map<std::string, std::string> kEventColors_;  ///< Colors.
 
   /// Graphs one formula with arguments.
   /// @param[in] formula_name Unique name for the formula.
