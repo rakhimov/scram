@@ -15,6 +15,8 @@
 
 #include "indexed_gate.h"
 
+class IndexedFaultTreeTest;
+
 namespace scram {
 
 class Gate;
@@ -27,6 +29,7 @@ class Mocus;
 /// The class provides main preprocessing operations over a fault tree
 /// to generate minimal cut sets.
 class IndexedFaultTree {
+  friend class ::IndexedFaultTreeTest;
   friend class Mocus;
 
  public:
