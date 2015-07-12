@@ -51,10 +51,10 @@ class IndexedGate {
   inline const GateType& type() const { return type_; }
 
   /// Changes the gate type information. This function is expected to be used
-  /// with only simple AND and OR gates.
-  /// @param[in] t The type for this gate. AND or OR gates only.
+  /// with only simple AND, OR, NOT, NULL gates.
+  /// @param[in] t The type for this gate.
   inline void type(const GateType& t) {
-    assert(t == kAndGate || t == kOrGate);
+    assert(t == kAndGate || t == kOrGate || t == kNotGate || t == kNullGate);
     type_ = t;
   }
 
@@ -62,7 +62,7 @@ class IndexedGate {
   inline int vote_number() const { return vote_number_; }
 
   /// Sets the vote number for this gate. The function does not check if
-  /// the gate type is ATLEAST.
+  /// the gate type is ATLEAST; nor does it validate the number.
   /// @param[in] number The vote number of ATLEAST gate.
   inline void vote_number(int number) { vote_number_ = number; }
 

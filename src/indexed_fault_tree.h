@@ -37,9 +37,8 @@ class IndexedFaultTree {
   explicit IndexedFaultTree(int top_event_id);
 
   /// Creates indexed gates with basic and house event indices as children.
+  /// Nested gates are flattened and given new indices.
   /// It is assumed that indices are sequential starting from 1.
-  /// This function also simplifies the tree to simple gates with flattened
-  /// formulas.
   /// @param[in] int_to_inter Container of gates and their indices including
   ///                         the top gate.
   /// @param[in] ccf_basic_to_gates CCF basic events that are converted to
@@ -58,7 +57,9 @@ class IndexedFaultTree {
   void PropagateConstants(const std::set<int>& true_house_events,
                           const std::set<int>& false_house_events);
 
-  /// Performs processing of a fault tree.
+  /// Performs processing of a fault tree to simplify the structure to
+  /// normalized (OR/AND gates only), modular, positive-gate-only indexed fault
+  /// tree.
   /// @param[in] num_basic_events The number of basic events. This information
   ///                             is needed to optimize the tree traversal
   ///                             with certain expectation.
@@ -120,7 +121,10 @@ class IndexedFaultTree {
   /// @param[in,out] gate The atleast gate to normalize.
   void NormalizeAtleastGate(const IndexedGatePtr& gate);
 
-  /// Remove all house events from a given gate.
+  /// Remove all house events from a given gate according to the Boolean logic.
+  /// The structure of the tree should not be pre-processed before this
+  /// operation; that is, this is the first operation that is done after
+  /// creation of an indexed fault tree.
   /// After this function, there should not be any unity or null gates because
   /// of house events.
   /// @param[in] true_house_events House events with true state.
@@ -132,6 +136,33 @@ class IndexedFaultTree {
                           const IndexedGatePtr& gate,
                           std::set<int>* processed_gates);
 
+  /// Changes the state of a gate or passes a constant child to be removed
+  /// later. The function determines its actions depending on the type of
+  /// a gate and state of a child; however, the sign of the index is ignored.
+  /// The caller of this function must ensure that the state corresponds to the
+  /// sign of the child index.
+  /// The type of the gate may change, but it will only be valid after the
+  /// to-be-erased children are handled properly.
+  /// @param[in,out] gate The parent gate that contains the children.
+  /// @param[in] child The constant child under consideration.
+  /// @param[in] state False or True constant state of the child.
+  /// @param[in,out] to_erase The set of children to erase from the parent gate.
+  /// @returns true if the passed gate has become constant due to its child.
+  /// @returns false if the parent still valid for further operations.
+  bool ProcessConstantChild(const IndexedGatePtr& gate, int child,
+                            bool state, std::vector<int>* to_erase);
+
+  /// Removes a set of children from a gate taking into account the logic.
+  /// This is a helper function for NULL and UNITY propagation on the tree.
+  /// If the final gate is empty, its state is turned into NULL or UNITY
+  /// depending on the logic of the gate and the logic of the constant
+  /// propagation.
+  /// The parent information is not updated for the child.
+  /// @param[in,out] gate The gate that contains the children to be removed.
+  /// @param[in] to_erase The set of children to erase from the parent gate.
+  void RemoveChildren(const IndexedGatePtr& gate,
+                      const std::vector<int>& to_erase);
+
   /// Removes null and unity gates. There should not be negative gate children.
   /// After this function, there should not be null or unity gates resulting
   /// from previous processing steps.
@@ -142,20 +173,6 @@ class IndexedFaultTree {
   /// @returns false if no change has been made.
   bool ProcessConstGates(const IndexedGatePtr& gate,
                          std::set<int>* processed_gates);
-
-  /// Changes the state of a gate or passes a constant child to be removed
-  /// later. The function determines its actions depending on the type of
-  /// a gate and state of a child,
-  /// @param[in,out] gate The parent gate that contains the children.
-  /// @param[in] child The constant child under consideration.
-  /// @param[in] state False or True constant state of the child.
-  /// @param[out] to_erase The set of children to erase from the above gate.
-  /// @returns true if the passed gate has become a constant due to its child.
-  /// @returns false if the parent still valid for further operations.
-  bool ProcessConstantChild(const IndexedGatePtr& gate,
-                            int child,
-                            bool state,
-                            std::vector<int>* to_erase);
 
   /// Propagates complements of child gates down to basic events
   /// in order to remove any NOR or NAND logic from the tree.
@@ -170,16 +187,6 @@ class IndexedFaultTree {
   void PropagateComplements(const IndexedGatePtr& gate,
                             std::map<int, int>* gate_complements,
                             std::set<int>* processed_gates);
-
-  /// Removes a set of children from an OR/AND gate.
-  /// This is a helper function for NULL and UNITY propagation on the tree.
-  /// If the final gate is empty, it is turned into NULL for OR gates and
-  /// UNITY for AND and other gates.
-  /// This function may also update the children parent information if needed.
-  /// @param[in,out] gate The gate that contains the children to be removed.
-  /// @param[in] to_erase The set of children to erase from the above gate.
-  void RemoveChildren(const IndexedGatePtr& gate,
-                      const std::vector<int>& to_erase);
 
   /// Pre-processes the tree by doing simple Boolean algebra.
   /// At this point all gates are expected to be either OR or AND.

@@ -36,18 +36,12 @@ void IndexedFaultTree::InitiateIndexedFaultTree(
     IndexedFaultTree::ProcessFormula(it->first, it->second->formula(),
                                      ccf_basic_to_gates, all_to_int);
   }
-
-  LOG(DEBUG2) << "Normalizing gates.";
-  assert(top_event_sign_ == 1);
-  IndexedFaultTree::NormalizeGates();
-  LOG(DEBUG2) << "Finished normalizing gates.";
 }
 
 void IndexedFaultTree::PropagateConstants(
     const std::set<int>& true_house_events,
     const std::set<int>& false_house_events) {
-  if (true_house_events.empty() && false_house_events.empty())
-    return;  // No need to prune constants when there are no constants.
+  if (true_house_events.empty() && false_house_events.empty()) return;
   IndexedGatePtr top = indexed_gates_.find(top_event_index_)->second;
   std::set<int> processed_gates;
   LOG(DEBUG2) << "Propagating constants in a fault tree.";
@@ -57,6 +51,11 @@ void IndexedFaultTree::PropagateConstants(
 }
 
 void IndexedFaultTree::ProcessIndexedFaultTree(int num_basic_events) {
+  LOG(DEBUG2) << "Normalizing gates.";
+  assert(top_event_sign_ == 1);
+  IndexedFaultTree::NormalizeGates();
+  LOG(DEBUG2) << "Finished normalizing gates.";
+
   IndexedGatePtr top = indexed_gates_.find(top_event_index_)->second;
   if (top_event_sign_ < 0) {
     assert(top->type() == kOrGate || top->type() == kAndGate);
@@ -290,19 +289,14 @@ void IndexedFaultTree::PropagateConstants(
     std::set<int>* processed_gates) {
   if (processed_gates->count(gate->index())) return;
   processed_gates->insert(gate->index());
-  // True house event in AND gate is removed.
-  // False house event in AND gate makes the gate NULL.
-  // True house event in OR gate makes the gate Unity, and it shouldn't appear
-  // in minimal cut sets.
-  // False house event in OR gate is removed.
-  // Unity may occur due to House event.
-  // Null can be due to house events or complement elements.
   std::set<int>::const_iterator it;
-  std::vector<int> to_erase;  // Children to erase.
+  std::vector<int> to_erase;  // Erase children later to keep iterator is valid.
   for (it = gate->children().begin(); it != gate->children().end(); ++it) {
+    assert(*it > 0);
     bool state = false;  // Null or Unity case. Null indication by default.
-    if (std::abs(*it) > gate_index_) {  // Processing a gate.
-      IndexedGatePtr child_gate = indexed_gates_.find(std::abs(*it))->second;
+    if (*it > gate_index_) {  // Processing a gate child.
+      // Depth-first traversal.
+      IndexedGatePtr child_gate = indexed_gates_.find(*it)->second;
       IndexedFaultTree::PropagateConstants(true_house_events,
                                            false_house_events,
                                            child_gate,
@@ -311,19 +305,17 @@ void IndexedFaultTree::PropagateConstants(
       if (gate_state == kNormalState) continue;
       state = gate_state == kNullState ? false : true;
 
-    } else {  // Processing a primary event.
-      if (false_house_events.count(std::abs(*it))) {
+    } else {  // Processing a primary event child.
+      if (false_house_events.count(*it)) {
         state = false;
-      } else if (true_house_events.count(std::abs(*it))) {
+      } else if (true_house_events.count(*it)) {
         state = true;
       } else {
-        continue;  // This must be a basic event.
+        continue;  // This must be a basic event child. It is not constant.
       }
     }
-    if (*it < 0) state = !state;  // Complement event.
-
     if (IndexedFaultTree::ProcessConstantChild(gate, *it, state, &to_erase))
-      return;
+      return;  // Early exit because the parent's state turned to NULL or UNITY.
   }
   IndexedFaultTree::RemoveChildren(gate, to_erase);
 }
@@ -333,11 +325,11 @@ bool IndexedFaultTree::ProcessConstantChild(const IndexedGatePtr& gate,
                                             bool state,
                                             std::vector<int>* to_erase) {
   GateType parent_type = gate->type();
-  assert(parent_type == kOrGate || parent_type == kAndGate ||
-         parent_type == kNotGate || parent_type == kNullGate);
 
   if (!state) {  // Null state child.
     switch (parent_type) {
+      case kNorGate:
+      case kXorGate:
       case kOrGate:
         to_erase->push_back(child);
         return false;
@@ -345,9 +337,16 @@ bool IndexedFaultTree::ProcessConstantChild(const IndexedGatePtr& gate,
       case kAndGate:
         gate->Nullify();
         break;
+      case kNandGate:
       case kNotGate:
         gate->MakeUnity();
         break;
+      case kAtleastGate:  // K / (N - 1).
+        to_erase->push_back(child);
+        int k = gate->vote_number();
+        int n = gate->children().size() - to_erase->size();
+        if (k == n) gate->type(kAndGate);
+        return false;
     }
   } else {  // Unity state child.
     switch (parent_type) {
@@ -355,29 +354,75 @@ bool IndexedFaultTree::ProcessConstantChild(const IndexedGatePtr& gate,
       case kOrGate:
         gate->MakeUnity();
         break;
+      case kNandGate:
       case kAndGate:
         to_erase->push_back(child);
         return false;
+      case kNorGate:
       case kNotGate:
         gate->Nullify();
         break;
+      case kXorGate:  // Special handling due to its internal negation.
+        assert(gate->children().size() == 2);
+        if (to_erase->size() == 1) {  // The other child is NULL.
+          gate->MakeUnity();
+        } else {
+          assert(to_erase->empty());
+          gate->type(kNotGate);
+          to_erase->push_back(child);
+          return false;
+        }
+        break;
+      case kAtleastGate:  // (K - 1) / (N - 1).
+        int k = gate->vote_number();
+        --k;
+        if (k == 1) gate->type(kOrGate);
+        assert(k > 1);
+        gate->vote_number(k);
+        to_erase->push_back(child);
+        return false;
     }
   }
-  return true;  // Becomes constant NULL or UNITY most of the time or cases.
+  return true;  // Becomes constant NULL or UNITY most of the cases.
 }
 
 void IndexedFaultTree::RemoveChildren(const IndexedGatePtr& gate,
                                       const std::vector<int>& to_erase) {
+  if (to_erase.empty()) return;
+  assert(to_erase.size() <= gate->children().size());
   std::vector<int>::const_iterator it_v;
   for (it_v = to_erase.begin(); it_v != to_erase.end(); ++it_v) {
     gate->EraseChild(*it_v);
   }
+  GateType type = gate->type();
   if (gate->children().empty()) {
-    assert(gate->type() == kOrGate || gate->type() == kAndGate);
-    if (gate->type() == kOrGate) {
-      gate->Nullify();
-    } else {  // The default operation for AND gate.
-      gate->MakeUnity();
+    assert(type != kNotGate && type != kNullGate);  // Constant by design.
+    assert(type != kAtleastGate);  // Must get transformed by design.
+    switch (type) {
+      case kNandGate:
+      case kXorGate:
+      case kOrGate:
+        gate->Nullify();
+        break;
+      case kNorGate:
+      case kAndGate:
+        gate->MakeUnity();
+        break;
+    }
+  } else if (gate->children().size() == 1) {
+    assert(type != kAtleastGate);  // Cannot have only one child by processing.
+    switch (type) {
+      case kXorGate:
+      case kOrGate:
+      case kAndGate:
+        gate->type(kNullGate);
+        break;
+      case kNorGate:
+      case kNandGate:
+        gate->type(kNotGate);
+        break;
+      default:
+        assert(type == kNotGate || type == kNullGate);
     }
   }
 }
@@ -478,17 +523,17 @@ bool IndexedFaultTree::JoinGates(const IndexedGatePtr& gate,
                                  std::set<int>* processed_gates) {
   if (processed_gates->count(gate->index())) return false;
   processed_gates->insert(gate->index());
-  GateType parent = gate->type();
-  assert(parent == kAndGate || parent == kOrGate);
+  GateType parent_type = gate->type();
+  assert(parent_type == kAndGate || parent_type == kOrGate);
   std::set<int>::const_iterator it;
   bool changed = false;  // Indication if the tree is changed.
   for (it = gate->children().begin(); it != gate->children().end();) {
     if (std::abs(*it) > gate_index_) {
       assert(*it > 0);
       IndexedGatePtr child_gate = indexed_gates_.find(std::abs(*it))->second;
-      GateType child = child_gate->type();
-      assert(child == kAndGate || child == kOrGate);
-      if (parent == child) {  // Parent is not NULL or NOT.
+      GateType child_type = child_gate->type();
+      assert(child_type == kAndGate || child_type == kOrGate);
+      if (parent_type == child_type) {  // Parent is not NULL or NOT.
         if (!changed) changed = true;
         if (!gate->MergeGate(&*indexed_gates_.find(*it)->second)) {
           break;
