@@ -577,9 +577,6 @@ void IndexedFaultTree::DetectModules(int num_basic_events) {
   assert(!top_gate->Revisited());
   assert(visited_gates.find(top_event_index_)->second.second ==
          top_gate->ExitTime());
-
-  int orig_mod = modules_.size();
-  LOG(DEBUG2) << "Detected number of original modules: " << modules_.size();
 }
 
 int IndexedFaultTree::AssignTiming(int time, const IndexedGatePtr& gate,
@@ -640,7 +637,7 @@ void IndexedFaultTree::FindOriginalModules(
                                             visited_gates);
       min = visited_gates->find(index)->second.first;
       max = visited_gates->find(index)->second.second;
-      if (modules_.count(index) && !child_gate->Revisited()) {
+      if (child_gate->IsModule() && !child_gate->Revisited()) {
         non_shared_children.push_back(*it);
         continue;
       }
@@ -661,7 +658,7 @@ void IndexedFaultTree::FindOriginalModules(
     LOG(DEBUG3) << "Found original module: " << gate->index();
     assert((modular_children.size() + non_shared_children.size()) ==
            gate->children().size());
-    modules_.insert(gate->index());
+    gate->TurnModule();
   }
   if (non_shared_children.size() > 1) {
     IndexedFaultTree::CreateNewModule(gate, non_shared_children);
@@ -695,14 +692,14 @@ void IndexedFaultTree::CreateNewModule(const IndexedGatePtr& gate,
   assert(children.size() > 1);
   assert(children.size() <= gate->children().size());
   if (children.size() == gate->children().size()) {
-    if (modules_.count(gate->index())) return;
-    modules_.insert(gate->index());
+    if (gate->IsModule()) return;
+    gate->TurnModule();
     return;
   }
   assert(gate->type() == kAndGate || gate->type() == kOrGate);
   IndexedGatePtr new_module(new IndexedGate(++new_gate_index_, gate->type()));
   indexed_gates_.insert(std::make_pair(new_gate_index_, new_module));
-  modules_.insert(new_gate_index_);
+  new_module->TurnModule();
   std::vector<int>::const_iterator it_g;
   for (it_g = children.begin(); it_g != children.end(); ++it_g) {
     gate->EraseChild(*it_g);

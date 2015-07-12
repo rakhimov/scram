@@ -200,7 +200,7 @@ void Mocus::FindMcs() {
     std::set<int> member = mcs.back();
     mcs.pop_back();
     if (*member.rbegin() < fault_tree_->gate_index_) {
-      imcs_.push_back(member);
+      imcs_.push_back(member);  // All elements are basic events.
     } else {
       std::set<int>::iterator it_s = member.end();
       --it_s;
@@ -246,7 +246,9 @@ void Mocus::CreateSimpleTree(int gate_index,
   std::set<int>::iterator it;
   for (it = gate->children().begin(); it != gate->children().end(); ++it) {
     if (*it > fault_tree_->gate_index_) {
-      if (fault_tree_->modules_.count(*it)) {
+      IndexedGatePtr child_gate =
+          fault_tree_->indexed_gates_.find(*it)->second;
+      if (child_gate->IsModule()) {
         simple_gate->InitiateWithModule(*it);
         Mocus::CreateSimpleTree(*it, processed_gates);
       } else {

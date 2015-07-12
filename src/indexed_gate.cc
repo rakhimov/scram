@@ -8,7 +8,8 @@ IndexedGate::IndexedGate(int index, const GateType& type)
     : index_(index),
       type_(type),
       state_(kNormalState),
-      vote_number_(-1) {
+      vote_number_(-1),
+      module_(false) {
   std::fill(visits_, visits_ + 3, 0);
 }
 

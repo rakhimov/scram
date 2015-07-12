@@ -250,7 +250,6 @@ class IndexedFaultTree {
   int gate_index_;  ///< The starting gate index for gate identification.
   /// All gates of this tree including newly created ones.
   boost::unordered_map<int, IndexedGatePtr> indexed_gates_;
-  std::set<int> modules_;  ///< Modules in the tree.
   int top_event_sign_;  ///< The negative or positive sign of the top event.
   int new_gate_index_;  ///< Index for a new gate.
 };

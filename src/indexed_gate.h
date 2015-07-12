@@ -90,6 +90,10 @@ class IndexedGate {
   /// @returns parents of this gate.
   inline const std::set<int>& parents() { return parents_; }
 
+  /// @returns true If this gate is set to be a module.
+  /// @returns false If it is not yet set to be a module.
+  inline bool IsModule() const { return module_; }
+
   /// This function is used to initiate this gate with children.
   /// It is assumed that children are passed in ascending order from another
   /// children set.
@@ -189,12 +193,15 @@ class IndexedGate {
   }
 
   /// @returns The time when this gate was first encountered or entered.
+  /// @returns 0 if no enter time is registered.
   inline int EnterTime() const { return visits_[0]; }
 
   /// @returns The exit time upon traversal of the tree.
+  /// @returns 0 if no exit time is registered.
   inline int ExitTime() const { return visits_[1]; }
 
   /// @returns The last time this gate was visited.
+  /// @returns 0 if no last time is registered.
   inline int LastVisit() const { return visits_[2] ? visits_[2] : visits_[1]; }
 
   /// @returns false if this gate was only visited once upon tree traversal.
@@ -208,6 +215,12 @@ class IndexedGate {
   /// Clears all the visit information. Resets the visit times to 0s.
   inline void ClearVisits() { return std::fill(visits_, visits_ + 3, 0); }
 
+  /// Turns this gate's module flag on. This should be one time operation.
+  inline void TurnModule() {
+    assert(!module_);
+    module_ = true;
+  }
+
  private:
   int index_;  ///< Index of this gate.
   GateType type_;  ///< Type of this gate. Only OR and AND are allowed.
@@ -217,6 +230,7 @@ class IndexedGate {
   std::set<int> parents_;  ///< Parents of this gate.
   /// This is a traversal array containing first, second, and last visits.
   int visits_[3];
+  bool module_;  ///< Indication of an independent module gate.
 };
 
 }  // namespace scram
