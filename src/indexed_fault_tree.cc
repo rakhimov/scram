@@ -64,16 +64,16 @@ void IndexedFaultTree::ProcessIndexedFaultTree(int num_basic_events) {
     top_event_sign_ = 1;
   }
   std::map<int, int> complements;
-  std::set<int> processed_gates;
-  IndexedFaultTree::PropagateComplements(top, &complements, &processed_gates);
-  processed_gates.clear();
-  IndexedFaultTree::ProcessConstGates(top, &processed_gates);
+  IndexedFaultTree::ClearGateVisits();
+  IndexedFaultTree::PropagateComplements(top, &complements);
+  IndexedFaultTree::ClearGateVisits();
+  IndexedFaultTree::ProcessConstGates(top);
   do {
-    processed_gates.clear();
-    if (!IndexedFaultTree::JoinGates(top, &processed_gates)) break;
+    IndexedFaultTree::ClearGateVisits();
+    if (!IndexedFaultTree::JoinGates(top)) break;
     // Cleanup null and unity gates. There is no negative gate.
-    processed_gates.clear();
-  } while (IndexedFaultTree::ProcessConstGates(top, &processed_gates));
+    IndexedFaultTree::ClearGateVisits();
+  } while (IndexedFaultTree::ProcessConstGates(top));
   // After this point there should not be null AND or unity OR gates,
   // and the tree structure should be repeating OR and AND.
   // All gates are positive, and each gate has at least two children.
@@ -143,8 +143,8 @@ void IndexedFaultTree::NormalizeGates() {
       return;
   }
   // Gather parent information for negative gate processing.
-  std::set<int> processed_gates;
-  IndexedFaultTree::GatherParentInformation(top_gate, &processed_gates);
+  IndexedFaultTree::ClearGateVisits();
+  IndexedFaultTree::GatherParentInformation(top_gate);
   // Process negative gates except for NOT. Note that top event's negative
   // gate is processed in the above lines.
   // All children are assumed to be positive at this point.
@@ -163,10 +163,9 @@ void IndexedFaultTree::NormalizeGates() {
 }
 
 void IndexedFaultTree::GatherParentInformation(
-    const IndexedGatePtr& parent_gate,
-    std::set<int>* processed_gates) {
-  if (processed_gates->count(parent_gate->index())) return;
-  processed_gates->insert(parent_gate->index());
+    const IndexedGatePtr& parent_gate) {
+  if (parent_gate->Visited()) return;
+  parent_gate->Visit(1);  // Time does not matter.
 
   std::set<int>::const_iterator it;
   for (it = parent_gate->children().begin();
@@ -175,7 +174,7 @@ void IndexedFaultTree::GatherParentInformation(
     if (index > gate_index_) {
       IndexedGatePtr child = indexed_gates_.find(index)->second;
       child->AddParent(parent_gate->index());
-      IndexedFaultTree::GatherParentInformation(child, processed_gates);
+      IndexedFaultTree::GatherParentInformation(child);
     }
   }
 }
@@ -426,8 +425,7 @@ void IndexedFaultTree::RemoveChildren(const IndexedGatePtr& gate,
 
 void IndexedFaultTree::PropagateComplements(
     const IndexedGatePtr& gate,
-    std::map<int, int>* gate_complements,
-    std::set<int>* processed_gates) {
+    std::map<int, int>* gate_complements) {
   // If the child gate is complement, then create a new gate that propagates
   // its sign to its children and itself becomes non-complement.
   // Keep track of complement gates for optimization of repeated complements.
@@ -462,33 +460,29 @@ void IndexedFaultTree::PropagateComplements(
               indexed_gates_.find(-*it)->second->children());
           complement_gate->InvertChildren();
           gate->SwapChild(*it, complement_gate->index());
-          processed_gates->insert(complement_gate->index());
+          complement_gate->Visit(1);
           IndexedFaultTree::PropagateComplements(complement_gate,
-                                                 gate_complements,
-                                                 processed_gates);
+                                                 gate_complements);
         }
         // Note that the iterator is invalid now.
         it = gate->children().begin();  // The negative gates at the start.
         continue;
-      } else if (!processed_gates->count(*it)) {
+      } else if (!child_gate->Visited()) {
         // Continue with the positive gate children.
-        processed_gates->insert(*it);
-        IndexedFaultTree::PropagateComplements(indexed_gates_.find(*it)->second,
-                                               gate_complements,
-                                               processed_gates);
+        child_gate->Visit(1);  // Time does not matter.
+        IndexedFaultTree::PropagateComplements(child_gate, gate_complements);
       }
     }
     ++it;
   }
 }
 
-bool IndexedFaultTree::ProcessConstGates(const IndexedGatePtr& gate,
-                                         std::set<int>* processed_gates) {
+bool IndexedFaultTree::ProcessConstGates(const IndexedGatePtr& gate) {
   // Null state gates' parent: OR->Remove the child and AND->NULL the parent.
   // Unity state gates' parent: OR->Unity the parent and AND->Remove the child.
   // The tree structure is only positive AND and OR gates.
-  if (processed_gates->count(gate->index())) return false;
-  processed_gates->insert(gate->index());
+  if (gate->Visited()) return false;
+  gate->Visit(1);  // Time does not matter.
 
   if (gate->state() == kNullState || gate->state() == kUnityState) return false;
   bool changed = false;  // Indication if this operation changed the gate.
@@ -500,8 +494,7 @@ bool IndexedFaultTree::ProcessConstGates(const IndexedGatePtr& gate,
     if (std::abs(*it) > gate_index_) {
       assert(*it > 0);
       IndexedGatePtr child_gate = indexed_gates_.find(*it)->second;
-      bool ret  =
-          IndexedFaultTree::ProcessConstGates(child_gate, processed_gates);
+      bool ret = IndexedFaultTree::ProcessConstGates(child_gate);
       if (!changed && ret) changed = true;
       State state = child_gate->state();
       if (state == kNormalState) continue;  // Only three states are possible.
@@ -516,10 +509,9 @@ bool IndexedFaultTree::ProcessConstGates(const IndexedGatePtr& gate,
   return changed;
 }
 
-bool IndexedFaultTree::JoinGates(const IndexedGatePtr& gate,
-                                 std::set<int>* processed_gates) {
-  if (processed_gates->count(gate->index())) return false;
-  processed_gates->insert(gate->index());
+bool IndexedFaultTree::JoinGates(const IndexedGatePtr& gate) {
+  if (gate->Visited()) return false;
+  gate->Visit(1);  // Time does not matter.
   GateType parent_type = gate->type();
   assert(parent_type == kAndGate || parent_type == kOrGate);
   std::set<int>::const_iterator it;
@@ -546,7 +538,7 @@ bool IndexedFaultTree::JoinGates(const IndexedGatePtr& gate,
         it = gate->children().begin();
         continue;
       } else {
-        bool ret = IndexedFaultTree::JoinGates(child_gate, processed_gates);
+        bool ret = IndexedFaultTree::JoinGates(child_gate);
         if (!changed && ret) changed = true;
       }
     }
@@ -579,8 +571,7 @@ void IndexedFaultTree::DetectModules(int num_basic_events) {
   LOG(DEBUG3) << "Timings are assigned to nodes.";
 
   std::map<int, std::pair<int, int> > visited_gates;
-  IndexedFaultTree::FindOriginalModules(top_gate, visit_basics,
-                                        &visited_gates);
+  IndexedFaultTree::FindOriginalModules(top_gate, visit_basics, &visited_gates);
   assert(visited_gates.count(top_event_index_));
   assert(visited_gates.find(top_event_index_)->second.first == 1);
   assert(!top_gate->Revisited());

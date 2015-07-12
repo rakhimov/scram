@@ -98,9 +98,7 @@ class IndexedFaultTree {
   /// This information might be needed for other algorithms because
   /// due to processing of the tree, the shape and nodes may change.
   /// @param[in] parent_gate The parent to start information gathering.
-  /// @param[in,out] processed_gates The gates that have already been processed.
-  void GatherParentInformation(const IndexedGatePtr& parent_gate,
-                               std::set<int>* processed_gates);
+  void GatherParentInformation(const IndexedGatePtr& parent_gate);
 
   /// Notifies all parents of negative gates, such as NOR and NAND before
   /// transforming these gates into basic gates of OR and AND.
@@ -169,11 +167,9 @@ class IndexedFaultTree {
   /// from previous processing steps.
   /// @param[in,out] gate The starting gate to traverse the tree. This is for
   ///                     recursive purposes.
-  /// @param[in,out] processed_gates The gates that have already been processed.
   /// @returns true if the given tree has been changed by this function.
   /// @returns false if no change has been made.
-  bool ProcessConstGates(const IndexedGatePtr& gate,
-                         std::set<int>* processed_gates);
+  bool ProcessConstGates(const IndexedGatePtr& gate);
 
   /// Propagates complements of child gates down to basic events
   /// in order to remove any NOR or NAND logic from the tree.
@@ -184,10 +180,8 @@ class IndexedFaultTree {
   ///                     is unknown for the function, so it must be sanitized
   ///                     for a top event to function correctly.
   /// @param[in,out] gate_complements The processed complements of gates.
-  /// @param[in,out] processed_gates The gates that have already been processed.
   void PropagateComplements(const IndexedGatePtr& gate,
-                            std::map<int, int>* gate_complements,
-                            std::set<int>* processed_gates);
+                            std::map<int, int>* gate_complements);
 
   /// Pre-processes the fault tree by doing the simplest Boolean algebra.
   /// Positive children with the same OR or AND gates as parents are coalesced.
@@ -196,10 +190,9 @@ class IndexedFaultTree {
   /// This function merges similar gates and may produce null or unity gates.
   /// @param[in,out] gate The starting gate to traverse the tree. This is for
   ///                     recursive purposes. This gate must be AND or OR.
-  /// @param[in,out] processed_gates The gates that have already been processed.
   /// @returns true if the given tree has been changed by this function.
   /// @returns false if no change has been made.
-  bool JoinGates(const IndexedGatePtr& gate, std::set<int>* processed_gates);
+  bool JoinGates(const IndexedGatePtr& gate);
 
   /// Traverses the indexed fault tree to detect modules.
   /// @param[in] num_basic_events The number of basic events in the tree.
