@@ -120,12 +120,13 @@ class IndexedGate {
   /// De Morgan's Law.
   void InvertChildren();
 
-  /// Adds children of another gate to this gate.
-  /// If this gate exists as a child then it is removed from the children.
+  /// Adds children of a child gate to this gate. This is a helper function for
+  /// gate coalescing. The child gate of the same type is removed from the
+  /// children list.
   /// @param[in] child_gate The gate which children to be added to this gate.
   /// @returns false if the final set is null or unity.
   /// @returns true if the addition is successful with a normal final state.
-  bool MergeGate(IndexedGate* child_gate);
+  bool JoinGate(IndexedGate* child_gate);
 
   /// Clears all the children of this gate.
   inline void EraseAllChildren() { children_.clear(); }

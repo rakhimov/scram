@@ -46,7 +46,7 @@ void IndexedGate::InvertChildren() {
   children_ = inverted_children;  /// @todo Check swap() for performance.
 }
 
-bool IndexedGate::MergeGate(IndexedGate* child_gate) {
+bool IndexedGate::JoinGate(IndexedGate* child_gate) {
   assert(children_.count(child_gate->index()));
   children_.erase(child_gate->index());
   std::set<int>::const_iterator it;

@@ -524,7 +524,7 @@ bool IndexedFaultTree::JoinGates(const IndexedGatePtr& gate) {
       assert(child_type == kAndGate || child_type == kOrGate);
       if (parent_type == child_type) {  // Parent is not NULL or NOT.
         if (!changed) changed = true;
-        if (!gate->MergeGate(&*indexed_gates_.find(*it)->second)) {
+        if (!gate->JoinGate(&*indexed_gates_.find(*it)->second)) {
           break;
         } else {
           it = gate->children().begin();
