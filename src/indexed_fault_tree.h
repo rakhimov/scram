@@ -75,6 +75,31 @@ class IndexedFaultTree {
   /// Mapping to string gate types to enum gate types.
   static const std::map<std::string, GateType> kStringToType_;
 
+  /// @returns true If the given index belongs to an indexed gate.
+  /// @param[in] index Positive index.
+  /// @warning The actual existance of the indexed gate is not guaranteed.
+  inline bool IsGateIndex(int index) const {
+    assert(index > 0);
+    return index >= kGateIndex_;
+  }
+
+  /// Adds a new indexed gate into the indexed fault tree's gate container.
+  /// @param[in] gate A new indexed gate.
+  inline void AddGate(const IndexedGatePtr& gate) {
+    assert(!indexed_gates_.count(gate->index()));
+    indexed_gates_.insert(std::make_pair(gate->index(), gate));
+  }
+
+  /// Commonly used function to get indexed gates from indices.
+  /// @param[in] index Positive index of a gate.
+  /// @returns The pointer to the requested indexed gate.
+  inline const IndexedGatePtr& GetGate(int index) const {
+    assert(index > 0);
+    assert(index >= kGateIndex_);
+    assert(indexed_gates_.count(index));
+    return indexed_gates_.find(index)->second;
+  }
+
   /// Processes a formula into a new indexed gates.
   /// @param[in] index The index to be assigned to the new indexed gate.
   /// @param[in] formula The formula to be converted into a gate.
@@ -247,7 +272,7 @@ class IndexedFaultTree {
   void ClearGateVisits();
 
   int top_event_index_;  ///< The index of the top gate of this tree.
-  int gate_index_;  ///< The starting gate index for gate identification.
+  const int kGateIndex_;  ///< The starting gate index for gate identification.
   /// All gates of this tree including newly created ones.
   boost::unordered_map<int, IndexedGatePtr> indexed_gates_;
   int top_event_sign_;  ///< The negative or positive sign of the top event.

@@ -20,7 +20,7 @@ const std::map<std::string, GateType> IndexedFaultTree::kStringToType_ =
 
 IndexedFaultTree::IndexedFaultTree(int top_event_id)
     : top_event_index_(top_event_id),
-      gate_index_(top_event_id),
+      kGateIndex_(top_event_id),
       new_gate_index_(0),
       top_event_sign_(1) {}
 
@@ -43,7 +43,7 @@ void IndexedFaultTree::PropagateConstants(
     const std::set<int>& false_house_events) {
   if (true_house_events.empty() && false_house_events.empty()) return;
   IndexedFaultTree::ClearGateVisits();
-  IndexedGatePtr top = indexed_gates_.find(top_event_index_)->second;
+  IndexedGatePtr top = IndexedFaultTree::GetGate(top_event_index_);
   LOG(DEBUG2) << "Propagating constants in a fault tree.";
   IndexedFaultTree::PropagateConstants(true_house_events, false_house_events,
                                        top);
@@ -56,7 +56,7 @@ void IndexedFaultTree::ProcessIndexedFaultTree(int num_basic_events) {
   IndexedFaultTree::NormalizeGates();
   LOG(DEBUG2) << "Finished normalizing gates.";
 
-  IndexedGatePtr top = indexed_gates_.find(top_event_index_)->second;
+  IndexedGatePtr top = IndexedFaultTree::GetGate(top_event_index_);
   if (top_event_sign_ < 0) {
     assert(top->type() == kOrGate || top->type() == kAndGate);
     top->type(top->type() == kOrGate ? kAndGate : kOrGate);
@@ -112,12 +112,12 @@ void IndexedFaultTree::ProcessFormula(
                                      all_to_int);
     gate->InitiateWithChild(child_index);
   }
-  indexed_gates_.insert(std::make_pair(gate->index(), gate));
+  IndexedFaultTree::AddGate(gate);
 }
 
 void IndexedFaultTree::NormalizeGates() {
   // Handle special case for a top event.
-  IndexedGatePtr top_gate = indexed_gates_.find(top_event_index_)->second;
+  IndexedGatePtr top_gate = IndexedFaultTree::GetGate(top_event_index_);
   GateType type = top_gate->type();
   switch (type) {
     case kNorGate:
@@ -136,7 +136,7 @@ void IndexedFaultTree::NormalizeGates() {
       assert(top_gate->children().size() == 1);
       int child_index = *top_gate->children().begin();
       assert(child_index > 0);
-      top_gate = indexed_gates_.find(std::abs(child_index))->second;
+      top_gate = IndexedFaultTree::GetGate(std::abs(child_index));
       indexed_gates_.erase(top_event_index_);
       top_event_index_ = top_gate->index();
       IndexedFaultTree::NormalizeGates();  // This should handle NOT->NOT cases.
@@ -171,8 +171,8 @@ void IndexedFaultTree::GatherParentInformation(
   for (it = parent_gate->children().begin();
        it != parent_gate->children().end(); ++it) {
     int index = std::abs(*it);
-    if (index > gate_index_) {
-      IndexedGatePtr child = indexed_gates_.find(index)->second;
+    if (IndexedFaultTree::IsGateIndex(index)) {
+      IndexedGatePtr child = IndexedFaultTree::GetGate(index);
       child->AddParent(parent_gate->index());
       IndexedFaultTree::GatherParentInformation(child);
     }
@@ -187,7 +187,7 @@ void IndexedFaultTree::NotifyParentsOfNegativeGates(
     int child_index = gate->index();
     std::set<int>::const_iterator it;
     for (it = gate->parents().begin(); it != gate->parents().end(); ++it) {
-      IndexedGatePtr parent = indexed_gates_.find(*it)->second;
+      IndexedGatePtr parent = IndexedFaultTree::GetGate(*it);
       assert(parent->children().count(child_index));  // Positive child.
       bool ret = parent->SwapChild(child_index, -child_index);
       assert(ret);
@@ -224,8 +224,8 @@ void IndexedFaultTree::NormalizeXorGate(const IndexedGatePtr& gate) {
   IndexedGatePtr gate_two(new IndexedGate(++new_gate_index_, kAndGate));
 
   gate->type(kOrGate);
-  indexed_gates_.insert(std::make_pair(gate_one->index(), gate_one));
-  indexed_gates_.insert(std::make_pair(gate_two->index(), gate_two));
+  IndexedFaultTree::AddGate(gate_one);
+  IndexedFaultTree::AddGate(gate_two);
 
   gate_one->AddChild(*it);
   gate_two->AddChild(-*it);
@@ -277,7 +277,7 @@ void IndexedFaultTree::NormalizeAtleastGate(const IndexedGatePtr& gate) {
       assert(ret);
     }
     gate->AddChild(gate_one->index());
-    indexed_gates_.insert(std::make_pair(gate_one->index(), gate_one));
+    IndexedFaultTree::AddGate(gate_one);
   }
 }
 
@@ -292,9 +292,9 @@ void IndexedFaultTree::PropagateConstants(
   for (it = gate->children().begin(); it != gate->children().end(); ++it) {
     assert(*it > 0);
     bool state = false;  // Null or Unity case. Null indication by default.
-    if (*it > gate_index_) {  // Processing a gate child.
+    if (IndexedFaultTree::IsGateIndex(*it)) {  // Processing a gate child.
       // Depth-first traversal.
-      IndexedGatePtr child_gate = indexed_gates_.find(*it)->second;
+      IndexedGatePtr child_gate = IndexedFaultTree::GetGate(*it);
       IndexedFaultTree::PropagateConstants(true_house_events,
                                            false_house_events, child_gate);
       State gate_state = child_gate->state();
@@ -431,9 +431,9 @@ void IndexedFaultTree::PropagateComplements(
   // Keep track of complement gates for optimization of repeated complements.
   std::set<int>::const_iterator it;
   for (it = gate->children().begin(); it != gate->children().end();) {
-    if (std::abs(*it) > gate_index_) {
+    if (IndexedFaultTree::IsGateIndex(std::abs(*it))) {
       // Deal with NOT and NULL gates.
-      IndexedGatePtr child_gate = indexed_gates_.find(std::abs(*it))->second;
+      IndexedGatePtr child_gate = IndexedFaultTree::GetGate(std::abs(*it));
       if (child_gate->type() == kNotGate || child_gate->type() == kNullGate) {
         assert(child_gate->children().size() == 1);
         int mult = child_gate->type() == kNotGate ? -1 : 1;
@@ -442,12 +442,12 @@ void IndexedFaultTree::PropagateComplements(
           return;
         it = gate->children().begin();
         continue;
-      }
-      if (*it < 0) {
+
+      } else if (*it < 0) {
         if (gate_complements->count(-*it)) {
           gate->SwapChild(*it, gate_complements->find(-*it)->second);
         } else {
-          GateType type = indexed_gates_.find(-*it)->second->type();
+          GateType type = child_gate->type();
           assert(type == kAndGate || type == kOrGate);
           GateType complement_type = type == kOrGate ? kAndGate : kOrGate;
           IndexedGatePtr complement_gate(new IndexedGate(++new_gate_index_,
@@ -456,8 +456,7 @@ void IndexedFaultTree::PropagateComplements(
                                                complement_gate));
           gate_complements->insert(std::make_pair(-*it,
                                                   complement_gate->index()));
-          complement_gate->children(
-              indexed_gates_.find(-*it)->second->children());
+          complement_gate->children(child_gate->children());
           complement_gate->InvertChildren();
           gate->SwapChild(*it, complement_gate->index());
           complement_gate->Visit(1);
@@ -467,6 +466,7 @@ void IndexedFaultTree::PropagateComplements(
         // Note that the iterator is invalid now.
         it = gate->children().begin();  // The negative gates at the start.
         continue;
+
       } else if (!child_gate->Visited()) {
         // Continue with the positive gate children.
         child_gate->Visit(1);  // Time does not matter.
@@ -491,9 +491,9 @@ bool IndexedFaultTree::ProcessConstGates(const IndexedGatePtr& gate) {
   assert(type == kAndGate || type == kOrGate);  // Only two types are possible.
   std::set<int>::const_iterator it;
   for (it = gate->children().begin(); it != gate->children().end(); ++it) {
-    if (std::abs(*it) > gate_index_) {
+    if (IndexedFaultTree::IsGateIndex(std::abs(*it))) {
       assert(*it > 0);
-      IndexedGatePtr child_gate = indexed_gates_.find(*it)->second;
+      IndexedGatePtr child_gate = IndexedFaultTree::GetGate(*it);
       bool ret = IndexedFaultTree::ProcessConstGates(child_gate);
       if (!changed && ret) changed = true;
       State state = child_gate->state();
@@ -517,14 +517,14 @@ bool IndexedFaultTree::JoinGates(const IndexedGatePtr& gate) {
   std::set<int>::const_iterator it;
   bool changed = false;  // Indication if the tree is changed.
   for (it = gate->children().begin(); it != gate->children().end();) {
-    if (std::abs(*it) > gate_index_) {
+    if (IndexedFaultTree::IsGateIndex(std::abs(*it))) {
       assert(*it > 0);
-      IndexedGatePtr child_gate = indexed_gates_.find(std::abs(*it))->second;
+      IndexedGatePtr child_gate = IndexedFaultTree::GetGate(std::abs(*it));
       GateType child_type = child_gate->type();
       assert(child_type == kAndGate || child_type == kOrGate);
       if (parent_type == child_type) {  // Parent is not NULL or NOT.
         if (!changed) changed = true;
-        if (!gate->JoinGate(&*indexed_gates_.find(*it)->second)) {
+        if (!gate->JoinGate(&*child_gate)) {
           break;
         } else {
           it = gate->children().begin();
@@ -564,7 +564,7 @@ void IndexedFaultTree::DetectModules(int num_basic_events) {
   }
   IndexedFaultTree::ClearGateVisits();
 
-  IndexedGatePtr top_gate = indexed_gates_.find(top_event_index_)->second;
+  IndexedGatePtr top_gate = IndexedFaultTree::GetGate(top_event_index_);
   int time = 0;
   IndexedFaultTree::AssignTiming(time, top_gate, visit_basics);
 
@@ -595,7 +595,7 @@ int IndexedFaultTree::AssignTiming(int time, const IndexedGatePtr& gate,
       }
     } else {
       time = IndexedFaultTree::AssignTiming(time,
-                                            indexed_gates_.find(index)->second,
+                                            IndexedFaultTree::GetGate(index),
                                             visit_basics);
     }
   }
@@ -632,7 +632,7 @@ void IndexedFaultTree::FindOriginalModules(
       }
     } else {
       assert(*it > 0);
-      IndexedGatePtr child_gate = indexed_gates_.find(index)->second;
+      IndexedGatePtr child_gate = IndexedFaultTree::GetGate(index);
       IndexedFaultTree::FindOriginalModules(child_gate, visit_basics,
                                             visited_gates);
       min = visited_gates->find(index)->second.first;
@@ -698,7 +698,7 @@ void IndexedFaultTree::CreateNewModule(const IndexedGatePtr& gate,
   }
   assert(gate->type() == kAndGate || gate->type() == kOrGate);
   IndexedGatePtr new_module(new IndexedGate(++new_gate_index_, gate->type()));
-  indexed_gates_.insert(std::make_pair(new_gate_index_, new_module));
+  IndexedFaultTree::AddGate(new_module);
   new_module->TurnModule();
   std::vector<int>::const_iterator it_g;
   for (it_g = children.begin(); it_g != children.end(); ++it_g) {
@@ -722,13 +722,13 @@ void IndexedFaultTree::FilterModularChildren(
     int index = std::abs(*it);
     int min = 0;
     int max = 0;
-    if (index < gate_index_) {
-      min = visit_basics[index][0];
-      max = visit_basics[index][1];
-    } else {
+    if (IndexedFaultTree::IsGateIndex(index)) {
       assert(*it > 0);
       min = visited_gates.find(index)->second.first;
       max = visited_gates.find(index)->second.second;
+    } else {
+      min = visit_basics[index][0];
+      max = visit_basics[index][1];
     }
     bool modular = true;
     std::vector<int>::iterator it_n;
@@ -737,13 +737,13 @@ void IndexedFaultTree::FilterModularChildren(
       int index = std::abs(*it_n);
       int lower = 0;
       int upper = 0;
-      if (index < gate_index_) {
-        lower = visit_basics[index][0];
-        upper = visit_basics[index][1];
-      } else {
+      if (IndexedFaultTree::IsGateIndex(index)) {
         assert(*it_n > 0);
         lower = visited_gates.find(index)->second.first;
         upper = visited_gates.find(index)->second.second;
+      } else {
+        lower = visit_basics[index][0];
+        upper = visit_basics[index][1];
       }
       int a = std::max(min, lower);
       int b = std::min(max, upper);

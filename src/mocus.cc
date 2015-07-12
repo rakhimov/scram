@@ -169,7 +169,7 @@ void Mocus::FindMcs() {
 
   int top_index = fault_tree_->top_event_index_;
   // Special case of empty top gate.
-  IndexedGatePtr top = fault_tree_->indexed_gates_.find(top_index)->second;
+  IndexedGatePtr top = fault_tree_->GetGate(top_index);
   if (top->children().empty()) {
     State state = top->state();
     assert(state == kNullState || state == kUnityState);
@@ -199,7 +199,7 @@ void Mocus::FindMcs() {
   while (!mcs.empty()) {
     std::set<int> member = mcs.back();
     mcs.pop_back();
-    if (*member.rbegin() < fault_tree_->gate_index_) {
+    if (!fault_tree_->IsGateIndex(std::abs(*member.rbegin()))) {
       imcs_.push_back(member);  // All elements are basic events.
     } else {
       std::set<int>::iterator it_s = member.end();
@@ -227,8 +227,7 @@ void Mocus::FindMcs() {
 
   // Special case of unity with empty sets.
   /// @todo Detect unity in modules.
-  State state = fault_tree_->indexed_gates_.find(top_index)->second->state();
-  assert(state != kUnityState);
+  assert(top->state() != kUnityState);
   LOG(DEBUG2) << "The number of MCS found: " << imcs_.size();
   LOG(DEBUG2) << "Minimal cut set finding time: " << DUR(mcs_time);
 }
@@ -237,17 +236,16 @@ void Mocus::CreateSimpleTree(int gate_index,
                              std::map<int, SimpleGatePtr>* processed_gates) {
   assert(gate_index > 0);
   if (processed_gates->count(gate_index)) return;
-  IndexedGatePtr gate =
-      fault_tree_->indexed_gates_.find(gate_index)->second;
+  IndexedGatePtr gate = fault_tree_->GetGate(gate_index);
   assert(gate->type() == kAndGate || gate->type() == kOrGate);
   SimpleGatePtr simple_gate(new SimpleGate(gate->type()));
   processed_gates->insert(std::make_pair(gate_index, simple_gate));
 
   std::set<int>::iterator it;
   for (it = gate->children().begin(); it != gate->children().end(); ++it) {
-    if (*it > fault_tree_->gate_index_) {
-      IndexedGatePtr child_gate =
-          fault_tree_->indexed_gates_.find(*it)->second;
+    if (fault_tree_->IsGateIndex(std::abs(*it))) {
+      assert(*it > 0);
+      IndexedGatePtr child_gate = fault_tree_->GetGate(*it);
       if (child_gate->IsModule()) {
         simple_gate->InitiateWithModule(*it);
         Mocus::CreateSimpleTree(*it, processed_gates);
@@ -256,7 +254,7 @@ void Mocus::CreateSimpleTree(int gate_index,
         simple_gate->AddChildGate(processed_gates->find(*it)->second);
       }
     } else {
-      assert(std::abs(*it) < fault_tree_->gate_index_);  // No negative gates.
+      assert(!fault_tree_->IsGateIndex(std::abs(*it)));  // No negative gates.
       simple_gate->InitiateWithBasic(*it);
     }
   }
