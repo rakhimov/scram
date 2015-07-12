@@ -171,7 +171,7 @@ class IndexedGate {
 
   /// Registers the visit time for this gate upon tree traversal.
   /// This information can be used to detect dependencies.
-  /// @param[in] time The visit time of this gate.
+  /// @param[in] time The current visit time of this gate. It must be positive.
   /// @returns true If this gate was previously visited.
   /// @returns false If this is visited and re-visited only once.
   bool Visit(int time) {
@@ -199,6 +199,13 @@ class IndexedGate {
   /// @returns false if this gate was only visited once upon tree traversal.
   /// @returns true if this gate was revisited at one more time.
   inline bool Revisited() const { return visits_[2] ? true : false; }
+
+  /// @returns true if this gate was visited at least once.
+  /// @returns false if this gate was never visited upon traversal.
+  inline bool Visited() const { return visits_[0] ? true : false; }
+
+  /// Clears all the visit information. Resets the visit times to 0s.
+  inline void ClearVisits() { return std::fill(visits_, visits_ + 3, 0); }
 
  private:
   int index_;  ///< Index of this gate.

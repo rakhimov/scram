@@ -133,11 +133,9 @@ class IndexedFaultTree {
   /// @param[in] true_house_events House events with true state.
   /// @param[in] false_house_events House events with false state.
   /// @param[in,out] gate The final resultant processed gate.
-  /// @param[in,out] processed_gates The gates that have already been processed.
   void PropagateConstants(const std::set<int>& true_house_events,
                           const std::set<int>& false_house_events,
-                          const IndexedGatePtr& gate,
-                          std::set<int>* processed_gates);
+                          const IndexedGatePtr& gate);
 
   /// Changes the state of a gate or passes a constant child to be removed
   /// later. The function determines its actions depending on the type of
@@ -191,7 +189,8 @@ class IndexedFaultTree {
                             std::map<int, int>* gate_complements,
                             std::set<int>* processed_gates);
 
-  /// Pre-processes the tree by doing simple Boolean algebra.
+  /// Pre-processes the fault tree by doing the simplest Boolean algebra.
+  /// Positive children with the same OR or AND gates as parents are coalesced.
   /// At this point all gates are expected to be either OR or AND.
   /// There should not be negative gate children.
   /// This function merges similar gates and may produce null or unity gates.
@@ -247,6 +246,12 @@ class IndexedFaultTree {
       const std::map<int, std::pair<int, int> >& visited_gates,
       std::vector<int>* modular_children,
       std::vector<int>* non_modular_children);
+
+  /// Clears visit time information from all indexed gates that are presently
+  /// in this fault tree's container. Any member function updating and using the
+  /// visit information of gates must ensure to clean visit times before running
+  /// algorithms. However, cleaning after finishing algorithms is not mandatory.
+  void ClearGateVisits();
 
   int top_event_index_;  ///< The index of the top gate of this tree.
   int gate_index_;  ///< The starting gate index for gate identification.

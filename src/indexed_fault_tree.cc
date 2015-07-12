@@ -42,11 +42,11 @@ void IndexedFaultTree::PropagateConstants(
     const std::set<int>& true_house_events,
     const std::set<int>& false_house_events) {
   if (true_house_events.empty() && false_house_events.empty()) return;
+  IndexedFaultTree::ClearGateVisits();
   IndexedGatePtr top = indexed_gates_.find(top_event_index_)->second;
-  std::set<int> processed_gates;
   LOG(DEBUG2) << "Propagating constants in a fault tree.";
   IndexedFaultTree::PropagateConstants(true_house_events, false_house_events,
-                                       top, &processed_gates);
+                                       top);
   LOG(DEBUG2) << "Constant propagation is done.";
 }
 
@@ -285,10 +285,9 @@ void IndexedFaultTree::NormalizeAtleastGate(const IndexedGatePtr& gate) {
 void IndexedFaultTree::PropagateConstants(
     const std::set<int>& true_house_events,
     const std::set<int>& false_house_events,
-    const IndexedGatePtr& gate,
-    std::set<int>* processed_gates) {
-  if (processed_gates->count(gate->index())) return;
-  processed_gates->insert(gate->index());
+    const IndexedGatePtr& gate) {
+  if (gate->Visited()) return;
+  gate->Visit(1);  // Time does not matter.
   std::set<int>::const_iterator it;
   std::vector<int> to_erase;  // Erase children later to keep iterator is valid.
   for (it = gate->children().begin(); it != gate->children().end(); ++it) {
@@ -298,9 +297,7 @@ void IndexedFaultTree::PropagateConstants(
       // Depth-first traversal.
       IndexedGatePtr child_gate = indexed_gates_.find(*it)->second;
       IndexedFaultTree::PropagateConstants(true_house_events,
-                                           false_house_events,
-                                           child_gate,
-                                           processed_gates);
+                                           false_house_events, child_gate);
       State gate_state = child_gate->state();
       if (gate_state == kNormalState) continue;
       state = gate_state == kNullState ? false : true;
@@ -573,6 +570,7 @@ void IndexedFaultTree::DetectModules(int num_basic_events) {
     visit_basics[i][0] = 0;
     visit_basics[i][1] = 0;
   }
+  IndexedFaultTree::ClearGateVisits();
 
   IndexedGatePtr top_gate = indexed_gates_.find(top_event_index_)->second;
   int time = 0;
@@ -774,6 +772,13 @@ void IndexedFaultTree::FilterModularChildren(
   *modular_children = still_modular;
   non_modular_children->insert(non_modular_children->end(),
                                new_non_modular.begin(), new_non_modular.end());
+}
+
+void IndexedFaultTree::ClearGateVisits() {
+  boost::unordered_map<int, IndexedGatePtr>::iterator it;
+  for (it = indexed_gates_.begin(); it != indexed_gates_.end(); ++it) {
+    it->second->ClearVisits();
+  }
 }
 
 }  // namespace scram
