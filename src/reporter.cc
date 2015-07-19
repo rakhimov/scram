@@ -141,7 +141,7 @@ void Reporter::ReportOrphanPrimaryEvents(
   xmlpp::Node* root = doc->get_root_node();
   xmlpp::NodeSet inf = root->find("./information");
   assert(inf.size() == 1);
-  xmlpp::Element* information = dynamic_cast<xmlpp::Element*>(inf[0]);
+  xmlpp::Element* information = static_cast<xmlpp::Element*>(inf[0]);
   information->add_child("warning")->add_child_text(out);
 }
 
@@ -162,7 +162,7 @@ void Reporter::ReportUnusedParameters(
   xmlpp::Node* root = doc->get_root_node();
   xmlpp::NodeSet inf = root->find("./information");
   assert(inf.size() == 1);
-  xmlpp::Element* information = dynamic_cast<xmlpp::Element*>(inf[0]);
+  xmlpp::Element* information = static_cast<xmlpp::Element*>(inf[0]);
   information->add_child("warning")->add_child_text(out);
 }
 
@@ -174,7 +174,7 @@ void Reporter::ReportFta(
   xmlpp::Node* root = doc->get_root_node();
   xmlpp::NodeSet res = root->find("./results");
   assert(res.size() == 1);
-  xmlpp::Element* results = dynamic_cast<xmlpp::Element*>(res[0]);
+  xmlpp::Element* results = static_cast<xmlpp::Element*>(res[0]);
   xmlpp::Element* sum_of_products = results->add_child("sum-of-products");
   sum_of_products->set_attribute("name", ft_name);
   sum_of_products->set_attribute(
@@ -238,7 +238,7 @@ void Reporter::ReportFta(
   // to be reported.
   xmlpp::NodeSet perf = root->find("./information/performance");
   assert(perf.size() == 1);
-  xmlpp::Element* performance = dynamic_cast<xmlpp::Element*>(perf[0]);
+  xmlpp::Element* performance = static_cast<xmlpp::Element*>(perf[0]);
   xmlpp::Element* calc_time = performance->add_child("calculation-time");
   calc_time->set_attribute("name", ft_name);
   calc_time->add_child("minimal-cut-set")->add_child_text(
@@ -256,7 +256,7 @@ void Reporter::ReportImportance(
   xmlpp::Node* root = doc->get_root_node();
   xmlpp::NodeSet res = root->find("./results");
   assert(res.size() == 1);
-  xmlpp::Element* results = dynamic_cast<xmlpp::Element*>(res[0]);
+  xmlpp::Element* results = static_cast<xmlpp::Element*>(res[0]);
   xmlpp::Element* importance = results->add_child("importance");
   importance->set_attribute("name", ft_name);
   importance->set_attribute("basic-events",
@@ -282,7 +282,7 @@ void Reporter::ReportImportance(
   xmlpp::NodeSet calc_times =
       root->find("./information/performance/calculation-time");
   assert(!calc_times.empty());
-  xmlpp::Element* calc_time = dynamic_cast<xmlpp::Element*>(calc_times.back());
+  xmlpp::Element* calc_time = static_cast<xmlpp::Element*>(calc_times.back());
   calc_time->add_child("importance")
       ->add_child_text(
           Reporter::ToString(prob_analysis->imp_analysis_time(), 5));
@@ -295,7 +295,7 @@ void Reporter::ReportUncertainty(
   xmlpp::Node* root = doc->get_root_node();
   xmlpp::NodeSet res = root->find("./results");
   assert(res.size() == 1);
-  xmlpp::Element* results = dynamic_cast<xmlpp::Element*>(res[0]);
+  xmlpp::Element* results = static_cast<xmlpp::Element*>(res[0]);
   xmlpp::Element* measure = results->add_child("measure");
   measure->set_attribute("name", ft_name);
 
@@ -333,7 +333,7 @@ void Reporter::ReportUncertainty(
   xmlpp::NodeSet calc_times =
       root->find("./information/performance/calculation-time");
   assert(!calc_times.empty());
-  xmlpp::Element* calc_time = dynamic_cast<xmlpp::Element*>(calc_times.back());
+  xmlpp::Element* calc_time = static_cast<xmlpp::Element*>(calc_times.back());
   calc_time->add_child("uncertainty")->add_child_text(
       Reporter::ToString(uncert_analysis->analysis_time(), 5));
 }

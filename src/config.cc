@@ -43,19 +43,14 @@ Config::Config(const std::string& config_file) : output_path_("") {
   xmlpp::NodeSet::iterator it_ch;
   for (it_ch = roots_children.begin();
        it_ch != roots_children.end(); ++it_ch) {
-    const xmlpp::Element* element =
-        dynamic_cast<const xmlpp::Element*>(*it_ch);
-    assert(element);
-
+    const xmlpp::Element* element = static_cast<const xmlpp::Element*>(*it_ch);
     std::string name = element->get_name();
     if (name == "input-files") {
       xmlpp::NodeSet input_files = element->find("./*");
       assert(!input_files.empty());
       xmlpp::NodeSet::iterator it_if;
       for (it_if = input_files.begin(); it_if != input_files.end(); ++it_if) {
-        const xmlpp::Element* file =
-            dynamic_cast<const xmlpp::Element*>(*it_if);
-        assert(file);
+        const xmlpp::Element* file = static_cast<const xmlpp::Element*>(*it_if);
         assert(file->get_name() == "file");
         input_files_.push_back(file->get_child_text()->get_content());
       }
@@ -67,8 +62,7 @@ Config::Config(const std::string& config_file) : output_path_("") {
       xmlpp::NodeSet::iterator it_op;
       for (it_op = options.begin(); it_op != options.end(); ++it_op) {
         const xmlpp::Element* option_group =
-            dynamic_cast<const xmlpp::Element*>(*it_op);
-        assert(option_group);
+            static_cast<const xmlpp::Element*>(*it_op);
         std::string name = option_group->get_name();
         if (name == "analysis") {
           Config::SetAnalysis(option_group);
@@ -121,9 +115,7 @@ void Config::SetLimits(const xmlpp::Element* limits) {
   xmlpp::NodeSet elements = limits->find("./*");
   xmlpp::NodeSet::iterator it;
   for (it = elements.begin(); it != elements.end(); ++it) {
-    const xmlpp::Element* limit =
-        dynamic_cast<const xmlpp::Element*>(*it);
-    assert(limit);
+    const xmlpp::Element* limit = static_cast<const xmlpp::Element*>(*it);
     std::string name = limit->get_name();
     std::string content = limit->get_child_text()->get_content();
     if (name == "limit-order") {

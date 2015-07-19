@@ -136,21 +136,18 @@ void FaultTreeAnalysis::GatherEvents(const FormulaPtr& formula) {
   const std::map<std::string, EventPtr>* children = &formula->event_args();
   std::map<std::string, EventPtr>::const_iterator it;
   for (it = children->begin(); it != children->end(); ++it) {
-    GatePtr child_gate = boost::dynamic_pointer_cast<Gate>(it->second);
-    BasicEventPtr basic_event =
-        boost::dynamic_pointer_cast<BasicEvent>(it->second);
-    HouseEventPtr house_event =
-        boost::dynamic_pointer_cast<HouseEvent>(it->second);
-    if (child_gate) {
+    if (GatePtr child_gate = boost::dynamic_pointer_cast<Gate>(it->second)) {
       inter_events_.insert(std::make_pair(child_gate->id(), child_gate));
       FaultTreeAnalysis::GatherEvents(child_gate);
 
-    } else if (basic_event) {
-      assert(!house_event);
+    } else if (BasicEventPtr basic_event =
+               boost::dynamic_pointer_cast<BasicEvent>(it->second)) {
       basic_events_.insert(std::make_pair(it->first, basic_event));
       if (basic_event->HasCcf())
         ccf_events_.insert(std::make_pair(it->first, basic_event));
     } else {
+      HouseEventPtr house_event =
+          boost::dynamic_pointer_cast<HouseEvent>(it->second);
       assert(house_event);
       house_events_.insert(std::make_pair(it->first, house_event));
     }

@@ -34,6 +34,7 @@ Coding Style Violations
 - Exceptions are used. (This is not recommended by GCSG.)
 - Streams are used instead of *printf-like routines*.
 - Naming of mutator functions without *set* prefix.
+- RTTI is used through dynamic casts. (Very limited application.)
 - C++11 features are not allowed. Only Boost features are used instead.
 - License boilerplate is not included unless the code is from other projects.
 
