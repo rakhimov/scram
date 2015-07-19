@@ -113,10 +113,10 @@ class IndexedFaultTree {
                       const boost::unordered_map<std::string, int>& all_to_int);
 
   /// Starts normalizing gates to simplify gates to OR, AND gates.
-  /// NOT and NUll are dealt with specifically.
   /// This function uses parent information of each gate, so the tree must
   /// be initialized before a call of this function.
   /// New gates are created upon normalizing complex gates, such as XOR.
+  /// @warning NOT and NUll gates are not handled except for the top gate.
   void NormalizeGates();
 
   /// Traverses the tree to gather information about parents of indexed gates.
@@ -126,20 +126,22 @@ class IndexedFaultTree {
   void GatherParentInformation(const IndexedGatePtr& parent_gate);
 
   /// Notifies all parents of negative gates, such as NOR and NAND before
-  /// transforming these gates into basic gates of OR and AND.
-  /// The parent information should be available. This function does not
-  /// change the type of the given gate.
-  /// @param[in] gate The gate to be start processing.
+  /// transforming these gates into basic gates of OR and AND. The child gates
+  /// with NOR and NAND types are swaped with a negative sign.
+  /// @param[in] gate The gate to start processing.
+  /// @warning This function does not change the types of gates.
+  /// @warning The top gate does not have parents, so it is not handled here.
   void NotifyParentsOfNegativeGates(const IndexedGatePtr& gate);
 
-  /// Normalizes a gate to make OR, AND gates. The parents of the
-  /// gates are not notified. This means that negative gates must be dealt
-  /// separately. However, NOT and NULL gates are left untouched for later
-  /// special processing.
+  /// Normalizes complex gates into OR, AND gates.
   /// @param[in,out] gate The gate to be processed.
+  /// @warning The parents of negative gates are assumed to be notified about
+  ///          the change of their children types.
+  /// @warning NOT and NULL gates are not handled.
   void NormalizeGate(const IndexedGatePtr& gate);
 
-  /// Normalizes a gate with XOR logic.
+  /// Normalizes a gate with XOR logic. This is a helper function for the main
+  /// gate normalization function.
   /// @param[in,out] gate The gate to normalize.
   void NormalizeXorGate(const IndexedGatePtr& gate);
 

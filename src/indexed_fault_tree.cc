@@ -132,12 +132,10 @@ void IndexedFaultTree::NormalizeGates() {
   switch (type) {
     case kNorGate:
       top_event_sign_ *= -1;  // For negative gates. Fall-through to OR case.
-    case kOrGate:
       top_gate->type(kOrGate);
       break;
     case kNandGate:
       top_event_sign_ *= -1;  // For negative gates. Fall-through to AND case.
-    case kAndGate:
       top_gate->type(kAndGate);
       break;
     case kNotGate:
@@ -152,24 +150,14 @@ void IndexedFaultTree::NormalizeGates() {
       IndexedFaultTree::NormalizeGates();  // This should handle NOT->NOT cases.
       return;
   }
-  // Gather parent information for negative gate processing.
-  IndexedFaultTree::ClearGateVisits();
-  IndexedFaultTree::GatherParentInformation(top_gate);
   // Process negative gates except for NOT. Note that top event's negative
   // gate is processed in the above lines.
   // All children are assumed to be positive at this point.
-  boost::unordered_map<int, IndexedGatePtr>::iterator it;
-  for (it = indexed_gates_.begin(); it != indexed_gates_.end(); ++it) {
-    if (it->first == top_event_index_) continue;
-    IndexedFaultTree::NotifyParentsOfNegativeGates(it->second);
-  }
+  IndexedFaultTree::ClearGateVisits();
+  IndexedFaultTree::NotifyParentsOfNegativeGates(top_gate);
 
-  // Assumes that all gates are in indexed_gates_ container.
-  boost::unordered_map<int, IndexedGatePtr> original_gates(indexed_gates_);
-  for (it = original_gates.begin(); it != original_gates.end(); ++it) {
-    IndexedFaultTree::NormalizeGate(it->second);
-  }
-  // Note that parent information is invalid from this point.
+  IndexedFaultTree::ClearGateVisits();
+  IndexedFaultTree::NormalizeGate(top_gate);
 }
 
 void IndexedFaultTree::GatherParentInformation(
@@ -191,21 +179,41 @@ void IndexedFaultTree::GatherParentInformation(
 
 void IndexedFaultTree::NotifyParentsOfNegativeGates(
     const IndexedGatePtr& gate) {
-  GateType type = gate->type();
-  // Deal with negative gate.
-  if (type == kNorGate || type == kNandGate) {
-    int child_index = gate->index();
-    std::set<int>::const_iterator it;
-    for (it = gate->parents().begin(); it != gate->parents().end(); ++it) {
-      IndexedGatePtr parent = IndexedFaultTree::GetGate(*it);
-      assert(parent->children().count(child_index));  // Positive child.
-      bool ret = parent->SwapChild(child_index, -child_index);
-      assert(ret);
+  if (gate->Visited()) return;
+  gate->Visit(1);
+  std::vector<int> to_negate;  // Children to get the negation.
+  std::set<int>::const_iterator it;
+  for (it = gate->children().begin(); it != gate->children().end(); ++it) {
+    if (IndexedFaultTree::IsGateIndex(std::abs(*it))) {
+      IndexedGatePtr child = IndexedFaultTree::GetGate(std::abs(*it));
+      IndexedFaultTree::NotifyParentsOfNegativeGates(child);
+
+      GateType type = child->type();
+      if (type == kNorGate || type == kNandGate) {
+        to_negate.push_back(*it);
+      }
     }
+  }
+  std::vector<int>::iterator it_neg;
+  for (it_neg = to_negate.begin(); it_neg != to_negate.end(); ++it_neg) {
+    bool ret = gate->SwapChild(*it_neg, -*it_neg);
+    assert(ret);
   }
 }
 
 void IndexedFaultTree::NormalizeGate(const IndexedGatePtr& gate) {
+  if (gate->Visited()) return;
+  gate->Visit(1);
+
+  // Depth-first traversal before the children may get changed.
+  std::set<int>::const_iterator it;
+  for (it = gate->children().begin(); it != gate->children().end(); ++it) {
+    if (IndexedFaultTree::IsGateIndex(std::abs(*it))) {
+      IndexedGatePtr child_gate = IndexedFaultTree::GetGate(std::abs(*it));
+      IndexedFaultTree::NormalizeGate(child_gate);
+    }
+  }
+
   GateType type = gate->type();
   switch (type) {  // Negation is already processed.
     case kNorGate:
@@ -223,7 +231,7 @@ void IndexedFaultTree::NormalizeGate(const IndexedGatePtr& gate) {
       IndexedFaultTree::NormalizeAtleastGate(gate);
       break;
     default:
-      assert(type == kNotGate || type == kNullGate);  // Dealt in coalescing.
+      assert(type == kNotGate || type == kNullGate);  // Must be dealt outside.
   }
 }
 
@@ -239,9 +247,11 @@ void IndexedFaultTree::NormalizeXorGate(const IndexedGatePtr& gate) {
 
   gate_one->AddChild(*it);
   gate_two->AddChild(-*it);
-  ++it;
+
+  ++it;  // Handling the second child.
   gate_one->AddChild(-*it);
   gate_two->AddChild(*it);
+
   gate->EraseAllChildren();
   gate->AddChild(gate_one->index());
   gate->AddChild(gate_two->index());
