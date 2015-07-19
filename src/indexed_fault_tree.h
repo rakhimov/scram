@@ -213,6 +213,17 @@ class IndexedFaultTree {
   void PropagateComplements(const IndexedGatePtr& gate,
                             std::map<int, int>* gate_complements);
 
+  /// Removes child gates of NULL type, which means these child gates have
+  /// only one child. That one grandchild is transfered to the parent gate,
+  /// and the original child gate is removed from the parent gate.
+  /// @param[in,out] gate The starting gate to traverse the tree. This is for
+  ///                     recursive purposes.
+  /// @returns true if the given tree has been changed by this function.
+  /// @returns false if no change has been made.
+  /// @warning There still may be only one NULL type gate which is the root
+  ///          of the tree. This must be handled separately.
+  bool RemoveNullGates(const IndexedGatePtr& gate);
+
   /// Pre-processes the fault tree by doing the simplest Boolean algebra.
   /// Positive children with the same OR or AND gates as parents are coalesced.
   /// At this point all gates are expected to be either OR or AND.

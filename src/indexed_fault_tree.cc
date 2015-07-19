@@ -68,12 +68,22 @@ void IndexedFaultTree::ProcessIndexedFaultTree(int num_basic_events) {
   IndexedFaultTree::PropagateComplements(top, &complements);
   IndexedFaultTree::ClearGateVisits();
   IndexedFaultTree::ProcessConstGates(top);
-  do {
+  bool tree_changed = true;
+  while (tree_changed) {
+    tree_changed = false;  // Break the loop if actions don't change the tree.
+    bool ret = false;  // The result of actions of functions.
     IndexedFaultTree::ClearGateVisits();
-    if (!IndexedFaultTree::JoinGates(top)) break;
-    // Cleanup null and unity gates. There is no negative gate.
+    ret = IndexedFaultTree::RemoveNullGates(top);
+    if (!tree_changed && ret) tree_changed = true;
+
     IndexedFaultTree::ClearGateVisits();
-  } while (IndexedFaultTree::ProcessConstGates(top));
+    ret = IndexedFaultTree::JoinGates(top);
+    if (!tree_changed && ret) tree_changed = true;
+
+    IndexedFaultTree::ClearGateVisits();
+    ret = IndexedFaultTree::ProcessConstGates(top);
+    if (!tree_changed && ret) tree_changed = true;
+  }
   // After this point there should not be null AND or unity OR gates,
   // and the tree structure should be repeating OR and AND.
   // All gates are positive, and each gate has at least two children.
@@ -507,6 +517,36 @@ bool IndexedFaultTree::ProcessConstGates(const IndexedGatePtr& gate) {
   }
   if (!changed && !to_erase.empty()) changed = true;
   IndexedFaultTree::RemoveChildren(gate, to_erase);
+  return changed;
+}
+
+bool IndexedFaultTree::RemoveNullGates(const IndexedGatePtr& gate) {
+  if (gate->Visited()) return false;
+  gate->Visit(1);  // Time does not matter.
+  std::vector<int> null_children;  // Null type gate children.
+  std::set<int>::const_iterator it;
+  bool changed = false;  // Indication if the tree is changed.
+  for (it = gate->children().begin(); it != gate->children().end(); ++it) {
+    if (IndexedFaultTree::IsGateIndex(std::abs(*it))) {
+      IndexedGatePtr child_gate = IndexedFaultTree::GetGate(std::abs(*it));
+      bool ret = IndexedFaultTree::RemoveNullGates(child_gate);
+      if (!changed && ret) changed = true;
+
+      if (child_gate->type() == kNullGate) null_children.push_back(*it);
+    }
+  }
+
+  std::vector<int>::iterator it_swap;
+  for (it_swap = null_children.begin(); it_swap != null_children.end();
+       ++it_swap) {
+    IndexedGatePtr child_gate = IndexedFaultTree::GetGate(std::abs(*it_swap));
+    if (child_gate->state() == kNormalState) {
+      int mult = *it_swap > 0 ? 1 : -1;  // Propagation of the complement.
+      assert(child_gate->children().size() == 1);
+      gate->SwapChild(*it_swap, *child_gate->children().begin() * mult);
+      if (!changed) changed = true;
+    }
+  }
   return changed;
 }
 

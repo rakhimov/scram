@@ -83,8 +83,7 @@ class IndexedGate {
   /// @param[in] children A new set of children for this gate.
   inline void children(const std::set<int>& children) { children_ = children; }
 
-  /// @returns The state of this gate, which is either "null", or "unity", or
-  ///          "normal" by default.
+  /// @returns The state of this gate.
   inline const State& state() const { return state_; }
 
   /// @returns parents of this gate.
