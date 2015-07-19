@@ -238,47 +238,48 @@ void IndexedFaultTree::NormalizeXorGate(const IndexedGatePtr& gate) {
 }
 
 void IndexedFaultTree::NormalizeAtleastGate(const IndexedGatePtr& gate) {
+  assert(gate->type() == kAtleastGate);
   int vote_number = gate->vote_number();
 
-  assert(vote_number > 1);
-  assert(gate->children().size() > vote_number);
-  std::set< std::set<int> > all_sets;
-  const std::set<int>* children = &gate->children();
-
-  std::set<int>::iterator it;
-  for (it = children->begin(); it != children->end(); ++it) {
-    std::set<int> set;
-    set.insert(*it);
-    all_sets.insert(set);
+  assert(vote_number > 0);  // Vote number can be 1 for special OR gates.
+  assert(gate->children().size() > 1);
+  if (gate->children().size() == vote_number) {
+    gate->type(kAndGate);
+    return;
+  } else if (vote_number == 1) {
+    gate->type(kOrGate);
+    return;
   }
-  for (int i = 1; i < vote_number; ++i) {
-    std::set< std::set<int> > tmp_sets;
-    std::set< std::set<int> >::iterator it_sets;
-    for (it_sets = all_sets.begin(); it_sets != all_sets.end(); ++it_sets) {
-      for (it = children->begin(); it != children->end(); ++it) {
-        std::set<int> set(*it_sets);
-        set.insert(*it);
-        if (set.size() > i) {
-          tmp_sets.insert(set);
-        }
-      }
-    }
-    all_sets = tmp_sets;
+
+  const std::set<int>* children = &gate->children();
+  std::set<int>::const_iterator it = children->begin();
+
+  IndexedGatePtr first_child(new IndexedGate(++new_gate_index_, kAndGate));
+  first_child->InitiateWithChild(*it);
+
+  IndexedGatePtr grand_child(new IndexedGate(++new_gate_index_, kAtleastGate));
+  first_child->InitiateWithChild(grand_child->index());
+  grand_child->vote_number(vote_number - 1);
+
+  IndexedGatePtr second_child(new IndexedGate(++new_gate_index_, kAtleastGate));
+  second_child->vote_number(vote_number);
+
+  IndexedFaultTree::AddGate(first_child);
+  IndexedFaultTree::AddGate(grand_child);
+  IndexedFaultTree::AddGate(second_child);
+
+  for (++it; it != children->end(); ++it) {
+    grand_child->InitiateWithChild(*it);
+    second_child->InitiateWithChild(*it);
   }
 
   gate->type(kOrGate);
   gate->EraseAllChildren();
-  std::set< std::set<int> >::iterator it_sets;
-  for (it_sets = all_sets.begin(); it_sets != all_sets.end(); ++it_sets) {
-    IndexedGatePtr gate_one(new IndexedGate(++new_gate_index_, kAndGate));
-    std::set<int>::iterator it;
-    for (it = it_sets->begin(); it != it_sets->end(); ++it) {
-      bool ret = gate_one->AddChild(*it);
-      assert(ret);
-    }
-    gate->AddChild(gate_one->index());
-    IndexedFaultTree::AddGate(gate_one);
-  }
+  gate->AddChild(first_child->index());
+  gate->AddChild(second_child->index());
+
+  IndexedFaultTree::NormalizeAtleastGate(grand_child);
+  IndexedFaultTree::NormalizeAtleastGate(second_child);
 }
 
 void IndexedFaultTree::PropagateConstants(

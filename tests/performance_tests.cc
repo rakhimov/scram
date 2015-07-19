@@ -67,9 +67,9 @@ TEST_F(PerformanceTest, DISABLED_Baobab1_L6) {
 
 // Test performance of MCS generation.
 TEST_F(PerformanceTest, DISABLED_Baobab1_L7) {
-  double mcs_time = 19.5;
+  double mcs_time = 15.7;
 #ifdef NDEBUG
-  mcs_time = 2.9;
+  mcs_time = 2.4;
 #endif
   std::vector<std::string> input_files;
   input_files.push_back("./share/scram/input/Baobab/baobab1.xml");
@@ -81,9 +81,9 @@ TEST_F(PerformanceTest, DISABLED_Baobab1_L7) {
 }
 
 TEST_F(PerformanceTest, DISABLED_CEA9601_L5) {
-  double mcs_time = 7.8;
+  double mcs_time = 6.8;
 #ifdef NDEBUG
-  mcs_time = 1.2;
+  mcs_time = 1.0;
 #endif
   std::vector<std::string> input_files;
   input_files.push_back("./share/scram/input/CEA9601/CEA9601.xml");
@@ -107,7 +107,7 @@ TEST_F(PerformanceTest, DISABLED_200Event_L24) {
 }
 
 TEST_F(PerformanceTest, DISABLED_CEA9601_L7) {
-  double mcs_time = 6.7;
+  double mcs_time = 5.3;
   std::vector<std::string> input_files;
   input_files.push_back("./share/scram/input/CEA9601/CEA9601.xml");
   input_files.push_back("./share/scram/input/CEA9601/CEA9601-basic-events.xml");

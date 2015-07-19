@@ -143,7 +143,12 @@ class IndexedFaultTree {
   /// @param[in,out] gate The gate to normalize.
   void NormalizeXorGate(const IndexedGatePtr& gate);
 
-  /// Normalizes an ATLEAST gate with a vote number.
+  /// Normalizes an ATLEAST gate with a vote number. The gate is turned into
+  /// an OR gate of recursively normalized ATLEAST and AND child gates according
+  /// to the formula K/N(x, y_i) = OR(AND(x, K-1/N-1(y_i)), K/N-1(y_i))) with
+  /// y_i being the rest of formula variables, which exclude x.
+  /// This representation is more friendly to other preprocessing and analysis
+  /// techniques than the alternative, which is OR of AND gates of combinations.
   /// @param[in,out] gate The atleast gate to normalize.
   void NormalizeAtleastGate(const IndexedGatePtr& gate);
 
