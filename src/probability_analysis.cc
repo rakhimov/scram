@@ -11,7 +11,7 @@
 
 namespace scram {
 
-ProbabilityAnalysis::ProbabilityAnalysis(std::string approx,
+ProbabilityAnalysis::ProbabilityAnalysis(const std::string& approx,
                                          int num_sums,
                                          double cut_off,
                                          bool importance_analysis)
@@ -19,7 +19,6 @@ ProbabilityAnalysis::ProbabilityAnalysis(std::string approx,
       warnings_(""),
       p_total_(0),
       p_rare_(0),
-      num_prob_mcs_(0),
       coherent_(true),
       p_time_(-1),
       imp_time_(-1) {
@@ -94,7 +93,6 @@ void ProbabilityAnalysis::Analyze(
                    " The MCUB approximation may not hold.";
     }
     num_sums_ = 0;  // For reporting purposes.
-    num_prob_mcs_ = imcs_.size();
     p_total_ = ProbabilityAnalysis::ProbMcub(imcs_);
 
   } else {
@@ -116,7 +114,6 @@ void ProbabilityAnalysis::Analyze(
     }
     // The default calculations.
     // Choose cut sets with high enough probabilities.
-    num_prob_mcs_ = mcs_for_prob.size();
     if (num_sums_ > mcs_for_prob.size()) num_sums_ = mcs_for_prob.size();
     ProbabilityAnalysis::ProbOr(1, num_sums_, &mcs_for_prob);
     p_total_ = ProbabilityAnalysis::CalculateTotalProbability();

@@ -90,13 +90,10 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   void CalculateStatistics();
 
   std::vector<double> sampled_results_;  ///< Storage for sampled values.
-
   int num_trials_;  ///< The number of trials to perform.
-
-  double analysis_time_;  ///< Time for uncertainty calculations and sampling.
-
   double mean_;  ///< The mean of the final distribution.
   double sigma_;  ///< The standard deviation of the final distribution.
+  double analysis_time_;  ///< Time for uncertainty calculations and sampling.
   /// The confidence interval of the distribution.
   std::pair<double, double> confidence_interval_;
   /// The histogram density of the distribution with lower bounds and values.

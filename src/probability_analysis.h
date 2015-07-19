@@ -33,7 +33,7 @@ class ProbabilityAnalysis {
   /// @param[in] cut_off The cut-off probability for cut sets.
   /// @param[in] importance_analysis To perform importance analysis.
   /// @throws InvalidArgument if any of the parameters is invalid.
-  explicit ProbabilityAnalysis(std::string approx = "no",
+  explicit ProbabilityAnalysis(const std::string& approx = "no",
                                int num_sums = 7,
                                double cut_off = 1e-8,
                                bool importance_analysis = false);
@@ -155,10 +155,12 @@ class ProbabilityAnalysis {
   /// Importance analysis of basic events that are in minimal cut sets.
   void PerformImportanceAnalysis();
 
-  std::string approx_;  ///< Approximations for probability calculations.
+
+  bool importance_analysis_;  ///< A flag for importance analysis.
+  std::string warnings_;  ///< Register warnings.
   int num_sums_;  ///< Number of sums in series expansion.
   double cut_off_;  ///< Cut-off probability for minimal cut sets.
-  bool importance_analysis_;  ///< A flag for importance analysis.
+  std::string approx_;  ///< Approximations for probability calculations.
 
   /// Container for basic events.
   boost::unordered_map<std::string, BasicEventPtr> basic_events_;
@@ -188,11 +190,6 @@ class ProbabilityAnalysis {
   /// Container for basic event importance types.
   /// The order is DIF, MIF, CIF, RRW, RAW.
   std::map< std::string, std::vector<double> > importance_;
-
-  std::string warnings_;  ///< Register warnings.
-
-  /// The number of minimal cut sets with higher than cut-off probability.
-  int num_prob_mcs_;
 
   bool coherent_;  ///< Indication of coherent optimized analysis.
   double p_time_;  ///< Time for probability calculations.

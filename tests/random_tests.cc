@@ -19,7 +19,6 @@ void PlotDistribution(const std::multiset<double>& series) {
   int num_bins = 50;
   double bin_width = 1.0 / num_bins;
   std::vector<int> bin_hight;
-  int size = 0;
   std::multiset<double>::const_iterator it = series.begin();
   for (int bin = 0; bin < num_bins; ++bin) {
     int size = 0;

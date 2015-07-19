@@ -30,9 +30,9 @@ Parameter::Parameter(const std::string& name, const std::string& base_path,
                      bool is_public)
       : Role::Role(is_public, base_path),
         name_(name),
+        unit_(kUnitless),
         mark_(""),
-        unused_(true),
-        unit_(kUnitless) {
+        unused_(true) {
   assert(name != "");
   id_ = is_public ? name : base_path + "." + name;  // Unique combination.
   boost::to_lower(id_);

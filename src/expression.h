@@ -338,10 +338,10 @@ class GlmExpression : public Expression {
   }
 
  private:
-  ExpressionPtr gamma_;  ///< Failure rate in hours.
+  ExpressionPtr gamma_;  ///< Probabilty of failure on demand.
   ExpressionPtr lambda_;  ///< Failure rate in hours.
+  ExpressionPtr mu_;  ///< Repair rate in hours.
   ExpressionPtr time_;  ///< Mission time in hours.
-  ExpressionPtr mu_;  ///< Mission time in hours.
 };
 
 /// @class WeibullExpression

@@ -194,8 +194,8 @@ class PrimaryEvent : public Event {
                         bool is_public = true,
                         const std::string& type = "")
       : Event(name, base_path, is_public),
-        type_(type),
-        has_expression_(false) {}
+        has_expression_(false),
+        type_(type) {}
 
   virtual ~PrimaryEvent() = 0;  ///< Abstract class.
 
@@ -312,8 +312,8 @@ class HouseEvent : public PrimaryEvent {
   explicit HouseEvent(const std::string& name,
                       const std::string& base_path = "",
                       bool is_public = true)
-      : state_(false),
-        PrimaryEvent(name, base_path, is_public, "house") {}
+      : PrimaryEvent(name, base_path, is_public, "house"),
+        state_(false) {}
 
   /// Sets the state for House event.
   /// @param[in] constant False or True for the state of this house event.

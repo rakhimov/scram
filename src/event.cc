@@ -1,5 +1,5 @@
 /// @file event.cc
-/// Implementation of Event Class.
+/// Implementation of Event Class and its derived classes.
 #include "event.h"
 
 #include <sstream>

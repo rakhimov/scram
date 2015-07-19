@@ -16,8 +16,8 @@ namespace scram {
 
 Component::Component(const std::string& name, const std::string& base_path,
                      bool is_public)
-    : name_(name),
-      Role::Role(is_public, base_path) {}
+    : Role::Role(is_public, base_path),
+      name_(name) {}
 
 void Component::AddGate(const GatePtr& gate) {
   std::string name = gate->name();

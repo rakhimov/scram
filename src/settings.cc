@@ -7,17 +7,17 @@
 namespace scram {
 
 Settings::Settings()
-    : num_sums_(7),
-      limit_order_(20),
-      approx_("no"),  // The default value indicates no setting.
-      cut_off_(1e-8),
-      mission_time_(8760),
-      num_trials_(1e3),
-      seed_(-1),  // The negative value indicates no setting.
-      probability_analysis_(false),
+    : probability_analysis_(false),
       importance_analysis_(false),
       uncertainty_analysis_(false),
-      ccf_analysis_(false) {}
+      ccf_analysis_(false),
+      limit_order_(20),
+      mission_time_(8760),
+      num_sums_(7),
+      cut_off_(1e-8),
+      approx_("no"),  // The default value indicates no setting.
+      seed_(-1),  // The negative value indicates no setting.
+      num_trials_(1e3) {}
 
 Settings& Settings::limit_order(int order) {
   if (order < 1) {

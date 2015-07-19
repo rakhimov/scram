@@ -122,12 +122,12 @@ class Settings {
   bool uncertainty_analysis_;  ///< A flag for uncertainty analysis.
   bool ccf_analysis_;  ///< A flag for common-cause analysis.
   int limit_order_;  ///< Limit on the order of minimal cut sets.
+  double mission_time_;  ///< System mission time.
   int num_sums_;  ///< The number of sums in probability calculation series.
   double cut_off_;  ///< The cut-off probability for cut sets.
   std::string approx_;  ///< The approximation to be applied for calculations.
-  int num_trials_;  ///< The number of trials for Monte Carlo simulations.
   int seed_;  ///< The seed for the pseudo-random number generator.
-  double mission_time_;  ///< System mission time.
+  int num_trials_;  ///< The number of trials for Monte Carlo simulations.
 };
 
 }  // namespace scram

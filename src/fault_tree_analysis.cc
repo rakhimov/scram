@@ -187,7 +187,6 @@ void FaultTreeAnalysis::GatherCcfBasicEvents(
 void FaultTreeAnalysis::SetsToString(const std::vector< std::set<int> >& imcs) {
   std::vector< std::set<int> >::const_iterator it_min;
   for (it_min = imcs.begin(); it_min != imcs.end(); ++it_min) {
-    bool unique = false;
     if (it_min->size() > max_order_) max_order_ = it_min->size();
     std::set<std::string> pr_set;
     std::set<int>::iterator it_set;
