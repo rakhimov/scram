@@ -229,13 +229,14 @@ class IndexedFaultTree {
 
   /// Pre-processes the fault tree by doing the simplest Boolean algebra.
   /// Positive children with the same OR or AND gates as parents are coalesced.
-  /// At this point all gates are expected to be either OR or AND.
-  /// There should not be negative gate children.
-  /// This function merges similar gates and may produce null or unity gates.
+  /// This function merges similar logic gates of NAND and NOR as well.
   /// @param[in,out] gate The starting gate to traverse the tree. This is for
-  ///                     recursive purposes. This gate must be AND or OR.
+  ///                     recursive purposes.
   /// @returns true if the given tree has been changed by this function.
   /// @returns false if no change has been made.
+  /// @warning NULL or UNITY state gates may emerge because of this processing.
+  /// @warning NULL type gates are not handled by this function.
+  /// @warning Module child gates are omitted from coalescing.
   bool JoinGates(const IndexedGatePtr& gate);
 
   /// Traverses the indexed fault tree to detect modules.

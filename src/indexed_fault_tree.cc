@@ -549,36 +549,37 @@ bool IndexedFaultTree::JoinGates(const IndexedGatePtr& gate) {
   if (gate->Visited()) return false;
   gate->Visit(1);  // Time does not matter.
   GateType parent_type = gate->type();
-  assert(parent_type == kAndGate || parent_type == kOrGate);
+  std::vector<IndexedGatePtr> to_join;  // Gate children of the same logic.
   std::set<int>::const_iterator it;
   bool changed = false;  // Indication if the tree is changed.
-  for (it = gate->children().begin(); it != gate->children().end();) {
+  for (it = gate->children().begin(); it != gate->children().end(); ++it) {
     if (IndexedFaultTree::IsGateIndex(std::abs(*it))) {
-      assert(*it > 0);
+      bool ret = false;  // Indication if the sub-tree has changed.
       IndexedGatePtr child_gate = IndexedFaultTree::GetGate(std::abs(*it));
+      ret = IndexedFaultTree::JoinGates(child_gate);
+      if (!changed && ret) changed = true;
+      if (*it < 0) continue;  // Cannot join a negative child gate.
+      if (child_gate->IsModule()) continue;  // Does not coalesce modules.
+
       GateType child_type = child_gate->type();
-      assert(child_type == kAndGate || child_type == kOrGate);
-      if (parent_type == child_type) {  // Parent is not NULL or NOT.
-        if (!changed) changed = true;
-        if (!gate->JoinGate(&*child_gate)) {
+
+      switch (parent_type) {
+        case kNandGate:
+        case kAndGate:
+          if (child_type == kAndGate) to_join.push_back(child_gate);
           break;
-        } else {
-          it = gate->children().begin();
-          continue;
-        }
-      } else if (child_gate->children().size() == 1) {
-        // This must be from some reduced gate after constant propagation.
-        if (!changed) changed = true;
-        if (!gate->SwapChild(*it, *child_gate->children().begin()))
+        case kNorGate:
+        case kOrGate:
+          if (child_type == kOrGate) to_join.push_back(child_gate);
           break;
-        it = gate->children().begin();
-        continue;
-      } else {
-        bool ret = IndexedFaultTree::JoinGates(child_gate);
-        if (!changed && ret) changed = true;
       }
     }
-    ++it;
+  }
+
+  if (!changed && !to_join.empty()) changed = true;
+  std::vector<IndexedGatePtr>::iterator it_ch;
+  for (it_ch = to_join.begin(); it_ch != to_join.end(); ++it_ch) {
+    if (!gate->JoinGate(&**it_ch)) return true;  // The parent is constant.
   }
   return changed;
 }
