@@ -67,7 +67,7 @@ void IndexedFaultTree::ProcessIndexedFaultTree(int num_basic_events) {
   IndexedFaultTree::ClearGateVisits();
   IndexedFaultTree::PropagateComplements(top, &complements);
   IndexedFaultTree::ClearGateVisits();
-  IndexedFaultTree::ProcessConstGates(top);
+  IndexedFaultTree::RemoveConstGates(top);
   bool tree_changed = true;
   while (tree_changed) {
     tree_changed = false;  // Break the loop if actions don't change the tree.
@@ -81,7 +81,7 @@ void IndexedFaultTree::ProcessIndexedFaultTree(int num_basic_events) {
     if (!tree_changed && ret) tree_changed = true;
 
     IndexedFaultTree::ClearGateVisits();
-    ret = IndexedFaultTree::ProcessConstGates(top);
+    ret = IndexedFaultTree::RemoveConstGates(top);
     if (!tree_changed && ret) tree_changed = true;
   }
   // After this point there should not be null AND or unity OR gates,
@@ -488,31 +488,26 @@ void IndexedFaultTree::PropagateComplements(
   }
 }
 
-bool IndexedFaultTree::ProcessConstGates(const IndexedGatePtr& gate) {
-  // Null state gates' parent: OR->Remove the child and AND->NULL the parent.
-  // Unity state gates' parent: OR->Unity the parent and AND->Remove the child.
-  // The tree structure is only positive AND and OR gates.
+bool IndexedFaultTree::RemoveConstGates(const IndexedGatePtr& gate) {
   if (gate->Visited()) return false;
   gate->Visit(1);  // Time does not matter.
 
   if (gate->state() == kNullState || gate->state() == kUnityState) return false;
   bool changed = false;  // Indication if this operation changed the gate.
   std::vector<int> to_erase;  // Keep track of children to erase.
-  GateType type = gate->type();
-  assert(type == kAndGate || type == kOrGate);  // Only two types are possible.
   std::set<int>::const_iterator it;
   for (it = gate->children().begin(); it != gate->children().end(); ++it) {
     if (IndexedFaultTree::IsGateIndex(std::abs(*it))) {
       assert(*it > 0);
       IndexedGatePtr child_gate = IndexedFaultTree::GetGate(*it);
-      bool ret = IndexedFaultTree::ProcessConstGates(child_gate);
+      bool ret = IndexedFaultTree::RemoveConstGates(child_gate);
       if (!changed && ret) changed = true;
       State state = child_gate->state();
       if (state == kNormalState) continue;  // Only three states are possible.
       bool state_flag = state == kNullState ? false : true;
       if (IndexedFaultTree::ProcessConstantChild(gate, *it, state_flag,
                                                  &to_erase))
-        return true;
+        return true;  // The parent gate itself has become constant.
     }
   }
   if (!changed && !to_erase.empty()) changed = true;

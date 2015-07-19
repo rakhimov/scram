@@ -192,14 +192,17 @@ class IndexedFaultTree {
   void RemoveChildren(const IndexedGatePtr& gate,
                       const std::vector<int>& to_erase);
 
-  /// Removes null and unity gates. There should not be negative gate children.
-  /// After this function, there should not be null or unity gates resulting
-  /// from previous processing steps.
+  /// Removes NULL and UNITY state child gates. The parent gate can be of any
+  /// type. Because of the constant children, the parent gate itself may turn
+  /// constant in some cases.
   /// @param[in,out] gate The starting gate to traverse the tree. This is for
   ///                     recursive purposes.
   /// @returns true if the given tree has been changed by this function.
   /// @returns false if no change has been made.
-  bool ProcessConstGates(const IndexedGatePtr& gate);
+  /// @warning There should not be negative gate children.
+  /// @warning There still may be only one constant state gate which is the root
+  ///          of the tree. This must be handled separately.
+  bool RemoveConstGates(const IndexedGatePtr& gate);
 
   /// Propagates complements of child gates down to basic events
   /// in order to remove any NOR or NAND logic from the tree.
