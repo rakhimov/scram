@@ -298,20 +298,22 @@ class IndexedFaultTree {
   /// @param[in] visit_basics The recordings for basic events.
   /// @param[in,out] visited_gates Container of visited gates with
   ///                              min and max time of visits of the subtree.
-  void FindOriginalModules(const IndexedGatePtr& gate,
-                           const int visit_basics[][2],
-                           std::map<int, std::pair<int, int> >* visited_gates);
+  void FindModules(const IndexedGatePtr& gate,
+                   const int visit_basics[][2],
+                   std::map<int, std::pair<int, int> >* visited_gates);
 
-  /// Creates a new module as a child of an existing gate. The existing
+  /// Creates a new module as a child of an existing gate if the logic of the
+  /// existing parent gate allows a sub-module. The existing
   /// children of the original gate are used to create the new module.
-  /// The module is added in the module and gate databases.
   /// If the new module must contain all the children, the original gate is
-  /// turned into a module.
+  /// asserted to be a module, and no operation is performed.
   ///
   /// @param[in,out] gate The parent gate for a module.
   /// @param[in] children Modular children to be added into the new module.
-  void CreateNewModule(const IndexedGatePtr& gate,
-                       const std::vector<int>& children);
+  ///
+  /// @returns Pointer to the new module if it is created.
+  IndexedGatePtr CreateNewModule(const IndexedGatePtr& gate,
+                                 const std::vector<int>& children);
 
   /// Checks if a group of modular children share anything with non-modular
   /// children. If so, then the modular children are not actually modular, and
@@ -328,6 +330,33 @@ class IndexedFaultTree {
       const std::map<int, std::pair<int, int> >& visited_gates,
       std::vector<int>* modular_children,
       std::vector<int>* non_modular_children);
+
+  /// Groups modular children by their common elements. The gates created with
+  /// these modular children are guaranteed to be independent modules.
+  ///
+  /// @param[in] visit_basics The recordings for basic events.
+  /// @param[in] visited_gates Visit max and min time recordings for gates.
+  /// @param[in] modular_children Candidates for modular grouping.
+  /// @param[out] groups Grouped modular children.
+  void GroupModularChildren(
+      const int visit_basics[][2],
+      const std::map<int, std::pair<int, int> >& visited_gates,
+      const std::vector<int>& modular_children,
+      std::vector<std::vector<int> >* groups);
+
+  /// Creates new module gates from groups of modular children if the logic of
+  /// the parent gate allows sub-modules. The existing
+  /// children of the original gate are used to create the new modules.
+  /// If all the parent gate children are modular and within one group,
+  /// the parent gate is asserted to be a module gate, and no operation is
+  /// performed.
+  ///
+  /// @param[in,out] gate The parent gate for a module.
+  /// @param[in] modular_children All the modular children.
+  /// @param[in] groups Grouped modular children.
+  void CreateNewModules(const IndexedGatePtr& gate,
+                        const std::vector<int>& modular_children,
+                        const std::vector<std::vector<int> >& groups);
 
   /// Clears visit time information from all indexed gates that are presently
   /// in this fault tree's container. Any member function updating and using the

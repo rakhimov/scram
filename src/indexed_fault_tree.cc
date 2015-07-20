@@ -623,7 +623,7 @@ void IndexedFaultTree::DetectModules(int num_basic_events) {
   LOG(DEBUG3) << "Timings are assigned to nodes.";
 
   std::map<int, std::pair<int, int> > visited_gates;
-  IndexedFaultTree::FindOriginalModules(top_gate, visit_basics, &visited_gates);
+  IndexedFaultTree::FindModules(top_gate, visit_basics, &visited_gates);
   assert(visited_gates.count(top_event_index_));
   assert(visited_gates.find(top_event_index_)->second.first == 1);
   assert(!top_gate->Revisited());
@@ -656,7 +656,7 @@ int IndexedFaultTree::AssignTiming(int time, const IndexedGatePtr& gate,
   return time;
 }
 
-void IndexedFaultTree::FindOriginalModules(
+void IndexedFaultTree::FindModules(
     const IndexedGatePtr& gate,
     const int visit_basics[][2],
     std::map<int, std::pair<int, int> >* visited_gates) {
@@ -672,13 +672,12 @@ void IndexedFaultTree::FindOriginalModules(
   std::set<int>::const_iterator it;
   for (it = gate->children().begin(); it != gate->children().end(); ++it) {
     int index = std::abs(*it);
-    int min = 0;
-    int max = 0;
+    int min = 0;  // Minimum time of the visit of the sub-tree.
+    int max = 0;  // Maximum time of the visit of the sub-tree.
     if (IndexedFaultTree::IsGateIndex(index)) {
       assert(*it > 0);
       IndexedGatePtr child_gate = IndexedFaultTree::GetGate(index);
-      IndexedFaultTree::FindOriginalModules(child_gate, visit_basics,
-                                            visited_gates);
+      IndexedFaultTree::FindModules(child_gate, visit_basics, visited_gates);
       min = visited_gates->find(index)->second.first;
       max = visited_gates->find(index)->second.second;
       if (child_gate->IsModule() && !child_gate->Revisited()) {
@@ -694,8 +693,8 @@ void IndexedFaultTree::FindOriginalModules(
         continue;
       }
     }
-    assert(min != 0);
-    assert(max != 0);
+    assert(min > 0);
+    assert(max > 0);
     if (min > enter_time && max < exit_time) {
       modular_children.push_back(*it);
     } else {
@@ -712,53 +711,67 @@ void IndexedFaultTree::FindOriginalModules(
            gate->children().size());
     gate->TurnModule();
   }
-  if (non_shared_children.size() > 1) {
-    IndexedFaultTree::CreateNewModule(gate, non_shared_children);
-    LOG(DEBUG3) << "New module of " << gate->index() << ": " << new_gate_index_
-        << " with NON-SHARED children number " << non_shared_children.size();
-  }
-  // There might be cases when in one level couple of child gates can be
-  // grouped into a module but they may share an event with another non-module
-  // gate which in turn shares an event with the outside world. This leads
-  // to a chain that needs to be considered. Formula rewriting might be helpful
-  // in this case.
-  IndexedFaultTree::FilterModularChildren(visit_basics,
-                                          *visited_gates,
-                                          &modular_children,
-                                          &non_modular_children);
-  if (modular_children.size() > 0) {
-    assert(modular_children.size() != 1);  // One modular child is non-shared.
-    IndexedFaultTree::CreateNewModule(gate, modular_children);
-    LOG(DEBUG3) << "New module of gate " << gate->index() << ": "
-        << new_gate_index_
-        << " with children number " << modular_children.size();
-  }
 
   max_time = std::max(max_time, gate->LastVisit());
   visited_gates->insert(std::make_pair(gate->index(),
                                        std::make_pair(min_time, max_time)));
+
+  // Attempting to create new modules for specific gate types.
+  switch (gate->type()) {
+    case kNorGate:
+    case kOrGate:
+    case kNandGate:
+    case kAndGate:
+      IndexedFaultTree::CreateNewModule(gate, non_shared_children);
+
+      IndexedFaultTree::FilterModularChildren(visit_basics,
+                                              *visited_gates,
+                                              &modular_children,
+                                              &non_modular_children);
+      assert(modular_children.size() != 1);  // One modular child is non-shared.
+      std::vector<std::vector<int> > groups;
+      IndexedFaultTree::GroupModularChildren(visit_basics, *visited_gates,
+                                             modular_children, &groups);
+      IndexedFaultTree::CreateNewModules(gate, modular_children, groups);
+  }
 }
 
-void IndexedFaultTree::CreateNewModule(const IndexedGatePtr& gate,
-                                       const std::vector<int>& children) {
-  assert(children.size() > 1);
-  assert(children.size() <= gate->children().size());
+boost::shared_ptr<IndexedGate> IndexedFaultTree::CreateNewModule(
+    const IndexedGatePtr& gate,
+    const std::vector<int>& children) {
+  IndexedGatePtr module;  // Empty pointer as an indication of a failure.
+  if (children.empty()) return module;
+  if (children.size() == 1) return module;
   if (children.size() == gate->children().size()) {
-    if (gate->IsModule()) return;
-    gate->TurnModule();
-    return;
+    assert(gate->IsModule());
+    return module;
   }
-  assert(gate->type() == kAndGate || gate->type() == kOrGate);
-  IndexedGatePtr new_module(new IndexedGate(++new_gate_index_, gate->type()));
-  IndexedFaultTree::AddGate(new_module);
-  new_module->TurnModule();
+  assert(children.size() < gate->children().size());
+  switch (gate->type()) {
+    case kNandGate:
+    case kAndGate:
+      module = IndexedGatePtr(new IndexedGate(++new_gate_index_, kAndGate));
+      break;
+    case kNorGate:
+    case kOrGate:
+      module = IndexedGatePtr(new IndexedGate(++new_gate_index_, kOrGate));
+      break;
+    default:
+      return module;  // Cannot create sub-modules for other types.
+  }
+  IndexedFaultTree::AddGate(module);
+  module->TurnModule();
   std::vector<int>::const_iterator it_g;
   for (it_g = children.begin(); it_g != children.end(); ++it_g) {
     gate->EraseChild(*it_g);
-    new_module->InitiateWithChild(*it_g);
+    module->InitiateWithChild(*it_g);
   }
   assert(!gate->children().empty());
-  gate->InitiateWithChild(new_module->index());
+  gate->InitiateWithChild(module->index());
+  LOG(DEBUG3) << "Created a new module for Gate " << gate->index() << ": "
+      << "Gate " << module->index() << " with "  << children.size()
+      << " NON-SHARED children.";
+  return module;
 }
 
 void IndexedFaultTree::FilterModularChildren(
@@ -775,14 +788,12 @@ void IndexedFaultTree::FilterModularChildren(
     int min = 0;
     int max = 0;
     if (IndexedFaultTree::IsGateIndex(index)) {
-      assert(*it > 0);
       min = visited_gates.find(index)->second.first;
       max = visited_gates.find(index)->second.second;
     } else {
       min = visit_basics[index][0];
       max = visit_basics[index][1];
     }
-    bool modular = true;
     std::vector<int>::iterator it_n;
     for (it_n = non_modular_children->begin();
          it_n != non_modular_children->end(); ++it_n) {
@@ -790,7 +801,6 @@ void IndexedFaultTree::FilterModularChildren(
       int lower = 0;
       int upper = 0;
       if (IndexedFaultTree::IsGateIndex(index)) {
-        assert(*it_n > 0);
         lower = visited_gates.find(index)->second.first;
         upper = visited_gates.find(index)->second.second;
       } else {
@@ -801,17 +811,100 @@ void IndexedFaultTree::FilterModularChildren(
       int b = std::min(max, upper);
       if (a <= b) {  // There's some overlap between the ranges.
         new_non_modular.push_back(*it);
-        modular = false;
-        break;
+      } else {
+        still_modular.push_back(*it);
       }
     }
-    if (modular) still_modular.push_back(*it);
   }
   IndexedFaultTree::FilterModularChildren(visit_basics, visited_gates,
                                           &still_modular, &new_non_modular);
   *modular_children = still_modular;
   non_modular_children->insert(non_modular_children->end(),
                                new_non_modular.begin(), new_non_modular.end());
+}
+
+void IndexedFaultTree::GroupModularChildren(
+    const int visit_basics[][2],
+    const std::map<int, std::pair<int, int> >& visited_gates,
+    const std::vector<int>& modular_children,
+    std::vector<std::vector<int> >* groups) {
+  if (modular_children.empty()) return;
+  assert(modular_children.size() > 1);
+  std::vector<int> to_check(modular_children);
+  while (!to_check.empty()) {
+    std::vector<int> group;
+    int first_member = to_check.back();
+    to_check.pop_back();
+    group.push_back(first_member);
+    int low = 0;
+    int high = 0;
+    int index = std::abs(first_member);
+    if (IndexedFaultTree::IsGateIndex(index)) {
+      low = visited_gates.find(index)->second.first;
+      high = visited_gates.find(index)->second.second;
+    } else {
+      low = visit_basics[index][0];
+      high = visit_basics[index][1];
+    }
+    int prev_size = 0;
+    std::vector<int> next_check;
+    while (prev_size < group.size()) {
+      prev_size = group.size();
+      std::vector<int>::iterator it;
+      for (it = to_check.begin(); it != to_check.end(); ++it) {
+        int min = 0;
+        int max = 0;
+        int index = std::abs(*it);
+        if (IndexedFaultTree::IsGateIndex(index)) {
+          min = visited_gates.find(index)->second.first;
+          max = visited_gates.find(index)->second.second;
+        } else {
+          min = visit_basics[index][0];
+          max = visit_basics[index][1];
+        }
+        int a = std::max(min, low);
+        int b = std::min(max, high);
+        if (a <= b) {  // There's some overlap between the ranges.
+          group.push_back(*it);
+          low = std::min(min, low);
+          high = std::max(max, low);
+        } else {
+          next_check.push_back(*it);
+        }
+      }
+      to_check = next_check;
+    }
+    assert(group.size() > 1);
+    groups->push_back(group);
+  }
+}
+
+void IndexedFaultTree::CreateNewModules(
+    const IndexedGatePtr& gate,
+    const std::vector<int>& modular_children,
+    const std::vector<std::vector<int> >& groups) {
+  if (modular_children.empty()) return;
+  assert(modular_children.size() > 1);
+  assert(!groups.empty());
+  if (modular_children.size() == gate->children().size() &&
+      groups.size() == 1) {
+    assert(gate->IsModule());
+    return;
+  }
+  IndexedGatePtr main_child;
+
+  if (modular_children.size() == gate->children().size()) {
+    assert(groups.size() > 1);
+    assert(gate->IsModule());
+    main_child = gate;
+  } else {
+    main_child = IndexedFaultTree::CreateNewModule(gate, modular_children);
+    assert(main_child);
+  }
+  std::vector<std::vector<int> >::const_iterator it;
+  for (it = groups.begin(); it != groups.end(); ++it) {
+    IndexedFaultTree::CreateNewModule(main_child, *it);
+  }
 }
 
 void IndexedFaultTree::ClearGateVisits() {
