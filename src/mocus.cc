@@ -179,6 +179,15 @@ void Mocus::FindMcs() {
       imcs_.push_back(empty_set);  // Special indication of unity set.
     }  // Other cases are null.
     return;
+  } else if (top->type() == kNullGate) {  // Special case of NULL type top.
+    assert(fault_tree_->top_event_sign_ > 0);
+    assert(top->children().size() == 1);
+    int child = *top->children().begin();
+    assert(!fault_tree_->IsGateIndex(std::abs(child)));
+    std::set<int> one_element;
+    one_element.insert(child);
+    imcs_.push_back(one_element);
+    return;
   }
 
   // Create simple gates from indexed gates.

@@ -116,7 +116,7 @@ class IndexedFaultTree {
   /// This function uses parent information of each gate, so the tree must
   /// be initialized before a call of this function.
   /// New gates are created upon normalizing complex gates, such as XOR.
-  /// @warning NOT and NUll gates are not handled except for the top gate.
+  /// @warning NUll gates are not handled except for the top gate.
   void NormalizeGates();
 
   /// Traverses the tree to gather information about parents of indexed gates.
@@ -125,9 +125,9 @@ class IndexedFaultTree {
   /// @param[in] parent_gate The parent to start information gathering.
   void GatherParentInformation(const IndexedGatePtr& parent_gate);
 
-  /// Notifies all parents of negative gates, such as NOR and NAND before
+  /// Notifies all parents of negative gates, such as NOT, NOR, and NAND before
   /// transforming these gates into basic gates of OR and AND. The child gates
-  /// with NOR and NAND types are swaped with a negative sign.
+  /// are swaped with a negative sign.
   /// @param[in] gate The gate to start processing.
   /// @warning This function does not change the types of gates.
   /// @warning The top gate does not have parents, so it is not handled here.
@@ -137,7 +137,7 @@ class IndexedFaultTree {
   /// @param[in,out] gate The gate to be processed.
   /// @warning The parents of negative gates are assumed to be notified about
   ///          the change of their children types.
-  /// @warning NOT and NULL gates are not handled.
+  /// @warning NULL gates are not handled.
   void NormalizeGate(const IndexedGatePtr& gate);
 
   /// Normalizes a gate with XOR logic. This is a helper function for the main
@@ -207,8 +207,9 @@ class IndexedFaultTree {
   bool RemoveConstGates(const IndexedGatePtr& gate);
 
   /// Propagates complements of child gates down to basic events
-  /// in order to remove any NOR or NAND logic from the tree.
-  /// This function also processes NOT and NULL gates.
+  /// in order to remove any negative logic from the fault tree's gates.
+  /// The tree must contain only OR and AND type gates. All NULL type gates must
+  /// be removed from the tree. Other complex gates must be preprocessed.
   /// The resulting tree will contain only positive gates, OR and AND.
   /// @param[in,out] gate The starting gate to traverse the tree. This is for
   ///                     recursive purposes. The sign of this passed gate

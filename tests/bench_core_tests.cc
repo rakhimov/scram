@@ -327,6 +327,36 @@ TEST_F(RiskAnalysisTest, XOR_ABC) {
   EXPECT_EQ(mcs, min_cut_sets());
 }
 
+// Checks for top gate of NOT with a single basic event child.
+TEST_F(RiskAnalysisTest, NOT_A) {
+  std::string tree_input = "./share/scram/input/core/not_a.xml";
+  std::set<std::string> cut_set;
+  std::set< std::set<std::string> > mcs;  // For expected min cut sets.
+
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  // Minimal cut set check.
+  cut_set.insert("not onlychild");
+  mcs.insert(cut_set);
+  EXPECT_EQ(1, min_cut_sets().size());
+  EXPECT_EQ(mcs, min_cut_sets());
+}
+
+// Checks for top gate of NULL with a single basic event child.
+TEST_F(RiskAnalysisTest, NULL_A) {
+  std::string tree_input = "./share/scram/input/core/null_a.xml";
+  std::set<std::string> cut_set;
+  std::set< std::set<std::string> > mcs;  // For expected min cut sets.
+
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  // Minimal cut set check.
+  cut_set.insert("onlychild");
+  mcs.insert(cut_set);
+  EXPECT_EQ(1, min_cut_sets().size());
+  EXPECT_EQ(mcs, min_cut_sets());
+}
+
 // Benchmark Tests for Beta factor common cause failure model.
 // Test Minimal cut sets and total probabilty.
 TEST_F(RiskAnalysisTest, BetaFactorCCF) {

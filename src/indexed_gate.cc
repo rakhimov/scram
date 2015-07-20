@@ -47,6 +47,12 @@ void IndexedGate::InvertChildren() {
   children_ = inverted_children;  /// @todo Check swap() for performance.
 }
 
+void IndexedGate::InvertChild(int existing_child) {
+  assert(children_.count(existing_child));
+  children_.erase(existing_child);
+  children_.insert(-existing_child);
+}
+
 bool IndexedGate::JoinGate(IndexedGate* child_gate) {
   assert(children_.count(child_gate->index()));
   children_.erase(child_gate->index());

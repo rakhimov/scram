@@ -57,9 +57,40 @@ void IndexedFaultTree::ProcessIndexedFaultTree(int num_basic_events) {
   LOG(DEBUG2) << "Finished normalizing gates.";
 
   IndexedGatePtr top = IndexedFaultTree::GetGate(top_event_index_);
+  IndexedFaultTree::ClearGateVisits();
+  IndexedFaultTree::RemoveNullGates(top);
+
+  if (top->type() == kNullGate) {  // Special case of preprocessing.
+    assert(top->children().size() == 1);
+    int child = *top->children().begin();
+    if (IndexedFaultTree::IsGateIndex(std::abs(child))) {
+      top_event_index_ = std::abs(child);
+      top = IndexedFaultTree::GetGate(top_event_index_);
+      assert(top->type() == kOrGate || top->type() == kAndGate);
+      top_event_sign_ *= child > 0 ? 1 : -1;
+    }
+  }
+  if (top->state() != kNormalState) {  // Top has become constant.
+    if (top_event_sign_ < 0) {
+      State orig_state = top->state();
+      top = IndexedGatePtr(new IndexedGate(++new_gate_index_, kNullGate));
+      IndexedFaultTree::AddGate(top);
+      top_event_index_ = top->index();
+      if (orig_state == kNullState) {
+        top->MakeUnity();
+      } else {
+        assert(orig_state == kUnityState);
+        top->Nullify();
+      }
+      top_event_sign_ = 1;
+    }
+    return;
+  }
   if (top_event_sign_ < 0) {
-    assert(top->type() == kOrGate || top->type() == kAndGate);
-    top->type(top->type() == kOrGate ? kAndGate : kOrGate);
+    assert(top->type() == kOrGate || top->type() == kAndGate ||
+           top->type() == kNullGate);
+    if (top->type() == kOrGate || top->type() == kAndGate)
+      top->type(top->type() == kOrGate ? kAndGate : kOrGate);
     top->InvertChildren();
     top_event_sign_ = 1;
   }
@@ -131,28 +162,12 @@ void IndexedFaultTree::NormalizeGates() {
   GateType type = top_gate->type();
   switch (type) {
     case kNorGate:
-      top_event_sign_ *= -1;  // For negative gates. Fall-through to OR case.
-      top_gate->type(kOrGate);
-      break;
     case kNandGate:
-      top_event_sign_ *= -1;  // For negative gates. Fall-through to AND case.
-      top_gate->type(kAndGate);
-      break;
     case kNotGate:
-      top_event_sign_ *= -1;  // Change the sign. Fall-through to NULL case.
-    case kNullGate:
-      assert(top_gate->children().size() == 1);
-      int child_index = *top_gate->children().begin();
-      assert(child_index > 0);
-      top_gate = IndexedFaultTree::GetGate(std::abs(child_index));
-      indexed_gates_.erase(top_event_index_);
-      top_event_index_ = top_gate->index();
-      IndexedFaultTree::NormalizeGates();  // This should handle NOT->NOT cases.
-      return;
+      top_event_sign_ *= -1;
   }
-  // Process negative gates except for NOT. Note that top event's negative
-  // gate is processed in the above lines.
-  // All children are assumed to be positive at this point.
+  // Process negative gates. Note that top event's negative gate is processed in
+  // the above lines.  All children are assumed to be positive at this point.
   IndexedFaultTree::ClearGateVisits();
   IndexedFaultTree::NotifyParentsOfNegativeGates(top_gate);
 
@@ -188,16 +203,17 @@ void IndexedFaultTree::NotifyParentsOfNegativeGates(
       IndexedGatePtr child = IndexedFaultTree::GetGate(std::abs(*it));
       IndexedFaultTree::NotifyParentsOfNegativeGates(child);
 
-      GateType type = child->type();
-      if (type == kNorGate || type == kNandGate) {
-        to_negate.push_back(*it);
+      switch (child->type()) {
+        case kNorGate:
+        case kNandGate:
+        case kNotGate:
+          to_negate.push_back(*it);
       }
     }
   }
   std::vector<int>::iterator it_neg;
   for (it_neg = to_negate.begin(); it_neg != to_negate.end(); ++it_neg) {
-    bool ret = gate->SwapChild(*it_neg, -*it_neg);
-    assert(ret);
+    gate->InvertChild(*it_neg);
   }
 }
 
@@ -216,6 +232,9 @@ void IndexedFaultTree::NormalizeGate(const IndexedGatePtr& gate) {
 
   GateType type = gate->type();
   switch (type) {  // Negation is already processed.
+    case kNotGate:
+      gate->type(kNullGate);
+      break;
     case kNorGate:
     case kOrGate:
       gate->type(kOrGate);
@@ -231,7 +250,7 @@ void IndexedFaultTree::NormalizeGate(const IndexedGatePtr& gate) {
       IndexedFaultTree::NormalizeAtleastGate(gate);
       break;
     default:
-      assert(type == kNotGate || type == kNullGate);  // Must be dealt outside.
+      assert(type == kNullGate);  // Must be dealt outside.
   }
 }
 
@@ -447,54 +466,40 @@ void IndexedFaultTree::RemoveChildren(const IndexedGatePtr& gate,
 void IndexedFaultTree::PropagateComplements(
     const IndexedGatePtr& gate,
     std::map<int, int>* gate_complements) {
+  if (gate->Visited()) return;
+  gate->Visit(1);
   // If the child gate is complement, then create a new gate that propagates
   // its sign to its children and itself becomes non-complement.
   // Keep track of complement gates for optimization of repeated complements.
+  std::vector<int> to_swap;  // Children with negation to get swaped.
   std::set<int>::const_iterator it;
-  for (it = gate->children().begin(); it != gate->children().end();) {
+  for (it = gate->children().begin(); it != gate->children().end(); ++it) {
     if (IndexedFaultTree::IsGateIndex(std::abs(*it))) {
-      // Deal with NOT and NULL gates.
       IndexedGatePtr child_gate = IndexedFaultTree::GetGate(std::abs(*it));
-      if (child_gate->type() == kNotGate || child_gate->type() == kNullGate) {
-        assert(child_gate->children().size() == 1);
-        int mult = child_gate->type() == kNotGate ? -1 : 1;
-        mult *= *it > 0 ? 1 : -1;
-        if (!gate->SwapChild(*it, *child_gate->children().begin() * mult))
-          return;
-        it = gate->children().begin();
-        continue;
-
-      } else if (*it < 0) {
-        if (gate_complements->count(-*it)) {
-          gate->SwapChild(*it, gate_complements->find(-*it)->second);
-        } else {
-          GateType type = child_gate->type();
-          assert(type == kAndGate || type == kOrGate);
-          GateType complement_type = type == kOrGate ? kAndGate : kOrGate;
-          IndexedGatePtr complement_gate(new IndexedGate(++new_gate_index_,
-                                                         complement_type));
-          indexed_gates_.insert(std::make_pair(complement_gate->index(),
-                                               complement_gate));
-          gate_complements->insert(std::make_pair(-*it,
-                                                  complement_gate->index()));
-          complement_gate->children(child_gate->children());
-          complement_gate->InvertChildren();
-          gate->SwapChild(*it, complement_gate->index());
-          complement_gate->Visit(1);
-          IndexedFaultTree::PropagateComplements(complement_gate,
-                                                 gate_complements);
-        }
-        // Note that the iterator is invalid now.
-        it = gate->children().begin();  // The negative gates at the start.
-        continue;
-
-      } else if (!child_gate->Visited()) {
-        // Continue with the positive gate children.
-        child_gate->Visit(1);  // Time does not matter.
-        IndexedFaultTree::PropagateComplements(child_gate, gate_complements);
+      if (*it < 0) {
+        to_swap.push_back(*it);
+        if (gate_complements->count(-*it)) continue;
+        GateType type = child_gate->type();
+        assert(type == kAndGate || type == kOrGate);
+        GateType complement_type = type == kOrGate ? kAndGate : kOrGate;
+        IndexedGatePtr complement_gate(new IndexedGate(++new_gate_index_,
+                                                        complement_type));
+        IndexedFaultTree::AddGate(complement_gate);
+        gate_complements->insert(std::make_pair(-*it,
+                                                complement_gate->index()));
+        complement_gate->children(child_gate->children());
+        complement_gate->InvertChildren();
+        child_gate = complement_gate;  // Needed for further propagation.
       }
+      IndexedFaultTree::PropagateComplements(child_gate, gate_complements);
     }
-    ++it;
+  }
+
+  std::vector<int>::iterator it_ch;
+  for (it_ch = to_swap.begin(); it_ch != to_swap.end(); ++it_ch) {
+    assert(*it_ch < 0);
+    bool ret = gate->SwapChild(*it_ch, gate_complements->find(-*it_ch)->second);
+    assert(ret);
   }
 }
 

@@ -123,6 +123,11 @@ class IndexedGate {
   /// De Morgan's Law.
   void InvertChildren();
 
+  /// Replaces a child with the complement of it.
+  /// This is a helper function to propagate a complement gate and apply
+  /// De Morgan's Law.
+  void InvertChild(int existing_child);
+
   /// Adds children of a child gate to this gate. This is a helper function for
   /// gate coalescing. The child gate of the same type is removed from the
   /// children list.
