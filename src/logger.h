@@ -68,11 +68,13 @@ class Logger {
   }
 
   /// This function can be to get and set the cut-off level for logging.
+  ///
   /// @returns The cut-off level for reporting.
   static LogLevel& ReportLevel();
 
   /// Returns a string stream by reference that is flushed to stderr by
   /// the Logger class destructor.
+  ///
   /// @param[in] level The log level for the information.
   inline std::ostringstream& Get(LogLevel level) {
     os_ << Logger::kLevelToString_[level] << ": ";

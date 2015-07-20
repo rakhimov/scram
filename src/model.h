@@ -30,6 +30,7 @@ class Model : public Element {
   typedef boost::shared_ptr<FaultTree> FaultTreePtr;
 
   /// Creates a model container.
+  ///
   /// @param[in] name The optional name for the model.
   explicit Model(const std::string& name = "");
 
@@ -72,100 +73,135 @@ class Model : public Element {
   }
 
   /// Adds a fault tree into the model container.
+  ///
   /// @param[in] fault_tree A fault tree defined in this model.
-  /// @throws RedefinitionError if the model has a container with the same name.
+  ///
+  /// @throws RedefinitionError The model has a container with the same name.
   void AddFaultTree(const FaultTreePtr& fault_tree);
 
   /// Adds a parameter that is used in this model's expressions.
+  ///
   /// @param[in] parameter A parameter defined in this model.
-  /// @throws RedefinitionError if the model has a parameter with the same name.
+  ///
+  /// @throws RedefinitionError The model has a parameter with the same name.
   void AddParameter(const ParameterPtr& parameter);
 
   /// Finds a parameter from a reference. The reference is not case sensitive
   /// and can contain the identifier, full path, or local path.
+  ///
   /// @param[in] reference Reference string to the parameter.
   /// @param[in] base_path The series of containers indicating the scope.
+  ///
   /// @returns Pointer to the parameter found by following the given reference.
-  /// @throws ValidationError if there are problems with referencing.
+  ///
+  /// @throws ValidationError There are problems with referencing.
   ParameterPtr GetParameter(const std::string& reference,
                             const std::string& base_path);
 
   /// Finds an event from a reference. The reference is not case sensitive and
   /// can contain the identifier, full path, or local path. The returned event
   /// may be a basic event, house event, or gate.
+  ///
   /// @param[in] reference Reference string to the event.
   /// @param[in] base_path The series of containers indicating the scope.
+  ///
   /// @returns Pointer to the event found by following the given reference.
-  /// @throws ValidationError if there are problems with referencing.
-  /// @throws LogicError if the given base path is invalid.
+  ///
+  /// @throws ValidationError There are problems with referencing.
+  /// @throws LogicError The given base path is invalid.
   EventPtr GetEvent(const std::string& reference, const std::string& base_path);
 
   /// Adds a house event that is used in this model.
+  ///
   /// @param[in] house_event A house event defined in this model.
-  /// @throws RedefinitionError if an event with the same name already exists.
+  ///
+  /// @throws RedefinitionError An event with the same name already exists.
   void AddHouseEvent(const HouseEventPtr& house_event);
 
   /// Finds a house event from a reference. The reference is not case sensitive
   /// and can contain the identifier, full path, or local path.
+  ///
   /// @param[in] reference Reference string to the house event.
   /// @param[in] base_path The series of containers indicating the scope.
+  ///
   /// @returns Pointer to the house event found by following the reference.
-  /// @throws ValidationError if there are problems with referencing.
+  ///
+  /// @throws ValidationError There are problems with referencing.
   HouseEventPtr GetHouseEvent(const std::string& reference,
                               const std::string& base_path);
 
   /// Adds a basic event that is used in this model.
+  ///
   /// @param[in] basic_event A basic event defined in this model.
-  /// @throws RedefinitionError if an event with the same name already exists.
+  ///
+  /// @throws RedefinitionError An event with the same name already exists.
   void AddBasicEvent(const BasicEventPtr& basic_event);
 
   /// Finds a basic event from a reference. The reference is not case sensitive
   /// and can contain the identifier, full path, or local path.
+  ///
   /// @param[in] reference Reference string to the basic event.
   /// @param[in] base_path The series of containers indicating the scope.
+  ///
   /// @returns Pointer to the basic event found by following the reference.
-  /// @throws ValidationError if there are problems with referencing.
+  ///
+  /// @throws ValidationError There are problems with referencing.
   BasicEventPtr GetBasicEvent(const std::string& reference,
                               const std::string& base_path);
 
   /// Adds a gate that is used in this model's fault trees or components.
+  ///
   /// @param[in] gate A gate defined in this model.
-  /// @throws RedefinitionError if an event with the same name already exists.
+  ///
+  /// @throws RedefinitionError An event with the same name already exists.
   void AddGate(const GatePtr& gate);
 
   /// Finds a gate from a reference. The reference is not case sensitive
   /// and can contain the identifier, full path, or local path.
+  ///
   /// @param[in] reference Reference string to the gate.
   /// @param[in] base_path The series of containers indicating the scope.
+  ///
   /// @returns Pointer to the gate found by following the reference.
-  /// @throws ValidationError if there are problems with referencing.
+  ///
+  /// @throws ValidationError There are problems with referencing.
   GatePtr GetGate(const std::string& reference, const std::string& base_path);
 
   /// Adds a CCF group that is used in this model's fault trees.
+  ///
   /// @param[in] ccf_group A CCF group defined in this model.
-  /// @throws RedefinitionError if the model has a CCF group with the same name.
+  ///
+  /// @throws RedefinitionError The model has a CCF group with the same name.
   void AddCcfGroup(const CcfGroupPtr& ccf_group);
 
  private:
   typedef boost::shared_ptr<Component> ComponentPtr;
 
   /// Helper function to find the scope container for references.
+  ///
   /// @param[in] base_path The series of containers to get the container.
+  ///
   /// @returns A fault tree or component from the base path if any.
-  /// @throws LogicError if there's missing container in the path.
+  ///
+  /// @throws LogicError There's missing container in the path.
   ComponentPtr GetContainer(const std::string& base_path);
 
   /// Helper function to find the local container for references.
+  ///
   /// @param[in] reference The reference to the target element.
   /// @param[in] scope The fault tree or component as a scope.
+  ///
   /// @returns A fault tree or component from the reference if any.
   ComponentPtr GetLocalContainer(const std::string& reference,
                                  const ComponentPtr& scope);
 
   /// Helper function to find the global container for references.
+  ///
   /// @param[in] reference The reference to the target element.
+  ///
   /// @returns A fault tree or component from the reference.
-  /// @throws ValidationError if there's missing container in the path.
+  ///
+  /// @throws ValidationError There's missing container in the path.
   ComponentPtr GetGlobalContainer(const std::string& reference);
 
   std::string name_;  ///< The name of the model.

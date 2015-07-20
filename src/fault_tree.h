@@ -35,6 +35,7 @@ class Component : public Element, public Role {
   /// itself, but for the events and parameters of the component. Component name
   /// is not meant to be public; however, it must be unique with the parent
   /// fault tree or component.
+  ///
   /// @param[in] name The name identificator for the component.
   /// @param[in] base_path The series of containers to get this container.
   /// @param[in] is_public A flag to define public or private role for members.
@@ -88,39 +89,52 @@ class Component : public Element, public Role {
   }
 
   /// Adds a gate into this component container.
+  ///
   /// @param[in] gate The gate to be added to this tree.
-  /// @throws ValidationError for re-added gates.
+  ///
+  /// @throws ValidationError The event is already in this container.
   void AddGate(const GatePtr& gate);
 
   /// Adds a basic event into this component container.
+  ///
   /// @param[in] basic_event The basic event to be added to this tree.
-  /// @throws ValidationError for re-added basic events.
+  ///
+  /// @throws ValidationError The event is already in this container.
   void AddBasicEvent(const BasicEventPtr& basic_event);
 
   /// Adds a house event into this component container.
+  ///
   /// @param[in] house_event The house event to be added to this tree.
-  /// @throws ValidationError for re-added house events.
+  ///
+  /// @throws ValidationError The event is already in this container.
   void AddHouseEvent(const HouseEventPtr& house_event);
 
   /// Adds a parameter into this component container.
+  ///
   /// @param[in] parameter The parameter to be added to this tree.
-  /// @throws ValidationError for re-added parameter.
+  ///
+  /// @throws ValidationError The parameter is already in this container.
   void AddParameter(const ParameterPtr& parameter);
 
   /// Adds a CCF group and its members into this component container.
+  ///
   /// @param[in] ccf_group The CCF group to be added to this container.
-  /// @throws ValidationError for re-added CCF groups or duplicate basic event
-  ///         members.
+  ///
+  /// @throws ValidationError Duplicate CCF groups or duplicate basic event
+  ///                         members.
   void AddCcfGroup(const CcfGroupPtr& ccf_group);
 
   /// Adds a component container into this component container.
+  ///
   /// @param[in] component The CCF group to be added to this container.
-  /// @throws ValidationError for re-added components.
+  ///
+  /// @throws ValidationError The component is already in this container.
   void AddComponent(const ComponentPtr& component);
 
  protected:
   /// Recursively traverses components to gather gates relevant to
   /// the whole component.
+  ///
   /// @param[out] gates Gates belonging to this component and its subcomponents.
   void GatherGates(boost::unordered_set<GatePtr>* gates);
 
@@ -156,16 +170,17 @@ class FaultTree : public Component {
 
   /// The main constructor of the Fault Tree. Fault trees are assumed to be
   /// public and belong to the root model.
+  ///
   /// @param[in] name The name identificator of this fault tree.
   explicit FaultTree(const std::string& name);
 
   /// @returns The top events of this fault tree.
   inline const std::vector<GatePtr>& top_events() const { return top_events_; }
 
-  /// Validates this fault tree's structure and events.
-  /// This step must be called before any other function that requests member
-  /// containers of top events, gates, basic events, house events, and so on.
-  /// @throws ValidationError if there are issues with this fault tree.
+  /// Validates this fault tree's structure by detecting top gates.
+  /// This function is essential to guess the analysis targets.
+  ///
+  /// @todo Replace with more explicit function that detects top gates.
   void Validate();
 
  private:
@@ -173,12 +188,14 @@ class FaultTree : public Component {
 
   /// Recursively marks descendant gates as "non-top". These gates belong
   /// to this fault tree only.
+  ///
   /// @param[in] gate The ancestor gate.
   /// @param[in] gates Gates belonging to the whole fault tree with components.
   void MarkNonTopGates(const GatePtr& gate,
                        const boost::unordered_set<GatePtr>& gates);
 
   /// Recursively marks descendant gates in formulas as "non-top"
+  ///
   /// @param[in] formula The formula of a gate or another formula.
   /// @param[in] gates Gates belonging to the whole fault tree with components.
   void MarkNonTopGates(const FormulaPtr& formula,

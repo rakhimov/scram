@@ -18,10 +18,12 @@ class XMLParser {
   ~XMLParser();
 
   /// Initializes a parser with an XML snippet.
+  ///
   /// @param[in] input An XML snippet to be used as input.
   void Init(const std::stringstream& input);
 
   /// Validates the file against a schema.
+  ///
   /// @param[in] schema The schema to validate against.
   void Validate(const std::stringstream& schema);
 

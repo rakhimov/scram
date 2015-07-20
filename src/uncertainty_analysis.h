@@ -25,10 +25,12 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
 
   /// The main constructor of Uncertainty Analysis.
+  ///
   /// @param[in] num_sums The number of sums in the probability series.
   /// @param[in] cut_off The cut-off probability for cut sets.
   /// @param[in] num_trials The number of trials to perform.
-  /// @throws InvalidArgument if any of the parameters is invalid.
+  ///
+  /// @throws InvalidArgument One of the parameters is invalid.
   explicit UncertaintyAnalysis(int num_sums = 7, double cut_off = 1e-8,
                                int num_trials = 1e3);
 
@@ -36,7 +38,9 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   /// Resets the main basic event database and clears the
   /// previous information. This information is the main source for
   /// calculations and internal indexes for basic events.
+  ///
   /// @param[in] basic_events The database of basic events in cut sets.
+  ///
   /// @note  If not enough information is provided, the analysis behavior
   ///        is undefined.
   void UpdateDatabase(
@@ -45,8 +49,10 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   /// Performs quantitative analysis on minimal cut sets containing basic
   /// events provided in the databases. It is assumed that the analysis is
   /// called only once.
+  ///
   /// @param[in] min_cut_sets Minimal cut sets with string ids of events.
   ///                         Negative event is indicated by "'not' + id"
+  ///
   /// @note  Undefined behavior if analysis called two or more times.
   void Analyze(const std::set< std::set<std::string> >& min_cut_sets);
 
@@ -83,6 +89,7 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   /// basic events removed from sampling.
   /// These constant events are removed from the probability equation, and
   /// the members of the equation are given a corresponding multiplier.
+  ///
   /// @param[out] basic_events The gathered uncertain basic events.
   void FilterUncertainEvents(std::vector<int>* basic_events);
 

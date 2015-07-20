@@ -42,8 +42,10 @@ enum State {
 class IndexedGate {
  public:
   /// Creates a gate with its index.
+  ///
   /// @param[in] index An unique positive index of this gate.
   /// @param[in] type The type of this gate.
+  ///
   /// @warning The index is not validated upon instantiation.
   IndexedGate(int index, const GateType& type);
 
@@ -52,6 +54,7 @@ class IndexedGate {
 
   /// Changes the gate type information. This function is expected to be used
   /// with only simple AND, OR, NOT, NULL gates.
+  ///
   /// @param[in] t The type for this gate.
   inline void type(const GateType& t) {
     assert(t == kAndGate || t == kOrGate || t == kNotGate || t == kNullGate);
@@ -63,6 +66,7 @@ class IndexedGate {
 
   /// Sets the vote number for this gate. The function does not check if
   /// the gate type is ATLEAST; nor does it validate the number.
+  ///
   /// @param[in] number The vote number of ATLEAST gate.
   inline void vote_number(int number) { vote_number_ = number; }
 
@@ -70,6 +74,7 @@ class IndexedGate {
   inline int index() const { return index_; }
 
   /// Sets the index of this gate.
+  ///
   /// @param[in] index Positive index of this gate.
   inline void index(int index) {
     assert(index > 0);
@@ -80,6 +85,7 @@ class IndexedGate {
   inline const std::set<int>& children() const { return children_; }
 
   /// Directly assigns children for this gate.
+  ///
   /// @param[in] children A new set of children for this gate.
   inline void children(const std::set<int>& children) { children_ = children; }
 
@@ -89,13 +95,14 @@ class IndexedGate {
   /// @returns parents of this gate.
   inline const std::set<int>& parents() { return parents_; }
 
-  /// @returns true If this gate is set to be a module.
-  /// @returns false If it is not yet set to be a module.
+  /// @returns true if this gate is set to be a module.
+  /// @returns false if it is not yet set to be a module.
   inline bool IsModule() const { return module_; }
 
   /// This function is used to initiate this gate with children.
   /// It is assumed that children are passed in ascending order from another
   /// children set.
+  ///
   /// @param[in] child A positive or negative index of a child.
   void InitiateWithChild(int child);
 
@@ -103,17 +110,22 @@ class IndexedGate {
   /// children are checked for complements. If there is a complement,
   /// the gate changes its state and clears its children. This functionality
   /// only works with OR and AND gates.
+  ///
   /// @param[in] child A positive or negative index of a child.
-  /// @returns false If there is a complement of the child being added.
-  /// @returns true If the addition of this child is successful.
+  ///
+  /// @returns false if there is a complement of the child being added.
+  /// @returns true if the addition of this child is successful.
+  ///
   /// @warning This function does not indicate error for future additions in
   ///          case the state is nulled or becomes unity.
   bool AddChild(int child);
 
   /// Swaps an existing child to a new child. Mainly used for
   /// changing the logic of this gate or complementing the child.
+  ///
   /// @param[in] existing_child An existing child to get swapped.
   /// @param[in] new_child A new child.
+  ///
   /// @warning If there is an iterator for the children set, then
   ///          it may become unusable because the children set is manipulated.
   bool SwapChild(int existing_child, int new_child);
@@ -131,7 +143,9 @@ class IndexedGate {
   /// Adds children of a child gate to this gate. This is a helper function for
   /// gate coalescing. The child gate of the same type is removed from the
   /// children list.
+  ///
   /// @param[in] child_gate The gate which children to be added to this gate.
+  ///
   /// @returns false if the final set is null or unity.
   /// @returns true if the addition is successful with a normal final state.
   bool JoinGate(IndexedGate* child_gate);
@@ -141,6 +155,7 @@ class IndexedGate {
 
   /// Removes a child from the children container. The passed child index
   /// must be in this gate's children container and initialized.
+  ///
   /// @param[in] child The positive or negative index of the existing child.
   inline void EraseChild(int child) {
     assert(children_.count(child));
@@ -164,6 +179,7 @@ class IndexedGate {
   }
 
   /// Adds a parent of this gate.
+  ///
   /// @param[in] index Positive index of the parent.
   inline void AddParent(int index) {
     assert(index > 0);
@@ -171,6 +187,7 @@ class IndexedGate {
   }
 
   /// Removes a parent of this gate.
+  ///
   /// @param[in] index Positive index of the existing parent.
   inline void EraseParent(int index) {
     assert(index > 0);
@@ -180,9 +197,11 @@ class IndexedGate {
 
   /// Registers the visit time for this gate upon tree traversal.
   /// This information can be used to detect dependencies.
+  ///
   /// @param[in] time The current visit time of this gate. It must be positive.
-  /// @returns true If this gate was previously visited.
-  /// @returns false If this is visited and re-visited only once.
+  ///
+  /// @returns true if this gate was previously visited.
+  /// @returns false if this is visited and re-visited only once.
   bool Visit(int time) {
     assert(time > 0);
     if (!visits_[0]) {

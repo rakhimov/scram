@@ -30,10 +30,12 @@ class RelaxNGValidator {
   ~RelaxNGValidator();
 
   /// Parse a RelaxNG schema XML file.
+  ///
   /// @param[in] contents The contents of the XML file.
   void parse_memory(const Glib::ustring& contents);
 
   /// Validate an XML file against the given schema.
+  ///
   /// @param[in] doc The XML file document.
   bool Validate(const xmlpp::Document* doc);
 
@@ -42,6 +44,7 @@ class RelaxNGValidator {
   void release_underlying();
 
   /// Parse a RelaxNG schema context.
+  ///
   /// @param[in] context The context.
   void parse_context(xmlRelaxNGParserCtxtPtr context);
 

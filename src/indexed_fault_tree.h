@@ -36,12 +36,14 @@ class IndexedFaultTree {
   typedef boost::shared_ptr<Gate> GatePtr;
 
   /// Constructs a simplified fault tree with indices of nodes.
+  ///
   /// @param[in] top_event_id The index of the top event of this tree.
   explicit IndexedFaultTree(int top_event_id);
 
   /// Creates indexed gates with basic and house event indices as children.
   /// Nested gates are flattened and given new indices.
   /// It is assumed that indices are sequential starting from 1.
+  ///
   /// @param[in] int_to_inter Container of gates and their indices including
   ///                         the top gate.
   /// @param[in] ccf_basic_to_gates CCF basic events that are converted to
@@ -55,6 +57,7 @@ class IndexedFaultTree {
 
   /// Remove all house events by propagating them as constants in Boolean
   /// equation.
+  ///
   /// @param[in] true_house_events House events with true state.
   /// @param[in] false_house_events House events with false state.
   void PropagateConstants(const std::set<int>& true_house_events,
@@ -63,6 +66,7 @@ class IndexedFaultTree {
   /// Performs processing of a fault tree to simplify the structure to
   /// normalized (OR/AND gates only), modular, positive-gate-only indexed fault
   /// tree.
+  ///
   /// @param[in] num_basic_events The number of basic events. This information
   ///                             is needed to optimize the tree traversal
   ///                             with certain expectation.
@@ -75,8 +79,12 @@ class IndexedFaultTree {
   /// Mapping to string gate types to enum gate types.
   static const std::map<std::string, GateType> kStringToType_;
 
-  /// @returns true If the given index belongs to an indexed gate.
+  /// Determines the type of the index.
+  ///
   /// @param[in] index Positive index.
+  ///
+  /// @returns true if the given index belongs to an indexed gate.
+  ///
   /// @warning The actual existance of the indexed gate is not guaranteed.
   inline bool IsGateIndex(int index) const {
     assert(index > 0);
@@ -84,6 +92,7 @@ class IndexedFaultTree {
   }
 
   /// Adds a new indexed gate into the indexed fault tree's gate container.
+  ///
   /// @param[in] gate A new indexed gate.
   inline void AddGate(const IndexedGatePtr& gate) {
     assert(!indexed_gates_.count(gate->index()));
@@ -91,7 +100,9 @@ class IndexedFaultTree {
   }
 
   /// Commonly used function to get indexed gates from indices.
+  ///
   /// @param[in] index Positive index of a gate.
+  ///
   /// @returns The pointer to the requested indexed gate.
   inline const IndexedGatePtr& GetGate(int index) const {
     assert(index > 0);
@@ -101,6 +112,7 @@ class IndexedFaultTree {
   }
 
   /// Processes a formula into a new indexed gates.
+  ///
   /// @param[in] index The index to be assigned to the new indexed gate.
   /// @param[in] formula The formula to be converted into a gate.
   /// @param[in] ccf_basic_to_gates CCF basic events that are converted to
@@ -116,25 +128,31 @@ class IndexedFaultTree {
   /// This function uses parent information of each gate, so the tree must
   /// be initialized before a call of this function.
   /// New gates are created upon normalizing complex gates, such as XOR.
+  ///
   /// @warning NUll gates are not handled except for the top gate.
   void NormalizeGates();
 
   /// Traverses the tree to gather information about parents of indexed gates.
   /// This information might be needed for other algorithms because
   /// due to processing of the tree, the shape and nodes may change.
+  ///
   /// @param[in] parent_gate The parent to start information gathering.
   void GatherParentInformation(const IndexedGatePtr& parent_gate);
 
   /// Notifies all parents of negative gates, such as NOT, NOR, and NAND before
   /// transforming these gates into basic gates of OR and AND. The child gates
   /// are swaped with a negative sign.
+  ///
   /// @param[in] gate The gate to start processing.
+  ///
   /// @warning This function does not change the types of gates.
   /// @warning The top gate does not have parents, so it is not handled here.
   void NotifyParentsOfNegativeGates(const IndexedGatePtr& gate);
 
   /// Normalizes complex gates into OR, AND gates.
+  ///
   /// @param[in,out] gate The gate to be processed.
+  ///
   /// @warning The parents of negative gates are assumed to be notified about
   ///          the change of their children types.
   /// @warning NULL gates are not handled.
@@ -142,6 +160,7 @@ class IndexedFaultTree {
 
   /// Normalizes a gate with XOR logic. This is a helper function for the main
   /// gate normalization function.
+  ///
   /// @param[in,out] gate The gate to normalize.
   void NormalizeXorGate(const IndexedGatePtr& gate);
 
@@ -151,6 +170,7 @@ class IndexedFaultTree {
   /// y_i being the rest of formula variables, which exclude x.
   /// This representation is more friendly to other preprocessing and analysis
   /// techniques than the alternative, which is OR of AND gates of combinations.
+  ///
   /// @param[in,out] gate The atleast gate to normalize.
   void NormalizeAtleastGate(const IndexedGatePtr& gate);
 
@@ -160,6 +180,7 @@ class IndexedFaultTree {
   /// creation of an indexed fault tree.
   /// After this function, there should not be any unity or null gates because
   /// of house events.
+  ///
   /// @param[in] true_house_events House events with true state.
   /// @param[in] false_house_events House events with false state.
   /// @param[in,out] gate The final resultant processed gate.
@@ -174,10 +195,12 @@ class IndexedFaultTree {
   /// sign of the child index.
   /// The type of the gate may change, but it will only be valid after the
   /// to-be-erased children are handled properly.
+  ///
   /// @param[in,out] gate The parent gate that contains the children.
   /// @param[in] child The constant child under consideration.
   /// @param[in] state False or True constant state of the child.
   /// @param[in,out] to_erase The set of children to erase from the parent gate.
+  ///
   /// @returns true if the passed gate has become constant due to its child.
   /// @returns false if the parent still valid for further operations.
   bool ProcessConstantChild(const IndexedGatePtr& gate, int child,
@@ -189,6 +212,7 @@ class IndexedFaultTree {
   /// depending on the logic of the gate and the logic of the constant
   /// propagation.
   /// The parent information is not updated for the child.
+  ///
   /// @param[in,out] gate The gate that contains the children to be removed.
   /// @param[in] to_erase The set of children to erase from the parent gate.
   void RemoveChildren(const IndexedGatePtr& gate,
@@ -197,10 +221,13 @@ class IndexedFaultTree {
   /// Removes NULL and UNITY state child gates. The parent gate can be of any
   /// type. Because of the constant children, the parent gate itself may turn
   /// constant in some cases.
+  ///
   /// @param[in,out] gate The starting gate to traverse the tree. This is for
   ///                     recursive purposes.
+  ///
   /// @returns true if the given tree has been changed by this function.
   /// @returns false if no change has been made.
+  ///
   /// @warning There should not be negative gate children.
   /// @warning There still may be only one constant state gate which is the root
   ///          of the tree. This must be handled separately.
@@ -211,6 +238,7 @@ class IndexedFaultTree {
   /// The tree must contain only OR and AND type gates. All NULL type gates must
   /// be removed from the tree. Other complex gates must be preprocessed.
   /// The resulting tree will contain only positive gates, OR and AND.
+  ///
   /// @param[in,out] gate The starting gate to traverse the tree. This is for
   ///                     recursive purposes. The sign of this passed gate
   ///                     is unknown for the function, so it must be sanitized
@@ -222,10 +250,13 @@ class IndexedFaultTree {
   /// Removes child gates of NULL type, which means these child gates have
   /// only one child. That one grandchild is transfered to the parent gate,
   /// and the original child gate is removed from the parent gate.
+  ///
   /// @param[in,out] gate The starting gate to traverse the tree. This is for
   ///                     recursive purposes.
+  ///
   /// @returns true if the given tree has been changed by this function.
   /// @returns false if no change has been made.
+  ///
   /// @warning There still may be only one NULL type gate which is the root
   ///          of the tree. This must be handled separately.
   bool RemoveNullGates(const IndexedGatePtr& gate);
@@ -233,28 +264,35 @@ class IndexedFaultTree {
   /// Pre-processes the fault tree by doing the simplest Boolean algebra.
   /// Positive children with the same OR or AND gates as parents are coalesced.
   /// This function merges similar logic gates of NAND and NOR as well.
+  ///
   /// @param[in,out] gate The starting gate to traverse the tree. This is for
   ///                     recursive purposes.
+  ///
   /// @returns true if the given tree has been changed by this function.
   /// @returns false if no change has been made.
+  ///
   /// @warning NULL or UNITY state gates may emerge because of this processing.
   /// @warning NULL type gates are not handled by this function.
   /// @warning Module child gates are omitted from coalescing.
   bool JoinGates(const IndexedGatePtr& gate);
 
   /// Traverses the indexed fault tree to detect modules.
+  ///
   /// @param[in] num_basic_events The number of basic events in the tree.
   void DetectModules(int num_basic_events);
 
   /// Traverses the given gate and assigns time of visit to nodes.
+  ///
   /// @param[in] time The current time.
   /// @param[in,out] gate The gate to traverse and assign time to.
   /// @param[in,out] visit_basics The recordings for basic events.
+  ///
   /// @returns The final time of traversing.
   int AssignTiming(int time, const IndexedGatePtr& gate, int visit_basics[][2]);
 
   /// Determines modules from original gates that have been already timed.
   /// This function can also create new modules from the existing tree.
+  ///
   /// @param[in,out] gate The gate to test for modularity.
   /// @param[in] visit_basics The recordings for basic events.
   /// @param[in,out] visited_gates Container of visited gates with
@@ -268,6 +306,7 @@ class IndexedFaultTree {
   /// The module is added in the module and gate databases.
   /// If the new module must contain all the children, the original gate is
   /// turned into a module.
+  ///
   /// @param[in,out] gate The parent gate for a module.
   /// @param[in] children Modular children to be added into the new module.
   void CreateNewModule(const IndexedGatePtr& gate,
@@ -278,6 +317,7 @@ class IndexedFaultTree {
   /// that children are removed from modular containers.
   /// This is due to chain of events that are shared between modular and
   /// non-modular children.
+  ///
   /// @param[in] visit_basics The recordings for basic events.
   /// @param[in] visited_gates Visit max and min time recordings for gates.
   /// @param[in,out] modular_children Candidates for modular grouping.

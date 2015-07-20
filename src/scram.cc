@@ -20,9 +20,11 @@ namespace po = boost::program_options;
 using namespace scram;
 
 /// Parses the command-line arguments.
+///
 /// @param[in] argc Count of arguments.
 /// @param[in] argv Values of arguments.
 /// @param[out] vm Variables map of program options.
+///
 /// @returns 0 for success.
 /// @returns 1 for errored state.
 /// @returns -1 for information only state like help and version.
@@ -125,9 +127,11 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
 }
 
 /// Updates analysis settings from command-line arguments.
+///
 /// @param[in] vm Variables map of program options.
 /// @param[in,out] settings Pre-configured or default settings.
-/// @throws std::exception if vm does not contain a required option.
+///
+/// @throws std::exception vm does not contain a required option.
 ///                        At least defaults are expected.
 void ConstructSettings(const po::variables_map& vm, Settings* settings) {
   // Determine if the probability approximation is requested.
@@ -155,12 +159,15 @@ void ConstructSettings(const po::variables_map& vm, Settings* settings) {
 }
 
 /// Main body of command-line entrance to run the program.
+///
 /// @param[in] vm Variables map of program options.
-/// @throws Error for any type of internal problems like validation.
-/// @throws boost::exception for possible Boost usage errors.
-/// @throws std::exception for any other problems.
+///
 /// @returns 0 for success.
 /// @returns 1 for errored state.
+///
+/// @throws Error Internal problems specific to SCRAM like validation.
+/// @throws boost::exception Boost errors.
+/// @throws std::exception All other problems.
 int RunScram(const po::variables_map& vm) {
   if (vm.count("verbosity")) {
     Logger::ReportLevel() = static_cast<LogLevel>(vm["verbosity"].as<int>());
@@ -225,6 +232,7 @@ int RunScram(const po::variables_map& vm) {
 }
 
 /// Command-line SCRAM entrance.
+///
 /// @returns 0 for success.
 /// @returns 1 for errored state.
 int main(int argc, char* argv[]) {

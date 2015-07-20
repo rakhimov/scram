@@ -28,10 +28,12 @@ class FaultTreeAnalysis {
   /// The passed fault tree must be pre-validated without cycles, and
   /// its events must be fully initialized. It is assumed that analysis
   /// is done only once.
+  ///
   /// @param[in] root The top event of the fault tree to analyze.
   /// @param[in] limit_order The maximum limit on minimal cut sets' order.
   /// @param[in] ccf_analysis Whether or not expand CCF group basic events.
-  /// @throws InvalidArgument if any of the parameters are invalid.
+  ///
+  /// @throws InvalidArgument One of the parameters is invalid.
   explicit FaultTreeAnalysis(const GatePtr& root, int limit_order = 20,
                              bool ccf_analysis = false);
 
@@ -46,6 +48,7 @@ class FaultTreeAnalysis {
   inline const GatePtr& top_event() const { return top_event_; }
 
   /// @returns The container of intermediate events.
+  ///
   /// @warning The tree must be validated and ready for analysis.
   inline const boost::unordered_map<std::string, GatePtr>&
       inter_events() const {
@@ -73,6 +76,7 @@ class FaultTreeAnalysis {
   }
 
   /// @returns Set with minimal cut sets.
+  ///
   /// @note The user should make sure that the analysis is actually done.
   inline const std::set< std::set<std::string> >& min_cut_sets() const {
     return min_cut_sets_;
@@ -105,10 +109,12 @@ class FaultTreeAnalysis {
   /// primary events of this fault tree. Moreover, all the nodes of this
   /// fault tree are expected to be defined fully and correctly.
   /// Gates are marked upon visit. The mark is checked to prevent revisiting.
+  ///
   /// @param[in] gate The gate to start traversal from.
   void GatherEvents(const GatePtr& gate);
 
   /// Traverses formulas recursively to find all events.
+  ///
   /// @param[in] formula The formula to get events from.
   void GatherEvents(const FormulaPtr& formula);
 
@@ -118,12 +124,14 @@ class FaultTreeAnalysis {
   void CleanMarks();
 
   /// Picks basic events created by CCF groups.
+  ///
   /// param[out] basic_events Container for newly created basic events.
   void GatherCcfBasicEvents(
       boost::unordered_map<std::string, BasicEventPtr>* basic_events);
 
   /// Converts minimal cut sets from indices to strings for future reporting.
   /// This function also detects basic events in minimal cut sets.
+  ///
   /// @param[in] imcs Min cut sets with indices of events.
   void SetsToString(const std::vector< std::set<int> >& imcs);
 

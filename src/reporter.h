@@ -35,14 +35,17 @@ class Reporter {
   /// time, methods, and model. In addition, the function forms the
   /// structure of the overall report for use by other reporting functions.
   /// This function must be called before other reporting functions.
+  ///
   /// @param[in] model The main model container.
   /// @param[in] settings Configured settings for analysis.
   /// @param[in,out] doc An empty document.
-  /// @throws LogicError if the document is not empty.
+  ///
+  /// @throws LogicError The document is not empty.
   void SetupReport(const ModelPtr& model, const Settings& settings,
                    xmlpp::Document* doc);
 
   /// Reports orphan primary events as warnings of the top information level.
+  ///
   /// @param[in] orphan_primary_events Container of orphan events.
   /// @param[in,out] doc Pre-formatted XML document.
   void ReportOrphanPrimaryEvents(
@@ -50,17 +53,20 @@ class Reporter {
       xmlpp::Document* doc);
 
   /// Reports unused parameters as warnings of the top information level.
+  ///
   /// @param[in] unused_parameters Container of unused parameters.
   /// @param[in,out] doc Pre-formatted XML document.
   void ReportUnusedParameters(const std::set<ParameterPtr>& unused_parameters,
                               xmlpp::Document* doc);
 
   /// Reports the results of analysis to a specified output destination.
+  ///
   /// @param[in] ft_name The original name of a fault tree.
   /// @param[in] fta Fault Tree Analysis with results.
   /// @param[in] prob_analysis ProbabilityAnalysis with results. Null pointer
   ///                          if there is no probability analysis.
   /// @param[in,out] doc Pre-formatted XML document.
+  ///
   /// @note This function must be called only after analysis is done.
   void ReportFta(
       std::string ft_name,
@@ -69,9 +75,11 @@ class Reporter {
       xmlpp::Document* doc);
 
   /// Reports results of importance analysis in probability analysis.
+  ///
   /// @param[in] ft_name The original name of a fault tree.
   /// @param[in] prob_analysis ProbabilityAnalysis with results.
   /// @param[in,out] doc Pre-formatted XML document.
+  ///
   /// @note This function must be called only after analysis is done.
   void ReportImportance(
       std::string ft_name,
@@ -79,9 +87,11 @@ class Reporter {
       xmlpp::Document* doc);
 
   /// Reports the results of uncertainty analysis with minimal cut sets.
+  ///
   /// @param[in] ft_name The original name of a fault tree.
   /// @param[in] uncert_analysis UncertaintyAnalysis with results.
   /// @param[in,out] doc Pre-formatted XML document.
+  ///
   /// @note This function must be called only after analysis is done.
   void ReportUncertainty(
       std::string ft_name,
@@ -93,14 +103,18 @@ class Reporter {
 
   /// Detects if a given basic event is a CCF event, and reports it
   /// with a specific formatting.
+  ///
   /// @param[in] basic_event A basic event to be reported.
   /// @param[in,out] parent A parent element node to have this basic event.
+  ///
   /// @returns A newly created element node with the event description.
   xmlpp::Element* ReportBasicEvent(const BasicEventPtr& basic_event,
                                    xmlpp::Element* parent);
 
   /// A generic function to convert numbers to string.
+  ///
   /// @param[in] num The number to be converted.
+  ///
   /// @returns Formatted string that represents the number.
   template<class T>
   inline std::string ToString(T num) {
@@ -110,8 +124,10 @@ class Reporter {
   }
 
   /// A helper function to convert a floating point number to string.
+  ///
   /// @param[in] num The number to be converted.
   /// @param[in] precision Decimal precision for reporting.
+  ///
   /// @returns Formatted string that represents the floating point number.
   inline std::string ToString(double num, int precision) {
     std::stringstream ss;

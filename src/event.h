@@ -24,6 +24,7 @@ class Event : public Element, public Role {
  public:
   /// Constructs a fault tree event with a specific id. It is assumed that names
   /// and other strings do not have leading and trailing whitespace characters.
+  ///
   /// @param[in] name The identifying name with caps preserved.
   /// @param[in] base_path The series of containers to get this event.
   /// @param[in] is_public Whether or not the event is public.
@@ -42,6 +43,8 @@ class Event : public Element, public Role {
   inline bool orphan() const { return orphan_; }
 
   /// Sets the orphan state.
+  ///
+  /// @param[in] state True if this event is not used anywhere.
   inline void orphan(bool state) { orphan_ = state; }
 
  private:
@@ -55,6 +58,7 @@ class Event : public Element, public Role {
 class Gate : public Event {
  public:
   /// Constructs with an id and a gate.
+  ///
   /// @param[in] name The identifying name with caps preserved.
   /// @param[in] base_path The series of containers to get this event.
   /// @param[in] is_public Whether or not the event is public.
@@ -65,6 +69,7 @@ class Gate : public Event {
   inline const boost::shared_ptr<Formula>& formula() const { return formula_; }
 
   /// Sets the formula of this gate.
+  ///
   /// @param[in] formula Boolean formula of this gate.
   inline void formula(const boost::shared_ptr<Formula>& formula) {
     assert(!formula_);
@@ -72,11 +77,13 @@ class Gate : public Event {
   }
 
   /// This function is for cycle detection.
+  ///
   /// @returns The connector between gates.
   inline Formula* connector() const { return &*formula_; }
 
   /// Checks if a gate is initialized correctly.
-  /// @throws Validation error if anything is wrong.
+  ///
+  /// @throws ValidationError Errors in the gate's logic or setup.
   void Validate();
 
   /// @returns The mark of this gate node. Empty string for no mark.
@@ -96,6 +103,7 @@ class Gate : public Event {
 class Formula {
  public:
   /// Constructs a formula.
+  ///
   /// @param[in] type The logical operator for this Boolean formula.
   explicit Formula(const std::string& type)
       : type_(type),
@@ -103,28 +111,35 @@ class Formula {
         gather_(true) {}
 
   /// @returns The type of this formula.
-  /// @throws LogicError if the gate is not yet assigned.
+  ///
+  /// @throws LogicError The gate is not yet assigned.
   inline const std::string& type() const { return type_; }
 
   /// @returns The vote number if and only if the operator is atleast.
-  /// @throws LogicError if the vote number is not yet assigned.
+  ///
+  /// @throws LogicError The vote number is not yet assigned.
   int vote_number() const;
 
   /// Sets the vote number only for an atleast formula.
+  ///
   /// @param[in] vnumber The vote number.
-  /// @throws InvalidArgument if the vote number is invalid.
-  /// @throws LogicError if the vote number is assigned illegally.
+  ///
+  /// @throws InvalidArgument The vote number is invalid.
+  /// @throws LogicError The vote number is assigned illegally.
+  ///
   /// @note (Children number > vote number)should be checked outside of
-  ///        this class.
+  ///       this class.
   void vote_number(int vnumber);
 
   /// @returns The event arguments of this formula.
-  /// @throws LogicError if there are no event or formula arguments,
+  ///
+  /// @throws LogicError There are no event or formula arguments,
   ///                    which should have been checked at initialization.
   const std::map<std::string, boost::shared_ptr<Event> >& event_args() const;
 
   /// @returns The formula arguments of this formula.
-  /// @throws LogicError if there are no event or formula arguments,
+  ///
+  /// @throws LogicError There are no event or formula arguments,
   ///                    which should have been checked at initialization.
   const std::set<boost::shared_ptr<Formula> >& formula_args() const;
 
@@ -134,17 +149,22 @@ class Formula {
   }
 
   /// Adds an event into the arguments list.
+  ///
   /// @param[in] event A pointer to an argument event.
-  /// @throws DuplicateArgumentError if the argument is duplicate.
+  ///
+  /// @throws DuplicateArgumentError The argument is duplicate.
   void AddArgument(const boost::shared_ptr<Event>& event);
 
   /// Adds a formula into the arguments list.
+  ///
   /// @param[in] formula A pointer to an argument formula.
-  /// @throws LogicError if the formula is being re-inserted.
+  ///
+  /// @throws LogicError The formula is being re-inserted.
   void AddArgument(const boost::shared_ptr<Formula>& formula);
 
   /// Checks if a formula is initialized correctly with the number of arguments.
-  /// @throws Validation error if anything is wrong.
+  ///
+  /// @throws ValidationError There are problems with the operator or arguments.
   void Validate();
 
   /// @returns Gates as nodes.
@@ -185,6 +205,7 @@ class Formula {
 class PrimaryEvent : public Event {
  public:
   /// Constructs with id name and probability.
+  ///
   /// @param[in] name The identifying name of this primary event.
   /// @param[in] base_path The series of containers to get this event.
   /// @param[in] is_public Whether or not the event is public.
@@ -220,6 +241,7 @@ class BasicEvent : public PrimaryEvent {
   typedef boost::shared_ptr<Expression> ExpressionPtr;
 
   /// Constructs with id name.
+  ///
   /// @param[in] name The identifying name of this basic event.
   /// @param[in] base_path The series of containers to get this event.
   /// @param[in] is_public Whether or not the event is public.
@@ -231,6 +253,7 @@ class BasicEvent : public PrimaryEvent {
   virtual ~BasicEvent() {}
 
   /// Sets the expression of this basic event.
+  ///
   /// @param[in] expression The expression to describe this event.
   inline void expression(const ExpressionPtr& expression) {
     assert(!expression_);
@@ -239,8 +262,10 @@ class BasicEvent : public PrimaryEvent {
   }
 
   /// @returns The mean probability of this basic event.
+  ///
   /// @note The user of this function should make sure that the returned
   ///       value is acceptable for calculations.
+  ///
   /// @warning Undefined behavior if the expression is not set.
   inline double p() const {
     assert(expression_);
@@ -248,9 +273,12 @@ class BasicEvent : public PrimaryEvent {
   }
 
   /// Samples probability value from its probability distribution.
+  ///
   /// @returns Sampled value.
+  ///
   /// @note The user of this function should make sure that the returned
   ///       value is acceptable for calculations.
+  ///
   /// @warning Undefined behavior if the expression is not set.
   inline double SampleProbability() {
     assert(expression_);
@@ -264,7 +292,8 @@ class BasicEvent : public PrimaryEvent {
   inline bool IsConstant() { return expression_->IsConstant(); }
 
   /// Validates the probability expressions for the primary event.
-  /// @throws Validation error if anything is wrong.
+  ///
+  /// @throws ValidationError The expression for the basic event is invalid.
   void Validate() {
     if (expression_->Min() < 0 || expression_->Max() > 1) {
       throw ValidationError("Expression value is invalid.");
@@ -272,6 +301,7 @@ class BasicEvent : public PrimaryEvent {
   }
 
   /// Indicates if this basic event has been set to be in a CCF group.
+  ///
   /// @returns true if in a CCF group.
   /// @returns false otherwise.
   inline bool HasCcf() const { return ccf_gate_ ? true : false; }
@@ -285,8 +315,9 @@ class BasicEvent : public PrimaryEvent {
   /// Sets the common cause failure group gate that can represent this basic
   /// event in analysis with common cause information. This information is
   /// expected to be provided by CCF group application.
+  ///
   /// @param[in] gate CCF group gate.
-  void ccf_gate(const boost::shared_ptr<Gate>& gate) {
+  inline void ccf_gate(const boost::shared_ptr<Gate>& gate) {
     assert(!ccf_gate_);
     ccf_gate_ = gate;
   }
@@ -306,6 +337,7 @@ class BasicEvent : public PrimaryEvent {
 class HouseEvent : public PrimaryEvent {
  public:
   /// Constructs with id name.
+  ///
   /// @param[in] name The identifying name of this house event.
   /// @param[in] base_path The series of containers to get this event.
   /// @param[in] is_public Whether or not the event is public.
@@ -316,6 +348,7 @@ class HouseEvent : public PrimaryEvent {
         state_(false) {}
 
   /// Sets the state for House event.
+  ///
   /// @param[in] constant False or True for the state of this house event.
   inline void state(bool constant) {
     PrimaryEvent::has_expression_ = true;
@@ -343,6 +376,7 @@ class CcfEvent : public BasicEvent {
   /// purposes. This name is formatted by the CcfGroup. The creator CCF group
   /// and names of the member events of this specific CCF event are saved for
   /// reporting.
+  ///
   /// @param[in] name The identifying name of this CCF event.
   /// @param[in] ccf_group The CCF group that created this event.
   /// @param[in] member_names The names of members that this CCF event

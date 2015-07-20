@@ -22,10 +22,12 @@ class Config {
  public:
   /// A constructor with configurations for analysis.
   /// Reads and validates the configurations.
+  ///
   /// @param[in] config_file XML file with configurations.
-  /// @throws ValidationError if the configurations have problems.
-  /// @throws ValueError if input values are not valid.
-  /// @throws IOError if the file is not accessible.
+  ///
+  /// @throws ValidationError The configurations have problems.
+  /// @throws ValueError Input values are not valid.
+  /// @throws IOError The file is not accessible.
   explicit Config(const std::string& config_file);
 
   /// @returns input files for analysis.
@@ -41,19 +43,24 @@ class Config {
 
  private:
   /// Extracts analysis types to be performed from analysis element.
+  ///
   /// @param[in] analysis Analysis element node.
   void SetAnalysis(const xmlpp::Element* analysis);
 
   /// Extracts approximations from the configurations.
+  ///
   /// @param[in] approx Approximation element node.
   void SetApprox(const xmlpp::Element* approx);
 
   /// Extracts limits for analysis.
+  ///
   /// @param[in] limits An XML element containing various limits.
   void SetLimits(const xmlpp::Element* limits);
 
   /// Interprets the given string into a boolean value.
+  ///
   /// @param[in] flag A flag that can be 0, 1, true, or false.
+  ///
   /// @returns The interpreted boolean.
   bool GetBoolFromString(const std::string& flag);
 
