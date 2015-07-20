@@ -51,6 +51,8 @@ void IndexedFaultTree::PropagateConstants(
 }
 
 void IndexedFaultTree::ProcessIndexedFaultTree(int num_basic_events) {
+  CLOCK(prep_time);
+  LOG(DEBUG2) << "Preprocessing the fault tree.";
   LOG(DEBUG2) << "Normalizing gates.";
   assert(top_event_sign_ == 1);
   IndexedFaultTree::NormalizeGates();
@@ -121,6 +123,7 @@ void IndexedFaultTree::ProcessIndexedFaultTree(int num_basic_events) {
   if (top->children().empty()) return;  // This is null or unity.
   // Detect original modules for processing.
   IndexedFaultTree::DetectModules(num_basic_events);
+  LOG(DEBUG2) << "Finished preprocessing the fault tree in " << DUR(prep_time);
 }
 
 void IndexedFaultTree::ProcessFormula(
@@ -600,9 +603,6 @@ bool IndexedFaultTree::JoinGates(const IndexedGatePtr& gate) {
 }
 
 void IndexedFaultTree::DetectModules(int num_basic_events) {
-  // At this stage only AND/OR gates are present.
-  // All one element gates and non-coherent gates are converted and processed.
-  // All constants are propagated and there are only gates and basic events.
   // First stage, traverse the tree depth-first for gates and indicate
   // visit time for each node.
   LOG(DEBUG2) << "Detecting modules in a fault tree.";
@@ -638,17 +638,17 @@ int IndexedFaultTree::AssignTiming(int time, const IndexedGatePtr& gate,
   std::set<int>::const_iterator it;
   for (it = gate->children().begin(); it != gate->children().end(); ++it) {
     int index = std::abs(*it);
-    if (index < top_event_index_) {
-      if (!visit_basics[index][0]) {
-        visit_basics[index][0] = ++time;
-        visit_basics[index][1] = time;
-      } else {
-        visit_basics[index][1] = ++time;
-      }
-    } else {
+    if (IndexedFaultTree::IsGateIndex(index)) {  // Gate child.
       time = IndexedFaultTree::AssignTiming(time,
                                             IndexedFaultTree::GetGate(index),
                                             visit_basics);
+    } else {  // Basic event child.
+      if (!visit_basics[index][0]) {  // The first time the node is visited.
+        visit_basics[index][0] = ++time;
+        visit_basics[index][1] = time;
+      } else {
+        visit_basics[index][1] = ++time;  // Revisiting the child node.
+      }
     }
   }
   bool re_visited = gate->Visit(++time);  // Exiting the gate in second visit.
@@ -674,15 +674,7 @@ void IndexedFaultTree::FindOriginalModules(
     int index = std::abs(*it);
     int min = 0;
     int max = 0;
-    if (index < top_event_index_) {
-      min = visit_basics[index][0];
-      max = visit_basics[index][1];
-      if (min == max) {
-        assert(min > enter_time && max < exit_time);
-        non_shared_children.push_back(*it);
-        continue;
-      }
-    } else {
+    if (IndexedFaultTree::IsGateIndex(index)) {
       assert(*it > 0);
       IndexedGatePtr child_gate = IndexedFaultTree::GetGate(index);
       IndexedFaultTree::FindOriginalModules(child_gate, visit_basics,
@@ -690,6 +682,14 @@ void IndexedFaultTree::FindOriginalModules(
       min = visited_gates->find(index)->second.first;
       max = visited_gates->find(index)->second.second;
       if (child_gate->IsModule() && !child_gate->Revisited()) {
+        non_shared_children.push_back(*it);
+        continue;
+      }
+    } else {
+      min = visit_basics[index][0];
+      max = visit_basics[index][1];
+      if (min == max) {
+        assert(min > enter_time && max < exit_time);
         non_shared_children.push_back(*it);
         continue;
       }

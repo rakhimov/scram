@@ -25,7 +25,6 @@ using namespace scram;
 // NOTE: Running tests several times is recommended to take into account
 //       the variation of time results.
 
-/**
 // Tests the performance of probability calculations
 // with cut-off approximations tests are done.
 TEST_F(PerformanceTest, DISABLED_ThreeMotor) {
@@ -35,7 +34,6 @@ TEST_F(PerformanceTest, DISABLED_ThreeMotor) {
   ASSERT_NO_THROW(Analyze(input));
   EXPECT_LT(ProbCalcTime(), p_time_std);
 }
-**/
 
 // Test performance of MCS generation.
 TEST_F(PerformanceTest, DISABLED_200Event_L17) {

@@ -276,7 +276,8 @@ class IndexedFaultTree {
   /// @warning Module child gates are omitted from coalescing.
   bool JoinGates(const IndexedGatePtr& gate);
 
-  /// Traverses the indexed fault tree to detect modules.
+  /// Traverses the indexed fault tree to detect modules. Modules are
+  /// independent sub-trees without common nodes with the rest of the tree.
   ///
   /// @param[in] num_basic_events The number of basic events in the tree.
   void DetectModules(int num_basic_events);
