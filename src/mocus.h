@@ -11,9 +11,9 @@
 #include <set>
 #include <vector>
 
-#include "indexed_gate.h"
-
 #include <boost/shared_ptr.hpp>
+
+#include "indexed_fault_tree.h"
 
 namespace scram {
 
@@ -108,8 +108,6 @@ class SimpleGate {
   std::vector<SimpleGatePtr> gates_;  ///< Container of child gates.
   static int limit_order_;  ///< The limit on the order of minimal cut sets.
 };
-
-class IndexedFaultTree;
 
 /// @class Mocus
 /// This class analyzes normalized, preprocessed, and indexed fault trees to

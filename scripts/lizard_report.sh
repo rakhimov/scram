@@ -16,7 +16,6 @@ lizard -s cyclomatic_complexity \
   fault_tree.cc \
   grapher.cc \
   indexed_fault_tree.cc \
-  indexed_gate.cc \
   initializer.cc \
   mocus.cc \
   model.cc \

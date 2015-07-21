@@ -28,7 +28,6 @@ set(SCRAM_CORE_SRC ${SCRAM_CORE_SRC}
   "${CMAKE_CURRENT_SOURCE_DIR}/ccf_group.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/model.cc"
-  "${CMAKE_CURRENT_SOURCE_DIR}/indexed_gate.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/indexed_fault_tree.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/preprocessor.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/mocus.cc"

@@ -14,7 +14,6 @@
 #include <boost/unordered_map.hpp>
 
 #include "indexed_fault_tree.h"
-#include "indexed_gate.h"
 
 class PreprocessorTest;
 

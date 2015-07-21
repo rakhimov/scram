@@ -38,7 +38,6 @@
 #include <algorithm>
 #include <utility>
 
-#include "indexed_fault_tree.h"
 #include "logger.h"
 
 namespace scram {
