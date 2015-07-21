@@ -298,8 +298,8 @@ TEST_F(RiskAnalysisTest, ReportDefaultMCS) {
   std::stringstream output;
   ASSERT_NO_THROW(ran->Report(output));
 
-  boost::shared_ptr<XMLParser> parser(new XMLParser());
-  ASSERT_NO_THROW(parser->Init(output));
+  boost::shared_ptr<XMLParser> parser;
+  ASSERT_NO_THROW(parser = boost::shared_ptr<XMLParser>(new XMLParser(output)));
   ASSERT_NO_THROW(parser->Validate(schema));
 }
 
@@ -321,8 +321,8 @@ TEST_F(RiskAnalysisTest, ReportProbability) {
   std::stringstream output;
   ASSERT_NO_THROW(ran->Report(output));
 
-  boost::shared_ptr<XMLParser> parser(new XMLParser());
-  ASSERT_NO_THROW(parser->Init(output));
+  boost::shared_ptr<XMLParser> parser;
+  ASSERT_NO_THROW(parser = boost::shared_ptr<XMLParser>(new XMLParser(output)));
   ASSERT_NO_THROW(parser->Validate(schema));
 }
 
@@ -344,8 +344,8 @@ TEST_F(RiskAnalysisTest, ReportImportanceFactors) {
   std::stringstream output;
   ASSERT_NO_THROW(ran->Report(output));
 
-  boost::shared_ptr<XMLParser> parser(new XMLParser());
-  ASSERT_NO_THROW(parser->Init(output));
+  boost::shared_ptr<XMLParser> parser;
+  ASSERT_NO_THROW(parser = boost::shared_ptr<XMLParser>(new XMLParser(output)));
   ASSERT_NO_THROW(parser->Validate(schema));
 }
 
@@ -367,8 +367,8 @@ TEST_F(RiskAnalysisTest, ReportUncertaintyResults) {
   std::stringstream output;
   ASSERT_NO_THROW(ran->Report(output));
 
-  boost::shared_ptr<XMLParser> parser(new XMLParser());
-  ASSERT_NO_THROW(parser->Init(output));
+  boost::shared_ptr<XMLParser> parser;
+  ASSERT_NO_THROW(parser = boost::shared_ptr<XMLParser>(new XMLParser(output)));
   ASSERT_NO_THROW(parser->Validate(schema));
 }
 
@@ -389,8 +389,8 @@ TEST_F(RiskAnalysisTest, ReportCCF) {
   std::stringstream output;
   ASSERT_NO_THROW(ran->Report(output));
 
-  boost::shared_ptr<XMLParser> parser(new XMLParser());
-  ASSERT_NO_THROW(parser->Init(output));
+  boost::shared_ptr<XMLParser> parser;
+  ASSERT_NO_THROW(parser = boost::shared_ptr<XMLParser>(new XMLParser(output)));
   ASSERT_NO_THROW(parser->Validate(schema));
 }
 
@@ -411,8 +411,8 @@ TEST_F(RiskAnalysisTest, ReportNegativeEvent) {
   std::stringstream output;
   ASSERT_NO_THROW(ran->Report(output));
 
-  boost::shared_ptr<XMLParser> parser(new XMLParser());
-  ASSERT_NO_THROW(parser->Init(output));
+  boost::shared_ptr<XMLParser> parser;
+  ASSERT_NO_THROW(parser = boost::shared_ptr<XMLParser>(new XMLParser(output)));
   ASSERT_NO_THROW(parser->Validate(schema));
 }
 
@@ -435,8 +435,8 @@ TEST_F(RiskAnalysisTest, ReportAll) {
   std::stringstream output;
   ASSERT_NO_THROW(ran->Report(output));
 
-  boost::shared_ptr<XMLParser> parser(new XMLParser());
-  ASSERT_NO_THROW(parser->Init(output));
+  boost::shared_ptr<XMLParser> parser;
+  ASSERT_NO_THROW(parser = boost::shared_ptr<XMLParser>(new XMLParser(output)));
   ASSERT_NO_THROW(parser->Validate(schema));
 }
 
@@ -456,8 +456,8 @@ TEST_F(RiskAnalysisTest, ReportRoles) {
   std::stringstream output;
   ASSERT_NO_THROW(ran->Report(output));
 
-  boost::shared_ptr<XMLParser> parser(new XMLParser());
-  ASSERT_NO_THROW(parser->Init(output));
+  boost::shared_ptr<XMLParser> parser;
+  ASSERT_NO_THROW(parser = boost::shared_ptr<XMLParser>(new XMLParser(output)));
   ASSERT_NO_THROW(parser->Validate(schema));
 }
 
@@ -477,8 +477,8 @@ TEST_F(RiskAnalysisTest, ReportOrphanPrimaryEvents) {
   std::stringstream output;
   ASSERT_NO_THROW(ran->Report(output));
 
-  boost::shared_ptr<XMLParser> parser(new XMLParser());
-  ASSERT_NO_THROW(parser->Init(output));
+  boost::shared_ptr<XMLParser> parser;
+  ASSERT_NO_THROW(parser = boost::shared_ptr<XMLParser>(new XMLParser(output)));
   ASSERT_NO_THROW(parser->Validate(schema));
 }
 
@@ -498,8 +498,8 @@ TEST_F(RiskAnalysisTest, ReportUnusedParameters) {
   std::stringstream output;
   ASSERT_NO_THROW(ran->Report(output));
 
-  boost::shared_ptr<XMLParser> parser(new XMLParser());
-  ASSERT_NO_THROW(parser->Init(output));
+  boost::shared_ptr<XMLParser> parser;
+  ASSERT_NO_THROW(parser = boost::shared_ptr<XMLParser>(new XMLParser(output)));
   ASSERT_NO_THROW(parser->Validate(schema));
 }
 

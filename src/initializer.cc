@@ -78,7 +78,8 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
   if (!file_stream) {
     throw IOError("File '" + xml_file + "' could not be loaded.");
   }
-  /// Collection of input file locations in canonical path.
+
+  // Collection of input file locations in canonical path.
   std::set<std::string> input_paths;
   fs::path file_path = fs::canonical(xml_file);
   if (input_paths.count(file_path.native())) {
@@ -91,8 +92,7 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
   stream << file_stream.rdbuf();
   file_stream.close();
 
-  boost::shared_ptr<XMLParser> parser(new XMLParser());
-  parser->Init(stream);
+  boost::shared_ptr<XMLParser> parser(new XMLParser(stream));
 
   std::stringstream schema;
   std::string schema_path = Env::input_schema();

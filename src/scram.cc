@@ -279,6 +279,12 @@ int main(int argc, char* argv[]) {
     std::cerr << "SCRAM Invalid Argument Error\n" << std::endl;
     std::cerr << iarg_err.what() << std::endl;
     return 1;
+  } catch (Error& scram_err) {
+    std::cerr << "Bad, bad news. Please report this error. Thank you!\n"
+        << std::endl;
+    std::cerr << "SCRAM Error\n" << std::endl;
+    std::cerr << scram_err.what() << std::endl;
+    return 1;
   } catch (boost::exception& boost_err) {
     std::cerr << "Bad, bad news. Please report this error. Thank you!\n"
         << std::endl;

@@ -8,12 +8,16 @@
 
 #include <gtest/gtest.h>
 
+using namespace scram;
+
 class XMLParserTests : public ::testing::Test {
  public:
   virtual void SetUp();
   virtual void TearDown();
 
  protected:
+  typedef boost::shared_ptr<XMLParser> XMLParserPtr;
+
   void FillSnippet(std::stringstream& ss);
   void FillBadSnippet(std::stringstream& ss);
   void FillSchema(std::stringstream& ss);
