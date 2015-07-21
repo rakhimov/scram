@@ -10,6 +10,7 @@
 #include "indexed_fault_tree.h"
 #include "logger.h"
 #include "mocus.h"
+#include "preprocessor.h"
 
 namespace scram {
 
@@ -101,8 +102,9 @@ void FaultTreeAnalysis::Analyze() {
   IndexedFaultTree* indexed_tree = new IndexedFaultTree(top_event_index);
   indexed_tree->InitiateIndexedFaultTree(int_to_inter, ccf_basic_to_gates,
                                          all_to_int_);
-  indexed_tree->PropagateConstants(true_house_events, false_house_events);
-  indexed_tree->ProcessIndexedFaultTree(int_to_basic_.size());
+  Preprocessor* preprocessor = new Preprocessor(indexed_tree);
+  preprocessor->PropagateConstants(true_house_events, false_house_events);
+  preprocessor->ProcessIndexedFaultTree(int_to_basic_.size());
   Mocus* mocus = new Mocus(indexed_tree, limit_order_);
   mocus->FindMcs();
 
@@ -123,6 +125,7 @@ void FaultTreeAnalysis::Analyze() {
   analysis_time_ = DUR(analysis_time);  // Duration of MCS generation.
   FaultTreeAnalysis::SetsToString(*imcs);  // MCS with event ids.
   delete indexed_tree;  // No exceptions are expected.
+  delete preprocessor;  // No exceptions are expected.
   delete mocus;  // No exceptions are expected.
 }
 

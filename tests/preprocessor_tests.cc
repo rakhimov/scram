@@ -1,11 +1,11 @@
-#include "indexed_fault_tree_tests.h"
+#include "preprocessor_tests.h"
 
 #include <vector>
 
 using namespace scram;
 
 // Handle constant children according to the Boolean logic of the parent.
-TEST_F(IndexedFaultTreeTest, ProcessConstantChild) {
+TEST_F(PreprocessorTest, ProcessConstantChild) {
   std::vector<int> to_erase;
   IndexedGatePtr gate(new IndexedGate(1, kAndGate));
   gate->AddChild(2);

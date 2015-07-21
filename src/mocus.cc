@@ -167,20 +167,18 @@ void Mocus::FindMcs() {
   CLOCK(mcs_time);
   LOG(DEBUG2) << "Start minimal cut set generation.";
 
-  int top_index = fault_tree_->top_event_index_;
+  IndexedGatePtr top = fault_tree_->top_event();
+
   // Special case of empty top gate.
-  IndexedGatePtr top = fault_tree_->GetGate(top_index);
   if (top->children().empty()) {
     State state = top->state();
     assert(state == kNullState || state == kUnityState);
-    assert(fault_tree_->top_event_sign_ > 0);
     if (state == kUnityState) {
       std::set<int> empty_set;
       imcs_.push_back(empty_set);  // Special indication of unity set.
     }  // Other cases are null.
     return;
   } else if (top->type() == kNullGate) {  // Special case of NULL type top.
-    assert(fault_tree_->top_event_sign_ > 0);
     assert(top->children().size() == 1);
     int child = *top->children().begin();
     assert(!fault_tree_->IsGateIndex(std::abs(child)));
@@ -192,11 +190,11 @@ void Mocus::FindMcs() {
 
   // Create simple gates from indexed gates.
   std::map<int, SimpleGatePtr> simple_gates;
-  Mocus::CreateSimpleTree(top_index, &simple_gates);
+  Mocus::CreateSimpleTree(top->index(), &simple_gates);
 
-  LOG(DEBUG3) << "Finding MCS from top module: " << top_index;
+  LOG(DEBUG3) << "Finding MCS from top module: " << top->index();
   std::vector<std::set<int> > mcs;
-  Mocus::FindMcsFromSimpleGate(simple_gates.find(top_index)->second, &mcs);
+  Mocus::FindMcsFromSimpleGate(simple_gates.find(top->index())->second, &mcs);
 
   LOG(DEBUG3) << "Top gate cut sets are generated.";
 

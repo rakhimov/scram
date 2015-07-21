@@ -20,6 +20,7 @@ lizard -s cyclomatic_complexity \
   initializer.cc \
   mocus.cc \
   model.cc \
+  preprocessor.cc \
   probability_analysis.cc \
   random.cc \
   relax_ng_validator.cc \
