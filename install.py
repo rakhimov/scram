@@ -44,7 +44,7 @@ def install_scram(args):
         rtn = subprocess.call(["which", "cmake"], shell=(os.name == "nt"))
         if rtn != 0:
             sys.exit("CMake could not be found, "
-                     "please install CMake before developing scram.")
+                     "please install CMake before developing SCRAM.")
         cmake_cmd = ["cmake", os.path.abspath(root_dir)]
         if args.prefix:
             cmake_cmd += ["-DCMAKE_INSTALL_PREFIX=" +
@@ -72,8 +72,7 @@ def install_scram(args):
     if args.threads:
         make_cmd += ["-j" + str(args.threads)]
 
-    subprocess.check_call(make_cmd, cwd=args.build_dir,
-                          shell=(os.name == "nt"))
+    subprocess.check_call(make_cmd, cwd=args.build_dir, shell=(os.name == "nt"))
 
     if args.test:
         make_cmd += ["test"]

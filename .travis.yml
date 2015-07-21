@@ -32,4 +32,4 @@ after_success:
       --exclude-pattern .*src/.*\.h
       --exclude gui/
       > /dev/null
-    - cp CTestCustom.cmake ./build/ && cd ./build && ctest -D Experimental
+    - cp ./cmake/CTestCustom.cmake ./build/ && cd ./build && ctest -D Experimental
