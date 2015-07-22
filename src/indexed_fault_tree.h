@@ -1,6 +1,7 @@
 /// @file indexed_fault_tree.h
-/// A fault tree analysis facility with event and gate indices instead
-/// of id names. This facility is designed to work with FaultTreeAnalysis class.
+/// Classes and facilities to represent simplified fault trees wth event and
+/// gate indices instead of ID names. This facility is designed to work with
+/// FaultTreeAnalysis class.
 #ifndef SCRAM_SRC_INDEXED_FAULT_TREE_H_
 #define SCRAM_SRC_INDEXED_FAULT_TREE_H_
 
@@ -12,6 +13,94 @@
 #include <boost/unordered_map.hpp>
 
 namespace scram {
+
+/// @class IndexedNode
+/// An abstract base class that represents a node in an indexed fault tree
+/// graph. The index of the node is a unique identifier for the node.
+/// The node holds a weak pointer to the parent that is managed by the parent.
+class IndexedNode {
+ public:
+  /// Creates a graph node with its index.
+  ///
+  /// @param[in] index An unique positive index of this node.
+  ///
+  /// @warning The index is not validated upon instantiation.
+  explicit IndexedNode(int index);
+
+  virtual ~IndexedNode() = 0;  ///< Abstract class.
+
+  /// @returns The index of this node.
+  inline int index() const { return index_; }
+
+  /// @returns parents of this gate.
+  inline const std::set<int>& parents() { return parents_; }
+
+  /// Adds a parent of this gate.
+  ///
+  /// @param[in] index Positive index of the parent.
+  inline void AddParent(int index) {
+    assert(index > 0);
+    parents_.insert(index);
+  }
+
+  /// Removes a parent of this gate.
+  ///
+  /// @param[in] index Positive index of the existing parent.
+  inline void EraseParent(int index) {
+    assert(index > 0);
+    assert(parents_.count(index));
+    parents_.erase(index);
+  }
+
+  /// Registers the visit time for this node upon tree traversal.
+  /// This information can be used to detect dependencies.
+  ///
+  /// @param[in] time The current visit time of this node. It must be positive.
+  ///
+  /// @returns true if this node was previously visited.
+  /// @returns false if this is visited and re-visited only once.
+  bool Visit(int time) {
+    assert(time > 0);
+    if (!visits_[0]) {
+      visits_[0] = time;
+    } else if (!visits_[1]) {
+      visits_[1] = time;
+    } else {
+      visits_[2] = time;
+      return true;
+    }
+    return false;
+  }
+
+  /// @returns The time when this node was first encountered or entered.
+  /// @returns 0 if no enter time is registered.
+  inline int EnterTime() const { return visits_[0]; }
+
+  /// @returns The exit time upon traversal of the tree.
+  /// @returns 0 if no exit time is registered.
+  inline int ExitTime() const { return visits_[1]; }
+
+  /// @returns The last time this node was visited.
+  /// @returns 0 if no last time is registered.
+  inline int LastVisit() const { return visits_[2] ? visits_[2] : visits_[1]; }
+
+  /// @returns false if this node was only visited once upon tree traversal.
+  /// @returns true if this node was revisited at one more time.
+  inline bool Revisited() const { return visits_[2] ? true : false; }
+
+  /// @returns true if this node was visited at least once.
+  /// @returns false if this node was never visited upon traversal.
+  inline bool Visited() const { return visits_[0] ? true : false; }
+
+  /// Clears all the visit information. Resets the visit times to 0s.
+  inline void ClearVisits() { return std::fill(visits_, visits_ + 3, 0); }
+
+ private:
+  int index_;  ///< Index of this node.
+  /// This is a traversal array containing first, second, and last visits.
+  int visits_[3];
+  std::set<int> parents_;  ///< Parents of this node.
+};
 
 /// @enum GateType
 /// Types of gates for representation, preprocessing, and analysis purposes.
@@ -38,11 +127,11 @@ enum State {
 
 /// @class IndexedGate
 /// This gate is for use in IndexedFaultTree.
-/// Initially this gate can represent any type of gate; however,
+/// Initially this gate can represent any type of gate or logic; however,
 /// this gate can be only of OR and AND type at the end of all simplifications
 /// and processing. This gate class helps to process the fault tree before
 /// any complex analysis is done.
-class IndexedGate {
+class IndexedGate : public IndexedNode {
  public:
   /// Creates a gate with its index.
   ///
@@ -73,17 +162,6 @@ class IndexedGate {
   /// @param[in] number The vote number of ATLEAST gate.
   inline void vote_number(int number) { vote_number_ = number; }
 
-  /// @returns The index of this gate.
-  inline int index() const { return index_; }
-
-  /// Sets the index of this gate.
-  ///
-  /// @param[in] index Positive index of this gate.
-  inline void index(int index) {
-    assert(index > 0);
-    index_ = index;
-  }
-
   /// @returns children of this gate.
   inline const std::set<int>& children() const { return children_; }
 
@@ -94,9 +172,6 @@ class IndexedGate {
 
   /// @returns The state of this gate.
   inline const State& state() const { return state_; }
-
-  /// @returns parents of this gate.
-  inline const std::set<int>& parents() { return parents_; }
 
   /// @returns true if this gate is set to be a module.
   /// @returns false if it is not yet set to be a module.
@@ -181,66 +256,6 @@ class IndexedGate {
     children_.clear();
   }
 
-  /// Adds a parent of this gate.
-  ///
-  /// @param[in] index Positive index of the parent.
-  inline void AddParent(int index) {
-    assert(index > 0);
-    parents_.insert(index);
-  }
-
-  /// Removes a parent of this gate.
-  ///
-  /// @param[in] index Positive index of the existing parent.
-  inline void EraseParent(int index) {
-    assert(index > 0);
-    assert(parents_.count(index));
-    parents_.erase(index);
-  }
-
-  /// Registers the visit time for this gate upon tree traversal.
-  /// This information can be used to detect dependencies.
-  ///
-  /// @param[in] time The current visit time of this gate. It must be positive.
-  ///
-  /// @returns true if this gate was previously visited.
-  /// @returns false if this is visited and re-visited only once.
-  bool Visit(int time) {
-    assert(time > 0);
-    if (!visits_[0]) {
-      visits_[0] = time;
-    } else if (!visits_[1]) {
-      visits_[1] = time;
-    } else {
-      visits_[2] = time;
-      return true;
-    }
-    return false;
-  }
-
-  /// @returns The time when this gate was first encountered or entered.
-  /// @returns 0 if no enter time is registered.
-  inline int EnterTime() const { return visits_[0]; }
-
-  /// @returns The exit time upon traversal of the tree.
-  /// @returns 0 if no exit time is registered.
-  inline int ExitTime() const { return visits_[1]; }
-
-  /// @returns The last time this gate was visited.
-  /// @returns 0 if no last time is registered.
-  inline int LastVisit() const { return visits_[2] ? visits_[2] : visits_[1]; }
-
-  /// @returns false if this gate was only visited once upon tree traversal.
-  /// @returns true if this gate was revisited at one more time.
-  inline bool Revisited() const { return visits_[2] ? true : false; }
-
-  /// @returns true if this gate was visited at least once.
-  /// @returns false if this gate was never visited upon traversal.
-  inline bool Visited() const { return visits_[0] ? true : false; }
-
-  /// Clears all the visit information. Resets the visit times to 0s.
-  inline void ClearVisits() { return std::fill(visits_, visits_ + 3, 0); }
-
   /// Turns this gate's module flag on. This should be one time operation.
   inline void TurnModule() {
     assert(!module_);
@@ -248,14 +263,10 @@ class IndexedGate {
   }
 
  private:
-  int index_;  ///< Index of this gate.
-  GateType type_;  ///< Type of this gate. Only OR and AND are allowed.
-  State state_;  ///< Indication if this gate's set is normal, null, or unity.
-  int vote_number_;  ///< Vote number for atleast gate.
-  std::set<int> children_;  ///< Children of a gate.
-  std::set<int> parents_;  ///< Parents of this gate.
-  /// This is a traversal array containing first, second, and last visits.
-  int visits_[3];
+  GateType type_;  ///< Type of this gate.
+  State state_;  ///< Indication if this gate's state is normal, null, or unity.
+  int vote_number_;  ///< Vote number for ATLEAST gate.
+  std::set<int> children_;  ///< Children of the gate.
   bool module_;  ///< Indication of an independent module gate.
 };
 

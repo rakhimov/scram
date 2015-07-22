@@ -10,14 +10,19 @@
 
 namespace scram {
 
+IndexedNode::IndexedNode(int index)
+    : index_(index) {
+  std::fill(visits_, visits_ + 3, 0);
+}
+
+IndexedNode::~IndexedNode() {}  // Empty body for pure virtual destructor.
+
 IndexedGate::IndexedGate(int index, const GateType& type)
-    : index_(index),
+    : IndexedNode(index),
       type_(type),
       state_(kNormalState),
       vote_number_(-1),
-      module_(false) {
-  std::fill(visits_, visits_ + 3, 0);
-}
+      module_(false) {}
 
 void IndexedGate::InitiateWithChild(int child) {
   assert(child != 0);
