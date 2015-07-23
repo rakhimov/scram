@@ -1,18 +1,19 @@
-#####################
+####################
 SCRAM Website Source
-#####################
+####################
 
 The three branch system is used to build website:
+
     **develop** -> **gh-source** -> **gh-pages**
 
 This branch contains source files for building SCRAM website and API
-documentation. This *gh-source* branch is synchronized with the *develop*
-branch to get the documentation files and source code of the application.
+documentation. This **gh-source** branch is synchronized with the **develop**
+branch to get the documentation files and the source code of the application.
 No other files are needed, for example, tests, input files, and shared files.
 After building the website and API documentation, they are uploaded to the
-*gh-pages* branch.
+**gh-pages** branch.
 
-The example merging steps with the *develop* branch:
+The example merging steps with the **develop** branch:
 
     #. Run 'git merge develop'. Conflicts are expected.
     #. Delete with 'git rm ' any new file that is not in *doc/*, *src/*
@@ -20,9 +21,9 @@ The example merging steps with the *develop* branch:
     #. Finish merging.
 
 
-******************************
+
 Building
-******************************
+========
 
 A list of dependencies:
 
@@ -65,4 +66,11 @@ The command to build the API documentation.
     doxygen doxygen.conf
 
 The results are located in *build/html* and *build/api/html*. The generated
-files should be transfered to the *gh-pages* branch.
+files should be transfered to the **gh-pages** branch.
+
+In addition to the generated files, files in *publish* directory must be
+transfered to the website branch. The directory also contains a publishing
+script that automates the transfers of the generated files. Before switching to
+the **gh-pages** branch for publishing, copy *publish* directory into *build*.
+
+Follow the instructions in *publish/README.rst* for the final publishing steps.
