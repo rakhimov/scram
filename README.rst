@@ -16,33 +16,31 @@ SCRAM
 
 **SCRAM** is a **C**\ommand-line **R**\isk **A**\nalysis **M**\ulti-tool.
 
-This project aims to build a simple command line tool for
-probabilistic risk analysis. SCRAM is currently capable of performing
-static fault tree analysis, analysis with common cause failure models,
-probability calculations with importance analysis,
-and uncertainty analysis using Monte Carlo simulations. This tool can handle
-non-coherent fault trees, containing NOT logic.
+This project aims to build a simple command line tool for probabilistic risk
+analysis. SCRAM is currently capable of performing static fault tree analysis,
+analysis with common cause failure models, probability calculations with
+importance analysis, and uncertainty analysis with Monte Carlo simulations. This
+tool can handle non-coherent fault trees, containing NOT logic.
 
-SCRAM partially supports the OpenPSA_ model exchange format. Its input
-files are based on this format.
+SCRAM partially supports the OpenPSA_ model exchange format. Its input files are
+based on this format.
 
-SCRAM generates a Graphviz Dot instruction file for a graphical
-representation of a fault tree.
+SCRAM generates a Graphviz Dot instruction file for a graphical representation
+of a fault tree.
 
 An experimental GUI front-end is under development using `Qt`_.
 
 In addition, a complex-fault-tree-generator script is provided to create
 hard-to-analyze fault trees and to explore the performance of SCRAM.
 
-A full description of SCRAM and its current capabilities
-is in `documentation`_.
+A full description of SCRAM and its current capabilities is in `documentation`_.
 
 .. _OpenPSA: http://open-psa.org
 .. _`documentation`: http://rakhimov.github.io/scram
 .. _`Qt`: http://qt-project.org/
 
-To get SCRAM, you can download a virtual machine image
-on Sourceforge_ or follow the building and installing instructions bellow.
+To get SCRAM, you can download a virtual machine image on Sourceforge_ or follow
+the building and installing instructions bellow.
 
 .. _Sourceforge:
     https://sourceforge.net/projects/iscram/files/
@@ -95,16 +93,16 @@ Compilers (Tested and Supported in CMake setup):
 ====================   ==================
 Package                Tested Version
 ====================   ==================
-`GCC/G++`              4.6.3, 4.8.2
-`Clang/LLVM`           5.1
+`GCC/G++`              4.6, 4.8
+`Clang/LLVM`           3.1
 ====================   ==================
 
 
 Installing Dependencies (Linux and Unix)
 ========================================
 
-The following installation instructions and scripts are taken from
-`Cyclus`_ project.
+The following installation instructions and scripts are taken from `Cyclus`_
+project.
 
 .. _Cyclus:
     https://github.com/cyclus/cyclus
@@ -117,8 +115,8 @@ installing established libraries.
 Linux Systems
 -------------
 
-This process is tested on `Travis CI`_
-Ubuntu 12.04 LTS using apt-get as a package manager.
+This process is tested on `Travis CI`_ Ubuntu 12.04 LTS using apt-get as a
+package manager.
 
 The command to install a dependency takes the form of:
 
@@ -160,8 +158,8 @@ SCRAM dependencies and GCC/G++ compiler:
 
     sudo apt-get install -y cmake make gcc g++ libboost-all-dev libboost-random-dev libxml2-dev libxml++2.6-dev python2.7 graphviz
 
-For Ubuntu 12.04, the default Boost version is 1.46, so the update above
-version 1.47 is required:
+For Ubuntu 12.04, the default Boost version is 1.46, so the update above version
+1.47 is required:
 
 .. code-block:: bash
 
@@ -192,7 +190,7 @@ Using macports_, the command to install a dependency takes the form of:
 
   sudo port install package
 
-where "package" is replaced by the correct package name. The minimal list of
+Where "package" is replaced by the correct package name. The minimal list of
 required library package names is:
 
 #. cmake
