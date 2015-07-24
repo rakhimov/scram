@@ -130,7 +130,7 @@ class Mocus {
 
  private:
   typedef boost::shared_ptr<SimpleGate> SimpleGatePtr;
-  typedef boost::shared_ptr<IndexedGate> IndexedGatePtr;
+  typedef boost::shared_ptr<IGate> IGatePtr;
 
   /// Traverses the fault tree to convert gates into simple gates.
   ///

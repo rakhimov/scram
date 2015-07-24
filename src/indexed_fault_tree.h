@@ -14,20 +14,23 @@
 
 namespace scram {
 
-/// @class IndexedNode
+/// @class Node
 /// An abstract base class that represents a node in an indexed fault tree
 /// graph. The index of the node is a unique identifier for the node.
 /// The node holds a weak pointer to the parent that is managed by the parent.
-class IndexedNode {
+class Node {
  public:
+  /// Creates a graph node with its index assigned sequentially.
+  Node();
+
   /// Creates a graph node with its index.
   ///
   /// @param[in] index An unique positive index of this node.
   ///
   /// @warning The index is not validated upon instantiation.
-  explicit IndexedNode(int index);
+  explicit Node(int index);
 
-  virtual ~IndexedNode() = 0;  ///< Abstract class.
+  virtual ~Node() = 0;  ///< Abstract class.
 
   /// @returns The index of this node.
   inline int index() const { return index_; }
@@ -96,10 +99,35 @@ class IndexedNode {
   inline void ClearVisits() { return std::fill(visits_, visits_ + 3, 0); }
 
  private:
+  static int next_index_;  ///< Automatic indexation of the next new node.
   int index_;  ///< Index of this node.
   /// This is a traversal array containing first, second, and last visits.
   int visits_[3];
   std::set<int> parents_;  ///< Parents of this node.
+};
+
+/// @class Constant
+/// Representation of a node that is a Boolean constant with True or False
+/// state.
+class Constant : public Node {
+ public:
+  /// Constructs a new constant indexed node.
+  ///
+  /// @param[in] state Binary state of the Boolean constant.
+  explicit Constant(bool state);
+
+  ///@returns The state of the constant.
+  inline bool state() { return state_; }
+
+ private:
+  bool state_;  ///< The Boolean value for the constant state.
+};
+
+/// @class IBasicEvent
+/// Indexed basic events in a indexed fault tree.
+class IBasicEvent : public Node {
+ public:
+  IBasicEvent();
 };
 
 /// @enum GateType
@@ -125,13 +153,13 @@ enum State {
   kUnityState  ///< The set is unity. This set guarantees failure.
 };
 
-/// @class IndexedGate
-/// This gate is for use in IndexedFaultTree.
+/// @class IGate
+/// This indexed gate is for use in IndexedFaultTree.
 /// Initially this gate can represent any type of gate or logic; however,
 /// this gate can be only of OR and AND type at the end of all simplifications
 /// and processing. This gate class helps to process the fault tree before
 /// any complex analysis is done.
-class IndexedGate : public IndexedNode {
+class IGate : public Node {
  public:
   /// Creates a gate with its index.
   ///
@@ -139,7 +167,7 @@ class IndexedGate : public IndexedNode {
   /// @param[in] type The type of this gate.
   ///
   /// @warning The index is not validated upon instantiation.
-  IndexedGate(int index, const GateType& type);
+  IGate(int index, const GateType& type);
 
   /// @returns Type of this gate.
   inline const GateType& type() const { return type_; }
@@ -226,7 +254,7 @@ class IndexedGate : public IndexedNode {
   ///
   /// @returns false if the final set is null or unity.
   /// @returns true if the addition is successful with a normal final state.
-  bool JoinGate(IndexedGate* child_gate);
+  bool JoinGate(IGate* child_gate);
 
   /// Clears all the children of this gate.
   inline void EraseAllChildren() { children_.clear(); }
@@ -278,7 +306,7 @@ class Formula;
 /// that takes into account the indices of events instead of ids and pointers.
 class IndexedFaultTree {
  public:
-  typedef boost::shared_ptr<IndexedGate> IndexedGatePtr;
+  typedef boost::shared_ptr<IGate> IGatePtr;
   typedef boost::shared_ptr<Gate> GatePtr;
 
   /// Constructs a simplified fault tree with indices of nodes.
@@ -295,7 +323,7 @@ class IndexedFaultTree {
   inline void top_event_index(int index) { top_event_index_ = index; }
 
   /// @returns The current top gate of the fault tree.
-  inline const IndexedGatePtr& top_event() const {
+  inline const IGatePtr& top_event() const {
     assert(indexed_gates_.count(top_event_index_));
     return indexed_gates_.find(top_event_index_)->second;
   }
@@ -330,7 +358,7 @@ class IndexedFaultTree {
   /// Adds a new indexed gate into the indexed fault tree's gate container.
   ///
   /// @param[in] gate A new indexed gate.
-  inline void AddGate(const IndexedGatePtr& gate) {
+  inline void AddGate(const IGatePtr& gate) {
     assert(!indexed_gates_.count(gate->index()));
     indexed_gates_.insert(std::make_pair(gate->index(), gate));
   }
@@ -340,7 +368,7 @@ class IndexedFaultTree {
   /// @param[in] index Positive index of a gate.
   ///
   /// @returns The pointer to the requested indexed gate.
-  inline const IndexedGatePtr& GetGate(int index) const {
+  inline const IGatePtr& GetGate(int index) const {
     assert(index > 0);
     assert(index >= kGateIndex_);
     assert(indexed_gates_.count(index));
@@ -354,8 +382,8 @@ class IndexedFaultTree {
   /// @param[in] type The type of the new gate.
   ///
   /// @returns Pointer to the newly created gate.
-  inline IndexedGatePtr CreateGate(const GateType& type) {
-    IndexedGatePtr gate(new IndexedGate(++new_gate_index_, type));
+  inline IGatePtr CreateGate(const GateType& type) {
+    IGatePtr gate(new IGate(++new_gate_index_, type));
     indexed_gates_.insert(std::make_pair(gate->index(), gate));
     return gate;
   }
@@ -366,7 +394,7 @@ class IndexedFaultTree {
   /// Mapping to string gate types to enum gate types.
   static const std::map<std::string, GateType> kStringToType_;
 
-  /// Processes a formula into a new indexed gates.
+  /// Processes a formula into new indexed gates.
   ///
   /// @param[in] index The index to be assigned to the new indexed gate.
   /// @param[in] formula The formula to be converted into a gate.
@@ -382,7 +410,7 @@ class IndexedFaultTree {
   int top_event_index_;  ///< The index of the top gate of this tree.
   const int kGateIndex_;  ///< The starting gate index for gate identification.
   /// All gates of this tree including newly created ones.
-  boost::unordered_map<int, IndexedGatePtr> indexed_gates_;
+  boost::unordered_map<int, IGatePtr> indexed_gates_;
   int new_gate_index_;  ///< Index for a new gate.
 };
 

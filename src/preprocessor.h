@@ -51,7 +51,7 @@ class Preprocessor {
   void ProcessIndexedFaultTree(int num_basic_events);
 
  private:
-  typedef boost::shared_ptr<IndexedGate> IndexedGatePtr;
+  typedef boost::shared_ptr<IGate> IGatePtr;
 
   /// Starts normalizing gates to simplify gates to OR, AND gates.
   /// This function uses parent information of each gate, so the tree must
@@ -69,7 +69,7 @@ class Preprocessor {
   ///
   /// @warning This function does not change the types of gates.
   /// @warning The top gate does not have parents, so it is not handled here.
-  void NotifyParentsOfNegativeGates(const IndexedGatePtr& gate);
+  void NotifyParentsOfNegativeGates(const IGatePtr& gate);
 
   /// Normalizes complex gates into OR, AND gates.
   ///
@@ -78,13 +78,13 @@ class Preprocessor {
   /// @warning The parents of negative gates are assumed to be notified about
   ///          the change of their children types.
   /// @warning NULL gates are not handled.
-  void NormalizeGate(const IndexedGatePtr& gate);
+  void NormalizeGate(const IGatePtr& gate);
 
   /// Normalizes a gate with XOR logic. This is a helper function for the main
   /// gate normalization function.
   ///
   /// @param[in,out] gate The gate to normalize.
-  void NormalizeXorGate(const IndexedGatePtr& gate);
+  void NormalizeXorGate(const IGatePtr& gate);
 
   /// Normalizes an ATLEAST gate with a vote number. The gate is turned into
   /// an OR gate of recursively normalized ATLEAST and AND child gates according
@@ -94,7 +94,7 @@ class Preprocessor {
   /// techniques than the alternative, which is OR of AND gates of combinations.
   ///
   /// @param[in,out] gate The atleast gate to normalize.
-  void NormalizeAtleastGate(const IndexedGatePtr& gate);
+  void NormalizeAtleastGate(const IGatePtr& gate);
 
   /// Remove all house events from a given gate according to the Boolean logic.
   /// The structure of the tree should not be pre-processed before this
@@ -108,7 +108,7 @@ class Preprocessor {
   /// @param[in,out] gate The final resultant processed gate.
   void PropagateConstants(const std::set<int>& true_house_events,
                           const std::set<int>& false_house_events,
-                          const IndexedGatePtr& gate);
+                          const IGatePtr& gate);
 
   /// Changes the state of a gate or passes a constant child to be removed
   /// later. The function determines its actions depending on the type of
@@ -125,7 +125,7 @@ class Preprocessor {
   ///
   /// @returns true if the passed gate has become constant due to its child.
   /// @returns false if the parent still valid for further operations.
-  bool ProcessConstantChild(const IndexedGatePtr& gate, int child,
+  bool ProcessConstantChild(const IGatePtr& gate, int child,
                             bool state, std::vector<int>* to_erase);
 
   /// Removes a set of children from a gate taking into account the logic.
@@ -137,8 +137,7 @@ class Preprocessor {
   ///
   /// @param[in,out] gate The gate that contains the children to be removed.
   /// @param[in] to_erase The set of children to erase from the parent gate.
-  void RemoveChildren(const IndexedGatePtr& gate,
-                      const std::vector<int>& to_erase);
+  void RemoveChildren(const IGatePtr& gate, const std::vector<int>& to_erase);
 
   /// Removes NULL and UNITY state child gates. The parent gate can be of any
   /// type. Because of the constant children, the parent gate itself may turn
@@ -153,7 +152,7 @@ class Preprocessor {
   /// @warning There should not be negative gate children.
   /// @warning There still may be only one constant state gate which is the root
   ///          of the tree. This must be handled separately.
-  bool RemoveConstGates(const IndexedGatePtr& gate);
+  bool RemoveConstGates(const IGatePtr& gate);
 
   /// Propagates complements of child gates down to basic events
   /// in order to remove any negative logic from the fault tree's gates.
@@ -166,7 +165,7 @@ class Preprocessor {
   ///                     is unknown for the function, so it must be sanitized
   ///                     for a top event to function correctly.
   /// @param[in,out] gate_complements The processed complements of gates.
-  void PropagateComplements(const IndexedGatePtr& gate,
+  void PropagateComplements(const IGatePtr& gate,
                             std::map<int, int>* gate_complements);
 
   /// Removes child gates of NULL type, which means these child gates have
@@ -181,7 +180,7 @@ class Preprocessor {
   ///
   /// @warning There still may be only one NULL type gate which is the root
   ///          of the tree. This must be handled separately.
-  bool RemoveNullGates(const IndexedGatePtr& gate);
+  bool RemoveNullGates(const IGatePtr& gate);
 
   /// Pre-processes the fault tree by doing the simplest Boolean algebra.
   /// Positive children with the same OR or AND gates as parents are coalesced.
@@ -196,7 +195,7 @@ class Preprocessor {
   /// @warning NULL or UNITY state gates may emerge because of this processing.
   /// @warning NULL type gates are not handled by this function.
   /// @warning Module child gates are omitted from coalescing.
-  bool JoinGates(const IndexedGatePtr& gate);
+  bool JoinGates(const IGatePtr& gate);
 
   /// Traverses the indexed fault tree to detect modules. Modules are
   /// independent sub-trees without common nodes with the rest of the tree.
@@ -211,7 +210,7 @@ class Preprocessor {
   /// @param[in,out] visit_basics The recordings for basic events.
   ///
   /// @returns The final time of traversing.
-  int AssignTiming(int time, const IndexedGatePtr& gate, int visit_basics[][2]);
+  int AssignTiming(int time, const IGatePtr& gate, int visit_basics[][2]);
 
   /// Determines modules from original gates that have been already timed.
   /// This function can also create new modules from the existing tree.
@@ -220,8 +219,7 @@ class Preprocessor {
   /// @param[in] visit_basics The recordings for basic events.
   /// @param[in,out] visited_gates Container of visited gates with
   ///                              min and max time of visits of the subtree.
-  void FindModules(const IndexedGatePtr& gate,
-                   const int visit_basics[][2],
+  void FindModules(const IGatePtr& gate, const int visit_basics[][2],
                    std::map<int, std::pair<int, int> >* visited_gates);
 
   /// Creates a new module as a child of an existing gate if the logic of the
@@ -234,8 +232,8 @@ class Preprocessor {
   /// @param[in] children Modular children to be added into the new module.
   ///
   /// @returns Pointer to the new module if it is created.
-  IndexedGatePtr CreateNewModule(const IndexedGatePtr& gate,
-                                 const std::vector<int>& children);
+  IGatePtr CreateNewModule(const IGatePtr& gate,
+                           const std::vector<int>& children);
 
   /// Checks if a group of modular children share anything with non-modular
   /// children. If so, then the modular children are not actually modular, and
@@ -276,7 +274,7 @@ class Preprocessor {
   /// @param[in,out] gate The parent gate for a module.
   /// @param[in] modular_children All the modular children.
   /// @param[in] groups Grouped modular children.
-  void CreateNewModules(const IndexedGatePtr& gate,
+  void CreateNewModules(const IGatePtr& gate,
                         const std::vector<int>& modular_children,
                         const std::vector<std::vector<int> >& groups);
 
@@ -290,7 +288,7 @@ class Preprocessor {
   /// gate as a root.
   ///
   /// @param[in/out] gate The root gate to be traversed and cleaned.
-  void ClearGateVisits(const IndexedGatePtr& gate);
+  void ClearGateVisits(const IGatePtr& gate);
 
   IndexedFaultTree* fault_tree_;  ///< The fault tree to preprocess.
   int top_event_sign_;  ///< The negative or positive sign of the top event.

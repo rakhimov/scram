@@ -12,7 +12,7 @@ using namespace scram;
 /// preprossing.
 class PreprocessorTest : public ::testing::Test {
  protected:
-  typedef boost::shared_ptr<IndexedGate> IndexedGatePtr;
+  typedef boost::shared_ptr<IGate> IGatePtr;
 
   virtual void SetUp() {
     fault_tree = new IndexedFaultTree(-1);  // The index is defined by tests.
@@ -24,7 +24,7 @@ class PreprocessorTest : public ::testing::Test {
     delete prep;
   }
 
-  bool ProcessConstantChild(const IndexedGatePtr& gate, int child,
+  bool ProcessConstantChild(const IGatePtr& gate, int child,
                             bool state, std::vector<int>* to_erase) {
     return prep->ProcessConstantChild(gate, child, state, to_erase);
   }

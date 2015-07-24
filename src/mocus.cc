@@ -166,7 +166,7 @@ void Mocus::FindMcs() {
   CLOCK(mcs_time);
   LOG(DEBUG2) << "Start minimal cut set generation.";
 
-  IndexedGatePtr top = fault_tree_->top_event();
+  IGatePtr top = fault_tree_->top_event();
 
   // Special case of empty top gate.
   if (top->children().empty()) {
@@ -242,7 +242,7 @@ void Mocus::CreateSimpleTree(int gate_index,
                              std::map<int, SimpleGatePtr>* processed_gates) {
   assert(gate_index > 0);
   if (processed_gates->count(gate_index)) return;
-  IndexedGatePtr gate = fault_tree_->GetGate(gate_index);
+  IGatePtr gate = fault_tree_->GetGate(gate_index);
   assert(gate->type() == kAndGate || gate->type() == kOrGate);
   SimpleGatePtr simple_gate(new SimpleGate(gate->type()));
   processed_gates->insert(std::make_pair(gate_index, simple_gate));
@@ -251,7 +251,7 @@ void Mocus::CreateSimpleTree(int gate_index,
   for (it = gate->children().begin(); it != gate->children().end(); ++it) {
     if (fault_tree_->IsGateIndex(std::abs(*it))) {
       assert(*it > 0);
-      IndexedGatePtr child_gate = fault_tree_->GetGate(*it);
+      IGatePtr child_gate = fault_tree_->GetGate(*it);
       if (child_gate->IsModule()) {
         simple_gate->InitiateWithModule(*it);
         Mocus::CreateSimpleTree(*it, processed_gates);

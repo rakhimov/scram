@@ -10,27 +10,36 @@
 
 namespace scram {
 
-IndexedNode::IndexedNode(int index)
-    : index_(index) {
+int Node::next_index_ = 1;
+
+Node::Node() : index_(next_index_++) {
   std::fill(visits_, visits_ + 3, 0);
 }
 
-IndexedNode::~IndexedNode() {}  // Empty body for pure virtual destructor.
+Node::Node(int index) : index_(index) {
+  std::fill(visits_, visits_ + 3, 0);
+}
 
-IndexedGate::IndexedGate(int index, const GateType& type)
-    : IndexedNode(index),
+Node::~Node() {}  // Empty body for pure virtual destructor.
+
+Constant::Constant(bool state) : Node(), state_(state) {}
+
+IBasicEvent::IBasicEvent() : Node() {}
+
+IGate::IGate(int index, const GateType& type)
+    : Node(index),
       type_(type),
       state_(kNormalState),
       vote_number_(-1),
       module_(false) {}
 
-void IndexedGate::InitiateWithChild(int child) {
+void IGate::InitiateWithChild(int child) {
   assert(child != 0);
   assert(state_ == kNormalState);
   children_.insert(children_.end(), child);
 }
 
-bool IndexedGate::AddChild(int child) {
+bool IGate::AddChild(int child) {
   assert(type_ == kAndGate || type_ == kOrGate);  // Must be normalized.
   assert(child != 0);
   assert(state_ == kNormalState);
@@ -43,13 +52,13 @@ bool IndexedGate::AddChild(int child) {
   return true;
 }
 
-bool IndexedGate::SwapChild(int existing_child, int new_child) {
+bool IGate::SwapChild(int existing_child, int new_child) {
   assert(children_.count(existing_child));
   children_.erase(existing_child);
-  return IndexedGate::AddChild(new_child);
+  return IGate::AddChild(new_child);
 }
 
-void IndexedGate::InvertChildren() {
+void IGate::InvertChildren() {
   std::set<int> inverted_children;
   std::set<int>::iterator it;
   for (it = children_.begin(); it != children_.end(); ++it) {
@@ -58,19 +67,19 @@ void IndexedGate::InvertChildren() {
   children_ = inverted_children;  /// @todo Check swap() for performance.
 }
 
-void IndexedGate::InvertChild(int existing_child) {
+void IGate::InvertChild(int existing_child) {
   assert(children_.count(existing_child));
   children_.erase(existing_child);
   children_.insert(-existing_child);
 }
 
-bool IndexedGate::JoinGate(IndexedGate* child_gate) {
+bool IGate::JoinGate(IGate* child_gate) {
   assert(children_.count(child_gate->index()));
   children_.erase(child_gate->index());
   std::set<int>::const_iterator it;
   for (it = child_gate->children_.begin(); it != child_gate->children_.end();
        ++it) {
-    if (!IndexedGate::AddChild(*it)) return false;
+    if (!IGate::AddChild(*it)) return false;
   }
   return true;
 }
@@ -107,7 +116,7 @@ void IndexedFaultTree::ProcessFormula(
     const boost::unordered_map<std::string, int>& all_to_int) {
   assert(!indexed_gates_.count(index));
   GateType type = kStringToType_.find(formula->type())->second;
-  IndexedGatePtr gate(new IndexedGate(index, type));
+  IGatePtr gate(new IGate(index, type));
   if (type == kAtleastGate) gate->vote_number(formula->vote_number());
 
   typedef boost::shared_ptr<Event> EventPtr;
