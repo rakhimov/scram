@@ -52,6 +52,8 @@ class Preprocessor {
 
  private:
   typedef boost::shared_ptr<IGate> IGatePtr;
+  typedef boost::shared_ptr<IBasicEvent> IBasicEventPtr;
+  typedef boost::shared_ptr<Constant> ConstantPtr;
 
   /// Starts normalizing gates to simplify gates to OR, AND gates.
   /// This function uses parent information of each gate, so the tree must
@@ -109,6 +111,16 @@ class Preprocessor {
   void PropagateConstants(const std::set<int>& true_house_events,
                           const std::set<int>& false_house_events,
                           const IGatePtr& gate);
+
+  /// Remove all house events from a given gate according to the Boolean logic.
+  /// The structure of the tree should not be pre-processed before this
+  /// operation; that is, this is the first operation that is done after
+  /// creation of an indexed fault tree. There should not be any negative nodes.
+  /// After this function, there should not be any unity or null gates because
+  /// of house events.
+  ///
+  /// @param[in,out] gate The final resultant processed gate.
+  void PropagateConstants(const IGatePtr& gate);
 
   /// Changes the state of a gate or passes a constant child to be removed
   /// later. The function determines its actions depending on the type of

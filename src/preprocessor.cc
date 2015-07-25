@@ -23,6 +23,12 @@ void Preprocessor::PropagateConstants(const std::set<int>& true_house_events,
 }
 
 void Preprocessor::ProcessIndexedFaultTree(int num_basic_events) {
+  Preprocessor::ClearGateVisits();
+  IGatePtr top = fault_tree_->top_event();
+  LOG(DEBUG2) << "Propagating constants in a fault tree.";
+  Preprocessor::PropagateConstants(top);
+  LOG(DEBUG2) << "Constant propagation is done.";
+
   CLOCK(prep_time);
   LOG(DEBUG2) << "Preprocessing the fault tree.";
   LOG(DEBUG2) << "Normalizing gates.";
@@ -30,7 +36,6 @@ void Preprocessor::ProcessIndexedFaultTree(int num_basic_events) {
   Preprocessor::NormalizeGates();
   LOG(DEBUG2) << "Finished normalizing gates.";
 
-  IGatePtr top = fault_tree_->top_event();
   Preprocessor::ClearGateVisits();
   Preprocessor::RemoveNullGates(top);
 
@@ -267,6 +272,31 @@ void Preprocessor::PropagateConstants(const std::set<int>& true_house_events,
       }
     }
     if (Preprocessor::ProcessConstantChild(gate, *it, state, &to_erase))
+      return;  // Early exit because the parent's state turned to NULL or UNITY.
+  }
+  Preprocessor::RemoveChildren(gate, to_erase);
+}
+
+void Preprocessor::PropagateConstants(const IGatePtr& gate) {
+  if (gate->Visited()) return;
+  gate->Visit(1);  // Time does not matter.
+  std::vector<int> to_erase;  // Erase children later to keep iterator valid.
+  boost::unordered_map<int, ConstantPtr>::const_iterator it_c;
+  for (it_c = gate->constant_children().begin();
+       it_c != gate->constant_children().end(); ++it_c) {
+    bool state = it_c->second->state();
+    if (Preprocessor::ProcessConstantChild(gate, it_c->first, state, &to_erase))
+      return;  // Early exit because the parent's state turned to NULL or UNITY.
+  }
+  boost::unordered_map<int, IGatePtr>::const_iterator it_g;
+  for (it_g = gate->gate_children().begin();
+       it_g != gate->gate_children().end(); ++it_g) {
+    IGatePtr child_gate = it_g->second;
+    Preprocessor::PropagateConstants(child_gate);
+    State gate_state = child_gate->state();
+    if (gate_state == kNormalState) continue;
+    bool state = gate_state == kNullState ? false : true;
+    if (Preprocessor::ProcessConstantChild(gate, it_g->first, state, &to_erase))
       return;  // Early exit because the parent's state turned to NULL or UNITY.
   }
   Preprocessor::RemoveChildren(gate, to_erase);

@@ -203,8 +203,25 @@ class IGate : public Node {
   /// @param[in] number The vote number of ATLEAST gate.
   inline void vote_number(int number) { vote_number_ = number; }
 
-  /// @returns children of this gate.
+  /// @returns Children of this gate.
   inline const std::set<int>& children() const { return children_; }
+
+  /// @returns Children of this gate that are indexed gates.
+  inline const boost::unordered_map<int, IGatePtr>& gate_children() const {
+    return gate_children_;
+  }
+
+  /// @returns Children of this gate that are indexed basic events.
+  inline const boost::unordered_map<int, IBasicEventPtr>&
+      basic_event_children() const {
+    return basic_event_children_;
+  }
+
+  /// @returns Children of this gate that are indexed constants.
+  inline const boost::unordered_map<int, ConstantPtr>&
+      constant_children() const {
+    return constant_children_;
+  }
 
   /// Directly copies children from another gate.
   ///
@@ -241,8 +258,46 @@ class IGate : public Node {
   ///          case the state is nulled or becomes unity.
   bool AddChild(int child);
 
+  /// Adds a child gate to this gate. Before adding the child, the existing
+  /// children are checked for complements. If there is a complement,
+  /// the gate changes its state and clears its children.
+  ///
+  /// @param[in] child A positive or negative index of a child.
+  /// @param[in] gate A pointer to the child gate.
+  ///
+  /// @returns false if there final state of the parent is normal.
+  /// @returns true if the parent has become constant due to a complement child.
+  ///
+  /// @warning This function does not indicate error for future additions in
+  ///          case the state is nulled or becomes unity.
   bool AddChild(int child, const IGatePtr& gate);
+
+  /// Adds a child basic event to this gate. Before adding the child, the
+  /// existing children are checked for complements. If there is a complement,
+  /// the gate changes its state and clears its children.
+  ///
+  /// @param[in] child A positive or negative index of a child.
+  /// @param[in] basic_event A pointer to the child basic_event.
+  ///
+  /// @returns false if there final state of the parent is normal.
+  /// @returns true if the parent has become constant due to a complement child.
+  ///
+  /// @warning This function does not indicate error for future additions in
+  ///          case the state is nulled or becomes unity.
   bool AddChild(int child, const IBasicEventPtr& basic_event);
+
+  /// Adds a constant child to this gate. Before adding the child, the existing
+  /// children are checked for complements. If there is a complement,
+  /// the gate changes its state and clears its children.
+  ///
+  /// @param[in] child A positive or negative index of a child.
+  /// @param[in] constant A pointer to the child that is a Constant.
+  ///
+  /// @returns false if there final state of the parent is normal.
+  /// @returns true if the parent has become constant due to a complement child.
+  ///
+  /// @warning This function does not indicate error for future additions in
+  ///          case the state is nulled or becomes unity.
   bool AddChild(int child, const ConstantPtr& constant);
 
   /// Swaps an existing child to a new child. Mainly used for

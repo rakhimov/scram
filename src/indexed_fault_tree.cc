@@ -188,12 +188,13 @@ const std::map<std::string, GateType> IndexedFaultTree::kStringToType_ =
                               ("nor", kNorGate) ("null", kNullGate);
 
 IndexedFaultTree::IndexedFaultTree(const GatePtr& root, bool ccf)
-    : top_event_index_(-1),
-      kGateIndex_(1e6) {
+    : kGateIndex_(1e6) {
   boost::unordered_map<std::string, NodePtr> id_to_index;
   IGatePtr top_event = IndexedFaultTree::ProcessFormula(root->formula(),
                                                         ccf,
                                                         &id_to_index);
+  IndexedFaultTree::AddGate(top_event);  /// @todo Remove.
+  top_event_index_ = top_event->index();
 }
 
 IndexedFaultTree::IndexedFaultTree(int top_event_id)
@@ -248,6 +249,7 @@ boost::shared_ptr<IGate> IndexedFaultTree::ProcessFormula(
               ccf_gate->formula(),
               ccf,
               id_to_index);
+          IndexedFaultTree::AddGate(new_gate);  /// @todo Remove.
           parent->AddChild(new_gate->index(), new_gate);
           id_to_index->insert(std::make_pair(basic_event->id(), new_gate));
         } else {
@@ -267,6 +269,7 @@ boost::shared_ptr<IGate> IndexedFaultTree::ProcessFormula(
         IGatePtr new_gate = IndexedFaultTree::ProcessFormula(gate->formula(),
                                                              ccf,
                                                              id_to_index);
+        IndexedFaultTree::AddGate(new_gate);  /// @todo Remove.
         parent->AddChild(new_gate->index(), new_gate);
         id_to_index->insert(std::make_pair(gate->id(), new_gate));
       }
@@ -291,6 +294,7 @@ boost::shared_ptr<IGate> IndexedFaultTree::ProcessFormula(
     IGatePtr new_gate = IndexedFaultTree::ProcessFormula(*it_f, ccf,
                                                          id_to_index);
     parent->AddChild(new_gate->index(), new_gate);
+    IndexedFaultTree::AddGate(new_gate);  /// @todo Remove.
   }
   return parent;
 }
