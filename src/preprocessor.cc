@@ -821,6 +821,16 @@ void Preprocessor::ClearGateVisits(const IGatePtr& gate) {
        ++it) {
     Preprocessor::ClearGateVisits(it->second);
   }
+  boost::unordered_map<int, IBasicEventPtr>::const_iterator it_b;
+  for (it_b = gate->basic_event_children().begin();
+       it_b != gate->basic_event_children().end(); ++it_b) {
+    it_b->second->ClearVisits();
+  }
+  boost::unordered_map<int, ConstantPtr>::const_iterator it_c;
+  for (it_c = gate->constant_children().begin();
+       it_c != gate->constant_children().end(); ++it_c) {
+    it_c->second->ClearVisits();
+  }
 }
 
 }  // namespace scram
