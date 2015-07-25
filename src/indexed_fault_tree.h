@@ -14,11 +14,16 @@
 
 namespace scram {
 
+class IGate;  // Indexed gate parent of nodes.
+
 /// @class Node
 /// An abstract base class that represents a node in an indexed fault tree
 /// graph. The index of the node is a unique identifier for the node.
 /// The node holds a weak pointer to the parent that is managed by the parent.
 class Node {
+
+  friend class IGate;  // To manage parent information.
+
  public:
   /// Creates a graph node with its index assigned sequentially.
   Node();
@@ -38,25 +43,8 @@ class Node {
   /// Resets the starting index.
   inline static void ResetIndex() { next_index_ = 1e6; }
 
-  /// @returns parents of this gate.
-  inline const std::set<int>& parents() { return parents_; }
-
-  /// Adds a parent of this gate.
-  ///
-  /// @param[in] index Positive index of the parent.
-  inline void AddParent(int index) {
-    assert(index > 0);
-    parents_.insert(index);
-  }
-
-  /// Removes a parent of this gate.
-  ///
-  /// @param[in] index Positive index of the existing parent.
-  inline void EraseParent(int index) {
-    assert(index > 0);
-    assert(parents_.count(index));
-    parents_.erase(index);
-  }
+  /// @returns Parents of this gate.
+  inline const std::set<IGate*>& parents() { return parents_; }
 
   /// Registers the visit time for this node upon tree traversal.
   /// This information can be used to detect dependencies.
@@ -102,11 +90,14 @@ class Node {
   inline void ClearVisits() { return std::fill(visits_, visits_ + 3, 0); }
 
  private:
+  Node(const Node&);
+  Node& operator=(const Node&);
+
   static int next_index_;  ///< Automatic indexation of the next new node.
   int index_;  ///< Index of this node.
   /// This is a traversal array containing first, second, and last visits.
   int visits_[3];
-  std::set<int> parents_;  ///< Parents of this node.
+  std::set<IGate*> parents_;  ///< Parents of this node.
 };
 
 /// @class Constant
@@ -123,6 +114,9 @@ class Constant : public Node {
   inline bool state() { return state_; }
 
  private:
+  Constant(const Constant&);
+  Constant& operator=(const Constant&);
+
   bool state_;  ///< The Boolean value for the constant state.
 };
 
@@ -141,6 +135,9 @@ class IBasicEvent : public Node {
   inline static void ResetIndex() { next_basic_event_ = 1; }
 
  private:
+  IBasicEvent(const IBasicEvent&);
+  IBasicEvent& operator=(const IBasicEvent&);
+
   static int next_basic_event_;  ///< The next index for the basic event.
 };
 
@@ -175,6 +172,7 @@ enum State {
 /// any complex analysis is done.
 class IGate : public Node {
  public:
+  typedef boost::shared_ptr<Node> NodePtr;
   typedef boost::shared_ptr<Constant> ConstantPtr;
   typedef boost::shared_ptr<IBasicEvent> IBasicEventPtr;
   typedef boost::shared_ptr<IGate> IGatePtr;
@@ -183,6 +181,9 @@ class IGate : public Node {
   ///
   /// @param[in] type The type of this gate.
   explicit IGate(const GateType& type);
+
+  /// Destructs parent information from children.
+  ~IGate() { IGate::EraseAllChildren(); }
 
   /// @returns Type of this gate.
   inline const GateType& type() const { return type_; }
@@ -223,16 +224,6 @@ class IGate : public Node {
   inline const boost::unordered_map<int, ConstantPtr>&
       constant_children() const {
     return constant_children_;
-  }
-
-  /// Directly copies children from another gate.
-  ///
-  /// @param[in] gate The gate which children will be copied.
-  inline void CopyChildren(const IGatePtr& gate) {
-    children_ = gate->children_;
-    gate_children_ = gate->gate_children_;
-    basic_event_children_ = gate->basic_event_children_;
-    constant_children_ = gate->constant_children_;
   }
 
   /// @returns The state of this gate.
@@ -332,12 +323,14 @@ class IGate : public Node {
   /// @returns true if the addition is successful with a normal final state.
   bool JoinNullGate(int index);
 
-  /// Clears all the children of this gate.
-  inline void EraseAllChildren() {
-    children_.clear();
-    gate_children_.clear();
-    basic_event_children_.clear();
-    constant_children_.clear();
+  /// Directly copies children from another gate. This is a helper function
+  /// for initialization of gates' copies.
+  ///
+  /// @param[in] gate The gate which children will be copied.
+  inline void CopyChildren(const IGatePtr& gate) {
+    assert(children_.empty());
+    IGate::AddChild(gate->index(), gate);  // This is a hack to keep the parent
+    IGate::JoinGate(gate);                 // information updated.
   }
 
   /// Removes a child from the children container. The passed child index
@@ -348,14 +341,25 @@ class IGate : public Node {
     assert(child != 0);
     assert(children_.count(child));
     children_.erase(child);
+    NodePtr node;
     if (gate_children_.count(child)) {
+      node = gate_children_.find(child)->second;
       gate_children_.erase(child);
     } else if (constant_children_.count(child)) {
+      node = constant_children_.find(child)->second;
       constant_children_.erase(child);
     } else {
+      node = basic_event_children_.find(child)->second;
       assert(basic_event_children_.count(child));
       basic_event_children_.erase(child);
     }
+    assert(node->parents_.count(this));
+    node->parents_.erase(this);
+  }
+
+  /// Clears all the children of this gate.
+  inline void EraseAllChildren() {
+    while (!children_.empty()) IGate::EraseChild(*children_.rbegin());
   }
 
   /// Sets the state of this gate to null and clears all its children.
@@ -363,10 +367,7 @@ class IGate : public Node {
   inline void Nullify() {
     assert(state_ == kNormalState);
     state_ = kNullState;
-    children_.clear();
-    gate_children_.clear();
-    basic_event_children_.clear();
-    constant_children_.clear();
+    IGate::EraseAllChildren();
   }
 
   /// Sets the state of this gate to unity and clears all its children.
@@ -374,10 +375,7 @@ class IGate : public Node {
   inline void MakeUnity() {
     assert(state_ == kNormalState);
     state_ = kUnityState;
-    children_.clear();
-    gate_children_.clear();
-    basic_event_children_.clear();
-    constant_children_.clear();
+    IGate::EraseAllChildren();
   }
 
   /// Turns this gate's module flag on. This should be one time operation.
@@ -387,6 +385,9 @@ class IGate : public Node {
   }
 
  private:
+  IGate(const IGate&);
+  IGate& operator=(const IGate&);
+
   /// Process an addition of a complement of an existing child.
   ///
   /// @param[in] index Positive or negative index of the child.
