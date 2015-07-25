@@ -32,14 +32,6 @@ class Node {
 
   virtual ~Node() = 0;  ///< Abstract class.
 
-  /// Sets the next index for new nodes. The indices will be sequential
-  /// starting from the given index.
-  ///
-  /// @param[in] index The starting number for indexation.
-  ///
-  /// @warning The setting is expected to be only once. It may mess up indices.
-  inline void next_index(int index) { next_index_ = index; }
-
   /// @returns The index of this node.
   inline int index() const { return index_; }
 
@@ -176,6 +168,10 @@ enum State {
 /// any complex analysis is done.
 class IGate : public Node {
  public:
+  typedef boost::shared_ptr<Constant> ConstantPtr;
+  typedef boost::shared_ptr<IBasicEvent> IBasicEventPtr;
+  typedef boost::shared_ptr<IGate> IGatePtr;
+
   /// Creates an indexed gate with its unique index.
   ///
   /// @param[in] type The type of this gate.
@@ -213,10 +209,12 @@ class IGate : public Node {
   /// @returns children of this gate.
   inline const std::set<int>& children() const { return children_; }
 
-  /// Directly assigns children for this gate.
+  /// Directly copies children from another gate.
   ///
-  /// @param[in] children A new set of children for this gate.
-  inline void children(const std::set<int>& children) { children_ = children; }
+  /// @param[in] gate The gate which children will be copied.
+  inline void CopyChildren(const IGatePtr& gate) {
+    children_ = gate->children();
+  }
 
   /// @returns The state of this gate.
   inline const State& state() const { return state_; }
@@ -246,6 +244,10 @@ class IGate : public Node {
   ///          case the state is nulled or becomes unity.
   bool AddChild(int child);
 
+  bool AddChild(int child, const IGatePtr& gate);
+  bool AddChild(int child, const IBasicEventPtr& basic_event);
+  bool AddChild(int child, const ConstantPtr& constant);
+
   /// Swaps an existing child to a new child. Mainly used for
   /// changing the logic of this gate or complementing the child.
   ///
@@ -267,14 +269,24 @@ class IGate : public Node {
   void InvertChild(int existing_child);
 
   /// Adds children of a child gate to this gate. This is a helper function for
-  /// gate coalescing. The child gate of the same type is removed from the
-  /// children list.
+  /// gate coalescing. The child gate of the same logic is removed from the
+  /// children list. The sign of the child gate is expected to be positive.
   ///
   /// @param[in] child_gate The gate which children to be added to this gate.
   ///
   /// @returns false if the final set is null or unity.
   /// @returns true if the addition is successful with a normal final state.
   bool JoinGate(IGate* child_gate);
+
+  /// Swaps a single child of a NULL type child gate. This is separate from
+  /// other coalescing functions because this function takes into account the
+  /// sign of the child.
+  ///
+  /// @param[in] index Positive or negative index of the child gate.
+  ///
+  /// @returns false if the final set is null or unity.
+  /// @returns true if the addition is successful with a normal final state.
+  bool JoinNullGate(int index);
 
   /// Clears all the children of this gate.
   inline void EraseAllChildren() { children_.clear(); }
@@ -311,11 +323,25 @@ class IGate : public Node {
   }
 
  private:
+  /// Process an addition of a complement of an existing child.
+  ///
+  /// @param[in] index Positive or negative index of the child.
+  ///
+  /// @returns false if the final set is null or unity.
+  /// @returns true if the addition is successful with a normal final state.
+  bool ProcessComplementChild(int index);
+
   GateType type_;  ///< Type of this gate.
   State state_;  ///< Indication if this gate's state is normal, null, or unity.
   int vote_number_;  ///< Vote number for ATLEAST gate.
-  std::set<int> children_;  ///< Children of the gate.
   bool module_;  ///< Indication of an independent module gate.
+  std::set<int> children_;  ///< Children of the gate.
+  /// Children that are gates.
+  boost::unordered_map<int, IGatePtr> gate_children_;
+  /// Children that are basic events.
+  boost::unordered_map<int, IBasicEventPtr> basic_event_children_;
+  /// Children that are constant like house events.
+  boost::unordered_map<int, ConstantPtr> constant_children_;
 };
 
 class BasicEvent;

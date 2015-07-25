@@ -401,7 +401,7 @@ void Preprocessor::PropagateComplements(const IGatePtr& gate,
             fault_tree_->CreateGate(complement_type);
         gate_complements->insert(std::make_pair(-*it,
                                                 complement_gate->index()));
-        complement_gate->children(child_gate->children());
+        complement_gate->CopyChildren(child_gate);
         complement_gate->InvertChildren();
         child_gate = complement_gate;  // Needed for further propagation.
       }
