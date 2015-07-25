@@ -15,18 +15,14 @@ class PreprocessorTest : public ::testing::Test {
   typedef boost::shared_ptr<IGate> IGatePtr;
 
   virtual void SetUp() {
-    fault_tree = new IndexedFaultTree(-1);  // The index is defined by tests.
-    prep = new Preprocessor(fault_tree);
   }
 
   virtual void TearDown() {
-    delete fault_tree;
-    delete prep;
   }
 
   bool ProcessConstantChild(const IGatePtr& gate, int child,
                             bool state, std::vector<int>* to_erase) {
-    return prep->ProcessConstantChild(gate, child, state, to_erase);
+    return false;
   }
 
   // Members for tests.

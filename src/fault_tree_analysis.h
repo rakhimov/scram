@@ -15,6 +15,8 @@
 
 namespace scram {
 
+class IndexedFaultTree;
+
 /// @class FaultTreeAnalysis
 /// Fault tree analysis functionality. The analysis must be done on a validated
 /// and fully initialized fault trees. After initialization of the analysis, the
@@ -74,9 +76,7 @@ class FaultTreeAnalysis {
     return inter_events_;
   }
 
-  /// @returns The container of all basic events of this tree. If CCF analysis
-  ///          is requested, this container includes the basic events that
-  ///          represent common cause failure.
+  /// @returns The container of all basic events of this tree.
   ///
   /// @warning If the fault tree has changed, this is only a snapshot of the
   ///          past
@@ -151,20 +151,13 @@ class FaultTreeAnalysis {
   /// may assume that marks are empty.
   void CleanMarks();
 
-  /// Picks basic events created by CCF groups.
-  ///
-  /// param[out] basic_events Container for newly created basic events.
-  void GatherCcfBasicEvents(
-      boost::unordered_map<std::string, BasicEventPtr>* basic_events);
-
   /// Converts minimal cut sets from indices to strings for future reporting.
   /// This function also detects basic events in minimal cut sets.
   ///
   /// @param[in] imcs Min cut sets with indices of events.
-  void SetsToString(const std::vector< std::set<int> >& imcs);
-
-  std::vector<BasicEventPtr> int_to_basic_;  ///< Indices to basic events.
-  boost::unordered_map<std::string, int> all_to_int_;  ///< All event indices.
+  /// @param[in] ft Indexed fault tree with basic event indices and pointers.
+  void SetsToString(const std::vector< std::set<int> >& imcs,
+                    const IndexedFaultTree* ft);
 
   /// Limit on the size of the minimal cut sets for performance reasons.
   int limit_order_;

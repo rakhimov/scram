@@ -12,18 +12,7 @@ Preprocessor::Preprocessor(IndexedFaultTree* fault_tree)
     : fault_tree_(fault_tree),
       top_event_sign_(1) {}
 
-void Preprocessor::PropagateConstants(const std::set<int>& true_house_events,
-                                      const std::set<int>& false_house_events) {
-  if (true_house_events.empty() && false_house_events.empty()) return;
-  Preprocessor::ClearGateVisits();
-  IGatePtr top = fault_tree_->top_event();
-  LOG(DEBUG2) << "Propagating constants in a fault tree.";
-  Preprocessor::PropagateConstants(true_house_events, false_house_events, top);
-  LOG(DEBUG2) << "Constant propagation is done.";
-}
-
-void Preprocessor::ProcessIndexedFaultTree(int num_basic_events) {
-  Preprocessor::ClearGateVisits();
+void Preprocessor::ProcessIndexedFaultTree() {
   IGatePtr top = fault_tree_->top_event();
   LOG(DEBUG2) << "Propagating constants in a fault tree.";
   Preprocessor::PropagateConstants(top);
@@ -98,7 +87,7 @@ void Preprocessor::ProcessIndexedFaultTree(int num_basic_events) {
   // All gates are positive, and each gate has at least two children.
   if (top->children().empty()) return;  // This is null or unity.
   // Detect original modules for processing.
-  Preprocessor::DetectModules(num_basic_events);
+  Preprocessor::DetectModules(fault_tree_->basic_events().size());
   LOG(DEBUG2) << "Finished preprocessing the fault tree in " << DUR(prep_time);
 }
 
@@ -241,40 +230,6 @@ void Preprocessor::NormalizeAtleastGate(const IGatePtr& gate) {
 
   Preprocessor::NormalizeAtleastGate(grand_child);
   Preprocessor::NormalizeAtleastGate(second_child);
-}
-
-void Preprocessor::PropagateConstants(const std::set<int>& true_house_events,
-                                      const std::set<int>& false_house_events,
-                                      const IGatePtr& gate) {
-  if (gate->Visited()) return;
-  gate->Visit(1);  // Time does not matter.
-  std::set<int>::const_iterator it;
-  std::vector<int> to_erase;  // Erase children later to keep iterator is valid.
-  for (it = gate->children().begin(); it != gate->children().end(); ++it) {
-    assert(*it > 0);
-    bool state = false;  // Null or Unity case. Null indication by default.
-    if (fault_tree_->IsGateIndex(*it)) {  // Processing a gate child.
-      // Depth-first traversal.
-      IGatePtr child_gate = fault_tree_->GetGate(*it);
-      Preprocessor::PropagateConstants(true_house_events, false_house_events,
-                                       child_gate);
-      State gate_state = child_gate->state();
-      if (gate_state == kNormalState) continue;
-      state = gate_state == kNullState ? false : true;
-
-    } else {  // Processing a primary event child.
-      if (false_house_events.count(*it)) {
-        state = false;
-      } else if (true_house_events.count(*it)) {
-        state = true;
-      } else {
-        continue;  // This must be a basic event child. It is not constant.
-      }
-    }
-    if (Preprocessor::ProcessConstantChild(gate, *it, state, &to_erase))
-      return;  // Early exit because the parent's state turned to NULL or UNITY.
-  }
-  Preprocessor::RemoveChildren(gate, to_erase);
 }
 
 void Preprocessor::PropagateConstants(const IGatePtr& gate) {
@@ -663,14 +618,18 @@ void Preprocessor::FindModules(
     case kAndGate:
       Preprocessor::CreateNewModule(gate, non_shared_children);
 
+      LOG(DEBUG4) << "Filtering modular children.";
       Preprocessor::FilterModularChildren(visit_basics,
                                           *visited_gates,
                                           &modular_children,
                                           &non_modular_children);
       assert(modular_children.size() != 1);  // One modular child is non-shared.
       std::vector<std::vector<int> > groups;
-      Preprocessor::GroupModularChildren(visit_basics, *visited_gates,
-                                         modular_children, &groups);
+      LOG(DEBUG4) << "Grouping modular children is Disabled.";
+      groups.push_back(modular_children);
+      // Preprocessor::GroupModularChildren(visit_basics, *visited_gates,
+      //                                    modular_children, &groups);
+      LOG(DEBUG4) << "Creating new modules from modular children.";
       Preprocessor::CreateNewModules(gate, modular_children, groups);
   }
 }

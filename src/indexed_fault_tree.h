@@ -35,10 +35,8 @@ class Node {
   /// @returns The index of this node.
   inline int index() const { return index_; }
 
-  /// Sets index of the node.
-  /// This is a temporary hack for refactoring the old code.
-  /// @todo Remove
-  inline void index(int index) { index_ = index; }
+  /// Resets the starting index.
+  inline static void ResetIndex() { next_index_ = 1e6; }
 
   /// @returns parents of this gate.
   inline const std::set<int>& parents() { return parents_; }
@@ -136,7 +134,11 @@ class Constant : public Node {
 /// events.
 class IBasicEvent : public Node {
  public:
+  /// Creates a new indexed basic event with its index assigned sequentially.
   IBasicEvent();
+
+  /// Resets the starting index for basic events.
+  inline static void ResetIndex() { next_basic_event_ = 1; }
 
  private:
   static int next_basic_event_;  ///< The next index for the basic event.
@@ -415,11 +417,6 @@ class IndexedFaultTree {
   /// @param[in] ccf Incorporation of ccf gates and events for ccf groups.
   explicit IndexedFaultTree(const GatePtr& root, bool ccf = false);
 
-  /// Constructs a simplified fault tree with indices of nodes.
-  ///
-  /// @param[in] top_event_id The index of the top event of this tree.
-  explicit IndexedFaultTree(int top_event_id);
-
   /// @returns The index of the top gate of this fault tree.
   inline int top_event_index() const { return top_event_index_; }
 
@@ -434,20 +431,10 @@ class IndexedFaultTree {
     return indexed_gates_.find(top_event_index_)->second;
   }
 
-  /// Creates indexed gates with basic and house event indices as children.
-  /// Nested gates are flattened and given new indices.
-  /// It is assumed that indices are sequential starting from 1.
-  ///
-  /// @param[in] int_to_inter Container of gates and their indices including
-  ///                         the top gate.
-  /// @param[in] ccf_basic_to_gates CCF basic events that are converted to
-  ///                               gates.
-  /// @param[in] all_to_int Container of all events in this tree to index
-  ///                       children of the gates.
-  void InitiateIndexedFaultTree(
-      const boost::unordered_map<int, GatePtr>& int_to_inter,
-      const std::map<std::string, int>& ccf_basic_to_gates,
-      const boost::unordered_map<std::string, int>& all_to_int);
+  /// @returns Indexed basic event as initialized in this fault tree.
+  inline const std::vector<BasicEventPtr>& basic_events() const {
+    return basic_events_;
+  }
 
   /// Helper function to map the results of indexation to the original basic
   /// events. This function, for example, helps transform minimal cut sets with
@@ -456,7 +443,7 @@ class IndexedFaultTree {
   /// @param[in] index Positive index of the basic event.
   ///
   /// @returns Pointer to the original basic event from its index.
-  inline const BasicEventPtr& GetBasicEvent(int index) {
+  inline const BasicEventPtr& GetBasicEvent(int index) const {
     assert(index > 0);
     assert(index <= basic_events_.size());
     return basic_events_[index - 1];
@@ -527,20 +514,6 @@ class IndexedFaultTree {
       const FormulaPtr& formula,
       bool ccf,
       boost::unordered_map<std::string, NodePtr>* id_to_index);
-
-  /// Processes a formula into new indexed gates.
-  ///
-  /// @param[in] formula The formula to be converted into a gate.
-  /// @param[in] ccf_basic_to_gates CCF basic events that are converted to
-  ///                               gates.
-  /// @param[in] all_to_int Container of all events in this tree to index
-  ///                       children of the gates.
-  ///
-  /// @returns Pointer to the newly created indexed gate.
-  IGatePtr ProcessFormula(
-      const FormulaPtr& formula,
-      const std::map<std::string, int>& ccf_basic_to_gates,
-      const boost::unordered_map<std::string, int>& all_to_int);
 
   int top_event_index_;  ///< The index of the top gate of this tree.
   const int kGateIndex_;  ///< The starting gate index for gate identification.

@@ -33,22 +33,10 @@ class Preprocessor {
   /// @param[in] fault_tree The fault tree to be preprocessed.
   explicit Preprocessor(IndexedFaultTree* fault_tree);
 
-  /// Remove all house events by propagating them as constants in Boolean
-  /// equation.
-  ///
-  /// @param[in] true_house_events House events with true state.
-  /// @param[in] false_house_events House events with false state.
-  void PropagateConstants(const std::set<int>& true_house_events,
-                          const std::set<int>& false_house_events);
-
   /// Performs processing of a fault tree to simplify the structure to
   /// normalized (OR/AND gates only), modular, positive-gate-only indexed fault
   /// tree.
-  ///
-  /// @param[in] num_basic_events The number of basic events. This information
-  ///                             is needed to optimize the tree traversal
-  ///                             with certain expectation.
-  void ProcessIndexedFaultTree(int num_basic_events);
+  void ProcessIndexedFaultTree();
 
  private:
   typedef boost::shared_ptr<IGate> IGatePtr;
@@ -97,20 +85,6 @@ class Preprocessor {
   ///
   /// @param[in,out] gate The atleast gate to normalize.
   void NormalizeAtleastGate(const IGatePtr& gate);
-
-  /// Remove all house events from a given gate according to the Boolean logic.
-  /// The structure of the tree should not be pre-processed before this
-  /// operation; that is, this is the first operation that is done after
-  /// creation of an indexed fault tree.
-  /// After this function, there should not be any unity or null gates because
-  /// of house events.
-  ///
-  /// @param[in] true_house_events House events with true state.
-  /// @param[in] false_house_events House events with false state.
-  /// @param[in,out] gate The final resultant processed gate.
-  void PropagateConstants(const std::set<int>& true_house_events,
-                          const std::set<int>& false_house_events,
-                          const IGatePtr& gate);
 
   /// Remove all house events from a given gate according to the Boolean logic.
   /// The structure of the tree should not be pre-processed before this
