@@ -8,7 +8,4 @@ using namespace scram;
 TEST_F(PreprocessorTest, DISABLED_ProcessConstantChild) {
   std::vector<int> to_erase;
   IGatePtr gate(new IGate(kAndGate));
-  gate->AddChild(2);
-  gate->AddChild(3);
-  ProcessConstantChild(gate, 2, false, &to_erase);
 }

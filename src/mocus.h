@@ -134,9 +134,9 @@ class Mocus {
 
   /// Traverses the fault tree to convert gates into simple gates.
   ///
-  /// @param[in] gate_index The index of a gate to start with.
+  /// @param[in] gate The gate to start with.
   /// @param[in,out] processed_gates Gates turned into simple gates.
-  void CreateSimpleTree(int gate_index,
+  void CreateSimpleTree(const IGatePtr& gate,
                         std::map<int, SimpleGatePtr>* processed_gates);
 
   /// Finds minimal cut sets of a simple gate.

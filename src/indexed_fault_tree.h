@@ -229,7 +229,10 @@ class IGate : public Node {
   ///
   /// @param[in] gate The gate which children will be copied.
   inline void CopyChildren(const IGatePtr& gate) {
-    children_ = gate->children();
+    children_ = gate->children_;
+    gate_children_ = gate->gate_children_;
+    basic_event_children_ = gate->basic_event_children_;
+    constant_children_ = gate->constant_children_;
   }
 
   /// @returns The state of this gate.
@@ -238,27 +241,6 @@ class IGate : public Node {
   /// @returns true if this gate is set to be a module.
   /// @returns false if it is not yet set to be a module.
   inline bool IsModule() const { return module_; }
-
-  /// This function is used to initiate this gate with children.
-  /// It is assumed that children are passed in ascending order from another
-  /// children set.
-  ///
-  /// @param[in] child A positive or negative index of a child.
-  void InitiateWithChild(int child);
-
-  /// Adds a child to this gate. Before adding the child, the existing
-  /// children are checked for complements. If there is a complement,
-  /// the gate changes its state and clears its children. This functionality
-  /// only works with OR and AND gates.
-  ///
-  /// @param[in] child A positive or negative index of a child.
-  ///
-  /// @returns false if there is a complement of the child being added.
-  /// @returns true if the addition of this child is successful.
-  ///
-  /// @warning This function does not indicate error for future additions in
-  ///          case the state is nulled or becomes unity.
-  bool AddChild(int child);
 
   /// Adds a child gate to this gate. Before adding the child, the existing
   /// children are checked for complements. If there is a complement,
@@ -302,15 +284,23 @@ class IGate : public Node {
   ///          case the state is nulled or becomes unity.
   bool AddChild(int child, const ConstantPtr& constant);
 
-  /// Swaps an existing child to a new child. Mainly used for
-  /// changing the logic of this gate or complementing the child.
+  /// Transfers this gates's child to another gate.
   ///
-  /// @param[in] existing_child An existing child to get swapped.
-  /// @param[in] new_child A new child.
+  /// @param[in] child Positive or negative index of the child.
+  /// @param[in,out] recipient A new parent for the child.
   ///
-  /// @warning If there is an iterator for the children set, then
-  ///          it may become unusable because the children set is manipulated.
-  bool SwapChild(int existing_child, int new_child);
+  /// @returns false if there final state of the recipient is normal.
+  /// @returns true if the recipient becomes constant due to a complement child.
+  bool TransferChild(int child, const IGatePtr& recipient);
+
+  /// Shares this gates's child with another gate.
+  ///
+  /// @param[in] child Positive or negative index of the child.
+  /// @param[in,out] recipient Another parent for the child.
+  ///
+  /// @returns false if there final state of the recipient is normal.
+  /// @returns true if the recipient becomes constant due to a complement child.
+  bool ShareChild(int child, const IGatePtr& recipient);
 
   /// Makes all children complement of themselves.
   /// This is a helper function to propagate a complement gate and apply
@@ -330,7 +320,7 @@ class IGate : public Node {
   ///
   /// @returns false if the final set is null or unity.
   /// @returns true if the addition is successful with a normal final state.
-  bool JoinGate(IGate* child_gate);
+  bool JoinGate(const IGatePtr& child_gate);
 
   /// Swaps a single child of a NULL type child gate. This is separate from
   /// other coalescing functions because this function takes into account the
@@ -343,15 +333,29 @@ class IGate : public Node {
   bool JoinNullGate(int index);
 
   /// Clears all the children of this gate.
-  inline void EraseAllChildren() { children_.clear(); }
+  inline void EraseAllChildren() {
+    children_.clear();
+    gate_children_.clear();
+    basic_event_children_.clear();
+    constant_children_.clear();
+  }
 
   /// Removes a child from the children container. The passed child index
   /// must be in this gate's children container and initialized.
   ///
   /// @param[in] child The positive or negative index of the existing child.
   inline void EraseChild(int child) {
+    assert(child != 0);
     assert(children_.count(child));
     children_.erase(child);
+    if (gate_children_.count(child)) {
+      gate_children_.erase(child);
+    } else if (constant_children_.count(child)) {
+      constant_children_.erase(child);
+    } else {
+      assert(basic_event_children_.count(child));
+      basic_event_children_.erase(child);
+    }
   }
 
   /// Sets the state of this gate to null and clears all its children.
@@ -360,6 +364,9 @@ class IGate : public Node {
     assert(state_ == kNormalState);
     state_ = kNullState;
     children_.clear();
+    gate_children_.clear();
+    basic_event_children_.clear();
+    constant_children_.clear();
   }
 
   /// Sets the state of this gate to unity and clears all its children.
@@ -368,6 +375,9 @@ class IGate : public Node {
     assert(state_ == kNormalState);
     state_ = kUnityState;
     children_.clear();
+    gate_children_.clear();
+    basic_event_children_.clear();
+    constant_children_.clear();
   }
 
   /// Turns this gate's module flag on. This should be one time operation.
@@ -417,19 +427,13 @@ class IndexedFaultTree {
   /// @param[in] ccf Incorporation of ccf gates and events for ccf groups.
   explicit IndexedFaultTree(const GatePtr& root, bool ccf = false);
 
-  /// @returns The index of the top gate of this fault tree.
-  inline int top_event_index() const { return top_event_index_; }
-
-  /// Sets the index for the top gate.
-  ///
-  /// @param[in] index Positive index of the top gate.
-  inline void top_event_index(int index) { top_event_index_ = index; }
-
   /// @returns The current top gate of the fault tree.
-  inline const IGatePtr& top_event() const {
-    assert(indexed_gates_.count(top_event_index_));
-    return indexed_gates_.find(top_event_index_)->second;
-  }
+  inline const IGatePtr& top_event() const { return top_event_; }
+
+  /// Sets the the top gate. This function is helpful for preprocessing.
+  ///
+  /// @param[in] gate Replacement top gate.
+  inline void top_event(const IGatePtr& gate) { top_event_ = gate; }
 
   /// @returns Indexed basic event as initialized in this fault tree.
   inline const std::vector<BasicEventPtr>& basic_events() const {
@@ -447,51 +451,6 @@ class IndexedFaultTree {
     assert(index > 0);
     assert(index <= basic_events_.size());
     return basic_events_[index - 1];
-  }
-
-  /// Determines the type of the index.
-  ///
-  /// @param[in] index Positive index.
-  ///
-  /// @returns true if the given index belongs to an indexed gate.
-  ///
-  /// @warning The actual existance of the indexed gate is not guaranteed.
-  inline bool IsGateIndex(int index) const {
-    assert(index > 0);
-    return index >= kGateIndex_;
-  }
-
-  /// Adds a new indexed gate into the indexed fault tree's gate container.
-  ///
-  /// @param[in] gate A new indexed gate.
-  inline void AddGate(const IGatePtr& gate) {
-    assert(!indexed_gates_.count(gate->index()));
-    indexed_gates_.insert(std::make_pair(gate->index(), gate));
-  }
-
-  /// Commonly used function to get indexed gates from indices.
-  ///
-  /// @param[in] index Positive index of a gate.
-  ///
-  /// @returns The pointer to the requested indexed gate.
-  inline const IGatePtr& GetGate(int index) const {
-    assert(index > 0);
-    assert(index >= kGateIndex_);
-    assert(indexed_gates_.count(index));
-    return indexed_gates_.find(index)->second;
-  }
-
-  /// Creates a new indexed gate. The gate is added to the fault tree container.
-  /// The index for the new gates are assigned sequentially and guaranteed to
-  /// be unique.
-  ///
-  /// @param[in] type The type of the new gate.
-  ///
-  /// @returns Pointer to the newly created gate.
-  inline IGatePtr CreateGate(const GateType& type) {
-    IGatePtr gate(new IGate(type));
-    indexed_gates_.insert(std::make_pair(gate->index(), gate));
-    return gate;
   }
 
  private:
@@ -515,10 +474,7 @@ class IndexedFaultTree {
       bool ccf,
       boost::unordered_map<std::string, NodePtr>* id_to_index);
 
-  int top_event_index_;  ///< The index of the top gate of this tree.
-  const int kGateIndex_;  ///< The starting gate index for gate identification.
-  /// All gates of this tree including newly created ones.
-  boost::unordered_map<int, IGatePtr> indexed_gates_;
+  IGatePtr top_event_;  ///< The top gate of this tree.
   std::vector<BasicEventPtr> basic_events_;  ///< Mapping for basic events.
 };
 

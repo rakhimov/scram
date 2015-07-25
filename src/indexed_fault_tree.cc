@@ -36,25 +36,6 @@ IGate::IGate(const GateType& type)
       vote_number_(-1),
       module_(false) {}
 
-void IGate::InitiateWithChild(int child) {
-  assert(child != 0);
-  assert(state_ == kNormalState);
-  children_.insert(children_.end(), child);
-}
-
-bool IGate::AddChild(int child) {
-  assert(type_ == kAndGate || type_ == kOrGate);  // Must be normalized.
-  assert(child != 0);
-  assert(state_ == kNormalState);
-  if (children_.count(-child)) {
-    state_ = type_ == kAndGate ? kNullState : kUnityState;
-    children_.clear();
-    return false;
-  }
-  children_.insert(child);
-  return true;
-}
-
 bool IGate::AddChild(int child, const IGatePtr& gate) {
   assert(child != 0);
   assert(std::abs(child) == gate->index());
@@ -63,7 +44,7 @@ bool IGate::AddChild(int child, const IGatePtr& gate) {
   if (type_ == kXorGate) assert(children_.size() < 2);
   if (children_.count(-child)) return IGate::ProcessComplementChild(child);
   children_.insert(child);
-  gate_children_.insert(std::make_pair(gate->index(), gate));
+  gate_children_.insert(std::make_pair(child, gate));
   return true;
 }
 
@@ -75,8 +56,7 @@ bool IGate::AddChild(int child, const IBasicEventPtr& basic_event) {
   if (type_ == kXorGate) assert(children_.size() < 2);
   if (children_.count(-child)) return IGate::ProcessComplementChild(child);
   children_.insert(child);
-  basic_event_children_.insert(std::make_pair(basic_event->index(),
-                                              basic_event));
+  basic_event_children_.insert(std::make_pair(child, basic_event));
   return true;
 }
 
@@ -88,38 +68,89 @@ bool IGate::AddChild(int child, const ConstantPtr& constant) {
   if (type_ == kXorGate) assert(children_.size() < 2);
   if (children_.count(-child)) return IGate::ProcessComplementChild(child);
   children_.insert(child);
-  constant_children_.insert(std::make_pair(constant->index(), constant));
+  constant_children_.insert(std::make_pair(child, constant));
   return true;
 }
 
-bool IGate::SwapChild(int existing_child, int new_child) {
-  assert(children_.count(existing_child));
-  children_.erase(existing_child);
-  return IGate::AddChild(new_child);
+bool IGate::TransferChild(int child, const IGatePtr& recipient) {
+  assert(child != 0);
+  assert(children_.count(child));
+  children_.erase(child);
+  bool ret = true;  // The normal state of the recipient.
+  if (gate_children_.count(child)) {
+    ret = recipient->AddChild(child, gate_children_.find(child)->second);
+    gate_children_.erase(child);
+  } else if (basic_event_children_.count(child)) {
+    ret = recipient->AddChild(child, basic_event_children_.find(child)->second);
+    basic_event_children_.erase(child);
+  } else {
+    assert(constant_children_.count(child));
+    ret = recipient->AddChild(child, constant_children_.find(child)->second);
+    constant_children_.erase(child);
+  }
+  return ret;
+}
+
+bool IGate::ShareChild(int child, const IGatePtr& recipient) {
+  assert(child != 0);
+  assert(children_.count(child));
+  bool ret = true;  // The normal state of the recipient.
+  if (gate_children_.count(child)) {
+    ret = recipient->AddChild(child, gate_children_.find(child)->second);
+  } else if (basic_event_children_.count(child)) {
+    ret = recipient->AddChild(child, basic_event_children_.find(child)->second);
+  } else {
+    assert(constant_children_.count(child));
+    ret = recipient->AddChild(child, constant_children_.find(child)->second);
+  }
+  return ret;
 }
 
 void IGate::InvertChildren() {
-  std::set<int> inverted_children;
+  std::set<int> children(children_);  // Not to mess the iterator.
   std::set<int>::iterator it;
-  for (it = children_.begin(); it != children_.end(); ++it) {
-    inverted_children.insert(inverted_children.begin(), -*it);
+  for (it = children.begin(); it != children.end(); ++it) {
+    IGate::InvertChild(*it);
   }
-  children_ = inverted_children;
 }
 
 void IGate::InvertChild(int existing_child) {
   assert(children_.count(existing_child));
   children_.erase(existing_child);
   children_.insert(-existing_child);
+  if (gate_children_.count(existing_child)) {
+    IGatePtr child = gate_children_.find(existing_child)->second;
+    gate_children_.erase(existing_child);
+    gate_children_.insert(std::make_pair(-existing_child, child));
+  } else if (basic_event_children_.count(existing_child)) {
+    IBasicEventPtr child = basic_event_children_.find(existing_child)->second;
+    basic_event_children_.erase(existing_child);
+    basic_event_children_.insert(std::make_pair(-existing_child, child));
+  } else {
+    ConstantPtr child = constant_children_.find(existing_child)->second;
+    constant_children_.erase(existing_child);
+    constant_children_.insert(std::make_pair(-existing_child, child));
+  }
 }
 
-bool IGate::JoinGate(IGate* child_gate) {
-  assert(children_.count(child_gate->index()));
+bool IGate::JoinGate(const IGatePtr& child_gate) {
+  assert(children_.count(child_gate->index()));  // Positive child only.
   children_.erase(child_gate->index());
-  std::set<int>::const_iterator it;
-  for (it = child_gate->children_.begin(); it != child_gate->children_.end();
-       ++it) {
-    if (!IGate::AddChild(*it)) return false;
+  gate_children_.erase(child_gate->index());
+  boost::unordered_map<int, IGatePtr>::const_iterator it_g;
+  for (it_g = child_gate->gate_children_.begin();
+       it_g != child_gate->gate_children_.end(); ++it_g) {
+    if (!IGate::AddChild(it_g->first, it_g->second)) return false;
+  }
+  boost::unordered_map<int, IBasicEventPtr>::const_iterator it_b;
+  for (it_b = child_gate->basic_event_children_.begin();
+       it_b != child_gate->basic_event_children_.end(); ++it_b) {
+    if (!IGate::AddChild(it_b->first, it_b->second)) return false;
+  }
+  boost::unordered_map<int, ConstantPtr>::const_iterator it_c;
+  for (it_c = child_gate->constant_children_.begin();
+       it_c != child_gate->constant_children_.end(); ++it_c) {
+    if (!IGate::AddChild(it_c->first, it_c->second)) return false;
   }
   return true;
 }
@@ -130,8 +161,8 @@ bool IGate::JoinNullGate(int index) {
   assert(gate_children_.count(index));
 
   children_.erase(index);
-  IGatePtr child_gate = gate_children_.find(std::abs(index))->second;
-  gate_children_.erase(std::abs(index));
+  IGatePtr child_gate = gate_children_.find(index)->second;
+  gate_children_.erase(index);
 
   assert(child_gate->type_ == kNullGate);
   assert(child_gate->children_.size() == 1);
@@ -187,16 +218,12 @@ const std::map<std::string, GateType> IndexedFaultTree::kStringToType_ =
                               ("not", kNotGate) ("nand", kNandGate)
                               ("nor", kNorGate) ("null", kNullGate);
 
-IndexedFaultTree::IndexedFaultTree(const GatePtr& root, bool ccf)
-    : kGateIndex_(1e6) {
+IndexedFaultTree::IndexedFaultTree(const GatePtr& root, bool ccf) {
   Node::ResetIndex();
   IBasicEvent::ResetIndex();
   boost::unordered_map<std::string, NodePtr> id_to_index;
-  IGatePtr top_event = IndexedFaultTree::ProcessFormula(root->formula(),
-                                                        ccf,
-                                                        &id_to_index);
-  IndexedFaultTree::AddGate(top_event);  /// @todo Remove.
-  top_event_index_ = top_event->index();
+  top_event_ = IndexedFaultTree::ProcessFormula(root->formula(), ccf,
+                                                &id_to_index);
 }
 
 boost::shared_ptr<IGate> IndexedFaultTree::ProcessFormula(
@@ -233,7 +260,6 @@ boost::shared_ptr<IGate> IndexedFaultTree::ProcessFormula(
               ccf_gate->formula(),
               ccf,
               id_to_index);
-          IndexedFaultTree::AddGate(new_gate);  /// @todo Remove.
           parent->AddChild(new_gate->index(), new_gate);
           id_to_index->insert(std::make_pair(basic_event->id(), new_gate));
         } else {
@@ -253,7 +279,6 @@ boost::shared_ptr<IGate> IndexedFaultTree::ProcessFormula(
         IGatePtr new_gate = IndexedFaultTree::ProcessFormula(gate->formula(),
                                                              ccf,
                                                              id_to_index);
-        IndexedFaultTree::AddGate(new_gate);  /// @todo Remove.
         parent->AddChild(new_gate->index(), new_gate);
         id_to_index->insert(std::make_pair(gate->id(), new_gate));
       }
@@ -277,7 +302,6 @@ boost::shared_ptr<IGate> IndexedFaultTree::ProcessFormula(
     IGatePtr new_gate = IndexedFaultTree::ProcessFormula(*it_f, ccf,
                                                          id_to_index);
     parent->AddChild(new_gate->index(), new_gate);
-    IndexedFaultTree::AddGate(new_gate);  /// @todo Remove.
   }
   return parent;
 }

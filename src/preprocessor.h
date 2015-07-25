@@ -152,7 +152,7 @@ class Preprocessor {
   ///                     for a top event to function correctly.
   /// @param[in,out] gate_complements The processed complements of gates.
   void PropagateComplements(const IGatePtr& gate,
-                            std::map<int, int>* gate_complements);
+                            std::map<int, IGatePtr>* gate_complements);
 
   /// Removes child gates of NULL type, which means these child gates have
   /// only one child. That one grandchild is transfered to the parent gate,
