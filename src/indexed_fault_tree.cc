@@ -36,13 +36,6 @@ IGate::IGate(const GateType& type)
       vote_number_(-1),
       module_(false) {}
 
-IGate::IGate(int index, const GateType& type)
-    : Node(index),
-      type_(type),
-      state_(kNormalState),
-      vote_number_(-1),
-      module_(false) {}
-
 void IGate::InitiateWithChild(int child) {
   assert(child != 0);
   assert(state_ == kNormalState);
@@ -196,8 +189,7 @@ const std::map<std::string, GateType> IndexedFaultTree::kStringToType_ =
 
 IndexedFaultTree::IndexedFaultTree(const GatePtr& root, bool ccf)
     : top_event_index_(-1),
-      kGateIndex_(-1),
-      new_gate_index_(-1) {
+      kGateIndex_(1e6) {
   boost::unordered_map<std::string, NodePtr> id_to_index;
   IGatePtr top_event = IndexedFaultTree::ProcessFormula(root->formula(),
                                                         ccf,
@@ -206,20 +198,19 @@ IndexedFaultTree::IndexedFaultTree(const GatePtr& root, bool ccf)
 
 IndexedFaultTree::IndexedFaultTree(int top_event_id)
     : top_event_index_(top_event_id),
-      kGateIndex_(top_event_id),
-      new_gate_index_(0) {}
+      kGateIndex_(top_event_id) {}
 
 void IndexedFaultTree::InitiateIndexedFaultTree(
     const boost::unordered_map<int, GatePtr>& int_to_inter,
     const std::map<std::string, int>& ccf_basic_to_gates,
     const boost::unordered_map<std::string, int>& all_to_int) {
-  // Assume that new ccf_gates are not re-added into general index container.
-  new_gate_index_ = all_to_int.size() + ccf_basic_to_gates.size() + 1;
-
   boost::unordered_map<int, GatePtr>::const_iterator it;
   for (it = int_to_inter.begin(); it != int_to_inter.end(); ++it) {
-    IndexedFaultTree::ProcessFormula(it->first, it->second->formula(),
-                                     ccf_basic_to_gates, all_to_int);
+    IGatePtr gate =
+        IndexedFaultTree::ProcessFormula(it->second->formula(),
+                                         ccf_basic_to_gates, all_to_int);
+    gate->index(it->first);
+    IndexedFaultTree::AddGate(gate);
   }
 }
 
@@ -304,15 +295,14 @@ boost::shared_ptr<IGate> IndexedFaultTree::ProcessFormula(
   return parent;
 }
 
-void IndexedFaultTree::ProcessFormula(
-    int index,
+boost::shared_ptr<IGate> IndexedFaultTree::ProcessFormula(
     const FormulaPtr& formula,
     const std::map<std::string, int>& ccf_basic_to_gates,
     const boost::unordered_map<std::string, int>& all_to_int) {
-  assert(!indexed_gates_.count(index));
   GateType type = kStringToType_.find(formula->type())->second;
-  IGatePtr gate(new IGate(index, type));
+  IGatePtr gate(new IGate(type));
   if (type == kAtleastGate) gate->vote_number(formula->vote_number());
+  assert(!indexed_gates_.count(gate->index()));
 
   typedef boost::shared_ptr<Event> EventPtr;
 
@@ -329,12 +319,13 @@ void IndexedFaultTree::ProcessFormula(
   const std::set<FormulaPtr>* formulas = &formula->formula_args();
   std::set<FormulaPtr>::const_iterator it_f;
   for (it_f = formulas->begin(); it_f != formulas->end(); ++it_f) {
-    int child_index = ++new_gate_index_;
-    IndexedFaultTree::ProcessFormula(child_index, *it_f, ccf_basic_to_gates,
-                                     all_to_int);
-    gate->InitiateWithChild(child_index);
+    IGatePtr child_gate = IndexedFaultTree::ProcessFormula(*it_f,
+                                                           ccf_basic_to_gates,
+                                                           all_to_int);
+    IndexedFaultTree::AddGate(child_gate);
+    gate->InitiateWithChild(child_gate->index());
   }
-  IndexedFaultTree::AddGate(gate);
+  return gate;
 }
 
 }  // namespace scram

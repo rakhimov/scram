@@ -35,6 +35,11 @@ class Node {
   /// @returns The index of this node.
   inline int index() const { return index_; }
 
+  /// Sets index of the node.
+  /// This is a temporary hack for refactoring the old code.
+  /// @todo Remove
+  inline void index(int index) { index_ = index; }
+
   /// @returns parents of this gate.
   inline const std::set<int>& parents() { return parents_; }
 
@@ -176,14 +181,6 @@ class IGate : public Node {
   ///
   /// @param[in] type The type of this gate.
   explicit IGate(const GateType& type);
-
-  /// Creates a gate with its index.
-  ///
-  /// @param[in] index An unique positive index of this gate.
-  /// @param[in] type The type of this gate.
-  ///
-  /// @warning The index is not validated upon instantiation.
-  IGate(int index, const GateType& type);
 
   /// @returns Type of this gate.
   inline const GateType& type() const { return type_; }
@@ -450,7 +447,7 @@ class IndexedFaultTree {
   ///
   /// @returns Pointer to the newly created gate.
   inline IGatePtr CreateGate(const GateType& type) {
-    IGatePtr gate(new IGate(++new_gate_index_, type));
+    IGatePtr gate(new IGate(type));
     indexed_gates_.insert(std::make_pair(gate->index(), gate));
     return gate;
   }
@@ -478,20 +475,20 @@ class IndexedFaultTree {
 
   /// Processes a formula into new indexed gates.
   ///
-  /// @param[in] index The index to be assigned to the new indexed gate.
   /// @param[in] formula The formula to be converted into a gate.
   /// @param[in] ccf_basic_to_gates CCF basic events that are converted to
   ///                               gates.
   /// @param[in] all_to_int Container of all events in this tree to index
   ///                       children of the gates.
-  void ProcessFormula(int index,
-                      const FormulaPtr& formula,
-                      const std::map<std::string, int>& ccf_basic_to_gates,
-                      const boost::unordered_map<std::string, int>& all_to_int);
+  ///
+  /// @returns Pointer to the newly created indexed gate.
+  IGatePtr ProcessFormula(
+      const FormulaPtr& formula,
+      const std::map<std::string, int>& ccf_basic_to_gates,
+      const boost::unordered_map<std::string, int>& all_to_int);
 
   int top_event_index_;  ///< The index of the top gate of this tree.
   const int kGateIndex_;  ///< The starting gate index for gate identification.
-  int new_gate_index_;  ///< Index for a new gate.
   /// All gates of this tree including newly created ones.
   boost::unordered_map<int, IGatePtr> indexed_gates_;
   std::vector<BasicEventPtr> basic_events_;  ///< Mapping for basic events.
