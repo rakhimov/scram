@@ -16,7 +16,16 @@
 namespace scram {
 
 /// @class FaultTreeAnalysis
-/// Fault tree analysis functionality.
+/// Fault tree analysis functionality. The analysis must be done on a validated
+/// and fully initialized fault trees. After initialization of the analysis, the
+/// fault tree under analysis should not change; otherwise, the success of the
+/// analysis is not quaranteed, and the results may be invalid. After the
+/// requested analysis is done, the fault tree can be changed without
+/// restrictions. To conduct a new analysis on the changed fault tree, a new
+/// FaultTreeAnalysis object must be created. In general, rerunning the same
+/// analysis twice will mess up the analysis and corrupt the previous results.
+///
+/// @warning Run analysis only once. One analysis per FaultTreeAnalysis object.
 class FaultTreeAnalysis {
  public:
   typedef boost::shared_ptr<Gate> GatePtr;
@@ -34,6 +43,11 @@ class FaultTreeAnalysis {
   /// @param[in] ccf_analysis Whether or not expand CCF group basic events.
   ///
   /// @throws InvalidArgument One of the parameters is invalid.
+  ///
+  /// @warning If the fault tree structure is changed, this analysis does not
+  ///          incorporate the changed structure. Moreover, the analysis results
+  ///          may get corrupted.
+  /// @warning The gates' visit marks must be clean.
   explicit FaultTreeAnalysis(const GatePtr& root, int limit_order = 20,
                              bool ccf_analysis = false);
 
@@ -42,14 +56,19 @@ class FaultTreeAnalysis {
   /// without its probabilities. Underlying objects may throw errors
   /// if the fault tree has initialization issues. However, there is no
   /// guarantee for that. This function is expected to be called only once.
+  ///
+  /// @warning If the fault tree structure has changed since the construction
+  ///          of the analysis, the analysis will be invalid or fail.
+  /// @warning The gates' visit marks must be clean.
   void Analyze();
 
-  /// @returns The top gate.
+  /// @returns The top gate that is passed to the analysis.
   inline const GatePtr& top_event() const { return top_event_; }
 
   /// @returns The container of intermediate events.
   ///
-  /// @warning The tree must be validated and ready for analysis.
+  /// @warning If the fault tree has changed, this is only a snapshot of the
+  ///          past
   inline const boost::unordered_map<std::string, GatePtr>&
       inter_events() const {
     return inter_events_;
@@ -58,18 +77,27 @@ class FaultTreeAnalysis {
   /// @returns The container of all basic events of this tree. If CCF analysis
   ///          is requested, this container includes the basic events that
   ///          represent common cause failure.
+  ///
+  /// @warning If the fault tree has changed, this is only a snapshot of the
+  ///          past
   inline const boost::unordered_map<std::string, BasicEventPtr>&
       basic_events() const {
     return basic_events_;
   }
 
   /// @returns Basic events that are in some CCF groups.
+  ///
+  /// @warning If the fault tree has changed, this is only a snapshot of the
+  ///          past
   inline const boost::unordered_map<std::string, BasicEventPtr>&
       ccf_events() const {
     return ccf_events_;
   }
 
-  /// @returns The container of house events of this tree.
+  /// @returns The container of house events of the fault tree.
+  ///
+  /// @warning If the fault tree has changed, this is only a snapshot of the
+  ///          past
   inline const boost::unordered_map<std::string, HouseEventPtr>&
       house_events() const {
     return house_events_;

@@ -32,6 +32,14 @@ class Node {
 
   virtual ~Node() = 0;  ///< Abstract class.
 
+  /// Sets the next index for new nodes. The indices will be sequential
+  /// starting from the given index.
+  ///
+  /// @param[in] index The starting number for indexation.
+  ///
+  /// @warning The setting is expected to be only once. It may mess up indices.
+  inline void next_index(int index) { next_index_ = index; }
+
   /// @returns The index of this node.
   inline int index() const { return index_; }
 
@@ -124,10 +132,17 @@ class Constant : public Node {
 };
 
 /// @class IBasicEvent
-/// Indexed basic events in a indexed fault tree.
+/// Indexed basic events in an indexed fault tree.
+/// Indexation of the basic events are special. It starts from 1 and ends with
+/// the number of the basic events in the fault tree. This indexation technique
+/// helps preprocessing and analysis algorithms optimize their work with basic
+/// events.
 class IBasicEvent : public Node {
  public:
   IBasicEvent();
+
+ private:
+  static int next_basic_event_;  ///< The next index for the basic event.
 };
 
 /// @enum GateType
@@ -161,6 +176,11 @@ enum State {
 /// any complex analysis is done.
 class IGate : public Node {
  public:
+  /// Creates an indexed gate with its unique index.
+  ///
+  /// @param[in] type The type of this gate.
+  explicit IGate(const GateType& type);
+
   /// Creates a gate with its index.
   ///
   /// @param[in] index An unique positive index of this gate.
@@ -298,6 +318,7 @@ class IGate : public Node {
   bool module_;  ///< Indication of an independent module gate.
 };
 
+class BasicEvent;
 class Gate;
 class Formula;
 
@@ -306,8 +327,15 @@ class Formula;
 /// that takes into account the indices of events instead of ids and pointers.
 class IndexedFaultTree {
  public:
-  typedef boost::shared_ptr<IGate> IGatePtr;
   typedef boost::shared_ptr<Gate> GatePtr;
+  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+  typedef boost::shared_ptr<IGate> IGatePtr;
+
+  /// Constructs an indexed fault tree starting from the top gate.
+  ///
+  /// @param[in] root The top gate of the fault tree.
+  /// @param[in] ccf Incorporation of ccf gates and events for ccf groups.
+  explicit IndexedFaultTree(const GatePtr& root, bool ccf = false);
 
   /// Constructs a simplified fault tree with indices of nodes.
   ///
@@ -342,6 +370,19 @@ class IndexedFaultTree {
       const boost::unordered_map<int, GatePtr>& int_to_inter,
       const std::map<std::string, int>& ccf_basic_to_gates,
       const boost::unordered_map<std::string, int>& all_to_int);
+
+  /// Helper function to map the results of indexation to the original basic
+  /// events. This function, for example, helps transform minimal cut sets with
+  /// indices into minimal cut sets with IDs or pointers.
+  ///
+  /// @param[in] index Positive index of the basic event.
+  ///
+  /// @returns Pointer to the original basic event from its index.
+  inline const BasicEventPtr& GetBasicEvent(int index) {
+    assert(index > 0);
+    assert(index <= basic_events_.size());
+    return basic_events_[index - 1];
+  }
 
   /// Determines the type of the index.
   ///
@@ -390,9 +431,24 @@ class IndexedFaultTree {
 
  private:
   typedef boost::shared_ptr<Formula> FormulaPtr;
+  typedef boost::shared_ptr<Node> NodePtr;
+  typedef boost::shared_ptr<Constant> ConstantPtr;
+  typedef boost::shared_ptr<IBasicEvent> IBasicEventPtr;
 
   /// Mapping to string gate types to enum gate types.
   static const std::map<std::string, GateType> kStringToType_;
+
+  /// Process a Boolean formula of a gate into an indexed fault tree.
+  ///
+  /// @param[in] formula The Boolean formula to be processed.
+  /// @param[in] ccf To replace basic events with ccf gates.
+  /// @param[in,out] id_to_index The mapping of already processed nodes.
+  ///
+  /// @returns Pointer to the newly created indexed gate.
+  IGatePtr ProcessFormula(
+      const FormulaPtr& formula,
+      bool ccf,
+      boost::unordered_map<std::string, NodePtr>* id_to_index);
 
   /// Processes a formula into new indexed gates.
   ///
@@ -409,9 +465,10 @@ class IndexedFaultTree {
 
   int top_event_index_;  ///< The index of the top gate of this tree.
   const int kGateIndex_;  ///< The starting gate index for gate identification.
+  int new_gate_index_;  ///< Index for a new gate.
   /// All gates of this tree including newly created ones.
   boost::unordered_map<int, IGatePtr> indexed_gates_;
-  int new_gate_index_;  ///< Index for a new gate.
+  std::vector<BasicEventPtr> basic_events_;  ///< Mapping for basic events.
 };
 
 }  // namespace scram
