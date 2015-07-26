@@ -4,6 +4,7 @@
 #define SCRAM_SRC_MODEL_H_
 
 #include <string>
+#include <utility>
 
 #include <boost/unordered_map.hpp>
 
@@ -100,16 +101,19 @@ class Model : public Element {
 
   /// Finds an event from a reference. The reference is not case sensitive and
   /// can contain the identifier, full path, or local path. The returned event
-  /// may be a basic event, house event, or gate.
+  /// may be a basic event, house event, or gate. This information is
+  /// communicated with the return value.
   ///
   /// @param[in] reference Reference string to the event.
   /// @param[in] base_path The series of containers indicating the scope.
   ///
-  /// @returns Pointer to the event found by following the given reference.
+  /// @returns A pair of the pointer to the event and its type("gate",
+  ///          "basic-event", "house-event").
   ///
   /// @throws ValidationError There are problems with referencing.
   /// @throws LogicError The given base path is invalid.
-  EventPtr GetEvent(const std::string& reference, const std::string& base_path);
+  std::pair<EventPtr, std::string> GetEvent(const std::string& reference,
+                                            const std::string& base_path);
 
   /// Adds a house event that is used in this model.
   ///

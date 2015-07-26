@@ -122,14 +122,12 @@ void FaultTree::MarkNonTopGates(const GatePtr& gate,
 
 void FaultTree::MarkNonTopGates(const FormulaPtr& formula,
                                 const boost::unordered_set<GatePtr>& gates) {
-  typedef boost::shared_ptr<Event> EventPtr;
-  std::map<std::string, EventPtr>::const_iterator it;
-  const std::map<std::string, EventPtr>* children = &formula->event_args();
+  std::vector<GatePtr>::const_iterator it;
+  const std::vector<GatePtr>* children = &formula->gate_args();
   for (it = children->begin(); it != children->end(); ++it) {
-    GatePtr child_gate = boost::dynamic_pointer_cast<Gate>(it->second);
-    if (child_gate && gates.count(child_gate)) {
-      FaultTree::MarkNonTopGates(child_gate, gates);
-      child_gate->mark("non-top");
+    if (gates.count(*it)) {
+      FaultTree::MarkNonTopGates(*it, gates);
+      (*it)->mark("non-top");
     }
   }
   const std::set<FormulaPtr>* formula_args = &formula->formula_args();

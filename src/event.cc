@@ -63,16 +63,16 @@ void Gate::Validate() {
         throw ValidationError(this->name() +
                               "INHIBIT gate must have only 2 children");
       }
-
       std::stringstream msg;
       msg << "";
       bool conditional_found = false;
-      std::map<std::string, boost::shared_ptr<Event> >::const_iterator it;
-      for (it = formula_->event_args().begin();
-           it != formula_->event_args().end(); ++it) {
-        if (!boost::dynamic_pointer_cast<BasicEvent>(it->second)) continue;
-        if (!it->second->HasAttribute("flavor")) continue;
-        std::string type = it->second->GetAttribute("flavor").value;
+      typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+      std::vector<BasicEventPtr>::const_iterator it;
+      for (it = formula_->basic_event_args().begin();
+           it != formula_->basic_event_args().end(); ++it) {
+        BasicEventPtr event = *it;
+        if (!event->HasAttribute("flavor")) continue;
+        std::string type = event->GetAttribute("flavor").value;
         if (type != "conditional") continue;
         if (!conditional_found) {
           conditional_found = true;
@@ -124,29 +124,31 @@ void Formula::vote_number(int vnumber) {
   vote_number_ = vnumber;
 }
 
-const std::map<std::string, boost::shared_ptr<Event> >& Formula::event_args()
-  const {
-  if (event_args_.empty() && formula_args_.empty()) {
-    throw LogicError("Formula does not have arguments.");
+void Formula::AddArgument(const HouseEventPtr& house_event) {
+  if (event_args_.count(house_event->id())) {
+    throw DuplicateArgumentError("Duplicate argument " + house_event->name());
   }
-  return event_args_;
+  event_args_.insert(std::make_pair(house_event->id(), house_event));
+  house_event_args_.push_back(house_event);
 }
 
-const std::set<boost::shared_ptr<Formula> >& Formula::formula_args() const {
-  if (event_args_.empty() && formula_args_.empty()) {
-    throw LogicError("Formula does not have arguments.");
+void Formula::AddArgument(const BasicEventPtr& basic_event) {
+  if (event_args_.count(basic_event->id())) {
+    throw DuplicateArgumentError("Duplicate argument " + basic_event->name());
   }
-  return formula_args_;
+  event_args_.insert(std::make_pair(basic_event->id(), basic_event));
+  basic_event_args_.push_back(basic_event);
 }
 
-void Formula::AddArgument(const boost::shared_ptr<Event>& event) {
-  if (event_args_.count(event->id())) {
-    throw DuplicateArgumentError("Duplicate argument " + event->name());
+void Formula::AddArgument(const GatePtr& gate) {
+  if (event_args_.count(gate->id())) {
+    throw DuplicateArgumentError("Duplicate argument " + gate->name());
   }
-  event_args_.insert(std::make_pair(event->id(), event));
+  event_args_.insert(std::make_pair(gate->id(), gate));
+  gate_args_.push_back(gate);
 }
 
-void Formula::AddArgument(const boost::shared_ptr<Formula>& formula) {
+void Formula::AddArgument(const FormulaPtr& formula) {
   if (formula_args_.count(formula)) {
     throw LogicError("Trying to re-insert a formula as an argument");
   }
@@ -184,12 +186,9 @@ void Formula::Validate() {
 void Formula::GatherNodesAndConnectors() {
   assert(nodes_.empty());
   assert(connectors_.empty());
-  std::map<std::string, boost::shared_ptr<Event> >::iterator it;
-  for (it = event_args_.begin(); it != event_args_.end(); ++it) {
-    Gate* ptr = dynamic_cast<Gate*>(&*it->second);
-    if (ptr) {
-      nodes_.push_back(ptr);
-    }
+  std::vector<GatePtr>::iterator it_g;
+  for (it_g = gate_args_.begin(); it_g != gate_args_.end(); ++it_g) {
+    nodes_.push_back(&**it_g);
   }
   std::set<boost::shared_ptr<Formula> >::iterator it_f;
   for (it_f = formula_args_.begin(); it_f != formula_args_.end();

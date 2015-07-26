@@ -70,24 +70,26 @@ void FaultTreeAnalysis::GatherEvents(const GatePtr& gate) {
 }
 
 void FaultTreeAnalysis::GatherEvents(const FormulaPtr& formula) {
-  const std::map<std::string, EventPtr>* children = &formula->event_args();
-  std::map<std::string, EventPtr>::const_iterator it;
-  for (it = children->begin(); it != children->end(); ++it) {
-    if (GatePtr child_gate = boost::dynamic_pointer_cast<Gate>(it->second)) {
-      inter_events_.insert(std::make_pair(child_gate->id(), child_gate));
-      FaultTreeAnalysis::GatherEvents(child_gate);
-
-    } else if (BasicEventPtr basic_event =
-               boost::dynamic_pointer_cast<BasicEvent>(it->second)) {
-      basic_events_.insert(std::make_pair(it->first, basic_event));
-      if (basic_event->HasCcf())
-        ccf_events_.insert(std::make_pair(it->first, basic_event));
-    } else {
-      HouseEventPtr house_event =
-          boost::dynamic_pointer_cast<HouseEvent>(it->second);
-      assert(house_event);
-      house_events_.insert(std::make_pair(it->first, house_event));
-    }
+  std::vector<BasicEventPtr>::const_iterator it_b;
+  for (it_b = formula->basic_event_args().begin();
+       it_b != formula->basic_event_args().end(); ++it_b) {
+    BasicEventPtr basic_event = *it_b;
+    basic_events_.insert(std::make_pair(basic_event->id(), basic_event));
+    if (basic_event->HasCcf())
+      ccf_events_.insert(std::make_pair(basic_event->id(), basic_event));
+  }
+  std::vector<HouseEventPtr>::const_iterator it_h;
+  for (it_h = formula->house_event_args().begin();
+       it_h != formula->house_event_args().end(); ++it_h) {
+    HouseEventPtr house_event = *it_h;
+    house_events_.insert(std::make_pair(house_event->id(), house_event));
+  }
+  std::vector<GatePtr>::const_iterator it_g;
+  for (it_g = formula->gate_args().begin();
+       it_g != formula->gate_args().end(); ++it_g) {
+    GatePtr gate = *it_g;
+    inter_events_.insert(std::make_pair(gate->id(), gate));
+    FaultTreeAnalysis::GatherEvents(gate);
   }
   const std::set<FormulaPtr>* formulas = &formula->formula_args();
   std::set<FormulaPtr>::const_iterator it_f;

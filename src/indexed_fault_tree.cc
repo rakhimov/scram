@@ -243,68 +243,71 @@ boost::shared_ptr<IGate> IndexedFaultTree::ProcessFormula(
   IGatePtr parent(new IGate(type));
   if (type == kAtleastGate) parent->vote_number(formula->vote_number());
 
-  typedef boost::shared_ptr<Event> EventPtr;
-  typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
-
-  const std::map<std::string, EventPtr>& children = formula->event_args();
-  std::map<std::string, EventPtr>::const_iterator it_children;
-  for (it_children = children.begin(); it_children != children.end();
-       ++it_children) {
-    EventPtr event = it_children->second;
-    if (BasicEventPtr basic_event =
-        boost::dynamic_pointer_cast<BasicEvent>(event)) {
-      if (id_to_index->count(basic_event->id())) {
-        NodePtr node = id_to_index->find(basic_event->id())->second;
-        if (ccf && basic_event->HasCcf()) {
-          parent->AddChild(node->index(),
-                           boost::static_pointer_cast<IGate>(node));
-        } else {
-          parent->AddChild(node->index(),
-                           boost::static_pointer_cast<IBasicEvent>(node));
-        }
-      } else {
-        if (ccf && basic_event->HasCcf()) {
-          GatePtr ccf_gate = basic_event->ccf_gate();
-          IGatePtr new_gate = IndexedFaultTree::ProcessFormula(
-              ccf_gate->formula(),
-              ccf,
-              id_to_index);
-          parent->AddChild(new_gate->index(), new_gate);
-          id_to_index->insert(std::make_pair(basic_event->id(), new_gate));
-        } else {
-          basic_events_.push_back(basic_event);
-          IBasicEventPtr new_basic(new IBasicEvent());
-          assert(basic_events_.size() == new_basic->index());
-          parent->AddChild(new_basic->index(), new_basic);
-          id_to_index->insert(std::make_pair(basic_event->id(), new_basic));
-        }
-      }
-    } else if (GatePtr gate = boost::dynamic_pointer_cast<Gate>(event)) {
-      if (id_to_index->count(gate->id())) {
-        NodePtr node = id_to_index->find(gate->id())->second;
+  std::vector<BasicEventPtr>::const_iterator it_b;
+  for (it_b = formula->basic_event_args().begin();
+       it_b != formula->basic_event_args().end(); ++it_b) {
+    BasicEventPtr basic_event = *it_b;
+    if (id_to_index->count(basic_event->id())) {
+      NodePtr node = id_to_index->find(basic_event->id())->second;
+      if (ccf && basic_event->HasCcf()) {
         parent->AddChild(node->index(),
                          boost::static_pointer_cast<IGate>(node));
       } else {
-        IGatePtr new_gate = IndexedFaultTree::ProcessFormula(gate->formula(),
-                                                             ccf,
-                                                             id_to_index);
-        parent->AddChild(new_gate->index(), new_gate);
-        id_to_index->insert(std::make_pair(gate->id(), new_gate));
+        parent->AddChild(node->index(),
+                         boost::static_pointer_cast<IBasicEvent>(node));
       }
     } else {
-      HouseEventPtr house = boost::dynamic_pointer_cast<HouseEvent>(event);
-      assert(house);
-      if (id_to_index->count(house->id())) {
-        NodePtr node = id_to_index->find(house->id())->second;
-        parent->AddChild(node->index(),
-                         boost::static_pointer_cast<Constant>(node));
+      if (ccf && basic_event->HasCcf()) {
+        GatePtr ccf_gate = basic_event->ccf_gate();
+        IGatePtr new_gate = IndexedFaultTree::ProcessFormula(
+            ccf_gate->formula(),
+            ccf,
+            id_to_index);
+        parent->AddChild(new_gate->index(), new_gate);
+        id_to_index->insert(std::make_pair(basic_event->id(), new_gate));
       } else {
-        ConstantPtr constant(new Constant(house->state()));
-        parent->AddChild(constant->index(), constant);
-        id_to_index->insert(std::make_pair(house->id(), constant));
+        basic_events_.push_back(basic_event);
+        IBasicEventPtr new_basic(new IBasicEvent());
+        assert(basic_events_.size() == new_basic->index());
+        parent->AddChild(new_basic->index(), new_basic);
+        id_to_index->insert(std::make_pair(basic_event->id(), new_basic));
       }
     }
   }
+
+  typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
+  std::vector<HouseEventPtr>::const_iterator it_h;
+  for (it_h = formula->house_event_args().begin();
+       it_h != formula->house_event_args().end(); ++it_h) {
+    HouseEventPtr house = *it_h;
+    if (id_to_index->count(house->id())) {
+      NodePtr node = id_to_index->find(house->id())->second;
+      parent->AddChild(node->index(),
+                       boost::static_pointer_cast<Constant>(node));
+    } else {
+      ConstantPtr constant(new Constant(house->state()));
+      parent->AddChild(constant->index(), constant);
+      id_to_index->insert(std::make_pair(house->id(), constant));
+    }
+  }
+
+  std::vector<GatePtr>::const_iterator it_g;
+  for (it_g = formula->gate_args().begin();
+       it_g != formula->gate_args().end(); ++it_g) {
+    GatePtr gate = *it_g;
+    if (id_to_index->count(gate->id())) {
+      NodePtr node = id_to_index->find(gate->id())->second;
+      parent->AddChild(node->index(),
+                       boost::static_pointer_cast<IGate>(node));
+    } else {
+      IGatePtr new_gate = IndexedFaultTree::ProcessFormula(gate->formula(),
+                                                           ccf,
+                                                           id_to_index);
+      parent->AddChild(new_gate->index(), new_gate);
+      id_to_index->insert(std::make_pair(gate->id(), new_gate));
+    }
+  }
+
   const std::set<FormulaPtr>& formulas = formula->formula_args();
   std::set<FormulaPtr>::const_iterator it_f;
   for (it_f = formulas.begin(); it_f != formulas.end(); ++it_f) {

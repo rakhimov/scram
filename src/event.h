@@ -120,6 +120,7 @@ class Gate;
 class BasicEvent : public PrimaryEvent {
  public:
   typedef boost::shared_ptr<Expression> ExpressionPtr;
+  typedef boost::shared_ptr<Gate> GatePtr;
 
   /// Constructs with id name.
   ///
@@ -187,7 +188,7 @@ class BasicEvent : public PrimaryEvent {
   inline bool HasCcf() const { return ccf_gate_ ? true : false; }
 
   /// @returns CCF group gate representing this basic event.
-  inline const boost::shared_ptr<Gate>& ccf_gate() const {
+  inline const GatePtr& ccf_gate() const {
     assert(ccf_gate_);
     return ccf_gate_;
   }
@@ -197,7 +198,7 @@ class BasicEvent : public PrimaryEvent {
   /// expected to be provided by CCF group application.
   ///
   /// @param[in] gate CCF group gate.
-  inline void ccf_gate(const boost::shared_ptr<Gate>& gate) {
+  inline void ccf_gate(const GatePtr& gate) {
     assert(!ccf_gate_);
     ccf_gate_ = gate;
   }
@@ -209,7 +210,7 @@ class BasicEvent : public PrimaryEvent {
 
   /// If this basic event is in a common cause group, CCF gate can serve
   /// as a replacement for the basic event for common cause analysis.
-  boost::shared_ptr<Gate> ccf_gate_;
+  GatePtr ccf_gate_;
 };
 
 class CcfGroup;
@@ -252,6 +253,8 @@ class Formula;  // To describe a gate's formula.
 /// A representation of a gate in a fault tree.
 class Gate : public Event {
  public:
+  typedef boost::shared_ptr<Formula> FormulaPtr;
+
   /// Constructs with an id and a gate.
   ///
   /// @param[in] name The identifying name with caps preserved.
@@ -261,12 +264,12 @@ class Gate : public Event {
                 bool is_public = true);
 
   /// @returns The formula of this gate.
-  inline const boost::shared_ptr<Formula>& formula() const { return formula_; }
+  inline const FormulaPtr& formula() const { return formula_; }
 
   /// Sets the formula of this gate.
   ///
   /// @param[in] formula Boolean formula of this gate.
-  inline void formula(const boost::shared_ptr<Formula>& formula) {
+  inline void formula(const FormulaPtr& formula) {
     assert(!formula_);
     formula_ = formula;
   }
@@ -288,7 +291,7 @@ class Gate : public Event {
   inline void mark(const std::string& new_mark) { mark_ = new_mark; }
 
  private:
-  boost::shared_ptr<Formula> formula_;  ///< Boolean formula of this gate.
+  FormulaPtr formula_;  ///< Boolean formula of this gate.
   std::string mark_;  ///< The mark for traversal or toposort.
 };
 
@@ -297,6 +300,12 @@ class Gate : public Event {
 /// Formulas are not expected to be shared.
 class Formula {
  public:
+  typedef boost::shared_ptr<Event> EventPtr;
+  typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
+  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+  typedef boost::shared_ptr<Gate> GatePtr;
+  typedef boost::shared_ptr<Formula> FormulaPtr;
+
   /// Constructs a formula.
   ///
   /// @param[in] type The logical operator for this Boolean formula.
@@ -324,35 +333,62 @@ class Formula {
   void vote_number(int vnumber);
 
   /// @returns The event arguments of this formula.
-  ///
-  /// @throws LogicError There are no event or formula arguments,
-  ///                    which should have been checked at initialization.
-  const std::map<std::string, boost::shared_ptr<Event> >& event_args() const;
+  inline const std::map<std::string, EventPtr>& event_args() const {
+    return event_args_;
+  }
+
+  /// @returns The house event arguments of this formula.
+  inline const std::vector<HouseEventPtr>& house_event_args() const {
+    return house_event_args_;
+  }
+
+  /// @returns The basic event arguments of this formula.
+  inline const std::vector<BasicEventPtr>& basic_event_args() const {
+    return basic_event_args_;
+  }
+
+  /// @returns The gate arguments of this formula.
+  inline const std::vector<GatePtr>& gate_args() const {
+    return gate_args_;
+  }
 
   /// @returns The formula arguments of this formula.
-  ///
-  /// @throws LogicError There are no event or formula arguments,
-  ///                    which should have been checked at initialization.
-  const std::set<boost::shared_ptr<Formula> >& formula_args() const;
+  inline const std::set<FormulaPtr>& formula_args() const {
+    return formula_args_;
+  }
 
   /// @returns The number of arguments.
   inline int num_args() const {
     return event_args_.size() + formula_args_.size();
   }
 
-  /// Adds an event into the arguments list.
+  /// Adds a house event into the arguments list.
   ///
-  /// @param[in] event A pointer to an argument event.
+  /// @param[in] house_event A pointer to an argument house event.
   ///
   /// @throws DuplicateArgumentError The argument is duplicate.
-  void AddArgument(const boost::shared_ptr<Event>& event);
+  void AddArgument(const HouseEventPtr& house_event);
+
+  /// Adds a basic event into the arguments list.
+  ///
+  /// @param[in] basic_event A pointer to an argument basic event.
+  ///
+  /// @throws DuplicateArgumentError The argument is duplicate.
+  void AddArgument(const BasicEventPtr& basic_event);
+
+  /// Adds a gate into the arguments list.
+  ///
+  /// @param[in] gate A pointer to an argument gate.
+  ///
+  /// @throws DuplicateArgumentError The argument is duplicate.
+  void AddArgument(const GatePtr& gate);
 
   /// Adds a formula into the arguments list.
   ///
   /// @param[in] formula A pointer to an argument formula.
   ///
   /// @throws LogicError The formula is being re-inserted.
-  void AddArgument(const boost::shared_ptr<Formula>& formula);
+  void AddArgument(const FormulaPtr& formula);
 
   /// Checks if a formula is initialized correctly with the number of arguments.
   ///
@@ -382,10 +418,12 @@ class Formula {
 
   std::string type_;  ///< Logical operator.
   int vote_number_;  ///< Vote number for atleast operator.
-  /// Arguments that are events, such as gates, basic and house events.
-  std::map<std::string, boost::shared_ptr<Event> > event_args_;
+  std::map<std::string, EventPtr> event_args_;  ///< All event arguments.
+  std::vector<HouseEventPtr> house_event_args_;  ///< House event arguments.
+  std::vector<BasicEventPtr> basic_event_args_;  ///< Basic event arguments.
+  std::vector<GatePtr> gate_args_;  ///< Arguments that are gates.
   /// Arguments that are formulas if this formula is nested.
-  std::set<boost::shared_ptr<Formula> > formula_args_;
+  std::set<FormulaPtr> formula_args_;
   std::vector<Gate*> nodes_;  ///< Gate arguments as nodes.
   std::vector<Formula*> connectors_;  ///< Formulae as connectors.
   bool gather_;  ///< A flag to gather nodes and connectors.

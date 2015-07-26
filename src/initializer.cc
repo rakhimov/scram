@@ -427,21 +427,36 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
     }
 
     try {
-      EventPtr child;
       if (element_type == "event") {  // Undefined type yet.
-        child = model_->GetEvent(name, base_path);
-
+        std::pair<EventPtr, std::string> target =
+            model_->GetEvent(name, base_path);
+        EventPtr event = target.first;
+        event->orphan(false);
+        std::string type = target.second;
+        if (type == "gate") {
+          formula->AddArgument(boost::static_pointer_cast<Gate>(event));
+        } else if (type == "basic-event") {
+          formula->AddArgument(boost::static_pointer_cast<BasicEvent>(event));
+        } else {
+          assert(type == "house-event");
+          formula->AddArgument(boost::static_pointer_cast<HouseEvent>(event));
+        }
       } else if (element_type == "gate") {
-        child = model_->GetGate(name, base_path);
+        GatePtr gate = model_->GetGate(name, base_path);
+        formula->AddArgument(gate);
+        gate->orphan(false);
 
       } else if (element_type == "basic-event") {
-        child = model_->GetBasicEvent(name, base_path);
+        BasicEventPtr basic_event = model_->GetBasicEvent(name, base_path);
+        formula->AddArgument(basic_event);
+        basic_event->orphan(false);
 
-      } else if (element_type == "house-event") {
-        child = model_->GetHouseEvent(name, base_path);
+      } else {
+        assert(element_type == "house-event");
+        HouseEventPtr house_event = model_->GetHouseEvent(name, base_path);
+        formula->AddArgument(house_event);
+        house_event->orphan(false);
       }
-      formula->AddArgument(child);
-      child->orphan(false);
     } catch (ValidationError& err) {
       std::stringstream msg;
       msg << "Line " << event->get_line() << ":\n";

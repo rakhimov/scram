@@ -62,8 +62,9 @@ boost::shared_ptr<Parameter> Model::GetParameter(const std::string& reference,
   throw ValidationError(msg);
 }
 
-boost::shared_ptr<Event> Model::GetEvent(const std::string& reference,
-                                         const std::string& base_path) {
+std::pair<boost::shared_ptr<Event>, std::string> Model::GetEvent(
+    const std::string& reference,
+    const std::string& base_path) {
   assert(reference != "");
   std::vector<std::string> path;
   boost::split(path, reference, boost::is_any_of("."),
@@ -74,14 +75,20 @@ boost::shared_ptr<Event> Model::GetEvent(const std::string& reference,
     ComponentPtr scope = Model::GetContainer(base_path);
     ComponentPtr container = Model::GetLocalContainer(reference, scope);
     if (container) {
-      if (container->basic_events().count(target_name))
-        return container->basic_events().find(target_name)->second;
+      if (container->basic_events().count(target_name)) {
+        EventPtr event = container->basic_events().find(target_name)->second;
+        return std::make_pair(event, "basic-event");
+      }
 
-      if (container->gates().count(target_name))
-        return container->gates().find(target_name)->second;
+      if (container->gates().count(target_name)) {
+        EventPtr event = container->gates().find(target_name)->second;
+        return std::make_pair(event, "gate");
+      }
 
-      if (container->house_events().count(target_name))
-        return container->house_events().find(target_name)->second;
+      if (container->house_events().count(target_name)) {
+        EventPtr event = container->house_events().find(target_name)->second;
+        return std::make_pair(event, "house-event");
+      }
     }
   }
   const boost::unordered_map<std::string, GatePtr>* gates = &gates_;
@@ -96,14 +103,20 @@ boost::shared_ptr<Event> Model::GetEvent(const std::string& reference,
     house_events = &container->house_events();
   }
 
-  if (basic_events->count(target_name))
-    return basic_events->find(target_name)->second;
+  if (basic_events->count(target_name)) {
+    EventPtr event = basic_events->find(target_name)->second;
+    return std::make_pair(event, "basic-event");
+  }
 
-  if (gates->count(target_name))
-    return gates->find(target_name)->second;
+  if (gates->count(target_name)) {
+    EventPtr event = gates->find(target_name)->second;
+    return std::make_pair(event, "gate");
+  }
 
-  if (house_events->count(target_name))
-    return house_events->find(target_name)->second;
+  if (house_events->count(target_name)) {
+    EventPtr event = house_events->find(target_name)->second;
+    return std::make_pair(event, "house-event");
+  }
 
   std::string msg = "Undefined event " + path.back() + " in reference " +
                     reference + " with base path " + base_path;

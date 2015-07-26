@@ -44,10 +44,9 @@ TEST(FormulaTest, VoteNumber) {
 TEST(FormulaTest, EventArguments) {
   FormulaPtr top(new Formula("and"));
   std::map<std::string, EventPtr> children;
-  EventPtr first_child(new BasicEvent("first"));
-  EventPtr second_child(new BasicEvent("second"));
-  // Request for children when there are no children is an error.
-  EXPECT_THROW(top->event_args(), LogicError);
+  BasicEventPtr first_child(new BasicEvent("first"));
+  BasicEventPtr second_child(new BasicEvent("second"));
+  EXPECT_EQ(0, top->num_args());
   // Adding first child.
   EXPECT_NO_THROW(top->AddArgument(first_child));
   // Re-adding a child must cause an error.
@@ -64,7 +63,7 @@ TEST(FormulaTest, EventArguments) {
 TEST(FormulaTest, FormulaArguments) {
   FormulaPtr top(new Formula("and"));
   FormulaPtr arg(new Formula("or"));
-  EXPECT_THROW(top->formula_args(), LogicError);
+  EXPECT_EQ(0, top->num_args());
   // Adding first child.
   EXPECT_NO_THROW(top->AddArgument(arg));
   // Re-adding a child must cause an error.
