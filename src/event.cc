@@ -12,12 +12,6 @@
 
 namespace scram {
 
-const std::set<std::string> Formula::kTwoOrMore_ =
-    boost::assign::list_of("and") ("or") ("nand") ("nor");
-
-const std::set<std::string> Formula::kSingle_ =
-    boost::assign::list_of("not") ("null");
-
 Event::Event(const std::string& name, const std::string& base_path,
              bool is_public)
     : Role::Role(is_public, base_path),
@@ -29,6 +23,31 @@ Event::Event(const std::string& name, const std::string& base_path,
 }
 
 Event::~Event() {}  // Empty body for pure virtual destructor.
+
+PrimaryEvent::PrimaryEvent(const std::string& name,
+                           const std::string& base_path,
+                           bool is_public,
+                           const std::string& type)
+      : Event(name, base_path, is_public),
+        has_expression_(false),
+        type_(type) {}
+
+PrimaryEvent::~PrimaryEvent() {}  // Empty body for pure virtual destructor.
+
+HouseEvent::HouseEvent(const std::string& name, const std::string& base_path,
+                       bool is_public)
+      : PrimaryEvent(name, base_path, is_public, "house"),
+        state_(false) {}
+
+BasicEvent::BasicEvent(const std::string& name, const std::string& base_path,
+                       bool is_public)
+      : PrimaryEvent(name, base_path, is_public, "basic") {}
+
+CcfEvent::CcfEvent(const std::string& name, const CcfGroup* ccf_group,
+                   const std::vector<std::string>& member_names)
+    : BasicEvent(name, ccf_group->base_path(), ccf_group->is_public()),
+      ccf_group_(ccf_group),
+      member_names_(member_names) {}
 
 Gate::Gate(const std::string& name, const std::string& base_path,
            bool is_public)
@@ -70,6 +89,17 @@ void Gate::Validate() {
     }
   }
 }
+
+const std::set<std::string> Formula::kTwoOrMore_ =
+    boost::assign::list_of("and") ("or") ("nand") ("nor");
+
+const std::set<std::string> Formula::kSingle_ =
+    boost::assign::list_of("not") ("null");
+
+Formula::Formula(const std::string& type)
+      : type_(type),
+        vote_number_(-1),
+        gather_(true) {}
 
 int Formula::vote_number() const {
   if (vote_number_ == -1) {
@@ -168,14 +198,5 @@ void Formula::GatherNodesAndConnectors() {
   }
   gather_ = false;
 }
-
-PrimaryEvent::~PrimaryEvent() {}  // Empty body for pure virtual destructor.
-
-CcfEvent::CcfEvent(const std::string& name,
-                   const CcfGroup* ccf_group,
-                   const std::vector<std::string>& member_names)
-    : BasicEvent(name, ccf_group->base_path(), ccf_group->is_public()),
-      ccf_group_(ccf_group),
-      member_names_(member_names) {}
 
 }  // namespace scram

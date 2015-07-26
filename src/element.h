@@ -72,9 +72,7 @@ class Role {
   ///
   /// @param[in] is_public A flag to define public or private role.
   /// @param[in] base_path The series of containers to get this event.
-  explicit Role(bool is_public = true, const std::string& base_path = "")
-      : is_public_(is_public),
-        base_path_(base_path) {}
+  explicit Role(bool is_public = true, const std::string& base_path = "");
 
   virtual ~Role() = 0;  ///< Abstract class;
 

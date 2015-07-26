@@ -69,7 +69,7 @@ class Logger {
 
   /// This function can be to get and set the cut-off level for logging.
   ///
-  /// @returns The cut-off level for reporting.
+  /// @returns Reference to the cut-off level for reporting.
   static LogLevel& ReportLevel();
 
   /// Returns a string stream by reference that is flushed to stderr by

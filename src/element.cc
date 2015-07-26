@@ -44,6 +44,10 @@ const Attribute& Element::GetAttribute(const std::string& id) const {
   return attributes_.find(id)->second;
 }
 
+Role::Role(bool is_public, const std::string& base_path)
+      : is_public_(is_public),
+        base_path_(base_path) {}
+
 Role::~Role() {}  // Empty body for pure virtual destructor.
 
 }  // namespace scram

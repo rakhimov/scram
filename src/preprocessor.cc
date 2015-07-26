@@ -363,6 +363,32 @@ void Preprocessor::RemoveChildren(const IGatePtr& gate,
   }
 }
 
+bool Preprocessor::RemoveConstGates(const IGatePtr& gate) {
+  if (gate->Visited()) return false;
+  gate->Visit(1);  // Time does not matter.
+
+  if (gate->state() == kNullState || gate->state() == kUnityState) return false;
+  bool changed = false;  // Indication if this operation changed the gate.
+  std::vector<int> to_erase;  // Keep track of children to erase.
+  boost::unordered_map<int, IGatePtr>::const_iterator it;
+  for (it = gate->gate_children().begin(); it != gate->gate_children().end();
+       ++it) {
+    assert(it->first > 0);
+    IGatePtr child_gate = it->second;
+    bool ret = Preprocessor::RemoveConstGates(child_gate);
+    if (!changed && ret) changed = true;
+    State state = child_gate->state();
+    if (state == kNormalState) continue;  // Only three states are possible.
+    bool state_flag = state == kNullState ? false : true;
+    if (Preprocessor::ProcessConstantChild(gate, it->first, state_flag,
+                                           &to_erase))
+      return true;  // The parent gate itself has become constant.
+  }
+  if (!changed && !to_erase.empty()) changed = true;
+  Preprocessor::RemoveChildren(gate, to_erase);
+  return changed;
+}
+
 void Preprocessor::PropagateComplements(
     const IGatePtr& gate,
     std::map<int, IGatePtr>* gate_complements) {
@@ -400,32 +426,6 @@ void Preprocessor::PropagateComplements(
     bool ret = gate->AddChild(complement->index(), complement);
     assert(ret);
   }
-}
-
-bool Preprocessor::RemoveConstGates(const IGatePtr& gate) {
-  if (gate->Visited()) return false;
-  gate->Visit(1);  // Time does not matter.
-
-  if (gate->state() == kNullState || gate->state() == kUnityState) return false;
-  bool changed = false;  // Indication if this operation changed the gate.
-  std::vector<int> to_erase;  // Keep track of children to erase.
-  boost::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_children().begin(); it != gate->gate_children().end();
-       ++it) {
-    assert(it->first > 0);
-    IGatePtr child_gate = it->second;
-    bool ret = Preprocessor::RemoveConstGates(child_gate);
-    if (!changed && ret) changed = true;
-    State state = child_gate->state();
-    if (state == kNormalState) continue;  // Only three states are possible.
-    bool state_flag = state == kNullState ? false : true;
-    if (Preprocessor::ProcessConstantChild(gate, it->first, state_flag,
-                                           &to_erase))
-      return true;  // The parent gate itself has become constant.
-  }
-  if (!changed && !to_erase.empty()) changed = true;
-  Preprocessor::RemoveChildren(gate, to_erase);
-  return changed;
 }
 
 bool Preprocessor::RemoveNullGates(const IGatePtr& gate) {
