@@ -29,9 +29,9 @@ void RiskAnalysis::GraphingInstructions() {
   boost::unordered_map<std::string, FaultTreePtr>::const_iterator it;
   for (it = model_->fault_trees().begin(); it != model_->fault_trees().end();
        ++it) {
-    const std::vector<GatePtr>* top_events = &it->second->top_events();
+    const std::vector<GatePtr>& top_events = it->second->top_events();
     std::vector<GatePtr>::const_iterator it_top;
-    for (it_top = top_events->begin(); it_top != top_events->end(); ++it_top) {
+    for (it_top = top_events.begin(); it_top != top_events.end(); ++it_top) {
       std::string output =
           it->second->name() + "_" + (*it_top)->name() + ".dot";
       std::ofstream of(output.c_str());

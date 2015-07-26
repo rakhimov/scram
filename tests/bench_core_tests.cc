@@ -265,7 +265,6 @@ TEST_F(RiskAnalysisTest, HOUSE_UNITY) {
 
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
-  ASSERT_NO_THROW(ran->GraphingInstructions());
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(1, p_total());  // Total prob check.
   // Minimal cut set check.
@@ -277,11 +276,9 @@ TEST_F(RiskAnalysisTest, HOUSE_UNITY) {
 
 // Checks for NULL due to house event.
 TEST_F(RiskAnalysisTest, HOUSE_NULL) {
-  std::string tree_input =
-      "./share/scram/input/core/null.xml";
+  std::string tree_input = "./share/scram/input/core/null.xml";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
-  ASSERT_NO_THROW(ran->GraphingInstructions());
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(0, p_total());  // Total prob check.
   // Minimal cut set check.

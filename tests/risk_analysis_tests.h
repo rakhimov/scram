@@ -17,6 +17,7 @@ typedef boost::shared_ptr<Event> EventPtr;
 typedef boost::shared_ptr<Gate> GatePtr;
 typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
 typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+typedef boost::shared_ptr<FaultTree> FaultTreePtr;
 
 class RiskAnalysisTest : public ::testing::Test {
  protected:
@@ -39,6 +40,11 @@ class RiskAnalysisTest : public ::testing::Test {
     std::vector<std::string> input_files;
     input_files.push_back(input_file);
     ProcessInputFiles(input_files);
+  }
+
+  // Returns a single fault tree, assuming one fault tree with single top gate.
+  const FaultTreePtr& fault_tree() {
+    return init->model()->fault_trees().begin()->second;
   }
 
   const boost::unordered_map<std::string, GatePtr>& gates() {

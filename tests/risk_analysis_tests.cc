@@ -67,26 +67,6 @@ TEST_F(RiskAnalysisTest, PopulateProbabilities) {
   EXPECT_EQ(0.5, basic_events().find("valvetwo")->second->p());
 }
 
-// Test Graphing Intructions
-TEST_F(RiskAnalysisTest, GraphingInstructions) {
-  settings.probability_analysis(true);
-  ASSERT_NO_THROW(ProcessInputFile("./share/scram/input/fta/graphing.xml"));
-  ASSERT_NO_THROW(ran->GraphingInstructions());
-}
-
-TEST_F(RiskAnalysisTest, GraphingFlavoredTypes) {
-  settings.probability_analysis(true);
-  ASSERT_NO_THROW(
-      ProcessInputFile("./share/scram/input/fta/flavored_types.xml"));
-  ASSERT_NO_THROW(ran->GraphingInstructions());
-}
-
-TEST_F(RiskAnalysisTest, GraphingNestedFormula) {
-  ASSERT_NO_THROW(
-      ProcessInputFile("./share/scram/input/fta/nested_formula.xml"));
-  ASSERT_NO_THROW(ran->GraphingInstructions());
-}
-
 // Test Analysis of Two train system.
 TEST_F(RiskAnalysisTest, AnalyzeDefault) {
   std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
