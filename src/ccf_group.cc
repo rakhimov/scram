@@ -24,7 +24,6 @@ void CcfGroup::AddMember(const BasicEventPtr& basic_event) {
   if (distribution_) {
     throw IllegalOperation("No more members accepted. The distribution for " +
                            name_ + " CCF group has already been defined.");
-
   }
   if (members_.count(name)) {
     throw DuplicateArgumentError("Duplicate member " + basic_event->name() +

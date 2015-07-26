@@ -8,6 +8,7 @@
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
@@ -21,7 +22,6 @@ class IGate;  // Indexed gate parent of nodes.
 /// graph. The index of the node is a unique identifier for the node.
 /// The node holds a weak pointer to the parent that is managed by the parent.
 class Node {
-
   friend class IGate;  // To manage parent information.
 
  public:
@@ -110,8 +110,8 @@ class Constant : public Node {
   /// @param[in] state Binary state of the Boolean constant.
   explicit Constant(bool state);
 
-  ///@returns The state of the constant.
-  inline bool state() { return state_; }
+  /// @returns The state of the constant.
+  inline bool state() const { return state_; }
 
  private:
   Constant(const Constant&);
