@@ -28,17 +28,14 @@ This project adheres to the following coding styles:
     https://google-styleguide.googlecode.com/svn/trunk/shell.xml
 
 
-Coding Style Violations
------------------------
+Deviations from the Coding Styles
+---------------------------------
 
-- Use of exceptions (This is not recommended by GCSG)
-- Use of streams instead of *printf-like routines*
-- Naming of mutator functions without *set* prefix
-- RTTI through dynamic casts (Very limited use)
-- Multiple and private inheritance
-- C++11 features are currently not allowed.
-  Only Boost features are used instead.
-- License boilerplate is not included unless the code is from other projects.
+- Exceptions are allowed
+- Prefer streams to *printf-like routines*
+- Name mutator functions without *set_* prefix
+- Multiple inheritance is allowed
+- C++11 features are currently not allowed. Only Boost features are used.
 
 
 Monitoring Code Quality
