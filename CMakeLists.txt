@@ -26,12 +26,6 @@ set(BUILD_SHARED_LIBS TRUE)  # Change this for static building.
 # Linking of external libraries, such as BOOST.
 set(USE_STATIC_LIBS OFF)  # Change this for static building
 
-# Pre-uploading the schema for static distribution.
-# The tests will need to be run in the test directory.
-if(USE_STATIC_LIBS)
-  add_definitions(-DEMBED_SCHEMA)
-endif()
-
 # Setup build locations.
 if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
   set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${SCRAM_BINARY_DIR}/bin")
