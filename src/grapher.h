@@ -101,11 +101,13 @@ class Grapher {
   ///
   /// @param[in] primary_event The primary event to be formatted.
   /// @param[in] repetition The repetition number of the node.
+  /// @param[in] type Type information message with flavors.
   /// @param[in] prob_msg Probability information message.
   /// @param[out] out The output stream.
   void FormatPrimaryEvent(const PrimaryEventPtr& primary_event,
                           int repetition,
-                          std::string prob_msg,
+                          const std::string& type,
+                          const std::string& prob_msg,
                           std::ostream& out);
 
   /// Format formulas gathered from nested formulas of gate descriptions.

@@ -180,7 +180,12 @@ void Grapher::FormatBasicEvents(
       prob_msg += snippet.str();
     }
     int repetition = node_repeat.find(it->second)->second;
-    Grapher::FormatPrimaryEvent(it->second, repetition, prob_msg, out);
+    std::string type = "basic";
+    // Detect undeveloped or conditional event.
+    if (it->second->HasAttribute("flavor")) {
+      type = it->second->GetAttribute("flavor").value;
+    }
+    Grapher::FormatPrimaryEvent(it->second, repetition, type, prob_msg, out);
   }
 }
 
@@ -197,19 +202,15 @@ void Grapher::FormatHouseEvents(
       prob_msg += it->second->state() ? "True" : "False";
     }
     int repetition = node_repeat.find(it->second)->second;
-    Grapher::FormatPrimaryEvent(it->second, repetition, prob_msg, out);
+    Grapher::FormatPrimaryEvent(it->second, repetition, "house", prob_msg, out);
   }
 }
 
 void Grapher::FormatPrimaryEvent(const PrimaryEventPtr& primary_event,
                                  int repetition,
-                                 std::string prob_msg,
+                                 const std::string& type,
+                                 const std::string& prob_msg,
                                  std::ostream& out) {
-  std::string type = primary_event->type();
-  // Detect undeveloped or conditional event.
-  if (type == "basic" && primary_event->HasAttribute("flavor")) {
-    type = primary_event->GetAttribute("flavor").value;
-  }
   std::string color = kEventColors_.find(type)->second;
   for (int i = 0; i <= repetition; ++i) {
     out << "\"" << primary_event->id() << "_R" << i

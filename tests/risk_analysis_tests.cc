@@ -41,8 +41,6 @@ TEST_F(RiskAnalysisTest, ProcessInput) {
   if (basic_events().count("valveone")) {
     BasicEventPtr primary = basic_events().find("valveone")->second;
     EXPECT_EQ("valveone", primary->id());
-    ASSERT_NO_THROW(primary->type());
-    EXPECT_EQ("basic", primary->type());
   }
 }
 

@@ -61,16 +61,11 @@ class PrimaryEvent : public Event {
   /// @param[in] name The identifying name of this primary event.
   /// @param[in] base_path The series of containers to get this event.
   /// @param[in] is_public Whether or not the event is public.
-  /// @param[in] type The type of the event.
   explicit PrimaryEvent(const std::string& name,
                         const std::string& base_path = "",
-                        bool is_public = true,
-                        const std::string& type = "");
+                        bool is_public = true);
 
   virtual ~PrimaryEvent() = 0;  ///< Abstract class.
-
-  /// @returns The type of the primary event.
-  inline const std::string& type() const { return type_; }
 
   /// @returns A flag indicating if the event's expression is set.
   inline bool has_expression() const { return has_expression_; }
@@ -78,9 +73,6 @@ class PrimaryEvent : public Event {
  protected:
   /// Flag to notify that expression for the event is defined.
   bool has_expression_;
-
- private:
-  std::string type_;  ///< The type of the primary event.
 };
 
 /// @class HouseEvent
