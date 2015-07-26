@@ -24,6 +24,8 @@ Design Description
   initialization phase validates the values and logic supplied from the input
   files. The constructs and analysis are initialized according to the
   configurations supplied from the configuration file and command-line.
+  After the initialization step, it is not expected that constructs of the
+  analysis change.
 
 - Risk Analyzer operates on the valid model with the initialized fault, event
   trees, and other constructs to provide the requested results. It runs after

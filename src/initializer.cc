@@ -970,14 +970,6 @@ void Initializer::CheckFirstLayer() {
 }
 
 void Initializer::CheckSecondLayer() {
-  if (!model_->fault_trees().empty()) {
-    boost::unordered_map<std::string, FaultTreePtr>::const_iterator it;
-    for (it = model_->fault_trees().begin(); it != model_->fault_trees().end();
-         ++it) {
-      it->second->Validate();
-    }
-  }
-
   if (!model_->ccf_groups().empty()) {
     boost::unordered_map<std::string, CcfGroupPtr>::const_iterator it;
     for (it = model_->ccf_groups().begin(); it != model_->ccf_groups().end();
@@ -1047,7 +1039,16 @@ void Initializer::ValidateExpressions() {
 }
 
 void Initializer::SetupForAnalysis() {
-  // CCF groups.
+  // Collecting top events of fault trees.
+  if (!model_->fault_trees().empty()) {
+    boost::unordered_map<std::string, FaultTreePtr>::const_iterator it;
+    for (it = model_->fault_trees().begin(); it != model_->fault_trees().end();
+         ++it) {
+      it->second->CollectTopEvents();
+    }
+  }
+
+  // CCF groups must apply models to basic event members.
   if (!model_->ccf_groups().empty()) {
     boost::unordered_map<std::string, CcfGroupPtr>::const_iterator it;
     for (it = model_->ccf_groups().begin(); it != model_->ccf_groups().end();

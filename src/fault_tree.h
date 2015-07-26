@@ -174,14 +174,14 @@ class FaultTree : public Component {
   /// @param[in] name The name identificator of this fault tree.
   explicit FaultTree(const std::string& name);
 
-  /// @returns The top events of this fault tree.
+  /// @returns The collected top events of this fault tree.
   inline const std::vector<GatePtr>& top_events() const { return top_events_; }
 
-  /// Validates this fault tree's structure by detecting top gates.
-  /// This function is essential to guess the analysis targets.
-  ///
-  /// @todo Replace with more explicit function that detects top gates.
-  void Validate();
+  /// Collects top event gates in this fault tree with components.
+  /// This function is essential to guess the analysis targets if the user does
+  /// not supply any. If the structure of the fault tree changes, this function
+  /// must be called again to update the top events.
+  void CollectTopEvents();
 
  private:
   typedef boost::shared_ptr<Formula> FormulaPtr;

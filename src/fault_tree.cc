@@ -99,7 +99,8 @@ void Component::GatherGates(boost::unordered_set<GatePtr>* gates) {
 
 FaultTree::FaultTree(const std::string& name) : Component::Component(name) {}
 
-void FaultTree::Validate() {
+void FaultTree::CollectTopEvents() {
+  top_events_.clear();
   boost::unordered_set<GatePtr> gates;
   Component::GatherGates(&gates);
   // Detects top events.
