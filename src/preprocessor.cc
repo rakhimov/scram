@@ -639,15 +639,11 @@ void Preprocessor::FindModules(const IGatePtr& gate,
     case kAndGate:
       Preprocessor::CreateNewModule(gate, non_shared_children);
 
-      LOG(DEBUG4) << "Filtering modular children.";
       Preprocessor::FilterModularChildren(&modular_children,
                                           &non_modular_children);
       assert(modular_children.size() != 1);  // One modular child is non-shared.
       std::vector<std::vector<std::pair<int, NodePtr> > > groups;
-      LOG(DEBUG4) << "Grouping modular children is Disabled.";
-      groups.push_back(modular_children);
-      // Preprocessor::GroupModularChildren(modular_children, &groups);
-      LOG(DEBUG4) << "Creating new modules from modular children.";
+      Preprocessor::GroupModularChildren(modular_children, &groups);
       Preprocessor::CreateNewModules(gate, modular_children, groups);
   }
 }
@@ -698,6 +694,7 @@ void Preprocessor::FilterModularChildren(
   for (it = modular_children->begin(); it != modular_children->end(); ++it) {
     int min = it->second->min_time();
     int max = it->second->max_time();
+    bool non_module = false;
     std::vector<std::pair<int, NodePtr> >::iterator it_n;
     for (it_n = non_modular_children->begin();
          it_n != non_modular_children->end(); ++it_n) {
@@ -706,10 +703,14 @@ void Preprocessor::FilterModularChildren(
       int a = std::max(min, lower);
       int b = std::min(max, upper);
       if (a <= b) {  // There's some overlap between the ranges.
-        new_non_modular.push_back(*it);
-      } else {
-        still_modular.push_back(*it);
+        non_module = true;
+        break;
       }
+    }
+    if (non_module) {
+      new_non_modular.push_back(*it);
+    } else{
+      still_modular.push_back(*it);
     }
   }
   Preprocessor::FilterModularChildren(&still_modular, &new_non_modular);
@@ -745,7 +746,7 @@ void Preprocessor::GroupModularChildren(
         if (a <= b) {  // There's some overlap between the ranges.
           group.push_back(*it);
           low = std::min(min, low);
-          high = std::max(max, low);
+          high = std::max(max, high);
         } else {
           next_check.push_back(*it);
         }
