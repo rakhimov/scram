@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2014-2015 Olzhas Rakhimov
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 /// @file expression.h
 /// Expressions that describe basic events.
 #ifndef SCRAM_SRC_EXPRESSION_H_
@@ -36,7 +52,8 @@ class Expression {
 
   /// Validates the expression.
   /// This late validation is due to parameters that are defined late.
-  /// @throws InvalidArgument if arguments are invalid for setup.
+  ///
+  /// @throws InvalidArgument The arguments are invalid for setup.
   virtual void Validate() {}
 
   /// @returns The mean value of this expression.
@@ -48,13 +65,14 @@ class Expression {
   /// This routine resets the sampling to get a new values.
   virtual inline void Reset() { sampled_ = false; }
 
-  /// Indication of constant expression.
+  /// @returns true if the expression's value does not need sampling.
+  /// @returns false if the expression's value has uncertainties.
   virtual inline bool IsConstant() { return false; }
 
-  /// Maximum value of this expression. This indication is for sampling cases.
+  /// @returns Maximum value of this expression.
   virtual inline double Max() { return Mean(); }
 
-  /// Minimum value of this expression. This indication is for sampling cases.
+  /// @returns Minimum value of this expression.
   virtual inline double Min() { return Mean(); }
 
   /// @returns Parameters as nodes.
@@ -104,6 +122,7 @@ enum Units {
 class Parameter : public Expression, public Element, public Role {
  public:
   /// Sets the expression of this basic event.
+  ///
   /// @param[in] name The name of this variable (Case sensitive).
   /// @param[in] base_path The series of containers to get this parameter.
   /// @param[in] is_public Whether or not the parameter is public.
@@ -112,6 +131,7 @@ class Parameter : public Expression, public Element, public Role {
                      bool is_public = true);
 
   /// Sets the expression of this parameter.
+  ///
   /// @param[in] expression The expression to describe this parameter.
   inline void expression(const ExpressionPtr& expression) {
     expression_ = expression;
@@ -128,6 +148,7 @@ class Parameter : public Expression, public Element, public Role {
   inline const Units& unit() const { return unit_; }
 
   /// Sets the unit of this parameter.
+  ///
   /// @param[in] unit A valid unit.
   inline void unit(const Units& unit) { unit_ = unit; }
 
@@ -135,6 +156,7 @@ class Parameter : public Expression, public Element, public Role {
   inline bool unused() { return unused_; }
 
   /// Sets the usage state for this parameter.
+  ///
   /// @param[in] state The usage state for this parameter.
   inline void unused(bool state) { unused_ = state; }
 
@@ -158,6 +180,7 @@ class Parameter : public Expression, public Element, public Role {
   inline double Min() { return expression_->Min(); }
 
   /// This function is for cycle detection.
+  ///
   /// @returns The connector between parameters.
   inline Expression* connector() { return this; }
 
@@ -165,6 +188,7 @@ class Parameter : public Expression, public Element, public Role {
   inline const std::string& mark() const { return mark_; }
 
   /// Sets the mark for this node.
+  ///
   /// @param[in] label The specific label for the node.
   inline void mark(const std::string& label) { mark_ = label; }
 
@@ -183,9 +207,10 @@ class MissionTime : public Expression {
  public:
   MissionTime() : mission_time_(-1), unit_(kHours) {}
 
-  /// Sets the mission time only once.
+  /// Sets the mission time. This function is expected to be used only once.
+  ///
   /// @param[in] time The mission time.
-  void mission_time(double time) {
+  inline void mission_time(double time) {
     assert(time >= 0);
     mission_time_ = time;
   }
@@ -194,6 +219,7 @@ class MissionTime : public Expression {
   inline const Units& unit() const { return unit_; }
 
   /// Sets the unit of this parameter.
+  ///
   /// @param[in] unit A valid unit.
   inline void unit(const Units& unit) { unit_ = unit; }
 
@@ -211,14 +237,17 @@ class MissionTime : public Expression {
 class ConstantExpression : public Expression {
  public:
   /// Constructor for float values.
+  ///
   /// @param[in] val Float numerical value.
   explicit ConstantExpression(double val) : value_(val) {}
 
   /// Constructor for integer values.
+  ///
   /// @param[in] val Integer numerical value.
   explicit ConstantExpression(int val) : value_(val) {}
 
   /// Constructor for boolean values.
+  ///
   /// @param[in] val true for 1 and false for 0 value of this constant.
   explicit ConstantExpression(bool val) : value_(val ? 1 : 0) {}
 
@@ -235,6 +264,7 @@ class ConstantExpression : public Expression {
 class ExponentialExpression : public Expression {
  public:
   /// Constructor for exponential expression with two arguments.
+  ///
   /// @param[in] lambda Hourly rate of failure.
   /// @param[in] t Mission time in hours.
   ExponentialExpression(const ExpressionPtr& lambda, const ExpressionPtr& t)
@@ -244,16 +274,13 @@ class ExponentialExpression : public Expression {
     Expression::args_.push_back(t);
   }
 
-  /// @throws InvalidArgument if failure rate or time is negative.
+  /// @throws InvalidArgument The failure rate or time is negative.
   void Validate();
 
   inline double Mean() {
     return 1 - std::exp(-(lambda_->Mean() * time_->Mean()));
   }
 
-  /// Samples the underlying distributions.
-  /// @returns A sampled value.
-  /// @throws InvalidArgument if sampled failure rate or time is negative.
   double Sample();
 
   inline void Reset() {
@@ -285,6 +312,7 @@ class ExponentialExpression : public Expression {
 class GlmExpression : public Expression {
  public:
   /// Constructor for GLM or exponential expression with four arguments.
+  ///
   /// @param[in] gamma Probability of failure on demand.
   /// @param[in] lambda Hourly rate of failure.
   /// @param[in] mu Hourly repairing rate.
@@ -309,9 +337,6 @@ class GlmExpression : public Expression {
             std::exp(-r * time_->Mean())) / r;
   }
 
-  /// Samples the underlying distributions.
-  /// @returns A sampled value.
-  /// @throws InvalidArgument if sampled values are invalid.
   double Sample();
 
   inline void Reset() {
@@ -338,10 +363,10 @@ class GlmExpression : public Expression {
   }
 
  private:
-  ExpressionPtr gamma_;  ///< Failure rate in hours.
+  ExpressionPtr gamma_;  ///< Probabilty of failure on demand.
   ExpressionPtr lambda_;  ///< Failure rate in hours.
+  ExpressionPtr mu_;  ///< Repair rate in hours.
   ExpressionPtr time_;  ///< Mission time in hours.
-  ExpressionPtr mu_;  ///< Mission time in hours.
 };
 
 /// @class WeibullExpression
@@ -349,6 +374,7 @@ class GlmExpression : public Expression {
 class WeibullExpression : public Expression {
  public:
   /// Constructor for Weibull distribution.
+  ///
   /// @param[in] alpha Scale parameter.
   /// @param[in] beta Shape parameter.
   /// @param[in] t0 Time shift.
@@ -372,9 +398,6 @@ class WeibullExpression : public Expression {
                                   alpha_->Mean(), beta_->Mean()));
   }
 
-  /// Samples the underlying distributions.
-  /// @returns A sampled value.
-  /// @throws InvalidArgument if sampled values are invalid.
   double Sample();
 
   inline void Reset() {
@@ -412,6 +435,7 @@ class WeibullExpression : public Expression {
 class UniformDeviate : public Expression {
  public:
   /// Setup for uniform distribution.
+  ///
   /// @param[in] min Minimum value of the distribution.
   /// @param[in] max Maximum value of the distribution.
   UniformDeviate(const ExpressionPtr& min, const ExpressionPtr& max)
@@ -421,14 +445,11 @@ class UniformDeviate : public Expression {
     Expression::args_.push_back(max);
   }
 
-  /// @throws InvalidArgument if min value is more or equal to max value.
+  /// @throws InvalidArgument The min value is more or equal to max value.
   void Validate();
 
   inline double Mean() { return (min_->Mean() + max_->Mean()) / 2; }
 
-  /// Samples the underlying distributions and uniform distribution.
-  /// @returns A sampled value.
-  /// @throws InvalidArgument if min value is more or equal to max value.
   double Sample();
 
   inline void Reset() {
@@ -450,6 +471,7 @@ class UniformDeviate : public Expression {
 class NormalDeviate : public Expression {
  public:
   /// Setup for normal distribution with validity check for arguments.
+  ///
   /// @param[in] mean The mean of the distribution.
   /// @param[in] sigma The standard deviation of the distribution.
   NormalDeviate(const ExpressionPtr& mean, const ExpressionPtr& sigma)
@@ -459,14 +481,11 @@ class NormalDeviate : public Expression {
     Expression::args_.push_back(sigma);
   }
 
-  /// @throws InvalidArgument if sigma is negative or zero.
+  /// @throws InvalidArgument The sigma is negative or zero.
   void Validate();
 
   inline double Mean() { return mean_->Mean(); }
 
-  /// Samples the normal distribution.
-  /// @returns A sampled value.
-  /// @throws InvalidArgument if the sampled sigma is negative or zero.
   double Sample();
 
   inline void Reset() {
@@ -475,8 +494,13 @@ class NormalDeviate : public Expression {
     sigma_->Reset();
   }
 
-  /// @warning This is only an approximation.
+  /// @returns ~99.9% percentile value.
+  ///
+  /// @warning This is only an approximation of the maximum value.
   inline double Max() { return mean_->Max() + 6 * sigma_->Max(); }
+
+  /// @returns Less than 0.1% percentile value.
+  ///
   /// @warning This is only an approximation.
   inline double Min() { return mean_->Min() - 6 * sigma_->Max(); }
 
@@ -490,6 +514,7 @@ class NormalDeviate : public Expression {
 class LogNormalDeviate : public Expression {
  public:
   /// Setup for log-normal distribution with validity check for arguments.
+  ///
   /// @param[in] mean This is the mean of the log-normal distribution not the
   ///                 mean of underlying normal distribution,
   ///                 which is parameter mu. mu is the location parameter,
@@ -509,14 +534,11 @@ class LogNormalDeviate : public Expression {
     Expression::args_.push_back(level);
   }
 
-  /// @throws InvalidArgument if (mean <= 0) or (ef <= 0) or (level != 0.95)
+  /// @throws InvalidArgument (mean <= 0) or (ef <= 0) or (level != 0.95)
   void Validate();
 
   inline double Mean() { return mean_->Mean(); }
 
-  /// Samples provided arguments and feeds the Log-normal generator.
-  /// @returns A sampled value.
-  /// @throws InvalidArgument if (mean <= 0) or (ef <= 0) or (level != 0.95)
   double Sample();
 
   inline void Reset() {
@@ -547,6 +569,7 @@ class LogNormalDeviate : public Expression {
 class GammaDeviate : public Expression {
  public:
   /// Setup for Gamma distribution with validity check for arguments.
+  ///
   /// @param[in] k Shape parameter of Gamma distribution.
   /// @param[in] theta Scale parameter of Gamma distribution.
   GammaDeviate(const ExpressionPtr& k, const ExpressionPtr& theta)
@@ -556,14 +579,11 @@ class GammaDeviate : public Expression {
     Expression::args_.push_back(theta);
   }
 
-  /// @throws InvalidArgument if (k <= 0) or (theta <= 0)
+  /// @throws InvalidArgument (k <= 0) or (theta <= 0)
   void Validate();
 
   inline double Mean() { return k_->Mean() * theta_->Mean(); }
 
-  /// Samples provided arguments and feeds the gamma distribution generator.
-  /// @returns A sampled value.
-  /// @throws InvalidArgument if (k <= 0) or (theta <= 0)
   double Sample();
 
   inline void Reset() {
@@ -592,6 +612,7 @@ class GammaDeviate : public Expression {
 class BetaDeviate : public Expression {
  public:
   /// Setup for Beta distribution with validity check for arguments.
+  ///
   /// @param[in] alpha Alpha shape parameter of Gamma distribution.
   /// @param[in] beta Beta shape parameter of Gamma distribution.
   BetaDeviate(const ExpressionPtr& alpha, const ExpressionPtr& beta)
@@ -601,16 +622,13 @@ class BetaDeviate : public Expression {
     Expression::args_.push_back(beta);
   }
 
-  /// @throws InvalidArgument if (alpha <= 0) or (beta <= 0)
+  /// @throws InvalidArgument (alpha <= 0) or (beta <= 0)
   void Validate();
 
   inline double Mean() {
     return alpha_->Mean() / (alpha_->Mean() + beta_->Mean());
   }
 
-  /// Samples provided arguments and feeds the beta distribution generator.
-  /// @returns A sampled value.
-  /// @throws InvalidArgument if (alpha <= 0) or (beta <= 0)
   double Sample();
 
   inline void Reset() {
@@ -636,10 +654,15 @@ class BetaDeviate : public Expression {
 class Histogram : public Expression {
  public:
   /// Histogram distribution setup.
+  ///
   /// @param[in] boundaries The upper bounds of intervals.
   /// @param[in] weights The positive weights of intervals restricted by
   ///                    the upper boundaries. Therefore, the number of
   ///                    weights must be equal to the number of boundaries.
+  ///
+  /// @throws InvalidArgument The boundaries container size is not equal to
+  ///                         weights container size.
+  ///
   /// @note This description of histogram sampling is for probabilities mostly.
   ///       Therefore, it is not flexible. Currently, it allows sampling both
   ///       boundaries and weights. This behavior makes checking for valid
@@ -648,22 +671,16 @@ class Histogram : public Expression {
   ///       The starting point is assumed to be 0, which leaves only positive
   ///       values for boundaries. This behavior is restrictive and should
   ///       be handled accordingly.
-  /// @throws InvalidArgument if boundaries container size is not equal to
-  ///                         weights container size.
   Histogram(const std::vector<ExpressionPtr>& boundaries,
             const std::vector<ExpressionPtr>& weights);
 
-  /// @throws InvalidArgument if the boundaries are not strictly increasing
+  /// @throws InvalidArgument The boundaries are not strictly increasing
   ///                         or weights are negative.
   void Validate();
 
   /// Calculates the mean from the histogram.
   double Mean();
 
-  /// Samples the underlying expressions and provides the sampling from
-  /// histogram distribution.
-  /// @throws InvalidArgument if the boundaries are not strictly increasing
-  ///                         or weights are negative.
   double Sample();
 
   inline void Reset() {
@@ -682,11 +699,18 @@ class Histogram : public Expression {
 
  private:
   /// Checks if mean values of expressions are strictly increasing.
-  /// @throws InvalidArgument if the mean values are not strictly increasing.
+  ///
+  /// @param[in] boundaries The upper bounds of intervals.
+  ///
+  /// @throws InvalidArgument The mean values are not strictly increasing.
   void CheckBoundaries(const std::vector<ExpressionPtr>& boundaries);
 
   /// Checks if mean values of boundaries are non-negative.
-  /// @throws InvalidArgument if the mean values are negative.
+  ///
+  /// @param[in] weights The positive weights of intervals restricted by
+  ///                    the upper boundaries.
+  ///
+  /// @throws InvalidArgument The mean values are negative.
   void CheckWeights(const std::vector<ExpressionPtr>& weights);
 
   /// Upper boundaries of the histogram.
@@ -701,12 +725,14 @@ class Histogram : public Expression {
 class Neg : public Expression {
  public:
   /// Construct a new expression that negates a given argument expression.
+  ///
   /// @param[in] expression The expression to be negated.
   explicit Neg(const ExpressionPtr& expression) : expression_(expression) {
     Expression::args_.push_back(expression);
   }
 
   inline double Mean() { return -expression_->Mean(); }
+
   inline double Sample() {
     if (!Expression::sampled_) {
       Expression::sampled_ = true;
@@ -714,10 +740,12 @@ class Neg : public Expression {
     }
     return Expression::sampled_value_;
   }
+
   inline void Reset() {
     Expression::sampled_ = false;
     expression_->Reset();
   }
+
   inline bool IsConstant() { return expression_->IsConstant(); }
   inline double Max() { return -expression_->Min(); }
   inline double Min() { return -expression_->Max(); }
@@ -731,7 +759,9 @@ class Neg : public Expression {
 class Add : public Expression {
  public:
   /// Construct a new expression that add given argument expressions.
+  ///
   /// @param[in] arguments The arguments of the addition equation.
+  ///
   /// @note It is assumed that arguments contain at least one element.
   explicit Add(const std::vector<ExpressionPtr>& arguments) {
     Expression::args_ = arguments;
@@ -746,6 +776,7 @@ class Add : public Expression {
     }
     return mean;
   }
+
   inline double Sample() {
     assert(!args_.empty());
     if (!Expression::sampled_) {
@@ -758,6 +789,7 @@ class Add : public Expression {
     }
     return Expression::sampled_value_;
   }
+
   inline void Reset() {
     assert(!args_.empty());
     Expression::sampled_ = false;
@@ -766,6 +798,7 @@ class Add : public Expression {
       (*it)->Reset();
     }
   }
+
   inline bool IsConstant() {
     std::vector<ExpressionPtr>::iterator it;
     for (it = args_.begin(); it != args_.end(); ++it) {
@@ -773,6 +806,7 @@ class Add : public Expression {
     }
     return true;
   }
+
   inline double Max() {
     assert(!args_.empty());
     double max = 0;
@@ -782,6 +816,7 @@ class Add : public Expression {
     }
     return max;
   }
+
   inline double Min() {
     assert(!args_.empty());
     double min = 0;
@@ -800,7 +835,9 @@ class Sub : public Expression {
  public:
   /// Construct a new expression that subtracts given argument expressions
   /// from the first argument expression.
+  ///
   /// @param[in] arguments The arguments for operation.
+  ///
   /// @note It is assumed that arguments contain at least one element.
   explicit Sub(const std::vector<ExpressionPtr>& arguments) {
     Expression::args_ = arguments;
@@ -815,6 +852,7 @@ class Sub : public Expression {
     }
     return mean;
   }
+
   inline double Sample() {
     assert(!args_.empty());
     if (!Expression::sampled_) {
@@ -827,6 +865,7 @@ class Sub : public Expression {
     }
     return Expression::sampled_value_;
   }
+
   inline void Reset() {
     assert(!args_.empty());
     Expression::sampled_ = false;
@@ -835,6 +874,7 @@ class Sub : public Expression {
       (*it)->Reset();
     }
   }
+
   inline bool IsConstant() {
     assert(!args_.empty());
     std::vector<ExpressionPtr>::iterator it;
@@ -843,6 +883,7 @@ class Sub : public Expression {
     }
     return true;
   }
+
   inline double Max() {
     assert(!args_.empty());
     std::vector<ExpressionPtr>::iterator it = args_.begin();
@@ -852,6 +893,7 @@ class Sub : public Expression {
     }
     return max;
   }
+
   inline double Min() {
     assert(!args_.empty());
     std::vector<ExpressionPtr>::iterator it = args_.begin();
@@ -868,7 +910,9 @@ class Sub : public Expression {
 class Mul : public Expression {
  public:
   /// Construct a new expression that multiplies given argument expressions.
+  ///
   /// @param[in] arguments The arguments for operation.
+  ///
   /// @note It is assumed that arguments contain at least one element.
   explicit Mul(const std::vector<ExpressionPtr>& arguments) {
     Expression::args_ = arguments;
@@ -883,6 +927,7 @@ class Mul : public Expression {
     }
     return mean;
   }
+
   inline double Sample() {
     assert(!args_.empty());
     if (!Expression::sampled_) {
@@ -895,6 +940,7 @@ class Mul : public Expression {
     }
     return Expression::sampled_value_;
   }
+
   inline void Reset() {
     assert(!args_.empty());
     Expression::sampled_ = false;
@@ -903,6 +949,7 @@ class Mul : public Expression {
       (*it)->Reset();
     }
   }
+
   inline bool IsConstant() {
     assert(!args_.empty());
     std::vector<ExpressionPtr>::iterator it;
@@ -911,8 +958,10 @@ class Mul : public Expression {
     }
     return true;
   }
+
   /// Finds maximum product from the given arguments' minimum and maximum
   /// values. Negative values may introduce sign cancellation.
+  ///
   /// @returns Maximum possible value of the product.
   inline double Max() {
     assert(!args_.empty());
@@ -931,8 +980,10 @@ class Mul : public Expression {
     }
     return max;
   }
+
   /// Finds minimum product from the given arguments' minimum and maximum
   /// values. Negative values may introduce sign cancellation.
+  ///
   /// @returns Minimum possible value of the product.
   inline double Min() {
     assert(!args_.empty());
@@ -959,7 +1010,9 @@ class Div : public Expression {
  public:
   /// Construct a new expression that divides the first given argument
   /// by the rest of argument expressions.
+  ///
   /// @param[in] arguments The arguments for operation.
+  ///
   /// @note It is assumed that arguments contain at least one element.
   ///       No arguments except the first should be 0. The bevaior may be
   ///       undefined if the value is 0 for division.
@@ -976,6 +1029,7 @@ class Div : public Expression {
     }
     return mean;
   }
+
   inline double Sample() {
     assert(!args_.empty());
     if (!Expression::sampled_) {
@@ -988,6 +1042,7 @@ class Div : public Expression {
     }
     return Expression::sampled_value_;
   }
+
   inline void Reset() {
     assert(!args_.empty());
     Expression::sampled_ = false;
@@ -996,6 +1051,7 @@ class Div : public Expression {
       (*it)->Reset();
     }
   }
+
   inline bool IsConstant() {
     assert(!args_.empty());
     std::vector<ExpressionPtr>::iterator it;
@@ -1004,9 +1060,10 @@ class Div : public Expression {
     }
     return true;
   }
-  /// Finds maximum results of division of the given arguments'
-  /// minimum and maximum values.
-  /// Negative values may introduce sign cancellation.
+
+  /// Finds maximum results of division of the given arguments' minimum and
+  /// maximum values. Negative values may introduce sign cancellation.
+  ///
   /// @returns Maximum value for division of arguments.
   inline double Max() {
     assert(!args_.empty());
@@ -1025,9 +1082,10 @@ class Div : public Expression {
     }
     return max;
   }
-  /// Finds minimum results of division of the given arguments'
-  /// minimum and maximum values.
-  /// Negative values may introduce sign cancellation.
+
+  /// Finds minimum results of division of the given arguments' minimum and
+  /// maximum values. Negative values may introduce sign cancellation.
+  ///
   /// @returns Minimum value for division of arguments.
   inline double Min() {
     assert(!args_.empty());

@@ -1,15 +1,24 @@
+/*
+ * Copyright (C) 2000 Ari Johnson
+ * Copyright (C) 2002-2004 The libxml dev team
+ * Copyright (C) 2014-2015 Olzhas Rakhimov
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 /// @file relax_ng_validator.cc
 /// Implementation of RelaxNG Validator.
-/* relaxngvalidator.cpp
- * this class is agented off of the schemavalidator in libxml++
- * here is their license statement:
- *
- * libxml++ and this file are copyright (C) 2000 by Ari Johnson,
- * (C) 2002-2004 by the libxml dev team and
- * are covered by the GNU Lesser General Public License, which should be
- * included with libxml++ as the file COPYING.
- */
-
+/// This class is agented off of the schemavalidator in libxml++.
 #include "relax_ng_validator.h"
 
 #include <libxml/xmlerror.h>
@@ -18,59 +27,40 @@
 
 namespace scram {
 
-RelaxNGValidator::RelaxNGValidator() : schema_(0), valid_context_(0) {}
+RelaxNGValidator::RelaxNGValidator() : schema_(NULL), valid_context_(NULL) {}
 
 RelaxNGValidator::~RelaxNGValidator() {
-  release_underlying();
+  RelaxNGValidator::ReleaseUnderlying();
 }
 
-void RelaxNGValidator::parse_context(xmlRelaxNGParserCtxtPtr context) {
-  release_underlying();  // Free any existing info
-  schema_ = xmlRelaxNGParse(context);
-  if (!schema_) {
-    throw ValidationError("Schema could not be parsed");
-  }
-}
-
-void RelaxNGValidator::parse_memory(const Glib::ustring& contents) {
+void RelaxNGValidator::ParseMemory(const Glib::ustring& contents) {
   xmlRelaxNGParserCtxtPtr context =
-    xmlRelaxNGNewMemParserCtxt(contents.c_str(), contents.bytes());
-  parse_context(context);
+      xmlRelaxNGNewMemParserCtxt(contents.c_str(), contents.bytes());
+  RelaxNGValidator::ParseContext(context);
 }
 
-void RelaxNGValidator::release_underlying() {
-  if (valid_context_) {
-    xmlRelaxNGFreeValidCtxt(valid_context_);
-    valid_context_ = 0;
-  }
-
-  if (schema_) {
-    xmlRelaxNGFree(schema_);
-    schema_ = 0;
-  }
-}
-
-bool RelaxNGValidator::Validate(const xmlpp::Document* doc) {
+void RelaxNGValidator::Validate(const xmlpp::Document* doc) {
   if (!doc) {
-    throw ValidationError("Document pointer cannot be 0");
+    throw InvalidArgument("Document pointer cannot be NULL");
   }
 
   if (!schema_) {
-    throw ValidationError("Must have a schema to validate document");
+    throw LogicError("Must have a schema to validate document");
   }
 
-  // A context is required at this stage only
+  // A context is required at this stage only.
   if (!valid_context_) {
     valid_context_ = xmlRelaxNGNewValidCtxt(schema_);
   }
 
   if (!valid_context_) {
-    throw ValidationError("Couldn't create validating context");
+    throw Error("Couldn't create validating context");
   }
 
-  int res;
+  int res = 0;  // Validation result.
   try {
-    res = xmlRelaxNGValidateDoc(valid_context_, (xmlDocPtr)doc->cobj());
+    res = xmlRelaxNGValidateDoc(valid_context_,
+                                const_cast<xmlDocPtr>(doc->cobj()));
   } catch (xmlError& e) {
     throw ValidationError(e.message);
   }
@@ -78,8 +68,26 @@ bool RelaxNGValidator::Validate(const xmlpp::Document* doc) {
   if (res != 0) {
     throw ValidationError("Document failed schema validation");
   }
+}
 
-  return res;
+void RelaxNGValidator::ParseContext(xmlRelaxNGParserCtxtPtr context) {
+  RelaxNGValidator::ReleaseUnderlying();  // Free any existing info.
+  schema_ = xmlRelaxNGParse(context);
+  if (!schema_) {
+    throw LogicError("Schema could not be parsed");
+  }
+}
+
+void RelaxNGValidator::ReleaseUnderlying() {
+  if (valid_context_) {
+    xmlRelaxNGFreeValidCtxt(valid_context_);
+    valid_context_ = NULL;
+  }
+
+  if (schema_) {
+    xmlRelaxNGFree(schema_);
+    schema_ = NULL;
+  }
 }
 
 }  // namespace scram

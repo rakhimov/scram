@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2014-2015 Olzhas Rakhimov
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 /// @file initializer.cc
 /// Implementation of input file processing into analysis constructs.
 #include "initializer.h"
@@ -26,17 +42,16 @@ namespace fs = boost::filesystem;
 
 namespace scram {
 
-const std::map<std::string, Units> Initializer::units_ =
+const std::map<std::string, Units> Initializer::kUnits_ =
     boost::assign::map_list_of("bool", kBool) ("int", kInt) ("float", kFloat)
                               ("hours", kHours) ("hours-1", kInverseHours)
                               ("years", kYears) ("years-1", kInverseYears)
                               ("fit", kFit) ("demands", kDemands);
 
-const char* const Initializer::unit_to_string_[] = {"unitless", "bool", "int",
-                                                    "float", "hours",
-                                                    "hours-1", "years",
-                                                    "years-1", "fit",
-                                                    "demands"};
+const char* const Initializer::kUnitToString_[] = {"unitless", "bool", "int",
+                                                   "float", "hours", "hours-1",
+                                                   "years", "years-1", "fit",
+                                                   "demands"};
 
 Initializer::Initializer(const Settings& settings) {
   settings_ = settings;
@@ -79,7 +94,8 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
   if (!file_stream) {
     throw IOError("File '" + xml_file + "' could not be loaded.");
   }
-  /// Collection of input file locations in canonical path.
+
+  // Collection of input file locations in canonical path.
   std::set<std::string> input_paths;
   fs::path file_path = fs::canonical(xml_file);
   if (input_paths.count(file_path.native())) {
@@ -92,8 +108,7 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
   stream << file_stream.rdbuf();
   file_stream.close();
 
-  boost::shared_ptr<XMLParser> parser(new XMLParser());
-  parser->Init(stream);
+  boost::shared_ptr<XMLParser> parser(new XMLParser(stream));
 
   std::stringstream schema;
   std::string schema_path = Env::input_schema();
@@ -111,8 +126,7 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
 
   if (!model_) {  // Create only one model for multiple files.
     const xmlpp::Element* root_element =
-        dynamic_cast<const xmlpp::Element*>(root);
-    assert(root_element);
+        static_cast<const xmlpp::Element*>(root);
     std::string model_name = root_element->get_attribute_value("name");
     boost::trim(model_name);  // The name may be empty. It is optional.
     model_ = ModelPtr(new Model(model_name));
@@ -123,51 +137,57 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
 
   xmlpp::NodeSet fault_trees = root->find("./define-fault-tree");
   for (it_ch = fault_trees.begin(); it_ch != fault_trees.end(); ++it_ch) {
-    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it_ch);
-    assert(element);
+    const xmlpp::Element* element = static_cast<const xmlpp::Element*>(*it_ch);
     Initializer::DefineFaultTree(element);
   }
 
   xmlpp::NodeSet ccf_groups = root->find("./define-CCF-group");
   for (it_ch = ccf_groups.begin(); it_ch != ccf_groups.end(); ++it_ch) {
-    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it_ch);
-    assert(element);
+    const xmlpp::Element* element = static_cast<const xmlpp::Element*>(*it_ch);
     Initializer::RegisterCcfGroup(element);
   }
 
   xmlpp::NodeSet model_data = root->find("./model-data");
   for (it_ch = model_data.begin(); it_ch != model_data.end(); ++it_ch) {
-    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it_ch);
-    assert(element);
+    const xmlpp::Element* element = static_cast<const xmlpp::Element*>(*it_ch);
     Initializer::ProcessModelData(element);
   }
 }
 
 void Initializer::ProcessTbdElements() {
-  std::vector< std::pair<ElementPtr, const xmlpp::Element*> >::iterator it;
+  // This element helps report errors.
+  const xmlpp::Element* el_def;  // XML element with the definition.
   try {
-    for (it = tbd_elements_.begin(); it != tbd_elements_.end(); ++it) {
-      if (boost::dynamic_pointer_cast<BasicEvent>(it->first)) {
-        BasicEventPtr basic_event =
-            boost::dynamic_pointer_cast<BasicEvent>(it->first);
-        Initializer::DefineBasicEvent(it->second, basic_event);
+    std::vector<std::pair<ParameterPtr,
+        const xmlpp::Element*> >::iterator it_p;
+    for (it_p = tbd_.parameters.begin(); it_p != tbd_.parameters.end();
+         ++it_p) {
+      el_def = it_p->second;
+      Initializer::DefineParameter(el_def, it_p->first);
+    }
+    std::vector<std::pair<BasicEventPtr,
+        const xmlpp::Element*> >::iterator it_b;
+    for (it_b = tbd_.basic_events.begin(); it_b != tbd_.basic_events.end();
+         ++it_b) {
+      el_def = it_b->second;
+      Initializer::DefineBasicEvent(el_def, it_b->first);
+    }
+    std::vector<std::pair<GatePtr,
+        const xmlpp::Element*> >::iterator it_g;
+    for (it_g = tbd_.gates.begin(); it_g != tbd_.gates.end(); ++it_g) {
+      el_def = it_g->second;
+      Initializer::DefineGate(el_def, it_g->first);
 
-      } else if (boost::dynamic_pointer_cast<Gate>(it->first)) {
-        GatePtr gate = boost::dynamic_pointer_cast<Gate>(it->first);
-        Initializer::DefineGate(it->second, gate);
-
-      } else if (boost::dynamic_pointer_cast<CcfGroup>(it->first)) {
-        CcfGroupPtr ccf_group =
-            boost::dynamic_pointer_cast<CcfGroup>(it->first);
-        Initializer::DefineCcfGroup(it->second, ccf_group);
-
-      } else if (boost::dynamic_pointer_cast<Parameter>(it->first)) {
-        ParameterPtr param = boost::dynamic_pointer_cast<Parameter>(it->first);
-        Initializer::DefineParameter(it->second, param);
-      }
+    }
+    std::vector<std::pair<CcfGroupPtr,
+        const xmlpp::Element*> >::iterator it_c;
+    for (it_c = tbd_.ccf_groups.begin(); it_c != tbd_.ccf_groups.end();
+         ++it_c) {
+      el_def = it_c->second;
+      Initializer::DefineCcfGroup(el_def, it_c->first);
     }
   } catch (ValidationError& err) {
-    const xmlpp::Node* root = it->second->find("/opsa-mef")[0];
+    const xmlpp::Node* root = el_def->find("/opsa-mef")[0];
     err.msg("In file '" + doc_to_file_.find(root)->second + "', " + err.msg());
     throw err;
   }
@@ -179,8 +199,7 @@ void Initializer::AttachLabelAndAttributes(const xmlpp::Element* element_node,
   if (!labels.empty()) {
     assert(labels.size() == 1);
     const xmlpp::Element* label =
-        dynamic_cast<const xmlpp::Element*>(labels.front());
-    assert(label);
+        static_cast<const xmlpp::Element*>(labels.front());
     const xmlpp::TextNode* text = label->get_child_text();
     assert(text);
     element->label(text->get_content());
@@ -190,13 +209,11 @@ void Initializer::AttachLabelAndAttributes(const xmlpp::Element* element_node,
   if (!attributes.empty()) {
     assert(attributes.size() == 1);  // Only one big element 'attributes'.
     const xmlpp::Element* attributes_element =
-        dynamic_cast<const xmlpp::Element*>(attributes.front());
-    xmlpp::NodeSet attribute_list =
-        attributes_element->find("./attribute");
+        static_cast<const xmlpp::Element*>(attributes.front());
+    xmlpp::NodeSet attribute_list = attributes_element->find("./attribute");
     xmlpp::NodeSet::iterator it;
     for (it = attribute_list.begin(); it != attribute_list.end(); ++it) {
-      const xmlpp::Element* attribute =
-          dynamic_cast<const xmlpp::Element*>(*it);
+      const xmlpp::Element* attribute = static_cast<const xmlpp::Element*>(*it);
       Attribute attr;
       attr.name = attribute->get_attribute_value("name");
       boost::trim(attr.name);
@@ -257,46 +274,40 @@ void Initializer::RegisterFaultTreeData(const xmlpp::Element* ft_node,
 
   xmlpp::NodeSet::iterator it;
   for (it = house_events.begin(); it != house_events.end(); ++it) {
-    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
-    assert(element);
+    const xmlpp::Element* element = static_cast<const xmlpp::Element*>(*it);
     component->AddHouseEvent(
         Initializer::DefineHouseEvent(element, base_path,
                                       component->is_public()));
   }
   CLOCK(basic_time);
   for (it = basic_events.begin(); it != basic_events.end(); ++it) {
-    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
-    assert(element);
+    const xmlpp::Element* element = static_cast<const xmlpp::Element*>(*it);
     component->AddBasicEvent(
         Initializer::RegisterBasicEvent(element, base_path,
                                         component->is_public()));
   }
   LOG(DEBUG2) << "Basic event registration time " << DUR(basic_time);
   for (it = parameters.begin(); it != parameters.end(); ++it) {
-    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
-    assert(element);
+    const xmlpp::Element* element = static_cast<const xmlpp::Element*>(*it);
     component->AddParameter(
         Initializer::RegisterParameter(element, base_path,
                                        component->is_public()));
   }
   CLOCK(gate_time);
   for (it = gates.begin(); it != gates.end(); ++it) {
-    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
-    assert(element);
+    const xmlpp::Element* element = static_cast<const xmlpp::Element*>(*it);
     component->AddGate(Initializer::RegisterGate(element, base_path,
                                                  component->is_public()));
   }
   LOG(DEBUG2) << "Gate registration time " << DUR(gate_time);
   for (it = ccf_groups.begin(); it != ccf_groups.end(); ++it) {
-    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
-    assert(element);
+    const xmlpp::Element* element = static_cast<const xmlpp::Element*>(*it);
     component->AddCcfGroup(
         Initializer::RegisterCcfGroup(element, base_path,
                                       component->is_public()));
   }
   for (it = components.begin(); it != components.end(); ++it) {
-    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
-    assert(element);
+    const xmlpp::Element* element = static_cast<const xmlpp::Element*>(*it);
     ComponentPtr sub = Initializer::DefineComponent(element, base_path,
                                                     component->is_public());
     try {
@@ -318,20 +329,17 @@ void Initializer::ProcessModelData(const xmlpp::Element* model_data) {
   xmlpp::NodeSet::iterator it;
 
   for (it = house_events.begin(); it != house_events.end(); ++it) {
-    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
-    assert(element);
+    const xmlpp::Element* element = static_cast<const xmlpp::Element*>(*it);
     Initializer::DefineHouseEvent(element);
   }
   CLOCK(basic_time);
   for (it = basic_events.begin(); it != basic_events.end(); ++it) {
-    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
-    assert(element);
+    const xmlpp::Element* element = static_cast<const xmlpp::Element*>(*it);
     Initializer::RegisterBasicEvent(element);
   }
   LOG(DEBUG2) << "Basic event registration time " << DUR(basic_time);
   for (it = parameters.begin(); it != parameters.end(); ++it) {
-    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
-    assert(element);
+    const xmlpp::Element* element = static_cast<const xmlpp::Element*>(*it);
     Initializer::RegisterParameter(element);
   }
 }
@@ -355,7 +363,7 @@ boost::shared_ptr<Gate> Initializer::RegisterGate(
     err.msg(msg.str() + err.msg());
     throw err;
   }
-  tbd_elements_.push_back(std::make_pair(gate, gate_node));
+  tbd_.gates.push_back(std::make_pair(gate, gate_node));
   Initializer::AttachLabelAndAttributes(gate_node, gate);
   return gate;
 }
@@ -367,7 +375,7 @@ void Initializer::DefineGate(const xmlpp::Element* gate_node,
   // Assumes that there are no attributes and labels.
   assert(formulas.size() == 1);
   const xmlpp::Element* formula_node =
-      dynamic_cast<const xmlpp::Element*>(formulas.front());
+      static_cast<const xmlpp::Element*>(formulas.front());
   gate->formula(Initializer::GetFormula(formula_node, gate->base_path()));
   try {
     gate->Validate();
@@ -421,8 +429,7 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
                                              "name() = 'house-event']");
   xmlpp::NodeSet::const_iterator it;
   for (it = events.begin(); it != events.end(); ++it) {
-    const xmlpp::Element* event = dynamic_cast<const xmlpp::Element*>(*it);
-    assert(event);
+    const xmlpp::Element* event = static_cast<const xmlpp::Element*>(*it);
     std::string name = event->get_attribute_value("name");
     boost::trim(name);
 
@@ -436,21 +443,36 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
     }
 
     try {
-      EventPtr child;
       if (element_type == "event") {  // Undefined type yet.
-        child = model_->GetEvent(name, base_path);
-
+        std::pair<EventPtr, std::string> target =
+            model_->GetEvent(name, base_path);
+        EventPtr event = target.first;
+        event->orphan(false);
+        std::string type = target.second;
+        if (type == "gate") {
+          formula->AddArgument(boost::static_pointer_cast<Gate>(event));
+        } else if (type == "basic-event") {
+          formula->AddArgument(boost::static_pointer_cast<BasicEvent>(event));
+        } else {
+          assert(type == "house-event");
+          formula->AddArgument(boost::static_pointer_cast<HouseEvent>(event));
+        }
       } else if (element_type == "gate") {
-        child = model_->GetGate(name, base_path);
+        GatePtr gate = model_->GetGate(name, base_path);
+        formula->AddArgument(gate);
+        gate->orphan(false);
 
       } else if (element_type == "basic-event") {
-        child = model_->GetBasicEvent(name, base_path);
+        BasicEventPtr basic_event = model_->GetBasicEvent(name, base_path);
+        formula->AddArgument(basic_event);
+        basic_event->orphan(false);
 
-      } else if (element_type == "house-event") {
-        child = model_->GetHouseEvent(name, base_path);
+      } else {
+        assert(element_type == "house-event");
+        HouseEventPtr house_event = model_->GetHouseEvent(name, base_path);
+        formula->AddArgument(house_event);
+        house_event->orphan(false);
       }
-      formula->AddArgument(child);
-      child->orphan(false);
     } catch (ValidationError& err) {
       std::stringstream msg;
       msg << "Line " << event->get_line() << ":\n";
@@ -465,8 +487,7 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
                                                "name() != 'house-event']");
   for (it = formulas.begin(); it != formulas.end(); ++it) {
     const xmlpp::Element* nested_formula =
-        dynamic_cast<const xmlpp::Element*>(*it);
-    assert(nested_formula);
+        static_cast<const xmlpp::Element*>(*it);
     formula->AddArgument(Initializer::GetFormula(nested_formula, base_path));
   }
 }
@@ -490,7 +511,7 @@ boost::shared_ptr<BasicEvent> Initializer::RegisterBasicEvent(
     err.msg(msg.str() + err.msg());
     throw err;
   }
-  tbd_elements_.push_back(std::make_pair(basic_event, event_node));
+  tbd_.basic_events.push_back(std::make_pair(basic_event, event_node));
   Initializer::AttachLabelAndAttributes(event_node, basic_event);
   return basic_event;
 }
@@ -502,8 +523,7 @@ void Initializer::DefineBasicEvent(const xmlpp::Element* event_node,
 
   if (!expressions.empty()) {
     const xmlpp::Element* expr_node =
-        dynamic_cast<const xmlpp::Element*>(expressions.back());
-    assert(expr_node);
+        static_cast<const xmlpp::Element*>(expressions.back());
     ExpressionPtr expression =
         Initializer::GetExpression(expr_node, basic_event->base_path());
     basic_event->expression(expression);
@@ -535,8 +555,7 @@ boost::shared_ptr<HouseEvent> Initializer::DefineHouseEvent(
   if (!expression.empty()) {
     assert(expression.size() == 1);
     const xmlpp::Element* constant =
-        dynamic_cast<const xmlpp::Element*>(expression.front());
-    assert(constant);
+        static_cast<const xmlpp::Element*>(expression.front());
 
     std::string val = constant->get_attribute_value("value");
     boost::trim(val);
@@ -567,14 +586,14 @@ boost::shared_ptr<Parameter> Initializer::RegisterParameter(
     err.msg(msg.str() + err.msg());
     throw err;
   }
-  tbd_elements_.push_back(std::make_pair(parameter, param_node));
+  tbd_.parameters.push_back(std::make_pair(parameter, param_node));
 
   // Attach units.
   std::string unit = param_node->get_attribute_value("unit");
   boost::trim(unit);
   if (unit != "") {
-    assert(units_.count(unit));
-    parameter->unit(units_.find(unit)->second);
+    assert(kUnits_.count(unit));
+    parameter->unit(kUnits_.find(unit)->second);
   }
   Initializer::AttachLabelAndAttributes(param_node, parameter);
   return parameter;
@@ -587,8 +606,7 @@ void Initializer::DefineParameter(const xmlpp::Element* param_node,
       param_node->find("./*[name() != 'attributes' and name() != 'label']");
   assert(expressions.size() == 1);
   const xmlpp::Element* expr_node =
-      dynamic_cast<const xmlpp::Element*>(expressions.back());
-  assert(expr_node);
+      static_cast<const xmlpp::Element*>(expressions.back());
   ExpressionPtr expression =
       Initializer::GetExpression(expr_node, parameter->base_path());
 
@@ -647,7 +665,7 @@ bool Initializer::GetParameterExpression(const xmlpp::Element* expr_element,
     try {
       ParameterPtr param = model_->GetParameter(name, base_path);
       param->unused(false);
-      param_unit = unit_to_string_[param->unit()];
+      param_unit = kUnitToString_[param->unit()];
       expression = param;
     } catch (ValidationError& err) {
       std::stringstream msg;
@@ -656,7 +674,7 @@ bool Initializer::GetParameterExpression(const xmlpp::Element* expr_element,
       throw err;
     }
   } else if (expr_name == "system-mission-time") {
-    param_unit = unit_to_string_[mission_time_->unit()];
+    param_unit = kUnitToString_[mission_time_->unit()];
     expression = mission_time_;
 
   } else {
@@ -683,13 +701,10 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
   xmlpp::NodeSet args = expr_element->find("./*");
   if (expr_name == "uniform-deviate") {
     assert(args.size() == 2);
-    const xmlpp::Element* element =
-        dynamic_cast<const xmlpp::Element*>(args[0]);
-    assert(element);
+    const xmlpp::Element* element = static_cast<const xmlpp::Element*>(args[0]);
     ExpressionPtr min = GetExpression(element, base_path);
 
-    element = dynamic_cast<const xmlpp::Element*>(args[1]);
-    assert(element);
+    element = static_cast<const xmlpp::Element*>(args[1]);
     ExpressionPtr max = GetExpression(element, base_path);
 
     expression = boost::shared_ptr<UniformDeviate>(
@@ -697,13 +712,10 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
 
   } else if (expr_name == "normal-deviate") {
     assert(args.size() == 2);
-    const xmlpp::Element* element =
-        dynamic_cast<const xmlpp::Element*>(args[0]);
-    assert(element);
+    const xmlpp::Element* element = static_cast<const xmlpp::Element*>(args[0]);
     ExpressionPtr mean = GetExpression(element, base_path);
 
-    element = dynamic_cast<const xmlpp::Element*>(args[1]);
-    assert(element);
+    element = static_cast<const xmlpp::Element*>(args[1]);
     ExpressionPtr sigma = GetExpression(element, base_path);
 
     expression = boost::shared_ptr<NormalDeviate>(
@@ -711,17 +723,13 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
 
   } else if (expr_name == "lognormal-deviate") {
     assert(args.size() == 3);
-    const xmlpp::Element* element =
-        dynamic_cast<const xmlpp::Element*>(args[0]);
-    assert(element);
+    const xmlpp::Element* element = static_cast<const xmlpp::Element*>(args[0]);
     ExpressionPtr mean = GetExpression(element, base_path);
 
-    element = dynamic_cast<const xmlpp::Element*>(args[1]);
-    assert(element);
+    element = static_cast<const xmlpp::Element*>(args[1]);
     ExpressionPtr ef = GetExpression(element, base_path);
 
-    element = dynamic_cast<const xmlpp::Element*>(args[2]);
-    assert(element);
+    element = static_cast<const xmlpp::Element*>(args[2]);
     ExpressionPtr level = GetExpression(element, base_path);
 
     expression = boost::shared_ptr<LogNormalDeviate>(
@@ -729,26 +737,20 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
 
   } else if (expr_name == "gamma-deviate") {
     assert(args.size() == 2);
-    const xmlpp::Element* element =
-        dynamic_cast<const xmlpp::Element*>(args[0]);
-    assert(element);
+    const xmlpp::Element* element = static_cast<const xmlpp::Element*>(args[0]);
     ExpressionPtr k = GetExpression(element, base_path);
 
-    element = dynamic_cast<const xmlpp::Element*>(args[1]);
-    assert(element);
+    element = static_cast<const xmlpp::Element*>(args[1]);
     ExpressionPtr theta = GetExpression(element, base_path);
 
     expression = boost::shared_ptr<GammaDeviate>(new GammaDeviate(k, theta));
 
   } else if (expr_name == "beta-deviate") {
     assert(args.size() == 2);
-    const xmlpp::Element* element =
-        dynamic_cast<const xmlpp::Element*>(args[0]);
-    assert(element);
+    const xmlpp::Element* element = static_cast<const xmlpp::Element*>(args[0]);
     ExpressionPtr alpha = GetExpression(element, base_path);
 
-    element = dynamic_cast<const xmlpp::Element*>(args[1]);
-    assert(element);
+    element = static_cast<const xmlpp::Element*>(args[1]);
     ExpressionPtr beta = GetExpression(element, base_path);
 
     expression = boost::shared_ptr<BetaDeviate>(new BetaDeviate(alpha, beta));
@@ -758,17 +760,15 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
     std::vector<ExpressionPtr> weights;
     xmlpp::NodeSet::iterator it;
     for (it = args.begin(); it != args.end(); ++it) {
-      const xmlpp::Element* el = dynamic_cast<const xmlpp::Element*>(*it);
+      const xmlpp::Element* el = static_cast<const xmlpp::Element*>(*it);
       xmlpp::NodeSet pair = el->find("./*");
       assert(pair.size() == 2);
       const xmlpp::Element* element =
-          dynamic_cast<const xmlpp::Element*>(pair[0]);
-      assert(element);
+          static_cast<const xmlpp::Element*>(pair[0]);
       ExpressionPtr bound = GetExpression(element, base_path);
       boundaries.push_back(bound);
 
-      element = dynamic_cast<const xmlpp::Element*>(pair[1]);
-      assert(element);
+      element = static_cast<const xmlpp::Element*>(pair[1]);
       ExpressionPtr weight = GetExpression(element, base_path);
       weights.push_back(weight);
     }
@@ -777,13 +777,10 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
 
   } else if (expr_name == "exponential") {
     assert(args.size() == 2);
-    const xmlpp::Element* element =
-        dynamic_cast<const xmlpp::Element*>(args[0]);
-    assert(element);
+    const xmlpp::Element* element = static_cast<const xmlpp::Element*>(args[0]);
     ExpressionPtr lambda = GetExpression(element, base_path);
 
-    element = dynamic_cast<const xmlpp::Element*>(args[1]);
-    assert(element);
+    element = static_cast<const xmlpp::Element*>(args[1]);
     ExpressionPtr time = GetExpression(element, base_path);
 
     expression = boost::shared_ptr<ExponentialExpression>(
@@ -791,21 +788,16 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
 
   } else if (expr_name == "GLM") {
     assert(args.size() == 4);
-    const xmlpp::Element* element =
-        dynamic_cast<const xmlpp::Element*>(args[0]);
-    assert(element);
+    const xmlpp::Element* element = static_cast<const xmlpp::Element*>(args[0]);
     ExpressionPtr gamma = GetExpression(element, base_path);
 
-    element = dynamic_cast<const xmlpp::Element*>(args[1]);
-    assert(element);
+    element = static_cast<const xmlpp::Element*>(args[1]);
     ExpressionPtr lambda = GetExpression(element, base_path);
 
-    element = dynamic_cast<const xmlpp::Element*>(args[2]);
-    assert(element);
+    element = static_cast<const xmlpp::Element*>(args[2]);
     ExpressionPtr mu = GetExpression(element, base_path);
 
-    element = dynamic_cast<const xmlpp::Element*>(args[3]);
-    assert(element);
+    element = static_cast<const xmlpp::Element*>(args[3]);
     ExpressionPtr time = GetExpression(element, base_path);
 
     expression = boost::shared_ptr<GlmExpression>(
@@ -813,21 +805,16 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
 
   } else if (expr_name == "Weibull") {
     assert(args.size() == 4);
-    const xmlpp::Element* element =
-        dynamic_cast<const xmlpp::Element*>(args[0]);
-    assert(element);
+    const xmlpp::Element* element = static_cast<const xmlpp::Element*>(args[0]);
     ExpressionPtr alpha = GetExpression(element, base_path);
 
-    element = dynamic_cast<const xmlpp::Element*>(args[1]);
-    assert(element);
+    element = static_cast<const xmlpp::Element*>(args[1]);
     ExpressionPtr beta = GetExpression(element, base_path);
 
-    element = dynamic_cast<const xmlpp::Element*>(args[2]);
-    assert(element);
+    element = static_cast<const xmlpp::Element*>(args[2]);
     ExpressionPtr t0 = GetExpression(element, base_path);
 
-    element = dynamic_cast<const xmlpp::Element*>(args[3]);
-    assert(element);
+    element = static_cast<const xmlpp::Element*>(args[3]);
     ExpressionPtr time = GetExpression(element, base_path);
 
     expression = boost::shared_ptr<WeibullExpression>(
@@ -878,13 +865,13 @@ boost::shared_ptr<CcfGroup> Initializer::RegisterCcfGroup(
   xmlpp::NodeSet members = ccf_node->find("./members");
   assert(members.size() == 1);
   const xmlpp::Element* element =
-      dynamic_cast<const xmlpp::Element*>(members[0]);
+      static_cast<const xmlpp::Element*>(members[0]);
 
   Initializer::ProcessCcfMembers(element, ccf_group);
 
   Initializer::AttachLabelAndAttributes(ccf_node, ccf_group);
 
-  tbd_elements_.push_back(std::make_pair(ccf_group, ccf_node));
+  tbd_.ccf_groups.push_back(std::make_pair(ccf_group, ccf_node));
   return ccf_group;
 }
 
@@ -893,15 +880,13 @@ void Initializer::DefineCcfGroup(const xmlpp::Element* ccf_node,
   xmlpp::NodeSet children = ccf_node->find("./*");
   xmlpp::NodeSet::iterator it;
   for (it = children.begin(); it != children.end(); ++it) {
-    const xmlpp::Element* element = dynamic_cast<const xmlpp::Element*>(*it);
-
-    assert(element);
+    const xmlpp::Element* element = static_cast<const xmlpp::Element*>(*it);
     std::string name = element->get_name();
 
     if (name == "distribution") {
       assert(element->find("./*").size() == 1);
       const xmlpp::Element* expr_node =
-          dynamic_cast<const xmlpp::Element*>(element->find("./*")[0]);
+          static_cast<const xmlpp::Element*>(element->find("./*")[0]);
       ExpressionPtr expression =
           Initializer::GetExpression(expr_node, ccf_group->base_path());
       ccf_group->AddDistribution(expression);
@@ -921,8 +906,7 @@ void Initializer::ProcessCcfMembers(const xmlpp::Element* members_node,
   assert(!children.empty());
   xmlpp::NodeSet::iterator it;
   for (it = children.begin(); it != children.end(); ++it) {
-    const xmlpp::Element* event_node = dynamic_cast<const xmlpp::Element*>(*it);
-    assert(event_node);
+    const xmlpp::Element* event_node = static_cast<const xmlpp::Element*>(*it);
     assert("basic-event" == event_node->get_name());
 
     std::string name = event_node->get_attribute_value("name");
@@ -948,9 +932,7 @@ void Initializer::ProcessCcfFactors(const xmlpp::Element* factors_node,
   // To keep track of CCF group factor levels.
   xmlpp::NodeSet::iterator it;
   for (it = children.begin(); it != children.end(); ++it) {
-    const xmlpp::Element* factor_node =
-        dynamic_cast<const xmlpp::Element*>(*it);
-    assert(factor_node);
+    const xmlpp::Element* factor_node = static_cast<const xmlpp::Element*>(*it);
     Initializer::DefineCcfFactor(factor_node, ccf_group);
   }
 }
@@ -969,7 +951,7 @@ void Initializer::DefineCcfFactor(const xmlpp::Element* factor_node,
   int level_num = boost::lexical_cast<int>(level);
   assert(factor_node->find("./*").size() == 1);
   const xmlpp::Element* expr_node =
-      dynamic_cast<const xmlpp::Element*>(factor_node->find("./*")[0]);
+      static_cast<const xmlpp::Element*>(factor_node->find("./*")[0]);
   ExpressionPtr expression =
       Initializer::GetExpression(expr_node, ccf_group->base_path());
   try {
@@ -1030,14 +1012,6 @@ void Initializer::CheckFirstLayer() {
 }
 
 void Initializer::CheckSecondLayer() {
-  if (!model_->fault_trees().empty()) {
-    boost::unordered_map<std::string, FaultTreePtr>::const_iterator it;
-    for (it = model_->fault_trees().begin(); it != model_->fault_trees().end();
-         ++it) {
-      it->second->Validate();
-    }
-  }
-
   if (!model_->ccf_groups().empty()) {
     boost::unordered_map<std::string, CcfGroupPtr>::const_iterator it;
     for (it = model_->ccf_groups().begin(); it != model_->ccf_groups().end();
@@ -1107,7 +1081,16 @@ void Initializer::ValidateExpressions() {
 }
 
 void Initializer::SetupForAnalysis() {
-  // CCF groups.
+  // Collecting top events of fault trees.
+  if (!model_->fault_trees().empty()) {
+    boost::unordered_map<std::string, FaultTreePtr>::const_iterator it;
+    for (it = model_->fault_trees().begin(); it != model_->fault_trees().end();
+         ++it) {
+      it->second->CollectTopEvents();
+    }
+  }
+
+  // CCF groups must apply models to basic event members.
   if (!model_->ccf_groups().empty()) {
     boost::unordered_map<std::string, CcfGroupPtr>::const_iterator it;
     for (it = model_->ccf_groups().begin(); it != model_->ccf_groups().end();

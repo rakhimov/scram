@@ -1,5 +1,5 @@
 ###############################
-TODO list for the SCRAM Project
+TODO List for the SCRAM Project
 ###############################
 
 .. note::
@@ -18,8 +18,8 @@ Major Enhancements and Capabilities
 ===================================
 
 - Boolean formula rewriting for fault trees. *High*
-- Binary Decision Diagram (BDD) based Algorithms. *High*
-- Zero-Suppressed BDD (ZBDD) based Algorithms. *High*
+- Binary Decision Diagram (BDD) based algorithms. *High*
+- Zero-Suppressed BDD (ZBDD) based algorithms. *High*
 - Sensitivity analysis. *Moderate*
 - Incorporation of an event tree analysis. *Moderate*
 - Event tree chaining. *Moderate*

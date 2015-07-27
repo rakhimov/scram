@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2014-2015 Olzhas Rakhimov
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 /// @file fault_tree.cc
 /// Implementation of fault tree and component containers.
 #include "fault_tree.h"
@@ -16,8 +32,8 @@ namespace scram {
 
 Component::Component(const std::string& name, const std::string& base_path,
                      bool is_public)
-    : name_(name),
-      Role::Role(is_public, base_path) {}
+    : Role::Role(is_public, base_path),
+      name_(name) {}
 
 void Component::AddGate(const GatePtr& gate) {
   std::string name = gate->name();
@@ -99,7 +115,8 @@ void Component::GatherGates(boost::unordered_set<GatePtr>* gates) {
 
 FaultTree::FaultTree(const std::string& name) : Component::Component(name) {}
 
-void FaultTree::Validate() {
+void FaultTree::CollectTopEvents() {
+  top_events_.clear();
   boost::unordered_set<GatePtr> gates;
   Component::GatherGates(&gates);
   // Detects top events.
@@ -121,14 +138,12 @@ void FaultTree::MarkNonTopGates(const GatePtr& gate,
 
 void FaultTree::MarkNonTopGates(const FormulaPtr& formula,
                                 const boost::unordered_set<GatePtr>& gates) {
-  typedef boost::shared_ptr<Event> EventPtr;
-  std::map<std::string, EventPtr>::const_iterator it;
-  const std::map<std::string, EventPtr>* children = &formula->event_args();
+  std::vector<GatePtr>::const_iterator it;
+  const std::vector<GatePtr>* children = &formula->gate_args();
   for (it = children->begin(); it != children->end(); ++it) {
-    GatePtr child_gate = boost::dynamic_pointer_cast<Gate>(it->second);
-    if (child_gate && gates.count(child_gate)) {
-      FaultTree::MarkNonTopGates(child_gate, gates);
-      child_gate->mark("non-top");
+    if (gates.count(*it)) {
+      FaultTree::MarkNonTopGates(*it, gates);
+      (*it)->mark("non-top");
     }
   }
   const std::set<FormulaPtr>* formula_args = &formula->formula_args();

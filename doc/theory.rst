@@ -74,13 +74,13 @@ GATES
 -----
 
 #. AND :
-    Output fault occurs if all of the input faults occur.
+    Output fault occurs if all the input faults occur.
 
 #. OR :
     Output fault occurs if at least one of the input faults occur.
 
 #. Priority AND :
-    Output fault occurs if all of the input faults occur in a specific
+    Output fault occurs if all the input faults occur in a specific
     sequence. This gate is for the dynamic tree analysis. The sequence may also
     be from first to last member or left to right. For most packages with the
     static fault tree analysis, this gate is treated just like AND gate without
@@ -170,12 +170,12 @@ Common Cause Failure
 
 If events are not statistically independent, common cause or mode analysis is
 performed to account for the failure of multiple elements at the same time or
-within a short period of time. These common mode failures may be due to the
-same manufacture flaws and design, environment, working conditions,
-maintenance, quality control, normal wear and tear, and many other factors.
-Several models are used to quantify the common cause failures. The components
-in the same common cause group must be described by the same probability. The
-exact formulas to compute factors are given in NRC NUREG-0492.
+within a short period. These common mode failures may be due to the same
+manufacture flaws and design, environment, working conditions, maintenance,
+quality control, normal wear and tear, and many other factors. Several models
+are used to quantify the common cause failures. The components in the same
+common cause group must be described by the same probability. The exact
+formulas to compute factors are given in NRC NUREG-0492.
 
 
 Beta System
@@ -306,8 +306,8 @@ reliability.
 Incorporation of Alignments
 ===========================
 
-The system's configuration may change over period of time due to maintenance
-or substitutions of failed/out-of-service event. This temporary configurations
+The system's configuration may change over time due to maintenance or
+substitutions of failed/out-of-service events. This temporary configurations
 create different analyses and final results.
 
 

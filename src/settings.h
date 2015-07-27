@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2014-2015 Olzhas Rakhimov
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 /// @file settings.h
 /// Builder for settings.
 #ifndef SCRAM_SRC_SETTINGS_H_
@@ -20,51 +36,73 @@ class Settings {
   Settings();
 
   /// Sets the limit order for minimal cut sets.
+  ///
   /// @param[in] order A natural number for the limit order.
+  ///
   /// @returns Reference to this object.
-  /// @throws ValueError if the number is not more than 0.
+  ///
+  /// @throws ValueError The number is not more than 0.
   Settings& limit_order(int order);
 
   /// Limits the number of sums in probability calculations.
+  ///
   /// @param[in] n A natural number for the number of sums.
+  ///
   /// @returns Reference to this object.
-  /// @throws ValueError if the number is less than 1.
+  ///
+  /// @throws ValueError The number is less than 1.
   Settings& num_sums(int n);
 
   /// Sets the cut-off probability for minimal cut sets to be considered
   /// for analysis.
+  ///
   /// @param[in] prob The minimum probability for minimal cut sets.
+  ///
   /// @returns Reference to this object.
-  /// @throws ValueError if the probability is not in the [0, 1] range.
+  ///
+  /// @throws ValueError The probability is not in the [0, 1] range.
   Settings& cut_off(double prob);
 
   /// Sets the approximation for probability analysis.
+  ///
   /// @param[in] approx Approximation to be applied.
+  ///
   /// @returns Reference to this object.
-  /// @throws ValueError if the approximation is not recognized.
-  Settings& approx(std::string approx);
+  ///
+  /// @throws ValueError The approximation is not recognized.
+  Settings& approx(const std::string& approx);
 
   /// Sets the number of trials for Monte Carlo simulations.
+  ///
   /// @param[in] n A natural number for the number of trials.
+  ///
   /// @returns Reference to this object.
-  /// @throws ValueError if the number is less than 1.
+  ///
+  /// @throws ValueError The number is less than 1.
   Settings& num_trials(int n);
 
   /// Sets the seed for the pseudo-random number generator.
+  ///
   /// @param[in] s A positive number.
+  ///
   /// @returns Reference to this object.
-  /// @throws ValueError if the number is negative.
+  ///
+  /// @throws ValueError The number is negative.
   Settings& seed(int s);
 
   /// Sets the system mission time.
+  ///
   /// @param[in] time A positive number in hours by default.
+  ///
   /// @returns Reference to this object.
   Settings& mission_time(double time);
 
   /// Sets the flag for probability analysis. If another analysis requires
   /// probability analysis, it won't be possible to turn off probability
   /// analysis before the parent analysis.
+  ///
   /// @param[in] flag True or false for turning on or off the analysis.
+  ///
   /// @returns Reference to this object.
   Settings& probability_analysis(bool flag) {
     if (!importance_analysis_ && !uncertainty_analysis_)
@@ -74,7 +112,9 @@ class Settings {
 
   /// Sets the flag for importance analysis. Importance analysis is performed
   /// together with probability analysis. Appropriate flags are turned on.
+  ///
   /// @param[in] flag True or false for turning on or off the analysis.
+  ///
   /// @returns Reference to this object.
   Settings& importance_analysis(bool flag) {
     importance_analysis_ = flag;
@@ -84,7 +124,9 @@ class Settings {
 
   /// Sets the flag for uncertainty analysis. Uncertainty analysis implies
   /// probability analysis, so the probability analysis is turned on implicitly.
+  ///
   /// @param[in] flag True or false for turning on or off the analysis.
+  ///
   /// @returns Reference to this object.
   Settings& uncertainty_analysis(bool flag) {
     uncertainty_analysis_ = flag;
@@ -93,7 +135,9 @@ class Settings {
   }
 
   /// Sets the flag for CCF analysis.
+  ///
   /// @param[in] flag True or false for turning on or off the analysis.
+  ///
   /// @returns Reference to this object.
   Settings& ccf_analysis(bool flag) {
     ccf_analysis_ = flag;
@@ -101,7 +145,10 @@ class Settings {
   }
 
   /// This comparison is primarily for testing.
+  ///
   /// @param[in] rhs Another Settings object to be compared.
+  ///
+  /// @returns true if all members of the compared setttings are equal.
   bool operator==(const Settings& rhs) const {
     return (probability_analysis_ == rhs.probability_analysis_) &&
         (importance_analysis_ == rhs.importance_analysis_) &&
@@ -122,12 +169,12 @@ class Settings {
   bool uncertainty_analysis_;  ///< A flag for uncertainty analysis.
   bool ccf_analysis_;  ///< A flag for common-cause analysis.
   int limit_order_;  ///< Limit on the order of minimal cut sets.
+  double mission_time_;  ///< System mission time.
   int num_sums_;  ///< The number of sums in probability calculation series.
   double cut_off_;  ///< The cut-off probability for cut sets.
   std::string approx_;  ///< The approximation to be applied for calculations.
-  int num_trials_;  ///< The number of trials for Monte Carlo simulations.
   int seed_;  ///< The seed for the pseudo-random number generator.
-  double mission_time_;  ///< System mission time.
+  int num_trials_;  ///< The number of trials for Monte Carlo simulations.
 };
 
 }  // namespace scram

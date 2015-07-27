@@ -30,15 +30,15 @@ Fault Tree Analysis
 #. Instantiate the analysis. Create the trees for the analysis.
 #. Find minimal cut sets. *Probability input is optional*
 
-   - May specify maximum order for cut sets for faster calculations.
+   - Maximum order for cut sets for faster calculations.
 
 #. Find the total probability of the top event and importance values for
    basic events.
 
-   - May specify cut-off probability for cut sets.
-   - May specify the limit on the number of sums in the probability equation.
-   - May specify the rare event approximation or MCUB for faster calculations.
-   - May specify mission time that is used to calculate probabilities.
+   - Cut-off probability for cut sets.
+   - The limit on the number of sums in the probability equation.
+   - The rare event approximation or MCUB for faster calculations. *Optional*
+   - Mission time that is used to calculate probabilities.
 
 #. Output the analysis results.
 
@@ -93,4 +93,5 @@ General Information for Users
 
 #. All analysis can be run with logging of steps. The logging outputs useful
    information for figuring out limiting bottlenecks and the source of errors
-   in analysis. This information can be used for debugging and tests.
+   in analysis if any. This information can be used for debugging and testing
+   purposes.

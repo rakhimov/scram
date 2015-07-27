@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2014-2015 Olzhas Rakhimov
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 /// @file grapher.cc
 /// Implements Grapher.
 #include "grapher.h"
@@ -11,13 +27,13 @@
 
 namespace scram {
 
-const std::map<std::string, std::string> Grapher::gate_colors_ =
+const std::map<std::string, std::string> Grapher::kGateColors_ =
     boost::assign::map_list_of("or", "blue") ("and", "green") ("not", "red")
                               ("xor", "brown") ("inhibit", "yellow")
                               ("atleast", "cyan") ("null", "gray")
                               ("nor", "magenta") ("nand", "orange");
 
-const std::map<std::string, std::string> Grapher::event_colors_ =
+const std::map<std::string, std::string> Grapher::kEventColors_ =
     boost::assign::map_list_of("basic", "black") ("undeveloped", "blue")
                               ("house", "green") ("conditional", "red");
 
@@ -108,8 +124,8 @@ void Grapher::FormatTopEvent(const GatePtr& top_event, std::ostream& out) {
     gate = top_event->GetAttribute("flavor").value;
 
   std::string gate_color = "black";
-  if (gate_colors_.count(gate)) {
-    gate_color = gate_colors_.find(gate)->second;
+  if (kGateColors_.count(gate)) {
+    gate_color = kGateColors_.find(gate)->second;
   }
 
   boost::to_upper(gate);
@@ -138,7 +154,7 @@ void Grapher::FormatIntermediateEvents(
     if (it->second->HasAttribute("flavor") && gate == "and")
       gate = it->second->GetAttribute("flavor").value;
 
-    std::string gate_color = gate_colors_.find(gate)->second;
+    std::string gate_color = kGateColors_.find(gate)->second;
     boost::to_upper(gate);  // This is for graphing.
     std::string id = it->second->id();
     std::string name = it->second->name();
@@ -180,7 +196,12 @@ void Grapher::FormatBasicEvents(
       prob_msg += snippet.str();
     }
     int repetition = node_repeat.find(it->second)->second;
-    Grapher::FormatPrimaryEvent(it->second, repetition, prob_msg, out);
+    std::string type = "basic";
+    // Detect undeveloped or conditional event.
+    if (it->second->HasAttribute("flavor")) {
+      type = it->second->GetAttribute("flavor").value;
+    }
+    Grapher::FormatPrimaryEvent(it->second, repetition, type, prob_msg, out);
   }
 }
 
@@ -197,20 +218,16 @@ void Grapher::FormatHouseEvents(
       prob_msg += it->second->state() ? "True" : "False";
     }
     int repetition = node_repeat.find(it->second)->second;
-    Grapher::FormatPrimaryEvent(it->second, repetition, prob_msg, out);
+    Grapher::FormatPrimaryEvent(it->second, repetition, "house", prob_msg, out);
   }
 }
 
 void Grapher::FormatPrimaryEvent(const PrimaryEventPtr& primary_event,
                                  int repetition,
-                                 std::string prob_msg,
+                                 const std::string& type,
+                                 const std::string& prob_msg,
                                  std::ostream& out) {
-  std::string type = primary_event->type();
-  // Detect undeveloped or conditional event.
-  if (type == "basic" && primary_event->HasAttribute("flavor")) {
-    type = primary_event->GetAttribute("flavor").value;
-  }
-  std::string color = event_colors_.find(type)->second;
+  std::string color = kEventColors_.find(type)->second;
   for (int i = 0; i <= repetition; ++i) {
     out << "\"" << primary_event->id() << "_R" << i
         << "\" [shape=circle, "
@@ -229,7 +246,7 @@ void Grapher::FormatFormulas(
   for (it = formulas.begin(); it != formulas.end(); ++it) {
     std::string gate = it->second->type();
 
-    std::string gate_color = gate_colors_.find(gate)->second;
+    std::string gate_color = kGateColors_.find(gate)->second;
     boost::to_upper(gate);  // This is for graphing.
     out << "\"" << it->first << "\"";
     out << " [shape=box, ";

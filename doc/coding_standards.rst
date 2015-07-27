@@ -28,14 +28,14 @@ This project adheres to the following coding styles:
     https://google-styleguide.googlecode.com/svn/trunk/shell.xml
 
 
-Coding Style Violations
------------------------
+Deviations from the Coding Styles
+---------------------------------
 
-- Exceptions are used. (This is not recommended by GCSG.)
-- Streams are used instead of *printf-like routines*.
-- Naming of mutator functions without *set* prefix.
-- C++11 features are not allowed. Only Boost features are used instead.
-- License boilerplate is not included unless the code is from other projects.
+- Exceptions are allowed
+- Prefer streams to *printf-like routines*
+- Name mutator functions without *set_* prefix
+- Multiple inheritance is allowed
+- C++11 features are currently not allowed. Only Boost features are used.
 
 
 Monitoring Code Quality
@@ -113,7 +113,8 @@ benchmarking tests. The following tools are used for this purpose:
     - GoogleTest_
     - Nose_
 
-These tests are automated, and continuous integration is provided by `Travis CI`_.
+These tests are automated, and continuous integration is provided by
+`Travis CI`_.
 
 .. _GoogleTest:
     https://code.google.com/p/googletest/
@@ -169,14 +170,15 @@ Good documentation of the code and functionality is the requirement for
 maintainability and evolution of the project and its acceptance by users.
 
 The project adheres to the Documentation Driven Development model
-(`DDD talk by Corey Oordt`_),
-following the best practices of `Agile Documentation`_ as well.
+(`DDD talk by Corey Oordt`_), following the best practices of
+`Agile Documentation`_ as well.
 
-Documentation for the project is maintained in the reStructuredText_ format,
+The documentation for the project is maintained in the reStructuredText_ format,
 and the final representations are dynamically generated with Sphinx_ in various
 formats (html, pdf, LaTeX).
 
-Documentation for the code is checked and generated dynamically with Doxygen_.
+The documentation for the code is checked and generated dynamically with
+Doxygen_.
 
 .. _Doxygen:
     http://doxygen.org/

@@ -1,14 +1,29 @@
+/*
+ * Copyright (C) 2014-2015 Olzhas Rakhimov
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 /// @file indexed_fault_tree.h
-/// A fault tree analysis facility with event and gate indices instead
-/// of id names. This facility is designed to work with FaultTreeAnalysis class.
+/// Classes and facilities to represent simplified fault trees wth event and
+/// gate indices instead of ID names. This facility is designed to work with
+/// FaultTreeAnalysis class.
 #ifndef SCRAM_SRC_INDEXED_FAULT_TREE_H_
 #define SCRAM_SRC_INDEXED_FAULT_TREE_H_
 
-#include <functional>
 #include <map>
 #include <set>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include <boost/shared_ptr.hpp>
@@ -16,360 +31,470 @@
 
 namespace scram {
 
-typedef boost::shared_ptr<std::set<int> > SetPtr;
+class IGate;  // Indexed gate parent of nodes.
 
-/// @class SetPtrComp
-/// Functor for set pointer comparison efficiency.
-struct SetPtrComp
-    : public std::binary_function<const SetPtr, const SetPtr, bool> {
-  /// Operator overload.
-  /// Compares sets for sorting.
-  bool operator()(const SetPtr& lhs, const SetPtr& rhs) const {
-    return *lhs < *rhs;
-  }
-};
+/// @class Node
+/// An abstract base class that represents a node in an indexed fault tree
+/// graph. The index of the node is a unique identifier for the node.
+/// The node holds a weak pointer to the parent that is managed by the parent.
+class Node {
+  friend class IGate;  // To manage parent information.
 
-/// @class SimpleGate
-/// A helper class to be used in indexed fault tree. This gate represents
-/// only positive OR or AND gates with basic event indices and pointers to
-/// other simple gates.
-/// All the gate children of this gate must be of opposite type.
-class SimpleGate {
  public:
-  typedef boost::shared_ptr<SimpleGate> SimpleGatePtr;
+  /// Creates a graph node with its index assigned sequentially.
+  Node();
 
-  /// @param[in] type The type of this gate. 1 is OR; 2 is AND.
-  explicit SimpleGate(int type) {
-    assert(type == 1 || type == 2);
-    type_ = type;
+  /// Creates a graph node with its index.
+  ///
+  /// @param[in] index An unique positive index of this node.
+  ///
+  /// @warning The index is not validated upon instantiation.
+  explicit Node(int index);
+
+  virtual ~Node() = 0;  ///< Abstract class.
+
+  /// @returns The index of this node.
+  inline int index() const { return index_; }
+
+  /// Resets the starting index.
+  inline static void ResetIndex() { next_index_ = 1e6; }
+
+  /// @returns Parents of this gate.
+  inline const std::set<IGate*>& parents() { return parents_; }
+
+  /// Registers the visit time for this node upon tree traversal.
+  /// This information can be used to detect dependencies.
+  ///
+  /// @param[in] time The current visit time of this node. It must be positive.
+  ///
+  /// @returns true if this node was previously visited.
+  /// @returns false if this is visited and re-visited only once.
+  bool Visit(int time) {
+    assert(time > 0);
+    if (!visits_[0]) {
+      visits_[0] = time;
+    } else if (!visits_[1]) {
+      visits_[1] = time;
+    } else {
+      visits_[2] = time;
+      return true;
+    }
+    return false;
   }
 
-  /// @returns The type of this gate. Either 1 or 2 for OR or AND, respectively.
-  inline int type() {
-    assert(type_ == 1 || type_ == 2);
-    return type_;
-  }
+  /// @returns The time when this node was first encountered or entered.
+  /// @returns 0 if no enter time is registered.
+  inline int EnterTime() const { return visits_[0]; }
 
-  /// Adds a basic event index at the end of a container.
-  /// This function is specifically given to initiate the gate.
-  /// @param[in] index The index of a basic event.
-  inline void InitiateWithBasic(int index) {
-    basic_events_.push_back(index);
-  }
+  /// @returns The exit time upon traversal of the tree.
+  /// @returns 0 if no exit time is registered.
+  inline int ExitTime() const { return visits_[1]; }
 
-  /// Adds a module index at the end of a container.
-  /// This function is specifically given to initiate the gate.
-  /// Note that modules are treated just like basic events.
-  /// @param[in] index The index of a module.
-  inline void InitiateWithModule(int index) {
-    assert(index > 0);
-    modules_.push_back(index);
-  }
+  /// @returns The last time this node was visited.
+  /// @returns 0 if no last time is registered.
+  inline int LastVisit() const { return visits_[2] ? visits_[2] : visits_[1]; }
 
-  /// Add a pointer to a child gate.
-  /// This function assumes that the tree does not have complement gates.
-  /// @param[in] gate The pointer to the child gate.
-  inline void AddChildGate(const SimpleGatePtr& gate) {
-    assert(gate->type() != type_);
-    gates_.push_back(gate);
-  }
+  /// @returns false if this node was only visited once upon tree traversal.
+  /// @returns true if this node was revisited at one more time.
+  inline bool Revisited() const { return visits_[2] ? true : false; }
 
-  /// Generates cut sets by using a provided set.
-  /// @param[in] cut_set The base cut set to work with.
-  /// @param[out] new_cut_sets Generated cut sets by adding the gate's children.
-  void GenerateCutSets(const SetPtr& cut_set,
-                       std::set<SetPtr, SetPtrComp>* new_cut_sets);
+  /// @returns true if this node was visited at least once.
+  /// @returns false if this node was never visited upon traversal.
+  inline bool Visited() const { return visits_[0] ? true : false; }
 
-  /// Sets the limit order for all analysis with simple gates.
-  /// @param[in] limit The limit order for minimal cut sets.
-  static void limit_order(int limit) { limit_order_ = limit; }
+  /// Clears all the visit information. Resets the visit times to 0s.
+  inline void ClearVisits() { return std::fill(visits_, visits_ + 3, 0); }
 
  private:
-  /// Generates cut sets for AND gate children using already generated sets.
-  /// The tree is assumed to be layered with OR children of AND gates.
-  /// @param[in] cut_set The base cut set to work with.
-  /// @param[out] new_cut_sets Generated cut sets by using the gate's children.
-  void AndGateCutSets(const SetPtr& cut_set,
-                      std::set<SetPtr, SetPtrComp>* new_cut_sets);
+  Node(const Node&);  ///< Restrict copy construction.
+  Node& operator=(const Node&);  ///< Restrict copy assignment.
 
-  /// Generates cut sets for OR gate children using already generated sets.
-  /// The tree is assumed to be layered with AND children of OR gates.
-  /// @param[in] cut_set The base cut set to work with.
-  /// @param[out] new_cut_sets Generated cut sets by using the gate's children.
-  void OrGateCutSets(const SetPtr& cut_set,
-                      std::set<SetPtr, SetPtrComp>* new_cut_sets);
-
-  int type_;  ///< Type of this gate.
-  std::vector<int> basic_events_;  ///< Container of basic events' indices.
-  std::vector<int> modules_;  ///< Container of modules' indices.
-  std::vector<SimpleGatePtr> gates_;  ///< Container of child gates.
-  static int limit_order_;  ///< The limit on the order of minimal cut sets.
+  static int next_index_;  ///< Automatic indexation of the next new node.
+  int index_;  ///< Index of this node.
+  /// This is a traversal array containing first, second, and last visits.
+  int visits_[3];
+  std::set<IGate*> parents_;  ///< Parents of this node.
 };
 
+/// @class Constant
+/// Representation of a node that is a Boolean constant with True or False
+/// state.
+class Constant : public Node {
+ public:
+  /// Constructs a new constant indexed node.
+  ///
+  /// @param[in] state Binary state of the Boolean constant.
+  explicit Constant(bool state);
+
+  /// @returns The state of the constant.
+  inline bool state() const { return state_; }
+
+ private:
+  Constant(const Constant&);  ///< Restrict copy construction.
+  Constant& operator=(const Constant&);  ///< Restrict copy assignment.
+
+  bool state_;  ///< The Boolean value for the constant state.
+};
+
+/// @class IBasicEvent
+/// Indexed basic events in an indexed fault tree.
+/// Indexation of the basic events are special. It starts from 1 and ends with
+/// the number of the basic events in the fault tree. This indexation technique
+/// helps preprocessing and analysis algorithms optimize their work with basic
+/// events.
+class IBasicEvent : public Node {
+ public:
+  /// Creates a new indexed basic event with its index assigned sequentially.
+  IBasicEvent();
+
+  /// Resets the starting index for basic events.
+  inline static void ResetIndex() { next_basic_event_ = 1; }
+
+ private:
+  IBasicEvent(const IBasicEvent&);  ///< Restrict copy construction.
+  IBasicEvent& operator=(const IBasicEvent&);  ///< Restrict copy assignment.
+
+  static int next_basic_event_;  ///< The next index for the basic event.
+};
+
+/// @enum GateType
+/// Types of gates for representation, preprocessing, and analysis purposes.
+enum GateType {
+  kAndGate,  ///< Simple AND gate.
+  kOrGate,  ///< Simple OR gate.
+  kAtleastGate,  ///< Combination or Vote gate representation.
+  kXorGate,  ///< Exclusive OR gate with two inputs.
+  kNotGate,  ///< Boolean negation.
+  kNandGate,  ///< NAND gate.
+  kNorGate,  ///< NOR gate.
+  kNullGate  ///< Special pass-through or NULL gate. This is not NULL set.
+};
+
+/// @enum State
+/// State of a gate as a set of events with a logical operator.
+/// This state helps detect null and unity sets that formed upon Boolean
+/// operations.
+enum State {
+  kNormalState,  ///< The default case with any set that is not null or unity.
+  kNullState,  ///< The set is null. This indicates no failure.
+  kUnityState  ///< The set is unity. This set guarantees failure.
+};
+
+/// @class IGate
+/// This indexed gate is for use in IndexedFaultTree.
+/// Initially this gate can represent any type of gate or logic; however,
+/// this gate can be only of OR and AND type at the end of all simplifications
+/// and processing. This gate class helps to process the fault tree before
+/// any complex analysis is done.
+class IGate : public Node {
+ public:
+  typedef boost::shared_ptr<Node> NodePtr;
+  typedef boost::shared_ptr<Constant> ConstantPtr;
+  typedef boost::shared_ptr<IBasicEvent> IBasicEventPtr;
+  typedef boost::shared_ptr<IGate> IGatePtr;
+
+  /// Creates an indexed gate with its unique index.
+  ///
+  /// @param[in] type The type of this gate.
+  explicit IGate(const GateType& type);
+
+  /// Destructs parent information from children.
+  ~IGate() { IGate::EraseAllChildren(); }
+
+  /// @returns Type of this gate.
+  inline const GateType& type() const { return type_; }
+
+  /// Changes the gate type information. This function is expected to be used
+  /// with only simple AND, OR, NOT, NULL gates.
+  ///
+  /// @param[in] t The type for this gate.
+  inline void type(const GateType& t) {
+    assert(t == kAndGate || t == kOrGate || t == kNotGate || t == kNullGate);
+    type_ = t;
+  }
+
+  /// @returns Vote number.
+  inline int vote_number() const { return vote_number_; }
+
+  /// Sets the vote number for this gate. The function does not check if
+  /// the gate type is ATLEAST; nor does it validate the number.
+  ///
+  /// @param[in] number The vote number of ATLEAST gate.
+  inline void vote_number(int number) { vote_number_ = number; }
+
+  /// @returns Children of this gate.
+  inline const std::set<int>& children() const { return children_; }
+
+  /// @returns Children of this gate that are indexed gates.
+  inline const boost::unordered_map<int, IGatePtr>& gate_children() const {
+    return gate_children_;
+  }
+
+  /// @returns Children of this gate that are indexed basic events.
+  inline const boost::unordered_map<int, IBasicEventPtr>&
+      basic_event_children() const {
+    return basic_event_children_;
+  }
+
+  /// @returns Children of this gate that are indexed constants.
+  inline const boost::unordered_map<int, ConstantPtr>&
+      constant_children() const {
+    return constant_children_;
+  }
+
+  /// @returns The state of this gate.
+  inline const State& state() const { return state_; }
+
+  /// @returns true if this gate is set to be a module.
+  /// @returns false if it is not yet set to be a module.
+  inline bool IsModule() const { return module_; }
+
+  /// Adds a child gate to this gate. Before adding the child, the existing
+  /// children are checked for complements. If there is a complement,
+  /// the gate changes its state and clears its children.
+  ///
+  /// @param[in] child A positive or negative index of a child.
+  /// @param[in] gate A pointer to the child gate.
+  ///
+  /// @returns false if there final state of the parent is normal.
+  /// @returns true if the parent has become constant due to a complement child.
+  ///
+  /// @warning This function does not indicate error for future additions in
+  ///          case the state is nulled or becomes unity.
+  bool AddChild(int child, const IGatePtr& gate);
+
+  /// Adds a child basic event to this gate. Before adding the child, the
+  /// existing children are checked for complements. If there is a complement,
+  /// the gate changes its state and clears its children.
+  ///
+  /// @param[in] child A positive or negative index of a child.
+  /// @param[in] basic_event A pointer to the child basic_event.
+  ///
+  /// @returns false if there final state of the parent is normal.
+  /// @returns true if the parent has become constant due to a complement child.
+  ///
+  /// @warning This function does not indicate error for future additions in
+  ///          case the state is nulled or becomes unity.
+  bool AddChild(int child, const IBasicEventPtr& basic_event);
+
+  /// Adds a constant child to this gate. Before adding the child, the existing
+  /// children are checked for complements. If there is a complement,
+  /// the gate changes its state and clears its children.
+  ///
+  /// @param[in] child A positive or negative index of a child.
+  /// @param[in] constant A pointer to the child that is a Constant.
+  ///
+  /// @returns false if there final state of the parent is normal.
+  /// @returns true if the parent has become constant due to a complement child.
+  ///
+  /// @warning This function does not indicate error for future additions in
+  ///          case the state is nulled or becomes unity.
+  bool AddChild(int child, const ConstantPtr& constant);
+
+  /// Transfers this gates's child to another gate.
+  ///
+  /// @param[in] child Positive or negative index of the child.
+  /// @param[in,out] recipient A new parent for the child.
+  ///
+  /// @returns false if there final state of the recipient is normal.
+  /// @returns true if the recipient becomes constant due to a complement child.
+  bool TransferChild(int child, const IGatePtr& recipient);
+
+  /// Shares this gates's child with another gate.
+  ///
+  /// @param[in] child Positive or negative index of the child.
+  /// @param[in,out] recipient Another parent for the child.
+  ///
+  /// @returns false if there final state of the recipient is normal.
+  /// @returns true if the recipient becomes constant due to a complement child.
+  bool ShareChild(int child, const IGatePtr& recipient);
+
+  /// Makes all children complement of themselves.
+  /// This is a helper function to propagate a complement gate and apply
+  /// De Morgan's Law.
+  void InvertChildren();
+
+  /// Replaces a child with the complement of it.
+  /// This is a helper function to propagate a complement gate and apply
+  /// De Morgan's Law.
+  ///
+  /// @param[in] existing_child Positive or negative index of the child.
+  void InvertChild(int existing_child);
+
+  /// Adds children of a child gate to this gate. This is a helper function for
+  /// gate coalescing. The child gate of the same logic is removed from the
+  /// children list. The sign of the child gate is expected to be positive.
+  ///
+  /// @param[in] child_gate The gate which children to be added to this gate.
+  ///
+  /// @returns false if the final set is null or unity.
+  /// @returns true if the addition is successful with a normal final state.
+  bool JoinGate(const IGatePtr& child_gate);
+
+  /// Swaps a single child of a NULL type child gate. This is separate from
+  /// other coalescing functions because this function takes into account the
+  /// sign of the child.
+  ///
+  /// @param[in] index Positive or negative index of the child gate.
+  ///
+  /// @returns false if the final set is null or unity.
+  /// @returns true if the addition is successful with a normal final state.
+  bool JoinNullGate(int index);
+
+  /// Directly copies children from another gate. This is a helper function
+  /// for initialization of gates' copies.
+  ///
+  /// @param[in] gate The gate which children will be copied.
+  inline void CopyChildren(const IGatePtr& gate) {
+    assert(children_.empty());
+    IGate::AddChild(gate->index(), gate);  // This is a hack to keep the parent
+    IGate::JoinGate(gate);                 // information updated.
+  }
+
+  /// Removes a child from the children container. The passed child index
+  /// must be in this gate's children container and initialized.
+  ///
+  /// @param[in] child The positive or negative index of the existing child.
+  inline void EraseChild(int child) {
+    assert(child != 0);
+    assert(children_.count(child));
+    children_.erase(child);
+    NodePtr node;
+    if (gate_children_.count(child)) {
+      node = gate_children_.find(child)->second;
+      gate_children_.erase(child);
+    } else if (constant_children_.count(child)) {
+      node = constant_children_.find(child)->second;
+      constant_children_.erase(child);
+    } else {
+      node = basic_event_children_.find(child)->second;
+      assert(basic_event_children_.count(child));
+      basic_event_children_.erase(child);
+    }
+    assert(node->parents_.count(this));
+    node->parents_.erase(this);
+  }
+
+  /// Clears all the children of this gate.
+  inline void EraseAllChildren() {
+    while (!children_.empty()) IGate::EraseChild(*children_.rbegin());
+  }
+
+  /// Sets the state of this gate to null and clears all its children.
+  /// This function is expected to be used only once.
+  inline void Nullify() {
+    assert(state_ == kNormalState);
+    state_ = kNullState;
+    IGate::EraseAllChildren();
+  }
+
+  /// Sets the state of this gate to unity and clears all its children.
+  /// This function is expected to be used only once.
+  inline void MakeUnity() {
+    assert(state_ == kNormalState);
+    state_ = kUnityState;
+    IGate::EraseAllChildren();
+  }
+
+  /// Turns this gate's module flag on. This should be one time operation.
+  inline void TurnModule() {
+    assert(!module_);
+    module_ = true;
+  }
+
+ private:
+  IGate(const IGate&);  ///< Restrict copy construction.
+  IGate& operator=(const IGate&);  ///< Restrict copy assignment.
+
+  /// Process an addition of a complement of an existing child.
+  ///
+  /// @param[in] index Positive or negative index of the child.
+  ///
+  /// @returns false if the final set is null or unity.
+  /// @returns true if the addition is successful with a normal final state.
+  bool ProcessComplementChild(int index);
+
+  GateType type_;  ///< Type of this gate.
+  State state_;  ///< Indication if this gate's state is normal, null, or unity.
+  int vote_number_;  ///< Vote number for ATLEAST gate.
+  bool module_;  ///< Indication of an independent module gate.
+  std::set<int> children_;  ///< Children of the gate.
+  /// Children that are gates.
+  boost::unordered_map<int, IGatePtr> gate_children_;
+  /// Children that are basic events.
+  boost::unordered_map<int, IBasicEventPtr> basic_event_children_;
+  /// Children that are constant like house events.
+  boost::unordered_map<int, ConstantPtr> constant_children_;
+};
+
+class BasicEvent;
 class Gate;
 class Formula;
-class IndexedGate;
 
 /// @class IndexedFaultTree
 /// This class provides simpler representation of a fault tree
 /// that takes into account the indices of events instead of ids and pointers.
-/// The class provides main operations over a fault tree to generate minimal
-/// cut sets.
 class IndexedFaultTree {
  public:
   typedef boost::shared_ptr<Gate> GatePtr;
+  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+  typedef boost::shared_ptr<IGate> IGatePtr;
 
-  /// Constructs a simplified fault tree with indices of nodes.
-  /// @param[in] top_event_id The index of the top event of this tree.
-  /// @param[in] limit_order The limit on the size of minimal cut sets.
-  IndexedFaultTree(int top_event_id, int limit_order);
+  /// Constructs an indexed fault tree starting from the top gate.
+  ///
+  /// @param[in] root The top gate of the fault tree.
+  /// @param[in] ccf Incorporation of ccf gates and events for ccf groups.
+  explicit IndexedFaultTree(const GatePtr& root, bool ccf = false);
 
-  /// Creates indexed gates with basic and house event indices as children.
-  /// It is assumed that indices are sequential starting from 1.
-  /// This function also simplifies the tree to simple gates with flattened
-  /// formulas.
-  /// @param[in] int_to_inter Container of gates and their indices including
-  ///                         the top gate.
-  /// @param[in] ccf_basic_to_gates CCF basic events that are converted to
-  ///                               gates.
-  /// @param[in] all_to_int Container of all events in this tree to index
-  ///                       children of the gates.
-  void InitiateIndexedFaultTree(
-      const boost::unordered_map<int, GatePtr>& int_to_inter,
-      const std::map<std::string, int>& ccf_basic_to_gates,
-      const boost::unordered_map<std::string, int>& all_to_int);
+  /// @returns The current top gate of the fault tree.
+  inline const IGatePtr& top_event() const { return top_event_; }
 
-  /// Remove all house events by propagating them as constants in Boolean
-  /// equation.
-  /// @param[in] true_house_events House events with true state.
-  /// @param[in] false_house_events House events with false state.
-  void PropagateConstants(const std::set<int>& true_house_events,
-                          const std::set<int>& false_house_events);
+  /// Sets the the top gate. This function is helpful for preprocessing.
+  ///
+  /// @param[in] gate Replacement top gate.
+  inline void top_event(const IGatePtr& gate) { top_event_ = gate; }
 
-  /// Performs processing of a fault tree.
-  /// @param[in] num_basic_events The number of basic events. This information
-  ///                             is needed to optimize the tree traversal
-  ///                             with certain expectation.
-  void ProcessIndexedFaultTree(int num_basic_events);
+  /// @returns Indexed basic event as initialized in this fault tree.
+  inline const std::vector<BasicEventPtr>& basic_events() const {
+    return basic_events_;
+  }
 
-  /// Finds minimal cut sets from the initiated fault tree with indices.
-  void FindMcs();
-
-  /// @returns Generated minimal cut sets with basic event indices.
-  inline const std::vector< std::set<int> >& GetGeneratedMcs() {
-    return imcs_;
+  /// Helper function to map the results of indexation to the original basic
+  /// events. This function, for example, helps transform minimal cut sets with
+  /// indices into minimal cut sets with IDs or pointers.
+  ///
+  /// @param[in] index Positive index of the basic event.
+  ///
+  /// @returns Pointer to the original basic event from its index.
+  inline const BasicEventPtr& GetBasicEvent(int index) const {
+    assert(index > 0);
+    assert(index <= basic_events_.size());
+    return basic_events_[index - 1];
   }
 
  private:
-  typedef boost::shared_ptr<SimpleGate> SimpleGatePtr;
-  typedef boost::shared_ptr<IndexedGate> IndexedGatePtr;
   typedef boost::shared_ptr<Formula> FormulaPtr;
+  typedef boost::shared_ptr<Node> NodePtr;
+  typedef boost::shared_ptr<Constant> ConstantPtr;
+  typedef boost::shared_ptr<IBasicEvent> IBasicEventPtr;
 
-  /// Processes a formula into a new indexed gates.
-  /// @param[in] index The index to be assigned to the new indexed gate.
-  /// @param[in] formula The formula to be converted into a gate.
-  /// @param[in] ccf_basic_to_gates CCF basic events that are converted to
-  ///                               gates.
-  /// @param[in] all_to_int Container of all events in this tree to index
-  ///                       children of the gates.
-  void ProcessFormula(int index,
-                      const FormulaPtr& formula,
-                      const std::map<std::string, int>& ccf_basic_to_gates,
-                      const boost::unordered_map<std::string, int>& all_to_int);
+  /// Mapping to string gate types to enum gate types.
+  static const std::map<std::string, GateType> kStringToType_;
 
-  /// Starts unrolling gates to simplify gates to OR, AND gates.
-  /// NOT and NUll are dealt with specifically.
-  /// This function uses parent information of each gate, so the tree must
-  /// be initialized before a call of this function.
-  /// New gates are created upon unrolling complex gates, such as XOR.
-  void UnrollGates();
+  /// Process a Boolean formula of a gate into an indexed fault tree.
+  ///
+  /// @param[in] formula The Boolean formula to be processed.
+  /// @param[in] ccf To replace basic events with ccf gates.
+  /// @param[in,out] id_to_index The mapping of already processed nodes.
+  ///
+  /// @returns Pointer to the newly created indexed gate.
+  IGatePtr ProcessFormula(
+      const FormulaPtr& formula,
+      bool ccf,
+      boost::unordered_map<std::string, NodePtr>* id_to_index);
 
-  /// Traverses the tree to gather information about parents of indexed gates.
-  /// This information might be needed for other algorithms because
-  /// due to processing of the tree, the shape and nodes may change.
-  /// @param[in] parent_gate The parent to start information gathering.
-  /// @param[in,out] processed_gates The gates that has already been processed.
-  void GatherParentInformation(const IndexedGatePtr& parent_gate,
-                               std::set<int>* processed_gates);
-
-  /// Notifies all parents of negative gates, such as NOR and NAND before
-  /// transforming these gates into basic gates of OR and AND.
-  /// The parent information should be available. This function does not
-  /// change the type of the given gate.
-  /// @param[in] gate The gate to be start processing.
-  void NotifyParentsOfNegativeGates(const IndexedGatePtr& gate);
-
-  /// Unrolls a gate to make OR, AND gates. The parents of the
-  /// gate are not notified. This means that negative gates must be dealt
-  /// separately. However, NOT and NULL gates are left untouched for later
-  /// special processing.
-  /// @param[in,out] gate The gate to be processed.
-  void UnrollGate(const IndexedGatePtr& gate);
-
-  /// Unrolls a gate with XOR logic.
-  /// @param[in,out] gate The gate to unroll.
-  void UnrollXorGate(const IndexedGatePtr& gate);
-
-  /// Unrolls an ATLEAST gate with a vote number.
-  /// @param[in,out] gate The atleast gate to unroll.
-  void UnrollAtleastGate(const IndexedGatePtr& gate);
-
-  /// Remove all house events from a given gate.
-  /// After this function, there should not be any unity or null gates because
-  ///  of house events.
-  /// @param[in] true_house_events House events with true state.
-  /// @param[in] false_house_events House events with false state.
-  /// @param[in,out] gate The final resultant processed gate.
-  /// @param[in,out] processed_gates The gates that has already been processed.
-  void PropagateConstants(const std::set<int>& true_house_events,
-                          const std::set<int>& false_house_events,
-                          const IndexedGatePtr& gate,
-                          std::set<int>* processed_gates);
-
-  /// Removes null and unity gates. There should not be negative gate children.
-  /// After this function, there should not be null or unity gates resulting
-  /// from previous processing steps.
-  /// @param[in,out] gate The starting gate to traverse the tree. This is for
-  ///                     recursive purposes.
-  /// @param[in,out] processed_gates The gates that has already been processed.
-  /// @returns true if the given tree has been changed by this function.
-  /// @returns false if no change has been made.
-  bool ProcessConstGates(const IndexedGatePtr& gate,
-                         std::set<int>* processed_gates);
-
-  /// Changes the state of a gate or passes a constant child to be removed
-  /// later. The function determines its actions depending on the type of
-  /// a gate and state of a child,
-  /// @param[in,out] gate The parent gate that contains the children.
-  /// @param[in] child The constant child under consideration.
-  /// @param[in] state False or True constant state of the child.
-  /// @param[out] to_erase The set of children to erase from the above gate.
-  /// @returns true if the passed gate has become a constant due to its child.
-  /// @returns false if the parent still valid for further operations.
-  bool ProcessConstantChild(const IndexedGatePtr& gate,
-                            int child,
-                            bool state,
-                            std::vector<int>* to_erase);
-
-  /// Propagates complements of child gates down to basic events
-  /// in order to remove any NOR or NAND logic from the tree.
-  /// This function also processes NOT and NULL gates.
-  /// The resulting tree will contain only positive gates, OR and AND.
-  /// @param[in,out] gate The starting gate to traverse the tree. This is for
-  ///                     recursive purposes. The sign of this passed gate
-  ///                     is unknown for the function, so it must be sanitized
-  ///                     for a top event to function correctly.
-  /// @param[in,out] gate_complements The processed complements of gates.
-  /// @param[in,out] processed_gates The gates that has already been processed.
-  void PropagateComplements(const IndexedGatePtr& gate,
-                            std::map<int, int>* gate_complements,
-                            std::set<int>* processed_gates);
-
-  /// Removes a set of children from an OR/AND gate.
-  /// This is a helper function for NULL and UNITY propagation on the tree.
-  /// If the final gate is empty, it is turned into NULL for OR gates and
-  /// UNITY for AND and other gates.
-  /// This function may also update the children parent information if needed.
-  /// @param[in,out] gate The gate that contains the children to be removed.
-  /// @param[in] to_erase The set of children to erase from the above gate.
-  void RemoveChildren(const IndexedGatePtr& gate,
-                      const std::vector<int>& to_erase);
-
-  /// Pre-processes the tree by doing simple Boolean algebra.
-  /// At this point all gates are expected to be either OR or AND.
-  /// There should not be negative gate children.
-  /// This function merges similar gates and may produce null or unity gates.
-  /// @param[in,out] gate The starting gate to traverse the tree. This is for
-  ///                     recursive purposes. This gate must be AND or OR.
-  /// @param[in,out] processed_gates The gates that has already been processed.
-  /// @returns true if the given tree has been changed by this function.
-  /// @returns false if no change has been made.
-  bool JoinGates(const IndexedGatePtr& gate, std::set<int>* processed_gates);
-
-  /// Traverses the indexed fault tree to detect modules.
-  /// @param[in] num_basic_events The number of basic events in the tree.
-  void DetectModules(int num_basic_events);
-
-  /// Traverses the given gate and assigns time of visit to nodes.
-  /// @param[in] time The current time.
-  /// @param[in,out] gate The gate to traverse and assign time to.
-  /// @param[in,out] visit_basics The recordings for basic events.
-  /// @returns The time final time of traversing.
-  int AssignTiming(int time, const IndexedGatePtr& gate, int visit_basics[][2]);
-
-  /// Determines modules from original gates that have been already timed.
-  /// This function can also create new modules from the existing tree.
-  /// @param[in,out] gate The gate to test for modularity.
-  /// @param[in] visit_basics The recordings for basic events.
-  /// @param[in,out] visited_gates Container of visited gates with
-  ///                              min and max time of visits of the subtree.
-  void FindOriginalModules(const IndexedGatePtr& gate,
-                           const int visit_basics[][2],
-                           std::map<int, std::pair<int, int> >* visited_gates);
-
-  /// Creates a new module as a child of an existing gate. The existing
-  /// children of the original gate are used to create the new module.
-  /// The module is added in the module and gate databases.
-  /// If the new module must contain all the children, the original gate is
-  /// turned into a module.
-  /// @param[in,out] gate The parent gate for a module.
-  /// @param[in] children Modular children to be added into the new module.
-  void CreateNewModule(const IndexedGatePtr& gate,
-                       const std::vector<int>& children);
-
-  /// Checks if a group of modular children share anything with non-modular
-  /// children. If so, then the modular children are not actually modular, and
-  /// that children are removed from modular containers.
-  /// This is due to chain of events that are shared between modular and
-  /// non-modular children.
-  /// @param[in] visit_basics The recordings for basic events.
-  /// @param[in] visited_gates Visit max and min time recordings for gates.
-  /// @param[in,out] modular_children Candidates for modular grouping.
-  /// @param[in,out] non_modular_children Non modular children.
-  void FilterModularChildren(
-      const int visit_basics[][2],
-      const std::map<int, std::pair<int, int> >& visited_gates,
-      std::vector<int>* modular_children,
-      std::vector<int>* non_modular_children);
-
-
-  /// Traverses the fault tree to convert gates into simple gates.
-  /// @param[in] gate_index The index of a gate to start with.
-  /// @param[in,out] processed_gates Gates turned into simple gates.
-  void CreateSimpleTree(int gate_index,
-                        std::map<int, SimpleGatePtr>* processed_gates);
-
-  /// Finds minimal cut sets of a simple gate.
-  /// @param[in] gate The simple gate as a parent for processing.
-  /// @param[out] mcs Minimal cut sets.
-  void FindMcsFromSimpleGate(const SimpleGatePtr& gate,
-                             std::vector< std::set<int> >* mcs);
-
-  /// Finds minimal cut sets from cut sets.
-  /// Reduces unique cut sets to minimal cut sets.
-  /// The performance is highly dependent on the passed sets. If the sets
-  /// share many events, it takes more time to remove supersets.
-  /// @param[in] cut_sets Cut sets with primary events.
-  /// @param[in] mcs_lower_order Reference minimal cut sets of some order.
-  /// @param[in] min_order The order of sets to become minimal.
-  /// @param[out] mcs Min cut sets.
-  /// @note T_avg(N^3 + N^2*logN + N*logN) = O_avg(N^3)
-  void MinimizeCutSets(
-      const std::vector<const std::set<int>* >& cut_sets,
-      const std::vector<std::set<int> >& mcs_lower_order,
-      int min_order,
-      std::vector<std::set<int> >* mcs);
-
-  int top_event_index_;  ///< The index of the top gate of this tree.
-  int gate_index_;  ///< The starting gate index for gate identification.
-  /// All gates of this tree including newly created ones.
-  boost::unordered_map<int, IndexedGatePtr> indexed_gates_;
-  std::set<int> modules_;  ///< Modules in the tree.
-  int top_event_sign_;  ///< The negative or positive sign of the top event.
-  int new_gate_index_;  ///< Index for a new gate.
-  std::vector< std::set<int> > imcs_;  ///< Min cut sets with indexed events.
-  /// Limit on the size of the minimal cut sets for performance reasons.
-  int limit_order_;
+  IGatePtr top_event_;  ///< The top gate of this tree.
+  std::vector<BasicEventPtr> basic_events_;  ///< Mapping for basic events.
 };
 
 }  // namespace scram

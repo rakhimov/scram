@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2014-2015 Olzhas Rakhimov
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 /// @file settings.cc
 /// Implementation of Settings Builder.
 #include "settings.h"
@@ -7,17 +23,17 @@
 namespace scram {
 
 Settings::Settings()
-    : num_sums_(7),
-      limit_order_(20),
-      approx_("no"),  // The default value indicates no setting.
-      cut_off_(1e-8),
-      mission_time_(8760),
-      num_trials_(1e3),
-      seed_(-1),  // The negative value indicates no setting.
-      probability_analysis_(false),
+    : probability_analysis_(false),
       importance_analysis_(false),
       uncertainty_analysis_(false),
-      ccf_analysis_(false) {}
+      ccf_analysis_(false),
+      limit_order_(20),
+      mission_time_(8760),
+      num_sums_(7),
+      cut_off_(1e-8),
+      approx_("no"),  // The default value indicates no setting.
+      seed_(-1),  // The negative value indicates no setting.
+      num_trials_(1e3) {}
 
 Settings& Settings::limit_order(int order) {
   if (order < 1) {
@@ -49,7 +65,7 @@ Settings& Settings::cut_off(double prob) {
   return *this;
 }
 
-Settings& Settings::approx(std::string approx) {
+Settings& Settings::approx(const std::string& approx) {
   if (approx != "no" && approx != "rare-event" && approx != "mcub") {
     std::string msg = "The probability approximation is not recognized.";
     throw InvalidArgument(msg);

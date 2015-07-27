@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2014-2015 Olzhas Rakhimov
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 /// @file logger.h
 /// Logging capability for various purposes, such as warnings and debugging.
 /// This logging facility caters mostly developers.
@@ -68,14 +84,18 @@ class Logger {
   }
 
   /// This function can be to get and set the cut-off level for logging.
-  /// @returns The cut-off level for reporting.
+  ///
+  /// @returns Reference to the cut-off level for reporting.
   static LogLevel& ReportLevel();
 
   /// Returns a string stream by reference that is flushed to stderr by
   /// the Logger class destructor.
+  ///
   /// @param[in] level The log level for the information.
+  ///
+  /// @returns Formatted output stringstream with the log level information.
   inline std::ostringstream& Get(LogLevel level) {
-    os_ << Logger::level_to_string_[level] << ": ";
+    os_ << Logger::kLevelToString_[level] << ": ";
     os_ << std::string(level < DEBUG1 ? 0 : level - DEBUG1 + 1, '\t');
     return os_;
   }
@@ -83,7 +103,7 @@ class Logger {
  private:
   /// Translates the logging level into a string. The index is the value
   /// of the enum.
-  static const char* const level_to_string_[];
+  static const char* const kLevelToString_[];
 
   /// Restrict copy construction.
   Logger(const Logger&);

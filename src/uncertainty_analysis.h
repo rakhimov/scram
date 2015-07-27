@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2014-2015 Olzhas Rakhimov
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 /// @file uncertainty_analysis.h
 /// Provides functionality for uncertainty analysis with Monte Carlo method.
 #ifndef SCRAM_SRC_UNCERTAINTY_ANALYSIS_H_
@@ -25,10 +41,12 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
 
   /// The main constructor of Uncertainty Analysis.
+  ///
   /// @param[in] num_sums The number of sums in the probability series.
   /// @param[in] cut_off The cut-off probability for cut sets.
   /// @param[in] num_trials The number of trials to perform.
-  /// @throws InvalidArgument if any of the parameters is invalid.
+  ///
+  /// @throws InvalidArgument One of the parameters is invalid.
   explicit UncertaintyAnalysis(int num_sums = 7, double cut_off = 1e-8,
                                int num_trials = 1e3);
 
@@ -36,7 +54,9 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   /// Resets the main basic event database and clears the
   /// previous information. This information is the main source for
   /// calculations and internal indexes for basic events.
+  ///
   /// @param[in] basic_events The database of basic events in cut sets.
+  ///
   /// @note  If not enough information is provided, the analysis behavior
   ///        is undefined.
   void UpdateDatabase(
@@ -45,8 +65,10 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   /// Performs quantitative analysis on minimal cut sets containing basic
   /// events provided in the databases. It is assumed that the analysis is
   /// called only once.
+  ///
   /// @param[in] min_cut_sets Minimal cut sets with string ids of events.
   ///                         Negative event is indicated by "'not' + id"
+  ///
   /// @note  Undefined behavior if analysis called two or more times.
   void Analyze(const std::set< std::set<std::string> >& min_cut_sets);
 
@@ -83,6 +105,7 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   /// basic events removed from sampling.
   /// These constant events are removed from the probability equation, and
   /// the members of the equation are given a corresponding multiplier.
+  ///
   /// @param[out] basic_events The gathered uncertain basic events.
   void FilterUncertainEvents(std::vector<int>* basic_events);
 
@@ -90,13 +113,10 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   void CalculateStatistics();
 
   std::vector<double> sampled_results_;  ///< Storage for sampled values.
-
   int num_trials_;  ///< The number of trials to perform.
-
-  double analysis_time_;  ///< Time for uncertainty calculations and sampling.
-
   double mean_;  ///< The mean of the final distribution.
   double sigma_;  ///< The standard deviation of the final distribution.
+  double analysis_time_;  ///< Time for uncertainty calculations and sampling.
   /// The confidence interval of the distribution.
   std::pair<double, double> confidence_interval_;
   /// The histogram density of the distribution with lower bounds and values.

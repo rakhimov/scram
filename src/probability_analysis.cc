@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2014-2015 Olzhas Rakhimov
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 /// @file probability_analysis.cc
 /// Implementations of functions to provide probability and importance
 /// informations.
@@ -11,7 +27,7 @@
 
 namespace scram {
 
-ProbabilityAnalysis::ProbabilityAnalysis(std::string approx,
+ProbabilityAnalysis::ProbabilityAnalysis(const std::string& approx,
                                          int num_sums,
                                          double cut_off,
                                          bool importance_analysis)
@@ -19,7 +35,6 @@ ProbabilityAnalysis::ProbabilityAnalysis(std::string approx,
       warnings_(""),
       p_total_(0),
       p_rare_(0),
-      num_prob_mcs_(0),
       coherent_(true),
       p_time_(-1),
       imp_time_(-1) {
@@ -94,7 +109,6 @@ void ProbabilityAnalysis::Analyze(
                    " The MCUB approximation may not hold.";
     }
     num_sums_ = 0;  // For reporting purposes.
-    num_prob_mcs_ = imcs_.size();
     p_total_ = ProbabilityAnalysis::ProbMcub(imcs_);
 
   } else {
@@ -116,7 +130,6 @@ void ProbabilityAnalysis::Analyze(
     }
     // The default calculations.
     // Choose cut sets with high enough probabilities.
-    num_prob_mcs_ = mcs_for_prob.size();
     if (num_sums_ > mcs_for_prob.size()) num_sums_ = mcs_for_prob.size();
     ProbabilityAnalysis::ProbOr(1, num_sums_, &mcs_for_prob);
     p_total_ = ProbabilityAnalysis::CalculateTotalProbability();

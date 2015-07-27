@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2014-2015 Olzhas Rakhimov
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 /// @file probability_analysis.h
 /// Contains functionality to do numerical analysis of probabilities and
 /// importances.
@@ -28,12 +44,14 @@ class ProbabilityAnalysis {
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
 
   /// The main constructor of Probability Analysis.
+  ///
   /// @param[in] approx The kind of approximation for probability calculations.
   /// @param[in] num_sums The number of sums in the probability series.
   /// @param[in] cut_off The cut-off probability for cut sets.
   /// @param[in] importance_analysis To perform importance analysis.
-  /// @throws InvalidArgument if any of the parameters is invalid.
-  explicit ProbabilityAnalysis(std::string approx = "no",
+  ///
+  /// @throws InvalidArgument One of the parameters is invalid.
+  explicit ProbabilityAnalysis(const std::string& approx = "no",
                                int num_sums = 7,
                                double cut_off = 1e-8,
                                bool importance_analysis = false);
@@ -44,7 +62,9 @@ class ProbabilityAnalysis {
   /// Resets the main basic event database and clears the
   /// previous information. This information is the main source for
   /// calculations and internal indexes for basic events.
+  ///
   /// @param[in] basic_events The database of basic events in cut sets.
+  ///
   /// @note  If not enough information is provided, the analysis behavior
   ///        is undefined.
   void UpdateDatabase(
@@ -53,16 +73,20 @@ class ProbabilityAnalysis {
   /// Performs quantitative analysis on minimal cut sets containing basic
   /// events provided in the databases. It is assumed that the analysis is
   /// called only once.
+  ///
   /// @param[in] min_cut_sets Minimal cut sets with string ids of events.
   ///                         Negative event is indicated by "'not' + id"
+  ///
   /// @note  Undefined behavior if analysis called two or more times.
   virtual void Analyze(const std::set< std::set<std::string> >& min_cut_sets);
 
   /// @returns The total probability calculated by the analysis.
+  ///
   /// @note The user should make sure that the analysis is actually done.
   inline double p_total() const { return p_total_; }
 
   /// @returns Map with minimal cut sets and their probabilities.
+  ///
   /// @note The user should make sure that the analysis is actually done.
   inline const std::map< std::set<std::string>, double >&
       prob_of_min_sets() const {
@@ -71,6 +95,7 @@ class ProbabilityAnalysis {
 
   /// @returns Map with basic events and their importance values.
   ///          The associated vector contains DIF, MIF, CIF, RRW, RAW in order.
+  ///
   /// @note The user should make sure that the analysis is actually done.
   inline const std::map< std::string, std::vector<double> >&
       importance() const {
@@ -87,6 +112,7 @@ class ProbabilityAnalysis {
   }
 
   /// @returns The probability with the rare-event approximation.
+  ///
   /// @note The user should make sure that the analysis is actually done.
   inline double p_rare() const { return p_rare_; }
 
@@ -106,12 +132,16 @@ class ProbabilityAnalysis {
   /// Populates databases of minimal cut sets with indices of the events.
   /// This traversal detects if cut sets contain complement events and
   /// turns non-coherent analysis.
+  ///
   /// @param[in] min_cut_sets Minimal cut sets with event ids.
   void IndexMcs(const std::set<std::set<std::string> >& min_cut_sets);
 
   /// Calculates probabilities using the minimal cut set upper bound (MCUB)
   /// approximation.
+  ///
   /// @param[in] min_cut_sets Sets of indices of basic events.
+  ///
+  /// @returns The total probability with the MCUB approximation.
   double ProbMcub(
       const std::vector< boost::container::flat_set<int> >& min_cut_sets);
 
@@ -119,31 +149,37 @@ class ProbabilityAnalysis {
   /// a set of minimal cut sets, which are in OR
   /// relationship with each other. This function is a brute force probability
   /// calculation without approximations.
+  ///
   /// @param[in] sign The sign of the series. Negative or positive number.
   /// @param[in] num_sums The number of sums in the series.
   /// @param[in,out] min_cut_sets Sets of indices of basic events.
-  /// @note This function drastically modifies min_cut_sets by deleting
-  /// sets inside it. This is for better performance.
   ///
+  /// @note This function drastically modifies min_cut_sets by deleting
+  ///       sets inside it. This is for better performance.
   /// @note O_avg(M*logM*N*2^N) where N is the number of sets, and M is
-  /// the average size of the sets.
+  ///       the average size of the sets.
   void ProbOr(int sign, int num_sums,
               std::set< boost::container::flat_set<int> >* min_cut_sets);
 
   /// Calculates a probability of a minimal cut set, whose members are in AND
   /// relationship with each other. This function assumes independence of each
   /// member.
+  ///
   /// @param[in] min_cut_set A flat set of indices of basic events.
-  /// @returns The total probability.
+  ///
+  /// @returns The total probability of the set.
+  ///
   /// @note O_avg(N) where N is the size of the passed set.
   double ProbAnd(const boost::container::flat_set<int>& min_cut_set);
 
   /// Calculates A(and)( B(or)C ) relationship for sets using set algebra.
+  ///
   /// @param[in] el A set of indices of basic events.
   /// @param[in] set Sets of indices of basic events.
   /// @param[out] combo_set A final set resulting from joining el and sets.
+  ///
   /// @note O_avg(N*M*logM) where N is the size of the set, and M is the
-  /// average size of the elements.
+  ///       average size of the elements.
   void CombineElAndSet(
       const boost::container::flat_set<int>& el,
       const std::set< boost::container::flat_set<int> >& set,
@@ -155,10 +191,12 @@ class ProbabilityAnalysis {
   /// Importance analysis of basic events that are in minimal cut sets.
   void PerformImportanceAnalysis();
 
-  std::string approx_;  ///< Approximations for probability calculations.
+
+  bool importance_analysis_;  ///< A flag for importance analysis.
+  std::string warnings_;  ///< Register warnings.
   int num_sums_;  ///< Number of sums in series expansion.
   double cut_off_;  ///< Cut-off probability for minimal cut sets.
-  bool importance_analysis_;  ///< A flag for importance analysis.
+  std::string approx_;  ///< Approximations for probability calculations.
 
   /// Container for basic events.
   boost::unordered_map<std::string, BasicEventPtr> basic_events_;
@@ -188,11 +226,6 @@ class ProbabilityAnalysis {
   /// Container for basic event importance types.
   /// The order is DIF, MIF, CIF, RRW, RAW.
   std::map< std::string, std::vector<double> > importance_;
-
-  std::string warnings_;  ///< Register warnings.
-
-  /// The number of minimal cut sets with higher than cut-off probability.
-  int num_prob_mcs_;
 
   bool coherent_;  ///< Indication of coherent optimized analysis.
   double p_time_;  ///< Time for probability calculations.

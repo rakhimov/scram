@@ -10,8 +10,8 @@ these external graphing tools.
 SCRAM Fault Tree Graphing Specifics
 ===================================
 
-#. Called after tree initiation steps.
-#. May operate without probability information.
+#. Called after the tree initialization steps.
+#. Probability information is optional.
 #. Gate repetition is graphed with a transfer symbol.
 #. Tries to make the tree look compact.
 #. Assigns colors for clarity:

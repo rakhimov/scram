@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2014-2015 Olzhas Rakhimov
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 /// @file scram.cc
 /// Main entrance.
 #include <iostream>
@@ -20,9 +36,11 @@ namespace po = boost::program_options;
 using namespace scram;
 
 /// Parses the command-line arguments.
+///
 /// @param[in] argc Count of arguments.
 /// @param[in] argv Values of arguments.
 /// @param[out] vm Variables map of program options.
+///
 /// @returns 0 for success.
 /// @returns 1 for errored state.
 /// @returns -1 for information only state like help and version.
@@ -125,9 +143,11 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
 }
 
 /// Updates analysis settings from command-line arguments.
+///
 /// @param[in] vm Variables map of program options.
 /// @param[in,out] settings Pre-configured or default settings.
-/// @throws std::exception if vm does not contain a required option.
+///
+/// @throws std::exception vm does not contain a required option.
 ///                        At least defaults are expected.
 void ConstructSettings(const po::variables_map& vm, Settings* settings) {
   // Determine if the probability approximation is requested.
@@ -155,12 +175,15 @@ void ConstructSettings(const po::variables_map& vm, Settings* settings) {
 }
 
 /// Main body of command-line entrance to run the program.
+///
 /// @param[in] vm Variables map of program options.
-/// @throws Error for any type of internal problems like validation.
-/// @throws boost::exception for possible Boost usage errors.
-/// @throws std::exception for any other problems.
+///
 /// @returns 0 for success.
 /// @returns 1 for errored state.
+///
+/// @throws Error Internal problems specific to SCRAM like validation.
+/// @throws boost::exception Boost errors.
+/// @throws std::exception All other problems.
 int RunScram(const po::variables_map& vm) {
   if (vm.count("verbosity")) {
     Logger::ReportLevel() = static_cast<LogLevel>(vm["verbosity"].as<int>());
@@ -225,6 +248,10 @@ int RunScram(const po::variables_map& vm) {
 }
 
 /// Command-line SCRAM entrance.
+///
+/// @param[in] argc Argument count.
+/// @param[in] argv Argument vector.
+///
 /// @returns 0 for success.
 /// @returns 1 for errored state.
 int main(int argc, char* argv[]) {
@@ -270,6 +297,12 @@ int main(int argc, char* argv[]) {
         << std::endl;
     std::cerr << "SCRAM Invalid Argument Error\n" << std::endl;
     std::cerr << iarg_err.what() << std::endl;
+    return 1;
+  } catch (Error& scram_err) {
+    std::cerr << "Bad, bad news. Please report this error. Thank you!\n"
+        << std::endl;
+    std::cerr << "SCRAM Error\n" << std::endl;
+    std::cerr << scram_err.what() << std::endl;
     return 1;
   } catch (boost::exception& boost_err) {
     std::cerr << "Bad, bad news. Please report this error. Thank you!\n"

@@ -1,3 +1,19 @@
+/*
+ * Copyright (C) 2014-2015 Olzhas Rakhimov
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 /// @file ccf_group.cc
 /// Implementation of various common cause failure models.
 #include "ccf_group.h"
@@ -24,7 +40,6 @@ void CcfGroup::AddMember(const BasicEventPtr& basic_event) {
   if (distribution_) {
     throw IllegalOperation("No more members accepted. The distribution for " +
                            name_ + " CCF group has already been defined.");
-
   }
   if (members_.count(name)) {
     throw DuplicateArgumentError("Duplicate member " + basic_event->name() +
@@ -87,6 +102,7 @@ void CcfGroup::ApplyModel() {
     BasicEventPtr member = it_m->second;
     GatePtr new_gate(
         new Gate(member->name(), member->base_path(), member->is_public()));
+    assert(member->id() == new_gate->id());
     new_gate->formula(FormulaPtr(new Formula("or")));
     gates.insert(std::make_pair(it_m->first, new_gate));
     member->ccf_gate(new_gate);
