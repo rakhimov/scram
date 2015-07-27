@@ -26,28 +26,28 @@ Release build:
 ==================== MCS Analysis =========================
 
 ----------- Chinese Tree (mcs = 392) ----------------------
-Standard build:
+Debug build:
 ---------------
 - Cut Set Generation      0.25s  |
 - Cut Set Minimization    0.25s  |
 
 
 ---------- fta-200 -l 17 (mcs = 8487) ---------------
-Standard build:
+Debug build:
 ---------------
 - Cut Set Generation      0.60s  |
-- Cut Set Minimization    7.5s   |
+- Cut Set Minimization    5.5s   |
 
 Release build:
 --------------
 - Cut Set Generation      0.12s  |
-- Cut Set Minimization    1.8s   |
+- Cut Set Minimization    1.0s   |
 
 ---------- fta-200 -l 24 (mcs = 16951) ---------------
-Standard build:
+Debug build:
 ---------------
-- Cut Set Generation      1.1s  |
-- Cut Set Minimization    26s   |
+- Cut Set Generation      1.1s  |  1.4s
+- Cut Set Minimization    26s   |  33s
 
 Release build:
 --------------
@@ -56,7 +56,7 @@ Release build:
 
 
 ---------- Baobab1 -l 6 (mcs = 2684) ----------------
-Standard build:
+Debug build:
 ---------------
 - Cut Set Generation      1.4s   |
 - Cut Set Minimization    0.30s  |
@@ -67,28 +67,35 @@ Release build:
 - Cut Set Minimization    0.03s  |
 
 ---------- Baobab1 -l 7 (mcs = 17432) ----------------
-Standard build:
+Debug build:
 ---------------
-- Cut Set Generation      6.5s  |
-- Cut Set Minimization    9.5s  |
+- Cut Set Generation      6.5s  |  9.0s
+- Cut Set Minimization    9.5s  |  11s
 
 Release build:
 --------------
-- Cut Set Generation      1.3s   |
-- Cut Set Minimization    0.80s  |  1.0s
+- Cut Set Generation      1.3s   |  1.8s
+- Cut Set Minimization    0.80s  |  1.3s
 
 ---------- Baobab1 -l 8 (mcs = 25892) ----------------
 Release build:
 --------------
-- Cut Set Generation      9.4s  |
-- Cut Set Minimization    20s   |  27s
+- Cut Set Generation      9.4s  |  13s
+- Cut Set Minimization    20s   |  48s
 
 
----------- CEA9601 -l 7 (mcs = 4578) ----------------
+---------- CEA9601 -l 10 (mcs = 5120) ----------------
+Debug build:
+---------------
+- Cut Set Generation      3.8s  |
+- Cut Set Minimization    0.5s  |
+
+
+---------- CEA9601 -l 14 (mcs = 5120) ----------------
 Release build:
 --------------
-- Cut Set Generation      5.4s   |
-- Cut Set Minimization    0.05s  |
+- Cut Set Generation      15.4s  |
+- Cut Set Minimization    0.12s  |
 
 
 ==================== Uncertainty Analysis =================
@@ -110,7 +117,7 @@ Python script:
 ==================== Fault Tree Validation ================
 
 ---| -p 300000 -c 3 --common-g 0.1 --common-p 0.1 |---
-Standard build:
+Debug build:
 ---------------
 - Parsing and Validation    37s  |  55s
 
