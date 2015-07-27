@@ -50,6 +50,7 @@ IGate::IGate(const GateType& type)
       type_(type),
       state_(kNormalState),
       vote_number_(-1),
+      mark_(false),
       min_time_(0),
       max_time_(0),
       module_(false) {}

@@ -227,8 +227,7 @@ class Preprocessor {
   /// This function can also create new modules from the existing tree.
   ///
   /// @param[in,out] gate The gate to test for modularity.
-  /// @param[in,out] visited_gates Container of visited gates.
-  void FindModules(const IGatePtr& gate, std::set<int>* visited_gates);
+  void FindModules(const IGatePtr& gate);
 
   /// Creates a new module as a child of an existing gate if the logic of the
   /// existing parent gate allows a sub-module. The existing
@@ -280,17 +279,29 @@ class Preprocessor {
       const std::vector<std::pair<int, NodePtr> >& modular_children,
       const std::vector<std::vector<std::pair<int, NodePtr> > >& groups);
 
-  /// Clears visit time information from all indexed gates that have been
+  /// Sets the visit marks to False for all indexed gates that have been
+  /// visited top-down. Any member function updating and using the visit
+  /// marks of gates must ensure to clean visit marks before running
+  /// algorithms. However, cleaning after finishing algorithms is not mandatory.
+  void ClearGateMarks();
+
+  /// Sets the visit marks of descendant gates to False starting from the given
+  /// gate as a root.
+  ///
+  /// @param[in,out] gate The root gate to be traversed and marks.
+  void ClearGateMarks(const IGatePtr& gate);
+
+  /// Clears visit time information from all indexed nodes that have been
   /// visited top-down. Any member function updating and using the visit
   /// information of gates must ensure to clean visit times before running
   /// algorithms. However, cleaning after finishing algorithms is not mandatory.
-  void ClearGateVisits();
+  void ClearNodeVisits();
 
-  /// Clears visit information from descendant gates starting from the given
+  /// Clears visit information from descendant nodes starting from the given
   /// gate as a root.
   ///
   /// @param[in,out] gate The root gate to be traversed and cleaned.
-  void ClearGateVisits(const IGatePtr& gate);
+  void ClearNodeVisits(const IGatePtr& gate);
 
   IndexedFaultTree* fault_tree_;  ///< The fault tree to preprocess.
   int top_event_sign_;  ///< The negative or positive sign of the top event.

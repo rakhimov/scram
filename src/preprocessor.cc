@@ -32,6 +32,7 @@ void Preprocessor::ProcessIndexedFaultTree() {
   IGatePtr top = fault_tree_->top_event();
   assert(top);
   assert(top->parents().empty());
+  assert(!top->mark());
   LOG(DEBUG2) << "Propagating constants in a fault tree.";
   Preprocessor::PropagateConstants(top);
   LOG(DEBUG2) << "Constant propagation is done.";
@@ -43,7 +44,7 @@ void Preprocessor::ProcessIndexedFaultTree() {
   Preprocessor::NormalizeGates();
   LOG(DEBUG2) << "Finished normalizing gates.";
 
-  Preprocessor::ClearGateVisits();
+  Preprocessor::ClearGateMarks();
   Preprocessor::RemoveNullGates(top);
 
   if (top->type() == kNullGate) {  // Special case of preprocessing.
@@ -83,25 +84,25 @@ void Preprocessor::ProcessIndexedFaultTree() {
   }
 
   std::map<int, IGatePtr> complements; // Must be cleaned!
-  Preprocessor::ClearGateVisits();
+  Preprocessor::ClearGateMarks();
   Preprocessor::PropagateComplements(top, &complements);
   complements.clear();  // Cleaning to get rid of extra reference counts.
 
-  Preprocessor::ClearGateVisits();
+  Preprocessor::ClearGateMarks();
   Preprocessor::RemoveConstGates(top);
   bool tree_changed = true;
   while (tree_changed) {
     tree_changed = false;  // Break the loop if actions don't change the tree.
     bool ret = false;  // The result of actions of functions.
-    Preprocessor::ClearGateVisits();
+    Preprocessor::ClearGateMarks();
     ret = Preprocessor::RemoveNullGates(top);
     if (!tree_changed && ret) tree_changed = true;
 
-    Preprocessor::ClearGateVisits();
+    Preprocessor::ClearGateMarks();
     ret = Preprocessor::JoinGates(top);
     if (!tree_changed && ret) tree_changed = true;
 
-    Preprocessor::ClearGateVisits();
+    Preprocessor::ClearGateMarks();
     ret = Preprocessor::RemoveConstGates(top);
     if (!tree_changed && ret) tree_changed = true;
   }
@@ -126,16 +127,16 @@ void Preprocessor::NormalizeGates() {
   }
   // Process negative gates. Note that top event's negative gate is processed in
   // the above lines.  All children are assumed to be positive at this point.
-  Preprocessor::ClearGateVisits();
+  Preprocessor::ClearGateMarks();
   Preprocessor::NotifyParentsOfNegativeGates(top_gate);
 
-  Preprocessor::ClearGateVisits();
+  Preprocessor::ClearGateMarks();
   Preprocessor::NormalizeGate(top_gate);
 }
 
 void Preprocessor::NotifyParentsOfNegativeGates(const IGatePtr& gate) {
-  if (gate->Visited()) return;
-  gate->Visit(1);
+  if (gate->mark()) return;
+  gate->mark(true);
   std::vector<int> to_negate;  // Children to get the negation.
   boost::unordered_map<int, IGatePtr>::const_iterator it;
   for (it = gate->gate_children().begin(); it != gate->gate_children().end();
@@ -156,8 +157,8 @@ void Preprocessor::NotifyParentsOfNegativeGates(const IGatePtr& gate) {
 }
 
 void Preprocessor::NormalizeGate(const IGatePtr& gate) {
-  if (gate->Visited()) return;
-  gate->Visit(1);
+  if (gate->mark()) return;
+  gate->mark(true);
 
   // Depth-first traversal before the children may get changed.
   boost::unordered_map<int, IGatePtr>::const_iterator it;
@@ -194,6 +195,8 @@ void Preprocessor::NormalizeXorGate(const IGatePtr& gate) {
   assert(gate->children().size() == 2);
   IGatePtr gate_one(new IGate(kAndGate));
   IGatePtr gate_two(new IGate(kAndGate));
+  gate_one->mark(true);
+  gate_two->mark(true);
 
   gate->type(kOrGate);
   std::set<int>::const_iterator it = gate->children().begin();
@@ -243,6 +246,10 @@ void Preprocessor::NormalizeAtleastGate(const IGatePtr& gate) {
     gate->ShareChild(*it, second_child);
   }
 
+  first_child->mark(true);
+  second_child->mark(true);
+  grand_child->mark(true);
+
   gate->type(kOrGate);
   gate->EraseAllChildren();
   gate->AddChild(first_child->index(), first_child);
@@ -253,8 +260,8 @@ void Preprocessor::NormalizeAtleastGate(const IGatePtr& gate) {
 }
 
 void Preprocessor::PropagateConstants(const IGatePtr& gate) {
-  if (gate->Visited()) return;
-  gate->Visit(1);  // Time does not matter.
+  if (gate->mark()) return;
+  gate->mark(true);
   std::vector<int> to_erase;  // Erase children later to keep iterator valid.
   boost::unordered_map<int, ConstantPtr>::const_iterator it_c;
   for (it_c = gate->constant_children().begin();
@@ -385,8 +392,8 @@ void Preprocessor::RemoveChildren(const IGatePtr& gate,
 }
 
 bool Preprocessor::RemoveConstGates(const IGatePtr& gate) {
-  if (gate->Visited()) return false;
-  gate->Visit(1);  // Time does not matter.
+  if (gate->mark()) return false;
+  gate->mark(true);
 
   if (gate->state() == kNullState || gate->state() == kUnityState) return false;
   bool changed = false;  // Indication if this operation changed the gate.
@@ -413,8 +420,8 @@ bool Preprocessor::RemoveConstGates(const IGatePtr& gate) {
 void Preprocessor::PropagateComplements(
     const IGatePtr& gate,
     std::map<int, IGatePtr>* gate_complements) {
-  if (gate->Visited()) return;
-  gate->Visit(1);
+  if (gate->mark()) return;
+  gate->mark(true);
   // If the child gate is complement, then create a new gate that propagates
   // its sign to its children and itself becomes non-complement.
   // Keep track of complement gates for optimization of repeated complements.
@@ -450,8 +457,8 @@ void Preprocessor::PropagateComplements(
 }
 
 bool Preprocessor::RemoveNullGates(const IGatePtr& gate) {
-  if (gate->Visited()) return false;
-  gate->Visit(1);  // Time does not matter.
+  if (gate->mark()) return false;
+  gate->mark(true);
   std::vector<int> null_children;  // Null type gate children.
   bool changed = false;  // Indication if the tree is changed.
   boost::unordered_map<int, IGatePtr>::const_iterator it;
@@ -475,8 +482,8 @@ bool Preprocessor::RemoveNullGates(const IGatePtr& gate) {
 }
 
 bool Preprocessor::JoinGates(const IGatePtr& gate) {
-  if (gate->Visited()) return false;
-  gate->Visit(1);  // Time does not matter.
+  if (gate->mark()) return false;
+  gate->mark(true);
   GateType parent_type = gate->type();
   std::vector<IGatePtr> to_join;  // Gate children of the same logic.
   bool changed = false;  // Indication if the tree is changed.
@@ -517,7 +524,7 @@ void Preprocessor::DetectModules() {
   // visit time for each node.
   LOG(DEBUG2) << "Detecting modules in a fault tree.";
 
-  Preprocessor::ClearGateVisits();
+  Preprocessor::ClearNodeVisits();
 
   IGatePtr top_gate = fault_tree_->top_event();
   int time = 0;
@@ -525,10 +532,9 @@ void Preprocessor::DetectModules() {
 
   LOG(DEBUG3) << "Timings are assigned to nodes.";
 
-  std::set<int> visited_gates;
-  Preprocessor::FindModules(top_gate, &visited_gates);
+  Preprocessor::ClearGateMarks();
+  Preprocessor::FindModules(top_gate);
 
-  assert(visited_gates.count(top_gate->index()));
   assert(!top_gate->Revisited());
   assert(top_gate->min_time() == 1);
   assert(top_gate->max_time() == top_gate->ExitTime());
@@ -555,9 +561,9 @@ int Preprocessor::AssignTiming(int time, const IGatePtr& gate) {
   return time;
 }
 
-void Preprocessor::FindModules(const IGatePtr& gate,
-                               std::set<int>* visited_gates) {
-  if (visited_gates->count(gate->index())) return;
+void Preprocessor::FindModules(const IGatePtr& gate) {
+  if (gate->mark()) return;
+  gate->mark(true);
   int enter_time = gate->EnterTime();
   int exit_time = gate->ExitTime();
   int min_time = enter_time;
@@ -570,7 +576,7 @@ void Preprocessor::FindModules(const IGatePtr& gate,
   for (it = gate->gate_children().begin(); it != gate->gate_children().end();
        ++it) {
     IGatePtr child_gate = it->second;
-    Preprocessor::FindModules(child_gate, visited_gates);
+    Preprocessor::FindModules(child_gate);
     if (child_gate->IsModule() && !child_gate->Revisited()) {
       assert(child_gate->parents().size() == 1);
       assert(child_gate->parents().count(&*gate));
@@ -629,7 +635,6 @@ void Preprocessor::FindModules(const IGatePtr& gate,
   max_time = std::max(max_time, gate->LastVisit());
   gate->min_time(min_time);
   gate->max_time(max_time);
-  visited_gates->insert(gate->index());
 
   // Attempting to create new modules for specific gate types.
   switch (gate->type()) {
@@ -672,6 +677,7 @@ boost::shared_ptr<IGate> Preprocessor::CreateNewModule(
       return module;  // Cannot create sub-modules for other types.
   }
   module->TurnModule();
+  module->mark(true);
   std::vector<std::pair<int, NodePtr> >::const_iterator it;
   for (it = children.begin(); it != children.end(); ++it) {
     gate->TransferChild(it->first, module);
@@ -786,16 +792,30 @@ void Preprocessor::CreateNewModules(
   }
 }
 
-void Preprocessor::ClearGateVisits() {
-  Preprocessor::ClearGateVisits(fault_tree_->top_event());
+void Preprocessor::ClearGateMarks() {
+  Preprocessor::ClearGateMarks(fault_tree_->top_event());
 }
 
-void Preprocessor::ClearGateVisits(const IGatePtr& gate) {
+void Preprocessor::ClearGateMarks(const IGatePtr& gate) {
+  if (!gate->mark()) return;
+  gate->mark(false);
+  boost::unordered_map<int, IGatePtr>::const_iterator it;
+  for (it = gate->gate_children().begin(); it != gate->gate_children().end();
+       ++it) {
+    Preprocessor::ClearGateMarks(it->second);
+  }
+}
+
+void Preprocessor::ClearNodeVisits() {
+  Preprocessor::ClearNodeVisits(fault_tree_->top_event());
+}
+
+void Preprocessor::ClearNodeVisits(const IGatePtr& gate) {
   gate->ClearVisits();
   boost::unordered_map<int, IGatePtr>::const_iterator it;
   for (it = gate->gate_children().begin(); it != gate->gate_children().end();
        ++it) {
-    Preprocessor::ClearGateVisits(it->second);
+    Preprocessor::ClearNodeVisits(it->second);
   }
   boost::unordered_map<int, IBasicEventPtr>::const_iterator it_b;
   for (it_b = gate->basic_event_children().begin();

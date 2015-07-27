@@ -255,6 +255,14 @@ class IGate : public Node {
     return constant_children_;
   }
 
+  /// @returns The mark of this gate.
+  inline bool mark() const { return mark_; }
+
+  /// Sets the mark of this gate.
+  ///
+  /// @param[in] flag Marking with the meaning for the marker.
+  inline void mark(bool flag) { mark_ = flag; }
+
   /// @returns The minimum time of visits of the gate's sub-tree.
   /// @returns 0 if no time assignement was performed.
   inline int min_time() const { return min_time_; }
@@ -452,6 +460,7 @@ class IGate : public Node {
   GateType type_;  ///< Type of this gate.
   State state_;  ///< Indication if this gate's state is normal, null, or unity.
   int vote_number_;  ///< Vote number for ATLEAST gate.
+  bool mark_;  ///< Marking for linear traversal of a graph.
   int min_time_;  ///< Minumum time of visits of the sub-tree of the gate.
   int max_time_;  ///< Maximum time of visits of the sub-tree of the gate.
   bool module_;  ///< Indication of an independent module gate.
