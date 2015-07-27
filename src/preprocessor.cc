@@ -31,6 +31,7 @@ Preprocessor::Preprocessor(IndexedFaultTree* fault_tree)
 void Preprocessor::ProcessIndexedFaultTree() {
   IGatePtr top = fault_tree_->top_event();
   assert(top);
+  assert(top->parents().empty());
   LOG(DEBUG2) << "Propagating constants in a fault tree.";
   Preprocessor::PropagateConstants(top);
   LOG(DEBUG2) << "Constant propagation is done.";
@@ -52,6 +53,7 @@ void Preprocessor::ProcessIndexedFaultTree() {
       IGatePtr child = top->gate_children().begin()->second;
       fault_tree_->top_event(child);
       top = child;
+      assert(top->parents().empty());
       assert(top->type() == kOrGate || top->type() == kAndGate);
       top_event_sign_ *= signed_index > 0 ? 1 : -1;
     }
@@ -586,6 +588,9 @@ void Preprocessor::FindModules(
     min = visited_gates->find(child_gate->index())->second.first;
     max = visited_gates->find(child_gate->index())->second.second;
     if (child_gate->IsModule() && !child_gate->Revisited()) {
+      assert(child_gate->parents().size() == 1);
+      assert(child_gate->parents().count(&*gate));
+
       non_shared_children.push_back(it->first);
       continue;
     }

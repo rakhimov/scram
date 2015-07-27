@@ -199,7 +199,10 @@ class IGate : public Node {
   explicit IGate(const GateType& type);
 
   /// Destructs parent information from children.
-  ~IGate() { IGate::EraseAllChildren(); }
+  ~IGate() {
+    assert(this->parents().empty());
+    IGate::EraseAllChildren();
+  }
 
   /// @returns Type of this gate.
   inline const GateType& type() const { return type_; }
@@ -434,6 +437,13 @@ class Formula;
 /// @class IndexedFaultTree
 /// This class provides simpler representation of a fault tree
 /// that takes into account the indices of events instead of ids and pointers.
+///
+/// @warning Never hold a smart pointer to any other indexed gate except for the
+///          top gate of an indexed fault tree. Extra reference count will
+///          prevent automatic deletion of the node and management of the
+///          structure of the fault tree. Moreover, the fault tree may become
+///          a multiple-top-event fault tree, which is not the assumption of
+///          all the other preprocessing and analysis algorithms.
 class IndexedFaultTree {
  public:
   typedef boost::shared_ptr<Gate> GatePtr;

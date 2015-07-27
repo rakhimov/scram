@@ -36,8 +36,8 @@ class PreprocessorTest;
 namespace scram {
 
 /// @class Preprocessor
-/// The class provides main preprocessing operations over a fault tree
-/// to generate minimal cut sets more efficiently.
+/// The class provides main preprocessing operations over an indexed fault tree
+/// to simplify the tree and to generate minimal cut sets more efficiently.
 class Preprocessor {
   friend class ::PreprocessorTest;
 
@@ -47,11 +47,22 @@ class Preprocessor {
   /// Constructs a preprocessor of an indexed fault tree.
   ///
   /// @param[in] fault_tree The fault tree to be preprocessed.
+  ///
+  /// @warning There should not be another smart pointer to the top gate
+  ///          outside of the passed indexed fault tree. Upon preprocessing a
+  ///          new top gate may be assigned to the fault tree, and if there is
+  ///          an extra pointer to the previous top gate outside of the fault
+  ///          tree, the destructor will not be called as expected by the
+  ///          preprocessing algorithms, which will mess the new structure of
+  ///          the indexed fault tree.
   explicit Preprocessor(IndexedFaultTree* fault_tree);
 
   /// Performs processing of a fault tree to simplify the structure to
   /// normalized (OR/AND gates only), modular, positive-gate-only indexed fault
   /// tree.
+  ///
+  /// @warning There should not be another smart pointer to the indexed top
+  ///          gate of the indexed fault tree outside of the tree.
   void ProcessIndexedFaultTree();
 
  private:
