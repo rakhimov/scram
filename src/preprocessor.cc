@@ -436,11 +436,18 @@ void Preprocessor::PropagateComplements(
       GateType type = child_gate->type();
       assert(type == kAndGate || type == kOrGate);
       GateType complement_type = type == kOrGate ? kAndGate : kOrGate;
-      IGatePtr complement_gate(new IGate(complement_type));
+      IGatePtr complement_gate;
+      if (child_gate->parents().size() == 1) {
+        child_gate->type(complement_type);
+        child_gate->InvertChildren();
+        complement_gate = child_gate;
+      } else {
+        complement_gate = IGatePtr(new IGate(complement_type));
+        complement_gate->CopyChildren(child_gate);
+        complement_gate->InvertChildren();
+      }
       gate_complements->insert(std::make_pair(child_gate->index(),
                                               complement_gate));
-      complement_gate->CopyChildren(child_gate);
-      complement_gate->InvertChildren();
       child_gate = complement_gate;  // Needed for further propagation.
     }
     Preprocessor::PropagateComplements(child_gate, gate_complements);
