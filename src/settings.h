@@ -147,6 +147,8 @@ class Settings {
   /// This comparison is primarily for testing.
   ///
   /// @param[in] rhs Another Settings object to be compared.
+  ///
+  /// @returns true if all members of the compared setttings are equal.
   bool operator==(const Settings& rhs) const {
     return (probability_analysis_ == rhs.probability_analysis_) &&
         (importance_analysis_ == rhs.importance_analysis_) &&

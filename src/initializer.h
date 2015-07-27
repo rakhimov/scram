@@ -258,6 +258,8 @@ class Initializer {
   /// @param[in] expr_element XML expression element containing the definition.
   /// @param[in] base_path Series of ancestor containers in the path with dots.
   ///
+  /// @returns Pointer to the newly defined or registered expression.
+  ///
   /// @throws ValidationError There are problems with getting the expression.
   ExpressionPtr GetExpression(const xmlpp::Element* expr_element,
                               const std::string& base_path);

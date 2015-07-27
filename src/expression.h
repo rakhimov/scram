@@ -65,13 +65,14 @@ class Expression {
   /// This routine resets the sampling to get a new values.
   virtual inline void Reset() { sampled_ = false; }
 
-  /// Indication of constant expression.
+  /// @returns true if the expression's value does not need sampling.
+  /// @returns false if the expression's value has uncertainties.
   virtual inline bool IsConstant() { return false; }
 
-  /// Maximum value of this expression. This indication is for sampling cases.
+  /// @returns Maximum value of this expression.
   virtual inline double Max() { return Mean(); }
 
-  /// Minimum value of this expression. This indication is for sampling cases.
+  /// @returns Minimum value of this expression.
   virtual inline double Min() { return Mean(); }
 
   /// @returns Parameters as nodes.
@@ -280,11 +281,6 @@ class ExponentialExpression : public Expression {
     return 1 - std::exp(-(lambda_->Mean() * time_->Mean()));
   }
 
-  /// Samples the underlying distributions.
-  ///
-  /// @returns A sampled value.
-  ///
-  /// @throws InvalidArgument The sampled failure rate or time is negative.
   double Sample();
 
   inline void Reset() {
@@ -341,11 +337,6 @@ class GlmExpression : public Expression {
             std::exp(-r * time_->Mean())) / r;
   }
 
-  /// Samples the underlying distributions.
-  ///
-  /// @returns A sampled value.
-  ///
-  /// @throws InvalidArgument The sampled values are invalid.
   double Sample();
 
   inline void Reset() {
@@ -407,11 +398,6 @@ class WeibullExpression : public Expression {
                                   alpha_->Mean(), beta_->Mean()));
   }
 
-  /// Samples the underlying distributions.
-  ///
-  /// @returns A sampled value.
-  ///
-  /// @throws InvalidArgument The sampled values are invalid.
   double Sample();
 
   inline void Reset() {
@@ -464,11 +450,6 @@ class UniformDeviate : public Expression {
 
   inline double Mean() { return (min_->Mean() + max_->Mean()) / 2; }
 
-  /// Samples the underlying distributions and uniform distribution.
-  ///
-  /// @returns A sampled value.
-  ///
-  /// @throws InvalidArgument The min value is more or equal to max value.
   double Sample();
 
   inline void Reset() {
@@ -505,11 +486,6 @@ class NormalDeviate : public Expression {
 
   inline double Mean() { return mean_->Mean(); }
 
-  /// Samples the normal distribution.
-  ///
-  /// @returns A sampled value.
-  ///
-  /// @throws InvalidArgument The the sampled sigma is negative or zero.
   double Sample();
 
   inline void Reset() {
@@ -518,8 +494,13 @@ class NormalDeviate : public Expression {
     sigma_->Reset();
   }
 
-  /// @warning This is only an approximation.
+  /// @returns ~99.9% percentile value.
+  ///
+  /// @warning This is only an approximation of the maximum value.
   inline double Max() { return mean_->Max() + 6 * sigma_->Max(); }
+
+  /// @returns Less than 0.1% percentile value.
+  ///
   /// @warning This is only an approximation.
   inline double Min() { return mean_->Min() - 6 * sigma_->Max(); }
 
@@ -558,11 +539,6 @@ class LogNormalDeviate : public Expression {
 
   inline double Mean() { return mean_->Mean(); }
 
-  /// Samples provided arguments and feeds the Log-normal generator.
-  ///
-  /// @returns A sampled value.
-  ///
-  /// @throws InvalidArgument (mean <= 0) or (ef <= 0) or (level != 0.95)
   double Sample();
 
   inline void Reset() {
@@ -608,11 +584,6 @@ class GammaDeviate : public Expression {
 
   inline double Mean() { return k_->Mean() * theta_->Mean(); }
 
-  /// Samples provided arguments and feeds the gamma distribution generator.
-  ///
-  /// @returns A sampled value.
-  ///
-  /// @throws InvalidArgument (k <= 0) or (theta <= 0)
   double Sample();
 
   inline void Reset() {
@@ -658,11 +629,6 @@ class BetaDeviate : public Expression {
     return alpha_->Mean() / (alpha_->Mean() + beta_->Mean());
   }
 
-  /// Samples provided arguments and feeds the beta distribution generator.
-  ///
-  /// @returns A sampled value.
-  ///
-  /// @throws InvalidArgument (alpha <= 0) or (beta <= 0)
   double Sample();
 
   inline void Reset() {
@@ -715,11 +681,6 @@ class Histogram : public Expression {
   /// Calculates the mean from the histogram.
   double Mean();
 
-  /// Samples the underlying expressions and provides the sampling from
-  /// histogram distribution.
-  ///
-  /// @throws InvalidArgument The boundaries are not strictly increasing
-  ///                         or weights are negative.
   double Sample();
 
   inline void Reset() {
@@ -739,10 +700,15 @@ class Histogram : public Expression {
  private:
   /// Checks if mean values of expressions are strictly increasing.
   ///
+  /// @param[in] boundaries The upper bounds of intervals.
+  ///
   /// @throws InvalidArgument The mean values are not strictly increasing.
   void CheckBoundaries(const std::vector<ExpressionPtr>& boundaries);
 
   /// Checks if mean values of boundaries are non-negative.
+  ///
+  /// @param[in] weights The positive weights of intervals restricted by
+  ///                    the upper boundaries.
   ///
   /// @throws InvalidArgument The mean values are negative.
   void CheckWeights(const std::vector<ExpressionPtr>& weights);

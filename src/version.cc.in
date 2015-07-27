@@ -23,7 +23,12 @@
 #include <boost/version.hpp>
 #include <libxml/xmlversion.h>
 
+/// @def INNER(x)
+/// Stringifies version numbers.
 #define INNER(x) #x
+
+/// @def SVER(x, y, z)
+/// Two level stringification of the version numbers.
 #define SVER(x,y,z) INNER(x.y.z)
 
 namespace scram {

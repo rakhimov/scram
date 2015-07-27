@@ -41,6 +41,11 @@ struct SetPtrComp
     : public std::binary_function<const SetPtr, const SetPtr, bool> {
   /// Operator overload.
   /// Compares sets for sorting.
+  ///
+  /// @param[in] lhs Pointer to a set.
+  /// @param[in] rhs Pointer to a set.
+  ///
+  /// @returns true if the lhs pointed set is less than the rhs pointed set.
   bool operator()(const SetPtr& lhs, const SetPtr& rhs) const {
     return *lhs < *rhs;
   }

@@ -106,8 +106,8 @@ class Node {
   inline void ClearVisits() { return std::fill(visits_, visits_ + 3, 0); }
 
  private:
-  Node(const Node&);
-  Node& operator=(const Node&);
+  Node(const Node&);  ///< Restrict copy construction.
+  Node& operator=(const Node&);  ///< Restrict copy assignment.
 
   static int next_index_;  ///< Automatic indexation of the next new node.
   int index_;  ///< Index of this node.
@@ -130,8 +130,8 @@ class Constant : public Node {
   inline bool state() const { return state_; }
 
  private:
-  Constant(const Constant&);
-  Constant& operator=(const Constant&);
+  Constant(const Constant&);  ///< Restrict copy construction.
+  Constant& operator=(const Constant&);  ///< Restrict copy assignment.
 
   bool state_;  ///< The Boolean value for the constant state.
 };
@@ -151,8 +151,8 @@ class IBasicEvent : public Node {
   inline static void ResetIndex() { next_basic_event_ = 1; }
 
  private:
-  IBasicEvent(const IBasicEvent&);
-  IBasicEvent& operator=(const IBasicEvent&);
+  IBasicEvent(const IBasicEvent&);  ///< Restrict copy construction.
+  IBasicEvent& operator=(const IBasicEvent&);  ///< Restrict copy assignment.
 
   static int next_basic_event_;  ///< The next index for the basic event.
 };
@@ -317,6 +317,8 @@ class IGate : public Node {
   /// Replaces a child with the complement of it.
   /// This is a helper function to propagate a complement gate and apply
   /// De Morgan's Law.
+  ///
+  /// @param[in] existing_child Positive or negative index of the child.
   void InvertChild(int existing_child);
 
   /// Adds children of a child gate to this gate. This is a helper function for
@@ -401,8 +403,8 @@ class IGate : public Node {
   }
 
  private:
-  IGate(const IGate&);
-  IGate& operator=(const IGate&);
+  IGate(const IGate&);  ///< Restrict copy construction.
+  IGate& operator=(const IGate&);  ///< Restrict copy assignment.
 
   /// Process an addition of a complement of an existing child.
   ///

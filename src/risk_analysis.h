@@ -78,7 +78,7 @@ class RiskAnalysis {
   /// Reports the results of analyses to a specified output destination.
   /// This function overwrites the file.
   ///
-  /// param[out] output The output destination.
+  /// @param[out] output The output destination.
   ///
   /// @throws IOError The output file is not accessible.
   ///

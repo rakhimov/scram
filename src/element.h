@@ -64,6 +64,9 @@ class Element {
   /// Checks if the element has a given attribute.
   ///
   /// @param[in] id The identification name of the attribute in lower case.
+  ///
+  /// @returns true if this element has an attribute with the given ID.
+  /// @returns false otherwise.
   bool HasAttribute(const std::string& id) const;
 
   /// @returns Pointer to the attribute if it exists.

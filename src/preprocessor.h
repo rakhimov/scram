@@ -289,7 +289,7 @@ class Preprocessor {
   /// Clears visit information from descendant gates starting from the given
   /// gate as a root.
   ///
-  /// @param[in/out] gate The root gate to be traversed and cleaned.
+  /// @param[in,out] gate The root gate to be traversed and cleaned.
   void ClearGateVisits(const IGatePtr& gate);
 
   IndexedFaultTree* fault_tree_;  ///< The fault tree to preprocess.

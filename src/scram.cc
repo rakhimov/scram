@@ -249,6 +249,9 @@ int RunScram(const po::variables_map& vm) {
 
 /// Command-line SCRAM entrance.
 ///
+/// @param[in] argc Argument count.
+/// @param[in] argv Argument vector.
+///
 /// @returns 0 for success.
 /// @returns 1 for errored state.
 int main(int argc, char* argv[]) {

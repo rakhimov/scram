@@ -140,6 +140,8 @@ class ProbabilityAnalysis {
   /// approximation.
   ///
   /// @param[in] min_cut_sets Sets of indices of basic events.
+  ///
+  /// @returns The total probability with the MCUB approximation.
   double ProbMcub(
       const std::vector< boost::container::flat_set<int> >& min_cut_sets);
 
@@ -165,7 +167,7 @@ class ProbabilityAnalysis {
   ///
   /// @param[in] min_cut_set A flat set of indices of basic events.
   ///
-  /// @returns The total probability.
+  /// @returns The total probability of the set.
   ///
   /// @note O_avg(N) where N is the size of the passed set.
   double ProbAnd(const boost::container::flat_set<int>& min_cut_set);
