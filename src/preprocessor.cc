@@ -81,9 +81,12 @@ void Preprocessor::ProcessIndexedFaultTree() {
     top->InvertChildren();
     top_event_sign_ = 1;
   }
-  std::map<int, IGatePtr> complements;
+
+  std::map<int, IGatePtr> complements; // Must be cleaned!
   Preprocessor::ClearGateVisits();
   Preprocessor::PropagateComplements(top, &complements);
+  complements.clear();  // Cleaning to get rid of extra reference counts.
+
   Preprocessor::ClearGateVisits();
   Preprocessor::RemoveConstGates(top);
   bool tree_changed = true;
@@ -107,7 +110,7 @@ void Preprocessor::ProcessIndexedFaultTree() {
   // All gates are positive, and each gate has at least two children.
   if (top->children().empty()) return;  // This is null or unity.
   // Detect original modules for processing.
-  Preprocessor::DetectModules(fault_tree_->basic_events().size());
+  Preprocessor::DetectModules();
   LOG(DEBUG2) << "Finished preprocessing the fault tree in " << DUR(prep_time);
 }
 
@@ -509,118 +512,107 @@ bool Preprocessor::JoinGates(const IGatePtr& gate) {
   return changed;
 }
 
-void Preprocessor::DetectModules(int num_basic_events) {
+void Preprocessor::DetectModules() {
   // First stage, traverse the tree depth-first for gates and indicate
   // visit time for each node.
   LOG(DEBUG2) << "Detecting modules in a fault tree.";
 
-  // First and last visits of basic events.
-  // Basic events are indexed 1 to the number of basic events sequentially.
-  int visit_basics[num_basic_events + 1][2];
-  for (int i = 0; i < num_basic_events + 1; ++i) {
-    visit_basics[i][0] = 0;
-    visit_basics[i][1] = 0;
-  }
   Preprocessor::ClearGateVisits();
 
   IGatePtr top_gate = fault_tree_->top_event();
   int time = 0;
-  Preprocessor::AssignTiming(time, top_gate, visit_basics);
+  Preprocessor::AssignTiming(time, top_gate);
 
   LOG(DEBUG3) << "Timings are assigned to nodes.";
 
-  std::map<int, std::pair<int, int> > visited_gates;
-  Preprocessor::FindModules(top_gate, visit_basics, &visited_gates);
+  std::set<int> visited_gates;
+  Preprocessor::FindModules(top_gate, &visited_gates);
+
   assert(visited_gates.count(top_gate->index()));
-  assert(visited_gates.find(top_gate->index())->second.first == 1);
   assert(!top_gate->Revisited());
-  assert(visited_gates.find(top_gate->index())->second.second ==
-         top_gate->ExitTime());
+  assert(top_gate->min_time() == 1);
+  assert(top_gate->max_time() == top_gate->ExitTime());
 }
 
-int Preprocessor::AssignTiming(int time, const IGatePtr& gate,
-                               int visit_basics[][2]) {
+int Preprocessor::AssignTiming(int time, const IGatePtr& gate) {
   if (gate->Visit(++time)) return time;  // Revisited gate.
   assert(gate->constant_children().empty());
 
   boost::unordered_map<int, IGatePtr>::const_iterator it;
   for (it = gate->gate_children().begin(); it != gate->gate_children().end();
        ++it) {
-    time = Preprocessor::AssignTiming(time, it->second, visit_basics);
+    time = Preprocessor::AssignTiming(time, it->second);
   }
 
   boost::unordered_map<int, IBasicEventPtr>::const_iterator it_b;
   for (it_b = gate->basic_event_children().begin();
        it_b != gate->basic_event_children().end(); ++it_b) {
-    int index = it_b->second->index();  /// @todo Replace with Node visit times.
-    if (!visit_basics[index][0]) {  // The first time the node is visited.
-      visit_basics[index][0] = ++time;
-      visit_basics[index][1] = time;
-    } else {
-      visit_basics[index][1] = ++time;  // Revisiting the child node.
-    }
+    it_b->second->Visit(++time);  // Enter the leaf.
+    it_b->second->Visit(time);  // Exit at the same time.
   }
   bool re_visited = gate->Visit(++time);  // Exiting the gate in second visit.
   assert(!re_visited);  // No cyclic visiting.
   return time;
 }
 
-void Preprocessor::FindModules(
-    const IGatePtr& gate,
-    const int visit_basics[][2],
-    std::map<int, std::pair<int, int> >* visited_gates) {
+void Preprocessor::FindModules(const IGatePtr& gate,
+                               std::set<int>* visited_gates) {
   if (visited_gates->count(gate->index())) return;
   int enter_time = gate->EnterTime();
   int exit_time = gate->ExitTime();
   int min_time = enter_time;
   int max_time = exit_time;
 
-  std::vector<int> non_shared_children;  // Non-shared module children.
-  std::vector<int> modular_children;  // Children that satisfy modularity.
-  std::vector<int> non_modular_children;  // Cannot be grouped into a module.
+  std::vector<std::pair<int, NodePtr> > non_shared_children;
+  std::vector<std::pair<int, NodePtr> > modular_children;
+  std::vector<std::pair<int, NodePtr> > non_modular_children;
   boost::unordered_map<int, IGatePtr>::const_iterator it;
   for (it = gate->gate_children().begin(); it != gate->gate_children().end();
        ++it) {
-    int min = 0;  // Minimum time of the visit of the sub-tree.
-    int max = 0;  // Maximum time of the visit of the sub-tree.
     IGatePtr child_gate = it->second;
-    Preprocessor::FindModules(child_gate, visit_basics, visited_gates);
-    min = visited_gates->find(child_gate->index())->second.first;
-    max = visited_gates->find(child_gate->index())->second.second;
+    Preprocessor::FindModules(child_gate, visited_gates);
     if (child_gate->IsModule() && !child_gate->Revisited()) {
       assert(child_gate->parents().size() == 1);
       assert(child_gate->parents().count(&*gate));
 
-      non_shared_children.push_back(it->first);
-      continue;
+      non_shared_children.push_back(*it);
+      continue;  // Sub-tree's visit times are within the Enter and Exit time.
     }
+    int min = child_gate->min_time();
+    int max = child_gate->max_time();
     assert(min > 0);
     assert(max > 0);
+    assert(max > min);
     if (min > enter_time && max < exit_time) {
-      modular_children.push_back(it->first);
+      modular_children.push_back(*it);
     } else {
-      non_modular_children.push_back(it->first);
+      non_modular_children.push_back(*it);
     }
     min_time = std::min(min_time, min);
     max_time = std::max(max_time, max);
   }
+
   boost::unordered_map<int, IBasicEventPtr>::const_iterator it_b;
   for (it_b = gate->basic_event_children().begin();
        it_b != gate->basic_event_children().end(); ++it_b) {
-    int index = it_b->second->index();
-    int min = visit_basics[index][0];
-    int max = visit_basics[index][1];
-    if (min == max) {
-      assert(min > enter_time && max < exit_time);
-      non_shared_children.push_back(it_b->first);
-      continue;
-    }
+    IBasicEventPtr child = it_b->second;
+    int min = child->EnterTime();
+    int max = child->LastVisit();
     assert(min > 0);
     assert(max > 0);
+    if (min == max) {
+      assert(min > enter_time && max < exit_time);
+      assert(child->parents().size() == 1);
+      assert(child->parents().count(&*gate));
+
+      non_shared_children.push_back(*it_b);
+      continue;  // The single parent child.
+    }
+    assert(max > min);
     if (min > enter_time && max < exit_time) {
-      modular_children.push_back(it_b->first);
+      modular_children.push_back(*it_b);
     } else {
-      non_modular_children.push_back(it_b->first);
+      non_modular_children.push_back(*it_b);
     }
     min_time = std::min(min_time, min);
     max_time = std::max(max_time, max);
@@ -635,8 +627,9 @@ void Preprocessor::FindModules(
   }
 
   max_time = std::max(max_time, gate->LastVisit());
-  visited_gates->insert(std::make_pair(gate->index(),
-                                       std::make_pair(min_time, max_time)));
+  gate->min_time(min_time);
+  gate->max_time(max_time);
+  visited_gates->insert(gate->index());
 
   // Attempting to create new modules for specific gate types.
   switch (gate->type()) {
@@ -647,16 +640,13 @@ void Preprocessor::FindModules(
       Preprocessor::CreateNewModule(gate, non_shared_children);
 
       LOG(DEBUG4) << "Filtering modular children.";
-      Preprocessor::FilterModularChildren(visit_basics,
-                                          *visited_gates,
-                                          &modular_children,
+      Preprocessor::FilterModularChildren(&modular_children,
                                           &non_modular_children);
       assert(modular_children.size() != 1);  // One modular child is non-shared.
-      std::vector<std::vector<int> > groups;
+      std::vector<std::vector<std::pair<int, NodePtr> > > groups;
       LOG(DEBUG4) << "Grouping modular children is Disabled.";
       groups.push_back(modular_children);
-      // Preprocessor::GroupModularChildren(visit_basics, *visited_gates,
-      //                                    modular_children, &groups);
+      // Preprocessor::GroupModularChildren(modular_children, &groups);
       LOG(DEBUG4) << "Creating new modules from modular children.";
       Preprocessor::CreateNewModules(gate, modular_children, groups);
   }
@@ -664,7 +654,7 @@ void Preprocessor::FindModules(
 
 boost::shared_ptr<IGate> Preprocessor::CreateNewModule(
     const IGatePtr& gate,
-    const std::vector<int>& children) {
+    const std::vector<std::pair<int, NodePtr> >& children) {
   IGatePtr module;  // Empty pointer as an indication of a failure.
   if (children.empty()) return module;
   if (children.size() == 1) return module;
@@ -686,9 +676,9 @@ boost::shared_ptr<IGate> Preprocessor::CreateNewModule(
       return module;  // Cannot create sub-modules for other types.
   }
   module->TurnModule();
-  std::vector<int>::const_iterator it_g;
-  for (it_g = children.begin(); it_g != children.end(); ++it_g) {
-    gate->TransferChild(*it_g, module);
+  std::vector<std::pair<int, NodePtr> >::const_iterator it;
+  for (it = children.begin(); it != children.end(); ++it) {
+    gate->TransferChild(it->first, module);
   }
   gate->AddChild(module->index(), module);
   assert(gate->children().size() > 1);
@@ -699,38 +689,20 @@ boost::shared_ptr<IGate> Preprocessor::CreateNewModule(
 }
 
 void Preprocessor::FilterModularChildren(
-    const int visit_basics[][2],
-    const std::map<int, std::pair<int, int> >& visited_gates,
-    std::vector<int>* modular_children,
-    std::vector<int>* non_modular_children) {
+    std::vector<std::pair<int, NodePtr> >* modular_children,
+    std::vector<std::pair<int, NodePtr> >* non_modular_children) {
   if (modular_children->empty() || non_modular_children->empty()) return;
-  std::vector<int> new_non_modular;
-  std::vector<int> still_modular;
-  std::vector<int>::iterator it;
+  std::vector<std::pair<int, NodePtr> > new_non_modular;
+  std::vector<std::pair<int, NodePtr> > still_modular;
+  std::vector<std::pair<int, NodePtr> >::iterator it;
   for (it = modular_children->begin(); it != modular_children->end(); ++it) {
-    int index = std::abs(*it);
-    int min = 0;
-    int max = 0;
-    if (visited_gates.count(index)) {
-      min = visited_gates.find(index)->second.first;
-      max = visited_gates.find(index)->second.second;
-    } else {
-      min = visit_basics[index][0];
-      max = visit_basics[index][1];
-    }
-    std::vector<int>::iterator it_n;
+    int min = it->second->min_time();
+    int max = it->second->max_time();
+    std::vector<std::pair<int, NodePtr> >::iterator it_n;
     for (it_n = non_modular_children->begin();
          it_n != non_modular_children->end(); ++it_n) {
-      int index = std::abs(*it_n);
-      int lower = 0;
-      int upper = 0;
-      if (visited_gates.count(index)) {
-        lower = visited_gates.find(index)->second.first;
-        upper = visited_gates.find(index)->second.second;
-      } else {
-        lower = visit_basics[index][0];
-        upper = visit_basics[index][1];
-      }
+      int lower = it_n->second->min_time();
+      int upper = it_n->second->max_time();
       int a = std::max(min, lower);
       int b = std::min(max, upper);
       if (a <= b) {  // There's some overlap between the ranges.
@@ -740,52 +712,34 @@ void Preprocessor::FilterModularChildren(
       }
     }
   }
-  Preprocessor::FilterModularChildren(visit_basics, visited_gates,
-                                      &still_modular, &new_non_modular);
+  Preprocessor::FilterModularChildren(&still_modular, &new_non_modular);
   *modular_children = still_modular;
   non_modular_children->insert(non_modular_children->end(),
                                new_non_modular.begin(), new_non_modular.end());
 }
 
 void Preprocessor::GroupModularChildren(
-    const int visit_basics[][2],
-    const std::map<int, std::pair<int, int> >& visited_gates,
-    const std::vector<int>& modular_children,
-    std::vector<std::vector<int> >* groups) {
+    const std::vector<std::pair<int, NodePtr> >& modular_children,
+    std::vector<std::vector<std::pair<int, NodePtr> > >* groups) {
   if (modular_children.empty()) return;
   assert(modular_children.size() > 1);
-  std::vector<int> to_check(modular_children);
+  std::vector<std::pair<int, NodePtr> > to_check(modular_children);
   while (!to_check.empty()) {
-    std::vector<int> group;
-    int first_member = to_check.back();
+    std::vector<std::pair<int, NodePtr> > group;
+    NodePtr first_member = to_check.back().second;
+    group.push_back(to_check.back());
     to_check.pop_back();
-    group.push_back(first_member);
-    int low = 0;
-    int high = 0;
-    int index = std::abs(first_member);
-    if (visited_gates.count(index)) {
-      low = visited_gates.find(index)->second.first;
-      high = visited_gates.find(index)->second.second;
-    } else {
-      low = visit_basics[index][0];
-      high = visit_basics[index][1];
-    }
+    int low = first_member->min_time();
+    int high = first_member->max_time();
+
     int prev_size = 0;
-    std::vector<int> next_check;
+    std::vector<std::pair<int, NodePtr> > next_check;
     while (prev_size < group.size()) {
       prev_size = group.size();
-      std::vector<int>::iterator it;
+      std::vector<std::pair<int, NodePtr> >::iterator it;
       for (it = to_check.begin(); it != to_check.end(); ++it) {
-        int min = 0;
-        int max = 0;
-        int index = std::abs(*it);
-        if (visited_gates.count(index)) {
-          min = visited_gates.find(index)->second.first;
-          max = visited_gates.find(index)->second.second;
-        } else {
-          min = visit_basics[index][0];
-          max = visit_basics[index][1];
-        }
+        int min = it->second->min_time();
+        int max = it->second->max_time();
         int a = std::max(min, low);
         int b = std::min(max, high);
         if (a <= b) {  // There's some overlap between the ranges.
@@ -805,8 +759,8 @@ void Preprocessor::GroupModularChildren(
 
 void Preprocessor::CreateNewModules(
     const IGatePtr& gate,
-    const std::vector<int>& modular_children,
-    const std::vector<std::vector<int> >& groups) {
+    const std::vector<std::pair<int, NodePtr> >& modular_children,
+    const std::vector<std::vector<std::pair<int, NodePtr> > >& groups) {
   if (modular_children.empty()) return;
   assert(modular_children.size() > 1);
   assert(!groups.empty());
@@ -825,7 +779,7 @@ void Preprocessor::CreateNewModules(
     main_child = Preprocessor::CreateNewModule(gate, modular_children);
     assert(main_child);
   }
-  std::vector<std::vector<int> >::const_iterator it;
+  std::vector<std::vector<std::pair<int, NodePtr> > >::const_iterator it;
   for (it = groups.begin(); it != groups.end(); ++it) {
     Preprocessor::CreateNewModule(main_child, *it);
   }

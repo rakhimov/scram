@@ -66,6 +66,7 @@ class Preprocessor {
   void ProcessIndexedFaultTree();
 
  private:
+  typedef boost::shared_ptr<Node> NodePtr;
   typedef boost::shared_ptr<IGate> IGatePtr;
   typedef boost::shared_ptr<IBasicEvent> IBasicEventPtr;
   typedef boost::shared_ptr<Constant> ConstantPtr;
@@ -212,28 +213,22 @@ class Preprocessor {
 
   /// Traverses the indexed fault tree to detect modules. Modules are
   /// independent sub-trees without common nodes with the rest of the tree.
-  ///
-  /// @param[in] num_basic_events The number of basic events in the tree.
-  void DetectModules(int num_basic_events);
+  void DetectModules();
 
   /// Traverses the given gate and assigns time of visit to nodes.
   ///
   /// @param[in] time The current time.
   /// @param[in,out] gate The gate to traverse and assign time to.
-  /// @param[in,out] visit_basics The recordings for basic events.
   ///
   /// @returns The final time of traversing.
-  int AssignTiming(int time, const IGatePtr& gate, int visit_basics[][2]);
+  int AssignTiming(int time, const IGatePtr& gate);
 
   /// Determines modules from original gates that have been already timed.
   /// This function can also create new modules from the existing tree.
   ///
   /// @param[in,out] gate The gate to test for modularity.
-  /// @param[in] visit_basics The recordings for basic events.
-  /// @param[in,out] visited_gates Container of visited gates with
-  ///                              min and max time of visits of the subtree.
-  void FindModules(const IGatePtr& gate, const int visit_basics[][2],
-                   std::map<int, std::pair<int, int> >* visited_gates);
+  /// @param[in,out] visited_gates Container of visited gates.
+  void FindModules(const IGatePtr& gate, std::set<int>* visited_gates);
 
   /// Creates a new module as a child of an existing gate if the logic of the
   /// existing parent gate allows a sub-module. The existing
@@ -245,8 +240,9 @@ class Preprocessor {
   /// @param[in] children Modular children to be added into the new module.
   ///
   /// @returns Pointer to the new module if it is created.
-  IGatePtr CreateNewModule(const IGatePtr& gate,
-                           const std::vector<int>& children);
+  IGatePtr CreateNewModule(
+      const IGatePtr& gate,
+      const std::vector<std::pair<int, NodePtr> >& children);
 
   /// Checks if a group of modular children share anything with non-modular
   /// children. If so, then the modular children are not actually modular, and
@@ -254,28 +250,20 @@ class Preprocessor {
   /// This is due to chain of events that are shared between modular and
   /// non-modular children.
   ///
-  /// @param[in] visit_basics The recordings for basic events.
-  /// @param[in] visited_gates Visit max and min time recordings for gates.
   /// @param[in,out] modular_children Candidates for modular grouping.
   /// @param[in,out] non_modular_children Non modular children.
   void FilterModularChildren(
-      const int visit_basics[][2],
-      const std::map<int, std::pair<int, int> >& visited_gates,
-      std::vector<int>* modular_children,
-      std::vector<int>* non_modular_children);
+      std::vector<std::pair<int, NodePtr> >* modular_children,
+      std::vector<std::pair<int, NodePtr> >* non_modular_children);
 
   /// Groups modular children by their common elements. The gates created with
   /// these modular children are guaranteed to be independent modules.
   ///
-  /// @param[in] visit_basics The recordings for basic events.
-  /// @param[in] visited_gates Visit max and min time recordings for gates.
   /// @param[in] modular_children Candidates for modular grouping.
   /// @param[out] groups Grouped modular children.
   void GroupModularChildren(
-      const int visit_basics[][2],
-      const std::map<int, std::pair<int, int> >& visited_gates,
-      const std::vector<int>& modular_children,
-      std::vector<std::vector<int> >* groups);
+      const std::vector<std::pair<int, NodePtr> >& modular_children,
+      std::vector<std::vector<std::pair<int, NodePtr> > >* groups);
 
   /// Creates new module gates from groups of modular children if the logic of
   /// the parent gate allows sub-modules. The existing
@@ -287,9 +275,10 @@ class Preprocessor {
   /// @param[in,out] gate The parent gate for a module.
   /// @param[in] modular_children All the modular children.
   /// @param[in] groups Grouped modular children.
-  void CreateNewModules(const IGatePtr& gate,
-                        const std::vector<int>& modular_children,
-                        const std::vector<std::vector<int> >& groups);
+  void CreateNewModules(
+      const IGatePtr& gate,
+      const std::vector<std::pair<int, NodePtr> >& modular_children,
+      const std::vector<std::vector<std::pair<int, NodePtr> > >& groups);
 
   /// Clears visit time information from all indexed gates that have been
   /// visited top-down. Any member function updating and using the visit

@@ -94,6 +94,16 @@ class Node {
   /// @returns 0 if no last time is registered.
   inline int LastVisit() const { return visits_[2] ? visits_[2] : visits_[1]; }
 
+  /// @returns The minimum time of the visit.
+  /// @returns 0 if no time is registered.
+  virtual inline int min_time() const { return visits_[0]; }
+
+  /// @returns The maximum time of the visit.
+  /// @returns 0 if no time is registered.
+  virtual inline int max_time() const {
+    return visits_[2] ? visits_[2] : visits_[1] ? visits_[1] : visits_[0];
+  }
+
   /// @returns false if this node was only visited once upon tree traversal.
   /// @returns true if this node was revisited at one more time.
   inline bool Revisited() const { return visits_[2] ? true : false; }
@@ -243,6 +253,28 @@ class IGate : public Node {
   inline const boost::unordered_map<int, ConstantPtr>&
       constant_children() const {
     return constant_children_;
+  }
+
+  /// @returns The minimum time of visits of the gate's sub-tree.
+  /// @returns 0 if no time assignement was performed.
+  inline int min_time() const { return min_time_; }
+
+  /// Sets the queried minimum visit time of the sub-tree.
+  /// @param[in] time The positive min time of this gate's sub-tree.
+  inline void min_time(int time) {
+    assert(time > 0);
+    min_time_ = time;
+  }
+
+  /// @returns The maximum time of the visits of the gate's sub-tree.
+  /// @returns 0 if no time assignement was performed.
+  inline int max_time() const { return max_time_; }
+
+  /// Sets the queried maximum visit time of the sub-tree.
+  /// @param[in] time The positive max time of this gate's sub-tree.
+  inline void max_time(int time) {
+    assert(time > 0);
+    max_time_ = time;
   }
 
   /// @returns The state of this gate.
@@ -420,6 +452,8 @@ class IGate : public Node {
   GateType type_;  ///< Type of this gate.
   State state_;  ///< Indication if this gate's state is normal, null, or unity.
   int vote_number_;  ///< Vote number for ATLEAST gate.
+  int min_time_;  ///< Minumum time of visits of the sub-tree of the gate.
+  int max_time_;  ///< Maximum time of visits of the sub-tree of the gate.
   bool module_;  ///< Indication of an independent module gate.
   std::set<int> children_;  ///< Children of the gate.
   /// Children that are gates.

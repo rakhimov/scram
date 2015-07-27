@@ -50,6 +50,8 @@ IGate::IGate(const GateType& type)
       type_(type),
       state_(kNormalState),
       vote_number_(-1),
+      min_time_(0),
+      max_time_(0),
       module_(false) {}
 
 bool IGate::AddChild(int child, const IGatePtr& gate) {
@@ -162,6 +164,7 @@ bool IGate::JoinGate(const IGatePtr& child_gate) {
   assert(children_.count(child_gate->index()));  // Positive child only.
   children_.erase(child_gate->index());
   gate_children_.erase(child_gate->index());
+  assert(child_gate->parents_.count(this));
   child_gate->parents_.erase(this);
   boost::unordered_map<int, IGatePtr>::const_iterator it_g;
   for (it_g = child_gate->gate_children_.begin();
