@@ -309,9 +309,19 @@ class Preprocessor {
   ///
   /// @param[in] gate The non-failed gate which sub-tree is to be traversed.
   /// @param[in] index The index of the failed node.
+  /// @param[in,out] num_dest The number of encounters with the destinations.
   /// @param[in,out] destinations Destinations of the failure.
-  void CollectFailureDestinations(const IGatePtr& gate, int index,
-                                  std::set<IGatePtr>* destinations);
+  void CollectFailureDestinations(
+      const IGatePtr& gate,
+      int index,
+      int* num_dest,
+      std::map<int, boost::weak_ptr<IGate> >* destinations);
+
+  /// This is a hacky way to create a weak pointer out of a raw one for parents.
+  /// This only works for coherent trees.
+  ///
+  /// @todo Track parents with weak pointers by default.
+  boost::weak_ptr<IGate> RawToWeakPointer(const IGate* parent);
 
   /// Sets the visit marks to False for all indexed gates that have been
   /// visited top-down. Any member function updating and using the visit

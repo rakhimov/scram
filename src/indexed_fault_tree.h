@@ -60,7 +60,7 @@ class Node {
   inline static void ResetIndex() { next_index_ = 1e6; }
 
   /// @returns Parents of this gate.
-  inline const std::set<IGate*>& parents() { return parents_; }
+  inline const std::set<IGate*>& parents() const { return parents_; }
 
   /// @returns Optimization value for failure propagation.
   inline int opti_value() const { return opti_value_; }
