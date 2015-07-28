@@ -244,6 +244,9 @@ class IGate : public Node {
   /// @param[in] number The vote number of ATLEAST gate.
   inline void vote_number(int number) { vote_number_ = number; }
 
+  /// @returns The state of this gate.
+  inline const State& state() const { return state_; }
+
   /// @returns Children of this gate.
   inline const std::set<int>& children() const { return children_; }
 
@@ -293,9 +296,6 @@ class IGate : public Node {
     assert(time > 0);
     max_time_ = time;
   }
-
-  /// @returns The state of this gate.
-  inline const State& state() const { return state_; }
 
   /// @returns true if this gate is set to be a module.
   /// @returns false if it is not yet set to be a module.
@@ -502,8 +502,8 @@ class Formula;
 /// This class provides simpler representation of a fault tree
 /// that takes into account the indices of events instead of ids and pointers.
 ///
-/// @warning Never hold a smart pointer to any other indexed gate except for the
-///          top gate of an indexed fault tree. Extra reference count will
+/// @warning Never hold a shared pointer to any other indexed gate except for
+///          the top gate of an indexed fault tree. Extra reference count will
 ///          prevent automatic deletion of the node and management of the
 ///          structure of the fault tree. Moreover, the fault tree may become
 ///          a multiple-top-event fault tree, which is not the assumption of

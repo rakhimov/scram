@@ -28,6 +28,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/weak_ptr.hpp>
 
 #include "indexed_fault_tree.h"
 
@@ -48,7 +49,7 @@ class Preprocessor {
   ///
   /// @param[in] fault_tree The fault tree to be preprocessed.
   ///
-  /// @warning There should not be another smart pointer to the top gate
+  /// @warning There should not be another shared pointer to the top gate
   ///          outside of the passed indexed fault tree. Upon preprocessing a
   ///          new top gate may be assigned to the fault tree, and if there is
   ///          an extra pointer to the previous top gate outside of the fault
@@ -278,6 +279,22 @@ class Preprocessor {
       const IGatePtr& gate,
       const std::vector<std::pair<int, NodePtr> >& modular_children,
       const std::vector<std::vector<std::pair<int, NodePtr> > >& groups);
+
+  /// Propagates failures of common nodes to detect redundancy. The fault tree
+  /// structure is optimized by removing the reduncies if possible. This
+  /// optimization helps reduce the number of common nodes.
+  void BooleanOptimization();
+
+  /// Traversers the fault tree to find nodes that have more than one parent.
+  /// Common nodes are encountered breadth-first, and they are unique.
+  ///
+  /// @param[out] common_gates Gates with more than one parent.
+  /// @param[out] common_basic_events Common basic events.
+  ///
+  /// @note Constant nodes are not expected to be operated.
+  void GatherCommonNodes(
+      std::vector<boost::weak_ptr<IGate> >* common_gates,
+      std::vector<boost::weak_ptr<IBasicEvent> >* common_basic_events);
 
   /// Sets the visit marks to False for all indexed gates that have been
   /// visited top-down. Any member function updating and using the visit

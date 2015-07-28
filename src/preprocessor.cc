@@ -19,6 +19,7 @@
 #include "preprocessor.h"
 
 #include <algorithm>
+#include <queue>
 
 #include "logger.h"
 
@@ -796,6 +797,45 @@ void Preprocessor::CreateNewModules(
   std::vector<std::vector<std::pair<int, NodePtr> > >::const_iterator it;
   for (it = groups.begin(); it != groups.end(); ++it) {
     Preprocessor::CreateNewModule(main_child, *it);
+  }
+}
+
+void Preprocessor::BooleanOptimization() {
+  Preprocessor::ClearNodeVisits();
+  Preprocessor::ClearGateMarks();
+
+  std::vector<boost::weak_ptr<IGate> > common_gates;
+  std::vector<boost::weak_ptr<IBasicEvent> > common_basic_events;
+  Preprocessor::GatherCommonNodes(&common_gates, &common_basic_events);
+}
+
+void Preprocessor::GatherCommonNodes(
+      std::vector<boost::weak_ptr<IGate> >* common_gates,
+      std::vector<boost::weak_ptr<IBasicEvent> >* common_basic_events) {
+  std::queue<IGatePtr> gates_queue;
+  gates_queue.push(fault_tree_->top_event());
+  while (!gates_queue.empty()) {
+    IGatePtr gate = gates_queue.front();
+    gates_queue.pop();
+    boost::unordered_map<int, IGatePtr>::const_iterator it;
+    for (it = gate->gate_children().begin(); it != gate->gate_children().end();
+         ++it) {
+      IGatePtr child_gate = it->second;
+      assert(child_gate->state() == kNormalState);
+      if (child_gate->Visited()) continue;
+      child_gate->Visit(1);
+      gates_queue.push(child_gate);
+      if (child_gate->parents().size() > 1) common_gates->push_back(child_gate);
+    }
+
+    boost::unordered_map<int, IBasicEventPtr>::const_iterator it_b;
+    for (it_b = gate->basic_event_children().begin();
+         it_b != gate->basic_event_children().end(); ++it_b) {
+      IBasicEventPtr child = it_b->second;
+      if (child->Visited()) continue;
+      child->Visit(1);
+      if (child->parents().size() > 1) common_basic_events->push_back(child);
+    }
   }
 }
 
