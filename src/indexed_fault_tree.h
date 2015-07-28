@@ -449,6 +449,18 @@ class IGate : public Node {
   IGate(const IGate&);  ///< Restrict copy construction.
   IGate& operator=(const IGate&);  ///< Restrict copy assignment.
 
+  /// Process an addition of a child that already exists in this gate.
+  ///
+  /// @param[in] index Positive or negative index of the existing child.
+  ///
+  /// @returns false if the final set is null or unity.
+  /// @returns true if the addition is successful with a normal final state.
+  ///
+  /// @warning The addition of a duplicate child has a complex set of possible
+  ///          outcommes dependending on the context. The complex corner cases
+  ///          must be handled by the caller.
+  bool ProcessDuplicateChild(int index);
+
   /// Process an addition of a complement of an existing child.
   ///
   /// @param[in] index Positive or negative index of the child.

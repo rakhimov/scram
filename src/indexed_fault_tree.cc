@@ -61,6 +61,7 @@ bool IGate::AddChild(int child, const IGatePtr& gate) {
   assert(state_ == kNormalState);
   if (type_ == kNotGate || type_ == kNullGate) assert(children_.empty());
   if (type_ == kXorGate) assert(children_.size() < 2);
+  if (children_.count(child)) return IGate::ProcessDuplicateChild(child);
   if (children_.count(-child)) return IGate::ProcessComplementChild(child);
   children_.insert(child);
   gate_children_.insert(std::make_pair(child, gate));
@@ -212,6 +213,18 @@ bool IGate::JoinNullGate(int index) {
     return IGate::AddChild(grandchild,
                            child_gate->basic_event_children_.begin()->second);
   }
+}
+
+bool IGate::ProcessDuplicateChild(int index) {
+  assert(type_ != kNotGate && type_ != kNullGate);
+  assert(type_ != kAtleastGate);  /// @todo Provide the complex logic.
+  assert(children_.count(index));
+  switch (type_) {
+    case kXorGate:
+      IGate::Nullify();
+      return false;;
+  }
+  return true;  // Duplicate children are OK in most cases.
 }
 
 bool IGate::ProcessComplementChild(int index) {
