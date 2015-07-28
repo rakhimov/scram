@@ -29,7 +29,7 @@ namespace scram {
 
 int Node::next_index_ = 1e6;  // 1 million basic events per fault tree is crazy!
 
-Node::Node() : index_(next_index_++) {
+Node::Node() : index_(next_index_++), opti_value_(0) {
   std::fill(visits_, visits_ + 3, 0);
 }
 

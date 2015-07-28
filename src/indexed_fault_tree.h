@@ -62,6 +62,14 @@ class Node {
   /// @returns Parents of this gate.
   inline const std::set<IGate*>& parents() { return parents_; }
 
+  /// @returns Optimization value for failure propagation.
+  inline int opti_value() const { return opti_value_; }
+
+  /// Sets the optimization value for failure propagation.
+  ///
+  /// @param[in] val Value that makes sense to the caller.
+  inline void opti_value(int val) { opti_value_ = val; }
+
   /// Registers the visit time for this node upon tree traversal.
   /// This information can be used to detect dependencies.
   ///
@@ -124,6 +132,7 @@ class Node {
   /// This is a traversal array containing first, second, and last visits.
   int visits_[3];
   std::set<IGate*> parents_;  ///< Parents of this node.
+  int opti_value_;  ///< Failure propagation optimization value.
 };
 
 /// @class Constant
