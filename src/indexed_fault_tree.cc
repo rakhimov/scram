@@ -53,7 +53,8 @@ IGate::IGate(const GateType& type)
       mark_(false),
       min_time_(0),
       max_time_(0),
-      module_(false) {}
+      module_(false),
+      num_failed_children_(0) {}
 
 bool IGate::AddChild(int child, const IGatePtr& gate) {
   assert(child != 0);
@@ -254,13 +255,39 @@ bool IGate::ProcessComplementChild(int index) {
   return false;  // Becomes constant most of the cases.
 }
 
+void IGate::ChildFailed() {
+  if (this->opti_value() == 1) return;
+  assert(this->opti_value() == 0);
+  assert(num_failed_children_ < children_.size());
+  ++num_failed_children_;
+  switch (type_) {
+    case kNullGate:
+    case kOrGate:
+      this->opti_value(1);
+      break;
+    case kAndGate:
+      if (num_failed_children_ == children_.size()) this->opti_value(1);
+      break;
+    case kAtleastGate:
+      if (num_failed_children_ == vote_number_) this->opti_value(1);
+      break;
+    default:
+      assert(false);  // Coherent gates only!
+  }
+}
+
+void IGate::ResetChildrenFailure() {
+
+}
+
 const std::map<std::string, GateType> IndexedFaultTree::kStringToType_ =
     boost::assign::map_list_of("and", kAndGate) ("or", kOrGate)
                               ("atleast", kAtleastGate) ("xor", kXorGate)
                               ("not", kNotGate) ("nand", kNandGate)
                               ("nor", kNorGate) ("null", kNullGate);
 
-IndexedFaultTree::IndexedFaultTree(const GatePtr& root, bool ccf) {
+IndexedFaultTree::IndexedFaultTree(const GatePtr& root, bool ccf) 
+    : coherent_(true) {
   Node::ResetIndex();
   IBasicEvent::ResetIndex();
   boost::unordered_map<std::string, NodePtr> id_to_index;
@@ -274,8 +301,17 @@ boost::shared_ptr<IGate> IndexedFaultTree::ProcessFormula(
     boost::unordered_map<std::string, NodePtr>* id_to_index) {
   GateType type = kStringToType_.find(formula->type())->second;
   IGatePtr parent(new IGate(type));
-  if (type == kAtleastGate) parent->vote_number(formula->vote_number());
-
+  switch (type) {
+    case kNotGate:
+    case kNandGate:
+    case kNorGate:
+    case kXorGate:
+      coherent_ = false;
+      break;
+    case kAtleastGate:
+      parent->vote_number(formula->vote_number());
+      break;
+  }
   std::vector<BasicEventPtr>::const_iterator it_b;
   for (it_b = formula->basic_event_args().begin();
        it_b != formula->basic_event_args().end(); ++it_b) {

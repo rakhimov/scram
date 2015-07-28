@@ -454,6 +454,16 @@ class IGate : public Node {
     module_ = true;
   }
 
+  /// Registers a failure of a child. Depending on the logic of the gate,
+  /// sets the failure of this gate.
+  ///
+  /// @note The actual failure or existence of the child is not checked.
+  void ChildFailed();
+
+  /// Resests this gates failure value and information about the number of
+  /// failed children.
+  void ResetChildrenFailure();
+
  private:
   IGate(const IGate&);  ///< Restrict copy construction.
   IGate& operator=(const IGate&);  ///< Restrict copy assignment.
@@ -492,6 +502,8 @@ class IGate : public Node {
   boost::unordered_map<int, IBasicEventPtr> basic_event_children_;
   /// Children that are constant like house events.
   boost::unordered_map<int, ConstantPtr> constant_children_;
+  /// The number of children failed upon failure propagation.
+  int num_failed_children_;
 };
 
 class BasicEvent;
@@ -519,6 +531,9 @@ class IndexedFaultTree {
   /// @param[in] root The top gate of the fault tree.
   /// @param[in] ccf Incorporation of ccf gates and events for ccf groups.
   explicit IndexedFaultTree(const GatePtr& root, bool ccf = false);
+
+  /// @returns true if the fault tree is coherent.
+  inline bool coherent() const { return coherent_; }
 
   /// @returns The current top gate of the fault tree.
   inline const IGatePtr& top_event() const { return top_event_; }
@@ -569,6 +584,7 @@ class IndexedFaultTree {
 
   IGatePtr top_event_;  ///< The top gate of this tree.
   std::vector<BasicEventPtr> basic_events_;  ///< Mapping for basic events.
+  bool coherent_;  ///< Indication that the tree does not contain negation.
 };
 
 }  // namespace scram

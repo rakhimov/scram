@@ -91,6 +91,9 @@ void Preprocessor::ProcessIndexedFaultTree() {
 
   Preprocessor::ClearGateMarks();
   Preprocessor::RemoveConstGates(top);
+
+  if (fault_tree_->coherent()) Preprocessor::BooleanOptimization();
+
   bool tree_changed = true;
   while (tree_changed) {
     tree_changed = false;  // Break the loop if actions don't change the tree.
@@ -807,6 +810,13 @@ void Preprocessor::BooleanOptimization() {
   std::vector<boost::weak_ptr<IGate> > common_gates;
   std::vector<boost::weak_ptr<IBasicEvent> > common_basic_events;
   Preprocessor::GatherCommonNodes(&common_gates, &common_basic_events);
+
+  Preprocessor::ClearNodeVisits();
+  std::vector<boost::weak_ptr<IGate> >::iterator it;
+  for (it = common_gates.begin(); it != common_gates.end(); ++it) {
+    if (it->expired()) continue;
+    Preprocessor::PropagateFailure(&*it->lock());
+  }
 }
 
 void Preprocessor::GatherCommonNodes(
@@ -836,6 +846,19 @@ void Preprocessor::GatherCommonNodes(
       child->Visit(1);
       if (child->parents().size() > 1) common_basic_events->push_back(child);
     }
+  }
+}
+
+void Preprocessor::PropagateFailure(Node* node) {
+  assert(node->parents().size() > 1);
+  assert(node->opti_value() == 0);
+  node->opti_value(1);
+  std::set<IGate*>::iterator it;
+  for (it = node->parents().begin(); it != node->parents().end(); ++it) {
+    IGate* parent = *it;
+    if (parent->opti_value() == 1) continue;
+    parent->ChildFailed();  // Send a notification.
+    if (parent->opti_value() == 1) Preprocessor::PropagateFailure(parent);
   }
 }
 

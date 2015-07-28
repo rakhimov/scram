@@ -296,6 +296,12 @@ class Preprocessor {
       std::vector<boost::weak_ptr<IGate> >* common_gates,
       std::vector<boost::weak_ptr<IBasicEvent> >* common_basic_events);
 
+  /// Propagates failure of the node by setting its ancestors' optimization
+  /// values to 1 if they fail according to their Boolean logic.
+  ///
+  /// @param[in] node The node that fails.
+  void PropagateFailure(Node* node);
+
   /// Sets the visit marks to False for all indexed gates that have been
   /// visited top-down. Any member function updating and using the visit
   /// marks of gates must ensure to clean visit marks before running
