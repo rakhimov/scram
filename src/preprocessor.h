@@ -300,7 +300,18 @@ class Preprocessor {
   /// values to 1 if they fail according to their Boolean logic.
   ///
   /// @param[in] node The node that fails.
-  void PropagateFailure(Node* node);
+  /// @param[in,out] mult_tot Total multiplicity of the node.
+  void PropagateFailure(Node* node, int* mult_tot);
+
+  /// Collects failure destinations and marks non-redundant nodes.
+  /// The optimization value for non-redundant nodes are set to 2.
+  /// The optimization value for non-removal parent nodes are set to 3.
+  ///
+  /// @param[in] gate The non-failed gate which sub-tree is to be traversed.
+  /// @param[in] index The index of the failed node.
+  /// @param[in,out] destinations Destinations of the failure.
+  void CollectFailureDestinations(const IGatePtr& gate, int index,
+                                  std::set<IGatePtr>* destinations);
 
   /// Sets the visit marks to False for all indexed gates that have been
   /// visited top-down. Any member function updating and using the visit
@@ -325,6 +336,12 @@ class Preprocessor {
   ///
   /// @param[in,out] gate The root gate to be traversed and cleaned.
   void ClearNodeVisits(const IGatePtr& gate);
+
+  /// Clears optimization values of nodes. The optimization values are set to 0.
+  /// Resets the number of failed children of gates.
+  ///
+  /// @param[in,out] gate The root gate to be traversed and cleaned.
+  void ClearOptiValues(const IGatePtr& gate);
 
   IndexedFaultTree* fault_tree_;  ///< The fault tree to preprocess.
   int top_event_sign_;  ///< The negative or positive sign of the top event.

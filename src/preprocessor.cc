@@ -811,11 +811,26 @@ void Preprocessor::BooleanOptimization() {
   std::vector<boost::weak_ptr<IBasicEvent> > common_basic_events;
   Preprocessor::GatherCommonNodes(&common_gates, &common_basic_events);
 
+  IGatePtr top = fault_tree_->top_event();
   Preprocessor::ClearNodeVisits();
   std::vector<boost::weak_ptr<IGate> >::iterator it;
   for (it = common_gates.begin(); it != common_gates.end(); ++it) {
     if (it->expired()) continue;
-    Preprocessor::PropagateFailure(&*it->lock());
+    Node* node = &*it->lock();
+    assert(node->opti_value() == 0);
+    node->opti_value(1);
+    int mult_tot = node->parents().size();  // Total multiplicity.
+    assert(mult_tot > 1);
+    Preprocessor::PropagateFailure(node, &mult_tot);
+    std::set<IGatePtr> destinations;
+    if (top->opti_value() == 1) {
+      destinations.insert(top);
+    } else {
+      assert(top->opti_value() == 0);
+      Preprocessor::CollectFailureDestinations(top, node->index(),
+                                               &destinations);
+    }
+    Preprocessor::ClearOptiValues(top);
   }
 }
 
@@ -849,16 +864,40 @@ void Preprocessor::GatherCommonNodes(
   }
 }
 
-void Preprocessor::PropagateFailure(Node* node) {
-  assert(node->parents().size() > 1);
-  assert(node->opti_value() == 0);
-  node->opti_value(1);
+void Preprocessor::PropagateFailure(Node* node, int* mult_tot) {
+  assert(node->opti_value() == 1);
   std::set<IGate*>::iterator it;
   for (it = node->parents().begin(); it != node->parents().end(); ++it) {
     IGate* parent = *it;
     if (parent->opti_value() == 1) continue;
     parent->ChildFailed();  // Send a notification.
-    if (parent->opti_value() == 1) Preprocessor::PropagateFailure(parent);
+    if (parent->opti_value() == 1) {  // The parent failed.
+      int mult = parent->parents().size();  // Multiplicity of the parent.
+      if (mult > 1) *mult_tot += mult;  // Total multiplicity.
+      Preprocessor::PropagateFailure(parent, mult_tot);
+    }
+  }
+}
+
+void Preprocessor::CollectFailureDestinations(
+    const IGatePtr& gate,
+    int index,
+    std::set<IGatePtr>* destinations) {
+  assert(gate->opti_value() == 0);
+  if (gate->children().count(index)) {  // Child may be non-gate.
+    gate->opti_value(3);
+  } else {
+    gate->opti_value(2);
+  }
+  boost::unordered_map<int, IGatePtr>::const_iterator it;
+  for (it = gate->gate_children().begin(); it != gate->gate_children().end();
+       ++it) {
+    IGatePtr child = it->second;
+    if (child->opti_value() == 0) {
+      Preprocessor::CollectFailureDestinations(child, index, destinations);
+    } else if (child->opti_value() == 1 && child->index() != index) {
+      destinations->insert(child);
+    } // Ignore gates with optimization values of 2 or 3.
   }
 }
 
@@ -897,6 +936,22 @@ void Preprocessor::ClearNodeVisits(const IGatePtr& gate) {
        it_c != gate->constant_children().end(); ++it_c) {
     it_c->second->ClearVisits();
   }
+}
+
+void Preprocessor::ClearOptiValues(const IGatePtr& gate) {
+  gate->opti_value(0);
+  gate->ResetChildrenFailure();
+  boost::unordered_map<int, IGatePtr>::const_iterator it;
+  for (it = gate->gate_children().begin(); it != gate->gate_children().end();
+       ++it) {
+    Preprocessor::ClearOptiValues(it->second);
+  }
+  boost::unordered_map<int, IBasicEventPtr>::const_iterator it_b;
+  for (it_b = gate->basic_event_children().begin();
+       it_b != gate->basic_event_children().end(); ++it_b) {
+    it_b->second->opti_value(0);
+  }
+  assert(gate->constant_children().empty());
 }
 
 }  // namespace scram

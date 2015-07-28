@@ -277,7 +277,7 @@ void IGate::ChildFailed() {
 }
 
 void IGate::ResetChildrenFailure() {
-
+  num_failed_children_ = 0;
 }
 
 const std::map<std::string, GateType> IndexedFaultTree::kStringToType_ =
