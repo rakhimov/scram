@@ -108,8 +108,7 @@ Proposed Improvements for this algorithm
 Other MCS Generation Algorithms
 ===============================
 
-According to :ref:`papers` about probabilistic safety and risk analysis,
-there are many algorithms developed for fault tree analysis since the 1960s,
+There are many algorithms developed for fault tree analysis since the 1960s,
 but MOCUS-based and BDD-based algorithms are most used in current PRA software.
 
 The first algorithm is MOCUS, a top-down algorithm first proposed by J.Fussel
@@ -131,3 +130,5 @@ and gates with many replicated events. One more important advantage of BDD
 based analysis is that BDD allows fast and exact calculation of probabilities,
 which makes Probability, Importance, Uncertainty analyses fast as well. This
 algorithm is used in CAFTA, RiskA, and RiskMan.
+
+More information can be found in :ref:`papers`.
