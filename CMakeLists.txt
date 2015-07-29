@@ -77,6 +77,10 @@ endif()
 
 ############################ begin find libraries ######################
 
+# Optional tcmalloc for optimization.
+find_package(Tcmalloc)
+set(LIBS ${LIBS} ${Tcmalloc_LIBRARIES})
+
 # Debian installs useful LibXML2 files to /usr/include/libxml2/libxml
 # libxml2 is required for relaxng schema validation
 find_package(LibXml2 REQUIRED)
