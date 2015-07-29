@@ -815,107 +815,16 @@ void Preprocessor::BooleanOptimization() {
   std::vector<boost::weak_ptr<IBasicEvent> > common_basic_events;
   Preprocessor::GatherCommonNodes(&common_gates, &common_basic_events);
 
-  IGatePtr top = fault_tree_->top_event();
   Preprocessor::ClearNodeVisits();
   std::vector<boost::weak_ptr<IGate> >::iterator it;
   for (it = common_gates.begin(); it != common_gates.end(); ++it) {
-    if (it->expired()) continue;  // The node has been deleted.
+    Preprocessor::ProcessCommonNode(*it);
+  }
 
-    IGatePtr node = it->lock();
-
-    if (node->parents().size() == 1) continue;  // The parent is deleted.
-
-    assert(node->opti_value() == 0);
-    node->opti_value(1);
-    int mult_tot = node->parents().size();  // Total multiplicity.
-    assert(mult_tot > 1);
-    Preprocessor::PropagateFailure(&*node, &mult_tot);
-    // The results of the failure propagation.
-    std::map<int, boost::weak_ptr<IGate> > destinations;
-    int num_dest = 0;  // This is not the same as the size of destinations.
-    if (top->opti_value() == 1) {  // The top gate failed.
-      destinations.insert(std::make_pair(top->index(), top));
-      num_dest = 1;
-    } else {
-      assert(top->opti_value() == 0);
-      Preprocessor::CollectFailureDestinations(top, node->index(), &num_dest,
-                                               &destinations);
-    }
-
-    if (num_dest < mult_tot) {  // Redundancy detection.
-      std::vector<boost::weak_ptr<IGate> > redundant_parents;
-      std::set<IGate*>::const_iterator it;
-      for (it = node->parents().begin(); it != node->parents().end(); ++it) {
-        IGate* parent = *it;
-        if (parent->opti_value() < 3) {
-          // Special cases for the redundant parent and the destination parent.
-          switch (parent->type()) {
-            case kOrGate:
-              if (destinations.count(parent->index())) {
-                destinations.erase(parent->index());
-              }
-              continue;  // No need to add into the redundancy list.
-          }
-          redundant_parents.push_back(Preprocessor::RawToWeakPointer(parent));
-        }
-      }
-      // The node behaves like a constant False for redundant parents.
-      bool created_constant = false;  // Parents turned into constants.
-      std::vector<boost::weak_ptr<IGate> >::iterator it_r;
-      for (it_r = redundant_parents.begin(); it_r != redundant_parents.end();
-           ++it_r) {
-        if (it_r->expired()) continue;
-        IGatePtr parent = it_r->lock();
-        switch (parent->type()) {
-          case kAndGate:
-            parent->Nullify();
-            if (!created_constant) created_constant = true;
-            break;
-          case kOrGate:
-            assert(parent->children().size() > 1);
-            parent->EraseChild(node->index());
-            if (parent->children().size() == 1) parent->type(kNullGate);
-            break;
-          case kAtleastGate:
-            assert(parent->children().size() > 2);
-            parent->EraseChild(node->index());
-            if (parent->children().size() == parent->vote_number())
-              parent->type(kAndGate);
-            break;
-          default:
-            assert(false);
-        }
-      }
-      std::map<int, boost::weak_ptr<IGate> >::iterator it_d;
-      for (it_d = destinations.begin(); it_d != destinations.end(); ++it_d) {
-        if (it_d->second.expired()) continue;
-        IGatePtr target = it_d->second.lock();
-        assert(target->type() != kNullGate);
-        switch (target->type()) {
-          case kOrGate:
-            target->AddChild(node->index(), node);
-            break;
-          case kAndGate:
-          case kAtleastGate:
-            IGatePtr new_gate(new IGate(target->type()));
-            new_gate->vote_number(target->vote_number());
-            new_gate->CopyChildren(target);
-            target->EraseAllChildren();
-            target->type(kOrGate);
-            target->AddChild(new_gate->index(), new_gate);
-            target->AddChild(node->index(), node);
-            break;
-        }
-      }
-      if (created_constant) {
-        Preprocessor::ClearGateMarks();
-        Preprocessor::RemoveConstGates(top);
-        Preprocessor::ClearGateMarks();
-        Preprocessor::RemoveNullGates(top);
-      }
-    }
-
-    Preprocessor::ClearOptiValues(top);
+  std::vector<boost::weak_ptr<IBasicEvent> >::iterator it_b;
+  for (it_b = common_basic_events.begin(); it_b != common_basic_events.end();
+       ++it_b) {
+    Preprocessor::ProcessCommonNode(*it_b);
   }
 }
 
@@ -949,25 +858,69 @@ void Preprocessor::GatherCommonNodes(
   }
 }
 
-void Preprocessor::PropagateFailure(Node* node, int* mult_tot) {
+template<class N>
+void Preprocessor::ProcessCommonNode(const boost::weak_ptr<N>& common_node) {
+  if (common_node.expired()) return;  // The node has been deleted.
+
+  boost::shared_ptr<N> node = common_node.lock();
+
+  if (node->parents().size() == 1) return;  // The parent is deleted.
+
+  IGatePtr top = fault_tree_->top_event();
+  Preprocessor::ClearOptiValues(top);
+
+  assert(node->opti_value() == 0);
+  node->opti_value(1);
+  int mult_tot = node->parents().size();  // Total multiplicity.
+  assert(mult_tot > 1);
+  mult_tot += Preprocessor::PropagateFailure(&*node);
+  // The results of the failure propagation.
+  std::map<int, boost::weak_ptr<IGate> > destinations;
+  int num_dest = 0;  // This is not the same as the size of destinations.
+  if (top->opti_value() == 1) {  // The top gate failed.
+    destinations.insert(std::make_pair(top->index(), top));
+    num_dest = 1;
+  } else {
+    assert(top->opti_value() == 0);
+    num_dest = Preprocessor::CollectFailureDestinations(top, node->index(),
+                                                        &destinations);
+  }
+
+  if (num_dest == 0) return;  // No failure destination detected.
+  assert(!destinations.empty());
+  if (num_dest < mult_tot) {  // Redundancy detection.
+    bool created_constant =
+        Preprocessor::ProcessRedundantParents(node, &destinations);
+    Preprocessor::ProcessFailureDestinations(node, destinations);
+    if (created_constant) {
+      Preprocessor::ClearGateMarks();
+      Preprocessor::RemoveConstGates(top);
+      Preprocessor::ClearGateMarks();
+      Preprocessor::RemoveNullGates(top);
+    }
+  }
+}
+
+int Preprocessor::PropagateFailure(Node* node) {
   assert(node->opti_value() == 1);
   std::set<IGate*>::iterator it;
+  int mult_tot = 0;
   for (it = node->parents().begin(); it != node->parents().end(); ++it) {
     IGate* parent = *it;
     if (parent->opti_value() == 1) continue;
     parent->ChildFailed();  // Send a notification.
     if (parent->opti_value() == 1) {  // The parent failed.
       int mult = parent->parents().size();  // Multiplicity of the parent.
-      if (mult > 1) *mult_tot += mult;  // Total multiplicity.
-      Preprocessor::PropagateFailure(parent, mult_tot);
+      if (mult > 1) mult_tot += mult;  // Total multiplicity.
+      mult_tot += Preprocessor::PropagateFailure(parent);
     }
   }
+  return mult_tot;
 }
 
-void Preprocessor::CollectFailureDestinations(
+int Preprocessor::CollectFailureDestinations(
     const IGatePtr& gate,
     int index,
-    int* num_dest,
     std::map<int, boost::weak_ptr<IGate> >* destinations) {
   assert(gate->opti_value() == 0);
   if (gate->children().count(index)) {  // Child may be non-gate.
@@ -975,17 +928,95 @@ void Preprocessor::CollectFailureDestinations(
   } else {
     gate->opti_value(2);
   }
+  int num_dest = 0;
   boost::unordered_map<int, IGatePtr>::const_iterator it;
   for (it = gate->gate_children().begin(); it != gate->gate_children().end();
        ++it) {
     IGatePtr child = it->second;
     if (child->opti_value() == 0) {
-      Preprocessor::CollectFailureDestinations(child, index, num_dest,
-                                               destinations);
+      num_dest +=
+          Preprocessor::CollectFailureDestinations(child, index, destinations);
     } else if (child->opti_value() == 1 && child->index() != index) {
       ++num_dest;
       destinations->insert(std::make_pair(child->index(), child));
     } // Ignore gates with optimization values of 2 or 3.
+  }
+  return num_dest;
+}
+
+bool Preprocessor::ProcessRedundantParents(
+    const NodePtr& node,
+    std::map<int, boost::weak_ptr<IGate> >* destinations) {
+  std::vector<boost::weak_ptr<IGate> > redundant_parents;
+  std::set<IGate*>::const_iterator it;
+  for (it = node->parents().begin(); it != node->parents().end(); ++it) {
+    IGate* parent = *it;
+    if (parent->opti_value() < 3) {
+      // Special cases for the redundant parent and the destination parent.
+      switch (parent->type()) {
+        case kOrGate:
+          if (destinations->count(parent->index())) {
+            destinations->erase(parent->index());
+            continue;  // No need to add into the redundancy list.
+          }
+      }
+      redundant_parents.push_back(Preprocessor::RawToWeakPointer(parent));
+    }
+  }
+  // The node behaves like a constant False for redundant parents.
+  bool created_constant = false;  // Parents turned into constants.
+  std::vector<boost::weak_ptr<IGate> >::iterator it_r;
+  for (it_r = redundant_parents.begin(); it_r != redundant_parents.end();
+       ++it_r) {
+    if (it_r->expired()) continue;
+    IGatePtr parent = it_r->lock();
+    switch (parent->type()) {
+      case kAndGate:
+        parent->Nullify();
+        if (!created_constant) created_constant = true;
+        break;
+      case kOrGate:
+        assert(parent->children().size() > 1);
+        parent->EraseChild(node->index());
+        if (parent->children().size() == 1) parent->type(kNullGate);
+        break;
+      case kAtleastGate:
+        assert(parent->children().size() > 2);
+        parent->EraseChild(node->index());
+        if (parent->children().size() == parent->vote_number())
+          parent->type(kAndGate);
+        break;
+      default:
+        assert(false);
+    }
+  }
+  return created_constant;
+}
+
+template<class N>
+void Preprocessor::ProcessFailureDestinations(
+    const boost::shared_ptr<N>& node,
+    const std::map<int, boost::weak_ptr<IGate> >& destinations) {
+  std::map<int, boost::weak_ptr<IGate> >::const_iterator it_d;
+  for (it_d = destinations.begin(); it_d != destinations.end(); ++it_d) {
+    if (it_d->second.expired()) continue;
+    IGatePtr target = it_d->second.lock();
+    assert(target->type() != kNullGate);
+    switch (target->type()) {
+      case kOrGate:
+        target->AddChild(node->index(), node);
+        break;
+      case kAndGate:
+      case kAtleastGate:
+        IGatePtr new_gate(new IGate(target->type()));
+        new_gate->vote_number(target->vote_number());
+        new_gate->CopyChildren(target);
+        target->EraseAllChildren();
+        target->type(kOrGate);
+        target->AddChild(new_gate->index(), new_gate);
+        target->AddChild(node->index(), node);
+        break;
+    }
   }
 }
 
