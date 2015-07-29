@@ -33,7 +33,7 @@ Node::Node() : index_(next_index_++), opti_value_(0) {
   std::fill(visits_, visits_ + 3, 0);
 }
 
-Node::Node(int index) : index_(index) {
+Node::Node(int index) : index_(index), opti_value_(0) {
   std::fill(visits_, visits_ + 3, 0);
 }
 
