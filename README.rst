@@ -257,9 +257,9 @@ The main and test binaries are installed in *installation/directory/bin*
 directory. Also, the test input files and RelaxNG schema are copied in
 *installation/directory/share/scram/*.
 
-The default build type is Debug, but it can be overridden by "--release",
-"--profile", or "--build-type" flags. For performance testing and distribution,
-run the building with the release flag:
+The default build type is Debug with many compiler warnings turned on, but it
+can be overridden by "--release", "--profile", or "--build-type" flags. For
+performance testing and distribution, run the building with the release flag:
 
 .. code-block:: bash
 

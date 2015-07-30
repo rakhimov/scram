@@ -60,10 +60,13 @@ def install_scram(args):
             cmake_cmd += ["-DCMAKE_BUILD_TYPE=Debug"]
             cmake_cmd += ["-DCMAKE_C_FLAGS=-pg"]
             cmake_cmd += ["-DCMAKE_CXX_FLAGS=-pg"]
-            cmake_cmd += ["-DCMAKE_CXX_FLAGS='-Wall -fprofile-arcs "
-                          "-ftest-coverage'"]
+            cmake_cmd += ["-DCMAKE_CXX_FLAGS='-fprofile-arcs -ftest-coverage'"]
         else:
-            cmake_cmd += ["-DCMAKE_BUILD_TYPE=Debug"]  # default build type
+            # Build for developers with all relevant warnings ON.
+            cmake_cmd += ["-DCMAKE_BUILD_TYPE=Debug"]
+            cmake_cmd += ["-DCMAKE_CXX_FLAGS='-Wall -Wextra "
+                          "-Wno-sign-compare "
+                          "-Wno-switch'" ]
 
         subprocess.check_call(cmake_cmd, cwd=args.build_dir,
                               shell=(os.name == 'nt'))
