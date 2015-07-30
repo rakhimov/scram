@@ -22,22 +22,25 @@ analysis with common cause failure models, probability calculations with
 importance analysis, and uncertainty analysis with Monte Carlo simulations. This
 tool can handle non-coherent fault trees, containing NOT logic.
 
-SCRAM partially supports the OpenPSA_ model exchange format. Its input files are
-based on this format.
+SCRAM partially supports the OpenPSA_ model exchange format. SCRAM input and
+report files are based on this format. For the current status of the OpenPSA MEF
+features in SCRAM, please see the `MEF Support`_ documentation.
 
 SCRAM generates a Graphviz Dot instruction file for a graphical representation
-of a fault tree.
+of a fault tree. An experimental GUI front-end is under development with Qt_ for
+better visualization and manipulation of risk analysis models.
 
-An experimental GUI front-end is under development using `Qt`_.
+To explore the performance of SCRAM or research fault trees, a
+fault tree generator script is provided, which can create hard-to-analyze fault
+trees in a short time.
 
-In addition, a complex-fault-tree-generator script is provided to create
-hard-to-analyze fault trees and to explore the performance of SCRAM.
-
-A full description of SCRAM and its current capabilities is in `documentation`_.
+The documentation_ contains a full description of SCRAM, its current
+capabilities, and future additions.
 
 .. _OpenPSA: http://open-psa.org
-.. _`documentation`: http://rakhimov.github.io/scram
-.. _`Qt`: http://qt-project.org/
+.. _`MEF Support`: http://rakhimov.github.io/scram/doc/opsa_support.html
+.. _documentation: http://rakhimov.github.io/scram
+.. _Qt: http://qt-project.org/
 
 To get SCRAM, you can download a virtual machine image on Sourceforge_ or follow
 the building and installing instructions bellow.
@@ -270,7 +273,7 @@ Other tools, such as the fault tree generator and shorthand-to-XML converter,
 can be found in the *scripts* directory. These tools do not need compilation or
 installation.
 
-The optional GUI front-end is built using Qt Creator and qmake.
+The optional GUI front-end is built with Qt Creator and qmake.
 
 
 Windows
@@ -381,7 +384,7 @@ documentation have more details how to use these tools.
 Documentation Building
 **********************
 
-Documentation can be generated following the instruction in
+Documentation can be generated following the instructions in
 the `gh-source`_ branch. The raw documentation files are in *doc* directory.
 
 .. _`gh-source`:
