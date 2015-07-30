@@ -104,11 +104,11 @@ class Node {
 
   /// @returns The minimum time of the visit.
   /// @returns 0 if no time is registered.
-  virtual inline int min_time() const { return visits_[0]; }
+  inline virtual int min_time() const { return visits_[0]; }
 
   /// @returns The maximum time of the visit.
   /// @returns 0 if no time is registered.
-  virtual inline int max_time() const {
+  inline virtual int max_time() const {
     return visits_[2] ? visits_[2] : visits_[1] ? visits_[1] : visits_[0];
   }
 
