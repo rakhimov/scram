@@ -16,12 +16,13 @@ Pull Requests and Issue Tracker. Best practices are encouraged:
 2. Create your **topic** branch from the **develop** branch.
 3. Keep in sync your **origin** develop branch with the **upstream** develop
    branch.
-4. Develop your contributions following [Coding Style and Quality Assurance].
+4. Develop your contributions following the [Coding Style and Quality Assurance].
+   Every commit should compile and pass tests.
 5. Keep your **topic** branch in sync with the **develop** branch by merging or
    rebasing your **topic** branch on top of the **develop**. Rebasing is highly
    recommended for streamlining the history. However, **DO NOT** rebase any
    commits that have been pulled/pushed anywhere else other than your own fork.
-6. Use [mailing list] and Issue Tracker to stay in touch with the project
+6. Use the [mailing list] and Issue Tracker to stay in touch with the project
    development.
 7. Submit your [pull request] from **your topic** branch to the
    **upstream develop** branch.
@@ -34,7 +35,7 @@ Pull Requests and Issue Tracker. Best practices are encouraged:
 
 ## Contributor License Agreement
 
-First time contributors will be asked to sign the
+Upon pull requests, first time contributors will be asked to sign the
 [Contributor License Agreement] through [CLA Assistant] with a GitHub account.
 This license is for your protection as a contributor as well as the protection
 of SCRAM and its users; it does not change your rights to use your own
