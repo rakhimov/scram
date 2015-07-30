@@ -30,8 +30,11 @@ using namespace scram;
 //
 // Performance testing values are taken from a computer with the following
 // specs:
-//   Core i5-2410M, Ubuntu 14.04 64bit
-//   Compilation with GCC 4.8.4 and Boost 1.55
+//   Proc         Core i5-2410M
+//   Ubuntu       14.04 64bit
+//   GCC          4.8.4
+//   Boost        1.55
+//   TCMalloc     2.1
 //
 // The values for performance are expected to have some random variation.
 // Better as well as worse performance are reported as test failures to
@@ -78,9 +81,9 @@ TEST_F(PerformanceTest, DISABLED_Baobab1_L6) {
 
 // Test performance of MCS generation.
 TEST_F(PerformanceTest, DISABLED_Baobab1_L7) {
-  double mcs_time = 21.5;
+  double mcs_time = 19;
 #ifdef NDEBUG
-  mcs_time = 3.0;
+  mcs_time = 2.3;
 #endif
   std::vector<std::string> input_files;
   input_files.push_back("./share/scram/input/Baobab/baobab1.xml");
@@ -94,7 +97,7 @@ TEST_F(PerformanceTest, DISABLED_Baobab1_L7) {
 TEST_F(PerformanceTest, DISABLED_CEA9601_L10) {
   double mcs_time = 4.0;
 #ifdef NDEBUG
-  mcs_time = 0.62;
+  mcs_time = 0.53;
 #endif
   std::vector<std::string> input_files;
   input_files.push_back("./share/scram/input/CEA9601/CEA9601.xml");
@@ -108,7 +111,7 @@ TEST_F(PerformanceTest, DISABLED_CEA9601_L10) {
 // Release only tests.
 #ifdef NDEBUG
 TEST_F(PerformanceTest, DISABLED_CEA9601_L14) {
-  double mcs_time = 15.5;
+  double mcs_time = 12.5;
   std::vector<std::string> input_files;
   input_files.push_back("./share/scram/input/CEA9601/CEA9601.xml");
   input_files.push_back("./share/scram/input/CEA9601/CEA9601-basic-events.xml");
