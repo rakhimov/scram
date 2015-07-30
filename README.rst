@@ -77,6 +77,7 @@ Package                Minimum Version
 `Graphviz Dot`         2.26.3
 `Qt`                   5.2.1
 `Qt Creator`           3.0.1
+`TCMalloc`             1.7
 ====================   ==================
 
 
@@ -143,6 +144,7 @@ and (optionally):
 #. graphviz
 #. qt5-default
 #. qtcreator
+#. libgoogle-perftools-dev
 
 compiler:
 
@@ -159,7 +161,7 @@ SCRAM dependencies and GCC/G++ compiler:
 
 .. code-block:: bash
 
-    sudo apt-get install -y cmake make gcc g++ libboost-all-dev libboost-random-dev libxml2-dev libxml++2.6-dev python2.7 graphviz
+    sudo apt-get install -y cmake make gcc g++ libboost-all-dev libboost-random-dev libxml2-dev libxml++2.6-dev python2.7 graphviz libgoogle-perftools-dev
 
 For Ubuntu 12.04, the default Boost version is 1.46, so the update above version
 1.47 is required:
