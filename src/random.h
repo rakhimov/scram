@@ -86,7 +86,7 @@ class Random {
   ///
   /// @returns A sample Value from the value vector.
   template<class T>
-  static inline T DiscreteGenerator(const std::vector<T>& values,
+  inline static T DiscreteGenerator(const std::vector<T>& values,
                                     const std::vector<double>& weights) {
     assert(values.size() == weights.size());
     return values[DiscreteGenerator(weights)];

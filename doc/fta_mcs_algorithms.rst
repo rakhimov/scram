@@ -4,48 +4,6 @@
 FTA: Finding Minimal Cut Sets
 #############################
 
-Fault Tree Constant Propagation
-===============================
-
-House or external events are treated as Boolean constants and propagated
-according to the Boolean algebra before other more complex and expensive steps.
-This procedure prunes the fault tree. Null and unity branches are removed
-from the tree leaving only basic events and gates.
-
-
-Fault Tree Preprocessing
-========================
-
-In order to optimize the analysis and deal with the exponential complexity,
-fault tree preprocessing is attempted before initiating other
-Minimal Cut Set algorithms. There are many proposed optimizations; however,
-the ordering and gain of their application may be unclear. Successful
-preprocessing helps reduce the complexity substantially for large trees.
-
-Initially, the fault tree is simplified to contain only AND and OR gates by
-replacing complex gates like ATLEAST and propagating complements. Then,
-gates of the same type are coalesced according to the rules of Boolean algebra.
-For example, AND gate parent and AND gate child are joined into a new gate or
-added to the parent gate. This operation attempts to reduce the number of gates
-to expand later. However, this operation may complicate the further step to
-find modules in the tree.
-
-The second operation is to find modules (independent sub-trees) of the tree.
-Modules are defined as gates or group of events that do not have common events
-or modules with other gates. Modules are analyzed as separate and independent
-fault trees. If a module appears in the final minimal cut sets, then the cut
-sets are populated with the minimal cut sets of the module. This operation
-guarantees that the final joint cut sets are minimal, and no expensive check
-for minimality is needed. However, most complex fault trees do not contain big
-modules in their original Boolean formula.
-
-In order to simplify the Boolean formula of a fault tree and group independent
-subtrees, formula rewriting can be attempted. One of the goals of this
-procedure is to reduce the number of common events and gates. This procedure
-may also help isolate those events and gates that appear in multiple places in
-a fault tree, making the modularization process more effective.
-
-
 Minimal Cut Set (MCS) Generation Algorithm
 ==========================================
 
@@ -99,17 +57,25 @@ are minimal. This incremental logic is continued till the initial set of cut
 sets is empty.
 
 
+UNITY and NULL Cases
+--------------------
+
+The analyzed minimal cut sets may result in NULL or UNITY state, which may
+indicate guaranteed success or failure. This cases are handled as special and
+given appropriate messages and probabilities. For example, UNITY state will
+show only one minimal cut set of order 0 but probability 1.
+
+
 Proposed Improvements for this algorithm
 ----------------------------------------
 
-- Use of Binary Decision Diagrams for faster MCS detection.
+- Use of Binary Decision Trees or Diagrams for faster MCS detection.
 
 
 Other MCS Generation Algorithms
 ===============================
 
-According to :ref:`papers` about probabilistic safety and risk analysis,
-there are many algorithms developed for fault tree analysis since the 1960s,
+There are many algorithms developed for fault tree analysis since the 1960s,
 but MOCUS-based and BDD-based algorithms are most used in current PRA software.
 
 The first algorithm is MOCUS, a top-down algorithm first proposed by J.Fussel
@@ -131,3 +97,5 @@ and gates with many replicated events. One more important advantage of BDD
 based analysis is that BDD allows fast and exact calculation of probabilities,
 which makes Probability, Importance, Uncertainty analyses fast as well. This
 algorithm is used in CAFTA, RiskA, and RiskMan.
+
+More information can be found in :ref:`papers`.

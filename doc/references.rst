@@ -10,9 +10,23 @@ References
 #. `FTA: Concepts and Applications <http://www.hq.nasa.gov/office/codeq/risk/docs/ftacourse.pdf>`_
 #. `Fault Tree Handbook with Aerospace Applications <http://www.hq.nasa.gov/office/codeq/doctree/fthb.pdf>`_
 #. `Software Test Techniques for System Fault-Tree Analysis <http://www.cs.virginia.edu/~jck/publications/safecomp.97.pdf>`_
-#. A.Rauzy, "Towards an Efficient Implementation of MOCUS"
-#. E.Petrosean, "Fault Tree Analysis for Energy Grid"
-#. D.Wakefield, "You Can't Just Build Trees and Call It PSA"
+
+#. A.Rauzy, "Towards an efficient implementation of MOCUS," IEEE IEEE Trans.
+   Rel., vol. 52, no. 2, pp 175-180, 2003.
+
+#. Y. Dutuit and A. Rauzy, "A linear time algorithm to find modules of fault
+   trees" IEEE Trans. Rel., vol. 45, no. 3, pp. 422–425, 1996.
+
+#. I. Niemelä, "On simplification of large fault trees," Reliab. Eng. Syst.
+   Saf., vol. 44, pp. 135–138, 1994.
+
+#. M.Nikolskaia and A.Rauzy, "Fine-tuning of boolean formulae preprocessing
+   techniques"
+
+#. D.Wakefield, "You can't just build trees and call it PSA"
+
+#. E.Petrosean, "Fault tree analysis for energy grid"
+
 
 Web Resources
 =============

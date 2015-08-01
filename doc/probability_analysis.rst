@@ -27,8 +27,8 @@ Sylvester-Poincaré expansion.
 The Approximate Probability Calculation Implementation
 ======================================================
 
-Approximate calculations are implemented in order to reduce calculation time.
-The series expansion of the exact formula is applied. This feature is the
+Approximate calculations are implemented in order to reduce the calculation
+time. The series expansion of the exact formula is applied. This feature is the
 default. The default value for series is set to 7 to get a conservative result
 while having acceptable performance. In general, it is impractical to include
 more than 8 sums, so the suggestion is to include between 4 and 8 sums. In
@@ -39,8 +39,8 @@ low probabilities. The default cut-off is 1e-8.
 The Rare-Event Approximation
 ============================
 
-Given that probabilities of events are very small value less than 0.1, only the
-first series in the probability equation may be used as a conservative
+Given that the probabilities of events are very small value less than 0.1, only
+the first series in the probability equation may be used as a conservative
 approximation; that is, the total probability is the sum of all probabilities
 of minimal cut sets. Ideally, this approximation gives good results for
 independent minimal cut sets with very low probabilities. However, if the cut
@@ -53,7 +53,7 @@ The Min-Cut-Upper Bound (MCUB) Approximation
 This method calculates the total probability by subtracting the probability
 of all minimal cut sets' being successful from 1.0; thus, the total probability
 never exceeds 1.0. Non-independence of the minimal cut sets introduce
-the major discrepancy for this technique. However, the MCUB approximation
+the major discrepancy for this technique. Moreover, the MCUB approximation
 provides non-conservative estimation for non-coherent trees containing
 *NOT* logic. There are other limitations described by Don Wakefield in
 "You Can't Just Build Trees and Call It PSA."
@@ -62,12 +62,12 @@ provides non-conservative estimation for non-coherent trees containing
 Probability Types
 =================
 
-Various probability types and distributions are accepted as described in
+Various probability types and distributions are accepted as described in the
 OpenPSA Model Exchange Format, for example, constant values, exponential with
 two or four parameters, uniform, normal, log-normal distributions.
 
-Bellow is a brief example. For more information, please take a look at OpenPSA
-MEF format documentation on http://open-psa.org
+Bellow is a brief example. For more information, please take a look at the
+OpenPSA MEF format documentation on http://open-psa.org
 
 **P-model**
     The probability of an event occurring when the time to failure is
@@ -97,15 +97,15 @@ The described assumptions may be applied for calculation of a cut set and total
 probabilities:
 
 - Independence of events (dependence may be simulated by common cause).
-- Rare event approximation (must be enforced by a user).
-- Min-Cut-Upper Bound Approximation (must be enforced by a user).
+- The rare event approximation (must be enforced by a user).
+- The Min-Cut-Upper Bound Approximation (must be enforced by a user).
 - Cut-off probability for minimal cut sets (the default value is 1e-8).
-- Brute force probability calculation if the rare event approximation is not
+- The brute force probability calculation if the rare event approximation is not
   good enough. This brute force calculation may be expensive and require
-  much more time. (the default method for probability calculations).
+  much more time. (This is the default method for probability calculations.)
 
 .. note::
-    For most calculations, rare event approximation and event
+    For most calculations, the rare event approximation and event
     independence may be applied satisfactorily. However, if the rare event
     approximation produces too large probability, SCRAM can use the upper bound
     method. An appropriate warning will be given even if the user enforces

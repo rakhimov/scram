@@ -8,6 +8,7 @@
   <url>
     <loc>http://rakhimov.github.io/scram/api/</loc>
     <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>http://rakhimov.github.io/scram/doc/fault_tree_generator.html</loc>
@@ -16,13 +17,16 @@
     <loc>http://rakhimov.github.io/scram/doc/common_cause_analysis.html</loc>
   </url>
   <url>
-    <loc>http://rakhimov.github.io/scram/doc/fta_graphing.html</loc>
+    <loc>http://rakhimov.github.io/scram/doc/fault_tree_graphing.html</loc>
   </url>
   <url>
-    <loc>http://rakhimov.github.io/scram/doc/fta_implementation.html</loc>
+    <loc>http://rakhimov.github.io/scram/doc/fault_tree_analysis.html</loc>
   </url>
   <url>
-    <loc>http://rakhimov.github.io/scram/doc/fta_mcs_algorithm.html</loc>
+    <loc>http://rakhimov.github.io/scram/doc/fta_preprocessing.html</loc>
+  </url>
+  <url>
+    <loc>http://rakhimov.github.io/scram/doc/fta_mcs_algorithms.html</loc>
   </url>
   <url>
     <loc>http://rakhimov.github.io/scram/doc/probability_analysis.html</loc>

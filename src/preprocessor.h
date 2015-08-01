@@ -28,6 +28,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/weak_ptr.hpp>
 
 #include "indexed_fault_tree.h"
 
@@ -36,8 +37,8 @@ class PreprocessorTest;
 namespace scram {
 
 /// @class Preprocessor
-/// The class provides main preprocessing operations over a fault tree
-/// to generate minimal cut sets more efficiently.
+/// The class provides main preprocessing operations over an indexed fault tree
+/// to simplify the tree and to generate minimal cut sets more efficiently.
 class Preprocessor {
   friend class ::PreprocessorTest;
 
@@ -47,14 +48,26 @@ class Preprocessor {
   /// Constructs a preprocessor of an indexed fault tree.
   ///
   /// @param[in] fault_tree The fault tree to be preprocessed.
+  ///
+  /// @warning There should not be another shared pointer to the top gate
+  ///          outside of the passed indexed fault tree. Upon preprocessing a
+  ///          new top gate may be assigned to the fault tree, and if there is
+  ///          an extra pointer to the previous top gate outside of the fault
+  ///          tree, the destructor will not be called as expected by the
+  ///          preprocessing algorithms, which will mess the new structure of
+  ///          the indexed fault tree.
   explicit Preprocessor(IndexedFaultTree* fault_tree);
 
   /// Performs processing of a fault tree to simplify the structure to
   /// normalized (OR/AND gates only), modular, positive-gate-only indexed fault
   /// tree.
+  ///
+  /// @warning There should not be another smart pointer to the indexed top
+  ///          gate of the indexed fault tree outside of the tree.
   void ProcessIndexedFaultTree();
 
  private:
+  typedef boost::shared_ptr<Node> NodePtr;
   typedef boost::shared_ptr<IGate> IGatePtr;
   typedef boost::shared_ptr<IBasicEvent> IBasicEventPtr;
   typedef boost::shared_ptr<Constant> ConstantPtr;
@@ -201,28 +214,21 @@ class Preprocessor {
 
   /// Traverses the indexed fault tree to detect modules. Modules are
   /// independent sub-trees without common nodes with the rest of the tree.
-  ///
-  /// @param[in] num_basic_events The number of basic events in the tree.
-  void DetectModules(int num_basic_events);
+  void DetectModules();
 
   /// Traverses the given gate and assigns time of visit to nodes.
   ///
   /// @param[in] time The current time.
   /// @param[in,out] gate The gate to traverse and assign time to.
-  /// @param[in,out] visit_basics The recordings for basic events.
   ///
   /// @returns The final time of traversing.
-  int AssignTiming(int time, const IGatePtr& gate, int visit_basics[][2]);
+  int AssignTiming(int time, const IGatePtr& gate);
 
   /// Determines modules from original gates that have been already timed.
   /// This function can also create new modules from the existing tree.
   ///
   /// @param[in,out] gate The gate to test for modularity.
-  /// @param[in] visit_basics The recordings for basic events.
-  /// @param[in,out] visited_gates Container of visited gates with
-  ///                              min and max time of visits of the subtree.
-  void FindModules(const IGatePtr& gate, const int visit_basics[][2],
-                   std::map<int, std::pair<int, int> >* visited_gates);
+  void FindModules(const IGatePtr& gate);
 
   /// Creates a new module as a child of an existing gate if the logic of the
   /// existing parent gate allows a sub-module. The existing
@@ -234,8 +240,9 @@ class Preprocessor {
   /// @param[in] children Modular children to be added into the new module.
   ///
   /// @returns Pointer to the new module if it is created.
-  IGatePtr CreateNewModule(const IGatePtr& gate,
-                           const std::vector<int>& children);
+  IGatePtr CreateNewModule(
+      const IGatePtr& gate,
+      const std::vector<std::pair<int, NodePtr> >& children);
 
   /// Checks if a group of modular children share anything with non-modular
   /// children. If so, then the modular children are not actually modular, and
@@ -243,28 +250,20 @@ class Preprocessor {
   /// This is due to chain of events that are shared between modular and
   /// non-modular children.
   ///
-  /// @param[in] visit_basics The recordings for basic events.
-  /// @param[in] visited_gates Visit max and min time recordings for gates.
   /// @param[in,out] modular_children Candidates for modular grouping.
   /// @param[in,out] non_modular_children Non modular children.
   void FilterModularChildren(
-      const int visit_basics[][2],
-      const std::map<int, std::pair<int, int> >& visited_gates,
-      std::vector<int>* modular_children,
-      std::vector<int>* non_modular_children);
+      std::vector<std::pair<int, NodePtr> >* modular_children,
+      std::vector<std::pair<int, NodePtr> >* non_modular_children);
 
   /// Groups modular children by their common elements. The gates created with
   /// these modular children are guaranteed to be independent modules.
   ///
-  /// @param[in] visit_basics The recordings for basic events.
-  /// @param[in] visited_gates Visit max and min time recordings for gates.
   /// @param[in] modular_children Candidates for modular grouping.
   /// @param[out] groups Grouped modular children.
   void GroupModularChildren(
-      const int visit_basics[][2],
-      const std::map<int, std::pair<int, int> >& visited_gates,
-      const std::vector<int>& modular_children,
-      std::vector<std::vector<int> >* groups);
+      const std::vector<std::pair<int, NodePtr> >& modular_children,
+      std::vector<std::vector<std::pair<int, NodePtr> > >* groups);
 
   /// Creates new module gates from groups of modular children if the logic of
   /// the parent gate allows sub-modules. The existing
@@ -276,21 +275,115 @@ class Preprocessor {
   /// @param[in,out] gate The parent gate for a module.
   /// @param[in] modular_children All the modular children.
   /// @param[in] groups Grouped modular children.
-  void CreateNewModules(const IGatePtr& gate,
-                        const std::vector<int>& modular_children,
-                        const std::vector<std::vector<int> >& groups);
+  void CreateNewModules(
+      const IGatePtr& gate,
+      const std::vector<std::pair<int, NodePtr> >& modular_children,
+      const std::vector<std::vector<std::pair<int, NodePtr> > >& groups);
 
-  /// Clears visit time information from all indexed gates that have been
+  /// Propagates failures of common nodes to detect redundancy. The fault tree
+  /// structure is optimized by removing the reduncies if possible. This
+  /// optimization helps reduce the number of common nodes.
+  void BooleanOptimization();
+
+  /// Traversers the fault tree to find nodes that have more than one parent.
+  /// Common nodes are encountered breadth-first, and they are unique.
+  ///
+  /// @param[out] common_gates Gates with more than one parent.
+  /// @param[out] common_basic_events Common basic events.
+  ///
+  /// @note Constant nodes are not expected to be operated.
+  void GatherCommonNodes(
+      std::vector<boost::weak_ptr<IGate> >* common_gates,
+      std::vector<boost::weak_ptr<IBasicEvent> >* common_basic_events);
+
+  /// Tries to simplify the fault tree by removing redundancies generated by
+  /// a common node.
+  ///
+  /// @param[in] common_node A node with more than one parent.
+  template<class N>
+  void ProcessCommonNode(const boost::weak_ptr<N>& common_node);
+
+  /// Propagates failure of the node by setting its ancestors' optimization
+  /// values to 1 if they fail according to their Boolean logic.
+  ///
+  /// @param[in] node The node that fails.
+  ///
+  /// @returns Total multiplicity of the node.
+  int PropagateFailure(Node* node);
+
+  /// Collects failure destinations and marks non-redundant nodes.
+  /// The optimization value for non-redundant nodes are set to 2.
+  /// The optimization value for non-removal parent nodes are set to 3.
+  ///
+  /// @param[in] gate The non-failed gate which sub-tree is to be traversed.
+  /// @param[in] index The index of the failed node.
+  /// @param[in,out] destinations Destinations of the failure.
+  ///
+  /// @returns The number of encounters with the destinations.
+  int CollectFailureDestinations(
+      const IGatePtr& gate,
+      int index,
+      std::map<int, boost::weak_ptr<IGate> >* destinations);
+
+  /// Detects if parents of a node are redundant. If there are redundant
+  /// parents, depending on the logic of the parent, the node is removed from
+  /// the parent unless it is also in the destination set. In the latter case,
+  /// the parent is removed from the destinations.
+  ///
+  /// param[in] node The common node.
+  /// param[in,out] destinations A set of destination gates.
+  ///
+  /// @returns true if some of the redundant parents turned into a constant.
+  ///
+  /// @warning This cleanup function may generate NULL type gates.
+  bool ProcessRedundantParents(
+      const NodePtr& node,
+      std::map<int, boost::weak_ptr<IGate> >* destinations);
+
+  /// Transforms failure destination according to the logic and the common node.
+  ///
+  /// @param[in] node The common node.
+  /// @param[in] destinations Destination gates for failure.
+  template<class N>
+  void ProcessFailureDestinations(
+      const boost::shared_ptr<N>& node,
+      const std::map<int, boost::weak_ptr<IGate> >& destinations);
+
+  /// This is a hacky way to create a weak pointer out of a raw one for parents.
+  /// This only works for coherent trees.
+  ///
+  /// @todo Track parents with weak pointers by default.
+  boost::weak_ptr<IGate> RawToWeakPointer(const IGate* parent);
+
+  /// Sets the visit marks to False for all indexed gates that have been
+  /// visited top-down. Any member function updating and using the visit
+  /// marks of gates must ensure to clean visit marks before running
+  /// algorithms. However, cleaning after finishing algorithms is not mandatory.
+  void ClearGateMarks();
+
+  /// Sets the visit marks of descendant gates to False starting from the given
+  /// gate as a root.
+  ///
+  /// @param[in,out] gate The root gate to be traversed and marks.
+  void ClearGateMarks(const IGatePtr& gate);
+
+  /// Clears visit time information from all indexed nodes that have been
   /// visited top-down. Any member function updating and using the visit
   /// information of gates must ensure to clean visit times before running
   /// algorithms. However, cleaning after finishing algorithms is not mandatory.
-  void ClearGateVisits();
+  void ClearNodeVisits();
 
-  /// Clears visit information from descendant gates starting from the given
+  /// Clears visit information from descendant nodes starting from the given
   /// gate as a root.
   ///
   /// @param[in,out] gate The root gate to be traversed and cleaned.
-  void ClearGateVisits(const IGatePtr& gate);
+  void ClearNodeVisits(const IGatePtr& gate);
+
+  /// Clears optimization values of nodes. The optimization values are set to 0.
+  /// Resets the number of failed children of gates.
+  ///
+  /// @param[in,out] gate The root gate to be traversed and cleaned.
+  void ClearOptiValues(const IGatePtr& gate);
 
   IndexedFaultTree* fault_tree_;  ///< The fault tree to preprocess.
   int top_event_sign_;  ///< The negative or positive sign of the top event.

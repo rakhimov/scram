@@ -179,7 +179,7 @@ class Component : public Element, public Role {
 /// @class FaultTree
 /// Fault tree representation as a container of gates, basic and house events,
 /// and other information. Additional functionality of a fault tree includes
-/// detection of top events upon validation.
+/// detection of top events.
 class FaultTree : public Component {
  public:
   typedef boost::shared_ptr<Gate> GatePtr;

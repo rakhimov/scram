@@ -59,12 +59,13 @@ Documentation
     doc/description
     doc/input_file
     doc/config_file
-    doc/fta_implementation
-    doc/fta_mcs_algorithm
+    doc/fault_tree_analysis
+    doc/fta_preprocessing
+    doc/fta_mcs_algorithms
     doc/probability_analysis
     doc/uncertainty_analysis
     doc/common_cause_analysis
-    doc/fta_graphing
+    doc/fault_tree_graphing
     doc/gui
     doc/design_description
     doc/coding_standards

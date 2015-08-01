@@ -60,7 +60,15 @@ class Node {
   inline static void ResetIndex() { next_index_ = 1e6; }
 
   /// @returns Parents of this gate.
-  inline const std::set<IGate*>& parents() { return parents_; }
+  inline const std::set<IGate*>& parents() const { return parents_; }
+
+  /// @returns Optimization value for failure propagation.
+  inline int opti_value() const { return opti_value_; }
+
+  /// Sets the optimization value for failure propagation.
+  ///
+  /// @param[in] val Value that makes sense to the caller.
+  inline void opti_value(int val) { opti_value_ = val; }
 
   /// Registers the visit time for this node upon tree traversal.
   /// This information can be used to detect dependencies.
@@ -94,6 +102,16 @@ class Node {
   /// @returns 0 if no last time is registered.
   inline int LastVisit() const { return visits_[2] ? visits_[2] : visits_[1]; }
 
+  /// @returns The minimum time of the visit.
+  /// @returns 0 if no time is registered.
+  inline virtual int min_time() const { return visits_[0]; }
+
+  /// @returns The maximum time of the visit.
+  /// @returns 0 if no time is registered.
+  inline virtual int max_time() const {
+    return visits_[2] ? visits_[2] : visits_[1] ? visits_[1] : visits_[0];
+  }
+
   /// @returns false if this node was only visited once upon tree traversal.
   /// @returns true if this node was revisited at one more time.
   inline bool Revisited() const { return visits_[2] ? true : false; }
@@ -114,6 +132,7 @@ class Node {
   /// This is a traversal array containing first, second, and last visits.
   int visits_[3];
   std::set<IGate*> parents_;  ///< Parents of this node.
+  int opti_value_;  ///< Failure propagation optimization value.
 };
 
 /// @class Constant
@@ -199,7 +218,10 @@ class IGate : public Node {
   explicit IGate(const GateType& type);
 
   /// Destructs parent information from children.
-  ~IGate() { IGate::EraseAllChildren(); }
+  ~IGate() {
+    assert(this->parents().empty());
+    IGate::EraseAllChildren();
+  }
 
   /// @returns Type of this gate.
   inline const GateType& type() const { return type_; }
@@ -222,6 +244,9 @@ class IGate : public Node {
   /// @param[in] number The vote number of ATLEAST gate.
   inline void vote_number(int number) { vote_number_ = number; }
 
+  /// @returns The state of this gate.
+  inline const State& state() const { return state_; }
+
   /// @returns Children of this gate.
   inline const std::set<int>& children() const { return children_; }
 
@@ -242,8 +267,35 @@ class IGate : public Node {
     return constant_children_;
   }
 
-  /// @returns The state of this gate.
-  inline const State& state() const { return state_; }
+  /// @returns The mark of this gate.
+  inline bool mark() const { return mark_; }
+
+  /// Sets the mark of this gate.
+  ///
+  /// @param[in] flag Marking with the meaning for the marker.
+  inline void mark(bool flag) { mark_ = flag; }
+
+  /// @returns The minimum time of visits of the gate's sub-tree.
+  /// @returns 0 if no time assignement was performed.
+  inline int min_time() const { return min_time_; }
+
+  /// Sets the queried minimum visit time of the sub-tree.
+  /// @param[in] time The positive min time of this gate's sub-tree.
+  inline void min_time(int time) {
+    assert(time > 0);
+    min_time_ = time;
+  }
+
+  /// @returns The maximum time of the visits of the gate's sub-tree.
+  /// @returns 0 if no time assignement was performed.
+  inline int max_time() const { return max_time_; }
+
+  /// Sets the queried maximum visit time of the sub-tree.
+  /// @param[in] time The positive max time of this gate's sub-tree.
+  inline void max_time(int time) {
+    assert(time > 0);
+    max_time_ = time;
+  }
 
   /// @returns true if this gate is set to be a module.
   /// @returns false if it is not yet set to be a module.
@@ -402,9 +454,31 @@ class IGate : public Node {
     module_ = true;
   }
 
+  /// Registers a failure of a child. Depending on the logic of the gate,
+  /// sets the failure of this gate.
+  ///
+  /// @note The actual failure or existence of the child is not checked.
+  void ChildFailed();
+
+  /// Resests this gates failure value and information about the number of
+  /// failed children.
+  void ResetChildrenFailure();
+
  private:
   IGate(const IGate&);  ///< Restrict copy construction.
   IGate& operator=(const IGate&);  ///< Restrict copy assignment.
+
+  /// Process an addition of a child that already exists in this gate.
+  ///
+  /// @param[in] index Positive or negative index of the existing child.
+  ///
+  /// @returns false if the final set is null or unity.
+  /// @returns true if the addition is successful with a normal final state.
+  ///
+  /// @warning The addition of a duplicate child has a complex set of possible
+  ///          outcommes dependending on the context. The complex corner cases
+  ///          must be handled by the caller.
+  bool ProcessDuplicateChild(int index);
 
   /// Process an addition of a complement of an existing child.
   ///
@@ -417,6 +491,9 @@ class IGate : public Node {
   GateType type_;  ///< Type of this gate.
   State state_;  ///< Indication if this gate's state is normal, null, or unity.
   int vote_number_;  ///< Vote number for ATLEAST gate.
+  bool mark_;  ///< Marking for linear traversal of a graph.
+  int min_time_;  ///< Minumum time of visits of the sub-tree of the gate.
+  int max_time_;  ///< Maximum time of visits of the sub-tree of the gate.
   bool module_;  ///< Indication of an independent module gate.
   std::set<int> children_;  ///< Children of the gate.
   /// Children that are gates.
@@ -425,6 +502,8 @@ class IGate : public Node {
   boost::unordered_map<int, IBasicEventPtr> basic_event_children_;
   /// Children that are constant like house events.
   boost::unordered_map<int, ConstantPtr> constant_children_;
+  /// The number of children failed upon failure propagation.
+  int num_failed_children_;
 };
 
 class BasicEvent;
@@ -434,6 +513,13 @@ class Formula;
 /// @class IndexedFaultTree
 /// This class provides simpler representation of a fault tree
 /// that takes into account the indices of events instead of ids and pointers.
+///
+/// @warning Never hold a shared pointer to any other indexed gate except for
+///          the top gate of an indexed fault tree. Extra reference count will
+///          prevent automatic deletion of the node and management of the
+///          structure of the fault tree. Moreover, the fault tree may become
+///          a multiple-top-event fault tree, which is not the assumption of
+///          all the other preprocessing and analysis algorithms.
 class IndexedFaultTree {
  public:
   typedef boost::shared_ptr<Gate> GatePtr;
@@ -445,6 +531,9 @@ class IndexedFaultTree {
   /// @param[in] root The top gate of the fault tree.
   /// @param[in] ccf Incorporation of ccf gates and events for ccf groups.
   explicit IndexedFaultTree(const GatePtr& root, bool ccf = false);
+
+  /// @returns true if the fault tree is coherent.
+  inline bool coherent() const { return coherent_; }
 
   /// @returns The current top gate of the fault tree.
   inline const IGatePtr& top_event() const { return top_event_; }
@@ -495,6 +584,7 @@ class IndexedFaultTree {
 
   IGatePtr top_event_;  ///< The top gate of this tree.
   std::vector<BasicEventPtr> basic_events_;  ///< Mapping for basic events.
+  bool coherent_;  ///< Indication that the tree does not contain negation.
 };
 
 }  // namespace scram

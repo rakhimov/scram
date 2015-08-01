@@ -63,17 +63,17 @@ class Expression {
   virtual double Sample() = 0;
 
   /// This routine resets the sampling to get a new values.
-  virtual inline void Reset() { sampled_ = false; }
+  inline virtual void Reset() { sampled_ = false; }
 
   /// @returns true if the expression's value does not need sampling.
   /// @returns false if the expression's value has uncertainties.
-  virtual inline bool IsConstant() { return false; }
+  inline virtual bool IsConstant() { return false; }
 
   /// @returns Maximum value of this expression.
-  virtual inline double Max() { return Mean(); }
+  inline virtual double Max() { return Mean(); }
 
   /// @returns Minimum value of this expression.
-  virtual inline double Min() { return Mean(); }
+  inline virtual double Min() { return Mean(); }
 
   /// @returns Parameters as nodes.
   inline const std::vector<Parameter*>& nodes() {
