@@ -102,7 +102,7 @@ sets is empty.
 Proposed Improvements for this algorithm
 ----------------------------------------
 
-- Use of Binary Decision Diagrams for faster MCS detection.
+- Use of Binary Decision Trees or Diagrams for faster MCS detection.
 
 
 Other MCS Generation Algorithms
