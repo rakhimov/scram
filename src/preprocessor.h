@@ -349,6 +349,16 @@ class Preprocessor {
       const boost::shared_ptr<N>& node,
       const std::map<int, boost::weak_ptr<IGate> >& destinations);
 
+  /// Detects and replaces multiple definitions of gates. Gates with the same
+  /// logic and inputs but different indices are considered redundant.
+  ///
+  /// @param[in] gate The gate to traverse the sub-tree.
+  /// @param[in,out] gates Ordered gates by their type.
+  ///
+  /// @returns true if multiple definitions are found and replaced.
+  bool DetectMultipleDefinitions(const IGatePtr& gate,
+                                 std::vector<std::vector<IGatePtr> >* gates);
+
   /// This is a hacky way to create a weak pointer out of a raw one for parents.
   /// This only works for coherent trees.
   ///

@@ -92,13 +92,34 @@ void Preprocessor::ProcessIndexedFaultTree() {
   Preprocessor::ClearGateMarks();
   Preprocessor::RemoveConstGates(top);
 
+  bool tree_changed = true;
+  while (tree_changed) {
+    tree_changed = false;  // Break the loop if actions don't change the tree.
+    bool ret = false;  // The result of actions of functions.
+    Preprocessor::ClearGateMarks();
+    // This vector is hardcoded for optimization. If the number of gate types
+    // change in future. This will fail and may cause bugs!
+    std::vector<std::vector<IGatePtr> > orig_gates(8, std::vector<IGatePtr>());
+    ret = Preprocessor::DetectMultipleDefinitions(top, &orig_gates);
+    orig_gates.clear();
+    if (!tree_changed && ret) tree_changed = true;
+
+    Preprocessor::ClearGateMarks();
+    ret = Preprocessor::RemoveNullGates(top);
+    if (!tree_changed && ret) tree_changed = true;
+
+    Preprocessor::ClearGateMarks();
+    ret = Preprocessor::RemoveConstGates(top);
+    if (!tree_changed && ret) tree_changed = true;
+  }
+
   if (fault_tree_->coherent()) {
     Preprocessor::ClearGateMarks();
     Preprocessor::RemoveNullGates(top);
     Preprocessor::BooleanOptimization();
   }
 
-  bool tree_changed = true;
+  tree_changed = true;
   while (tree_changed) {
     tree_changed = false;  // Break the loop if actions don't change the tree.
     bool ret = false;  // The result of actions of functions.
@@ -1018,6 +1039,56 @@ void Preprocessor::ProcessFailureDestinations(
         break;
     }
   }
+}
+
+bool Preprocessor::DetectMultipleDefinitions(
+    const IGatePtr& gate,
+    std::vector<std::vector<IGatePtr> >* gates) {
+  if (gate->mark()) return false;
+  gate->mark(true);
+  GateType type = gate->type();
+  std::vector<IGatePtr>& type_group = (*gates)[type];
+  std::vector<IGatePtr>::iterator it;
+  for (it = type_group.begin(); it != type_group.end(); ++it) {
+    IGatePtr orig_gate = *it;
+    assert(orig_gate->mark());
+    if (orig_gate->children() == gate->children()) {
+      // This might be multiple definition. Extra check for K/N gates.
+      if (type == kAtleastGate &&
+          orig_gate->vote_number() != gate->vote_number()) continue;
+      // Swap this gate with the original gate because it is redefined.
+      // @todo Switch to weak pointers because of a possible segfault.
+      int index = gate->index();
+      std::set<IGate*> parents = gate->parents();
+      std::set<IGate*>::iterator it_parent;
+      for (it_parent = parents.begin(); it_parent != parents.end();
+           ++it_parent) {
+        IGate* parent = *it_parent;
+        int sign = 1;  // Guessing the sign.
+        if (!parent->children().count(index)) {
+          assert(parent->children().count(-index));
+          sign = -1;
+        }
+        parent->EraseChild(sign * index);
+        parent->AddChild(sign * orig_gate->index(), orig_gate);
+        return true;
+      }
+    }
+  }
+  // No redefinition is found for this gate. In order to avoid a comparison
+  // with descendants, this gate is not yet put into original gates container.
+  // Copy the gate children because they may get replaced.
+  boost::unordered_map<int, IGatePtr> child_gates = gate->gate_children();
+  bool changed = false;
+  boost::unordered_map<int, IGatePtr>::iterator it_ch;
+  for (it_ch = child_gates.begin(); it_ch != child_gates.end(); ++it_ch) {
+    IGatePtr child_gate = it_ch->second;
+    if (child_gate->parents().empty()) continue;  // Replaced by another gate.
+    bool ret = Preprocessor::DetectMultipleDefinitions(child_gate, gates);
+    if (!changed && ret) changed = true;
+  }
+  type_group.push_back(gate);
+  return changed;
 }
 
 boost::weak_ptr<IGate> Preprocessor::RawToWeakPointer(const IGate* parent) {

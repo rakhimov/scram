@@ -179,7 +179,7 @@ class IBasicEvent : public Node {
 /// @enum GateType
 /// Types of gates for representation, preprocessing, and analysis purposes.
 enum GateType {
-  kAndGate,  ///< Simple AND gate.
+  kAndGate = 0,  ///< Simple AND gate.
   kOrGate,  ///< Simple OR gate.
   kAtleastGate,  ///< Combination or Vote gate representation.
   kXorGate,  ///< Exclusive OR gate with two inputs.

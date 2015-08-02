@@ -69,8 +69,8 @@ Release build:
 ---------- CEA9601 -l 10 (mcs = 5120) ----------------
 Debug build:
 ---------------
-- Cut Set Generation      3.4s  |
-- Cut Set Minimization    0.5s  |
+- Cut Set Generation      3.2s  |
+- Cut Set Minimization    0.3s  |
 
 
 ---------- CEA9601 -l 14 (mcs = 5120) ----------------

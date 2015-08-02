@@ -95,9 +95,9 @@ TEST_F(PerformanceTest, DISABLED_Baobab1_L7) {
 }
 
 TEST_F(PerformanceTest, DISABLED_CEA9601_L10) {
-  double mcs_time = 4.0;
+  double mcs_time = 3.2;
 #ifdef NDEBUG
-  mcs_time = 0.53;
+  mcs_time = 0.45;
 #endif
   std::vector<std::string> input_files;
   input_files.push_back("./share/scram/input/CEA9601/CEA9601.xml");
