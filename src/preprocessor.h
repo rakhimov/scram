@@ -677,6 +677,26 @@ class Preprocessor {
       boost::unordered_map<IGatePtr, std::vector<IGateWeakPtr> >* multi_def,
       std::vector<std::vector<IGatePtr> >* gates);
 
+  /// Detects and manipulates AND and OR gate distributivity.
+  /// For example,
+  /// (a + b) * (a + c) = a + b * c.
+  ///
+  /// @param[in] gate The gate which arguments must be tested.
+  ///
+  /// @returns true if transformations are performed.
+  ///
+  /// @warning Gate marks must be clear.
+  bool DetectDistributivity(const IGatePtr& gate);
+
+  /// Manipulates gates with distributive arguments.
+  ///
+  /// @param[in,out] gate The gate which arguments must be manipulated.
+  /// @param[in,out] candidates Candidates for distributivity check.
+  ///
+  /// @returns true if transformations are performed.
+  bool HandleDistributiveArgs(const IGatePtr& gate,
+                              const std::vector<IGatePtr>& candidates);
+
   /// Replaces one gate in the graph with another.
   ///
   /// @param[in,out] gate An existing gate to be replaced.

@@ -141,6 +141,13 @@ void Preprocessor::PhaseTwo() {
 
   if (Preprocessor::CheckRootGate()) return;
 
+  LOG(DEBUG3) << "Processing Distributivity...";
+  Preprocessor::ClearGateMarks();
+  Preprocessor::DetectDistributivity(graph_->root());
+  Preprocessor::ClearConstGates();
+  Preprocessor::ClearNullGates();
+  LOG(DEBUG3) << "Distributivity detection is done!";
+
   LOG(DEBUG3) << "Coalescing gates...";
   graph_changed = true;
   while (graph_changed) {
@@ -1458,6 +1465,133 @@ void Preprocessor::DetectMultipleDefinitions(
     Preprocessor::DetectMultipleDefinitions(it_ch->second, multi_def, gates);
   }
   type_group.push_back(gate);
+}
+
+bool Preprocessor::DetectDistributivity(const IGatePtr& gate) {
+  if (gate->mark()) return false;
+  gate->mark(true);
+  assert(gate->state() == kNormalState);
+  bool changed = false;
+  bool possible = true;  // Whether or not distributivity possible.
+  Operator distr_type;
+  switch (gate->type()) {
+    case kAndGate:
+    case kNandGate:
+      distr_type = kOrGate;
+      break;
+    case kOrGate:
+    case kNorGate:
+      distr_type = kAndGate;
+      break;
+    default:
+      possible = false;
+  }
+  std::vector<IGatePtr> candidates;
+  // Collect child gates of distributivity type.
+  boost::unordered_map<int, IGatePtr>::const_iterator it_ch;
+  for (it_ch = gate->gate_args().begin(); it_ch != gate->gate_args().end();
+       ++it_ch) {
+    IGatePtr child_gate = it_ch->second;
+    bool ret = Preprocessor::DetectDistributivity(child_gate);
+    if (ret) changed = true;
+    if (!possible) continue;  // Distributivity is not possible.
+    if (it_ch->first < 0) continue;  // Does not work on negation.
+    if (child_gate->state() != kNormalState) continue;
+    if (child_gate->type() == distr_type) candidates.push_back(child_gate);
+  }
+  if (Preprocessor::HandleDistributiveArgs(gate, candidates)) changed = true;
+  return changed;
+}
+
+bool Preprocessor::HandleDistributiveArgs(
+    const IGatePtr& gate,
+    const std::vector<IGatePtr>& candidates) {
+  if (candidates.size() < 2) return false;
+  // Detecting a combination
+  // that gives the most optimization is combinatorial.
+  // This algorithm is the simplest intersection of all candidates.
+  std::set<int> intersection = candidates.front()->args();
+  Operator distr_type = candidates.front()->type();
+  std::vector<IGatePtr>::const_iterator it_can;
+  for (it_can = candidates.begin(); it_can != candidates.end(); ++it_can) {
+    IGatePtr candidate = *it_can;
+    assert(candidate->type() == distr_type);
+
+    std::vector<int> new_intersection(intersection.size(), 0);
+    std::set_intersection(candidate->args().begin(),
+                          candidate->args().end(),
+                          intersection.begin(),
+                          intersection.end(),
+                          new_intersection.begin());
+    intersection = std::set<int>(new_intersection.begin(),
+                                 new_intersection.end());
+    // Clean zeros.
+    intersection.erase(0);
+  }
+  if (intersection.empty()) return false;
+
+  IGatePtr new_parent;
+  if (candidates.size() == gate->args().size()) {
+    gate->type(distr_type);
+    new_parent = gate;  // Re-use the gate.
+  } else {
+    new_parent = IGatePtr(new IGate(distr_type));
+    gate->AddArg(new_parent->index(), new_parent);
+  }
+
+  IGatePtr new_child(new IGate(kAndGate));  // default for OR gate parent.
+  if (distr_type == kAndGate) new_child->type(kOrGate);
+
+  new_parent->AddArg(new_child->index(), new_child);
+
+  // Getting the common part of the distributive equation.
+  std::set<int>::iterator it_inter;
+  for (it_inter = intersection.begin(); it_inter != intersection.end();
+       ++it_inter) {
+    int index = *it_inter;  // May be negative.
+    IGatePtr candidate = candidates.back();
+    assert(candidate->args().size() > 1);
+    assert(candidate->constant_args().empty());
+    if (candidate->gate_args().count(index)) {
+      IGatePtr common = candidate->gate_args().find(index)->second;
+      new_parent->AddArg(index, common);
+    } else {
+      VariablePtr common = candidate->variable_args().find(index)->second;
+      new_parent->AddArg(index, common);
+    }
+  }
+
+  // Removing the common part from the sub-equations.
+  for (it_can = candidates.begin(); it_can != candidates.end(); ++it_can) {
+    IGatePtr candidate = *it_can;
+    gate->EraseArg(candidate->index());
+
+    // Must be careful here not to change multi-parent candidates.
+    if (!candidate->parents().empty()) {
+      IGatePtr replacement(new IGate(candidate->type()));
+      replacement->CopyArgs(candidate);
+      candidate = replacement;
+    }
+
+    new_child->AddArg(candidate->index(), candidate);
+    for (it_inter = intersection.begin(); it_inter != intersection.end();
+         ++it_inter) {
+      candidate->EraseArg(*it_inter);
+    }
+    if (candidate->args().size() == 1) {
+      candidate->type(kNullGate);
+      null_gates_.push_back(candidate);
+    } else if (candidate->args().empty()) {
+      if (candidate->type() == kAndGate) {
+        candidate->MakeUnity();
+      } else {
+        assert(candidate->type() == kOrGate);
+        candidate->Nullify();
+      }
+      const_gates_.push_back(candidate);
+    }
+  }
+  return true;
 }
 
 void Preprocessor::ReplaceGate(const IGatePtr& gate,
