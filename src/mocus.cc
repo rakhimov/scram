@@ -252,7 +252,7 @@ void Mocus::FindMcs() {
   /// @todo Detect unity in modules.
   assert(top->state() != kUnityState);
   LOG(DEBUG2) << "The number of MCS found: " << imcs_.size();
-  LOG(DEBUG2) << "Minimal cut set finding time: " << DUR(mcs_time);
+  LOG(DEBUG2) << "Minimal cut sets found in " << DUR(mcs_time);
 }
 
 void Mocus::CreateSimpleTree(const IGatePtr& gate,
@@ -263,6 +263,7 @@ void Mocus::CreateSimpleTree(const IGatePtr& gate,
   processed_gates->insert(std::make_pair(gate->index(), simple_gate));
 
   assert(gate->constant_children().empty());
+  assert(gate->children().size() > 1);
   boost::unordered_map<int, IGatePtr>::const_iterator it;
   for (it = gate->gate_children().begin(); it != gate->gate_children().end();
        ++it) {

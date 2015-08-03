@@ -200,8 +200,8 @@ class FaultTreeAnalysis {
   /// Container for basic events in minimal cut sets.
   boost::unordered_map<std::string, BasicEventPtr> mcs_basic_events_;
 
-  int max_order_;  ///< Maximum order of minimal cut sets.
   std::string warnings_;  ///< Generated warnings in analysis.
+  int max_order_;  ///< Maximum order of minimal cut sets.
   double analysis_time_;  ///< Time taken by the core analysis.
 };
 

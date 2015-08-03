@@ -286,7 +286,7 @@ const std::map<std::string, GateType> IndexedFaultTree::kStringToType_ =
                               ("not", kNotGate) ("nand", kNandGate)
                               ("nor", kNorGate) ("null", kNullGate);
 
-IndexedFaultTree::IndexedFaultTree(const GatePtr& root, bool ccf) 
+IndexedFaultTree::IndexedFaultTree(const GatePtr& root, bool ccf)
     : coherent_(true) {
   Node::ResetIndex();
   IBasicEvent::ResetIndex();
@@ -316,27 +316,26 @@ boost::shared_ptr<IGate> IndexedFaultTree::ProcessFormula(
   for (it_b = formula->basic_event_args().begin();
        it_b != formula->basic_event_args().end(); ++it_b) {
     BasicEventPtr basic_event = *it_b;
-    if (id_to_index->count(basic_event->id())) {
+    if (id_to_index->count(basic_event->id())) {  // Node already exists.
       NodePtr node = id_to_index->find(basic_event->id())->second;
-      if (ccf && basic_event->HasCcf()) {
+      if (ccf && basic_event->HasCcf()) {  // Replace with a CCF gate.
         parent->AddChild(node->index(),
                          boost::static_pointer_cast<IGate>(node));
       } else {
         parent->AddChild(node->index(),
                          boost::static_pointer_cast<IBasicEvent>(node));
       }
-    } else {
-      if (ccf && basic_event->HasCcf()) {
+    } else {  // Create a new node.
+      if (ccf && basic_event->HasCcf()) {  // Create a CCF gate.
         GatePtr ccf_gate = basic_event->ccf_gate();
-        IGatePtr new_gate = IndexedFaultTree::ProcessFormula(
-            ccf_gate->formula(),
-            ccf,
-            id_to_index);
+        IGatePtr new_gate =
+            IndexedFaultTree::ProcessFormula(ccf_gate->formula(), ccf,
+                                             id_to_index);
         parent->AddChild(new_gate->index(), new_gate);
         id_to_index->insert(std::make_pair(basic_event->id(), new_gate));
       } else {
         basic_events_.push_back(basic_event);
-        IBasicEventPtr new_basic(new IBasicEvent());
+        IBasicEventPtr new_basic(new IBasicEvent());  // Sequential indexation.
         assert(basic_events_.size() == new_basic->index());
         parent->AddChild(new_basic->index(), new_basic);
         id_to_index->insert(std::make_pair(basic_event->id(), new_basic));
@@ -361,8 +360,8 @@ boost::shared_ptr<IGate> IndexedFaultTree::ProcessFormula(
   }
 
   std::vector<GatePtr>::const_iterator it_g;
-  for (it_g = formula->gate_args().begin();
-       it_g != formula->gate_args().end(); ++it_g) {
+  for (it_g = formula->gate_args().begin(); it_g != formula->gate_args().end();
+       ++it_g) {
     GatePtr gate = *it_g;
     if (id_to_index->count(gate->id())) {
       NodePtr node = id_to_index->find(gate->id())->second;
