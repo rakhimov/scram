@@ -25,6 +25,4 @@ const char* const Logger::kLevelToString_[] = {"ERROR", "WARNING", "INFO",
                                                "DEBUG4", "DEBUG5"};
 LogLevel Logger::report_level_ = ERROR;
 
-LogLevel& Logger::ReportLevel() { return report_level_; }
-
 }  // namespace scram
