@@ -1,7 +1,8 @@
 Speed recordings of SCRAM for optimization and regression-detection purposes.
 Only cases that help detect bottlenecks are recorded in this file.
-If the performance becomes good enough to make the running times negligible,
-the case is removed. The running times are taken from the logs and reports.
+If the performance becomes good enough to make the running times negligible
+(less than 0.5s), the case is removed. The running times are taken from the
+logs and reports.
 
 System specs:     Core i5-2410M, Ubuntu 14.04 64bit
 GCC version:      4.8.4
@@ -25,20 +26,6 @@ Release build:
 
 
 ==================== MCS Analysis =========================
-
------------ Chinese Tree (mcs = 392) ----------------------
-Debug build:
----------------
-- Cut Set Generation      0.25s  |
-- Cut Set Minimization    0.25s  |
-
-
----------- fta-200 -l 20 (mcs = 15347) ---------------
-Debug build:
----------------
-- Cut Set Generation      0.20s  |
-- Cut Set Minimization    0.20s  |
-
 
 ---------- Baobab1 -l 6 (mcs = 2684) ----------------
 Debug build:
@@ -80,6 +67,25 @@ Release build:
 - Cut Set Minimization    0.05s  |
 
 
+---------- Baobab2 -l 5 (mcs = 1025) ----------------
+Debug build:
+---------------
+- Cut Set Generation      20s    |
+- Cut Set Minimization    0.40s  |
+
+Release build:
+---------------
+- Cut Set Generation      3.2s   |
+- Cut Set Minimization    0.05s  |
+
+
+---------- Baobab2 -l 6 (mcs = 4805) ----------------
+Release build:
+---------------
+- Cut Set Generation      19s    |
+- Cut Set Minimization    0.25s  |
+
+
 ==================== Uncertainty Analysis =================
 
 ----------- Chinese Tree -l 5 -s 3 --uncertainty true -------
@@ -90,7 +96,7 @@ Release build:
 
 ==================== Fault Tree Generation ================
 
----| -b 100000 -c 3 --common-g 0.1 --common-p 0.1 |---
+---| -b 100000 -c 3 --common-g 0.1 --common-b 0.1 |---
 Python script:
 --------------
 - Generation Time  8.7s  |  20s
@@ -98,7 +104,7 @@ Python script:
 
 ==================== Fault Tree Validation ================
 
----| -b 300000 -c 3 --common-g 0.1 --common-p 0.1 |---
+---| -b 300000 -c 3 --common-g 0.1 --common-b 0.1 |---
 Debug build:
 ---------------
 - Parsing and Validation    37s  |  41s
