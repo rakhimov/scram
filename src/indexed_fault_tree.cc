@@ -288,7 +288,9 @@ const std::map<std::string, GateType> IndexedFaultTree::kStringToType_ =
                               ("nor", kNorGate) ("null", kNullGate);
 
 IndexedFaultTree::IndexedFaultTree(const GatePtr& root, bool ccf)
-    : coherent_(true) {
+    : coherent_(true),
+      constants_(false),
+      normal_(true) {
   Node::ResetIndex();
   IBasicEvent::ResetIndex();
   boost::unordered_map<std::string, NodePtr> id_to_index;
@@ -302,6 +304,9 @@ boost::shared_ptr<IGate> IndexedFaultTree::ProcessFormula(
     boost::unordered_map<std::string, NodePtr>* id_to_index) {
   GateType type = kStringToType_.find(formula->type())->second;
   IGatePtr parent(new IGate(type));
+
+  if (normal_ && type != kOrGate && type != kAndGate) normal_ = false;
+
   switch (type) {
     case kNotGate:
     case kNandGate:
@@ -348,6 +353,8 @@ boost::shared_ptr<IGate> IndexedFaultTree::ProcessFormula(
   std::vector<HouseEventPtr>::const_iterator it_h;
   for (it_h = formula->house_event_args().begin();
        it_h != formula->house_event_args().end(); ++it_h) {
+    constants_ = true;
+
     HouseEventPtr house = *it_h;
     if (id_to_index->count(house->id())) {
       NodePtr node = id_to_index->find(house->id())->second;

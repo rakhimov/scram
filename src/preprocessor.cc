@@ -57,23 +57,30 @@ namespace scram {
 
 Preprocessor::Preprocessor(IndexedFaultTree* fault_tree)
     : fault_tree_(fault_tree),
-      top_event_sign_(1) {}
+      top_event_sign_(1),
+      constants_(fault_tree->constants()) {}
 
 void Preprocessor::ProcessIndexedFaultTree() {
   IGatePtr top = fault_tree_->top_event();
   assert(top);
   assert(top->parents().empty());
   assert(!top->mark());
-  LOG(DEBUG2) << "Propagating constants in a fault tree.";
-  Preprocessor::PropagateConstants(top);
-  LOG(DEBUG2) << "Constant propagation is done.";
 
-  CLOCK(prep_time);
+  CLOCK(prep_time);  // Overall preprocessing time.
   LOG(DEBUG2) << "Preprocessing the fault tree.";
-  LOG(DEBUG2) << "Normalizing gates.";
-  assert(top_event_sign_ == 1);
-  Preprocessor::NormalizeGates();
-  LOG(DEBUG2) << "Finished normalizing gates.";
+
+  if (constants_) {
+    LOG(DEBUG2) << "Propagating constants in the fault tree.";
+    Preprocessor::PropagateConstants(top);
+    LOG(DEBUG2) << "Constant propagation is done.";
+  }
+
+  if (!fault_tree_->normal()) {
+    LOG(DEBUG2) << "Normalizing gates.";
+    assert(top_event_sign_ == 1);
+    Preprocessor::NormalizeGates();
+    LOG(DEBUG2) << "Finished normalizing gates.";
+  }
 
   Preprocessor::ClearGateMarks();
   Preprocessor::RemoveNullGates(top);
@@ -114,10 +121,13 @@ void Preprocessor::ProcessIndexedFaultTree() {
     top_event_sign_ = 1;
   }
 
-  std::map<int, IGatePtr> complements; // Must be cleaned!
-  Preprocessor::ClearGateMarks();
-  Preprocessor::PropagateComplements(top, &complements);
-  complements.clear();  // Cleaning to get rid of extra reference counts.
+  if (!fault_tree_->coherent()) {
+    LOG(DEBUG2) << "Propagating complements in the fault tree.";
+    std::map<int, IGatePtr> complements;
+    Preprocessor::ClearGateMarks();
+    Preprocessor::PropagateComplements(top, &complements);
+    LOG(DEBUG2) << "Complement propagation is done.";
+  }
 
   Preprocessor::ClearGateMarks();
   Preprocessor::PropagateConstants(top);
@@ -185,7 +195,7 @@ void Preprocessor::NormalizeGates() {
       top_event_sign_ *= -1;
   }
   // Process negative gates. Note that top event's negative gate is processed in
-  // the above lines.  All children are assumed to be positive at this point.
+  // the above lines. All children are assumed to be positive at this point.
   Preprocessor::ClearGateMarks();
   Preprocessor::NotifyParentsOfNegativeGates(top_gate);
 

@@ -539,7 +539,9 @@ class IndexedFaultTree {
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
   typedef boost::shared_ptr<IGate> IGatePtr;
 
-  /// Constructs an indexed fault tree starting from the top gate.
+  /// Constructs an indexed fault tree starting from the top gate. Upon
+  /// constuction, features of the fault tree are recorded to help preprocessing
+  /// and analysis functions.
   ///
   /// @param[in] root The top gate of the fault tree.
   /// @param[in] ccf Incorporation of ccf gates and events for ccf groups.
@@ -547,6 +549,12 @@ class IndexedFaultTree {
 
   /// @returns true if the fault tree is coherent.
   inline bool coherent() const { return coherent_; }
+
+  /// @returns true if the initialized fault tree has constants.
+  inline bool constants() const { return constants_; }
+
+  /// @returns true if the initialized fault tree has only OR and AND gates.
+  inline bool normal() const { return normal_; }
 
   /// @returns The current top gate of the fault tree.
   inline const IGatePtr& top_event() const { return top_event_; }
@@ -598,6 +606,8 @@ class IndexedFaultTree {
   IGatePtr top_event_;  ///< The top gate of this tree.
   std::vector<BasicEventPtr> basic_events_;  ///< Mapping for basic events.
   bool coherent_;  ///< Indication that the tree does not contain negation.
+  bool constants_;  ///< Indication that the original tree contains constants.
+  bool normal_;  ///< Indication for the tree containing only OR and AND gates.
 };
 
 }  // namespace scram

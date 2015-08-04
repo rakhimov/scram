@@ -414,6 +414,7 @@ class Preprocessor {
 
   IndexedFaultTree* fault_tree_;  ///< The fault tree to preprocess.
   int top_event_sign_;  ///< The negative or positive sign of the top event.
+  bool constants_;  ///< Indication if there are constants in the tree.
 };
 
 }  // namespace scram
