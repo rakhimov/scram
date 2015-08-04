@@ -479,7 +479,7 @@ void Preprocessor::PropagateComplements(
   // If the child gate is complement, then create a new gate that propagates
   // its sign to its children and itself becomes non-complement.
   // Keep track of complement gates for optimization of repeated complements.
-  std::vector<int> to_swap;  // Children with negation to get swaped.
+  std::vector<int> to_swap;  // Children with negation to get swapped.
   boost::unordered_map<int, IGatePtr>::const_iterator it;
   for (it = gate->gate_children().begin(); it != gate->gate_children().end();
        ++it) {
@@ -491,7 +491,7 @@ void Preprocessor::PropagateComplements(
       assert(type == kAndGate || type == kOrGate);
       GateType complement_type = type == kOrGate ? kAndGate : kOrGate;
       IGatePtr complement_gate;
-      if (child_gate->parents().size() == 1) {
+      if (child_gate->parents().size() == 1) {  // Optimization. Reuse.
         child_gate->type(complement_type);
         child_gate->InvertChildren();
         complement_gate = child_gate;
@@ -513,7 +513,7 @@ void Preprocessor::PropagateComplements(
     gate->EraseChild(*it_ch);
     IGatePtr complement = gate_complements->find(-*it_ch)->second;
     bool ret = gate->AddChild(complement->index(), complement);
-    assert(ret);
+    assert(ret);  // No duplicates.
   }
 }
 

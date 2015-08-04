@@ -181,8 +181,6 @@ class Preprocessor {
 
   /// Propagates complements of child gates down to basic events
   /// in order to remove any negative logic from the fault tree's gates.
-  /// The tree must contain only OR and AND type gates. All NULL type gates must
-  /// be removed from the tree. Other complex gates must be preprocessed.
   /// The resulting tree will contain only positive gates, OR and AND.
   ///
   /// @param[in,out] gate The starting gate to traverse the tree. This is for
@@ -190,6 +188,15 @@ class Preprocessor {
   ///                     is unknown for the function, so it must be sanitized
   ///                     for a top event to function correctly.
   /// @param[in,out] gate_complements The processed complements of gates.
+  ///
+  /// @note The tree must be normalized. It must contain only OR and AND gates.
+  ///
+  /// @warning Gate marks must be clear.
+  /// @warning If the root gate has a negative sign, it must be handled before
+  ///          calling this function. The children and type of the gate must
+  ///          be inverted according to the logic of the root gate.
+  ///
+  /// @todo Module-aware complement propagation.
   void PropagateComplements(const IGatePtr& gate,
                             std::map<int, IGatePtr>* gate_complements);
 
