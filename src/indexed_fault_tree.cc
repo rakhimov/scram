@@ -219,12 +219,46 @@ bool IGate::JoinNullGate(int index) {
 
 bool IGate::ProcessDuplicateChild(int index) {
   assert(type_ != kNotGate && type_ != kNullGate);
-  assert(type_ != kAtleastGate);  /// @todo Provide the complex logic.
   assert(children_.count(index));
   switch (type_) {
     case kXorGate:
       IGate::Nullify();
       return false;;
+    case kAtleastGate:
+      // This is a very special handling of K/N duplicates.
+      // @(k, [x, x, y_i]) = x & @(k-2, [y_i]) | @(k, [y_i])
+      assert(vote_number_ > 1);
+      assert(children_.size() > 2);
+      type_ = kOrGate;
+      std::set<int> to_share(children_);  // Copy before manipulations.
+      to_share.erase(index);
+
+      IGatePtr child_and(new IGate(kAndGate));  // May not be needed.
+      IGatePtr grand_child;  // Only if child_and is needed.
+      if (vote_number_ == 3) {  // Create an OR grandchild.
+        grand_child = IGatePtr(new IGate(kOrGate));
+
+      } else if (vote_number_ > 3) {  // Create a K/N grandchild.
+        grand_child = IGatePtr(new IGate(kAtleastGate));
+        grand_child->vote_number(vote_number_ - 2);
+      }
+      if (grand_child) {
+        this->AddChild(child_and->index(), child_and);
+        this->TransferChild(index, child_and);
+        child_and->AddChild(grand_child->index(), grand_child);
+        assert(child_and->children().size() == 2);
+      }
+
+      IGatePtr child_atleast(new IGate(kAtleastGate));
+      child_atleast->vote_number(vote_number_);
+      this->AddChild(child_atleast->index(), child_atleast);
+
+      std::set<int>::iterator it;
+      for (it = to_share.begin(); it != to_share.end(); ++it) {
+        if (grand_child) this->ShareChild(*it, grand_child);
+        this->TransferChild(*it, child_atleast);
+      }
+      assert(children_.size() == 2);
   }
   return true;  // Duplicate children are OK in most cases.
 }

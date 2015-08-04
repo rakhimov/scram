@@ -315,8 +315,10 @@ class IGate : public Node {
   inline bool IsModule() const { return module_; }
 
   /// Adds a child gate to this gate. Before adding the child, the existing
-  /// children are checked for complements. If there is a complement,
-  /// the gate changes its state and clears its children.
+  /// children are checked for complements and duplicates. If there is a
+  /// complement, the gate may change its state (clearing its children) or type.
+  /// The duplicates are handled according to the logic of the gate. The caller
+  /// must be aware of possible changes due to the logic of the gate.
   ///
   /// @param[in] child A positive or negative index of a child.
   /// @param[in] gate A pointer to the child gate.
@@ -324,13 +326,21 @@ class IGate : public Node {
   /// @returns false if there final state of the parent is normal.
   /// @returns true if the parent has become constant due to a complement child.
   ///
+  /// @warning The function does not indicate invalid state. For example, a
+  ///          second child for NOT or NULL type gates is not going to be
+  ///          reported in any way.
   /// @warning This function does not indicate error for future additions in
   ///          case the state is nulled or becomes unity.
+  /// @warning Complex logic gates like ATLEAST and XOR are handled specially
+  ///          if the child is duplicate. The caller must be very cautious
+  ///          of the side effects of the manipulations.
   bool AddChild(int child, const IGatePtr& gate);
 
   /// Adds a child basic event to this gate. Before adding the child, the
-  /// existing children are checked for complements. If there is a complement,
-  /// the gate changes its state and clears its children.
+  /// existing children are checked for complements and duplicates. If there is
+  /// a complement, the gate may change its state (clearing its children) or
+  /// type. The duplicates are handled according to the logic of the gate. The
+  /// caller must be aware of possible changes due to the logic of the gate.
   ///
   /// @param[in] child A positive or negative index of a child.
   /// @param[in] basic_event A pointer to the child basic_event.
@@ -338,13 +348,21 @@ class IGate : public Node {
   /// @returns false if there final state of the parent is normal.
   /// @returns true if the parent has become constant due to a complement child.
   ///
+  /// @warning The function does not indicate invalid state. For example, a
+  ///          second child for NOT or NULL type gates is not going to be
+  ///          reported in any way.
   /// @warning This function does not indicate error for future additions in
   ///          case the state is nulled or becomes unity.
+  /// @warning Complex logic gates like ATLEAST and XOR are handled specially
+  ///          if the child is duplicate. The caller must be very cautious
+  ///          of the side effects of the manipulations.
   bool AddChild(int child, const IBasicEventPtr& basic_event);
 
   /// Adds a constant child to this gate. Before adding the child, the existing
-  /// children are checked for complements. If there is a complement,
-  /// the gate changes its state and clears its children.
+  /// children are checked for complements and duplicates. If there is a
+  /// complement, the gate may change its state (clearing its children) or type.
+  /// The duplicates are handled according to the logic of the gate. The caller
+  /// must be aware of possible changes due to the logic of the gate.
   ///
   /// @param[in] child A positive or negative index of a child.
   /// @param[in] constant A pointer to the child that is a Constant.
@@ -352,8 +370,14 @@ class IGate : public Node {
   /// @returns false if there final state of the parent is normal.
   /// @returns true if the parent has become constant due to a complement child.
   ///
+  /// @warning The function does not indicate invalid state. For example, a
+  ///          second child for NOT or NULL type gates is not going to be
+  ///          reported in any way.
   /// @warning This function does not indicate error for future additions in
   ///          case the state is nulled or becomes unity.
+  /// @warning Complex logic gates like ATLEAST and XOR are handled specially
+  ///          if the child is duplicate. The caller must be very cautious
+  ///          of the side effects of the manipulations.
   bool AddChild(int child, const ConstantPtr& constant);
 
   /// Transfers this gates's child to another gate.
@@ -394,6 +418,9 @@ class IGate : public Node {
   ///
   /// @returns false if the final set is null or unity.
   /// @returns true if the addition is successful with a normal final state.
+  ///
+  /// @warning This function does not test if the parent and child logics are
+  ///          correct for coealescing.
   bool JoinGate(const IGatePtr& child_gate);
 
   /// Swaps a single child of a NULL type child gate. This is separate from
@@ -420,6 +447,9 @@ class IGate : public Node {
   /// must be in this gate's children container and initialized.
   ///
   /// @param[in] child The positive or negative index of the existing child.
+  ///
+  /// @warning The parent gate may become empty or one-child gate, which must
+  ///          be handled by the caller.
   inline void EraseChild(int child) {
     assert(child != 0);
     assert(children_.count(child));
