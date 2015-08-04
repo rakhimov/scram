@@ -546,7 +546,20 @@ bool Preprocessor::RemoveNullGates(const IGatePtr& gate) {
 bool Preprocessor::JoinGates(const IGatePtr& gate) {
   if (gate->mark()) return false;
   gate->mark(true);
-  GateType parent_type = gate->type();
+  bool possible = false;  // If joining is possible at all.
+  GateType target_type;  // What kind of child gate are we searching for?
+  switch (gate->type()) {
+    case kNandGate:
+    case kAndGate:
+      target_type = kAndGate;
+      possible = true;
+      break;
+    case kNorGate:
+    case kOrGate:
+      target_type = kOrGate;
+      possible = true;
+      break;
+  }
   std::vector<IGatePtr> to_join;  // Gate children of the same logic.
   bool changed = false;  // Indication if the tree is changed.
   boost::unordered_map<int, IGatePtr>::const_iterator it;
@@ -556,21 +569,13 @@ bool Preprocessor::JoinGates(const IGatePtr& gate) {
     IGatePtr child_gate = it->second;
     ret = Preprocessor::JoinGates(child_gate);
     if (!changed && ret) changed = true;
+
+    if (!possible) continue;  // Joining with the parent is impossible.
+
     if (it->first < 0) continue;  // Cannot join a negative child gate.
     if (child_gate->IsModule()) continue;  // Does not coalesce modules.
 
-    GateType child_type = child_gate->type();
-
-    switch (parent_type) {
-      case kNandGate:
-      case kAndGate:
-        if (child_type == kAndGate) to_join.push_back(child_gate);
-        break;
-      case kNorGate:
-      case kOrGate:
-        if (child_type == kOrGate) to_join.push_back(child_gate);
-        break;
-    }
+    if (child_gate->type() == target_type) to_join.push_back(child_gate);
   }
 
   if (!changed && !to_join.empty()) changed = true;
