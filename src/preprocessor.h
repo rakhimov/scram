@@ -127,6 +127,31 @@ class Preprocessor {
   /// @note This is a helper function for NormalizeGate.
   void NormalizeAtleastGate(const IGatePtr& gate);
 
+  /// Propagates constant gates buttom-up. This is a helper function for
+  /// algorithms that may produce and need to remove constant gates.
+  ///
+  /// @param[in,out] gate The gate that has become constant.
+  ///
+  /// @note This function works with NULL type gate propagation function to
+  ///       cleanup the structure of the tree.
+  ///
+  /// @warning All parents of the gate will be deleted, so the gate itself may
+  ///          get deleted unless it is the top gate.
+  void PropagateConstGate(IGate* gate);
+
+  /// Propagate NULL type gates buttom-up. This is a helper function for
+  /// algorithms that may produce and need to remove NULL type gates as soon
+  /// as it is detected.
+  ///
+  /// @param[in,out] gate The gate that is NULL type.
+  ///
+  /// @note This function works with constant state gate propagation function to
+  ///       cleanup the structure of the tree.
+  ///
+  /// @warning All parents of the gate will be deleted, so the gate itself may
+  ///          get deleted unless it is the top gate.
+  void PropagateNullGate(IGate* gate);
+
   /// Removes all constants and constant gates from a given sub-tree according
   /// to the Boolean logic of the gates. This algorithm is top-down search for
   /// all constants. It is less efficient than a targeted bottom-up propagation

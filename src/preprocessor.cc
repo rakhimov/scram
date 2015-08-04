@@ -328,6 +328,46 @@ void Preprocessor::NormalizeAtleastGate(const IGatePtr& gate) {
   Preprocessor::NormalizeAtleastGate(second_child);
 }
 
+void Preprocessor::PropagateConstGate(IGate* gate) {
+  assert(gate->state() != kNormalState);
+
+  while(!gate->parents().empty()) {
+    IGate* parent = *gate->parents().begin();
+    IGatePtr locked_parent = Preprocessor::RawToWeakPointer(parent).lock();
+
+    int sign = parent->children().count(gate->index()) ? 1 : -1;
+    bool state = gate->state() == kNullState ? false : true;
+    if (sign < 0) state = !state;
+
+    std::vector<int> to_erase;
+    Preprocessor::ProcessConstantChild(locked_parent, sign * gate->index(),
+                                       state, &to_erase);
+    Preprocessor::RemoveChildren(locked_parent, to_erase);
+
+    if (parent->state() != kNormalState) {
+      Preprocessor::PropagateConstGate(parent);
+    } else if (parent->type() == kNullGate) {
+      Preprocessor::PropagateNullGate(parent);
+    }
+  }
+}
+
+void Preprocessor::PropagateNullGate(IGate* gate) {
+  assert(gate->type() == kNullGate);
+
+  while(!gate->parents().empty()) {
+    IGate* parent = *gate->parents().begin();
+    int sign = parent->children().count(gate->index()) ? 1 : -1;
+    parent->JoinNullGate(sign * gate->index());
+
+    if (parent->state() != kNormalState) {
+      Preprocessor::PropagateConstGate(parent);
+    } else if (parent->type() == kNullGate) {
+      Preprocessor::PropagateNullGate(parent);
+    }
+  }
+}
+
 bool Preprocessor::PropagateConstants(const IGatePtr& gate) {
   if (gate->mark()) return false;
   gate->mark(true);
