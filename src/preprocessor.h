@@ -72,20 +72,25 @@ class Preprocessor {
   typedef boost::shared_ptr<IBasicEvent> IBasicEventPtr;
   typedef boost::shared_ptr<Constant> ConstantPtr;
 
-  /// Starts normalizing gates to simplify gates to OR, AND gates.
-  /// This function uses parent information of each gate, so the tree must
-  /// be initialized before a call of this function.
-  /// New gates are created upon normalizing complex gates, such as XOR.
+  /// Normalizes the gates of the whole indexed fault tree into OR, AND gates.
   ///
-  /// @warning NUll gates are not handled except for the top gate.
+  /// @note The negation of the top gate is saved and handled in a special
+  ///       because it does not have a parent.
+  /// @note New gates are created upon normalization of complex gates like XOR.
+  /// @note This function is meant to be called only once.
+  ///
+  /// @warning NULL type gates are left untouched for coalescing functions.
   void NormalizeGates();
 
-  /// Notifies all parents of negative gates, such as NOT, NOR, and NAND before
+  /// Notifies all parents of negative gates, such as NOT, NOR, and NAND, before
   /// transforming these gates into basic gates of OR and AND. The child gates
   /// are swaped with a negative sign.
   ///
   /// @param[in] gate The gate to start processing.
   ///
+  /// @note This function is a helper function for NormalizeGates().
+  ///
+  /// @warning Gate marks must be clear.
   /// @warning This function does not change the types of gates.
   /// @warning The top gate does not have parents, so it is not handled here.
   void NotifyParentsOfNegativeGates(const IGatePtr& gate);
@@ -94,6 +99,9 @@ class Preprocessor {
   ///
   /// @param[in,out] gate The gate to be processed.
   ///
+  /// @note This is a helper function for NormalizeGates().
+  ///
+  /// @warning Gate marks must be clear.
   /// @warning The parents of negative gates are assumed to be notified about
   ///          the change of their children types.
   /// @warning NULL gates are not handled.
@@ -103,6 +111,8 @@ class Preprocessor {
   /// gate normalization function.
   ///
   /// @param[in,out] gate The gate to normalize.
+  ///
+  /// @note This is a helper function for NormalizeGate.
   void NormalizeXorGate(const IGatePtr& gate);
 
   /// Normalizes an ATLEAST gate with a vote number. The gate is turned into
@@ -113,16 +123,18 @@ class Preprocessor {
   /// techniques than the alternative, which is OR of AND gates of combinations.
   ///
   /// @param[in,out] gate The atleast gate to normalize.
+  ///
+  /// @note This is a helper function for NormalizeGate.
   void NormalizeAtleastGate(const IGatePtr& gate);
 
-  /// Remove all house events from a given gate according to the Boolean logic.
-  /// The structure of the tree should not be pre-processed before this
-  /// operation; that is, this is the first operation that is done after
-  /// creation of an indexed fault tree. There should not be any negative nodes.
-  /// After this function, there should not be any unity or null gates because
-  /// of house events.
+  /// Removes all constants and constant gates from a given sub-tree according
+  /// to the Boolean logic of the gates.
   ///
-  /// @param[in,out] gate The final resultant processed gate.
+  /// @param[in,out] gate The final resultant processed gate and sub-tree.
+  ///
+  /// @warning Gate marks must be clear.
+  /// @warning There still may be only one constant state gate which is the root
+  ///          of the tree. This must be handled separately.
   void PropagateConstants(const IGatePtr& gate);
 
   /// Changes the state of a gate or passes a constant child to be removed
@@ -140,6 +152,10 @@ class Preprocessor {
   ///
   /// @returns true if the passed gate has become constant due to its child.
   /// @returns false if the parent still valid for further operations.
+  ///
+  /// @note This is a helper function that propagates constants.
+  /// @note This function may change the state of the gate.
+  /// @note This function may change type and parameters of the gate.
   bool ProcessConstantChild(const IGatePtr& gate, int child,
                             bool state, std::vector<int>* to_erase);
 
@@ -148,7 +164,6 @@ class Preprocessor {
   /// If the final gate is empty, its state is turned into NULL or UNITY
   /// depending on the logic of the gate and the logic of the constant
   /// propagation.
-  /// The parent information is not updated for the child.
   ///
   /// @param[in,out] gate The gate that contains the children to be removed.
   /// @param[in] to_erase The set of children to erase from the parent gate.
@@ -365,20 +380,27 @@ class Preprocessor {
   /// @todo Track parents with weak pointers by default.
   boost::weak_ptr<IGate> RawToWeakPointer(const IGate* parent);
 
-  /// Sets the visit marks to False for all indexed gates that have been
-  /// visited top-down. Any member function updating and using the visit
-  /// marks of gates must ensure to clean visit marks before running
-  /// algorithms. However, cleaning after finishing algorithms is not mandatory.
+  /// Sets the visit marks to False for all indexed gates, starting from the top
+  /// gate, that have been visited top-down. Any member function updating and
+  /// using the visit marks of gates must ensure to clean visit marks before
+  /// running algorithms. However, cleaning after finishing algorithms is not
+  /// mandatory.
+  ///
+  /// @warning If the marks have not been assigned in a top-down traversal, this
+  ///          function will fail silently.
   void ClearGateMarks();
 
   /// Sets the visit marks of descendant gates to False starting from the given
-  /// gate as a root.
+  /// gate as a root. The top-down traversal marking is assumed.
   ///
   /// @param[in,out] gate The root gate to be traversed and marks.
+  ///
+  /// @warning If the marks have not been assigned in a top-down traversal
+  ///          starting from the given gate, this function will fail silently.
   void ClearGateMarks(const IGatePtr& gate);
 
   /// Clears visit time information from all indexed nodes that have been
-  /// visited top-down. Any member function updating and using the visit
+  /// visited or not. Any member function updating and using the visit
   /// information of gates must ensure to clean visit times before running
   /// algorithms. However, cleaning after finishing algorithms is not mandatory.
   void ClearNodeVisits();

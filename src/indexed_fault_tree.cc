@@ -146,6 +146,7 @@ void IGate::InvertChildren() {
 
 void IGate::InvertChild(int existing_child) {
   assert(children_.count(existing_child));
+  assert(!children_.count(-existing_child));
   children_.erase(existing_child);
   children_.insert(-existing_child);
   if (gate_children_.count(existing_child)) {

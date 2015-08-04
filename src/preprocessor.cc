@@ -15,7 +15,37 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /// @file preprocessor.cc
-/// Implementation of preprocessing algorithms.
+/// Implementation of preprocessing algorithms. If a preprocessing algorithm has
+/// its limitations, side-effects, and assumptions, the documentation in the
+/// header file must contain all the relevant information within notes or
+/// warnings. The default assumption for all algorithms is that the fault
+/// tree is valid and well-formed.
+///
+/// Some Suggested Notes/Warnings: (Clear contract for preprocessing algorithms)
+///
+///   * Coherent trees only
+///   * Positive gates or nodes only
+///   * Node visits or gate marks must be cleared before the call
+///   * May introduce NULL or UNITY state gates or constants
+///   * May introduce NULL/NOT type gates
+///   * Operates on certain gate types only
+///   * Normalized gates only
+///   * Should not have gates of certain types
+///   * How it deals with modules (Aware of them or not at all)
+///   * Should not have constants or constant gates
+///   * Does it depend on other preprocessing functions?
+///   * Does it swap the top gate of the fault tree with another (child) gate?
+///   * Does it remove gates or other kind of nodes?
+///
+/// Assuming that the fault tree is provided in the state as described in the
+/// contract, the algorithms should never throw an exception. The algorithms
+/// must guarantee that, given a valid and well-formed fault tree, the resulting
+/// fault tree will at least be valid, well-formed, and semantically equivalent
+/// to the input fault tree.
+///
+/// If the contract is not respected, the result or behavior of the algorithm
+/// may be undefined. There is no requirement to check for the flawed contract
+/// and to exit gracefully.
 #include "preprocessor.h"
 
 #include <algorithm>
@@ -181,7 +211,7 @@ void Preprocessor::NotifyParentsOfNegativeGates(const IGatePtr& gate) {
   }
   std::vector<int>::iterator it_neg;
   for (it_neg = to_negate.begin(); it_neg != to_negate.end(); ++it_neg) {
-    gate->InvertChild(*it_neg);
+    gate->InvertChild(*it_neg);  // Does not produce constants or duplicates.
   }
 }
 
@@ -291,12 +321,14 @@ void Preprocessor::NormalizeAtleastGate(const IGatePtr& gate) {
 void Preprocessor::PropagateConstants(const IGatePtr& gate) {
   if (gate->mark()) return;
   gate->mark(true);
-  std::vector<int> to_erase;  // Erase children later to keep iterator valid.
+  std::vector<int> to_erase;  // Erase children later to keep iterators valid.
   boost::unordered_map<int, ConstantPtr>::const_iterator it_c;
   for (it_c = gate->constant_children().begin();
        it_c != gate->constant_children().end(); ++it_c) {
+    int index = it_c->first;  // May be negation.
     bool state = it_c->second->state();
-    if (Preprocessor::ProcessConstantChild(gate, it_c->first, state, &to_erase))
+    if (index < 0) state = !state;
+    if (Preprocessor::ProcessConstantChild(gate, index, state, &to_erase))
       return;  // Early exit because the parent's state turned to NULL or UNITY.
   }
   boost::unordered_map<int, IGatePtr>::const_iterator it_g;
@@ -306,8 +338,10 @@ void Preprocessor::PropagateConstants(const IGatePtr& gate) {
     Preprocessor::PropagateConstants(child_gate);
     State gate_state = child_gate->state();
     if (gate_state == kNormalState) continue;
+    int index = it_g->first;  // May be negation.
     bool state = gate_state == kNullState ? false : true;
-    if (Preprocessor::ProcessConstantChild(gate, it_g->first, state, &to_erase))
+    if (index < 0) state = !state;
+    if (Preprocessor::ProcessConstantChild(gate, index, state, &to_erase))
       return;  // Early exit because the parent's state turned to NULL or UNITY.
   }
   Preprocessor::RemoveChildren(gate, to_erase);

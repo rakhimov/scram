@@ -178,10 +178,15 @@ class IBasicEvent : public Node {
 
 /// @enum GateType
 /// Types of gates for representation, preprocessing, and analysis purposes.
+///
+/// @warning If a new gate type is added, all the preprocessing and indexed
+///          fault tree algorithms must be reviewed and updated. The algorithms
+///          may assume for performance and simplicity reasons that these are
+///          the only kinds of gates possible.
 enum GateType {
   kAndGate = 0,  ///< Simple AND gate.
   kOrGate,  ///< Simple OR gate.
-  kAtleastGate,  ///< Combination or Vote gate representation.
+  kAtleastGate,  ///< Combination, K/N, or Vote gate representation.
   kXorGate,  ///< Exclusive OR gate with two inputs.
   kNotGate,  ///< Boolean negation.
   kNandGate,  ///< NAND gate.
@@ -236,12 +241,17 @@ class IGate : public Node {
   }
 
   /// @returns Vote number.
+  ///
+  /// @warning The function does not validate the vote number; nor does it check
+  ///          the ATLEAST type of the gate.
   inline int vote_number() const { return vote_number_; }
 
-  /// Sets the vote number for this gate. The function does not check if
-  /// the gate type is ATLEAST; nor does it validate the number.
+  /// Sets the vote number for this gate. This funciton is used for K/N gates.
   ///
   /// @param[in] number The vote number of ATLEAST gate.
+  ///
+  /// @warning The function does not validate the vote number; nor does it check
+  ///          the ATLEAST type of the gate.
   inline void vote_number(int number) { vote_number_ = number; }
 
   /// @returns The state of this gate.
@@ -267,6 +277,9 @@ class IGate : public Node {
     return constant_children_;
   }
 
+  /// Marks are used for linear traversal of graphs. This can be an alternative
+  /// for visit information provided by the base Node class.
+  ///
   /// @returns The mark of this gate.
   inline bool mark() const { return mark_; }
 
@@ -511,7 +524,7 @@ class Gate;
 class Formula;
 
 /// @class IndexedFaultTree
-/// This class provides simpler representation of a fault tree
+/// This class provides a simpler representation of a fault tree
 /// that takes into account the indices of events instead of ids and pointers.
 ///
 /// @warning Never hold a shared pointer to any other indexed gate except for
