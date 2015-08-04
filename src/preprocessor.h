@@ -384,10 +384,18 @@ class Preprocessor {
                                  std::vector<std::vector<IGatePtr> >* gates);
 
   /// This is a hacky way to create a weak pointer out of a raw one for parents.
-  /// This only works for coherent trees.
   ///
-  /// @todo Track parents with weak pointers by default.
+  /// @returns A weak pointer to the parent.
   boost::weak_ptr<IGate> RawToWeakPointer(const IGate* parent);
+
+  /// Transforms a set of raw pointers to parents into weak pointers to parents.
+  /// Weak pointers may be required by algorithms if the parent may get deleted
+  /// before the algorithms can operate on it.
+  ///
+  /// @param[in] node A node which parents are needed as weak pointers.
+  /// @param[out] parents A vector of weak pointers to the parents.
+  void GetWeakParents(const NodePtr& node,
+                      std::vector<boost::weak_ptr<IGate> >* parents);
 
   /// Sets the visit marks to False for all indexed gates, starting from the top
   /// gate, that have been visited top-down. Any member function updating and

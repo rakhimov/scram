@@ -1127,7 +1127,21 @@ boost::weak_ptr<IGate> Preprocessor::RawToWeakPointer(const IGate* parent) {
     return fault_tree_->top_event();
   assert(!parent->parents().empty());
   const IGate* grand_parent = *parent->parents().begin();
+
+  if (grand_parent->children().count(-parent->index()))  // Negation.
+    return grand_parent->gate_children().find(-parent->index())->second;
+
   return grand_parent->gate_children().find(parent->index())->second;
+}
+
+void Preprocessor::GetWeakParents(
+    const NodePtr& node,
+    std::vector<boost::weak_ptr<IGate> >* parents) {
+  assert(parents->empty());
+  std::set<IGate*>::iterator it;
+  for (it = node->parents().begin(); it != node->parents().end(); ++it) {
+    parents->push_back(Preprocessor::RawToWeakPointer(*it));
+  }
 }
 
 void Preprocessor::ClearGateMarks() {
