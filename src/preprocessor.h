@@ -204,14 +204,21 @@ class Preprocessor {
   /// only one child. That one grandchild is transfered to the parent gate,
   /// and the original child gate is removed from the parent gate.
   ///
+  /// This is a top-down algorithm that searches for all NULL type gates, which
+  /// means it is less efficient than having a specific NULL type gate
+  /// propagate its child bottom-up.
+  ///
   /// @param[in,out] gate The starting gate to traverse the tree. This is for
   ///                     recursive purposes.
   ///
   /// @returns true if the given tree has been changed by this function.
   /// @returns false if no change has been made.
   ///
+  /// @warning Gate marks must be clear.
   /// @warning There still may be only one NULL type gate which is the root
   ///          of the tree. This must be handled separately.
+  /// @warning NULL gates that are constant are not handled and left for
+  ///          constant propagation functions.
   bool RemoveNullGates(const IGatePtr& gate);
 
   /// Pre-processes the fault tree by doing the simplest Boolean algebra.

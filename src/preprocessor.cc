@@ -529,8 +529,9 @@ bool Preprocessor::RemoveNullGates(const IGatePtr& gate) {
     bool ret = Preprocessor::RemoveNullGates(child_gate);
     if (!changed && ret) changed = true;
 
-    if (child_gate->type() == kNullGate && child_gate->state() == kNormalState)
-      null_children.push_back(it->first);
+    if (child_gate->state() != kNormalState) continue;
+
+    if (child_gate->type() == kNullGate) null_children.push_back(it->first);
   }
 
   std::vector<int>::iterator it_swap;
