@@ -128,14 +128,21 @@ class Preprocessor {
   void NormalizeAtleastGate(const IGatePtr& gate);
 
   /// Removes all constants and constant gates from a given sub-tree according
-  /// to the Boolean logic of the gates.
+  /// to the Boolean logic of the gates. This algorithm is top-down search for
+  /// all constants. It is less efficient than a targeted bottom-up propagation
+  /// for a specific constant. Therefore, this function is used to get rid of
+  /// all constants without knowing where they are or what they are.
   ///
-  /// @param[in,out] gate The final resultant processed gate and sub-tree.
+  /// @param[in,out] gate The starting gate to traverse the tree. This is for
+  ///                     recursive purposes.
+  ///
+  /// @returns true if the given tree has been changed by this function.
+  /// @returns false if no change has been made.
   ///
   /// @warning Gate marks must be clear.
   /// @warning There still may be only one constant state gate which is the root
   ///          of the tree. This must be handled separately.
-  void PropagateConstants(const IGatePtr& gate);
+  bool PropagateConstants(const IGatePtr& gate);
 
   /// Changes the state of a gate or passes a constant child to be removed
   /// later. The function determines its actions depending on the type of
@@ -167,22 +174,10 @@ class Preprocessor {
   ///
   /// @param[in,out] gate The gate that contains the children to be removed.
   /// @param[in] to_erase The set of children to erase from the parent gate.
+  ///
+  /// @note This is a helper function that propagates constants, so it is
+  ///       coupled with the logic of the constant propagation algorithms.
   void RemoveChildren(const IGatePtr& gate, const std::vector<int>& to_erase);
-
-  /// Removes NULL and UNITY state child gates. The parent gate can be of any
-  /// type. Because of the constant children, the parent gate itself may turn
-  /// constant in some cases.
-  ///
-  /// @param[in,out] gate The starting gate to traverse the tree. This is for
-  ///                     recursive purposes.
-  ///
-  /// @returns true if the given tree has been changed by this function.
-  /// @returns false if no change has been made.
-  ///
-  /// @warning There should not be negative gate children.
-  /// @warning There still may be only one constant state gate which is the root
-  ///          of the tree. This must be handled separately.
-  bool RemoveConstGates(const IGatePtr& gate);
 
   /// Propagates complements of child gates down to basic events
   /// in order to remove any negative logic from the fault tree's gates.

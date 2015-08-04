@@ -120,7 +120,7 @@ void Preprocessor::ProcessIndexedFaultTree() {
   complements.clear();  // Cleaning to get rid of extra reference counts.
 
   Preprocessor::ClearGateMarks();
-  Preprocessor::RemoveConstGates(top);
+  Preprocessor::PropagateConstants(top);
 
   bool tree_changed = true;
   while (tree_changed) {
@@ -139,7 +139,7 @@ void Preprocessor::ProcessIndexedFaultTree() {
     if (!tree_changed && ret) tree_changed = true;
 
     Preprocessor::ClearGateMarks();
-    ret = Preprocessor::RemoveConstGates(top);
+    ret = Preprocessor::PropagateConstants(top);
     if (!tree_changed && ret) tree_changed = true;
   }
 
@@ -162,7 +162,7 @@ void Preprocessor::ProcessIndexedFaultTree() {
     if (!tree_changed && ret) tree_changed = true;
 
     Preprocessor::ClearGateMarks();
-    ret = Preprocessor::RemoveConstGates(top);
+    ret = Preprocessor::PropagateConstants(top);
     if (!tree_changed && ret) tree_changed = true;
   }
   // After this point there should not be null AND or unity OR gates,
@@ -318,9 +318,12 @@ void Preprocessor::NormalizeAtleastGate(const IGatePtr& gate) {
   Preprocessor::NormalizeAtleastGate(second_child);
 }
 
-void Preprocessor::PropagateConstants(const IGatePtr& gate) {
-  if (gate->mark()) return;
+bool Preprocessor::PropagateConstants(const IGatePtr& gate) {
+  if (gate->mark()) return false;
   gate->mark(true);
+  if (gate->state() != kNormalState) return false;
+
+  bool changed = false;  // Indication if this operation changed the gate.
   std::vector<int> to_erase;  // Erase children later to keep iterators valid.
   boost::unordered_map<int, ConstantPtr>::const_iterator it_c;
   for (it_c = gate->constant_children().begin();
@@ -329,22 +332,26 @@ void Preprocessor::PropagateConstants(const IGatePtr& gate) {
     bool state = it_c->second->state();
     if (index < 0) state = !state;
     if (Preprocessor::ProcessConstantChild(gate, index, state, &to_erase))
-      return;  // Early exit because the parent's state turned to NULL or UNITY.
+      return true;  // The parent gate itself has become constant.
   }
   boost::unordered_map<int, IGatePtr>::const_iterator it_g;
   for (it_g = gate->gate_children().begin();
        it_g != gate->gate_children().end(); ++it_g) {
     IGatePtr child_gate = it_g->second;
-    Preprocessor::PropagateConstants(child_gate);
+    bool ret = Preprocessor::PropagateConstants(child_gate);
+    if (!changed && ret) changed = true;
+
     State gate_state = child_gate->state();
     if (gate_state == kNormalState) continue;
     int index = it_g->first;  // May be negation.
     bool state = gate_state == kNullState ? false : true;
     if (index < 0) state = !state;
     if (Preprocessor::ProcessConstantChild(gate, index, state, &to_erase))
-      return;  // Early exit because the parent's state turned to NULL or UNITY.
+      return true;  // Early exit because the parent has become constant.
   }
+  if (!changed && !to_erase.empty()) changed = true;
   Preprocessor::RemoveChildren(gate, to_erase);
+  return changed;
 }
 
 bool Preprocessor::ProcessConstantChild(const IGatePtr& gate,
@@ -452,32 +459,6 @@ void Preprocessor::RemoveChildren(const IGatePtr& gate,
         assert(type == kNotGate || type == kNullGate);
     }
   }
-}
-
-bool Preprocessor::RemoveConstGates(const IGatePtr& gate) {
-  if (gate->mark()) return false;
-  gate->mark(true);
-
-  if (gate->state() == kNullState || gate->state() == kUnityState) return false;
-  bool changed = false;  // Indication if this operation changed the gate.
-  std::vector<int> to_erase;  // Keep track of children to erase.
-  boost::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_children().begin(); it != gate->gate_children().end();
-       ++it) {
-    assert(it->first > 0);
-    IGatePtr child_gate = it->second;
-    bool ret = Preprocessor::RemoveConstGates(child_gate);
-    if (!changed && ret) changed = true;
-    State state = child_gate->state();
-    if (state == kNormalState) continue;  // Only three states are possible.
-    bool state_flag = state == kNullState ? false : true;
-    if (Preprocessor::ProcessConstantChild(gate, it->first, state_flag,
-                                           &to_erase))
-      return true;  // The parent gate itself has become constant.
-  }
-  if (!changed && !to_erase.empty()) changed = true;
-  Preprocessor::RemoveChildren(gate, to_erase);
-  return changed;
 }
 
 void Preprocessor::PropagateComplements(
@@ -949,7 +930,7 @@ void Preprocessor::ProcessCommonNode(const boost::weak_ptr<N>& common_node) {
     Preprocessor::ProcessFailureDestinations(node, destinations);
     if (created_constant) {
       Preprocessor::ClearGateMarks();
-      Preprocessor::RemoveConstGates(top);
+      Preprocessor::PropagateConstants(top);
       Preprocessor::ClearGateMarks();
       Preprocessor::RemoveNullGates(top);
     }
