@@ -164,6 +164,10 @@ class Preprocessor {
   /// @returns true if the given tree has been changed by this function.
   /// @returns false if no change has been made.
   ///
+  /// @note This is one of the first preprocessing steps. Other algorithms are
+  ///       safe to assume that there are no house events in the faul tree.
+  ///       Only possible constant nodes are gates that turn NULL or UNITY sets.
+  ///
   /// @warning Gate marks must be clear.
   /// @warning There still may be only one constant state gate which is the root
   ///          of the tree. This must be handled separately.
@@ -256,9 +260,10 @@ class Preprocessor {
   /// @returns true if the given tree has been changed by this function.
   /// @returns false if no change has been made.
   ///
-  /// @warning NULL or UNITY state gates may emerge because of this processing.
-  /// @warning NULL type gates are not handled by this function.
-  /// @warning Module child gates are omitted from coalescing.
+  /// @note Constant state gates may be generated upon joining. These gates
+  ///       are registered for future processing.
+  /// @note It is impossible that this function generates NULL type gates.
+  /// @note Module child gates are omitted from coalescing to preserve them.
   bool JoinGates(const IGatePtr& gate);
 
   /// Traverses the indexed fault tree to detect modules. Modules are
@@ -448,6 +453,13 @@ class Preprocessor {
   IndexedFaultTree* fault_tree_;  ///< The fault tree to preprocess.
   int top_event_sign_;  ///< The negative or positive sign of the top event.
   bool constants_;  ///< Indication if there are constants in the tree.
+  /// Container for constant gates to be tracked and cleaned by algorithms.
+  /// These constant gates are created because of complement or constant
+  /// descendants.
+  std::vector<boost::weak_ptr<IGate> > const_gates_;
+  /// Container for NULL type gates to be tracked and cleaned by algorithms.
+  /// NULL type gates are created by coherent gates with only one child.
+  std::vector<boost::weak_ptr<IGate> > null_gates_;
 };
 
 }  // namespace scram

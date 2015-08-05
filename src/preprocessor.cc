@@ -95,7 +95,7 @@ void Preprocessor::ProcessIndexedFaultTree() {
       assert(top->parents().empty());
       assert(top->type() == kOrGate || top->type() == kAndGate);
       top_event_sign_ *= signed_index > 0 ? 1 : -1;
-    }
+    }  // Else there is only basic event in the final fault tree.
   }
   if (top->state() != kNormalState) {  // Top has become constant.
     if (top_event_sign_ < 0) {
@@ -112,17 +112,16 @@ void Preprocessor::ProcessIndexedFaultTree() {
     }
     return;
   }
-  if (top_event_sign_ < 0) {
-    assert(top->type() == kOrGate || top->type() == kAndGate ||
-           top->type() == kNullGate);
-    if (top->type() == kOrGate || top->type() == kAndGate)
-      top->type(top->type() == kOrGate ? kAndGate : kOrGate);
-    top->InvertChildren();
-    top_event_sign_ = 1;
-  }
-
   if (!fault_tree_->coherent()) {
     LOG(DEBUG2) << "Propagating complements in the fault tree.";
+    if (top_event_sign_ < 0) {
+      assert(top->type() == kOrGate || top->type() == kAndGate ||
+             top->type() == kNullGate);
+      if (top->type() == kOrGate || top->type() == kAndGate)
+        top->type(top->type() == kOrGate ? kAndGate : kOrGate);
+      top->InvertChildren();
+      top_event_sign_ = 1;
+    }
     std::map<int, IGatePtr> complements;
     Preprocessor::ClearGateMarks();
     Preprocessor::PropagateComplements(top, &complements);
@@ -159,22 +158,30 @@ void Preprocessor::ProcessIndexedFaultTree() {
     Preprocessor::BooleanOptimization();
   }
 
+  LOG(DEBUG2) << "Coalescing gates.";
+  Preprocessor::ClearGateMarks();
+  Preprocessor::RemoveNullGates(top);
   tree_changed = true;
   while (tree_changed) {
-    tree_changed = false;  // Break the loop if actions don't change the tree.
-    bool ret = false;  // The result of actions of functions.
-    Preprocessor::ClearGateMarks();
-    ret = Preprocessor::RemoveNullGates(top);
-    if (!tree_changed && ret) tree_changed = true;
+    assert(const_gates_.empty());
+    assert(null_gates_.empty());
 
     Preprocessor::ClearGateMarks();
-    ret = Preprocessor::JoinGates(top);
-    if (!tree_changed && ret) tree_changed = true;
+    tree_changed = Preprocessor::JoinGates(top);  // May produce constant gates.
 
-    Preprocessor::ClearGateMarks();
-    ret = Preprocessor::PropagateConstants(top);
-    if (!tree_changed && ret) tree_changed = true;
+    if (!const_gates_.empty()) {
+      Preprocessor::ClearGateMarks();
+      std::vector<boost::weak_ptr<IGate> >::iterator it;
+      for (it = const_gates_.begin(); it != const_gates_.end(); ++it) {
+        if (it->expired()) continue;
+        Preprocessor::PropagateConstGate(it->lock());
+      }
+      const_gates_.clear();
+      tree_changed = true;
+    }
   }
+  LOG(DEBUG2) << "Gate coalescense is done.";
+
   // After this point there should not be null AND or unity OR gates,
   // and the tree structure should be repeating OR and AND.
   // All gates are positive, and each gate has at least two children.
@@ -228,7 +235,7 @@ void Preprocessor::NotifyParentsOfNegativeGates(const IGatePtr& gate) {
 void Preprocessor::NormalizeGate(const IGatePtr& gate) {
   if (gate->mark()) return;
   gate->mark(true);
-
+  assert(!gate->children().empty());
   // Depth-first traversal before the children may get changed.
   boost::unordered_map<int, IGatePtr>::const_iterator it;
   for (it = gate->gate_children().begin(); it != gate->gate_children().end();
@@ -239,23 +246,30 @@ void Preprocessor::NormalizeGate(const IGatePtr& gate) {
   GateType type = gate->type();
   switch (type) {  // Negation is already processed.
     case kNotGate:
+      assert(gate->children().size() == 1);
       gate->type(kNullGate);
       break;
     case kNorGate:
     case kOrGate:
+      assert(gate->children().size() > 1);
       gate->type(kOrGate);
       break;
     case kNandGate:
     case kAndGate:
+      assert(gate->children().size() > 1);
       gate->type(kAndGate);
       break;
     case kXorGate:
+      assert(gate->children().size() == 2);
       Preprocessor::NormalizeXorGate(gate);
       break;
     case kAtleastGate:
+      assert(gate->children().size() > 2);
+      assert(gate->vote_number() > 1);
       Preprocessor::NormalizeAtleastGate(gate);
       break;
     default:
+      assert(gate->children().size() == 1);
       assert(type == kNullGate);  // Must be dealt outside.
   }
 }
@@ -515,6 +529,7 @@ void Preprocessor::PropagateComplements(
     std::map<int, IGatePtr>* gate_complements) {
   if (gate->mark()) return;
   gate->mark(true);
+  //assert(gate->children().size() > 1);  /// @todo Put Back.
   // If the child gate is complement, then create a new gate that propagates
   // its sign to its children and itself becomes non-complement.
   // Keep track of complement gates for optimization of repeated complements.
@@ -590,15 +605,18 @@ bool Preprocessor::JoinGates(const IGatePtr& gate) {
   switch (gate->type()) {
     case kNandGate:
     case kAndGate:
+      //assert(gate->children().size() > 1);  /// @todo Put back.
       target_type = kAndGate;
       possible = true;
       break;
     case kNorGate:
     case kOrGate:
+      //assert(gate->children().size() > 1);  /// @todo Put back.
       target_type = kOrGate;
       possible = true;
       break;
   }
+  //assert(!gate->children().empty());  /// @todo Put back.
   std::vector<IGatePtr> to_join;  // Gate children of the same logic.
   bool changed = false;  // Indication if the tree is changed.
   boost::unordered_map<int, IGatePtr>::const_iterator it;
@@ -620,7 +638,12 @@ bool Preprocessor::JoinGates(const IGatePtr& gate) {
   if (!changed && !to_join.empty()) changed = true;
   std::vector<IGatePtr>::iterator it_ch;
   for (it_ch = to_join.begin(); it_ch != to_join.end(); ++it_ch) {
-    if (!gate->JoinGate(*it_ch)) return true;  // The parent is constant.
+    gate->JoinGate(*it_ch);
+    if (gate->state() != kNormalState) {
+      const_gates_.push_back(gate);  // Register for future processing.
+      return true;  // The parent is constant. No need to join other children.
+    }
+    //assert(gate->children().size() > 1);  // Does not produce NULL type gates.
   }
   return changed;
 }
