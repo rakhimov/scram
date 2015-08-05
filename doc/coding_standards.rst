@@ -28,8 +28,8 @@ This project adheres to the following coding styles:
     https://google-styleguide.googlecode.com/svn/trunk/shell.xml
 
 
-Deviations from the Coding Styles
----------------------------------
+Deviations from the GCSG
+------------------------
 
 - Exceptions are allowed
 - Prefer streams to *printf-like routines*
