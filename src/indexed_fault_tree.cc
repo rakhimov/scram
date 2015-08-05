@@ -66,7 +66,7 @@ bool IGate::AddChild(int child, const IGatePtr& gate) {
   if (children_.count(-child)) return IGate::ProcessComplementChild(child);
   children_.insert(child);
   gate_children_.insert(std::make_pair(child, gate));
-  gate->parents_.insert(this);
+  gate->parents_.insert(std::make_pair(Node::index(), shared_from_this()));
   return true;
 }
 
@@ -76,10 +76,12 @@ bool IGate::AddChild(int child, const IBasicEventPtr& basic_event) {
   assert(state_ == kNormalState);
   if (type_ == kNotGate || type_ == kNullGate) assert(children_.empty());
   if (type_ == kXorGate) assert(children_.size() < 2);
+  if (children_.count(child)) return IGate::ProcessDuplicateChild(child);
   if (children_.count(-child)) return IGate::ProcessComplementChild(child);
   children_.insert(child);
   basic_event_children_.insert(std::make_pair(child, basic_event));
-  basic_event->parents_.insert(this);
+  basic_event->parents_.insert(std::make_pair(Node::index(),
+                                              shared_from_this()));
   return true;
 }
 
@@ -89,10 +91,11 @@ bool IGate::AddChild(int child, const ConstantPtr& constant) {
   assert(state_ == kNormalState);
   if (type_ == kNotGate || type_ == kNullGate) assert(children_.empty());
   if (type_ == kXorGate) assert(children_.size() < 2);
+  if (children_.count(child)) return IGate::ProcessDuplicateChild(child);
   if (children_.count(-child)) return IGate::ProcessComplementChild(child);
   children_.insert(child);
   constant_children_.insert(std::make_pair(child, constant));
-  constant->parents_.insert(this);
+  constant->parents_.insert(std::make_pair(Node::index(), shared_from_this()));
   return true;
 }
 
@@ -116,8 +119,8 @@ bool IGate::TransferChild(int child, const IGatePtr& recipient) {
     ret = recipient->AddChild(child, constant_children_.find(child)->second);
     constant_children_.erase(child);
   }
-  assert(node->parents_.count(this));
-  node->parents_.erase(this);
+  assert(node->parents_.count(Node::index()));
+  node->parents_.erase(Node::index());
   return ret;
 }
 
@@ -168,8 +171,9 @@ bool IGate::JoinGate(const IGatePtr& child_gate) {
   assert(children_.count(child_gate->index()));  // Positive child only.
   children_.erase(child_gate->index());
   gate_children_.erase(child_gate->index());
-  assert(child_gate->parents_.count(this));
-  child_gate->parents_.erase(this);
+  assert(child_gate->parents_.count(Node::index()));
+  child_gate->parents_.erase(Node::index());
+
   boost::unordered_map<int, IGatePtr>::const_iterator it_g;
   for (it_g = child_gate->gate_children_.begin();
        it_g != child_gate->gate_children_.end(); ++it_g) {
@@ -196,7 +200,7 @@ bool IGate::JoinNullGate(int index) {
   children_.erase(index);
   IGatePtr child_gate = gate_children_.find(index)->second;
   gate_children_.erase(index);
-  child_gate->parents_.erase(this);
+  child_gate->parents_.erase(Node::index());
 
   assert(child_gate->type_ == kNullGate);
   assert(child_gate->children_.size() == 1);
@@ -291,20 +295,20 @@ bool IGate::ProcessComplementChild(int index) {
 }
 
 void IGate::ChildFailed() {
-  if (this->opti_value() == 1) return;
-  assert(this->opti_value() == 0);
+  if (Node::opti_value() == 1) return;
+  assert(Node::opti_value() == 0);
   assert(num_failed_children_ < children_.size());
   ++num_failed_children_;
   switch (type_) {
     case kNullGate:
     case kOrGate:
-      this->opti_value(1);
+      Node::opti_value(1);
       break;
     case kAndGate:
-      if (num_failed_children_ == children_.size()) this->opti_value(1);
+      if (num_failed_children_ == children_.size()) Node::opti_value(1);
       break;
     case kAtleastGate:
-      if (num_failed_children_ == vote_number_) this->opti_value(1);
+      if (num_failed_children_ == vote_number_) Node::opti_value(1);
       break;
     default:
       assert(false);  // Coherent gates only!

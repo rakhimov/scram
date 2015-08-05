@@ -328,21 +328,20 @@ void Preprocessor::NormalizeAtleastGate(const IGatePtr& gate) {
   Preprocessor::NormalizeAtleastGate(second_child);
 }
 
-void Preprocessor::PropagateConstGate(IGate* gate) {
+void Preprocessor::PropagateConstGate(const IGatePtr& gate) {
   assert(gate->state() != kNormalState);
 
   while(!gate->parents().empty()) {
-    IGate* parent = *gate->parents().begin();
-    IGatePtr locked_parent = Preprocessor::RawToWeakPointer(parent).lock();
+    IGatePtr parent = gate->parents().begin()->second.lock();
 
     int sign = parent->children().count(gate->index()) ? 1 : -1;
     bool state = gate->state() == kNullState ? false : true;
     if (sign < 0) state = !state;
 
     std::vector<int> to_erase;
-    Preprocessor::ProcessConstantChild(locked_parent, sign * gate->index(),
+    Preprocessor::ProcessConstantChild(parent, sign * gate->index(),
                                        state, &to_erase);
-    Preprocessor::RemoveChildren(locked_parent, to_erase);
+    Preprocessor::RemoveChildren(parent, to_erase);
 
     if (parent->state() != kNormalState) {
       Preprocessor::PropagateConstGate(parent);
@@ -352,11 +351,11 @@ void Preprocessor::PropagateConstGate(IGate* gate) {
   }
 }
 
-void Preprocessor::PropagateNullGate(IGate* gate) {
+void Preprocessor::PropagateNullGate(const IGatePtr& gate) {
   assert(gate->type() == kNullGate);
 
   while(!gate->parents().empty()) {
-    IGate* parent = *gate->parents().begin();
+    IGatePtr parent = gate->parents().begin()->second.lock();
     int sign = parent->children().count(gate->index()) ? 1 : -1;
     parent->JoinNullGate(sign * gate->index());
 
@@ -686,7 +685,7 @@ void Preprocessor::FindModules(const IGatePtr& gate) {
     Preprocessor::FindModules(child_gate);
     if (child_gate->IsModule() && !child_gate->Revisited()) {
       assert(child_gate->parents().size() == 1);
-      assert(child_gate->parents().count(&*gate));
+      assert(child_gate->parents().count(gate->index()));
 
       non_shared_children.push_back(*it);
       continue;  // Sub-tree's visit times are within the Enter and Exit time.
@@ -716,7 +715,7 @@ void Preprocessor::FindModules(const IGatePtr& gate) {
     if (min == max) {
       assert(min > enter_time && max < exit_time);
       assert(child->parents().size() == 1);
-      assert(child->parents().count(&*gate));
+      assert(child->parents().count(gate->index()));
 
       non_shared_children.push_back(*it_b);
       continue;  // The single parent child.
@@ -965,7 +964,7 @@ void Preprocessor::ProcessCommonNode(const boost::weak_ptr<N>& common_node) {
   node->opti_value(1);
   int mult_tot = node->parents().size();  // Total multiplicity.
   assert(mult_tot > 1);
-  mult_tot += Preprocessor::PropagateFailure(&*node);
+  mult_tot += Preprocessor::PropagateFailure(node);
   // The results of the failure propagation.
   std::map<int, boost::weak_ptr<IGate> > destinations;
   int num_dest = 0;  // This is not the same as the size of destinations.
@@ -993,12 +992,13 @@ void Preprocessor::ProcessCommonNode(const boost::weak_ptr<N>& common_node) {
   }
 }
 
-int Preprocessor::PropagateFailure(Node* node) {
+int Preprocessor::PropagateFailure(const NodePtr& node) {
   assert(node->opti_value() == 1);
-  std::set<IGate*>::iterator it;
   int mult_tot = 0;
+  boost::unordered_map<int, boost::weak_ptr<IGate> >::const_iterator it;
   for (it = node->parents().begin(); it != node->parents().end(); ++it) {
-    IGate* parent = *it;
+    assert(!it->second.expired());
+    IGatePtr parent = it->second.lock();
     if (parent->opti_value() == 1) continue;
     parent->ChildFailed();  // Send a notification.
     if (parent->opti_value() == 1) {  // The parent failed.
@@ -1040,9 +1040,10 @@ bool Preprocessor::ProcessRedundantParents(
     const NodePtr& node,
     std::map<int, boost::weak_ptr<IGate> >* destinations) {
   std::vector<boost::weak_ptr<IGate> > redundant_parents;
-  std::set<IGate*>::const_iterator it;
+  boost::unordered_map<int, boost::weak_ptr<IGate> >::const_iterator it;
   for (it = node->parents().begin(); it != node->parents().end(); ++it) {
-    IGate* parent = *it;
+    assert(!it->second.expired());
+    IGatePtr parent = it->second.lock();
     if (parent->opti_value() < 3) {
       // Special cases for the redundant parent and the destination parent.
       switch (parent->type()) {
@@ -1052,7 +1053,7 @@ bool Preprocessor::ProcessRedundantParents(
             continue;  // No need to add into the redundancy list.
           }
       }
-      redundant_parents.push_back(Preprocessor::RawToWeakPointer(parent));
+      redundant_parents.push_back(parent);
     }
   }
   // The node behaves like a constant False for redundant parents.
@@ -1130,11 +1131,13 @@ bool Preprocessor::DetectMultipleDefinitions(
       // Swap this gate with the original gate because it is redefined.
       // @todo Switch to weak pointers because of a possible segfault.
       int index = gate->index();
-      std::set<IGate*> parents = gate->parents();
-      std::set<IGate*>::iterator it_parent;
+      boost::unordered_map<int, boost::weak_ptr<IGate> > parents =
+          gate->parents();
+      boost::unordered_map<int, boost::weak_ptr<IGate> >::iterator it_parent;
       for (it_parent = parents.begin(); it_parent != parents.end();
            ++it_parent) {
-        IGate* parent = *it_parent;
+        assert(!it_parent->second.expired());
+        IGatePtr parent = it_parent->second.lock();
         int sign = 1;  // Guessing the sign.
         if (!parent->children().count(index)) {
           assert(parent->children().count(-index));
@@ -1160,28 +1163,6 @@ bool Preprocessor::DetectMultipleDefinitions(
   }
   type_group.push_back(gate);
   return changed;
-}
-
-boost::weak_ptr<IGate> Preprocessor::RawToWeakPointer(const IGate* parent) {
-  if (parent->index() == fault_tree_->top_event()->index())
-    return fault_tree_->top_event();
-  assert(!parent->parents().empty());
-  const IGate* grand_parent = *parent->parents().begin();
-
-  if (grand_parent->children().count(-parent->index()))  // Negation.
-    return grand_parent->gate_children().find(-parent->index())->second;
-
-  return grand_parent->gate_children().find(parent->index())->second;
-}
-
-void Preprocessor::GetWeakParents(
-    const NodePtr& node,
-    std::vector<boost::weak_ptr<IGate> >* parents) {
-  assert(parents->empty());
-  std::set<IGate*>::iterator it;
-  for (it = node->parents().begin(); it != node->parents().end(); ++it) {
-    parents->push_back(Preprocessor::RawToWeakPointer(*it));
-  }
 }
 
 void Preprocessor::ClearGateMarks() {

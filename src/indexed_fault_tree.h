@@ -26,8 +26,10 @@
 #include <string>
 #include <vector>
 
+#include <boost/enable_shared_from_this.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
+#include <boost/weak_ptr.hpp>
 
 namespace scram {
 
@@ -36,7 +38,7 @@ class IGate;  // Indexed gate parent of nodes.
 /// @class Node
 /// An abstract base class that represents a node in an indexed fault tree
 /// graph. The index of the node is a unique identifier for the node.
-/// The node holds a weak pointer to the parent that is managed by the parent.
+/// The node holds weak pointers to the parents that are managed by the parents.
 class Node {
   friend class IGate;  // To manage parent information.
 
@@ -60,7 +62,10 @@ class Node {
   inline static void ResetIndex() { next_index_ = 1e6; }
 
   /// @returns Parents of this gate.
-  inline const std::set<IGate*>& parents() const { return parents_; }
+  inline const boost::unordered_map<int, boost::weak_ptr<IGate> >&
+      parents() const {
+    return parents_;
+  }
 
   /// @returns Optimization value for failure propagation.
   inline int opti_value() const { return opti_value_; }
@@ -131,7 +136,7 @@ class Node {
   int index_;  ///< Index of this node.
   /// This is a traversal array containing first, second, and last visits.
   int visits_[3];
-  std::set<IGate*> parents_;  ///< Parents of this node.
+  boost::unordered_map<int, boost::weak_ptr<IGate> > parents_;  ///< Parents.
   int opti_value_;  ///< Failure propagation optimization value.
 };
 
@@ -210,21 +215,23 @@ enum State {
 /// this gate can be only of OR and AND type at the end of all simplifications
 /// and processing. This gate class helps to process the fault tree before
 /// any complex analysis is done.
-class IGate : public Node {
+class IGate : public Node, public boost::enable_shared_from_this<IGate> {
  public:
   typedef boost::shared_ptr<Node> NodePtr;
   typedef boost::shared_ptr<Constant> ConstantPtr;
   typedef boost::shared_ptr<IBasicEvent> IBasicEventPtr;
   typedef boost::shared_ptr<IGate> IGatePtr;
 
-  /// Creates an indexed gate with its unique index.
+  /// Creates an indexed gate with its unique index. It is assumed that smart
+  /// pointers are used to manage the graph, and one shared pointer exists for
+  /// this gate to manage parent-child hierarchy.
   ///
   /// @param[in] type The type of this gate.
   explicit IGate(const GateType& type);
 
   /// Destructs parent information from children.
   ~IGate() {
-    assert(this->parents().empty());
+    assert(Node::parents().empty());
     IGate::EraseAllChildren();
   }
 
@@ -466,8 +473,8 @@ class IGate : public Node {
       assert(basic_event_children_.count(child));
       basic_event_children_.erase(child);
     }
-    assert(node->parents_.count(this));
-    node->parents_.erase(this);
+    assert(node->parents_.count(Node::index()));
+    node->parents_.erase(Node::index());
   }
 
   /// Clears all the children of this gate.
@@ -535,7 +542,7 @@ class IGate : public Node {
   State state_;  ///< Indication if this gate's state is normal, null, or unity.
   int vote_number_;  ///< Vote number for ATLEAST gate.
   bool mark_;  ///< Marking for linear traversal of a graph.
-  int min_time_;  ///< Minumum time of visits of the sub-tree of the gate.
+  int min_time_;  ///< Minimum time of visits of the sub-tree of the gate.
   int max_time_;  ///< Maximum time of visits of the sub-tree of the gate.
   bool module_;  ///< Indication of an independent module gate.
   std::set<int> children_;  ///< Children of the gate.
