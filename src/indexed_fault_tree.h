@@ -22,6 +22,7 @@
 #define SCRAM_SRC_INDEXED_FAULT_TREE_H_
 
 #include <map>
+#include <ostream>
 #include <set>
 #include <string>
 #include <vector>
@@ -646,6 +647,44 @@ class IndexedFaultTree {
   bool constants_;  ///< Indication that the original tree contains constants.
   bool normal_;  ///< Indication for the tree containing only OR and AND gates.
 };
+
+/// Prints indexed house events or constants in the shorthand format.
+///
+/// @param[in,out] os Output stream.
+/// @param[in] constant The constant to be printed.
+///
+/// @warning Visit information may get changed.
+std::ostream& operator<<(std::ostream& os,
+                         const boost::shared_ptr<Constant>& constant);
+
+/// Prints indexed basic events or constants in the shorthand format.
+///
+/// @param[in,out] os Output stream.
+/// @param[in] basic_event The basic event to be printed.
+///
+/// @warning Visit information may get changed.
+std::ostream& operator<<(std::ostream& os,
+                         const boost::shared_ptr<IBasicEvent>& basic_event);
+
+/// Prints indexed gates in the shorthand format. The gates that have become a
+/// constant are named "GC". The gates that are modules are named "GM".
+///
+/// @param[in,out] os Output stream.
+/// @param[in] gate The gate to be printed.
+///
+/// @warning Visit information may get changed.
+std::ostream& operator<<(std::ostream& os,
+                         const boost::shared_ptr<IGate>& gate);
+
+/// Prints the indexed fault tree in the shorthand format.
+/// This function is for debugging purposes. The output is not meant to be
+/// human readable.
+///
+/// @param[in,out] os Output stream.
+/// @param[in] ft The fault tree to be printed.
+///
+/// @warning Visits of nodes must be clean. Visit information may get changed.
+std::ostream& operator<<(std::ostream& os, const IndexedFaultTree* ft);
 
 }  // namespace scram
 

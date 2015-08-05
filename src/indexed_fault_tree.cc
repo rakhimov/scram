@@ -21,6 +21,7 @@
 #include <utility>
 
 #include <boost/assign.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/pointer_cast.hpp>
 
 #include "event.h"
@@ -430,6 +431,131 @@ boost::shared_ptr<IGate> IndexedFaultTree::ProcessFormula(
     parent->AddChild(new_gate->index(), new_gate);
   }
   return parent;
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const boost::shared_ptr<Constant>& constant) {
+  if (constant->Visited()) return os;
+  constant->Visit(1);
+  std::string state = constant->state() ? "true" : "false";
+  os << "s(H" << constant->index() << ") = " << state << std::endl;
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const boost::shared_ptr<IBasicEvent>& basic_event) {
+  if (basic_event->Visited()) return os;
+  basic_event->Visit(1);
+  os << "p(B" << basic_event->index() << ") = " << 1 << std::endl;
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const boost::shared_ptr<IGate>& gate) {
+  if (gate->Visited()) return os;
+  gate->Visit(1);
+  if (gate->state() != kNormalState) {
+    std::string state = gate->state() == kNullState ? "false" : "true" ;
+    os << "s(GC" << gate->index() << ") = " << state << std::endl;
+    return os;
+  }
+  std::string formula = "(";  // Begining string for most formulas.
+  std::string op = "";  // Operator of the formula.
+  std::string end = ")";  // Closing parentheses for most formulas.
+  switch (gate->type()) {  // Determine the begining string and the operator.
+    case kNandGate:
+      formula = "~(";  // Fall-through to AND gate.
+    case kAndGate:
+      op = " & ";
+      break;
+    case kNorGate:
+      formula = "~(";  // Fall-through to OR gate.
+    case kOrGate:
+      op = " | ";
+      break;
+    case kXorGate:
+      op = " ^ ";
+      break;
+    case kNotGate:
+      formula = "~(";  // Parentheses are for cases of NOT(NOT Child).
+      break;
+    case kNullGate:
+      formula = "";  // No need for the parentheses.
+      end = "";
+      break;
+    case kAtleastGate:
+      formula = "@(" + boost::lexical_cast<std::string>(gate->vote_number());
+      formula += ", [";
+      op = ", ";
+      end = "])";
+      break;
+  }
+  bool first_child = true;  // To get the formatting correct.
+
+  typedef boost::shared_ptr<IGate> IGatePtr;
+  boost::unordered_map<int, IGatePtr>::const_iterator it_gate;
+  for (it_gate = gate->gate_children().begin();
+       it_gate != gate->gate_children().end(); ++it_gate) {
+    if (first_child) {
+      first_child = false;
+    } else {
+      formula += op;
+    }
+    if (it_gate->first < 0) formula += "~";  // Negation.
+    IGatePtr child_gate = it_gate->second;
+    if (child_gate->state() == kNormalState) {
+      formula += "G";
+      if (child_gate->IsModule()) formula += "M";
+    } else {
+      formula += "GC";
+    }
+    formula += boost::lexical_cast<std::string>(child_gate->index());
+
+    os << child_gate;
+  }
+
+  typedef boost::shared_ptr<IBasicEvent> IBasicEventPtr;
+  boost::unordered_map<int, IBasicEventPtr>::const_iterator it_basic;
+  for (it_basic = gate->basic_event_children().begin();
+       it_basic != gate->basic_event_children().end(); ++it_basic) {
+    if (first_child) {
+      first_child = false;
+    } else {
+      formula += op;
+    }
+    if (it_basic->first < 0) formula += "~";  // Negation.
+    IBasicEventPtr child = it_basic->second;
+    formula += "B" + boost::lexical_cast<std::string>(child->index());
+
+    os << child;
+  }
+
+  typedef boost::shared_ptr<Constant> ConstantPtr;
+  boost::unordered_map<int, ConstantPtr>::const_iterator it_const;
+  for (it_const = gate->constant_children().begin();
+       it_const != gate->constant_children().end(); ++it_const) {
+    if (first_child) {
+      first_child = false;
+    } else {
+      formula += op;
+    }
+    if (it_const->first < 0) formula += "~";  // Negation.
+    ConstantPtr child = it_const->second;
+    formula += "H" + boost::lexical_cast<std::string>(child->index());
+
+    os << child;
+  }
+  std::string signature = "G";
+  if (gate->IsModule()) signature += "M";
+  os << signature << gate->index() << " := " << formula << end << std::endl;
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const IndexedFaultTree* ft) {
+  os << "IndexedFaultTree_G" << ft->top_event()->index() << std::endl;
+  os << std::endl;
+  os << ft->top_event();
+  return os;
 }
 
 }  // namespace scram
