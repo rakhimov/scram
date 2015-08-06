@@ -84,7 +84,7 @@ class Preprocessor {
   void NormalizeGates();
 
   /// Notifies all parents of negative gates, such as NOT, NOR, and NAND, before
-  /// transforming these gates into basic gates of OR and AND. The child gates
+  /// transforming these gates into basic gates of OR and AND. The argument gates
   /// are swaped with a negative sign.
   ///
   /// @param[in] gate The gate to start processing.
@@ -104,7 +104,7 @@ class Preprocessor {
   ///
   /// @warning Gate marks must be clear.
   /// @warning The parents of negative gates are assumed to be notified about
-  ///          the change of their children types.
+  ///          the change of their argument types.
   /// @warning NULL gates are not handled.
   void NormalizeGate(const IGatePtr& gate);
 
@@ -117,7 +117,7 @@ class Preprocessor {
   void NormalizeXorGate(const IGatePtr& gate);
 
   /// Normalizes an ATLEAST gate with a vote number. The gate is turned into
-  /// an OR gate of recursively normalized ATLEAST and AND child gates according
+  /// an OR gate of recursively normalized ATLEAST and AND arg gates according
   /// to the formula K/N(x, y_i) = OR(AND(x, K-1/N-1(y_i)), K/N-1(y_i))) with
   /// y_i being the rest of formula variables, which exclude x.
   /// This representation is more friendly to other preprocessing and analysis
@@ -174,42 +174,42 @@ class Preprocessor {
   ///          of the tree. This must be handled separately.
   bool PropagateConstants(const IGatePtr& gate);
 
-  /// Changes the state of a gate or passes a constant child to be removed
+  /// Changes the state of a gate or passes a constant argument to be removed
   /// later. The function determines its actions depending on the type of
-  /// a gate and state of a child; however, the sign of the index is ignored.
+  /// a gate and state of an argument; however, the index sign is ignored.
   /// The caller of this function must ensure that the state corresponds to the
-  /// sign of the child index.
+  /// sign of the argument index.
   /// The type of the gate may change, but it will only be valid after the
-  /// to-be-erased children are handled properly.
+  /// to-be-erased arguments are handled properly.
   ///
-  /// @param[in,out] gate The parent gate that contains the children.
-  /// @param[in] child The constant child under consideration.
-  /// @param[in] state False or True constant state of the child.
-  /// @param[in,out] to_erase The set of children to erase from the parent gate.
+  /// @param[in,out] gate The parent gate that contains the arguments.
+  /// @param[in] arg The constant argument under consideration.
+  /// @param[in] state False or True constant state of the argument.
+  /// @param[in,out] to_erase The set of arguments to erase from the parent gate.
   ///
-  /// @returns true if the passed gate has become constant due to its child.
+  /// @returns true if the passed gate has become constant due to its argument.
   /// @returns false if the parent still valid for further operations.
   ///
   /// @note This is a helper function that propagates constants.
   /// @note This function may change the state of the gate.
   /// @note This function may change type and parameters of the gate.
-  bool ProcessConstantChild(const IGatePtr& gate, int child,
-                            bool state, std::vector<int>* to_erase);
+  bool ProcessConstantArg(const IGatePtr& gate, int arg,
+                          bool state, std::vector<int>* to_erase);
 
-  /// Removes a set of children from a gate taking into account the logic.
+  /// Removes a set of arguments from a gate taking into account the logic.
   /// This is a helper function for NULL and UNITY propagation on the tree.
   /// If the final gate is empty, its state is turned into NULL or UNITY
   /// depending on the logic of the gate and the logic of the constant
   /// propagation.
   ///
-  /// @param[in,out] gate The gate that contains the children to be removed.
-  /// @param[in] to_erase The set of children to erase from the parent gate.
+  /// @param[in,out] gate The gate that contains the arguments to be removed.
+  /// @param[in] to_erase The set of arguments to erase from the parent gate.
   ///
   /// @note This is a helper function that propagates constants, so it is
   ///       coupled with the logic of the constant propagation algorithms.
-  void RemoveChildren(const IGatePtr& gate, const std::vector<int>& to_erase);
+  void RemoveArgs(const IGatePtr& gate, const std::vector<int>& to_erase);
 
-  /// Propagates complements of child gates down to leafs according to
+  /// Propagates complements of argument gates down to leafs according to
   /// the De Morgan's law in order to remove any negative logic from the fault
   /// tree's gates. The resulting tree will contain only positive gates, OR
   /// and AND. After this function, the Boolean graph is in negation normal
@@ -225,20 +225,20 @@ class Preprocessor {
   ///
   /// @warning Gate marks must be clear.
   /// @warning If the root gate has a negative sign, it must be handled before
-  ///          calling this function. The children and type of the gate must
+  ///          calling this function. The arguments and type of the gate must
   ///          be inverted according to the logic of the root gate.
   ///
   /// @todo Module-aware complement propagation.
   void PropagateComplements(const IGatePtr& gate,
                             std::map<int, IGatePtr>* gate_complements);
 
-  /// Removes child gates of NULL type, which means these child gates have
-  /// only one child. That one grandchild is transfered to the parent gate,
-  /// and the original child gate is removed from the parent gate.
+  /// Removes argument gates of NULL type, which means these arg gates have
+  /// only one argument. That one grand arg is transfered to the parent gate,
+  /// and the original argument gate is removed from the parent gate.
   ///
   /// This is a top-down algorithm that searches for all NULL type gates, which
   /// means it is less efficient than having a specific NULL type gate
-  /// propagate its child bottom-up.
+  /// propagate its argument bottom-up.
   ///
   /// @param[in,out] gate The starting gate to traverse the tree. This is for
   ///                     recursive purposes.
@@ -254,7 +254,7 @@ class Preprocessor {
   bool RemoveNullGates(const IGatePtr& gate);
 
   /// Pre-processes the fault tree by doing the simplest Boolean algebra.
-  /// Positive children with the same OR or AND gates as parents are coalesced.
+  /// Positive arguments with the same OR or AND gates as parents are coalesced.
   /// This function merges similar logic gates of NAND and NOR as well.
   ///
   /// @param[in,out] gate The starting gate to traverse the tree. This is for
@@ -266,7 +266,7 @@ class Preprocessor {
   /// @note Constant state gates may be generated upon joining. These gates
   ///       are registered for future processing.
   /// @note It is impossible that this function generates NULL type gates.
-  /// @note Module child gates are omitted from coalescing to preserve them.
+  /// @note Module gates are omitted from coalescing to preserve them.
   bool JoinGates(const IGatePtr& gate);
 
   /// Traverses the indexed fault tree to detect modules. Modules are
@@ -287,54 +287,54 @@ class Preprocessor {
   /// @param[in,out] gate The gate to test for modularity.
   void FindModules(const IGatePtr& gate);
 
-  /// Creates a new module as a child of an existing gate if the logic of the
-  /// existing parent gate allows a sub-module. The existing
-  /// children of the original gate are used to create the new module.
-  /// If the new module must contain all the children, the original gate is
+  /// Creates a new module as an argument of an existing gate if the logic of
+  /// the existing parent gate allows a sub-module. The existing
+  /// arguments of the original gate are used to create the new module.
+  /// If the new module must contain all the arguments, the original gate is
   /// asserted to be a module, and no operation is performed.
   ///
   /// @param[in,out] gate The parent gate for a module.
-  /// @param[in] children Modular children to be added into the new module.
+  /// @param[in] args Modular arguments to be added into the new module.
   ///
   /// @returns Pointer to the new module if it is created.
   IGatePtr CreateNewModule(
       const IGatePtr& gate,
-      const std::vector<std::pair<int, NodePtr> >& children);
+      const std::vector<std::pair<int, NodePtr> >& args);
 
-  /// Checks if a group of modular children share anything with non-modular
-  /// children. If so, then the modular children are not actually modular, and
-  /// that children are removed from modular containers.
+  /// Checks if a group of modular arguments share anything with non-modular
+  /// arguments. If so, then the modular arguments are not actually modular, and
+  /// that arguments are removed from modular containers.
   /// This is due to chain of events that are shared between modular and
-  /// non-modular children.
+  /// non-modular arguments.
   ///
-  /// @param[in,out] modular_children Candidates for modular grouping.
-  /// @param[in,out] non_modular_children Non modular children.
-  void FilterModularChildren(
-      std::vector<std::pair<int, NodePtr> >* modular_children,
-      std::vector<std::pair<int, NodePtr> >* non_modular_children);
+  /// @param[in,out] modular_args Candidates for modular grouping.
+  /// @param[in,out] non_modular_args Non modular arguments.
+  void FilterModularArgs(
+      std::vector<std::pair<int, NodePtr> >* modular_args,
+      std::vector<std::pair<int, NodePtr> >* non_modular_args);
 
-  /// Groups modular children by their common elements. The gates created with
-  /// these modular children are guaranteed to be independent modules.
+  /// Groups modular arguments by their common elements. The gates created with
+  /// these modular arguments are guaranteed to be independent modules.
   ///
-  /// @param[in] modular_children Candidates for modular grouping.
-  /// @param[out] groups Grouped modular children.
-  void GroupModularChildren(
-      const std::vector<std::pair<int, NodePtr> >& modular_children,
+  /// @param[in] modular_args Candidates for modular grouping.
+  /// @param[out] groups Grouped modular arguments.
+  void GroupModularArgs(
+      const std::vector<std::pair<int, NodePtr> >& modular_args,
       std::vector<std::vector<std::pair<int, NodePtr> > >* groups);
 
-  /// Creates new module gates from groups of modular children if the logic of
+  /// Creates new module gates from groups of modular arguments if the logic of
   /// the parent gate allows sub-modules. The existing
-  /// children of the original gate are used to create the new modules.
-  /// If all the parent gate children are modular and within one group,
+  /// arguments of the original gate are used to create the new modules.
+  /// If all the parent gate arguments are modular and within one group,
   /// the parent gate is asserted to be a module gate, and no operation is
   /// performed.
   ///
   /// @param[in,out] gate The parent gate for a module.
-  /// @param[in] modular_children All the modular children.
-  /// @param[in] groups Grouped modular children.
+  /// @param[in] modular_args All the modular arguments.
+  /// @param[in] groups Grouped modular arguments.
   void CreateNewModules(
       const IGatePtr& gate,
-      const std::vector<std::pair<int, NodePtr> >& modular_children,
+      const std::vector<std::pair<int, NodePtr> >& modular_args,
       const std::vector<std::vector<std::pair<int, NodePtr> > >& groups);
 
   /// Propagates failures of common nodes to detect redundancy. The fault tree
@@ -387,8 +387,8 @@ class Preprocessor {
   /// the parent unless it is also in the destination set. In the latter case,
   /// the parent is removed from the destinations.
   ///
-  /// param[in] node The common node.
-  /// param[in,out] destinations A set of destination gates.
+  /// @param[in] node The common node.
+  /// @param[in,out] destinations A set of destination gates.
   ///
   /// @returns true if some of the redundant parents turned into a constant.
   ///
@@ -448,7 +448,7 @@ class Preprocessor {
   void ClearNodeVisits(const IGatePtr& gate);
 
   /// Clears optimization values of nodes. The optimization values are set to 0.
-  /// Resets the number of failed children of gates.
+  /// Resets the number of failed arguments of gates.
   ///
   /// @param[in,out] gate The root gate to be traversed and cleaned.
   void ClearOptiValues(const IGatePtr& gate);
@@ -461,7 +461,7 @@ class Preprocessor {
   /// descendants.
   std::vector<boost::weak_ptr<IGate> > const_gates_;
   /// Container for NULL type gates to be tracked and cleaned by algorithms.
-  /// NULL type gates are created by coherent gates with only one child.
+  /// NULL type gates are created by coherent gates with only one argument.
   std::vector<boost::weak_ptr<IGate> > null_gates_;
 };
 

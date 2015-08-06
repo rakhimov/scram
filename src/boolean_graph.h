@@ -18,6 +18,10 @@
 /// Classes and facilities to represent simplified fault trees as Boolean graphs
 /// wth event and gate indices instead of ID names. This facility is designed to
 /// work with FaultTreeAnalysis and Preprocessor classes.
+///
+/// The terminologies of the graphs and Boolean logic are mixed to represent the
+/// Boolean graph; however, if there is a conflict, the Boolean terminalogy is
+/// preferred. For example, instead of "children", "arguments" are preferred.
 #ifndef SCRAM_SRC_BOOLEAN_GRAPH_H_
 #define SCRAM_SRC_BOOLEAN_GRAPH_H_
 
@@ -233,10 +237,10 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
   /// @param[in] type The type of this gate.
   explicit IGate(const Operator& type);
 
-  /// Destructs parent information from children.
+  /// Destructs parent information from the arguments.
   ~IGate() {
     assert(Node::parents().empty());
-    IGate::EraseAllChildren();
+    IGate::EraseAllArgs();
   }
 
   /// @returns Type of this gate.
@@ -268,24 +272,22 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
   /// @returns The state of this gate.
   inline const State& state() const { return state_; }
 
-  /// @returns Children of this gate.
-  inline const std::set<int>& children() const { return children_; }
+  /// @returns Arguments of this gate.
+  inline const std::set<int>& args() const { return args_; }
 
-  /// @returns Children of this gate that are indexed gates.
-  inline const boost::unordered_map<int, IGatePtr>& gate_children() const {
-    return gate_children_;
+  /// @returns Arguments of this gate that are indexed gates.
+  inline const boost::unordered_map<int, IGatePtr>& gate_args() const {
+    return gate_args_;
   }
 
-  /// @returns Children of this gate that are variables.
-  inline const boost::unordered_map<int, VariablePtr>&
-      variable_children() const {
-    return variable_children_;
+  /// @returns Arguments of this gate that are variables.
+  inline const boost::unordered_map<int, VariablePtr>& variable_args() const {
+    return variable_args_;
   }
 
-  /// @returns Children of this gate that are indexed constants.
-  inline const boost::unordered_map<int, ConstantPtr>&
-      constant_children() const {
-    return constant_children_;
+  /// @returns Arguments of this gate that are indexed constants.
+  inline const boost::unordered_map<int, ConstantPtr>& constant_args() const {
+    return constant_args_;
   }
 
   /// Marks are used for linear traversal of graphs. This can be an alternative
@@ -325,181 +327,182 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
   /// @returns false if it is not yet set to be a module.
   inline bool IsModule() const { return module_; }
 
-  /// Adds a child gate to this gate. Before adding the child, the existing
-  /// children are checked for complements and duplicates. If there is a
-  /// complement, the gate may change its state (clearing its children) or type.
+  /// Adds an argument gate to this gate. Before adding the argument, the
+  /// existing arguments are checked for complements and duplicates. If there is
+  /// complement, the gate may change its state (clearing its arguments) or type.
   /// The duplicates are handled according to the logic of the gate. The caller
   /// must be aware of possible changes due to the logic of the gate.
   ///
-  /// @param[in] child A positive or negative index of a child.
-  /// @param[in] gate A pointer to the child gate.
+  /// @param[in] arg A positive or negative index of an argument.
+  /// @param[in] gate A pointer to the argument gate.
   ///
   /// @returns false if there final state of the parent is normal.
-  /// @returns true if the parent has become constant due to a complement child.
+  /// @returns true if the parent has become constant due to a complement arg.
   ///
   /// @warning The function does not indicate invalid state. For example, a
-  ///          second child for NOT or NULL type gates is not going to be
+  ///          second argument for NOT or NULL type gates is not going to be
   ///          reported in any way.
   /// @warning This function does not indicate error for future additions in
   ///          case the state is nulled or becomes unity.
   /// @warning Complex logic gates like ATLEAST and XOR are handled specially
-  ///          if the child is duplicate. The caller must be very cautious
+  ///          if the argument is duplicate. The caller must be very cautious
   ///          of the side effects of the manipulations.
-  bool AddChild(int child, const IGatePtr& gate);
+  bool AddArg(int arg, const IGatePtr& gate);
 
-  /// Adds a child variable to this gate. Before adding the child, the
-  /// existing children are checked for complements and duplicates. If there is
-  /// a complement, the gate may change its state (clearing its children) or
+  /// Adds an argument variable to this gate. Before adding the argument, the
+  /// existing arguments are checked for complements and duplicates. If there is
+  /// a complement, the gate may change its state (clearing its arguments) or
   /// type. The duplicates are handled according to the logic of the gate. The
   /// caller must be aware of possible changes due to the logic of the gate.
   ///
-  /// @param[in] child A positive or negative index of a child.
-  /// @param[in] variable A pointer to the child variable.
+  /// @param[in] arg A positive or negative index of an argument.
+  /// @param[in] variable A pointer to the argument variable.
   ///
   /// @returns false if there final state of the parent is normal.
-  /// @returns true if the parent has become constant due to a complement child.
+  /// @returns true if the parent has become constant due to a complement arg.
   ///
   /// @warning The function does not indicate invalid state. For example, a
-  ///          second child for NOT or NULL type gates is not going to be
+  ///          second argument for NOT or NULL type gates is not going to be
   ///          reported in any way.
   /// @warning This function does not indicate error for future additions in
   ///          case the state is nulled or becomes unity.
   /// @warning Complex logic gates like ATLEAST and XOR are handled specially
-  ///          if the child is duplicate. The caller must be very cautious
+  ///          if the argument is duplicate. The caller must be very cautious
   ///          of the side effects of the manipulations.
-  bool AddChild(int child, const VariablePtr& variable);
+  bool AddArg(int arg, const VariablePtr& variable);
 
-  /// Adds a constant child to this gate. Before adding the child, the existing
-  /// children are checked for complements and duplicates. If there is a
-  /// complement, the gate may change its state (clearing its children) or type.
+  /// Adds a constant argument to this gate. Before adding the argument, the
+  /// existing arguments are checked for complements and duplicates. If there is
+  /// complement, the gate may change its state (clearing its arguments) or type.
   /// The duplicates are handled according to the logic of the gate. The caller
   /// must be aware of possible changes due to the logic of the gate.
   ///
-  /// @param[in] child A positive or negative index of a child.
-  /// @param[in] constant A pointer to the child that is a Constant.
+  /// @param[in] arg A positive or negative index of an argument.
+  /// @param[in] constant A pointer to the argument that is a Constant.
   ///
   /// @returns false if there final state of the parent is normal.
-  /// @returns true if the parent has become constant due to a complement child.
+  /// @returns true if the parent has become constant due to a complement arg.
   ///
   /// @warning The function does not indicate invalid state. For example, a
-  ///          second child for NOT or NULL type gates is not going to be
+  ///          second argument for NOT or NULL type gates is not going to be
   ///          reported in any way.
   /// @warning This function does not indicate error for future additions in
   ///          case the state is nulled or becomes unity.
   /// @warning Complex logic gates like ATLEAST and XOR are handled specially
-  ///          if the child is duplicate. The caller must be very cautious
+  ///          if the argument is duplicate. The caller must be very cautious
   ///          of the side effects of the manipulations.
-  bool AddChild(int child, const ConstantPtr& constant);
+  bool AddArg(int arg, const ConstantPtr& constant);
 
-  /// Transfers this gates's child to another gate.
+  /// Transfers this gates's argument to another gate.
   ///
-  /// @param[in] child Positive or negative index of the child.
-  /// @param[in,out] recipient A new parent for the child.
+  /// @param[in] arg Positive or negative index of the argument.
+  /// @param[in,out] recipient A new parent for the argument.
   ///
   /// @returns false if there final state of the recipient is normal.
-  /// @returns true if the recipient becomes constant due to a complement child.
-  bool TransferChild(int child, const IGatePtr& recipient);
+  /// @returns true if the recipient becomes constant due to a complement arg.
+  bool TransferArg(int arg, const IGatePtr& recipient);
 
-  /// Shares this gates's child with another gate.
+  /// Shares this gates's argument with another gate.
   ///
-  /// @param[in] child Positive or negative index of the child.
-  /// @param[in,out] recipient Another parent for the child.
+  /// @param[in] arg Positive or negative index of the argument.
+  /// @param[in,out] recipient Another parent for the argument.
   ///
   /// @returns false if there final state of the recipient is normal.
-  /// @returns true if the recipient becomes constant due to a complement child.
-  bool ShareChild(int child, const IGatePtr& recipient);
+  /// @returns true if the recipient becomes constant due to a complement arg.
+  bool ShareArg(int arg, const IGatePtr& recipient);
 
-  /// Makes all children complement of themselves.
+  /// Makes all arguments complement of themselves.
   /// This is a helper function to propagate a complement gate and apply
   /// De Morgan's Law.
-  void InvertChildren();
+  void InvertArgs();
 
-  /// Replaces a child with the complement of it.
+  /// Replaces an argument with the complement of it.
   /// This is a helper function to propagate a complement gate and apply
   /// De Morgan's Law.
   ///
-  /// @param[in] existing_child Positive or negative index of the child.
-  void InvertChild(int existing_child);
+  /// @param[in] existing_arg Positive or negative index of the argument.
+  void InvertArg(int existing_arg);
 
-  /// Adds children of a child gate to this gate. This is a helper function for
-  /// gate coalescing. The child gate of the same logic is removed from the
-  /// children list. The sign of the child gate is expected to be positive.
+  /// Adds arguments of an argument gate to this gate. This is a helper function
+  /// for gate coalescing. The argument gate of the same logic is removed from
+  /// the arguments list. The sign of the argument gate is expected to be
+  /// positive.
   ///
-  /// @param[in] child_gate The gate which children to be added to this gate.
+  /// @param[in] arg_gate The gate which arguments to be added to this gate.
   ///
   /// @returns false if the final set is null or unity.
   /// @returns true if the addition is successful with a normal final state.
   ///
-  /// @warning This function does not test if the parent and child logics are
+  /// @warning This function does not test if the parent and argument logics are
   ///          correct for coealescing.
-  bool JoinGate(const IGatePtr& child_gate);
+  bool JoinGate(const IGatePtr& arg_gate);
 
-  /// Swaps a single child of a NULL type child gate. This is separate from
-  /// other coalescing functions because this function takes into account the
-  /// sign of the child.
+  /// Swaps a single argument of a NULL type argument gate. This is separate
+  /// from other coalescing functions because this function takes into account
+  /// the sign of the argument.
   ///
-  /// @param[in] index Positive or negative index of the child gate.
+  /// @param[in] index Positive or negative index of the argument gate.
   ///
   /// @returns false if the final set is null or unity.
   /// @returns true if the addition is successful with a normal final state.
   bool JoinNullGate(int index);
 
-  /// Directly copies children from another gate. This is a helper function
+  /// Directly copies arguments from another gate. This is a helper function
   /// for initialization of gates' copies.
   ///
-  /// @param[in] gate The gate which children will be copied.
-  inline void CopyChildren(const IGatePtr& gate) {
-    assert(children_.empty());
-    IGate::AddChild(gate->index(), gate);  // This is a hack to keep the parent
-    IGate::JoinGate(gate);                 // information updated.
+  /// @param[in] gate The gate which arguments will be copied.
+  inline void CopyArgs(const IGatePtr& gate) {
+    assert(args_.empty());
+    IGate::AddArg(gate->index(), gate);  // This is a hack to keep the parent
+    IGate::JoinGate(gate);               // information updated.
   }
 
-  /// Removes a child from the children container. The passed child index
-  /// must be in this gate's children container and initialized.
+  /// Removes an argument from the arguments container. The passed argument
+  /// index must be in this gate's arguments container and initialized.
   ///
-  /// @param[in] child The positive or negative index of the existing child.
+  /// @param[in] arg The positive or negative index of the existing argument.
   ///
-  /// @warning The parent gate may become empty or one-child gate, which must
+  /// @warning The parent gate may become empty or one-argument gate, which must
   ///          be handled by the caller.
-  inline void EraseChild(int child) {
-    assert(child != 0);
-    assert(children_.count(child));
-    children_.erase(child);
+  inline void EraseArg(int arg) {
+    assert(arg != 0);
+    assert(args_.count(arg));
+    args_.erase(arg);
     NodePtr node;
-    if (gate_children_.count(child)) {
-      node = gate_children_.find(child)->second;
-      gate_children_.erase(child);
-    } else if (constant_children_.count(child)) {
-      node = constant_children_.find(child)->second;
-      constant_children_.erase(child);
+    if (gate_args_.count(arg)) {
+      node = gate_args_.find(arg)->second;
+      gate_args_.erase(arg);
+    } else if (constant_args_.count(arg)) {
+      node = constant_args_.find(arg)->second;
+      constant_args_.erase(arg);
     } else {
-      node = variable_children_.find(child)->second;
-      assert(variable_children_.count(child));
-      variable_children_.erase(child);
+      node = variable_args_.find(arg)->second;
+      assert(variable_args_.count(arg));
+      variable_args_.erase(arg);
     }
     assert(node->parents_.count(Node::index()));
     node->parents_.erase(Node::index());
   }
 
-  /// Clears all the children of this gate.
-  inline void EraseAllChildren() {
-    while (!children_.empty()) IGate::EraseChild(*children_.rbegin());
+  /// Clears all the arguments of this gate.
+  inline void EraseAllArgs() {
+    while (!args_.empty()) IGate::EraseArg(*args_.rbegin());
   }
 
-  /// Sets the state of this gate to null and clears all its children.
+  /// Sets the state of this gate to null and clears all its arguments.
   /// This function is expected to be used only once.
   inline void Nullify() {
     assert(state_ == kNormalState);
     state_ = kNullState;
-    IGate::EraseAllChildren();
+    IGate::EraseAllArgs();
   }
 
-  /// Sets the state of this gate to unity and clears all its children.
+  /// Sets the state of this gate to unity and clears all its arguments.
   /// This function is expected to be used only once.
   inline void MakeUnity() {
     assert(state_ == kNormalState);
     state_ = kUnityState;
-    IGate::EraseAllChildren();
+    IGate::EraseAllArgs();
   }
 
   /// Turns this gate's module flag on. This should be one time operation.
@@ -508,39 +511,39 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
     module_ = true;
   }
 
-  /// Registers a failure of a child. Depending on the logic of the gate,
+  /// Registers a failure of an argument. Depending on the logic of the gate,
   /// sets the failure of this gate.
   ///
-  /// @note The actual failure or existence of the child is not checked.
-  void ChildFailed();
+  /// @note The actual failure or existence of the argument is not checked.
+  void ArgFailed();
 
   /// Resests this gates failure value and information about the number of
-  /// failed children.
-  void ResetChildrenFailure();
+  /// failed arguments.
+  inline void ResetArgFailure() { num_failed_args_ = 0; }
 
  private:
   IGate(const IGate&);  ///< Restrict copy construction.
   IGate& operator=(const IGate&);  ///< Restrict copy assignment.
 
-  /// Process an addition of a child that already exists in this gate.
+  /// Process an addition of an argument that already exists in this gate.
   ///
-  /// @param[in] index Positive or negative index of the existing child.
+  /// @param[in] index Positive or negative index of the existing argument.
   ///
   /// @returns false if the final set is null or unity.
   /// @returns true if the addition is successful with a normal final state.
   ///
-  /// @warning The addition of a duplicate child has a complex set of possible
-  ///          outcommes dependending on the context. The complex corner cases
-  ///          must be handled by the caller.
-  bool ProcessDuplicateChild(int index);
+  /// @warning The addition of a duplicate argument has a complex set of
+  ///          possible outcommes dependending on the context. The complex
+  ///          corner cases must be handled by the caller.
+  bool ProcessDuplicateArg(int index);
 
-  /// Process an addition of a complement of an existing child.
+  /// Process an addition of a complement of an existing argument.
   ///
-  /// @param[in] index Positive or negative index of the child.
+  /// @param[in] index Positive or negative index of the argument.
   ///
   /// @returns false if the final set is null or unity.
   /// @returns true if the addition is successful with a normal final state.
-  bool ProcessComplementChild(int index);
+  bool ProcessComplementArg(int index);
 
   Operator type_;  ///< Type of this gate.
   State state_;  ///< Indication if this gate's state is normal, null, or unity.
@@ -549,15 +552,15 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
   int min_time_;  ///< Minimum time of visits of the sub-tree of the gate.
   int max_time_;  ///< Maximum time of visits of the sub-tree of the gate.
   bool module_;  ///< Indication of an independent module gate.
-  std::set<int> children_;  ///< Children of the gate.
-  /// Children that are gates.
-  boost::unordered_map<int, IGatePtr> gate_children_;
-  /// Children that are variables.
-  boost::unordered_map<int, VariablePtr> variable_children_;
-  /// Children that are constant like house events.
-  boost::unordered_map<int, ConstantPtr> constant_children_;
-  /// The number of children failed upon failure propagation.
-  int num_failed_children_;
+  std::set<int> args_;  ///< Arguments of the gate.
+  /// Arguments that are gates.
+  boost::unordered_map<int, IGatePtr> gate_args_;
+  /// Arguments that are variables.
+  boost::unordered_map<int, VariablePtr> variable_args_;
+  /// Arguments that are constant like house events.
+  boost::unordered_map<int, ConstantPtr> constant_args_;
+  /// The number of arguments failed upon failure propagation.
+  int num_failed_args_;
 };
 
 class BasicEvent;

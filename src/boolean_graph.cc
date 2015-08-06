@@ -16,6 +16,9 @@
  */
 /// @file boolean_graph.cc
 /// Implementation of indexed nodes, events, gates, and the Boolean graph.
+/// The implementation caters other algorithms like preprocessing. The main
+/// goal is to make manipulations and transformations of the graph easier to
+/// achieve for graph algorithms.
 #include "boolean_graph.h"
 
 #include <utility>
@@ -55,175 +58,172 @@ IGate::IGate(const Operator& type)
       min_time_(0),
       max_time_(0),
       module_(false),
-      num_failed_children_(0) {}
+      num_failed_args_(0) {}
 
-bool IGate::AddChild(int child, const IGatePtr& gate) {
-  assert(child != 0);
-  assert(std::abs(child) == gate->index());
+bool IGate::AddArg(int arg, const IGatePtr& gate) {
+  assert(arg != 0);
+  assert(std::abs(arg) == gate->index());
   assert(state_ == kNormalState);
-  if (type_ == kNotGate || type_ == kNullGate) assert(children_.empty());
-  if (type_ == kXorGate) assert(children_.size() < 2);
-  if (children_.count(child)) return IGate::ProcessDuplicateChild(child);
-  if (children_.count(-child)) return IGate::ProcessComplementChild(child);
-  children_.insert(child);
-  gate_children_.insert(std::make_pair(child, gate));
+  if (type_ == kNotGate || type_ == kNullGate) assert(args_.empty());
+  if (type_ == kXorGate) assert(args_.size() < 2);
+  if (args_.count(arg)) return IGate::ProcessDuplicateArg(arg);
+  if (args_.count(-arg)) return IGate::ProcessComplementArg(arg);
+  args_.insert(arg);
+  gate_args_.insert(std::make_pair(arg, gate));
   gate->parents_.insert(std::make_pair(Node::index(), shared_from_this()));
   return true;
 }
 
-bool IGate::AddChild(int child, const VariablePtr& variable) {
-  assert(child != 0);
-  assert(std::abs(child) == variable->index());
+bool IGate::AddArg(int arg, const VariablePtr& variable) {
+  assert(arg != 0);
+  assert(std::abs(arg) == variable->index());
   assert(state_ == kNormalState);
-  if (type_ == kNotGate || type_ == kNullGate) assert(children_.empty());
-  if (type_ == kXorGate) assert(children_.size() < 2);
-  if (children_.count(child)) return IGate::ProcessDuplicateChild(child);
-  if (children_.count(-child)) return IGate::ProcessComplementChild(child);
-  children_.insert(child);
-  variable_children_.insert(std::make_pair(child, variable));
+  if (type_ == kNotGate || type_ == kNullGate) assert(args_.empty());
+  if (type_ == kXorGate) assert(args_.size() < 2);
+  if (args_.count(arg)) return IGate::ProcessDuplicateArg(arg);
+  if (args_.count(-arg)) return IGate::ProcessComplementArg(arg);
+  args_.insert(arg);
+  variable_args_.insert(std::make_pair(arg, variable));
   variable->parents_.insert(std::make_pair(Node::index(), shared_from_this()));
   return true;
 }
 
-bool IGate::AddChild(int child, const ConstantPtr& constant) {
-  assert(child != 0);
-  assert(std::abs(child) == constant->index());
+bool IGate::AddArg(int arg, const ConstantPtr& constant) {
+  assert(arg != 0);
+  assert(std::abs(arg) == constant->index());
   assert(state_ == kNormalState);
-  if (type_ == kNotGate || type_ == kNullGate) assert(children_.empty());
-  if (type_ == kXorGate) assert(children_.size() < 2);
-  if (children_.count(child)) return IGate::ProcessDuplicateChild(child);
-  if (children_.count(-child)) return IGate::ProcessComplementChild(child);
-  children_.insert(child);
-  constant_children_.insert(std::make_pair(child, constant));
+  if (type_ == kNotGate || type_ == kNullGate) assert(args_.empty());
+  if (type_ == kXorGate) assert(args_.size() < 2);
+  if (args_.count(arg)) return IGate::ProcessDuplicateArg(arg);
+  if (args_.count(-arg)) return IGate::ProcessComplementArg(arg);
+  args_.insert(arg);
+  constant_args_.insert(std::make_pair(arg, constant));
   constant->parents_.insert(std::make_pair(Node::index(), shared_from_this()));
   return true;
 }
 
-bool IGate::TransferChild(int child, const IGatePtr& recipient) {
-  assert(child != 0);
-  assert(children_.count(child));
-  children_.erase(child);
+bool IGate::TransferArg(int arg, const IGatePtr& recipient) {
+  assert(arg != 0);
+  assert(args_.count(arg));
+  args_.erase(arg);
   bool ret = true;  // The normal state of the recipient.
   NodePtr node;
-  if (gate_children_.count(child)) {
-    node = gate_children_.find(child)->second;
-    ret = recipient->AddChild(child, gate_children_.find(child)->second);
-    gate_children_.erase(child);
-  } else if (variable_children_.count(child)) {
-    node = variable_children_.find(child)->second;
-    ret = recipient->AddChild(child, variable_children_.find(child)->second);
-    variable_children_.erase(child);
+  if (gate_args_.count(arg)) {
+    node = gate_args_.find(arg)->second;
+    ret = recipient->AddArg(arg, gate_args_.find(arg)->second);
+    gate_args_.erase(arg);
+  } else if (variable_args_.count(arg)) {
+    node = variable_args_.find(arg)->second;
+    ret = recipient->AddArg(arg, variable_args_.find(arg)->second);
+    variable_args_.erase(arg);
   } else {
-    assert(constant_children_.count(child));
-    node = constant_children_.find(child)->second;
-    ret = recipient->AddChild(child, constant_children_.find(child)->second);
-    constant_children_.erase(child);
+    assert(constant_args_.count(arg));
+    node = constant_args_.find(arg)->second;
+    ret = recipient->AddArg(arg, constant_args_.find(arg)->second);
+    constant_args_.erase(arg);
   }
   assert(node->parents_.count(Node::index()));
   node->parents_.erase(Node::index());
   return ret;
 }
 
-bool IGate::ShareChild(int child, const IGatePtr& recipient) {
-  assert(child != 0);
-  assert(children_.count(child));
+bool IGate::ShareArg(int arg, const IGatePtr& recipient) {
+  assert(arg != 0);
+  assert(args_.count(arg));
   bool ret = true;  // The normal state of the recipient.
-  if (gate_children_.count(child)) {
-    ret = recipient->AddChild(child, gate_children_.find(child)->second);
-  } else if (variable_children_.count(child)) {
-    ret = recipient->AddChild(child, variable_children_.find(child)->second);
+  if (gate_args_.count(arg)) {
+    ret = recipient->AddArg(arg, gate_args_.find(arg)->second);
+  } else if (variable_args_.count(arg)) {
+    ret = recipient->AddArg(arg, variable_args_.find(arg)->second);
   } else {
-    assert(constant_children_.count(child));
-    ret = recipient->AddChild(child, constant_children_.find(child)->second);
+    assert(constant_args_.count(arg));
+    ret = recipient->AddArg(arg, constant_args_.find(arg)->second);
   }
   return ret;
 }
 
-void IGate::InvertChildren() {
-  std::set<int> children(children_);  // Not to mess the iterator.
+void IGate::InvertArgs() {
+  std::set<int> args(args_);  // Not to mess the iterator.
   std::set<int>::iterator it;
-  for (it = children.begin(); it != children.end(); ++it) {
-    IGate::InvertChild(*it);
+  for (it = args.begin(); it != args.end(); ++it) {
+    IGate::InvertArg(*it);
   }
 }
 
-void IGate::InvertChild(int existing_child) {
-  assert(children_.count(existing_child));
-  assert(!children_.count(-existing_child));
-  children_.erase(existing_child);
-  children_.insert(-existing_child);
-  if (gate_children_.count(existing_child)) {
-    IGatePtr child = gate_children_.find(existing_child)->second;
-    gate_children_.erase(existing_child);
-    gate_children_.insert(std::make_pair(-existing_child, child));
-  } else if (variable_children_.count(existing_child)) {
-    VariablePtr child = variable_children_.find(existing_child)->second;
-    variable_children_.erase(existing_child);
-    variable_children_.insert(std::make_pair(-existing_child, child));
+void IGate::InvertArg(int existing_arg) {
+  assert(args_.count(existing_arg));
+  assert(!args_.count(-existing_arg));
+  args_.erase(existing_arg);
+  args_.insert(-existing_arg);
+  if (gate_args_.count(existing_arg)) {
+    IGatePtr arg = gate_args_.find(existing_arg)->second;
+    gate_args_.erase(existing_arg);
+    gate_args_.insert(std::make_pair(-existing_arg, arg));
+  } else if (variable_args_.count(existing_arg)) {
+    VariablePtr arg = variable_args_.find(existing_arg)->second;
+    variable_args_.erase(existing_arg);
+    variable_args_.insert(std::make_pair(-existing_arg, arg));
   } else {
-    ConstantPtr child = constant_children_.find(existing_child)->second;
-    constant_children_.erase(existing_child);
-    constant_children_.insert(std::make_pair(-existing_child, child));
+    ConstantPtr arg = constant_args_.find(existing_arg)->second;
+    constant_args_.erase(existing_arg);
+    constant_args_.insert(std::make_pair(-existing_arg, arg));
   }
 }
 
-bool IGate::JoinGate(const IGatePtr& child_gate) {
-  assert(children_.count(child_gate->index()));  // Positive child only.
-  children_.erase(child_gate->index());
-  gate_children_.erase(child_gate->index());
-  assert(child_gate->parents_.count(Node::index()));
-  child_gate->parents_.erase(Node::index());
+bool IGate::JoinGate(const IGatePtr& arg_gate) {
+  assert(args_.count(arg_gate->index()));  // Positive argument only.
+  args_.erase(arg_gate->index());
+  gate_args_.erase(arg_gate->index());
+  assert(arg_gate->parents_.count(Node::index()));
+  arg_gate->parents_.erase(Node::index());
 
   boost::unordered_map<int, IGatePtr>::const_iterator it_g;
-  for (it_g = child_gate->gate_children_.begin();
-       it_g != child_gate->gate_children_.end(); ++it_g) {
-    if (!IGate::AddChild(it_g->first, it_g->second)) return false;
+  for (it_g = arg_gate->gate_args_.begin();
+       it_g != arg_gate->gate_args_.end(); ++it_g) {
+    if (!IGate::AddArg(it_g->first, it_g->second)) return false;
   }
   boost::unordered_map<int, VariablePtr>::const_iterator it_b;
-  for (it_b = child_gate->variable_children_.begin();
-       it_b != child_gate->variable_children_.end(); ++it_b) {
-    if (!IGate::AddChild(it_b->first, it_b->second)) return false;
+  for (it_b = arg_gate->variable_args_.begin();
+       it_b != arg_gate->variable_args_.end(); ++it_b) {
+    if (!IGate::AddArg(it_b->first, it_b->second)) return false;
   }
   boost::unordered_map<int, ConstantPtr>::const_iterator it_c;
-  for (it_c = child_gate->constant_children_.begin();
-       it_c != child_gate->constant_children_.end(); ++it_c) {
-    if (!IGate::AddChild(it_c->first, it_c->second)) return false;
+  for (it_c = arg_gate->constant_args_.begin();
+       it_c != arg_gate->constant_args_.end(); ++it_c) {
+    if (!IGate::AddArg(it_c->first, it_c->second)) return false;
   }
   return true;
 }
 
 bool IGate::JoinNullGate(int index) {
   assert(index != 0);
-  assert(children_.count(index));
-  assert(gate_children_.count(index));
+  assert(args_.count(index));
+  assert(gate_args_.count(index));
 
-  children_.erase(index);
-  IGatePtr child_gate = gate_children_.find(index)->second;
-  gate_children_.erase(index);
-  child_gate->parents_.erase(Node::index());
+  args_.erase(index);
+  IGatePtr arg_gate = gate_args_.find(index)->second;
+  gate_args_.erase(index);
+  arg_gate->parents_.erase(Node::index());
 
-  assert(child_gate->type_ == kNullGate);
-  assert(child_gate->children_.size() == 1);
+  assert(arg_gate->type_ == kNullGate);
+  assert(arg_gate->args_.size() == 1);
 
-  int grandchild = *child_gate->children_.begin();
+  int grandchild = *arg_gate->args_.begin();
   grandchild *= index > 0 ? 1 : -1;  // Carry the parent's sign.
 
-  if (!child_gate->gate_children_.empty()) {
-    return IGate::AddChild(grandchild,
-                           child_gate->gate_children_.begin()->second);
-  } else if (!child_gate->constant_children_.empty()) {
-    return IGate::AddChild(grandchild,
-                           child_gate->constant_children_.begin()->second);
+  if (!arg_gate->gate_args_.empty()) {
+    return IGate::AddArg(grandchild, arg_gate->gate_args_.begin()->second);
+  } else if (!arg_gate->constant_args_.empty()) {
+    return IGate::AddArg(grandchild, arg_gate->constant_args_.begin()->second);
   } else {
-    assert(!child_gate->variable_children_.empty());
-    return IGate::AddChild(grandchild,
-                           child_gate->variable_children_.begin()->second);
+    assert(!arg_gate->variable_args_.empty());
+    return IGate::AddArg(grandchild, arg_gate->variable_args_.begin()->second);
   }
 }
 
-bool IGate::ProcessDuplicateChild(int index) {
+bool IGate::ProcessDuplicateArg(int index) {
   assert(type_ != kNotGate && type_ != kNullGate);
-  assert(children_.count(index));
+  assert(args_.count(index));
   switch (type_) {
     case kXorGate:
       IGate::Nullify();
@@ -232,9 +232,9 @@ bool IGate::ProcessDuplicateChild(int index) {
       // This is a very special handling of K/N duplicates.
       // @(k, [x, x, y_i]) = x & @(k-2, [y_i]) | @(k, [y_i])
       assert(vote_number_ > 1);
-      assert(children_.size() > 2);
+      assert(args_.size() > 2);
       type_ = kOrGate;
-      std::set<int> to_share(children_);  // Copy before manipulations.
+      std::set<int> to_share(args_);  // Copy before manipulations.
       to_share.erase(index);
 
       IGatePtr child_and(new IGate(kAndGate));  // May not be needed.
@@ -247,29 +247,29 @@ bool IGate::ProcessDuplicateChild(int index) {
         grand_child->vote_number(vote_number_ - 2);
       }
       if (grand_child) {
-        this->AddChild(child_and->index(), child_and);
-        this->TransferChild(index, child_and);
-        child_and->AddChild(grand_child->index(), grand_child);
-        assert(child_and->children().size() == 2);
+        this->AddArg(child_and->index(), child_and);
+        this->TransferArg(index, child_and);
+        child_and->AddArg(grand_child->index(), grand_child);
+        assert(child_and->args().size() == 2);
       }
 
       IGatePtr child_atleast(new IGate(kAtleastGate));
       child_atleast->vote_number(vote_number_);
-      this->AddChild(child_atleast->index(), child_atleast);
+      this->AddArg(child_atleast->index(), child_atleast);
 
       std::set<int>::iterator it;
       for (it = to_share.begin(); it != to_share.end(); ++it) {
-        if (grand_child) this->ShareChild(*it, grand_child);
-        this->TransferChild(*it, child_atleast);
+        if (grand_child) this->ShareArg(*it, grand_child);
+        this->TransferArg(*it, child_atleast);
       }
-      assert(children_.size() == 2);
+      assert(args_.size() == 2);
   }
-  return true;  // Duplicate children are OK in most cases.
+  return true;  // Duplicate arguments are OK in most cases.
 }
 
-bool IGate::ProcessComplementChild(int index) {
+bool IGate::ProcessComplementArg(int index) {
   assert(type_ != kNotGate && type_ != kNullGate);
-  assert(children_.count(-index));
+  assert(args_.count(-index));
   switch (type_) {
     case kNorGate:
     case kAndGate:
@@ -281,12 +281,12 @@ bool IGate::ProcessComplementChild(int index) {
       IGate::MakeUnity();
       break;
     case kAtleastGate:
-      IGate::EraseChild(-index);
+      IGate::EraseArg(-index);
       assert(vote_number_ > 1);
       --vote_number_;
       if (vote_number_ == 1) {
         type_ = kOrGate;
-      } else if (vote_number_ == children_.size()) {
+      } else if (vote_number_ == args_.size()) {
         type_ = kAndGate;
       }
       return true;
@@ -294,29 +294,25 @@ bool IGate::ProcessComplementChild(int index) {
   return false;  // Becomes constant most of the cases.
 }
 
-void IGate::ChildFailed() {
+void IGate::ArgFailed() {
   if (Node::opti_value() == 1) return;
   assert(Node::opti_value() == 0);
-  assert(num_failed_children_ < children_.size());
-  ++num_failed_children_;
+  assert(num_failed_args_ < args_.size());
+  ++num_failed_args_;
   switch (type_) {
     case kNullGate:
     case kOrGate:
       Node::opti_value(1);
       break;
     case kAndGate:
-      if (num_failed_children_ == children_.size()) Node::opti_value(1);
+      if (num_failed_args_ == args_.size()) Node::opti_value(1);
       break;
     case kAtleastGate:
-      if (num_failed_children_ == vote_number_) Node::opti_value(1);
+      if (num_failed_args_ == vote_number_) Node::opti_value(1);
       break;
     default:
       assert(false);  // Coherent gates only!
   }
-}
-
-void IGate::ResetChildrenFailure() {
-  num_failed_children_ = 0;
 }
 
 const std::map<std::string, Operator> BooleanGraph::kStringToType_ =
@@ -362,10 +358,10 @@ boost::shared_ptr<IGate> BooleanGraph::ProcessFormula(
     if (id_to_index->count(basic_event->id())) {  // Node already exists.
       NodePtr node = id_to_index->find(basic_event->id())->second;
       if (ccf && basic_event->HasCcf()) {  // Replace with a CCF gate.
-        parent->AddChild(node->index(),
+        parent->AddArg(node->index(),
                          boost::static_pointer_cast<IGate>(node));
       } else {
-        parent->AddChild(node->index(),
+        parent->AddArg(node->index(),
                          boost::static_pointer_cast<Variable>(node));
       }
     } else {  // Create a new node.
@@ -373,13 +369,13 @@ boost::shared_ptr<IGate> BooleanGraph::ProcessFormula(
         GatePtr ccf_gate = basic_event->ccf_gate();
         IGatePtr new_gate =
             BooleanGraph::ProcessFormula(ccf_gate->formula(), ccf, id_to_index);
-        parent->AddChild(new_gate->index(), new_gate);
+        parent->AddArg(new_gate->index(), new_gate);
         id_to_index->insert(std::make_pair(basic_event->id(), new_gate));
       } else {
         basic_events_.push_back(basic_event);
         VariablePtr new_basic(new Variable());  // Sequential indexation.
         assert(basic_events_.size() == new_basic->index());
-        parent->AddChild(new_basic->index(), new_basic);
+        parent->AddArg(new_basic->index(), new_basic);
         id_to_index->insert(std::make_pair(basic_event->id(), new_basic));
       }
     }
@@ -394,11 +390,11 @@ boost::shared_ptr<IGate> BooleanGraph::ProcessFormula(
     HouseEventPtr house = *it_h;
     if (id_to_index->count(house->id())) {
       NodePtr node = id_to_index->find(house->id())->second;
-      parent->AddChild(node->index(),
+      parent->AddArg(node->index(),
                        boost::static_pointer_cast<Constant>(node));
     } else {
       ConstantPtr constant(new Constant(house->state()));
-      parent->AddChild(constant->index(), constant);
+      parent->AddArg(constant->index(), constant);
       id_to_index->insert(std::make_pair(house->id(), constant));
     }
   }
@@ -409,12 +405,12 @@ boost::shared_ptr<IGate> BooleanGraph::ProcessFormula(
     GatePtr gate = *it_g;
     if (id_to_index->count(gate->id())) {
       NodePtr node = id_to_index->find(gate->id())->second;
-      parent->AddChild(node->index(),
+      parent->AddArg(node->index(),
                        boost::static_pointer_cast<IGate>(node));
     } else {
       IGatePtr new_gate = BooleanGraph::ProcessFormula(gate->formula(), ccf,
                                                        id_to_index);
-      parent->AddChild(new_gate->index(), new_gate);
+      parent->AddArg(new_gate->index(), new_gate);
       id_to_index->insert(std::make_pair(gate->id(), new_gate));
     }
   }
@@ -423,7 +419,7 @@ boost::shared_ptr<IGate> BooleanGraph::ProcessFormula(
   std::set<FormulaPtr>::const_iterator it_f;
   for (it_f = formulas.begin(); it_f != formulas.end(); ++it_f) {
     IGatePtr new_gate = BooleanGraph::ProcessFormula(*it_f, ccf, id_to_index);
-    parent->AddChild(new_gate->index(), new_gate);
+    parent->AddArg(new_gate->index(), new_gate);
   }
   return parent;
 }
@@ -472,7 +468,7 @@ std::ostream& operator<<(std::ostream& os,
       op = " ^ ";
       break;
     case kNotGate:
-      formula = "~(";  // Parentheses are for cases of NOT(NOT Child).
+      formula = "~(";  // Parentheses are for cases of NOT(NOT Arg).
       break;
     case kNullGate:
       formula = "";  // No need for the parentheses.
@@ -485,60 +481,60 @@ std::ostream& operator<<(std::ostream& os,
       end = "])";
       break;
   }
-  bool first_child = true;  // To get the formatting correct.
+  bool first_arg = true;  // To get the formatting correct.
 
   typedef boost::shared_ptr<IGate> IGatePtr;
   boost::unordered_map<int, IGatePtr>::const_iterator it_gate;
-  for (it_gate = gate->gate_children().begin();
-       it_gate != gate->gate_children().end(); ++it_gate) {
-    if (first_child) {
-      first_child = false;
+  for (it_gate = gate->gate_args().begin(); it_gate != gate->gate_args().end();
+       ++it_gate) {
+    if (first_arg) {
+      first_arg = false;
     } else {
       formula += op;
     }
     if (it_gate->first < 0) formula += "~";  // Negation.
-    IGatePtr child_gate = it_gate->second;
-    if (child_gate->state() == kNormalState) {
+    IGatePtr arg_gate = it_gate->second;
+    if (arg_gate->state() == kNormalState) {
       formula += "G";
-      if (child_gate->IsModule()) formula += "M";
+      if (arg_gate->IsModule()) formula += "M";
     } else {
       formula += "GC";
     }
-    formula += boost::lexical_cast<std::string>(child_gate->index());
+    formula += boost::lexical_cast<std::string>(arg_gate->index());
 
-    os << child_gate;
+    os << arg_gate;
   }
 
   typedef boost::shared_ptr<Variable> VariablePtr;
   boost::unordered_map<int, VariablePtr>::const_iterator it_basic;
-  for (it_basic = gate->variable_children().begin();
-       it_basic != gate->variable_children().end(); ++it_basic) {
-    if (first_child) {
-      first_child = false;
+  for (it_basic = gate->variable_args().begin();
+       it_basic != gate->variable_args().end(); ++it_basic) {
+    if (first_arg) {
+      first_arg = false;
     } else {
       formula += op;
     }
     if (it_basic->first < 0) formula += "~";  // Negation.
-    VariablePtr child = it_basic->second;
-    formula += "B" + boost::lexical_cast<std::string>(child->index());
+    VariablePtr arg = it_basic->second;
+    formula += "B" + boost::lexical_cast<std::string>(arg->index());
 
-    os << child;
+    os << arg;
   }
 
   typedef boost::shared_ptr<Constant> ConstantPtr;
   boost::unordered_map<int, ConstantPtr>::const_iterator it_const;
-  for (it_const = gate->constant_children().begin();
-       it_const != gate->constant_children().end(); ++it_const) {
-    if (first_child) {
-      first_child = false;
+  for (it_const = gate->constant_args().begin();
+       it_const != gate->constant_args().end(); ++it_const) {
+    if (first_arg) {
+      first_arg = false;
     } else {
       formula += op;
     }
     if (it_const->first < 0) formula += "~";  // Negation.
-    ConstantPtr child = it_const->second;
-    formula += "H" + boost::lexical_cast<std::string>(child->index());
+    ConstantPtr arg = it_const->second;
+    formula += "H" + boost::lexical_cast<std::string>(arg->index());
 
-    os << child;
+    os << arg;
   }
   std::string signature = "G";
   if (gate->IsModule()) signature += "M";

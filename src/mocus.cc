@@ -185,7 +185,7 @@ void Mocus::FindMcs() {
   IGatePtr top = fault_tree_->top_event();
 
   // Special case of empty top gate.
-  if (top->children().empty()) {
+  if (top->args().empty()) {
     State state = top->state();
     assert(state == kNullState || state == kUnityState);
     if (state == kUnityState) {
@@ -194,9 +194,9 @@ void Mocus::FindMcs() {
     }  // Other cases are null.
     return;
   } else if (top->type() == kNullGate) {  // Special case of NULL type top.
-    assert(top->children().size() == 1);
-    assert(top->gate_children().empty());
-    int child = *top->children().begin();
+    assert(top->args().size() == 1);
+    assert(top->gate_args().empty());
+    int child = *top->args().begin();
     std::set<int> one_element;
     one_element.insert(child);
     imcs_.push_back(one_element);
@@ -262,11 +262,10 @@ void Mocus::CreateSimpleTree(const IGatePtr& gate,
   SimpleGatePtr simple_gate(new SimpleGate(gate->type()));
   processed_gates->insert(std::make_pair(gate->index(), simple_gate));
 
-  assert(gate->constant_children().empty());
-  assert(gate->children().size() > 1);
+  assert(gate->constant_args().empty());
+  assert(gate->args().size() > 1);
   boost::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_children().begin(); it != gate->gate_children().end();
-       ++it) {
+  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
     assert(it->first > 0);
     IGatePtr child_gate = it->second;
     Mocus::CreateSimpleTree(it->second, processed_gates);
@@ -278,8 +277,8 @@ void Mocus::CreateSimpleTree(const IGatePtr& gate,
   }
   typedef boost::shared_ptr<Variable> VariablePtr;
   boost::unordered_map<int, VariablePtr>::const_iterator it_b;
-  for (it_b = gate->variable_children().begin();
-       it_b != gate->variable_children().end(); ++it_b) {
+  for (it_b = gate->variable_args().begin();
+       it_b != gate->variable_args().end(); ++it_b) {
     simple_gate->InitiateWithBasic(it_b->first);
   }
 }

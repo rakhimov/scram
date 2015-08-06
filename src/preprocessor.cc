@@ -34,7 +34,7 @@
 ///   * How it deals with modules (Aware of them or not at all)
 ///   * Should not have constants or constant gates
 ///   * Does it depend on other preprocessing functions?
-///   * Does it swap the top gate of the fault tree with another (child) gate?
+///   * Does it swap the top gate of the fault tree with another (arg) gate?
 ///   * Does it remove gates or other kind of nodes?
 ///
 /// Assuming that the fault tree is provided in the state as described in the
@@ -86,12 +86,12 @@ void Preprocessor::ProcessFaultTree() {
   Preprocessor::RemoveNullGates(top);
 
   if (top->type() == kNullGate) {  // Special case of preprocessing.
-    assert(top->children().size() == 1);
-    if (!top->gate_children().empty()) {
-      int signed_index = top->gate_children().begin()->first;
-      IGatePtr child = top->gate_children().begin()->second;
-      fault_tree_->top_event(child);
-      top = child;
+    assert(top->args().size() == 1);
+    if (!top->gate_args().empty()) {
+      int signed_index = top->gate_args().begin()->first;
+      IGatePtr arg = top->gate_args().begin()->second;
+      fault_tree_->top_event(arg);
+      top = arg;
       assert(top->parents().empty());
       assert(top->type() == kOrGate || top->type() == kAndGate);
       top_event_sign_ *= signed_index > 0 ? 1 : -1;
@@ -119,7 +119,7 @@ void Preprocessor::ProcessFaultTree() {
              top->type() == kNullGate);
       if (top->type() == kOrGate || top->type() == kAndGate)
         top->type(top->type() == kOrGate ? kAndGate : kOrGate);
-      top->InvertChildren();
+      top->InvertArgs();
       top_event_sign_ = 1;
     }
     std::map<int, IGatePtr> complements;
@@ -184,8 +184,8 @@ void Preprocessor::ProcessFaultTree() {
 
   // After this point there should not be null AND or unity OR gates,
   // and the tree structure should be repeating OR and AND.
-  // All gates are positive, and each gate has at least two children.
-  if (top->children().empty()) return;  // This is null or unity.
+  // All gates are positive, and each gate has at least two arguments.
+  if (top->args().empty()) return;  // This is null or unity.
   // Detect original modules for processing.
   Preprocessor::DetectModules();
   LOG(DEBUG2) << "Finished preprocessing the fault tree in " << DUR(prep_time);
@@ -202,7 +202,7 @@ void Preprocessor::NormalizeGates() {
       top_event_sign_ *= -1;
   }
   // Process negative gates. Note that top event's negative gate is processed in
-  // the above lines. All children are assumed to be positive at this point.
+  // the above lines. All arguments are assumed to be positive at this point.
   Preprocessor::ClearGateMarks();
   Preprocessor::NotifyParentsOfNegativeGates(top_gate);
 
@@ -213,13 +213,12 @@ void Preprocessor::NormalizeGates() {
 void Preprocessor::NotifyParentsOfNegativeGates(const IGatePtr& gate) {
   if (gate->mark()) return;
   gate->mark(true);
-  std::vector<int> to_negate;  // Children to get the negation.
+  std::vector<int> to_negate;  // Args to get the negation.
   boost::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_children().begin(); it != gate->gate_children().end();
-       ++it) {
-    IGatePtr child = it->second;
-    Preprocessor::NotifyParentsOfNegativeGates(child);
-    switch (child->type()) {
+  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
+    IGatePtr arg = it->second;
+    Preprocessor::NotifyParentsOfNegativeGates(arg);
+    switch (arg->type()) {
       case kNorGate:
       case kNandGate:
       case kNotGate:
@@ -228,73 +227,72 @@ void Preprocessor::NotifyParentsOfNegativeGates(const IGatePtr& gate) {
   }
   std::vector<int>::iterator it_neg;
   for (it_neg = to_negate.begin(); it_neg != to_negate.end(); ++it_neg) {
-    gate->InvertChild(*it_neg);  // Does not produce constants or duplicates.
+    gate->InvertArg(*it_neg);  // Does not produce constants or duplicates.
   }
 }
 
 void Preprocessor::NormalizeGate(const IGatePtr& gate) {
   if (gate->mark()) return;
   gate->mark(true);
-  assert(!gate->children().empty());
-  // Depth-first traversal before the children may get changed.
+  assert(!gate->args().empty());
+  // Depth-first traversal before the arguments may get changed.
   boost::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_children().begin(); it != gate->gate_children().end();
-       ++it) {
+  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
     Preprocessor::NormalizeGate(it->second);
   }
 
   Operator type = gate->type();
   switch (type) {  // Negation is already processed.
     case kNotGate:
-      assert(gate->children().size() == 1);
+      assert(gate->args().size() == 1);
       gate->type(kNullGate);
       break;
     case kNorGate:
     case kOrGate:
-      assert(gate->children().size() > 1);
+      assert(gate->args().size() > 1);
       gate->type(kOrGate);
       break;
     case kNandGate:
     case kAndGate:
-      assert(gate->children().size() > 1);
+      assert(gate->args().size() > 1);
       gate->type(kAndGate);
       break;
     case kXorGate:
-      assert(gate->children().size() == 2);
+      assert(gate->args().size() == 2);
       Preprocessor::NormalizeXorGate(gate);
       break;
     case kAtleastGate:
-      assert(gate->children().size() > 2);
+      assert(gate->args().size() > 2);
       assert(gate->vote_number() > 1);
       Preprocessor::NormalizeAtleastGate(gate);
       break;
     default:
-      assert(gate->children().size() == 1);
+      assert(gate->args().size() == 1);
       assert(type == kNullGate);  // Must be dealt outside.
   }
 }
 
 void Preprocessor::NormalizeXorGate(const IGatePtr& gate) {
-  assert(gate->children().size() == 2);
+  assert(gate->args().size() == 2);
   IGatePtr gate_one(new IGate(kAndGate));
   IGatePtr gate_two(new IGate(kAndGate));
   gate_one->mark(true);
   gate_two->mark(true);
 
   gate->type(kOrGate);
-  std::set<int>::const_iterator it = gate->children().begin();
-  gate->ShareChild(*it, gate_one);
-  gate->ShareChild(*it, gate_two);
-  gate_two->InvertChild(*it);
+  std::set<int>::const_iterator it = gate->args().begin();
+  gate->ShareArg(*it, gate_one);
+  gate->ShareArg(*it, gate_two);
+  gate_two->InvertArg(*it);
 
-  ++it;  // Handling the second child.
-  gate->ShareChild(*it, gate_one);
-  gate_one->InvertChild(*it);
-  gate->ShareChild(*it, gate_two);
+  ++it;  // Handling the second argument.
+  gate->ShareArg(*it, gate_one);
+  gate_one->InvertArg(*it);
+  gate->ShareArg(*it, gate_two);
 
-  gate->EraseAllChildren();
-  gate->AddChild(gate_one->index(), gate_one);
-  gate->AddChild(gate_two->index(), gate_two);
+  gate->EraseAllArgs();
+  gate->AddArg(gate_one->index(), gate_one);
+  gate->AddArg(gate_two->index(), gate_two);
 }
 
 void Preprocessor::NormalizeAtleastGate(const IGatePtr& gate) {
@@ -302,8 +300,8 @@ void Preprocessor::NormalizeAtleastGate(const IGatePtr& gate) {
   int vote_number = gate->vote_number();
 
   assert(vote_number > 0);  // Vote number can be 1 for special OR gates.
-  assert(gate->children().size() > 1);
-  if (gate->children().size() == vote_number) {
+  assert(gate->args().size() > 1);
+  if (gate->args().size() == vote_number) {
     gate->type(kAndGate);
     return;
   } else if (vote_number == 1) {
@@ -311,35 +309,35 @@ void Preprocessor::NormalizeAtleastGate(const IGatePtr& gate) {
     return;
   }
 
-  const std::set<int>& children = gate->children();
-  std::set<int>::const_iterator it = children.begin();
+  const std::set<int>& args = gate->args();
+  std::set<int>::const_iterator it = args.begin();
 
-  IGatePtr first_child(new IGate(kAndGate));
-  gate->ShareChild(*it, first_child);
+  IGatePtr first_arg(new IGate(kAndGate));
+  gate->ShareArg(*it, first_arg);
 
-  IGatePtr grand_child(new IGate(kAtleastGate));
-  first_child->AddChild(grand_child->index(), grand_child);
-  grand_child->vote_number(vote_number - 1);
+  IGatePtr grand_arg(new IGate(kAtleastGate));
+  first_arg->AddArg(grand_arg->index(), grand_arg);
+  grand_arg->vote_number(vote_number - 1);
 
-  IGatePtr second_child(new IGate(kAtleastGate));
-  second_child->vote_number(vote_number);
+  IGatePtr second_arg(new IGate(kAtleastGate));
+  second_arg->vote_number(vote_number);
 
-  for (++it; it != children.end(); ++it) {
-    gate->ShareChild(*it, grand_child);
-    gate->ShareChild(*it, second_child);
+  for (++it; it != args.end(); ++it) {
+    gate->ShareArg(*it, grand_arg);
+    gate->ShareArg(*it, second_arg);
   }
 
-  first_child->mark(true);
-  second_child->mark(true);
-  grand_child->mark(true);
+  first_arg->mark(true);
+  second_arg->mark(true);
+  grand_arg->mark(true);
 
   gate->type(kOrGate);
-  gate->EraseAllChildren();
-  gate->AddChild(first_child->index(), first_child);
-  gate->AddChild(second_child->index(), second_child);
+  gate->EraseAllArgs();
+  gate->AddArg(first_arg->index(), first_arg);
+  gate->AddArg(second_arg->index(), second_arg);
 
-  Preprocessor::NormalizeAtleastGate(grand_child);
-  Preprocessor::NormalizeAtleastGate(second_child);
+  Preprocessor::NormalizeAtleastGate(grand_arg);
+  Preprocessor::NormalizeAtleastGate(second_arg);
 }
 
 void Preprocessor::PropagateConstGate(const IGatePtr& gate) {
@@ -348,14 +346,14 @@ void Preprocessor::PropagateConstGate(const IGatePtr& gate) {
   while(!gate->parents().empty()) {
     IGatePtr parent = gate->parents().begin()->second.lock();
 
-    int sign = parent->children().count(gate->index()) ? 1 : -1;
+    int sign = parent->args().count(gate->index()) ? 1 : -1;
     bool state = gate->state() == kNullState ? false : true;
     if (sign < 0) state = !state;
 
     std::vector<int> to_erase;
-    Preprocessor::ProcessConstantChild(parent, sign * gate->index(),
-                                       state, &to_erase);
-    Preprocessor::RemoveChildren(parent, to_erase);
+    Preprocessor::ProcessConstantArg(parent, sign * gate->index(),
+                                     state, &to_erase);
+    Preprocessor::RemoveArgs(parent, to_erase);
 
     if (parent->state() != kNormalState) {
       Preprocessor::PropagateConstGate(parent);
@@ -370,7 +368,7 @@ void Preprocessor::PropagateNullGate(const IGatePtr& gate) {
 
   while(!gate->parents().empty()) {
     IGatePtr parent = gate->parents().begin()->second.lock();
-    int sign = parent->children().count(gate->index()) ? 1 : -1;
+    int sign = parent->args().count(gate->index()) ? 1 : -1;
     parent->JoinNullGate(sign * gate->index());
 
     if (parent->state() != kNormalState) {
@@ -387,48 +385,46 @@ bool Preprocessor::PropagateConstants(const IGatePtr& gate) {
   if (gate->state() != kNormalState) return false;
 
   bool changed = false;  // Indication if this operation changed the gate.
-  std::vector<int> to_erase;  // Erase children later to keep iterators valid.
+  std::vector<int> to_erase;  // Erase arguments later to keep iterators valid.
   boost::unordered_map<int, ConstantPtr>::const_iterator it_c;
-  for (it_c = gate->constant_children().begin();
-       it_c != gate->constant_children().end(); ++it_c) {
+  for (it_c = gate->constant_args().begin();
+       it_c != gate->constant_args().end(); ++it_c) {
     int index = it_c->first;  // May be negation.
     bool state = it_c->second->state();
     if (index < 0) state = !state;
-    if (Preprocessor::ProcessConstantChild(gate, index, state, &to_erase))
+    if (Preprocessor::ProcessConstantArg(gate, index, state, &to_erase))
       return true;  // The parent gate itself has become constant.
   }
   boost::unordered_map<int, IGatePtr>::const_iterator it_g;
-  for (it_g = gate->gate_children().begin();
-       it_g != gate->gate_children().end(); ++it_g) {
-    IGatePtr child_gate = it_g->second;
-    bool ret = Preprocessor::PropagateConstants(child_gate);
+  for (it_g = gate->gate_args().begin(); it_g != gate->gate_args().end();
+       ++it_g) {
+    IGatePtr arg_gate = it_g->second;
+    bool ret = Preprocessor::PropagateConstants(arg_gate);
     if (!changed && ret) changed = true;
 
-    State gate_state = child_gate->state();
+    State gate_state = arg_gate->state();
     if (gate_state == kNormalState) continue;
     int index = it_g->first;  // May be negation.
     bool state = gate_state == kNullState ? false : true;
     if (index < 0) state = !state;
-    if (Preprocessor::ProcessConstantChild(gate, index, state, &to_erase))
+    if (Preprocessor::ProcessConstantArg(gate, index, state, &to_erase))
       return true;  // Early exit because the parent has become constant.
   }
   if (!changed && !to_erase.empty()) changed = true;
-  Preprocessor::RemoveChildren(gate, to_erase);
+  Preprocessor::RemoveArgs(gate, to_erase);
   return changed;
 }
 
-bool Preprocessor::ProcessConstantChild(const IGatePtr& gate,
-                                        int child,
-                                        bool state,
-                                        std::vector<int>* to_erase) {
+bool Preprocessor::ProcessConstantArg(const IGatePtr& gate, int arg,
+                                      bool state, std::vector<int>* to_erase) {
   Operator parent_type = gate->type();
 
-  if (!state) {  // Null state child.
+  if (!state) {  // Null state arg.
     switch (parent_type) {
       case kNorGate:
       case kXorGate:
       case kOrGate:
-        to_erase->push_back(child);
+        to_erase->push_back(arg);
         return false;
       case kNullGate:
       case kAndGate:
@@ -439,13 +435,13 @@ bool Preprocessor::ProcessConstantChild(const IGatePtr& gate,
         gate->MakeUnity();
         break;
       case kAtleastGate:  // K / (N - 1).
-        to_erase->push_back(child);
+        to_erase->push_back(arg);
         int k = gate->vote_number();
-        int n = gate->children().size() - to_erase->size();
+        int n = gate->args().size() - to_erase->size();
         if (k == n) gate->type(kAndGate);
         return false;
     }
-  } else {  // Unity state child.
+  } else {  // Unity state arg.
     switch (parent_type) {
       case kNullGate:
       case kOrGate:
@@ -453,20 +449,20 @@ bool Preprocessor::ProcessConstantChild(const IGatePtr& gate,
         break;
       case kNandGate:
       case kAndGate:
-        to_erase->push_back(child);
+        to_erase->push_back(arg);
         return false;
       case kNorGate:
       case kNotGate:
         gate->Nullify();
         break;
       case kXorGate:  // Special handling due to its internal negation.
-        assert(gate->children().size() == 2);
-        if (to_erase->size() == 1) {  // The other child is NULL.
+        assert(gate->args().size() == 2);
+        if (to_erase->size() == 1) {  // The other arg is NULL.
           gate->MakeUnity();
         } else {
           assert(to_erase->empty());
           gate->type(kNotGate);
-          to_erase->push_back(child);
+          to_erase->push_back(arg);
           return false;
         }
         break;
@@ -476,23 +472,23 @@ bool Preprocessor::ProcessConstantChild(const IGatePtr& gate,
         if (k == 1) gate->type(kOrGate);
         assert(k > 1);
         gate->vote_number(k);
-        to_erase->push_back(child);
+        to_erase->push_back(arg);
         return false;
     }
   }
   return true;  // Becomes constant NULL or UNITY most of the cases.
 }
 
-void Preprocessor::RemoveChildren(const IGatePtr& gate,
-                                  const std::vector<int>& to_erase) {
+void Preprocessor::RemoveArgs(const IGatePtr& gate,
+                              const std::vector<int>& to_erase) {
   if (to_erase.empty()) return;
-  assert(to_erase.size() <= gate->children().size());
+  assert(to_erase.size() <= gate->args().size());
   std::vector<int>::const_iterator it_v;
   for (it_v = to_erase.begin(); it_v != to_erase.end(); ++it_v) {
-    gate->EraseChild(*it_v);
+    gate->EraseArg(*it_v);
   }
   Operator type = gate->type();
-  if (gate->children().empty()) {
+  if (gate->args().empty()) {
     assert(type != kNotGate && type != kNullGate);  // Constant by design.
     assert(type != kAtleastGate);  // Must get transformed by design.
     switch (type) {
@@ -506,8 +502,8 @@ void Preprocessor::RemoveChildren(const IGatePtr& gate,
         gate->MakeUnity();
         break;
     }
-  } else if (gate->children().size() == 1) {
-    assert(type != kAtleastGate);  // Cannot have only one child by processing.
+  } else if (gate->args().size() == 1) {
+    assert(type != kAtleastGate);  // Cannot have only one arg by processing.
     switch (type) {
       case kXorGate:
       case kOrGate:
@@ -529,44 +525,43 @@ void Preprocessor::PropagateComplements(
     std::map<int, IGatePtr>* gate_complements) {
   if (gate->mark()) return;
   gate->mark(true);
-  //assert(gate->children().size() > 1);  /// @todo Put Back.
-  // If the child gate is complement, then create a new gate that propagates
-  // its sign to its children and itself becomes non-complement.
+  //assert(gate->args().size() > 1);  /// @todo Put Back.
+  // If the argument gate is complement, then create a new gate that propagates
+  // its sign to its arguments and itself becomes non-complement.
   // Keep track of complement gates for optimization of repeated complements.
-  std::vector<int> to_swap;  // Children with negation to get swapped.
+  std::vector<int> to_swap;  // Args with negation to get swapped.
   boost::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_children().begin(); it != gate->gate_children().end();
-       ++it) {
-    IGatePtr child_gate = it->second;
+  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
+    IGatePtr arg_gate = it->second;
     if (it->first < 0) {
       to_swap.push_back(it->first);
-      if (gate_complements->count(child_gate->index())) continue;
-      Operator type = child_gate->type();
+      if (gate_complements->count(arg_gate->index())) continue;
+      Operator type = arg_gate->type();
       assert(type == kAndGate || type == kOrGate);
       Operator complement_type = type == kOrGate ? kAndGate : kOrGate;
       IGatePtr complement_gate;
-      if (child_gate->parents().size() == 1) {  // Optimization. Reuse.
-        child_gate->type(complement_type);
-        child_gate->InvertChildren();
-        complement_gate = child_gate;
+      if (arg_gate->parents().size() == 1) {  // Optimization. Reuse.
+        arg_gate->type(complement_type);
+        arg_gate->InvertArgs();
+        complement_gate = arg_gate;
       } else {
         complement_gate = IGatePtr(new IGate(complement_type));
-        complement_gate->CopyChildren(child_gate);
-        complement_gate->InvertChildren();
+        complement_gate->CopyArgs(arg_gate);
+        complement_gate->InvertArgs();
       }
-      gate_complements->insert(std::make_pair(child_gate->index(),
+      gate_complements->insert(std::make_pair(arg_gate->index(),
                                               complement_gate));
-      child_gate = complement_gate;  // Needed for further propagation.
+      arg_gate = complement_gate;  // Needed for further propagation.
     }
-    Preprocessor::PropagateComplements(child_gate, gate_complements);
+    Preprocessor::PropagateComplements(arg_gate, gate_complements);
   }
 
   std::vector<int>::iterator it_ch;
   for (it_ch = to_swap.begin(); it_ch != to_swap.end(); ++it_ch) {
     assert(*it_ch < 0);
-    gate->EraseChild(*it_ch);
+    gate->EraseArg(*it_ch);
     IGatePtr complement = gate_complements->find(-*it_ch)->second;
-    bool ret = gate->AddChild(complement->index(), complement);
+    bool ret = gate->AddArg(complement->index(), complement);
     assert(ret);  // No duplicates.
   }
 }
@@ -574,23 +569,21 @@ void Preprocessor::PropagateComplements(
 bool Preprocessor::RemoveNullGates(const IGatePtr& gate) {
   if (gate->mark()) return false;
   gate->mark(true);
-  std::vector<int> null_children;  // Null type gate children.
+  std::vector<int> null_args;  // Null type gate args.
   bool changed = false;  // Indication if the tree is changed.
   boost::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_children().begin(); it != gate->gate_children().end();
-       ++it) {
-    IGatePtr child_gate = it->second;
-    bool ret = Preprocessor::RemoveNullGates(child_gate);
+  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
+    IGatePtr arg_gate = it->second;
+    bool ret = Preprocessor::RemoveNullGates(arg_gate);
     if (!changed && ret) changed = true;
 
-    if (child_gate->state() != kNormalState) continue;
+    if (arg_gate->state() != kNormalState) continue;
 
-    if (child_gate->type() == kNullGate) null_children.push_back(it->first);
+    if (arg_gate->type() == kNullGate) null_args.push_back(it->first);
   }
 
   std::vector<int>::iterator it_swap;
-  for (it_swap = null_children.begin(); it_swap != null_children.end();
-       ++it_swap) {
+  for (it_swap = null_args.begin(); it_swap != null_args.end(); ++it_swap) {
     if (!gate->JoinNullGate(*it_swap)) return true;  // Becomes constant.
     if (!changed) changed = true;
   }
@@ -601,38 +594,37 @@ bool Preprocessor::JoinGates(const IGatePtr& gate) {
   if (gate->mark()) return false;
   gate->mark(true);
   bool possible = false;  // If joining is possible at all.
-  Operator target_type;  // What kind of child gate are we searching for?
+  Operator target_type;  // What kind of arg gate are we searching for?
   switch (gate->type()) {
     case kNandGate:
     case kAndGate:
-      //assert(gate->children().size() > 1);  /// @todo Put back.
+      //assert(gate->args().size() > 1);  /// @todo Put back.
       target_type = kAndGate;
       possible = true;
       break;
     case kNorGate:
     case kOrGate:
-      //assert(gate->children().size() > 1);  /// @todo Put back.
+      //assert(gate->args().size() > 1);  /// @todo Put back.
       target_type = kOrGate;
       possible = true;
       break;
   }
-  //assert(!gate->children().empty());  /// @todo Put back.
-  std::vector<IGatePtr> to_join;  // Gate children of the same logic.
+  //assert(!gate->args().empty());  /// @todo Put back.
+  std::vector<IGatePtr> to_join;  // Gate arguments of the same logic.
   bool changed = false;  // Indication if the tree is changed.
   boost::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_children().begin(); it != gate->gate_children().end();
-       ++it) {
+  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
     bool ret = false;  // Indication if the sub-tree has changed.
-    IGatePtr child_gate = it->second;
-    ret = Preprocessor::JoinGates(child_gate);
+    IGatePtr arg_gate = it->second;
+    ret = Preprocessor::JoinGates(arg_gate);
     if (!changed && ret) changed = true;
 
     if (!possible) continue;  // Joining with the parent is impossible.
 
-    if (it->first < 0) continue;  // Cannot join a negative child gate.
-    if (child_gate->IsModule()) continue;  // Does not coalesce modules.
+    if (it->first < 0) continue;  // Cannot join a negative arg gate.
+    if (arg_gate->IsModule()) continue;  // Does not coalesce modules.
 
-    if (child_gate->type() == target_type) to_join.push_back(child_gate);
+    if (arg_gate->type() == target_type) to_join.push_back(arg_gate);
   }
 
   if (!changed && !to_join.empty()) changed = true;
@@ -641,9 +633,9 @@ bool Preprocessor::JoinGates(const IGatePtr& gate) {
     gate->JoinGate(*it_ch);
     if (gate->state() != kNormalState) {
       const_gates_.push_back(gate);  // Register for future processing.
-      return true;  // The parent is constant. No need to join other children.
+      return true;  // The parent is constant. No need to join other arguments.
     }
-    //assert(gate->children().size() > 1);  // Does not produce NULL type gates.
+    //assert(gate->args().size() > 1);  // Does not produce NULL type gates.
   }
   return changed;
 }
@@ -671,17 +663,16 @@ void Preprocessor::DetectModules() {
 
 int Preprocessor::AssignTiming(int time, const IGatePtr& gate) {
   if (gate->Visit(++time)) return time;  // Revisited gate.
-  assert(gate->constant_children().empty());
+  assert(gate->constant_args().empty());
 
   boost::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_children().begin(); it != gate->gate_children().end();
-       ++it) {
+  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
     time = Preprocessor::AssignTiming(time, it->second);
   }
 
   boost::unordered_map<int, VariablePtr>::const_iterator it_b;
-  for (it_b = gate->variable_children().begin();
-       it_b != gate->variable_children().end(); ++it_b) {
+  for (it_b = gate->variable_args().begin();
+       it_b != gate->variable_args().end(); ++it_b) {
     it_b->second->Visit(++time);  // Enter the leaf.
     it_b->second->Visit(time);  // Exit at the same time.
   }
@@ -698,56 +689,55 @@ void Preprocessor::FindModules(const IGatePtr& gate) {
   int min_time = enter_time;
   int max_time = exit_time;
 
-  std::vector<std::pair<int, NodePtr> > non_shared_children;
-  std::vector<std::pair<int, NodePtr> > modular_children;
-  std::vector<std::pair<int, NodePtr> > non_modular_children;
+  std::vector<std::pair<int, NodePtr> > non_shared_args;
+  std::vector<std::pair<int, NodePtr> > modular_args;
+  std::vector<std::pair<int, NodePtr> > non_modular_args;
   boost::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_children().begin(); it != gate->gate_children().end();
-       ++it) {
-    IGatePtr child_gate = it->second;
-    Preprocessor::FindModules(child_gate);
-    if (child_gate->IsModule() && !child_gate->Revisited()) {
-      assert(child_gate->parents().size() == 1);
-      assert(child_gate->parents().count(gate->index()));
+  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
+    IGatePtr arg_gate = it->second;
+    Preprocessor::FindModules(arg_gate);
+    if (arg_gate->IsModule() && !arg_gate->Revisited()) {
+      assert(arg_gate->parents().size() == 1);
+      assert(arg_gate->parents().count(gate->index()));
 
-      non_shared_children.push_back(*it);
+      non_shared_args.push_back(*it);
       continue;  // Sub-tree's visit times are within the Enter and Exit time.
     }
-    int min = child_gate->min_time();
-    int max = child_gate->max_time();
+    int min = arg_gate->min_time();
+    int max = arg_gate->max_time();
     assert(min > 0);
     assert(max > 0);
     assert(max > min);
     if (min > enter_time && max < exit_time) {
-      modular_children.push_back(*it);
+      modular_args.push_back(*it);
     } else {
-      non_modular_children.push_back(*it);
+      non_modular_args.push_back(*it);
     }
     min_time = std::min(min_time, min);
     max_time = std::max(max_time, max);
   }
 
   boost::unordered_map<int, VariablePtr>::const_iterator it_b;
-  for (it_b = gate->variable_children().begin();
-       it_b != gate->variable_children().end(); ++it_b) {
-    VariablePtr child = it_b->second;
-    int min = child->EnterTime();
-    int max = child->LastVisit();
+  for (it_b = gate->variable_args().begin();
+       it_b != gate->variable_args().end(); ++it_b) {
+    VariablePtr arg = it_b->second;
+    int min = arg->EnterTime();
+    int max = arg->LastVisit();
     assert(min > 0);
     assert(max > 0);
     if (min == max) {
       assert(min > enter_time && max < exit_time);
-      assert(child->parents().size() == 1);
-      assert(child->parents().count(gate->index()));
+      assert(arg->parents().size() == 1);
+      assert(arg->parents().count(gate->index()));
 
-      non_shared_children.push_back(*it_b);
-      continue;  // The single parent child.
+      non_shared_args.push_back(*it_b);
+      continue;  // The single parent argument.
     }
     assert(max > min);
     if (min > enter_time && max < exit_time) {
-      modular_children.push_back(*it_b);
+      modular_args.push_back(*it_b);
     } else {
-      non_modular_children.push_back(*it_b);
+      non_modular_args.push_back(*it_b);
     }
     min_time = std::min(min_time, min);
     max_time = std::max(max_time, max);
@@ -756,8 +746,8 @@ void Preprocessor::FindModules(const IGatePtr& gate) {
   // Determine if this gate is module itself.
   if (min_time == enter_time && max_time == exit_time) {
     LOG(DEBUG3) << "Found original module: " << gate->index();
-    assert((modular_children.size() + non_shared_children.size()) ==
-           gate->children().size());
+    assert((modular_args.size() + non_shared_args.size()) ==
+           gate->args().size());
     gate->TurnModule();
   }
 
@@ -771,28 +761,27 @@ void Preprocessor::FindModules(const IGatePtr& gate) {
     case kOrGate:
     case kNandGate:
     case kAndGate:
-      Preprocessor::CreateNewModule(gate, non_shared_children);
+      Preprocessor::CreateNewModule(gate, non_shared_args);
 
-      Preprocessor::FilterModularChildren(&modular_children,
-                                          &non_modular_children);
-      assert(modular_children.size() != 1);  // One modular child is non-shared.
+      Preprocessor::FilterModularArgs(&modular_args, &non_modular_args);
+      assert(modular_args.size() != 1);  // One modular arg is non-shared.
       std::vector<std::vector<std::pair<int, NodePtr> > > groups;
-      Preprocessor::GroupModularChildren(modular_children, &groups);
-      Preprocessor::CreateNewModules(gate, modular_children, groups);
+      Preprocessor::GroupModularArgs(modular_args, &groups);
+      Preprocessor::CreateNewModules(gate, modular_args, groups);
   }
 }
 
 boost::shared_ptr<IGate> Preprocessor::CreateNewModule(
     const IGatePtr& gate,
-    const std::vector<std::pair<int, NodePtr> >& children) {
+    const std::vector<std::pair<int, NodePtr> >& args) {
   IGatePtr module;  // Empty pointer as an indication of a failure.
-  if (children.empty()) return module;
-  if (children.size() == 1) return module;
-  if (children.size() == gate->children().size()) {
+  if (args.empty()) return module;
+  if (args.size() == 1) return module;
+  if (args.size() == gate->args().size()) {
     assert(gate->IsModule());
     return module;
   }
-  assert(children.size() < gate->children().size());
+  assert(args.size() < gate->args().size());
   switch (gate->type()) {
     case kNandGate:
     case kAndGate:
@@ -808,31 +797,31 @@ boost::shared_ptr<IGate> Preprocessor::CreateNewModule(
   module->TurnModule();
   module->mark(true);
   std::vector<std::pair<int, NodePtr> >::const_iterator it;
-  for (it = children.begin(); it != children.end(); ++it) {
-    gate->TransferChild(it->first, module);
+  for (it = args.begin(); it != args.end(); ++it) {
+    gate->TransferArg(it->first, module);
   }
-  gate->AddChild(module->index(), module);
-  assert(gate->children().size() > 1);
+  gate->AddArg(module->index(), module);
+  assert(gate->args().size() > 1);
   LOG(DEBUG3) << "Created a new module for Gate " << gate->index() << ": "
-      << "Gate " << module->index() << " with "  << children.size()
-      << " NON-SHARED children.";
+      << "Gate " << module->index() << " with "  << args.size()
+      << " NON-SHARED arguments.";
   return module;
 }
 
-void Preprocessor::FilterModularChildren(
-    std::vector<std::pair<int, NodePtr> >* modular_children,
-    std::vector<std::pair<int, NodePtr> >* non_modular_children) {
-  if (modular_children->empty() || non_modular_children->empty()) return;
+void Preprocessor::FilterModularArgs(
+    std::vector<std::pair<int, NodePtr> >* modular_args,
+    std::vector<std::pair<int, NodePtr> >* non_modular_args) {
+  if (modular_args->empty() || non_modular_args->empty()) return;
   std::vector<std::pair<int, NodePtr> > new_non_modular;
   std::vector<std::pair<int, NodePtr> > still_modular;
   std::vector<std::pair<int, NodePtr> >::iterator it;
-  for (it = modular_children->begin(); it != modular_children->end(); ++it) {
+  for (it = modular_args->begin(); it != modular_args->end(); ++it) {
     int min = it->second->min_time();
     int max = it->second->max_time();
     bool non_module = false;
     std::vector<std::pair<int, NodePtr> >::iterator it_n;
-    for (it_n = non_modular_children->begin();
-         it_n != non_modular_children->end(); ++it_n) {
+    for (it_n = non_modular_args->begin();
+         it_n != non_modular_args->end(); ++it_n) {
       int lower = it_n->second->min_time();
       int upper = it_n->second->max_time();
       int a = std::max(min, lower);
@@ -848,18 +837,18 @@ void Preprocessor::FilterModularChildren(
       still_modular.push_back(*it);
     }
   }
-  Preprocessor::FilterModularChildren(&still_modular, &new_non_modular);
-  *modular_children = still_modular;
-  non_modular_children->insert(non_modular_children->end(),
-                               new_non_modular.begin(), new_non_modular.end());
+  Preprocessor::FilterModularArgs(&still_modular, &new_non_modular);
+  *modular_args = still_modular;
+  non_modular_args->insert(non_modular_args->end(), new_non_modular.begin(),
+                           new_non_modular.end());
 }
 
-void Preprocessor::GroupModularChildren(
-    const std::vector<std::pair<int, NodePtr> >& modular_children,
+void Preprocessor::GroupModularArgs(
+    const std::vector<std::pair<int, NodePtr> >& modular_args,
     std::vector<std::vector<std::pair<int, NodePtr> > >* groups) {
-  if (modular_children.empty()) return;
-  assert(modular_children.size() > 1);
-  std::vector<std::pair<int, NodePtr> > to_check(modular_children);
+  if (modular_args.empty()) return;
+  assert(modular_args.size() > 1);
+  std::vector<std::pair<int, NodePtr> > to_check(modular_args);
   while (!to_check.empty()) {
     std::vector<std::pair<int, NodePtr> > group;
     NodePtr first_member = to_check.back().second;
@@ -895,29 +884,28 @@ void Preprocessor::GroupModularChildren(
 
 void Preprocessor::CreateNewModules(
     const IGatePtr& gate,
-    const std::vector<std::pair<int, NodePtr> >& modular_children,
+    const std::vector<std::pair<int, NodePtr> >& modular_args,
     const std::vector<std::vector<std::pair<int, NodePtr> > >& groups) {
-  if (modular_children.empty()) return;
-  assert(modular_children.size() > 1);
+  if (modular_args.empty()) return;
+  assert(modular_args.size() > 1);
   assert(!groups.empty());
-  if (modular_children.size() == gate->children().size() &&
-      groups.size() == 1) {
+  if (modular_args.size() == gate->args().size() && groups.size() == 1) {
     assert(gate->IsModule());
     return;
   }
-  IGatePtr main_child;
+  IGatePtr main_arg;
 
-  if (modular_children.size() == gate->children().size()) {
+  if (modular_args.size() == gate->args().size()) {
     assert(groups.size() > 1);
     assert(gate->IsModule());
-    main_child = gate;
+    main_arg = gate;
   } else {
-    main_child = Preprocessor::CreateNewModule(gate, modular_children);
-    assert(main_child);
+    main_arg = Preprocessor::CreateNewModule(gate, modular_args);
+    assert(main_arg);
   }
   std::vector<std::vector<std::pair<int, NodePtr> > >::const_iterator it;
   for (it = groups.begin(); it != groups.end(); ++it) {
-    Preprocessor::CreateNewModule(main_child, *it);
+    Preprocessor::CreateNewModule(main_arg, *it);
   }
 }
 
@@ -951,23 +939,22 @@ void Preprocessor::GatherCommonNodes(
     IGatePtr gate = gates_queue.front();
     gates_queue.pop();
     boost::unordered_map<int, IGatePtr>::const_iterator it;
-    for (it = gate->gate_children().begin(); it != gate->gate_children().end();
-         ++it) {
-      IGatePtr child_gate = it->second;
-      assert(child_gate->state() == kNormalState);
-      if (child_gate->Visited()) continue;
-      child_gate->Visit(1);
-      gates_queue.push(child_gate);
-      if (child_gate->parents().size() > 1) common_gates->push_back(child_gate);
+    for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
+      IGatePtr arg_gate = it->second;
+      assert(arg_gate->state() == kNormalState);
+      if (arg_gate->Visited()) continue;
+      arg_gate->Visit(1);
+      gates_queue.push(arg_gate);
+      if (arg_gate->parents().size() > 1) common_gates->push_back(arg_gate);
     }
 
     boost::unordered_map<int, VariablePtr>::const_iterator it_b;
-    for (it_b = gate->variable_children().begin();
-         it_b != gate->variable_children().end(); ++it_b) {
-      VariablePtr child = it_b->second;
-      if (child->Visited()) continue;
-      child->Visit(1);
-      if (child->parents().size() > 1) common_variables->push_back(child);
+    for (it_b = gate->variable_args().begin();
+         it_b != gate->variable_args().end(); ++it_b) {
+      VariablePtr arg = it_b->second;
+      if (arg->Visited()) continue;
+      arg->Visit(1);
+      if (arg->parents().size() > 1) common_variables->push_back(arg);
     }
   }
 }
@@ -1023,7 +1010,7 @@ int Preprocessor::PropagateFailure(const NodePtr& node) {
     assert(!it->second.expired());
     IGatePtr parent = it->second.lock();
     if (parent->opti_value() == 1) continue;
-    parent->ChildFailed();  // Send a notification.
+    parent->ArgFailed();  // Send a notification.
     if (parent->opti_value() == 1) {  // The parent failed.
       int mult = parent->parents().size();  // Multiplicity of the parent.
       if (mult > 1) mult_tot += mult;  // Total multiplicity.
@@ -1038,22 +1025,21 @@ int Preprocessor::CollectFailureDestinations(
     int index,
     std::map<int, boost::weak_ptr<IGate> >* destinations) {
   assert(gate->opti_value() == 0);
-  if (gate->children().count(index)) {  // Child may be non-gate.
+  if (gate->args().count(index)) {  // Argument may be non-gate.
     gate->opti_value(3);
   } else {
     gate->opti_value(2);
   }
   int num_dest = 0;
   boost::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_children().begin(); it != gate->gate_children().end();
-       ++it) {
-    IGatePtr child = it->second;
-    if (child->opti_value() == 0) {
+  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
+    IGatePtr arg = it->second;
+    if (arg->opti_value() == 0) {
       num_dest +=
-          Preprocessor::CollectFailureDestinations(child, index, destinations);
-    } else if (child->opti_value() == 1 && child->index() != index) {
+          Preprocessor::CollectFailureDestinations(arg, index, destinations);
+    } else if (arg->opti_value() == 1 && arg->index() != index) {
       ++num_dest;
-      destinations->insert(std::make_pair(child->index(), child));
+      destinations->insert(std::make_pair(arg->index(), arg));
     } // Ignore gates with optimization values of 2 or 3.
   }
   return num_dest;
@@ -1092,14 +1078,14 @@ bool Preprocessor::ProcessRedundantParents(
         if (!created_constant) created_constant = true;
         break;
       case kOrGate:
-        assert(parent->children().size() > 1);
-        parent->EraseChild(node->index());
-        if (parent->children().size() == 1) parent->type(kNullGate);
+        assert(parent->args().size() > 1);
+        parent->EraseArg(node->index());
+        if (parent->args().size() == 1) parent->type(kNullGate);
         break;
       case kAtleastGate:
-        assert(parent->children().size() > 2);
-        parent->EraseChild(node->index());
-        if (parent->children().size() == parent->vote_number())
+        assert(parent->args().size() > 2);
+        parent->EraseArg(node->index());
+        if (parent->args().size() == parent->vote_number())
           parent->type(kAndGate);
         break;
       default:
@@ -1120,17 +1106,17 @@ void Preprocessor::ProcessFailureDestinations(
     assert(target->type() != kNullGate);
     switch (target->type()) {
       case kOrGate:
-        target->AddChild(node->index(), node);
+        target->AddArg(node->index(), node);
         break;
       case kAndGate:
       case kAtleastGate:
         IGatePtr new_gate(new IGate(target->type()));
         new_gate->vote_number(target->vote_number());
-        new_gate->CopyChildren(target);
-        target->EraseAllChildren();
+        new_gate->CopyArgs(target);
+        target->EraseAllArgs();
         target->type(kOrGate);
-        target->AddChild(new_gate->index(), new_gate);
-        target->AddChild(node->index(), node);
+        target->AddArg(new_gate->index(), new_gate);
+        target->AddArg(node->index(), node);
         break;
     }
   }
@@ -1147,7 +1133,7 @@ bool Preprocessor::DetectMultipleDefinitions(
   for (it = type_group.begin(); it != type_group.end(); ++it) {
     IGatePtr orig_gate = *it;
     assert(orig_gate->mark());
-    if (orig_gate->children() == gate->children()) {
+    if (orig_gate->args() == gate->args()) {
       // This might be multiple definition. Extra check for K/N gates.
       if (type == kAtleastGate &&
           orig_gate->vote_number() != gate->vote_number()) continue;
@@ -1162,26 +1148,26 @@ bool Preprocessor::DetectMultipleDefinitions(
         assert(!it_parent->second.expired());
         IGatePtr parent = it_parent->second.lock();
         int sign = 1;  // Guessing the sign.
-        if (!parent->children().count(index)) {
-          assert(parent->children().count(-index));
+        if (!parent->args().count(index)) {
+          assert(parent->args().count(-index));
           sign = -1;
         }
-        parent->EraseChild(sign * index);
-        parent->AddChild(sign * orig_gate->index(), orig_gate);
+        parent->EraseArg(sign * index);
+        parent->AddArg(sign * orig_gate->index(), orig_gate);
         return true;
       }
     }
   }
   // No redefinition is found for this gate. In order to avoid a comparison
   // with descendants, this gate is not yet put into original gates container.
-  // Copy the gate children because they may get replaced.
-  boost::unordered_map<int, IGatePtr> child_gates = gate->gate_children();
+  // Copy the gate arguments because they may get replaced.
+  boost::unordered_map<int, IGatePtr> arg_gates = gate->gate_args();
   bool changed = false;
   boost::unordered_map<int, IGatePtr>::iterator it_ch;
-  for (it_ch = child_gates.begin(); it_ch != child_gates.end(); ++it_ch) {
-    IGatePtr child_gate = it_ch->second;
-    if (child_gate->parents().empty()) continue;  // Replaced by another gate.
-    bool ret = Preprocessor::DetectMultipleDefinitions(child_gate, gates);
+  for (it_ch = arg_gates.begin(); it_ch != arg_gates.end(); ++it_ch) {
+    IGatePtr arg_gate = it_ch->second;
+    if (arg_gate->parents().empty()) continue;  // Replaced by another gate.
+    bool ret = Preprocessor::DetectMultipleDefinitions(arg_gate, gates);
     if (!changed && ret) changed = true;
   }
   type_group.push_back(gate);
@@ -1196,8 +1182,7 @@ void Preprocessor::ClearGateMarks(const IGatePtr& gate) {
   if (!gate->mark()) return;
   gate->mark(false);
   boost::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_children().begin(); it != gate->gate_children().end();
-       ++it) {
+  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
     Preprocessor::ClearGateMarks(it->second);
   }
 }
@@ -1209,36 +1194,34 @@ void Preprocessor::ClearNodeVisits() {
 void Preprocessor::ClearNodeVisits(const IGatePtr& gate) {
   gate->ClearVisits();
   boost::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_children().begin(); it != gate->gate_children().end();
-       ++it) {
+  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
     Preprocessor::ClearNodeVisits(it->second);
   }
   boost::unordered_map<int, VariablePtr>::const_iterator it_b;
-  for (it_b = gate->variable_children().begin();
-       it_b != gate->variable_children().end(); ++it_b) {
+  for (it_b = gate->variable_args().begin();
+       it_b != gate->variable_args().end(); ++it_b) {
     it_b->second->ClearVisits();
   }
   boost::unordered_map<int, ConstantPtr>::const_iterator it_c;
-  for (it_c = gate->constant_children().begin();
-       it_c != gate->constant_children().end(); ++it_c) {
+  for (it_c = gate->constant_args().begin();
+       it_c != gate->constant_args().end(); ++it_c) {
     it_c->second->ClearVisits();
   }
 }
 
 void Preprocessor::ClearOptiValues(const IGatePtr& gate) {
   gate->opti_value(0);
-  gate->ResetChildrenFailure();
+  gate->ResetArgFailure();
   boost::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_children().begin(); it != gate->gate_children().end();
-       ++it) {
+  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
     Preprocessor::ClearOptiValues(it->second);
   }
   boost::unordered_map<int, VariablePtr>::const_iterator it_b;
-  for (it_b = gate->variable_children().begin();
-       it_b != gate->variable_children().end(); ++it_b) {
+  for (it_b = gate->variable_args().begin();
+       it_b != gate->variable_args().end(); ++it_b) {
     it_b->second->opti_value(0);
   }
-  assert(gate->constant_children().empty());
+  assert(gate->constant_args().empty());
 }
 
 }  // namespace scram

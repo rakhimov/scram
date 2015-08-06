@@ -36,11 +36,6 @@ class PreprocessorTest : public ::testing::Test {
   virtual void TearDown() {
   }
 
-  bool ProcessConstantChild(const IGatePtr& gate, int child,
-                            bool state, std::vector<int>* to_erase) {
-    return false;
-  }
-
   // Members for tests.
   Preprocessor* prep;
   BooleanGraph* fault_tree;
