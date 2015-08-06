@@ -17,7 +17,7 @@
 """shorthand_to_xml.py
 
 This script converts the shorthand notation for fault trees into an
-XML file. The output file is formatted according to OpenPSA MEF.
+XML file. The output file is formatted according to the OpenPSA MEF.
 The default output file name is the input file name with the XML extension.
 
 The shorthand notation is described as follows:
@@ -26,6 +26,7 @@ OR gate:                           gate_name := (child1 | child2 | ...)
 ATLEAST(k/n) gate:                 gate_name := @(k, [child1, child2, ...])
 NOT gate:                          gate_name := ~child
 XOR gate:                          gate_name := (child1 ^ child2)
+NULL gate:                         gate_name := child
 Probability of a basic event:      p(event_name) = probability
 Boolean state of a house event:    s(event_name) = state
 
@@ -34,8 +35,8 @@ Some requirements and additions to the shorthand format:
    according to 'XML NCNAME datatype' without double dashes('--'), period('.'),
    and trailing '-'.
 2. No requirement for the structure of the input, i.e. topologically sorted.
-3. Undefined nodes are processed as 'events' to the final XML output. However,
-   warnings will be emitted in case it is the user's mistake.
+3. Undefined nodes are processed as 'events' to the final XML output. Only
+   warnings are emitted in the case of undefined nodes.
 4. Name clashes or redefinitions are errors.
 5. Cyclic trees are detected by the script as errors.
 6. The top gate is detected by the script. Only one top gate is allowed
@@ -435,6 +436,8 @@ def parse_input_file(input_file, multi_top=False):
     xor_re = re.compile(r"(\s*" + form + r"\s*\^\s*" + form + r"\s*)$")
     # NOT gate identification
     not_re = re.compile(r"~\s*(" + name_sig + r"|@?\(.+\))$")
+    # NULL gate identification
+    null_re = re.compile(r"\s*(" + name_sig + r")$")
 
     blank_line = re.compile(r"^\s*$")
 
@@ -538,6 +541,10 @@ def parse_input_file(input_file, multi_top=False):
             arguments = not_re.match(line).group(1)
             arguments = get_arguments(arguments, "~")
             operator = "not"
+        elif null_re.match(line):
+            arguments = null_re.match(line).group(1)
+            arguments = [arguments.strip()]
+            operator = "null"  # pass-through
         else:
             raise ParsingError("Cannot interpret the formula:\n" + line)
         formula = Formula(operator, k_num)
@@ -650,16 +657,17 @@ def write_to_xml_file(fault_tree, output_file):
     t_file.write("<define-fault-tree name=\"%s\">\n" % fault_tree.name)
 
     def write_formula(formula, o_file):
-        """Write the formula in OpenPSA MEF XML.
+        """Write the formula in the OpenPSA MEF XML.
 
         Args:
             formula: The formula to be printed.
             o_file: The output file stream.
         """
-        o_file.write("<" + formula.operator)
-        if formula.operator == "atleast":
-            o_file.write(" min=\"" + formula.k_num + "\"")
-        o_file.write(">\n")
+        if formula.operator != "null":
+            o_file.write("<" + formula.operator)
+            if formula.operator == "atleast":
+                o_file.write(" min=\"" + formula.k_num + "\"")
+            o_file.write(">\n")
         # Print house events
         for h_child in formula.h_arguments:
             o_file.write("<house-event name=\"" + h_child.name + "\"/>\n")
@@ -680,10 +688,11 @@ def write_to_xml_file(fault_tree, output_file):
         for f_child in formula.f_arguments:
             write_formula(f_child, o_file)
 
-        o_file.write("</" + formula.operator+ ">\n")
+        if formula.operator != "null":
+            o_file.write("</" + formula.operator+ ">\n")
 
     def write_gate(gate, o_file):
-        """Write the gate in OpenPSA MEF XML.
+        """Write the gate in the OpenPSA MEF XML.
 
         Args:
             gate: The gate to be printed.

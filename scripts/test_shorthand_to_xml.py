@@ -33,13 +33,14 @@ def test_correct():
     """Tests the valid overall process."""
     tmp = NamedTemporaryFile()
     tmp.write("ValidFaultTree\n\n")
-    tmp.write("root := g1 | g2 | g3 | g4 | e1\n")
+    tmp.write("root := g1 | g2 | g3 | g4 | g7 | e1\n")
     tmp.write("g1 := e2 | g3 & g5\n")
     tmp.write("g2 := h1 & g6\n")
     tmp.write("g3 := (g6 ^ e2)\n")
     tmp.write("g4 := @(2, [g5, e3, e4])\n")
     tmp.write("g5 := ~e3\n")
     tmp.write("g6 := ((e3 | e4))\n\n")
+    tmp.write("g7 := e3\n\n")
     tmp.write("p(e1) = 0.1\n")
     tmp.write("p(e2) = 0.2\n")
     tmp.write("p(e3) = 0.3\n")
@@ -48,7 +49,7 @@ def test_correct():
     tmp.flush()
     fault_tree = parse_input_file(tmp.name)
     assert_is_not_none(fault_tree)
-    yield assert_equal, 7, len(fault_tree.gates)
+    yield assert_equal, 8, len(fault_tree.gates)
     yield assert_equal, 3, len(fault_tree.basic_events)
     yield assert_equal, 2, len(fault_tree.house_events)
     yield assert_equal, 1, len(fault_tree.undef_nodes)
@@ -156,6 +157,20 @@ def test_combination_gate_children():
     tmp.write("g1 := @(4, [a, b, c])")  # K > N
     tmp.flush()
     yield assert_raises, FaultTreeError, parse_input_file, tmp.name
+
+def test_null_gate():
+    """Tests if NULL type gates are recognized correctly."""
+    tmp = NamedTemporaryFile()
+    tmp.write("FT\n")
+    tmp.write("g1 := a")
+    tmp.flush()
+    fault_tree = parse_input_file(tmp.name)
+    assert_is_not_none(fault_tree)
+    yield assert_equal, 1, len(fault_tree.gates)
+    yield assert_true, "g1" in fault_tree.gates
+    yield assert_true, "a" in fault_tree.gates["g1"].formula.node_arguments
+    yield assert_equal, "null", fault_tree.gates["g1"].formula.operator
+
 
 def test_no_top_event():
     """Detection of cases without top gate definitions.
