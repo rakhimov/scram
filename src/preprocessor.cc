@@ -44,7 +44,7 @@
 /// to the input fault tree.
 ///
 /// If the contract is not respected, the result or behavior of the algorithm
-/// may be undefined. There is no requirement to check for the flawed contract
+/// may be undefined. There is no requirement to check for the broken contract
 /// and to exit gracefully.
 #include "preprocessor.h"
 
@@ -679,9 +679,9 @@ int Preprocessor::AssignTiming(int time, const IGatePtr& gate) {
     time = Preprocessor::AssignTiming(time, it->second);
   }
 
-  boost::unordered_map<int, IBasicEventPtr>::const_iterator it_b;
-  for (it_b = gate->basic_event_children().begin();
-       it_b != gate->basic_event_children().end(); ++it_b) {
+  boost::unordered_map<int, VariablePtr>::const_iterator it_b;
+  for (it_b = gate->variable_children().begin();
+       it_b != gate->variable_children().end(); ++it_b) {
     it_b->second->Visit(++time);  // Enter the leaf.
     it_b->second->Visit(time);  // Exit at the same time.
   }
@@ -727,10 +727,10 @@ void Preprocessor::FindModules(const IGatePtr& gate) {
     max_time = std::max(max_time, max);
   }
 
-  boost::unordered_map<int, IBasicEventPtr>::const_iterator it_b;
-  for (it_b = gate->basic_event_children().begin();
-       it_b != gate->basic_event_children().end(); ++it_b) {
-    IBasicEventPtr child = it_b->second;
+  boost::unordered_map<int, VariablePtr>::const_iterator it_b;
+  for (it_b = gate->variable_children().begin();
+       it_b != gate->variable_children().end(); ++it_b) {
+    VariablePtr child = it_b->second;
     int min = child->EnterTime();
     int max = child->LastVisit();
     assert(min > 0);
@@ -926,8 +926,8 @@ void Preprocessor::BooleanOptimization() {
   Preprocessor::ClearGateMarks();
 
   std::vector<boost::weak_ptr<IGate> > common_gates;
-  std::vector<boost::weak_ptr<IBasicEvent> > common_basic_events;
-  Preprocessor::GatherCommonNodes(&common_gates, &common_basic_events);
+  std::vector<boost::weak_ptr<Variable> > common_variables;
+  Preprocessor::GatherCommonNodes(&common_gates, &common_variables);
 
   Preprocessor::ClearNodeVisits();
   std::vector<boost::weak_ptr<IGate> >::iterator it;
@@ -935,8 +935,8 @@ void Preprocessor::BooleanOptimization() {
     Preprocessor::ProcessCommonNode(*it);
   }
 
-  std::vector<boost::weak_ptr<IBasicEvent> >::iterator it_b;
-  for (it_b = common_basic_events.begin(); it_b != common_basic_events.end();
+  std::vector<boost::weak_ptr<Variable> >::iterator it_b;
+  for (it_b = common_variables.begin(); it_b != common_variables.end();
        ++it_b) {
     Preprocessor::ProcessCommonNode(*it_b);
   }
@@ -944,7 +944,7 @@ void Preprocessor::BooleanOptimization() {
 
 void Preprocessor::GatherCommonNodes(
       std::vector<boost::weak_ptr<IGate> >* common_gates,
-      std::vector<boost::weak_ptr<IBasicEvent> >* common_basic_events) {
+      std::vector<boost::weak_ptr<Variable> >* common_variables) {
   std::queue<IGatePtr> gates_queue;
   gates_queue.push(fault_tree_->top_event());
   while (!gates_queue.empty()) {
@@ -961,13 +961,13 @@ void Preprocessor::GatherCommonNodes(
       if (child_gate->parents().size() > 1) common_gates->push_back(child_gate);
     }
 
-    boost::unordered_map<int, IBasicEventPtr>::const_iterator it_b;
-    for (it_b = gate->basic_event_children().begin();
-         it_b != gate->basic_event_children().end(); ++it_b) {
-      IBasicEventPtr child = it_b->second;
+    boost::unordered_map<int, VariablePtr>::const_iterator it_b;
+    for (it_b = gate->variable_children().begin();
+         it_b != gate->variable_children().end(); ++it_b) {
+      VariablePtr child = it_b->second;
       if (child->Visited()) continue;
       child->Visit(1);
-      if (child->parents().size() > 1) common_basic_events->push_back(child);
+      if (child->parents().size() > 1) common_variables->push_back(child);
     }
   }
 }
@@ -1213,9 +1213,9 @@ void Preprocessor::ClearNodeVisits(const IGatePtr& gate) {
        ++it) {
     Preprocessor::ClearNodeVisits(it->second);
   }
-  boost::unordered_map<int, IBasicEventPtr>::const_iterator it_b;
-  for (it_b = gate->basic_event_children().begin();
-       it_b != gate->basic_event_children().end(); ++it_b) {
+  boost::unordered_map<int, VariablePtr>::const_iterator it_b;
+  for (it_b = gate->variable_children().begin();
+       it_b != gate->variable_children().end(); ++it_b) {
     it_b->second->ClearVisits();
   }
   boost::unordered_map<int, ConstantPtr>::const_iterator it_c;
@@ -1233,9 +1233,9 @@ void Preprocessor::ClearOptiValues(const IGatePtr& gate) {
        ++it) {
     Preprocessor::ClearOptiValues(it->second);
   }
-  boost::unordered_map<int, IBasicEventPtr>::const_iterator it_b;
-  for (it_b = gate->basic_event_children().begin();
-       it_b != gate->basic_event_children().end(); ++it_b) {
+  boost::unordered_map<int, VariablePtr>::const_iterator it_b;
+  for (it_b = gate->variable_children().begin();
+       it_b != gate->variable_children().end(); ++it_b) {
     it_b->second->opti_value(0);
   }
   assert(gate->constant_children().empty());

@@ -161,25 +161,27 @@ class Constant : public Node {
   bool state_;  ///< The Boolean value for the constant state.
 };
 
-/// @class IBasicEvent
-/// Indexed basic events in a Boolean graph.
-/// Indexation of the basic events are special. It starts from 1 and ends with
+/// @class Variable
+/// Boolean variables in a Boolean formula or graph. Variables can represent
+/// the basic events of fault trees.
+///
+/// Indexation of the variables is special. It starts from 1 and ends with
 /// the number of the basic events in the fault tree. This indexation technique
 /// helps preprocessing and analysis algorithms optimize their work with basic
 /// events.
-class IBasicEvent : public Node {
+class Variable : public Node {
  public:
-  /// Creates a new indexed basic event with its index assigned sequentially.
-  IBasicEvent();
+  /// Creates a new indexed variable with its index assigned sequentially.
+  Variable();
 
-  /// Resets the starting index for basic events.
-  inline static void ResetIndex() { next_basic_event_ = 1; }
+  /// Resets the starting index for variables.
+  inline static void ResetIndex() { next_variable_ = 1; }
 
  private:
-  IBasicEvent(const IBasicEvent&);  ///< Restrict copy construction.
-  IBasicEvent& operator=(const IBasicEvent&);  ///< Restrict copy assignment.
+  Variable(const Variable&);  ///< Restrict copy construction.
+  Variable& operator=(const Variable&);  ///< Restrict copy assignment.
 
-  static int next_basic_event_;  ///< The next index for the basic event.
+  static int next_variable_;  ///< The next index for a new variable.
 };
 
 /// @enum GateType
@@ -220,7 +222,7 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
  public:
   typedef boost::shared_ptr<Node> NodePtr;
   typedef boost::shared_ptr<Constant> ConstantPtr;
-  typedef boost::shared_ptr<IBasicEvent> IBasicEventPtr;
+  typedef boost::shared_ptr<Variable> VariablePtr;
   typedef boost::shared_ptr<IGate> IGatePtr;
 
   /// Creates an indexed gate with its unique index. It is assumed that smart
@@ -273,10 +275,10 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
     return gate_children_;
   }
 
-  /// @returns Children of this gate that are indexed basic events.
-  inline const boost::unordered_map<int, IBasicEventPtr>&
-      basic_event_children() const {
-    return basic_event_children_;
+  /// @returns Children of this gate that are variables.
+  inline const boost::unordered_map<int, VariablePtr>&
+      variable_children() const {
+    return variable_children_;
   }
 
   /// @returns Children of this gate that are indexed constants.
@@ -344,14 +346,14 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
   ///          of the side effects of the manipulations.
   bool AddChild(int child, const IGatePtr& gate);
 
-  /// Adds a child basic event to this gate. Before adding the child, the
+  /// Adds a child variable to this gate. Before adding the child, the
   /// existing children are checked for complements and duplicates. If there is
   /// a complement, the gate may change its state (clearing its children) or
   /// type. The duplicates are handled according to the logic of the gate. The
   /// caller must be aware of possible changes due to the logic of the gate.
   ///
   /// @param[in] child A positive or negative index of a child.
-  /// @param[in] basic_event A pointer to the child basic_event.
+  /// @param[in] variable A pointer to the child variable.
   ///
   /// @returns false if there final state of the parent is normal.
   /// @returns true if the parent has become constant due to a complement child.
@@ -364,7 +366,7 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
   /// @warning Complex logic gates like ATLEAST and XOR are handled specially
   ///          if the child is duplicate. The caller must be very cautious
   ///          of the side effects of the manipulations.
-  bool AddChild(int child, const IBasicEventPtr& basic_event);
+  bool AddChild(int child, const VariablePtr& variable);
 
   /// Adds a constant child to this gate. Before adding the child, the existing
   /// children are checked for complements and duplicates. If there is a
@@ -470,9 +472,9 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
       node = constant_children_.find(child)->second;
       constant_children_.erase(child);
     } else {
-      node = basic_event_children_.find(child)->second;
-      assert(basic_event_children_.count(child));
-      basic_event_children_.erase(child);
+      node = variable_children_.find(child)->second;
+      assert(variable_children_.count(child));
+      variable_children_.erase(child);
     }
     assert(node->parents_.count(Node::index()));
     node->parents_.erase(Node::index());
@@ -549,8 +551,8 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
   std::set<int> children_;  ///< Children of the gate.
   /// Children that are gates.
   boost::unordered_map<int, IGatePtr> gate_children_;
-  /// Children that are basic events.
-  boost::unordered_map<int, IBasicEventPtr> basic_event_children_;
+  /// Children that are variables.
+  boost::unordered_map<int, VariablePtr> variable_children_;
   /// Children that are constant like house events.
   boost::unordered_map<int, ConstantPtr> constant_children_;
   /// The number of children failed upon failure propagation.
@@ -604,12 +606,13 @@ class BooleanGraph {
   /// @param[in] gate Replacement top gate.
   inline void top_event(const IGatePtr& gate) { top_event_ = gate; }
 
-  /// @returns Indexed basic event as initialized in this fault tree.
+  /// @returns Original basic event as initialized in this indexed fault tree.
+  ///          The position of a basic event equals (its index - 1).
   inline const std::vector<BasicEventPtr>& basic_events() const {
     return basic_events_;
   }
 
-  /// Helper function to map the results of indexation to the original basic
+  /// Helper function to map the results of the indexation to the original basic
   /// events. This function, for example, helps transform minimal cut sets with
   /// indices into minimal cut sets with IDs or pointers.
   ///
@@ -626,7 +629,7 @@ class BooleanGraph {
   typedef boost::shared_ptr<Formula> FormulaPtr;
   typedef boost::shared_ptr<Node> NodePtr;
   typedef boost::shared_ptr<Constant> ConstantPtr;
-  typedef boost::shared_ptr<IBasicEvent> IBasicEventPtr;
+  typedef boost::shared_ptr<Variable> VariablePtr;
 
   /// Mapping to string gate types to enum gate types.
   static const std::map<std::string, GateType> kStringToType_;
@@ -634,7 +637,7 @@ class BooleanGraph {
   /// Process a Boolean formula of a gate into a Boolean graph.
   ///
   /// @param[in] formula The Boolean formula to be processed.
-  /// @param[in] ccf To replace basic events with ccf gates.
+  /// @param[in] ccf A flag to replace basic events with ccf gates.
   /// @param[in,out] id_to_index The mapping of already processed nodes.
   ///
   /// @returns Pointer to the newly created indexed gate.
@@ -659,14 +662,14 @@ class BooleanGraph {
 std::ostream& operator<<(std::ostream& os,
                          const boost::shared_ptr<Constant>& constant);
 
-/// Prints indexed basic events or constants in the shorthand format.
+/// Prints indexed variables as basic events in the shorthand format.
 ///
 /// @param[in,out] os Output stream.
-/// @param[in] basic_event The basic event to be printed.
+/// @param[in] variable The basic event to be printed.
 ///
 /// @warning Visit information may get changed.
 std::ostream& operator<<(std::ostream& os,
-                         const boost::shared_ptr<IBasicEvent>& basic_event);
+                         const boost::shared_ptr<Variable>& variable);
 
 /// Prints indexed gates in the shorthand format. The gates that have become a
 /// constant are named "GC". The gates that are modules are named "GM".

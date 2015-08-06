@@ -168,7 +168,7 @@ class FaultTreeAnalysis {
   void CleanMarks();
 
   /// Converts minimal cut sets from indices to strings for future reporting.
-  /// This function also detects basic events in minimal cut sets.
+  /// This function also collects basic events in minimal cut sets.
   ///
   /// @param[in] imcs Min cut sets with indices of events.
   /// @param[in] ft Indexed fault tree with basic event indices and pointers.

@@ -276,10 +276,10 @@ void Mocus::CreateSimpleTree(const IGatePtr& gate,
       simple_gate->AddChildGate(processed_gates->find(it->first)->second);
     }
   }
-  typedef boost::shared_ptr<IBasicEvent> IBasicEventPtr;
-  boost::unordered_map<int, IBasicEventPtr>::const_iterator it_b;
-  for (it_b = gate->basic_event_children().begin();
-       it_b != gate->basic_event_children().end(); ++it_b) {
+  typedef boost::shared_ptr<Variable> VariablePtr;
+  boost::unordered_map<int, VariablePtr>::const_iterator it_b;
+  for (it_b = gate->variable_children().begin();
+       it_b != gate->variable_children().end(); ++it_b) {
     simple_gate->InitiateWithBasic(it_b->first);
   }
 }

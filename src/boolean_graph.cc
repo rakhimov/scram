@@ -42,9 +42,9 @@ Node::~Node() {}  // Empty body for pure virtual destructor.
 
 Constant::Constant(bool state) : Node(), state_(state) {}
 
-int IBasicEvent::next_basic_event_ = 1;
+int Variable::next_variable_ = 1;
 
-IBasicEvent::IBasicEvent() : Node(next_basic_event_++) {}
+Variable::Variable() : Node(next_variable_++) {}
 
 IGate::IGate(const GateType& type)
     : Node(),
@@ -71,18 +71,17 @@ bool IGate::AddChild(int child, const IGatePtr& gate) {
   return true;
 }
 
-bool IGate::AddChild(int child, const IBasicEventPtr& basic_event) {
+bool IGate::AddChild(int child, const VariablePtr& variable) {
   assert(child != 0);
-  assert(std::abs(child) == basic_event->index());
+  assert(std::abs(child) == variable->index());
   assert(state_ == kNormalState);
   if (type_ == kNotGate || type_ == kNullGate) assert(children_.empty());
   if (type_ == kXorGate) assert(children_.size() < 2);
   if (children_.count(child)) return IGate::ProcessDuplicateChild(child);
   if (children_.count(-child)) return IGate::ProcessComplementChild(child);
   children_.insert(child);
-  basic_event_children_.insert(std::make_pair(child, basic_event));
-  basic_event->parents_.insert(std::make_pair(Node::index(),
-                                              shared_from_this()));
+  variable_children_.insert(std::make_pair(child, variable));
+  variable->parents_.insert(std::make_pair(Node::index(), shared_from_this()));
   return true;
 }
 
@@ -110,10 +109,10 @@ bool IGate::TransferChild(int child, const IGatePtr& recipient) {
     node = gate_children_.find(child)->second;
     ret = recipient->AddChild(child, gate_children_.find(child)->second);
     gate_children_.erase(child);
-  } else if (basic_event_children_.count(child)) {
-    node = basic_event_children_.find(child)->second;
-    ret = recipient->AddChild(child, basic_event_children_.find(child)->second);
-    basic_event_children_.erase(child);
+  } else if (variable_children_.count(child)) {
+    node = variable_children_.find(child)->second;
+    ret = recipient->AddChild(child, variable_children_.find(child)->second);
+    variable_children_.erase(child);
   } else {
     assert(constant_children_.count(child));
     node = constant_children_.find(child)->second;
@@ -131,8 +130,8 @@ bool IGate::ShareChild(int child, const IGatePtr& recipient) {
   bool ret = true;  // The normal state of the recipient.
   if (gate_children_.count(child)) {
     ret = recipient->AddChild(child, gate_children_.find(child)->second);
-  } else if (basic_event_children_.count(child)) {
-    ret = recipient->AddChild(child, basic_event_children_.find(child)->second);
+  } else if (variable_children_.count(child)) {
+    ret = recipient->AddChild(child, variable_children_.find(child)->second);
   } else {
     assert(constant_children_.count(child));
     ret = recipient->AddChild(child, constant_children_.find(child)->second);
@@ -157,10 +156,10 @@ void IGate::InvertChild(int existing_child) {
     IGatePtr child = gate_children_.find(existing_child)->second;
     gate_children_.erase(existing_child);
     gate_children_.insert(std::make_pair(-existing_child, child));
-  } else if (basic_event_children_.count(existing_child)) {
-    IBasicEventPtr child = basic_event_children_.find(existing_child)->second;
-    basic_event_children_.erase(existing_child);
-    basic_event_children_.insert(std::make_pair(-existing_child, child));
+  } else if (variable_children_.count(existing_child)) {
+    VariablePtr child = variable_children_.find(existing_child)->second;
+    variable_children_.erase(existing_child);
+    variable_children_.insert(std::make_pair(-existing_child, child));
   } else {
     ConstantPtr child = constant_children_.find(existing_child)->second;
     constant_children_.erase(existing_child);
@@ -180,9 +179,9 @@ bool IGate::JoinGate(const IGatePtr& child_gate) {
        it_g != child_gate->gate_children_.end(); ++it_g) {
     if (!IGate::AddChild(it_g->first, it_g->second)) return false;
   }
-  boost::unordered_map<int, IBasicEventPtr>::const_iterator it_b;
-  for (it_b = child_gate->basic_event_children_.begin();
-       it_b != child_gate->basic_event_children_.end(); ++it_b) {
+  boost::unordered_map<int, VariablePtr>::const_iterator it_b;
+  for (it_b = child_gate->variable_children_.begin();
+       it_b != child_gate->variable_children_.end(); ++it_b) {
     if (!IGate::AddChild(it_b->first, it_b->second)) return false;
   }
   boost::unordered_map<int, ConstantPtr>::const_iterator it_c;
@@ -216,9 +215,9 @@ bool IGate::JoinNullGate(int index) {
     return IGate::AddChild(grandchild,
                            child_gate->constant_children_.begin()->second);
   } else {
-    assert(!child_gate->basic_event_children_.empty());
+    assert(!child_gate->variable_children_.empty());
     return IGate::AddChild(grandchild,
-                           child_gate->basic_event_children_.begin()->second);
+                           child_gate->variable_children_.begin()->second);
   }
 }
 
@@ -331,7 +330,7 @@ BooleanGraph::BooleanGraph(const GatePtr& root, bool ccf)
       constants_(false),
       normal_(true) {
   Node::ResetIndex();
-  IBasicEvent::ResetIndex();
+  Variable::ResetIndex();
   boost::unordered_map<std::string, NodePtr> id_to_index;
   top_event_ = BooleanGraph::ProcessFormula(root->formula(), ccf, &id_to_index);
 }
@@ -367,7 +366,7 @@ boost::shared_ptr<IGate> BooleanGraph::ProcessFormula(
                          boost::static_pointer_cast<IGate>(node));
       } else {
         parent->AddChild(node->index(),
-                         boost::static_pointer_cast<IBasicEvent>(node));
+                         boost::static_pointer_cast<Variable>(node));
       }
     } else {  // Create a new node.
       if (ccf && basic_event->HasCcf()) {  // Create a CCF gate.
@@ -378,7 +377,7 @@ boost::shared_ptr<IGate> BooleanGraph::ProcessFormula(
         id_to_index->insert(std::make_pair(basic_event->id(), new_gate));
       } else {
         basic_events_.push_back(basic_event);
-        IBasicEventPtr new_basic(new IBasicEvent());  // Sequential indexation.
+        VariablePtr new_basic(new Variable());  // Sequential indexation.
         assert(basic_events_.size() == new_basic->index());
         parent->AddChild(new_basic->index(), new_basic);
         id_to_index->insert(std::make_pair(basic_event->id(), new_basic));
@@ -439,10 +438,10 @@ std::ostream& operator<<(std::ostream& os,
 }
 
 std::ostream& operator<<(std::ostream& os,
-                         const boost::shared_ptr<IBasicEvent>& basic_event) {
-  if (basic_event->Visited()) return os;
-  basic_event->Visit(1);
-  os << "p(B" << basic_event->index() << ") = " << 1 << std::endl;
+                         const boost::shared_ptr<Variable>& variable) {
+  if (variable->Visited()) return os;
+  variable->Visit(1);
+  os << "p(B" << variable->index() << ") = " << 1 << std::endl;
   return os;
 }
 
@@ -510,17 +509,17 @@ std::ostream& operator<<(std::ostream& os,
     os << child_gate;
   }
 
-  typedef boost::shared_ptr<IBasicEvent> IBasicEventPtr;
-  boost::unordered_map<int, IBasicEventPtr>::const_iterator it_basic;
-  for (it_basic = gate->basic_event_children().begin();
-       it_basic != gate->basic_event_children().end(); ++it_basic) {
+  typedef boost::shared_ptr<Variable> VariablePtr;
+  boost::unordered_map<int, VariablePtr>::const_iterator it_basic;
+  for (it_basic = gate->variable_children().begin();
+       it_basic != gate->variable_children().end(); ++it_basic) {
     if (first_child) {
       first_child = false;
     } else {
       formula += op;
     }
     if (it_basic->first < 0) formula += "~";  // Negation.
-    IBasicEventPtr child = it_basic->second;
+    VariablePtr child = it_basic->second;
     formula += "B" + boost::lexical_cast<std::string>(child->index());
 
     os << child;
