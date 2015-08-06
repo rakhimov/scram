@@ -5,6 +5,7 @@
 # This script must be run in scram/src directory
 
 lizard -s cyclomatic_complexity \
+  boolean_graph.cc \
   ccf_group.cc \
   config.cc \
   cycle.cc \
@@ -15,8 +16,8 @@ lizard -s cyclomatic_complexity \
   fault_tree_analysis.cc \
   fault_tree.cc \
   grapher.cc \
-  indexed_fault_tree.cc \
   initializer.cc \
+  logger.cc \
   mocus.cc \
   model.cc \
   preprocessor.cc \
