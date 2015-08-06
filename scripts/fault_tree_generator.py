@@ -17,7 +17,7 @@
 """fault_tree_generator.py
 
 This script generates a fault tree of various complexities. The generated
-fault tree can be put into XML file with OpenPSA MEF ready for analysis
+fault tree can be put into XML file with the OpenPSA MEF ready for analysis
 or into a shorthand format file. The resulting fault tree is topologically
 sorted.
 
@@ -1060,8 +1060,7 @@ def manage_cmd_args():
     Raises:
         ArgumentTypeError: There are problems with the arguments.
     """
-    description = "This script creates a fault tree of an arbitrary size and"\
-                  " complexity."
+    description = "Complex-Fault-Tree Generator"
 
     parser = ap.ArgumentParser(description=description,
                                formatter_class=ap.ArgumentDefaultsHelpFormatter)

@@ -732,8 +732,7 @@ def main():
     Raises:
         ArgumentTypeError: There are problemns with the arguments.
     """
-    description = "A script that converts shorthand fault tree notation into"\
-                  " an OpenPSA MEF XML file."
+    description = "Shorthand => OpenPSA MEF XML Converter"
 
     parser = ap.ArgumentParser(description=description)
 
