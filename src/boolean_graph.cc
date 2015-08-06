@@ -46,7 +46,7 @@ int Variable::next_variable_ = 1;
 
 Variable::Variable() : Node(next_variable_++) {}
 
-IGate::IGate(const GateType& type)
+IGate::IGate(const Operator& type)
     : Node(),
       type_(type),
       state_(kNormalState),
@@ -319,7 +319,7 @@ void IGate::ResetChildrenFailure() {
   num_failed_children_ = 0;
 }
 
-const std::map<std::string, GateType> BooleanGraph::kStringToType_ =
+const std::map<std::string, Operator> BooleanGraph::kStringToType_ =
     boost::assign::map_list_of("and", kAndGate) ("or", kOrGate)
                               ("atleast", kAtleastGate) ("xor", kXorGate)
                               ("not", kNotGate) ("nand", kNandGate)
@@ -339,7 +339,7 @@ boost::shared_ptr<IGate> BooleanGraph::ProcessFormula(
     const FormulaPtr& formula,
     bool ccf,
     boost::unordered_map<std::string, NodePtr>* id_to_index) {
-  GateType type = kStringToType_.find(formula->type())->second;
+  Operator type = kStringToType_.find(formula->type())->second;
   IGatePtr parent(new IGate(type));
 
   if (normal_ && type != kOrGate && type != kAndGate) normal_ = false;

@@ -194,7 +194,7 @@ void Preprocessor::ProcessFaultTree() {
 void Preprocessor::NormalizeGates() {
   // Handle special case for a top event.
   IGatePtr top_gate = fault_tree_->top_event();
-  GateType type = top_gate->type();
+  Operator type = top_gate->type();
   switch (type) {
     case kNorGate:
     case kNandGate:
@@ -243,7 +243,7 @@ void Preprocessor::NormalizeGate(const IGatePtr& gate) {
     Preprocessor::NormalizeGate(it->second);
   }
 
-  GateType type = gate->type();
+  Operator type = gate->type();
   switch (type) {  // Negation is already processed.
     case kNotGate:
       assert(gate->children().size() == 1);
@@ -421,7 +421,7 @@ bool Preprocessor::ProcessConstantChild(const IGatePtr& gate,
                                         int child,
                                         bool state,
                                         std::vector<int>* to_erase) {
-  GateType parent_type = gate->type();
+  Operator parent_type = gate->type();
 
   if (!state) {  // Null state child.
     switch (parent_type) {
@@ -491,7 +491,7 @@ void Preprocessor::RemoveChildren(const IGatePtr& gate,
   for (it_v = to_erase.begin(); it_v != to_erase.end(); ++it_v) {
     gate->EraseChild(*it_v);
   }
-  GateType type = gate->type();
+  Operator type = gate->type();
   if (gate->children().empty()) {
     assert(type != kNotGate && type != kNullGate);  // Constant by design.
     assert(type != kAtleastGate);  // Must get transformed by design.
@@ -541,9 +541,9 @@ void Preprocessor::PropagateComplements(
     if (it->first < 0) {
       to_swap.push_back(it->first);
       if (gate_complements->count(child_gate->index())) continue;
-      GateType type = child_gate->type();
+      Operator type = child_gate->type();
       assert(type == kAndGate || type == kOrGate);
-      GateType complement_type = type == kOrGate ? kAndGate : kOrGate;
+      Operator complement_type = type == kOrGate ? kAndGate : kOrGate;
       IGatePtr complement_gate;
       if (child_gate->parents().size() == 1) {  // Optimization. Reuse.
         child_gate->type(complement_type);
@@ -601,7 +601,7 @@ bool Preprocessor::JoinGates(const IGatePtr& gate) {
   if (gate->mark()) return false;
   gate->mark(true);
   bool possible = false;  // If joining is possible at all.
-  GateType target_type;  // What kind of child gate are we searching for?
+  Operator target_type;  // What kind of child gate are we searching for?
   switch (gate->type()) {
     case kNandGate:
     case kAndGate:
@@ -1141,7 +1141,7 @@ bool Preprocessor::DetectMultipleDefinitions(
     std::vector<std::vector<IGatePtr> >* gates) {
   if (gate->mark()) return false;
   gate->mark(true);
-  GateType type = gate->type();
+  Operator type = gate->type();
   std::vector<IGatePtr>& type_group = (*gates)[type];
   std::vector<IGatePtr>::iterator it;
   for (it = type_group.begin(); it != type_group.end(); ++it) {

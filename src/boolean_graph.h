@@ -184,14 +184,15 @@ class Variable : public Node {
   static int next_variable_;  ///< The next index for a new variable.
 };
 
-/// @enum GateType
-/// Types of gates for representation, preprocessing, and analysis purposes.
+/// @enum Operator
+/// Boolean operators of gates for representation, preprocessing, and analysis
+/// purposes. The operator defines a type of a gate.
 ///
-/// @warning If a new gate type is added, all the preprocessing and indexed
-///          fault tree algorithms must be reviewed and updated. The algorithms
+/// @warning If a new operator is added, all the preprocessing and Boolean
+///          graph algorithms must be reviewed and updated. The algorithms
 ///          may assume for performance and simplicity reasons that these are
-///          the only kinds of gates possible.
-enum GateType {
+///          the only kinds of operators possible.
+enum Operator {
   kAndGate = 0,  ///< Simple AND gate.
   kOrGate,  ///< Simple OR gate.
   kAtleastGate,  ///< Combination, K/N, or Vote gate representation.
@@ -230,7 +231,7 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
   /// this gate to manage parent-child hierarchy.
   ///
   /// @param[in] type The type of this gate.
-  explicit IGate(const GateType& type);
+  explicit IGate(const Operator& type);
 
   /// Destructs parent information from children.
   ~IGate() {
@@ -239,13 +240,13 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
   }
 
   /// @returns Type of this gate.
-  inline const GateType& type() const { return type_; }
+  inline const Operator& type() const { return type_; }
 
   /// Changes the gate type information. This function is expected to be used
   /// with only simple AND, OR, NOT, NULL gates.
   ///
   /// @param[in] t The type for this gate.
-  inline void type(const GateType& t) {
+  inline void type(const Operator& t) {
     assert(t == kAndGate || t == kOrGate || t == kNotGate || t == kNullGate);
     type_ = t;
   }
@@ -541,7 +542,7 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
   /// @returns true if the addition is successful with a normal final state.
   bool ProcessComplementChild(int index);
 
-  GateType type_;  ///< Type of this gate.
+  Operator type_;  ///< Type of this gate.
   State state_;  ///< Indication if this gate's state is normal, null, or unity.
   int vote_number_;  ///< Vote number for ATLEAST gate.
   bool mark_;  ///< Marking for linear traversal of a graph.
@@ -632,7 +633,7 @@ class BooleanGraph {
   typedef boost::shared_ptr<Variable> VariablePtr;
 
   /// Mapping to string gate types to enum gate types.
-  static const std::map<std::string, GateType> kStringToType_;
+  static const std::map<std::string, Operator> kStringToType_;
 
   /// Process a Boolean formula of a gate into a Boolean graph.
   ///

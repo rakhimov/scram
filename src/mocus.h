@@ -62,10 +62,10 @@ class SimpleGate {
   typedef boost::shared_ptr<SimpleGate> SimpleGatePtr;
 
   /// @param[in] type The type of this gate. AND or OR types are expected.
-  explicit SimpleGate(const GateType& type) : type_(type) {}
+  explicit SimpleGate(const Operator& type) : type_(type) {}
 
   /// @returns The type of this gate.
-  inline const GateType& type() const { return type_; }
+  inline const Operator& type() const { return type_; }
 
   /// Adds a basic event index at the end of a container.
   /// This function is specifically given to initiate the gate.
@@ -124,7 +124,7 @@ class SimpleGate {
   void OrGateCutSets(const SetPtr& cut_set,
                       std::set<SetPtr, SetPtrComp>* new_cut_sets);
 
-  GateType type_;  ///< Type of this gate.
+  Operator type_;  ///< Type of this gate.
   std::vector<int> basic_events_;  ///< Container of basic events' indices.
   std::vector<int> modules_;  ///< Container of modules' indices.
   std::vector<SimpleGatePtr> gates_;  ///< Container of child gates.
