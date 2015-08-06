@@ -30,15 +30,16 @@
 #include <boost/unordered_map.hpp>
 #include <boost/weak_ptr.hpp>
 
-#include "indexed_fault_tree.h"
+#include "boolean_graph.h"
 
 class PreprocessorTest;
 
 namespace scram {
 
 /// @class Preprocessor
-/// The class provides main preprocessing operations over an indexed fault tree
-/// to simplify the tree and to generate minimal cut sets more efficiently.
+/// The class provides main preprocessing operations over a Boolean graph
+/// to simplify the fault tree and to generate minimal cut sets more
+/// efficiently.
 class Preprocessor {
   friend class ::PreprocessorTest;
 
@@ -56,7 +57,7 @@ class Preprocessor {
   ///          tree, the destructor will not be called as expected by the
   ///          preprocessing algorithms, which will mess the new structure of
   ///          the indexed fault tree.
-  explicit Preprocessor(IndexedFaultTree* fault_tree);
+  explicit Preprocessor(BooleanGraph* fault_tree);
 
   /// Performs processing of a fault tree to simplify the structure to
   /// normalized (OR/AND gates only), modular, positive-gate-only indexed fault
@@ -64,7 +65,7 @@ class Preprocessor {
   ///
   /// @warning There should not be another smart pointer to the indexed top
   ///          gate of the indexed fault tree outside of the tree.
-  void ProcessIndexedFaultTree();
+  void ProcessFaultTree();
 
  private:
   typedef boost::shared_ptr<Node> NodePtr;
@@ -450,7 +451,7 @@ class Preprocessor {
   /// @param[in,out] gate The root gate to be traversed and cleaned.
   void ClearOptiValues(const IGatePtr& gate);
 
-  IndexedFaultTree* fault_tree_;  ///< The fault tree to preprocess.
+  BooleanGraph* fault_tree_;  ///< The fault tree to preprocess.
   int top_event_sign_;  ///< The negative or positive sign of the top event.
   bool constants_;  ///< Indication if there are constants in the tree.
   /// Container for constant gates to be tracked and cleaned by algorithms.

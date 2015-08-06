@@ -29,7 +29,7 @@
 
 #include <boost/shared_ptr.hpp>
 
-#include "indexed_fault_tree.h"
+#include "boolean_graph.h"
 
 namespace scram {
 
@@ -52,7 +52,7 @@ struct SetPtrComp
 };
 
 /// @class SimpleGate
-/// A helper class to be used in indexed fault tree. This gate represents
+/// A helper class to be used in MOCUS. This gate represents
 /// only positive OR or AND gates with basic event indices and pointers to
 /// other simple gates.
 /// All the child gates of this gate must be of opposite type.
@@ -139,7 +139,7 @@ class Mocus {
   ///
   /// @param[in] fault_tree Preprocessed, normalized, and indexed fault tree.
   /// @param[in] limit_order The limit on the size of minimal cut sets.
-  explicit Mocus(const IndexedFaultTree* fault_tree, int limit_order = 20);
+  explicit Mocus(const BooleanGraph* fault_tree, int limit_order = 20);
 
   /// Finds minimal cut sets from the initiated fault tree with indices.
   void FindMcs();
@@ -183,7 +183,7 @@ class Mocus {
                        int min_order,
                        std::vector<std::set<int> >* mcs);
 
-  const IndexedFaultTree* fault_tree_;  ///< The main fault tree.
+  const BooleanGraph* fault_tree_;  ///< The main fault tree.
   std::vector< std::set<int> > imcs_;  ///< Min cut sets with indexed events.
   /// Limit on the size of the minimal cut sets for performance reasons.
   int limit_order_;

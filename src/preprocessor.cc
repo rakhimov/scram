@@ -55,12 +55,12 @@
 
 namespace scram {
 
-Preprocessor::Preprocessor(IndexedFaultTree* fault_tree)
+Preprocessor::Preprocessor(BooleanGraph* fault_tree)
     : fault_tree_(fault_tree),
       top_event_sign_(1),
       constants_(fault_tree->constants()) {}
 
-void Preprocessor::ProcessIndexedFaultTree() {
+void Preprocessor::ProcessFaultTree() {
   IGatePtr top = fault_tree_->top_event();
   assert(top);
   assert(top->parents().empty());

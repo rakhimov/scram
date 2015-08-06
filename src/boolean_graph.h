@@ -14,12 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-/// @file indexed_fault_tree.h
-/// Classes and facilities to represent simplified fault trees wth event and
-/// gate indices instead of ID names. This facility is designed to work with
-/// FaultTreeAnalysis class.
-#ifndef SCRAM_SRC_INDEXED_FAULT_TREE_H_
-#define SCRAM_SRC_INDEXED_FAULT_TREE_H_
+/// @file boolean_graph.h
+/// Classes and facilities to represent simplified fault trees as Boolean graphs
+/// wth event and gate indices instead of ID names. This facility is designed to
+/// work with FaultTreeAnalysis and Preprocessor classes.
+#ifndef SCRAM_SRC_BOOLEAN_GRAPH_H_
+#define SCRAM_SRC_BOOLEAN_GRAPH_H_
 
 #include <map>
 #include <ostream>
@@ -37,8 +37,8 @@ namespace scram {
 class IGate;  // Indexed gate parent of nodes.
 
 /// @class Node
-/// An abstract base class that represents a node in an indexed fault tree
-/// graph. The index of the node is a unique identifier for the node.
+/// An abstract base class that represents a node in a Boolean graph.
+/// The index of the node is a unique identifier for the node.
 /// The node holds weak pointers to the parents that are managed by the parents.
 class Node {
   friend class IGate;  // To manage parent information.
@@ -162,7 +162,7 @@ class Constant : public Node {
 };
 
 /// @class IBasicEvent
-/// Indexed basic events in an indexed fault tree.
+/// Indexed basic events in a Boolean graph.
 /// Indexation of the basic events are special. It starts from 1 and ends with
 /// the number of the basic events in the fault tree. This indexation technique
 /// helps preprocessing and analysis algorithms optimize their work with basic
@@ -211,7 +211,7 @@ enum State {
 };
 
 /// @class IGate
-/// This indexed gate is for use in IndexedFaultTree.
+/// This indexed gate is for use in BooleanGraph.
 /// Initially this gate can represent any type of gate or logic; however,
 /// this gate can be only of OR and AND type at the end of all simplifications
 /// and processing. This gate class helps to process the fault tree before
@@ -561,29 +561,31 @@ class BasicEvent;
 class Gate;
 class Formula;
 
-/// @class IndexedFaultTree
+/// @class BooleanGraph
+/// BooleanGraph is a propositional directed acyclic graph (PDAG).
 /// This class provides a simpler representation of a fault tree
 /// that takes into account the indices of events instead of ids and pointers.
+/// This graph can also be called an indexed fault tree.
 ///
 /// @warning Never hold a shared pointer to any other indexed gate except for
-///          the top gate of an indexed fault tree. Extra reference count will
+///          the top gate of a Boolean graph. Extra reference count will
 ///          prevent automatic deletion of the node and management of the
 ///          structure of the fault tree. Moreover, the fault tree may become
 ///          a multiple-top-event fault tree, which is not the assumption of
 ///          all the other preprocessing and analysis algorithms.
-class IndexedFaultTree {
+class BooleanGraph {
  public:
   typedef boost::shared_ptr<Gate> GatePtr;
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
   typedef boost::shared_ptr<IGate> IGatePtr;
 
-  /// Constructs an indexed fault tree starting from the top gate. Upon
+  /// Constructs a BooleanGraph starting from the top gate of a fault tree. Upon
   /// constuction, features of the fault tree are recorded to help preprocessing
   /// and analysis functions.
   ///
   /// @param[in] root The top gate of the fault tree.
   /// @param[in] ccf Incorporation of ccf gates and events for ccf groups.
-  explicit IndexedFaultTree(const GatePtr& root, bool ccf = false);
+  explicit BooleanGraph(const GatePtr& root, bool ccf = false);
 
   /// @returns true if the fault tree is coherent.
   inline bool coherent() const { return coherent_; }
@@ -629,7 +631,7 @@ class IndexedFaultTree {
   /// Mapping to string gate types to enum gate types.
   static const std::map<std::string, GateType> kStringToType_;
 
-  /// Process a Boolean formula of a gate into an indexed fault tree.
+  /// Process a Boolean formula of a gate into a Boolean graph.
   ///
   /// @param[in] formula The Boolean formula to be processed.
   /// @param[in] ccf To replace basic events with ccf gates.
@@ -676,16 +678,16 @@ std::ostream& operator<<(std::ostream& os,
 std::ostream& operator<<(std::ostream& os,
                          const boost::shared_ptr<IGate>& gate);
 
-/// Prints the indexed fault tree in the shorthand format.
-/// This function is for debugging purposes. The output is not meant to be
-/// human readable.
+/// Prints the BooleanGraph as a fault tree in the shorthand format.
+/// This function is mostly for debugging purposes. The output is not meant to
+/// be human readable.
 ///
 /// @param[in,out] os Output stream.
 /// @param[in] ft The fault tree to be printed.
 ///
 /// @warning Visits of nodes must be clean. Visit information may get changed.
-std::ostream& operator<<(std::ostream& os, const IndexedFaultTree* ft);
+std::ostream& operator<<(std::ostream& os, const BooleanGraph* ft);
 
 }  // namespace scram
 
-#endif  // SCRAM_SRC_INDEXED_FAULT_TREE_H_
+#endif  // SCRAM_SRC_BOOLEAN_GRAPH_H_

@@ -20,8 +20,8 @@
 
 #include <boost/algorithm/string.hpp>
 
+#include "boolean_graph.h"
 #include "error.h"
-#include "indexed_fault_tree.h"
 #include "logger.h"
 #include "mocus.h"
 #include "preprocessor.h"
@@ -50,12 +50,11 @@ void FaultTreeAnalysis::Analyze() {
   CLOCK(analysis_time);
 
   CLOCK(ft_creation);
-  IndexedFaultTree* indexed_tree = new IndexedFaultTree(top_event_,
-                                                        ccf_analysis_);
+  BooleanGraph* indexed_tree = new BooleanGraph(top_event_, ccf_analysis_);
   LOG(DEBUG2) << "Indexed fault tree is created in " << DUR(ft_creation);
 
   Preprocessor* preprocessor = new Preprocessor(indexed_tree);
-  preprocessor->ProcessIndexedFaultTree();
+  preprocessor->ProcessFaultTree();
   delete preprocessor;  // No exceptions are expected.
 
   Mocus* mocus = new Mocus(indexed_tree, limit_order_);
@@ -121,7 +120,7 @@ void FaultTreeAnalysis::CleanMarks() {
 }
 
 void FaultTreeAnalysis::SetsToString(const std::vector< std::set<int> >& imcs,
-                                     const IndexedFaultTree* ft) {
+                                     const BooleanGraph* ft) {
   std::vector< std::set<int> >::const_iterator it_min;
   for (it_min = imcs.begin(); it_min != imcs.end(); ++it_min) {
     if (it_min->size() > max_order_) max_order_ = it_min->size();

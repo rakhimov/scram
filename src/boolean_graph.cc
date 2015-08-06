@@ -14,9 +14,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-/// @file indexed_fault_tree.cc
-/// Implementation of indexed nodes, events, gates, and fault trees.
-#include "indexed_fault_tree.h"
+/// @file boolean_graph.cc
+/// Implementation of indexed nodes, events, gates, and the Boolean graph.
+#include "boolean_graph.h"
 
 #include <utility>
 
@@ -320,24 +320,23 @@ void IGate::ResetChildrenFailure() {
   num_failed_children_ = 0;
 }
 
-const std::map<std::string, GateType> IndexedFaultTree::kStringToType_ =
+const std::map<std::string, GateType> BooleanGraph::kStringToType_ =
     boost::assign::map_list_of("and", kAndGate) ("or", kOrGate)
                               ("atleast", kAtleastGate) ("xor", kXorGate)
                               ("not", kNotGate) ("nand", kNandGate)
                               ("nor", kNorGate) ("null", kNullGate);
 
-IndexedFaultTree::IndexedFaultTree(const GatePtr& root, bool ccf)
+BooleanGraph::BooleanGraph(const GatePtr& root, bool ccf)
     : coherent_(true),
       constants_(false),
       normal_(true) {
   Node::ResetIndex();
   IBasicEvent::ResetIndex();
   boost::unordered_map<std::string, NodePtr> id_to_index;
-  top_event_ = IndexedFaultTree::ProcessFormula(root->formula(), ccf,
-                                                &id_to_index);
+  top_event_ = BooleanGraph::ProcessFormula(root->formula(), ccf, &id_to_index);
 }
 
-boost::shared_ptr<IGate> IndexedFaultTree::ProcessFormula(
+boost::shared_ptr<IGate> BooleanGraph::ProcessFormula(
     const FormulaPtr& formula,
     bool ccf,
     boost::unordered_map<std::string, NodePtr>* id_to_index) {
@@ -374,8 +373,7 @@ boost::shared_ptr<IGate> IndexedFaultTree::ProcessFormula(
       if (ccf && basic_event->HasCcf()) {  // Create a CCF gate.
         GatePtr ccf_gate = basic_event->ccf_gate();
         IGatePtr new_gate =
-            IndexedFaultTree::ProcessFormula(ccf_gate->formula(), ccf,
-                                             id_to_index);
+            BooleanGraph::ProcessFormula(ccf_gate->formula(), ccf, id_to_index);
         parent->AddChild(new_gate->index(), new_gate);
         id_to_index->insert(std::make_pair(basic_event->id(), new_gate));
       } else {
@@ -415,9 +413,8 @@ boost::shared_ptr<IGate> IndexedFaultTree::ProcessFormula(
       parent->AddChild(node->index(),
                        boost::static_pointer_cast<IGate>(node));
     } else {
-      IGatePtr new_gate = IndexedFaultTree::ProcessFormula(gate->formula(),
-                                                           ccf,
-                                                           id_to_index);
+      IGatePtr new_gate = BooleanGraph::ProcessFormula(gate->formula(), ccf,
+                                                       id_to_index);
       parent->AddChild(new_gate->index(), new_gate);
       id_to_index->insert(std::make_pair(gate->id(), new_gate));
     }
@@ -426,8 +423,7 @@ boost::shared_ptr<IGate> IndexedFaultTree::ProcessFormula(
   const std::set<FormulaPtr>& formulas = formula->formula_args();
   std::set<FormulaPtr>::const_iterator it_f;
   for (it_f = formulas.begin(); it_f != formulas.end(); ++it_f) {
-    IGatePtr new_gate = IndexedFaultTree::ProcessFormula(*it_f, ccf,
-                                                         id_to_index);
+    IGatePtr new_gate = BooleanGraph::ProcessFormula(*it_f, ccf, id_to_index);
     parent->AddChild(new_gate->index(), new_gate);
   }
   return parent;
@@ -551,8 +547,8 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const IndexedFaultTree* ft) {
-  os << "IndexedFaultTree_G" << ft->top_event()->index() << std::endl;
+std::ostream& operator<<(std::ostream& os, const BooleanGraph* ft) {
+  os << "BooleanGraph_G" << ft->top_event()->index() << std::endl;
   os << std::endl;
   os << ft->top_event();
   return os;

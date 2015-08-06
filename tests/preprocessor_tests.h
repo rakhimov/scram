@@ -43,7 +43,7 @@ class PreprocessorTest : public ::testing::Test {
 
   // Members for tests.
   Preprocessor* prep;
-  IndexedFaultTree* fault_tree;
+  BooleanGraph* fault_tree;
 };
 
 #endif // SCRAM_TESTS_PREPROCESSOR_TESTS_H_

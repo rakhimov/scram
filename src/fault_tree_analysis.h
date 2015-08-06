@@ -31,7 +31,7 @@
 
 namespace scram {
 
-class IndexedFaultTree;
+class BooleanGraph;
 
 /// @class FaultTreeAnalysis
 /// Fault tree analysis functionality. The analysis must be done on a validated
@@ -173,7 +173,7 @@ class FaultTreeAnalysis {
   /// @param[in] imcs Min cut sets with indices of events.
   /// @param[in] ft Indexed fault tree with basic event indices and pointers.
   void SetsToString(const std::vector< std::set<int> >& imcs,
-                    const IndexedFaultTree* ft);
+                    const BooleanGraph* ft);
 
   /// Limit on the size of the minimal cut sets for performance reasons.
   int limit_order_;
