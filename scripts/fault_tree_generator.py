@@ -28,6 +28,12 @@ analysis.
 The time complexity is approximately:
 
     O(N) + O((N/Ratio)^2*exp(-AvgChildren/Ratio)) + O(CommonG*exp(CommonB))
+
+Note that generating a fault tree with both the number of basic events and the
+number of gates contstrained may change other factors that are set by the user.
+However, if the number of gates are not set (constrained) by the user, all the
+other factors set by the user are guaranteed to be preserved and used as they
+are.
 """
 from __future__ import print_function, division
 
@@ -426,6 +432,30 @@ class Factors(object):
         """
         return int(Factors.common_g * Factors.__percent_gates *
                    Factors.avg_children * num_gates / Factors.parents_g)
+
+    @staticmethod
+    def calculate_parents_g(num_gates):
+        """This is a helper function to get average parents of gates.
+
+        This function makes possible to generate a fault tree with the user
+        specified number of gates. All other parameters except for the number
+        of parents must be set for use in calculations.
+
+        Args:
+            num_gates: The total number of gates in the future fault tree
+
+        Returns:
+            The estimated average number of parents of gates.
+        """
+        ratio = 1 / (-1 + num_gates / Factors.num_basics *
+                Factors.avg_children *
+                (1 - Factors.common_b + Factors.common_b / Factors.parents_b))
+        assert ratio > 0
+        parents = Factors.common_g / (Factors.common_g - 1 +
+                                   (1 + ratio) / Factors.avg_children)
+        if parents < 2:
+            parents = 2
+        return parents
 
 
 class Settings(object):
@@ -1052,7 +1082,7 @@ def manage_cmd_args():
     parser.add_argument("-b", "--basics", type=int, help=basics, default=100,
                         metavar="int")
 
-    children = "average number of children gates"
+    children = "average number of children or arguments of gates"
     parser.add_argument("-c", "--children", type=float, help=children,
                         default=3.0, metavar="float")
 
@@ -1075,6 +1105,10 @@ def manage_cmd_args():
     parents_g = "average number of parents for common gates"
     parser.add_argument("--parents-g", type=float, help=parents_g, default=2.0,
                         metavar="float")
+
+    gates = "number of gates (if set, discards --parents-g)"
+    parser.add_argument("-g", "--gates", type=int, help=gates, default=0,
+                        metavar="int")
 
     maxprob = "maximum probability for basic events"
     parser.add_argument("--maxprob", type=float, help=maxprob, default=0.1,
@@ -1112,6 +1146,7 @@ def manage_cmd_args():
     check_if_positive(common_g, args.common_g)
     check_if_positive(parents_b, args.parents_b)
     check_if_positive(parents_g, args.parents_g)
+    check_if_positive(gates, args.gates)
     check_if_positive(house, args.house)
     check_if_positive(ccf, args.ccf)
 
@@ -1194,6 +1229,9 @@ def setup_factors(args):
     for i in range(5 - len(weights_float)):
         weights_float.append(0)
     Factors.set_weights(weights_float)
+
+    if args.gates:
+        Factors.parents_g = Factors.calculate_parents_g(args.gates)
 
     Factors.calculate()
 

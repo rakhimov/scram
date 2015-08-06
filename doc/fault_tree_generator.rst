@@ -48,6 +48,11 @@ Script arguments
 - Output formats: shorthand or XML(default).
 - An option to merge gates into nested formulas for output.
 
+.. note::
+    The number of gates can be constrained, but this may change other factors or
+    not succeed at all. The reason is that the fault tree generation formulas
+    may run out of degrees of freedom.
+
 
 Note on Performance
 ===================
@@ -55,7 +60,7 @@ Note on Performance
 Depending on the provided arguments for the script, the execution time
 varies greatly. The number of gates and common gates in the fault tree
 generation tend to greatly increase the execution time because of the need to
-check for cycles. If the number of gates and common gates are kept constant,
+prevent cycles. If the number of gates and common gates are kept constant,
 the generation time scales linearly with the number of basic events.
 
 It is possible to generate a 100,000-basic-event fault tree in less than a
