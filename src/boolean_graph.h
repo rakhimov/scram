@@ -190,7 +190,7 @@ class Variable : public Node {
 
 /// @enum Operator
 /// Boolean operators of gates for representation, preprocessing, and analysis
-/// purposes. The operator defines a type of a gate.
+/// purposes. The operator defines a type and logic of a gate.
 ///
 /// @warning If a new operator is added, all the preprocessing and Boolean
 ///          graph algorithms must be reviewed and updated. The algorithms
@@ -206,6 +206,9 @@ enum Operator {
   kNorGate,  ///< NOR gate.
   kNullGate  ///< Special pass-through or NULL gate. This is not NULL set.
 };
+
+/// The number of operators in the enum. This number is useful for algorithms.
+static const int kNumOperators = 8;  // Update this number if operators change.
 
 /// @enum State
 /// State of a gate as a set of events with a logical operator.

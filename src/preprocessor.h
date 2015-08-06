@@ -297,9 +297,8 @@ class Preprocessor {
   /// @param[in] args Modular arguments to be added into the new module.
   ///
   /// @returns Pointer to the new module if it is created.
-  IGatePtr CreateNewModule(
-      const IGatePtr& gate,
-      const std::vector<std::pair<int, NodePtr> >& args);
+  IGatePtr CreateNewModule(const IGatePtr& gate,
+                           const std::vector<std::pair<int, NodePtr> >& args);
 
   /// Checks if a group of modular arguments share anything with non-modular
   /// arguments. If so, then the modular arguments are not actually modular, and

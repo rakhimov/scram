@@ -136,9 +136,8 @@ void Preprocessor::ProcessFaultTree() {
     tree_changed = false;  // Break the loop if actions don't change the tree.
     bool ret = false;  // The result of actions of functions.
     Preprocessor::ClearGateMarks();
-    // This vector is hardcoded for optimization. If the number of gate types
-    // change in future. This will fail and may cause bugs!
-    std::vector<std::vector<IGatePtr> > orig_gates(8, std::vector<IGatePtr>());
+    std::vector<std::vector<IGatePtr> > orig_gates(kNumOperators,
+                                                   std::vector<IGatePtr>());
     ret = Preprocessor::DetectMultipleDefinitions(top, &orig_gates);
     orig_gates.clear();
     if (!tree_changed && ret) tree_changed = true;
