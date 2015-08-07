@@ -136,13 +136,13 @@ void Preprocessor::ProcessFaultTree() {
   LOG(DEBUG2) << "Finished multi-definition detection in " << DUR(mult_time);
 
   if (graph_->coherent()) {
-    Preprocessor::ClearGateMarks();
+    CLOCK(optim_time);
+    LOG(DEBUG2) << "Boolean optimization...";
     Preprocessor::BooleanOptimization();
+    LOG(DEBUG2) << "Finished Boolean optimization in " << DUR(optim_time);
   }
 
   LOG(DEBUG2) << "Coalescing gates...";
-  Preprocessor::ClearGateMarks();
-  Preprocessor::RemoveNullGates();
   tree_changed = true;
   while (tree_changed) {
     assert(const_gates_.empty());
@@ -189,7 +189,7 @@ void Preprocessor::NormalizeGates() {
   Preprocessor::NormalizeGate(root_gate);  // Registers null gates only.
 
   assert(const_gates_.empty());
-  if (!null_gates_.empty()) Preprocessor::ClearNullGates();
+  Preprocessor::ClearNullGates();
 }
 
 void Preprocessor::NotifyParentsOfNegativeGates(const IGatePtr& gate) {
@@ -647,6 +647,8 @@ bool Preprocessor::JoinGates(const IGatePtr& gate) {
 }
 
 void Preprocessor::DetectModules() {
+  assert(const_gates_.empty());
+  assert(null_gates_.empty());
   // First stage, traverse the tree depth-first for gates and indicate
   // visit time for each node.
   LOG(DEBUG2) << "Detecting modules...";
@@ -916,6 +918,8 @@ void Preprocessor::CreateNewModules(
 }
 
 void Preprocessor::BooleanOptimization() {
+  assert(const_gates_.empty());
+  assert(null_gates_.empty());
   Preprocessor::ClearNodeVisits();
   Preprocessor::ClearGateMarks();
 
@@ -967,6 +971,8 @@ void Preprocessor::GatherCommonNodes(
 
 template<class N>
 void Preprocessor::ProcessCommonNode(const boost::weak_ptr<N>& common_node) {
+  assert(const_gates_.empty());
+  assert(null_gates_.empty());
   if (common_node.expired()) return;  // The node has been deleted.
 
   boost::shared_ptr<N> node = common_node.lock();
@@ -996,15 +1002,10 @@ void Preprocessor::ProcessCommonNode(const boost::weak_ptr<N>& common_node) {
   if (num_dest == 0) return;  // No failure destination detected.
   assert(!destinations.empty());
   if (num_dest < mult_tot) {  // Redundancy detection.
-    bool created_constant =
-        Preprocessor::ProcessRedundantParents(node, &destinations);
+    Preprocessor::ProcessRedundantParents(node, &destinations);
     Preprocessor::ProcessFailureDestinations(node, destinations);
-    if (created_constant) {
-      Preprocessor::ClearGateMarks();
-      Preprocessor::PropagateConstants(root);
-      Preprocessor::ClearGateMarks();
-      Preprocessor::RemoveNullGates();
-    }
+    Preprocessor::ClearConstGates();
+    Preprocessor::ClearNullGates();
   }
 }
 
@@ -1051,7 +1052,7 @@ int Preprocessor::CollectFailureDestinations(
   return num_dest;
 }
 
-bool Preprocessor::ProcessRedundantParents(
+void Preprocessor::ProcessRedundantParents(
     const NodePtr& node,
     std::map<int, boost::weak_ptr<IGate> >* destinations) {
   std::vector<boost::weak_ptr<IGate> > redundant_parents;
@@ -1071,8 +1072,8 @@ bool Preprocessor::ProcessRedundantParents(
       redundant_parents.push_back(parent);
     }
   }
+  /// @todo Use RemoveConstArg function instead.
   // The node behaves like a constant False for redundant parents.
-  bool created_constant = false;  // Parents turned into constants.
   std::vector<boost::weak_ptr<IGate> >::iterator it_r;
   for (it_r = redundant_parents.begin(); it_r != redundant_parents.end();
        ++it_r) {
@@ -1081,12 +1082,15 @@ bool Preprocessor::ProcessRedundantParents(
     switch (parent->type()) {
       case kAndGate:
         parent->Nullify();
-        if (!created_constant) created_constant = true;
+        const_gates_.push_back(parent);
         break;
       case kOrGate:
         assert(parent->args().size() > 1);
         parent->EraseArg(node->index());
-        if (parent->args().size() == 1) parent->type(kNullGate);
+        if (parent->args().size() == 1) {
+          parent->type(kNullGate);
+          null_gates_.push_back(parent);
+        }
         break;
       case kAtleastGate:
         assert(parent->args().size() > 2);
@@ -1098,7 +1102,6 @@ bool Preprocessor::ProcessRedundantParents(
         assert(false);
     }
   }
-  return created_constant;
 }
 
 template<class N>
@@ -1172,8 +1175,8 @@ bool Preprocessor::ProcessMultipleDefinitions() {
       }
     }
   }
-  if (!const_gates_.empty()) Preprocessor::ClearConstGates();
-  if (!null_gates_.empty()) Preprocessor::ClearNullGates();
+  Preprocessor::ClearConstGates();
+  Preprocessor::ClearNullGates();
   return true;
 }
 

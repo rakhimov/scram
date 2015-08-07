@@ -409,16 +409,15 @@ class Preprocessor {
 
   /// Detects if parents of a node are redundant. If there are redundant
   /// parents, depending on the logic of the parent, the node is removed from
-  /// the parent unless it is also in the destination set. In the latter case,
-  /// the parent is removed from the destinations.
+  /// the parent unless it is also in the destination set with specific logic.
+  /// In the latter case, the parent is removed from the destinations.
   ///
   /// @param[in] node The common node.
   /// @param[in,out] destinations A set of destination gates.
   ///
-  /// @returns true if some of the redundant parents turned into a constant.
-  ///
-  /// @warning This cleanup function may generate NULL type gates.
-  bool ProcessRedundantParents(
+  /// @note Constant gates are registered for removal.
+  /// @note Null type gates are registered for removal.
+  void ProcessRedundantParents(
       const NodePtr& node,
       std::map<int, boost::weak_ptr<IGate> >* destinations);
 
