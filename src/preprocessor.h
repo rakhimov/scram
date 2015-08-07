@@ -240,18 +240,31 @@ class Preprocessor {
   /// means it is less efficient than having a specific NULL type gate
   /// propagate its argument bottom-up.
   ///
-  /// @param[in,out] gate The starting gate to traverse the tree. This is for
-  ///                     recursive purposes.
-  ///
-  /// @returns true if the given tree has been changed by this function.
+  /// @returns true if the fault tree had it NULL type gates removed.
   /// @returns false if no change has been made.
   ///
-  /// @warning Gate marks must be clear.
+  /// @note This function assumes that the container for NULL gates is empty.
+  ///       In other words, it is assumed no other function was trying to
+  ///       communicate NULL type gates for future processing.
+  /// @note This function is designed to be called only once at the start
+  ///       of preprocessing after cleaning all the constants from the graph.
+  /// @note Other algorithms must use the bottom-up NULL gate propagation
+  ///       function because that function is more targeted and efficient than
+  ///       this function.
+  ///
+  /// @warning This function clears and uses gate marks.
   /// @warning There still may be only one NULL type gate which is the root
   ///          of the tree. This must be handled separately.
   /// @warning NULL gates that are constant are not handled and left for
   ///          constant propagation functions.
-  bool RemoveNullGates(const IGatePtr& gate);
+  bool RemoveNullGates();
+
+  /// Gathers all NULL type gates starting from the given gate as a root.
+  ///
+  /// @param[in,out] gate The starting gate to search for NULL gates.
+  ///
+  /// @warning Gate marks must be clear.
+  void GatherNullGates(const IGatePtr& gate);
 
   /// Pre-processes the fault tree by doing the simplest Boolean algebra.
   /// Positive arguments with the same OR or AND gates as parents are coalesced.

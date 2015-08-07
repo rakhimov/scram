@@ -82,21 +82,8 @@ void Preprocessor::ProcessFaultTree() {
     LOG(DEBUG2) << "Finished normalizing gates.";
   }
 
-  Preprocessor::ClearGateMarks();
-  Preprocessor::RemoveNullGates(top);
+  Preprocessor::RemoveNullGates();
 
-  if (top->type() == kNullGate) {  // Special case of preprocessing.
-    assert(top->args().size() == 1);
-    if (!top->gate_args().empty()) {
-      int signed_index = top->gate_args().begin()->first;
-      IGatePtr arg = top->gate_args().begin()->second;
-      fault_tree_->top_event(arg);
-      top = arg;
-      assert(top->parents().empty());
-      assert(top->type() == kOrGate || top->type() == kAndGate);
-      top_event_sign_ *= signed_index > 0 ? 1 : -1;
-    }  // Else there is only basic event in the final fault tree.
-  }
   if (top->state() != kNormalState) {  // Top has become constant.
     if (top_event_sign_ < 0) {
       State orig_state = top->state();
@@ -111,6 +98,18 @@ void Preprocessor::ProcessFaultTree() {
       top_event_sign_ = 1;
     }
     return;
+  }
+  if (top->type() == kNullGate) {  // Special case of preprocessing.
+    assert(top->args().size() == 1);
+    if (!top->gate_args().empty()) {
+      int signed_index = top->gate_args().begin()->first;
+      IGatePtr arg = top->gate_args().begin()->second;
+      fault_tree_->top_event(arg);
+      top = arg;
+      assert(top->parents().empty());
+      assert(top->type() == kOrGate || top->type() == kAndGate);
+      top_event_sign_ *= signed_index > 0 ? 1 : -1;
+    }
   }
   if (!fault_tree_->coherent()) {
     LOG(DEBUG2) << "Propagating complements in the fault tree.";
@@ -131,6 +130,8 @@ void Preprocessor::ProcessFaultTree() {
   Preprocessor::ClearGateMarks();
   Preprocessor::PropagateConstants(top);
 
+  CLOCK(mult_time);
+  LOG(DEBUG2) << "Detecting multiple definitions.";
   bool tree_changed = true;
   while (tree_changed) {
     tree_changed = false;  // Break the loop if actions don't change the tree.
@@ -143,23 +144,24 @@ void Preprocessor::ProcessFaultTree() {
     if (!tree_changed && ret) tree_changed = true;
 
     Preprocessor::ClearGateMarks();
-    ret = Preprocessor::RemoveNullGates(top);
+    ret = Preprocessor::RemoveNullGates();
     if (!tree_changed && ret) tree_changed = true;
 
     Preprocessor::ClearGateMarks();
     ret = Preprocessor::PropagateConstants(top);
     if (!tree_changed && ret) tree_changed = true;
   }
+  LOG(DEBUG2) << "Finished multi-definition detection in " << DUR(mult_time);
 
   if (fault_tree_->coherent()) {
     Preprocessor::ClearGateMarks();
-    Preprocessor::RemoveNullGates(top);
+    Preprocessor::RemoveNullGates();
     Preprocessor::BooleanOptimization();
   }
 
   LOG(DEBUG2) << "Coalescing gates.";
   Preprocessor::ClearGateMarks();
-  Preprocessor::RemoveNullGates(top);
+  Preprocessor::RemoveNullGates();
   tree_changed = true;
   while (tree_changed) {
     assert(const_gates_.empty());
@@ -565,28 +567,37 @@ void Preprocessor::PropagateComplements(
   }
 }
 
-bool Preprocessor::RemoveNullGates(const IGatePtr& gate) {
-  if (gate->mark()) return false;
+bool Preprocessor::RemoveNullGates() {
+  Preprocessor::ClearGateMarks();
+  assert(null_gates_.empty());
+  IGatePtr root = fault_tree_->top_event();
+  Preprocessor::GatherNullGates(root);
+  Preprocessor::ClearGateMarks();
+  if (null_gates_.size() == 1 && null_gates_.front().lock() == root)
+    null_gates_.clear();  // Special case of only one NULL gate as the root.
+
+  if (!null_gates_.empty()) {
+    std::vector<boost::weak_ptr<IGate> >::iterator it;
+    for (it = null_gates_.begin(); it != null_gates_.end(); ++it) {
+      if (it->expired()) continue;
+      Preprocessor::PropagateNullGate(it->lock());
+    }
+    null_gates_.clear();
+    return true;
+  }
+  return false;
+}
+
+void Preprocessor::GatherNullGates(const IGatePtr& gate) {
+  if (gate->mark()) return;
   gate->mark(true);
-  std::vector<int> null_args;  // Null type gate args.
-  bool changed = false;  // Indication if the tree is changed.
+  if (gate->type() == kNullGate && gate->state() == kNormalState) {
+    null_gates_.push_back(gate);
+  }
   boost::unordered_map<int, IGatePtr>::const_iterator it;
   for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
-    IGatePtr arg_gate = it->second;
-    bool ret = Preprocessor::RemoveNullGates(arg_gate);
-    if (!changed && ret) changed = true;
-
-    if (arg_gate->state() != kNormalState) continue;
-
-    if (arg_gate->type() == kNullGate) null_args.push_back(it->first);
+    Preprocessor::GatherNullGates(it->second);
   }
-
-  std::vector<int>::iterator it_swap;
-  for (it_swap = null_args.begin(); it_swap != null_args.end(); ++it_swap) {
-    if (!gate->JoinNullGate(*it_swap)) return true;  // Becomes constant.
-    if (!changed) changed = true;
-  }
-  return changed;
 }
 
 bool Preprocessor::JoinGates(const IGatePtr& gate) {
@@ -996,7 +1007,7 @@ void Preprocessor::ProcessCommonNode(const boost::weak_ptr<N>& common_node) {
       Preprocessor::ClearGateMarks();
       Preprocessor::PropagateConstants(top);
       Preprocessor::ClearGateMarks();
-      Preprocessor::RemoveNullGates(top);
+      Preprocessor::RemoveNullGates();
     }
   }
 }
