@@ -358,11 +358,10 @@ boost::shared_ptr<IGate> BooleanGraph::ProcessFormula(
     if (id_to_index->count(basic_event->id())) {  // Node already exists.
       NodePtr node = id_to_index->find(basic_event->id())->second;
       if (ccf && basic_event->HasCcf()) {  // Replace with a CCF gate.
-        parent->AddArg(node->index(),
-                         boost::static_pointer_cast<IGate>(node));
+        parent->AddArg(node->index(), boost::static_pointer_cast<IGate>(node));
       } else {
         parent->AddArg(node->index(),
-                         boost::static_pointer_cast<Variable>(node));
+                       boost::static_pointer_cast<Variable>(node));
       }
     } else {  // Create a new node.
       if (ccf && basic_event->HasCcf()) {  // Create a CCF gate.
@@ -390,8 +389,7 @@ boost::shared_ptr<IGate> BooleanGraph::ProcessFormula(
     HouseEventPtr house = *it_h;
     if (id_to_index->count(house->id())) {
       NodePtr node = id_to_index->find(house->id())->second;
-      parent->AddArg(node->index(),
-                       boost::static_pointer_cast<Constant>(node));
+      parent->AddArg(node->index(), boost::static_pointer_cast<Constant>(node));
     } else {
       ConstantPtr constant(new Constant(house->state()));
       parent->AddArg(constant->index(), constant);
@@ -405,8 +403,7 @@ boost::shared_ptr<IGate> BooleanGraph::ProcessFormula(
     GatePtr gate = *it_g;
     if (id_to_index->count(gate->id())) {
       NodePtr node = id_to_index->find(gate->id())->second;
-      parent->AddArg(node->index(),
-                       boost::static_pointer_cast<IGate>(node));
+      parent->AddArg(node->index(), boost::static_pointer_cast<IGate>(node));
     } else {
       IGatePtr new_gate = BooleanGraph::ProcessFormula(gate->formula(), ccf,
                                                        id_to_index);
@@ -446,7 +443,7 @@ std::ostream& operator<<(std::ostream& os,
   if (gate->Visited()) return os;
   gate->Visit(1);
   if (gate->state() != kNormalState) {
-    std::string state = gate->state() == kNullState ? "false" : "true" ;
+    std::string state = gate->state() == kNullState ? "false" : "true";
     os << "s(GC" << gate->index() << ") = " << state << std::endl;
     return os;
   }

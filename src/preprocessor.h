@@ -198,7 +198,7 @@ class Preprocessor {
   /// @param[in,out] gate The parent gate that contains the arguments.
   /// @param[in] arg The constant argument under consideration.
   /// @param[in] state False or True constant state of the argument.
-  /// @param[in,out] to_erase The set of arguments to erase from the parent gate.
+  /// @param[in,out] to_erase The set of arguments to erase from the gate.
   ///
   /// @returns true if the passed gate has become constant due to its argument.
   /// @returns false if the parent still valid for further operations.
@@ -493,7 +493,6 @@ class Preprocessor {
 
   BooleanGraph* graph_;  ///< The Boolean graph to preprocess.
   int root_sign_;  ///< The negative or positive sign of the root node.
-  bool constants_;  ///< Indication if there are constants in the graph.
   /// Container for constant gates to be tracked and cleaned by algorithms.
   /// These constant gates are created because of complement or constant
   /// descendants.

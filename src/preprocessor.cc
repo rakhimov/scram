@@ -57,8 +57,7 @@ namespace scram {
 
 Preprocessor::Preprocessor(BooleanGraph* graph)
     : graph_(graph),
-      root_sign_(1),
-      constants_(graph->constants()) {}
+      root_sign_(1) {}
 
 void Preprocessor::ProcessFaultTree() {
   IGatePtr root = graph_->root();
@@ -69,7 +68,7 @@ void Preprocessor::ProcessFaultTree() {
   CLOCK(prep_time);  // Overall preprocessing time.
   LOG(DEBUG2) << "Preprocessing...";
 
-  if (constants_) {
+  if (graph_->constants()) {
     LOG(DEBUG2) << "Propagating constants...";
     Preprocessor::PropagateConstants(root);
     LOG(DEBUG2) << "Constant propagation is done!";
@@ -325,7 +324,7 @@ void Preprocessor::NormalizeAtleastGate(const IGatePtr& gate) {
 void Preprocessor::PropagateConstGate(const IGatePtr& gate) {
   assert(gate->state() != kNormalState);
 
-  while(!gate->parents().empty()) {
+  while (!gate->parents().empty()) {
     IGatePtr parent = gate->parents().begin()->second.lock();
 
     int sign = parent->args().count(gate->index()) ? 1 : -1;
@@ -348,7 +347,7 @@ void Preprocessor::PropagateConstGate(const IGatePtr& gate) {
 void Preprocessor::PropagateNullGate(const IGatePtr& gate) {
   assert(gate->type() == kNullGate);
 
-  while(!gate->parents().empty()) {
+  while (!gate->parents().empty()) {
     IGatePtr parent = gate->parents().begin()->second.lock();
     int sign = parent->args().count(gate->index()) ? 1 : -1;
     parent->JoinNullGate(sign * gate->index());
@@ -527,7 +526,7 @@ void Preprocessor::PropagateComplements(
     std::map<int, IGatePtr>* gate_complements) {
   if (gate->mark()) return;
   gate->mark(true);
-  //assert(gate->args().size() > 1);  /// @todo Put Back.
+  // assert(gate->args().size() > 1);  /// @todo Put Back.
   // If the argument gate is complement, then create a new gate that propagates
   // its sign to its arguments and itself becomes non-complement.
   // Keep track of complement gates for optimization of repeated complements.
@@ -604,18 +603,18 @@ bool Preprocessor::JoinGates(const IGatePtr& gate) {
   switch (gate->type()) {
     case kNandGate:
     case kAndGate:
-      //assert(gate->args().size() > 1);  /// @todo Put back.
+      // assert(gate->args().size() > 1);  /// @todo Put back.
       target_type = kAndGate;
       possible = true;
       break;
     case kNorGate:
     case kOrGate:
-      //assert(gate->args().size() > 1);  /// @todo Put back.
+      // assert(gate->args().size() > 1);  /// @todo Put back.
       target_type = kOrGate;
       possible = true;
       break;
   }
-  //assert(!gate->args().empty());  /// @todo Put back.
+  // assert(!gate->args().empty());  /// @todo Put back.
   std::vector<IGatePtr> to_join;  // Gate arguments of the same logic.
   bool changed = false;  // Indication if the tree is changed.
   boost::unordered_map<int, IGatePtr>::const_iterator it;
@@ -641,7 +640,7 @@ bool Preprocessor::JoinGates(const IGatePtr& gate) {
       const_gates_.push_back(gate);  // Register for future processing.
       return true;  // The parent is constant. No need to join other arguments.
     }
-    //assert(gate->args().size() > 1);  // Does not produce NULL type gates.
+    // assert(gate->args().size() > 1);  // Does not produce NULL type gates.
   }
   return changed;
 }
@@ -841,7 +840,7 @@ void Preprocessor::FilterModularArgs(
     }
     if (non_module) {
       new_non_modular.push_back(*it);
-    } else{
+    } else {
       still_modular.push_back(*it);
     }
   }
@@ -1047,7 +1046,7 @@ int Preprocessor::CollectFailureDestinations(
     } else if (arg->opti_value() == 1 && arg->index() != index) {
       ++num_dest;
       destinations->insert(std::make_pair(arg->index(), arg));
-    } // Ignore gates with optimization values of 2 or 3.
+    }  // Ignore gates with optimization values of 2 or 3.
   }
   return num_dest;
 }
@@ -1118,7 +1117,7 @@ void Preprocessor::ProcessFailureDestinations(
         target->AddArg(node->index(), node);
         break;
       case kAndGate:
-      case kAtleastGate:
+      case kAtleastGate:  /// @todo Provide proper swap (replace).
         IGatePtr new_gate(new IGate(target->type()));
         new_gate->vote_number(target->vote_number());
         new_gate->CopyArgs(target);

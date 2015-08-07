@@ -332,7 +332,7 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
 
   /// Adds an argument gate to this gate. Before adding the argument, the
   /// existing arguments are checked for complements and duplicates. If there is
-  /// complement, the gate may change its state (clearing its arguments) or type.
+  /// complement, the gate may change its state (erasing its arguments) or type.
   /// The duplicates are handled according to the logic of the gate. The caller
   /// must be aware of possible changes due to the logic of the gate.
   ///
@@ -354,7 +354,7 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
 
   /// Adds an argument variable to this gate. Before adding the argument, the
   /// existing arguments are checked for complements and duplicates. If there is
-  /// a complement, the gate may change its state (clearing its arguments) or
+  /// a complement, the gate may change its state (erasing its arguments) or
   /// type. The duplicates are handled according to the logic of the gate. The
   /// caller must be aware of possible changes due to the logic of the gate.
   ///
@@ -376,7 +376,7 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
 
   /// Adds a constant argument to this gate. Before adding the argument, the
   /// existing arguments are checked for complements and duplicates. If there is
-  /// complement, the gate may change its state (clearing its arguments) or type.
+  /// complement, the gate may change its state (erasing its arguments) or type.
   /// The duplicates are handled according to the logic of the gate. The caller
   /// must be aware of possible changes due to the logic of the gate.
   ///
