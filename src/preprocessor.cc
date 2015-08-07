@@ -34,7 +34,7 @@
 ///   * How it deals with modules (Aware of them or not at all)
 ///   * Should not have constants or constant gates
 ///   * Does it depend on other preprocessing functions?
-///   * Does it swap the top gate of the fault tree with another (arg) gate?
+///   * Does it swap the root gate of the graph with another (arg) gate?
 ///   * Does it remove gates or other kind of nodes?
 ///
 /// Assuming that the fault tree is provided in the state as described in the
@@ -55,83 +55,83 @@
 
 namespace scram {
 
-Preprocessor::Preprocessor(BooleanGraph* fault_tree)
-    : fault_tree_(fault_tree),
-      top_event_sign_(1),
-      constants_(fault_tree->constants()) {}
+Preprocessor::Preprocessor(BooleanGraph* graph)
+    : graph_(graph),
+      root_sign_(1),
+      constants_(graph->constants()) {}
 
 void Preprocessor::ProcessFaultTree() {
-  IGatePtr top = fault_tree_->top_event();
-  assert(top);
-  assert(top->parents().empty());
-  assert(!top->mark());
+  IGatePtr root = graph_->root();
+  assert(root);
+  assert(root->parents().empty());
+  assert(!root->mark());
 
   CLOCK(prep_time);  // Overall preprocessing time.
-  LOG(DEBUG2) << "Preprocessing the fault tree.";
+  LOG(DEBUG2) << "Preprocessing...";
 
   if (constants_) {
-    LOG(DEBUG2) << "Propagating constants in the fault tree.";
-    Preprocessor::PropagateConstants(top);
-    LOG(DEBUG2) << "Constant propagation is done.";
+    LOG(DEBUG2) << "Propagating constants...";
+    Preprocessor::PropagateConstants(root);
+    LOG(DEBUG2) << "Constant propagation is done!";
   }
 
-  if (!fault_tree_->normal()) {
-    LOG(DEBUG2) << "Normalizing gates.";
-    assert(top_event_sign_ == 1);
+  if (!graph_->normal()) {
+    LOG(DEBUG2) << "Normalizing gates...";
+    assert(root_sign_ == 1);
     Preprocessor::NormalizeGates();
-    LOG(DEBUG2) << "Finished normalizing gates.";
+    LOG(DEBUG2) << "Finished normalizing gates!";
   }
 
   Preprocessor::RemoveNullGates();
 
-  if (top->state() != kNormalState) {  // Top has become constant.
-    if (top_event_sign_ < 0) {
-      State orig_state = top->state();
-      top = IGatePtr(new IGate(kNullGate));
-      fault_tree_->top_event(top);
+  if (root->state() != kNormalState) {  // The root gate has become constant.
+    if (root_sign_ < 0) {
+      State orig_state = root->state();
+      root = IGatePtr(new IGate(kNullGate));
+      graph_->root(root);
       if (orig_state == kNullState) {
-        top->MakeUnity();
+        root->MakeUnity();
       } else {
         assert(orig_state == kUnityState);
-        top->Nullify();
+        root->Nullify();
       }
-      top_event_sign_ = 1;
+      root_sign_ = 1;
     }
     return;
   }
-  if (top->type() == kNullGate) {  // Special case of preprocessing.
-    assert(top->args().size() == 1);
-    if (!top->gate_args().empty()) {
-      int signed_index = top->gate_args().begin()->first;
-      IGatePtr arg = top->gate_args().begin()->second;
-      fault_tree_->top_event(arg);
-      top = arg;
-      assert(top->parents().empty());
-      assert(top->type() == kOrGate || top->type() == kAndGate);
-      top_event_sign_ *= signed_index > 0 ? 1 : -1;
+  if (root->type() == kNullGate) {  // Special case of preprocessing.
+    assert(root->args().size() == 1);
+    if (!root->gate_args().empty()) {
+      int signed_index = root->gate_args().begin()->first;
+      IGatePtr arg = root->gate_args().begin()->second;
+      graph_->root(arg);
+      root = arg;
+      assert(root->parents().empty());
+      assert(root->type() == kOrGate || root->type() == kAndGate);
+      root_sign_ *= signed_index > 0 ? 1 : -1;
     }
   }
-  if (!fault_tree_->coherent()) {
-    LOG(DEBUG2) << "Propagating complements in the fault tree.";
-    if (top_event_sign_ < 0) {
-      assert(top->type() == kOrGate || top->type() == kAndGate ||
-             top->type() == kNullGate);
-      if (top->type() == kOrGate || top->type() == kAndGate)
-        top->type(top->type() == kOrGate ? kAndGate : kOrGate);
-      top->InvertArgs();
-      top_event_sign_ = 1;
+  if (!graph_->coherent()) {
+    LOG(DEBUG2) << "Propagating complements...";
+    if (root_sign_ < 0) {
+      assert(root->type() == kOrGate || root->type() == kAndGate ||
+             root->type() == kNullGate);
+      if (root->type() == kOrGate || root->type() == kAndGate)
+        root->type(root->type() == kOrGate ? kAndGate : kOrGate);
+      root->InvertArgs();
+      root_sign_ = 1;
     }
     std::map<int, IGatePtr> complements;
     Preprocessor::ClearGateMarks();
-    Preprocessor::PropagateComplements(top, &complements);
-    LOG(DEBUG2) << "Complement propagation is done.";
+    Preprocessor::PropagateComplements(root, &complements);
+    LOG(DEBUG2) << "Complement propagation is done!";
   }
 
   Preprocessor::ClearGateMarks();
-  Preprocessor::PropagateConstants(top);
+  Preprocessor::PropagateConstants(root);
 
   CLOCK(mult_time);
-  LOG(DEBUG2) << "Detecting multiple definitions.";
+  LOG(DEBUG2) << "Detecting multiple definitions...";
   bool tree_changed = true;
   while (tree_changed) {
     tree_changed = false;  // Break the loop if actions don't change the tree.
@@ -139,7 +139,7 @@ void Preprocessor::ProcessFaultTree() {
     Preprocessor::ClearGateMarks();
     std::vector<std::vector<IGatePtr> > orig_gates(kNumOperators,
                                                    std::vector<IGatePtr>());
-    ret = Preprocessor::DetectMultipleDefinitions(top, &orig_gates);
+    ret = Preprocessor::DetectMultipleDefinitions(root, &orig_gates);
     orig_gates.clear();
     if (!tree_changed && ret) tree_changed = true;
 
@@ -148,18 +148,18 @@ void Preprocessor::ProcessFaultTree() {
     if (!tree_changed && ret) tree_changed = true;
 
     Preprocessor::ClearGateMarks();
-    ret = Preprocessor::PropagateConstants(top);
+    ret = Preprocessor::PropagateConstants(root);
     if (!tree_changed && ret) tree_changed = true;
   }
   LOG(DEBUG2) << "Finished multi-definition detection in " << DUR(mult_time);
 
-  if (fault_tree_->coherent()) {
+  if (graph_->coherent()) {
     Preprocessor::ClearGateMarks();
     Preprocessor::RemoveNullGates();
     Preprocessor::BooleanOptimization();
   }
 
-  LOG(DEBUG2) << "Coalescing gates.";
+  LOG(DEBUG2) << "Coalescing gates...";
   Preprocessor::ClearGateMarks();
   Preprocessor::RemoveNullGates();
   tree_changed = true;
@@ -168,7 +168,7 @@ void Preprocessor::ProcessFaultTree() {
     assert(null_gates_.empty());
 
     Preprocessor::ClearGateMarks();
-    tree_changed = Preprocessor::JoinGates(top);  // May produce constant gates.
+    tree_changed = Preprocessor::JoinGates(root);  // May produce constant gates.
 
     if (!const_gates_.empty()) {
       Preprocessor::ClearGateMarks();
@@ -181,34 +181,34 @@ void Preprocessor::ProcessFaultTree() {
       tree_changed = true;
     }
   }
-  LOG(DEBUG2) << "Gate coalescense is done.";
+  LOG(DEBUG2) << "Gate coalescense is done!";
 
   // After this point there should not be null AND or unity OR gates,
   // and the tree structure should be repeating OR and AND.
   // All gates are positive, and each gate has at least two arguments.
-  if (top->args().empty()) return;  // This is null or unity.
+  if (root->args().empty()) return;  // This is null or unity.
   // Detect original modules for processing.
   Preprocessor::DetectModules();
-  LOG(DEBUG2) << "Finished preprocessing the fault tree in " << DUR(prep_time);
+  LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
 }
 
 void Preprocessor::NormalizeGates() {
-  // Handle special case for a top event.
-  IGatePtr top_gate = fault_tree_->top_event();
-  Operator type = top_gate->type();
+  // Handle special case for a root gate.
+  IGatePtr root_gate = graph_->root();
+  Operator type = root_gate->type();
   switch (type) {
     case kNorGate:
     case kNandGate:
     case kNotGate:
-      top_event_sign_ *= -1;
+      root_sign_ *= -1;
   }
-  // Process negative gates. Note that top event's negative gate is processed in
+  // Process negative gates. Note that root's negative gate is processed in
   // the above lines. All arguments are assumed to be positive at this point.
   Preprocessor::ClearGateMarks();
-  Preprocessor::NotifyParentsOfNegativeGates(top_gate);
+  Preprocessor::NotifyParentsOfNegativeGates(root_gate);
 
   Preprocessor::ClearGateMarks();
-  Preprocessor::NormalizeGate(top_gate);
+  Preprocessor::NormalizeGate(root_gate);
 }
 
 void Preprocessor::NotifyParentsOfNegativeGates(const IGatePtr& gate) {
@@ -570,7 +570,7 @@ void Preprocessor::PropagateComplements(
 bool Preprocessor::RemoveNullGates() {
   Preprocessor::ClearGateMarks();
   assert(null_gates_.empty());
-  IGatePtr root = fault_tree_->top_event();
+  IGatePtr root = graph_->root();
   Preprocessor::GatherNullGates(root);
   Preprocessor::ClearGateMarks();
   if (null_gates_.size() == 1 && null_gates_.front().lock() == root)
@@ -653,22 +653,22 @@ bool Preprocessor::JoinGates(const IGatePtr& gate) {
 void Preprocessor::DetectModules() {
   // First stage, traverse the tree depth-first for gates and indicate
   // visit time for each node.
-  LOG(DEBUG2) << "Detecting modules in a fault tree.";
+  LOG(DEBUG2) << "Detecting modules...";
 
   Preprocessor::ClearNodeVisits();
 
-  IGatePtr top_gate = fault_tree_->top_event();
+  IGatePtr root_gate = graph_->root();
   int time = 0;
-  Preprocessor::AssignTiming(time, top_gate);
+  Preprocessor::AssignTiming(time, root_gate);
 
   LOG(DEBUG3) << "Timings are assigned to nodes.";
 
   Preprocessor::ClearGateMarks();
-  Preprocessor::FindModules(top_gate);
+  Preprocessor::FindModules(root_gate);
 
-  assert(!top_gate->Revisited());
-  assert(top_gate->min_time() == 1);
-  assert(top_gate->max_time() == top_gate->ExitTime());
+  assert(!root_gate->Revisited());
+  assert(root_gate->min_time() == 1);
+  assert(root_gate->max_time() == root_gate->ExitTime());
 }
 
 int Preprocessor::AssignTiming(int time, const IGatePtr& gate) {
@@ -944,7 +944,7 @@ void Preprocessor::GatherCommonNodes(
       std::vector<boost::weak_ptr<IGate> >* common_gates,
       std::vector<boost::weak_ptr<Variable> >* common_variables) {
   std::queue<IGatePtr> gates_queue;
-  gates_queue.push(fault_tree_->top_event());
+  gates_queue.push(graph_->root());
   while (!gates_queue.empty()) {
     IGatePtr gate = gates_queue.front();
     gates_queue.pop();
@@ -977,8 +977,8 @@ void Preprocessor::ProcessCommonNode(const boost::weak_ptr<N>& common_node) {
 
   if (node->parents().size() == 1) return;  // The parent is deleted.
 
-  IGatePtr top = fault_tree_->top_event();
-  Preprocessor::ClearOptiValues(top);
+  IGatePtr root = graph_->root();
+  Preprocessor::ClearOptiValues(root);
 
   assert(node->opti_value() == 0);
   node->opti_value(1);
@@ -988,12 +988,12 @@ void Preprocessor::ProcessCommonNode(const boost::weak_ptr<N>& common_node) {
   // The results of the failure propagation.
   std::map<int, boost::weak_ptr<IGate> > destinations;
   int num_dest = 0;  // This is not the same as the size of destinations.
-  if (top->opti_value() == 1) {  // The top gate failed.
-    destinations.insert(std::make_pair(top->index(), top));
+  if (root->opti_value() == 1) {  // The root gate failed.
+    destinations.insert(std::make_pair(root->index(), root));
     num_dest = 1;
   } else {
-    assert(top->opti_value() == 0);
-    num_dest = Preprocessor::CollectFailureDestinations(top, node->index(),
+    assert(root->opti_value() == 0);
+    num_dest = Preprocessor::CollectFailureDestinations(root, node->index(),
                                                         &destinations);
   }
 
@@ -1005,7 +1005,7 @@ void Preprocessor::ProcessCommonNode(const boost::weak_ptr<N>& common_node) {
     Preprocessor::ProcessFailureDestinations(node, destinations);
     if (created_constant) {
       Preprocessor::ClearGateMarks();
-      Preprocessor::PropagateConstants(top);
+      Preprocessor::PropagateConstants(root);
       Preprocessor::ClearGateMarks();
       Preprocessor::RemoveNullGates();
     }
@@ -1185,7 +1185,7 @@ bool Preprocessor::DetectMultipleDefinitions(
 }
 
 void Preprocessor::ClearGateMarks() {
-  Preprocessor::ClearGateMarks(fault_tree_->top_event());
+  Preprocessor::ClearGateMarks(graph_->root());
 }
 
 void Preprocessor::ClearGateMarks(const IGatePtr& gate) {
@@ -1198,7 +1198,7 @@ void Preprocessor::ClearGateMarks(const IGatePtr& gate) {
 }
 
 void Preprocessor::ClearNodeVisits() {
-  Preprocessor::ClearNodeVisits(fault_tree_->top_event());
+  Preprocessor::ClearNodeVisits(graph_->root());
 }
 
 void Preprocessor::ClearNodeVisits(const IGatePtr& gate) {

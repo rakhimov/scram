@@ -80,7 +80,7 @@ class Node {
   /// @param[in] val Value that makes sense to the caller.
   inline void opti_value(int val) { opti_value_ = val; }
 
-  /// Registers the visit time for this node upon tree traversal.
+  /// Registers the visit time for this node upon graph traversal.
   /// This information can be used to detect dependencies.
   ///
   /// @param[in] time The current visit time of this node. It must be positive.
@@ -104,7 +104,7 @@ class Node {
   /// @returns 0 if no enter time is registered.
   inline int EnterTime() const { return visits_[0]; }
 
-  /// @returns The exit time upon traversal of the tree.
+  /// @returns The exit time upon traversal of the graph.
   /// @returns 0 if no exit time is registered.
   inline int ExitTime() const { return visits_[1]; }
 
@@ -122,7 +122,7 @@ class Node {
     return visits_[2] ? visits_[2] : visits_[1] ? visits_[1] : visits_[0];
   }
 
-  /// @returns false if this node was only visited once upon tree traversal.
+  /// @returns false if this node was only visited once upon graph traversal.
   /// @returns true if this node was revisited at one more time.
   inline bool Revisited() const { return visits_[2] ? true : false; }
 
@@ -211,7 +211,7 @@ enum Operator {
 static const int kNumOperators = 8;  // Update this number if operators change.
 
 /// @enum State
-/// State of a gate as a set of events with a logical operator.
+/// State of a gate as a set of Boolean variables with a logical operator.
 /// This state helps detect null and unity sets that formed upon Boolean
 /// operations.
 enum State {
@@ -304,23 +304,23 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
   /// @param[in] flag Marking with the meaning for the marker.
   inline void mark(bool flag) { mark_ = flag; }
 
-  /// @returns The minimum time of visits of the gate's sub-tree.
+  /// @returns The minimum time of visits of the gate's sub-graph.
   /// @returns 0 if no time assignement was performed.
   inline int min_time() const { return min_time_; }
 
-  /// Sets the queried minimum visit time of the sub-tree.
-  /// @param[in] time The positive min time of this gate's sub-tree.
+  /// Sets the queried minimum visit time of the sub-graph.
+  /// @param[in] time The positive min time of this gate's sub-graph.
   inline void min_time(int time) {
     assert(time > 0);
     min_time_ = time;
   }
 
-  /// @returns The maximum time of the visits of the gate's sub-tree.
+  /// @returns The maximum time of the visits of the gate's sub-graph.
   /// @returns 0 if no time assignement was performed.
   inline int max_time() const { return max_time_; }
 
-  /// Sets the queried maximum visit time of the sub-tree.
-  /// @param[in] time The positive max time of this gate's sub-tree.
+  /// Sets the queried maximum visit time of the sub-graph.
+  /// @param[in] time The positive max time of this gate's sub-graph.
   inline void max_time(int time) {
     assert(time > 0);
     max_time_ = time;
@@ -552,8 +552,8 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
   State state_;  ///< Indication if this gate's state is normal, null, or unity.
   int vote_number_;  ///< Vote number for ATLEAST gate.
   bool mark_;  ///< Marking for linear traversal of a graph.
-  int min_time_;  ///< Minimum time of visits of the sub-tree of the gate.
-  int max_time_;  ///< Maximum time of visits of the sub-tree of the gate.
+  int min_time_;  ///< Minimum time of visits of the sub-graph of the gate.
+  int max_time_;  ///< Maximum time of visits of the sub-graph of the gate.
   bool module_;  ///< Indication of an independent module gate.
   std::set<int> args_;  ///< Arguments of the gate.
   /// Arguments that are gates.
@@ -573,13 +573,13 @@ class Formula;
 /// @class BooleanGraph
 /// BooleanGraph is a propositional directed acyclic graph (PDAG).
 /// This class provides a simpler representation of a fault tree
-/// that takes into account the indices of events instead of ids and pointers.
+/// that takes into account the indices of events instead of IDs and pointers.
 /// This graph can also be called an indexed fault tree.
 ///
 /// @warning Never hold a shared pointer to any other indexed gate except for
-///          the top gate of a Boolean graph. Extra reference count will
+///          the root gate of a Boolean graph. Extra reference count will
 ///          prevent automatic deletion of the node and management of the
-///          structure of the fault tree. Moreover, the fault tree may become
+///          structure of the graph. Moreover, the graph may become
 ///          a multiple-top-event fault tree, which is not the assumption of
 ///          all the other preprocessing and analysis algorithms.
 class BooleanGraph {
@@ -605,13 +605,13 @@ class BooleanGraph {
   /// @returns true if the initialized fault tree has only OR and AND gates.
   inline bool normal() const { return normal_; }
 
-  /// @returns The current top gate of the fault tree.
-  inline const IGatePtr& top_event() const { return top_event_; }
+  /// @returns The current root gate of the graph.
+  inline const IGatePtr& root() const { return root_; }
 
-  /// Sets the the top gate. This function is helpful for preprocessing.
+  /// Sets the the root gate. This function is helpful for preprocessing.
   ///
-  /// @param[in] gate Replacement top gate.
-  inline void top_event(const IGatePtr& gate) { top_event_ = gate; }
+  /// @param[in] gate Replacement root gate.
+  inline void root(const IGatePtr& gate) { root_ = gate; }
 
   /// @returns Original basic event as initialized in this indexed fault tree.
   ///          The position of a basic event equals (its index - 1).
@@ -653,11 +653,11 @@ class BooleanGraph {
       bool ccf,
       boost::unordered_map<std::string, NodePtr>* id_to_index);
 
-  IGatePtr top_event_;  ///< The top gate of this tree.
+  IGatePtr root_;  ///< The root gate of this graph.
   std::vector<BasicEventPtr> basic_events_;  ///< Mapping for basic events.
-  bool coherent_;  ///< Indication that the tree does not contain negation.
-  bool constants_;  ///< Indication that the original tree contains constants.
-  bool normal_;  ///< Indication for the tree containing only OR and AND gates.
+  bool coherent_;  ///< Indication that the graph does not contain negation.
+  bool constants_;  ///< Indication that the original graph contains constants.
+  bool normal_;  ///< Indication for the graph containing only OR and AND gates.
 };
 
 /// Prints indexed house events or constants in the shorthand format.

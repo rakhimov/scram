@@ -182,7 +182,7 @@ void Mocus::FindMcs() {
   CLOCK(mcs_time);
   LOG(DEBUG2) << "Start minimal cut set generation.";
 
-  IGatePtr top = fault_tree_->top_event();
+  IGatePtr top = fault_tree_->root();
 
   // Special case of empty top gate.
   if (top->args().empty()) {

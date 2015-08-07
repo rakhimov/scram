@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /// @file preprocessor.h
-/// A collection of fault tree preprocessing algorithms that simplify
+/// A collection of Boolean graph preprocessing algorithms that simplify
 /// fault trees for analysis.
 #ifndef SCRAM_SRC_PREPROCESSOR_H_
 #define SCRAM_SRC_PREPROCESSOR_H_
@@ -46,25 +46,25 @@ class Preprocessor {
  public:
   typedef boost::shared_ptr<Gate> GatePtr;
 
-  /// Constructs a preprocessor of an indexed fault tree.
+  /// Constructs a preprocessor of a Boolean graph representing a fault tree.
   ///
-  /// @param[in] fault_tree The fault tree to be preprocessed.
+  /// @param[in] graph The Boolean graph to be preprocessed.
   ///
-  /// @warning There should not be another shared pointer to the top gate
-  ///          outside of the passed indexed fault tree. Upon preprocessing a
-  ///          new top gate may be assigned to the fault tree, and if there is
-  ///          an extra pointer to the previous top gate outside of the fault
-  ///          tree, the destructor will not be called as expected by the
+  /// @warning There should not be another shared pointer to the root gate
+  ///          outside of the passed Boolean graph. Upon preprocessing a
+  ///          new root gate may be assigned to the graph, and if there is
+  ///          an extra pointer to the previous top gate outside of the graph,
+  ///          the destructor will not be called as expected by the
   ///          preprocessing algorithms, which will mess the new structure of
-  ///          the indexed fault tree.
-  explicit Preprocessor(BooleanGraph* fault_tree);
+  ///          the Boolean graph.
+  explicit Preprocessor(BooleanGraph* graph);
 
   /// Performs processing of a fault tree to simplify the structure to
   /// normalized (OR/AND gates only), modular, positive-gate-only indexed fault
   /// tree.
   ///
   /// @warning There should not be another smart pointer to the indexed top
-  ///          gate of the indexed fault tree outside of the tree.
+  ///          gate of the fault tree outside of the Boolean graph.
   void ProcessFaultTree();
 
  private:
@@ -73,7 +73,7 @@ class Preprocessor {
   typedef boost::shared_ptr<Variable> VariablePtr;
   typedef boost::shared_ptr<Constant> ConstantPtr;
 
-  /// Normalizes the gates of the whole indexed fault tree into OR, AND gates.
+  /// Normalizes the gates of the whole Boolean graph into OR, AND gates.
   ///
   /// @note The negation of the top gate is saved and handled in a special
   ///       because it does not have a parent.
@@ -84,8 +84,8 @@ class Preprocessor {
   void NormalizeGates();
 
   /// Notifies all parents of negative gates, such as NOT, NOR, and NAND, before
-  /// transforming these gates into basic gates of OR and AND. The argument gates
-  /// are swaped with a negative sign.
+  /// transforming these gates into basic gates of OR and AND. The argument
+  /// gates are swaped with a negative sign.
   ///
   /// @param[in] gate The gate to start processing.
   ///
@@ -134,7 +134,7 @@ class Preprocessor {
   /// @param[in,out] gate The gate that has become constant.
   ///
   /// @note This function works with NULL type gate propagation function to
-  ///       cleanup the structure of the tree.
+  ///       cleanup the structure of the graph.
   ///
   /// @warning All parents of the gate will be deleted, so the gate itself may
   ///          get deleted unless it is the top gate.
@@ -147,22 +147,22 @@ class Preprocessor {
   /// @param[in,out] gate The gate that is NULL type.
   ///
   /// @note This function works with constant state gate propagation function to
-  ///       cleanup the structure of the tree.
+  ///       cleanup the structure of the graph.
   ///
   /// @warning All parents of the gate will be deleted, so the gate itself may
   ///          get deleted unless it is the top gate.
   void PropagateNullGate(const IGatePtr& gate);
 
-  /// Removes all constants and constant gates from a given sub-tree according
+  /// Removes all constants and constant gates from a given sub-graph according
   /// to the Boolean logic of the gates. This algorithm is top-down search for
   /// all constants. It is less efficient than a targeted bottom-up propagation
   /// for a specific constant. Therefore, this function is used to get rid of
   /// all constants without knowing where they are or what they are.
   ///
-  /// @param[in,out] gate The starting gate to traverse the tree. This is for
+  /// @param[in,out] gate The starting gate to traverse the graph. This is for
   ///                     recursive purposes.
   ///
-  /// @returns true if the given tree has been changed by this function.
+  /// @returns true if the given graph has been changed by this function.
   /// @returns false if no change has been made.
   ///
   /// @note This is one of the first preprocessing steps. Other algorithms are
@@ -171,7 +171,7 @@ class Preprocessor {
   ///
   /// @warning Gate marks must be clear.
   /// @warning There still may be only one constant state gate which is the root
-  ///          of the tree. This must be handled separately.
+  ///          of the graph. This must be handled separately.
   bool PropagateConstants(const IGatePtr& gate);
 
   /// Changes the state of a gate or passes a constant argument to be removed
@@ -197,7 +197,7 @@ class Preprocessor {
                           bool state, std::vector<int>* to_erase);
 
   /// Removes a set of arguments from a gate taking into account the logic.
-  /// This is a helper function for NULL and UNITY propagation on the tree.
+  /// This is a helper function for NULL and UNITY propagation on the graph.
   /// If the final gate is empty, its state is turned into NULL or UNITY
   /// depending on the logic of the gate and the logic of the constant
   /// propagation.
@@ -210,18 +210,18 @@ class Preprocessor {
   void RemoveArgs(const IGatePtr& gate, const std::vector<int>& to_erase);
 
   /// Propagates complements of argument gates down to leafs according to
-  /// the De Morgan's law in order to remove any negative logic from the fault
-  /// tree's gates. The resulting tree will contain only positive gates, OR
+  /// the De Morgan's law in order to remove any negative logic from the
+  /// graph's gates. The resulting graph will contain only positive gates, OR
   /// and AND. After this function, the Boolean graph is in negation normal
   /// form.
   ///
-  /// @param[in,out] gate The starting gate to traverse the tree. This is for
+  /// @param[in,out] gate The starting gate to traverse the graph. This is for
   ///                     recursive purposes. The sign of this passed gate
   ///                     is unknown for the function, so it must be sanitized
-  ///                     for a top event to function correctly.
+  ///                     for the root gate to function correctly.
   /// @param[in,out] gate_complements The processed complements of gates.
   ///
-  /// @note The tree must be normalized. It must contain only OR and AND gates.
+  /// @note The graph must be normalized. It must contain only OR and AND gates.
   ///
   /// @warning Gate marks must be clear.
   /// @warning If the root gate has a negative sign, it must be handled before
@@ -240,7 +240,7 @@ class Preprocessor {
   /// means it is less efficient than having a specific NULL type gate
   /// propagate its argument bottom-up.
   ///
-  /// @returns true if the fault tree had it NULL type gates removed.
+  /// @returns true if the Boolean graph had it NULL type gates removed.
   /// @returns false if no change has been made.
   ///
   /// @note This function assumes that the container for NULL gates is empty.
@@ -254,7 +254,7 @@ class Preprocessor {
   ///
   /// @warning This function clears and uses gate marks.
   /// @warning There still may be only one NULL type gate which is the root
-  ///          of the tree. This must be handled separately.
+  ///          of the graph. This must be handled separately.
   /// @warning NULL gates that are constant are not handled and left for
   ///          constant propagation functions.
   bool RemoveNullGates();
@@ -266,14 +266,14 @@ class Preprocessor {
   /// @warning Gate marks must be clear.
   void GatherNullGates(const IGatePtr& gate);
 
-  /// Pre-processes the fault tree by doing the simplest Boolean algebra.
+  /// Pre-processes the Boolean graph by doing the simplest Boolean algebra.
   /// Positive arguments with the same OR or AND gates as parents are coalesced.
   /// This function merges similar logic gates of NAND and NOR as well.
   ///
-  /// @param[in,out] gate The starting gate to traverse the tree. This is for
+  /// @param[in,out] gate The starting gate to traverse the graph. This is for
   ///                     recursive purposes.
   ///
-  /// @returns true if the given tree has been changed by this function.
+  /// @returns true if the given graph has been changed by this function.
   /// @returns false if no change has been made.
   ///
   /// @note Constant state gates may be generated upon joining. These gates
@@ -282,7 +282,7 @@ class Preprocessor {
   /// @note Module gates are omitted from coalescing to preserve them.
   bool JoinGates(const IGatePtr& gate);
 
-  /// Traverses the indexed fault tree to detect modules. Modules are
+  /// Traverses the Boolean graph to detect modules. Modules are
   /// independent sub-trees without common nodes with the rest of the tree.
   void DetectModules();
 
@@ -316,7 +316,7 @@ class Preprocessor {
   /// Checks if a group of modular arguments share anything with non-modular
   /// arguments. If so, then the modular arguments are not actually modular, and
   /// that arguments are removed from modular containers.
-  /// This is due to chain of events that are shared between modular and
+  /// This is due to chain of nodes that are shared between modular and
   /// non-modular arguments.
   ///
   /// @param[in,out] modular_args Candidates for modular grouping.
@@ -349,12 +349,12 @@ class Preprocessor {
       const std::vector<std::pair<int, NodePtr> >& modular_args,
       const std::vector<std::vector<std::pair<int, NodePtr> > >& groups);
 
-  /// Propagates failures of common nodes to detect redundancy. The fault tree
+  /// Propagates failures of common nodes to detect redundancy. The graph
   /// structure is optimized by removing the reduncies if possible. This
   /// optimization helps reduce the number of common nodes.
   void BooleanOptimization();
 
-  /// Traversers the fault tree to find nodes that have more than one parent.
+  /// Traversers the graph to find nodes that have more than one parent.
   /// Common nodes are encountered breadth-first, and they are unique.
   ///
   /// @param[out] common_gates Gates with more than one parent.
@@ -365,7 +365,7 @@ class Preprocessor {
       std::vector<boost::weak_ptr<IGate> >* common_gates,
       std::vector<boost::weak_ptr<Variable> >* common_variables);
 
-  /// Tries to simplify the fault tree by removing redundancies generated by
+  /// Tries to simplify the graph by removing redundancies generated by
   /// a common node.
   ///
   /// @param[in] common_node A node with more than one parent.
@@ -465,9 +465,9 @@ class Preprocessor {
   /// @param[in,out] gate The root gate to be traversed and cleaned.
   void ClearOptiValues(const IGatePtr& gate);
 
-  BooleanGraph* fault_tree_;  ///< The fault tree to preprocess.
-  int top_event_sign_;  ///< The negative or positive sign of the top event.
-  bool constants_;  ///< Indication if there are constants in the tree.
+  BooleanGraph* graph_;  ///< The Boolean graph to preprocess.
+  int root_sign_;  ///< The negative or positive sign of the root node.
+  bool constants_;  ///< Indication if there are constants in the graph.
   /// Container for constant gates to be tracked and cleaned by algorithms.
   /// These constant gates are created because of complement or constant
   /// descendants.

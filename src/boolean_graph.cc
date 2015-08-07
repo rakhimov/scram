@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /// @file boolean_graph.cc
-/// Implementation of indexed nodes, events, gates, and the Boolean graph.
+/// Implementation of indexed nodes, variables, gates, and the Boolean graph.
 /// The implementation caters other algorithms like preprocessing. The main
 /// goal is to make manipulations and transformations of the graph easier to
 /// achieve for graph algorithms.
@@ -328,7 +328,7 @@ BooleanGraph::BooleanGraph(const GatePtr& root, bool ccf)
   Node::ResetIndex();
   Variable::ResetIndex();
   boost::unordered_map<std::string, NodePtr> id_to_index;
-  top_event_ = BooleanGraph::ProcessFormula(root->formula(), ccf, &id_to_index);
+  root_ = BooleanGraph::ProcessFormula(root->formula(), ccf, &id_to_index);
 }
 
 boost::shared_ptr<IGate> BooleanGraph::ProcessFormula(
@@ -543,9 +543,9 @@ std::ostream& operator<<(std::ostream& os,
 }
 
 std::ostream& operator<<(std::ostream& os, const BooleanGraph* ft) {
-  os << "BooleanGraph_G" << ft->top_event()->index() << std::endl;
+  os << "BooleanGraph_G" << ft->root()->index() << std::endl;
   os << std::endl;
-  os << ft->top_event();
+  os << ft->root();
   return os;
 }
 
