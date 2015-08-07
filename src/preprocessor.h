@@ -296,7 +296,7 @@ class Preprocessor {
   bool JoinGates(const IGatePtr& gate);
 
   /// Traverses the Boolean graph to detect modules. Modules are
-  /// independent sub-trees without common nodes with the rest of the tree.
+  /// independent sub-graphs without common nodes with the rest of the tree.
   void DetectModules();
 
   /// Traverses the given gate and assigns time of visit to nodes.
@@ -397,7 +397,7 @@ class Preprocessor {
   /// The optimization value for non-redundant nodes are set to 2.
   /// The optimization value for non-removal parent nodes are set to 3.
   ///
-  /// @param[in] gate The non-failed gate which sub-tree is to be traversed.
+  /// @param[in] gate The non-failed gate which sub-graph is to be traversed.
   /// @param[in] index The index of the failed node.
   /// @param[in,out] destinations Destinations of the failure.
   ///
@@ -434,12 +434,26 @@ class Preprocessor {
   /// Detects and replaces multiple definitions of gates. Gates with the same
   /// logic and inputs but different indices are considered redundant.
   ///
-  /// @param[in] gate The gate to traverse the sub-tree.
+  /// @returns true if multiple definitions are found and replaced.
+  ///
+  /// @note This function does not recursively detect multiple definitions
+  ///       due to replaced redundant arguments of gates. The replaced gates
+  ///       are considered a new graph, and this function must be called again
+  ///       to verify that the new graph does not have multiple definitions.
+  bool ProcessMultipleDefinitions();
+
+  /// Traverses the Boolean graph to collect multiple definitions of gates.
+  ///
+  /// @param[in] gate The gate to traverse the sub-graph.
+  /// @param[in,out] multi_def Detected multiple definitions.
   /// @param[in,out] gates Ordered gates by their type.
   ///
-  /// @returns true if multiple definitions are found and replaced.
-  bool DetectMultipleDefinitions(const IGatePtr& gate,
-                                 std::vector<std::vector<IGatePtr> >* gates);
+  /// @warning Gate marks must be clear.
+  void DetectMultipleDefinitions(
+      const IGatePtr& gate,
+      boost::unordered_map<IGatePtr,
+                           std::vector<boost::weak_ptr<IGate> > >* multi_def,
+      std::vector<std::vector<IGatePtr> >* gates);
 
   /// Sets the visit marks to False for all indexed gates, starting from the top
   /// gate, that have been visited top-down. Any member function updating and

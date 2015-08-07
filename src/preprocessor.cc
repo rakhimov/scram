@@ -127,35 +127,16 @@ void Preprocessor::ProcessFaultTree() {
     LOG(DEBUG2) << "Complement propagation is done!";
   }
 
-  Preprocessor::ClearGateMarks();
-  Preprocessor::PropagateConstants(root);
-
   CLOCK(mult_time);
   LOG(DEBUG2) << "Detecting multiple definitions...";
   bool tree_changed = true;
   while (tree_changed) {
-    tree_changed = false;  // Break the loop if actions don't change the tree.
-    bool ret = false;  // The result of actions of functions.
-    Preprocessor::ClearGateMarks();
-    std::vector<std::vector<IGatePtr> > orig_gates(kNumOperators,
-                                                   std::vector<IGatePtr>());
-    ret = Preprocessor::DetectMultipleDefinitions(root, &orig_gates);
-    orig_gates.clear();
-    if (!tree_changed && ret) tree_changed = true;
-
-    Preprocessor::ClearGateMarks();
-    ret = Preprocessor::RemoveNullGates();
-    if (!tree_changed && ret) tree_changed = true;
-
-    Preprocessor::ClearGateMarks();
-    ret = Preprocessor::PropagateConstants(root);
-    if (!tree_changed && ret) tree_changed = true;
+    tree_changed = Preprocessor::ProcessMultipleDefinitions();
   }
   LOG(DEBUG2) << "Finished multi-definition detection in " << DUR(mult_time);
 
   if (graph_->coherent()) {
     Preprocessor::ClearGateMarks();
-    Preprocessor::RemoveNullGates();
     Preprocessor::BooleanOptimization();
   }
 
@@ -1147,11 +1128,64 @@ void Preprocessor::ProcessFailureDestinations(
   }
 }
 
-bool Preprocessor::DetectMultipleDefinitions(
+bool Preprocessor::ProcessMultipleDefinitions() {
+  assert(null_gates_.empty());
+  assert(const_gates_.empty());
+  // The original gate and its multiple definitions.
+  boost::unordered_map<IGatePtr, std::vector<boost::weak_ptr<IGate> > >
+      multi_def;
+  std::vector<std::vector<IGatePtr> > orig_gates(kNumOperators,
+                                                 std::vector<IGatePtr>());
+  Preprocessor::ClearGateMarks();
+  IGatePtr root = graph_->root();
+  Preprocessor::DetectMultipleDefinitions(root, &multi_def, &orig_gates);
+
+  if (multi_def.empty()) return false;
+  boost::unordered_map<IGatePtr,
+      std::vector<boost::weak_ptr<IGate> > >::iterator it;
+  for (it = multi_def.begin(); it != multi_def.end(); ++it) {
+    IGatePtr orig_gate = it->first;
+    std::vector<boost::weak_ptr<IGate> >& duplicates = it->second;
+    std::vector<boost::weak_ptr<IGate> >::iterator it_dup;
+    for (it_dup = duplicates.begin(); it_dup != duplicates.end(); ++it_dup) {
+      if (it_dup->expired()) continue;
+      IGatePtr dup = it_dup->lock();
+      // Swap this gate with the original gate because it is redefined.
+      int index = dup->index();
+      boost::unordered_map<int, boost::weak_ptr<IGate> > parents =
+          dup->parents();  // Copy because parents will be deleted.
+      boost::unordered_map<int, boost::weak_ptr<IGate> >::iterator it_parent;
+      for (it_parent = parents.begin(); it_parent != parents.end();
+           ++it_parent) {
+        if (it_parent->second.expired()) continue;
+        IGatePtr parent = it_parent->second.lock();
+        int sign = 1;  // Guessing the sign.
+        if (parent->args().count(-index)) sign = -1;
+        parent->EraseArg(sign * index);
+        parent->AddArg(sign * orig_gate->index(), orig_gate);
+
+        if (parent->state() != kNormalState) {
+          const_gates_.push_back(parent);
+        } else if (parent->type() == kNullGate) {
+          null_gates_.push_back(parent);
+        }
+      }
+    }
+  }
+  if (!const_gates_.empty()) Preprocessor::ClearConstGates();
+  if (!null_gates_.empty()) Preprocessor::ClearNullGates();
+  return true;
+}
+
+void Preprocessor::DetectMultipleDefinitions(
     const IGatePtr& gate,
+    boost::unordered_map<IGatePtr,
+                         std::vector<boost::weak_ptr<IGate> > >* multi_def,
     std::vector<std::vector<IGatePtr> >* gates) {
-  if (gate->mark()) return false;
+  if (gate->mark()) return;
   gate->mark(true);
+  assert(gate->state() == kNormalState);
+
   Operator type = gate->type();
   std::vector<IGatePtr>& type_group = (*gates)[type];
   std::vector<IGatePtr>::iterator it;
@@ -1161,42 +1195,25 @@ bool Preprocessor::DetectMultipleDefinitions(
     if (orig_gate->args() == gate->args()) {
       // This might be multiple definition. Extra check for K/N gates.
       if (type == kAtleastGate &&
-          orig_gate->vote_number() != gate->vote_number()) continue;
-      // Swap this gate with the original gate because it is redefined.
-      // @todo Switch to weak pointers because of a possible segfault.
-      int index = gate->index();
-      boost::unordered_map<int, boost::weak_ptr<IGate> > parents =
-          gate->parents();
-      boost::unordered_map<int, boost::weak_ptr<IGate> >::iterator it_parent;
-      for (it_parent = parents.begin(); it_parent != parents.end();
-           ++it_parent) {
-        assert(!it_parent->second.expired());
-        IGatePtr parent = it_parent->second.lock();
-        int sign = 1;  // Guessing the sign.
-        if (!parent->args().count(index)) {
-          assert(parent->args().count(-index));
-          sign = -1;
-        }
-        parent->EraseArg(sign * index);
-        parent->AddArg(sign * orig_gate->index(), orig_gate);
-        return true;
+          orig_gate->vote_number() != gate->vote_number()) continue;  // No.
+      // Register this gate for replacement.
+      if (multi_def->count(orig_gate)) {
+        multi_def->find(orig_gate)->second.push_back(gate);
+      } else {
+        std::vector<boost::weak_ptr<IGate> > duplicates(1, gate);
+        multi_def->insert(std::make_pair(orig_gate, duplicates));
       }
+      return;
     }
   }
   // No redefinition is found for this gate. In order to avoid a comparison
   // with descendants, this gate is not yet put into original gates container.
-  // Copy the gate arguments because they may get replaced.
-  boost::unordered_map<int, IGatePtr> arg_gates = gate->gate_args();
-  bool changed = false;
-  boost::unordered_map<int, IGatePtr>::iterator it_ch;
-  for (it_ch = arg_gates.begin(); it_ch != arg_gates.end(); ++it_ch) {
-    IGatePtr arg_gate = it_ch->second;
-    if (arg_gate->parents().empty()) continue;  // Replaced by another gate.
-    bool ret = Preprocessor::DetectMultipleDefinitions(arg_gate, gates);
-    if (!changed && ret) changed = true;
+  boost::unordered_map<int, IGatePtr>::const_iterator it_ch;
+  for (it_ch = gate->gate_args().begin(); it_ch != gate->gate_args().end();
+       ++it_ch) {
+    Preprocessor::DetectMultipleDefinitions(it_ch->second, multi_def, gates);
   }
   type_group.push_back(gate);
-  return changed;
 }
 
 void Preprocessor::ClearGateMarks() {
