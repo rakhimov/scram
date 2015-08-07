@@ -82,7 +82,7 @@ void Preprocessor::ProcessFaultTree() {
     LOG(DEBUG2) << "Finished normalizing gates!";
   }
 
-  Preprocessor::RemoveNullGates();
+  Preprocessor::RemoveNullGates();  /// @todo Run before normalization.
 
   if (root->state() != kNormalState) {  // The root gate has become constant.
     if (root_sign_ < 0) {
@@ -167,17 +167,12 @@ void Preprocessor::ProcessFaultTree() {
     assert(const_gates_.empty());
     assert(null_gates_.empty());
 
+    tree_changed = false;
     Preprocessor::ClearGateMarks();
-    tree_changed = Preprocessor::JoinGates(root);  // May produce constant gates.
+    Preprocessor::JoinGates(root);  // Registers const gates.
 
     if (!const_gates_.empty()) {
-      Preprocessor::ClearGateMarks();
-      std::vector<boost::weak_ptr<IGate> >::iterator it;
-      for (it = const_gates_.begin(); it != const_gates_.end(); ++it) {
-        if (it->expired()) continue;
-        Preprocessor::PropagateConstGate(it->lock());
-      }
-      const_gates_.clear();
+      Preprocessor::ClearConstGates();
       tree_changed = true;
     }
   }
@@ -193,7 +188,9 @@ void Preprocessor::ProcessFaultTree() {
 }
 
 void Preprocessor::NormalizeGates() {
-  // Handle special case for a root gate.
+  assert(const_gates_.empty());
+  assert(null_gates_.empty());
+  // Handle special case for the root gate.
   IGatePtr root_gate = graph_->root();
   Operator type = root_gate->type();
   switch (type) {
@@ -208,7 +205,10 @@ void Preprocessor::NormalizeGates() {
   Preprocessor::NotifyParentsOfNegativeGates(root_gate);
 
   Preprocessor::ClearGateMarks();
-  Preprocessor::NormalizeGate(root_gate);
+  Preprocessor::NormalizeGate(root_gate);  // Registers null gates only.
+
+  assert(const_gates_.empty());
+  if (!null_gates_.empty()) Preprocessor::ClearNullGates();
 }
 
 void Preprocessor::NotifyParentsOfNegativeGates(const IGatePtr& gate) {
@@ -235,6 +235,7 @@ void Preprocessor::NotifyParentsOfNegativeGates(const IGatePtr& gate) {
 void Preprocessor::NormalizeGate(const IGatePtr& gate) {
   if (gate->mark()) return;
   gate->mark(true);
+  assert(gate->state() == kNormalState);
   assert(!gate->args().empty());
   // Depth-first traversal before the arguments may get changed.
   boost::unordered_map<int, IGatePtr>::const_iterator it;
@@ -242,8 +243,7 @@ void Preprocessor::NormalizeGate(const IGatePtr& gate) {
     Preprocessor::NormalizeGate(it->second);
   }
 
-  Operator type = gate->type();
-  switch (type) {  // Negation is already processed.
+  switch (gate->type()) {  // Negation is already processed.
     case kNotGate:
       assert(gate->args().size() == 1);
       gate->type(kNullGate);
@@ -267,9 +267,9 @@ void Preprocessor::NormalizeGate(const IGatePtr& gate) {
       assert(gate->vote_number() > 1);
       Preprocessor::NormalizeAtleastGate(gate);
       break;
-    default:
-      assert(gate->args().size() == 1);
-      assert(type == kNullGate);  // Must be dealt outside.
+    case kNullGate:
+      null_gates_.push_back(gate);  // Register for removal.
+      break;
   }
 }
 
@@ -378,6 +378,26 @@ void Preprocessor::PropagateNullGate(const IGatePtr& gate) {
       Preprocessor::PropagateNullGate(parent);
     }
   }
+}
+
+void Preprocessor::ClearConstGates() {
+  Preprocessor::ClearGateMarks();  // New gates may get created without marks!
+  std::vector<boost::weak_ptr<IGate> >::iterator it;
+  for (it = const_gates_.begin(); it != const_gates_.end(); ++it) {
+    if (it->expired()) continue;
+    Preprocessor::PropagateConstGate(it->lock());
+  }
+  const_gates_.clear();
+}
+
+void Preprocessor::ClearNullGates() {
+  Preprocessor::ClearGateMarks();  // New gates may get created without marks!
+  std::vector<boost::weak_ptr<IGate> >::iterator it;
+  for (it = null_gates_.begin(); it != null_gates_.end(); ++it) {
+    if (it->expired()) continue;
+    Preprocessor::PropagateNullGate(it->lock());
+  }
+  null_gates_.clear();
 }
 
 bool Preprocessor::PropagateConstants(const IGatePtr& gate) {
@@ -577,12 +597,7 @@ bool Preprocessor::RemoveNullGates() {
     null_gates_.clear();  // Special case of only one NULL gate as the root.
 
   if (!null_gates_.empty()) {
-    std::vector<boost::weak_ptr<IGate> >::iterator it;
-    for (it = null_gates_.begin(); it != null_gates_.end(); ++it) {
-      if (it->expired()) continue;
-      Preprocessor::PropagateNullGate(it->lock());
-    }
-    null_gates_.clear();
+    Preprocessor::ClearNullGates();
     return true;
   }
   return false;

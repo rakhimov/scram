@@ -80,7 +80,7 @@ class Preprocessor {
   /// @note New gates are created upon normalization of complex gates like XOR.
   /// @note This function is meant to be called only once.
   ///
-  /// @warning NULL type gates are left untouched for coalescing functions.
+  /// @warning The root get may still be NULL type.
   void NormalizeGates();
 
   /// Notifies all parents of negative gates, such as NOT, NOR, and NAND, before
@@ -93,7 +93,7 @@ class Preprocessor {
   ///
   /// @warning Gate marks must be clear.
   /// @warning This function does not change the types of gates.
-  /// @warning The top gate does not have parents, so it is not handled here.
+  /// @warning The root gate does not have parents, so it is not handled here.
   void NotifyParentsOfNegativeGates(const IGatePtr& gate);
 
   /// Normalizes complex gates into OR, AND gates.
@@ -102,10 +102,11 @@ class Preprocessor {
   ///
   /// @note This is a helper function for NormalizeGates().
   ///
+  /// @note This function registers NULL type gates for future removal.
+  ///
   /// @warning Gate marks must be clear.
   /// @warning The parents of negative gates are assumed to be notified about
   ///          the change of their argument types.
-  /// @warning NULL gates are not handled.
   void NormalizeGate(const IGatePtr& gate);
 
   /// Normalizes a gate with XOR logic. This is a helper function for the main
@@ -133,8 +134,8 @@ class Preprocessor {
   ///
   /// @param[in,out] gate The gate that has become constant.
   ///
-  /// @note This function works with NULL type gate propagation function to
-  ///       cleanup the structure of the graph.
+  /// @note This function works together with NULL type gate propagation
+  ///       function to cleanup the structure of the graph.
   ///
   /// @warning All parents of the gate will be deleted, so the gate itself may
   ///          get deleted unless it is the top gate.
@@ -146,12 +147,24 @@ class Preprocessor {
   ///
   /// @param[in,out] gate The gate that is NULL type.
   ///
-  /// @note This function works with constant state gate propagation function to
-  ///       cleanup the structure of the graph.
+  /// @note This function works together with constant state gate propagation
+  ///       function to cleanup the structure of the graph.
   ///
   /// @warning All parents of the gate will be deleted, so the gate itself may
   ///          get deleted unless it is the top gate.
   void PropagateNullGate(const IGatePtr& gate);
+
+  /// Clears all constant gates registered for removal by algorithms or
+  /// other preprocessing functions.
+  ///
+  /// @warning Gate marks will get cleared by this function.
+  void ClearConstGates();
+
+  /// Clears all NULL type gates registered for removal by algorithms or
+  /// other preprocessing functions.
+  ///
+  /// @warning Gate marks will get cleared by this function.
+  void ClearNullGates();
 
   /// Removes all constants and constant gates from a given sub-graph according
   /// to the Boolean logic of the gates. This algorithm is top-down search for
