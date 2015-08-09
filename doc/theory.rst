@@ -353,7 +353,7 @@ by using specific gates, such as Priority AND, Sequence.
 
 
 GATES
------
+=====
 
 #. Priority AND :
     Output fault occurs

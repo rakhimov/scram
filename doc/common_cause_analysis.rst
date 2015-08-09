@@ -1,6 +1,6 @@
-###############################
-FTA: Common Cause Failure (CCF)
-###############################
+####################
+Common Cause Failure
+####################
 
 #. Define groups of basic events that share common cause failure.
 
