@@ -74,8 +74,9 @@ void ProbabilityAnalysis::Analyze(
 
   // Special case of unity with empty sets.
   if (min_cut_sets_.size() == 1 && min_cut_sets_.begin()->empty()) {
-    warnings_ += "Probability for UNITY case.";
+    warnings_ += " Probability is for UNITY case.";
     p_total_ = 1;
+    p_rare_ = 1;
     prob_of_min_sets_.insert(std::make_pair(*min_cut_sets_.begin(), 1));
     return;
   }

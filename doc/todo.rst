@@ -2,8 +2,7 @@
 TODO List for the SCRAM Project
 ###############################
 
-.. note::
-    Relative, subjective importance within groups is given in *italics*.
+.. note:: Relative, subjective importance within groups is given in *italics*.
 
 
 Low Hanging Fruits
@@ -11,7 +10,7 @@ Low Hanging Fruits
 
 - `Issues on GitHub <https://github.com/rakhimov/scram/issues>`_
 
-- `Todo list in the code <https://rakhimov.github.io/scram/api/todo.html>`_
+- `TODO list in the code <https://rakhimov.github.io/scram/api/todo.html>`_
 
 
 Major Enhancements and Capabilities
@@ -31,8 +30,7 @@ Major Enhancements and Capabilities
     * Guaranteed Success/Failure
 
 - Consequences and Consequence groups. *Moderate*
-- Substitutions to represent Delete Terms, Recovery Rules,
-  and Exchange Event. *Moderate*
+- Substitutions to represent Delete Terms, Recovery Rules, and Exchange Event. *Moderate*
 - Dynamic Fault Tree Analysis. *Moderate*
 
 

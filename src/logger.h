@@ -83,10 +83,10 @@ class Logger {
     fflush(stderr);
   }
 
-  /// This function can be to get and set the cut-off level for logging.
+  /// This function can be used to get and set the cut-off level for logging.
   ///
   /// @returns Reference to the cut-off level for reporting.
-  static LogLevel& ReportLevel();
+  inline static LogLevel& ReportLevel() { return report_level_; }
 
   /// Returns a string stream by reference that is flushed to stderr by
   /// the Logger class destructor.

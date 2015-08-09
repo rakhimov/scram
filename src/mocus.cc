@@ -172,7 +172,7 @@ void SimpleGate::OrGateCutSets(const SetPtr& cut_set,
   new_cut_sets->insert(local_sets.begin(), local_sets.end());
 }
 
-Mocus::Mocus(const IndexedFaultTree* fault_tree, int limit_order)
+Mocus::Mocus(const BooleanGraph* fault_tree, int limit_order)
       : fault_tree_(fault_tree),
         limit_order_(limit_order) {
   SimpleGate::limit_order(limit_order);
@@ -182,10 +182,10 @@ void Mocus::FindMcs() {
   CLOCK(mcs_time);
   LOG(DEBUG2) << "Start minimal cut set generation.";
 
-  IGatePtr top = fault_tree_->top_event();
+  IGatePtr top = fault_tree_->root();
 
   // Special case of empty top gate.
-  if (top->children().empty()) {
+  if (top->args().empty()) {
     State state = top->state();
     assert(state == kNullState || state == kUnityState);
     if (state == kUnityState) {
@@ -194,9 +194,9 @@ void Mocus::FindMcs() {
     }  // Other cases are null.
     return;
   } else if (top->type() == kNullGate) {  // Special case of NULL type top.
-    assert(top->children().size() == 1);
-    assert(top->gate_children().empty());
-    int child = *top->children().begin();
+    assert(top->args().size() == 1);
+    assert(top->gate_args().empty());
+    int child = *top->args().begin();
     std::set<int> one_element;
     one_element.insert(child);
     imcs_.push_back(one_element);
@@ -252,7 +252,7 @@ void Mocus::FindMcs() {
   /// @todo Detect unity in modules.
   assert(top->state() != kUnityState);
   LOG(DEBUG2) << "The number of MCS found: " << imcs_.size();
-  LOG(DEBUG2) << "Minimal cut set finding time: " << DUR(mcs_time);
+  LOG(DEBUG2) << "Minimal cut sets found in " << DUR(mcs_time);
 }
 
 void Mocus::CreateSimpleTree(const IGatePtr& gate,
@@ -262,10 +262,10 @@ void Mocus::CreateSimpleTree(const IGatePtr& gate,
   SimpleGatePtr simple_gate(new SimpleGate(gate->type()));
   processed_gates->insert(std::make_pair(gate->index(), simple_gate));
 
-  assert(gate->constant_children().empty());
+  assert(gate->constant_args().empty());
+  assert(gate->args().size() > 1);
   boost::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_children().begin(); it != gate->gate_children().end();
-       ++it) {
+  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
     assert(it->first > 0);
     IGatePtr child_gate = it->second;
     Mocus::CreateSimpleTree(it->second, processed_gates);
@@ -275,10 +275,10 @@ void Mocus::CreateSimpleTree(const IGatePtr& gate,
       simple_gate->AddChildGate(processed_gates->find(it->first)->second);
     }
   }
-  typedef boost::shared_ptr<IBasicEvent> IBasicEventPtr;
-  boost::unordered_map<int, IBasicEventPtr>::const_iterator it_b;
-  for (it_b = gate->basic_event_children().begin();
-       it_b != gate->basic_event_children().end(); ++it_b) {
+  typedef boost::shared_ptr<Variable> VariablePtr;
+  boost::unordered_map<int, VariablePtr>::const_iterator it_b;
+  for (it_b = gate->variable_args().begin();
+       it_b != gate->variable_args().end(); ++it_b) {
     simple_gate->InitiateWithBasic(it_b->first);
   }
 }

@@ -31,7 +31,7 @@
 
 namespace scram {
 
-class IndexedFaultTree;
+class BooleanGraph;
 
 /// @class FaultTreeAnalysis
 /// Fault tree analysis functionality. The analysis must be done on a validated
@@ -168,12 +168,12 @@ class FaultTreeAnalysis {
   void CleanMarks();
 
   /// Converts minimal cut sets from indices to strings for future reporting.
-  /// This function also detects basic events in minimal cut sets.
+  /// This function also collects basic events in minimal cut sets.
   ///
   /// @param[in] imcs Min cut sets with indices of events.
   /// @param[in] ft Indexed fault tree with basic event indices and pointers.
   void SetsToString(const std::vector< std::set<int> >& imcs,
-                    const IndexedFaultTree* ft);
+                    const BooleanGraph* ft);
 
   /// Limit on the size of the minimal cut sets for performance reasons.
   int limit_order_;
@@ -200,8 +200,8 @@ class FaultTreeAnalysis {
   /// Container for basic events in minimal cut sets.
   boost::unordered_map<std::string, BasicEventPtr> mcs_basic_events_;
 
-  int max_order_;  ///< Maximum order of minimal cut sets.
   std::string warnings_;  ///< Generated warnings in analysis.
+  int max_order_;  ///< Maximum order of minimal cut sets.
   double analysis_time_;  ///< Time taken by the core analysis.
 };
 

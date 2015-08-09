@@ -18,12 +18,10 @@
 /// Implementation of fault tree analysis.
 #include "fault_tree_analysis.h"
 
-#include <sstream>
-
 #include <boost/algorithm/string.hpp>
 
+#include "boolean_graph.h"
 #include "error.h"
-#include "indexed_fault_tree.h"
 #include "logger.h"
 #include "mocus.h"
 #include "preprocessor.h"
@@ -51,31 +49,30 @@ FaultTreeAnalysis::FaultTreeAnalysis(const GatePtr& root, int limit_order,
 void FaultTreeAnalysis::Analyze() {
   CLOCK(analysis_time);
 
-  IndexedFaultTree* indexed_tree = new IndexedFaultTree(top_event_,
-                                                        ccf_analysis_);
+  CLOCK(ft_creation);
+  BooleanGraph* indexed_tree = new BooleanGraph(top_event_, ccf_analysis_);
+  LOG(DEBUG2) << "Indexed fault tree is created in " << DUR(ft_creation);
+
   Preprocessor* preprocessor = new Preprocessor(indexed_tree);
-  preprocessor->ProcessIndexedFaultTree();
+  preprocessor->ProcessFaultTree();
+  delete preprocessor;  // No exceptions are expected.
+
   Mocus* mocus = new Mocus(indexed_tree, limit_order_);
   mocus->FindMcs();
 
   const std::vector< std::set<int> >& imcs = mocus->GetGeneratedMcs();
-  // First, defensive check if cut sets exist for the specified limit order.
+  // Special cases of sets.
   if (imcs.empty()) {
-    std::stringstream msg;
-    msg << " No cut sets for the limit order " <<  limit_order_;
-    warnings_ += msg.str();
-    return;
+    // Special case of null of a top event. No minimal cut sets found.
+    warnings_ += " The top event is NULL. Success is guaranteed.";
   } else if (imcs.size() == 1 && imcs.back().empty()) {
     // Special case of unity of a top event.
-    std::stringstream msg;
-    msg << " The top event is UNITY. Failure is guaranteed.";
-    warnings_ += msg.str();
+    warnings_ += " The top event is UNITY. Failure is guaranteed.";
   }
 
   analysis_time_ = DUR(analysis_time);  // Duration of MCS generation.
   FaultTreeAnalysis::SetsToString(imcs, indexed_tree);  // MCS with event ids.
   delete indexed_tree;  // No exceptions are expected.
-  delete preprocessor;  // No exceptions are expected.
   delete mocus;  // No exceptions are expected.
 }
 
@@ -123,7 +120,7 @@ void FaultTreeAnalysis::CleanMarks() {
 }
 
 void FaultTreeAnalysis::SetsToString(const std::vector< std::set<int> >& imcs,
-                                     const IndexedFaultTree* ft) {
+                                     const BooleanGraph* ft) {
   std::vector< std::set<int> >::const_iterator it_min;
   for (it_min = imcs.begin(); it_min != imcs.end(); ++it_min) {
     if (it_min->size() > max_order_) max_order_ = it_min->size();

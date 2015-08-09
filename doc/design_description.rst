@@ -4,60 +4,61 @@ Design Description
 
 - XML Parser leverages external libraries to process XML files.
 
-- Validator validates XML configuration and input files against the RelaxNG
-  schema. The validation against the schema is an integral part of the
-  initialization. Values that passed the validation against the schema are not
-  re-checked by users of those values.
+- Validator validates XML configuration and input files against the RelaxNG schema.
+  The validation against the schema is an integral part of the initialization.
+  Values that pass the validation against the schema are not re-checked by users of those values.
 
 - Settings manages overall analysis settings per run.
 
-- Config manages program configurations and analysis settings from a
-  configuration file.
+- Config manages program configurations and analysis settings from a configuration file.
 
 - Containers: models, fault trees, event trees, components.
 
-- Constructs: anything that is stored in containers and can be an input for
-  analysis. Note that some containers are constructs as well.
+- Constructs: anything that is stored in containers and can be an input for analysis.
+  Note that some containers are constructs as well.
 
-- Initializer processes input files to construct a model with fault trees,
-  event trees, CCF, and other analysis containers and constructs. This
-  initialization phase validates the values and logic supplied from the input
-  files. The constructs and analysis are initialized according to the
-  configurations supplied from the configuration file and command-line.
-  After the initialization step, it is not expected that constructs of the
-  analysis change.
+- Initializer processes input files to construct a model
+  with fault trees, event trees, CCF, and other analysis containers and constructs.
+  This initialization phase validates the values and logic supplied from the input files.
+  The constructs and analyses are initialized according to the configurations
+  supplied from the configuration file and command-line.
+  After the initialization step,
+  it is not expected that constructs of the analysis change.
 
-- Risk Analyzer operates on the valid model with the initialized fault, event
-  trees, and other constructs to provide the requested results. It runs after
-  the initialization phase with the user-specified analysis settings.
+- Risk Analyzer operates on the valid model
+  with the initialized fault, event trees, and other constructs
+  to provide the requested results.
+  It runs after the initialization phase with the user-specified analysis settings.
 
-- Analyzers of fault trees, event trees, CCF, uncertainty, and other analysis
-  kinds. These analyzers are employed by the main Risk Analyzer to produce final
-  results. Common functionalities may be shared among these analyzers.
+- Analyzers of fault trees, event trees, CCF, uncertainty, and other analysis kinds.
+  These analyzers are employed by the main Risk Analyzer to produce final results.
+  Common utilities and functionalities may be shared among these analyzers.
 
     * Fault Tree Analyzer operates on one fault tree with a single top event,
-      and may provide primary events, intermediate events, and  minimal cut
-      sets as output, or other information about the passed fault tree. This
-      fault tree analyzer uses many other helper facilities specifically
-      designed to make the analysis efficient and fast.
+      and may provide primary events, intermediate events,
+      and  minimal cut sets as output,
+      or other information about the passed fault tree.
+      This fault tree analyzer uses many other helper facilities
+      specifically designed to make the analysis efficient and fast.
 
-    * Probability Calculator accepts cut sets and member basic events to
-      generate the total probability, individual probabilities of cut sets,
-      contributions, importances.
+    * Probability Calculator accepts cut sets and member basic events
+      to calculate the total probability,
+      individual probabilities of cut sets,
+      importance factors for basic events.
 
-    * Uncertainty Analyzer uses Probability Calculator facilities to sample
-      basic event probabilities and calculate the total probability.
-      Sampled results are processed to find statistical information, such as
-      mean, confidence ranges, standard deviation, and distributions.
+    * Uncertainty Analyzer uses Probability Calculator facilities
+      to sample basic event probabilities and calculate the total probability.
+      Sampled results are processed to find statistical information,
+      such as mean, confidence ranges, standard deviation, and distributions.
 
 - Supporting classes: Formula, Expressions.
 
-- Reporter outputs the results of the work of Risk Analyzer to specified files
-  or streams in XML format.
+- Reporter outputs the results of the work of Risk Analyzer
+  to specified files or streams in XML format.
 
 - Grapher outputs a fault tree graphing instruction file for Graphviz Dot tool.
-  This can be used before any analysis, but a valid fault tree with or without
-  probability information must be provided.
+  This can be used before any analysis,
+  but a valid fault tree with or without probability information must be provided.
 
 
 API Documentation
@@ -65,5 +66,5 @@ API Documentation
 
 `API Docs Generated by Doxygen`_
 
-.. _`API Docs Generated by Doxygen`:
+.. _API Docs Generated by Doxygen:
     http://rakhimov.github.io/scram/api/index.html

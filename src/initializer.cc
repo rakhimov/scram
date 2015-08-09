@@ -177,7 +177,6 @@ void Initializer::ProcessTbdElements() {
     for (it_g = tbd_.gates.begin(); it_g != tbd_.gates.end(); ++it_g) {
       el_def = it_g->second;
       Initializer::DefineGate(el_def, it_g->first);
-
     }
     std::vector<std::pair<CcfGroupPtr,
         const xmlpp::Element*> >::iterator it_c;
