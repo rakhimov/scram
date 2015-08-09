@@ -2,9 +2,9 @@
 Fault Tree Graphing
 ###################
 
-In order to make visual verification of a created tree, other diagram and
-graphing packages are employed. SCRAM writes a file with instructions for
-these external graphing tools.
+In order to make visual verification of a fault tree,
+other diagram and graphing packages are employed.
+SCRAM writes a file with instructions for the external graphing tools.
 
 
 SCRAM Fault Tree Graphing Specifics
@@ -12,8 +12,7 @@ SCRAM Fault Tree Graphing Specifics
 
 #. Called after the tree initialization steps.
 #. Probability information is optional.
-#. Gate repetition is graphed with a transfer symbol.
-#. Tries to make the tree look compact.
+#. Gate repetition is graphed with transfer symbols.
 #. Assigns colors for clarity:
 
     1. Gates and Node Colors:
@@ -41,11 +40,10 @@ Currently Supported Graphing Tools
 
 - `Graphviz DOT`_ (*Prefer SVG output for complex trees*)
 
-.. _`Graphviz DOT`: http://www.graphviz.org
+.. _Graphviz DOT: http://www.graphviz.org
 
 
-.. note::
-    One file per top event is produced with the fault tree and top event names.
+.. note:: One file per top event is produced with the fault tree and top event names.
 
 
 Example Fault Tree Images

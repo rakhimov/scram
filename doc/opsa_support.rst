@@ -2,9 +2,10 @@
 OpenPSA Model Exchange Format
 #############################
 
-Open Probabilistic Safety Assessment Initiative hopes to bring international
-community of PSA together to improve the tools, techniques, and quality
-of PSA in a non-competitive and open manner for the benefit of the community.
+Open Probabilistic Safety Assessment Initiative hopes
+to bring international community of PSA together
+to improve the tools, techniques, and quality of PSA
+in a non-competitive and open manner for the benefit of the community.
 
 The initiative deals with the following issues in the current PSA:
 
@@ -19,10 +20,11 @@ The initiative deals with the following issues in the current PSA:
     - Lack of data and software backward and forward compatibility
     - No universal format for industry data
 
-In order to facilitate information exchange and quality assurance, OpenPSA
-community has developed a model exchange format(MEF) for PSA that covers
-most needs to describe the analysis input for PSA tools. Moreover, the MEF
-defines the following requirements for its development and use:
+In order to facilitate information exchange and quality assurance,
+OpenPSA community has developed a model exchange format(MEF) for PSA
+that covers most needs to describe the analysis input for PSA tools.
+Moreover, the MEF defines the following requirements
+for its development and use:
 
     - Soundness
     - Completeness
@@ -30,13 +32,12 @@ defines the following requirements for its development and use:
     - Generality
     - Extensibility
 
-The MEF is designed with the "declarative modeling" criterion to
-"present a more informative view of the actual systems, components, and
-interactions which the model represents". This paradigm is followed from the
-structured programming techniques.
+The MEF is designed with the "declarative modeling" criterion
+to "present a more informative view of the actual systems, components,
+and interactions which the model represents".
+This paradigm is followed from the structured programming techniques.
 
-More information about the initiative and format can be found on
-http://open-psa.org
+More information about the initiative and format can be found on http://open-psa.org
 
 
 .. _opsa_mef_schema:
@@ -94,17 +95,17 @@ to identify the supported and unsupported features.
 Deviations from OpenPSA MEF
 ===========================
 
-- Names and references are not case-sensitive and restricted to fewer
-  characters and combinations. :ref:`naming_rules` section contains more
-  information on these restrictions.
-- House events must be defined explicitly for analysis with probability
-  information.
+- Names and references are not case-sensitive
+  and restricted to fewer characters and combinations.
+  :ref:`naming_rules` section contains more information on these restrictions.
+- House events must be defined explicitly
+  for analysis with probability information.
 - The correct number of a gate's children is required.
 - Orphan primary events are reported as warning.
 - Unused parameters are reported as warning.
 - Redefinition of containers, events, and parameters is considered an error.
-- Common cause model levels for factors are required and must be strictly
-  sequential in ascending order.
+- Common cause model levels for factors are required
+  and must be strictly sequential in ascending order.
 - Attributes are not inherited.
 
 
@@ -113,5 +114,5 @@ OpenPSA MEF Converters
 
 - `Python script`_ for :ref:`shorthand_format` to OpenPSA MEF XML conversion.
 
-.. _`Python script`:
+.. _Python script:
     https://github.com/rakhimov/scram/blob/master/scripts/shorthand_to_xml.py

@@ -156,7 +156,7 @@ class BasicEvent(Node):
 
     def __init__(self, parent=None):
         BasicEvent.num_basic += 1
-        super(BasicEvent, self).__init__("E" + str(BasicEvent.num_basic),
+        super(BasicEvent, self).__init__("B" + str(BasicEvent.num_basic),
                                            parent)
         self.prob = random.uniform(BasicEvent.min_prob, BasicEvent.max_prob)
         BasicEvent.basic_events.append(self)

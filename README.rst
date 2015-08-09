@@ -127,7 +127,7 @@ The command to install a dependency takes the form of:
 
 .. code-block:: bash
 
-  sudo apt-get install package
+    sudo apt-get install package
 
 Where ``package`` is replaced by the correct package name.
 The minimal list of required library package names is:
@@ -192,7 +192,7 @@ Using macports_, the command to install a dependency takes the form of:
 
 .. code-block:: bash
 
-  sudo port install package
+    sudo port install package
 
 Where ``package`` is replaced by the correct package name.
 The minimal list of required library package names is:
@@ -283,7 +283,7 @@ Windows
 Currently the easiest option is to use a virtual machine with Ubuntu 14.04.
 
 #. Install `VirtualBox <https://www.virtualbox.org/>`_
-#. Get the system.
+#. Get the system
 
    a. Pre-configured image
 
@@ -294,8 +294,8 @@ Currently the easiest option is to use a virtual machine with Ubuntu 14.04.
 
    b. New system.
 
-        - Download `Ubuntu 14.04`_ or any other system.
-        - Follow the installation instructions for Linux/Unix machines.
+        - Download `Ubuntu 14.04`_ or any other system
+        - Follow the installation instructions for Linux/Unix machines
 
 The other option is to use MinGW_, Mingw-w64_, or Cygwin_
 and to build on Windows.
