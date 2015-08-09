@@ -16,8 +16,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """test_scram_call.py
 
-A set of tests to invoke command-line SCRAM with correct and
-incorrect arguments.
+A set of tests to invoke command-line SCRAM
+with correct and incorrect arguments.
 """
 
 import os

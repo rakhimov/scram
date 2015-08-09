@@ -258,10 +258,12 @@ class OperatorPrecedenceTestCase(TestCase):
     def two_operators(self, op_one, op_two, num_args=3):
         """Common operations for two operator tests.
 
-        The requirement for the input is to have g1 gate with a nested formula
-        with num_args arguments. Only the first argument is associated with
-        the first operator, and the rest of arguments are associated with the
-        second operator. The arguments must be named e1, e2, e3, ...
+        The requirement for the input is to have g1 gate
+        with a nested formula
+        with num_args arguments.
+        Only the first argument is associated with the first operator,
+        and the rest of arguments are associated with the second operator.
+        The arguments must be named e1, e2, e3, ...
 
         Args:
             op_one: The first operator of higher precedence.
@@ -312,9 +314,9 @@ class OperatorPrecedenceTestCase(TestCase):
     def test_xor_xor(self):
         """Formula with XOR and XOR operators.
 
-        Note that this is a special case because most analysis restricts
-        XOR operator to two arguments, so nested formula of XOR operators
-        must be created.
+        Note that this is a special case
+        because most analysis restricts XOR operator to two arguments,
+        so nested formula of XOR operators must be created.
         """
         self.tmp.write("g1 := e1 ^ e2 ^ e3\n")
         self.tmp.flush()
@@ -374,10 +376,12 @@ class ParenthesesTestCase(TestCase):
     def two_operators(self, op_one, op_two, num_args=3):
         """Common operations for two operator tests with parentheses.
 
-        The requirement for the input is to have g1 gate with a nested formula
-        with num_args arguments. Only the last argument is associated with
-        the first operator, and the rest of arguments are associated with the
-        second operator. The arguments must be named e1, e2, e3, ...
+        The requirement for the input is to have g1 gate
+        with a nested formula
+        with num_args arguments.
+        Only the last argument is associated with the first operator,
+        and the rest of arguments are associated with the second operator.
+        The arguments must be named e1, e2, e3, ...
 
         Args:
             op_one: The first operator of higher precedence.
@@ -477,9 +481,9 @@ class ParenthesesTestCase(TestCase):
     def combination(self, op_two, num_args=4):
         """Common cases for combination operator containing other formulas.
 
-        The first operator must be K/N. The first two node arguments are
-        associated with the K/N operator, the rest are assigned to the second
-        operator.
+        The first operator must be K/N.
+        The first two node arguments are associated with the K/N operator,
+        the rest are assigned to the second operator.
 
         Args:
             op_two: The second operator of lower precedence.

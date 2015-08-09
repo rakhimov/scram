@@ -16,24 +16,28 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """fault_tree_generator.py
 
-This script generates a fault tree of various complexities. The generated
-fault tree can be put into XML file with the OpenPSA MEF ready for analysis
-or into a shorthand format file. The resulting fault tree is topologically
-sorted.
+This script generates a fault tree of various complexities.
+The generated fault tree can be put into an XML file with the OpenPSA MEF
+or a shorthand format file.
+The resulting fault tree is topologically sorted.
 
 This script helps create complex fault trees in a short time
-to test other analysis tools, for example, input dependent performance
-analysis.
+to test other analysis tools,
+for example, input dependent performance analysis.
 
 The time complexity is approximately:
 
     O(N) + O((N/Ratio)^2*exp(-AvgChildren/Ratio)) + O(CommonG*exp(CommonB))
 
-Note that generating a fault tree with both the number of basic events and the
-number of gates contstrained may change other factors that are set by the user.
-However, if the number of gates are not set (constrained) by the user, all the
-other factors set by the user are guaranteed to be preserved and used as they
-are.
+Where N is the number of basic events,
+and Ratio is N / num_gates.
+
+Note that generating a fault tree
+with both the number of basic events and the number of gates contstrained
+may change other factors that are set by the user.
+However, if the number of gates are not set (constrained) by the user,
+all the other factors set by the user are
+guaranteed to be preserved and used as they are.
 """
 from __future__ import print_function, division
 
@@ -137,7 +141,7 @@ class Gate(Node):
 class BasicEvent(Node):
     """Representation of a basic event in a fault tree.
 
-        Names are assigned sequentially starting from E1.
+        Names are assigned sequentially starting from B1.
 
     Attributes:
         num_basic: Total number of basic events created.
@@ -224,8 +228,8 @@ class CcfGroup(object):
 class Factors(object):
     """Collection of factors that determine the complexity of the fault tree.
 
-    This collection must be setup and updated before the fault tree generation
-    processes.
+    This collection must be setup and updated
+    before the fault tree generation processes.
 
     Attributes:
         num_basics: The number of basic events.
@@ -264,8 +268,8 @@ class Factors(object):
     def __calculate_max_children(avg_children, weights):
         """Calculates the maximum number of children for sampling.
 
-        The result may have a fractional part that must be adjusted in
-        sampling accordingly.
+        The result may have a fractional part
+        that must be adjusted in sampling accordingly.
 
         Args:
             avg_children: The average number of children for gates.
@@ -349,8 +353,9 @@ class Factors(object):
     def get_num_children(gate):
         """Randomly selects the number of children for the given gate type.
 
-        This function also has a side effect. It sets k_num for the K/N type of
-        gates depending on the number of children.
+        This function has a side effect.
+        It sets k_num for the K/N type of gates
+        depending on the number of children.
 
         Args:
             gate: The parent gate for children.
@@ -386,9 +391,10 @@ class Factors(object):
     def get_num_gates(num_basics):
         """Approximates the number of gates in the resulting fault tree.
 
-        This is an estimate of the number of gates needed to initialize the
-        fault tree with the given number of basic events and the fault tree
-        properties.
+        This is an estimate of the number of gates
+        needed to initialize the fault tree
+        with the given number of basic events
+        and fault tree properties.
 
         Args:
             num_basics: The number of basic event to get initialized.
@@ -405,8 +411,9 @@ class Factors(object):
     def get_num_common_basics(num_gates):
         """Estimates the number of common basic events.
 
-        These common basic events must be chosen from the total number of
-        basic events in order to ensure the average number of parents.
+        These common basic events must be chosen
+        from the total number of basic events
+        in order to ensure the correct average number of parents.
 
         Args:
             num_gates: The total number of gates in the future fault tree
@@ -421,8 +428,9 @@ class Factors(object):
     def get_num_common_gates(num_gates):
         """Estimates the number of common gates.
 
-        These common gates must be chosen from the total number of
-        gates in order to ensure the average number of parents.
+        These common gates must be chosen
+        from the total number of gates
+        in order to ensure the correct average number of parents.
 
         Args:
             num_gates: The total number of gates in the future fault tree
@@ -435,11 +443,13 @@ class Factors(object):
 
     @staticmethod
     def calculate_parents_g(num_gates):
-        """This is a helper function to get average parents of gates.
+        """Estimates the average number of parents for gates.
 
-        This function makes possible to generate a fault tree with the user
-        specified number of gates. All other parameters except for the number
-        of parents must be set for use in calculations.
+        This function makes possible to generate a fault tree
+        with the user specified number of gates.
+        All other parameters
+        except for the number of parents
+        must be set for use in calculations.
 
         Args:
             num_gates: The total number of gates in the future fault tree
@@ -461,7 +471,8 @@ class Factors(object):
 class Settings(object):
     """Collection of settings specific to this script per run.
 
-    These settings include arguments that do not influence the complexity
+    These settings include arguments
+    that do not influence the complexity
     of the generated fault tree.
 
     Attributes:
@@ -893,7 +904,7 @@ def write_results(top_event):
 def write_shorthand(top_event):
     """Writes the results into the shorthand format file.
 
-    Note that the shorthand format does not support advanced gates and groups.
+    Note that the shorthand format does not support advanced gates or groups.
 
     Args:
         top_event: The top gate of the generated fault tree.
@@ -1022,8 +1033,7 @@ def check_if_positive(desc, val):
         raise ap.ArgumentTypeError(desc + " is negative")
 
 def check_if_less(desc, val, ref):
-    """Verifies that the value is less than some reference for
-    the supplied argument.
+    """Verifies that the value is less than some reference for the argument.
 
     Args:
         desc: The description of the argument from the command-line.
@@ -1037,8 +1047,7 @@ def check_if_less(desc, val, ref):
         raise ap.ArgumentTypeError(desc + " is more than " + str(ref))
 
 def check_if_more(desc, val, ref):
-    """Verifies that the value is more than some reference for
-    the supplied argument.
+    """Verifies that the value is more than some reference for the argument.
 
     Args:
         desc: The description of the argument from the command-line.
@@ -1162,8 +1171,9 @@ def manage_cmd_args():
 def validate_setup(args):
     """Checks if the relationships between arguments are valid for use.
 
-    These checks are important to ensure that the requested fault tree is
-    producible and realistic to achieve in reasonable time.
+    These checks are important
+    to ensure that the requested fault tree is producible
+    and realistic to achieve in reasonable time.
 
     Args:
         args: Command-line arguments with values.

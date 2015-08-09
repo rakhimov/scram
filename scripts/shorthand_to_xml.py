@@ -16,8 +16,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """shorthand_to_xml.py
 
-This script converts the shorthand notation for fault trees into an
-XML file. The output file is formatted according to the OpenPSA MEF.
+This script converts
+the shorthand notation for fault trees into an XML file.
+The output file is formatted according to the OpenPSA MEF.
 The default output file name is the input file name with the XML extension.
 
 The shorthand notation is described as follows:
@@ -31,15 +32,16 @@ Probability of a basic event:      p(event_name) = probability
 Boolean state of a house event:    s(event_name) = state
 
 Some requirements and additions to the shorthand format:
-1. The names and references are not case-sensitive and must be formatted
-   according to 'XML NCNAME datatype' without double dashes('--'), period('.'),
-   and trailing '-'.
+1. The names and references are not case-sensitive
+   and must be formatted according to 'XML NCNAME datatype'
+   without double dashes('--'), period('.'), and trailing '-'.
 2. No requirement for the structure of the input, i.e. topologically sorted.
-3. Undefined nodes are processed as 'events' to the final XML output. Only
-   warnings are emitted in the case of undefined nodes.
+3. Undefined nodes are processed as 'events' to the final XML output.
+   Only warnings are emitted in the case of undefined nodes.
 4. Name clashes or redefinitions are errors.
 5. Cyclic trees are detected by the script as errors.
-6. The top gate is detected by the script. Only one top gate is allowed
+6. The top gate is detected by the script.
+   Only one top gate is allowed
    unless otherwise specified by the user.
 7. Repeated children are considered an error.
 8. The script is flexible with whitespace characters in the input file.
@@ -231,8 +233,8 @@ class FaultTree(object):
         def visit(gate):
             """Recursively visits the given gate sub-tree to detect a cycle.
 
-            Upon visiting the descendant gates, their marks are changed from
-            temporary to permanent.
+            Upon visiting the descendant gates,
+            their marks are changed from temporary to permanent.
 
             Args:
                 gate: The current gate.
@@ -644,8 +646,8 @@ def toposort_gates(top_gates, gates):
 def write_to_xml_file(fault_tree, output_file):
     """Writes the fault tree into an XML file.
 
-    The file is formatted according to OpenPSA MEF but without indentations
-    for human readability.
+    The file is formatted according to OpenPSA MEF
+    but without indentations for human readability.
 
     Args:
         fault_tree: A full fault tree.

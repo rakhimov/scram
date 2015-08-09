@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 """install.py
 
-An installation script for SCRAM. This script automates the building and
-installation processes for various purposes like release and debug.
+Installation script for SCRAM.
+This script automates the building and installation processes
+for various purposes like release and debug.
 """
 
 import os

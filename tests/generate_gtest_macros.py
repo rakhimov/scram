@@ -1,11 +1,11 @@
 """generate_gtest_macros.py
 
-A simple module and default main execution to generate a listing of
-ADD_TEST CMake macros for all non-disabled tests in a
-google-test-based executable.
+A simple module and default main execution
+to generate a listing of ADD_TEST CMake macros
+for all non-disabled tests in a google-test-based executable.
 
-The default main function writes a list of macros to the given output
-file.
+The default main function writes a list of macros
+to the given output file.
 """
 from __future__ import print_function
 
