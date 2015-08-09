@@ -180,6 +180,10 @@ formats (html, pdf, LaTeX).
 The documentation for the code is checked and generated dynamically with
 Doxygen_.
 
+The source text of the documentation in the code and the reST format
+must be formatted consistently and with `Semantic Linefeeds`_
+for maintainability and version control.
+
 .. _Doxygen:
     http://doxygen.org/
 .. _Sphinx:
@@ -190,3 +194,5 @@ Doxygen_.
     http://pyvideo.org/video/441/pycon-2011--documentation-driven-development
 .. _`Agile Documentation`:
     http://www.agilemodeling.com/essays/agileDocumentationBestPractices.htm
+.. _Semantic Linefeeds:
+    http://rhodesmill.org/brandon/2012/one-sentence-per-line/
