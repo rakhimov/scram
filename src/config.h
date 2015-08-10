@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /// @file config.h
-/// Configuration management facilities to make various setups for analysis
-/// possible.
+/// Configuration management facilities
+/// to make various setups for analysis possible.
 
 #ifndef SCRAM_SRC_CONFIG_H_
 #define SCRAM_SRC_CONFIG_H_
@@ -32,8 +32,8 @@ namespace scram {
 
 /// @class Config
 /// This class processes configuration files for analysis.
-/// The class contains all the setup and state to initialize general
-/// analysis.
+/// The class contains all the setup and state
+/// to initialize general analysis.
 class Config {
  public:
   /// A constructor with configurations for analysis.

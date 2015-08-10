@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /// @file version.h
-/// Set of functions with version information of the core and
-/// dependencies.
+/// Set of functions with version information
+/// of the core and dependencies.
 #ifndef SCRAM_SRC_VERSION_H_
 #define SCRAM_SRC_VERSION_H_
 

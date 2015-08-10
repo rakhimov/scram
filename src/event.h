@@ -36,8 +36,10 @@ namespace scram {
 /// Abstract base class for general fault tree events.
 class Event : public Element, public Role {
  public:
-  /// Constructs a fault tree event with a specific id. It is assumed that names
-  /// and other strings do not have leading and trailing whitespace characters.
+  /// Constructs a fault tree event with a specific id.
+  /// It is assumed that names
+  /// and other strings do not have
+  /// leading and trailing whitespace characters.
   ///
   /// @param[in] name The identifying name with caps preserved.
   /// @param[in] base_path The series of containers to get this event.
@@ -68,7 +70,8 @@ class Event : public Element, public Role {
 };
 
 /// @class PrimaryEvent
-/// This is an abstract base class for events that can cause faults.
+/// This is an abstract base class for events
+/// that can cause failures.
 /// This class represents Base, House, Undeveloped, and other events.
 class PrimaryEvent : public Event {
  public:
@@ -152,8 +155,8 @@ class BasicEvent : public PrimaryEvent {
 
   /// @returns The mean probability of this basic event.
   ///
-  /// @note The user of this function should make sure that the returned
-  ///       value is acceptable for calculations.
+  /// @note The user of this function should make sure
+  ///       that the returned value is acceptable for calculations.
   ///
   /// @warning Undefined behavior if the expression is not set.
   inline double p() const {
@@ -165,8 +168,8 @@ class BasicEvent : public PrimaryEvent {
   ///
   /// @returns Sampled value.
   ///
-  /// @note The user of this function should make sure that the returned
-  ///       value is acceptable for calculations.
+  /// @note The user of this function should make sure
+  ///       that the returned value is acceptable for calculations.
   ///
   /// @warning Undefined behavior if the expression is not set.
   inline double SampleProbability() {
@@ -201,9 +204,11 @@ class BasicEvent : public PrimaryEvent {
     return ccf_gate_;
   }
 
-  /// Sets the common cause failure group gate that can represent this basic
-  /// event in analysis with common cause information. This information is
-  /// expected to be provided by CCF group application.
+  /// Sets the common cause failure group gate
+  /// that can represent this basic event
+  /// in analysis with common cause information.
+  /// This information is expected to be provided by
+  /// CCF group application.
   ///
   /// @param[in] gate CCF group gate.
   inline void ccf_gate(const GatePtr& gate) {
@@ -212,27 +217,31 @@ class BasicEvent : public PrimaryEvent {
   }
 
  private:
-  /// Expression that describes this basic event and provides numerical
-  /// values for probability calculations.
+  /// Expression that describes this basic event
+  /// and provides numerical values for probability calculations.
   ExpressionPtr expression_;
 
-  /// If this basic event is in a common cause group, CCF gate can serve
-  /// as a replacement for the basic event for common cause analysis.
+  /// If this basic event is in a common cause group,
+  /// CCF gate can serve as a replacement for the basic event
+  /// for common cause analysis.
   GatePtr ccf_gate_;
 };
 
 class CcfGroup;
 
 /// @class CcfEvent
-/// A basic event that represents a multiple failure of a group of events due to
-/// a common cause. This event is generated out of a common cause group.
+/// A basic event that represents a multiple failure of
+/// a group of events due to a common cause.
+/// This event is generated out of a common cause group.
 /// This class is a helper to report correctly the CCF events.
 class CcfEvent : public BasicEvent {
  public:
-  /// Constructs CCF event with specific name that is used for internal
-  /// purposes. This name is formatted by the CcfGroup. The creator CCF group
-  /// and names of the member events of this specific CCF event are saved for
-  /// reporting.
+  /// Constructs CCF event with specific name
+  /// that is used for internal purposes.
+  /// This name is formatted by the CcfGroup.
+  /// The creator CCF group
+  /// and names of the member events of this specific CCF event
+  /// are saved for reporting.
   ///
   /// @param[in] name The identifying name of this CCF event.
   /// @param[in] ccf_group The CCF group that created this event.
@@ -292,7 +301,8 @@ class Gate : public Event {
   /// @throws ValidationError Errors in the gate's logic or setup.
   void Validate();
 
-  /// @returns The mark of this gate node. Empty string for no mark.
+  /// @returns The mark of this gate node.
+  /// @returns Empty string for no mark.
   inline const std::string& mark() const { return mark_; }
 
   /// Sets the mark for this gate node.
@@ -324,20 +334,20 @@ class Formula {
   /// @throws LogicError The gate is not yet assigned.
   inline const std::string& type() const { return type_; }
 
-  /// @returns The vote number if and only if the operator is atleast.
+  /// @returns The vote number if and only if the operator is ATLEAST.
   ///
   /// @throws LogicError The vote number is not yet assigned.
   int vote_number() const;
 
-  /// Sets the vote number only for an atleast formula.
+  /// Sets the vote number only for an ATLEAST formula.
   ///
   /// @param[in] vnumber The vote number.
   ///
   /// @throws InvalidArgument The vote number is invalid.
   /// @throws LogicError The vote number is assigned illegally.
   ///
-  /// @note (Children number > vote number)should be checked outside of
-  ///       this class.
+  /// @note (Children number > vote number) should be checked
+  ///       outside of this class.
   void vote_number(int vnumber);
 
   /// @returns The event arguments of this formula.
@@ -425,7 +435,7 @@ class Formula {
   void GatherNodesAndConnectors();
 
   std::string type_;  ///< Logical operator.
-  int vote_number_;  ///< Vote number for atleast operator.
+  int vote_number_;  ///< Vote number for ATLEAST operator.
   std::map<std::string, EventPtr> event_args_;  ///< All event arguments.
   std::vector<HouseEventPtr> house_event_args_;  ///< House event arguments.
   std::vector<BasicEventPtr> basic_event_args_;  ///< Basic event arguments.

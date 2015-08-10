@@ -15,11 +15,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /// @file preprocessor.cc
-/// Implementation of preprocessing algorithms. If a preprocessing algorithm has
-/// its limitations, side-effects, and assumptions, the documentation in the
-/// header file must contain all the relevant information within notes or
-/// warnings. The default assumption for all algorithms is that the fault
-/// tree is valid and well-formed.
+/// Implementation of preprocessing algorithms.
+/// If a preprocessing algorithm has
+/// its limitations, side-effects, and assumptions,
+/// the documentation in the header file
+/// must contain all the relevant information within
+/// notes or warnings.
+/// The default assumption for all algorithms is
+/// that the fault tree is valid and well-formed.
 ///
 /// Some Suggested Notes/Warnings: (Clear contract for preprocessing algorithms)
 ///
@@ -33,18 +36,22 @@
 ///   * Should not have gates of certain types
 ///   * How it deals with modules (Aware of them or not at all)
 ///   * Should not have constants or constant gates
-///   * Does it depend on other preprocessing functions?
+///   * Does it depend on other preprocessing functions or algorithms?
 ///   * Does it swap the root gate of the graph with another (arg) gate?
 ///   * Does it remove gates or other kind of nodes?
 ///
-/// Assuming that the fault tree is provided in the state as described in the
-/// contract, the algorithms should never throw an exception. The algorithms
-/// must guarantee that, given a valid and well-formed fault tree, the resulting
-/// fault tree will at least be valid, well-formed, and semantically equivalent
-/// to the input fault tree.
+/// Assuming that the fault tree is provided
+/// in the state as described in the contract,
+/// the algorithms should never throw an exception.
+/// The algorithms must guarantee that,
+/// given a valid and well-formed fault tree,
+/// the resulting fault tree will at least be
+/// valid, well-formed,
+/// and semantically equivalent to the input fault tree.
 ///
-/// If the contract is not respected, the result or behavior of the algorithm
-/// may be undefined. There is no requirement to check for the broken contract
+/// If the contract is not respected,
+/// the result or behavior of the algorithm may be undefined.
+/// There is no requirement to check for the broken contract
 /// and to exit gracefully.
 #include "preprocessor.h"
 
@@ -160,7 +167,8 @@ void Preprocessor::ProcessFaultTree() {
 
   // After this point there should not be null AND or unity OR gates,
   // and the tree structure should be repeating OR and AND.
-  // All gates are positive, and each gate has at least two arguments.
+  // All gates are positive,
+  // and each gate has at least two arguments.
   if (root->args().empty()) return;  // This is null or unity.
   // Detect original modules for processing.
   Preprocessor::DetectModules();
@@ -179,8 +187,9 @@ void Preprocessor::NormalizeGates() {
     case kNotGate:
       root_sign_ *= -1;
   }
-  // Process negative gates. Note that root's negative gate is processed in
-  // the above lines. All arguments are assumed to be positive at this point.
+  // Process negative gates.
+  // Note that root's negative gate is processed in the above lines.
+  // All arguments are assumed to be positive at this point.
   Preprocessor::ClearGateMarks();
   Preprocessor::NotifyParentsOfNegativeGates(root_gate);
 
@@ -527,9 +536,12 @@ void Preprocessor::PropagateComplements(
   if (gate->mark()) return;
   gate->mark(true);
   // assert(gate->args().size() > 1);  /// @todo Put Back.
-  // If the argument gate is complement, then create a new gate that propagates
-  // its sign to its arguments and itself becomes non-complement.
-  // Keep track of complement gates for optimization of repeated complements.
+  // If the argument gate is complement,
+  // then create a new gate
+  // that propagates its sign to its arguments
+  // and itself becomes non-complement.
+  // Keep track of complement gates
+  // for optimization of repeated complements.
   std::vector<int> to_swap;  // Args with negation to get swapped.
   boost::unordered_map<int, IGatePtr>::const_iterator it;
   for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
@@ -648,8 +660,8 @@ bool Preprocessor::JoinGates(const IGatePtr& gate) {
 void Preprocessor::DetectModules() {
   assert(const_gates_.empty());
   assert(null_gates_.empty());
-  // First stage, traverse the tree depth-first for gates and indicate
-  // visit time for each node.
+  // First stage, traverse the tree depth-first for gates
+  // and indicate visit time for each node.
   LOG(DEBUG2) << "Detecting modules...";
 
   Preprocessor::ClearNodeVisits();
@@ -1208,8 +1220,9 @@ void Preprocessor::DetectMultipleDefinitions(
       return;
     }
   }
-  // No redefinition is found for this gate. In order to avoid a comparison
-  // with descendants, this gate is not yet put into original gates container.
+  // No redefinition is found for this gate.
+  // In order to avoid a comparison with descendants,
+  // this gate is not yet put into original gates container.
   boost::unordered_map<int, IGatePtr>::const_iterator it_ch;
   for (it_ch = gate->gate_args().begin(); it_ch != gate->gate_args().end();
        ++it_ch) {

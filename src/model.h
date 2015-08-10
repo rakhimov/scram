@@ -35,7 +35,7 @@ class FaultTree;
 class Component;
 
 /// @class Model
-/// This class represents a model that is defined in one input file.
+/// This class represents a risk analysis model.
 class Model : public Element {
  public:
   typedef boost::shared_ptr<Parameter> ParameterPtr;
@@ -103,7 +103,8 @@ class Model : public Element {
   /// @throws RedefinitionError The model has a parameter with the same name.
   void AddParameter(const ParameterPtr& parameter);
 
-  /// Finds a parameter from a reference. The reference is not case sensitive
+  /// Finds a parameter from a reference.
+  /// The reference is not case sensitive
   /// and can contain the identifier, full path, or local path.
   ///
   /// @param[in] reference Reference string to the parameter.
@@ -115,16 +116,17 @@ class Model : public Element {
   ParameterPtr GetParameter(const std::string& reference,
                             const std::string& base_path);
 
-  /// Finds an event from a reference. The reference is not case sensitive and
-  /// can contain the identifier, full path, or local path. The returned event
-  /// may be a basic event, house event, or gate. This information is
-  /// communicated with the return value.
+  /// Finds an event from a reference.
+  /// The reference is not case sensitive
+  /// and can contain the identifier, full path, or local path.
+  /// The returned event may be a basic event, house event, or gate.
+  /// This information is communicated with the return value.
   ///
   /// @param[in] reference Reference string to the event.
   /// @param[in] base_path The series of containers indicating the scope.
   ///
-  /// @returns A pair of the pointer to the event and its type("gate",
-  ///          "basic-event", "house-event").
+  /// @returns A pair of the pointer to the event and its type
+  ///          ("gate", "basic-event", "house-event").
   ///
   /// @throws ValidationError There are problems with referencing.
   /// @throws LogicError The given base path is invalid.
@@ -138,7 +140,8 @@ class Model : public Element {
   /// @throws RedefinitionError An event with the same name already exists.
   void AddHouseEvent(const HouseEventPtr& house_event);
 
-  /// Finds a house event from a reference. The reference is not case sensitive
+  /// Finds a house event from a reference.
+  /// The reference is not case sensitive
   /// and can contain the identifier, full path, or local path.
   ///
   /// @param[in] reference Reference string to the house event.
@@ -157,7 +160,8 @@ class Model : public Element {
   /// @throws RedefinitionError An event with the same name already exists.
   void AddBasicEvent(const BasicEventPtr& basic_event);
 
-  /// Finds a basic event from a reference. The reference is not case sensitive
+  /// Finds a basic event from a reference.
+  /// The reference is not case sensitive
   /// and can contain the identifier, full path, or local path.
   ///
   /// @param[in] reference Reference string to the basic event.
@@ -176,7 +180,8 @@ class Model : public Element {
   /// @throws RedefinitionError An event with the same name already exists.
   void AddGate(const GatePtr& gate);
 
-  /// Finds a gate from a reference. The reference is not case sensitive
+  /// Finds a gate from a reference.
+  /// The reference is not case sensitive
   /// and can contain the identifier, full path, or local path.
   ///
   /// @param[in] reference Reference string to the gate.

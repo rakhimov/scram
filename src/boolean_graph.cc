@@ -16,9 +16,10 @@
  */
 /// @file boolean_graph.cc
 /// Implementation of indexed nodes, variables, gates, and the Boolean graph.
-/// The implementation caters other algorithms like preprocessing. The main
-/// goal is to make manipulations and transformations of the graph easier to
-/// achieve for graph algorithms.
+/// The implementation caters other algorithms like preprocessing.
+/// The main goal is
+/// to make manipulations and transformations of the graph easier
+/// to achieve for graph algorithms.
 #include "boolean_graph.h"
 
 #include <utility>
@@ -239,10 +240,10 @@ bool IGate::ProcessDuplicateArg(int index) {
 
       IGatePtr child_and(new IGate(kAndGate));  // May not be needed.
       IGatePtr grand_child;  // Only if child_and is needed.
-      if (vote_number_ == 3) {  // Create an OR grandchild.
+      if (vote_number_ == 3) {  // Create an OR grand child.
         grand_child = IGatePtr(new IGate(kOrGate));
 
-      } else if (vote_number_ > 3) {  // Create a K/N grandchild.
+      } else if (vote_number_ > 3) {  // Create a K/N grand child.
         grand_child = IGatePtr(new IGate(kAtleastGate));
         grand_child->vote_number(vote_number_ - 2);
       }
@@ -447,10 +448,10 @@ std::ostream& operator<<(std::ostream& os,
     os << "s(GC" << gate->index() << ") = " << state << std::endl;
     return os;
   }
-  std::string formula = "(";  // Begining string for most formulas.
+  std::string formula = "(";  // Beginning string for most formulas.
   std::string op = "";  // Operator of the formula.
   std::string end = ")";  // Closing parentheses for most formulas.
-  switch (gate->type()) {  // Determine the begining string and the operator.
+  switch (gate->type()) {  // Determine the beginning string and the operator.
     case kNandGate:
       formula = "~(";  // Fall-through to AND gate.
     case kAndGate:

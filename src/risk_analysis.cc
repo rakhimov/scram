@@ -113,8 +113,9 @@ void RiskAnalysis::Report(std::ostream& out) {
   xmlpp::Document* doc = new xmlpp::Document();
   rp.SetupReport(model_, settings_, doc);
 
-  /// Container for excess primary events not in the analysis.
-  /// This container is for warning in case the input is formed not as intended.
+  // Container for excess primary events not in the analysis.
+  // This container is for warning
+  // in case the input is formed not as intended.
   typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
   std::set<PrimaryEventPtr> orphan_primary_events;
@@ -132,8 +133,8 @@ void RiskAnalysis::Report(std::ostream& out) {
   if (!orphan_primary_events.empty())
     rp.ReportOrphanPrimaryEvents(orphan_primary_events, doc);
 
-  /// Container for unused parameters not in the analysis.
-  /// This container is for warning in case the input is formed not as intended.
+  // Container for unused parameters not in the analysis.
+  // This container is for warning in case the input is formed not as intended.
   typedef boost::shared_ptr<Parameter> ParameterPtr;
   std::set<ParameterPtr> unused_parameters;
   boost::unordered_map<std::string, ParameterPtr>::const_iterator it_v;

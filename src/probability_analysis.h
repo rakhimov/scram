@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /// @file probability_analysis.h
-/// Contains functionality to do numerical analysis of probabilities and
-/// importances.
+/// Contains functionality to do numerical analysis
+/// of probabilities and importance factors.
 #ifndef SCRAM_SRC_PROBABILITY_ANALYSIS_H_
 #define SCRAM_SRC_PROBABILITY_ANALYSIS_H_
 
@@ -59,20 +59,21 @@ class ProbabilityAnalysis {
   virtual ~ProbabilityAnalysis() {}
 
   /// Sets the databases of basic events with probabilities.
-  /// Resets the main basic event database and clears the
-  /// previous information. This information is the main source for
-  /// calculations and internal indexes for basic events.
+  /// Resets the main basic event database
+  /// and clears the previous information.
+  /// This information is the main source
+  /// for calculations and internal indexes for basic events.
   ///
   /// @param[in] basic_events The database of basic events in cut sets.
   ///
-  /// @note  If not enough information is provided, the analysis behavior
-  ///        is undefined.
+  /// @note  If not enough information is provided,
+  ///        the analysis behavior is undefined.
   void UpdateDatabase(
       const boost::unordered_map<std::string, BasicEventPtr>& basic_events);
 
-  /// Performs quantitative analysis on minimal cut sets containing basic
-  /// events provided in the databases. It is assumed that the analysis is
-  /// called only once.
+  /// Performs quantitative analysis on minimal cut sets
+  /// containing basic events provided in the databases.
+  /// It is assumed that the analysis is called only once.
   ///
   /// @param[in] min_cut_sets Minimal cut sets with string ids of events.
   ///                         Negative event is indicated by "'not' + id"
@@ -94,7 +95,8 @@ class ProbabilityAnalysis {
   }
 
   /// @returns Map with basic events and their importance values.
-  ///          The associated vector contains DIF, MIF, CIF, RRW, RAW in order.
+  ///          The associated vector contains
+  ///          DIF, MIF, CIF, RRW, RAW in order.
   ///
   /// @note The user should make sure that the analysis is actually done.
   inline const std::map< std::string, std::vector<double> >&
@@ -123,21 +125,24 @@ class ProbabilityAnalysis {
   inline double imp_analysis_time() const { return imp_time_; }
 
  protected:
-  /// Assigns an index to each basic event, and then populates with this
-  /// indices new databases and basic to integer converting maps.
+  /// Assigns an index to each basic event,
+  /// and then populates with these indices
+  /// new databases and basic-to-integer converting maps.
   /// The previous data are lost.
   /// These indices will be used for future analysis.
   void AssignIndices();
 
-  /// Populates databases of minimal cut sets with indices of the events.
-  /// This traversal detects if cut sets contain complement events and
-  /// turns non-coherent analysis.
+  /// Populates databases of minimal cut sets
+  /// with indices of the events.
+  /// This traversal detects
+  /// if cut sets contain complement events
+  /// and turns non-coherent analysis.
   ///
-  /// @param[in] min_cut_sets Minimal cut sets with event ids.
+  /// @param[in] min_cut_sets Minimal cut sets with event IDs.
   void IndexMcs(const std::set<std::set<std::string> >& min_cut_sets);
 
-  /// Calculates probabilities using the minimal cut set upper bound (MCUB)
-  /// approximation.
+  /// Calculates probabilities
+  /// using the minimal cut set upper bound (MCUB) approximation.
   ///
   /// @param[in] min_cut_sets Sets of indices of basic events.
   ///
@@ -145,25 +150,28 @@ class ProbabilityAnalysis {
   double ProbMcub(
       const std::vector< boost::container::flat_set<int> >& min_cut_sets);
 
-  /// Generates positive and negative terms of probability equation expansion
-  /// a set of minimal cut sets, which are in OR
-  /// relationship with each other. This function is a brute force probability
-  /// calculation without approximations.
+  /// Generates positive and negative terms
+  /// of probability equation expansion from
+  /// a set of minimal cut sets,
+  /// which are in OR relationship with each other.
+  /// This function is a brute force probability calculation
+  /// without approximations.
   ///
   /// @param[in] sign The sign of the series. Negative or positive number.
   /// @param[in] num_sums The number of sums in the series.
   /// @param[in,out] min_cut_sets Sets of indices of basic events.
   ///
-  /// @note This function drastically modifies min_cut_sets by deleting
-  ///       sets inside it. This is for better performance.
-  /// @note O_avg(M*logM*N*2^N) where N is the number of sets, and M is
-  ///       the average size of the sets.
+  /// @note This function drastically modifies min_cut_sets
+  ///       by deleting sets inside it.
+  ///       This is for better performance.
+  /// @note O_avg(M*logM*N*2^N) where N is the number of sets,
+  ///       and M is the average size of the sets.
   void ProbOr(int sign, int num_sums,
               std::set< boost::container::flat_set<int> >* min_cut_sets);
 
-  /// Calculates a probability of a minimal cut set, whose members are in AND
-  /// relationship with each other. This function assumes independence of each
-  /// member.
+  /// Calculates a probability of a minimal cut set,
+  /// whose members are in AND relationship with each other.
+  /// This function assumes independence of each member.
   ///
   /// @param[in] min_cut_set A flat set of indices of basic events.
   ///
@@ -178,8 +186,8 @@ class ProbabilityAnalysis {
   /// @param[in] set Sets of indices of basic events.
   /// @param[out] combo_set A final set resulting from joining el and sets.
   ///
-  /// @note O_avg(N*M*logM) where N is the size of the set, and M is the
-  ///       average size of the elements.
+  /// @note O_avg(N*M*logM) where N is the size of the set,
+  ///       and M is the average size of the elements.
   void CombineElAndSet(
       const boost::container::flat_set<int>& el,
       const std::set< boost::container::flat_set<int> >& set,

@@ -27,9 +27,11 @@ namespace scram {
 
 /// @class Random
 /// This class contains generators for various random distributions.
-/// The values passed to the member functions are asserted to be in the
-/// correct form. In other words, the user should make sure that the passed
-/// parameters are valid. For example, standard deviation cannot be negative.
+/// The values passed to the member functions are asserted
+/// to be in the correct form.
+/// In other words, the user should make sure
+/// that the passed parameters are valid.
+/// For example, standard deviation cannot be negative.
 class Random {
  public:
   /// Sets the seed of the underlying random number generator.
@@ -58,8 +60,9 @@ class Random {
   ///
   /// @param[in] intervals Interval points for the distribution.
   ///                      The values must be strictly increasing.
-  /// @param[in] weights Weights at the boundaries. The number of weights
-  ///                    must be equal to the number of points.
+  /// @param[in] weights Weights at the boundaries.
+  ///                    The number of weights must be equal to
+  ///                    the number of points.
   ///                    Extra weights are ignored.
   ///
   /// @returns A sampled value.
@@ -70,8 +73,9 @@ class Random {
   ///
   /// @param[in] intervals Interval points for the distribution.
   ///                      The values must be strictly increasing.
-  /// @param[in] weights Weights at the boundaries. The number of weights
-  ///                    must be one less than the number of points.
+  /// @param[in] weights Weights at the boundaries.
+  ///                    The number of weights must be equal to
+  ///                    the number of points.
   ///                    Extra weights are ignored.
   ///
   /// @returns A sampled value.
@@ -81,8 +85,8 @@ class Random {
   /// RNG from a discrete distribution.
   ///
   /// @param[in] values Discrete values.
-  /// @param[in] weights Weights for the corresponding values. The size must
-  ///                    be the same as the values vector size.
+  /// @param[in] weights Weights for the corresponding values.
+  ///                    The size must be the same as the values vector size.
   ///
   /// @returns A sample Value from the value vector.
   template<class T>
@@ -123,8 +127,9 @@ class Random {
   ///
   /// @returns A sampled value.
   ///
-  /// @note The rate parameter is 1/theta, so for alpha/beta system, pass
-  ///       1/beta as a second parameter for this generator.
+  /// @note The rate parameter is 1/theta,
+  ///       so for alpha/beta system,
+  ///       pass 1/beta as a second parameter for this generator.
   static double GammaGenerator(double k, double theta);
 
   /// RNG from Beta distribution.
@@ -177,8 +182,8 @@ class Random {
  private:
   /// RNG from a discrete distribution.
   ///
-  /// @param[in] weights Weights for the range [0, n), where n is the size
-  ///                    of the vector.
+  /// @param[in] weights Weights for the range [0, n),
+  ///                    where n is the size of the vector.
   ///
   /// @returns Integer in the range [0, 1).
   static int DiscreteGenerator(const std::vector<double>& weights);

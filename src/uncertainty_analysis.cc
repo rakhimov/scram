@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /// @file uncertainty_analysis.cc
-/// Implements the functionality to run Monte Carlo uncertainty analysis.
+/// Implements the functionality to run Monte Carlo simulations.
 #include "uncertainty_analysis.h"
 
 #include <cmath>
@@ -146,7 +146,7 @@ void UncertaintyAnalysis::FilterUncertainEvents(
       basic_events->push_back(*it);
     }
   }
-  // Precalculate for constant events and remove them from sets.
+  // Pre-calculate for constant events and remove them from sets.
   std::vector< flat_set<int> >::iterator it_set;
   for (it_set = pos_terms_.begin(); it_set != pos_terms_.end(); ++it_set) {
     double const_prob = 1;  // 1 is for multiplication.
