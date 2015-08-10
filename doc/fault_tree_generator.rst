@@ -1,6 +1,6 @@
-##################################
-Fault Tree Generator Python Script
-##################################
+####################
+Fault Tree Generator
+####################
 
 The complexity of a fault tree depends on many factors,
 such as types of gates, the number of common nodes, the total number of nodes,
