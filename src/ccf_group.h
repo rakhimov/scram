@@ -15,9 +15,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /// @file ccf_group.h
-/// Functional containers for basic events grouped by common cause failure.
-/// Common cause failure can be modeled using alpha, beta, MGL, or direct
-/// parameter assignment in phi model.
+/// Functional containers for basic events
+/// grouped by common cause failure.
+/// Common cause failure can be modeled
+/// with alpha, beta, MGL,
+/// or direct parameter assignment in phi model.
 #ifndef SCRAM_SRC_CCF_GROUP_H_
 #define SCRAM_SRC_CCF_GROUP_H_
 
@@ -73,21 +75,23 @@ class CcfGroup : public Element, public Role {
   /// @param[in] basic_event A member basic event.
   ///
   /// @throws DuplicateArgumentError The basic event is already in the group.
-  /// @throws IllegalOperation The probability distribution for this
-  ///                          CCF group is already defined. No more members
-  ///                          are accepted.
+  /// @throws IllegalOperation The probability distribution
+  ///                          for this CCF group is already defined.
+  ///                          No more members are accepted.
   void AddMember(const BasicEventPtr& basic_event);
 
-  /// Adds the distribution that describes the probability of basic events
-  /// in this CCF group. All basic events should be added as members
-  /// before defining their probabilities. No more basic events can be
-  /// added after this function.
+  /// Adds the distribution that describes the probability of
+  /// basic events in this CCF group.
+  /// All basic events should be added as members
+  /// before defining their probabilities.
+  /// No more basic events can be added after this function.
   ///
   /// @param[in] distr The probability distribution of this group.
   void AddDistribution(const ExpressionPtr& distr);
 
-  /// Adds a CCF factor for the specified model. The addition of factors
-  /// must be in ascending level order and no gaps are allowed between levels.
+  /// Adds a CCF factor for the specified model.
+  /// The addition of factors must be in ascending level order
+  /// and no gaps are allowed between levels.
   /// The default case is to start from 1.
   ///
   /// @param[in] factor A factor for the CCF model.
@@ -97,30 +101,31 @@ class CcfGroup : public Element, public Role {
   virtual void AddFactor(const ExpressionPtr& factor, int level);
 
   /// Checks if the provided distribution is between 0 and 1.
-  /// This check must be performed before validating basic events that are
-  /// members of this CCF group to give more precise error messages.
+  /// This check must be performed before validating basic events
+  /// that are members of this CCF group
+  /// to give more precise error messages.
   ///
   /// @throws ValidationError There is an issue with the distribution.
   void ValidateDistribution();
 
   /// Validates the setup for the CCF model and group.
-  /// The passed expressions must be checked for circular logic before
-  /// initiating the CCF validation.
+  /// The passed expressions must be checked for circular logic
+  /// before initiating the CCF validation.
   ///
   /// @throws ValidationError There is an issue with the setup.
   virtual void Validate();
 
-  /// Processes the given factors and members to create common cause failure
-  /// probabilities and new events that can replace the members in a fault
-  /// tree.
+  /// Processes the given factors and members
+  /// to create common cause failure probabilities and new events
+  /// that can replace the members in a fault tree.
   void ApplyModel();
 
  protected:
   typedef boost::shared_ptr<Gate> GatePtr;
   typedef boost::shared_ptr<Formula> FormulaPtr;
 
-  /// Creates new basic events from members. The new basic events
-  /// are included in the database of new events.
+  /// Creates new basic events from members.
+  /// The new basic events are included in the database of new events.
   ///
   /// @param[in] max_level The max level for grouping.
   /// @param[out] new_events New basic events and their parents.
@@ -128,9 +133,11 @@ class CcfGroup : public Element, public Role {
       int max_level,
       std::map<BasicEventPtr, std::set<std::string> >* new_events);
 
-  /// Calculates probabilities for new basic events representing failures
-  /// due to common cause. Each derived common cause failure model must
-  /// implement this function with its own specific formulas and assumptions.
+  /// Calculates probabilities for new basic events
+  /// representing failures due to common cause.
+  /// Each derived common cause failure model
+  /// must implement this function
+  /// with its own specific formulas and assumptions.
   ///
   /// @param[in] max_level The max level of grouping.
   /// @param[out] probabilities Expressions representing probabilities for
@@ -157,7 +164,8 @@ class CcfGroup : public Element, public Role {
 };
 
 /// @class BetaFactorModel
-/// Common cause failure model that assumes, if common cause failure occurs,
+/// Common cause failure model that assumes,
+/// if common cause failure occurs,
 /// then all components or members fail simultaneously or within short time.
 class BetaFactorModel : public CcfGroup {
  public:
@@ -171,7 +179,8 @@ class BetaFactorModel : public CcfGroup {
                            bool is_public = true)
       : CcfGroup(name, "beta-factor", base_path, is_public) {}
 
-  /// Adds a CCF factor for the beta model. Only one factor is expected.
+  /// Adds a CCF factor for the beta model.
+  /// Only one factor is expected.
   ///
   /// @param[in] factor A factor for the CCF model.
   /// @param[in] level The level of the passed factor.
@@ -189,9 +198,11 @@ class BetaFactorModel : public CcfGroup {
 };
 
 /// @class MglModel
-/// Multiple Greek Letters model characterizes failure of sub-groups of
-/// the group due to common cause. The factor for k-component group defines
-/// fraction of failure k or more members given that (k-1) members failed.
+/// Multiple Greek Letters model characterizes failure of
+/// sub-groups of the group due to common cause.
+/// The factor for k-component group defines
+/// fraction of failure k or more members
+/// given that (k-1) members failed.
 class MglModel : public CcfGroup {
  public:
   /// Constructs the group and sets the model.
@@ -204,8 +215,8 @@ class MglModel : public CcfGroup {
                     bool is_public = true)
       : CcfGroup(name, "MGL", base_path, is_public) {}
 
-  /// Adds a CCF factor for the MGL model. The factor level must start
-  /// from 2.
+  /// Adds a CCF factor for the MGL model.
+  /// The factor level must start from 2.
   ///
   /// @param[in] factor A factor for the CCF model.
   /// @param[in] level The level of the passed factor.
@@ -219,7 +230,8 @@ class MglModel : public CcfGroup {
 };
 
 /// @class AlphaFactorModel
-/// Alpha factor model characterizes failure of exactly k members of
+/// Alpha factor model characterizes
+/// failure of exactly k members of
 /// the group due to common cause.
 class AlphaFactorModel : public CcfGroup {
  public:
@@ -239,9 +251,10 @@ class AlphaFactorModel : public CcfGroup {
 };
 
 /// @class PhiFactorModel
-/// Phi factor model is a simplification, where fractions of k-member group
-/// failure is given directly. Thus, Q_k = phi_k * Q_total.
-/// This model is described in OpenPSA Model Exchange Format.
+/// Phi factor model is a simplification,
+/// where fractions of k-member group failure is given directly.
+/// Thus, Q_k = phi_k * Q_total.
+/// This model is described in the OpenPSA Model Exchange Format.
 class PhiFactorModel : public CcfGroup {
  public:
   /// Constructs the group and sets the model.
@@ -254,8 +267,8 @@ class PhiFactorModel : public CcfGroup {
                           bool is_public = true)
       : CcfGroup(name, "phi-factor", base_path, is_public) {}
 
-  /// In addition to the default validation of CcfGroup, checks if
-  /// the given factors' sum is 1.
+  /// In addition to the default validation of CcfGroup,
+  /// checks if the given factors' sum is 1.
   ///
   /// @throws ValidationError There is an issue with the setup.
   ///

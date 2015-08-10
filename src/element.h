@@ -15,7 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /// @file element.h
-/// Helper classes, structs, and properties common to all other classes.
+/// Helper classes, structs, and properties
+/// common to all other classes.
 #ifndef SCRAM_SRC_ELEMENT_H_
 #define SCRAM_SRC_ELEMENT_H_
 
@@ -35,8 +36,10 @@ struct Attribute {
 };
 
 /// @class Element
-/// This abstract class represents any element of analysis that can have some
-/// extra descriptions, such as attributes and a label.
+/// This abstract class represents
+/// any element of analysis
+/// that can have extra descriptions,
+/// such as attributes and a label.
 class Element {
  public:
   Element();
@@ -51,7 +54,8 @@ class Element {
   ///
   /// @param[in] new_label The label to be set.
   ///
-  /// @throws LogicError The label is already set or the new label is empty.
+  /// @throws LogicError The label is already set,
+  ///                    or the new label is empty.
   void label(const std::string& new_label);
 
   /// Adds an attribute to the attribute map.
@@ -69,7 +73,7 @@ class Element {
   /// @returns false otherwise.
   bool HasAttribute(const std::string& id) const;
 
-  /// @returns Pointer to the attribute if it exists.
+  /// @returns Reference to the attribute if it exists.
   ///
   /// @param[in] id The id name of the attribute in lower case.
   ///
@@ -82,9 +86,10 @@ class Element {
 };
 
 /// @class Role
-/// Abstract class that manages private or public roles for elements as needed.
-/// Public is the default assumption. It is expected to set only once and never
-/// changes.
+/// Abstract class that manages private or public roles
+/// for elements as needed.
+/// Public is the default assumption.
+/// It is expected to be set only once and never change.
 class Role {
  public:
   /// Sets the role of an element upon creation.

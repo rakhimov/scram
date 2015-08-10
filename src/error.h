@@ -25,8 +25,8 @@
 namespace scram {
 
 /// @class Error
-/// The Error class is the base class for common exceptions specific to the
-/// SCRAM code.
+/// The Error class is the base class
+/// for common exceptions specific to the SCRAM code.
 class Error : public std::exception {
  public:
   /// Constructs a new error with a provided message.
@@ -111,7 +111,8 @@ class IOError : public Error {
 };
 
 /// @class InvalidArgument
-/// This error class can be used to indicate unacceptable arguments.
+/// This error class can be used
+/// to indicate unacceptable arguments.
 class InvalidArgument : public Error {
  public:
   /// Constructs a new invalid argument error with a provided message.
@@ -121,7 +122,8 @@ class InvalidArgument : public Error {
 };
 
 /// @class LogicError
-/// Signals internal logic errors, for example, pre-condition failure
+/// Signals internal logic errors,
+/// for example, pre-condition failure
 /// or use of functionality in ways not designed to.
 class LogicError : public Error {
  public:
@@ -132,9 +134,10 @@ class LogicError : public Error {
 };
 
 /// @class IllegalOperation
-/// This error can be used to indicate that call for a method is not
-/// what is intended from an object derived from another class that actually
-/// supports the operation. This is a strong kind of logic error.
+/// This error can be used to indicate
+/// that call for a function or operation is not legal.
+/// For example, a derived class can make illegal
+/// the call of the virtual function of the base class.
 class IllegalOperation : public Error {
  public:
   /// Constructs a new illegal operation error with a provided message.

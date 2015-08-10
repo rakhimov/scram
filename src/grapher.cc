@@ -15,7 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /// @file grapher.cc
-/// Implements Grapher.
+/// Implementation of graphing of analysis constructs.
 #include "grapher.h"
 
 #include <set>
@@ -52,8 +52,8 @@ void Grapher::GraphFaultTree(const GatePtr& top_event, bool prob_requested,
   std::vector<std::pair<std::string, FormulaPtr> > formulas;
 
   // Keep track of number of repetitions of nodes.
-  // These repetitions are needed so that the graph links to separate nodes
-  // with the same display name.
+  // These repetitions are needed so that
+  // the graph links to separate nodes with the same display name.
   boost::unordered_map<EventPtr, int> node_repeat;
 
   // Populate intermediate and primary events of the top.

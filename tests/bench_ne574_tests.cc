@@ -18,8 +18,8 @@
 
 #include "risk_analysis_tests.h"
 
-// Benchmark Tests for an example fault tree given in NE574 Risk Analysis
-// class at UW-Madison.
+// Benchmark Tests for an example fault tree given
+// in NE574 Risk Analysis class at UW-Madison.
 // Test Minimal cut sets and total probabilty.
 TEST_F(RiskAnalysisTest, ne574) {
   std::string tree_input = "./share/scram/input/ne574/ne574.xml";

@@ -22,8 +22,8 @@
 
 using namespace scram;
 
-// This mock class is used to specify return
-// values and samples in a hard coded way.
+// This mock class is used to specify
+// return values and samples in a hard coded way.
 class OpenExpression : public Expression {
  public:
   explicit OpenExpression(double m = 1, double s = 1, double mn = 0,

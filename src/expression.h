@@ -38,9 +38,11 @@ class Parameter;  // This is for cycle detection through expressions.
 
 /// @class Expression
 /// Abstract base class for all sorts of expressions to describe events.
-/// This class also acts like a connector for parameter nodes and may
-/// create cycles. Expressions are not expected to be shared except for
-/// parameters. In addition, expressions are not expected to be changed
+/// This class also acts like a connector for parameter nodes
+/// and may create cycles.
+/// Expressions are not expected to be shared
+/// except for parameters.
+/// In addition, expressions are not expected to be changed
 /// after validation phases.
 class Expression {
  public:
@@ -117,11 +119,12 @@ enum Units {
 };
 
 /// @class Parameter
-/// This class provides a representation of a variable in basic event
-/// description. It is both expression and element description.
+/// This class provides a representation of a variable
+/// in basic event description.
+/// It is both expression and element description.
 class Parameter : public Expression, public Element, public Role {
  public:
-  /// Sets the expression of this basic event.
+  /// Creates a parameter as a variable for future references.
   ///
   /// @param[in] name The name of this variable (Case sensitive).
   /// @param[in] base_path The series of containers to get this parameter.
@@ -207,7 +210,8 @@ class MissionTime : public Expression {
  public:
   MissionTime() : mission_time_(-1), unit_(kHours) {}
 
-  /// Sets the mission time. This function is expected to be used only once.
+  /// Sets the mission time.
+  /// This function is expected to be used only once.
   ///
   /// @param[in] time The mission time.
   inline void mission_time(double time) {
@@ -260,7 +264,8 @@ class ConstantExpression : public Expression {
 };
 
 /// @class ExponentialExpression
-/// Negative exponential distribution with hourly failure rate and time.
+/// Negative exponential distribution
+/// with hourly failure rate and time.
 class ExponentialExpression : public Expression {
  public:
   /// Constructor for exponential expression with two arguments.
@@ -307,8 +312,8 @@ class ExponentialExpression : public Expression {
 };
 
 /// @class GlmExpression
-/// Exponential with probability of failure on demand, hourly failure rate,
-/// hourly repairing rate, and time.
+/// Exponential with probability of failure on demand,
+/// hourly failure rate, hourly repairing rate, and time.
 class GlmExpression : public Expression {
  public:
   /// Constructor for GLM or exponential expression with four arguments.
@@ -470,7 +475,7 @@ class UniformDeviate : public Expression {
 /// Normal distribution.
 class NormalDeviate : public Expression {
  public:
-  /// Setup for normal distribution with validity check for arguments.
+  /// Setup for normal distribution.
   ///
   /// @param[in] mean The mean of the distribution.
   /// @param[in] sigma The standard deviation of the distribution.
@@ -513,14 +518,15 @@ class NormalDeviate : public Expression {
 /// Log-normal distribution.
 class LogNormalDeviate : public Expression {
  public:
-  /// Setup for log-normal distribution with validity check for arguments.
+  /// Setup for log-normal distribution.
   ///
-  /// @param[in] mean This is the mean of the log-normal distribution not the
-  ///                 mean of underlying normal distribution,
-  ///                 which is parameter mu. mu is the location parameter,
+  /// @param[in] mean The mean of the log-normal distribution
+  ///                 not the mean of underlying normal distribution,
+  ///                 which is parameter mu.
+  ///                 mu is the location parameter,
   ///                 sigma is the scale factor.
   ///                 E(x) = exp(mu + sigma^2 / 2)
-  /// @param[in] ef This is the error factor of the log-normal distribution
+  /// @param[in] ef The error factor of the log-normal distribution
   ///               for confidence level of 0.95.
   ///               EF = exp(1.645 * sigma)
   /// @param[in] level The confidence level of 0.95 is assumed.
@@ -568,7 +574,7 @@ class LogNormalDeviate : public Expression {
 /// Gamma distribution.
 class GammaDeviate : public Expression {
  public:
-  /// Setup for Gamma distribution with validity check for arguments.
+  /// Setup for Gamma distribution.
   ///
   /// @param[in] k Shape parameter of Gamma distribution.
   /// @param[in] theta Scale parameter of Gamma distribution.
@@ -611,7 +617,7 @@ class GammaDeviate : public Expression {
 /// Beta distribution.
 class BetaDeviate : public Expression {
  public:
-  /// Setup for Beta distribution with validity check for arguments.
+  /// Setup for Beta distribution.
   ///
   /// @param[in] alpha Alpha shape parameter of Gamma distribution.
   /// @param[in] beta Beta shape parameter of Gamma distribution.
@@ -656,25 +662,29 @@ class Histogram : public Expression {
   /// Histogram distribution setup.
   ///
   /// @param[in] boundaries The upper bounds of intervals.
-  /// @param[in] weights The positive weights of intervals restricted by
-  ///                    the upper boundaries. Therefore, the number of
-  ///                    weights must be equal to the number of boundaries.
+  /// @param[in] weights The positive weights of intervals
+  ///                    restricted by the upper boundaries.
+  ///                    Therefore, the number of weights must be
+  ///                    equal to the number of boundaries.
   ///
   /// @throws InvalidArgument The boundaries container size is not equal to
   ///                         weights container size.
   ///
   /// @note This description of histogram sampling is for probabilities mostly.
-  ///       Therefore, it is not flexible. Currently, it allows sampling both
-  ///       boundaries and weights. This behavior makes checking for valid
-  ///       arrangement of the boundaries mandatory for each sampling.
+  ///       Therefore, it is not flexible.
+  ///       Currently, it allows sampling both boundaries and weights.
+  ///       This behavior makes checking
+  ///       for valid arrangement of the boundaries mandatory
+  ///       for each sampling.
   ///       Moreover, the first starting point is assumed but not defined.
-  ///       The starting point is assumed to be 0, which leaves only positive
-  ///       values for boundaries. This behavior is restrictive and should
-  ///       be handled accordingly.
+  ///       The starting point is assumed to be 0,
+  ///       which leaves only positive values for boundaries.
+  ///       This behavior is restrictive
+  ///       and should be handled accordingly.
   Histogram(const std::vector<ExpressionPtr>& boundaries,
             const std::vector<ExpressionPtr>& weights);
 
-  /// @throws InvalidArgument The boundaries are not strictly increasing
+  /// @throws InvalidArgument The boundaries are not strictly increasing,
   ///                         or weights are negative.
   void Validate();
 
@@ -724,7 +734,8 @@ class Histogram : public Expression {
 /// This class for negation of numerical value or another expression.
 class Neg : public Expression {
  public:
-  /// Construct a new expression that negates a given argument expression.
+  /// Construct a new expression
+  /// that negates a given argument expression.
   ///
   /// @param[in] expression The expression to be negated.
   explicit Neg(const ExpressionPtr& expression) : expression_(expression) {
@@ -758,7 +769,8 @@ class Neg : public Expression {
 /// This expression adds all the given expressions' values.
 class Add : public Expression {
  public:
-  /// Construct a new expression that add given argument expressions.
+  /// Construct a new expression
+  /// that adds given argument expressions.
   ///
   /// @param[in] arguments The arguments of the addition equation.
   ///
@@ -833,7 +845,8 @@ class Add : public Expression {
 /// First expression minus the rest of the given expressions' values.
 class Sub : public Expression {
  public:
-  /// Construct a new expression that subtracts given argument expressions
+  /// Construct a new expression
+  /// that subtracts given argument expressions
   /// from the first argument expression.
   ///
   /// @param[in] arguments The arguments for operation.
@@ -909,7 +922,8 @@ class Sub : public Expression {
 /// This expression performs multiplication operation.
 class Mul : public Expression {
  public:
-  /// Construct a new expression that multiplies given argument expressions.
+  /// Construct a new expression
+  /// that multiplies given argument expressions.
   ///
   /// @param[in] arguments The arguments for operation.
   ///
@@ -959,8 +973,9 @@ class Mul : public Expression {
     return true;
   }
 
-  /// Finds maximum product from the given arguments' minimum and maximum
-  /// values. Negative values may introduce sign cancellation.
+  /// Finds maximum product
+  /// from the given arguments' minimum and maximum values.
+  /// Negative values may introduce sign cancellation.
   ///
   /// @returns Maximum possible value of the product.
   inline double Max() {
@@ -981,8 +996,9 @@ class Mul : public Expression {
     return max;
   }
 
-  /// Finds minimum product from the given arguments' minimum and maximum
-  /// values. Negative values may introduce sign cancellation.
+  /// Finds minimum product
+  /// from the given arguments' minimum and maximum values.
+  /// Negative values may introduce sign cancellation.
   ///
   /// @returns Minimum possible value of the product.
   inline double Min() {
@@ -1008,14 +1024,16 @@ class Mul : public Expression {
 /// This expression performs division operation.
 class Div : public Expression {
  public:
-  /// Construct a new expression that divides the first given argument
-  /// by the rest of argument expressions.
+  /// Construct a new expression
+  /// that divides the first given argument by
+  /// the rest of argument expressions.
   ///
   /// @param[in] arguments The arguments for operation.
   ///
   /// @note It is assumed that arguments contain at least one element.
-  ///       No arguments except the first should be 0. The bevaior may be
-  ///       undefined if the value is 0 for division.
+  ///       No arguments except the first should be 0.
+  ///       The behavior may be undefined
+  ///       if the value is 0 for division.
   explicit Div(const std::vector<ExpressionPtr>& arguments) {
     Expression::args_ = arguments;
   }
@@ -1061,8 +1079,9 @@ class Div : public Expression {
     return true;
   }
 
-  /// Finds maximum results of division of the given arguments' minimum and
-  /// maximum values. Negative values may introduce sign cancellation.
+  /// Finds maximum results of division
+  /// of the given arguments' minimum and maximum values.
+  /// Negative values may introduce sign cancellation.
   ///
   /// @returns Maximum value for division of arguments.
   inline double Max() {
@@ -1083,8 +1102,9 @@ class Div : public Expression {
     return max;
   }
 
-  /// Finds minimum results of division of the given arguments' minimum and
-  /// maximum values. Negative values may introduce sign cancellation.
+  /// Finds minimum results of division
+  /// of the given arguments' minimum and maximum values.
+  /// Negative values may introduce sign cancellation.
   ///
   /// @returns Minimum value for division of arguments.
   inline double Min() {

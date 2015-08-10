@@ -97,9 +97,10 @@ class Settings {
   /// @returns Reference to this object.
   Settings& mission_time(double time);
 
-  /// Sets the flag for probability analysis. If another analysis requires
-  /// probability analysis, it won't be possible to turn off probability
-  /// analysis before the parent analysis.
+  /// Sets the flag for probability analysis.
+  /// If another analysis requires probability analysis,
+  /// it won't be possible to turn off probability analysis
+  /// before the parent analysis.
   ///
   /// @param[in] flag True or false for turning on or off the analysis.
   ///
@@ -110,8 +111,10 @@ class Settings {
     return *this;
   }
 
-  /// Sets the flag for importance analysis. Importance analysis is performed
-  /// together with probability analysis. Appropriate flags are turned on.
+  /// Sets the flag for importance analysis.
+  /// Importance analysis is performed
+  /// together with probability analysis.
+  /// Appropriate flags are turned on.
   ///
   /// @param[in] flag True or false for turning on or off the analysis.
   ///
@@ -122,8 +125,9 @@ class Settings {
     return *this;
   }
 
-  /// Sets the flag for uncertainty analysis. Uncertainty analysis implies
-  /// probability analysis, so the probability analysis is turned on implicitly.
+  /// Sets the flag for uncertainty analysis.
+  /// Uncertainty analysis implies probability analysis,
+  /// so the probability analysis is turned on implicitly.
   ///
   /// @param[in] flag True or false for turning on or off the analysis.
   ///
@@ -148,7 +152,7 @@ class Settings {
   ///
   /// @param[in] rhs Another Settings object to be compared.
   ///
-  /// @returns true if all members of the compared setttings are equal.
+  /// @returns true if all members of the compared settings are equal.
   bool operator==(const Settings& rhs) const {
     return (probability_analysis_ == rhs.probability_analysis_) &&
         (importance_analysis_ == rhs.importance_analysis_) &&

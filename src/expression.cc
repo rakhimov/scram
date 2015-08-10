@@ -15,8 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /// @file expression.cc
-/// Implementation of various expressions for basic event probability
-/// description.
+/// Implementation of various expressions
+/// for basic event probability description.
 #include "expression.h"
 
 #include <boost/algorithm/string.hpp>

@@ -15,7 +15,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 /// @file uncertainty_analysis.h
-/// Provides functionality for uncertainty analysis with Monte Carlo method.
+/// Provides functionality for uncertainty analysis
+/// with Monte Carlo method.
 #ifndef SCRAM_SRC_UNCERTAINTY_ANALYSIS_H_
 #define SCRAM_SRC_UNCERTAINTY_ANALYSIS_H_
 
@@ -34,8 +35,10 @@
 namespace scram {
 
 /// @class UncertaintyAnalysis
-/// Uncertainty analysis and statistics for top event or gate probabilities
-/// from minimal cut sets and probability distributions of basic events.
+/// Uncertainty analysis and statistics
+/// for top event or gate probabilities
+/// from minimal cut sets
+/// and probability distributions of basic events.
 class UncertaintyAnalysis : private ProbabilityAnalysis {
  public:
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
@@ -51,22 +54,23 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
                                int num_trials = 1e3);
 
   /// Sets the databases of basic events with probabilities.
-  /// Resets the main basic event database and clears the
-  /// previous information. This information is the main source for
-  /// calculations and internal indexes for basic events.
+  /// Resets the main basic event database
+  /// and clears the previous information.
+  /// This information is the main source
+  /// for calculations and internal indices for basic events.
   ///
   /// @param[in] basic_events The database of basic events in cut sets.
   ///
-  /// @note  If not enough information is provided, the analysis behavior
-  ///        is undefined.
+  /// @note  If not enough information is provided,
+  ///        the analysis behavior is undefined.
   void UpdateDatabase(
       const boost::unordered_map<std::string, BasicEventPtr>& basic_events);
 
-  /// Performs quantitative analysis on minimal cut sets containing basic
-  /// events provided in the databases. It is assumed that the analysis is
-  /// called only once.
+  /// Performs quantitative analysis on minimal cut sets
+  /// containing basic events provided in the databases.
+  /// It is assumed that the analysis is called only once.
   ///
-  /// @param[in] min_cut_sets Minimal cut sets with string ids of events.
+  /// @param[in] min_cut_sets Minimal cut sets with string IDs of events.
   ///                         Negative event is indicated by "'not' + id"
   ///
   /// @note  Undefined behavior if analysis called two or more times.
@@ -97,14 +101,15 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   inline double analysis_time() const { return analysis_time_; }
 
  private:
-  /// Performs Monte Carlo Simulation by sampling the probability distributions
+  /// Performs Monte Carlo Simulation
+  /// by sampling the probability distributions
   /// and providing the final sampled values of the final probability.
   void Sample();
 
-  /// Gathers basic events that have distributions. Other constant, certain
-  /// basic events removed from sampling.
-  /// These constant events are removed from the probability equation, and
-  /// the members of the equation are given a corresponding multiplier.
+  /// Gathers basic events that have distributions.
+  /// Other constant, certain basic events removed from sampling.
+  /// These constant events are removed from the probability equation,
+  /// and the members of the equation are given a corresponding multiplier.
   ///
   /// @param[out] basic_events The gathered uncertain basic events.
   void FilterUncertainEvents(std::vector<int>* basic_events);

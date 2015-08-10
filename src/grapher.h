@@ -127,7 +127,8 @@ class Grapher {
                           std::ostream& out);
 
   /// Format formulas gathered from nested formulas of gate descriptions.
-  /// The name is empty for these formulas. Formulas are expected to be unique.
+  /// The name is empty for these formulas.
+  /// Formulas are expected to be unique.
   ///
   /// @param[in] formulas The container with registered nested formulas.
   /// @param[out] out The output stream.

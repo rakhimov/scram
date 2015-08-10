@@ -43,15 +43,20 @@ class Formula;
 class XMLParser;
 
 /// @class Initializer
-/// This class operates on input files to initialize analysis constructs like
-/// models, fault trees, and events. The initialization phase includes
-/// validation and proper setup of the constructs for future use or analysis.
+/// This class operates on input files
+/// to initialize analysis constructs
+/// like models, fault trees, and events.
+/// The initialization phase includes
+/// validation and proper setup of the constructs
+/// for future use or analysis.
 class Initializer {
  public:
   typedef boost::shared_ptr<Model> ModelPtr;
 
-  /// Prepares common information to be used by the future input file
-  /// constructs, for example, mission time.
+  /// Prepares common information to be used by
+  /// the future input file constructs,
+  /// for example, mission time.
+  ///
   /// @param[in] settings Analysis settings.
   explicit Initializer(const Settings& settings);
 
@@ -91,9 +96,9 @@ class Initializer {
   /// Reads one input file with the structure of analysis entities.
   /// Initializes the analysis from the given input file.
   /// Puts all events into their appropriate containers.
-  /// This function mostly registers element definitions, but it may leave
-  /// them to be defined later because of possible undefined dependencies of
-  /// those elements.
+  /// This function mostly registers element definitions,
+  /// but it may leave them to be defined later
+  /// because of possible undefined dependencies of those elements.
   ///
   /// @param[in] xml_file The formatted XML input file.
   ///
@@ -102,16 +107,17 @@ class Initializer {
   /// @throws IOError The input file is not accessible.
   void ProcessInputFile(const std::string& xml_file);
 
-  /// Processes definitions of elements that are left to be determined later.
+  /// Processes definitions of elements
+  /// that are left to be determined later.
   /// This late definition happens primarily due to unregistered dependencies.
   ///
   /// @throws ValidationError The elements contain undefined dependencies.
   void ProcessTbdElements();
 
-  /// Attaches attributes and label to the elements of the analysis.
-  /// These attributes are not XML attributes but OpenPSA format defined
-  /// arbitrary attributes and label that can be attached to many analysis
-  /// elements.
+  /// Attaches attributes and a label to the elements of the analysis.
+  /// These attributes are not XML attributes
+  /// but OpenPSA format defined arbitrary attributes
+  /// and a label that can be attached to many analysis elements.
   ///
   /// @param[in] element_node XML element.
   /// @param[out] element The object that needs attributes and label.
@@ -123,7 +129,8 @@ class Initializer {
   /// @param[in] ft_node XML element defining the fault tree.
   ///
   /// @throws ValidationError There are issues with registering and defining
-  ///                         the fault tree and its data like gates and events.
+  ///                         the fault tree and its data
+  ///                         like gates and events.
   void DefineFaultTree(const xmlpp::Element* ft_node);
 
   /// Defines a component container.
@@ -135,16 +142,18 @@ class Initializer {
   /// @returns Component that is ready for registration.
   ///
   /// @throws ValidationError There are issues with registering and defining
-  ///                         the component and its data like gates and events.
+  ///                         the component and its data
+  ///                         like gates and events.
   ComponentPtr DefineComponent(const xmlpp::Element* component_node,
                                const std::string& base_path,
                                bool public_container = true);
 
-  /// Registers fault tree and component data like gates, events, parameters.
+  /// Registers fault tree and component data
+  /// like gates, events, parameters.
   ///
   /// @param[in] ft_node XML element defining the fault tree or component.
-  /// @param[in,out] component The component or fault tree container that is
-  ///                          the owner of the data.
+  /// @param[in,out] component The component or fault tree container
+  ///                          that is the owner of the data.
   /// @param[in] base_path Series of ancestor containers in the path with dots.
   ///
   /// @throws ValidationError There are issues with registering and defining
@@ -177,8 +186,8 @@ class Initializer {
   /// @param[in,out] gate Registered gate ready to be defined.
   void DefineGate(const xmlpp::Element* gate_node, const GatePtr& gate);
 
-  /// Creates a Boolean formula from the XML elements describing the formula
-  /// with events and other nested formulas.
+  /// Creates a Boolean formula from the XML elements
+  /// describing the formula with events and other nested formulas.
   ///
   /// @param[in] formula_node XML element defining the formula.
   /// @param[in] base_path Series of ancestor containers in the path with dots.
@@ -307,9 +316,9 @@ class Initializer {
   ///
   /// @returns Pointer to the registered CCF group.
   ///
-  /// @throws ValidationError There are problems with registering the group and
-  ///                         its members, for example, duplications or
-  ///                         missing information.
+  /// @throws ValidationError There are problems with registering
+  ///                         the group and its members,
+  ///                         for example, duplications or missing information.
   CcfGroupPtr RegisterCcfGroup(const xmlpp::Element* ccf_node,
                                const std::string& base_path = "",
                                bool public_container = true);
@@ -326,8 +335,9 @@ class Initializer {
   /// @param[in] members_node XML element containing all members.
   /// @param[in,out] ccf_group CCF group of the given members.
   ///
-  /// @throws ValidationError Members are redefined, or there are other
-  ///                         setup issues with the CCF group.
+  /// @throws ValidationError Members are redefined,
+  ///                         or there are other setup issues
+  ///                         with the CCF group.
   void ProcessCcfMembers(const xmlpp::Element* members_node,
                          const CcfGroupPtr& ccf_group);
 
@@ -343,8 +353,8 @@ class Initializer {
   /// @param[in] factor_node XML element containing one factor.
   /// @param[in,out] ccf_group CCF group to be defined by the given factors.
   ///
-  /// @throws ValidationError There are problems with level numbers or
-  ///                         factors for specific CCF models.
+  /// @throws ValidationError There are problems with level numbers
+  ///                         or factors for specific CCF models.
   void DefineCcfFactor(const xmlpp::Element* factor_node,
                        const CcfGroupPtr& ccf_group);
 
@@ -359,23 +369,26 @@ class Initializer {
   /// @throws ValidationError The first layer members contain mistakes.
   void CheckFirstLayer();
 
-  /// Checks for problems with analysis containers, such as fault trees,
-  /// event trees, common cause groups, and others that use the first layer
-  /// members.
+  /// Checks for problems with analysis containers,
+  /// such as fault trees, event trees, common cause groups,
+  /// and others that use the first layer members.
   ///
   /// @throws ValidationError The second layer members contain mistakes.
   void CheckSecondLayer();
 
-  /// Validates expressions and anything that is dependent on them, such
-  /// as parameters and basic events.
+  /// Validates expressions and anything
+  /// that is dependent on them,
+  /// such as parameters and basic events.
   ///
   /// @throws ValidationError There are problems detected with expressions.
   void ValidateExpressions();
 
   /// Applies the input information to set up for future analysis.
-  /// This step is crucial to get correct fault tree structures and
-  /// basic events with correct expressions.
-  /// Meta-logical layer of analysis, such as CCF groups and substitutions,
+  /// This step is crucial to get
+  /// correct fault tree structures
+  /// and basic events with correct expressions.
+  /// Meta-logical layer of analysis,
+  /// such as CCF groups and substitutions,
   /// is applied to analysis.
   void SetupForAnalysis();
 
@@ -390,8 +403,8 @@ class Initializer {
   std::map<const xmlpp::Node*, std::string> doc_to_file_;
 
   /// @struct TbdElements
-  /// Collection of elements that are defined late because of unordered
-  /// registration and definition of their dependencies.
+  /// Collection of elements that are defined late
+  /// because of unordered registration and definition of their dependencies.
   struct TbdElements {
     /// Parameters rely on parameter registration.
     std::vector<std::pair<ParameterPtr, const xmlpp::Element*> > parameters;

@@ -39,7 +39,7 @@ class ProbabilityAnalysis;
 class UncertaintyAnalysis;
 
 /// @class Reporter
-/// This class reports the findings of the analyses.
+/// This class reports the results of the analyses.
 class Reporter {
  public:
   typedef boost::shared_ptr<Model> ModelPtr;
@@ -47,9 +47,10 @@ class Reporter {
   typedef boost::shared_ptr<Parameter> ParameterPtr;
 
   /// Sets up XML report document according to a specific standards.
-  /// This function populates information about the software, settings,
-  /// time, methods, and model. In addition, the function forms the
-  /// structure of the overall report for use by other reporting functions.
+  /// This function populates information
+  /// about the software, settings, time, methods, and model.
+  /// In addition, the function forms the structure
+  /// of the overall report for use by other reporting functions.
   /// This function must be called before other reporting functions.
   ///
   /// @param[in] model The main model container.
@@ -60,7 +61,8 @@ class Reporter {
   void SetupReport(const ModelPtr& model, const Settings& settings,
                    xmlpp::Document* doc);
 
-  /// Reports orphan primary events as warnings of the top information level.
+  /// Reports orphan primary events
+  /// as warnings of the top information level.
   ///
   /// @param[in] orphan_primary_events Container of orphan events.
   /// @param[in,out] doc Pre-formatted XML document.
@@ -68,19 +70,21 @@ class Reporter {
       const std::set<PrimaryEventPtr>& orphan_primary_events,
       xmlpp::Document* doc);
 
-  /// Reports unused parameters as warnings of the top information level.
+  /// Reports unused parameters
+  /// as warnings of the top information level.
   ///
   /// @param[in] unused_parameters Container of unused parameters.
   /// @param[in,out] doc Pre-formatted XML document.
   void ReportUnusedParameters(const std::set<ParameterPtr>& unused_parameters,
                               xmlpp::Document* doc);
 
-  /// Reports the results of analysis to a specified output destination.
+  /// Reports the results of analysis
+  /// to a specified output destination.
   ///
   /// @param[in] ft_name The original name of a fault tree.
   /// @param[in] fta Fault Tree Analysis with results.
-  /// @param[in] prob_analysis ProbabilityAnalysis with results. Null pointer
-  ///                          if there is no probability analysis.
+  /// @param[in] prob_analysis ProbabilityAnalysis with results.
+  ///                          Null pointer for no probability analysis.
   /// @param[in,out] doc Pre-formatted XML document.
   ///
   /// @note This function must be called only after analysis is done.
@@ -117,8 +121,8 @@ class Reporter {
  private:
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
 
-  /// Detects if a given basic event is a CCF event, and reports it
-  /// with a specific formatting.
+  /// Detects if a given basic event is a CCF event,
+  /// and reports it with specific formatting.
   ///
   /// @param[in] basic_event A basic event to be reported.
   /// @param[in,out] parent A parent element node to have this basic event.

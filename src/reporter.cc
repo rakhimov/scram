@@ -250,8 +250,8 @@ void Reporter::ReportFta(
   }
 
   // Report calculation time in the information section.
-  // It is assumed that MCS reporting is the default and the first thing
-  // to be reported.
+  // It is assumed that MCS reporting is the default
+  // and the first thing to be reported.
   xmlpp::NodeSet perf = root->find("./information/performance");
   assert(perf.size() == 1);
   xmlpp::Element* performance = static_cast<xmlpp::Element*>(perf[0]);

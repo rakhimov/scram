@@ -16,10 +16,11 @@
  */
 /// @file mocus.h
 /// Fault tree analysis with the MOCUS algorithm.
-/// This algorithm requires normalized, only layered AND and OR, fault tree. All
-/// gates must be positive (negation normal form); that is, negations must be
-/// pushed down to leaves, basic events. The fault tree should not contian
-/// constants or house events.
+/// This algorithm requires a fault tree in negation normal form.
+/// The fault tree must only contain layered AND and OR gates.
+/// All gates must be positive;
+/// that is, negations must be pushed down to leaves, basic events.
+/// The fault tree should not contain constants or house events.
 #ifndef SCRAM_SRC_MOCUS_H_
 #define SCRAM_SRC_MOCUS_H_
 
@@ -53,9 +54,10 @@ struct SetPtrComp
 };
 
 /// @class SimpleGate
-/// A helper class to be used in MOCUS. This gate represents
-/// only positive OR or AND gates with basic event indices and pointers to
-/// other simple gates.
+/// A helper class to be used in MOCUS.
+/// This gate represents only positive OR or AND gates
+/// with basic event indices
+/// and pointers to other simple gates.
 /// All the child gates of this gate must be of opposite type.
 class SimpleGate {
  public:
@@ -108,7 +110,8 @@ class SimpleGate {
   static void limit_order(int limit) { limit_order_ = limit; }
 
  private:
-  /// Generates cut sets for AND gate children using already generated sets.
+  /// Generates cut sets for AND gate children
+  /// using already generated sets.
   /// The tree is assumed to be layered with OR children of AND gates.
   ///
   /// @param[in] cut_set The base cut set to work with.
@@ -116,7 +119,8 @@ class SimpleGate {
   void AndGateCutSets(const SetPtr& cut_set,
                       std::set<SetPtr, SetPtrComp>* new_cut_sets);
 
-  /// Generates cut sets for OR gate children using already generated sets.
+  /// Generates cut sets for OR gate children
+  /// using already generated sets.
   /// The tree is assumed to be layered with AND children of OR gates.
   ///
   /// @param[in] cut_set The base cut set to work with.
@@ -132,8 +136,8 @@ class SimpleGate {
 };
 
 /// @class Mocus
-/// This class analyzes normalized, preprocessed, and indexed fault trees to
-/// generate minimal cut sets with the MOCUS algorithm.
+/// This class analyzes normalized, preprocessed, and indexed fault trees
+/// to generate minimal cut sets with the MOCUS algorithm.
 class Mocus {
  public:
   /// Constructor with the analysis target.
@@ -170,8 +174,9 @@ class Mocus {
 
   /// Finds minimal cut sets from cut sets.
   /// Reduces unique cut sets to minimal cut sets.
-  /// The performance is highly dependent on the passed sets. If the sets
-  /// share many events, it takes more time to remove supersets.
+  /// The performance is highly dependent on the passed sets.
+  /// If the sets share many events,
+  /// it takes more time to remove supersets.
   ///
   /// @param[in] cut_sets Cut sets with primary events.
   /// @param[in] mcs_lower_order Reference minimal cut sets of some order.

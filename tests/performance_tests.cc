@@ -20,16 +20,18 @@
 
 using namespace scram;
 
-// Performance testing is done only if requested by activating
-// disabled tests.
+// Performance testing is done only if requested
+// by activating disabled tests.
 //
-// To run the performance tests, supply "--gtest_also_run_disabled_tests" flag
-// to GTest. The GTest filter may be applied to filter only performance tests.
-// Different tests are compiled depending on the build type. Generally,
-// debug or non-debug types are recognized.
+// To run the performance tests,
+// supply "--gtest_also_run_disabled_tests" flag to GTest.
+// The GTest filter may be applied to filter only performance tests.
+// Different tests are compiled depending on the build type.
+// Generally, debug or non-debug types are recognized.
 //
-// Performance testing values are taken from a computer with the following
-// specs:
+// Performance testing values are taken
+// from a computer with the following specs:
+//
 //   Proc         Core i5-2410M
 //   Ubuntu       14.04 64bit
 //   GCC          4.8.4
@@ -37,12 +39,12 @@ using namespace scram;
 //   TCMalloc     2.1
 //
 // The values for performance are expected to have some random variation.
-// Better as well as worse performance are reported as test failures to
-// indicate the change.
+// Better as well as worse performance are reported
+// as test failures to indicate the change.
 //
 // NOTE: Running all the tests may take considerable time.
-// NOTE: Running tests several times is recommended to take into account
-//       the variation of time results.
+// NOTE: Running tests several times is recommended
+//       to take into account the random variation of time results.
 
 // Tests the performance of probability calculations
 // with cut-off approximations tests are done.
