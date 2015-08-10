@@ -108,17 +108,9 @@ Misc.
 .. toctree::
     :maxdepth: 1
 
+    doc/theory.rst
     doc/references
     doc/xml_comments
-
-
-Theoretical Background
-----------------------
-
-.. toctree::
-    :maxdepth: 2
-
-    doc/theory.rst
 
 
 Contact Us
