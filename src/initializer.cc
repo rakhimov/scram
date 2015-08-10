@@ -618,7 +618,7 @@ boost::shared_ptr<Expression> Initializer::GetExpression(
   using scram::Initializer;
   ExpressionPtr expression;
   bool not_parameter = true;  // Parameters are saved in a different container.
-  if (GetConstantExpression(expr_element, base_path, expression)) {
+  if (GetConstantExpression(expr_element, expression)) {
   } else if (GetParameterExpression(expr_element, base_path, expression)) {
     not_parameter = false;
   } else {
@@ -630,7 +630,6 @@ boost::shared_ptr<Expression> Initializer::GetExpression(
 }
 
 bool Initializer::GetConstantExpression(const xmlpp::Element* expr_element,
-                                        const std::string& base_path,
                                         ExpressionPtr& expression) {
   typedef boost::shared_ptr<ConstantExpression> ConstantExpressionPtr;
   assert(expr_element);
