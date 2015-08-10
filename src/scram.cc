@@ -33,7 +33,7 @@
 
 namespace po = boost::program_options;
 
-using namespace scram;
+namespace {
 
 /// Parses the command-line arguments.
 ///
@@ -101,16 +101,16 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
 
   if (vm->count("version")) {
     std::string build_type =
-        strlen(version::build()) ? version::build() : "Non-Debug";
+        strlen(scram::version::build()) ? scram::version::build() : "Non-Debug";
 
-    std::cout << "SCRAM " << version::core()
-              << " (" << version::describe() << ")";
+    std::cout << "SCRAM " << scram::version::core()
+              << " (" << scram::version::describe() << ")";
     if (build_type != "Release") {
       std::cout << " " << build_type << " Build";
     }
     std::cout << "\n\nDependencies:\n";
-    std::cout << "   Boost    " << version::boost() << "\n";
-    std::cout << "   xml2     " << version::xml2() << "\n";
+    std::cout << "   Boost    " << scram::version::boost() << "\n";
+    std::cout << "   xml2     " << scram::version::xml2() << "\n";
     return -1;
   }
 
@@ -149,7 +149,7 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
 ///
 /// @throws std::exception vm does not contain a required option.
 ///                        At least defaults are expected.
-void ConstructSettings(const po::variables_map& vm, Settings* settings) {
+void ConstructSettings(const po::variables_map& vm, scram::Settings* settings) {
   // Determine if the probability approximation is requested.
   if (vm.count("rare-event")) {
     assert(!vm.count("mcub"));
@@ -186,15 +186,17 @@ void ConstructSettings(const po::variables_map& vm, Settings* settings) {
 /// @throws std::exception All other problems.
 int RunScram(const po::variables_map& vm) {
   if (vm.count("verbosity")) {
-    Logger::ReportLevel() = static_cast<LogLevel>(vm["verbosity"].as<int>());
+    scram::Logger::ReportLevel() =
+        static_cast<scram::LogLevel>(vm["verbosity"].as<int>());
   }
   // Analysis settings.
-  Settings settings;
+  scram::Settings settings;
   std::vector<std::string> input_files;
   std::string output_path = "";
   // Get configurations if any.
   if (vm.count("config-file")) {
-    Config* config = new Config(vm["config-file"].as<std::string>());
+    scram::Config* config =
+        new scram::Config(vm["config-file"].as<std::string>());
     settings = config->settings();
     input_files = config->input_files();
     output_path = config->output_path();
@@ -215,10 +217,10 @@ int RunScram(const po::variables_map& vm) {
     output_path = vm["output-path"].as<std::string>();
   }
   // Process input files into valid analysis containers and constructs.
-  Initializer* init = new Initializer(settings);
+  scram::Initializer* init = new scram::Initializer(settings);
   init->ProcessInputFiles(input_files);
   // Initiate risk analysis with the given information.
-  RiskAnalysis* ran = new RiskAnalysis(init->model(), settings);
+  scram::RiskAnalysis* ran = new scram::RiskAnalysis(init->model(), settings);
   delete init;
 
   // Stop if only validation is requested.
@@ -247,6 +249,8 @@ int RunScram(const po::variables_map& vm) {
   return 0;
 }
 
+}  // namespace
+
 /// Command-line SCRAM entrance.
 ///
 /// @param[in] argc Argument count.
@@ -268,37 +272,37 @@ int main(int argc, char* argv[]) {
     return RunScram(vm);
 
 #ifdef NDEBUG
-  } catch (IOError& io_err) {
+  } catch (scram::IOError& io_err) {
     std::cerr << "SCRAM I/O Error\n" << std::endl;
     std::cerr << io_err.what() << std::endl;
     return 1;
-  } catch (ValidationError& vld_err) {
+  } catch (scram::ValidationError& vld_err) {
     std::cerr << "SCRAM Validation Error\n" << std::endl;
     std::cerr << vld_err.what() << std::endl;
     return 1;
-  } catch (ValueError& val_err) {
+  } catch (scram::ValueError& val_err) {
     std::cerr << "SCRAM Value Error\n" << std::endl;
     std::cerr << val_err.what() << std::endl;
     return 1;
-  } catch (LogicError& logic_err) {
+  } catch (scram::LogicError& logic_err) {
     std::cerr << "Bad, bad news. Please report this error. Thank you!\n"
         << std::endl;
     std::cerr << "SCRAM Logic Error\n" << std::endl;
     std::cerr << logic_err.what() << std::endl;
     return 1;
-  } catch (IllegalOperation& iopp_err) {
+  } catch (scram::IllegalOperation& iopp_err) {
     std::cerr << "Bad, bad news. Please report this error. Thank you!\n"
         << std::endl;
     std::cerr << "SCRAM Illegal Operation\n" << std::endl;
     std::cerr << iopp_err.what() << std::endl;
     return 1;
-  } catch (InvalidArgument& iarg_err) {
+  } catch (scram::InvalidArgument& iarg_err) {
     std::cerr << "Bad, bad news. Please report this error. Thank you!\n"
         << std::endl;
     std::cerr << "SCRAM Invalid Argument Error\n" << std::endl;
     std::cerr << iarg_err.what() << std::endl;
     return 1;
-  } catch (Error& scram_err) {
+  } catch (scram::Error& scram_err) {
     std::cerr << "Bad, bad news. Please report this error. Thank you!\n"
         << std::endl;
     std::cerr << "SCRAM Error\n" << std::endl;
