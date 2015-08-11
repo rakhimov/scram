@@ -439,110 +439,130 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
+namespace {
+
+/// @struct FormulaSig
+/// Gate formula signature for printing in the shorthand format.
+struct FormulaSig {
+  std::string begin;  ///< Beginning of the formula string.
+  std::string op;  ///< Operator between the formula arguments.
+  std::string end;  ///< The end of the formula string.
+};
+
+/// Provides proper formatting clues for gate formulas.
+///
+/// @param[in] gate The gate with the formula to be printed.
+///
+/// @returns The beginning, operator, and end strings for the formula.
+const FormulaSig GetFormulaSig(const boost::shared_ptr<const IGate>& gate) {
+  FormulaSig sig = {"(", "", ")"};  // Defaults for most gate types.
+
+  switch (gate->type()) {
+    case kNandGate:
+      sig.begin = "~(";  // Fall-through to AND gate.
+    case kAndGate:
+      sig.op = " & ";
+      break;
+    case kNorGate:
+      sig.begin = "~(";  // Fall-through to OR gate.
+    case kOrGate:
+      sig.op = " | ";
+      break;
+    case kXorGate:
+      sig.op = " ^ ";
+      break;
+    case kNotGate:
+      sig.begin = "~(";  // Parentheses are for cases of NOT(NOT Arg).
+      break;
+    case kNullGate:
+      sig.begin = "";  // No need for the parentheses.
+      sig.end = "";
+      break;
+    case kAtleastGate:
+      sig.begin = "@(" + boost::lexical_cast<std::string>(gate->vote_number()) +
+                  ", [";
+      sig.op = ", ";
+      sig.end = "])";
+      break;
+  }
+  return sig;
+}
+
+/// Provides special formatting for indexed gate names.
+///
+/// @param[in] gate The gate which name must be created.
+///
+/// @returns The name of the gate with extra information about its state.
+const std::string GetName(const boost::shared_ptr<const IGate>& gate) {
+  std::string name = "G";
+  if (gate->state() == kNormalState) {
+    if (gate->IsModule()) name += "M";
+  } else {  // This gate has become constant.
+    name += "C";
+  }
+  name += boost::lexical_cast<std::string>(gate->index());
+  return name;
+}
+
+}  // namespace
+
 std::ostream& operator<<(std::ostream& os,
                          const boost::shared_ptr<IGate>& gate) {
   if (gate->Visited()) return os;
   gate->Visit(1);
+  std::string name = GetName(gate);
   if (gate->state() != kNormalState) {
     std::string state = gate->state() == kNullState ? "false" : "true";
-    os << "s(GC" << gate->index() << ") = " << state << std::endl;
+    os << "s(" << name << ") = " << state << std::endl;
     return os;
   }
-  std::string formula = "(";  // Beginning string for most formulas.
-  std::string op = "";  // Operator of the formula.
-  std::string end = ")";  // Closing parentheses for most formulas.
-  switch (gate->type()) {  // Determine the beginning string and the operator.
-    case kNandGate:
-      formula = "~(";  // Fall-through to AND gate.
-    case kAndGate:
-      op = " & ";
-      break;
-    case kNorGate:
-      formula = "~(";  // Fall-through to OR gate.
-    case kOrGate:
-      op = " | ";
-      break;
-    case kXorGate:
-      op = " ^ ";
-      break;
-    case kNotGate:
-      formula = "~(";  // Parentheses are for cases of NOT(NOT Arg).
-      break;
-    case kNullGate:
-      formula = "";  // No need for the parentheses.
-      end = "";
-      break;
-    case kAtleastGate:
-      formula = "@(" + boost::lexical_cast<std::string>(gate->vote_number());
-      formula += ", [";
-      op = ", ";
-      end = "])";
-      break;
-  }
-  bool first_arg = true;  // To get the formatting correct.
+  std::string formula = "";  // The formula of the gate for printing.
+  const FormulaSig sig = GetFormulaSig(gate);  // Formatting for the formula.
+  int num_args = gate->args().size();  // The number of arguments to print.
 
   typedef boost::shared_ptr<IGate> IGatePtr;
   boost::unordered_map<int, IGatePtr>::const_iterator it_gate;
   for (it_gate = gate->gate_args().begin(); it_gate != gate->gate_args().end();
        ++it_gate) {
-    if (first_arg) {
-      first_arg = false;
-    } else {
-      formula += op;
-    }
     if (it_gate->first < 0) formula += "~";  // Negation.
-    IGatePtr arg_gate = it_gate->second;
-    if (arg_gate->state() == kNormalState) {
-      formula += "G";
-      if (arg_gate->IsModule()) formula += "M";
-    } else {
-      formula += "GC";
-    }
-    formula += boost::lexical_cast<std::string>(arg_gate->index());
+    formula += GetName(it_gate->second);
 
-    os << arg_gate;
+    if (--num_args) formula += sig.op;
+
+    os << it_gate->second;
   }
 
   typedef boost::shared_ptr<Variable> VariablePtr;
   boost::unordered_map<int, VariablePtr>::const_iterator it_basic;
   for (it_basic = gate->variable_args().begin();
        it_basic != gate->variable_args().end(); ++it_basic) {
-    if (first_arg) {
-      first_arg = false;
-    } else {
-      formula += op;
-    }
     if (it_basic->first < 0) formula += "~";  // Negation.
-    VariablePtr arg = it_basic->second;
-    formula += "B" + boost::lexical_cast<std::string>(arg->index());
+    int index = it_basic->second->index();
+    formula += "B" + boost::lexical_cast<std::string>(index);
 
-    os << arg;
+    if (--num_args) formula += sig.op;
+
+    os << it_basic->second;
   }
 
   typedef boost::shared_ptr<Constant> ConstantPtr;
   boost::unordered_map<int, ConstantPtr>::const_iterator it_const;
   for (it_const = gate->constant_args().begin();
        it_const != gate->constant_args().end(); ++it_const) {
-    if (first_arg) {
-      first_arg = false;
-    } else {
-      formula += op;
-    }
     if (it_const->first < 0) formula += "~";  // Negation.
-    ConstantPtr arg = it_const->second;
-    formula += "H" + boost::lexical_cast<std::string>(arg->index());
+    int index = it_const->second->index();
+    formula += "H" + boost::lexical_cast<std::string>(index);
 
-    os << arg;
+    if (--num_args) formula += sig.op;
+
+    os << it_const->second;
   }
-  std::string signature = "G";
-  if (gate->IsModule()) signature += "M";
-  os << signature << gate->index() << " := " << formula << end << std::endl;
+  os << name << " := " << sig.begin << formula << sig.end << std::endl;
   return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const BooleanGraph* ft) {
-  os << "BooleanGraph_G" << ft->root()->index() << std::endl;
-  os << std::endl;
+  os << "BooleanGraph" << std::endl << std::endl;
   os << ft->root();
   return os;
 }
