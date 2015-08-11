@@ -45,3 +45,7 @@ Web Resources
 #. `Sensitivity Analysis Wiki Page <https://en.wikipedia.org/wiki/Sensitivity_analysis>`_
 #. `Uncertainty Quantification Wiki Page <https://en.wikipedia.org/wiki/Uncertainty_quantification>`_
 #. `Common Cause Wiki Page <https://en.wikipedia.org/wiki/Common_cause_and_special_cause_(statistics)>`_
+#. `Propositional DAG Wiki Page <https://en.wikipedia.org/wiki/Propositional_directed_acyclic_graph>`_
+#. `BDD Wiki Page <https://en.wikipedia.org/wiki/Binary_decision_diagram>`_
+#. `ZBDD Wiki Page <https://en.wikipedia.org/wiki/Zero-suppressed_decision_diagram>`_
+#. `Negation Normal Form Wiki Page <https://en.wikipedia.org/wiki/Negation_normal_form>`_
