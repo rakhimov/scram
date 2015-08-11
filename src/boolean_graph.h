@@ -611,6 +611,7 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
 };
 
 class BasicEvent;
+class HouseEvent;
 class Gate;
 class Formula;
 
@@ -688,6 +689,7 @@ class BooleanGraph {
 
  private:
   typedef boost::shared_ptr<Formula> FormulaPtr;
+  typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
   typedef boost::shared_ptr<Node> NodePtr;
   typedef boost::shared_ptr<Constant> ConstantPtr;
   typedef boost::shared_ptr<Variable> VariablePtr;
@@ -695,17 +697,53 @@ class BooleanGraph {
   /// Mapping to string gate types to enum gate types.
   static const std::map<std::string, Operator> kStringToType_;
 
-  /// Process a Boolean formula of a gate into a Boolean graph.
+  /// Processes a Boolean formula of a gate into a Boolean graph.
   ///
   /// @param[in] formula The Boolean formula to be processed.
   /// @param[in] ccf A flag to replace basic events with CCF gates.
-  /// @param[in,out] id_to_index The mapping of already processed nodes.
+  /// @param[in,out] id_to_node The mapping of already processed nodes.
   ///
   /// @returns Pointer to the newly created indexed gate.
   IGatePtr ProcessFormula(
       const FormulaPtr& formula,
       bool ccf,
-      boost::unordered_map<std::string, NodePtr>* id_to_index);
+      boost::unordered_map<std::string, NodePtr>* id_to_node);
+
+  /// Processes a Boolean formula's basic events
+  /// into variable arguments of an indexed gate of the Boolean graph.
+  ///
+  /// @param[in,out] parent The parent gate to own the arguments.
+  /// @param[in] basic_events The collection of basic events of the formula.
+  /// @param[in] ccf A flag to replace basic events with CCF gates.
+  /// @param[in,out] id_to_node The mapping of already processed nodes.
+  void ProcessBasicEvents(
+      const IGatePtr& parent,
+      const std::vector<BasicEventPtr>& basic_events,
+      bool ccf,
+      boost::unordered_map<std::string, NodePtr>* id_to_node);
+
+  /// Processes a Boolean formula's house events
+  /// into constant arguments of an indexed gate of the Boolean graph.
+  ///
+  /// @param[in,out] parent The parent gate to own the arguments.
+  /// @param[in] house_events The collection of house events of the formula.
+  /// @param[in,out] id_to_node The mapping of already processed nodes.
+  void ProcessHouseEvents(
+      const IGatePtr& parent,
+      const std::vector<HouseEventPtr>& house_events,
+      boost::unordered_map<std::string, NodePtr>* id_to_node);
+
+  /// Processes a Boolean formula's gates
+  /// into gate arguments of an indexed gate of the Boolean graph.
+  ///
+  /// @param[in,out] parent The parent gate to own the arguments.
+  /// @param[in] gates The collection of gates of the formula.
+  /// @param[in] ccf A flag to replace basic events with CCF gates.
+  /// @param[in,out] id_to_node The mapping of already processed nodes.
+  void ProcessGates(const IGatePtr& parent,
+                    const std::vector<GatePtr>& gates,
+                    bool ccf,
+                    boost::unordered_map<std::string, NodePtr>* id_to_node);
 
   IGatePtr root_;  ///< The root gate of this graph.
   std::vector<BasicEventPtr> basic_events_;  ///< Mapping for basic events.

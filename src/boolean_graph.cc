@@ -328,18 +328,18 @@ BooleanGraph::BooleanGraph(const GatePtr& root, bool ccf)
       normal_(true) {
   Node::ResetIndex();
   Variable::ResetIndex();
-  boost::unordered_map<std::string, NodePtr> id_to_index;
-  root_ = BooleanGraph::ProcessFormula(root->formula(), ccf, &id_to_index);
+  boost::unordered_map<std::string, NodePtr> id_to_node;
+  root_ = BooleanGraph::ProcessFormula(root->formula(), ccf, &id_to_node);
 }
 
 boost::shared_ptr<IGate> BooleanGraph::ProcessFormula(
     const FormulaPtr& formula,
     bool ccf,
-    boost::unordered_map<std::string, NodePtr>* id_to_index) {
+    boost::unordered_map<std::string, NodePtr>* id_to_node) {
   Operator type = kStringToType_.find(formula->type())->second;
   IGatePtr parent(new IGate(type));
 
-  if (normal_ && type != kOrGate && type != kAndGate) normal_ = false;
+  if (type != kOrGate && type != kAndGate) normal_ = false;
 
   switch (type) {
     case kNotGate:
@@ -352,12 +352,33 @@ boost::shared_ptr<IGate> BooleanGraph::ProcessFormula(
       parent->vote_number(formula->vote_number());
       break;
   }
+  BooleanGraph::ProcessBasicEvents(parent, formula->basic_event_args(),
+                                   ccf, id_to_node);
+
+  BooleanGraph::ProcessHouseEvents(parent, formula->house_event_args(),
+                                   id_to_node);
+
+  BooleanGraph::ProcessGates(parent, formula->gate_args(), ccf, id_to_node);
+
+  const std::set<FormulaPtr>& formulas = formula->formula_args();
+  std::set<FormulaPtr>::const_iterator it_f;
+  for (it_f = formulas.begin(); it_f != formulas.end(); ++it_f) {
+    IGatePtr new_gate = BooleanGraph::ProcessFormula(*it_f, ccf, id_to_node);
+    parent->AddArg(new_gate->index(), new_gate);
+  }
+  return parent;
+}
+
+void BooleanGraph::ProcessBasicEvents(
+      const IGatePtr& parent,
+      const std::vector<BasicEventPtr>& basic_events,
+      bool ccf,
+      boost::unordered_map<std::string, NodePtr>* id_to_node) {
   std::vector<BasicEventPtr>::const_iterator it_b;
-  for (it_b = formula->basic_event_args().begin();
-       it_b != formula->basic_event_args().end(); ++it_b) {
+  for (it_b = basic_events.begin(); it_b != basic_events.end(); ++it_b) {
     BasicEventPtr basic_event = *it_b;
-    if (id_to_index->count(basic_event->id())) {  // Node already exists.
-      NodePtr node = id_to_index->find(basic_event->id())->second;
+    if (id_to_node->count(basic_event->id())) {  // Node already exists.
+      NodePtr node = id_to_node->find(basic_event->id())->second;
       if (ccf && basic_event->HasCcf()) {  // Replace with a CCF gate.
         parent->AddArg(node->index(), boost::static_pointer_cast<IGate>(node));
       } else {
@@ -368,58 +389,58 @@ boost::shared_ptr<IGate> BooleanGraph::ProcessFormula(
       if (ccf && basic_event->HasCcf()) {  // Create a CCF gate.
         GatePtr ccf_gate = basic_event->ccf_gate();
         IGatePtr new_gate =
-            BooleanGraph::ProcessFormula(ccf_gate->formula(), ccf, id_to_index);
+            BooleanGraph::ProcessFormula(ccf_gate->formula(), ccf, id_to_node);
         parent->AddArg(new_gate->index(), new_gate);
-        id_to_index->insert(std::make_pair(basic_event->id(), new_gate));
+        id_to_node->insert(std::make_pair(basic_event->id(), new_gate));
       } else {
         basic_events_.push_back(basic_event);
         VariablePtr new_basic(new Variable());  // Sequential indexation.
         assert(basic_events_.size() == new_basic->index());
         parent->AddArg(new_basic->index(), new_basic);
-        id_to_index->insert(std::make_pair(basic_event->id(), new_basic));
+        id_to_node->insert(std::make_pair(basic_event->id(), new_basic));
       }
     }
   }
+}
 
-  typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
+void BooleanGraph::ProcessHouseEvents(
+      const IGatePtr& parent,
+      const std::vector<HouseEventPtr>& house_events,
+      boost::unordered_map<std::string, NodePtr>* id_to_node) {
   std::vector<HouseEventPtr>::const_iterator it_h;
-  for (it_h = formula->house_event_args().begin();
-       it_h != formula->house_event_args().end(); ++it_h) {
+  for (it_h = house_events.begin(); it_h != house_events.end(); ++it_h) {
     constants_ = true;
 
     HouseEventPtr house = *it_h;
-    if (id_to_index->count(house->id())) {
-      NodePtr node = id_to_index->find(house->id())->second;
+    if (id_to_node->count(house->id())) {
+      NodePtr node = id_to_node->find(house->id())->second;
       parent->AddArg(node->index(), boost::static_pointer_cast<Constant>(node));
     } else {
       ConstantPtr constant(new Constant(house->state()));
       parent->AddArg(constant->index(), constant);
-      id_to_index->insert(std::make_pair(house->id(), constant));
+      id_to_node->insert(std::make_pair(house->id(), constant));
     }
   }
+}
 
+void BooleanGraph::ProcessGates(
+      const IGatePtr& parent,
+      const std::vector<GatePtr>& gates,
+      bool ccf,
+      boost::unordered_map<std::string, NodePtr>* id_to_node) {
   std::vector<GatePtr>::const_iterator it_g;
-  for (it_g = formula->gate_args().begin(); it_g != formula->gate_args().end();
-       ++it_g) {
+  for (it_g = gates.begin(); it_g != gates.end(); ++it_g) {
     GatePtr gate = *it_g;
-    if (id_to_index->count(gate->id())) {
-      NodePtr node = id_to_index->find(gate->id())->second;
+    if (id_to_node->count(gate->id())) {
+      NodePtr node = id_to_node->find(gate->id())->second;
       parent->AddArg(node->index(), boost::static_pointer_cast<IGate>(node));
     } else {
       IGatePtr new_gate = BooleanGraph::ProcessFormula(gate->formula(), ccf,
-                                                       id_to_index);
+                                                       id_to_node);
       parent->AddArg(new_gate->index(), new_gate);
-      id_to_index->insert(std::make_pair(gate->id(), new_gate));
+      id_to_node->insert(std::make_pair(gate->id(), new_gate));
     }
   }
-
-  const std::set<FormulaPtr>& formulas = formula->formula_args();
-  std::set<FormulaPtr>::const_iterator it_f;
-  for (it_f = formulas.begin(); it_f != formulas.end(); ++it_f) {
-    IGatePtr new_gate = BooleanGraph::ProcessFormula(*it_f, ccf, id_to_index);
-    parent->AddArg(new_gate->index(), new_gate);
-  }
-  return parent;
 }
 
 std::ostream& operator<<(std::ostream& os,
