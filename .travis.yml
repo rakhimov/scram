@@ -30,8 +30,10 @@ script:
 after_success:
     - coveralls --exclude tests  --exclude ./build/CMakeFiles/
       --exclude ./build/lib/  --exclude src/error.cc
+      --exclude src/env.cc  --exclude src/version.cc
+      --exclude src/logger.cc
       --exclude ./build/bin/  --exclude install/include/
-      --exclude-pattern .*src/.*\.h
+      --exclude-pattern .*/src/.*\.h$
       --exclude gui/
       > /dev/null
     - cp ./cmake/CTestCustom.cmake ./build/ && cd ./build && ctest -D Experimental
