@@ -363,6 +363,8 @@ class Preprocessor {
   /// This function can also create new modules from the existing graph.
   ///
   /// @param[in,out] gate The gate to test for modularity.
+  ///
+  /// @todo Make this function aware of previously created modules.
   void FindModules(const IGatePtr& gate);
 
   /// Creates a new module
@@ -425,6 +427,8 @@ class Preprocessor {
   /// The graph structure is optimized
   /// by removing the redundancies if possible.
   /// This optimization helps reduce the number of common nodes.
+  ///
+  /// @warning Boolean optimization may replace the root gate of the graph.
   void BooleanOptimization();
 
   /// Traverses the graph to find nodes
@@ -492,6 +496,9 @@ class Preprocessor {
   ///
   /// @param[in] node The common node.
   /// @param[in] destinations Destination gates for failure.
+  ///
+  /// @warning This function will replace the root gate of the graph
+  ///          if it is the failure destination.
   template<class N>
   void ProcessFailureDestinations(
       const boost::shared_ptr<N>& node,
@@ -522,6 +529,18 @@ class Preprocessor {
       boost::unordered_map<IGatePtr,
                            std::vector<boost::weak_ptr<IGate> > >* multi_def,
       std::vector<std::vector<IGatePtr> >* gates);
+
+  /// Replaces one gate in the graph with another.
+  ///
+  /// @param[in,out] gate An existing gate to be replaced.
+  /// @param[in,out] replacement A gate that will replace the old gate.
+  ///
+  /// @note The sign of the existing gate as an argument
+  ///       is transfered to the replacement gate.
+  ///
+  /// @note If any parent becomes constant or NULL type,
+  ///       the parent is registered for removal.
+  void ReplaceGate(const IGatePtr& gate, const IGatePtr& replacement);
 
   /// Sets the visit marks to False for all indexed gates,
   /// starting from the top gate,
