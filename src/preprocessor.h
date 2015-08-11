@@ -77,6 +77,7 @@ class Preprocessor {
  private:
   typedef boost::shared_ptr<Node> NodePtr;
   typedef boost::shared_ptr<IGate> IGatePtr;
+  typedef boost::weak_ptr<IGate> IGateWeakPtr;
   typedef boost::shared_ptr<Variable> VariablePtr;
   typedef boost::shared_ptr<Constant> ConstantPtr;
 
@@ -441,7 +442,7 @@ class Preprocessor {
   ///
   /// @note Constant nodes are not expected to be operated.
   void GatherCommonNodes(
-      std::vector<boost::weak_ptr<IGate> >* common_gates,
+      std::vector<IGateWeakPtr>* common_gates,
       std::vector<boost::weak_ptr<Variable> >* common_variables);
 
   /// Tries to simplify the graph by removing redundancies
@@ -470,10 +471,8 @@ class Preprocessor {
   /// @param[in,out] destinations Destinations of the failure.
   ///
   /// @returns The number of encounters with the destinations.
-  int CollectFailureDestinations(
-      const IGatePtr& gate,
-      int index,
-      std::map<int, boost::weak_ptr<IGate> >* destinations);
+  int CollectFailureDestinations(const IGatePtr& gate, int index,
+                                 std::map<int, IGateWeakPtr>* destinations);
 
   /// Detects if parents of a node are redundant.
   /// If there are redundant parents,
@@ -487,9 +486,8 @@ class Preprocessor {
   ///
   /// @note Constant gates are registered for removal.
   /// @note Null type gates are registered for removal.
-  void ProcessRedundantParents(
-      const NodePtr& node,
-      std::map<int, boost::weak_ptr<IGate> >* destinations);
+  void ProcessRedundantParents(const NodePtr& node,
+                               std::map<int, IGateWeakPtr>* destinations);
 
   /// Transforms failure destination
   /// according to the logic and the common node.
@@ -502,7 +500,7 @@ class Preprocessor {
   template<class N>
   void ProcessFailureDestinations(
       const boost::shared_ptr<N>& node,
-      const std::map<int, boost::weak_ptr<IGate> >& destinations);
+      const std::map<int, IGateWeakPtr>& destinations);
 
   /// Detects and replaces multiple definitions of gates.
   /// Gates with the same logic and inputs
@@ -526,8 +524,7 @@ class Preprocessor {
   /// @warning Gate marks must be clear.
   void DetectMultipleDefinitions(
       const IGatePtr& gate,
-      boost::unordered_map<IGatePtr,
-                           std::vector<boost::weak_ptr<IGate> > >* multi_def,
+      boost::unordered_map<IGatePtr, std::vector<IGateWeakPtr> >* multi_def,
       std::vector<std::vector<IGatePtr> >* gates);
 
   /// Replaces one gate in the graph with another.
@@ -591,10 +588,10 @@ class Preprocessor {
   /// Container for constant gates to be tracked and cleaned by algorithms.
   /// These constant gates are created
   /// because of complement or constant descendants.
-  std::vector<boost::weak_ptr<IGate> > const_gates_;
+  std::vector<IGateWeakPtr> const_gates_;
   /// Container for NULL type gates to be tracked and cleaned by algorithms.
   /// NULL type gates are created by coherent gates with only one argument.
-  std::vector<boost::weak_ptr<IGate> > null_gates_;
+  std::vector<IGateWeakPtr> null_gates_;
 };
 
 }  // namespace scram

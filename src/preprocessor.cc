@@ -372,7 +372,7 @@ void Preprocessor::PropagateNullGate(const IGatePtr& gate) {
 
 void Preprocessor::ClearConstGates() {
   Preprocessor::ClearGateMarks();  // New gates may get created without marks!
-  std::vector<boost::weak_ptr<IGate> >::iterator it;
+  std::vector<IGateWeakPtr>::iterator it;
   for (it = const_gates_.begin(); it != const_gates_.end(); ++it) {
     if (it->expired()) continue;
     Preprocessor::PropagateConstGate(it->lock());
@@ -382,7 +382,7 @@ void Preprocessor::ClearConstGates() {
 
 void Preprocessor::ClearNullGates() {
   Preprocessor::ClearGateMarks();  // New gates may get created without marks!
-  std::vector<boost::weak_ptr<IGate> >::iterator it;
+  std::vector<IGateWeakPtr>::iterator it;
   for (it = null_gates_.begin(); it != null_gates_.end(); ++it) {
     if (it->expired()) continue;
     Preprocessor::PropagateNullGate(it->lock());
@@ -939,12 +939,12 @@ void Preprocessor::BooleanOptimization() {
   Preprocessor::ClearNodeVisits();
   Preprocessor::ClearGateMarks();
 
-  std::vector<boost::weak_ptr<IGate> > common_gates;
+  std::vector<IGateWeakPtr> common_gates;
   std::vector<boost::weak_ptr<Variable> > common_variables;
   Preprocessor::GatherCommonNodes(&common_gates, &common_variables);
 
   Preprocessor::ClearNodeVisits();
-  std::vector<boost::weak_ptr<IGate> >::iterator it;
+  std::vector<IGateWeakPtr>::iterator it;
   for (it = common_gates.begin(); it != common_gates.end(); ++it) {
     Preprocessor::ProcessCommonNode(*it);
   }
@@ -957,7 +957,7 @@ void Preprocessor::BooleanOptimization() {
 }
 
 void Preprocessor::GatherCommonNodes(
-      std::vector<boost::weak_ptr<IGate> >* common_gates,
+      std::vector<IGateWeakPtr>* common_gates,
       std::vector<boost::weak_ptr<Variable> >* common_variables) {
   std::queue<IGatePtr> gates_queue;
   gates_queue.push(graph_->root());
@@ -1004,7 +1004,7 @@ void Preprocessor::ProcessCommonNode(const boost::weak_ptr<N>& common_node) {
   assert(mult_tot > 1);
   mult_tot += Preprocessor::PropagateFailure(node);
   // The results of the failure propagation.
-  std::map<int, boost::weak_ptr<IGate> > destinations;
+  std::map<int, IGateWeakPtr> destinations;
   int num_dest = 0;  // This is not the same as the size of destinations.
   if (root->opti_value() == 1) {  // The root gate failed.
     destinations.insert(std::make_pair(root->index(), root));
@@ -1028,7 +1028,7 @@ void Preprocessor::ProcessCommonNode(const boost::weak_ptr<N>& common_node) {
 int Preprocessor::PropagateFailure(const NodePtr& node) {
   assert(node->opti_value() == 1);
   int mult_tot = 0;
-  boost::unordered_map<int, boost::weak_ptr<IGate> >::const_iterator it;
+  boost::unordered_map<int, IGateWeakPtr>::const_iterator it;
   for (it = node->parents().begin(); it != node->parents().end(); ++it) {
     assert(!it->second.expired());
     IGatePtr parent = it->second.lock();
@@ -1046,7 +1046,7 @@ int Preprocessor::PropagateFailure(const NodePtr& node) {
 int Preprocessor::CollectFailureDestinations(
     const IGatePtr& gate,
     int index,
-    std::map<int, boost::weak_ptr<IGate> >* destinations) {
+    std::map<int, IGateWeakPtr>* destinations) {
   assert(gate->opti_value() == 0);
   if (gate->args().count(index)) {  // Argument may be non-gate.
     gate->opti_value(3);
@@ -1070,9 +1070,9 @@ int Preprocessor::CollectFailureDestinations(
 
 void Preprocessor::ProcessRedundantParents(
     const NodePtr& node,
-    std::map<int, boost::weak_ptr<IGate> >* destinations) {
-  std::vector<boost::weak_ptr<IGate> > redundant_parents;
-  boost::unordered_map<int, boost::weak_ptr<IGate> >::const_iterator it;
+    std::map<int, IGateWeakPtr>* destinations) {
+  std::vector<IGateWeakPtr> redundant_parents;
+  boost::unordered_map<int, IGateWeakPtr>::const_iterator it;
   for (it = node->parents().begin(); it != node->parents().end(); ++it) {
     assert(!it->second.expired());
     IGatePtr parent = it->second.lock();
@@ -1090,7 +1090,7 @@ void Preprocessor::ProcessRedundantParents(
   }
   /// @todo Use RemoveConstArg function instead.
   // The node behaves like a constant False for redundant parents.
-  std::vector<boost::weak_ptr<IGate> >::iterator it_r;
+  std::vector<IGateWeakPtr>::iterator it_r;
   for (it_r = redundant_parents.begin(); it_r != redundant_parents.end();
        ++it_r) {
     if (it_r->expired()) continue;
@@ -1123,8 +1123,8 @@ void Preprocessor::ProcessRedundantParents(
 template<class N>
 void Preprocessor::ProcessFailureDestinations(
     const boost::shared_ptr<N>& node,
-    const std::map<int, boost::weak_ptr<IGate> >& destinations) {
-  std::map<int, boost::weak_ptr<IGate> >::const_iterator it_d;
+    const std::map<int, IGateWeakPtr>& destinations) {
+  std::map<int, IGateWeakPtr>::const_iterator it_d;
   for (it_d = destinations.begin(); it_d != destinations.end(); ++it_d) {
     if (it_d->second.expired()) continue;
     IGatePtr target = it_d->second.lock();
@@ -1152,8 +1152,7 @@ bool Preprocessor::ProcessMultipleDefinitions() {
   assert(null_gates_.empty());
   assert(const_gates_.empty());
   // The original gate and its multiple definitions.
-  boost::unordered_map<IGatePtr, std::vector<boost::weak_ptr<IGate> > >
-      multi_def;
+  boost::unordered_map<IGatePtr, std::vector<IGateWeakPtr> > multi_def;
   std::vector<std::vector<IGatePtr> > orig_gates(kNumOperators,
                                                  std::vector<IGatePtr>());
   Preprocessor::ClearGateMarks();
@@ -1162,12 +1161,11 @@ bool Preprocessor::ProcessMultipleDefinitions() {
   Preprocessor::ClearGateMarks();
 
   if (multi_def.empty()) return false;
-  boost::unordered_map<IGatePtr,
-      std::vector<boost::weak_ptr<IGate> > >::iterator it;
+  boost::unordered_map<IGatePtr, std::vector<IGateWeakPtr> >::iterator it;
   for (it = multi_def.begin(); it != multi_def.end(); ++it) {
     IGatePtr orig_gate = it->first;
-    std::vector<boost::weak_ptr<IGate> >& duplicates = it->second;
-    std::vector<boost::weak_ptr<IGate> >::iterator it_dup;
+    std::vector<IGateWeakPtr>& duplicates = it->second;
+    std::vector<IGateWeakPtr>::iterator it_dup;
     for (it_dup = duplicates.begin(); it_dup != duplicates.end(); ++it_dup) {
       if (it_dup->expired()) continue;
       IGatePtr dup = it_dup->lock();
@@ -1181,8 +1179,7 @@ bool Preprocessor::ProcessMultipleDefinitions() {
 
 void Preprocessor::DetectMultipleDefinitions(
     const IGatePtr& gate,
-    boost::unordered_map<IGatePtr,
-                         std::vector<boost::weak_ptr<IGate> > >* multi_def,
+    boost::unordered_map<IGatePtr, std::vector<IGateWeakPtr> >* multi_def,
     std::vector<std::vector<IGatePtr> >* gates) {
   if (gate->mark()) return;
   gate->mark(true);
@@ -1202,7 +1199,7 @@ void Preprocessor::DetectMultipleDefinitions(
       if (multi_def->count(orig_gate)) {
         multi_def->find(orig_gate)->second.push_back(gate);
       } else {
-        std::vector<boost::weak_ptr<IGate> > duplicates(1, gate);
+        std::vector<IGateWeakPtr> duplicates(1, gate);
         multi_def->insert(std::make_pair(orig_gate, duplicates));
       }
       return;
