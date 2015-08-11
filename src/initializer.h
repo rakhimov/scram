@@ -71,7 +71,7 @@ class Initializer {
   /// @throws IOError One of the input files is not accessible.
   void ProcessInputFiles(const std::vector<std::string>& xml_files);
 
-  /// @returns The model build from the input files.
+  /// @returns The model built from the input files.
   inline ModelPtr model() const { return model_; }
 
  private:
