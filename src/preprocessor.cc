@@ -56,6 +56,7 @@
 #include "preprocessor.h"
 
 #include <algorithm>
+#include <list>
 #include <queue>
 
 #include "logger.h"
@@ -867,21 +868,22 @@ void Preprocessor::GroupModularArgs(
     std::vector<std::vector<std::pair<int, NodePtr> > >* groups) {
   if (modular_args.empty()) return;
   assert(modular_args.size() > 1);
-  std::vector<std::pair<int, NodePtr> > to_check(modular_args);
-  while (!to_check.empty()) {
+  assert(groups->empty());
+  std::list<std::pair<int, NodePtr> > member_list(modular_args.begin(),
+                                                  modular_args.end());
+  while (!member_list.empty()) {
     std::vector<std::pair<int, NodePtr> > group;
-    NodePtr first_member = to_check.back().second;
-    group.push_back(to_check.back());
-    to_check.pop_back();
+    NodePtr first_member = member_list.front().second;
+    group.push_back(member_list.front());
+    member_list.pop_front();
     int low = first_member->min_time();
     int high = first_member->max_time();
 
-    int prev_size = 0;
-    std::vector<std::pair<int, NodePtr> > next_check;
+    int prev_size = 0;  // To track the addition of a new member into the group.
     while (prev_size < group.size()) {
       prev_size = group.size();
-      std::vector<std::pair<int, NodePtr> >::iterator it;
-      for (it = to_check.begin(); it != to_check.end(); ++it) {
+      std::list<std::pair<int, NodePtr> >::iterator it;
+      for (it = member_list.begin(); it != member_list.end();) {
         int min = it->second->min_time();
         int max = it->second->max_time();
         int a = std::max(min, low);
@@ -890,15 +892,18 @@ void Preprocessor::GroupModularArgs(
           group.push_back(*it);
           low = std::min(min, low);
           high = std::max(max, high);
+          std::list<std::pair<int, NodePtr> >::iterator it_erase = it;
+          ++it;
+          member_list.erase(it_erase);
         } else {
-          next_check.push_back(*it);
+          ++it;
         }
       }
-      to_check = next_check;
     }
     assert(group.size() > 1);
     groups->push_back(group);
   }
+  assert(!groups->empty());
 }
 
 void Preprocessor::CreateNewModules(
