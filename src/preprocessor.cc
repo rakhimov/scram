@@ -177,6 +177,15 @@ void Preprocessor::ProcessFaultTree() {
   LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
 }
 
+void Preprocessor::PhaseOne() {
+}
+
+void Preprocessor::PhaseTwo() {}
+
+void Preprocessor::PhaseThree() {}
+
+void Preprocessor::PhaseFour() {}
+
 void Preprocessor::NormalizeGates() {
   assert(const_gates_.empty());
   assert(null_gates_.empty());

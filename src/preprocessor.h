@@ -81,6 +81,48 @@ class Preprocessor {
   typedef boost::shared_ptr<Variable> VariablePtr;
   typedef boost::shared_ptr<Constant> ConstantPtr;
 
+  /// The initial phase of preprocessing.
+  /// The most basic cleanup algorithms are applied.
+  /// The cleanup should benefit all other phases
+  /// and algorithms.
+  ///
+  /// @note The constants or house events in the graph are cleaned.
+  ///       Any constant state gates must be removed
+  ///       by the future preprocessing algorithms
+  ///       as they introduce these constant state  gates.
+  /// @note NULL type (pass-through) gates are processed.
+  ///       Any NULL type gates must be processed and removed
+  ///       by the future preprocessing algorithms
+  ///       as they introduce these NULL type gates.
+  void PhaseOne();
+
+  /// Preprocessing phase of the original structure of the graph.
+  /// This phase attempts to leverage
+  /// the existing information from the structure of the graph
+  /// to maximize the optimization
+  /// and to make the preprocessing techniques efficient.
+  ///
+  /// @note Multiple definitions of gates are detected and processed.
+  /// @note Modules are detected and created.
+  /// @note Non-module and non-multiple gates are coalesced.
+  /// @note Boolean optimization is applied.
+  void PhaseTwo();
+
+  /// Application of gate normalization.
+  /// After this phase,
+  /// the graph is in normal form.
+  ///
+  /// @note Gate normalization is conducted.
+  void PhaseThree();
+
+  /// Propagation of complements.
+  /// Complements are propagated down to the variables in the graph.
+  /// After this phase,
+  /// the graph is in negation normal form.
+  ///
+  /// @note Complements are propagated to the variables of the graph.
+  void PhaseFour();
+
   /// Normalizes the gates of the whole Boolean graph
   /// into OR, AND gates.
   ///
