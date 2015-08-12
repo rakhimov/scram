@@ -136,9 +136,9 @@ void Preprocessor::ProcessFaultTree() {
 
   CLOCK(mult_time);
   LOG(DEBUG2) << "Detecting multiple definitions...";
-  bool tree_changed = true;
-  while (tree_changed) {
-    tree_changed = Preprocessor::ProcessMultipleDefinitions();
+  bool graph_changed = true;
+  while (graph_changed) {
+    graph_changed = Preprocessor::ProcessMultipleDefinitions();
   }
   LOG(DEBUG2) << "Finished multi-definition detection in " << DUR(mult_time);
 
@@ -150,25 +150,25 @@ void Preprocessor::ProcessFaultTree() {
   }
 
   LOG(DEBUG2) << "Coalescing gates...";
-  tree_changed = true;
-  while (tree_changed) {
+  graph_changed = true;
+  while (graph_changed) {
     assert(const_gates_.empty());
     assert(null_gates_.empty());
 
-    tree_changed = false;
+    graph_changed = false;
     Preprocessor::ClearGateMarks();
     if (graph_->root()->state() == kNormalState)
       Preprocessor::JoinGates(graph_->root());  // Registers const gates.
 
     if (!const_gates_.empty()) {
       Preprocessor::ClearConstGates();
-      tree_changed = true;
+      graph_changed = true;
     }
   }
   LOG(DEBUG2) << "Gate coalescense is done!";
 
   // After this point there should not be null AND or unity OR gates,
-  // and the tree structure should be repeating OR and AND.
+  // and the graph structure should be repeating OR and AND.
   // All gates are positive,
   // and each gate has at least two arguments.
   if (root->args().empty()) return;  // This is null or unity.
@@ -622,29 +622,27 @@ bool Preprocessor::JoinGates(const IGatePtr& gate) {
   }
   assert(!gate->args().empty());
   std::vector<IGatePtr> to_join;  // Gate arguments of the same logic.
-  bool changed = false;  // Indication if the tree is changed.
+  bool changed = false;  // Indication if the graph is changed.
   boost::unordered_map<int, IGatePtr>::const_iterator it;
   for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
-    bool ret = false;  // Indication if the sub-tree has changed.
     IGatePtr arg_gate = it->second;
-    ret = Preprocessor::JoinGates(arg_gate);
-    if (!changed && ret) changed = true;
+    if (Preprocessor::JoinGates(arg_gate)) changed = true;
 
     if (!possible) continue;  // Joining with the parent is impossible.
 
     if (it->first < 0) continue;  // Cannot join a negative arg gate.
-    if (arg_gate->IsModule()) continue;  // Does not coalesce modules.
+    if (arg_gate->IsModule()) continue;  // Preserve modules.
 
     if (arg_gate->type() == target_type) to_join.push_back(arg_gate);
   }
 
-  if (!changed && !to_join.empty()) changed = true;
   std::vector<IGatePtr>::iterator it_ch;
   for (it_ch = to_join.begin(); it_ch != to_join.end(); ++it_ch) {
     gate->JoinGate(*it_ch);
+    changed = true;
     if (gate->state() != kNormalState) {
       const_gates_.push_back(gate);  // Register for future processing.
-      return true;  // The parent is constant. No need to join other arguments.
+      break;  // The parent is constant. No need to join other arguments.
     }
     assert(gate->args().size() > 1);  // Does not produce NULL type gates.
   }
@@ -654,7 +652,7 @@ bool Preprocessor::JoinGates(const IGatePtr& gate) {
 void Preprocessor::DetectModules() {
   assert(const_gates_.empty());
   assert(null_gates_.empty());
-  // First stage, traverse the tree depth-first for gates
+  // First stage, traverse the graph depth-first for gates
   // and indicate visit time for each node.
   LOG(DEBUG2) << "Detecting modules...";
 
@@ -714,7 +712,7 @@ void Preprocessor::FindModules(const IGatePtr& gate) {
       assert(arg_gate->parents().count(gate->index()));
 
       non_shared_args.push_back(*it);
-      continue;  // Sub-tree's visit times are within the Enter and Exit time.
+      continue;  // Sub-graph's visit times are within the Enter and Exit time.
     }
     int min = arg_gate->min_time();
     int max = arg_gate->max_time();
