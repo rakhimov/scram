@@ -123,6 +123,17 @@ class Preprocessor {
   /// @note Complements are propagated to the variables of the graph.
   void PhaseFour();
 
+  /// Checks the root gate of the graph for further processing.
+  /// The root gate may become constant
+  /// or one-variable-NULL-gate,
+  /// which signals the special case
+  /// and no need for further processing.
+  ///
+  /// @returns true if no more processing is needed.
+  ///
+  /// @note This function may swap the root gate of the graph.
+  bool CheckRootGate();
+
   /// Normalizes the gates of the whole Boolean graph
   /// into OR, AND gates.
   ///

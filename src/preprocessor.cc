@@ -68,15 +68,16 @@ Preprocessor::Preprocessor(BooleanGraph* graph)
       root_sign_(1) {}
 
 void Preprocessor::ProcessFaultTree() {
-  IGatePtr root = graph_->root();
-  assert(root);
-  assert(root->parents().empty());
-  assert(!root->mark());
+  assert(graph_->root());
+  assert(graph_->root()->parents().empty());
+  assert(!graph_->root()->mark());
 
   CLOCK(prep_time);  // Overall preprocessing time.
   LOG(DEBUG2) << "Preprocessing...";
 
   Preprocessor::PhaseOne();
+
+  if (Preprocessor::CheckRootGate()) return;
 
   if (!graph_->normal()) {
     LOG(DEBUG2) << "Normalizing gates...";
@@ -85,34 +86,10 @@ void Preprocessor::ProcessFaultTree() {
     LOG(DEBUG2) << "Finished normalizing gates!";
   }
 
-  if (root->state() != kNormalState) {  // The root gate has become constant.
-    if (root_sign_ < 0) {
-      State orig_state = root->state();
-      root = IGatePtr(new IGate(kNullGate));
-      graph_->root(root);
-      if (orig_state == kNullState) {
-        root->MakeUnity();
-      } else {
-        assert(orig_state == kUnityState);
-        root->Nullify();
-      }
-      root_sign_ = 1;
-    }
-    return;
-  }
-  if (root->type() == kNullGate) {  // Special case of preprocessing.
-    assert(root->args().size() == 1);
-    if (!root->gate_args().empty()) {
-      int signed_index = root->gate_args().begin()->first;
-      IGatePtr arg = root->gate_args().begin()->second;
-      graph_->root(arg);
-      root = arg;
-      assert(root->parents().empty());
-      assert(root->type() == kOrGate || root->type() == kAndGate);
-      root_sign_ *= signed_index > 0 ? 1 : -1;
-    }
-  }
+  if (Preprocessor::CheckRootGate()) return;
+
   if (!graph_->coherent()) {
+    IGatePtr root = graph_->root();
     LOG(DEBUG2) << "Propagating complements...";
     if (root_sign_ < 0) {
       assert(root->type() == kOrGate || root->type() == kAndGate ||
@@ -161,13 +138,10 @@ void Preprocessor::ProcessFaultTree() {
   }
   LOG(DEBUG2) << "Gate coalescense is done!";
 
-  // After this point there should not be null AND or unity OR gates,
-  // and the graph structure should be repeating OR and AND.
-  // All gates are positive,
-  // and each gate has at least two arguments.
-  if (root->args().empty()) return;  // This is null or unity.
-  // Detect original modules for processing.
+  if (Preprocessor::CheckRootGate()) return;
+
   Preprocessor::DetectModules();
+
   LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
 }
 
@@ -188,6 +162,41 @@ void Preprocessor::PhaseTwo() {}
 void Preprocessor::PhaseThree() {}
 
 void Preprocessor::PhaseFour() {}
+
+bool Preprocessor::CheckRootGate() {
+  IGatePtr root = graph_->root();
+  if (root->state() != kNormalState) {  // The root gate has become constant.
+    if (root_sign_ < 0) {
+      State orig_state = root->state();
+      root = IGatePtr(new IGate(kNullGate));
+      graph_->root(root);
+      if (orig_state == kNullState) {
+        root->MakeUnity();
+      } else {
+        assert(orig_state == kUnityState);
+        root->Nullify();
+      }
+      root_sign_ = 1;
+    }
+    return true;  // No more processing is needed.
+  }
+  if (root->type() == kNullGate) {  // Special case of preprocessing.
+    assert(root->args().size() == 1);
+    if (!root->gate_args().empty()) {
+      int signed_index = root->gate_args().begin()->first;
+      root = root->gate_args().begin()->second;
+      graph_->root(root);  // Destroy the previous root.
+      assert(root->parents().empty());
+      root_sign_ *= signed_index > 0 ? 1 : -1;
+    } else {
+      assert(root->variable_args().size() == 1);
+      if (root_sign_ < 0) root->InvertArgs();
+      root_sign_ = 1;
+      return true;  // Only one variable argument.
+    }
+  }
+  return false;
+}
 
 void Preprocessor::NormalizeGates() {
   assert(const_gates_.empty());
