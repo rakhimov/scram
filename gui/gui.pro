@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2014-09-10T17:56:09
+# Project created by QtCreator 2015-08-12T00:23:29
 #
 #-------------------------------------------------
 
@@ -12,8 +12,8 @@ TARGET = gui
 TEMPLATE = app
 
 
-SOURCES += main.cc\
-        mainwindow.cc
+SOURCES += main.cpp\
+        mainwindow.cpp
 
 HEADERS  += mainwindow.h
 

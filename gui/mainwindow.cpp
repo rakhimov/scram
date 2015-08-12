@@ -15,25 +15,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
 
-#include <QMainWindow>
-
-namespace Ui {
-class MainWindow;
+MainWindow::MainWindow(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::MainWindow)
+{
+    ui->setupUi(this);
 }
 
-class MainWindow : public QMainWindow
+MainWindow::~MainWindow()
 {
-    Q_OBJECT
-
-public:
-    explicit MainWindow(QWidget *parent = 0);
-    ~MainWindow();
-
-private:
-    Ui::MainWindow *ui;
-};
-
-#endif // MAINWINDOW_H
+    delete ui;
+}
