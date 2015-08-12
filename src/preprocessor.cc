@@ -82,14 +82,14 @@ void Preprocessor::ProcessFaultTree() {
     LOG(DEBUG2) << "Constant are removed!";
   }
 
+  Preprocessor::RemoveNullGates();
+
   if (!graph_->normal()) {
     LOG(DEBUG2) << "Normalizing gates...";
     assert(root_sign_ == 1);
     Preprocessor::NormalizeGates();
     LOG(DEBUG2) << "Finished normalizing gates!";
   }
-
-  Preprocessor::RemoveNullGates();  /// @todo Run before normalization.
 
   if (root->state() != kNormalState) {  // The root gate has become constant.
     if (root_sign_ < 0) {
@@ -247,6 +247,7 @@ void Preprocessor::NormalizeGate(const IGatePtr& gate) {
     case kNotGate:
       assert(gate->args().size() == 1);
       gate->type(kNullGate);
+      null_gates_.push_back(gate);  // Register for removal.
       break;
     case kNorGate:
     case kOrGate:
