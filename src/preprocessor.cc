@@ -72,55 +72,64 @@ void Preprocessor::ProcessFaultTree() {
   assert(graph_->root()->parents().empty());
   assert(!graph_->root()->mark());
 
-  CLOCK(prep_time);  // Overall preprocessing time.
-  LOG(DEBUG2) << "Preprocessing...";
-
+  CLOCK(time_1);
+  LOG(DEBUG2) << "Preprocessing Phase I...";
   Preprocessor::PhaseOne();
-
+  LOG(DEBUG2) << "Finished Preprocessing Phase I in " << DUR(time_1);
   if (Preprocessor::CheckRootGate()) return;
 
   if (!graph_->normal()) {
-    LOG(DEBUG2) << "Normalizing gates...";
-    assert(root_sign_ == 1);
-    Preprocessor::NormalizeGates();
-    LOG(DEBUG2) << "Finished normalizing gates!";
+    CLOCK(time_3);
+    LOG(DEBUG2) << "Preprocessing Phase III...";
+    Preprocessor::PhaseThree();
+    LOG(DEBUG2) << "Finished Preprocessing Phase III in " << DUR(time_3);
+    if (Preprocessor::CheckRootGate()) return;
   }
-
-  if (Preprocessor::CheckRootGate()) return;
 
   if (!graph_->coherent()) {
-    IGatePtr root = graph_->root();
-    LOG(DEBUG2) << "Propagating complements...";
-    if (root_sign_ < 0) {
-      assert(root->type() == kOrGate || root->type() == kAndGate ||
-             root->type() == kNullGate);
-      if (root->type() == kOrGate || root->type() == kAndGate)
-        root->type(root->type() == kOrGate ? kAndGate : kOrGate);
-      root->InvertArgs();
-      root_sign_ = 1;
-    }
-    std::map<int, IGatePtr> complements;
-    Preprocessor::ClearGateMarks();
-    Preprocessor::PropagateComplements(root, &complements);
-    LOG(DEBUG2) << "Complement propagation is done!";
+    CLOCK(time_4);
+    LOG(DEBUG2) << "Preprocessing Phase IV...";
+    Preprocessor::PhaseFour();
+    LOG(DEBUG2) << "Finished Preprocessing Phase IV in " << DUR(time_4);
   }
+  if (Preprocessor::CheckRootGate()) return;
 
+  CLOCK(time_2);
+  LOG(DEBUG2) << "Preprocessing Phase II...";
+  Preprocessor::PhaseTwo();  /// @todo Move up.
+  LOG(DEBUG2) << "Finished Preprocessing Phase II in " << DUR(time_2);
+
+  Preprocessor::CheckRootGate();  // To cleanup.
+}
+
+void Preprocessor::PhaseOne() {
+  if (graph_->constants()) {
+    LOG(DEBUG3) << "Removing constants...";
+    Preprocessor::RemoveConstants();
+    LOG(DEBUG3) << "Constant are removed!";
+  }
+  LOG(DEBUG3) << "Removing NULL gates...";
+  Preprocessor::RemoveNullGates();
+  LOG(DEBUG3) << "Finished cleaning NULL gates!";
+}
+
+void Preprocessor::PhaseTwo() {
   CLOCK(mult_time);
-  LOG(DEBUG2) << "Detecting multiple definitions...";
+  LOG(DEBUG3) << "Detecting multiple definitions...";
   bool graph_changed = true;
   while (graph_changed) {
     graph_changed = Preprocessor::ProcessMultipleDefinitions();
   }
-  LOG(DEBUG2) << "Finished multi-definition detection in " << DUR(mult_time);
+  LOG(DEBUG3) << "Finished multi-definition detection in " << DUR(mult_time);
 
   if (graph_->coherent()) {
     CLOCK(optim_time);
-    LOG(DEBUG2) << "Boolean optimization...";
+    LOG(DEBUG3) << "Boolean optimization...";
     Preprocessor::BooleanOptimization();
-    LOG(DEBUG2) << "Finished Boolean optimization in " << DUR(optim_time);
+    LOG(DEBUG3) << "Finished Boolean optimization in " << DUR(optim_time);
   }
 
-  LOG(DEBUG2) << "Coalescing gates...";
+  LOG(DEBUG3) << "Coalescing gates...";
   graph_changed = true;
   while (graph_changed) {
     assert(const_gates_.empty());
@@ -136,32 +145,47 @@ void Preprocessor::ProcessFaultTree() {
       graph_changed = true;
     }
   }
-  LOG(DEBUG2) << "Gate coalescense is done!";
+  LOG(DEBUG3) << "Gate coalescense is done!";
 
   if (Preprocessor::CheckRootGate()) return;
 
+  LOG(DEBUG3) << "Detecting modules...";
   Preprocessor::DetectModules();
-
-  LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
+  LOG(DEBUG3) << "Finished module detection!";
 }
 
-void Preprocessor::PhaseOne() {
-  CLOCK(time);
-  LOG(DEBUG2) << "Preprocessing Phase I...";
-  if (graph_->constants()) {
-    LOG(DEBUG3) << "Removing constants...";
-    Preprocessor::RemoveConstants();
-    LOG(DEBUG3) << "Constant are removed!";
+void Preprocessor::PhaseThree() {
+  assert(!graph_->normal());
+  LOG(DEBUG3) << "Normalizing gates...";
+  assert(root_sign_ == 1);
+  Preprocessor::NormalizeGates();
+  LOG(DEBUG3) << "Finished normalizing gates!";
+
+  if (Preprocessor::CheckRootGate()) return;
+  // Preprocessor::PhaseTwo();  /// @todo Enable.
+}
+
+void Preprocessor::PhaseFour() {
+  assert(!graph_->coherent());
+  LOG(DEBUG3) << "Propagating complements...";
+  if (root_sign_ < 0) {
+    IGatePtr root = graph_->root();
+    assert(root->type() == kOrGate || root->type() == kAndGate ||
+           root->type() == kNullGate);
+    if (root->type() == kOrGate || root->type() == kAndGate)
+      root->type(root->type() == kOrGate ? kAndGate : kOrGate);
+    root->InvertArgs();
+    root_sign_ = 1;
   }
-  Preprocessor::RemoveNullGates();
-  LOG(DEBUG2) << "Finished Preprocessing Phase I in " << DUR(time);
+  std::map<int, IGatePtr> complements;
+  Preprocessor::ClearGateMarks();
+  Preprocessor::PropagateComplements(graph_->root(), &complements);
+  complements.clear();
+  LOG(DEBUG3) << "Complement propagation is done!";
+
+  if (Preprocessor::CheckRootGate()) return;
+  // Preprocessor::PhaseTwo();  /// @todo Enable.
 }
-
-void Preprocessor::PhaseTwo() {}
-
-void Preprocessor::PhaseThree() {}
-
-void Preprocessor::PhaseFour() {}
 
 bool Preprocessor::CheckRootGate() {
   IGatePtr root = graph_->root();
@@ -676,15 +700,13 @@ void Preprocessor::DetectModules() {
   assert(null_gates_.empty());
   // First stage, traverse the graph depth-first for gates
   // and indicate visit time for each node.
-  LOG(DEBUG2) << "Detecting modules...";
-
   Preprocessor::ClearNodeVisits();
 
   IGatePtr root_gate = graph_->root();
   int time = 0;
   Preprocessor::AssignTiming(time, root_gate);
 
-  LOG(DEBUG3) << "Timings are assigned to nodes.";
+  LOG(DEBUG4) << "Timings are assigned to nodes.";
 
   Preprocessor::ClearGateMarks();
   Preprocessor::FindModules(root_gate);
@@ -779,9 +801,9 @@ void Preprocessor::FindModules(const IGatePtr& gate) {
 
   // Determine if this gate is module itself.
   if (min_time == enter_time && max_time == exit_time) {
-    LOG(DEBUG3) << "Found original module: " << gate->index();
+    LOG(DEBUG4) << "Found original module: " << gate->index();
     assert(non_modular_args.empty());
-    gate->TurnModule();
+    if (!gate->IsModule()) gate->TurnModule();  /// @todo Handle earlier.
   }
 
   max_time = std::max(max_time, gate->LastVisit());
@@ -847,7 +869,7 @@ boost::shared_ptr<IGate> Preprocessor::CreateNewModule(
   }
   gate->AddArg(module->index(), module);
   assert(gate->args().size() > 1);
-  LOG(DEBUG3) << "Created a new module for Gate " << gate->index() << ": "
+  LOG(DEBUG4) << "Created a new module for Gate " << gate->index() << ": "
       << "Gate " << module->index() << " with "  << args.size()
       << " NON-SHARED arguments.";
   return module;
