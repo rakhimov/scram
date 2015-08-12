@@ -76,13 +76,7 @@ void Preprocessor::ProcessFaultTree() {
   CLOCK(prep_time);  // Overall preprocessing time.
   LOG(DEBUG2) << "Preprocessing...";
 
-  if (graph_->constants()) {
-    LOG(DEBUG2) << "Removing constants...";
-    Preprocessor::RemoveConstants();
-    LOG(DEBUG2) << "Constant are removed!";
-  }
-
-  Preprocessor::RemoveNullGates();
+  Preprocessor::PhaseOne();
 
   if (!graph_->normal()) {
     LOG(DEBUG2) << "Normalizing gates...";
@@ -178,6 +172,15 @@ void Preprocessor::ProcessFaultTree() {
 }
 
 void Preprocessor::PhaseOne() {
+  CLOCK(time);
+  LOG(DEBUG2) << "Preprocessing Phase I...";
+  if (graph_->constants()) {
+    LOG(DEBUG3) << "Removing constants...";
+    Preprocessor::RemoveConstants();
+    LOG(DEBUG3) << "Constant are removed!";
+  }
+  Preprocessor::RemoveNullGates();
+  LOG(DEBUG2) << "Finished Preprocessing Phase I in " << DUR(time);
 }
 
 void Preprocessor::PhaseTwo() {}
