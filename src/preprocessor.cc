@@ -339,12 +339,7 @@ void Preprocessor::PropagateConstGate(const IGatePtr& gate) {
 
     int sign = parent->args().count(gate->index()) ? 1 : -1;
     bool state = gate->state() == kNullState ? false : true;
-    if (sign < 0) state = !state;
-
-    std::vector<int> to_erase;
-    Preprocessor::ProcessConstantArg(parent, sign * gate->index(),
-                                     state, &to_erase);
-    Preprocessor::RemoveArgs(parent, to_erase);
+    Preprocessor::ProcessConstantArg(parent, sign * gate->index(), state);
 
     if (parent->state() != kNormalState) {
       Preprocessor::PropagateConstGate(parent);
@@ -431,13 +426,8 @@ void Preprocessor::PropagateConstant(const ConstantPtr& constant) {
     IGatePtr parent = constant->parents().begin()->second.lock();
 
     int sign = parent->args().count(constant->index()) ? 1 : -1;
-    bool state = constant->state();
-    if (sign < 0) state = !state;
-
-    std::vector<int> to_erase;
     Preprocessor::ProcessConstantArg(parent, sign * constant->index(),
-                                     state, &to_erase);
-    Preprocessor::RemoveArgs(parent, to_erase);
+                                     constant->state());
 
     if (parent->state() != kNormalState) {
       Preprocessor::PropagateConstGate(parent);
@@ -447,96 +437,78 @@ void Preprocessor::PropagateConstant(const ConstantPtr& constant) {
   }
 }
 
-bool Preprocessor::ProcessConstantArg(const IGatePtr& gate, int arg,
-                                      bool state, std::vector<int>* to_erase) {
-  Operator parent_type = gate->type();
+void Preprocessor::ProcessConstantArg(const IGatePtr& gate, int arg,
+                                      bool state) {
+  if (arg < 0) state = !state;
 
-  if (!state) {  // Null state arg.
-    switch (parent_type) {
-      case kNorGate:
-      case kXorGate:
-      case kOrGate:
-        to_erase->push_back(arg);
-        return false;
-      case kNullGate:
-      case kAndGate:
-        gate->Nullify();
-        break;
-      case kNandGate:
-      case kNotGate:
-        gate->MakeUnity();
-        break;
-      case kAtleastGate:  // K / (N - 1).
-        to_erase->push_back(arg);
-        int k = gate->vote_number();
-        int n = gate->args().size() - to_erase->size();
-        if (k == n) gate->type(kAndGate);
-        return false;
-    }
-  } else {  // Unity state arg.
-    switch (parent_type) {
-      case kNullGate:
-      case kOrGate:
-        gate->MakeUnity();
-        break;
-      case kNandGate:
-      case kAndGate:
-        to_erase->push_back(arg);
-        return false;
-      case kNorGate:
-      case kNotGate:
-        gate->Nullify();
-        break;
-      case kXorGate:  // Special handling due to its internal negation.
-        assert(gate->args().size() == 2);
-        if (to_erase->size() == 1) {  // The other arg is NULL.
-          gate->MakeUnity();
-        } else {
-          assert(to_erase->empty());
-          gate->type(kNotGate);
-          to_erase->push_back(arg);
-          return false;
-        }
-        break;
-      case kAtleastGate:  // (K - 1) / (N - 1).
-        int k = gate->vote_number();
-        --k;
-        if (k == 1) gate->type(kOrGate);
-        assert(k > 1);
-        gate->vote_number(k);
-        to_erase->push_back(arg);
-        return false;
-    }
+  if (state) {  // Unity state or True arg.
+    Preprocessor::ProcessTrueArg(gate, arg);
+  } else {  // Null state or False arg.
+    Preprocessor::ProcessFalseArg(gate, arg);
   }
-  return true;  // Becomes constant NULL or UNITY most of the cases.
 }
 
-void Preprocessor::RemoveArgs(const IGatePtr& gate,
-                              const std::vector<int>& to_erase) {
-  if (to_erase.empty()) return;
-  assert(to_erase.size() <= gate->args().size());
-  std::vector<int>::const_iterator it_v;
-  for (it_v = to_erase.begin(); it_v != to_erase.end(); ++it_v) {
-    gate->EraseArg(*it_v);
+void Preprocessor::ProcessTrueArg(const IGatePtr& gate, int arg) {
+  switch (gate->type()) {
+    case kNullGate:
+    case kOrGate:
+      gate->MakeUnity();
+      break;
+    case kNandGate:
+    case kAndGate:
+      Preprocessor::RemoveConstantArg(gate, arg);
+      break;
+    case kNorGate:
+    case kNotGate:
+      gate->Nullify();
+      break;
+    case kXorGate:  // Special handling due to its internal negation.
+      assert(gate->args().size() == 2);
+      gate->EraseArg(arg);
+      assert(gate->args().size() == 1);
+      gate->type(kNotGate);
+      break;
+    case kAtleastGate:  // (K - 1) / (N - 1).
+      assert(gate->args().size() > 2);
+      gate->EraseArg(arg);
+      int k = gate->vote_number();
+      --k;
+      gate->vote_number(k);
+      if (k == 1) gate->type(kOrGate);
+      break;
   }
-  Operator type = gate->type();
-  if (gate->args().empty()) {
-    assert(type != kNotGate && type != kNullGate);  // Constant by design.
-    assert(type != kAtleastGate);  // Must get transformed by design.
-    switch (type) {
-      case kNandGate:
-      case kXorGate:
-      case kOrGate:
-        gate->Nullify();
-        break;
-      case kNorGate:
-      case kAndGate:
-        gate->MakeUnity();
-        break;
-    }
-  } else if (gate->args().size() == 1) {
-    assert(type != kAtleastGate);  // Cannot have only one arg by processing.
-    switch (type) {
+}
+
+void Preprocessor::ProcessFalseArg(const IGatePtr& gate, int arg) {
+  switch (gate->type()) {
+    case kNorGate:
+    case kXorGate:
+    case kOrGate:
+      Preprocessor::RemoveConstantArg(gate, arg);
+      break;
+    case kNullGate:
+    case kAndGate:
+      gate->Nullify();
+      break;
+    case kNandGate:
+    case kNotGate:
+      gate->MakeUnity();
+      break;
+    case kAtleastGate:  // K / (N - 1).
+      assert(gate->args().size() > 2);
+      gate->EraseArg(arg);
+      int k = gate->vote_number();
+      int n = gate->args().size();
+      if (k == n) gate->type(kAndGate);
+      break;
+  }
+}
+
+void Preprocessor::RemoveConstantArg(const IGatePtr& gate, int arg) {
+  assert(gate->args().size() > 1);  // One-arg gates must have become constant.
+  gate->EraseArg(arg);
+  if (gate->args().size() == 1) {
+    switch (gate->type()) {
       case kXorGate:
       case kOrGate:
       case kAndGate:
@@ -547,9 +519,9 @@ void Preprocessor::RemoveArgs(const IGatePtr& gate,
         gate->type(kNotGate);
         break;
       default:
-        assert(type == kNotGate || type == kNullGate);
+        assert(false);  // Other one-arg gates must not happen.
     }
-  }
+  }  // More complex cases with K/N gates are handled by the caller functions.
 }
 
 void Preprocessor::PropagateComplements(

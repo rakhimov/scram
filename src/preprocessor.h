@@ -241,44 +241,62 @@ class Preprocessor {
   /// Changes the state of a gate
   /// or passes a constant argument to be removed later.
   /// The function determines its actions depending on
-  /// the type of a gate and state of an argument;
-  /// however, the index sign is ignored.
-  /// The caller of this function must ensure
-  /// that the state corresponds to the sign of the argument index.
+  /// the type of a gate and state of an argument.
   /// The type of the gate may change,
   /// but it will only be valid
   /// after the to-be-erased arguments are handled properly.
   ///
   /// @param[in,out] gate The parent gate that contains the arguments.
-  /// @param[in] arg The constant argument under consideration.
+  /// @param[in] arg The positive or negative index of the argument.
   /// @param[in] state False or True constant state of the argument.
-  /// @param[in,out] to_erase The set of arguments to erase from the gate.
   ///
-  /// @returns true if the passed gate has become constant due to its argument.
-  /// @returns false if the parent still valid for further operations.
+  /// @note This is a helper function that propagates constants.
+  /// @note This function takes into account the sign of the index
+  ///       to properly assess the Boolean constant argument.
+  /// @note This function may change the state of the gate.
+  /// @note This function may change type and parameters of the gate.
+  void ProcessConstantArg(const IGatePtr& gate, int arg, bool state);
+
+  /// Processes Boolean constant argument with True value.
+  ///
+  /// @param[in,out] gate The parent gate that contains the arguments.
+  /// @param[in] arg The positive or negative index of the argument.
   ///
   /// @note This is a helper function that propagates constants.
   /// @note This function may change the state of the gate.
   /// @note This function may change type and parameters of the gate.
-  bool ProcessConstantArg(const IGatePtr& gate, int arg,
-                          bool state, std::vector<int>* to_erase);
+  void ProcessTrueArg(const IGatePtr& gate, int arg);
 
-  /// Removes a set of arguments from a gate
+  /// Processes Boolean constant argument with False value.
+  ///
+  /// @param[in,out] gate The parent gate that contains the arguments.
+  /// @param[in] arg The positive or negative index of the argument.
+  ///
+  /// @note This is a helper function that propagates constants.
+  /// @note This function may change the state of the gate.
+  /// @note This function may change type and parameters of the gate.
+  void ProcessFalseArg(const IGatePtr& gate, int arg);
+
+  /// Removes Boolean constant arguments from a gate
   /// taking into account the logic.
   /// This is a helper function
-  /// for NULL and UNITY propagation on the graph.
+  /// for NULL and UNITY set or constant propagation for the graph.
   /// If the final gate is empty,
   /// its state is turned into NULL or UNITY
   /// depending on the logic of the gate
-  /// and the logic of the constant propagation.
+  /// and the logic of the Boolean constant propagation.
   ///
   /// @param[in,out] gate The gate that contains the arguments to be removed.
-  /// @param[in] to_erase The set of arguments to erase from the parent gate.
+  /// @param[in] arg The positive or negative index of the argument.
   ///
   /// @note This is a helper function that propagates constants,
   ///       so it is coupled with the logic of
   ///       the constant propagation algorithms.
-  void RemoveArgs(const IGatePtr& gate, const std::vector<int>& to_erase);
+  ///
+  /// @warning This function does not handle complex K/N gate parents.
+  ///          The logic is not simple for K/N gates,
+  ///          so it must be handled by the caller.
+  void RemoveConstantArg(const IGatePtr& gate, int arg);
 
   /// Propagates complements of argument gates down to leafs
   /// according to the De Morgan's law
