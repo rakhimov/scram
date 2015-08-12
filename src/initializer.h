@@ -21,6 +21,7 @@
 
 #include <map>
 #include <set>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -55,7 +56,7 @@ class Initializer {
 
   /// Prepares common information to be used by
   /// the future input file constructs,
-  /// for example, mission time.
+  /// for example, mission time and validation schema.
   ///
   /// @param[in] settings Analysis settings.
   explicit Initializer(const Settings& settings);
@@ -393,6 +394,9 @@ class Initializer {
   ModelPtr model_;  ///< Analysis model with constructs.
   Settings settings_;  ///< Settings for analysis.
   boost::shared_ptr<MissionTime> mission_time_;  ///< Mission time expression.
+
+  /// The main schema for validation.
+  static std::stringstream schema_;
 
   /// Parsers with all documents saved for later access.
   std::vector<boost::shared_ptr<XMLParser> > parsers_;
