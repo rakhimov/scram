@@ -359,21 +359,22 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
   /// @param[in] arg A positive or negative index of an argument.
   /// @param[in] gate A pointer to the argument gate.
   ///
-  /// @returns false if there final state of the parent is normal.
-  /// @returns true if the parent has become constant.
-  ///
   /// @warning The function does not indicate invalid state.
   ///          For example, a second argument for NOT or NULL type gates
   ///          is not going to be reported in any way.
   /// @warning This function does not indicate error
   ///          for future additions
   ///          in case the state is nulled or becomes unity.
+  /// @warning Duplicate arguments may change the type and state of the gate.
+  ///          Depending on the logic of the gate,
+  ///          new gates may be introduced
+  ///          instead of the existing arguments.
   /// @warning Complex logic gates like ATLEAST and XOR
   ///          are handled specially
   ///          if the argument is duplicate.
   ///          The caller must be very cautious of
   ///          the side effects of the manipulations.
-  bool AddArg(int arg, const IGatePtr& gate);
+  void AddArg(int arg, const IGatePtr& gate);
 
   /// Adds an argument variable to this gate.
   /// Before adding the argument,
@@ -387,21 +388,22 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
   /// @param[in] arg A positive or negative index of an argument.
   /// @param[in] variable A pointer to the argument variable.
   ///
-  /// @returns false if there final state of the parent is normal.
-  /// @returns true if the parent has become constant.
-  ///
   /// @warning The function does not indicate invalid state.
   ///          For example, a second argument for NOT or NULL type gates
   ///          is not going to be reported in any way.
   /// @warning This function does not indicate error
   ///          for future additions
   ///          in case the state is nulled or becomes unity.
+  /// @warning Duplicate arguments may change the type and state of the gate.
+  ///          Depending on the logic of the gate,
+  ///          new gates may be introduced
+  ///          instead of the existing arguments.
   /// @warning Complex logic gates like ATLEAST and XOR
   ///          are handled specially
   ///          if the argument is duplicate.
   ///          The caller must be very cautious of
   ///          the side effects of the manipulations.
-  bool AddArg(int arg, const VariablePtr& variable);
+  void AddArg(int arg, const VariablePtr& variable);
 
   /// Adds a constant argument to this gate.
   /// Before adding the argument,
@@ -415,39 +417,34 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
   /// @param[in] arg A positive or negative index of an argument.
   /// @param[in] constant A pointer to the argument that is a Constant.
   ///
-  /// @returns false if there final state of the parent is normal.
-  /// @returns true if the parent has become constant.
-  ///
   /// @warning The function does not indicate invalid state.
   ///          For example, a second argument for NOT or NULL type gates
   ///          is not going to be reported in any way.
   /// @warning This function does not indicate error
   ///          for future additions
   ///          in case the state is nulled or becomes unity.
+  /// @warning Duplicate arguments may change the type and state of the gate.
+  ///          Depending on the logic of the gate,
+  ///          new gates may be introduced
+  ///          instead of the existing arguments.
   /// @warning Complex logic gates like ATLEAST and XOR
   ///          are handled specially
   ///          if the argument is duplicate.
   ///          The caller must be very cautious of
   ///          the side effects of the manipulations.
-  bool AddArg(int arg, const ConstantPtr& constant);
+  void AddArg(int arg, const ConstantPtr& constant);
 
   /// Transfers this gates's argument to another gate.
   ///
   /// @param[in] arg Positive or negative index of the argument.
   /// @param[in,out] recipient A new parent for the argument.
-  ///
-  /// @returns false if there final state of the recipient is normal.
-  /// @returns true if the recipient becomes constant.
-  bool TransferArg(int arg, const IGatePtr& recipient);
+  void TransferArg(int arg, const IGatePtr& recipient);
 
   /// Shares this gates's argument with another gate.
   ///
   /// @param[in] arg Positive or negative index of the argument.
   /// @param[in,out] recipient Another parent for the argument.
-  ///
-  /// @returns false if there final state of the recipient is normal.
-  /// @returns true if the recipient becomes constant.
-  bool ShareArg(int arg, const IGatePtr& recipient);
+  void ShareArg(int arg, const IGatePtr& recipient);
 
   /// Makes all arguments complements of themselves.
   /// This is a helper function to propagate a complement gate
@@ -469,23 +466,17 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
   ///
   /// @param[in] arg_gate The gate which arguments to be added to this gate.
   ///
-  /// @returns false if the final set is null or unity.
-  /// @returns true if the addition is successful with a normal final state.
-  ///
   /// @warning This function does not test
   ///          if the parent and argument logics are
   ///          correct for coalescing.
-  bool JoinGate(const IGatePtr& arg_gate);
+  void JoinGate(const IGatePtr& arg_gate);
 
   /// Swaps a single argument of a NULL type argument gate.
   /// This is separate from other coalescing functions
   /// because this function takes into account the sign of the argument.
   ///
   /// @param[in] index Positive or negative index of the argument gate.
-  ///
-  /// @returns false if the final set is null or unity.
-  /// @returns true if the addition is successful with a normal final state.
-  bool JoinNullGate(int index);
+  void JoinNullGate(int index);
 
   /// Directly copies arguments from another gate.
   /// This is a helper function for initialization of gates' copies.
@@ -575,22 +566,16 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
   ///
   /// @param[in] index Positive or negative index of the existing argument.
   ///
-  /// @returns false if the final set is null or unity.
-  /// @returns true if the addition is successful with a normal final state.
-  ///
   /// @warning The addition of a duplicate argument
   ///          has a complex set of possible outcomes
   ///          depending on the context.
   ///          The complex corner cases must be handled by the caller.
-  bool ProcessDuplicateArg(int index);
+  void ProcessDuplicateArg(int index);
 
   /// Process an addition of a complement of an existing argument.
   ///
   /// @param[in] index Positive or negative index of the argument.
-  ///
-  /// @returns false if the final set is null or unity.
-  /// @returns true if the addition is successful with a normal final state.
-  bool ProcessComplementArg(int index);
+  void ProcessComplementArg(int index);
 
   Operator type_;  ///< Type of this gate.
   State state_;  ///< Indication if this gate's state is normal, null, or unity.

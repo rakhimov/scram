@@ -157,7 +157,8 @@ void Preprocessor::ProcessFaultTree() {
 
     tree_changed = false;
     Preprocessor::ClearGateMarks();
-    Preprocessor::JoinGates(graph_->root());  // Registers const gates.
+    if (graph_->root()->state() == kNormalState)
+      Preprocessor::JoinGates(graph_->root());  // Registers const gates.
 
     if (!const_gates_.empty()) {
       Preprocessor::ClearConstGates();
@@ -529,7 +530,6 @@ void Preprocessor::PropagateComplements(
     std::map<int, IGatePtr>* gate_complements) {
   if (gate->mark()) return;
   gate->mark(true);
-  // assert(gate->args().size() > 1);  /// @todo Put Back.
   // If the argument gate is complement,
   // then create a new gate
   // that propagates its sign to its arguments
@@ -568,8 +568,8 @@ void Preprocessor::PropagateComplements(
     assert(*it_ch < 0);
     gate->EraseArg(*it_ch);
     IGatePtr complement = gate_complements->find(-*it_ch)->second;
-    bool ret = gate->AddArg(complement->index(), complement);
-    assert(ret);  // No duplicates.
+    gate->AddArg(complement->index(), complement);
+    assert(gate->state() == kNormalState);  // No duplicates.
   }
 }
 
@@ -609,18 +609,18 @@ bool Preprocessor::JoinGates(const IGatePtr& gate) {
   switch (gate->type()) {
     case kNandGate:
     case kAndGate:
-      // assert(gate->args().size() > 1);  /// @todo Put back.
+      assert(gate->args().size() > 1);
       target_type = kAndGate;
       possible = true;
       break;
     case kNorGate:
     case kOrGate:
-      // assert(gate->args().size() > 1);  /// @todo Put back.
+      assert(gate->args().size() > 1);
       target_type = kOrGate;
       possible = true;
       break;
   }
-  // assert(!gate->args().empty());  /// @todo Put back.
+  assert(!gate->args().empty());
   std::vector<IGatePtr> to_join;  // Gate arguments of the same logic.
   bool changed = false;  // Indication if the tree is changed.
   boost::unordered_map<int, IGatePtr>::const_iterator it;
@@ -646,7 +646,7 @@ bool Preprocessor::JoinGates(const IGatePtr& gate) {
       const_gates_.push_back(gate);  // Register for future processing.
       return true;  // The parent is constant. No need to join other arguments.
     }
-    // assert(gate->args().size() > 1);  // Does not produce NULL type gates.
+    assert(gate->args().size() > 1);  // Does not produce NULL type gates.
   }
   return changed;
 }
@@ -1151,6 +1151,7 @@ bool Preprocessor::ProcessMultipleDefinitions() {
   Preprocessor::ClearGateMarks();
   Preprocessor::DetectMultipleDefinitions(graph_->root(), &multi_def,
                                           &orig_gates);
+  orig_gates.clear();  /// @todo Use weak pointers.
   Preprocessor::ClearGateMarks();
 
   if (multi_def.empty()) return false;

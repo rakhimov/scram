@@ -61,7 +61,7 @@ IGate::IGate(const Operator& type)
       module_(false),
       num_failed_args_(0) {}
 
-bool IGate::AddArg(int arg, const IGatePtr& gate) {
+void IGate::AddArg(int arg, const IGatePtr& gate) {
   assert(arg != 0);
   assert(std::abs(arg) == gate->index());
   assert(state_ == kNormalState);
@@ -72,10 +72,9 @@ bool IGate::AddArg(int arg, const IGatePtr& gate) {
   args_.insert(arg);
   gate_args_.insert(std::make_pair(arg, gate));
   gate->parents_.insert(std::make_pair(Node::index(), shared_from_this()));
-  return true;
 }
 
-bool IGate::AddArg(int arg, const VariablePtr& variable) {
+void IGate::AddArg(int arg, const VariablePtr& variable) {
   assert(arg != 0);
   assert(std::abs(arg) == variable->index());
   assert(state_ == kNormalState);
@@ -86,10 +85,9 @@ bool IGate::AddArg(int arg, const VariablePtr& variable) {
   args_.insert(arg);
   variable_args_.insert(std::make_pair(arg, variable));
   variable->parents_.insert(std::make_pair(Node::index(), shared_from_this()));
-  return true;
 }
 
-bool IGate::AddArg(int arg, const ConstantPtr& constant) {
+void IGate::AddArg(int arg, const ConstantPtr& constant) {
   assert(arg != 0);
   assert(std::abs(arg) == constant->index());
   assert(state_ == kNormalState);
@@ -100,47 +98,42 @@ bool IGate::AddArg(int arg, const ConstantPtr& constant) {
   args_.insert(arg);
   constant_args_.insert(std::make_pair(arg, constant));
   constant->parents_.insert(std::make_pair(Node::index(), shared_from_this()));
-  return true;
 }
 
-bool IGate::TransferArg(int arg, const IGatePtr& recipient) {
+void IGate::TransferArg(int arg, const IGatePtr& recipient) {
   assert(arg != 0);
   assert(args_.count(arg));
   args_.erase(arg);
-  bool ret = true;  // The normal state of the recipient.
   NodePtr node;
   if (gate_args_.count(arg)) {
     node = gate_args_.find(arg)->second;
-    ret = recipient->AddArg(arg, gate_args_.find(arg)->second);
+    recipient->AddArg(arg, gate_args_.find(arg)->second);
     gate_args_.erase(arg);
   } else if (variable_args_.count(arg)) {
     node = variable_args_.find(arg)->second;
-    ret = recipient->AddArg(arg, variable_args_.find(arg)->second);
+    recipient->AddArg(arg, variable_args_.find(arg)->second);
     variable_args_.erase(arg);
   } else {
     assert(constant_args_.count(arg));
     node = constant_args_.find(arg)->second;
-    ret = recipient->AddArg(arg, constant_args_.find(arg)->second);
+    recipient->AddArg(arg, constant_args_.find(arg)->second);
     constant_args_.erase(arg);
   }
   assert(node->parents_.count(Node::index()));
   node->parents_.erase(Node::index());
-  return ret;
 }
 
-bool IGate::ShareArg(int arg, const IGatePtr& recipient) {
+void IGate::ShareArg(int arg, const IGatePtr& recipient) {
   assert(arg != 0);
   assert(args_.count(arg));
-  bool ret = true;  // The normal state of the recipient.
   if (gate_args_.count(arg)) {
-    ret = recipient->AddArg(arg, gate_args_.find(arg)->second);
+    recipient->AddArg(arg, gate_args_.find(arg)->second);
   } else if (variable_args_.count(arg)) {
-    ret = recipient->AddArg(arg, variable_args_.find(arg)->second);
+    recipient->AddArg(arg, variable_args_.find(arg)->second);
   } else {
     assert(constant_args_.count(arg));
-    ret = recipient->AddArg(arg, constant_args_.find(arg)->second);
+    recipient->AddArg(arg, constant_args_.find(arg)->second);
   }
-  return ret;
 }
 
 void IGate::InvertArgs() {
@@ -171,64 +164,67 @@ void IGate::InvertArg(int existing_arg) {
   }
 }
 
-bool IGate::JoinGate(const IGatePtr& arg_gate) {
+void IGate::JoinGate(const IGatePtr& arg_gate) {
   assert(args_.count(arg_gate->index()));  // Positive argument only.
-  args_.erase(arg_gate->index());
-  gate_args_.erase(arg_gate->index());
-  assert(arg_gate->parents_.count(Node::index()));
-  arg_gate->parents_.erase(Node::index());
 
   boost::unordered_map<int, IGatePtr>::const_iterator it_g;
   for (it_g = arg_gate->gate_args_.begin();
        it_g != arg_gate->gate_args_.end(); ++it_g) {
-    if (!IGate::AddArg(it_g->first, it_g->second)) return false;
+    IGate::AddArg(it_g->first, it_g->second);
+    if (state_ != kNormalState) return;
   }
   boost::unordered_map<int, VariablePtr>::const_iterator it_b;
   for (it_b = arg_gate->variable_args_.begin();
        it_b != arg_gate->variable_args_.end(); ++it_b) {
-    if (!IGate::AddArg(it_b->first, it_b->second)) return false;
+    IGate::AddArg(it_b->first, it_b->second);
+    if (state_ != kNormalState) return;
   }
   boost::unordered_map<int, ConstantPtr>::const_iterator it_c;
   for (it_c = arg_gate->constant_args_.begin();
        it_c != arg_gate->constant_args_.end(); ++it_c) {
-    if (!IGate::AddArg(it_c->first, it_c->second)) return false;
+    IGate::AddArg(it_c->first, it_c->second);
+    if (state_ != kNormalState) return;
   }
-  return true;
+
+  args_.erase(arg_gate->index());  // Erase at the end to avoid the type change.
+  gate_args_.erase(arg_gate->index());
+  assert(arg_gate->parents_.count(Node::index()));
+  arg_gate->parents_.erase(Node::index());
 }
 
-bool IGate::JoinNullGate(int index) {
+void IGate::JoinNullGate(int index) {
   assert(index != 0);
   assert(args_.count(index));
   assert(gate_args_.count(index));
 
   args_.erase(index);
-  IGatePtr arg_gate = gate_args_.find(index)->second;
+  IGatePtr null_gate = gate_args_.find(index)->second;
   gate_args_.erase(index);
-  arg_gate->parents_.erase(Node::index());
+  null_gate->parents_.erase(Node::index());
 
-  assert(arg_gate->type_ == kNullGate);
-  assert(arg_gate->args_.size() == 1);
+  assert(null_gate->type_ == kNullGate);
+  assert(null_gate->args_.size() == 1);
 
-  int grandchild = *arg_gate->args_.begin();
-  grandchild *= index > 0 ? 1 : -1;  // Carry the parent's sign.
+  int arg = *null_gate->args_.begin();
+  arg *= index > 0 ? 1 : -1;  // Carry the parent's sign.
 
-  if (!arg_gate->gate_args_.empty()) {
-    return IGate::AddArg(grandchild, arg_gate->gate_args_.begin()->second);
-  } else if (!arg_gate->constant_args_.empty()) {
-    return IGate::AddArg(grandchild, arg_gate->constant_args_.begin()->second);
+  if (!null_gate->gate_args_.empty()) {
+    IGate::AddArg(arg, null_gate->gate_args_.begin()->second);
+  } else if (!null_gate->constant_args_.empty()) {
+    IGate::AddArg(arg, null_gate->constant_args_.begin()->second);
   } else {
-    assert(!arg_gate->variable_args_.empty());
-    return IGate::AddArg(grandchild, arg_gate->variable_args_.begin()->second);
+    assert(!null_gate->variable_args_.empty());
+    IGate::AddArg(arg, null_gate->variable_args_.begin()->second);
   }
 }
 
-bool IGate::ProcessDuplicateArg(int index) {
+void IGate::ProcessDuplicateArg(int index) {
   assert(type_ != kNotGate && type_ != kNullGate);
   assert(args_.count(index));
   switch (type_) {
     case kXorGate:
       IGate::Nullify();
-      return false;;
+      break;
     case kAtleastGate:
       // This is a very special handling of K/N duplicates.
       // @(k, [x, x, y_i]) = x & @(k-2, [y_i]) | @(k, [y_i])
@@ -265,10 +261,23 @@ bool IGate::ProcessDuplicateArg(int index) {
       }
       assert(args_.size() == 2);
   }
-  return true;  // Duplicate arguments are OK in most cases.
+  if (args_.size() == 1) {
+    switch(type_) {
+      case kAndGate:
+      case kOrGate:
+        type_ = kNullGate;
+        break;
+      case kNandGate:
+      case kNorGate:
+        type_ = kNotGate;
+        break;
+      default:
+        assert(false);  // NOT and NULL gates can't have duplicates.
+    }
+  }
 }
 
-bool IGate::ProcessComplementArg(int index) {
+void IGate::ProcessComplementArg(int index) {
   assert(type_ != kNotGate && type_ != kNullGate);
   assert(args_.count(-index));
   switch (type_) {
@@ -290,9 +299,8 @@ bool IGate::ProcessComplementArg(int index) {
       } else if (vote_number_ == args_.size()) {
         type_ = kAndGate;
       }
-      return true;
+      break;
   }
-  return false;  // Becomes constant most of the cases.
 }
 
 void IGate::ArgFailed() {
