@@ -191,8 +191,7 @@ class Preprocessor {
   /// @warning Gate marks will get cleared by this function.
   void ClearNullGates();
 
-  /// Removes all constants and constant gates
-  /// from a given sub-graph
+  /// Removes all Boolean constants from the Boolean graph
   /// according to the Boolean logic of the gates.
   /// This algorithm is top-down search for all constants.
   /// It is less efficient
@@ -202,10 +201,7 @@ class Preprocessor {
   /// without knowing where they are or what they are
   /// at the very beginning of preprocessing.
   ///
-  /// @param[in,out] gate The starting gate to traverse the graph.
-  ///                     This is for recursive purposes.
-  ///
-  /// @returns true if the given graph has been changed by this function.
+  /// @returns true if the graph has been changed by this function.
   /// @returns false if no change has been made.
   ///
   /// @note This is one of the first preprocessing steps.
@@ -214,11 +210,33 @@ class Preprocessor {
   ///       Only possible constant nodes are gates
   ///       that turn NULL or UNITY sets.
   ///
-  /// @warning Gate marks must be clear.
   /// @warning There still may be only one constant state gate
   ///          which is the root of the graph.
   ///          This must be handled separately.
-  bool PropagateConstants(const IGatePtr& gate);
+  bool RemoveConstants();
+
+  /// Gathers all Boolean constants in the graph.
+  /// This is a helper function for initial cleanup of constants.
+  ///
+  /// @param[in,out] gate The gate to start the traversal.
+  /// @param[out] constants The container for constants.
+  ///
+  /// @warning Gate marks must be clear.
+  /// @warning The constants are assumed to be removed after this function.
+  ///          The visit information must be cleaned from constants
+  ///          if they are not going to be deleted.
+  void GatherConstants(const IGatePtr& gate,
+                       std::vector<boost::weak_ptr<Constant> >* constants);
+
+  /// Propagates a Boolean constant bottom-up.
+  /// This is a helper function for initial cleanup of the Boolean graph.
+  ///
+  /// @param[in,out] constant The constant to be propagated.
+  ///
+  /// @note This function works together with
+  ///       NULL type and constant gate propagation functions
+  ///       to clean the results of the propagation.
+  void PropagateConstant(const ConstantPtr& constant);
 
   /// Changes the state of a gate
   /// or passes a constant argument to be removed later.

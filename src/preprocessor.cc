@@ -77,9 +77,9 @@ void Preprocessor::ProcessFaultTree() {
   LOG(DEBUG2) << "Preprocessing...";
 
   if (graph_->constants()) {
-    LOG(DEBUG2) << "Propagating constants...";
-    Preprocessor::PropagateConstants(root);
-    LOG(DEBUG2) << "Constant propagation is done!";
+    LOG(DEBUG2) << "Removing constants...";
+    Preprocessor::RemoveConstants();
+    LOG(DEBUG2) << "Constant are removed!";
   }
 
   if (!graph_->normal()) {
@@ -390,40 +390,61 @@ void Preprocessor::ClearNullGates() {
   null_gates_.clear();
 }
 
-bool Preprocessor::PropagateConstants(const IGatePtr& gate) {
-  if (gate->mark()) return false;
-  gate->mark(true);
-  if (gate->state() != kNormalState) return false;
+bool Preprocessor::RemoveConstants() {
+  assert(const_gates_.empty());
+  Preprocessor::ClearGateMarks();
+  std::vector<boost::weak_ptr<Constant> > constants;
+  Preprocessor::GatherConstants(graph_->root(), &constants);
+  Preprocessor::ClearGateMarks();
+  std::vector<boost::weak_ptr<Constant> >::iterator it;
+  for (it = constants.begin(); it != constants.end(); ++it) {
+    if (it->expired()) continue;
+    Preprocessor::PropagateConstant(it->lock());
+  }
+  assert(const_gates_.empty());
+  if (!constants.empty()) return true;
+  return false;
+}
 
-  bool changed = false;  // Indication if this operation changed the gate.
-  std::vector<int> to_erase;  // Erase arguments later to keep iterators valid.
+void Preprocessor::GatherConstants(
+    const IGatePtr& gate,
+    std::vector<boost::weak_ptr<Constant> >* constants) {
+  if (gate->mark()) return;
+  gate->mark(true);
   boost::unordered_map<int, ConstantPtr>::const_iterator it_c;
   for (it_c = gate->constant_args().begin();
        it_c != gate->constant_args().end(); ++it_c) {
-    int index = it_c->first;  // May be negation.
-    bool state = it_c->second->state();
-    if (index < 0) state = !state;
-    if (Preprocessor::ProcessConstantArg(gate, index, state, &to_erase))
-      return true;  // The parent gate itself has become constant.
+    ConstantPtr constant = it_c->second;
+    if (constant->Visited()) continue;
+    constant->Visit(1);  // This node will be deleted anyway.
+    constants->push_back(constant);
   }
-  boost::unordered_map<int, IGatePtr>::const_iterator it_g;
-  for (it_g = gate->gate_args().begin(); it_g != gate->gate_args().end();
-       ++it_g) {
-    IGatePtr arg_gate = it_g->second;
-    bool ret = Preprocessor::PropagateConstants(arg_gate);
-    if (!changed && ret) changed = true;
 
-    State gate_state = arg_gate->state();
-    if (gate_state == kNormalState) continue;
-    int index = it_g->first;  // May be negation.
-    bool state = gate_state == kNullState ? false : true;
-    if (index < 0) state = !state;
-    if (Preprocessor::ProcessConstantArg(gate, index, state, &to_erase))
-      return true;  // Early exit because the parent has become constant.
+  boost::unordered_map<int, IGatePtr>::const_iterator it;
+  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
+    Preprocessor::GatherConstants(it->second, constants);
   }
-  if (!changed && !to_erase.empty()) changed = true;
-  Preprocessor::RemoveArgs(gate, to_erase);
-  return changed;
+}
+
+void Preprocessor::PropagateConstant(const ConstantPtr& constant) {
+  while (!constant->parents().empty()) {
+    IGatePtr parent = constant->parents().begin()->second.lock();
+
+    int sign = parent->args().count(constant->index()) ? 1 : -1;
+    bool state = constant->state();
+    if (sign < 0) state = !state;
+
+    std::vector<int> to_erase;
+    Preprocessor::ProcessConstantArg(parent, sign * constant->index(),
+                                     state, &to_erase);
+    Preprocessor::RemoveArgs(parent, to_erase);
+
+    if (parent->state() != kNormalState) {
+      Preprocessor::PropagateConstGate(parent);
+    } else if (parent->type() == kNullGate) {
+      Preprocessor::PropagateNullGate(parent);
+    }
+  }
 }
 
 bool Preprocessor::ProcessConstantArg(const IGatePtr& gate, int arg,
