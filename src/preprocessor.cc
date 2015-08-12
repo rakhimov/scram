@@ -703,6 +703,7 @@ void Preprocessor::FindModules(const IGatePtr& gate) {
   std::vector<std::pair<int, NodePtr> > non_shared_args;
   std::vector<std::pair<int, NodePtr> > modular_args;
   std::vector<std::pair<int, NodePtr> > non_modular_args;
+
   boost::unordered_map<int, IGatePtr>::const_iterator it;
   for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
     IGatePtr arg_gate = it->second;
@@ -757,8 +758,7 @@ void Preprocessor::FindModules(const IGatePtr& gate) {
   // Determine if this gate is module itself.
   if (min_time == enter_time && max_time == exit_time) {
     LOG(DEBUG3) << "Found original module: " << gate->index();
-    assert((modular_args.size() + non_shared_args.size()) ==
-           gate->args().size());
+    assert(non_modular_args.empty());
     gate->TurnModule();
   }
 
@@ -766,6 +766,18 @@ void Preprocessor::FindModules(const IGatePtr& gate) {
   gate->min_time(min_time);
   gate->max_time(max_time);
 
+  Preprocessor::ProcessModularArgs(gate, non_shared_args, &modular_args,
+                                   &non_modular_args);
+}
+
+void Preprocessor::ProcessModularArgs(
+    const IGatePtr& gate,
+    const std::vector<std::pair<int, NodePtr> >& non_shared_args,
+    std::vector<std::pair<int, NodePtr> >* modular_args,
+    std::vector<std::pair<int, NodePtr> >* non_modular_args) {
+  assert(gate->args().size() ==
+         (non_shared_args.size() + modular_args->size() +
+          non_modular_args->size()));
   // Attempting to create new modules for specific gate types.
   switch (gate->type()) {
     case kNorGate:
@@ -774,11 +786,11 @@ void Preprocessor::FindModules(const IGatePtr& gate) {
     case kAndGate:
       Preprocessor::CreateNewModule(gate, non_shared_args);
 
-      Preprocessor::FilterModularArgs(&modular_args, &non_modular_args);
-      assert(modular_args.size() != 1);  // One modular arg is non-shared.
+      Preprocessor::FilterModularArgs(modular_args, non_modular_args);
+      assert(modular_args->size() != 1);  // One modular arg is non-shared.
       std::vector<std::vector<std::pair<int, NodePtr> > > groups;
-      Preprocessor::GroupModularArgs(modular_args, &groups);
-      Preprocessor::CreateNewModules(gate, modular_args, groups);
+      Preprocessor::GroupModularArgs(*modular_args, &groups);
+      Preprocessor::CreateNewModules(gate, *modular_args, groups);
   }
 }
 
@@ -819,6 +831,24 @@ boost::shared_ptr<IGate> Preprocessor::CreateNewModule(
   return module;
 }
 
+namespace {
+
+/// Detects overlap in ranges.
+///
+/// @param[in] a_min The lower boundary of the first range.
+/// @param[in] a_max The upper boundary of the first range.
+/// @param[in] b_min The lower boundary of the second range.
+/// @param[in] b_max The upper boundary of the second range.
+///
+/// @returns true if there's overlap in the ranges.
+bool DetectOverlap(int a_min, int a_max, int b_min, int b_max) {
+  assert(a_min < a_max);
+  assert(b_min < b_max);
+  return std::max(a_min, b_min) <= std::min(a_max, b_max);
+}
+
+}
+
 void Preprocessor::FilterModularArgs(
     std::vector<std::pair<int, NodePtr> >* modular_args,
     std::vector<std::pair<int, NodePtr> >* non_modular_args) {
@@ -831,13 +861,11 @@ void Preprocessor::FilterModularArgs(
     int max = it->second->max_time();
     bool non_module = false;
     std::vector<std::pair<int, NodePtr> >::iterator it_n;
-    for (it_n = non_modular_args->begin();
-         it_n != non_modular_args->end(); ++it_n) {
-      int lower = it_n->second->min_time();
-      int upper = it_n->second->max_time();
-      int a = std::max(min, lower);
-      int b = std::min(max, upper);
-      if (a <= b) {  // There's some overlap between the ranges.
+    for (it_n = non_modular_args->begin(); it_n != non_modular_args->end();
+         ++it_n) {
+      bool overlap = DetectOverlap(min, max, it_n->second->min_time(),
+                                   it_n->second->max_time());
+      if (overlap) {
         non_module = true;
         break;
       }
@@ -877,9 +905,7 @@ void Preprocessor::GroupModularArgs(
       for (it = member_list.begin(); it != member_list.end();) {
         int min = it->second->min_time();
         int max = it->second->max_time();
-        int a = std::max(min, low);
-        int b = std::min(max, high);
-        if (a <= b) {  // There's some overlap between the ranges.
+        if (DetectOverlap(min, max, low, high)) {
           group.push_back(*it);
           low = std::min(min, low);
           high = std::max(max, high);

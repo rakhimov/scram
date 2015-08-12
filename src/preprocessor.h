@@ -404,6 +404,18 @@ class Preprocessor {
   /// @todo Make this function aware of previously created modules.
   void FindModules(const IGatePtr& gate);
 
+  /// Processes gate arguments found during the module detection.
+  ///
+  /// @param[in,out] gate The gate with the arguments.
+  /// @param[in] non_shared_args Args that belong only to this gate.
+  /// @param[in,out] modular_args Args that may be grouped into new modules.
+  /// @param[in,out] non_modular_args Args that cannot be grouped into modules.
+  void ProcessModularArgs(
+      const IGatePtr& gate,
+      const std::vector<std::pair<int, NodePtr> >& non_shared_args,
+      std::vector<std::pair<int, NodePtr> >* modular_args,
+      std::vector<std::pair<int, NodePtr> >* non_modular_args);
+
   /// Creates a new module
   /// as an argument of an existing gate
   /// if the logic of the existing parent gate allows a sub-module.
