@@ -21,6 +21,7 @@
 #define SCRAM_SRC_PREPROCESSOR_H_
 
 #include <map>
+#include <iostream>
 #include <set>
 #include <string>
 #include <utility>
@@ -696,6 +697,15 @@ class Preprocessor {
   ///
   /// @note Gate marks are used for linear time traversal.
   void ClearOptiValues(const IGatePtr& gate);
+
+  /// Prints the Boolean graph in the shorthand format.
+  /// This is a helper for logging and debugging.
+  ///
+  /// @warning Node visits are used.
+  inline void PrintGraph() {
+    ClearNodeVisits();
+    std::cerr << std::endl << graph_ << std::endl;
+  }
 
   BooleanGraph* graph_;  ///< The Boolean graph to preprocess.
   int root_sign_;  ///< The negative or positive sign of the root node.

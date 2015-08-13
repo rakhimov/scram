@@ -29,7 +29,7 @@
 #define SCRAM_SRC_BOOLEAN_GRAPH_H_
 
 #include <map>
-#include <ostream>
+#include <iostream>
 #include <set>
 #include <string>
 #include <vector>
