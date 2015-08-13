@@ -1063,7 +1063,7 @@ void Preprocessor::ProcessCommonNode(const boost::weak_ptr<N>& common_node) {
   if (node->parents().size() == 1) return;  // The parent is deleted.
 
   IGatePtr root = graph_->root();
-  Preprocessor::ClearOptiValues(root);
+  Preprocessor::ClearOptiValues();
 
   assert(node->opti_value() == 0);
   node->opti_value(1);
@@ -1346,7 +1346,18 @@ void Preprocessor::ClearNodeVisits(const IGatePtr& gate) {
   }
 }
 
+void Preprocessor::ClearOptiValues() {
+  LOG(DEBUG5) << "Clearing OptiValues...";
+  Preprocessor::ClearGateMarks();
+  Preprocessor::ClearOptiValues(graph_->root());
+  Preprocessor::ClearGateMarks();
+  LOG(DEBUG5) << "Node Optivalues are clear!";
+}
+
 void Preprocessor::ClearOptiValues(const IGatePtr& gate) {
+  if (gate->mark()) return;
+  gate->mark(true);
+
   gate->opti_value(0);
   gate->ResetArgFailure();
   boost::unordered_map<int, IGatePtr>::const_iterator it;

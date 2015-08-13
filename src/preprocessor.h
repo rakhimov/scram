@@ -677,13 +677,24 @@ class Preprocessor {
   /// starting from the given gate as a root.
   ///
   /// @param[in,out] gate The root gate to be traversed and cleaned.
+  ///
+  /// @note Gate marks are used for linear time traversal.
   void ClearNodeVisits(const IGatePtr& gate);
+
+  /// Clears optimization values of all nodes in the graph.
+  /// The optimization values are set to 0.
+  /// Resets the number of failed arguments of gates.
+  ///
+  /// @not Gate marks are used for linear time traversal.
+  void ClearOptiValues();
 
   /// Clears optimization values of nodes.
   /// The optimization values are set to 0.
   /// Resets the number of failed arguments of gates.
   ///
   /// @param[in,out] gate The root gate to be traversed and cleaned.
+  ///
+  /// @note Gate marks are used for linear time traversal.
   void ClearOptiValues(const IGatePtr& gate);
 
   BooleanGraph* graph_;  ///< The Boolean graph to preprocess.
