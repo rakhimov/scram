@@ -94,4 +94,4 @@ class FaultTreeGeneratorTestCase(TestCase):
         Factors.calculate()
         num_gates = 5405
         parents_g = Factors.calculate_parents_g(num_gates)
-        assert_almost_equal(1.99474024, parents_g)
+        assert_almost_equal(2, parents_g)

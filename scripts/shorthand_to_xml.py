@@ -197,9 +197,9 @@ class FaultTree(object):
         Raises:
             FaultTreeError: The given name already exists.
         """
-        if (self.basic_events.has_key(name.lower()) or
-            self.gates.has_key(name.lower()) or
-            self.house_events.has_key(name.lower())):
+        if (name.lower() in self.basic_events or
+            name.lower() in self.gates or
+            name.lower() in self.house_events):
             raise FaultTreeError("Redefinition of a node: " + name)
 
     def __detect_cycle(self):
@@ -274,7 +274,7 @@ class FaultTree(object):
             if cycle:
                 print_cycle(cycle)
 
-        detached_gates = [x for x in self.gates.itervalues() if not x.mark]
+        detached_gates = [x for x in self.gates.values() if not x.mark]
         if detached_gates:
             error_msg = "Detected detached gates that may be in a cycle\n"
             error_msg += str([x.name for x in detached_gates])
@@ -293,7 +293,7 @@ class FaultTree(object):
         Raises:
             FaultTreeError: Multiple or no top gates are detected.
         """
-        top_gates = [x for x in self.gates.itervalues() if x.is_orphan()]
+        top_gates = [x for x in self.gates.values() if x.is_orphan()]
         if len(top_gates) > 1 and not self.multi_top:
             names = [x.name for x in top_gates]
             raise FaultTreeError("Detected multiple top gates:\n" + str(names))
@@ -358,16 +358,16 @@ class FaultTree(object):
             assert formula.num_arguments() > 0
             for child in formula.node_arguments:
                 child_node = None
-                if self.gates.has_key(child.lower()):
+                if child.lower() in self.gates:
                     child_node = self.gates[child.lower()]
                     formula.g_arguments.append(child_node)
-                elif self.basic_events.has_key(child.lower()):
+                elif child.lower() in self.basic_events:
                     child_node = self.basic_events[child.lower()]
                     formula.b_arguments.append(child_node)
-                elif self.house_events.has_key(child.lower()):
+                elif child.lower() in self.house_events:
                     child_node = self.house_events[child.lower()]
                     formula.h_arguments.append(child_node)
-                elif self.undef_nodes.has_key(child.lower()):
+                elif child.lower() in self.undef_nodes:
                     child_node = self.undef_nodes[child.lower()]
                     formula.u_arguments.append(child_node)
                 else:
@@ -380,13 +380,13 @@ class FaultTree(object):
             for child_formula in formula.f_arguments:
                 populate_formula(child_formula)
 
-        for gate in self.gates.itervalues():
+        for gate in self.gates.values():
             populate_formula(gate.formula)
 
-        for basic in self.basic_events.itervalues():
+        for basic in self.basic_events.values():
             if basic.is_orphan():
                 print("Warning. Orphan basic event: " + basic.name)
-        for house in self.house_events.itervalues():
+        for house in self.house_events.values():
             if house.is_orphan():
                 print("Warning. Orphan house event: " + house.name)
         self.__detect_top()
@@ -609,6 +609,7 @@ def toposort_gates(top_gates, gates):
     """
     for gate in gates:
         gate.mark = ""
+
     def continue_formula(formula, final_list):
         """Continues visiting gates in the formula.
 
@@ -691,7 +692,7 @@ def write_to_xml_file(fault_tree, output_file):
             write_formula(f_child, o_file)
 
         if formula.operator != "null":
-            o_file.write("</" + formula.operator+ ">\n")
+            o_file.write("</" + formula.operator + ">\n")
 
     def write_gate(gate, o_file):
         """Write the gate in the OpenPSA MEF XML.
@@ -713,12 +714,12 @@ def write_to_xml_file(fault_tree, output_file):
 
     if fault_tree.basic_events or fault_tree.house_events:
         t_file.write("<model-data>\n")
-        for basic in fault_tree.basic_events.itervalues():
+        for basic in fault_tree.basic_events.values():
             t_file.write("<define-basic-event name=\"" + basic.name + "\">\n"
                         "<float value=\"" + str(basic.prob) + "\"/>\n"
                         "</define-basic-event>\n")
 
-        for house in fault_tree.house_events.itervalues():
+        for house in fault_tree.house_events.values():
             t_file.write("<define-house-event name=\"" + house.name + "\">\n"
                         "<constant value=\"" + str(house.state) + "\"/>\n"
                         "</define-house-event>\n")

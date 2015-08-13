@@ -68,7 +68,7 @@ Package                Minimum Version
 `boost`                1.48.0
 `libxml2`              2
 `libxml++`             2.34.1
-`Python`               2.7.3
+`Python`               2.7.3 or 3.3+
 ====================   ==================
 
 

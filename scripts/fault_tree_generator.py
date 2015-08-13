@@ -643,9 +643,9 @@ def generate_fault_tree():
                        random.randint(2, int(2 * Factors.avg_children - 2))
             if last_mem > len(members):
                 break
-            CcfGroup().members = members[first_mem : last_mem]
+            CcfGroup().members = members[first_mem: last_mem]
             first_mem = last_mem
-        BasicEvent.non_ccf_events = members[first_mem : ]
+        BasicEvent.non_ccf_events = members[first_mem:]
 
     return top_event
 
@@ -697,7 +697,7 @@ def write_info():
             "The fault tree name: " + Settings.ft_name + "\n"
             "The root gate name: " + Settings.root_name + "\n\n"
             "The seed of the random number generator: " +
-            str(Settings.seed)+ "\n"
+            str(Settings.seed) + "\n"
             "The number of basic events: " + str(Factors.num_basics) + "\n"
             "The number of house events: " + str(Factors.num_house) + "\n"
             "The number of CCF groups: " + str(Factors.num_ccf) + "\n"
@@ -798,7 +798,6 @@ def write_model_data(t_file, basic_events):
                      "<constant value=\"" + house.state + "\"/>\n"
                      "</define-house-event>\n")
 
-
     t_file.write("</model-data>\n")
 
 def write_results(top_event):
@@ -836,7 +835,7 @@ def write_results(top_event):
             """
             o_file.write("<" + gate.gate_type)
             if gate.gate_type == "atleast":
-                o_file.write(" min=\"" + str(gate.k_num) +"\"")
+                o_file.write(" min=\"" + str(gate.k_num) + "\"")
             o_file.write(">\n")
             # Print children that are house events.
             for h_child in gate.h_children:
@@ -859,7 +858,7 @@ def write_results(top_event):
                     write_formula(g_child, o_file)
                 nested_gates.update(to_nest)
 
-            o_file.write("</" + gate.gate_type+ ">\n")
+            o_file.write("</" + gate.gate_type + ">\n")
 
         o_file.write("<define-gate name=\"" + gate.name + "\">\n")
         write_formula(gate, o_file)
