@@ -10,11 +10,9 @@ It should be easier to visualize and setup the analysis using this front-end too
 However, some of more advanced functionality may not be available through the GUI,
 but it should be possible to tweak the GUI-generated input files to get the desired results.
 
-The GUI front-end is developed with `Qt and Qt Creator`_.
-`The basic concepts of UI`_ are followed.
+The GUI front-end is developed with `Qt5 and Qt Creator`_.
 
-.. _Qt and Qt Creator: http://qt-project.org/
-.. _The basic concepts of UI: http://www.usability.gov/what-and-why/user-interface-design.html
+.. _Qt5 and Qt Creator: http://qt-project.org/
 
 
 GUI Features
@@ -38,3 +36,14 @@ GUI Features
 - Smart defaults
 - Cut set editor
 - Revision control
+
+
+Human Interface Guidelines
+--------------------------
+
+- `KDE HIG <https://techbase.kde.org/Projects/Usability/HIG/>`_
+- `GNOME HIG <https://developer.gnome.org/hig/stable/>`_
+- `XFCE HIG <https://wiki.xfce.org/dev/hig/general>`_
+- `The basic concepts of UI`_
+
+.. _The basic concepts of UI: http://www.usability.gov/what-and-why/user-interface-design.html
