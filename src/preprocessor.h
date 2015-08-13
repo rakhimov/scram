@@ -664,11 +664,13 @@ class Preprocessor {
   void ClearGateMarks(const IGatePtr& gate);
 
   /// Clears visit time information from all indexed nodes
-  /// that have been visited or not.
+  /// that have been visited.
   /// Any member function updating and using the visit information of nodes
   /// must ensure to clean visit times
   /// before running algorithms.
   /// However, cleaning after finishing algorithms is not mandatory.
+  ///
+  /// @note Gate marks are used for linear time traversal.
   void ClearNodeVisits();
 
   /// Clears visit information from descendant nodes

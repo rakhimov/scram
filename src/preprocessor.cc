@@ -709,10 +709,10 @@ void Preprocessor::DetectModules() {
   // and indicate visit time for each node.
   Preprocessor::ClearNodeVisits();
 
+  LOG(DEBUG4) << "Assigning timings to nodes...";
   IGatePtr root_gate = graph_->root();
   int time = 0;
   Preprocessor::AssignTiming(time, root_gate);
-
   LOG(DEBUG4) << "Timings are assigned to nodes.";
 
   Preprocessor::ClearGateMarks();
@@ -1011,7 +1011,6 @@ void Preprocessor::BooleanOptimization() {
   std::vector<boost::weak_ptr<Variable> > common_variables;
   Preprocessor::GatherCommonNodes(&common_gates, &common_variables);
 
-  Preprocessor::ClearNodeVisits();
   std::vector<IGateWeakPtr>::iterator it;
   for (it = common_gates.begin(); it != common_gates.end(); ++it) {
     Preprocessor::ProcessCommonNode(*it);
@@ -1318,11 +1317,19 @@ void Preprocessor::ClearGateMarks(const IGatePtr& gate) {
 }
 
 void Preprocessor::ClearNodeVisits() {
+  LOG(DEBUG5) << "Clearing node visit times...";
+  Preprocessor::ClearGateMarks();
   Preprocessor::ClearNodeVisits(graph_->root());
+  Preprocessor::ClearGateMarks();
+  LOG(DEBUG5) << "Node visit times are clear!";
 }
 
 void Preprocessor::ClearNodeVisits(const IGatePtr& gate) {
-  gate->ClearVisits();
+  if (gate->mark()) return;
+  gate->mark(true);
+
+  if (gate->Visited()) gate->ClearVisits();
+
   boost::unordered_map<int, IGatePtr>::const_iterator it;
   for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
     Preprocessor::ClearNodeVisits(it->second);
@@ -1330,12 +1337,12 @@ void Preprocessor::ClearNodeVisits(const IGatePtr& gate) {
   boost::unordered_map<int, VariablePtr>::const_iterator it_b;
   for (it_b = gate->variable_args().begin();
        it_b != gate->variable_args().end(); ++it_b) {
-    it_b->second->ClearVisits();
+    if (it_b->second->Visited()) it_b->second->ClearVisits();
   }
   boost::unordered_map<int, ConstantPtr>::const_iterator it_c;
   for (it_c = gate->constant_args().begin();
        it_c != gate->constant_args().end(); ++it_c) {
-    it_c->second->ClearVisits();
+    if (it_c->second->Visited()) it_c->second->ClearVisits();
   }
 }
 
