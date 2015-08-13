@@ -78,6 +78,12 @@ void Preprocessor::ProcessFaultTree() {
   LOG(DEBUG2) << "Finished Preprocessing Phase I in " << DUR(time_1);
   if (Preprocessor::CheckRootGate()) return;
 
+  CLOCK(time_2);
+  LOG(DEBUG2) << "Preprocessing Phase II...";
+  Preprocessor::PhaseTwo();
+  LOG(DEBUG2) << "Finished Preprocessing Phase II in " << DUR(time_2);
+  if (Preprocessor::CheckRootGate()) return;
+
   if (!graph_->normal()) {
     CLOCK(time_3);
     LOG(DEBUG2) << "Preprocessing Phase III...";
@@ -92,13 +98,6 @@ void Preprocessor::ProcessFaultTree() {
     Preprocessor::PhaseFour();
     LOG(DEBUG2) << "Finished Preprocessing Phase IV in " << DUR(time_4);
   }
-  if (Preprocessor::CheckRootGate()) return;
-
-  CLOCK(time_2);
-  LOG(DEBUG2) << "Preprocessing Phase II...";
-  Preprocessor::PhaseTwo();  /// @todo Move up.
-  LOG(DEBUG2) << "Finished Preprocessing Phase II in " << DUR(time_2);
-
   Preprocessor::CheckRootGate();  // To cleanup.
 }
 
@@ -122,12 +121,20 @@ void Preprocessor::PhaseTwo() {
   }
   LOG(DEBUG3) << "Finished multi-definition detection in " << DUR(mult_time);
 
+  if (Preprocessor::CheckRootGate()) return;
+
+  LOG(DEBUG3) << "Detecting modules...";
+  Preprocessor::DetectModules();
+  LOG(DEBUG3) << "Finished module detection!";
+
   if (graph_->coherent()) {
     CLOCK(optim_time);
     LOG(DEBUG3) << "Boolean optimization...";
     Preprocessor::BooleanOptimization();
     LOG(DEBUG3) << "Finished Boolean optimization in " << DUR(optim_time);
   }
+
+  if (Preprocessor::CheckRootGate()) return;
 
   LOG(DEBUG3) << "Coalescing gates...";
   graph_changed = true;
@@ -162,7 +169,7 @@ void Preprocessor::PhaseThree() {
   LOG(DEBUG3) << "Finished normalizing gates!";
 
   if (Preprocessor::CheckRootGate()) return;
-  // Preprocessor::PhaseTwo();  /// @todo Enable.
+  Preprocessor::PhaseTwo();
 }
 
 void Preprocessor::PhaseFour() {
@@ -184,7 +191,7 @@ void Preprocessor::PhaseFour() {
   LOG(DEBUG3) << "Complement propagation is done!";
 
   if (Preprocessor::CheckRootGate()) return;
-  // Preprocessor::PhaseTwo();  /// @todo Enable.
+  Preprocessor::PhaseTwo();
 }
 
 bool Preprocessor::CheckRootGate() {
@@ -800,10 +807,10 @@ void Preprocessor::FindModules(const IGatePtr& gate) {
   }
 
   // Determine if this gate is module itself.
-  if (min_time == enter_time && max_time == exit_time) {
+  if (!gate->IsModule() && min_time == enter_time && max_time == exit_time) {
     LOG(DEBUG4) << "Found original module: " << gate->index();
     assert(non_modular_args.empty());
-    if (!gate->IsModule()) gate->TurnModule();  /// @todo Handle earlier.
+    gate->TurnModule();
   }
 
   max_time = std::max(max_time, gate->LastVisit());
