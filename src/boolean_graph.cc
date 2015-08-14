@@ -29,6 +29,7 @@
 #include <boost/pointer_cast.hpp>
 
 #include "event.h"
+#include "logger.h"
 
 namespace scram {
 
@@ -471,6 +472,75 @@ void BooleanGraph::ProcessGates(
       id_to_node->insert(std::make_pair(gate->id(), new_gate));
     }
   }
+}
+
+void BooleanGraph::ClearGateMarks() {
+  BooleanGraph::ClearGateMarks(root_);
+}
+
+void BooleanGraph::ClearGateMarks(const IGatePtr& gate) {
+  if (!gate->mark()) return;
+  gate->mark(false);
+  boost::unordered_map<int, IGatePtr>::const_iterator it;
+  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
+    BooleanGraph::ClearGateMarks(it->second);
+  }
+}
+
+void BooleanGraph::ClearNodeVisits() {
+  LOG(DEBUG5) << "Clearing node visit times...";
+  BooleanGraph::ClearGateMarks();
+  BooleanGraph::ClearNodeVisits(root_);
+  BooleanGraph::ClearGateMarks();
+  LOG(DEBUG5) << "Node visit times are clear!";
+}
+
+void BooleanGraph::ClearNodeVisits(const IGatePtr& gate) {
+  if (gate->mark()) return;
+  gate->mark(true);
+
+  if (gate->Visited()) gate->ClearVisits();
+
+  boost::unordered_map<int, IGatePtr>::const_iterator it;
+  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
+    BooleanGraph::ClearNodeVisits(it->second);
+  }
+  boost::unordered_map<int, VariablePtr>::const_iterator it_b;
+  for (it_b = gate->variable_args().begin();
+       it_b != gate->variable_args().end(); ++it_b) {
+    if (it_b->second->Visited()) it_b->second->ClearVisits();
+  }
+  boost::unordered_map<int, ConstantPtr>::const_iterator it_c;
+  for (it_c = gate->constant_args().begin();
+       it_c != gate->constant_args().end(); ++it_c) {
+    if (it_c->second->Visited()) it_c->second->ClearVisits();
+  }
+}
+
+void BooleanGraph::ClearOptiValues() {
+  LOG(DEBUG5) << "Clearing OptiValues...";
+  BooleanGraph::ClearGateMarks();
+  BooleanGraph::ClearOptiValues(root_);
+  BooleanGraph::ClearGateMarks();
+  LOG(DEBUG5) << "Node Optivalues are clear!";
+}
+
+void BooleanGraph::ClearOptiValues(const IGatePtr& gate) {
+  if (gate->mark()) return;
+  gate->mark(true);
+
+  gate->opti_value(0);
+  gate->ResetArgFailure();
+  boost::unordered_map<int, IGatePtr>::const_iterator it;
+  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
+    BooleanGraph::ClearOptiValues(it->second);
+  }
+  boost::unordered_map<int, VariablePtr>::const_iterator it_b;
+  for (it_b = gate->variable_args().begin();
+       it_b != gate->variable_args().end(); ++it_b) {
+    it_b->second->opti_value(0);
+  }
+  assert(gate->constant_args().empty());
 }
 
 std::ostream& operator<<(std::ostream& os,

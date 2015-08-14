@@ -595,6 +595,7 @@ class BasicEvent;
 class HouseEvent;
 class Gate;
 class Formula;
+class Preprocessor;
 
 /// @class BooleanGraph
 /// BooleanGraph is a propositional directed acyclic graph (PDAG).
@@ -602,6 +603,9 @@ class Formula;
 /// that takes into account the indices of events
 /// instead of IDs and pointers.
 /// This graph can also be called an indexed fault tree.
+///
+/// This class is designed
+/// to help preprocessing and other graph transformation functions.
 ///
 /// @warning Never hold a shared pointer to any other indexed gate
 ///          except for the root gate of a Boolean graph.
@@ -613,6 +617,8 @@ class Formula;
 ///          which is not the assumption of
 ///          all the other preprocessing and analysis algorithms.
 class BooleanGraph {
+  friend Preprocessor;
+
  public:
   typedef boost::shared_ptr<Gate> GatePtr;
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
@@ -725,6 +731,73 @@ class BooleanGraph {
                     const std::vector<GatePtr>& gates,
                     bool ccf,
                     boost::unordered_map<std::string, NodePtr>* id_to_node);
+
+  /// Sets the visit marks to False for all indexed gates,
+  /// starting from the root gate,
+  /// that have been visited top-down.
+  /// Any function updating and using the visit marks of gates
+  /// must ensure to clean visit marks
+  /// before running algorithms.
+  /// However, cleaning after finishing algorithms is not mandatory.
+  ///
+  /// @warning If the marks have not been assigned in a top-down traversal,
+  ///          this function will fail silently.
+  void ClearGateMarks();
+
+  /// Sets the visit marks of descendant gates to False
+  /// starting from the given gate as the root.
+  /// The top-down traversal marking is assumed.
+  ///
+  /// @param[in,out] gate The root gate to be traversed and marks.
+  ///
+  /// @warning If the marks have not been assigned in a top-down traversal,
+  ///          starting from the given gate,
+  ///          this function will fail silently.
+  void ClearGateMarks(const IGatePtr& gate);
+
+  /// Clears visit time information from all indexed nodes
+  /// that have been visited.
+  /// Any member function updating and using the visit information of nodes
+  /// must ensure to clean visit times
+  /// before running algorithms.
+  /// However, cleaning after finishing algorithms is not mandatory.
+  ///
+  /// @note Gate marks are used for linear time traversal.
+  void ClearNodeVisits();
+
+  /// Clears visit information from descendant nodes
+  /// starting from the given gate as the root.
+  ///
+  /// @param[in,out] gate The root gate to be traversed and cleaned.
+  ///
+  /// @note Gate marks are used for linear time traversal.
+  void ClearNodeVisits(const IGatePtr& gate);
+
+  /// Clears optimization values of all nodes in the graph.
+  /// The optimization values are set to 0.
+  /// Resets the number of failed arguments of gates.
+  ///
+  /// @not Gate marks are used for linear time traversal.
+  void ClearOptiValues();
+
+  /// Clears optimization values of nodes.
+  /// The optimization values are set to 0.
+  /// Resets the number of failed arguments of gates.
+  ///
+  /// @param[in,out] gate The root gate to be traversed and cleaned.
+  ///
+  /// @note Gate marks are used for linear time traversal.
+  void ClearOptiValues(const IGatePtr& gate);
+
+  /// Prints the Boolean graph in the shorthand format.
+  /// This is a helper for logging and debugging.
+  /// The output is the standard error.
+  ///
+  /// @warning Node visits are used.
+  inline void Print() {
+    ClearNodeVisits();
+    std::cerr << std::endl << this << std::endl;
+  }
 
   IGatePtr root_;  ///< The root gate of this graph.
   std::vector<BasicEventPtr> basic_events_;  ///< Mapping for basic events.

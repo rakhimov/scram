@@ -142,7 +142,7 @@ void Preprocessor::PhaseTwo() {
   if (Preprocessor::CheckRootGate()) return;
 
   LOG(DEBUG3) << "Processing Distributivity...";
-  Preprocessor::ClearGateMarks();
+  graph_->ClearGateMarks();
   Preprocessor::DetectDistributivity(graph_->root());
   Preprocessor::ClearConstGates();
   Preprocessor::ClearNullGates();
@@ -155,7 +155,7 @@ void Preprocessor::PhaseTwo() {
     assert(null_gates_.empty());
 
     graph_changed = false;
-    Preprocessor::ClearGateMarks();
+    graph_->ClearGateMarks();
     if (graph_->root()->state() == kNormalState)
       Preprocessor::JoinGates(graph_->root());  // Registers const gates.
 
@@ -197,7 +197,7 @@ void Preprocessor::PhaseFour() {
     root_sign_ = 1;
   }
   std::map<int, IGatePtr> complements;
-  Preprocessor::ClearGateMarks();
+  graph_->ClearGateMarks();
   Preprocessor::PropagateComplements(graph_->root(), &complements);
   complements.clear();
   LOG(DEBUG3) << "Complement propagation is done!";
@@ -256,10 +256,10 @@ void Preprocessor::NormalizeGates() {
   // Process negative gates.
   // Note that root's negative gate is processed in the above lines.
   // All arguments are assumed to be positive at this point.
-  Preprocessor::ClearGateMarks();
+  graph_->ClearGateMarks();
   Preprocessor::NotifyParentsOfNegativeGates(root_gate);
 
-  Preprocessor::ClearGateMarks();
+  graph_->ClearGateMarks();
   Preprocessor::NormalizeGate(root_gate);  // Registers null gates only.
 
   assert(const_gates_.empty());
@@ -432,7 +432,7 @@ void Preprocessor::PropagateNullGate(const IGatePtr& gate) {
 }
 
 void Preprocessor::ClearConstGates() {
-  Preprocessor::ClearGateMarks();  // New gates may get created without marks!
+  graph_->ClearGateMarks();  // New gates may get created without marks!
   std::vector<IGateWeakPtr>::iterator it;
   for (it = const_gates_.begin(); it != const_gates_.end(); ++it) {
     if (it->expired()) continue;
@@ -442,7 +442,7 @@ void Preprocessor::ClearConstGates() {
 }
 
 void Preprocessor::ClearNullGates() {
-  Preprocessor::ClearGateMarks();  // New gates may get created without marks!
+  graph_->ClearGateMarks();  // New gates may get created without marks!
   std::vector<IGateWeakPtr>::iterator it;
   for (it = null_gates_.begin(); it != null_gates_.end(); ++it) {
     if (it->expired()) continue;
@@ -453,10 +453,10 @@ void Preprocessor::ClearNullGates() {
 
 bool Preprocessor::RemoveConstants() {
   assert(const_gates_.empty());
-  Preprocessor::ClearGateMarks();
+  graph_->ClearGateMarks();
   std::vector<boost::weak_ptr<Constant> > constants;
   Preprocessor::GatherConstants(graph_->root(), &constants);
-  Preprocessor::ClearGateMarks();
+  graph_->ClearGateMarks();
   std::vector<boost::weak_ptr<Constant> >::iterator it;
   for (it = constants.begin(); it != constants.end(); ++it) {
     if (it->expired()) continue;
@@ -639,11 +639,11 @@ void Preprocessor::PropagateComplements(
 }
 
 bool Preprocessor::RemoveNullGates() {
-  Preprocessor::ClearGateMarks();
+  graph_->ClearGateMarks();
   assert(null_gates_.empty());
   IGatePtr root = graph_->root();
   Preprocessor::GatherNullGates(root);
-  Preprocessor::ClearGateMarks();
+  graph_->ClearGateMarks();
   if (null_gates_.size() == 1 && null_gates_.front().lock() == root)
     null_gates_.clear();  // Special case of only one NULL gate as the root.
 
@@ -719,7 +719,7 @@ void Preprocessor::DetectModules() {
   assert(null_gates_.empty());
   // First stage, traverse the graph depth-first for gates
   // and indicate visit time for each node.
-  Preprocessor::ClearNodeVisits();
+  graph_->ClearNodeVisits();
 
   LOG(DEBUG4) << "Assigning timings to nodes...";
   IGatePtr root_gate = graph_->root();
@@ -727,7 +727,7 @@ void Preprocessor::DetectModules() {
   Preprocessor::AssignTiming(time, root_gate);
   LOG(DEBUG4) << "Timings are assigned to nodes.";
 
-  Preprocessor::ClearGateMarks();
+  graph_->ClearGateMarks();
   Preprocessor::FindModules(root_gate);
 
   assert(!root_gate->Revisited());
@@ -1016,8 +1016,8 @@ void Preprocessor::CreateNewModules(
 void Preprocessor::BooleanOptimization() {
   assert(const_gates_.empty());
   assert(null_gates_.empty());
-  Preprocessor::ClearNodeVisits();
-  Preprocessor::ClearGateMarks();
+  graph_->ClearNodeVisits();
+  graph_->ClearGateMarks();
 
   std::vector<IGateWeakPtr> common_gates;
   std::vector<boost::weak_ptr<Variable> > common_variables;
@@ -1075,7 +1075,7 @@ void Preprocessor::ProcessCommonNode(const boost::weak_ptr<N>& common_node) {
   if (node->parents().size() == 1) return;  // The parent is deleted.
 
   IGatePtr root = graph_->root();
-  Preprocessor::ClearOptiValues();
+  graph_->ClearOptiValues();
 
   assert(node->opti_value() == 0);
   node->opti_value(1);
@@ -1231,11 +1231,11 @@ bool Preprocessor::DecomposeCommonNodes() {
   assert(const_gates_.empty());
   assert(null_gates_.empty());
 
-  Preprocessor::ClearNodeVisits();
+  graph_->ClearNodeVisits();
   std::vector<IGateWeakPtr> common_gates;
   std::vector<boost::weak_ptr<Variable> > common_variables;
   Preprocessor::GatherCommonNodes(&common_gates, &common_variables);
-  Preprocessor::ClearNodeVisits();
+  graph_->ClearNodeVisits();
 
   bool changed = false;
   std::vector<IGateWeakPtr>::iterator it;
@@ -1405,11 +1405,11 @@ bool Preprocessor::ProcessMultipleDefinitions() {
   boost::unordered_map<IGatePtr, std::vector<IGateWeakPtr> > multi_def;
   std::vector<std::vector<IGatePtr> > orig_gates(kNumOperators,
                                                  std::vector<IGatePtr>());
-  Preprocessor::ClearGateMarks();
+  graph_->ClearGateMarks();
   Preprocessor::DetectMultipleDefinitions(graph_->root(), &multi_def,
                                           &orig_gates);
   orig_gates.clear();  /// @todo Use weak pointers.
-  Preprocessor::ClearGateMarks();
+  graph_->ClearGateMarks();
 
   if (multi_def.empty()) return false;
   boost::unordered_map<IGatePtr, std::vector<IGateWeakPtr> >::iterator it;
@@ -1611,75 +1611,6 @@ void Preprocessor::ReplaceGate(const IGatePtr& gate,
       null_gates_.push_back(parent);
     }
   }
-}
-
-void Preprocessor::ClearGateMarks() {
-  Preprocessor::ClearGateMarks(graph_->root());
-}
-
-void Preprocessor::ClearGateMarks(const IGatePtr& gate) {
-  if (!gate->mark()) return;
-  gate->mark(false);
-  boost::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
-    Preprocessor::ClearGateMarks(it->second);
-  }
-}
-
-void Preprocessor::ClearNodeVisits() {
-  LOG(DEBUG5) << "Clearing node visit times...";
-  Preprocessor::ClearGateMarks();
-  Preprocessor::ClearNodeVisits(graph_->root());
-  Preprocessor::ClearGateMarks();
-  LOG(DEBUG5) << "Node visit times are clear!";
-}
-
-void Preprocessor::ClearNodeVisits(const IGatePtr& gate) {
-  if (gate->mark()) return;
-  gate->mark(true);
-
-  if (gate->Visited()) gate->ClearVisits();
-
-  boost::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
-    Preprocessor::ClearNodeVisits(it->second);
-  }
-  boost::unordered_map<int, VariablePtr>::const_iterator it_b;
-  for (it_b = gate->variable_args().begin();
-       it_b != gate->variable_args().end(); ++it_b) {
-    if (it_b->second->Visited()) it_b->second->ClearVisits();
-  }
-  boost::unordered_map<int, ConstantPtr>::const_iterator it_c;
-  for (it_c = gate->constant_args().begin();
-       it_c != gate->constant_args().end(); ++it_c) {
-    if (it_c->second->Visited()) it_c->second->ClearVisits();
-  }
-}
-
-void Preprocessor::ClearOptiValues() {
-  LOG(DEBUG5) << "Clearing OptiValues...";
-  Preprocessor::ClearGateMarks();
-  Preprocessor::ClearOptiValues(graph_->root());
-  Preprocessor::ClearGateMarks();
-  LOG(DEBUG5) << "Node Optivalues are clear!";
-}
-
-void Preprocessor::ClearOptiValues(const IGatePtr& gate) {
-  if (gate->mark()) return;
-  gate->mark(true);
-
-  gate->opti_value(0);
-  gate->ResetArgFailure();
-  boost::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
-    Preprocessor::ClearOptiValues(it->second);
-  }
-  boost::unordered_map<int, VariablePtr>::const_iterator it_b;
-  for (it_b = gate->variable_args().begin();
-       it_b != gate->variable_args().end(); ++it_b) {
-    it_b->second->opti_value(0);
-  }
-  assert(gate->constant_args().empty());
 }
 
 }  // namespace scram
