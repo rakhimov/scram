@@ -114,7 +114,9 @@ class Node {
 
   /// @returns The last time this node was visited.
   /// @returns 0 if no last time is registered.
-  inline int LastVisit() const { return visits_[2] ? visits_[2] : visits_[1]; }
+  inline int LastVisit() const {
+    return visits_[2] ? visits_[2] : visits_[1] ? visits_[1] : visits_[0];
+  }
 
   /// @returns The minimum time of the visit.
   /// @returns 0 if no time is registered.
@@ -122,9 +124,7 @@ class Node {
 
   /// @returns The maximum time of the visit.
   /// @returns 0 if no time is registered.
-  inline virtual int max_time() const {
-    return visits_[2] ? visits_[2] : visits_[1] ? visits_[1] : visits_[0];
-  }
+  inline virtual int max_time() const { return LastVisit(); }
 
   /// @returns false if this node was only visited once upon graph traversal.
   /// @returns true if this node was revisited at one more time.

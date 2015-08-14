@@ -1230,13 +1230,13 @@ void Preprocessor::ProcessFailureDestinations(
 bool Preprocessor::DecomposeCommonNodes() {
   assert(const_gates_.empty());
   assert(null_gates_.empty());
-  Preprocessor::ClearNodeVisits();
 
+  Preprocessor::ClearNodeVisits();
   std::vector<IGateWeakPtr> common_gates;
   std::vector<boost::weak_ptr<Variable> > common_variables;
   Preprocessor::GatherCommonNodes(&common_gates, &common_variables);
+  Preprocessor::ClearNodeVisits();
 
-  Preprocessor::ClearGateMarks();
   bool changed = false;
   std::vector<IGateWeakPtr>::iterator it;
   for (it = common_gates.begin(); it != common_gates.end(); ++it) {

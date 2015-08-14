@@ -195,7 +195,6 @@ TEST_F(RiskAnalysisTest, A_OR_NOT_AB) {
   cut_set.insert(A);
   mcs.insert(cut_set);
   cut_set.clear();
-  cut_set.insert("not " + A);
   cut_set.insert(B);
   mcs.insert(cut_set);
   EXPECT_EQ(2, min_cut_sets().size());
