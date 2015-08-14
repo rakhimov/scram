@@ -668,21 +668,21 @@ void Preprocessor::PropagateComplements(
 bool Preprocessor::JoinGates(const IGatePtr& gate, bool common) {
   if (gate->mark()) return false;
   gate->mark(true);
-  bool possible = false;  // If joining is possible at all.
+  bool possible = true;  // If joining is possible at all.
   Operator target_type;  // What kind of arg gate are we searching for?
   switch (gate->type()) {
     case kNandGate:
     case kAndGate:
       assert(gate->args().size() > 1);
       target_type = kAndGate;
-      possible = true;
       break;
     case kNorGate:
     case kOrGate:
       assert(gate->args().size() > 1);
       target_type = kOrGate;
-      possible = true;
       break;
+    default:
+      possible = false;
   }
   assert(!gate->args().empty());
   std::vector<IGatePtr> to_join;  // Gate arguments of the same logic.
