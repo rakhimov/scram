@@ -62,6 +62,30 @@ IGate::IGate(const Operator& type)
       module_(false),
       num_failed_args_(0) {}
 
+boost::shared_ptr<IGate> IGate::Clone() {
+  IGatePtr clone(new IGate(type_));  // The same type.
+  clone->vote_number_ = vote_number_;  // Copy vote number in case it is K/N.
+  // Getting arguments copied.
+  clone->args_ = args_;
+  clone->gate_args_ = gate_args_;
+  clone->variable_args_ = variable_args_;
+  clone->constant_args_ = constant_args_;
+  // Introducing the new parent to the args.
+  boost::unordered_map<int, IGatePtr>::const_iterator it_g;
+  for (it_g = gate_args_.begin(); it_g != gate_args_.end(); ++it_g) {
+    it_g->second->parents_.insert(std::make_pair(clone->index(), clone));
+  }
+  boost::unordered_map<int, VariablePtr>::const_iterator it_b;
+  for (it_b = variable_args_.begin(); it_b != variable_args_.end(); ++it_b) {
+    it_b->second->parents_.insert(std::make_pair(clone->index(), clone));
+  }
+  boost::unordered_map<int, ConstantPtr>::const_iterator it_c;
+  for (it_c = constant_args_.begin(); it_c != constant_args_.end(); ++it_c) {
+    it_c->second->parents_.insert(std::make_pair(clone->index(), clone));
+  }
+  return clone;
+}
+
 void IGate::AddArg(int arg, const IGatePtr& gate) {
   assert(arg != 0);
   assert(std::abs(arg) == gate->index());
@@ -216,28 +240,6 @@ void IGate::JoinNullGate(int index) {
   } else {
     assert(!null_gate->variable_args_.empty());
     IGate::AddArg(arg, null_gate->variable_args_.begin()->second);
-  }
-}
-
-void IGate::CopyArgs(const IGatePtr& gate) {
-  assert(args_.empty());
-  boost::unordered_map<int, IGatePtr>::const_iterator it_g;
-  for (it_g = gate->gate_args_.begin(); it_g != gate->gate_args_.end();
-       ++it_g) {
-    IGate::AddArg(it_g->first, it_g->second);
-    if (state_ != kNormalState) return;
-  }
-  boost::unordered_map<int, VariablePtr>::const_iterator it_b;
-  for (it_b = gate->variable_args_.begin(); it_b != gate->variable_args_.end();
-       ++it_b) {
-    IGate::AddArg(it_b->first, it_b->second);
-    if (state_ != kNormalState) return;
-  }
-  boost::unordered_map<int, ConstantPtr>::const_iterator it_c;
-  for (it_c = gate->constant_args_.begin(); it_c != gate->constant_args_.end();
-       ++it_c) {
-    IGate::AddArg(it_c->first, it_c->second);
-    if (state_ != kNormalState) return;
   }
 }
 

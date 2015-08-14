@@ -613,8 +613,8 @@ void Preprocessor::PropagateComplements(
         arg_gate->InvertArgs();
         complement_gate = arg_gate;
       } else {
-        complement_gate = IGatePtr(new IGate(complement_type));
-        complement_gate->CopyArgs(arg_gate);
+        complement_gate = arg_gate->Clone();
+        complement_gate->type(complement_type);
         complement_gate->InvertArgs();
       }
       gate_complements->insert(std::make_pair(arg_gate->index(),
@@ -1343,9 +1343,7 @@ void Preprocessor::ProcessDecompositionAncestors(const IGatePtr& ancestor,
     IGatePtr gate = it->second;
     if (gate->LastVisit() != node->index()) continue;
     if (gate->parents().size() > 1) {  // Common gate.
-      IGatePtr copy(new IGate(gate->type()));
-      copy->CopyArgs(gate);
-      copy->vote_number(gate->vote_number());
+      IGatePtr copy = gate->Clone();
       to_swap.push_back(std::make_pair(it->first, copy));
       gate = copy;
     }
@@ -1536,8 +1534,7 @@ bool Preprocessor::HandleDistributiveArgs(
 
     // Must be careful here not to change multi-parent candidates.
     if (!candidate->parents().empty()) {
-      IGatePtr replacement(new IGate(candidate->type()));
-      replacement->CopyArgs(candidate);
+      IGatePtr replacement = candidate->Clone();
       candidate = replacement;
     }
 

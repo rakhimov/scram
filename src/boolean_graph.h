@@ -258,6 +258,13 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
     IGate::EraseAllArgs();
   }
 
+  /// Clones arguments and parameters.
+  /// The semantics of the gate is cloned,
+  /// not the gate data like index and parents.
+  ///
+  /// @returns Shared pointer to a newly created gate.
+  IGatePtr Clone();
+
   /// @returns Type of this gate.
   inline const Operator& type() const { return type_; }
 
@@ -477,12 +484,6 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
   ///
   /// @param[in] index Positive or negative index of the argument gate.
   void JoinNullGate(int index);
-
-  /// Directly copies arguments from another gate.
-  /// This is a helper function for initialization of gates' copies.
-  ///
-  /// @param[in] gate The gate which arguments will be copied.
-  void CopyArgs(const IGatePtr& gate);
 
   /// Removes an argument from the arguments container.
   /// The passed argument index must be
