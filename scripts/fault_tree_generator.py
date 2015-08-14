@@ -264,6 +264,9 @@ class Factors(object):
     __percent_basics = None  # percentage of basic events in gate children
     __percent_gates = None  # percentage of gates in gate children
 
+    # Special case with the constrained number of gates
+    __num_gates = None  # If set, all other factors get affected.
+
     @staticmethod
     def __calculate_max_children(avg_children, weights):
         """Calculates the maximum number of children for sampling.
@@ -388,7 +391,7 @@ class Factors(object):
         return Factors.__percent_gates
 
     @staticmethod
-    def get_num_gates(num_basics):
+    def get_num_gates():
         """Approximates the number of gates in the resulting fault tree.
 
         This is an estimate of the number of gates
@@ -396,13 +399,14 @@ class Factors(object):
         with the given number of basic events
         and fault tree properties.
 
-        Args:
-            num_basics: The number of basic event to get initialized.
-
         Returns:
             The number of gates needed for the given basic events.
         """
-        return int(num_basics /
+        # Special case of constrained gates
+        if Factors.__num_gates:
+            return Factors.__num_gates
+
+        return int(Factors.num_basics /
                 (Factors.__percent_basics * Factors.avg_children *
                     (1 - Factors.common_b +
                         Factors.common_b / Factors.parents_b)))
@@ -466,6 +470,34 @@ class Factors(object):
         if parents < 2:
             parents = 2
         return parents
+
+    @staticmethod
+    def constrain_num_gates(num_gates):
+        """Constrains the number of gates.
+
+        The number of parents and the ratios for common nodes are manipulated.
+
+        Args:
+            num_gates: The total number of gates in the future fault tree
+        """
+        Factors.__num_gates = num_gates
+        assert Factors.__num_gates * Factors.avg_children > Factors.num_basics
+        # Calculate the ratios
+        alpha = Factors.__num_gates / Factors.num_basics
+        common = max(Factors.common_g, Factors.common_b)
+        min_common = 1 - (1 + alpha) / Factors.avg_children / alpha
+        if common < min_common:
+            common = round(min_common + 0.05, 1)
+        elif common > 2 * min_common:  # Really hope it does not happen
+            common = 2 * min_common
+        assert common < 1  # Very brittle configuration here
+
+        Factors.common_g = common
+        Factors.common_b = common
+        parents = 1 / (1 - min_common / common)
+        assert parents > 2  # This is brittle as well
+        Factors.parents_g = parents
+        Factors.parents_b = parents
 
 
 class Settings(object):
@@ -606,7 +638,7 @@ def generate_fault_tree():
     top_event.name = Settings.root_name
 
     # Estimating the parameters
-    num_gates = Factors.get_num_gates(Factors.num_basics)
+    num_gates = Factors.get_num_gates()
     num_common_basics = Factors.get_num_common_basics(num_gates)
     num_common_gates = Factors.get_num_common_gates(num_gates)
     common_basics = [BasicEvent() for _ in range(num_common_basics)]
@@ -1113,7 +1145,8 @@ def manage_cmd_args():
     parser.add_argument("--parents-g", type=float, help=parents_g, default=2.0,
                         metavar="float")
 
-    gates = "number of gates (if set, discards --parents-g)"
+    gates = "number of gates (if set, discards --parents-g and --parents-b, " \
+            "and may choose the maximum of --common-g and --common-b)"
     parser.add_argument("-g", "--gates", type=int, help=gates, default=0,
                         metavar="int")
 
@@ -1206,6 +1239,12 @@ def validate_setup(args):
     if args.shorthand and args.out == "fault_tree.xml":
         args.out = "fault_tree.txt"
 
+    if args.gates:
+        # Check if there are enough gates for the basic events.
+        if args.gates * args.children <= args.basics:
+            raise ap.ArgumentTypeError("not enough gates and average children "
+                                       "to achieve the number of basic events")
+
 def setup_factors(args):
     """Configures the fault generation by assigning factors.
 
@@ -1239,7 +1278,7 @@ def setup_factors(args):
     Factors.set_weights(weights_float)
 
     if args.gates:
-        Factors.parents_g = Factors.calculate_parents_g(args.gates)
+        Factors.constrain_num_gates(args.gates)
 
     Factors.calculate()
 

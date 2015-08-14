@@ -18,6 +18,7 @@
 
 Tests for the fault tree generator.
 """
+from __future__ import division
 
 from subprocess import call
 from tempfile import NamedTemporaryFile
@@ -25,7 +26,7 @@ from unittest import TestCase
 
 from lxml import etree
 from nose.tools import assert_equal, assert_true, assert_is_not_none, \
-        assert_almost_equal
+        assert_almost_equal, assert_less
 
 from fault_tree_generator import Settings, Factors, generate_fault_tree, \
         write_results, write_shorthand, BasicEvent, Gate, HouseEvent, \
@@ -88,10 +89,12 @@ class FaultTreeGeneratorTestCase(TestCase):
         cmd = ["./shorthand_to_xml.py", self.output.name, "-o", tmp.name]
         assert_equal(0, call(cmd))
 
-    def test_parents_g_formula(self):
-        """Checks the calculations of the average number of parents of gates."""
+    def test_constrained_num_gates(self):
+        """Checks the case of the constrained number of gates."""
         Factors.set_weights([1, 1, 1, 0.1, 0.1])
+        Factors.num_basics = 200
+        Factors.constrain_num_gates(200)
         Factors.calculate()
-        num_gates = 5405
-        parents_g = Factors.calculate_parents_g(num_gates)
-        assert_almost_equal(2, parents_g)
+        top_node = generate_fault_tree()
+        assert_is_not_none(top_node)
+        assert_less(abs(1 - len(Gate.gates) / 200), 0.1)
