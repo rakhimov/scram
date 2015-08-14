@@ -64,7 +64,7 @@ A list of dependencies:
 ====================   ==================
 Package                Minimum Version
 ====================   ==================
-`CMake`                2.8
+`CMake`                2.8.12
 `boost`                1.48.0
 `libxml2`              2
 `libxml++`             2.34.1
@@ -79,7 +79,6 @@ Package                Minimum Version
 ====================   ==================
 `Graphviz Dot`         2.26.3
 `Qt`                   5.2.1
-`Qt Creator`           3.0.1
 `TCMalloc`             1.7
 ====================   ==================
 
@@ -95,14 +94,18 @@ Package                Tested Version
 ====================   ==================
 
 
-Compilers (Tested and Supported in CMake setup):
+Compilers:
 
 ====================   ==================
-Package                Tested Version
+Package                Minimum Version
 ====================   ==================
-`GCC/G++`              4.6, 4.8
+`GCC/G++`              4.6
 `Clang/LLVM`           3.1
 ====================   ==================
+
+.. note::
+    Earlier versions may or may not work.
+    The listed minimum versions are the ones known to work.
 
 
 Installing Dependencies (Linux and Unix)
@@ -120,8 +123,8 @@ or has some other suitable method of automatically installing libraries.
 Linux Systems
 -------------
 
-This process is tested on `Travis CI`_ Ubuntu 12.04 LTS
-using ``apt-get`` as a package manager.
+This process is tested on Ubuntu 14.04 LTS
+using ``apt-get`` as the package manager.
 
 The command to install a dependency takes the form of:
 
@@ -144,7 +147,6 @@ and (optionally):
 
 #. graphviz
 #. qt5-default
-#. qtcreator
 #. libgoogle-perftools-dev
 
 compiler:
@@ -164,18 +166,11 @@ the following line will install all major dependencies and GCC/G++ compiler:
 
     sudo apt-get install -y cmake make gcc g++ libboost-all-dev libboost-random-dev libxml2-dev libxml++2.6-dev python2.7 graphviz libgoogle-perftools-dev
 
-For Ubuntu 12.04, the default Boost version is 1.46,
-so the update above version 1.47 is required:
-
-.. code-block:: bash
-
-    sudo apt-get install -y libboost-program-options1.48-dev libboost-random1.48-dev libboost-filesystem1.48-dev libboost-system1.48-dev
-
 The optional installation for GUI:
 
 .. code-block:: bash
 
-    sudo apt-get install -y qt5-default qtcreator
+    sudo apt-get install -y qt5-default
 
 .. _Travis CI: https://travis-ci.org/rakhimov/scram
 
@@ -207,7 +202,6 @@ and (optionally):
 
 #. graphviz
 #. qt5-mac
-#. qt5-creator-mac
 
 compiler:
 
@@ -231,7 +225,7 @@ The optional installation for GUI building:
 
 .. code-block:: bash
 
-    sudo port install qt5-mac qt5-creator-mac
+    sudo port install qt5-mac
 
 .. _macports: http://www.macports.org/
 
@@ -273,8 +267,6 @@ Other tools,
 such as the **fault tree generator** and **shorthand-to-XML** converter,
 can be found in the ``scripts`` directory.
 These tools do not need compilation or installation.
-
-The optional GUI front-end is built with Qt Creator and qmake.
 
 
 Windows
