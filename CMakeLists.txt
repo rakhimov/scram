@@ -122,6 +122,13 @@ message("--    Boost System location: ${Boost_SYSTEM_LIBRARY}")
 set(LIBS ${LIBS} ${Boost_FILESYSTEM_LIBRARY})
 message("--    Boost Filesystem location: ${Boost_FILESYSTEM_LIBRARY}")
 
+# Find the QtWidgets library
+find_package(Qt5Widgets)
+if(Qt5Widgets_FOUND)
+  message("-- Found Qt5")
+  message("-- Qt5 Version: ${Qt5Widgets_VERSION_STRING}")
+endif()
+
 ########################## end of find libraries ########################
 
 ########################## begin includes ###############################
@@ -135,10 +142,13 @@ include_directories(${Glibmm_INCLUDE_DIRS})
 include_directories("${SCRAM_SOURCE_DIR}")
 
 add_subdirectory("${SCRAM_SOURCE_DIR}")
-add_subdirectory("${SCRAM_GUI_DIR}")
 add_subdirectory("${SCRAM_SHARE_DIR}")
 add_subdirectory("${SCRAM_TEST_DIR}")
 add_subdirectory("${SCRAM_INPUT_DIR}")
+
+if(Qt5Widgets_FOUND)
+  add_subdirectory("${SCRAM_GUI_DIR}")
+endif()
 
 ####################### end includes ####################################
 
