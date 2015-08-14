@@ -20,7 +20,7 @@
 
 // Benchmark Tests for CEA9601 fault tree from XFTA.
 // Test Minimal cut sets.
-TEST_F(RiskAnalysisTest, CEA9601_Test) {
+TEST_F(RiskAnalysisTest, DISABLED_CEA9601_Test) {
   std::vector<std::string> input_files;
   input_files.push_back("./share/scram/input/CEA9601/CEA9601.xml");
   input_files.push_back("./share/scram/input/CEA9601/CEA9601-basic-events.xml");

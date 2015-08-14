@@ -218,6 +218,28 @@ void IGate::JoinNullGate(int index) {
   }
 }
 
+void IGate::CopyArgs(const IGatePtr& gate) {
+  assert(args_.empty());
+  boost::unordered_map<int, IGatePtr>::const_iterator it_g;
+  for (it_g = gate->gate_args_.begin(); it_g != gate->gate_args_.end();
+       ++it_g) {
+    IGate::AddArg(it_g->first, it_g->second);
+    if (state_ != kNormalState) return;
+  }
+  boost::unordered_map<int, VariablePtr>::const_iterator it_b;
+  for (it_b = gate->variable_args_.begin(); it_b != gate->variable_args_.end();
+       ++it_b) {
+    IGate::AddArg(it_b->first, it_b->second);
+    if (state_ != kNormalState) return;
+  }
+  boost::unordered_map<int, ConstantPtr>::const_iterator it_c;
+  for (it_c = gate->constant_args_.begin(); it_c != gate->constant_args_.end();
+       ++it_c) {
+    IGate::AddArg(it_c->first, it_c->second);
+    if (state_ != kNormalState) return;
+  }
+}
+
 void IGate::ProcessDuplicateArg(int index) {
   assert(type_ != kNotGate && type_ != kNullGate);
   assert(args_.count(index));

@@ -482,11 +482,7 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
   /// This is a helper function for initialization of gates' copies.
   ///
   /// @param[in] gate The gate which arguments will be copied.
-  inline void CopyArgs(const IGatePtr& gate) {
-    assert(args_.empty());
-    IGate::AddArg(gate->index(), gate);  // This is a hack to keep the parent
-    IGate::JoinGate(gate);               // information updated.
-  }
+  void CopyArgs(const IGatePtr& gate);
 
   /// Removes an argument from the arguments container.
   /// The passed argument index must be

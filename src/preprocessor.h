@@ -293,12 +293,9 @@ class Preprocessor {
   void PropagateConstant(const ConstantPtr& constant);
 
   /// Changes the state of a gate
-  /// or passes a constant argument to be removed later.
+  /// or removes a constant argument.
   /// The function determines its actions depending on
   /// the type of a gate and state of an argument.
-  /// The type of the gate may change,
-  /// but it will only be valid
-  /// after the to-be-erased arguments are handled properly.
   ///
   /// @param[in,out] gate The parent gate that contains the arguments.
   /// @param[in] arg The positive or negative index of the argument.
@@ -543,6 +540,8 @@ class Preprocessor {
   /// @param[out] common_variables Common variables.
   ///
   /// @note Constant nodes are not expected to be operated.
+  ///
+  /// @warning Node visit information must be clear.
   void GatherCommonNodes(
       std::vector<IGateWeakPtr>* common_gates,
       std::vector<boost::weak_ptr<Variable> >* common_variables);
@@ -603,6 +602,55 @@ class Preprocessor {
   void ProcessFailureDestinations(
       const boost::shared_ptr<N>& node,
       const std::map<int, IGateWeakPtr>& destinations);
+
+  /// The Shannon decomposition for common nodes in the Boolean graph.
+  /// This procedure is also called "Contant Propagation",
+  /// but it is confusing with the actual propagation of
+  /// house events and constant gates.
+  ///
+  /// The main two operations are performed
+  ///  according to the Shannon decomposition of particular setups:
+  ///
+  /// x & f(x, y) = x & f(1, y)
+  /// x | f(x, y) = x | f(0, y)
+  ///
+  /// @returns true if the setups are found and processed.
+  bool DecomposeCommonNodes();
+
+  /// Processes common nodes in decomposition setups.
+  ///
+  /// @param[in] common_node The common node.
+  ///
+  /// @returns true if the decomposition setups are found and processed.
+  ///
+  /// @warning Gate visit information is manipulated.
+  bool ProcessDecompositionCommonNode(const boost::weak_ptr<Node>& common_node);
+
+  /// Marks destinations for common node decomposition.
+  ///
+  /// @param[in] parent The parent or ancestor of the common node.
+  /// @param[in] index The positive index of the common node.
+  ///
+  /// @warning The gate visit fields are manipulated.
+  void MarkDecompositionDestinations(const IGatePtr& parent, int index);
+
+  /// Processes decomposition destinations with particular setups.
+  ///
+  /// @param[in] node The common node under consideration.
+  /// @param[in] dest The set of destination parents.
+  void ProcessDecompositionDestinations(const NodePtr& node,
+                                        const std::vector<IGateWeakPtr>& dest);
+
+  /// Processes decomposition ancestors
+  /// in the link to the decomposition destinations.
+  ///
+  /// @param[in] ancestor The parent or ancestor of the common node.
+  /// @param[in] node The common node under consideration.
+  /// @param[in] state The constant state to be propagated.
+  /// @param[in] destination Indication that the ancestor is the destination.
+  void ProcessDecompositionAncestors(const IGatePtr& ancestor,
+                                     const NodePtr& node,
+                                     bool state, bool destination);
 
   /// Detects and replaces multiple definitions of gates.
   /// Gates with the same logic and inputs
