@@ -90,10 +90,12 @@ void IGate::AddArg(int arg, const IGatePtr& gate) {
   assert(arg != 0);
   assert(std::abs(arg) == gate->index());
   assert(state_ == kNormalState);
-  if (type_ == kNotGate || type_ == kNullGate) assert(args_.empty());
-  if (type_ == kXorGate) assert(args_.size() < 2);
+  assert((type_ == kNotGate || type_ == kNullGate) ? args_.empty() : true);
+  assert(type_ == kXorGate ? args_.size() < 2 : true);
+
   if (args_.count(arg)) return IGate::ProcessDuplicateArg(arg);
   if (args_.count(-arg)) return IGate::ProcessComplementArg(arg);
+
   args_.insert(arg);
   gate_args_.insert(std::make_pair(arg, gate));
   gate->parents_.insert(std::make_pair(Node::index(), shared_from_this()));
@@ -103,10 +105,12 @@ void IGate::AddArg(int arg, const VariablePtr& variable) {
   assert(arg != 0);
   assert(std::abs(arg) == variable->index());
   assert(state_ == kNormalState);
-  if (type_ == kNotGate || type_ == kNullGate) assert(args_.empty());
-  if (type_ == kXorGate) assert(args_.size() < 2);
+  assert((type_ == kNotGate || type_ == kNullGate) ? args_.empty() : true);
+  assert(type_ == kXorGate ? args_.size() < 2 : true);
+
   if (args_.count(arg)) return IGate::ProcessDuplicateArg(arg);
   if (args_.count(-arg)) return IGate::ProcessComplementArg(arg);
+
   args_.insert(arg);
   variable_args_.insert(std::make_pair(arg, variable));
   variable->parents_.insert(std::make_pair(Node::index(), shared_from_this()));
@@ -116,10 +120,12 @@ void IGate::AddArg(int arg, const ConstantPtr& constant) {
   assert(arg != 0);
   assert(std::abs(arg) == constant->index());
   assert(state_ == kNormalState);
-  if (type_ == kNotGate || type_ == kNullGate) assert(args_.empty());
-  if (type_ == kXorGate) assert(args_.size() < 2);
+  assert((type_ == kNotGate || type_ == kNullGate) ? args_.empty() : true);
+  assert(type_ == kXorGate ? args_.size() < 2 : true);
+
   if (args_.count(arg)) return IGate::ProcessDuplicateArg(arg);
   if (args_.count(-arg)) return IGate::ProcessComplementArg(arg);
+
   args_.insert(arg);
   constant_args_.insert(std::make_pair(arg, constant));
   constant->parents_.insert(std::make_pair(Node::index(), shared_from_this()));
