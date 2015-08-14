@@ -1434,24 +1434,26 @@ void Preprocessor::DetectMultipleDefinitions(
   gate->mark(true);
   assert(gate->state() == kNormalState);
 
-  Operator type = gate->type();
-  std::vector<IGatePtr>& type_group = (*gates)[type];
-  std::vector<IGatePtr>::iterator it;
-  for (it = type_group.begin(); it != type_group.end(); ++it) {
-    IGatePtr orig_gate = *it;
-    assert(orig_gate->mark());
-    if (orig_gate->args() == gate->args()) {
-      // This might be multiple definition. Extra check for K/N gates.
-      if (type == kAtleastGate &&
-          orig_gate->vote_number() != gate->vote_number()) continue;  // No.
-      // Register this gate for replacement.
-      if (multi_def->count(orig_gate)) {
-        multi_def->find(orig_gate)->second.push_back(gate);
-      } else {
-        std::vector<IGateWeakPtr> duplicates(1, gate);
-        multi_def->insert(std::make_pair(orig_gate, duplicates));
+  if (!gate->IsModule()) {  // Modules are unique by definition.
+    Operator type = gate->type();
+    std::vector<IGatePtr>& type_group = (*gates)[type];
+    std::vector<IGatePtr>::iterator it;
+    for (it = type_group.begin(); it != type_group.end(); ++it) {
+      IGatePtr orig_gate = *it;
+      assert(orig_gate->mark());
+      if (orig_gate->args() == gate->args()) {
+        // This might be multiple definition. Extra check for K/N gates.
+        if (type == kAtleastGate &&
+            orig_gate->vote_number() != gate->vote_number()) continue;  // No.
+        // Register this gate for replacement.
+        if (multi_def->count(orig_gate)) {
+          multi_def->find(orig_gate)->second.push_back(gate);
+        } else {
+          std::vector<IGateWeakPtr> duplicates(1, gate);
+          multi_def->insert(std::make_pair(orig_gate, duplicates));
+        }
+        return;
       }
-      return;
     }
   }
   // No redefinition is found for this gate.
@@ -1462,7 +1464,7 @@ void Preprocessor::DetectMultipleDefinitions(
        ++it_ch) {
     Preprocessor::DetectMultipleDefinitions(it_ch->second, multi_def, gates);
   }
-  type_group.push_back(gate);
+  if (!gate->IsModule()) (*gates)[gate->type()].push_back(gate);
 }
 
 bool Preprocessor::DetectDistributivity(const IGatePtr& gate) {
