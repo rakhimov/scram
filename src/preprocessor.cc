@@ -84,11 +84,12 @@ void Preprocessor::ProcessFaultTree() {
   LOG(DEBUG2) << "Finished Preprocessing Phase II in " << DUR(time_2);
   if (Preprocessor::CheckRootGate()) return;
 
-  if (!graph_->normal()) {
+  if (!graph_->normal_) {
     CLOCK(time_3);
     LOG(DEBUG2) << "Preprocessing Phase III...";
     Preprocessor::PhaseThree();
     LOG(DEBUG2) << "Finished Preprocessing Phase III in " << DUR(time_3);
+    graph_->normal_ = true;
     if (Preprocessor::CheckRootGate()) return;
   }
 
@@ -176,7 +177,7 @@ void Preprocessor::PhaseTwo() {
 }
 
 void Preprocessor::PhaseThree() {
-  assert(!graph_->normal());
+  assert(!graph_->normal_);
   LOG(DEBUG3) << "Normalizing gates...";
   assert(root_sign_ == 1);
   Preprocessor::NormalizeGates();

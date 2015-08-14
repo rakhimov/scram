@@ -637,9 +637,6 @@ class BooleanGraph {
   /// @returns true if the fault tree is coherent.
   inline bool coherent() const { return coherent_; }
 
-  /// @returns true if the initialized fault tree has only OR and AND gates.
-  inline bool normal() const { return normal_; }
-
   /// @returns The current root gate of the graph.
   inline const IGatePtr& root() const { return root_; }
 
