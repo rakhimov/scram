@@ -261,36 +261,29 @@ void IGate::ProcessDuplicateArg(int index) {
       // @(k, [x, x, y_i]) = x & @(k-2, [y_i]) | @(k, [y_i])
       assert(vote_number_ > 1);
       assert(args_.size() > 2);
+      IGatePtr clone_one = IGate::Clone();  // @(k, [y_i])
+
+      this->EraseAllArgs();  // The main gate turns into OR with x.
       type_ = kOrGate;
-      std::set<int> to_share(args_);  // Copy before manipulations.
-      to_share.erase(index);
-
-      IGatePtr child_and(new IGate(kAndGate));  // May not be needed.
-      IGatePtr grand_child;  // Only if child_and is needed.
-      if (vote_number_ == 3) {  // Create an OR grand child.
-        grand_child = IGatePtr(new IGate(kOrGate));
-
-      } else if (vote_number_ > 3) {  // Create a K/N grand child.
-        grand_child = IGatePtr(new IGate(kAtleastGate));
-        grand_child->vote_number(vote_number_ - 2);
+      this->AddArg(clone_one->index(), clone_one);
+      if (vote_number_ == 2) {  // No need for the second K/N gate.
+        clone_one->TransferArg(index, shared_from_this());  // Transfered the x.
+        assert(this->args_.size() == 2);
+        return;
       }
-      if (grand_child) {
-        this->AddArg(child_and->index(), child_and);
-        this->TransferArg(index, child_and);
-        child_and->AddArg(grand_child->index(), grand_child);
-        assert(child_and->args().size() == 2);
-      }
+      // Create the AND gate to combine with the duplicate node.
+      IGatePtr and_gate(new IGate(kAndGate));
+      this->AddArg(and_gate->index(), and_gate);
+      clone_one->TransferArg(index, and_gate);  // Transfered the x.
 
-      IGatePtr child_atleast(new IGate(kAtleastGate));
-      child_atleast->vote_number(vote_number_);
-      this->AddArg(child_atleast->index(), child_atleast);
+      // Have to create the second K/N for vote_number > 2.
+      IGatePtr clone_two = clone_one->Clone();
+      clone_two->vote_number(vote_number_ - 2);  // @(k-2, [y_i])
+      if (clone_two->vote_number() == 1) clone_two->type(kOrGate);
+      and_gate->AddArg(clone_two->index(), clone_two);
 
-      std::set<int>::iterator it;
-      for (it = to_share.begin(); it != to_share.end(); ++it) {
-        if (grand_child) this->ShareArg(*it, grand_child);
-        this->TransferArg(*it, child_atleast);
-      }
-      assert(args_.size() == 2);
+      assert(and_gate->args().size() == 2);
+      assert(this->args_.size() == 2);
   }
   if (args_.size() == 1) {
     switch(type_) {
