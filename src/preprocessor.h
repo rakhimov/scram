@@ -124,6 +124,13 @@ class Preprocessor {
   /// @note Complements are propagated to the variables of the graph.
   void PhaseFour();
 
+  /// The final phase
+  /// that cleans up the graph,
+  /// and puts the structure of the graph ready for analysis.
+  /// This phase makes the graph stucture
+  /// alternating AND/OR gate layers.
+  void PhaseFive();
+
   /// Checks the root gate of the graph for further processing.
   /// The root gate may become constant
   /// or one-variable-NULL-gate,
@@ -384,6 +391,8 @@ class Preprocessor {
   ///
   /// @param[in,out] gate The starting gate to traverse the graph.
   ///                     This is for recursive purposes.
+  /// @param[in] common A flag to also join common gates.
+  ///                   These gates may be important for other algorithms.
   ///
   /// @returns true if the given graph has been changed by this function.
   /// @returns false if no change has been made.
@@ -392,7 +401,7 @@ class Preprocessor {
   ///       These gates are registered for future processing.
   /// @note It is impossible that this function generates NULL type gates.
   /// @note Module gates are omitted from coalescing to preserve them.
-  bool JoinGates(const IGatePtr& gate);
+  bool JoinGates(const IGatePtr& gate, bool common);
 
   /// Traverses the Boolean graph to detect modules.
   /// Modules are independent sub-graphs

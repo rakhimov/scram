@@ -98,8 +98,19 @@ void Preprocessor::ProcessFaultTree() {
     LOG(DEBUG2) << "Preprocessing Phase IV...";
     Preprocessor::PhaseFour();
     LOG(DEBUG2) << "Finished Preprocessing Phase IV in " << DUR(time_4);
+    if (Preprocessor::CheckRootGate()) return;
   }
+
+  CLOCK(time_5);
+  LOG(DEBUG2) << "Preprocessing Phase V...";
+  Preprocessor::PhaseFive();
+  LOG(DEBUG2) << "Finished Preprocessing Phase V in " << DUR(time_5);
+
   Preprocessor::CheckRootGate();  // To cleanup.
+
+  assert(const_gates_.empty());
+  assert(null_gates_.empty());
+  assert(graph_->normal_);
 }
 
 void Preprocessor::PhaseOne() {
@@ -160,7 +171,7 @@ void Preprocessor::PhaseTwo() {
     graph_changed = false;
     graph_->ClearGateMarks();
     if (graph_->root()->state() == kNormalState)
-      Preprocessor::JoinGates(graph_->root());  // Registers const gates.
+      Preprocessor::JoinGates(graph_->root(), false);  // Registers const gates.
 
     if (!const_gates_.empty()) {
       Preprocessor::ClearConstGates();
@@ -207,6 +218,26 @@ void Preprocessor::PhaseFour() {
 
   if (Preprocessor::CheckRootGate()) return;
   Preprocessor::PhaseTwo();
+}
+
+void Preprocessor::PhaseFive() {
+  LOG(DEBUG3) << "Coalescing gates...";
+  bool graph_changed = true;
+  while (graph_changed) {
+    assert(const_gates_.empty());
+    assert(null_gates_.empty());
+
+    graph_changed = false;
+    graph_->ClearGateMarks();
+    if (graph_->root()->state() == kNormalState)
+      Preprocessor::JoinGates(graph_->root(), true);  // Make layered.
+
+    if (!const_gates_.empty()) {
+      Preprocessor::ClearConstGates();
+      graph_changed = true;
+    }
+  }
+  LOG(DEBUG3) << "Gate coalescense is done!";
 }
 
 bool Preprocessor::CheckRootGate() {
@@ -634,7 +665,7 @@ void Preprocessor::PropagateComplements(
   }
 }
 
-bool Preprocessor::JoinGates(const IGatePtr& gate) {
+bool Preprocessor::JoinGates(const IGatePtr& gate, bool common) {
   if (gate->mark()) return false;
   gate->mark(true);
   bool possible = false;  // If joining is possible at all.
@@ -659,12 +690,13 @@ bool Preprocessor::JoinGates(const IGatePtr& gate) {
   boost::unordered_map<int, IGatePtr>::const_iterator it;
   for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
     IGatePtr arg_gate = it->second;
-    if (Preprocessor::JoinGates(arg_gate)) changed = true;
+    if (Preprocessor::JoinGates(arg_gate, common)) changed = true;
 
     if (!possible) continue;  // Joining with the parent is impossible.
 
     if (it->first < 0) continue;  // Cannot join a negative arg gate.
     if (arg_gate->IsModule()) continue;  // Preserve modules.
+    if (!common && arg_gate->parents().size() > 1) continue;  // Check common.
 
     if (arg_gate->type() == target_type) to_join.push_back(arg_gate);
   }
