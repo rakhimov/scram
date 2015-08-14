@@ -803,6 +803,8 @@ class BooleanGraph {
   bool normal_;  ///< Indication for the graph containing only OR and AND gates.
   /// Registered house events upon the creation of the Boolean graph.
   std::vector<boost::weak_ptr<Constant> > constants_;
+  /// Registered NULL type gates upon the creation of the Boolean graph.
+  std::vector<boost::weak_ptr<IGate> > null_gates_;
 };
 
 /// Prints indexed house events or constants in the shorthand format.

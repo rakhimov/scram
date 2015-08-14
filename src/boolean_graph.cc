@@ -381,6 +381,9 @@ boost::shared_ptr<IGate> BooleanGraph::ProcessFormula(
     case kAtleastGate:
       parent->vote_number(formula->vote_number());
       break;
+    case kNullGate:
+      null_gates_.push_back(parent);
+      break;
   }
   BooleanGraph::ProcessBasicEvents(parent, formula->basic_event_args(),
                                    ccf, id_to_node);

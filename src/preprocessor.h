@@ -273,6 +273,31 @@ class Preprocessor {
   ///       to clean the results of the propagation.
   void PropagateConstant(const ConstantPtr& constant);
 
+  /// Removes argument gates of NULL type,
+  /// which means these arg gates have only one argument.
+  /// That one grand arg is transfered to the parent gate,
+  /// and the original argument gate is removed from the parent gate.
+  ///
+  /// This function is used only once
+  /// to get rid of all NULL type gates
+  /// at the very beginning of preprocessing.
+  ///
+  /// @note This function assumes
+  ///       that the container for NULL gates is empty.
+  ///       In other words, it is assumed
+  ///       no other function was trying to
+  ///       communicate NULL type gates for future processing.
+  /// @note This function is designed to be called only once
+  ///       at the start of preprocessing
+  ///       after cleaning all the constants from the graph.
+  ///
+  /// @warning There still may be only one NULL type gate
+  ///          which is the root of the graph.
+  ///          This must be handled separately.
+  /// @warning NULL gates that are constant are not handled
+  ///          and left for constant propagation functions.
+  void RemoveNullGates();
+
   /// Changes the state of a gate
   /// or removes a constant argument.
   /// The function determines its actions depending on
@@ -352,50 +377,6 @@ class Preprocessor {
   /// @todo Module-aware complement propagation.
   void PropagateComplements(const IGatePtr& gate,
                             std::map<int, IGatePtr>* gate_complements);
-
-  /// Removes argument gates of NULL type,
-  /// which means these arg gates have only one argument.
-  /// That one grand arg is transfered to the parent gate,
-  /// and the original argument gate is removed from the parent gate.
-  ///
-  /// This is a top-down algorithm that searches for all NULL type gates,
-  /// which means it is less efficient
-  /// than having a specific NULL type gate propagate its argument bottom-up.
-  /// Therefore, this function is used
-  /// to get rid of all NULL type gates
-  /// without knowing where they are or what they are
-  /// at the very beginning of preprocessing.
-  ///
-  /// @returns true if the Boolean graph had it NULL type gates removed.
-  /// @returns false if no change has been made.
-  ///
-  /// @note This function assumes
-  ///       that the container for NULL gates is empty.
-  ///       In other words, it is assumed
-  ///       no other function was trying to
-  ///       communicate NULL type gates for future processing.
-  /// @note This function is designed to be called only once
-  ///       at the start of preprocessing
-  ///       after cleaning all the constants from the graph.
-  /// @note Other algorithms must use
-  ///       the bottom-up NULL gate propagation function
-  ///       because that function is more targeted and efficient.
-  ///
-  /// @warning This function clears and uses gate marks.
-  /// @warning There still may be only one NULL type gate
-  ///          which is the root of the graph.
-  ///          This must be handled separately.
-  /// @warning NULL gates that are constant are not handled
-  ///          and left for constant propagation functions.
-  bool RemoveNullGates();
-
-  /// Gathers all NULL type gates
-  /// starting from the given gate as a root.
-  ///
-  /// @param[in,out] gate The starting gate to search for NULL gates.
-  ///
-  /// @warning Gate marks must be clear.
-  void GatherNullGates(const IGatePtr& gate);
 
   /// Coalesces positive argument gates
   /// with the same OR or AND logic as parents.

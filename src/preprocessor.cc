@@ -107,9 +107,11 @@ void Preprocessor::PhaseOne() {
     Preprocessor::RemoveConstants();
     LOG(DEBUG3) << "Constant are removed!";
   }
-  LOG(DEBUG3) << "Removing NULL gates...";
-  Preprocessor::RemoveNullGates();
-  LOG(DEBUG3) << "Finished cleaning NULL gates!";
+  if (!graph_->null_gates_.empty()) {
+    LOG(DEBUG3) << "Removing NULL gates...";
+    Preprocessor::RemoveNullGates();
+    LOG(DEBUG3) << "Finished cleaning NULL gates!";
+  }
 }
 
 void Preprocessor::PhaseTwo() {
@@ -480,6 +482,22 @@ void Preprocessor::PropagateConstant(const ConstantPtr& constant) {
   }
 }
 
+void Preprocessor::RemoveNullGates() {
+  assert(null_gates_.empty());
+  assert(!graph_->null_gates_.empty());
+  null_gates_ = graph_->null_gates_;  // Transfering for internal uses.
+  graph_->null_gates_.clear();
+
+  IGatePtr root = graph_->root();
+  if (null_gates_.size() == 1 && null_gates_.front().lock() == root) {
+    null_gates_.clear();  // Special case of only one NULL gate as the root.
+    return;
+  }
+
+  Preprocessor::ClearNullGates();
+  assert(null_gates_.empty());
+}
+
 void Preprocessor::ProcessConstantArg(const IGatePtr& gate, int arg,
                                       bool state) {
   if (arg < 0) state = !state;
@@ -612,34 +630,6 @@ void Preprocessor::PropagateComplements(
     IGatePtr complement = gate_complements->find(-*it_ch)->second;
     gate->AddArg(complement->index(), complement);
     assert(gate->state() == kNormalState);  // No duplicates.
-  }
-}
-
-bool Preprocessor::RemoveNullGates() {
-  graph_->ClearGateMarks();
-  assert(null_gates_.empty());
-  IGatePtr root = graph_->root();
-  Preprocessor::GatherNullGates(root);
-  graph_->ClearGateMarks();
-  if (null_gates_.size() == 1 && null_gates_.front().lock() == root)
-    null_gates_.clear();  // Special case of only one NULL gate as the root.
-
-  if (!null_gates_.empty()) {
-    Preprocessor::ClearNullGates();
-    return true;
-  }
-  return false;
-}
-
-void Preprocessor::GatherNullGates(const IGatePtr& gate) {
-  if (gate->mark()) return;
-  gate->mark(true);
-  if (gate->type() == kNullGate && gate->state() == kNormalState) {
-    null_gates_.push_back(gate);
-  }
-  boost::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
-    Preprocessor::GatherNullGates(it->second);
   }
 }
 
