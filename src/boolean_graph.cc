@@ -355,7 +355,6 @@ const std::map<std::string, Operator> BooleanGraph::kStringToType_ =
 
 BooleanGraph::BooleanGraph(const GatePtr& root, bool ccf)
     : coherent_(true),
-      constants_(false),
       normal_(true) {
   Node::ResetIndex();
   Variable::ResetIndex();
@@ -440,8 +439,6 @@ void BooleanGraph::ProcessHouseEvents(
       boost::unordered_map<std::string, NodePtr>* id_to_node) {
   std::vector<HouseEventPtr>::const_iterator it_h;
   for (it_h = house_events.begin(); it_h != house_events.end(); ++it_h) {
-    constants_ = true;
-
     HouseEventPtr house = *it_h;
     if (id_to_node->count(house->id())) {
       NodePtr node = id_to_node->find(house->id())->second;
@@ -450,6 +447,7 @@ void BooleanGraph::ProcessHouseEvents(
       ConstantPtr constant(new Constant(house->state()));
       parent->AddArg(constant->index(), constant);
       id_to_node->insert(std::make_pair(house->id(), constant));
+      constants_.push_back(constant);
     }
   }
 }

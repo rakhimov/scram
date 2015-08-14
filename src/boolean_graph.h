@@ -637,9 +637,6 @@ class BooleanGraph {
   /// @returns true if the fault tree is coherent.
   inline bool coherent() const { return coherent_; }
 
-  /// @returns true if the initialized fault tree has constants.
-  inline bool constants() const { return constants_; }
-
   /// @returns true if the initialized fault tree has only OR and AND gates.
   inline bool normal() const { return normal_; }
 
@@ -711,6 +708,7 @@ class BooleanGraph {
 
   /// Processes a Boolean formula's house events
   /// into constant arguments of an indexed gate of the Boolean graph.
+  /// Newly created constants are registered for removal for Preprocessor.
   ///
   /// @param[in,out] parent The parent gate to own the arguments.
   /// @param[in] house_events The collection of house events of the formula.
@@ -802,8 +800,9 @@ class BooleanGraph {
   IGatePtr root_;  ///< The root gate of this graph.
   std::vector<BasicEventPtr> basic_events_;  ///< Mapping for basic events.
   bool coherent_;  ///< Indication that the graph does not contain negation.
-  bool constants_;  ///< Indication that the original graph contains constants.
   bool normal_;  ///< Indication for the graph containing only OR and AND gates.
+  /// Registered house events upon the creation of the Boolean graph.
+  std::vector<boost::weak_ptr<Constant> > constants_;
 };
 
 /// Prints indexed house events or constants in the shorthand format.

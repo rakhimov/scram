@@ -247,16 +247,10 @@ class Preprocessor {
 
   /// Removes all Boolean constants from the Boolean graph
   /// according to the Boolean logic of the gates.
-  /// This algorithm is top-down search for all constants.
-  /// It is less efficient
-  /// than a targeted bottom-up propagation for a specific constant.
-  /// Therefore, this function is used
+  /// This function is only used
   /// to get rid of all constants
-  /// without knowing where they are or what they are
+  /// registered by the Boolean graph
   /// at the very beginning of preprocessing.
-  ///
-  /// @returns true if the graph has been changed by this function.
-  /// @returns false if no change has been made.
   ///
   /// @note This is one of the first preprocessing steps.
   ///       Other algorithms are safe to assume
@@ -267,20 +261,7 @@ class Preprocessor {
   /// @warning There still may be only one constant state gate
   ///          which is the root of the graph.
   ///          This must be handled separately.
-  bool RemoveConstants();
-
-  /// Gathers all Boolean constants in the graph.
-  /// This is a helper function for initial cleanup of constants.
-  ///
-  /// @param[in,out] gate The gate to start the traversal.
-  /// @param[out] constants The container for constants.
-  ///
-  /// @warning Gate marks must be clear.
-  /// @warning The constants are assumed to be removed after this function.
-  ///          The visit information must be cleaned from constants
-  ///          if they are not going to be deleted.
-  void GatherConstants(const IGatePtr& gate,
-                       std::vector<boost::weak_ptr<Constant> >* constants);
+  void RemoveConstants();
 
   /// Propagates a Boolean constant bottom-up.
   /// This is a helper function for initial cleanup of the Boolean graph.

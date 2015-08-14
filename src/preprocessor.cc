@@ -102,7 +102,7 @@ void Preprocessor::ProcessFaultTree() {
 }
 
 void Preprocessor::PhaseOne() {
-  if (graph_->constants()) {
+  if (!graph_->constants_.empty()) {
     LOG(DEBUG3) << "Removing constants...";
     Preprocessor::RemoveConstants();
     LOG(DEBUG3) << "Constant are removed!";
@@ -451,40 +451,17 @@ void Preprocessor::ClearNullGates() {
   null_gates_.clear();
 }
 
-bool Preprocessor::RemoveConstants() {
+void Preprocessor::RemoveConstants() {
   assert(const_gates_.empty());
-  graph_->ClearGateMarks();
-  std::vector<boost::weak_ptr<Constant> > constants;
-  Preprocessor::GatherConstants(graph_->root(), &constants);
-  graph_->ClearGateMarks();
+  assert(!graph_->constants_.empty());
   std::vector<boost::weak_ptr<Constant> >::iterator it;
-  for (it = constants.begin(); it != constants.end(); ++it) {
+  for (it = graph_->constants_.begin(); it != graph_->constants_.end(); ++it) {
     if (it->expired()) continue;
     Preprocessor::PropagateConstant(it->lock());
+    assert(it->expired());
   }
   assert(const_gates_.empty());
-  if (!constants.empty()) return true;
-  return false;
-}
-
-void Preprocessor::GatherConstants(
-    const IGatePtr& gate,
-    std::vector<boost::weak_ptr<Constant> >* constants) {
-  if (gate->mark()) return;
-  gate->mark(true);
-  boost::unordered_map<int, ConstantPtr>::const_iterator it_c;
-  for (it_c = gate->constant_args().begin();
-       it_c != gate->constant_args().end(); ++it_c) {
-    ConstantPtr constant = it_c->second;
-    if (constant->Visited()) continue;
-    constant->Visit(1);  // This node will be deleted anyway.
-    constants->push_back(constant);
-  }
-
-  boost::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
-    Preprocessor::GatherConstants(it->second, constants);
-  }
+  graph_->constants_.clear();
 }
 
 void Preprocessor::PropagateConstant(const ConstantPtr& constant) {
