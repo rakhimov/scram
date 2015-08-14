@@ -888,9 +888,8 @@ boost::shared_ptr<IGate> Preprocessor::CreateNewModule(
   }
   gate->AddArg(module->index(), module);
   assert(gate->args().size() > 1);
-  LOG(DEBUG4) << "Created a new module for Gate " << gate->index() << ": "
-      << "Gate " << module->index() << " with "  << args.size()
-      << " NON-SHARED arguments.";
+  LOG(DEBUG4) << "Created a module for Gate " << gate->index() << ": Gate "
+      << module->index() << " with "  << args.size() << " arguments.";
   return module;
 }
 
@@ -983,6 +982,7 @@ void Preprocessor::GroupModularArgs(
     assert(group.size() > 1);
     groups->push_back(group);
   }
+  LOG(DEBUG4) << "Grouped modular args in " << groups->size() << " group(s).";
   assert(!groups->empty());
 }
 
