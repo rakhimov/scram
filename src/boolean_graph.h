@@ -669,6 +669,13 @@ class BooleanGraph {
     return basic_events_[index - 1];
   }
 
+  /// Prints the Boolean graph in the shorthand format.
+  /// This is a helper for logging and debugging.
+  /// The output is the standard error.
+  ///
+  /// @warning Node visits are used.
+  void Print();
+
  private:
   typedef boost::shared_ptr<Formula> FormulaPtr;
   typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
@@ -784,16 +791,6 @@ class BooleanGraph {
   ///
   /// @note Gate marks are used for linear time traversal.
   void ClearOptiValues(const IGatePtr& gate);
-
-  /// Prints the Boolean graph in the shorthand format.
-  /// This is a helper for logging and debugging.
-  /// The output is the standard error.
-  ///
-  /// @warning Node visits are used.
-  inline void Print() {
-    ClearNodeVisits();
-    std::cerr << std::endl << this << std::endl;
-  }
 
   IGatePtr root_;  ///< The root gate of this graph.
   std::vector<BasicEventPtr> basic_events_;  ///< Mapping for basic events.

@@ -363,6 +363,11 @@ BooleanGraph::BooleanGraph(const GatePtr& root, bool ccf)
   root_ = BooleanGraph::ProcessFormula(root->formula(), ccf, &id_to_node);
 }
 
+void BooleanGraph::Print() {
+  ClearNodeVisits();
+  std::cerr << std::endl << this << std::endl;
+}
+
 boost::shared_ptr<IGate> BooleanGraph::ProcessFormula(
     const FormulaPtr& formula,
     bool ccf,

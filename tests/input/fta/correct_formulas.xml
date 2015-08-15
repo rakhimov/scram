@@ -44,6 +44,7 @@
       <nand>
         <event name="A"/>
         <event name="B"/>
+        <event name="H"/>
       </nand>
     </define-gate>
     <define-gate name="INHIBIT">
@@ -62,5 +63,6 @@
         <attribute name="flavor" value="conditional"/>
       </attributes>
     </define-basic-event>
+    <define-house-event name="H"/>
   </define-fault-tree>
 </opsa-mef>
