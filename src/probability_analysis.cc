@@ -20,7 +20,6 @@
 #include "probability_analysis.h"
 
 #include <boost/algorithm/string.hpp>
-#include <boost/pointer_cast.hpp>
 
 #include "error.h"
 #include "logger.h"

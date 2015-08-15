@@ -23,6 +23,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/date_time.hpp>
+#include <boost/pointer_cast.hpp>
 
 #include "ccf_group.h"
 #include "error.h"

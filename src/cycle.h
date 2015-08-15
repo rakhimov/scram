@@ -19,12 +19,10 @@
 #ifndef SCRAM_SRC_CYCLE_H_
 #define SCRAM_SRC_CYCLE_H_
 
-#include <assert.h>
-
+#include <cassert>
 #include <string>
 #include <vector>
 
-#include <boost/pointer_cast.hpp>
 #include <boost/shared_ptr.hpp>
 
 namespace scram {

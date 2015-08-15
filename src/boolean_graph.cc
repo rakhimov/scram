@@ -286,7 +286,7 @@ void IGate::ProcessDuplicateArg(int index) {
       assert(this->args_.size() == 2);
   }
   if (args_.size() == 1) {
-    switch(type_) {
+    switch (type_) {
       case kAndGate:
       case kOrGate:
         type_ = kNullGate;
