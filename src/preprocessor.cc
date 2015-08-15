@@ -147,6 +147,11 @@ void Preprocessor::PhaseTwo() {
   LOG(DEBUG3) << "Finished module detection!";
 
   if (graph_->coherent()) {
+    CLOCK(merge_time);
+    LOG(DEBUG3) << "Merging common arguments...";
+    Preprocessor::MergeCommonArgs();
+    LOG(DEBUG3) << "Finished merging common args in " << DUR(merge_time);
+
     CLOCK(optim_time);
     LOG(DEBUG3) << "Boolean optimization...";
     Preprocessor::BooleanOptimization();
@@ -1018,6 +1023,221 @@ void Preprocessor::CreateNewModules(
   std::vector<std::vector<std::pair<int, NodePtr> > >::const_iterator it;
   for (it = groups.begin(); it != groups.end(); ++it) {
     Preprocessor::CreateNewModule(main_arg, *it);
+  }
+}
+
+bool Preprocessor::MergeCommonArgs() {
+  assert(null_gates_.empty());
+  assert(const_gates_.empty());
+  bool changed = false;
+
+  LOG(DEBUG4) << "Merging common arguments for AND gates...";
+  bool ret = Preprocessor::MergeCommonArgs(kAndGate);
+  if (ret) changed = true;
+  LOG(DEBUG4) << "Finished merging for AND gates!";
+
+  LOG(DEBUG4) << "Merging common arguments for OR gates...";
+  ret = Preprocessor::MergeCommonArgs(kOrGate);
+  if (ret) changed = true;
+  LOG(DEBUG4) << "Finished merging for OR gates!";
+
+  assert(null_gates_.empty());
+  assert(const_gates_.empty());
+  return changed;
+}
+
+bool Preprocessor::MergeCommonArgs(const Operator& op) {
+  assert(op == kAndGate || op == kOrGate);
+  graph_->ClearNodeVisits();
+  graph_->ClearGateMarks();
+  // Gather and group gates
+  // by their operator types and common arguments.
+  Preprocessor::MarkCommonArgs(graph_->root(), op);
+  graph_->ClearGateMarks();
+  std::vector<std::pair<IGatePtr, std::vector<int> > > group;
+  Preprocessor::GatherCommonArgs(graph_->root(), op, &group);
+  // Finding common parents for the common arguments.
+  boost::unordered_map<std::vector<int>, std::set<IGatePtr> > parents;
+  Preprocessor::GroupCommonParents(group, &parents);
+  if (parents.empty()) return false;  // No candidates for merging.
+
+  LOG(DEBUG4) << "Merging " << parents.size() << " groups...";
+  // After common arguments and parents are grouped,
+  // the merging technique must find the most optimal strategy
+  // to create new gates
+  // that will represent the common arguments.
+  // The strategy may favor modularity, size, or other parameters
+  // of the new structure of the final graph.
+  // The common elements within
+  // the groups of common parents and common arguments
+  // create the biggest challenge for finding the optimal solution.
+  // For example,
+  // {
+  // (a, b) : (p1, p2),
+  // (b, c) : (p2, p3)
+  // }
+  // The strategy has to make
+  // the most optimal choice
+  // between two mutually exclusive options.
+  graph_->ClearOptiValues();
+  /// @todo Must group by sizes to detect supersets.
+  ///       If supersets are processed before the subsets,
+  ///       the optimization of the supersets is impossible.
+  /// @todo Must find a way to efficiently transfer data
+  ///       from the map to the table.
+  std::vector<std::pair<std::vector<int>, std::set<IGatePtr> > >
+      table(parents.begin(), parents.end());
+  while (!table.empty()) {
+    std::set<IGatePtr>& common_parents = table.back().second;
+    std::vector<int>& common_args = table.back().first;
+    std::set<IGatePtr> useful_parents; // With full set of args.
+
+    std::set<IGatePtr>::iterator it_p;
+    for (it_p = common_parents.begin(); it_p != common_parents.end(); ++it_p) {
+      IGatePtr common_parent = *it_p;
+      if (common_parent->opti_value()) {  // Modified parent.
+        assert(common_parent->opti_value() == 1);
+        const std::set<int>& args = common_parent->args();
+        bool have_args = std::includes(args.begin(), args.end(),
+                                       common_args.begin(), common_args.end());
+        // Erased and optimized common args.
+        if (!have_args) continue;
+      }
+      useful_parents.insert(useful_parents.end(), common_parent);
+    }
+
+    if (useful_parents.size() < 2) {  // No point of merging arguments.
+      table.pop_back();
+      continue;  /// @todo Investigate better options.
+    }
+    LOG(DEBUG5) << "Merging " << common_args.size() << " args into a new gate";
+    IGatePtr parent = *useful_parents.begin();  // To get the arguments.
+    IGatePtr merge_gate(new IGate(parent->type()));
+    std::vector<int>::iterator it;
+    for (it = common_args.begin(); it != common_args.end(); ++it) {
+      parent->ShareArg(*it, merge_gate);
+      for (it_p = useful_parents.begin(); it_p != useful_parents.end();
+           ++it_p) {
+        IGatePtr common_parent = *it_p;
+        common_parent->EraseArg(*it);
+      }
+    }
+    for (it_p = useful_parents.begin(); it_p != useful_parents.end(); ++it_p) {
+      IGatePtr common_parent = *it_p;
+      common_parent->AddArg(merge_gate->index(), merge_gate);
+      common_parent->opti_value(1);  // Mark as processed.
+      if (common_parent->args().size() == 1) {
+        common_parent->type(kNullGate);
+        null_gates_.push_back(common_parent);
+      }
+      assert(common_parent->state() == kNormalState);
+    }
+    for (int i = 0; i < table.size() - 1; ++i) {
+      std::vector<int>& set_args = table[i].first;
+      if (set_args.size() <= common_args.size()) continue;
+      bool superset = std::includes(set_args.begin(), set_args.end(),
+                                    common_args.begin(), common_args.end());
+      if (!superset) continue;
+      std::vector<int> diff(set_args.size() - common_args.size(), 0);
+      std::set_difference(set_args.begin(), set_args.end(),
+                          common_args.begin(), common_args.end(),
+                          diff.begin());
+      assert(diff.back() != 0);
+      assert(merge_gate->index() > diff.back());
+      diff.push_back(merge_gate->index());  // Assumes sequential indexing.
+      set_args = diff;
+      assert(table[i].first.size() == diff.size());
+    }
+    table.pop_back();  // Erasing the group from operations.
+  }
+  Preprocessor::ClearNullGates();
+  return true;
+}
+
+void Preprocessor::MarkCommonArgs(const IGatePtr& gate, const Operator& op) {
+  if (gate->mark()) return;
+  gate->mark(true);
+
+  bool in_group = gate->type() == op ? true : false;
+
+  boost::unordered_map<int, IGatePtr>::const_iterator it;
+  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
+    IGatePtr arg_gate = it->second;
+    assert(arg_gate->state() == kNormalState);
+    Preprocessor::MarkCommonArgs(arg_gate, op);
+    if (in_group) arg_gate->Visit(1);
+  }
+
+  if (!in_group) return;  // No need to visit leaf variables.
+
+  boost::unordered_map<int, VariablePtr>::const_iterator it_v;
+  for (it_v = gate->variable_args().begin();
+       it_v != gate->variable_args().end(); ++it_v) {
+    it_v->second->Visit(1);
+  }
+  assert(gate->constant_args().empty());
+}
+
+void Preprocessor::GatherCommonArgs(
+    const IGatePtr& gate,
+    const Operator& op,
+    std::vector<std::pair<IGatePtr, std::vector<int> > >* group) {
+  if (gate->mark()) return;
+  gate->mark(true);
+
+  bool in_group = gate->type() == op ? true : false;
+
+  std::vector<int> common_args;
+  boost::unordered_map<int, IGatePtr>::const_iterator it;
+  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
+    IGatePtr arg_gate = it->second;
+    assert(arg_gate->state() == kNormalState);
+    Preprocessor::GatherCommonArgs(arg_gate, op, group);
+    if (in_group && arg_gate->ExitTime()) common_args.push_back(it->first);
+  }
+
+  if (!in_group) return;  // No need to check variables.
+
+  boost::unordered_map<int, VariablePtr>::const_iterator it_v;
+  for (it_v = gate->variable_args().begin();
+       it_v != gate->variable_args().end(); ++it_v) {
+    if (it_v->second->ExitTime()) common_args.push_back(it_v->first);
+  }
+  assert(gate->constant_args().empty());
+
+  if (common_args.size() < 2) return;  // Can't be merged anyway.
+
+  std::sort(common_args.begin(), common_args.end());
+  group->push_back(std::make_pair(gate, common_args));
+}
+
+void Preprocessor::GroupCommonParents(
+    const std::vector<std::pair<IGatePtr, std::vector<int> > >& group,
+    boost::unordered_map<std::vector<int>, std::set<IGatePtr> >* parents) {
+  if (group.empty()) return;
+  for (int i = 0; i < group.size() - 1; ++i) {
+    const std::vector<int>& args_gate = group[i].second;
+    assert(args_gate.size() > 1);
+    int j = i;
+    for (++j; j < group.size(); ++j) {
+      const std::vector<int>& args_comp = group[j].second;
+      assert(args_comp.size() > 1);
+
+      int min_size = args_gate.size();
+      if (args_comp.size() < min_size) min_size = args_comp.size();
+
+      std::vector<int> common(min_size, 0);
+      std::set_intersection(args_gate.begin(), args_gate.end(),
+                            args_comp.begin(), args_comp.end(),
+                            common.begin());
+      if (common.front() == 0) continue;  // No intersection is found.
+      while (common.back() == 0) common.pop_back();  // May have suprises!
+      assert(common.size() <= min_size);  // To check for the suprises.
+      if (common.size() < 2) continue;  // Can't be a merge condidate.
+      std::set<IGatePtr>& common_parents = (*parents)[common];
+      common_parents.insert(group[i].first);
+      common_parents.insert(group[j].first);
+    }
   }
 }
 

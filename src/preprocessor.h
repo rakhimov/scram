@@ -504,6 +504,81 @@ class Preprocessor {
       const std::vector<std::pair<int, NodePtr> >& modular_args,
       const std::vector<std::vector<std::pair<int, NodePtr> > >& groups);
 
+  /// Identifies common arguments of gates,
+  /// and merges the common arguments into new gates.
+  /// This technique helps uncover the common structure
+  /// within gates that are not modules.
+  ///
+  /// @returns true if the graph structure is changed by this technique.
+  ///
+  /// @note This technique works only with OR/AND gates.
+  ///       Partial or full normalization may make
+  ///       this technique more effective.
+  /// @note Constant arguments are not expected.
+  ///
+  /// @warning Gate marks are used for traversal.
+  /// @warning Node visit times are used for common node detection.
+  /// @warning Gate optimization values are used
+  ///          to mark the optimized gates.
+  bool MergeCommonArgs();
+
+  /// Merges common arguments for a specific group of gates.
+  /// The gates are grouped by their operators.
+  /// This is a helper function
+  /// that devides the main merging technique by the gate types.
+  ///
+  /// @param[in] op The operator that defines the group.
+  ///
+  /// @note The operator or logic of the gates must allow merging.
+  ///       OR/AND operators are expected.
+  ///
+  /// @warning Gate marks are used for traversal.
+  /// @warning Node visit times are used for common node detection.
+  /// @warning Gate optimization values are used
+  ///          to mark the optimized gates.
+  bool MergeCommonArgs(const Operator& op);
+
+  /// Marks common arguments of gates with a specific operator.
+  ///
+  /// @param[in] gate The gate to start the traversal.
+  /// @param[in] op The operator of gates
+  ///               which arguments must be marked.
+  ///
+  /// @note Visit information is used to mark the common arguments.
+  ///
+  /// @warning Gate marks are used for linear traversal.
+  void MarkCommonArgs(const IGatePtr& gate, const Operator& op);
+
+  /// Gathers common arguments of the gates
+  /// in the group of a specific operator.
+  /// The common arguments must be marked
+  /// by the second visit exit time.
+  ///
+  /// @param[in] gate The gate to start the traversal.
+  /// @param[in] op The operator of gates in the group.
+  /// @param[out] group The group of the gates with their common arguments.
+  ///
+  /// @note The common arguments are sorted.
+  ///
+  /// @warning Gate marks are used for linear traversal.
+  void GatherCommonArgs(
+      const IGatePtr& gate,
+      const Operator& op,
+      std::vector<std::pair<IGatePtr, std::vector<int> > >* group);
+
+  /// Findes intersections of common arguments of gates.
+  /// Gates with the same common arguments are grouped
+  /// to represent common parents for the arguments.
+  ///
+  /// @param[in] group The group of the gates with their common arguments.
+  /// @param[out] parents Grouped common parent gates
+  ///             for the sets of common arguments.
+  ///
+  /// @note The common arguments are sorted.
+  void GroupCommonParents(
+     const std::vector<std::pair<IGatePtr, std::vector<int> > >& group,
+     boost::unordered_map<std::vector<int>, std::set<IGatePtr> >* parents);
+
   /// Propagates failures of common nodes to detect redundancy.
   /// The graph structure is optimized
   /// by removing the redundancies if possible.
