@@ -95,6 +95,11 @@ class Preprocessor {
   ///       Any NULL type gates must be processed and removed
   ///       by the future preprocessing algorithms
   ///       as they introduce these NULL type gates.
+  ///
+  /// @warning This phase also runs partial normalization of gates;
+  ///          however, the preprocessing algorithms should not rely on this.
+  ///          If the partial normalization messes some significant algorithm,
+  ///          it may be removed from this phase in future.
   void PhaseOne();
 
   /// Preprocessing phase of the original structure of the graph.
@@ -297,15 +302,19 @@ class Preprocessor {
   /// Normalizes the gates of the whole Boolean graph
   /// into OR, AND gates.
   ///
+  /// @param[in] full A flag to handle complex gates like XOR and K/N,
+  ///                 which generate a lot more new gates
+  ///                 and make the structure of the graph more complex.
+  ///
   /// @note The negation of the top gate is saved
   ///       and handled as a special case for negation propagation
   ///       because it does not have a parent.
-  /// @note New gates are created upon normalization
-  ///       of complex gates like XOR.
-  /// @note This function is meant to be called only once.
+  /// @note New gates are created only upon full normalization
+  ///       of complex gates like XOR and K/N.
+  /// @note The full normalization is meant to be called only once.
   ///
   /// @warning The root get may still be NULL type.
-  void NormalizeGates();
+  void NormalizeGates(bool full);
 
   /// Notifies all parents of negative gates,
   /// such as NOT, NOR, and NAND,
@@ -326,6 +335,7 @@ class Preprocessor {
   /// Normalizes complex gates into OR, AND gates.
   ///
   /// @param[in,out] gate The gate to be processed.
+  /// @param[in] full A flag to handle complex gates like XOR and K/N.
   ///
   /// @note This is a helper function for NormalizeGates().
   ///
@@ -333,8 +343,8 @@ class Preprocessor {
   ///
   /// @warning Gate marks must be clear.
   /// @warning The parents of negative gates are assumed to be
-  ///          notified about the change of their argument types.
-  void NormalizeGate(const IGatePtr& gate);
+  ///          notified about the change of their arguments' types.
+  void NormalizeGate(const IGatePtr& gate, bool full);
 
   /// Normalizes a gate with XOR logic.
   /// This is a helper function

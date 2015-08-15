@@ -119,6 +119,11 @@ void Preprocessor::PhaseOne() {
     Preprocessor::RemoveConstants();
     LOG(DEBUG3) << "Constant are removed!";
   }
+  if (!graph_->coherent_) {
+    LOG(DEBUG3) << "Partial normalization of gates...";
+    Preprocessor::NormalizeGates(false);
+    LOG(DEBUG3) << "Finished the partial normalization of gates!";
+  }
   if (!graph_->null_gates_.empty()) {
     LOG(DEBUG3) << "Removing NULL gates...";
     Preprocessor::RemoveNullGates();
@@ -189,10 +194,10 @@ void Preprocessor::PhaseTwo() {
 
 void Preprocessor::PhaseThree() {
   assert(!graph_->normal_);
-  LOG(DEBUG3) << "Normalizing gates...";
+  LOG(DEBUG3) << "Full normalization of gates...";
   assert(root_sign_ == 1);
-  Preprocessor::NormalizeGates();
-  LOG(DEBUG3) << "Finished normalizing gates!";
+  Preprocessor::NormalizeGates(true);
+  LOG(DEBUG3) << "Finished the full normalization gates!";
 
   if (Preprocessor::CheckRootGate()) return;
   Preprocessor::PhaseTwo();
@@ -461,7 +466,7 @@ void Preprocessor::ClearNullGates() {
   null_gates_.clear();
 }
 
-void Preprocessor::NormalizeGates() {
+void Preprocessor::NormalizeGates(bool full) {
   assert(const_gates_.empty());
   assert(null_gates_.empty());
   // Handle special case for the root gate.
@@ -475,12 +480,11 @@ void Preprocessor::NormalizeGates() {
   }
   // Process negative gates.
   // Note that root's negative gate is processed in the above lines.
-  // All arguments are assumed to be positive at this point.
   graph_->ClearGateMarks();
   Preprocessor::NotifyParentsOfNegativeGates(root_gate);
 
   graph_->ClearGateMarks();
-  Preprocessor::NormalizeGate(root_gate);  // Registers null gates only.
+  Preprocessor::NormalizeGate(root_gate, full);  // Registers null gates only.
 
   assert(const_gates_.empty());
   Preprocessor::ClearNullGates();
@@ -507,7 +511,7 @@ void Preprocessor::NotifyParentsOfNegativeGates(const IGatePtr& gate) {
   }
 }
 
-void Preprocessor::NormalizeGate(const IGatePtr& gate) {
+void Preprocessor::NormalizeGate(const IGatePtr& gate, bool full) {
   if (gate->mark()) return;
   gate->mark(true);
   assert(gate->state() == kNormalState);
@@ -515,7 +519,7 @@ void Preprocessor::NormalizeGate(const IGatePtr& gate) {
   // Depth-first traversal before the arguments may get changed.
   boost::unordered_map<int, IGatePtr>::const_iterator it;
   for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
-    Preprocessor::NormalizeGate(it->second);
+    Preprocessor::NormalizeGate(it->second, full);
   }
 
   switch (gate->type()) {  // Negation is already processed.
@@ -536,11 +540,13 @@ void Preprocessor::NormalizeGate(const IGatePtr& gate) {
       break;
     case kXorGate:
       assert(gate->args().size() == 2);
+      if (!full) break;
       Preprocessor::NormalizeXorGate(gate);
       break;
     case kAtleastGate:
       assert(gate->args().size() > 2);
       assert(gate->vote_number() > 1);
+      if (!full) break;
       Preprocessor::NormalizeAtleastGate(gate);
       break;
     case kNullGate:
