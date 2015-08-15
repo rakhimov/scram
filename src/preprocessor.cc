@@ -909,7 +909,7 @@ bool DetectOverlap(int a_min, int a_max, int b_min, int b_max) {
   return std::max(a_min, b_min) <= std::min(a_max, b_max);
 }
 
-}
+}  // namespace
 
 void Preprocessor::FilterModularArgs(
     std::vector<std::pair<int, NodePtr> >* modular_args,
@@ -1271,7 +1271,7 @@ bool Preprocessor::ProcessDecompositionCommonNode(
     assert(!it->second.expired());
     IGatePtr parent = it->second.lock();
     assert(parent->LastVisit() != node->index());
-    switch(parent->type()) {
+    switch (parent->type()) {
       case kAndGate:
       case kNandGate:
       case kOrGate:
@@ -1304,7 +1304,9 @@ bool Preprocessor::ProcessDecompositionCommonNode(
   }
   if (dest.empty()) return false;  // No setups are found.
 
+  LOG(DEBUG4) << "Processing decomposition for node " << node->index();
   Preprocessor::ProcessDecompositionDestinations(node, dest);
+  LOG(DEBUG4) << "Finished the decomposition for node " << node->index();
   return true;
 }
 
@@ -1346,17 +1348,25 @@ void Preprocessor::ProcessDecompositionDestinations(
     }
     int sign = parent->args().count(node->index()) ? 1 : -1;
     if (sign < 0) state = !state;
-    Preprocessor::ProcessDecompositionAncestors(parent, node, state, true);
-    Preprocessor::ClearConstGates();  // Actual propagation of the complement.
+    boost::unordered_map<int, IGatePtr> clones;
+    LOG(DEBUG5) << "Processing decomposition ancestor G" << parent->index();
+    Preprocessor::ProcessDecompositionAncestors(parent, node, state, true,
+                                                &clones);
+    LOG(DEBUG5) << "Finished Processing ancestor G" << parent->index();
+    clones.clear();  // Before propagating the constant.
+    Preprocessor::ClearConstGates();  // Actual propagation of the constant.
     Preprocessor::ClearNullGates();
   }
 }
 
-void Preprocessor::ProcessDecompositionAncestors(const IGatePtr& ancestor,
-                                                 const NodePtr& node,
-                                                 bool state,
-                                                 bool destination) {
+void Preprocessor::ProcessDecompositionAncestors(
+    const IGatePtr& ancestor,
+    const NodePtr& node,
+    bool state,
+    bool destination,
+    boost::unordered_map<int, IGatePtr>* clones) {
   if (!destination && node->parents().count(ancestor->index())) {
+    LOG(DEBUG5) << "Reached decomposition sub-parent G" << ancestor->index();
     int sign = ancestor->args().count(node->index()) ? 1 : -1;
     Preprocessor::ProcessConstantArg(ancestor, sign * node->index(), state);
 
@@ -1374,15 +1384,22 @@ void Preprocessor::ProcessDecompositionAncestors(const IGatePtr& ancestor,
        ++it) {
     IGatePtr gate = it->second;
     if (gate->LastVisit() != node->index()) continue;
-    if (gate->parents().size() > 1) {  // Common gate.
-      IGatePtr copy = gate->Clone();
+    if (clones->count(gate->index())) {  // Already processed gate.
+      IGatePtr copy = clones->find(gate->index())->second;
       to_swap.push_back(std::make_pair(it->first, copy));
-      gate = copy;
+    } else if (gate->parents().size() == 1) {
+      gate->ClearVisits();  // To avoid revisiting in destination linking.
+      ancestors.push_back(gate);  // Unprocessed gate.
+    } else {
+      assert(gate->parents().size() > 1);
+      IGatePtr copy = gate->Clone();
+      clones->insert(std::make_pair(gate->index(), copy));
+      to_swap.push_back(std::make_pair(it->first, copy));
+      ancestors.push_back(copy);  // Process only new clones.
     }
-    ancestors.push_back(gate);
   }
   // Swaping is first
-  // because it reduces common nodes
+  // because it reduces the number of common nodes
   // for the sub-graph.
   std::vector<std::pair<int, IGatePtr> >::iterator it_s;
   for (it_s = to_swap.begin(); it_s != to_swap.end(); ++it_s) {
@@ -1392,7 +1409,8 @@ void Preprocessor::ProcessDecompositionAncestors(const IGatePtr& ancestor,
   }
   std::vector<IGatePtr>::iterator it_an;
   for (it_an = ancestors.begin(); it_an != ancestors.end(); ++it_an) {
-    Preprocessor::ProcessDecompositionAncestors(*it_an, node, state, false);
+    Preprocessor::ProcessDecompositionAncestors(*it_an, node, state, false,
+                                                clones);
   }
 }
 

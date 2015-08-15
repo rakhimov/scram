@@ -614,14 +614,20 @@ class Preprocessor {
 
   /// Processes decomposition ancestors
   /// in the link to the decomposition destinations.
+  /// Common gates in the sub-graph
+  /// are cloned to not mess the whole graph.
   ///
   /// @param[in] ancestor The parent or ancestor of the common node.
   /// @param[in] node The common node under consideration.
   /// @param[in] state The constant state to be propagated.
   /// @param[in] destination Indication that the ancestor is the destination.
-  void ProcessDecompositionAncestors(const IGatePtr& ancestor,
-                                     const NodePtr& node,
-                                     bool state, bool destination);
+  /// @param[in,out] clones Clones of common gates in the sub-graph.
+  void ProcessDecompositionAncestors(
+      const IGatePtr& ancestor,
+      const NodePtr& node,
+      bool state,
+      bool destination,
+      boost::unordered_map<int, IGatePtr>* clones);
 
   /// Detects and replaces multiple definitions of gates.
   /// Gates with the same logic and inputs
