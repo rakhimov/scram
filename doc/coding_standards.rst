@@ -11,7 +11,7 @@ This project adheres to the following coding styles:
     #. `Google Python Style Guide (GPSG)`_
     #. `PEP 8 -- Style Guide for Python Code (PEP8)`_
     #. `KDE CMake Coding Style`_
-    #. `Qt Coding Style`_ for GUI
+    #. `Qt Coding Style`_ for the GUI Development
     #. `Google Shell Style Guide`_
 
 .. _Google C++ Style Guide (GCSG): http://google-styleguide.googlecode.com/svn/trunk/cppguide.html
@@ -149,7 +149,8 @@ The documentation for the project is maintained in the reStructuredText_ format,
 and the final representations are dynamically generated with Sphinx_
 in various formats (html, pdf, LaTeX).
 
-The documentation for the code is checked and generated dynamically with Doxygen_.
+The code documentation is dynamically generated with Doxygen_,
+which also verifies full documentation coverage.
 
 The source text of the documentation in the code and the reST format
 must be formatted consistently and with `Semantic Linefeeds`_

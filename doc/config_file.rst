@@ -2,10 +2,10 @@
 Configuration Files
 ###################
 
-In order to work with complex analysis
+In order to analyze complex analysis models
 with several input files and tailored configurations,
 it is more convenient to use a configuration file than command-line arguments.
-Moreover, additional command-line options can be provided
+Additional command-line options can be provided
 to override or suppress the options from a configuration file.
 
 The configuration file is an XML file
