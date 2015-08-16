@@ -1244,14 +1244,17 @@ bool Preprocessor::DecomposeCommonNodes() {
   graph_->ClearNodeVisits();
 
   bool changed = false;
-  std::vector<IGateWeakPtr>::iterator it;
-  for (it = common_gates.begin(); it != common_gates.end(); ++it) {
+  // The processing is done deepest-layer-first.
+  // The deepest-first processing avoids generating extra parents
+  // for the nodes that are deep in the graph.
+  std::vector<IGateWeakPtr>::reverse_iterator it;
+  for (it = common_gates.rbegin(); it != common_gates.rend(); ++it) {
     bool ret = Preprocessor::ProcessDecompositionCommonNode(*it);
     if (ret) changed = true;
   }
 
-  std::vector<boost::weak_ptr<Variable> >::iterator it_b;
-  for (it_b = common_variables.begin(); it_b != common_variables.end();
+  std::vector<boost::weak_ptr<Variable> >::reverse_iterator it_b;
+  for (it_b = common_variables.rbegin(); it_b != common_variables.rend();
        ++it_b) {
     bool ret = Preprocessor::ProcessDecompositionCommonNode(*it_b);
     if (ret) changed = true;
