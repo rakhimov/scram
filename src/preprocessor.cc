@@ -1332,6 +1332,8 @@ void Preprocessor::MarkDecompositionDestinations(const IGatePtr& parent,
 void Preprocessor::ProcessDecompositionDestinations(
     const NodePtr& node,
     const std::vector<IGateWeakPtr>& dest) {
+  boost::unordered_map<int, IGatePtr> clones_true;  // True state propagation.
+  boost::unordered_map<int, IGatePtr> clones_false;  // False state propagation.
   std::vector<IGateWeakPtr>::const_iterator it;
   for (it = dest.begin(); it != dest.end(); ++it) {
     if (it->expired()) continue;  // Removed by constant propagation.
@@ -1354,15 +1356,15 @@ void Preprocessor::ProcessDecompositionDestinations(
     }
     int sign = parent->args().count(node->index()) ? 1 : -1;
     if (sign < 0) state = !state;
-    boost::unordered_map<int, IGatePtr> clones;
+    boost::unordered_map<int, IGatePtr>& clones =
+        state ? clones_true : clones_false;
     LOG(DEBUG5) << "Processing decomposition ancestor G" << parent->index();
     Preprocessor::ProcessDecompositionAncestors(parent, node, state, true,
                                                 &clones);
     LOG(DEBUG5) << "Finished Processing ancestor G" << parent->index();
-    clones.clear();  // Before propagating the constant.
-    Preprocessor::ClearConstGates();  // Actual propagation of the constant.
-    Preprocessor::ClearNullGates();
   }
+  Preprocessor::ClearConstGates();  // Actual propagation of the constant.
+  Preprocessor::ClearNullGates();
 }
 
 void Preprocessor::ProcessDecompositionAncestors(
