@@ -745,7 +745,7 @@ class Preprocessor {
 
   /// Detects and manipulates AND and OR gate distributivity.
   /// For example,
-  /// (a + b) * (a + c) = a + b * c.
+  /// (a | b) & (a | c) = a | b & c.
   ///
   /// @param[in] gate The gate which arguments must be tested.
   ///

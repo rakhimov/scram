@@ -101,6 +101,7 @@ with an AND/OR gate with common descendant nodes in the gate's sub-graph.
     .. math::
 
         x \& f(x, y) = x \& f(1, y)
+
         x \| f(x, y) = x \| f(0, y)
 
 This technique is also called Constant Propagation,
@@ -126,6 +127,7 @@ corresponding to the distributivity of *AND* and *OR* operators.
     .. math::
 
         (x \| y) \& (x \| z) = x \| (y \& z)
+
         (x \& y) \| (x \& z) = x \& (y \| z)
 
 This technique helps reduce the number of common nodes;
