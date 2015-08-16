@@ -146,17 +146,19 @@ void Preprocessor::PhaseTwo() {
   Preprocessor::DetectModules();
   LOG(DEBUG3) << "Finished module detection!";
 
-  CLOCK(decom_time);
-  LOG(DEBUG3) << "Decomposition of common nodes...";
-  Preprocessor::DecomposeCommonNodes();
-  LOG(DEBUG3) << "Finished the Decomposition in " << DUR(decom_time);
-
   if (graph_->coherent()) {
     CLOCK(optim_time);
     LOG(DEBUG3) << "Boolean optimization...";
     Preprocessor::BooleanOptimization();
     LOG(DEBUG3) << "Finished Boolean optimization in " << DUR(optim_time);
   }
+
+  if (Preprocessor::CheckRootGate()) return;
+
+  CLOCK(decom_time);
+  LOG(DEBUG3) << "Decomposition of common nodes...";
+  Preprocessor::DecomposeCommonNodes();
+  LOG(DEBUG3) << "Finished the Decomposition in " << DUR(decom_time);
 
   if (Preprocessor::CheckRootGate()) return;
 
@@ -1253,6 +1255,9 @@ bool Preprocessor::DecomposeCommonNodes() {
     if (ret) changed = true;
   }
 
+  // Variables are processed after gates
+  // because, if parent gates are removed,
+  // there may be no need to process these variables.
   std::vector<boost::weak_ptr<Variable> >::reverse_iterator it_b;
   for (it_b = common_variables.rbegin(); it_b != common_variables.rend();
        ++it_b) {
