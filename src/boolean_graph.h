@@ -29,7 +29,7 @@
 #define SCRAM_SRC_BOOLEAN_GRAPH_H_
 
 #include <map>
-#include <ostream>
+#include <iostream>
 #include <set>
 #include <string>
 #include <vector>
@@ -49,7 +49,7 @@ class IGate;  // Indexed gate parent of nodes.
 /// The node holds weak pointers to the parents
 /// that are managed by the parents.
 class Node {
-  friend class IGate;  // To manage parent information.
+  friend class IGate;  ///< To manage parent information.
 
  public:
   /// Creates a graph node with its index assigned sequentially.
@@ -114,7 +114,9 @@ class Node {
 
   /// @returns The last time this node was visited.
   /// @returns 0 if no last time is registered.
-  inline int LastVisit() const { return visits_[2] ? visits_[2] : visits_[1]; }
+  inline int LastVisit() const {
+    return visits_[2] ? visits_[2] : visits_[1] ? visits_[1] : visits_[0];
+  }
 
   /// @returns The minimum time of the visit.
   /// @returns 0 if no time is registered.
@@ -122,9 +124,7 @@ class Node {
 
   /// @returns The maximum time of the visit.
   /// @returns 0 if no time is registered.
-  inline virtual int max_time() const {
-    return visits_[2] ? visits_[2] : visits_[1] ? visits_[1] : visits_[0];
-  }
+  inline virtual int max_time() const { return LastVisit(); }
 
   /// @returns false if this node was only visited once upon graph traversal.
   /// @returns true if this node was revisited at one more time.
@@ -258,6 +258,13 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
     IGate::EraseAllArgs();
   }
 
+  /// Clones arguments and parameters.
+  /// The semantics of the gate is cloned,
+  /// not the gate data like index and parents.
+  ///
+  /// @returns Shared pointer to a newly created gate.
+  IGatePtr Clone();
+
   /// @returns Type of this gate.
   inline const Operator& type() const { return type_; }
 
@@ -359,21 +366,22 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
   /// @param[in] arg A positive or negative index of an argument.
   /// @param[in] gate A pointer to the argument gate.
   ///
-  /// @returns false if there final state of the parent is normal.
-  /// @returns true if the parent has become constant.
-  ///
   /// @warning The function does not indicate invalid state.
   ///          For example, a second argument for NOT or NULL type gates
   ///          is not going to be reported in any way.
   /// @warning This function does not indicate error
   ///          for future additions
   ///          in case the state is nulled or becomes unity.
+  /// @warning Duplicate arguments may change the type and state of the gate.
+  ///          Depending on the logic of the gate,
+  ///          new gates may be introduced
+  ///          instead of the existing arguments.
   /// @warning Complex logic gates like ATLEAST and XOR
   ///          are handled specially
   ///          if the argument is duplicate.
   ///          The caller must be very cautious of
   ///          the side effects of the manipulations.
-  bool AddArg(int arg, const IGatePtr& gate);
+  void AddArg(int arg, const IGatePtr& gate);
 
   /// Adds an argument variable to this gate.
   /// Before adding the argument,
@@ -387,21 +395,22 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
   /// @param[in] arg A positive or negative index of an argument.
   /// @param[in] variable A pointer to the argument variable.
   ///
-  /// @returns false if there final state of the parent is normal.
-  /// @returns true if the parent has become constant.
-  ///
   /// @warning The function does not indicate invalid state.
   ///          For example, a second argument for NOT or NULL type gates
   ///          is not going to be reported in any way.
   /// @warning This function does not indicate error
   ///          for future additions
   ///          in case the state is nulled or becomes unity.
+  /// @warning Duplicate arguments may change the type and state of the gate.
+  ///          Depending on the logic of the gate,
+  ///          new gates may be introduced
+  ///          instead of the existing arguments.
   /// @warning Complex logic gates like ATLEAST and XOR
   ///          are handled specially
   ///          if the argument is duplicate.
   ///          The caller must be very cautious of
   ///          the side effects of the manipulations.
-  bool AddArg(int arg, const VariablePtr& variable);
+  void AddArg(int arg, const VariablePtr& variable);
 
   /// Adds a constant argument to this gate.
   /// Before adding the argument,
@@ -415,48 +424,43 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
   /// @param[in] arg A positive or negative index of an argument.
   /// @param[in] constant A pointer to the argument that is a Constant.
   ///
-  /// @returns false if there final state of the parent is normal.
-  /// @returns true if the parent has become constant.
-  ///
   /// @warning The function does not indicate invalid state.
   ///          For example, a second argument for NOT or NULL type gates
   ///          is not going to be reported in any way.
   /// @warning This function does not indicate error
   ///          for future additions
   ///          in case the state is nulled or becomes unity.
+  /// @warning Duplicate arguments may change the type and state of the gate.
+  ///          Depending on the logic of the gate,
+  ///          new gates may be introduced
+  ///          instead of the existing arguments.
   /// @warning Complex logic gates like ATLEAST and XOR
   ///          are handled specially
   ///          if the argument is duplicate.
   ///          The caller must be very cautious of
   ///          the side effects of the manipulations.
-  bool AddArg(int arg, const ConstantPtr& constant);
+  void AddArg(int arg, const ConstantPtr& constant);
 
   /// Transfers this gates's argument to another gate.
   ///
   /// @param[in] arg Positive or negative index of the argument.
   /// @param[in,out] recipient A new parent for the argument.
-  ///
-  /// @returns false if there final state of the recipient is normal.
-  /// @returns true if the recipient becomes constant.
-  bool TransferArg(int arg, const IGatePtr& recipient);
+  void TransferArg(int arg, const IGatePtr& recipient);
 
   /// Shares this gates's argument with another gate.
   ///
   /// @param[in] arg Positive or negative index of the argument.
   /// @param[in,out] recipient Another parent for the argument.
-  ///
-  /// @returns false if there final state of the recipient is normal.
-  /// @returns true if the recipient becomes constant.
-  bool ShareArg(int arg, const IGatePtr& recipient);
+  void ShareArg(int arg, const IGatePtr& recipient);
 
   /// Makes all arguments complements of themselves.
   /// This is a helper function to propagate a complement gate
-  /// and apply De Morgan's Law.
+  /// and apply the De Morgan's Law.
   void InvertArgs();
 
   /// Replaces an argument with the complement of it.
   /// This is a helper function to propagate a complement gate
-  /// and apply De Morgan's Law.
+  /// and apply the De Morgan's Law.
   ///
   /// @param[in] existing_arg Positive or negative index of the argument.
   void InvertArg(int existing_arg);
@@ -469,33 +473,17 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
   ///
   /// @param[in] arg_gate The gate which arguments to be added to this gate.
   ///
-  /// @returns false if the final set is null or unity.
-  /// @returns true if the addition is successful with a normal final state.
-  ///
   /// @warning This function does not test
   ///          if the parent and argument logics are
   ///          correct for coalescing.
-  bool JoinGate(const IGatePtr& arg_gate);
+  void JoinGate(const IGatePtr& arg_gate);
 
   /// Swaps a single argument of a NULL type argument gate.
   /// This is separate from other coalescing functions
   /// because this function takes into account the sign of the argument.
   ///
   /// @param[in] index Positive or negative index of the argument gate.
-  ///
-  /// @returns false if the final set is null or unity.
-  /// @returns true if the addition is successful with a normal final state.
-  bool JoinNullGate(int index);
-
-  /// Directly copies arguments from another gate.
-  /// This is a helper function for initialization of gates' copies.
-  ///
-  /// @param[in] gate The gate which arguments will be copied.
-  inline void CopyArgs(const IGatePtr& gate) {
-    assert(args_.empty());
-    IGate::AddArg(gate->index(), gate);  // This is a hack to keep the parent
-    IGate::JoinGate(gate);               // information updated.
-  }
+  void JoinNullGate(int index);
 
   /// Removes an argument from the arguments container.
   /// The passed argument index must be
@@ -575,22 +563,16 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
   ///
   /// @param[in] index Positive or negative index of the existing argument.
   ///
-  /// @returns false if the final set is null or unity.
-  /// @returns true if the addition is successful with a normal final state.
-  ///
   /// @warning The addition of a duplicate argument
   ///          has a complex set of possible outcomes
   ///          depending on the context.
   ///          The complex corner cases must be handled by the caller.
-  bool ProcessDuplicateArg(int index);
+  void ProcessDuplicateArg(int index);
 
   /// Process an addition of a complement of an existing argument.
   ///
   /// @param[in] index Positive or negative index of the argument.
-  ///
-  /// @returns false if the final set is null or unity.
-  /// @returns true if the addition is successful with a normal final state.
-  bool ProcessComplementArg(int index);
+  void ProcessComplementArg(int index);
 
   Operator type_;  ///< Type of this gate.
   State state_;  ///< Indication if this gate's state is normal, null, or unity.
@@ -611,8 +593,10 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
 };
 
 class BasicEvent;
+class HouseEvent;
 class Gate;
 class Formula;
+class Preprocessor;
 
 /// @class BooleanGraph
 /// BooleanGraph is a propositional directed acyclic graph (PDAG).
@@ -620,6 +604,9 @@ class Formula;
 /// that takes into account the indices of events
 /// instead of IDs and pointers.
 /// This graph can also be called an indexed fault tree.
+///
+/// This class is designed
+/// to help preprocessing and other graph transformation functions.
 ///
 /// @warning Never hold a shared pointer to any other indexed gate
 ///          except for the root gate of a Boolean graph.
@@ -631,6 +618,8 @@ class Formula;
 ///          which is not the assumption of
 ///          all the other preprocessing and analysis algorithms.
 class BooleanGraph {
+  friend class Preprocessor;  ///< The main manipulator of Boolean graphs.
+
  public:
   typedef boost::shared_ptr<Gate> GatePtr;
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
@@ -648,12 +637,6 @@ class BooleanGraph {
 
   /// @returns true if the fault tree is coherent.
   inline bool coherent() const { return coherent_; }
-
-  /// @returns true if the initialized fault tree has constants.
-  inline bool constants() const { return constants_; }
-
-  /// @returns true if the initialized fault tree has only OR and AND gates.
-  inline bool normal() const { return normal_; }
 
   /// @returns The current root gate of the graph.
   inline const IGatePtr& root() const { return root_; }
@@ -686,8 +669,16 @@ class BooleanGraph {
     return basic_events_[index - 1];
   }
 
+  /// Prints the Boolean graph in the shorthand format.
+  /// This is a helper for logging and debugging.
+  /// The output is the standard error.
+  ///
+  /// @warning Node visits are used.
+  void Print();
+
  private:
   typedef boost::shared_ptr<Formula> FormulaPtr;
+  typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
   typedef boost::shared_ptr<Node> NodePtr;
   typedef boost::shared_ptr<Constant> ConstantPtr;
   typedef boost::shared_ptr<Variable> VariablePtr;
@@ -695,23 +686,120 @@ class BooleanGraph {
   /// Mapping to string gate types to enum gate types.
   static const std::map<std::string, Operator> kStringToType_;
 
-  /// Process a Boolean formula of a gate into a Boolean graph.
+  /// Processes a Boolean formula of a gate into a Boolean graph.
   ///
   /// @param[in] formula The Boolean formula to be processed.
   /// @param[in] ccf A flag to replace basic events with CCF gates.
-  /// @param[in,out] id_to_index The mapping of already processed nodes.
+  /// @param[in,out] id_to_node The mapping of already processed nodes.
   ///
   /// @returns Pointer to the newly created indexed gate.
   IGatePtr ProcessFormula(
       const FormulaPtr& formula,
       bool ccf,
-      boost::unordered_map<std::string, NodePtr>* id_to_index);
+      boost::unordered_map<std::string, NodePtr>* id_to_node);
+
+  /// Processes a Boolean formula's basic events
+  /// into variable arguments of an indexed gate of the Boolean graph.
+  ///
+  /// @param[in,out] parent The parent gate to own the arguments.
+  /// @param[in] basic_events The collection of basic events of the formula.
+  /// @param[in] ccf A flag to replace basic events with CCF gates.
+  /// @param[in,out] id_to_node The mapping of already processed nodes.
+  void ProcessBasicEvents(
+      const IGatePtr& parent,
+      const std::vector<BasicEventPtr>& basic_events,
+      bool ccf,
+      boost::unordered_map<std::string, NodePtr>* id_to_node);
+
+  /// Processes a Boolean formula's house events
+  /// into constant arguments of an indexed gate of the Boolean graph.
+  /// Newly created constants are registered for removal for Preprocessor.
+  ///
+  /// @param[in,out] parent The parent gate to own the arguments.
+  /// @param[in] house_events The collection of house events of the formula.
+  /// @param[in,out] id_to_node The mapping of already processed nodes.
+  void ProcessHouseEvents(
+      const IGatePtr& parent,
+      const std::vector<HouseEventPtr>& house_events,
+      boost::unordered_map<std::string, NodePtr>* id_to_node);
+
+  /// Processes a Boolean formula's gates
+  /// into gate arguments of an indexed gate of the Boolean graph.
+  ///
+  /// @param[in,out] parent The parent gate to own the arguments.
+  /// @param[in] gates The collection of gates of the formula.
+  /// @param[in] ccf A flag to replace basic events with CCF gates.
+  /// @param[in,out] id_to_node The mapping of already processed nodes.
+  void ProcessGates(const IGatePtr& parent,
+                    const std::vector<GatePtr>& gates,
+                    bool ccf,
+                    boost::unordered_map<std::string, NodePtr>* id_to_node);
+
+  /// Sets the visit marks to False for all indexed gates,
+  /// starting from the root gate,
+  /// that have been visited top-down.
+  /// Any function updating and using the visit marks of gates
+  /// must ensure to clean visit marks
+  /// before running algorithms.
+  /// However, cleaning after finishing algorithms is not mandatory.
+  ///
+  /// @warning If the marks have not been assigned in a top-down traversal,
+  ///          this function will fail silently.
+  void ClearGateMarks();
+
+  /// Sets the visit marks of descendant gates to False
+  /// starting from the given gate as the root.
+  /// The top-down traversal marking is assumed.
+  ///
+  /// @param[in,out] gate The root gate to be traversed and marks.
+  ///
+  /// @warning If the marks have not been assigned in a top-down traversal,
+  ///          starting from the given gate,
+  ///          this function will fail silently.
+  void ClearGateMarks(const IGatePtr& gate);
+
+  /// Clears visit time information from all indexed nodes
+  /// that have been visited.
+  /// Any member function updating and using the visit information of nodes
+  /// must ensure to clean visit times
+  /// before running algorithms.
+  /// However, cleaning after finishing algorithms is not mandatory.
+  ///
+  /// @note Gate marks are used for linear time traversal.
+  void ClearNodeVisits();
+
+  /// Clears visit information from descendant nodes
+  /// starting from the given gate as the root.
+  ///
+  /// @param[in,out] gate The root gate to be traversed and cleaned.
+  ///
+  /// @note Gate marks are used for linear time traversal.
+  void ClearNodeVisits(const IGatePtr& gate);
+
+  /// Clears optimization values of all nodes in the graph.
+  /// The optimization values are set to 0.
+  /// Resets the number of failed arguments of gates.
+  ///
+  /// @note Gate marks are used for linear time traversal.
+  void ClearOptiValues();
+
+  /// Clears optimization values of nodes.
+  /// The optimization values are set to 0.
+  /// Resets the number of failed arguments of gates.
+  ///
+  /// @param[in,out] gate The root gate to be traversed and cleaned.
+  ///
+  /// @note Gate marks are used for linear time traversal.
+  void ClearOptiValues(const IGatePtr& gate);
 
   IGatePtr root_;  ///< The root gate of this graph.
   std::vector<BasicEventPtr> basic_events_;  ///< Mapping for basic events.
   bool coherent_;  ///< Indication that the graph does not contain negation.
-  bool constants_;  ///< Indication that the original graph contains constants.
   bool normal_;  ///< Indication for the graph containing only OR and AND gates.
+  /// Registered house events upon the creation of the Boolean graph.
+  std::vector<boost::weak_ptr<Constant> > constants_;
+  /// Registered NULL type gates upon the creation of the Boolean graph.
+  std::vector<boost::weak_ptr<IGate> > null_gates_;
 };
 
 /// Prints indexed house events or constants in the shorthand format.

@@ -19,7 +19,6 @@
 #include "initializer.h"
 
 #include <fstream>
-#include <sstream>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/assign.hpp>
@@ -53,10 +52,18 @@ const char* const Initializer::kUnitToString_[] = {"unitless", "bool", "int",
                                                    "years", "years-1", "fit",
                                                    "demands"};
 
+std::stringstream Initializer::schema_;
+
 Initializer::Initializer(const Settings& settings) {
   settings_ = settings;
   mission_time_ = boost::shared_ptr<MissionTime>(new MissionTime());
   mission_time_->mission_time(settings_.mission_time_);
+  if (schema_.str().empty()) {
+    std::string schema_path = Env::input_schema();
+    std::ifstream schema_stream(schema_path.c_str());
+    schema_ << schema_stream.rdbuf();
+    schema_stream.close();
+  }
 }
 
 void Initializer::ProcessInputFiles(const std::vector<std::string>& xml_files) {
@@ -109,14 +116,7 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
   file_stream.close();
 
   boost::shared_ptr<XMLParser> parser(new XMLParser(stream));
-
-  std::stringstream schema;
-  std::string schema_path = Env::input_schema();
-  std::ifstream schema_stream(schema_path.c_str());
-  schema << schema_stream.rdbuf();
-  schema_stream.close();
-
-  parser->Validate(schema);
+  parser->Validate(schema_);
   parsers_.push_back(parser);
 
   const xmlpp::Document* doc = parser->Document();
@@ -618,7 +618,7 @@ boost::shared_ptr<Expression> Initializer::GetExpression(
   using scram::Initializer;
   ExpressionPtr expression;
   bool not_parameter = true;  // Parameters are saved in a different container.
-  if (GetConstantExpression(expr_element, base_path, expression)) {
+  if (GetConstantExpression(expr_element, expression)) {
   } else if (GetParameterExpression(expr_element, base_path, expression)) {
     not_parameter = false;
   } else {
@@ -630,7 +630,6 @@ boost::shared_ptr<Expression> Initializer::GetExpression(
 }
 
 bool Initializer::GetConstantExpression(const xmlpp::Element* expr_element,
-                                        const std::string& base_path,
                                         ExpressionPtr& expression) {
   typedef boost::shared_ptr<ConstantExpression> ConstantExpressionPtr;
   assert(expr_element);

@@ -1,6 +1,6 @@
-##################################
-Fault Tree Generator Python Script
-##################################
+####################
+Fault Tree Generator
+####################
 
 The complexity of a fault tree depends on many factors,
 such as types of gates, the number of common nodes, the total number of nodes,
@@ -28,23 +28,24 @@ General Description
 - The output is topologically sorted and valid for other analysis tools.
 
 
-Script arguments
+Script Arguments
 ================
 
 - The seed for the pseudo-random number generator.
 - The number of basic events.
 - The number of house events.
 - The number of CCF (MGL only) groups.
-- The average number of children for gates.
-- Percentage of common basic events.
+- The average number of arguments for gates.
+- Percentage of common-basic-event arguments per gate.
   This events may show up in several places in the resulting fault tree.
-- Percentage of common gates per gate.
+- Percentage of common-gate arguments per gate.
   The acyclic property is ensured.
 - The average number of parents for common basic events.
 - The average number of parents for common gates.
 - Minimum and maximum probabilities for basic events.
 - Weights for the gate types: AND, OR, K/N, NOT, XOR.
-- Optional use of more complex gates (K/N, NOT, XOR) only if the weights are given.
+  Complex gates (K/N, NOT, XOR) are created
+  only if the weights are given.
 - Output file name.
 - Output formats: shorthand or XML(default).
 - An option to merge gates into nested formulas for the output.
@@ -52,7 +53,8 @@ Script arguments
 .. note::
     The number of gates can be constrained,
     but this may change other factors or not succeed at all.
-    The reason is that the fault tree generation formulas may run out of degrees of freedom.
+    The reason is that the fault tree generation formulas
+    may run out of degrees of freedom.
 
 
 Note on Performance
@@ -67,7 +69,8 @@ If the number of gates and the number of common gates are kept constant,
 the generation time scales linearly with the number of basic events.
 
 It is possible to generate a 100,000-basic-event fault tree in less than a minute;
-however, to generate more complex fault trees, it is recommended to use Cython_.
+however, to generate more complex fault trees,
+it is recommended to use Cython_.
 Cython can convert the fault tree generator script into C code,
 which can be compiled into a faster executable.
 This faster executable is capable of generating million-basic-event fault trees in few minutes.

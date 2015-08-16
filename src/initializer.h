@@ -21,6 +21,7 @@
 
 #include <map>
 #include <set>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -55,7 +56,7 @@ class Initializer {
 
   /// Prepares common information to be used by
   /// the future input file constructs,
-  /// for example, mission time.
+  /// for example, mission time and validation schema.
   ///
   /// @param[in] settings Analysis settings.
   explicit Initializer(const Settings& settings);
@@ -71,7 +72,7 @@ class Initializer {
   /// @throws IOError One of the input files is not accessible.
   void ProcessInputFiles(const std::vector<std::string>& xml_files);
 
-  /// @returns The model build from the input files.
+  /// @returns The model built from the input files.
   inline ModelPtr model() const { return model_; }
 
  private:
@@ -276,12 +277,10 @@ class Initializer {
   /// Processes Constant Expression definitions in input file.
   ///
   /// @param[in] expr_element XML expression element containing the definition.
-  /// @param[in] base_path Series of ancestor containers in the path with dots.
   /// @param[out] expression Expression described in XML input expression node.
   ///
   /// @returns true if expression was found and processed.
   bool GetConstantExpression(const xmlpp::Element* expr_element,
-                             const std::string& base_path,
                              ExpressionPtr& expression);
 
   /// Processes Parameter Expression definitions in input file.
@@ -395,6 +394,9 @@ class Initializer {
   ModelPtr model_;  ///< Analysis model with constructs.
   Settings settings_;  ///< Settings for analysis.
   boost::shared_ptr<MissionTime> mission_time_;  ///< Mission time expression.
+
+  /// The main schema for validation.
+  static std::stringstream schema_;
 
   /// Parsers with all documents saved for later access.
   std::vector<boost::shared_ptr<XMLParser> > parsers_;

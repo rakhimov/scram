@@ -53,9 +53,12 @@ void FaultTreeAnalysis::Analyze() {
   BooleanGraph* indexed_tree = new BooleanGraph(top_event_, ccf_analysis_);
   LOG(DEBUG2) << "Indexed fault tree is created in " << DUR(ft_creation);
 
+  CLOCK(prep_time);  // Overall preprocessing time.
+  LOG(DEBUG2) << "Preprocessing...";
   Preprocessor* preprocessor = new Preprocessor(indexed_tree);
   preprocessor->ProcessFaultTree();
   delete preprocessor;  // No exceptions are expected.
+  LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
 
   Mocus* mocus = new Mocus(indexed_tree, limit_order_);
   mocus->FindMcs();

@@ -33,7 +33,7 @@ for its development and use:
     - Extensibility
 
 The MEF is designed with the "declarative modeling" criterion
-to "present a more informative view of the actual systems, components,
+"to present a more informative view of the actual systems, components,
 and interactions which the model represents".
 This paradigm is followed from the structured programming techniques.
 

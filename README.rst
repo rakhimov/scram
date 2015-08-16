@@ -23,7 +23,6 @@ Example merging steps with the **develop** branch:
     #. Finish merging.
 
 
-
 Building
 ========
 

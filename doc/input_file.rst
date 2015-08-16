@@ -30,9 +30,9 @@ Steps in XML Input Validation
     - The first file must define the name, label, and attributes of the model.
       Other files with this kind of information are ignored without a warning.
       This feature allows reuse of files from other models
-      without the need for the include directives.
+      without the need for the OpenPSA MEF ``include`` directives.
 
-#. An XML input file is validated by RelaxNG_ against the :ref:`schema`.
+#. An XML input file is validated against the RelaxNG_ :ref:`schema`.
 #. The fault tree validation assumptions/requirements:
 
     - Event names and references are not case-sensitive.
@@ -46,17 +46,17 @@ Steps in XML Input Validation
 
 #. Additional validation of fault trees and values of parameters is performed:
 
-    - Each gate has the correct number of children.
-    - The same child appearing two or more time for one parent is an error.
-    - Values of expressions and parameters are correct, i.e., non-negative for probabilities.
+    - Each gate or formula must have the correct number of arguments.
+    - A duplicate argument in Boolean formulas or gates is an error.
+    - Values of expressions and parameters must be valid, i.e., non-negative for probabilities.
     - All events must be explicitly defined for probability calculations.
 
-#. Error messages (a file name, line numbers, types of errors):
+#. Error messages (with a file name, line numbers, types of errors):
 
     - Report a cyclic tree.
     - Report a cyclic parameter with expressions.
     - Report missing element descriptions.
-    - Throw an error if an event is being redefined.
+    - Report an error if an event or a construct is being redefined.
 
 #. Warnings for potential errors:
 
@@ -107,7 +107,7 @@ Shorthand Input Format
 ======================
 
 A more convenient format than the XML for writing simple fault trees
-utilizes a shorter notation for gates ('&', '|', '@', '~', '^') and events
+utilizes a shorter notation for gates, operators ('&', '|', '@', '~', '^'), and events
 to create a collection of Boolean equations.
 The shorthand format can be converted into the XML format with `this script`_.
 

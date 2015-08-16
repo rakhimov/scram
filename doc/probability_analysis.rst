@@ -66,16 +66,6 @@ for calculation of a cut set and total probabilities:
   and require much more time.
   (This is the default method for probability calculations.)
 
-.. note::
-    For most calculations, the rare event approximation and event
-    independence may be applied satisfactorily. However, if the rare event
-    approximation produces too large probability, SCRAM can use the upper bound
-    method. An appropriate warning will be given even if the user enforces
-    the rare event approximation. It is suggested that the maximum number of
-    series should be around 4-8. The default value is conservative 7.
-    There are N sums and :math:`2^N` terms for N minimal cut sets, so
-    the N number of series for calculations can be enforced by a user.
-
 
 The Exact Probability Calculation
 =================================

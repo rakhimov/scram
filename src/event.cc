@@ -22,7 +22,6 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/assign.hpp>
-#include <boost/pointer_cast.hpp>
 
 #include "ccf_group.h"
 
