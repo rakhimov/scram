@@ -16,7 +16,6 @@ Low Hanging Fruits
 Major Enhancements and Capabilities
 ===================================
 
-- Boolean formula rewriting for fault trees. *High*
 - Binary Decision Diagram (BDD) based algorithms. *High*
 - Zero-Suppressed BDD (ZBDD) based algorithms. *High*
 - Incorporation of cut-offs for MOCUS. *High*

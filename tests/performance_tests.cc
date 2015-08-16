@@ -79,7 +79,7 @@ TEST_F(PerformanceTest, DISABLED_200Event_L20) {
 
 // Test performance of MCS generation.
 TEST_F(PerformanceTest, DISABLED_Baobab1_L6) {
-  double mcs_time = 2.2;
+  double mcs_time = 1.2;
 #ifdef NDEBUG
   mcs_time = 0.31;
 #endif
@@ -94,9 +94,9 @@ TEST_F(PerformanceTest, DISABLED_Baobab1_L6) {
 
 // Test performance of MCS generation.
 TEST_F(PerformanceTest, DISABLED_Baobab1_L7) {
-  double mcs_time = 19;
+  double mcs_time = 17;
 #ifdef NDEBUG
-  mcs_time = 2.3;
+  mcs_time = 2.0;
 #endif
   std::vector<std::string> input_files;
   input_files.push_back("./share/scram/input/Baobab/baobab1.xml");
@@ -108,16 +108,16 @@ TEST_F(PerformanceTest, DISABLED_Baobab1_L7) {
 }
 
 TEST_F(PerformanceTest, DISABLED_CEA9601_L10) {
-  double mcs_time = 3.2;
+  double mcs_time = 2.0;
 #ifdef NDEBUG
-  mcs_time = 0.45;
+  mcs_time = 0.3;
 #endif
   std::vector<std::string> input_files;
   input_files.push_back("./share/scram/input/CEA9601/CEA9601.xml");
   input_files.push_back("./share/scram/input/CEA9601/CEA9601-basic-events.xml");
   settings.limit_order(10);
   ASSERT_NO_THROW(Analyze(input_files));
-  EXPECT_EQ(5120, NumOfMcs());
+  EXPECT_EQ(4832, NumOfMcs());
   EXPECT_NEAR(mcs_time, McsGenerationTime(), mcs_time * delta);
 }
 
@@ -138,13 +138,13 @@ TEST_F(PerformanceTest, DISABLED_Baobab2_L5) {
 // Release only tests.
 #ifdef NDEBUG
 TEST_F(PerformanceTest, DISABLED_CEA9601_L14) {
-  double mcs_time = 12.5;
+  double mcs_time = 8.0;
   std::vector<std::string> input_files;
   input_files.push_back("./share/scram/input/CEA9601/CEA9601.xml");
   input_files.push_back("./share/scram/input/CEA9601/CEA9601-basic-events.xml");
   settings.limit_order(14);
   ASSERT_NO_THROW(Analyze(input_files));
-  EXPECT_EQ(5160, NumOfMcs());
+  EXPECT_EQ(4832, NumOfMcs());
   EXPECT_NEAR(mcs_time, McsGenerationTime(), mcs_time * delta);
 }
 

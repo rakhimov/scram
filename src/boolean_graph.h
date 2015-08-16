@@ -49,7 +49,7 @@ class IGate;  // Indexed gate parent of nodes.
 /// The node holds weak pointers to the parents
 /// that are managed by the parents.
 class Node {
-  friend class IGate;  // To manage parent information.
+  friend class IGate;  ///< To manage parent information.
 
  public:
   /// Creates a graph node with its index assigned sequentially.
@@ -455,12 +455,12 @@ class IGate : public Node, public boost::enable_shared_from_this<IGate> {
 
   /// Makes all arguments complements of themselves.
   /// This is a helper function to propagate a complement gate
-  /// and apply De Morgan's Law.
+  /// and apply the De Morgan's Law.
   void InvertArgs();
 
   /// Replaces an argument with the complement of it.
   /// This is a helper function to propagate a complement gate
-  /// and apply De Morgan's Law.
+  /// and apply the De Morgan's Law.
   ///
   /// @param[in] existing_arg Positive or negative index of the argument.
   void InvertArg(int existing_arg);
@@ -618,7 +618,7 @@ class Preprocessor;
 ///          which is not the assumption of
 ///          all the other preprocessing and analysis algorithms.
 class BooleanGraph {
-  friend Preprocessor;
+  friend class Preprocessor;  ///< The main manipulator of Boolean graphs.
 
  public:
   typedef boost::shared_ptr<Gate> GatePtr;
@@ -780,7 +780,7 @@ class BooleanGraph {
   /// The optimization values are set to 0.
   /// Resets the number of failed arguments of gates.
   ///
-  /// @not Gate marks are used for linear time traversal.
+  /// @note Gate marks are used for linear time traversal.
   void ClearOptiValues();
 
   /// Clears optimization values of nodes.

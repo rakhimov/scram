@@ -37,33 +37,33 @@ Debug build:
 ---------- Baobab1 -l 7 (mcs = 17432) ----------------
 Debug build:
 ---------------
-- Cut Set Generation      6.5s  |  8.1s
+- Cut Set Generation      5.5s  |
 - Cut Set Minimization    9.5s  |  11s
 
 Release build:
 --------------
-- Cut Set Generation      1.1s   |
+- Cut Set Generation      0.70s  |
 - Cut Set Minimization    0.80s  |  1.1s
 
 
 ---------- Baobab1 -l 8 (mcs = 25892) ----------------
 Release build:
 --------------
-- Cut Set Generation      8.5s  |
+- Cut Set Generation      4.8s  |
 - Cut Set Minimization    20s   |  40s
 
 
----------- CEA9601 -l 10 (mcs = 5120) ----------------
+---------- CEA9601 -l 10 (mcs = 4832) ----------------
 Debug build:
 ---------------
-- Cut Set Generation      3.2s  |
+- Cut Set Generation      2.0s  |
 - Cut Set Minimization    0.3s  |
 
 
----------- CEA9601 -l 14 (mcs = 5120) ----------------
+---------- CEA9601 -l 14 (mcs = 4832) ----------------
 Release build:
 --------------
-- Cut Set Generation      11.5s  |
+- Cut Set Generation      7.5s   |
 - Cut Set Minimization    0.05s  |
 
 
@@ -82,7 +82,7 @@ Release build:
 ---------- Baobab2 -l 6 (mcs = 4805) ----------------
 Release build:
 ---------------
-- Cut Set Generation      19s    |
+- Cut Set Generation      18s    |
 - Cut Set Minimization    0.25s  |
 
 

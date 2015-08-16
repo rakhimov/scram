@@ -132,7 +132,7 @@ class Preprocessor {
   /// The final phase
   /// that cleans up the graph,
   /// and puts the structure of the graph ready for analysis.
-  /// This phase makes the graph stucture
+  /// This phase makes the graph structure
   /// alternating AND/OR gate layers.
   void PhaseFive();
 
@@ -525,9 +525,11 @@ class Preprocessor {
   /// Merges common arguments for a specific group of gates.
   /// The gates are grouped by their operators.
   /// This is a helper function
-  /// that devides the main merging technique by the gate types.
+  /// that divides the main merging technique by the gate types.
   ///
   /// @param[in] op The operator that defines the group.
+  ///
+  /// @returns true if common args are merged into gates.
   ///
   /// @note The operator or logic of the gates must allow merging.
   ///       OR/AND operators are expected.
@@ -585,6 +587,8 @@ class Preprocessor {
   /// This optimization helps reduce the number of common nodes.
   ///
   /// @warning Boolean optimization may replace the root gate of the graph.
+  /// @warning The current implementation works
+  ///          only for coherent graphs.
   void BooleanOptimization();
 
   /// Traverses the graph to find nodes
@@ -660,7 +664,7 @@ class Preprocessor {
       const std::map<int, IGateWeakPtr>& destinations);
 
   /// The Shannon decomposition for common nodes in the Boolean graph.
-  /// This procedure is also called "Contant Propagation",
+  /// This procedure is also called "Constant Propagation",
   /// but it is confusing with the actual propagation of
   /// house events and constant gates.
   ///

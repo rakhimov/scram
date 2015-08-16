@@ -290,7 +290,7 @@ bool Preprocessor::CheckRootGate() {
 void Preprocessor::RemoveNullGates() {
   assert(null_gates_.empty());
   assert(!graph_->null_gates_.empty());
-  null_gates_ = graph_->null_gates_;  // Transfering for internal uses.
+  null_gates_ = graph_->null_gates_;  // Transferring for internal uses.
   graph_->null_gates_.clear();
 
   IGatePtr root = graph_->root();
@@ -1090,7 +1090,7 @@ bool Preprocessor::MergeCommonArgs(const Operator& op) {
   while (!table.empty()) {
     std::set<IGatePtr>& common_parents = table.back().second;
     std::vector<int>& common_args = table.back().first;
-    std::set<IGatePtr> useful_parents; // With full set of args.
+    std::set<IGatePtr> useful_parents;  // With full set of args.
 
     std::set<IGatePtr>::iterator it_p;
     for (it_p = common_parents.begin(); it_p != common_parents.end(); ++it_p) {
@@ -1231,9 +1231,9 @@ void Preprocessor::GroupCommonParents(
                             args_comp.begin(), args_comp.end(),
                             common.begin());
       if (common.front() == 0) continue;  // No intersection is found.
-      while (common.back() == 0) common.pop_back();  // May have suprises!
-      assert(common.size() <= min_size);  // To check for the suprises.
-      if (common.size() < 2) continue;  // Can't be a merge condidate.
+      while (common.back() == 0) common.pop_back();  // May have surprises!
+      assert(common.size() <= min_size);  // To check for the surprises.
+      if (common.size() < 2) continue;  // Can't be a merge candidate.
       std::set<IGatePtr>& common_parents = (*parents)[common];
       common_parents.insert(group[i].first);
       common_parents.insert(group[j].first);
@@ -1497,7 +1497,7 @@ bool Preprocessor::ProcessDecompositionCommonNode(
 
   if (node->parents().size() < 2) return false;
 
-  bool possible = false;  // Possiblity in particular setups for decomposition.
+  bool possible = false;  // Possibility in particular setups for decomposition.
 
   // Determine if the decomposition setups are possible.
   boost::unordered_map<int, IGateWeakPtr>::const_iterator it;

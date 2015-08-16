@@ -529,7 +529,7 @@ void BooleanGraph::ClearOptiValues() {
   BooleanGraph::ClearGateMarks();
   BooleanGraph::ClearOptiValues(root_);
   BooleanGraph::ClearGateMarks();
-  LOG(DEBUG5) << "Node Optivalues are clear!";
+  LOG(DEBUG5) << "Node OptiValues are clear!";
 }
 
 void BooleanGraph::ClearOptiValues(const IGatePtr& gate) {
