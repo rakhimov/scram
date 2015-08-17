@@ -14,12 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file ccf_group.h
 /// Functional containers for basic events
 /// grouped by common cause failure.
 /// Common cause failure can be modeled
 /// with alpha, beta, MGL,
 /// or direct parameter assignment in phi model.
+
 #ifndef SCRAM_SRC_CCF_GROUP_H_
 #define SCRAM_SRC_CCF_GROUP_H_
 

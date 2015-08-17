@@ -14,8 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file initializer.cc
 /// Implementation of input file processing into analysis constructs.
+
 #include "initializer.h"
 
 #include <fstream>

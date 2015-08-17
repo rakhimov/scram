@@ -14,8 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file settings.cc
 /// Implementation of Settings Builder.
+
 #include "settings.h"
 
 #include "error.h"

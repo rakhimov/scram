@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """fault_tree_generator.py
 
 This script generates a fault tree of various complexities.
@@ -39,6 +40,7 @@ However, if the number of gates are not set (constrained) by the user,
 all the other factors set by the user are
 guaranteed to be preserved and used as they are.
 """
+
 from __future__ import print_function, division
 
 from collections import deque

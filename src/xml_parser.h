@@ -14,8 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file xml_parser.h
 /// XML Parser.
+
 #ifndef SCRAM_SRC_XML_PARSER_H_
 #define SCRAM_SRC_XML_PARSER_H_
 

@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file mocus.h
 /// Fault tree analysis with the MOCUS algorithm.
 /// This algorithm requires a fault tree in negation normal form.
@@ -21,6 +22,7 @@
 /// All gates must be positive;
 /// that is, negations must be pushed down to leaves, basic events.
 /// The fault tree should not contain constants or house events.
+
 #ifndef SCRAM_SRC_MOCUS_H_
 #define SCRAM_SRC_MOCUS_H_
 

@@ -14,8 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file fault_tree_analysis.cc
 /// Implementation of fault tree analysis.
+
 #include "fault_tree_analysis.h"
 
 #include <boost/algorithm/string.hpp>

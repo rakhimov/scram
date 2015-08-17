@@ -14,8 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file element.cc
 /// Implementation of helper features for all elements of the analysis.
+
 #include "element.h"
 
 #include <boost/algorithm/string.hpp>

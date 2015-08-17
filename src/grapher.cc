@@ -14,8 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file grapher.cc
 /// Implementation of graphing of analysis constructs.
+
 #include "grapher.h"
 
 #include <set>

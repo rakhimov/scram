@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 """install.py
 
 Installation script for SCRAM.
@@ -12,6 +13,7 @@ import subprocess
 import sys
 
 import argparse as ap
+
 
 def absexpanduser(rel_path):
     """Expands a given relative path into an absolute one.

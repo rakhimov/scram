@@ -14,9 +14,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file uncertainty_analysis.h
 /// Provides functionality for uncertainty analysis
 /// with Monte Carlo method.
+
 #ifndef SCRAM_SRC_UNCERTAINTY_ANALYSIS_H_
 #define SCRAM_SRC_UNCERTAINTY_ANALYSIS_H_
 

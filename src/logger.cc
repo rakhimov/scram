@@ -14,8 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file logger.cc
 /// Initializing static members of Logger class.
+
 #include "logger.h"
 
 namespace scram {

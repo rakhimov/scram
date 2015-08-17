@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """test_shorthand_to_xml.py
 
 Tests for the shorthand-to-XML converter.
@@ -28,6 +29,7 @@ from nose.tools import assert_raises, assert_is_not_none, assert_equal, \
 
 from shorthand_to_xml import ParsingError, FormatError, FaultTreeError, \
         parse_input_file, write_to_xml_file
+
 
 def test_correct():
     """Tests the valid overall process."""

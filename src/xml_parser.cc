@@ -14,8 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file xml_parser.cc
 /// Implementation of XML Parser.
+
 #include "xml_parser.h"
 
 #include <string>

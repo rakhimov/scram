@@ -14,12 +14,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file boolean_graph.cc
 /// Implementation of indexed nodes, variables, gates, and the Boolean graph.
 /// The implementation caters other algorithms like preprocessing.
 /// The main goal is
 /// to make manipulations and transformations of the graph easier
 /// to achieve for graph algorithms.
+
 #include "boolean_graph.h"
 
 #include <utility>

@@ -14,8 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file model.h
 /// Representation for a model container for risk analysis.
+
 #ifndef SCRAM_SRC_MODEL_H_
 #define SCRAM_SRC_MODEL_H_
 

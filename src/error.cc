@@ -14,8 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file error.cc
 /// Implementation of the exceptions for use in SCRAM.
+
 #include "error.h"
 
 namespace scram {

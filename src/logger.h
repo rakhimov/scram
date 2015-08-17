@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file logger.h
 /// Logging capability for various purposes,
 /// such as warnings and debugging.
@@ -21,6 +22,7 @@
 /// The design and code are inspired by
 /// the C++ logging framework of Petru Marginean,
 /// published at http://www.drdobbs.com/cpp/logging-in-c/201804215
+
 #ifndef SCRAM_SRC_LOGGER_H_
 #define SCRAM_SRC_LOGGER_H_
 

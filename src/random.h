@@ -14,8 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file random.h
 /// Contains helpers for randomness simulations.
+
 #ifndef SCRAM_SRC_RANDOM_H_
 #define SCRAM_SRC_RANDOM_H_
 

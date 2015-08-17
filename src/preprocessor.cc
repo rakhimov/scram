@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file preprocessor.cc
 /// Implementation of preprocessing algorithms.
 /// If a preprocessing algorithm has
@@ -53,6 +54,7 @@
 /// the result or behavior of the algorithm may be undefined.
 /// There is no requirement to check for the broken contract
 /// and to exit gracefully.
+
 #include "preprocessor.h"
 
 #include <algorithm>

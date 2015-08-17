@@ -14,9 +14,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file probability_analysis.cc
 /// Implementations of functions to provide
 /// probability and importance informations.
+
 #include "probability_analysis.h"
 
 #include <boost/algorithm/string.hpp>

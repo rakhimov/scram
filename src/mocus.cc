@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file mocus.cc
 /// Implementation of the MOCUS algorithm.
 /// It is assumed that the tree is layered
@@ -60,6 +61,7 @@
 /// and generates only additional supersets.
 ///
 /// The generated sets are kept unique by storing them in a set.
+
 #include "mocus.h"
 
 #include <algorithm>

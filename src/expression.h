@@ -14,8 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file expression.h
 /// Expressions that describe basic events.
+
 #ifndef SCRAM_SRC_EXPRESSION_H_
 #define SCRAM_SRC_EXPRESSION_H_
 

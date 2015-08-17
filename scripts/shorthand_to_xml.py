@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """shorthand_to_xml.py
 
 This script converts
@@ -48,6 +49,7 @@ Some requirements and additions to the shorthand format:
 9. Parentheses are optional for logical operators except for ATLEAST.
 10. (Experimental) Boolean formula can be nested: g1 := a & b | c ^ ~d | ~(e|f)
 """
+
 from __future__ import print_function
 
 from collections import deque

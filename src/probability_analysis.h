@@ -14,9 +14,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file probability_analysis.h
 /// Contains functionality to do numerical analysis
 /// of probabilities and importance factors.
+
 #ifndef SCRAM_SRC_PROBABILITY_ANALYSIS_H_
 #define SCRAM_SRC_PROBABILITY_ANALYSIS_H_
 

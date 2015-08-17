@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file boolean_graph.h
 /// Classes and facilities to represent simplified fault trees
 /// as Boolean graphs with event and gate indices instead of ID names.
@@ -25,6 +26,7 @@
 /// however, if there is a conflict,
 /// the Boolean terminology is preferred.
 /// For example, instead of "children", "arguments" are preferred.
+
 #ifndef SCRAM_SRC_BOOLEAN_GRAPH_H_
 #define SCRAM_SRC_BOOLEAN_GRAPH_H_
 

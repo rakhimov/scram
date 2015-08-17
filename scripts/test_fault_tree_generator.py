@@ -14,10 +14,12 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """test_fault_tree_generator.py
 
 Tests for the fault tree generator.
 """
+
 from __future__ import division
 
 from subprocess import call
@@ -31,6 +33,7 @@ from nose.tools import assert_equal, assert_true, assert_is_not_none, \
 from fault_tree_generator import Settings, Factors, generate_fault_tree, \
         write_results, write_shorthand, BasicEvent, Gate, HouseEvent, \
         CcfGroup
+
 
 class FaultTreeGeneratorTestCase(TestCase):
     """General tests for the fault tree generator script."""

@@ -14,14 +14,17 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """run_inputs.py
 
 Runs SCRAM with test inputs to examine the output visually.
 """
+
 from __future__ import print_function
 
 import subprocess
 import sys
+
 
 def main():
     # Input that must be analyzed with the results printed.

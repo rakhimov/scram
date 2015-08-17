@@ -14,8 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file risk_analysis.h
 /// Contains the main system for performing analysis.
+
 #ifndef SCRAM_SRC_RISK_ANALYISIS_H_
 #define SCRAM_SRC_RISK_ANALYISIS_H_
 

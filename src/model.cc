@@ -14,8 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file model.cc
 /// Implementation of functions in Model class.
+
 #include "model.h"
 
 #include <vector>

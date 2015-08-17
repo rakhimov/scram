@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 """test_scram_call.py
 
 A set of tests to invoke command-line SCRAM
@@ -24,6 +25,7 @@ import os
 from subprocess import call
 
 from nose.tools import assert_true, assert_equal, assert_not_equal
+
 
 def test_empty_call():
     """Tests a command-line call without any arguments."""

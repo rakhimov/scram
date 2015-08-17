@@ -14,8 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file risk_analysis.cc
 /// Implementation of risk analysis handler.
+
 #include "risk_analysis.h"
 
 #include <fstream>
