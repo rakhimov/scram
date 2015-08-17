@@ -24,6 +24,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 
 #include "element.h"
@@ -244,6 +245,9 @@ class Model : public Element {
 
   /// Container for fully defined basic events.
   std::unordered_map<std::string, BasicEventPtr> basic_events_;
+
+  /// Container for event identifiers.
+  std::unordered_set<std::string> event_ids_;
 
   /// Container for defined parameters or variables.
   std::unordered_map<std::string, ParameterPtr> parameters_;

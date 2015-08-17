@@ -34,19 +34,19 @@ Model::Model(const std::string& name) : name_(name) {}
 void Model::AddFaultTree(const FaultTreePtr& fault_tree) {
   std::string name = fault_tree->name();
   boost::to_lower(name);
-  if (fault_trees_.count(name)) {
+  bool original = fault_trees_.insert({name, fault_tree}).second;
+  if (!original) {
     std::string msg = "Redefinition of fault tree " + fault_tree->name();
     throw RedefinitionError(msg);
   }
-  fault_trees_.insert(std::make_pair(name, fault_tree));
 }
 
 void Model::AddParameter(const ParameterPtr& parameter) {
-  if (parameters_.count(parameter->id())) {
+  bool original = parameters_.insert({parameter->id(), parameter}).second;
+  if (!original) {
     std::string msg = "Redefinition of parameter " + parameter->name();
     throw RedefinitionError(msg);
   }
-  parameters_.insert(std::make_pair(parameter->id(), parameter));
 }
 
 std::shared_ptr<Parameter> Model::GetParameter(const std::string& reference,
@@ -61,8 +61,9 @@ std::shared_ptr<Parameter> Model::GetParameter(const std::string& reference,
     ComponentPtr scope = Model::GetContainer(base_path);
     ComponentPtr container = Model::GetLocalContainer(reference, scope);
     if (container) {
-      if (container->parameters().count(target_name))
-        return container->parameters().find(target_name)->second;
+      try {
+        return container->parameters().at(target_name);
+      } catch (std::out_of_range& err) {}  // Continue searching.
     }
   }
   const std::unordered_map<std::string, ParameterPtr>* parameters =
@@ -72,8 +73,9 @@ std::shared_ptr<Parameter> Model::GetParameter(const std::string& reference,
     parameters = &container->parameters();
   }
 
-  if (parameters->count(target_name))
-    return parameters->find(target_name)->second;
+  try {
+    return parameters->at(target_name);
+  } catch (std::out_of_range& err) {}
 
   std::string msg = "Undefined parameter " + path.back() + " in reference " +
       reference + " with base path " + base_path;
@@ -93,20 +95,20 @@ std::pair<std::shared_ptr<Event>, std::string> Model::GetEvent(
     ComponentPtr scope = Model::GetContainer(base_path);
     ComponentPtr container = Model::GetLocalContainer(reference, scope);
     if (container) {
-      if (container->basic_events().count(target_name)) {
-        EventPtr event = container->basic_events().find(target_name)->second;
-        return std::make_pair(event, "basic-event");
-      }
+      try {
+        EventPtr event = container->basic_events().at(target_name);
+        return {event, "basic-event"};
+      } catch (std::out_of_range& err) {}
 
-      if (container->gates().count(target_name)) {
-        EventPtr event = container->gates().find(target_name)->second;
-        return std::make_pair(event, "gate");
-      }
+      try {
+        EventPtr event = container->gates().at(target_name);
+        return {event, "gate"};
+      } catch (std::out_of_range& err) {}
 
-      if (container->house_events().count(target_name)) {
-        EventPtr event = container->house_events().find(target_name)->second;
-        return std::make_pair(event, "house-event");
-      }
+      try {
+        EventPtr event = container->house_events().at(target_name);
+        return {event, "house-event"};
+      } catch (std::out_of_range& err) {}
     }
   }
   const std::unordered_map<std::string, GatePtr>* gates = &gates_;
@@ -121,20 +123,20 @@ std::pair<std::shared_ptr<Event>, std::string> Model::GetEvent(
     house_events = &container->house_events();
   }
 
-  if (basic_events->count(target_name)) {
-    EventPtr event = basic_events->find(target_name)->second;
-    return std::make_pair(event, "basic-event");
-  }
+  try {
+    EventPtr event = basic_events->at(target_name);
+    return {event, "basic-event"};
+  } catch (std::out_of_range& err) {}
 
-  if (gates->count(target_name)) {
-    EventPtr event = gates->find(target_name)->second;
-    return std::make_pair(event, "gate");
-  }
+  try {
+    EventPtr event = gates->at(target_name);
+    return {event, "gate"};
+  } catch (std::out_of_range& err) {}
 
-  if (house_events->count(target_name)) {
-    EventPtr event = house_events->find(target_name)->second;
-    return std::make_pair(event, "house-event");
-  }
+  try {
+    EventPtr event = house_events->at(target_name);
+    return {event, "house-event"};
+  } catch (std::out_of_range& err) {}
 
   std::string msg = "Undefined event " + path.back() + " in reference " +
                     reference + " with base path " + base_path;
@@ -142,13 +144,13 @@ std::pair<std::shared_ptr<Event>, std::string> Model::GetEvent(
 }
 
 void Model::AddHouseEvent(const HouseEventPtr& house_event) {
-  std::string name = house_event->id();
-  if (gates_.count(name) || basic_events_.count(name) ||
-      house_events_.count(name)) {
+  std::string id = house_event->id();
+  bool original = event_ids_.insert(id).second;
+  if (!original) {
     std::string msg = "Redefinition of event " + house_event->name();
     throw RedefinitionError(msg);
   }
-  house_events_.insert(std::make_pair(name, house_event));
+  house_events_.insert({id, house_event});
 }
 
 std::shared_ptr<HouseEvent> Model::GetHouseEvent(const std::string& reference,
@@ -163,8 +165,9 @@ std::shared_ptr<HouseEvent> Model::GetHouseEvent(const std::string& reference,
     ComponentPtr scope = Model::GetContainer(base_path);
     ComponentPtr container = Model::GetLocalContainer(reference, scope);
     if (container) {
-      if (container->house_events().count(target_name))
-        return container->house_events().find(target_name)->second;
+      try {
+        return container->house_events().at(target_name);
+      } catch (std::out_of_range& err) {}  // Continue searching.
     }
   }
   const std::unordered_map<std::string, HouseEventPtr>* house_events =
@@ -174,8 +177,9 @@ std::shared_ptr<HouseEvent> Model::GetHouseEvent(const std::string& reference,
     house_events = &container->house_events();
   }
 
-  if (house_events->count(target_name))
-    return house_events->find(target_name)->second;
+  try {
+    return house_events->at(target_name);
+  } catch (std::out_of_range& err) {}
 
   std::string msg = "Undefined house event " + path.back() + " in reference " +
                     reference + " with base path " + base_path;
@@ -183,13 +187,13 @@ std::shared_ptr<HouseEvent> Model::GetHouseEvent(const std::string& reference,
 }
 
 void Model::AddBasicEvent(const BasicEventPtr& basic_event) {
-  std::string name = basic_event->id();
-  if (gates_.count(name) || basic_events_.count(name) ||
-      house_events_.count(name)) {
+  std::string id = basic_event->id();
+  bool original = event_ids_.insert(id).second;
+  if (!original) {
     std::string msg = "Redefinition of event " + basic_event->name();
     throw RedefinitionError(msg);
   }
-  basic_events_.insert(std::make_pair(name, basic_event));
+  basic_events_.insert({id, basic_event});
 }
 
 std::shared_ptr<BasicEvent> Model::GetBasicEvent(const std::string& reference,
@@ -204,8 +208,9 @@ std::shared_ptr<BasicEvent> Model::GetBasicEvent(const std::string& reference,
     ComponentPtr scope = Model::GetContainer(base_path);
     ComponentPtr container = Model::GetLocalContainer(reference, scope);
     if (container) {
-      if (container->basic_events().count(target_name))
-        return container->basic_events().find(target_name)->second;
+      try {
+        return container->basic_events().at(target_name);
+      } catch (std::out_of_range& err) {}  // Continue searching.
     }
   }
   const std::unordered_map<std::string, BasicEventPtr>* basic_events =
@@ -215,8 +220,9 @@ std::shared_ptr<BasicEvent> Model::GetBasicEvent(const std::string& reference,
     basic_events = &container->basic_events();
   }
 
-  if (basic_events->count(target_name))
-    return basic_events->find(target_name)->second;
+  try {
+    return basic_events->at(target_name);
+  } catch (std::out_of_range& err) {}
 
   std::string msg = "Undefined basic event " + path.back() + " in reference " +
                     reference + " with base path " + base_path;
@@ -224,13 +230,13 @@ std::shared_ptr<BasicEvent> Model::GetBasicEvent(const std::string& reference,
 }
 
 void Model::AddGate(const GatePtr& gate) {
-  std::string name = gate->id();
-  if (gates_.count(name) || basic_events_.count(name) ||
-      house_events_.count(name)) {
+  std::string id = gate->id();
+  bool original = event_ids_.insert(id).second;
+  if (!original) {
     std::string msg = "Redefinition of event " + gate->name();
     throw RedefinitionError(msg);
   }
-  gates_.insert(std::make_pair(name, gate));
+  gates_.insert({id, gate});
 }
 
 std::shared_ptr<Gate> Model::GetGate(const std::string& reference,
@@ -245,8 +251,9 @@ std::shared_ptr<Gate> Model::GetGate(const std::string& reference,
     ComponentPtr scope = Model::GetContainer(base_path);
     ComponentPtr container = Model::GetLocalContainer(reference, scope);
     if (container) {
-      if (container->gates().count(target_name))
-        return container->gates().find(target_name)->second;
+      try {
+        return container->gates().at(target_name);
+      } catch (std::out_of_range& err) {}  // Continue searching.
     }
   }
   const std::unordered_map<std::string, GatePtr>* gates = &gates_;
@@ -255,8 +262,9 @@ std::shared_ptr<Gate> Model::GetGate(const std::string& reference,
     gates = &container->gates();
   }
 
-  if (gates->count(target_name))
-    return gates->find(target_name)->second;
+  try {
+    return gates->at(target_name);
+  } catch (std::out_of_range& err) {}  // Continue searching.
 
   std::string msg = "Undefined gate " + path.back() + " in reference " +
                     reference + " with base path " + base_path;
@@ -265,11 +273,11 @@ std::shared_ptr<Gate> Model::GetGate(const std::string& reference,
 
 void Model::AddCcfGroup(const CcfGroupPtr& ccf_group) {
   std::string name = ccf_group->id();
-  if (ccf_groups_.count(name)) {
+  bool original = ccf_groups_.insert({name, ccf_group}).second;
+  if (!original) {
     std::string msg = "Redefinition of CCF group " + ccf_group->name();
     throw RedefinitionError(msg);
   }
-  ccf_groups_.insert(std::make_pair(name, ccf_group));
 }
 
 std::shared_ptr<Component> Model::GetContainer(const std::string& base_path) {
@@ -280,17 +288,22 @@ std::shared_ptr<Component> Model::GetContainer(const std::string& base_path) {
   std::vector<std::string>::iterator it = path.begin();
   std::string name = *it;
   boost::to_lower(name);
-  if (!fault_trees_.count(name)) throw LogicError("Missing fault tree " + *it);
-  ComponentPtr container = fault_trees_.find(name)->second;
+  ComponentPtr container;
+  try {
+    container = fault_trees_.at(name);
+  } catch (std::out_of_range& err) {
+    throw LogicError("Missing fault tree " + *it);
+  }
   const std::unordered_map<std::string, ComponentPtr>* candidates;
   for (++it; it != path.end(); ++it) {
     name = *it;
     boost::to_lower(name);
     candidates = &container->components();
-    if (!candidates->count(name)) {
+    try {
+      container = candidates->at(name);
+    } catch (std::out_of_range& err) {
       throw LogicError("Undefined component " + *it + " in path " + base_path);
     }
-    container = candidates->find(name)->second;
   }
   return container;
 }
@@ -309,11 +322,12 @@ std::shared_ptr<Component> Model::GetLocalContainer(
       std::string name = path[i];
       boost::to_lower(name);
       candidates = &container->components();
-      if (!candidates->count(name)) {  // No container available.
+      try {
+        container = candidates->at(name);
+      } catch (std::out_of_range& err) {
         ComponentPtr undefined;
         return undefined;  // Not possible to reach locally.
       }
-      container = candidates->find(name)->second;
     }
   }
   return container;
@@ -328,21 +342,24 @@ std::shared_ptr<Component> Model::GetGlobalContainer(
   assert(path.size() > 1);
   std::string name = path.front();
   boost::to_lower(name);
-  if (!fault_trees_.count(name)) {
+  ComponentPtr container;
+  try {
+    container = fault_trees_.at(name);
+  } catch (std::out_of_range& err) {
     throw ValidationError("Undefined fault tree " + path.front() +
                           " in reference " + reference);
   }
-  ComponentPtr container = fault_trees_.find(name)->second;
   const std::unordered_map<std::string, ComponentPtr>* candidates;
   for (int i = 1; i < path.size() - 1; ++i) {
     std::string name = path[i];
     boost::to_lower(name);
     candidates = &container->components();
-    if (!candidates->count(name)) {  // No container available.
+    try {
+      container = candidates->at(name);
+    } catch (std::out_of_range& err) {
       throw ValidationError("Undefined component " + path[i] +
                             " in reference " + reference);
     }
-    container = candidates->find(name)->second;
   }
   return container;
 }
