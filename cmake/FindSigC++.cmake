@@ -24,7 +24,7 @@ find_path(SigC++Config_INCLUDE_DIR
   PATH_SUFFIXES lib/sigc++-2.0/include
   )
 
-# find lib
+# Find lib
 find_path(SigC++_PKGCONF_LIBRARY_DIRS
   NAMES libsigc-2.0.so
   PATH_SUFFIXES lib

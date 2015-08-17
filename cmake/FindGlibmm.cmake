@@ -28,7 +28,7 @@ find_path(GlibmmConfig_INCLUDE_DIR
   PATH_SUFFIXES lib/glibmm-2.4/include
   )
 
-# find lib
+# Find lib
 find_path(Glibmm_PKGCONF_LIBRARY_DIRS
   NAMES libglib-2.0.so
   PATH_SUFFIXES lib

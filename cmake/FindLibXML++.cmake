@@ -28,7 +28,7 @@ find_path(LibXML++Config_INCLUDE_DIR
   PATH_SUFFIXES lib/libxml++-2.6/include
   )
 
-# find lib
+# Find lib
 find_path(LibXML++_PKGCONF_LIBRARY_DIRS
   NAMES xml++-2.6
   PATH_SUFFIXES lib

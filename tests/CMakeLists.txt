@@ -1,4 +1,4 @@
-# Be sure to clear these each time
+# Be sure to clear these each time.
 set(GENERATED_TEST_LIST "" CACHE INTERNAL "")
 set(GENERATED_FILTER_LIST "" CACHE INTERNAL "")
 set(GENERATED_TEST_SOURCE_LIST "" CACHE INTERNAL "")
@@ -10,7 +10,8 @@ set(GTEST_INCLUDE_DIRS
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/GoogleTest")
 
-# Alerts CMake to any tests we need to worry about
+# Alerts CMake to any tests
+# we need to worry about.
 include_directories(${GTEST_INCLUDE_DIRS})
 
 find_package(Threads)
@@ -22,7 +23,8 @@ include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 
 include_directories(${SCRAM_CORE_INCLUDE_DIRS})
 
-# To add a new file, just add it to this list.
+# To add a new file,
+# just add it to this list.
 # Any GoogleTests inside will be automatically added to ctest.
 set(SCRAM_CORE_TEST_SOURCE ${SCRAM_CORE_TEST_SOURCE}
   "${CMAKE_CURRENT_SOURCE_DIR}/random_tests.cc"
@@ -57,7 +59,7 @@ set(SCRAM_CORE_TEST_SOURCE ${SCRAM_CORE_TEST_SOURCE}
   "${CMAKE_CURRENT_SOURCE_DIR}/performance_tests.cc"
   )
 
-# Make tests to switch and run in build directory
+# Make tests switch and run in build directory.
 configure_file(scram_unit_test_driver.cc.in
   "${CMAKE_CURRENT_SOURCE_DIR}/scram_unit_test_driver.cc"
   @ONLY
@@ -85,7 +87,8 @@ install(FILES ${header_files}
   COMPONENT testing
   )
 
-# Read tests after building the driver, and add them to ctest.
+# Read tests after building the driver
+# and add them to ctest.
 set(tgt "scram_tests")
 add_custom_command(TARGET ${tgt}
   POST_BUILD

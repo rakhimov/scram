@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
-# in-source build prevention
+
+# In-source build prevention.
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
   message(STATUS "SCRAM requires an out-of-source build.")
   message(STATUS "Please remove these files from ${CMAKE_BINARY_DIR} first:")
@@ -12,9 +13,9 @@ endif()
 
 project(SCRAM)
 
-############################ begin cmake configuration ###################
+##################### Begin cmake configuration ###################
 
-# set project directories
+# Set project directories.
 set(PROJECT_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
 set(SCRAM_SOURCE_DIR "${PROJECT_SOURCE_DIR}/src")
 set(SCRAM_GUI_DIR "${PROJECT_SOURCE_DIR}/gui")
@@ -40,24 +41,26 @@ endif()
 
 set(SCRAM_EXECUTABLE_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 
-# use, i.e. don't skip the full RPATH for the build tree
+# Use, i.e. don't skip the full RPATH for the build tree.
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 
-# when building, don't use the install RPATH already
-# (but later on when installing)
+# When building,
+# don't use the install RPATH already
+# (but later on when installing).
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
-# add the automatically determined parts of the RPATH
-# which point to directories outside the build tree to the install RPATH
+# Add the automatically determined parts of the RPATH,
+# which point to directories outside the build tree
+# to the install RPATH.
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-# Tell CMake where the modules are
+# Tell CMake where the modules are.
 list(APPEND CMAKE_MODULE_PATH
   "${CMAKE_DIR}/share/cmake-2.8/Modules" "${PROJECT_SOURCE_DIR}/cmake")
 
-# set configuration for all library builds
+# Set configuration for all library builds.
 if(WIN32)
   set(suffix ".dll")
 elseif(APPLE)
@@ -67,35 +70,36 @@ else()
   set(suffix ".so")
 endif()
 
-# enable testing, must be at top-level cmake file
+# Enable testing.
+# Must be at top-level cmake file.
 option(USE_TESTING "Build testing" ON)
 if(USE_TESTING)
   enable_testing()
   include(CTest)
 endif()
 
-############################ end cmake configuration ###################
+######################## End cmake configuration ###################
 
-############################ begin find libraries ######################
+######################## Begin find libraries ######################
 
-# Optional tcmalloc for optimization.
+# Optional TCMalloc for optimization.
 find_package(Tcmalloc)
 set(LIBS ${LIBS} ${Tcmalloc_LIBRARIES})
 
-# Debian installs useful LibXML2 files to /usr/include/libxml2/libxml
-# libxml2 is required for relaxng schema validation
+# Debian installs useful LibXML2 files to /usr/include/libxml2/libxml.
+# libxml2 is required for relaxng schema validation.
 find_package(LibXml2 REQUIRED)
 add_definitions(${LIBXML2_DEFINITIONS})
 set(LIBS ${LIBS} ${LIBXML2_LIBRARIES})
 
-# Find LibXML++ and dependencies
+# Find LibXML++ and dependencies.
 find_package(LibXML++ REQUIRED)
 set(LIBS ${LIBS} ${LibXML++_LIBRARIES})
 message(${LIBS})
 
-# Include the boost header files and the program_options library
+# Include the boost header files and the program_options library.
 # Please be sure to use Boost rather than BOOST.
-# Capitalization matters on some platforms
+# Capitalization matters on some platforms.
 set(BOOST_MIN_VERSION "1.48.0")
 set(Boost_USE_STATIC_LIBS ${USE_STATIC_LIBS})
 set(Boost_USE_STATIC_RUNTIME ${USE_STATIC_LIBS})
@@ -122,18 +126,18 @@ message("--    Boost System location: ${Boost_SYSTEM_LIBRARY}")
 set(LIBS ${LIBS} ${Boost_FILESYSTEM_LIBRARY})
 message("--    Boost Filesystem location: ${Boost_FILESYSTEM_LIBRARY}")
 
-# Find the QtWidgets library
+# Find the QtWidgets library.
 find_package(Qt5Widgets)
 if(Qt5Widgets_FOUND)
   message("-- Found Qt5")
   message("-- Qt5 Version: ${Qt5Widgets_VERSION_STRING}")
 endif()
 
-########################## end of find libraries ########################
+########################## End of find libraries ########################
 
-########################## begin includes ###############################
+########################## Begin includes ###############################
 
-# include all the directories we just found
+# Include all the directories we just found.
 include_directories("${Boost_INCLUDE_DIR}")
 include_directories("${LIBXML2_INCLUDE_DIR}")
 include_directories("${LibXML++_INCLUDE_DIR}")
@@ -150,9 +154,9 @@ if(Qt5Widgets_FOUND)
   add_subdirectory("${SCRAM_GUI_DIR}")
 endif()
 
-####################### end includes ####################################
+####################### End includes ####################################
 
-###################### begin uninstall target ###########################
+###################### Begin uninstall target ###########################
 
 configure_file(
   "${PROJECT_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"
@@ -163,4 +167,4 @@ configure_file(
 add_custom_target(uninstall
   COMMAND "${CMAKE_COMMAND}" -P "\"${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake\"")
 
-###################### end uninstall target #############################
+###################### End uninstall target #############################
