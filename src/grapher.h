@@ -23,11 +23,11 @@
 
 #include <iostream>
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 
 #include "event.h"
@@ -39,7 +39,7 @@ namespace scram {
 /// Currently operates with Fault Trees only.
 class Grapher {
  public:
-  typedef boost::shared_ptr<Gate> GatePtr;
+  typedef std::shared_ptr<Gate> GatePtr;
 
   /// Outputs instructions for graphviz dot to create a fault tree.
   /// This function must be called only with fully initialized fault tree.
@@ -51,11 +51,11 @@ class Grapher {
                       std::ostream& out);
 
  private:
-  typedef boost::shared_ptr<Event> EventPtr;
-  typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
-  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
-  typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
-  typedef boost::shared_ptr<Formula> FormulaPtr;
+  typedef std::shared_ptr<Event> EventPtr;
+  typedef std::shared_ptr<PrimaryEvent> PrimaryEventPtr;
+  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
+  typedef std::shared_ptr<HouseEvent> HouseEventPtr;
+  typedef std::shared_ptr<Formula> FormulaPtr;
 
   static const std::map<std::string, std::string> kGateColors_;  ///< Colors.
   static const std::map<std::string, std::string> kEventColors_;  ///< Colors.

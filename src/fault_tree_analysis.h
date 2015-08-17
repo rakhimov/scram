@@ -22,11 +22,11 @@
 #define SCRAM_SRC_FAULT_TREE_ANALYSIS_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
-#include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 
 #include "event.h"
@@ -54,9 +54,9 @@ class BooleanGraph;
 ///          One analysis per FaultTreeAnalysis object.
 class FaultTreeAnalysis {
  public:
-  typedef boost::shared_ptr<Gate> GatePtr;
-  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
-  typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
+  typedef std::shared_ptr<Gate> GatePtr;
+  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
+  typedef std::shared_ptr<HouseEvent> HouseEventPtr;
 
   /// Traverses a valid fault tree from the root gate
   /// to collect databases of events, gates,
@@ -157,8 +157,8 @@ class FaultTreeAnalysis {
   inline double analysis_time() const { return analysis_time_; }
 
  private:
-  typedef boost::shared_ptr<Event> EventPtr;
-  typedef boost::shared_ptr<Formula> FormulaPtr;
+  typedef std::shared_ptr<Event> EventPtr;
+  typedef std::shared_ptr<Formula> FormulaPtr;
 
   /// Gathers information about the correctly initialized fault tree.
   /// Databases for events are manipulated

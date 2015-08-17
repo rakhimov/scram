@@ -80,7 +80,7 @@ void Gate::Validate() {
       std::stringstream msg;
       msg << "";
       bool conditional_found = false;
-      typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+      typedef std::shared_ptr<BasicEvent> BasicEventPtr;
       std::vector<BasicEventPtr>::const_iterator it;
       for (it = formula_->basic_event_args().begin();
            it != formula_->basic_event_args().end(); ++it) {
@@ -203,9 +203,8 @@ void Formula::GatherNodesAndConnectors() {
   for (it_g = gate_args_.begin(); it_g != gate_args_.end(); ++it_g) {
     nodes_.push_back(&**it_g);
   }
-  std::set<boost::shared_ptr<Formula> >::iterator it_f;
-  for (it_f = formula_args_.begin(); it_f != formula_args_.end();
-       ++it_f) {
+  std::set<std::shared_ptr<Formula> >::iterator it_f;
+  for (it_f = formula_args_.begin(); it_f != formula_args_.end(); ++it_f) {
     connectors_.push_back(&**it_f);
   }
   gather_ = false;

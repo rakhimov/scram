@@ -22,11 +22,11 @@
 #define SCRAM_SRC_REPORTER_H_
 
 #include <iomanip>
+#include <memory>
 #include <set>
 #include <sstream>
 #include <string>
 
-#include <boost/shared_ptr.hpp>
 #include <libxml++/libxml++.h>
 
 namespace scram {
@@ -44,9 +44,9 @@ class UncertaintyAnalysis;
 /// This class reports the results of the analyses.
 class Reporter {
  public:
-  typedef boost::shared_ptr<Model> ModelPtr;
-  typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
-  typedef boost::shared_ptr<Parameter> ParameterPtr;
+  typedef std::shared_ptr<Model> ModelPtr;
+  typedef std::shared_ptr<PrimaryEvent> PrimaryEventPtr;
+  typedef std::shared_ptr<Parameter> ParameterPtr;
 
   /// Sets up XML report document according to a specific standards.
   /// This function populates information
@@ -92,8 +92,8 @@ class Reporter {
   /// @note This function must be called only after analysis is done.
   void ReportFta(
       std::string ft_name,
-      const boost::shared_ptr<const FaultTreeAnalysis>& fta,
-      const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
+      const std::shared_ptr<const FaultTreeAnalysis>& fta,
+      const std::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
       xmlpp::Document* doc);
 
   /// Reports results of importance analysis in probability analysis.
@@ -105,7 +105,7 @@ class Reporter {
   /// @note This function must be called only after analysis is done.
   void ReportImportance(
       std::string ft_name,
-      const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
+      const std::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
       xmlpp::Document* doc);
 
   /// Reports the results of uncertainty analysis with minimal cut sets.
@@ -117,11 +117,11 @@ class Reporter {
   /// @note This function must be called only after analysis is done.
   void ReportUncertainty(
       std::string ft_name,
-      const boost::shared_ptr<const UncertaintyAnalysis>& uncert_analysis,
+      const std::shared_ptr<const UncertaintyAnalysis>& uncert_analysis,
       xmlpp::Document* doc);
 
  private:
-  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
 
   /// Detects if a given basic event is a CCF event,
   /// and reports it with specific formatting.

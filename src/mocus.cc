@@ -288,7 +288,7 @@ void Mocus::CreateSimpleTree(const IGatePtr& gate,
       simple_gate->AddChildGate(processed_gates->find(it->first)->second);
     }
   }
-  typedef boost::shared_ptr<Variable> VariablePtr;
+  typedef std::shared_ptr<Variable> VariablePtr;
   boost::unordered_map<int, VariablePtr>::const_iterator it_b;
   for (it_b = gate->variable_args().begin();
        it_b != gate->variable_args().end(); ++it_b) {

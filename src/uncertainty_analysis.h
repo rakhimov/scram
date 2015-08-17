@@ -23,12 +23,12 @@
 #define SCRAM_SRC_UNCERTAINTY_ANALYSIS_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 
 #include "event.h"
@@ -43,7 +43,7 @@ namespace scram {
 /// and probability distributions of basic events.
 class UncertaintyAnalysis : private ProbabilityAnalysis {
  public:
-  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
 
   /// The main constructor of Uncertainty Analysis.
   ///

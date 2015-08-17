@@ -21,6 +21,7 @@
 #ifndef SCRAM_SRC_MODEL_H_
 #define SCRAM_SRC_MODEL_H_
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -40,13 +41,13 @@ class Component;
 /// This class represents a risk analysis model.
 class Model : public Element {
  public:
-  typedef boost::shared_ptr<Parameter> ParameterPtr;
-  typedef boost::shared_ptr<Event> EventPtr;
-  typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
-  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
-  typedef boost::shared_ptr<Gate> GatePtr;
-  typedef boost::shared_ptr<CcfGroup> CcfGroupPtr;
-  typedef boost::shared_ptr<FaultTree> FaultTreePtr;
+  typedef std::shared_ptr<Parameter> ParameterPtr;
+  typedef std::shared_ptr<Event> EventPtr;
+  typedef std::shared_ptr<HouseEvent> HouseEventPtr;
+  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
+  typedef std::shared_ptr<Gate> GatePtr;
+  typedef std::shared_ptr<CcfGroup> CcfGroupPtr;
+  typedef std::shared_ptr<FaultTree> FaultTreePtr;
 
   /// Creates a model container.
   ///
@@ -202,7 +203,7 @@ class Model : public Element {
   void AddCcfGroup(const CcfGroupPtr& ccf_group);
 
  private:
-  typedef boost::shared_ptr<Component> ComponentPtr;
+  typedef std::shared_ptr<Component> ComponentPtr;
 
   /// Helper function to find the scope container for references.
   ///

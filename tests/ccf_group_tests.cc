@@ -17,7 +17,6 @@
 
 #include "ccf_group.h"
 
-#include <boost/shared_ptr.hpp>
 #include <gtest/gtest.h>
 
 #include "error.h"
@@ -27,8 +26,8 @@
 namespace scram {
 namespace test {
 
-typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
-typedef boost::shared_ptr<Expression> ExpressionPtr;
+typedef std::shared_ptr<BasicEvent> BasicEventPtr;
+typedef std::shared_ptr<Expression> ExpressionPtr;
 
 TEST(CcfGroupTest, AddMemberRepeated) {
   CcfGroup* ccf_group = new BetaFactorModel("general");

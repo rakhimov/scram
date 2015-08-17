@@ -20,6 +20,7 @@
 
 #include "xml_parser.h"
 
+#include <cassert>
 #include <string>
 
 #include "error.h"
@@ -28,7 +29,7 @@
 namespace scram {
 
 XMLParser::XMLParser(const std::stringstream& xml_input_snippet) {
-  parser_ = boost::shared_ptr<xmlpp::DomParser>(new xmlpp::DomParser());
+  parser_ = std::shared_ptr<xmlpp::DomParser>(new xmlpp::DomParser());
   try {
     parser_->parse_memory(xml_input_snippet.str());
     assert(parser_->get_document());

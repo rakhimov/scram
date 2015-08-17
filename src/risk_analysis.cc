@@ -118,15 +118,15 @@ void RiskAnalysis::Report(std::ostream& out) {
   // Container for excess primary events not in the analysis.
   // This container is for warning
   // in case the input is formed not as intended.
-  typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
-  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+  typedef std::shared_ptr<PrimaryEvent> PrimaryEventPtr;
+  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
   std::set<PrimaryEventPtr> orphan_primary_events;
   boost::unordered_map<std::string, BasicEventPtr>::const_iterator it_b;
   for (it_b = model_->basic_events().begin();
        it_b != model_->basic_events().end(); ++it_b) {
     if (it_b->second->orphan()) orphan_primary_events.insert(it_b->second);
   }
-  typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
+  typedef std::shared_ptr<HouseEvent> HouseEventPtr;
   boost::unordered_map<std::string, HouseEventPtr>::const_iterator it_h;
   for (it_h = model_->house_events().begin();
        it_h != model_->house_events().end(); ++it_h) {
@@ -137,7 +137,7 @@ void RiskAnalysis::Report(std::ostream& out) {
 
   // Container for unused parameters not in the analysis.
   // This container is for warning in case the input is formed not as intended.
-  typedef boost::shared_ptr<Parameter> ParameterPtr;
+  typedef std::shared_ptr<Parameter> ParameterPtr;
   std::set<ParameterPtr> unused_parameters;
   boost::unordered_map<std::string, ParameterPtr>::const_iterator it_v;
   for (it_v = model_->parameters().begin(); it_v != model_->parameters().end();

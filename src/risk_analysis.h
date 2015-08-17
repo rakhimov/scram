@@ -23,10 +23,9 @@
 
 #include <iostream>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
-
-#include <boost/shared_ptr.hpp>
 
 #include "fault_tree_analysis.h"
 #include "probability_analysis.h"
@@ -43,10 +42,10 @@ class Model;
 /// Main system that performs analyses.
 class RiskAnalysis {
  public:
-  typedef boost::shared_ptr<Model> ModelPtr;
-  typedef boost::shared_ptr<FaultTreeAnalysis> FaultTreeAnalysisPtr;
-  typedef boost::shared_ptr<ProbabilityAnalysis> ProbabilityAnalysisPtr;
-  typedef boost::shared_ptr<UncertaintyAnalysis> UncertaintyAnalysisPtr;
+  typedef std::shared_ptr<Model> ModelPtr;
+  typedef std::shared_ptr<FaultTreeAnalysis> FaultTreeAnalysisPtr;
+  typedef std::shared_ptr<ProbabilityAnalysis> ProbabilityAnalysisPtr;
+  typedef std::shared_ptr<UncertaintyAnalysis> UncertaintyAnalysisPtr;
 
   /// Constructs RiskAnalysis with a valid model and analysis settings.
   ///
@@ -118,8 +117,8 @@ class RiskAnalysis {
   }
 
  private:
-  typedef boost::shared_ptr<Gate> GatePtr;
-  typedef boost::shared_ptr<FaultTree> FaultTreePtr;
+  typedef std::shared_ptr<Gate> GatePtr;
+  typedef std::shared_ptr<FaultTree> FaultTreePtr;
 
   ModelPtr model_;  ///< Analysis model with constructs.
   Settings settings_;  ///< Settings for analysis.

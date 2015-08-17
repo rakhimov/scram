@@ -23,12 +23,12 @@
 #define SCRAM_SRC_PROBABILITY_ANALYSIS_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include <boost/container/flat_set.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 
 #include "event.h"
@@ -43,7 +43,7 @@ class ProbabilityAnalysis {
   friend class test::ProbabilityAnalysisTest;
 
  public:
-  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
 
   /// The main constructor of Probability Analysis.
   ///

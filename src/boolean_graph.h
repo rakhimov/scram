@@ -30,16 +30,14 @@
 #ifndef SCRAM_SRC_BOOLEAN_GRAPH_H_
 #define SCRAM_SRC_BOOLEAN_GRAPH_H_
 
-#include <map>
 #include <iostream>
+#include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
-#include <boost/enable_shared_from_this.hpp>
-#include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
-#include <boost/weak_ptr.hpp>
 
 namespace scram {
 
@@ -73,7 +71,7 @@ class Node {
   inline static void ResetIndex() { next_index_ = 1e6; }
 
   /// @returns Parents of this gate.
-  inline const boost::unordered_map<int, boost::weak_ptr<IGate> >&
+  inline const boost::unordered_map<int, std::weak_ptr<IGate> >&
       parents() const {
     return parents_;
   }
@@ -147,7 +145,7 @@ class Node {
   int index_;  ///< Index of this node.
   /// This is a traversal array containing first, second, and last visits.
   int visits_[3];
-  boost::unordered_map<int, boost::weak_ptr<IGate> > parents_;  ///< Parents.
+  boost::unordered_map<int, std::weak_ptr<IGate> > parents_;  ///< Parents.
   int opti_value_;  ///< Failure propagation optimization value.
 };
 
@@ -239,12 +237,12 @@ enum State {
 /// at the end of all simplifications and processing.
 /// This gate class helps process the fault tree
 /// before any complex analysis is done.
-class IGate : public Node, public boost::enable_shared_from_this<IGate> {
+class IGate : public Node, public std::enable_shared_from_this<IGate> {
  public:
-  typedef boost::shared_ptr<Node> NodePtr;
-  typedef boost::shared_ptr<Constant> ConstantPtr;
-  typedef boost::shared_ptr<Variable> VariablePtr;
-  typedef boost::shared_ptr<IGate> IGatePtr;
+  typedef std::shared_ptr<Node> NodePtr;
+  typedef std::shared_ptr<Constant> ConstantPtr;
+  typedef std::shared_ptr<Variable> VariablePtr;
+  typedef std::shared_ptr<IGate> IGatePtr;
 
   /// Creates an indexed gate with its unique index.
   /// It is assumed that smart pointers are used to manage the graph,
@@ -623,9 +621,9 @@ class BooleanGraph {
   friend class Preprocessor;  ///< The main manipulator of Boolean graphs.
 
  public:
-  typedef boost::shared_ptr<Gate> GatePtr;
-  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
-  typedef boost::shared_ptr<IGate> IGatePtr;
+  typedef std::shared_ptr<Gate> GatePtr;
+  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
+  typedef std::shared_ptr<IGate> IGatePtr;
 
   /// Constructs a BooleanGraph
   /// starting from the top gate of a fault tree.
@@ -679,11 +677,11 @@ class BooleanGraph {
   void Print();
 
  private:
-  typedef boost::shared_ptr<Formula> FormulaPtr;
-  typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
-  typedef boost::shared_ptr<Node> NodePtr;
-  typedef boost::shared_ptr<Constant> ConstantPtr;
-  typedef boost::shared_ptr<Variable> VariablePtr;
+  typedef std::shared_ptr<Formula> FormulaPtr;
+  typedef std::shared_ptr<HouseEvent> HouseEventPtr;
+  typedef std::shared_ptr<Node> NodePtr;
+  typedef std::shared_ptr<Constant> ConstantPtr;
+  typedef std::shared_ptr<Variable> VariablePtr;
 
   /// Mapping to string gate types to enum gate types.
   static const std::map<std::string, Operator> kStringToType_;
@@ -799,9 +797,9 @@ class BooleanGraph {
   bool coherent_;  ///< Indication that the graph does not contain negation.
   bool normal_;  ///< Indication for the graph containing only OR and AND gates.
   /// Registered house events upon the creation of the Boolean graph.
-  std::vector<boost::weak_ptr<Constant> > constants_;
+  std::vector<std::weak_ptr<Constant> > constants_;
   /// Registered NULL type gates upon the creation of the Boolean graph.
-  std::vector<boost::weak_ptr<IGate> > null_gates_;
+  std::vector<std::weak_ptr<IGate> > null_gates_;
 };
 
 /// Prints indexed house events or constants in the shorthand format.
@@ -811,7 +809,7 @@ class BooleanGraph {
 ///
 /// @warning Visit information may get changed.
 std::ostream& operator<<(std::ostream& os,
-                         const boost::shared_ptr<Constant>& constant);
+                         const std::shared_ptr<Constant>& constant);
 
 /// Prints indexed variables as basic events in the shorthand format.
 ///
@@ -820,7 +818,7 @@ std::ostream& operator<<(std::ostream& os,
 ///
 /// @warning Visit information may get changed.
 std::ostream& operator<<(std::ostream& os,
-                         const boost::shared_ptr<Variable>& variable);
+                         const std::shared_ptr<Variable>& variable);
 
 /// Prints indexed gates in the shorthand format.
 /// The gates that have become a constant are named "GC".
@@ -831,7 +829,7 @@ std::ostream& operator<<(std::ostream& os,
 ///
 /// @warning Visit information may get changed.
 std::ostream& operator<<(std::ostream& os,
-                         const boost::shared_ptr<IGate>& gate);
+                         const std::shared_ptr<IGate>& gate);
 
 /// Prints the BooleanGraph as a fault tree in the shorthand format.
 /// This function is mostly for debugging purposes.

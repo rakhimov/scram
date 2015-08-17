@@ -22,13 +22,13 @@
 #define SCRAM_SRC_INITIALIZER_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include <boost/shared_ptr.hpp>
 #include <libxml++/libxml++.h>
 
 #include "event.h"
@@ -54,7 +54,7 @@ class XMLParser;
 /// for future use or analysis.
 class Initializer {
  public:
-  typedef boost::shared_ptr<Model> ModelPtr;
+  typedef std::shared_ptr<Model> ModelPtr;
 
   /// Prepares common information to be used by
   /// the future input file constructs,
@@ -78,18 +78,18 @@ class Initializer {
   inline ModelPtr model() const { return model_; }
 
  private:
-  typedef boost::shared_ptr<Element> ElementPtr;
-  typedef boost::shared_ptr<Event> EventPtr;
-  typedef boost::shared_ptr<Gate> GatePtr;
-  typedef boost::shared_ptr<Formula> FormulaPtr;
-  typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
-  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
-  typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
-  typedef boost::shared_ptr<CcfGroup> CcfGroupPtr;
-  typedef boost::shared_ptr<FaultTree> FaultTreePtr;
-  typedef boost::shared_ptr<Component> ComponentPtr;
-  typedef boost::shared_ptr<Expression> ExpressionPtr;
-  typedef boost::shared_ptr<Parameter> ParameterPtr;
+  typedef std::shared_ptr<Element> ElementPtr;
+  typedef std::shared_ptr<Event> EventPtr;
+  typedef std::shared_ptr<Gate> GatePtr;
+  typedef std::shared_ptr<Formula> FormulaPtr;
+  typedef std::shared_ptr<PrimaryEvent> PrimaryEventPtr;
+  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
+  typedef std::shared_ptr<HouseEvent> HouseEventPtr;
+  typedef std::shared_ptr<CcfGroup> CcfGroupPtr;
+  typedef std::shared_ptr<FaultTree> FaultTreePtr;
+  typedef std::shared_ptr<Component> ComponentPtr;
+  typedef std::shared_ptr<Expression> ExpressionPtr;
+  typedef std::shared_ptr<Parameter> ParameterPtr;
 
   /// Map of valid units for parameters.
   static const std::map<std::string, Units> kUnits_;
@@ -395,13 +395,13 @@ class Initializer {
 
   ModelPtr model_;  ///< Analysis model with constructs.
   Settings settings_;  ///< Settings for analysis.
-  boost::shared_ptr<MissionTime> mission_time_;  ///< Mission time expression.
+  std::shared_ptr<MissionTime> mission_time_;  ///< Mission time expression.
 
   /// The main schema for validation.
   static std::stringstream schema_;
 
   /// Parsers with all documents saved for later access.
-  std::vector<boost::shared_ptr<XMLParser> > parsers_;
+  std::vector<std::shared_ptr<XMLParser> > parsers_;
 
   /// Map roots of documents to files. This is for error reporting.
   std::map<const xmlpp::Node*, std::string> doc_to_file_;

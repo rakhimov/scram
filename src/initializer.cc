@@ -25,7 +25,6 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/pointer_cast.hpp>
 #include <boost/unordered_map.hpp>
 
 #include "ccf_group.h"
@@ -56,7 +55,7 @@ std::stringstream Initializer::schema_;
 
 Initializer::Initializer(const Settings& settings) {
   settings_ = settings;
-  mission_time_ = boost::shared_ptr<MissionTime>(new MissionTime());
+  mission_time_ = std::shared_ptr<MissionTime>(new MissionTime());
   mission_time_->mission_time(settings_.mission_time_);
   if (schema_.str().empty()) {
     std::string schema_path = Env::input_schema();
@@ -115,7 +114,7 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
   stream << file_stream.rdbuf();
   file_stream.close();
 
-  boost::shared_ptr<XMLParser> parser(new XMLParser(stream));
+  std::shared_ptr<XMLParser> parser(new XMLParser(stream));
   parser->Validate(schema_);
   parsers_.push_back(parser);
 
@@ -241,7 +240,7 @@ void Initializer::DefineFaultTree(const xmlpp::Element* ft_node) {
   Initializer::RegisterFaultTreeData(ft_node, fault_tree, name);
 }
 
-boost::shared_ptr<Component> Initializer::DefineComponent(
+std::shared_ptr<Component> Initializer::DefineComponent(
     const xmlpp::Element* component_node,
     const std::string& base_path,
     bool public_container) {
@@ -343,10 +342,9 @@ void Initializer::ProcessModelData(const xmlpp::Element* model_data) {
   }
 }
 
-boost::shared_ptr<Gate> Initializer::RegisterGate(
-    const xmlpp::Element* gate_node,
-    const std::string& base_path,
-    bool public_container) {
+std::shared_ptr<Gate> Initializer::RegisterGate(const xmlpp::Element* gate_node,
+                                                const std::string& base_path,
+                                                bool public_container) {
   std::string name = gate_node->get_attribute_value("name");
   boost::trim(name);
   std::string role = gate_node->get_attribute_value("role");
@@ -386,7 +384,7 @@ void Initializer::DefineGate(const xmlpp::Element* gate_node,
   }
 }
 
-boost::shared_ptr<Formula> Initializer::GetFormula(
+std::shared_ptr<Formula> Initializer::GetFormula(
     const xmlpp::Element* formula_node,
     const std::string& base_path) {
   std::string type = formula_node->get_name();
@@ -449,12 +447,12 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
         event->orphan(false);
         std::string type = target.second;
         if (type == "gate") {
-          formula->AddArgument(boost::static_pointer_cast<Gate>(event));
+          formula->AddArgument(std::static_pointer_cast<Gate>(event));
         } else if (type == "basic-event") {
-          formula->AddArgument(boost::static_pointer_cast<BasicEvent>(event));
+          formula->AddArgument(std::static_pointer_cast<BasicEvent>(event));
         } else {
           assert(type == "house-event");
-          formula->AddArgument(boost::static_pointer_cast<HouseEvent>(event));
+          formula->AddArgument(std::static_pointer_cast<HouseEvent>(event));
         }
       } else if (element_type == "gate") {
         GatePtr gate = model_->GetGate(name, base_path);
@@ -491,7 +489,7 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
   }
 }
 
-boost::shared_ptr<BasicEvent> Initializer::RegisterBasicEvent(
+std::shared_ptr<BasicEvent> Initializer::RegisterBasicEvent(
     const xmlpp::Element* event_node,
     const std::string& base_path,
     bool public_container) {
@@ -529,7 +527,7 @@ void Initializer::DefineBasicEvent(const xmlpp::Element* event_node,
   }
 }
 
-boost::shared_ptr<HouseEvent> Initializer::DefineHouseEvent(
+std::shared_ptr<HouseEvent> Initializer::DefineHouseEvent(
     const xmlpp::Element* event_node,
     const std::string& base_path,
     bool public_container) {
@@ -566,7 +564,7 @@ boost::shared_ptr<HouseEvent> Initializer::DefineHouseEvent(
   return house_event;
 }
 
-boost::shared_ptr<Parameter> Initializer::RegisterParameter(
+std::shared_ptr<Parameter> Initializer::RegisterParameter(
     const xmlpp::Element* param_node,
     const std::string& base_path,
     bool public_container) {
@@ -612,7 +610,7 @@ void Initializer::DefineParameter(const xmlpp::Element* param_node,
   parameter->expression(expression);
 }
 
-boost::shared_ptr<Expression> Initializer::GetExpression(
+std::shared_ptr<Expression> Initializer::GetExpression(
     const xmlpp::Element* expr_element,
     const std::string& base_path) {
   using scram::Initializer;
@@ -631,7 +629,7 @@ boost::shared_ptr<Expression> Initializer::GetExpression(
 
 bool Initializer::GetConstantExpression(const xmlpp::Element* expr_element,
                                         ExpressionPtr& expression) {
-  typedef boost::shared_ptr<ConstantExpression> ConstantExpressionPtr;
+  typedef std::shared_ptr<ConstantExpression> ConstantExpressionPtr;
   assert(expr_element);
   std::string expr_name = expr_element->get_name();
   if (expr_name == "float" || expr_name == "int") {
@@ -705,8 +703,7 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
     element = static_cast<const xmlpp::Element*>(args[1]);
     ExpressionPtr max = GetExpression(element, base_path);
 
-    expression = boost::shared_ptr<UniformDeviate>(
-        new UniformDeviate(min, max));
+    expression = std::shared_ptr<UniformDeviate>(new UniformDeviate(min, max));
 
   } else if (expr_name == "normal-deviate") {
     assert(args.size() == 2);
@@ -716,8 +713,7 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
     element = static_cast<const xmlpp::Element*>(args[1]);
     ExpressionPtr sigma = GetExpression(element, base_path);
 
-    expression = boost::shared_ptr<NormalDeviate>(
-        new NormalDeviate(mean, sigma));
+    expression = std::shared_ptr<NormalDeviate>(new NormalDeviate(mean, sigma));
 
   } else if (expr_name == "lognormal-deviate") {
     assert(args.size() == 3);
@@ -730,7 +726,7 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
     element = static_cast<const xmlpp::Element*>(args[2]);
     ExpressionPtr level = GetExpression(element, base_path);
 
-    expression = boost::shared_ptr<LogNormalDeviate>(
+    expression = std::shared_ptr<LogNormalDeviate>(
         new LogNormalDeviate(mean, ef, level));
 
   } else if (expr_name == "gamma-deviate") {
@@ -741,7 +737,7 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
     element = static_cast<const xmlpp::Element*>(args[1]);
     ExpressionPtr theta = GetExpression(element, base_path);
 
-    expression = boost::shared_ptr<GammaDeviate>(new GammaDeviate(k, theta));
+    expression = std::shared_ptr<GammaDeviate>(new GammaDeviate(k, theta));
 
   } else if (expr_name == "beta-deviate") {
     assert(args.size() == 2);
@@ -751,7 +747,7 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
     element = static_cast<const xmlpp::Element*>(args[1]);
     ExpressionPtr beta = GetExpression(element, base_path);
 
-    expression = boost::shared_ptr<BetaDeviate>(new BetaDeviate(alpha, beta));
+    expression = std::shared_ptr<BetaDeviate>(new BetaDeviate(alpha, beta));
 
   } else if (expr_name == "histogram") {
     std::vector<ExpressionPtr> boundaries;
@@ -770,8 +766,7 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
       ExpressionPtr weight = GetExpression(element, base_path);
       weights.push_back(weight);
     }
-    expression = boost::shared_ptr<Histogram>(
-        new Histogram(boundaries, weights));
+    expression = std::shared_ptr<Histogram>(new Histogram(boundaries, weights));
 
   } else if (expr_name == "exponential") {
     assert(args.size() == 2);
@@ -781,7 +776,7 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
     element = static_cast<const xmlpp::Element*>(args[1]);
     ExpressionPtr time = GetExpression(element, base_path);
 
-    expression = boost::shared_ptr<ExponentialExpression>(
+    expression = std::shared_ptr<ExponentialExpression>(
         new ExponentialExpression(lambda, time));
 
   } else if (expr_name == "GLM") {
@@ -798,7 +793,7 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
     element = static_cast<const xmlpp::Element*>(args[3]);
     ExpressionPtr time = GetExpression(element, base_path);
 
-    expression = boost::shared_ptr<GlmExpression>(
+    expression = std::shared_ptr<GlmExpression>(
         new GlmExpression(gamma, lambda, mu, time));
 
   } else if (expr_name == "Weibull") {
@@ -815,7 +810,7 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
     element = static_cast<const xmlpp::Element*>(args[3]);
     ExpressionPtr time = GetExpression(element, base_path);
 
-    expression = boost::shared_ptr<WeibullExpression>(
+    expression = std::shared_ptr<WeibullExpression>(
         new WeibullExpression(alpha, beta, t0, time));
   } else {
     return false;
@@ -823,7 +818,7 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
   return true;
 }
 
-boost::shared_ptr<CcfGroup> Initializer::RegisterCcfGroup(
+std::shared_ptr<CcfGroup> Initializer::RegisterCcfGroup(
     const xmlpp::Element* ccf_node,
     const std::string& base_path,
     bool public_container) {

@@ -308,7 +308,7 @@ void Preprocessor::RemoveNullGates() {
 void Preprocessor::RemoveConstants() {
   assert(const_gates_.empty());
   assert(!graph_->constants_.empty());
-  std::vector<boost::weak_ptr<Constant> >::iterator it;
+  std::vector<std::weak_ptr<Constant> >::iterator it;
   for (it = graph_->constants_.begin(); it != graph_->constants_.end(); ++it) {
     if (it->expired()) continue;
     Preprocessor::PropagateConstant(it->lock());
@@ -872,7 +872,7 @@ void Preprocessor::ProcessModularArgs(
   }
 }
 
-boost::shared_ptr<IGate> Preprocessor::CreateNewModule(
+std::shared_ptr<IGate> Preprocessor::CreateNewModule(
     const IGatePtr& gate,
     const std::vector<std::pair<int, NodePtr> >& args) {
   IGatePtr module;  // Empty pointer as an indication of a failure.
@@ -1250,7 +1250,7 @@ void Preprocessor::BooleanOptimization() {
   graph_->ClearGateMarks();
 
   std::vector<IGateWeakPtr> common_gates;
-  std::vector<boost::weak_ptr<Variable> > common_variables;
+  std::vector<std::weak_ptr<Variable> > common_variables;
   Preprocessor::GatherCommonNodes(&common_gates, &common_variables);
 
   std::vector<IGateWeakPtr>::iterator it;
@@ -1258,7 +1258,7 @@ void Preprocessor::BooleanOptimization() {
     Preprocessor::ProcessCommonNode(*it);
   }
 
-  std::vector<boost::weak_ptr<Variable> >::iterator it_b;
+  std::vector<std::weak_ptr<Variable> >::iterator it_b;
   for (it_b = common_variables.begin(); it_b != common_variables.end();
        ++it_b) {
     Preprocessor::ProcessCommonNode(*it_b);
@@ -1267,7 +1267,7 @@ void Preprocessor::BooleanOptimization() {
 
 void Preprocessor::GatherCommonNodes(
       std::vector<IGateWeakPtr>* common_gates,
-      std::vector<boost::weak_ptr<Variable> >* common_variables) {
+      std::vector<std::weak_ptr<Variable> >* common_variables) {
   std::queue<IGatePtr> gates_queue;
   gates_queue.push(graph_->root());
   while (!gates_queue.empty()) {
@@ -1295,12 +1295,12 @@ void Preprocessor::GatherCommonNodes(
 }
 
 template<class N>
-void Preprocessor::ProcessCommonNode(const boost::weak_ptr<N>& common_node) {
+void Preprocessor::ProcessCommonNode(const std::weak_ptr<N>& common_node) {
   assert(const_gates_.empty());
   assert(null_gates_.empty());
   if (common_node.expired()) return;  // The node has been deleted.
 
-  boost::shared_ptr<N> node = common_node.lock();
+  std::shared_ptr<N> node = common_node.lock();
 
   if (node->parents().size() == 1) return;  // The parent is deleted.
 
@@ -1431,7 +1431,7 @@ void Preprocessor::ProcessRedundantParents(
 
 template<class N>
 void Preprocessor::ProcessFailureDestinations(
-    const boost::shared_ptr<N>& node,
+    const std::shared_ptr<N>& node,
     const std::map<int, IGateWeakPtr>& destinations) {
   std::map<int, IGateWeakPtr>::const_iterator it_d;
   for (it_d = destinations.begin(); it_d != destinations.end(); ++it_d) {
@@ -1463,7 +1463,7 @@ bool Preprocessor::DecomposeCommonNodes() {
 
   graph_->ClearNodeVisits();
   std::vector<IGateWeakPtr> common_gates;
-  std::vector<boost::weak_ptr<Variable> > common_variables;
+  std::vector<std::weak_ptr<Variable> > common_variables;
   Preprocessor::GatherCommonNodes(&common_gates, &common_variables);
   graph_->ClearNodeVisits();
 
@@ -1480,7 +1480,7 @@ bool Preprocessor::DecomposeCommonNodes() {
   // Variables are processed after gates
   // because, if parent gates are removed,
   // there may be no need to process these variables.
-  std::vector<boost::weak_ptr<Variable> >::reverse_iterator it_b;
+  std::vector<std::weak_ptr<Variable> >::reverse_iterator it_b;
   for (it_b = common_variables.rbegin(); it_b != common_variables.rend();
        ++it_b) {
     bool ret = Preprocessor::ProcessDecompositionCommonNode(*it_b);
@@ -1490,12 +1490,12 @@ bool Preprocessor::DecomposeCommonNodes() {
 }
 
 bool Preprocessor::ProcessDecompositionCommonNode(
-    const boost::weak_ptr<Node>& common_node) {
+    const std::weak_ptr<Node>& common_node) {
   assert(const_gates_.empty());
   assert(null_gates_.empty());
   if (common_node.expired()) return false;  // The node has been deleted.
 
-  boost::shared_ptr<Node> node = common_node.lock();
+  NodePtr node = common_node.lock();
 
   if (node->parents().size() < 2) return false;
 

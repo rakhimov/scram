@@ -30,7 +30,7 @@ namespace test {
 /// for fault tree preprossing.
 class PreprocessorTest : public ::testing::Test {
  protected:
-  typedef boost::shared_ptr<IGate> IGatePtr;
+  typedef std::shared_ptr<IGate> IGatePtr;
 
   virtual void SetUp() {
   }

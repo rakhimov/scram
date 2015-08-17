@@ -21,11 +21,11 @@
 #ifndef SCRAM_SRC_FAULT_TREE_H_
 #define SCRAM_SRC_FAULT_TREE_H_
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
-#include <boost/shared_ptr.hpp>
 #include <boost/unordered_map.hpp>
 #include <boost/unordered_set.hpp>
 
@@ -41,12 +41,12 @@ class Parameter;
 /// Component is for logical grouping of events, gates, and other components.
 class Component : public Element, public Role {
  public:
-  typedef boost::shared_ptr<Gate> GatePtr;
-  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
-  typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
-  typedef boost::shared_ptr<Parameter> ParameterPtr;
-  typedef boost::shared_ptr<CcfGroup> CcfGroupPtr;
-  typedef boost::shared_ptr<Component> ComponentPtr;
+  typedef std::shared_ptr<Gate> GatePtr;
+  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
+  typedef std::shared_ptr<HouseEvent> HouseEventPtr;
+  typedef std::shared_ptr<Parameter> ParameterPtr;
+  typedef std::shared_ptr<CcfGroup> CcfGroupPtr;
+  typedef std::shared_ptr<Component> ComponentPtr;
 
   /// Constructs a component assuming
   /// that it exists within some fault tree.
@@ -188,7 +188,7 @@ class Component : public Element, public Role {
 /// detection of top events.
 class FaultTree : public Component {
  public:
-  typedef boost::shared_ptr<Gate> GatePtr;
+  typedef std::shared_ptr<Gate> GatePtr;
 
   /// The main constructor of the Fault Tree.
   /// Fault trees are assumed to be public and belong to the root model.
@@ -207,7 +207,7 @@ class FaultTree : public Component {
   void CollectTopEvents();
 
  private:
-  typedef boost::shared_ptr<Formula> FormulaPtr;
+  typedef std::shared_ptr<Formula> FormulaPtr;
 
   /// Recursively marks descendant gates as "non-top".
   /// These gates belong to this fault tree only.

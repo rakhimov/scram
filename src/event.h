@@ -22,11 +22,10 @@
 #define SCRAM_SRC_EVENT_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
-
-#include <boost/shared_ptr.hpp>
 
 #include "element.h"
 #include "error.h"
@@ -132,8 +131,8 @@ class Gate;
 /// Representation of a basic event in a fault tree.
 class BasicEvent : public PrimaryEvent {
  public:
-  typedef boost::shared_ptr<Expression> ExpressionPtr;
-  typedef boost::shared_ptr<Gate> GatePtr;
+  typedef std::shared_ptr<Expression> ExpressionPtr;
+  typedef std::shared_ptr<Gate> GatePtr;
 
   /// Constructs with id name.
   ///
@@ -272,7 +271,7 @@ class Formula;  // To describe a gate's formula.
 /// A representation of a gate in a fault tree.
 class Gate : public Event {
  public:
-  typedef boost::shared_ptr<Formula> FormulaPtr;
+  typedef std::shared_ptr<Formula> FormulaPtr;
 
   /// Constructs with an id and a gate.
   ///
@@ -320,11 +319,11 @@ class Gate : public Event {
 /// Formulas are not expected to be shared.
 class Formula {
  public:
-  typedef boost::shared_ptr<Event> EventPtr;
-  typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
-  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
-  typedef boost::shared_ptr<Gate> GatePtr;
-  typedef boost::shared_ptr<Formula> FormulaPtr;
+  typedef std::shared_ptr<Event> EventPtr;
+  typedef std::shared_ptr<HouseEvent> HouseEventPtr;
+  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
+  typedef std::shared_ptr<Gate> GatePtr;
+  typedef std::shared_ptr<Formula> FormulaPtr;
 
   /// Constructs a formula.
   ///

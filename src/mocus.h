@@ -28,16 +28,15 @@
 
 #include <functional>
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
-
-#include <boost/shared_ptr.hpp>
 
 #include "boolean_graph.h"
 
 namespace scram {
 
-typedef boost::shared_ptr<std::set<int> > SetPtr;
+typedef std::shared_ptr<std::set<int> > SetPtr;
 
 /// @class SetPtrComp
 /// Functor for set pointer comparison efficiency.
@@ -63,7 +62,7 @@ struct SetPtrComp
 /// All the child gates of this gate must be of opposite type.
 class SimpleGate {
  public:
-  typedef boost::shared_ptr<SimpleGate> SimpleGatePtr;
+  typedef std::shared_ptr<SimpleGate> SimpleGatePtr;
 
   /// @param[in] type The type of this gate. AND or OR types are expected.
   explicit SimpleGate(const Operator& type) : type_(type) {}
@@ -157,8 +156,8 @@ class Mocus {
   }
 
  private:
-  typedef boost::shared_ptr<SimpleGate> SimpleGatePtr;
-  typedef boost::shared_ptr<IGate> IGatePtr;
+  typedef std::shared_ptr<SimpleGate> SimpleGatePtr;
+  typedef std::shared_ptr<IGate> IGatePtr;
 
   /// Traverses the fault tree to convert gates into simple gates.
   ///

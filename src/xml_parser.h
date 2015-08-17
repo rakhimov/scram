@@ -21,9 +21,9 @@
 #ifndef SCRAM_SRC_XML_PARSER_H_
 #define SCRAM_SRC_XML_PARSER_H_
 
+#include <memory>
 #include <sstream>
 
-#include <boost/shared_ptr.hpp>
 #include <libxml++/libxml++.h>
 
 namespace scram {
@@ -58,7 +58,7 @@ class XMLParser {
   }
 
  private:
-  boost::shared_ptr<xmlpp::DomParser> parser_;  ///< File parser.
+  std::shared_ptr<xmlpp::DomParser> parser_;  ///< File parser.
 };
 
 }  // namespace scram

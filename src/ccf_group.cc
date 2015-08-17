@@ -137,7 +137,7 @@ void CcfGroup::ApplyModel() {
 void CcfGroup::ConstructCcfBasicEvents(
     int max_level,
     std::map<BasicEventPtr, std::set<std::string> >* new_events) {
-  typedef boost::shared_ptr<CcfEvent> CcfEventPtr;
+  typedef std::shared_ptr<CcfEvent> CcfEventPtr;
 
   assert(max_level > 1);
   assert(members_.size() > 1);

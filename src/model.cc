@@ -49,8 +49,8 @@ void Model::AddParameter(const ParameterPtr& parameter) {
   parameters_.insert(std::make_pair(parameter->id(), parameter));
 }
 
-boost::shared_ptr<Parameter> Model::GetParameter(const std::string& reference,
-                                                 const std::string& base_path) {
+std::shared_ptr<Parameter> Model::GetParameter(const std::string& reference,
+                                               const std::string& base_path) {
   assert(reference != "");
   std::vector<std::string> path;
   boost::split(path, reference, boost::is_any_of("."),
@@ -76,11 +76,11 @@ boost::shared_ptr<Parameter> Model::GetParameter(const std::string& reference,
     return parameters->find(target_name)->second;
 
   std::string msg = "Undefined parameter " + path.back() + " in reference " +
-                    reference + " with base path " + base_path;
+      reference + " with base path " + base_path;
   throw ValidationError(msg);
 }
 
-std::pair<boost::shared_ptr<Event>, std::string> Model::GetEvent(
+std::pair<std::shared_ptr<Event>, std::string> Model::GetEvent(
     const std::string& reference,
     const std::string& base_path) {
   assert(reference != "");
@@ -151,9 +151,8 @@ void Model::AddHouseEvent(const HouseEventPtr& house_event) {
   house_events_.insert(std::make_pair(name, house_event));
 }
 
-boost::shared_ptr<HouseEvent> Model::GetHouseEvent(
-    const std::string& reference,
-    const std::string& base_path) {
+std::shared_ptr<HouseEvent> Model::GetHouseEvent(const std::string& reference,
+                                                 const std::string& base_path) {
   assert(reference != "");
   std::vector<std::string> path;
   boost::split(path, reference, boost::is_any_of("."),
@@ -193,9 +192,8 @@ void Model::AddBasicEvent(const BasicEventPtr& basic_event) {
   basic_events_.insert(std::make_pair(name, basic_event));
 }
 
-boost::shared_ptr<BasicEvent> Model::GetBasicEvent(
-    const std::string& reference,
-    const std::string& base_path) {
+std::shared_ptr<BasicEvent> Model::GetBasicEvent(const std::string& reference,
+                                                 const std::string& base_path) {
   assert(reference != "");
   std::vector<std::string> path;
   boost::split(path, reference, boost::is_any_of("."),
@@ -235,8 +233,8 @@ void Model::AddGate(const GatePtr& gate) {
   gates_.insert(std::make_pair(name, gate));
 }
 
-boost::shared_ptr<Gate> Model::GetGate(const std::string& reference,
-                                       const std::string& base_path) {
+std::shared_ptr<Gate> Model::GetGate(const std::string& reference,
+                                     const std::string& base_path) {
   assert(reference != "");
   std::vector<std::string> path;
   boost::split(path, reference, boost::is_any_of("."),
@@ -274,7 +272,7 @@ void Model::AddCcfGroup(const CcfGroupPtr& ccf_group) {
   ccf_groups_.insert(std::make_pair(name, ccf_group));
 }
 
-boost::shared_ptr<Component> Model::GetContainer(const std::string& base_path) {
+std::shared_ptr<Component> Model::GetContainer(const std::string& base_path) {
   assert(base_path != "");
   std::vector<std::string> path;
   boost::split(path, base_path, boost::is_any_of("."),
@@ -297,7 +295,7 @@ boost::shared_ptr<Component> Model::GetContainer(const std::string& base_path) {
   return container;
 }
 
-boost::shared_ptr<Component> Model::GetLocalContainer(
+std::shared_ptr<Component> Model::GetLocalContainer(
     const std::string& reference,
     const ComponentPtr& scope) {
   assert(reference != "");
@@ -321,7 +319,7 @@ boost::shared_ptr<Component> Model::GetLocalContainer(
   return container;
 }
 
-boost::shared_ptr<Component> Model::GetGlobalContainer(
+std::shared_ptr<Component> Model::GetGlobalContainer(
     const std::string& reference) {
   assert(reference != "");
   std::vector<std::string> path;

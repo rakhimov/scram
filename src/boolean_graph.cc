@@ -26,8 +26,6 @@
 
 #include <utility>
 
-#include <boost/pointer_cast.hpp>
-
 #include "event.h"
 #include "logger.h"
 
@@ -62,7 +60,7 @@ IGate::IGate(const Operator& type)
       module_(false),
       num_failed_args_(0) {}
 
-boost::shared_ptr<IGate> IGate::Clone() {
+std::shared_ptr<IGate> IGate::Clone() {
   IGatePtr clone(new IGate(type_));  // The same type.
   clone->vote_number_ = vote_number_;  // Copy vote number in case it is K/N.
   // Getting arguments copied.
@@ -367,7 +365,7 @@ void BooleanGraph::Print() {
   std::cerr << std::endl << this << std::endl;
 }
 
-boost::shared_ptr<IGate> BooleanGraph::ProcessFormula(
+std::shared_ptr<IGate> BooleanGraph::ProcessFormula(
     const FormulaPtr& formula,
     bool ccf,
     boost::unordered_map<std::string, NodePtr>* id_to_node) {
@@ -418,10 +416,9 @@ void BooleanGraph::ProcessBasicEvents(
     if (id_to_node->count(basic_event->id())) {  // Node already exists.
       NodePtr node = id_to_node->find(basic_event->id())->second;
       if (ccf && basic_event->HasCcf()) {  // Replace with a CCF gate.
-        parent->AddArg(node->index(), boost::static_pointer_cast<IGate>(node));
+        parent->AddArg(node->index(), std::static_pointer_cast<IGate>(node));
       } else {
-        parent->AddArg(node->index(),
-                       boost::static_pointer_cast<Variable>(node));
+        parent->AddArg(node->index(), std::static_pointer_cast<Variable>(node));
       }
     } else {  // Create a new node.
       if (ccf && basic_event->HasCcf()) {  // Create a CCF gate.
@@ -450,7 +447,7 @@ void BooleanGraph::ProcessHouseEvents(
     HouseEventPtr house = *it_h;
     if (id_to_node->count(house->id())) {
       NodePtr node = id_to_node->find(house->id())->second;
-      parent->AddArg(node->index(), boost::static_pointer_cast<Constant>(node));
+      parent->AddArg(node->index(), std::static_pointer_cast<Constant>(node));
     } else {
       ConstantPtr constant(new Constant(house->state()));
       parent->AddArg(constant->index(), constant);
@@ -470,7 +467,7 @@ void BooleanGraph::ProcessGates(
     GatePtr gate = *it_g;
     if (id_to_node->count(gate->id())) {
       NodePtr node = id_to_node->find(gate->id())->second;
-      parent->AddArg(node->index(), boost::static_pointer_cast<IGate>(node));
+      parent->AddArg(node->index(), std::static_pointer_cast<IGate>(node));
     } else {
       IGatePtr new_gate = BooleanGraph::ProcessFormula(gate->formula(), ccf,
                                                        id_to_node);
@@ -550,7 +547,7 @@ void BooleanGraph::ClearOptiValues(const IGatePtr& gate) {
 }
 
 std::ostream& operator<<(std::ostream& os,
-                         const boost::shared_ptr<Constant>& constant) {
+                         const std::shared_ptr<Constant>& constant) {
   if (constant->Visited()) return os;
   constant->Visit(1);
   std::string state = constant->state() ? "true" : "false";
@@ -559,7 +556,7 @@ std::ostream& operator<<(std::ostream& os,
 }
 
 std::ostream& operator<<(std::ostream& os,
-                         const boost::shared_ptr<Variable>& variable) {
+                         const std::shared_ptr<Variable>& variable) {
   if (variable->Visited()) return os;
   variable->Visit(1);
   os << "p(B" << variable->index() << ") = " << 1 << std::endl;
@@ -581,7 +578,7 @@ struct FormulaSig {
 /// @param[in] gate The gate with the formula to be printed.
 ///
 /// @returns The beginning, operator, and end strings for the formula.
-const FormulaSig GetFormulaSig(const boost::shared_ptr<const IGate>& gate) {
+const FormulaSig GetFormulaSig(const std::shared_ptr<const IGate>& gate) {
   FormulaSig sig = {"(", "", ")"};  // Defaults for most gate types.
 
   switch (gate->type()) {
@@ -619,7 +616,7 @@ const FormulaSig GetFormulaSig(const boost::shared_ptr<const IGate>& gate) {
 /// @param[in] gate The gate which name must be created.
 ///
 /// @returns The name of the gate with extra information about its state.
-const std::string GetName(const boost::shared_ptr<const IGate>& gate) {
+const std::string GetName(const std::shared_ptr<const IGate>& gate) {
   std::string name = "G";
   if (gate->state() == kNormalState) {
     if (gate->IsModule()) name += "M";
@@ -633,7 +630,7 @@ const std::string GetName(const boost::shared_ptr<const IGate>& gate) {
 }  // namespace
 
 std::ostream& operator<<(std::ostream& os,
-                         const boost::shared_ptr<IGate>& gate) {
+                         const std::shared_ptr<IGate>& gate) {
   if (gate->Visited()) return os;
   gate->Visit(1);
   std::string name = GetName(gate);
@@ -646,7 +643,7 @@ std::ostream& operator<<(std::ostream& os,
   const FormulaSig sig = GetFormulaSig(gate);  // Formatting for the formula.
   int num_args = gate->args().size();  // The number of arguments to print.
 
-  typedef boost::shared_ptr<IGate> IGatePtr;
+  typedef std::shared_ptr<IGate> IGatePtr;
   boost::unordered_map<int, IGatePtr>::const_iterator it_gate;
   for (it_gate = gate->gate_args().begin(); it_gate != gate->gate_args().end();
        ++it_gate) {
@@ -658,7 +655,7 @@ std::ostream& operator<<(std::ostream& os,
     os << it_gate->second;
   }
 
-  typedef boost::shared_ptr<Variable> VariablePtr;
+  typedef std::shared_ptr<Variable> VariablePtr;
   boost::unordered_map<int, VariablePtr>::const_iterator it_basic;
   for (it_basic = gate->variable_args().begin();
        it_basic != gate->variable_args().end(); ++it_basic) {
@@ -671,7 +668,7 @@ std::ostream& operator<<(std::ostream& os,
     os << it_basic->second;
   }
 
-  typedef boost::shared_ptr<Constant> ConstantPtr;
+  typedef std::shared_ptr<Constant> ConstantPtr;
   boost::unordered_map<int, ConstantPtr>::const_iterator it_const;
   for (it_const = gate->constant_args().begin();
        it_const != gate->constant_args().end(); ++it_const) {
