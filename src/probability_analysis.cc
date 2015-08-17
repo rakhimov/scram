@@ -64,7 +64,7 @@ ProbabilityAnalysis::ProbabilityAnalysis(const std::string& approx,
 }
 
 void ProbabilityAnalysis::UpdateDatabase(
-    const boost::unordered_map<std::string, BasicEventPtr>& basic_events) {
+    const std::unordered_map<std::string, BasicEventPtr>& basic_events) {
   basic_events_ = basic_events;
   ProbabilityAnalysis::AssignIndices();
 }
@@ -149,7 +149,7 @@ void ProbabilityAnalysis::AssignIndices() {
   iprobs_.clear();
   // Indexation of events.
   int j = 1;
-  boost::unordered_map<std::string, BasicEventPtr>::iterator itp;
+  std::unordered_map<std::string, BasicEventPtr>::iterator itp;
   // Dummy basic event at index 0.
   int_to_basic_.push_back(BasicEventPtr(new BasicEvent("dummy")));
   iprobs_.push_back(0);

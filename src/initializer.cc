@@ -21,11 +21,11 @@
 #include "initializer.h"
 
 #include <fstream>
+#include <unordered_map>
 
 #include <boost/algorithm/string.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
-#include <boost/unordered_map.hpp>
 
 #include "ccf_group.h"
 #include "cycle.h"
@@ -967,7 +967,7 @@ void Initializer::ValidateInitialization() {
 
 void Initializer::CheckFirstLayer() {
   // Check if all gates have no cycles.
-  boost::unordered_map<std::string, GatePtr>::const_iterator it;
+  std::unordered_map<std::string, GatePtr>::const_iterator it;
   for (it = model_->gates().begin(); it != model_->gates().end(); ++it) {
     std::vector<std::string> cycle;
     if (cycle::DetectCycle<Gate, Formula>(&*it->second, &cycle)) {
@@ -981,12 +981,12 @@ void Initializer::CheckFirstLayer() {
   // Check if all primary events have expressions for probability analysis.
   if (settings_.probability_analysis_) {
     std::string msg = "";
-    boost::unordered_map<std::string, BasicEventPtr>::const_iterator it_b;
+    std::unordered_map<std::string, BasicEventPtr>::const_iterator it_b;
     for (it_b = model_->basic_events().begin();
          it_b != model_->basic_events().end(); ++it_b) {
       if (!it_b->second->has_expression()) msg += it_b->second->name() + "\n";
     }
-    boost::unordered_map<std::string, HouseEventPtr>::const_iterator it_h;
+    std::unordered_map<std::string, HouseEventPtr>::const_iterator it_h;
     for (it_h = model_->house_events().begin();
          it_h != model_->house_events().end(); ++it_h) {
       if (!it_h->second->has_expression()) msg += it_h->second->name() + "\n";
@@ -1006,7 +1006,7 @@ void Initializer::CheckFirstLayer() {
 
 void Initializer::CheckSecondLayer() {
   if (!model_->ccf_groups().empty()) {
-    boost::unordered_map<std::string, CcfGroupPtr>::const_iterator it;
+    std::unordered_map<std::string, CcfGroupPtr>::const_iterator it;
     for (it = model_->ccf_groups().begin(); it != model_->ccf_groups().end();
          ++it) {
       it->second->Validate();
@@ -1017,7 +1017,7 @@ void Initializer::CheckSecondLayer() {
 void Initializer::ValidateExpressions() {
   // Check for cycles in parameters. This must be done before expressions.
   if (!model_->parameters().empty()) {
-    boost::unordered_map<std::string, ParameterPtr>::const_iterator it;
+    std::unordered_map<std::string, ParameterPtr>::const_iterator it;
     for (it = model_->parameters().begin(); it != model_->parameters().end();
          ++it) {
       std::vector<std::string> cycle;
@@ -1047,7 +1047,7 @@ void Initializer::ValidateExpressions() {
     std::stringstream msg;
     msg << "";
     if (!model_->ccf_groups().empty()) {
-      boost::unordered_map<std::string, CcfGroupPtr>::const_iterator it;
+      std::unordered_map<std::string, CcfGroupPtr>::const_iterator it;
       for (it = model_->ccf_groups().begin(); it != model_->ccf_groups().end();
            ++it) {
         try {
@@ -1057,7 +1057,7 @@ void Initializer::ValidateExpressions() {
         }
       }
     }
-    boost::unordered_map<std::string, BasicEventPtr>::const_iterator it;
+    std::unordered_map<std::string, BasicEventPtr>::const_iterator it;
     for (it = model_->basic_events().begin();
          it != model_->basic_events().end(); ++it) {
       try {
@@ -1076,7 +1076,7 @@ void Initializer::ValidateExpressions() {
 void Initializer::SetupForAnalysis() {
   // Collecting top events of fault trees.
   if (!model_->fault_trees().empty()) {
-    boost::unordered_map<std::string, FaultTreePtr>::const_iterator it;
+    std::unordered_map<std::string, FaultTreePtr>::const_iterator it;
     for (it = model_->fault_trees().begin(); it != model_->fault_trees().end();
          ++it) {
       it->second->CollectTopEvents();
@@ -1085,7 +1085,7 @@ void Initializer::SetupForAnalysis() {
 
   // CCF groups must apply models to basic event members.
   if (!model_->ccf_groups().empty()) {
-    boost::unordered_map<std::string, CcfGroupPtr>::const_iterator it;
+    std::unordered_map<std::string, CcfGroupPtr>::const_iterator it;
     for (it = model_->ccf_groups().begin(); it != model_->ccf_groups().end();
          ++it) {
       it->second->ApplyModel();

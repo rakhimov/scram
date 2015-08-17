@@ -65,7 +65,7 @@ std::shared_ptr<Parameter> Model::GetParameter(const std::string& reference,
         return container->parameters().find(target_name)->second;
     }
   }
-  const boost::unordered_map<std::string, ParameterPtr>* parameters =
+  const std::unordered_map<std::string, ParameterPtr>* parameters =
       &parameters_;
   if (path.size() > 1) {
     ComponentPtr container = Model::GetGlobalContainer(reference);
@@ -109,10 +109,10 @@ std::pair<std::shared_ptr<Event>, std::string> Model::GetEvent(
       }
     }
   }
-  const boost::unordered_map<std::string, GatePtr>* gates = &gates_;
-  const boost::unordered_map<std::string, HouseEventPtr>* house_events =
+  const std::unordered_map<std::string, GatePtr>* gates = &gates_;
+  const std::unordered_map<std::string, HouseEventPtr>* house_events =
       &house_events_;
-  const boost::unordered_map<std::string, BasicEventPtr>* basic_events =
+  const std::unordered_map<std::string, BasicEventPtr>* basic_events =
       &basic_events_;
   if (path.size() > 1) {
     ComponentPtr container = Model::GetGlobalContainer(reference);
@@ -167,7 +167,7 @@ std::shared_ptr<HouseEvent> Model::GetHouseEvent(const std::string& reference,
         return container->house_events().find(target_name)->second;
     }
   }
-  const boost::unordered_map<std::string, HouseEventPtr>* house_events =
+  const std::unordered_map<std::string, HouseEventPtr>* house_events =
       &house_events_;
   if (path.size() > 1) {
     ComponentPtr container = Model::GetGlobalContainer(reference);
@@ -208,7 +208,7 @@ std::shared_ptr<BasicEvent> Model::GetBasicEvent(const std::string& reference,
         return container->basic_events().find(target_name)->second;
     }
   }
-  const boost::unordered_map<std::string, BasicEventPtr>* basic_events =
+  const std::unordered_map<std::string, BasicEventPtr>* basic_events =
       &basic_events_;
   if (path.size() > 1) {
     ComponentPtr container = Model::GetGlobalContainer(reference);
@@ -249,7 +249,7 @@ std::shared_ptr<Gate> Model::GetGate(const std::string& reference,
         return container->gates().find(target_name)->second;
     }
   }
-  const boost::unordered_map<std::string, GatePtr>* gates = &gates_;
+  const std::unordered_map<std::string, GatePtr>* gates = &gates_;
   if (path.size() > 1) {
     ComponentPtr container = Model::GetGlobalContainer(reference);
     gates = &container->gates();
@@ -282,7 +282,7 @@ std::shared_ptr<Component> Model::GetContainer(const std::string& base_path) {
   boost::to_lower(name);
   if (!fault_trees_.count(name)) throw LogicError("Missing fault tree " + *it);
   ComponentPtr container = fault_trees_.find(name)->second;
-  const boost::unordered_map<std::string, ComponentPtr>* candidates;
+  const std::unordered_map<std::string, ComponentPtr>* candidates;
   for (++it; it != path.end(); ++it) {
     name = *it;
     boost::to_lower(name);
@@ -304,7 +304,7 @@ std::shared_ptr<Component> Model::GetLocalContainer(
                boost::token_compress_on);
   ComponentPtr container = scope;
   if (path.size() > 1) {
-    const boost::unordered_map<std::string, ComponentPtr>* candidates;
+    const std::unordered_map<std::string, ComponentPtr>* candidates;
     for (int i = 0; i < path.size() - 1; ++i) {
       std::string name = path[i];
       boost::to_lower(name);
@@ -333,7 +333,7 @@ std::shared_ptr<Component> Model::GetGlobalContainer(
                           " in reference " + reference);
   }
   ComponentPtr container = fault_trees_.find(name)->second;
-  const boost::unordered_map<std::string, ComponentPtr>* candidates;
+  const std::unordered_map<std::string, ComponentPtr>* candidates;
   for (int i = 1; i < path.size() - 1; ++i) {
     std::string name = path[i];
     boost::to_lower(name);

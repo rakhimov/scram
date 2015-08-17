@@ -104,11 +104,11 @@ void Component::AddComponent(const ComponentPtr& component) {
 }
 
 void Component::GatherGates(std::unordered_set<GatePtr>* gates) {
-  boost::unordered_map<std::string, GatePtr>::iterator it;
+  std::unordered_map<std::string, GatePtr>::iterator it;
   for (it = gates_.begin(); it != gates_.end(); ++it) {
     gates->insert(it->second);
   }
-  boost::unordered_map<std::string, ComponentPtr>::iterator it_comp;
+  std::unordered_map<std::string, ComponentPtr>::iterator it_comp;
   for (it_comp = components_.begin(); it_comp != components_.end(); ++it_comp) {
     it_comp->second->GatherGates(gates);
   }

@@ -27,6 +27,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -717,7 +718,7 @@ class Preprocessor {
       const NodePtr& node,
       bool state,
       bool destination,
-      boost::unordered_map<int, IGatePtr>* clones);
+      std::unordered_map<int, IGatePtr>* clones);
 
   /// Detects and replaces multiple definitions of gates.
   /// Gates with the same logic and inputs
@@ -741,7 +742,7 @@ class Preprocessor {
   /// @warning Gate marks must be clear.
   void DetectMultipleDefinitions(
       const IGatePtr& gate,
-      boost::unordered_map<IGatePtr, std::vector<IGateWeakPtr> >* multi_def,
+      std::unordered_map<IGatePtr, std::vector<IGateWeakPtr> >* multi_def,
       std::vector<std::vector<IGatePtr> >* gates);
 
   /// Detects and manipulates AND and OR gate distributivity.

@@ -65,6 +65,7 @@
 #include "mocus.h"
 
 #include <algorithm>
+#include <unordered_map>
 #include <utility>
 
 #include "logger.h"
@@ -277,7 +278,7 @@ void Mocus::CreateSimpleTree(const IGatePtr& gate,
 
   assert(gate->constant_args().empty());
   assert(gate->args().size() > 1);
-  boost::unordered_map<int, IGatePtr>::const_iterator it;
+  std::unordered_map<int, IGatePtr>::const_iterator it;
   for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
     assert(it->first > 0);
     IGatePtr child_gate = it->second;
@@ -289,7 +290,7 @@ void Mocus::CreateSimpleTree(const IGatePtr& gate,
     }
   }
   typedef std::shared_ptr<Variable> VariablePtr;
-  boost::unordered_map<int, VariablePtr>::const_iterator it_b;
+  std::unordered_map<int, VariablePtr>::const_iterator it_b;
   for (it_b = gate->variable_args().begin();
        it_b != gate->variable_args().end(); ++it_b) {
     simple_gate->InitiateWithBasic(it_b->first);

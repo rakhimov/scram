@@ -69,15 +69,15 @@ std::shared_ptr<IGate> IGate::Clone() {
   clone->variable_args_ = variable_args_;
   clone->constant_args_ = constant_args_;
   // Introducing the new parent to the args.
-  boost::unordered_map<int, IGatePtr>::const_iterator it_g;
+  std::unordered_map<int, IGatePtr>::const_iterator it_g;
   for (it_g = gate_args_.begin(); it_g != gate_args_.end(); ++it_g) {
     it_g->second->parents_.insert(std::make_pair(clone->index(), clone));
   }
-  boost::unordered_map<int, VariablePtr>::const_iterator it_b;
+  std::unordered_map<int, VariablePtr>::const_iterator it_b;
   for (it_b = variable_args_.begin(); it_b != variable_args_.end(); ++it_b) {
     it_b->second->parents_.insert(std::make_pair(clone->index(), clone));
   }
-  boost::unordered_map<int, ConstantPtr>::const_iterator it_c;
+  std::unordered_map<int, ConstantPtr>::const_iterator it_c;
   for (it_c = constant_args_.begin(); it_c != constant_args_.end(); ++it_c) {
     it_c->second->parents_.insert(std::make_pair(clone->index(), clone));
   }
@@ -196,19 +196,19 @@ void IGate::InvertArg(int existing_arg) {
 void IGate::JoinGate(const IGatePtr& arg_gate) {
   assert(args_.count(arg_gate->index()));  // Positive argument only.
 
-  boost::unordered_map<int, IGatePtr>::const_iterator it_g;
+  std::unordered_map<int, IGatePtr>::const_iterator it_g;
   for (it_g = arg_gate->gate_args_.begin();
        it_g != arg_gate->gate_args_.end(); ++it_g) {
     IGate::AddArg(it_g->first, it_g->second);
     if (state_ != kNormalState) return;
   }
-  boost::unordered_map<int, VariablePtr>::const_iterator it_b;
+  std::unordered_map<int, VariablePtr>::const_iterator it_b;
   for (it_b = arg_gate->variable_args_.begin();
        it_b != arg_gate->variable_args_.end(); ++it_b) {
     IGate::AddArg(it_b->first, it_b->second);
     if (state_ != kNormalState) return;
   }
-  boost::unordered_map<int, ConstantPtr>::const_iterator it_c;
+  std::unordered_map<int, ConstantPtr>::const_iterator it_c;
   for (it_c = arg_gate->constant_args_.begin();
        it_c != arg_gate->constant_args_.end(); ++it_c) {
     IGate::AddArg(it_c->first, it_c->second);
@@ -356,7 +356,7 @@ BooleanGraph::BooleanGraph(const GatePtr& root, bool ccf)
       normal_(true) {
   Node::ResetIndex();
   Variable::ResetIndex();
-  boost::unordered_map<std::string, NodePtr> id_to_node;
+  std::unordered_map<std::string, NodePtr> id_to_node;
   root_ = BooleanGraph::ProcessFormula(root->formula(), ccf, &id_to_node);
 }
 
@@ -368,7 +368,7 @@ void BooleanGraph::Print() {
 std::shared_ptr<IGate> BooleanGraph::ProcessFormula(
     const FormulaPtr& formula,
     bool ccf,
-    boost::unordered_map<std::string, NodePtr>* id_to_node) {
+    std::unordered_map<std::string, NodePtr>* id_to_node) {
   Operator type = kStringToType_.find(formula->type())->second;
   IGatePtr parent(new IGate(type));
 
@@ -409,7 +409,7 @@ void BooleanGraph::ProcessBasicEvents(
       const IGatePtr& parent,
       const std::vector<BasicEventPtr>& basic_events,
       bool ccf,
-      boost::unordered_map<std::string, NodePtr>* id_to_node) {
+      std::unordered_map<std::string, NodePtr>* id_to_node) {
   std::vector<BasicEventPtr>::const_iterator it_b;
   for (it_b = basic_events.begin(); it_b != basic_events.end(); ++it_b) {
     BasicEventPtr basic_event = *it_b;
@@ -441,7 +441,7 @@ void BooleanGraph::ProcessBasicEvents(
 void BooleanGraph::ProcessHouseEvents(
       const IGatePtr& parent,
       const std::vector<HouseEventPtr>& house_events,
-      boost::unordered_map<std::string, NodePtr>* id_to_node) {
+      std::unordered_map<std::string, NodePtr>* id_to_node) {
   std::vector<HouseEventPtr>::const_iterator it_h;
   for (it_h = house_events.begin(); it_h != house_events.end(); ++it_h) {
     HouseEventPtr house = *it_h;
@@ -461,7 +461,7 @@ void BooleanGraph::ProcessGates(
       const IGatePtr& parent,
       const std::vector<GatePtr>& gates,
       bool ccf,
-      boost::unordered_map<std::string, NodePtr>* id_to_node) {
+      std::unordered_map<std::string, NodePtr>* id_to_node) {
   std::vector<GatePtr>::const_iterator it_g;
   for (it_g = gates.begin(); it_g != gates.end(); ++it_g) {
     GatePtr gate = *it_g;
@@ -484,7 +484,7 @@ void BooleanGraph::ClearGateMarks() {
 void BooleanGraph::ClearGateMarks(const IGatePtr& gate) {
   if (!gate->mark()) return;
   gate->mark(false);
-  boost::unordered_map<int, IGatePtr>::const_iterator it;
+  std::unordered_map<int, IGatePtr>::const_iterator it;
   for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
     BooleanGraph::ClearGateMarks(it->second);
   }
@@ -504,16 +504,16 @@ void BooleanGraph::ClearNodeVisits(const IGatePtr& gate) {
 
   if (gate->Visited()) gate->ClearVisits();
 
-  boost::unordered_map<int, IGatePtr>::const_iterator it;
+  std::unordered_map<int, IGatePtr>::const_iterator it;
   for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
     BooleanGraph::ClearNodeVisits(it->second);
   }
-  boost::unordered_map<int, VariablePtr>::const_iterator it_b;
+  std::unordered_map<int, VariablePtr>::const_iterator it_b;
   for (it_b = gate->variable_args().begin();
        it_b != gate->variable_args().end(); ++it_b) {
     if (it_b->second->Visited()) it_b->second->ClearVisits();
   }
-  boost::unordered_map<int, ConstantPtr>::const_iterator it_c;
+  std::unordered_map<int, ConstantPtr>::const_iterator it_c;
   for (it_c = gate->constant_args().begin();
        it_c != gate->constant_args().end(); ++it_c) {
     if (it_c->second->Visited()) it_c->second->ClearVisits();
@@ -534,11 +534,11 @@ void BooleanGraph::ClearOptiValues(const IGatePtr& gate) {
 
   gate->opti_value(0);
   gate->ResetArgFailure();
-  boost::unordered_map<int, IGatePtr>::const_iterator it;
+  std::unordered_map<int, IGatePtr>::const_iterator it;
   for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
     BooleanGraph::ClearOptiValues(it->second);
   }
-  boost::unordered_map<int, VariablePtr>::const_iterator it_b;
+  std::unordered_map<int, VariablePtr>::const_iterator it_b;
   for (it_b = gate->variable_args().begin();
        it_b != gate->variable_args().end(); ++it_b) {
     it_b->second->opti_value(0);
@@ -644,7 +644,7 @@ std::ostream& operator<<(std::ostream& os,
   int num_args = gate->args().size();  // The number of arguments to print.
 
   typedef std::shared_ptr<IGate> IGatePtr;
-  boost::unordered_map<int, IGatePtr>::const_iterator it_gate;
+  std::unordered_map<int, IGatePtr>::const_iterator it_gate;
   for (it_gate = gate->gate_args().begin(); it_gate != gate->gate_args().end();
        ++it_gate) {
     if (it_gate->first < 0) formula += "~";  // Negation.
@@ -656,7 +656,7 @@ std::ostream& operator<<(std::ostream& os,
   }
 
   typedef std::shared_ptr<Variable> VariablePtr;
-  boost::unordered_map<int, VariablePtr>::const_iterator it_basic;
+  std::unordered_map<int, VariablePtr>::const_iterator it_basic;
   for (it_basic = gate->variable_args().begin();
        it_basic != gate->variable_args().end(); ++it_basic) {
     if (it_basic->first < 0) formula += "~";  // Negation.
@@ -669,7 +669,7 @@ std::ostream& operator<<(std::ostream& os,
   }
 
   typedef std::shared_ptr<Constant> ConstantPtr;
-  boost::unordered_map<int, ConstantPtr>::const_iterator it_const;
+  std::unordered_map<int, ConstantPtr>::const_iterator it_const;
   for (it_const = gate->constant_args().begin();
        it_const != gate->constant_args().end(); ++it_const) {
     if (it_const->first < 0) formula += "~";  // Negation.

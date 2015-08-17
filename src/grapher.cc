@@ -54,14 +54,14 @@ void Grapher::GraphFaultTree(const GatePtr& top_event, bool prob_requested,
   // Keep track of number of repetitions of nodes.
   // These repetitions are needed so that
   // the graph links to separate nodes with the same display name.
-  boost::unordered_map<EventPtr, int> node_repeat;
+  std::unordered_map<EventPtr, int> node_repeat;
 
   // Populate intermediate and primary events of the top.
   Grapher::GraphFormula(fta->top_event()->id() + "_R0",
                         fta->top_event()->formula(),
                         &formulas, &node_repeat, out);
   // Do the same for all intermediate events.
-  boost::unordered_map<std::string, GatePtr>::const_iterator it_inter;
+  std::unordered_map<std::string, GatePtr>::const_iterator it_inter;
   for (it_inter = fta->inter_events().begin();
        it_inter != fta->inter_events().end(); ++it_inter) {
     std::string name = it_inter->second->id() + "_R0";
@@ -86,7 +86,7 @@ void Grapher::GraphFormula(
     const std::string& formula_name,
     const FormulaPtr& formula,
     std::vector<std::pair<std::string, FormulaPtr> >* formulas,
-    boost::unordered_map<EventPtr, int>* node_repeat,
+    std::unordered_map<EventPtr, int>* node_repeat,
     std::ostream& out) {
   // Populate intermediate and primary events of the input gate.
   const std::map<std::string, EventPtr>* events = &formula->event_args();
@@ -144,10 +144,10 @@ void Grapher::FormatTopEvent(const GatePtr& top_event, std::ostream& out) {
 }
 
 void Grapher::FormatIntermediateEvents(
-    const boost::unordered_map<std::string, GatePtr>& inter_events,
-    const boost::unordered_map<EventPtr, int>& node_repeat,
+    const std::unordered_map<std::string, GatePtr>& inter_events,
+    const std::unordered_map<EventPtr, int>& node_repeat,
     std::ostream& out) {
-  boost::unordered_map<std::string, GatePtr>::const_iterator it;
+  std::unordered_map<std::string, GatePtr>::const_iterator it;
   for (it = inter_events.begin(); it != inter_events.end(); ++it) {
     std::string gate = it->second->formula()->type();
 
@@ -182,11 +182,11 @@ void Grapher::FormatIntermediateEvents(
 }
 
 void Grapher::FormatBasicEvents(
-    const boost::unordered_map<std::string, BasicEventPtr>& basic_events,
-    const boost::unordered_map<EventPtr, int>& node_repeat,
+    const std::unordered_map<std::string, BasicEventPtr>& basic_events,
+    const std::unordered_map<EventPtr, int>& node_repeat,
     bool prob_requested,
     std::ostream& out) {
-  boost::unordered_map<std::string, BasicEventPtr>::const_iterator it;
+  std::unordered_map<std::string, BasicEventPtr>::const_iterator it;
   for (it = basic_events.begin(); it != basic_events.end(); ++it) {
     std::string prob_msg = "";
     if (prob_requested) {
@@ -206,11 +206,11 @@ void Grapher::FormatBasicEvents(
 }
 
 void Grapher::FormatHouseEvents(
-    const boost::unordered_map<std::string, HouseEventPtr>& house_events,
-    const boost::unordered_map<EventPtr, int>& node_repeat,
+    const std::unordered_map<std::string, HouseEventPtr>& house_events,
+    const std::unordered_map<EventPtr, int>& node_repeat,
     bool prob_requested,
     std::ostream& out) {
-  boost::unordered_map<std::string, HouseEventPtr>::const_iterator it;
+  std::unordered_map<std::string, HouseEventPtr>::const_iterator it;
   for (it = house_events.begin(); it != house_events.end(); ++it) {
     std::string prob_msg = "";
     if (prob_requested) {

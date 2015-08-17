@@ -25,10 +25,9 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
-
-#include <boost/unordered_map.hpp>
 
 #include "event.h"
 
@@ -72,7 +71,7 @@ class Grapher {
   void GraphFormula(const std::string& formula_name,
                     const FormulaPtr& formula,
                     std::vector<std::pair<std::string, FormulaPtr> >* formulas,
-                    boost::unordered_map<EventPtr, int>* node_repeat,
+                    std::unordered_map<EventPtr, int>* node_repeat,
                     std::ostream& out);
 
   /// Provides formatting information for top gate.
@@ -87,8 +86,8 @@ class Grapher {
   /// @param[in] node_repeat The number of times a node is repeated.
   /// @param[out] out The output stream.
   void FormatIntermediateEvents(
-      const boost::unordered_map<std::string, GatePtr>& inter_events,
-      const boost::unordered_map<EventPtr, int>& node_repeat,
+      const std::unordered_map<std::string, GatePtr>& inter_events,
+      const std::unordered_map<EventPtr, int>& node_repeat,
       std::ostream& out);
 
   /// Provides formatting information for basic events.
@@ -98,8 +97,8 @@ class Grapher {
   /// @param[in] prob_requested Indication to include probability numbers.
   /// @param[out] out The output stream.
   void FormatBasicEvents(
-      const boost::unordered_map<std::string, BasicEventPtr>& basic_events,
-      const boost::unordered_map<EventPtr, int>& node_repeat,
+      const std::unordered_map<std::string, BasicEventPtr>& basic_events,
+      const std::unordered_map<EventPtr, int>& node_repeat,
       bool prob_requested,
       std::ostream& out);
 
@@ -110,8 +109,8 @@ class Grapher {
   /// @param[in] prob_requested Indication to include probability numbers.
   /// @param[out] out The output stream.
   void FormatHouseEvents(
-      const boost::unordered_map<std::string, HouseEventPtr>& house_events,
-      const boost::unordered_map<EventPtr, int>& node_repeat,
+      const std::unordered_map<std::string, HouseEventPtr>& house_events,
+      const std::unordered_map<EventPtr, int>& node_repeat,
       bool prob_requested,
       std::ostream& out);
 

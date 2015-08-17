@@ -25,9 +25,8 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
-
-#include <boost/unordered_map.hpp>
 
 #include "event.h"
 
@@ -102,8 +101,7 @@ class FaultTreeAnalysis {
   ///
   /// @warning If the fault tree has changed,
   ///          this is only a snapshot of the past
-  inline const boost::unordered_map<std::string, GatePtr>&
-      inter_events() const {
+  inline const std::unordered_map<std::string, GatePtr>& inter_events() const {
     return inter_events_;
   }
 
@@ -111,7 +109,7 @@ class FaultTreeAnalysis {
   ///
   /// @warning If the fault tree has changed,
   ///          this is only a snapshot of the past
-  inline const boost::unordered_map<std::string, BasicEventPtr>&
+  inline const std::unordered_map<std::string, BasicEventPtr>&
       basic_events() const {
     return basic_events_;
   }
@@ -120,7 +118,7 @@ class FaultTreeAnalysis {
   ///
   /// @warning If the fault tree has changed,
   ///          this is only a snapshot of the past
-  inline const boost::unordered_map<std::string, BasicEventPtr>&
+  inline const std::unordered_map<std::string, BasicEventPtr>&
       ccf_events() const {
     return ccf_events_;
   }
@@ -129,7 +127,7 @@ class FaultTreeAnalysis {
   ///
   /// @warning If the fault tree has changed,
   ///          this is only a snapshot of the past
-  inline const boost::unordered_map<std::string, HouseEventPtr>&
+  inline const std::unordered_map<std::string, HouseEventPtr>&
       house_events() const {
     return house_events_;
   }
@@ -142,7 +140,7 @@ class FaultTreeAnalysis {
   }
 
   /// @returns Collection of basic events that are in the minimal cut sets.
-  inline const boost::unordered_map<std::string, BasicEventPtr>&
+  inline const std::unordered_map<std::string, BasicEventPtr>&
       mcs_basic_events() const {
     return mcs_basic_events_;
   }
@@ -202,23 +200,23 @@ class FaultTreeAnalysis {
   GatePtr top_event_;  ///< Top event of this fault tree.
 
   /// Container for intermediate events.
-  boost::unordered_map<std::string, GatePtr> inter_events_;
+  std::unordered_map<std::string, GatePtr> inter_events_;
 
   /// Container for basic events.
-  boost::unordered_map<std::string, BasicEventPtr> basic_events_;
+  std::unordered_map<std::string, BasicEventPtr> basic_events_;
 
   /// Container for house events of the tree.
-  boost::unordered_map<std::string, HouseEventPtr> house_events_;
+  std::unordered_map<std::string, HouseEventPtr> house_events_;
 
   /// Container for basic events that are identified to be in some CCF group.
   /// These basic events are not necessarily in the same CCF group.
-  boost::unordered_map<std::string, BasicEventPtr> ccf_events_;
+  std::unordered_map<std::string, BasicEventPtr> ccf_events_;
 
   /// Container for minimal cut sets.
   std::set< std::set<std::string> > min_cut_sets_;
 
   /// Container for basic events in minimal cut sets.
-  boost::unordered_map<std::string, BasicEventPtr> mcs_basic_events_;
+  std::unordered_map<std::string, BasicEventPtr> mcs_basic_events_;
 
   std::string warnings_;  ///< Generated warnings in analysis.
   int max_order_;  ///< Maximum order of minimal cut sets.

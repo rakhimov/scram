@@ -30,14 +30,14 @@
 #ifndef SCRAM_SRC_BOOLEAN_GRAPH_H_
 #define SCRAM_SRC_BOOLEAN_GRAPH_H_
 
+#include <cassert>
 #include <iostream>
 #include <map>
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
-
-#include <boost/unordered_map.hpp>
 
 namespace scram {
 
@@ -71,7 +71,7 @@ class Node {
   inline static void ResetIndex() { next_index_ = 1e6; }
 
   /// @returns Parents of this gate.
-  inline const boost::unordered_map<int, std::weak_ptr<IGate> >&
+  inline const std::unordered_map<int, std::weak_ptr<IGate> >&
       parents() const {
     return parents_;
   }
@@ -145,7 +145,7 @@ class Node {
   int index_;  ///< Index of this node.
   /// This is a traversal array containing first, second, and last visits.
   int visits_[3];
-  boost::unordered_map<int, std::weak_ptr<IGate> > parents_;  ///< Parents.
+  std::unordered_map<int, std::weak_ptr<IGate> > parents_;  ///< Parents.
   int opti_value_;  ///< Failure propagation optimization value.
 };
 
@@ -300,17 +300,17 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   inline const std::set<int>& args() const { return args_; }
 
   /// @returns Arguments of this gate that are indexed gates.
-  inline const boost::unordered_map<int, IGatePtr>& gate_args() const {
+  inline const std::unordered_map<int, IGatePtr>& gate_args() const {
     return gate_args_;
   }
 
   /// @returns Arguments of this gate that are variables.
-  inline const boost::unordered_map<int, VariablePtr>& variable_args() const {
+  inline const std::unordered_map<int, VariablePtr>& variable_args() const {
     return variable_args_;
   }
 
   /// @returns Arguments of this gate that are indexed constants.
-  inline const boost::unordered_map<int, ConstantPtr>& constant_args() const {
+  inline const std::unordered_map<int, ConstantPtr>& constant_args() const {
     return constant_args_;
   }
 
@@ -583,11 +583,11 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   bool module_;  ///< Indication of an independent module gate.
   std::set<int> args_;  ///< Arguments of the gate.
   /// Arguments that are gates.
-  boost::unordered_map<int, IGatePtr> gate_args_;
+  std::unordered_map<int, IGatePtr> gate_args_;
   /// Arguments that are variables.
-  boost::unordered_map<int, VariablePtr> variable_args_;
+  std::unordered_map<int, VariablePtr> variable_args_;
   /// Arguments that are constant like house events.
-  boost::unordered_map<int, ConstantPtr> constant_args_;
+  std::unordered_map<int, ConstantPtr> constant_args_;
   /// The number of arguments failed upon failure propagation.
   int num_failed_args_;
 };
@@ -696,7 +696,7 @@ class BooleanGraph {
   IGatePtr ProcessFormula(
       const FormulaPtr& formula,
       bool ccf,
-      boost::unordered_map<std::string, NodePtr>* id_to_node);
+      std::unordered_map<std::string, NodePtr>* id_to_node);
 
   /// Processes a Boolean formula's basic events
   /// into variable arguments of an indexed gate of the Boolean graph.
@@ -709,7 +709,7 @@ class BooleanGraph {
       const IGatePtr& parent,
       const std::vector<BasicEventPtr>& basic_events,
       bool ccf,
-      boost::unordered_map<std::string, NodePtr>* id_to_node);
+      std::unordered_map<std::string, NodePtr>* id_to_node);
 
   /// Processes a Boolean formula's house events
   /// into constant arguments of an indexed gate of the Boolean graph.
@@ -721,7 +721,7 @@ class BooleanGraph {
   void ProcessHouseEvents(
       const IGatePtr& parent,
       const std::vector<HouseEventPtr>& house_events,
-      boost::unordered_map<std::string, NodePtr>* id_to_node);
+      std::unordered_map<std::string, NodePtr>* id_to_node);
 
   /// Processes a Boolean formula's gates
   /// into gate arguments of an indexed gate of the Boolean graph.
@@ -733,7 +733,7 @@ class BooleanGraph {
   void ProcessGates(const IGatePtr& parent,
                     const std::vector<GatePtr>& gates,
                     bool ccf,
-                    boost::unordered_map<std::string, NodePtr>* id_to_node);
+                    std::unordered_map<std::string, NodePtr>* id_to_node);
 
   /// Sets the visit marks to False for all indexed gates,
   /// starting from the root gate,

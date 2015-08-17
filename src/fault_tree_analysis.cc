@@ -118,7 +118,7 @@ void FaultTreeAnalysis::GatherEvents(const FormulaPtr& formula) {
 
 void FaultTreeAnalysis::CleanMarks() {
   top_event_->mark("");
-  boost::unordered_map<std::string, GatePtr>::iterator it;
+  std::unordered_map<std::string, GatePtr>::iterator it;
   for (it = inter_events_.begin(); it != inter_events_.end(); ++it) {
     it->second->mark("");
   }

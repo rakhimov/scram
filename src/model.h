@@ -23,9 +23,8 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <utility>
-
-#include <boost/unordered_map.hpp>
 
 #include "element.h"
 #include "event.h"
@@ -58,36 +57,36 @@ class Model : public Element {
   inline const std::string& name() const { return name_; }
 
   /// @returns Defined fault trees in the model.
-  inline const boost::unordered_map<std::string, FaultTreePtr>&
+  inline const std::unordered_map<std::string, FaultTreePtr>&
       fault_trees() const {
     return fault_trees_;
   }
 
   /// @returns Parameters defined for this model.
-  inline const boost::unordered_map<std::string, ParameterPtr>&
+  inline const std::unordered_map<std::string, ParameterPtr>&
       parameters() const {
     return parameters_;
   }
 
   /// @returns House events defined for this model.
-  inline const boost::unordered_map<std::string, HouseEventPtr>&
+  inline const std::unordered_map<std::string, HouseEventPtr>&
       house_events() const {
     return house_events_;
   }
 
   /// @returns Basic events defined for this model.
-  inline const boost::unordered_map<std::string, BasicEventPtr>&
+  inline const std::unordered_map<std::string, BasicEventPtr>&
       basic_events() const {
     return basic_events_;
   }
 
   /// @returns Gates defined for this model.
-  inline const boost::unordered_map<std::string, GatePtr>& gates() const {
+  inline const std::unordered_map<std::string, GatePtr>& gates() const {
     return gates_;
   }
 
   /// @returns CCF groups defined for this model.
-  inline const boost::unordered_map<std::string, CcfGroupPtr>&
+  inline const std::unordered_map<std::string, CcfGroupPtr>&
       ccf_groups() const {
     return ccf_groups_;
   }
@@ -235,22 +234,22 @@ class Model : public Element {
   std::string name_;  ///< The name of the model.
 
   /// A collection of fault trees.
-  boost::unordered_map<std::string, FaultTreePtr> fault_trees_;
+  std::unordered_map<std::string, FaultTreePtr> fault_trees_;
 
   /// Container for fully defined gates.
-  boost::unordered_map<std::string, GatePtr> gates_;
+  std::unordered_map<std::string, GatePtr> gates_;
 
   /// Container for fully defined house events.
-  boost::unordered_map<std::string, HouseEventPtr> house_events_;
+  std::unordered_map<std::string, HouseEventPtr> house_events_;
 
   /// Container for fully defined basic events.
-  boost::unordered_map<std::string, BasicEventPtr> basic_events_;
+  std::unordered_map<std::string, BasicEventPtr> basic_events_;
 
   /// Container for defined parameters or variables.
-  boost::unordered_map<std::string, ParameterPtr> parameters_;
+  std::unordered_map<std::string, ParameterPtr> parameters_;
 
   /// A collection of common cause failure groups.
-  boost::unordered_map<std::string, CcfGroupPtr> ccf_groups_;
+  std::unordered_map<std::string, CcfGroupPtr> ccf_groups_;
 };
 
 }  // namespace scram

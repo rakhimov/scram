@@ -65,15 +65,15 @@ class RiskAnalysisTest : public ::testing::Test {
     return init->model()->fault_trees().begin()->second;
   }
 
-  const boost::unordered_map<std::string, GatePtr>& gates() {
+  const std::unordered_map<std::string, GatePtr>& gates() {
     return init->model()->gates();
   }
 
-  const boost::unordered_map<std::string, HouseEventPtr>& house_events() {
+  const std::unordered_map<std::string, HouseEventPtr>& house_events() {
     return init->model()->house_events();
   }
 
-  const boost::unordered_map<std::string, BasicEventPtr>& basic_events() {
+  const std::unordered_map<std::string, BasicEventPtr>& basic_events() {
     return init->model()->basic_events();
   }
 

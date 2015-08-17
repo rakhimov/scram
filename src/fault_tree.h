@@ -24,10 +24,9 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
-
-#include <boost/unordered_map.hpp>
 
 #include "element.h"
 #include "event.h"
@@ -69,41 +68,41 @@ class Component : public Element, public Role {
 
   /// @returns The container of all gates of this component
   ///          with lower-case names as keys.
-  inline const boost::unordered_map<std::string, GatePtr>& gates() const {
+  inline const std::unordered_map<std::string, GatePtr>& gates() const {
     return gates_;
   }
 
   /// @returns The container of all basic events of this component
   ///          with lower-case names as keys.
-  inline const boost::unordered_map<std::string, BasicEventPtr>&
+  inline const std::unordered_map<std::string, BasicEventPtr>&
       basic_events() const {
     return basic_events_;
   }
 
   /// @returns The container of house events of this component
   ///          with lower-case names as keys.
-  inline const boost::unordered_map<std::string, HouseEventPtr>&
+  inline const std::unordered_map<std::string, HouseEventPtr>&
       house_events() const {
     return house_events_;
   }
 
   /// @returns The container of parameters of this component
   ///          with lower-case names as keys.
-  inline const boost::unordered_map<std::string, ParameterPtr>&
+  inline const std::unordered_map<std::string, ParameterPtr>&
       parameters() const {
     return parameters_;
   }
 
   /// @returns CCF groups belonging to this component
   ///          with lower-case names as keys.
-  inline const boost::unordered_map<std::string, CcfGroupPtr>&
+  inline const std::unordered_map<std::string, CcfGroupPtr>&
       ccf_groups() const {
     return ccf_groups_;
   }
 
   /// @returns Components in this component container
   ///          with lower-case names as keys.
-  inline const boost::unordered_map<std::string, ComponentPtr>&
+  inline const std::unordered_map<std::string, ComponentPtr>&
       components() const {
     return components_;
   }
@@ -163,22 +162,22 @@ class Component : public Element, public Role {
   std::string name_;  ///< The name of this component.
 
   /// Container for gates with lower-case names as keys.
-  boost::unordered_map<std::string, GatePtr> gates_;
+  std::unordered_map<std::string, GatePtr> gates_;
 
   /// Container for basic events with lower-case names as keys.
-  boost::unordered_map<std::string, BasicEventPtr> basic_events_;
+  std::unordered_map<std::string, BasicEventPtr> basic_events_;
 
   /// Container for house events with lower-case names as keys.
-  boost::unordered_map<std::string, HouseEventPtr> house_events_;
+  std::unordered_map<std::string, HouseEventPtr> house_events_;
 
   /// Container for parameters with lower-case names as keys.
-  boost::unordered_map<std::string, ParameterPtr> parameters_;
+  std::unordered_map<std::string, ParameterPtr> parameters_;
 
   /// Container for CCF groups with lower-case names as keys.
-  boost::unordered_map<std::string, CcfGroupPtr> ccf_groups_;
+  std::unordered_map<std::string, CcfGroupPtr> ccf_groups_;
 
   /// Container for components with lower-case names as keys.
-  boost::unordered_map<std::string, ComponentPtr> components_;
+  std::unordered_map<std::string, ComponentPtr> components_;
 };
 
 /// @class FaultTree
