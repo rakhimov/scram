@@ -19,6 +19,9 @@
 
 #include "risk_analysis_tests.h"
 
+namespace scram {
+namespace test {
+
 // Benchmark Tests for Small Tree fault tree from XFTA.
 // This benchmark is for uncertainty analysis.
 TEST_F(RiskAnalysisTest, SmallTree) {
@@ -45,3 +48,6 @@ TEST_F(RiskAnalysisTest, SmallTree) {
   EXPECT_NEAR(0.02495, mean(), 5e-3);
   EXPECT_NEAR(0.023625, sigma(), 5e-3);
 }
+
+}  // namespace test
+}  // namespace scram

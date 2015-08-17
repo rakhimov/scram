@@ -19,6 +19,9 @@
 
 #include "risk_analysis_tests.h"
 
+namespace scram {
+namespace test {
+
 // Benchmark tests for Lift system from OpenFTA
 TEST_F(RiskAnalysisTest, Lift) {
   std::string tree_input = "./share/scram/input/Lift/lift.xml";
@@ -53,3 +56,6 @@ TEST_F(RiskAnalysisTest, Lift) {
   EXPECT_EQ(12, min_cut_sets().size());
   EXPECT_EQ(mcs, min_cut_sets());
 }
+
+}  // namespace test
+}  // namespace scram

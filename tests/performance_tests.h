@@ -18,6 +18,9 @@
 #ifndef SCRAM_TESTS_PERFORMANCE_TESTS_H_
 #define SCRAM_TESTS_PERFORMANCE_TESTS_H_
 
+#include <string>
+#include <vector>
+
 #include <gtest/gtest.h>
 
 #include "fault_tree_analysis.h"
@@ -25,7 +28,8 @@
 #include "probability_analysis.h"
 #include "risk_analysis.h"
 
-using namespace scram;
+namespace scram {
+namespace test {
 
 class PerformanceTest : public ::testing::Test {
  protected:
@@ -81,5 +85,8 @@ class PerformanceTest : public ::testing::Test {
   Settings settings;
   double delta;  // The range indicator for values.
 };
+
+}  // namespace test
+}  // namespace scram
 
 #endif  // SCRAM_TESTS_PERFORMANCE_TESTS_H_

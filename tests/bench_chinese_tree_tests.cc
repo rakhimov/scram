@@ -19,6 +19,9 @@
 
 #include "risk_analysis_tests.h"
 
+namespace scram {
+namespace test {
+
 // Benchmark Tests for Chinese fault tree from XFTA.
 // Test Minimal cut sets and probability.
 /// @todo Test importance factors.
@@ -39,3 +42,6 @@ TEST_F(RiskAnalysisTest, ChineseTree) {
   distr[6] = 168;
   EXPECT_EQ(distr, McsDistribution());
 }
+
+}  // namespace test
+}  // namespace scram

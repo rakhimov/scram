@@ -23,7 +23,8 @@
 #include "cycle.h"
 #include "error.h"
 
-using namespace scram;
+namespace scram {
+namespace test {
 
 typedef boost::shared_ptr<Event> EventPtr;
 typedef boost::shared_ptr<Gate> GatePtr;
@@ -203,8 +204,8 @@ TEST(GateTest, Inhibit) {
   BasicEventPtr C(new BasicEvent("c"));
   // INHIBIT Gate tests.
   Attribute inh_attr;
-  inh_attr.name="flavor";
-  inh_attr.value="inhibit";
+  inh_attr.name = "flavor";
+  inh_attr.value = "inhibit";
   GatePtr top(new Gate("top"));
   FormulaPtr formula(new Formula("and"));
   top->formula(formula);
@@ -244,3 +245,6 @@ TEST(PrimaryEventTest, HouseProbability) {
   EXPECT_NO_THROW(primary->state(false));
   EXPECT_FALSE(primary->state());
 }
+
+}  // namespace test
+}  // namespace scram

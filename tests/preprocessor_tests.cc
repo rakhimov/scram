@@ -19,8 +19,12 @@
 
 #include <vector>
 
-using namespace scram;
+namespace scram {
+namespace test {
 
 // Handle constant children according to the Boolean logic of the parent.
 TEST_F(PreprocessorTest, DISABLED_ProcessConstantChild) {
 }
+
+}  // namespace test
+}  // namespace scram

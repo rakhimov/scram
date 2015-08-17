@@ -27,7 +27,8 @@
 #include "error.h"
 #include "xml_parser.h"
 
-using namespace scram;
+namespace scram {
+namespace test {
 
 TEST_F(RiskAnalysisTest, ProcessInput) {
   std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
@@ -537,3 +538,6 @@ TEST_F(RiskAnalysisTest, ConstantGates) {
   EXPECT_EQ(1, min_cut_sets().size());
   EXPECT_EQ(1, min_cut_sets().count(mcs_1));
 }
+
+}  // namespace test
+}  // namespace scram

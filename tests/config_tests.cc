@@ -21,7 +21,8 @@
 
 #include "error.h"
 
-using namespace scram;
+namespace scram {
+namespace test {
 
 // Test with a wrong input.
 TEST(ConfigTest, IOError) {
@@ -56,3 +57,6 @@ TEST(ConfigTest, FullSettings) {
 
   delete config;
 }
+
+}  // namespace test
+}  // namespace scram

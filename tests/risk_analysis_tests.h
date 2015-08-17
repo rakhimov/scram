@@ -28,7 +28,8 @@
 
 #include <gtest/gtest.h>
 
-using namespace scram;
+namespace scram {
+namespace test {
 
 typedef boost::shared_ptr<Event> EventPtr;
 typedef boost::shared_ptr<Gate> GatePtr;
@@ -136,5 +137,8 @@ class RiskAnalysisTest : public ::testing::Test {
   Initializer* init;
   Settings settings;
 };
+
+}  // namespace test
+}  // namespace scram
 
 #endif  // SCRAM_TESTS_RISK_ANALYSIS_TESTS_H_

@@ -35,9 +35,9 @@
 
 #include "boolean_graph.h"
 
-class PreprocessorTest;
-
 namespace scram {
+
+namespace test { class PreprocessorTest; }
 
 /// @class Preprocessor
 /// The class provides main preprocessing operations
@@ -45,7 +45,7 @@ namespace scram {
 /// to simplify the fault tree
 /// and to help generate minimal cut sets more efficiently.
 class Preprocessor {
-  friend class ::PreprocessorTest;
+  friend class test::PreprocessorTest;
 
  public:
   typedef boost::shared_ptr<Gate> GatePtr;

@@ -19,6 +19,9 @@
 
 #include "risk_analysis_tests.h"
 
+namespace scram {
+namespace test {
+
 // Benchmark Tests for auto-generated 200 event fault tree.
 // Test Minimal cut sets and probability.
 TEST_F(RiskAnalysisTest, 200Event) {
@@ -30,3 +33,6 @@ TEST_F(RiskAnalysisTest, 200Event) {
   // Minimal cut set check.
   EXPECT_EQ(287, min_cut_sets().size());
 }
+
+}  // namespace test
+}  // namespace scram

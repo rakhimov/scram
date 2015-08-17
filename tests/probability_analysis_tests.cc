@@ -19,6 +19,9 @@
 
 #include "error.h"
 
+namespace scram {
+namespace test {
+
 TEST_F(ProbabilityAnalysisTest, ProbAndInt) {
   std::set<int> min_cut_set;
 
@@ -190,3 +193,6 @@ TEST_F(ProbabilityAnalysisTest, Constructor) {
   ASSERT_THROW(ProbabilityAnalysis("no", 1, -1), InvalidArgument);
   ASSERT_THROW(ProbabilityAnalysis("no", 1, 10), InvalidArgument);
 }
+
+}  // namespace test
+}  // namespace scram

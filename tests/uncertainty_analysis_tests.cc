@@ -21,7 +21,8 @@
 
 #include "error.h"
 
-using namespace scram;
+namespace scram {
+namespace test {
 
 TEST(UncertaintyAnalysisTest, Constructor) {
   ASSERT_NO_THROW(UncertaintyAnalysis(1));
@@ -34,3 +35,6 @@ TEST(UncertaintyAnalysisTest, Constructor) {
   ASSERT_NO_THROW(UncertaintyAnalysis(1, 1, 100));
   ASSERT_THROW(UncertaintyAnalysis(1, 1, -1), InvalidArgument);
 }
+
+}  // namespace test
+}  // namespace scram

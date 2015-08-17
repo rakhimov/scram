@@ -19,6 +19,9 @@
 
 #include "risk_analysis_tests.h"
 
+namespace scram {
+namespace test {
+
 // Benchmark Tests for Baobab 1 fault tree from XFTA.
 // Test Minimal cut sets.
 TEST_F(RiskAnalysisTest, Baobab_1_Test) {
@@ -38,3 +41,6 @@ TEST_F(RiskAnalysisTest, Baobab_1_Test) {
   distr[6] = 2212;
   EXPECT_EQ(distr, McsDistribution());
 }
+
+}  // namespace test
+}  // namespace scram

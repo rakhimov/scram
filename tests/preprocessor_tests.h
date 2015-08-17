@@ -22,7 +22,8 @@
 
 #include <gtest/gtest.h>
 
-using namespace scram;
+namespace scram {
+namespace test {
 
 /// @class PreprocessorTest
 /// This test fixture is for white-box testing of algorithms
@@ -42,4 +43,7 @@ class PreprocessorTest : public ::testing::Test {
   BooleanGraph* fault_tree;
 };
 
-#endif // SCRAM_TESTS_PREPROCESSOR_TESTS_H_
+}  // namespace test
+}  // namespace scram
+
+#endif  // SCRAM_TESTS_PREPROCESSOR_TESTS_H_

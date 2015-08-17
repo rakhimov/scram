@@ -22,7 +22,8 @@
 #include "error.h"
 #include "ccf_group.h"
 
-using namespace scram;
+namespace scram {
+namespace test {
 
 typedef boost::shared_ptr<Gate> GatePtr;
 typedef boost::shared_ptr<Formula> FormulaPtr;
@@ -85,3 +86,6 @@ TEST(FaultTreeTest, AddParameter) {
   EXPECT_NO_THROW(ft->AddParameter(parameter_two));
   delete ft;
 }
+
+}  // namespace test
+}  // namespace scram

@@ -19,6 +19,9 @@
 
 #include "risk_analysis_tests.h"
 
+namespace scram {
+namespace test {
+
 // Benchmark Tests for an example fault tree given
 // in NE574 Risk Analysis class at UW-Madison.
 // Test Minimal cut sets and total probabilty.
@@ -71,3 +74,6 @@ TEST_F(RiskAnalysisTest, ne574) {
   EXPECT_EQ(7, min_cut_sets().size());
   EXPECT_EQ(mcs, min_cut_sets());
 }
+
+}  // namespace test
+}  // namespace scram

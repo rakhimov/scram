@@ -24,7 +24,8 @@
 #include "error.h"
 #include "settings.h"
 
-using namespace scram;
+namespace scram {
+namespace test {
 
 // Test if the XML is well formed.
 TEST(InitializerTest, XMLFormatting) {
@@ -235,3 +236,6 @@ TEST(InitializerTest, NonOrphanTopEvent) {
   EXPECT_NO_THROW(init->ProcessInputFiles(input_files));
   delete init;
 }
+
+}  // namespace test
+}  // namespace scram

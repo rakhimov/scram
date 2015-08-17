@@ -22,6 +22,9 @@
 #include "fault_tree.h"
 #include "grapher.h"
 
+namespace scram {
+namespace test {
+
 // Test Graphing Intructions
 TEST_F(RiskAnalysisTest, GraphingInstructions) {
   Grapher gr = Grapher();
@@ -70,3 +73,6 @@ TEST_F(RiskAnalysisTest, GraphingHOUSE_NULL) {
   ASSERT_NO_THROW(gr.GraphFaultTree(fault_tree()->top_events().front(),
                                     true, out));
 }
+
+}  // namespace test
+}  // namespace scram

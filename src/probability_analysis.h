@@ -33,14 +33,14 @@
 
 #include "event.h"
 
-class ProbabilityAnalysisTest;
-
 namespace scram {
+
+namespace test { class ProbabilityAnalysisTest; }
 
 /// @class ProbabilityAnalysis
 /// Main quantitative analysis.
 class ProbabilityAnalysis {
-  friend class ::ProbabilityAnalysisTest;
+  friend class test::ProbabilityAnalysisTest;
 
  public:
   typedef boost::shared_ptr<BasicEvent> BasicEventPtr;

@@ -26,7 +26,8 @@
 #include <boost/assign/std/vector.hpp>
 #include <gtest/gtest.h>
 
-using namespace scram;
+namespace scram {
+namespace test {
 
 // Plots the sampled numbers in the range [0, 1].
 void PlotDistribution(const std::multiset<double>& series) {
@@ -321,3 +322,6 @@ TEST(RandomTest, LogTriangular) {
       << "    Shifted: -1    Scaled-down: 1/2.7\n" << std::endl;
   PlotDistribution(series);
 }
+
+}  // namespace test
+}  // namespace scram

@@ -21,7 +21,8 @@
 
 #include "error.h"
 
-using namespace scram;
+namespace scram {
+namespace test {
 
 class TestElement : public Element {};
 
@@ -45,3 +46,6 @@ TEST(ElementTest, Attribute) {
   ASSERT_TRUE(el.HasAttribute(attr.name));
   ASSERT_NO_THROW(el.GetAttribute(attr.name));
 }
+
+}  // namespace test
+}  // namespace scram

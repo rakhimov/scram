@@ -21,7 +21,8 @@
 
 #include "error.h"
 
-using namespace scram;
+namespace scram {
+namespace test {
 
 TEST(SettingsTest, IncorrectSetup) {
   Settings s;
@@ -43,3 +44,6 @@ TEST(SettingsTest, IncorrectSetup) {
   // Incorrect mission time.
   ASSERT_THROW(s.mission_time(-10), InvalidArgument);
 }
+
+}  // namespace test
+}  // namespace scram

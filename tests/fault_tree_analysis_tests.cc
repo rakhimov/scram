@@ -21,7 +21,8 @@
 
 #include "error.h"
 
-using namespace scram;
+namespace scram {
+namespace test {
 
 // Invalid options for the constructor.
 TEST(FaultTreeAnalysisTest, Constructor) {
@@ -30,3 +31,6 @@ TEST(FaultTreeAnalysisTest, Constructor) {
   ASSERT_THROW(FaultTreeAnalysis(GatePtr(new Gate("dummy")), -1),
                InvalidArgument);
 }
+
+}  // namespace test
+}  // namespace scram

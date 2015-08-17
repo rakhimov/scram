@@ -24,7 +24,8 @@
 #include "event.h"
 #include "expression.h"
 
-using namespace scram;
+namespace scram {
+namespace test {
 
 typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
 typedef boost::shared_ptr<Expression> ExpressionPtr;
@@ -50,3 +51,6 @@ TEST(CcfGroupTest, AddMemberAfterDistribution) {
   EXPECT_THROW(ccf_group->AddMember(member), IllegalOperation);
   delete ccf_group;
 }
+
+}  // namespace test
+}  // namespace scram

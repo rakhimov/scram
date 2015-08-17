@@ -21,6 +21,9 @@
 
 #include "risk_analysis_tests.h"
 
+namespace scram {
+namespace test {
+
 // Benchmark Tests for [A or B or C] fault tree.
 // Test Minimal cut sets and total probabilty.
 TEST_F(RiskAnalysisTest, ABC) {
@@ -471,3 +474,6 @@ TEST_F(RiskAnalysisTest, AlphaFactorCCF) {
   distr[3] = 8;
   EXPECT_EQ(distr, McsDistribution());
 }
+
+}  // namespace test
+}  // namespace scram

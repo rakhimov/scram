@@ -26,7 +26,8 @@
 
 #include <gtest/gtest.h>
 
-using namespace scram;
+namespace scram {
+namespace test {
 
 class ProbabilityAnalysisTest : public ::testing::Test {
  protected:
@@ -90,5 +91,8 @@ class ProbabilityAnalysisTest : public ::testing::Test {
   // Members
   ProbabilityAnalysis* prob_analysis;
 };
+
+}  // namespace test
+}  // namespace scram
 
 #endif  // SCRAM_TESTS_PROBABILITY_ANALYSIS_TESTS_H_

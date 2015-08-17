@@ -24,7 +24,8 @@
 #include "model.h"
 #include "settings.h"
 
-using namespace scram;
+namespace scram {
+namespace test {
 
 TEST(BooleanGraphTest, Print) {
   Settings settings;
@@ -39,3 +40,6 @@ TEST(BooleanGraphTest, Print) {
   delete init;
   delete graph;
 }
+
+}  // namespace test
+}  // namespace scram

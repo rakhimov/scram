@@ -21,7 +21,8 @@
 
 #include "error.h"
 
-using namespace scram;
+namespace scram {
+namespace test {
 
 // This mock class is used to specify
 // return values and samples in a hard coded way.
@@ -574,3 +575,6 @@ TEST(ExpressionTest, DivisionMaxAndMin) {
   EXPECT_DOUBLE_EQ(-1.0 / -4 / 1 / -2, dev->Min());
   EXPECT_DOUBLE_EQ(2.0 / -4 / 1 / -2, dev->Max());
 }
+
+}  // namespace test
+}  // namespace scram

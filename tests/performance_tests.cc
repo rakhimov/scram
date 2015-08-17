@@ -15,12 +15,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "performance_tests.h"
-
-#include <string>
-
-using namespace scram;
-
 // Performance testing is done only if requested
 // by activating disabled tests.
 //
@@ -46,6 +40,13 @@ using namespace scram;
 // NOTE: Running all the tests may take considerable time.
 // NOTE: Running tests several times is recommended
 //       to take into account the random variation of time results.
+
+#include "performance_tests.h"
+
+#include <string>
+
+namespace scram {
+namespace test {
 
 // Tests the performance of probability calculations
 // with cut-off approximations tests are done.
@@ -161,3 +162,6 @@ TEST_F(PerformanceTest, DISABLED_Baobab2_L6) {
 }
 
 #endif
+
+}  // namespace test
+}  // namespace scram

@@ -25,7 +25,8 @@
 
 #include <gtest/gtest.h>
 
-using namespace scram;
+namespace scram {
+namespace test {
 
 class XMLParserTests : public ::testing::Test {
  public:
@@ -43,5 +44,8 @@ class XMLParserTests : public ::testing::Test {
   std::string inner_node_;
   std::string inner_content_;
 };
+
+}  // namespace test
+}  // namespace scram
 
 #endif  // SCRAM_TESTS_XML_PARSER_TESTS_H_
