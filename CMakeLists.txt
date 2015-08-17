@@ -13,6 +13,13 @@ endif()
 
 project(SCRAM)
 
+####################### Begin compiler configurations ###################
+
+# Default to C++11.
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++11")
+
+######################## End compiler configurations ####################
+
 ##################### Begin cmake configuration ###################
 
 # Set project directories.
