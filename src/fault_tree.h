@@ -24,10 +24,10 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
 
 #include "element.h"
 #include "event.h"
@@ -157,7 +157,7 @@ class Component : public Element, public Role {
   ///
   /// @param[out] gates Gates belonging to this component
   ///                   and its subcomponents.
-  void GatherGates(boost::unordered_set<GatePtr>* gates);
+  void GatherGates(std::unordered_set<GatePtr>* gates);
 
  private:
   std::string name_;  ///< The name of this component.
@@ -215,14 +215,14 @@ class FaultTree : public Component {
   /// @param[in] gate The ancestor gate.
   /// @param[in] gates Gates belonging to the whole fault tree with components.
   void MarkNonTopGates(const GatePtr& gate,
-                       const boost::unordered_set<GatePtr>& gates);
+                       const std::unordered_set<GatePtr>& gates);
 
   /// Recursively marks descendant gates in formulas as "non-top"
   ///
   /// @param[in] formula The formula of a gate or another formula.
   /// @param[in] gates Gates belonging to the whole fault tree with components.
   void MarkNonTopGates(const FormulaPtr& formula,
-                       const boost::unordered_set<GatePtr>& gates);
+                       const std::unordered_set<GatePtr>& gates);
 
   std::vector<GatePtr> top_events_;  ///< Top events of this fault tree.
 };

@@ -103,7 +103,7 @@ void Component::AddComponent(const ComponentPtr& component) {
   components_.insert(std::make_pair(name, component));
 }
 
-void Component::GatherGates(boost::unordered_set<GatePtr>* gates) {
+void Component::GatherGates(std::unordered_set<GatePtr>* gates) {
   boost::unordered_map<std::string, GatePtr>::iterator it;
   for (it = gates_.begin(); it != gates_.end(); ++it) {
     gates->insert(it->second);
@@ -118,10 +118,10 @@ FaultTree::FaultTree(const std::string& name) : Component::Component(name) {}
 
 void FaultTree::CollectTopEvents() {
   top_events_.clear();
-  boost::unordered_set<GatePtr> gates;
+  std::unordered_set<GatePtr> gates;
   Component::GatherGates(&gates);
   // Detects top events.
-  boost::unordered_set<GatePtr>::iterator it;
+  std::unordered_set<GatePtr>::iterator it;
   for (it = gates.begin(); it != gates.end(); ++it) {
     FaultTree::MarkNonTopGates(*it, gates);
   }
@@ -132,13 +132,13 @@ void FaultTree::CollectTopEvents() {
 }
 
 void FaultTree::MarkNonTopGates(const GatePtr& gate,
-                                const boost::unordered_set<GatePtr>& gates) {
+                                const std::unordered_set<GatePtr>& gates) {
   if (gate->mark() == "non-top") return;
   FaultTree::MarkNonTopGates(gate->formula(), gates);
 }
 
 void FaultTree::MarkNonTopGates(const FormulaPtr& formula,
-                                const boost::unordered_set<GatePtr>& gates) {
+                                const std::unordered_set<GatePtr>& gates) {
   std::vector<GatePtr>::const_iterator it;
   const std::vector<GatePtr>* children = &formula->gate_args();
   for (it = children->begin(); it != children->end(); ++it) {
