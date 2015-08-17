@@ -65,7 +65,7 @@ A list of dependencies:
 Package                Minimum Version
 ====================   ==================
 `CMake`                2.8.12
-`boost`                1.48.0
+`boost`                1.46.0
 `libxml2`              2
 `libxml++`             2.34.1
 `Python`               2.7.3 or 3.3+
@@ -138,7 +138,6 @@ The minimal list of required library package names is:
 #. make
 #. cmake
 #. libboost-all-dev
-#. libboost-random-dev
 #. libxml2-dev
 #. libxml++2.6-dev
 #. python2.7
@@ -164,7 +163,7 @@ the following line will install all major dependencies and GCC/G++ compiler:
 
 .. code-block:: bash
 
-    sudo apt-get install -y cmake make gcc g++ libboost-all-dev libboost-random-dev libxml2-dev libxml++2.6-dev python2.7 graphviz libgoogle-perftools-dev
+    sudo apt-get install -y cmake make gcc g++ libboost-all-dev libxml2-dev libxml++2.6-dev python2.7 graphviz libgoogle-perftools-dev
 
 The optional installation for GUI:
 

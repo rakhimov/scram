@@ -12,10 +12,6 @@ before_install:
 
 install:
     - sudo apt-get install -qq libboost-all-dev
-    - sudo apt-get install -qq libboost-program-options1.48-dev
-    - sudo apt-get install -qq libboost-random1.48-dev
-    - sudo apt-get install -qq libboost-filesystem1.48-dev
-    - sudo apt-get install -qq libboost-system1.48-dev
     - sudo apt-get install -qq libxml2-dev
     - sudo apt-get install -qq libxml++2.6-dev
     - sudo apt-get install -qq libgoogle-perftools-dev
