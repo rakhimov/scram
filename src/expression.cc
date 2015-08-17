@@ -302,14 +302,15 @@ double Histogram::Mean() {
 double Histogram::Sample() {
   if (!Expression::sampled_) {
     Expression::sampled_ = true;
-    std::vector<double> b;
-    b.push_back(0);  // The initial point.
-    std::vector<double> w;
+    std::vector<double> sampled_boundaries;
+    sampled_boundaries.push_back(0);  // The initial point.
+    std::vector<double> sampled_weights;
     for (int i = 0; i < boundaries_.size(); ++i) {
-      b.push_back(boundaries_[i]->Sample());
-      w.push_back(weights_[i]->Sample());
+      sampled_boundaries.push_back(boundaries_[i]->Sample());
+      sampled_weights.push_back(weights_[i]->Sample());
     }
-    Expression::sampled_value_ = Random::HistogramGenerator(w, b);
+    Expression::sampled_value_ = Random::HistogramGenerator(sampled_boundaries,
+                                                            sampled_weights);
   }
   return Expression::sampled_value_;
 }
