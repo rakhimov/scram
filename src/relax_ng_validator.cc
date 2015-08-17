@@ -34,7 +34,9 @@
 
 namespace scram {
 
-RelaxNGValidator::RelaxNGValidator() : schema_(NULL), valid_context_(NULL) {}
+RelaxNGValidator::RelaxNGValidator()
+    : schema_(nullptr),
+      valid_context_(nullptr) {}
 
 RelaxNGValidator::~RelaxNGValidator() {
   RelaxNGValidator::ReleaseUnderlying();
@@ -88,12 +90,12 @@ void RelaxNGValidator::ParseContext(xmlRelaxNGParserCtxtPtr context) {
 void RelaxNGValidator::ReleaseUnderlying() {
   if (valid_context_) {
     xmlRelaxNGFreeValidCtxt(valid_context_);
-    valid_context_ = NULL;
+    valid_context_ = nullptr;
   }
 
   if (schema_) {
     xmlRelaxNGFree(schema_);
-    schema_ = NULL;
+    schema_ = nullptr;
   }
 }
 
