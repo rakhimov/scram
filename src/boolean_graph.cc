@@ -26,7 +26,6 @@
 
 #include <utility>
 
-#include <boost/lexical_cast.hpp>
 #include <boost/pointer_cast.hpp>
 
 #include "event.h"
@@ -607,8 +606,7 @@ const FormulaSig GetFormulaSig(const boost::shared_ptr<const IGate>& gate) {
       sig.end = "";
       break;
     case kAtleastGate:
-      sig.begin = "@(" + boost::lexical_cast<std::string>(gate->vote_number()) +
-                  ", [";
+      sig.begin = "@(" + std::to_string(gate->vote_number()) + ", [";
       sig.op = ", ";
       sig.end = "])";
       break;
@@ -628,7 +626,7 @@ const std::string GetName(const boost::shared_ptr<const IGate>& gate) {
   } else {  // This gate has become constant.
     name += "C";
   }
-  name += boost::lexical_cast<std::string>(gate->index());
+  name += std::to_string(gate->index());
   return name;
 }
 
@@ -666,7 +664,7 @@ std::ostream& operator<<(std::ostream& os,
        it_basic != gate->variable_args().end(); ++it_basic) {
     if (it_basic->first < 0) formula += "~";  // Negation.
     int index = it_basic->second->index();
-    formula += "B" + boost::lexical_cast<std::string>(index);
+    formula += "B" + std::to_string(index);
 
     if (--num_args) formula += sig.op;
 
@@ -679,7 +677,7 @@ std::ostream& operator<<(std::ostream& os,
        it_const != gate->constant_args().end(); ++it_const) {
     if (it_const->first < 0) formula += "~";  // Negation.
     int index = it_const->second->index();
-    formula += "H" + boost::lexical_cast<std::string>(index);
+    formula += "H" + std::to_string(index);
 
     if (--num_args) formula += sig.op;
 
