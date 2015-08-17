@@ -23,7 +23,6 @@
 #include <fstream>
 
 #include <boost/algorithm/string.hpp>
-#include <boost/assign.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/pointer_cast.hpp>
@@ -44,10 +43,9 @@ namespace fs = boost::filesystem;
 namespace scram {
 
 const std::map<std::string, Units> Initializer::kUnits_ =
-    boost::assign::map_list_of("bool", kBool) ("int", kInt) ("float", kFloat)
-                              ("hours", kHours) ("hours-1", kInverseHours)
-                              ("years", kYears) ("years-1", kInverseYears)
-                              ("fit", kFit) ("demands", kDemands);
+    {{"bool", kBool}, {"int", kInt}, {"float", kFloat}, {"hours", kHours},
+     {"hours-1", kInverseHours}, {"years", kYears}, {"years-1", kInverseYears},
+     {"fit", kFit}, {"demands", kDemands}};
 
 const char* const Initializer::kUnitToString_[] = {"unitless", "bool", "int",
                                                    "float", "hours", "hours-1",

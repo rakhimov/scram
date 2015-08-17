@@ -23,7 +23,6 @@
 #include <sstream>
 
 #include <boost/algorithm/string.hpp>
-#include <boost/assign.hpp>
 
 #include "ccf_group.h"
 
@@ -105,11 +104,10 @@ void Gate::Validate() {
   }
 }
 
-const std::set<std::string> Formula::kTwoOrMore_ =
-    boost::assign::list_of("and") ("or") ("nand") ("nor");
+const std::set<std::string> Formula::kTwoOrMore_ = {{"and"}, {"or"}, {"nand"},
+                                                    {"nor"}};
 
-const std::set<std::string> Formula::kSingle_ =
-    boost::assign::list_of("not") ("null");
+const std::set<std::string> Formula::kSingle_ = {{"not"}, {"null"}};
 
 Formula::Formula(const std::string& type)
       : type_(type),

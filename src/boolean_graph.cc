@@ -26,7 +26,6 @@
 
 #include <utility>
 
-#include <boost/assign.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/pointer_cast.hpp>
 
@@ -351,10 +350,9 @@ void IGate::ArgFailed() {
 }
 
 const std::map<std::string, Operator> BooleanGraph::kStringToType_ =
-    boost::assign::map_list_of("and", kAndGate) ("or", kOrGate)
-                              ("atleast", kAtleastGate) ("xor", kXorGate)
-                              ("not", kNotGate) ("nand", kNandGate)
-                              ("nor", kNorGate) ("null", kNullGate);
+    {{"and", kAndGate}, {"or", kOrGate}, {"atleast", kAtleastGate},
+     {"xor", kXorGate}, {"not", kNotGate}, {"nand", kNandGate},
+     {"nor", kNorGate}, {"null", kNullGate}};
 
 BooleanGraph::BooleanGraph(const GatePtr& root, bool ccf)
     : coherent_(true),

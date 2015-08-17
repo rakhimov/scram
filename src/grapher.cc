@@ -23,21 +23,19 @@
 #include <set>
 
 #include <boost/algorithm/string.hpp>
-#include <boost/assign.hpp>
 
 #include "fault_tree_analysis.h"
 
 namespace scram {
 
 const std::map<std::string, std::string> Grapher::kGateColors_ =
-    boost::assign::map_list_of("or", "blue") ("and", "green") ("not", "red")
-                              ("xor", "brown") ("inhibit", "yellow")
-                              ("atleast", "cyan") ("null", "gray")
-                              ("nor", "magenta") ("nand", "orange");
+    {{"or", "blue"}, {"and", "green"}, {"not", "red"}, {"xor", "brown"},
+     {"inhibit", "yellow"}, {"atleast", "cyan"}, {"null", "gray"},
+     {"nor", "magenta"}, {"nand", "orange"}};
 
 const std::map<std::string, std::string> Grapher::kEventColors_ =
-    boost::assign::map_list_of("basic", "black") ("undeveloped", "blue")
-                              ("house", "green") ("conditional", "red");
+    {{"basic", "black"}, {"undeveloped", "blue"}, {"house", "green"},
+     {"conditional", "red"}};
 
 void Grapher::GraphFaultTree(const GatePtr& top_event, bool prob_requested,
                              std::ostream& out) {

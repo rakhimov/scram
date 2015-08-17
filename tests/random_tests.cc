@@ -23,7 +23,6 @@
 #include <iostream>
 #include <set>
 
-#include <boost/assign/std/vector.hpp>
 #include <gtest/gtest.h>
 
 namespace scram {
@@ -101,11 +100,8 @@ TEST(RandomTest, Triangular) {
 }
 
 TEST(RandomTest, PiecewiseLinear) {
-  using namespace boost::assign;
-  std::vector<double> intervals;
-  std::vector<double> weights;
-  intervals += 0, 2, 4, 6, 8, 10;
-  weights += 0, 1, 0, 1, 0, 1;
+  std::vector<double> intervals = {0, 2, 4, 6, 8, 10};
+  std::vector<double> weights = {0, 1, 0, 1, 0, 1};
   std::multiset<double> series;
   int sample_size = 1e5;
   for (int i = 0; i < sample_size; ++i) {
@@ -119,11 +115,8 @@ TEST(RandomTest, PiecewiseLinear) {
 }
 
 TEST(RandomTest, Histogram) {
-  using namespace boost::assign;
-  std::vector<double> intervals;
-  std::vector<double> weights;
-  intervals += 0, 2, 4, 6, 8, 10;
-  weights += 1, 2, 4, 3, 1;
+  std::vector<double> intervals = {0, 2, 4, 6, 8, 10};
+  std::vector<double> weights = {1, 2, 4, 3, 1};
   std::multiset<double> series;
   int sample_size = 1e5;
   for (int i = 0; i < sample_size; ++i) {
@@ -137,11 +130,8 @@ TEST(RandomTest, Histogram) {
 }
 
 TEST(RandomTest, Discrete) {
-  using namespace boost::assign;
-  std::vector<double> values;
-  std::vector<double> weights;
-  values += 0, 2, 4, 6, 8, 9;
-  weights += 1, 2, 4, 3, 1, 4;
+  std::vector<double> values = {0, 2, 4, 6, 8, 9};
+  std::vector<double> weights = {1, 2, 4, 3, 1, 4};
   std::multiset<double> series;
   int sample_size = 1e5;
   for (int i = 0; i < sample_size; ++i) {
