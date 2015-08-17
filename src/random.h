@@ -21,9 +21,9 @@
 #ifndef SCRAM_SRC_RANDOM_H_
 #define SCRAM_SRC_RANDOM_H_
 
+#include <cassert>
+#include <random>
 #include <vector>
-
-#include <boost/random.hpp>
 
 namespace scram {
 
@@ -162,7 +162,7 @@ class Random {
   /// @param[in] mean The mean value for Poisson distribution.
   ///
   /// @returns A sampled value.
-  static double PoissonGenerator(double mean);
+  static int PoissonGenerator(int mean);
 
   /// RNG from log-uniform distribution.
   ///
@@ -190,7 +190,7 @@ class Random {
   /// @returns Integer in the range [0, 1).
   static int DiscreteGenerator(const std::vector<double>& weights);
 
-  static boost::mt19937 rng_;  ///< The random number generator.
+  static std::mt19937 rng_;  ///< The random number generator.
 };
 
 }  // namespace scram

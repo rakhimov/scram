@@ -274,7 +274,7 @@ TEST(RandomTest, Poisson) {
   for (int i = 0; i < sample_size; ++i) {
     double sample = 0;
     do {
-      sample = Random::PoissonGenerator(5) / 10;
+      sample = static_cast<double>(Random::PoissonGenerator(5)) / 10;
     } while (sample < 0 || sample >= 1);
     series.insert(sample);
   }
