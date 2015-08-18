@@ -40,33 +40,13 @@ Event::Event(const std::string& name, const std::string& base_path,
 
 Event::~Event() {}  // Empty body for pure virtual destructor.
 
-PrimaryEvent::PrimaryEvent(const std::string& name,
-                           const std::string& base_path,
-                           bool is_public)
-      : Event(name, base_path, is_public),
-        has_expression_(false) {}
-
 PrimaryEvent::~PrimaryEvent() {}  // Empty body for pure virtual destructor.
-
-HouseEvent::HouseEvent(const std::string& name, const std::string& base_path,
-                       bool is_public)
-      : PrimaryEvent(name, base_path, is_public),
-        state_(false) {}
-
-BasicEvent::BasicEvent(const std::string& name, const std::string& base_path,
-                       bool is_public)
-      : PrimaryEvent(name, base_path, is_public) {}
 
 CcfEvent::CcfEvent(const std::string& name, const CcfGroup* ccf_group,
                    const std::vector<std::string>& member_names)
     : BasicEvent(name, ccf_group->base_path(), ccf_group->is_public()),
       ccf_group_(ccf_group),
       member_names_(member_names) {}
-
-Gate::Gate(const std::string& name, const std::string& base_path,
-           bool is_public)
-    : Event(name, base_path, is_public),
-      mark_("") {}
 
 void Gate::Validate() {
   // Detect inhibit flavor.
