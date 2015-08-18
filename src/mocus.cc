@@ -321,7 +321,7 @@ void Mocus::FindMcsFromSimpleGate(const SimpleGatePtr& gate,
     if ((*it)->size() == 1) {
       mcs->push_back(**it);
     } else {
-      cut_sets_vector.push_back(&**it);
+      cut_sets_vector.push_back(it->get());
     }
   }
   Mocus::MinimizeCutSets(cut_sets_vector, *mcs, 2, mcs);

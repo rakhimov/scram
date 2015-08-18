@@ -33,11 +33,11 @@ void Expression::GatherNodesAndConnectors() {
   assert(connectors_.empty());
   std::vector<ExpressionPtr>::iterator it;
   for (it = args_.begin(); it != args_.end(); ++it) {
-    Parameter* ptr = dynamic_cast<Parameter*>(&**it);
+    Parameter* ptr = dynamic_cast<Parameter*>(it->get());
     if (ptr) {
       nodes_.push_back(ptr);
     } else {
-      connectors_.push_back(&**it);
+      connectors_.push_back(it->get());
     }
   }
   gather_ = false;

@@ -295,7 +295,7 @@ class Gate : public Event {
   /// This function is for cycle detection.
   ///
   /// @returns The connector between gates.
-  inline Formula* connector() const { return &*formula_; }
+  inline Formula* connector() const { return formula_.get(); }
 
   /// Checks if a gate is initialized correctly.
   ///

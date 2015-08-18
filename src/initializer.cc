@@ -970,7 +970,7 @@ void Initializer::CheckFirstLayer() {
   std::unordered_map<std::string, GatePtr>::const_iterator it;
   for (it = model_->gates().begin(); it != model_->gates().end(); ++it) {
     std::vector<std::string> cycle;
-    if (cycle::DetectCycle<Gate, Formula>(&*it->second, &cycle)) {
+    if (cycle::DetectCycle<Gate, Formula>(it->second.get(), &cycle)) {
       std::string msg = "Detected a cycle in " + it->second->name() +
                         " gate:\n";
       msg += cycle::PrintCycle(cycle);
@@ -1021,7 +1021,7 @@ void Initializer::ValidateExpressions() {
     for (it = model_->parameters().begin(); it != model_->parameters().end();
          ++it) {
       std::vector<std::string> cycle;
-      if (cycle::DetectCycle<Parameter, Expression>(&*it->second, &cycle)) {
+      if (cycle::DetectCycle<Parameter, Expression>(it->second.get(), &cycle)) {
         std::string msg = "Detected a cycle in " + it->second->name() +
                           " parameter:\n";
         msg += cycle::PrintCycle(cycle);

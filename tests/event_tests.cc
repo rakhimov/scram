@@ -102,7 +102,7 @@ TEST(GateTest, Cycle) {
   formula_two->AddArgument(bottom);
   formula_three->AddArgument(top);  // Looping here.
   std::vector<std::string> cycle;
-  bool ret = cycle::DetectCycle<Gate, Formula>(&*top, &cycle);
+  bool ret = cycle::DetectCycle<Gate, Formula>(top.get(), &cycle);
   EXPECT_TRUE(ret);
   std::vector<std::string> print_cycle;
   print_cycle.push_back("Top");

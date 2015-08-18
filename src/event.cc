@@ -201,11 +201,11 @@ void Formula::GatherNodesAndConnectors() {
   assert(connectors_.empty());
   std::vector<GatePtr>::iterator it_g;
   for (it_g = gate_args_.begin(); it_g != gate_args_.end(); ++it_g) {
-    nodes_.push_back(&**it_g);
+    nodes_.push_back(it_g->get());
   }
   std::set<std::shared_ptr<Formula> >::iterator it_f;
   for (it_f = formula_args_.begin(); it_f != formula_args_.end(); ++it_f) {
-    connectors_.push_back(&**it_f);
+    connectors_.push_back(it_f->get());
   }
   gather_ = false;
 }
