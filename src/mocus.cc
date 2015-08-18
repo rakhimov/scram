@@ -74,8 +74,9 @@ namespace scram {
 
 int SimpleGate::limit_order_ = 20;
 
-void SimpleGate::GenerateCutSets(const SetPtr& cut_set,
-                                 std::set<SetPtr, SetPtrComp>* new_cut_sets) {
+void SimpleGate::GenerateCutSets(
+    const SetPtr& cut_set,
+    std::set<SetPtr, SetPtrComp>* new_cut_sets) noexcept {
   assert(cut_set->size() <= limit_order_);
   assert(type_ == kOrGate || type_ == kAndGate);
   switch (type_) {
@@ -88,8 +89,9 @@ void SimpleGate::GenerateCutSets(const SetPtr& cut_set,
   }
 }
 
-void SimpleGate::AndGateCutSets(const SetPtr& cut_set,
-                                std::set<SetPtr, SetPtrComp>* new_cut_sets) {
+void SimpleGate::AndGateCutSets(
+    const SetPtr& cut_set,
+    std::set<SetPtr, SetPtrComp>* new_cut_sets) noexcept {
   assert(cut_set->size() <= limit_order_);
   // Check for null case.
   std::vector<int>::iterator it;
@@ -136,8 +138,9 @@ void SimpleGate::AndGateCutSets(const SetPtr& cut_set,
   }
 }
 
-void SimpleGate::OrGateCutSets(const SetPtr& cut_set,
-                               std::set<SetPtr, SetPtrComp>* new_cut_sets) {
+void SimpleGate::OrGateCutSets(
+    const SetPtr& cut_set,
+    std::set<SetPtr, SetPtrComp>* new_cut_sets) noexcept {
   assert(cut_set->size() <= limit_order_);
   // Check for local minimality.
   std::vector<int>::iterator it;
@@ -269,8 +272,9 @@ void Mocus::FindMcs() {
   LOG(DEBUG2) << "Minimal cut sets found in " << DUR(mcs_time);
 }
 
-void Mocus::CreateSimpleTree(const IGatePtr& gate,
-                             std::map<int, SimpleGatePtr>* processed_gates) {
+void Mocus::CreateSimpleTree(
+    const IGatePtr& gate,
+    std::map<int, SimpleGatePtr>* processed_gates) noexcept {
   if (processed_gates->count(gate->index())) return;
   assert(gate->type() == kAndGate || gate->type() == kOrGate);
   SimpleGatePtr simple_gate(new SimpleGate(gate->type()));
@@ -297,8 +301,9 @@ void Mocus::CreateSimpleTree(const IGatePtr& gate,
   }
 }
 
-void Mocus::FindMcsFromSimpleGate(const SimpleGatePtr& gate,
-                                  std::vector< std::set<int> >* mcs) {
+void Mocus::FindMcsFromSimpleGate(
+    const SimpleGatePtr& gate,
+    std::vector< std::set<int> >* mcs) noexcept {
   CLOCK(gen_time);
 
   SetPtrComp comp;
@@ -333,7 +338,7 @@ void Mocus::FindMcsFromSimpleGate(const SimpleGatePtr& gate,
 void Mocus::MinimizeCutSets(const std::vector<const std::set<int>* >& cut_sets,
                             const std::vector<std::set<int> >& mcs_lower_order,
                             int min_order,
-                            std::vector<std::set<int> >* mcs) {
+                            std::vector<std::set<int> >* mcs) noexcept {
   if (cut_sets.empty()) return;
 
   std::vector<const std::set<int>* > temp_sets;  // For mcs of a level above.

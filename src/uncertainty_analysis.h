@@ -75,7 +75,7 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   ///                         Negative event is indicated by "'not' + id"
   ///
   /// @note  Undefined behavior if analysis called two or more times.
-  void Analyze(const std::set< std::set<std::string> >& min_cut_sets);
+  void Analyze(const std::set< std::set<std::string> >& min_cut_sets) noexcept;
 
   /// @returns Mean of the final distribution.
   inline double mean() const { return mean_; }
@@ -105,7 +105,7 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   /// Performs Monte Carlo Simulation
   /// by sampling the probability distributions
   /// and providing the final sampled values of the final probability.
-  void Sample();
+  void Sample() noexcept;
 
   /// Gathers basic events that have distributions.
   /// Other constant, certain basic events removed from sampling.
@@ -113,10 +113,10 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   /// and the members of the equation are given a corresponding multiplier.
   ///
   /// @param[out] basic_events The gathered uncertain basic events.
-  void FilterUncertainEvents(std::vector<int>* basic_events);
+  void FilterUncertainEvents(std::vector<int>* basic_events) noexcept;
 
   /// Calculates statistical values from the final distribution.
-  void CalculateStatistics();
+  void CalculateStatistics() noexcept;
 
   std::vector<double> sampled_results_;  ///< Storage for sampled values.
   int num_trials_;  ///< The number of trials to perform.

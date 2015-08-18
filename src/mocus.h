@@ -49,7 +49,7 @@ struct SetPtrComp
   /// @param[in] rhs Pointer to a set.
   ///
   /// @returns true if the lhs pointed set is less than the rhs pointed set.
-  bool operator()(const SetPtr& lhs, const SetPtr& rhs) const {
+  bool operator()(const SetPtr& lhs, const SetPtr& rhs) const noexcept {
     return *lhs < *rhs;
   }
 };
@@ -65,7 +65,7 @@ class SimpleGate {
   typedef std::shared_ptr<SimpleGate> SimpleGatePtr;
 
   /// @param[in] type The type of this gate. AND or OR types are expected.
-  explicit SimpleGate(const Operator& type) : type_(type) {}
+  explicit SimpleGate(const Operator& type) noexcept : type_(type) {}
 
   /// @returns The type of this gate.
   inline const Operator& type() const { return type_; }
@@ -103,7 +103,7 @@ class SimpleGate {
   /// @param[in] cut_set The base cut set to work with.
   /// @param[out] new_cut_sets Generated cut sets by adding the gate's children.
   void GenerateCutSets(const SetPtr& cut_set,
-                       std::set<SetPtr, SetPtrComp>* new_cut_sets);
+                       std::set<SetPtr, SetPtrComp>* new_cut_sets) noexcept;
 
   /// Sets the limit order for all analysis with simple gates.
   ///
@@ -118,7 +118,7 @@ class SimpleGate {
   /// @param[in] cut_set The base cut set to work with.
   /// @param[out] new_cut_sets Generated cut sets by using the gate's children.
   void AndGateCutSets(const SetPtr& cut_set,
-                      std::set<SetPtr, SetPtrComp>* new_cut_sets);
+                      std::set<SetPtr, SetPtrComp>* new_cut_sets) noexcept;
 
   /// Generates cut sets for OR gate children
   /// using already generated sets.
@@ -127,7 +127,7 @@ class SimpleGate {
   /// @param[in] cut_set The base cut set to work with.
   /// @param[out] new_cut_sets Generated cut sets by using the gate's children.
   void OrGateCutSets(const SetPtr& cut_set,
-                      std::set<SetPtr, SetPtrComp>* new_cut_sets);
+                     std::set<SetPtr, SetPtrComp>* new_cut_sets) noexcept;
 
   Operator type_;  ///< Type of this gate.
   std::vector<int> basic_events_;  ///< Container of basic events' indices.
@@ -164,14 +164,14 @@ class Mocus {
   /// @param[in] gate The gate to start with.
   /// @param[in,out] processed_gates Gates turned into simple gates.
   void CreateSimpleTree(const IGatePtr& gate,
-                        std::map<int, SimpleGatePtr>* processed_gates);
+                        std::map<int, SimpleGatePtr>* processed_gates) noexcept;
 
   /// Finds minimal cut sets of a simple gate.
   ///
   /// @param[in] gate The simple gate as a parent for processing.
   /// @param[out] mcs Minimal cut sets.
   void FindMcsFromSimpleGate(const SimpleGatePtr& gate,
-                             std::vector< std::set<int> >* mcs);
+                             std::vector< std::set<int> >* mcs) noexcept;
 
   /// Finds minimal cut sets from cut sets.
   /// Reduces unique cut sets to minimal cut sets.
@@ -188,7 +188,7 @@ class Mocus {
   void MinimizeCutSets(const std::vector<const std::set<int>* >& cut_sets,
                        const std::vector<std::set<int> >& mcs_lower_order,
                        int min_order,
-                       std::vector<std::set<int> >* mcs);
+                       std::vector<std::set<int> >* mcs) noexcept;
 
   const BooleanGraph* fault_tree_;  ///< The main fault tree.
   std::vector< std::set<int> > imcs_;  ///< Min cut sets with indexed events.

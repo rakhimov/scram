@@ -29,16 +29,19 @@ typedef std::mt19937 RandomGenerator;
 
 std::mt19937 Random::rng_;
 
-void Random::seed(int seed) { Random::rng_.seed(static_cast<unsigned>(seed)); }
+void Random::seed(int seed) noexcept {
+  Random::rng_.seed(static_cast<unsigned>(seed));
+}
 
-double Random::UniformRealGenerator(double min, double max) {
+double Random::UniformRealGenerator(double min, double max) noexcept {
   assert(min < max);
   typedef std::uniform_real_distribution<double> UniformDistribution;
   UniformDistribution dist(min, max);
   return dist(rng_);
 }
 
-double Random::TriangularGenerator(double lower, double mode, double upper) {
+double Random::TriangularGenerator(double lower, double mode,
+                                   double upper) noexcept {
   assert(lower < mode);
   assert(mode < upper);
   static const std::array<double, 3> weights = {0, 1, 0};
@@ -48,48 +51,50 @@ double Random::TriangularGenerator(double lower, double mode, double upper) {
   return dist(rng_);
 }
 
-double Random::PiecewiseLinearGenerator(const std::vector<double>& intervals,
-                                        const std::vector<double>& weights) {
+double Random::PiecewiseLinearGenerator(
+    const std::vector<double>& intervals,
+    const std::vector<double>& weights) noexcept {
   typedef std::piecewise_linear_distribution<double> PLDistribution;
   PLDistribution dist(intervals.begin(), intervals.end(), weights.begin());
   return dist(rng_);
 }
 
-double Random::HistogramGenerator(const std::vector<double>& intervals,
-                                  const std::vector<double>& weights) {
+double Random::HistogramGenerator(
+    const std::vector<double>& intervals,
+    const std::vector<double>& weights) noexcept {
   typedef std::piecewise_constant_distribution<double> HistogramDistribution;
   HistogramDistribution dist(intervals.begin(), intervals.end(),
                              weights.begin());
   return dist(rng_);
 }
 
-int Random::DiscreteGenerator(const std::vector<double>& weights) {
+int Random::DiscreteGenerator(const std::vector<double>& weights) noexcept {
   typedef std::discrete_distribution<int> DiscreteDistribution;
   DiscreteDistribution dist(weights.begin(), weights.end());
   return dist(rng_);
 }
 
-int Random::BinomialGenerator(int n, double p) {
+int Random::BinomialGenerator(int n, double p) noexcept {
   typedef std::binomial_distribution<int> BinomialDistribution;
   BinomialDistribution dist(n, p);
   return dist(rng_);
 }
 
-double Random::NormalGenerator(double mean, double sigma) {
+double Random::NormalGenerator(double mean, double sigma) noexcept {
   assert(sigma >= 0);
   typedef std::normal_distribution<double> NormalDistribution;
   NormalDistribution dist(mean, sigma);
   return dist(rng_);
 }
 
-double Random::LogNormalGenerator(double m, double s) {
+double Random::LogNormalGenerator(double m, double s) noexcept {
   assert(s >= 0);
   typedef std::lognormal_distribution<double> LogNormalDistribution;
   LogNormalDistribution dist(m, s);
   return dist(rng_);
 }
 
-double Random::GammaGenerator(double k, double theta) {
+double Random::GammaGenerator(double k, double theta) noexcept {
   assert(k > 0);
   assert(theta > 0);
   typedef std::gamma_distribution<double> GammaDistribution;
@@ -97,7 +102,7 @@ double Random::GammaGenerator(double k, double theta) {
   return theta * gamma_dist(rng_);
 }
 
-double Random::BetaGenerator(double alpha, double beta) {
+double Random::BetaGenerator(double alpha, double beta) noexcept {
   assert(alpha > 0);
   assert(beta > 0);
   typedef std::gamma_distribution<double> GammaDistribution;
@@ -111,7 +116,7 @@ double Random::BetaGenerator(double alpha, double beta) {
   return x / (x + y);
 }
 
-double Random::WeibullGenerator(double k, double lambda) {
+double Random::WeibullGenerator(double k, double lambda) noexcept {
   assert(k > 0);
   assert(lambda > 0);
   typedef std::weibull_distribution<double> WeibullDistribution;
@@ -119,26 +124,26 @@ double Random::WeibullGenerator(double k, double lambda) {
   return dist(rng_);
 }
 
-double Random::ExponentialGenerator(double lambda) {
+double Random::ExponentialGenerator(double lambda) noexcept {
   assert(lambda > 0);
   typedef std::exponential_distribution<double> ExponentialDistribution;
   ExponentialDistribution dist(lambda);
   return dist(rng_);
 }
 
-int Random::PoissonGenerator(int mean) {
+int Random::PoissonGenerator(int mean) noexcept {
   assert(mean > 0);
   typedef std::poisson_distribution<int> PoissonDistribution;
   PoissonDistribution dist(mean);
   return dist(rng_);
 }
 
-double Random::LogUniformGenerator(double min, double max) {
+double Random::LogUniformGenerator(double min, double max) noexcept {
   return std::exp(Random::UniformRealGenerator(min, max));
 }
 
 double Random::LogTriangularGenerator(double lower, double mode,
-                                      double upper) {
+                                      double upper) noexcept {
   return std::exp(Random::TriangularGenerator(lower, mode, upper));
 }
 

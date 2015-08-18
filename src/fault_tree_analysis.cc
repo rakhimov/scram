@@ -48,7 +48,7 @@ FaultTreeAnalysis::FaultTreeAnalysis(const GatePtr& root, int limit_order,
   FaultTreeAnalysis::CleanMarks();
 }
 
-void FaultTreeAnalysis::Analyze() {
+void FaultTreeAnalysis::Analyze() noexcept {
   CLOCK(analysis_time);
 
   CLOCK(ft_creation);
@@ -81,13 +81,13 @@ void FaultTreeAnalysis::Analyze() {
   delete mocus;  // No exceptions are expected.
 }
 
-void FaultTreeAnalysis::GatherEvents(const GatePtr& gate) {
+void FaultTreeAnalysis::GatherEvents(const GatePtr& gate) noexcept {
   if (gate->mark() == "visited") return;
   gate->mark("visited");
   FaultTreeAnalysis::GatherEvents(gate->formula());
 }
 
-void FaultTreeAnalysis::GatherEvents(const FormulaPtr& formula) {
+void FaultTreeAnalysis::GatherEvents(const FormulaPtr& formula) noexcept {
   std::vector<BasicEventPtr>::const_iterator it_b;
   for (it_b = formula->basic_event_args().begin();
        it_b != formula->basic_event_args().end(); ++it_b) {
@@ -116,7 +116,7 @@ void FaultTreeAnalysis::GatherEvents(const FormulaPtr& formula) {
   }
 }
 
-void FaultTreeAnalysis::CleanMarks() {
+void FaultTreeAnalysis::CleanMarks() noexcept {
   top_event_->mark("");
   std::unordered_map<std::string, GatePtr>::iterator it;
   for (it = inter_events_.begin(); it != inter_events_.end(); ++it) {
@@ -125,7 +125,7 @@ void FaultTreeAnalysis::CleanMarks() {
 }
 
 void FaultTreeAnalysis::SetsToString(const std::vector< std::set<int> >& imcs,
-                                     const BooleanGraph* ft) {
+                                     const BooleanGraph* ft) noexcept {
   std::vector< std::set<int> >::const_iterator it_min;
   for (it_min = imcs.begin(); it_min != imcs.end(); ++it_min) {
     if (it_min->size() > max_order_) max_order_ = it_min->size();

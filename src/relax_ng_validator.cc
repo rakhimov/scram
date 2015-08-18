@@ -38,7 +38,7 @@ RelaxNGValidator::RelaxNGValidator()
     : schema_(nullptr),
       valid_context_(nullptr) {}
 
-RelaxNGValidator::~RelaxNGValidator() {
+RelaxNGValidator::~RelaxNGValidator() noexcept {
   RelaxNGValidator::ReleaseUnderlying();
 }
 
@@ -87,7 +87,7 @@ void RelaxNGValidator::ParseContext(xmlRelaxNGParserCtxtPtr context) {
   }
 }
 
-void RelaxNGValidator::ReleaseUnderlying() {
+void RelaxNGValidator::ReleaseUnderlying() noexcept {
   if (valid_context_) {
     xmlRelaxNGFreeValidCtxt(valid_context_);
     valid_context_ = nullptr;

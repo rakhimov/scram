@@ -41,7 +41,7 @@ class XMLParser {
   explicit XMLParser(const std::stringstream& xml_input_snippet);
 
   /// Resets the parser.
-  ~XMLParser();
+  ~XMLParser() noexcept;
 
   /// Validates the file against a schema.
   ///

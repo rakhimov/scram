@@ -44,7 +44,7 @@ class RelaxNGValidator {
   RelaxNGValidator();
 
   /// Releases XML related memory by calling ReleaseUnderlying().
-  ~RelaxNGValidator();
+  ~RelaxNGValidator() noexcept;
 
   /// Parses a RelaxNG schema XML file.
   ///
@@ -72,7 +72,7 @@ class RelaxNGValidator {
   void ParseContext(xmlRelaxNGParserCtxtPtr context);
 
   /// Frees XML-related memory.
-  void ReleaseUnderlying();
+  void ReleaseUnderlying() noexcept;
 
   xmlRelaxNGPtr schema_;  ///< The schema.
   xmlRelaxNGValidCtxtPtr valid_context_;  ///< The validated context.

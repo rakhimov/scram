@@ -86,7 +86,7 @@ class Logger {
   Logger& operator=(const Logger&) = delete;  ///< Restrict copy assignment.
 
   /// Flashes all the logs into the standard error upon destruction.
-  ~Logger() {
+  ~Logger() noexcept {
     os_ << std::endl;
     // fprintf used for thread safety.
     fprintf(stderr, "%s", os_.str().c_str());

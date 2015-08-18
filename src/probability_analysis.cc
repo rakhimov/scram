@@ -70,7 +70,7 @@ void ProbabilityAnalysis::UpdateDatabase(
 }
 
 void ProbabilityAnalysis::Analyze(
-    const std::set< std::set<std::string> >& min_cut_sets) {
+    const std::set< std::set<std::string> >& min_cut_sets) noexcept {
   min_cut_sets_ = min_cut_sets;
 
   // Special case of unity with empty sets.
@@ -142,7 +142,7 @@ void ProbabilityAnalysis::Analyze(
   imp_time_ = DUR(imp_time);
 }
 
-void ProbabilityAnalysis::AssignIndices() {
+void ProbabilityAnalysis::AssignIndices() noexcept {
   // Cleanup the previous information.
   int_to_basic_.clear();
   basic_to_int_.clear();
@@ -162,7 +162,7 @@ void ProbabilityAnalysis::AssignIndices() {
 }
 
 void ProbabilityAnalysis::IndexMcs(
-    const std::set<std::set<std::string> >& min_cut_sets) {
+    const std::set<std::set<std::string> >& min_cut_sets) noexcept {
   // Update databases of minimal cut sets with indexed events.
   std::set< std::set<std::string> >::const_iterator it;
   for (it = min_cut_sets.begin(); it != min_cut_sets.end(); ++it) {
@@ -199,9 +199,8 @@ void ProbabilityAnalysis::IndexMcs(
 }
 
 double ProbabilityAnalysis::ProbMcub(
-    const std::vector< boost::container::flat_set<int> >& min_cut_sets) {
-  using boost::container::flat_set;
-  std::vector< flat_set<int> >::const_iterator it_min;
+    const std::vector<FlatSet>& min_cut_sets) noexcept {
+  std::vector<FlatSet>::const_iterator it_min;
   double m = 1;
   for (it_min = min_cut_sets.begin(); it_min != min_cut_sets.end(); ++it_min) {
     // Calculate a probability of a set with AND relationship.
@@ -210,10 +209,8 @@ double ProbabilityAnalysis::ProbMcub(
   return 1 - m;
 }
 
-void ProbabilityAnalysis::ProbOr(
-    int sign,
-    int num_sums,
-    std::set< boost::container::flat_set<int> >* min_cut_sets) {
+void ProbabilityAnalysis::ProbOr(int sign, int num_sums,
+                                 std::set<FlatSet>* min_cut_sets) noexcept {
   assert(sign != 0);
   assert(num_sums >= 0);
 
@@ -221,8 +218,6 @@ void ProbabilityAnalysis::ProbOr(
   if (min_cut_sets->empty()) return;
 
   if (num_sums == 0) return;
-
-  using boost::container::flat_set;
 
   // Put this element into the equation.
   if (sign > 0) {
@@ -236,7 +231,7 @@ void ProbabilityAnalysis::ProbOr(
   // Delete element from the original set.
   min_cut_sets->erase(min_cut_sets->begin());
 
-  std::set< flat_set<int> > combo_sets;
+  std::set<FlatSet> combo_sets;
   ProbabilityAnalysis::CombineElAndSet(
       (sign > 0) ? pos_terms_.back() : neg_terms_.back(),
       *min_cut_sets, &combo_sets);
@@ -245,14 +240,12 @@ void ProbabilityAnalysis::ProbOr(
   ProbabilityAnalysis::ProbOr(-sign, num_sums - 1, &combo_sets);
 }
 
-double ProbabilityAnalysis::ProbAnd(
-    const boost::container::flat_set<int>& min_cut_set) {
+double ProbabilityAnalysis::ProbAnd(const FlatSet& min_cut_set) noexcept {
   // Test just in case the min cut set is empty.
   if (min_cut_set.empty()) return 0;
 
-  using boost::container::flat_set;
   double p_sub_set = 1;  // 1 is for multiplication.
-  flat_set<int>::const_iterator it_set;
+  FlatSet::const_iterator it_set;
   for (it_set = min_cut_set.begin(); it_set != min_cut_set.end(); ++it_set) {
     if (*it_set > 0) {
       p_sub_set *= iprobs_[*it_set];
@@ -264,15 +257,14 @@ double ProbabilityAnalysis::ProbAnd(
 }
 
 void ProbabilityAnalysis::CombineElAndSet(
-    const boost::container::flat_set<int>& el,
-    const std::set< boost::container::flat_set<int> >& set,
-    std::set< boost::container::flat_set<int> >* combo_set) {
-  using boost::container::flat_set;
-  std::set< flat_set<int> >::iterator it_set;
+    const FlatSet& el,
+    const std::set<FlatSet>& set,
+    std::set<FlatSet>* combo_set) noexcept {
+  std::set<FlatSet>::iterator it_set;
   for (it_set = set.begin(); it_set != set.end(); ++it_set) {
     bool include = true;  // Indicates that the resultant set is not null.
     if (!coherent_) {
-      flat_set<int>::const_iterator it;
+      FlatSet::const_iterator it;
       for (it = el.begin(); it != el.end(); ++it) {
         if (it_set->count(-*it)) {
           include = false;
@@ -281,18 +273,17 @@ void ProbabilityAnalysis::CombineElAndSet(
       }
     }
     if (include) {
-      flat_set<int> member_set(*it_set);
+      FlatSet member_set(*it_set);
       member_set.insert(el.begin(), el.end());
       combo_set->insert(combo_set->end(), member_set);
     }
   }
 }
 
-double ProbabilityAnalysis::CalculateTotalProbability() {
-  using boost::container::flat_set;
+double ProbabilityAnalysis::CalculateTotalProbability() noexcept {
   double pos = 0;
   double neg = 0;
-  std::vector< flat_set<int> >::iterator it_s;
+  std::vector<FlatSet>::iterator it_s;
   for (it_s = pos_terms_.begin(); it_s != pos_terms_.end(); ++it_s) {
     pos += ProbabilityAnalysis::ProbAnd(*it_s);
   }
@@ -302,7 +293,7 @@ double ProbabilityAnalysis::CalculateTotalProbability() {
   return pos - neg;
 }
 
-void ProbabilityAnalysis::PerformImportanceAnalysis() {
+void ProbabilityAnalysis::PerformImportanceAnalysis() noexcept {
   // The main data for all the importance types is P(top/event) or
   // P(top/Not event).
   std::set<int>::iterator it;

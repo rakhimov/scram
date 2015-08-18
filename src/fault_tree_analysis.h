@@ -92,7 +92,7 @@ class FaultTreeAnalysis {
   ///          since the construction of the analysis,
   ///          the analysis will be invalid or fail.
   /// @warning The gates' visit marks must be clean.
-  void Analyze();
+  void Analyze() noexcept;
 
   /// @returns The top gate that is passed to the analysis.
   inline const GatePtr& top_event() const { return top_event_; }
@@ -171,18 +171,18 @@ class FaultTreeAnalysis {
   /// The mark is checked to prevent revisiting.
   ///
   /// @param[in] gate The gate to start traversal from.
-  void GatherEvents(const GatePtr& gate);
+  void GatherEvents(const GatePtr& gate) noexcept;
 
   /// Traverses formulas recursively to find all events.
   ///
   /// @param[in] formula The formula to get events from.
-  void GatherEvents(const FormulaPtr& formula);
+  void GatherEvents(const FormulaPtr& formula) noexcept;
 
   /// Cleans marks from gates that were traversed.
   /// Marks are set to empty strings.
   /// This is important
   /// because other code may assume that marks are empty.
-  void CleanMarks();
+  void CleanMarks() noexcept;
 
   /// Converts minimal cut sets from indices to strings
   /// for future reporting.
@@ -191,7 +191,7 @@ class FaultTreeAnalysis {
   /// @param[in] imcs Min cut sets with indices of events.
   /// @param[in] ft Indexed fault tree with basic event indices and pointers.
   void SetsToString(const std::vector< std::set<int> >& imcs,
-                    const BooleanGraph* ft);
+                    const BooleanGraph* ft) noexcept;
 
   /// Limit on the size of the minimal cut sets for performance reasons.
   int limit_order_;

@@ -63,7 +63,7 @@ class Preprocessor {
   ///          the destructor will not be called
   ///          as expected by the preprocessing algorithms,
   ///          which will mess the new structure of the Boolean graph.
-  explicit Preprocessor(BooleanGraph* graph);
+  explicit Preprocessor(BooleanGraph* graph) noexcept;
 
   /// Performs processing of a fault tree
   /// to simplify the structure to
@@ -75,7 +75,7 @@ class Preprocessor {
   /// @warning There should not be another smart pointer
   ///          to the indexed top gate of the fault tree
   ///          outside of the Boolean graph.
-  void ProcessFaultTree();
+  void ProcessFaultTree() noexcept;
 
  private:
   typedef std::shared_ptr<Node> NodePtr;
@@ -102,7 +102,7 @@ class Preprocessor {
   ///          however, the preprocessing algorithms should not rely on this.
   ///          If the partial normalization messes some significant algorithm,
   ///          it may be removed from this phase in future.
-  void PhaseOne();
+  void PhaseOne() noexcept;
 
   /// Preprocessing phase of the original structure of the graph.
   /// This phase attempts to leverage
@@ -114,14 +114,14 @@ class Preprocessor {
   /// @note Modules are detected and created.
   /// @note Non-module and non-multiple gates are coalesced.
   /// @note Boolean optimization is applied.
-  void PhaseTwo();
+  void PhaseTwo() noexcept;
 
   /// Application of gate normalization.
   /// After this phase,
   /// the graph is in normal form.
   ///
   /// @note Gate normalization is conducted.
-  void PhaseThree();
+  void PhaseThree() noexcept;
 
   /// Propagation of complements.
   /// Complements are propagated down to the variables in the graph.
@@ -129,14 +129,14 @@ class Preprocessor {
   /// the graph is in negation normal form.
   ///
   /// @note Complements are propagated to the variables of the graph.
-  void PhaseFour();
+  void PhaseFour() noexcept;
 
   /// The final phase
   /// that cleans up the graph,
   /// and puts the structure of the graph ready for analysis.
   /// This phase makes the graph structure
   /// alternating AND/OR gate layers.
-  void PhaseFive();
+  void PhaseFive() noexcept;
 
   /// Checks the root gate of the graph for further processing.
   /// The root gate may become constant
@@ -147,7 +147,7 @@ class Preprocessor {
   /// @returns true if no more processing is needed.
   ///
   /// @note This function may swap the root gate of the graph.
-  bool CheckRootGate();
+  bool CheckRootGate() noexcept;
 
   /// Removes argument gates of NULL type,
   /// which means these arg gates have only one argument.
@@ -172,7 +172,7 @@ class Preprocessor {
   ///          This must be handled separately.
   /// @warning NULL gates that are constant are not handled
   ///          and left for constant propagation functions.
-  void RemoveNullGates();
+  void RemoveNullGates() noexcept;
 
   /// Removes all Boolean constants from the Boolean graph
   /// according to the Boolean logic of the gates.
@@ -190,7 +190,7 @@ class Preprocessor {
   /// @warning There still may be only one constant state gate
   ///          which is the root of the graph.
   ///          This must be handled separately.
-  void RemoveConstants();
+  void RemoveConstants() noexcept;
 
   /// Propagates a Boolean constant bottom-up.
   /// This is a helper function for initial cleanup of the Boolean graph.
@@ -200,7 +200,7 @@ class Preprocessor {
   /// @note This function works together with
   ///       NULL type and constant gate propagation functions
   ///       to clean the results of the propagation.
-  void PropagateConstant(const ConstantPtr& constant);
+  void PropagateConstant(const ConstantPtr& constant) noexcept;
 
   /// Changes the state of a gate
   /// or removes a constant argument.
@@ -216,7 +216,7 @@ class Preprocessor {
   ///       to properly assess the Boolean constant argument.
   /// @note This function may change the state of the gate.
   /// @note This function may change type and parameters of the gate.
-  void ProcessConstantArg(const IGatePtr& gate, int arg, bool state);
+  void ProcessConstantArg(const IGatePtr& gate, int arg, bool state) noexcept;
 
   /// Processes Boolean constant argument with True value.
   ///
@@ -226,7 +226,7 @@ class Preprocessor {
   /// @note This is a helper function that propagates constants.
   /// @note This function may change the state of the gate.
   /// @note This function may change type and parameters of the gate.
-  void ProcessTrueArg(const IGatePtr& gate, int arg);
+  void ProcessTrueArg(const IGatePtr& gate, int arg) noexcept;
 
   /// Processes Boolean constant argument with False value.
   ///
@@ -236,7 +236,7 @@ class Preprocessor {
   /// @note This is a helper function that propagates constants.
   /// @note This function may change the state of the gate.
   /// @note This function may change type and parameters of the gate.
-  void ProcessFalseArg(const IGatePtr& gate, int arg);
+  void ProcessFalseArg(const IGatePtr& gate, int arg) noexcept;
 
   /// Removes Boolean constant arguments from a gate
   /// taking into account the logic.
@@ -257,7 +257,7 @@ class Preprocessor {
   /// @warning This function does not handle complex K/N gate parents.
   ///          The logic is not simple for K/N gates,
   ///          so it must be handled by the caller.
-  void RemoveConstantArg(const IGatePtr& gate, int arg);
+  void RemoveConstantArg(const IGatePtr& gate, int arg) noexcept;
 
   /// Propagates constant gates bottom-up.
   /// This is a helper function for algorithms
@@ -272,7 +272,7 @@ class Preprocessor {
   /// @warning All parents of the gate will be removed,
   ///          so the gate itself may get deleted
   ///          unless it is the top gate.
-  void PropagateConstGate(const IGatePtr& gate);
+  void PropagateConstGate(const IGatePtr& gate) noexcept;
 
   /// Propagate NULL type gates bottom-up.
   /// This is a helper function for algorithms
@@ -287,19 +287,19 @@ class Preprocessor {
   /// @warning All parents of the gate will be removed,
   ///          so the gate itself may get deleted
   ///          unless it is the top gate.
-  void PropagateNullGate(const IGatePtr& gate);
+  void PropagateNullGate(const IGatePtr& gate) noexcept;
 
   /// Clears all constant gates registered for removal
   /// by algorithms or other preprocessing functions.
   ///
   /// @warning Gate marks will get cleared by this function.
-  void ClearConstGates();
+  void ClearConstGates() noexcept;
 
   /// Clears all NULL type gates registered for removal
   /// by algorithms or other preprocessing functions.
   ///
   /// @warning Gate marks will get cleared by this function.
-  void ClearNullGates();
+  void ClearNullGates() noexcept;
 
   /// Normalizes the gates of the whole Boolean graph
   /// into OR, AND gates.
@@ -316,7 +316,7 @@ class Preprocessor {
   /// @note The full normalization is meant to be called only once.
   ///
   /// @warning The root get may still be NULL type.
-  void NormalizeGates(bool full);
+  void NormalizeGates(bool full) noexcept;
 
   /// Notifies all parents of negative gates,
   /// such as NOT, NOR, and NAND,
@@ -332,7 +332,7 @@ class Preprocessor {
   /// @warning This function does not change the types of gates.
   /// @warning The root gate does not have parents,
   ///          so it is not handled here.
-  void NotifyParentsOfNegativeGates(const IGatePtr& gate);
+  void NotifyParentsOfNegativeGates(const IGatePtr& gate) noexcept;
 
   /// Normalizes complex gates into OR, AND gates.
   ///
@@ -346,7 +346,7 @@ class Preprocessor {
   /// @warning Gate marks must be clear.
   /// @warning The parents of negative gates are assumed to be
   ///          notified about the change of their arguments' types.
-  void NormalizeGate(const IGatePtr& gate, bool full);
+  void NormalizeGate(const IGatePtr& gate, bool full) noexcept;
 
   /// Normalizes a gate with XOR logic.
   /// This is a helper function
@@ -355,7 +355,7 @@ class Preprocessor {
   /// @param[in,out] gate The gate to normalize.
   ///
   /// @note This is a helper function for NormalizeGate.
-  void NormalizeXorGate(const IGatePtr& gate);
+  void NormalizeXorGate(const IGatePtr& gate) noexcept;
 
   /// Normalizes an ATLEAST gate with a vote number.
   /// The gate is turned into an OR gate of
@@ -372,7 +372,7 @@ class Preprocessor {
   /// @param[in,out] gate The ATLEAST gate to normalize.
   ///
   /// @note This is a helper function for NormalizeGate.
-  void NormalizeAtleastGate(const IGatePtr& gate);
+  void NormalizeAtleastGate(const IGatePtr& gate) noexcept;
 
   /// Propagates complements of argument gates down to leafs
   /// according to the De Morgan's law
@@ -395,7 +395,7 @@ class Preprocessor {
   ///
   /// @todo Module-aware complement propagation.
   void PropagateComplements(const IGatePtr& gate,
-                            std::map<int, IGatePtr>* gate_complements);
+                            std::map<int, IGatePtr>* gate_complements) noexcept;
 
   /// Coalesces positive argument gates
   /// with the same OR or AND logic as parents.
@@ -413,12 +413,12 @@ class Preprocessor {
   ///       These gates are registered for future processing.
   /// @note It is impossible that this function generates NULL type gates.
   /// @note Module gates are omitted from coalescing to preserve them.
-  bool JoinGates(const IGatePtr& gate, bool common);
+  bool JoinGates(const IGatePtr& gate, bool common) noexcept;
 
   /// Traverses the Boolean graph to detect modules.
   /// Modules are independent sub-graphs
   /// without common nodes with the rest of the graph.
-  void DetectModules();
+  void DetectModules() noexcept;
 
   /// Traverses the given gate
   /// and assigns time of visit to nodes.
@@ -427,7 +427,7 @@ class Preprocessor {
   /// @param[in,out] gate The gate to traverse and assign time to.
   ///
   /// @returns The final time of traversing.
-  int AssignTiming(int time, const IGatePtr& gate);
+  int AssignTiming(int time, const IGatePtr& gate) noexcept;
 
   /// Determines modules from original gates
   /// that have been already timed.
@@ -436,7 +436,7 @@ class Preprocessor {
   /// @param[in,out] gate The gate to test for modularity.
   ///
   /// @todo Make this function aware of previously created modules.
-  void FindModules(const IGatePtr& gate);
+  void FindModules(const IGatePtr& gate) noexcept;
 
   /// Processes gate arguments found during the module detection.
   ///
@@ -448,7 +448,7 @@ class Preprocessor {
       const IGatePtr& gate,
       const std::vector<std::pair<int, NodePtr> >& non_shared_args,
       std::vector<std::pair<int, NodePtr> >* modular_args,
-      std::vector<std::pair<int, NodePtr> >* non_modular_args);
+      std::vector<std::pair<int, NodePtr> >* non_modular_args) noexcept;
 
   /// Creates a new module
   /// as an argument of an existing gate
@@ -463,8 +463,9 @@ class Preprocessor {
   /// @param[in] args Modular arguments to be added into the new module.
   ///
   /// @returns Pointer to the new module if it is created.
-  IGatePtr CreateNewModule(const IGatePtr& gate,
-                           const std::vector<std::pair<int, NodePtr> >& args);
+  IGatePtr CreateNewModule(
+      const IGatePtr& gate,
+      const std::vector<std::pair<int, NodePtr> >& args) noexcept;
 
   /// Checks if a group of modular arguments share
   /// anything with non-modular arguments.
@@ -477,7 +478,7 @@ class Preprocessor {
   /// @param[in,out] non_modular_args Non modular arguments.
   void FilterModularArgs(
       std::vector<std::pair<int, NodePtr> >* modular_args,
-      std::vector<std::pair<int, NodePtr> >* non_modular_args);
+      std::vector<std::pair<int, NodePtr> >* non_modular_args) noexcept;
 
   /// Groups modular arguments by their common elements.
   /// The gates created with these modular arguments
@@ -487,7 +488,7 @@ class Preprocessor {
   /// @param[out] groups Grouped modular arguments.
   void GroupModularArgs(
       const std::vector<std::pair<int, NodePtr> >& modular_args,
-      std::vector<std::vector<std::pair<int, NodePtr> > >* groups);
+      std::vector<std::vector<std::pair<int, NodePtr> > >* groups) noexcept;
 
   /// Creates new module gates
   /// from groups of modular arguments
@@ -504,7 +505,7 @@ class Preprocessor {
   void CreateNewModules(
       const IGatePtr& gate,
       const std::vector<std::pair<int, NodePtr> >& modular_args,
-      const std::vector<std::vector<std::pair<int, NodePtr> > >& groups);
+      const std::vector<std::vector<std::pair<int, NodePtr> > >& groups) noexcept;
 
   /// Identifies common arguments of gates,
   /// and merges the common arguments into new gates.
@@ -522,7 +523,7 @@ class Preprocessor {
   /// @warning Node visit times are used for common node detection.
   /// @warning Gate optimization values are used
   ///          to mark the optimized gates.
-  bool MergeCommonArgs();
+  bool MergeCommonArgs() noexcept;
 
   /// Merges common arguments for a specific group of gates.
   /// The gates are grouped by their operators.
@@ -540,7 +541,7 @@ class Preprocessor {
   /// @warning Node visit times are used for common node detection.
   /// @warning Gate optimization values are used
   ///          to mark the optimized gates.
-  bool MergeCommonArgs(const Operator& op);
+  bool MergeCommonArgs(const Operator& op) noexcept;
 
   /// Marks common arguments of gates with a specific operator.
   ///
@@ -551,7 +552,7 @@ class Preprocessor {
   /// @note Visit information is used to mark the common arguments.
   ///
   /// @warning Gate marks are used for linear traversal.
-  void MarkCommonArgs(const IGatePtr& gate, const Operator& op);
+  void MarkCommonArgs(const IGatePtr& gate, const Operator& op) noexcept;
 
   /// Gathers common arguments of the gates
   /// in the group of a specific operator.
@@ -568,7 +569,7 @@ class Preprocessor {
   void GatherCommonArgs(
       const IGatePtr& gate,
       const Operator& op,
-      std::vector<std::pair<IGatePtr, std::vector<int> > >* group);
+      std::vector<std::pair<IGatePtr, std::vector<int> > >* group) noexcept;
 
   /// Findes intersections of common arguments of gates.
   /// Gates with the same common arguments are grouped
@@ -581,7 +582,7 @@ class Preprocessor {
   /// @note The common arguments are sorted.
   void GroupCommonParents(
      const std::vector<std::pair<IGatePtr, std::vector<int> > >& group,
-     boost::unordered_map<std::vector<int>, std::set<IGatePtr> >* parents);
+     boost::unordered_map<std::vector<int>, std::set<IGatePtr> >* parents) noexcept;
 
   /// Propagates failures of common nodes to detect redundancy.
   /// The graph structure is optimized
@@ -591,7 +592,7 @@ class Preprocessor {
   /// @warning Boolean optimization may replace the root gate of the graph.
   /// @warning The current implementation works
   ///          only for coherent graphs.
-  void BooleanOptimization();
+  void BooleanOptimization() noexcept;
 
   /// Traverses the graph to find nodes
   /// that have more than one parent.
@@ -606,14 +607,14 @@ class Preprocessor {
   /// @warning Node visit information must be clear.
   void GatherCommonNodes(
       std::vector<IGateWeakPtr>* common_gates,
-      std::vector<std::weak_ptr<Variable> >* common_variables);
+      std::vector<std::weak_ptr<Variable> >* common_variables) noexcept;
 
   /// Tries to simplify the graph by removing redundancies
   /// generated by a common node.
   ///
   /// @param[in] common_node A node with more than one parent.
   template<class N>
-  void ProcessCommonNode(const std::weak_ptr<N>& common_node);
+  void ProcessCommonNode(const std::weak_ptr<N>& common_node) noexcept;
 
   /// Propagates failure of the node
   /// by setting its ancestors' optimization values to 1
@@ -622,7 +623,7 @@ class Preprocessor {
   /// @param[in] node The node that fails.
   ///
   /// @returns Total multiplicity of the node.
-  int PropagateFailure(const NodePtr& node);
+  int PropagateFailure(const NodePtr& node) noexcept;
 
   /// Collects failure destinations
   /// and marks non-redundant nodes.
@@ -634,8 +635,10 @@ class Preprocessor {
   /// @param[in,out] destinations Destinations of the failure.
   ///
   /// @returns The number of encounters with the destinations.
-  int CollectFailureDestinations(const IGatePtr& gate, int index,
-                                 std::map<int, IGateWeakPtr>* destinations);
+  int CollectFailureDestinations(
+      const IGatePtr& gate,
+      int index,
+      std::map<int, IGateWeakPtr>* destinations) noexcept;
 
   /// Detects if parents of a node are redundant.
   /// If there are redundant parents,
@@ -649,8 +652,9 @@ class Preprocessor {
   ///
   /// @note Constant gates are registered for removal.
   /// @note Null type gates are registered for removal.
-  void ProcessRedundantParents(const NodePtr& node,
-                               std::map<int, IGateWeakPtr>* destinations);
+  void ProcessRedundantParents(
+      const NodePtr& node,
+      std::map<int, IGateWeakPtr>* destinations) noexcept;
 
   /// Transforms failure destination
   /// according to the logic and the common node.
@@ -663,7 +667,7 @@ class Preprocessor {
   template<class N>
   void ProcessFailureDestinations(
       const std::shared_ptr<N>& node,
-      const std::map<int, IGateWeakPtr>& destinations);
+      const std::map<int, IGateWeakPtr>& destinations) noexcept;
 
   /// The Shannon decomposition for common nodes in the Boolean graph.
   /// This procedure is also called "Constant Propagation",
@@ -677,7 +681,7 @@ class Preprocessor {
   /// x | f(x, y) = x | f(0, y)
   ///
   /// @returns true if the setups are found and processed.
-  bool DecomposeCommonNodes();
+  bool DecomposeCommonNodes() noexcept;
 
   /// Processes common nodes in decomposition setups.
   ///
@@ -686,7 +690,8 @@ class Preprocessor {
   /// @returns true if the decomposition setups are found and processed.
   ///
   /// @warning Gate visit information is manipulated.
-  bool ProcessDecompositionCommonNode(const std::weak_ptr<Node>& common_node);
+  bool ProcessDecompositionCommonNode(
+      const std::weak_ptr<Node>& common_node) noexcept;
 
   /// Marks destinations for common node decomposition.
   ///
@@ -694,14 +699,16 @@ class Preprocessor {
   /// @param[in] index The positive index of the common node.
   ///
   /// @warning The gate visit fields are manipulated.
-  void MarkDecompositionDestinations(const IGatePtr& parent, int index);
+  void MarkDecompositionDestinations(const IGatePtr& parent,
+                                     int index) noexcept;
 
   /// Processes decomposition destinations with particular setups.
   ///
   /// @param[in] node The common node under consideration.
   /// @param[in] dest The set of destination parents.
-  void ProcessDecompositionDestinations(const NodePtr& node,
-                                        const std::vector<IGateWeakPtr>& dest);
+  void ProcessDecompositionDestinations(
+      const NodePtr& node,
+      const std::vector<IGateWeakPtr>& dest) noexcept;
 
   /// Processes decomposition ancestors
   /// in the link to the decomposition destinations.
@@ -718,7 +725,7 @@ class Preprocessor {
       const NodePtr& node,
       bool state,
       bool destination,
-      std::unordered_map<int, IGatePtr>* clones);
+      std::unordered_map<int, IGatePtr>* clones) noexcept;
 
   /// Detects and replaces multiple definitions of gates.
   /// Gates with the same logic and inputs
@@ -731,7 +738,7 @@ class Preprocessor {
   ///       The replaced gates are considered a new graph,
   ///       and this function must be called again
   ///       to verify that the new graph does not have multiple definitions.
-  bool ProcessMultipleDefinitions();
+  bool ProcessMultipleDefinitions() noexcept;
 
   /// Traverses the Boolean graph to collect multiple definitions of gates.
   ///
@@ -743,7 +750,7 @@ class Preprocessor {
   void DetectMultipleDefinitions(
       const IGatePtr& gate,
       std::unordered_map<IGatePtr, std::vector<IGateWeakPtr> >* multi_def,
-      std::vector<std::vector<IGatePtr> >* gates);
+      std::vector<std::vector<IGatePtr> >* gates) noexcept;
 
   /// Detects and manipulates AND and OR gate distributivity.
   /// For example,
@@ -754,7 +761,7 @@ class Preprocessor {
   /// @returns true if transformations are performed.
   ///
   /// @warning Gate marks must be clear.
-  bool DetectDistributivity(const IGatePtr& gate);
+  bool DetectDistributivity(const IGatePtr& gate) noexcept;
 
   /// Manipulates gates with distributive arguments.
   ///
@@ -763,7 +770,7 @@ class Preprocessor {
   ///
   /// @returns true if transformations are performed.
   bool HandleDistributiveArgs(const IGatePtr& gate,
-                              const std::vector<IGatePtr>& candidates);
+                              const std::vector<IGatePtr>& candidates) noexcept;
 
   /// Replaces one gate in the graph with another.
   ///
@@ -775,7 +782,7 @@ class Preprocessor {
   ///
   /// @note If any parent becomes constant or NULL type,
   ///       the parent is registered for removal.
-  void ReplaceGate(const IGatePtr& gate, const IGatePtr& replacement);
+  void ReplaceGate(const IGatePtr& gate, const IGatePtr& replacement) noexcept;
 
   BooleanGraph* graph_;  ///< The Boolean graph to preprocess.
   int root_sign_;  ///< The negative or positive sign of the root node.

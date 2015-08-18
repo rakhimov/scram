@@ -54,7 +54,7 @@ void UncertaintyAnalysis::UpdateDatabase(
 }
 
 void UncertaintyAnalysis::Analyze(
-    const std::set< std::set<std::string> >& min_cut_sets) {
+    const std::set< std::set<std::string> >& min_cut_sets) noexcept {
   min_cut_sets_ = min_cut_sets;
 
   // Special case of unity with empty sets.
@@ -93,7 +93,7 @@ void UncertaintyAnalysis::Analyze(
   analysis_time_ = DUR(analysis_time);
 }
 
-void UncertaintyAnalysis::Sample() {
+void UncertaintyAnalysis::Sample() noexcept {
   using boost::container::flat_set;
   // Detect constant basic events.
   std::vector<int> basic_events;
@@ -137,7 +137,7 @@ void UncertaintyAnalysis::Sample() {
 }
 
 void UncertaintyAnalysis::FilterUncertainEvents(
-    std::vector<int>* basic_events) {
+    std::vector<int>* basic_events) noexcept {
   using boost::container::flat_set;
   std::set<int> const_events;
   std::set<int>::const_iterator it;
@@ -181,7 +181,7 @@ void UncertaintyAnalysis::FilterUncertainEvents(
   }
 }
 
-void UncertaintyAnalysis::CalculateStatistics() {
+void UncertaintyAnalysis::CalculateStatistics() noexcept {
   using namespace boost;
   using namespace boost::accumulators;
   accumulator_set<double, stats<tag::mean, tag::variance, tag::density> >

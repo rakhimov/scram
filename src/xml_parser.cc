@@ -38,7 +38,7 @@ XMLParser::XMLParser(const std::stringstream& xml_input_snippet) {
   }
 }
 
-XMLParser::~XMLParser() { parser_.reset(); }
+XMLParser::~XMLParser() noexcept { parser_.reset(); }
 
 void XMLParser::Validate(const std::stringstream& xml_schema_snippet) {
   RelaxNGValidator validator;
