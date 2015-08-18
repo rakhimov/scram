@@ -160,7 +160,7 @@ class BasicEvent : public PrimaryEvent {
   ///       that the returned value is acceptable for calculations.
   ///
   /// @warning Undefined behavior if the expression is not set.
-  inline double p() const {
+  inline double p() const noexcept {
     assert(expression_);
     return expression_->Mean();
   }
@@ -173,16 +173,16 @@ class BasicEvent : public PrimaryEvent {
   ///       that the returned value is acceptable for calculations.
   ///
   /// @warning Undefined behavior if the expression is not set.
-  inline double SampleProbability() {
+  inline double SampleProbability() noexcept {
     assert(expression_);
     return expression_->Sample();
   }
 
   /// Resets the sampling.
-  inline void Reset() { expression_->Reset(); }
+  inline void Reset() noexcept { expression_->Reset(); }
 
   /// @returns Indication if this event does not have uncertainty.
-  inline bool IsConstant() { return expression_->IsConstant(); }
+  inline bool IsConstant() noexcept { return expression_->IsConstant(); }
 
   /// Validates the probability expressions for the primary event.
   ///

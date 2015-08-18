@@ -84,7 +84,7 @@ void ExponentialExpression::Validate() {
   }
 }
 
-double ExponentialExpression::Sample() {
+double ExponentialExpression::Sample() noexcept {
   if (!Expression::sampled_) {
     Expression::sampled_ = true;
     Expression::sampled_value_ =  1 - std::exp(-(lambda_->Sample() *
@@ -113,7 +113,7 @@ void GlmExpression::Validate() {
   }
 }
 
-double GlmExpression::Sample() {
+double GlmExpression::Sample() noexcept {
   if (!Expression::sampled_) {
     Expression::sampled_ = true;
     double gamma = gamma_->Sample();
@@ -156,7 +156,7 @@ void WeibullExpression::Validate() {
   }
 }
 
-double WeibullExpression::Sample() {
+double WeibullExpression::Sample() noexcept {
   if (!Expression::sampled_) {
     Expression::sampled_ = true;
     double alpha = alpha_->Sample();
@@ -182,7 +182,7 @@ void UniformDeviate::Validate() {
   }
 }
 
-double UniformDeviate::Sample() {
+double UniformDeviate::Sample() noexcept {
   if (!Expression::sampled_) {
     Expression::sampled_ = true;
     Expression::sampled_value_ = Random::UniformRealGenerator(min_->Sample(),
@@ -199,7 +199,7 @@ void NormalDeviate::Validate() {
   }
 }
 
-double NormalDeviate::Sample() {
+double NormalDeviate::Sample() noexcept {
   if (!Expression::sampled_) {
     Expression::sampled_ = true;
     Expression::sampled_value_ =  Random::NormalGenerator(mean_->Sample(),
@@ -226,7 +226,7 @@ void LogNormalDeviate::Validate() {
   }
 }
 
-double LogNormalDeviate::Sample() {
+double LogNormalDeviate::Sample() noexcept {
   if (!Expression::sampled_) {
     Expression::sampled_ = true;
     double sigma = std::log(ef_->Sample()) / 1.645;
@@ -252,7 +252,7 @@ void GammaDeviate::Validate() {
   }
 }
 
-double GammaDeviate::Sample() {
+double GammaDeviate::Sample() noexcept {
   if (!Expression::sampled_) {
     Expression::sampled_ = true;
     Expression::sampled_value_ = Random::GammaGenerator(k_->Sample(),
@@ -277,7 +277,7 @@ void BetaDeviate::Validate() {
   }
 }
 
-double BetaDeviate::Sample() {
+double BetaDeviate::Sample() noexcept {
   if (!Expression::sampled_) {
     Expression::sampled_ = true;
     Expression::sampled_value_ = Random::BetaGenerator(alpha_->Sample(),
@@ -305,7 +305,7 @@ void Histogram::Validate() {
   CheckWeights(weights_);
 }
 
-double Histogram::Mean() {
+double Histogram::Mean() noexcept {
   double sum_weights = 0;
   double sum_product = 0;
   double lower_bound = 0;
@@ -318,7 +318,7 @@ double Histogram::Mean() {
   return sum_product / (lower_bound * sum_weights);
 }
 
-double Histogram::Sample() {
+double Histogram::Sample() noexcept {
   if (!Expression::sampled_) {
     Expression::sampled_ = true;
     std::vector<double> sampled_boundaries;

@@ -38,10 +38,10 @@ class OpenExpression : public Expression {
   double sample;
   double min;  // This value is used only if explicitly set non-zero.
   double max;  // This value is used only if explicitly set non-zero.
-  inline double Mean() { return mean; }
-  inline double Sample() { return sample; }
-  inline double Max() { return max ? max : sample; }
-  inline double Min() { return min ? min : sample; }
+  inline double Mean() noexcept { return mean; }
+  inline double Sample() noexcept { return sample; }
+  inline double Max() noexcept { return max ? max : sample; }
+  inline double Min() noexcept { return min ? min : sample; }
   inline bool IsConstant() noexcept { return true; }
 };
 
