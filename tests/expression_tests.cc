@@ -42,7 +42,7 @@ class OpenExpression : public Expression {
   inline double Sample() { return sample; }
   inline double Max() { return max ? max : sample; }
   inline double Min() { return min ? min : sample; }
-  inline bool IsConstant() { return true; }
+  inline bool IsConstant() noexcept { return true; }
 };
 
 typedef std::shared_ptr<OpenExpression> OpenExpressionPtr;

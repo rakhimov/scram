@@ -50,6 +50,10 @@ class Expression {
  public:
   typedef std::shared_ptr<Expression> ExpressionPtr;
 
+  /// Constructs an expression with empty arguments.
+  ///
+  /// @note Derived classes must register their arguments
+  ///       for validation and other common functionality.
   Expression() : sampled_(false), sampled_value_(0), gather_(true) {}
 
   virtual ~Expression() {}
@@ -69,9 +73,18 @@ class Expression {
   /// This routine resets the sampling to get a new values.
   inline virtual void Reset() { sampled_ = false; }
 
+  /// Determines if the value of the expression varies.
+  /// The default logic is to check arguments with uncertainties for sampling.
+  /// Derivied expression classes must decide
+  /// if they don't have arguments,
+  /// or if they are random deviates.
+  ///
   /// @returns true if the expression's value does not need sampling.
   /// @returns false if the expression's value has uncertainties.
-  inline virtual bool IsConstant() { return false; }
+  ///
+  /// @warning Improper registration of arguments
+  ///          may yeild silent failure.
+  virtual bool IsConstant() noexcept;
 
   /// @returns Maximum value of this expression.
   inline virtual double Max() { return Mean(); }
@@ -140,6 +153,7 @@ class Parameter : public Expression, public Element, public Role {
   /// @param[in] expression The expression to describe this parameter.
   inline void expression(const ExpressionPtr& expression) {
     expression_ = expression;
+    Expression::args_.clear();
     Expression::args_.push_back(expression);
   }
 
@@ -180,7 +194,6 @@ class Parameter : public Expression, public Element, public Role {
     expression_->Reset();
   }
 
-  inline bool IsConstant() { return expression_->IsConstant(); }
   inline double Max() { return expression_->Max(); }
   inline double Min() { return expression_->Min(); }
 
@@ -231,7 +244,7 @@ class MissionTime : public Expression {
 
   inline double Mean() { return mission_time_; }
   inline double Sample() { return mission_time_; }
-  inline bool IsConstant() { return true; }
+  inline bool IsConstant() noexcept { return true; }
 
  private:
   double mission_time_;  ///< The constant's value.
@@ -259,7 +272,7 @@ class ConstantExpression : public Expression {
 
   inline double Mean() { return value_; }
   inline double Sample() { return value_; }
-  inline bool IsConstant() { return true; }
+  inline bool IsConstant() noexcept { return true; }
 
  private:
   double value_;  ///< The constant's value.
@@ -294,10 +307,6 @@ class ExponentialExpression : public Expression {
     Expression::sampled_ = false;
     lambda_->Reset();
     time_->Reset();
-  }
-
-  inline bool IsConstant() {
-    return lambda_->IsConstant() && time_->IsConstant();
   }
 
   inline double Max() {
@@ -352,11 +361,6 @@ class GlmExpression : public Expression {
     lambda_->Reset();
     time_->Reset();
     mu_->Reset();
-  }
-
-  inline bool IsConstant() {
-    return gamma_->IsConstant() && lambda_->IsConstant() &&
-        time_->IsConstant() && mu_->IsConstant();
   }
 
   inline double Max() {
@@ -415,11 +419,6 @@ class WeibullExpression : public Expression {
     time_->Reset();
   }
 
-  inline bool IsConstant() {
-    return alpha_->IsConstant() && beta_->IsConstant() && t0_->IsConstant() &&
-        time_->IsConstant();
-  }
-
   inline double Max() {
     return 1 - std::exp(-std::pow((time_->Max() - t0_->Min()) /
                                   alpha_->Min(), beta_->Max()));
@@ -465,6 +464,7 @@ class UniformDeviate : public Expression {
     max_->Reset();
   }
 
+  inline bool IsConstant() noexcept { return false; }
   inline double Max() { return max_->Max(); }
   inline double Min() { return min_->Min(); }
 
@@ -500,6 +500,8 @@ class NormalDeviate : public Expression {
     mean_->Reset();
     sigma_->Reset();
   }
+
+  inline bool IsConstant() noexcept { return false; }
 
   /// @returns ~99.9% percentile value.
   ///
@@ -556,6 +558,8 @@ class LogNormalDeviate : public Expression {
     level_->Reset();
   }
 
+  inline bool IsConstant() noexcept { return false; }
+
   /// 99 percentile estimate.
   inline double Max() {
     double sigma = std::log(ef_->Mean()) / 1.645;
@@ -599,6 +603,8 @@ class GammaDeviate : public Expression {
     k_->Reset();
     theta_->Reset();
   }
+
+  inline bool IsConstant() noexcept { return false; }
 
   inline double Max() {
     return theta_->Max() *
@@ -644,6 +650,8 @@ class BetaDeviate : public Expression {
     alpha_->Reset();
     beta_->Reset();
   }
+
+  inline bool IsConstant() noexcept { return false; }
 
   /// 99 percentile estimate.
   inline double Max() {
@@ -706,6 +714,7 @@ class Histogram : public Expression {
     }
   }
 
+  inline bool IsConstant() noexcept { return false; }
   inline double Max() { return boundaries_.back()->Max(); }
   inline double Min() { return boundaries_.front()->Min(); }
 
@@ -759,7 +768,6 @@ class Neg : public Expression {
     expression_->Reset();
   }
 
-  inline bool IsConstant() { return expression_->IsConstant(); }
   inline double Max() { return -expression_->Min(); }
   inline double Min() { return -expression_->Max(); }
 
@@ -811,14 +819,6 @@ class Add : public Expression {
     for (it = args_.begin(); it != args_.end(); ++it) {
       (*it)->Reset();
     }
-  }
-
-  inline bool IsConstant() {
-    std::vector<ExpressionPtr>::iterator it;
-    for (it = args_.begin(); it != args_.end(); ++it) {
-      if (!(*it)->IsConstant()) return false;
-    }
-    return true;
   }
 
   inline double Max() {
@@ -890,15 +890,6 @@ class Sub : public Expression {
     }
   }
 
-  inline bool IsConstant() {
-    assert(!args_.empty());
-    std::vector<ExpressionPtr>::iterator it;
-    for (it = args_.begin(); it != args_.end(); ++it) {
-      if (!(*it)->IsConstant()) return false;
-    }
-    return true;
-  }
-
   inline double Max() {
     assert(!args_.empty());
     std::vector<ExpressionPtr>::iterator it = args_.begin();
@@ -964,15 +955,6 @@ class Mul : public Expression {
     for (it = args_.begin(); it != args_.end(); ++it) {
       (*it)->Reset();
     }
-  }
-
-  inline bool IsConstant() {
-    assert(!args_.empty());
-    std::vector<ExpressionPtr>::iterator it;
-    for (it = args_.begin(); it != args_.end(); ++it) {
-      if (!(*it)->IsConstant()) return false;
-    }
-    return true;
   }
 
   /// Finds maximum product
@@ -1070,15 +1052,6 @@ class Div : public Expression {
     for (it = args_.begin(); it != args_.end(); ++it) {
       (*it)->Reset();
     }
-  }
-
-  inline bool IsConstant() {
-    assert(!args_.empty());
-    std::vector<ExpressionPtr>::iterator it;
-    for (it = args_.begin(); it != args_.end(); ++it) {
-      if (!(*it)->IsConstant()) return false;
-    }
-    return true;
   }
 
   /// Finds maximum results of division

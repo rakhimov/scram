@@ -28,6 +28,13 @@
 
 namespace scram {
 
+bool Expression::IsConstant() noexcept {
+  for (ExpressionPtr arg: args_) {
+    if (!arg->IsConstant()) return false;
+  }
+  return true;
+}
+
 void Expression::GatherNodesAndConnectors() {
   assert(nodes_.empty());
   assert(connectors_.empty());
