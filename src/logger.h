@@ -82,6 +82,9 @@ class Logger {
  public:
   Logger() {}
 
+  Logger(const Logger&) = delete;  ///< Restrict copy construction.
+  Logger& operator=(const Logger&) = delete;  ///< Restrict copy assignment.
+
   /// Flashes all the logs into the standard error upon destruction.
   ~Logger() {
     os_ << std::endl;
@@ -111,11 +114,6 @@ class Logger {
   /// Translates the logging level into a string.
   /// The index is the value of the enum.
   static const char* const kLevelToString_[];
-
-  /// Restrict copy construction.
-  Logger(const Logger&);
-  /// Restrict copy assignment.
-  Logger& operator=(const Logger&);
 
   std::ostringstream os_;  ///< Main stringstream to gather the logs.
   static LogLevel report_level_;  ///< Cut-off log level for reporting.

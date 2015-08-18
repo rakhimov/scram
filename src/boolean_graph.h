@@ -62,6 +62,9 @@ class Node {
   /// @warning The index is not validated upon instantiation.
   explicit Node(int index);
 
+  Node(const Node&) = delete;  ///< Restrict copy construction.
+  Node& operator=(const Node&) = delete;  ///< Restrict copy assignment.
+
   virtual ~Node() = 0;  ///< Abstract class.
 
   /// @returns The index of this node.
@@ -138,9 +141,6 @@ class Node {
   inline void ClearVisits() { return std::fill(visits_, visits_ + 3, 0); }
 
  private:
-  Node(const Node&);  ///< Restrict copy construction.
-  Node& operator=(const Node&);  ///< Restrict copy assignment.
-
   static int next_index_;  ///< Automatic indexation of the next new node.
   int index_;  ///< Index of this node.
   /// This is a traversal array containing first, second, and last visits.
@@ -159,13 +159,13 @@ class Constant : public Node {
   /// @param[in] state Binary state of the Boolean constant.
   explicit Constant(bool state);
 
+  Constant(const Constant&) = delete;  ///< Restrict copy construction.
+  Constant& operator=(const Constant&) = delete;  ///< Restrict copy assignment.
+
   /// @returns The state of the constant.
   inline bool state() const { return state_; }
 
  private:
-  Constant(const Constant&);  ///< Restrict copy construction.
-  Constant& operator=(const Constant&);  ///< Restrict copy assignment.
-
   bool state_;  ///< The Boolean value for the constant state.
 };
 
@@ -184,13 +184,13 @@ class Variable : public Node {
   /// Creates a new indexed variable with its index assigned sequentially.
   Variable();
 
+  Variable(const Variable&) = delete;  ///< Restrict copy construction.
+  Variable& operator=(const Variable&) = delete;  ///< Restrict copy assignment.
+
   /// Resets the starting index for variables.
   inline static void ResetIndex() { next_variable_ = 1; }
 
  private:
-  Variable(const Variable&);  ///< Restrict copy construction.
-  Variable& operator=(const Variable&);  ///< Restrict copy assignment.
-
   static int next_variable_;  ///< The next index for a new variable.
 };
 
@@ -264,6 +264,9 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   ///
   /// @returns Shared pointer to a newly created gate.
   IGatePtr Clone();
+
+  IGate(const IGate&) = delete;  ///< Restrict copy construction.
+  IGate& operator=(const IGate&) = delete;  ///< Restrict copy assignment.
 
   /// @returns Type of this gate.
   inline const Operator& type() const { return type_; }
@@ -555,9 +558,6 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   inline void ResetArgFailure() { num_failed_args_ = 0; }
 
  private:
-  IGate(const IGate&);  ///< Restrict copy construction.
-  IGate& operator=(const IGate&);  ///< Restrict copy assignment.
-
   /// Process an addition of an argument
   /// that already exists in this gate.
   ///
