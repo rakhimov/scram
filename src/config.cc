@@ -20,6 +20,7 @@
 
 #include "config.h"
 
+#include <cassert>
 #include <fstream>
 #include <memory>
 #include <sstream>
