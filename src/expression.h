@@ -416,16 +416,27 @@ class WeibullExpression : public Expression {
   ExpressionPtr time_;  ///< Mission time in hours.
 };
 
+/// @class RandomDeviate
+/// Abstract base class for all deviate expressions.
+/// These expressions provide quantification for uncertainty and sensitivity.
+class RandomDeviate : public Expression {
+ public:
+  using Expression::Expression;  // Main helper constructors with arguments.
+  virtual ~RandomDeviate() = 0;  ///< Make it abstract.
+
+  inline bool IsConstant() noexcept { return false; }
+};
+
 /// @class UniformDeviate
 /// Uniform distribution.
-class UniformDeviate : public Expression {
+class UniformDeviate : public RandomDeviate {
  public:
   /// Setup for uniform distribution.
   ///
   /// @param[in] min Minimum value of the distribution.
   /// @param[in] max Maximum value of the distribution.
   UniformDeviate(const ExpressionPtr& min, const ExpressionPtr& max)
-      : Expression::Expression({min, max}),
+      : RandomDeviate::RandomDeviate({min, max}),
         min_(min),
         max_(max) {}
 
@@ -436,7 +447,6 @@ class UniformDeviate : public Expression {
 
   double Sample();
 
-  inline bool IsConstant() noexcept { return false; }
   inline double Max() { return max_->Max(); }
   inline double Min() { return min_->Min(); }
 
@@ -447,14 +457,14 @@ class UniformDeviate : public Expression {
 
 /// @class NormalDeviate
 /// Normal distribution.
-class NormalDeviate : public Expression {
+class NormalDeviate : public RandomDeviate {
  public:
   /// Setup for normal distribution.
   ///
   /// @param[in] mean The mean of the distribution.
   /// @param[in] sigma The standard deviation of the distribution.
   NormalDeviate(const ExpressionPtr& mean, const ExpressionPtr& sigma)
-      : Expression::Expression({mean, sigma}),
+      : RandomDeviate::RandomDeviate({mean, sigma}),
         mean_(mean),
         sigma_(sigma) {}
 
@@ -464,8 +474,6 @@ class NormalDeviate : public Expression {
   inline double Mean() { return mean_->Mean(); }
 
   double Sample();
-
-  inline bool IsConstant() noexcept { return false; }
 
   /// @returns ~99.9% percentile value.
   ///
@@ -484,7 +492,7 @@ class NormalDeviate : public Expression {
 
 /// @class LogNormalDeviate
 /// Log-normal distribution.
-class LogNormalDeviate : public Expression {
+class LogNormalDeviate : public RandomDeviate {
  public:
   /// Setup for log-normal distribution.
   ///
@@ -500,7 +508,7 @@ class LogNormalDeviate : public Expression {
   /// @param[in] level The confidence level of 0.95 is assumed.
   LogNormalDeviate(const ExpressionPtr& mean, const ExpressionPtr& ef,
                    const ExpressionPtr& level)
-      : Expression::Expression({mean, ef, level}),
+      : RandomDeviate::RandomDeviate({mean, ef, level}),
         mean_(mean),
         ef_(ef),
         level_(level) {}
@@ -511,8 +519,6 @@ class LogNormalDeviate : public Expression {
   inline double Mean() { return mean_->Mean(); }
 
   double Sample();
-
-  inline bool IsConstant() noexcept { return false; }
 
   /// 99 percentile estimate.
   inline double Max() {
@@ -532,14 +538,14 @@ class LogNormalDeviate : public Expression {
 
 /// @class GammaDeviate
 /// Gamma distribution.
-class GammaDeviate : public Expression {
+class GammaDeviate : public RandomDeviate {
  public:
   /// Setup for Gamma distribution.
   ///
   /// @param[in] k Shape parameter of Gamma distribution.
   /// @param[in] theta Scale parameter of Gamma distribution.
   GammaDeviate(const ExpressionPtr& k, const ExpressionPtr& theta)
-      : Expression::Expression({k, theta}),
+      : RandomDeviate::RandomDeviate({k, theta}),
         k_(k),
         theta_(theta) {}
 
@@ -549,8 +555,6 @@ class GammaDeviate : public Expression {
   inline double Mean() { return k_->Mean() * theta_->Mean(); }
 
   double Sample();
-
-  inline bool IsConstant() noexcept { return false; }
 
   inline double Max() {
     return theta_->Max() *
@@ -569,14 +573,14 @@ class GammaDeviate : public Expression {
 
 /// @class BetaDeviate
 /// Beta distribution.
-class BetaDeviate : public Expression {
+class BetaDeviate : public RandomDeviate {
  public:
   /// Setup for Beta distribution.
   ///
   /// @param[in] alpha Alpha shape parameter of Gamma distribution.
   /// @param[in] beta Beta shape parameter of Gamma distribution.
   BetaDeviate(const ExpressionPtr& alpha, const ExpressionPtr& beta)
-      : Expression::Expression({alpha, beta}),
+      : RandomDeviate::RandomDeviate({alpha, beta}),
         alpha_(alpha),
         beta_(beta) {}
 
@@ -588,8 +592,6 @@ class BetaDeviate : public Expression {
   }
 
   double Sample();
-
-  inline bool IsConstant() noexcept { return false; }
 
   /// 99 percentile estimate.
   inline double Max() {
@@ -605,7 +607,7 @@ class BetaDeviate : public Expression {
 
 /// @class Histogram
 /// Histogram distribution.
-class Histogram : public Expression {
+class Histogram : public RandomDeviate {
  public:
   /// Histogram distribution setup.
   ///
@@ -641,7 +643,6 @@ class Histogram : public Expression {
 
   double Sample();
 
-  inline bool IsConstant() noexcept { return false; }
   inline double Max() { return boundaries_.back()->Max(); }
   inline double Min() { return boundaries_.front()->Min(); }
 

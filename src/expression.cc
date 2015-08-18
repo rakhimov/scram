@@ -170,6 +170,8 @@ double WeibullExpression::Sample() {
   return Expression::sampled_value_;
 }
 
+RandomDeviate::~RandomDeviate() {}  // Empty destructor for the abstract class.
+
 void UniformDeviate::Validate() {
   if (min_->Mean() >= max_->Mean()) {
     throw InvalidArgument("Min value is more than max for Uniform"
