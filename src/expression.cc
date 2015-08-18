@@ -32,6 +32,12 @@ Expression::Expression(const std::vector<ExpressionPtr>& args) : args_(args) {}
 
 Expression::Expression(const std::vector<ExpressionPtr>&& args) : args_(args) {}
 
+void Expression::Reset() noexcept {
+  if (!Expression::sampled_) return;
+  Expression::sampled_ = false;
+  for (ExpressionPtr arg : args_) arg->Reset();
+}
+
 bool Expression::IsConstant() noexcept {
   for (ExpressionPtr arg : args_) {
     if (!arg->IsConstant()) return false;

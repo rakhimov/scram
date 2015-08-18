@@ -77,7 +77,10 @@ class Expression {
   virtual double Sample() = 0;
 
   /// This routine resets the sampling to get a new values.
-  inline virtual void Reset() { sampled_ = false; }
+  /// All the arguments are called to reset themselves.
+  /// If this expression was not sampled,
+  /// its arguments are not going to get any calls.
+  virtual void Reset() noexcept;
 
   /// Determines if the value of the expression varies.
   /// The default logic is to check arguments with uncertainties for sampling.
@@ -203,11 +206,6 @@ class Parameter : public Expression, public Element, public Role {
     return Expression::sampled_value_;
   }
 
-  inline void Reset() {
-    Expression::sampled_ = false;
-    expression_->Reset();
-  }
-
   inline double Max() { return expression_->Max(); }
   inline double Min() { return expression_->Min(); }
 
@@ -315,12 +313,6 @@ class ExponentialExpression : public Expression {
 
   double Sample();
 
-  inline void Reset() {
-    Expression::sampled_ = false;
-    lambda_->Reset();
-    time_->Reset();
-  }
-
   inline double Max() {
     return 1 - std::exp(-(lambda_->Max() * time_->Max()));
   }
@@ -362,14 +354,6 @@ class GlmExpression : public Expression {
   }
 
   double Sample();
-
-  inline void Reset() {
-    Expression::sampled_ = false;
-    gamma_->Reset();
-    lambda_->Reset();
-    time_->Reset();
-    mu_->Reset();
-  }
 
   inline double Max() {
     /// @todo Find the maximum case.
@@ -415,14 +399,6 @@ class WeibullExpression : public Expression {
 
   double Sample();
 
-  inline void Reset() {
-    Expression::sampled_ = false;
-    alpha_->Reset();
-    beta_->Reset();
-    t0_->Reset();
-    time_->Reset();
-  }
-
   inline double Max() {
     return 1 - std::exp(-std::pow((time_->Max() - t0_->Min()) /
                                   alpha_->Min(), beta_->Max()));
@@ -460,12 +436,6 @@ class UniformDeviate : public Expression {
 
   double Sample();
 
-  inline void Reset() {
-    Expression::sampled_ = false;
-    min_->Reset();
-    max_->Reset();
-  }
-
   inline bool IsConstant() noexcept { return false; }
   inline double Max() { return max_->Max(); }
   inline double Min() { return min_->Min(); }
@@ -494,12 +464,6 @@ class NormalDeviate : public Expression {
   inline double Mean() { return mean_->Mean(); }
 
   double Sample();
-
-  inline void Reset() {
-    Expression::sampled_ = false;
-    mean_->Reset();
-    sigma_->Reset();
-  }
 
   inline bool IsConstant() noexcept { return false; }
 
@@ -548,13 +512,6 @@ class LogNormalDeviate : public Expression {
 
   double Sample();
 
-  inline void Reset() {
-    Expression::sampled_ = false;
-    mean_->Reset();
-    ef_->Reset();
-    level_->Reset();
-  }
-
   inline bool IsConstant() noexcept { return false; }
 
   /// 99 percentile estimate.
@@ -592,12 +549,6 @@ class GammaDeviate : public Expression {
   inline double Mean() { return k_->Mean() * theta_->Mean(); }
 
   double Sample();
-
-  inline void Reset() {
-    Expression::sampled_ = false;
-    k_->Reset();
-    theta_->Reset();
-  }
 
   inline bool IsConstant() noexcept { return false; }
 
@@ -637,12 +588,6 @@ class BetaDeviate : public Expression {
   }
 
   double Sample();
-
-  inline void Reset() {
-    Expression::sampled_ = false;
-    alpha_->Reset();
-    beta_->Reset();
-  }
 
   inline bool IsConstant() noexcept { return false; }
 
@@ -696,17 +641,6 @@ class Histogram : public Expression {
 
   double Sample();
 
-  inline void Reset() {
-    Expression::sampled_ = false;
-    std::vector<ExpressionPtr>::iterator it;
-    for (it = boundaries_.begin(); it != boundaries_.end(); ++it) {
-      (*it)->Reset();
-    }
-    for (it = weights_.begin(); it != weights_.end(); ++it) {
-      (*it)->Reset();
-    }
-  }
-
   inline bool IsConstant() noexcept { return false; }
   inline double Max() { return boundaries_.back()->Max(); }
   inline double Min() { return boundaries_.front()->Min(); }
@@ -756,11 +690,6 @@ class Neg : public Expression {
     return Expression::sampled_value_;
   }
 
-  inline void Reset() {
-    Expression::sampled_ = false;
-    expression_->Reset();
-  }
-
   inline double Max() { return -expression_->Min(); }
   inline double Min() { return -expression_->Max(); }
 
@@ -796,15 +725,6 @@ class Add : public Expression {
       }
     }
     return Expression::sampled_value_;
-  }
-
-  inline void Reset() {
-    assert(!args_.empty());
-    Expression::sampled_ = false;
-    std::vector<ExpressionPtr>::iterator it;
-    for (it = args_.begin(); it != args_.end(); ++it) {
-      (*it)->Reset();
-    }
   }
 
   inline double Max() {
@@ -859,15 +779,6 @@ class Sub : public Expression {
     return Expression::sampled_value_;
   }
 
-  inline void Reset() {
-    assert(!args_.empty());
-    Expression::sampled_ = false;
-    std::vector<ExpressionPtr>::iterator it;
-    for (it = args_.begin(); it != args_.end(); ++it) {
-      (*it)->Reset();
-    }
-  }
-
   inline double Max() {
     assert(!args_.empty());
     std::vector<ExpressionPtr>::iterator it = args_.begin();
@@ -917,15 +828,6 @@ class Mul : public Expression {
       }
     }
     return Expression::sampled_value_;
-  }
-
-  inline void Reset() {
-    assert(!args_.empty());
-    Expression::sampled_ = false;
-    std::vector<ExpressionPtr>::iterator it;
-    for (it = args_.begin(); it != args_.end(); ++it) {
-      (*it)->Reset();
-    }
   }
 
   /// Finds maximum product
@@ -1005,15 +907,6 @@ class Div : public Expression {
       }
     }
     return Expression::sampled_value_;
-  }
-
-  inline void Reset() {
-    assert(!args_.empty());
-    Expression::sampled_ = false;
-    std::vector<ExpressionPtr>::iterator it;
-    for (it = args_.begin(); it != args_.end(); ++it) {
-      (*it)->Reset();
-    }
   }
 
   /// Finds maximum results of division
