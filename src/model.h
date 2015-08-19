@@ -47,7 +47,7 @@ class Model : public Element {
   typedef std::shared_ptr<BasicEvent> BasicEventPtr;
   typedef std::shared_ptr<Gate> GatePtr;
   typedef std::shared_ptr<CcfGroup> CcfGroupPtr;
-  typedef std::shared_ptr<FaultTree> FaultTreePtr;
+  typedef std::unique_ptr<FaultTree> FaultTreePtr;
 
   /// Creates a model container.
   ///
@@ -93,11 +93,12 @@ class Model : public Element {
   }
 
   /// Adds a fault tree into the model container.
+  /// Fault trees are uniquely owned by this model.
   ///
   /// @param[in] fault_tree A fault tree defined in this model.
   ///
   /// @throws RedefinitionError The model has a container with the same name.
-  void AddFaultTree(const FaultTreePtr& fault_tree);
+  void AddFaultTree(FaultTreePtr fault_tree);
 
   /// Adds a parameter that is used in this model's expressions.
   ///
@@ -203,8 +204,6 @@ class Model : public Element {
   void AddCcfGroup(const CcfGroupPtr& ccf_group);
 
  private:
-  typedef std::shared_ptr<Component> ComponentPtr;
-
   /// Helper function to find the scope container for references.
   ///
   /// @param[in] base_path The series of containers to get the container.
@@ -212,16 +211,17 @@ class Model : public Element {
   /// @returns A fault tree or component from the base path if any.
   ///
   /// @throws LogicError There's missing container in the path.
-  ComponentPtr GetContainer(const std::string& base_path);
+  const Component* GetContainer(const std::string& base_path);
 
   /// Helper function to find the local container for references.
   ///
   /// @param[in] reference The reference to the target element.
   /// @param[in] scope The fault tree or component as a scope.
   ///
-  /// @returns A fault tree or component from the reference if any.
-  ComponentPtr GetLocalContainer(const std::string& reference,
-                                 const ComponentPtr& scope);
+  /// @returns A fault tree or component from the reference.
+  /// @returns nullptr if there is no local container.
+  const Component* GetLocalContainer(const std::string& reference,
+                                     const Component* scope);
 
   /// Helper function to find the global container for references.
   ///
@@ -230,7 +230,7 @@ class Model : public Element {
   /// @returns A fault tree or component from the reference.
   ///
   /// @throws ValidationError There's missing container in the path.
-  ComponentPtr GetGlobalContainer(const std::string& reference);
+  const Component* GetGlobalContainer(const std::string& reference);
 
   std::string name_;  ///< The name of the model.
 

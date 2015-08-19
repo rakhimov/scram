@@ -35,7 +35,7 @@ typedef std::shared_ptr<Event> EventPtr;
 typedef std::shared_ptr<Gate> GatePtr;
 typedef std::shared_ptr<HouseEvent> HouseEventPtr;
 typedef std::shared_ptr<BasicEvent> BasicEventPtr;
-typedef std::shared_ptr<FaultTree> FaultTreePtr;
+typedef std::unique_ptr<FaultTree> FaultTreePtr;
 
 class RiskAnalysisTest : public ::testing::Test {
  protected:

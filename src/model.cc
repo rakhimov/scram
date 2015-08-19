@@ -31,14 +31,14 @@ namespace scram {
 
 Model::Model(const std::string& name) : name_(name) {}
 
-void Model::AddFaultTree(const FaultTreePtr& fault_tree) {
+void Model::AddFaultTree(FaultTreePtr fault_tree) {
   std::string name = fault_tree->name();
   boost::to_lower(name);
-  bool original = fault_trees_.insert({name, fault_tree}).second;
-  if (!original) {
+  if (fault_trees_.count(name)) {
     std::string msg = "Redefinition of fault tree " + fault_tree->name();
     throw RedefinitionError(msg);
   }
+  fault_trees_.emplace(name, std::move(fault_tree));
 }
 
 void Model::AddParameter(const ParameterPtr& parameter) {
@@ -58,8 +58,8 @@ std::shared_ptr<Parameter> Model::GetParameter(const std::string& reference,
   std::string target_name = path.back();
   boost::to_lower(target_name);
   if (base_path != "") {
-    ComponentPtr scope = Model::GetContainer(base_path);
-    ComponentPtr container = Model::GetLocalContainer(reference, scope);
+    const Component* scope = Model::GetContainer(base_path);
+    const Component* container = Model::GetLocalContainer(reference, scope);
     if (container) {
       try {
         return container->parameters().at(target_name);
@@ -69,7 +69,7 @@ std::shared_ptr<Parameter> Model::GetParameter(const std::string& reference,
   const std::unordered_map<std::string, ParameterPtr>* parameters =
       &parameters_;
   if (path.size() > 1) {
-    ComponentPtr container = Model::GetGlobalContainer(reference);
+    const Component* container = Model::GetGlobalContainer(reference);
     parameters = &container->parameters();
   }
 
@@ -92,8 +92,8 @@ std::pair<std::shared_ptr<Event>, std::string> Model::GetEvent(
   std::string target_name = path.back();
   boost::to_lower(target_name);
   if (base_path != "") {
-    ComponentPtr scope = Model::GetContainer(base_path);
-    ComponentPtr container = Model::GetLocalContainer(reference, scope);
+    const Component* scope = Model::GetContainer(base_path);
+    const Component* container = Model::GetLocalContainer(reference, scope);
     if (container) {
       try {
         EventPtr event = container->basic_events().at(target_name);
@@ -117,7 +117,7 @@ std::pair<std::shared_ptr<Event>, std::string> Model::GetEvent(
   const std::unordered_map<std::string, BasicEventPtr>* basic_events =
       &basic_events_;
   if (path.size() > 1) {
-    ComponentPtr container = Model::GetGlobalContainer(reference);
+    const Component* container = Model::GetGlobalContainer(reference);
     gates = &container->gates();
     basic_events = &container->basic_events();
     house_events = &container->house_events();
@@ -162,8 +162,8 @@ std::shared_ptr<HouseEvent> Model::GetHouseEvent(const std::string& reference,
   std::string target_name = path.back();
   boost::to_lower(target_name);
   if (base_path != "") {
-    ComponentPtr scope = Model::GetContainer(base_path);
-    ComponentPtr container = Model::GetLocalContainer(reference, scope);
+    const Component* scope = Model::GetContainer(base_path);
+    const Component* container = Model::GetLocalContainer(reference, scope);
     if (container) {
       try {
         return container->house_events().at(target_name);
@@ -173,7 +173,7 @@ std::shared_ptr<HouseEvent> Model::GetHouseEvent(const std::string& reference,
   const std::unordered_map<std::string, HouseEventPtr>* house_events =
       &house_events_;
   if (path.size() > 1) {
-    ComponentPtr container = Model::GetGlobalContainer(reference);
+    const Component* container = Model::GetGlobalContainer(reference);
     house_events = &container->house_events();
   }
 
@@ -205,8 +205,8 @@ std::shared_ptr<BasicEvent> Model::GetBasicEvent(const std::string& reference,
   std::string target_name = path.back();
   boost::to_lower(target_name);
   if (base_path != "") {
-    ComponentPtr scope = Model::GetContainer(base_path);
-    ComponentPtr container = Model::GetLocalContainer(reference, scope);
+    const Component* scope = Model::GetContainer(base_path);
+    const Component* container = Model::GetLocalContainer(reference, scope);
     if (container) {
       try {
         return container->basic_events().at(target_name);
@@ -216,7 +216,7 @@ std::shared_ptr<BasicEvent> Model::GetBasicEvent(const std::string& reference,
   const std::unordered_map<std::string, BasicEventPtr>* basic_events =
       &basic_events_;
   if (path.size() > 1) {
-    ComponentPtr container = Model::GetGlobalContainer(reference);
+    const Component* container = Model::GetGlobalContainer(reference);
     basic_events = &container->basic_events();
   }
 
@@ -248,8 +248,8 @@ std::shared_ptr<Gate> Model::GetGate(const std::string& reference,
   std::string target_name = path.back();
   boost::to_lower(target_name);
   if (base_path != "") {
-    ComponentPtr scope = Model::GetContainer(base_path);
-    ComponentPtr container = Model::GetLocalContainer(reference, scope);
+    const Component* scope = Model::GetContainer(base_path);
+    const Component* container = Model::GetLocalContainer(reference, scope);
     if (container) {
       try {
         return container->gates().at(target_name);
@@ -258,7 +258,7 @@ std::shared_ptr<Gate> Model::GetGate(const std::string& reference,
   }
   const std::unordered_map<std::string, GatePtr>* gates = &gates_;
   if (path.size() > 1) {
-    ComponentPtr container = Model::GetGlobalContainer(reference);
+    const Component* container = Model::GetGlobalContainer(reference);
     gates = &container->gates();
   }
 
@@ -280,7 +280,7 @@ void Model::AddCcfGroup(const CcfGroupPtr& ccf_group) {
   }
 }
 
-std::shared_ptr<Component> Model::GetContainer(const std::string& base_path) {
+const Component* Model::GetContainer(const std::string& base_path) {
   assert(base_path != "");
   std::vector<std::string> path;
   boost::split(path, base_path, boost::is_any_of("."),
@@ -288,19 +288,17 @@ std::shared_ptr<Component> Model::GetContainer(const std::string& base_path) {
   std::vector<std::string>::iterator it = path.begin();
   std::string name = *it;
   boost::to_lower(name);
-  ComponentPtr container;
+  const Component* container;
   try {
-    container = fault_trees_.at(name);
+    container = fault_trees_.at(name).get();
   } catch (std::out_of_range& err) {
     throw LogicError("Missing fault tree " + *it);
   }
-  const std::unordered_map<std::string, ComponentPtr>* candidates;
   for (++it; it != path.end(); ++it) {
     name = *it;
     boost::to_lower(name);
-    candidates = &container->components();
     try {
-      container = candidates->at(name);
+      container = container->components().at(name).get();
     } catch (std::out_of_range& err) {
       throw LogicError("Undefined component " + *it + " in path " + base_path);
     }
@@ -308,33 +306,28 @@ std::shared_ptr<Component> Model::GetContainer(const std::string& base_path) {
   return container;
 }
 
-std::shared_ptr<Component> Model::GetLocalContainer(
-    const std::string& reference,
-    const ComponentPtr& scope) {
+const Component* Model::GetLocalContainer(const std::string& reference,
+                                          const Component* scope) {
   assert(reference != "");
   std::vector<std::string> path;
   boost::split(path, reference, boost::is_any_of("."),
                boost::token_compress_on);
-  ComponentPtr container = scope;
+  const Component* container = scope;
   if (path.size() > 1) {
-    const std::unordered_map<std::string, ComponentPtr>* candidates;
     for (int i = 0; i < path.size() - 1; ++i) {
       std::string name = path[i];
       boost::to_lower(name);
-      candidates = &container->components();
       try {
-        container = candidates->at(name);
+        container = container->components().at(name).get();
       } catch (std::out_of_range& err) {
-        ComponentPtr undefined;
-        return undefined;  // Not possible to reach locally.
+        return nullptr;  // Not possible to reach locally.
       }
     }
   }
   return container;
 }
 
-std::shared_ptr<Component> Model::GetGlobalContainer(
-    const std::string& reference) {
+const Component* Model::GetGlobalContainer(const std::string& reference) {
   assert(reference != "");
   std::vector<std::string> path;
   boost::split(path, reference, boost::is_any_of("."),
@@ -342,20 +335,18 @@ std::shared_ptr<Component> Model::GetGlobalContainer(
   assert(path.size() > 1);
   std::string name = path.front();
   boost::to_lower(name);
-  ComponentPtr container;
+  const Component* container;
   try {
-    container = fault_trees_.at(name);
+    container = fault_trees_.at(name).get();
   } catch (std::out_of_range& err) {
     throw ValidationError("Undefined fault tree " + path.front() +
                           " in reference " + reference);
   }
-  const std::unordered_map<std::string, ComponentPtr>* candidates;
   for (int i = 1; i < path.size() - 1; ++i) {
     std::string name = path[i];
     boost::to_lower(name);
-    candidates = &container->components();
     try {
-      container = candidates->at(name);
+      container = container->components().at(name).get();
     } catch (std::out_of_range& err) {
       throw ValidationError("Undefined component " + path[i] +
                             " in reference " + reference);

@@ -94,13 +94,13 @@ void Component::AddCcfGroup(const CcfGroupPtr& ccf_group) {
   }
 }
 
-void Component::AddComponent(const ComponentPtr& component) {
+void Component::AddComponent(ComponentPtr component) {
   std::string name = component->name();
   boost::to_lower(name);
   if (components_.count(name)) {
     throw ValidationError("Duplicate component " + component->name());
   }
-  components_.insert(std::make_pair(name, component));
+  components_.emplace(name, std::move(component));
 }
 
 void Component::GatherGates(std::unordered_set<GatePtr>* gates) {

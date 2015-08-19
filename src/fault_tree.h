@@ -45,7 +45,7 @@ class Component : public Element, public Role {
   typedef std::shared_ptr<HouseEvent> HouseEventPtr;
   typedef std::shared_ptr<Parameter> ParameterPtr;
   typedef std::shared_ptr<CcfGroup> CcfGroupPtr;
-  typedef std::shared_ptr<Component> ComponentPtr;
+  typedef std::unique_ptr<Component> ComponentPtr;
 
   /// Constructs a component assuming
   /// that it exists within some fault tree.
@@ -143,12 +143,14 @@ class Component : public Element, public Role {
   ///                         or duplicate basic event members.
   void AddCcfGroup(const CcfGroupPtr& ccf_group);
 
-  /// Adds a component container into this component container.
+  /// Adds a member component container into this component container.
+  /// Components are unique.
+  /// The ownership is transfered to this component only.
   ///
   /// @param[in] component The CCF group to be added to this container.
   ///
   /// @throws ValidationError The component is already in this container.
-  void AddComponent(const ComponentPtr& component);
+  void AddComponent(ComponentPtr component);
 
  protected:
   /// Recursively traverses components

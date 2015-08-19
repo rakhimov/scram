@@ -128,7 +128,7 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
     std::string model_name = root_element->get_attribute_value("name");
     boost::trim(model_name);  // The name may be empty. It is optional.
     model_ = ModelPtr(new Model(model_name));
-    Initializer::AttachLabelAndAttributes(root_element, model_);
+    Initializer::AttachLabelAndAttributes(root_element, model_.get());
   }
 
   xmlpp::NodeSet::iterator it_ch;  // Iterator for all children.
@@ -191,7 +191,7 @@ void Initializer::ProcessTbdElements() {
 }
 
 void Initializer::AttachLabelAndAttributes(const xmlpp::Element* element_node,
-                                           const ElementPtr& element) {
+                                           Element* element) {
   xmlpp::NodeSet labels = element_node->find("./label");
   if (!labels.empty()) {
     assert(labels.size() == 1);
@@ -228,18 +228,18 @@ void Initializer::DefineFaultTree(const xmlpp::Element* ft_node) {
   boost::trim(name);
   assert(!name.empty());
   FaultTreePtr fault_tree(new FaultTree(name));
+  Initializer::RegisterFaultTreeData(ft_node, name, fault_tree.get());
   try {
-    model_->AddFaultTree(fault_tree);
+    model_->AddFaultTree(std::move(fault_tree));
   } catch (ValidationError& err) {
     std::stringstream msg;
     msg << "Line " << ft_node->get_line() << ":\n";
     err.msg(msg.str() + err.msg());
     throw err;
   }
-  Initializer::RegisterFaultTreeData(ft_node, fault_tree, name);
 }
 
-std::shared_ptr<Component> Initializer::DefineComponent(
+std::unique_ptr<Component> Initializer::DefineComponent(
     const xmlpp::Element* component_node,
     const std::string& base_path,
     bool public_container) {
@@ -252,14 +252,14 @@ std::shared_ptr<Component> Initializer::DefineComponent(
   // Overwrite the role explicitly.
   if (role != "") component_role = role == "public" ? true : false;
   ComponentPtr component(new Component(name, base_path, component_role));
-  Initializer::RegisterFaultTreeData(component_node, component,
-                                     base_path + "." + name);
+  Initializer::RegisterFaultTreeData(component_node, base_path + "." + name,
+                                     component.get());
   return component;
 }
 
 void Initializer::RegisterFaultTreeData(const xmlpp::Element* ft_node,
-                                        const ComponentPtr& component,
-                                        const std::string& base_path) {
+                                        const std::string& base_path,
+                                        Component* component) {
   Initializer::AttachLabelAndAttributes(ft_node, component);
 
   xmlpp::NodeSet house_events = ft_node->find("./define-house-event");
@@ -308,7 +308,7 @@ void Initializer::RegisterFaultTreeData(const xmlpp::Element* ft_node,
     ComponentPtr sub = Initializer::DefineComponent(element, base_path,
                                                     component->is_public());
     try {
-      component->AddComponent(sub);
+      component->AddComponent(std::move(sub));
     } catch (ValidationError& err) {
       std::stringstream msg;
       msg << "Line " << element->get_line() << ":\n";
@@ -360,7 +360,7 @@ std::shared_ptr<Gate> Initializer::RegisterGate(const xmlpp::Element* gate_node,
     throw err;
   }
   tbd_.gates.push_back(std::make_pair(gate, gate_node));
-  Initializer::AttachLabelAndAttributes(gate_node, gate);
+  Initializer::AttachLabelAndAttributes(gate_node, gate.get());
   return gate;
 }
 
@@ -508,7 +508,7 @@ std::shared_ptr<BasicEvent> Initializer::RegisterBasicEvent(
     throw err;
   }
   tbd_.basic_events.push_back(std::make_pair(basic_event, event_node));
-  Initializer::AttachLabelAndAttributes(event_node, basic_event);
+  Initializer::AttachLabelAndAttributes(event_node, basic_event.get());
   return basic_event;
 }
 
@@ -559,7 +559,7 @@ std::shared_ptr<HouseEvent> Initializer::DefineHouseEvent(
     bool state = (val == "true") ? true : false;
     house_event->state(state);
   }
-  Initializer::AttachLabelAndAttributes(event_node, house_event);
+  Initializer::AttachLabelAndAttributes(event_node, house_event.get());
   return house_event;
 }
 
@@ -591,7 +591,7 @@ std::shared_ptr<Parameter> Initializer::RegisterParameter(
     assert(kUnits_.count(unit));
     parameter->unit(kUnits_.find(unit)->second);
   }
-  Initializer::AttachLabelAndAttributes(param_node, parameter);
+  Initializer::AttachLabelAndAttributes(param_node, parameter.get());
   return parameter;
 }
 
@@ -861,7 +861,7 @@ std::shared_ptr<CcfGroup> Initializer::RegisterCcfGroup(
 
   Initializer::ProcessCcfMembers(element, ccf_group);
 
-  Initializer::AttachLabelAndAttributes(ccf_node, ccf_group);
+  Initializer::AttachLabelAndAttributes(ccf_node, ccf_group.get());
 
   tbd_.ccf_groups.push_back(std::make_pair(ccf_group, ccf_node));
   return ccf_group;

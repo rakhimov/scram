@@ -86,10 +86,10 @@ class Initializer {
   typedef std::shared_ptr<BasicEvent> BasicEventPtr;
   typedef std::shared_ptr<HouseEvent> HouseEventPtr;
   typedef std::shared_ptr<CcfGroup> CcfGroupPtr;
-  typedef std::shared_ptr<FaultTree> FaultTreePtr;
-  typedef std::shared_ptr<Component> ComponentPtr;
   typedef std::shared_ptr<Expression> ExpressionPtr;
   typedef std::shared_ptr<Parameter> ParameterPtr;
+  typedef std::unique_ptr<FaultTree> FaultTreePtr;
+  typedef std::unique_ptr<Component> ComponentPtr;
 
   /// Map of valid units for parameters.
   static const std::map<std::string, Units> kUnits_;
@@ -125,7 +125,7 @@ class Initializer {
   /// @param[in] element_node XML element.
   /// @param[out] element The object that needs attributes and label.
   void AttachLabelAndAttributes(const xmlpp::Element* element_node,
-                                const ElementPtr& element);
+                                Element* element);
 
   /// Defines a fault tree for the analysis.
   ///
@@ -155,15 +155,15 @@ class Initializer {
   /// like gates, events, parameters.
   ///
   /// @param[in] ft_node XML element defining the fault tree or component.
+  /// @param[in] base_path Series of ancestor containers in the path with dots.
   /// @param[in,out] component The component or fault tree container
   ///                          that is the owner of the data.
-  /// @param[in] base_path Series of ancestor containers in the path with dots.
   ///
   /// @throws ValidationError There are issues with registering and defining
   ///                         the component's data like gates and events.
   void RegisterFaultTreeData(const xmlpp::Element* ft_node,
-                             const ComponentPtr& component,
-                             const std::string& base_path);
+                             const std::string& base_path,
+                             Component* component);
 
   /// Processes model data with definitions of events and analysis.
   ///

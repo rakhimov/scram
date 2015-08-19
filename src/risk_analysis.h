@@ -118,7 +118,7 @@ class RiskAnalysis {
 
  private:
   typedef std::shared_ptr<Gate> GatePtr;
-  typedef std::shared_ptr<FaultTree> FaultTreePtr;
+  typedef std::unique_ptr<FaultTree> FaultTreePtr;
 
   ModelPtr model_;  ///< Analysis model with constructs.
   Settings settings_;  ///< Settings for analysis.
