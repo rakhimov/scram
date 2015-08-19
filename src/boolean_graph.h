@@ -835,8 +835,7 @@ std::ostream& operator<<(std::ostream& os,
 /// @param[in] gate The gate to be printed.
 ///
 /// @warning Visit information may get changed.
-std::ostream& operator<<(std::ostream& os,
-                         const std::shared_ptr<IGate>& gate);
+std::ostream& operator<<(std::ostream& os, const std::shared_ptr<IGate>& gate);
 
 /// Prints the BooleanGraph as a fault tree in the shorthand format.
 /// This function is mostly for debugging purposes.

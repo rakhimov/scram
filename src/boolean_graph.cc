@@ -393,7 +393,7 @@ std::shared_ptr<IGate> BooleanGraph::ProcessFormula(
 
   BooleanGraph::ProcessGates(parent, formula->gate_args(), ccf, nodes);
 
-  for (FormulaPtr sub_form : formula->formula_args()) {
+  for (const FormulaPtr& sub_form : formula->formula_args()) {
     IGatePtr new_gate = BooleanGraph::ProcessFormula(sub_form, ccf, nodes);
     parent->AddArg(new_gate->index(), new_gate);
   }
@@ -405,7 +405,7 @@ void BooleanGraph::ProcessBasicEvents(
     const std::vector<BasicEventPtr>& basic_events,
     bool ccf,
     ProcessedNodes* nodes) noexcept {
-  for (auto basic_event : basic_events) {
+  for (const auto& basic_event : basic_events) {
     if (ccf && basic_event->HasCcf()) {  // Replace with a CCF gate.
       if (nodes->gates.count(basic_event->id())) {
         IGatePtr ccf_gate = nodes->gates.find(basic_event->id())->second;
@@ -436,7 +436,7 @@ void BooleanGraph::ProcessHouseEvents(
     const IGatePtr& parent,
     const std::vector<HouseEventPtr>& house_events,
     ProcessedNodes* nodes) noexcept {
-  for (auto house : house_events) {
+  for (const auto& house : house_events) {
     if (nodes->constants.count(house->id())) {
       ConstantPtr constant = nodes->constants.find(house->id())->second;
       parent->AddArg(constant->index(), constant);
@@ -453,7 +453,7 @@ void BooleanGraph::ProcessGates(const IGatePtr& parent,
                                 const std::vector<GatePtr>& gates,
                                 bool ccf,
                                 ProcessedNodes* nodes) noexcept {
-  for (auto gate : gates) {
+  for (const auto& gate : gates) {
     if (nodes->gates.count(gate->id())) {
       IGatePtr node = nodes->gates.find(gate->id())->second;
       parent->AddArg(node->index(), node);
@@ -618,8 +618,7 @@ const std::string GetName(const std::shared_ptr<const IGate>& gate) {
 
 }  // namespace
 
-std::ostream& operator<<(std::ostream& os,
-                         const std::shared_ptr<IGate>& gate) {
+std::ostream& operator<<(std::ostream& os, const std::shared_ptr<IGate>& gate) {
   if (gate->Visited()) return os;
   gate->Visit(1);
   std::string name = GetName(gate);
@@ -633,41 +632,35 @@ std::ostream& operator<<(std::ostream& os,
   int num_args = gate->args().size();  // The number of arguments to print.
 
   typedef std::shared_ptr<IGate> IGatePtr;
-  std::unordered_map<int, IGatePtr>::const_iterator it_gate;
-  for (it_gate = gate->gate_args().begin(); it_gate != gate->gate_args().end();
-       ++it_gate) {
-    if (it_gate->first < 0) formula += "~";  // Negation.
-    formula += GetName(it_gate->second);
+  for (const std::pair<int, IGatePtr>& node : gate->gate_args()) {
+    if (node.first < 0) formula += "~";  // Negation.
+    formula += GetName(node.second);
 
     if (--num_args) formula += sig.op;
 
-    os << it_gate->second;
+    os << node.second;
   }
 
   typedef std::shared_ptr<Variable> VariablePtr;
-  std::unordered_map<int, VariablePtr>::const_iterator it_basic;
-  for (it_basic = gate->variable_args().begin();
-       it_basic != gate->variable_args().end(); ++it_basic) {
-    if (it_basic->first < 0) formula += "~";  // Negation.
-    int index = it_basic->second->index();
+  for (const std::pair<int, VariablePtr>& basic : gate->variable_args()) {
+    if (basic.first < 0) formula += "~";  // Negation.
+    int index = basic.second->index();
     formula += "B" + std::to_string(index);
 
     if (--num_args) formula += sig.op;
 
-    os << it_basic->second;
+    os << basic.second;
   }
 
   typedef std::shared_ptr<Constant> ConstantPtr;
-  std::unordered_map<int, ConstantPtr>::const_iterator it_const;
-  for (it_const = gate->constant_args().begin();
-       it_const != gate->constant_args().end(); ++it_const) {
-    if (it_const->first < 0) formula += "~";  // Negation.
-    int index = it_const->second->index();
+  for (const std::pair<int, ConstantPtr>& constant : gate->constant_args()) {
+    if (constant.first < 0) formula += "~";  // Negation.
+    int index = constant.second->index();
     formula += "H" + std::to_string(index);
 
     if (--num_args) formula += sig.op;
 
-    os << it_const->second;
+    os << constant.second;
   }
   os << name << " := " << sig.begin << formula << sig.end << std::endl;
   return os;
