@@ -641,12 +641,6 @@ class BooleanGraph {
   /// @returns The current root gate of the graph.
   inline const IGatePtr& root() const { return root_; }
 
-  /// Sets the the root gate.
-  /// This function is helpful for preprocessing.
-  ///
-  /// @param[in] gate Replacement root gate.
-  inline void root(const IGatePtr& gate) { root_ = gate; }
-
   /// @returns Original basic event
   ///          as initialized in this indexed fault tree.
   ///          The position of a basic event equals (its index - 1).
@@ -686,17 +680,34 @@ class BooleanGraph {
   /// Mapping to string gate types to enum gate types.
   static const std::map<std::string, Operator> kStringToType_;
 
+  /// Sets the the root gate.
+  /// This function is helpful for preprocessing.
+  ///
+  /// @param[in] gate Replacement root gate.
+  inline void root(const IGatePtr& gate) { root_ = gate; }
+
+  /// @struct ProcessedNodes
+  /// Holder for nodes that are created from fault tree events.
+  /// This is a helper structure
+  /// for functions that transform a fault tree into a Boolean graph.
+  struct ProcessedNodes {
+    /// Mapping of gate IDs and Boolean graph gates.
+    std::unordered_map<std::string, IGatePtr> gates;
+    /// Mapping of basic event IDs and Boolean graph variables.
+    std::unordered_map<std::string, VariablePtr> variables;
+    /// Mapping of house event IDs and Boolean graph constants.
+    std::unordered_map<std::string, ConstantPtr> constants;
+  };
+
   /// Processes a Boolean formula of a gate into a Boolean graph.
   ///
   /// @param[in] formula The Boolean formula to be processed.
   /// @param[in] ccf A flag to replace basic events with CCF gates.
-  /// @param[in,out] id_to_node The mapping of already processed nodes.
+  /// @param[in,out] nodes The mapping of processed nodes.
   ///
   /// @returns Pointer to the newly created indexed gate.
-  IGatePtr ProcessFormula(
-      const FormulaPtr& formula,
-      bool ccf,
-      std::unordered_map<std::string, NodePtr>* id_to_node) noexcept;
+  IGatePtr ProcessFormula(const FormulaPtr& formula, bool ccf,
+                          ProcessedNodes* nodes) noexcept;
 
   /// Processes a Boolean formula's basic events
   /// into variable arguments of an indexed gate of the Boolean graph.
@@ -704,12 +715,11 @@ class BooleanGraph {
   /// @param[in,out] parent The parent gate to own the arguments.
   /// @param[in] basic_events The collection of basic events of the formula.
   /// @param[in] ccf A flag to replace basic events with CCF gates.
-  /// @param[in,out] id_to_node The mapping of already processed nodes.
-  void ProcessBasicEvents(
-      const IGatePtr& parent,
-      const std::vector<BasicEventPtr>& basic_events,
-      bool ccf,
-      std::unordered_map<std::string, NodePtr>* id_to_node) noexcept;
+  /// @param[in,out] nodes The mapping of processed nodes.
+  void ProcessBasicEvents(const IGatePtr& parent,
+                          const std::vector<BasicEventPtr>& basic_events,
+                          bool ccf,
+                          ProcessedNodes* nodes) noexcept;
 
   /// Processes a Boolean formula's house events
   /// into constant arguments of an indexed gate of the Boolean graph.
@@ -717,11 +727,10 @@ class BooleanGraph {
   ///
   /// @param[in,out] parent The parent gate to own the arguments.
   /// @param[in] house_events The collection of house events of the formula.
-  /// @param[in,out] id_to_node The mapping of already processed nodes.
-  void ProcessHouseEvents(
-      const IGatePtr& parent,
-      const std::vector<HouseEventPtr>& house_events,
-      std::unordered_map<std::string, NodePtr>* id_to_node) noexcept;
+  /// @param[in,out] nodes The mapping of processed nodes.
+  void ProcessHouseEvents(const IGatePtr& parent,
+                          const std::vector<HouseEventPtr>& house_events,
+                          ProcessedNodes* nodes) noexcept;
 
   /// Processes a Boolean formula's gates
   /// into gate arguments of an indexed gate of the Boolean graph.
@@ -729,12 +738,9 @@ class BooleanGraph {
   /// @param[in,out] parent The parent gate to own the arguments.
   /// @param[in] gates The collection of gates of the formula.
   /// @param[in] ccf A flag to replace basic events with CCF gates.
-  /// @param[in,out] id_to_node The mapping of already processed nodes.
-  void ProcessGates(
-      const IGatePtr& parent,
-      const std::vector<GatePtr>& gates,
-      bool ccf,
-      std::unordered_map<std::string, NodePtr>* id_to_node) noexcept;
+  /// @param[in,out] nodes The mapping of processed nodes.
+  void ProcessGates(const IGatePtr& parent, const std::vector<GatePtr>& gates,
+                    bool ccf, ProcessedNodes* nodes) noexcept;
 
   /// Sets the visit marks to False for all indexed gates,
   /// starting from the root gate,
