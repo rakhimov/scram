@@ -44,9 +44,9 @@ class UncertaintyAnalysis;
 /// This class reports the results of the analyses.
 class Reporter {
  public:
-  typedef std::shared_ptr<Model> ModelPtr;
-  typedef std::shared_ptr<PrimaryEvent> PrimaryEventPtr;
-  typedef std::shared_ptr<Parameter> ParameterPtr;
+  typedef std::shared_ptr<const Model> ModelPtr;
+  typedef std::shared_ptr<const PrimaryEvent> PrimaryEventPtr;
+  typedef std::shared_ptr<const Parameter> ParameterPtr;
 
   /// Sets up XML report document according to a specific standards.
   /// This function populates information
@@ -69,7 +69,7 @@ class Reporter {
   /// @param[in] orphan_primary_events Container of orphan events.
   /// @param[in,out] doc Pre-formatted XML document.
   void ReportOrphanPrimaryEvents(
-      const std::set<PrimaryEventPtr>& orphan_primary_events,
+      const std::vector<PrimaryEventPtr>& orphan_primary_events,
       xmlpp::Document* doc);
 
   /// Reports unused parameters
@@ -77,8 +77,9 @@ class Reporter {
   ///
   /// @param[in] unused_parameters Container of unused parameters.
   /// @param[in,out] doc Pre-formatted XML document.
-  void ReportUnusedParameters(const std::set<ParameterPtr>& unused_parameters,
-                              xmlpp::Document* doc);
+  void ReportUnusedParameters(
+      const std::vector<ParameterPtr>& unused_parameters,
+      xmlpp::Document* doc);
 
   /// Reports the results of analysis
   /// to a specified output destination.
@@ -121,7 +122,7 @@ class Reporter {
       xmlpp::Document* doc);
 
  private:
-  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
+  typedef std::shared_ptr<const BasicEvent> BasicEventPtr;
 
   /// Detects if a given basic event is a CCF event,
   /// and reports it with specific formatting.

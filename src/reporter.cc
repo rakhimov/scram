@@ -143,15 +143,11 @@ void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
 }
 
 void Reporter::ReportOrphanPrimaryEvents(
-    const std::set<PrimaryEventPtr>& orphan_primary_events,
+    const std::vector<PrimaryEventPtr>& orphan_primary_events,
     xmlpp::Document* doc) {
-  assert(!orphan_primary_events.empty());
-  std::string out = "";
-  out += "WARNING! Orphan Primary Events: ";
-  std::set<PrimaryEventPtr>::const_iterator it;
-  for (it = orphan_primary_events.begin(); it != orphan_primary_events.end();
-       ++it) {
-    PrimaryEventPtr event = *it;
+  if (orphan_primary_events.empty()) return;
+  std::string out = "WARNING! Orphan Primary Events: ";
+  for (const auto& event : orphan_primary_events) {
     out += event->is_public() ? "" : event->base_path() + ".";
     out += event->name();
     out += " ";
@@ -164,15 +160,11 @@ void Reporter::ReportOrphanPrimaryEvents(
 }
 
 void Reporter::ReportUnusedParameters(
-    const std::set<ParameterPtr>& unused_parameters,
+    const std::vector<ParameterPtr>& unused_parameters,
     xmlpp::Document* doc) {
-  assert(!unused_parameters.empty());
-  std::string out = "";
-  out += "WARNING! Unused Parameters: ";
-  std::set<ParameterPtr>::const_iterator it;
-  for (it = unused_parameters.begin(); it != unused_parameters.end();
-       ++it) {
-    ParameterPtr param = *it;
+  if (unused_parameters.empty()) return;
+  std::string out = "WARNING! Unused Parameters: ";
+  for (const auto param : unused_parameters) {
     out += param->is_public() ? "" : param->base_path() + ".";
     out += param->name();
     out += " ";
@@ -359,8 +351,8 @@ void Reporter::ReportUncertainty(
 xmlpp::Element* Reporter::ReportBasicEvent(const BasicEventPtr& basic_event,
                                            xmlpp::Element* parent) {
   xmlpp::Element* element;
-  std::shared_ptr<CcfEvent> ccf_event =
-      std::dynamic_pointer_cast<CcfEvent>(basic_event);
+  std::shared_ptr<const CcfEvent> ccf_event =
+      std::dynamic_pointer_cast<const CcfEvent>(basic_event);
   std::string prefix =
         basic_event->is_public() ? "" : basic_event->base_path() + ".";
   if (!ccf_event) {
