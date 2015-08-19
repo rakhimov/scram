@@ -208,7 +208,7 @@ class FaultTree : public Component {
   void CollectTopEvents();
 
  private:
-  typedef std::shared_ptr<Formula> FormulaPtr;
+  typedef std::unique_ptr<Formula> FormulaPtr;
 
   /// Recursively marks descendant gates as "non-top".
   /// These gates belong to this fault tree only.

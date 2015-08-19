@@ -139,18 +139,14 @@ void FaultTree::MarkNonTopGates(const GatePtr& gate,
 
 void FaultTree::MarkNonTopGates(const FormulaPtr& formula,
                                 const std::unordered_set<GatePtr>& gates) {
-  std::vector<GatePtr>::const_iterator it;
-  const std::vector<GatePtr>* children = &formula->gate_args();
-  for (it = children->begin(); it != children->end(); ++it) {
-    if (gates.count(*it)) {
-      FaultTree::MarkNonTopGates(*it, gates);
-      (*it)->mark("non-top");
+  for (const GatePtr& gate : formula->gate_args()) {
+    if (gates.count(gate)) {
+      FaultTree::MarkNonTopGates(gate, gates);
+      gate->mark("non-top");
     }
   }
-  const std::set<FormulaPtr>* formula_args = &formula->formula_args();
-  std::set<FormulaPtr>::const_iterator it_f;
-  for (it_f = formula_args->begin(); it_f != formula_args->end(); ++it_f) {
-    FaultTree::MarkNonTopGates(*it_f, gates);
+  for (const FormulaPtr& arg : formula->formula_args()) {
+    FaultTree::MarkNonTopGates(arg, gates);
   }
 }
 

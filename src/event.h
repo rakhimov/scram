@@ -249,7 +249,7 @@ class Formula;  // To describe a gate's formula.
 /// A representation of a gate in a fault tree.
 class Gate : public Event {
  public:
-  typedef std::shared_ptr<Formula> FormulaPtr;
+  typedef std::unique_ptr<Formula> FormulaPtr;
 
   using Event::Event;  // Construction with unique identification.
 
@@ -259,9 +259,9 @@ class Gate : public Event {
   /// Sets the formula of this gate.
   ///
   /// @param[in] formula Boolean formula of this gate.
-  inline void formula(const FormulaPtr& formula) {
+  inline void formula(FormulaPtr formula) {
     assert(!formula_);
-    formula_ = formula;
+    formula_ = std::move(formula);
   }
 
   /// This function is for cycle detection.
@@ -295,7 +295,7 @@ class Formula {
   typedef std::shared_ptr<HouseEvent> HouseEventPtr;
   typedef std::shared_ptr<BasicEvent> BasicEventPtr;
   typedef std::shared_ptr<Gate> GatePtr;
-  typedef std::shared_ptr<Formula> FormulaPtr;
+  typedef std::unique_ptr<Formula> FormulaPtr;
 
   /// Constructs a formula.
   ///
@@ -344,7 +344,7 @@ class Formula {
   }
 
   /// @returns The formula arguments of this formula.
-  inline const std::set<FormulaPtr>& formula_args() const {
+  inline const std::vector<FormulaPtr>& formula_args() const {
     return formula_args_;
   }
 
@@ -375,11 +375,10 @@ class Formula {
   void AddArgument(const GatePtr& gate);
 
   /// Adds a formula into the arguments list.
+  /// Formulas are unique.
   ///
   /// @param[in] formula A pointer to an argument formula.
-  ///
-  /// @throws LogicError The formula is being re-inserted.
-  void AddArgument(const FormulaPtr& formula);
+  void AddArgument(FormulaPtr formula);
 
   /// Checks if a formula is initialized correctly with the number of arguments.
   ///
@@ -413,8 +412,9 @@ class Formula {
   std::vector<HouseEventPtr> house_event_args_;  ///< House event arguments.
   std::vector<BasicEventPtr> basic_event_args_;  ///< Basic event arguments.
   std::vector<GatePtr> gate_args_;  ///< Arguments that are gates.
-  /// Arguments that are formulas if this formula is nested.
-  std::set<FormulaPtr> formula_args_;
+  /// Arguments that are formulas
+  /// if this formula is nested.
+  std::vector<FormulaPtr> formula_args_;
   std::vector<Gate*> nodes_;  ///< Gate arguments as nodes.
   std::vector<Formula*> connectors_;  ///< Formulae as connectors.
   bool gather_;  ///< A flag to gather nodes and connectors.

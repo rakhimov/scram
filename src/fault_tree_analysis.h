@@ -156,7 +156,7 @@ class FaultTreeAnalysis {
 
  private:
   typedef std::shared_ptr<Event> EventPtr;
-  typedef std::shared_ptr<Formula> FormulaPtr;
+  typedef std::unique_ptr<Formula> FormulaPtr;
 
   /// Gathers information about the correctly initialized fault tree.
   /// Databases for events are manipulated

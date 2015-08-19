@@ -383,7 +383,7 @@ void Initializer::DefineGate(const xmlpp::Element* gate_node,
   }
 }
 
-std::shared_ptr<Formula> Initializer::GetFormula(
+std::unique_ptr<Formula> Initializer::GetFormula(
     const xmlpp::Element* formula_node,
     const std::string& base_path) {
   std::string type = formula_node->get_name();
@@ -399,11 +399,10 @@ std::shared_ptr<Formula> Initializer::GetFormula(
     formula->vote_number(vote_number);
   }
   // Process arguments of this formula.
-  if (type == "null") {
-    Initializer::ProcessFormula(formula_node->get_parent(), formula, base_path);
-  } else {
-    Initializer::ProcessFormula(formula_node, formula, base_path);
+  if (type == "null") {  // Special case of pass-through.
+    formula_node = formula_node->get_parent();
   }
+  Initializer::ProcessFormula(formula_node, base_path, formula.get());
 
   try {
     formula->Validate();
@@ -417,8 +416,8 @@ std::shared_ptr<Formula> Initializer::GetFormula(
 }
 
 void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
-                                 const FormulaPtr& formula,
-                                 const std::string& base_path) {
+                                 const std::string& base_path,
+                                 Formula* formula) {
   xmlpp::NodeSet events = formula_node->find("./*[name() = 'event' or "
                                              "name() = 'gate' or "
                                              "name() = 'basic-event' or "

@@ -81,15 +81,15 @@ class Initializer {
   typedef std::shared_ptr<Element> ElementPtr;
   typedef std::shared_ptr<Event> EventPtr;
   typedef std::shared_ptr<Gate> GatePtr;
-  typedef std::shared_ptr<Formula> FormulaPtr;
+  typedef std::unique_ptr<Formula> FormulaPtr;  ///< Unique Formula.
   typedef std::shared_ptr<PrimaryEvent> PrimaryEventPtr;
   typedef std::shared_ptr<BasicEvent> BasicEventPtr;
   typedef std::shared_ptr<HouseEvent> HouseEventPtr;
   typedef std::shared_ptr<CcfGroup> CcfGroupPtr;
   typedef std::shared_ptr<Expression> ExpressionPtr;
   typedef std::shared_ptr<Parameter> ParameterPtr;
-  typedef std::unique_ptr<FaultTree> FaultTreePtr;
-  typedef std::unique_ptr<Component> ComponentPtr;
+  typedef std::unique_ptr<FaultTree> FaultTreePtr;  ///< Unique fault tree.
+  typedef std::unique_ptr<Component> ComponentPtr;  ///< Unique component.
 
   /// Map of valid units for parameters.
   static const std::map<std::string, Units> kUnits_;
@@ -204,13 +204,13 @@ class Initializer {
   /// Processes the arguments of a formula with nodes and formulas.
   ///
   /// @param[in] formula_node The XML element with children as arguments.
-  /// @param[in,out] formula The formula to be defined by the arguments.
   /// @param[in] base_path Series of ancestor containers in the path with dots.
+  /// @param[in,out] formula The formula to be defined by the arguments.
   ///
   /// @throws ValidationError Repeated arguments are identified.
   void ProcessFormula(const xmlpp::Element* formula_node,
-                      const FormulaPtr& formula,
-                      const std::string& base_path);
+                      const std::string& base_path,
+                      Formula* formula);
 
   /// Registers a basic event for later definition.
   ///

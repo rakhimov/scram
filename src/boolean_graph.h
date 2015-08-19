@@ -671,7 +671,7 @@ class BooleanGraph {
   void Print();
 
  private:
-  typedef std::shared_ptr<Formula> FormulaPtr;
+  typedef std::unique_ptr<Formula> FormulaPtr;
   typedef std::shared_ptr<HouseEvent> HouseEventPtr;
   typedef std::shared_ptr<Node> NodePtr;
   typedef std::shared_ptr<Constant> ConstantPtr;

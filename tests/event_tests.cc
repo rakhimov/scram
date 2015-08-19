@@ -27,7 +27,7 @@ namespace test {
 
 typedef std::shared_ptr<Event> EventPtr;
 typedef std::shared_ptr<Gate> GatePtr;
-typedef std::shared_ptr<Formula> FormulaPtr;
+typedef std::unique_ptr<Formula> FormulaPtr;
 typedef std::shared_ptr<HouseEvent> HouseEventPtr;
 typedef std::shared_ptr<BasicEvent> BasicEventPtr;
 
@@ -81,26 +81,25 @@ TEST(FormulaTest, FormulaArguments) {
   FormulaPtr top(new Formula("and"));
   FormulaPtr arg(new Formula("or"));
   EXPECT_EQ(0, top->num_args());
+  Formula* shadow = arg.get();
   // Adding first child.
-  EXPECT_NO_THROW(top->AddArgument(arg));
-  // Re-adding a child must cause an error.
-  EXPECT_THROW(top->AddArgument(arg), LogicError);
-  EXPECT_EQ(arg, *top->formula_args().begin());
+  EXPECT_NO_THROW(top->AddArgument(std::move(arg)));  // arg is gone.
+  EXPECT_EQ(shadow, top->formula_args().begin()->get());
 }
 
 TEST(GateTest, Cycle) {
   GatePtr top(new Gate("Top"));
-  FormulaPtr formula_one(new Formula("not"));
-  top->formula(formula_one);
   GatePtr middle(new Gate("Middle"));
-  FormulaPtr formula_two(new Formula("not"));
-  middle->formula(formula_two);
   GatePtr bottom(new Gate("Bottom"));
-  FormulaPtr formula_three(new Formula("not"));
-  bottom->formula(formula_three);
+  FormulaPtr formula_one(new Formula("not"));
   formula_one->AddArgument(middle);
+  FormulaPtr formula_two(new Formula("not"));
   formula_two->AddArgument(bottom);
+  FormulaPtr formula_three(new Formula("not"));
   formula_three->AddArgument(top);  // Looping here.
+  top->formula(std::move(formula_one));
+  middle->formula(std::move(formula_two));
+  bottom->formula(std::move(formula_three));
   std::vector<std::string> cycle;
   bool ret = cycle::DetectCycle<Gate, Formula>(top.get(), &cycle);
   EXPECT_TRUE(ret);
@@ -206,8 +205,7 @@ TEST(GateTest, Inhibit) {
   inh_attr.name = "flavor";
   inh_attr.value = "inhibit";
   GatePtr top(new Gate("top"));
-  FormulaPtr formula(new Formula("and"));
-  top->formula(formula);
+  top->formula(FormulaPtr(new Formula("and")));
   top->AddAttribute(inh_attr);
   EXPECT_THROW(top->Validate(), ValidationError);
   top->formula()->AddArgument(A);
@@ -219,8 +217,7 @@ TEST(GateTest, Inhibit) {
   EXPECT_THROW(top->Validate(), ValidationError);
 
   top = GatePtr(new Gate("top"));
-  formula = FormulaPtr(new Formula("and"));  // Re-initialize.
-  top->formula(formula);
+  top->formula(FormulaPtr(new Formula("and")));
   top->AddAttribute(inh_attr);
 
   Attribute cond;

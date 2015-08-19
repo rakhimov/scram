@@ -49,7 +49,7 @@ void Grapher::GraphFaultTree(const GatePtr& top_event, bool prob_requested,
   FaultTreeAnalysis* fta = new FaultTreeAnalysis(top_event);
 
   // Keep track of nested formulas for future special formatting.
-  std::vector<std::pair<std::string, FormulaPtr> > formulas;
+  std::vector<std::pair<std::string, const Formula*> > formulas;
 
   // Keep track of number of repetitions of nodes.
   // These repetitions are needed so that
@@ -65,7 +65,7 @@ void Grapher::GraphFaultTree(const GatePtr& top_event, bool prob_requested,
   for (it_inter = fta->inter_events().begin();
        it_inter != fta->inter_events().end(); ++it_inter) {
     std::string name = it_inter->second->id() + "_R0";
-    FormulaPtr formula = it_inter->second->formula();
+    const FormulaPtr& formula = it_inter->second->formula();
     Grapher::GraphFormula(name, formula, &formulas, &node_repeat, out);
   }
 
@@ -85,7 +85,7 @@ void Grapher::GraphFaultTree(const GatePtr& top_event, bool prob_requested,
 void Grapher::GraphFormula(
     const std::string& formula_name,
     const FormulaPtr& formula,
-    std::vector<std::pair<std::string, FormulaPtr> >* formulas,
+    std::vector<std::pair<std::string, const Formula*> >* formulas,
     std::unordered_map<EventPtr, int>* node_repeat,
     std::ostream& out) {
   // Populate intermediate and primary events of the input gate.
@@ -102,17 +102,15 @@ void Grapher::GraphFormula(
         << node_repeat->find(it_child->second)->second << "\";\n";
   }
   // Deal with formulas.
-  const std::set<FormulaPtr>* formula_args = &formula->formula_args();
-  std::set<FormulaPtr>::const_iterator it_f;
   int i = 1;  // Count formulas for unique naming.
-  for (it_f = formula_args->begin(); it_f != formula_args->end(); ++it_f) {
+  for (const FormulaPtr& arg : formula->formula_args()) {
     std::stringstream unique_name;
     unique_name << formula_name << "._F" << i;  // Unique name.
     ++i;
     out << "\"" << formula_name << "\" -> "
         << "\"" << unique_name.str() << "\";\n";
-    formulas->push_back(std::make_pair(unique_name.str(), *it_f));
-    Grapher::GraphFormula(unique_name.str(), *it_f, formulas, node_repeat, out);
+    formulas->emplace_back(unique_name.str(), arg.get());
+    Grapher::GraphFormula(unique_name.str(), arg, formulas, node_repeat, out);
   }
 }
 
@@ -240,22 +238,20 @@ void Grapher::FormatPrimaryEvent(const PrimaryEventPtr& primary_event,
 }
 
 void Grapher::FormatFormulas(
-    const std::vector<std::pair<std::string, FormulaPtr> >& formulas,
+    const std::vector<std::pair<std::string, const Formula*> >& formulas,
     std::ostream& out) {
-  std::vector<std::pair<std::string, FormulaPtr> >::const_iterator it;
-  for (it = formulas.begin(); it != formulas.end(); ++it) {
-    std::string gate = it->second->type();
-
-    std::string gate_color = kGateColors_.find(gate)->second;
+  for (const auto& pair : formulas) {
+    std::string gate = pair.second->type();
+    std::string gate_color = kGateColors_.at(gate);
     boost::to_upper(gate);  // This is for graphing.
-    out << "\"" << it->first << "\"";
+    out << "\"" << pair.first << "\"";
     out << " [shape=box, ";
     out << "fontsize=10, fontcolor=black, "
         << "color=" << gate_color << ", "
         << "label=\"{ " << gate;
     if (gate == "ATLEAST") {
-      out << " " << it->second->vote_number()
-          << "/" << it->second->num_args();
+      out << " " << pair.second->vote_number()
+          << "/" << pair.second->num_args();
     }
     out << " }\"]\n";
   }

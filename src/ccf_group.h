@@ -123,7 +123,7 @@ class CcfGroup : public Element, public Role {
 
  protected:
   typedef std::shared_ptr<Gate> GatePtr;
-  typedef std::shared_ptr<Formula> FormulaPtr;
+  typedef std::unique_ptr<Formula> FormulaPtr;
 
   /// Creates new basic events from members.
   /// The new basic events are included in the database of new events.

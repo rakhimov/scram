@@ -109,10 +109,8 @@ void FaultTreeAnalysis::GatherEvents(const FormulaPtr& formula) noexcept {
     inter_events_.insert(std::make_pair(gate->id(), gate));
     FaultTreeAnalysis::GatherEvents(gate);
   }
-  const std::set<FormulaPtr>* formulas = &formula->formula_args();
-  std::set<FormulaPtr>::const_iterator it_f;
-  for (it_f = formulas->begin(); it_f != formulas->end(); ++it_f) {
-    FaultTreeAnalysis::GatherEvents(*it_f);
+  for (const FormulaPtr& arg : formula->formula_args()) {
+    FaultTreeAnalysis::GatherEvents(arg);
   }
 }
 

@@ -54,7 +54,7 @@ class Grapher {
   typedef std::shared_ptr<PrimaryEvent> PrimaryEventPtr;
   typedef std::shared_ptr<BasicEvent> BasicEventPtr;
   typedef std::shared_ptr<HouseEvent> HouseEventPtr;
-  typedef std::shared_ptr<Formula> FormulaPtr;
+  typedef std::unique_ptr<Formula> FormulaPtr;
 
   static const std::map<std::string, std::string> kGateColors_;  ///< Colors.
   static const std::map<std::string, std::string> kEventColors_;  ///< Colors.
@@ -68,11 +68,12 @@ class Grapher {
   /// @param[out] out The output stream.
   ///
   /// @note The repetition information is important to avoid clashes.
-  void GraphFormula(const std::string& formula_name,
-                    const FormulaPtr& formula,
-                    std::vector<std::pair<std::string, FormulaPtr> >* formulas,
-                    std::unordered_map<EventPtr, int>* node_repeat,
-                    std::ostream& out);
+  void GraphFormula(
+      const std::string& formula_name,
+      const FormulaPtr& formula,
+      std::vector<std::pair<std::string, const Formula*> >* formulas,
+      std::unordered_map<EventPtr, int>* node_repeat,
+      std::ostream& out);
 
   /// Provides formatting information for top gate.
   ///
@@ -134,7 +135,7 @@ class Grapher {
   /// @param[in] formulas The container with registered nested formulas.
   /// @param[out] out The output stream.
   void FormatFormulas(
-      const std::vector<std::pair<std::string, FormulaPtr> >& formulas,
+      const std::vector<std::pair<std::string, const Formula*> >& formulas,
       std::ostream& out);
 };
 
