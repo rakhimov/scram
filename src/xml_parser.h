@@ -58,7 +58,7 @@ class XMLParser {
   }
 
  private:
-  std::shared_ptr<xmlpp::DomParser> parser_;  ///< File parser.
+  std::unique_ptr<xmlpp::DomParser> parser_;  ///< File parser.
 };
 
 }  // namespace scram

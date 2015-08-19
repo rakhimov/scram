@@ -34,7 +34,7 @@ class XMLParserTests : public ::testing::Test {
   virtual void TearDown();
 
  protected:
-  typedef std::shared_ptr<XMLParser> XMLParserPtr;
+  typedef std::unique_ptr<XMLParser> XMLParserPtr;
 
   void FillSnippet(std::stringstream& ss);
   void FillBadSnippet(std::stringstream& ss);

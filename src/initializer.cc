@@ -35,7 +35,6 @@
 #include "expression.h"
 #include "fault_tree.h"
 #include "logger.h"
-#include "xml_parser.h"
 
 namespace fs = boost::filesystem;
 
@@ -114,9 +113,9 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
   stream << file_stream.rdbuf();
   file_stream.close();
 
-  std::shared_ptr<XMLParser> parser(new XMLParser(stream));
+  XMLParser* parser(new XMLParser(stream));
+  parsers_.emplace_back(parser);
   parser->Validate(schema_);
-  parsers_.push_back(parser);
 
   const xmlpp::Document* doc = parser->Document();
   const xmlpp::Node* root = doc->get_root_node();

@@ -284,8 +284,8 @@ TEST_F(RiskAnalysisTest, ReportDefaultMCS) {
   std::stringstream output;
   ASSERT_NO_THROW(ran->Report(output));
 
-  std::shared_ptr<XMLParser> parser;
-  ASSERT_NO_THROW(parser = std::shared_ptr<XMLParser>(new XMLParser(output)));
+  std::unique_ptr<XMLParser> parser;
+  ASSERT_NO_THROW(parser = std::unique_ptr<XMLParser>(new XMLParser(output)));
   ASSERT_NO_THROW(parser->Validate(schema));
 }
 
@@ -307,8 +307,8 @@ TEST_F(RiskAnalysisTest, ReportProbability) {
   std::stringstream output;
   ASSERT_NO_THROW(ran->Report(output));
 
-  std::shared_ptr<XMLParser> parser;
-  ASSERT_NO_THROW(parser = std::shared_ptr<XMLParser>(new XMLParser(output)));
+  std::unique_ptr<XMLParser> parser;
+  ASSERT_NO_THROW(parser = std::unique_ptr<XMLParser>(new XMLParser(output)));
   ASSERT_NO_THROW(parser->Validate(schema));
 }
 
@@ -330,8 +330,8 @@ TEST_F(RiskAnalysisTest, ReportImportanceFactors) {
   std::stringstream output;
   ASSERT_NO_THROW(ran->Report(output));
 
-  std::shared_ptr<XMLParser> parser;
-  ASSERT_NO_THROW(parser = std::shared_ptr<XMLParser>(new XMLParser(output)));
+  std::unique_ptr<XMLParser> parser;
+  ASSERT_NO_THROW(parser = std::unique_ptr<XMLParser>(new XMLParser(output)));
   ASSERT_NO_THROW(parser->Validate(schema));
 }
 
@@ -353,8 +353,8 @@ TEST_F(RiskAnalysisTest, ReportUncertaintyResults) {
   std::stringstream output;
   ASSERT_NO_THROW(ran->Report(output));
 
-  std::shared_ptr<XMLParser> parser;
-  ASSERT_NO_THROW(parser = std::shared_ptr<XMLParser>(new XMLParser(output)));
+  std::unique_ptr<XMLParser> parser;
+  ASSERT_NO_THROW(parser = std::unique_ptr<XMLParser>(new XMLParser(output)));
   ASSERT_NO_THROW(parser->Validate(schema));
 }
 
@@ -375,8 +375,8 @@ TEST_F(RiskAnalysisTest, ReportCCF) {
   std::stringstream output;
   ASSERT_NO_THROW(ran->Report(output));
 
-  std::shared_ptr<XMLParser> parser;
-  ASSERT_NO_THROW(parser = std::shared_ptr<XMLParser>(new XMLParser(output)));
+  std::unique_ptr<XMLParser> parser;
+  ASSERT_NO_THROW(parser = std::unique_ptr<XMLParser>(new XMLParser(output)));
   ASSERT_NO_THROW(parser->Validate(schema));
 }
 
@@ -397,8 +397,8 @@ TEST_F(RiskAnalysisTest, ReportNegativeEvent) {
   std::stringstream output;
   ASSERT_NO_THROW(ran->Report(output));
 
-  std::shared_ptr<XMLParser> parser;
-  ASSERT_NO_THROW(parser = std::shared_ptr<XMLParser>(new XMLParser(output)));
+  std::unique_ptr<XMLParser> parser;
+  ASSERT_NO_THROW(parser = std::unique_ptr<XMLParser>(new XMLParser(output)));
   ASSERT_NO_THROW(parser->Validate(schema));
 }
 
@@ -421,8 +421,8 @@ TEST_F(RiskAnalysisTest, ReportAll) {
   std::stringstream output;
   ASSERT_NO_THROW(ran->Report(output));
 
-  std::shared_ptr<XMLParser> parser;
-  ASSERT_NO_THROW(parser = std::shared_ptr<XMLParser>(new XMLParser(output)));
+  std::unique_ptr<XMLParser> parser;
+  ASSERT_NO_THROW(parser = std::unique_ptr<XMLParser>(new XMLParser(output)));
   ASSERT_NO_THROW(parser->Validate(schema));
 }
 
@@ -442,8 +442,8 @@ TEST_F(RiskAnalysisTest, ReportRoles) {
   std::stringstream output;
   ASSERT_NO_THROW(ran->Report(output));
 
-  std::shared_ptr<XMLParser> parser;
-  ASSERT_NO_THROW(parser = std::shared_ptr<XMLParser>(new XMLParser(output)));
+  std::unique_ptr<XMLParser> parser;
+  ASSERT_NO_THROW(parser = std::unique_ptr<XMLParser>(new XMLParser(output)));
   ASSERT_NO_THROW(parser->Validate(schema));
 }
 
@@ -463,8 +463,8 @@ TEST_F(RiskAnalysisTest, ReportOrphanPrimaryEvents) {
   std::stringstream output;
   ASSERT_NO_THROW(ran->Report(output));
 
-  std::shared_ptr<XMLParser> parser;
-  ASSERT_NO_THROW(parser = std::shared_ptr<XMLParser>(new XMLParser(output)));
+  std::unique_ptr<XMLParser> parser;
+  ASSERT_NO_THROW(parser = std::unique_ptr<XMLParser>(new XMLParser(output)));
   ASSERT_NO_THROW(parser->Validate(schema));
 }
 
@@ -484,8 +484,8 @@ TEST_F(RiskAnalysisTest, ReportUnusedParameters) {
   std::stringstream output;
   ASSERT_NO_THROW(ran->Report(output));
 
-  std::shared_ptr<XMLParser> parser;
-  ASSERT_NO_THROW(parser = std::shared_ptr<XMLParser>(new XMLParser(output)));
+  std::unique_ptr<XMLParser> parser;
+  ASSERT_NO_THROW(parser = std::unique_ptr<XMLParser>(new XMLParser(output)));
   ASSERT_NO_THROW(parser->Validate(schema));
 }
 

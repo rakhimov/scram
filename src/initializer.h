@@ -34,6 +34,7 @@
 #include "event.h"
 #include "model.h"
 #include "settings.h"
+#include "xml_parser.h"
 
 namespace scram {
 
@@ -43,7 +44,6 @@ class Component;
 class CcfGroup;
 class Expression;
 class Formula;
-class XMLParser;
 
 /// @class Initializer
 /// This class operates on input files
@@ -401,7 +401,7 @@ class Initializer {
   static std::stringstream schema_;
 
   /// Parsers with all documents saved for later access.
-  std::vector<std::shared_ptr<XMLParser> > parsers_;
+  std::vector<std::unique_ptr<XMLParser> > parsers_;
 
   /// Map roots of documents to files. This is for error reporting.
   std::map<const xmlpp::Node*, std::string> doc_to_file_;

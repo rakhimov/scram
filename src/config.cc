@@ -43,9 +43,9 @@ Config::Config(const std::string& config_file) : output_path_("") {
   stream << file_stream.rdbuf();
   file_stream.close();
 
-  std::shared_ptr<XMLParser> parser;
+  std::unique_ptr<XMLParser> parser;
   try {
-    parser = std::shared_ptr<XMLParser>(new XMLParser(stream));
+    parser = std::unique_ptr<XMLParser>(new XMLParser(stream));
     std::stringstream schema;
     std::string schema_path = Env::config_schema();
     std::ifstream schema_stream(schema_path.c_str());
@@ -61,8 +61,7 @@ Config::Config(const std::string& config_file) : output_path_("") {
   assert(root->get_name() == "config");
   xmlpp::NodeSet roots_children = root->find("./*");
   xmlpp::NodeSet::iterator it_ch;
-  for (it_ch = roots_children.begin();
-       it_ch != roots_children.end(); ++it_ch) {
+  for (it_ch = roots_children.begin(); it_ch != roots_children.end(); ++it_ch) {
     const xmlpp::Element* element = static_cast<const xmlpp::Element*>(*it_ch);
     std::string name = element->get_name();
     if (name == "input-files") {
