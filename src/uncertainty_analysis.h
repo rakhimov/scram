@@ -83,7 +83,7 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   /// @returns Standard deviation of the final distribution.
   inline double sigma() const { return sigma_; }
 
-  /// @returns 95% confidence interval. Normal distribution is assumed.
+  /// @returns 95% confidence interval of the mean.
   inline const std::pair<double, double>& confidence_interval() const {
     return confidence_interval_;
   }
@@ -92,6 +92,9 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   const std::vector<std::pair<double, double> >& distribution() const {
     return distribution_;
   }
+
+  /// @returns Quantiles of the distribution.
+  const std::vector<double>& quantiles() const { return quantiles_; }
 
   /// @returns Warnings generated upon analysis.
   inline const std::string warnings() const {
@@ -120,6 +123,8 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
 
   std::vector<double> sampled_results_;  ///< Storage for sampled values.
   int num_trials_;  ///< The number of trials to perform.
+  int num_bins_;  ///< The number of bins for the histogram.
+  int num_quantiles_;  ///< The number of quantiles.
   double mean_;  ///< The mean of the final distribution.
   double sigma_;  ///< The standard deviation of the final distribution.
   double analysis_time_;  ///< Time for uncertainty calculations and sampling.
@@ -127,6 +132,8 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   std::pair<double, double> confidence_interval_;
   /// The histogram density of the distribution with lower bounds and values.
   std::vector<std::pair<double, double> > distribution_;
+  /// The quantiles of the distribution.
+  std::vector<double> quantiles_;
   /// Storage for constant part of the positive equation.
   /// The same mapping as positive sets.
   std::vector<double> pos_const_;

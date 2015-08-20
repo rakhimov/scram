@@ -330,7 +330,7 @@
     <element name="quantile">
       <attribute name="number"> <data type="nonNegativeInteger"/> </attribute>
       <optional>
-        <attribute name="mean"> <data type="float"/> </attribute>
+        <attribute name="value"> <data type="float"/> </attribute>
       </optional>
       <optional>
         <attribute name="lower-bound"> <data type="float"/> </attribute>

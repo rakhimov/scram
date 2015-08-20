@@ -20,14 +20,15 @@
 
 #include "uncertainty_analysis.h"
 
+#include <array>
 #include <cmath>
 
-#include <boost/algorithm/string.hpp>
 #include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics/stats.hpp>
-#include <boost/accumulators/statistics/mean.hpp>
-#include <boost/accumulators/statistics/variance.hpp>
 #include <boost/accumulators/statistics/density.hpp>
+#include <boost/accumulators/statistics/extended_p_square_quantile.hpp>
+#include <boost/accumulators/statistics/mean.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics/variance.hpp>
 
 #include "error.h"
 #include "logger.h"
@@ -37,6 +38,8 @@ namespace scram {
 UncertaintyAnalysis::UncertaintyAnalysis(int num_sums, double cut_off,
                                          int num_trials)
     : ProbabilityAnalysis::ProbabilityAnalysis("no", num_sums, cut_off),
+      num_bins_(20),
+      num_quantiles_(20),
       mean_(-1),
       sigma_(-1),
       analysis_time_(-1) {
@@ -184,11 +187,22 @@ void UncertaintyAnalysis::FilterUncertainEvents(
 void UncertaintyAnalysis::CalculateStatistics() noexcept {
   using namespace boost;
   using namespace boost::accumulators;
+  typedef accumulator_set<double, stats<tag::extended_p_square_quantile> >
+      accumulator_q;
+  quantiles_.clear();
+  double delta = 1.0 / num_quantiles_;
+  for (int i = 0; i < num_quantiles_; ++i) {
+    quantiles_.push_back(delta * (i + 1));
+  }
+  accumulator_q acc_q(extended_p_square_probabilities = quantiles_);
+
   accumulator_set<double, stats<tag::mean, tag::variance, tag::density> >
       acc(tag::density::num_bins = 20, tag::density::cache_size = num_trials_);
+
   std::vector<double>::iterator it;
   for (it = sampled_results_.begin(); it != sampled_results_.end(); ++it) {
     acc(*it);
+    acc_q(*it);
   }
   typedef iterator_range<std::vector<std::pair<double, double> >::iterator >
       histogram_type;
@@ -201,6 +215,10 @@ void UncertaintyAnalysis::CalculateStatistics() noexcept {
   sigma_ = std::sqrt(var);
   confidence_interval_.first = mean_ - sigma_ * 1.96 / std::sqrt(num_trials_);
   confidence_interval_.second = mean_ + sigma_ * 1.96 / std::sqrt(num_trials_);
+
+  for (int i = 0; i < num_quantiles_; ++i) {
+    quantiles_[i] = quantile(acc_q, quantile_probability = quantiles_[i]);
+  }
 }
 
 }  // namespace scram
