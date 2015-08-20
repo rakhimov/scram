@@ -55,7 +55,7 @@ std::stringstream Initializer::schema_;
 Initializer::Initializer(const Settings& settings) {
   settings_ = settings;
   mission_time_ = std::shared_ptr<MissionTime>(new MissionTime());
-  mission_time_->mission_time(settings_.mission_time_);
+  mission_time_->mission_time(settings_.mission_time());
   if (schema_.str().empty()) {
     std::string schema_path = Env::input_schema();
     std::ifstream schema_stream(schema_path.c_str());
@@ -977,7 +977,7 @@ void Initializer::CheckFirstLayer() {
   }
   std::stringstream error_messages;
   // Check if all primary events have expressions for probability analysis.
-  if (settings_.probability_analysis_) {
+  if (settings_.probability_analysis()) {
     std::string msg = "";
     std::unordered_map<std::string, BasicEventPtr>::const_iterator it_b;
     for (it_b = model_->basic_events().begin();
@@ -1041,7 +1041,7 @@ void Initializer::ValidateExpressions() {
   }
 
   // Check probability values for primary events.
-  if (settings_.probability_analysis_) {
+  if (settings_.probability_analysis()) {
     std::stringstream msg;
     msg << "";
     if (!model_->ccf_groups().empty()) {

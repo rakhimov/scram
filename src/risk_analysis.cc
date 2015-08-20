@@ -56,7 +56,7 @@ void RiskAnalysis::GraphingInstructions() {
         throw IOError(output +  " : Cannot write the graphing file.");
       }
       Grapher gr = Grapher();
-      gr.GraphFaultTree(*it_top, settings_.probability_analysis_, of);
+      gr.GraphFaultTree(*it_top, settings_.probability_analysis(), of);
       of.flush();
     }
   }
@@ -66,7 +66,7 @@ void RiskAnalysis::GraphingInstructions() {
 void RiskAnalysis::Analyze() {
   // Set the seed for the pseudo-random number generator if given explicitly.
   // Otherwise it defaults to the current time.
-  if (settings_.seed_ >= 0) Random::seed(settings_.seed_);
+  if (settings_.seed() >= 0) Random::seed(settings_.seed());
 
   std::unordered_map<std::string, FaultTreePtr>::const_iterator it;
   for (it = model_->fault_trees().begin(); it != model_->fault_trees().end();
@@ -80,25 +80,25 @@ void RiskAnalysis::Analyze() {
       std::string name = base_path + target->name();  // Analysis ID.
 
       FaultTreeAnalysisPtr fta(new FaultTreeAnalysis(*it_top,
-                                                     settings_.limit_order_,
-                                                     settings_.ccf_analysis_));
+                                                     settings_.limit_order(),
+                                                     settings_.ccf_analysis()));
       fta->Analyze();
       fault_tree_analyses_.insert(std::make_pair(name, fta));
 
-      if (settings_.probability_analysis_) {
+      if (settings_.probability_analysis()) {
         ProbabilityAnalysisPtr pa(
-            new ProbabilityAnalysis(settings_.approx_, settings_.num_sums_,
-                                    settings_.cut_off_,
-                                    settings_.importance_analysis_));
+            new ProbabilityAnalysis(settings_.approx(), settings_.num_sums(),
+                                    settings_.cut_off(),
+                                    settings_.importance_analysis()));
         pa->UpdateDatabase(fta->mcs_basic_events());
         pa->Analyze(fta->min_cut_sets());
         probability_analyses_.insert(std::make_pair(name, pa));
       }
 
-      if (settings_.uncertainty_analysis_) {
+      if (settings_.uncertainty_analysis()) {
         UncertaintyAnalysisPtr ua(
-            new UncertaintyAnalysis(settings_.num_sums_, settings_.cut_off_,
-                                    settings_.num_trials_));
+            new UncertaintyAnalysis(settings_.num_sums(), settings_.cut_off(),
+                                    settings_.num_trials()));
         ua->UpdateDatabase(fta->mcs_basic_events());
         ua->Analyze(fta->min_cut_sets());
         uncertainty_analyses_.insert(std::make_pair(name, ua));
@@ -148,18 +148,18 @@ void RiskAnalysis::Report(std::ostream& out) {
   for (it = fault_tree_analyses_.begin(); it != fault_tree_analyses_.end();
        ++it) {
     ProbabilityAnalysisPtr prob_analysis;  // Null pointer if no analysis.
-    if (settings_.probability_analysis_) {
+    if (settings_.probability_analysis()) {
       prob_analysis = probability_analyses_.find(it->first)->second;
     }
     rp.ReportFta(it->first, fault_tree_analyses_.find(it->first)->second,
                  prob_analysis, doc);
 
-    if (settings_.importance_analysis_) {
+    if (settings_.importance_analysis()) {
       rp.ReportImportance(it->first,
                           probability_analyses_.find(it->first)->second, doc);
     }
 
-    if (settings_.uncertainty_analysis_) {
+    if (settings_.uncertainty_analysis()) {
         rp.ReportUncertainty(it->first,
                              uncertainty_analyses_.find(it->first)->second,
                              doc);

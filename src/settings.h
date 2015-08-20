@@ -25,15 +25,9 @@
 
 namespace scram {
 
-class RiskAnalysis;
-
 /// @class Settings
 /// Builder for analysis settings.
 class Settings {
-  friend class Initializer;
-  friend class RiskAnalysis;
-  friend class Reporter;
-
  public:
   Settings();
 
@@ -150,24 +144,17 @@ class Settings {
     return *this;
   }
 
-  /// This comparison is primarily for testing.
-  ///
-  /// @param[in] rhs Another Settings object to be compared.
-  ///
-  /// @returns true if all members of the compared settings are equal.
-  bool operator==(const Settings& rhs) const {
-    return (probability_analysis_ == rhs.probability_analysis_) &&
-        (importance_analysis_ == rhs.importance_analysis_) &&
-        (uncertainty_analysis_ == rhs.uncertainty_analysis_) &&
-        (ccf_analysis_ == rhs.ccf_analysis_) &&
-        (limit_order_ == rhs.limit_order_) &&
-        (num_sums_ == rhs.num_sums_) &&
-        (cut_off_ == rhs.cut_off_) &&
-        (approx_ == rhs.approx_) &&
-        (num_trials_ == rhs.num_trials_) &&
-        (seed_ == rhs.seed_) &&
-        (mission_time_ == rhs.mission_time_);
-  }
+  inline bool probability_analysis() const { return probability_analysis_; }
+  inline bool importance_analysis() const { return importance_analysis_; }
+  inline bool uncertainty_analysis() const { return uncertainty_analysis_; }
+  inline bool ccf_analysis() const { return ccf_analysis_; }
+  inline int limit_order() const { return limit_order_; }
+  inline double mission_time() const { return mission_time_; }
+  inline int num_sums() const { return num_sums_; }
+  inline double cut_off() const { return cut_off_; }
+  inline const std::string& approx() const { return approx_; }
+  inline int seed() const { return seed_; }
+  inline int num_trials() const { return num_trials_; }
 
  private:
   bool probability_analysis_;  ///< A flag for probability analysis.

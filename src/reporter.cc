@@ -67,10 +67,10 @@ void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
   xmlpp::Element* methods = information->add_child("calculation-method");
   methods->set_attribute("name", "MOCUS");
   methods->add_child("limits")->add_child("number-of-basic-events")
-      ->add_child_text(Reporter::ToString(settings.limit_order_));
+      ->add_child_text(Reporter::ToString(settings.limit_order()));
 
   // Report the setup for CCF analysis.
-  if (settings.ccf_analysis_) {
+  if (settings.ccf_analysis()) {
     xmlpp::Element* ccf_an = information->add_child("calculated-quantity");
     ccf_an->set_attribute("name", "CCF Analysis");
     ccf_an->set_attribute("definition",
@@ -78,26 +78,26 @@ void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
   }
 
   // Report the setup for probability analysis.
-  if (settings.probability_analysis_) {
+  if (settings.probability_analysis()) {
     quant = information->add_child("calculated-quantity");
     quant->set_attribute("name", "Probability Analysis");
     quant->set_attribute("definition",
                          "Quantitative analysis of failure probability");
-    quant->set_attribute("approximation", settings.approx_);
+    quant->set_attribute("approximation", settings.approx());
 
     methods = information->add_child("calculation-method");
     methods->set_attribute("name", "Numerical Probability");
     xmlpp::Element* limits = methods->add_child("limits");
     limits->add_child("mission-time")
-        ->add_child_text(Reporter::ToString(settings.mission_time_));
+        ->add_child_text(Reporter::ToString(settings.mission_time()));
     limits->add_child("cut-off")
-        ->add_child_text(Reporter::ToString(settings.cut_off_));
+        ->add_child_text(Reporter::ToString(settings.cut_off()));
     limits->add_child("number-of-sums")
-        ->add_child_text(Reporter::ToString(settings.num_sums_));
+        ->add_child_text(Reporter::ToString(settings.num_sums()));
   }
 
   // Report the setup for optional importance analysis.
-  if (settings.importance_analysis_) {
+  if (settings.importance_analysis()) {
     quant = information->add_child("calculated-quantity");
     quant->set_attribute("name", "Importance Analysis");
     quant->set_attribute("definition",
@@ -106,7 +106,7 @@ void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
   }
 
   // Report the setup for optional uncertainty analysis.
-  if (settings.uncertainty_analysis_) {
+  if (settings.uncertainty_analysis()) {
     xmlpp::Element* quant = information->add_child("calculated-quantity");
     quant->set_attribute("name", "Uncertainty Analysis");
     quant->set_attribute(
@@ -117,10 +117,10 @@ void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
     methods->set_attribute("name", "Monte Carlo");
     xmlpp::Element* limits = methods->add_child("limits");
     limits->add_child("number-of-trials")
-        ->add_child_text(Reporter::ToString(settings.num_trials_));
-    if (settings.seed_ >= 0) {
+        ->add_child_text(Reporter::ToString(settings.num_trials()));
+    if (settings.seed() >= 0) {
       limits->add_child("seed")
-          ->add_child_text(Reporter::ToString(settings.seed_));
+          ->add_child_text(Reporter::ToString(settings.seed()));
     }
   }
 

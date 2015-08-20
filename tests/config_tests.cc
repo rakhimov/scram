@@ -47,15 +47,19 @@ TEST(ConfigTest, FullSettings) {
               config->input_files().back());
   // Check the output destination.
   EXPECT_EQ("temp_results.xml", config->output_path());
-  // Check options.
-  Settings settings;
-  settings.probability_analysis(true).importance_analysis(true)
-      .uncertainty_analysis(true).ccf_analysis(true)
-      .approx("rare-event").limit_order(11).mission_time(48)
-      .cut_off(0.009).num_sums(42).num_trials(777).seed(97531);
-  EXPECT_EQ(settings, config->settings());
 
-  delete config;
+  const Settings& settings = config->settings();
+  EXPECT_EQ(true, settings.probability_analysis());
+  EXPECT_EQ(true, settings.importance_analysis());
+  EXPECT_EQ(true, settings.uncertainty_analysis());
+  EXPECT_EQ(true, settings.ccf_analysis());
+  EXPECT_EQ("rare-event", settings.approx());
+  EXPECT_EQ(11, settings.limit_order());
+  EXPECT_EQ(48, settings.mission_time());
+  EXPECT_EQ(0.009, settings.cut_off());
+  EXPECT_EQ(42, settings.num_sums());
+  EXPECT_EQ(777, settings.num_trials());
+  EXPECT_EQ(97531, settings.seed());
 }
 
 }  // namespace test
