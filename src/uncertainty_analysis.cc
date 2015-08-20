@@ -193,11 +193,12 @@ void UncertaintyAnalysis::CalculateStatistics() noexcept {
   typedef iterator_range<std::vector<std::pair<double, double> >::iterator >
       histogram_type;
   histogram_type hist = density(acc);
-  for (int i = 0; i < hist.size(); i++) {
+  for (int i = 1; i < hist.size(); i++) {
     distribution_.push_back(hist[i]);
   }
   mean_ = boost::accumulators::mean(acc);
-  sigma_ = std::sqrt(variance(acc));
+  double var = variance(acc);
+  sigma_ = std::sqrt(var);
   confidence_interval_.first = mean_ - sigma_ * 1.96 / std::sqrt(num_trials_);
   confidence_interval_.second = mean_ + sigma_ * 1.96 / std::sqrt(num_trials_);
 }

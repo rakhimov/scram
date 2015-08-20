@@ -327,18 +327,18 @@ void Reporter::ReportUncertainty(
       "upper-bound",
       Reporter::ToString(uncert_analysis->confidence_interval().second, 7));
   /// @todo Error factor reporting.
-  xmlpp::Element* quantiles = measure->add_child("quantiles");
+  xmlpp::Element* hist = measure->add_child("histogram");
   int num_bins = uncert_analysis->distribution().size() - 1;
-  quantiles->set_attribute("number", Reporter::ToString(num_bins));
+  hist->set_attribute("number", Reporter::ToString(num_bins));
   for (int i = 0; i < num_bins; ++i) {
-    xmlpp::Element* quant = quantiles->add_child("quantile");
-    quant->set_attribute("number", Reporter::ToString(i + 1));
+    xmlpp::Element* bin = hist->add_child("bin");
+    bin->set_attribute("number", Reporter::ToString(i + 1));
     double lower = uncert_analysis->distribution()[i].first;
     double upper = uncert_analysis->distribution()[i + 1].first;
-    double value = uncert_analysis->distribution()[i + 1].second;
-    quant->set_attribute("mean", Reporter::ToString(value, 7));
-    quant->set_attribute("lower-bound", Reporter::ToString(lower, 7));
-    quant->set_attribute("upper-bound", Reporter::ToString(upper, 7));
+    double value = uncert_analysis->distribution()[i].second;
+    bin->set_attribute("value", Reporter::ToString(value, 7));
+    bin->set_attribute("lower-bound", Reporter::ToString(lower, 7));
+    bin->set_attribute("upper-bound", Reporter::ToString(upper, 7));
   }
   xmlpp::NodeSet calc_times =
       root->find("./information/performance/calculation-time");

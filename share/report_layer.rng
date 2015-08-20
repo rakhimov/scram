@@ -311,6 +311,9 @@
       <optional>
         <ref name="quantiles"/>
       </optional>
+      <optional>
+        <ref name="histogram"/>
+      </optional>
     </element>
   </define>
 
@@ -328,6 +331,30 @@
       <attribute name="number"> <data type="nonNegativeInteger"/> </attribute>
       <optional>
         <attribute name="mean"> <data type="float"/> </attribute>
+      </optional>
+      <optional>
+        <attribute name="lower-bound"> <data type="float"/> </attribute>
+      </optional>
+      <optional>
+        <attribute name="upper-bound"> <data type="float"/> </attribute>
+      </optional>
+    </element>
+  </define>
+
+  <define name="histogram">
+    <element name="histogram">
+      <attribute name="number"> <data type="nonNegativeInteger"/> </attribute>
+      <oneOrMore>
+        <ref name="bin"/>
+      </oneOrMore>
+    </element>
+  </define>
+
+  <define name="bin">
+    <element name="bin">
+      <attribute name="number"> <data type="nonNegativeInteger"/> </attribute>
+      <optional>
+        <attribute name="value"> <data type="float"/> </attribute>
       </optional>
       <optional>
         <attribute name="lower-bound"> <data type="float"/> </attribute>
