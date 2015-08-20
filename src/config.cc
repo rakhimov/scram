@@ -59,42 +59,57 @@ Config::Config(const std::string& config_file) : output_path_("") {
   const xmlpp::Document* doc = parser->Document();
   const xmlpp::Node* root = doc->get_root_node();
   assert(root->get_name() == "config");
-  xmlpp::NodeSet roots_children = root->find("./*");
-  xmlpp::NodeSet::iterator it_ch;
-  for (it_ch = roots_children.begin(); it_ch != roots_children.end(); ++it_ch) {
-    const xmlpp::Element* element = static_cast<const xmlpp::Element*>(*it_ch);
-    std::string name = element->get_name();
-    if (name == "input-files") {
-      xmlpp::NodeSet input_files = element->find("./*");
-      assert(!input_files.empty());
-      xmlpp::NodeSet::iterator it_if;
-      for (it_if = input_files.begin(); it_if != input_files.end(); ++it_if) {
-        const xmlpp::Element* file = static_cast<const xmlpp::Element*>(*it_if);
-        assert(file->get_name() == "file");
-        input_files_.push_back(file->get_child_text()->get_content());
-      }
-    } else if (name == "output-path") {
-      output_path_ = element->get_child_text()->get_content();
+  Config::GatherInputFiles(root);
+  Config::GatherOptions(root);
+  Config::GetOutputPath(root);
+}
 
-    } else if (name == "options") {
-      xmlpp::NodeSet options = element->find("./*");
-      xmlpp::NodeSet::iterator it_op;
-      for (it_op = options.begin(); it_op != options.end(); ++it_op) {
-        const xmlpp::Element* option_group =
-            static_cast<const xmlpp::Element*>(*it_op);
-        std::string name = option_group->get_name();
-        if (name == "analysis") {
-          Config::SetAnalysis(option_group);
+void Config::GatherInputFiles(const xmlpp::Node* root) {
+  xmlpp::NodeSet input_files = root->find("./input-files");
+  if (input_files.empty()) return;
+  assert(input_files.size() == 1);
+  const xmlpp::Element* files =
+      static_cast<const xmlpp::Element*>(input_files.front());
+  xmlpp::NodeSet all_files = files->find("./*");
+  assert(!all_files.empty());
+  for (const xmlpp::Node* node : all_files) {
+    const xmlpp::Element* file = static_cast<const xmlpp::Element*>(node);
+    assert(file->get_name() == "file");
+    input_files_.push_back(file->get_child_text()->get_content());
+  }
+}
 
-        } else if (name == "approximations") {
-          Config::SetApprox(option_group);
+void Config::GatherOptions(const xmlpp::Node* root) {
+  xmlpp::NodeSet options = root->find("./options");
+  if (options.empty()) return;
+  assert(options.size() == 1);
+  const xmlpp::Element* element =
+      static_cast<const xmlpp::Element*>(options.front());
+  xmlpp::NodeSet all_options = element->find("./*");
+  assert(!all_options.empty());
+  for (const xmlpp::Node* node : all_options) {
+    const xmlpp::Element* option_group =
+        static_cast<const xmlpp::Element*>(node);
+    std::string name = option_group->get_name();
+    if (name == "analysis") {
+      Config::SetAnalysis(option_group);
 
-        } else if (name == "limits") {
-          Config::SetLimits(option_group);
-        }
-      }
+    } else if (name == "approximations") {
+      Config::SetApprox(option_group);
+
+    } else if (name == "limits") {
+      Config::SetLimits(option_group);
     }
   }
+}
+
+void Config::GetOutputPath(const xmlpp::Node* root) {
+  xmlpp::NodeSet out = root->find("./output-path");
+  if (out.empty()) return;
+  assert(out.size() == 1);
+  const xmlpp::Element* element =
+      static_cast<const xmlpp::Element*>(out.front());
+  output_path_ = element->get_child_text()->get_content();
 }
 
 void Config::SetAnalysis(const xmlpp::Element* analysis) {

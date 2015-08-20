@@ -59,6 +59,21 @@ class Config {
   inline const std::string& output_path() const { return output_path_; }
 
  private:
+  /// Gathers input files with analysis constructs.
+  ///
+  /// @param[in] root The root XML element.
+  void GatherInputFiles(const xmlpp::Node* root);
+
+  /// Gathers options for analysis.
+  ///
+  /// @param[in] root The root XML element.
+  void GatherOptions(const xmlpp::Node* root);
+
+  /// Gets the output path for reports.
+  ///
+  /// @param[in] root The root XML element.
+  void GetOutputPath(const xmlpp::Node* root);
+
   /// Extracts analysis types to be performed from analysis element.
   ///
   /// @param[in] analysis Analysis element node.
