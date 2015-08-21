@@ -502,10 +502,9 @@ class LogNormalDeviate : public RandomDeviate {
   ///                 mu is the location parameter,
   ///                 sigma is the scale factor.
   ///                 E(x) = exp(mu + sigma^2 / 2)
-  /// @param[in] ef The error factor of the log-normal distribution
-  ///               for confidence level of 0.95.
-  ///               EF = exp(1.645 * sigma)
-  /// @param[in] level The confidence level of 0.95 is assumed.
+  /// @param[in] ef The error factor of the log-normal distribution.
+  ///               EF = exp(z * sigma)
+  /// @param[in] level The confidence level.
   LogNormalDeviate(const ExpressionPtr& mean, const ExpressionPtr& ef,
                    const ExpressionPtr& level)
       : RandomDeviate::RandomDeviate({mean, ef, level}),
@@ -513,7 +512,7 @@ class LogNormalDeviate : public RandomDeviate {
         ef_(ef),
         level_(level) {}
 
-  /// @throws InvalidArgument (mean <= 0) or (ef <= 0) or (level != 0.95)
+  /// @throws InvalidArgument (mean <= 0) or (ef <= 0) or invalid level
   void Validate();
 
   inline double Mean() noexcept { return mean_->Mean(); }
@@ -522,7 +521,10 @@ class LogNormalDeviate : public RandomDeviate {
 
   /// 99 percentile estimate.
   inline double Max() noexcept {
-    double sigma = std::log(ef_->Mean()) / 1.645;
+    double p = level_->Mean() + (1 - level_->Mean()) / 2;
+    double z = std::sqrt(2) * boost::math::erfc_inv(2 * p);
+    z = std::abs(z);
+    double sigma = std::log(ef_->Mean()) / z;
     double mu = std::log(mean_->Max()) - std::pow(sigma, 2) / 2;
     return std::exp(std::sqrt(2) * std::pow(boost::math::erfc(1 / 50), -1) *
                     sigma + mu);

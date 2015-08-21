@@ -277,11 +277,14 @@ TEST(ExpressionTest, NormalDeviate) {
 TEST(ExpressionTest, LogNormalDeviate) {
   OpenExpressionPtr mean(new OpenExpression(10, 5));
   OpenExpressionPtr ef(new OpenExpression(5, 3));
-  OpenExpressionPtr level(new OpenExpression(0.95));
+  OpenExpressionPtr level(new OpenExpression(0.95, 0.95, 0.6, 0.9));
   ExpressionPtr dev;
   ASSERT_NO_THROW(dev = ExpressionPtr(new LogNormalDeviate(mean, ef, level)));
 
-  level->mean = 0.5;  // Unsupported level.
+  ASSERT_NO_THROW(dev->Validate());
+  level->mean = -0.5;
+  EXPECT_THROW(dev->Validate(), InvalidArgument);
+  level->mean = 2;
   EXPECT_THROW(dev->Validate(), InvalidArgument);
   level->mean = 0.95;
   ASSERT_NO_THROW(dev->Validate());

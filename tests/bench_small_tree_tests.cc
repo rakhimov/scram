@@ -33,8 +33,8 @@ TEST_F(RiskAnalysisTest, SmallTree) {
   std::set<std::set<std::string>> mcs = {{"e1", "e2"}, {"e3", "e4"}};
   EXPECT_EQ(2, min_cut_sets().size());
   EXPECT_EQ(mcs, min_cut_sets());
-  EXPECT_NEAR(0.02565, mean(), 1e-3);
-  EXPECT_NEAR(0.022765, sigma(), 2e-3);
+  EXPECT_NEAR(0.02569, mean(), 1e-3);
+  EXPECT_NEAR(0.018065, sigma(), 2e-3);
 }
 
 }  // namespace test

@@ -209,14 +209,17 @@ double NormalDeviate::Sample() noexcept {
 }
 
 void LogNormalDeviate::Validate() {
-  if (level_->Mean() != 0.95) {
-    throw InvalidArgument("The confidence level is expected to be 0.95.");
+  if (level_->Mean() <= 0 || level_->Mean() >= 1) {
+    throw InvalidArgument("The confidence level is not within (0, 1).");
   } else if (ef_->Mean() <= 1) {
     throw InvalidArgument("The Error Factor for Log-Normal distribution"
                           " cannot be less than 1.");
   } else if (mean_->Mean() <= 0) {
     throw InvalidArgument("The mean of Log-Normal distribution cannot be"
                           " negative or zero.");
+  } else if (level_->Min() <= 0 || level_->Max() >= 1) {
+    throw InvalidArgument("The confidence level doesn't sample within (0, 1).");
+
   } else if (ef_->Min() <= 1) {
     throw InvalidArgument("The Sampled Error Factor for Log-Normal"
                           " distribution cannot be less than 1.");
@@ -229,7 +232,11 @@ void LogNormalDeviate::Validate() {
 double LogNormalDeviate::Sample() noexcept {
   if (!Expression::sampled_) {
     Expression::sampled_ = true;
-    double sigma = std::log(ef_->Sample()) / 1.645;
+    double l = level_->Sample();
+    double p = l + (1 - l) / 2;
+    double z = std::sqrt(2) * boost::math::erfc_inv(2 * p);
+    z = std::abs(z);
+    double sigma = std::log(ef_->Sample()) / z;
     double mu = std::log(mean_->Sample()) - std::pow(sigma, 2) / 2;
     Expression::sampled_value_ =  Random::LogNormalGenerator(mu, sigma);
   }
