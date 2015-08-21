@@ -167,6 +167,12 @@ void Config::SetLimits(const xmlpp::Element* limits) {
     } else if (name == "number-of-trials") {
       settings_.num_trials(boost::lexical_cast<int>(content));
 
+    } else if (name == "number-of-quantiles") {
+      settings_.num_quantiles(boost::lexical_cast<int>(content));
+
+    } else if (name == "number-of-bins") {
+      settings_.num_bins(boost::lexical_cast<int>(content));
+
     } else if (name == "seed") {
       settings_.seed(boost::lexical_cast<int>(content));
     }

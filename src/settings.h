@@ -29,8 +29,6 @@ namespace scram {
 /// Builder for analysis settings.
 class Settings {
  public:
-  Settings();
-
   /// Sets the limit order for minimal cut sets.
   ///
   /// @param[in] order A natural number for the limit order.
@@ -76,6 +74,24 @@ class Settings {
   ///
   /// @throws ValueError The number is less than 1.
   Settings& num_trials(int n);
+
+  /// Sets the number of quantiles for distributions.
+  ///
+  /// @param[in] n A natural number for the number of quantiles.
+  ///
+  /// @returns Reference to this object.
+  ///
+  /// @throws ValueError The number is less than 1.
+  Settings& num_quantiles(int n);
+
+  /// Sets the number of bins for histograms.
+  ///
+  /// @param[in] n A natural number for the number of bins.
+  ///
+  /// @returns Reference to this object.
+  ///
+  /// @throws ValueError The number is less than 1.
+  Settings& num_bins(int n);
 
   /// Sets the seed for the pseudo-random number generator.
   ///
@@ -155,19 +171,23 @@ class Settings {
   inline const std::string& approx() const { return approx_; }
   inline int seed() const { return seed_; }
   inline int num_trials() const { return num_trials_; }
+  inline int num_quantiles() const { return num_quantiles_; }
+  inline int num_bins() const { return num_bins_; }
 
  private:
-  bool probability_analysis_;  ///< A flag for probability analysis.
-  bool importance_analysis_;  ///< A flag for importance analysis.
-  bool uncertainty_analysis_;  ///< A flag for uncertainty analysis.
-  bool ccf_analysis_;  ///< A flag for common-cause analysis.
-  int limit_order_;  ///< Limit on the order of minimal cut sets.
-  double mission_time_;  ///< System mission time.
-  int num_sums_;  ///< The number of sums in probability calculation series.
-  double cut_off_;  ///< The cut-off probability for cut sets.
-  std::string approx_;  ///< The approximation to be applied for calculations.
-  int seed_;  ///< The seed for the pseudo-random number generator.
-  int num_trials_;  ///< The number of trials for Monte Carlo simulations.
+  bool probability_analysis_ = false;  ///< A flag for probability analysis.
+  bool importance_analysis_ = false;  ///< A flag for importance analysis.
+  bool uncertainty_analysis_ = false;  ///< A flag for uncertainty analysis.
+  bool ccf_analysis_ = false;  ///< A flag for common-cause analysis.
+  int limit_order_ = 20;  ///< Limit on the order of minimal cut sets.
+  double mission_time_ = 8760;  ///< System mission time.
+  int num_sums_ = 7;  ///< The number of sums in probability calculation series.
+  double cut_off_ = 1e-8;  ///< The cut-off probability for cut sets.
+  std::string approx_ = "no";  ///< The approximations for calculations.
+  int seed_ = 0;  ///< The seed for the pseudo-random number generator.
+  int num_trials_ = 1e3;  ///< The number of trials for Monte Carlo simulations.
+  int num_quantiles_ = 20;  ///< The number of quantiles for distributions.
+  int num_bins_ = 20;  ///< The number of bins for histograms.
 };
 
 }  // namespace scram

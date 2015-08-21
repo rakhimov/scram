@@ -119,8 +119,6 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
 
   std::vector<double> sampled_results_;  ///< Storage for sampled values.
   const Settings kSettings_;  ///< All settings for analysis.
-  int num_bins_;  ///< The number of bins for the histogram.
-  int num_quantiles_;  ///< The number of quantiles.
   double mean_;  ///< The mean of the final distribution.
   double sigma_;  ///< The standard deviation of the final distribution.
   double analysis_time_;  ///< Time for uncertainty calculations and sampling.

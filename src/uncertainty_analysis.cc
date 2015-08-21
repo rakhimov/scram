@@ -37,8 +37,6 @@ namespace scram {
 UncertaintyAnalysis::UncertaintyAnalysis(const Settings& settings)
     : ProbabilityAnalysis::ProbabilityAnalysis(settings),
       kSettings_(settings),
-      num_bins_(20),
-      num_quantiles_(20),
       mean_(0),
       sigma_(0),
       analysis_time_(-1) {}
@@ -183,15 +181,17 @@ void UncertaintyAnalysis::CalculateStatistics() noexcept {
   typedef accumulator_set<double, stats<tag::extended_p_square_quantile> >
       accumulator_q;
   quantiles_.clear();
-  double delta = 1.0 / num_quantiles_;
-  for (int i = 0; i < num_quantiles_; ++i) {
+  int num_quantiles = kSettings_.num_quantiles();
+  double delta = 1.0 / num_quantiles;
+  for (int i = 0; i < num_quantiles; ++i) {
     quantiles_.push_back(delta * (i + 1));
   }
   accumulator_q acc_q(extended_p_square_probabilities = quantiles_);
 
   int num_trials = kSettings_.num_trials();
   accumulator_set<double, stats<tag::mean, tag::variance, tag::density> >
-      acc(tag::density::num_bins = 20, tag::density::cache_size = num_trials);
+      acc(tag::density::num_bins = kSettings_.num_bins(),
+          tag::density::cache_size = num_trials);
 
   std::vector<double>::iterator it;
   for (it = sampled_results_.begin(); it != sampled_results_.end(); ++it) {
@@ -210,7 +210,7 @@ void UncertaintyAnalysis::CalculateStatistics() noexcept {
   confidence_interval_.first = mean_ - sigma_ * 1.96 / std::sqrt(num_trials);
   confidence_interval_.second = mean_ + sigma_ * 1.96 / std::sqrt(num_trials);
 
-  for (int i = 0; i < num_quantiles_; ++i) {
+  for (int i = 0; i < num_quantiles; ++i) {
     quantiles_[i] = quantile(acc_q, quantile_probability = quantiles_[i]);
   }
 }

@@ -59,6 +59,12 @@ Set the system mission time in hours for probability calculations
 \fB\-\-num\-trials\fR arg
 Set the number of trials for Monte Carlo simulations
 .TP
+\fB\-\-num\-quantiles\fR arg
+Set the number of quantiles for distributions
+.TP
+\fB\-\-num\-bins\fR arg
+Set the number of bins for histograms
+.TP
 \fB\-\-seed\fR arg
 Set the seed for the pseudo\-random number generator
 .HP

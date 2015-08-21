@@ -39,6 +39,12 @@ TEST(SettingsTest, IncorrectSetup) {
   // Incorrect number of trials.
   ASSERT_THROW(s.num_trials(-10), InvalidArgument);
   ASSERT_THROW(s.num_trials(0), InvalidArgument);
+  // Incorrect number of quantiles.
+  ASSERT_THROW(s.num_quantiles(-10), InvalidArgument);
+  ASSERT_THROW(s.num_quantiles(0), InvalidArgument);
+  // Incorrect number of bins.
+  ASSERT_THROW(s.num_bins(-10), InvalidArgument);
+  ASSERT_THROW(s.num_bins(0), InvalidArgument);
   // Incorrect seed.
   ASSERT_THROW(s.seed(-1), InvalidArgument);
   // Incorrect mission time.

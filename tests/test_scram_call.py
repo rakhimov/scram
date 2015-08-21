@@ -98,6 +98,11 @@ def test_fta_calls():
     cmd = ["scram", fta_input, "--mcub"]
     yield assert_equal, 0, call(cmd)
 
+    # Test the uncertainty
+    cmd = ["scram", fta_input, "--uncertainty", "true", "--num-bins", "20",
+           "--num-quantiles", "20"]
+    yield assert_equal, 0, call(cmd)
+
 def test_config_file():
     """Tests calls with configuration files."""
     # Test with a configuration file
@@ -121,7 +126,7 @@ def test_logging():
     yield assert_equal, 1, call(cmd)
     cmd = ["scram", fta_input, "--verbosity", "8"]
     yield assert_equal, 1, call(cmd)
-    cmd = ["scram", fta_input, "--verbosity", "2"]
+    cmd = ["scram", fta_input, "--verbosity", "7"]
     yield assert_equal, 0, call(cmd)
 
 def test_graph_call():

@@ -65,16 +65,18 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
         ("importance", po::value<bool>(), "Perform importance analysis")
         ("uncertainty", po::value<bool>(), "Perform uncertainty analysis")
         ("ccf", po::value<bool>(), "Perform common-cause failure analysis")
-        ("rare-event",
-         "Use the rare event approximation for probability calculations")
-        ("mcub", "Use the MCUB approximation for probability calculations")
+        ("rare-event", "Use the rare event approximation")
+        ("mcub", "Use the MCUB approximation")
         ("limit-order,l", po::value<int>(), "Upper limit for cut set order")
         ("num-sums,s", po::value<int>(),
-         "Number of sums in series expansion for probability calculations")
+         "Number of sums in probability equations")
         ("cut-off", po::value<double>(), "Cut-off probability for cut sets")
         ("mission-time", po::value<double>(), "System mission time in hours")
         ("num-trials", po::value<int>(),
          "Number of trials for Monte Carlo simulations")
+        ("num-quantiles", po::value<int>(),
+         "Number of quantiles for distributions")
+        ("num-bins", po::value<int>(), "Number of bins for histograms")
         ("seed", po::value<int>(),
          "Seed for the pseudo-random number generator")
         ("output-path,o", po::value<std::string>(), "Output path for reports")
@@ -168,6 +170,9 @@ void ConstructSettings(const po::variables_map& vm, scram::Settings* settings) {
   if (vm.count("mission-time"))
     settings->mission_time(vm["mission-time"].as<double>());
   if (vm.count("num-trials")) settings->num_trials(vm["num-trials"].as<int>());
+  if (vm.count("num-quantiles"))
+    settings->num_quantiles(vm["num-quantiles"].as<int>());
+  if (vm.count("num-bins")) settings->num_bins(vm["num-bins"].as<int>());
   if (vm.count("importance"))
     settings->importance_analysis(vm["importance"].as<bool>());
   if (vm.count("uncertainty"))

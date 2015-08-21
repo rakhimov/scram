@@ -66,7 +66,7 @@ _scram() {
       return
       ;;
     -l|--limit-order|-s|--num-sums|--cut-off|--mission-time|--num-trials| \
-    --seed)
+    --seed|--num-quantiles|--num-bins)
       # An argument is required.
       return
       ;;

@@ -82,6 +82,16 @@
               </element>
             </optional>
             <optional>
+              <element name="number-of-quantiles">
+                <data type="nonNegativeInteger"/>
+              </element>
+            </optional>
+            <optional>
+              <element name="number-of-bins">
+                <data type="nonNegativeInteger"/>
+              </element>
+            </optional>
+            <optional>
               <element name="seed">
                 <data type="nonNegativeInteger"/>
               </element>
