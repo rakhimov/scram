@@ -39,6 +39,7 @@ UncertaintyAnalysis::UncertaintyAnalysis(const Settings& settings)
       kSettings_(settings),
       mean_(0),
       sigma_(0),
+      error_factor_(1),
       analysis_time_(-1) {}
 
 void UncertaintyAnalysis::UpdateDatabase(
@@ -88,6 +89,9 @@ void UncertaintyAnalysis::Analyze(
 }
 
 void UncertaintyAnalysis::Sample() noexcept {
+  sampled_results_.clear();
+  sampled_results_.reserve(kSettings_.num_trials());
+
   using boost::container::flat_set;
   // Detect constant basic events.
   std::vector<int> basic_events;
@@ -207,6 +211,7 @@ void UncertaintyAnalysis::CalculateStatistics() noexcept {
   mean_ = boost::accumulators::mean(acc);
   double var = variance(acc);
   sigma_ = std::sqrt(var);
+  error_factor_ = std::exp(1.96 * sigma_);
   confidence_interval_.first = mean_ - sigma_ * 1.96 / std::sqrt(num_trials);
   confidence_interval_.second = mean_ + sigma_ * 1.96 / std::sqrt(num_trials);
 

@@ -79,6 +79,9 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   /// @returns Standard deviation of the final distribution.
   inline double sigma() const { return sigma_; }
 
+  /// @returns Error factor for 95% confidence level.
+  inline double error_factor() const { return error_factor_; }
+
   /// @returns 95% confidence interval of the mean.
   inline const std::pair<double, double>& confidence_interval() const {
     return confidence_interval_;
@@ -121,6 +124,7 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   const Settings kSettings_;  ///< All settings for analysis.
   double mean_;  ///< The mean of the final distribution.
   double sigma_;  ///< The standard deviation of the final distribution.
+  double error_factor_;  ///< Error factor for 95% confidence level.
   double analysis_time_;  ///< Time for uncertainty calculations and sampling.
   /// The confidence interval of the distribution.
   std::pair<double, double> confidence_interval_;

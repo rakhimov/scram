@@ -326,6 +326,12 @@ void Reporter::ReportUncertainty(
   confidence->set_attribute(
       "upper-bound",
       Reporter::ToString(uncert_analysis->confidence_interval().second, 7));
+  xmlpp::Element* error_factor = measure->add_child("error-factor");
+  error_factor->set_attribute("percentage", "95");
+  error_factor->set_attribute(
+      "value",
+      Reporter::ToString(uncert_analysis->error_factor(), 7));
+
   xmlpp::Element* quantiles = measure->add_child("quantiles");
   int num_quantiles = uncert_analysis->quantiles().size();
   quantiles->set_attribute("number", Reporter::ToString(num_quantiles));
@@ -341,7 +347,7 @@ void Reporter::ReportUncertainty(
     quant->set_attribute("upper-bound", Reporter::ToString(upper, 7));
     lower_bound = upper;
   }
-  /// @todo Error factor reporting.
+
   xmlpp::Element* hist = measure->add_child("histogram");
   int num_bins = uncert_analysis->distribution().size() - 1;
   hist->set_attribute("number", Reporter::ToString(num_bins));
