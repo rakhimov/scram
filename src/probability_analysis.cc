@@ -31,8 +31,8 @@ namespace scram {
 ProbabilityAnalysis::ProbabilityAnalysis(const Settings& settings)
     : kSettings_(settings),
       warnings_(""),
-      p_total_(-1),
-      p_rare_(-1),
+      p_total_(0),
+      p_rare_(0),
       coherent_(true),
       p_time_(0),
       imp_time_(0) {}

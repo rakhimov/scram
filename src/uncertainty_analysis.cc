@@ -39,8 +39,8 @@ UncertaintyAnalysis::UncertaintyAnalysis(const Settings& settings)
       kSettings_(settings),
       num_bins_(20),
       num_quantiles_(20),
-      mean_(-1),
-      sigma_(-1),
+      mean_(0),
+      sigma_(0),
       analysis_time_(-1) {}
 
 void UncertaintyAnalysis::UpdateDatabase(
@@ -57,8 +57,9 @@ void UncertaintyAnalysis::Analyze(
     warnings_ += "Uncertainty for UNITY case.";
     mean_ = 1;
     sigma_ = 0;
-    confidence_interval_ = std::make_pair(1, 1);
-    distribution_.push_back(std::make_pair(1, 1));
+    confidence_interval_ = {1, 1};
+    distribution_.emplace_back(1, 1);
+    quantiles_.emplace_back(1);
     return;
   }
 
