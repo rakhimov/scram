@@ -75,10 +75,12 @@ void UncertaintyAnalysis::Analyze(
   }
 
   CLOCK(analysis_time);
-  // Generate the equation.
-  int num_sums = kSettings_.num_sums();
-  if (kSettings_.approx() == "rare-event") num_sums = 1;
-  ProbabilityAnalysis::ProbOr(1, num_sums, &iset);
+  if (kSettings_.approx() != "mcub") {
+    // Generate the equation.
+    int num_sums = kSettings_.num_sums();
+    if (kSettings_.approx() == "rare-event") num_sums = 1;
+    ProbabilityAnalysis::ProbOr(1, num_sums, &iset);
+  }
   // Sample probabilities and generate data.
   UncertaintyAnalysis::Sample();
 
@@ -98,52 +100,55 @@ void UncertaintyAnalysis::Sample() noexcept {
   UncertaintyAnalysis::FilterUncertainEvents(&basic_events);
   for (int i = 0; i < kSettings_.num_trials(); ++i) {
     // Reset distributions.
-    std::vector<int>::iterator it_b;
-    // The first element is dummy.
-    for (it_b = basic_events.begin(); it_b != basic_events.end(); ++it_b) {
-      int_to_basic_[*it_b]->Reset();
+    for (int index : basic_events) {
+      int_to_basic_[index]->Reset();
     }
     // Sample all basic events with distributions.
-    for (it_b = basic_events.begin(); it_b != basic_events.end(); ++it_b) {
-      double prob = int_to_basic_[*it_b]->SampleProbability();
+    for (int index : basic_events) {
+      double prob = int_to_basic_[index]->SampleProbability();
       assert(prob >= 0 && prob <= 1);
-      iprobs_[*it_b] = prob;
+      iprobs_[index] = prob;
     }
-    double pos = 0;
-    std::vector< flat_set<int> >::iterator it_s;
-    int j = 0;  // Position of the terms.
-    for (it_s = pos_terms_.begin(); it_s != pos_terms_.end(); ++it_s) {
-      if (it_s->empty()) {
-        pos += pos_const_[j];
-      } else {
-        pos += ProbabilityAnalysis::ProbAnd(*it_s) * pos_const_[j];
+    double result = 0;
+    if (kSettings_.approx() == "mcub") {
+      result = ProbabilityAnalysis::ProbMcub(imcs_);
+    } else {
+      double pos = 0;
+      int j = 0;  // Position of the terms.
+      for (const flat_set<int>& cut_set : pos_terms_) {
+        if (cut_set.empty()) {
+          pos += pos_const_[j];
+        } else {
+          pos += ProbabilityAnalysis::ProbAnd(cut_set) * pos_const_[j];
+        }
+        ++j;
       }
-      ++j;
-    }
-    double neg = 0;
-    j = 0;
-    for (it_s = neg_terms_.begin(); it_s != neg_terms_.end(); ++it_s) {
-      if (it_s->empty()) {
-        neg += neg_const_[j];
-      } else {
-        neg += ProbabilityAnalysis::ProbAnd(*it_s) * neg_const_[j];
+      double neg = 0;
+      j = 0;
+      for (const flat_set<int>& cut_set : neg_terms_) {
+        if (cut_set.empty()) {
+          neg += neg_const_[j];
+        } else {
+          neg += ProbabilityAnalysis::ProbAnd(cut_set) * neg_const_[j];
+        }
+        ++j;
       }
-      ++j;
+      assert(pos > neg);
+      result = pos - neg;
     }
-    sampled_results_.push_back(pos - neg);
+    sampled_results_.push_back(result);
   }
 }
 
 void UncertaintyAnalysis::FilterUncertainEvents(
     std::vector<int>* basic_events) noexcept {
   using boost::container::flat_set;
-  std::set<int> const_events;
-  std::set<int>::const_iterator it;
-  for (it = mcs_basic_events_.begin(); it != mcs_basic_events_.end(); ++it) {
-    if (int_to_basic_[*it]->IsConstant()) {
-      const_events.insert(const_events.end(), *it);
+  std::set<int> const_events;  // Does not need sampling.
+  for (int index : mcs_basic_events_) {
+    if (int_to_basic_[index]->IsConstant()) {
+      const_events.insert(const_events.end(), index);
     } else {
-      basic_events->push_back(*it);
+      basic_events->push_back(index);
     }
   }
   // Pre-calculate for constant events and remove them from sets.
