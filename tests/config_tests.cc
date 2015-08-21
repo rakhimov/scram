@@ -17,6 +17,8 @@
 
 #include "config.h"
 
+#include <memory>
+
 #include <gtest/gtest.h>
 
 #include "error.h"
@@ -39,7 +41,7 @@ TEST(ConfigTest, ValidationError) {
 // Tests all settings with one file.
 TEST(ConfigTest, FullSettings) {
   std::string config_file = "./share/scram/input/fta/full_configuration.xml";
-  Config* config = new Config(config_file);
+  std::unique_ptr<Config> config(new Config(config_file));
   // Check the input files.
   EXPECT_EQ(config->input_files().size(), 1);
   if (!config->input_files().empty())
