@@ -30,20 +30,13 @@
 
 namespace scram {
 
-FaultTreeAnalysis::FaultTreeAnalysis(const GatePtr& root, int limit_order,
-                                     bool ccf_analysis)
-    : ccf_analysis_(ccf_analysis),
+FaultTreeAnalysis::FaultTreeAnalysis(const GatePtr& root,
+                                     const Settings& settings)
+    : top_event_(root),
+      kSettings_(settings),
       warnings_(""),
       max_order_(0),
       analysis_time_(0) {
-  // Check for the right limit order.
-  if (limit_order < 1) {
-    std::string msg = "The limit on the order of minimal cut sets "
-                      "cannot be less than one.";
-    throw InvalidArgument(msg);
-  }
-  limit_order_ = limit_order;
-  top_event_ = root;
   FaultTreeAnalysis::GatherEvents(top_event_);
   FaultTreeAnalysis::CleanMarks();
 }
@@ -52,7 +45,8 @@ void FaultTreeAnalysis::Analyze() noexcept {
   CLOCK(analysis_time);
 
   CLOCK(ft_creation);
-  BooleanGraph* indexed_tree = new BooleanGraph(top_event_, ccf_analysis_);
+  BooleanGraph* indexed_tree = new BooleanGraph(top_event_,
+                                                kSettings_.ccf_analysis());
   LOG(DEBUG2) << "Indexed fault tree is created in " << DUR(ft_creation);
 
   CLOCK(prep_time);  // Overall preprocessing time.
@@ -62,7 +56,7 @@ void FaultTreeAnalysis::Analyze() noexcept {
   delete preprocessor;  // No exceptions are expected.
   LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
 
-  Mocus* mocus = new Mocus(indexed_tree, limit_order_);
+  Mocus* mocus = new Mocus(indexed_tree, kSettings_.limit_order());
   mocus->FindMcs();
 
   const std::vector< std::set<int> >& imcs = mocus->GetGeneratedMcs();

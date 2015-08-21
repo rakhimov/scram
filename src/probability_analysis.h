@@ -32,6 +32,7 @@
 #include <boost/container/flat_set.hpp>
 
 #include "event.h"
+#include "settings.h"
 
 namespace scram {
 
@@ -47,16 +48,8 @@ class ProbabilityAnalysis {
 
   /// The main constructor of Probability Analysis.
   ///
-  /// @param[in] approx The kind of approximation for probability calculations.
-  /// @param[in] num_sums The number of sums in the probability series.
-  /// @param[in] cut_off The cut-off probability for cut sets.
-  /// @param[in] importance_analysis To perform importance analysis.
-  ///
-  /// @throws InvalidArgument One of the parameters is invalid.
-  explicit ProbabilityAnalysis(const std::string& approx = "no",
-                               int num_sums = 7,
-                               double cut_off = 1e-8,
-                               bool importance_analysis = false);
+  /// @param[in] settings Analysis settings for probability calculations.
+  explicit ProbabilityAnalysis(const Settings& settings);
 
   virtual ~ProbabilityAnalysis() {}
 
@@ -156,7 +149,7 @@ class ProbabilityAnalysis {
 
   /// Generates positive and negative terms
   /// of probability equation expansion from
-  /// a set of minimal cut sets,
+  /// a set of cut sets,
   /// which are in OR relationship with each other.
   /// This function is a brute force probability calculation
   /// without approximations.
@@ -165,23 +158,23 @@ class ProbabilityAnalysis {
   /// @param[in] num_sums The number of sums in the series.
   /// @param[in,out] min_cut_sets Sets of indices of basic events.
   ///
-  /// @note This function drastically modifies min_cut_sets
+  /// @note This function drastically modifies cut_sets
   ///       by deleting sets inside it.
   ///       This is for better performance.
   /// @note O_avg(M*logM*N*2^N) where N is the number of sets,
   ///       and M is the average size of the sets.
-  void ProbOr(int sign, int num_sums, std::set<FlatSet>* min_cut_sets) noexcept;
+  void ProbOr(int sign, int num_sums, std::set<FlatSet>* cut_sets) noexcept;
 
-  /// Calculates a probability of a minimal cut set,
+  /// Calculates a probability of a cut set,
   /// whose members are in AND relationship with each other.
   /// This function assumes independence of each member.
   ///
-  /// @param[in] min_cut_set A flat set of indices of basic events.
+  /// @param[in] cut_set A flat set of indices of basic events.
   ///
   /// @returns The total probability of the set.
   ///
   /// @note O_avg(N) where N is the size of the passed set.
-  double ProbAnd(const FlatSet& min_cut_set) noexcept;
+  double ProbAnd(const FlatSet& cut_set) noexcept;
 
   /// Calculates A(and)( B(or)C ) relationship for sets using set algebra.
   ///
@@ -201,11 +194,8 @@ class ProbabilityAnalysis {
   void PerformImportanceAnalysis() noexcept;
 
 
-  bool importance_analysis_;  ///< A flag for importance analysis.
+  const Settings kSettings_;  ///< All settings for analysis.
   std::string warnings_;  ///< Register warnings.
-  int num_sums_;  ///< Number of sums in series expansion.
-  double cut_off_;  ///< Cut-off probability for minimal cut sets.
-  std::string approx_;  ///< Approximations for probability calculations.
 
   /// Container for basic events.
   std::unordered_map<std::string, BasicEventPtr> basic_events_;

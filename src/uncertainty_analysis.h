@@ -32,6 +32,7 @@
 
 #include "event.h"
 #include "probability_analysis.h"
+#include "settings.h"
 
 namespace scram {
 
@@ -46,13 +47,8 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
 
   /// The main constructor of Uncertainty Analysis.
   ///
-  /// @param[in] num_sums The number of sums in the probability series.
-  /// @param[in] cut_off The cut-off probability for cut sets.
-  /// @param[in] num_trials The number of trials to perform.
-  ///
-  /// @throws InvalidArgument One of the parameters is invalid.
-  explicit UncertaintyAnalysis(int num_sums = 7, double cut_off = 1e-8,
-                               int num_trials = 1e3);
+  /// @param[in] settings Analysis settings for uncertainty calculations.
+  explicit UncertaintyAnalysis(const Settings& settings);
 
   /// Sets the databases of basic events with probabilities.
   /// Resets the main basic event database
@@ -122,7 +118,7 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   void CalculateStatistics() noexcept;
 
   std::vector<double> sampled_results_;  ///< Storage for sampled values.
-  int num_trials_;  ///< The number of trials to perform.
+  const Settings kSettings_;  ///< All settings for analysis.
   int num_bins_;  ///< The number of bins for the histogram.
   int num_quantiles_;  ///< The number of quantiles.
   double mean_;  ///< The mean of the final distribution.

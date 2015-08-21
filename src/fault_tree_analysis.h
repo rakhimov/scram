@@ -29,6 +29,7 @@
 #include <vector>
 
 #include "event.h"
+#include "settings.h"
 
 namespace scram {
 
@@ -64,10 +65,7 @@ class FaultTreeAnalysis {
   /// and its events must be fully initialized.
   ///
   /// @param[in] root The top event of the fault tree to analyze.
-  /// @param[in] limit_order The maximum limit on minimal cut sets' order.
-  /// @param[in] ccf_analysis Whether or not expand CCF group basic events.
-  ///
-  /// @throws InvalidArgument One of the parameters is invalid.
+  /// @param[in] settings Analysis settings for all calculations.
   ///
   /// @note It is assumed that analysis is done only once.
   ///
@@ -75,8 +73,8 @@ class FaultTreeAnalysis {
   ///          this analysis does not incorporate the changed structure.
   ///          Moreover, the analysis results may get corrupted.
   /// @warning The gates' visit marks must be clean.
-  explicit FaultTreeAnalysis(const GatePtr& root, int limit_order = 20,
-                             bool ccf_analysis = false);
+  explicit FaultTreeAnalysis(const GatePtr& root,
+                             const Settings& settings = Settings());
 
   /// Analyzes the fault tree and performs computations.
   /// This function must be called
@@ -193,11 +191,8 @@ class FaultTreeAnalysis {
   void SetsToString(const std::vector< std::set<int> >& imcs,
                     const BooleanGraph* ft) noexcept;
 
-  /// Limit on the size of the minimal cut sets for performance reasons.
-  int limit_order_;
-  bool ccf_analysis_;  ///< A flag to include CCF groups in fault trees.
-
   GatePtr top_event_;  ///< Top event of this fault tree.
+  const Settings kSettings_;  ///< All settings for analysis.
 
   /// Container for intermediate events.
   std::unordered_map<std::string, GatePtr> inter_events_;

@@ -178,21 +178,5 @@ TEST_F(ProbabilityAnalysisTest, ProbOrInt) {
   EXPECT_DOUBLE_EQ(0.074, ProbOr(&min_cut_sets));
 }
 
-// ---------------------- Test Public Functions --------------------------
-// Invalid options for the constructor.
-TEST_F(ProbabilityAnalysisTest, Constructor) {
-  // Incorrect approximation argument.
-  ASSERT_THROW(ProbabilityAnalysis("approx"), InvalidArgument);
-  // Incorrect number of series in the probability equation.
-  ASSERT_NO_THROW(ProbabilityAnalysis("no"));
-  ASSERT_NO_THROW(ProbabilityAnalysis("mcub"));
-  ASSERT_NO_THROW(ProbabilityAnalysis("rare-event"));
-  ASSERT_THROW(ProbabilityAnalysis("no", -1), InvalidArgument);
-  // Incorrect cut-off probability.
-  ASSERT_NO_THROW(ProbabilityAnalysis("no", 1));
-  ASSERT_THROW(ProbabilityAnalysis("no", 1, -1), InvalidArgument);
-  ASSERT_THROW(ProbabilityAnalysis("no", 1, 10), InvalidArgument);
-}
-
 }  // namespace test
 }  // namespace scram

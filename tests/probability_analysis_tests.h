@@ -32,7 +32,7 @@ namespace test {
 class ProbabilityAnalysisTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
-    prob_analysis = new ProbabilityAnalysis();
+    prob_analysis = new ProbabilityAnalysis(Settings());
   }
 
   virtual void TearDown() {

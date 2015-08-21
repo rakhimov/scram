@@ -20,7 +20,6 @@
 
 #include "uncertainty_analysis.h"
 
-#include <array>
 #include <cmath>
 
 #include <boost/accumulators/accumulators.hpp>
@@ -35,21 +34,14 @@
 
 namespace scram {
 
-UncertaintyAnalysis::UncertaintyAnalysis(int num_sums, double cut_off,
-                                         int num_trials)
-    : ProbabilityAnalysis::ProbabilityAnalysis("no", num_sums, cut_off),
+UncertaintyAnalysis::UncertaintyAnalysis(const Settings& settings)
+    : ProbabilityAnalysis::ProbabilityAnalysis(settings),
+      kSettings_(settings),
       num_bins_(20),
       num_quantiles_(20),
       mean_(-1),
       sigma_(-1),
-      analysis_time_(-1) {
-  if (num_trials < 1) {
-    std::string msg = "The number of trials for uncertainty analysis cannot"
-                      " be fewer than 1.";
-    throw InvalidArgument(msg);
-  }
-  num_trials_ = num_trials;
-}
+      analysis_time_(-1) {}
 
 void UncertaintyAnalysis::UpdateDatabase(
     const std::unordered_map<std::string, BasicEventPtr>& basic_events) {
@@ -77,16 +69,14 @@ void UncertaintyAnalysis::Analyze(
 
   std::vector< flat_set<int> >::const_iterator it_min;
   for (it_min = imcs_.begin(); it_min != imcs_.end(); ++it_min) {
-    if (ProbabilityAnalysis::ProbAnd(*it_min) > cut_off_) {
+    if (ProbabilityAnalysis::ProbAnd(*it_min) > kSettings_.cut_off()) {
       iset.insert(*it_min);
     }
   }
 
   CLOCK(analysis_time);
-  // Maximum number of sums in the series.
-  if (num_sums_ > iset.size()) num_sums_ = iset.size();
   // Generate the equation.
-  ProbabilityAnalysis::ProbOr(1, num_sums_, &iset);
+  ProbabilityAnalysis::ProbOr(1, kSettings_.num_sums(), &iset);
   // Sample probabilities and generate data.
   UncertaintyAnalysis::Sample();
 
@@ -101,7 +91,7 @@ void UncertaintyAnalysis::Sample() noexcept {
   // Detect constant basic events.
   std::vector<int> basic_events;
   UncertaintyAnalysis::FilterUncertainEvents(&basic_events);
-  for (int i = 0; i < num_trials_; ++i) {
+  for (int i = 0; i < kSettings_.num_trials(); ++i) {
     // Reset distributions.
     std::vector<int>::iterator it_b;
     // The first element is dummy.
@@ -196,8 +186,9 @@ void UncertaintyAnalysis::CalculateStatistics() noexcept {
   }
   accumulator_q acc_q(extended_p_square_probabilities = quantiles_);
 
+  int num_trials = kSettings_.num_trials();
   accumulator_set<double, stats<tag::mean, tag::variance, tag::density> >
-      acc(tag::density::num_bins = 20, tag::density::cache_size = num_trials_);
+      acc(tag::density::num_bins = 20, tag::density::cache_size = num_trials);
 
   std::vector<double>::iterator it;
   for (it = sampled_results_.begin(); it != sampled_results_.end(); ++it) {
@@ -213,8 +204,8 @@ void UncertaintyAnalysis::CalculateStatistics() noexcept {
   mean_ = boost::accumulators::mean(acc);
   double var = variance(acc);
   sigma_ = std::sqrt(var);
-  confidence_interval_.first = mean_ - sigma_ * 1.96 / std::sqrt(num_trials_);
-  confidence_interval_.second = mean_ + sigma_ * 1.96 / std::sqrt(num_trials_);
+  confidence_interval_.first = mean_ - sigma_ * 1.96 / std::sqrt(num_trials);
+  confidence_interval_.second = mean_ + sigma_ * 1.96 / std::sqrt(num_trials);
 
   for (int i = 0; i < num_quantiles_; ++i) {
     quantiles_[i] = quantile(acc_q, quantile_probability = quantiles_[i]);
