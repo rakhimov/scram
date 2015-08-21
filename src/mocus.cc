@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file mocus.cc
 /// Implementation of the MOCUS algorithm.
 /// It is assumed that the tree is layered
@@ -60,9 +61,11 @@
 /// and generates only additional supersets.
 ///
 /// The generated sets are kept unique by storing them in a set.
+
 #include "mocus.h"
 
 #include <algorithm>
+#include <unordered_map>
 #include <utility>
 
 #include "logger.h"
@@ -71,8 +74,9 @@ namespace scram {
 
 int SimpleGate::limit_order_ = 20;
 
-void SimpleGate::GenerateCutSets(const SetPtr& cut_set,
-                                 std::set<SetPtr, SetPtrComp>* new_cut_sets) {
+void SimpleGate::GenerateCutSets(
+    const SetPtr& cut_set,
+    std::set<SetPtr, SetPtrComp>* new_cut_sets) noexcept {
   assert(cut_set->size() <= limit_order_);
   assert(type_ == kOrGate || type_ == kAndGate);
   switch (type_) {
@@ -85,8 +89,9 @@ void SimpleGate::GenerateCutSets(const SetPtr& cut_set,
   }
 }
 
-void SimpleGate::AndGateCutSets(const SetPtr& cut_set,
-                                std::set<SetPtr, SetPtrComp>* new_cut_sets) {
+void SimpleGate::AndGateCutSets(
+    const SetPtr& cut_set,
+    std::set<SetPtr, SetPtrComp>* new_cut_sets) noexcept {
   assert(cut_set->size() <= limit_order_);
   // Check for null case.
   std::vector<int>::iterator it;
@@ -133,8 +138,9 @@ void SimpleGate::AndGateCutSets(const SetPtr& cut_set,
   }
 }
 
-void SimpleGate::OrGateCutSets(const SetPtr& cut_set,
-                               std::set<SetPtr, SetPtrComp>* new_cut_sets) {
+void SimpleGate::OrGateCutSets(
+    const SetPtr& cut_set,
+    std::set<SetPtr, SetPtrComp>* new_cut_sets) noexcept {
   assert(cut_set->size() <= limit_order_);
   // Check for local minimality.
   std::vector<int>::iterator it;
@@ -266,8 +272,9 @@ void Mocus::FindMcs() {
   LOG(DEBUG2) << "Minimal cut sets found in " << DUR(mcs_time);
 }
 
-void Mocus::CreateSimpleTree(const IGatePtr& gate,
-                             std::map<int, SimpleGatePtr>* processed_gates) {
+void Mocus::CreateSimpleTree(
+    const IGatePtr& gate,
+    std::map<int, SimpleGatePtr>* processed_gates) noexcept {
   if (processed_gates->count(gate->index())) return;
   assert(gate->type() == kAndGate || gate->type() == kOrGate);
   SimpleGatePtr simple_gate(new SimpleGate(gate->type()));
@@ -275,7 +282,7 @@ void Mocus::CreateSimpleTree(const IGatePtr& gate,
 
   assert(gate->constant_args().empty());
   assert(gate->args().size() > 1);
-  boost::unordered_map<int, IGatePtr>::const_iterator it;
+  std::unordered_map<int, IGatePtr>::const_iterator it;
   for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
     assert(it->first > 0);
     IGatePtr child_gate = it->second;
@@ -286,16 +293,17 @@ void Mocus::CreateSimpleTree(const IGatePtr& gate,
       simple_gate->AddChildGate(processed_gates->find(it->first)->second);
     }
   }
-  typedef boost::shared_ptr<Variable> VariablePtr;
-  boost::unordered_map<int, VariablePtr>::const_iterator it_b;
+  typedef std::shared_ptr<Variable> VariablePtr;
+  std::unordered_map<int, VariablePtr>::const_iterator it_b;
   for (it_b = gate->variable_args().begin();
        it_b != gate->variable_args().end(); ++it_b) {
     simple_gate->InitiateWithBasic(it_b->first);
   }
 }
 
-void Mocus::FindMcsFromSimpleGate(const SimpleGatePtr& gate,
-                                  std::vector< std::set<int> >* mcs) {
+void Mocus::FindMcsFromSimpleGate(
+    const SimpleGatePtr& gate,
+    std::vector< std::set<int> >* mcs) noexcept {
   CLOCK(gen_time);
 
   SetPtrComp comp;
@@ -318,7 +326,7 @@ void Mocus::FindMcsFromSimpleGate(const SimpleGatePtr& gate,
     if ((*it)->size() == 1) {
       mcs->push_back(**it);
     } else {
-      cut_sets_vector.push_back(&**it);
+      cut_sets_vector.push_back(it->get());
     }
   }
   Mocus::MinimizeCutSets(cut_sets_vector, *mcs, 2, mcs);
@@ -330,7 +338,7 @@ void Mocus::FindMcsFromSimpleGate(const SimpleGatePtr& gate,
 void Mocus::MinimizeCutSets(const std::vector<const std::set<int>* >& cut_sets,
                             const std::vector<std::set<int> >& mcs_lower_order,
                             int min_order,
-                            std::vector<std::set<int> >* mcs) {
+                            std::vector<std::set<int> >* mcs) noexcept {
   if (cut_sets.empty()) return;
 
   std::vector<const std::set<int>* > temp_sets;  // For mcs of a level above.

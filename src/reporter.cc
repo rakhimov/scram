@@ -14,8 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file reporter.cc
 /// Implements Reporter class.
+
 #include "reporter.h"
 
 #include <map>
@@ -23,7 +25,6 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/date_time.hpp>
-#include <boost/pointer_cast.hpp>
 
 #include "ccf_group.h"
 #include "error.h"
@@ -66,10 +67,10 @@ void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
   xmlpp::Element* methods = information->add_child("calculation-method");
   methods->set_attribute("name", "MOCUS");
   methods->add_child("limits")->add_child("number-of-basic-events")
-      ->add_child_text(Reporter::ToString(settings.limit_order_));
+      ->add_child_text(Reporter::ToString(settings.limit_order()));
 
   // Report the setup for CCF analysis.
-  if (settings.ccf_analysis_) {
+  if (settings.ccf_analysis()) {
     xmlpp::Element* ccf_an = information->add_child("calculated-quantity");
     ccf_an->set_attribute("name", "CCF Analysis");
     ccf_an->set_attribute("definition",
@@ -77,26 +78,26 @@ void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
   }
 
   // Report the setup for probability analysis.
-  if (settings.probability_analysis_) {
+  if (settings.probability_analysis()) {
     quant = information->add_child("calculated-quantity");
     quant->set_attribute("name", "Probability Analysis");
     quant->set_attribute("definition",
                          "Quantitative analysis of failure probability");
-    quant->set_attribute("approximation", settings.approx_);
+    quant->set_attribute("approximation", settings.approx());
 
     methods = information->add_child("calculation-method");
     methods->set_attribute("name", "Numerical Probability");
     xmlpp::Element* limits = methods->add_child("limits");
     limits->add_child("mission-time")
-        ->add_child_text(Reporter::ToString(settings.mission_time_));
+        ->add_child_text(Reporter::ToString(settings.mission_time()));
     limits->add_child("cut-off")
-        ->add_child_text(Reporter::ToString(settings.cut_off_));
+        ->add_child_text(Reporter::ToString(settings.cut_off()));
     limits->add_child("number-of-sums")
-        ->add_child_text(Reporter::ToString(settings.num_sums_));
+        ->add_child_text(Reporter::ToString(settings.num_sums()));
   }
 
   // Report the setup for optional importance analysis.
-  if (settings.importance_analysis_) {
+  if (settings.importance_analysis()) {
     quant = information->add_child("calculated-quantity");
     quant->set_attribute("name", "Importance Analysis");
     quant->set_attribute("definition",
@@ -105,7 +106,7 @@ void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
   }
 
   // Report the setup for optional uncertainty analysis.
-  if (settings.uncertainty_analysis_) {
+  if (settings.uncertainty_analysis()) {
     xmlpp::Element* quant = information->add_child("calculated-quantity");
     quant->set_attribute("name", "Uncertainty Analysis");
     quant->set_attribute(
@@ -116,10 +117,10 @@ void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
     methods->set_attribute("name", "Monte Carlo");
     xmlpp::Element* limits = methods->add_child("limits");
     limits->add_child("number-of-trials")
-        ->add_child_text(Reporter::ToString(settings.num_trials_));
-    if (settings.seed_ >= 0) {
+        ->add_child_text(Reporter::ToString(settings.num_trials()));
+    if (settings.seed() >= 0) {
       limits->add_child("seed")
-          ->add_child_text(Reporter::ToString(settings.seed_));
+          ->add_child_text(Reporter::ToString(settings.seed()));
     }
   }
 
@@ -142,15 +143,11 @@ void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
 }
 
 void Reporter::ReportOrphanPrimaryEvents(
-    const std::set<PrimaryEventPtr>& orphan_primary_events,
+    const std::vector<PrimaryEventPtr>& orphan_primary_events,
     xmlpp::Document* doc) {
-  assert(!orphan_primary_events.empty());
-  std::string out = "";
-  out += "WARNING! Orphan Primary Events: ";
-  std::set<PrimaryEventPtr>::const_iterator it;
-  for (it = orphan_primary_events.begin(); it != orphan_primary_events.end();
-       ++it) {
-    PrimaryEventPtr event = *it;
+  if (orphan_primary_events.empty()) return;
+  std::string out = "WARNING! Orphan Primary Events: ";
+  for (const auto& event : orphan_primary_events) {
     out += event->is_public() ? "" : event->base_path() + ".";
     out += event->name();
     out += " ";
@@ -163,15 +160,11 @@ void Reporter::ReportOrphanPrimaryEvents(
 }
 
 void Reporter::ReportUnusedParameters(
-    const std::set<ParameterPtr>& unused_parameters,
+    const std::vector<ParameterPtr>& unused_parameters,
     xmlpp::Document* doc) {
-  assert(!unused_parameters.empty());
-  std::string out = "";
-  out += "WARNING! Unused Parameters: ";
-  std::set<ParameterPtr>::const_iterator it;
-  for (it = unused_parameters.begin(); it != unused_parameters.end();
-       ++it) {
-    ParameterPtr param = *it;
+  if (unused_parameters.empty()) return;
+  std::string out = "WARNING! Unused Parameters: ";
+  for (const auto param : unused_parameters) {
     out += param->is_public() ? "" : param->base_path() + ".";
     out += param->name();
     out += " ";
@@ -185,8 +178,8 @@ void Reporter::ReportUnusedParameters(
 
 void Reporter::ReportFta(
     std::string ft_name,
-    const boost::shared_ptr<const FaultTreeAnalysis>& fta,
-    const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
+    const std::shared_ptr<const FaultTreeAnalysis>& fta,
+    const std::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
     xmlpp::Document* doc) {
   xmlpp::Node* root = doc->get_root_node();
   xmlpp::NodeSet res = root->find("./results");
@@ -268,7 +261,7 @@ void Reporter::ReportFta(
 
 void Reporter::ReportImportance(
     std::string ft_name,
-    const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
+    const std::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
     xmlpp::Document* doc) {
   xmlpp::Node* root = doc->get_root_node();
   xmlpp::NodeSet res = root->find("./results");
@@ -307,7 +300,7 @@ void Reporter::ReportImportance(
 
 void Reporter::ReportUncertainty(
     std::string ft_name,
-    const boost::shared_ptr<const UncertaintyAnalysis>& uncert_analysis,
+    const std::shared_ptr<const UncertaintyAnalysis>& uncert_analysis,
     xmlpp::Document* doc) {
   xmlpp::Node* root = doc->get_root_node();
   xmlpp::NodeSet res = root->find("./results");
@@ -333,19 +326,40 @@ void Reporter::ReportUncertainty(
   confidence->set_attribute(
       "upper-bound",
       Reporter::ToString(uncert_analysis->confidence_interval().second, 7));
-  /// @todo Error factor reporting.
+  xmlpp::Element* error_factor = measure->add_child("error-factor");
+  error_factor->set_attribute("percentage", "95");
+  error_factor->set_attribute(
+      "value",
+      Reporter::ToString(uncert_analysis->error_factor(), 7));
+
   xmlpp::Element* quantiles = measure->add_child("quantiles");
-  int num_bins = uncert_analysis->distribution().size() - 1;
-  quantiles->set_attribute("number", Reporter::ToString(num_bins));
-  for (int i = 0; i < num_bins; ++i) {
+  int num_quantiles = uncert_analysis->quantiles().size();
+  quantiles->set_attribute("number", Reporter::ToString(num_quantiles));
+  double lower_bound = 0;
+  double delta = 1.0 / num_quantiles;
+  for (int i = 0; i < num_quantiles; ++i) {
     xmlpp::Element* quant = quantiles->add_child("quantile");
     quant->set_attribute("number", Reporter::ToString(i + 1));
+    double upper = uncert_analysis->quantiles()[i];
+    double value = delta * (i + 1);
+    quant->set_attribute("value", Reporter::ToString(value, 7));
+    quant->set_attribute("lower-bound", Reporter::ToString(lower_bound, 7));
+    quant->set_attribute("upper-bound", Reporter::ToString(upper, 7));
+    lower_bound = upper;
+  }
+
+  xmlpp::Element* hist = measure->add_child("histogram");
+  int num_bins = uncert_analysis->distribution().size() - 1;
+  hist->set_attribute("number", Reporter::ToString(num_bins));
+  for (int i = 0; i < num_bins; ++i) {
+    xmlpp::Element* bin = hist->add_child("bin");
+    bin->set_attribute("number", Reporter::ToString(i + 1));
     double lower = uncert_analysis->distribution()[i].first;
     double upper = uncert_analysis->distribution()[i + 1].first;
-    double value = uncert_analysis->distribution()[i + 1].second;
-    quant->set_attribute("mean", Reporter::ToString(value, 7));
-    quant->set_attribute("lower-bound", Reporter::ToString(lower, 7));
-    quant->set_attribute("upper-bound", Reporter::ToString(upper, 7));
+    double value = uncert_analysis->distribution()[i].second;
+    bin->set_attribute("value", Reporter::ToString(value, 7));
+    bin->set_attribute("lower-bound", Reporter::ToString(lower, 7));
+    bin->set_attribute("upper-bound", Reporter::ToString(upper, 7));
   }
   xmlpp::NodeSet calc_times =
       root->find("./information/performance/calculation-time");
@@ -358,8 +372,8 @@ void Reporter::ReportUncertainty(
 xmlpp::Element* Reporter::ReportBasicEvent(const BasicEventPtr& basic_event,
                                            xmlpp::Element* parent) {
   xmlpp::Element* element;
-  boost::shared_ptr<CcfEvent> ccf_event =
-      boost::dynamic_pointer_cast<CcfEvent>(basic_event);
+  std::shared_ptr<const CcfEvent> ccf_event =
+      std::dynamic_pointer_cast<const CcfEvent>(basic_event);
   std::string prefix =
         basic_event->is_public() ? "" : basic_event->base_path() + ".";
   if (!ccf_event) {

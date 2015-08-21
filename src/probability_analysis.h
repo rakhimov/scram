@@ -14,47 +14,42 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file probability_analysis.h
 /// Contains functionality to do numerical analysis
 /// of probabilities and importance factors.
+
 #ifndef SCRAM_SRC_PROBABILITY_ANALYSIS_H_
 #define SCRAM_SRC_PROBABILITY_ANALYSIS_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include <boost/container/flat_set.hpp>
-#include <boost/shared_ptr.hpp>
-#include <boost/unordered_map.hpp>
 
 #include "event.h"
-
-class ProbabilityAnalysisTest;
+#include "settings.h"
 
 namespace scram {
+
+namespace test { class ProbabilityAnalysisTest; }
 
 /// @class ProbabilityAnalysis
 /// Main quantitative analysis.
 class ProbabilityAnalysis {
-  friend class ::ProbabilityAnalysisTest;
+  friend class test::ProbabilityAnalysisTest;
 
  public:
-  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
 
   /// The main constructor of Probability Analysis.
   ///
-  /// @param[in] approx The kind of approximation for probability calculations.
-  /// @param[in] num_sums The number of sums in the probability series.
-  /// @param[in] cut_off The cut-off probability for cut sets.
-  /// @param[in] importance_analysis To perform importance analysis.
-  ///
-  /// @throws InvalidArgument One of the parameters is invalid.
-  explicit ProbabilityAnalysis(const std::string& approx = "no",
-                               int num_sums = 7,
-                               double cut_off = 1e-8,
-                               bool importance_analysis = false);
+  /// @param[in] settings Analysis settings for probability calculations.
+  explicit ProbabilityAnalysis(const Settings& settings);
 
   virtual ~ProbabilityAnalysis() {}
 
@@ -69,7 +64,7 @@ class ProbabilityAnalysis {
   /// @note  If not enough information is provided,
   ///        the analysis behavior is undefined.
   void UpdateDatabase(
-      const boost::unordered_map<std::string, BasicEventPtr>& basic_events);
+      const std::unordered_map<std::string, BasicEventPtr>& basic_events);
 
   /// Performs quantitative analysis on minimal cut sets
   /// containing basic events provided in the databases.
@@ -79,7 +74,8 @@ class ProbabilityAnalysis {
   ///                         Negative event is indicated by "'not' + id"
   ///
   /// @note  Undefined behavior if analysis called two or more times.
-  virtual void Analyze(const std::set< std::set<std::string> >& min_cut_sets);
+  virtual void Analyze(
+      const std::set< std::set<std::string> >& min_cut_sets) noexcept;
 
   /// @returns The total probability calculated by the analysis.
   ///
@@ -108,7 +104,7 @@ class ProbabilityAnalysis {
   inline const std::string warnings() const { return warnings_; }
 
   /// @returns The container of basic events of supplied for the analysis.
-  inline const boost::unordered_map<std::string, BasicEventPtr>&
+  inline const std::unordered_map<std::string, BasicEventPtr>&
       basic_events() const {
     return basic_events_;
   }
@@ -125,12 +121,14 @@ class ProbabilityAnalysis {
   inline double imp_analysis_time() const { return imp_time_; }
 
  protected:
+  typedef boost::container::flat_set<int> FlatSet;  ///< Faster set.
+
   /// Assigns an index to each basic event,
   /// and then populates with these indices
   /// new databases and basic-to-integer converting maps.
   /// The previous data are lost.
   /// These indices will be used for future analysis.
-  void AssignIndices();
+  void AssignIndices() noexcept;
 
   /// Populates databases of minimal cut sets
   /// with indices of the events.
@@ -139,7 +137,7 @@ class ProbabilityAnalysis {
   /// and turns non-coherent analysis.
   ///
   /// @param[in] min_cut_sets Minimal cut sets with event IDs.
-  void IndexMcs(const std::set<std::set<std::string> >& min_cut_sets);
+  void IndexMcs(const std::set<std::set<std::string> >& min_cut_sets) noexcept;
 
   /// Calculates probabilities
   /// using the minimal cut set upper bound (MCUB) approximation.
@@ -147,38 +145,36 @@ class ProbabilityAnalysis {
   /// @param[in] min_cut_sets Sets of indices of basic events.
   ///
   /// @returns The total probability with the MCUB approximation.
-  double ProbMcub(
-      const std::vector< boost::container::flat_set<int> >& min_cut_sets);
+  double ProbMcub(const std::vector<FlatSet>& min_cut_sets) noexcept;
 
   /// Generates positive and negative terms
   /// of probability equation expansion from
-  /// a set of minimal cut sets,
+  /// a set of cut sets,
   /// which are in OR relationship with each other.
   /// This function is a brute force probability calculation
   /// without approximations.
   ///
   /// @param[in] sign The sign of the series. Negative or positive number.
   /// @param[in] num_sums The number of sums in the series.
-  /// @param[in,out] min_cut_sets Sets of indices of basic events.
+  /// @param[in,out] cut_sets Sets of indices of basic events.
   ///
-  /// @note This function drastically modifies min_cut_sets
+  /// @note This function drastically modifies cut_sets
   ///       by deleting sets inside it.
   ///       This is for better performance.
   /// @note O_avg(M*logM*N*2^N) where N is the number of sets,
   ///       and M is the average size of the sets.
-  void ProbOr(int sign, int num_sums,
-              std::set< boost::container::flat_set<int> >* min_cut_sets);
+  void ProbOr(int sign, int num_sums, std::set<FlatSet>* cut_sets) noexcept;
 
-  /// Calculates a probability of a minimal cut set,
+  /// Calculates a probability of a cut set,
   /// whose members are in AND relationship with each other.
   /// This function assumes independence of each member.
   ///
-  /// @param[in] min_cut_set A flat set of indices of basic events.
+  /// @param[in] cut_set A flat set of indices of basic events.
   ///
   /// @returns The total probability of the set.
   ///
   /// @note O_avg(N) where N is the size of the passed set.
-  double ProbAnd(const boost::container::flat_set<int>& min_cut_set);
+  double ProbAnd(const FlatSet& cut_set) noexcept;
 
   /// Calculates A(and)( B(or)C ) relationship for sets using set algebra.
   ///
@@ -188,30 +184,25 @@ class ProbabilityAnalysis {
   ///
   /// @note O_avg(N*M*logM) where N is the size of the set,
   ///       and M is the average size of the elements.
-  void CombineElAndSet(
-      const boost::container::flat_set<int>& el,
-      const std::set< boost::container::flat_set<int> >& set,
-      std::set< boost::container::flat_set<int> >* combo_set);
+  void CombineElAndSet(const FlatSet& el, const std::set<FlatSet>& set,
+                       std::set<FlatSet>* combo_set) noexcept;
 
   /// Calculates total probability from the generated probability equation.
-  double CalculateTotalProbability();
+  double CalculateTotalProbability() noexcept;
 
   /// Importance analysis of basic events that are in minimal cut sets.
-  void PerformImportanceAnalysis();
+  void PerformImportanceAnalysis() noexcept;
 
 
-  bool importance_analysis_;  ///< A flag for importance analysis.
+  const Settings kSettings_;  ///< All settings for analysis.
   std::string warnings_;  ///< Register warnings.
-  int num_sums_;  ///< Number of sums in series expansion.
-  double cut_off_;  ///< Cut-off probability for minimal cut sets.
-  std::string approx_;  ///< Approximations for probability calculations.
 
   /// Container for basic events.
-  boost::unordered_map<std::string, BasicEventPtr> basic_events_;
+  std::unordered_map<std::string, BasicEventPtr> basic_events_;
 
   std::vector<BasicEventPtr> int_to_basic_;  ///< Indices to basic events.
   /// Indices of basic events.
-  boost::unordered_map<std::string, int> basic_to_int_;
+  std::unordered_map<std::string, int> basic_to_int_;
   std::vector<double> iprobs_;  ///< Holds probabilities of basic events.
 
   /// Minimal cut sets passed for analysis.

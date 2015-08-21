@@ -14,14 +14,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file random.h
 /// Contains helpers for randomness simulations.
+
 #ifndef SCRAM_SRC_RANDOM_H_
 #define SCRAM_SRC_RANDOM_H_
 
+#include <cassert>
+#include <random>
 #include <vector>
-
-#include <boost/random.hpp>
 
 namespace scram {
 
@@ -37,7 +39,7 @@ class Random {
   /// Sets the seed of the underlying random number generator.
   ///
   /// @param[in] seed The seed for RNGs.
-  static void seed(int seed);
+  static void seed(int seed) noexcept;
 
   /// RNG from uniform distribution.
   ///
@@ -45,7 +47,7 @@ class Random {
   /// @param[in] max Upper bound.
   ///
   /// @returns A sampled value.
-  static double UniformRealGenerator(double min, double max);
+  static double UniformRealGenerator(double min, double max) noexcept;
 
   /// RNG from a triangular distribution.
   ///
@@ -54,7 +56,8 @@ class Random {
   /// @param[in] upper Upper bound.
   ///
   /// @returns A sampled value.
-  static double TriangularGenerator(double lower, double mode, double upper);
+  static double TriangularGenerator(double lower, double mode,
+                                    double upper) noexcept;
 
   /// RNG from a piecewise linear distribution.
   ///
@@ -66,8 +69,9 @@ class Random {
   ///                    Extra weights are ignored.
   ///
   /// @returns A sampled value.
-  static double PiecewiseLinearGenerator(const std::vector<double>& intervals,
-                                         const std::vector<double>& weights);
+  static double PiecewiseLinearGenerator(
+      const std::vector<double>& intervals,
+      const std::vector<double>& weights) noexcept;
 
   /// RNG from a histogram distribution.
   ///
@@ -79,8 +83,9 @@ class Random {
   ///                    Extra weights are ignored.
   ///
   /// @returns A sampled value.
-  static double HistogramGenerator(const std::vector<double>& intervals,
-                                   const std::vector<double>& weights);
+  static double HistogramGenerator(
+      const std::vector<double>& intervals,
+      const std::vector<double>& weights) noexcept;
 
   /// RNG from a discrete distribution.
   ///
@@ -90,8 +95,9 @@ class Random {
   ///
   /// @returns A sample Value from the value vector.
   template<class T>
-  inline static T DiscreteGenerator(const std::vector<T>& values,
-                                    const std::vector<double>& weights) {
+  inline static T DiscreteGenerator(
+      const std::vector<T>& values,
+      const std::vector<double>& weights) noexcept {
     assert(values.size() == weights.size());
     return values[DiscreteGenerator(weights)];
   }
@@ -102,7 +108,7 @@ class Random {
   /// @param[in] p Probability of success.
   ///
   /// @returns The number of successes.
-  static int BinomialGenerator(int n, double p);
+  static int BinomialGenerator(int n, double p) noexcept;
 
   /// RNG from a normal distribution.
   ///
@@ -110,7 +116,7 @@ class Random {
   /// @param[in] sigma The standard deviation of the distribution.
   ///
   /// @returns A sampled value.
-  static double NormalGenerator(double mean, double sigma);
+  static double NormalGenerator(double mean, double sigma) noexcept;
 
   /// RNG from lognormal distribution.
   ///
@@ -118,7 +124,7 @@ class Random {
   /// @param[in] s The s scale factor of the distribution.
   ///
   /// @returns A sampled value.
-  static double LogNormalGenerator(double m, double s);
+  static double LogNormalGenerator(double m, double s) noexcept;
 
   /// RNG from Gamma distribution.
   ///
@@ -130,7 +136,7 @@ class Random {
   /// @note The rate parameter is 1/theta,
   ///       so for alpha/beta system,
   ///       pass 1/beta as a second parameter for this generator.
-  static double GammaGenerator(double k, double theta);
+  static double GammaGenerator(double k, double theta) noexcept;
 
   /// RNG from Beta distribution.
   ///
@@ -138,7 +144,7 @@ class Random {
   /// @param[in] beta Beta shape parameter of Beta distribution.
   ///
   /// @returns A sampled value.
-  static double BetaGenerator(double alpha, double beta);
+  static double BetaGenerator(double alpha, double beta) noexcept;
 
   /// RNG from Weibull distribution.
   ///
@@ -146,21 +152,21 @@ class Random {
   /// @param[in] lambda Scale parameter of Weibull distribution.
   ///
   /// @returns A sampled value.
-  static double WeibullGenerator(double k, double lambda);
+  static double WeibullGenerator(double k, double lambda) noexcept;
 
   /// RNG from Exponential distribution.
   ///
   /// @param[in] lambda Rate parameter of Exponential distribution.
   ///
   /// @returns A sampled value.
-  static double ExponentialGenerator(double lambda);
+  static double ExponentialGenerator(double lambda) noexcept;
 
   /// RNG from Poisson distribution.
   ///
   /// @param[in] mean The mean value for Poisson distribution.
   ///
   /// @returns A sampled value.
-  static double PoissonGenerator(double mean);
+  static int PoissonGenerator(int mean) noexcept;
 
   /// RNG from log-uniform distribution.
   ///
@@ -168,7 +174,7 @@ class Random {
   /// @param[in] max Upper bound.
   ///
   /// @returns A sampled value.
-  static double LogUniformGenerator(double min, double max);
+  static double LogUniformGenerator(double min, double max) noexcept;
 
   /// RNG from log-triangular distribution.
   ///
@@ -177,7 +183,8 @@ class Random {
   /// @param[in] upper Upper bound.
   ///
   /// @returns A sampled value.
-  static double LogTriangularGenerator(double lower, double mode, double upper);
+  static double LogTriangularGenerator(double lower, double mode,
+                                       double upper) noexcept;
 
  private:
   /// RNG from a discrete distribution.
@@ -186,9 +193,9 @@ class Random {
   ///                    where n is the size of the vector.
   ///
   /// @returns Integer in the range [0, 1).
-  static int DiscreteGenerator(const std::vector<double>& weights);
+  static int DiscreteGenerator(const std::vector<double>& weights) noexcept;
 
-  static boost::mt19937 rng_;  ///< The random number generator.
+  static std::mt19937 rng_;  ///< The random number generator.
 };
 
 }  // namespace scram

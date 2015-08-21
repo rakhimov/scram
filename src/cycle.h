@@ -14,16 +14,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file cycle.h
 /// Facilities to detect and print cycles.
+
 #ifndef SCRAM_SRC_CYCLE_H_
 #define SCRAM_SRC_CYCLE_H_
 
 #include <cassert>
 #include <string>
 #include <vector>
-
-#include <boost/shared_ptr.hpp>
 
 namespace scram {
 namespace cycle {

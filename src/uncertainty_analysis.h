@@ -14,23 +14,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file uncertainty_analysis.h
 /// Provides functionality for uncertainty analysis
 /// with Monte Carlo method.
+
 #ifndef SCRAM_SRC_UNCERTAINTY_ANALYSIS_H_
 #define SCRAM_SRC_UNCERTAINTY_ANALYSIS_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
-#include <boost/shared_ptr.hpp>
-#include <boost/unordered_map.hpp>
-
 #include "event.h"
 #include "probability_analysis.h"
+#include "settings.h"
 
 namespace scram {
 
@@ -41,17 +43,12 @@ namespace scram {
 /// and probability distributions of basic events.
 class UncertaintyAnalysis : private ProbabilityAnalysis {
  public:
-  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
 
   /// The main constructor of Uncertainty Analysis.
   ///
-  /// @param[in] num_sums The number of sums in the probability series.
-  /// @param[in] cut_off The cut-off probability for cut sets.
-  /// @param[in] num_trials The number of trials to perform.
-  ///
-  /// @throws InvalidArgument One of the parameters is invalid.
-  explicit UncertaintyAnalysis(int num_sums = 7, double cut_off = 1e-8,
-                               int num_trials = 1e3);
+  /// @param[in] settings Analysis settings for uncertainty calculations.
+  explicit UncertaintyAnalysis(const Settings& settings);
 
   /// Sets the databases of basic events with probabilities.
   /// Resets the main basic event database
@@ -64,7 +61,7 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   /// @note  If not enough information is provided,
   ///        the analysis behavior is undefined.
   void UpdateDatabase(
-      const boost::unordered_map<std::string, BasicEventPtr>& basic_events);
+      const std::unordered_map<std::string, BasicEventPtr>& basic_events);
 
   /// Performs quantitative analysis on minimal cut sets
   /// containing basic events provided in the databases.
@@ -74,7 +71,7 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   ///                         Negative event is indicated by "'not' + id"
   ///
   /// @note  Undefined behavior if analysis called two or more times.
-  void Analyze(const std::set< std::set<std::string> >& min_cut_sets);
+  void Analyze(const std::set< std::set<std::string> >& min_cut_sets) noexcept;
 
   /// @returns Mean of the final distribution.
   inline double mean() const { return mean_; }
@@ -82,7 +79,10 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   /// @returns Standard deviation of the final distribution.
   inline double sigma() const { return sigma_; }
 
-  /// @returns 95% confidence interval. Normal distribution is assumed.
+  /// @returns Error factor for 95% confidence level.
+  inline double error_factor() const { return error_factor_; }
+
+  /// @returns 95% confidence interval of the mean.
   inline const std::pair<double, double>& confidence_interval() const {
     return confidence_interval_;
   }
@@ -91,6 +91,9 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   const std::vector<std::pair<double, double> >& distribution() const {
     return distribution_;
   }
+
+  /// @returns Quantiles of the distribution.
+  const std::vector<double>& quantiles() const { return quantiles_; }
 
   /// @returns Warnings generated upon analysis.
   inline const std::string warnings() const {
@@ -104,7 +107,7 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   /// Performs Monte Carlo Simulation
   /// by sampling the probability distributions
   /// and providing the final sampled values of the final probability.
-  void Sample();
+  void Sample() noexcept;
 
   /// Gathers basic events that have distributions.
   /// Other constant, certain basic events removed from sampling.
@@ -112,20 +115,23 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   /// and the members of the equation are given a corresponding multiplier.
   ///
   /// @param[out] basic_events The gathered uncertain basic events.
-  void FilterUncertainEvents(std::vector<int>* basic_events);
+  void FilterUncertainEvents(std::vector<int>* basic_events) noexcept;
 
   /// Calculates statistical values from the final distribution.
-  void CalculateStatistics();
+  void CalculateStatistics() noexcept;
 
   std::vector<double> sampled_results_;  ///< Storage for sampled values.
-  int num_trials_;  ///< The number of trials to perform.
+  const Settings kSettings_;  ///< All settings for analysis.
   double mean_;  ///< The mean of the final distribution.
   double sigma_;  ///< The standard deviation of the final distribution.
+  double error_factor_;  ///< Error factor for 95% confidence level.
   double analysis_time_;  ///< Time for uncertainty calculations and sampling.
   /// The confidence interval of the distribution.
   std::pair<double, double> confidence_interval_;
   /// The histogram density of the distribution with lower bounds and values.
   std::vector<std::pair<double, double> > distribution_;
+  /// The quantiles of the distribution.
+  std::vector<double> quantiles_;
   /// Storage for constant part of the positive equation.
   /// The same mapping as positive sets.
   std::vector<double> pos_const_;

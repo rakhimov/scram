@@ -14,9 +14,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file probability_analysis.cc
 /// Implementations of functions to provide
 /// probability and importance informations.
+
 #include "probability_analysis.h"
 
 #include <boost/algorithm/string.hpp>
@@ -26,49 +28,23 @@
 
 namespace scram {
 
-ProbabilityAnalysis::ProbabilityAnalysis(const std::string& approx,
-                                         int num_sums,
-                                         double cut_off,
-                                         bool importance_analysis)
-    : importance_analysis_(importance_analysis),
+ProbabilityAnalysis::ProbabilityAnalysis(const Settings& settings)
+    : kSettings_(settings),
       warnings_(""),
       p_total_(0),
       p_rare_(0),
       coherent_(true),
-      p_time_(-1),
-      imp_time_(-1) {
-  // Check for right number of sums.
-  if (num_sums < 1) {
-    std::string msg = "The number of sums in the probability calculation "
-                      "cannot be less than one";
-    throw InvalidArgument(msg);
-  }
-  num_sums_ = num_sums;
-
-  // Check for valid cut-off probability.
-  if (cut_off < 0 || cut_off > 1) {
-    std::string msg = "The cut-off probability cannot be negative or"
-                      " more than 1.";
-    throw InvalidArgument(msg);
-  }
-  cut_off_ = cut_off;
-
-  // Check the right approximation for probability calculations.
-  if (approx != "no" && approx != "rare-event" && approx != "mcub") {
-    std::string msg = "The probability approximation is not recognized.";
-    throw InvalidArgument(msg);
-  }
-  approx_ = approx;
-}
+      p_time_(0),
+      imp_time_(0) {}
 
 void ProbabilityAnalysis::UpdateDatabase(
-    const boost::unordered_map<std::string, BasicEventPtr>& basic_events) {
+    const std::unordered_map<std::string, BasicEventPtr>& basic_events) {
   basic_events_ = basic_events;
   ProbabilityAnalysis::AssignIndices();
 }
 
 void ProbabilityAnalysis::Analyze(
-    const std::set< std::set<std::string> >& min_cut_sets) {
+    const std::set< std::set<std::string> >& min_cut_sets) noexcept {
   min_cut_sets_ = min_cut_sets;
 
   // Special case of unity with empty sets.
@@ -91,7 +67,8 @@ void ProbabilityAnalysis::Analyze(
   for (it_min = imcs_.begin(); it_min != imcs_.end(); ++i, ++it_min) {
     // Calculate a probability of a set with AND relationship.
     double p_sub_set = ProbabilityAnalysis::ProbAnd(*it_min);
-    if (p_sub_set > cut_off_) {
+    // Choose cut sets with high enough probabilities.
+    if (p_sub_set > kSettings_.cut_off()) {
       flat_set<int> mcs(*it_min);
       mcs_for_prob.insert(mcs_for_prob.end(), mcs);
     }
@@ -102,21 +79,23 @@ void ProbabilityAnalysis::Analyze(
   }
 
   CLOCK(p_time);
+  LOG(DEBUG3) << "Calculating probabilities...";
+  LOG(DEBUG3) << "Cut sets above cut-off level: " << mcs_for_prob.size();
   // Get the total probability.
-  if (approx_ == "mcub") {
+  if (kSettings_.approx() == "mcub") {
     if (!coherent_) {
       warnings_ += " The cut sets are not coherent and contain negation."
                    " The MCUB approximation may not hold.";
     }
-    num_sums_ = 0;  // For reporting purposes.
     p_total_ = ProbabilityAnalysis::ProbMcub(imcs_);
 
   } else {
+    int num_sums = kSettings_.num_sums();
     // Check if the rare event approximation is requested.
-    if (approx_ == "rare-event") {
-      std::map< std::set<std::string>, double >::iterator it_pr;
-      for (it_pr = prob_of_min_sets_.begin();
-           it_pr != prob_of_min_sets_.end(); ++it_pr) {
+    if (kSettings_.approx() == "rare-event") {
+      std::map<std::set<std::string>, double>::iterator it_pr;
+      for (it_pr = prob_of_min_sets_.begin(); it_pr != prob_of_min_sets_.end();
+           ++it_pr) {
         // Check if a probability of a set does not exceed 0.1,
         // which is required for the rare event approximation to hold.
         if (it_pr->second > 0.1) {
@@ -126,28 +105,30 @@ void ProbabilityAnalysis::Analyze(
           break;
         }
       }
-      num_sums_ = 1;  // Only first series is used for the rare event case.
+      num_sums = 1;  // Only first series is used for the rare event case.
     }
-    // The default calculations.
-    // Choose cut sets with high enough probabilities.
-    if (num_sums_ > mcs_for_prob.size()) num_sums_ = mcs_for_prob.size();
-    ProbabilityAnalysis::ProbOr(1, num_sums_, &mcs_for_prob);
+    ProbabilityAnalysis::ProbOr(1, num_sums, &mcs_for_prob);
     p_total_ = ProbabilityAnalysis::CalculateTotalProbability();
   }
+  LOG(DEBUG3) << "Finished probability calculations in " << DUR(p_time);
   p_time_ = DUR(p_time);
-  CLOCK(imp_time);
-  if (importance_analysis_) ProbabilityAnalysis::PerformImportanceAnalysis();
-  imp_time_ = DUR(imp_time);
+  if (kSettings_.importance_analysis()) {
+    CLOCK(imp_time);
+    LOG(DEBUG3) << "Calculating importance factors...";
+    ProbabilityAnalysis::PerformImportanceAnalysis();
+    LOG(DEBUG3) << "Calculated importance factors in " << DUR(imp_time);
+    imp_time_ = DUR(imp_time);
+  }
 }
 
-void ProbabilityAnalysis::AssignIndices() {
+void ProbabilityAnalysis::AssignIndices() noexcept {
   // Cleanup the previous information.
   int_to_basic_.clear();
   basic_to_int_.clear();
   iprobs_.clear();
   // Indexation of events.
   int j = 1;
-  boost::unordered_map<std::string, BasicEventPtr>::iterator itp;
+  std::unordered_map<std::string, BasicEventPtr>::iterator itp;
   // Dummy basic event at index 0.
   int_to_basic_.push_back(BasicEventPtr(new BasicEvent("dummy")));
   iprobs_.push_back(0);
@@ -160,7 +141,7 @@ void ProbabilityAnalysis::AssignIndices() {
 }
 
 void ProbabilityAnalysis::IndexMcs(
-    const std::set<std::set<std::string> >& min_cut_sets) {
+    const std::set<std::set<std::string> >& min_cut_sets) noexcept {
   // Update databases of minimal cut sets with indexed events.
   std::set< std::set<std::string> >::const_iterator it;
   for (it = min_cut_sets.begin(); it != min_cut_sets.end(); ++it) {
@@ -197,9 +178,8 @@ void ProbabilityAnalysis::IndexMcs(
 }
 
 double ProbabilityAnalysis::ProbMcub(
-    const std::vector< boost::container::flat_set<int> >& min_cut_sets) {
-  using boost::container::flat_set;
-  std::vector< flat_set<int> >::const_iterator it_min;
+    const std::vector<FlatSet>& min_cut_sets) noexcept {
+  std::vector<FlatSet>::const_iterator it_min;
   double m = 1;
   for (it_min = min_cut_sets.begin(); it_min != min_cut_sets.end(); ++it_min) {
     // Calculate a probability of a set with AND relationship.
@@ -208,69 +188,59 @@ double ProbabilityAnalysis::ProbMcub(
   return 1 - m;
 }
 
-void ProbabilityAnalysis::ProbOr(
-    int sign,
-    int num_sums,
-    std::set< boost::container::flat_set<int> >* min_cut_sets) {
+void ProbabilityAnalysis::ProbOr(int sign, int num_sums,
+                                 std::set<FlatSet>* cut_sets) noexcept {
   assert(sign != 0);
   assert(num_sums >= 0);
 
   // Recursive implementation.
-  if (min_cut_sets->empty()) return;
+  if (cut_sets->empty()) return;
 
   if (num_sums == 0) return;
-
-  using boost::container::flat_set;
 
   // Put this element into the equation.
   if (sign > 0) {
     // This is a positive member.
-    pos_terms_.push_back(*min_cut_sets->begin());
+    pos_terms_.push_back(*cut_sets->begin());
   } else {
     // This must be a negative member.
-    neg_terms_.push_back(*min_cut_sets->begin());
+    neg_terms_.push_back(*cut_sets->begin());
   }
 
   // Delete element from the original set.
-  min_cut_sets->erase(min_cut_sets->begin());
+  cut_sets->erase(cut_sets->begin());
 
-  std::set< flat_set<int> > combo_sets;
+  std::set<FlatSet> combo_sets;
   ProbabilityAnalysis::CombineElAndSet(
       (sign > 0) ? pos_terms_.back() : neg_terms_.back(),
-      *min_cut_sets, &combo_sets);
+      *cut_sets, &combo_sets);
 
-  ProbabilityAnalysis::ProbOr(sign, num_sums, min_cut_sets);
+  ProbabilityAnalysis::ProbOr(sign, num_sums, cut_sets);
   ProbabilityAnalysis::ProbOr(-sign, num_sums - 1, &combo_sets);
 }
 
-double ProbabilityAnalysis::ProbAnd(
-    const boost::container::flat_set<int>& min_cut_set) {
-  // Test just in case the min cut set is empty.
-  if (min_cut_set.empty()) return 0;
-
-  using boost::container::flat_set;
+double ProbabilityAnalysis::ProbAnd(const FlatSet& cut_set) noexcept {
+  if (cut_set.empty()) return 0;
   double p_sub_set = 1;  // 1 is for multiplication.
-  flat_set<int>::const_iterator it_set;
-  for (it_set = min_cut_set.begin(); it_set != min_cut_set.end(); ++it_set) {
-    if (*it_set > 0) {
-      p_sub_set *= iprobs_[*it_set];
+  for (int member : cut_set) {
+    if (member > 0) {
+      p_sub_set *= iprobs_[member];
     } else {
-      p_sub_set *= 1 - iprobs_[std::abs(*it_set)];  // Never zero.
+      p_sub_set *= 1 - iprobs_[std::abs(member)];  // Never zero.
     }
   }
   return p_sub_set;
 }
 
 void ProbabilityAnalysis::CombineElAndSet(
-    const boost::container::flat_set<int>& el,
-    const std::set< boost::container::flat_set<int> >& set,
-    std::set< boost::container::flat_set<int> >* combo_set) {
-  using boost::container::flat_set;
-  std::set< flat_set<int> >::iterator it_set;
+    const FlatSet& el,
+    const std::set<FlatSet>& set,
+    std::set<FlatSet>* combo_set) noexcept {
+  std::set<FlatSet>::iterator it_set;
   for (it_set = set.begin(); it_set != set.end(); ++it_set) {
     bool include = true;  // Indicates that the resultant set is not null.
     if (!coherent_) {
-      flat_set<int>::const_iterator it;
+      FlatSet::const_iterator it;
       for (it = el.begin(); it != el.end(); ++it) {
         if (it_set->count(-*it)) {
           include = false;
@@ -279,18 +249,17 @@ void ProbabilityAnalysis::CombineElAndSet(
       }
     }
     if (include) {
-      flat_set<int> member_set(*it_set);
+      FlatSet member_set(*it_set);
       member_set.insert(el.begin(), el.end());
       combo_set->insert(combo_set->end(), member_set);
     }
   }
 }
 
-double ProbabilityAnalysis::CalculateTotalProbability() {
-  using boost::container::flat_set;
+double ProbabilityAnalysis::CalculateTotalProbability() noexcept {
   double pos = 0;
   double neg = 0;
-  std::vector< flat_set<int> >::iterator it_s;
+  std::vector<FlatSet>::iterator it_s;
   for (it_s = pos_terms_.begin(); it_s != pos_terms_.end(); ++it_s) {
     pos += ProbabilityAnalysis::ProbAnd(*it_s);
   }
@@ -300,7 +269,7 @@ double ProbabilityAnalysis::CalculateTotalProbability() {
   return pos - neg;
 }
 
-void ProbabilityAnalysis::PerformImportanceAnalysis() {
+void ProbabilityAnalysis::PerformImportanceAnalysis() noexcept {
   // The main data for all the importance types is P(top/event) or
   // P(top/Not event).
   std::set<int>::iterator it;
@@ -308,7 +277,7 @@ void ProbabilityAnalysis::PerformImportanceAnalysis() {
     // Calculate P(top/event)
     iprobs_[*it] = 1;
     double p_e = 0;
-    if (approx_ == "mcub") {
+    if (kSettings_.approx() == "mcub") {
       p_e = ProbabilityAnalysis::ProbMcub(imcs_);
     } else {  // For the rare event and default cases.
       p_e = ProbabilityAnalysis::CalculateTotalProbability();
@@ -317,7 +286,7 @@ void ProbabilityAnalysis::PerformImportanceAnalysis() {
     // Calculate P(top/Not event)
     iprobs_[*it] = 0;
     double p_not_e = 0;
-    if (approx_ == "mcub") {
+    if (kSettings_.approx() == "mcub") {
       p_not_e = ProbabilityAnalysis::ProbMcub(imcs_);
     } else {  // For the rare event and default cases.
       p_not_e = ProbabilityAnalysis::CalculateTotalProbability();

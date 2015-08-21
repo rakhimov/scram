@@ -14,6 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file logger.h
 /// Logging capability for various purposes,
 /// such as warnings and debugging.
@@ -21,6 +22,7 @@
 /// The design and code are inspired by
 /// the C++ logging framework of Petru Marginean,
 /// published at http://www.drdobbs.com/cpp/logging-in-c/201804215
+
 #ifndef SCRAM_SRC_LOGGER_H_
 #define SCRAM_SRC_LOGGER_H_
 
@@ -80,8 +82,11 @@ class Logger {
  public:
   Logger() {}
 
+  Logger(const Logger&) = delete;  ///< Restrict copy construction.
+  Logger& operator=(const Logger&) = delete;  ///< Restrict copy assignment.
+
   /// Flashes all the logs into the standard error upon destruction.
-  ~Logger() {
+  ~Logger() noexcept {
     os_ << std::endl;
     // fprintf used for thread safety.
     fprintf(stderr, "%s", os_.str().c_str());
@@ -109,11 +114,6 @@ class Logger {
   /// Translates the logging level into a string.
   /// The index is the value of the enum.
   static const char* const kLevelToString_[];
-
-  /// Restrict copy construction.
-  Logger(const Logger&);
-  /// Restrict copy assignment.
-  Logger& operator=(const Logger&);
 
   std::ostringstream os_;  ///< Main stringstream to gather the logs.
   static LogLevel report_level_;  ///< Cut-off log level for reporting.

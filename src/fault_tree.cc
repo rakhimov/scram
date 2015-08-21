@@ -14,8 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file fault_tree.cc
 /// Implementation of fault tree and component containers.
+
 #include "fault_tree.h"
 
 #include <map>
@@ -92,21 +94,21 @@ void Component::AddCcfGroup(const CcfGroupPtr& ccf_group) {
   }
 }
 
-void Component::AddComponent(const ComponentPtr& component) {
+void Component::AddComponent(ComponentPtr component) {
   std::string name = component->name();
   boost::to_lower(name);
   if (components_.count(name)) {
     throw ValidationError("Duplicate component " + component->name());
   }
-  components_.insert(std::make_pair(name, component));
+  components_.emplace(name, std::move(component));
 }
 
-void Component::GatherGates(boost::unordered_set<GatePtr>* gates) {
-  boost::unordered_map<std::string, GatePtr>::iterator it;
+void Component::GatherGates(std::unordered_set<GatePtr>* gates) {
+  std::unordered_map<std::string, GatePtr>::iterator it;
   for (it = gates_.begin(); it != gates_.end(); ++it) {
     gates->insert(it->second);
   }
-  boost::unordered_map<std::string, ComponentPtr>::iterator it_comp;
+  std::unordered_map<std::string, ComponentPtr>::iterator it_comp;
   for (it_comp = components_.begin(); it_comp != components_.end(); ++it_comp) {
     it_comp->second->GatherGates(gates);
   }
@@ -116,10 +118,10 @@ FaultTree::FaultTree(const std::string& name) : Component::Component(name) {}
 
 void FaultTree::CollectTopEvents() {
   top_events_.clear();
-  boost::unordered_set<GatePtr> gates;
+  std::unordered_set<GatePtr> gates;
   Component::GatherGates(&gates);
   // Detects top events.
-  boost::unordered_set<GatePtr>::iterator it;
+  std::unordered_set<GatePtr>::iterator it;
   for (it = gates.begin(); it != gates.end(); ++it) {
     FaultTree::MarkNonTopGates(*it, gates);
   }
@@ -130,25 +132,21 @@ void FaultTree::CollectTopEvents() {
 }
 
 void FaultTree::MarkNonTopGates(const GatePtr& gate,
-                                const boost::unordered_set<GatePtr>& gates) {
+                                const std::unordered_set<GatePtr>& gates) {
   if (gate->mark() == "non-top") return;
   FaultTree::MarkNonTopGates(gate->formula(), gates);
 }
 
 void FaultTree::MarkNonTopGates(const FormulaPtr& formula,
-                                const boost::unordered_set<GatePtr>& gates) {
-  std::vector<GatePtr>::const_iterator it;
-  const std::vector<GatePtr>* children = &formula->gate_args();
-  for (it = children->begin(); it != children->end(); ++it) {
-    if (gates.count(*it)) {
-      FaultTree::MarkNonTopGates(*it, gates);
-      (*it)->mark("non-top");
+                                const std::unordered_set<GatePtr>& gates) {
+  for (const GatePtr& gate : formula->gate_args()) {
+    if (gates.count(gate)) {
+      FaultTree::MarkNonTopGates(gate, gates);
+      gate->mark("non-top");
     }
   }
-  const std::set<FormulaPtr>* formula_args = &formula->formula_args();
-  std::set<FormulaPtr>::const_iterator it_f;
-  for (it_f = formula_args->begin(); it_f != formula_args->end(); ++it_f) {
-    FaultTree::MarkNonTopGates(*it_f, gates);
+  for (const FormulaPtr& arg : formula->formula_args()) {
+    FaultTree::MarkNonTopGates(arg, gates);
   }
 }
 

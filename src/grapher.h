@@ -14,19 +14,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file grapher.h
 /// Graphing of analysis entities.
+
 #ifndef SCRAM_SRC_GRAPHER_H_
 #define SCRAM_SRC_GRAPHER_H_
 
 #include <iostream>
 #include <map>
+#include <memory>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
-
-#include <boost/shared_ptr.hpp>
-#include <boost/unordered_map.hpp>
 
 #include "event.h"
 
@@ -37,7 +38,7 @@ namespace scram {
 /// Currently operates with Fault Trees only.
 class Grapher {
  public:
-  typedef boost::shared_ptr<Gate> GatePtr;
+  typedef std::shared_ptr<Gate> GatePtr;
 
   /// Outputs instructions for graphviz dot to create a fault tree.
   /// This function must be called only with fully initialized fault tree.
@@ -49,11 +50,11 @@ class Grapher {
                       std::ostream& out);
 
  private:
-  typedef boost::shared_ptr<Event> EventPtr;
-  typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
-  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
-  typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
-  typedef boost::shared_ptr<Formula> FormulaPtr;
+  typedef std::shared_ptr<Event> EventPtr;
+  typedef std::shared_ptr<PrimaryEvent> PrimaryEventPtr;
+  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
+  typedef std::shared_ptr<HouseEvent> HouseEventPtr;
+  typedef std::unique_ptr<Formula> FormulaPtr;
 
   static const std::map<std::string, std::string> kGateColors_;  ///< Colors.
   static const std::map<std::string, std::string> kEventColors_;  ///< Colors.
@@ -67,11 +68,12 @@ class Grapher {
   /// @param[out] out The output stream.
   ///
   /// @note The repetition information is important to avoid clashes.
-  void GraphFormula(const std::string& formula_name,
-                    const FormulaPtr& formula,
-                    std::vector<std::pair<std::string, FormulaPtr> >* formulas,
-                    boost::unordered_map<EventPtr, int>* node_repeat,
-                    std::ostream& out);
+  void GraphFormula(
+      const std::string& formula_name,
+      const FormulaPtr& formula,
+      std::vector<std::pair<std::string, const Formula*> >* formulas,
+      std::unordered_map<EventPtr, int>* node_repeat,
+      std::ostream& out);
 
   /// Provides formatting information for top gate.
   ///
@@ -85,8 +87,8 @@ class Grapher {
   /// @param[in] node_repeat The number of times a node is repeated.
   /// @param[out] out The output stream.
   void FormatIntermediateEvents(
-      const boost::unordered_map<std::string, GatePtr>& inter_events,
-      const boost::unordered_map<EventPtr, int>& node_repeat,
+      const std::unordered_map<std::string, GatePtr>& inter_events,
+      const std::unordered_map<EventPtr, int>& node_repeat,
       std::ostream& out);
 
   /// Provides formatting information for basic events.
@@ -96,8 +98,8 @@ class Grapher {
   /// @param[in] prob_requested Indication to include probability numbers.
   /// @param[out] out The output stream.
   void FormatBasicEvents(
-      const boost::unordered_map<std::string, BasicEventPtr>& basic_events,
-      const boost::unordered_map<EventPtr, int>& node_repeat,
+      const std::unordered_map<std::string, BasicEventPtr>& basic_events,
+      const std::unordered_map<EventPtr, int>& node_repeat,
       bool prob_requested,
       std::ostream& out);
 
@@ -108,8 +110,8 @@ class Grapher {
   /// @param[in] prob_requested Indication to include probability numbers.
   /// @param[out] out The output stream.
   void FormatHouseEvents(
-      const boost::unordered_map<std::string, HouseEventPtr>& house_events,
-      const boost::unordered_map<EventPtr, int>& node_repeat,
+      const std::unordered_map<std::string, HouseEventPtr>& house_events,
+      const std::unordered_map<EventPtr, int>& node_repeat,
       bool prob_requested,
       std::ostream& out);
 
@@ -133,7 +135,7 @@ class Grapher {
   /// @param[in] formulas The container with registered nested formulas.
   /// @param[out] out The output stream.
   void FormatFormulas(
-      const std::vector<std::pair<std::string, FormulaPtr> >& formulas,
+      const std::vector<std::pair<std::string, const Formula*> >& formulas,
       std::ostream& out);
 };
 

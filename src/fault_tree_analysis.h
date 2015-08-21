@@ -14,20 +14,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file fault_tree_analysis.h
 /// Fault Tree Analysis.
+
 #ifndef SCRAM_SRC_FAULT_TREE_ANALYSIS_H_
 #define SCRAM_SRC_FAULT_TREE_ANALYSIS_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
-#include <boost/shared_ptr.hpp>
-#include <boost/unordered_map.hpp>
-
 #include "event.h"
+#include "settings.h"
 
 namespace scram {
 
@@ -52,9 +54,9 @@ class BooleanGraph;
 ///          One analysis per FaultTreeAnalysis object.
 class FaultTreeAnalysis {
  public:
-  typedef boost::shared_ptr<Gate> GatePtr;
-  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
-  typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
+  typedef std::shared_ptr<Gate> GatePtr;
+  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
+  typedef std::shared_ptr<HouseEvent> HouseEventPtr;
 
   /// Traverses a valid fault tree from the root gate
   /// to collect databases of events, gates,
@@ -63,10 +65,7 @@ class FaultTreeAnalysis {
   /// and its events must be fully initialized.
   ///
   /// @param[in] root The top event of the fault tree to analyze.
-  /// @param[in] limit_order The maximum limit on minimal cut sets' order.
-  /// @param[in] ccf_analysis Whether or not expand CCF group basic events.
-  ///
-  /// @throws InvalidArgument One of the parameters is invalid.
+  /// @param[in] settings Analysis settings for all calculations.
   ///
   /// @note It is assumed that analysis is done only once.
   ///
@@ -74,8 +73,8 @@ class FaultTreeAnalysis {
   ///          this analysis does not incorporate the changed structure.
   ///          Moreover, the analysis results may get corrupted.
   /// @warning The gates' visit marks must be clean.
-  explicit FaultTreeAnalysis(const GatePtr& root, int limit_order = 20,
-                             bool ccf_analysis = false);
+  explicit FaultTreeAnalysis(const GatePtr& root,
+                             const Settings& settings = Settings());
 
   /// Analyzes the fault tree and performs computations.
   /// This function must be called
@@ -91,7 +90,7 @@ class FaultTreeAnalysis {
   ///          since the construction of the analysis,
   ///          the analysis will be invalid or fail.
   /// @warning The gates' visit marks must be clean.
-  void Analyze();
+  void Analyze() noexcept;
 
   /// @returns The top gate that is passed to the analysis.
   inline const GatePtr& top_event() const { return top_event_; }
@@ -100,8 +99,7 @@ class FaultTreeAnalysis {
   ///
   /// @warning If the fault tree has changed,
   ///          this is only a snapshot of the past
-  inline const boost::unordered_map<std::string, GatePtr>&
-      inter_events() const {
+  inline const std::unordered_map<std::string, GatePtr>& inter_events() const {
     return inter_events_;
   }
 
@@ -109,7 +107,7 @@ class FaultTreeAnalysis {
   ///
   /// @warning If the fault tree has changed,
   ///          this is only a snapshot of the past
-  inline const boost::unordered_map<std::string, BasicEventPtr>&
+  inline const std::unordered_map<std::string, BasicEventPtr>&
       basic_events() const {
     return basic_events_;
   }
@@ -118,7 +116,7 @@ class FaultTreeAnalysis {
   ///
   /// @warning If the fault tree has changed,
   ///          this is only a snapshot of the past
-  inline const boost::unordered_map<std::string, BasicEventPtr>&
+  inline const std::unordered_map<std::string, BasicEventPtr>&
       ccf_events() const {
     return ccf_events_;
   }
@@ -127,7 +125,7 @@ class FaultTreeAnalysis {
   ///
   /// @warning If the fault tree has changed,
   ///          this is only a snapshot of the past
-  inline const boost::unordered_map<std::string, HouseEventPtr>&
+  inline const std::unordered_map<std::string, HouseEventPtr>&
       house_events() const {
     return house_events_;
   }
@@ -140,7 +138,7 @@ class FaultTreeAnalysis {
   }
 
   /// @returns Collection of basic events that are in the minimal cut sets.
-  inline const boost::unordered_map<std::string, BasicEventPtr>&
+  inline const std::unordered_map<std::string, BasicEventPtr>&
       mcs_basic_events() const {
     return mcs_basic_events_;
   }
@@ -155,8 +153,8 @@ class FaultTreeAnalysis {
   inline double analysis_time() const { return analysis_time_; }
 
  private:
-  typedef boost::shared_ptr<Event> EventPtr;
-  typedef boost::shared_ptr<Formula> FormulaPtr;
+  typedef std::shared_ptr<Event> EventPtr;
+  typedef std::unique_ptr<Formula> FormulaPtr;
 
   /// Gathers information about the correctly initialized fault tree.
   /// Databases for events are manipulated
@@ -171,18 +169,18 @@ class FaultTreeAnalysis {
   /// The mark is checked to prevent revisiting.
   ///
   /// @param[in] gate The gate to start traversal from.
-  void GatherEvents(const GatePtr& gate);
+  void GatherEvents(const GatePtr& gate) noexcept;
 
   /// Traverses formulas recursively to find all events.
   ///
   /// @param[in] formula The formula to get events from.
-  void GatherEvents(const FormulaPtr& formula);
+  void GatherEvents(const FormulaPtr& formula) noexcept;
 
   /// Cleans marks from gates that were traversed.
   /// Marks are set to empty strings.
   /// This is important
   /// because other code may assume that marks are empty.
-  void CleanMarks();
+  void CleanMarks() noexcept;
 
   /// Converts minimal cut sets from indices to strings
   /// for future reporting.
@@ -191,32 +189,29 @@ class FaultTreeAnalysis {
   /// @param[in] imcs Min cut sets with indices of events.
   /// @param[in] ft Indexed fault tree with basic event indices and pointers.
   void SetsToString(const std::vector< std::set<int> >& imcs,
-                    const BooleanGraph* ft);
-
-  /// Limit on the size of the minimal cut sets for performance reasons.
-  int limit_order_;
-  bool ccf_analysis_;  ///< A flag to include CCF groups in fault trees.
+                    const BooleanGraph* ft) noexcept;
 
   GatePtr top_event_;  ///< Top event of this fault tree.
+  const Settings kSettings_;  ///< All settings for analysis.
 
   /// Container for intermediate events.
-  boost::unordered_map<std::string, GatePtr> inter_events_;
+  std::unordered_map<std::string, GatePtr> inter_events_;
 
   /// Container for basic events.
-  boost::unordered_map<std::string, BasicEventPtr> basic_events_;
+  std::unordered_map<std::string, BasicEventPtr> basic_events_;
 
   /// Container for house events of the tree.
-  boost::unordered_map<std::string, HouseEventPtr> house_events_;
+  std::unordered_map<std::string, HouseEventPtr> house_events_;
 
   /// Container for basic events that are identified to be in some CCF group.
   /// These basic events are not necessarily in the same CCF group.
-  boost::unordered_map<std::string, BasicEventPtr> ccf_events_;
+  std::unordered_map<std::string, BasicEventPtr> ccf_events_;
 
   /// Container for minimal cut sets.
   std::set< std::set<std::string> > min_cut_sets_;
 
   /// Container for basic events in minimal cut sets.
-  boost::unordered_map<std::string, BasicEventPtr> mcs_basic_events_;
+  std::unordered_map<std::string, BasicEventPtr> mcs_basic_events_;
 
   std::string warnings_;  ///< Generated warnings in analysis.
   int max_order_;  ///< Maximum order of minimal cut sets.

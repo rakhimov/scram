@@ -14,22 +14,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file ccf_group.h
 /// Functional containers for basic events
 /// grouped by common cause failure.
 /// Common cause failure can be modeled
 /// with alpha, beta, MGL,
 /// or direct parameter assignment in phi model.
+
 #ifndef SCRAM_SRC_CCF_GROUP_H_
 #define SCRAM_SRC_CCF_GROUP_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
 #include <vector>
-
-#include <boost/shared_ptr.hpp>
 
 #include "element.h"
 #include "event.h"
@@ -41,8 +42,8 @@ namespace scram {
 /// Abstract base class for all common cause failure models.
 class CcfGroup : public Element, public Role {
  public:
-  typedef boost::shared_ptr<Expression> ExpressionPtr;
-  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+  typedef std::shared_ptr<Expression> ExpressionPtr;
+  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
 
   /// Constructor to be used by derived classes.
   ///
@@ -121,8 +122,8 @@ class CcfGroup : public Element, public Role {
   void ApplyModel();
 
  protected:
-  typedef boost::shared_ptr<Gate> GatePtr;
-  typedef boost::shared_ptr<Formula> FormulaPtr;
+  typedef std::shared_ptr<Gate> GatePtr;
+  typedef std::unique_ptr<Formula> FormulaPtr;
 
   /// Creates new basic events from members.
   /// The new basic events are included in the database of new events.

@@ -14,8 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file ccf_group.cc
 /// Implementation of various common cause failure models.
+
 #include "ccf_group.h"
 
 #include <sstream>
@@ -135,7 +137,7 @@ void CcfGroup::ApplyModel() {
 void CcfGroup::ConstructCcfBasicEvents(
     int max_level,
     std::map<BasicEventPtr, std::set<std::string> >* new_events) {
-  typedef boost::shared_ptr<CcfEvent> CcfEventPtr;
+  typedef std::shared_ptr<CcfEvent> CcfEventPtr;
 
   assert(max_level > 1);
   assert(members_.size() > 1);

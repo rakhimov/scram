@@ -14,8 +14,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file settings.h
 /// Builder for settings.
+
 #ifndef SCRAM_SRC_SETTINGS_H_
 #define SCRAM_SRC_SETTINGS_H_
 
@@ -23,18 +25,10 @@
 
 namespace scram {
 
-class RiskAnalysis;
-
 /// @class Settings
 /// Builder for analysis settings.
 class Settings {
-  friend class Initializer;
-  friend class RiskAnalysis;
-  friend class Reporter;
-
  public:
-  Settings();
-
   /// Sets the limit order for minimal cut sets.
   ///
   /// @param[in] order A natural number for the limit order.
@@ -80,6 +74,24 @@ class Settings {
   ///
   /// @throws ValueError The number is less than 1.
   Settings& num_trials(int n);
+
+  /// Sets the number of quantiles for distributions.
+  ///
+  /// @param[in] n A natural number for the number of quantiles.
+  ///
+  /// @returns Reference to this object.
+  ///
+  /// @throws ValueError The number is less than 1.
+  Settings& num_quantiles(int n);
+
+  /// Sets the number of bins for histograms.
+  ///
+  /// @param[in] n A natural number for the number of bins.
+  ///
+  /// @returns Reference to this object.
+  ///
+  /// @throws ValueError The number is less than 1.
+  Settings& num_bins(int n);
 
   /// Sets the seed for the pseudo-random number generator.
   ///
@@ -148,37 +160,34 @@ class Settings {
     return *this;
   }
 
-  /// This comparison is primarily for testing.
-  ///
-  /// @param[in] rhs Another Settings object to be compared.
-  ///
-  /// @returns true if all members of the compared settings are equal.
-  bool operator==(const Settings& rhs) const {
-    return (probability_analysis_ == rhs.probability_analysis_) &&
-        (importance_analysis_ == rhs.importance_analysis_) &&
-        (uncertainty_analysis_ == rhs.uncertainty_analysis_) &&
-        (ccf_analysis_ == rhs.ccf_analysis_) &&
-        (limit_order_ == rhs.limit_order_) &&
-        (num_sums_ == rhs.num_sums_) &&
-        (cut_off_ == rhs.cut_off_) &&
-        (approx_ == rhs.approx_) &&
-        (num_trials_ == rhs.num_trials_) &&
-        (seed_ == rhs.seed_) &&
-        (mission_time_ == rhs.mission_time_);
-  }
+  inline bool probability_analysis() const { return probability_analysis_; }
+  inline bool importance_analysis() const { return importance_analysis_; }
+  inline bool uncertainty_analysis() const { return uncertainty_analysis_; }
+  inline bool ccf_analysis() const { return ccf_analysis_; }
+  inline int limit_order() const { return limit_order_; }
+  inline double mission_time() const { return mission_time_; }
+  inline int num_sums() const { return num_sums_; }
+  inline double cut_off() const { return cut_off_; }
+  inline const std::string& approx() const { return approx_; }
+  inline int seed() const { return seed_; }
+  inline int num_trials() const { return num_trials_; }
+  inline int num_quantiles() const { return num_quantiles_; }
+  inline int num_bins() const { return num_bins_; }
 
  private:
-  bool probability_analysis_;  ///< A flag for probability analysis.
-  bool importance_analysis_;  ///< A flag for importance analysis.
-  bool uncertainty_analysis_;  ///< A flag for uncertainty analysis.
-  bool ccf_analysis_;  ///< A flag for common-cause analysis.
-  int limit_order_;  ///< Limit on the order of minimal cut sets.
-  double mission_time_;  ///< System mission time.
-  int num_sums_;  ///< The number of sums in probability calculation series.
-  double cut_off_;  ///< The cut-off probability for cut sets.
-  std::string approx_;  ///< The approximation to be applied for calculations.
-  int seed_;  ///< The seed for the pseudo-random number generator.
-  int num_trials_;  ///< The number of trials for Monte Carlo simulations.
+  bool probability_analysis_ = false;  ///< A flag for probability analysis.
+  bool importance_analysis_ = false;  ///< A flag for importance analysis.
+  bool uncertainty_analysis_ = false;  ///< A flag for uncertainty analysis.
+  bool ccf_analysis_ = false;  ///< A flag for common-cause analysis.
+  int limit_order_ = 20;  ///< Limit on the order of minimal cut sets.
+  double mission_time_ = 8760;  ///< System mission time.
+  int num_sums_ = 7;  ///< The number of sums in probability calculation series.
+  double cut_off_ = 1e-8;  ///< The cut-off probability for cut sets.
+  std::string approx_ = "no";  ///< The approximations for calculations.
+  int seed_ = 0;  ///< The seed for the pseudo-random number generator.
+  int num_trials_ = 1e3;  ///< The number of trials for Monte Carlo simulations.
+  int num_quantiles_ = 20;  ///< The number of quantiles for distributions.
+  int num_bins_ = 20;  ///< The number of bins for histograms.
 };
 
 }  // namespace scram

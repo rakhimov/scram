@@ -14,9 +14,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file expression.cc
 /// Implementation of various expressions
 /// for basic event probability description.
+
 #include "expression.h"
 
 #include <boost/algorithm/string.hpp>
@@ -26,16 +28,31 @@
 
 namespace scram {
 
+Expression::Expression(const std::vector<ExpressionPtr>& args) : args_(args) {}
+
+void Expression::Reset() noexcept {
+  if (!Expression::sampled_) return;
+  Expression::sampled_ = false;
+  for (ExpressionPtr arg : args_) arg->Reset();
+}
+
+bool Expression::IsConstant() noexcept {
+  for (ExpressionPtr arg : args_) {
+    if (!arg->IsConstant()) return false;
+  }
+  return true;
+}
+
 void Expression::GatherNodesAndConnectors() {
   assert(nodes_.empty());
   assert(connectors_.empty());
   std::vector<ExpressionPtr>::iterator it;
   for (it = args_.begin(); it != args_.end(); ++it) {
-    Parameter* ptr = dynamic_cast<Parameter*>(&**it);
+    Parameter* ptr = dynamic_cast<Parameter*>(it->get());
     if (ptr) {
       nodes_.push_back(ptr);
     } else {
-      connectors_.push_back(&**it);
+      connectors_.push_back(it->get());
     }
   }
   gather_ = false;
@@ -65,7 +82,7 @@ void ExponentialExpression::Validate() {
   }
 }
 
-double ExponentialExpression::Sample() {
+double ExponentialExpression::Sample() noexcept {
   if (!Expression::sampled_) {
     Expression::sampled_ = true;
     Expression::sampled_value_ =  1 - std::exp(-(lambda_->Sample() *
@@ -94,7 +111,7 @@ void GlmExpression::Validate() {
   }
 }
 
-double GlmExpression::Sample() {
+double GlmExpression::Sample() noexcept {
   if (!Expression::sampled_) {
     Expression::sampled_ = true;
     double gamma = gamma_->Sample();
@@ -137,7 +154,7 @@ void WeibullExpression::Validate() {
   }
 }
 
-double WeibullExpression::Sample() {
+double WeibullExpression::Sample() noexcept {
   if (!Expression::sampled_) {
     Expression::sampled_ = true;
     double alpha = alpha_->Sample();
@@ -151,6 +168,8 @@ double WeibullExpression::Sample() {
   return Expression::sampled_value_;
 }
 
+RandomDeviate::~RandomDeviate() {}  // Empty destructor for the abstract class.
+
 void UniformDeviate::Validate() {
   if (min_->Mean() >= max_->Mean()) {
     throw InvalidArgument("Min value is more than max for Uniform"
@@ -161,7 +180,7 @@ void UniformDeviate::Validate() {
   }
 }
 
-double UniformDeviate::Sample() {
+double UniformDeviate::Sample() noexcept {
   if (!Expression::sampled_) {
     Expression::sampled_ = true;
     Expression::sampled_value_ = Random::UniformRealGenerator(min_->Sample(),
@@ -178,7 +197,7 @@ void NormalDeviate::Validate() {
   }
 }
 
-double NormalDeviate::Sample() {
+double NormalDeviate::Sample() noexcept {
   if (!Expression::sampled_) {
     Expression::sampled_ = true;
     Expression::sampled_value_ =  Random::NormalGenerator(mean_->Sample(),
@@ -188,14 +207,17 @@ double NormalDeviate::Sample() {
 }
 
 void LogNormalDeviate::Validate() {
-  if (level_->Mean() != 0.95) {
-    throw InvalidArgument("The confidence level is expected to be 0.95.");
+  if (level_->Mean() <= 0 || level_->Mean() >= 1) {
+    throw InvalidArgument("The confidence level is not within (0, 1).");
   } else if (ef_->Mean() <= 1) {
     throw InvalidArgument("The Error Factor for Log-Normal distribution"
                           " cannot be less than 1.");
   } else if (mean_->Mean() <= 0) {
     throw InvalidArgument("The mean of Log-Normal distribution cannot be"
                           " negative or zero.");
+  } else if (level_->Min() <= 0 || level_->Max() >= 1) {
+    throw InvalidArgument("The confidence level doesn't sample within (0, 1).");
+
   } else if (ef_->Min() <= 1) {
     throw InvalidArgument("The Sampled Error Factor for Log-Normal"
                           " distribution cannot be less than 1.");
@@ -205,10 +227,14 @@ void LogNormalDeviate::Validate() {
   }
 }
 
-double LogNormalDeviate::Sample() {
+double LogNormalDeviate::Sample() noexcept {
   if (!Expression::sampled_) {
     Expression::sampled_ = true;
-    double sigma = std::log(ef_->Sample()) / 1.645;
+    double l = level_->Sample();
+    double p = l + (1 - l) / 2;
+    double z = std::sqrt(2) * boost::math::erfc_inv(2 * p);
+    z = std::abs(z);
+    double sigma = std::log(ef_->Sample()) / z;
     double mu = std::log(mean_->Sample()) - std::pow(sigma, 2) / 2;
     Expression::sampled_value_ =  Random::LogNormalGenerator(mu, sigma);
   }
@@ -231,7 +257,7 @@ void GammaDeviate::Validate() {
   }
 }
 
-double GammaDeviate::Sample() {
+double GammaDeviate::Sample() noexcept {
   if (!Expression::sampled_) {
     Expression::sampled_ = true;
     Expression::sampled_value_ = Random::GammaGenerator(k_->Sample(),
@@ -256,7 +282,7 @@ void BetaDeviate::Validate() {
   }
 }
 
-double BetaDeviate::Sample() {
+double BetaDeviate::Sample() noexcept {
   if (!Expression::sampled_) {
     Expression::sampled_ = true;
     Expression::sampled_value_ = Random::BetaGenerator(alpha_->Sample(),
@@ -284,7 +310,7 @@ void Histogram::Validate() {
   CheckWeights(weights_);
 }
 
-double Histogram::Mean() {
+double Histogram::Mean() noexcept {
   double sum_weights = 0;
   double sum_product = 0;
   double lower_bound = 0;
@@ -297,17 +323,18 @@ double Histogram::Mean() {
   return sum_product / (lower_bound * sum_weights);
 }
 
-double Histogram::Sample() {
+double Histogram::Sample() noexcept {
   if (!Expression::sampled_) {
     Expression::sampled_ = true;
-    std::vector<double> b;
-    b.push_back(0);  // The initial point.
-    std::vector<double> w;
+    std::vector<double> sampled_boundaries;
+    sampled_boundaries.push_back(0);  // The initial point.
+    std::vector<double> sampled_weights;
     for (int i = 0; i < boundaries_.size(); ++i) {
-      b.push_back(boundaries_[i]->Sample());
-      w.push_back(weights_[i]->Sample());
+      sampled_boundaries.push_back(boundaries_[i]->Sample());
+      sampled_weights.push_back(weights_[i]->Sample());
     }
-    Expression::sampled_value_ = Random::HistogramGenerator(w, b);
+    Expression::sampled_value_ = Random::HistogramGenerator(sampled_boundaries,
+                                                            sampled_weights);
   }
   return Expression::sampled_value_;
 }

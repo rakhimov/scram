@@ -14,14 +14,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file xml_parser.h
 /// XML Parser.
+
 #ifndef SCRAM_SRC_XML_PARSER_H_
 #define SCRAM_SRC_XML_PARSER_H_
 
+#include <memory>
 #include <sstream>
 
-#include <boost/shared_ptr.hpp>
 #include <libxml++/libxml++.h>
 
 namespace scram {
@@ -39,7 +41,7 @@ class XMLParser {
   explicit XMLParser(const std::stringstream& xml_input_snippet);
 
   /// Resets the parser.
-  ~XMLParser();
+  ~XMLParser() noexcept;
 
   /// Validates the file against a schema.
   ///
@@ -56,7 +58,7 @@ class XMLParser {
   }
 
  private:
-  boost::shared_ptr<xmlpp::DomParser> parser_;  ///< File parser.
+  std::unique_ptr<xmlpp::DomParser> parser_;  ///< File parser.
 };
 
 }  // namespace scram

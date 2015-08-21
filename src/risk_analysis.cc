@@ -14,14 +14,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file risk_analysis.cc
 /// Implementation of risk analysis handler.
+
 #include "risk_analysis.h"
 
 #include <fstream>
 #include <set>
-
-#include <boost/unordered_map.hpp>
+#include <unordered_map>
+#include <utility>
 
 #include "error.h"
 #include "event.h"
@@ -34,15 +36,14 @@
 
 namespace scram {
 
-RiskAnalysis::RiskAnalysis(const ModelPtr& model, const Settings& settings) {
-  model_ = model;
-  settings_ = settings;
-}
+RiskAnalysis::RiskAnalysis(const ModelPtr& model, const Settings& settings)
+    : model_(model),
+      kSettings_(settings) {}
 
 void RiskAnalysis::GraphingInstructions() {
   CLOCK(graph_time);
   LOG(DEBUG1) << "Producing graphing instructions";
-  boost::unordered_map<std::string, FaultTreePtr>::const_iterator it;
+  std::unordered_map<std::string, FaultTreePtr>::const_iterator it;
   for (it = model_->fault_trees().begin(); it != model_->fault_trees().end();
        ++it) {
     const std::vector<GatePtr>& top_events = it->second->top_events();
@@ -55,7 +56,7 @@ void RiskAnalysis::GraphingInstructions() {
         throw IOError(output +  " : Cannot write the graphing file.");
       }
       Grapher gr = Grapher();
-      gr.GraphFaultTree(*it_top, settings_.probability_analysis_, of);
+      gr.GraphFaultTree(*it_top, kSettings_.probability_analysis(), of);
       of.flush();
     }
   }
@@ -65,42 +66,32 @@ void RiskAnalysis::GraphingInstructions() {
 void RiskAnalysis::Analyze() {
   // Set the seed for the pseudo-random number generator if given explicitly.
   // Otherwise it defaults to the current time.
-  if (settings_.seed_ >= 0) Random::seed(settings_.seed_);
+  if (kSettings_.seed() >= 0) Random::seed(kSettings_.seed());
 
-  boost::unordered_map<std::string, FaultTreePtr>::const_iterator it;
-  for (it = model_->fault_trees().begin(); it != model_->fault_trees().end();
-       ++it) {
-    const std::vector<GatePtr>* top_events = &it->second->top_events();
-    std::vector<GatePtr>::const_iterator it_top;
-    for (it_top = top_events->begin(); it_top != top_events->end(); ++it_top) {
-      GatePtr target = *it_top;
+  const std::unordered_map<std::string, FaultTreePtr>& fault_trees =
+      model_->fault_trees();
+  for (const auto& ft : fault_trees) {
+    for (const GatePtr& target : ft.second->top_events()) {
       std::string base_path =
           target->is_public() ? "" : target->base_path() + ".";
       std::string name = base_path + target->name();  // Analysis ID.
 
-      FaultTreeAnalysisPtr fta(new FaultTreeAnalysis(*it_top,
-                                                     settings_.limit_order_,
-                                                     settings_.ccf_analysis_));
+      FaultTreeAnalysisPtr fta(new FaultTreeAnalysis(target, kSettings_));
       fta->Analyze();
-      fault_tree_analyses_.insert(std::make_pair(name, fta));
+      fault_tree_analyses_.emplace(name, fta);
 
-      if (settings_.probability_analysis_) {
-        ProbabilityAnalysisPtr pa(
-            new ProbabilityAnalysis(settings_.approx_, settings_.num_sums_,
-                                    settings_.cut_off_,
-                                    settings_.importance_analysis_));
+      if (kSettings_.probability_analysis()) {
+        ProbabilityAnalysisPtr pa(new ProbabilityAnalysis(kSettings_));
         pa->UpdateDatabase(fta->mcs_basic_events());
         pa->Analyze(fta->min_cut_sets());
-        probability_analyses_.insert(std::make_pair(name, pa));
+        probability_analyses_.emplace(name, pa);
       }
 
-      if (settings_.uncertainty_analysis_) {
-        UncertaintyAnalysisPtr ua(
-            new UncertaintyAnalysis(settings_.num_sums_, settings_.cut_off_,
-                                    settings_.num_trials_));
+      if (kSettings_.uncertainty_analysis()) {
+        UncertaintyAnalysisPtr ua(new UncertaintyAnalysis(kSettings_));
         ua->UpdateDatabase(fta->mcs_basic_events());
         ua->Analyze(fta->min_cut_sets());
-        uncertainty_analyses_.insert(std::make_pair(name, ua));
+        uncertainty_analyses_.emplace(name, ua);
       }
     }
   }
@@ -111,57 +102,54 @@ void RiskAnalysis::Report(std::ostream& out) {
 
   // Create XML or use already created document.
   xmlpp::Document* doc = new xmlpp::Document();
-  rp.SetupReport(model_, settings_, doc);
+  rp.SetupReport(model_, kSettings_, doc);
 
   // Container for excess primary events not in the analysis.
   // This container is for warning
   // in case the input is formed not as intended.
-  typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
-  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
-  std::set<PrimaryEventPtr> orphan_primary_events;
-  boost::unordered_map<std::string, BasicEventPtr>::const_iterator it_b;
+  typedef std::shared_ptr<const PrimaryEvent> PrimaryEventPtr;
+  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
+  std::vector<PrimaryEventPtr> orphan_primary_events;
+  std::unordered_map<std::string, BasicEventPtr>::const_iterator it_b;
   for (it_b = model_->basic_events().begin();
        it_b != model_->basic_events().end(); ++it_b) {
-    if (it_b->second->orphan()) orphan_primary_events.insert(it_b->second);
+    if (it_b->second->orphan()) orphan_primary_events.push_back(it_b->second);
   }
-  typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
-  boost::unordered_map<std::string, HouseEventPtr>::const_iterator it_h;
+  typedef std::shared_ptr<HouseEvent> HouseEventPtr;
+  std::unordered_map<std::string, HouseEventPtr>::const_iterator it_h;
   for (it_h = model_->house_events().begin();
        it_h != model_->house_events().end(); ++it_h) {
-    if (it_h->second->orphan()) orphan_primary_events.insert(it_h->second);
+    if (it_h->second->orphan()) orphan_primary_events.push_back(it_h->second);
   }
-  if (!orphan_primary_events.empty())
-    rp.ReportOrphanPrimaryEvents(orphan_primary_events, doc);
+  rp.ReportOrphanPrimaryEvents(orphan_primary_events, doc);
 
   // Container for unused parameters not in the analysis.
   // This container is for warning in case the input is formed not as intended.
-  typedef boost::shared_ptr<Parameter> ParameterPtr;
-  std::set<ParameterPtr> unused_parameters;
-  boost::unordered_map<std::string, ParameterPtr>::const_iterator it_v;
+  typedef std::shared_ptr<Parameter> ParameterPtr;
+  std::vector<std::shared_ptr<const Parameter>> unused_parameters;
+  std::unordered_map<std::string, ParameterPtr>::const_iterator it_v;
   for (it_v = model_->parameters().begin(); it_v != model_->parameters().end();
        ++it_v) {
-    if (it_v->second->unused()) unused_parameters.insert(it_v->second);
+    if (it_v->second->unused()) unused_parameters.push_back(it_v->second);
   }
-
-  if (!unused_parameters.empty())
-    rp.ReportUnusedParameters(unused_parameters, doc);
+  rp.ReportUnusedParameters(unused_parameters, doc);
 
   std::map<std::string, FaultTreeAnalysisPtr>::iterator it;
   for (it = fault_tree_analyses_.begin(); it != fault_tree_analyses_.end();
        ++it) {
     ProbabilityAnalysisPtr prob_analysis;  // Null pointer if no analysis.
-    if (settings_.probability_analysis_) {
+    if (kSettings_.probability_analysis()) {
       prob_analysis = probability_analyses_.find(it->first)->second;
     }
     rp.ReportFta(it->first, fault_tree_analyses_.find(it->first)->second,
                  prob_analysis, doc);
 
-    if (settings_.importance_analysis_) {
+    if (kSettings_.importance_analysis()) {
       rp.ReportImportance(it->first,
                           probability_analyses_.find(it->first)->second, doc);
     }
 
-    if (settings_.uncertainty_analysis_) {
+    if (kSettings_.uncertainty_analysis()) {
         rp.ReportUncertainty(it->first,
                              uncertainty_analyses_.find(it->first)->second,
                              doc);

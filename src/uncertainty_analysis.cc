@@ -14,45 +14,41 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file uncertainty_analysis.cc
 /// Implements the functionality to run Monte Carlo simulations.
+
 #include "uncertainty_analysis.h"
 
 #include <cmath>
 
-#include <boost/algorithm/string.hpp>
 #include <boost/accumulators/accumulators.hpp>
-#include <boost/accumulators/statistics/stats.hpp>
-#include <boost/accumulators/statistics/mean.hpp>
-#include <boost/accumulators/statistics/variance.hpp>
 #include <boost/accumulators/statistics/density.hpp>
+#include <boost/accumulators/statistics/extended_p_square_quantile.hpp>
+#include <boost/accumulators/statistics/mean.hpp>
+#include <boost/accumulators/statistics/stats.hpp>
+#include <boost/accumulators/statistics/variance.hpp>
 
 #include "error.h"
 #include "logger.h"
 
 namespace scram {
 
-UncertaintyAnalysis::UncertaintyAnalysis(int num_sums, double cut_off,
-                                         int num_trials)
-    : ProbabilityAnalysis::ProbabilityAnalysis("no", num_sums, cut_off),
-      mean_(-1),
-      sigma_(-1),
-      analysis_time_(-1) {
-  if (num_trials < 1) {
-    std::string msg = "The number of trials for uncertainty analysis cannot"
-                      " be fewer than 1.";
-    throw InvalidArgument(msg);
-  }
-  num_trials_ = num_trials;
-}
+UncertaintyAnalysis::UncertaintyAnalysis(const Settings& settings)
+    : ProbabilityAnalysis::ProbabilityAnalysis(settings),
+      kSettings_(settings),
+      mean_(0),
+      sigma_(0),
+      error_factor_(1),
+      analysis_time_(-1) {}
 
 void UncertaintyAnalysis::UpdateDatabase(
-    const boost::unordered_map<std::string, BasicEventPtr>& basic_events) {
+    const std::unordered_map<std::string, BasicEventPtr>& basic_events) {
   ProbabilityAnalysis::UpdateDatabase(basic_events);
 }
 
 void UncertaintyAnalysis::Analyze(
-    const std::set< std::set<std::string> >& min_cut_sets) {
+    const std::set< std::set<std::string> >& min_cut_sets) noexcept {
   min_cut_sets_ = min_cut_sets;
 
   // Special case of unity with empty sets.
@@ -60,90 +56,111 @@ void UncertaintyAnalysis::Analyze(
     warnings_ += "Uncertainty for UNITY case.";
     mean_ = 1;
     sigma_ = 0;
-    confidence_interval_ = std::make_pair(1, 1);
-    distribution_.push_back(std::make_pair(1, 1));
+    confidence_interval_ = {1, 1};
+    distribution_.emplace_back(1, 1);
+    quantiles_.emplace_back(1);
     return;
   }
 
+
+  LOG(DEBUG3) << "Indexing minimal cut sets...";
   ProbabilityAnalysis::IndexMcs(min_cut_sets_);
+  LOG(DEBUG3) << "Finished indexing minimal cut sets!";
 
   using boost::container::flat_set;
   std::set< flat_set<int> > iset;
 
+  LOG(DEBUG3) << "Getting probabilities of minimal cut sets...";
   std::vector< flat_set<int> >::const_iterator it_min;
   for (it_min = imcs_.begin(); it_min != imcs_.end(); ++it_min) {
-    if (ProbabilityAnalysis::ProbAnd(*it_min) > cut_off_) {
+    if (ProbabilityAnalysis::ProbAnd(*it_min) > kSettings_.cut_off()) {
       iset.insert(*it_min);
     }
   }
+  LOG(DEBUG3) << "Got MCS probabilities!";
+  LOG(DEBUG3) << "Cut sets above cut-off level: " << iset.size();
 
   CLOCK(analysis_time);
-  // Maximum number of sums in the series.
-  if (num_sums_ > iset.size()) num_sums_ = iset.size();
-  // Generate the equation.
-  ProbabilityAnalysis::ProbOr(1, num_sums_, &iset);
+  CLOCK(sample_time);
+  LOG(DEBUG3) << "Sampling probabilities...";
+  if (kSettings_.approx() != "mcub") {
+    // Generate the equation.
+    int num_sums = kSettings_.num_sums();
+    if (kSettings_.approx() == "rare-event") num_sums = 1;
+    ProbabilityAnalysis::ProbOr(1, num_sums, &iset);
+  }
   // Sample probabilities and generate data.
   UncertaintyAnalysis::Sample();
+  LOG(DEBUG3) << "Finished sampling probabilities in " << DUR(sample_time);
 
+  CLOCK(stat_time);
+  LOG(DEBUG3) << "Calculating statistics...";
   // Perform statistical analysis.
   UncertaintyAnalysis::CalculateStatistics();
+  LOG(DEBUG3) << "Finished calculating statistics in " << DUR(stat_time);
 
   analysis_time_ = DUR(analysis_time);
 }
 
-void UncertaintyAnalysis::Sample() {
+void UncertaintyAnalysis::Sample() noexcept {
+  sampled_results_.clear();
+  sampled_results_.reserve(kSettings_.num_trials());
+
   using boost::container::flat_set;
   // Detect constant basic events.
   std::vector<int> basic_events;
   UncertaintyAnalysis::FilterUncertainEvents(&basic_events);
-  for (int i = 0; i < num_trials_; ++i) {
+  for (int i = 0; i < kSettings_.num_trials(); ++i) {
     // Reset distributions.
-    std::vector<int>::iterator it_b;
-    // The first element is dummy.
-    for (it_b = basic_events.begin(); it_b != basic_events.end(); ++it_b) {
-      int_to_basic_[*it_b]->Reset();
+    for (int index : basic_events) {
+      int_to_basic_[index]->Reset();
     }
     // Sample all basic events with distributions.
-    for (it_b = basic_events.begin(); it_b != basic_events.end(); ++it_b) {
-      double prob = int_to_basic_[*it_b]->SampleProbability();
+    for (int index : basic_events) {
+      double prob = int_to_basic_[index]->SampleProbability();
       assert(prob >= 0 && prob <= 1);
-      iprobs_[*it_b] = prob;
+      iprobs_[index] = prob;
     }
-    double pos = 0;
-    std::vector< flat_set<int> >::iterator it_s;
-    int j = 0;  // Position of the terms.
-    for (it_s = pos_terms_.begin(); it_s != pos_terms_.end(); ++it_s) {
-      if (it_s->empty()) {
-        pos += pos_const_[j];
-      } else {
-        pos += ProbabilityAnalysis::ProbAnd(*it_s) * pos_const_[j];
+    double result = 0;
+    if (kSettings_.approx() == "mcub") {
+      result = ProbabilityAnalysis::ProbMcub(imcs_);
+    } else {
+      double pos = 0;
+      int j = 0;  // Position of the terms.
+      for (const flat_set<int>& cut_set : pos_terms_) {
+        if (cut_set.empty()) {
+          pos += pos_const_[j];
+        } else {
+          pos += ProbabilityAnalysis::ProbAnd(cut_set) * pos_const_[j];
+        }
+        ++j;
       }
-      ++j;
-    }
-    double neg = 0;
-    j = 0;
-    for (it_s = neg_terms_.begin(); it_s != neg_terms_.end(); ++it_s) {
-      if (it_s->empty()) {
-        neg += neg_const_[j];
-      } else {
-        neg += ProbabilityAnalysis::ProbAnd(*it_s) * neg_const_[j];
+      double neg = 0;
+      j = 0;
+      for (const flat_set<int>& cut_set : neg_terms_) {
+        if (cut_set.empty()) {
+          neg += neg_const_[j];
+        } else {
+          neg += ProbabilityAnalysis::ProbAnd(cut_set) * neg_const_[j];
+        }
+        ++j;
       }
-      ++j;
+      assert(pos > neg);
+      result = pos - neg;
     }
-    sampled_results_.push_back(pos - neg);
+    sampled_results_.push_back(result);
   }
 }
 
 void UncertaintyAnalysis::FilterUncertainEvents(
-    std::vector<int>* basic_events) {
+    std::vector<int>* basic_events) noexcept {
   using boost::container::flat_set;
-  std::set<int> const_events;
-  std::set<int>::const_iterator it;
-  for (it = mcs_basic_events_.begin(); it != mcs_basic_events_.end(); ++it) {
-    if (int_to_basic_[*it]->IsConstant()) {
-      const_events.insert(const_events.end(), *it);
+  std::set<int> const_events;  // Does not need sampling.
+  for (int index : mcs_basic_events_) {
+    if (int_to_basic_[index]->IsConstant()) {
+      const_events.insert(const_events.end(), index);
     } else {
-      basic_events->push_back(*it);
+      basic_events->push_back(index);
     }
   }
   // Pre-calculate for constant events and remove them from sets.
@@ -179,25 +196,45 @@ void UncertaintyAnalysis::FilterUncertainEvents(
   }
 }
 
-void UncertaintyAnalysis::CalculateStatistics() {
+void UncertaintyAnalysis::CalculateStatistics() noexcept {
   using namespace boost;
   using namespace boost::accumulators;
+  typedef accumulator_set<double, stats<tag::extended_p_square_quantile> >
+      accumulator_q;
+  quantiles_.clear();
+  int num_quantiles = kSettings_.num_quantiles();
+  double delta = 1.0 / num_quantiles;
+  for (int i = 0; i < num_quantiles; ++i) {
+    quantiles_.push_back(delta * (i + 1));
+  }
+  accumulator_q acc_q(extended_p_square_probabilities = quantiles_);
+
+  int num_trials = kSettings_.num_trials();
   accumulator_set<double, stats<tag::mean, tag::variance, tag::density> >
-      acc(tag::density::num_bins = 20, tag::density::cache_size = num_trials_);
+      acc(tag::density::num_bins = kSettings_.num_bins(),
+          tag::density::cache_size = num_trials);
+
   std::vector<double>::iterator it;
   for (it = sampled_results_.begin(); it != sampled_results_.end(); ++it) {
     acc(*it);
+    acc_q(*it);
   }
   typedef iterator_range<std::vector<std::pair<double, double> >::iterator >
       histogram_type;
   histogram_type hist = density(acc);
-  for (int i = 0; i < hist.size(); i++) {
+  for (int i = 1; i < hist.size(); i++) {
     distribution_.push_back(hist[i]);
   }
   mean_ = boost::accumulators::mean(acc);
-  sigma_ = std::sqrt(variance(acc));
-  confidence_interval_.first = mean_ - sigma_ * 1.96 / std::sqrt(num_trials_);
-  confidence_interval_.second = mean_ + sigma_ * 1.96 / std::sqrt(num_trials_);
+  double var = variance(acc);
+  sigma_ = std::sqrt(var);
+  error_factor_ = std::exp(1.96 * sigma_);
+  confidence_interval_.first = mean_ - sigma_ * 1.96 / std::sqrt(num_trials);
+  confidence_interval_.second = mean_ + sigma_ * 1.96 / std::sqrt(num_trials);
+
+  for (int i = 0; i < num_quantiles; ++i) {
+    quantiles_[i] = quantile(acc_q, quantile_probability = quantiles_[i]);
+  }
 }
 
 }  // namespace scram

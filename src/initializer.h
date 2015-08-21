@@ -14,24 +14,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file initializer.h
 /// A facility that processes input files into analysis constructs.
+
 #ifndef SCRAM_SRC_INITIALIZER_H_
 #define SCRAM_SRC_INITIALIZER_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
 
-#include <boost/shared_ptr.hpp>
 #include <libxml++/libxml++.h>
 
 #include "event.h"
 #include "model.h"
 #include "settings.h"
+#include "xml_parser.h"
 
 namespace scram {
 
@@ -41,7 +44,6 @@ class Component;
 class CcfGroup;
 class Expression;
 class Formula;
-class XMLParser;
 
 /// @class Initializer
 /// This class operates on input files
@@ -52,7 +54,7 @@ class XMLParser;
 /// for future use or analysis.
 class Initializer {
  public:
-  typedef boost::shared_ptr<Model> ModelPtr;
+  typedef std::shared_ptr<Model> ModelPtr;
 
   /// Prepares common information to be used by
   /// the future input file constructs,
@@ -76,18 +78,18 @@ class Initializer {
   inline ModelPtr model() const { return model_; }
 
  private:
-  typedef boost::shared_ptr<Element> ElementPtr;
-  typedef boost::shared_ptr<Event> EventPtr;
-  typedef boost::shared_ptr<Gate> GatePtr;
-  typedef boost::shared_ptr<Formula> FormulaPtr;
-  typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
-  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
-  typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
-  typedef boost::shared_ptr<CcfGroup> CcfGroupPtr;
-  typedef boost::shared_ptr<FaultTree> FaultTreePtr;
-  typedef boost::shared_ptr<Component> ComponentPtr;
-  typedef boost::shared_ptr<Expression> ExpressionPtr;
-  typedef boost::shared_ptr<Parameter> ParameterPtr;
+  typedef std::shared_ptr<Element> ElementPtr;
+  typedef std::shared_ptr<Event> EventPtr;
+  typedef std::shared_ptr<Gate> GatePtr;
+  typedef std::unique_ptr<Formula> FormulaPtr;  ///< Unique Formula.
+  typedef std::shared_ptr<PrimaryEvent> PrimaryEventPtr;
+  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
+  typedef std::shared_ptr<HouseEvent> HouseEventPtr;
+  typedef std::shared_ptr<CcfGroup> CcfGroupPtr;
+  typedef std::shared_ptr<Expression> ExpressionPtr;
+  typedef std::shared_ptr<Parameter> ParameterPtr;
+  typedef std::unique_ptr<FaultTree> FaultTreePtr;  ///< Unique fault tree.
+  typedef std::unique_ptr<Component> ComponentPtr;  ///< Unique component.
 
   /// Map of valid units for parameters.
   static const std::map<std::string, Units> kUnits_;
@@ -123,7 +125,7 @@ class Initializer {
   /// @param[in] element_node XML element.
   /// @param[out] element The object that needs attributes and label.
   void AttachLabelAndAttributes(const xmlpp::Element* element_node,
-                                const ElementPtr& element);
+                                Element* element);
 
   /// Defines a fault tree for the analysis.
   ///
@@ -153,15 +155,15 @@ class Initializer {
   /// like gates, events, parameters.
   ///
   /// @param[in] ft_node XML element defining the fault tree or component.
+  /// @param[in] base_path Series of ancestor containers in the path with dots.
   /// @param[in,out] component The component or fault tree container
   ///                          that is the owner of the data.
-  /// @param[in] base_path Series of ancestor containers in the path with dots.
   ///
   /// @throws ValidationError There are issues with registering and defining
   ///                         the component's data like gates and events.
   void RegisterFaultTreeData(const xmlpp::Element* ft_node,
-                             const ComponentPtr& component,
-                             const std::string& base_path);
+                             const std::string& base_path,
+                             Component* component);
 
   /// Processes model data with definitions of events and analysis.
   ///
@@ -202,13 +204,13 @@ class Initializer {
   /// Processes the arguments of a formula with nodes and formulas.
   ///
   /// @param[in] formula_node The XML element with children as arguments.
-  /// @param[in,out] formula The formula to be defined by the arguments.
   /// @param[in] base_path Series of ancestor containers in the path with dots.
+  /// @param[in,out] formula The formula to be defined by the arguments.
   ///
   /// @throws ValidationError Repeated arguments are identified.
   void ProcessFormula(const xmlpp::Element* formula_node,
-                      const FormulaPtr& formula,
-                      const std::string& base_path);
+                      const std::string& base_path,
+                      Formula* formula);
 
   /// Registers a basic event for later definition.
   ///
@@ -393,13 +395,13 @@ class Initializer {
 
   ModelPtr model_;  ///< Analysis model with constructs.
   Settings settings_;  ///< Settings for analysis.
-  boost::shared_ptr<MissionTime> mission_time_;  ///< Mission time expression.
+  std::shared_ptr<MissionTime> mission_time_;  ///< Mission time expression.
 
   /// The main schema for validation.
   static std::stringstream schema_;
 
   /// Parsers with all documents saved for later access.
-  std::vector<boost::shared_ptr<XMLParser> > parsers_;
+  std::vector<std::unique_ptr<XMLParser> > parsers_;
 
   /// Map roots of documents to files. This is for error reporting.
   std::map<const xmlpp::Node*, std::string> doc_to_file_;

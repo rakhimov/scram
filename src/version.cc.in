@@ -14,11 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file version.cc.in
 /// Implementations of functions returning
 /// the version information
 /// of the core and dependencies.
 /// Some information is filled by CMake and Git.
+
 #include "version.h"
 
 #include <boost/version.hpp>

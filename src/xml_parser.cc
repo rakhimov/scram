@@ -14,10 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file xml_parser.cc
 /// Implementation of XML Parser.
+
 #include "xml_parser.h"
 
+#include <cassert>
 #include <string>
 
 #include "error.h"
@@ -26,7 +29,7 @@
 namespace scram {
 
 XMLParser::XMLParser(const std::stringstream& xml_input_snippet) {
-  parser_ = boost::shared_ptr<xmlpp::DomParser>(new xmlpp::DomParser());
+  parser_ = std::unique_ptr<xmlpp::DomParser>(new xmlpp::DomParser());
   try {
     parser_->parse_memory(xml_input_snippet.str());
     assert(parser_->get_document());
@@ -35,7 +38,7 @@ XMLParser::XMLParser(const std::stringstream& xml_input_snippet) {
   }
 }
 
-XMLParser::~XMLParser() { parser_.reset(); }
+XMLParser::~XMLParser() noexcept { parser_.reset(); }
 
 void XMLParser::Validate(const std::stringstream& xml_schema_snippet) {
   RelaxNGValidator validator;

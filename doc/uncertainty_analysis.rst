@@ -8,14 +8,13 @@ Pseudo-Random Number Generator
 Uncertainty analysis employs Monte Carlo simulations
 to calculate the uncertainty propagation in probabilities.
 For Monte Carlo simulations,
-`MT 19937`_ Mersenne Twister Pseudo-random number generator is provided by Boost_.
+SCRAM uses `MT 19937`_ Mersenne Twister Pseudo-random number generator.
 Mersenne Twister PRNG is well tested and well suited for Monte Carlo simulations.
 The seed of the PRNG is usually the system time at the runtime,
 but this parameter can be fixed by a user,
 for example, to test the analysis tool.
 
 .. _MT 19937: https://en.wikipedia.org/wiki/Mersenne_twister
-.. _Boost: http://www.boost.org/doc/libs/1_56_0/doc/html/boost_random/reference.html
 
 
 Monte Carlo (MC) Simulations

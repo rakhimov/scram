@@ -29,8 +29,6 @@ Deviations from the GCSG
 - Prefer streams to ``printf-like`` routines
 - Name mutator functions without ``set_`` prefix
 - Multiple inheritance is allowed
-- C++11 features are currently not allowed.
-  Only Boost features are used.
 
 
 Monitoring Code Quality

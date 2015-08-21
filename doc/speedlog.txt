@@ -111,4 +111,4 @@ Debug build:
 
 Release build:
 --------------
-- Parsing and Validation    23s  |
+- Parsing and Validation    23s  |  26s

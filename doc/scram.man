@@ -1,0 +1,76 @@
+.TH SCRAM "1" "August 2015" "SCRAM 0.9.0" "SCRAM Manual"
+.SH NAME
+SCRAM \- Command-line Risk Analysis Multi-tool
+.SH SYNOPSIS
+.B scram
+[\fIinput-files\fR] [\fIoptions\fR]
+.SH OPTIONS
+.TP
+\fB\-\-version\fR
+Prints version information of SCRAM and its dependencies
+.TP
+\fB\-\-help\fR
+Prints the help message with a list of commands
+.TP
+\fB\-\-input\-files\fR arg
+Run with analysis constructs from XML input files
+.TP
+\fB\-\-config\-file\fR arg
+Run analysis with configurations from XML configuration file
+.TP
+\fB\-\-validate\fR
+Validate input and configuration files without analysis
+.TP
+\fB\-\-graph\fR
+Validate and produce graph without analysis
+.TP
+\fB\-\-probability\fR arg
+Perform probability analysis
+.TP
+\fB\-\-importance\fR arg
+Perform importance analysis
+.TP
+\fB\-\-uncertainty\fR arg
+Perform uncertainty analysis
+.TP
+\fB\-\-ccf\fR arg
+Perform common\-cause failure analysis
+.TP
+\fB\-\-rare\-event\fR
+Use the rare event approximation for probability
+calculations
+.TP
+\fB\-\-mcub\fR
+Use the MCUB approximation for probability
+calculations
+.HP
+\fB\-l\fR [ \fB\-\-limit\-order\fR ] arg Upper limit for cut set order
+.TP
+\fB\-s\fR [ \fB\-\-num\-sums\fR ] arg
+Set the number of sums in series expansion for probability
+calculations
+.TP
+\fB\-\-cut\-off\fR arg
+Cut\-off probability for cut sets
+.TP
+\fB\-\-mission\-time\fR arg
+Set the system mission time in hours for probability calculations
+.TP
+\fB\-\-num\-trials\fR arg
+Set the number of trials for Monte Carlo simulations
+.TP
+\fB\-\-num\-quantiles\fR arg
+Set the number of quantiles for distributions
+.TP
+\fB\-\-num\-bins\fR arg
+Set the number of bins for histograms
+.TP
+\fB\-\-seed\fR arg
+Set the seed for the pseudo\-random number generator
+.HP
+\fB\-o\fR [ \fB\-\-output\-path\fR ] arg Output path for reports
+.TP
+\fB\-\-verbosity\fR arg
+Set the log verbosity
+.SH "SEE ALSO"
+http://rakhimov.github.io/scram

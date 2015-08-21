@@ -14,18 +14,19 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file fault_tree.h
 /// Fault Tree and Component containers.
+
 #ifndef SCRAM_SRC_FAULT_TREE_H_
 #define SCRAM_SRC_FAULT_TREE_H_
 
+#include <memory>
 #include <set>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
-
-#include <boost/shared_ptr.hpp>
-#include <boost/unordered_map.hpp>
-#include <boost/unordered_set.hpp>
 
 #include "element.h"
 #include "event.h"
@@ -39,12 +40,12 @@ class Parameter;
 /// Component is for logical grouping of events, gates, and other components.
 class Component : public Element, public Role {
  public:
-  typedef boost::shared_ptr<Gate> GatePtr;
-  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
-  typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
-  typedef boost::shared_ptr<Parameter> ParameterPtr;
-  typedef boost::shared_ptr<CcfGroup> CcfGroupPtr;
-  typedef boost::shared_ptr<Component> ComponentPtr;
+  typedef std::shared_ptr<Gate> GatePtr;
+  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
+  typedef std::shared_ptr<HouseEvent> HouseEventPtr;
+  typedef std::shared_ptr<Parameter> ParameterPtr;
+  typedef std::shared_ptr<CcfGroup> CcfGroupPtr;
+  typedef std::unique_ptr<Component> ComponentPtr;
 
   /// Constructs a component assuming
   /// that it exists within some fault tree.
@@ -67,41 +68,41 @@ class Component : public Element, public Role {
 
   /// @returns The container of all gates of this component
   ///          with lower-case names as keys.
-  inline const boost::unordered_map<std::string, GatePtr>& gates() const {
+  inline const std::unordered_map<std::string, GatePtr>& gates() const {
     return gates_;
   }
 
   /// @returns The container of all basic events of this component
   ///          with lower-case names as keys.
-  inline const boost::unordered_map<std::string, BasicEventPtr>&
+  inline const std::unordered_map<std::string, BasicEventPtr>&
       basic_events() const {
     return basic_events_;
   }
 
   /// @returns The container of house events of this component
   ///          with lower-case names as keys.
-  inline const boost::unordered_map<std::string, HouseEventPtr>&
+  inline const std::unordered_map<std::string, HouseEventPtr>&
       house_events() const {
     return house_events_;
   }
 
   /// @returns The container of parameters of this component
   ///          with lower-case names as keys.
-  inline const boost::unordered_map<std::string, ParameterPtr>&
+  inline const std::unordered_map<std::string, ParameterPtr>&
       parameters() const {
     return parameters_;
   }
 
   /// @returns CCF groups belonging to this component
   ///          with lower-case names as keys.
-  inline const boost::unordered_map<std::string, CcfGroupPtr>&
+  inline const std::unordered_map<std::string, CcfGroupPtr>&
       ccf_groups() const {
     return ccf_groups_;
   }
 
   /// @returns Components in this component container
   ///          with lower-case names as keys.
-  inline const boost::unordered_map<std::string, ComponentPtr>&
+  inline const std::unordered_map<std::string, ComponentPtr>&
       components() const {
     return components_;
   }
@@ -142,12 +143,14 @@ class Component : public Element, public Role {
   ///                         or duplicate basic event members.
   void AddCcfGroup(const CcfGroupPtr& ccf_group);
 
-  /// Adds a component container into this component container.
+  /// Adds a member component container into this component container.
+  /// Components are unique.
+  /// The ownership is transfered to this component only.
   ///
   /// @param[in] component The CCF group to be added to this container.
   ///
   /// @throws ValidationError The component is already in this container.
-  void AddComponent(const ComponentPtr& component);
+  void AddComponent(ComponentPtr component);
 
  protected:
   /// Recursively traverses components
@@ -155,28 +158,28 @@ class Component : public Element, public Role {
   ///
   /// @param[out] gates Gates belonging to this component
   ///                   and its subcomponents.
-  void GatherGates(boost::unordered_set<GatePtr>* gates);
+  void GatherGates(std::unordered_set<GatePtr>* gates);
 
  private:
   std::string name_;  ///< The name of this component.
 
   /// Container for gates with lower-case names as keys.
-  boost::unordered_map<std::string, GatePtr> gates_;
+  std::unordered_map<std::string, GatePtr> gates_;
 
   /// Container for basic events with lower-case names as keys.
-  boost::unordered_map<std::string, BasicEventPtr> basic_events_;
+  std::unordered_map<std::string, BasicEventPtr> basic_events_;
 
   /// Container for house events with lower-case names as keys.
-  boost::unordered_map<std::string, HouseEventPtr> house_events_;
+  std::unordered_map<std::string, HouseEventPtr> house_events_;
 
   /// Container for parameters with lower-case names as keys.
-  boost::unordered_map<std::string, ParameterPtr> parameters_;
+  std::unordered_map<std::string, ParameterPtr> parameters_;
 
   /// Container for CCF groups with lower-case names as keys.
-  boost::unordered_map<std::string, CcfGroupPtr> ccf_groups_;
+  std::unordered_map<std::string, CcfGroupPtr> ccf_groups_;
 
   /// Container for components with lower-case names as keys.
-  boost::unordered_map<std::string, ComponentPtr> components_;
+  std::unordered_map<std::string, ComponentPtr> components_;
 };
 
 /// @class FaultTree
@@ -186,7 +189,7 @@ class Component : public Element, public Role {
 /// detection of top events.
 class FaultTree : public Component {
  public:
-  typedef boost::shared_ptr<Gate> GatePtr;
+  typedef std::shared_ptr<Gate> GatePtr;
 
   /// The main constructor of the Fault Tree.
   /// Fault trees are assumed to be public and belong to the root model.
@@ -205,7 +208,7 @@ class FaultTree : public Component {
   void CollectTopEvents();
 
  private:
-  typedef boost::shared_ptr<Formula> FormulaPtr;
+  typedef std::unique_ptr<Formula> FormulaPtr;
 
   /// Recursively marks descendant gates as "non-top".
   /// These gates belong to this fault tree only.
@@ -213,14 +216,14 @@ class FaultTree : public Component {
   /// @param[in] gate The ancestor gate.
   /// @param[in] gates Gates belonging to the whole fault tree with components.
   void MarkNonTopGates(const GatePtr& gate,
-                       const boost::unordered_set<GatePtr>& gates);
+                       const std::unordered_set<GatePtr>& gates);
 
   /// Recursively marks descendant gates in formulas as "non-top"
   ///
   /// @param[in] formula The formula of a gate or another formula.
   /// @param[in] gates Gates belonging to the whole fault tree with components.
   void MarkNonTopGates(const FormulaPtr& formula,
-                       const boost::unordered_set<GatePtr>& gates);
+                       const std::unordered_set<GatePtr>& gates);
 
   std::vector<GatePtr> top_events_;  ///< Top events of this fault tree.
 };

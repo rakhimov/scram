@@ -14,17 +14,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file reporter.h
 /// Reporter of results.
+
 #ifndef SCRAM_SRC_REPORTER_H_
 #define SCRAM_SRC_REPORTER_H_
 
 #include <iomanip>
+#include <memory>
 #include <set>
 #include <sstream>
 #include <string>
+#include <vector>
 
-#include <boost/shared_ptr.hpp>
 #include <libxml++/libxml++.h>
 
 namespace scram {
@@ -42,9 +45,9 @@ class UncertaintyAnalysis;
 /// This class reports the results of the analyses.
 class Reporter {
  public:
-  typedef boost::shared_ptr<Model> ModelPtr;
-  typedef boost::shared_ptr<PrimaryEvent> PrimaryEventPtr;
-  typedef boost::shared_ptr<Parameter> ParameterPtr;
+  typedef std::shared_ptr<const Model> ModelPtr;
+  typedef std::shared_ptr<const PrimaryEvent> PrimaryEventPtr;
+  typedef std::shared_ptr<const Parameter> ParameterPtr;
 
   /// Sets up XML report document according to a specific standards.
   /// This function populates information
@@ -67,7 +70,7 @@ class Reporter {
   /// @param[in] orphan_primary_events Container of orphan events.
   /// @param[in,out] doc Pre-formatted XML document.
   void ReportOrphanPrimaryEvents(
-      const std::set<PrimaryEventPtr>& orphan_primary_events,
+      const std::vector<PrimaryEventPtr>& orphan_primary_events,
       xmlpp::Document* doc);
 
   /// Reports unused parameters
@@ -75,8 +78,9 @@ class Reporter {
   ///
   /// @param[in] unused_parameters Container of unused parameters.
   /// @param[in,out] doc Pre-formatted XML document.
-  void ReportUnusedParameters(const std::set<ParameterPtr>& unused_parameters,
-                              xmlpp::Document* doc);
+  void ReportUnusedParameters(
+      const std::vector<ParameterPtr>& unused_parameters,
+      xmlpp::Document* doc);
 
   /// Reports the results of analysis
   /// to a specified output destination.
@@ -90,8 +94,8 @@ class Reporter {
   /// @note This function must be called only after analysis is done.
   void ReportFta(
       std::string ft_name,
-      const boost::shared_ptr<const FaultTreeAnalysis>& fta,
-      const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
+      const std::shared_ptr<const FaultTreeAnalysis>& fta,
+      const std::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
       xmlpp::Document* doc);
 
   /// Reports results of importance analysis in probability analysis.
@@ -103,7 +107,7 @@ class Reporter {
   /// @note This function must be called only after analysis is done.
   void ReportImportance(
       std::string ft_name,
-      const boost::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
+      const std::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
       xmlpp::Document* doc);
 
   /// Reports the results of uncertainty analysis with minimal cut sets.
@@ -115,11 +119,11 @@ class Reporter {
   /// @note This function must be called only after analysis is done.
   void ReportUncertainty(
       std::string ft_name,
-      const boost::shared_ptr<const UncertaintyAnalysis>& uncert_analysis,
+      const std::shared_ptr<const UncertaintyAnalysis>& uncert_analysis,
       xmlpp::Document* doc);
 
  private:
-  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
+  typedef std::shared_ptr<const BasicEvent> BasicEventPtr;
 
   /// Detects if a given basic event is a CCF event,
   /// and reports it with specific formatting.

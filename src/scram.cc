@@ -14,9 +14,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file scram.cc
 /// Main entrance.
+
 #include <iostream>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -53,28 +56,30 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
         ("help", "Display this help message")
         ("version", "Display version information")
         ("input-files", po::value< std::vector<std::string> >(),
-         "XML input files with analysis entities")
+         "XML input files with analysis constructs")
         ("config-file", po::value<std::string>(),
-         "XML configuration file for analysis")
+         "XML file with analysis configurations")
         ("validate", "Validate input files without analysis")
         ("graph", "Validate and produce graph without analysis")
         ("probability", po::value<bool>(), "Perform probability analysis")
         ("importance", po::value<bool>(), "Perform importance analysis")
         ("uncertainty", po::value<bool>(), "Perform uncertainty analysis")
         ("ccf", po::value<bool>(), "Perform common-cause failure analysis")
-        ("rare-event",
-         "Use the rare event approximation for probability calculations")
-        ("mcub", "Use the MCUB approximation for probability calculations")
+        ("rare-event", "Use the rare event approximation")
+        ("mcub", "Use the MCUB approximation")
         ("limit-order,l", po::value<int>(), "Upper limit for cut set order")
         ("num-sums,s", po::value<int>(),
-         "Number of sums in series expansion for probability calculations")
+         "Number of sums in probability equations")
         ("cut-off", po::value<double>(), "Cut-off probability for cut sets")
         ("mission-time", po::value<double>(), "System mission time in hours")
         ("num-trials", po::value<int>(),
          "Number of trials for Monte Carlo simulations")
+        ("num-quantiles", po::value<int>(),
+         "Number of quantiles for distributions")
+        ("num-bins", po::value<int>(), "Number of bins for histograms")
         ("seed", po::value<int>(),
          "Seed for the pseudo-random number generator")
-        ("output-path,o", po::value<std::string>(), "Output path")
+        ("output-path,o", po::value<std::string>(), "Output path for reports")
         ("verbosity", po::value<int>(), "Set log verbosity")
         ;
 
@@ -165,6 +170,9 @@ void ConstructSettings(const po::variables_map& vm, scram::Settings* settings) {
   if (vm.count("mission-time"))
     settings->mission_time(vm["mission-time"].as<double>());
   if (vm.count("num-trials")) settings->num_trials(vm["num-trials"].as<int>());
+  if (vm.count("num-quantiles"))
+    settings->num_quantiles(vm["num-quantiles"].as<int>());
+  if (vm.count("num-bins")) settings->num_bins(vm["num-bins"].as<int>());
   if (vm.count("importance"))
     settings->importance_analysis(vm["importance"].as<bool>());
   if (vm.count("uncertainty"))
@@ -194,16 +202,17 @@ int RunScram(const po::variables_map& vm) {
   std::vector<std::string> input_files;
   std::string output_path = "";
   // Get configurations if any.
+  // Invalid configurations will throw.
   if (vm.count("config-file")) {
-    scram::Config* config =
-        new scram::Config(vm["config-file"].as<std::string>());
+    std::unique_ptr<scram::Config>
+        config(new scram::Config(vm["config-file"].as<std::string>()));
     settings = config->settings();
     input_files = config->input_files();
     output_path = config->output_path();
-    delete config;
   }
 
-  // Command-line settings overwrites the settings from the configurations.
+  // Command-line settings overwrites
+  // the settings from the configurations.
   ConstructSettings(vm, &settings);
 
   // Add input files from the command-line.
@@ -212,28 +221,30 @@ int RunScram(const po::variables_map& vm) {
         vm["input-files"].as< std::vector<std::string> >();
     input_files.insert(input_files.end(), cmd_input.begin(), cmd_input.end());
   }
-  // Overwrite output path if it is given from the command-line.
+  // Overwrite output path
+  // if it is given from the command-line.
   if (vm.count("output-path")) {
     output_path = vm["output-path"].as<std::string>();
   }
-  // Process input files into valid analysis containers and constructs.
-  scram::Initializer* init = new scram::Initializer(settings);
+  // Process input files
+  // into valid analysis containers and constructs.
+  std::unique_ptr<scram::Initializer> init(new scram::Initializer(settings));
+  // Validation phase happens upon processing.
   init->ProcessInputFiles(input_files);
-  // Initiate risk analysis with the given information.
-  scram::RiskAnalysis* ran = new scram::RiskAnalysis(init->model(), settings);
-  delete init;
 
   // Stop if only validation is requested.
   if (vm.count("validate")) {
     std::cout << "The files are VALID." << std::endl;
-    delete ran;
     return 0;
   }
+  // Initiate risk analysis with the given information.
+  std::unique_ptr<scram::RiskAnalysis>
+      ran(new scram::RiskAnalysis(init->model(), settings));
+  init.reset();  // Remove extra reference counts to shared objects.
 
   // Graph if requested.
   if (vm.count("graph")) {
     ran->GraphingInstructions();
-    delete ran;
     return 0;
   }
 
@@ -245,7 +256,6 @@ int RunScram(const po::variables_map& vm) {
     ran->Report(std::cout);
   }
 
-  delete ran;
   return 0;
 }
 

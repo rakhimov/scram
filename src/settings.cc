@@ -14,26 +14,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file settings.cc
 /// Implementation of Settings Builder.
+
 #include "settings.h"
 
 #include "error.h"
 
 namespace scram {
-
-Settings::Settings()
-    : probability_analysis_(false),
-      importance_analysis_(false),
-      uncertainty_analysis_(false),
-      ccf_analysis_(false),
-      limit_order_(20),
-      mission_time_(8760),
-      num_sums_(7),
-      cut_off_(1e-8),
-      approx_("no"),  // The default value indicates no setting.
-      seed_(-1),  // The negative value indicates no setting.
-      num_trials_(1e3) {}
 
 Settings& Settings::limit_order(int order) {
   if (order < 1) {
@@ -80,6 +69,24 @@ Settings& Settings::num_trials(int n) {
     throw InvalidArgument(msg);
   }
   num_trials_ = n;
+  return *this;
+}
+
+Settings& Settings::num_quantiles(int n) {
+  if (n < 1) {
+    std::string msg = "The number of quantiles cannot be less than 1.";
+    throw InvalidArgument(msg);
+  }
+  num_quantiles_ = n;
+  return *this;
+}
+
+Settings& Settings::num_bins(int n) {
+  if (n < 1) {
+    std::string msg = "The number of bins cannot be less than 1.";
+    throw InvalidArgument(msg);
+  }
+  num_bins_ = n;
   return *this;
 }
 

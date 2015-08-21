@@ -14,15 +14,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 /// @file model.h
 /// Representation for a model container for risk analysis.
+
 #ifndef SCRAM_SRC_MODEL_H_
 #define SCRAM_SRC_MODEL_H_
 
+#include <memory>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <utility>
-
-#include <boost/unordered_map.hpp>
 
 #include "element.h"
 #include "event.h"
@@ -38,13 +41,13 @@ class Component;
 /// This class represents a risk analysis model.
 class Model : public Element {
  public:
-  typedef boost::shared_ptr<Parameter> ParameterPtr;
-  typedef boost::shared_ptr<Event> EventPtr;
-  typedef boost::shared_ptr<HouseEvent> HouseEventPtr;
-  typedef boost::shared_ptr<BasicEvent> BasicEventPtr;
-  typedef boost::shared_ptr<Gate> GatePtr;
-  typedef boost::shared_ptr<CcfGroup> CcfGroupPtr;
-  typedef boost::shared_ptr<FaultTree> FaultTreePtr;
+  typedef std::shared_ptr<Parameter> ParameterPtr;
+  typedef std::shared_ptr<Event> EventPtr;
+  typedef std::shared_ptr<HouseEvent> HouseEventPtr;
+  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
+  typedef std::shared_ptr<Gate> GatePtr;
+  typedef std::shared_ptr<CcfGroup> CcfGroupPtr;
+  typedef std::unique_ptr<FaultTree> FaultTreePtr;
 
   /// Creates a model container.
   ///
@@ -55,46 +58,47 @@ class Model : public Element {
   inline const std::string& name() const { return name_; }
 
   /// @returns Defined fault trees in the model.
-  inline const boost::unordered_map<std::string, FaultTreePtr>&
+  inline const std::unordered_map<std::string, FaultTreePtr>&
       fault_trees() const {
     return fault_trees_;
   }
 
   /// @returns Parameters defined for this model.
-  inline const boost::unordered_map<std::string, ParameterPtr>&
+  inline const std::unordered_map<std::string, ParameterPtr>&
       parameters() const {
     return parameters_;
   }
 
   /// @returns House events defined for this model.
-  inline const boost::unordered_map<std::string, HouseEventPtr>&
+  inline const std::unordered_map<std::string, HouseEventPtr>&
       house_events() const {
     return house_events_;
   }
 
   /// @returns Basic events defined for this model.
-  inline const boost::unordered_map<std::string, BasicEventPtr>&
+  inline const std::unordered_map<std::string, BasicEventPtr>&
       basic_events() const {
     return basic_events_;
   }
 
   /// @returns Gates defined for this model.
-  inline const boost::unordered_map<std::string, GatePtr>& gates() const {
+  inline const std::unordered_map<std::string, GatePtr>& gates() const {
     return gates_;
   }
 
   /// @returns CCF groups defined for this model.
-  inline const boost::unordered_map<std::string, CcfGroupPtr>&
+  inline const std::unordered_map<std::string, CcfGroupPtr>&
       ccf_groups() const {
     return ccf_groups_;
   }
 
   /// Adds a fault tree into the model container.
+  /// Fault trees are uniquely owned by this model.
   ///
   /// @param[in] fault_tree A fault tree defined in this model.
   ///
   /// @throws RedefinitionError The model has a container with the same name.
-  void AddFaultTree(const FaultTreePtr& fault_tree);
+  void AddFaultTree(FaultTreePtr fault_tree);
 
   /// Adds a parameter that is used in this model's expressions.
   ///
@@ -200,8 +204,6 @@ class Model : public Element {
   void AddCcfGroup(const CcfGroupPtr& ccf_group);
 
  private:
-  typedef boost::shared_ptr<Component> ComponentPtr;
-
   /// Helper function to find the scope container for references.
   ///
   /// @param[in] base_path The series of containers to get the container.
@@ -209,16 +211,17 @@ class Model : public Element {
   /// @returns A fault tree or component from the base path if any.
   ///
   /// @throws LogicError There's missing container in the path.
-  ComponentPtr GetContainer(const std::string& base_path);
+  const Component* GetContainer(const std::string& base_path);
 
   /// Helper function to find the local container for references.
   ///
   /// @param[in] reference The reference to the target element.
   /// @param[in] scope The fault tree or component as a scope.
   ///
-  /// @returns A fault tree or component from the reference if any.
-  ComponentPtr GetLocalContainer(const std::string& reference,
-                                 const ComponentPtr& scope);
+  /// @returns A fault tree or component from the reference.
+  /// @returns nullptr if there is no local container.
+  const Component* GetLocalContainer(const std::string& reference,
+                                     const Component* scope);
 
   /// Helper function to find the global container for references.
   ///
@@ -227,27 +230,30 @@ class Model : public Element {
   /// @returns A fault tree or component from the reference.
   ///
   /// @throws ValidationError There's missing container in the path.
-  ComponentPtr GetGlobalContainer(const std::string& reference);
+  const Component* GetGlobalContainer(const std::string& reference);
 
   std::string name_;  ///< The name of the model.
 
   /// A collection of fault trees.
-  boost::unordered_map<std::string, FaultTreePtr> fault_trees_;
+  std::unordered_map<std::string, FaultTreePtr> fault_trees_;
 
   /// Container for fully defined gates.
-  boost::unordered_map<std::string, GatePtr> gates_;
+  std::unordered_map<std::string, GatePtr> gates_;
 
   /// Container for fully defined house events.
-  boost::unordered_map<std::string, HouseEventPtr> house_events_;
+  std::unordered_map<std::string, HouseEventPtr> house_events_;
 
   /// Container for fully defined basic events.
-  boost::unordered_map<std::string, BasicEventPtr> basic_events_;
+  std::unordered_map<std::string, BasicEventPtr> basic_events_;
+
+  /// Container for event identifiers.
+  std::unordered_set<std::string> event_ids_;
 
   /// Container for defined parameters or variables.
-  boost::unordered_map<std::string, ParameterPtr> parameters_;
+  std::unordered_map<std::string, ParameterPtr> parameters_;
 
   /// A collection of common cause failure groups.
-  boost::unordered_map<std::string, CcfGroupPtr> ccf_groups_;
+  std::unordered_map<std::string, CcfGroupPtr> ccf_groups_;
 };
 
 }  // namespace scram
