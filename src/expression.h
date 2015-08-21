@@ -56,12 +56,6 @@ class Expression {
   /// @param[in] args Arguments of this expression.
   explicit Expression(const std::vector<ExpressionPtr>& args);
 
-  /// Constructor for use by derived classes
-  /// to register their arguments.
-  ///
-  /// @param[in] args Arguments of this expression.
-  explicit Expression(const std::vector<ExpressionPtr>&& args);
-
   virtual ~Expression() {}
 
   /// Validates the expression.

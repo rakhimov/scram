@@ -156,7 +156,7 @@ class ProbabilityAnalysis {
   ///
   /// @param[in] sign The sign of the series. Negative or positive number.
   /// @param[in] num_sums The number of sums in the series.
-  /// @param[in,out] min_cut_sets Sets of indices of basic events.
+  /// @param[in,out] cut_sets Sets of indices of basic events.
   ///
   /// @note This function drastically modifies cut_sets
   ///       by deleting sets inside it.

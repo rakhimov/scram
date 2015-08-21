@@ -26,6 +26,7 @@
 #include <set>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include <libxml++/libxml++.h>
 
