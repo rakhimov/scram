@@ -79,6 +79,8 @@ void ProbabilityAnalysis::Analyze(
   }
 
   CLOCK(p_time);
+  LOG(DEBUG3) << "Calculating probabilities...";
+  LOG(DEBUG3) << "Cut sets above cut-off level: " << mcs_for_prob.size();
   // Get the total probability.
   if (kSettings_.approx() == "mcub") {
     if (!coherent_) {
@@ -108,10 +110,13 @@ void ProbabilityAnalysis::Analyze(
     ProbabilityAnalysis::ProbOr(1, num_sums, &mcs_for_prob);
     p_total_ = ProbabilityAnalysis::CalculateTotalProbability();
   }
+  LOG(DEBUG3) << "Finished probability calculations in " << DUR(p_time);
   p_time_ = DUR(p_time);
   if (kSettings_.importance_analysis()) {
     CLOCK(imp_time);
+    LOG(DEBUG3) << "Calculating importance factors...";
     ProbabilityAnalysis::PerformImportanceAnalysis();
+    LOG(DEBUG3) << "Calculated importance factors in " << DUR(imp_time);
     imp_time_ = DUR(imp_time);
   }
 }

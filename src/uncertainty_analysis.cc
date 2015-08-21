@@ -62,19 +62,27 @@ void UncertaintyAnalysis::Analyze(
     return;
   }
 
+
+  LOG(DEBUG3) << "Indexing minimal cut sets...";
   ProbabilityAnalysis::IndexMcs(min_cut_sets_);
+  LOG(DEBUG3) << "Finished indexing minimal cut sets!";
 
   using boost::container::flat_set;
   std::set< flat_set<int> > iset;
 
+  LOG(DEBUG3) << "Getting probabilities of minimal cut sets...";
   std::vector< flat_set<int> >::const_iterator it_min;
   for (it_min = imcs_.begin(); it_min != imcs_.end(); ++it_min) {
     if (ProbabilityAnalysis::ProbAnd(*it_min) > kSettings_.cut_off()) {
       iset.insert(*it_min);
     }
   }
+  LOG(DEBUG3) << "Got MCS probabilities!";
+  LOG(DEBUG3) << "Cut sets above cut-off level: " << iset.size();
 
   CLOCK(analysis_time);
+  CLOCK(sample_time);
+  LOG(DEBUG3) << "Sampling probabilities...";
   if (kSettings_.approx() != "mcub") {
     // Generate the equation.
     int num_sums = kSettings_.num_sums();
@@ -83,9 +91,13 @@ void UncertaintyAnalysis::Analyze(
   }
   // Sample probabilities and generate data.
   UncertaintyAnalysis::Sample();
+  LOG(DEBUG3) << "Finished sampling probabilities in " << DUR(sample_time);
 
+  CLOCK(stat_time);
+  LOG(DEBUG3) << "Calculating statistics...";
   // Perform statistical analysis.
   UncertaintyAnalysis::CalculateStatistics();
+  LOG(DEBUG3) << "Finished calculating statistics in " << DUR(stat_time);
 
   analysis_time_ = DUR(analysis_time);
 }
