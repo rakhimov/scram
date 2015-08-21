@@ -76,7 +76,9 @@ void UncertaintyAnalysis::Analyze(
 
   CLOCK(analysis_time);
   // Generate the equation.
-  ProbabilityAnalysis::ProbOr(1, kSettings_.num_sums(), &iset);
+  int num_sums = kSettings_.num_sums();
+  if (kSettings_.approx() == "rare-event") num_sums = 1;
+  ProbabilityAnalysis::ProbOr(1, num_sums, &iset);
   // Sample probabilities and generate data.
   UncertaintyAnalysis::Sample();
 
