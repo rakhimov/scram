@@ -3,9 +3,11 @@ tests/scram_unit_test_driver.cc
 src/env.cc
 src/version.cc
 
+# Qt Generated Project Configuration
+CMakeLists.txt.user
+
 # Build directories
 build/
-build-*/
 
 # Compiled Object files
 *.slo
