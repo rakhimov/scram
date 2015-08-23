@@ -21,8 +21,6 @@ endif()
 
 include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
 
-include_directories(${SCRAM_CORE_INCLUDE_DIRS})
-
 # To add a new file,
 # just add it to this list.
 # Any GoogleTests inside will be automatically added to ctest.
