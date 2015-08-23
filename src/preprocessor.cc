@@ -1083,21 +1083,26 @@ bool Preprocessor::MergeCommonArgs(const Operator& op) noexcept {
   // the most optimal choice
   // between two mutually exclusive options.
   graph_->ClearOptiValues();
-  /// @todo Must group by sizes to detect supersets.
+  /// @todo Must group by size to detect supersets.
   ///       If supersets are processed before the subsets,
   ///       the optimization of the supersets is impossible.
   /// @todo Must find a way to efficiently transfer data
   ///       from the map to the table.
   std::vector<std::pair<std::vector<int>, std::set<IGatePtr> > >
       table(parents.begin(), parents.end());
+  // Sorting in descending order for more efficient pop.
+  std::sort(table.begin(), table.end(),
+            [](const std::pair<std::vector<int>, std::set<IGatePtr>>& a,
+               const std::pair<std::vector<int>, std::set<IGatePtr>>& b) {
+              return a.first.size() > b.first.size();
+            });
+  assert(table.front().first.size() >= table.back().first.size());
   while (!table.empty()) {
     std::set<IGatePtr>& common_parents = table.back().second;
     std::vector<int>& common_args = table.back().first;
     std::set<IGatePtr> useful_parents;  // With full set of args.
 
-    std::set<IGatePtr>::iterator it_p;
-    for (it_p = common_parents.begin(); it_p != common_parents.end(); ++it_p) {
-      IGatePtr common_parent = *it_p;
+    for (const IGatePtr& common_parent : common_parents) {
       if (common_parent->opti_value()) {  // Modified parent.
         assert(common_parent->opti_value() == 1);
         const std::set<int>& args = common_parent->args();
@@ -1116,17 +1121,13 @@ bool Preprocessor::MergeCommonArgs(const Operator& op) noexcept {
     LOG(DEBUG5) << "Merging " << common_args.size() << " args into a new gate";
     IGatePtr parent = *useful_parents.begin();  // To get the arguments.
     IGatePtr merge_gate(new IGate(parent->type()));
-    std::vector<int>::iterator it;
-    for (it = common_args.begin(); it != common_args.end(); ++it) {
-      parent->ShareArg(*it, merge_gate);
-      for (it_p = useful_parents.begin(); it_p != useful_parents.end();
-           ++it_p) {
-        IGatePtr common_parent = *it_p;
-        common_parent->EraseArg(*it);
+    for (int index : common_args) {
+      parent->ShareArg(index, merge_gate);
+      for (const IGatePtr& common_parent : useful_parents) {
+        common_parent->EraseArg(index);
       }
     }
-    for (it_p = useful_parents.begin(); it_p != useful_parents.end(); ++it_p) {
-      IGatePtr common_parent = *it_p;
+    for (const IGatePtr& common_parent : useful_parents) {
       common_parent->AddArg(merge_gate->index(), merge_gate);
       common_parent->opti_value(1);  // Mark as processed.
       if (common_parent->args().size() == 1) {
