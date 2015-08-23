@@ -81,7 +81,7 @@ TEST_F(PerformanceTest, DISABLED_200Event_L20) {
 
 // Test performance of MCS generation.
 TEST_F(PerformanceTest, DISABLED_Baobab1_L6) {
-  double mcs_time = 1.2;
+  double mcs_time = 0.75;
 #ifdef NDEBUG
   mcs_time = 0.31;
 #endif
@@ -96,7 +96,7 @@ TEST_F(PerformanceTest, DISABLED_Baobab1_L6) {
 
 // Test performance of MCS generation.
 TEST_F(PerformanceTest, DISABLED_Baobab1_L7) {
-  double mcs_time = 17;
+  double mcs_time = 15;
 #ifdef NDEBUG
   mcs_time = 2.0;
 #endif
@@ -110,7 +110,7 @@ TEST_F(PerformanceTest, DISABLED_Baobab1_L7) {
 }
 
 TEST_F(PerformanceTest, DISABLED_CEA9601_L10) {
-  double mcs_time = 2.0;
+  double mcs_time = 0.6;
 #ifdef NDEBUG
   mcs_time = 0.07;
 #endif
