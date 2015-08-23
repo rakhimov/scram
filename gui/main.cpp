@@ -42,7 +42,7 @@ namespace po = boost::program_options;
  * @returns 1 for errored state.
  * @returns -1 for information only state like help and version.
  */
-int parseArguments(int argc, char* argv[], po::variables_map* vm)
+int parseArguments(int argc, char *argv[], po::variables_map *vm)
 {
     std::string usage = "Usage:    scram-gui [input-files] [options]";
     po::options_description desc("Options");
@@ -87,35 +87,37 @@ int parseArguments(int argc, char* argv[], po::variables_map* vm)
 
 int main(int argc, char *argv[])
 {
-    po::variables_map vm;
-    int ret = parseArguments(argc, argv, &vm);
-    if (ret == 1) return 1;
-    if (ret == -1) return 0;
+    if (argc > 1) {
+        po::variables_map vm;
+        int ret = parseArguments(argc, argv, &vm);
+        if (ret == 1) return 1;
+        if (ret == -1) return 0;
 
-    scram::Settings settings;
-    std::vector<std::string> input_files;
-    // Get configurations if any.
-    // Invalid configurations will throw.
-    if (vm.count("config-file")) {
-      std::unique_ptr<scram::Config>
-          config(new scram::Config(vm["config-file"].as<std::string>()));
-      settings = config->settings();
-      input_files = config->input_files();
-    }
+        scram::Settings settings;
+        std::vector<std::string> input_files;
+        // Get configurations if any.
+        // Invalid configurations will throw.
+        if (vm.count("config-file")) {
+          std::unique_ptr<scram::Config>
+              config(new scram::Config(vm["config-file"].as<std::string>()));
+          settings = config->settings();
+          input_files = config->input_files();
+        }
 
-    if (vm.count("probability"))
-        settings.probability_analysis(vm["probability"].as<bool>());
-    // Add input files from the command-line.
-    if (vm.count("input-files")) {
-      std::vector<std::string> cmd_input =
-          vm["input-files"].as< std::vector<std::string> >();
-      input_files.insert(input_files.end(), cmd_input.begin(), cmd_input.end());
+        if (vm.count("probability"))
+            settings.probability_analysis(vm["probability"].as<bool>());
+        // Add input files from the command-line.
+        if (vm.count("input-files")) {
+          std::vector<std::string> cmd_input =
+              vm["input-files"].as< std::vector<std::string> >();
+          input_files.insert(input_files.end(), cmd_input.begin(), cmd_input.end());
+        }
+        // Process input files
+        // into valid analysis containers and constructs.
+        std::unique_ptr<scram::Initializer> init(new scram::Initializer(settings));
+        // Validation phase happens upon processing.
+        init->ProcessInputFiles(input_files);
     }
-    // Process input files
-    // into valid analysis containers and constructs.
-    std::unique_ptr<scram::Initializer> init(new scram::Initializer(settings));
-    // Validation phase happens upon processing.
-    init->ProcessInputFiles(input_files);
 
     QApplication a(argc, argv);
     MainWindow w;
