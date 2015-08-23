@@ -1536,7 +1536,13 @@ bool Preprocessor::ProcessDecompositionCommonNode(
     assert(!it->second.expired());
     IGatePtr parent = it->second.lock();
     if (parent->LastVisit() == node->index()) {
-      dest.push_back(parent);
+      switch (parent->type()) {
+        case kAndGate:
+        case kNandGate:
+        case kOrGate:
+        case kNorGate:
+          dest.push_back(parent);
+      }
     } else {
       parent->Visit(node->index());  // Mark for processing by the destination.
     }
@@ -1586,6 +1592,8 @@ void Preprocessor::ProcessDecompositionDestinations(
       case kNorGate:
         state = false;
         break;
+      default:
+        assert(false);
     }
     int sign = parent->args().count(node->index()) ? 1 : -1;
     if (sign < 0) state = !state;
