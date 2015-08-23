@@ -24,6 +24,8 @@ set_target_properties(scramgui
   INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
   )
 
+target_link_libraries(scramgui dl scramcore ${LIBS})
+
 install(
   TARGETS scramgui
   LIBRARY DESTINATION lib
@@ -31,7 +33,7 @@ install(
   )
 
 add_executable(scram-gui ${SCRAM_GUI_BIN})
-target_link_libraries(scram-gui scramgui)
+target_link_libraries(scram-gui scramgui scramcore ${Boost_LIBRARIES})
 
 install(TARGETS scram-gui
   RUNTIME DESTINATION bin
