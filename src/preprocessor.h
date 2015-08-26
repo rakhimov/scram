@@ -520,7 +520,7 @@ class Preprocessor {
   /// @note Constant arguments are not expected.
   ///
   /// @warning Gate marks are used for traversal.
-  /// @warning Node visit times are used for common node detection.
+  /// @warning Node counts are used for common node detection.
   /// @warning Gate optimization values are used
   ///          to mark the optimized gates.
   bool MergeCommonArgs() noexcept;
@@ -538,7 +538,7 @@ class Preprocessor {
   ///       OR/AND operators are expected.
   ///
   /// @warning Gate marks are used for traversal.
-  /// @warning Node visit times are used for common node detection.
+  /// @warning Node counts are used for common node detection.
   /// @warning Gate optimization values are used
   ///          to mark the optimized gates.
   bool MergeCommonArgs(const Operator& op) noexcept;
@@ -549,7 +549,7 @@ class Preprocessor {
   /// @param[in] op The operator of gates
   ///               which arguments must be marked.
   ///
-  /// @note Visit information is used to mark the common arguments.
+  /// @note Node count information is used to mark the common arguments.
   ///
   /// @warning Gate marks are used for linear traversal.
   void MarkCommonArgs(const IGatePtr& gate, const Operator& op) noexcept;

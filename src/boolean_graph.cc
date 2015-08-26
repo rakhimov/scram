@@ -35,7 +35,11 @@ int Node::next_index_ = 1e6;  // 1 million basic events per fault tree is crazy!
 
 Node::Node() noexcept : Node::Node(next_index_++) {}
 
-Node::Node(int index) noexcept : index_(index), opti_value_(0) {
+Node::Node(int index) noexcept
+    : index_(index),
+      opti_value_(0),
+      pos_count_(0),
+      neg_count_(0) {
   std::fill(visits_, visits_ + 3, 0);
 }
 
@@ -539,6 +543,28 @@ void BooleanGraph::ClearOptiValues(const IGatePtr& gate) noexcept {
   for (it_b = gate->variable_args().begin();
        it_b != gate->variable_args().end(); ++it_b) {
     it_b->second->opti_value(0);
+  }
+  assert(gate->constant_args().empty());
+}
+
+void BooleanGraph::ClearNodeCounts() noexcept {
+  LOG(DEBUG5) << "Clearing node counts...";
+  BooleanGraph::ClearGateMarks();
+  BooleanGraph::ClearNodeCounts(root_);
+  BooleanGraph::ClearGateMarks();
+  LOG(DEBUG5) << "Node counts are clear!";
+}
+
+void BooleanGraph::ClearNodeCounts(const IGatePtr& gate) noexcept {
+  if (gate->mark()) return;
+  gate->mark(true);
+
+  gate->ResetCount();
+  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+    BooleanGraph::ClearNodeCounts(arg.second);
+  }
+  for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
+    arg.second->ResetCount();
   }
   assert(gate->constant_args().empty());
 }

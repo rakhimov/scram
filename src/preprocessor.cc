@@ -1051,7 +1051,7 @@ bool Preprocessor::MergeCommonArgs() noexcept {
 
 bool Preprocessor::MergeCommonArgs(const Operator& op) noexcept {
   assert(op == kAndGate || op == kOrGate);
-  graph_->ClearNodeVisits();
+  graph_->ClearNodeCounts();
   graph_->ClearGateMarks();
   // Gather and group gates
   // by their operator types and common arguments.
@@ -1165,20 +1165,17 @@ void Preprocessor::MarkCommonArgs(const IGatePtr& gate,
 
   bool in_group = gate->type() == op ? true : false;
 
-  std::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
-    IGatePtr arg_gate = it->second;
+  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+    IGatePtr arg_gate = arg.second;
     assert(arg_gate->state() == kNormalState);
     Preprocessor::MarkCommonArgs(arg_gate, op);
-    if (in_group) arg_gate->Visit(1);
+    if (in_group) arg_gate->AddCount(arg.first > 0);
   }
 
   if (!in_group) return;  // No need to visit leaf variables.
 
-  std::unordered_map<int, VariablePtr>::const_iterator it_v;
-  for (it_v = gate->variable_args().begin();
-       it_v != gate->variable_args().end(); ++it_v) {
-    it_v->second->Visit(1);
+  for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
+    arg.second->AddCount(arg.first > 0);
   }
   assert(gate->constant_args().empty());
 }
@@ -1193,27 +1190,28 @@ void Preprocessor::GatherCommonArgs(
   bool in_group = gate->type() == op ? true : false;
 
   std::vector<int> common_args;
-  std::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
-    IGatePtr arg_gate = it->second;
+  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+    IGatePtr arg_gate = arg.second;
     assert(arg_gate->state() == kNormalState);
     Preprocessor::GatherCommonArgs(arg_gate, op, group);
-    if (in_group && arg_gate->ExitTime()) common_args.push_back(it->first);
+    if (!in_group) continue;
+    int count = arg.first > 0 ? arg_gate->pos_count() : arg_gate->neg_count();
+    if (count > 1) common_args.push_back(arg.first);
   }
 
   if (!in_group) return;  // No need to check variables.
 
-  std::unordered_map<int, VariablePtr>::const_iterator it_v;
-  for (it_v = gate->variable_args().begin();
-       it_v != gate->variable_args().end(); ++it_v) {
-    if (it_v->second->ExitTime()) common_args.push_back(it_v->first);
+  for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
+    VariablePtr var = arg.second;
+    int count = arg.first > 0 ? var->pos_count() : var->neg_count();
+    if (count > 1) common_args.push_back(arg.first);
   }
   assert(gate->constant_args().empty());
 
   if (common_args.size() < 2) return;  // Can't be merged anyway.
 
   std::sort(common_args.begin(), common_args.end());
-  group->push_back(std::make_pair(gate, common_args));
+  group->emplace_back(gate, common_args);
 }
 
 void Preprocessor::GroupCommonParents(

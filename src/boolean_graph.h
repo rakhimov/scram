@@ -140,6 +140,25 @@ class Node {
   /// Clears all the visit information. Resets the visit times to 0s.
   inline void ClearVisits() { return std::fill(visits_, visits_ + 3, 0); }
 
+  /// @returns The positive count of this node.
+  inline int pos_count() const { return pos_count_; }
+
+  /// @returns The negative count of this node.
+  inline int neg_count() const { return neg_count_; }
+
+  /// Increases the count of this node.
+  ///
+  /// @param[in] positive Indication of a positive node.
+  inline void AddCount(bool positive) {
+    positive ? ++pos_count_ : ++neg_count_;
+  }
+
+  /// Resets positive and negative counts of this node.
+  inline void ResetCount() {
+    pos_count_ = 0;
+    neg_count_ = 0;
+  }
+
  private:
   static int next_index_;  ///< Automatic indexation of the next new node.
   int index_;  ///< Index of this node.
@@ -147,6 +166,8 @@ class Node {
   int visits_[3];
   std::unordered_map<int, std::weak_ptr<IGate> > parents_;  ///< Parents.
   int opti_value_;  ///< Failure propagation optimization value.
+  int pos_count_;  ///< The number of occurances as a positive node.
+  int neg_count_;  ///< The number of occurances as a negative node.
 };
 
 /// @class Constant
@@ -798,6 +819,18 @@ class BooleanGraph {
   ///
   /// @note Gate marks are used for linear time traversal.
   void ClearOptiValues(const IGatePtr& gate) noexcept;
+
+  /// Clears counts of all nodes in the graph.
+  ///
+  /// @note Gate marks are used for linear time traversal.
+  void ClearNodeCounts() noexcept;
+
+  /// Clears counts of nodes.
+  ///
+  /// @param[in,out] gate The root gate to be traversed and cleaned.
+  ///
+  /// @note Gate marks are used for linear time traversal.
+  void ClearNodeCounts(const IGatePtr& gate) noexcept;
 
   IGatePtr root_;  ///< The root gate of this graph.
   std::vector<BasicEventPtr> basic_events_;  ///< Mapping for basic events.
