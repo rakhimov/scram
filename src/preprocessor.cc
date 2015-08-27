@@ -148,12 +148,12 @@ void Preprocessor::PhaseTwo() noexcept {
   Preprocessor::DetectModules();
   LOG(DEBUG3) << "Finished module detection!";
 
-  if (graph_->coherent()) {
-    CLOCK(merge_time);
-    LOG(DEBUG3) << "Merging common arguments...";
-    Preprocessor::MergeCommonArgs();
-    LOG(DEBUG3) << "Finished merging common args in " << DUR(merge_time);
+  CLOCK(merge_time);
+  LOG(DEBUG3) << "Merging common arguments...";
+  Preprocessor::MergeCommonArgs();
+  LOG(DEBUG3) << "Finished merging common args in " << DUR(merge_time);
 
+  if (graph_->coherent()) {
     CLOCK(optim_time);
     LOG(DEBUG3) << "Boolean optimization...";
     Preprocessor::BooleanOptimization();
@@ -1100,7 +1100,7 @@ bool Preprocessor::MergeCommonArgs(const Operator& op) noexcept {
   while (!table.empty()) {
     std::set<IGatePtr>& common_parents = table.back().second;
     std::vector<int>& common_args = table.back().first;
-    std::set<IGatePtr> useful_parents;  // With full set of args.
+    std::vector<IGatePtr> useful_parents;  // With full set of args.
 
     for (const IGatePtr& common_parent : common_parents) {
       if (common_parent->opti_value()) {  // Modified parent.
@@ -1111,7 +1111,7 @@ bool Preprocessor::MergeCommonArgs(const Operator& op) noexcept {
         // Erased and optimized common args.
         if (!have_args) continue;
       }
-      useful_parents.insert(useful_parents.end(), common_parent);
+      useful_parents.push_back(common_parent);
     }
 
     if (useful_parents.size() < 2) {  // No point of merging arguments.
@@ -1119,7 +1119,7 @@ bool Preprocessor::MergeCommonArgs(const Operator& op) noexcept {
       continue;  /// @todo Investigate better options.
     }
     LOG(DEBUG5) << "Merging " << common_args.size() << " args into a new gate";
-    IGatePtr parent = *useful_parents.begin();  // To get the arguments.
+    IGatePtr parent = useful_parents.front();  // To get the arguments.
     IGatePtr merge_gate(new IGate(parent->type()));
     for (int index : common_args) {
       parent->ShareArg(index, merge_gate);

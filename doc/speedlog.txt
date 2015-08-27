@@ -53,17 +53,10 @@ Release build:
 - Cut Set Minimization    20s   |  42s
 
 
----------- CEA9601 -l 10 (mcs = 4832) ----------------
-Debug build:
----------------
-- Cut Set Generation      0.55s  |
-- Cut Set Minimization    0.05s  |
-
-
----------- CEA9601 -l 14 (mcs = 4832) ----------------
+---------- CEA9601 -l 14 (mcs = 5640) ----------------
 Release build:
 --------------
-- Cut Set Generation      4.8s   |
+- Cut Set Generation      2.5s   |
 - Cut Set Minimization    0.05s  |
 
 
