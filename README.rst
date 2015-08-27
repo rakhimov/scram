@@ -171,8 +171,6 @@ The optional installation for GUI:
 
     sudo apt-get install -y qt5-default
 
-.. _Travis CI: https://travis-ci.org/rakhimov/scram
-
 
 Mac Systems
 -----------
@@ -201,6 +199,7 @@ and (optionally):
 
 #. graphviz
 #. qt5-mac
+#. google-perftools
 
 compiler:
 
@@ -217,7 +216,7 @@ the following line will install all major dependencies:
 
 .. code-block:: bash
 
-    sudo port install cmake boost libxml2 libxmlxx2 python27 graphviz
+    sudo port install cmake boost libxml2 libxmlxx2 python27 graphviz google-perftools
 
 
 The optional installation for GUI building:
@@ -293,13 +292,11 @@ and to build on Windows.
 
 Currently only Cygwin_ 64bit has been tested to produce binaries on Windows.
 The dependencies listed for Linux systems must be installed with Cygwin64.
-Unfortunately, this method requires building `libxml++`_ from source.
 
 .. _Ubuntu 14.04: http://www.ubuntu.com/download
 .. _MinGW: http://www.mingw.org/
 .. _Mingw-w64: http://mingw-w64.sourceforge.net/
 .. _Cygwin: https://www.cygwin.com/
-.. _libxml++: http://libxmlplusplus.sourceforge.net/
 .. _Ubuntu image with SCRAM:
     http://sourceforge.net/projects/iscram/files/ScramBox.ova/download
 
