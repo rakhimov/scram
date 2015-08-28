@@ -1383,10 +1383,9 @@ void Preprocessor::ProcessRedundantParents(
     const NodePtr& node,
     std::map<int, IGateWeakPtr>* destinations) noexcept {
   std::vector<IGateWeakPtr> redundant_parents;
-  std::unordered_map<int, IGateWeakPtr>::const_iterator it;
-  for (it = node->parents().begin(); it != node->parents().end(); ++it) {
-    assert(!it->second.expired());
-    IGatePtr parent = it->second.lock();
+  for (const std::pair<int, IGateWeakPtr>& member : node->parents()) {
+    assert(!member.second.expired());
+    IGatePtr parent = member.second.lock();
     if (parent->opti_value() < 3) {
       // Special cases for the redundant parent and the destination parent.
       switch (parent->type()) {
@@ -1399,34 +1398,15 @@ void Preprocessor::ProcessRedundantParents(
       redundant_parents.push_back(parent);
     }
   }
-  /// @todo Use RemoveConstArg function instead.
   // The node behaves like a constant False for redundant parents.
-  std::vector<IGateWeakPtr>::iterator it_r;
-  for (it_r = redundant_parents.begin(); it_r != redundant_parents.end();
-       ++it_r) {
-    if (it_r->expired()) continue;
-    IGatePtr parent = it_r->lock();
-    switch (parent->type()) {
-      case kAndGate:
-        parent->Nullify();
-        const_gates_.push_back(parent);
-        break;
-      case kOrGate:
-        assert(parent->args().size() > 1);
-        parent->EraseArg(node->index());
-        if (parent->args().size() == 1) {
-          parent->type(kNullGate);
-          null_gates_.push_back(parent);
-        }
-        break;
-      case kAtleastGate:
-        assert(parent->args().size() > 2);
-        parent->EraseArg(node->index());
-        if (parent->args().size() == parent->vote_number())
-          parent->type(kAndGate);
-        break;
-      default:
-        assert(false);
+  for (const IGateWeakPtr& ptr : redundant_parents) {
+    if (ptr.expired()) continue;
+    IGatePtr parent = ptr.lock();
+    Preprocessor::ProcessConstantArg(parent, node->index(), false);
+    if (parent->state() != kNormalState) {
+      const_gates_.push_back(parent);
+    } else if (parent->type() == kNullGate) {
+      null_gates_.push_back(parent);
     }
   }
 }

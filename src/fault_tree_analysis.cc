@@ -47,7 +47,7 @@ void FaultTreeAnalysis::Analyze() noexcept {
   CLOCK(ft_creation);
   BooleanGraph* indexed_tree = new BooleanGraph(top_event_,
                                                 kSettings_.ccf_analysis());
-  LOG(DEBUG2) << "Indexed fault tree is created in " << DUR(ft_creation);
+  LOG(DEBUG2) << "Boolean graph is created in " << DUR(ft_creation);
 
   CLOCK(prep_time);  // Overall preprocessing time.
   LOG(DEBUG2) << "Preprocessing...";
