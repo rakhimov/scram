@@ -1142,11 +1142,10 @@ bool Preprocessor::MergeCommonArgs(const Operator& op) noexcept {
       bool superset = std::includes(set_args.begin(), set_args.end(),
                                     common_args.begin(), common_args.end());
       if (!superset) continue;
-      std::vector<int> diff(set_args.size() - common_args.size(), 0);
+      std::vector<int> diff;
       std::set_difference(set_args.begin(), set_args.end(),
                           common_args.begin(), common_args.end(),
-                          diff.begin());
-      assert(diff.back() != 0);
+                          std::back_inserter(diff));
       assert(merge_gate->index() > diff.back());
       diff.push_back(merge_gate->index());  // Assumes sequential indexing.
       set_args = diff;
@@ -1229,13 +1228,10 @@ void Preprocessor::GroupCommonParents(
       int min_size = args_gate.size();
       if (args_comp.size() < min_size) min_size = args_comp.size();
 
-      std::vector<int> common(min_size, 0);
+      std::vector<int> common;
       std::set_intersection(args_gate.begin(), args_gate.end(),
                             args_comp.begin(), args_comp.end(),
-                            common.begin());
-      if (common.front() == 0) continue;  // No intersection is found.
-      while (common.back() == 0) common.pop_back();  // May have surprises!
-      assert(common.size() <= min_size);  // To check for the surprises.
+                            std::back_inserter(common));
       if (common.size() < 2) continue;  // Can't be a merge candidate.
       std::set<IGatePtr>& common_parents = (*parents)[common];
       common_parents.insert(group[i].first);
@@ -1758,21 +1754,16 @@ bool Preprocessor::HandleDistributiveArgs(
   // This algorithm is the simplest intersection of all candidates.
   std::set<int> intersection = candidates.front()->args();
   Operator distr_type = candidates.front()->type();
-  std::vector<IGatePtr>::const_iterator it_can;
-  for (it_can = candidates.begin(); it_can != candidates.end(); ++it_can) {
-    IGatePtr candidate = *it_can;
+  for (const IGatePtr& candidate : candidates) {
     assert(candidate->type() == distr_type);
-
-    std::vector<int> new_intersection(intersection.size(), 0);
+    std::set<int> new_intersection;
     std::set_intersection(candidate->args().begin(),
                           candidate->args().end(),
                           intersection.begin(),
                           intersection.end(),
-                          new_intersection.begin());
-    intersection = std::set<int>(new_intersection.begin(),
-                                 new_intersection.end());
-    // Clean zeros.
-    intersection.erase(0);
+                          std::inserter(new_intersection,
+                                        new_intersection.begin()));
+    intersection = new_intersection;
   }
   if (intersection.empty()) return false;
 
@@ -1791,10 +1782,7 @@ bool Preprocessor::HandleDistributiveArgs(
   new_parent->AddArg(new_child->index(), new_child);
 
   // Getting the common part of the distributive equation.
-  std::set<int>::iterator it_inter;
-  for (it_inter = intersection.begin(); it_inter != intersection.end();
-       ++it_inter) {
-    int index = *it_inter;  // May be negative.
+  for (int index : intersection) {  // May be negative.
     IGatePtr candidate = candidates.back();
     assert(candidate->args().size() > 1);
     assert(candidate->constant_args().empty());
@@ -1808,8 +1796,7 @@ bool Preprocessor::HandleDistributiveArgs(
   }
 
   // Removing the common part from the sub-equations.
-  for (it_can = candidates.begin(); it_can != candidates.end(); ++it_can) {
-    IGatePtr candidate = *it_can;
+  for (IGatePtr candidate : candidates) {  // Copy for swapping.
     gate->EraseArg(candidate->index());
 
     // Must be careful here not to change multi-parent candidates.
@@ -1819,9 +1806,8 @@ bool Preprocessor::HandleDistributiveArgs(
     }
 
     new_child->AddArg(candidate->index(), candidate);
-    for (it_inter = intersection.begin(); it_inter != intersection.end();
-         ++it_inter) {
-      candidate->EraseArg(*it_inter);
+    for (int index : intersection) {
+      candidate->EraseArg(index);
     }
     if (candidate->args().size() == 1) {
       candidate->type(kNullGate);
