@@ -25,7 +25,6 @@ namespace test {
 // Benchmark Tests for the ThreeMotor fault tree from OpenFTA.
 TEST_F(RiskAnalysisTest, ThreeMotor) {
   std::string tree_input = "./share/scram/input/ThreeMotor/three_motor.xml";
-  std::set<std::string> cut_set;
   std::set< std::set<std::string> > mcs;  // For expected min cut sets.
   std::string T3 = "t3";
   std::string S1 = "s1";
@@ -50,83 +49,23 @@ TEST_F(RiskAnalysisTest, ThreeMotor) {
   EXPECT_NEAR(0.0211538, p_total(), 1e-5);
   // Minimal cut set check.
   // Order 1
-  cut_set.insert(K5);
-  mcs.insert(cut_set);
-  cut_set.clear();
+  mcs.insert({K5});
 
   // Order 2
-  cut_set.insert(S1);
-  cut_set.insert(T2);
-  mcs.insert(cut_set);
-  cut_set.clear();
-
-  cut_set.insert(K1);
-  cut_set.insert(T2);
-  mcs.insert(cut_set);
-  cut_set.clear();
-
-  cut_set.insert(T1inc);
-  cut_set.insert(T2);
-  mcs.insert(cut_set);
-  cut_set.clear();
+  mcs.insert({S1, T2});
+  mcs.insert({K1, T2});
+  mcs.insert({T1inc, T2});
 
   // Order 3
   // Order 4
-  cut_set.insert(T2);
-  cut_set.insert(T2inc);
-  cut_set.insert(T3inc);
-  cut_set.insert(T4inc);
-  mcs.insert(cut_set);
-  cut_set.clear();
-
-  cut_set.insert(KT3inc);
-  cut_set.insert(T2);
-  cut_set.insert(T2inc);
-  cut_set.insert(T3inc);
-  mcs.insert(cut_set);
-  cut_set.clear();
-
-  cut_set.insert(KT2inc);
-  cut_set.insert(T2);
-  cut_set.insert(T2inc);
-  cut_set.insert(T4inc);
-  mcs.insert(cut_set);
-  cut_set.clear();
-
-  cut_set.insert(KT2inc);
-  cut_set.insert(KT3inc);
-  cut_set.insert(T2);
-  cut_set.insert(T2inc);
-  mcs.insert(cut_set);
-  cut_set.clear();
-
-  cut_set.insert(KT1inc);
-  cut_set.insert(T2);
-  cut_set.insert(T3inc);
-  cut_set.insert(T4inc);
-  mcs.insert(cut_set);
-  cut_set.clear();
-
-  cut_set.insert(KT1inc);
-  cut_set.insert(KT3inc);
-  cut_set.insert(T2);
-  cut_set.insert(T3inc);
-  mcs.insert(cut_set);
-  cut_set.clear();
-
-  cut_set.insert(KT1inc);
-  cut_set.insert(KT2inc);
-  cut_set.insert(T2);
-  cut_set.insert(T4inc);
-  mcs.insert(cut_set);
-  cut_set.clear();
-
-  cut_set.insert(KT1inc);
-  cut_set.insert(KT2inc);
-  cut_set.insert(KT3inc);
-  cut_set.insert(T2);
-  mcs.insert(cut_set);
-  cut_set.clear();
+  mcs.insert({T2, T2inc, T3inc, T4inc});
+  mcs.insert({KT3inc, T2, T2inc, T3inc});
+  mcs.insert({KT2inc, T2, T2inc, T4inc});
+  mcs.insert({KT2inc, KT3inc, T2, T2inc});
+  mcs.insert({KT1inc, T2, T3inc, T4inc});
+  mcs.insert({KT1inc, KT3inc, T2, T3inc});
+  mcs.insert({KT1inc, KT2inc, T2, T4inc});
+  mcs.insert({KT1inc, KT2inc, KT3inc, T2});
 
   EXPECT_EQ(12, min_cut_sets().size());
   EXPECT_EQ(mcs, min_cut_sets());

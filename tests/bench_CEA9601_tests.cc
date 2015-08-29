@@ -37,9 +37,7 @@ TEST_F(RiskAnalysisTest, DISABLED_CEA9601_Test) {
   ASSERT_NO_THROW(ran->Analyze());
   // Minimal cut set check.
   EXPECT_EQ(2732, min_cut_sets().size());
-  std::vector<int> distr(5, 0);
-  distr[3] = 858;
-  distr[4] = 1874;
+  std::vector<int> distr = {0, 0, 0, 858, 1874};
   EXPECT_EQ(distr, McsDistribution());
 }
 

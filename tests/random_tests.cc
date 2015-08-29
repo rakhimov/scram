@@ -22,37 +22,28 @@
 #include <iomanip>
 #include <iostream>
 #include <set>
+#include <vector>
 
 #include <gtest/gtest.h>
 
 namespace scram {
 namespace test {
 
-// Plots the sampled numbers in the range [0, 1].
-void PlotDistribution(const std::multiset<double>& series) {
+/// Plots the sampled numbers in the range [0, 1].
+///
+/// @param[in,out] series The sampled results.
+void PlotDistribution(const std::vector<double>& series) {
   assert(!series.empty());
-  assert(*series.begin() >= 0);  // Min element.
-  assert(*series.rbegin() <= 1);  // Max element.
   int num_bins = 50;
   double bin_width = 1.0 / num_bins;
-  std::vector<int> bin_hight;
-  std::multiset<double>::const_iterator it = series.begin();
-  for (int bin = 0; bin < num_bins; ++bin) {
-    int size = 0;
-    if (it != series.end()) {
-      double upper_bound = bin * bin_width;
-      while (*it <= upper_bound) {
-        ++size;
-        ++it;
-        if (it == series.end()) break;
-      }
-    }
-    bin_hight.push_back(size);
+  std::vector<int> bin_hight(num_bins + 1, 0);
+  for (double sample : series) {
+    int bin = sample / bin_width;
+    ++bin_hight[bin];
   }
-  assert(bin_hight.size() == num_bins);
   int max_size = *std::max_element(bin_hight.begin(), bin_hight.end());
   int screen_hight = 20;  // Max number of characters in hight.
-  for (int i = 0; i < num_bins; ++i) {
+  for (int i = 0; i < bin_hight.size(); ++i) {
     int num_x = screen_hight * bin_hight[i] / static_cast<double>(max_size) +
                 0.5;
     bin_hight[i] = num_x;  // Height in characters.
@@ -76,10 +67,11 @@ TEST(RandomTest, Seed) {
 }
 
 TEST(RandomTest, UniformReal) {
-  std::multiset<double> series;
+  std::vector<double> series;
   int sample_size = 1e5;
+  series.reserve(sample_size);
   for (int i = 0; i < sample_size; ++i) {
-    series.insert(Random::UniformRealGenerator(0, 1));
+    series.push_back(Random::UniformRealGenerator(0, 1));
   }
   std::cout << "\n    Uniform Distribution of " << sample_size
       << " Real Numbers." << std::endl;
@@ -88,10 +80,11 @@ TEST(RandomTest, UniformReal) {
 }
 
 TEST(RandomTest, Triangular) {
-  std::multiset<double> series;
+  std::vector<double> series;
   int sample_size = 1e5;
+  series.reserve(sample_size);
   for (int i = 0; i < sample_size; ++i) {
-    series.insert(Random::TriangularGenerator(0, 0.5, 1));
+    series.push_back(Random::TriangularGenerator(0, 0.5, 1));
   }
   std::cout << "\n    Triangular Distribution of " << sample_size
       << " Real Numbers." << std::endl;
@@ -102,10 +95,12 @@ TEST(RandomTest, Triangular) {
 TEST(RandomTest, PiecewiseLinear) {
   std::vector<double> intervals = {0, 2, 4, 6, 8, 10};
   std::vector<double> weights = {0, 1, 0, 1, 0, 1};
-  std::multiset<double> series;
+  std::vector<double> series;
   int sample_size = 1e5;
+  series.reserve(sample_size);
   for (int i = 0; i < sample_size; ++i) {
-    series.insert(Random::PiecewiseLinearGenerator(intervals, weights) / 10.0);
+    series.push_back(
+        Random::PiecewiseLinearGenerator(intervals, weights) / 10.0);
   }
   std::cout << "\n    Piecewise Linear Distribution of " << sample_size
       << " Real Numbers." << std::endl;
@@ -117,10 +112,11 @@ TEST(RandomTest, PiecewiseLinear) {
 TEST(RandomTest, Histogram) {
   std::vector<double> intervals = {0, 2, 4, 6, 8, 10};
   std::vector<double> weights = {1, 2, 4, 3, 1};
-  std::multiset<double> series;
+  std::vector<double> series;
   int sample_size = 1e5;
+  series.reserve(sample_size);
   for (int i = 0; i < sample_size; ++i) {
-    series.insert(Random::HistogramGenerator(intervals, weights) / 10.0);
+    series.push_back(Random::HistogramGenerator(intervals, weights) / 10.0);
   }
   std::cout << "\n    Histogram Distribution of " << sample_size
       << " Real Numbers." << std::endl;
@@ -132,10 +128,11 @@ TEST(RandomTest, Histogram) {
 TEST(RandomTest, Discrete) {
   std::vector<double> values = {0, 2, 4, 6, 8, 9};
   std::vector<double> weights = {1, 2, 4, 3, 1, 4};
-  std::multiset<double> series;
+  std::vector<double> series;
   int sample_size = 1e5;
+  series.reserve(sample_size);
   for (int i = 0; i < sample_size; ++i) {
-    series.insert(Random::DiscreteGenerator(values, weights) / 10.0);
+    series.push_back(Random::DiscreteGenerator(values, weights) / 10.0);
   }
   std::cout << "\n    Discrete Distribution of " << sample_size
       << " Real Numbers." << std::endl;
@@ -145,10 +142,11 @@ TEST(RandomTest, Discrete) {
 }
 
 TEST(RandomTest, Binomial) {
-  std::multiset<double> series;
+  std::vector<double> series;
   int sample_size = 1e5;
+  series.reserve(sample_size);
   for (int i = 0; i < sample_size; ++i) {
-    series.insert(Random::BinomialGenerator(20, 0.5) / 20.0);
+    series.push_back(Random::BinomialGenerator(20, 0.5) / 20.0);
   }
   std::cout << "\n    Binomial Distribution of " << sample_size
       << " Real Numbers." << std::endl;
@@ -157,14 +155,15 @@ TEST(RandomTest, Binomial) {
 }
 
 TEST(RandomTest, Normal) {
-  std::multiset<double> series;
+  std::vector<double> series;
   int sample_size = 1e5;
+  series.reserve(sample_size);
   for (int i = 0; i < sample_size; ++i) {
     double sample = 0;
     do {
       sample = Random::NormalGenerator(0.5, 0.15);
-    } while (sample < 0 || sample >= 1);
-    series.insert(sample);
+    } while (sample < 0 || sample > 1);
+    series.push_back(sample);
   }
   assert(series.size() == sample_size);
   std::cout << "\n    Normal Distribution of " << sample_size
@@ -174,14 +173,15 @@ TEST(RandomTest, Normal) {
 }
 
 TEST(RandomTest, LogNormal) {
-  std::multiset<double> series;
+  std::vector<double> series;
   int sample_size = 1e5;
+  series.reserve(sample_size);
   for (int i = 0; i < sample_size; ++i) {
     double sample = 0;
     do {
       sample = Random::LogNormalGenerator(0, 2);
-    } while (sample < 0 || sample >= 1);
-    series.insert(sample);
+    } while (sample < 0 || sample > 1);
+    series.push_back(sample);
   }
   assert(series.size() == sample_size);
   std::cout << "\n    Log-Normal Distribution of " << sample_size
@@ -191,14 +191,15 @@ TEST(RandomTest, LogNormal) {
 }
 
 TEST(RandomTest, Gamma) {
-  std::multiset<double> series;
+  std::vector<double> series;
   int sample_size = 1e5;
+  series.reserve(sample_size);
   for (int i = 0; i < sample_size; ++i) {
     double sample = 0;
     do {
       sample = Random::GammaGenerator(2, 2) / 10;
-    } while (sample < 0 || sample >= 1);
-    series.insert(sample);
+    } while (sample < 0 || sample > 1);
+    series.push_back(sample);
   }
   assert(series.size() == sample_size);
   std::cout << "\n    Gamma Distribution of " << sample_size
@@ -208,14 +209,15 @@ TEST(RandomTest, Gamma) {
 }
 
 TEST(RandomTest, Beta) {
-  std::multiset<double> series;
+  std::vector<double> series;
   int sample_size = 1e5;
+  series.reserve(sample_size);
   for (int i = 0; i < sample_size; ++i) {
     double sample = 0;
     do {
       sample = Random::BetaGenerator(2, 2);
-    } while (sample < 0 || sample >= 1);
-    series.insert(sample);
+    } while (sample < 0 || sample > 1);
+    series.push_back(sample);
   }
   assert(series.size() == sample_size);
   std::cout << "\n    Beta Distribution of " << sample_size
@@ -225,14 +227,15 @@ TEST(RandomTest, Beta) {
 }
 
 TEST(RandomTest, Weibull) {
-  std::multiset<double> series;
+  std::vector<double> series;
   int sample_size = 1e5;
+  series.reserve(sample_size);
   for (int i = 0; i < sample_size; ++i) {
     double sample = 0;
     do {
       sample = Random::WeibullGenerator(3, 1) / 2;
-    } while (sample < 0 || sample >= 1);
-    series.insert(sample);
+    } while (sample < 0 || sample > 1);
+    series.push_back(sample);
   }
   assert(series.size() == sample_size);
   std::cout << "\n    Weibull Distribution of " << sample_size
@@ -242,14 +245,15 @@ TEST(RandomTest, Weibull) {
 }
 
 TEST(RandomTest, Exponential) {
-  std::multiset<double> series;
+  std::vector<double> series;
   int sample_size = 1e5;
+  series.reserve(sample_size);
   for (int i = 0; i < sample_size; ++i) {
     double sample = 0;
     do {
       sample = Random::ExponentialGenerator(1) / 5;
-    } while (sample < 0 || sample >= 1);
-    series.insert(sample);
+    } while (sample < 0 || sample > 1);
+    series.push_back(sample);
   }
   assert(series.size() == sample_size);
   std::cout << "\n    Exponential Distribution of " << sample_size
@@ -259,14 +263,15 @@ TEST(RandomTest, Exponential) {
 }
 
 TEST(RandomTest, Poisson) {
-  std::multiset<double> series;
+  std::vector<double> series;
   int sample_size = 1e5;
+  series.reserve(sample_size);
   for (int i = 0; i < sample_size; ++i) {
     double sample = 0;
     do {
-      sample = static_cast<double>(Random::PoissonGenerator(5)) / 10;
-    } while (sample < 0 || sample >= 1);
-    series.insert(sample);
+      sample = Random::PoissonGenerator(5) / 10.0;
+    } while (sample < 0 || sample > 1);
+    series.push_back(sample);
   }
   assert(series.size() == sample_size);
   std::cout << "\n    Poisson Distribution of " << sample_size
@@ -276,15 +281,16 @@ TEST(RandomTest, Poisson) {
 }
 
 TEST(RandomTest, LogUniform) {
-  std::multiset<double> series;
+  std::vector<double> series;
   int sample_size = 1e5;
+  series.reserve(sample_size);
   for (int i = 0; i < sample_size; ++i) {
     double sample = 0;
     do {
       sample = (Random::LogUniformGenerator(0, std::log(3.7)) - 1) /
                std::exp(1);
-    } while (sample < 0 || sample >= 1);
-    series.insert(sample);
+    } while (sample < 0 || sample > 1);
+    series.push_back(sample);
   }
   assert(series.size() == sample_size);
   std::cout << "\n    Log-Uniform Distribution of " << sample_size
@@ -295,15 +301,16 @@ TEST(RandomTest, LogUniform) {
 }
 
 TEST(RandomTest, LogTriangular) {
-  std::multiset<double> series;
+  std::vector<double> series;
   int sample_size = 1e5;
+  series.reserve(sample_size);
   for (int i = 0; i < sample_size; ++i) {
     double sample = 0;
     do {
       sample = (Random::LogTriangularGenerator(0, 0.5, std::log(3.7)) - 1) /
                std::exp(1);
-    } while (sample < 0 || sample >= 1);
-    series.insert(sample);
+    } while (sample < 0 || sample > 1);
+    series.push_back(sample);
   }
   assert(series.size() == sample_size);
   std::cout << "\n    Log-Triangular Distribution of " << sample_size

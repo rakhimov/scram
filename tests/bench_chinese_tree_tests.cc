@@ -35,11 +35,7 @@ TEST_F(RiskAnalysisTest, ChineseTree) {
   EXPECT_NEAR(0.0045691, p_total(), 1e-5);
   // Minimal cut set check.
   EXPECT_EQ(392, min_cut_sets().size());
-  std::vector<int> distr(7, 0);
-  distr[2] = 12;
-  distr[4] = 24;
-  distr[5] = 188;
-  distr[6] = 168;
+  std::vector<int> distr = {0, 0, 12, 0, 24, 188, 168};
   EXPECT_EQ(distr, McsDistribution());
 }
 

@@ -90,11 +90,10 @@ class RiskAnalysisTest : public ::testing::Test {
     assert(ran->fault_tree_analyses().size() == 1);
     std::vector<int> distr(
         ran->fault_tree_analyses().begin()->second->max_order() + 1, 0);
-    std::set< std::set<std::string> >::const_iterator it;
-    const std::set< std::set<std::string> >* mcs =
-        &ran->fault_tree_analyses().begin()->second->min_cut_sets();
-    for (it = mcs->begin(); it != mcs->end(); ++it) {
-      int order = it->size();
+    const std::set< std::set<std::string> >& mcs =
+        ran->fault_tree_analyses().begin()->second->min_cut_sets();
+    for (const auto& cut_set : mcs) {
+      int order = cut_set.size();
       distr[order]++;
     }
     return distr;
