@@ -15,6 +15,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -56,7 +57,7 @@ int parseArguments(int argc, char *argv[], po::variables_map *vm)
     try {
         po::store(po::parse_command_line(argc, argv, desc), *vm);
     } catch (std::exception& err) {
-        std::cout << "Option error: " << err.what() << "\n\n"
+        std::cerr << "Option error: " << err.what() << "\n\n"
             << usage << "\n\n" << desc << "\n";
         return 1;
     }
@@ -78,8 +79,8 @@ int parseArguments(int argc, char *argv[], po::variables_map *vm)
 
     if (!vm->count("input-files") && !vm->count("config-file")) {
       std::string msg = "No input or configuration file is given.\n";
-      std::cout << msg << std::endl;
-      std::cout << usage << "\n\n" << desc << "\n";
+      std::cerr << msg << std::endl;
+      std::cerr << usage << "\n\n" << desc << "\n";
       return 1;
     }
     return 0;

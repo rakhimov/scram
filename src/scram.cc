@@ -85,7 +85,7 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
 
     po::store(po::parse_command_line(argc, argv, desc), *vm);
   } catch (std::exception& err) {
-    std::cout << "Option error: " << err.what() << "\n\n"
+    std::cerr << "Option error: " << err.what() << "\n\n"
         << usage << "\n\n" << desc << "\n";
     return 1;
   }
@@ -121,16 +121,16 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
 
   if (!vm->count("input-files") && !vm->count("config-file")) {
     std::string msg = "No input or configuration file is given.\n";
-    std::cout << msg << std::endl;
-    std::cout << usage << "\n\n" << desc << "\n";
+    std::cerr << msg << std::endl;
+    std::cerr << usage << "\n\n" << desc << "\n";
     return 1;
   }
 
   if (vm->count("rare-event") && vm->count("mcub")) {
     std::string msg = "The rare event and MCUB approximations cannot be "
                       "applied at the time.";
-    std::cout << msg << "\n" << std::endl;
-    std::cout << usage << "\n\n" << desc << std::endl;
+    std::cerr << msg << "\n" << std::endl;
+    std::cerr << usage << "\n\n" << desc << std::endl;
     return 1;
   }
 
@@ -138,8 +138,8 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
     int verb = (*vm)["verbosity"].as<int>();
     if (verb < 0 || verb > 7) {
       std::string msg = "Log verbosity must be between 0 and 7.";
-      std::cout << msg << "\n" << std::endl;
-      std::cout << usage << "\n\n" << desc << std::endl;
+      std::cerr << msg << "\n" << std::endl;
+      std::cerr << usage << "\n\n" << desc << std::endl;
       return 1;
     }
   }
