@@ -575,14 +575,16 @@ class Preprocessor {
   /// Gates with the same common arguments are grouped
   /// to represent common parents for the arguments.
   ///
+  /// @param[in] num_common_args The least number common arguments to consider.
   /// @param[in] group The group of the gates with their common arguments.
   /// @param[out] parents Grouped common parent gates
   ///             for the sets of common arguments.
   ///
   /// @note The common arguments are sorted.
   void GroupCommonParents(
-     const std::vector<std::pair<IGatePtr, std::vector<int> > >& group,
-     boost::unordered_map<std::vector<int>, std::set<IGatePtr> >* parents) noexcept;
+      int num_common_args,
+      const std::vector<std::pair<IGatePtr, std::vector<int> > >& group,
+      boost::unordered_map<std::vector<int>, std::set<IGatePtr> >* parents) noexcept;
 
   /// Propagates failures of common nodes to detect redundancy.
   /// The graph structure is optimized
@@ -766,11 +768,53 @@ class Preprocessor {
   /// Manipulates gates with distributive arguments.
   ///
   /// @param[in,out] gate The gate which arguments must be manipulated.
+  /// @param[in] distr_type The type of distributive arguments.
   /// @param[in,out] candidates Candidates for distributivity check.
   ///
   /// @returns true if transformations are performed.
   bool HandleDistributiveArgs(const IGatePtr& gate,
+                              const Operator& distr_type,
                               const std::vector<IGatePtr>& candidates) noexcept;
+
+  /// @struct MergeTable
+  /// Helper struct for algorithms
+  /// that must make an optimal decision
+  /// how to merge or factor out
+  /// common arguments of gates into new gates.
+  struct MergeTable {
+    typedef std::vector<int> CommonArgs;  ///< Unique, sorted common arguments.
+    typedef std::set<IGatePtr> CommonParents;  ///< Unique common parent gates.
+    typedef std::pair<CommonArgs, CommonParents> Option;  ///< One possibility.
+    typedef std::vector<Option> MergeGroup;  ///< Isolated group for processing.
+
+    std::vector<MergeGroup> groups;  ///< Container of isolated groups.
+  };
+
+  /// Groups distributive gate arguments
+  /// for furture factorization.
+  /// The function tries to maximize the return
+  /// from the gate manipulations.
+  ///
+  /// @param[in] options Combinations of common args and distributive gates.
+  /// @param[out] table Groups of distributive gates for separate manipulation.
+  ///
+  /// @todo Evaluate various grouping strategies.
+  ///       Module creation, the number of parents,
+  ///       the number of merge groups, and other criteria
+  ///       can serve as optimization goals.
+  void GroupDistributiveArgs(
+      const boost::unordered_map<std::vector<int>, std::set<IGatePtr>>& options,
+      MergeTable* table) noexcept;
+
+  /// Transforms distributive arguments gates
+  /// into a new subgraph.
+  ///
+  /// @param[in,out] gate The parent gate of all the distributive arguments.
+  /// @param[in] distr_type The type of distributive arguments.
+  /// @param[in,out] group Group of distributive args for manipulation.
+  void TransformDistributiveArgs(const IGatePtr& gate,
+                                 const Operator& distr_type,
+                                 MergeTable::MergeGroup* group) noexcept;
 
   /// Replaces one gate in the graph with another.
   ///
