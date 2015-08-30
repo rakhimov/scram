@@ -1652,7 +1652,10 @@ bool Preprocessor::ProcessMultipleDefinitions() noexcept {
   graph_->ClearGateMarks();
 
   if (multi_def.empty()) return false;
+  LOG(DEBUG4) << multi_def.size() << " gates are multiply defined.";
   for (const auto& def : multi_def) {
+    LOG(DEBUG5) << "Gate " << def.first->index() << ": "
+        << def.second.size() << " times.";
     for (const IGateWeakPtr& dup : def.second) {
       if (dup.expired()) continue;
       Preprocessor::ReplaceGate(dup.lock(), def.first);

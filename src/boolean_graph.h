@@ -32,13 +32,17 @@
 
 #include <array>
 #include <cassert>
+#include <functional>
 #include <iostream>
 #include <map>
 #include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
+
+#include <boost/functional/hash.hpp>
 
 namespace scram {
 
@@ -626,17 +630,55 @@ class GateSet {
   typedef std::shared_ptr<IGate> IGatePtr;
 
   /// Inserts a gate into the set
-  /// if it is not a duplicate.
+  /// if it is semantically unique.
   ///
   /// @param[in] gate The gate to insert.
   ///
   /// @returns A pair of the unique gate and
   ///          the insertion success flag.
-  std::pair<IGatePtr, bool> insert(const IGatePtr& gate) noexcept;
+  inline std::pair<IGatePtr, bool> insert(const IGatePtr& gate) noexcept {
+    auto result = table_[gate->type()].insert(gate);
+    return {*result.first, result.second};
+  }
 
  private:
+  /// @struct Hash
+  /// Functor for hashing gates by their arguments.
+  ///
+  /// @note The hashing discards the logic of the gate.
+  struct Hash
+      : public std::unary_function<const IGatePtr, std::size_t> {
+    /// Operator overload for hashing.
+    ///
+    /// @param[in] gate The gate which hash must be calculated.
+    ///
+    /// @returns Hash value of the gate
+    ///          from its arguments but not logic.
+    std::size_t operator()(const IGatePtr& gate) const noexcept {
+      return boost::hash_value(gate->args());
+    }
+  };
+  /// @struct Equal
+  /// Functor for equality test for gates by their arguments.
+  ///
+  /// @note The equality discards the logic of the gate.
+  struct Equal
+      : public std::binary_function<const IGatePtr, const IGatePtr, bool> {
+    /// Operator overload for gate argument equality test.
+    ///
+    /// @param[in] lhs The first gate.
+    /// @param[in] rhs The second gate.
+    ///
+    /// @returns true if the gate arguments are equal.
+    bool operator()(const IGatePtr& lhs, const IGatePtr& rhs) const noexcept {
+      if (lhs->args() != rhs->args()) return false;
+      if (lhs->type() == kAtleastGate &&
+          lhs->vote_number() != rhs->vote_number()) return false;
+      return true;
+    }
+  };
   /// Container of gates grouped by their types.
-  std::array<std::vector<IGatePtr>, kNumOperators> table_;
+  std::array<std::unordered_set<IGatePtr, Hash, Equal>, kNumOperators> table_;
 };
 
 class BasicEvent;
