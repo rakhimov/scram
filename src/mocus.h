@@ -27,9 +27,9 @@
 #define SCRAM_SRC_MOCUS_H_
 
 #include <functional>
-#include <map>
 #include <memory>
 #include <set>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -73,7 +73,7 @@ struct SetPtrEqual
 };
 
 /// @class SetPtrComp
-/// Functor for set pointer comparison efficiency.
+/// Functor for set pointer comparison.
 struct SetPtrComp
     : public std::binary_function<const SetPtr, const SetPtr, bool> {
   /// Operator overload.
@@ -193,8 +193,9 @@ class Mocus {
   ///
   /// @param[in] gate The gate to start with.
   /// @param[in,out] processed_gates Gates turned into simple gates.
-  void CreateSimpleTree(const IGatePtr& gate,
-                        std::map<int, SimpleGatePtr>* processed_gates) noexcept;
+  void CreateSimpleTree(
+      const IGatePtr& gate,
+      std::unordered_map<int, SimpleGatePtr>* processed_gates) noexcept;
 
   /// Finds minimal cut sets of a simple gate.
   ///
