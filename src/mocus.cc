@@ -143,6 +143,15 @@ void SimpleGate::OrGateCutSets(const SetPtr& cut_set,
       return;
     }
   }
+  // Generate cut sets from child gates of AND type.
+  HashSet local_sets;
+  for (const SimpleGatePtr& gate : gates_) {
+    gate->AndGateCutSets(cut_set, &local_sets);
+    if (local_sets.count(cut_set)) {
+      new_cut_sets->insert(cut_set);
+      return;
+    }
+  }
   // There is a guarantee of a size increase of a cut set.
   if (cut_set->size() < limit_order_) {
     // Create new cut sets from basic events and modules.
@@ -161,16 +170,6 @@ void SimpleGate::OrGateCutSets(const SetPtr& cut_set,
     }
   }
 
-  // Generate cut sets from child gates of AND type.
-  HashSet local_sets;
-  for (const SimpleGatePtr& gate : gates_) {
-    gate->AndGateCutSets(cut_set, &local_sets);
-    if (local_sets.empty()) continue;
-    if (local_sets.count(cut_set)) {
-      new_cut_sets->insert(cut_set);
-      return;
-    }
-  }
   new_cut_sets->insert(local_sets.begin(), local_sets.end());
 }
 
