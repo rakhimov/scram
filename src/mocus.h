@@ -30,13 +30,45 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <unordered_set>
 #include <vector>
+
+#include <boost/functional/hash.hpp>
 
 #include "boolean_graph.h"
 
 namespace scram {
 
-typedef std::shared_ptr<std::set<int> > SetPtr;
+typedef std::shared_ptr<std::set<int>> SetPtr;
+
+/// @struct SetPtrHash
+/// Functor for hashing sets given by pointers.
+struct SetPtrHash
+    : public std::unary_function<const SetPtr, std::size_t> {
+  /// Operator overload for hashing.
+  ///
+  /// @param[in] set The pointer to set which hash must be calculated.
+  ///
+  /// @returns Hash value of the set.
+  std::size_t operator()(const SetPtr& set) const noexcept {
+    return boost::hash_value(*set);
+  }
+};
+
+/// @struct SetPtrEqual
+/// Functor for equality test for pointers of sets.
+struct SetPtrEqual
+    : public std::binary_function<const SetPtr, const SetPtr, bool> {
+  /// Operator overload for set equality test.
+  ///
+  /// @param[in] lhs The first set.
+  /// @param[in] rhs The second set.
+  ///
+  /// @returns true if the pointed sets are equal.
+  bool operator()(const SetPtr& lhs, const SetPtr& rhs) const noexcept {
+    return *lhs == *rhs;
+  }
+};
 
 /// @class SetPtrComp
 /// Functor for set pointer comparison efficiency.
@@ -63,6 +95,7 @@ struct SetPtrComp
 class SimpleGate {
  public:
   typedef std::shared_ptr<SimpleGate> SimpleGatePtr;
+  typedef std::unordered_set<SetPtr, SetPtrHash, SetPtrEqual> HashSet;
 
   /// @param[in] type The type of this gate. AND or OR types are expected.
   explicit SimpleGate(const Operator& type) noexcept : type_(type) {}
@@ -102,8 +135,7 @@ class SimpleGate {
   ///
   /// @param[in] cut_set The base cut set to work with.
   /// @param[out] new_cut_sets Generated cut sets by adding the gate's children.
-  void GenerateCutSets(const SetPtr& cut_set,
-                       std::set<SetPtr, SetPtrComp>* new_cut_sets) noexcept;
+  void GenerateCutSets(const SetPtr& cut_set, HashSet* new_cut_sets) noexcept;
 
   /// Sets the limit order for all analysis with simple gates.
   ///
@@ -117,8 +149,7 @@ class SimpleGate {
   ///
   /// @param[in] cut_set The base cut set to work with.
   /// @param[out] new_cut_sets Generated cut sets by using the gate's children.
-  void AndGateCutSets(const SetPtr& cut_set,
-                      std::set<SetPtr, SetPtrComp>* new_cut_sets) noexcept;
+  void AndGateCutSets(const SetPtr& cut_set, HashSet* new_cut_sets) noexcept;
 
   /// Generates cut sets for OR gate children
   /// using already generated sets.
@@ -126,8 +157,7 @@ class SimpleGate {
   ///
   /// @param[in] cut_set The base cut set to work with.
   /// @param[out] new_cut_sets Generated cut sets by using the gate's children.
-  void OrGateCutSets(const SetPtr& cut_set,
-                     std::set<SetPtr, SetPtrComp>* new_cut_sets) noexcept;
+  void OrGateCutSets(const SetPtr& cut_set, HashSet* new_cut_sets) noexcept;
 
   Operator type_;  ///< Type of this gate.
   std::vector<int> basic_events_;  ///< Container of basic events' indices.
