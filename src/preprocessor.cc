@@ -1641,26 +1641,21 @@ void Preprocessor::ProcessDecompositionAncestors(
 bool Preprocessor::ProcessMultipleDefinitions() noexcept {
   assert(null_gates_.empty());
   assert(const_gates_.empty());
+
+  graph_->ClearGateMarks();
   // The original gate and its multiple definitions.
   std::unordered_map<IGatePtr, std::vector<IGateWeakPtr> > multi_def;
-  std::vector<std::vector<IGatePtr> > orig_gates(kNumOperators,
-                                                 std::vector<IGatePtr>());
-  graph_->ClearGateMarks();
+  GateSet* unique_gates = new GateSet();
   Preprocessor::DetectMultipleDefinitions(graph_->root(), &multi_def,
-                                          &orig_gates);
-  orig_gates.clear();  /// @todo Use weak pointers.
+                                          unique_gates);
+  delete unique_gates;  // To remove extra reference counts.
   graph_->ClearGateMarks();
 
   if (multi_def.empty()) return false;
-  std::unordered_map<IGatePtr, std::vector<IGateWeakPtr> >::iterator it;
-  for (it = multi_def.begin(); it != multi_def.end(); ++it) {
-    IGatePtr orig_gate = it->first;
-    std::vector<IGateWeakPtr>& duplicates = it->second;
-    std::vector<IGateWeakPtr>::iterator it_dup;
-    for (it_dup = duplicates.begin(); it_dup != duplicates.end(); ++it_dup) {
-      if (it_dup->expired()) continue;
-      IGatePtr dup = it_dup->lock();
-      Preprocessor::ReplaceGate(dup, orig_gate);
+  for (const auto& def : multi_def) {
+    for (const IGateWeakPtr& dup : def.second) {
+      if (dup.expired()) continue;
+      Preprocessor::ReplaceGate(dup.lock(), def.first);
     }
   }
   Preprocessor::ClearConstGates();
@@ -1671,42 +1666,24 @@ bool Preprocessor::ProcessMultipleDefinitions() noexcept {
 void Preprocessor::DetectMultipleDefinitions(
     const IGatePtr& gate,
     std::unordered_map<IGatePtr, std::vector<IGateWeakPtr> >* multi_def,
-    std::vector<std::vector<IGatePtr> >* gates) noexcept {
+    GateSet* unique_gates) noexcept {
   if (gate->mark()) return;
   gate->mark(true);
   assert(gate->state() == kNormalState);
 
   if (!gate->IsModule()) {  // Modules are unique by definition.
-    Operator type = gate->type();
-    std::vector<IGatePtr>& type_group = (*gates)[type];
-    std::vector<IGatePtr>::iterator it;
-    for (it = type_group.begin(); it != type_group.end(); ++it) {
-      IGatePtr orig_gate = *it;
-      assert(orig_gate->mark());
-      if (orig_gate->args() == gate->args()) {
-        // This might be multiple definition. Extra check for K/N gates.
-        if (type == kAtleastGate &&
-            orig_gate->vote_number() != gate->vote_number()) continue;  // No.
-        // Register this gate for replacement.
-        if (multi_def->count(orig_gate)) {
-          multi_def->find(orig_gate)->second.push_back(gate);
-        } else {
-          std::vector<IGateWeakPtr> duplicates(1, gate);
-          multi_def->insert(std::make_pair(orig_gate, duplicates));
-        }
-        return;
-      }
+    std::pair<IGatePtr, bool> ret = unique_gates->insert(gate);
+    assert(ret.first->mark());
+    if (!ret.second) {  // The gate is duplicate.
+      (*multi_def)[ret.first].push_back(gate);
+      return;
     }
   }
   // No redefinition is found for this gate.
-  // In order to avoid a comparison with descendants,
-  // this gate is not yet put into original gates container.
-  std::unordered_map<int, IGatePtr>::const_iterator it_ch;
-  for (it_ch = gate->gate_args().begin(); it_ch != gate->gate_args().end();
-       ++it_ch) {
-    Preprocessor::DetectMultipleDefinitions(it_ch->second, multi_def, gates);
+  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+    Preprocessor::DetectMultipleDefinitions(arg.second, multi_def,
+                                            unique_gates);
   }
-  if (!gate->IsModule()) (*gates)[gate->type()].push_back(gate);
 }
 
 bool Preprocessor::DetectDistributivity(const IGatePtr& gate) noexcept {

@@ -744,13 +744,13 @@ class Preprocessor {
   ///
   /// @param[in] gate The gate to traverse the sub-graph.
   /// @param[in,out] multi_def Detected multiple definitions.
-  /// @param[in,out] gates Ordered gates by their type.
+  /// @param[in,out] unique_gates A set of semantically unique gates.
   ///
   /// @warning Gate marks must be clear.
   void DetectMultipleDefinitions(
       const IGatePtr& gate,
       std::unordered_map<IGatePtr, std::vector<IGateWeakPtr> >* multi_def,
-      std::vector<std::vector<IGatePtr> >* gates) noexcept;
+      GateSet* unique_gates) noexcept;
 
   /// Detects and manipulates AND and OR gate distributivity.
   /// For example,

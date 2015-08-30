@@ -30,6 +30,7 @@
 #ifndef SCRAM_SRC_BOOLEAN_GRAPH_H_
 #define SCRAM_SRC_BOOLEAN_GRAPH_H_
 
+#include <array>
 #include <cassert>
 #include <iostream>
 #include <map>
@@ -611,6 +612,31 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   std::unordered_map<int, ConstantPtr> constant_args_;
   /// The number of arguments failed upon failure propagation.
   int num_failed_args_;
+};
+
+/// @class GateSet
+/// Container of unique gates.
+/// This container acts like an unordered set of gates.
+/// The gates are equivalent
+/// if they have the same semantics.
+/// However, this set does not test
+/// for the isomorphism of the gates' Boolean formulas.
+class GateSet {
+ public:
+  typedef std::shared_ptr<IGate> IGatePtr;
+
+  /// Inserts a gate into the set
+  /// if it is not a duplicate.
+  ///
+  /// @param[in] gate The gate to insert.
+  ///
+  /// @returns A pair of the unique gate and
+  ///          the insertion success flag.
+  std::pair<IGatePtr, bool> insert(const IGatePtr& gate) noexcept;
+
+ private:
+  /// Container of gates grouped by their types.
+  std::array<std::vector<IGatePtr>, kNumOperators> table_;
 };
 
 class BasicEvent;

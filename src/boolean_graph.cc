@@ -356,6 +356,22 @@ void IGate::ArgFailed() noexcept {
   }
 }
 
+std::pair<std::shared_ptr<IGate>, bool>
+GateSet::insert(const IGatePtr& gate) noexcept {
+  Operator type = gate->type();
+  std::vector<IGatePtr>& type_group = table_[type];
+  for (const IGatePtr& orig_gate : type_group) {
+    if (orig_gate->args() == gate->args()) {
+      // This might be multiple definition. Extra check for K/N gates.
+      if (type == kAtleastGate &&
+          orig_gate->vote_number() != gate->vote_number()) continue;  // No.
+      return {orig_gate, false};
+    }
+  }
+  type_group.push_back(gate);
+  return {gate, true};
+}
+
 const std::map<std::string, Operator> BooleanGraph::kStringToType_ =
     {{"and", kAndGate}, {"or", kOrGate}, {"atleast", kAtleastGate},
      {"xor", kXorGate}, {"not", kNotGate}, {"nand", kNandGate},
