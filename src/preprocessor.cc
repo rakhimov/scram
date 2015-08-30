@@ -252,6 +252,28 @@ void Preprocessor::PhaseFive() noexcept {
     }
   }
   LOG(DEBUG3) << "Gate coalescense is done!";
+
+  if (Preprocessor::CheckRootGate()) return;
+  Preprocessor::PhaseTwo();
+  if (Preprocessor::CheckRootGate()) return;
+
+  LOG(DEBUG3) << "Coalescing gates...";
+  graph_changed = true;
+  while (graph_changed) {
+    assert(const_gates_.empty());
+    assert(null_gates_.empty());
+
+    graph_changed = false;
+    graph_->ClearGateMarks();
+    if (graph_->root()->state() == kNormalState)
+      Preprocessor::JoinGates(graph_->root(), true);  // Make layered.
+
+    if (!const_gates_.empty()) {
+      Preprocessor::ClearConstGates();
+      graph_changed = true;
+    }
+  }
+  LOG(DEBUG3) << "Gate coalescense is done!";
 }
 
 bool Preprocessor::CheckRootGate() noexcept {

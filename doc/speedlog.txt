@@ -56,26 +56,26 @@ Release build:
 ---------- CEA9601 -l 14 (mcs = 5640) ----------------
 Release build:
 --------------
-- Cut Set Generation      2.5s   |
+- Cut Set Generation      2.1s   |
 - Cut Set Minimization    0.05s  |
 
 
 ---------- Baobab2 -l 5 (mcs = 1025) ----------------
 Debug build:
 ---------------
-- Cut Set Generation      20s    |
+- Cut Set Generation      18s    |
 - Cut Set Minimization    0.40s  |
 
 Release build:
 ---------------
-- Cut Set Generation      3.2s   |
+- Cut Set Generation      2.9s   |
 - Cut Set Minimization    0.05s  |
 
 
 ---------- Baobab2 -l 6 (mcs = 4805) ----------------
 Release build:
 ---------------
-- Cut Set Generation      18s    |
+- Cut Set Generation      17s    |
 - Cut Set Minimization    0.25s  |
 
 
