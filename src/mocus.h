@@ -33,13 +33,15 @@
 #include <unordered_set>
 #include <vector>
 
+#include <boost/container/flat_set.hpp>
 #include <boost/functional/hash.hpp>
 
 #include "boolean_graph.h"
 
 namespace scram {
 
-typedef std::shared_ptr<std::set<int>> SetPtr;
+typedef boost::container::flat_set<int> Set;
+typedef std::shared_ptr<Set> SetPtr;
 
 /// @struct SetPtrHash
 /// Functor for hashing sets given by pointers.
@@ -51,7 +53,7 @@ struct SetPtrHash
   ///
   /// @returns Hash value of the set.
   std::size_t operator()(const SetPtr& set) const noexcept {
-    return boost::hash_value(*set);
+    return boost::hash_range(set->begin(), set->end());
   }
 };
 
@@ -181,9 +183,7 @@ class Mocus {
   void FindMcs();
 
   /// @returns Generated minimal cut sets with basic event indices.
-  inline const std::vector< std::set<int> >& GetGeneratedMcs() const {
-    return imcs_;
-  }
+  inline const std::vector<Set>& GetGeneratedMcs() const { return imcs_; }
 
  private:
   typedef std::shared_ptr<SimpleGate> SimpleGatePtr;
@@ -201,7 +201,7 @@ class Mocus {
   /// @param[in] gate The simple gate as a parent for processing.
   /// @param[out] mcs Minimal cut sets.
   void FindMcsFromSimpleGate(const SimpleGatePtr& gate,
-                             std::vector< std::set<int> >* mcs) noexcept;
+                             std::vector<Set>* mcs) noexcept;
 
   /// Finds minimal cut sets from cut sets.
   /// Reduces unique cut sets to minimal cut sets.
@@ -215,13 +215,13 @@ class Mocus {
   /// @param[out] mcs Min cut sets.
   ///
   /// @note T_avg(N^3 + N^2*logN + N*logN) = O_avg(N^3)
-  void MinimizeCutSets(const std::vector<const std::set<int>* >& cut_sets,
-                       const std::vector<std::set<int> >& mcs_lower_order,
+  void MinimizeCutSets(const std::vector<const Set*>& cut_sets,
+                       const std::vector<Set>& mcs_lower_order,
                        int min_order,
-                       std::vector<std::set<int> >* mcs) noexcept;
+                       std::vector<Set>* mcs) noexcept;
 
   const BooleanGraph* fault_tree_;  ///< The main fault tree.
-  std::vector< std::set<int> > imcs_;  ///< Min cut sets with indexed events.
+  std::vector<Set> imcs_;  ///< Min cut sets with indexed events.
   /// Limit on the size of the minimal cut sets for performance reasons.
   int limit_order_;
 };

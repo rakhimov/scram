@@ -25,7 +25,6 @@
 #include "boolean_graph.h"
 #include "error.h"
 #include "logger.h"
-#include "mocus.h"
 #include "preprocessor.h"
 
 namespace scram {
@@ -59,7 +58,7 @@ void FaultTreeAnalysis::Analyze() noexcept {
   Mocus* mocus = new Mocus(indexed_tree, kSettings_.limit_order());
   mocus->FindMcs();
 
-  const std::vector< std::set<int> >& imcs = mocus->GetGeneratedMcs();
+  const std::vector<Set>& imcs = mocus->GetGeneratedMcs();
   // Special cases of sets.
   if (imcs.empty()) {
     // Special case of null of a top event. No minimal cut sets found.
@@ -116,13 +115,13 @@ void FaultTreeAnalysis::CleanMarks() noexcept {
   }
 }
 
-void FaultTreeAnalysis::SetsToString(const std::vector< std::set<int> >& imcs,
+void FaultTreeAnalysis::SetsToString(const std::vector<Set>& imcs,
                                      const BooleanGraph* ft) noexcept {
-  std::vector< std::set<int> >::const_iterator it_min;
+  std::vector<Set>::const_iterator it_min;
   for (it_min = imcs.begin(); it_min != imcs.end(); ++it_min) {
     if (it_min->size() > max_order_) max_order_ = it_min->size();
     std::set<std::string> pr_set;
-    std::set<int>::iterator it_set;
+    Set::const_iterator it_set;
     for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
       BasicEventPtr basic_event = ft->GetBasicEvent(std::abs(*it_set));
       if (*it_set < 0) {  // NOT logic.

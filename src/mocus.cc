@@ -105,7 +105,7 @@ void SimpleGate::AndGateCutSets(const SetPtr& cut_set,
     if (!cut_set->count(index)) ++order;
     if (order > limit_order_) return;
   }
-  SetPtr cut_set_copy(new std::set<int>(*cut_set));
+  SetPtr cut_set_copy(new Set(*cut_set));
   // Include all basic events and modules into the set.
   cut_set_copy->insert(basic_events_.begin(), basic_events_.end());
   cut_set_copy->insert(modules_.begin(), modules_.end());
@@ -157,14 +157,14 @@ void SimpleGate::OrGateCutSets(const SetPtr& cut_set,
     // Create new cut sets from basic events and modules.
     for (int index : basic_events_) {
       if (!cut_set->count(-index)) {
-        SetPtr new_set(new std::set<int>(*cut_set));
+        SetPtr new_set(new Set(*cut_set));
         new_set->insert(index);
         new_cut_sets->insert(new_set);
       }
     }
     for (int index : modules_) {
       // No check for complements. The modules are assumed to be positive.
-      SetPtr new_set(new std::set<int>(*cut_set));
+      SetPtr new_set(new Set(*cut_set));
       new_set->insert(index);
       new_cut_sets->insert(new_set);
     }
@@ -190,7 +190,7 @@ void Mocus::FindMcs() {
     State state = top->state();
     assert(state == kNullState || state == kUnityState);
     if (state == kUnityState) {
-      std::set<int> empty_set;
+      Set empty_set;
       imcs_.push_back(empty_set);  // Special indication of unity set.
     }  // Other cases are null.
     return;
@@ -198,7 +198,7 @@ void Mocus::FindMcs() {
     assert(top->args().size() == 1);
     assert(top->gate_args().empty());
     int child = *top->args().begin();
-    std::set<int> one_element;
+    Set one_element;
     one_element.insert(child);
     imcs_.push_back(one_element);
     return;
@@ -209,7 +209,7 @@ void Mocus::FindMcs() {
   Mocus::CreateSimpleTree(top, &simple_gates);
 
   LOG(DEBUG3) << "Finding MCS from top module: " << top->index();
-  std::vector<std::set<int> > mcs;
+  std::vector<Set> mcs;
   Mocus::FindMcsFromSimpleGate(simple_gates.find(top->index())->second, &mcs);
 
   LOG(DEBUG3) << "Top gate cut sets are generated.";
@@ -217,20 +217,20 @@ void Mocus::FindMcs() {
   // The next is to join all other modules.
   LOG(DEBUG3) << "Joining modules.";
   // Save minimal cut sets of analyzed modules.
-  std::map<int, std::vector< std::set<int> > > module_mcs;
-  std::vector< std::set<int> >::iterator it;
+  std::map<int, std::vector<Set> > module_mcs;
+  std::vector<Set>::iterator it;
   while (!mcs.empty()) {
-    std::set<int> member = mcs.back();
+    Set member = mcs.back();
     mcs.pop_back();
     int largest_element = std::abs(*member.rbegin());  // Positive modules!
     if (largest_element <= fault_tree_->basic_events().size()) {
       imcs_.push_back(member);  // All elements are basic events.
     } else {
-      std::set<int>::iterator it_s = member.end();
+      Set::iterator it_s = member.end();
       --it_s;
       int module_index = *it_s;
       member.erase(it_s);
-      std::vector< std::set<int> > sub_mcs;
+      std::vector<Set> sub_mcs;
       if (module_mcs.count(module_index)) {
         sub_mcs = module_mcs.find(module_index)->second;
       } else {
@@ -239,7 +239,7 @@ void Mocus::FindMcs() {
                                      &sub_mcs);
         module_mcs.insert(std::make_pair(module_index, sub_mcs));
       }
-      std::vector< std::set<int> >::iterator it;
+      std::vector<Set>::iterator it;
       for (it = sub_mcs.begin(); it != sub_mcs.end(); ++it) {
         if (it->size() + member.size() <= limit_order_) {
           it->insert(member.begin(), member.end());
@@ -285,13 +285,12 @@ void Mocus::CreateSimpleTree(
   }
 }
 
-void Mocus::FindMcsFromSimpleGate(
-    const SimpleGatePtr& gate,
-    std::vector< std::set<int> >* mcs) noexcept {
+void Mocus::FindMcsFromSimpleGate(const SimpleGatePtr& gate,
+                                  std::vector<Set>* mcs) noexcept {
   CLOCK(gen_time);
 
   SimpleGate::HashSet cut_sets;
-  SetPtr cut_set(new std::set<int>);  // Initial empty cut set.
+  SetPtr cut_set(new Set);  // Initial empty cut set.
   // Generate main minimal cut set gates from top module.
   gate->GenerateCutSets(cut_set, &cut_sets);
 
@@ -301,7 +300,7 @@ void Mocus::FindMcsFromSimpleGate(
   CLOCK(min_time);
   LOG(DEBUG4) << "Minimizing the cut sets.";
 
-  std::vector<const std::set<int>* > cut_sets_vector;
+  std::vector<const Set*> cut_sets_vector;
   cut_sets_vector.reserve(cut_sets.size());
   for (const SetPtr& cut_set : cut_sets) {
     assert(!cut_set->empty());
@@ -317,20 +316,20 @@ void Mocus::FindMcsFromSimpleGate(
   LOG(DEBUG4) << "Cut set minimization time: " << DUR(min_time);
 }
 
-void Mocus::MinimizeCutSets(const std::vector<const std::set<int>* >& cut_sets,
-                            const std::vector<std::set<int> >& mcs_lower_order,
+void Mocus::MinimizeCutSets(const std::vector<const Set*>& cut_sets,
+                            const std::vector<Set>& mcs_lower_order,
                             int min_order,
-                            std::vector<std::set<int> >* mcs) noexcept {
+                            std::vector<Set>* mcs) noexcept {
   if (cut_sets.empty()) return;
 
-  std::vector<const std::set<int>* > temp_sets;  // For mcs of a level above.
-  std::vector<std::set<int> > temp_min_sets;  // For mcs of this level.
+  std::vector<const Set*> temp_sets;  // For mcs of a level above.
+  std::vector<Set> temp_min_sets;  // For mcs of this level.
 
-  std::vector<const std::set<int>* >::const_iterator it_uniq;
+  std::vector<const Set*>::const_iterator it_uniq;
   for (it_uniq = cut_sets.begin(); it_uniq != cut_sets.end(); ++it_uniq) {
     bool include = true;  // Determine to keep or not.
 
-    std::vector<std::set<int> >::const_iterator it_min;
+    std::vector<Set>::const_iterator it_min;
     for (it_min = mcs_lower_order.begin(); it_min != mcs_lower_order.end();
          ++it_min) {
       if (std::includes((*it_uniq)->begin(), (*it_uniq)->end(),
