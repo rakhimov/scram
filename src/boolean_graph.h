@@ -383,6 +383,25 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// @returns false if it is not yet set to be a module.
   inline bool IsModule() const { return module_; }
 
+  /// Helper function for algorithms
+  /// to get nodes from argument indices.
+  ///
+  /// @param[in] index Positive or negative index of the existing argument.
+  ///
+  /// @returns Pointer to the argument node of this gate.
+  ///
+  /// @warning The function assumes that the argument exists.
+  ///          If it doesn't, the behavior is undefined.
+  /// @warning Never try to use dynamic casts to find the type of the node.
+  ///          There are other gate's helper functions
+  ///          that will avoid any need for the RTTI or other hacks.
+  inline NodePtr GetArg(int index) const noexcept {
+    assert(args_.count(index));
+    if (gate_args_.count(index)) return gate_args_.find(index)->second;
+    if (variable_args_.count(index)) return variable_args_.find(index)->second;
+    return constant_args_.find(index)->second;
+  }
+
   /// Adds an argument gate to this gate.
   /// Before adding the argument,
   /// the existing arguments are checked for complements and duplicates.
