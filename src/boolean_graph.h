@@ -18,7 +18,7 @@
 /// @file boolean_graph.h
 /// Classes and facilities to represent simplified fault trees
 /// as Boolean graphs with event and gate indices instead of ID names.
-/// This facilities are designed to work
+/// These facilities are designed to work
 /// with FaultTreeAnalysis and Preprocessor classes.
 ///
 /// The terminologies of the graphs and Boolean logic are mixed
@@ -40,6 +40,7 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 #include <boost/functional/hash.hpp>

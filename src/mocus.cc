@@ -17,10 +17,11 @@
 
 /// @file mocus.cc
 /// Implementation of the MOCUS algorithm.
-/// It is assumed that the tree is layered
+/// The algorithms assumes
+/// that the tree is layered
 /// with OR and AND gates on each level.
 /// That is, one level contains only AND or OR gates.
-/// The function assumes the tree contains only positive gates.
+/// The algorithm assumes the graph contains only positive gates.
 ///
 /// The description of the algorithm.
 ///

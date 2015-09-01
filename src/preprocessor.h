@@ -22,7 +22,6 @@
 #ifndef SCRAM_SRC_PREPROCESSOR_H_
 #define SCRAM_SRC_PREPROCESSOR_H_
 
-#include <iostream>
 #include <map>
 #include <memory>
 #include <set>
@@ -527,8 +526,8 @@ class Preprocessor {
   /// @param[in] groups Grouped modular arguments.
   void CreateNewModules(
       const IGatePtr& gate,
-      const std::vector<std::pair<int, NodePtr> >& modular_args,
-      const std::vector<std::vector<std::pair<int, NodePtr> > >& groups) noexcept;
+      const std::vector<std::pair<int, NodePtr>>& modular_args,
+      const std::vector<std::vector<std::pair<int, NodePtr>>>& groups) noexcept;
 
   /// Identifies common arguments of gates,
   /// and merges the common arguments into new gates.

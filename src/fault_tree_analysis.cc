@@ -20,6 +20,8 @@
 
 #include "fault_tree_analysis.h"
 
+#include <utility>
+
 #include <boost/algorithm/string.hpp>
 
 #include "boolean_graph.h"

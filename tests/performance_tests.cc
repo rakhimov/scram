@@ -103,7 +103,7 @@ TEST_F(PerformanceTest, DISABLED_CEA9601_L10) {
 }
 
 TEST_F(PerformanceTest, DISABLED_Baobab2) {
-  double mcs_time = 16;
+  double mcs_time = 15;
 #ifdef NDEBUG
   mcs_time = 2.0;
 #endif

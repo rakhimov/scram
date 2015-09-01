@@ -63,7 +63,7 @@ Release build:
 ---------- Baobab2 (mcs = 4805) ----------------
 Debug build:
 ---------------
-- Cut Set Generation      14s   |
+- Cut Set Generation      13s   |
 - Cut Set Minimization    2.1s  |
 
 Release build:

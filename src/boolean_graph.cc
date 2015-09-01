@@ -19,8 +19,8 @@
 /// Implementation of indexed nodes, variables, gates, and the Boolean graph.
 /// The implementation caters other algorithms like preprocessing.
 /// The main goal is
-/// to make manipulations and transformations of the graph easier
-/// to achieve for graph algorithms.
+/// to make manipulations and transformations of the graph
+/// easier to achieve for graph algorithms.
 
 #include "boolean_graph.h"
 

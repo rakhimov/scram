@@ -19,8 +19,8 @@
 /// Fault tree analysis with the MOCUS algorithm.
 /// This algorithm requires a fault tree in negation normal form.
 /// The fault tree must only contain layered AND and OR gates.
-/// All gates must be positive;
-/// that is, negations must be pushed down to leaves, basic events.
+/// All gates must be positive.
+/// That is, negations must be pushed down to leaves, basic events.
 /// The fault tree should not contain constants or house events.
 
 #ifndef SCRAM_SRC_MOCUS_H_

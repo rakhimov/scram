@@ -17,42 +17,52 @@
 
 /// @file preprocessor.cc
 /// Implementation of preprocessing algorithms.
+/// The main goal of preprocessing algorithms is
+/// to make Boolean graphs simpler, modular, easier for analysis.
+///
 /// If a preprocessing algorithm has
 /// its limitations, side-effects, and assumptions,
 /// the documentation in the header file
 /// must contain all the relevant information within
-/// notes or warnings.
+/// its description, notes, or warnings.
 /// The default assumption for all algorithms is
-/// that the fault tree is valid and well-formed.
+/// that the Boolean graph is valid and well-formed.
 ///
-/// Some Suggested Notes/Warnings: (Clear contract for preprocessing algorithms)
+/// Some suggested Notes/Warnings: (Contract for preprocessing algorithms)
 ///
-///   * Coherent trees only
-///   * Positive gates or nodes only
-///   * Node visits or gate marks must be cleared before the call
+///   * Works with coherent graphs only
+///   * Works with positive gates or nodes only
+///   * Depends on node visit information, gate marks, or other node flags.
 ///   * May introduce NULL or UNITY state gates or constants
 ///   * May introduce NULL/NOT type gates
 ///   * Operates on certain gate types only
-///   * Normalized gates only
-///   * Should not have gates of certain types
-///   * How it deals with modules (Aware of them or not at all)
-///   * Should not have constants or constant gates
-///   * Does it depend on other preprocessing functions or algorithms?
-///   * Does it swap the root gate of the graph with another (arg) gate?
-///   * Does it remove gates or other kind of nodes?
+///   * Works with normalized gates or structure only
+///   * Cannot accept a graph with gates of certain types
+///   * May destroy modules
+///   * Can accept graphs with constants or constant gates
+///   * Depends on other preprocessing functions or algorithms
+///   * Swaps the root gate of the graph with another (arg) gate
+///   * Removes gates or other kind of nodes
+///   * May introduce new gate clones or subgraphs,
+///     making the graph more complex.
+///   * Works on particular cases or setups only
+///   * Has tradeoffs
+///   * Runs better/More effective before/after some preprocessing step(s)
+///   * Coupled with another preprocessing algorithms
 ///
-/// Assuming that the fault tree is provided
+/// Assuming that the Boolean graph is provided
 /// in the state as described in the contract,
 /// the algorithms should never throw an exception.
 /// The algorithms must guarantee that,
-/// given a valid and well-formed fault tree,
-/// the resulting fault tree will at least be
+/// given a valid and well-formed Boolean graph,
+/// the resulting Boolean graph will at least be
 /// valid, well-formed,
-/// and semantically equivalent to the input fault tree.
+/// and semantically equivalent (isomorphic) to the input Boolean graph.
 ///
 /// If the contract is not respected,
-/// the result or behavior of the algorithm may be undefined.
-/// There is no requirement to check for the broken contract
+/// the result or behavior of the algorithm can be undefined.
+/// There is no requirement
+/// to check for the broken contract
 /// and to exit gracefully.
 
 #include "preprocessor.h"
@@ -1077,8 +1087,8 @@ void Preprocessor::GroupModularArgs(
 
 void Preprocessor::CreateNewModules(
     const IGatePtr& gate,
-    const std::vector<std::pair<int, NodePtr> >& modular_args,
-    const std::vector<std::vector<std::pair<int, NodePtr> > >& groups) noexcept {
+    const std::vector<std::pair<int, NodePtr>>& modular_args,
+    const std::vector<std::vector<std::pair<int, NodePtr>>>& groups) noexcept {
   if (modular_args.empty()) return;
   assert(modular_args.size() > 1);
   assert(!groups.empty());
@@ -1472,7 +1482,7 @@ void Preprocessor::TransformDistributiveArgs(
   IGatePtr new_parent;
   if (gate->args().size() == gates.size()) {
     new_parent = gate;  // Reuse the gate to avoid extra merging operations.
-    switch(gate->type()) {
+    switch (gate->type()) {
       case kAndGate:
       case kOrGate:
         gate->type(distr_type);
