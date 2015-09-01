@@ -1140,7 +1140,7 @@ bool Preprocessor::MergeCommonArgs(const Operator& op) noexcept {
   // by their operator types and common arguments.
   Preprocessor::MarkCommonArgs(graph_->root(), op);
   graph_->ClearGateMarks();
-  std::vector<std::pair<IGatePtr, std::vector<int> > > group;
+  MergeTable::Candidates group;
   Preprocessor::GatherCommonArgs(graph_->root(), op, &group);
   // Finding common parents for the common arguments.
   MergeTable::Collection parents;
@@ -1260,10 +1260,8 @@ void Preprocessor::MarkCommonArgs(const IGatePtr& gate,
   assert(gate->constant_args().empty());
 }
 
-void Preprocessor::GatherCommonArgs(
-    const IGatePtr& gate,
-    const Operator& op,
-    std::vector<std::pair<IGatePtr, std::vector<int> > >* group) noexcept {
+void Preprocessor::GatherCommonArgs(const IGatePtr& gate, const Operator& op,
+                                    MergeTable::Candidates* group) noexcept {
   if (gate->mark()) return;
   gate->mark(true);
 
@@ -1296,7 +1294,7 @@ void Preprocessor::GatherCommonArgs(
 
 void Preprocessor::GroupCommonParents(
     int num_common_args,
-    const std::vector<std::pair<IGatePtr, std::vector<int> > >& group,
+    const MergeTable::Candidates& group,
     MergeTable::Collection* parents) noexcept {
   if (group.empty()) return;
   for (int i = 0; i < group.size() - 1; ++i) {
@@ -1363,7 +1361,7 @@ bool Preprocessor::HandleDistributiveArgs(
   // Detecting a combination
   // that gives the most optimization is combinatorial.
   // The problem is similar to merging common arguments of gates.
-  std::vector<std::pair<IGatePtr, std::vector<int>>> group;
+  MergeTable::Candidates group;
   for (const IGatePtr& candidate : candidates) {
     group.emplace_back(candidate, std::vector<int>(candidate->args().begin(),
                                                    candidate->args().end()));

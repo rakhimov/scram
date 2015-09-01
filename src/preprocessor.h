@@ -576,6 +576,25 @@ class Preprocessor {
   /// @warning Gate marks are used for linear traversal.
   void MarkCommonArgs(const IGatePtr& gate, const Operator& op) noexcept;
 
+  /// @struct MergeTable
+  /// Helper struct for algorithms
+  /// that must make an optimal decision
+  /// how to merge or factor out
+  /// common arguments of gates into new gates.
+  struct MergeTable {
+    typedef std::vector<int> CommonArgs;  ///< Unique, sorted common arguments.
+    typedef std::set<IGatePtr> CommonParents;  ///< Unique common parent gates.
+    typedef std::pair<CommonArgs, CommonParents> Option;  ///< One possibility.
+    typedef std::vector<Option> MergeGroup;  ///< Isolated group for processing.
+
+    /// Collection of merge-candidate gates with their common arguments.
+    typedef std::vector<std::pair<IGatePtr, CommonArgs>> Candidates;
+    /// Mapping for collection of common args and common parents as options.
+    typedef boost::unordered_map<CommonArgs, CommonParents> Collection;
+
+    std::vector<MergeGroup> groups;  ///< Container of isolated groups.
+  };
+
   /// Gathers common arguments of the gates
   /// in the group of a specific operator.
   /// The common arguments must be marked
@@ -588,27 +607,8 @@ class Preprocessor {
   /// @note The common arguments are sorted.
   ///
   /// @warning Gate marks are used for linear traversal.
-  void GatherCommonArgs(
-      const IGatePtr& gate,
-      const Operator& op,
-      std::vector<std::pair<IGatePtr, std::vector<int> > >* group) noexcept;
-
-  /// @struct MergeTable
-  /// Helper struct for algorithms
-  /// that must make an optimal decision
-  /// how to merge or factor out
-  /// common arguments of gates into new gates.
-  struct MergeTable {
-    typedef std::vector<int> CommonArgs;  ///< Unique, sorted common arguments.
-    typedef std::set<IGatePtr> CommonParents;  ///< Unique common parent gates.
-    typedef std::pair<CommonArgs, CommonParents> Option;  ///< One possibility.
-    typedef std::vector<Option> MergeGroup;  ///< Isolated group for processing.
-
-    /// Mapping for collection of common args and common parents as options.
-    typedef boost::unordered_map<CommonArgs, CommonParents> Collection;
-
-    std::vector<MergeGroup> groups;  ///< Container of isolated groups.
-  };
+  void GatherCommonArgs(const IGatePtr& gate, const Operator& op,
+                        MergeTable::Candidates* group) noexcept;
 
   /// Findes intersections of common arguments of gates.
   /// Gates with the same common arguments are grouped
@@ -620,10 +620,9 @@ class Preprocessor {
   ///             for the sets of common arguments.
   ///
   /// @note The common arguments are sorted.
-  void GroupCommonParents(
-      int num_common_args,
-      const std::vector<std::pair<IGatePtr, std::vector<int> > >& group,
-      MergeTable::Collection* parents) noexcept;
+  void GroupCommonParents(int num_common_args,
+                          const MergeTable::Candidates& group,
+                          MergeTable::Collection* parents) noexcept;
 
   /// Detects and manipulates AND and OR gate distributivity.
   /// For example,
