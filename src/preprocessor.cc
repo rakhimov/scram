@@ -1133,7 +1133,7 @@ bool Preprocessor::MergeCommonArgs(const Operator& op) noexcept {
   std::vector<std::pair<IGatePtr, std::vector<int> > > group;
   Preprocessor::GatherCommonArgs(graph_->root(), op, &group);
   // Finding common parents for the common arguments.
-  boost::unordered_map<std::vector<int>, std::set<IGatePtr> > parents;
+  MergeTable::Collection parents;
   Preprocessor::GroupCommonParents(2, group, &parents);
   if (parents.empty()) return false;  // No candidates for merging.
 
@@ -1161,18 +1161,16 @@ bool Preprocessor::MergeCommonArgs(const Operator& op) noexcept {
   ///       the optimization of the supersets is impossible.
   /// @todo Must find a way to efficiently transfer data
   ///       from the map to the table.
-  std::vector<std::pair<std::vector<int>, std::set<IGatePtr> > >
-      table(parents.begin(), parents.end());
+  MergeTable::MergeGroup table(parents.begin(), parents.end());
   // Sorting in descending order for more efficient pop.
   std::sort(table.begin(), table.end(),
-            [](const std::pair<std::vector<int>, std::set<IGatePtr>>& a,
-               const std::pair<std::vector<int>, std::set<IGatePtr>>& b) {
-              return a.first.size() > b.first.size();
+            [](const MergeTable::Option& lhs, const MergeTable::Option& rhs) {
+              return lhs.first.size() > rhs.first.size();
             });
   assert(table.front().first.size() >= table.back().first.size());
   while (!table.empty()) {
-    std::set<IGatePtr>& common_parents = table.back().second;
-    std::vector<int>& common_args = table.back().first;
+    MergeTable::CommonParents& common_parents = table.back().second;
+    MergeTable::CommonArgs& common_args = table.back().first;
     std::vector<IGatePtr> useful_parents;  // With full set of args.
 
     for (const IGatePtr& common_parent : common_parents) {
@@ -1289,7 +1287,7 @@ void Preprocessor::GatherCommonArgs(
 void Preprocessor::GroupCommonParents(
     int num_common_args,
     const std::vector<std::pair<IGatePtr, std::vector<int> > >& group,
-    boost::unordered_map<std::vector<int>, std::set<IGatePtr> >* parents) noexcept {
+    MergeTable::Collection* parents) noexcept {
   if (group.empty()) return;
   for (int i = 0; i < group.size() - 1; ++i) {
     const std::vector<int>& args_gate = group[i].second;
@@ -1304,7 +1302,7 @@ void Preprocessor::GroupCommonParents(
                             args_comp.begin(), args_comp.end(),
                             std::back_inserter(common));
       if (common.size() < num_common_args) continue;  // Doesn't satisfy.
-      std::set<IGatePtr>& common_parents = (*parents)[common];
+      MergeTable::CommonParents& common_parents = (*parents)[common];
       common_parents.insert(group[i].first);
       common_parents.insert(group[j].first);
     }
@@ -1361,7 +1359,7 @@ bool Preprocessor::HandleDistributiveArgs(
                                                    candidate->args().end()));
   }
   LOG(DEBUG5) << "Considering " << group.size() << " candidates...";
-  boost::unordered_map<std::vector<int>, std::set<IGatePtr>> options;
+  MergeTable::Collection options;
   Preprocessor::GroupCommonParents(1, group, &options);
   if (options.empty()) return false;
   LOG(DEBUG4) << "Got " << options.size() << " distributive option(s).";
@@ -1401,15 +1399,14 @@ bool Preprocessor::HandleDistributiveArgs(
   return true;
 }
 
-void Preprocessor::GroupDistributiveArgs(
-    const boost::unordered_map<std::vector<int>, std::set<IGatePtr>>& options,
-    MergeTable* table) noexcept {
+void Preprocessor::GroupDistributiveArgs(const MergeTable::Collection& options,
+                                         MergeTable* table) noexcept {
   assert(!options.empty());
   MergeTable::MergeGroup all_options(options.begin(), options.end());
   // Sorting in descending size of common arguments.
   std::sort(all_options.begin(), all_options.end(),
             [](const MergeTable::Option& lhs, const MergeTable::Option& rhs) {
-              return lhs.first.size() < rhs.first.size();
+            return lhs.first.size() < rhs.first.size();
             });
 
   // Isolated options in subset to superset relationship.
@@ -1430,9 +1427,9 @@ void Preprocessor::GroupDistributiveArgs(
                                       group.back()->first.end());
         if (!superset) continue;  // Does not include all the arguments.
         bool parents = std::includes(group.back()->second.begin(),
-                                    group.back()->second.end(),
-                                    candidate->second.begin(),
-                                    candidate->second.end());
+                                     group.back()->second.end(),
+                                     candidate->second.begin(),
+                                     candidate->second.end());
         if (!parents) continue;  // Parents do not match.
         group.push_back(candidate);
       }
@@ -1457,7 +1454,7 @@ void Preprocessor::GroupDistributiveArgs(
     }
     all_options.erase(std::remove_if(all_options.begin(), all_options.end(),
                                      [](const MergeTable::Option& option) {
-                                       return option.second.size() < 2;
+                                     return option.second.size() < 2;
                                      }),
                       all_options.end());
   }

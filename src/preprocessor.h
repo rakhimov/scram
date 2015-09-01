@@ -594,6 +594,23 @@ class Preprocessor {
       const Operator& op,
       std::vector<std::pair<IGatePtr, std::vector<int> > >* group) noexcept;
 
+  /// @struct MergeTable
+  /// Helper struct for algorithms
+  /// that must make an optimal decision
+  /// how to merge or factor out
+  /// common arguments of gates into new gates.
+  struct MergeTable {
+    typedef std::vector<int> CommonArgs;  ///< Unique, sorted common arguments.
+    typedef std::set<IGatePtr> CommonParents;  ///< Unique common parent gates.
+    typedef std::pair<CommonArgs, CommonParents> Option;  ///< One possibility.
+    typedef std::vector<Option> MergeGroup;  ///< Isolated group for processing.
+
+    /// Mapping for collection of common args and common parents as options.
+    typedef boost::unordered_map<CommonArgs, CommonParents> Collection;
+
+    std::vector<MergeGroup> groups;  ///< Container of isolated groups.
+  };
+
   /// Findes intersections of common arguments of gates.
   /// Gates with the same common arguments are grouped
   /// to represent common parents for the arguments.
@@ -607,7 +624,7 @@ class Preprocessor {
   void GroupCommonParents(
       int num_common_args,
       const std::vector<std::pair<IGatePtr, std::vector<int> > >& group,
-      boost::unordered_map<std::vector<int>, std::set<IGatePtr> >* parents) noexcept;
+      MergeTable::Collection* parents) noexcept;
 
   /// Detects and manipulates AND and OR gate distributivity.
   /// For example,
@@ -631,20 +648,6 @@ class Preprocessor {
                               const Operator& distr_type,
                               const std::vector<IGatePtr>& candidates) noexcept;
 
-  /// @struct MergeTable
-  /// Helper struct for algorithms
-  /// that must make an optimal decision
-  /// how to merge or factor out
-  /// common arguments of gates into new gates.
-  struct MergeTable {
-    typedef std::vector<int> CommonArgs;  ///< Unique, sorted common arguments.
-    typedef std::set<IGatePtr> CommonParents;  ///< Unique common parent gates.
-    typedef std::pair<CommonArgs, CommonParents> Option;  ///< One possibility.
-    typedef std::vector<Option> MergeGroup;  ///< Isolated group for processing.
-
-    std::vector<MergeGroup> groups;  ///< Container of isolated groups.
-  };
-
   /// Groups distributive gate arguments
   /// for furture factorization.
   /// The function tries to maximize the return
@@ -657,9 +660,8 @@ class Preprocessor {
   ///       Module creation, the number of parents,
   ///       the number of merge groups, and other criteria
   ///       can serve as optimization goals.
-  void GroupDistributiveArgs(
-      const boost::unordered_map<std::vector<int>, std::set<IGatePtr>>& options,
-      MergeTable* table) noexcept;
+  void GroupDistributiveArgs(const MergeTable::Collection& options,
+                             MergeTable* table) noexcept;
 
   /// Transforms distributive arguments gates
   /// into a new subgraph.
