@@ -543,8 +543,6 @@ class Preprocessor {
   ///
   /// @warning Gate marks are used for traversal.
   /// @warning Node counts are used for common node detection.
-  /// @warning Gate optimization values are used
-  ///          to mark the optimized gates.
   bool MergeCommonArgs() noexcept;
 
   /// Merges common arguments for a specific group of gates.
@@ -561,8 +559,6 @@ class Preprocessor {
   ///
   /// @warning Gate marks are used for traversal.
   /// @warning Node counts are used for common node detection.
-  /// @warning Gate optimization values are used
-  ///          to mark the optimized gates.
   bool MergeCommonArgs(const Operator& op) noexcept;
 
   /// Marks common arguments of gates with a specific operator.
@@ -585,6 +581,7 @@ class Preprocessor {
     typedef std::vector<int> CommonArgs;  ///< Unique, sorted common arguments.
     typedef std::set<IGatePtr> CommonParents;  ///< Unique common parent gates.
     typedef std::pair<CommonArgs, CommonParents> Option;  ///< One possibility.
+    typedef std::vector<Option*> OptionGroup;  ///< A set of best options.
     typedef std::vector<Option> MergeGroup;  ///< Isolated group for processing.
 
     /// Collection of merge-candidate gates with their common arguments.
@@ -624,6 +621,66 @@ class Preprocessor {
                           const MergeTable::Candidates& group,
                           MergeTable::Collection* parents) noexcept;
 
+  /// Groups common args for merging.
+  /// The common parents of arguments are isolated into groups
+  /// so that other groups are not affected by the merging operations.
+  ///
+  /// @param[in] options Combinations of common args and distributive gates.
+  /// @param[out] table Groups of distributive gates for separate manipulation.
+  void GroupCommonArgs(const MergeTable::Collection& options,
+                       MergeTable* table) noexcept;
+
+  /// Finds an optimal way of grouping options.
+  /// The goal of this function is
+  /// to maximize the effect of gate merging
+  /// or common argument factorization.
+  ///
+  /// After common arguments and parents are grouped,
+  /// the merging technique must find the most optimal strategy
+  /// to create new gates
+  /// that will represent the common arguments.
+  /// The strategy may favor modularity, size, or other parameters
+  /// of the new structure of the final graph.
+  /// The common elements within
+  /// the groups of common parents and common arguments
+  /// create the biggest challenge for finding the optimal solution.
+  /// For example,
+  /// {
+  /// (a, b) : (p1, p2),
+  /// (b, c) : (p2, p3)
+  /// }
+  /// The strategy has to make
+  /// the most optimal choice
+  /// between two mutually exclusive options.
+  ///
+  /// @param[in] all_options The sorted set of options.
+  ///                        The options are sorted
+  ///                        in descending size of common arguments.
+  /// @param[out] best_group The optimal group of options.
+  ///
+  /// @note The all_options parameter is not passed by const reference
+  ///       because the best group must store non const pointers to options.
+  ///       It is expected that the chosen options will be manipulated
+  ///       by the user of this function through these pointers.
+  ///       However, this function guarantees
+  ///       not to manipulate or change the set of all options.
+  ///
+  /// @todo The non const reference seems to be a code-smell in this case.
+  /// @todo Evaluate various merging strategies.
+  ///       Module creation, the number of parents,
+  ///       the number of merge groups, and other criteria
+  ///       can serve as optimization parameters.
+  /// @todo The current logic misses opportunities
+  ///       that may branch with the same base option.
+  void FindOptionGroup(MergeTable::MergeGroup& all_options,
+                       MergeTable::OptionGroup* best_group) noexcept;
+
+  /// Transforms common arguments of gates
+  /// into new gates.
+  ///
+  /// @param[in,out] group Group of merge options for manipulation.
+  void TransformCommonArgs(MergeTable::MergeGroup* group) noexcept;
+
   /// Detects and manipulates AND and OR gate distributivity.
   /// For example,
   /// (a | b) & (a | c) = a | b & c.
@@ -654,19 +711,16 @@ class Preprocessor {
   /// @param[in] options Combinations of common args and distributive gates.
   /// @param[out] table Groups of distributive gates for separate manipulation.
   ///
-  /// @todo Evaluate various grouping strategies.
-  ///       Module creation, the number of parents,
-  ///       the number of merge groups, and other criteria
-  ///       can serve as optimization goals.
+  /// @todo Evaluate various grouping strategies as in common arg merging.
   void GroupDistributiveArgs(const MergeTable::Collection& options,
                              MergeTable* table) noexcept;
 
-  /// Transforms distributive arguments gates
+  /// Transforms distributive of arguments gates
   /// into a new subgraph.
   ///
   /// @param[in,out] gate The parent gate of all the distributive arguments.
   /// @param[in] distr_type The type of distributive arguments.
-  /// @param[in,out] group Group of distributive args for manipulation.
+  /// @param[in,out] group Group of distributive args options for manipulation.
   void TransformDistributiveArgs(const IGatePtr& gate,
                                  const Operator& distr_type,
                                  MergeTable::MergeGroup* group) noexcept;

@@ -53,11 +53,14 @@
 /// Assuming that the Boolean graph is provided
 /// in the state as described in the contract,
 /// the algorithms should never throw an exception.
-/// The algorithms must guarantee that,
-/// given a valid and well-formed Boolean graph,
-/// the resulting Boolean graph will at least be
-/// valid, well-formed,
+///
+/// The algorithms must guarantee
+/// that, given a valid and well-formed Boolean graph,
+/// the resulting Boolean graph
+/// will at least be valid, well-formed,
 /// and semantically equivalent (isomorphic) to the input Boolean graph.
+/// Moreover, the algorithms must be deterministic
+/// and produce stable results.
 ///
 /// If the contract is not respected,
 /// the result or behavior of the algorithm can be undefined.
@@ -1148,92 +1151,13 @@ bool Preprocessor::MergeCommonArgs(const Operator& op) noexcept {
   if (parents.empty()) return false;  // No candidates for merging.
 
   LOG(DEBUG4) << "Merging " << parents.size() << " groups...";
-  // After common arguments and parents are grouped,
-  // the merging technique must find the most optimal strategy
-  // to create new gates
-  // that will represent the common arguments.
-  // The strategy may favor modularity, size, or other parameters
-  // of the new structure of the final graph.
-  // The common elements within
-  // the groups of common parents and common arguments
-  // create the biggest challenge for finding the optimal solution.
-  // For example,
-  // {
-  // (a, b) : (p1, p2),
-  // (b, c) : (p2, p3)
-  // }
-  // The strategy has to make
-  // the most optimal choice
-  // between two mutually exclusive options.
-  graph_->ClearOptiValues();
-  /// @todo Must group by size to detect supersets.
-  ///       If supersets are processed before the subsets,
-  ///       the optimization of the supersets is impossible.
-  /// @todo Must find a way to efficiently transfer data
-  ///       from the map to the table.
-  MergeTable::MergeGroup table(parents.begin(), parents.end());
-  // Sorting in descending order for more efficient pop.
-  std::sort(table.begin(), table.end(),
-            [](const MergeTable::Option& lhs, const MergeTable::Option& rhs) {
-              return lhs.first.size() > rhs.first.size();
-            });
-  assert(table.front().first.size() >= table.back().first.size());
-  while (!table.empty()) {
-    MergeTable::CommonParents& common_parents = table.back().second;
-    MergeTable::CommonArgs& common_args = table.back().first;
-    std::vector<IGatePtr> useful_parents;  // With full set of args.
+  MergeTable table;
+  Preprocessor::GroupCommonArgs(parents, &table);
 
-    for (const IGatePtr& common_parent : common_parents) {
-      if (common_parent->opti_value()) {  // Modified parent.
-        assert(common_parent->opti_value() == 1);
-        const std::set<int>& args = common_parent->args();
-        bool have_args = std::includes(args.begin(), args.end(),
-                                       common_args.begin(), common_args.end());
-        // Erased and optimized common args.
-        if (!have_args) continue;
-      }
-      useful_parents.push_back(common_parent);
-    }
-
-    if (useful_parents.size() < 2) {  // No point of merging arguments.
-      table.pop_back();
-      continue;  /// @todo Investigate better options.
-    }
-    LOG(DEBUG5) << "Merging " << common_args.size() << " args into a new gate";
-    IGatePtr parent = useful_parents.front();  // To get the arguments.
-    IGatePtr merge_gate(new IGate(parent->type()));
-    for (int index : common_args) {
-      parent->ShareArg(index, merge_gate);
-      for (const IGatePtr& common_parent : useful_parents) {
-        common_parent->EraseArg(index);
-      }
-    }
-    for (const IGatePtr& common_parent : useful_parents) {
-      common_parent->AddArg(merge_gate->index(), merge_gate);
-      common_parent->opti_value(1);  // Mark as processed.
-      if (common_parent->args().size() == 1) {
-        common_parent->type(kNullGate);
-        null_gates_.push_back(common_parent);
-      }
-      assert(common_parent->state() == kNormalState);
-    }
-    for (int i = 0; i < table.size() - 1; ++i) {
-      std::vector<int>& set_args = table[i].first;
-      if (set_args.size() <= common_args.size()) continue;
-      bool superset = std::includes(set_args.begin(), set_args.end(),
-                                    common_args.begin(), common_args.end());
-      if (!superset) continue;
-      std::vector<int> diff;
-      std::set_difference(set_args.begin(), set_args.end(),
-                          common_args.begin(), common_args.end(),
-                          std::back_inserter(diff));
-      assert(merge_gate->index() > diff.back());
-      diff.push_back(merge_gate->index());  // Assumes sequential indexing.
-      set_args = diff;
-      assert(table[i].first.size() == diff.size());
-    }
-    table.pop_back();  // Erasing the group from operations.
+  for (MergeTable::MergeGroup& group : table.groups) {
+    Preprocessor::TransformCommonArgs(&group);
   }
+  assert(const_gates_.empty());
   Preprocessor::ClearNullGates();
   return true;
 }
@@ -1313,6 +1237,123 @@ void Preprocessor::GroupCommonParents(
       MergeTable::CommonParents& common_parents = (*parents)[common];
       common_parents.insert(group[i].first);
       common_parents.insert(group[j].first);
+    }
+  }
+}
+
+void Preprocessor::GroupCommonArgs(const MergeTable::Collection& options,
+                                   MergeTable* table) noexcept {
+  assert(!options.empty());
+  MergeTable::MergeGroup all_options(options.begin(), options.end());
+  // Sorting in descending size of common arguments.
+  std::stable_sort(all_options.begin(), all_options.end(),
+                   [](const MergeTable::Option& lhs,
+                     const MergeTable::Option& rhs) {
+                     return lhs.first.size() < rhs.first.size();
+                   });
+
+  while (!all_options.empty()) {
+    MergeTable::OptionGroup best_group;
+    Preprocessor::FindOptionGroup(all_options, &best_group);
+    MergeTable::MergeGroup merge_group;  // The group to go into the table.
+    for (MergeTable::Option* member : best_group) {
+      merge_group.push_back(*member);
+      member->second.clear();  // To remove the best group from the all options.
+    }
+    table->groups.push_back(merge_group);
+
+    const MergeTable::CommonParents& gates = merge_group.front().second;
+    /// @todo This strategy deletes too many groups.
+    ///       The intersections must be considered for each option.
+    const MergeTable::CommonArgs& args = merge_group.back().first;
+    for (MergeTable::Option& option : all_options) {
+      std::vector<int> common;
+      std::set_intersection(option.first.begin(), option.first.end(),
+                            args.begin(), args.end(),
+                            std::back_inserter(common));
+      if (common.empty()) continue;  // Doesn't affect this option.
+      MergeTable::CommonParents& parents = option.second;
+      for (const IGatePtr& gate : gates) parents.erase(gate);
+    }
+    all_options.erase(std::remove_if(all_options.begin(), all_options.end(),
+                                     [](const MergeTable::Option& option) {
+                                       return option.second.size() < 2;
+                                     }),
+                      all_options.end());
+  }
+}
+
+void Preprocessor::FindOptionGroup(
+    MergeTable::MergeGroup& all_options,
+    MergeTable::OptionGroup* best_group) noexcept {
+  for (int i = 0; i < all_options.size(); ++i) {
+    MergeTable::OptionGroup group = {&all_options[i]};
+    int j = i;
+    for (++j; j < all_options.size(); ++j) {
+      MergeTable::Option* candidate = &all_options[j];
+      bool superset = std::includes(candidate->first.begin(),
+                                    candidate->first.end(),
+                                    group.back()->first.begin(),
+                                    group.back()->first.end());
+      if (!superset) continue;  // Does not include all the arguments.
+      bool parents = std::includes(group.back()->second.begin(),
+                                   group.back()->second.end(),
+                                   candidate->second.begin(),
+                                   candidate->second.end());
+      if (!parents) continue;  // Parents do not match.
+      group.push_back(candidate);
+    }
+    if (group.size() > best_group->size()) {  // The more members, the merrier.
+      *best_group = group;
+    } else if (group.size() == best_group->size()) {  // Optimistic choice.
+      if (group.front()->second.size() < best_group->front()->second.size())
+        *best_group = group;  // The fewer parents, the more room for others.
+    }
+  }
+}
+
+void Preprocessor::TransformCommonArgs(MergeTable::MergeGroup* group) noexcept {
+  MergeTable::MergeGroup::iterator it;
+  for (it = group->begin(); it != group->end(); ++it) {
+    MergeTable::CommonParents& common_parents = it->second;
+    MergeTable::CommonArgs& common_args = it->first;
+    assert(common_parents.size() > 1);
+    assert(common_args.size() > 1);
+
+    LOG(DEBUG5) << "Merging " << common_args.size() << " args into a new gate";
+    LOG(DEBUG5) << "The number of common parents: " << common_parents.size();
+    IGatePtr parent = *common_parents.begin();  // To get the arguments.
+    assert(parent->args().size() > 1);
+    IGatePtr merge_gate(new IGate(parent->type()));
+    for (int index : common_args) {
+      parent->ShareArg(index, merge_gate);
+      for (const IGatePtr& common_parent : common_parents) {
+        common_parent->EraseArg(index);
+      }
+    }
+    for (const IGatePtr& common_parent : common_parents) {
+      common_parent->AddArg(merge_gate->index(), merge_gate);
+      if (common_parent->args().size() == 1) {
+        common_parent->type(kNullGate);  // Assumes AND/OR gates only.
+        null_gates_.push_back(common_parent);
+      }
+      assert(common_parent->state() == kNormalState);
+    }
+    // Substitute args in superset common args with the new gate.
+    MergeTable::MergeGroup::iterator it_rest = it;
+    for (++it_rest; it_rest != group->end(); ++it_rest) {
+      MergeTable::CommonArgs& set_args = it_rest->first;
+      assert(set_args.size() > common_args.size());
+      // Note: it is assummed that common_args is a proper subset of set_args.
+      std::vector<int> diff;
+      std::set_difference(set_args.begin(), set_args.end(),
+                          common_args.begin(), common_args.end(),
+                          std::back_inserter(diff));
+      assert(diff.size() == (set_args.size() - common_args.size()));
+      assert(merge_gate->index() > diff.back());
+      diff.push_back(merge_gate->index());  // Assumes sequential indexing.
+      set_args = diff;
+      assert(it_rest->first.size() == diff.size());
     }
   }
 }
@@ -1401,7 +1442,7 @@ bool Preprocessor::HandleDistributiveArgs(
   }
 
   for (MergeTable::MergeGroup& group : table.groups) {
-    TransformDistributiveArgs(gate, distr_type, &group);
+    Preprocessor::TransformDistributiveArgs(gate, distr_type, &group);
   }
   assert(!gate->args().empty());
   return true;
@@ -1412,44 +1453,17 @@ void Preprocessor::GroupDistributiveArgs(const MergeTable::Collection& options,
   assert(!options.empty());
   MergeTable::MergeGroup all_options(options.begin(), options.end());
   // Sorting in descending size of common arguments.
-  std::sort(all_options.begin(), all_options.end(),
-            [](const MergeTable::Option& lhs, const MergeTable::Option& rhs) {
-            return lhs.first.size() < rhs.first.size();
-            });
+  std::stable_sort(all_options.begin(), all_options.end(),
+                   [](const MergeTable::Option& lhs,
+                     const MergeTable::Option& rhs) {
+                     return lhs.first.size() < rhs.first.size();
+                   });
 
-  // Isolated options in subset to superset relationship.
-  typedef std::vector<MergeTable::Option*> OptionGroup;
-
-  /// @todo The current logic misses opportunities
-  ///       that may branch with the same base option.
   while (!all_options.empty()) {
-    OptionGroup best_group;
-    for (int i = 0; i < all_options.size(); ++i) {
-      OptionGroup group = {&all_options[i]};
-      int j = i;
-      for (++j; j < all_options.size(); ++j) {
-        MergeTable::Option* candidate = &all_options[j];
-        bool superset = std::includes(candidate->first.begin(),
-                                      candidate->first.end(),
-                                      group.back()->first.begin(),
-                                      group.back()->first.end());
-        if (!superset) continue;  // Does not include all the arguments.
-        bool parents = std::includes(group.back()->second.begin(),
-                                     group.back()->second.end(),
-                                     candidate->second.begin(),
-                                     candidate->second.end());
-        if (!parents) continue;  // Parents do not match.
-        group.push_back(candidate);
-      }
-      if (group.size() > best_group.size()) {  // The more members, the merrier.
-        best_group = group;
-      } else if (group.size() == best_group.size()) {  // Optimistic choice.
-        if (group.front()->second.size() < best_group.front()->second.size())
-          best_group = group;  // The fewer parents, the more room for others.
-      }
-    }
+    MergeTable::OptionGroup best_group;
+    Preprocessor::FindOptionGroup(all_options, &best_group);
     MergeTable::MergeGroup merge_group;  // The group to go into the table.
-    for (const auto& member : best_group) {
+    for (MergeTable::Option* member : best_group) {
       merge_group.push_back(*member);
       member->second.clear();  // To remove the best group from the all options.
     }
@@ -1462,7 +1476,7 @@ void Preprocessor::GroupDistributiveArgs(const MergeTable::Collection& options,
     }
     all_options.erase(std::remove_if(all_options.begin(), all_options.end(),
                                      [](const MergeTable::Option& option) {
-                                     return option.second.size() < 2;
+                                       return option.second.size() < 2;
                                      }),
                       all_options.end());
   }
