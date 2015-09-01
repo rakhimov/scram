@@ -752,6 +752,57 @@ bool Preprocessor::JoinGates(const IGatePtr& gate, bool common) noexcept {
   return changed;
 }
 
+bool Preprocessor::ProcessMultipleDefinitions() noexcept {
+  assert(null_gates_.empty());
+  assert(const_gates_.empty());
+
+  graph_->ClearGateMarks();
+  // The original gate and its multiple definitions.
+  std::unordered_map<IGatePtr, std::vector<IGateWeakPtr> > multi_def;
+  GateSet* unique_gates = new GateSet();
+  Preprocessor::DetectMultipleDefinitions(graph_->root(), &multi_def,
+                                          unique_gates);
+  delete unique_gates;  // To remove extra reference counts.
+  graph_->ClearGateMarks();
+
+  if (multi_def.empty()) return false;
+  LOG(DEBUG4) << multi_def.size() << " gates are multiply defined.";
+  for (const auto& def : multi_def) {
+    LOG(DEBUG5) << "Gate " << def.first->index() << ": "
+        << def.second.size() << " times.";
+    for (const IGateWeakPtr& dup : def.second) {
+      if (dup.expired()) continue;
+      Preprocessor::ReplaceGate(dup.lock(), def.first);
+    }
+  }
+  Preprocessor::ClearConstGates();
+  Preprocessor::ClearNullGates();
+  return true;
+}
+
+void Preprocessor::DetectMultipleDefinitions(
+    const IGatePtr& gate,
+    std::unordered_map<IGatePtr, std::vector<IGateWeakPtr> >* multi_def,
+    GateSet* unique_gates) noexcept {
+  if (gate->mark()) return;
+  gate->mark(true);
+  assert(gate->state() == kNormalState);
+
+  if (!gate->IsModule()) {  // Modules are unique by definition.
+    std::pair<IGatePtr, bool> ret = unique_gates->insert(gate);
+    assert(ret.first->mark());
+    if (!ret.second) {  // The gate is duplicate.
+      (*multi_def)[ret.first].push_back(gate);
+      return;
+    }
+  }
+  // No redefinition is found for this gate.
+  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+    Preprocessor::DetectMultipleDefinitions(arg.second, multi_def,
+                                            unique_gates);
+  }
+}
+
 void Preprocessor::DetectModules() noexcept {
   assert(const_gates_.empty());
   assert(null_gates_.empty());
@@ -1260,6 +1311,240 @@ void Preprocessor::GroupCommonParents(
   }
 }
 
+bool Preprocessor::DetectDistributivity(const IGatePtr& gate) noexcept {
+  if (gate->mark()) return false;
+  gate->mark(true);
+  assert(gate->state() == kNormalState);
+  bool changed = false;
+  bool possible = true;  // Whether or not distributivity possible.
+  Operator distr_type;
+  switch (gate->type()) {
+    case kAndGate:
+    case kNandGate:
+      distr_type = kOrGate;
+      break;
+    case kOrGate:
+    case kNorGate:
+      distr_type = kAndGate;
+      break;
+    default:
+      possible = false;
+  }
+  std::vector<IGatePtr> candidates;
+  // Collect child gates of distributivity type.
+  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+    IGatePtr child_gate = arg.second;
+    bool ret = Preprocessor::DetectDistributivity(child_gate);
+    if (ret) changed = true;
+    if (!possible) continue;  // Distributivity is not possible.
+    if (arg.first < 0) continue;  // Does not work on negation.
+    if (child_gate->state() != kNormalState) continue;  // No arguments.
+    if (child_gate->IsModule()) continue;  // Can't have common arguments.
+    if (child_gate->type() == distr_type) candidates.push_back(child_gate);
+  }
+  if (Preprocessor::HandleDistributiveArgs(gate, distr_type, candidates))
+    changed = true;
+  return changed;
+}
+
+bool Preprocessor::HandleDistributiveArgs(
+    const IGatePtr& gate,
+    const Operator& distr_type,
+    const std::vector<IGatePtr>& candidates) noexcept {
+  if (candidates.size() < 2) return false;
+  // Detecting a combination
+  // that gives the most optimization is combinatorial.
+  // The problem is similar to merging common arguments of gates.
+  std::vector<std::pair<IGatePtr, std::vector<int>>> group;
+  for (const IGatePtr& candidate : candidates) {
+    group.emplace_back(candidate, std::vector<int>(candidate->args().begin(),
+                                                   candidate->args().end()));
+  }
+  LOG(DEBUG5) << "Considering " << group.size() << " candidates...";
+  boost::unordered_map<std::vector<int>, std::set<IGatePtr>> options;
+  Preprocessor::GroupCommonParents(1, group, &options);
+  if (options.empty()) return false;
+  LOG(DEBUG4) << "Got " << options.size() << " distributive option(s).";
+
+  MergeTable table;
+  Preprocessor::GroupDistributiveArgs(options, &table);
+  assert(!table.groups.empty());
+  LOG(DEBUG4) << "Found " << table.groups.size() << " distributive group(s).";
+  // Sanitize the table with single parent gates only.
+  for (MergeTable::MergeGroup& group : table.groups) {
+    MergeTable::Option& base_option = group.front();
+    std::vector<std::pair<IGatePtr, IGatePtr>> to_swap;
+    for (const IGatePtr& member : base_option.second) {
+      assert(!member->parents().empty());
+      if (member->parents().size() > 1) {
+        IGatePtr clone = member->Clone();
+        clone->mark(true);
+        to_swap.emplace_back(member, clone);
+      }
+    }
+    for (const auto& pair : to_swap) {
+      gate->EraseArg(pair.first->index());
+      gate->AddArg(pair.second->index(), pair.second);
+      for (MergeTable::Option& option : group) {
+        if (option.second.count(pair.first)) {
+          option.second.erase(pair.first);
+          option.second.insert(pair.second);
+        }
+      }
+    }
+  }
+
+  for (MergeTable::MergeGroup& group : table.groups) {
+    TransformDistributiveArgs(gate, distr_type, &group);
+  }
+  assert(!gate->args().empty());
+  return true;
+}
+
+void Preprocessor::GroupDistributiveArgs(
+    const boost::unordered_map<std::vector<int>, std::set<IGatePtr>>& options,
+    MergeTable* table) noexcept {
+  assert(!options.empty());
+  MergeTable::MergeGroup all_options(options.begin(), options.end());
+  // Sorting in descending size of common arguments.
+  std::sort(all_options.begin(), all_options.end(),
+            [](const MergeTable::Option& lhs, const MergeTable::Option& rhs) {
+              return lhs.first.size() < rhs.first.size();
+            });
+
+  // Isolated options in subset to superset relationship.
+  typedef std::vector<MergeTable::Option*> OptionGroup;
+
+  /// @todo The current logic misses opportunities
+  ///       that may branch with the same base option.
+  while (!all_options.empty()) {
+    OptionGroup best_group;
+    for (int i = 0; i < all_options.size(); ++i) {
+      OptionGroup group = {&all_options[i]};
+      int j = i;
+      for (++j; j < all_options.size(); ++j) {
+        MergeTable::Option* candidate = &all_options[j];
+        bool superset = std::includes(candidate->first.begin(),
+                                      candidate->first.end(),
+                                      group.back()->first.begin(),
+                                      group.back()->first.end());
+        if (!superset) continue;  // Does not include all the arguments.
+        bool parents = std::includes(group.back()->second.begin(),
+                                    group.back()->second.end(),
+                                    candidate->second.begin(),
+                                    candidate->second.end());
+        if (!parents) continue;  // Parents do not match.
+        group.push_back(candidate);
+      }
+      if (group.size() > best_group.size()) {  // The more members, the merrier.
+        best_group = group;
+      } else if (group.size() == best_group.size()) {  // Optimistic choice.
+        if (group.front()->second.size() < best_group.front()->second.size())
+          best_group = group;  // The fewer parents, the more room for others.
+      }
+    }
+    MergeTable::MergeGroup merge_group;  // The group to go into the table.
+    for (const auto& member : best_group) {
+      merge_group.push_back(*member);
+      member->second.clear();  // To remove the best group from the all options.
+    }
+    table->groups.push_back(merge_group);
+
+    const MergeTable::CommonParents& gates = merge_group.front().second;
+    for (MergeTable::Option& option : all_options) {
+      MergeTable::CommonParents& parents = option.second;
+      for (const IGatePtr& gate : gates) parents.erase(gate);
+    }
+    all_options.erase(std::remove_if(all_options.begin(), all_options.end(),
+                                     [](const MergeTable::Option& option) {
+                                       return option.second.size() < 2;
+                                     }),
+                      all_options.end());
+  }
+}
+
+void Preprocessor::TransformDistributiveArgs(
+    const IGatePtr& gate,
+    const Operator& distr_type,
+    MergeTable::MergeGroup* group) noexcept {
+  if (group->empty()) return;
+  const MergeTable::Option& base_option = group->front();
+  const MergeTable::CommonArgs& args = base_option.first;
+  const MergeTable::CommonParents& gates = base_option.second;
+
+  IGatePtr new_parent;
+  if (gate->args().size() == gates.size()) {
+    new_parent = gate;  // Reuse the gate to avoid extra merging operations.
+    switch(gate->type()) {
+      case kAndGate:
+      case kOrGate:
+        gate->type(distr_type);
+        break;
+      case kNandGate:
+        gate->type(kNorGate);
+        break;
+      case kNorGate:
+        gate->type(kNandGate);
+        break;
+    }
+  } else {
+    new_parent = IGatePtr(new IGate(distr_type));
+    new_parent->mark(true);
+    gate->AddArg(new_parent->index(), new_parent);
+  }
+
+  IGatePtr sub_parent(new IGate(distr_type == kAndGate ? kOrGate : kAndGate));
+  sub_parent->mark(true);
+  new_parent->AddArg(sub_parent->index(), sub_parent);
+
+  IGatePtr rep = *gates.begin();  // Representative of common parents.
+  // Getting the common part of the distributive equation.
+  for (int index : args) {  // May be negative.
+    if (rep->gate_args().count(index)) {
+      IGatePtr common = rep->gate_args().find(index)->second;
+      new_parent->AddArg(index, common);
+    } else {
+      VariablePtr common = rep->variable_args().find(index)->second;
+      new_parent->AddArg(index, common);
+    }
+  }
+
+  // Removing the common part from the sub-equations.
+  for (const IGatePtr& member : gates) {
+    assert(member->parents().size() == 1);
+    gate->EraseArg(member->index());
+
+    sub_parent->AddArg(member->index(), member);
+    for (int index : args) {
+      member->EraseArg(index);
+    }
+    if (member->args().size() == 1) {
+      member->type(kNullGate);
+      null_gates_.push_back(member);
+    } else if (member->args().empty()) {
+      if (member->type() == kAndGate) {
+        member->MakeUnity();
+      } else {
+        assert(member->type() == kOrGate);
+        member->Nullify();
+      }
+      const_gates_.push_back(member);
+    }
+  }
+  // Cleaning the arguments from the group.
+  MergeTable::MergeGroup::iterator it = group->begin();
+  for (++it; it != group->end(); ++it) {
+    MergeTable::Option& super = *it;
+    MergeTable::CommonArgs& super_args = super.first;
+    for (int index : args) {
+      super_args.erase(std::lower_bound(super_args.begin(), super_args.end(),
+                                        index));
+    }
+  }
+  group->erase(group->begin());
+  Preprocessor::TransformDistributiveArgs(sub_parent, distr_type, group);
+}
+
 void Preprocessor::BooleanOptimization() noexcept {
   assert(const_gates_.empty());
   assert(null_gates_.empty());
@@ -1656,291 +1941,6 @@ void Preprocessor::ProcessDecompositionAncestors(
     Preprocessor::ProcessDecompositionAncestors(*it_an, node, state, false,
                                                 clones);
   }
-}
-
-bool Preprocessor::ProcessMultipleDefinitions() noexcept {
-  assert(null_gates_.empty());
-  assert(const_gates_.empty());
-
-  graph_->ClearGateMarks();
-  // The original gate and its multiple definitions.
-  std::unordered_map<IGatePtr, std::vector<IGateWeakPtr> > multi_def;
-  GateSet* unique_gates = new GateSet();
-  Preprocessor::DetectMultipleDefinitions(graph_->root(), &multi_def,
-                                          unique_gates);
-  delete unique_gates;  // To remove extra reference counts.
-  graph_->ClearGateMarks();
-
-  if (multi_def.empty()) return false;
-  LOG(DEBUG4) << multi_def.size() << " gates are multiply defined.";
-  for (const auto& def : multi_def) {
-    LOG(DEBUG5) << "Gate " << def.first->index() << ": "
-        << def.second.size() << " times.";
-    for (const IGateWeakPtr& dup : def.second) {
-      if (dup.expired()) continue;
-      Preprocessor::ReplaceGate(dup.lock(), def.first);
-    }
-  }
-  Preprocessor::ClearConstGates();
-  Preprocessor::ClearNullGates();
-  return true;
-}
-
-void Preprocessor::DetectMultipleDefinitions(
-    const IGatePtr& gate,
-    std::unordered_map<IGatePtr, std::vector<IGateWeakPtr> >* multi_def,
-    GateSet* unique_gates) noexcept {
-  if (gate->mark()) return;
-  gate->mark(true);
-  assert(gate->state() == kNormalState);
-
-  if (!gate->IsModule()) {  // Modules are unique by definition.
-    std::pair<IGatePtr, bool> ret = unique_gates->insert(gate);
-    assert(ret.first->mark());
-    if (!ret.second) {  // The gate is duplicate.
-      (*multi_def)[ret.first].push_back(gate);
-      return;
-    }
-  }
-  // No redefinition is found for this gate.
-  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
-    Preprocessor::DetectMultipleDefinitions(arg.second, multi_def,
-                                            unique_gates);
-  }
-}
-
-bool Preprocessor::DetectDistributivity(const IGatePtr& gate) noexcept {
-  if (gate->mark()) return false;
-  gate->mark(true);
-  assert(gate->state() == kNormalState);
-  bool changed = false;
-  bool possible = true;  // Whether or not distributivity possible.
-  Operator distr_type;
-  switch (gate->type()) {
-    case kAndGate:
-    case kNandGate:
-      distr_type = kOrGate;
-      break;
-    case kOrGate:
-    case kNorGate:
-      distr_type = kAndGate;
-      break;
-    default:
-      possible = false;
-  }
-  std::vector<IGatePtr> candidates;
-  // Collect child gates of distributivity type.
-  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
-    IGatePtr child_gate = arg.second;
-    bool ret = Preprocessor::DetectDistributivity(child_gate);
-    if (ret) changed = true;
-    if (!possible) continue;  // Distributivity is not possible.
-    if (arg.first < 0) continue;  // Does not work on negation.
-    if (child_gate->state() != kNormalState) continue;  // No arguments.
-    if (child_gate->IsModule()) continue;  // Can't have common arguments.
-    if (child_gate->type() == distr_type) candidates.push_back(child_gate);
-  }
-  if (Preprocessor::HandleDistributiveArgs(gate, distr_type, candidates))
-    changed = true;
-  return changed;
-}
-
-bool Preprocessor::HandleDistributiveArgs(
-    const IGatePtr& gate,
-    const Operator& distr_type,
-    const std::vector<IGatePtr>& candidates) noexcept {
-  if (candidates.size() < 2) return false;
-  // Detecting a combination
-  // that gives the most optimization is combinatorial.
-  // The problem is similar to merging common arguments of gates.
-  std::vector<std::pair<IGatePtr, std::vector<int>>> group;
-  for (const IGatePtr& candidate : candidates) {
-    group.emplace_back(candidate, std::vector<int>(candidate->args().begin(),
-                                                   candidate->args().end()));
-  }
-  LOG(DEBUG5) << "Considering " << group.size() << " candidates...";
-  boost::unordered_map<std::vector<int>, std::set<IGatePtr>> options;
-  Preprocessor::GroupCommonParents(1, group, &options);
-  if (options.empty()) return false;
-  LOG(DEBUG4) << "Got " << options.size() << " distributive option(s).";
-
-  MergeTable table;
-  Preprocessor::GroupDistributiveArgs(options, &table);
-  assert(!table.groups.empty());
-  LOG(DEBUG4) << "Found " << table.groups.size() << " distributive group(s).";
-  // Sanitize the table with single parent gates only.
-  for (MergeTable::MergeGroup& group : table.groups) {
-    MergeTable::Option& base_option = group.front();
-    std::vector<std::pair<IGatePtr, IGatePtr>> to_swap;
-    for (const IGatePtr& member : base_option.second) {
-      assert(!member->parents().empty());
-      if (member->parents().size() > 1) {
-        IGatePtr clone = member->Clone();
-        clone->mark(true);
-        to_swap.emplace_back(member, clone);
-      }
-    }
-    for (const auto& pair : to_swap) {
-      gate->EraseArg(pair.first->index());
-      gate->AddArg(pair.second->index(), pair.second);
-      for (MergeTable::Option& option : group) {
-        if (option.second.count(pair.first)) {
-          option.second.erase(pair.first);
-          option.second.insert(pair.second);
-        }
-      }
-    }
-  }
-
-  for (MergeTable::MergeGroup& group : table.groups) {
-    TransformDistributiveArgs(gate, distr_type, &group);
-  }
-  assert(!gate->args().empty());
-  return true;
-}
-
-void Preprocessor::GroupDistributiveArgs(
-    const boost::unordered_map<std::vector<int>, std::set<IGatePtr>>& options,
-    MergeTable* table) noexcept {
-  assert(!options.empty());
-  MergeTable::MergeGroup all_options(options.begin(), options.end());
-  // Sorting in descending size of common arguments.
-  std::sort(all_options.begin(), all_options.end(),
-            [](const MergeTable::Option& lhs, const MergeTable::Option& rhs) {
-              return lhs.first.size() < rhs.first.size();
-            });
-
-  // Isolated options in subset to superset relationship.
-  typedef std::vector<MergeTable::Option*> OptionGroup;
-
-  /// @todo The current logic misses opportunities
-  ///       that may branch with the same base option.
-  while (!all_options.empty()) {
-    OptionGroup best_group;
-    for (int i = 0; i < all_options.size(); ++i) {
-      OptionGroup group = {&all_options[i]};
-      int j = i;
-      for (++j; j < all_options.size(); ++j) {
-        MergeTable::Option* candidate = &all_options[j];
-        bool superset = std::includes(candidate->first.begin(),
-                                      candidate->first.end(),
-                                      group.back()->first.begin(),
-                                      group.back()->first.end());
-        if (!superset) continue;  // Does not include all the arguments.
-        bool parents = std::includes(group.back()->second.begin(),
-                                    group.back()->second.end(),
-                                    candidate->second.begin(),
-                                    candidate->second.end());
-        if (!parents) continue;  // Parents do not match.
-        group.push_back(candidate);
-      }
-      if (group.size() > best_group.size()) {  // The more members, the merrier.
-        best_group = group;
-      } else if (group.size() == best_group.size()) {  // Optimistic choice.
-        if (group.front()->second.size() < best_group.front()->second.size())
-          best_group = group;  // The fewer parents, the more room for others.
-      }
-    }
-    MergeTable::MergeGroup merge_group;  // The group to go into the table.
-    for (const auto& member : best_group) {
-      merge_group.push_back(*member);
-      member->second.clear();  // To remove the best group from the all options.
-    }
-    table->groups.push_back(merge_group);
-
-    const MergeTable::CommonParents& gates = merge_group.front().second;
-    for (MergeTable::Option& option : all_options) {
-      MergeTable::CommonParents& parents = option.second;
-      for (const IGatePtr& gate : gates) parents.erase(gate);
-    }
-    all_options.erase(std::remove_if(all_options.begin(), all_options.end(),
-                                     [](const MergeTable::Option& option) {
-                                       return option.second.size() < 2;
-                                     }),
-                      all_options.end());
-  }
-}
-
-void Preprocessor::TransformDistributiveArgs(
-    const IGatePtr& gate,
-    const Operator& distr_type,
-    MergeTable::MergeGroup* group) noexcept {
-  if (group->empty()) return;
-  const MergeTable::Option& base_option = group->front();
-  const MergeTable::CommonArgs& args = base_option.first;
-  const MergeTable::CommonParents& gates = base_option.second;
-
-  IGatePtr new_parent;
-  if (gate->args().size() == gates.size()) {
-    new_parent = gate;  // Reuse the gate to avoid extra merging operations.
-    switch(gate->type()) {
-      case kAndGate:
-      case kOrGate:
-        gate->type(distr_type);
-        break;
-      case kNandGate:
-        gate->type(kNorGate);
-        break;
-      case kNorGate:
-        gate->type(kNandGate);
-        break;
-    }
-  } else {
-    new_parent = IGatePtr(new IGate(distr_type));
-    new_parent->mark(true);
-    gate->AddArg(new_parent->index(), new_parent);
-  }
-
-  IGatePtr sub_parent(new IGate(distr_type == kAndGate ? kOrGate : kAndGate));
-  sub_parent->mark(true);
-  new_parent->AddArg(sub_parent->index(), sub_parent);
-
-  IGatePtr rep = *gates.begin();  // Representative of common parents.
-  // Getting the common part of the distributive equation.
-  for (int index : args) {  // May be negative.
-    if (rep->gate_args().count(index)) {
-      IGatePtr common = rep->gate_args().find(index)->second;
-      new_parent->AddArg(index, common);
-    } else {
-      VariablePtr common = rep->variable_args().find(index)->second;
-      new_parent->AddArg(index, common);
-    }
-  }
-
-  // Removing the common part from the sub-equations.
-  for (const IGatePtr& member : gates) {
-    assert(member->parents().size() == 1);
-    gate->EraseArg(member->index());
-
-    sub_parent->AddArg(member->index(), member);
-    for (int index : args) {
-      member->EraseArg(index);
-    }
-    if (member->args().size() == 1) {
-      member->type(kNullGate);
-      null_gates_.push_back(member);
-    } else if (member->args().empty()) {
-      if (member->type() == kAndGate) {
-        member->MakeUnity();
-      } else {
-        assert(member->type() == kOrGate);
-        member->Nullify();
-      }
-      const_gates_.push_back(member);
-    }
-  }
-  // Cleaning the arguments from the group.
-  MergeTable::MergeGroup::iterator it = group->begin();
-  for (++it; it != group->end(); ++it) {
-    MergeTable::Option& super = *it;
-    MergeTable::CommonArgs& super_args = super.first;
-    for (int index : args) {
-      super_args.erase(std::lower_bound(super_args.begin(), super_args.end(),
-                                        index));
-    }
-  }
-  group->erase(group->begin());
-  Preprocessor::TransformDistributiveArgs(sub_parent, distr_type, group);
 }
 
 void Preprocessor::ReplaceGate(const IGatePtr& gate,

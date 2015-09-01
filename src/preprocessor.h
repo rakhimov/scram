@@ -48,8 +48,6 @@ class Preprocessor {
   friend class test::PreprocessorTest;
 
  public:
-  typedef std::shared_ptr<Gate> GatePtr;
-
   /// Constructs a preprocessor of a Boolean graph
   /// representing a fault tree.
   ///
@@ -415,6 +413,31 @@ class Preprocessor {
   /// @note Module gates are omitted from coalescing to preserve them.
   bool JoinGates(const IGatePtr& gate, bool common) noexcept;
 
+  /// Detects and replaces multiple definitions of gates.
+  /// Gates with the same logic and inputs
+  /// but different indices are considered redundant.
+  ///
+  /// @returns true if multiple definitions are found and replaced.
+  ///
+  /// @note This function does not recursively detect multiple definitions
+  ///       due to replaced redundant arguments of gates.
+  ///       The replaced gates are considered a new graph,
+  ///       and this function must be called again
+  ///       to verify that the new graph does not have multiple definitions.
+  bool ProcessMultipleDefinitions() noexcept;
+
+  /// Traverses the Boolean graph to collect multiple definitions of gates.
+  ///
+  /// @param[in] gate The gate to traverse the sub-graph.
+  /// @param[in,out] multi_def Detected multiple definitions.
+  /// @param[in,out] unique_gates A set of semantically unique gates.
+  ///
+  /// @warning Gate marks must be clear.
+  void DetectMultipleDefinitions(
+      const IGatePtr& gate,
+      std::unordered_map<IGatePtr, std::vector<IGateWeakPtr> >* multi_def,
+      GateSet* unique_gates) noexcept;
+
   /// Traverses the Boolean graph to detect modules.
   /// Modules are independent sub-graphs
   /// without common nodes with the rest of the graph.
@@ -586,6 +609,68 @@ class Preprocessor {
       const std::vector<std::pair<IGatePtr, std::vector<int> > >& group,
       boost::unordered_map<std::vector<int>, std::set<IGatePtr> >* parents) noexcept;
 
+  /// Detects and manipulates AND and OR gate distributivity.
+  /// For example,
+  /// (a | b) & (a | c) = a | b & c.
+  ///
+  /// @param[in] gate The gate which arguments must be tested.
+  ///
+  /// @returns true if transformations are performed.
+  ///
+  /// @warning Gate marks must be clear.
+  bool DetectDistributivity(const IGatePtr& gate) noexcept;
+
+  /// Manipulates gates with distributive arguments.
+  ///
+  /// @param[in,out] gate The gate which arguments must be manipulated.
+  /// @param[in] distr_type The type of distributive arguments.
+  /// @param[in,out] candidates Candidates for distributivity check.
+  ///
+  /// @returns true if transformations are performed.
+  bool HandleDistributiveArgs(const IGatePtr& gate,
+                              const Operator& distr_type,
+                              const std::vector<IGatePtr>& candidates) noexcept;
+
+  /// @struct MergeTable
+  /// Helper struct for algorithms
+  /// that must make an optimal decision
+  /// how to merge or factor out
+  /// common arguments of gates into new gates.
+  struct MergeTable {
+    typedef std::vector<int> CommonArgs;  ///< Unique, sorted common arguments.
+    typedef std::set<IGatePtr> CommonParents;  ///< Unique common parent gates.
+    typedef std::pair<CommonArgs, CommonParents> Option;  ///< One possibility.
+    typedef std::vector<Option> MergeGroup;  ///< Isolated group for processing.
+
+    std::vector<MergeGroup> groups;  ///< Container of isolated groups.
+  };
+
+  /// Groups distributive gate arguments
+  /// for furture factorization.
+  /// The function tries to maximize the return
+  /// from the gate manipulations.
+  ///
+  /// @param[in] options Combinations of common args and distributive gates.
+  /// @param[out] table Groups of distributive gates for separate manipulation.
+  ///
+  /// @todo Evaluate various grouping strategies.
+  ///       Module creation, the number of parents,
+  ///       the number of merge groups, and other criteria
+  ///       can serve as optimization goals.
+  void GroupDistributiveArgs(
+      const boost::unordered_map<std::vector<int>, std::set<IGatePtr>>& options,
+      MergeTable* table) noexcept;
+
+  /// Transforms distributive arguments gates
+  /// into a new subgraph.
+  ///
+  /// @param[in,out] gate The parent gate of all the distributive arguments.
+  /// @param[in] distr_type The type of distributive arguments.
+  /// @param[in,out] group Group of distributive args for manipulation.
+  void TransformDistributiveArgs(const IGatePtr& gate,
+                                 const Operator& distr_type,
+                                 MergeTable::MergeGroup* group) noexcept;
+
   /// Propagates failures of common nodes to detect redundancy.
   /// The graph structure is optimized
   /// by removing the redundancies if possible.
@@ -728,93 +813,6 @@ class Preprocessor {
       bool state,
       bool destination,
       std::unordered_map<int, IGatePtr>* clones) noexcept;
-
-  /// Detects and replaces multiple definitions of gates.
-  /// Gates with the same logic and inputs
-  /// but different indices are considered redundant.
-  ///
-  /// @returns true if multiple definitions are found and replaced.
-  ///
-  /// @note This function does not recursively detect multiple definitions
-  ///       due to replaced redundant arguments of gates.
-  ///       The replaced gates are considered a new graph,
-  ///       and this function must be called again
-  ///       to verify that the new graph does not have multiple definitions.
-  bool ProcessMultipleDefinitions() noexcept;
-
-  /// Traverses the Boolean graph to collect multiple definitions of gates.
-  ///
-  /// @param[in] gate The gate to traverse the sub-graph.
-  /// @param[in,out] multi_def Detected multiple definitions.
-  /// @param[in,out] unique_gates A set of semantically unique gates.
-  ///
-  /// @warning Gate marks must be clear.
-  void DetectMultipleDefinitions(
-      const IGatePtr& gate,
-      std::unordered_map<IGatePtr, std::vector<IGateWeakPtr> >* multi_def,
-      GateSet* unique_gates) noexcept;
-
-  /// Detects and manipulates AND and OR gate distributivity.
-  /// For example,
-  /// (a | b) & (a | c) = a | b & c.
-  ///
-  /// @param[in] gate The gate which arguments must be tested.
-  ///
-  /// @returns true if transformations are performed.
-  ///
-  /// @warning Gate marks must be clear.
-  bool DetectDistributivity(const IGatePtr& gate) noexcept;
-
-  /// Manipulates gates with distributive arguments.
-  ///
-  /// @param[in,out] gate The gate which arguments must be manipulated.
-  /// @param[in] distr_type The type of distributive arguments.
-  /// @param[in,out] candidates Candidates for distributivity check.
-  ///
-  /// @returns true if transformations are performed.
-  bool HandleDistributiveArgs(const IGatePtr& gate,
-                              const Operator& distr_type,
-                              const std::vector<IGatePtr>& candidates) noexcept;
-
-  /// @struct MergeTable
-  /// Helper struct for algorithms
-  /// that must make an optimal decision
-  /// how to merge or factor out
-  /// common arguments of gates into new gates.
-  struct MergeTable {
-    typedef std::vector<int> CommonArgs;  ///< Unique, sorted common arguments.
-    typedef std::set<IGatePtr> CommonParents;  ///< Unique common parent gates.
-    typedef std::pair<CommonArgs, CommonParents> Option;  ///< One possibility.
-    typedef std::vector<Option> MergeGroup;  ///< Isolated group for processing.
-
-    std::vector<MergeGroup> groups;  ///< Container of isolated groups.
-  };
-
-  /// Groups distributive gate arguments
-  /// for furture factorization.
-  /// The function tries to maximize the return
-  /// from the gate manipulations.
-  ///
-  /// @param[in] options Combinations of common args and distributive gates.
-  /// @param[out] table Groups of distributive gates for separate manipulation.
-  ///
-  /// @todo Evaluate various grouping strategies.
-  ///       Module creation, the number of parents,
-  ///       the number of merge groups, and other criteria
-  ///       can serve as optimization goals.
-  void GroupDistributiveArgs(
-      const boost::unordered_map<std::vector<int>, std::set<IGatePtr>>& options,
-      MergeTable* table) noexcept;
-
-  /// Transforms distributive arguments gates
-  /// into a new subgraph.
-  ///
-  /// @param[in,out] gate The parent gate of all the distributive arguments.
-  /// @param[in] distr_type The type of distributive arguments.
-  /// @param[in,out] group Group of distributive args for manipulation.
-  void TransformDistributiveArgs(const IGatePtr& gate,
-                                 const Operator& distr_type,
-                                 MergeTable::MergeGroup* group) noexcept;
 
   /// Replaces one gate in the graph with another.
   ///
