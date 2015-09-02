@@ -357,7 +357,7 @@ void Preprocessor::PropagateConstant(const ConstantPtr& constant) noexcept {
   while (!constant->parents().empty()) {
     IGatePtr parent = constant->parents().begin()->second.lock();
 
-    int sign = parent->args().count(constant->index()) ? 1 : -1;
+    int sign = parent->GetArgSign(constant);
     Preprocessor::ProcessConstantArg(parent, sign * constant->index(),
                                      constant->state());
 
@@ -462,7 +462,7 @@ void Preprocessor::PropagateConstGate(const IGatePtr& gate) noexcept {
   while (!gate->parents().empty()) {
     IGatePtr parent = gate->parents().begin()->second.lock();
 
-    int sign = parent->args().count(gate->index()) ? 1 : -1;
+    int sign = parent->GetArgSign(gate);
     bool state = gate->state() == kNullState ? false : true;
     Preprocessor::ProcessConstantArg(parent, sign * gate->index(), state);
 
@@ -479,7 +479,7 @@ void Preprocessor::PropagateNullGate(const IGatePtr& gate) noexcept {
 
   while (!gate->parents().empty()) {
     IGatePtr parent = gate->parents().begin()->second.lock();
-    int sign = parent->args().count(gate->index()) ? 1 : -1;
+    int sign = parent->GetArgSign(gate);
     parent->JoinNullGate(sign * gate->index());
 
     if (parent->state() != kNormalState) {
@@ -1894,7 +1894,7 @@ void Preprocessor::ProcessDecompositionDestinations(
       default:
         assert(false);
     }
-    int sign = parent->args().count(node->index()) ? 1 : -1;
+    int sign = parent->GetArgSign(node);
     if (sign < 0) state = !state;
     std::unordered_map<int, IGatePtr>& clones =
         state ? clones_true : clones_false;
@@ -1915,7 +1915,7 @@ void Preprocessor::ProcessDecompositionAncestors(
     std::unordered_map<int, IGatePtr>* clones) noexcept {
   if (!destination && node->parents().count(ancestor->index())) {
     LOG(DEBUG5) << "Reached decomposition sub-parent G" << ancestor->index();
-    int sign = ancestor->args().count(node->index()) ? 1 : -1;
+    int sign = ancestor->GetArgSign(node);
     Preprocessor::ProcessConstantArg(ancestor, sign * node->index(), state);
 
     if (ancestor->state() != kNormalState) {
@@ -1967,10 +1967,8 @@ void Preprocessor::ReplaceGate(const IGatePtr& gate,
   assert(!gate->parents().empty());
   while (!gate->parents().empty()) {
     IGatePtr parent = gate->parents().begin()->second.lock();
-    int index = gate->index();
-    int sign = 1;  // Guessing the sign.
-    if (parent->args().count(-index)) sign = -1;
-    parent->EraseArg(sign * index);
+    int sign = parent->GetArgSign(gate);
+    parent->EraseArg(sign * gate->index());
     parent->AddArg(sign * replacement->index(), replacement);
 
     if (parent->state() != kNormalState) {

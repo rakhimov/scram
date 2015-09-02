@@ -384,6 +384,20 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// @returns false if it is not yet set to be a module.
   inline bool IsModule() const { return module_; }
 
+  /// Helper funciton to use the sign of the argument.
+  ///
+  /// @param[in] arg One of the arguments of this gate.
+  ///
+  /// @returns 1 if the argument is positive.
+  /// @returns -1 if the argument is negative (complement).
+  ///
+  /// @warning The function assumes that the argument exists.
+  ///          If it doesn't, the return value is invalid.
+  inline int GetArgSign(const NodePtr& arg) const noexcept {
+    assert(arg->parents().count(this->index()));
+    return args_.count(arg->index()) ? 1 : -1;
+  }
+
   /// Helper function for algorithms
   /// to get nodes from argument indices.
   ///
