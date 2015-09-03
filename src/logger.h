@@ -37,6 +37,11 @@ namespace scram {
 #define LOG(level) if (level > scram::Logger::ReportLevel()); \
   else scram::Logger().Get(level)
 
+/// @def BLOG(level, cond)
+/// Conditional logging with the level defined.
+#define BLOG(level, cond) if (!cond || level > scram::Logger::ReportLevel()); \
+  else scram::Logger().Get(level)
+
 /// @def CLOCK(var)
 /// Starts the timing where var is the unique variable for the clock.
 #define CLOCK(var) std::clock_t var = std::clock()
