@@ -816,56 +816,89 @@ class Preprocessor {
   /// house events and constant gates.
   ///
   /// The main two operations are performed
-  ///  according to the Shannon decomposition of particular setups:
+  /// according to the Shannon decomposition of particular setups:
   ///
   /// x & f(x, y) = x & f(1, y)
   /// x | f(x, y) = x | f(0, y)
   ///
   /// @returns true if the setups are found and processed.
+  ///
+  /// @note This preprocessing algorithm
+  ///       may introduce clones of existing shared gates,
+  ///       which may increase the size of the graph
+  ///       and complicate application and performance of other algorithms.
+  ///
+  /// @warning Gate optimization values are used.
+  /// @warning Node visit information is used.
+  /// @warning Gate marks are used.
   bool DecomposeCommonNodes() noexcept;
 
   /// Processes common nodes in decomposition setups.
+  /// This function only works with DecomposeCommonNodes()
+  /// because it requires a specific setup of
+  /// optimization values and visit information of nodes.
+  /// These setups are assumed
+  /// to be provided by the DecomposeCommonNodes().
   ///
   /// @param[in] common_node The common node.
   ///
   /// @returns true if the decomposition setups are found and processed.
   ///
-  /// @warning Gate visit information is manipulated.
+  /// @warning Gate optimization values are manipulated.
   bool ProcessDecompositionCommonNode(
       const std::weak_ptr<Node>& common_node) noexcept;
 
   /// Marks destinations for common node decomposition.
+  /// The optimization value of the ancestors of the common node
+  /// is marked with the index of the common node.
   ///
   /// @param[in] parent The parent or ancestor of the common node.
   /// @param[in] index The positive index of the common node.
   ///
-  /// @warning The gate visit fields are manipulated.
+  /// @warning The gate optimization value fields are changed.
+  ///          It is expected that no ancestor gate has the specific opti-value
+  ///          before the call of this function.
+  ///          Otherwise, the logic of the algorithm is messed up and invalid.
   void MarkDecompositionDestinations(const IGatePtr& parent,
                                      int index) noexcept;
 
-  /// Processes decomposition destinations with particular setups.
+  /// Processes decomposition destinations
+  /// with the decomposition setups.
   ///
   /// @param[in] node The common node under consideration.
   /// @param[in] dest The set of destination parents.
-  void ProcessDecompositionDestinations(
+  ///
+  /// @returns true if the graph is changed by processing.
+  ///
+  /// @warning Gate marks are used to traverse subgraphs in linear time.
+  /// @warning Gate optimization values are used to detect ancestor.
+  /// @warning Gate visit time information is used to detect shared nodes.
+  bool ProcessDecompositionDestinations(
       const NodePtr& node,
       const std::vector<IGateWeakPtr>& dest) noexcept;
 
   /// Processes decomposition ancestors
   /// in the link to the decomposition destinations.
-  /// Common gates in the sub-graph
-  /// are cloned to not mess the whole graph.
+  /// Common node's parents shared outside of the subgraph
+  /// may get cloned to not mess the whole graph.
   ///
   /// @param[in] ancestor The parent or ancestor of the common node.
   /// @param[in] node The common node under consideration.
   /// @param[in] state The constant state to be propagated.
-  /// @param[in] destination Indication that the ancestor is the destination.
-  /// @param[in,out] clones Clones of common gates in the sub-graph.
-  void ProcessDecompositionAncestors(
+  /// @param[in] visit_bounds The main graph's visit enter and exit times.
+  /// @param[in,out] clones Clones of common parents in the subgraph.
+  ///
+  /// @returns true if the parent is reached and processed.
+  ///
+  /// @warning Gate marks are used to traverse subgraphs in linear time.
+  ///          Gate marks must be clear for the subgraph for the first call.
+  /// @warning Gate optimization values are used to detect ancestor.
+  /// @warning Gate visit time information is used to detect shared nodes.
+  bool ProcessDecompositionAncestors(
       const IGatePtr& ancestor,
       const NodePtr& node,
       bool state,
-      bool destination,
+      const std::pair<int, int>& visit_bounds,
       std::unordered_map<int, IGatePtr>* clones) noexcept;
 
   /// Replaces one gate in the graph with another.

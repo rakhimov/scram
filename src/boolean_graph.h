@@ -124,7 +124,7 @@ class Node {
   /// @returns The last time this node was visited.
   /// @returns 0 if no last time is registered.
   inline int LastVisit() const {
-    return visits_[2] ? visits_[2] : visits_[1] ? visits_[1] : visits_[0];
+    return visits_[2] ? visits_[2] : visits_[1];
   }
 
   /// @returns The minimum time of the visit.
