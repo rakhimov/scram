@@ -70,6 +70,8 @@ def install_scram(args):
             cmake_cmd += ["-DCMAKE_CXX_FLAGS='-Wall -Wextra "
                           "-Wno-sign-compare "
                           "-Wno-switch'" ]
+        if args.D is not None:
+            cmake_cmd += ['-D' + x for x in args.D]
 
         subprocess.check_call(cmake_cmd, cwd=args.build_dir,
                               shell=(os.name == 'nt'))
@@ -148,6 +150,9 @@ def main():
     release = "build for release with optimizations"
     parser.add_argument("-r", "--release", help=release, action="store_true",
                         default=False)
+
+    parser.add_argument('-D', metavar='VAR', action='append',
+                        help='pass environment variable(s) to CMake')
 
     args = parser.parse_args()
     if args.uninstall:
