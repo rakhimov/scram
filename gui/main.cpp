@@ -23,6 +23,7 @@
 #include "mainwindow.h"
 #include <QApplication>
 
+#include <boost/exception/all.hpp>
 #include <boost/program_options.hpp>
 
 #include "config.h"
@@ -58,7 +59,7 @@ int parseArguments(int argc, char *argv[], po::variables_map *vm)
         po::store(po::parse_command_line(argc, argv, desc), *vm);
     } catch (std::exception& err) {
         std::cerr << "Option error: " << err.what() << "\n\n"
-            << usage << "\n\n" << desc << "\n";
+                  << usage << "\n\n" << desc << "\n";
         return 1;
     }
 
@@ -86,38 +87,70 @@ int parseArguments(int argc, char *argv[], po::variables_map *vm)
     return 0;
 }
 
+/**
+ * Main body of command-line entrance to run the program.
+ *
+ * @param[in] vm Variables map of program options.
+ *
+ * @returns 0 for success.
+ * @returns 1 for errored state.
+ *
+ * @throws Error Internal problems specific to SCRAM like validation.
+ * @throws boost::exception Boost errors.
+ * @throws std::exception All other problems.
+ */
+int acceptCmdLine(const po::variables_map& vm)
+{
+    scram::Settings settings;
+    std::vector<std::string> inputFiles;
+    // Get configurations if any.
+    // Invalid configurations will throw.
+    if (vm.count("config-file")) {
+        std::unique_ptr<scram::Config>
+                config(new scram::Config(vm["config-file"].as<std::string>()));
+        settings = config->settings();
+        inputFiles = config->input_files();
+    }
+
+    if (vm.count("probability"))
+        settings.probability_analysis(vm["probability"].as<bool>());
+    // Add input files from the command-line.
+    if (vm.count("input-files")) {
+        std::vector<std::string> cmdInput =
+                vm["input-files"].as< std::vector<std::string> >();
+        inputFiles.insert(inputFiles.end(), cmdInput.begin(), cmdInput.end());
+    }
+    // Process input files
+    // into valid analysis containers and constructs.
+    std::unique_ptr<scram::Initializer> init(new scram::Initializer(settings));
+    // Validation phase happens upon processing.
+    init->ProcessInputFiles(inputFiles);
+
+    return 0;
+}
+
 int main(int argc, char *argv[])
 {
     if (argc > 1) {
-        po::variables_map vm;
-        int ret = parseArguments(argc, argv, &vm);
-        if (ret == 1) return 1;
-        if (ret == -1) return 0;
-
-        scram::Settings settings;
-        std::vector<std::string> input_files;
-        // Get configurations if any.
-        // Invalid configurations will throw.
-        if (vm.count("config-file")) {
-          std::unique_ptr<scram::Config>
-              config(new scram::Config(vm["config-file"].as<std::string>()));
-          settings = config->settings();
-          input_files = config->input_files();
+        try {
+            po::variables_map vm;
+            int ret = parseArguments(argc, argv, &vm);
+            if (ret == 1) return 1;
+            if (ret == -1) return 0;
+            acceptCmdLine(vm);
+        } catch (scram::Error& scramErr) {
+            std::cerr << "SCRAM Error\n" << std::endl;
+            std::cerr << scramErr.what() << std::endl;
+            return 1;
+        } catch (boost::exception& boostErr) {
+            std::cerr << "Boost Exception:\n" << std::endl;
+            std::cerr << boost::diagnostic_information(boostErr) << std::endl;
+            return 1;
+        } catch (std::exception& stdErr) {
+            std::cerr << "Standard Exception:\n" << std::endl;
+            std::cerr << stdErr.what() << std::endl;
+            return 1;
         }
-
-        if (vm.count("probability"))
-            settings.probability_analysis(vm["probability"].as<bool>());
-        // Add input files from the command-line.
-        if (vm.count("input-files")) {
-          std::vector<std::string> cmd_input =
-              vm["input-files"].as< std::vector<std::string> >();
-          input_files.insert(input_files.end(), cmd_input.begin(), cmd_input.end());
-        }
-        // Process input files
-        // into valid analysis containers and constructs.
-        std::unique_ptr<scram::Initializer> init(new scram::Initializer(settings));
-        // Validation phase happens upon processing.
-        init->ProcessInputFiles(input_files);
     }
 
     QApplication a(argc, argv);
