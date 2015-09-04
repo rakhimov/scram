@@ -59,8 +59,7 @@ IGate::IGate(const Operator& type) noexcept
       mark_(false),
       min_time_(0),
       max_time_(0),
-      module_(false),
-      num_failed_args_(0) {}
+      module_(false) {}
 
 std::shared_ptr<IGate> IGate::Clone() noexcept {
   IGatePtr clone(new IGate(type_));  // The same type.
@@ -335,27 +334,6 @@ void IGate::ProcessComplementArg(int index) noexcept {
   }
 }
 
-void IGate::ArgFailed() noexcept {
-  if (Node::opti_value() == 1) return;
-  assert(Node::opti_value() == 0);
-  assert(num_failed_args_ < args_.size());
-  ++num_failed_args_;
-  switch (type_) {
-    case kNullGate:
-    case kOrGate:
-      Node::opti_value(1);
-      break;
-    case kAndGate:
-      if (num_failed_args_ == args_.size()) Node::opti_value(1);
-      break;
-    case kAtleastGate:
-      if (num_failed_args_ == vote_number_) Node::opti_value(1);
-      break;
-    default:
-      assert(false);  // Coherent gates only!
-  }
-}
-
 const std::map<std::string, Operator> BooleanGraph::kStringToType_ =
     {{"and", kAndGate}, {"or", kOrGate}, {"atleast", kAtleastGate},
      {"xor", kXorGate}, {"not", kNotGate}, {"nand", kNandGate},
@@ -528,7 +506,6 @@ void BooleanGraph::ClearOptiValues(const IGatePtr& gate) noexcept {
   gate->mark(true);
 
   gate->opti_value(0);
-  gate->ResetArgFailure();
   for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
     BooleanGraph::ClearOptiValues(arg.second);
   }

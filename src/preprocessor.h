@@ -784,8 +784,9 @@ class Preprocessor {
   /// This optimization helps reduce the number of common nodes.
   ///
   /// @warning Boolean optimization may replace the root gate of the graph.
-  /// @warning The current implementation works
-  ///          only for coherent graphs.
+  /// @warning Node visit information is mainipulated.
+  /// @warning Gate marks are manipulated.
+  /// @warning Node optimization values are manipulated.
   void BooleanOptimization() noexcept;
 
   /// Traverses the graph to find nodes
@@ -798,7 +799,7 @@ class Preprocessor {
   ///
   /// @note Constant nodes are not expected to be operated.
   ///
-  /// @warning Node visit information must be clear.
+  /// @warning Node visit information is manipulated.
   void GatherCommonNodes(
       std::vector<IGateWeakPtr>* common_gates,
       std::vector<std::weak_ptr<Variable> >* common_variables) noexcept;
@@ -810,22 +811,39 @@ class Preprocessor {
   template<class N>
   void ProcessCommonNode(const std::weak_ptr<N>& common_node) noexcept;
 
-  /// Propagates failure of the node
+  /// Marks ancestor gates true.
+  /// The marking stops at the root
+  /// of an independent subgraph for algorithmic efficiency.
+  ///
+  /// @param[in] node The child node.
+  /// @param[out] The root module gate ancestor.
+  ///
+  /// @warning Since very specific branches are marked 'true',
+  ///          cleanup must be performed after/with the use of the ancestors.
+  ///          If the cleanup is done improperly or not at all,
+  ///          the default global contract of clean marks will be broken.
+  void MarkAncestors(const NodePtr& node, IGatePtr* module) noexcept;
+
+  /// Propagates failure of a common node
   /// by setting its ancestors' optimization values to 1
   /// if they fail according to their Boolean logic.
+  /// The failure of an argument is similar to propagating constant TRUE.
   ///
-  /// @param[in] node The node that fails.
+  /// @param[in,out] gate The ancestor gate that may fail.
   ///
   /// @returns Total multiplicity of the node.
-  int PropagateFailure(const NodePtr& node) noexcept;
+  ///
+  /// @note The optimization value of the main common node must be 1.
+  /// @note The marks of ancestor gates must be 'true'.
+  ///       This function will reset all of them to 'false'.
+  int PropagateFailure(const IGatePtr& gate) noexcept;
 
   /// Collects failure destinations
   /// and marks non-redundant nodes.
-  /// The optimization value for non-redundant nodes are set to 2.
-  /// The optimization value for non-removal parent nodes are set to 3.
+  /// The optimization value for non-redundant gates are set to 2.
   ///
   /// @param[in] gate The non-failed gate which sub-graph is to be traversed.
-  /// @param[in] index The index of the failed node.
+  /// @param[in] index The index of the main failure-source common node.
   /// @param[in,out] destinations Destinations of the failure.
   ///
   /// @returns The number of encounters with the destinations.
@@ -843,12 +861,27 @@ class Preprocessor {
   ///
   /// @param[in] node The common node.
   /// @param[in,out] destinations A set of destination gates.
+  /// @param[out] redundant_parents A set of redundant parents.
+  void CollectRedundantParents(
+      const NodePtr& node,
+      std::map<int, IGateWeakPtr>* destinations,
+      std::vector<IGateWeakPtr>* redundant_parents) noexcept;
+
+  /// Detects if parents of a node are redundant.
+  /// If there are redundant parents,
+  /// depending on the logic of the parent,
+  /// the node is removed from the parent
+  /// unless it is also in the destination set with specific logic.
+  /// In the latter case, the parent is removed from the destinations.
+  ///
+  /// @param[in] node The common node.
+  /// @param[in] redundant_parents A set of redundant parents.
   ///
   /// @note Constant gates are registered for removal.
   /// @note Null type gates are registered for removal.
   void ProcessRedundantParents(
       const NodePtr& node,
-      std::map<int, IGateWeakPtr>* destinations) noexcept;
+      const std::vector<IGateWeakPtr>& redundant_parents) noexcept;
 
   /// Transforms failure destination
   /// according to the logic and the common node.

@@ -617,17 +617,6 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
     IGate::EraseAllArgs();
   }
 
-  /// Registers a failure of an argument.
-  /// Depending on the logic of the gate,
-  /// sets the failure of this gate.
-  ///
-  /// @note The actual failure or existence of the argument is not checked.
-  void ArgFailed() noexcept;
-
-  /// Resets this gates failure value
-  /// and information about the number of failed arguments.
-  inline void ResetArgFailure() noexcept { num_failed_args_ = 0; }
-
  private:
   /// Process an addition of an argument
   /// that already exists in this gate.
@@ -659,8 +648,6 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   std::unordered_map<int, VariablePtr> variable_args_;
   /// Arguments that are constant like house events.
   std::unordered_map<int, ConstantPtr> constant_args_;
-  /// The number of arguments failed upon failure propagation.
-  int num_failed_args_;
 };
 
 /// @class GateSet
