@@ -922,6 +922,17 @@ class BooleanGraph {
   /// @note Gate marks are used for linear time traversal.
   void ClearOptiValues(const IGatePtr& gate) noexcept;
 
+  /// Clears optimization values only for a part of the graph.
+  /// This is the fastest way to clean
+  /// contiguously marked optimization values.
+  ///
+  /// @param[in,out] gate The root gate to be traversed and cleaned.
+  ///
+  /// @note The logic is coupled with Boolean optimization.
+  ///       The "dirty" nodes are marked anything but 0,
+  ///       and there is only one dirty variable argument at most.
+  void ClearOptiValuesFast(const IGatePtr& gate) noexcept;
+
   /// Clears counts of all nodes in the graph.
   ///
   /// @note Gate marks are used for linear time traversal.

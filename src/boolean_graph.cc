@@ -535,14 +535,26 @@ void BooleanGraph::ClearOptiValues(const IGatePtr& gate) noexcept {
 
   gate->opti_value(0);
   gate->ResetArgFailure();
-  std::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
-    BooleanGraph::ClearOptiValues(it->second);
+  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+    BooleanGraph::ClearOptiValues(arg.second);
   }
-  std::unordered_map<int, VariablePtr>::const_iterator it_b;
-  for (it_b = gate->variable_args().begin();
-       it_b != gate->variable_args().end(); ++it_b) {
-    it_b->second->opti_value(0);
+  for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
+    arg.second->opti_value(0);
+  }
+  assert(gate->constant_args().empty());
+}
+
+void BooleanGraph::ClearOptiValuesFast(const IGatePtr& gate) noexcept {
+  if (!gate->opti_value()) return;
+  gate->opti_value(0);
+  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+    BooleanGraph::ClearOptiValuesFast(arg.second);
+  }
+  for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
+    if (arg.second->opti_value()) {
+      arg.second->opti_value(0);
+      break;  // Only one variable is dirty.
+    }
   }
   assert(gate->constant_args().empty());
 }
