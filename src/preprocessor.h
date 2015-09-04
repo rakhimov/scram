@@ -484,9 +484,9 @@ class Preprocessor {
   /// @param[in,out] non_modular_args Args that cannot be grouped into modules.
   void ProcessModularArgs(
       const IGatePtr& gate,
-      const std::vector<std::pair<int, NodePtr> >& non_shared_args,
-      std::vector<std::pair<int, NodePtr> >* modular_args,
-      std::vector<std::pair<int, NodePtr> >* non_modular_args) noexcept;
+      const std::vector<std::pair<int, NodePtr>>& non_shared_args,
+      std::vector<std::pair<int, NodePtr>>* modular_args,
+      std::vector<std::pair<int, NodePtr>>* non_modular_args) noexcept;
 
   /// Creates a new module
   /// as an argument of an existing gate
@@ -503,7 +503,7 @@ class Preprocessor {
   /// @returns Pointer to the new module if it is created.
   IGatePtr CreateNewModule(
       const IGatePtr& gate,
-      const std::vector<std::pair<int, NodePtr> >& args) noexcept;
+      const std::vector<std::pair<int, NodePtr>>& args) noexcept;
 
   /// Checks if a group of modular arguments share
   /// anything with non-modular arguments.
@@ -515,8 +515,8 @@ class Preprocessor {
   /// @param[in,out] modular_args Candidates for modular grouping.
   /// @param[in,out] non_modular_args Non modular arguments.
   void FilterModularArgs(
-      std::vector<std::pair<int, NodePtr> >* modular_args,
-      std::vector<std::pair<int, NodePtr> >* non_modular_args) noexcept;
+      std::vector<std::pair<int, NodePtr>>* modular_args,
+      std::vector<std::pair<int, NodePtr>>* non_modular_args) noexcept;
 
   /// Groups modular arguments by their common elements.
   /// The gates created with these modular arguments
@@ -525,8 +525,8 @@ class Preprocessor {
   /// @param[in] modular_args Candidates for modular grouping.
   /// @param[out] groups Grouped modular arguments.
   void GroupModularArgs(
-      const std::vector<std::pair<int, NodePtr> >& modular_args,
-      std::vector<std::vector<std::pair<int, NodePtr> > >* groups) noexcept;
+      const std::vector<std::pair<int, NodePtr>>& modular_args,
+      std::vector<std::vector<std::pair<int, NodePtr>>>* groups) noexcept;
 
   /// Creates new module gates
   /// from groups of modular arguments

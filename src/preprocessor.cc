@@ -790,20 +790,18 @@ void Preprocessor::DetectMultipleDefinitions(
 void Preprocessor::DetectModules() noexcept {
   assert(const_gates_.empty());
   assert(null_gates_.empty());
+  IGatePtr root_gate = graph_->root();  // Does not change in this algorithm.
   // First stage, traverse the graph depth-first for gates
   // and indicate visit time for each node.
-  graph_->ClearNodeVisits();
-
   LOG(DEBUG4) << "Assigning timings to nodes...";
-  IGatePtr root_gate = graph_->root();
-  int time = 0;
-  Preprocessor::AssignTiming(time, root_gate);
+  graph_->ClearNodeVisits();
+  Preprocessor::AssignTiming(0, root_gate);
   LOG(DEBUG4) << "Timings are assigned to nodes.";
 
   graph_->ClearGateMarks();
   Preprocessor::FindModules(root_gate);
 
-  assert(!root_gate->Revisited());
+  assert(!root_gate->Revisited());  // Sanity checks.
   assert(root_gate->min_time() == 1);
   assert(root_gate->max_time() == root_gate->ExitTime());
 }
@@ -812,16 +810,12 @@ int Preprocessor::AssignTiming(int time, const IGatePtr& gate) noexcept {
   if (gate->Visit(++time)) return time;  // Revisited gate.
   assert(gate->constant_args().empty());
 
-  std::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
-    time = Preprocessor::AssignTiming(time, it->second);
+  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+    time = Preprocessor::AssignTiming(time, arg.second);
   }
-
-  std::unordered_map<int, VariablePtr>::const_iterator it_b;
-  for (it_b = gate->variable_args().begin();
-       it_b != gate->variable_args().end(); ++it_b) {
-    it_b->second->Visit(++time);  // Enter the leaf.
-    it_b->second->Visit(time);  // Exit at the same time.
+  for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
+    arg.second->Visit(++time);  // Enter the leaf.
+    arg.second->Visit(time);  // Exit at the same time.
   }
   bool re_visited = gate->Visit(++time);  // Exiting the gate in second visit.
   assert(!re_visited);  // No cyclic visiting.
@@ -836,64 +830,61 @@ void Preprocessor::FindModules(const IGatePtr& gate) noexcept {
   int min_time = enter_time;
   int max_time = exit_time;
 
-  std::vector<std::pair<int, NodePtr> > non_shared_args;
-  std::vector<std::pair<int, NodePtr> > modular_args;
-  std::vector<std::pair<int, NodePtr> > non_modular_args;
+  std::vector<std::pair<int, NodePtr>> non_shared_args;
+  std::vector<std::pair<int, NodePtr>> modular_args;
+  std::vector<std::pair<int, NodePtr>> non_modular_args;
 
-  std::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
-    IGatePtr arg_gate = it->second;
+  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+    IGatePtr arg_gate = arg.second;
     Preprocessor::FindModules(arg_gate);
     if (arg_gate->IsModule() && !arg_gate->Revisited()) {
       assert(arg_gate->parents().size() == 1);
       assert(arg_gate->parents().count(gate->index()));
 
-      non_shared_args.push_back(*it);
+      non_shared_args.push_back(arg);
       continue;  // Sub-graph's visit times are within the Enter and Exit time.
     }
-    int min = arg_gate->min_time();
-    int max = arg_gate->max_time();
-    assert(min > 0);
-    assert(max > 0);
-    assert(max > min);
-    if (min > enter_time && max < exit_time) {
-      modular_args.push_back(*it);
+    int min_arg = arg_gate->min_time();
+    int max_arg = arg_gate->max_time();
+    assert(min_arg > 0);
+    assert(max_arg > 0);
+    assert(max_arg > min_arg);
+    if (min_arg > enter_time && max_arg < exit_time) {
+      modular_args.push_back(arg);
     } else {
-      non_modular_args.push_back(*it);
+      non_modular_args.push_back(arg);
     }
-    min_time = std::min(min_time, min);
-    max_time = std::max(max_time, max);
+    min_time = std::min(min_time, min_arg);
+    max_time = std::max(max_time, max_arg);
   }
 
-  std::unordered_map<int, VariablePtr>::const_iterator it_b;
-  for (it_b = gate->variable_args().begin();
-       it_b != gate->variable_args().end(); ++it_b) {
-    VariablePtr arg = it_b->second;
-    int min = arg->EnterTime();
-    int max = arg->LastVisit();
-    assert(min > 0);
-    assert(max > 0);
-    if (min == max) {
-      assert(min > enter_time && max < exit_time);
-      assert(arg->parents().size() == 1);
-      assert(arg->parents().count(gate->index()));
+  for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
+    VariablePtr var = arg.second;
+    int min_arg = var->min_time();
+    int max_arg = var->max_time();
+    assert(min_arg > 0);
+    assert(max_arg > 0);
+    if (min_arg == max_arg) {
+      assert(min_arg > enter_time && max_arg < exit_time);
+      assert(var->parents().size() == 1);
+      assert(var->parents().count(gate->index()));
 
-      non_shared_args.push_back(*it_b);
+      non_shared_args.push_back(arg);
       continue;  // The single parent argument.
     }
-    assert(max > min);
-    if (min > enter_time && max < exit_time) {
-      modular_args.push_back(*it_b);
+    assert(max_arg > min_arg);
+    if (min_arg > enter_time && max_arg < exit_time) {
+      modular_args.push_back(arg);
     } else {
-      non_modular_args.push_back(*it_b);
+      non_modular_args.push_back(arg);
     }
-    min_time = std::min(min_time, min);
-    max_time = std::max(max_time, max);
+    min_time = std::min(min_time, min_arg);
+    max_time = std::max(max_time, max_arg);
   }
 
   // Determine if this gate is module itself.
   if (!gate->IsModule() && min_time == enter_time && max_time == exit_time) {
-    LOG(DEBUG4) << "Found original module: " << gate->index();
+    LOG(DEBUG4) << "Found original module: G" << gate->index();
     assert(non_modular_args.empty());
     gate->TurnModule();
   }
@@ -908,9 +899,9 @@ void Preprocessor::FindModules(const IGatePtr& gate) noexcept {
 
 void Preprocessor::ProcessModularArgs(
     const IGatePtr& gate,
-    const std::vector<std::pair<int, NodePtr> >& non_shared_args,
-    std::vector<std::pair<int, NodePtr> >* modular_args,
-    std::vector<std::pair<int, NodePtr> >* non_modular_args) noexcept {
+    const std::vector<std::pair<int, NodePtr>>& non_shared_args,
+    std::vector<std::pair<int, NodePtr>>* modular_args,
+    std::vector<std::pair<int, NodePtr>>* non_modular_args) noexcept {
   assert(gate->args().size() ==
          (non_shared_args.size() + modular_args->size() +
           non_modular_args->size()));
@@ -924,7 +915,7 @@ void Preprocessor::ProcessModularArgs(
 
       Preprocessor::FilterModularArgs(modular_args, non_modular_args);
       assert(modular_args->size() != 1);  // One modular arg is non-shared.
-      std::vector<std::vector<std::pair<int, NodePtr> > > groups;
+      std::vector<std::vector<std::pair<int, NodePtr>>> groups;
       Preprocessor::GroupModularArgs(*modular_args, &groups);
       Preprocessor::CreateNewModules(gate, *modular_args, groups);
   }
@@ -932,7 +923,7 @@ void Preprocessor::ProcessModularArgs(
 
 std::shared_ptr<IGate> Preprocessor::CreateNewModule(
     const IGatePtr& gate,
-    const std::vector<std::pair<int, NodePtr> >& args) noexcept {
+    const std::vector<std::pair<int, NodePtr>>& args) noexcept {
   IGatePtr module;  // Empty pointer as an indication of a failure.
   if (args.empty()) return module;
   if (args.size() == 1) return module;
@@ -954,15 +945,15 @@ std::shared_ptr<IGate> Preprocessor::CreateNewModule(
       return module;  // Cannot create sub-modules for other types.
   }
   module->TurnModule();
-  module->mark(true);
-  std::vector<std::pair<int, NodePtr> >::const_iterator it;
-  for (it = args.begin(); it != args.end(); ++it) {
-    gate->TransferArg(it->first, module);
+  assert(gate->mark());
+  module->mark(true);  // Keep consistent marking with the subgraph.
+  for (const auto& arg : args) {
+    gate->TransferArg(arg.first, module);
   }
   gate->AddArg(module->index(), module);
   assert(gate->args().size() > 1);
-  LOG(DEBUG4) << "Created a module for Gate " << gate->index() << ": Gate "
-      << module->index() << " with "  << args.size() << " arguments.";
+  LOG(DEBUG4) << "Created a module G" << module->index()
+      << " with "  << args.size() << " arguments for G" << gate->index();
   return module;
 }
 
@@ -985,30 +976,28 @@ bool DetectOverlap(int a_min, int a_max, int b_min, int b_max) noexcept {
 }  // namespace
 
 void Preprocessor::FilterModularArgs(
-    std::vector<std::pair<int, NodePtr> >* modular_args,
-    std::vector<std::pair<int, NodePtr> >* non_modular_args) noexcept {
+    std::vector<std::pair<int, NodePtr>>* modular_args,
+    std::vector<std::pair<int, NodePtr>>* non_modular_args) noexcept {
   if (modular_args->empty() || non_modular_args->empty()) return;
-  std::vector<std::pair<int, NodePtr> > new_non_modular;
-  std::vector<std::pair<int, NodePtr> > still_modular;
-  std::vector<std::pair<int, NodePtr> >::iterator it;
-  for (it = modular_args->begin(); it != modular_args->end(); ++it) {
-    int min = it->second->min_time();
-    int max = it->second->max_time();
+  std::vector<std::pair<int, NodePtr>> new_non_modular;
+  std::vector<std::pair<int, NodePtr>> still_modular;
+  for (const auto& mod_arg : *modular_args) {
+    int min = mod_arg.second->min_time();
+    int max = mod_arg.second->max_time();
     bool non_module = false;
-    std::vector<std::pair<int, NodePtr> >::iterator it_n;
-    for (it_n = non_modular_args->begin(); it_n != non_modular_args->end();
-         ++it_n) {
-      bool overlap = DetectOverlap(min, max, it_n->second->min_time(),
-                                   it_n->second->max_time());
+    for (const auto& non_mod_arg : *non_modular_args) {
+      bool overlap = DetectOverlap(min, max,
+                                   non_mod_arg.second->min_time(),
+                                   non_mod_arg.second->max_time());
       if (overlap) {
         non_module = true;
         break;
       }
     }
     if (non_module) {
-      new_non_modular.push_back(*it);
+      new_non_modular.push_back(mod_arg);
     } else {
-      still_modular.push_back(*it);
+      still_modular.push_back(mod_arg);
     }
   }
   Preprocessor::FilterModularArgs(&still_modular, &new_non_modular);
@@ -1018,15 +1007,15 @@ void Preprocessor::FilterModularArgs(
 }
 
 void Preprocessor::GroupModularArgs(
-    const std::vector<std::pair<int, NodePtr> >& modular_args,
-    std::vector<std::vector<std::pair<int, NodePtr> > >* groups) noexcept {
+    const std::vector<std::pair<int, NodePtr>>& modular_args,
+    std::vector<std::vector<std::pair<int, NodePtr>>>* groups) noexcept {
   if (modular_args.empty()) return;
   assert(modular_args.size() > 1);
   assert(groups->empty());
-  std::list<std::pair<int, NodePtr> > member_list(modular_args.begin(),
-                                                  modular_args.end());
+  std::list<std::pair<int, NodePtr>> member_list(modular_args.begin(),
+                                                 modular_args.end());
   while (!member_list.empty()) {
-    std::vector<std::pair<int, NodePtr> > group;
+    std::vector<std::pair<int, NodePtr>> group;
     NodePtr first_member = member_list.front().second;
     group.push_back(member_list.front());
     member_list.pop_front();
@@ -1036,7 +1025,7 @@ void Preprocessor::GroupModularArgs(
     int prev_size = 0;  // To track the addition of a new member into the group.
     while (prev_size < group.size()) {
       prev_size = group.size();
-      std::list<std::pair<int, NodePtr> >::iterator it;
+      std::list<std::pair<int, NodePtr>>::iterator it;
       for (it = member_list.begin(); it != member_list.end();) {
         int min = it->second->min_time();
         int max = it->second->max_time();
@@ -1053,7 +1042,7 @@ void Preprocessor::GroupModularArgs(
       }
     }
     assert(group.size() > 1);
-    groups->push_back(group);
+    groups->emplace_back(group);
   }
   LOG(DEBUG4) << "Grouped modular args in " << groups->size() << " group(s).";
   assert(!groups->empty());
@@ -1080,9 +1069,8 @@ void Preprocessor::CreateNewModules(
     main_arg = Preprocessor::CreateNewModule(gate, modular_args);
     assert(main_arg);
   }
-  std::vector<std::vector<std::pair<int, NodePtr> > >::const_iterator it;
-  for (it = groups.begin(); it != groups.end(); ++it) {
-    Preprocessor::CreateNewModule(main_arg, *it);
+  for (const auto& group : groups) {
+    Preprocessor::CreateNewModule(main_arg, group);
   }
 }
 
