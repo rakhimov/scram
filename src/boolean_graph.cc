@@ -569,6 +569,24 @@ void BooleanGraph::ClearNodeCounts(const IGatePtr& gate) noexcept {
   assert(gate->constant_args().empty());
 }
 
+void BooleanGraph::TestGateMarks(const IGatePtr& gate) noexcept {
+  assert(!gate->mark());
+  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+    BooleanGraph::TestGateMarks(arg.second);
+  }
+}
+
+void BooleanGraph::TestOptiValues(const IGatePtr& gate) noexcept {
+  assert(!gate->opti_value());
+  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+    BooleanGraph::TestOptiValues(arg.second);
+  }
+  for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
+    assert(!arg.second->opti_value());
+  }
+  assert(gate->constant_args().empty());
+}
+
 std::ostream& operator<<(std::ostream& os,
                          const std::shared_ptr<Constant>& constant) {
   if (constant->Visited()) return os;

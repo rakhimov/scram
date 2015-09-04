@@ -934,6 +934,22 @@ class BooleanGraph {
   /// @note Gate marks are used for linear time traversal.
   void ClearNodeCounts(const IGatePtr& gate) noexcept;
 
+  /// Helper function to find discontinuous gate marking.
+  /// Assertion failes if any gate is still marked.
+  ///
+  /// @param[in] gate The starting gate to traverse.
+  ///
+  /// @note This functions is not linear and for debugging only.
+  void TestGateMarks(const IGatePtr& gate) noexcept;
+
+  /// Helper function to find uncleared optimization values.
+  /// Assertion failes if any node has non-zero optimization value.
+  ///
+  /// @param[in] gate The starting gate to traverse.
+  ///
+  /// @note This functions is not linear and for debugging only.
+  void TestOptiValues(const IGatePtr& gate) noexcept;
+
   IGatePtr root_;  ///< The root gate of this graph.
   std::vector<BasicEventPtr> basic_events_;  ///< Mapping for basic events.
   bool coherent_;  ///< Indication that the graph does not contain negation.
