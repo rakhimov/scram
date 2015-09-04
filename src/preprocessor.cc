@@ -343,11 +343,10 @@ void Preprocessor::RemoveNullGates() noexcept {
 void Preprocessor::RemoveConstants() noexcept {
   assert(const_gates_.empty());
   assert(!graph_->constants_.empty());
-  std::vector<std::weak_ptr<Constant> >::iterator it;
-  for (it = graph_->constants_.begin(); it != graph_->constants_.end(); ++it) {
-    if (it->expired()) continue;
-    Preprocessor::PropagateConstant(it->lock());
-    assert(it->expired());
+  for (const std::weak_ptr<Constant>& ptr : graph_->constants_) {
+    if (ptr.expired()) continue;
+    Preprocessor::PropagateConstant(ptr.lock());
+    assert(ptr.expired());
   }
   assert(const_gates_.empty());
   graph_->constants_.clear();
@@ -492,20 +491,18 @@ void Preprocessor::PropagateNullGate(const IGatePtr& gate) noexcept {
 
 void Preprocessor::ClearConstGates() noexcept {
   graph_->ClearGateMarks();  // New gates may get created without marks!
-  std::vector<IGateWeakPtr>::iterator it;
-  for (it = const_gates_.begin(); it != const_gates_.end(); ++it) {
-    if (it->expired()) continue;
-    Preprocessor::PropagateConstGate(it->lock());
+  for (const IGateWeakPtr& ptr : const_gates_) {
+    if (ptr.expired()) continue;
+    Preprocessor::PropagateConstGate(ptr.lock());
   }
   const_gates_.clear();
 }
 
 void Preprocessor::ClearNullGates() noexcept {
   graph_->ClearGateMarks();  // New gates may get created without marks!
-  std::vector<IGateWeakPtr>::iterator it;
-  for (it = null_gates_.begin(); it != null_gates_.end(); ++it) {
-    if (it->expired()) continue;
-    Preprocessor::PropagateNullGate(it->lock());
+  for (const IGateWeakPtr& ptr : null_gates_) {
+    if (ptr.expired()) continue;
+    Preprocessor::PropagateNullGate(ptr.lock());
   }
   null_gates_.clear();
 }

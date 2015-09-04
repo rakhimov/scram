@@ -485,9 +485,8 @@ void BooleanGraph::ClearGateMarks() noexcept {
 void BooleanGraph::ClearGateMarks(const IGatePtr& gate) noexcept {
   if (!gate->mark()) return;
   gate->mark(false);
-  std::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
-    BooleanGraph::ClearGateMarks(it->second);
+  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+    BooleanGraph::ClearGateMarks(arg.second);
   }
 }
 
@@ -505,19 +504,14 @@ void BooleanGraph::ClearNodeVisits(const IGatePtr& gate) noexcept {
 
   if (gate->Visited()) gate->ClearVisits();
 
-  std::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
-    BooleanGraph::ClearNodeVisits(it->second);
+  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+    BooleanGraph::ClearNodeVisits(arg.second);
   }
-  std::unordered_map<int, VariablePtr>::const_iterator it_b;
-  for (it_b = gate->variable_args().begin();
-       it_b != gate->variable_args().end(); ++it_b) {
-    if (it_b->second->Visited()) it_b->second->ClearVisits();
+  for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
+    if (arg.second->Visited()) arg.second->ClearVisits();
   }
-  std::unordered_map<int, ConstantPtr>::const_iterator it_c;
-  for (it_c = gate->constant_args().begin();
-       it_c != gate->constant_args().end(); ++it_c) {
-    if (it_c->second->Visited()) it_c->second->ClearVisits();
+  for (const std::pair<int, ConstantPtr>& arg : gate->constant_args()) {
+    if (arg.second->Visited()) arg.second->ClearVisits();
   }
 }
 
