@@ -1112,6 +1112,30 @@ void Preprocessor::CreateNewModules(
   }
 }
 
+void Preprocessor::GatherModules(std::vector<IGateWeakPtr>* modules) noexcept {
+  graph_->ClearGateMarks();
+  std::queue<IGatePtr> gates_queue;
+  IGatePtr root = graph_->root();
+  assert(!root->mark());
+  assert(root->IsModule());
+  root->mark(true);
+  modules->push_back(root);
+  gates_queue.push(root);
+  while (!gates_queue.empty()) {
+    IGatePtr gate = gates_queue.front();
+    gates_queue.pop();
+    assert(gate->mark());
+    for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+      IGatePtr arg_gate = arg.second;
+      assert(arg_gate->state() == kNormalState);
+      if (arg_gate->mark()) continue;
+      arg_gate->mark(true);
+      gates_queue.push(arg_gate);
+      if (arg_gate->IsModule()) modules->push_back(arg_gate);
+    }
+  }
+}
+
 bool Preprocessor::MergeCommonArgs() noexcept {
   assert(null_gates_.empty());
   assert(const_gates_.empty());

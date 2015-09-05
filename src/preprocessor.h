@@ -529,6 +529,15 @@ class Preprocessor {
       const std::vector<std::pair<int, NodePtr>>& modular_args,
       const std::vector<std::vector<std::pair<int, NodePtr>>>& groups) noexcept;
 
+  /// Gathers all modules in the Boolean graph.
+  ///
+  /// @param[out] modules Unique modules encountered breadth-first.
+  ///
+  /// @note It is assumed that module detection is already performed.
+  ///
+  /// @warning Gate marks are used.
+  void GatherModules(std::vector<IGateWeakPtr>* modules) noexcept;
+
   /// Identifies common arguments of gates,
   /// and merges the common arguments into new gates.
   /// This technique helps uncover the common structure
