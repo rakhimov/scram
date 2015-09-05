@@ -1150,7 +1150,7 @@ bool Preprocessor::MergeCommonArgs(const Operator& op) noexcept {
   LOG(DEBUG4) << "Merging " << parents.size() << " groups...";
   MergeTable table;
   Preprocessor::GroupCommonArgs(parents, &table);
-
+  LOG(DEBUG4) << "Transforming " << table.groups.size() << " table groups...";
   for (MergeTable::MergeGroup& group : table.groups) {
     Preprocessor::TransformCommonArgs(&group);
   }
@@ -1209,7 +1209,7 @@ void Preprocessor::GatherCommonArgs(const IGatePtr& gate, const Operator& op,
 
   if (common_args.size() < 2) return;  // Can't be merged anyway.
 
-  std::sort(common_args.begin(), common_args.end());
+  std::sort(common_args.begin(), common_args.end());  // Unique and stable.
   group->emplace_back(gate, common_args);
 }
 
@@ -1217,8 +1217,7 @@ void Preprocessor::GroupCommonParents(
     int num_common_args,
     const MergeTable::Candidates& group,
     MergeTable::Collection* parents) noexcept {
-  if (group.empty()) return;
-  for (int i = 0; i < group.size() - 1; ++i) {
+  for (int i = 0; i < group.size(); ++i) {
     const std::vector<int>& args_gate = group[i].second;
     assert(args_gate.size() > 1);
     int j = i;
@@ -1245,7 +1244,7 @@ void Preprocessor::GroupCommonArgs(const MergeTable::Collection& options,
   // Sorting in descending size of common arguments.
   std::stable_sort(all_options.begin(), all_options.end(),
                    [](const MergeTable::Option& lhs,
-                     const MergeTable::Option& rhs) {
+                      const MergeTable::Option& rhs) {
                      return lhs.first.size() < rhs.first.size();
                    });
 
@@ -1452,7 +1451,7 @@ void Preprocessor::GroupDistributiveArgs(const MergeTable::Collection& options,
   // Sorting in descending size of common arguments.
   std::stable_sort(all_options.begin(), all_options.end(),
                    [](const MergeTable::Option& lhs,
-                     const MergeTable::Option& rhs) {
+                      const MergeTable::Option& rhs) {
                      return lhs.first.size() < rhs.first.size();
                    });
 
@@ -1553,8 +1552,10 @@ void Preprocessor::TransformDistributiveArgs(
     MergeTable::Option& super = *it;
     MergeTable::CommonArgs& super_args = super.first;
     for (int index : args) {
-      super_args.erase(std::lower_bound(super_args.begin(), super_args.end(),
-                                        index));
+      std::vector<int>::iterator it_index =
+          std::lower_bound(super_args.begin(), super_args.end(), index);
+      assert(it_index != super_args.end());  // The index should exist.
+      super_args.erase(it_index);
     }
   }
   group->erase(group->begin());
