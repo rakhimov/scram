@@ -611,6 +611,9 @@ class Preprocessor {
   /// @param[out] group The group of the gates with their common arguments.
   ///
   /// @note The common arguments are sorted.
+  /// @note The gathering is limited by modules.
+  ///       That is, no search is performed in submodules
+  ///       because they don't have common args with the supermodule.
   ///
   /// @warning Gate marks are used for linear traversal.
   void GatherCommonArgs(const IGatePtr& gate, const Operator& op,

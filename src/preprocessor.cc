@@ -1164,23 +1164,33 @@ bool Preprocessor::MergeCommonArgs(const Operator& op) noexcept {
   // by their operator types and common arguments.
   Preprocessor::MarkCommonArgs(graph_->root(), op);
   graph_->ClearGateMarks();
-  MergeTable::Candidates group;
-  Preprocessor::GatherCommonArgs(graph_->root(), op, &group);
-  // Finding common parents for the common arguments.
-  MergeTable::Collection parents;
-  Preprocessor::GroupCommonParents(2, group, &parents);
-  if (parents.empty()) return false;  // No candidates for merging.
-
-  LOG(DEBUG4) << "Merging " << parents.size() << " groups...";
-  MergeTable table;
-  Preprocessor::GroupCommonArgs(parents, &table);
-  LOG(DEBUG4) << "Transforming " << table.groups.size() << " table groups...";
-  for (MergeTable::MergeGroup& group : table.groups) {
-    Preprocessor::TransformCommonArgs(&group);
+  std::vector<IGateWeakPtr> modules;
+  Preprocessor::GatherModules(&modules);
+  graph_->ClearGateMarks();
+  LOG(DEBUG4) << "Working with " << modules.size() << " modules...";
+  bool changed = false;
+  for (const auto& module : modules) {
+    if (module.expired()) continue;
+    IGatePtr root = module.lock();
+    MergeTable::Candidates group;
+    Preprocessor::GatherCommonArgs(root, op, &group);
+    graph_->ClearGateMarks(root);
+    // Finding common parents for the common arguments.
+    MergeTable::Collection parents;
+    Preprocessor::GroupCommonParents(2, group, &parents);
+    if (parents.empty()) continue;  // No candidates for merging.
+    changed = true;
+    LOG(DEBUG4) << "Merging " << parents.size() << " groups...";
+    MergeTable table;
+    Preprocessor::GroupCommonArgs(parents, &table);
+    LOG(DEBUG4) << "Transforming " << table.groups.size() << " table groups...";
+    for (MergeTable::MergeGroup& group : table.groups) {
+      Preprocessor::TransformCommonArgs(&group);
+    }
+    assert(const_gates_.empty());
+    Preprocessor::ClearNullGates();
   }
-  assert(const_gates_.empty());
-  Preprocessor::ClearNullGates();
-  return true;
+  return changed;
 }
 
 void Preprocessor::MarkCommonArgs(const IGatePtr& gate,
@@ -1216,7 +1226,8 @@ void Preprocessor::GatherCommonArgs(const IGatePtr& gate, const Operator& op,
   for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
     IGatePtr arg_gate = arg.second;
     assert(arg_gate->state() == kNormalState);
-    Preprocessor::GatherCommonArgs(arg_gate, op, group);
+    if (!arg_gate->IsModule())
+      Preprocessor::GatherCommonArgs(arg_gate, op, group);
     if (!in_group) continue;
     int count = arg.first > 0 ? arg_gate->pos_count() : arg_gate->neg_count();
     if (count > 1) common_args.push_back(arg.first);
