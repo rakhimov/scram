@@ -1572,11 +1572,13 @@ void Preprocessor::TransformDistributiveArgs(
       member->type(kNullGate);
       null_gates_.push_back(member);
     } else if (member->args().empty()) {
-      if (member->type() == kAndGate) {
-        member->MakeUnity();
-      } else {
-        assert(member->type() == kOrGate);
-        member->Nullify();
+      switch (distr_type) {
+        case kAndGate:
+          member->MakeUnity();
+          break;
+        case kOrGate:
+          member->Nullify();
+          break;
       }
       const_gates_.push_back(member);
     }
