@@ -609,8 +609,10 @@ class Preprocessor {
     typedef std::vector<Option*> OptionGroup;  ///< A set of best options.
     typedef std::vector<Option> MergeGroup;  ///< Isolated group for processing.
 
+    /// Candidate gates with their shared arguments.
+    typedef std::pair<IGatePtr, CommonArgs> Candidate;
     /// Collection of merge-candidate gates with their common arguments.
-    typedef std::vector<std::pair<IGatePtr, CommonArgs>> Candidates;
+    typedef std::vector<Candidate> Candidates;
     /// Mapping for collection of common args and common parents as options.
     typedef boost::unordered_map<CommonArgs, CommonParents> Collection;
 
@@ -634,6 +636,18 @@ class Preprocessor {
   /// @warning Gate marks are used for linear traversal.
   void GatherCommonArgs(const IGatePtr& gate, const Operator& op,
                         MergeTable::Candidates* group) noexcept;
+
+  /// Groups candidates with common arguments.
+  /// The groups do not intersect
+  /// either by candidates or common arguments.
+  ///
+  /// @param[in] candidates The group of the gates with their common arguments.
+  /// @param[out] groups Non-intersecting collection of groups of candidates.
+  ///
+  /// @note Groups with only one member are discarded.
+  void GroupCandidatesByArgs(
+      const MergeTable::Candidates& candidates,
+      std::vector<MergeTable::Candidates>* groups) noexcept;
 
   /// Findes intersections of common arguments of gates.
   /// Gates with the same common arguments are grouped
