@@ -379,7 +379,8 @@ class Preprocessor {
   ///
   /// @param[in,out] gate The starting gate to traverse the graph.
   ///                     This is for recursive purposes.
-  /// @param[in,out] gate_complements The processed complements of gates.
+  /// @param[in] keep_modules A flag to NOT propagate complements to modules.
+  /// @param[in,out] complements The processed complements of shared gates.
   ///
   /// @note The graph must be normalized.
   ///       It must contain only OR and AND gates.
@@ -389,10 +390,10 @@ class Preprocessor {
   ///          it must be handled before calling this function.
   ///          The arguments and type of the gate
   ///          must be inverted according to the logic of the root gate.
-  ///
-  /// @todo Module-aware complement propagation.
-  void PropagateComplements(const IGatePtr& gate,
-                            std::map<int, IGatePtr>* gate_complements) noexcept;
+  void PropagateComplements(
+      const IGatePtr& gate,
+      bool keep_modules,
+      std::unordered_map<int, IGatePtr>* complements) noexcept;
 
   /// Coalesces positive argument gates
   /// with the same OR or AND logic as parents.

@@ -238,9 +238,9 @@ void Preprocessor::PhaseFour() noexcept {
     root->InvertArgs();
     root_sign_ = 1;
   }
-  std::map<int, IGatePtr> complements;
+  std::unordered_map<int, IGatePtr> complements;
   graph_->ClearGateMarks();
-  Preprocessor::PropagateComplements(graph_->root(), &complements);
+  Preprocessor::PropagateComplements(graph_->root(), false, &complements);
   complements.clear();
   LOG(DEBUG3) << "Complement propagation is done!";
 
@@ -668,7 +668,8 @@ void Preprocessor::NormalizeAtleastGate(const IGatePtr& gate) noexcept {
 
 void Preprocessor::PropagateComplements(
     const IGatePtr& gate,
-    std::map<int, IGatePtr>* gate_complements) noexcept {
+    bool keep_modules,
+    std::unordered_map<int, IGatePtr>* complements) noexcept {
   if (gate->mark()) return;
   gate->mark(true);
   // If the argument gate is complement,
@@ -677,39 +678,40 @@ void Preprocessor::PropagateComplements(
   // and itself becomes non-complement.
   // Keep track of complement gates
   // for optimization of repeated complements.
-  std::vector<int> to_swap;  // Args with negation to get swapped.
-  std::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
-    IGatePtr arg_gate = it->second;
-    if (it->first < 0) {
-      to_swap.push_back(it->first);
-      if (gate_complements->count(arg_gate->index())) continue;
+  std::vector<std::pair<int, IGatePtr>> to_swap;  // Gate args with negation.
+  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+    IGatePtr arg_gate = arg.second;
+    if ((arg.first < 0) && !(keep_modules && arg_gate->IsModule())) {
+      IGatePtr complement;
+      if (complements->count(arg_gate->index())) {
+        complement = complements->find(arg_gate->index())->second;
+        to_swap.emplace_back(arg.first, complement);
+        assert(complement->mark());
+        continue;  // Existing complements are already processed.
+      }
       Operator type = arg_gate->type();
       assert(type == kAndGate || type == kOrGate);
       Operator complement_type = type == kOrGate ? kAndGate : kOrGate;
-      IGatePtr complement_gate;
       if (arg_gate->parents().size() == 1) {  // Optimization. Reuse.
         arg_gate->type(complement_type);
         arg_gate->InvertArgs();
-        complement_gate = arg_gate;
+        complement = arg_gate;
       } else {
-        complement_gate = arg_gate->Clone();
-        complement_gate->type(complement_type);
-        complement_gate->InvertArgs();
+        complement = arg_gate->Clone();
+        complement->type(complement_type);
+        complement->InvertArgs();
+        complements->emplace(arg_gate->index(), complement);
       }
-      gate_complements->insert(std::make_pair(arg_gate->index(),
-                                              complement_gate));
-      arg_gate = complement_gate;  // Needed for further propagation.
+      to_swap.emplace_back(arg.first, complement);
+      arg_gate = complement;  // Needed for further propagation.
     }
-    Preprocessor::PropagateComplements(arg_gate, gate_complements);
+    Preprocessor::PropagateComplements(arg_gate, keep_modules, complements);
   }
 
-  std::vector<int>::iterator it_ch;
-  for (it_ch = to_swap.begin(); it_ch != to_swap.end(); ++it_ch) {
-    assert(*it_ch < 0);
-    gate->EraseArg(*it_ch);
-    IGatePtr complement = gate_complements->find(-*it_ch)->second;
-    gate->AddArg(complement->index(), complement);
+  for (const auto& arg : to_swap) {
+    assert(arg.first < 0);
+    gate->EraseArg(arg.first);
+    gate->AddArg(arg.second->index(), arg.second);
     assert(gate->state() == kNormalState);  // No duplicates.
   }
 }
