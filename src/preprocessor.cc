@@ -659,6 +659,7 @@ void Preprocessor::PropagateComplements(
         complement = arg_gate;
       } else {
         complement = arg_gate->Clone();
+        if (arg_gate->IsModule()) arg_gate->DestroyModule();  // Very bad.
         complement->type(complement_type);
         complement->InvertArgs();
         complements->emplace(arg_gate->index(), complement);
@@ -840,6 +841,8 @@ void Preprocessor::FindModules(const IGatePtr& gate) noexcept {
     if (arg_gate->IsModule() && !arg_gate->Revisited()) {
       assert(arg_gate->parents().size() == 1);
       assert(arg_gate->parents().count(gate->index()));
+      assert(arg_gate->min_time() > enter_time);
+      assert(arg_gate->max_time() < exit_time);
 
       non_shared_args.push_back(arg);
       continue;  // Sub-graph's visit times are within the Enter and Exit time.
@@ -853,9 +856,9 @@ void Preprocessor::FindModules(const IGatePtr& gate) noexcept {
       modular_args.push_back(arg);
     } else {
       non_modular_args.push_back(arg);
+      min_time = std::min(min_time, min_arg);
+      max_time = std::max(max_time, max_arg);
     }
-    min_time = std::min(min_time, min_arg);
-    max_time = std::max(max_time, max_arg);
   }
 
   for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
@@ -877,9 +880,9 @@ void Preprocessor::FindModules(const IGatePtr& gate) noexcept {
       modular_args.push_back(arg);
     } else {
       non_modular_args.push_back(arg);
+      min_time = std::min(min_time, min_arg);
+      max_time = std::max(max_time, max_arg);
     }
-    min_time = std::min(min_time, min_arg);
-    max_time = std::max(max_time, max_arg);
   }
 
   // Determine if this gate is module itself.
