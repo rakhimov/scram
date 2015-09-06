@@ -693,18 +693,28 @@ class Preprocessor {
   /// @param[in,out] group Group of merge options for manipulation.
   void TransformCommonArgs(MergeTable::MergeGroup* group) noexcept;
 
+  /// Detects and manipulates AND and OR gate distributivity
+  /// for the whole graph.
+  ///
+  /// @returns true if the graph is changed.
+  bool DetectDistributivity() noexcept;
+
   /// Detects and manipulates AND and OR gate distributivity.
   /// For example,
   /// (a | b) & (a | c) = a | b & c.
   ///
-  /// @param[in] gate The gate which arguments must be tested.
+  /// @param[in] gate The gate which arguments and subgraph must be tested.
   ///
   /// @returns true if transformations are performed.
+  ///
+  /// @note This algorithm does not produce constant gates.
+  /// @note NULL type gates are registered if produced.
   ///
   /// @warning Gate marks must be clear.
   bool DetectDistributivity(const IGatePtr& gate) noexcept;
 
   /// Manipulates gates with distributive arguments.
+  /// Designed to work with distributivity detection and manipulation logic.
   ///
   /// @param[in,out] gate The gate which arguments must be manipulated.
   /// @param[in] distr_type The type of distributive arguments.
@@ -713,7 +723,22 @@ class Preprocessor {
   /// @returns true if transformations are performed.
   bool HandleDistributiveArgs(const IGatePtr& gate,
                               const Operator& distr_type,
-                              const std::vector<IGatePtr>& candidates) noexcept;
+                              std::vector<IGatePtr>* candidates) noexcept;
+
+  /// Detects relationships between the gate and its distributive arguments
+  /// to remove unnecessary candidates.
+  /// The determination of redundant candidates follow the Boolean logic.
+  /// For example, if any argument is superset of another argument,
+  /// it can be removed from the gate.
+  ///
+  /// @param[in,out] gate The gate which arguments must be filtered.
+  /// @param[in,out] candidates Candidates for distributivity check.
+  ///
+  /// @returns true if the candidates and the gate are manipulated.
+  ///
+  /// @note The redundant candidates are also removed from the gate.
+  bool FilterDistributiveArgs(const IGatePtr& gate,
+                              std::vector<IGatePtr>* candidates) noexcept;
 
   /// Groups distributive gate arguments
   /// for furture factorization.

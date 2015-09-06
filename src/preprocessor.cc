@@ -166,6 +166,14 @@ void Preprocessor::PhaseTwo() noexcept {
   Preprocessor::MergeCommonArgs();
   LOG(DEBUG3) << "Finished merging common args in " << DUR(merge_time);
 
+  if (Preprocessor::CheckRootGate()) return;
+
+  LOG(DEBUG3) << "Processing Distributivity...";
+  Preprocessor::DetectDistributivity();
+  LOG(DEBUG3) << "Distributivity detection is done!";
+
+  if (Preprocessor::CheckRootGate()) return;
+
   if (graph_->coherent()) {
     CLOCK(optim_time);
     LOG(DEBUG3) << "Boolean optimization...";
@@ -181,13 +189,6 @@ void Preprocessor::PhaseTwo() noexcept {
   LOG(DEBUG3) << "Finished the Decomposition in " << DUR(decom_time);
 
   if (Preprocessor::CheckRootGate()) return;
-
-  LOG(DEBUG3) << "Processing Distributivity...";
-  graph_->ClearGateMarks();
-  Preprocessor::DetectDistributivity(graph_->root());
-  Preprocessor::ClearConstGates();
-  Preprocessor::ClearNullGates();
-  LOG(DEBUG3) << "Distributivity detection is done!";
 
   LOG(DEBUG3) << "Coalescing gates...";
   graph_changed = true;
@@ -1389,6 +1390,16 @@ void Preprocessor::TransformCommonArgs(MergeTable::MergeGroup* group) noexcept {
   }
 }
 
+bool Preprocessor::DetectDistributivity() noexcept {
+  assert(const_gates_.empty());
+  assert(null_gates_.empty());
+  graph_->ClearGateMarks();
+  bool changed = Preprocessor::DetectDistributivity(graph_->root());
+  assert(const_gates_.empty());
+  Preprocessor::ClearNullGates();
+  return changed;
+}
+
 bool Preprocessor::DetectDistributivity(const IGatePtr& gate) noexcept {
   if (gate->mark()) return false;
   gate->mark(true);
@@ -1420,7 +1431,7 @@ bool Preprocessor::DetectDistributivity(const IGatePtr& gate) noexcept {
     if (child_gate->IsModule()) continue;  // Can't have common arguments.
     if (child_gate->type() == distr_type) candidates.push_back(child_gate);
   }
-  if (Preprocessor::HandleDistributiveArgs(gate, distr_type, candidates))
+  if (Preprocessor::HandleDistributiveArgs(gate, distr_type, &candidates))
     changed = true;
   return changed;
 }
@@ -1428,13 +1439,16 @@ bool Preprocessor::DetectDistributivity(const IGatePtr& gate) noexcept {
 bool Preprocessor::HandleDistributiveArgs(
     const IGatePtr& gate,
     const Operator& distr_type,
-    const std::vector<IGatePtr>& candidates) noexcept {
-  if (candidates.size() < 2) return false;
+    std::vector<IGatePtr>* candidates) noexcept {
+  assert(gate->args().size() > 1);
+  if (candidates->empty()) return false;
+  bool changed = Preprocessor::FilterDistributiveArgs(gate, candidates);
+  if (candidates->size() < 2) return changed;
   // Detecting a combination
   // that gives the most optimization is combinatorial.
   // The problem is similar to merging common arguments of gates.
   MergeTable::Candidates group;
-  for (const IGatePtr& candidate : candidates) {
+  for (const IGatePtr& candidate : *candidates) {
     group.emplace_back(candidate, std::vector<int>(candidate->args().begin(),
                                                    candidate->args().end()));
   }
@@ -1460,13 +1474,13 @@ bool Preprocessor::HandleDistributiveArgs(
         to_swap.emplace_back(member, clone);
       }
     }
-    for (const auto& pair : to_swap) {
-      gate->EraseArg(pair.first->index());
-      gate->AddArg(pair.second->index(), pair.second);
+    for (const auto& gates : to_swap) {
+      gate->EraseArg(gates.first->index());
+      gate->AddArg(gates.second->index(), gates.second);
       for (MergeTable::Option& option : group) {
-        if (option.second.count(pair.first)) {
-          option.second.erase(pair.first);
-          option.second.insert(pair.second);
+        if (option.second.count(gates.first)) {
+          option.second.erase(gates.first);
+          option.second.insert(gates.second);
         }
       }
     }
@@ -1477,6 +1491,75 @@ bool Preprocessor::HandleDistributiveArgs(
   }
   assert(!gate->args().empty());
   return true;
+}
+
+bool Preprocessor::FilterDistributiveArgs(
+    const IGatePtr& gate,
+    std::vector<IGatePtr>* candidates) noexcept {
+  assert(!candidates->empty());
+  // Handling a special case of fast constant propagation.
+  std::vector<int> to_erase;  // Late erase for more opportunities.
+  for (const IGatePtr& candidate : *candidates) {  // All of them are positive.
+    std::vector<int> common;
+    std::set_intersection(candidate->args().begin(), candidate->args().end(),
+                          gate->args().begin(), gate->args().end(),
+                          std::back_inserter(common));
+    if (!common.empty()) to_erase.push_back(candidate->index());
+  }
+  bool changed = !to_erase.empty();
+  for (int index : to_erase) {
+    gate->EraseArg(index);
+    candidates->erase(std::find_if(candidates->begin(), candidates->end(),
+                                   [&](const IGatePtr& candidate) {
+                                     return candidate->index() == index;
+                                   }),
+                      candidates->end());
+  }
+  // Sort in descending size of gate arguments.
+  std::sort(candidates->begin(), candidates->end(),
+            [](const IGatePtr& lhs, const IGatePtr rhs) {
+              return lhs->args().size() > rhs->args().size();
+            });
+  std::vector<IGatePtr> exclusive;  // No candidate is a subset of another.
+  while (!candidates->empty()) {
+    IGatePtr sub = candidates->back();
+    candidates->pop_back();
+    exclusive.push_back(sub);
+    for (const IGatePtr& super : *candidates) {
+      if (std::includes(super->args().begin(), super->args().end(),
+                        sub->args().begin(), sub->args().end())) {
+        changed = true;
+        gate->EraseArg(super->index());
+      }
+    }
+    candidates->erase(
+        std::remove_if(candidates->begin(), candidates->end(),
+                       [&](const IGatePtr& super) {
+                         return std::includes(super->args().begin(),
+                                              super->args().end(),
+                                              sub->args().begin(),
+                                              sub->args().end());
+                       }),
+        candidates->end());
+  }
+  *candidates = exclusive;
+  assert(!gate->args().empty());
+  if (gate->args().size() == 1) {
+    switch (gate->type()) {
+      case kAndGate:
+      case kOrGate:
+        gate->type(kNullGate);
+        break;
+      case kNandGate:
+      case kNorGate:
+        gate->type(kNotGate);
+        break;
+      default:
+        assert(false);
+    }
+    return true;
+  }
+  return changed;
 }
 
 void Preprocessor::GroupDistributiveArgs(const MergeTable::Collection& options,
@@ -1568,19 +1651,10 @@ void Preprocessor::TransformDistributiveArgs(
     for (int index : args) {
       member->EraseArg(index);
     }
+    assert(!member->args().empty());  // Assumes that filtering is done.
     if (member->args().size() == 1) {
       member->type(kNullGate);
       null_gates_.push_back(member);
-    } else if (member->args().empty()) {
-      switch (distr_type) {
-        case kAndGate:
-          member->MakeUnity();
-          break;
-        case kOrGate:
-          member->Nullify();
-          break;
-      }
-      const_gates_.push_back(member);
     }
   }
   // Cleaning the arguments from the group.
