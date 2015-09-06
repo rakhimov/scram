@@ -192,20 +192,7 @@ void Preprocessor::PhaseTwo() noexcept {
 
   LOG(DEBUG3) << "Coalescing gates...";
   graph_changed = true;
-  while (graph_changed) {
-    assert(const_gates_.empty());
-    assert(null_gates_.empty());
-
-    graph_changed = false;
-    graph_->ClearGateMarks();
-    if (graph_->root()->state() == kNormalState)
-      Preprocessor::JoinGates(graph_->root(), false);  // Registers const gates.
-
-    if (!const_gates_.empty()) {
-      Preprocessor::ClearConstGates();
-      graph_changed = true;
-    }
-  }
+  while (graph_changed) graph_changed = Preprocessor::CoalesceGates(false);
   LOG(DEBUG3) << "Gate coalescense is done!";
 
   if (Preprocessor::CheckRootGate()) return;
@@ -249,44 +236,18 @@ void Preprocessor::PhaseFour() noexcept {
 }
 
 void Preprocessor::PhaseFive() noexcept {
-  LOG(DEBUG3) << "Coalescing gates...";
+  LOG(DEBUG3) << "Coalescing gates...";  // Make layered.
   bool graph_changed = true;
-  while (graph_changed) {
-    assert(const_gates_.empty());
-    assert(null_gates_.empty());
-
-    graph_changed = false;
-    graph_->ClearGateMarks();
-    if (graph_->root()->state() == kNormalState)
-      Preprocessor::JoinGates(graph_->root(), true);  // Make layered.
-
-    if (!const_gates_.empty()) {
-      Preprocessor::ClearConstGates();
-      graph_changed = true;
-    }
-  }
+  while (graph_changed) graph_changed = Preprocessor::CoalesceGates(true);
   LOG(DEBUG3) << "Gate coalescense is done!";
 
   if (Preprocessor::CheckRootGate()) return;
   Preprocessor::PhaseTwo();
   if (Preprocessor::CheckRootGate()) return;
 
-  LOG(DEBUG3) << "Coalescing gates...";
+  LOG(DEBUG3) << "Coalescing gates...";  // Final coalescing before analysis.
   graph_changed = true;
-  while (graph_changed) {
-    assert(const_gates_.empty());
-    assert(null_gates_.empty());
-
-    graph_changed = false;
-    graph_->ClearGateMarks();
-    if (graph_->root()->state() == kNormalState)
-      Preprocessor::JoinGates(graph_->root(), true);  // Make layered.
-
-    if (!const_gates_.empty()) {
-      Preprocessor::ClearConstGates();
-      graph_changed = true;
-    }
-  }
+  while (graph_changed) graph_changed = Preprocessor::CoalesceGates(true);
   LOG(DEBUG3) << "Gate coalescense is done!";
 }
 
@@ -716,6 +677,18 @@ void Preprocessor::PropagateComplements(
   }
 }
 
+bool Preprocessor::CoalesceGates(bool common) noexcept {
+  assert(const_gates_.empty());
+  assert(null_gates_.empty());
+  assert(graph_->root()->state() == kNormalState);
+  graph_->ClearGateMarks();
+  bool ret = Preprocessor::JoinGates(graph_->root(), common);
+
+  assert(null_gates_.empty());
+  Preprocessor::ClearConstGates();
+  return ret;
+}
+
 bool Preprocessor::JoinGates(const IGatePtr& gate, bool common) noexcept {
   if (gate->mark()) return false;
   gate->mark(true);
@@ -738,23 +711,21 @@ bool Preprocessor::JoinGates(const IGatePtr& gate, bool common) noexcept {
   assert(!gate->args().empty());
   std::vector<IGatePtr> to_join;  // Gate arguments of the same logic.
   bool changed = false;  // Indication if the graph is changed.
-  std::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
-    IGatePtr arg_gate = it->second;
+  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+    IGatePtr arg_gate = arg.second;
     if (Preprocessor::JoinGates(arg_gate, common)) changed = true;
 
     if (!possible) continue;  // Joining with the parent is impossible.
 
-    if (it->first < 0) continue;  // Cannot join a negative arg gate.
+    if (arg.first < 0) continue;  // Cannot join a negative arg gate.
     if (arg_gate->IsModule()) continue;  // Preserve modules.
     if (!common && arg_gate->parents().size() > 1) continue;  // Check common.
 
     if (arg_gate->type() == target_type) to_join.push_back(arg_gate);
   }
 
-  std::vector<IGatePtr>::iterator it_ch;
-  for (it_ch = to_join.begin(); it_ch != to_join.end(); ++it_ch) {
-    gate->JoinGate(*it_ch);
+  for (const IGatePtr& arg : to_join) {
+    gate->JoinGate(arg);
     changed = true;
     if (gate->state() != kNormalState) {
       const_gates_.push_back(gate);  // Register for future processing.

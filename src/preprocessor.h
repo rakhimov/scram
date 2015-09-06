@@ -395,6 +395,19 @@ class Preprocessor {
       bool keep_modules,
       std::unordered_map<int, IGatePtr>* complements) noexcept;
 
+  /// Runs gate coalescense on the whole Boolean graph.
+  ///
+  /// @param[in] common A flag to also coalesce common/shared gates.
+  ///                   These gates may be important for other algorithms.
+  ///
+  /// @returns true if the graph has been changed.
+  /// @returns false if no change has been made.
+  ///
+  /// @note Module gates are omitted from coalescing to preserve them.
+  ///
+  /// @warning Gate marks are used.
+  bool CoalesceGates(bool common) noexcept;
+
   /// Coalesces positive argument gates
   /// with the same OR or AND logic as parents.
   /// This function merges similar logic gates of NAND and NOR as well.
@@ -411,6 +424,8 @@ class Preprocessor {
   ///       These gates are registered for future processing.
   /// @note It is impossible that this function generates NULL type gates.
   /// @note Module gates are omitted from coalescing to preserve them.
+  ///
+  /// @warning Gate marks are used.
   bool JoinGates(const IGatePtr& gate, bool common) noexcept;
 
   /// Detects and replaces multiple definitions of gates.
