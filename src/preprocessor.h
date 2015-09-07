@@ -646,6 +646,8 @@ class Preprocessor {
   ///       and the end result may not be the most optimal.
   ///
   /// @warning May produce NULL type and constant gates.
+  ///
+  /// @todo Consider repeating until no change can be made.
   void FilterMergeCandidates(MergeTable::Candidates* candidates) noexcept;
 
   /// Groups candidates with common arguments.
@@ -707,8 +709,8 @@ class Preprocessor {
   /// between two mutually exclusive options.
   ///
   /// @param[in] all_options The sorted set of options.
-  ///                        The options are sorted
-  ///                        in descending size of common arguments.
+  ///                        The options must be sorted
+  ///                        in ascending size of common arguments.
   /// @param[out] best_group The optimal group of options.
   ///
   /// @note The all_options parameter is not passed by const reference
@@ -718,14 +720,13 @@ class Preprocessor {
   ///       However, this function guarantees
   ///       not to manipulate or change the set of all options.
   ///
-  /// @todo The non const reference seems to be a code-smell in this case.
   /// @todo Evaluate various merging strategies.
   ///       Module creation, the number of parents,
   ///       the number of merge groups, and other criteria
   ///       can serve as optimization parameters.
   /// @todo The current logic misses opportunities
   ///       that may branch with the same base option.
-  void FindOptionGroup(MergeTable::MergeGroup& all_options,
+  void FindOptionGroup(MergeTable::MergeGroup* all_options,
                        MergeTable::OptionGroup* best_group) noexcept;
 
   /// Transforms common arguments of gates

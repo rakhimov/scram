@@ -1350,7 +1350,6 @@ void Preprocessor::GroupCommonArgs(const MergeTable::Collection& options,
                                    MergeTable* table) noexcept {
   assert(!options.empty());
   MergeTable::MergeGroup all_options(options.begin(), options.end());
-  // Sorting in descending size of common arguments.
   std::stable_sort(all_options.begin(), all_options.end(),
                    [](const MergeTable::Option& lhs,
                       const MergeTable::Option& rhs) {
@@ -1359,7 +1358,8 @@ void Preprocessor::GroupCommonArgs(const MergeTable::Collection& options,
 
   while (!all_options.empty()) {
     MergeTable::OptionGroup best_group;
-    Preprocessor::FindOptionGroup(all_options, &best_group);
+    Preprocessor::FindOptionGroup(&all_options, &best_group);
+    assert(!best_group.empty());
     MergeTable::MergeGroup merge_group;  // The group to go into the table.
     for (MergeTable::Option* member : best_group) {
       merge_group.push_back(*member);
@@ -1389,13 +1389,31 @@ void Preprocessor::GroupCommonArgs(const MergeTable::Collection& options,
 }
 
 void Preprocessor::FindOptionGroup(
-    MergeTable::MergeGroup& all_options,
+    MergeTable::MergeGroup* all_options,
     MergeTable::OptionGroup* best_group) noexcept {
-  for (int i = 0; i < all_options.size(); ++i) {
-    MergeTable::OptionGroup group = {&all_options[i]};
-    int j = i;
-    for (++j; j < all_options.size(); ++j) {
-      MergeTable::Option* candidate = &all_options[j];
+  assert(best_group->empty());
+  // Searching for modular arguments.
+  auto it = std::find_if(all_options->begin(), all_options->end(),
+                         [](const MergeTable::Option& option) {
+                           int num_parents = option.second.size();
+                           IGatePtr parent = *option.second.begin();
+                           const MergeTable::CommonArgs& args = option.first;
+                           int num_modular = 0;  // Modular arguments.
+                           for (int index : args) {
+                             NodePtr arg = parent->GetArg(index);
+                             if (arg->parents().size() == num_parents) {
+                               if (++num_modular > 1) return true;
+                             }
+                           }
+                           return false;
+                         });
+  bool best_is_found = it != all_options->end();
+  if (!best_is_found) it = all_options->begin();
+  for (; it != all_options->end(); ++it) {
+    MergeTable::OptionGroup group = {&*it};
+    auto it_next = it;
+    for (++it_next; it_next != all_options->end(); ++it_next) {
+      MergeTable::Option* candidate = &*it_next;
       bool superset = std::includes(candidate->first.begin(),
                                     candidate->first.end(),
                                     group.back()->first.begin(),
@@ -1414,6 +1432,7 @@ void Preprocessor::FindOptionGroup(
       if (group.front()->second.size() < best_group->front()->second.size())
         *best_group = group;  // The fewer parents, the more room for others.
     }
+    if (best_is_found) break;
   }
 }
 
@@ -1639,7 +1658,6 @@ void Preprocessor::GroupDistributiveArgs(const MergeTable::Collection& options,
                                          MergeTable* table) noexcept {
   assert(!options.empty());
   MergeTable::MergeGroup all_options(options.begin(), options.end());
-  // Sorting in descending size of common arguments.
   std::stable_sort(all_options.begin(), all_options.end(),
                    [](const MergeTable::Option& lhs,
                       const MergeTable::Option& rhs) {
@@ -1648,7 +1666,7 @@ void Preprocessor::GroupDistributiveArgs(const MergeTable::Collection& options,
 
   while (!all_options.empty()) {
     MergeTable::OptionGroup best_group;
-    Preprocessor::FindOptionGroup(all_options, &best_group);
+    Preprocessor::FindOptionGroup(&all_options, &best_group);
     MergeTable::MergeGroup merge_group;  // The group to go into the table.
     for (MergeTable::Option* member : best_group) {
       merge_group.push_back(*member);
