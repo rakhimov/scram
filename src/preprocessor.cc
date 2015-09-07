@@ -840,47 +840,35 @@ void Preprocessor::FindModules(const IGatePtr& gate) noexcept {
     if (arg_gate->IsModule() && !arg_gate->Revisited()) {
       assert(arg_gate->parents().size() == 1);
       assert(arg_gate->parents().count(gate->index()));
-      assert(arg_gate->min_time() > enter_time);
-      assert(arg_gate->max_time() < exit_time);
+      assert(IsSubgraphWithinGraph(arg_gate, enter_time, exit_time));
 
       non_shared_args.push_back(arg);
       continue;  // Sub-graph's visit times are within the Enter and Exit time.
     }
-    int min_arg = arg_gate->min_time();
-    int max_arg = arg_gate->max_time();
-    assert(min_arg > 0);
-    assert(max_arg > 0);
-    assert(max_arg > min_arg);
-    if (min_arg > enter_time && max_arg < exit_time) {
+    if (IsSubgraphWithinGraph(arg_gate, enter_time, exit_time)) {
       modular_args.push_back(arg);
     } else {
       non_modular_args.push_back(arg);
-      min_time = std::min(min_time, min_arg);
-      max_time = std::max(max_time, max_arg);
+      min_time = std::min(min_time, arg_gate->min_time());
+      max_time = std::max(max_time, arg_gate->max_time());
     }
   }
 
   for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
     VariablePtr var = arg.second;
-    int min_arg = var->min_time();
-    int max_arg = var->max_time();
-    assert(min_arg > 0);
-    assert(max_arg > 0);
-    if (min_arg == max_arg) {
-      assert(min_arg > enter_time && max_arg < exit_time);
-      assert(var->parents().size() == 1);
+    if (var->parents().size() == 1) {
+      assert(IsNodeWithinGraph(var, enter_time, exit_time));
       assert(var->parents().count(gate->index()));
 
       non_shared_args.push_back(arg);
       continue;  // The single parent argument.
     }
-    assert(max_arg > min_arg);
-    if (min_arg > enter_time && max_arg < exit_time) {
+    if (IsNodeWithinGraph(var, enter_time, exit_time)) {
       modular_args.push_back(arg);
     } else {
       non_modular_args.push_back(arg);
-      min_time = std::min(min_time, min_arg);
-      max_time = std::max(max_time, max_arg);
+      min_time = std::min(min_time, var->EnterTime());
+      max_time = std::max(max_time, var->LastVisit());
     }
   }
 
@@ -2220,9 +2208,10 @@ bool Preprocessor::ProcessDecompositionAncestors(
         to_swap.emplace_back(arg.first, clone);
         changed = true;
         continue;  // Clones are already processed.
-      } else if (gate->parents().size() == 1) {  // Pass-through.
-      } else if ((gate->EnterTime() < visit_bounds.first) ||  // Non-cloned.
-                 (gate->LastVisit() > visit_bounds.second)) {  // Shared parent.
+      }
+      if (gate->parents().size() != 1 &&
+          !IsNodeWithinGraph(gate, visit_bounds.first,  // Non-cloned.
+                             visit_bounds.second)) {    // Shared parent.
         assert(gate->parents().size() > 1);
         assert(!clones->count(gate->index()));
         IGatePtr clone = gate->Clone();
@@ -2239,9 +2228,9 @@ bool Preprocessor::ProcessDecompositionAncestors(
         continue;  // No subgraph to process here.
       }
       if (gate->type() == kNullGate) null_gates_.push_back(gate);
-    } else {
-      if (gate->EnterTime() < visit_bounds.first) continue;  // Shared gate.
-      if (gate->LastVisit() > visit_bounds.second) continue;  // Shared gate.
+    } else if (!IsNodeWithinGraph(gate, visit_bounds.first,
+                                  visit_bounds.second)) {
+        continue;  // Shared non-parent gate.
     }
 
     bool ret = Preprocessor::ProcessDecompositionAncestors(gate, node, state,

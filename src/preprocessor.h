@@ -467,13 +467,45 @@ class Preprocessor {
   /// @returns The final time of traversing.
   int AssignTiming(int time, const IGatePtr& gate) noexcept;
 
+  /// Checks if a node within a graph enter and exit times.
+  ///
+  /// @param[in] node The node to be tested.
+  /// @param[in] enter_time The enter time of the root gate of the graph.
+  /// @param[in] exit_time The exit time of the root gate of the graph.
+  ///
+  /// @returns true if the node within the graph visit times.
+  inline bool IsNodeWithinGraph(const NodePtr& node, int enter_time,
+                                int exit_time) noexcept {
+    assert(enter_time > 0);
+    assert(exit_time > enter_time);
+    assert(node->EnterTime() >= 0);
+    assert(node->LastVisit() >= node->EnterTime());
+    return node->EnterTime() > enter_time && node->LastVisit() < exit_time;
+  }
+
+  /// Checks if a subgraph with a root gate is within a subgraph.
+  /// The positive result means
+  /// that all nodes of the subgraph is contained within the main graph.
+  ///
+  /// @param[in] root The root gate of the subgraph.
+  /// @param[in] enter_time The enter time of the root gate of the graph.
+  /// @param[in] exit_time The exit time of the root gate of the graph.
+  ///
+  /// @returns true if the subgraph within the graph visit times.
+  inline bool IsSubgraphWithinGraph(const IGatePtr& root, int enter_time,
+                                    int exit_time) noexcept {
+    assert(enter_time > 0);
+    assert(exit_time > enter_time);
+    assert(root->min_time() > 0);
+    assert(root->max_time() > root->min_time());
+    return root->min_time() > enter_time && root->max_time() < exit_time;
+  }
+
   /// Determines modules from original gates
   /// that have been already timed.
   /// This function can also create new modules from the existing graph.
   ///
   /// @param[in,out] gate The gate to test for modularity.
-  ///
-  /// @todo Make this function aware of previously created modules.
   void FindModules(const IGatePtr& gate) noexcept;
 
   /// Processes gate arguments found during the module detection.
