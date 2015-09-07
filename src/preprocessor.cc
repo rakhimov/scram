@@ -1913,7 +1913,7 @@ int Preprocessor::PropagateFailure(const IGatePtr& gate) noexcept {
       ++num_failures;
     } else if (failed == -1) {
       ++num_success;
-    } // Ignore when 0.
+    }  // Ignore when 0.
   }
   for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
     int failed = arg.second->opti_value() * (arg.first > 0 ? 1 : -1);
@@ -1923,7 +1923,7 @@ int Preprocessor::PropagateFailure(const IGatePtr& gate) noexcept {
     } else if (failed == -1) {
       ++num_success;
       break;  /// @todo Find the only one variable faster.
-    } // Ignore when 0.
+    }  // Ignore when 0.
   }
   assert(gate->constant_args().empty());
   assert(gate->opti_value() == 0);

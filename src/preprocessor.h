@@ -662,7 +662,7 @@ class Preprocessor {
       const MergeTable::Candidates& candidates,
       std::vector<MergeTable::Candidates>* groups) noexcept;
 
-  /// Findes intersections of common arguments of gates.
+  /// Finds intersections of common arguments of gates.
   /// Gates with the same common arguments are grouped
   /// to represent common parents for the arguments.
   ///
@@ -779,7 +779,7 @@ class Preprocessor {
                               std::vector<IGatePtr>* candidates) noexcept;
 
   /// Groups distributive gate arguments
-  /// for furture factorization.
+  /// for future factorization.
   /// The function tries to maximize the return
   /// from the gate manipulations.
   ///
@@ -806,7 +806,7 @@ class Preprocessor {
   /// This optimization helps reduce the number of common nodes.
   ///
   /// @warning Boolean optimization may replace the root gate of the graph.
-  /// @warning Node visit information is mainipulated.
+  /// @warning Node visit information is manipulated.
   /// @warning Gate marks are manipulated.
   /// @warning Node optimization values are manipulated.
   void BooleanOptimization() noexcept;
@@ -838,7 +838,7 @@ class Preprocessor {
   /// of an independent subgraph for algorithmic efficiency.
   ///
   /// @param[in] node The child node.
-  /// @param[out] The root module gate ancestor.
+  /// @param[out] module The root module gate ancestor.
   ///
   /// @warning Since very specific branches are marked 'true',
   ///          cleanup must be performed after/with the use of the ancestors.

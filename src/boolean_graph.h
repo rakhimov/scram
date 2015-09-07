@@ -172,8 +172,8 @@ class Node {
   int visits_[3];
   std::unordered_map<int, std::weak_ptr<IGate> > parents_;  ///< Parents.
   int opti_value_;  ///< Failure propagation optimization value.
-  int pos_count_;  ///< The number of occurances as a positive node.
-  int neg_count_;  ///< The number of occurances as a negative node.
+  int pos_count_;  ///< The number of occurrences as a positive node.
+  int neg_count_;  ///< The number of occurrences as a negative node.
 };
 
 /// @class Constant
@@ -402,7 +402,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
     module_ = false;
   }
 
-  /// Helper funciton to use the sign of the argument.
+  /// Helper function to use the sign of the argument.
   ///
   /// @param[in] arg One of the arguments of this gate.
   ///
@@ -944,7 +944,7 @@ class BooleanGraph {
   void ClearNodeCounts(const IGatePtr& gate) noexcept;
 
   /// Helper function to find discontinuous gate marking.
-  /// Assertion failes if any gate is still marked.
+  /// Assertion fails if any gate is still marked.
   ///
   /// @param[in] gate The starting gate to traverse.
   ///
@@ -952,7 +952,7 @@ class BooleanGraph {
   void TestGateMarks(const IGatePtr& gate) noexcept;
 
   /// Helper function to find uncleared optimization values.
-  /// Assertion failes if any node has non-zero optimization value.
+  /// Assertion fails if any node has non-zero optimization value.
   ///
   /// @param[in] gate The starting gate to traverse.
   ///
