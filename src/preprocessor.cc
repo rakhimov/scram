@@ -1900,7 +1900,7 @@ int Preprocessor::PropagateFailure(const IGatePtr& gate,
   gate->mark(false);  // Cleaning up the marks of the ancestors.
   assert(!gate->opti_value());
   int mult_tot = 0;  // The total multiplicity of the subgraph.
-  int num_failures = 0;  // The number of failed arguments.
+  int num_failure = 0;  // The number of failed arguments.
   int num_success = 0;  // The number of success arguments.
   for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
     IGatePtr arg_gate = arg.second;
@@ -1909,7 +1909,7 @@ int Preprocessor::PropagateFailure(const IGatePtr& gate,
     int failed = arg_gate->opti_value() * (arg.first > 0 ? 1 : -1);
     assert(!failed || failed == -1 || failed == 1);
     if (failed == 1) {
-      ++num_failures;
+      ++num_failure;
     } else if (failed == -1) {
       ++num_success;
     }  // Ignore when 0.
@@ -1920,7 +1920,7 @@ int Preprocessor::PropagateFailure(const IGatePtr& gate,
     if (!failed) failed = -gate->variable_args().count(-node->index());
     switch (failed) {
       case 1:
-        ++num_failures;
+        ++num_failure;
         break;
       case -1:
         ++num_success;
@@ -1929,25 +1929,34 @@ int Preprocessor::PropagateFailure(const IGatePtr& gate,
   }
   assert(gate->constant_args().empty());
   assert(gate->opti_value() == 0);
-  assert((num_success + num_failures) > 0);
+  assert((num_success + num_failure) > 0);
+  Preprocessor::DetermineGateFailure(gate, num_failure, num_success);
+  int mult_add = gate->parents().size();
+  if (gate->opti_value() != 1 || mult_add < 2 ) mult_add = 0;
+  return mult_tot + mult_add;
+}
+
+void Preprocessor::DetermineGateFailure(const IGatePtr& gate, int num_failure,
+                                        int num_success) noexcept {
+  assert(num_failure >= 0);
+  assert(num_success >= 0);
+  assert((num_success + num_failure) > 0);
   gate->opti_value(-1);  // The default assumption of not failing.
   switch (gate->type()) {
-    case kNotGate:
-      if (num_failures == 0) gate->opti_value(1);
-      break;
     case kNullGate:
     case kOrGate:
-      if (num_failures > 0) gate->opti_value(1);
+      if (num_failure > 0) gate->opti_value(1);
       break;
     case kAndGate:
-      if (num_failures == gate->args().size()) gate->opti_value(1);
+      if (num_failure == gate->args().size()) gate->opti_value(1);
       break;
     case kAtleastGate:
-      if (num_failures >= gate->vote_number()) gate->opti_value(1);
+      if (num_failure >= gate->vote_number()) gate->opti_value(1);
       break;
     case kXorGate:
-      if (num_failures == 1)  gate->opti_value(1);
+      if (num_failure == 1)  gate->opti_value(1);
       break;
+    case kNotGate:
     case kNandGate:
       if (num_success > 0) gate->opti_value(1);
       break;
@@ -1955,9 +1964,6 @@ int Preprocessor::PropagateFailure(const IGatePtr& gate,
       if (num_success == gate->args().size()) gate->opti_value(1);
       break;
   }
-  int mult_add = gate->parents().size();
-  if (gate->opti_value() != 1 || mult_add < 2 ) mult_add = 0;
-  return mult_tot + mult_add;
 }
 
 int Preprocessor::CollectFailureDestinations(

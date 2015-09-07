@@ -871,6 +871,14 @@ class Preprocessor {
   ///       This function will reset all of them to 'false'.
   int PropagateFailure(const IGatePtr& gate, const NodePtr& node) noexcept;
 
+  /// Determines if a gate fails due to failed/succeeded arguments.
+  /// If gates fails, its optimization value is set to 1.
+  /// If it doesn't, its optimization value is -1;
+  ///
+  /// @param[in,out] gate The ancestor gate that may fail.
+  void DetermineGateFailure(const IGatePtr& gate, int num_failure,
+                            int num_success) noexcept;
+
   /// Collects failure destinations
   /// and marks non-redundant nodes.
   /// The optimization value for non-redundant gates are set to 2.
