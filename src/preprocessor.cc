@@ -2087,24 +2087,23 @@ bool Preprocessor::ProcessDecompositionCommonNode(
 
   if (node->parents().size() < 2) return false;
 
-  bool possible = false;  // Possibility in particular setups for decomposition.
-
+  auto IsDecompositionType = [](Operator type) {  // Possible types for setups.
+                               switch (type) {
+                                 case kAndGate:
+                                 case kNandGate:
+                                 case kOrGate:
+                                 case kNorGate:
+                                   return true;
+                               }
+                               return false;
+                             };
   // Determine if the decomposition setups are possible.
-  for (const std::pair<int, IGateWeakPtr>& member : node->parents()) {
-    assert(!member.second.expired());
-    IGatePtr parent = member.second.lock();
-    assert(parent->opti_value() != node->index());
-    switch (parent->type()) {
-      case kAndGate:
-      case kNandGate:
-      case kOrGate:
-      case kNorGate:
-        possible = true;
-    }
-    if (possible) break;
-  }
-
-  if (!possible) return false;
+  auto it =
+      std::find_if(node->parents().begin(), node->parents().end(),
+                   [&](const std::pair<int, IGateWeakPtr>& member) {
+                     return IsDecompositionType(member.second.lock()->type());
+                   });
+  if (it == node->parents().end()) return false;  // No setups possible.
 
   // Mark parents and ancestors.
   for (const std::pair<int, IGateWeakPtr>& member : node->parents()) {
@@ -2120,13 +2119,7 @@ bool Preprocessor::ProcessDecompositionCommonNode(
     assert(!member.second.expired());
     IGatePtr parent = member.second.lock();
     if (parent->opti_value() == node->index()) {
-      switch (parent->type()) {
-        case kAndGate:
-        case kNandGate:
-        case kOrGate:
-        case kNorGate:
-          dest.push_back(parent);
-      }
+      if (IsDecompositionType(parent->type())) dest.push_back(parent);
     } else {  // Mark for processing by destinations.
       parent->opti_value(node->index());
     }
