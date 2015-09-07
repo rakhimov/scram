@@ -1392,42 +1392,11 @@ void Preprocessor::FindOptionGroup(
     MergeTable::MergeGroup* all_options,
     MergeTable::OptionGroup* best_group) noexcept {
   assert(best_group->empty());
-  bool best_is_found = false;
   // Find the best starting option.
-  MergeTable::MergeGroup::iterator best_option = all_options->end();
-  int best_counts[3] = {0, 0, 0};  // The number of extra parents.
-  auto it = all_options->begin();
-  for (; it != all_options->end(); ++it) {
-    int num_parents = it->second.size();
-    IGatePtr parent = *it->second.begin();  // Representative.
-    const MergeTable::CommonArgs& args = it->first;
-    int cur_counts[3] = {0, 0, 0};
-    for (int index : args) {
-      NodePtr arg = parent->GetArg(index);
-      int extra_count = arg->parents().size() - num_parents;
-      if (extra_count > 2) continue;  // Optimal decision criterion.
-      ++cur_counts[extra_count];  // Logging extra parents.
-      if (cur_counts[0] > 1) break;  // Modular option is found.
-    }
-    if (cur_counts[0] > 1) {  // Special case of modular options.
-      best_option = it;
-      best_is_found = true;
-      break;
-    }
-    if ((cur_counts[0] > best_counts[0]) ||
-        (cur_counts[0] == best_counts[0] && cur_counts[1] > best_counts[1]) ||
-        (cur_counts[0] == best_counts[0] && cur_counts[1] == best_counts[1] &&
-         cur_counts[2] > best_counts[2])) {
-      best_option = it;
-      best_counts[0] = cur_counts[0];
-      best_counts[1] = cur_counts[1];
-      best_counts[2] = cur_counts[2];
-    }
-  }
-  it = best_option;
-  if (!best_is_found) best_is_found = it != all_options->end();
-  if (!best_is_found) it = all_options->begin();
-
+  MergeTable::MergeGroup::iterator best_option;
+  Preprocessor::FindBaseOption(all_options, &best_option);
+  bool best_is_found = best_option != all_options->end();
+  auto it = best_is_found ? best_option : all_options->begin();
   for (; it != all_options->end(); ++it) {
     MergeTable::OptionGroup group = {&*it};
     auto it_next = it;
@@ -1452,6 +1421,39 @@ void Preprocessor::FindOptionGroup(
         *best_group = group;  // The fewer parents, the more room for others.
     }
     if (best_is_found) break;
+  }
+}
+
+void Preprocessor::FindBaseOption(
+    MergeTable::MergeGroup* all_options,
+    MergeTable::MergeGroup::iterator* best_option) noexcept {
+  *best_option = all_options->end();
+  int best_counts[3] = {0, 0, 0};  // The number of extra parents.
+  for (auto it = all_options->begin(); it != all_options->end(); ++it) {
+    int num_parents = it->second.size();
+    IGatePtr parent = *it->second.begin();  // Representative.
+    const MergeTable::CommonArgs& args = it->first;
+    int cur_counts[3] = {0, 0, 0};
+    for (int index : args) {
+      NodePtr arg = parent->GetArg(index);
+      int extra_count = arg->parents().size() - num_parents;
+      if (extra_count > 2) continue;  // Optimal decision criterion.
+      ++cur_counts[extra_count];  // Logging extra parents.
+      if (cur_counts[0] > 1) break;  // Modular option is found.
+    }
+    if (cur_counts[0] > 1) {  // Special case of modular options.
+      *best_option = it;
+      break;
+    }
+    if ((cur_counts[0] > best_counts[0]) ||
+        (cur_counts[0] == best_counts[0] && cur_counts[1] > best_counts[1]) ||
+        (cur_counts[0] == best_counts[0] && cur_counts[1] == best_counts[1] &&
+         cur_counts[2] > best_counts[2])) {
+      *best_option = it;
+      best_counts[0] = cur_counts[0];
+      best_counts[1] = cur_counts[1];
+      best_counts[2] = cur_counts[2];
+    }
   }
 }
 

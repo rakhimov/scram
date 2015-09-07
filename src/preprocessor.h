@@ -725,6 +725,16 @@ class Preprocessor {
   void FindOptionGroup(MergeTable::MergeGroup* all_options,
                        MergeTable::OptionGroup* best_group) noexcept;
 
+  /// Finds the starting option for group formation.
+  ///
+  /// @param[in] all_options The sorted set of options.
+  ///                        The options must be sorted
+  ///                        in ascending size of common arguments.
+  /// @param[out] best_option The optimal starting option if any.
+  ///                         If not found, iterator at the end of the group.
+  void FindBaseOption(MergeTable::MergeGroup* all_options,
+                      MergeTable::MergeGroup::iterator* best_option) noexcept;
+
   /// Transforms common arguments of gates
   /// into new gates.
   ///
