@@ -1140,6 +1140,8 @@ bool Preprocessor::MergeCommonArgs(const Operator& op) noexcept {
     Preprocessor::GatherCommonArgs(root, op, &candidates);
     graph_->ClearGateMarks(root);
     if (candidates.size() < 2) continue;
+    Preprocessor::FilterMergeCandidates(&candidates);
+    if (candidates.size() < 2) continue;
     std::vector<MergeTable::Candidates> groups;
     Preprocessor::GroupCandidatesByArgs(candidates, &groups);
     for (const auto& group : groups) {
@@ -1157,7 +1159,7 @@ bool Preprocessor::MergeCommonArgs(const Operator& op) noexcept {
         Preprocessor::TransformCommonArgs(&member_group);
       }
     }
-    assert(const_gates_.empty());
+    Preprocessor::ClearConstGates();
     Preprocessor::ClearNullGates();
   }
   return changed;
@@ -1218,6 +1220,64 @@ void Preprocessor::GatherCommonArgs(const IGatePtr& gate, const Operator& op,
   group->emplace_back(gate, common_args);
 }
 
+void Preprocessor::FilterMergeCandidates(
+    MergeTable::Candidates* candidates) noexcept {
+  assert(candidates->size() > 1);
+  std::stable_sort(candidates->begin(), candidates->end(),
+                   [](const MergeTable::Candidate& lhs,
+                      const MergeTable::Candidate& rhs) {
+                     return lhs.second.size() < rhs.second.size();
+                   });
+  bool cleanup = false;  // Clean constant or NULL type gates.
+  for (auto it = candidates->begin(); it != candidates->end(); ++it) {
+    IGatePtr gate = it->first;
+    MergeTable::CommonArgs& common_args = it->second;
+    if (gate->args().size() == 1) continue;
+    if (gate->state() != kNormalState) continue;
+    if (common_args.size() < 2) continue;
+    if (gate->args().size() != common_args.size()) continue;
+    auto it_next = it;
+    for (++it_next; it_next != candidates->end(); ++it_next) {
+      IGatePtr comp_gate = it_next->first;
+      MergeTable::CommonArgs& comp_args = it_next->second;
+      if (comp_args.size() < common_args.size()) continue;  // Changed gate.
+      if (!std::includes(comp_args.begin(), comp_args.end(),
+                         common_args.begin(), common_args.end())) continue;
+
+      MergeTable::CommonArgs diff;
+      std::set_difference(comp_args.begin(), comp_args.end(),
+                          common_args.begin(), common_args.end(),
+                          std::back_inserter(diff));
+      diff.push_back(gate->index());
+      std::sort(diff.begin(), diff.end());
+      comp_args = diff;
+      for (int index : common_args) comp_gate->EraseArg(index);
+      comp_gate->AddArg(gate->index(), gate);
+      if (comp_gate->state() != kNormalState) {  // Complement of gate is arg.
+        const_gates_.push_back(comp_gate);
+        comp_args.clear();
+        cleanup = true;
+      } else if (comp_gate->args().size() == 1) {  // Perfect substitution.
+        comp_gate->type(kNullGate);
+        null_gates_.push_back(comp_gate);
+        assert(comp_args.size() == 1);
+        cleanup = true;
+      } else if (comp_args.size() == 1) {
+        cleanup = true;
+      }
+    }
+  }
+  if (!cleanup) return;
+  candidates->erase(
+      std::remove_if(candidates->begin(), candidates->end(),
+                     [](const MergeTable::Candidate& mem) {
+                       return mem.first->state() != kNormalState ||
+                              mem.first->type() == kNullGate ||
+                              mem.second.size() == 1;
+                     }),
+      candidates->end());
+}
+
 void Preprocessor::GroupCandidatesByArgs(
     const MergeTable::Candidates& candidates,
     std::vector<MergeTable::Candidates>* groups) noexcept {
@@ -1257,9 +1317,9 @@ void Preprocessor::GroupCandidatesByArgs(
     }
     if (group.size() > 1) groups->push_back(group);  // Discard single members.
   }
-  LOG(DEBUG4) << "Grouped merge candidates in " << groups->size()
-              << " group(s).";
-  assert(!groups->empty());
+  bool any_groups = !groups->empty();
+  BLOG(DEBUG4, any_groups) << "Grouped merge candidates in " << groups->size()
+                           << " group(s).";
 }
 
 void Preprocessor::GroupCommonParents(

@@ -637,6 +637,17 @@ class Preprocessor {
   void GatherCommonArgs(const IGatePtr& gate, const Operator& op,
                         MergeTable::Candidates* group) noexcept;
 
+  /// Filters merge candidates and their shared arguments
+  /// to detect opportunities for simplifications like gate substitutions.
+  ///
+  /// @param[in,out] candidates The group of merge candidate gates
+  ///
+  /// @note The simplifications are based on optimistic heuristics,
+  ///       and the end result may not be the most optimal.
+  ///
+  /// @warning May produce NULL type and constant gates.
+  void FilterMergeCandidates(MergeTable::Candidates* candidates) noexcept;
+
   /// Groups candidates with common arguments.
   /// The groups do not intersect
   /// either by candidates or common arguments.
