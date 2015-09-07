@@ -720,10 +720,6 @@ class Preprocessor {
   ///       However, this function guarantees
   ///       not to manipulate or change the set of all options.
   ///
-  /// @todo Evaluate various merging strategies.
-  ///       Module creation, the number of parents,
-  ///       the number of merge groups, and other criteria
-  ///       can serve as optimization parameters.
   /// @todo The current logic misses opportunities
   ///       that may branch with the same base option.
   void FindOptionGroup(MergeTable::MergeGroup* all_options,
