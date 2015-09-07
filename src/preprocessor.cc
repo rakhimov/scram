@@ -1793,17 +1793,13 @@ void Preprocessor::BooleanOptimization() noexcept {
   std::vector<IGateWeakPtr> common_gates;
   std::vector<std::weak_ptr<Variable>> common_variables;
   Preprocessor::GatherCommonNodes(&common_gates, &common_variables);
-  for (const auto& gate : common_gates) {
-    Preprocessor::ProcessCommonNode(gate);
-  }
-  for (const auto& var : common_variables) {
-    Preprocessor::ProcessCommonNode(var);
-  }
+  for (const auto& gate : common_gates) Preprocessor::ProcessCommonNode(gate);
+  for (const auto& var : common_variables) Preprocessor::ProcessCommonNode(var);
 }
 
 void Preprocessor::GatherCommonNodes(
       std::vector<IGateWeakPtr>* common_gates,
-      std::vector<std::weak_ptr<Variable> >* common_variables) noexcept {
+      std::vector<std::weak_ptr<Variable>>* common_variables) noexcept {
   graph_->ClearNodeVisits();
   std::queue<IGatePtr> gates_queue;
   gates_queue.push(graph_->root());
@@ -1847,7 +1843,7 @@ void Preprocessor::ProcessCommonNode(
 
   int mult_tot = node->parents().size();  // Total multiplicity.
   assert(mult_tot > 1);
-  mult_tot += Preprocessor::PropagateFailure(root);
+  mult_tot += Preprocessor::PropagateFailure(root, node);
   assert(!root->mark());
 
   // The results of the failure propagation.
@@ -1896,7 +1892,8 @@ void Preprocessor::MarkAncestors(const NodePtr& node,
   }
 }
 
-int Preprocessor::PropagateFailure(const IGatePtr& gate) noexcept {
+int Preprocessor::PropagateFailure(const IGatePtr& gate,
+                                   const NodePtr& node) noexcept {
   if (!gate->mark()) return 0;
   gate->mark(false);  // Cleaning up the marks of the ancestors.
   assert(!gate->opti_value());
@@ -1905,7 +1902,7 @@ int Preprocessor::PropagateFailure(const IGatePtr& gate) noexcept {
   int num_success = 0;  // The number of success arguments.
   for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
     IGatePtr arg_gate = arg.second;
-    mult_tot += Preprocessor::PropagateFailure(arg_gate);
+    mult_tot += Preprocessor::PropagateFailure(arg_gate, node);
     assert(!arg_gate->mark());
     int failed = arg_gate->opti_value() * (arg.first > 0 ? 1 : -1);
     assert(!failed || failed == -1 || failed == 1);
@@ -1915,14 +1912,17 @@ int Preprocessor::PropagateFailure(const IGatePtr& gate) noexcept {
       ++num_success;
     }  // Ignore when 0.
   }
-  for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
-    int failed = arg.second->opti_value() * (arg.first > 0 ? 1 : -1);
-    if (failed == 1) {
-      ++num_failures;
-      break;  // Should be only one variable.
-    } else if (failed == -1) {
-      ++num_success;
-      break;  /// @todo Find the only one variable faster.
+  if (node->parents().count(gate->index())) {  // Try to find the basic event.
+    assert(node->opti_value() == 1);
+    int failed = gate->variable_args().count(node->index());
+    if (!failed) failed = -gate->variable_args().count(-node->index());
+    switch (failed) {
+      case 1:
+        ++num_failures;
+        break;
+      case -1:
+        ++num_success;
+        break;
     }  // Ignore when 0.
   }
   assert(gate->constant_args().empty());
@@ -1973,7 +1973,7 @@ int Preprocessor::CollectFailureDestinations(
     if (arg->index() == index) continue;  // This is the failure source.
     if (arg->opti_value() != 1) continue;  // Not a failure destination.
     if (member.first < 0) continue;  // Complement of failure is success.
-    ++num_dest;                      /// @todo Complement is destination?
+    ++num_dest;                      /// @todo Is complement a destination?
     destinations->emplace(arg->index(), arg);
   }
   return num_dest;
