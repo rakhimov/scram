@@ -574,30 +574,10 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   ///
   /// @warning The parent gate may become empty or one-argument gate,
   ///          which must be handled by the caller.
-  inline void EraseArg(int arg) noexcept {
-    assert(arg != 0);
-    assert(args_.count(arg));
-    args_.erase(arg);
-    NodePtr node;
-    if (gate_args_.count(arg)) {
-      node = gate_args_.find(arg)->second;
-      gate_args_.erase(arg);
-    } else if (constant_args_.count(arg)) {
-      node = constant_args_.find(arg)->second;
-      constant_args_.erase(arg);
-    } else {
-      node = variable_args_.find(arg)->second;
-      assert(variable_args_.count(arg));
-      variable_args_.erase(arg);
-    }
-    assert(node->parents_.count(Node::index()));
-    node->parents_.erase(Node::index());
-  }
+  void EraseArg(int arg) noexcept;
 
   /// Clears all the arguments of this gate.
-  inline void EraseAllArgs() noexcept {
-    while (!args_.empty()) IGate::EraseArg(*args_.rbegin());
-  }
+  void EraseAllArgs() noexcept;
 
   /// Sets the state of this gate to null
   /// and clears all its arguments.

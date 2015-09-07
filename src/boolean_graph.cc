@@ -70,17 +70,14 @@ std::shared_ptr<IGate> IGate::Clone() noexcept {
   clone->variable_args_ = variable_args_;
   clone->constant_args_ = constant_args_;
   // Introducing the new parent to the args.
-  std::unordered_map<int, IGatePtr>::const_iterator it_g;
-  for (it_g = gate_args_.begin(); it_g != gate_args_.end(); ++it_g) {
-    it_g->second->parents_.insert(std::make_pair(clone->index(), clone));
+  for (const std::pair<int, IGatePtr>& arg : gate_args_) {
+    arg.second->parents_.emplace(clone->index(), clone);
   }
-  std::unordered_map<int, VariablePtr>::const_iterator it_b;
-  for (it_b = variable_args_.begin(); it_b != variable_args_.end(); ++it_b) {
-    it_b->second->parents_.insert(std::make_pair(clone->index(), clone));
+  for (const std::pair<int, VariablePtr>& arg : variable_args_) {
+    arg.second->parents_.emplace(clone->index(), clone);
   }
-  std::unordered_map<int, ConstantPtr>::const_iterator it_c;
-  for (it_c = constant_args_.begin(); it_c != constant_args_.end(); ++it_c) {
-    it_c->second->parents_.insert(std::make_pair(clone->index(), clone));
+  for (const std::pair<int, ConstantPtr>& arg : constant_args_) {
+    arg.second->parents_.emplace(clone->index(), clone);
   }
   return clone;
 }
@@ -96,8 +93,8 @@ void IGate::AddArg(int arg, const IGatePtr& gate) noexcept {
   if (args_.count(-arg)) return IGate::ProcessComplementArg(arg);
 
   args_.insert(arg);
-  gate_args_.insert(std::make_pair(arg, gate));
-  gate->parents_.insert(std::make_pair(Node::index(), shared_from_this()));
+  gate_args_.emplace(arg, gate);
+  gate->parents_.emplace(Node::index(), shared_from_this());
 }
 
 void IGate::AddArg(int arg, const VariablePtr& variable) noexcept {
@@ -111,8 +108,8 @@ void IGate::AddArg(int arg, const VariablePtr& variable) noexcept {
   if (args_.count(-arg)) return IGate::ProcessComplementArg(arg);
 
   args_.insert(arg);
-  variable_args_.insert(std::make_pair(arg, variable));
-  variable->parents_.insert(std::make_pair(Node::index(), shared_from_this()));
+  variable_args_.emplace(arg, variable);
+  variable->parents_.emplace(Node::index(), shared_from_this());
 }
 
 void IGate::AddArg(int arg, const ConstantPtr& constant) noexcept {
@@ -126,8 +123,8 @@ void IGate::AddArg(int arg, const ConstantPtr& constant) noexcept {
   if (args_.count(-arg)) return IGate::ProcessComplementArg(arg);
 
   args_.insert(arg);
-  constant_args_.insert(std::make_pair(arg, constant));
-  constant->parents_.insert(std::make_pair(Node::index(), shared_from_this()));
+  constant_args_.emplace(arg, constant);
+  constant->parents_.emplace(Node::index(), shared_from_this());
 }
 
 void IGate::TransferArg(int arg, const IGatePtr& recipient) noexcept {
@@ -168,10 +165,24 @@ void IGate::ShareArg(int arg, const IGatePtr& recipient) noexcept {
 
 void IGate::InvertArgs() noexcept {
   std::set<int> args(args_);  // Not to mess the iterator.
-  std::set<int>::iterator it;
-  for (it = args.begin(); it != args.end(); ++it) {
-    IGate::InvertArg(*it);
-  }
+  std::set<int> inverted_args;
+  for (int index : args_) inverted_args.insert(inverted_args.begin(), -index);
+  args_ = std::move(inverted_args);
+
+  std::unordered_map<int, IGatePtr> inverted_gates;
+  for (const auto& arg : gate_args_)
+    inverted_gates.emplace(-arg.first, arg.second);
+  gate_args_ = std::move(inverted_gates);
+
+  std::unordered_map<int, VariablePtr> inverted_vars;
+  for (const auto& arg : variable_args_)
+    inverted_vars.emplace(-arg.first, arg.second);
+  variable_args_ = std::move(inverted_vars);
+
+  std::unordered_map<int, ConstantPtr> inverted_consts;
+  for (const auto& arg : constant_args_)
+    inverted_consts.emplace(-arg.first, arg.second);
+  constant_args_ = std::move(inverted_consts);
 }
 
 void IGate::InvertArg(int existing_arg) noexcept {
@@ -182,37 +193,31 @@ void IGate::InvertArg(int existing_arg) noexcept {
   if (gate_args_.count(existing_arg)) {
     IGatePtr arg = gate_args_.find(existing_arg)->second;
     gate_args_.erase(existing_arg);
-    gate_args_.insert(std::make_pair(-existing_arg, arg));
+    gate_args_.emplace(-existing_arg, arg);
   } else if (variable_args_.count(existing_arg)) {
     VariablePtr arg = variable_args_.find(existing_arg)->second;
     variable_args_.erase(existing_arg);
-    variable_args_.insert(std::make_pair(-existing_arg, arg));
+    variable_args_.emplace(-existing_arg, arg);
   } else {
     ConstantPtr arg = constant_args_.find(existing_arg)->second;
     constant_args_.erase(existing_arg);
-    constant_args_.insert(std::make_pair(-existing_arg, arg));
+    constant_args_.emplace(-existing_arg, arg);
   }
 }
 
 void IGate::JoinGate(const IGatePtr& arg_gate) noexcept {
   assert(args_.count(arg_gate->index()));  // Positive argument only.
 
-  std::unordered_map<int, IGatePtr>::const_iterator it_g;
-  for (it_g = arg_gate->gate_args_.begin();
-       it_g != arg_gate->gate_args_.end(); ++it_g) {
-    IGate::AddArg(it_g->first, it_g->second);
+  for (const std::pair<int, IGatePtr>& arg : arg_gate->gate_args_) {
+    IGate::AddArg(arg.first, arg.second);
     if (state_ != kNormalState) return;
   }
-  std::unordered_map<int, VariablePtr>::const_iterator it_b;
-  for (it_b = arg_gate->variable_args_.begin();
-       it_b != arg_gate->variable_args_.end(); ++it_b) {
-    IGate::AddArg(it_b->first, it_b->second);
+  for (const std::pair<int, VariablePtr>& arg : arg_gate->variable_args_) {
+    IGate::AddArg(arg.first, arg.second);
     if (state_ != kNormalState) return;
   }
-  std::unordered_map<int, ConstantPtr>::const_iterator it_c;
-  for (it_c = arg_gate->constant_args_.begin();
-       it_c != arg_gate->constant_args_.end(); ++it_c) {
-    IGate::AddArg(it_c->first, it_c->second);
+  for (const std::pair<int, ConstantPtr>& arg : arg_gate->constant_args_) {
+    IGate::AddArg(arg.first, arg.second);
     if (state_ != kNormalState) return;
   }
 
@@ -240,12 +245,48 @@ void IGate::JoinNullGate(int index) noexcept {
 
   if (!null_gate->gate_args_.empty()) {
     IGate::AddArg(arg, null_gate->gate_args_.begin()->second);
-  } else if (!null_gate->constant_args_.empty()) {
-    IGate::AddArg(arg, null_gate->constant_args_.begin()->second);
-  } else {
-    assert(!null_gate->variable_args_.empty());
+  } else if (!null_gate->variable_args_.empty()) {
     IGate::AddArg(arg, null_gate->variable_args_.begin()->second);
+  } else {
+    assert(!null_gate->constant_args_.empty());
+    IGate::AddArg(arg, null_gate->constant_args_.begin()->second);
   }
+}
+
+void IGate::EraseArg(int arg) noexcept {
+  assert(arg != 0);
+  assert(args_.count(arg));
+  args_.erase(arg);
+  NodePtr node;
+  if (gate_args_.count(arg)) {
+    node = gate_args_.find(arg)->second;
+    gate_args_.erase(arg);
+  } else if (variable_args_.count(arg)) {
+    node = variable_args_.find(arg)->second;
+    variable_args_.erase(arg);
+  } else {
+    assert(constant_args_.count(arg));
+    node = constant_args_.find(arg)->second;
+    constant_args_.erase(arg);
+  }
+  assert(node->parents_.count(Node::index()));
+  node->parents_.erase(Node::index());
+}
+
+void IGate::EraseAllArgs() noexcept {
+  args_.clear();
+  for (const std::pair<int, IGatePtr>& arg : gate_args_) {
+    arg.second->parents_.erase(Node::index());
+  }
+  gate_args_.clear();
+  for (const std::pair<int, VariablePtr>& arg : variable_args_) {
+    arg.second->parents_.erase(Node::index());
+  }
+  variable_args_.clear();
+  for (const std::pair<int, ConstantPtr>& arg : constant_args_) {
+    arg.second->parents_.erase(Node::index());
+  }
+  constant_args_.clear();
 }
 
 void IGate::ProcessDuplicateArg(int index) noexcept {
@@ -516,7 +557,7 @@ void BooleanGraph::ClearOptiValues(const IGatePtr& gate) noexcept {
 }
 
 void BooleanGraph::ClearOptiValuesFast(const IGatePtr& gate) noexcept {
-  if (!gate->opti_value()) return;
+  if (!gate->opti_value()) return;  // Clean only 'dirty' gates.
   gate->opti_value(0);
   for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
     BooleanGraph::ClearOptiValuesFast(arg.second);
@@ -524,7 +565,7 @@ void BooleanGraph::ClearOptiValuesFast(const IGatePtr& gate) noexcept {
   for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
     if (arg.second->opti_value()) {
       arg.second->opti_value(0);
-      break;  // Only one variable is dirty.
+      break;  // Only one variable is 'dirty'.
     }
   }
   assert(gate->constant_args().empty());
