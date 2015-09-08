@@ -48,6 +48,9 @@ class Event : public Element, public Role {
   explicit Event(const std::string& name, const std::string& base_path = "",
                  bool is_public = true);
 
+  Event(const Event&) = delete;
+  Event& operator=(const Event&) = delete;
+
   virtual ~Event() = 0;  ///< Abstract class.
 
   /// @returns The id that is set upon the construction of this event.
@@ -301,6 +304,9 @@ class Formula {
   ///
   /// @param[in] type The logical operator for this Boolean formula.
   explicit Formula(const std::string& type);
+
+  Formula(const Formula&) = delete;
+  Formula& operator=(const Formula&) = delete;
 
   /// @returns The type of this formula.
   ///

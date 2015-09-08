@@ -54,6 +54,9 @@ class CcfGroup : public Element, public Role {
   CcfGroup(const std::string& name, const std::string& model,
            const std::string& base_path = "", bool is_public = true);
 
+  CcfGroup(const CcfGroup&) = delete;
+  CcfGroup& operator=(const CcfGroup&) = delete;
+
   virtual ~CcfGroup() {}
 
   /// @returns The name of this CCF group.

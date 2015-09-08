@@ -68,8 +68,8 @@ class Node {
   /// @warning The index is not validated upon instantiation.
   explicit Node(int index) noexcept;
 
-  Node(const Node&) = delete;  ///< Restrict copy construction.
-  Node& operator=(const Node&) = delete;  ///< Restrict copy assignment.
+  Node(const Node&) = delete;
+  Node& operator=(const Node&) = delete;
 
   virtual ~Node() = 0;  ///< Abstract class.
 
@@ -186,9 +186,6 @@ class Constant : public Node {
   /// @param[in] state Binary state of the Boolean constant.
   explicit Constant(bool state) noexcept;
 
-  Constant(const Constant&) = delete;  ///< Restrict copy construction.
-  Constant& operator=(const Constant&) = delete;  ///< Restrict copy assignment.
-
   /// @returns The state of the constant.
   inline bool state() const { return state_; }
 
@@ -210,9 +207,6 @@ class Variable : public Node {
  public:
   /// Creates a new indexed variable with its index assigned sequentially.
   Variable() noexcept;
-
-  Variable(const Variable&) = delete;  ///< Restrict copy construction.
-  Variable& operator=(const Variable&) = delete;  ///< Restrict copy assignment.
 
   /// Resets the starting index for variables.
   inline static void ResetIndex() { next_variable_ = 1; }
@@ -295,9 +289,6 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   ///          If cloning destroys modules,
   ///          DestroyModule() member function must be called.
   IGatePtr Clone() noexcept;
-
-  IGate(const IGate&) = delete;  ///< Restrict copy construction.
-  IGate& operator=(const IGate&) = delete;  ///< Restrict copy assignment.
 
   /// @returns Type of this gate.
   inline const Operator& type() const { return type_; }
@@ -735,6 +726,9 @@ class BooleanGraph {
   /// @param[in] root The top gate of the fault tree.
   /// @param[in] ccf Incorporation of CCF gates and events for CCF groups.
   explicit BooleanGraph(const GatePtr& root, bool ccf = false) noexcept;
+
+  BooleanGraph(const BooleanGraph&) = delete;
+  BooleanGraph& operator=(const BooleanGraph&) = delete;
 
   /// @returns true if the fault tree is coherent.
   inline bool coherent() const { return coherent_; }

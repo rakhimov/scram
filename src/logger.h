@@ -87,8 +87,8 @@ class Logger {
  public:
   Logger() {}
 
-  Logger(const Logger&) = delete;  ///< Restrict copy construction.
-  Logger& operator=(const Logger&) = delete;  ///< Restrict copy assignment.
+  Logger(const Logger&) = delete;
+  Logger& operator=(const Logger&) = delete;
 
   /// Flashes all the logs into the standard error upon destruction.
   ~Logger() noexcept {
