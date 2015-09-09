@@ -71,7 +71,6 @@ Documentation: Moderate Importance
 Platform Support
 ================
 
-- Installation Package for Ubuntu (PPA/DEB).
 - Installation Package for Windows.
 - Installation Package for Mac OS X.
 
@@ -80,6 +79,11 @@ Coding Specific
 ===============
 
 - More tests for expressions. *Moderate*
+
+- More tests for preprocessing techniques. *High*
+
+    * Graph equality tests.
+
 - Benchmark tests:
 
     * HIPPS (periodic tests)
