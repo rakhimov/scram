@@ -2,42 +2,48 @@
   NLOC    CCN   token  PARAM  location  
 ----------------------------------------
        1      1      2      1 Node::Node@36-36@boolean_graph.cc
-       3      1     15      1 opti_value_@38-40@boolean_graph.cc
-       1      1      5      0 Node@42-42@boolean_graph.cc
-       1      1      2      1 state_@44-44@boolean_graph.cc
-       1      1      2      1 Node@48-48@boolean_graph.cc
-       1      1      2      1 num_failed_args_@59-59@boolean_graph.cc
-      21      4    236      0 IGate::Clone@61-83@boolean_graph.cc
-      12      6    163      2 IGate::AddArg@85-98@boolean_graph.cc
-      12      6    163      2 IGate::AddArg@100-113@boolean_graph.cc
-      12      6    163      2 IGate::AddArg@115-128@boolean_graph.cc
+       3      1     15      1 neg_count_@42-44@boolean_graph.cc
+       1      1      5      0 Node@46-46@boolean_graph.cc
+       1      1      2      1 state_@48-48@boolean_graph.cc
+       1      1      2      1 Node@52-52@boolean_graph.cc
+       1      1      2      1 module_@62-62@boolean_graph.cc
+      18      4    167      0 IGate::Clone@64-83@boolean_graph.cc
+      12      6    153      2 IGate::AddArg@85-98@boolean_graph.cc
+      12      6    153      2 IGate::AddArg@100-113@boolean_graph.cc
+      12      6    153      2 IGate::AddArg@115-128@boolean_graph.cc
       22      3    220      2 IGate::TransferArg@130-151@boolean_graph.cc
       12      3    122      2 IGate::ShareArg@153-164@boolean_graph.cc
-       7      2     60      0 IGate::InvertArgs@166-172@boolean_graph.cc
-      19      3    178      1 IGate::InvertArg@174-192@boolean_graph.cc
-      25      7    274      1 IGate::JoinGate@194-220@boolean_graph.cc
-      21      4    228      1 IGate::JoinNullGate@222-246@boolean_graph.cc
-      44     11    308      1 IGate::ProcessDuplicateArg@248-298@boolean_graph.cc
-      25     10    121      1 IGate::ProcessComplementArg@300-324@boolean_graph.cc
-      20      8    113      0 IGate::ArgFailed@326-345@boolean_graph.cc
-       6      1     36      1 normal_@354-359@boolean_graph.cc
-       4      1     25      0 BooleanGraph::Print@361-364@boolean_graph.cc
-      31     10    215      3 BooleanGraph::ProcessFormula@366-401@boolean_graph.cc
-      31      6    297      4 BooleanGraph::ProcessBasicEvents@403-433@boolean_graph.cc
-      16      3    149      3 BooleanGraph::ProcessHouseEvents@435-450@boolean_graph.cc
-      16      3    149      4 BooleanGraph::ProcessGates@452-467@boolean_graph.cc
-       3      1     15      0 BooleanGraph::ClearGateMarks@469-471@boolean_graph.cc
-       8      3     87      1 BooleanGraph::ClearGateMarks@473-480@boolean_graph.cc
-       7      1     41      0 BooleanGraph::ClearNodeVisits@482-488@boolean_graph.cc
-      19      8    236      1 BooleanGraph::ClearNodeVisits@490-510@boolean_graph.cc
-       7      1     41      0 BooleanGraph::ClearOptiValues@512-518@boolean_graph.cc
-      16      4    171      1 BooleanGraph::ClearOptiValues@520-536@boolean_graph.cc
-       8      3     79      2 operator <<@538-545@boolean_graph.cc
-       7      2     63      2 operator <<@547-553@boolean_graph.cc
-      31      9    156      1 GetFormulaSig@570-601@boolean_graph.cc
-      10      3     72      1 GetName@608-617@boolean_graph.cc
-      38     13    390      2 operator <<@621-667@boolean_graph.cc
-       5      1     40      2 operator <<@669-673@boolean_graph.cc
+      18      5    183      0 IGate::InvertArgs@166-186@boolean_graph.cc
+      19      3    163      1 IGate::InvertArg@188-206@boolean_graph.cc
+      19      7    208      1 IGate::JoinGate@208-228@boolean_graph.cc
+      21      4    228      1 IGate::JoinNullGate@230-254@boolean_graph.cc
+      19      3    161      1 IGate::EraseArg@256-274@boolean_graph.cc
+      15      4    134      0 IGate::EraseAllArgs@276-290@boolean_graph.cc
+      52     13    373      1 IGate::ProcessDuplicateArg@292-350@boolean_graph.cc
+      25     10    121      1 IGate::ProcessComplementArg@352-376@boolean_graph.cc
+       6      1     36      1 normal_@385-390@boolean_graph.cc
+       4      1     25      0 BooleanGraph::Print@392-395@boolean_graph.cc
+      31     10    215      3 BooleanGraph::ProcessFormula@397-432@boolean_graph.cc
+      31      6    297      4 BooleanGraph::ProcessBasicEvents@434-464@boolean_graph.cc
+      16      3    149      3 BooleanGraph::ProcessHouseEvents@466-481@boolean_graph.cc
+      16      3    149      4 BooleanGraph::ProcessGates@483-498@boolean_graph.cc
+       3      1     15      0 BooleanGraph::ClearGateMarks@500-502@boolean_graph.cc
+       7      3     64      1 BooleanGraph::ClearGateMarks@504-510@boolean_graph.cc
+       7      1     41      0 BooleanGraph::ClearNodeVisits@512-518@boolean_graph.cc
+      14      8    165      1 BooleanGraph::ClearNodeVisits@520-535@boolean_graph.cc
+       7      1     41      0 BooleanGraph::ClearOptiValues@537-543@boolean_graph.cc
+      12      4    118      1 BooleanGraph::ClearOptiValues@545-557@boolean_graph.cc
+      14      5    126      1 BooleanGraph::ClearOptiValuesFast@559-572@boolean_graph.cc
+       7      1     41      0 BooleanGraph::ClearNodeCounts@574-580@boolean_graph.cc
+      12      4    116      1 BooleanGraph::ClearNodeCounts@582-594@boolean_graph.cc
+       6      2     55      1 BooleanGraph::TestGateMarks@596-601@boolean_graph.cc
+      10      3    105      1 BooleanGraph::TestOptiValues@603-612@boolean_graph.cc
+       8      3     79      2 operator <<@614-621@boolean_graph.cc
+       7      2     63      2 operator <<@623-629@boolean_graph.cc
+      31      9    156      1 GetFormulaSig@646-677@boolean_graph.cc
+      10      3     72      1 GetName@684-693@boolean_graph.cc
+      38     13    390      2 operator <<@697-743@boolean_graph.cc
+       5      1     40      2 operator <<@745-749@boolean_graph.cc
        9      2     75      4 CcfGroup::CcfGroup@29-37@ccf_group.cc
       13      3     90      1 CcfGroup::AddMember@39-51@ccf_group.cc
        8      2     69      1 CcfGroup::AddDistribution@53-61@ccf_group.cc
@@ -116,12 +122,12 @@
       15      3    114      0 Histogram::Sample@326-340@expression.cc
       16      6    148      1 Histogram::CheckBoundaries@342-357@expression.cc
        9      4     81      1 Histogram::CheckWeights@359-367@expression.cc
-      10      1     54      2 FaultTreeAnalysis::FaultTreeAnalysis@33-42@fault_tree_analysis.cc
-      25      4    198      0 FaultTreeAnalysis::Analyze@44-76@fault_tree_analysis.cc
-       5      2     45      1 FaultTreeAnalysis::GatherEvents@78-82@fault_tree_analysis.cc
-      26      6    274      1 FaultTreeAnalysis::GatherEvents@84-109@fault_tree_analysis.cc
-       7      2     64      0 FaultTreeAnalysis::CleanMarks@111-117@fault_tree_analysis.cc
-      19      5    211      2 FaultTreeAnalysis::SetsToString@119-137@fault_tree_analysis.cc
+      10      1     54      2 FaultTreeAnalysis::FaultTreeAnalysis@34-43@fault_tree_analysis.cc
+      25      4    193      0 FaultTreeAnalysis::Analyze@45-77@fault_tree_analysis.cc
+       5      2     45      1 FaultTreeAnalysis::GatherEvents@79-83@fault_tree_analysis.cc
+      17      6    155      1 FaultTreeAnalysis::GatherEvents@85-101@fault_tree_analysis.cc
+       6      2     46      0 FaultTreeAnalysis::CleanMarks@103-108@fault_tree_analysis.cc
+      17      5    144      2 FaultTreeAnalysis::SetsToString@110-126@fault_tree_analysis.cc
        4      1     37      3 Component::Component@34-37@fault_tree.cc
        9      4     82      1 Component::AddGate@39-47@fault_tree.cc
        9      4     82      1 Component::AddBasicEvent@49-57@fault_tree.cc
@@ -174,14 +180,14 @@
        9      3     80      0 Initializer::CheckSecondLayer@1005-1013@initializer.cc
       53     14    464      0 Initializer::ValidateExpressions@1015-1072@initializer.cc
       16      5    153      0 Initializer::SetupForAnalysis@1074-1092@initializer.cc
-      14      4     80      2 SimpleGate::GenerateCutSets@77-90@mocus.cc
-      43     15    445      2 SimpleGate::AndGateCutSets@92-139@mocus.cc
-      44     12    400      2 SimpleGate::OrGateCutSets@141-190@mocus.cc
-       5      1     31      2 Mocus::Mocus@192-196@mocus.cc
-      63     10    597      0 Mocus::FindMcs@198-273@mocus.cc
-      27      6    311      2 Mocus::CreateSimpleTree@275-302@mocus.cc
-      27      3    262      2 Mocus::FindMcsFromSimpleGate@304-336@mocus.cc
-      31      7    308      4 Mocus::MinimizeCutSets@338-375@mocus.cc
+      13      4     73      2 SimpleGate::GenerateCutSets@77-89@mocus.cc
+      33     13    266      2 SimpleGate::AndGateCutSets@91-128@mocus.cc
+      39     11    253      2 SimpleGate::OrGateCutSets@130-174@mocus.cc
+       5      1     31      2 Mocus::Mocus@176-180@mocus.cc
+      62     10    536      0 Mocus::FindMcs@182-256@mocus.cc
+      24      6    254      2 Mocus::CreateSimpleTree@258-282@mocus.cc
+      23      3    202      2 Mocus::FindMcsFromSimpleGate@284-312@mocus.cc
+      28      7    215      4 Mocus::MinimizeCutSets@314-347@mocus.cc
        1      1     18      1 Model::Model@32-32@model.cc
        9      2     73      1 Model::AddFaultTree@34-42@model.cc
        7      2     59      1 Model::AddParameter@44-50@model.cc
@@ -197,63 +203,78 @@
       25      4    200      1 Model::GetContainer@283-307@model.cc
       20      4    150      2 Model::GetLocalContainer@309-328@model.cc
       27      4    214      1 Model::GetGlobalContainer@330-356@model.cc
-       1      1      2      1 root_sign_@70-70@preprocessor.cc
-      38      7    304      0 Preprocessor::ProcessFaultTree@72-116@preprocessor.cc
-      17      4    107      0 Preprocessor::PhaseOne@118-134@preprocessor.cc
-      54     10    381      0 Preprocessor::PhaseTwo@136-202@preprocessor.cc
-       9      2     61      0 Preprocessor::PhaseThree@204-213@preprocessor.cc
-      20      8    185      0 Preprocessor::PhaseFour@215-235@preprocessor.cc
-      17      4    113      0 Preprocessor::PhaseFive@237-255@preprocessor.cc
-      34      8    260      0 Preprocessor::CheckRootGate@257-290@preprocessor.cc
-      13      3    103      0 Preprocessor::RemoveNullGates@292-306@preprocessor.cc
-      12      3    125      0 Preprocessor::RemoveConstants@308-319@preprocessor.cc
-      13      5    138      1 Preprocessor::PropagateConstant@321-335@preprocessor.cc
-       9      3     56      3 Preprocessor::ProcessConstantArg@337-346@preprocessor.cc
-      30     10    190      2 Preprocessor::ProcessTrueArg@348-377@preprocessor.cc
-      24     10    143      2 Preprocessor::ProcessFalseArg@379-402@preprocessor.cc
-      19      7    109      2 Preprocessor::RemoveConstantArg@404-422@preprocessor.cc
-      14      6    161      1 Preprocessor::PropagateConstGate@424-440@preprocessor.cc
-      13      5    142      1 Preprocessor::PropagateNullGate@442-456@preprocessor.cc
-       9      3     77      0 Preprocessor::ClearConstGates@458-466@preprocessor.cc
-       9      3     77      0 Preprocessor::ClearNullGates@468-476@preprocessor.cc
-      18      4    113      1 Preprocessor::NormalizeGates@478-500@preprocessor.cc
-      21      7    171      1 Preprocessor::NotifyParentsOfNegativeGates@502-522@preprocessor.cc
-      41     13    323      2 Preprocessor::NormalizeGate@524-566@preprocessor.cc
-      19      1    195      1 Preprocessor::NormalizeXorGate@568-589@preprocessor.cc
-      35      4    333      1 Preprocessor::NormalizeAtleastGate@591-634@preprocessor.cc
-      40      9    365      2 Preprocessor::PropagateComplements@636-682@preprocessor.cc
-      44     16    366      2 Preprocessor::JoinGates@684-731@preprocessor.cc
-      15      1    125      0 Preprocessor::DetectModules@733-752@preprocessor.cc
-      17      4    191      2 Preprocessor::AssignTiming@754-772@preprocessor.cc
-      68     15    634      1 Preprocessor::FindModules@774-850@preprocessor.cc
-      21      5    193      4 Preprocessor::ProcessModularArgs@852-874@preprocessor.cc
-      35      9    299      2 Preprocessor::CreateNewModule@876-910@preprocessor.cc
-       5      1     50      4 DetectOverlap@922-926@preprocessor.cc
-      32      7    310      2 Preprocessor::FilterModularArgs@930-961@preprocessor.cc
-      40      6    393      2 Preprocessor::GroupModularArgs@963-1003@preprocessor.cc
-      25      6    246      3 Preprocessor::CreateNewModules@1005-1030@preprocessor.cc
-      16      3    115      0 Preprocessor::MergeCommonArgs@1032-1050@preprocessor.cc
-      78     15    847      1 Preprocessor::MergeCommonArgs@1052-1158@preprocessor.cc
-      20      7    215      2 Preprocessor::MarkCommonArgs@1160-1183@preprocessor.cc
-      26     10    310      3 Preprocessor::GatherCommonArgs@1185-1216@preprocessor.cc
-      27      8    328      2 Preprocessor::GroupCommonParents@1218-1246@preprocessor.cc
-      18      3    159      0 Preprocessor::BooleanOptimization@1248-1268@preprocessor.cc
-      27      8    285      2 Preprocessor::GatherCommonNodes@1270-1297@preprocessor.cc
-      33      6    285      1 Preprocessor::ProcessCommonNode@1300-1338@preprocessor.cc
-      17      5    168      1 Preprocessor::PropagateFailure@1340-1356@preprocessor.cc
-      24      6    206      3 Preprocessor::CollectFailureDestinations@1358-1381@preprocessor.cc
-      48     12    386      2 Preprocessor::ProcessRedundantParents@1383-1433@preprocessor.cc
-      26      7    213      2 Preprocessor::ProcessFailureDestinations@1436-1461@preprocessor.cc
-      22      5    189      0 Preprocessor::DecomposeCommonNodes@1463-1493@preprocessor.cc
-      44     14    436      1 Preprocessor::ProcessDecompositionCommonNode@1495-1550@preprocessor.cc
-      12      4    126      2 Preprocessor::MarkDecompositionDestinations@1552-1563@preprocessor.cc
-      33     11    267      2 Preprocessor::ProcessDecompositionDestinations@1565-1601@preprocessor.cc
-      50     13    548      5 Preprocessor::ProcessDecompositionAncestors@1603-1656@preprocessor.cc
-      27      5    255      0 Preprocessor::ProcessMultipleDefinitions@1658-1686@preprocessor.cc
-      34     10    349      3 Preprocessor::DetectMultipleDefinitions@1688-1727@preprocessor.cc
-      34     13    244      1 Preprocessor::DetectDistributivity@1729-1763@preprocessor.cc
-      74     14    697      2 Preprocessor::HandleDistributiveArgs@1765-1853@preprocessor.cc
-      17      5    172      2 Preprocessor::ReplaceGate@1855-1872@preprocessor.cc
+       1      1      2      1 root_sign_@83-83@preprocessor.cc
+      38      7    304      0 Preprocessor::ProcessFaultTree@85-129@preprocessor.cc
+      17      4    107      0 Preprocessor::PhaseOne@131-147@preprocessor.cc
+      42     10    303      0 Preprocessor::PhaseTwo@149-203@preprocessor.cc
+       9      2     61      0 Preprocessor::PhaseThree@205-214@preprocessor.cc
+      20      8    187      0 Preprocessor::PhaseFour@216-236@preprocessor.cc
+      13      5     97      0 Preprocessor::PhaseFive@238-252@preprocessor.cc
+      34      8    260      0 Preprocessor::CheckRootGate@254-287@preprocessor.cc
+      13      3    103      0 Preprocessor::RemoveNullGates@289-303@preprocessor.cc
+      11      3     97      0 Preprocessor::RemoveConstants@305-315@preprocessor.cc
+      13      4    124      1 Preprocessor::PropagateConstant@317-331@preprocessor.cc
+       9      3     56      3 Preprocessor::ProcessConstantArg@333-342@preprocessor.cc
+      30     10    190      2 Preprocessor::ProcessTrueArg@344-373@preprocessor.cc
+      24     10    143      2 Preprocessor::ProcessFalseArg@375-398@preprocessor.cc
+      19      7    109      2 Preprocessor::RemoveConstantArg@400-418@preprocessor.cc
+      14      5    147      1 Preprocessor::PropagateConstGate@420-436@preprocessor.cc
+      13      4    128      1 Preprocessor::PropagateNullGate@438-452@preprocessor.cc
+       8      3     53      0 Preprocessor::ClearConstGates@454-461@preprocessor.cc
+       8      3     53      0 Preprocessor::ClearNullGates@463-470@preprocessor.cc
+      18      4    113      1 Preprocessor::NormalizeGates@472-494@preprocessor.cc
+      20      7    171      1 Preprocessor::NotifyParentsOfNegativeGates@496-515@preprocessor.cc
+      41     13    323      2 Preprocessor::NormalizeGate@517-559@preprocessor.cc
+      19      1    195      1 Preprocessor::NormalizeXorGate@561-582@preprocessor.cc
+      35      4    333      1 Preprocessor::NormalizeAtleastGate@584-627@preprocessor.cc
+      43     12    387      3 Preprocessor::PropagateComplements@629-678@preprocessor.cc
+      10      1     87      1 Preprocessor::CoalesceGates@680-690@preprocessor.cc
+      42     16    319      2 Preprocessor::JoinGates@692-737@preprocessor.cc
+      24      5    200      0 Preprocessor::ProcessMultipleDefinitions@739-765@preprocessor.cc
+      20      5    167      3 Preprocessor::DetectMultipleDefinitions@767-788@preprocessor.cc
+      14      1    120      0 Preprocessor::DetectModules@790-807@preprocessor.cc
+      14      4    144      2 Preprocessor::AssignTiming@809-823@preprocessor.cc
+      55     12    525      1 Preprocessor::FindModules@825-888@preprocessor.cc
+      21      5    188      4 Preprocessor::ProcessModularArgs@890-912@preprocessor.cc
+      35      9    276      2 Preprocessor::CreateNewModule@914-948@preprocessor.cc
+       5      1     50      4 DetectOverlap@960-964@preprocessor.cc
+      30      7    240      2 Preprocessor::FilterModularArgs@968-997@preprocessor.cc
+      29      4    251      1 while@1007-1036@preprocessor.cc
+       3      1     20      1 for@1062-1064@preprocessor.cc
+      23      5    206      1 Preprocessor::GatherModules@1067-1089@preprocessor.cc
+      16      3    115      0 Preprocessor::MergeCommonArgs@1091-1109@preprocessor.cc
+      41      9    332      1 Preprocessor::MergeCommonArgs@1111-1154@preprocessor.cc
+      17      7    177      2 Preprocessor::MarkCommonArgs@1156-1176@preprocessor.cc
+      26     13    302      3 Preprocessor::GatherCommonArgs@1178-1209@preprocessor.cc
+      56     16    571      1 Preprocessor::FilterMergeCandidates@1211-1267@preprocessor.cc
+      42      7    377      2 Preprocessor::GroupCandidatesByArgs@1269-1311@preprocessor.cc
+      22      4    216      3 Preprocessor::GroupCommonParents@1313-1335@preprocessor.cc
+      37      6    359      2 Preprocessor::GroupCommonArgs@1337-1377@preprocessor.cc
+      34     10    339      2 Preprocessor::FindOptionGroup@1379-1413@preprocessor.cc
+      32     12    306      2 Preprocessor::FindBaseOption@1415-1446@preprocessor.cc
+      42      7    437      1 Preprocessor::TransformCommonArgs@1448-1492@preprocessor.cc
+       9      1     66      0 Preprocessor::DetectDistributivity@1494-1502@preprocessor.cc
+      34     14    234      1 Preprocessor::DetectDistributivity@1504-1538@preprocessor.cc
+      50     12    484      3 Preprocessor::HandleDistributiveArgs@1540-1595@preprocessor.cc
+      66     12    588      2 Preprocessor::FilterDistributiveArgs@1597-1664@preprocessor.cc
+      30      5    276      2 Preprocessor::GroupDistributiveArgs@1666-1697@preprocessor.cc
+      68     15    572      3 Preprocessor::TransformDistributiveArgs@1699-1774@preprocessor.cc
+      12      4    130      0 Preprocessor::BooleanOptimization@1776-1788@preprocessor.cc
+      25      8    245      2 Preprocessor::GatherCommonNodes@1790-1814@preprocessor.cc
+      45      7    391      1 Preprocessor::ProcessCommonNode@1817-1867@preprocessor.cc
+      15      4    115      2 Preprocessor::MarkAncestors@1869-1883@preprocessor.cc
+      41     14    366      2 Preprocessor::PropagateFailure@1885-1925@preprocessor.cc
+      29     15    206      3 Preprocessor::DetermineGateFailure@1927-1955@preprocessor.cc
+      20      6    165      3 Preprocessor::CollectFailureDestinations@1957-1976@preprocessor.cc
+      20      5    156      3 Preprocessor::CollectRedundantParents@1978-1998@preprocessor.cc
+      15      5    122      2 Preprocessor::ProcessRedundantParents@2000-2015@preprocessor.cc
+      24      6    196      2 Preprocessor::ProcessFailureDestinations@2018-2041@preprocessor.cc
+      22      5    187      0 Preprocessor::DecomposeCommonNodes@2043-2074@preprocessor.cc
+      43     13    402      1 Preprocessor::ProcessDecompositionCommonNode@2076-2128@preprocessor.cc
+      11      4    102      2 Preprocessor::MarkDecompositionDestinations@2130-2140@preprocessor.cc
+      40     11    287      2 Preprocessor::ProcessDecompositionDestinations@2142-2185@preprocessor.cc
+      60     17    587      5 Preprocessor::ProcessDecompositionAncestors@2187-2250@preprocessor.cc
+      15      4    153      2 Preprocessor::ReplaceGate@2252-2267@preprocessor.cc
        8      1     46      1 ProbabilityAnalysis::ProbabilityAnalysis@31-38@probability_analysis.cc
        5      1     30      1 ProbabilityAnalysis::UpdateDatabase@40-44@probability_analysis.cc
       61     11    455      1 ProbabilityAnalysis::Analyze@46-122@probability_analysis.cc
@@ -326,7 +347,7 @@
 ==============================================================
 NLOC    Avg.NLOC AvgCCN Avg.ttoken  function_cnt    file
 --------------------------------------------------------------
-    553     14    4.0       125        37     boolean_graph.cc
+    619     13    3.0       119        43     boolean_graph.cc
     285     17    3.0       164        16     ccf_group.cc
     141     16    4.0       157         8     config.cc
      17     12    2.0       106         1     cycle.cc
@@ -334,14 +355,14 @@ NLOC    Avg.NLOC AvgCCN Avg.ttoken  function_cnt    file
       8      2    1.0        21         2     error.cc
     143      9    3.0        76        14     event.cc
     314     11    3.0        84        28     expression.cc
-    101     15    3.0       141         6     fault_tree_analysis.cc
+     89     13    3.0       106         6     fault_tree_analysis.cc
     115      8    3.0        83        12     fault_tree.cc
     197     23    4.0       213         8     grapher.cc
     932     28    5.0       258        32     initializer.cc
       7      0    0.0         0         0     logger.cc
-    262     31    7.0       304         8     mocus.cc
+    234     28    6.0       228         8     mocus.cc
     304     19    3.0       160        15     model.cc
-   1551     26    6.0       242        57     preprocessor.cc
+   1941     26    6.0       227        72     preprocessor.cc
     228     20    4.0       163        11     probability_analysis.cc
     106      6    1.0        48        16     random.cc
      57      8    2.0        44         6     relax_ng_validator.cc
@@ -357,8 +378,10 @@ NLOC    Avg.NLOC AvgCCN Avg.ttoken  function_cnt    file
 ========================================
   NLOC    CCN   token  PARAM  location  
 ----------------------------------------
-      44     16    366      2 Preprocessor::JoinGates@684-731@preprocessor.cc
+      60     17    587      5 Preprocessor::ProcessDecompositionAncestors@2187-2250@preprocessor.cc
+      42     16    319      2 Preprocessor::JoinGates@692-737@preprocessor.cc
+      56     16    571      1 Preprocessor::FilterMergeCandidates@1211-1267@preprocessor.cc
 ==========================================================================================
 Total nloc  Avg.nloc  Avg CCN  Avg token  Fun Cnt  Warning cnt   Fun Rt   nloc Rt  
 ------------------------------------------------------------------------------------------
-      6338        19     4.44     168.61      320            1      0.00    0.01
+      6754        18     4.52     164.77      341            3      0.01    0.02
