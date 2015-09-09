@@ -105,14 +105,8 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
   }
 
   if (vm->count("version")) {
-    std::string build_type =
-        strlen(scram::version::build()) ? scram::version::build() : "Non-Debug";
-
     std::cout << "SCRAM " << scram::version::core()
               << " (" << scram::version::describe() << ")";
-    if (build_type != "Release") {
-      std::cout << " " << build_type << " Build";
-    }
     std::cout << "\n\nDependencies:\n";
     std::cout << "   Boost    " << scram::version::boost() << "\n";
     std::cout << "   xml2     " << scram::version::xml2() << "\n";
