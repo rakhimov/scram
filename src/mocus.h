@@ -19,27 +19,61 @@
 /// Fault tree analysis with the MOCUS algorithm.
 /// This algorithm requires a fault tree in negation normal form.
 /// The fault tree must only contain layered AND and OR gates.
-/// All gates must be positive;
-/// that is, negations must be pushed down to leaves, basic events.
+/// All gates must be positive.
+/// That is, negations must be pushed down to leaves, basic events.
 /// The fault tree should not contain constants or house events.
 
 #ifndef SCRAM_SRC_MOCUS_H_
 #define SCRAM_SRC_MOCUS_H_
 
 #include <functional>
-#include <map>
 #include <memory>
 #include <set>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
+
+#include <boost/container/flat_set.hpp>
+#include <boost/functional/hash.hpp>
 
 #include "boolean_graph.h"
 
 namespace scram {
 
-typedef std::shared_ptr<std::set<int> > SetPtr;
+typedef boost::container::flat_set<int> Set;
+typedef std::shared_ptr<Set> SetPtr;
+
+/// @struct SetPtrHash
+/// Functor for hashing sets given by pointers.
+struct SetPtrHash
+    : public std::unary_function<const SetPtr, std::size_t> {
+  /// Operator overload for hashing.
+  ///
+  /// @param[in] set The pointer to set which hash must be calculated.
+  ///
+  /// @returns Hash value of the set.
+  std::size_t operator()(const SetPtr& set) const noexcept {
+    return boost::hash_range(set->begin(), set->end());
+  }
+};
+
+/// @struct SetPtrEqual
+/// Functor for equality test for pointers of sets.
+struct SetPtrEqual
+    : public std::binary_function<const SetPtr, const SetPtr, bool> {
+  /// Operator overload for set equality test.
+  ///
+  /// @param[in] lhs The first set.
+  /// @param[in] rhs The second set.
+  ///
+  /// @returns true if the pointed sets are equal.
+  bool operator()(const SetPtr& lhs, const SetPtr& rhs) const noexcept {
+    return *lhs == *rhs;
+  }
+};
 
 /// @class SetPtrComp
-/// Functor for set pointer comparison efficiency.
+/// Functor for set pointer comparison.
 struct SetPtrComp
     : public std::binary_function<const SetPtr, const SetPtr, bool> {
   /// Operator overload.
@@ -63,6 +97,7 @@ struct SetPtrComp
 class SimpleGate {
  public:
   typedef std::shared_ptr<SimpleGate> SimpleGatePtr;
+  typedef std::unordered_set<SetPtr, SetPtrHash, SetPtrEqual> HashSet;
 
   /// @param[in] type The type of this gate. AND or OR types are expected.
   explicit SimpleGate(const Operator& type) noexcept : type_(type) {}
@@ -102,8 +137,7 @@ class SimpleGate {
   ///
   /// @param[in] cut_set The base cut set to work with.
   /// @param[out] new_cut_sets Generated cut sets by adding the gate's children.
-  void GenerateCutSets(const SetPtr& cut_set,
-                       std::set<SetPtr, SetPtrComp>* new_cut_sets) noexcept;
+  void GenerateCutSets(const SetPtr& cut_set, HashSet* new_cut_sets) noexcept;
 
   /// Sets the limit order for all analysis with simple gates.
   ///
@@ -117,8 +151,7 @@ class SimpleGate {
   ///
   /// @param[in] cut_set The base cut set to work with.
   /// @param[out] new_cut_sets Generated cut sets by using the gate's children.
-  void AndGateCutSets(const SetPtr& cut_set,
-                      std::set<SetPtr, SetPtrComp>* new_cut_sets) noexcept;
+  void AndGateCutSets(const SetPtr& cut_set, HashSet* new_cut_sets) noexcept;
 
   /// Generates cut sets for OR gate children
   /// using already generated sets.
@@ -126,8 +159,7 @@ class SimpleGate {
   ///
   /// @param[in] cut_set The base cut set to work with.
   /// @param[out] new_cut_sets Generated cut sets by using the gate's children.
-  void OrGateCutSets(const SetPtr& cut_set,
-                     std::set<SetPtr, SetPtrComp>* new_cut_sets) noexcept;
+  void OrGateCutSets(const SetPtr& cut_set, HashSet* new_cut_sets) noexcept;
 
   Operator type_;  ///< Type of this gate.
   std::vector<int> basic_events_;  ///< Container of basic events' indices.
@@ -151,9 +183,7 @@ class Mocus {
   void FindMcs();
 
   /// @returns Generated minimal cut sets with basic event indices.
-  inline const std::vector< std::set<int> >& GetGeneratedMcs() const {
-    return imcs_;
-  }
+  inline const std::vector<Set>& GetGeneratedMcs() const { return imcs_; }
 
  private:
   typedef std::shared_ptr<SimpleGate> SimpleGatePtr;
@@ -163,15 +193,16 @@ class Mocus {
   ///
   /// @param[in] gate The gate to start with.
   /// @param[in,out] processed_gates Gates turned into simple gates.
-  void CreateSimpleTree(const IGatePtr& gate,
-                        std::map<int, SimpleGatePtr>* processed_gates) noexcept;
+  void CreateSimpleTree(
+      const IGatePtr& gate,
+      std::unordered_map<int, SimpleGatePtr>* processed_gates) noexcept;
 
   /// Finds minimal cut sets of a simple gate.
   ///
   /// @param[in] gate The simple gate as a parent for processing.
   /// @param[out] mcs Minimal cut sets.
   void FindMcsFromSimpleGate(const SimpleGatePtr& gate,
-                             std::vector< std::set<int> >* mcs) noexcept;
+                             std::vector<Set>* mcs) noexcept;
 
   /// Finds minimal cut sets from cut sets.
   /// Reduces unique cut sets to minimal cut sets.
@@ -185,13 +216,13 @@ class Mocus {
   /// @param[out] mcs Min cut sets.
   ///
   /// @note T_avg(N^3 + N^2*logN + N*logN) = O_avg(N^3)
-  void MinimizeCutSets(const std::vector<const std::set<int>* >& cut_sets,
-                       const std::vector<std::set<int> >& mcs_lower_order,
+  void MinimizeCutSets(const std::vector<const Set*>& cut_sets,
+                       const std::vector<Set>& mcs_lower_order,
                        int min_order,
-                       std::vector<std::set<int> >* mcs) noexcept;
+                       std::vector<Set>* mcs) noexcept;
 
   const BooleanGraph* fault_tree_;  ///< The main fault tree.
-  std::vector< std::set<int> > imcs_;  ///< Min cut sets with indexed events.
+  std::vector<Set> imcs_;  ///< Min cut sets with indexed events.
   /// Limit on the size of the minimal cut sets for performance reasons.
   int limit_order_;
 };

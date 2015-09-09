@@ -61,6 +61,9 @@ class Component : public Element, public Role {
   explicit Component(const std::string& name, const std::string& base_path = "",
                      bool is_public = true);
 
+  Component(const Component&) = delete;
+  Component& operator=(const Component&) = delete;
+
   virtual ~Component() {}
 
   /// @returns The name of this component.

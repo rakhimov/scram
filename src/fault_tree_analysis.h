@@ -29,6 +29,7 @@
 #include <vector>
 
 #include "event.h"
+#include "mocus.h"
 #include "settings.h"
 
 namespace scram {
@@ -188,7 +189,7 @@ class FaultTreeAnalysis {
   ///
   /// @param[in] imcs Min cut sets with indices of events.
   /// @param[in] ft Indexed fault tree with basic event indices and pointers.
-  void SetsToString(const std::vector< std::set<int> >& imcs,
+  void SetsToString(const std::vector<Set>& imcs,
                     const BooleanGraph* ft) noexcept;
 
   GatePtr top_event_;  ///< Top event of this fault tree.

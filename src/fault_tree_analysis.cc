@@ -20,12 +20,13 @@
 
 #include "fault_tree_analysis.h"
 
+#include <utility>
+
 #include <boost/algorithm/string.hpp>
 
 #include "boolean_graph.h"
 #include "error.h"
 #include "logger.h"
-#include "mocus.h"
 #include "preprocessor.h"
 
 namespace scram {
@@ -47,7 +48,7 @@ void FaultTreeAnalysis::Analyze() noexcept {
   CLOCK(ft_creation);
   BooleanGraph* indexed_tree = new BooleanGraph(top_event_,
                                                 kSettings_.ccf_analysis());
-  LOG(DEBUG2) << "Indexed fault tree is created in " << DUR(ft_creation);
+  LOG(DEBUG2) << "Boolean graph is created in " << DUR(ft_creation);
 
   CLOCK(prep_time);  // Overall preprocessing time.
   LOG(DEBUG2) << "Preprocessing...";
@@ -59,7 +60,7 @@ void FaultTreeAnalysis::Analyze() noexcept {
   Mocus* mocus = new Mocus(indexed_tree, kSettings_.limit_order());
   mocus->FindMcs();
 
-  const std::vector< std::set<int> >& imcs = mocus->GetGeneratedMcs();
+  const std::vector<Set>& imcs = mocus->GetGeneratedMcs();
   // Special cases of sets.
   if (imcs.empty()) {
     // Special case of null of a top event. No minimal cut sets found.
@@ -82,25 +83,16 @@ void FaultTreeAnalysis::GatherEvents(const GatePtr& gate) noexcept {
 }
 
 void FaultTreeAnalysis::GatherEvents(const FormulaPtr& formula) noexcept {
-  std::vector<BasicEventPtr>::const_iterator it_b;
-  for (it_b = formula->basic_event_args().begin();
-       it_b != formula->basic_event_args().end(); ++it_b) {
-    BasicEventPtr basic_event = *it_b;
-    basic_events_.insert(std::make_pair(basic_event->id(), basic_event));
+  for (const BasicEventPtr& basic_event : formula->basic_event_args()) {
+    basic_events_.emplace(basic_event->id(), basic_event);
     if (basic_event->HasCcf())
-      ccf_events_.insert(std::make_pair(basic_event->id(), basic_event));
+      ccf_events_.emplace(basic_event->id(), basic_event);
   }
-  std::vector<HouseEventPtr>::const_iterator it_h;
-  for (it_h = formula->house_event_args().begin();
-       it_h != formula->house_event_args().end(); ++it_h) {
-    HouseEventPtr house_event = *it_h;
-    house_events_.insert(std::make_pair(house_event->id(), house_event));
+  for (const HouseEventPtr& house_event : formula->house_event_args()) {
+    house_events_.emplace(house_event->id(), house_event);
   }
-  std::vector<GatePtr>::const_iterator it_g;
-  for (it_g = formula->gate_args().begin();
-       it_g != formula->gate_args().end(); ++it_g) {
-    GatePtr gate = *it_g;
-    inter_events_.insert(std::make_pair(gate->id(), gate));
+  for (const GatePtr& gate : formula->gate_args()) {
+    inter_events_.emplace(gate->id(), gate);
     FaultTreeAnalysis::GatherEvents(gate);
   }
   for (const FormulaPtr& arg : formula->formula_args()) {
@@ -110,27 +102,24 @@ void FaultTreeAnalysis::GatherEvents(const FormulaPtr& formula) noexcept {
 
 void FaultTreeAnalysis::CleanMarks() noexcept {
   top_event_->mark("");
-  std::unordered_map<std::string, GatePtr>::iterator it;
-  for (it = inter_events_.begin(); it != inter_events_.end(); ++it) {
-    it->second->mark("");
+  for (const std::pair<std::string, GatePtr>& member : inter_events_) {
+    member.second->mark("");
   }
 }
 
-void FaultTreeAnalysis::SetsToString(const std::vector< std::set<int> >& imcs,
+void FaultTreeAnalysis::SetsToString(const std::vector<Set>& imcs,
                                      const BooleanGraph* ft) noexcept {
-  std::vector< std::set<int> >::const_iterator it_min;
-  for (it_min = imcs.begin(); it_min != imcs.end(); ++it_min) {
-    if (it_min->size() > max_order_) max_order_ = it_min->size();
+  for (const Set& min_cut_set : imcs) {
+    if (min_cut_set.size() > max_order_) max_order_ = min_cut_set.size();
     std::set<std::string> pr_set;
-    std::set<int>::iterator it_set;
-    for (it_set = it_min->begin(); it_set != it_min->end(); ++it_set) {
-      BasicEventPtr basic_event = ft->GetBasicEvent(std::abs(*it_set));
-      if (*it_set < 0) {  // NOT logic.
+    for (int index : min_cut_set) {
+      BasicEventPtr basic_event = ft->GetBasicEvent(std::abs(index));
+      if (index < 0) {  // NOT logic.
         pr_set.insert("not " + basic_event->id());
       } else {
         pr_set.insert(basic_event->id());
       }
-      mcs_basic_events_.insert(std::make_pair(basic_event->id(), basic_event));
+      mcs_basic_events_.emplace(basic_event->id(), basic_event);
     }
     min_cut_sets_.insert(pr_set);
   }

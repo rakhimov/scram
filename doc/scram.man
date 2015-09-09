@@ -1,9 +1,20 @@
-.TH SCRAM "1" "August 2015" "SCRAM 0.9.0" "SCRAM Manual"
+.TH SCRAM "1" "September 2015" "SCRAM 0.9.2" "SCRAM Manual"
 .SH NAME
 SCRAM \- Command-line Risk Analysis Multi-tool
 .SH SYNOPSIS
 .B scram
 [\fIinput-files\fR] [\fIoptions\fR]
+.SH DESCRIPTION
+.PP
+\fBSCRAM\fP is a probabilistic risk analysis (PRA) tool.
+It can perform static fault tree analysis,
+analysis with common cause failure models,
+probability calculations with importance analysis,
+and uncertainty analysis with Monte Carlo simulations.
+This tool can handle non-coherent fault trees, containing NOT logic.
+.PP
+\fBSCRAM\fP works with PRA models and constructs described
+in OpenPSA Model Exchange Format.
 .SH OPTIONS
 .TP
 \fB\-\-version\fR

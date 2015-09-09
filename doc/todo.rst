@@ -71,10 +71,9 @@ Documentation: Moderate Importance
 Platform Support
 ================
 
-- Compiling with Mingw-w64 for Windows. *High*
-- Installation Package for Windows. *High*
-- Installation Package for Mac OS X. *Moderate*
-- Installation Package for Ubuntu (PPA/DEB). *Low*
+- Installation Package for Ubuntu (PPA/DEB).
+- Installation Package for Windows.
+- Installation Package for Mac OS X.
 
 
 Coding Specific

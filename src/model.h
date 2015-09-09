@@ -54,6 +54,9 @@ class Model : public Element {
   /// @param[in] name The optional name for the model.
   explicit Model(const std::string& name = "");
 
+  Model(const Model&) = delete;
+  Model& operator=(const Model&) = delete;
+
   /// @returns The name of the model.
   inline const std::string& name() const { return name_; }
 

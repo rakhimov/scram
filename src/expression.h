@@ -56,6 +56,9 @@ class Expression {
   /// @param[in] args Arguments of this expression.
   explicit Expression(const std::vector<ExpressionPtr>& args);
 
+  Expression(const Expression&) = delete;
+  Expression& operator=(const Expression&) = delete;
+
   virtual ~Expression() {}
 
   /// Validates the expression.

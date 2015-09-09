@@ -18,72 +18,58 @@ If the current performance is not listed, then the best is the current.
 
 ============== Probability/Importance Analysis ===========
 
------------ Chinese Tree High Prob -l 5 -s 3 (p = 0.004267) ---
+----------- Chinese Tree High Prob -l 5 -s 3 (p = 0.097) ---
 Release build:
 --------------
-- Prob Calculation  22s   |
-- Importance Calc.  1.7s  |
+- Prob Calculation  22s   |  26s
+- Importance Calc.  1.5s  |
 
 
 ==================== MCS Analysis =========================
 
----------- Baobab1 -l 6 (mcs = 2684) ----------------
-Debug build:
----------------
-- Cut Set Generation      1.2s   |
-- Cut Set Minimization    0.25s  |
-
-
 ---------- Baobab1 -l 7 (mcs = 17432) ----------------
 Debug build:
 ---------------
-- Cut Set Generation      5.5s  |
+- Cut Set Generation      2.2s  |
 - Cut Set Minimization    9.5s  |  11s
 
 Release build:
 --------------
-- Cut Set Generation      0.70s  |
-- Cut Set Minimization    0.80s  |  1.1s
+- Cut Set Generation      0.25s  |
+- Cut Set Minimization    0.65s  |
 
 
 ---------- Baobab1 -l 8 (mcs = 25892) ----------------
 Release build:
 --------------
-- Cut Set Generation      4.8s  |
-- Cut Set Minimization    20s   |  40s
+- Cut Set Generation      0.85s  |
+- Cut Set Minimization    4.9s   |
 
 
----------- CEA9601 -l 10 (mcs = 4832) ----------------
-Debug build:
----------------
-- Cut Set Generation      2.0s  |
-- Cut Set Minimization    0.3s  |
-
-
----------- CEA9601 -l 14 (mcs = 4832) ----------------
+---------- Baobab1 -l 9 (mcs = 36516) ----------------
 Release build:
 --------------
-- Cut Set Generation      7.5s   |
+- Cut Set Generation      2.4s  |
+- Cut Set Minimization    23s   |
+
+
+---------- CEA9601 -l 14 (mcs = 5160) ----------------
+Release build:
+--------------
+- Cut Set Generation      3.9s   |
 - Cut Set Minimization    0.05s  |
 
 
----------- Baobab2 -l 5 (mcs = 1025) ----------------
+---------- Baobab2 (mcs = 4805) ----------------
 Debug build:
 ---------------
-- Cut Set Generation      20s    |
-- Cut Set Minimization    0.40s  |
+- Cut Set Generation      13s   |
+- Cut Set Minimization    2.1s  |
 
 Release build:
 ---------------
-- Cut Set Generation      3.2s   |
-- Cut Set Minimization    0.05s  |
-
-
----------- Baobab2 -l 6 (mcs = 4805) ----------------
-Release build:
----------------
-- Cut Set Generation      18s    |
-- Cut Set Minimization    0.25s  |
+- Cut Set Generation      1.8s   |
+- Cut Set Minimization    0.15s  |
 
 
 ==================== Uncertainty Analysis =================

@@ -37,6 +37,11 @@ namespace scram {
 #define LOG(level) if (level > scram::Logger::ReportLevel()); \
   else scram::Logger().Get(level)
 
+/// @def BLOG(level, cond)
+/// Conditional logging with the level defined.
+#define BLOG(level, cond) if (!cond || level > scram::Logger::ReportLevel()); \
+  else scram::Logger().Get(level)
+
 /// @def CLOCK(var)
 /// Starts the timing where var is the unique variable for the clock.
 #define CLOCK(var) std::clock_t var = std::clock()
@@ -82,8 +87,8 @@ class Logger {
  public:
   Logger() {}
 
-  Logger(const Logger&) = delete;  ///< Restrict copy construction.
-  Logger& operator=(const Logger&) = delete;  ///< Restrict copy assignment.
+  Logger(const Logger&) = delete;
+  Logger& operator=(const Logger&) = delete;
 
   /// Flashes all the logs into the standard error upon destruction.
   ~Logger() noexcept {
