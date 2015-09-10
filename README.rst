@@ -45,14 +45,34 @@ its current capabilities, and future additions.
 .. _documentation: http://rakhimov.github.io/scram
 .. _Qt: http://qt-project.org/
 
-To get SCRAM,
-you can download a virtual machine image on Sourceforge_
-or follow the building and installing instructions bellow.
-
-.. _Sourceforge: https://sourceforge.net/projects/iscram/files/
-
 .. contents:: **Table of Contents**
     :depth: 2
+
+
+******************
+Quick Installation
+******************
+
+The fastest and easiest way to install SCRAM is
+to have a Linux distribution with ``apt-get`` as the package manager
+that can install packages from Personal Package Archives.
+For example, `Ubuntu 14.04`_ and later releases are tested to work.
+
+On these machines, run the following commands to get SCRAM from its PPA_.
+
+.. code-block:: bash
+
+    sudo add-apt-repository ppa:rakhimov/scram
+
+    sudo apt-get update
+
+    sudo apt-get install scram
+
+.. _Ubuntu 14.04: http://www.ubuntu.com/download
+.. _PPA: https://launchpad.net/~rakhimov/+archive/ubuntu/scram
+
+If you want to get more tools and run tests under current development,
+follow the building and installing instructions bellow.
 
 
 ***********************
@@ -270,35 +290,20 @@ These tools do not need compilation or installation.
 Windows
 =======
 
-Currently the easiest option is to use a virtual machine with Ubuntu 14.04.
+Currently the easiest option is
+to use a virtual machine (`VirtualBox <https://www.virtualbox.org/>`_)
+with `Ubuntu 14.04`_.
+Follow the Quick Installation guide for this option.
 
-#. Install `VirtualBox <https://www.virtualbox.org/>`_
-#. Get the system
-
-   a. Pre-configured image
-
-        - Download `Ubuntu image with SCRAM`_ of the latest release version
-        - Open the downloaded .ova file with VirtualBox(File->Import Appliance)
-        - User name: ``scram``
-        - Password: ``scram``
-
-   b. New system.
-
-        - Download `Ubuntu 14.04`_ or any other system
-        - Follow the installation instructions for Linux/Unix machines
-
-The other option is to use MinGW_, Mingw-w64_, or Cygwin_
+Another option is to use MinGW_, Mingw-w64_, or Cygwin_
 and to build on Windows.
 
 Currently only Cygwin_ 64bit has been tested to produce binaries on Windows.
 The dependencies listed for Linux systems must be installed with Cygwin64.
 
-.. _Ubuntu 14.04: http://www.ubuntu.com/download
 .. _MinGW: http://www.mingw.org/
 .. _Mingw-w64: http://mingw-w64.sourceforge.net/
 .. _Cygwin: https://www.cygwin.com/
-.. _Ubuntu image with SCRAM:
-    http://sourceforge.net/projects/iscram/files/ScramBox.ova/download
 
 
 ***********************
