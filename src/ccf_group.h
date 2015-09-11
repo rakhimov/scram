@@ -190,15 +190,15 @@ class BetaFactorModel : public CcfGroup {
   /// @param[in] level The level of the passed factor.
   ///
   /// @throws ValidationError Level is not what is expected.
-  void AddFactor(const ExpressionPtr& factor, int level);
+  void AddFactor(const ExpressionPtr& factor, int level) override;
 
  private:
   void ConstructCcfBasicEvents(
       int max_level,
-      std::map<BasicEventPtr, std::set<std::string> >* new_events);
+      std::map<BasicEventPtr, std::set<std::string> >* new_events) override;
 
   void CalculateProb(int max_level,
-                     std::map<int, ExpressionPtr>* probabilities);
+                     std::map<int, ExpressionPtr>* probabilities) override;
 };
 
 /// @class MglModel
@@ -226,11 +226,11 @@ class MglModel : public CcfGroup {
   /// @param[in] level The level of the passed factor.
   ///
   /// @throws ValidationError Level is not what is expected.
-  void AddFactor(const ExpressionPtr& factor, int level);
+  void AddFactor(const ExpressionPtr& factor, int level) override;
 
  private:
   void CalculateProb(int max_level,
-                     std::map<int, ExpressionPtr>* probabilities);
+                     std::map<int, ExpressionPtr>* probabilities) override;
 };
 
 /// @class AlphaFactorModel
@@ -251,7 +251,7 @@ class AlphaFactorModel : public CcfGroup {
 
  private:
   void CalculateProb(int max_level,
-                     std::map<int, ExpressionPtr>* probabilities);
+                     std::map<int, ExpressionPtr>* probabilities) override;
 };
 
 /// @class PhiFactorModel
@@ -278,11 +278,11 @@ class PhiFactorModel : public CcfGroup {
   ///
   /// @todo Problem with sampling the factors and not getting exactly 1.
   ///       Currently only accepts constant expressions.
-  void Validate();
+  void Validate() override;
 
  private:
   void CalculateProb(int max_level,
-                     std::map<int, ExpressionPtr>* probabilities);
+                     std::map<int, ExpressionPtr>* probabilities) override;
 };
 
 }  // namespace scram
