@@ -1611,10 +1611,9 @@ bool Preprocessor::FilterDistributiveArgs(
   for (int index : to_erase) {
     gate->EraseArg(index);
     candidates->erase(std::find_if(candidates->begin(), candidates->end(),
-                                   [&](const IGatePtr& candidate) {
+                                   [&index](const IGatePtr& candidate) {
                                      return candidate->index() == index;
-                                   }),
-                      candidates->end());
+                                   }));
   }
   // Sort in descending size of gate arguments.
   std::sort(candidates->begin(), candidates->end(),
@@ -1635,7 +1634,7 @@ bool Preprocessor::FilterDistributiveArgs(
     }
     candidates->erase(
         std::remove_if(candidates->begin(), candidates->end(),
-                       [&](const IGatePtr& super) {
+                       [&sub](const IGatePtr& super) {
                          return std::includes(super->args().begin(),
                                               super->args().end(),
                                               sub->args().begin(),
@@ -2096,7 +2095,8 @@ bool Preprocessor::ProcessDecompositionCommonNode(
   // Determine if the decomposition setups are possible.
   auto it =
       std::find_if(node->parents().begin(), node->parents().end(),
-                   [&](const std::pair<int, IGateWeakPtr>& member) {
+                   [&IsDecompositionType]
+                   (const std::pair<int, IGateWeakPtr>& member) {
                      return IsDecompositionType(member.second.lock()->type());
                    });
   if (it == node->parents().end()) return false;  // No setups possible.
