@@ -45,9 +45,9 @@ class UncertaintyAnalysis;
 /// This class reports the results of the analyses.
 class Reporter {
  public:
-  typedef std::shared_ptr<const Model> ModelPtr;
-  typedef std::shared_ptr<const PrimaryEvent> PrimaryEventPtr;
-  typedef std::shared_ptr<const Parameter> ParameterPtr;
+  using ModelPtr = std::shared_ptr<const Model>;
+  using PrimaryEventPtr = std::shared_ptr<const PrimaryEvent>;
+  using ParameterPtr = std::shared_ptr<const Parameter>;
 
   /// Sets up XML report document according to a specific standards.
   /// This function populates information
@@ -123,7 +123,7 @@ class Reporter {
       xmlpp::Document* doc);
 
  private:
-  typedef std::shared_ptr<const BasicEvent> BasicEventPtr;
+  using BasicEventPtr = std::shared_ptr<const BasicEvent>;
 
   /// Detects if a given basic event is a CCF event,
   /// and reports it with specific formatting.

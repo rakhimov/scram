@@ -25,11 +25,11 @@
 namespace scram {
 namespace test {
 
-typedef std::shared_ptr<Event> EventPtr;
-typedef std::shared_ptr<Gate> GatePtr;
-typedef std::unique_ptr<Formula> FormulaPtr;
-typedef std::shared_ptr<HouseEvent> HouseEventPtr;
-typedef std::shared_ptr<BasicEvent> BasicEventPtr;
+using EventPtr = std::shared_ptr<Event>;
+using GatePtr = std::shared_ptr<Gate>;
+using FormulaPtr = std::unique_ptr<Formula>;
+using HouseEventPtr = std::shared_ptr<HouseEvent>;
+using BasicEventPtr = std::shared_ptr<BasicEvent>;
 
 // Test for Event base class.
 TEST(EventTest, Id) {

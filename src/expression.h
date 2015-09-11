@@ -48,7 +48,7 @@ class Parameter;  // This is for cycle detection through expressions.
 /// after validation phases.
 class Expression {
  public:
-  typedef std::shared_ptr<Expression> ExpressionPtr;
+  using ExpressionPtr = std::shared_ptr<Expression>;
 
   /// Constructor for use by derived classes
   /// to register their arguments.

@@ -45,8 +45,8 @@ class OpenExpression : public Expression {
   inline bool IsConstant() noexcept { return true; }
 };
 
-typedef std::shared_ptr<OpenExpression> OpenExpressionPtr;
-typedef std::shared_ptr<Expression> ExpressionPtr;
+using OpenExpressionPtr = std::shared_ptr<OpenExpression>;
+using ExpressionPtr = std::shared_ptr<Expression>;
 
 TEST(ExpressionTest, Exponential) {
   OpenExpressionPtr lambda(new OpenExpression(10, 8));

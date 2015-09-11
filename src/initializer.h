@@ -54,7 +54,7 @@ class Formula;
 /// for future use or analysis.
 class Initializer {
  public:
-  typedef std::shared_ptr<Model> ModelPtr;
+  using ModelPtr = std::shared_ptr<Model>;
 
   /// Prepares common information to be used by
   /// the future input file constructs,
@@ -78,18 +78,18 @@ class Initializer {
   inline ModelPtr model() const { return model_; }
 
  private:
-  typedef std::shared_ptr<Element> ElementPtr;
-  typedef std::shared_ptr<Event> EventPtr;
-  typedef std::shared_ptr<Gate> GatePtr;
-  typedef std::unique_ptr<Formula> FormulaPtr;  ///< Unique Formula.
-  typedef std::shared_ptr<PrimaryEvent> PrimaryEventPtr;
-  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
-  typedef std::shared_ptr<HouseEvent> HouseEventPtr;
-  typedef std::shared_ptr<CcfGroup> CcfGroupPtr;
-  typedef std::shared_ptr<Expression> ExpressionPtr;
-  typedef std::shared_ptr<Parameter> ParameterPtr;
-  typedef std::unique_ptr<FaultTree> FaultTreePtr;  ///< Unique fault tree.
-  typedef std::unique_ptr<Component> ComponentPtr;  ///< Unique component.
+  using ElementPtr = std::shared_ptr<Element>;
+  using EventPtr = std::shared_ptr<Event>;
+  using GatePtr = std::shared_ptr<Gate>;
+  using FormulaPtr = std::unique_ptr<Formula>;  ///< Unique Formula.
+  using PrimaryEventPtr = std::shared_ptr<PrimaryEvent>;
+  using BasicEventPtr = std::shared_ptr<BasicEvent>;
+  using HouseEventPtr = std::shared_ptr<HouseEvent>;
+  using CcfGroupPtr = std::shared_ptr<CcfGroup>;
+  using ExpressionPtr = std::shared_ptr<Expression>;
+  using ParameterPtr = std::shared_ptr<Parameter>;
+  using FaultTreePtr = std::unique_ptr<FaultTree>;  ///< Unique fault tree.
+  using ComponentPtr = std::unique_ptr<Component>;  ///< Unique component.
 
   /// Map of valid units for parameters.
   static const std::map<std::string, Units> kUnits_;

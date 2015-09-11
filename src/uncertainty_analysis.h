@@ -43,7 +43,7 @@ namespace scram {
 /// and probability distributions of basic events.
 class UncertaintyAnalysis : private ProbabilityAnalysis {
  public:
-  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
+  using BasicEventPtr = std::shared_ptr<BasicEvent>;
 
   /// The main constructor of Uncertainty Analysis.
   ///

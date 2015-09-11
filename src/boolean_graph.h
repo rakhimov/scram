@@ -260,10 +260,10 @@ enum State {
 /// before any complex analysis is done.
 class IGate : public Node, public std::enable_shared_from_this<IGate> {
  public:
-  typedef std::shared_ptr<Node> NodePtr;
-  typedef std::shared_ptr<Constant> ConstantPtr;
-  typedef std::shared_ptr<Variable> VariablePtr;
-  typedef std::shared_ptr<IGate> IGatePtr;
+  using NodePtr = std::shared_ptr<Node>;
+  using ConstantPtr = std::shared_ptr<Constant>;
+  using VariablePtr = std::shared_ptr<Variable>;
+  using IGatePtr = std::shared_ptr<IGate>;
 
   /// Creates an indexed gate with its unique index.
   /// It is assumed that smart pointers are used to manage the graph,
@@ -630,7 +630,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
 /// for the isomorphism of the gates' Boolean formulas.
 class GateSet {
  public:
-  typedef std::shared_ptr<IGate> IGatePtr;
+  using IGatePtr = std::shared_ptr<IGate>;
 
   /// Inserts a gate into the set
   /// if it is semantically unique.
@@ -713,9 +713,9 @@ class BooleanGraph {
   friend class Preprocessor;  ///< The main manipulator of Boolean graphs.
 
  public:
-  typedef std::shared_ptr<Gate> GatePtr;
-  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
-  typedef std::shared_ptr<IGate> IGatePtr;
+  using GatePtr = std::shared_ptr<Gate>;
+  using BasicEventPtr = std::shared_ptr<BasicEvent>;
+  using IGatePtr = std::shared_ptr<IGate>;
 
   /// Constructs a BooleanGraph
   /// starting from the top gate of a fault tree.
@@ -766,11 +766,11 @@ class BooleanGraph {
   void Print();
 
  private:
-  typedef std::unique_ptr<Formula> FormulaPtr;
-  typedef std::shared_ptr<HouseEvent> HouseEventPtr;
-  typedef std::shared_ptr<Node> NodePtr;
-  typedef std::shared_ptr<Constant> ConstantPtr;
-  typedef std::shared_ptr<Variable> VariablePtr;
+  using FormulaPtr = std::unique_ptr<Formula>;
+  using HouseEventPtr = std::shared_ptr<HouseEvent>;
+  using NodePtr = std::shared_ptr<Node>;
+  using ConstantPtr = std::shared_ptr<Constant>;
+  using VariablePtr = std::shared_ptr<Variable>;
 
   /// Mapping to string gate types to enum gate types.
   static const std::map<std::string, Operator> kStringToType_;

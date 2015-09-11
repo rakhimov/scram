@@ -55,9 +55,9 @@ class BooleanGraph;
 ///          One analysis per FaultTreeAnalysis object.
 class FaultTreeAnalysis {
  public:
-  typedef std::shared_ptr<Gate> GatePtr;
-  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
-  typedef std::shared_ptr<HouseEvent> HouseEventPtr;
+  using GatePtr = std::shared_ptr<Gate>;
+  using BasicEventPtr = std::shared_ptr<BasicEvent>;
+  using HouseEventPtr = std::shared_ptr<HouseEvent>;
 
   /// Traverses a valid fault tree from the root gate
   /// to collect databases of events, gates,
@@ -154,8 +154,8 @@ class FaultTreeAnalysis {
   inline double analysis_time() const { return analysis_time_; }
 
  private:
-  typedef std::shared_ptr<Event> EventPtr;
-  typedef std::unique_ptr<Formula> FormulaPtr;
+  using EventPtr = std::shared_ptr<Event>;
+  using FormulaPtr = std::unique_ptr<Formula>;
 
   /// Gathers information about the correctly initialized fault tree.
   /// Databases for events are manipulated

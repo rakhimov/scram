@@ -25,12 +25,12 @@
 namespace scram {
 namespace test {
 
-typedef std::shared_ptr<Gate> GatePtr;
-typedef std::shared_ptr<Formula> FormulaPtr;
-typedef std::shared_ptr<BasicEvent> BasicEventPtr;
-typedef std::shared_ptr<HouseEvent> HouseEventPtr;
-typedef std::shared_ptr<CcfGroup> CcfGroupPtr;
-typedef std::shared_ptr<Parameter> ParameterPtr;
+using GatePtr = std::shared_ptr<Gate>;
+using FormulaPtr = std::shared_ptr<Formula>;
+using BasicEventPtr = std::shared_ptr<BasicEvent>;
+using HouseEventPtr = std::shared_ptr<HouseEvent>;
+using CcfGroupPtr = std::shared_ptr<CcfGroup>;
+using ParameterPtr = std::shared_ptr<Parameter>;
 
 TEST(FaultTreeTest, AddGate) {
   FaultTree* ft = new FaultTree("never_fail");

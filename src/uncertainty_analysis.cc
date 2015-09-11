@@ -199,8 +199,8 @@ void UncertaintyAnalysis::FilterUncertainEvents(
 void UncertaintyAnalysis::CalculateStatistics() noexcept {
   using namespace boost;
   using namespace boost::accumulators;
-  typedef accumulator_set<double, stats<tag::extended_p_square_quantile> >
-      accumulator_q;
+  using accumulator_q =
+      accumulator_set<double, stats<tag::extended_p_square_quantile>>;
   quantiles_.clear();
   int num_quantiles = kSettings_.num_quantiles();
   double delta = 1.0 / num_quantiles;
@@ -219,8 +219,8 @@ void UncertaintyAnalysis::CalculateStatistics() noexcept {
     acc(*it);
     acc_q(*it);
   }
-  typedef iterator_range<std::vector<std::pair<double, double> >::iterator >
-      histogram_type;
+  using histogram_type =
+      iterator_range<std::vector<std::pair<double, double>>::iterator>;
   histogram_type hist = density(acc);
   for (int i = 1; i < hist.size(); i++) {
     distribution_.push_back(hist[i]);

@@ -611,7 +611,6 @@ void Initializer::DefineParameter(const xmlpp::Element* param_node,
 std::shared_ptr<Expression> Initializer::GetExpression(
     const xmlpp::Element* expr_element,
     const std::string& base_path) {
-  using scram::Initializer;
   ExpressionPtr expression;
   bool not_parameter = true;  // Parameters are saved in a different container.
   if (GetConstantExpression(expr_element, expression)) {
@@ -627,20 +626,19 @@ std::shared_ptr<Expression> Initializer::GetExpression(
 
 bool Initializer::GetConstantExpression(const xmlpp::Element* expr_element,
                                         ExpressionPtr& expression) {
-  typedef std::shared_ptr<ConstantExpression> ConstantExpressionPtr;
   assert(expr_element);
   std::string expr_name = expr_element->get_name();
   if (expr_name == "float" || expr_name == "int") {
     std::string val = expr_element->get_attribute_value("value");
     boost::trim(val);
     double num = boost::lexical_cast<double>(val);
-    expression = ConstantExpressionPtr(new ConstantExpression(num));
+    expression = std::make_shared<ConstantExpression>(num);
 
   } else if (expr_name == "bool") {
     std::string val = expr_element->get_attribute_value("value");
     boost::trim(val);
     bool state = (val == "true") ? true : false;
-    expression = ConstantExpressionPtr(new ConstantExpression(state));
+    expression = std::make_shared<ConstantExpression>(state);
   } else {
     return false;
   }

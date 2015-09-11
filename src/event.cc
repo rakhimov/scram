@@ -60,7 +60,7 @@ void Gate::Validate() {
       std::stringstream msg;
       msg << "";
       bool conditional_found = false;
-      typedef std::shared_ptr<BasicEvent> BasicEventPtr;
+      using BasicEventPtr = std::shared_ptr<BasicEvent>;
       std::vector<BasicEventPtr>::const_iterator it;
       for (it = formula_->basic_event_args().begin();
            it != formula_->basic_event_args().end(); ++it) {

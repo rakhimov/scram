@@ -40,8 +40,8 @@
 
 namespace scram {
 
-typedef boost::container::flat_set<int> Set;
-typedef std::shared_ptr<Set> SetPtr;
+using Set = boost::container::flat_set<int>;
+using SetPtr = std::shared_ptr<Set>;
 
 /// @struct SetPtrHash
 /// Functor for hashing sets given by pointers.
@@ -96,8 +96,8 @@ struct SetPtrComp
 /// All the child gates of this gate must be of opposite type.
 class SimpleGate {
  public:
-  typedef std::shared_ptr<SimpleGate> SimpleGatePtr;
-  typedef std::unordered_set<SetPtr, SetPtrHash, SetPtrEqual> HashSet;
+  using SimpleGatePtr = std::shared_ptr<SimpleGate>;
+  using HashSet = std::unordered_set<SetPtr, SetPtrHash, SetPtrEqual>;
 
   /// @param[in] type The type of this gate. AND or OR types are expected.
   explicit SimpleGate(const Operator& type) noexcept : type_(type) {}
@@ -186,8 +186,8 @@ class Mocus {
   inline const std::vector<Set>& GetGeneratedMcs() const { return imcs_; }
 
  private:
-  typedef std::shared_ptr<SimpleGate> SimpleGatePtr;
-  typedef std::shared_ptr<IGate> IGatePtr;
+  using SimpleGatePtr = std::shared_ptr<SimpleGate>;
+  using IGatePtr = std::shared_ptr<IGate>;
 
   /// Traverses the fault tree to convert gates into simple gates.
   ///

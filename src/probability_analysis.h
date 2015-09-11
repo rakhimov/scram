@@ -44,7 +44,7 @@ class ProbabilityAnalysis {
   friend class test::ProbabilityAnalysisTest;
 
  public:
-  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
+  using BasicEventPtr = std::shared_ptr<BasicEvent>;
 
   /// The main constructor of Probability Analysis.
   ///
@@ -121,7 +121,7 @@ class ProbabilityAnalysis {
   inline double imp_analysis_time() const { return imp_time_; }
 
  protected:
-  typedef boost::container::flat_set<int> FlatSet;  ///< Faster set.
+  using FlatSet = boost::container::flat_set<int>;  ///< Faster set.
 
   /// Assigns an index to each basic event,
   /// and then populates with these indices
