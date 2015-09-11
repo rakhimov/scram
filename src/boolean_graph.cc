@@ -375,10 +375,15 @@ void IGate::ProcessComplementArg(int index) noexcept {
   }
 }
 
-const std::map<std::string, Operator> BooleanGraph::kStringToType_ =
-    {{"and", kAndGate}, {"or", kOrGate}, {"atleast", kAtleastGate},
-     {"xor", kXorGate}, {"not", kNotGate}, {"nand", kNandGate},
-     {"nor", kNorGate}, {"null", kNullGate}};
+const std::map<std::string, Operator> BooleanGraph::kStringToType_ = {
+    {"and", kAndGate},
+    {"or", kOrGate},
+    {"atleast", kAtleastGate},
+    {"xor", kXorGate},
+    {"not", kNotGate},
+    {"nand", kNandGate},
+    {"nor", kNorGate},
+    {"null", kNullGate}};
 
 BooleanGraph::BooleanGraph(const GatePtr& root, bool ccf) noexcept
     : coherent_(true),
