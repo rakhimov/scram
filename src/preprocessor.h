@@ -908,6 +908,8 @@ class Preprocessor {
   /// If it doesn't, its optimization value is -1;
   ///
   /// @param[in,out] gate The ancestor gate that may fail.
+  /// @param[in] num_failure The number of failure (TRUE) arguments.
+  /// @param[in] num_success The number of success (FALSE) arguments.
   void DetermineGateFailure(const IGatePtr& gate, int num_failure,
                             int num_success) noexcept;
 
