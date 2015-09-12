@@ -68,14 +68,11 @@ bool DetectCycle(N* node, std::vector<std::string>* cycle) {
 /// @returns True if a cycle is detected.
 template<class N, class C>
 bool ContinueConnector(C* connector, std::vector<std::string>* cycle) {
-  typename std::vector<N*>::const_iterator it;
-  for (it = connector->nodes().begin(); it != connector->nodes().end(); ++it) {
-    if (DetectCycle<N, C>(*it, cycle)) return true;
+  for (N* node : connector->nodes()) {
+    if (DetectCycle<N, C>(node, cycle)) return true;
   }
-  typename std::vector<C*>::const_iterator it_c;
-  for (it_c = connector->connectors().begin();
-       it_c != connector->connectors().end(); ++it_c) {
-    if (ContinueConnector<N, C>(*it_c, cycle)) return true;
+  for (C* link : connector->connectors()) {
+    if (ContinueConnector<N, C>(link, cycle)) return true;
   }
   return false;
 }
