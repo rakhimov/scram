@@ -200,7 +200,7 @@ void Initializer::ProcessTbdElements() {
     }
   } catch (ValidationError& err) {
     const xmlpp::Node* root = el_def->find("/opsa-mef")[0];
-    err.msg("In file '" + doc_to_file_.find(root)->second + "', " + err.msg());
+    err.msg("In file '" + doc_to_file_.at(root) + "', " + err.msg());
     throw err;
   }
 }
@@ -552,7 +552,7 @@ std::shared_ptr<Parameter> Initializer::RegisterParameter(
   std::string unit = GetAttributeValue(param_node, "unit");
   if (unit != "") {
     assert(kUnits_.count(unit));
-    parameter->unit(kUnits_.find(unit)->second);
+    parameter->unit(kUnits_.at(unit));
   }
   Initializer::AttachLabelAndAttributes(param_node, parameter.get());
   return parameter;
