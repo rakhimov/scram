@@ -69,7 +69,7 @@ class RiskAnalysis {
   /// Analyzes the fault tree and performs computations.
   ///
   /// @note This function must be called
-  ///       only after initializing the tree
+  ///       only after initializing the model
   ///       with or without its probabilities.
   void Analyze() noexcept;
 
