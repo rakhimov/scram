@@ -93,7 +93,7 @@ Python script:
 ---| -b 300000 -c 3 --common-g 0.1 --common-b 0.1 |---
 Debug build:
 ---------------
-- Parsing and Validation    37s  |  41s
+- Parsing and Validation    37s  |  46s
 
 Release build:
 --------------
