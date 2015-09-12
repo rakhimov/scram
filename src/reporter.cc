@@ -201,11 +201,9 @@ void Reporter::ReportUnusedParameters(
   information->add_child("warning")->add_child_text(out);
 }
 
-void Reporter::ReportFta(
-    std::string ft_name,
-    const std::shared_ptr<const FaultTreeAnalysis>& fta,
-    const std::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
-    xmlpp::Document* doc) {
+void Reporter::ReportFta(std::string ft_name, const FaultTreeAnalysis& fta,
+                         const ProbabilityAnalysis* prob_analysis,
+                         xmlpp::Document* doc) {
   xmlpp::Node* root = doc->get_root_node();
   xmlpp::NodeSet res = root->find("./results");
   assert(res.size() == 1);
@@ -213,22 +211,22 @@ void Reporter::ReportFta(
   xmlpp::Element* sum_of_products = results->add_child("sum-of-products");
   sum_of_products->set_attribute("name", ft_name);
   sum_of_products->set_attribute("basic-events",
-                                 ToString(fta->mcs_basic_events().size()));
+                                 ToString(fta.mcs_basic_events().size()));
   sum_of_products->set_attribute("products",
-                                 ToString(fta->min_cut_sets().size()));
+                                 ToString(fta.min_cut_sets().size()));
 
   if (prob_analysis) {
     sum_of_products->set_attribute("probability",
                                    ToString(prob_analysis->p_total(), 7));
   }
 
-  std::string warning = fta->warnings();
+  std::string warning = fta.warnings();
   if (prob_analysis) warning += prob_analysis->warnings();
   if (warning != "") {
     sum_of_products->add_child("warning")->add_child_text(warning);
   }
 
-  for (const std::set<std::string>& cut_set : fta->min_cut_sets()) {
+  for (const std::set<std::string>& cut_set : fta.min_cut_sets()) {
     xmlpp::Element* product = sum_of_products->add_child("product");
     product->set_attribute("order", ToString(cut_set.size()));
 
@@ -253,8 +251,8 @@ void Reporter::ReportFta(
         name = comp_name;
         parent = product->add_child("not");
       }
-      assert(fta->mcs_basic_events().count(name));
-      Reporter::ReportBasicEvent(fta->mcs_basic_events().at(name), parent);
+      assert(fta.mcs_basic_events().count(name));
+      Reporter::ReportBasicEvent(fta.mcs_basic_events().at(name), parent);
     }
   }
 
@@ -267,17 +265,16 @@ void Reporter::ReportFta(
   xmlpp::Element* calc_time = performance->add_child("calculation-time");
   calc_time->set_attribute("name", ft_name);
   calc_time->add_child("minimal-cut-set")
-      ->add_child_text(ToString(fta->analysis_time(), 5));
+      ->add_child_text(ToString(fta.analysis_time(), 5));
   if (prob_analysis) {
     calc_time->add_child("probability")
         ->add_child_text(ToString(prob_analysis->prob_analysis_time(), 5));
   }
 }
 
-void Reporter::ReportImportance(
-    std::string ft_name,
-    const std::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
-    xmlpp::Document* doc) {
+void Reporter::ReportImportance(std::string ft_name,
+                                const ProbabilityAnalysis& prob_analysis,
+                                xmlpp::Document* doc) {
   xmlpp::Node* root = doc->get_root_node();
   xmlpp::NodeSet res = root->find("./results");
   assert(res.size() == 1);
@@ -285,17 +282,17 @@ void Reporter::ReportImportance(
   xmlpp::Element* importance = results->add_child("importance");
   importance->set_attribute("name", ft_name);
   importance->set_attribute("basic-events",
-                            ToString(prob_analysis->importance().size()));
+                            ToString(prob_analysis.importance().size()));
 
-  std::string warning = prob_analysis->warnings();
+  std::string warning = prob_analysis.warnings();
   if (warning != "") {
     importance->add_child("warning")->add_child_text(warning);
   }
 
   for (const std::pair<std::string, std::vector<double>>& factors :
-       prob_analysis->importance()) {
+       prob_analysis.importance()) {
     xmlpp::Element* element = Reporter::ReportBasicEvent(
-        prob_analysis->basic_events().at(factors.first),
+        prob_analysis.basic_events().at(factors.first),
         importance);
     element->set_attribute("DIF", ToString(factors.second[0], 4));
     element->set_attribute("MIF", ToString(factors.second[1], 4));
@@ -308,13 +305,12 @@ void Reporter::ReportImportance(
   assert(!calc_times.empty());
   xmlpp::Element* calc_time = static_cast<xmlpp::Element*>(calc_times.back());
   calc_time->add_child("importance")
-      ->add_child_text(ToString(prob_analysis->imp_analysis_time(), 5));
+      ->add_child_text(ToString(prob_analysis.imp_analysis_time(), 5));
 }
 
-void Reporter::ReportUncertainty(
-    std::string ft_name,
-    const std::shared_ptr<const UncertaintyAnalysis>& uncert_analysis,
-    xmlpp::Document* doc) {
+void Reporter::ReportUncertainty(std::string ft_name,
+                                 const UncertaintyAnalysis& uncert_analysis,
+                                 xmlpp::Document* doc) {
   xmlpp::Node* root = doc->get_root_node();
   xmlpp::NodeSet res = root->find("./results");
   assert(res.size() == 1);
@@ -322,37 +318,37 @@ void Reporter::ReportUncertainty(
   xmlpp::Element* measure = results->add_child("measure");
   measure->set_attribute("name", ft_name);
 
-  std::string warning = uncert_analysis->warnings();
+  std::string warning = uncert_analysis.warnings();
   if (warning != "") {
     measure->add_child("warning")->add_child_text(warning);
   }
 
   measure->add_child("mean")
-      ->set_attribute("value", ToString(uncert_analysis->mean(), 7));
+      ->set_attribute("value", ToString(uncert_analysis.mean(), 7));
   measure->add_child("standard-deviation")
-      ->set_attribute("value", ToString(uncert_analysis->sigma(), 7));
+      ->set_attribute("value", ToString(uncert_analysis.sigma(), 7));
   xmlpp::Element* confidence = measure->add_child("confidence-range");
   confidence->set_attribute("percentage", "95");
   confidence->set_attribute(
       "lower-bound",
-      ToString(uncert_analysis->confidence_interval().first, 7));
+      ToString(uncert_analysis.confidence_interval().first, 7));
   confidence->set_attribute(
       "upper-bound",
-      ToString(uncert_analysis->confidence_interval().second, 7));
+      ToString(uncert_analysis.confidence_interval().second, 7));
   xmlpp::Element* error_factor = measure->add_child("error-factor");
   error_factor->set_attribute("percentage", "95");
   error_factor->set_attribute("value",
-                              ToString(uncert_analysis->error_factor(), 7));
+                              ToString(uncert_analysis.error_factor(), 7));
 
   xmlpp::Element* quantiles = measure->add_child("quantiles");
-  int num_quantiles = uncert_analysis->quantiles().size();
+  int num_quantiles = uncert_analysis.quantiles().size();
   quantiles->set_attribute("number", ToString(num_quantiles));
   double lower_bound = 0;
   double delta = 1.0 / num_quantiles;
   for (int i = 0; i < num_quantiles; ++i) {
     xmlpp::Element* quant = quantiles->add_child("quantile");
     quant->set_attribute("number", ToString(i + 1));
-    double upper = uncert_analysis->quantiles()[i];
+    double upper = uncert_analysis.quantiles()[i];
     double value = delta * (i + 1);
     quant->set_attribute("value", ToString(value, 7));
     quant->set_attribute("lower-bound", ToString(lower_bound, 7));
@@ -361,14 +357,14 @@ void Reporter::ReportUncertainty(
   }
 
   xmlpp::Element* hist = measure->add_child("histogram");
-  int num_bins = uncert_analysis->distribution().size() - 1;
+  int num_bins = uncert_analysis.distribution().size() - 1;
   hist->set_attribute("number", ToString(num_bins));
   for (int i = 0; i < num_bins; ++i) {
     xmlpp::Element* bin = hist->add_child("bin");
     bin->set_attribute("number", ToString(i + 1));
-    double lower = uncert_analysis->distribution()[i].first;
-    double upper = uncert_analysis->distribution()[i + 1].first;
-    double value = uncert_analysis->distribution()[i].second;
+    double lower = uncert_analysis.distribution()[i].first;
+    double upper = uncert_analysis.distribution()[i + 1].first;
+    double value = uncert_analysis.distribution()[i].second;
     bin->set_attribute("value", ToString(value, 7));
     bin->set_attribute("lower-bound", ToString(lower, 7));
     bin->set_attribute("upper-bound", ToString(upper, 7));
@@ -378,7 +374,7 @@ void Reporter::ReportUncertainty(
   assert(!calc_times.empty());
   xmlpp::Element* calc_time = static_cast<xmlpp::Element*>(calc_times.back());
   calc_time->add_child("uncertainty")
-      ->add_child_text(ToString(uncert_analysis->analysis_time(), 5));
+      ->add_child_text(ToString(uncert_analysis.analysis_time(), 5));
 }
 
 xmlpp::Element* Reporter::ReportBasicEvent(const BasicEventPtr& basic_event,

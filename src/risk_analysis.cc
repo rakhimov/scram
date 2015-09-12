@@ -63,14 +63,12 @@ void RiskAnalysis::GraphingInstructions() {
   LOG(DEBUG1) << "Graphing instructions are produced in " << DUR(graph_time);
 }
 
-void RiskAnalysis::Analyze() {
+void RiskAnalysis::Analyze() noexcept {
   // Set the seed for the pseudo-random number generator if given explicitly.
   // Otherwise it defaults to the current time.
   if (kSettings_.seed() >= 0) Random::seed(kSettings_.seed());
-
-  const std::unordered_map<std::string, FaultTreePtr>& fault_trees =
-      model_->fault_trees();
-  for (const auto& ft : fault_trees) {
+  for (const std::pair<const std::string, FaultTreePtr>& ft :
+       model_->fault_trees()) {
     for (const GatePtr& target : ft.second->top_events()) {
       std::string base_path =
           target->is_public() ? "" : target->base_path() + ".";
@@ -78,21 +76,21 @@ void RiskAnalysis::Analyze() {
 
       FaultTreeAnalysisPtr fta(new FaultTreeAnalysis(target, kSettings_));
       fta->Analyze();
-      fault_tree_analyses_.emplace(name, fta);
 
       if (kSettings_.probability_analysis()) {
         ProbabilityAnalysisPtr pa(new ProbabilityAnalysis(kSettings_));
         pa->UpdateDatabase(fta->mcs_basic_events());
         pa->Analyze(fta->min_cut_sets());
-        probability_analyses_.emplace(name, pa);
+        probability_analyses_.emplace(name, std::move(pa));
       }
 
       if (kSettings_.uncertainty_analysis()) {
         UncertaintyAnalysisPtr ua(new UncertaintyAnalysis(kSettings_));
         ua->UpdateDatabase(fta->mcs_basic_events());
         ua->Analyze(fta->min_cut_sets());
-        uncertainty_analyses_.emplace(name, ua);
+        uncertainty_analyses_.emplace(name, std::move(ua));
       }
+      fault_tree_analyses_.emplace(name, std::move(fta));
     }
   }
 }
@@ -101,8 +99,8 @@ void RiskAnalysis::Report(std::ostream& out) {
   Reporter rp = Reporter();
 
   // Create XML or use already created document.
-  xmlpp::Document* doc = new xmlpp::Document();
-  rp.SetupReport(model_, kSettings_, doc);
+  std::unique_ptr<xmlpp::Document> doc(new xmlpp::Document());
+  rp.SetupReport(model_, kSettings_, doc.get());
 
   // Container for excess primary events not in the analysis.
   // This container is for warning
@@ -121,7 +119,7 @@ void RiskAnalysis::Report(std::ostream& out) {
        it_h != model_->house_events().end(); ++it_h) {
     if (it_h->second->orphan()) orphan_primary_events.push_back(it_h->second);
   }
-  rp.ReportOrphanPrimaryEvents(orphan_primary_events, doc);
+  rp.ReportOrphanPrimaryEvents(orphan_primary_events, doc.get());
 
   // Container for unused parameters not in the analysis.
   // This container is for warning in case the input is formed not as intended.
@@ -132,32 +130,30 @@ void RiskAnalysis::Report(std::ostream& out) {
        ++it_v) {
     if (it_v->second->unused()) unused_parameters.push_back(it_v->second);
   }
-  rp.ReportUnusedParameters(unused_parameters, doc);
+  rp.ReportUnusedParameters(unused_parameters, doc.get());
 
   std::map<std::string, FaultTreeAnalysisPtr>::iterator it;
   for (it = fault_tree_analyses_.begin(); it != fault_tree_analyses_.end();
        ++it) {
-    ProbabilityAnalysisPtr prob_analysis;  // Null pointer if no analysis.
+    ProbabilityAnalysis* prob_analysis = nullptr;  // Null if no analysis.
     if (kSettings_.probability_analysis()) {
-      prob_analysis = probability_analyses_.find(it->first)->second;
+      prob_analysis = probability_analyses_.at(it->first).get();
     }
-    rp.ReportFta(it->first, fault_tree_analyses_.find(it->first)->second,
-                 prob_analysis, doc);
+    rp.ReportFta(it->first, *fault_tree_analyses_.at(it->first), prob_analysis,
+                 doc.get());
 
     if (kSettings_.importance_analysis()) {
-      rp.ReportImportance(it->first,
-                          probability_analyses_.find(it->first)->second, doc);
+      rp.ReportImportance(it->first, *probability_analyses_.at(it->first),
+                          doc.get());
     }
 
     if (kSettings_.uncertainty_analysis()) {
-        rp.ReportUncertainty(it->first,
-                             uncertainty_analyses_.find(it->first)->second,
-                             doc);
+        rp.ReportUncertainty(it->first, *uncertainty_analyses_.at(it->first),
+                             doc.get());
     }
   }
 
   doc->write_to_stream_formatted(out, "UTF-8");
-  delete doc;
 }
 
 void RiskAnalysis::Report(std::string output) {

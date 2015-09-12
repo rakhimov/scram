@@ -92,11 +92,9 @@ class Reporter {
   /// @param[in,out] doc Pre-formatted XML document.
   ///
   /// @note This function must be called only after analysis is done.
-  void ReportFta(
-      std::string ft_name,
-      const std::shared_ptr<const FaultTreeAnalysis>& fta,
-      const std::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
-      xmlpp::Document* doc);
+  void ReportFta(std::string ft_name, const FaultTreeAnalysis& fta,
+                 const ProbabilityAnalysis* prob_analysis,
+                 xmlpp::Document* doc);
 
   /// Reports results of importance analysis in probability analysis.
   ///
@@ -105,10 +103,9 @@ class Reporter {
   /// @param[in,out] doc Pre-formatted XML document.
   ///
   /// @note This function must be called only after analysis is done.
-  void ReportImportance(
-      std::string ft_name,
-      const std::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
-      xmlpp::Document* doc);
+  void ReportImportance(std::string ft_name,
+                        const ProbabilityAnalysis& prob_analysis,
+                        xmlpp::Document* doc);
 
   /// Reports the results of uncertainty analysis with minimal cut sets.
   ///
@@ -117,10 +114,9 @@ class Reporter {
   /// @param[in,out] doc Pre-formatted XML document.
   ///
   /// @note This function must be called only after analysis is done.
-  void ReportUncertainty(
-      std::string ft_name,
-      const std::shared_ptr<const UncertaintyAnalysis>& uncert_analysis,
-      xmlpp::Document* doc);
+  void ReportUncertainty(std::string ft_name,
+                         const UncertaintyAnalysis& uncert_analysis,
+                         xmlpp::Document* doc);
 
  private:
   using BasicEventPtr = std::shared_ptr<const BasicEvent>;
