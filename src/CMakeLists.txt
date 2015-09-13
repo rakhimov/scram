@@ -31,6 +31,7 @@ set(SCRAM_CORE_SRC ${SCRAM_CORE_SRC}
   "${CMAKE_CURRENT_SOURCE_DIR}/boolean_graph.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/preprocessor.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/mocus.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/bdd.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree_analysis.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/probability_analysis.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/uncertainty_analysis.cc"
