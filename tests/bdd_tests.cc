@@ -31,6 +31,7 @@ TEST_F(RiskAnalysisTest, BddTest) {
   GatePtr top_gate = fault_tree()->top_events().front();
   BooleanGraph* graph = new BooleanGraph(top_gate);
   Bdd* bdd = new Bdd(graph);
+  bdd->Analyze();
   delete graph;
   delete bdd;
 }

@@ -32,12 +32,28 @@ class Bdd {
   /// Constructor with the analysis target.
   ///
   /// @param[in] fault_tree Preprocessed, normalized, and indexed fault tree.
-  explicit Bdd(const BooleanGraph* fault_tree);
+  explicit Bdd(BooleanGraph* fault_tree);
+
+  /// Runs the analysis.
+  void Analyze() noexcept;
 
  private:
   using IGatePtr = std::shared_ptr<IGate>;
 
-  const BooleanGraph* fault_tree_;  ///< The main fault tree.
+  /// Assigns topological ordering to nodes of the Boolean Graph.
+  /// The ordering is assigned to the optimization value of the nodes.
+  /// The nodes are sorted in descending optimization value.
+  /// The highest optimization value belongs to the root.
+  ///
+  /// @param[in] root The root or current parent gate of the graph.
+  /// @param[in] order The current order value.
+  ///
+  /// @returns The final order value.
+  ///
+  /// @note Optimization values must be clear before the assignment.
+  int TopologicalOrder(const IGatePtr& root, int order) noexcept;
+
+  BooleanGraph* fault_tree_;  ///< The main fault tree.
 };
 
 }  // namespace scram

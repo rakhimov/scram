@@ -689,6 +689,7 @@ class HouseEvent;
 class Gate;
 class Formula;
 class Preprocessor;
+class Bdd;
 
 /// @class BooleanGraph
 /// BooleanGraph is a propositional directed acyclic graph (PDAG).
@@ -711,6 +712,7 @@ class Preprocessor;
 ///          all the other preprocessing and analysis algorithms.
 class BooleanGraph {
   friend class Preprocessor;  ///< The main manipulator of Boolean graphs.
+  friend class Bdd;  ///< Needs to control marks of nodes.
 
  public:
   using GatePtr = std::shared_ptr<Gate>;

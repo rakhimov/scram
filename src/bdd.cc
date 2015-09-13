@@ -22,6 +22,24 @@
 
 namespace scram {
 
-Bdd::Bdd(const BooleanGraph* fault_tree) : fault_tree_(fault_tree) {}
+Bdd::Bdd(BooleanGraph* fault_tree) : fault_tree_(fault_tree) {}
+
+void Bdd::Analyze() noexcept {
+  fault_tree_->ClearOptiValues();
+  Bdd::TopologicalOrder(fault_tree_->root(), 0);
+}
+
+int Bdd::TopologicalOrder(const IGatePtr& root, int order) noexcept {
+  if (root->opti_value()) return order;
+  for (const std::pair<int, IGatePtr>& arg : root->gate_args()) {
+    order = Bdd::TopologicalOrder(arg.second, order);
+  }
+  using VariablePtr = std::shared_ptr<Variable>;
+  for (const std::pair<int, VariablePtr>& arg : root->variable_args()) {
+    if (!arg.second->opti_value()) arg.second->opti_value(++order);
+  }
+  root->opti_value(++order);
+  return order;
+}
 
 }  // namespace scram
