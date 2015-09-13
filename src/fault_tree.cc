@@ -43,7 +43,7 @@ void Component::AddGate(const GatePtr& gate) {
       house_events_.count(name)) {
     throw ValidationError("Duplicate event " + gate->name());
   }
-  gates_.insert(std::make_pair(name, gate));
+  gates_.emplace(name, gate);
 }
 
 void Component::AddBasicEvent(const BasicEventPtr& basic_event) {
@@ -53,7 +53,7 @@ void Component::AddBasicEvent(const BasicEventPtr& basic_event) {
       house_events_.count(name)) {
     throw ValidationError("Duplicate event " + basic_event->name());
   }
-  basic_events_.insert(std::make_pair(name, basic_event));
+  basic_events_.emplace(name, basic_event);
 }
 
 void Component::AddHouseEvent(const HouseEventPtr& house_event) {
@@ -63,7 +63,7 @@ void Component::AddHouseEvent(const HouseEventPtr& house_event) {
       house_events_.count(name)) {
     throw ValidationError("Duplicate event " + house_event->name());
   }
-  house_events_.insert(std::make_pair(name, house_event));
+  house_events_.emplace(name, house_event);
 }
 
 void Component::AddParameter(const ParameterPtr& parameter) {
@@ -72,7 +72,7 @@ void Component::AddParameter(const ParameterPtr& parameter) {
   if (parameters_.count(name)) {
     throw ValidationError("Duplicate parameter " + parameter->name());
   }
-  parameters_.insert(std::make_pair(name, parameter));
+  parameters_.emplace(name, parameter);
 }
 
 void Component::AddCcfGroup(const CcfGroupPtr& ccf_group) {
@@ -81,17 +81,16 @@ void Component::AddCcfGroup(const CcfGroupPtr& ccf_group) {
   if (ccf_groups_.count(name)) {
     throw ValidationError("Duplicate CCF group " + ccf_group->name());
   }
-  ccf_groups_.insert(std::make_pair(name, ccf_group));
-  std::map<std::string, BasicEventPtr>::const_iterator it;
-  for (it = ccf_group->members().begin(); it != ccf_group->members().end();
-       ++it) {
-    if (gates_.count(it->first) || basic_events_.count(it->first) ||
-        house_events_.count(it->first)) {
-      throw ValidationError("Duplicate event " + it->second->name() +
+  for (const std::pair<std::string, BasicEventPtr>& member :
+       ccf_group->members()) {
+    if (gates_.count(member.first) || basic_events_.count(member.first) ||
+        house_events_.count(member.first)) {
+      throw ValidationError("Duplicate event " + member.second->name() +
                             " from CCF group " + ccf_group->name());
     }
-    basic_events_.insert(*it);
   }
+  for (const auto& member : ccf_group->members()) basic_events_.insert(member);
+  ccf_groups_.emplace(name, ccf_group);
 }
 
 void Component::AddComponent(ComponentPtr component) {
@@ -104,13 +103,11 @@ void Component::AddComponent(ComponentPtr component) {
 }
 
 void Component::GatherGates(std::unordered_set<GatePtr>* gates) {
-  std::unordered_map<std::string, GatePtr>::iterator it;
-  for (it = gates_.begin(); it != gates_.end(); ++it) {
-    gates->insert(it->second);
+  for (const std::pair<std::string, GatePtr>& gate : gates_) {
+    gates->insert(gate.second);
   }
-  std::unordered_map<std::string, ComponentPtr>::iterator it_comp;
-  for (it_comp = components_.begin(); it_comp != components_.end(); ++it_comp) {
-    it_comp->second->GatherGates(gates);
+  for (const std::pair<const std::string, ComponentPtr>& comp : components_) {
+    comp.second->GatherGates(gates);
   }
 }
 
@@ -121,13 +118,12 @@ void FaultTree::CollectTopEvents() {
   std::unordered_set<GatePtr> gates;
   Component::GatherGates(&gates);
   // Detects top events.
-  std::unordered_set<GatePtr>::iterator it;
-  for (it = gates.begin(); it != gates.end(); ++it) {
-    FaultTree::MarkNonTopGates(*it, gates);
+  for (const GatePtr& gate : gates) {
+    FaultTree::MarkNonTopGates(gate, gates);
   }
-  for (it = gates.begin(); it != gates.end(); ++it) {
-    if ((*it)->mark() != "non-top") top_events_.push_back(*it);
-    (*it)->mark("");
+  for (const GatePtr& gate : gates) {
+    if (gate->mark() != "non-top") top_events_.push_back(gate);
+    gate->mark("");  // Cleaning up.
   }
 }
 
