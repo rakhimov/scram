@@ -21,9 +21,66 @@
 #ifndef SCRAM_SRC_BDD_H_
 #define SCRAM_SRC_BDD_H_
 
+#include <memory>
+
 #include "boolean_graph.h"
 
 namespace scram {
+
+/// @class Vertex
+/// Representation of a vertex in BDD graphs.
+class Vertex {
+ public:
+  virtual ~Vertex() = 0;  ///< Abstract class.
+};
+
+/// @class Terminal
+/// Representation of terminal vertices in BDD graphs.
+class Terminal : public Vertex {
+ public:
+  /// @param[in] value True or False (1 or 0) terminal.
+  explicit Terminal(bool value);
+
+  /// @returns The value of the terminal vertex.
+  inline bool value() const { return value_; }
+
+ private:
+  bool value_;  ///< The meaning of the terminal.
+};
+
+/// @class NonTerminal
+/// Representation of non-terminal vertices in BDD graphs.
+class NonTerminal : public Vertex {
+ public:
+  using VertexPtr = std::shared_ptr<Vertex>;
+
+  /// @param[in] index Unique identifier of this non-terminal vertex.
+  explicit NonTerminal(int index);
+
+  /// @returns The index of this vertex.
+  inline int index() const { return index_; }
+
+  /// @returns (1/True/then) branch vertex.
+  inline const VertexPtr& high() const { return high_; }
+
+  /// Sets the (1/True/then) branch vertex.
+  ///
+  /// @param[in] high The vertex.
+  inline void high(const VertexPtr& high) { high_ = high; }
+
+  /// @returns (0/False/else) branch vertex.
+  inline const VertexPtr& low() const { return low_; }
+
+  /// Sets the (0/False/else) branch vertex.
+  ///
+  /// @param[in] low The vertex.
+  inline void low(const VertexPtr& low) { low_ = low; }
+
+ private:
+  int index_;  ///< Index of the variable.
+  VertexPtr high_;  ///< 1 (True/then) branch in the Shannon decomposition.
+  VertexPtr low_;  ///< O (False/else) branch in the Shannon decomposition.
+};
 
 /// @class Bdd
 /// Analysis of Boolean graphs with Binary Decision Diagrams.

@@ -22,6 +22,12 @@
 
 namespace scram {
 
+Vertex::~Vertex() {}  // Empty body for pure virtual destructor.
+
+Terminal::Terminal(bool value) : value_(value) {}
+
+NonTerminal::NonTerminal(int index) : index_(index) {}
+
 Bdd::Bdd(BooleanGraph* fault_tree) : fault_tree_(fault_tree) {}
 
 void Bdd::Analyze() noexcept {
