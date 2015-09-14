@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 2.8.12)
 
+set(BUILD_SHARED_LIBS FALSE)  # GUI code should never be used by the core.
+
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(SCRAM_GUI_RES "${CMAKE_CURRENT_SOURCE_DIR}/res.qrc")
@@ -21,19 +23,7 @@ add_library(scramgui
 
 qt5_use_modules(scramgui Core Gui Widgets)
 
-set_target_properties(scramgui
-  PROPERTIES
-  INSTALL_NAME_DIR "${CMAKE_INSTALL_PREFIX}/lib"
-  INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib"
-  )
-
 target_link_libraries(scramgui dl scramcore ${LIBS})
-
-install(
-  TARGETS scramgui
-  LIBRARY DESTINATION lib
-  COMPONENT scram-gui
-  )
 
 add_executable(scram-gui ${SCRAM_GUI_BIN})
 target_link_libraries(scram-gui scramgui scramcore ${Boost_LIBRARIES})

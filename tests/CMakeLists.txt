@@ -1,3 +1,5 @@
+set(BUILD_SHARED_LIBS FALSE)  # No need to share with other executables.
+
 # Be sure to clear these each time.
 set(GENERATED_TEST_LIST "" CACHE INTERNAL "")
 set(GENERATED_FILTER_LIST "" CACHE INTERNAL "")
@@ -73,12 +75,6 @@ target_link_libraries(scram_tests dl
 
 install(TARGETS scram_tests
   RUNTIME DESTINATION bin
-  COMPONENT testing
-  )
-
-file(GLOB header_files "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
-install(FILES ${header_files}
-  DESTINATION include/scram
   COMPONENT testing
   )
 
