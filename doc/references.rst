@@ -11,21 +11,39 @@ References
 #. `Fault Tree Handbook with Aerospace Applications <http://www.hq.nasa.gov/office/codeq/doctree/fthb.pdf>`_
 #. `Software Test Techniques for System Fault-Tree Analysis <http://www.cs.virginia.edu/~jck/publications/safecomp.97.pdf>`_
 
-#. A.Rauzy, "Towards an efficient implementation of MOCUS," IEEE IEEE Trans.
-   Rel., vol. 52, no. 2, pp 175-180, 2003.
+#. R. Bryant,
+   "Graph based algorithms for boolean function manipulation,"
+   IEEE Trans. Comp., vol. 35, no. 8, pp. 677-691, 1986.
 
-#. Y. Dutuit and A. Rauzy, "A linear time algorithm to find modules of fault
-   trees" IEEE Trans. Rel., vol. 45, no. 3, pp. 422–425, 1996.
+#. K. Brace, R. Rudell, and R. Bryant,
+   "Efficient implementation of a BDD package,"
+   In Proceedings of the 27th ACM/IEEE Design Automation Conference.
+   IEEE 0738, 1990.
 
-#. I. Niemelä, "On simplification of large fault trees," Reliab. Eng. Syst.
-   Saf., vol. 44, pp. 135–138, 1994.
+#. A. Rauzy,
+   "Towards an efficient implementation of MOCUS," IEEE Trans.
+   Rel., vol. 52, no. 2, pp. 175-180, 2003.
 
-#. M.Nikolskaia and A.Rauzy, "Fine-tuning of boolean formulae preprocessing
-   techniques"
+#. Y. Dutuit and A. Rauzy,
+   "A linear time algorithm to find modules of fault trees,"
+   IEEE Trans. Rel., vol. 45, no. 3, pp. 422–425, 1996.
 
-#. D.Wakefield, "You can't just build trees and call it PSA"
+#. I. Niemelä,
+   "On simplification of large fault trees,"
+   Reliab. Eng. Syst. Saf., vol. 44, pp. 135–138, 1994.
 
-#. E.Petrosean, "Fault tree analysis for energy grid"
+#. M.Nikolskaia and A.Rauzy,
+   "Fine-tuning of boolean formulae preprocessing techniques"
+
+#. A. Rauzy,
+   "Mathematical foundation of minimal cutsets,"
+   IEEE Trans. Rel., vol. 50, no. 4, pp. 389-396, 2001
+
+#. D. Wakefield,
+   "You can't just build trees and call it PSA"
+
+#. E. Petrosean,
+   "Fault tree analysis for energy grid"
 
 
 Web Resources
