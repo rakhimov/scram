@@ -40,12 +40,19 @@ class Vertex {
 
 /// @class Terminal
 /// Representation of terminal vertices in BDD graphs.
+/// It is expected
+/// that in a reduced BDD graphs,
+/// there are only two terminal vertices of value 1 or 0.
 class Terminal : public Vertex {
  public:
   /// @param[in] value True or False (1 or 0) terminal.
   explicit Terminal(bool value);
 
   /// @returns The value of the terminal vertex.
+  ///
+  /// @note The value serves as an id for this terminal vertex.
+  ///       Non-terminal if-then-else vertices should never have
+  ///       identifications of value 0 or 1.
   inline bool value() const { return value_; }
 
  private:
@@ -54,36 +61,110 @@ class Terminal : public Vertex {
 
 /// @class Ite
 /// Representation of non-terminal if-then-else vertices in BDD graphs.
+/// This class is designed to help construct and manipulate BDD graphs.
+/// The design goal is to avoid as much RTTI as possible
+/// and take into account the performance of algorithms.
 class Ite : public Vertex {
  public:
-  using VertexPtr = std::shared_ptr<Vertex>;
+  using TerminalPtr = std::shared_ptr<Terminal>;
+  using ItePtr = std::shared_ptr<Ite>;
 
-  /// @param[in] index Unique identifier of this non-terminal vertex.
-  explicit Ite(int index);
+  /// @param[in] index Index of this non-terminal vertex.
+  /// @param[in] order Specific ordering number for BDD graphs.
+  Ite(int index, int order);
 
   /// @returns The index of this vertex.
-  inline int index() const { return index_; }
+  inline int index() const {
+    assert(index_ > 0);
+    return index_;
+  }
 
-  /// @returns (1/True/then) branch vertex.
-  inline const VertexPtr& high() const { return high_; }
+  /// @returns The order of the vertex.
+  inline int order() const {
+    assert(order_ > 0);
+    return order_;
+  }
+
+  /// @returns Unique identifier of the function graph.
+  inline int id() const {
+    assert(id_ > 1);  // Must not have an ID of terminal nodes.
+    return id_;
+  }
+
+  /// Sets the unique identifier of the function graph.
+  ///
+  /// @param[in] id Unique identifier of the function graph.
+  ///               The identifier should not collide
+  ///               with the identifiers of terminal nodes.
+  inline void id(int id) {
+    assert(id > 1);  // Must not have an ID of terminal nodes.
+    id_ = id;
+  }
+
+  /// @returns The left part of the key (id(low)) for the function graph.
+  inline int IdLow() const {
+    if (low_) return low_->id();
+    assert(low_term_);
+    return low_term_->value();
+  }
+
+  /// @returns The right part of the key (id(high)) for the function graph.
+  inline int IdHigh() const {
+    if (high_) return high_->id();
+    assert(high_term_);
+    return high_term_->value();
+  }
+
+  /// @returns (1/True/then) branch if-then-else vertex.
+  /// @returns nullptr if the branch is Terminal or non-existent.
+  inline const ItePtr& high() const { return high_; }
 
   /// Sets the (1/True/then) branch vertex.
   ///
-  /// @param[in] high The vertex.
-  inline void high(const VertexPtr& high) { high_ = high; }
+  /// @param[in] high The if-then-else vertex.
+  inline void high(const ItePtr& high) {
+    assert(order_ < high->order_);  // Ordered graph.
+    high_ = high;
+    high_term_ = nullptr;
+  }
+
+  /// Sets the (1/True/then) branch to terminal vertex.
+  ///
+  /// @param[in] high_term The terminal vertex.
+  inline void high(const TerminalPtr& high_term) {
+    high_term_ = high_term;
+    high_ = nullptr;
+  }
 
   /// @returns (0/False/else) branch vertex.
-  inline const VertexPtr& low() const { return low_; }
+  /// @returns nullptr if the branch is Terminal or non-existent.
+  inline const ItePtr& low() const { return low_; }
 
   /// Sets the (0/False/else) branch vertex.
   ///
   /// @param[in] low The vertex.
-  inline void low(const VertexPtr& low) { low_ = low; }
+  inline void low(const ItePtr& low) {
+    assert(order_ < low->order_);  // Ordered graph.
+    low_ = low;
+    low_term_ = nullptr;
+  }
+
+  /// Sets the (0/False/else) branch to terminal vertex.
+  ///
+  /// @param[in] low_term The terminal vertex.
+  inline void low(const TerminalPtr& low_term) {
+    low_term_ = low_term;
+    low_ = nullptr;
+  }
 
  private:
   int index_;  ///< Index of the variable.
-  VertexPtr high_;  ///< 1 (True/then) branch in the Shannon decomposition.
-  VertexPtr low_;  ///< O (False/else) branch in the Shannon decomposition.
+  int order_;  ///< Order of the variable.
+  int id_;  ///< Unique identifier of the function graph with this vertex.
+  ItePtr high_;  ///< 1 (True/then) branch in the Shannon decomposition.
+  ItePtr low_;  ///< O (False/else) branch in the Shannon decomposition.
+  TerminalPtr high_term_;  ///< Terminal vertex for 1 (True/then) branch.
+  TerminalPtr low_term_;  ///< Terminal vertex for 0 (False/else) branch.
 };
 
 using IteTriplet = std::array<int, 3>;  ///< (v, G, H) triplet for functions.
@@ -133,6 +214,18 @@ class Bdd {
   /// @note Optimization values must be clear before the assignment.
   int TopologicalOrder(const IGatePtr& root, int order) noexcept;
 
+  /// Reverses the optimization value assigned by the topological ordering.
+  /// This reversing is needed
+  /// to put optimization values in ascending order
+  /// starting from the root.
+  ///
+  /// @param[in] root The root or current parent gate of the graph.
+  /// @param[in] shift The shift for the vertex ordering.
+  ///                  Optimization value is subtracted from the shift.
+  ///
+  /// @warning Node visit information must be clear.
+  void AdjustOrder(const IGatePtr& root, int shift) noexcept;
+
   /// Converts all gates in the Boolean graph
   /// into if-then-else BDD graphs.
   /// Registers processed gates.
@@ -141,6 +234,14 @@ class Bdd {
   ///
   /// @warning Gate marks must be clear.
   void ConvertGates(const IGatePtr& root) noexcept;
+
+  /// Applies reduction rules to the BDD graph.
+  ///
+  /// @param[in] ite The root vertex of the graph.
+  ///
+  /// @returns Pointer to the replacement vertex.
+  /// @returns nullptr if no replacement is required for reduction.
+  ItePtr ReduceGraph(const ItePtr& ite) noexcept;
 
   /// Turns a Boolean graph gate into a BDD graph.
   /// Registers the results for future references.
@@ -163,10 +264,11 @@ class Bdd {
 
   BooleanGraph* fault_tree_;  ///< The main fault tree.
   /// Table of unique if-then-else calculation results.
-  std::unordered_map<std::array<int, 3>, VertexPtr, IteHash> unique_table_;
+  std::unordered_map<std::array<int, 3>, ItePtr, IteHash> unique_table_;
   std::unordered_map<int, ItePtr> gates_;  ///< Processed gates.
   const TerminalPtr kOne_;  ///< Terminal True.
   const TerminalPtr kZero_;  ///< Terminal False.
+  int function_id_;  ///< Identification assignment for new function graphs.
 };
 
 }  // namespace scram
