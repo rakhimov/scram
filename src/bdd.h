@@ -24,6 +24,7 @@
 #include <array>
 #include <memory>
 #include <unordered_map>
+#include <utility>
 
 #include <boost/functional/hash.hpp>
 
@@ -86,8 +87,8 @@ class Ite : public Vertex {
   }
 
   /// @returns Unique identifier of the function graph.
+  /// @returns 0 if no reduction is performed with a resulting id.
   inline int id() const {
-    assert(id_ > 1);  // Must not have an ID of terminal nodes.
     return id_;
   }
 
@@ -157,7 +158,58 @@ class Ite : public Vertex {
     low_ = nullptr;
   }
 
+  /// Checks and applies Boolean operators for terminal branches.
+  /// The function is coupled with the BDD Apply procedures.
+  ///
+  /// @param[in] type The operator or type of the gate.
+  /// @param[in] arg_one First argument function graph with lower order.
+  /// @param[in] arg_two Second argument function graph with higher order.
+  ///
+  /// @returns Pair of bools for (high, low) branch application results.
+  ///          True means that terminal vertices are processed.
+  ///
+  /// @note This if-then-else vertex should be new without any branches.
+  /// @note Argument vertices must have equal order,
+  ///       or they must be passed in ascending order.
+  /// @note The main reason for the conditional Apply
+  ///       is to avoid RTTI and related hacks by the users of Vertex classes.
+  std::pair<bool, bool> ApplyIfTerminal(Operator type, const ItePtr& arg_one,
+                                        const ItePtr& arg_two) noexcept;
+
  private:
+  /// Applies the logic of a Boolean operator
+  /// to terminal vertices.
+  ///
+  /// @param[in] type The operator to apply.
+  /// @param[in] term_one First argument terminal vertex or nullptr.
+  /// @param[in] term_two Second argument terminal vertex or nullptr.
+  ///
+  /// @returns Terminal vertex as a result of operations.
+  /// @returns nullptr if no operations are performed.
+  ///
+  /// @note If the input pointer parameters are nullptr,
+  ///       no operations are performed.
+  TerminalPtr ApplyTerminal(Operator type, const TerminalPtr& term_one,
+                            const TerminalPtr& term_two) noexcept;
+
+
+  /// Applies the logic of a Boolean operator
+  /// to non-terminal and terminal vertices.
+  ///
+  /// @param[in] type The operator or type of the gate.
+  /// @param[in] v_one Non-terminal if-then-else vertex.
+  /// @param[in] term_one Terminal vertex.
+  /// @param[out] branch The resulting if-then-else branch of the operation.
+  /// @param[out] branch_term The resulting terminal branch of the operation.
+  ///
+  /// @note The result is assigned to only of the the branches
+  ///       depending on the logic and the input arguments.
+  /// @note If the input pointer parameters are nullptr,
+  ///       no operations are performed.
+  void ApplyTerminal(Operator type, const ItePtr& v_one,
+                     const TerminalPtr& term_one,
+                     ItePtr* branch, TerminalPtr* branch_term) noexcept;
+
   int index_;  ///< Index of the variable.
   int order_;  ///< Order of the variable.
   int id_;  ///< Unique identifier of the function graph with this vertex.
@@ -230,10 +282,10 @@ class Bdd {
   /// into if-then-else BDD graphs.
   /// Registers processed gates.
   ///
-  /// @param[in] root The root or current parent gate of the graph.
+  /// @param[in] gate The root or current parent gate of the graph.
   ///
-  /// @warning Gate marks must be clear.
-  void ConvertGates(const IGatePtr& root) noexcept;
+  /// @returns Pointer to the root vertex of the BDD graph.
+  ItePtr ConvertGate(const IGatePtr& gate) noexcept;
 
   /// Applies reduction rules to the BDD graph.
   ///
@@ -242,12 +294,6 @@ class Bdd {
   /// @returns Pointer to the replacement vertex.
   /// @returns nullptr if no replacement is required for reduction.
   ItePtr ReduceGraph(const ItePtr& ite) noexcept;
-
-  /// Turns a Boolean graph gate into a BDD graph.
-  /// Registers the results for future references.
-  ///
-  /// @param[in] gate The gate with a formula and arguments.
-  void ProcessGate(const IGatePtr& gate) noexcept;
 
   /// Considers the Shannon decomposition
   /// for the given Boolean operator
@@ -258,14 +304,43 @@ class Bdd {
   /// @param[in] pos The position of the argument to decompose against.
   ///
   /// @returns Pointer to the vertex in the BDD graph for the decomposition.
+  ///
+  /// @note It is expected that arguments are variables (modules) but not gates.
   ItePtr IfThenElse(Operator type,
                     const std::vector<std::pair<int, NodePtr>>& args,
                     int pos) noexcept;
 
+  /// Applies Boolean operation to BDD graphs.
+  ///
+  /// @param[in] type The operator or type of the gate.
+  /// @param[in] arg_one First argument function graph.
+  /// @param[in] arg_two Second argument function graph.
+  ///
+  /// @returns Poitner to the root vertex of the resultant BDD graph.
+  ///
+  /// @note The order of arguments does not matter for two variable operators.
+  ItePtr Apply(Operator type, const ItePtr& arg_one,
+               const ItePtr& arg_two) noexcept;
+
   BooleanGraph* fault_tree_;  ///< The main fault tree.
-  /// Table of unique if-then-else calculation results.
+
+  /// Table of unique if-then-else nodes denoting function graphs.
+  /// The key consists of ite(index, id_high, id_low),
+  /// where IDs are unique (id_high != id_low) identifications of
+  /// unique reduced-ordered function graphs.
   std::unordered_map<std::array<int, 3>, ItePtr, IteHash> unique_table_;
+
+  /// Table of processed computations over functions.
+  /// The key must convey the semantics of the operation over functions.
+  /// For example, AND(F, G) is ite(F, G, 0),
+  /// which is also equivalent to ite(G, F, 0).
+  /// The argument functions are recorded with their IDs (not vertex indices).
+  /// In order to keep only unique computations,
+  /// the argument IDs must be ordered.
+  std::unordered_map<std::array<int, 3>, ItePtr, IteHash> compute_table_;
+
   std::unordered_map<int, ItePtr> gates_;  ///< Processed gates.
+
   const TerminalPtr kOne_;  ///< Terminal True.
   const TerminalPtr kZero_;  ///< Terminal False.
   int function_id_;  ///< Identification assignment for new function graphs.

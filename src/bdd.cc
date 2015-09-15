@@ -28,7 +28,80 @@ Vertex::~Vertex() {}  // Empty body for pure virtual destructor.
 
 Terminal::Terminal(bool value) : value_(value) {}
 
-Ite::Ite(int index, int order) : index_(index), order_(order), id_(-1) {}
+Ite::Ite(int index, int order) : index_(index), order_(order), id_(0) {}
+
+std::pair<bool, bool> Ite::ApplyIfTerminal(Operator type, const ItePtr& arg_one,
+                                           const ItePtr& arg_two) noexcept {
+  assert(arg_one && arg_two);
+  assert(arg_one->id() && arg_two->id());  // Reduced and ordered.
+  assert(arg_one->order() <= arg_two->order());  // Must be passed in order.
+  assert(!high_ && !low_ && !high_term_ && !low_term_);  // Must be new.
+  if (arg_one->order() == arg_two->order()) {
+    high_term_ =
+        Ite::ApplyTerminal(type, arg_one->high_term_, arg_two->high_term_);
+    low_term_ =
+        Ite::ApplyTerminal(type, arg_one->low_term_, arg_two->low_term_);
+
+    Ite::ApplyTerminal(type, arg_one->high_, arg_two->high_term_, &high_,
+                       &high_term_);
+    Ite::ApplyTerminal(type, arg_two->high_, arg_one->high_term_, &high_,
+                       &high_term_);
+
+    Ite::ApplyTerminal(type, arg_one->low_, arg_two->low_term_, &low_,
+                       &low_term_);
+    Ite::ApplyTerminal(type, arg_two->low_, arg_one->low_term_, &low_,
+                       &low_term_);
+  } else {
+    assert(arg_one->order() < arg_two->order());  // Double check.
+    Ite::ApplyTerminal(type, arg_two, arg_one->high_term_, &high_, &high_term_);
+    Ite::ApplyTerminal(type, arg_two, arg_one->low_term_, &low_, &low_term_);
+  }
+  assert(!high_ || !high_term_);
+  assert(!low_ || !low_term_);
+  bool high = high_term_ || high_;
+  bool low = low_term_ || low_;
+  return {high, low};
+}
+
+std::shared_ptr<Terminal> Ite::ApplyTerminal(
+    Operator type,
+    const TerminalPtr& term_one,
+    const TerminalPtr& term_two) noexcept {
+  if (!term_one || !term_two) return nullptr;
+  switch (type) {
+    case kOrGate:
+      return term_one->value() ? term_one : term_two;
+    case kAndGate:
+      return term_one->value() ? term_two : term_one;  // Reverse of OR logic!
+    default:
+      assert(false);
+  }
+}
+
+void Ite::ApplyTerminal(Operator type, const ItePtr& v_one,
+                        const TerminalPtr& term_one,
+                        ItePtr* branch, TerminalPtr* branch_term) noexcept {
+  if (!v_one || !term_one) return;
+  assert(!*branch && !*branch_term);
+  switch (type) {
+    case kOrGate:
+      if (term_one->value()) {
+        *branch_term = term_one;
+      } else {
+        *branch = v_one;
+      }
+      break;
+    case kAndGate:
+      if (term_one->value()) {
+        *branch = v_one;
+      } else {
+        *branch_term = term_one;
+      }
+      break;
+    default:
+      assert(false);
+  }
+}
 
 Bdd::Bdd(BooleanGraph* fault_tree)
     : fault_tree_(fault_tree),
@@ -43,9 +116,7 @@ void Bdd::Analyze() noexcept {
   fault_tree_->ClearNodeVisits();
   Bdd::AdjustOrder(fault_tree_->root(), ++shift);
   assert(fault_tree_->root()->opti_value() == 1);
-  fault_tree_->ClearGateMarks();
-  Bdd::ConvertGates(fault_tree_->root());
-  for (const std::pair<int, ItePtr>& ite : gates_) Bdd::ReduceGraph(ite.second);
+  Bdd::ConvertGate(fault_tree_->root());
 }
 
 int Bdd::TopologicalOrder(const IGatePtr& root, int order) noexcept {
@@ -77,17 +148,42 @@ void Bdd::AdjustOrder(const IGatePtr& root, int shift) noexcept {
   }
 }
 
-void Bdd::ConvertGates(const IGatePtr& root) noexcept {
-  if (root->mark()) return;
-  root->mark(true);
-  Bdd::ProcessGate(root);
-  for (const std::pair<int, IGatePtr>& arg : root->gate_args()) {
-    Bdd::ConvertGates(arg.second);
+std::shared_ptr<Ite> Bdd::ConvertGate(const IGatePtr& gate) noexcept {
+  ItePtr& bdd_graph = gates_[gate->index()];
+  if (bdd_graph) return bdd_graph;
+
+  if (!gate->variable_args().empty()) {
+    // Process variable arguments into a BDD graph.
+    std::vector<std::pair<int, NodePtr>> args;
+    args.insert(args.end(), gate->variable_args().begin(),
+                gate->variable_args().end());
+    std::sort(args.begin(), args.end(),
+              [](const std::pair<int, NodePtr>& lhs,
+                 const std::pair<int, NodePtr>& rhs) {
+              return lhs.second->opti_value() < rhs.second->opti_value();
+              });
+    bdd_graph = Bdd::IfThenElse(gate->type(), args, 0);  // Make ordered.
+    ItePtr res = Bdd::ReduceGraph(bdd_graph);  // Make reduced.
+    if (res) bdd_graph = res;  // Replace if needed.
   }
+
+  // Apply the gate operator to BDD graphs of argument variables and gates.
+  /// @todo Determine if order matters among gates.
+  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+    ItePtr arg_graph = Bdd::ConvertGate(arg.second);
+    if (!bdd_graph) {  // No variable arguments have been processed.
+      bdd_graph = arg_graph;
+      continue;
+    }
+    bdd_graph = Bdd::Apply(gate->type(), bdd_graph, arg_graph);
+  }
+  assert(bdd_graph);
+  return bdd_graph;
 }
 
 std::shared_ptr<Ite> Bdd::ReduceGraph(const ItePtr& ite) noexcept {
   if (!ite) return nullptr;  // Terminal nodes.
+  if (ite->id()) return nullptr;  // Already reduced function graph.
   ItePtr high = Bdd::ReduceGraph(ite->high());
   ItePtr low = Bdd::ReduceGraph(ite->low());
   if (high) ite->high(high);
@@ -104,19 +200,6 @@ std::shared_ptr<Ite> Bdd::ReduceGraph(const ItePtr& ite) noexcept {
   ite->id(function_id_++);  // Unique function graph.
   in_table = ite;
   return nullptr;  // No need for replacement.
-}
-
-void Bdd::ProcessGate(const IGatePtr& gate) noexcept {
-  std::vector<std::pair<int, NodePtr>> args;
-  args.insert(args.end(), gate->gate_args().begin(), gate->gate_args().end());
-  args.insert(args.end(), gate->variable_args().begin(),
-              gate->variable_args().end());
-  std::sort(args.begin(), args.end(),
-            [](const std::pair<int, NodePtr>& lhs,
-               const std::pair<int, NodePtr>& rhs) {
-              return lhs.second->opti_value() < rhs.second->opti_value();
-            });
-  gates_.emplace(gate->index(), Bdd::IfThenElse(gate->type(), args, 0));
 }
 
 std::shared_ptr<Ite> Bdd::IfThenElse(
@@ -150,6 +233,61 @@ std::shared_ptr<Ite> Bdd::IfThenElse(
       assert(false);
   }
   return ite;
+}
+
+std::shared_ptr<Ite> Bdd::Apply(Operator type, const ItePtr& arg_one,
+                                const ItePtr& arg_two) noexcept {
+  assert(arg_one && arg_two);
+  std::array<int, 3> sig = {0, 0, 0};  // Signature of the operation.
+  int min_id = std::min(arg_one->id(), arg_two->id());
+  int max_id = std::max(arg_one->id(), arg_two->id());
+  assert(min_id && max_id);  // Both are reduced function graphs.
+  assert(min_id != max_id);  /// @todo Consider this special case.
+  switch (type) {
+    case kOrGate:
+      sig[0] = min_id;
+      sig[1] = 1;
+      sig[2] = max_id;
+      break;
+    case kAndGate:
+      sig[0] = min_id;
+      sig[1] = max_id;
+      sig[2] = 0;
+      break;
+    default:
+      assert(false);
+  }
+  ItePtr& bdd_graph = compute_table_[sig];  // Register if not computed.
+  if (bdd_graph) return bdd_graph;  // Already computed.
+  if (arg_one->order() == arg_two->order()) {  // The same variable.
+    assert(arg_one->index() == arg_two->index());
+    bdd_graph = std::make_shared<Ite>(arg_one->index(), arg_one->order());
+    std::pair<bool, bool> term =
+        bdd_graph->ApplyIfTerminal(type, arg_one, arg_two);
+    if (!term.first)
+      bdd_graph->high(Bdd::Apply(type, arg_one->high(), arg_two->high()));
+    if (!term.second)
+      bdd_graph->low(Bdd::Apply(type, arg_one->low(), arg_two->low()));
+  } else {
+    ItePtr v_one;  // Lower-order-vertex function graph.
+    ItePtr v_two;  // Higher-order-vertex function graph.
+    if (arg_one->order() < arg_two->order()) {
+      v_one = arg_one;
+      v_two = arg_two;
+    } else {
+      v_one = arg_two;
+      v_two = arg_one;
+    }
+    bdd_graph = std::make_shared<Ite>(v_one->index(), v_one->order());
+    std::pair<bool, bool> term = bdd_graph->ApplyIfTerminal(type, v_one, v_two);
+    if (!term.first)
+      bdd_graph->high(Bdd::Apply(type, v_one->high(), v_two));
+    if (!term.second)
+      bdd_graph->low(Bdd::Apply(type, v_one->low(), v_two));
+  }
+  ItePtr res = Bdd::ReduceGraph(bdd_graph);
+  if (res) bdd_graph = res;
+  return bdd_graph;
 }
 
 }  // namespace scram
