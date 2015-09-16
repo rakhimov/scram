@@ -30,13 +30,6 @@ Vertex::~Vertex() {}  // Empty body for pure virtual destructor.
 
 Terminal::Terminal(bool value) : value_(value) {}
 
-Ite::Ite(int index, int order)
-    : index_(index),
-      order_(order),
-      id_(0),
-      mark_(false),
-      prob_(0) {}
-
 std::pair<bool, bool> Ite::ApplyIfTerminal(Operator type, const ItePtr& arg_one,
                                            const ItePtr& arg_two) noexcept {
   assert(arg_one && arg_two);

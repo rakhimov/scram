@@ -35,8 +35,14 @@ namespace scram {
 
 /// @class Vertex
 /// Representation of a vertex in BDD graphs.
+/// The design goal for vertex classes
+/// is to avoid as much RTTI as possible
+/// and take into account the performance of algorithms.
 class Vertex {
  public:
+  Vertex() = default;
+  Vertex(const Vertex&) = delete;
+  Vertex& operator=(const Vertex&) = delete;
   virtual ~Vertex() = 0;  ///< Abstract class.
 };
 
@@ -44,7 +50,7 @@ class Vertex {
 /// Representation of terminal vertices in BDD graphs.
 /// It is expected
 /// that in a reduced BDD graphs,
-/// there are only two terminal vertices of value 1 or 0.
+/// there are at most two terminal vertices of value 1 or 0.
 class Terminal : public Vertex {
  public:
   /// @param[in] value True or False (1 or 0) terminal.
@@ -61,19 +67,23 @@ class Terminal : public Vertex {
   bool value_;  ///< The meaning of the terminal.
 };
 
-/// @class Ite
-/// Representation of non-terminal if-then-else vertices in BDD graphs.
-/// This class is designed to help construct and manipulate BDD graphs.
-/// The design goal is to avoid as much RTTI as possible
-/// and take into account the performance of algorithms.
-class Ite : public Vertex {
+/// @class NonTerminal
+/// Representation of non-terminal vertices in BDD graphs.
+template<typename Node>
+class NonTerminal : public Vertex {
  public:
   using TerminalPtr = std::shared_ptr<Terminal>;
-  using ItePtr = std::shared_ptr<Ite>;
+  using NonTerminalPtr = std::shared_ptr<Node>;
 
   /// @param[in] index Index of this non-terminal vertex.
   /// @param[in] order Specific ordering number for BDD graphs.
-  Ite(int index, int order);
+  NonTerminal(int index, int order)
+      : index_(index),
+        order_(order),
+        id_(0),
+        mark_(false) {}
+
+  virtual ~NonTerminal() {}
 
   /// @returns The index of this vertex.
   inline int index() const {
@@ -87,15 +97,15 @@ class Ite : public Vertex {
     return order_;
   }
 
-  /// @returns Unique identifier of the function graph.
+  /// @returns Unique identifier of the ROBDD graph.
   /// @returns 0 if no reduction is performed with a resulting id.
   inline int id() const {
     return id_;
   }
 
-  /// Sets the unique identifier of the function graph.
+  /// Sets the unique identifier of the ROBDD graph.
   ///
-  /// @param[in] id Unique identifier of the function graph.
+  /// @param[in] id Unique identifier of the ROBDD graph.
   ///               The identifier should not collide
   ///               with the identifiers of terminal nodes.
   inline void id(int id) {
@@ -103,14 +113,14 @@ class Ite : public Vertex {
     id_ = id;
   }
 
-  /// @returns The left part of the key (id(low)) for the function graph.
+  /// @returns The left part of the key (id(low)) for the ROBDD graph.
   inline int IdLow() const {
     if (low_) return low_->id();
     assert(low_term_);
     return low_term_->value();
   }
 
-  /// @returns The right part of the key (id(high)) for the function graph.
+  /// @returns The right part of the key (id(high)) for the ROBDD graph.
   inline int IdHigh() const {
     if (high_) return high_->id();
     assert(high_term_);
@@ -119,12 +129,12 @@ class Ite : public Vertex {
 
   /// @returns (1/True/then) branch if-then-else vertex.
   /// @returns nullptr if the branch is Terminal or non-existent.
-  inline const ItePtr& high() const { return high_; }
+  inline const NonTerminalPtr& high() const { return high_; }
 
   /// Sets the (1/True/then) branch vertex.
   ///
   /// @param[in] high The if-then-else vertex.
-  inline void high(const ItePtr& high) {
+  inline void high(const NonTerminalPtr& high) {
     assert(order_ < high->order_);  // Ordered graph.
     high_ = high;
     high_term_ = nullptr;
@@ -140,12 +150,12 @@ class Ite : public Vertex {
 
   /// @returns (0/False/else) branch vertex.
   /// @returns nullptr if the branch is Terminal or non-existent.
-  inline const ItePtr& low() const { return low_; }
+  inline const NonTerminalPtr& low() const { return low_; }
 
   /// Sets the (0/False/else) branch vertex.
   ///
   /// @param[in] low The vertex.
-  inline void low(const ItePtr& low) {
+  inline void low(const NonTerminalPtr& low) {
     assert(order_ < low->order_);  // Ordered graph.
     low_ = low;
     low_term_ = nullptr;
@@ -159,6 +169,14 @@ class Ite : public Vertex {
     low_ = nullptr;
   }
 
+  /// @returns (1/True/then) branch terminal vertex.
+  /// @returns nullptr if the branch is not terminal.
+  inline const TerminalPtr& high_term() const { return high_term_; }
+
+  /// @returns (0/False/else) branch terminal vertex.
+  /// @returns nullptr if the branch is not terminal.
+  inline const TerminalPtr& low_term() const { return low_term_; }
+
   /// @returns The mark of this vertex.
   inline bool mark() const { return mark_; }
 
@@ -167,6 +185,26 @@ class Ite : public Vertex {
   /// @param[in] flag A flag with the meaning for the user of marks.
   inline void mark(bool flag) { mark_ = flag; }
 
+ protected:
+  int index_;  ///< Index of the variable.
+  int order_;  ///< Order of the variable.
+  int id_;  ///< Unique identifier of the ROBDD graph with this vertex.
+  NonTerminalPtr high_;  ///< 1 (True/then) branch in the Shannon decomposition.
+  NonTerminalPtr low_;  ///< O (False/else) branch in the Shannon decomposition.
+  TerminalPtr high_term_;  ///< Terminal vertex for 1 (True/then) branch.
+  TerminalPtr low_term_;  ///< Terminal vertex for 0 (False/else) branch.
+  bool mark_;  ///< Traversal mark.
+};
+
+/// @class Ite
+/// Representation of non-terminal if-then-else vertices in BDD graphs.
+/// This class is designed to help construct and manipulate BDD graphs.
+class Ite : public NonTerminal<Ite> {
+ public:
+  using ItePtr = std::shared_ptr<Ite>;
+
+  using NonTerminal::NonTerminal;  ///< Constructor with index and order.
+
   /// @returns The probability of the function graph.
   inline double prob() const { return prob_; }
 
@@ -174,14 +212,6 @@ class Ite : public Vertex {
   ///
   /// @param[in] value Calculated value for the probability.
   inline void prob(double value) { prob_ = value; }
-
-  /// @returns (1/True/then) branch terminal vertex.
-  /// @returns nullptr if the branch is not terminal.
-  inline const TerminalPtr& high_term() const { return high_term_; }
-
-  /// @returns (0/False/else) branch terminal vertex.
-  /// @returns nullptr if the branch is not terminal.
-  inline const TerminalPtr& low_term() const { return low_term_; }
 
   /// Checks and applies Boolean operators for terminal branches.
   /// The function is coupled with the BDD Apply procedures.
@@ -202,6 +232,8 @@ class Ite : public Vertex {
                                         const ItePtr& arg_two) noexcept;
 
  private:
+  using TerminalPtr = std::shared_ptr<Terminal>;
+
   /// Applies the logic of a Boolean operator
   /// to terminal vertices.
   ///
@@ -216,7 +248,6 @@ class Ite : public Vertex {
   ///       no operations are performed.
   TerminalPtr ApplyTerminal(Operator type, const TerminalPtr& term_one,
                             const TerminalPtr& term_two) noexcept;
-
 
   /// Applies the logic of a Boolean operator
   /// to non-terminal and terminal vertices.
@@ -235,15 +266,7 @@ class Ite : public Vertex {
                      const TerminalPtr& term_one,
                      ItePtr* branch, TerminalPtr* branch_term) noexcept;
 
-  int index_;  ///< Index of the variable.
-  int order_;  ///< Order of the variable.
-  int id_;  ///< Unique identifier of the function graph with this vertex.
-  ItePtr high_;  ///< 1 (True/then) branch in the Shannon decomposition.
-  ItePtr low_;  ///< O (False/else) branch in the Shannon decomposition.
-  TerminalPtr high_term_;  ///< Terminal vertex for 1 (True/then) branch.
-  TerminalPtr low_term_;  ///< Terminal vertex for 0 (False/else) branch.
-  bool mark_;  ///< Traversal mark.
-  double prob_;  ///< Probability of the function graph.
+  double prob_ = 0;  ///< Probability of the function graph.
 };
 
 using IteTriplet = std::array<int, 3>;  ///< (v, G, H) triplet for functions.
@@ -279,7 +302,6 @@ class Bdd {
  private:
   using NodePtr = std::shared_ptr<Node>;
   using IGatePtr = std::shared_ptr<IGate>;
-  using VertexPtr = std::shared_ptr<Vertex>;
   using TerminalPtr = std::shared_ptr<Terminal>;
   using ItePtr = std::shared_ptr<Ite>;
 
