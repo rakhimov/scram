@@ -269,20 +269,24 @@ class Ite : public NonTerminal<Ite> {
   double prob_ = 0;  ///< Probability of the function graph.
 };
 
-using IteTriplet = std::array<int, 3>;  ///< (v, G, H) triplet for functions.
+using Triplet = std::array<int, 3>;  ///< (v, G, H) triplet for functions.
 
-/// @struct IteHash
-/// Functor for hashing if-then-else nodes.
-struct IteHash : public std::unary_function<const IteTriplet, std::size_t> {
-  /// Operator overload for hashing if-then-else nodes.
+/// @struct TripletHash
+/// Functor for hashing triplets of ordered numbers.
+struct TripletHash : public std::unary_function<const Triplet, std::size_t> {
+  /// Operator overload for hashing three ordered ID numbers.
   ///
   /// @param[in] triplet (v, G, H) nodes.
   ///
   /// @returns Hash value of the triplet.
-  std::size_t operator()(const IteTriplet& triplet) const noexcept {
+  std::size_t operator()(const Triplet& triplet) const noexcept {
     return boost::hash_range(triplet.begin(), triplet.end());
   }
 };
+
+/// Hash table for triplets of numbers as keys.
+template<typename Value>
+using TripletTable = std::unordered_map<Triplet, Value, TripletHash>;
 
 /// @class Bdd
 /// Analysis of Boolean graphs with Binary Decision Diagrams.
@@ -304,6 +308,7 @@ class Bdd {
   using IGatePtr = std::shared_ptr<IGate>;
   using TerminalPtr = std::shared_ptr<Terminal>;
   using ItePtr = std::shared_ptr<Ite>;
+  using HashTable = TripletTable<ItePtr>;
 
   /// Assigns topological ordering to nodes of the Boolean Graph.
   /// The ordering is assigned to the optimization value of the nodes.
@@ -388,7 +393,7 @@ class Bdd {
   /// The key consists of ite(index, id_high, id_low),
   /// where IDs are unique (id_high != id_low) identifications of
   /// unique reduced-ordered function graphs.
-  std::unordered_map<std::array<int, 3>, ItePtr, IteHash> unique_table_;
+  HashTable unique_table_;
 
   /// Table of processed computations over functions.
   /// The key must convey the semantics of the operation over functions.
@@ -397,7 +402,7 @@ class Bdd {
   /// The argument functions are recorded with their IDs (not vertex indices).
   /// In order to keep only unique computations,
   /// the argument IDs must be ordered.
-  std::unordered_map<std::array<int, 3>, ItePtr, IteHash> compute_table_;
+  HashTable compute_table_;
 
   std::unordered_map<int, ItePtr> gates_;  ///< Processed gates.
   std::vector<double> probs_;  ///< Probabilities of variables.
