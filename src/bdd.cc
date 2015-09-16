@@ -22,13 +22,20 @@
 
 #include <algorithm>
 
+#include "event.h"
+
 namespace scram {
 
 Vertex::~Vertex() {}  // Empty body for pure virtual destructor.
 
 Terminal::Terminal(bool value) : value_(value) {}
 
-Ite::Ite(int index, int order) : index_(index), order_(order), id_(0) {}
+Ite::Ite(int index, int order)
+    : index_(index),
+      order_(order),
+      id_(0),
+      mark_(false),
+      prob_(0) {}
 
 std::pair<bool, bool> Ite::ApplyIfTerminal(Operator type, const ItePtr& arg_one,
                                            const ItePtr& arg_two) noexcept {
@@ -105,6 +112,7 @@ void Ite::ApplyTerminal(Operator type, const ItePtr& v_one,
 
 Bdd::Bdd(BooleanGraph* fault_tree)
     : fault_tree_(fault_tree),
+      p_graph_(0),
       kOne_(std::make_shared<Terminal>(true)),
       kZero_(std::make_shared<Terminal>(false)),
       function_id_(2) {}
@@ -117,6 +125,14 @@ void Bdd::Analyze() noexcept {
   Bdd::AdjustOrder(fault_tree_->root(), ++shift);
   assert(fault_tree_->root()->opti_value() == 1);
   Bdd::ConvertGate(fault_tree_->root());
+  ItePtr root_vertex = gates_.find(fault_tree_->root()->index())->second;
+  probs_.reserve(fault_tree_->basic_events().size() + 1);
+  probs_.push_back(-1);  // First one is a dummy.
+  using BasicEventPtr = std::shared_ptr<BasicEvent>;
+  for (const BasicEventPtr& event : fault_tree_->basic_events()) {
+    probs_.push_back(event->p());
+  }
+  p_graph_ = Bdd::CalculateProbability(root_vertex);
 }
 
 int Bdd::TopologicalOrder(const IGatePtr& root, int order) noexcept {
@@ -242,7 +258,7 @@ std::shared_ptr<Ite> Bdd::Apply(Operator type, const ItePtr& arg_one,
   int min_id = std::min(arg_one->id(), arg_two->id());
   int max_id = std::max(arg_one->id(), arg_two->id());
   assert(min_id && max_id);  // Both are reduced function graphs.
-  assert(min_id != max_id);  /// @todo Consider this special case.
+  if (min_id == max_id) return arg_one;
   switch (type) {
     case kOrGate:
       sig[0] = min_id;
@@ -288,6 +304,18 @@ std::shared_ptr<Ite> Bdd::Apply(Operator type, const ItePtr& arg_one,
   ItePtr res = Bdd::ReduceGraph(bdd_graph);
   if (res) bdd_graph = res;
   return bdd_graph;
+}
+
+double Bdd::CalculateProbability(const ItePtr& vertex) noexcept {
+  if (vertex->mark()) return vertex->prob();
+  vertex->mark(true);
+  double var_prob = probs_[vertex->index()];
+  double high = vertex->high() ? Bdd::CalculateProbability(vertex->high())
+                               : vertex->high_term()->value();
+  double low = vertex->low() ? Bdd::CalculateProbability(vertex->low())
+                               : vertex->low_term()->value();
+  vertex->prob(var_prob * high  + (1 - var_prob) * low);
+  return vertex->prob();
 }
 
 }  // namespace scram

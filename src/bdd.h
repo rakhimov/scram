@@ -25,6 +25,7 @@
 #include <memory>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include <boost/functional/hash.hpp>
 
@@ -158,6 +159,30 @@ class Ite : public Vertex {
     low_ = nullptr;
   }
 
+  /// @returns The mark of this vertex.
+  inline bool mark() const { return mark_; }
+
+  /// Marks this vertex.
+  ///
+  /// @param[in] flag A flag with the meaning for the user of marks.
+  inline void mark(bool flag) { mark_ = flag; }
+
+  /// @returns The probability of the function graph.
+  inline double prob() const { return prob_; }
+
+  /// Sets the probability of the function graph.
+  ///
+  /// @param[in] value Calculated value for the probability.
+  inline void prob(double value) { prob_ = value; }
+
+  /// @returns (1/True/then) branch terminal vertex.
+  /// @returns nullptr if the branch is not terminal.
+  inline const TerminalPtr& high_term() const { return high_term_; }
+
+  /// @returns (0/False/else) branch terminal vertex.
+  /// @returns nullptr if the branch is not terminal.
+  inline const TerminalPtr& low_term() const { return low_term_; }
+
   /// Checks and applies Boolean operators for terminal branches.
   /// The function is coupled with the BDD Apply procedures.
   ///
@@ -217,6 +242,8 @@ class Ite : public Vertex {
   ItePtr low_;  ///< O (False/else) branch in the Shannon decomposition.
   TerminalPtr high_term_;  ///< Terminal vertex for 1 (True/then) branch.
   TerminalPtr low_term_;  ///< Terminal vertex for 0 (False/else) branch.
+  bool mark_;  ///< Traversal mark.
+  double prob_;  ///< Probability of the function graph.
 };
 
 using IteTriplet = std::array<int, 3>;  ///< (v, G, H) triplet for functions.
@@ -245,6 +272,9 @@ class Bdd {
 
   /// Runs the analysis.
   void Analyze() noexcept;
+
+  /// @returns The total probability of the graph.
+  inline double p_graph() const { return p_graph_; }
 
  private:
   using NodePtr = std::shared_ptr<Node>;
@@ -322,6 +352,14 @@ class Bdd {
   ItePtr Apply(Operator type, const ItePtr& arg_one,
                const ItePtr& arg_two) noexcept;
 
+  /// Calculates exact probability
+  /// of a function graph represented by its root vertex.
+  ///
+  /// @param[in] vertex The root vertex of a function graph.
+  ///
+  /// @returns Probability value.
+  double CalculateProbability(const ItePtr& vertex) noexcept;
+
   BooleanGraph* fault_tree_;  ///< The main fault tree.
 
   /// Table of unique if-then-else nodes denoting function graphs.
@@ -340,6 +378,8 @@ class Bdd {
   std::unordered_map<std::array<int, 3>, ItePtr, IteHash> compute_table_;
 
   std::unordered_map<int, ItePtr> gates_;  ///< Processed gates.
+  std::vector<double> probs_;  ///< Probabilities of variables.
+  double p_graph_;  ///< Total probability of the graph.
 
   const TerminalPtr kOne_;  ///< Terminal True.
   const TerminalPtr kZero_;  ///< Terminal False.

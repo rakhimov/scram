@@ -26,12 +26,30 @@ namespace scram {
 namespace test {
 
 TEST_F(RiskAnalysisTest, BddTest) {
-  std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
+  std::string tree_input =
+      "./share/scram/input/fta/correct_tree_input_with_probs.xml";
+  settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   GatePtr top_gate = fault_tree()->top_events().front();
   BooleanGraph* graph = new BooleanGraph(top_gate);
   Bdd* bdd = new Bdd(graph);
   bdd->Analyze();
+  EXPECT_EQ(0.646, bdd->p_graph());
+  delete graph;
+  delete bdd;
+}
+
+TEST_F(RiskAnalysisTest, BddProb) {
+  std::vector<std::string> input_files;
+  input_files.push_back("./share/scram/input/Chinese/chinese.xml");
+  input_files.push_back("./share/scram/input/Chinese/chinese-basic-events.xml");
+  settings.probability_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFiles(input_files));
+  GatePtr top_gate = fault_tree()->top_events().front();
+  BooleanGraph* graph = new BooleanGraph(top_gate);
+  Bdd* bdd = new Bdd(graph);
+  bdd->Analyze();
+  EXPECT_NEAR(0.0045691, bdd->p_graph(), 1e-5);
   delete graph;
   delete bdd;
 }
