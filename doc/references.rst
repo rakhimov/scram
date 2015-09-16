@@ -17,8 +17,11 @@ References
 
 #. K. Brace, R. Rudell, and R. Bryant,
    "Efficient implementation of a BDD package,"
-   In Proceedings of the 27th ACM/IEEE Design Automation Conference.
-   IEEE 0738, 1990.
+   in Proc. 27th ACM/IEEE Design Automation Conf., IEEE 0738, 1990.
+
+#. S. Minato,
+   "Zero-suppressed BDD's for set manipulation in combinatorial problems,"
+   in Proc. 30th ACM/IEEE Design Automation Conf., pp. 272–277, 1993.
 
 #. A. Rauzy,
    "Towards an efficient implementation of MOCUS," IEEE Trans.
