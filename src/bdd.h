@@ -83,7 +83,7 @@ class NonTerminal : public Vertex {
         id_(0),
         mark_(false) {}
 
-  virtual ~NonTerminal() {}
+  virtual ~NonTerminal() = 0;  ///< Abstract base class.
 
   /// @returns The index of this vertex.
   inline int index() const {
@@ -195,6 +195,9 @@ class NonTerminal : public Vertex {
   TerminalPtr low_term_;  ///< Terminal vertex for 0 (False/else) branch.
   bool mark_;  ///< Traversal mark.
 };
+
+template<typename Node>
+NonTerminal<Node>::~NonTerminal() {}  // Default pure virtual destructor.
 
 /// @class Ite
 /// Representation of non-terminal if-then-else vertices in BDD graphs.
