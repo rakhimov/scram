@@ -22,9 +22,59 @@
 
 namespace scram {
 
+std::pair<bool, bool> SetNode::ConvertIfTerminal(const ItePtr& ite) noexcept {
+  assert(!high_ && !low_ && !high_term_ && !low_term_);
+  high_term_ = ite->high_term();
+  low_term_ = ite->low_term();
+  return {high_term_ != nullptr, low_term_ != nullptr};
+}
+
+void SetNode::ReduceApply(const SetNodePtr& node, SetNodePtr* branch,
+                          TerminalPtr* branch_term) noexcept {
+  if (!node->high_term() || node->high_term()->value()) {
+    *branch = node;
+    return;
+  }
+  assert(!node->high_term()->value());  // Empty set.
+  if (node->low()) {
+    *branch = node->low();
+  } else {
+    assert(node->low_term());
+    *branch_term = node->low_term();
+  }
+}
+
 Zbdd::Zbdd()
     : kBase_(std::make_shared<Terminal>(true)),
       kEmpty_(std::make_shared<Terminal>(false)),
       set_id_(2) {}
+
+void Zbdd::Analyze(const Bdd* bdd) noexcept {
+  Zbdd::ConvertBdd(bdd->root());
+}
+
+std::shared_ptr<SetNode> Zbdd::ConvertBdd(const ItePtr& ite) noexcept {
+  if (!ite) return nullptr;  // Terminal node is handled externally.
+  SetNodePtr& zbdd = ites_[ite->id()];
+  if (zbdd) return zbdd;
+  SetNodePtr high = Zbdd::ConvertBdd(ite->high());
+  SetNodePtr low = Zbdd::ConvertBdd(ite->low());
+
+  zbdd = std::make_shared<SetNode>(ite->index(), ite->order());
+  std::pair<bool, bool> term = zbdd->ConvertIfTerminal(ite);
+  if (!term.first) zbdd->ReduceHigh(high);
+  if (!term.second) zbdd->ReduceLow(low);
+  if (zbdd->high_term() && !zbdd->high_term()->value()) return zbdd;  // Reduce.
+  int id_high = zbdd->IdHigh();
+  int id_low = zbdd->IdLow();
+  SetNodePtr& in_table = unique_table_[{zbdd->index(), id_high, id_low}];
+  if (in_table) {
+    zbdd = in_table;
+  } else {
+    in_table = zbdd;
+    zbdd->id(set_id_++);
+  }
+  return zbdd;
+}
 
 }  // namespace scram

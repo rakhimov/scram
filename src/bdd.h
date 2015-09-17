@@ -303,6 +303,11 @@ class Bdd {
   /// @returns The total probability of the graph.
   inline double p_graph() const { return p_graph_; }
 
+  /// @returns The root vertex of the ROBDD.
+  inline const std::shared_ptr<Ite>& root() const {
+    return gates_.find(fault_tree_->root()->index())->second;
+  }
+
  private:
   using NodePtr = std::shared_ptr<Node>;
   using IGatePtr = std::shared_ptr<IGate>;

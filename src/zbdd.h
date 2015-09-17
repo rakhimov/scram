@@ -30,8 +30,44 @@ namespace scram {
 class SetNode : public NonTerminal<SetNode> {
  public:
   using TerminalPtr = std::shared_ptr<Terminal>;
+  using ItePtr = std::shared_ptr<Ite>;
   using SetNodePtr = std::shared_ptr<SetNode>;
+
   using NonTerminal::NonTerminal;  ///< Constructor with index and order.
+
+  /// Converts terminal ROBDD vertex
+  /// into ZBDD SetNode terminals.
+  ///
+  /// @param[in] ite If-then-else vertex.
+  ///
+  /// @returns Pair of bools for (high, low) branch application results.
+  ///          True means that terminal vertices are processed.
+  std::pair<bool, bool> ConvertIfTerminal(const ItePtr& ite) noexcept;
+
+  /// Helper function for ROBDD conversion.
+  /// Checks the reduction rule upon assigning the high branch of the SetNode.
+  ///
+  /// @param[in] node Reduced ZBDD node.
+  inline void ReduceHigh(const SetNodePtr& node) noexcept {
+    ReduceApply(node, &high_, &high_term_);
+  }
+
+  /// Helper function for ROBDD conversion.
+  /// Checks the reduction rule upon assigning the low branch of the SetNode.
+  ///
+  /// @param[in] node Reduced ZBDD node.
+  inline void ReduceLow(const SetNodePtr& node) noexcept {
+    ReduceApply(node, &low_, &low_term_);
+  }
+
+ private:
+  /// Checks for the reduction rule upon assigning to branches.
+  ///
+  /// @param[in] node Reduced ZBDD node.
+  /// @param[out] branch The branch for SetNode assignment.
+  /// @param[out] branch_term The branch for Terminal vertex assignment.
+  void ReduceApply(const SetNodePtr& node, SetNodePtr* branch,
+                   TerminalPtr* branch_term) noexcept;
 };
 
 /// @class Zbdd
@@ -40,10 +76,25 @@ class Zbdd {
  public:
   Zbdd();
 
+  /// Runs the analysis
+  /// with the representation of a Boolean graph
+  /// as a Reduced Ordered BDD.
+  ///
+  /// @param[in] bdd ROBDD with the ITE vertices.
+  void Analyze(const Bdd* bdd) noexcept;
+
  private:
   using TerminalPtr = std::shared_ptr<Terminal>;
+  using ItePtr = std::shared_ptr<Ite>;
   using SetNodePtr = std::shared_ptr<SetNode>;
   using HashTable = TripletTable<SetNodePtr>;
+
+  /// Converts BDD graph into ZBDD graph.
+  ///
+  /// @param[in] ite If-then-else vertex of the ROBDD graph.
+  ///
+  /// @returns Pointer to the root SetNode vertex of the ZBDD graph.
+  SetNodePtr ConvertBdd(const ItePtr& ite) noexcept;
 
   /// Table of unique SetNodes denoting sets.
   /// The key consists of (index, id_high, id_low) triplet.
@@ -55,6 +106,8 @@ class Zbdd {
   /// In order to keep only unique computations,
   /// the argument IDs must be ordered.
   HashTable compute_table_;
+
+  std::unordered_map<int, SetNodePtr> ites_;  ///< Processed function graphs.
 
   const TerminalPtr kBase_;  ///< Terminal Base (Unity/1) set.
   const TerminalPtr kEmpty_;  ///< Terminal Empty (Null/0) set.

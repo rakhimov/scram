@@ -169,7 +169,7 @@ std::shared_ptr<Ite> Bdd::ConvertGate(const IGatePtr& gate) noexcept {
     std::sort(args.begin(), args.end(),
               [](const std::pair<int, NodePtr>& lhs,
                  const std::pair<int, NodePtr>& rhs) {
-              return lhs.second->opti_value() < rhs.second->opti_value();
+                return lhs.second->opti_value() < rhs.second->opti_value();
               });
     bdd_graph = Bdd::IfThenElse(gate->type(), args, 0);  // Make ordered.
     ItePtr res = Bdd::ReduceGraph(bdd_graph);  // Make reduced.

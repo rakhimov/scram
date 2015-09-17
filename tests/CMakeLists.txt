@@ -40,6 +40,7 @@ set(SCRAM_CORE_TEST_SOURCE ${SCRAM_CORE_TEST_SOURCE}
   "${CMAKE_CURRENT_SOURCE_DIR}/probability_analysis_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/initializer_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/bdd_tests.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/zbdd_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/risk_analysis_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/grapher_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/bench_core_tests.cc"
