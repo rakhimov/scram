@@ -50,7 +50,9 @@ Zbdd::Zbdd()
       set_id_(2) {}
 
 void Zbdd::Analyze(const Bdd* bdd) noexcept {
-  Zbdd::ConvertBdd(bdd->root());
+  SetNodePtr root = Zbdd::ConvertBdd(bdd->root());
+  std::vector<int> seed;
+  GenerateCutSets(root, &seed);
 }
 
 std::shared_ptr<SetNode> Zbdd::ConvertBdd(const ItePtr& ite) noexcept {
@@ -75,6 +77,23 @@ std::shared_ptr<SetNode> Zbdd::ConvertBdd(const ItePtr& ite) noexcept {
     zbdd->id(set_id_++);
   }
   return zbdd;
+}
+
+void Zbdd::GenerateCutSets(const SetNodePtr& node,
+                           std::vector<int>* path) noexcept {
+  std::vector<int> seed(*path);
+  if (node->low()) {
+    Zbdd::GenerateCutSets(node->low(), &seed);
+  } else {
+    if (!seed.empty()) cut_sets_.emplace_back(std::move(seed));
+  }
+
+  path->push_back(node->index());
+  if (node->high()) {
+    Zbdd::GenerateCutSets(node->high(), path);
+  } else {
+    cut_sets_.emplace_back(std::move(*path));
+  }
 }
 
 }  // namespace scram

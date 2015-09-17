@@ -36,6 +36,7 @@ TEST_F(RiskAnalysisTest, ZbddTest) {
   bdd->Analyze();
   Zbdd* zbdd = new Zbdd();
   zbdd->Analyze(bdd);
+  //EXPECT_EQ(4, zbdd->cut_sets().size());
   delete graph;
   delete bdd;
   delete zbdd;
@@ -53,6 +54,7 @@ TEST_F(RiskAnalysisTest, ZbddProb) {
   bdd->Analyze();
   Zbdd* zbdd = new Zbdd();
   zbdd->Analyze(bdd);
+  //EXPECT_EQ(392, zbdd->cut_sets().size());
   delete graph;
   delete bdd;
   delete zbdd;

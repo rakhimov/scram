@@ -83,6 +83,10 @@ class Zbdd {
   /// @param[in] bdd ROBDD with the ITE vertices.
   void Analyze(const Bdd* bdd) noexcept;
 
+  inline const std::vector<std::vector<int>>& cut_sets() const {
+    return cut_sets_;
+  }
+
  private:
   using TerminalPtr = std::shared_ptr<Terminal>;
   using ItePtr = std::shared_ptr<Ite>;
@@ -95,6 +99,15 @@ class Zbdd {
   ///
   /// @returns Pointer to the root SetNode vertex of the ZBDD graph.
   SetNodePtr ConvertBdd(const ItePtr& ite) noexcept;
+
+  /// Traverses the reduced ZBDD graph to generate cut sets.
+  /// The generated cut sets are stored in the main container.
+  ///
+  /// @param[in] node The node in traversal.
+  /// @param[in, out] path Current path of high branches.
+  ///                      This container may get modified drastically
+  ///                      upon passing to the main cut sets container.
+  void GenerateCutSets(const SetNodePtr& node, std::vector<int>* path) noexcept;
 
   /// Table of unique SetNodes denoting sets.
   /// The key consists of (index, id_high, id_low) triplet.
@@ -112,6 +125,8 @@ class Zbdd {
   const TerminalPtr kBase_;  ///< Terminal Base (Unity/1) set.
   const TerminalPtr kEmpty_;  ///< Terminal Empty (Null/0) set.
   int set_id_;  ///< Identification assignment for new set graphs.
+
+  std::vector<std::vector<int>> cut_sets_;  ///< Generated cut sets.
 };
 
 }  // namespace scram
