@@ -27,47 +27,19 @@ namespace scram {
 
 /// @class SetNode
 /// Representation of non-terminal nodes in ZBDD.
-class SetNode : public NonTerminal<SetNode> {
+class SetNode : public NonTerminal {
  public:
-  using TerminalPtr = std::shared_ptr<Terminal>;
-  using ItePtr = std::shared_ptr<Ite>;
-  using SetNodePtr = std::shared_ptr<SetNode>;
-
   using NonTerminal::NonTerminal;  ///< Constructor with index and order.
 
-  /// Converts terminal ROBDD vertex
-  /// into ZBDD SetNode terminals.
+  /// Recovers a shared pointer to SetNode from a pointer to Vertex.
   ///
-  /// @param[in] ite If-then-else vertex.
+  /// @param[in] vertex Pointer to a Vertex known to be a SetNode.
   ///
-  /// @returns Pair of bools for (high, low) branch application results.
-  ///          True means that terminal vertices are processed.
-  std::pair<bool, bool> ConvertIfTerminal(const ItePtr& ite) noexcept;
-
-  /// Helper function for ROBDD conversion.
-  /// Checks the reduction rule upon assigning the high branch of the SetNode.
-  ///
-  /// @param[in] node Reduced ZBDD node.
-  inline void ReduceHigh(const SetNodePtr& node) noexcept {
-    ReduceApply(node, &high_, &high_term_);
+  /// @return Casted pointer to SetNode.
+  inline static std::shared_ptr<SetNode> Ptr(
+      const std::shared_ptr<Vertex>& vertex) {
+    return std::static_pointer_cast<SetNode>(vertex);
   }
-
-  /// Helper function for ROBDD conversion.
-  /// Checks the reduction rule upon assigning the low branch of the SetNode.
-  ///
-  /// @param[in] node Reduced ZBDD node.
-  inline void ReduceLow(const SetNodePtr& node) noexcept {
-    ReduceApply(node, &low_, &low_term_);
-  }
-
- private:
-  /// Checks for the reduction rule upon assigning to branches.
-  ///
-  /// @param[in] node Reduced ZBDD node.
-  /// @param[out] branch The branch for SetNode assignment.
-  /// @param[out] branch_term The branch for Terminal vertex assignment.
-  void ReduceApply(const SetNodePtr& node, SetNodePtr* branch,
-                   TerminalPtr* branch_term) noexcept;
 };
 
 /// @class Zbdd
@@ -88,6 +60,7 @@ class Zbdd {
   }
 
  private:
+  using VertexPtr = std::shared_ptr<Vertex>;
   using TerminalPtr = std::shared_ptr<Terminal>;
   using ItePtr = std::shared_ptr<Ite>;
   using SetNodePtr = std::shared_ptr<SetNode>;
@@ -95,19 +68,20 @@ class Zbdd {
 
   /// Converts BDD graph into ZBDD graph.
   ///
-  /// @param[in] ite If-then-else vertex of the ROBDD graph.
+  /// @param[in] vertex Vertex of the ROBDD graph.
   ///
-  /// @returns Pointer to the root SetNode vertex of the ZBDD graph.
-  SetNodePtr ConvertBdd(const ItePtr& ite) noexcept;
+  /// @returns Pointer to the root vertex of the ZBDD graph.
+  VertexPtr ConvertBdd(const VertexPtr& vertex) noexcept;
 
   /// Traverses the reduced ZBDD graph to generate cut sets.
   /// The generated cut sets are stored in the main container.
   ///
-  /// @param[in] node The node in traversal.
+  /// @param[in] vertex The node in traversal.
   /// @param[in, out] path Current path of high branches.
   ///                      This container may get modified drastically
   ///                      upon passing to the main cut sets container.
-  void GenerateCutSets(const SetNodePtr& node, std::vector<int>* path) noexcept;
+  void GenerateCutSets(const VertexPtr& vertex,
+                       std::vector<int>* path) noexcept;
 
   /// Table of unique SetNodes denoting sets.
   /// The key consists of (index, id_high, id_low) triplet.

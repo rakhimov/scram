@@ -35,15 +35,30 @@ namespace scram {
 
 /// @class Vertex
 /// Representation of a vertex in BDD graphs.
-/// The design goal for vertex classes
-/// is to avoid as much RTTI as possible
-/// and take into account the performance of algorithms.
 class Vertex {
  public:
-  Vertex() = default;
+  /// @param[in] terminal Flag for terminal nodes.
+  /// @param[in] id Identificator of the BDD graph.
+  explicit Vertex(bool terminal = false, int id = 0);
+
   Vertex(const Vertex&) = delete;
   Vertex& operator=(const Vertex&) = delete;
+
   virtual ~Vertex() = 0;  ///< Abstract class.
+
+  /// @returns true if this vertex is terminal.
+  inline bool terminal() const { return terminal_; }
+
+  /// @returns Identificator of the BDD graph rooted by this vertex.
+  ///
+  /// @todo Deal with 0 id.
+  inline int id() const { return id_; };
+
+ protected:
+  int id_;  ///< Unique identifier of the BDD graph with this vertex.
+
+ private:
+  bool terminal_;  ///< Flag for terminal vertices. RTTI hack.
 };
 
 /// @class Terminal
@@ -63,25 +78,29 @@ class Terminal : public Vertex {
   ///       identifications of value 0 or 1.
   inline bool value() const { return value_; }
 
+  /// Recovers a shared pointer to Terminal from a pointer to Vertex.
+  ///
+  /// @param[in] vertex Pointer to a Vertex known to be a Terminal.
+  ///
+  /// @return Casted pointer to Terminal.
+  inline static std::shared_ptr<Terminal> Ptr(
+      const std::shared_ptr<Vertex>& vertex) {
+    return std::static_pointer_cast<Terminal>(vertex);
+  }
+
  private:
   bool value_;  ///< The meaning of the terminal.
 };
 
 /// @class NonTerminal
 /// Representation of non-terminal vertices in BDD graphs.
-template<typename Node>
 class NonTerminal : public Vertex {
  public:
-  using TerminalPtr = std::shared_ptr<Terminal>;
-  using NonTerminalPtr = std::shared_ptr<Node>;
+  using VertexPtr = std::shared_ptr<Vertex>;
 
   /// @param[in] index Index of this non-terminal vertex.
   /// @param[in] order Specific ordering number for BDD graphs.
-  NonTerminal(int index, int order)
-      : index_(index),
-        order_(order),
-        id_(0),
-        mark_(false) {}
+  NonTerminal(int index, int order);
 
   virtual ~NonTerminal() = 0;  ///< Abstract base class.
 
@@ -97,12 +116,6 @@ class NonTerminal : public Vertex {
     return order_;
   }
 
-  /// @returns Unique identifier of the ROBDD graph.
-  /// @returns 0 if no reduction is performed with a resulting id.
-  inline int id() const {
-    return id_;
-  }
-
   /// Sets the unique identifier of the ROBDD graph.
   ///
   /// @param[in] id Unique identifier of the ROBDD graph.
@@ -110,72 +123,24 @@ class NonTerminal : public Vertex {
   ///               with the identifiers of terminal nodes.
   inline void id(int id) {
     assert(id > 1);  // Must not have an ID of terminal nodes.
-    id_ = id;
+    Vertex::id_ = id;
   }
 
-  /// @returns The left part of the key (id(low)) for the ROBDD graph.
-  inline int IdLow() const {
-    if (low_) return low_->id();
-    assert(low_term_);
-    return low_term_->value();
-  }
+  /// @returns (1/True/then/left) branch if-then-else vertex.
+  inline const VertexPtr& high() const { return high_; }
 
-  /// @returns The right part of the key (id(high)) for the ROBDD graph.
-  inline int IdHigh() const {
-    if (high_) return high_->id();
-    assert(high_term_);
-    return high_term_->value();
-  }
-
-  /// @returns (1/True/then) branch if-then-else vertex.
-  /// @returns nullptr if the branch is Terminal or non-existent.
-  inline const NonTerminalPtr& high() const { return high_; }
-
-  /// Sets the (1/True/then) branch vertex.
+  /// Sets the (1/True/then/left) branch vertex.
   ///
   /// @param[in] high The if-then-else vertex.
-  inline void high(const NonTerminalPtr& high) {
-    assert(order_ < high->order_);  // Ordered graph.
-    high_ = high;
-    high_term_ = nullptr;
-  }
+  inline void high(const VertexPtr& high) { high_ = high; }
 
-  /// Sets the (1/True/then) branch to terminal vertex.
-  ///
-  /// @param[in] high_term The terminal vertex.
-  inline void high(const TerminalPtr& high_term) {
-    high_term_ = high_term;
-    high_ = nullptr;
-  }
+  /// @returns (0/False/else/right) branch vertex.
+  inline const VertexPtr& low() const { return low_; }
 
-  /// @returns (0/False/else) branch vertex.
-  /// @returns nullptr if the branch is Terminal or non-existent.
-  inline const NonTerminalPtr& low() const { return low_; }
-
-  /// Sets the (0/False/else) branch vertex.
+  /// Sets the (0/False/else/right) branch vertex.
   ///
   /// @param[in] low The vertex.
-  inline void low(const NonTerminalPtr& low) {
-    assert(order_ < low->order_);  // Ordered graph.
-    low_ = low;
-    low_term_ = nullptr;
-  }
-
-  /// Sets the (0/False/else) branch to terminal vertex.
-  ///
-  /// @param[in] low_term The terminal vertex.
-  inline void low(const TerminalPtr& low_term) {
-    low_term_ = low_term;
-    low_ = nullptr;
-  }
-
-  /// @returns (1/True/then) branch terminal vertex.
-  /// @returns nullptr if the branch is not terminal.
-  inline const TerminalPtr& high_term() const { return high_term_; }
-
-  /// @returns (0/False/else) branch terminal vertex.
-  /// @returns nullptr if the branch is not terminal.
-  inline const TerminalPtr& low_term() const { return low_term_; }
+  inline void low(const VertexPtr& low) { low_ = low; }
 
   /// @returns The mark of this vertex.
   inline bool mark() const { return mark_; }
@@ -188,24 +153,16 @@ class NonTerminal : public Vertex {
  protected:
   int index_;  ///< Index of the variable.
   int order_;  ///< Order of the variable.
-  int id_;  ///< Unique identifier of the ROBDD graph with this vertex.
-  NonTerminalPtr high_;  ///< 1 (True/then) branch in the Shannon decomposition.
-  NonTerminalPtr low_;  ///< O (False/else) branch in the Shannon decomposition.
-  TerminalPtr high_term_;  ///< Terminal vertex for 1 (True/then) branch.
-  TerminalPtr low_term_;  ///< Terminal vertex for 0 (False/else) branch.
+  VertexPtr high_;  ///< 1 (True/then) branch in the Shannon decomposition.
+  VertexPtr low_;  ///< O (False/else) branch in the Shannon decomposition.
   bool mark_;  ///< Traversal mark.
 };
-
-template<typename Node>
-NonTerminal<Node>::~NonTerminal() {}  // Default pure virtual destructor.
 
 /// @class Ite
 /// Representation of non-terminal if-then-else vertices in BDD graphs.
 /// This class is designed to help construct and manipulate BDD graphs.
-class Ite : public NonTerminal<Ite> {
+class Ite : public NonTerminal {
  public:
-  using ItePtr = std::shared_ptr<Ite>;
-
   using NonTerminal::NonTerminal;  ///< Constructor with index and order.
 
   /// @returns The probability of the function graph.
@@ -216,59 +173,17 @@ class Ite : public NonTerminal<Ite> {
   /// @param[in] value Calculated value for the probability.
   inline void prob(double value) { prob_ = value; }
 
-  /// Checks and applies Boolean operators for terminal branches.
-  /// The function is coupled with the BDD Apply procedures.
+  /// Recovers a shared pointer to Ite from a pointer to Vertex.
   ///
-  /// @param[in] type The operator or type of the gate.
-  /// @param[in] arg_one First argument function graph with lower order.
-  /// @param[in] arg_two Second argument function graph with higher order.
+  /// @param[in] vertex Pointer to a Vertex known to be an Ite.
   ///
-  /// @returns Pair of bools for (high, low) branch application results.
-  ///          True means that terminal vertices are processed.
-  ///
-  /// @note This if-then-else vertex should be new without any branches.
-  /// @note Argument vertices must have equal order,
-  ///       or they must be passed in ascending order.
-  /// @note The main reason for the conditional Apply
-  ///       is to avoid RTTI and related hacks by the users of Vertex classes.
-  std::pair<bool, bool> ApplyIfTerminal(Operator type, const ItePtr& arg_one,
-                                        const ItePtr& arg_two) noexcept;
+  /// @return Casted pointer to Ite.
+  inline static std::shared_ptr<Ite> Ptr(
+      const std::shared_ptr<Vertex>& vertex) {
+    return std::static_pointer_cast<Ite>(vertex);
+  }
 
  private:
-  using TerminalPtr = std::shared_ptr<Terminal>;
-
-  /// Applies the logic of a Boolean operator
-  /// to terminal vertices.
-  ///
-  /// @param[in] type The operator to apply.
-  /// @param[in] term_one First argument terminal vertex or nullptr.
-  /// @param[in] term_two Second argument terminal vertex or nullptr.
-  ///
-  /// @returns Terminal vertex as a result of operations.
-  /// @returns nullptr if no operations are performed.
-  ///
-  /// @note If the input pointer parameters are nullptr,
-  ///       no operations are performed.
-  TerminalPtr ApplyTerminal(Operator type, const TerminalPtr& term_one,
-                            const TerminalPtr& term_two) noexcept;
-
-  /// Applies the logic of a Boolean operator
-  /// to non-terminal and terminal vertices.
-  ///
-  /// @param[in] type The operator or type of the gate.
-  /// @param[in] v_one Non-terminal if-then-else vertex.
-  /// @param[in] term_one Terminal vertex.
-  /// @param[out] branch The resulting if-then-else branch of the operation.
-  /// @param[out] branch_term The resulting terminal branch of the operation.
-  ///
-  /// @note The result is assigned to only of the the branches
-  ///       depending on the logic and the input arguments.
-  /// @note If the input pointer parameters are nullptr,
-  ///       no operations are performed.
-  void ApplyTerminal(Operator type, const ItePtr& v_one,
-                     const TerminalPtr& term_one,
-                     ItePtr* branch, TerminalPtr* branch_term) noexcept;
-
   double prob_ = 0;  ///< Probability of the function graph.
 };
 
@@ -314,6 +229,7 @@ class Bdd {
  private:
   using NodePtr = std::shared_ptr<Node>;
   using IGatePtr = std::shared_ptr<IGate>;
+  using VertexPtr = std::shared_ptr<Vertex>;
   using TerminalPtr = std::shared_ptr<Terminal>;
   using ItePtr = std::shared_ptr<Ite>;
   using HashTable = TripletTable<ItePtr>;
@@ -352,13 +268,14 @@ class Bdd {
   /// @returns Pointer to the root vertex of the BDD graph.
   ItePtr ConvertGate(const IGatePtr& gate) noexcept;
 
-  /// Applies reduction rules to the BDD graph.
+  /// Applies reduction rules to a BDD graph.
   ///
-  /// @param[in] ite The root vertex of the graph.
+  /// @param[in,out] vertex The root vertex of the graph.
   ///
-  /// @returns Pointer to the replacement vertex.
-  /// @returns nullptr if no replacement is required for reduction.
-  ItePtr ReduceGraph(const ItePtr& ite) noexcept;
+  /// @returns The root vertex of the reduced graph.
+  ///          It is the same vertex as the input vertex
+  ///          only if the resulting graph is unique.
+  VertexPtr Reduce(const VertexPtr& vertex) noexcept;
 
   /// Considers the Shannon decomposition
   /// for the given Boolean operator
@@ -384,8 +301,30 @@ class Bdd {
   /// @returns Poitner to the root vertex of the resultant BDD graph.
   ///
   /// @note The order of arguments does not matter for two variable operators.
-  ItePtr Apply(Operator type, const ItePtr& arg_one,
-               const ItePtr& arg_two) noexcept;
+  VertexPtr Apply(Operator type, const VertexPtr& arg_one,
+                  const VertexPtr& arg_two) noexcept;
+
+  /// Applies the logic of a Boolean operator
+  /// to terminal vertices.
+  ///
+  /// @param[in] type The operator to apply.
+  /// @param[in] term_one First argument terminal vertex.
+  /// @param[in] term_two Second argument terminal vertex.
+  ///
+  /// @returns Terminal vertex as a result of operations.
+  TerminalPtr ApplyTerminal(Operator type, const TerminalPtr& term_one,
+                            const TerminalPtr& term_two) noexcept;
+
+  /// Applies the logic of a Boolean operator
+  /// to non-terminal and terminal vertices.
+  ///
+  /// @param[in] type The operator or type of the gate.
+  /// @param[in] v_one Non-terminal vertex.
+  /// @param[in] term_one Terminal vertex.
+  ///
+  /// @returns Pointer to the vertex as a result of operations.
+  VertexPtr ApplyTerminal(Operator type, const ItePtr& v_one,
+                          const TerminalPtr& term_one) noexcept;
 
   /// Calculates exact probability
   /// of a function graph represented by its root vertex.
@@ -393,7 +332,7 @@ class Bdd {
   /// @param[in] vertex The root vertex of a function graph.
   ///
   /// @returns Probability value.
-  double CalculateProbability(const ItePtr& vertex) noexcept;
+  double CalculateProbability(const VertexPtr& vertex) noexcept;
 
   BooleanGraph* fault_tree_;  ///< The main fault tree.
 
