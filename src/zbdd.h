@@ -25,6 +25,12 @@
 
 namespace scram {
 
+/// @enum SetOp
+/// Operations on sets.
+enum class SetOp {
+  Without = 0  ///< Without '\' operator.
+};
+
 /// @class SetNode
 /// Representation of non-terminal nodes in ZBDD.
 class SetNode : public NonTerminal {
@@ -55,6 +61,7 @@ class Zbdd {
   /// @param[in] bdd ROBDD with the ITE vertices.
   void Analyze(const Bdd* bdd) noexcept;
 
+  /// @returns Minimal cut sets.
   inline const std::vector<std::vector<int>>& cut_sets() const {
     return cut_sets_;
   }
@@ -72,6 +79,25 @@ class Zbdd {
   ///
   /// @returns Pointer to the root vertex of the ZBDD graph.
   VertexPtr ConvertBdd(const VertexPtr& vertex) noexcept;
+
+  /// Removes subsets in ZBDD.
+  ///
+  /// @param[in] vertex The variable node in the set.
+  ///
+  /// @returns Processed vertex.
+  ///
+  /// @warning NonTerminal vertex marks are used.
+  VertexPtr Subsume(const VertexPtr& vertex) noexcept;
+
+  /// Applies subsume operation on two sets.
+  /// Subsume operation removes
+  /// paths that exist in Low branch from High branch.
+  ///
+  /// @param[in] high True/then/high branch of a variable.
+  /// @param[in] low False/else/low branch of a variable.
+  ///
+  /// @returns Minimized high branch for a variable.
+  VertexPtr Subsume(const VertexPtr& high, const VertexPtr& low) noexcept;
 
   /// Traverses the reduced ZBDD graph to generate cut sets.
   /// The generated cut sets are stored in the main container.
@@ -92,7 +118,7 @@ class Zbdd {
   /// The argument functions are recorded with their IDs (not vertex indices).
   /// In order to keep only unique computations,
   /// the argument IDs must be ordered.
-  HashTable compute_table_;
+  TripletTable<VertexPtr> compute_table_;
 
   std::unordered_map<int, SetNodePtr> ites_;  ///< Processed function graphs.
 

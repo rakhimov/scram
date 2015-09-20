@@ -29,8 +29,9 @@ Zbdd::Zbdd()
 
 void Zbdd::Analyze(const Bdd* bdd) noexcept {
   SetNodePtr root = SetNode::Ptr(Zbdd::ConvertBdd(bdd->root()));
+  Zbdd::Subsume(root);
   std::vector<int> seed;
-  GenerateCutSets(root, &seed);
+  Zbdd::GenerateCutSets(root, &seed);
 }
 
 std::shared_ptr<Vertex> Zbdd::ConvertBdd(const VertexPtr& vertex) noexcept {
@@ -52,17 +53,77 @@ std::shared_ptr<Vertex> Zbdd::ConvertBdd(const VertexPtr& vertex) noexcept {
   return zbdd;
 }
 
+std::shared_ptr<Vertex> Zbdd::Subsume(const VertexPtr& vertex) noexcept {
+  if (vertex->terminal()) return vertex;
+  SetNodePtr node = SetNode::Ptr(vertex);
+  if (node->mark()) return node;
+  node->mark(true);
+  node->high(Zbdd::Subsume(node->high(), node->low()));
+  Zbdd::Subsume(node->high());
+  Zbdd::Subsume(node->low());
+  return node;
+}
+
+std::shared_ptr<Vertex> Zbdd::Subsume(const VertexPtr& high,
+                                      const VertexPtr& low) noexcept {
+  if (low->terminal()) {
+    if (Terminal::Ptr(low)->value()) {
+      return kEmpty_;
+    } else {
+      return high;
+    }
+  }
+  if (high->terminal()) return high;
+  /// @todo Define set operation signatures.
+  int op = static_cast<int>(SetOp::Without);
+  VertexPtr& computed = compute_table_[{op, high->id(), low->id()}];
+  if (computed) return computed;
+
+  SetNodePtr high_node = SetNode::Ptr(high);
+  SetNodePtr low_node = SetNode::Ptr(low);
+  if (high_node->order() > low_node->order()) {
+    computed = Zbdd::Subsume(high, low_node->low());
+    return computed;
+  }
+  VertexPtr subhigh;
+  VertexPtr sublow;
+  if (high_node->order() == low_node->order()) {
+    assert(high_node->index() == low_node->index());
+    /// @todo This is correct only for coherent sets.
+    subhigh = Zbdd::Subsume(high_node->high(), low_node->high());
+    sublow = Zbdd::Subsume(high_node->low(), low_node->low());
+  } else {
+    assert(high_node->order() < low_node->order());
+    subhigh = Zbdd::Subsume(high_node->high(), low);
+    sublow = Zbdd::Subsume(high_node->low(), low);
+  }
+  SetNodePtr& existing_node =
+      unique_table_[{high_node->index(), subhigh->id(), sublow->id()}];
+  if (!existing_node) {
+    existing_node =
+        std::make_shared<SetNode>(high_node->index(), high_node->order());
+    existing_node->high(subhigh);
+    existing_node->low(sublow);
+    existing_node->id(set_id_++);
+  }
+  computed = existing_node;
+  return computed;
+}
+
 void Zbdd::GenerateCutSets(const VertexPtr& vertex,
                            std::vector<int>* path) noexcept {
-  if (vertex->terminal()) return;
+  if (vertex->terminal()) {
+    if (Terminal::Ptr(vertex)->value()) {
+      cut_sets_.emplace_back(std::move(*path));
+    }
+    return;  // Don't include 0/NULL sets.
+  }
   SetNodePtr node = SetNode::Ptr(vertex);
   std::vector<int> seed(*path);
   Zbdd::GenerateCutSets(node->low(), &seed);
-  if (!seed.empty()) cut_sets_.emplace_back(std::move(seed));
 
   path->push_back(node->index());
   Zbdd::GenerateCutSets(node->high(), path);
-  cut_sets_.emplace_back(std::move(*path));
 }
 
 }  // namespace scram
