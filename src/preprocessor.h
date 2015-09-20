@@ -74,6 +74,11 @@ class Preprocessor {
   ///          outside of the Boolean graph.
   void ProcessFaultTree() noexcept;
 
+  /// Performs preprocessing for analyses with Binary Decision Diagrams.
+  ///
+  /// @todo Decouple preprocessing from the analysis types.
+  void ProcessForBdd() noexcept;
+
  private:
   using NodePtr = std::shared_ptr<Node>;
   using IGatePtr = std::shared_ptr<IGate>;

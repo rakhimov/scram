@@ -128,6 +128,43 @@ void Preprocessor::ProcessFaultTree() noexcept {
   assert(graph_->normal_);
 }
 
+void Preprocessor::ProcessForBdd() noexcept {
+  assert(graph_->root());
+  assert(graph_->root()->parents().empty());
+  assert(!graph_->root()->mark());
+
+  CLOCK(time_1);
+  LOG(DEBUG2) << "Preprocessing Phase I...";
+  Preprocessor::PhaseOne();
+  LOG(DEBUG2) << "Finished Preprocessing Phase I in " << DUR(time_1);
+  if (Preprocessor::CheckRootGate()) return;
+
+  CLOCK(time_2);
+  LOG(DEBUG2) << "Preprocessing Phase II...";
+  Preprocessor::PhaseTwo();
+  LOG(DEBUG2) << "Finished Preprocessing Phase II in " << DUR(time_2);
+  if (Preprocessor::CheckRootGate()) return;
+
+  /// @todo Partial normalization may be better for BDD. (XOR, NAND, NOR, K/N)
+  if (!graph_->normal_) {
+    CLOCK(time_3);
+    LOG(DEBUG2) << "Preprocessing Phase III...";
+    Preprocessor::PhaseThree();
+    LOG(DEBUG2) << "Finished Preprocessing Phase III in " << DUR(time_3);
+    graph_->normal_ = true;
+    if (Preprocessor::CheckRootGate()) return;
+  }
+
+  /// @todo Propagation of complements is redundant for BDD.
+  if (!graph_->coherent()) {
+    CLOCK(time_4);
+    LOG(DEBUG2) << "Preprocessing Phase IV...";
+    Preprocessor::PhaseFour();
+    LOG(DEBUG2) << "Finished Preprocessing Phase IV in " << DUR(time_4);
+    if (Preprocessor::CheckRootGate()) return;
+  }
+}
+
 void Preprocessor::PhaseOne() noexcept {
   if (!graph_->constants_.empty()) {
     LOG(DEBUG3) << "Removing constants...";

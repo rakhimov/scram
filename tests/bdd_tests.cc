@@ -21,6 +21,7 @@
 
 #include "bdd.h"
 #include "fault_tree.h"
+#include "preprocessor.h"
 
 namespace scram {
 namespace test {
@@ -32,10 +33,13 @@ TEST_F(RiskAnalysisTest, BddTest) {
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   GatePtr top_gate = fault_tree()->top_events().front();
   BooleanGraph* graph = new BooleanGraph(top_gate);
+  Preprocessor* prep = new Preprocessor(graph);
+  prep->ProcessForBdd();
   Bdd* bdd = new Bdd(graph);
   bdd->Analyze();
   EXPECT_EQ(0.646, bdd->p_graph());
   delete graph;
+  delete prep;
   delete bdd;
 }
 
@@ -47,10 +51,13 @@ TEST_F(RiskAnalysisTest, BddProb) {
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
   GatePtr top_gate = fault_tree()->top_events().front();
   BooleanGraph* graph = new BooleanGraph(top_gate);
+  Preprocessor* prep = new Preprocessor(graph);
+  prep->ProcessForBdd();
   Bdd* bdd = new Bdd(graph);
   bdd->Analyze();
   EXPECT_NEAR(0.0045691, bdd->p_graph(), 1e-5);
   delete graph;
+  delete prep;
   delete bdd;
 }
 
