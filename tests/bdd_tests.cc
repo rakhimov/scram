@@ -61,5 +61,40 @@ TEST_F(RiskAnalysisTest, BddProb) {
   delete bdd;
 }
 
+TEST_F(RiskAnalysisTest, BddNonCoherent) {
+  std::vector<std::string> input_files;
+  input_files.push_back("./share/scram/input/core/a_or_not_b.xml");
+  settings.probability_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFiles(input_files));
+  GatePtr top_gate = fault_tree()->top_events().front();
+  BooleanGraph* graph = new BooleanGraph(top_gate);
+  Preprocessor* prep = new Preprocessor(graph);
+  prep->ProcessForBdd();
+  Bdd* bdd = new Bdd(graph);
+  bdd->Analyze();
+  EXPECT_NEAR(0.82, bdd->p_graph(), 1e-5);
+  delete graph;
+  delete prep;
+  delete bdd;
+}
+
+TEST_F(RiskAnalysisTest, DISABLED_BddCea9601) {
+  std::vector<std::string> input_files;
+  input_files.push_back("./share/scram/input/CEA9601/CEA9601.xml");
+  input_files.push_back("./share/scram/input/CEA9601/CEA9601-basic-events.xml");
+  settings.probability_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFiles(input_files));
+  GatePtr top_gate = fault_tree()->top_events().front();
+  BooleanGraph* graph = new BooleanGraph(top_gate);
+  Preprocessor* prep = new Preprocessor(graph);
+  prep->ProcessForBdd();
+  Bdd* bdd = new Bdd(graph);
+  bdd->Analyze();
+  EXPECT_NEAR(2.0812e-8, bdd->p_graph(), 1e-10);
+  delete graph;
+  delete prep;
+  delete bdd;
+}
+
 }  // namespace test
 }  // namespace scram

@@ -47,7 +47,6 @@ Bdd::Bdd(BooleanGraph* fault_tree)
       function_id_(2) {}
 
 void Bdd::Analyze() noexcept {
-  assert(fault_tree_->coherent());
   fault_tree_->ClearOptiValues();
   int shift = Bdd::TopologicalOrder(fault_tree_->root(), 0);
 
@@ -156,27 +155,35 @@ std::shared_ptr<Ite> Bdd::IfThenElse(
   assert(pos < args.size());
   const auto& arg = args[pos];
   ++pos;  // Next argument for subgraphs.
-  assert(arg.first > 0);
   ItePtr ite(new Ite(arg.second->index(), arg.second->opti_value()));
+  VertexPtr high;
+  VertexPtr low;
   switch (type) {
     case kOrGate:
-      ite->high(kOne_);
+      high = kOne_;
       if (pos == args.size()) {
-        ite->low(kZero_);
+        low = kZero_;
       } else {
-        ite->low(Bdd::IfThenElse(type, args, pos));
+        low = Bdd::IfThenElse(type, args, pos);
       }
       break;
     case kAndGate:
       if (pos == args.size()) {
-        ite->high(kOne_);
+        high = kOne_;
       } else {
-        ite->high(Bdd::IfThenElse(type, args, pos));
+        high = Bdd::IfThenElse(type, args, pos);
       }
-      ite->low(kZero_);
+      low = kZero_;
       break;
     default:
       assert(false);
+  }
+  if (arg.first > 0) {
+    ite->high(high);
+    ite->low(low);
+  } else {
+    ite->high(low);
+    ite->low(high);
   }
   return ite;
 }
