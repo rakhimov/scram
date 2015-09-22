@@ -82,7 +82,7 @@ Preprocessor::Preprocessor(BooleanGraph* graph) noexcept
     : graph_(graph),
       root_sign_(1) {}
 
-void Preprocessor::ProcessFaultTree() noexcept {
+void Preprocessor::Run() noexcept {
   assert(graph_->root());
   assert(graph_->root()->parents().empty());
   assert(!graph_->root()->mark());
@@ -99,12 +99,11 @@ void Preprocessor::ProcessFaultTree() noexcept {
   LOG(DEBUG2) << "Finished Preprocessing Phase II in " << DUR(time_2);
   if (Preprocessor::CheckRootGate()) return;
 
-  if (!graph_->normal_) {
+  if (!graph_->normal()) {
     CLOCK(time_3);
     LOG(DEBUG2) << "Preprocessing Phase III...";
     Preprocessor::PhaseThree();
     LOG(DEBUG2) << "Finished Preprocessing Phase III in " << DUR(time_3);
-    graph_->normal_ = true;
     if (Preprocessor::CheckRootGate()) return;
   }
 
@@ -126,35 +125,6 @@ void Preprocessor::ProcessFaultTree() noexcept {
   assert(const_gates_.empty());
   assert(null_gates_.empty());
   assert(graph_->normal_);
-}
-
-void Preprocessor::ProcessForBdd() noexcept {
-  assert(graph_->root());
-  assert(graph_->root()->parents().empty());
-  assert(!graph_->root()->mark());
-
-  CLOCK(time_1);
-  LOG(DEBUG2) << "Preprocessing Phase I...";
-  Preprocessor::PhaseOne();
-  LOG(DEBUG2) << "Finished Preprocessing Phase I in " << DUR(time_1);
-  if (Preprocessor::CheckRootGate()) return;
-
-  CLOCK(time_2);
-  LOG(DEBUG2) << "Preprocessing Phase II...";
-  Preprocessor::PhaseTwo();
-  LOG(DEBUG2) << "Finished Preprocessing Phase II in " << DUR(time_2);
-  if (Preprocessor::CheckRootGate()) return;
-
-  /// @todo Partial normalization may be better for BDD. (XOR, NAND, NOR, K/N)
-  /// @todo Normalization may require the same ordering as for BDD.
-  if (!graph_->normal_) {
-    CLOCK(time_3);
-    LOG(DEBUG2) << "Preprocessing Phase III...";
-    Preprocessor::PhaseThree();
-    LOG(DEBUG2) << "Finished Preprocessing Phase III in " << DUR(time_3);
-    graph_->normal_ = true;
-    if (Preprocessor::CheckRootGate()) return;
-  }
 }
 
 void Preprocessor::PhaseOne() noexcept {
@@ -236,6 +206,7 @@ void Preprocessor::PhaseThree() noexcept {
   LOG(DEBUG3) << "Full normalization of gates...";
   assert(root_sign_ == 1);
   Preprocessor::NormalizeGates(true);
+  graph_->normal_ = true;
   LOG(DEBUG3) << "Finished the full normalization gates!";
 
   if (Preprocessor::CheckRootGate()) return;
@@ -2292,6 +2263,33 @@ void Preprocessor::ReplaceGate(const IGatePtr& gate,
     } else if (parent->type() == kNullGate) {
       null_gates_.push_back(parent);
     }
+  }
+}
+
+void PreprocessorBdd::Run() noexcept {
+  assert(graph_->root());
+  assert(graph_->root()->parents().empty());
+  assert(!graph_->root()->mark());
+
+  CLOCK(time_1);
+  LOG(DEBUG2) << "Preprocessing Phase I...";
+  Preprocessor::PhaseOne();
+  LOG(DEBUG2) << "Finished Preprocessing Phase I in " << DUR(time_1);
+  if (Preprocessor::CheckRootGate()) return;
+
+  CLOCK(time_2);
+  LOG(DEBUG2) << "Preprocessing Phase II...";
+  Preprocessor::PhaseTwo();
+  LOG(DEBUG2) << "Finished Preprocessing Phase II in " << DUR(time_2);
+  if (Preprocessor::CheckRootGate()) return;
+
+  /// @todo Normalization may require the same ordering as for BDD.
+  if (!graph_->normal()) {
+    CLOCK(time_3);
+    LOG(DEBUG2) << "Preprocessing Phase III...";
+    Preprocessor::PhaseThree();
+    LOG(DEBUG2) << "Finished Preprocessing Phase III in " << DUR(time_3);
+    if (Preprocessor::CheckRootGate()) return;
   }
 }
 

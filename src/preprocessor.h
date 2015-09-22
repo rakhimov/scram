@@ -62,24 +62,21 @@ class Preprocessor {
   ///          which will mess the new structure of the Boolean graph.
   explicit Preprocessor(BooleanGraph* graph) noexcept;
 
+  virtual ~Preprocessor() {}
+
   /// Performs processing of a fault tree
   /// to simplify the structure to
   /// normalized (OR/AND gates only),
   /// modular (independent sub-trees),
   /// positive-gate-only (negation normal)
-  /// indexed fault tree.
+  /// Boolean graph.
   ///
   /// @warning There should not be another smart pointer
   ///          to the indexed top gate of the fault tree
   ///          outside of the Boolean graph.
-  void ProcessFaultTree() noexcept;
+  virtual void Run() noexcept;
 
-  /// Performs preprocessing for analyses with Binary Decision Diagrams.
-  ///
-  /// @todo Decouple preprocessing from the analysis types.
-  void ProcessForBdd() noexcept;
-
- private:
+ protected:
   using NodePtr = std::shared_ptr<Node>;
   using IGatePtr = std::shared_ptr<IGate>;
   using IGateWeakPtr = std::weak_ptr<IGate>;
@@ -1088,6 +1085,16 @@ class Preprocessor {
   /// Container for NULL type gates to be tracked and cleaned by algorithms.
   /// NULL type gates are created by coherent gates with only one argument.
   std::vector<IGateWeakPtr> null_gates_;
+};
+
+/// @class PreprocessorBdd
+/// Specilalization of preprocessing for BDD based analyses.
+class PreprocessorBdd : public Preprocessor {
+ public:
+  using Preprocessor::Preprocessor;  ///< Constructor with a Boolean graph.
+
+  /// Performs preprocessing for analyses with Binary Decision Diagrams.
+  void Run() noexcept override;
 };
 
 }  // namespace scram

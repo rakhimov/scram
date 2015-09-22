@@ -33,8 +33,8 @@ TEST_F(RiskAnalysisTest, BddTest) {
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   GatePtr top_gate = fault_tree()->top_events().front();
   BooleanGraph* graph = new BooleanGraph(top_gate);
-  Preprocessor* prep = new Preprocessor(graph);
-  prep->ProcessForBdd();
+  Preprocessor* prep = new PreprocessorBdd(graph);
+  prep->Run();
   Bdd* bdd = new Bdd(graph);
   bdd->Analyze();
   EXPECT_EQ(0.646, bdd->p_graph());
@@ -51,8 +51,8 @@ TEST_F(RiskAnalysisTest, BddChinese) {
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
   GatePtr top_gate = fault_tree()->top_events().front();
   BooleanGraph* graph = new BooleanGraph(top_gate);
-  Preprocessor* prep = new Preprocessor(graph);
-  prep->ProcessForBdd();
+  Preprocessor* prep = new PreprocessorBdd(graph);
+  prep->Run();
   Bdd* bdd = new Bdd(graph);
   bdd->Analyze();
   EXPECT_NEAR(0.0045691, bdd->p_graph(), 1e-5);
@@ -68,8 +68,8 @@ TEST_F(RiskAnalysisTest, BddNonCoherent) {
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
   GatePtr top_gate = fault_tree()->top_events().front();
   BooleanGraph* graph = new BooleanGraph(top_gate);
-  Preprocessor* prep = new Preprocessor(graph);
-  prep->ProcessForBdd();
+  Preprocessor* prep = new PreprocessorBdd(graph);
+  prep->Run();
   Bdd* bdd = new Bdd(graph);
   bdd->Analyze();
   EXPECT_NEAR(0.82, bdd->p_graph(), 1e-5);
@@ -86,8 +86,8 @@ TEST_F(RiskAnalysisTest, DISABLED_BddCea9601) {
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
   GatePtr top_gate = fault_tree()->top_events().front();
   BooleanGraph* graph = new BooleanGraph(top_gate);
-  Preprocessor* prep = new Preprocessor(graph);
-  prep->ProcessForBdd();
+  Preprocessor* prep = new PreprocessorBdd(graph);
+  prep->Run();
   Bdd* bdd = new Bdd(graph);
   bdd->Analyze();
   EXPECT_NEAR(2.0812e-8, bdd->p_graph(), 1e-10);
@@ -104,8 +104,8 @@ TEST_F(RiskAnalysisTest, BddBaobab1) {
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
   GatePtr top_gate = fault_tree()->top_events().front();
   BooleanGraph* graph = new BooleanGraph(top_gate);
-  Preprocessor* prep = new Preprocessor(graph);
-  prep->ProcessForBdd();
+  Preprocessor* prep = new PreprocessorBdd(graph);
+  prep->Run();
   Bdd* bdd = new Bdd(graph);
   bdd->Analyze();
   EXPECT_NEAR(1.2823e-6, bdd->p_graph(), 1e-8);
