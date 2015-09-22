@@ -146,21 +146,13 @@ void Preprocessor::ProcessForBdd() noexcept {
   if (Preprocessor::CheckRootGate()) return;
 
   /// @todo Partial normalization may be better for BDD. (XOR, NAND, NOR, K/N)
+  /// @todo Normalization may require the same ordering as for BDD.
   if (!graph_->normal_) {
     CLOCK(time_3);
     LOG(DEBUG2) << "Preprocessing Phase III...";
     Preprocessor::PhaseThree();
     LOG(DEBUG2) << "Finished Preprocessing Phase III in " << DUR(time_3);
     graph_->normal_ = true;
-    if (Preprocessor::CheckRootGate()) return;
-  }
-
-  /// @todo Propagation of complements is redundant for BDD.
-  if (!graph_->coherent()) {
-    CLOCK(time_4);
-    LOG(DEBUG2) << "Preprocessing Phase IV...";
-    Preprocessor::PhaseFour();
-    LOG(DEBUG2) << "Finished Preprocessing Phase IV in " << DUR(time_4);
     if (Preprocessor::CheckRootGate()) return;
   }
 }
