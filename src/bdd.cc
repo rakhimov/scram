@@ -35,6 +35,7 @@ Terminal::Terminal(bool value) : Vertex::Vertex(true, value), value_(value) {}
 NonTerminal::NonTerminal(int index, int order)
       : index_(index),
         order_(order),
+        module_(false),
         complement_edge_(false),
         mark_(false) {}
 
@@ -107,8 +108,13 @@ const Bdd::Result& Bdd::IfThenElse(const IGatePtr& gate) noexcept {
   }
   for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
     const Result& res = Bdd::IfThenElse(arg.second);
-    bool complement = (arg.first < 0) ^ res.complement;
-    args.push_back({complement, res.vertex});
+    if (arg.second->IsModule()) {
+      ItePtr proxy = Bdd::CreateModuleProxy(arg.second);
+      args.push_back({arg.first < 0, proxy});
+    } else {
+      bool complement = (arg.first < 0) ^ res.complement;
+      args.push_back({complement, res.vertex});
+    }
   }
   std::sort(args.begin(), args.end(),
             [](const Result& lhs, const Result& rhs) {
@@ -132,6 +138,19 @@ std::shared_ptr<Ite> Bdd::IfThenElse(const VariablePtr& variable) noexcept {
   ItePtr& in_table = unique_table_[{variable->index(), 1, -1}];
   if (in_table) return in_table;
   in_table = std::make_shared<Ite>(variable->index(), variable->opti_value());
+  in_table->id(function_id_++);
+  in_table->high(kOne_);
+  in_table->low(kOne_);
+  in_table->complement_edge(true);
+  return in_table;
+}
+
+std::shared_ptr<Ite> Bdd::CreateModuleProxy(const IGatePtr& gate) noexcept {
+  assert(gate->IsModule());
+  ItePtr& in_table = unique_table_[{gate->index(), 1, -1}];
+  if (in_table) return in_table;
+  in_table = std::make_shared<Ite>(gate->index(), gate->opti_value());
+  in_table->module(true);  // The main difference.
   in_table->id(function_id_++);
   in_table->high(kOne_);
   in_table->low(kOne_);
@@ -212,6 +231,7 @@ Bdd::Result Bdd::Apply(Operator type,
                      complement_two);
   }
   ItePtr bdd_graph = std::make_shared<Ite>(ite_one->index(), ite_one->order());
+  bdd_graph->module(ite_one->module());  /// @todo Create clone function.
   bdd_graph->high(high.vertex);
   bdd_graph->low(low.vertex);
   if (high.complement) {
@@ -308,8 +328,14 @@ double Bdd::CalculateProbability(const VertexPtr& vertex) noexcept {
   ItePtr ite = Ite::Ptr(vertex);
   if (ite->mark()) return ite->prob();
   ite->mark(true);
-
-  double var_prob = probs_[ite->index()];
+  double var_prob = 0;
+  if (ite->module()) {
+    const Result& res = gates_[ite->index()];
+    var_prob = Bdd::CalculateProbability(res.vertex);
+    if (res.complement) var_prob = 1 - var_prob;
+  } else {
+    var_prob = probs_[ite->index()];
+  }
   double high = Bdd::CalculateProbability(ite->high());
   double low = Bdd::CalculateProbability(ite->low());
   if (ite->complement_edge()) low = 1 - low;

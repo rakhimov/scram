@@ -118,6 +118,12 @@ class NonTerminal : public Vertex {
     return order_;
   }
 
+  /// @returns true if this vertex represents a module gate.
+  inline bool module() const { return module_; }
+
+  /// Sets this vertex for representation of a module.
+  inline void module(bool flag) { module_ = flag; }
+
   /// Sets the unique identifier of the ROBDD graph.
   ///
   /// @param[in] id Unique identifier of the ROBDD graph.
@@ -170,6 +176,7 @@ class NonTerminal : public Vertex {
  protected:
   int index_;  ///< Index of the variable.
   int order_;  ///< Order of the variable.
+  bool module_;  ///< Mark for module variables.
   VertexPtr high_;  ///< 1 (True/then) branch in the Shannon decomposition.
   VertexPtr low_;  ///< O (False/else) branch in the Shannon decomposition.
   bool complement_edge_;  ///< Flag for complement low edge.
@@ -308,6 +315,15 @@ class Bdd {
   ///
   /// @returns Pointer to the root vertex of the BDD graph.
   ItePtr IfThenElse(const VariablePtr& variable) noexcept;
+
+  /// Creates a vertex to represent a module gate.
+  ///
+  /// @param[in] gate The root or current parent gate of the graph.
+  ///
+  /// @returns Pointer to the BDD if-then-else vertex.
+  ///
+  /// @note The gate still needs to be converted and saved.
+  ItePtr CreateModuleProxy(const IGatePtr& gate) noexcept;
 
   /// Applies reduction rules to a BDD graph.
   ///
