@@ -66,6 +66,8 @@ class Vertex {
 /// It is expected
 /// that in a reduced BDD graphs,
 /// there are at most two terminal vertices of value 1 or 0.
+/// If the BDD graph has attributed edges,
+/// only single terminal vertex is expected with value 1.
 class Terminal : public Vertex {
  public:
   /// @param[in] value True or False (1 or 0) terminal.
@@ -135,12 +137,27 @@ class NonTerminal : public Vertex {
   inline void high(const VertexPtr& high) { high_ = high; }
 
   /// @returns (0/False/else/right) branch vertex.
+  ///
+  /// @note This edge may have complement interpretation.
+  ///       Check complement_edge() upon using this edge.
   inline const VertexPtr& low() const { return low_; }
 
   /// Sets the (0/False/else/right) branch vertex.
   ///
   /// @param[in] low The vertex.
+  ///
+  /// @note This may have complement interpretation.
+  ///       Keep the complement_edge() flag up-to-date
+  ///       after setting this edge.
   inline void low(const VertexPtr& low) { low_ = low; }
+
+  /// @returns true if the low edge is complement.
+  inline bool complement_edge() const { return complement_edge_; }
+
+  /// Sets the complement flag for the low edge.
+  ///
+  /// @param[in] flag Indicator to treat the low edge as a complement.
+  inline void complement_edge(bool flag) { complement_edge_ = flag; }
 
   /// @returns The mark of this vertex.
   inline bool mark() const { return mark_; }
@@ -155,6 +172,7 @@ class NonTerminal : public Vertex {
   int order_;  ///< Order of the variable.
   VertexPtr high_;  ///< 1 (True/then) branch in the Shannon decomposition.
   VertexPtr low_;  ///< O (False/else) branch in the Shannon decomposition.
+  bool complement_edge_;  ///< Flag for complement low edge.
   bool mark_;  ///< Traversal mark.
 };
 
@@ -208,6 +226,9 @@ using TripletTable = std::unordered_map<Triplet, Value, TripletHash>;
 
 /// @class Bdd
 /// Analysis of Boolean graphs with Binary Decision Diagrams.
+/// This binary dicision diagram data structure
+/// represents Reduced Ordered BDD with attributed edges.
+/// There is only one terminal vertex of value 1/True.
 class Bdd {
  public:
   /// Constructor with the analysis target.
@@ -222,17 +243,28 @@ class Bdd {
   inline double p_graph() const { return p_graph_; }
 
   /// @returns The root vertex of the ROBDD.
-  inline const std::shared_ptr<Ite>& root() const {
-    return gates_.find(fault_tree_->root()->index())->second;
-  }
+  inline const std::shared_ptr<Vertex>& root() const { return root_; }
+
+  /// @returns true if the root must be interpreted as complement.
+  inline bool complement_root() const { return complement_root_; }
 
  private:
   using NodePtr = std::shared_ptr<Node>;
+  using VariablePtr = std::shared_ptr<Variable>;
   using IGatePtr = std::shared_ptr<IGate>;
   using VertexPtr = std::shared_ptr<Vertex>;
   using TerminalPtr = std::shared_ptr<Terminal>;
   using ItePtr = std::shared_ptr<Ite>;
-  using HashTable = TripletTable<ItePtr>;
+
+  /// @struct Result
+  /// Holder of computation results.
+  struct Result {
+    bool complement;  ///< The interpretation for the result.
+    VertexPtr vertex;  ///< The root vertex of the resulting BDD graph.
+  };
+
+  using UniqueTable = TripletTable<ItePtr>;  ///< To store unique vertices.
+  using ComputeTable = TripletTable<Result>;  ///< To store computation results.
 
   /// Assigns topological ordering to nodes of the Boolean Graph.
   /// The ordering is assigned to the optimization value of the nodes.
@@ -266,7 +298,16 @@ class Bdd {
   /// @param[in] gate The root or current parent gate of the graph.
   ///
   /// @returns Pointer to the root vertex of the BDD graph.
-  ItePtr ConvertGate(const IGatePtr& gate) noexcept;
+  const Result& IfThenElse(const IGatePtr& gate) noexcept;
+
+  /// Converts variable argument of a Boolean graph gate
+  /// into if-then-else BDD graph vertex.
+  /// Registers processed variable.
+  ///
+  /// @param[in] variable The variable argument.
+  ///
+  /// @returns Pointer to the root vertex of the BDD graph.
+  ItePtr IfThenElse(const VariablePtr& variable) noexcept;
 
   /// Applies reduction rules to a BDD graph.
   ///
@@ -275,34 +316,24 @@ class Bdd {
   /// @returns The root vertex of the reduced graph.
   ///          It is the same vertex as the input vertex
   ///          only if the resulting graph is unique.
+  ///
+  /// @todo Review with the one terminal changes.
   VertexPtr Reduce(const VertexPtr& vertex) noexcept;
-
-  /// Considers the Shannon decomposition
-  /// for the given Boolean operator
-  /// with ordered arguments.
-  ///
-  /// @param[in] type The operator or type of the gate.
-  /// @param[in] args Ordered arguments of the gate.
-  /// @param[in] pos The position of the argument to decompose against.
-  ///
-  /// @returns Pointer to the vertex in the BDD graph for the decomposition.
-  ///
-  /// @note It is expected that arguments are variables (modules) but not gates.
-  ItePtr IfThenElse(Operator type,
-                    const std::vector<std::pair<int, NodePtr>>& args,
-                    int pos) noexcept;
 
   /// Applies Boolean operation to BDD graphs.
   ///
   /// @param[in] type The operator or type of the gate.
   /// @param[in] arg_one First argument function graph.
   /// @param[in] arg_two Second argument function graph.
+  /// @param[in] complement_one Interpretation of arg_one as complement.
+  /// @param[in] complement_two Interpretation of arg_two as complement.
   ///
   /// @returns Poitner to the root vertex of the resultant BDD graph.
   ///
   /// @note The order of arguments does not matter for two variable operators.
-  VertexPtr Apply(Operator type, const VertexPtr& arg_one,
-                  const VertexPtr& arg_two) noexcept;
+  Result Apply(Operator type,
+               const VertexPtr& arg_one, const VertexPtr& arg_two,
+               bool complement_one, bool complement_two) noexcept;
 
   /// Applies the logic of a Boolean operator
   /// to terminal vertices.
@@ -310,21 +341,48 @@ class Bdd {
   /// @param[in] type The operator to apply.
   /// @param[in] term_one First argument terminal vertex.
   /// @param[in] term_two Second argument terminal vertex.
+  /// @param[in] complement_one Interpretation of term_one as complement.
+  /// @param[in] complement_two Interpretation of term_two as complement.
   ///
   /// @returns Terminal vertex as a result of operations.
-  TerminalPtr ApplyTerminal(Operator type, const TerminalPtr& term_one,
-                            const TerminalPtr& term_two) noexcept;
+  Result Apply(Operator type,
+               const TerminalPtr& term_one, const TerminalPtr& term_two,
+               bool complement_one, bool complement_two) noexcept;
 
   /// Applies the logic of a Boolean operator
   /// to non-terminal and terminal vertices.
   ///
   /// @param[in] type The operator or type of the gate.
-  /// @param[in] v_one Non-terminal vertex.
-  /// @param[in] term_one Terminal vertex.
+  /// @param[in] ite_one Non-terminal vertex.
+  /// @param[in] term_two Terminal vertex.
+  /// @param[in] complement_one Interpretation of ite_one as complement.
+  /// @param[in] complement_two Interpretation of term_two as complement.
   ///
   /// @returns Pointer to the vertex as a result of operations.
-  VertexPtr ApplyTerminal(Operator type, const ItePtr& v_one,
-                          const TerminalPtr& term_one) noexcept;
+  Result Apply(Operator type,
+               const ItePtr& ite_one, const TerminalPtr& term_two,
+               bool complement_one, bool complement_two) noexcept;
+
+  /// Produces canonical signature of application of Boolean operations.
+  /// The signature of the operations helps
+  /// detect equivalent operations.
+  ///
+  /// @param[in] type The operator or type of the gate.
+  /// @param[in] arg_one First argument function graph.
+  /// @param[in] arg_two Second argument function graph.
+  /// @param[in] complement_one Interpretation of arg_one as complement.
+  /// @param[in] complement_two Interpretation of arg_two as complement.
+  ///
+  /// @returns Unique signature of the operation.
+  ///
+  /// @note The arguments should not be the same functions.
+  ///       It is assumed
+  ///       that equal ID functions are handled by the reduction.
+  /// @note Even though the arguments are not ItePtr,
+  ///       it is expected that they are if-then-else vertices.
+  Triplet GetSignature(Operator type,
+                       const VertexPtr& arg_one, const VertexPtr& arg_two,
+                       bool complement_one, bool complement_two) noexcept;
 
   /// Calculates exact probability
   /// of a function graph represented by its root vertex.
@@ -335,12 +393,14 @@ class Bdd {
   double CalculateProbability(const VertexPtr& vertex) noexcept;
 
   BooleanGraph* fault_tree_;  ///< The main fault tree.
+  VertexPtr root_;  ///< The root vertex of this BDD.
+  bool complement_root_;  ///< The interpretation of the root as complement.
 
   /// Table of unique if-then-else nodes denoting function graphs.
   /// The key consists of ite(index, id_high, id_low),
   /// where IDs are unique (id_high != id_low) identifications of
   /// unique reduced-ordered function graphs.
-  HashTable unique_table_;
+  UniqueTable unique_table_;
 
   /// Table of processed computations over functions.
   /// The key must convey the semantics of the operation over functions.
@@ -349,14 +409,13 @@ class Bdd {
   /// The argument functions are recorded with their IDs (not vertex indices).
   /// In order to keep only unique computations,
   /// the argument IDs must be ordered.
-  HashTable compute_table_;
+  ComputeTable compute_table_;
 
-  std::unordered_map<int, ItePtr> gates_;  ///< Processed gates.
+  std::unordered_map<int, Result> gates_;  ///< Processed gates.
   std::vector<double> probs_;  ///< Probabilities of variables.
   double p_graph_;  ///< Total probability of the graph.
 
   const TerminalPtr kOne_;  ///< Terminal True.
-  const TerminalPtr kZero_;  ///< Terminal False.
   int function_id_;  ///< Identification assignment for new function graphs.
 };
 

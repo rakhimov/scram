@@ -28,21 +28,23 @@ Zbdd::Zbdd()
       set_id_(2) {}
 
 void Zbdd::Analyze(const Bdd* bdd) noexcept {
-  SetNodePtr root = SetNode::Ptr(Zbdd::ConvertBdd(bdd->root()));
+  SetNodePtr root =
+      SetNode::Ptr(Zbdd::ConvertBdd(bdd->root(), bdd->complement_root()));
   Zbdd::Subsume(root);
   std::vector<int> seed;
   Zbdd::GenerateCutSets(root, &seed);
 }
 
-std::shared_ptr<Vertex> Zbdd::ConvertBdd(const VertexPtr& vertex) noexcept {
-  if (vertex->terminal())
-    return Terminal::Ptr(vertex)->value() ? kBase_ : kEmpty_;
-  SetNodePtr& zbdd = ites_[vertex->id()];
+std::shared_ptr<Vertex> Zbdd::ConvertBdd(const VertexPtr& vertex,
+                                         bool complement) noexcept {
+  if (vertex->terminal()) return complement ? kEmpty_ : kBase_;
+  int sign = complement ? -1 : 1;
+  SetNodePtr& zbdd = ites_[sign * vertex->id()];
   if (zbdd) return zbdd;
   ItePtr ite = Ite::Ptr(vertex);
   zbdd = std::make_shared<SetNode>(ite->index(), ite->order());
-  zbdd->high(Zbdd::ConvertBdd(ite->high()));
-  zbdd->low(Zbdd::ConvertBdd(ite->low()));
+  zbdd->high(Zbdd::ConvertBdd(ite->high(), complement));
+  zbdd->low(Zbdd::ConvertBdd(ite->low(), ite->complement_edge() ^ complement));
   if (zbdd->high()->terminal() && !Terminal::Ptr(zbdd->high())->value())
     return zbdd->low();  // Reduce.
   SetNodePtr& in_table =

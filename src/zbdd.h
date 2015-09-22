@@ -59,6 +59,9 @@ class Zbdd {
   /// as a Reduced Ordered BDD.
   ///
   /// @param[in] bdd ROBDD with the ITE vertices.
+  ///
+  /// @note Only coherent (monotonic) graphs are accepted.
+  /// @note BDD is assumed to have attributed edges with only one terminal 1.
   void Analyze(const Bdd* bdd) noexcept;
 
   /// @returns Minimal cut sets.
@@ -76,9 +79,11 @@ class Zbdd {
   /// Converts BDD graph into ZBDD graph.
   ///
   /// @param[in] vertex Vertex of the ROBDD graph.
+  /// @param[in] complement Interpretation of the vertex as complement.
   ///
   /// @returns Pointer to the root vertex of the ZBDD graph.
-  VertexPtr ConvertBdd(const VertexPtr& vertex) noexcept;
+  VertexPtr ConvertBdd(const VertexPtr& vertex,
+                       bool complement) noexcept;
 
   /// Removes subsets in ZBDD.
   ///
