@@ -21,6 +21,7 @@
 
 #include "zbdd.h"
 #include "fault_tree.h"
+#include "preprocessor.h"
 
 namespace scram {
 namespace test {
@@ -42,7 +43,7 @@ TEST_F(RiskAnalysisTest, ZbddTest) {
   delete zbdd;
 }
 
-TEST_F(RiskAnalysisTest, ZbddProb) {
+TEST_F(RiskAnalysisTest, ZbddChinese) {
   std::vector<std::string> input_files;
   input_files.push_back("./share/scram/input/Chinese/chinese.xml");
   input_files.push_back("./share/scram/input/Chinese/chinese-basic-events.xml");
@@ -56,6 +57,28 @@ TEST_F(RiskAnalysisTest, ZbddProb) {
   zbdd->Analyze(bdd);
   EXPECT_EQ(392, zbdd->cut_sets().size());
   delete graph;
+  delete bdd;
+  delete zbdd;
+}
+
+TEST_F(RiskAnalysisTest, DISABLED_ZbddBaobab1) {
+  std::vector<std::string> input_files;
+  input_files.push_back("./share/scram/input/Baobab/baobab1.xml");
+  input_files.push_back("./share/scram/input/Baobab/baobab1-basic-events.xml");
+  settings.probability_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFiles(input_files));
+  GatePtr top_gate = fault_tree()->top_events().front();
+  BooleanGraph* graph = new BooleanGraph(top_gate);
+  Preprocessor* prep = new Preprocessor(graph);
+  prep->ProcessForBdd();
+  Bdd* bdd = new Bdd(graph);
+  bdd->Analyze();
+  Zbdd* zbdd = new Zbdd();
+  zbdd->Analyze(bdd);
+  EXPECT_NEAR(1.2823e-6, bdd->p_graph(), 1e-8);
+  EXPECT_EQ(392, zbdd->cut_sets().size());
+  delete graph;
+  delete prep;
   delete bdd;
   delete zbdd;
 }
