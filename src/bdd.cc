@@ -49,13 +49,6 @@ Bdd::Bdd(BooleanGraph* fault_tree)
       function_id_(2) {}
 
 void Bdd::Analyze() noexcept {
-  fault_tree_->ClearOptiValues();
-  int shift = Bdd::TopologicalOrder(fault_tree_->root(), 0);
-
-  fault_tree_->ClearNodeVisits();
-  Bdd::AdjustOrder(fault_tree_->root(), ++shift);
-  assert(fault_tree_->root()->opti_value() == 1);
-
   const Result& result = Bdd::IfThenElse(fault_tree_->root());
   root_ = result.vertex;
   complement_root_ = result.complement;
@@ -68,35 +61,6 @@ void Bdd::Analyze() noexcept {
   }
   p_graph_ = Bdd::CalculateProbability(root_);
   if (complement_root_) p_graph_ = 1 - p_graph_;
-}
-
-int Bdd::TopologicalOrder(const IGatePtr& root, int order) noexcept {
-  if (root->opti_value()) return order;
-  for (const std::pair<int, IGatePtr>& arg : root->gate_args()) {
-    order = Bdd::TopologicalOrder(arg.second, order);
-  }
-  using VariablePtr = std::shared_ptr<Variable>;
-  for (const std::pair<int, VariablePtr>& arg : root->variable_args()) {
-    if (!arg.second->opti_value()) arg.second->opti_value(++order);
-  }
-  assert(root->constant_args().empty());
-  root->opti_value(++order);
-  return order;
-}
-
-void Bdd::AdjustOrder(const IGatePtr& root, int shift) noexcept {
-  if (root->Visited()) return;
-  root->Visit(1);
-  root->opti_value(shift - root->opti_value());
-  for (const std::pair<int, IGatePtr>& arg : root->gate_args()) {
-    Bdd::AdjustOrder(arg.second, shift);
-  }
-  using VariablePtr = std::shared_ptr<Variable>;
-  for (const std::pair<int, VariablePtr>& arg : root->variable_args()) {
-    if (arg.second->Visited()) continue;
-    arg.second->Visit(1);
-    arg.second->opti_value(shift - arg.second->opti_value());
-  }
 }
 
 const Bdd::Result& Bdd::IfThenElse(const IGatePtr& gate) noexcept {

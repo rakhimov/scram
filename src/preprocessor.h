@@ -315,6 +315,9 @@ class Preprocessor {
   /// @note The full normalization is meant to be called only once.
   ///
   /// @warning The root get may still be NULL type.
+  /// @warning Gate marks are used.
+  /// @warning Optimization values are used.
+  /// @warning Node visit information is used.
   void NormalizeGates(bool full) noexcept;
 
   /// Notifies all parents of negative gates,
@@ -371,6 +374,7 @@ class Preprocessor {
   /// @param[in,out] gate The ATLEAST gate to normalize.
   ///
   /// @note This is a helper function for NormalizeGate.
+  /// @note Normalization of K/N gates is aware of variable ordering.
   void NormalizeAtleastGate(const IGatePtr& gate) noexcept;
 
   /// Propagates complements of argument gates down to leafs
@@ -1076,6 +1080,36 @@ class Preprocessor {
   ///       the parent is registered for removal.
   void ReplaceGate(const IGatePtr& gate, const IGatePtr& replacement) noexcept;
 
+  /// Assigns order for Boolean graph variables.
+  ///
+  /// @note Optimization values are used for ordering.
+  void AssignOrder() noexcept;
+
+  /// Assigns topological ordering to nodes of the Boolean Graph.
+  /// The ordering is assigned to the optimization value of the nodes.
+  /// The nodes are sorted in descending optimization value.
+  /// The highest optimization value belongs to the root.
+  ///
+  /// @param[in] root The root or current parent gate of the graph.
+  /// @param[in] order The current order value.
+  ///
+  /// @returns The final order value.
+  ///
+  /// @note Optimization values must be clear before the assignment.
+  int TopologicalOrder(const IGatePtr& root, int order) noexcept;
+
+  /// Reverses the optimization value assigned by the topological ordering.
+  /// This reversing is needed
+  /// to put optimization values in ascending order
+  /// starting from the root.
+  ///
+  /// @param[in] root The root or current parent gate of the graph.
+  /// @param[in] shift The shift for the vertex ordering.
+  ///                  Optimization value is subtracted from the shift.
+  ///
+  /// @warning Node visit information must be clear.
+  void AdjustOrder(const IGatePtr& root, int shift) noexcept;
+
   BooleanGraph* graph_;  ///< The Boolean graph to preprocess.
   int root_sign_;  ///< The negative or positive sign of the root node.
   /// Container for constant gates to be tracked and cleaned by algorithms.
@@ -1094,6 +1128,7 @@ class PreprocessorBdd : public Preprocessor {
   using Preprocessor::Preprocessor;  ///< Constructor with a Boolean graph.
 
   /// Performs preprocessing for analyses with Binary Decision Diagrams.
+  /// This preprocessing assings the order for variables for BDD construction.
   void Run() noexcept override;
 };
 

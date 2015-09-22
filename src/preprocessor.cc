@@ -472,6 +472,7 @@ void Preprocessor::ClearNullGates() noexcept {
 void Preprocessor::NormalizeGates(bool full) noexcept {
   assert(const_gates_.empty());
   assert(null_gates_.empty());
+  if (full) Preprocessor::AssignOrder();  // K/N gates need order.
   // Handle special case for the root gate.
   IGatePtr root_gate = graph_->root();
   Operator type = root_gate->type();
@@ -595,11 +596,14 @@ void Preprocessor::NormalizeAtleastGate(const IGatePtr& gate) noexcept {
     return;
   }
 
-  const std::set<int>& args = gate->args();
-  std::set<int>::const_iterator it = args.begin();
-
+  auto it = std::min_element(gate->args().cbegin(), gate->args().cend(),
+                             [&gate](int lhs, int rhs) {
+                               return gate->GetArg(lhs)->opti_value() <
+                                      gate->GetArg(rhs)->opti_value();
+                             });
+  assert(it != gate->args().cend());
   IGatePtr first_arg(new IGate(kAndGate));
-  gate->ShareArg(*it, first_arg);
+  gate->TransferArg(*it, first_arg);
 
   IGatePtr grand_arg(new IGate(kAtleastGate));
   first_arg->AddArg(grand_arg->index(), grand_arg);
@@ -608,7 +612,7 @@ void Preprocessor::NormalizeAtleastGate(const IGatePtr& gate) noexcept {
   IGatePtr second_arg(new IGate(kAtleastGate));
   second_arg->vote_number(vote_number);
 
-  for (++it; it != args.end(); ++it) {
+  for (it = gate->args().cbegin(); it != gate->args().cend(); ++it) {
     gate->ShareArg(*it, grand_arg);
     gate->ShareArg(*it, second_arg);
   }
@@ -2266,6 +2270,43 @@ void Preprocessor::ReplaceGate(const IGatePtr& gate,
   }
 }
 
+void Preprocessor::AssignOrder() noexcept {
+  graph_->ClearOptiValues();
+  int shift = Preprocessor::TopologicalOrder(graph_->root(), 0);
+  graph_->ClearNodeVisits();
+  Preprocessor::AdjustOrder(graph_->root(), ++shift);
+  assert(graph_->root()->opti_value() == 1);
+}
+
+int Preprocessor::TopologicalOrder(const IGatePtr& root, int order) noexcept {
+  if (root->opti_value()) return order;
+  for (const std::pair<int, IGatePtr>& arg : root->gate_args()) {
+    order = Preprocessor::TopologicalOrder(arg.second, order);
+  }
+  using VariablePtr = std::shared_ptr<Variable>;
+  for (const std::pair<int, VariablePtr>& arg : root->variable_args()) {
+    if (!arg.second->opti_value()) arg.second->opti_value(++order);
+  }
+  assert(root->constant_args().empty());
+  root->opti_value(++order);
+  return order;
+}
+
+void Preprocessor::AdjustOrder(const IGatePtr& root, int shift) noexcept {
+  if (root->Visited()) return;
+  root->Visit(1);
+  root->opti_value(shift - root->opti_value());
+  for (const std::pair<int, IGatePtr>& arg : root->gate_args()) {
+    Preprocessor::AdjustOrder(arg.second, shift);
+  }
+  using VariablePtr = std::shared_ptr<Variable>;
+  for (const std::pair<int, VariablePtr>& arg : root->variable_args()) {
+    if (arg.second->Visited()) continue;
+    arg.second->Visit(1);
+    arg.second->opti_value(shift - arg.second->opti_value());
+  }
+}
+
 void PreprocessorBdd::Run() noexcept {
   assert(graph_->root());
   assert(graph_->root()->parents().empty());
@@ -2291,6 +2332,7 @@ void PreprocessorBdd::Run() noexcept {
     LOG(DEBUG2) << "Finished Preprocessing Phase III in " << DUR(time_3);
     if (Preprocessor::CheckRootGate()) return;
   }
+  Preprocessor::AssignOrder();
 }
 
 }  // namespace scram

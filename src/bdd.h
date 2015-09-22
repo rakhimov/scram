@@ -241,6 +241,8 @@ class Bdd {
   /// Constructor with the analysis target.
   ///
   /// @param[in] fault_tree Preprocessed, normalized, and indexed fault tree.
+  ///
+  /// @note The passed Boolean graph must already have variable ordering.
   explicit Bdd(BooleanGraph* fault_tree);
 
   /// Runs the analysis.
@@ -272,31 +274,6 @@ class Bdd {
 
   using UniqueTable = TripletTable<ItePtr>;  ///< To store unique vertices.
   using ComputeTable = TripletTable<Result>;  ///< To store computation results.
-
-  /// Assigns topological ordering to nodes of the Boolean Graph.
-  /// The ordering is assigned to the optimization value of the nodes.
-  /// The nodes are sorted in descending optimization value.
-  /// The highest optimization value belongs to the root.
-  ///
-  /// @param[in] root The root or current parent gate of the graph.
-  /// @param[in] order The current order value.
-  ///
-  /// @returns The final order value.
-  ///
-  /// @note Optimization values must be clear before the assignment.
-  int TopologicalOrder(const IGatePtr& root, int order) noexcept;
-
-  /// Reverses the optimization value assigned by the topological ordering.
-  /// This reversing is needed
-  /// to put optimization values in ascending order
-  /// starting from the root.
-  ///
-  /// @param[in] root The root or current parent gate of the graph.
-  /// @param[in] shift The shift for the vertex ordering.
-  ///                  Optimization value is subtracted from the shift.
-  ///
-  /// @warning Node visit information must be clear.
-  void AdjustOrder(const IGatePtr& root, int shift) noexcept;
 
   /// Converts all gates in the Boolean graph
   /// into if-then-else BDD graphs.
