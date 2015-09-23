@@ -62,7 +62,6 @@ void UncertaintyAnalysis::Analyze(
     return;
   }
 
-
   LOG(DEBUG3) << "Indexing minimal cut sets...";
   ProbabilityAnalysis::IndexMcs(min_cut_sets_);
   LOG(DEBUG3) << "Finished indexing minimal cut sets!";

@@ -31,6 +31,7 @@
 
 #include <boost/container/flat_set.hpp>
 
+#include "bdd.h"
 #include "event.h"
 #include "settings.h"
 
@@ -56,6 +57,8 @@ class ProbabilityAnalysis {
  public:
   using BasicEventPtr = std::shared_ptr<BasicEvent>;
   using GatePtr = std::shared_ptr<Gate>;
+  using VertexPtr = std::shared_ptr<Vertex>;
+  using ItePtr = std::shared_ptr<Ite>;
 
   /// The main constructor of Probability Analysis.
   ///
@@ -214,10 +217,19 @@ class ProbabilityAnalysis {
   ///       with BDD based approach.
   double CalculateBddProbability() noexcept;
 
+  /// Calculates exact probability
+  /// of a function graph represented by its root BDD vertex.
+  ///
+  /// @param[in] vertex The root vertex of a function graph.
+  ///
+  /// @returns Probability value.
+  double CalculateProbability(const VertexPtr& vertex) noexcept;
+
   /// Importance analysis of basic events that are in minimal cut sets.
   void PerformImportanceAnalysis() noexcept;
 
   GatePtr top_event_;  ///< Top gate of the passed fault tree.
+  std::unique_ptr<Bdd> bdd_graph_;  ///< The main BDD graph for analysis.
   const Settings kSettings_;  ///< All settings for analysis.
   std::string warnings_;  ///< Register warnings.
 
@@ -228,6 +240,7 @@ class ProbabilityAnalysis {
   /// Indices of basic events.
   std::unordered_map<std::string, int> basic_to_int_;
   std::vector<double> iprobs_;  ///< Holds probabilities of basic events.
+  std::vector<double> var_probs_;  ///< Boolean graph variable probabilities.
 
   /// Minimal cut sets passed for analysis.
   std::set< std::set<std::string> > min_cut_sets_;

@@ -238,40 +238,39 @@ using TripletTable = std::unordered_map<Triplet, Value, TripletHash>;
 /// There is only one terminal vertex of value 1/True.
 class Bdd {
  public:
+  using VertexPtr = std::shared_ptr<Vertex>;
+
   /// Constructor with the analysis target.
+  /// Reduced Ordered BDD is produced from a Boolean graph.
   ///
   /// @param[in] fault_tree Preprocessed, normalized, and indexed fault tree.
   ///
   /// @note The passed Boolean graph must already have variable ordering.
-  explicit Bdd(BooleanGraph* fault_tree);
-
-  /// Runs the analysis.
-  void Analyze() noexcept;
-
-  /// @returns The total probability of the graph.
-  inline double p_graph() const { return p_graph_; }
-
-  /// @returns The root vertex of the ROBDD.
-  inline const std::shared_ptr<Vertex>& root() const { return root_; }
-
-  /// @returns true if the root must be interpreted as complement.
-  inline bool complement_root() const { return complement_root_; }
-
- private:
-  using NodePtr = std::shared_ptr<Node>;
-  using VariablePtr = std::shared_ptr<Variable>;
-  using IGatePtr = std::shared_ptr<IGate>;
-  using VertexPtr = std::shared_ptr<Vertex>;
-  using TerminalPtr = std::shared_ptr<Terminal>;
-  using ItePtr = std::shared_ptr<Ite>;
+  /// @note BDD construction may take considerable time.
+  explicit Bdd(const BooleanGraph* fault_tree);
 
   /// @struct Result
-  /// Holder of computation results.
+  /// Holder of computation results and gate representations.
   struct Result {
     bool complement;  ///< The interpretation for the result.
     VertexPtr vertex;  ///< The root vertex of the resulting BDD graph.
   };
 
+  /// @returns The root vertex of the ROBDD.
+  inline const VertexPtr& root() const { return root_; }
+
+  /// @returns true if the root must be interpreted as complement.
+  inline bool complement_root() const { return complement_root_; }
+
+  /// @returns Mapping of Boolean graph gates and BDD graph vertices.
+  inline const std::unordered_map<int, Result>& gates() const { return gates_; }
+
+ private:
+  using NodePtr = std::shared_ptr<Node>;
+  using VariablePtr = std::shared_ptr<Variable>;
+  using IGatePtr = std::shared_ptr<IGate>;
+  using TerminalPtr = std::shared_ptr<Terminal>;
+  using ItePtr = std::shared_ptr<Ite>;
   using UniqueTable = TripletTable<ItePtr>;  ///< To store unique vertices.
   using ComputeTable = TripletTable<Result>;  ///< To store computation results.
 
@@ -377,15 +376,7 @@ class Bdd {
                        const VertexPtr& arg_one, const VertexPtr& arg_two,
                        bool complement_one, bool complement_two) noexcept;
 
-  /// Calculates exact probability
-  /// of a function graph represented by its root vertex.
-  ///
-  /// @param[in] vertex The root vertex of a function graph.
-  ///
-  /// @returns Probability value.
-  double CalculateProbability(const VertexPtr& vertex) noexcept;
-
-  BooleanGraph* fault_tree_;  ///< The main fault tree.
+  const BooleanGraph* fault_tree_;  ///< The main fault tree.
   VertexPtr root_;  ///< The root vertex of this BDD.
   bool complement_root_;  ///< The interpretation of the root as complement.
 
@@ -405,9 +396,6 @@ class Bdd {
   ComputeTable compute_table_;
 
   std::unordered_map<int, Result> gates_;  ///< Processed gates.
-  std::vector<double> probs_;  ///< Probabilities of variables.
-  double p_graph_;  ///< Total probability of the graph.
-
   const TerminalPtr kOne_;  ///< Terminal True.
   int function_id_;  ///< Identification assignment for new function graphs.
 };

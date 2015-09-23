@@ -23,7 +23,6 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "bdd.h"
 #include "boolean_graph.h"
 #include "error.h"
 #include "logger.h"
@@ -297,15 +296,39 @@ double ProbabilityAnalysis::CalculateBddProbability() noexcept {
   delete preprocessor;  // No exceptions are expected.
   LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
 
-
   CLOCK(bdd_time);  // BDD based calculation time.
   LOG(DEBUG2) << "Calculating probability with BDD...";
-  Bdd* bdd = new Bdd(graph);
-  bdd->Analyze();
-  double prob = bdd->p_graph();
-  delete bdd;
+  bdd_graph_ = std::unique_ptr<Bdd>(new Bdd(graph));
+  var_probs_.reserve(graph->basic_events().size() + 1);
+  var_probs_.push_back(-1);  // First one is a dummy.
+  for (const BasicEventPtr& event : graph->basic_events()) {
+    var_probs_.push_back(event->p());
+  }
+  double prob = ProbabilityAnalysis::CalculateProbability(bdd_graph_->root());
+  if (bdd_graph_->complement_root()) prob = 1 - prob;
   LOG(DEBUG2) << "Calculated probability " << prob << " in " << DUR(bdd_time);
   return prob;
+}
+
+double ProbabilityAnalysis::CalculateProbability(
+    const VertexPtr& vertex) noexcept {
+  if (vertex->terminal()) return 1;
+  ItePtr ite = Ite::Ptr(vertex);
+  if (ite->mark()) return ite->prob();
+  ite->mark(true);
+  double var_prob = 0;
+  if (ite->module()) {
+    const Bdd::Result& res = bdd_graph_->gates().find(ite->index())->second;
+    var_prob = ProbabilityAnalysis::CalculateProbability(res.vertex);
+    if (res.complement) var_prob = 1 - var_prob;
+  } else {
+    var_prob = var_probs_[ite->index()];
+  }
+  double high = ProbabilityAnalysis::CalculateProbability(ite->high());
+  double low = ProbabilityAnalysis::CalculateProbability(ite->low());
+  if (ite->complement_edge()) low = 1 - low;
+  ite->prob(var_prob * high + (1 - var_prob) * low);
+  return ite->prob();
 }
 
 void ProbabilityAnalysis::PerformImportanceAnalysis() noexcept {

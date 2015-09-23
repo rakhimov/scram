@@ -39,6 +39,9 @@ TEST_F(RiskAnalysisTest, CEA9601_Test) {
   EXPECT_EQ(2732, min_cut_sets().size());
   std::vector<int> distr = {0, 0, 0, 858, 1874};
   EXPECT_EQ(distr, McsDistribution());
+
+  /// @todo Run probability tests.
+  // EXPECT_NEAR(2.0812e-8, p_total(), 1e-10);
 }
 
 }  // namespace test

@@ -41,26 +41,14 @@ NonTerminal::NonTerminal(int index, int order)
 
 NonTerminal::~NonTerminal() {}  // Default pure virtual destructor.
 
-Bdd::Bdd(BooleanGraph* fault_tree)
+Bdd::Bdd(const BooleanGraph* fault_tree)
     : fault_tree_(fault_tree),
       complement_root_(false),
-      p_graph_(0),
       kOne_(std::make_shared<Terminal>(true)),
-      function_id_(2) {}
-
-void Bdd::Analyze() noexcept {
+      function_id_(2) {
   const Result& result = Bdd::IfThenElse(fault_tree_->root());
   root_ = result.vertex;
   complement_root_ = result.complement;
-
-  probs_.reserve(fault_tree_->basic_events().size() + 1);
-  probs_.push_back(-1);  // First one is a dummy.
-  using BasicEventPtr = std::shared_ptr<BasicEvent>;
-  for (const BasicEventPtr& event : fault_tree_->basic_events()) {
-    probs_.push_back(event->p());
-  }
-  p_graph_ = Bdd::CalculateProbability(root_);
-  if (complement_root_) p_graph_ = 1 - p_graph_;
 }
 
 const Bdd::Result& Bdd::IfThenElse(const IGatePtr& gate) noexcept {
@@ -295,26 +283,6 @@ Triplet Bdd::GetSignature(Operator type,
       assert(false);
   }
   return sig;
-}
-
-double Bdd::CalculateProbability(const VertexPtr& vertex) noexcept {
-  if (vertex->terminal()) return 1;
-  ItePtr ite = Ite::Ptr(vertex);
-  if (ite->mark()) return ite->prob();
-  ite->mark(true);
-  double var_prob = 0;
-  if (ite->module()) {
-    const Result& res = gates_[ite->index()];
-    var_prob = Bdd::CalculateProbability(res.vertex);
-    if (res.complement) var_prob = 1 - var_prob;
-  } else {
-    var_prob = probs_[ite->index()];
-  }
-  double high = Bdd::CalculateProbability(ite->high());
-  double low = Bdd::CalculateProbability(ite->low());
-  if (ite->complement_edge()) low = 1 - low;
-  ite->prob(var_prob * high  + (1 - var_prob) * low);
-  return ite->prob();
 }
 
 }  // namespace scram

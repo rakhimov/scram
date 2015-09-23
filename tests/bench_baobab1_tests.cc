@@ -28,9 +28,10 @@ TEST_F(RiskAnalysisTest, Baobab_1_Test) {
   std::vector<std::string> input_files;
   input_files.push_back("./share/scram/input/Baobab/baobab1.xml");
   input_files.push_back("./share/scram/input/Baobab/baobab1-basic-events.xml");
-  settings.limit_order(6);
+  settings.limit_order(6).probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
   ASSERT_NO_THROW(ran->Analyze());
+  EXPECT_NEAR(1.2823e-6, p_total(), 1e-8);  // Probability with BDD.
   // Minimal cut set check.
   EXPECT_EQ(2684, min_cut_sets().size());
   std::vector<int> distr = {0, 0, 1, 1, 70, 400, 2212};
