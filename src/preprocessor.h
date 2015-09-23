@@ -1098,18 +1098,6 @@ class Preprocessor {
   /// @note Optimization values must be clear before the assignment.
   int TopologicalOrder(const IGatePtr& root, int order) noexcept;
 
-  /// Reverses the optimization value assigned by the topological ordering.
-  /// This reversing is needed
-  /// to put optimization values in ascending order
-  /// starting from the root.
-  ///
-  /// @param[in] root The root or current parent gate of the graph.
-  /// @param[in] shift The shift for the vertex ordering.
-  ///                  Optimization value is subtracted from the shift.
-  ///
-  /// @warning Node visit information must be clear.
-  void AdjustOrder(const IGatePtr& root, int shift) noexcept;
-
   BooleanGraph* graph_;  ///< The Boolean graph to preprocess.
   int root_sign_;  ///< The negative or positive sign of the root node.
   /// Container for constant gates to be tracked and cleaned by algorithms.

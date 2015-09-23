@@ -108,7 +108,7 @@ TEST_F(RiskAnalysisTest, A_AND_NOT_B) {
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  EXPECT_DOUBLE_EQ(0.08, p_total());
+  EXPECT_NEAR(0.08, p_total(), 1e-5);
 
   std::set< std::set<std::string> > mcs = {{"a", "not b"}};
   EXPECT_EQ(1, min_cut_sets().size());

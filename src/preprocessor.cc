@@ -596,7 +596,7 @@ void Preprocessor::NormalizeAtleastGate(const IGatePtr& gate) noexcept {
     return;
   }
 
-  auto it = std::min_element(gate->args().cbegin(), gate->args().cend(),
+  auto it = std::max_element(gate->args().cbegin(), gate->args().cend(),
                              [&gate](int lhs, int rhs) {
                                return gate->GetArg(lhs)->opti_value() <
                                       gate->GetArg(rhs)->opti_value();
@@ -2272,10 +2272,7 @@ void Preprocessor::ReplaceGate(const IGatePtr& gate,
 
 void Preprocessor::AssignOrder() noexcept {
   graph_->ClearOptiValues();
-  int shift = Preprocessor::TopologicalOrder(graph_->root(), 0);
-  graph_->ClearNodeVisits();
-  Preprocessor::AdjustOrder(graph_->root(), ++shift);
-  assert(graph_->root()->opti_value() == 1);
+  Preprocessor::TopologicalOrder(graph_->root(), 0);
 }
 
 int Preprocessor::TopologicalOrder(const IGatePtr& root, int order) noexcept {
@@ -2283,28 +2280,12 @@ int Preprocessor::TopologicalOrder(const IGatePtr& root, int order) noexcept {
   for (const std::pair<int, IGatePtr>& arg : root->gate_args()) {
     order = Preprocessor::TopologicalOrder(arg.second, order);
   }
-  using VariablePtr = std::shared_ptr<Variable>;
   for (const std::pair<int, VariablePtr>& arg : root->variable_args()) {
     if (!arg.second->opti_value()) arg.second->opti_value(++order);
   }
   assert(root->constant_args().empty());
   root->opti_value(++order);
   return order;
-}
-
-void Preprocessor::AdjustOrder(const IGatePtr& root, int shift) noexcept {
-  if (root->Visited()) return;
-  root->Visit(1);
-  root->opti_value(shift - root->opti_value());
-  for (const std::pair<int, IGatePtr>& arg : root->gate_args()) {
-    Preprocessor::AdjustOrder(arg.second, shift);
-  }
-  using VariablePtr = std::shared_ptr<Variable>;
-  for (const std::pair<int, VariablePtr>& arg : root->variable_args()) {
-    if (arg.second->Visited()) continue;
-    arg.second->Visit(1);
-    arg.second->opti_value(shift - arg.second->opti_value());
-  }
 }
 
 void PreprocessorBdd::Run() noexcept {
