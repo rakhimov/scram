@@ -41,21 +41,21 @@ TEST_F(RiskAnalysisTest, ProcessInput) {
   EXPECT_EQ(1, basic_events().count("valveone"));
   EXPECT_EQ(1, basic_events().count("valvetwo"));
   if (gates().count("topevent")) {
-    GatePtr top = gates().find("topevent")->second;
+    GatePtr top = gates().at("topevent");
     EXPECT_EQ("topevent", top->id());
     ASSERT_NO_THROW(top->formula()->type());
     EXPECT_EQ("and", top->formula()->type());
     EXPECT_EQ(2, top->formula()->event_args().size());
   }
   if (gates().count("trainone")) {
-    GatePtr inter = gates().find("trainone")->second;
+    GatePtr inter = gates().at("trainone");
     EXPECT_EQ("trainone", inter->id());
     ASSERT_NO_THROW(inter->formula()->type());
     EXPECT_EQ("or", inter->formula()->type());
     EXPECT_EQ(2, inter->formula()->event_args().size());
   }
   if (basic_events().count("valveone")) {
-    BasicEventPtr primary = basic_events().find("valveone")->second;
+    BasicEventPtr primary = basic_events().at("valveone");
     EXPECT_EQ("valveone", primary->id());
   }
 }
@@ -71,14 +71,14 @@ TEST_F(RiskAnalysisTest, PopulateProbabilities) {
   ASSERT_EQ(1, basic_events().count("pumptwo"));
   ASSERT_EQ(1, basic_events().count("valveone"));
   ASSERT_EQ(1, basic_events().count("valvetwo"));
-  ASSERT_NO_THROW(basic_events().find("pumpone")->second->p());
-  ASSERT_NO_THROW(basic_events().find("pumptwo")->second->p());
-  ASSERT_NO_THROW(basic_events().find("valveone")->second->p());
-  ASSERT_NO_THROW(basic_events().find("valvetwo")->second->p());
-  EXPECT_EQ(0.6, basic_events().find("pumpone")->second->p());
-  EXPECT_EQ(0.7, basic_events().find("pumptwo")->second->p());
-  EXPECT_EQ(0.4, basic_events().find("valveone")->second->p());
-  EXPECT_EQ(0.5, basic_events().find("valvetwo")->second->p());
+  ASSERT_NO_THROW(basic_events().at("pumpone")->p());
+  ASSERT_NO_THROW(basic_events().at("pumptwo")->p());
+  ASSERT_NO_THROW(basic_events().at("valveone")->p());
+  ASSERT_NO_THROW(basic_events().at("valvetwo")->p());
+  EXPECT_EQ(0.6, basic_events().at("pumpone")->p());
+  EXPECT_EQ(0.7, basic_events().at("pumptwo")->p());
+  EXPECT_EQ(0.4, basic_events().at("valveone")->p());
+  EXPECT_EQ(0.5, basic_events().at("valvetwo")->p());
 }
 
 // Test Analysis of Two train system.
@@ -86,56 +86,31 @@ TEST_F(RiskAnalysisTest, AnalyzeDefault) {
   std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  std::set<std::string> mcs_1;
-  std::set<std::string> mcs_2;
-  std::set<std::string> mcs_3;
-  std::set<std::string> mcs_4;
-  mcs_1.insert("pumpone");
-  mcs_1.insert("pumptwo");
-  mcs_2.insert("pumpone");
-  mcs_2.insert("valvetwo");
-  mcs_3.insert("pumptwo");
-  mcs_3.insert("valveone");
-  mcs_4.insert("valveone");
-  mcs_4.insert("valvetwo");
-  EXPECT_EQ(4, min_cut_sets().size());
-  EXPECT_EQ(1, min_cut_sets().count(mcs_1));
-  EXPECT_EQ(1, min_cut_sets().count(mcs_2));
-  EXPECT_EQ(1, min_cut_sets().count(mcs_3));
-  EXPECT_EQ(1, min_cut_sets().count(mcs_4));
+  std::set<std::set<std::string>> mcs = {{"pumpone", "pumptwo"},
+                                         {"pumpone", "valvetwo"},
+                                         {"pumptwo", "valveone"},
+                                         {"valveone", "valvetwo"}};
+  EXPECT_EQ(mcs, min_cut_sets());
 }
 
 TEST_F(RiskAnalysisTest, AnalyzeWithProbability) {
   std::string with_prob =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
-  std::set<std::string> mcs_1;
-  std::set<std::string> mcs_2;
-  std::set<std::string> mcs_3;
-  std::set<std::string> mcs_4;
-  mcs_1.insert("pumpone");
-  mcs_1.insert("pumptwo");
-  mcs_2.insert("pumpone");
-  mcs_2.insert("valvetwo");
-  mcs_3.insert("pumptwo");
-  mcs_3.insert("valveone");
-  mcs_4.insert("valveone");
-  mcs_4.insert("valvetwo");
-
+  std::set<std::string> mcs_1 = {"pumpone", "pumptwo"};
+  std::set<std::string> mcs_2 = {"pumpone", "valvetwo"};
+  std::set<std::string> mcs_3 = {"pumptwo", "valveone"};
+  std::set<std::string> mcs_4 = {"valveone", "valvetwo"};
+  std::set<std::set<std::string>> mcs = {mcs_1, mcs_2, mcs_3, mcs_4};
   settings.probability_analysis(true).importance_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(with_prob));
   ASSERT_NO_THROW(ran->Analyze());
 
-  EXPECT_EQ(4, min_cut_sets().size());
-  EXPECT_EQ(1, min_cut_sets().count(mcs_1));
-  EXPECT_EQ(1, min_cut_sets().count(mcs_2));
-  EXPECT_EQ(1, min_cut_sets().count(mcs_3));
-  EXPECT_EQ(1, min_cut_sets().count(mcs_4));
-
+  EXPECT_EQ(mcs, min_cut_sets());
   EXPECT_DOUBLE_EQ(0.646, p_total());
-  EXPECT_DOUBLE_EQ(0.42, prob_of_min_sets().find(mcs_1)->second);
-  EXPECT_DOUBLE_EQ(0.3, prob_of_min_sets().find(mcs_2)->second);
-  EXPECT_DOUBLE_EQ(0.28, prob_of_min_sets().find(mcs_3)->second);
-  EXPECT_DOUBLE_EQ(0.2, prob_of_min_sets().find(mcs_4)->second);
+  EXPECT_DOUBLE_EQ(0.42, prob_of_min_sets().at(mcs_1));
+  EXPECT_DOUBLE_EQ(0.3, prob_of_min_sets().at(mcs_2));
+  EXPECT_DOUBLE_EQ(0.28, prob_of_min_sets().at(mcs_3));
+  EXPECT_DOUBLE_EQ(0.2, prob_of_min_sets().at(mcs_4));
 
   // Check importance values.
   std::vector<std::pair<std::string, ImportanceFactors>> importance = {
@@ -157,26 +132,13 @@ TEST_F(RiskAnalysisTest, AnalyzeWithProbability) {
 
 TEST_F(RiskAnalysisTest, AnalyzeNestedFormula) {
   std::string nested_input = "./share/scram/input/fta/nested_formula.xml";
-  std::set<std::string> mcs_1;
-  std::set<std::string> mcs_2;
-  std::set<std::string> mcs_3;
-  std::set<std::string> mcs_4;
-  mcs_1.insert("pumpone");
-  mcs_1.insert("pumptwo");
-  mcs_2.insert("pumpone");
-  mcs_2.insert("valvetwo");
-  mcs_3.insert("pumptwo");
-  mcs_3.insert("valveone");
-  mcs_4.insert("valveone");
-  mcs_4.insert("valvetwo");
-
+  std::set<std::set<std::string>> mcs = {{"pumpone", "pumptwo"},
+                                         {"pumpone", "valvetwo"},
+                                         {"pumptwo", "valveone"},
+                                         {"valveone", "valvetwo"}};
   ASSERT_NO_THROW(ProcessInputFile(nested_input));
   ASSERT_NO_THROW(ran->Analyze());
-  EXPECT_EQ(4, min_cut_sets().size());
-  EXPECT_EQ(1, min_cut_sets().count(mcs_1));
-  EXPECT_EQ(1, min_cut_sets().count(mcs_2));
-  EXPECT_EQ(1, min_cut_sets().count(mcs_3));
-  EXPECT_EQ(1, min_cut_sets().count(mcs_4));
+  EXPECT_EQ(mcs, min_cut_sets());
 }
 
 TEST_F(RiskAnalysisTest, Importance) {
@@ -484,17 +446,10 @@ TEST_F(RiskAnalysisTest, ChildNandNorGates) {
   std::string tree_input = "./share/scram/input/fta/children_nand_nor.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  std::set<std::string> mcs_1;
-  std::set<std::string> mcs_2;
-  mcs_1.insert("not pumpone");
-  mcs_1.insert("not pumptwo");
-  mcs_1.insert("not valveone");
-  mcs_2.insert("not pumpone");
-  mcs_2.insert("not valvetwo");
-  mcs_2.insert("not valveone");
-  EXPECT_EQ(2, min_cut_sets().size());
-  EXPECT_EQ(1, min_cut_sets().count(mcs_1));
-  EXPECT_EQ(1, min_cut_sets().count(mcs_2));
+  std::set<std::set<std::string>> mcs = {
+      {"not pumpone", "not pumptwo", "not valveone"},
+      {"not pumpone", "not valvetwo", "not valveone"}};
+  EXPECT_EQ(mcs, min_cut_sets());
 }
 
 // Simple test for several house event propagation.
@@ -502,11 +457,8 @@ TEST_F(RiskAnalysisTest, ManyHouseEvents) {
   std::string tree_input = "./share/scram/input/fta/constant_propagation.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  std::set<std::string> mcs_1;
-  mcs_1.insert("a");
-  mcs_1.insert("b");
-  EXPECT_EQ(1, min_cut_sets().size());
-  EXPECT_EQ(1, min_cut_sets().count(mcs_1));
+  std::set<std::set<std::string>> mcs = {{"a", "b"}};
+  EXPECT_EQ(mcs, min_cut_sets());
 }
 
 // Simple test for several constant gate propagation.
@@ -514,9 +466,8 @@ TEST_F(RiskAnalysisTest, ConstantGates) {
   std::string tree_input = "./share/scram/input/fta/constant_gates.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  std::set<std::string> mcs_1;
-  EXPECT_EQ(1, min_cut_sets().size());
-  EXPECT_EQ(1, min_cut_sets().count(mcs_1));
+  std::set<std::set<std::string>> mcs = {{}};
+  EXPECT_EQ(mcs, min_cut_sets());
 }
 
 }  // namespace test

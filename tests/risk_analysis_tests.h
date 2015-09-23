@@ -105,7 +105,7 @@ class RiskAnalysisTest : public ::testing::Test {
     return ran->probability_analyses().begin()->second->p_total();
   }
 
-  const std::map< std::set<std::string>, double >& prob_of_min_sets() {
+  const std::map<std::set<std::string>, double>& prob_of_min_sets() {
     assert(!ran->probability_analyses().empty());
     assert(ran->probability_analyses().size() == 1);
     return ran->probability_analyses().begin()->second->prob_of_min_sets();
@@ -114,8 +114,7 @@ class RiskAnalysisTest : public ::testing::Test {
   const ImportanceFactors& importance(std::string id) {
     assert(!ran->probability_analyses().empty());
     assert(ran->probability_analyses().size() == 1);
-    return ran->probability_analyses().begin()->second
-        ->importance().find(id)->second;
+    return ran->probability_analyses().begin()->second->importance().at(id);
   }
 
   // Uncertainty analysis.
