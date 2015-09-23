@@ -111,7 +111,7 @@ class RiskAnalysisTest : public ::testing::Test {
     return ran->probability_analyses().begin()->second->prob_of_min_sets();
   }
 
-  const std::vector<double>& importance(std::string id) {
+  const ImportanceFactors& importance(std::string id) {
     assert(!ran->probability_analyses().empty());
     assert(ran->probability_analyses().size() == 1);
     return ran->probability_analyses().begin()->second

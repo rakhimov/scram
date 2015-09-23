@@ -38,6 +38,16 @@ namespace scram {
 
 namespace test { class ProbabilityAnalysisTest; }
 
+/// @struct ImportanceFactors
+/// Collection of importance factors for variables.
+struct ImportanceFactors {
+  double dif;  ///< Fussel-Vesely diagnosis importance factor.
+  double mif;  ///< Birnbaum marginal importance factor.
+  double cif;  ///< Critical importance factor.
+  double rrw;  ///< Risk reduction worth factor.
+  double raw;  ///< Risk achievement worth factor.
+};
+
 /// @class ProbabilityAnalysis
 /// Main quantitative analysis.
 class ProbabilityAnalysis {
@@ -98,12 +108,10 @@ class ProbabilityAnalysis {
     return prob_of_min_sets_;
   }
 
-  /// @returns Map with basic events and their importance values.
-  ///          The associated vector contains
-  ///          DIF, MIF, CIF, RRW, RAW in order.
+  /// @returns Map with basic events and their importance factors.
   ///
   /// @note The user should make sure that the analysis is actually done.
-  inline const std::map< std::string, std::vector<double> >&
+  inline const std::unordered_map<std::string, ImportanceFactors>&
       importance() const {
     return importance_;
   }
@@ -238,9 +246,8 @@ class ProbabilityAnalysis {
   /// Container for minimal cut sets and their respective probabilities.
   std::map< std::set<std::string>, double > prob_of_min_sets_;
 
-  /// Container for basic event importance types.
-  /// The order is DIF, MIF, CIF, RRW, RAW.
-  std::map< std::string, std::vector<double> > importance_;
+  /// Container for basic event importance factors.
+  std::unordered_map<std::string, ImportanceFactors> importance_;
 
   bool coherent_;  ///< Indication of coherent optimized analysis.
   double p_time_;  ///< Time for probability calculations.

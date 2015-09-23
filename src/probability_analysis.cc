@@ -333,20 +333,14 @@ void ProbabilityAnalysis::PerformImportanceAnalysis() noexcept {
     // Restore the probability.
     iprobs_[*it] = int_to_basic_[*it]->p();
 
-    // Mapped vector for importance factors.
-    std::vector<double> imp;
-    // Fussel-Vesely Diagnosis importance factor.
-    imp.push_back(1 - p_not_e / p_total_);
-    // Birnbaum Marginal importance factor.
-    imp.push_back(p_e - p_not_e);
-    // Critical Importance factor.
-    imp.push_back(imp[1] * iprobs_[*it] / p_not_e);
-    // Risk Reduction Worth.
-    imp.push_back(p_total_ / p_not_e);
-    // Risk Achievement Worth.
-    imp.push_back(p_e / p_total_);
+    ImportanceFactors imp;
+    imp.dif = 1 - p_not_e / p_total_;  // Diagnosis importance factor.
+    imp.mif = p_e - p_not_e;  // Birnbaum Marginal importance factor.
+    imp.cif = imp.mif * iprobs_[*it] / p_not_e;  // Critical Importance factor.
+    imp.rrw = p_total_ / p_not_e;  // Risk Reduction Worth.
+    imp.raw = p_e / p_total_;  // Risk Achievement Worth.
 
-    importance_.insert(std::make_pair(int_to_basic_[*it]->id(), imp));
+    importance_.emplace(int_to_basic_[*it]->id(), std::move(imp));
   }
 }
 

@@ -289,16 +289,17 @@ void Reporter::ReportImportance(std::string ft_name,
     importance->add_child("warning")->add_child_text(warning);
   }
 
-  for (const std::pair<std::string, std::vector<double>>& factors :
+  for (const std::pair<std::string, ImportanceFactors>& entry :
        prob_analysis.importance()) {
     xmlpp::Element* element = Reporter::ReportBasicEvent(
-        prob_analysis.basic_events().at(factors.first),
+        prob_analysis.basic_events().at(entry.first),
         importance);
-    element->set_attribute("DIF", ToString(factors.second[0], 4));
-    element->set_attribute("MIF", ToString(factors.second[1], 4));
-    element->set_attribute("CIF", ToString(factors.second[2], 4));
-    element->set_attribute("RRW", ToString(factors.second[3], 4));
-    element->set_attribute("RAW", ToString(factors.second[4], 4));
+    const ImportanceFactors& factors = entry.second;
+    element->set_attribute("DIF", ToString(factors.dif, 4));
+    element->set_attribute("MIF", ToString(factors.mif, 4));
+    element->set_attribute("CIF", ToString(factors.cif, 4));
+    element->set_attribute("RRW", ToString(factors.rrw, 4));
+    element->set_attribute("RAW", ToString(factors.raw, 4));
   }
   xmlpp::NodeSet calc_times =
       root->find("./information/performance/calculation-time");

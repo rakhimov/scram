@@ -138,25 +138,20 @@ TEST_F(RiskAnalysisTest, AnalyzeWithProbability) {
   EXPECT_DOUBLE_EQ(0.2, prob_of_min_sets().find(mcs_4)->second);
 
   // Check importance values.
-  std::vector<double> imp;
-  std::map< std::string, std::vector<double> > importance;
-  imp = {0.47368, 0.51, 0.9, 1.9, 1.315};
-  importance.insert({"pumpone", imp});
-  imp = {0.41176, 0.38, 0.7, 1.7, 1.1765};
-  importance.insert({"pumptwo", imp});
-  imp = {0.21053, 0.34, 0.26667, 1.2667, 1.3158};
-  importance.insert({"valveone", imp});
-  imp = {0.17647, 0.228, 0.21429, 1.2143, 1.1765};
-  importance.insert({"valvetwo", imp});
+  std::vector<std::pair<std::string, ImportanceFactors>> importance = {
+      {"pumpone", {0.47368, 0.51, 0.9, 1.9, 1.315}},
+      {"pumptwo", {0.41176, 0.38, 0.7, 1.7, 1.1765}},
+      {"valveone", {0.21053, 0.34, 0.26667, 1.2667, 1.3158}},
+      {"valvetwo", {0.17647, 0.228, 0.21429, 1.2143, 1.1765}}};
 
-  std::map< std::string, std::vector<double> >::iterator it;
-  for (it = importance.begin(); it != importance.end(); ++it) {
-    std::vector<double> results = RiskAnalysisTest::importance(it->first);
-    ASSERT_EQ(5, results.size());
-    for (int i = 0; i < 5; ++i) {
-      EXPECT_NEAR(it->second[i], results[i], 1e-3)
-          << it->first << ": Importance " << i;
-    }
+  for (const auto& entry : importance) {
+    const ImportanceFactors& result = RiskAnalysisTest::importance(entry.first);
+    const ImportanceFactors& test = entry.second;
+    EXPECT_NEAR(test.dif, result.dif, 1e-3);
+    EXPECT_NEAR(test.mif, result.mif, 1e-3);
+    EXPECT_NEAR(test.cif, result.cif, 1e-3);
+    EXPECT_NEAR(test.rrw, result.rrw, 1e-3);
+    EXPECT_NEAR(test.raw, result.raw, 1e-3);
   }
 }
 
@@ -191,25 +186,20 @@ TEST_F(RiskAnalysisTest, Importance) {
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(0.67, p_total());
   // Check importance values with negative event.
-  std::vector<double> imp;
-  std::map< std::string, std::vector<double> > importance;
-  imp = {0.40299, 0.45, 0.675, 1.675, 1.2687};
-  importance.insert({"pumpone", imp});
-  imp = {0.31343, 0.3, 0.45652, 1.4565, 1.1343};
-  importance.insert({"pumptwo", imp});
-  imp = {0.23881, 0.4, 0.31373, 1.3137, 1.3582};
-  importance.insert({"valveone", imp});
-  imp = {0.13433, 0.18, 0.15517, 1.1552, 1.1343};
-  importance.insert({"valvetwo", imp});
+  std::vector<std::pair<std::string, ImportanceFactors>> importance = {
+      {"pumpone", {0.40299, 0.45, 0.675, 1.675, 1.2687}},
+      {"pumptwo", {0.31343, 0.3, 0.45652, 1.4565, 1.1343}},
+      {"valveone", {0.23881, 0.4, 0.31373, 1.3137, 1.3582}},
+      {"valvetwo", {0.13433, 0.18, 0.15517, 1.1552, 1.1343}}};
 
-  std::map< std::string, std::vector<double> >::iterator it;
-  for (it = importance.begin(); it != importance.end(); ++it) {
-    std::vector<double> results = RiskAnalysisTest::importance(it->first);
-    assert(results.size() == 5);
-    for (int i = 0; i < 5; ++i) {
-      EXPECT_NEAR(it->second[i], results[i], 1e-3)
-          << it->first << ": Importance " << i;
-    }
+  for (const auto& entry : importance) {
+    const ImportanceFactors& result = RiskAnalysisTest::importance(entry.first);
+    const ImportanceFactors& test = entry.second;
+    EXPECT_NEAR(test.dif, result.dif, 1e-3);
+    EXPECT_NEAR(test.mif, result.mif, 1e-3);
+    EXPECT_NEAR(test.cif, result.cif, 1e-3);
+    EXPECT_NEAR(test.rrw, result.rrw, 1e-3);
+    EXPECT_NEAR(test.raw, result.raw, 1e-3);
   }
 }
 
