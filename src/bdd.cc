@@ -66,6 +66,16 @@ void Bdd::Analyze() noexcept {
 const Bdd::Result& Bdd::IfThenElse(const IGatePtr& gate) noexcept {
   Result& result = gates_[gate->index()];
   if (result.vertex) return result;
+  if (gate->state() != kNormalState) {
+    // Constant case should only happen to the top gate.
+    assert(gate == fault_tree_->root());
+    if (gate->state() == kNullState) {
+      result = {true, kOne_};
+    } else {
+      result = {false, kOne_};
+    }
+    return result;
+  }
   std::vector<Result> args;
   for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
     args.push_back({arg.first < 0, Bdd::IfThenElse(arg.second)});

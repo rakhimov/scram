@@ -290,7 +290,7 @@ TEST_F(RiskAnalysisTest, PhiFactorCCF) {
   settings.ccf_analysis(true).num_sums(3).probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  EXPECT_NEAR(0.04109, p_total(), 1e-5);
+  EXPECT_NEAR(0.04104, p_total(), 1e-5);
   EXPECT_EQ(34, min_cut_sets().size());
   std::vector<int> distr = {0, 2, 24, 8};
   EXPECT_EQ(distr, McsDistribution());
@@ -303,7 +303,7 @@ TEST_F(RiskAnalysisTest, MGLFactorCCF) {
   settings.ccf_analysis(true).num_sums(3).probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  EXPECT_NEAR(0.01631, p_total(), 1e-5);
+  EXPECT_NEAR(0.01630, p_total(), 1e-5);
   EXPECT_EQ(34, min_cut_sets().size());
   std::vector<int> distr = {0, 2, 24, 8};
   EXPECT_EQ(distr, McsDistribution());
@@ -316,7 +316,7 @@ TEST_F(RiskAnalysisTest, AlphaFactorCCF) {
   settings.ccf_analysis(true).num_sums(3).probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  EXPECT_NEAR(0.03093, p_total(), 1e-5);
+  EXPECT_NEAR(0.03092, p_total(), 1e-5);
   EXPECT_EQ(34, min_cut_sets().size());
   std::vector<int> distr = {0, 2, 24, 8};
   EXPECT_EQ(distr, McsDistribution());

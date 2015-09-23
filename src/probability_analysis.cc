@@ -23,8 +23,11 @@
 
 #include <boost/algorithm/string.hpp>
 
+#include "bdd.h"
+#include "boolean_graph.h"
 #include "error.h"
 #include "logger.h"
+#include "preprocessor.h"
 
 namespace scram {
 
@@ -36,6 +39,12 @@ ProbabilityAnalysis::ProbabilityAnalysis(const Settings& settings)
       coherent_(true),
       p_time_(0),
       imp_time_(0) {}
+
+ProbabilityAnalysis::ProbabilityAnalysis(const GatePtr& root,
+                                         const Settings& settings)
+    : ProbabilityAnalysis::ProbabilityAnalysis(settings) {
+  top_event_ = root;
+}
 
 void ProbabilityAnalysis::UpdateDatabase(
     const std::unordered_map<std::string, BasicEventPtr>& basic_events) {
@@ -90,7 +99,6 @@ void ProbabilityAnalysis::Analyze(
     p_total_ = ProbabilityAnalysis::ProbMcub(imcs_);
 
   } else {
-    int num_sums = kSettings_.num_sums();
     // Check if the rare event approximation is requested.
     if (kSettings_.approx() == "rare-event") {
       std::map<std::set<std::string>, double>::iterator it_pr;
@@ -105,10 +113,16 @@ void ProbabilityAnalysis::Analyze(
           break;
         }
       }
-      num_sums = 1;  // Only first series is used for the rare event case.
+      ProbabilityAnalysis::ProbOr(1, 1, &mcs_for_prob);
+      p_total_ = ProbabilityAnalysis::CalculateTotalProbability();
+    } else {
+      ProbabilityAnalysis::ProbOr(1, kSettings_.num_sums(), &mcs_for_prob);
+      if (top_event_) {
+        p_total_ = ProbabilityAnalysis::CalculateBddProbability();
+      } else {
+        p_total_ = ProbabilityAnalysis::CalculateTotalProbability();
+      }
     }
-    ProbabilityAnalysis::ProbOr(1, num_sums, &mcs_for_prob);
-    p_total_ = ProbabilityAnalysis::CalculateTotalProbability();
   }
   LOG(DEBUG3) << "Finished probability calculations in " << DUR(p_time);
   p_time_ = DUR(p_time);
@@ -267,6 +281,31 @@ double ProbabilityAnalysis::CalculateTotalProbability() noexcept {
     neg += ProbabilityAnalysis::ProbAnd(*it_s);
   }
   return pos - neg;
+}
+
+double ProbabilityAnalysis::CalculateBddProbability() noexcept {
+  assert(top_event_);
+  CLOCK(ft_creation);
+  BooleanGraph* graph =
+      new BooleanGraph(top_event_, kSettings_.ccf_analysis());
+  LOG(DEBUG2) << "Boolean graph is created in " << DUR(ft_creation);
+
+  CLOCK(prep_time);  // Overall preprocessing time.
+  LOG(DEBUG2) << "Preprocessing...";
+  Preprocessor* preprocessor = new PreprocessorBdd(graph);
+  preprocessor->Run();
+  delete preprocessor;  // No exceptions are expected.
+  LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
+
+
+  CLOCK(bdd_time);  // BDD based calculation time.
+  LOG(DEBUG2) << "Calculating probability with BDD...";
+  Bdd* bdd = new Bdd(graph);
+  bdd->Analyze();
+  double prob = bdd->p_graph();
+  delete bdd;
+  LOG(DEBUG2) << "Calculated probability " << prob << " in " << DUR(bdd_time);
+  return prob;
 }
 
 void ProbabilityAnalysis::PerformImportanceAnalysis() noexcept {

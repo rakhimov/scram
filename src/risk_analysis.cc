@@ -75,7 +75,7 @@ void RiskAnalysis::Analyze() noexcept {
       fta->Analyze();
 
       if (kSettings_.probability_analysis()) {
-        ProbabilityAnalysisPtr pa(new ProbabilityAnalysis(kSettings_));
+        ProbabilityAnalysisPtr pa(new ProbabilityAnalysis(target, kSettings_));
         pa->UpdateDatabase(fta->mcs_basic_events());
         pa->Analyze(fta->min_cut_sets());
         probability_analyses_.emplace(name, std::move(pa));

@@ -45,11 +45,19 @@ class ProbabilityAnalysis {
 
  public:
   using BasicEventPtr = std::shared_ptr<BasicEvent>;
+  using GatePtr = std::shared_ptr<Gate>;
 
   /// The main constructor of Probability Analysis.
   ///
   /// @param[in] settings Analysis settings for probability calculations.
   explicit ProbabilityAnalysis(const Settings& settings);
+
+  /// Probability analysis
+  /// on the fault tree represented by the root gate
+  /// with Binary decision diagrams.
+  ///
+  /// @note This technique does not require cut sets.
+  ProbabilityAnalysis(const GatePtr& root, const Settings& settings);
 
   virtual ~ProbabilityAnalysis() {}
 
@@ -190,10 +198,18 @@ class ProbabilityAnalysis {
   /// Calculates total probability from the generated probability equation.
   double CalculateTotalProbability() noexcept;
 
+  /// Calculates the total probability
+  /// using the fault tree directly
+  /// without cut sets.
+  ///
+  /// @todo Replace the main probability calculation functionality
+  ///       with BDD based approach.
+  double CalculateBddProbability() noexcept;
+
   /// Importance analysis of basic events that are in minimal cut sets.
   void PerformImportanceAnalysis() noexcept;
 
-
+  GatePtr top_event_;  ///< Top gate of the passed fault tree.
   const Settings kSettings_;  ///< All settings for analysis.
   std::string warnings_;  ///< Register warnings.
 
