@@ -65,6 +65,9 @@ class ProbabilityAnalysis {
   /// on the fault tree represented by the root gate
   /// with Binary decision diagrams.
   ///
+  /// @param[in] root The top event of the fault tree.
+  /// @param[in] settings Analysis settings for probability calculations.
+  ///
   /// @note This technique does not require cut sets.
   ProbabilityAnalysis(const GatePtr& root, const Settings& settings);
 

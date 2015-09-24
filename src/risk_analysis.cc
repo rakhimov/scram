@@ -82,7 +82,7 @@ void RiskAnalysis::Analyze() noexcept {
       }
 
       if (kSettings_.uncertainty_analysis()) {
-        UncertaintyAnalysisPtr ua(new UncertaintyAnalysis(kSettings_));
+        UncertaintyAnalysisPtr ua(new UncertaintyAnalysis(target, kSettings_));
         ua->UpdateDatabase(fta->mcs_basic_events());
         ua->Analyze(fta->min_cut_sets());
         uncertainty_analyses_.emplace(name, std::move(ua));

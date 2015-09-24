@@ -45,10 +45,15 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
  public:
   using BasicEventPtr = std::shared_ptr<BasicEvent>;
 
-  /// The main constructor of Uncertainty Analysis.
+  /// Uncertainty analysis
+  /// on the fault tree represented by the root gate
+  /// with Binary decision diagrams.
   ///
-  /// @param[in] settings Analysis settings for uncertainty calculations.
-  explicit UncertaintyAnalysis(const Settings& settings);
+  /// @param[in] root The top event of the fault tree.
+  /// @param[in] settings Analysis settings for probability calculations.
+  ///
+  /// @note This technique does not require cut sets.
+  UncertaintyAnalysis(const GatePtr& root, const Settings& settings);
 
   /// Sets the databases of basic events with probabilities.
   /// Resets the main basic event database
@@ -110,11 +115,10 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   void Sample() noexcept;
 
   /// Gathers basic events that have distributions.
-  /// Other constant, certain basic events removed from sampling.
-  /// These constant events are removed from the probability equation,
-  /// and the members of the equation are given a corresponding multiplier.
   ///
   /// @param[out] basic_events The gathered uncertain basic events.
+  ///
+  /// @todo Mark BDD graph branches that do not need sampling.
   void FilterUncertainEvents(std::vector<int>* basic_events) noexcept;
 
   /// Calculates statistical values from the final distribution.
@@ -132,12 +136,6 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   std::vector<std::pair<double, double> > distribution_;
   /// The quantiles of the distribution.
   std::vector<double> quantiles_;
-  /// Storage for constant part of the positive equation.
-  /// The same mapping as positive sets.
-  std::vector<double> pos_const_;
-  /// Storage for constant part of the negative equation.
-  /// The same mapping as negative sets.
-  std::vector<double> neg_const_;
 };
 
 }  // namespace scram

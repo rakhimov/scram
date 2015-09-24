@@ -34,8 +34,9 @@
 
 namespace scram {
 
-UncertaintyAnalysis::UncertaintyAnalysis(const Settings& settings)
-    : ProbabilityAnalysis::ProbabilityAnalysis(settings),
+UncertaintyAnalysis::UncertaintyAnalysis(const GatePtr& root,
+                                         const Settings& settings)
+    : ProbabilityAnalysis::ProbabilityAnalysis(root, settings),
       kSettings_(settings),
       mean_(0),
       sigma_(0),
@@ -62,32 +63,9 @@ void UncertaintyAnalysis::Analyze(
     return;
   }
 
-  LOG(DEBUG3) << "Indexing minimal cut sets...";
-  ProbabilityAnalysis::IndexMcs(min_cut_sets_);
-  LOG(DEBUG3) << "Finished indexing minimal cut sets!";
-
-  using boost::container::flat_set;
-  std::set< flat_set<int> > iset;
-
-  LOG(DEBUG3) << "Getting probabilities of minimal cut sets...";
-  std::vector< flat_set<int> >::const_iterator it_min;
-  for (it_min = imcs_.begin(); it_min != imcs_.end(); ++it_min) {
-    if (ProbabilityAnalysis::ProbAnd(*it_min) > kSettings_.cut_off()) {
-      iset.insert(*it_min);
-    }
-  }
-  LOG(DEBUG3) << "Got MCS probabilities!";
-  LOG(DEBUG3) << "Cut sets above cut-off level: " << iset.size();
-
   CLOCK(analysis_time);
   CLOCK(sample_time);
   LOG(DEBUG3) << "Sampling probabilities...";
-  if (kSettings_.approx() != "mcub") {
-    // Generate the equation.
-    int num_sums = kSettings_.num_sums();
-    if (kSettings_.approx() == "rare-event") num_sums = 1;
-    ProbabilityAnalysis::ProbOr(1, num_sums, &iset);
-  }
   // Sample probabilities and generate data.
   UncertaintyAnalysis::Sample();
   LOG(DEBUG3) << "Finished sampling probabilities in " << DUR(sample_time);
@@ -105,7 +83,6 @@ void UncertaintyAnalysis::Sample() noexcept {
   sampled_results_.clear();
   sampled_results_.reserve(kSettings_.num_trials());
 
-  using boost::container::flat_set;
   // Detect constant basic events.
   std::vector<int> basic_events;
   UncertaintyAnalysis::FilterUncertainEvents(&basic_events);
@@ -126,28 +103,7 @@ void UncertaintyAnalysis::Sample() noexcept {
     } else if (kSettings_.approx() == "rare-event") {
       result = ProbabilityAnalysis::ProbRareEvent(imcs_);
     } else {
-      double pos = 0;
-      int j = 0;  // Position of the terms.
-      for (const flat_set<int>& cut_set : pos_terms_) {
-        if (cut_set.empty()) {
-          pos += pos_const_[j];
-        } else {
-          pos += ProbabilityAnalysis::ProbAnd(cut_set) * pos_const_[j];
-        }
-        ++j;
-      }
-      double neg = 0;
-      j = 0;
-      for (const flat_set<int>& cut_set : neg_terms_) {
-        if (cut_set.empty()) {
-          neg += neg_const_[j];
-        } else {
-          neg += ProbabilityAnalysis::ProbAnd(cut_set) * neg_const_[j];
-        }
-        ++j;
-      }
-      assert(pos > neg);
-      result = pos - neg;
+      result = ProbabilityAnalysis::CalculateTotalProbability();
     }
     sampled_results_.push_back(result);
   }
@@ -155,45 +111,10 @@ void UncertaintyAnalysis::Sample() noexcept {
 
 void UncertaintyAnalysis::FilterUncertainEvents(
     std::vector<int>* basic_events) noexcept {
-  using boost::container::flat_set;
-  std::set<int> const_events;  // Does not need sampling.
-  for (int index : mcs_basic_events_) {
-    if (index_to_basic_[index]->IsConstant()) {
-      const_events.insert(const_events.end(), index);
-    } else {
-      basic_events->push_back(index);
+  for (const BasicEventPtr& event : ordered_basic_events_) {
+    if (!event->IsConstant()) {
+      basic_events->push_back(id_to_index_.find(event->id())->second);
     }
-  }
-  // Pre-calculate for constant events and remove them from sets.
-  std::vector< flat_set<int> >::iterator it_set;
-  for (it_set = pos_terms_.begin(); it_set != pos_terms_.end(); ++it_set) {
-    double const_prob = 1;  // 1 is for multiplication.
-    flat_set<int>::iterator it_f;
-    for (it_f = it_set->begin(); it_f != it_set->end();) {
-      if (const_events.count(std::abs(*it_f))) {
-        const_prob *= *it_f > 0 ? var_probs_[*it_f] : 1 - var_probs_[-*it_f];
-        it_set->erase(*it_f);
-        it_f = it_set->begin();
-        continue;
-      }
-      ++it_f;
-    }
-    pos_const_.push_back(const_prob);
-  }
-
-  for (it_set = neg_terms_.begin(); it_set != neg_terms_.end(); ++it_set) {
-    double const_prob = 1;  // 1 is for multiplication.
-    flat_set<int>::iterator it_f;
-    for (it_f = it_set->begin(); it_f != it_set->end();) {
-      if (const_events.count(std::abs(*it_f))) {
-        const_prob *= *it_f > 0 ? var_probs_[*it_f] : 1 - var_probs_[-*it_f];
-        it_set->erase(*it_f);
-        it_f = it_set->begin();
-        continue;
-      }
-      ++it_f;
-    }
-    neg_const_.push_back(const_prob);
   }
 }
 

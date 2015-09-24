@@ -74,7 +74,7 @@ void ProbabilityAnalysis::Analyze(
   // Minimal cut sets with higher than cut-off probability.
   std::set<flat_set<int>> mcs_for_prob;
   int i = 0;  // Indices for minimal cut sets in the vector.
-  for (const flat_set<int>& cut_set : imcs_) {
+  for (const flat_set<int>& cut_set : imcs_) {  /// @todo Remove.
     // Calculate a probability of a set with AND relationship.
     double p_sub_set = ProbabilityAnalysis::ProbAnd(cut_set);
     // Choose cut sets with high enough probabilities.
@@ -148,7 +148,7 @@ void ProbabilityAnalysis::AssignIndices() noexcept {
     bdd_graph_ = std::unique_ptr<Bdd>(new Bdd(graph));
     ordered_basic_events_ = graph->basic_events();
     delete graph;  /// @todo This is dangerous. BDD has invalid graph pointer.
-    LOG(DEBUG2) << "BDD is created in " << bdd_time;
+    LOG(DEBUG2) << "BDD is created in " << DUR(bdd_time);
   }
   // Cleanup the previous information.
   index_to_basic_.clear();
@@ -302,9 +302,8 @@ double ProbabilityAnalysis::CalculateTotalProbability() noexcept {
   return prob;
 }
 
-double ProbabilityAnalysis::CalculateProbability(
-    const VertexPtr& vertex,
-    bool mark) noexcept {
+double ProbabilityAnalysis::CalculateProbability(const VertexPtr& vertex,
+                                                 bool mark) noexcept {
   if (vertex->terminal()) return 1;
   ItePtr ite = Ite::Ptr(vertex);
   if (ite->mark() == mark) return ite->prob();
