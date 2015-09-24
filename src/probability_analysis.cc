@@ -318,7 +318,7 @@ double ProbabilityAnalysis::CalculateProbability(
   ite->mark(true);
   double var_prob = 0;
   if (ite->module()) {
-    const Bdd::Result& res = bdd_graph_->gates().find(ite->index())->second;
+    const Bdd::Function& res = bdd_graph_->gates().find(ite->index())->second;
     var_prob = ProbabilityAnalysis::CalculateProbability(res.vertex);
     if (res.complement) var_prob = 1 - var_prob;
   } else {

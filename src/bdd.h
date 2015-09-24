@@ -249,11 +249,11 @@ class Bdd {
   /// @note BDD construction may take considerable time.
   explicit Bdd(const BooleanGraph* fault_tree);
 
-  /// @struct Result
-  /// Holder of computation results and gate representations.
-  struct Result {
-    bool complement;  ///< The interpretation for the result.
-    VertexPtr vertex;  ///< The root vertex of the resulting BDD graph.
+  /// @struct Function
+  /// Holder of computation resultant functions and gate representations.
+  struct Function {
+    bool complement;  ///< The interpretation of the function.
+    VertexPtr vertex;  ///< The root vertex of the BDD function graph.
   };
 
   /// @returns The root vertex of the ROBDD.
@@ -263,7 +263,9 @@ class Bdd {
   inline bool complement_root() const { return complement_root_; }
 
   /// @returns Mapping of Boolean graph gates and BDD graph vertices.
-  inline const std::unordered_map<int, Result>& gates() const { return gates_; }
+  inline const std::unordered_map<int, Function>& gates() const {
+    return gates_;
+  }
 
  private:
   using NodePtr = std::shared_ptr<Node>;
@@ -272,7 +274,7 @@ class Bdd {
   using TerminalPtr = std::shared_ptr<Terminal>;
   using ItePtr = std::shared_ptr<Ite>;
   using UniqueTable = TripletTable<ItePtr>;  ///< To store unique vertices.
-  using ComputeTable = TripletTable<Result>;  ///< To store computation results.
+  using ComputeTable = TripletTable<Function>;  ///< To store computed results.
 
   /// Converts all gates in the Boolean graph
   /// into if-then-else BDD graphs.
@@ -280,8 +282,8 @@ class Bdd {
   ///
   /// @param[in] gate The root or current parent gate of the graph.
   ///
-  /// @returns Pointer to the root vertex of the BDD graph.
-  const Result& IfThenElse(const IGatePtr& gate) noexcept;
+  /// @returns The BDD function representing the gate.
+  const Function& IfThenElse(const IGatePtr& gate) noexcept;
 
   /// Converts variable argument of a Boolean graph gate
   /// into if-then-else BDD graph vertex.
@@ -320,10 +322,10 @@ class Bdd {
   /// @param[in] complement_one Interpretation of arg_one as complement.
   /// @param[in] complement_two Interpretation of arg_two as complement.
   ///
-  /// @returns Poitner to the root vertex of the resultant BDD graph.
+  /// @returns The BDD function as a result of operation.
   ///
   /// @note The order of arguments does not matter for two variable operators.
-  Result Apply(Operator type,
+  Function Apply(Operator type,
                const VertexPtr& arg_one, const VertexPtr& arg_two,
                bool complement_one, bool complement_two) noexcept;
 
@@ -336,8 +338,8 @@ class Bdd {
   /// @param[in] complement_one Interpretation of term_one as complement.
   /// @param[in] complement_two Interpretation of term_two as complement.
   ///
-  /// @returns Terminal vertex as a result of operations.
-  Result Apply(Operator type,
+  /// @returns The resulting BDD function.
+  Function Apply(Operator type,
                const TerminalPtr& term_one, const TerminalPtr& term_two,
                bool complement_one, bool complement_two) noexcept;
 
@@ -350,8 +352,8 @@ class Bdd {
   /// @param[in] complement_one Interpretation of ite_one as complement.
   /// @param[in] complement_two Interpretation of term_two as complement.
   ///
-  /// @returns Pointer to the vertex as a result of operations.
-  Result Apply(Operator type,
+  /// @returns The resulting BDD function.
+  Function Apply(Operator type,
                const ItePtr& ite_one, const TerminalPtr& term_two,
                bool complement_one, bool complement_two) noexcept;
 
@@ -395,7 +397,7 @@ class Bdd {
   /// the argument IDs must be ordered.
   ComputeTable compute_table_;
 
-  std::unordered_map<int, Result> gates_;  ///< Processed gates.
+  std::unordered_map<int, Function> gates_;  ///< Processed gates.
   const TerminalPtr kOne_;  ///< Terminal True.
   int function_id_;  ///< Identification assignment for new function graphs.
 };

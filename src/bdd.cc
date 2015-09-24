@@ -46,13 +46,13 @@ Bdd::Bdd(const BooleanGraph* fault_tree)
       complement_root_(false),
       kOne_(std::make_shared<Terminal>(true)),
       function_id_(2) {
-  const Result& result = Bdd::IfThenElse(fault_tree_->root());
+  const Function& result = Bdd::IfThenElse(fault_tree_->root());
   root_ = result.vertex;
   complement_root_ = result.complement;
 }
 
-const Bdd::Result& Bdd::IfThenElse(const IGatePtr& gate) noexcept {
-  Result& result = gates_[gate->index()];
+const Bdd::Function& Bdd::IfThenElse(const IGatePtr& gate) noexcept {
+  Function& result = gates_[gate->index()];
   if (result.vertex) return result;
   if (gate->state() != kNormalState) {
     // Constant case should only happen to the top gate.
@@ -64,12 +64,12 @@ const Bdd::Result& Bdd::IfThenElse(const IGatePtr& gate) noexcept {
     }
     return result;
   }
-  std::vector<Result> args;
+  std::vector<Function> args;
   for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
     args.push_back({arg.first < 0, Bdd::IfThenElse(arg.second)});
   }
   for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
-    const Result& res = Bdd::IfThenElse(arg.second);
+    const Function& res = Bdd::IfThenElse(arg.second);
     if (arg.second->IsModule()) {
       ItePtr proxy = Bdd::CreateModuleProxy(arg.second);
       args.push_back({arg.first < 0, proxy});
@@ -79,7 +79,7 @@ const Bdd::Result& Bdd::IfThenElse(const IGatePtr& gate) noexcept {
     }
   }
   std::sort(args.begin(), args.end(),
-            [](const Result& lhs, const Result& rhs) {
+            [](const Function& lhs, const Function& rhs) {
               if (lhs.vertex->terminal()) return false;
               if (rhs.vertex->terminal()) return true;
               return Ite::Ptr(lhs.vertex)->order() <
@@ -138,9 +138,9 @@ std::shared_ptr<Vertex> Bdd::Reduce(const VertexPtr& vertex) noexcept {
   return ite;
 }
 
-Bdd::Result Bdd::Apply(Operator type,
-                       const VertexPtr& arg_one, const VertexPtr& arg_two,
-                       bool complement_one, bool complement_two) noexcept {
+Bdd::Function Bdd::Apply(Operator type,
+                         const VertexPtr& arg_one, const VertexPtr& arg_two,
+                         bool complement_one, bool complement_two) noexcept {
   if (arg_one->terminal() && arg_two->terminal()) {
     return Bdd::Apply(type, Terminal::Ptr(arg_one), Terminal::Ptr(arg_two),
                       complement_one, complement_two);
@@ -167,13 +167,13 @@ Bdd::Result Bdd::Apply(Operator type,
   }
   Triplet sig =
       Bdd::GetSignature(type, arg_one, arg_two, complement_one, complement_two);
-  Result& result = compute_table_[sig];  // Register if not computed.
+  Function& result = compute_table_[sig];  // Register if not computed.
   if (result.vertex) return result;  // Already computed.
 
   ItePtr ite_one = Ite::Ptr(arg_one);
   ItePtr ite_two = Ite::Ptr(arg_two);
-  Result high;
-  Result low;
+  Function high;
+  Function low;
   if (ite_one->order() == ite_two->order()) {  // The same variable.
     assert(ite_one->index() == ite_two->index());
     high = Bdd::Apply(type, ite_one->high(), ite_two->high(),
@@ -220,9 +220,9 @@ Bdd::Result Bdd::Apply(Operator type,
   return result;
 }
 
-Bdd::Result Bdd::Apply(Operator type,
-                       const TerminalPtr& term_one, const TerminalPtr& term_two,
-                       bool complement_one, bool complement_two) noexcept {
+Bdd::Function Bdd::Apply(Operator type, const TerminalPtr& term_one,
+                         const TerminalPtr& term_two, bool complement_one,
+                         bool complement_two) noexcept {
   assert(term_one->value());
   assert(term_two->value());
   assert(term_one == term_two);
@@ -238,9 +238,9 @@ Bdd::Result Bdd::Apply(Operator type,
   }
 }
 
-Bdd::Result Bdd::Apply(Operator type,
-                       const ItePtr& ite_one, const TerminalPtr& term_two,
-                       bool complement_one, bool complement_two) noexcept {
+Bdd::Function Bdd::Apply(Operator type,
+                         const ItePtr& ite_one, const TerminalPtr& term_two,
+                         bool complement_one, bool complement_two) noexcept {
   assert(term_two->value());
   switch (type) {
     case kOrGate:
