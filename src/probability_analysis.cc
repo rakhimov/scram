@@ -30,8 +30,10 @@
 
 namespace scram {
 
-ProbabilityAnalysis::ProbabilityAnalysis(const Settings& settings)
-    : kSettings_(settings),
+ProbabilityAnalysis::ProbabilityAnalysis(const GatePtr& root,
+                                         const Settings& settings)
+    : top_event_(root),
+      kSettings_(settings),
       warnings_(""),
       p_total_(0),
       p_rare_(0),
@@ -39,12 +41,6 @@ ProbabilityAnalysis::ProbabilityAnalysis(const Settings& settings)
       coherent_(true),
       p_time_(0),
       imp_time_(0) {}
-
-ProbabilityAnalysis::ProbabilityAnalysis(const GatePtr& root,
-                                         const Settings& settings)
-    : ProbabilityAnalysis::ProbabilityAnalysis(settings) {
-  top_event_ = root;
-}
 
 void ProbabilityAnalysis::UpdateDatabase(
     const std::unordered_map<std::string, BasicEventPtr>& basic_events) {

@@ -56,11 +56,6 @@ class ProbabilityAnalysis {
   using VertexPtr = std::shared_ptr<Vertex>;
   using ItePtr = std::shared_ptr<Ite>;
 
-  /// The main constructor of Probability Analysis.
-  ///
-  /// @param[in] settings Analysis settings for probability calculations.
-  explicit ProbabilityAnalysis(const Settings& settings);
-
   /// Probability analysis
   /// on the fault tree represented by the root gate
   /// with Binary decision diagrams.

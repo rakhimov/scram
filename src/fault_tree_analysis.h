@@ -58,6 +58,7 @@ class FaultTreeAnalysis {
   using GatePtr = std::shared_ptr<Gate>;
   using BasicEventPtr = std::shared_ptr<BasicEvent>;
   using HouseEventPtr = std::shared_ptr<HouseEvent>;
+  using CutSet = std::set<std::string>;  ///< Cut set with basic event IDs.
 
   /// Traverses a valid fault tree from the root gate
   /// to collect databases of events, gates,
@@ -134,14 +135,28 @@ class FaultTreeAnalysis {
   /// @returns Set with minimal cut sets.
   ///
   /// @note The user should make sure that the analysis is actually done.
-  inline const std::set< std::set<std::string> >& min_cut_sets() const {
-    return min_cut_sets_;
-  }
+  inline const std::set<CutSet>& min_cut_sets() const { return min_cut_sets_; }
 
   /// @returns Collection of basic events that are in the minimal cut sets.
   inline const std::unordered_map<std::string, BasicEventPtr>&
       mcs_basic_events() const {
     return mcs_basic_events_;
+  }
+
+  /// @returns Map with minimal cut sets and their probabilities.
+  ///
+  /// @note The user should make sure that the analysis is actually done.
+  inline const std::map<CutSet, double>& mcs_probability() const {
+    assert(kSettings_.probability_analysis());
+    return mcs_probability_;
+  }
+
+  /// @returns The sum of minimal cut set probabilities.
+  ///
+  /// @note This value is the same as the rare-event approximation.
+  inline double sum_mcs_probability() const {
+    assert(kSettings_.probability_analysis());
+    return sum_mcs_probability_;
   }
 
   /// @returns The maximum order of the found minimal cut sets.
@@ -185,10 +200,13 @@ class FaultTreeAnalysis {
 
   /// Converts minimal cut sets from indices to strings
   /// for future reporting.
-  /// This function also collects basic events in minimal cut sets.
+  /// This function also collects basic events in minimal cut sets
+  /// and calculates their probabilities.
   ///
   /// @param[in] imcs Min cut sets with indices of events.
   /// @param[in] ft Indexed fault tree with basic event indices and pointers.
+  ///
+  /// @todo Probability calculation feels more like a hack than design.
   void SetsToString(const std::vector<Set>& imcs,
                     const BooleanGraph* ft) noexcept;
 
@@ -209,11 +227,15 @@ class FaultTreeAnalysis {
   std::unordered_map<std::string, BasicEventPtr> ccf_events_;
 
   /// Container for minimal cut sets.
-  std::set< std::set<std::string> > min_cut_sets_;
+  std::set<CutSet> min_cut_sets_;
 
   /// Container for basic events in minimal cut sets.
   std::unordered_map<std::string, BasicEventPtr> mcs_basic_events_;
 
+  /// Container for minimal cut sets and their respective probabilities.
+  std::map<CutSet, double> mcs_probability_;
+
+  double sum_mcs_probability_;  ///< The sum of minimal cut set probabilities.
   std::string warnings_;  ///< Generated warnings in analysis.
   int max_order_;  ///< Maximum order of minimal cut sets.
   double analysis_time_;  ///< Time taken by the core analysis.

@@ -227,10 +227,10 @@ void Reporter::ReportFta(std::string ft_name, const FaultTreeAnalysis& fta,
     product->set_attribute("order", ToString(cut_set.size()));
 
     if (prob_analysis) {
-      double mcs_prob = prob_analysis->prob_of_min_sets().at(cut_set);
+      double mcs_prob = fta.mcs_probability().at(cut_set);
       product->set_attribute("probability", ToString(mcs_prob, 7));
       product->set_attribute("contribution",
-                             ToString(mcs_prob / prob_analysis->p_rare(), 7));
+                             ToString(mcs_prob / fta.sum_mcs_probability(), 7));
     }
 
     // List elements of minimal cut sets.
