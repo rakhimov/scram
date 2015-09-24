@@ -304,28 +304,31 @@ double ProbabilityAnalysis::CalculateBddProbability() noexcept {
   for (const BasicEventPtr& event : graph->basic_events()) {
     var_probs_.push_back(event->p());
   }
-  double prob = ProbabilityAnalysis::CalculateProbability(bdd_graph_->root());
+  delete graph;  /// @todo This is dangerous. bdd_graph_ has an invalid pointer.
+  double prob =
+      ProbabilityAnalysis::CalculateProbability(bdd_graph_->root(), true);
   if (bdd_graph_->complement_root()) prob = 1 - prob;
   LOG(DEBUG2) << "Calculated probability " << prob << " in " << DUR(bdd_time);
   return prob;
 }
 
 double ProbabilityAnalysis::CalculateProbability(
-    const VertexPtr& vertex) noexcept {
+    const VertexPtr& vertex,
+    bool mark) noexcept {
   if (vertex->terminal()) return 1;
   ItePtr ite = Ite::Ptr(vertex);
-  if (ite->mark()) return ite->prob();
-  ite->mark(true);
+  if (ite->mark() == mark) return ite->prob();
+  ite->mark(mark);
   double var_prob = 0;
   if (ite->module()) {
     const Bdd::Function& res = bdd_graph_->gates().find(ite->index())->second;
-    var_prob = ProbabilityAnalysis::CalculateProbability(res.vertex);
+    var_prob = ProbabilityAnalysis::CalculateProbability(res.vertex, mark);
     if (res.complement) var_prob = 1 - var_prob;
   } else {
     var_prob = var_probs_[ite->index()];
   }
-  double high = ProbabilityAnalysis::CalculateProbability(ite->high());
-  double low = ProbabilityAnalysis::CalculateProbability(ite->low());
+  double high = ProbabilityAnalysis::CalculateProbability(ite->high(), mark);
+  double low = ProbabilityAnalysis::CalculateProbability(ite->low(), mark);
   if (ite->complement_edge()) low = 1 - low;
   ite->prob(var_prob * high + (1 - var_prob) * low);
   return ite->prob();

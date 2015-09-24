@@ -221,9 +221,13 @@ class ProbabilityAnalysis {
   /// of a function graph represented by its root BDD vertex.
   ///
   /// @param[in] vertex The root vertex of a function graph.
+  /// @param[in] mark A flag to mark traversed vertices.
   ///
   /// @returns Probability value.
-  double CalculateProbability(const VertexPtr& vertex) noexcept;
+  ///
+  /// @warning If a vertice is already marked with the input mark,
+  ///          it will not be traversed and updated with a probability value.
+  double CalculateProbability(const VertexPtr& vertex, bool mark) noexcept;
 
   /// Importance analysis of basic events that are in minimal cut sets.
   void PerformImportanceAnalysis() noexcept;
