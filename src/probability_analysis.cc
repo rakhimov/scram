@@ -60,7 +60,7 @@ void ProbabilityAnalysis::Analyze(
     warnings_ += " Probability is for UNITY case.";
     p_total_ = 1;
     p_rare_ = 1;
-    prob_of_min_sets_.insert(std::make_pair(*min_cut_sets_.begin(), 1));
+    prob_of_min_sets_.emplace(*min_cut_sets_.begin(), 1);
     return;
   }
 
@@ -68,22 +68,21 @@ void ProbabilityAnalysis::Analyze(
 
   using boost::container::flat_set;
   // Minimal cut sets with higher than cut-off probability.
-  std::set< flat_set<int> > mcs_for_prob;
-  // Iterate minimal cut sets and find probabilities for each set.
-  std::vector< flat_set<int> >::const_iterator it_min;
+  std::set<flat_set<int>> mcs_for_prob;
   int i = 0;  // Indices for minimal cut sets in the vector.
-  for (it_min = imcs_.begin(); it_min != imcs_.end(); ++i, ++it_min) {
+  for (const flat_set<int>& cut_set : imcs_) {
     // Calculate a probability of a set with AND relationship.
-    double p_sub_set = ProbabilityAnalysis::ProbAnd(*it_min);
+    double p_sub_set = ProbabilityAnalysis::ProbAnd(cut_set);
     // Choose cut sets with high enough probabilities.
     if (p_sub_set > kSettings_.cut_off()) {
-      flat_set<int> mcs(*it_min);
+      flat_set<int> mcs(cut_set);
       mcs_for_prob.insert(mcs_for_prob.end(), mcs);
     }
 
     // Update a container with minimal cut sets and probabilities.
-    prob_of_min_sets_.insert(std::make_pair(imcs_to_smcs_[i], p_sub_set));
+    prob_of_min_sets_.emplace(imcs_to_smcs_[i], p_sub_set);
     p_rare_ += p_sub_set;
+    ++i;
   }
 
   CLOCK(p_time);
@@ -97,30 +96,26 @@ void ProbabilityAnalysis::Analyze(
     }
     p_total_ = ProbabilityAnalysis::ProbMcub(imcs_);
 
+  } else if (kSettings_.approx() == "rare-event") {
+    std::map<std::set<std::string>, double>::iterator it_pr;
+    for (it_pr = prob_of_min_sets_.begin(); it_pr != prob_of_min_sets_.end();
+         ++it_pr) {
+      // Check if a probability of a set does not exceed 0.1,
+      // which is required for the rare event approximation to hold.
+      if (it_pr->second > 0.1) {
+        warnings_ += " The rare event approximation may be inaccurate for"
+            " this analysis because one of minimal cut sets'"
+            " probability exceeds the 0.1 threshold requirement.";
+        break;
+      }
+    }
+    p_total_ = ProbabilityAnalysis::ProbRareEvent(imcs_);
   } else {
-    // Check if the rare event approximation is requested.
-    if (kSettings_.approx() == "rare-event") {
-      std::map<std::set<std::string>, double>::iterator it_pr;
-      for (it_pr = prob_of_min_sets_.begin(); it_pr != prob_of_min_sets_.end();
-           ++it_pr) {
-        // Check if a probability of a set does not exceed 0.1,
-        // which is required for the rare event approximation to hold.
-        if (it_pr->second > 0.1) {
-          warnings_ += " The rare event approximation may be inaccurate for"
-                       " this analysis because one of minimal cut sets'"
-                       " probability exceeds the 0.1 threshold requirement.";
-          break;
-        }
-      }
-      ProbabilityAnalysis::ProbOr(1, 1, &mcs_for_prob);
-      p_total_ = ProbabilityAnalysis::CalculateTotalProbability();
+    ProbabilityAnalysis::ProbOr(1, kSettings_.num_sums(), &mcs_for_prob);
+    if (top_event_) {
+      p_total_ = ProbabilityAnalysis::CalculateBddProbability();
     } else {
-      ProbabilityAnalysis::ProbOr(1, kSettings_.num_sums(), &mcs_for_prob);
-      if (top_event_) {
-        p_total_ = ProbabilityAnalysis::CalculateBddProbability();
-      } else {
-        p_total_ = ProbabilityAnalysis::CalculateTotalProbability();
-      }
+      p_total_ = ProbabilityAnalysis::CalculateTotalProbability();
     }
   }
   LOG(DEBUG3) << "Finished probability calculations in " << DUR(p_time);
@@ -192,13 +187,20 @@ void ProbabilityAnalysis::IndexMcs(
 
 double ProbabilityAnalysis::ProbMcub(
     const std::vector<FlatSet>& min_cut_sets) noexcept {
-  std::vector<FlatSet>::const_iterator it_min;
   double m = 1;
-  for (it_min = min_cut_sets.begin(); it_min != min_cut_sets.end(); ++it_min) {
-    // Calculate a probability of a set with AND relationship.
-    m *= 1 - ProbabilityAnalysis::ProbAnd(*it_min);
+  for (const auto& cut_set : min_cut_sets) {
+    m *= 1 - ProbabilityAnalysis::ProbAnd(cut_set);
   }
   return 1 - m;
+}
+
+double ProbabilityAnalysis::ProbRareEvent(
+    const std::vector<FlatSet>& min_cut_sets) noexcept {
+  double sum = 0;
+  for (const auto& cut_set : min_cut_sets) {
+    sum += ProbabilityAnalysis::ProbAnd(cut_set);
+  }
+  return sum;
 }
 
 void ProbabilityAnalysis::ProbOr(int sign, int num_sums,
@@ -344,7 +346,9 @@ void ProbabilityAnalysis::PerformImportanceAnalysis() noexcept {
     double p_e = 0;
     if (kSettings_.approx() == "mcub") {
       p_e = ProbabilityAnalysis::ProbMcub(imcs_);
-    } else {  // For the rare event and default cases.
+    } else if (kSettings_.approx() == "rare-event") {
+      p_e = ProbabilityAnalysis::ProbRareEvent(imcs_);
+    } else {
       p_e = ProbabilityAnalysis::CalculateTotalProbability();
     }
 
@@ -353,7 +357,9 @@ void ProbabilityAnalysis::PerformImportanceAnalysis() noexcept {
     double p_not_e = 0;
     if (kSettings_.approx() == "mcub") {
       p_not_e = ProbabilityAnalysis::ProbMcub(imcs_);
-    } else {  // For the rare event and default cases.
+    } else if (kSettings_.approx() == "rare-event") {
+      p_not_e = ProbabilityAnalysis::ProbRareEvent(imcs_);
+    } else {
       p_not_e = ProbabilityAnalysis::CalculateTotalProbability();
     }
     // Restore the probability.

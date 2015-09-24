@@ -123,6 +123,8 @@ void UncertaintyAnalysis::Sample() noexcept {
     double result = 0;
     if (kSettings_.approx() == "mcub") {
       result = ProbabilityAnalysis::ProbMcub(imcs_);
+    } else if (kSettings_.approx() == "rare-event") {
+      result = ProbabilityAnalysis::ProbRareEvent(imcs_);
     } else {
       double pos = 0;
       int j = 0;  // Position of the terms.

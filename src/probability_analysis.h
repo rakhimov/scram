@@ -166,6 +166,14 @@ class ProbabilityAnalysis {
   /// @returns The total probability with the MCUB approximation.
   double ProbMcub(const std::vector<FlatSet>& min_cut_sets) noexcept;
 
+  /// Calculates probabilities
+  /// using the Rare-Event approximation.
+  ///
+  /// @param[in] min_cut_sets Sets of indices of basic events.
+  ///
+  /// @returns The total probability with the rare-event approximation.
+  double ProbRareEvent(const std::vector<FlatSet>& min_cut_sets) noexcept;
+
   /// Generates positive and negative terms
   /// of probability equation expansion from
   /// a set of cut sets,
