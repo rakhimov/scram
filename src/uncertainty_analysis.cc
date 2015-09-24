@@ -42,17 +42,10 @@ UncertaintyAnalysis::UncertaintyAnalysis(const GatePtr& root,
       error_factor_(1),
       analysis_time_(-1) {}
 
-void UncertaintyAnalysis::UpdateDatabase(
-    const std::unordered_map<std::string, BasicEventPtr>& basic_events) {
-  ProbabilityAnalysis::UpdateDatabase(basic_events);
-}
-
 void UncertaintyAnalysis::Analyze(
     const std::set< std::set<std::string> >& min_cut_sets) noexcept {
-  min_cut_sets_ = min_cut_sets;
-
   // Special case of unity with empty sets.
-  if (min_cut_sets_.size() == 1 && min_cut_sets_.begin()->empty()) {
+  if (min_cut_sets.size() == 1 && min_cut_sets.begin()->empty()) {
     warnings_ += "Uncertainty for UNITY case.";
     mean_ = 1;
     sigma_ = 0;
@@ -61,6 +54,9 @@ void UncertaintyAnalysis::Analyze(
     quantiles_.emplace_back(1);
     return;
   }
+
+  ProbabilityAnalysis::AssignIndices();
+  ProbabilityAnalysis::IndexMcs(min_cut_sets);
 
   CLOCK(analysis_time);
   CLOCK(sample_time);

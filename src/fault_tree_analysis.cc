@@ -114,7 +114,7 @@ void FaultTreeAnalysis::SetsToString(const std::vector<Set>& imcs,
   for (const Set& min_cut_set : imcs) {
     if (min_cut_set.size() > max_order_) max_order_ = min_cut_set.size();
     CutSet pr_set;
-    double prob = 1;  // 1 is for multiplication.
+    double prob = 1;  // 1 is for multiplication and Unity set.
     for (int index : min_cut_set) {
       BasicEventPtr basic_event = ft->GetBasicEvent(std::abs(index));
       if (index < 0) {  // NOT logic.

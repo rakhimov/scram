@@ -107,10 +107,10 @@ TEST_F(RiskAnalysisTest, AnalyzeWithProbability) {
 
   EXPECT_EQ(mcs, min_cut_sets());
   EXPECT_DOUBLE_EQ(0.646, p_total());
-  EXPECT_DOUBLE_EQ(0.42, prob_of_min_sets().at(mcs_1));
-  EXPECT_DOUBLE_EQ(0.3, prob_of_min_sets().at(mcs_2));
-  EXPECT_DOUBLE_EQ(0.28, prob_of_min_sets().at(mcs_3));
-  EXPECT_DOUBLE_EQ(0.2, prob_of_min_sets().at(mcs_4));
+  EXPECT_DOUBLE_EQ(0.42, mcs_probability().at(mcs_1));
+  EXPECT_DOUBLE_EQ(0.3, mcs_probability().at(mcs_2));
+  EXPECT_DOUBLE_EQ(0.28, mcs_probability().at(mcs_3));
+  EXPECT_DOUBLE_EQ(0.2, mcs_probability().at(mcs_4));
 
   // Check importance values.
   std::vector<std::pair<std::string, ImportanceFactors>> importance = {

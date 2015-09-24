@@ -69,19 +69,6 @@ class ProbabilityAnalysis : public Analysis {
 
   virtual ~ProbabilityAnalysis() {}
 
-  /// Sets the databases of basic events with probabilities.
-  /// Resets the main basic event database
-  /// and clears the previous information.
-  /// This information is the main source
-  /// for calculations and internal indexes for basic events.
-  ///
-  /// @param[in] basic_events The database of basic events in cut sets.
-  ///
-  /// @note  If not enough information is provided,
-  ///        the analysis behavior is undefined.
-  void UpdateDatabase(
-      const std::unordered_map<std::string, BasicEventPtr>& basic_events);
-
   /// Performs quantitative analysis on minimal cut sets
   /// containing basic events provided in the databases.
   /// It is assumed that the analysis is called only once.
@@ -89,7 +76,7 @@ class ProbabilityAnalysis : public Analysis {
   /// @param[in] min_cut_sets Minimal cut sets with string ids of events.
   ///                         Negative event is indicated by "'not' + id"
   ///
-  /// @note  Undefined behavior if analysis called two or more times.
+  /// @note  Undefined behavior if analysis is called two or more times.
   virtual void Analyze(
       const std::set< std::set<std::string> >& min_cut_sets) noexcept;
 
@@ -97,14 +84,6 @@ class ProbabilityAnalysis : public Analysis {
   ///
   /// @note The user should make sure that the analysis is actually done.
   inline double p_total() const { return p_total_; }
-
-  /// @returns Map with minimal cut sets and their probabilities.
-  ///
-  /// @note The user should make sure that the analysis is actually done.
-  inline const std::map< std::set<std::string>, double >&
-      prob_of_min_sets() const {
-    return prob_of_min_sets_;
-  }
 
   /// @returns Map with basic events and their importance factors.
   ///
@@ -122,11 +101,6 @@ class ProbabilityAnalysis : public Analysis {
       basic_events() const {
     return basic_events_;
   }
-
-  /// @returns The probability with the rare-event approximation.
-  ///
-  /// @note The user should make sure that the analysis is actually done.
-  inline double p_rare() const { return p_rare_; }
 
   /// @returns Analysis time spent on calculating the total probability.
   inline double prob_analysis_time() const { return p_time_; }
@@ -216,28 +190,17 @@ class ProbabilityAnalysis : public Analysis {
   std::unordered_map<std::string, int> id_to_index_;
   std::vector<double> var_probs_;  ///< Variable probabilities.
 
-  /// Minimal cut sets passed for analysis.
-  std::set<std::set<std::string>> min_cut_sets_;
-
   /// Minimal cut sets with indices of events.
-  std::vector<boost::container::flat_set<int>> imcs_;
-  /// Indices min cut sets to strings min cut sets mapping.
-  /// The same position as in imcs_ container is assumed.
-  std::vector<std::set<std::string>> imcs_to_smcs_;
+  std::vector<FlatSet> imcs_;
   /// Container for basic event indices that are in minimal cut sets.
   std::set<int> mcs_basic_events_;
 
   double p_total_;  ///< Total probability of the top event.
-  double p_rare_;  ///< Total probability applying the rare-event approximation.
   bool current_mark_; ///< To keep track of BDD current mark.
-
-  /// Container for minimal cut sets and their respective probabilities.
-  std::map<std::set<std::string>, double> prob_of_min_sets_;
 
   /// Container for basic event importance factors.
   std::unordered_map<std::string, ImportanceFactors> importance_;
 
-  bool coherent_;  ///< Indication of coherent optimized analysis.
   double p_time_;  ///< Time for probability calculations.
   double imp_time_;  ///< Time for importance calculations.
 };

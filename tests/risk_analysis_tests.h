@@ -105,10 +105,10 @@ class RiskAnalysisTest : public ::testing::Test {
     return ran->probability_analyses().begin()->second->p_total();
   }
 
-  const std::map<std::set<std::string>, double>& prob_of_min_sets() {
-    assert(!ran->probability_analyses().empty());
-    assert(ran->probability_analyses().size() == 1);
-    return ran->probability_analyses().begin()->second->prob_of_min_sets();
+  const std::map<std::set<std::string>, double>& mcs_probability() {
+    assert(!ran->fault_tree_analyses().empty());
+    assert(ran->fault_tree_analyses().size() == 1);
+    return ran->fault_tree_analyses().begin()->second->mcs_probability();
   }
 
   const ImportanceFactors& importance(std::string id) {

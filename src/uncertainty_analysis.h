@@ -55,19 +55,6 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   /// @note This technique does not require cut sets.
   UncertaintyAnalysis(const GatePtr& root, const Settings& settings);
 
-  /// Sets the databases of basic events with probabilities.
-  /// Resets the main basic event database
-  /// and clears the previous information.
-  /// This information is the main source
-  /// for calculations and internal indices for basic events.
-  ///
-  /// @param[in] basic_events The database of basic events in cut sets.
-  ///
-  /// @note  If not enough information is provided,
-  ///        the analysis behavior is undefined.
-  void UpdateDatabase(
-      const std::unordered_map<std::string, BasicEventPtr>& basic_events);
-
   /// Performs quantitative analysis on minimal cut sets
   /// containing basic events provided in the databases.
   /// It is assumed that the analysis is called only once.
