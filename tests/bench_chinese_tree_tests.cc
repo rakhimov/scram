@@ -29,7 +29,7 @@ TEST_F(RiskAnalysisTest, ChineseTree) {
   std::vector<std::string> input_files;
   input_files.push_back("./share/scram/input/Chinese/chinese.xml");
   input_files.push_back("./share/scram/input/Chinese/chinese-basic-events.xml");
-  settings.probability_analysis(true).limit_order(6).num_sums(3);
+  settings.probability_analysis(true).limit_order(6);
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_NEAR(0.0045691, p_total(), 1e-5);

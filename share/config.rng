@@ -72,11 +72,6 @@
               </element>
             </optional>
             <optional>
-              <element name="number-of-sums">
-                <data type="nonNegativeInteger"/>
-              </element>
-            </optional>
-            <optional>
               <element name="number-of-trials">
                 <data type="nonNegativeInteger"/>
               </element>

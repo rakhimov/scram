@@ -59,7 +59,6 @@ TEST(ConfigTest, FullSettings) {
   EXPECT_EQ(11, settings.limit_order());
   EXPECT_EQ(48, settings.mission_time());
   EXPECT_EQ(0.009, settings.cut_off());
-  EXPECT_EQ(42, settings.num_sums());
   EXPECT_EQ(777, settings.num_trials());
   EXPECT_EQ(13, settings.num_quantiles());
   EXPECT_EQ(31, settings.num_bins());

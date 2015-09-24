@@ -38,15 +38,6 @@ class Settings {
   /// @throws ValueError The number is not more than 0.
   Settings& limit_order(int order);
 
-  /// Limits the number of sums in probability calculations.
-  ///
-  /// @param[in] n A natural number for the number of sums.
-  ///
-  /// @returns Reference to this object.
-  ///
-  /// @throws ValueError The number is less than 1.
-  Settings& num_sums(int n);
-
   /// Sets the cut-off probability for minimal cut sets to be considered
   /// for analysis.
   ///
@@ -166,7 +157,6 @@ class Settings {
   inline bool ccf_analysis() const { return ccf_analysis_; }
   inline int limit_order() const { return limit_order_; }
   inline double mission_time() const { return mission_time_; }
-  inline int num_sums() const { return num_sums_; }
   inline double cut_off() const { return cut_off_; }
   inline const std::string& approx() const { return approx_; }
   inline int seed() const { return seed_; }
@@ -181,7 +171,6 @@ class Settings {
   bool ccf_analysis_ = false;  ///< A flag for common-cause analysis.
   int limit_order_ = 20;  ///< Limit on the order of minimal cut sets.
   double mission_time_ = 8760;  ///< System mission time.
-  int num_sums_ = 7;  ///< The number of sums in probability calculation series.
   double cut_off_ = 1e-8;  ///< The cut-off probability for cut sets.
   std::string approx_ = "no";  ///< The approximations for calculations.
   int seed_ = 0;  ///< The seed for the pseudo-random number generator.

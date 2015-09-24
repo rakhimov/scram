@@ -82,10 +82,6 @@ def test_fta_calls():
     cmd = ["scram", fta_input, "-c", "10"]
     yield assert_not_equal, 0, call(cmd)
 
-    # Test the incorrect number for probability series
-    cmd = ["scram", fta_input, "-s", "-1"]
-    yield assert_not_equal, 0, call(cmd)
-
     # Test the application of the rare event and MCUB at the same time
     cmd = ["scram", fta_input, "--rare-event", "--mcub"]
     yield assert_not_equal, 0, call(cmd)

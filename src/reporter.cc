@@ -116,10 +116,6 @@ void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
     xmlpp::Element* limits = methods->add_child("limits");
     limits->add_child("mission-time")
         ->add_child_text(ToString(settings.mission_time()));
-    limits->add_child("cut-off")
-        ->add_child_text(ToString(settings.cut_off()));
-    limits->add_child("number-of-sums")
-        ->add_child_text(ToString(settings.num_sums()));
   }
 
   // Report the setup for optional importance analysis.

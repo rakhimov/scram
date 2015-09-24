@@ -320,7 +320,7 @@ TEST_F(RiskAnalysisTest, ReportCCF) {
   schema << schema_stream.rdbuf();
   schema_stream.close();
 
-  settings.ccf_analysis(true).importance_analysis(true).num_sums(3);
+  settings.ccf_analysis(true).importance_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
 

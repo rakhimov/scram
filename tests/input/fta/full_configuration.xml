@@ -13,7 +13,6 @@
       <limit-order>11</limit-order>
       <mission-time>48</mission-time>
       <cut-off>0.009</cut-off>
-      <number-of-sums>42</number-of-sums>
       <number-of-trials>777</number-of-trials>
       <number-of-quantiles>13</number-of-quantiles>
       <number-of-bins>31</number-of-bins>

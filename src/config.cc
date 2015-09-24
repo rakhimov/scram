@@ -150,9 +150,6 @@ void Config::SetLimits(const xmlpp::Element* limits) {
     } else if (name == "cut-off") {
       settings_.cut_off(boost::lexical_cast<double>(content));
 
-    } else if (name == "number-of-sums") {
-      settings_.num_sums(boost::lexical_cast<int>(content));
-
     } else if (name == "mission-time") {
       settings_.mission_time(boost::lexical_cast<double>(content));
 

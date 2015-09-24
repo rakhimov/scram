@@ -18,12 +18,6 @@ If the current performance is not listed, then the best is the current.
 
 ============== Probability/Importance Analysis ===========
 
------------ Chinese Tree High Prob -l 5 -s 3 (p = 0.097) ---
-Release build:
---------------
-- Prob Calculation  22s   |  26s
-- Importance Calc.  1.5s  |
-
 
 ==================== MCS Analysis =========================
 
@@ -73,11 +67,6 @@ Release build:
 
 
 ==================== Uncertainty Analysis =================
-
------------ Chinese Tree -l 5 -s 3 --uncertainty true -------
-Release build:
---------------
-- Calculation Time  51s  |
 
 
 ==================== Fault Tree Generation ================

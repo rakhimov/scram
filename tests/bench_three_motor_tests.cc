@@ -42,8 +42,7 @@ TEST_F(RiskAnalysisTest, ThreeMotor) {
   std::string T3inc = "t3inc";
   std::string T4inc = "t4inc";
 
-  // Adjust settings for number of sums.
-  settings.probability_analysis(true).num_sums(3);
+  settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_NEAR(0.0211538, p_total(), 1e-5);

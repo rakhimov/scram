@@ -222,37 +222,6 @@ double ProbabilityAnalysis::ProbRareEvent(
   return sum;
 }
 
-void ProbabilityAnalysis::ProbOr(int sign, int num_sums,
-                                 std::set<FlatSet>* cut_sets) noexcept {
-  assert(sign != 0);
-  assert(num_sums >= 0);
-
-  // Recursive implementation.
-  if (cut_sets->empty()) return;
-
-  if (num_sums == 0) return;
-
-  // Put this element into the equation.
-  if (sign > 0) {
-    // This is a positive member.
-    pos_terms_.push_back(*cut_sets->begin());
-  } else {
-    // This must be a negative member.
-    neg_terms_.push_back(*cut_sets->begin());
-  }
-
-  // Delete element from the original set.
-  cut_sets->erase(cut_sets->begin());
-
-  std::set<FlatSet> combo_sets;
-  ProbabilityAnalysis::CombineElAndSet(
-      (sign > 0) ? pos_terms_.back() : neg_terms_.back(),
-      *cut_sets, &combo_sets);
-
-  ProbabilityAnalysis::ProbOr(sign, num_sums, cut_sets);
-  ProbabilityAnalysis::ProbOr(-sign, num_sums - 1, &combo_sets);
-}
-
 double ProbabilityAnalysis::ProbAnd(const FlatSet& cut_set) noexcept {
   if (cut_set.empty()) return 0;
   double p_sub_set = 1;  // 1 is for multiplication.
@@ -264,30 +233,6 @@ double ProbabilityAnalysis::ProbAnd(const FlatSet& cut_set) noexcept {
     }
   }
   return p_sub_set;
-}
-
-void ProbabilityAnalysis::CombineElAndSet(
-    const FlatSet& el,
-    const std::set<FlatSet>& set,
-    std::set<FlatSet>* combo_set) noexcept {
-  std::set<FlatSet>::iterator it_set;
-  for (it_set = set.begin(); it_set != set.end(); ++it_set) {
-    bool include = true;  // Indicates that the resultant set is not null.
-    if (!coherent_) {
-      FlatSet::const_iterator it;
-      for (it = el.begin(); it != el.end(); ++it) {
-        if (it_set->count(-*it)) {
-          include = false;
-          break;  // A complement is found; the set is null.
-        }
-      }
-    }
-    if (include) {
-      FlatSet member_set(*it_set);
-      member_set.insert(el.begin(), el.end());
-      combo_set->insert(combo_set->end(), member_set);
-    }
-  }
 }
 
 double ProbabilityAnalysis::CalculateTotalProbability() noexcept {

@@ -34,16 +34,6 @@ Settings& Settings::limit_order(int order) {
   return *this;
 }
 
-Settings& Settings::num_sums(int n) {
-  if (n < 1) {
-    std::string msg = "The number of sums in the probability calculation "
-                      "cannot be less than 1";
-    throw InvalidArgument(msg);
-  }
-  num_sums_ = n;
-  return *this;
-}
-
 Settings& Settings::cut_off(double prob) {
   if (prob < 0 || prob > 1) {
     std::string msg = "The cut-off probability cannot be negative or"

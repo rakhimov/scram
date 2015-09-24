@@ -13,7 +13,6 @@ This configuration file is missing the required input files.
       <limit-order>11</limit-order>
       <mission-time>48</mission-time>
       <cut-off>0.009</cut-off>
-      <number-of-sums>42</number-of-sums>
       <number-of-trials>777</number-of-trials>
       <seed>97531</seed>
     </limits>

@@ -173,24 +173,6 @@ class ProbabilityAnalysis {
   /// @returns The total probability with the rare-event approximation.
   double ProbRareEvent(const std::vector<FlatSet>& min_cut_sets) noexcept;
 
-  /// Generates positive and negative terms
-  /// of probability equation expansion from
-  /// a set of cut sets,
-  /// which are in OR relationship with each other.
-  /// This function is a brute force probability calculation
-  /// without approximations.
-  ///
-  /// @param[in] sign The sign of the series. Negative or positive number.
-  /// @param[in] num_sums The number of sums in the series.
-  /// @param[in,out] cut_sets Sets of indices of basic events.
-  ///
-  /// @note This function drastically modifies cut_sets
-  ///       by deleting sets inside it.
-  ///       This is for better performance.
-  /// @note O_avg(M*logM*N*2^N) where N is the number of sets,
-  ///       and M is the average size of the sets.
-  void ProbOr(int sign, int num_sums, std::set<FlatSet>* cut_sets) noexcept;
-
   /// Calculates a probability of a cut set,
   /// whose members are in AND relationship with each other.
   /// This function assumes independence of each member.
@@ -201,17 +183,6 @@ class ProbabilityAnalysis {
   ///
   /// @note O_avg(N) where N is the size of the passed set.
   double ProbAnd(const FlatSet& cut_set) noexcept;
-
-  /// Calculates A(and)( B(or)C ) relationship for sets using set algebra.
-  ///
-  /// @param[in] el A set of indices of basic events.
-  /// @param[in] set Sets of indices of basic events.
-  /// @param[out] combo_set A final set resulting from joining el and sets.
-  ///
-  /// @note O_avg(N*M*logM) where N is the size of the set,
-  ///       and M is the average size of the elements.
-  void CombineElAndSet(const FlatSet& el, const std::set<FlatSet>& set,
-                       std::set<FlatSet>* combo_set) noexcept;
 
   /// Calculates the total probability
   /// using the fault tree directly
@@ -274,11 +245,6 @@ class ProbabilityAnalysis {
   bool coherent_;  ///< Indication of coherent optimized analysis.
   double p_time_;  ///< Time for probability calculations.
   double imp_time_;  ///< Time for importance calculations.
-
-  /// Positive terms of the probability equation.
-  std::vector< boost::container::flat_set<int> > pos_terms_;
-  /// Negative terms of the probability equation.
-  std::vector< boost::container::flat_set<int> > neg_terms_;
 };
 
 }  // namespace scram
