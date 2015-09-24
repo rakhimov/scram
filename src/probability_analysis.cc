@@ -32,8 +32,8 @@ namespace scram {
 
 ProbabilityAnalysis::ProbabilityAnalysis(const GatePtr& root,
                                          const Settings& settings)
-    : top_event_(root),
-      kSettings_(settings),
+    : Analysis::Analysis(settings),
+      top_event_(root),
       warnings_(""),
       p_total_(0),
       p_rare_(0),

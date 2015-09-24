@@ -37,7 +37,6 @@ namespace scram {
 UncertaintyAnalysis::UncertaintyAnalysis(const GatePtr& root,
                                          const Settings& settings)
     : ProbabilityAnalysis::ProbabilityAnalysis(root, settings),
-      kSettings_(settings),
       mean_(0),
       sigma_(0),
       error_factor_(1),

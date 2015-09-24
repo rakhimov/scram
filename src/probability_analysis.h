@@ -31,6 +31,7 @@
 
 #include <boost/container/flat_set.hpp>
 
+#include "analysis.h"
 #include "bdd.h"
 #include "event.h"
 #include "settings.h"
@@ -49,7 +50,7 @@ struct ImportanceFactors {
 
 /// @class ProbabilityAnalysis
 /// Main quantitative analysis.
-class ProbabilityAnalysis {
+class ProbabilityAnalysis : public Analysis {
  public:
   using BasicEventPtr = std::shared_ptr<BasicEvent>;
   using GatePtr = std::shared_ptr<Gate>;
@@ -204,7 +205,6 @@ class ProbabilityAnalysis {
 
   GatePtr top_event_;  ///< Top gate of the passed fault tree.
   std::unique_ptr<Bdd> bdd_graph_;  ///< The main BDD graph for analysis.
-  const Settings kSettings_;  ///< All settings for analysis.
   std::string warnings_;  ///< Register warnings.
 
   /// Container for input basic events.

@@ -28,6 +28,7 @@
 #include <unordered_map>
 #include <vector>
 
+#include "analysis.h"
 #include "event.h"
 #include "mocus.h"
 #include "settings.h"
@@ -53,7 +54,7 @@ class BooleanGraph;
 ///
 /// @warning Run analysis only once.
 ///          One analysis per FaultTreeAnalysis object.
-class FaultTreeAnalysis {
+class FaultTreeAnalysis : public Analysis {
  public:
   using GatePtr = std::shared_ptr<Gate>;
   using BasicEventPtr = std::shared_ptr<BasicEvent>;
@@ -211,7 +212,6 @@ class FaultTreeAnalysis {
                     const BooleanGraph* ft) noexcept;
 
   GatePtr top_event_;  ///< Top event of this fault tree.
-  const Settings kSettings_;  ///< All settings for analysis.
 
   /// Container for intermediate events.
   std::unordered_map<std::string, GatePtr> inter_events_;

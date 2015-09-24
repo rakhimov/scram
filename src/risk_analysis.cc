@@ -37,8 +37,8 @@
 namespace scram {
 
 RiskAnalysis::RiskAnalysis(const ModelPtr& model, const Settings& settings)
-    : model_(model),
-      kSettings_(settings) {}
+    : Analysis::Analysis(settings),
+      model_(model) {}
 
 void RiskAnalysis::GraphingInstructions() {
   CLOCK(graph_time);

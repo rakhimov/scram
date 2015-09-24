@@ -125,7 +125,6 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   void CalculateStatistics() noexcept;
 
   std::vector<double> sampled_results_;  ///< Storage for sampled values.
-  const Settings kSettings_;  ///< All settings for analysis.
   double mean_;  ///< The mean of the final distribution.
   double sigma_;  ///< The standard deviation of the final distribution.
   double error_factor_;  ///< Error factor for 95% confidence level.

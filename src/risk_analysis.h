@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 
+#include "analysis.h"
 #include "fault_tree_analysis.h"
 #include "probability_analysis.h"
 #include "settings.h"
@@ -40,7 +41,7 @@ class Model;
 
 /// @class RiskAnalysis
 /// Main system that performs analyses.
-class RiskAnalysis {
+class RiskAnalysis : public Analysis {
  public:
   using ModelPtr = std::shared_ptr<const Model>;
   using FaultTreeAnalysisPtr = std::unique_ptr<FaultTreeAnalysis>;
@@ -121,7 +122,6 @@ class RiskAnalysis {
   using FaultTreePtr = std::unique_ptr<FaultTree>;
 
   ModelPtr model_;  ///< Analysis model with constructs.
-  const Settings kSettings_;  ///< Settings for all analysis.
 
   /// Fault tree analyses that are performed on a specific fault tree.
   std::map<std::string, FaultTreeAnalysisPtr> fault_tree_analyses_;

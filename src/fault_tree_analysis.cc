@@ -33,8 +33,8 @@ namespace scram {
 
 FaultTreeAnalysis::FaultTreeAnalysis(const GatePtr& root,
                                      const Settings& settings)
-    : top_event_(root),
-      kSettings_(settings),
+    : Analysis::Analysis(settings),
+      top_event_(root),
       sum_mcs_probability_(0),
       warnings_(""),
       max_order_(0),
