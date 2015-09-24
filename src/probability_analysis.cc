@@ -35,6 +35,7 @@ ProbabilityAnalysis::ProbabilityAnalysis(const Settings& settings)
       warnings_(""),
       p_total_(0),
       p_rare_(0),
+      current_mark_(false),
       coherent_(true),
       p_time_(0),
       imp_time_(0) {}
@@ -47,7 +48,10 @@ ProbabilityAnalysis::ProbabilityAnalysis(const GatePtr& root,
 
 void ProbabilityAnalysis::UpdateDatabase(
     const std::unordered_map<std::string, BasicEventPtr>& basic_events) {
-  basic_events_ = basic_events;
+  basic_events_ = basic_events;  /// @todo Remove.
+  for (const auto& entry : basic_events) {  /// @todo Remove.
+    ordered_basic_events_.push_back(entry.second);
+  }
   ProbabilityAnalysis::AssignIndices();
 }
 
@@ -111,12 +115,8 @@ void ProbabilityAnalysis::Analyze(
     }
     p_total_ = ProbabilityAnalysis::ProbRareEvent(imcs_);
   } else {
-    ProbabilityAnalysis::ProbOr(1, kSettings_.num_sums(), &mcs_for_prob);
-    if (top_event_) {
-      p_total_ = ProbabilityAnalysis::CalculateBddProbability();
-    } else {
-      p_total_ = ProbabilityAnalysis::CalculateTotalProbability();
-    }
+    assert(top_event_);
+    p_total_ = ProbabilityAnalysis::CalculateTotalProbability();
   }
   LOG(DEBUG3) << "Finished probability calculations in " << DUR(p_time);
   p_time_ = DUR(p_time);
@@ -130,20 +130,39 @@ void ProbabilityAnalysis::Analyze(
 }
 
 void ProbabilityAnalysis::AssignIndices() noexcept {
+  if (top_event_) {
+    CLOCK(ft_creation);
+    BooleanGraph* graph =
+        new BooleanGraph(top_event_, kSettings_.ccf_analysis());
+    LOG(DEBUG2) << "Boolean graph is created in " << DUR(ft_creation);
+
+    CLOCK(prep_time);  // Overall preprocessing time.
+    LOG(DEBUG2) << "Preprocessing...";
+    Preprocessor* preprocessor = new PreprocessorBdd(graph);
+    preprocessor->Run();
+    delete preprocessor;  // No exceptions are expected.
+    LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
+
+    CLOCK(bdd_time);  // BDD based calculation time.
+    LOG(DEBUG2) << "Creating BDD for ProbabilityAnalysis...";
+    bdd_graph_ = std::unique_ptr<Bdd>(new Bdd(graph));
+    ordered_basic_events_ = graph->basic_events();
+    delete graph;  /// @todo This is dangerous. BDD has invalid graph pointer.
+    LOG(DEBUG2) << "BDD is created in " << bdd_time;
+  }
   // Cleanup the previous information.
-  int_to_basic_.clear();
-  basic_to_int_.clear();
-  iprobs_.clear();
+  index_to_basic_.clear();
+  id_to_index_.clear();
+  var_probs_.clear();
+  // Dummy basic event at index 0.
+  index_to_basic_.push_back(std::make_shared<BasicEvent>("dummy"));
+  var_probs_.push_back(-1);
   // Indexation of events.
   int j = 1;
-  std::unordered_map<std::string, BasicEventPtr>::iterator itp;
-  // Dummy basic event at index 0.
-  int_to_basic_.push_back(BasicEventPtr(new BasicEvent("dummy")));
-  iprobs_.push_back(0);
-  for (itp = basic_events_.begin(); itp != basic_events_.end(); ++itp) {
-    int_to_basic_.push_back(itp->second);
-    basic_to_int_.insert(std::make_pair(itp->second->id(), j));
-    iprobs_.push_back(itp->second->p());
+  for (const BasicEventPtr& event : ordered_basic_events_) {
+    index_to_basic_.push_back(event);
+    id_to_index_.emplace(event->id(), j);
+    var_probs_.push_back(event->p());
     ++j;
   }
 }
@@ -165,19 +184,19 @@ void ProbabilityAnalysis::IndexMcs(
         std::string comp_name = *it_set;
         boost::replace_first(comp_name, "not ", "");
         // This must be a complement of an event.
-        assert(basic_to_int_.count(comp_name));
+        assert(id_to_index_.count(comp_name));
 
         if (coherent_) coherent_ = false;  // Detected non-coherence.
 
         mcs_with_indices.insert(mcs_with_indices.begin(),
-                                -basic_to_int_.find(comp_name)->second);
-        mcs_basic_events_.insert(basic_to_int_.find(comp_name)->second);
+                                -id_to_index_.find(comp_name)->second);
+        mcs_basic_events_.insert(id_to_index_.find(comp_name)->second);
 
       } else {
-        assert(basic_to_int_.count(*it_set));
+        assert(id_to_index_.count(*it_set));
         mcs_with_indices.insert(mcs_with_indices.end(),
-                                basic_to_int_.find(*it_set)->second);
-        mcs_basic_events_.insert(basic_to_int_.find(*it_set)->second);
+                                id_to_index_.find(*it_set)->second);
+        mcs_basic_events_.insert(id_to_index_.find(*it_set)->second);
       }
     }
     imcs_.push_back(mcs_with_indices);
@@ -239,9 +258,9 @@ double ProbabilityAnalysis::ProbAnd(const FlatSet& cut_set) noexcept {
   double p_sub_set = 1;  // 1 is for multiplication.
   for (int member : cut_set) {
     if (member > 0) {
-      p_sub_set *= iprobs_[member];
+      p_sub_set *= var_probs_[member];
     } else {
-      p_sub_set *= 1 - iprobs_[std::abs(member)];  // Never zero.
+      p_sub_set *= 1 - var_probs_[std::abs(member)];  // Never zero.
     }
   }
   return p_sub_set;
@@ -272,45 +291,14 @@ void ProbabilityAnalysis::CombineElAndSet(
 }
 
 double ProbabilityAnalysis::CalculateTotalProbability() noexcept {
-  double pos = 0;
-  double neg = 0;
-  std::vector<FlatSet>::iterator it_s;
-  for (it_s = pos_terms_.begin(); it_s != pos_terms_.end(); ++it_s) {
-    pos += ProbabilityAnalysis::ProbAnd(*it_s);
-  }
-  for (it_s = neg_terms_.begin(); it_s != neg_terms_.end(); ++it_s) {
-    neg += ProbabilityAnalysis::ProbAnd(*it_s);
-  }
-  return pos - neg;
-}
-
-double ProbabilityAnalysis::CalculateBddProbability() noexcept {
   assert(top_event_);
-  CLOCK(ft_creation);
-  BooleanGraph* graph =
-      new BooleanGraph(top_event_, kSettings_.ccf_analysis());
-  LOG(DEBUG2) << "Boolean graph is created in " << DUR(ft_creation);
-
-  CLOCK(prep_time);  // Overall preprocessing time.
-  LOG(DEBUG2) << "Preprocessing...";
-  Preprocessor* preprocessor = new PreprocessorBdd(graph);
-  preprocessor->Run();
-  delete preprocessor;  // No exceptions are expected.
-  LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
-
-  CLOCK(bdd_time);  // BDD based calculation time.
+  CLOCK(calc_time);  // BDD based calculation time.
   LOG(DEBUG2) << "Calculating probability with BDD...";
-  bdd_graph_ = std::unique_ptr<Bdd>(new Bdd(graph));
-  var_probs_.reserve(graph->basic_events().size() + 1);
-  var_probs_.push_back(-1);  // First one is a dummy.
-  for (const BasicEventPtr& event : graph->basic_events()) {
-    var_probs_.push_back(event->p());
-  }
-  delete graph;  /// @todo This is dangerous. bdd_graph_ has an invalid pointer.
-  double prob =
-      ProbabilityAnalysis::CalculateProbability(bdd_graph_->root(), true);
+  current_mark_ = !current_mark_;
+  double prob = ProbabilityAnalysis::CalculateProbability(bdd_graph_->root(),
+                                                          current_mark_);
   if (bdd_graph_->complement_root()) prob = 1 - prob;
-  LOG(DEBUG2) << "Calculated probability " << prob << " in " << DUR(bdd_time);
+  LOG(DEBUG2) << "Calculated probability " << prob << " in " << DUR(calc_time);
   return prob;
 }
 
@@ -342,7 +330,7 @@ void ProbabilityAnalysis::PerformImportanceAnalysis() noexcept {
   std::set<int>::iterator it;
   for (it = mcs_basic_events_.begin(); it != mcs_basic_events_.end(); ++it) {
     // Calculate P(top/event)
-    iprobs_[*it] = 1;
+    var_probs_[*it] = 1;
     double p_e = 0;
     if (kSettings_.approx() == "mcub") {
       p_e = ProbabilityAnalysis::ProbMcub(imcs_);
@@ -353,7 +341,7 @@ void ProbabilityAnalysis::PerformImportanceAnalysis() noexcept {
     }
 
     // Calculate P(top/Not event)
-    iprobs_[*it] = 0;
+    var_probs_[*it] = 0;
     double p_not_e = 0;
     if (kSettings_.approx() == "mcub") {
       p_not_e = ProbabilityAnalysis::ProbMcub(imcs_);
@@ -363,16 +351,16 @@ void ProbabilityAnalysis::PerformImportanceAnalysis() noexcept {
       p_not_e = ProbabilityAnalysis::CalculateTotalProbability();
     }
     // Restore the probability.
-    iprobs_[*it] = int_to_basic_[*it]->p();
+    var_probs_[*it] = index_to_basic_[*it]->p();
 
     ImportanceFactors imp;
     imp.dif = 1 - p_not_e / p_total_;  // Diagnosis importance factor.
     imp.mif = p_e - p_not_e;  // Birnbaum Marginal importance factor.
-    imp.cif = imp.mif * iprobs_[*it] / p_not_e;  // Critical Importance factor.
+    imp.cif = imp.mif * var_probs_[*it] / p_not_e;  // Critical factor.
     imp.rrw = p_total_ / p_not_e;  // Risk Reduction Worth.
     imp.raw = p_e / p_total_;  // Risk Achievement Worth.
 
-    importance_.emplace(int_to_basic_[*it]->id(), std::move(imp));
+    importance_.emplace(index_to_basic_[*it]->id(), std::move(imp));
   }
 }
 

@@ -37,8 +37,6 @@
 
 namespace scram {
 
-namespace test { class ProbabilityAnalysisTest; }
-
 /// @struct ImportanceFactors
 /// Collection of importance factors for variables.
 struct ImportanceFactors {
@@ -52,8 +50,6 @@ struct ImportanceFactors {
 /// @class ProbabilityAnalysis
 /// Main quantitative analysis.
 class ProbabilityAnalysis {
-  friend class test::ProbabilityAnalysisTest;
-
  public:
   using BasicEventPtr = std::shared_ptr<BasicEvent>;
   using GatePtr = std::shared_ptr<Gate>;
@@ -214,16 +210,13 @@ class ProbabilityAnalysis {
   void CombineElAndSet(const FlatSet& el, const std::set<FlatSet>& set,
                        std::set<FlatSet>* combo_set) noexcept;
 
-  /// Calculates total probability from the generated probability equation.
-  double CalculateTotalProbability() noexcept;
-
   /// Calculates the total probability
   /// using the fault tree directly
   /// without cut sets.
   ///
   /// @todo Replace the main probability calculation functionality
   ///       with BDD based approach.
-  double CalculateBddProbability() noexcept;
+  double CalculateTotalProbability() noexcept;
 
   /// Calculates exact probability
   /// of a function graph represented by its root BDD vertex.
@@ -245,31 +238,32 @@ class ProbabilityAnalysis {
   const Settings kSettings_;  ///< All settings for analysis.
   std::string warnings_;  ///< Register warnings.
 
-  /// Container for basic events.
+  /// Container for input basic events.
   std::unordered_map<std::string, BasicEventPtr> basic_events_;
+  std::vector<BasicEventPtr> ordered_basic_events_;  ///< Ordering by indices.
 
-  std::vector<BasicEventPtr> int_to_basic_;  ///< Indices to basic events.
+  std::vector<BasicEventPtr> index_to_basic_;  ///< Indices to basic events.
   /// Indices of basic events.
-  std::unordered_map<std::string, int> basic_to_int_;
-  std::vector<double> iprobs_;  ///< Holds probabilities of basic events.
-  std::vector<double> var_probs_;  ///< Boolean graph variable probabilities.
+  std::unordered_map<std::string, int> id_to_index_;
+  std::vector<double> var_probs_;  ///< Variable probabilities.
 
   /// Minimal cut sets passed for analysis.
-  std::set< std::set<std::string> > min_cut_sets_;
+  std::set<std::set<std::string>> min_cut_sets_;
 
   /// Minimal cut sets with indices of events.
-  std::vector< boost::container::flat_set<int> > imcs_;
+  std::vector<boost::container::flat_set<int>> imcs_;
   /// Indices min cut sets to strings min cut sets mapping.
   /// The same position as in imcs_ container is assumed.
-  std::vector< std::set<std::string> > imcs_to_smcs_;
+  std::vector<std::set<std::string>> imcs_to_smcs_;
   /// Container for basic event indices that are in minimal cut sets.
   std::set<int> mcs_basic_events_;
 
   double p_total_;  ///< Total probability of the top event.
   double p_rare_;  ///< Total probability applying the rare-event approximation.
+  bool current_mark_; ///< To keep track of BDD current mark.
 
   /// Container for minimal cut sets and their respective probabilities.
-  std::map< std::set<std::string>, double > prob_of_min_sets_;
+  std::map<std::set<std::string>, double> prob_of_min_sets_;
 
   /// Container for basic event importance factors.
   std::unordered_map<std::string, ImportanceFactors> importance_;

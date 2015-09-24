@@ -112,13 +112,13 @@ void UncertaintyAnalysis::Sample() noexcept {
   for (int i = 0; i < kSettings_.num_trials(); ++i) {
     // Reset distributions.
     for (int index : basic_events) {
-      int_to_basic_[index]->Reset();
+      index_to_basic_[index]->Reset();
     }
     // Sample all basic events with distributions.
     for (int index : basic_events) {
-      double prob = int_to_basic_[index]->SampleProbability();
+      double prob = index_to_basic_[index]->SampleProbability();
       assert(prob >= 0 && prob <= 1);
-      iprobs_[index] = prob;
+      var_probs_[index] = prob;
     }
     double result = 0;
     if (kSettings_.approx() == "mcub") {
@@ -158,7 +158,7 @@ void UncertaintyAnalysis::FilterUncertainEvents(
   using boost::container::flat_set;
   std::set<int> const_events;  // Does not need sampling.
   for (int index : mcs_basic_events_) {
-    if (int_to_basic_[index]->IsConstant()) {
+    if (index_to_basic_[index]->IsConstant()) {
       const_events.insert(const_events.end(), index);
     } else {
       basic_events->push_back(index);
@@ -171,7 +171,7 @@ void UncertaintyAnalysis::FilterUncertainEvents(
     flat_set<int>::iterator it_f;
     for (it_f = it_set->begin(); it_f != it_set->end();) {
       if (const_events.count(std::abs(*it_f))) {
-        const_prob *= *it_f > 0 ? iprobs_[*it_f] : 1 - iprobs_[-*it_f];
+        const_prob *= *it_f > 0 ? var_probs_[*it_f] : 1 - var_probs_[-*it_f];
         it_set->erase(*it_f);
         it_f = it_set->begin();
         continue;
@@ -186,7 +186,7 @@ void UncertaintyAnalysis::FilterUncertainEvents(
     flat_set<int>::iterator it_f;
     for (it_f = it_set->begin(); it_f != it_set->end();) {
       if (const_events.count(std::abs(*it_f))) {
-        const_prob *= *it_f > 0 ? iprobs_[*it_f] : 1 - iprobs_[-*it_f];
+        const_prob *= *it_f > 0 ? var_probs_[*it_f] : 1 - var_probs_[-*it_f];
         it_set->erase(*it_f);
         it_f = it_set->begin();
         continue;
