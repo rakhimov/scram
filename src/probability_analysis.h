@@ -29,8 +29,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include <boost/container/flat_set.hpp>
-
 #include "analysis.h"
 #include "bdd.h"
 #include "event.h"
@@ -109,7 +107,7 @@ class ProbabilityAnalysis : public Analysis {
   inline double imp_analysis_time() const { return imp_time_; }
 
  protected:
-  using FlatSet = boost::container::flat_set<int>;  ///< Faster set.
+  using CutSet = std::vector<int>;  ///< Unique positive or negative literals.
 
   /// Assigns an index to each basic event,
   /// and then populates with these indices
@@ -125,7 +123,7 @@ class ProbabilityAnalysis : public Analysis {
   /// and turns non-coherent analysis.
   ///
   /// @param[in] min_cut_sets Minimal cut sets with event IDs.
-  void IndexMcs(const std::set<std::set<std::string> >& min_cut_sets) noexcept;
+  void IndexMcs(const std::set<std::set<std::string>>& min_cut_sets) noexcept;
 
   /// Calculates probabilities
   /// using the minimal cut set upper bound (MCUB) approximation.
@@ -133,7 +131,7 @@ class ProbabilityAnalysis : public Analysis {
   /// @param[in] min_cut_sets Sets of indices of basic events.
   ///
   /// @returns The total probability with the MCUB approximation.
-  double ProbMcub(const std::vector<FlatSet>& min_cut_sets) noexcept;
+  double ProbMcub(const std::vector<CutSet>& min_cut_sets) noexcept;
 
   /// Calculates probabilities
   /// using the Rare-Event approximation.
@@ -141,18 +139,18 @@ class ProbabilityAnalysis : public Analysis {
   /// @param[in] min_cut_sets Sets of indices of basic events.
   ///
   /// @returns The total probability with the rare-event approximation.
-  double ProbRareEvent(const std::vector<FlatSet>& min_cut_sets) noexcept;
+  double ProbRareEvent(const std::vector<CutSet>& min_cut_sets) noexcept;
 
   /// Calculates a probability of a cut set,
   /// whose members are in AND relationship with each other.
   /// This function assumes independence of each member.
   ///
-  /// @param[in] cut_set A flat set of indices of basic events.
+  /// @param[in] cut_set A cut set of indices of basic events.
   ///
   /// @returns The total probability of the set.
   ///
   /// @note O_avg(N) where N is the size of the passed set.
-  double ProbAnd(const FlatSet& cut_set) noexcept;
+  double ProbAnd(const CutSet& cut_set) noexcept;
 
   /// Calculates the total probability
   /// using the fault tree directly
@@ -170,7 +168,7 @@ class ProbabilityAnalysis : public Analysis {
   ///
   /// @returns Probability value.
   ///
-  /// @warning If a vertice is already marked with the input mark,
+  /// @warning If a vertex is already marked with the input mark,
   ///          it will not be traversed and updated with a probability value.
   double CalculateProbability(const VertexPtr& vertex, bool mark) noexcept;
 
@@ -191,7 +189,7 @@ class ProbabilityAnalysis : public Analysis {
   std::vector<double> var_probs_;  ///< Variable probabilities.
 
   /// Minimal cut sets with indices of events.
-  std::vector<FlatSet> imcs_;
+  std::vector<CutSet> imcs_;
   /// Container for basic event indices that are in minimal cut sets.
   std::set<int> mcs_basic_events_;
 

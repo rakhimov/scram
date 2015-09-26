@@ -117,10 +117,10 @@ void ProbabilityAnalysis::AssignIndices() noexcept {
 }
 
 void ProbabilityAnalysis::IndexMcs(
-    const std::set<std::set<std::string> >& min_cut_sets) noexcept {
+    const std::set<std::set<std::string>>& min_cut_sets) noexcept {
   // Update databases of minimal cut sets with indexed events.
   for (const auto& cut_set : min_cut_sets) {
-    FlatSet mcs_with_indices;  // Minimal cut set with indices.
+    CutSet mcs_with_indices;  // Minimal cut set with indices.
     for (const auto& id : cut_set) {
       std::vector<std::string> names;
       boost::split(names, id, boost::is_any_of(" "), boost::token_compress_on);
@@ -131,14 +131,12 @@ void ProbabilityAnalysis::IndexMcs(
         // This must be a complement of an event.
         assert(id_to_index_.count(comp_name));
 
-        mcs_with_indices.insert(mcs_with_indices.begin(),
-                                -id_to_index_.find(comp_name)->second);
+        mcs_with_indices.push_back(-id_to_index_.find(comp_name)->second);
         mcs_basic_events_.insert(id_to_index_.find(comp_name)->second);
 
       } else {
         assert(id_to_index_.count(id));
-        mcs_with_indices.insert(mcs_with_indices.end(),
-                                id_to_index_.find(id)->second);
+        mcs_with_indices.push_back(id_to_index_.find(id)->second);
         mcs_basic_events_.insert(id_to_index_.find(id)->second);
       }
     }
@@ -147,7 +145,7 @@ void ProbabilityAnalysis::IndexMcs(
 }
 
 double ProbabilityAnalysis::ProbMcub(
-    const std::vector<FlatSet>& min_cut_sets) noexcept {
+    const std::vector<CutSet>& min_cut_sets) noexcept {
   double m = 1;
   for (const auto& cut_set : min_cut_sets) {
     m *= 1 - ProbabilityAnalysis::ProbAnd(cut_set);
@@ -156,7 +154,7 @@ double ProbabilityAnalysis::ProbMcub(
 }
 
 double ProbabilityAnalysis::ProbRareEvent(
-    const std::vector<FlatSet>& min_cut_sets) noexcept {
+    const std::vector<CutSet>& min_cut_sets) noexcept {
   double sum = 0;
   for (const auto& cut_set : min_cut_sets) {
     sum += ProbabilityAnalysis::ProbAnd(cut_set);
@@ -164,7 +162,7 @@ double ProbabilityAnalysis::ProbRareEvent(
   return sum;
 }
 
-double ProbabilityAnalysis::ProbAnd(const FlatSet& cut_set) noexcept {
+double ProbabilityAnalysis::ProbAnd(const CutSet& cut_set) noexcept {
   if (cut_set.empty()) return 0;
   double p_sub_set = 1;  // 1 is for multiplication.
   for (int member : cut_set) {
