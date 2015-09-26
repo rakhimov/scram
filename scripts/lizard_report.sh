@@ -5,6 +5,7 @@
 # This script must be run in scram/src directory
 
 lizard -s cyclomatic_complexity \
+  bdd.cc \
   boolean_graph.cc \
   ccf_group.cc \
   config.cc \
@@ -22,11 +23,11 @@ lizard -s cyclomatic_complexity \
   model.cc \
   preprocessor.cc \
   probability_analysis.cc \
-  random.cc \
   relax_ng_validator.cc \
   reporter.cc \
   risk_analysis.cc \
   scram.cc \
   settings.cc \
   uncertainty_analysis.cc \
-  xml_parser.cc
+  xml_parser.cc \
+  zbdd.cc
