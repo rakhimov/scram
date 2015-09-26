@@ -119,8 +119,8 @@ class Gate;
 /// Representation of a basic event in a fault tree.
 class BasicEvent : public PrimaryEvent {
  public:
-  typedef std::shared_ptr<Expression> ExpressionPtr;
-  typedef std::shared_ptr<Gate> GatePtr;
+  using ExpressionPtr = std::shared_ptr<Expression>;
+  using GatePtr = std::shared_ptr<Gate>;
 
   using PrimaryEvent::PrimaryEvent;  // Construction with unique identification.
 
@@ -252,7 +252,7 @@ class Formula;  // To describe a gate's formula.
 /// A representation of a gate in a fault tree.
 class Gate : public Event {
  public:
-  typedef std::unique_ptr<Formula> FormulaPtr;
+  using FormulaPtr = std::unique_ptr<Formula>;
 
   using Event::Event;  // Construction with unique identification.
 
@@ -294,11 +294,11 @@ class Gate : public Event {
 /// Formulas are not expected to be shared.
 class Formula {
  public:
-  typedef std::shared_ptr<Event> EventPtr;
-  typedef std::shared_ptr<HouseEvent> HouseEventPtr;
-  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
-  typedef std::shared_ptr<Gate> GatePtr;
-  typedef std::unique_ptr<Formula> FormulaPtr;
+  using EventPtr = std::shared_ptr<Event>;
+  using HouseEventPtr = std::shared_ptr<HouseEvent>;
+  using BasicEventPtr = std::shared_ptr<BasicEvent>;
+  using GatePtr = std::shared_ptr<Gate>;
+  using FormulaPtr = std::unique_ptr<Formula>;
 
   /// Constructs a formula.
   ///

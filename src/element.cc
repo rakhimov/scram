@@ -26,8 +26,6 @@
 
 namespace scram {
 
-Attribute::Attribute() : name(""), value(""), type("") {}
-
 Element::Element() : label_("") {}
 
 Element::~Element() {}  // Empty body for pure virtual destructor.

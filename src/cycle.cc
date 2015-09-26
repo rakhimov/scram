@@ -25,11 +25,11 @@ namespace cycle {
 
 std::string PrintCycle(const std::vector<std::string>& cycle) {
   assert(cycle.size() > 1);
-  std::vector<std::string>::const_iterator it = cycle.begin();
+  auto it = cycle.cbegin();
   std::string cycle_start = *it;
   std::string result = "->" + cycle_start;
   for (++it; *it != cycle_start; ++it) {
-    assert(it != cycle.end());
+    assert(it != cycle.cend());
     result = "->" + *it + result;
   }
   result = cycle_start + result;

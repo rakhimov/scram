@@ -42,7 +42,7 @@ void Model::AddFaultTree(FaultTreePtr fault_tree) {
 }
 
 void Model::AddParameter(const ParameterPtr& parameter) {
-  bool original = parameters_.insert({parameter->id(), parameter}).second;
+  bool original = parameters_.emplace(parameter->id(), parameter).second;
   if (!original) {
     std::string msg = "Redefinition of parameter " + parameter->name();
     throw RedefinitionError(msg);
@@ -150,7 +150,7 @@ void Model::AddHouseEvent(const HouseEventPtr& house_event) {
     std::string msg = "Redefinition of event " + house_event->name();
     throw RedefinitionError(msg);
   }
-  house_events_.insert({id, house_event});
+  house_events_.emplace(id, house_event);
 }
 
 std::shared_ptr<HouseEvent> Model::GetHouseEvent(const std::string& reference,
@@ -193,7 +193,7 @@ void Model::AddBasicEvent(const BasicEventPtr& basic_event) {
     std::string msg = "Redefinition of event " + basic_event->name();
     throw RedefinitionError(msg);
   }
-  basic_events_.insert({id, basic_event});
+  basic_events_.emplace(id, basic_event);
 }
 
 std::shared_ptr<BasicEvent> Model::GetBasicEvent(const std::string& reference,
@@ -236,7 +236,7 @@ void Model::AddGate(const GatePtr& gate) {
     std::string msg = "Redefinition of event " + gate->name();
     throw RedefinitionError(msg);
   }
-  gates_.insert({id, gate});
+  gates_.emplace(id, gate);
 }
 
 std::shared_ptr<Gate> Model::GetGate(const std::string& reference,
@@ -273,7 +273,7 @@ std::shared_ptr<Gate> Model::GetGate(const std::string& reference,
 
 void Model::AddCcfGroup(const CcfGroupPtr& ccf_group) {
   std::string name = ccf_group->id();
-  bool original = ccf_groups_.insert({name, ccf_group}).second;
+  bool original = ccf_groups_.emplace(name, ccf_group).second;
   if (!original) {
     std::string msg = "Redefinition of CCF group " + ccf_group->name();
     throw RedefinitionError(msg);
@@ -285,7 +285,7 @@ const Component* Model::GetContainer(const std::string& base_path) {
   std::vector<std::string> path;
   boost::split(path, base_path, boost::is_any_of("."),
                boost::token_compress_on);
-  std::vector<std::string>::iterator it = path.begin();
+  auto it = path.begin();
   std::string name = *it;
   boost::to_lower(name);
   const Component* container;

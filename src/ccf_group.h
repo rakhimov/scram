@@ -42,8 +42,8 @@ namespace scram {
 /// Abstract base class for all common cause failure models.
 class CcfGroup : public Element, public Role {
  public:
-  typedef std::shared_ptr<Expression> ExpressionPtr;
-  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
+  using ExpressionPtr = std::shared_ptr<Expression>;
+  using BasicEventPtr = std::shared_ptr<BasicEvent>;
 
   /// Constructor to be used by derived classes.
   ///
@@ -125,8 +125,8 @@ class CcfGroup : public Element, public Role {
   void ApplyModel();
 
  protected:
-  typedef std::shared_ptr<Gate> GatePtr;
-  typedef std::unique_ptr<Formula> FormulaPtr;
+  using GatePtr = std::shared_ptr<Gate>;
+  using FormulaPtr = std::unique_ptr<Formula>;
 
   /// Creates new basic events from members.
   /// The new basic events are included in the database of new events.
@@ -190,15 +190,15 @@ class BetaFactorModel : public CcfGroup {
   /// @param[in] level The level of the passed factor.
   ///
   /// @throws ValidationError Level is not what is expected.
-  void AddFactor(const ExpressionPtr& factor, int level);
+  void AddFactor(const ExpressionPtr& factor, int level) override;
 
  private:
   void ConstructCcfBasicEvents(
       int max_level,
-      std::map<BasicEventPtr, std::set<std::string> >* new_events);
+      std::map<BasicEventPtr, std::set<std::string> >* new_events) override;
 
   void CalculateProb(int max_level,
-                     std::map<int, ExpressionPtr>* probabilities);
+                     std::map<int, ExpressionPtr>* probabilities) override;
 };
 
 /// @class MglModel
@@ -226,11 +226,11 @@ class MglModel : public CcfGroup {
   /// @param[in] level The level of the passed factor.
   ///
   /// @throws ValidationError Level is not what is expected.
-  void AddFactor(const ExpressionPtr& factor, int level);
+  void AddFactor(const ExpressionPtr& factor, int level) override;
 
  private:
   void CalculateProb(int max_level,
-                     std::map<int, ExpressionPtr>* probabilities);
+                     std::map<int, ExpressionPtr>* probabilities) override;
 };
 
 /// @class AlphaFactorModel
@@ -251,7 +251,7 @@ class AlphaFactorModel : public CcfGroup {
 
  private:
   void CalculateProb(int max_level,
-                     std::map<int, ExpressionPtr>* probabilities);
+                     std::map<int, ExpressionPtr>* probabilities) override;
 };
 
 /// @class PhiFactorModel
@@ -278,11 +278,11 @@ class PhiFactorModel : public CcfGroup {
   ///
   /// @todo Problem with sampling the factors and not getting exactly 1.
   ///       Currently only accepts constant expressions.
-  void Validate();
+  void Validate() override;
 
  private:
   void CalculateProb(int max_level,
-                     std::map<int, ExpressionPtr>* probabilities);
+                     std::map<int, ExpressionPtr>* probabilities) override;
 };
 
 }  // namespace scram

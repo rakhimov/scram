@@ -31,40 +31,43 @@
 
 #include <boost/container/flat_set.hpp>
 
+#include "analysis.h"
+#include "bdd.h"
 #include "event.h"
 #include "settings.h"
 
 namespace scram {
 
-namespace test { class ProbabilityAnalysisTest; }
+/// @struct ImportanceFactors
+/// Collection of importance factors for variables.
+struct ImportanceFactors {
+  double dif;  ///< Fussel-Vesely diagnosis importance factor.
+  double mif;  ///< Birnbaum marginal importance factor.
+  double cif;  ///< Critical importance factor.
+  double rrw;  ///< Risk reduction worth factor.
+  double raw;  ///< Risk achievement worth factor.
+};
 
 /// @class ProbabilityAnalysis
 /// Main quantitative analysis.
-class ProbabilityAnalysis {
-  friend class test::ProbabilityAnalysisTest;
-
+class ProbabilityAnalysis : public Analysis {
  public:
-  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
+  using BasicEventPtr = std::shared_ptr<BasicEvent>;
+  using GatePtr = std::shared_ptr<Gate>;
+  using VertexPtr = std::shared_ptr<Vertex>;
+  using ItePtr = std::shared_ptr<Ite>;
 
-  /// The main constructor of Probability Analysis.
+  /// Probability analysis
+  /// on the fault tree represented by the root gate
+  /// with Binary decision diagrams.
   ///
+  /// @param[in] root The top event of the fault tree.
   /// @param[in] settings Analysis settings for probability calculations.
-  explicit ProbabilityAnalysis(const Settings& settings);
+  ///
+  /// @note This technique does not require cut sets.
+  ProbabilityAnalysis(const GatePtr& root, const Settings& settings);
 
   virtual ~ProbabilityAnalysis() {}
-
-  /// Sets the databases of basic events with probabilities.
-  /// Resets the main basic event database
-  /// and clears the previous information.
-  /// This information is the main source
-  /// for calculations and internal indexes for basic events.
-  ///
-  /// @param[in] basic_events The database of basic events in cut sets.
-  ///
-  /// @note  If not enough information is provided,
-  ///        the analysis behavior is undefined.
-  void UpdateDatabase(
-      const std::unordered_map<std::string, BasicEventPtr>& basic_events);
 
   /// Performs quantitative analysis on minimal cut sets
   /// containing basic events provided in the databases.
@@ -73,7 +76,7 @@ class ProbabilityAnalysis {
   /// @param[in] min_cut_sets Minimal cut sets with string ids of events.
   ///                         Negative event is indicated by "'not' + id"
   ///
-  /// @note  Undefined behavior if analysis called two or more times.
+  /// @note  Undefined behavior if analysis is called two or more times.
   virtual void Analyze(
       const std::set< std::set<std::string> >& min_cut_sets) noexcept;
 
@@ -82,20 +85,10 @@ class ProbabilityAnalysis {
   /// @note The user should make sure that the analysis is actually done.
   inline double p_total() const { return p_total_; }
 
-  /// @returns Map with minimal cut sets and their probabilities.
+  /// @returns Map with basic events and their importance factors.
   ///
   /// @note The user should make sure that the analysis is actually done.
-  inline const std::map< std::set<std::string>, double >&
-      prob_of_min_sets() const {
-    return prob_of_min_sets_;
-  }
-
-  /// @returns Map with basic events and their importance values.
-  ///          The associated vector contains
-  ///          DIF, MIF, CIF, RRW, RAW in order.
-  ///
-  /// @note The user should make sure that the analysis is actually done.
-  inline const std::map< std::string, std::vector<double> >&
+  inline const std::unordered_map<std::string, ImportanceFactors>&
       importance() const {
     return importance_;
   }
@@ -109,11 +102,6 @@ class ProbabilityAnalysis {
     return basic_events_;
   }
 
-  /// @returns The probability with the rare-event approximation.
-  ///
-  /// @note The user should make sure that the analysis is actually done.
-  inline double p_rare() const { return p_rare_; }
-
   /// @returns Analysis time spent on calculating the total probability.
   inline double prob_analysis_time() const { return p_time_; }
 
@@ -121,7 +109,7 @@ class ProbabilityAnalysis {
   inline double imp_analysis_time() const { return imp_time_; }
 
  protected:
-  typedef boost::container::flat_set<int> FlatSet;  ///< Faster set.
+  using FlatSet = boost::container::flat_set<int>;  ///< Faster set.
 
   /// Assigns an index to each basic event,
   /// and then populates with these indices
@@ -147,23 +135,13 @@ class ProbabilityAnalysis {
   /// @returns The total probability with the MCUB approximation.
   double ProbMcub(const std::vector<FlatSet>& min_cut_sets) noexcept;
 
-  /// Generates positive and negative terms
-  /// of probability equation expansion from
-  /// a set of cut sets,
-  /// which are in OR relationship with each other.
-  /// This function is a brute force probability calculation
-  /// without approximations.
+  /// Calculates probabilities
+  /// using the Rare-Event approximation.
   ///
-  /// @param[in] sign The sign of the series. Negative or positive number.
-  /// @param[in] num_sums The number of sums in the series.
-  /// @param[in,out] cut_sets Sets of indices of basic events.
+  /// @param[in] min_cut_sets Sets of indices of basic events.
   ///
-  /// @note This function drastically modifies cut_sets
-  ///       by deleting sets inside it.
-  ///       This is for better performance.
-  /// @note O_avg(M*logM*N*2^N) where N is the number of sets,
-  ///       and M is the average size of the sets.
-  void ProbOr(int sign, int num_sums, std::set<FlatSet>* cut_sets) noexcept;
+  /// @returns The total probability with the rare-event approximation.
+  double ProbRareEvent(const std::vector<FlatSet>& min_cut_sets) noexcept;
 
   /// Calculates a probability of a cut set,
   /// whose members are in AND relationship with each other.
@@ -176,64 +154,55 @@ class ProbabilityAnalysis {
   /// @note O_avg(N) where N is the size of the passed set.
   double ProbAnd(const FlatSet& cut_set) noexcept;
 
-  /// Calculates A(and)( B(or)C ) relationship for sets using set algebra.
+  /// Calculates the total probability
+  /// using the fault tree directly
+  /// without cut sets.
   ///
-  /// @param[in] el A set of indices of basic events.
-  /// @param[in] set Sets of indices of basic events.
-  /// @param[out] combo_set A final set resulting from joining el and sets.
-  ///
-  /// @note O_avg(N*M*logM) where N is the size of the set,
-  ///       and M is the average size of the elements.
-  void CombineElAndSet(const FlatSet& el, const std::set<FlatSet>& set,
-                       std::set<FlatSet>* combo_set) noexcept;
-
-  /// Calculates total probability from the generated probability equation.
+  /// @todo Replace the main probability calculation functionality
+  ///       with BDD based approach.
   double CalculateTotalProbability() noexcept;
+
+  /// Calculates exact probability
+  /// of a function graph represented by its root BDD vertex.
+  ///
+  /// @param[in] vertex The root vertex of a function graph.
+  /// @param[in] mark A flag to mark traversed vertices.
+  ///
+  /// @returns Probability value.
+  ///
+  /// @warning If a vertice is already marked with the input mark,
+  ///          it will not be traversed and updated with a probability value.
+  double CalculateProbability(const VertexPtr& vertex, bool mark) noexcept;
 
   /// Importance analysis of basic events that are in minimal cut sets.
   void PerformImportanceAnalysis() noexcept;
 
-
-  const Settings kSettings_;  ///< All settings for analysis.
+  GatePtr top_event_;  ///< Top gate of the passed fault tree.
+  std::unique_ptr<Bdd> bdd_graph_;  ///< The main BDD graph for analysis.
   std::string warnings_;  ///< Register warnings.
 
-  /// Container for basic events.
+  /// Container for input basic events.
   std::unordered_map<std::string, BasicEventPtr> basic_events_;
+  std::vector<BasicEventPtr> ordered_basic_events_;  ///< Ordering by indices.
 
-  std::vector<BasicEventPtr> int_to_basic_;  ///< Indices to basic events.
+  std::vector<BasicEventPtr> index_to_basic_;  ///< Indices to basic events.
   /// Indices of basic events.
-  std::unordered_map<std::string, int> basic_to_int_;
-  std::vector<double> iprobs_;  ///< Holds probabilities of basic events.
-
-  /// Minimal cut sets passed for analysis.
-  std::set< std::set<std::string> > min_cut_sets_;
+  std::unordered_map<std::string, int> id_to_index_;
+  std::vector<double> var_probs_;  ///< Variable probabilities.
 
   /// Minimal cut sets with indices of events.
-  std::vector< boost::container::flat_set<int> > imcs_;
-  /// Indices min cut sets to strings min cut sets mapping.
-  /// The same position as in imcs_ container is assumed.
-  std::vector< std::set<std::string> > imcs_to_smcs_;
+  std::vector<FlatSet> imcs_;
   /// Container for basic event indices that are in minimal cut sets.
   std::set<int> mcs_basic_events_;
 
   double p_total_;  ///< Total probability of the top event.
-  double p_rare_;  ///< Total probability applying the rare-event approximation.
+  bool current_mark_; ///< To keep track of BDD current mark.
 
-  /// Container for minimal cut sets and their respective probabilities.
-  std::map< std::set<std::string>, double > prob_of_min_sets_;
+  /// Container for basic event importance factors.
+  std::unordered_map<std::string, ImportanceFactors> importance_;
 
-  /// Container for basic event importance types.
-  /// The order is DIF, MIF, CIF, RRW, RAW.
-  std::map< std::string, std::vector<double> > importance_;
-
-  bool coherent_;  ///< Indication of coherent optimized analysis.
   double p_time_;  ///< Time for probability calculations.
   double imp_time_;  ///< Time for importance calculations.
-
-  /// Positive terms of the probability equation.
-  std::vector< boost::container::flat_set<int> > pos_terms_;
-  /// Negative terms of the probability equation.
-  std::vector< boost::container::flat_set<int> > neg_terms_;
 };
 
 }  // namespace scram

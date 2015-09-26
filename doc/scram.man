@@ -57,10 +57,6 @@ calculations
 .HP
 \fB\-l\fR [ \fB\-\-limit\-order\fR ] arg Upper limit for cut set order
 .TP
-\fB\-s\fR [ \fB\-\-num\-sums\fR ] arg
-Set the number of sums in series expansion for probability
-calculations
-.TP
 \fB\-\-cut\-off\fR arg
 Cut\-off probability for cut sets
 .TP

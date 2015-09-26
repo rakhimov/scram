@@ -375,10 +375,15 @@ void IGate::ProcessComplementArg(int index) noexcept {
   }
 }
 
-const std::map<std::string, Operator> BooleanGraph::kStringToType_ =
-    {{"and", kAndGate}, {"or", kOrGate}, {"atleast", kAtleastGate},
-     {"xor", kXorGate}, {"not", kNotGate}, {"nand", kNandGate},
-     {"nor", kNorGate}, {"null", kNullGate}};
+const std::map<std::string, Operator> BooleanGraph::kStringToType_ = {
+    {"and", kAndGate},
+    {"or", kOrGate},
+    {"atleast", kAtleastGate},
+    {"xor", kXorGate},
+    {"not", kNotGate},
+    {"nand", kNandGate},
+    {"nor", kNorGate},
+    {"null", kNullGate}};
 
 BooleanGraph::BooleanGraph(const GatePtr& root, bool ccf) noexcept
     : coherent_(true),
@@ -707,7 +712,7 @@ std::ostream& operator<<(std::ostream& os, const std::shared_ptr<IGate>& gate) {
   const FormulaSig sig = GetFormulaSig(gate);  // Formatting for the formula.
   int num_args = gate->args().size();  // The number of arguments to print.
 
-  typedef std::shared_ptr<IGate> IGatePtr;
+  using IGatePtr = std::shared_ptr<IGate>;
   for (const std::pair<int, IGatePtr>& node : gate->gate_args()) {
     if (node.first < 0) formula += "~";  // Negation.
     formula += GetName(node.second);
@@ -717,7 +722,7 @@ std::ostream& operator<<(std::ostream& os, const std::shared_ptr<IGate>& gate) {
     os << node.second;
   }
 
-  typedef std::shared_ptr<Variable> VariablePtr;
+  using VariablePtr = std::shared_ptr<Variable>;
   for (const std::pair<int, VariablePtr>& basic : gate->variable_args()) {
     if (basic.first < 0) formula += "~";  // Negation.
     int index = basic.second->index();
@@ -728,7 +733,7 @@ std::ostream& operator<<(std::ostream& os, const std::shared_ptr<IGate>& gate) {
     os << basic.second;
   }
 
-  typedef std::shared_ptr<Constant> ConstantPtr;
+  using ConstantPtr = std::shared_ptr<Constant>;
   for (const std::pair<int, ConstantPtr>& constant : gate->constant_args()) {
     if (constant.first < 0) formula += "~";  // Negation.
     int index = constant.second->index();

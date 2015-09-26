@@ -54,7 +54,7 @@ class Formula;
 /// for future use or analysis.
 class Initializer {
  public:
-  typedef std::shared_ptr<Model> ModelPtr;
+  using ModelPtr = std::shared_ptr<Model>;
 
   /// Prepares common information to be used by
   /// the future input file constructs,
@@ -78,18 +78,18 @@ class Initializer {
   inline ModelPtr model() const { return model_; }
 
  private:
-  typedef std::shared_ptr<Element> ElementPtr;
-  typedef std::shared_ptr<Event> EventPtr;
-  typedef std::shared_ptr<Gate> GatePtr;
-  typedef std::unique_ptr<Formula> FormulaPtr;  ///< Unique Formula.
-  typedef std::shared_ptr<PrimaryEvent> PrimaryEventPtr;
-  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
-  typedef std::shared_ptr<HouseEvent> HouseEventPtr;
-  typedef std::shared_ptr<CcfGroup> CcfGroupPtr;
-  typedef std::shared_ptr<Expression> ExpressionPtr;
-  typedef std::shared_ptr<Parameter> ParameterPtr;
-  typedef std::unique_ptr<FaultTree> FaultTreePtr;  ///< Unique fault tree.
-  typedef std::unique_ptr<Component> ComponentPtr;  ///< Unique component.
+  using ElementPtr = std::shared_ptr<Element>;
+  using EventPtr = std::shared_ptr<Event>;
+  using GatePtr = std::shared_ptr<Gate>;
+  using FormulaPtr = std::unique_ptr<Formula>;  ///< Unique Formula.
+  using PrimaryEventPtr = std::shared_ptr<PrimaryEvent>;
+  using BasicEventPtr = std::shared_ptr<BasicEvent>;
+  using HouseEventPtr = std::shared_ptr<HouseEvent>;
+  using CcfGroupPtr = std::shared_ptr<CcfGroup>;
+  using ExpressionPtr = std::shared_ptr<Expression>;
+  using ParameterPtr = std::shared_ptr<Parameter>;
+  using FaultTreePtr = std::unique_ptr<FaultTree>;  ///< Unique fault tree.
+  using ComponentPtr = std::unique_ptr<Component>;  ///< Unique component.
 
   /// Map of valid units for parameters.
   static const std::map<std::string, Units> kUnits_;
@@ -342,13 +342,6 @@ class Initializer {
   void ProcessCcfMembers(const xmlpp::Element* members_node,
                          const CcfGroupPtr& ccf_group);
 
-  /// Attaches factors to a given common cause failure group.
-  ///
-  /// @param[in] factors_node XML element containing all factors.
-  /// @param[in,out] ccf_group CCF group to be defined by the given factors.
-  void ProcessCcfFactors(const xmlpp::Element* factors_node,
-                         const CcfGroupPtr& ccf_group);
-
   /// Defines factor and adds it to CCF group.
   ///
   /// @param[in] factor_node XML element containing one factor.
@@ -364,18 +357,6 @@ class Initializer {
   ///
   /// @throws ValidationError The initialization contains mistakes.
   void ValidateInitialization();
-
-  /// Checks for problems with gates, events, expressions, and parameters.
-  ///
-  /// @throws ValidationError The first layer members contain mistakes.
-  void CheckFirstLayer();
-
-  /// Checks for problems with analysis containers,
-  /// such as fault trees, event trees, common cause groups,
-  /// and others that use the first layer members.
-  ///
-  /// @throws ValidationError The second layer members contain mistakes.
-  void CheckSecondLayer();
 
   /// Validates expressions and anything
   /// that is dependent on them,
@@ -401,7 +382,7 @@ class Initializer {
   static std::stringstream schema_;
 
   /// Parsers with all documents saved for later access.
-  std::vector<std::unique_ptr<XMLParser> > parsers_;
+  std::vector<std::unique_ptr<XMLParser>> parsers_;
 
   /// Map roots of documents to files. This is for error reporting.
   std::map<const xmlpp::Node*, std::string> doc_to_file_;
@@ -411,13 +392,13 @@ class Initializer {
   /// because of unordered registration and definition of their dependencies.
   struct TbdElements {
     /// Parameters rely on parameter registration.
-    std::vector<std::pair<ParameterPtr, const xmlpp::Element*> > parameters;
+    std::vector<std::pair<ParameterPtr, const xmlpp::Element*>> parameters;
     /// Basic events rely on parameter registration.
-    std::vector<std::pair<BasicEventPtr, const xmlpp::Element*> > basic_events;
+    std::vector<std::pair<BasicEventPtr, const xmlpp::Element*>> basic_events;
     /// Gates rely on gate, basic event, and house event registrations.
-    std::vector<std::pair<GatePtr, const xmlpp::Element*> > gates;
+    std::vector<std::pair<GatePtr, const xmlpp::Element*>> gates;
     /// CCF groups rely on both parameter and basic event registration.
-    std::vector<std::pair<CcfGroupPtr, const xmlpp::Element*> > ccf_groups;
+    std::vector<std::pair<CcfGroupPtr, const xmlpp::Element*>> ccf_groups;
   } tbd_;  ///< Elements are assumed to be unique.
 
   /// Container for defined expressions for later validation.

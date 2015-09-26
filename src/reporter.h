@@ -45,9 +45,9 @@ class UncertaintyAnalysis;
 /// This class reports the results of the analyses.
 class Reporter {
  public:
-  typedef std::shared_ptr<const Model> ModelPtr;
-  typedef std::shared_ptr<const PrimaryEvent> PrimaryEventPtr;
-  typedef std::shared_ptr<const Parameter> ParameterPtr;
+  using ModelPtr = std::shared_ptr<const Model>;
+  using PrimaryEventPtr = std::shared_ptr<const PrimaryEvent>;
+  using ParameterPtr = std::shared_ptr<const Parameter>;
 
   /// Sets up XML report document according to a specific standards.
   /// This function populates information
@@ -92,11 +92,9 @@ class Reporter {
   /// @param[in,out] doc Pre-formatted XML document.
   ///
   /// @note This function must be called only after analysis is done.
-  void ReportFta(
-      std::string ft_name,
-      const std::shared_ptr<const FaultTreeAnalysis>& fta,
-      const std::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
-      xmlpp::Document* doc);
+  void ReportFta(std::string ft_name, const FaultTreeAnalysis& fta,
+                 const ProbabilityAnalysis* prob_analysis,
+                 xmlpp::Document* doc);
 
   /// Reports results of importance analysis in probability analysis.
   ///
@@ -105,10 +103,9 @@ class Reporter {
   /// @param[in,out] doc Pre-formatted XML document.
   ///
   /// @note This function must be called only after analysis is done.
-  void ReportImportance(
-      std::string ft_name,
-      const std::shared_ptr<const ProbabilityAnalysis>& prob_analysis,
-      xmlpp::Document* doc);
+  void ReportImportance(std::string ft_name,
+                        const ProbabilityAnalysis& prob_analysis,
+                        xmlpp::Document* doc);
 
   /// Reports the results of uncertainty analysis with minimal cut sets.
   ///
@@ -117,13 +114,12 @@ class Reporter {
   /// @param[in,out] doc Pre-formatted XML document.
   ///
   /// @note This function must be called only after analysis is done.
-  void ReportUncertainty(
-      std::string ft_name,
-      const std::shared_ptr<const UncertaintyAnalysis>& uncert_analysis,
-      xmlpp::Document* doc);
+  void ReportUncertainty(std::string ft_name,
+                         const UncertaintyAnalysis& uncert_analysis,
+                         xmlpp::Document* doc);
 
  private:
-  typedef std::shared_ptr<const BasicEvent> BasicEventPtr;
+  using BasicEventPtr = std::shared_ptr<const BasicEvent>;
 
   /// Detects if a given basic event is a CCF event,
   /// and reports it with specific formatting.
@@ -134,30 +130,6 @@ class Reporter {
   /// @returns A newly created element node with the event description.
   xmlpp::Element* ReportBasicEvent(const BasicEventPtr& basic_event,
                                    xmlpp::Element* parent);
-
-  /// A generic function to convert numbers to string.
-  ///
-  /// @param[in] num The number to be converted.
-  ///
-  /// @returns Formatted string that represents the number.
-  template<class T>
-  inline std::string ToString(T num) {
-    std::stringstream ss;
-    ss << num;
-    return ss.str();
-  }
-
-  /// A helper function to convert a floating point number to string.
-  ///
-  /// @param[in] num The number to be converted.
-  /// @param[in] precision Decimal precision for reporting.
-  ///
-  /// @returns Formatted string that represents the floating point number.
-  inline std::string ToString(double num, int precision) {
-    std::stringstream ss;
-    ss << std::setprecision(precision) << num;
-    return ss.str();
-  }
 };
 
 }  // namespace scram

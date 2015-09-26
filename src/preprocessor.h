@@ -62,24 +62,26 @@ class Preprocessor {
   ///          which will mess the new structure of the Boolean graph.
   explicit Preprocessor(BooleanGraph* graph) noexcept;
 
+  virtual ~Preprocessor() {}
+
   /// Performs processing of a fault tree
   /// to simplify the structure to
   /// normalized (OR/AND gates only),
   /// modular (independent sub-trees),
   /// positive-gate-only (negation normal)
-  /// indexed fault tree.
+  /// Boolean graph.
   ///
   /// @warning There should not be another smart pointer
   ///          to the indexed top gate of the fault tree
   ///          outside of the Boolean graph.
-  void ProcessFaultTree() noexcept;
+  virtual void Run() noexcept;
 
- private:
-  typedef std::shared_ptr<Node> NodePtr;
-  typedef std::shared_ptr<IGate> IGatePtr;
-  typedef std::weak_ptr<IGate> IGateWeakPtr;
-  typedef std::shared_ptr<Variable> VariablePtr;
-  typedef std::shared_ptr<Constant> ConstantPtr;
+ protected:
+  using NodePtr = std::shared_ptr<Node>;
+  using IGatePtr = std::shared_ptr<IGate>;
+  using IGateWeakPtr = std::weak_ptr<IGate>;
+  using VariablePtr = std::shared_ptr<Variable>;
+  using ConstantPtr = std::shared_ptr<Constant>;
 
   /// The initial phase of preprocessing.
   /// The most basic cleanup algorithms are applied.
@@ -313,6 +315,9 @@ class Preprocessor {
   /// @note The full normalization is meant to be called only once.
   ///
   /// @warning The root get may still be NULL type.
+  /// @warning Gate marks are used.
+  /// @warning Optimization values are used.
+  /// @warning Node visit information is used.
   void NormalizeGates(bool full) noexcept;
 
   /// Notifies all parents of negative gates,
@@ -369,6 +374,7 @@ class Preprocessor {
   /// @param[in,out] gate The ATLEAST gate to normalize.
   ///
   /// @note This is a helper function for NormalizeGate.
+  /// @note Normalization of K/N gates is aware of variable ordering.
   void NormalizeAtleastGate(const IGatePtr& gate) noexcept;
 
   /// Propagates complements of argument gates down to leafs
@@ -635,18 +641,18 @@ class Preprocessor {
   /// how to merge or factor out
   /// common arguments of gates into new gates.
   struct MergeTable {
-    typedef std::vector<int> CommonArgs;  ///< Unique, sorted common arguments.
-    typedef std::set<IGatePtr> CommonParents;  ///< Unique common parent gates.
-    typedef std::pair<CommonArgs, CommonParents> Option;  ///< One possibility.
-    typedef std::vector<Option*> OptionGroup;  ///< A set of best options.
-    typedef std::vector<Option> MergeGroup;  ///< Isolated group for processing.
+    using CommonArgs = std::vector<int>;  ///< Unique, sorted common arguments.
+    using CommonParents = std::set<IGatePtr>;  ///< Unique common parent gates.
+    using Option = std::pair<CommonArgs, CommonParents>;  ///< One possibility.
+    using OptionGroup = std::vector<Option*>;  ///< A set of best options.
+    using MergeGroup = std::vector<Option>;  ///< Isolated group for processing.
 
     /// Candidate gates with their shared arguments.
-    typedef std::pair<IGatePtr, CommonArgs> Candidate;
+    using Candidate = std::pair<IGatePtr, CommonArgs>;
     /// Collection of merge-candidate gates with their common arguments.
-    typedef std::vector<Candidate> Candidates;
+    using Candidates = std::vector<Candidate>;
     /// Mapping for collection of common args and common parents as options.
-    typedef boost::unordered_map<CommonArgs, CommonParents> Collection;
+    using Collection = boost::unordered_map<CommonArgs, CommonParents>;
 
     std::vector<MergeGroup> groups;  ///< Container of isolated groups.
   };
@@ -908,6 +914,8 @@ class Preprocessor {
   /// If it doesn't, its optimization value is -1;
   ///
   /// @param[in,out] gate The ancestor gate that may fail.
+  /// @param[in] num_failure The number of failure (TRUE) arguments.
+  /// @param[in] num_success The number of success (FALSE) arguments.
   void DetermineGateFailure(const IGatePtr& gate, int num_failure,
                             int num_success) noexcept;
 
@@ -1072,6 +1080,24 @@ class Preprocessor {
   ///       the parent is registered for removal.
   void ReplaceGate(const IGatePtr& gate, const IGatePtr& replacement) noexcept;
 
+  /// Assigns order for Boolean graph variables.
+  ///
+  /// @note Optimization values are used for ordering.
+  void AssignOrder() noexcept;
+
+  /// Assigns topological ordering to nodes of the Boolean Graph.
+  /// The ordering is assigned to the optimization value of the nodes.
+  /// The nodes are sorted in descending optimization value.
+  /// The highest optimization value belongs to the root.
+  ///
+  /// @param[in] root The root or current parent gate of the graph.
+  /// @param[in] order The current order value.
+  ///
+  /// @returns The final order value.
+  ///
+  /// @note Optimization values must be clear before the assignment.
+  int TopologicalOrder(const IGatePtr& root, int order) noexcept;
+
   BooleanGraph* graph_;  ///< The Boolean graph to preprocess.
   int root_sign_;  ///< The negative or positive sign of the root node.
   /// Container for constant gates to be tracked and cleaned by algorithms.
@@ -1081,6 +1107,17 @@ class Preprocessor {
   /// Container for NULL type gates to be tracked and cleaned by algorithms.
   /// NULL type gates are created by coherent gates with only one argument.
   std::vector<IGateWeakPtr> null_gates_;
+};
+
+/// @class PreprocessorBdd
+/// Specilalization of preprocessing for BDD based analyses.
+class PreprocessorBdd : public Preprocessor {
+ public:
+  using Preprocessor::Preprocessor;  ///< Constructor with a Boolean graph.
+
+  /// Performs preprocessing for analyses with Binary Decision Diagrams.
+  /// This preprocessing assings the order for variables for BDD construction.
+  void Run() noexcept override;
 };
 
 }  // namespace scram

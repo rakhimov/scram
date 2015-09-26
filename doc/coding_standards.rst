@@ -2,6 +2,10 @@
 Coding Style and Quality Assurance
 ##################################
 
+************
+Code Quality
+************
+
 Coding Styles
 =============
 
@@ -29,6 +33,29 @@ Deviations from the GCSG
 - Prefer streams to ``printf-like`` routines
 - Name mutator functions without ``set_`` prefix
 - Multiple inheritance is allowed
+
+
+Additional Coding Conventions
+-----------------------------
+
+Core C++ Code
+~~~~~~~~~~~~~
+
+- If function input parameters or return values
+  are pointers (raw or smart),
+  they are never null pointers
+  unless explicitly specified.
+  Null pointer based logic must be rare and explicit.
+
+- Declare a getter function before a setter function
+  for a corresponding member variable.
+
+- Declare getter and setter functions before other complex member functions.
+
+- Prefer "modern C++" (C++11).
+  Refer to `C++ Core Guidelines`_ for best practices.
+
+.. _C++ Core Guidelines: https://github.com/isocpp/CppCoreGuidelines
 
 
 Monitoring Code Quality
@@ -133,15 +160,17 @@ Version control and Versioning
 .. _Semantic Versioning: http://semver.org/
 
 
+*************
 Documentation
-=============
+*************
 
 Good documentation of the code and functionality is
 the requirement for maintainability and evolution of the project
 and its acceptance by users.
 
 The project adheres to the Documentation Driven Development model (`DDD talk by Corey Oordt`_),
-following the best practices of `Agile Documentation`_ as well.
+following the best practices of `Agile Documentation`_,
+Google Documentation Guide Philosophy_ and `Best Practices`_.
 
 The documentation for the project is maintained in the reStructuredText_ format,
 and the final representations are dynamically generated with Sphinx_
@@ -159,4 +188,57 @@ for maintainability and version control.
 .. _reStructuredText: http://docutils.sourceforge.net/rst.html
 .. _DDD talk by Corey Oordt: http://pyvideo.org/video/441/pycon-2011--documentation-driven-development
 .. _Agile Documentation: http://www.agilemodeling.com/essays/agileDocumentationBestPractices.htm
+.. _Philosophy: https://github.com/google/styleguide/blob/gh-pages/docguide/best_practices.md
+.. _Best Practices: https://github.com/google/styleguide/blob/gh-pages/docguide/best_practices.md
 .. _Semantic Linefeeds: http://rhodesmill.org/brandon/2012/one-sentence-per-line/
+
+
+Conventions in Documentation "Source Text"
+==========================================
+
+General
+-------
+
+- Prefer :ref:`shorthand_format` for the Boolean formula documentation.
+  This format uses the C-style bitwise logical operators for equations.
+
+
+reST Documentation Style
+------------------------
+
+- Semantic Linefeeds
+- Two blank lines between sections with bodies
+- One blank line after a header before its body
+- Title '#' overlined and underlined
+- Chapter '*' overlined and underlined
+- Section underlining and order '=', '-', '~', '^', '+'
+- Point nesting and order '-', '*', '+'
+- 4-space indentation
+- 100 character line limit
+  (except for links and paths)
+- No trailing whitespace characters
+- No tabs (spaces only)
+- No excessive blank lines at the end of files
+
+
+Core Code Documentation Style
+-----------------------------
+
+- Semantic Linefeeds
+- Doxygen comments with '///' and '///<'
+- Comment ordering: description->param->returns->throws->note->warning->todo
+
+    * Leave one Doxygen blank line between sections
+
+- Always specify input and output parameters with @pram[in,out]
+- In-code TODOs with Doxygen '/// @todo'
+  so that Doxygen picks them up.
+
+
+GUI Code Documentation Style
+----------------------------
+
+- Semantic Linefeeds
+- Leverage Qt Creator for auto-documentation
+- Doxygen with C-style comments (default in Qt Creator)
+- The same organization of Doxygen sections as in the core code.

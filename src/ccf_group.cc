@@ -47,16 +47,15 @@ void CcfGroup::AddMember(const BasicEventPtr& basic_event) {
     throw DuplicateArgumentError("Duplicate member " + basic_event->name() +
                                  " in " + name_ + " CCF group.");
   }
-  members_.insert(std::make_pair(name, basic_event));
+  members_.emplace(name, basic_event);
 }
 
 void CcfGroup::AddDistribution(const ExpressionPtr& distr) {
   assert(!distribution_);
   distribution_ = distr;
   // Define probabilities of all basic events.
-  std::map<std::string, BasicEventPtr>::iterator it;
-  for (it = members_.begin(); it != members_.end(); ++it) {
-    it->second->expression(distribution_);
+  for (const std::pair<std::string, BasicEventPtr>& mem : members_) {
+    mem.second->expression(distribution_);
   }
 }
 
@@ -68,7 +67,7 @@ void CcfGroup::AddFactor(const ExpressionPtr& factor, int level) {
         << factors_.size() + 1 << ". Instead was given " << level;
     throw ValidationError(msg.str());
   }
-  factors_.push_back(std::make_pair(level, factor));
+  factors_.emplace_back(level, factor);
 }
 
 void CcfGroup::ValidateDistribution() {
@@ -87,9 +86,8 @@ void CcfGroup::Validate() {
     throw ValidationError("The level of factors for " + name_ + " CCF group" +
                           " cannot be more than # of members.");
   }
-  std::vector<std::pair<int, ExpressionPtr> >::iterator it;
-  for (it = factors_.begin(); it != factors_.end(); ++it) {
-    if (it->second->Max() > 1 || it->second->Min() < 0) {
+  for (const std::pair<int, ExpressionPtr>& f : factors_) {
+    if (f.second->Max() > 1 || f.second->Min() < 0) {
       throw ValidationError("Factors for " + name_ + " CCF group" +
                             " have illegal values.");
     }
@@ -99,14 +97,13 @@ void CcfGroup::Validate() {
 void CcfGroup::ApplyModel() {
   // Construct replacement gates for member basic events.
   std::map<std::string, GatePtr> gates;
-  std::map<std::string, BasicEventPtr>::const_iterator it_m;
-  for (it_m = members_.begin(); it_m != members_.end(); ++it_m) {
-    BasicEventPtr member = it_m->second;
+  for (const std::pair<std::string, BasicEventPtr>& mem : members_) {
+    BasicEventPtr member = mem.second;
     GatePtr new_gate(
         new Gate(member->name(), member->base_path(), member->is_public()));
     assert(member->id() == new_gate->id());
     new_gate->formula(FormulaPtr(new Formula("or")));
-    gates.insert(std::make_pair(it_m->first, new_gate));
+    gates.emplace(mem.first, new_gate);
     member->ccf_gate(new_gate);
   }
 
@@ -116,20 +113,18 @@ void CcfGroup::ApplyModel() {
   this->CalculateProb(max_level, &probabilities);
 
   // Mapping of new basic events and their parents.
-  std::map<BasicEventPtr, std::set<std::string> > new_events;
+  std::map<BasicEventPtr, std::set<std::string>> new_events;
   this->ConstructCcfBasicEvents(max_level, &new_events);
 
   assert(!new_events.empty());
-  std::map<BasicEventPtr, std::set<std::string> >::iterator it;
-  for (it = new_events.begin(); it != new_events.end(); ++it) {
-    int level = it->second.size();
+  for (const auto& mem : new_events) {
+    int level = mem.second.size();
     ExpressionPtr prob = probabilities.find(level)->second;
-    BasicEventPtr new_event = it->first;
+    BasicEventPtr new_event = mem.first;
     new_event->expression(prob);
     // Add this basic event to the parent gates.
-    std::set<std::string>::iterator it_l;
-    for (it_l = it->second.begin(); it_l != it->second.end(); ++it_l) {
-      gates.find(*it_l)->second->formula()->AddArgument(new_event);
+    for (const std::string& parent : mem.second) {
+      gates.at(parent)->formula()->AddArgument(new_event);
     }
   }
 }
@@ -137,44 +132,36 @@ void CcfGroup::ApplyModel() {
 void CcfGroup::ConstructCcfBasicEvents(
     int max_level,
     std::map<BasicEventPtr, std::set<std::string> >* new_events) {
-  typedef std::shared_ptr<CcfEvent> CcfEventPtr;
-
   assert(max_level > 1);
   assert(members_.size() > 1);
   assert(max_level <= members_.size());
   assert(new_events->empty());
 
-  std::set<std::set<std::string> > combinations;
-  std::set<std::string> comb;  // One combination.
-  combinations.insert(comb);  // Empty set is needed for iteration.
-
+  std::set<std::set<std::string>> combinations = {{}};
   for (int i = 0; i < max_level; ++i) {
-    std::set<std::set<std::string> > next_level;
-    std::set<std::set<std::string> >::iterator it;
-    for (it = combinations.begin(); it != combinations.end(); ++it) {
-      std::map<std::string, BasicEventPtr>::const_iterator it_m;
-      for (it_m = members_.begin(); it_m != members_.end(); ++it_m) {
-        if (!it->count(it_m->first)) {
-          std::set<std::string> comb(*it);
-          comb.insert(it_m->first);
+    std::set<std::set<std::string>> next_level;
+    for (const std::set<std::string>& combination : combinations) {
+      for (const std::pair<std::string, BasicEventPtr>& mem : members_) {
+        if (!combination.count(mem.first)) {
+          std::set<std::string> comb(combination);
+          comb.insert(mem.first);
           next_level.insert(comb);
         }
       }
     }
-    for (it = next_level.begin(); it != next_level.end(); ++it) {
+    for (const std::set<std::string>& combination : next_level) {
       std::string name = "[";
       std::vector<std::string> names;
-      std::set<std::string>::const_iterator it_s;
-      for (it_s = it->begin(); it_s != it->end();) {
-        std::string member_name = members_.find(*it_s)->second->name();
+      for (auto it_s = combination.begin(); it_s != combination.end();) {
+        std::string member_name = members_.at(*it_s)->name();
         name += member_name;
         names.push_back(member_name);
         ++it_s;
-        if (it_s != it->end()) name += " ";
+        if (it_s != combination.end()) name += " ";
       }
       name += "]";
-      CcfEventPtr new_basic_event(new CcfEvent(name, this, names));
-      new_events->insert(std::make_pair(new_basic_event, *it));
+      new_events->emplace(std::make_shared<CcfEvent>(name, this, names),
+                          combination);
     }
     combinations = next_level;
   }
@@ -190,7 +177,7 @@ void BetaFactorModel::AddFactor(const ExpressionPtr& factor, int level) {
                           " must have the level matching the number of" +
                           " its members.");
   }
-  CcfGroup::factors_.push_back(std::make_pair(level, factor));
+  CcfGroup::factors_.emplace_back(level, factor);
 }
 
 void BetaFactorModel::ConstructCcfBasicEvents(
@@ -198,13 +185,12 @@ void BetaFactorModel::ConstructCcfBasicEvents(
     std::map<BasicEventPtr, std::set<std::string> >* new_events) {
   // This function is not optimized or efficient for beta-factor models.
   assert(CcfGroup::factors_.size() == 1);
-  std::map<BasicEventPtr, std::set<std::string> > all_events;
+  std::map<BasicEventPtr, std::set<std::string>> all_events;
   CcfGroup::ConstructCcfBasicEvents(max_level, &all_events);  // Standard case.
 
-  std::map<BasicEventPtr, std::set<std::string> >::iterator it;
-  for (it = all_events.begin(); it != all_events.end(); ++it) {
-    int level = it->second.size();  // Filter out only relevant levels.
-    if (level == 1 || level == max_level) new_events->insert(*it);
+  for (const auto& event : all_events) {
+    int level = event.second.size();  // Filter out only relevant levels.
+    if (level == 1 || level == max_level) new_events->insert(event);
   }
 }
 
@@ -212,22 +198,16 @@ void BetaFactorModel::CalculateProb(
     int max_level,
     std::map<int, ExpressionPtr>* probabilities) {
   assert(probabilities->empty());
-  std::vector<ExpressionPtr> args;  // For expression arguments.
   ExpressionPtr one(new ConstantExpression(1.0));
-  args.push_back(one);
   ExpressionPtr beta = CcfGroup::factors_.begin()->second;
-  args.push_back(beta);
-  ExpressionPtr indep_factor(new Sub(args));  // (1 - beta)
-  args.clear();
-  args.push_back(indep_factor);
-  args.push_back(CcfGroup::distribution_);  // (1 - beta) * Q
-  probabilities->insert(std::make_pair(1, ExpressionPtr(new Mul(args))));
+  ExpressionPtr indep_factor(new Sub({one, beta}));  // (1 - beta)
+  probabilities->emplace(  // (1 - beta) * Q
+      1,
+      ExpressionPtr(new Mul({indep_factor, CcfGroup::distribution_})));
 
-  args.clear();
-  args.push_back(beta);
-  args.push_back(CcfGroup::distribution_);  // beta * Q
-  probabilities->insert(std::make_pair(max_level,
-                                       ExpressionPtr(new Mul(args))));
+  probabilities->emplace(  // beta * Q
+      max_level,
+      ExpressionPtr(new Mul({beta, CcfGroup::distribution_})));
 }
 
 void MglModel::AddFactor(const ExpressionPtr& factor, int level) {
@@ -238,38 +218,31 @@ void MglModel::AddFactor(const ExpressionPtr& factor, int level) {
         << factors_.size() + 2 << ". Instead was given " << level;
     throw ValidationError(msg.str());
   }
-  CcfGroup::factors_.push_back(std::make_pair(level, factor));
+  CcfGroup::factors_.emplace_back(level, factor);
 }
 
 void MglModel::CalculateProb(int max_level,
                              std::map<int, ExpressionPtr>* probabilities) {
   assert(factors_.size() == max_level - 1);
 
+  ExpressionPtr one(new ConstantExpression(1.0));
+  int num_members = members_.size();
   for (int i = 0; i < max_level; ++i) {
-    int num_members = members_.size();
     // (n - 1) choose (k - 1) element in the equation.
     int mult = CcfGroup::Factorial(num_members - 1) /
                CcfGroup::Factorial(num_members - i - 1) /
                CcfGroup::Factorial(i);
 
-    ExpressionPtr k(new ConstantExpression(1.0 / mult));
-
     std::vector<ExpressionPtr> args;
-    args.push_back(k);
+    args.push_back(ExpressionPtr(new ConstantExpression(1.0 / mult)));
     for (int j = 0; j < i; ++j) {
       args.push_back(factors_[j].second);
     }
     if (i < max_level - 1) {
-      ExpressionPtr one(new ConstantExpression(1.0));
-      std::vector<ExpressionPtr> sub_args;
-      sub_args.push_back(one);
-      sub_args.push_back(factors_[i].second);
-      ExpressionPtr last_factor(new Sub(sub_args));
-      args.push_back(last_factor);
+      args.push_back(ExpressionPtr(new Sub({one, factors_[i].second})));
     }
-    args.push_back(distribution_);
-    ExpressionPtr prob(new Mul(args));
-    probabilities->insert(std::make_pair(i + 1, prob));
+    args.push_back(CcfGroup::distribution_);
+    probabilities->emplace(i + 1, ExpressionPtr(new Mul(args)));
   }
   assert(probabilities->size() == max_level);
 }
@@ -280,31 +253,22 @@ void AlphaFactorModel::CalculateProb(
   assert(probabilities->empty());
   assert(factors_.size() == max_level);
   std::vector<ExpressionPtr> sum_args;
-  std::vector<std::pair<int, ExpressionPtr> >::iterator it_f;
-  for (it_f = factors_.begin(); it_f != factors_.end(); ++it_f) {
-    sum_args.push_back(it_f->second);
+  for (const std::pair<int, ExpressionPtr>& factor : CcfGroup::factors_) {
+    sum_args.push_back(factor.second);
   }
   ExpressionPtr sum(new Add(sum_args));
+  int num_members = members_.size();
 
   for (int i = 0; i < max_level; ++i) {
-    int num_members = members_.size();
     // (n - 1) choose (k - 1) element in the equation.
     int mult = CcfGroup::Factorial(num_members - 1) /
                CcfGroup::Factorial(num_members - i - 1) /
                CcfGroup::Factorial(i);
 
     ExpressionPtr k(new ConstantExpression(1.0 / mult));
-
-    std::vector<ExpressionPtr> args;
-    args.push_back(k);
-    std::vector<ExpressionPtr> div_args;
-    div_args.push_back(factors_[i].second);
-    div_args.push_back(sum);
-    ExpressionPtr fraction(new Div(div_args));
-    args.push_back(fraction);
-    args.push_back(distribution_);
-    ExpressionPtr prob(new Mul(args));
-    probabilities->insert(std::make_pair(i + 1, prob));
+    ExpressionPtr fraction(new Div({CcfGroup::factors_[i].second, sum}));
+    ExpressionPtr prob(new Mul({k, fraction, CcfGroup::distribution_}));
+    probabilities->emplace(i + 1, prob);
   }
   assert(probabilities->size() == max_level);
 }
@@ -316,11 +280,10 @@ void PhiFactorModel::Validate() {
   double sum_max = 0;
   /// @todo How to assure that the sum will be 1 in sampling.
   ///       Is it allowed to have a factor sampling for Uncertainty analysis.
-  std::vector<std::pair<int, ExpressionPtr> >::iterator it;
-  for (it = CcfGroup::factors_.begin(); it != CcfGroup::factors_.end(); ++it) {
-    sum += it->second->Mean();
-    sum_min += it->second->Min();
-    sum_max += it->second->Max();
+  for (const std::pair<int, ExpressionPtr>& factor : CcfGroup::factors_) {
+    sum += factor.second->Mean();
+    sum_min += factor.second->Min();
+    sum_max += factor.second->Max();
   }
   /// @todo Problems with floating point number comparison.
   double epsilon = 1e-4;
@@ -337,13 +300,9 @@ void PhiFactorModel::CalculateProb(
     int max_level,
     std::map<int, ExpressionPtr>* probabilities) {
   assert(probabilities->empty());
-  std::vector<std::pair<int, ExpressionPtr> >::iterator it_f;
-  for (it_f = factors_.begin(); it_f != factors_.end(); ++it_f) {
-    std::vector<ExpressionPtr> args;
-    args.push_back(it_f->second);
-    args.push_back(distribution_);
-    ExpressionPtr prob(new Mul(args));
-    probabilities->insert(std::make_pair(it_f->first, prob));
+  for (const std::pair<int, ExpressionPtr>& factor : CcfGroup::factors_) {
+    ExpressionPtr prob(new Mul({factor.second, CcfGroup::distribution_}));
+    probabilities->emplace(factor.first, prob);
   }
   assert(probabilities->size() == max_level);
 }

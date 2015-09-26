@@ -82,7 +82,7 @@ Preprocessor::Preprocessor(BooleanGraph* graph) noexcept
     : graph_(graph),
       root_sign_(1) {}
 
-void Preprocessor::ProcessFaultTree() noexcept {
+void Preprocessor::Run() noexcept {
   assert(graph_->root());
   assert(graph_->root()->parents().empty());
   assert(!graph_->root()->mark());
@@ -99,12 +99,11 @@ void Preprocessor::ProcessFaultTree() noexcept {
   LOG(DEBUG2) << "Finished Preprocessing Phase II in " << DUR(time_2);
   if (Preprocessor::CheckRootGate()) return;
 
-  if (!graph_->normal_) {
+  if (!graph_->normal()) {
     CLOCK(time_3);
     LOG(DEBUG2) << "Preprocessing Phase III...";
     Preprocessor::PhaseThree();
     LOG(DEBUG2) << "Finished Preprocessing Phase III in " << DUR(time_3);
-    graph_->normal_ = true;
     if (Preprocessor::CheckRootGate()) return;
   }
 
@@ -207,6 +206,7 @@ void Preprocessor::PhaseThree() noexcept {
   LOG(DEBUG3) << "Full normalization of gates...";
   assert(root_sign_ == 1);
   Preprocessor::NormalizeGates(true);
+  graph_->normal_ = true;
   LOG(DEBUG3) << "Finished the full normalization gates!";
 
   if (Preprocessor::CheckRootGate()) return;
@@ -472,6 +472,7 @@ void Preprocessor::ClearNullGates() noexcept {
 void Preprocessor::NormalizeGates(bool full) noexcept {
   assert(const_gates_.empty());
   assert(null_gates_.empty());
+  if (full) Preprocessor::AssignOrder();  // K/N gates need order.
   // Handle special case for the root gate.
   IGatePtr root_gate = graph_->root();
   Operator type = root_gate->type();
@@ -595,11 +596,14 @@ void Preprocessor::NormalizeAtleastGate(const IGatePtr& gate) noexcept {
     return;
   }
 
-  const std::set<int>& args = gate->args();
-  std::set<int>::const_iterator it = args.begin();
-
+  auto it = std::max_element(gate->args().cbegin(), gate->args().cend(),
+                             [&gate](int lhs, int rhs) {
+                               return gate->GetArg(lhs)->opti_value() <
+                                      gate->GetArg(rhs)->opti_value();
+                             });
+  assert(it != gate->args().cend());
   IGatePtr first_arg(new IGate(kAndGate));
-  gate->ShareArg(*it, first_arg);
+  gate->TransferArg(*it, first_arg);
 
   IGatePtr grand_arg(new IGate(kAtleastGate));
   first_arg->AddArg(grand_arg->index(), grand_arg);
@@ -608,7 +612,7 @@ void Preprocessor::NormalizeAtleastGate(const IGatePtr& gate) noexcept {
   IGatePtr second_arg(new IGate(kAtleastGate));
   second_arg->vote_number(vote_number);
 
-  for (++it; it != args.end(); ++it) {
+  for (it = gate->args().cbegin(); it != gate->args().cend(); ++it) {
     gate->ShareArg(*it, grand_arg);
     gate->ShareArg(*it, second_arg);
   }
@@ -1611,10 +1615,9 @@ bool Preprocessor::FilterDistributiveArgs(
   for (int index : to_erase) {
     gate->EraseArg(index);
     candidates->erase(std::find_if(candidates->begin(), candidates->end(),
-                                   [&](const IGatePtr& candidate) {
+                                   [&index](const IGatePtr& candidate) {
                                      return candidate->index() == index;
-                                   }),
-                      candidates->end());
+                                   }));
   }
   // Sort in descending size of gate arguments.
   std::sort(candidates->begin(), candidates->end(),
@@ -1635,7 +1638,7 @@ bool Preprocessor::FilterDistributiveArgs(
     }
     candidates->erase(
         std::remove_if(candidates->begin(), candidates->end(),
-                       [&](const IGatePtr& super) {
+                       [&sub](const IGatePtr& super) {
                          return std::includes(super->args().begin(),
                                               super->args().end(),
                                               sub->args().begin(),
@@ -2096,7 +2099,8 @@ bool Preprocessor::ProcessDecompositionCommonNode(
   // Determine if the decomposition setups are possible.
   auto it =
       std::find_if(node->parents().begin(), node->parents().end(),
-                   [&](const std::pair<int, IGateWeakPtr>& member) {
+                   [&IsDecompositionType]
+                   (const std::pair<int, IGateWeakPtr>& member) {
                      return IsDecompositionType(member.second.lock()->type());
                    });
   if (it == node->parents().end()) return false;  // No setups possible.
@@ -2264,6 +2268,52 @@ void Preprocessor::ReplaceGate(const IGatePtr& gate,
       null_gates_.push_back(parent);
     }
   }
+}
+
+void Preprocessor::AssignOrder() noexcept {
+  graph_->ClearOptiValues();
+  Preprocessor::TopologicalOrder(graph_->root(), 0);
+}
+
+int Preprocessor::TopologicalOrder(const IGatePtr& root, int order) noexcept {
+  if (root->opti_value()) return order;
+  for (const std::pair<int, IGatePtr>& arg : root->gate_args()) {
+    order = Preprocessor::TopologicalOrder(arg.second, order);
+  }
+  for (const std::pair<int, VariablePtr>& arg : root->variable_args()) {
+    if (!arg.second->opti_value()) arg.second->opti_value(++order);
+  }
+  assert(root->constant_args().empty());
+  root->opti_value(++order);
+  return order;
+}
+
+void PreprocessorBdd::Run() noexcept {
+  assert(graph_->root());
+  assert(graph_->root()->parents().empty());
+  assert(!graph_->root()->mark());
+
+  CLOCK(time_1);
+  LOG(DEBUG2) << "Preprocessing Phase I...";
+  Preprocessor::PhaseOne();
+  LOG(DEBUG2) << "Finished Preprocessing Phase I in " << DUR(time_1);
+  if (Preprocessor::CheckRootGate()) return;
+
+  CLOCK(time_2);
+  LOG(DEBUG2) << "Preprocessing Phase II...";
+  Preprocessor::PhaseTwo();
+  LOG(DEBUG2) << "Finished Preprocessing Phase II in " << DUR(time_2);
+  if (Preprocessor::CheckRootGate()) return;
+
+  /// @todo Normalization may require the same ordering as for BDD.
+  if (!graph_->normal()) {
+    CLOCK(time_3);
+    LOG(DEBUG2) << "Preprocessing Phase III...";
+    Preprocessor::PhaseThree();
+    LOG(DEBUG2) << "Finished Preprocessing Phase III in " << DUR(time_3);
+    if (Preprocessor::CheckRootGate()) return;
+  }
+  Preprocessor::AssignOrder();
 }
 
 }  // namespace scram

@@ -33,8 +33,9 @@ namespace scram {
 
 FaultTreeAnalysis::FaultTreeAnalysis(const GatePtr& root,
                                      const Settings& settings)
-    : top_event_(root),
-      kSettings_(settings),
+    : Analysis::Analysis(settings),
+      top_event_(root),
+      sum_mcs_probability_(0),
       warnings_(""),
       max_order_(0),
       analysis_time_(0) {
@@ -53,7 +54,7 @@ void FaultTreeAnalysis::Analyze() noexcept {
   CLOCK(prep_time);  // Overall preprocessing time.
   LOG(DEBUG2) << "Preprocessing...";
   Preprocessor* preprocessor = new Preprocessor(indexed_tree);
-  preprocessor->ProcessFaultTree();
+  preprocessor->Run();
   delete preprocessor;  // No exceptions are expected.
   LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
 
@@ -109,19 +110,27 @@ void FaultTreeAnalysis::CleanMarks() noexcept {
 
 void FaultTreeAnalysis::SetsToString(const std::vector<Set>& imcs,
                                      const BooleanGraph* ft) noexcept {
+  assert(!sum_mcs_probability_);
   for (const Set& min_cut_set : imcs) {
     if (min_cut_set.size() > max_order_) max_order_ = min_cut_set.size();
-    std::set<std::string> pr_set;
+    CutSet pr_set;
+    double prob = 1;  // 1 is for multiplication and Unity set.
     for (int index : min_cut_set) {
       BasicEventPtr basic_event = ft->GetBasicEvent(std::abs(index));
       if (index < 0) {  // NOT logic.
+        if (kSettings_.probability_analysis()) prob *= 1 - basic_event->p();
         pr_set.insert("not " + basic_event->id());
       } else {
+        if (kSettings_.probability_analysis()) prob *= basic_event->p();
         pr_set.insert(basic_event->id());
       }
       mcs_basic_events_.emplace(basic_event->id(), basic_event);
     }
     min_cut_sets_.insert(pr_set);
+    if (kSettings_.probability_analysis()) {
+      mcs_probability_.emplace(pr_set, prob);
+      sum_mcs_probability_ += prob;
+    }
   }
 }
 

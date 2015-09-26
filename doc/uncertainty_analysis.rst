@@ -10,6 +10,10 @@ to calculate the uncertainty propagation in probabilities.
 For Monte Carlo simulations,
 SCRAM uses `MT 19937`_ Mersenne Twister Pseudo-random number generator.
 Mersenne Twister PRNG is well tested and well suited for Monte Carlo simulations.
+
+Given the same parameters for SCRAM simulations,
+the same results are expected across different platforms and PRNG implementations
+thanks to the standard specifications for MT 19937 in C++.
 The seed of the PRNG is usually the system time at the runtime,
 but this parameter can be fixed by a user,
 for example, to test the analysis tool.
@@ -23,7 +27,6 @@ Monte Carlo (MC) Simulations
 #. Initialize events with distributions.
 #. If uncertainty analysis is not requested,
    perform the standard analysis with average probabilities.
-#. Generate an equation for MC simulations from minimal cut sets.
 #. Set the seed for the PRNG for entire analysis. (Can be set by the user)
 #. Determine the number of samples. (Can be set by the user)
 #. Sample probability distributions and calculate the total probability.

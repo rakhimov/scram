@@ -23,91 +23,52 @@
 
 #include <boost/algorithm/string.hpp>
 
+#include "boolean_graph.h"
 #include "error.h"
 #include "logger.h"
+#include "preprocessor.h"
 
 namespace scram {
 
-ProbabilityAnalysis::ProbabilityAnalysis(const Settings& settings)
-    : kSettings_(settings),
+ProbabilityAnalysis::ProbabilityAnalysis(const GatePtr& root,
+                                         const Settings& settings)
+    : Analysis::Analysis(settings),
+      top_event_(root),
       warnings_(""),
       p_total_(0),
-      p_rare_(0),
-      coherent_(true),
+      current_mark_(false),
       p_time_(0),
       imp_time_(0) {}
 
-void ProbabilityAnalysis::UpdateDatabase(
-    const std::unordered_map<std::string, BasicEventPtr>& basic_events) {
-  basic_events_ = basic_events;
-  ProbabilityAnalysis::AssignIndices();
-}
-
 void ProbabilityAnalysis::Analyze(
     const std::set< std::set<std::string> >& min_cut_sets) noexcept {
-  min_cut_sets_ = min_cut_sets;
-
   // Special case of unity with empty sets.
-  if (min_cut_sets_.size() == 1 && min_cut_sets_.begin()->empty()) {
+  if (min_cut_sets.size() == 1 && min_cut_sets.begin()->empty()) {
     warnings_ += " Probability is for UNITY case.";
     p_total_ = 1;
-    p_rare_ = 1;
-    prob_of_min_sets_.insert(std::make_pair(*min_cut_sets_.begin(), 1));
     return;
   }
+  ProbabilityAnalysis::AssignIndices();
 
-  ProbabilityAnalysis::IndexMcs(min_cut_sets_);
-
-  using boost::container::flat_set;
-  // Minimal cut sets with higher than cut-off probability.
-  std::set< flat_set<int> > mcs_for_prob;
-  // Iterate minimal cut sets and find probabilities for each set.
-  std::vector< flat_set<int> >::const_iterator it_min;
-  int i = 0;  // Indices for minimal cut sets in the vector.
-  for (it_min = imcs_.begin(); it_min != imcs_.end(); ++i, ++it_min) {
-    // Calculate a probability of a set with AND relationship.
-    double p_sub_set = ProbabilityAnalysis::ProbAnd(*it_min);
-    // Choose cut sets with high enough probabilities.
-    if (p_sub_set > kSettings_.cut_off()) {
-      flat_set<int> mcs(*it_min);
-      mcs_for_prob.insert(mcs_for_prob.end(), mcs);
-    }
-
-    // Update a container with minimal cut sets and probabilities.
-    prob_of_min_sets_.insert(std::make_pair(imcs_to_smcs_[i], p_sub_set));
-    p_rare_ += p_sub_set;
-  }
+  ProbabilityAnalysis::IndexMcs(min_cut_sets);
 
   CLOCK(p_time);
   LOG(DEBUG3) << "Calculating probabilities...";
-  LOG(DEBUG3) << "Cut sets above cut-off level: " << mcs_for_prob.size();
   // Get the total probability.
   if (kSettings_.approx() == "mcub") {
-    if (!coherent_) {
-      warnings_ += " The cut sets are not coherent and contain negation."
-                   " The MCUB approximation may not hold.";
-    }
+    /// @todo Detect the conditions.
+    warnings_ += " The MCUB approximation may not hold"
+                 " if the fault tree is not coherent"
+                 " or there are many common events.";
     p_total_ = ProbabilityAnalysis::ProbMcub(imcs_);
 
+  } else if (kSettings_.approx() == "rare-event") {
+    /// @todo Check if a probability of any cut set exceeds 0.1.
+    warnings_ += " The rare event approximation may be inaccurate for analysis"
+                 " if minimal cut sets' probabilities exceed 0.1.";
+    p_total_ = ProbabilityAnalysis::ProbRareEvent(imcs_);
   } else {
-    int num_sums = kSettings_.num_sums();
-    // Check if the rare event approximation is requested.
-    if (kSettings_.approx() == "rare-event") {
-      std::map<std::set<std::string>, double>::iterator it_pr;
-      for (it_pr = prob_of_min_sets_.begin(); it_pr != prob_of_min_sets_.end();
-           ++it_pr) {
-        // Check if a probability of a set does not exceed 0.1,
-        // which is required for the rare event approximation to hold.
-        if (it_pr->second > 0.1) {
-          warnings_ += " The rare event approximation may be inaccurate for"
-                       " this analysis because one of minimal cut sets'"
-                       " probability exceeds the 0.1 threshold requirement.";
-          break;
-        }
-      }
-      num_sums = 1;  // Only first series is used for the rare event case.
-    }
-    ProbabilityAnalysis::ProbOr(1, num_sums, &mcs_for_prob);
+    assert(top_event_);
     p_total_ = ProbabilityAnalysis::CalculateTotalProbability();
   }
   LOG(DEBUG3) << "Finished probability calculations in " << DUR(p_time);
@@ -122,20 +83,35 @@ void ProbabilityAnalysis::Analyze(
 }
 
 void ProbabilityAnalysis::AssignIndices() noexcept {
-  // Cleanup the previous information.
-  int_to_basic_.clear();
-  basic_to_int_.clear();
-  iprobs_.clear();
+  assert(top_event_);
+  CLOCK(ft_creation);
+  BooleanGraph* graph = new BooleanGraph(top_event_, kSettings_.ccf_analysis());
+  LOG(DEBUG2) << "Boolean graph is created in " << DUR(ft_creation);
+
+  CLOCK(prep_time);  // Overall preprocessing time.
+  LOG(DEBUG2) << "Preprocessing...";
+  Preprocessor* preprocessor = new PreprocessorBdd(graph);
+  preprocessor->Run();
+  delete preprocessor;  // No exceptions are expected.
+  LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
+
+  CLOCK(bdd_time);  // BDD based calculation time.
+  LOG(DEBUG2) << "Creating BDD for ProbabilityAnalysis...";
+  bdd_graph_ = std::unique_ptr<Bdd>(new Bdd(graph));
+  ordered_basic_events_ = graph->basic_events();
+  delete graph;  /// @todo This is dangerous. BDD has invalid graph pointer.
+  LOG(DEBUG2) << "BDD is created in " << DUR(bdd_time);
+
+  // Dummy basic event at index 0.
+  index_to_basic_.push_back(std::make_shared<BasicEvent>("dummy"));
+  var_probs_.push_back(-1);
   // Indexation of events.
   int j = 1;
-  std::unordered_map<std::string, BasicEventPtr>::iterator itp;
-  // Dummy basic event at index 0.
-  int_to_basic_.push_back(BasicEventPtr(new BasicEvent("dummy")));
-  iprobs_.push_back(0);
-  for (itp = basic_events_.begin(); itp != basic_events_.end(); ++itp) {
-    int_to_basic_.push_back(itp->second);
-    basic_to_int_.insert(std::make_pair(itp->second->id(), j));
-    iprobs_.push_back(itp->second->p());
+  for (const BasicEventPtr& event : ordered_basic_events_) {
+    basic_events_.emplace(event->id(), event);  /// @todo Remove.
+    index_to_basic_.push_back(event);
+    id_to_index_.emplace(event->id(), j);
+    var_probs_.push_back(event->p());
     ++j;
   }
 }
@@ -143,80 +119,49 @@ void ProbabilityAnalysis::AssignIndices() noexcept {
 void ProbabilityAnalysis::IndexMcs(
     const std::set<std::set<std::string> >& min_cut_sets) noexcept {
   // Update databases of minimal cut sets with indexed events.
-  std::set< std::set<std::string> >::const_iterator it;
-  for (it = min_cut_sets.begin(); it != min_cut_sets.end(); ++it) {
-    using boost::container::flat_set;
-    flat_set<int> mcs_with_indices;  // Minimal cut set with indices.
-    std::set<std::string>::const_iterator it_set;
-    for (it_set = it->begin(); it_set != it->end(); ++it_set) {
+  for (const auto& cut_set : min_cut_sets) {
+    FlatSet mcs_with_indices;  // Minimal cut set with indices.
+    for (const auto& id : cut_set) {
       std::vector<std::string> names;
-      boost::split(names, *it_set, boost::is_any_of(" "),
-                   boost::token_compress_on);
+      boost::split(names, id, boost::is_any_of(" "), boost::token_compress_on);
       assert(names.size() >= 1);
       if (names[0] == "not") {
-        std::string comp_name = *it_set;
+        std::string comp_name = id;
         boost::replace_first(comp_name, "not ", "");
         // This must be a complement of an event.
-        assert(basic_to_int_.count(comp_name));
-
-        if (coherent_) coherent_ = false;  // Detected non-coherence.
+        assert(id_to_index_.count(comp_name));
 
         mcs_with_indices.insert(mcs_with_indices.begin(),
-                                -basic_to_int_.find(comp_name)->second);
-        mcs_basic_events_.insert(basic_to_int_.find(comp_name)->second);
+                                -id_to_index_.find(comp_name)->second);
+        mcs_basic_events_.insert(id_to_index_.find(comp_name)->second);
 
       } else {
-        assert(basic_to_int_.count(*it_set));
+        assert(id_to_index_.count(id));
         mcs_with_indices.insert(mcs_with_indices.end(),
-                                basic_to_int_.find(*it_set)->second);
-        mcs_basic_events_.insert(basic_to_int_.find(*it_set)->second);
+                                id_to_index_.find(id)->second);
+        mcs_basic_events_.insert(id_to_index_.find(id)->second);
       }
     }
     imcs_.push_back(mcs_with_indices);
-    imcs_to_smcs_.push_back(*it);
   }
 }
 
 double ProbabilityAnalysis::ProbMcub(
     const std::vector<FlatSet>& min_cut_sets) noexcept {
-  std::vector<FlatSet>::const_iterator it_min;
   double m = 1;
-  for (it_min = min_cut_sets.begin(); it_min != min_cut_sets.end(); ++it_min) {
-    // Calculate a probability of a set with AND relationship.
-    m *= 1 - ProbabilityAnalysis::ProbAnd(*it_min);
+  for (const auto& cut_set : min_cut_sets) {
+    m *= 1 - ProbabilityAnalysis::ProbAnd(cut_set);
   }
   return 1 - m;
 }
 
-void ProbabilityAnalysis::ProbOr(int sign, int num_sums,
-                                 std::set<FlatSet>* cut_sets) noexcept {
-  assert(sign != 0);
-  assert(num_sums >= 0);
-
-  // Recursive implementation.
-  if (cut_sets->empty()) return;
-
-  if (num_sums == 0) return;
-
-  // Put this element into the equation.
-  if (sign > 0) {
-    // This is a positive member.
-    pos_terms_.push_back(*cut_sets->begin());
-  } else {
-    // This must be a negative member.
-    neg_terms_.push_back(*cut_sets->begin());
+double ProbabilityAnalysis::ProbRareEvent(
+    const std::vector<FlatSet>& min_cut_sets) noexcept {
+  double sum = 0;
+  for (const auto& cut_set : min_cut_sets) {
+    sum += ProbabilityAnalysis::ProbAnd(cut_set);
   }
-
-  // Delete element from the original set.
-  cut_sets->erase(cut_sets->begin());
-
-  std::set<FlatSet> combo_sets;
-  ProbabilityAnalysis::CombineElAndSet(
-      (sign > 0) ? pos_terms_.back() : neg_terms_.back(),
-      *cut_sets, &combo_sets);
-
-  ProbabilityAnalysis::ProbOr(sign, num_sums, cut_sets);
-  ProbabilityAnalysis::ProbOr(-sign, num_sums - 1, &combo_sets);
+  return sum;
 }
 
 double ProbabilityAnalysis::ProbAnd(const FlatSet& cut_set) noexcept {
@@ -224,90 +169,83 @@ double ProbabilityAnalysis::ProbAnd(const FlatSet& cut_set) noexcept {
   double p_sub_set = 1;  // 1 is for multiplication.
   for (int member : cut_set) {
     if (member > 0) {
-      p_sub_set *= iprobs_[member];
+      p_sub_set *= var_probs_[member];
     } else {
-      p_sub_set *= 1 - iprobs_[std::abs(member)];  // Never zero.
+      p_sub_set *= 1 - var_probs_[std::abs(member)];  // Never zero.
     }
   }
   return p_sub_set;
 }
 
-void ProbabilityAnalysis::CombineElAndSet(
-    const FlatSet& el,
-    const std::set<FlatSet>& set,
-    std::set<FlatSet>* combo_set) noexcept {
-  std::set<FlatSet>::iterator it_set;
-  for (it_set = set.begin(); it_set != set.end(); ++it_set) {
-    bool include = true;  // Indicates that the resultant set is not null.
-    if (!coherent_) {
-      FlatSet::const_iterator it;
-      for (it = el.begin(); it != el.end(); ++it) {
-        if (it_set->count(-*it)) {
-          include = false;
-          break;  // A complement is found; the set is null.
-        }
-      }
-    }
-    if (include) {
-      FlatSet member_set(*it_set);
-      member_set.insert(el.begin(), el.end());
-      combo_set->insert(combo_set->end(), member_set);
-    }
-  }
+double ProbabilityAnalysis::CalculateTotalProbability() noexcept {
+  assert(top_event_);
+  CLOCK(calc_time);  // BDD based calculation time.
+  LOG(DEBUG2) << "Calculating probability with BDD...";
+  current_mark_ = !current_mark_;
+  double prob = ProbabilityAnalysis::CalculateProbability(bdd_graph_->root(),
+                                                          current_mark_);
+  if (bdd_graph_->complement_root()) prob = 1 - prob;
+  LOG(DEBUG2) << "Calculated probability " << prob << " in " << DUR(calc_time);
+  return prob;
 }
 
-double ProbabilityAnalysis::CalculateTotalProbability() noexcept {
-  double pos = 0;
-  double neg = 0;
-  std::vector<FlatSet>::iterator it_s;
-  for (it_s = pos_terms_.begin(); it_s != pos_terms_.end(); ++it_s) {
-    pos += ProbabilityAnalysis::ProbAnd(*it_s);
+double ProbabilityAnalysis::CalculateProbability(const VertexPtr& vertex,
+                                                 bool mark) noexcept {
+  if (vertex->terminal()) return 1;
+  ItePtr ite = Ite::Ptr(vertex);
+  if (ite->mark() == mark) return ite->prob();
+  ite->mark(mark);
+  double var_prob = 0;
+  if (ite->module()) {
+    const Bdd::Function& res = bdd_graph_->gates().find(ite->index())->second;
+    var_prob = ProbabilityAnalysis::CalculateProbability(res.vertex, mark);
+    if (res.complement) var_prob = 1 - var_prob;
+  } else {
+    var_prob = var_probs_[ite->index()];
   }
-  for (it_s = neg_terms_.begin(); it_s != neg_terms_.end(); ++it_s) {
-    neg += ProbabilityAnalysis::ProbAnd(*it_s);
-  }
-  return pos - neg;
+  double high = ProbabilityAnalysis::CalculateProbability(ite->high(), mark);
+  double low = ProbabilityAnalysis::CalculateProbability(ite->low(), mark);
+  if (ite->complement_edge()) low = 1 - low;
+  ite->prob(var_prob * high + (1 - var_prob) * low);
+  return ite->prob();
 }
 
 void ProbabilityAnalysis::PerformImportanceAnalysis() noexcept {
   // The main data for all the importance types is P(top/event) or
   // P(top/Not event).
-  std::set<int>::iterator it;
-  for (it = mcs_basic_events_.begin(); it != mcs_basic_events_.end(); ++it) {
+  for (int index : mcs_basic_events_) {
     // Calculate P(top/event)
-    iprobs_[*it] = 1;
+    var_probs_[index] = 1;
     double p_e = 0;
     if (kSettings_.approx() == "mcub") {
       p_e = ProbabilityAnalysis::ProbMcub(imcs_);
-    } else {  // For the rare event and default cases.
+    } else if (kSettings_.approx() == "rare-event") {
+      p_e = ProbabilityAnalysis::ProbRareEvent(imcs_);
+    } else {
       p_e = ProbabilityAnalysis::CalculateTotalProbability();
     }
 
     // Calculate P(top/Not event)
-    iprobs_[*it] = 0;
+    var_probs_[index] = 0;
     double p_not_e = 0;
     if (kSettings_.approx() == "mcub") {
       p_not_e = ProbabilityAnalysis::ProbMcub(imcs_);
-    } else {  // For the rare event and default cases.
+    } else if (kSettings_.approx() == "rare-event") {
+      p_not_e = ProbabilityAnalysis::ProbRareEvent(imcs_);
+    } else {
       p_not_e = ProbabilityAnalysis::CalculateTotalProbability();
     }
     // Restore the probability.
-    iprobs_[*it] = int_to_basic_[*it]->p();
+    var_probs_[index] = index_to_basic_[index]->p();
 
-    // Mapped vector for importance factors.
-    std::vector<double> imp;
-    // Fussel-Vesely Diagnosis importance factor.
-    imp.push_back(1 - p_not_e / p_total_);
-    // Birnbaum Marginal importance factor.
-    imp.push_back(p_e - p_not_e);
-    // Critical Importance factor.
-    imp.push_back(imp[1] * iprobs_[*it] / p_not_e);
-    // Risk Reduction Worth.
-    imp.push_back(p_total_ / p_not_e);
-    // Risk Achievement Worth.
-    imp.push_back(p_e / p_total_);
+    ImportanceFactors imp;
+    imp.dif = 1 - p_not_e / p_total_;  // Diagnosis importance factor.
+    imp.mif = p_e - p_not_e;  // Birnbaum Marginal importance factor.
+    imp.cif = imp.mif * var_probs_[index] / p_not_e;  // Critical factor.
+    imp.rrw = p_total_ / p_not_e;  // Risk Reduction Worth.
+    imp.raw = p_e / p_total_;  // Risk Achievement Worth.
 
-    importance_.insert(std::make_pair(int_to_basic_[*it]->id(), imp));
+    importance_.emplace(index_to_basic_[index]->id(), std::move(imp));
   }
 }
 

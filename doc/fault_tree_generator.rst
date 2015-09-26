@@ -19,7 +19,7 @@ General Description
 - Use of pseudo-random numbers to determine the structure of the tree.
 - The number of basic events is set by a user.
 - The seed of the pseudo-random number generator is fixed and set by a user.
-- Nodes in the fault tree are randomly chosen between a new or common nodes.
+- Nodes in the fault tree are randomly chosen between a new node or common nodes.
 - Names are assigned sequentially. B#, H#, CCF#, and G#.
 - Probabilities for basic events are generated randomly.
 - The fault tree is reproducible with the same parameters and the seed.
@@ -37,7 +37,7 @@ Script Arguments
 - The number of CCF (MGL only) groups.
 - The average number of arguments for gates.
 - Percentage of common-basic-event arguments per gate.
-  This events may show up in several places in the resulting fault tree.
+  These events may show up in several places in the resulting fault tree.
 - Percentage of common-gate arguments per gate.
   The acyclic property is ensured.
 - The average number of parents for common basic events.

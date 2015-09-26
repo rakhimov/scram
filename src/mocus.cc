@@ -275,7 +275,7 @@ void Mocus::CreateSimpleTree(
       simple_gate->AddChildGate(processed_gates->find(arg.first)->second);
     }
   }
-  typedef std::shared_ptr<Variable> VariablePtr;
+  using VariablePtr = std::shared_ptr<Variable>;
   for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
     simple_gate->InitiateWithBasic(arg.first);
   }

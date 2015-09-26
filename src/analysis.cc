@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2015 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,13 +15,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/// @file random.cc
-/// Implementation file of various RNGs.
+/// @file analysis.cc
+/// Implementation of common facilities for all analysis classes.
 
-#include "random.h"
+#include "analysis.h"
 
 namespace scram {
 
-std::mt19937 Random::rng_;
+Analysis::Analysis(const Settings& settings) : kSettings_(settings) {}
+
+Analysis::~Analysis() {}  ///< Empty body for pure virtual destructor.
 
 }  // namespace scram

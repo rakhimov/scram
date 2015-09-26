@@ -68,8 +68,6 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
         ("rare-event", "Use the rare event approximation")
         ("mcub", "Use the MCUB approximation")
         ("limit-order,l", po::value<int>(), "Upper limit for cut set order")
-        ("num-sums,s", po::value<int>(),
-         "Number of sums in probability equations")
         ("cut-off", po::value<double>(), "Cut-off probability for cut sets")
         ("mission-time", po::value<double>(), "System mission time in hours")
         ("num-trials", po::value<int>(),
@@ -159,7 +157,6 @@ void ConstructSettings(const po::variables_map& vm, scram::Settings* settings) {
   if (vm.count("seed")) settings->seed(vm["seed"].as<int>());
   if (vm.count("limit-order"))
     settings->limit_order(vm["limit-order"].as<int>());
-  if (vm.count("num-sums")) settings->num_sums(vm["num-sums"].as<int>());
   if (vm.count("cut-off")) settings->cut_off(vm["cut-off"].as<double>());
   if (vm.count("mission-time"))
     settings->mission_time(vm["mission-time"].as<double>());

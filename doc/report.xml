@@ -20,8 +20,6 @@
     <calculation-method name="Numerical Probability">
       <limits>
         <mission-time>8760</mission-time>
-        <cut-off>1e-08</cut-off>
-        <number-of-sums>7</number-of-sums>
       </limits>
     </calculation-method>
     <calculated-quantity name="Importance Analysis" definition="Quantitative analysis of contributions and importance of events."/>

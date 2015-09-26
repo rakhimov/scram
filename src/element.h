@@ -30,8 +30,6 @@ namespace scram {
 /// @struct Attribute
 /// This struct allows for any attribute.
 struct Attribute {
-  Attribute();
-
   std::string name;  ///< The name that identifies this attribute.
   std::string value;  ///< Value of this attributes.
   std::string type;  ///< Optional type of the attribute.

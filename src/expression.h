@@ -48,7 +48,7 @@ class Parameter;  // This is for cycle detection through expressions.
 /// after validation phases.
 class Expression {
  public:
-  typedef std::shared_ptr<Expression> ExpressionPtr;
+  using ExpressionPtr = std::shared_ptr<Expression>;
 
   /// Constructor for use by derived classes
   /// to register their arguments.
@@ -390,20 +390,21 @@ class WeibullExpression : public Expression {
   void Validate();
 
   inline double Mean() noexcept {
-    return 1 - std::exp(-std::pow((time_->Mean() - t0_->Mean()) /
-                                  alpha_->Mean(), beta_->Mean()));
+    return 1 -
+        std::exp(-std::pow((time_->Mean() - t0_->Mean()) / alpha_->Mean(),
+                           beta_->Mean()));
   }
 
   double Sample() noexcept;
 
   inline double Max() noexcept {
-    return 1 - std::exp(-std::pow((time_->Max() - t0_->Min()) /
-                                  alpha_->Min(), beta_->Max()));
+    return 1 - std::exp(-std::pow((time_->Max() - t0_->Min()) / alpha_->Min(),
+                                  beta_->Max()));
   }
 
   inline double Min() noexcept {
-    return 1 - std::exp(-std::pow((time_->Min() - t0_->Max()) /
-                                  alpha_->Max(), beta_->Min()));
+    return 1 - std::exp(-std::pow((time_->Min() - t0_->Max()) / alpha_->Max(),
+                                  beta_->Min()));
   }
 
  private:
@@ -523,8 +524,8 @@ class LogNormalDeviate : public RandomDeviate {
     z = std::abs(z);
     double sigma = std::log(ef_->Mean()) / z;
     double mu = std::log(mean_->Max()) - std::pow(sigma, 2) / 2;
-    return std::exp(std::sqrt(2) * std::pow(boost::math::erfc(1 / 50), -1) *
-                    sigma + mu);
+    return std::exp(
+        std::sqrt(2) * std::pow(boost::math::erfc(1 / 50), -1) * sigma + mu);
   }
 
   inline double Min() noexcept { return 0; }
@@ -556,11 +557,9 @@ class GammaDeviate : public RandomDeviate {
   double Sample() noexcept;
 
   inline double Max() noexcept {
+    using boost::math::gamma_q;
     return theta_->Max() *
-        std::pow(boost::math::gamma_q(k_->Max(),
-                                      boost::math::gamma_q(k_->Max(), 0)
-                                      - 0.99),
-                 -1);
+        std::pow(gamma_q(k_->Max(), gamma_q(k_->Max(), 0) - 0.99), -1);
   }
 
   inline double Min() noexcept { return 0; }
@@ -705,10 +704,7 @@ class Add : public Expression {
   inline double Mean() noexcept {
     assert(!args_.empty());
     double mean = 0;
-    std::vector<ExpressionPtr>::iterator it;
-    for (it = args_.begin(); it != args_.end(); ++it) {
-      mean += (*it)->Mean();
-    }
+    for (const ExpressionPtr& arg : args_) mean += arg->Mean();
     return mean;
   }
 
@@ -717,10 +713,8 @@ class Add : public Expression {
     if (!Expression::sampled_) {
       Expression::sampled_ = true;
       Expression::sampled_value_ = 0;
-      std::vector<ExpressionPtr>::iterator it;
-      for (it = args_.begin(); it != args_.end(); ++it) {
-        Expression::sampled_value_ += (*it)->Sample();
-      }
+      for (const ExpressionPtr& arg : args_)
+        Expression::sampled_value_ += arg->Sample();
     }
     return Expression::sampled_value_;
   }
@@ -728,20 +722,14 @@ class Add : public Expression {
   inline double Max() noexcept {
     assert(!args_.empty());
     double max = 0;
-    std::vector<ExpressionPtr>::iterator it;
-    for (it = args_.begin(); it != args_.end(); ++it) {
-      max += (*it)->Max();
-    }
+    for (const ExpressionPtr& arg : args_) max += arg->Max();
     return max;
   }
 
   inline double Min() noexcept {
     assert(!args_.empty());
     double min = 0;
-    std::vector<ExpressionPtr>::iterator it;
-    for (it = args_.begin(); it != args_.end(); ++it) {
-      min += (*it)->Min();
-    }
+    for (const ExpressionPtr& arg : args_) min += arg->Min();
     return min;
   }
 };
@@ -808,10 +796,7 @@ class Mul : public Expression {
   inline double Mean() noexcept {
     assert(!args_.empty());
     double mean = 1;
-    std::vector<ExpressionPtr>::iterator it;
-    for (it = args_.begin(); it != args_.end(); ++it) {
-      mean *= (*it)->Mean();
-    }
+    for (const ExpressionPtr& arg : args_) mean *= arg->Mean();
     return mean;
   }
 
@@ -820,10 +805,8 @@ class Mul : public Expression {
     if (!Expression::sampled_) {
       Expression::sampled_ = true;
       Expression::sampled_value_ = 1;
-      std::vector<ExpressionPtr>::iterator it;
-      for (it = args_.begin(); it != args_.end(); ++it) {
-        Expression::sampled_value_ *= (*it)->Sample();
-      }
+      for (const ExpressionPtr& arg : args_)
+        Expression::sampled_value_ *= arg->Sample();
     }
     return Expression::sampled_value_;
   }
@@ -835,18 +818,17 @@ class Mul : public Expression {
   /// @returns Maximum possible value of the product.
   inline double Max() noexcept {
     assert(!args_.empty());
-    std::vector<ExpressionPtr>::iterator it = args_.begin();
-    double max = (*it)->Max();  // Maximum possible product.
-    double min = (*it)->Min();  // Minimum possible product.
-    for (++it; it != args_.end(); ++it) {
-      double mult_max = (*it)->Max();
-      double mult_min = (*it)->Min();
+    double max = 1;  // Maximum possible product.
+    double min = 1;  // Minimum possible product.
+    for (const ExpressionPtr& arg : args_) {
+      double mult_max = arg->Max();
+      double mult_min = arg->Min();
       double max_max = max * mult_max;
       double max_min = max * mult_min;
       double min_max = min * mult_max;
       double min_min = min * mult_min;
-      max = std::max(std::max(max_max, max_min), std::max(min_max, min_min));
-      min = std::min(std::min(max_max, max_min), std::min(min_max, min_min));
+      max = std::max({max_max, max_min, min_max, min_min});
+      min = std::min({max_max, max_min, min_max, min_min});
     }
     return max;
   }
@@ -858,18 +840,17 @@ class Mul : public Expression {
   /// @returns Minimum possible value of the product.
   inline double Min() noexcept {
     assert(!args_.empty());
-    std::vector<ExpressionPtr>::iterator it = args_.begin();
-    double max = (*it)->Max();  // Maximum possible product.
-    double min = (*it)->Min();  // Minimum possible product.
-    for (++it; it != args_.end(); ++it) {
-      double mult_max = (*it)->Max();
-      double mult_min = (*it)->Min();
+    double max = 1;  // Maximum possible product.
+    double min = 1;  // Minimum possible product.
+    for (const ExpressionPtr& arg : args_) {
+      double mult_max = arg->Max();
+      double mult_min = arg->Min();
       double max_max = max * mult_max;
       double max_min = max * mult_min;
       double min_max = min * mult_max;
       double min_min = min * mult_min;
-      max = std::max(std::max(max_max, max_min), std::max(min_max, min_min));
-      min = std::min(std::min(max_max, max_min), std::min(min_max, min_min));
+      max = std::max({max_max, max_min, min_max, min_min});
+      min = std::min({max_max, max_min, min_max, min_min});
     }
     return min;
   }
@@ -924,8 +905,8 @@ class Div : public Expression {
       double max_min = max / mult_min;
       double min_max = min / mult_max;
       double min_min = min / mult_min;
-      max = std::max(std::max(max_max, max_min), std::max(min_max, min_min));
-      min = std::min(std::min(max_max, max_min), std::min(min_max, min_min));
+      max = std::max({max_max, max_min, min_max, min_min});
+      min = std::min({max_max, max_min, min_max, min_min});
     }
     return max;
   }
@@ -947,8 +928,8 @@ class Div : public Expression {
       double max_min = max / mult_min;
       double min_max = min / mult_max;
       double min_min = min / mult_min;
-      max = std::max(std::max(max_max, max_min), std::max(min_max, min_min));
-      min = std::min(std::min(max_max, max_min), std::min(min_max, min_min));
+      max = std::max({max_max, max_min, min_max, min_min});
+      min = std::min({max_max, max_min, min_max, min_min});
     }
     return min;
   }

@@ -43,25 +43,17 @@ namespace scram {
 /// and probability distributions of basic events.
 class UncertaintyAnalysis : private ProbabilityAnalysis {
  public:
-  typedef std::shared_ptr<BasicEvent> BasicEventPtr;
+  using BasicEventPtr = std::shared_ptr<BasicEvent>;
 
-  /// The main constructor of Uncertainty Analysis.
+  /// Uncertainty analysis
+  /// on the fault tree represented by the root gate
+  /// with Binary decision diagrams.
   ///
-  /// @param[in] settings Analysis settings for uncertainty calculations.
-  explicit UncertaintyAnalysis(const Settings& settings);
-
-  /// Sets the databases of basic events with probabilities.
-  /// Resets the main basic event database
-  /// and clears the previous information.
-  /// This information is the main source
-  /// for calculations and internal indices for basic events.
+  /// @param[in] root The top event of the fault tree.
+  /// @param[in] settings Analysis settings for probability calculations.
   ///
-  /// @param[in] basic_events The database of basic events in cut sets.
-  ///
-  /// @note  If not enough information is provided,
-  ///        the analysis behavior is undefined.
-  void UpdateDatabase(
-      const std::unordered_map<std::string, BasicEventPtr>& basic_events);
+  /// @note This technique does not require cut sets.
+  UncertaintyAnalysis(const GatePtr& root, const Settings& settings);
 
   /// Performs quantitative analysis on minimal cut sets
   /// containing basic events provided in the databases.
@@ -110,18 +102,16 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   void Sample() noexcept;
 
   /// Gathers basic events that have distributions.
-  /// Other constant, certain basic events removed from sampling.
-  /// These constant events are removed from the probability equation,
-  /// and the members of the equation are given a corresponding multiplier.
   ///
   /// @param[out] basic_events The gathered uncertain basic events.
+  ///
+  /// @todo Mark BDD graph branches that do not need sampling.
   void FilterUncertainEvents(std::vector<int>* basic_events) noexcept;
 
   /// Calculates statistical values from the final distribution.
   void CalculateStatistics() noexcept;
 
   std::vector<double> sampled_results_;  ///< Storage for sampled values.
-  const Settings kSettings_;  ///< All settings for analysis.
   double mean_;  ///< The mean of the final distribution.
   double sigma_;  ///< The standard deviation of the final distribution.
   double error_factor_;  ///< Error factor for 95% confidence level.
@@ -132,12 +122,6 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   std::vector<std::pair<double, double> > distribution_;
   /// The quantiles of the distribution.
   std::vector<double> quantiles_;
-  /// Storage for constant part of the positive equation.
-  /// The same mapping as positive sets.
-  std::vector<double> pos_const_;
-  /// Storage for constant part of the negative equation.
-  /// The same mapping as negative sets.
-  std::vector<double> neg_const_;
 };
 
 }  // namespace scram

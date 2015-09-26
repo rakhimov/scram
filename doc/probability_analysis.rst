@@ -43,56 +43,32 @@ For more information, please take a look at the OpenPSA_ MEF format documentatio
 Probability Calculations
 ************************
 
-Since minimal cut sets may neither be mutually exclusive nor independent,
-direct use of the sets' total probabilities may be inaccurate.
-In addition, rare event approximation may not be appropriate
-for events with large probabilities.
-
-In order to account for the above deficiencies,
-brute force algorithm is implemented to calculate
-the total probability of the top event in a fault tree.
-However, this algorithm still assumes independence of basic events in the fault tree.
-
-The described assumptions may be applied
-for calculation of a cut set and total probabilities:
-
-- Independence of events (dependence may be simulated by common cause).
-- The rare event approximation (must be enforced by a user).
-- The Min-Cut-Upper Bound Approximation (must be enforced by a user).
-- Cut-off probability for minimal cut sets (the default value is 1e-8).
-- The brute force probability calculation
-  if the rare event approximation is not good enough.
-  This brute force calculation may be expensive
-  and require much more time.
-  (This is the default method for probability calculations.)
+Probability calculation algorithms assume
+independence of basic events in the fault tree.
+The dependence can be communicated with common cause groups.
 
 
 The Exact Probability Calculation
 =================================
 
-The general probability formula for sets is expanded recursively.
-In each iteration, some sets are merged
-to account for common members in minimal cut sets.
-This algorithm is also used for series expansion,
-giving the Sylvester-Poincaré expansion.
+Since minimal cut sets may neither be mutually exclusive nor independent,
+direct use of the sets' total probabilities may be inaccurate.
+The exact probability calculation is achieved
+with Binary Decision Diagram (BDD) based algorithms.
+This approach does not require calculation of minimal cut sets.
+As long as a fault tree can be converted into BDD,
+the calculation of its probability is linear in the size of BDD.
 
 
 The Approximate Probability Calculation
 =======================================
 
 Approximate calculations are implemented to reduce the calculation time.
-The series expansion of the exact formula is applied.
-The default value for series is set to 7
-to get a conservative result while having acceptable performance.
-In general, it is impractical to include more than 8 sums,
-so the suggestion is to include between 4 and 8 sums.
-In addition, cut-off probability for cut sets can be used
-to discard sets with low probabilities.
-The default cut-off is 1e-8.
+However, the users must be aware of the limitations and inaccuracies of approximations.
 
 
 The Rare-Event Approximation
-============================
+----------------------------
 
 Given that the probabilities of events are very small value less than 0.1,
 only the first series in the probability equation may be used
@@ -105,7 +81,7 @@ the total probability may exceed 1.
 
 
 The Min-Cut-Upper Bound (MCUB) Approximation
-============================================
+--------------------------------------------
 
 This method calculates the total probability
 by subtracting the probability of all minimal cut sets' being successful from 1;
@@ -121,10 +97,10 @@ described by Don Wakefield in "You Can't Just Build Trees and Call It PSA."
 Importance Analysis
 *******************
 
-Importance analysis is performed for basic events in minimal cut sets.
+Importance analysis is performed for basic events in a fault tree.
 The same configurations are used as for probability analysis.
 The analysis is performed by request with probability data.
-The following factors are calculated:
+The following importance factors are calculated:
 
     - Fussel-Vesely Diagnosis Importance Factor (DIF)
     - Birnbaum Marginal Importance Factor (MIF)
