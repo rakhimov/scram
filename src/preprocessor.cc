@@ -46,7 +46,7 @@
 ///   * May introduce new gate clones or subgraphs,
 ///     making the graph more complex.
 ///   * Works on particular cases or setups only
-///   * Has tradeoffs
+///   * Has trade-offs
 ///   * Runs better/More effective before/after some preprocessing step(s)
 ///   * Coupled with another preprocessing algorithms
 ///
@@ -192,7 +192,7 @@ void Preprocessor::PhaseTwo() noexcept {
   LOG(DEBUG3) << "Coalescing gates...";
   graph_changed = true;
   while (graph_changed) graph_changed = Preprocessor::CoalesceGates(false);
-  LOG(DEBUG3) << "Gate coalescense is done!";
+  LOG(DEBUG3) << "Gate coalescence is done!";
 
   if (Preprocessor::CheckRootGate()) return;
 
@@ -239,7 +239,7 @@ void Preprocessor::PhaseFive() noexcept {
   LOG(DEBUG3) << "Coalescing gates...";  // Make layered.
   bool graph_changed = true;
   while (graph_changed) graph_changed = Preprocessor::CoalesceGates(true);
-  LOG(DEBUG3) << "Gate coalescense is done!";
+  LOG(DEBUG3) << "Gate coalescence is done!";
 
   if (Preprocessor::CheckRootGate()) return;
   Preprocessor::PhaseTwo();
@@ -248,7 +248,7 @@ void Preprocessor::PhaseFive() noexcept {
   LOG(DEBUG3) << "Coalescing gates...";  // Final coalescing before analysis.
   graph_changed = true;
   while (graph_changed) graph_changed = Preprocessor::CoalesceGates(true);
-  LOG(DEBUG3) << "Gate coalescense is done!";
+  LOG(DEBUG3) << "Gate coalescence is done!";
 }
 
 bool Preprocessor::CheckRootGate() noexcept {
@@ -1481,7 +1481,7 @@ void Preprocessor::TransformCommonArgs(MergeTable::MergeGroup* group) noexcept {
     for (++it_rest; it_rest != group->end(); ++it_rest) {
       MergeTable::CommonArgs& set_args = it_rest->first;
       assert(set_args.size() > common_args.size());
-      // Note: it is assummed that common_args is a proper subset of set_args.
+      // Note: it is assumed that common_args is a proper subset of set_args.
       std::vector<int> diff;
       std::set_difference(set_args.begin(), set_args.end(),
                           common_args.begin(), common_args.end(),

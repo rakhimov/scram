@@ -36,16 +36,12 @@
 
 namespace scram {
 
-namespace test { class PreprocessorTest; }
-
 /// @class Preprocessor
 /// The class provides main preprocessing operations
 /// over a Boolean graph
 /// to simplify the fault tree
 /// and to help generate minimal cut sets more efficiently.
 class Preprocessor {
-  friend class test::PreprocessorTest;
-
  public:
   /// Constructs a preprocessor of a Boolean graph
   /// representing a fault tree.
@@ -401,7 +397,7 @@ class Preprocessor {
       bool keep_modules,
       std::unordered_map<int, IGatePtr>* complements) noexcept;
 
-  /// Runs gate coalescense on the whole Boolean graph.
+  /// Runs gate coalescence on the whole Boolean graph.
   ///
   /// @param[in] common A flag to also coalesce common/shared gates.
   ///                   These gates may be important for other algorithms.
@@ -1110,13 +1106,13 @@ class Preprocessor {
 };
 
 /// @class PreprocessorBdd
-/// Specilalization of preprocessing for BDD based analyses.
+/// Specialization of preprocessing for BDD based analyses.
 class PreprocessorBdd : public Preprocessor {
  public:
   using Preprocessor::Preprocessor;  ///< Constructor with a Boolean graph.
 
   /// Performs preprocessing for analyses with Binary Decision Diagrams.
-  /// This preprocessing assings the order for variables for BDD construction.
+  /// This preprocessing assigns the order for variables for BDD construction.
   void Run() noexcept override;
 };
 
