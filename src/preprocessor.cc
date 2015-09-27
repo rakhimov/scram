@@ -598,9 +598,8 @@ void Preprocessor::NormalizeAtleastGate(const IGatePtr& gate) noexcept {
 
   auto it = std::max_element(gate->args().cbegin(), gate->args().cend(),
                              [&gate](int lhs, int rhs) {
-                               return gate->GetArg(lhs)->opti_value() <
-                                      gate->GetArg(rhs)->opti_value();
-                             });
+    return gate->GetArg(lhs)->opti_value() < gate->GetArg(rhs)->opti_value();
+  });
   assert(it != gate->args().cend());
   IGatePtr first_arg(new IGate(kAndGate));
   gate->TransferArg(*it, first_arg);
@@ -1215,11 +1214,11 @@ void Preprocessor::GatherCommonArgs(const IGatePtr& gate, const Operator& op,
 void Preprocessor::FilterMergeCandidates(
     MergeTable::Candidates* candidates) noexcept {
   assert(candidates->size() > 1);
-  std::stable_sort(candidates->begin(), candidates->end(),
-                   [](const MergeTable::Candidate& lhs,
-                      const MergeTable::Candidate& rhs) {
-                     return lhs.second.size() < rhs.second.size();
-                   });
+  std::stable_sort(
+      candidates->begin(), candidates->end(),
+      [](const MergeTable::Candidate& lhs, const MergeTable::Candidate& rhs) {
+        return lhs.second.size() < rhs.second.size();
+      });
   bool cleanup = false;  // Clean constant or NULL type gates.
   for (auto it = candidates->begin(); it != candidates->end(); ++it) {
     IGatePtr gate = it->first;
@@ -1260,14 +1259,13 @@ void Preprocessor::FilterMergeCandidates(
     }
   }
   if (!cleanup) return;
-  candidates->erase(
-      std::remove_if(candidates->begin(), candidates->end(),
-                     [](const MergeTable::Candidate& mem) {
-                       return mem.first->state() != kNormalState ||
-                              mem.first->type() == kNullGate ||
-                              mem.second.size() == 1;
-                     }),
-      candidates->end());
+  candidates->erase(std::remove_if(candidates->begin(), candidates->end(),
+                                   [](const MergeTable::Candidate& mem) {
+                      return mem.first->state() != kNormalState ||
+                             mem.first->type() == kNullGate ||
+                             mem.second.size() == 1;
+                    }),
+                    candidates->end());
 }
 
 void Preprocessor::GroupCandidatesByArgs(
@@ -1342,11 +1340,11 @@ void Preprocessor::GroupCommonArgs(const MergeTable::Collection& options,
                                    MergeTable* table) noexcept {
   assert(!options.empty());
   MergeTable::MergeGroup all_options(options.begin(), options.end());
-  std::stable_sort(all_options.begin(), all_options.end(),
-                   [](const MergeTable::Option& lhs,
-                      const MergeTable::Option& rhs) {
-                     return lhs.first.size() < rhs.first.size();
-                   });
+  std::stable_sort(
+      all_options.begin(), all_options.end(),
+      [](const MergeTable::Option& lhs, const MergeTable::Option& rhs) {
+        return lhs.first.size() < rhs.first.size();
+      });
 
   while (!all_options.empty()) {
     MergeTable::OptionGroup best_group;
@@ -1374,8 +1372,8 @@ void Preprocessor::GroupCommonArgs(const MergeTable::Collection& options,
     }
     all_options.erase(std::remove_if(all_options.begin(), all_options.end(),
                                      [](const MergeTable::Option& option) {
-                                       return option.second.size() < 2;
-                                     }),
+                        return option.second.size() < 2;
+                      }),
                       all_options.end());
   }
 }
@@ -1616,14 +1614,14 @@ bool Preprocessor::FilterDistributiveArgs(
     gate->EraseArg(index);
     candidates->erase(std::find_if(candidates->begin(), candidates->end(),
                                    [&index](const IGatePtr& candidate) {
-                                     return candidate->index() == index;
-                                   }));
+      return candidate->index() == index;
+    }));
   }
   // Sort in descending size of gate arguments.
   std::sort(candidates->begin(), candidates->end(),
             [](const IGatePtr& lhs, const IGatePtr rhs) {
-              return lhs->args().size() > rhs->args().size();
-            });
+    return lhs->args().size() > rhs->args().size();
+  });
   std::vector<IGatePtr> exclusive;  // No candidate is a subset of another.
   while (!candidates->empty()) {
     IGatePtr sub = candidates->back();
@@ -1636,15 +1634,13 @@ bool Preprocessor::FilterDistributiveArgs(
         gate->EraseArg(super->index());
       }
     }
-    candidates->erase(
-        std::remove_if(candidates->begin(), candidates->end(),
-                       [&sub](const IGatePtr& super) {
-                         return std::includes(super->args().begin(),
-                                              super->args().end(),
-                                              sub->args().begin(),
-                                              sub->args().end());
-                       }),
-        candidates->end());
+    candidates->erase(std::remove_if(candidates->begin(), candidates->end(),
+                                     [&sub](const IGatePtr& super) {
+                        return std::includes(
+                            super->args().begin(), super->args().end(),
+                            sub->args().begin(), sub->args().end());
+                      }),
+                      candidates->end());
   }
   *candidates = exclusive;
   assert(!gate->args().empty());
@@ -1670,11 +1666,11 @@ void Preprocessor::GroupDistributiveArgs(const MergeTable::Collection& options,
                                          MergeTable* table) noexcept {
   assert(!options.empty());
   MergeTable::MergeGroup all_options(options.begin(), options.end());
-  std::stable_sort(all_options.begin(), all_options.end(),
-                   [](const MergeTable::Option& lhs,
-                      const MergeTable::Option& rhs) {
-                     return lhs.first.size() < rhs.first.size();
-                   });
+  std::stable_sort(
+      all_options.begin(), all_options.end(),
+      [](const MergeTable::Option& lhs, const MergeTable::Option& rhs) {
+        return lhs.first.size() < rhs.first.size();
+      });
 
   while (!all_options.empty()) {
     MergeTable::OptionGroup best_group;
@@ -1693,8 +1689,8 @@ void Preprocessor::GroupDistributiveArgs(const MergeTable::Collection& options,
     }
     all_options.erase(std::remove_if(all_options.begin(), all_options.end(),
                                      [](const MergeTable::Option& option) {
-                                       return option.second.size() < 2;
-                                     }),
+                        return option.second.size() < 2;
+                      }),
                       all_options.end());
   }
 }
@@ -2087,15 +2083,15 @@ bool Preprocessor::ProcessDecompositionCommonNode(
   if (node->parents().size() < 2) return false;
 
   auto IsDecompositionType = [](Operator type) {  // Possible types for setups.
-                               switch (type) {
-                                 case kAndGate:
-                                 case kNandGate:
-                                 case kOrGate:
-                                 case kNorGate:
-                                   return true;
-                               }
-                               return false;
-                             };
+    switch (type) {
+      case kAndGate:
+      case kNandGate:
+      case kOrGate:
+      case kNorGate:
+        return true;
+    }
+    return false;
+  };
   // Determine if the decomposition setups are possible.
   auto it =
       std::find_if(node->parents().begin(), node->parents().end(),

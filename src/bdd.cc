@@ -80,11 +80,10 @@ const Bdd::Function& Bdd::IfThenElse(const IGatePtr& gate) noexcept {
   }
   std::sort(args.begin(), args.end(),
             [](const Function& lhs, const Function& rhs) {
-              if (lhs.vertex->terminal()) return false;
-              if (rhs.vertex->terminal()) return true;
-              return Ite::Ptr(lhs.vertex)->order() <
-                     Ite::Ptr(rhs.vertex)->order();
-            });
+    if (lhs.vertex->terminal()) return false;
+    if (rhs.vertex->terminal()) return true;
+    return Ite::Ptr(lhs.vertex)->order() < Ite::Ptr(rhs.vertex)->order();
+  });
   auto it = args.cbegin();
   result.complement = it->complement;
   result.vertex = it->vertex;
