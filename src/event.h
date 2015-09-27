@@ -54,18 +54,18 @@ class Event : public Element, public Role {
   virtual ~Event() = 0;  ///< Abstract class.
 
   /// @returns The id that is set upon the construction of this event.
-  inline const std::string& id() const { return id_; }
+  const std::string& id() const { return id_; }
 
   /// @returns The original name with capitalizations.
-  inline const std::string& name() const { return name_; }
+  const std::string& name() const { return name_; }
 
   /// @returns True if this node is orphan.
-  inline bool orphan() const { return orphan_; }
+  bool orphan() const { return orphan_; }
 
   /// Sets the orphan state.
   ///
   /// @param[in] state True if this event is not used anywhere.
-  inline void orphan(bool state) { orphan_ = state; }
+  void orphan(bool state) { orphan_ = state; }
 
  private:
   std::string id_;  ///< Id name of a event. It is in lower case.
@@ -83,7 +83,7 @@ class PrimaryEvent : public Event {
   virtual ~PrimaryEvent() = 0;  ///< Abstract class.
 
   /// @returns A flag indicating if the event's expression is set.
-  inline bool has_expression() const { return has_expression_; }
+  bool has_expression() const { return has_expression_; }
 
  protected:
   /// Flag to notify that expression for the event is defined.
@@ -99,13 +99,13 @@ class HouseEvent : public PrimaryEvent {
   /// Sets the state for House event.
   ///
   /// @param[in] constant False or True for the state of this house event.
-  inline void state(bool constant) {
+  void state(bool constant) {
     PrimaryEvent::has_expression_ = true;
     state_ = constant;
   }
 
   /// @returns The true or false state of this house event.
-  inline bool state() const { return state_; }
+  bool state() const { return state_; }
 
  private:
   /// Represents the state of the house event.
@@ -129,7 +129,7 @@ class BasicEvent : public PrimaryEvent {
   /// Sets the expression of this basic event.
   ///
   /// @param[in] expression The expression to describe this event.
-  inline void expression(const ExpressionPtr& expression) {
+  void expression(const ExpressionPtr& expression) {
     assert(!expression_);
     PrimaryEvent::has_expression_ = true;
     expression_ = expression;
@@ -141,7 +141,7 @@ class BasicEvent : public PrimaryEvent {
   ///       that the returned value is acceptable for calculations.
   ///
   /// @warning Undefined behavior if the expression is not set.
-  inline double p() const noexcept {
+  double p() const noexcept {
     assert(expression_);
     return expression_->Mean();
   }
@@ -154,16 +154,16 @@ class BasicEvent : public PrimaryEvent {
   ///       that the returned value is acceptable for calculations.
   ///
   /// @warning Undefined behavior if the expression is not set.
-  inline double SampleProbability() noexcept {
+  double SampleProbability() noexcept {
     assert(expression_);
     return expression_->Sample();
   }
 
   /// Resets the sampling.
-  inline void Reset() noexcept { expression_->Reset(); }
+  void Reset() noexcept { expression_->Reset(); }
 
   /// @returns Indication if this event does not have uncertainty.
-  inline bool IsConstant() noexcept { return expression_->IsConstant(); }
+  bool IsConstant() noexcept { return expression_->IsConstant(); }
 
   /// Validates the probability expressions for the primary event.
   ///
@@ -178,10 +178,10 @@ class BasicEvent : public PrimaryEvent {
   ///
   /// @returns true if in a CCF group.
   /// @returns false otherwise.
-  inline bool HasCcf() const { return ccf_gate_ ? true : false; }
+  bool HasCcf() const { return ccf_gate_ ? true : false; }
 
   /// @returns CCF group gate representing this basic event.
-  inline const GatePtr& ccf_gate() const {
+  const GatePtr& ccf_gate() const {
     assert(ccf_gate_);
     return ccf_gate_;
   }
@@ -193,7 +193,7 @@ class BasicEvent : public PrimaryEvent {
   /// CCF group application.
   ///
   /// @param[in] gate CCF group gate.
-  inline void ccf_gate(const GatePtr& gate) {
+  void ccf_gate(const GatePtr& gate) {
     assert(!ccf_gate_);
     ccf_gate_ = gate;
   }
@@ -233,12 +233,10 @@ class CcfEvent : public BasicEvent {
            const std::vector<std::string>& member_names);
 
   /// @returns Pointer to the CCF group that created this CCF event.
-  inline const CcfGroup* ccf_group() const { return ccf_group_; }
+  const CcfGroup* ccf_group() const { return ccf_group_; }
 
   /// @returns Original names of members of this CCF event.
-  inline const std::vector<std::string>& member_names() const {
-    return member_names_;
-  }
+  const std::vector<std::string>& member_names() const { return member_names_; }
 
  private:
   const CcfGroup* ccf_group_;  ///< Pointer to the CCF group.
@@ -257,12 +255,12 @@ class Gate : public Event {
   using Event::Event;  // Construction with unique identification.
 
   /// @returns The formula of this gate.
-  inline const FormulaPtr& formula() const { return formula_; }
+  const FormulaPtr& formula() const { return formula_; }
 
   /// Sets the formula of this gate.
   ///
   /// @param[in] formula Boolean formula of this gate.
-  inline void formula(FormulaPtr formula) {
+  void formula(FormulaPtr formula) {
     assert(!formula_);
     formula_ = std::move(formula);
   }
@@ -270,7 +268,7 @@ class Gate : public Event {
   /// This function is for cycle detection.
   ///
   /// @returns The connector between gates.
-  inline Formula* connector() const { return formula_.get(); }
+  Formula* connector() const { return formula_.get(); }
 
   /// Checks if a gate is initialized correctly.
   ///
@@ -279,10 +277,10 @@ class Gate : public Event {
 
   /// @returns The mark of this gate node.
   /// @returns Empty string for no mark.
-  inline const std::string& mark() const { return mark_; }
+  const std::string& mark() const { return mark_; }
 
   /// Sets the mark for this gate node.
-  inline void mark(const std::string& new_mark) { mark_ = new_mark; }
+  void mark(const std::string& new_mark) { mark_ = new_mark; }
 
  private:
   FormulaPtr formula_;  ///< Boolean formula of this gate.
@@ -311,7 +309,7 @@ class Formula {
   /// @returns The type of this formula.
   ///
   /// @throws LogicError The gate is not yet assigned.
-  inline const std::string& type() const { return type_; }
+  const std::string& type() const { return type_; }
 
   /// @returns The vote number if and only if the operator is ATLEAST.
   ///
@@ -330,34 +328,28 @@ class Formula {
   void vote_number(int vnumber);
 
   /// @returns The event arguments of this formula.
-  inline const std::map<std::string, EventPtr>& event_args() const {
+  const std::map<std::string, EventPtr>& event_args() const {
     return event_args_;
   }
 
   /// @returns The house event arguments of this formula.
-  inline const std::vector<HouseEventPtr>& house_event_args() const {
+  const std::vector<HouseEventPtr>& house_event_args() const {
     return house_event_args_;
   }
 
   /// @returns The basic event arguments of this formula.
-  inline const std::vector<BasicEventPtr>& basic_event_args() const {
+  const std::vector<BasicEventPtr>& basic_event_args() const {
     return basic_event_args_;
   }
 
   /// @returns The gate arguments of this formula.
-  inline const std::vector<GatePtr>& gate_args() const {
-    return gate_args_;
-  }
+  const std::vector<GatePtr>& gate_args() const { return gate_args_; }
 
   /// @returns The formula arguments of this formula.
-  inline const std::vector<FormulaPtr>& formula_args() const {
-    return formula_args_;
-  }
+  const std::vector<FormulaPtr>& formula_args() const { return formula_args_; }
 
   /// @returns The number of arguments.
-  inline int num_args() const {
-    return event_args_.size() + formula_args_.size();
-  }
+  int num_args() const { return event_args_.size() + formula_args_.size(); }
 
   /// Adds a house event into the arguments list.
   ///
@@ -392,13 +384,13 @@ class Formula {
   void Validate();
 
   /// @returns Gates as nodes.
-  inline const std::vector<Gate*>& nodes() {
+  const std::vector<Gate*>& nodes() {
     if (gather_) Formula::GatherNodesAndConnectors();
     return nodes_;
   }
 
   /// @returns Formulae as connectors.
-  inline const std::vector<Formula*>& connectors() {
+  const std::vector<Formula*>& connectors() {
     if (gather_) Formula::GatherNodesAndConnectors();
     return connectors_;
   }

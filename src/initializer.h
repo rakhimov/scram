@@ -75,7 +75,7 @@ class Initializer {
   void ProcessInputFiles(const std::vector<std::string>& xml_files);
 
   /// @returns The model built from the input files.
-  inline ModelPtr model() const { return model_; }
+  ModelPtr model() const { return model_; }
 
  private:
   using ElementPtr = std::shared_ptr<Element>;

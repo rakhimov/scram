@@ -30,7 +30,7 @@ namespace scram {
 class Settings {
  public:
   /// @returns The limit on the size of minimal cut sets.
-  inline int limit_order() const { return limit_order_; }
+  int limit_order() const { return limit_order_; }
 
   /// Sets the limit order for minimal cut sets.
   ///
@@ -42,7 +42,7 @@ class Settings {
   Settings& limit_order(int order);
 
   /// @returns The minimum required probability for cut sets.
-  inline double cut_off() const { return cut_off_; }
+  double cut_off() const { return cut_off_; }
 
   /// Sets the cut-off probability for minimal cut sets to be considered
   /// for analysis.
@@ -57,7 +57,7 @@ class Settings {
   /// @returns "no" if no quantitative approximation is requested.
   /// @returns "rare-event" for the rare-event approximation.
   /// @returns "mcub" for the min-cut-upper bound approximation.
-  inline const std::string& approx() const { return approx_; }
+  const std::string& approx() const { return approx_; }
 
   /// Sets the approximation for probability analysis.
   ///
@@ -69,7 +69,7 @@ class Settings {
   Settings& approx(const std::string& approx);
 
   /// @returns The number of trials for Monte-Carlo simulations.
-  inline int num_trials() const { return num_trials_; }
+  int num_trials() const { return num_trials_; }
 
   /// Sets the number of trials for Monte Carlo simulations.
   ///
@@ -81,7 +81,7 @@ class Settings {
   Settings& num_trials(int n);
 
   /// @returns The number of quantiles for distributions.
-  inline int num_quantiles() const { return num_quantiles_; }
+  int num_quantiles() const { return num_quantiles_; }
 
   /// Sets the number of quantiles for distributions.
   ///
@@ -93,7 +93,7 @@ class Settings {
   Settings& num_quantiles(int n);
 
   /// @returns The number of bins for histograms.
-  inline int num_bins() const { return num_bins_; }
+  int num_bins() const { return num_bins_; }
 
   /// Sets the number of bins for histograms.
   ///
@@ -105,7 +105,7 @@ class Settings {
   Settings& num_bins(int n);
 
   /// @returns The seed of the pseudo-random number generator.
-  inline int seed() const { return seed_; }
+  int seed() const { return seed_; }
 
   /// Sets the seed for the pseudo-random number generator.
   ///
@@ -117,7 +117,7 @@ class Settings {
   Settings& seed(int s);
 
   /// @returns The length time of the system under risk.
-  inline double mission_time() const { return mission_time_; }
+  double mission_time() const { return mission_time_; }
 
   /// Sets the system mission time.
   ///
@@ -127,7 +127,7 @@ class Settings {
   Settings& mission_time(double time);
 
   /// @returns true if probability analysis is requested.
-  inline bool probability_analysis() const { return probability_analysis_; }
+  bool probability_analysis() const { return probability_analysis_; }
 
   /// Sets the flag for probability analysis.
   /// If another analysis requires probability analysis,
@@ -144,7 +144,7 @@ class Settings {
   }
 
   /// @returns true if importance analysis is requested.
-  inline bool importance_analysis() const { return importance_analysis_; }
+  bool importance_analysis() const { return importance_analysis_; }
 
   /// Sets the flag for importance analysis.
   /// Importance analysis is performed
@@ -161,7 +161,7 @@ class Settings {
   }
 
   /// @returns true if uncertainty analysis is requested.
-  inline bool uncertainty_analysis() const { return uncertainty_analysis_; }
+  bool uncertainty_analysis() const { return uncertainty_analysis_; }
 
   /// Sets the flag for uncertainty analysis.
   /// Uncertainty analysis implies probability analysis,
@@ -177,7 +177,7 @@ class Settings {
   }
 
   /// @returns true if CCF groups must be incorporated into analysis.
-  inline bool ccf_analysis() const { return ccf_analysis_; }
+  bool ccf_analysis() const { return ccf_analysis_; }
 
   /// Sets the flag for CCF analysis.
   ///

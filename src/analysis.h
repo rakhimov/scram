@@ -35,7 +35,7 @@ class Analysis {
   virtual ~Analysis() = 0;  ///< Abstract class.
 
   /// @returns Analysis settings.
-  inline const Settings& settings() const { return kSettings_; }
+  const Settings& settings() const { return kSettings_; }
 
  protected:
   const Settings kSettings_;  ///< All settings for analysis.

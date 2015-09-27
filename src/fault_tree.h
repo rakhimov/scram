@@ -67,46 +67,41 @@ class Component : public Element, public Role {
   virtual ~Component() {}
 
   /// @returns The name of this component.
-  inline const std::string& name() const { return name_; }
+  const std::string& name() const { return name_; }
 
   /// @returns The container of all gates of this component
   ///          with lower-case names as keys.
-  inline const std::unordered_map<std::string, GatePtr>& gates() const {
+  const std::unordered_map<std::string, GatePtr>& gates() const {
     return gates_;
   }
 
   /// @returns The container of all basic events of this component
   ///          with lower-case names as keys.
-  inline const std::unordered_map<std::string, BasicEventPtr>&
-      basic_events() const {
+  const std::unordered_map<std::string, BasicEventPtr>& basic_events() const {
     return basic_events_;
   }
 
   /// @returns The container of house events of this component
   ///          with lower-case names as keys.
-  inline const std::unordered_map<std::string, HouseEventPtr>&
-      house_events() const {
+  const std::unordered_map<std::string, HouseEventPtr>& house_events() const {
     return house_events_;
   }
 
   /// @returns The container of parameters of this component
   ///          with lower-case names as keys.
-  inline const std::unordered_map<std::string, ParameterPtr>&
-      parameters() const {
+  const std::unordered_map<std::string, ParameterPtr>& parameters() const {
     return parameters_;
   }
 
   /// @returns CCF groups belonging to this component
   ///          with lower-case names as keys.
-  inline const std::unordered_map<std::string, CcfGroupPtr>&
-      ccf_groups() const {
+  const std::unordered_map<std::string, CcfGroupPtr>& ccf_groups() const {
     return ccf_groups_;
   }
 
   /// @returns Components in this component container
   ///          with lower-case names as keys.
-  inline const std::unordered_map<std::string, ComponentPtr>&
-      components() const {
+  const std::unordered_map<std::string, ComponentPtr>& components() const {
     return components_;
   }
 
@@ -201,7 +196,7 @@ class FaultTree : public Component {
   explicit FaultTree(const std::string& name);
 
   /// @returns The collected top events of this fault tree.
-  inline const std::vector<GatePtr>& top_events() const { return top_events_; }
+  const std::vector<GatePtr>& top_events() const { return top_events_; }
 
   /// Collects top event gates in this fault tree with components.
   /// This function is essential to guess the analysis targets

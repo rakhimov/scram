@@ -38,11 +38,11 @@ class OpenExpression : public Expression {
   double sample;
   double min;  // This value is used only if explicitly set non-zero.
   double max;  // This value is used only if explicitly set non-zero.
-  inline double Mean() noexcept { return mean; }
-  inline double Sample() noexcept { return sample; }
-  inline double Max() noexcept { return max ? max : sample; }
-  inline double Min() noexcept { return min ? min : sample; }
-  inline bool IsConstant() noexcept { return true; }
+  double Mean() noexcept { return mean; }
+  double Sample() noexcept { return sample; }
+  double Max() noexcept { return max ? max : sample; }
+  double Min() noexcept { return min ? min : sample; }
+  bool IsConstant() noexcept { return true; }
 };
 
 using OpenExpressionPtr = std::shared_ptr<OpenExpression>;

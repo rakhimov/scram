@@ -81,30 +81,28 @@ class ProbabilityAnalysis : public Analysis {
   /// @returns The total probability calculated by the analysis.
   ///
   /// @note The user should make sure that the analysis is actually done.
-  inline double p_total() const { return p_total_; }
+  double p_total() const { return p_total_; }
 
   /// @returns Map with basic events and their importance factors.
   ///
   /// @note The user should make sure that the analysis is actually done.
-  inline const std::unordered_map<std::string, ImportanceFactors>&
-      importance() const {
+  const std::unordered_map<std::string, ImportanceFactors>& importance() const {
     return importance_;
   }
 
   /// @returns Warnings generated upon analysis.
-  inline const std::string warnings() const { return warnings_; }
+  const std::string warnings() const { return warnings_; }
 
   /// @returns The container of basic events of supplied for the analysis.
-  inline const std::unordered_map<std::string, BasicEventPtr>&
-      basic_events() const {
+  const std::unordered_map<std::string, BasicEventPtr>& basic_events() const {
     return basic_events_;
   }
 
   /// @returns Analysis time spent on calculating the total probability.
-  inline double prob_analysis_time() const { return p_time_; }
+  double prob_analysis_time() const { return p_time_; }
 
   /// @returns Analysis time spent on calculating the importance factors.
-  inline double imp_analysis_time() const { return imp_time_; }
+  double imp_analysis_time() const { return imp_time_; }
 
  protected:
   using CutSet = std::vector<int>;  ///< Unique positive or negative literals.

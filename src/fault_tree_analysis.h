@@ -96,13 +96,13 @@ class FaultTreeAnalysis : public Analysis {
   void Analyze() noexcept;
 
   /// @returns The top gate that is passed to the analysis.
-  inline const GatePtr& top_event() const { return top_event_; }
+  const GatePtr& top_event() const { return top_event_; }
 
   /// @returns The container of intermediate events.
   ///
   /// @warning If the fault tree has changed,
   ///          this is only a snapshot of the past
-  inline const std::unordered_map<std::string, GatePtr>& inter_events() const {
+  const std::unordered_map<std::string, GatePtr>& inter_events() const {
     return inter_events_;
   }
 
@@ -110,8 +110,7 @@ class FaultTreeAnalysis : public Analysis {
   ///
   /// @warning If the fault tree has changed,
   ///          this is only a snapshot of the past
-  inline const std::unordered_map<std::string, BasicEventPtr>&
-      basic_events() const {
+  const std::unordered_map<std::string, BasicEventPtr>& basic_events() const {
     return basic_events_;
   }
 
@@ -119,8 +118,7 @@ class FaultTreeAnalysis : public Analysis {
   ///
   /// @warning If the fault tree has changed,
   ///          this is only a snapshot of the past
-  inline const std::unordered_map<std::string, BasicEventPtr>&
-      ccf_events() const {
+  const std::unordered_map<std::string, BasicEventPtr>& ccf_events() const {
     return ccf_events_;
   }
 
@@ -128,18 +126,17 @@ class FaultTreeAnalysis : public Analysis {
   ///
   /// @warning If the fault tree has changed,
   ///          this is only a snapshot of the past
-  inline const std::unordered_map<std::string, HouseEventPtr>&
-      house_events() const {
+  const std::unordered_map<std::string, HouseEventPtr>& house_events() const {
     return house_events_;
   }
 
   /// @returns Set with minimal cut sets.
   ///
   /// @note The user should make sure that the analysis is actually done.
-  inline const std::set<CutSet>& min_cut_sets() const { return min_cut_sets_; }
+  const std::set<CutSet>& min_cut_sets() const { return min_cut_sets_; }
 
   /// @returns Collection of basic events that are in the minimal cut sets.
-  inline const std::unordered_map<std::string, BasicEventPtr>&
+  const std::unordered_map<std::string, BasicEventPtr>&
       mcs_basic_events() const {
     return mcs_basic_events_;
   }
@@ -147,7 +144,7 @@ class FaultTreeAnalysis : public Analysis {
   /// @returns Map with minimal cut sets and their probabilities.
   ///
   /// @note The user should make sure that the analysis is actually done.
-  inline const std::map<CutSet, double>& mcs_probability() const {
+  const std::map<CutSet, double>& mcs_probability() const {
     assert(kSettings_.probability_analysis());
     return mcs_probability_;
   }
@@ -155,19 +152,19 @@ class FaultTreeAnalysis : public Analysis {
   /// @returns The sum of minimal cut set probabilities.
   ///
   /// @note This value is the same as the rare-event approximation.
-  inline double sum_mcs_probability() const {
+  double sum_mcs_probability() const {
     assert(kSettings_.probability_analysis());
     return sum_mcs_probability_;
   }
 
   /// @returns The maximum order of the found minimal cut sets.
-  inline int max_order() const { return max_order_; }
+  int max_order() const { return max_order_; }
 
   /// @returns Warnings generated upon analysis.
-  inline const std::string& warnings() const { return warnings_; }
+  const std::string& warnings() const { return warnings_; }
 
   /// @returns Analysis time spent on finding minimal cut sets.
-  inline double analysis_time() const { return analysis_time_; }
+  double analysis_time() const { return analysis_time_; }
 
  private:
   using EventPtr = std::shared_ptr<Event>;

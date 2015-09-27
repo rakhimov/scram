@@ -48,7 +48,7 @@ class Element {
 
   /// @returns The empty or preset label.
   /// @returns Empty string if the label has not been set.
-  inline const std::string& label() const { return label_; }
+  const std::string& label() const { return label_; }
 
   /// Sets the label.
   ///
@@ -101,10 +101,10 @@ class Role {
   virtual ~Role() = 0;  ///< Abstract class;
 
   /// @returns True for public roles, or False for private roles.
-  inline bool is_public() const { return is_public_; }
+  bool is_public() const { return is_public_; }
 
   /// @returns The base path containing ancestor container names.
-  inline const std::string& base_path() const { return base_path_; }
+  const std::string& base_path() const { return base_path_; }
 
  private:
   bool is_public_;  ///< A flag for public and private roles.

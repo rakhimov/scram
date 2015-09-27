@@ -60,16 +60,16 @@ class CcfGroup : public Element, public Role {
   virtual ~CcfGroup() {}
 
   /// @returns The name of this CCF group.
-  inline const std::string& name() const { return name_; }
+  const std::string& name() const { return name_; }
 
   /// @returns The identifier of this CCF group.
-  inline const std::string& id() const { return id_; }
+  const std::string& id() const { return id_; }
 
   /// @returns The CCF model applied to this group.
-  inline const std::string& model() const { return model_; }
+  const std::string& model() const { return model_; }
 
   /// @returns Members of the CCF group with lower-case names as keys.
-  inline const std::map<std::string, BasicEventPtr>& members() const {
+  const std::map<std::string, BasicEventPtr>& members() const {
     return members_;
   }
 

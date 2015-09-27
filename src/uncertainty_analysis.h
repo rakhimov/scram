@@ -66,16 +66,16 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   void Analyze(const std::set< std::set<std::string> >& min_cut_sets) noexcept;
 
   /// @returns Mean of the final distribution.
-  inline double mean() const { return mean_; }
+  double mean() const { return mean_; }
 
   /// @returns Standard deviation of the final distribution.
-  inline double sigma() const { return sigma_; }
+  double sigma() const { return sigma_; }
 
   /// @returns Error factor for 95% confidence level.
-  inline double error_factor() const { return error_factor_; }
+  double error_factor() const { return error_factor_; }
 
   /// @returns 95% confidence interval of the mean.
-  inline const std::pair<double, double>& confidence_interval() const {
+  const std::pair<double, double>& confidence_interval() const {
     return confidence_interval_;
   }
 
@@ -88,12 +88,10 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   const std::vector<double>& quantiles() const { return quantiles_; }
 
   /// @returns Warnings generated upon analysis.
-  inline const std::string warnings() const {
-    return ProbabilityAnalysis::warnings();
-  }
+  const std::string warnings() const { return ProbabilityAnalysis::warnings(); }
 
   /// @returns Analysis time spent on sampling and simulations.
-  inline double analysis_time() const { return analysis_time_; }
+  double analysis_time() const { return analysis_time_; }
 
  private:
   /// Performs Monte Carlo Simulation

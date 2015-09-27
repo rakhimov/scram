@@ -48,15 +48,13 @@ class Config {
   explicit Config(const std::string& config_file);
 
   /// @returns input files for analysis.
-  inline const std::vector<std::string>& input_files() const {
-    return input_files_;
-  }
+  const std::vector<std::string>& input_files() const { return input_files_; }
 
   /// @returns the settings for analysis.
-  inline const Settings& settings() const { return settings_; }
+  const Settings& settings() const { return settings_; }
 
   /// @returns the output destination if any.
-  inline const std::string& output_path() const { return output_path_; }
+  const std::string& output_path() const { return output_path_; }
 
  private:
   /// Gathers input files with analysis constructs.

@@ -74,24 +74,23 @@ class Node {
   virtual ~Node() = 0;  ///< Abstract class.
 
   /// @returns The index of this node.
-  inline int index() const { return index_; }
+  int index() const { return index_; }
 
   /// Resets the starting index.
-  inline static void ResetIndex() { next_index_ = 1e6; }
+  static void ResetIndex() { next_index_ = 1e6; }
 
   /// @returns Parents of this gate.
-  inline const std::unordered_map<int, std::weak_ptr<IGate> >&
-      parents() const {
+  const std::unordered_map<int, std::weak_ptr<IGate> >& parents() const {
     return parents_;
   }
 
   /// @returns Optimization value for failure propagation.
-  inline int opti_value() const { return opti_value_; }
+  int opti_value() const { return opti_value_; }
 
   /// Sets the optimization value for failure propagation.
   ///
   /// @param[in] val Value that makes sense to the caller.
-  inline void opti_value(int val) { opti_value_ = val; }
+  void opti_value(int val) { opti_value_ = val; }
 
   /// Registers the visit time for this node upon graph traversal.
   /// This information can be used to detect dependencies.
@@ -115,52 +114,48 @@ class Node {
 
   /// @returns The time when this node was first encountered or entered.
   /// @returns 0 if no enter time is registered.
-  inline int EnterTime() const { return visits_[0]; }
+  int EnterTime() const { return visits_[0]; }
 
   /// @returns The exit time upon traversal of the graph.
   /// @returns 0 if no exit time is registered.
-  inline int ExitTime() const { return visits_[1]; }
+  int ExitTime() const { return visits_[1]; }
 
   /// @returns The last time this node was visited.
   /// @returns 0 if no last time is registered.
-  inline int LastVisit() const {
-    return visits_[2] ? visits_[2] : visits_[1];
-  }
+  int LastVisit() const { return visits_[2] ? visits_[2] : visits_[1]; }
 
   /// @returns The minimum time of the visit.
   /// @returns 0 if no time is registered.
-  inline virtual int min_time() const { return visits_[0]; }
+  virtual int min_time() const { return visits_[0]; }
 
   /// @returns The maximum time of the visit.
   /// @returns 0 if no time is registered.
-  inline virtual int max_time() const { return LastVisit(); }
+  virtual int max_time() const { return LastVisit(); }
 
   /// @returns false if this node was only visited once upon graph traversal.
   /// @returns true if this node was revisited at one more time.
-  inline bool Revisited() const { return visits_[2] ? true : false; }
+  bool Revisited() const { return visits_[2] ? true : false; }
 
   /// @returns true if this node was visited at least once.
   /// @returns false if this node was never visited upon traversal.
-  inline bool Visited() const { return visits_[0] ? true : false; }
+  bool Visited() const { return visits_[0] ? true : false; }
 
   /// Clears all the visit information. Resets the visit times to 0s.
-  inline void ClearVisits() { return std::fill(visits_, visits_ + 3, 0); }
+  void ClearVisits() { return std::fill(visits_, visits_ + 3, 0); }
 
   /// @returns The positive count of this node.
-  inline int pos_count() const { return pos_count_; }
+  int pos_count() const { return pos_count_; }
 
   /// @returns The negative count of this node.
-  inline int neg_count() const { return neg_count_; }
+  int neg_count() const { return neg_count_; }
 
   /// Increases the count of this node.
   ///
   /// @param[in] positive Indication of a positive node.
-  inline void AddCount(bool positive) {
-    positive ? ++pos_count_ : ++neg_count_;
-  }
+  void AddCount(bool positive) { positive ? ++pos_count_ : ++neg_count_; }
 
   /// Resets positive and negative counts of this node.
-  inline void ResetCount() {
+  void ResetCount() {
     pos_count_ = 0;
     neg_count_ = 0;
   }
@@ -187,7 +182,7 @@ class Constant : public Node {
   explicit Constant(bool state) noexcept;
 
   /// @returns The state of the constant.
-  inline bool state() const { return state_; }
+  bool state() const { return state_; }
 
  private:
   bool state_;  ///< The Boolean value for the constant state.
@@ -209,7 +204,7 @@ class Variable : public Node {
   Variable() noexcept;
 
   /// Resets the starting index for variables.
-  inline static void ResetIndex() { next_variable_ = 1; }
+  static void ResetIndex() { next_variable_ = 1; }
 
  private:
   static int next_variable_;  ///< The next index for a new variable.
@@ -291,14 +286,14 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   IGatePtr Clone() noexcept;
 
   /// @returns Type of this gate.
-  inline const Operator& type() const { return type_; }
+  const Operator& type() const { return type_; }
 
   /// Changes the gate type information.
   /// This function is expected to be used
   /// with only simple AND, OR, NOT, NULL gates.
   ///
   /// @param[in] t The type for this gate.
-  inline void type(const Operator& t) {
+  void type(const Operator& t) {
     assert(t == kAndGate || t == kOrGate || t == kNotGate || t == kNullGate);
     type_ = t;
   }
@@ -307,7 +302,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   ///
   /// @warning The function does not validate the vote number,
   ///          nor does it check for the ATLEAST type of the gate.
-  inline int vote_number() const { return vote_number_; }
+  int vote_number() const { return vote_number_; }
 
   /// Sets the vote number for this gate.
   /// This function is used for K/N gates.
@@ -316,26 +311,26 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   ///
   /// @warning The function does not validate the vote number,
   ///          nor does it check for the ATLEAST type of the gate.
-  inline void vote_number(int number) { vote_number_ = number; }
+  void vote_number(int number) { vote_number_ = number; }
 
   /// @returns The state of this gate.
-  inline const State& state() const { return state_; }
+  const State& state() const { return state_; }
 
   /// @returns Arguments of this gate.
-  inline const std::set<int>& args() const { return args_; }
+  const std::set<int>& args() const { return args_; }
 
   /// @returns Arguments of this gate that are indexed gates.
-  inline const std::unordered_map<int, IGatePtr>& gate_args() const {
+  const std::unordered_map<int, IGatePtr>& gate_args() const {
     return gate_args_;
   }
 
   /// @returns Arguments of this gate that are variables.
-  inline const std::unordered_map<int, VariablePtr>& variable_args() const {
+  const std::unordered_map<int, VariablePtr>& variable_args() const {
     return variable_args_;
   }
 
   /// @returns Arguments of this gate that are indexed constants.
-  inline const std::unordered_map<int, ConstantPtr>& constant_args() const {
+  const std::unordered_map<int, ConstantPtr>& constant_args() const {
     return constant_args_;
   }
 
@@ -344,51 +339,51 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// to visit information provided by the base Node class.
   ///
   /// @returns The mark of this gate.
-  inline bool mark() const { return mark_; }
+  bool mark() const { return mark_; }
 
   /// Sets the mark of this gate.
   ///
   /// @param[in] flag Marking with the meaning for the marker.
-  inline void mark(bool flag) { mark_ = flag; }
+  void mark(bool flag) { mark_ = flag; }
 
   /// @returns The minimum time of visits of the gate's sub-graph.
   /// @returns 0 if no time assignment was performed.
-  inline int min_time() const { return min_time_; }
+  int min_time() const { return min_time_; }
 
   /// Sets the queried minimum visit time of the sub-graph.
   ///
   /// @param[in] time The positive min time of this gate's sub-graph.
-  inline void min_time(int time) {
+  void min_time(int time) {
     assert(time > 0);
     min_time_ = time;
   }
 
   /// @returns The maximum time of the visits of the gate's sub-graph.
   /// @returns 0 if no time assignment was performed.
-  inline int max_time() const { return max_time_; }
+  int max_time() const { return max_time_; }
 
   /// Sets the queried maximum visit time of the sub-graph.
   ///
   /// @param[in] time The positive max time of this gate's sub-graph.
-  inline void max_time(int time) {
+  void max_time(int time) {
     assert(time > 0);
     max_time_ = time;
   }
 
   /// @returns true if this gate is set to be a module.
   /// @returns false if it is not yet set to be a module.
-  inline bool IsModule() const { return module_; }
+  bool IsModule() const { return module_; }
 
   /// Turns this gate's module flag on.
   /// This should be one time operation.
-  inline void TurnModule() {
+  void TurnModule() {
     assert(!module_);
     module_ = true;
   }
 
   /// Sets the module flag to false.
   /// This is a destruction of the module.
-  inline void DestroyModule() {
+  void DestroyModule() {
     assert(module_);
     module_ = false;
   }
@@ -402,7 +397,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   ///
   /// @warning The function assumes that the argument exists.
   ///          If it doesn't, the return value is invalid.
-  inline int GetArgSign(const NodePtr& arg) const noexcept {
+  int GetArgSign(const NodePtr& arg) const noexcept {
     assert(arg->parents().count(this->index()));
     return args_.count(arg->index()) ? 1 : -1;
   }
@@ -419,7 +414,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// @warning Never try to use dynamic casts to find the type of the node.
   ///          There are other gate's helper functions
   ///          that will avoid any need for the RTTI or other hacks.
-  inline NodePtr GetArg(int index) const noexcept {
+  NodePtr GetArg(int index) const noexcept {
     assert(args_.count(index));
     if (gate_args_.count(index)) return gate_args_.find(index)->second;
     if (variable_args_.count(index)) return variable_args_.find(index)->second;
@@ -573,7 +568,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// Sets the state of this gate to null
   /// and clears all its arguments.
   /// This function is expected to be used only once.
-  inline void Nullify() noexcept {
+  void Nullify() noexcept {
     assert(state_ == kNormalState);
     state_ = kNullState;
     IGate::EraseAllArgs();
@@ -582,7 +577,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// Sets the state of this gate to unity
   /// and clears all its arguments.
   /// This function is expected to be used only once.
-  inline void MakeUnity() noexcept {
+  void MakeUnity() noexcept {
     assert(state_ == kNormalState);
     state_ = kUnityState;
     IGate::EraseAllArgs();
@@ -639,7 +634,7 @@ class GateSet {
   ///
   /// @returns A pair of the unique gate and
   ///          the insertion success flag.
-  inline std::pair<IGatePtr, bool> insert(const IGatePtr& gate) noexcept {
+  std::pair<IGatePtr, bool> insert(const IGatePtr& gate) noexcept {
     auto result = table_[gate->type()].insert(gate);
     return {*result.first, result.second};
   }
@@ -732,18 +727,18 @@ class BooleanGraph {
   BooleanGraph& operator=(const BooleanGraph&) = delete;
 
   /// @returns true if the fault tree is coherent.
-  inline bool coherent() const { return coherent_; }
+  bool coherent() const { return coherent_; }
 
   /// @returns true if all gates of the fault tree are normalized AND/OR.
-  inline bool normal() const { return normal_; }
+  bool normal() const { return normal_; }
 
   /// @returns The current root gate of the graph.
-  inline const IGatePtr& root() const { return root_; }
+  const IGatePtr& root() const { return root_; }
 
   /// @returns Original basic event
   ///          as initialized in this indexed fault tree.
   ///          The position of a basic event equals (its index - 1).
-  inline const std::vector<BasicEventPtr>& basic_events() const {
+  const std::vector<BasicEventPtr>& basic_events() const {
     return basic_events_;
   }
 
@@ -756,7 +751,7 @@ class BooleanGraph {
   /// @param[in] index Positive index of the basic event.
   ///
   /// @returns Pointer to the original basic event from its index.
-  inline const BasicEventPtr& GetBasicEvent(int index) const {
+  const BasicEventPtr& GetBasicEvent(int index) const {
     assert(index > 0);
     assert(index <= basic_events_.size());
     return basic_events_[index - 1];
@@ -783,7 +778,7 @@ class BooleanGraph {
   /// This function is helpful for preprocessing.
   ///
   /// @param[in] gate Replacement root gate.
-  inline void root(const IGatePtr& gate) { root_ = gate; }
+  void root(const IGatePtr& gate) { root_ = gate; }
 
   /// @struct ProcessedNodes
   /// Holder for nodes that are created from fault tree events.

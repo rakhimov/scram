@@ -58,40 +58,35 @@ class Model : public Element {
   Model& operator=(const Model&) = delete;
 
   /// @returns The name of the model.
-  inline const std::string& name() const { return name_; }
+  const std::string& name() const { return name_; }
 
   /// @returns Defined fault trees in the model.
-  inline const std::unordered_map<std::string, FaultTreePtr>&
-      fault_trees() const {
+  const std::unordered_map<std::string, FaultTreePtr>& fault_trees() const {
     return fault_trees_;
   }
 
   /// @returns Parameters defined for this model.
-  inline const std::unordered_map<std::string, ParameterPtr>&
-      parameters() const {
+  const std::unordered_map<std::string, ParameterPtr>& parameters() const {
     return parameters_;
   }
 
   /// @returns House events defined for this model.
-  inline const std::unordered_map<std::string, HouseEventPtr>&
-      house_events() const {
+  const std::unordered_map<std::string, HouseEventPtr>& house_events() const {
     return house_events_;
   }
 
   /// @returns Basic events defined for this model.
-  inline const std::unordered_map<std::string, BasicEventPtr>&
-      basic_events() const {
+  const std::unordered_map<std::string, BasicEventPtr>& basic_events() const {
     return basic_events_;
   }
 
   /// @returns Gates defined for this model.
-  inline const std::unordered_map<std::string, GatePtr>& gates() const {
+  const std::unordered_map<std::string, GatePtr>& gates() const {
     return gates_;
   }
 
   /// @returns CCF groups defined for this model.
-  inline const std::unordered_map<std::string, CcfGroupPtr>&
-      ccf_groups() const {
+  const std::unordered_map<std::string, CcfGroupPtr>& ccf_groups() const {
     return ccf_groups_;
   }
 

@@ -476,8 +476,8 @@ class Preprocessor {
   /// @param[in] exit_time The exit time of the root gate of the graph.
   ///
   /// @returns true if the node within the graph visit times.
-  inline bool IsNodeWithinGraph(const NodePtr& node, int enter_time,
-                                int exit_time) noexcept {
+  bool IsNodeWithinGraph(const NodePtr& node, int enter_time,
+                         int exit_time) noexcept {
     assert(enter_time > 0);
     assert(exit_time > enter_time);
     assert(node->EnterTime() >= 0);
@@ -494,8 +494,8 @@ class Preprocessor {
   /// @param[in] exit_time The exit time of the root gate of the graph.
   ///
   /// @returns true if the subgraph within the graph visit times.
-  inline bool IsSubgraphWithinGraph(const IGatePtr& root, int enter_time,
-                                    int exit_time) noexcept {
+  bool IsSubgraphWithinGraph(const IGatePtr& root, int enter_time,
+                             int exit_time) noexcept {
     assert(enter_time > 0);
     assert(exit_time > enter_time);
     assert(root->min_time() > 0);

@@ -42,8 +42,7 @@ class SetNode : public NonTerminal {
   /// @param[in] vertex Pointer to a Vertex known to be a SetNode.
   ///
   /// @return Casted pointer to SetNode.
-  inline static std::shared_ptr<SetNode> Ptr(
-      const std::shared_ptr<Vertex>& vertex) {
+  static std::shared_ptr<SetNode> Ptr(const std::shared_ptr<Vertex>& vertex) {
     return std::static_pointer_cast<SetNode>(vertex);
   }
 };
@@ -65,7 +64,7 @@ class Zbdd {
   void Analyze(const Bdd* bdd) noexcept;
 
   /// @returns Minimal cut sets.
-  inline const std::vector<std::vector<int>>& cut_sets() const {
+  const std::vector<std::vector<int>>& cut_sets() const {
     return cut_sets_;
   }
 

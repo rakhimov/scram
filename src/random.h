@@ -41,7 +41,7 @@ class Random {
   /// Sets the seed of the underlying random number generator.
   ///
   /// @param[in] seed The seed for RNGs.
-  inline static void seed(int seed) noexcept {
+  static void seed(int seed) noexcept {
     Random::rng_.seed(static_cast<unsigned>(seed));
   }
 
@@ -51,7 +51,7 @@ class Random {
   /// @param[in] max Upper bound.
   ///
   /// @returns A sampled value.
-  inline static double UniformRealGenerator(double min, double max) noexcept {
+  static double UniformRealGenerator(double min, double max) noexcept {
     assert(min < max);
     std::uniform_real_distribution<double> dist(min, max);
     return dist(rng_);
@@ -64,8 +64,8 @@ class Random {
   /// @param[in] upper Upper bound.
   ///
   /// @returns A sampled value.
-  inline static double TriangularGenerator(double lower, double mode,
-                                           double upper) noexcept {
+  static double TriangularGenerator(double lower, double mode,
+                                    double upper) noexcept {
     assert(lower < mode);
     assert(mode < upper);
     static const std::array<double, 3> weights = {0, 1, 0};
@@ -86,7 +86,7 @@ class Random {
   ///                    Extra weights are ignored.
   ///
   /// @returns A sampled value.
-  inline static double PiecewiseLinearGenerator(
+  static double PiecewiseLinearGenerator(
       const std::vector<double>& intervals,
       const std::vector<double>& weights) noexcept {
     std::piecewise_linear_distribution<double> dist(intervals.begin(),
@@ -105,7 +105,7 @@ class Random {
   ///                    Extra weights are ignored.
   ///
   /// @returns A sampled value.
-  inline static double HistogramGenerator(
+  static double HistogramGenerator(
       const std::vector<double>& intervals,
       const std::vector<double>& weights) noexcept {
     std::piecewise_constant_distribution<double> dist(intervals.begin(),
@@ -122,9 +122,8 @@ class Random {
   ///
   /// @returns A sample Value from the value vector.
   template<class T>
-  inline static T DiscreteGenerator(
-      const std::vector<T>& values,
-      const std::vector<double>& weights) noexcept {
+  static T DiscreteGenerator(const std::vector<T>& values,
+                             const std::vector<double>& weights) noexcept {
     assert(values.size() == weights.size());
     return values[DiscreteGenerator(weights)];
   }
@@ -135,7 +134,7 @@ class Random {
   /// @param[in] p Probability of success.
   ///
   /// @returns The number of successes.
-  inline static int BinomialGenerator(int n, double p) noexcept {
+  static int BinomialGenerator(int n, double p) noexcept {
     std::binomial_distribution<int> dist(n, p);
     return dist(rng_);
   }
@@ -146,7 +145,7 @@ class Random {
   /// @param[in] sigma The standard deviation of the distribution.
   ///
   /// @returns A sampled value.
-  inline static double NormalGenerator(double mean, double sigma) noexcept {
+  static double NormalGenerator(double mean, double sigma) noexcept {
     assert(sigma >= 0);
     std::normal_distribution<double> dist(mean, sigma);
     return dist(rng_);
@@ -158,7 +157,7 @@ class Random {
   /// @param[in] s The s scale factor of the distribution.
   ///
   /// @returns A sampled value.
-  inline static double LogNormalGenerator(double m, double s) noexcept {
+  static double LogNormalGenerator(double m, double s) noexcept {
     assert(s >= 0);
     std::lognormal_distribution<double> dist(m, s);
     return dist(rng_);
@@ -174,7 +173,7 @@ class Random {
   /// @note The rate parameter is 1/theta,
   ///       so for alpha/beta system,
   ///       pass 1/beta as a second parameter for this generator.
-  inline static double GammaGenerator(double k, double theta) noexcept {
+  static double GammaGenerator(double k, double theta) noexcept {
     assert(k > 0);
     assert(theta > 0);
     std::gamma_distribution<double> gamma_dist(k);
@@ -187,7 +186,7 @@ class Random {
   /// @param[in] beta Beta shape parameter of Beta distribution.
   ///
   /// @returns A sampled value.
-  inline static double BetaGenerator(double alpha, double beta) noexcept {
+  static double BetaGenerator(double alpha, double beta) noexcept {
     assert(alpha > 0);
     assert(beta > 0);
     std::gamma_distribution<double> gamma_dist_x(alpha);
@@ -203,7 +202,7 @@ class Random {
   /// @param[in] lambda Scale parameter of Weibull distribution.
   ///
   /// @returns A sampled value.
-  inline static double WeibullGenerator(double k, double lambda) noexcept {
+  static double WeibullGenerator(double k, double lambda) noexcept {
     assert(k > 0);
     assert(lambda > 0);
     std::weibull_distribution<double> dist(k, lambda);
@@ -215,7 +214,7 @@ class Random {
   /// @param[in] lambda Rate parameter of Exponential distribution.
   ///
   /// @returns A sampled value.
-  inline static double ExponentialGenerator(double lambda) noexcept {
+  static double ExponentialGenerator(double lambda) noexcept {
     assert(lambda > 0);
     std::exponential_distribution<double> dist(lambda);
     return dist(rng_);
@@ -226,7 +225,7 @@ class Random {
   /// @param[in] mean The mean value for Poisson distribution.
   ///
   /// @returns A sampled value.
-  inline static int PoissonGenerator(int mean) noexcept {
+  static int PoissonGenerator(int mean) noexcept {
     assert(mean > 0);
     std::poisson_distribution<int> dist(mean);
     return dist(rng_);
@@ -238,7 +237,7 @@ class Random {
   /// @param[in] max Upper bound.
   ///
   /// @returns A sampled value.
-  inline static double LogUniformGenerator(double min, double max) noexcept {
+  static double LogUniformGenerator(double min, double max) noexcept {
     return std::exp(Random::UniformRealGenerator(min, max));
   }
 
@@ -249,8 +248,8 @@ class Random {
   /// @param[in] upper Upper bound.
   ///
   /// @returns A sampled value.
-  inline static double LogTriangularGenerator(double lower, double mode,
-                                              double upper) noexcept {
+  static double LogTriangularGenerator(double lower, double mode,
+                                       double upper) noexcept {
     return std::exp(Random::TriangularGenerator(lower, mode, upper));
   }
 
@@ -261,8 +260,7 @@ class Random {
   ///                    where n is the size of the vector.
   ///
   /// @returns Integer in the range [0, 1).
-  inline static int DiscreteGenerator(
-      const std::vector<double>& weights) noexcept {
+  static int DiscreteGenerator(const std::vector<double>& weights) noexcept {
     std::discrete_distribution<int> dist(weights.begin(), weights.end());
     return dist(rng_);
   }

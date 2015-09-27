@@ -47,12 +47,12 @@ class Vertex {
   virtual ~Vertex() = 0;  ///< Abstract class.
 
   /// @returns true if this vertex is terminal.
-  inline bool terminal() const { return terminal_; }
+  bool terminal() const { return terminal_; }
 
   /// @returns Identificator of the BDD graph rooted by this vertex.
   ///
   /// @todo Deal with 0 id.
-  inline int id() const { return id_; };
+  int id() const { return id_; };
 
  protected:
   int id_;  ///< Unique identifier of the BDD graph with this vertex.
@@ -78,15 +78,14 @@ class Terminal : public Vertex {
   /// @note The value serves as an id for this terminal vertex.
   ///       Non-terminal if-then-else vertices should never have
   ///       identifications of value 0 or 1.
-  inline bool value() const { return value_; }
+  bool value() const { return value_; }
 
   /// Recovers a shared pointer to Terminal from a pointer to Vertex.
   ///
   /// @param[in] vertex Pointer to a Vertex known to be a Terminal.
   ///
   /// @return Casted pointer to Terminal.
-  inline static std::shared_ptr<Terminal> Ptr(
-      const std::shared_ptr<Vertex>& vertex) {
+  static std::shared_ptr<Terminal> Ptr(const std::shared_ptr<Vertex>& vertex) {
     return std::static_pointer_cast<Terminal>(vertex);
   }
 
@@ -107,46 +106,46 @@ class NonTerminal : public Vertex {
   virtual ~NonTerminal() = 0;  ///< Abstract base class.
 
   /// @returns The index of this vertex.
-  inline int index() const {
+  int index() const {
     assert(index_ > 0);
     return index_;
   }
 
   /// @returns The order of the vertex.
-  inline int order() const {
+  int order() const {
     assert(order_ > 0);
     return order_;
   }
 
   /// @returns true if this vertex represents a module gate.
-  inline bool module() const { return module_; }
+  bool module() const { return module_; }
 
   /// Sets this vertex for representation of a module.
-  inline void module(bool flag) { module_ = flag; }
+  void module(bool flag) { module_ = flag; }
 
   /// Sets the unique identifier of the ROBDD graph.
   ///
   /// @param[in] id Unique identifier of the ROBDD graph.
   ///               The identifier should not collide
   ///               with the identifiers of terminal nodes.
-  inline void id(int id) {
+  void id(int id) {
     assert(id > 1);  // Must not have an ID of terminal nodes.
     Vertex::id_ = id;
   }
 
   /// @returns (1/True/then/left) branch if-then-else vertex.
-  inline const VertexPtr& high() const { return high_; }
+  const VertexPtr& high() const { return high_; }
 
   /// Sets the (1/True/then/left) branch vertex.
   ///
   /// @param[in] high The if-then-else vertex.
-  inline void high(const VertexPtr& high) { high_ = high; }
+  void high(const VertexPtr& high) { high_ = high; }
 
   /// @returns (0/False/else/right) branch vertex.
   ///
   /// @note This edge may have complement interpretation.
   ///       Check complement_edge() upon using this edge.
-  inline const VertexPtr& low() const { return low_; }
+  const VertexPtr& low() const { return low_; }
 
   /// Sets the (0/False/else/right) branch vertex.
   ///
@@ -155,23 +154,23 @@ class NonTerminal : public Vertex {
   /// @note This may have complement interpretation.
   ///       Keep the complement_edge() flag up-to-date
   ///       after setting this edge.
-  inline void low(const VertexPtr& low) { low_ = low; }
+  void low(const VertexPtr& low) { low_ = low; }
 
   /// @returns true if the low edge is complement.
-  inline bool complement_edge() const { return complement_edge_; }
+  bool complement_edge() const { return complement_edge_; }
 
   /// Sets the complement flag for the low edge.
   ///
   /// @param[in] flag Indicator to treat the low edge as a complement.
-  inline void complement_edge(bool flag) { complement_edge_ = flag; }
+  void complement_edge(bool flag) { complement_edge_ = flag; }
 
   /// @returns The mark of this vertex.
-  inline bool mark() const { return mark_; }
+  bool mark() const { return mark_; }
 
   /// Marks this vertex.
   ///
   /// @param[in] flag A flag with the meaning for the user of marks.
-  inline void mark(bool flag) { mark_ = flag; }
+  void mark(bool flag) { mark_ = flag; }
 
  protected:
   int index_;  ///< Index of the variable.
@@ -191,20 +190,19 @@ class Ite : public NonTerminal {
   using NonTerminal::NonTerminal;  ///< Constructor with index and order.
 
   /// @returns The probability of the function graph.
-  inline double prob() const { return prob_; }
+  double prob() const { return prob_; }
 
   /// Sets the probability of the function graph.
   ///
   /// @param[in] value Calculated value for the probability.
-  inline void prob(double value) { prob_ = value; }
+  void prob(double value) { prob_ = value; }
 
   /// Recovers a shared pointer to Ite from a pointer to Vertex.
   ///
   /// @param[in] vertex Pointer to a Vertex known to be an Ite.
   ///
   /// @return Casted pointer to Ite.
-  inline static std::shared_ptr<Ite> Ptr(
-      const std::shared_ptr<Vertex>& vertex) {
+  static std::shared_ptr<Ite> Ptr(const std::shared_ptr<Vertex>& vertex) {
     return std::static_pointer_cast<Ite>(vertex);
   }
 
@@ -257,13 +255,13 @@ class Bdd {
   };
 
   /// @returns The root vertex of the ROBDD.
-  inline const VertexPtr& root() const { return root_; }
+  const VertexPtr& root() const { return root_; }
 
   /// @returns true if the root must be interpreted as complement.
-  inline bool complement_root() const { return complement_root_; }
+  bool complement_root() const { return complement_root_; }
 
   /// @returns Mapping of Boolean graph gates and BDD graph vertices.
-  inline const std::unordered_map<int, Function>& gates() const {
+  const std::unordered_map<int, Function>& gates() const {
     return gates_;
   }
 

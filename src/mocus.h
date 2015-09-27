@@ -103,22 +103,20 @@ class SimpleGate {
   explicit SimpleGate(const Operator& type) noexcept : type_(type) {}
 
   /// @returns The type of this gate.
-  inline const Operator& type() const { return type_; }
+  const Operator& type() const { return type_; }
 
   /// Adds a basic event index at the end of a container.
   /// This function is specifically given to initiate the gate.
   ///
   /// @param[in] index The index of a basic event.
-  inline void InitiateWithBasic(int index) {
-    basic_events_.push_back(index);
-  }
+  void InitiateWithBasic(int index) { basic_events_.push_back(index); }
 
   /// Adds a module index at the end of a container.
   /// This function is specifically given to initiate the gate.
   /// Note that modules are treated just like basic events.
   ///
   /// @param[in] index The index of a module.
-  inline void InitiateWithModule(int index) {
+  void InitiateWithModule(int index) {
     assert(index > 0);
     modules_.push_back(index);
   }
@@ -127,7 +125,7 @@ class SimpleGate {
   /// This function assumes that the tree does not have complement gates.
   ///
   /// @param[in] gate The pointer to the child gate.
-  inline void AddChildGate(const SimpleGatePtr& gate) {
+  void AddChildGate(const SimpleGatePtr& gate) {
     assert(gate->type() == kAndGate || gate->type() == kOrGate);
     assert(gate->type() != type_);
     gates_.push_back(gate);
@@ -183,7 +181,7 @@ class Mocus {
   void FindMcs();
 
   /// @returns Generated minimal cut sets with basic event indices.
-  inline const std::vector<Set>& GetGeneratedMcs() const { return imcs_; }
+  const std::vector<Set>& GetGeneratedMcs() const { return imcs_; }
 
  private:
   using SimpleGatePtr = std::shared_ptr<SimpleGate>;

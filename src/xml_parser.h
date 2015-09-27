@@ -53,9 +53,7 @@ class XMLParser {
   void Validate(const std::stringstream& xml_schema_snippet);
 
   /// @returns The parser's document.
-  inline const xmlpp::Document* Document() const {
-    return parser_->get_document();
-  }
+  const xmlpp::Document* Document() const { return parser_->get_document(); }
 
  private:
   std::unique_ptr<xmlpp::DomParser> parser_;  ///< File parser.
