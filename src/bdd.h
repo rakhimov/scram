@@ -200,7 +200,7 @@ class Ite : public NonTerminal {
   /// @returns Saved results of importance factor calculations.
   double factor() const { return factor_; }
 
-  /// Memorized the results of importance factor calculations.
+  /// Memorized results of importance factor calculations.
   ///
   /// @param[in] value Calculation results for importance factor.
   void factor(double value) { factor_ = value; }
@@ -240,7 +240,7 @@ using TripletTable = std::unordered_map<Triplet, Value, TripletHash>;
 
 /// @class Bdd
 /// Analysis of Boolean graphs with Binary Decision Diagrams.
-/// This binary dicision diagram data structure
+/// This binary decision diagram data structure
 /// represents Reduced Ordered BDD with attributed edges.
 /// There is only one terminal vertex of value 1/True.
 class Bdd {

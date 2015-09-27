@@ -48,7 +48,7 @@ class SetNode : public NonTerminal {
 };
 
 /// @class Zbdd
-/// Zero-Suppressed Binary Desicision Diagrams for set manipulations.
+/// Zero-Suppressed Binary Decision Diagrams for set manipulations.
 class Zbdd {
  public:
   Zbdd();
@@ -64,16 +64,16 @@ class Zbdd {
   void Analyze(const Bdd* bdd) noexcept;
 
   /// @returns Minimal cut sets.
-  const std::vector<std::vector<int>>& cut_sets() const {
-    return cut_sets_;
-  }
+  const std::vector<std::vector<int>>& cut_sets() const { return cut_sets_; }
 
  private:
   using VertexPtr = std::shared_ptr<Vertex>;
   using TerminalPtr = std::shared_ptr<Terminal>;
   using ItePtr = std::shared_ptr<Ite>;
   using SetNodePtr = std::shared_ptr<SetNode>;
-  using HashTable = TripletTable<SetNodePtr>;
+  using UniqueTable = TripletTable<SetNodePtr>;
+  using ComputeTable = TripletTable<VertexPtr>;
+  using CutSet = std::vector<int>;
 
   /// Converts BDD graph into ZBDD graph.
   ///
@@ -81,8 +81,7 @@ class Zbdd {
   /// @param[in] complement Interpretation of the vertex as complement.
   ///
   /// @returns Pointer to the root vertex of the ZBDD graph.
-  VertexPtr ConvertBdd(const VertexPtr& vertex,
-                       bool complement) noexcept;
+  VertexPtr ConvertBdd(const VertexPtr& vertex, bool complement) noexcept;
 
   /// Removes subsets in ZBDD.
   ///
@@ -110,27 +109,31 @@ class Zbdd {
   /// @param[in, out] path Current path of high branches.
   ///                      This container may get modified drastically
   ///                      upon passing to the main cut sets container.
-  void GenerateCutSets(const VertexPtr& vertex,
-                       std::vector<int>* path) noexcept;
+  /// @param[in, out] cut_sets A set of cut sets generated in this graph.
+  void GenerateCutSets(const VertexPtr& vertex, std::vector<int>* path,
+                       std::vector<CutSet>* cut_sets) noexcept;
 
   /// Table of unique SetNodes denoting sets.
   /// The key consists of (index, id_high, id_low) triplet.
-  HashTable unique_table_;
+  UniqueTable unique_table_;
 
   /// Table of processed computations over sets.
   /// The key must convey the semantics of the operation over sets.
   /// The argument functions are recorded with their IDs (not vertex indices).
   /// In order to keep only unique computations,
   /// the argument IDs must be ordered.
-  TripletTable<VertexPtr> compute_table_;
+  ComputeTable compute_table_;
 
+  const Bdd* bdd_graph_;  ///< BDD for transformations.
   std::unordered_map<int, SetNodePtr> ites_;  ///< Processed function graphs.
-
+  std::unordered_map<int, VertexPtr> modules_;  ///< Module graphs.
   const TerminalPtr kBase_;  ///< Terminal Base (Unity/1) set.
   const TerminalPtr kEmpty_;  ///< Terminal Empty (Null/0) set.
   int set_id_;  ///< Identification assignment for new set graphs.
-
-  std::vector<std::vector<int>> cut_sets_;  ///< Generated cut sets.
+  std::unordered_map<int, VertexPtr> subsume_results_;  ///< Memorize subsume.
+  /// Storage for cut sets generated for modules.
+  std::unordered_map<int, std::vector<CutSet>> module_cut_sets_;
+  std::vector<CutSet> cut_sets_;  ///< Generated cut sets.
 };
 
 }  // namespace scram

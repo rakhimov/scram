@@ -26,7 +26,7 @@
 namespace scram {
 namespace test {
 
-TEST_F(RiskAnalysisTest, DISABLED_ZbddTest) {
+TEST_F(RiskAnalysisTest, ZbddTest) {
   std::string tree_input =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
@@ -44,7 +44,7 @@ TEST_F(RiskAnalysisTest, DISABLED_ZbddTest) {
   delete zbdd;
 }
 
-TEST_F(RiskAnalysisTest, DISABLED_ZbddChinese) {
+TEST_F(RiskAnalysisTest, ZbddChinese) {
   std::vector<std::string> input_files;
   input_files.push_back("./share/scram/input/Chinese/chinese.xml");
   input_files.push_back("./share/scram/input/Chinese/chinese-basic-events.xml");
