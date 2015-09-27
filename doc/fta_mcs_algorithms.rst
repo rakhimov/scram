@@ -112,4 +112,4 @@ that the BDD allows fast and exact calculation of probabilities,
 which makes Probability, Importance, Uncertainty analyses fast as well.
 This algorithm is used in CAFTA, RiskA, and RiskMan.
 
-More information can be found in :ref:`papers`.
+More information can be found in :ref:`references`.

@@ -3,7 +3,7 @@ Theory
 ######
 
 This section contains short descriptions of the analyses used in probabilistic risk assessment.
-More information can be found in :ref:`papers`.
+More information can be found in :ref:`references`.
 
 
 **************************
