@@ -83,8 +83,8 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
 
     po::store(po::parse_command_line(argc, argv, desc), *vm);
   } catch (std::exception& err) {
-    std::cerr << "Option error: " << err.what() << "\n\n"
-        << usage << "\n\n" << desc << "\n";
+    std::cerr << "Option error: " << err.what() << "\n\n" << usage << "\n\n"
+              << desc << "\n";
     return 1;
   }
   po::notify(*vm);
@@ -112,26 +112,23 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
   }
 
   if (!vm->count("input-files") && !vm->count("config-file")) {
-    std::string msg = "No input or configuration file is given.\n";
-    std::cerr << msg << std::endl;
+    std::cerr << "No input or configuration file is given.\n" << std::endl;
     std::cerr << usage << "\n\n" << desc << "\n";
     return 1;
   }
 
   if (vm->count("rare-event") && vm->count("mcub")) {
-    std::string msg = "The rare event and MCUB approximations cannot be "
-                      "applied at the time.";
-    std::cerr << msg << "\n" << std::endl;
-    std::cerr << usage << "\n\n" << desc << std::endl;
+    std::cerr << "The rare event and MCUB approximations cannot be "
+              << "applied at the same time.\n"
+              << usage << "\n\n" << desc << std::endl;
     return 1;
   }
 
   if (vm->count("verbosity")) {
     int verb = (*vm)["verbosity"].as<int>();
     if (verb < 0 || verb > 7) {
-      std::string msg = "Log verbosity must be between 0 and 7.";
-      std::cerr << msg << "\n" << std::endl;
-      std::cerr << usage << "\n\n" << desc << std::endl;
+      std::cerr << "Log verbosity must be between 0 and 7." << "\n"
+                << usage << "\n\n" << desc << std::endl;
       return 1;
     }
   }
@@ -274,52 +271,39 @@ int main(int argc, char* argv[]) {
 
 #ifdef NDEBUG
   } catch (scram::IOError& io_err) {
-    std::cerr << "SCRAM I/O Error\n" << std::endl;
-    std::cerr << io_err.what() << std::endl;
+    std::cerr << "SCRAM I/O Error:\n" << io_err.what() << std::endl;
     return 1;
   } catch (scram::ValidationError& vld_err) {
-    std::cerr << "SCRAM Validation Error\n" << std::endl;
-    std::cerr << vld_err.what() << std::endl;
+    std::cerr << "SCRAM Validation Error:\n" << vld_err.what() << std::endl;
     return 1;
   } catch (scram::ValueError& val_err) {
-    std::cerr << "SCRAM Value Error\n" << std::endl;
-    std::cerr << val_err.what() << std::endl;
+    std::cerr << "SCRAM Value Error:\n" << val_err.what() << std::endl;
     return 1;
   } catch (scram::LogicError& logic_err) {
     std::cerr << "Bad, bad news. Please report this error. Thank you!\n"
-        << std::endl;
-    std::cerr << "SCRAM Logic Error\n" << std::endl;
-    std::cerr << logic_err.what() << std::endl;
+              << "SCRAM Logic Error:\n" << logic_err.what() << std::endl;
     return 1;
   } catch (scram::IllegalOperation& iopp_err) {
     std::cerr << "Bad, bad news. Please report this error. Thank you!\n"
-        << std::endl;
-    std::cerr << "SCRAM Illegal Operation\n" << std::endl;
-    std::cerr << iopp_err.what() << std::endl;
+              << "SCRAM Illegal Operation:\n" << iopp_err.what() << std::endl;
     return 1;
   } catch (scram::InvalidArgument& iarg_err) {
     std::cerr << "Bad, bad news. Please report this error. Thank you!\n"
-        << std::endl;
-    std::cerr << "SCRAM Invalid Argument Error\n" << std::endl;
-    std::cerr << iarg_err.what() << std::endl;
+              << "SCRAM Invalid Argument Error:\n" << iarg_err.what()
+              << std::endl;
     return 1;
   } catch (scram::Error& scram_err) {
     std::cerr << "Bad, bad news. Please report this error. Thank you!\n"
-        << std::endl;
-    std::cerr << "SCRAM Error\n" << std::endl;
-    std::cerr << scram_err.what() << std::endl;
+              << "SCRAM Error:\n" << scram_err.what() << std::endl;
     return 1;
   } catch (boost::exception& boost_err) {
     std::cerr << "Bad, bad news. Please report this error. Thank you!\n"
-        << std::endl;
-    std::cerr << "Boost Exception:\n" << std::endl;
-    std::cerr << boost::diagnostic_information(boost_err) << std::endl;
+              << "Boost Exception:\n"
+              << boost::diagnostic_information(boost_err) << std::endl;
     return 1;
   } catch (std::exception& std_err) {
     std::cerr << "Bad, bad news. Please report this error. Thank you!\n"
-        << std::endl;
-    std::cerr << "Standard Exception:\n" << std::endl;
-    std::cerr << std_err.what() << std::endl;
+              << "Standard Exception:\n" << std_err.what() << std::endl;
     return 1;
   }
 #endif

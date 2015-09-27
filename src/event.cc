@@ -68,13 +68,13 @@ void Gate::Validate() {
         if (!conditional_found) {
           conditional_found = true;
         } else {
-          msg << this->name() << " : " << "INHIBIT"
-              << " gate must have exactly one conditional event.\n";
+          msg << this->name() << " : INHIBIT gate must have"
+              << " exactly one conditional event.\n";
         }
       }
       if (!conditional_found) {
-        msg << this->name() << " : " << "INHIBIT"
-            << " gate is missing a conditional event.\n";
+        msg << this->name()
+            << " : INHIBIT gate is missing a conditional event.\n";
       }
       if (!msg.str().empty()) throw ValidationError(msg.str());
     }

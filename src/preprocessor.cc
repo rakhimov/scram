@@ -755,8 +755,8 @@ bool Preprocessor::ProcessMultipleDefinitions() noexcept {
   if (multi_def.empty()) return false;
   LOG(DEBUG4) << multi_def.size() << " gates are multiply defined.";
   for (const auto& def : multi_def) {
-    LOG(DEBUG5) << "Gate " << def.first->index() << ": "
-        << def.second.size() << " times.";
+    LOG(DEBUG5) << "Gate " << def.first->index() << ": " << def.second.size()
+                << " times.";
     for (const IGateWeakPtr& dup : def.second) {
       if (dup.expired()) continue;
       Preprocessor::ReplaceGate(dup.lock(), def.first);
@@ -945,8 +945,8 @@ std::shared_ptr<IGate> Preprocessor::CreateNewModule(
   }
   gate->AddArg(module->index(), module);
   assert(gate->args().size() > 1);
-  LOG(DEBUG4) << "Created a module G" << module->index()
-      << " with "  << args.size() << " arguments for G" << gate->index();
+  LOG(DEBUG4) << "Created a module G" << module->index() << " with "
+              << args.size() << " arguments for G" << gate->index();
   return module;
 }
 
@@ -1855,8 +1855,8 @@ void Preprocessor::ProcessCommonNode(
     graph_->ClearOptiValuesFast(root);  // Important to call before processing.
     if (redundant_parents.empty()) return;  // No optimization.
     LOG(DEBUG4) << "Node " << node->index() << ": "
-        << redundant_parents.size() << " redundant parent(s) and "
-        << destinations.size() << " failure destination(s)";
+                << redundant_parents.size() << " redundant parent(s) and "
+                << destinations.size() << " failure destination(s)";
     Preprocessor::ProcessRedundantParents(node, redundant_parents);
     Preprocessor::ProcessFailureDestinations(node, destinations);
     Preprocessor::ClearConstGates();
