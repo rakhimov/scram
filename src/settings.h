@@ -29,6 +29,9 @@ namespace scram {
 /// Builder for analysis settings.
 class Settings {
  public:
+  /// @returns The limit on the size of minimal cut sets.
+  inline int limit_order() const { return limit_order_; }
+
   /// Sets the limit order for minimal cut sets.
   ///
   /// @param[in] order A natural number for the limit order.
@@ -37,6 +40,9 @@ class Settings {
   ///
   /// @throws ValueError The number is not more than 0.
   Settings& limit_order(int order);
+
+  /// @returns The minimum required probability for cut sets.
+  inline double cut_off() const { return cut_off_; }
 
   /// Sets the cut-off probability for minimal cut sets to be considered
   /// for analysis.
@@ -48,6 +54,11 @@ class Settings {
   /// @throws ValueError The probability is not in the [0, 1] range.
   Settings& cut_off(double prob);
 
+  /// @returns "no" if no quantitative approximation is requested.
+  /// @returns "rare-event" for the rare-event approximation.
+  /// @returns "mcub" for the min-cut-upper bound approximation.
+  inline const std::string& approx() const { return approx_; }
+
   /// Sets the approximation for probability analysis.
   ///
   /// @param[in] approx Approximation to be applied.
@@ -56,6 +67,9 @@ class Settings {
   ///
   /// @throws ValueError The approximation is not recognized.
   Settings& approx(const std::string& approx);
+
+  /// @returns The number of trials for Monte-Carlo simulations.
+  inline int num_trials() const { return num_trials_; }
 
   /// Sets the number of trials for Monte Carlo simulations.
   ///
@@ -66,6 +80,9 @@ class Settings {
   /// @throws ValueError The number is less than 1.
   Settings& num_trials(int n);
 
+  /// @returns The number of quantiles for distributions.
+  inline int num_quantiles() const { return num_quantiles_; }
+
   /// Sets the number of quantiles for distributions.
   ///
   /// @param[in] n A natural number for the number of quantiles.
@@ -74,6 +91,9 @@ class Settings {
   ///
   /// @throws ValueError The number is less than 1.
   Settings& num_quantiles(int n);
+
+  /// @returns The number of bins for histograms.
+  inline int num_bins() const { return num_bins_; }
 
   /// Sets the number of bins for histograms.
   ///
@@ -84,6 +104,9 @@ class Settings {
   /// @throws ValueError The number is less than 1.
   Settings& num_bins(int n);
 
+  /// @returns The seed of the pseudo-random number generator.
+  inline int seed() const { return seed_; }
+
   /// Sets the seed for the pseudo-random number generator.
   ///
   /// @param[in] s A positive number.
@@ -93,12 +116,18 @@ class Settings {
   /// @throws ValueError The number is negative.
   Settings& seed(int s);
 
+  /// @returns The length time of the system under risk.
+  inline double mission_time() const { return mission_time_; }
+
   /// Sets the system mission time.
   ///
   /// @param[in] time A positive number in hours by default.
   ///
   /// @returns Reference to this object.
   Settings& mission_time(double time);
+
+  /// @returns true if probability analysis is requested.
+  inline bool probability_analysis() const { return probability_analysis_; }
 
   /// Sets the flag for probability analysis.
   /// If another analysis requires probability analysis,
@@ -114,6 +143,9 @@ class Settings {
     return *this;
   }
 
+  /// @returns true if importance analysis is requested.
+  inline bool importance_analysis() const { return importance_analysis_; }
+
   /// Sets the flag for importance analysis.
   /// Importance analysis is performed
   /// together with probability analysis.
@@ -128,6 +160,9 @@ class Settings {
     return *this;
   }
 
+  /// @returns true if uncertainty analysis is requested.
+  inline bool uncertainty_analysis() const { return uncertainty_analysis_; }
+
   /// Sets the flag for uncertainty analysis.
   /// Uncertainty analysis implies probability analysis,
   /// so the probability analysis is turned on implicitly.
@@ -141,6 +176,9 @@ class Settings {
     return *this;
   }
 
+  /// @returns true if CCF groups must be incorporated into analysis.
+  inline bool ccf_analysis() const { return ccf_analysis_; }
+
   /// Sets the flag for CCF analysis.
   ///
   /// @param[in] flag True or false for turning on or off the analysis.
@@ -150,19 +188,6 @@ class Settings {
     ccf_analysis_ = flag;
     return *this;
   }
-
-  inline bool probability_analysis() const { return probability_analysis_; }
-  inline bool importance_analysis() const { return importance_analysis_; }
-  inline bool uncertainty_analysis() const { return uncertainty_analysis_; }
-  inline bool ccf_analysis() const { return ccf_analysis_; }
-  inline int limit_order() const { return limit_order_; }
-  inline double mission_time() const { return mission_time_; }
-  inline double cut_off() const { return cut_off_; }
-  inline const std::string& approx() const { return approx_; }
-  inline int seed() const { return seed_; }
-  inline int num_trials() const { return num_trials_; }
-  inline int num_quantiles() const { return num_quantiles_; }
-  inline int num_bins() const { return num_bins_; }
 
  private:
   bool probability_analysis_ = false;  ///< A flag for probability analysis.
