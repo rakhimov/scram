@@ -32,7 +32,7 @@ Deviations from the GCSG
 - Exceptions are allowed
 - Prefer streams to ``printf-like`` routines
 - Name mutator functions without ``set_`` prefix
-- Multiple inheritance is allowed
+- Multiple inheritance is allowed (mostly for mixins)
 
 
 Additional Coding Conventions
@@ -41,19 +41,43 @@ Additional Coding Conventions
 Core C++ Code
 ~~~~~~~~~~~~~
 
+- Exceptions are forbidden in **analysis code**.
+
+- Check all preconditions and assumptions
+  with the ``assert`` macro wherever possible in **analysis code**.
+  Consider supplying an error message to clarify the assertion,
+  for example, ``assert(!node->mark() && "Detected a cycle!")``.
+
 - If function input parameters or return values
   are pointers (raw or smart),
   they are never null pointers
   unless explicitly specified.
-  Null pointer based logic must be rare and explicit.
+  Null pointer based logic must be
+  rare, localized, and explicit.
+
+- Consider creating a typedef (using declaration/alias)
+  for common smart pointers.
+
+    * ``ClassNamePtr`` for shared and unique pointers
+    * ``ClassNameWeakPtr`` for weak pointers
+
+- Prefer "modern C++" (C++11).
+  Refer to `C++ Core Guidelines`_ for best practices.
+
+- In definitions of class member functions,
+  prefix all calls of non-virtual member and inherited functions
+  with corresponding class names, i.e., ``ClassName::Foo()``.
+  Use ``this->Foo()`` only for virtual functions to be overridden by design.
+  Use ``Foo()`` only for free functions in current namespace.
 
 - Declare a getter function before a setter function
   for a corresponding member variable.
 
 - Declare getter and setter functions before other complex member functions.
 
-- Prefer "modern C++" (C++11).
-  Refer to `C++ Core Guidelines`_ for best practices.
+- Do not use ``inline``
+  when defining a function in a class definition.
+  It is implicitly ``inline``.
 
 .. _C++ Core Guidelines: https://github.com/isocpp/CppCoreGuidelines
 
@@ -66,12 +90,13 @@ C++
 
 #. Performance profiling with Gprof_
 #. Code coverage check with Gcov_ and reporting with Coveralls_
-#. Test status is tracked on CDash_
+#. Test status dashboard on CDash_
 #. Memory management bugs and leaks with Valgrind_
 #. Static code analysis with Coverity_
 #. Cyclomatic complexity analysis with Lizard_
 #. Google style conformance check with Cpplint_
 #. Common C++ code problem check with cppclean_
+#. Consistent code formatting with ClangFormat_
 
 .. _Gprof: https://www.cs.utah.edu/dept/old/texinfo/as/gprof.html
 .. _Gcov: https://gcc.gnu.org/onlinedocs/gcc/Gcov.html
@@ -82,7 +107,7 @@ C++
 .. _Lizard: https://github.com/terryyin/lizard
 .. _Cpplint: https://google-styleguide.googlecode.com/svn/trunk/cpplint/
 .. _cppclean: https://github.com/myint/cppclean
-
+.. _ClangFormat: http://clang.llvm.org/docs/ClangFormat.html
 
 Python
 ------
@@ -226,11 +251,20 @@ Core Code Documentation Style
 
 - Semantic Linefeeds
 - Doxygen comments with '///' and '///<'
-- Comment ordering: description->param->returns->throws->note->warning->todo
+- Comment ordering:
 
-    * Leave one Doxygen blank line between sections
+    #. description
+    #. param
+    #. returns
+    #. pre
+    #. post
+    #. throws
+    #. note
+    #. warning
+    #. todo
 
-- Always specify input and output parameters with @pram[in,out]
+- Leave one Doxygen blank line between sections
+- Always specify input and output parameters with @param[in,out]
 - In-code TODOs with Doxygen '/// @todo'
   so that Doxygen picks them up.
 
