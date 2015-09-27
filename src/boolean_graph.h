@@ -398,7 +398,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// @warning The function assumes that the argument exists.
   ///          If it doesn't, the return value is invalid.
   int GetArgSign(const NodePtr& arg) const noexcept {
-    assert(arg->parents().count(this->index()));
+    assert(arg->parents().count(Node::index()));
     return args_.count(arg->index()) ? 1 : -1;
   }
 
