@@ -17,7 +17,13 @@
       <or>
         <event name="ValveTwo"/>
         <event name="PumpTwo"/>
+        <gate name="NegativePumpOne"/>
       </or>
+    </define-gate>
+    <define-gate name="NegativePumpOne">
+      <not>
+        <event name="PumpOne"/>
+      </not>
     </define-gate>
     <define-basic-event name="ValveOne">
       <float value="0.04"/>

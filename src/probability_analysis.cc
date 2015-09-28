@@ -70,12 +70,20 @@ void ProbabilityAnalysis::Analyze(
   } else {
     p_total_ = ProbabilityAnalysis::CalculateTotalProbability();
   }
+
+  assert(p_total_ >= 0 && "The total probability is negative.");
+  if (p_total_ > 1) p_total_ = 1;  /// @todo Emit a warning!
   LOG(DEBUG3) << "Finished probability calculations in " << DUR(p_time);
   p_time_ = DUR(p_time);
   if (kSettings_.importance_analysis()) {
     CLOCK(imp_time);
     LOG(DEBUG3) << "Calculating importance factors...";
     ProbabilityAnalysis::PerformImportanceAnalysis();
+    /* if (kSettings_.approx() == "no") { */
+    /*   ProbabilityAnalysis::PerformImportanceAnalysisBdd(); */
+    /* } else { */
+    /*   ProbabilityAnalysis::PerformImportanceAnalysis(); */
+    /* } */
     LOG(DEBUG3) << "Calculated importance factors in " << DUR(imp_time);
     imp_time_ = DUR(imp_time);
   }
@@ -220,6 +228,8 @@ void ProbabilityAnalysis::PerformImportanceAnalysis() noexcept {
     } else {
       p_e = ProbabilityAnalysis::CalculateTotalProbability();
     }
+    assert(p_e >= 0);
+    if (p_e > 1) p_e = 1;
 
     // Calculate P(top/Not event)
     var_probs_[index] = 0;
@@ -231,15 +241,18 @@ void ProbabilityAnalysis::PerformImportanceAnalysis() noexcept {
     } else {
       p_not_e = ProbabilityAnalysis::CalculateTotalProbability();
     }
+    assert(p_not_e >= 0);
+    if (p_not_e > 1) p_not_e = 1;
     // Restore the probability.
     var_probs_[index] = index_to_basic_[index]->p();
 
     ImportanceFactors imp;
-    imp.dif = 1 - p_not_e / p_total_;  // Diagnosis importance factor.
+    double p_var = var_probs_[index];
     imp.mif = p_e - p_not_e;  // Birnbaum Marginal importance factor.
-    imp.cif = imp.mif * var_probs_[index] / p_not_e;  // Critical factor.
-    imp.rrw = p_total_ / p_not_e;  // Risk Reduction Worth.
-    imp.raw = p_e / p_total_;  // Risk Achievement Worth.
+    imp.cif = p_var * imp.mif / p_total_;  // Critical factor.
+    imp.raw = 1 + (1 - p_var) * imp.mif / p_total_;  // Risk Achievement Worth.
+    imp.dif = p_var * imp.raw;  // Diagnosis importance factor.
+    imp.rrw = p_total_ / (p_total_ - p_var * imp.mif);  // Risk Reduction Worth.
 
     importance_.emplace(index_to_basic_[index]->id(), std::move(imp));
   }

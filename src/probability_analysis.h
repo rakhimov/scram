@@ -40,11 +40,11 @@ namespace scram {
 /// @struct ImportanceFactors
 /// Collection of importance factors for variables.
 struct ImportanceFactors {
-  double dif;  ///< Fussel-Vesely diagnosis importance factor.
   double mif;  ///< Birnbaum marginal importance factor.
   double cif;  ///< Critical importance factor.
-  double rrw;  ///< Risk reduction worth factor.
+  double dif;  ///< Fussel-Vesely diagnosis importance factor.
   double raw;  ///< Risk achievement worth factor.
+  double rrw;  ///< Risk reduction worth factor.
 };
 
 /// @class ProbabilityAnalysis

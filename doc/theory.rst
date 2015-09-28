@@ -269,23 +269,11 @@ Importance Analysis
 *******************
 
 The importance of a component or event provides information
-about its impact on the top event.
+about its impact on the system.
 This analysis is used to filter out components
 that need most attention to reduce the overall risk.
 
 .. note:: The following interpretations are valid only for coherent fault trees.
-
-
-Fussel-Vesely
-=============
-
-This factor is also called Diagnosis Importance Factor(DIF).
-The value provides information
-about how much the component is contributing to the total risk.
-
-.. math::
-
-    DIF = (P(top) - P(top/NOT event)) / P(top)
 
 
 Birnbaum
@@ -297,7 +285,7 @@ by measuring the difference between failed-event and non-failed event systems.
 
 .. math::
 
-    MIF = P(top/event) - P(top/NOT event)
+    MIF = P(System/event) - P(System/NOT event)
 
 
 Critical Importance Factor
@@ -308,35 +296,47 @@ and takes into account the reliability of the component.
 
 .. math::
 
-    CIF = P(event) / P(top/NOT event) * MIF
+    CIF = P(event) / P(System) * MIF
 
 
-Risk Reduction Worth
-====================
+Fussel-Vesely
+=============
 
-This factor is also called Risk Decrease Factor
-and indicates the maximum decrease in risk of the top event
-if the component never failed or increased its reliability.
-This factor helps select the components
-to improve first with most effect on risk reduction.
+This factor is also called Diagnosis Importance Factor(DIF).
+The value provides information
+about how much the component is contributing to the total risk.
 
 .. math::
 
-    RRW = P(top) / P(top/NOT event)
+    DIF = P(event/System) = P(event) * P(System/event) / P(System)
 
 
 Risk Achievement Worth
 ======================
 
 This factor is also called Risk Increase Factor
-and measures the increase in risk of the top event
+and measures the increase in risk of the system
 given that the component has already failed.
 This factor indicates the importance of
 maintaining the component at its current level of reliability.
 
 .. math::
 
-    RAW = P(top/event) / P(top)
+    RAW = P(System/event) / P(System)
+
+
+Risk Reduction Worth
+====================
+
+This factor is also called Risk Decrease Factor
+and indicates the maximum decrease in risk of the system
+if the component never failed or increased its reliability.
+This factor helps select the components
+to improve first with most effect on risk reduction.
+
+.. math::
+
+    RRW = P(System) / P(System/NOT event)
 
 
 ***************************

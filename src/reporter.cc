@@ -291,11 +291,11 @@ void Reporter::ReportImportance(std::string ft_name,
         prob_analysis.basic_events().at(entry.first),
         importance);
     const ImportanceFactors& factors = entry.second;
-    element->set_attribute("DIF", ToString(factors.dif, 4));
     element->set_attribute("MIF", ToString(factors.mif, 4));
     element->set_attribute("CIF", ToString(factors.cif, 4));
-    element->set_attribute("RRW", ToString(factors.rrw, 4));
+    element->set_attribute("DIF", ToString(factors.dif, 4));
     element->set_attribute("RAW", ToString(factors.raw, 4));
+    element->set_attribute("RRW", ToString(factors.rrw, 4));
   }
   xmlpp::NodeSet calc_times =
       root->find("./information/performance/calculation-time");
