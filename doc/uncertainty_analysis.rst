@@ -6,7 +6,7 @@ Pseudo-Random Number Generator
 ==============================
 
 Uncertainty analysis employs Monte Carlo simulations
-to calculate the uncertainty propagation in probabilities.
+to calculate the uncertainty propagation in probabilities [UA]_.
 For Monte Carlo simulations,
 SCRAM uses `MT 19937`_ Mersenne Twister Pseudo-random number generator.
 Mersenne Twister PRNG is well tested and well suited for Monte Carlo simulations.

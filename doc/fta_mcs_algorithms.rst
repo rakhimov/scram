@@ -8,7 +8,7 @@ Minimal Cut Set (MCS) Generation Algorithm
 ==========================================
 
 Steps in the algorithm for minimal cut set generation from a fault tree.
-This algorithm is similar to the MOCUS algorithm.
+This algorithm is similar to the MOCUS algorithm [Rau03]_.
 
 **Rule 1.** Each OR gate generates new rows(sets) in the table(set) of cut sets
 
@@ -79,18 +79,19 @@ UNITY set will show only one empty minimal cut set of order 0 but probability 1.
 Proposed Improvements for this algorithm
 ----------------------------------------
 
-- Use of Binary Decision Trees or Diagrams for faster MCS detection.
+- Use of Binary Decision Trees or Diagrams for faster MCS detection [Rau03]_.
 
 
 Other MCS Generation Algorithms
 ===============================
 
 There are many algorithms developed for fault tree analysis since the 1960s,
-but MOCUS-based and BDD-based algorithms are most used in current PRA software.
+but MOCUS-based and BDD-based algorithms are most used in current PRA software
+[Rau93]_ [Rau03]_.
 
 MOCUS is a top-down algorithm first proposed by J.Fussel and W.Vesely in 1972.
 There are many suggested improvement techniques for this algorithm,
-but the basics are simpler than for other FTA algorithms.
+but the basics are simpler than for other FTA algorithms [Rau03]_.
 In addition, MOCUS-like algorithms may incorporate approximations
 to speed up their calculations;
 however, this may lead to inaccuracies in overall analysis.
@@ -99,17 +100,18 @@ over all the tools that use this algorithm.
 The MOCUS algorithm is used by many FTA tools, such as RiskSpectrum and SAPHIRE.
 
 The BDD-based algorithm can use
-various types of the Binary Decision Diagram (BDD) for Boolean operations.
+various types of the Binary Decision Diagram ([BDD]_) for Boolean operations
+[Bry86]_ [Min93]_ [Rau93]_.
 This is a bottom-up approach that is mature and well tuned for PRA
 and other applications like electronics.
-This method consists of many complex algorithms of the BDD to find MCS.
+This method consists of many complex algorithms of the BDD to find MCS [Rau01]_.
 The BDD algorithms tend to be faster than MOCUS and other algorithms;
 however, this algorithm is subject to combinatorial explosion
 for very large models with thousands of basic events and gates
 with many replicated events.
 One more important advantage of the BDD-based analysis is
 that the BDD allows fast and exact calculation of probabilities,
-which makes Probability, Importance, Uncertainty analyses fast as well.
+which makes Probability, Importance, Uncertainty analyses fast as well [DR01]_.
 This algorithm is used in CAFTA, RiskA, and RiskMan.
 
 More information can be found in :ref:`references`.

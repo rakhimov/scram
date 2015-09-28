@@ -9,12 +9,12 @@ Probability Types
 *****************
 
 Various probability types and distributions are accepted
-as described in the OpenPSA Model Exchange Format,
+as described in the OpenPSA Model Exchange Format [MEF]_,
 for example, constant values, exponential with two or four parameters,
 and uniform, normal, log-normal distributions.
 
 Bellow is a brief description.
-For more information, please take a look at the OpenPSA_ MEF format documentation.
+For more information, please take a look at the [MEF]_ format documentation.
 
 **P-model**
     The probability of an event occurring
@@ -36,8 +36,6 @@ For more information, please take a look at the OpenPSA_ MEF format documentatio
 
         P \approx \lambda*t
 
-.. _OpenPSA: http://open-psa.org
-
 
 ************************
 Probability Calculations
@@ -52,11 +50,11 @@ The Exact Probability Calculation
 =================================
 
 Since minimal cut sets may neither be mutually exclusive nor independent,
-direct use of the sets' total probabilities may be inaccurate.
+direct use of the sets' total probabilities may be inaccurate [WakXX]_.
 The exact probability calculation is achieved
-with Binary Decision Diagram (BDD) based algorithms.
+with Binary Decision Diagram ([BDD]_) based algorithms [DR01]_.
 This approach does not require calculation of minimal cut sets.
-As long as a fault tree can be converted into BDD,
+As long as a fault tree ([PDAG]_) can be converted into BDD,
 the calculation of its probability is linear in the size of BDD.
 
 
@@ -64,7 +62,7 @@ The Approximate Probability Calculation
 =======================================
 
 Approximate calculations are implemented to reduce the calculation time.
-However, the users must be aware of the limitations and inaccuracies of approximations.
+However, the users must be aware of the limitations and inaccuracies of approximations [WakXX]_.
 
 
 The Rare-Event Approximation
@@ -90,14 +88,14 @@ Non-independence of the minimal cut sets introduce the major discrepancy for thi
 Moreover, the MCUB approximation provides non-conservative estimation
 for non-coherent trees containing NOT logic.
 There are other limitations
-described by Don Wakefield in "You Can't Just Build Trees and Call It PSA."
+described by Don Wakefield in "You Can't Just Build Trees and Call It PSA" [WakXX]_.
 
 
 *******************
 Importance Analysis
 *******************
 
-Importance analysis is performed for basic events in a fault tree.
+Importance analysis is performed for basic events in a fault tree [DR01]_.
 The same configurations are used as for probability analysis.
 The analysis is performed by request with probability data.
 The following importance factors are calculated:
@@ -107,3 +105,6 @@ The following importance factors are calculated:
     - Critical Importance Factor (CIF)
     - Risk Reduction Worth (RRW)
     - Risk Achievement Worth (RAW)
+
+The short description and interpretation of the factors
+can be found in :ref:`theory`.

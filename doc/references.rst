@@ -23,18 +23,6 @@ Papers
           "Efficient algorithms to assess component and gate importance in fault tree analysis,"
           Reliab. Eng. Syst. Saf., vol. 72, no. 2, pp. 213-222, 2001.
 
-.. [Rau93] A. Rauzy,
-           "New algorithms for fault trees analysis,"
-           Reliab. Eng. Syst. Saf., vol. 5, no. 59, pp. 203-211, 1993.
-
-.. [Rau01] A. Rauzy,
-           "Mathematical foundation of minimal cutsets,"
-           IEEE Trans. Rel., vol. 50, no. 4, pp. 389-396, 2001
-
-.. [Rau03] A. Rauzy,
-           "Towards an efficient implementation of MOCUS," IEEE Trans.
-           Reliab. Eng. Syst. Saf., vol. 52, no. 2, pp. 175-180, 2003.
-
 .. [Min93] S. Minato,
            "Zero-suppressed BDD's for set manipulation in combinatorial problems,"
            in Proc. 30th ACM/IEEE Design Automation Conf., pp. 272-277, 1993.
@@ -46,6 +34,18 @@ Papers
 .. [NR99] M.Nikolskaia and A.Rauzy,
           "Fine-tuning of boolean formulae preprocessing techniques,"
           in Proc. ESREL Conf., vol. 2, pp. 1027-1032, 1999.
+
+.. [Rau93] A. Rauzy,
+           "New algorithms for fault trees analysis,"
+           Reliab. Eng. Syst. Saf., vol. 5, no. 59, pp. 203-211, 1993.
+
+.. [Rau01] A. Rauzy,
+           "Mathematical foundation of minimal cutsets,"
+           IEEE Trans. Rel., vol. 50, no. 4, pp. 389-396, 2001
+
+.. [Rau03] A. Rauzy,
+           "Towards an efficient implementation of MOCUS," IEEE Trans.
+           Reliab. Eng. Syst. Saf., vol. 52, no. 2, pp. 175-180, 2003.
 
 .. [WakXX] D. Wakefield,
            "You can't just build trees and call it PSA"

@@ -7,7 +7,7 @@ OpenPSA MEF
 ***********
 
 The results of calculations are reported in the XML format
-suggested by `OpenPSA Model Exchange Format v2.0d`_.
+suggested by OpenPSA Model Exchange Format ([MEF]_).
 It is expected that the standardized report format be used by other tools
 to further analyze and operate on the results of PSA tools.
 The report contains two constructs:
@@ -54,9 +54,6 @@ The report contains two constructs:
         * Statistical measures (with moments)
         * Curves
         * Probability/frequency, importance factors, sensitivity analyses, ...
-
-.. _OpenPSA Model Exchange Format v2.0d:
-    http://open-psa.org/joomla1.5/index.php?option=com_content&view=category&id=4&Itemid=19
 
 
 Validation Schemas
