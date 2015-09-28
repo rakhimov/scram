@@ -31,6 +31,7 @@
 
 #include "analysis.h"
 #include "bdd.h"
+#include "boolean_graph.h"
 #include "event.h"
 #include "settings.h"
 
@@ -76,7 +77,7 @@ class ProbabilityAnalysis : public Analysis {
   ///
   /// @note  Undefined behavior if analysis is called two or more times.
   virtual void Analyze(
-      const std::set< std::set<std::string> >& min_cut_sets) noexcept;
+      const std::set<std::set<std::string>>& min_cut_sets) noexcept;
 
   /// @returns The total probability calculated by the analysis.
   ///
@@ -174,12 +175,12 @@ class ProbabilityAnalysis : public Analysis {
   void PerformImportanceAnalysis() noexcept;
 
   GatePtr top_event_;  ///< Top gate of the passed fault tree.
+  std::unique_ptr<BooleanGraph> bool_graph_;  ///< Indexation graph.
   std::unique_ptr<Bdd> bdd_graph_;  ///< The main BDD graph for analysis.
   std::string warnings_;  ///< Register warnings.
 
   /// Container for input basic events.
   std::unordered_map<std::string, BasicEventPtr> basic_events_;
-  std::vector<BasicEventPtr> ordered_basic_events_;  ///< Ordering by indices.
 
   std::vector<BasicEventPtr> index_to_basic_;  ///< Indices to basic events.
   /// Indices of basic events.

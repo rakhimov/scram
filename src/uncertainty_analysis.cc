@@ -43,7 +43,9 @@ UncertaintyAnalysis::UncertaintyAnalysis(const GatePtr& root,
       analysis_time_(-1) {}
 
 void UncertaintyAnalysis::Analyze(
-    const std::set< std::set<std::string> >& min_cut_sets) noexcept {
+    const std::set<std::set<std::string>>& min_cut_sets) noexcept {
+  assert(top_event_ && "The fault tree is undefined.");
+  assert(!bool_graph_ && "Re-running analysis.");
   // Special case of unity with empty sets.
   if (min_cut_sets.size() == 1 && min_cut_sets.begin()->empty()) {
     warnings_ += "Uncertainty for UNITY case.";
@@ -75,12 +77,9 @@ void UncertaintyAnalysis::Analyze(
 }
 
 void UncertaintyAnalysis::Sample() noexcept {
-  sampled_results_.clear();
+  assert(sampled_results_.empty() && "Re-sampling is undefined.");
   sampled_results_.reserve(kSettings_.num_trials());
-
-  // Detect constant basic events.
-  std::vector<int> basic_events;
-  UncertaintyAnalysis::FilterUncertainEvents(&basic_events);
+  std::vector<int> basic_events = UncertaintyAnalysis::FilterUncertainEvents();
   for (int i = 0; i < kSettings_.num_trials(); ++i) {
     // Reset distributions.
     for (int index : basic_events) {
@@ -104,13 +103,14 @@ void UncertaintyAnalysis::Sample() noexcept {
   }
 }
 
-void UncertaintyAnalysis::FilterUncertainEvents(
-    std::vector<int>* basic_events) noexcept {
-  for (const BasicEventPtr& event : ordered_basic_events_) {
+std::vector<int> UncertaintyAnalysis::FilterUncertainEvents() noexcept {
+  std::vector<int> uncertain_events;
+  for (const BasicEventPtr& event : bool_graph_->basic_events()) {
     if (!event->IsConstant()) {
-      basic_events->push_back(id_to_index_.find(event->id())->second);
+      uncertain_events.push_back(id_to_index_.find(event->id())->second);
     }
   }
+  return uncertain_events;
 }
 
 void UncertaintyAnalysis::CalculateStatistics() noexcept {

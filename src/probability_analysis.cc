@@ -23,7 +23,6 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "boolean_graph.h"
 #include "error.h"
 #include "logger.h"
 #include "preprocessor.h"
@@ -41,7 +40,9 @@ ProbabilityAnalysis::ProbabilityAnalysis(const GatePtr& root,
       imp_time_(0) {}
 
 void ProbabilityAnalysis::Analyze(
-    const std::set< std::set<std::string> >& min_cut_sets) noexcept {
+    const std::set<std::set<std::string>>& min_cut_sets) noexcept {
+  assert(top_event_ && "The fault tree is undefined.");
+  assert(!bool_graph_ && "Re-running analysis.");
   // Special case of unity with empty sets.
   if (min_cut_sets.size() == 1 && min_cut_sets.begin()->empty()) {
     warnings_ += " Probability is for UNITY case.";
@@ -49,7 +50,6 @@ void ProbabilityAnalysis::Analyze(
     return;
   }
   ProbabilityAnalysis::AssignIndices();
-
   ProbabilityAnalysis::IndexMcs(min_cut_sets);
 
   CLOCK(p_time);
@@ -68,7 +68,6 @@ void ProbabilityAnalysis::Analyze(
                  " if minimal cut sets' probabilities exceed 0.1.";
     p_total_ = ProbabilityAnalysis::ProbRareEvent(imcs_);
   } else {
-    assert(top_event_);
     p_total_ = ProbabilityAnalysis::CalculateTotalProbability();
   }
   LOG(DEBUG3) << "Finished probability calculations in " << DUR(p_time);
@@ -83,31 +82,31 @@ void ProbabilityAnalysis::Analyze(
 }
 
 void ProbabilityAnalysis::AssignIndices() noexcept {
-  assert(top_event_);
   CLOCK(ft_creation);
-  BooleanGraph* graph = new BooleanGraph(top_event_, kSettings_.ccf_analysis());
+  bool_graph_ = std::unique_ptr<BooleanGraph>(
+      new BooleanGraph(top_event_, kSettings_.ccf_analysis()));
   LOG(DEBUG2) << "Boolean graph is created in " << DUR(ft_creation);
 
-  CLOCK(prep_time);  // Overall preprocessing time.
-  LOG(DEBUG2) << "Preprocessing...";
-  Preprocessor* preprocessor = new PreprocessorBdd(graph);
-  preprocessor->Run();
-  delete preprocessor;  // No exceptions are expected.
-  LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
+  if (kSettings_.approx() == "no") {
+    CLOCK(prep_time);  // Overall preprocessing time.
+    LOG(DEBUG2) << "Preprocessing...";
+    Preprocessor* preprocessor = new PreprocessorBdd(bool_graph_.get());
+    preprocessor->Run();
+    delete preprocessor;  // No exceptions are expected.
+    LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
 
-  CLOCK(bdd_time);  // BDD based calculation time.
-  LOG(DEBUG2) << "Creating BDD for ProbabilityAnalysis...";
-  bdd_graph_ = std::unique_ptr<Bdd>(new Bdd(graph));
-  ordered_basic_events_ = graph->basic_events();
-  delete graph;  /// @todo This is dangerous. BDD has invalid graph pointer.
-  LOG(DEBUG2) << "BDD is created in " << DUR(bdd_time);
+    CLOCK(bdd_time);  // BDD based calculation time.
+    LOG(DEBUG2) << "Creating BDD for ProbabilityAnalysis...";
+    bdd_graph_ = std::unique_ptr<Bdd>(new Bdd(bool_graph_.get()));
+    LOG(DEBUG2) << "BDD is created in " << DUR(bdd_time);
+  }
 
   // Dummy basic event at index 0.
   index_to_basic_.push_back(std::make_shared<BasicEvent>("dummy"));
   var_probs_.push_back(-1);
   // Indexation of events.
   int j = 1;
-  for (const BasicEventPtr& event : ordered_basic_events_) {
+  for (const BasicEventPtr& event : bool_graph_->basic_events()) {
     basic_events_.emplace(event->id(), event);  /// @todo Remove.
     index_to_basic_.push_back(event);
     id_to_index_.emplace(event->id(), j);
@@ -130,7 +129,6 @@ void ProbabilityAnalysis::IndexMcs(
         boost::replace_first(comp_name, "not ", "");
         // This must be a complement of an event.
         assert(id_to_index_.count(comp_name));
-
         mcs_with_indices.push_back(-id_to_index_.find(comp_name)->second);
         mcs_basic_events_.insert(id_to_index_.find(comp_name)->second);
 

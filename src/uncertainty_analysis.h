@@ -63,7 +63,7 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   ///                         Negative event is indicated by "'not' + id"
   ///
   /// @note  Undefined behavior if analysis called two or more times.
-  void Analyze(const std::set< std::set<std::string> >& min_cut_sets) noexcept;
+  void Analyze(const std::set<std::set<std::string>>& min_cut_sets) noexcept;
 
   /// @returns Mean of the final distribution.
   double mean() const { return mean_; }
@@ -88,7 +88,7 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   const std::vector<double>& quantiles() const { return quantiles_; }
 
   /// @returns Warnings generated upon analysis.
-  const std::string warnings() const { return ProbabilityAnalysis::warnings(); }
+  const std::string& warnings() const { return warnings_; }
 
   /// @returns Analysis time spent on sampling and simulations.
   double analysis_time() const { return analysis_time_; }
@@ -101,10 +101,10 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
 
   /// Gathers basic events that have distributions.
   ///
-  /// @param[out] basic_events The gathered uncertain basic events.
+  /// @returns The gathered uncertain basic events.
   ///
   /// @todo Mark BDD graph branches that do not need sampling.
-  void FilterUncertainEvents(std::vector<int>* basic_events) noexcept;
+  std::vector<int> FilterUncertainEvents() noexcept;
 
   /// Calculates statistical values from the final distribution.
   void CalculateStatistics() noexcept;
