@@ -169,7 +169,7 @@ TEST_F(RiskAnalysisTest, ImportanceNeg) {
 TEST_F(RiskAnalysisTest, ImportanceRareEvent) {
   std::string with_prob = "./share/scram/input/fta/importance_test.xml";
   // Probability calculations with the rare event approximation.
-  settings.approx("rare-event").importance_analysis(true);
+  settings.approximation("rare-event").importance_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(with_prob));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(0.012, p_total());  // Adjusted probability.
@@ -193,7 +193,7 @@ TEST_F(RiskAnalysisTest, ImportanceRareEvent) {
 
 TEST_F(RiskAnalysisTest, DISABLED_ImportanceNegRareEvent) {
   std::string tree_input = "./share/scram/input/fta/importance_neg_test.xml";
-  settings.importance_analysis(true).approx("rare-event");
+  settings.importance_analysis(true).approximation("rare-event");
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(1, p_total());
@@ -220,7 +220,7 @@ TEST_F(RiskAnalysisTest, MCUB) {
   std::string with_prob =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   // Probability calculations with the MCUB approximation.
-  settings.approx("mcub").probability_analysis(true).importance_analysis(true);
+  settings.approximation("mcub").importance_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(with_prob));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(0.766144, p_total());
@@ -231,7 +231,7 @@ TEST_F(RiskAnalysisTest, MCUB) {
 TEST_F(RiskAnalysisTest, McubNonCoherent) {
   std::string with_prob = "./share/scram/input/core/a_and_not_b.xml";
   // Probability calculations with the MCUB approximation.
-  settings.approx("mcub").probability_analysis(true);
+  settings.approximation("mcub").probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(with_prob));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_NEAR(0.08, p_total(), 1e-5);

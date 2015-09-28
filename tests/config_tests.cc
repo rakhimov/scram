@@ -55,7 +55,7 @@ TEST(ConfigTest, FullSettings) {
   EXPECT_EQ(true, settings.importance_analysis());
   EXPECT_EQ(true, settings.uncertainty_analysis());
   EXPECT_EQ(true, settings.ccf_analysis());
-  EXPECT_EQ("rare-event", settings.approx());
+  EXPECT_EQ("rare-event", settings.approximation());
   EXPECT_EQ(11, settings.limit_order());
   EXPECT_EQ(48, settings.mission_time());
   EXPECT_EQ(0.009, settings.cut_off());

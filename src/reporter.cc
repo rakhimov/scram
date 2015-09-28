@@ -109,7 +109,7 @@ void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
     quant->set_attribute("name", "Probability Analysis");
     quant->set_attribute("definition",
                          "Quantitative analysis of failure probability");
-    quant->set_attribute("approximation", settings.approx());
+    quant->set_attribute("approximation", settings.approximation());
 
     methods = information->add_child("calculation-method");
     methods->set_attribute("name", "Numerical Probability");

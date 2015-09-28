@@ -27,7 +27,7 @@ namespace test {
 TEST(SettingsTest, IncorrectSetup) {
   Settings s;
   // Incorrect approximation argument.
-  ASSERT_THROW(s.approx("approx"), InvalidArgument);
+  ASSERT_THROW(s.approximation("approx"), InvalidArgument);
   // Incorrect limit order for minimal cut sets.
   ASSERT_THROW(s.limit_order(-1), InvalidArgument);
   // Incorrect cut-off probability.

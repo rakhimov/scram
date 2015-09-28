@@ -44,12 +44,12 @@ Settings& Settings::cut_off(double prob) {
   return *this;
 }
 
-Settings& Settings::approx(const std::string& approx) {
+Settings& Settings::approximation(const std::string& approx) {
   if (approx != "no" && approx != "rare-event" && approx != "mcub") {
     std::string msg = "The probability approximation is not recognized.";
     throw InvalidArgument(msg);
   }
-  approx_ = approx;
+  approximation_ = approx;
   return *this;
 }
 

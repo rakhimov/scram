@@ -135,7 +135,7 @@ void Config::SetApprox(const xmlpp::Element* approx) {
   for (const xmlpp::Node* node : approx->find("./*")) {
     std::string name = node->get_name();
     assert(name == "rare-event" || name == "mcub");
-    settings_.approx(name);
+    settings_.approximation(name);
   }
 }
 

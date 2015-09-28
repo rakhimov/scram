@@ -147,9 +147,9 @@ void ConstructSettings(const po::variables_map& vm, scram::Settings* settings) {
   // Determine if the probability approximation is requested.
   if (vm.count("rare-event")) {
     assert(!vm.count("mcub"));
-    settings->approx("rare-event");
+    settings->approximation("rare-event");
   } else if (vm.count("mcub")) {
-    settings->approx("mcub");
+    settings->approximation("mcub");
   }
   if (vm.count("seed")) settings->seed(vm["seed"].as<int>());
   if (vm.count("limit-order"))

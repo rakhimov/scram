@@ -55,14 +55,14 @@ void ProbabilityAnalysis::Analyze(
   CLOCK(p_time);
   LOG(DEBUG3) << "Calculating probabilities...";
   // Get the total probability.
-  if (kSettings_.approx() == "mcub") {
+  if (kSettings_.approximation() == "mcub") {
     /// @todo Detect the conditions.
     warnings_ += " The MCUB approximation may not hold"
                  " if the fault tree is not coherent"
                  " or there are many common events.";
     p_total_ = ProbabilityAnalysis::ProbMcub(imcs_);
 
-  } else if (kSettings_.approx() == "rare-event") {
+  } else if (kSettings_.approximation() == "rare-event") {
     /// @todo Check if a probability of any cut set exceeds 0.1.
     warnings_ += " The rare event approximation may be inaccurate for analysis"
                  " if minimal cut sets' probabilities exceed 0.1.";
@@ -79,7 +79,7 @@ void ProbabilityAnalysis::Analyze(
     CLOCK(imp_time);
     LOG(DEBUG3) << "Calculating importance factors...";
     ProbabilityAnalysis::PerformImportanceAnalysis();
-    /* if (kSettings_.approx() == "no") { */
+    /* if (kSettings_.approximation() == "no") { */
     /*   ProbabilityAnalysis::PerformImportanceAnalysisBdd(); */
     /* } else { */
     /*   ProbabilityAnalysis::PerformImportanceAnalysis(); */
@@ -95,7 +95,7 @@ void ProbabilityAnalysis::AssignIndices() noexcept {
       new BooleanGraph(top_event_, kSettings_.ccf_analysis()));
   LOG(DEBUG2) << "Boolean graph is created in " << DUR(ft_creation);
 
-  if (kSettings_.approx() == "no") {
+  if (kSettings_.approximation() == "no") {
     CLOCK(prep_time);  // Overall preprocessing time.
     LOG(DEBUG2) << "Preprocessing...";
     Preprocessor* preprocessor = new PreprocessorBdd(bool_graph_.get());
@@ -221,9 +221,9 @@ void ProbabilityAnalysis::PerformImportanceAnalysis() noexcept {
     // Calculate P(top/event)
     var_probs_[index] = 1;
     double p_e = 0;
-    if (kSettings_.approx() == "mcub") {
+    if (kSettings_.approximation() == "mcub") {
       p_e = ProbabilityAnalysis::ProbMcub(imcs_);
-    } else if (kSettings_.approx() == "rare-event") {
+    } else if (kSettings_.approximation() == "rare-event") {
       p_e = ProbabilityAnalysis::ProbRareEvent(imcs_);
     } else {
       p_e = ProbabilityAnalysis::CalculateTotalProbability();
@@ -234,9 +234,9 @@ void ProbabilityAnalysis::PerformImportanceAnalysis() noexcept {
     // Calculate P(top/Not event)
     var_probs_[index] = 0;
     double p_not_e = 0;
-    if (kSettings_.approx() == "mcub") {
+    if (kSettings_.approximation() == "mcub") {
       p_not_e = ProbabilityAnalysis::ProbMcub(imcs_);
-    } else if (kSettings_.approx() == "rare-event") {
+    } else if (kSettings_.approximation() == "rare-event") {
       p_not_e = ProbabilityAnalysis::ProbRareEvent(imcs_);
     } else {
       p_not_e = ProbabilityAnalysis::CalculateTotalProbability();

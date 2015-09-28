@@ -57,16 +57,16 @@ class Settings {
   /// @returns "no" if no quantitative approximation is requested.
   /// @returns "rare-event" for the rare-event approximation.
   /// @returns "mcub" for the min-cut-upper bound approximation.
-  const std::string& approx() const { return approx_; }
+  const std::string& approximation() const { return approximation_; }
 
-  /// Sets the approximation for probability analysis.
+  /// Sets the approximation for quantitative analysis.
   ///
   /// @param[in] approx Approximation to be applied.
   ///
   /// @returns Reference to this object.
   ///
   /// @throws ValueError The approximation is not recognized.
-  Settings& approx(const std::string& approx);
+  Settings& approximation(const std::string& approx);
 
   /// @returns The number of trials for Monte-Carlo simulations.
   int num_trials() const { return num_trials_; }
@@ -197,7 +197,7 @@ class Settings {
   int limit_order_ = 20;  ///< Limit on the order of minimal cut sets.
   double mission_time_ = 8760;  ///< System mission time.
   double cut_off_ = 1e-8;  ///< The cut-off probability for cut sets.
-  std::string approx_ = "no";  ///< The approximations for calculations.
+  std::string approximation_ = "no";  ///< The approximations for calculations.
   int seed_ = 0;  ///< The seed for the pseudo-random number generator.
   int num_trials_ = 1e3;  ///< The number of trials for Monte Carlo simulations.
   int num_quantiles_ = 20;  ///< The number of quantiles for distributions.

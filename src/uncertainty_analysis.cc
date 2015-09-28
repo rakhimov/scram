@@ -92,9 +92,9 @@ void UncertaintyAnalysis::Sample() noexcept {
       var_probs_[index] = prob;
     }
     double result = 0;
-    if (kSettings_.approx() == "mcub") {
+    if (kSettings_.approximation() == "mcub") {
       result = ProbabilityAnalysis::ProbMcub(imcs_);
-    } else if (kSettings_.approx() == "rare-event") {
+    } else if (kSettings_.approximation() == "rare-event") {
       result = ProbabilityAnalysis::ProbRareEvent(imcs_);
     } else {
       result = ProbabilityAnalysis::CalculateTotalProbability();
