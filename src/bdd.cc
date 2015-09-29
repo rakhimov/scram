@@ -98,6 +98,7 @@ const Bdd::Function& Bdd::IfThenElse(const IGatePtr& gate) noexcept {
 std::shared_ptr<Ite> Bdd::IfThenElse(const VariablePtr& variable) noexcept {
   ItePtr& in_table = unique_table_[{variable->index(), 1, -1}];
   if (in_table) return in_table;
+  index_to_order_.emplace(variable->index(), variable->opti_value());
   in_table = std::make_shared<Ite>(variable->index(), variable->opti_value());
   in_table->id(function_id_++);
   in_table->high(kOne_);

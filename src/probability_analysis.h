@@ -151,12 +151,9 @@ class ProbabilityAnalysis : public Analysis {
   /// @note O_avg(N) where N is the size of the passed set.
   double ProbAnd(const CutSet& cut_set) noexcept;
 
-  /// Calculates the total probability
-  /// using the fault tree directly
-  /// without cut sets.
+  /// Calculates the total probability.
   ///
-  /// @todo Replace the main probability calculation functionality
-  ///       with BDD based approach.
+  /// @returns The total probability of the graph or cut sets.
   double CalculateTotalProbability() noexcept;
 
   /// Calculates exact probability
@@ -173,6 +170,35 @@ class ProbabilityAnalysis : public Analysis {
 
   /// Importance analysis of basic events that are in minimal cut sets.
   void PerformImportanceAnalysis() noexcept;
+
+  /// Performs BDD-based importance analysis.
+  void PerformImportanceAnalysisBdd() noexcept;
+
+  /// Calculates Marginal Importance Factor of a variable.
+  ///
+  /// @param[in] vertex The root vertex of a function graph.
+  /// @param[in] order The identifying order of the variable.
+  /// @param[in] mark A flag to mark traversed vertices.
+  ///
+  /// @note Probability fields are used to save results.
+  /// @note The graph needs cleaning its marks after this function
+  ///       because the graph gets continuously-but-partially marked.
+  double CalculateMif(const VertexPtr& vertex, int order, bool mark) noexcept;
+
+  /// Retrieves memorized probability values for BDD function graphs.
+  ///
+  /// @param[in] vertex Vertex with calculated probabilities.
+  ///
+  /// @returns Saved probability of the vertex.
+  double RetrieveProbability(const VertexPtr& vertex) noexcept;
+
+  /// Clears marks of vertices in BDD graph.
+  ///
+  /// @param[in] vertex The starting root vertex of the graph.
+  /// @param[in] mark The desired mark for the vertices.
+  ///
+  /// @note Marks will propagate to modules as well.
+  void ClearMarks(const VertexPtr& vertex, bool mark) noexcept;
 
   GatePtr top_event_;  ///< Top gate of the passed fault tree.
   std::unique_ptr<BooleanGraph> bool_graph_;  ///< Indexation graph.

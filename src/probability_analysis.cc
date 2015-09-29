@@ -79,11 +79,6 @@ void ProbabilityAnalysis::Analyze(
     CLOCK(imp_time);
     LOG(DEBUG3) << "Calculating importance factors...";
     ProbabilityAnalysis::PerformImportanceAnalysis();
-    /* if (kSettings_.approximation() == "no") { */
-    /*   ProbabilityAnalysis::PerformImportanceAnalysisBdd(); */
-    /* } else { */
-    /*   ProbabilityAnalysis::PerformImportanceAnalysis(); */
-    /* } */
     LOG(DEBUG3) << "Calculated importance factors in " << DUR(imp_time);
     imp_time_ = DUR(imp_time);
   }
@@ -215,6 +210,10 @@ double ProbabilityAnalysis::CalculateProbability(const VertexPtr& vertex,
 }
 
 void ProbabilityAnalysis::PerformImportanceAnalysis() noexcept {
+  if (kSettings_.approximation() == "no") {
+    ProbabilityAnalysis::PerformImportanceAnalysisBdd();
+    return;
+  }
   // The main data for all the importance types is P(top/event) or
   // P(top/Not event).
   for (int index : mcs_basic_events_) {
@@ -223,10 +222,9 @@ void ProbabilityAnalysis::PerformImportanceAnalysis() noexcept {
     double p_e = 0;
     if (kSettings_.approximation() == "mcub") {
       p_e = ProbabilityAnalysis::ProbMcub(imcs_);
-    } else if (kSettings_.approximation() == "rare-event") {
-      p_e = ProbabilityAnalysis::ProbRareEvent(imcs_);
     } else {
-      p_e = ProbabilityAnalysis::CalculateTotalProbability();
+      assert(kSettings_.approximation() == "rare-event");
+      p_e = ProbabilityAnalysis::ProbRareEvent(imcs_);
     }
     assert(p_e >= 0);
     if (p_e > 1) p_e = 1;
@@ -236,10 +234,9 @@ void ProbabilityAnalysis::PerformImportanceAnalysis() noexcept {
     double p_not_e = 0;
     if (kSettings_.approximation() == "mcub") {
       p_not_e = ProbabilityAnalysis::ProbMcub(imcs_);
-    } else if (kSettings_.approximation() == "rare-event") {
-      p_not_e = ProbabilityAnalysis::ProbRareEvent(imcs_);
     } else {
-      p_not_e = ProbabilityAnalysis::CalculateTotalProbability();
+      assert(kSettings_.approximation() == "rare-event");
+      p_not_e = ProbabilityAnalysis::ProbRareEvent(imcs_);
     }
     assert(p_not_e >= 0);
     if (p_not_e > 1) p_not_e = 1;
@@ -256,6 +253,92 @@ void ProbabilityAnalysis::PerformImportanceAnalysis() noexcept {
 
     importance_.emplace(index_to_basic_[index]->id(), std::move(imp));
   }
+}
+
+void ProbabilityAnalysis::PerformImportanceAnalysisBdd() noexcept {
+  for (int index : mcs_basic_events_) {
+    int order = bdd_graph_->index_to_order().find(index)->second;
+    ImportanceFactors imp;
+    current_mark_ = !current_mark_;
+    imp.mif = ProbabilityAnalysis::CalculateMif(bdd_graph_->root(), order,
+                                                current_mark_);
+    if (bdd_graph_->complement_root()) imp.mif = -imp.mif;
+
+    double p_var = var_probs_[index];
+    imp.cif = p_var * imp.mif / p_total_;
+    imp.raw = 1 + (1 - p_var) * imp.mif / p_total_;
+    imp.dif = p_var * imp.raw;
+    imp.rrw = p_total_ / (p_total_ - p_var * imp.mif);
+    importance_.emplace(index_to_basic_[index]->id(), std::move(imp));
+
+    current_mark_ = !current_mark_;
+    ProbabilityAnalysis::ClearMarks(bdd_graph_->root(), current_mark_);
+  }
+}
+
+double ProbabilityAnalysis::CalculateMif(const VertexPtr& vertex, int order,
+                                         bool mark) noexcept {
+  if (vertex->terminal()) return 0;
+  ItePtr ite = Ite::Ptr(vertex);
+  if (ite->mark() == mark) return ite->factor();
+  ite->mark(mark);
+  if (ite->order() > order) {
+    if (!ite->module()) {
+      ite->factor(0);
+    } else {  /// @todo Detect if the variable is in the module.
+      // The assumption is
+      // that the order of a module is always larger
+      // than the order of its variables.
+      double high = ProbabilityAnalysis::RetrieveProbability(ite->high());
+      double low = ProbabilityAnalysis::RetrieveProbability(ite->low());
+      if (ite->complement_edge()) low = 1 - low;
+      const Bdd::Function& res = bdd_graph_->gates().find(ite->index())->second;
+      double mif = ProbabilityAnalysis::CalculateMif(res.vertex, order, mark);
+      if (res.complement) mif = -mif;
+      ite->factor((high - low) * mif);
+    }
+  } else if (ite->order() == order) {
+    assert(!ite->module() && "A variable can't be a module.");
+    double high = ProbabilityAnalysis::RetrieveProbability(ite->high());
+    double low = ProbabilityAnalysis::RetrieveProbability(ite->low());
+    if (ite->complement_edge()) low = 1 - low;
+    ite->factor(high - low);
+  } else  {
+    assert(ite->order() < order);
+    double var_prob = 0;
+    if (ite->module()) {
+      const Bdd::Function& res = bdd_graph_->gates().find(ite->index())->second;
+      var_prob = ProbabilityAnalysis::RetrieveProbability(res.vertex);
+      if (res.complement) var_prob = 1 - var_prob;
+    } else {
+      var_prob = var_probs_[ite->index()];
+    }
+    double high = ProbabilityAnalysis::CalculateMif(ite->high(), order, mark);
+    double low = ProbabilityAnalysis::CalculateMif(ite->low(), order, mark);
+    if (ite->complement_edge()) low = -low;
+    ite->factor(var_prob * high + (1 - var_prob) * low);
+  }
+  return ite->factor();
+}
+
+double ProbabilityAnalysis::RetrieveProbability(
+    const VertexPtr& vertex) noexcept {
+  if (vertex->terminal()) return 1;
+  return Ite::Ptr(vertex)->prob();
+}
+
+void ProbabilityAnalysis::ClearMarks(const VertexPtr& vertex,
+                                     bool mark) noexcept {
+  if (vertex->terminal()) return;
+  ItePtr ite = Ite::Ptr(vertex);
+  if (ite->mark() == mark) return;
+  ite->mark(mark);
+  if (ite->module()) {
+    const Bdd::Function& res = bdd_graph_->gates().find(ite->index())->second;
+    ProbabilityAnalysis::ClearMarks(res.vertex, mark);
+  }
+  ProbabilityAnalysis::ClearMarks(ite->high(), mark);
+  ProbabilityAnalysis::ClearMarks(ite->low(), mark);
 }
 
 }  // namespace scram

@@ -197,6 +197,14 @@ class Ite : public NonTerminal {
   /// @param[in] value Calculated value for the probability.
   void prob(double value) { prob_ = value; }
 
+  /// @returns Saved results of importance factor calculations.
+  double factor() const { return factor_; }
+
+  /// Memorized the results of importance factor calculations.
+  ///
+  /// @param[in] value Calculation results for importance factor.
+  void factor(double value) { factor_ = value; }
+
   /// Recovers a shared pointer to Ite from a pointer to Vertex.
   ///
   /// @param[in] vertex Pointer to a Vertex known to be an Ite.
@@ -208,6 +216,7 @@ class Ite : public NonTerminal {
 
  private:
   double prob_ = 0;  ///< Probability of the function graph.
+  double factor_ = 0;  ///< Importance factor calculation results.
 };
 
 using Triplet = std::array<int, 3>;  ///< (v, G, H) triplet for functions.
@@ -263,6 +272,11 @@ class Bdd {
   /// @returns Mapping of Boolean graph gates and BDD graph vertices.
   const std::unordered_map<int, Function>& gates() const {
     return gates_;
+  }
+
+  /// @returns Mapping of variable indices to their orders.
+  inline const std::unordered_map<int, int>& index_to_order() const {
+    return index_to_order_;
   }
 
  private:
@@ -396,6 +410,7 @@ class Bdd {
   ComputeTable compute_table_;
 
   std::unordered_map<int, Function> gates_;  ///< Processed gates.
+  std::unordered_map<int, int> index_to_order_;  ///< Indices and orders.
   const TerminalPtr kOne_;  ///< Terminal True.
   int function_id_;  ///< Identification assignment for new function graphs.
 };
