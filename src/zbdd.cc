@@ -29,8 +29,9 @@ Zbdd::Zbdd()
 
 void Zbdd::Analyze(const Bdd* bdd) noexcept {
   bdd_graph_ = bdd;
+  const Bdd::Function& bdd_root = bdd->root();
   SetNodePtr root =
-      SetNode::Ptr(Zbdd::ConvertBdd(bdd->root(), bdd->complement_root()));
+      SetNode::Ptr(Zbdd::ConvertBdd(bdd_root.vertex, bdd_root.complement));
   root = SetNode::Ptr(Zbdd::Subsume(root));  /// @todo Not always SetNode.
   std::vector<int> seed;
   Zbdd::GenerateCutSets(root, &seed, &cut_sets_);

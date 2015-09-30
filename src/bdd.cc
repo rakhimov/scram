@@ -43,12 +43,9 @@ NonTerminal::~NonTerminal() {}  // Default pure virtual destructor.
 
 Bdd::Bdd(const BooleanGraph* fault_tree)
     : fault_tree_(fault_tree),
-      complement_root_(false),
       kOne_(std::make_shared<Terminal>(true)),
       function_id_(2) {
-  const Function& result = Bdd::IfThenElse(fault_tree_->root());
-  root_ = result.vertex;
-  complement_root_ = result.complement;
+  root_ = Bdd::IfThenElse(fault_tree_->root());
 }
 
 const Bdd::Function& Bdd::IfThenElse(const IGatePtr& gate) noexcept {

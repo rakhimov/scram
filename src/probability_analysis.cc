@@ -181,9 +181,9 @@ double ProbabilityAnalysis::CalculateTotalProbability() noexcept {
   CLOCK(calc_time);  // BDD based calculation time.
   LOG(DEBUG2) << "Calculating probability with BDD...";
   current_mark_ = !current_mark_;
-  double prob = ProbabilityAnalysis::CalculateProbability(bdd_graph_->root(),
-                                                          current_mark_);
-  if (bdd_graph_->complement_root()) prob = 1 - prob;
+  double prob = ProbabilityAnalysis::CalculateProbability(
+      bdd_graph_->root().vertex, current_mark_);
+  if (bdd_graph_->root().complement) prob = 1 - prob;
   LOG(DEBUG2) << "Calculated probability " << prob << " in " << DUR(calc_time);
   return prob;
 }
@@ -260,9 +260,9 @@ void ProbabilityAnalysis::PerformImportanceAnalysisBdd() noexcept {
     int order = bdd_graph_->index_to_order().find(index)->second;
     ImportanceFactors imp;
     current_mark_ = !current_mark_;
-    imp.mif = ProbabilityAnalysis::CalculateMif(bdd_graph_->root(), order,
-                                                current_mark_);
-    if (bdd_graph_->complement_root()) imp.mif = -imp.mif;
+    imp.mif = ProbabilityAnalysis::CalculateMif(bdd_graph_->root().vertex,
+                                                order, current_mark_);
+    if (bdd_graph_->root().complement) imp.mif = -imp.mif;
 
     double p_var = var_probs_[index];
     imp.cif = p_var * imp.mif / p_total_;
@@ -272,7 +272,7 @@ void ProbabilityAnalysis::PerformImportanceAnalysisBdd() noexcept {
     importance_.emplace(index_to_basic_[index]->id(), std::move(imp));
 
     current_mark_ = !current_mark_;
-    ProbabilityAnalysis::ClearMarks(bdd_graph_->root(), current_mark_);
+    ProbabilityAnalysis::ClearMarks(bdd_graph_->root().vertex, current_mark_);
   }
 }
 

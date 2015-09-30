@@ -263,11 +263,8 @@ class Bdd {
     VertexPtr vertex;  ///< The root vertex of the BDD function graph.
   };
 
-  /// @returns The root vertex of the ROBDD.
-  const VertexPtr& root() const { return root_; }
-
-  /// @returns true if the root must be interpreted as complement.
-  bool complement_root() const { return complement_root_; }
+  /// @returns The root function of the ROBDD.
+  const Function& root() const { return root_; }
 
   /// @returns Mapping of Boolean graph gates and BDD graph vertices.
   const std::unordered_map<int, Function>& gates() const {
@@ -391,8 +388,7 @@ class Bdd {
                        bool complement_one, bool complement_two) noexcept;
 
   const BooleanGraph* fault_tree_;  ///< The main fault tree.
-  VertexPtr root_;  ///< The root vertex of this BDD.
-  bool complement_root_;  ///< The interpretation of the root as complement.
+  Function root_;  ///< The root function of this BDD.
 
   /// Table of unique if-then-else nodes denoting function graphs.
   /// The key consists of ite(index, id_high, id_low),
