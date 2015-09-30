@@ -22,6 +22,7 @@
 #define SCRAM_SRC_BDD_H_
 
 #include <array>
+#include <functional>
 #include <memory>
 #include <unordered_map>
 #include <utility>
@@ -156,14 +157,6 @@ class NonTerminal : public Vertex {
   ///       after setting this edge.
   void low(const VertexPtr& low) { low_ = low; }
 
-  /// @returns true if the low edge is complement.
-  bool complement_edge() const { return complement_edge_; }
-
-  /// Sets the complement flag for the low edge.
-  ///
-  /// @param[in] flag Indicator to treat the low edge as a complement.
-  void complement_edge(bool flag) { complement_edge_ = flag; }
-
   /// @returns The mark of this vertex.
   bool mark() const { return mark_; }
 
@@ -178,14 +171,45 @@ class NonTerminal : public Vertex {
   bool module_;  ///< Mark for module variables.
   VertexPtr high_;  ///< 1 (True/then) branch in the Shannon decomposition.
   VertexPtr low_;  ///< O (False/else) branch in the Shannon decomposition.
-  bool complement_edge_;  ///< Flag for complement low edge.
   bool mark_;  ///< Traversal mark.
+};
+
+/// @class ComplementEdge
+/// Mixin for vertices
+/// that may need to indicate
+/// that one of edges must be interpreted as complement.
+///
+/// @note This is not about the vertex,
+///       but it is about the chosen edge.
+class ComplementEdge {
+ public:
+  /// Sets the complement edge to false by default.
+  ComplementEdge();
+
+  virtual ~ComplementEdge() = 0;  ///< Abstract class.
+
+  /// @returns true if the chosen edge is complement.
+  bool complement_edge() const { return complement_edge_; }
+
+  /// Sets the complement flag for the chosen edge.
+  ///
+  /// @param[in] flag Indicator to treat the chosen edge as a complement.
+  void complement_edge(bool flag) { complement_edge_ = flag; }
+
+ private:
+  bool complement_edge_;  ///< Flag for complement edge.
 };
 
 /// @class Ite
 /// Representation of non-terminal if-then-else vertices in BDD graphs.
 /// This class is designed to help construct and manipulate BDD graphs.
-class Ite : public NonTerminal {
+///
+/// @note This class provides one attributed complement edge.
+///       The BDD data structure must choose
+///       one of two (high/low) edges to assign the attribute.
+///       Consistency is not the responsibility of this class
+///       but of BDD algorithms and users.
+class Ite : public NonTerminal, public ComplementEdge {
  public:
   using NonTerminal::NonTerminal;  ///< Constructor with index and order.
 
@@ -242,7 +266,9 @@ using TripletTable = std::unordered_map<Triplet, Value, TripletHash>;
 /// Analysis of Boolean graphs with Binary Decision Diagrams.
 /// This binary decision diagram data structure
 /// represents Reduced Ordered BDD with attributed edges.
-/// There is only one terminal vertex of value 1/True.
+///
+/// @note The low/else edge is chosen to have the attribute for an ITE vertex.
+///       There is only one terminal vertex of value 1/True.
 class Bdd {
  public:
   using VertexPtr = std::shared_ptr<Vertex>;

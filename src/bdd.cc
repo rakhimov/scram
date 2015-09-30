@@ -37,10 +37,13 @@ NonTerminal::NonTerminal(int index, int order)
       : index_(index),
         order_(order),
         module_(false),
-        complement_edge_(false),
         mark_(false) {}
 
 NonTerminal::~NonTerminal() {}  // Default pure virtual destructor.
+
+ComplementEdge::ComplementEdge() : complement_edge_(false) {}
+
+ComplementEdge::~ComplementEdge() {}  // Default pure virtual destructor.
 
 Bdd::Bdd(const BooleanGraph* fault_tree)
     : fault_tree_(fault_tree),
