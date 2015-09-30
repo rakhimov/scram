@@ -23,6 +23,7 @@
 #include <algorithm>
 
 #include "event.h"
+#include "logger.h"
 
 namespace scram {
 
@@ -46,6 +47,7 @@ Bdd::Bdd(const BooleanGraph* fault_tree)
       kOne_(std::make_shared<Terminal>(true)),
       function_id_(2) {
   root_ = Bdd::IfThenElse(fault_tree_->root());
+  LOG(DEBUG3) << "The number of BDD generated vertices: " << function_id_ - 1;
 }
 
 const Bdd::Function& Bdd::IfThenElse(const IGatePtr& gate) noexcept {
@@ -120,30 +122,19 @@ std::shared_ptr<Ite> Bdd::CreateModuleProxy(const IGatePtr& gate) noexcept {
 Bdd::Function Bdd::Apply(Operator type,
                          const VertexPtr& arg_one, const VertexPtr& arg_two,
                          bool complement_one, bool complement_two) noexcept {
-  if (arg_one->terminal() && arg_two->terminal()) {
+  assert(arg_one->id() && arg_two->id());  // Both are reduced function graphs.
+  if (arg_one->terminal() && arg_two->terminal())
     return Bdd::Apply(type, Terminal::Ptr(arg_one), Terminal::Ptr(arg_two),
                       complement_one, complement_two);
-  } else if (arg_one->terminal()) {
+  if (arg_one->terminal())
     return Bdd::Apply(type, Ite::Ptr(arg_two), Terminal::Ptr(arg_one),
                       complement_two, complement_one);
-  } else if (arg_two->terminal()) {
+  if (arg_two->terminal())
     return Bdd::Apply(type, Ite::Ptr(arg_one), Terminal::Ptr(arg_two),
                       complement_one, complement_two);
-  }
-  assert(arg_one->id() && arg_two->id());  // Both are reduced function graphs.
-  if (arg_one->id() == arg_two->id()) {  // Reduction detection.
-    if (complement_one ^ complement_two) {
-      switch (type) {
-        case kOrGate:
-          return {false, kOne_};
-        case kAndGate:
-          return {true, kOne_};
-        default:
-          assert(false);
-      }
-    }
-    return {complement_one, arg_one};
-  }
+  if (arg_one->id() == arg_two->id())  // Reduction detection.
+    return Bdd::Apply(type, arg_one, complement_one, complement_two);
+
   Triplet sig =
       Bdd::GetSignature(type, arg_one, arg_two, complement_one, complement_two);
   Function& result = compute_table_[sig];  // Register if not computed.
@@ -151,26 +142,15 @@ Bdd::Function Bdd::Apply(Operator type,
 
   ItePtr ite_one = Ite::Ptr(arg_one);
   ItePtr ite_two = Ite::Ptr(arg_two);
-  Function high;
-  Function low;
-  if (ite_one->order() == ite_two->order()) {  // The same variable.
-    assert(ite_one->index() == ite_two->index());
-    high = Bdd::Apply(type, ite_one->high(), ite_two->high(),
-                      complement_one, complement_two);
-    low = Bdd::Apply(type, ite_one->low(), ite_two->low(),
-                     complement_one ^ ite_one->complement_edge(),
-                     complement_two ^ ite_two->complement_edge());
-  } else {
-    if (ite_one->order() > ite_two->order()) {
-      std::swap(ite_one, ite_two);
-      std::swap(complement_one, complement_two);
-    }
-    high = Bdd::Apply(type, ite_one->high(), ite_two,
-                      complement_one, complement_two);
-    low = Bdd::Apply(type, ite_one->low(), ite_two,
-                     complement_one ^ ite_one->complement_edge(),
-                     complement_two);
+  if (ite_one->order() > ite_two->order()) {
+    std::swap(ite_one, ite_two);
+    std::swap(complement_one, complement_two);
   }
+  std::pair<Function, Function> new_edges = Bdd::Apply(type, ite_one, ite_two,
+                                                       complement_one,
+                                                       complement_two);
+  Function& high = new_edges.first;
+  Function& low = new_edges.second;
   ItePtr bdd_graph = std::make_shared<Ite>(ite_one->index(), ite_one->order());
   bdd_graph->module(ite_one->module());  /// @todo Create clone function.
   bdd_graph->high(high.vertex);
@@ -231,6 +211,42 @@ Bdd::Function Bdd::Apply(Operator type,
     default:
       assert(false);
   }
+}
+
+Bdd::Function Bdd::Apply(Operator type, const VertexPtr& single_arg,
+                         bool complement_one, bool complement_two) noexcept {
+  if (complement_one ^ complement_two) {
+    switch (type) {
+      case kOrGate:
+        return {false, kOne_};
+      case kAndGate:
+        return {true, kOne_};
+      default:
+        assert(false);
+    }
+  }
+  return {complement_one, single_arg};
+}
+
+std::pair<Bdd::Function, Bdd::Function>
+Bdd::Apply(Operator type, const ItePtr& arg_one, const ItePtr& arg_two,
+           bool complement_one, bool complement_two) noexcept {
+  if (arg_one->order() == arg_two->order()) {  // The same variable.
+    assert(arg_one->index() == arg_two->index());
+    Function high = Bdd::Apply(type, arg_one->high(), arg_two->high(),
+                               complement_one, complement_two);
+    Function low = Bdd::Apply(type, arg_one->low(), arg_two->low(),
+                              complement_one ^ arg_one->complement_edge(),
+                              complement_two ^ arg_two->complement_edge());
+    return {high, low};
+  }
+  assert(arg_one->order() < arg_two->order());
+  Function high = Bdd::Apply(type, arg_one->high(), arg_two,
+                             complement_one, complement_two);
+  Function low = Bdd::Apply(type, arg_one->low(), arg_two,
+                            complement_one ^ arg_one->complement_edge(),
+                            complement_two);
+  return {high, low};
 }
 
 Triplet Bdd::GetSignature(Operator type,

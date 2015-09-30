@@ -324,8 +324,8 @@ class Bdd {
   ///
   /// @note The order of arguments does not matter for two variable operators.
   Function Apply(Operator type,
-               const VertexPtr& arg_one, const VertexPtr& arg_two,
-               bool complement_one, bool complement_two) noexcept;
+                 const VertexPtr& arg_one, const VertexPtr& arg_two,
+                 bool complement_one, bool complement_two) noexcept;
 
   /// Applies the logic of a Boolean operator
   /// to terminal vertices.
@@ -338,8 +338,8 @@ class Bdd {
   ///
   /// @returns The resulting BDD function.
   Function Apply(Operator type,
-               const TerminalPtr& term_one, const TerminalPtr& term_two,
-               bool complement_one, bool complement_two) noexcept;
+                 const TerminalPtr& term_one, const TerminalPtr& term_two,
+                 bool complement_one, bool complement_two) noexcept;
 
   /// Applies the logic of a Boolean operator
   /// to non-terminal and terminal vertices.
@@ -352,8 +352,38 @@ class Bdd {
   ///
   /// @returns The resulting BDD function.
   Function Apply(Operator type,
-               const ItePtr& ite_one, const TerminalPtr& term_two,
-               bool complement_one, bool complement_two) noexcept;
+                 const ItePtr& ite_one, const TerminalPtr& term_two,
+                 bool complement_one, bool complement_two) noexcept;
+
+  /// Applies Boolean operation for a special case of the same arguments.
+  ///
+  /// @param[in] type The operator or type of the gate.
+  /// @param[in] single_arg One of two identical arguments.
+  /// @param[in] complement_one Interpretation of the first vertex argument.
+  /// @param[in] complement_two Interpretation of the second vertex argument.
+  ///
+  /// @returns The BDD function as a result of operation.
+  Function Apply(Operator type, const VertexPtr& single_arg,
+                 bool complement_one, bool complement_two) noexcept;
+
+  /// Applies Boolean operation to BDD graph non-terminal verteices.
+  ///
+  /// @param[in] type The operator or type of the gate.
+  /// @param[in] arg_one First argument if-then-else vertex.
+  /// @param[in] arg_two Second argument if-then-else vertex.
+  /// @param[in] complement_one Interpretation of arg_one as complement.
+  /// @param[in] complement_two Interpretation of arg_two as complement.
+  ///
+  /// @returns High and Low BDD functions as a result of operation.
+  ///
+  /// @pre Argument if-then-else vertices must be ordered.
+  ///
+  /// @note The order of arguments does not matter for two variable operators.
+  std::pair<Function, Function> Apply(Operator type,
+                                      const ItePtr& arg_one,
+                                      const ItePtr& arg_two,
+                                      bool complement_one,
+                                      bool complement_two) noexcept;
 
   /// Produces canonical signature of application of Boolean operations.
   /// The signature of the operations helps
