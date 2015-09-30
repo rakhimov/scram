@@ -117,24 +117,6 @@ std::shared_ptr<Ite> Bdd::CreateModuleProxy(const IGatePtr& gate) noexcept {
   return in_table;
 }
 
-std::shared_ptr<Vertex> Bdd::Reduce(const VertexPtr& vertex) noexcept {
-  if (vertex->terminal()) return vertex;
-  if (vertex->id()) return vertex;  // Already reduced function graph.
-  ItePtr ite = Ite::Ptr(vertex);
-  ite->high(Bdd::Reduce(ite->high()));
-  ite->low(Bdd::Reduce(ite->low()));
-  if (ite->high()->id() == ite->low()->id()) {  // Redundancy condition.
-    assert(ite->low() == ite->high());
-    return ite->low();
-  }
-  ItePtr& in_table =
-      unique_table_[{ite->index(), ite->high()->id(), ite->low()->id()}];
-  if (in_table) return in_table;  // Existing function graph.
-  ite->id(function_id_++);  // Unique function graph.
-  in_table = ite;
-  return ite;
-}
-
 Bdd::Function Bdd::Apply(Operator type,
                          const VertexPtr& arg_one, const VertexPtr& arg_two,
                          bool complement_one, bool complement_two) noexcept {

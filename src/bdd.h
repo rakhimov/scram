@@ -312,17 +312,6 @@ class Bdd {
   /// @note The gate still needs to be converted and saved.
   ItePtr CreateModuleProxy(const IGatePtr& gate) noexcept;
 
-  /// Applies reduction rules to a BDD graph.
-  ///
-  /// @param[in,out] vertex The root vertex of the graph.
-  ///
-  /// @returns The root vertex of the reduced graph.
-  ///          It is the same vertex as the input vertex
-  ///          only if the resulting graph is unique.
-  ///
-  /// @todo Review with the one terminal changes.
-  VertexPtr Reduce(const VertexPtr& vertex) noexcept;
-
   /// Applies Boolean operation to BDD graphs.
   ///
   /// @param[in] type The operator or type of the gate.
