@@ -63,6 +63,10 @@ The Approximate Probability Calculation
 
 Approximate calculations are implemented to reduce the calculation time.
 However, the users must be aware of the limitations and inaccuracies of approximations [WakXX]_.
+If approximate calculations yield probability values above one,
+the result is adjusted to one.
+In this special case,
+appropriate warnings are given in the final report.
 
 
 The Rare-Event Approximation

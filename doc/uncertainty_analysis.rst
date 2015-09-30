@@ -55,3 +55,31 @@ Statistical Distributions
 - Exponential
 - Log-Uniform
 - Log-Triangular
+
+
+Adjustment of Invalid Samples
+-----------------------------
+
+Upon performing Monte-Carlo simulations,
+the analysis is not required
+to check the validity of samples
+and to abort the analysis.
+If it happens
+that a sampled value is not sensible (probability > 1),
+the sample is adjusted to the nearest acceptable value (probability = 1).
+No warnings are given in this case;
+however, if the problem is due to probability calculation approximations (rare-event),
+Probability Analysis report may contain the warning.
+
+In order to prevent invalid ranges for uncertainty analysis,
+the input validation assesses the ranges of provided distributions.
+Uncertainty analysis is performed
+only if maximum and minimum values are within the acceptable range.
+This approach should prevent most errors.
+
+However, for some distributions (normal),
+theoretical range may be (-inf, +inf),
+which rarely fits for probability analysis variables.
+In this case,
+the best estimate is made to find the most likely range
+(5-6 sigma, 99.9% percentile, etc.).

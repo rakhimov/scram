@@ -88,7 +88,11 @@ void UncertaintyAnalysis::Sample() noexcept {
     // Sample all basic events with distributions.
     for (int index : basic_events) {
       double prob = index_to_basic_[index]->SampleProbability();
-      assert(prob >= 0 && prob <= 1);
+      if (prob < 0) {
+        prob = 0;
+      } else if (prob > 1) {
+        prob = 1;
+      }
       var_probs_[index] = prob;
     }
     double result = 0;
@@ -99,6 +103,8 @@ void UncertaintyAnalysis::Sample() noexcept {
     } else {
       result = ProbabilityAnalysis::CalculateTotalProbability();
     }
+    assert(result >= 0);
+    if (result > 1) result = 1;
     sampled_results_.push_back(result);
   }
 }

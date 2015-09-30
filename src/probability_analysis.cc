@@ -72,7 +72,10 @@ void ProbabilityAnalysis::Analyze(
   }
 
   assert(p_total_ >= 0 && "The total probability is negative.");
-  if (p_total_ > 1) p_total_ = 1;  /// @todo Emit a warning!
+  if (p_total_ > 1) {
+    warnings_ += " Probability value exceeded 1 and was adjusted to 1.";
+    p_total_ = 1;
+  }
   LOG(DEBUG3) << "Finished probability calculations in " << DUR(p_time);
   p_time_ = DUR(p_time);
   if (kSettings_.importance_analysis()) {
