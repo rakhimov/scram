@@ -635,7 +635,7 @@ def generate_fault_tree():
     """
     # Start with a top event
     top_event = Gate()
-    while top_event.gate_type != "and" and top_event.gate_type != "or":
+    while top_event.gate_type == "xor" or top_event.gate_type == "not":
         top_event.gate_type = Factors.get_random_type()
     top_event.name = Settings.root_name
 
