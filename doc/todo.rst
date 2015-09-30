@@ -23,6 +23,9 @@ Major Enhancements and Capabilities
 - Incorporation of cut-offs for BDD. *Moderate*
 - Incorporation of cut-offs for ZBDD. *Moderate*
 - Advanced variable ordering heuristics for BDD. *High*
+
+    * Post-construction reordering.
+
 - Sensitivity analysis. *Moderate*
 - Incorporation of an event tree analysis. *Moderate*
 - Event tree chaining. *Moderate*
