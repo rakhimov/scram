@@ -43,6 +43,9 @@ Core C++ Code
 
 - Exceptions are forbidden in **analysis code**.
 
+- RTTI (typeid, dynamic_cast, dynamic_pointer_cast)
+  is forbidden in **analysis code**.
+
 - Check all preconditions and assumptions
   with the ``assert`` macro wherever possible in **analysis code**.
   Consider supplying an error message to clarify the assertion,
