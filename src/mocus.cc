@@ -173,10 +173,10 @@ void SimpleGate::OrGateCutSets(const SetPtr& cut_set,
   new_cut_sets->insert(local_sets.begin(), local_sets.end());
 }
 
-Mocus::Mocus(const BooleanGraph* fault_tree, int limit_order)
+Mocus::Mocus(const BooleanGraph* fault_tree, const Settings& settings)
       : fault_tree_(fault_tree),
-        limit_order_(limit_order) {
-  SimpleGate::limit_order(limit_order);
+        limit_order_(settings.limit_order()) {
+  SimpleGate::limit_order(limit_order_);
 }
 
 void Mocus::FindMcs() {

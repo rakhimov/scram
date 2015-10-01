@@ -37,6 +37,7 @@
 #include <boost/functional/hash.hpp>
 
 #include "boolean_graph.h"
+#include "settings.h"
 
 namespace scram {
 
@@ -174,8 +175,8 @@ class Mocus {
   /// Constructor with the analysis target.
   ///
   /// @param[in] fault_tree Preprocessed, normalized, and indexed fault tree.
-  /// @param[in] limit_order The limit on the size of minimal cut sets.
-  explicit Mocus(const BooleanGraph* fault_tree, int limit_order = 20);
+  /// @param[in] settings The analysis settings.
+  explicit Mocus(const BooleanGraph* fault_tree, const Settings& settings);
 
   /// Finds minimal cut sets from the initiated fault tree with indices.
   void FindMcs();

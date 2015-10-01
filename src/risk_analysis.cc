@@ -71,7 +71,8 @@ void RiskAnalysis::Analyze() noexcept {
           target->is_public() ? "" : target->base_path() + ".";
       std::string name = base_path + target->name();  // Analysis ID.
 
-      FaultTreeAnalysisPtr fta(new FaultTreeAnalysis(target, kSettings_));
+      FaultTreeAnalysisPtr fta(
+          new FaultTreeAnalyzer<Mocus>(target, kSettings_));
       fta->Analyze();
 
       if (kSettings_.probability_analysis()) {

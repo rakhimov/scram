@@ -1104,7 +1104,7 @@ class CustomPreprocessor : public Preprocessor {};
 
 class Mocus;
 
-/// @class CustomPreprocessor<Bdd>
+/// @class CustomPreprocessor<Mocus>
 /// Specialization of preprocessing for MOCUS based analyses.
 template<>
 class CustomPreprocessor<Mocus> : public Preprocessor {

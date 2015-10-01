@@ -24,66 +24,23 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "boolean_graph.h"
 #include "error.h"
-#include "logger.h"
-#include "preprocessor.h"
 
 namespace scram {
 
-FaultTreeAnalysis::FaultTreeAnalysis(const GatePtr& root,
-                                     const Settings& settings)
-    : Analysis::Analysis(settings),
-      top_event_(root),
-      sum_mcs_probability_(0),
-      warnings_(""),
-      max_order_(0),
-      analysis_time_(0) {
-  FaultTreeAnalysis::GatherEvents(top_event_);
-  FaultTreeAnalysis::CleanMarks();
+FaultTreeDescriptor::FaultTreeDescriptor(const GatePtr& root)
+    : top_event_(root) {
+  FaultTreeDescriptor::GatherEvents(top_event_);
+  FaultTreeDescriptor::ClearMarks();
 }
 
-void FaultTreeAnalysis::Analyze() noexcept {
-  CLOCK(analysis_time);
-
-  CLOCK(ft_creation);
-  BooleanGraph* indexed_tree = new BooleanGraph(top_event_,
-                                                kSettings_.ccf_analysis());
-  LOG(DEBUG2) << "Boolean graph is created in " << DUR(ft_creation);
-
-  CLOCK(prep_time);  // Overall preprocessing time.
-  LOG(DEBUG2) << "Preprocessing...";
-  Preprocessor* preprocessor = new CustomPreprocessor<Mocus>(indexed_tree);
-  preprocessor->Run();
-  delete preprocessor;  // No exceptions are expected.
-  LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
-
-  Mocus* mocus = new Mocus(indexed_tree, kSettings_.limit_order());
-  mocus->FindMcs();
-
-  const std::vector<Set>& imcs = mocus->GetGeneratedMcs();
-  // Special cases of sets.
-  if (imcs.empty()) {
-    // Special case of null of a top event. No minimal cut sets found.
-    warnings_ += " The top event is NULL. Success is guaranteed.";
-  } else if (imcs.size() == 1 && imcs.back().empty()) {
-    // Special case of unity of a top event.
-    warnings_ += " The top event is UNITY. Failure is guaranteed.";
-  }
-
-  analysis_time_ = DUR(analysis_time);  // Duration of MCS generation.
-  FaultTreeAnalysis::SetsToString(imcs, indexed_tree);  // MCS with event ids.
-  delete indexed_tree;  // No exceptions are expected.
-  delete mocus;  // No exceptions are expected.
-}
-
-void FaultTreeAnalysis::GatherEvents(const GatePtr& gate) noexcept {
+void FaultTreeDescriptor::GatherEvents(const GatePtr& gate) noexcept {
   if (gate->mark() == "visited") return;
   gate->mark("visited");
-  FaultTreeAnalysis::GatherEvents(gate->formula());
+  FaultTreeDescriptor::GatherEvents(gate->formula());
 }
 
-void FaultTreeAnalysis::GatherEvents(const FormulaPtr& formula) noexcept {
+void FaultTreeDescriptor::GatherEvents(const FormulaPtr& formula) noexcept {
   for (const BasicEventPtr& basic_event : formula->basic_event_args()) {
     basic_events_.emplace(basic_event->id(), basic_event);
     if (basic_event->HasCcf())
@@ -94,22 +51,41 @@ void FaultTreeAnalysis::GatherEvents(const FormulaPtr& formula) noexcept {
   }
   for (const GatePtr& gate : formula->gate_args()) {
     inter_events_.emplace(gate->id(), gate);
-    FaultTreeAnalysis::GatherEvents(gate);
+    FaultTreeDescriptor::GatherEvents(gate);
   }
   for (const FormulaPtr& arg : formula->formula_args()) {
-    FaultTreeAnalysis::GatherEvents(arg);
+    FaultTreeDescriptor::GatherEvents(arg);
   }
 }
 
-void FaultTreeAnalysis::CleanMarks() noexcept {
+void FaultTreeDescriptor::ClearMarks() noexcept {
   top_event_->mark("");
   for (const std::pair<std::string, GatePtr>& member : inter_events_) {
     member.second->mark("");
   }
 }
 
+FaultTreeAnalysis::FaultTreeAnalysis(const GatePtr& root,
+                                     const Settings& settings)
+    : Analysis::Analysis(settings),
+      FaultTreeDescriptor::FaultTreeDescriptor(root),
+      sum_mcs_probability_(0),
+      warnings_(""),
+      max_order_(0),
+      analysis_time_(0) {}
+
 void FaultTreeAnalysis::SetsToString(const std::vector<Set>& imcs,
                                      const BooleanGraph* ft) noexcept {
+  using BasicEventPtr = std::shared_ptr<BasicEvent>;
+  // Special cases of sets.
+  if (imcs.empty()) {
+    // Special case of null of a top event. No minimal cut sets found.
+    warnings_ += " The top event is NULL. Success is guaranteed.";
+  } else if (imcs.size() == 1 && imcs.back().empty()) {
+    // Special case of unity of a top event.
+    warnings_ += " The top event is UNITY. Failure is guaranteed.";
+    max_order_ = 1;
+  }
   assert(!sum_mcs_probability_);
   for (const Set& min_cut_set : imcs) {
     if (min_cut_set.size() > max_order_) max_order_ = min_cut_set.size();
