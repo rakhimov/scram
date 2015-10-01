@@ -59,16 +59,10 @@ class ProbabilityAnalysis : public Analysis {
 
   virtual ~ProbabilityAnalysis() {}
 
-  /// Performs quantitative analysis on minimal cut sets
-  /// containing basic events provided in the databases.
-  /// It is assumed that the analysis is called only once.
+  /// Performs quantitative analysis on the supplied fault tree.
   ///
-  /// @param[in] min_cut_sets Minimal cut sets with string ids of events.
-  ///                         Negative event is indicated by "'not' + id"
-  ///
-  /// @note  Undefined behavior if analysis is called two or more times.
-  virtual void Analyze(
-      const std::set<std::set<std::string>>& min_cut_sets) noexcept;
+  /// @pre Analysis is called only once.
+  virtual void Analyze() noexcept {}  /// @todo Make pure virtual.
 
   /// @returns The total probability calculated by the analysis.
   ///
@@ -265,12 +259,11 @@ class McubCalculator : private CutSetCalculator {
 };
 
 /// @class ProbabilityAnalyzer
+/// Fault-tree-analysis-aware probability analyzer.
+/// Probability analyzer provides the main engine for probability analysis.
 ///
 /// @tparam Algorithm Fault tree analysis algorithm.
 /// @tparam Calculator Quantitative analysis calculator.
-///
-/// Fault tree analysis aware probability analyzer.
-/// Probability analyzer provides the main engine for probability analysis.
 template<typename Algorithm, typename Calculator>
 class ProbabilityAnalyzer : public ProbabilityAnalysis {
  public:
@@ -279,7 +272,8 @@ class ProbabilityAnalyzer : public ProbabilityAnalysis {
   ///
   /// @param[in] fta Finished fault tree analyzer with results.
   explicit ProbabilityAnalyzer(const FaultTreeAnalyzer<Algorithm>* fta)
-      : ProbabilityAnalysis::ProbabilityAnalysis(fta), fta_(fta) {
+      : ProbabilityAnalysis::ProbabilityAnalysis(fta),
+        fta_(fta) {
     var_probs_.push_back(-1);
     for (const BasicEventPtr& event : fta->graph()->basic_events()) {
       var_probs_.push_back(event->p());
@@ -299,7 +293,8 @@ void ProbabilityAnalyzer<Algorithm, Calculator>::Analyze() noexcept {
   CLOCK(p_time);
   LOG(DEBUG3) << "Calculating probabilities...";
   // Get the total probability.
-  p_total_ = Calculator().Calculate(fta_->GetGeneratedMcs(), var_probs_);
+  p_total_ =
+      Calculator().Calculate(fta_->algorithm()->GetGeneratedMcs(), var_probs_);
   assert(p_total_ >= 0 && "The total probability is negative.");
   if (p_total_ > 1) {
     warnings_ += " Probability value exceeded 1 and was adjusted to 1.";
@@ -307,6 +302,121 @@ void ProbabilityAnalyzer<Algorithm, Calculator>::Analyze() noexcept {
   }
   LOG(DEBUG3) << "Finished probability calculations in " << DUR(p_time);
   analysis_time_ = DUR(p_time);
+}
+
+/// @class ProbabilityAnalyzer<typename Algorithm, Bdd>
+/// Specialization of probability analyzer with Binary Decision Diagrams.
+/// The quantitative analysis is done with BDD.
+///
+/// @tparam Algorithm Fault tree analysis algorithm.
+template<typename Algorithm>
+class ProbabilityAnalyzer<Algorithm, Bdd> : public ProbabilityAnalysis {
+ public:
+  /// Constructs probability analyzer from a fault tree analyzer
+  /// with the same algorithm.
+  ///
+  /// @param[in] fta Finished fault tree analyzer with results.
+  explicit ProbabilityAnalyzer(const FaultTreeAnalyzer<Algorithm>* fta);
+
+  /// Runs the analysis to find the total probability.
+  void Analyze() noexcept;
+
+ private:
+  /// Calculates the total probability.
+  ///
+  /// @returns The total probability of the graph or cut sets.
+  double CalculateTotalProbability() noexcept;
+
+  /// Calculates exact probability
+  /// of a function graph represented by its root BDD vertex.
+  ///
+  /// @param[in] vertex The root vertex of a function graph.
+  /// @param[in] mark A flag to mark traversed vertices.
+  ///
+  /// @returns Probability value.
+  ///
+  /// @warning If a vertex is already marked with the input mark,
+  ///          it will not be traversed and updated with a probability value.
+  double CalculateProbability(const VertexPtr& vertex, bool mark) noexcept;
+
+  const FaultTreeAnalyzer<Algorithm>* fta_;  ///< Finished fault tree analysis.
+  std::vector<double> var_probs_;  ///< Variable probabilities.
+  std::unique_ptr<BooleanGraph> bool_graph_;  ///< Indexation graph.
+  std::unique_ptr<Bdd> bdd_graph_;  ///< The main BDD graph for analysis.
+  bool current_mark_; ///< To keep track of BDD current mark.
+};
+
+template<typename Algorithm>
+ProbabilityAnalyzer<Algorithm, Bdd>::ProbabilityAnalyzer(
+    const FaultTreeAnalyzer<Algorithm>* fta)
+    : ProbabilityAnalysis::ProbabilityAnalysis(fta),
+      fta_(fta),
+      current_mark_(false) {
+  CLOCK(main_time);
+  CLOCK(ft_creation);
+  bool_graph_ = std::unique_ptr<BooleanGraph>(
+      new BooleanGraph(fta_->top_event(), kSettings_.ccf_analysis()));
+  LOG(DEBUG2) << "Boolean graph is created in " << DUR(ft_creation);
+  CLOCK(prep_time);  // Overall preprocessing time.
+  LOG(DEBUG2) << "Preprocessing...";
+  Preprocessor* preprocessor = new CustomPreprocessor<Bdd>(bool_graph_.get());
+  preprocessor->Run();
+  delete preprocessor;  // No exceptions are expected.
+  LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
+
+  CLOCK(bdd_time);  // BDD based calculation time.
+  LOG(DEBUG2) << "Creating BDD for ProbabilityAnalysis...";
+  bdd_graph_ = std::unique_ptr<Bdd>(new Bdd(bool_graph_.get()));
+  LOG(DEBUG2) << "BDD is created in " << DUR(bdd_time);
+  var_probs_.push_back(-1);
+  for (const BasicEventPtr& event : bool_graph_->basic_events()) {
+    var_probs_.push_back(event->p());
+  }
+  analysis_time_ = DUR(main_time);
+}
+
+template<typename Algorithm>
+void ProbabilityAnalyzer<Algorithm, Bdd>::Analyze() noexcept {
+  CLOCK(p_time);
+  LOG(DEBUG3) << "Calculating probabilities...";
+  p_total_ = CalculateTotalProbability();
+  LOG(DEBUG3) << "Finished probability calculations in " << DUR(p_time);
+  analysis_time_ += DUR(p_time);
+}
+
+template<typename Algorithm>
+double
+ProbabilityAnalyzer<Algorithm, Bdd>::CalculateTotalProbability() noexcept {
+  CLOCK(calc_time);  // BDD based calculation time.
+  LOG(DEBUG2) << "Calculating probability with BDD...";
+  current_mark_ = !current_mark_;
+  double prob = CalculateProbability(bdd_graph_->root().vertex, current_mark_);
+  if (bdd_graph_->root().complement) prob = 1 - prob;
+  LOG(DEBUG2) << "Calculated probability " << prob << " in " << DUR(calc_time);
+  return prob;
+}
+
+template<typename Algorithm>
+double ProbabilityAnalyzer<Algorithm, Bdd>::CalculateProbability(
+    const VertexPtr& vertex,
+    bool mark) noexcept {
+  if (vertex->terminal()) return 1;
+  ItePtr ite = Ite::Ptr(vertex);
+  if (ite->mark() == mark) return ite->prob();
+  ite->mark(mark);
+  double var_prob = 0;
+  if (ite->module()) {
+    const Bdd::Function& res = bdd_graph_->gates().find(ite->index())->second;
+    var_prob = CalculateProbability(res.vertex, mark);
+    if (res.complement) var_prob = 1 - var_prob;
+  } else {
+    var_prob = var_probs_[ite->index()];
+  }
+  double high = CalculateProbability(ite->high(), mark);
+  double low = CalculateProbability(ite->low(), mark);
+  if (ite->complement_edge()) low = 1 - low;
+  ite->prob(var_prob * high + (1 - var_prob) * low);
+  return ite->prob();
 }
 
 }  // namespace scram

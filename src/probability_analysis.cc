@@ -42,47 +42,6 @@ ProbabilityAnalysis::ProbabilityAnalysis(const FaultTreeAnalysis* fta)
       p_total_(0),
       current_mark_(false) {}
 
-void ProbabilityAnalysis::Analyze(
-    const std::set<std::set<std::string>>& min_cut_sets) noexcept {
-  assert(top_event_ && "The fault tree is undefined.");
-  assert(!bool_graph_ && "Re-running analysis.");
-  // Special case of unity with empty sets.
-  if (min_cut_sets.size() == 1 && min_cut_sets.begin()->empty()) {
-    warnings_ += " Probability is for UNITY case.";
-    p_total_ = 1;
-    return;
-  }
-  ProbabilityAnalysis::AssignIndices();
-  ProbabilityAnalysis::IndexMcs(min_cut_sets);
-
-  CLOCK(p_time);
-  LOG(DEBUG3) << "Calculating probabilities...";
-  // Get the total probability.
-  if (kSettings_.approximation() == "mcub") {
-    /// @todo Detect the conditions.
-    warnings_ += " The MCUB approximation may not hold"
-                 " if the fault tree is not coherent"
-                 " or there are many common events.";
-    p_total_ = ProbabilityAnalysis::ProbMcub(imcs_);
-
-  } else if (kSettings_.approximation() == "rare-event") {
-    /// @todo Check if a probability of any cut set exceeds 0.1.
-    warnings_ += " The rare event approximation may be inaccurate for analysis"
-                 " if minimal cut sets' probabilities exceed 0.1.";
-    p_total_ = ProbabilityAnalysis::ProbRareEvent(imcs_);
-  } else {
-    p_total_ = ProbabilityAnalysis::CalculateTotalProbability();
-  }
-
-  assert(p_total_ >= 0 && "The total probability is negative.");
-  if (p_total_ > 1) {
-    warnings_ += " Probability value exceeded 1 and was adjusted to 1.";
-    p_total_ = 1;
-  }
-  LOG(DEBUG3) << "Finished probability calculations in " << DUR(p_time);
-  analysis_time_ = DUR(p_time);
-}
-
 void ProbabilityAnalysis::AssignIndices() noexcept {
   CLOCK(ft_creation);
   bool_graph_ = std::unique_ptr<BooleanGraph>(

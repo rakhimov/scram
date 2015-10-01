@@ -71,14 +71,10 @@ void RiskAnalysis::Analyze() noexcept {
           target->is_public() ? "" : target->base_path() + ".";
       std::string name = base_path + target->name();  // Analysis ID.
 
-      FaultTreeAnalysisPtr fta(
-          new FaultTreeAnalyzer<Mocus>(target, kSettings_));
-      fta->Analyze();
+      RiskAnalysis::RunAnalysis(name, target);
 
       if (kSettings_.probability_analysis()) {
-        ProbabilityAnalysisPtr pa(new ProbabilityAnalysis(target, kSettings_));
-        pa->Analyze(fta->min_cut_sets());
-        probability_analyses_.emplace(name, std::move(pa));
+        const FaultTreeAnalysisPtr& fta = fault_tree_analyses_.at(name);
         if (kSettings_.importance_analysis()) {
           ImportanceAnalysisPtr ia(new ImportanceAnalysis(target, kSettings_));
           ia->Analyze(fta->min_cut_sets());
@@ -91,10 +87,50 @@ void RiskAnalysis::Analyze() noexcept {
           uncertainty_analyses_.emplace(name, std::move(ua));
         }
       }
-
-      fault_tree_analyses_.emplace(name, std::move(fta));
     }
   }
+}
+
+void RiskAnalysis::RunAnalysis(const std::string& name,
+                               const GatePtr& target) noexcept {
+  RiskAnalysis::RunAnalysis<Mocus>(name, target);
+}
+
+template<typename Algorithm>
+void RiskAnalysis::RunAnalysis(const std::string& name,
+                               const GatePtr& target) noexcept {
+  auto* fta = new FaultTreeAnalyzer<Algorithm>(target, kSettings_);
+  fta->Analyze();
+  if (kSettings_.probability_analysis()) {
+    if (kSettings_.approximation() == "no") {
+      RiskAnalysis::RunAnalysis<Algorithm, Bdd>(name, fta);
+    } else if (kSettings_.approximation() == "rare-event") {
+      RiskAnalysis::RunAnalysis<Algorithm, RareEventCalculator>(name, fta);
+    } else {
+      assert(kSettings_.approximation() == "mcub");
+      RiskAnalysis::RunAnalysis<Algorithm, McubCalculator>(name, fta);
+    }
+  }
+  fault_tree_analyses_.emplace(name, FaultTreeAnalysisPtr(fta));
+}
+
+template<typename Algorithm, typename Calculator>
+void RiskAnalysis::RunAnalysis(
+    const std::string& name,
+    const FaultTreeAnalyzer<Algorithm>* fta) noexcept {
+  auto* pa = new ProbabilityAnalyzer<Algorithm, Calculator>(fta);
+  pa->Analyze();
+  /* if (kSettings_.importance_analysis()) { */
+  /*   auto* ia = new ImportanceAnalysis(target, kSettings_); */
+  /*   ia->Analyze(fta->min_cut_sets()); */
+  /*   importance_analyses_.emplace(name, ImportanceAnalysisPtr(ia)); */
+  /* } */
+  /* if (kSettings_.uncertainty_analysis()) { */
+  /*   auto* ua = new UncertaintyAnalysis(target, kSettings_); */
+  /*   ua->Analyze(fta->min_cut_sets()); */
+  /*   uncertainty_analyses_.emplace(name, UncertaintyAnalysisPtr(ua)); */
+  /* } */
+  probability_analyses_.emplace(name, ProbabilityAnalysisPtr(pa));
 }
 
 void RiskAnalysis::Report(std::ostream& out) {

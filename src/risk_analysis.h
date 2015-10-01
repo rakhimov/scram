@@ -131,6 +131,15 @@ class RiskAnalysis : public Analysis {
   using GatePtr = std::shared_ptr<Gate>;
   using FaultTreePtr = std::unique_ptr<FaultTree>;
 
+  void RunAnalysis(const std::string& name, const GatePtr& target) noexcept;
+
+  template<typename Algorithm>
+  void RunAnalysis(const std::string& name, const GatePtr& target) noexcept;
+
+  template<typename Algorithm, typename Calculator>
+  void RunAnalysis(const std::string& name,
+                   const FaultTreeAnalyzer<Algorithm>* fta) noexcept;
+
   ModelPtr model_;  ///< Analysis model with constructs.
 
   /// Fault tree analyses that are performed on a specific fault tree.
