@@ -32,7 +32,7 @@ TEST_F(RiskAnalysisTest, ZbddTest) {
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   GatePtr top_gate = fault_tree()->top_events().front();
   BooleanGraph* graph = new BooleanGraph(top_gate);
-  Preprocessor* prep = new PreprocessorBdd(graph);
+  Preprocessor* prep = new CustomPreprocessor<Bdd>(graph);
   prep->Run();
   Bdd* bdd = new Bdd(graph);
   Zbdd* zbdd = new Zbdd();
@@ -51,7 +51,7 @@ TEST_F(RiskAnalysisTest, ZbddChinese) {
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
   GatePtr top_gate = fault_tree()->top_events().front();
   BooleanGraph* graph = new BooleanGraph(top_gate);
-  Preprocessor* prep = new PreprocessorBdd(graph);
+  Preprocessor* prep = new CustomPreprocessor<Bdd>(graph);
   prep->Run();
   Bdd* bdd = new Bdd(graph);
   Zbdd* zbdd = new Zbdd();
@@ -70,7 +70,7 @@ TEST_F(RiskAnalysisTest, DISABLED_ZbddBaobab1) {
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
   GatePtr top_gate = fault_tree()->top_events().front();
   BooleanGraph* graph = new BooleanGraph(top_gate);
-  Preprocessor* prep = new PreprocessorBdd(graph);
+  Preprocessor* prep = new CustomPreprocessor<Bdd>(graph);
   prep->Run();
   Bdd* bdd = new Bdd(graph);
   Zbdd* zbdd = new Zbdd();

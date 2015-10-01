@@ -53,7 +53,7 @@ void FaultTreeAnalysis::Analyze() noexcept {
 
   CLOCK(prep_time);  // Overall preprocessing time.
   LOG(DEBUG2) << "Preprocessing...";
-  Preprocessor* preprocessor = new Preprocessor(indexed_tree);
+  Preprocessor* preprocessor = new CustomPreprocessor<Mocus>(indexed_tree);
   preprocessor->Run();
   delete preprocessor;  // No exceptions are expected.
   LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);

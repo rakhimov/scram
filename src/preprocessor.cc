@@ -24,11 +24,11 @@
 /// its limitations, side-effects, and assumptions,
 /// the documentation in the header file
 /// must contain all the relevant information within
-/// its description, notes, or warnings.
+/// its description, preconditions, postconditions, notes, or warnings.
 /// The default assumption for all algorithms is
 /// that the Boolean graph is valid and well-formed.
 ///
-/// Some suggested Notes/Warnings: (Contract for preprocessing algorithms)
+/// Some suggested contracts/notes for preprocessing algorithms:
 ///
 ///   * Works with coherent graphs only
 ///   * Works with positive gates or nodes only
@@ -49,6 +49,8 @@
 ///   * Has trade-offs
 ///   * Runs better/More effective before/after some preprocessing step(s)
 ///   * Coupled with another preprocessing algorithms
+///   * Idempotent (consecutive, repeated application doesn't yield any change)
+///   * One-time operation (any repetition is pointless or dangerous)
 ///
 /// Assuming that the Boolean graph is provided
 /// in the state as described in the contract,
@@ -81,51 +83,6 @@ namespace scram {
 Preprocessor::Preprocessor(BooleanGraph* graph) noexcept
     : graph_(graph),
       root_sign_(1) {}
-
-void Preprocessor::Run() noexcept {
-  assert(graph_->root());
-  assert(graph_->root()->parents().empty());
-  assert(!graph_->root()->mark());
-
-  CLOCK(time_1);
-  LOG(DEBUG2) << "Preprocessing Phase I...";
-  Preprocessor::PhaseOne();
-  LOG(DEBUG2) << "Finished Preprocessing Phase I in " << DUR(time_1);
-  if (Preprocessor::CheckRootGate()) return;
-
-  CLOCK(time_2);
-  LOG(DEBUG2) << "Preprocessing Phase II...";
-  Preprocessor::PhaseTwo();
-  LOG(DEBUG2) << "Finished Preprocessing Phase II in " << DUR(time_2);
-  if (Preprocessor::CheckRootGate()) return;
-
-  if (!graph_->normal()) {
-    CLOCK(time_3);
-    LOG(DEBUG2) << "Preprocessing Phase III...";
-    Preprocessor::PhaseThree();
-    LOG(DEBUG2) << "Finished Preprocessing Phase III in " << DUR(time_3);
-    if (Preprocessor::CheckRootGate()) return;
-  }
-
-  if (!graph_->coherent()) {
-    CLOCK(time_4);
-    LOG(DEBUG2) << "Preprocessing Phase IV...";
-    Preprocessor::PhaseFour();
-    LOG(DEBUG2) << "Finished Preprocessing Phase IV in " << DUR(time_4);
-    if (Preprocessor::CheckRootGate()) return;
-  }
-
-  CLOCK(time_5);
-  LOG(DEBUG2) << "Preprocessing Phase V...";
-  Preprocessor::PhaseFive();
-  LOG(DEBUG2) << "Finished Preprocessing Phase V in " << DUR(time_5);
-
-  Preprocessor::CheckRootGate();  // To cleanup.
-
-  assert(const_gates_.empty());
-  assert(null_gates_.empty());
-  assert(graph_->normal_);
-}
 
 void Preprocessor::PhaseOne() noexcept {
   if (!graph_->constants_.empty()) {
@@ -2284,7 +2241,52 @@ int Preprocessor::TopologicalOrder(const IGatePtr& root, int order) noexcept {
   return order;
 }
 
-void PreprocessorBdd::Run() noexcept {
+void CustomPreprocessor<Mocus>::Run() noexcept {
+  assert(graph_->root());
+  assert(graph_->root()->parents().empty());
+  assert(!graph_->root()->mark());
+
+  CLOCK(time_1);
+  LOG(DEBUG2) << "Preprocessing Phase I...";
+  Preprocessor::PhaseOne();
+  LOG(DEBUG2) << "Finished Preprocessing Phase I in " << DUR(time_1);
+  if (Preprocessor::CheckRootGate()) return;
+
+  CLOCK(time_2);
+  LOG(DEBUG2) << "Preprocessing Phase II...";
+  Preprocessor::PhaseTwo();
+  LOG(DEBUG2) << "Finished Preprocessing Phase II in " << DUR(time_2);
+  if (Preprocessor::CheckRootGate()) return;
+
+  if (!graph_->normal()) {
+    CLOCK(time_3);
+    LOG(DEBUG2) << "Preprocessing Phase III...";
+    Preprocessor::PhaseThree();
+    LOG(DEBUG2) << "Finished Preprocessing Phase III in " << DUR(time_3);
+    if (Preprocessor::CheckRootGate()) return;
+  }
+
+  if (!graph_->coherent()) {
+    CLOCK(time_4);
+    LOG(DEBUG2) << "Preprocessing Phase IV...";
+    Preprocessor::PhaseFour();
+    LOG(DEBUG2) << "Finished Preprocessing Phase IV in " << DUR(time_4);
+    if (Preprocessor::CheckRootGate()) return;
+  }
+
+  CLOCK(time_5);
+  LOG(DEBUG2) << "Preprocessing Phase V...";
+  Preprocessor::PhaseFive();
+  LOG(DEBUG2) << "Finished Preprocessing Phase V in " << DUR(time_5);
+
+  Preprocessor::CheckRootGate();  // To cleanup.
+
+  assert(const_gates_.empty());
+  assert(null_gates_.empty());
+  assert(graph_->normal());
+}
+
+void CustomPreprocessor<Bdd>::Run() noexcept {
   assert(graph_->root());
   assert(graph_->root()->parents().empty());
   assert(!graph_->root()->mark());

@@ -58,19 +58,10 @@ class Preprocessor {
   ///          which will mess the new structure of the Boolean graph.
   explicit Preprocessor(BooleanGraph* graph) noexcept;
 
-  virtual ~Preprocessor() {}
+  virtual ~Preprocessor() = default;
 
-  /// Performs processing of a fault tree
-  /// to simplify the structure to
-  /// normalized (OR/AND gates only),
-  /// modular (independent sub-trees),
-  /// positive-gate-only (negation normal)
-  /// Boolean graph.
-  ///
-  /// @warning There should not be another smart pointer
-  ///          to the indexed top gate of the fault tree
-  ///          outside of the Boolean graph.
-  virtual void Run() noexcept;
+  /// Runs preprocessor with specified techniques.
+  virtual void Run() = 0;
 
  protected:
   using NodePtr = std::shared_ptr<Node>;
@@ -1105,9 +1096,36 @@ class Preprocessor {
   std::vector<IGateWeakPtr> null_gates_;
 };
 
-/// @class PreprocessorBdd
+/// @class CustomPreprocessor
+/// Abstract template class for specialization of Preprocessor
+/// for needs of specific analysis algorithms.
+template<typename T>
+class CustomPreprocessor : public Preprocessor {};
+
+class Mocus;
+
+/// @class CustomPreprocessor<Bdd>
+/// Specialization of preprocessing for MOCUS based analyses.
+template<>
+class CustomPreprocessor<Mocus> : public Preprocessor {
+ public:
+  using Preprocessor::Preprocessor;  ///< Constructor with a Boolean graph.
+
+  /// Performs processing of a fault tree
+  /// to simplify the structure to
+  /// normalized (OR/AND gates only),
+  /// modular (independent sub-trees),
+  /// positive-gate-only (negation normal)
+  /// Boolean graph.
+  void Run() noexcept override;
+};
+
+class Bdd;
+
+/// @class CustomPreprocessor<Bdd>
 /// Specialization of preprocessing for BDD based analyses.
-class PreprocessorBdd : public Preprocessor {
+template<>
+class CustomPreprocessor<Bdd> : public Preprocessor {
  public:
   using Preprocessor::Preprocessor;  ///< Constructor with a Boolean graph.
 

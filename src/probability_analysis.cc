@@ -96,7 +96,7 @@ void ProbabilityAnalysis::AssignIndices() noexcept {
   if (kSettings_.approximation() == "no") {
     CLOCK(prep_time);  // Overall preprocessing time.
     LOG(DEBUG2) << "Preprocessing...";
-    Preprocessor* preprocessor = new PreprocessorBdd(bool_graph_.get());
+    Preprocessor* preprocessor = new CustomPreprocessor<Bdd>(bool_graph_.get());
     preprocessor->Run();
     delete preprocessor;  // No exceptions are expected.
     LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
