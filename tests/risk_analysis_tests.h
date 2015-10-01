@@ -112,9 +112,9 @@ class RiskAnalysisTest : public ::testing::Test {
   }
 
   const ImportanceFactors& importance(std::string id) {
-    assert(!ran->probability_analyses().empty());
-    assert(ran->probability_analyses().size() == 1);
-    return ran->probability_analyses().begin()->second->importance().at(id);
+    assert(!ran->importance_analyses().empty());
+    assert(ran->importance_analyses().size() == 1);
+    return ran->importance_analyses().begin()->second->importance().at(id);
   }
 
   // Uncertainty analysis.

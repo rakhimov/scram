@@ -31,6 +31,7 @@
 #include "event.h"
 #include "expression.h"
 #include "fault_tree_analysis.h"
+#include "importance_analysis.h"
 #include "model.h"
 #include "probability_analysis.h"
 #include "risk_analysis.h"
@@ -264,12 +265,12 @@ void Reporter::ReportFta(std::string ft_name, const FaultTreeAnalysis& fta,
       ->add_child_text(ToString(fta.analysis_time(), 5));
   if (prob_analysis) {
     calc_time->add_child("probability")
-        ->add_child_text(ToString(prob_analysis->prob_analysis_time(), 5));
+        ->add_child_text(ToString(prob_analysis->analysis_time(), 5));
   }
 }
 
 void Reporter::ReportImportance(std::string ft_name,
-                                const ProbabilityAnalysis& prob_analysis,
+                                const ImportanceAnalysis& importance_analysis,
                                 xmlpp::Document* doc) {
   xmlpp::Node* root = doc->get_root_node();
   xmlpp::NodeSet res = root->find("./results");
@@ -278,17 +279,17 @@ void Reporter::ReportImportance(std::string ft_name,
   xmlpp::Element* importance = results->add_child("importance");
   importance->set_attribute("name", ft_name);
   importance->set_attribute("basic-events",
-                            ToString(prob_analysis.importance().size()));
+                            ToString(importance_analysis.importance().size()));
 
-  std::string warning = prob_analysis.warnings();
+  std::string warning = importance_analysis.warnings();
   if (warning != "") {
     importance->add_child("warning")->add_child_text(warning);
   }
 
   for (const std::pair<std::string, ImportanceFactors>& entry :
-       prob_analysis.importance()) {
+       importance_analysis.importance()) {
     xmlpp::Element* element = Reporter::ReportBasicEvent(
-        prob_analysis.basic_events().at(entry.first),
+        importance_analysis.basic_events().at(entry.first),
         importance);
     const ImportanceFactors& factors = entry.second;
     element->set_attribute("MIF", ToString(factors.mif, 4));
@@ -302,7 +303,7 @@ void Reporter::ReportImportance(std::string ft_name,
   assert(!calc_times.empty());
   xmlpp::Element* calc_time = static_cast<xmlpp::Element*>(calc_times.back());
   calc_time->add_child("importance")
-      ->add_child_text(ToString(prob_analysis.imp_analysis_time(), 5));
+      ->add_child_text(ToString(importance_analysis.analysis_time(), 5));
 }
 
 void Reporter::ReportUncertainty(std::string ft_name,

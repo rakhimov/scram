@@ -70,9 +70,7 @@ FaultTreeAnalysis::FaultTreeAnalysis(const GatePtr& root,
     : Analysis::Analysis(settings),
       FaultTreeDescriptor::FaultTreeDescriptor(root),
       sum_mcs_probability_(0),
-      warnings_(""),
-      max_order_(0),
-      analysis_time_(0) {}
+      max_order_(0) {}
 
 void FaultTreeAnalysis::SetsToString(const std::vector<Set>& imcs,
                                      const BooleanGraph* ft) noexcept {

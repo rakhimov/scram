@@ -79,6 +79,11 @@ void RiskAnalysis::Analyze() noexcept {
         ProbabilityAnalysisPtr pa(new ProbabilityAnalysis(target, kSettings_));
         pa->Analyze(fta->min_cut_sets());
         probability_analyses_.emplace(name, std::move(pa));
+        if (kSettings_.importance_analysis()) {
+          ImportanceAnalysisPtr ia(new ImportanceAnalysis(target, kSettings_));
+          ia->Analyze(fta->min_cut_sets());
+          importance_analyses_.emplace(name, std::move(ia));
+        }
         if (kSettings_.uncertainty_analysis()) {
           UncertaintyAnalysisPtr ua(
               new UncertaintyAnalysis(target, kSettings_));
@@ -137,7 +142,7 @@ void RiskAnalysis::Report(std::ostream& out) {
     rp.ReportFta(id, *fta.second, prob_analysis, doc.get());
 
     if (kSettings_.importance_analysis()) {
-      rp.ReportImportance(id, *prob_analysis, doc.get());
+      rp.ReportImportance(id, *importance_analyses_.at(id), doc.get());
     }
 
     if (kSettings_.uncertainty_analysis()) {

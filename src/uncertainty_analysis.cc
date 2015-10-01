@@ -39,8 +39,7 @@ UncertaintyAnalysis::UncertaintyAnalysis(const GatePtr& root,
     : ProbabilityAnalysis::ProbabilityAnalysis(root, settings),
       mean_(0),
       sigma_(0),
-      error_factor_(1),
-      analysis_time_(-1) {}
+      error_factor_(1) {}
 
 void UncertaintyAnalysis::Analyze(
     const std::set<std::set<std::string>>& min_cut_sets) noexcept {

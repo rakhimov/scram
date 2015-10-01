@@ -41,7 +41,7 @@ namespace scram {
 /// for top event or gate probabilities
 /// from minimal cut sets
 /// and probability distributions of basic events.
-class UncertaintyAnalysis : private ProbabilityAnalysis {
+class UncertaintyAnalysis : public ProbabilityAnalysis {
  public:
   using BasicEventPtr = std::shared_ptr<BasicEvent>;
 
@@ -87,12 +87,6 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   /// @returns Quantiles of the distribution.
   const std::vector<double>& quantiles() const { return quantiles_; }
 
-  /// @returns Warnings generated upon analysis.
-  const std::string& warnings() const { return warnings_; }
-
-  /// @returns Analysis time spent on sampling and simulations.
-  double analysis_time() const { return analysis_time_; }
-
  private:
   /// Performs Monte Carlo Simulation
   /// by sampling the probability distributions
@@ -113,7 +107,6 @@ class UncertaintyAnalysis : private ProbabilityAnalysis {
   double mean_;  ///< The mean of the final distribution.
   double sigma_;  ///< The standard deviation of the final distribution.
   double error_factor_;  ///< Error factor for 95% confidence level.
-  double analysis_time_;  ///< Time for uncertainty calculations and sampling.
   /// The confidence interval of the distribution.
   std::pair<double, double> confidence_interval_;
   /// The histogram density of the distribution with lower bounds and values.

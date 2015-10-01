@@ -36,6 +36,7 @@ set(SCRAM_CORE_SRC ${SCRAM_CORE_SRC}
   "${CMAKE_CURRENT_SOURCE_DIR}/analysis.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/fault_tree_analysis.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/probability_analysis.cc"
+  "${CMAKE_CURRENT_SOURCE_DIR}/importance_analysis.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/uncertainty_analysis.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/grapher.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/reporter.cc"

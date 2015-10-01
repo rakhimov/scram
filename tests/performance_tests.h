@@ -78,7 +78,7 @@ class PerformanceTest : public ::testing::Test {
   // Time taken to calculate total probability.
   double ProbCalcTime() {
     assert(!ran->probability_analyses().empty());
-    return ran->probability_analyses().begin()->second->prob_analysis_time();
+    return ran->probability_analyses().begin()->second->analysis_time();
   }
 
   RiskAnalysis* ran;

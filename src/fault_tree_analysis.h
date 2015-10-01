@@ -228,12 +228,6 @@ class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
   /// @returns The maximum order of the found minimal cut sets.
   int max_order() const { return max_order_; }
 
-  /// @returns Warnings generated upon analysis.
-  const std::string& warnings() const { return warnings_; }
-
-  /// @returns Analysis time spent on finding minimal cut sets.
-  double analysis_time() const { return analysis_time_; }
-
  protected:
   /// Converts minimal cut sets from indices to strings
   /// for future reporting.
@@ -257,9 +251,7 @@ class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
   std::map<CutSet, double> mcs_probability_;
 
   double sum_mcs_probability_;  ///< The sum of minimal cut set probabilities.
-  std::string warnings_;  ///< Generated warnings in analysis.
   int max_order_;  ///< Maximum order of minimal cut sets.
-  double analysis_time_;  ///< Time taken by the core analysis.
 };
 
 /// @class FaultTreeAnalyzer

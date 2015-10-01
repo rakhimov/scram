@@ -39,6 +39,7 @@ class PrimaryEvent;
 class BasicEvent;
 class FaultTreeAnalysis;
 class ProbabilityAnalysis;
+class ImportanceAnalysis;
 class UncertaintyAnalysis;
 
 /// @class Reporter
@@ -99,12 +100,12 @@ class Reporter {
   /// Reports results of importance analysis in probability analysis.
   ///
   /// @param[in] ft_name The original name of a fault tree.
-  /// @param[in] prob_analysis ProbabilityAnalysis with results.
+  /// @param[in] importance_analysis ImportanceAnalysis with results.
   /// @param[in,out] doc Pre-formatted XML document.
   ///
   /// @note This function must be called only after analysis is done.
   void ReportImportance(std::string ft_name,
-                        const ProbabilityAnalysis& prob_analysis,
+                        const ImportanceAnalysis& importance_analysis,
                         xmlpp::Document* doc);
 
   /// Reports the results of uncertainty analysis with minimal cut sets.

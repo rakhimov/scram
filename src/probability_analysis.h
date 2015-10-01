@@ -16,8 +16,7 @@
  */
 
 /// @file probability_analysis.h
-/// Contains functionality to do numerical analysis
-/// of probabilities and importance factors.
+/// Contains functionality to do numerical analysis of probabilities.
 
 #ifndef SCRAM_SRC_PROBABILITY_ANALYSIS_H_
 #define SCRAM_SRC_PROBABILITY_ANALYSIS_H_
@@ -38,18 +37,8 @@
 
 namespace scram {
 
-/// @struct ImportanceFactors
-/// Collection of importance factors for variables.
-struct ImportanceFactors {
-  double mif;  ///< Birnbaum marginal importance factor.
-  double cif;  ///< Critical importance factor.
-  double dif;  ///< Fussel-Vesely diagnosis importance factor.
-  double raw;  ///< Risk achievement worth factor.
-  double rrw;  ///< Risk reduction worth factor.
-};
-
 /// @class ProbabilityAnalysis
-/// Main quantitative analysis.
+/// Main quantitative analysis class.
 class ProbabilityAnalysis : public Analysis {
  public:
   using BasicEventPtr = std::shared_ptr<BasicEvent>;
@@ -58,13 +47,12 @@ class ProbabilityAnalysis : public Analysis {
   using ItePtr = std::shared_ptr<Ite>;
 
   /// Probability analysis
-  /// on the fault tree represented by the root gate
-  /// with Binary decision diagrams.
+  /// on the fault tree represented by the root gate.
   ///
   /// @param[in] root The top event of the fault tree.
   /// @param[in] settings Analysis settings for probability calculations.
   ///
-  /// @note This technique does not require cut sets.
+  /// @todo Remove this constructor.
   ProbabilityAnalysis(const GatePtr& root, const Settings& settings);
 
   explicit ProbabilityAnalysis(const FaultTreeAnalysis* fta);
@@ -87,26 +75,10 @@ class ProbabilityAnalysis : public Analysis {
   /// @note The user should make sure that the analysis is actually done.
   double p_total() const { return p_total_; }
 
-  /// @returns Map with basic events and their importance factors.
-  ///
-  /// @note The user should make sure that the analysis is actually done.
-  const std::unordered_map<std::string, ImportanceFactors>& importance() const {
-    return importance_;
-  }
-
-  /// @returns Warnings generated upon analysis.
-  const std::string warnings() const { return warnings_; }
-
   /// @returns The container of basic events of supplied for the analysis.
   const std::unordered_map<std::string, BasicEventPtr>& basic_events() const {
     return basic_events_;
   }
-
-  /// @returns Analysis time spent on calculating the total probability.
-  double prob_analysis_time() const { return p_time_; }
-
-  /// @returns Analysis time spent on calculating the importance factors.
-  double imp_analysis_time() const { return imp_time_; }
 
  protected:
   using CutSet = std::vector<int>;  ///< Unique positive or negative literals.
@@ -171,42 +143,9 @@ class ProbabilityAnalysis : public Analysis {
   ///          it will not be traversed and updated with a probability value.
   double CalculateProbability(const VertexPtr& vertex, bool mark) noexcept;
 
-  /// Importance analysis of basic events that are in minimal cut sets.
-  void PerformImportanceAnalysis() noexcept;
-
-  /// Performs BDD-based importance analysis.
-  void PerformImportanceAnalysisBdd() noexcept;
-
-  /// Calculates Marginal Importance Factor of a variable.
-  ///
-  /// @param[in] vertex The root vertex of a function graph.
-  /// @param[in] order The identifying order of the variable.
-  /// @param[in] mark A flag to mark traversed vertices.
-  ///
-  /// @note Probability fields are used to save results.
-  /// @note The graph needs cleaning its marks after this function
-  ///       because the graph gets continuously-but-partially marked.
-  double CalculateMif(const VertexPtr& vertex, int order, bool mark) noexcept;
-
-  /// Retrieves memorized probability values for BDD function graphs.
-  ///
-  /// @param[in] vertex Vertex with calculated probabilities.
-  ///
-  /// @returns Saved probability of the vertex.
-  double RetrieveProbability(const VertexPtr& vertex) noexcept;
-
-  /// Clears marks of vertices in BDD graph.
-  ///
-  /// @param[in] vertex The starting root vertex of the graph.
-  /// @param[in] mark The desired mark for the vertices.
-  ///
-  /// @note Marks will propagate to modules as well.
-  void ClearMarks(const VertexPtr& vertex, bool mark) noexcept;
-
   GatePtr top_event_;  ///< Top gate of the passed fault tree.
   std::unique_ptr<BooleanGraph> bool_graph_;  ///< Indexation graph.
   std::unique_ptr<Bdd> bdd_graph_;  ///< The main BDD graph for analysis.
-  std::string warnings_;  ///< Register warnings.
 
   /// Container for input basic events.
   std::unordered_map<std::string, BasicEventPtr> basic_events_;
@@ -223,12 +162,6 @@ class ProbabilityAnalysis : public Analysis {
 
   double p_total_;  ///< Total probability of the top event.
   bool current_mark_; ///< To keep track of BDD current mark.
-
-  /// Container for basic event importance factors.
-  std::unordered_map<std::string, ImportanceFactors> importance_;
-
-  double p_time_;  ///< Time for probability calculations.
-  double imp_time_;  ///< Time for importance calculations.
 };
 
 /// @class CutSetCalculator
@@ -373,7 +306,7 @@ void ProbabilityAnalyzer<Algorithm, Calculator>::Analyze() noexcept {
     p_total_ = 1;
   }
   LOG(DEBUG3) << "Finished probability calculations in " << DUR(p_time);
-  p_time_ = DUR(p_time);
+  analysis_time_ = DUR(p_time);
 }
 
 }  // namespace scram
