@@ -33,6 +33,7 @@
 #include "bdd.h"
 #include "boolean_graph.h"
 #include "event.h"
+#include "fault_tree_analysis.h"
 #include "settings.h"
 
 namespace scram {
@@ -65,6 +66,8 @@ class ProbabilityAnalysis : public Analysis {
   ///
   /// @note This technique does not require cut sets.
   ProbabilityAnalysis(const GatePtr& root, const Settings& settings);
+
+  explicit ProbabilityAnalysis(const FaultTreeAnalysis* fta);
 
   virtual ~ProbabilityAnalysis() {}
 
@@ -227,6 +230,151 @@ class ProbabilityAnalysis : public Analysis {
   double p_time_;  ///< Time for probability calculations.
   double imp_time_;  ///< Time for importance calculations.
 };
+
+/// @class CutSetCalculator
+/// Quantitative calculator of a probability value of a single cut set.
+class CutSetCalculator {
+ public:
+  /// Calculates a probability of a cut set,
+  /// whose members are in AND relationship with each other.
+  /// This function assumes independence of each member.
+  ///
+  /// @param[in] cut_set A cut set of signed indices of basic events.
+  /// @param[in] var_probs Probabilities of events mapped to a vector.
+  ///
+  /// @returns The total probability of the set.
+  ///
+  /// @pre Probability values are non-negative.
+  /// @pre Absolute indices of events directly map to vector indices.
+  ///
+  /// @note O_avg(N) where N is the size of the passed set.
+  template<typename CutSet>
+  double Calculate(const CutSet& cut_set,
+                   const std::vector<double>& var_probs) noexcept {
+    if (cut_set.empty()) return 0;
+    double p_sub_set = 1;  // 1 is for multiplication.
+    for (int member : cut_set) {
+      if (member > 0) {
+        p_sub_set *= var_probs[member];
+      } else {
+        p_sub_set *= 1 - var_probs[std::abs(member)];
+      }
+    }
+    return p_sub_set;
+  }
+
+  /// Checks the special case of a unity set with probability 1.
+  ///
+  /// @returns true if the Unity set is detected.
+  ///
+  /// @pre The unity set is indicated by a single empty set.
+  template<typename CutSet>
+  double CheckUnity(const std::vector<CutSet>& cut_sets) noexcept {
+    return cut_sets.size() == 1 && cut_sets.front().empty();
+  }
+};
+
+/// @class RareEventCalculator
+/// Quantitative calculator of probability values
+/// with the Rare-Event approximation.
+class RareEventCalculator : private CutSetCalculator {
+ public:
+  /// Calculates probabilities
+  /// using the Rare-Event approximation.
+  ///
+  /// @param[in] cut_sets A collection of sets of indices of basic events.
+  /// @param[in] var_probs Probabilities of events mapped to a vector.
+  ///
+  /// @returns The total probability with the rare-event approximation.
+  ///
+  /// @pre Absolute indices of events directly map to vector indices.
+  ///
+  /// @post The returned probability value may not be acceptable.
+  ///       That is, it may be out of the acceptable [0, 1] range.
+  ///       The caller of this function must decide
+  ///       what to do in this case.
+  template<typename CutSet>
+  double Calculate(const std::vector<CutSet>& cut_sets,
+                   const std::vector<double>& var_probs) noexcept {
+    if (CutSetCalculator::CheckUnity(cut_sets)) return 1;
+    double sum = 0;
+    for (const auto& cut_set : cut_sets) {
+      assert(!cut_set.empty() && "Detected an empty cut set.");
+      sum += CutSetCalculator::Calculate(cut_set, var_probs);
+    }
+    return sum;
+  }
+};
+
+//// @class McubCalculator
+/// Quantitative calculator of probability values
+/// with the Min-Cut-Upper Bound approximation.
+class McubCalculator : private CutSetCalculator {
+ public:
+  /// Calculates probabilities
+  /// using the minimal cut set upper bound (MCUB) approximation.
+  ///
+  /// @param[in] cut_sets A collection of sets of indices of basic events.
+  /// @param[in] var_probs Probabilities of events mapped to a vector.
+  ///
+  /// @returns The total probability with the MCUB approximation.
+  template<typename CutSet>
+  double Calculate(const std::vector<CutSet>& cut_sets,
+                   const std::vector<double>& var_probs) noexcept {
+    if (CutSetCalculator::CheckUnity(cut_sets)) return 1;
+    double m = 1;
+    for (const auto& cut_set : cut_sets) {
+      assert(!cut_set.empty() && "Detected an empty cut set.");
+      m *= 1 - CutSetCalculator::Calculate(cut_set, var_probs);
+    }
+    return 1 - m;
+  }
+};
+
+/// @class ProbabilityAnalyzer
+///
+/// @tparam Algorithm Fault tree analysis algorithm.
+/// @tparam Calculator Quantitative analysis calculator.
+///
+/// Fault tree analysis aware probability analyzer.
+/// Probability analyzer provides the main engine for probability analysis.
+template<typename Algorithm, typename Calculator>
+class ProbabilityAnalyzer : public ProbabilityAnalysis {
+ public:
+  /// Constructs probability analyzer from a fault tree analyzer
+  /// with the same algorithm.
+  ///
+  /// @param[in] fta Finished fault tree analyzer with results.
+  explicit ProbabilityAnalyzer(const FaultTreeAnalyzer<Algorithm>* fta)
+      : ProbabilityAnalysis::ProbabilityAnalysis(fta), fta_(fta) {
+    var_probs_.push_back(-1);
+    for (const BasicEventPtr& event : fta->graph()->basic_events()) {
+      var_probs_.push_back(event->p());
+    }
+  }
+
+  /// Runs the analysis to find the total probability.
+  void Analyze() noexcept;
+
+ private:
+  const FaultTreeAnalyzer<Algorithm>* fta_;  ///< Finished fault tree analysis.
+  std::vector<double> var_probs_;  ///< Variable probabilities.
+};
+
+template<typename Algorithm, typename Calculator>
+void ProbabilityAnalyzer<Algorithm, Calculator>::Analyze() noexcept {
+  CLOCK(p_time);
+  LOG(DEBUG3) << "Calculating probabilities...";
+  // Get the total probability.
+  p_total_ = Calculator().Calculate(fta_->GetGeneratedMcs(), var_probs_);
+  assert(p_total_ >= 0 && "The total probability is negative.");
+  if (p_total_ > 1) {
+    warnings_ += " Probability value exceeded 1 and was adjusted to 1.";
+    p_total_ = 1;
+  }
+  LOG(DEBUG3) << "Finished probability calculations in " << DUR(p_time);
+  p_time_ = DUR(p_time);
+}
 
 }  // namespace scram
 

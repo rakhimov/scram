@@ -263,9 +263,12 @@ class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
 };
 
 /// @class FaultTreeAnalyzer
+///
+/// @tparam Algorithm Fault tree analysis algorithm.
+///
 /// Fault tree analysis facility with specific algorithms.
 /// This class is meant to be specialized by fault tree analysis algorithms.
-template<typename T>
+template<typename Algorithm>
 class FaultTreeAnalyzer : public FaultTreeAnalysis {
  public:
   /// Constructor with a fault tree and analysis settings.
@@ -274,13 +277,19 @@ class FaultTreeAnalyzer : public FaultTreeAnalysis {
   /// Runs fault tree analysis with the given algorithm.
   void Analyze() noexcept;
 
+  /// @returns Pointer to the analysis algorithm.
+  const Algorithm* algorithm() const { return algorithm_.get(); }
+
+  /// @returns Pointer to the Boolean graph representing the fault tree.
+  const BooleanGraph* graph() const { return graph_.get(); }
+
  protected:
-  std::unique_ptr<T> algorithm_;  ///< Analysis algorithm.
+  std::unique_ptr<Algorithm> algorithm_;  ///< Analysis algorithm.
   std::unique_ptr<BooleanGraph> graph_;  ///< Boolean graph of the fault tree.
 };
 
-template<typename T>
-void FaultTreeAnalyzer<T>::Analyze() noexcept {
+template<typename Algorithm>
+void FaultTreeAnalyzer<Algorithm>::Analyze() noexcept {
   CLOCK(analysis_time);
 
   CLOCK(ft_creation);
@@ -290,12 +299,13 @@ void FaultTreeAnalyzer<T>::Analyze() noexcept {
 
   CLOCK(prep_time);  // Overall preprocessing time.
   LOG(DEBUG2) << "Preprocessing...";
-  Preprocessor* preprocessor = new CustomPreprocessor<T>(graph_.get());
+  Preprocessor* preprocessor = new CustomPreprocessor<Algorithm>(graph_.get());
   preprocessor->Run();
   delete preprocessor;  // No exceptions are expected.
   LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
 
-  algorithm_ = std::unique_ptr<T>(new T(graph_.get(), kSettings_));
+  algorithm_ =
+      std::unique_ptr<Algorithm>(new Algorithm(graph_.get(), kSettings_));
   algorithm_->FindMcs();
   analysis_time_ = DUR(analysis_time);  // Duration of MCS generation.
   FaultTreeAnalysis::SetsToString(algorithm_->GetGeneratedMcs(), graph_.get());

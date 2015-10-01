@@ -1097,9 +1097,12 @@ class Preprocessor {
 };
 
 /// @class CustomPreprocessor
+///
+/// @tparam Algorithm The target algorithm for the preprocessor.
+///
 /// Abstract template class for specialization of Preprocessor
 /// for needs of specific analysis algorithms.
-template<typename T>
+template<typename Algorithm>
 class CustomPreprocessor : public Preprocessor {};
 
 class Mocus;

@@ -79,13 +79,14 @@ void RiskAnalysis::Analyze() noexcept {
         ProbabilityAnalysisPtr pa(new ProbabilityAnalysis(target, kSettings_));
         pa->Analyze(fta->min_cut_sets());
         probability_analyses_.emplace(name, std::move(pa));
+        if (kSettings_.uncertainty_analysis()) {
+          UncertaintyAnalysisPtr ua(
+              new UncertaintyAnalysis(target, kSettings_));
+          ua->Analyze(fta->min_cut_sets());
+          uncertainty_analyses_.emplace(name, std::move(ua));
+        }
       }
 
-      if (kSettings_.uncertainty_analysis()) {
-        UncertaintyAnalysisPtr ua(new UncertaintyAnalysis(target, kSettings_));
-        ua->Analyze(fta->min_cut_sets());
-        uncertainty_analyses_.emplace(name, std::move(ua));
-      }
       fault_tree_analyses_.emplace(name, std::move(fta));
     }
   }

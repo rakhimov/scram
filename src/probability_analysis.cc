@@ -39,6 +39,15 @@ ProbabilityAnalysis::ProbabilityAnalysis(const GatePtr& root,
       p_time_(0),
       imp_time_(0) {}
 
+ProbabilityAnalysis::ProbabilityAnalysis(const FaultTreeAnalysis* fta)
+    : Analysis::Analysis(fta->settings()),
+      top_event_(fta->top_event()),
+      warnings_(""),
+      p_total_(0),
+      current_mark_(false),
+      p_time_(0),
+      imp_time_(0) {}
+
 void ProbabilityAnalysis::Analyze(
     const std::set<std::set<std::string>>& min_cut_sets) noexcept {
   assert(top_event_ && "The fault tree is undefined.");
