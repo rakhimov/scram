@@ -26,7 +26,7 @@ namespace test {
 
 TEST(SettingsTest, IncorrectSetup) {
   Settings s;
-  /// Incorrect algorithm.
+  // Incorrect algorithm.
   EXPECT_THROW(s.algorithm("the-best"), InvalidArgument);
   // Incorrect approximation argument.
   EXPECT_THROW(s.approximation("approx"), InvalidArgument);
@@ -48,6 +48,46 @@ TEST(SettingsTest, IncorrectSetup) {
   EXPECT_THROW(s.seed(-1), InvalidArgument);
   // Incorrect mission time.
   EXPECT_THROW(s.mission_time(-10), InvalidArgument);
+}
+
+TEST(SettingsTest, CorrectSetup) {
+  Settings s;
+  // Correct algorithm.
+  EXPECT_NO_THROW(s.algorithm("mocus"));
+  EXPECT_NO_THROW(s.algorithm("bdd"));
+
+  // Correct approximation argument.
+  EXPECT_NO_THROW(s.approximation("rare-event"));
+  EXPECT_NO_THROW(s.approximation("mcub"));
+
+  // Correct limit order for minimal cut sets.
+  EXPECT_NO_THROW(s.limit_order(1));
+  EXPECT_NO_THROW(s.limit_order(100));
+
+  // Correct cut-off probability.
+  EXPECT_NO_THROW(s.cut_off(1));
+  EXPECT_NO_THROW(s.cut_off(0));
+  EXPECT_NO_THROW(s.cut_off(0.5));
+
+  // Correct number of trials.
+  EXPECT_NO_THROW(s.num_trials(1));
+  EXPECT_NO_THROW(s.num_trials(1e6));
+
+  // Correct number of quantiles.
+  EXPECT_NO_THROW(s.num_quantiles(1));
+  EXPECT_NO_THROW(s.num_quantiles(10));
+
+  // Correct number of bins.
+  EXPECT_NO_THROW(s.num_bins(1));
+  EXPECT_NO_THROW(s.num_bins(10));
+
+  // Correct seed.
+  EXPECT_NO_THROW(s.seed(1));
+
+  // Correct mission time.
+  EXPECT_NO_THROW(s.mission_time(0));
+  EXPECT_NO_THROW(s.mission_time(10));
+  EXPECT_NO_THROW(s.mission_time(1e6));
 }
 
 }  // namespace test
