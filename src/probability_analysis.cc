@@ -167,4 +167,6 @@ double ProbabilityAnalysis::CalculateProbability(const VertexPtr& vertex,
   return ite->prob();
 }
 
+ProbabilityAnalyzerBase::~ProbabilityAnalyzerBase() {}  ///< Default.
+
 }  // namespace scram

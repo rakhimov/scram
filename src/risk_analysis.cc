@@ -80,12 +80,6 @@ void RiskAnalysis::Analyze() noexcept {
           ia->Analyze(fta->min_cut_sets());
           importance_analyses_.emplace(name, std::move(ia));
         }
-        if (kSettings_.uncertainty_analysis()) {
-          UncertaintyAnalysisPtr ua(
-              new UncertaintyAnalysis(target, kSettings_));
-          ua->Analyze(fta->min_cut_sets());
-          uncertainty_analyses_.emplace(name, std::move(ua));
-        }
       }
     }
   }
@@ -125,11 +119,11 @@ void RiskAnalysis::RunAnalysis(
   /*   ia->Analyze(fta->min_cut_sets()); */
   /*   importance_analyses_.emplace(name, ImportanceAnalysisPtr(ia)); */
   /* } */
-  /* if (kSettings_.uncertainty_analysis()) { */
-  /*   auto* ua = new UncertaintyAnalysis(target, kSettings_); */
-  /*   ua->Analyze(fta->min_cut_sets()); */
-  /*   uncertainty_analyses_.emplace(name, UncertaintyAnalysisPtr(ua)); */
-  /* } */
+  if (kSettings_.uncertainty_analysis()) {
+    auto* ua = new UncertaintyAnalyzer<Algorithm, Calculator>(pa);
+    ua->Analyze();
+    uncertainty_analyses_.emplace(name, UncertaintyAnalysisPtr(ua));
+  }
   probability_analyses_.emplace(name, ProbabilityAnalysisPtr(pa));
 }
 

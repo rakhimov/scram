@@ -34,91 +34,43 @@
 
 namespace scram {
 
-UncertaintyAnalysis::UncertaintyAnalysis(const GatePtr& root,
-                                         const Settings& settings)
-    : ProbabilityAnalysis::ProbabilityAnalysis(root, settings),
+UncertaintyAnalysis::UncertaintyAnalysis(
+    const ProbabilityAnalysis* prob_analysis)
+    : Analysis::Analysis(prob_analysis->settings()),
       mean_(0),
       sigma_(0),
       error_factor_(1) {}
 
-void UncertaintyAnalysis::Analyze(
-    const std::set<std::set<std::string>>& min_cut_sets) noexcept {
-  assert(top_event_ && "The fault tree is undefined.");
-  assert(!bool_graph_ && "Re-running analysis.");
-  // Special case of unity with empty sets.
-  if (min_cut_sets.size() == 1 && min_cut_sets.begin()->empty()) {
-    warnings_ += "Uncertainty for UNITY case.";
-    mean_ = 1;
-    sigma_ = 0;
-    confidence_interval_ = {1, 1};
-    distribution_.emplace_back(1, 1);
-    quantiles_.emplace_back(1);
-    return;
-  }
-
-  ProbabilityAnalysis::AssignIndices();
-  ProbabilityAnalysis::IndexMcs(min_cut_sets);
-
+void UncertaintyAnalysis::Analyze() noexcept {
   CLOCK(analysis_time);
   CLOCK(sample_time);
   LOG(DEBUG3) << "Sampling probabilities...";
   // Sample probabilities and generate data.
-  UncertaintyAnalysis::Sample();
+  std::vector<double> samples = this->Sample();
   LOG(DEBUG3) << "Finished sampling probabilities in " << DUR(sample_time);
 
   CLOCK(stat_time);
   LOG(DEBUG3) << "Calculating statistics...";
   // Perform statistical analysis.
-  UncertaintyAnalysis::CalculateStatistics();
+  UncertaintyAnalysis::CalculateStatistics(samples);
   LOG(DEBUG3) << "Finished calculating statistics in " << DUR(stat_time);
 
   analysis_time_ = DUR(analysis_time);
 }
 
-void UncertaintyAnalysis::Sample() noexcept {
-  assert(sampled_results_.empty() && "Re-sampling is undefined.");
-  sampled_results_.reserve(kSettings_.num_trials());
-  std::vector<int> basic_events = UncertaintyAnalysis::FilterUncertainEvents();
-  for (int i = 0; i < kSettings_.num_trials(); ++i) {
-    // Reset distributions.
-    for (int index : basic_events) {
-      index_to_basic_[index]->Reset();
-    }
-    // Sample all basic events with distributions.
-    for (int index : basic_events) {
-      double prob = index_to_basic_[index]->SampleProbability();
-      if (prob < 0) {
-        prob = 0;
-      } else if (prob > 1) {
-        prob = 1;
-      }
-      var_probs_[index] = prob;
-    }
-    double result = 0;
-    if (kSettings_.approximation() == "mcub") {
-      result = ProbabilityAnalysis::ProbMcub(imcs_);
-    } else if (kSettings_.approximation() == "rare-event") {
-      result = ProbabilityAnalysis::ProbRareEvent(imcs_);
-    } else {
-      result = ProbabilityAnalysis::CalculateTotalProbability();
-    }
-    assert(result >= 0);
-    if (result > 1) result = 1;
-    sampled_results_.push_back(result);
-  }
-}
-
-std::vector<int> UncertaintyAnalysis::FilterUncertainEvents() noexcept {
-  std::vector<int> uncertain_events;
-  for (const BasicEventPtr& event : bool_graph_->basic_events()) {
-    if (!event->IsConstant()) {
-      uncertain_events.push_back(id_to_index_.find(event->id())->second);
-    }
+std::vector<std::pair<int, BasicEvent*>>
+UncertaintyAnalysis::FilterUncertainEvents(const BooleanGraph* graph) noexcept {
+  std::vector<std::pair<int, BasicEvent*>> uncertain_events;
+  int index = 1;
+  for (const BasicEventPtr& event : graph->basic_events()) {
+    if (!event->IsConstant()) uncertain_events.emplace_back(index, event.get());
+    ++index;
   }
   return uncertain_events;
 }
 
-void UncertaintyAnalysis::CalculateStatistics() noexcept {
+void UncertaintyAnalysis::CalculateStatistics(
+    const std::vector<double>& samples) noexcept {
   using namespace boost;
   using namespace boost::accumulators;
   using accumulator_q =
@@ -136,10 +88,9 @@ void UncertaintyAnalysis::CalculateStatistics() noexcept {
       acc(tag::density::num_bins = kSettings_.num_bins(),
           tag::density::cache_size = num_trials);
 
-  std::vector<double>::iterator it;
-  for (it = sampled_results_.begin(); it != sampled_results_.end(); ++it) {
-    acc(*it);
-    acc_q(*it);
+  for (double sample : samples) {
+    acc(sample);
+    acc_q(sample);
   }
   using histogram_type =
       iterator_range<std::vector<std::pair<double, double>>::iterator>;

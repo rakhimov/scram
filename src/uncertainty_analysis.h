@@ -30,6 +30,7 @@
 #include <utility>
 #include <vector>
 
+#include "analysis.h"
 #include "event.h"
 #include "probability_analysis.h"
 #include "settings.h"
@@ -41,29 +42,23 @@ namespace scram {
 /// for top event or gate probabilities
 /// from minimal cut sets
 /// and probability distributions of basic events.
-class UncertaintyAnalysis : public ProbabilityAnalysis {
+class UncertaintyAnalysis : public Analysis {
  public:
   using BasicEventPtr = std::shared_ptr<BasicEvent>;
 
   /// Uncertainty analysis
-  /// on the fault tree represented by the root gate
-  /// with Binary decision diagrams.
+  /// on the fault tree processed
+  /// by probability analysis.
   ///
-  /// @param[in] root The top event of the fault tree.
-  /// @param[in] settings Analysis settings for probability calculations.
-  ///
-  /// @note This technique does not require cut sets.
-  UncertaintyAnalysis(const GatePtr& root, const Settings& settings);
+  /// @param[in] prob_analysis Completed probability analysis.
+  explicit UncertaintyAnalysis(const ProbabilityAnalysis* prob_analysis);
 
-  /// Performs quantitative analysis on minimal cut sets
-  /// containing basic events provided in the databases.
-  /// It is assumed that the analysis is called only once.
-  ///
-  /// @param[in] min_cut_sets Minimal cut sets with string IDs of events.
-  ///                         Negative event is indicated by "'not' + id"
+  virtual ~UncertaintyAnalysis() = default;
+
+  /// Performs quantitative analysis on the total probability.
   ///
   /// @note  Undefined behavior if analysis called two or more times.
-  void Analyze(const std::set<std::set<std::string>>& min_cut_sets) noexcept;
+  void Analyze() noexcept;
 
   /// @returns Mean of the final distribution.
   double mean() const { return mean_; }
@@ -87,23 +82,28 @@ class UncertaintyAnalysis : public ProbabilityAnalysis {
   /// @returns Quantiles of the distribution.
   const std::vector<double>& quantiles() const { return quantiles_; }
 
- private:
+ protected:
   /// Performs Monte Carlo Simulation
   /// by sampling the probability distributions
   /// and providing the final sampled values of the final probability.
-  void Sample() noexcept;
+  ///
+  /// @returns Sampled values.
+  virtual std::vector<double> Sample() noexcept = 0;
 
   /// Gathers basic events that have distributions.
   ///
-  /// @returns The gathered uncertain basic events.
+  /// @param[in] graph Boolean graph with the variables.
   ///
-  /// @todo Mark BDD graph branches that do not need sampling.
-  std::vector<int> FilterUncertainEvents() noexcept;
+  /// @returns The gathered uncertain basic events.
+  std::vector<std::pair<int, BasicEvent*>> FilterUncertainEvents(
+      const BooleanGraph* graph) noexcept;
 
+ private:
   /// Calculates statistical values from the final distribution.
-  void CalculateStatistics() noexcept;
+  ///
+  /// @param[in] samples Gathered samples for statistical analysis.
+  void CalculateStatistics(const std::vector<double>& samples) noexcept;
 
-  std::vector<double> sampled_results_;  ///< Storage for sampled values.
   double mean_;  ///< The mean of the final distribution.
   double sigma_;  ///< The standard deviation of the final distribution.
   double error_factor_;  ///< Error factor for 95% confidence level.
@@ -114,6 +114,70 @@ class UncertaintyAnalysis : public ProbabilityAnalysis {
   /// The quantiles of the distribution.
   std::vector<double> quantiles_;
 };
+
+/// @class UncertaintyAnalyzer
+/// Uncertainty analysis facility.
+///
+/// @tparam Calculator Quantitative analysis calculator.
+template<typename Algorithm, typename Calculator>
+class UncertaintyAnalyzer : public UncertaintyAnalysis {
+ public:
+  /// Constructs uncertainty analyzer from probability analyzer.
+  /// Probability analyzer facilities are used
+  /// to calculate the total probability for sampling.
+  ///
+  /// @param[in] prob_analyzer Instantiated probability analyzer.
+  ///
+  /// @pre Probability analyzer can work with modified probability values.
+  ///
+  /// @post Probability analyzer's probability values are
+  ///       reset to the original values (event probabilities).
+  explicit UncertaintyAnalyzer(
+      ProbabilityAnalyzer<Algorithm, Calculator>* prob_analyzer)
+      : UncertaintyAnalysis::UncertaintyAnalysis(prob_analyzer),
+        prob_analyzer_(prob_analyzer) {}
+
+  /// @returns Samples of the total probability.
+  std::vector<double> Sample() noexcept override;
+
+ private:
+  /// Calculator of the total probability.
+  ProbabilityAnalyzer<Algorithm, Calculator>* prob_analyzer_;
+};
+
+template<typename Algorithm, typename Calculator>
+std::vector<double>
+UncertaintyAnalyzer<Algorithm, Calculator>::Sample() noexcept {
+  std::vector<std::pair<int, BasicEvent*>> uncertain_events =
+      UncertaintyAnalysis::FilterUncertainEvents(prob_analyzer_->graph());
+  std::vector<double>& var_probs = prob_analyzer_->var_probs();
+  std::vector<double> samples;
+  samples.reserve(kSettings_.num_trials());
+  for (int i = 0; i < kSettings_.num_trials(); ++i) {
+    // Reset distributions.
+    for (const auto& event : uncertain_events) event.second->Reset();
+
+    // Sample all basic events with distributions.
+    for (const auto& event : uncertain_events) {
+      double prob = event.second->SampleProbability();
+      if (prob < 0) {  // Adjust if out of range.
+        prob = 0;
+      } else if (prob > 1) {
+        prob = 1;
+      }
+      var_probs[event.first] = prob;
+    }
+    double result = prob_analyzer_->CalculateTotalProbability();
+    assert(result >= 0);
+    if (result > 1) result = 1;
+    samples.push_back(result);
+  }
+  // Cleanup.
+  for (const auto& event : uncertain_events)
+    var_probs[event.first] = event.second->p();
+
+  return samples;
+}
 
 }  // namespace scram
 
