@@ -79,7 +79,12 @@ void RiskAnalysis::Analyze() noexcept {
 
 void RiskAnalysis::RunAnalysis(const std::string& name,
                                const GatePtr& target) noexcept {
-  RiskAnalysis::RunAnalysis<Mocus>(name, target);
+  if (kSettings_.algorithm() == "bdd") {
+    RiskAnalysis::RunAnalysis<Bdd>(name, target);
+  } else {  // The default algorithm.
+    assert(kSettings_.algorithm() == "mocus");
+    RiskAnalysis::RunAnalysis<Mocus>(name, target);
+  }
 }
 
 template<typename Algorithm>

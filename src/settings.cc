@@ -24,6 +24,15 @@
 
 namespace scram {
 
+Settings& Settings::algorithm(const std::string& algorithm) {
+  if (algorithm != "mocus" && algorithm != "bdd") {
+    throw InvalidArgument(
+        "The qualitative analysis algorithm is not recognized.");
+  }
+  algorithm_ = algorithm;
+  return *this;
+}
+
 Settings& Settings::limit_order(int order) {
   if (order < 1) {
     std::string msg = "The limit on the order of minimal cut sets "

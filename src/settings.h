@@ -29,6 +29,18 @@ namespace scram {
 /// Builder for analysis settings.
 class Settings {
  public:
+  /// @returns The Qualitative analysis algorithm.
+  const std::string& algorithm() const { return algorithm_; }
+
+  /// Sets the algorithm for Qualitative analysis.
+  ///
+  /// @param[in] algorithm  The name of the algorithm in lower case.
+  ///
+  /// @returns Reference to this object.
+  ///
+  /// @throws InvalidArgument The algorithm is not recognized.
+  Settings& algorithm(const std::string& algorithm);
+
   /// @returns The limit on the size of minimal cut sets.
   int limit_order() const { return limit_order_; }
 
@@ -194,6 +206,7 @@ class Settings {
   bool importance_analysis_ = false;  ///< A flag for importance analysis.
   bool uncertainty_analysis_ = false;  ///< A flag for uncertainty analysis.
   bool ccf_analysis_ = false;  ///< A flag for common-cause analysis.
+  std::string algorithm_ = "mocus";  ///< Qualitative analysis algorithm.
   int limit_order_ = 20;  ///< Limit on the order of minimal cut sets.
   double mission_time_ = 8760;  ///< System mission time.
   double cut_off_ = 1e-8;  ///< The cut-off probability for cut sets.
