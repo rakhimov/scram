@@ -94,9 +94,14 @@ void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
       "Groups of events sufficient for a top event failure");
 
   xmlpp::Element* methods = information->add_child("calculation-method");
-  methods->set_attribute("name", "MOCUS");
-  methods->add_child("limits")->add_child("number-of-basic-events")
-      ->add_child_text(ToString(settings.limit_order()));
+  if (settings.algorithm() == "bdd") {
+    methods->set_attribute("name", "Binary Decision Diagram");
+  } else {
+    assert(settings.algorithm() == "mocus");
+    methods->set_attribute("name", "MOCUS");
+    methods->add_child("limits")->add_child("number-of-basic-events")
+        ->add_child_text(ToString(settings.limit_order()));
+  }
 
   // Report the setup for CCF analysis.
   if (settings.ccf_analysis()) {
@@ -108,16 +113,6 @@ void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
 
   // Report the setup for probability analysis.
   if (settings.probability_analysis()) {
-    if (settings.approximation() == "rare-event") {
-      information->add_child("warning")->add_child_text(
-          " The rare event approximation may be inaccurate for analysis"
-          " if cut sets' probabilities exceed 0.1.");
-    } else if (settings.approximation() == "mcub") {
-      information->add_child("warning")->add_child_text(
-          " The MCUB approximation may not hold"
-          " if the fault tree is non-coherent"
-          " or there are many common events.");
-    }
     quant = information->add_child("calculated-quantity");
     quant->set_attribute("name", "Probability Analysis");
     quant->set_attribute("definition",
@@ -125,7 +120,22 @@ void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
     quant->set_attribute("approximation", settings.approximation());
 
     methods = information->add_child("calculation-method");
-    methods->set_attribute("name", "Numerical Probability");
+
+    if (settings.approximation() == "rare-event") {
+      information->add_child("warning")->add_child_text(
+          " The rare event approximation may be inaccurate for analysis"
+          " if cut sets' probabilities exceed 0.1.");
+      methods->set_attribute("name", "Rare Event Approximation");
+    } else if (settings.approximation() == "mcub") {
+      information->add_child("warning")->add_child_text(
+          " The MCUB approximation may not hold"
+          " if the fault tree is non-coherent"
+          " or there are many common events.");
+      methods->set_attribute("name", "MCUB Approximation");
+    } else {
+      assert(settings.approximation() == "no");
+      methods->set_attribute("name", "Binary Decision Diagram");
+    }
     xmlpp::Element* limits = methods->add_child("limits");
     limits->add_child("mission-time")
         ->add_child_text(ToString(settings.mission_time()));

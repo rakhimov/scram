@@ -293,6 +293,27 @@ TEST_F(RiskAnalysisTest, ReportDefaultMCS) {
   ASSERT_NO_THROW(parser->Validate(schema));
 }
 
+TEST_F(RiskAnalysisTest, ReportDefaultBdd) {
+  std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
+
+  std::stringstream schema;
+  std::string schema_path = Env::report_schema();
+  std::ifstream schema_stream(schema_path.c_str());
+  schema << schema_stream.rdbuf();
+  schema_stream.close();
+
+  settings.algorithm("bdd");
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
+
+  std::stringstream output;
+  ASSERT_NO_THROW(ran->Report(output));
+
+  std::unique_ptr<XMLParser> parser;
+  ASSERT_NO_THROW(parser = std::unique_ptr<XMLParser>(new XMLParser(output)));
+  ASSERT_NO_THROW(parser->Validate(schema));
+}
+
 // Reporting of analysis for MCS with probability results.
 TEST_F(RiskAnalysisTest, ReportProbability) {
   std::string tree_input =
