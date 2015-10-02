@@ -22,23 +22,25 @@
 
 namespace scram {
 
-Zbdd::Zbdd()
+Zbdd::Zbdd() noexcept
     : kBase_(std::make_shared<Terminal>(true)),
       kEmpty_(std::make_shared<Terminal>(false)),
       set_id_(2) {}
 
-void Zbdd::Analyze(const Bdd* bdd) noexcept {
-  bdd_graph_ = bdd;
+Zbdd::Zbdd(const Bdd* bdd) noexcept : Zbdd::Zbdd() {
   const Bdd::Function& bdd_root = bdd->root();
-  SetNodePtr root =
-      SetNode::Ptr(Zbdd::ConvertBdd(bdd_root.vertex, bdd_root.complement));
-  root = SetNode::Ptr(Zbdd::Subsume(root));  /// @todo Not always SetNode.
+  root_ = Zbdd::ConvertBdd(bdd_root.vertex, bdd_root.complement, bdd);
+}
+
+void Zbdd::Analyze() noexcept {
+  root_ = Zbdd::Subsume(root_);
   std::vector<int> seed;
-  Zbdd::GenerateCutSets(root, &seed, &cut_sets_);
+  Zbdd::GenerateCutSets(root_, &seed, &cut_sets_);
 }
 
 std::shared_ptr<Vertex> Zbdd::ConvertBdd(const VertexPtr& vertex,
-                                         bool complement) noexcept {
+                                         bool complement,
+                                         const Bdd* bdd_graph) noexcept {
   if (vertex->terminal()) return complement ? kEmpty_ : kBase_;
   assert(!complement);  // @todo Make it work for non-coherent cases.
   int sign = complement ? -1 : 1;
@@ -49,12 +51,14 @@ std::shared_ptr<Vertex> Zbdd::ConvertBdd(const VertexPtr& vertex,
   if (ite->module()) {  // This is a proxy and not a variable.
     zbdd->module(true);
     const Bdd::Function& module =
-        bdd_graph_->gates().find(ite->index())->second;
-    modules_.emplace(ite->index(),
-                     Zbdd::ConvertBdd(module.vertex, module.complement));
+        bdd_graph->gates().find(ite->index())->second;
+    modules_.emplace(
+        ite->index(),
+        Zbdd::ConvertBdd(module.vertex, module.complement, bdd_graph));
   }
-  zbdd->high(Zbdd::ConvertBdd(ite->high(), complement));
-  zbdd->low(Zbdd::ConvertBdd(ite->low(), ite->complement_edge() ^ complement));
+  zbdd->high(Zbdd::ConvertBdd(ite->high(), complement, bdd_graph));
+  zbdd->low(Zbdd::ConvertBdd(ite->low(), ite->complement_edge() ^ complement,
+                             bdd_graph));
   if (zbdd->high()->terminal() && !Terminal::Ptr(zbdd->high())->value())
     return zbdd->low();  // Reduce.
   SetNodePtr& in_table =

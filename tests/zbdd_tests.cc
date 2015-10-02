@@ -35,8 +35,8 @@ TEST_F(RiskAnalysisTest, ZbddTest) {
   Preprocessor* prep = new CustomPreprocessor<Bdd>(graph);
   prep->Run();
   Bdd* bdd = new Bdd(graph);
-  Zbdd* zbdd = new Zbdd();
-  zbdd->Analyze(bdd);
+  Zbdd* zbdd = new Zbdd(bdd);
+  zbdd->Analyze();
   EXPECT_EQ(4, zbdd->cut_sets().size());
   delete graph;
   delete bdd;
@@ -54,8 +54,8 @@ TEST_F(RiskAnalysisTest, ZbddChinese) {
   Preprocessor* prep = new CustomPreprocessor<Bdd>(graph);
   prep->Run();
   Bdd* bdd = new Bdd(graph);
-  Zbdd* zbdd = new Zbdd();
-  zbdd->Analyze(bdd);
+  Zbdd* zbdd = new Zbdd(bdd);
+  zbdd->Analyze();
   EXPECT_EQ(392, zbdd->cut_sets().size());
   delete graph;
   delete bdd;
@@ -73,8 +73,8 @@ TEST_F(RiskAnalysisTest, DISABLED_ZbddBaobab1) {
   Preprocessor* prep = new CustomPreprocessor<Bdd>(graph);
   prep->Run();
   Bdd* bdd = new Bdd(graph);
-  Zbdd* zbdd = new Zbdd();
-  zbdd->Analyze(bdd);
+  Zbdd* zbdd = new Zbdd(bdd);
+  zbdd->Analyze();
   EXPECT_EQ(392, zbdd->cut_sets().size());
   delete graph;
   delete prep;
