@@ -45,6 +45,8 @@ namespace {
 
 /// A generic function to convert numbers to string.
 ///
+/// @tparam T  Numerical type.
+///
 /// @param[in] num  The number to be converted.
 ///
 /// @returns Formatted string that represents the number.

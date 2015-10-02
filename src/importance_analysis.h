@@ -87,6 +87,8 @@ class ImportanceAnalysis : public Analysis {
   /// Gathers all events present in cut sets.
   /// Only this events can have importance factors.
   ///
+  /// @tparam CutSet  An iterable container of unique elements.
+  ///
   /// @param[in] graph  Boolean graph with basic event indices and pointers.
   /// @param[in] cut_sets  Cut sets with basic event indices.
   ///
@@ -141,6 +143,8 @@ ImportanceAnalysis::GatherImportantEvents(
 /// @class ImportanceAnalyzer
 /// Analyzer of importance factors
 /// with the help from probability analyzers.
+///
+/// @tparam Algorithm  Qualitative analysis algorithm.
 template<typename Algorithm, typename Calculator>
 class ImportanceAnalyzer : public ImportanceAnalysis {
  public:
@@ -195,8 +199,10 @@ ImportanceAnalyzer<Algorithm, Calculator>::CalculateMif(int index) noexcept {
   return p_e - p_not_e;
 }
 
-/// @class ImportanceAnalyzer<typename Algorithm, Bdd>
+/// @class ImportanceAnalyzer<Algorithm, Bdd>
 /// Specialization of importance analyzer with Binary Decision Diagrams.
+///
+/// @tparam Algorithm  Qualitative analysis algorithm.
 template<typename Algorithm>
 class ImportanceAnalyzer<Algorithm, Bdd> : public ImportanceAnalysis {
  public:
@@ -230,6 +236,8 @@ class ImportanceAnalyzer<Algorithm, Bdd> : public ImportanceAnalysis {
   /// @param[in] vertex  The root vertex of a function graph.
   /// @param[in] order  The identifying order of the variable.
   /// @param[in] mark  A flag to mark traversed vertices.
+  ///
+  /// @returns Importance factor value.
   ///
   /// @note Probability factor fields are used to save results.
   /// @note The graph needs cleaning its marks after this function

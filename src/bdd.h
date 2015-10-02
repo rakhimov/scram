@@ -259,6 +259,8 @@ struct TripletHash : public std::unary_function<const Triplet, std::size_t> {
 };
 
 /// Hash table for triplets of numbers as keys.
+///
+/// @tparam Value  Type of values to be stored in the table.
 template<typename Value>
 using TripletTable = std::unordered_map<Triplet, Value, TripletHash>;
 

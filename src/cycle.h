@@ -35,6 +35,9 @@ bool ContinueConnector(C* connector, std::vector<std::string>* cycle);
 /// Interrupts the detection at first cycle.
 /// Nodes get marked.
 ///
+/// @tparam N  Type of nodes in the graph.
+/// @tparam C  Type of connectors (nodes, edges) in the graph.
+///
 /// @param[in,out] node  The node to start with.
 /// @param[out] cycle  If a cycle is detected,
 ///                    it is given in reverse,
@@ -61,6 +64,9 @@ bool DetectCycle(N* node, std::vector<std::string>* cycle) {
 
 /// Helper function to check for cyclic references through connectors.
 /// Connectors may get market upon traversal.
+///
+/// @tparam N  Type of nodes in the graph.
+/// @tparam C  Type of connectors (nodes, edges) in the graph.
 ///
 /// @param[in,out] connector  Connector to nodes.
 /// @param[out] cycle  The cycle path if detected.

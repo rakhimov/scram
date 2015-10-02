@@ -115,6 +115,7 @@ class UncertaintyAnalysis : public Analysis {
 /// @class UncertaintyAnalyzer
 /// Uncertainty analysis facility.
 ///
+/// @tparam Algorithm  Qualitative analysis algorithm.
 /// @tparam Calculator  Quantitative analysis calculator.
 template<typename Algorithm, typename Calculator>
 class UncertaintyAnalyzer : public UncertaintyAnalysis {

@@ -257,6 +257,7 @@ Core Code Documentation Style
 - Comment ordering:
 
     #. description
+    #. tparam
     #. param
     #. returns
     #. pre

@@ -79,6 +79,8 @@ class CutSetCalculator {
   /// whose members are in AND relationship with each other.
   /// This function assumes independence of each member.
   ///
+  /// @tparam CutSet  An iterable container of unique elements.
+  ///
   /// @param[in] cut_set  A cut set of signed indices of basic events.
   /// @param[in] var_probs  Probabilities of events mapped to a vector.
   ///
@@ -103,9 +105,14 @@ class CutSetCalculator {
 
   /// Checks the special case of a unity set with probability 1.
   ///
+  /// @tparam CutSet  An iterable container of unique elements.
+  ///
+  /// @param[in] cut_sets  Collection of ALL cut sets.
+  ///
   /// @returns true if the Unity set is detected.
   ///
   /// @pre The unity set is indicated by a single empty set.
+  /// @pre Provided cut sets are ALL the cut sets under consideration.
   template<typename CutSet>
   double CheckUnity(const std::vector<CutSet>& cut_sets) noexcept {
     return cut_sets.size() == 1 && cut_sets.front().empty();
@@ -119,6 +126,8 @@ class RareEventCalculator : private CutSetCalculator {
  public:
   /// Calculates probabilities
   /// using the Rare-Event approximation.
+  ///
+  /// @tparam CutSet  An iterable container of unique elements.
   ///
   /// @param[in] cut_sets  A collection of sets of indices of basic events.
   /// @param[in] var_probs  Probabilities of events mapped to a vector.
@@ -174,6 +183,8 @@ class McubCalculator : private CutSetCalculator {
 class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
  public:
   /// Constructs probability analyzer from a fault tree analyzer.
+  ///
+  /// @tparam Algorithm  Qualitative analysis algorithm.
   ///
   /// @param[in] fta  Finished fault tree analyzer with results.
   template<typename Algorithm>
@@ -243,7 +254,7 @@ class ProbabilityAnalyzer : public ProbabilityAnalyzerBase {
   std::unique_ptr<Calculator> calc_;  ///< Provider of the calculation logic.
 };
 
-/// @class ProbabilityAnalyzer<typename Algorithm, Bdd>
+/// @class ProbabilityAnalyzer<Algorithm, Bdd>
 /// Specialization of probability analyzer with Binary Decision Diagrams.
 /// The quantitative analysis is done with BDD.
 ///
