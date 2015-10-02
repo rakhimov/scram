@@ -24,6 +24,7 @@
 
 #include "event.h"
 #include "logger.h"
+#include "zbdd.h"
 
 namespace scram {
 
@@ -48,9 +49,38 @@ ComplementEdge::~ComplementEdge() {}  // Default pure virtual destructor.
 Bdd::Bdd(const BooleanGraph* fault_tree)
     : fault_tree_(fault_tree),
       kOne_(std::make_shared<Terminal>(true)),
-      function_id_(2) {
+      function_id_(2),
+      zbdd_(nullptr) {
   root_ = Bdd::IfThenElse(fault_tree_->root());
   LOG(DEBUG3) << "The number of BDD generated vertices: " << function_id_ - 1;
+}
+
+Bdd::~Bdd() noexcept {
+  if (zbdd_) delete zbdd_;
+}
+
+void Bdd::ClearMarks(const VertexPtr& vertex, bool mark) noexcept {
+  if (vertex->terminal()) return;
+  ItePtr ite = Ite::Ptr(vertex);
+  if (ite->mark() == mark) return;
+  ite->mark(mark);
+  if (ite->module()) {
+    const Bdd::Function& res = gates_.find(ite->index())->second;
+    Bdd::ClearMarks(res.vertex, mark);
+  }
+  Bdd::ClearMarks(ite->high(), mark);
+  Bdd::ClearMarks(ite->low(), mark);
+}
+
+void Bdd::Analyze() noexcept {
+  if (zbdd_) delete zbdd_;
+  zbdd_ = new Zbdd(this);
+  zbdd_->Analyze();
+}
+
+const std::vector<std::vector<int>>& Bdd::cut_sets() const {
+  assert(zbdd_ && "Analysis is not done.");
+  return zbdd_->cut_sets();
 }
 
 const Bdd::Function& Bdd::IfThenElse(const IGatePtr& gate) noexcept {
@@ -281,19 +311,6 @@ Triplet Bdd::GetSignature(Operator type,
       assert(false);
   }
   return sig;
-}
-
-void Bdd::ClearMarks(const VertexPtr& vertex, bool mark) noexcept {
-  if (vertex->terminal()) return;
-  ItePtr ite = Ite::Ptr(vertex);
-  if (ite->mark() == mark) return;
-  ite->mark(mark);
-  if (ite->module()) {
-    const Bdd::Function& res = gates_.find(ite->index())->second;
-    Bdd::ClearMarks(res.vertex, mark);
-  }
-  Bdd::ClearMarks(ite->high(), mark);
-  Bdd::ClearMarks(ite->low(), mark);
 }
 
 }  // namespace scram
