@@ -61,6 +61,7 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
          "XML file with analysis configurations")
         ("validate", "Validate input files without analysis")
         ("graph", "Validate and produce graph without analysis")
+        ("bdd", "Perform qualitative analysis with BDD")
         ("probability", po::value<bool>(), "Perform probability analysis")
         ("importance", po::value<bool>(), "Perform importance analysis")
         ("uncertainty", po::value<bool>(), "Perform uncertainty analysis")
@@ -161,6 +162,7 @@ void ConstructSettings(const po::variables_map& vm, scram::Settings* settings) {
   if (vm.count("num-quantiles"))
     settings->num_quantiles(vm["num-quantiles"].as<int>());
   if (vm.count("num-bins")) settings->num_bins(vm["num-bins"].as<int>());
+  if (vm.count("bdd")) settings->algorithm("bdd");
   if (vm.count("importance"))
     settings->importance_analysis(vm["importance"].as<bool>());
   if (vm.count("uncertainty"))
