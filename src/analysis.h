@@ -29,7 +29,7 @@ namespace scram {
 /// Base abstract class for all analysis with settings.
 class Analysis {
  public:
-  /// @param[in] settings Analysis settings for all calculations.
+  /// @param[in] settings  Analysis settings for all calculations.
   explicit Analysis(const Settings& settings);
 
   virtual ~Analysis() = 0;  ///< Abstract class.

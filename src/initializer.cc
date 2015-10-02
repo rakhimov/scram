@@ -44,7 +44,7 @@ namespace {
 
 /// Helper function to staticly cast to XML element.
 ///
-/// @param[in] node XML node known to be XML element.
+/// @param[in] node  XML node known to be XML element.
 ///
 /// @returns XML element cast from the XML node.
 ///
@@ -55,7 +55,7 @@ inline const xmlpp::Element* XmlElement(const xmlpp::Node* node) {
 
 /// Normalizes the string in the XML attribute.
 ///
-/// @param[in] element XML element with the attribute.
+/// @param[in] element  XML element with the attribute.
 ///
 /// @returns Normalized (trimmed) string from the attribute.
 inline std::string GetAttributeValue(const xmlpp::Element* element,

@@ -106,7 +106,7 @@ class Logger {
   /// Returns a string stream by reference
   /// that is flushed to stderr by the Logger class destructor.
   ///
-  /// @param[in] level The log level for the information.
+  /// @param[in] level  The log level for the information.
   ///
   /// @returns Formatted output stringstream with the log level information.
   std::ostringstream& Get(LogLevel level) {

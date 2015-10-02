@@ -42,9 +42,9 @@ class Event : public Element, public Role {
   /// and other strings do not have
   /// leading and trailing whitespace characters.
   ///
-  /// @param[in] name The identifying name with caps preserved.
-  /// @param[in] base_path The series of containers to get this event.
-  /// @param[in] is_public Whether or not the event is public.
+  /// @param[in] name  The identifying name with caps preserved.
+  /// @param[in] base_path  The series of containers to get this event.
+  /// @param[in] is_public  Whether or not the event is public.
   explicit Event(const std::string& name, const std::string& base_path = "",
                  bool is_public = true);
 
@@ -64,7 +64,7 @@ class Event : public Element, public Role {
 
   /// Sets the orphan state.
   ///
-  /// @param[in] state True if this event is not used anywhere.
+  /// @param[in] state  True if this event is not used anywhere.
   void orphan(bool state) { orphan_ = state; }
 
  private:
@@ -98,7 +98,7 @@ class HouseEvent : public PrimaryEvent {
 
   /// Sets the state for House event.
   ///
-  /// @param[in] constant False or True for the state of this house event.
+  /// @param[in] constant  False or True for the state of this house event.
   void state(bool constant) {
     PrimaryEvent::has_expression_ = true;
     state_ = constant;
@@ -128,7 +128,7 @@ class BasicEvent : public PrimaryEvent {
 
   /// Sets the expression of this basic event.
   ///
-  /// @param[in] expression The expression to describe this event.
+  /// @param[in] expression  The expression to describe this event.
   void expression(const ExpressionPtr& expression) {
     assert(!expression_);
     PrimaryEvent::has_expression_ = true;
@@ -192,7 +192,7 @@ class BasicEvent : public PrimaryEvent {
   /// This information is expected to be provided by
   /// CCF group application.
   ///
-  /// @param[in] gate CCF group gate.
+  /// @param[in] gate  CCF group gate.
   void ccf_gate(const GatePtr& gate) {
     assert(!ccf_gate_);
     ccf_gate_ = gate;
@@ -225,10 +225,10 @@ class CcfEvent : public BasicEvent {
   /// and names of the member events of this specific CCF event
   /// are saved for reporting.
   ///
-  /// @param[in] name The identifying name of this CCF event.
-  /// @param[in] ccf_group The CCF group that created this event.
-  /// @param[in] member_names The names of members that this CCF event
-  ///                         represents as multiple failure.
+  /// @param[in] name  The identifying name of this CCF event.
+  /// @param[in] ccf_group  The CCF group that created this event.
+  /// @param[in] member_names  The names of members that this CCF event
+  ///                          represents as multiple failure.
   CcfEvent(const std::string& name, const CcfGroup* ccf_group,
            const std::vector<std::string>& member_names);
 
@@ -259,7 +259,7 @@ class Gate : public Event {
 
   /// Sets the formula of this gate.
   ///
-  /// @param[in] formula Boolean formula of this gate.
+  /// @param[in] formula  Boolean formula of this gate.
   void formula(FormulaPtr formula) {
     assert(!formula_);
     formula_ = std::move(formula);
@@ -300,7 +300,7 @@ class Formula {
 
   /// Constructs a formula.
   ///
-  /// @param[in] type The logical operator for this Boolean formula.
+  /// @param[in] type  The logical operator for this Boolean formula.
   explicit Formula(const std::string& type);
 
   Formula(const Formula&) = delete;
@@ -318,7 +318,7 @@ class Formula {
 
   /// Sets the vote number only for an ATLEAST formula.
   ///
-  /// @param[in] vnumber The vote number.
+  /// @param[in] vnumber  The vote number.
   ///
   /// @throws InvalidArgument The vote number is invalid.
   /// @throws LogicError The vote number is assigned illegally.
@@ -353,21 +353,21 @@ class Formula {
 
   /// Adds a house event into the arguments list.
   ///
-  /// @param[in] house_event A pointer to an argument house event.
+  /// @param[in] house_event  A pointer to an argument house event.
   ///
   /// @throws DuplicateArgumentError The argument is duplicate.
   void AddArgument(const HouseEventPtr& house_event);
 
   /// Adds a basic event into the arguments list.
   ///
-  /// @param[in] basic_event A pointer to an argument basic event.
+  /// @param[in] basic_event  A pointer to an argument basic event.
   ///
   /// @throws DuplicateArgumentError The argument is duplicate.
   void AddArgument(const BasicEventPtr& basic_event);
 
   /// Adds a gate into the arguments list.
   ///
-  /// @param[in] gate A pointer to an argument gate.
+  /// @param[in] gate  A pointer to an argument gate.
   ///
   /// @throws DuplicateArgumentError The argument is duplicate.
   void AddArgument(const GatePtr& gate);
@@ -375,7 +375,7 @@ class Formula {
   /// Adds a formula into the arguments list.
   /// Formulas are unique.
   ///
-  /// @param[in] formula A pointer to an argument formula.
+  /// @param[in] formula  A pointer to an argument formula.
   void AddArgument(FormulaPtr formula);
 
   /// Checks if a formula is initialized correctly with the number of arguments.

@@ -38,8 +38,8 @@ namespace scram {
 /// Representation of a vertex in BDD graphs.
 class Vertex {
  public:
-  /// @param[in] terminal Flag for terminal nodes.
-  /// @param[in] id Identificator of the BDD graph.
+  /// @param[in] terminal  Flag for terminal nodes.
+  /// @param[in] id  Identificator of the BDD graph.
   explicit Vertex(bool terminal = false, int id = 0);
 
   Vertex(const Vertex&) = delete;
@@ -71,7 +71,7 @@ class Vertex {
 /// only single terminal vertex is expected with value 1.
 class Terminal : public Vertex {
  public:
-  /// @param[in] value True or False (1 or 0) terminal.
+  /// @param[in] value  True or False (1 or 0) terminal.
   explicit Terminal(bool value);
 
   /// @returns The value of the terminal vertex.
@@ -83,7 +83,7 @@ class Terminal : public Vertex {
 
   /// Recovers a shared pointer to Terminal from a pointer to Vertex.
   ///
-  /// @param[in] vertex Pointer to a Vertex known to be a Terminal.
+  /// @param[in] vertex  Pointer to a Vertex known to be a Terminal.
   ///
   /// @return Casted pointer to Terminal.
   static std::shared_ptr<Terminal> Ptr(const std::shared_ptr<Vertex>& vertex) {
@@ -100,8 +100,8 @@ class NonTerminal : public Vertex {
  public:
   using VertexPtr = std::shared_ptr<Vertex>;
 
-  /// @param[in] index Index of this non-terminal vertex.
-  /// @param[in] order Specific ordering number for BDD graphs.
+  /// @param[in] index  Index of this non-terminal vertex.
+  /// @param[in] order  Specific ordering number for BDD graphs.
   NonTerminal(int index, int order);
 
   virtual ~NonTerminal() = 0;  ///< Abstract base class.
@@ -126,9 +126,9 @@ class NonTerminal : public Vertex {
 
   /// Sets the unique identifier of the ROBDD graph.
   ///
-  /// @param[in] id Unique identifier of the ROBDD graph.
-  ///               The identifier should not collide
-  ///               with the identifiers of terminal nodes.
+  /// @param[in] id  Unique identifier of the ROBDD graph.
+  ///                The identifier should not collide
+  ///                with the identifiers of terminal nodes.
   void id(int id) {
     assert(id > 1);  // Must not have an ID of terminal nodes.
     Vertex::id_ = id;
@@ -139,7 +139,7 @@ class NonTerminal : public Vertex {
 
   /// Sets the (1/True/then/left) branch vertex.
   ///
-  /// @param[in] high The if-then-else vertex.
+  /// @param[in] high  The if-then-else vertex.
   void high(const VertexPtr& high) { high_ = high; }
 
   /// @returns (0/False/else/right) branch vertex.
@@ -150,7 +150,7 @@ class NonTerminal : public Vertex {
 
   /// Sets the (0/False/else/right) branch vertex.
   ///
-  /// @param[in] low The vertex.
+  /// @param[in] low  The vertex.
   ///
   /// @note This may have complement interpretation.
   ///       Keep the complement_edge() flag up-to-date
@@ -162,7 +162,7 @@ class NonTerminal : public Vertex {
 
   /// Marks this vertex.
   ///
-  /// @param[in] flag A flag with the meaning for the user of marks.
+  /// @param[in] flag  A flag with the meaning for the user of marks.
   void mark(bool flag) { mark_ = flag; }
 
  protected:
@@ -193,7 +193,7 @@ class ComplementEdge {
 
   /// Sets the complement flag for the chosen edge.
   ///
-  /// @param[in] flag Indicator to treat the chosen edge as a complement.
+  /// @param[in] flag  Indicator to treat the chosen edge as a complement.
   void complement_edge(bool flag) { complement_edge_ = flag; }
 
  private:
@@ -218,7 +218,7 @@ class Ite : public NonTerminal, public ComplementEdge {
 
   /// Sets the probability of the function graph.
   ///
-  /// @param[in] value Calculated value for the probability.
+  /// @param[in] value  Calculated value for the probability.
   void prob(double value) { prob_ = value; }
 
   /// @returns Saved results of importance factor calculations.
@@ -226,12 +226,12 @@ class Ite : public NonTerminal, public ComplementEdge {
 
   /// Memorized results of importance factor calculations.
   ///
-  /// @param[in] value Calculation results for importance factor.
+  /// @param[in] value  Calculation results for importance factor.
   void factor(double value) { factor_ = value; }
 
   /// Recovers a shared pointer to Ite from a pointer to Vertex.
   ///
-  /// @param[in] vertex Pointer to a Vertex known to be an Ite.
+  /// @param[in] vertex  Pointer to a Vertex known to be an Ite.
   ///
   /// @return Casted pointer to Ite.
   static std::shared_ptr<Ite> Ptr(const std::shared_ptr<Vertex>& vertex) {
@@ -276,7 +276,7 @@ class Bdd {
   /// Constructor with the analysis target.
   /// Reduced Ordered BDD is produced from a Boolean graph.
   ///
-  /// @param[in] fault_tree Preprocessed, normalized, and indexed fault tree.
+  /// @param[in] fault_tree  Preprocessed, normalized, and indexed fault tree.
   ///
   /// @note The passed Boolean graph must already have variable ordering.
   /// @note BDD construction may take considerable time.
@@ -304,7 +304,7 @@ class Bdd {
 
   /// Helper function to clear and set vertex marks.
   ///
-  /// @param[in] mark Desired mark for BDD vertices.
+  /// @param[in] mark  Desired mark for BDD vertices.
   ///
   /// @note Marks will propagate to modules as well.
   ///
@@ -325,7 +325,7 @@ class Bdd {
   /// into if-then-else BDD graphs.
   /// Registers processed gates.
   ///
-  /// @param[in] gate The root or current parent gate of the graph.
+  /// @param[in] gate  The root or current parent gate of the graph.
   ///
   /// @returns The BDD function representing the gate.
   const Function& IfThenElse(const IGatePtr& gate) noexcept;
@@ -334,14 +334,14 @@ class Bdd {
   /// into if-then-else BDD graph vertex.
   /// Registers processed variable.
   ///
-  /// @param[in] variable The variable argument.
+  /// @param[in] variable  The variable argument.
   ///
   /// @returns Pointer to the root vertex of the BDD graph.
   ItePtr IfThenElse(const VariablePtr& variable) noexcept;
 
   /// Creates a vertex to represent a module gate.
   ///
-  /// @param[in] gate The root or current parent gate of the graph.
+  /// @param[in] gate  The root or current parent gate of the graph.
   ///
   /// @returns Pointer to the BDD if-then-else vertex.
   ///
@@ -350,11 +350,11 @@ class Bdd {
 
   /// Applies Boolean operation to BDD graphs.
   ///
-  /// @param[in] type The operator or type of the gate.
-  /// @param[in] arg_one First argument function graph.
-  /// @param[in] arg_two Second argument function graph.
-  /// @param[in] complement_one Interpretation of arg_one as complement.
-  /// @param[in] complement_two Interpretation of arg_two as complement.
+  /// @param[in] type  The operator or type of the gate.
+  /// @param[in] arg_one  First argument function graph.
+  /// @param[in] arg_two  Second argument function graph.
+  /// @param[in] complement_one  Interpretation of arg_one as complement.
+  /// @param[in] complement_two  Interpretation of arg_two as complement.
   ///
   /// @returns The BDD function as a result of operation.
   ///
@@ -366,11 +366,11 @@ class Bdd {
   /// Applies the logic of a Boolean operator
   /// to terminal vertices.
   ///
-  /// @param[in] type The operator to apply.
-  /// @param[in] term_one First argument terminal vertex.
-  /// @param[in] term_two Second argument terminal vertex.
-  /// @param[in] complement_one Interpretation of term_one as complement.
-  /// @param[in] complement_two Interpretation of term_two as complement.
+  /// @param[in] type  The operator to apply.
+  /// @param[in] term_one  First argument terminal vertex.
+  /// @param[in] term_two  Second argument terminal vertex.
+  /// @param[in] complement_one  Interpretation of term_one as complement.
+  /// @param[in] complement_two  Interpretation of term_two as complement.
   ///
   /// @returns The resulting BDD function.
   Function Apply(Operator type,
@@ -380,11 +380,11 @@ class Bdd {
   /// Applies the logic of a Boolean operator
   /// to non-terminal and terminal vertices.
   ///
-  /// @param[in] type The operator or type of the gate.
-  /// @param[in] ite_one Non-terminal vertex.
-  /// @param[in] term_two Terminal vertex.
-  /// @param[in] complement_one Interpretation of ite_one as complement.
-  /// @param[in] complement_two Interpretation of term_two as complement.
+  /// @param[in] type  The operator or type of the gate.
+  /// @param[in] ite_one  Non-terminal vertex.
+  /// @param[in] term_two  Terminal vertex.
+  /// @param[in] complement_one  Interpretation of ite_one as complement.
+  /// @param[in] complement_two  Interpretation of term_two as complement.
   ///
   /// @returns The resulting BDD function.
   Function Apply(Operator type,
@@ -393,10 +393,10 @@ class Bdd {
 
   /// Applies Boolean operation for a special case of the same arguments.
   ///
-  /// @param[in] type The operator or type of the gate.
-  /// @param[in] single_arg One of two identical arguments.
-  /// @param[in] complement_one Interpretation of the first vertex argument.
-  /// @param[in] complement_two Interpretation of the second vertex argument.
+  /// @param[in] type  The operator or type of the gate.
+  /// @param[in] single_arg  One of two identical arguments.
+  /// @param[in] complement_one  Interpretation of the first vertex argument.
+  /// @param[in] complement_two  Interpretation of the second vertex argument.
   ///
   /// @returns The BDD function as a result of operation.
   Function Apply(Operator type, const VertexPtr& single_arg,
@@ -404,11 +404,11 @@ class Bdd {
 
   /// Applies Boolean operation to BDD graph non-terminal verteices.
   ///
-  /// @param[in] type The operator or type of the gate.
-  /// @param[in] arg_one First argument if-then-else vertex.
-  /// @param[in] arg_two Second argument if-then-else vertex.
-  /// @param[in] complement_one Interpretation of arg_one as complement.
-  /// @param[in] complement_two Interpretation of arg_two as complement.
+  /// @param[in] type  The operator or type of the gate.
+  /// @param[in] arg_one  First argument if-then-else vertex.
+  /// @param[in] arg_two  Second argument if-then-else vertex.
+  /// @param[in] complement_one  Interpretation of arg_one as complement.
+  /// @param[in] complement_two  Interpretation of arg_two as complement.
   ///
   /// @returns High and Low BDD functions as a result of operation.
   ///
@@ -425,11 +425,11 @@ class Bdd {
   /// The signature of the operations helps
   /// detect equivalent operations.
   ///
-  /// @param[in] type The operator or type of the gate.
-  /// @param[in] arg_one First argument function graph.
-  /// @param[in] arg_two Second argument function graph.
-  /// @param[in] complement_one Interpretation of arg_one as complement.
-  /// @param[in] complement_two Interpretation of arg_two as complement.
+  /// @param[in] type  The operator or type of the gate.
+  /// @param[in] arg_one  First argument function graph.
+  /// @param[in] arg_two  Second argument function graph.
+  /// @param[in] complement_one  Interpretation of arg_one as complement.
+  /// @param[in] complement_two  Interpretation of arg_two as complement.
   ///
   /// @returns Unique signature of the operation.
   ///
@@ -444,8 +444,8 @@ class Bdd {
 
   /// Clears marks of vertices in BDD graph.
   ///
-  /// @param[in] vertex The starting root vertex of the graph.
-  /// @param[in] mark The desired mark for the vertices.
+  /// @param[in] vertex  The starting root vertex of the graph.
+  /// @param[in] mark  The desired mark for the vertices.
   ///
   /// @note Marks will propagate to modules as well.
   void ClearMarks(const VertexPtr& vertex, bool mark) noexcept;

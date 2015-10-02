@@ -49,7 +49,7 @@ struct SetPtrHash
     : public std::unary_function<const SetPtr, std::size_t> {
   /// Operator overload for hashing.
   ///
-  /// @param[in] set The pointer to set which hash must be calculated.
+  /// @param[in] set  The pointer to set which hash must be calculated.
   ///
   /// @returns Hash value of the set.
   std::size_t operator()(const SetPtr& set) const noexcept {
@@ -63,8 +63,8 @@ struct SetPtrEqual
     : public std::binary_function<const SetPtr, const SetPtr, bool> {
   /// Operator overload for set equality test.
   ///
-  /// @param[in] lhs The first set.
-  /// @param[in] rhs The second set.
+  /// @param[in] lhs  The first set.
+  /// @param[in] rhs  The second set.
   ///
   /// @returns true if the pointed sets are equal.
   bool operator()(const SetPtr& lhs, const SetPtr& rhs) const noexcept {
@@ -79,8 +79,8 @@ struct SetPtrComp
   /// Operator overload.
   /// Compares sets for sorting.
   ///
-  /// @param[in] lhs Pointer to a set.
-  /// @param[in] rhs Pointer to a set.
+  /// @param[in] lhs  Pointer to a set.
+  /// @param[in] rhs  Pointer to a set.
   ///
   /// @returns true if the lhs pointed set is less than the rhs pointed set.
   bool operator()(const SetPtr& lhs, const SetPtr& rhs) const noexcept {
@@ -99,7 +99,7 @@ class SimpleGate {
   using SimpleGatePtr = std::shared_ptr<SimpleGate>;
   using HashSet = std::unordered_set<SetPtr, SetPtrHash, SetPtrEqual>;
 
-  /// @param[in] type The type of this gate. AND or OR types are expected.
+  /// @param[in] type  The type of this gate. AND or OR types are expected.
   explicit SimpleGate(const Operator& type) noexcept : type_(type) {}
 
   /// @returns The type of this gate.
@@ -108,14 +108,14 @@ class SimpleGate {
   /// Adds a basic event index at the end of a container.
   /// This function is specifically given to initiate the gate.
   ///
-  /// @param[in] index The index of a basic event.
+  /// @param[in] index  The index of a basic event.
   void InitiateWithBasic(int index) { basic_events_.push_back(index); }
 
   /// Adds a module index at the end of a container.
   /// This function is specifically given to initiate the gate.
   /// Note that modules are treated just like basic events.
   ///
-  /// @param[in] index The index of a module.
+  /// @param[in] index  The index of a module.
   void InitiateWithModule(int index) {
     assert(index > 0);
     modules_.push_back(index);
@@ -124,7 +124,7 @@ class SimpleGate {
   /// Add a pointer to a child gate.
   /// This function assumes that the tree does not have complement gates.
   ///
-  /// @param[in] gate The pointer to the child gate.
+  /// @param[in] gate  The pointer to the child gate.
   void AddChildGate(const SimpleGatePtr& gate) {
     assert(gate->type() == kAndGate || gate->type() == kOrGate);
     assert(gate->type() != type_);
@@ -133,13 +133,14 @@ class SimpleGate {
 
   /// Generates cut sets by using a provided set.
   ///
-  /// @param[in] cut_set The base cut set to work with.
-  /// @param[out] new_cut_sets Generated cut sets by adding the gate's children.
+  /// @param[in] cut_set  The base cut set to work with.
+  /// @param[out] new_cut_sets  Generated cut sets
+  ///                           by adding the gate's children.
   void GenerateCutSets(const SetPtr& cut_set, HashSet* new_cut_sets) noexcept;
 
   /// Sets the limit order for all analysis with simple gates.
   ///
-  /// @param[in] limit The limit order for minimal cut sets.
+  /// @param[in] limit  The limit order for minimal cut sets.
   static void limit_order(int limit) { limit_order_ = limit; }
 
  private:
@@ -147,16 +148,16 @@ class SimpleGate {
   /// using already generated sets.
   /// The tree is assumed to be layered with OR children of AND gates.
   ///
-  /// @param[in] cut_set The base cut set to work with.
-  /// @param[out] new_cut_sets Generated cut sets by using the gate's children.
+  /// @param[in] cut_set  The base cut set to work with.
+  /// @param[out] new_cut_sets  Generated cut sets by using the gate's children.
   void AndGateCutSets(const SetPtr& cut_set, HashSet* new_cut_sets) noexcept;
 
   /// Generates cut sets for OR gate children
   /// using already generated sets.
   /// The tree is assumed to be layered with AND children of OR gates.
   ///
-  /// @param[in] cut_set The base cut set to work with.
-  /// @param[out] new_cut_sets Generated cut sets by using the gate's children.
+  /// @param[in] cut_set  The base cut set to work with.
+  /// @param[out] new_cut_sets  Generated cut sets by using the gate's children.
   void OrGateCutSets(const SetPtr& cut_set, HashSet* new_cut_sets) noexcept;
 
   Operator type_;  ///< Type of this gate.
@@ -173,8 +174,8 @@ class Mocus {
  public:
   /// Constructor with the analysis target.
   ///
-  /// @param[in] fault_tree Preprocessed, normalized, and indexed fault tree.
-  /// @param[in] settings The analysis settings.
+  /// @param[in] fault_tree  Preprocessed, normalized, and indexed fault tree.
+  /// @param[in] settings  The analysis settings.
   explicit Mocus(const BooleanGraph* fault_tree, const Settings& settings);
 
   /// Finds minimal cut sets from the initiated fault tree with indices.
@@ -189,16 +190,16 @@ class Mocus {
 
   /// Traverses the fault tree to convert gates into simple gates.
   ///
-  /// @param[in] gate The gate to start with.
-  /// @param[in,out] processed_gates Gates turned into simple gates.
+  /// @param[in] gate  The gate to start with.
+  /// @param[in,out] processed_gates  Gates turned into simple gates.
   void CreateSimpleTree(
       const IGatePtr& gate,
       std::unordered_map<int, SimpleGatePtr>* processed_gates) noexcept;
 
   /// Finds minimal cut sets of a simple gate.
   ///
-  /// @param[in] gate The simple gate as a parent for processing.
-  /// @param[out] mcs Minimal cut sets.
+  /// @param[in] gate  The simple gate as a parent for processing.
+  /// @param[out] mcs  Minimal cut sets.
   void FindMcsFromSimpleGate(const SimpleGatePtr& gate,
                              std::vector<Set>* mcs) noexcept;
 
@@ -208,10 +209,10 @@ class Mocus {
   /// If the sets share many events,
   /// it takes more time to remove supersets.
   ///
-  /// @param[in] cut_sets Cut sets with primary events.
-  /// @param[in] mcs_lower_order Reference minimal cut sets of some order.
-  /// @param[in] min_order The order of sets to become minimal.
-  /// @param[out] mcs Min cut sets.
+  /// @param[in] cut_sets  Cut sets with primary events.
+  /// @param[in] mcs_lower_order  Reference minimal cut sets of some order.
+  /// @param[in] min_order  The order of sets to become minimal.
+  /// @param[out] mcs  Min cut sets.
   ///
   /// @note T_avg(N^3 + N^2*logN + N*logN) = O_avg(N^3)
   void MinimizeCutSets(const std::vector<const Set*>& cut_sets,

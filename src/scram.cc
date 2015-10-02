@@ -40,9 +40,9 @@ namespace {
 
 /// Parses the command-line arguments.
 ///
-/// @param[in] argc Count of arguments.
-/// @param[in] argv Values of arguments.
-/// @param[out] vm Variables map of program options.
+/// @param[in] argc  Count of arguments.
+/// @param[in] argv  Values of arguments.
+/// @param[out] vm  Variables map of program options.
 ///
 /// @returns 0 for success.
 /// @returns 1 for errored state.
@@ -138,8 +138,8 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
 
 /// Updates analysis settings from command-line arguments.
 ///
-/// @param[in] vm Variables map of program options.
-/// @param[in,out] settings Pre-configured or default settings.
+/// @param[in] vm  Variables map of program options.
+/// @param[in,out] settings  Pre-configured or default settings.
 ///
 /// @throws std::exception vm does not contain a required option.
 ///                        At least defaults are expected.
@@ -172,7 +172,7 @@ void ConstructSettings(const po::variables_map& vm, scram::Settings* settings) {
 
 /// Main body of command-line entrance to run the program.
 ///
-/// @param[in] vm Variables map of program options.
+/// @param[in] vm  Variables map of program options.
 ///
 /// @returns 0 for success.
 /// @returns 1 for errored state.
@@ -251,8 +251,8 @@ int RunScram(const po::variables_map& vm) {
 
 /// Command-line SCRAM entrance.
 ///
-/// @param[in] argc Argument count.
-/// @param[in] argv Argument vector.
+/// @param[in] argc  Argument count.
+/// @param[in] argv  Argument vector.
 ///
 /// @returns 0 for success.
 /// @returns 1 for errored state.

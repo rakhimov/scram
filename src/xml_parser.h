@@ -35,7 +35,7 @@ class XMLParser {
  public:
   /// Initializes a parser with an XML snippet.
   ///
-  /// @param[in] xml_input_snippet An XML snippet to be used as input.
+  /// @param[in] xml_input_snippet  An XML snippet to be used as input.
   ///
   /// @throws ValidationError There are problems loading the XML snippet.
   explicit XMLParser(const std::stringstream& xml_input_snippet);
@@ -45,7 +45,7 @@ class XMLParser {
 
   /// Validates the file against a schema.
   ///
-  /// @param[in] xml_schema_snippet The schema to validate against.
+  /// @param[in] xml_schema_snippet  The schema to validate against.
   ///
   /// @throws ValidationError The XML file failed schema validation.
   /// @throws LogicError The schema could not be parsed.

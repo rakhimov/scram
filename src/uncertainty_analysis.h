@@ -47,7 +47,7 @@ class UncertaintyAnalysis : public Analysis {
   /// on the fault tree processed
   /// by probability analysis.
   ///
-  /// @param[in] prob_analysis Completed probability analysis.
+  /// @param[in] prob_analysis  Completed probability analysis.
   explicit UncertaintyAnalysis(const ProbabilityAnalysis* prob_analysis);
 
   virtual ~UncertaintyAnalysis() = default;
@@ -89,7 +89,7 @@ class UncertaintyAnalysis : public Analysis {
 
   /// Gathers basic events that have distributions.
   ///
-  /// @param[in] graph Boolean graph with the variables.
+  /// @param[in] graph  Boolean graph with the variables.
   ///
   /// @returns The gathered uncertain basic events.
   std::vector<std::pair<int, BasicEvent*>> FilterUncertainEvents(
@@ -98,7 +98,7 @@ class UncertaintyAnalysis : public Analysis {
  private:
   /// Calculates statistical values from the final distribution.
   ///
-  /// @param[in] samples Gathered samples for statistical analysis.
+  /// @param[in] samples  Gathered samples for statistical analysis.
   void CalculateStatistics(const std::vector<double>& samples) noexcept;
 
   double mean_;  ///< The mean of the final distribution.
@@ -115,7 +115,7 @@ class UncertaintyAnalysis : public Analysis {
 /// @class UncertaintyAnalyzer
 /// Uncertainty analysis facility.
 ///
-/// @tparam Calculator Quantitative analysis calculator.
+/// @tparam Calculator  Quantitative analysis calculator.
 template<typename Algorithm, typename Calculator>
 class UncertaintyAnalyzer : public UncertaintyAnalysis {
  public:
@@ -123,7 +123,7 @@ class UncertaintyAnalyzer : public UncertaintyAnalysis {
   /// Probability analyzer facilities are used
   /// to calculate the total probability for sampling.
   ///
-  /// @param[in] prob_analyzer Instantiated probability analyzer.
+  /// @param[in] prob_analyzer  Instantiated probability analyzer.
   ///
   /// @pre Probability analyzer can work with modified probability values.
   ///

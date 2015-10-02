@@ -51,7 +51,7 @@ class Model : public Element {
 
   /// Creates a model container.
   ///
-  /// @param[in] name The optional name for the model.
+  /// @param[in] name  The optional name for the model.
   explicit Model(const std::string& name = "");
 
   Model(const Model&) = delete;
@@ -93,14 +93,14 @@ class Model : public Element {
   /// Adds a fault tree into the model container.
   /// Fault trees are uniquely owned by this model.
   ///
-  /// @param[in] fault_tree A fault tree defined in this model.
+  /// @param[in] fault_tree  A fault tree defined in this model.
   ///
   /// @throws RedefinitionError The model has a container with the same name.
   void AddFaultTree(FaultTreePtr fault_tree);
 
   /// Adds a parameter that is used in this model's expressions.
   ///
-  /// @param[in] parameter A parameter defined in this model.
+  /// @param[in] parameter  A parameter defined in this model.
   ///
   /// @throws RedefinitionError The model has a parameter with the same name.
   void AddParameter(const ParameterPtr& parameter);
@@ -109,8 +109,8 @@ class Model : public Element {
   /// The reference is not case sensitive
   /// and can contain the identifier, full path, or local path.
   ///
-  /// @param[in] reference Reference string to the parameter.
-  /// @param[in] base_path The series of containers indicating the scope.
+  /// @param[in] reference  Reference string to the parameter.
+  /// @param[in] base_path  The series of containers indicating the scope.
   ///
   /// @returns Pointer to the parameter found by following the given reference.
   ///
@@ -124,8 +124,8 @@ class Model : public Element {
   /// The returned event may be a basic event, house event, or gate.
   /// This information is communicated with the return value.
   ///
-  /// @param[in] reference Reference string to the event.
-  /// @param[in] base_path The series of containers indicating the scope.
+  /// @param[in] reference  Reference string to the event.
+  /// @param[in] base_path  The series of containers indicating the scope.
   ///
   /// @returns A pair of the pointer to the event and its type
   ///          ("gate", "basic-event", "house-event").
@@ -137,7 +137,7 @@ class Model : public Element {
 
   /// Adds a house event that is used in this model.
   ///
-  /// @param[in] house_event A house event defined in this model.
+  /// @param[in] house_event  A house event defined in this model.
   ///
   /// @throws RedefinitionError An event with the same name already exists.
   void AddHouseEvent(const HouseEventPtr& house_event);
@@ -146,8 +146,8 @@ class Model : public Element {
   /// The reference is not case sensitive
   /// and can contain the identifier, full path, or local path.
   ///
-  /// @param[in] reference Reference string to the house event.
-  /// @param[in] base_path The series of containers indicating the scope.
+  /// @param[in] reference  Reference string to the house event.
+  /// @param[in] base_path  The series of containers indicating the scope.
   ///
   /// @returns Pointer to the house event found by following the reference.
   ///
@@ -157,7 +157,7 @@ class Model : public Element {
 
   /// Adds a basic event that is used in this model.
   ///
-  /// @param[in] basic_event A basic event defined in this model.
+  /// @param[in] basic_event  A basic event defined in this model.
   ///
   /// @throws RedefinitionError An event with the same name already exists.
   void AddBasicEvent(const BasicEventPtr& basic_event);
@@ -166,8 +166,8 @@ class Model : public Element {
   /// The reference is not case sensitive
   /// and can contain the identifier, full path, or local path.
   ///
-  /// @param[in] reference Reference string to the basic event.
-  /// @param[in] base_path The series of containers indicating the scope.
+  /// @param[in] reference  Reference string to the basic event.
+  /// @param[in] base_path  The series of containers indicating the scope.
   ///
   /// @returns Pointer to the basic event found by following the reference.
   ///
@@ -177,7 +177,7 @@ class Model : public Element {
 
   /// Adds a gate that is used in this model's fault trees or components.
   ///
-  /// @param[in] gate A gate defined in this model.
+  /// @param[in] gate  A gate defined in this model.
   ///
   /// @throws RedefinitionError An event with the same name already exists.
   void AddGate(const GatePtr& gate);
@@ -186,8 +186,8 @@ class Model : public Element {
   /// The reference is not case sensitive
   /// and can contain the identifier, full path, or local path.
   ///
-  /// @param[in] reference Reference string to the gate.
-  /// @param[in] base_path The series of containers indicating the scope.
+  /// @param[in] reference  Reference string to the gate.
+  /// @param[in] base_path  The series of containers indicating the scope.
   ///
   /// @returns Pointer to the gate found by following the reference.
   ///
@@ -196,7 +196,7 @@ class Model : public Element {
 
   /// Adds a CCF group that is used in this model's fault trees.
   ///
-  /// @param[in] ccf_group A CCF group defined in this model.
+  /// @param[in] ccf_group  A CCF group defined in this model.
   ///
   /// @throws RedefinitionError The model has a CCF group with the same name.
   void AddCcfGroup(const CcfGroupPtr& ccf_group);
@@ -204,7 +204,7 @@ class Model : public Element {
  private:
   /// Helper function to find the scope container for references.
   ///
-  /// @param[in] base_path The series of containers to get the container.
+  /// @param[in] base_path  The series of containers to get the container.
   ///
   /// @returns A fault tree or component from the base path if any.
   ///
@@ -213,8 +213,8 @@ class Model : public Element {
 
   /// Helper function to find the local container for references.
   ///
-  /// @param[in] reference The reference to the target element.
-  /// @param[in] scope The fault tree or component as a scope.
+  /// @param[in] reference  The reference to the target element.
+  /// @param[in] scope  The fault tree or component as a scope.
   ///
   /// @returns A fault tree or component from the reference.
   /// @returns nullptr if there is no local container.
@@ -223,7 +223,7 @@ class Model : public Element {
 
   /// Helper function to find the global container for references.
   ///
-  /// @param[in] reference The reference to the target element.
+  /// @param[in] reference  The reference to the target element.
   ///
   /// @returns A fault tree or component from the reference.
   ///

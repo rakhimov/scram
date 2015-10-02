@@ -47,7 +47,7 @@ class ProbabilityAnalysis : public Analysis {
   /// Probability analysis
   /// with the results of qualitative analysis.
   ///
-  /// @param[in] fta Fault tree analysis with results.
+  /// @param[in] fta  Fault tree analysis with results.
   explicit ProbabilityAnalysis(const FaultTreeAnalysis* fta);
 
   virtual ~ProbabilityAnalysis() = default;
@@ -79,8 +79,8 @@ class CutSetCalculator {
   /// whose members are in AND relationship with each other.
   /// This function assumes independence of each member.
   ///
-  /// @param[in] cut_set A cut set of signed indices of basic events.
-  /// @param[in] var_probs Probabilities of events mapped to a vector.
+  /// @param[in] cut_set  A cut set of signed indices of basic events.
+  /// @param[in] var_probs  Probabilities of events mapped to a vector.
   ///
   /// @returns The total probability of the set.
   ///
@@ -120,8 +120,8 @@ class RareEventCalculator : private CutSetCalculator {
   /// Calculates probabilities
   /// using the Rare-Event approximation.
   ///
-  /// @param[in] cut_sets A collection of sets of indices of basic events.
-  /// @param[in] var_probs Probabilities of events mapped to a vector.
+  /// @param[in] cut_sets  A collection of sets of indices of basic events.
+  /// @param[in] var_probs  Probabilities of events mapped to a vector.
   ///
   /// @returns The total probability with the rare-event approximation.
   ///
@@ -152,8 +152,8 @@ class McubCalculator : private CutSetCalculator {
   /// Calculates probabilities
   /// using the minimal cut set upper bound (MCUB) approximation.
   ///
-  /// @param[in] cut_sets A collection of sets of indices of basic events.
-  /// @param[in] var_probs Probabilities of events mapped to a vector.
+  /// @param[in] cut_sets  A collection of sets of indices of basic events.
+  /// @param[in] var_probs  Probabilities of events mapped to a vector.
   ///
   /// @returns The total probability with the MCUB approximation.
   template<typename CutSet>
@@ -175,7 +175,7 @@ class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
  public:
   /// Constructs probability analyzer from a fault tree analyzer.
   ///
-  /// @param[in] fta Finished fault tree analyzer with results.
+  /// @param[in] fta  Finished fault tree analyzer with results.
   template<typename Algorithm>
   explicit ProbabilityAnalyzerBase(const FaultTreeAnalyzer<Algorithm>* fta)
       : ProbabilityAnalysis::ProbabilityAnalysis(fta) {
@@ -211,15 +211,15 @@ class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
 /// Fault-tree-analysis-aware probability analyzer.
 /// Probability analyzer provides the main engine for probability analysis.
 ///
-/// @tparam Algorithm Fault tree analysis algorithm.
-/// @tparam Calculator Quantitative analysis calculator.
+/// @tparam Algorithm  Fault tree analysis algorithm.
+/// @tparam Calculator  Quantitative analysis calculator.
 template<typename Algorithm, typename Calculator>
 class ProbabilityAnalyzer : public ProbabilityAnalyzerBase {
  public:
   /// Constructs probability analyzer from a fault tree analyzer
   /// with the same algorithm.
   ///
-  /// @param[in] fta Finished fault tree analyzer with results.
+  /// @param[in] fta  Finished fault tree analyzer with results.
   explicit ProbabilityAnalyzer(const FaultTreeAnalyzer<Algorithm>* fta)
       : ProbabilityAnalyzerBase::ProbabilityAnalyzerBase(fta),
         fta_(fta) {
@@ -247,14 +247,14 @@ class ProbabilityAnalyzer : public ProbabilityAnalyzerBase {
 /// Specialization of probability analyzer with Binary Decision Diagrams.
 /// The quantitative analysis is done with BDD.
 ///
-/// @tparam Algorithm Fault tree analysis algorithm.
+/// @tparam Algorithm  Fault tree analysis algorithm.
 template<typename Algorithm>
 class ProbabilityAnalyzer<Algorithm, Bdd> : public ProbabilityAnalyzerBase {
  public:
   /// Constructs probability analyzer from a fault tree analyzer
   /// with the same algorithm.
   ///
-  /// @param[in] fta Finished fault tree analyzer with results.
+  /// @param[in] fta  Finished fault tree analyzer with results.
   explicit ProbabilityAnalyzer(const FaultTreeAnalyzer<Algorithm>* fta);
 
   /// Calculates the total probability.
@@ -277,8 +277,8 @@ class ProbabilityAnalyzer<Algorithm, Bdd> : public ProbabilityAnalyzerBase {
   /// Calculates exact probability
   /// of a function graph represented by its root BDD vertex.
   ///
-  /// @param[in] vertex The root vertex of a function graph.
-  /// @param[in] mark A flag to mark traversed vertices.
+  /// @param[in] vertex  The root vertex of a function graph.
+  /// @param[in] mark  A flag to mark traversed vertices.
   ///
   /// @returns Probability value.
   ///

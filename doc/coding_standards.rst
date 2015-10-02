@@ -267,8 +267,12 @@ Core Code Documentation Style
     #. todo
 
 - Leave one Doxygen blank line between sections
-- Always specify input and output parameters with @param[in,out]
-- In-code TODOs with Doxygen '/// @todo'
+- Always specify input and output parameters with
+  ``@param[in,out] arg  Description...``
+
+    * Two spaces between parameter and its description
+
+- In-code TODOs with Doxygen '``/// @todo``'
   so that Doxygen picks them up.
 
 

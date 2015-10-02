@@ -51,8 +51,8 @@ class RiskAnalysis : public Analysis {
 
   /// Constructs RiskAnalysis with a valid model and analysis settings.
   ///
-  /// @param[in] model An analysis model with fault trees, events, etc.
-  /// @param[in] settings Analysis settings for the given model.
+  /// @param[in] model  An analysis model with fault trees, events, etc.
+  /// @param[in] settings  Analysis settings for the given model.
   RiskAnalysis(const ModelPtr& model, const Settings& settings);
 
   /// Provides graphing instructions
@@ -79,7 +79,7 @@ class RiskAnalysis : public Analysis {
   /// into XML formatted stream.
   /// The report is appended to the stream.
   ///
-  /// @param[out] out The output stream.
+  /// @param[out] out  The output stream.
   ///
   /// @note This function must be called only after Analyze() function.
   void Report(std::ostream& out);
@@ -88,7 +88,7 @@ class RiskAnalysis : public Analysis {
   /// to a specified output destination.
   /// This function overwrites the file.
   ///
-  /// @param[out] output The output destination.
+  /// @param[out] output  The output destination.
   ///
   /// @throws IOError The output file is not accessible.
   ///
@@ -133,27 +133,27 @@ class RiskAnalysis : public Analysis {
   /// Runs all possible analysis on a given target.
   /// Analysis types are deduced from the settings.
   ///
-  /// @param[in] name Identificator for analyses.
-  /// @param[in] target Analysis target.
+  /// @param[in] name  Identificator for analyses.
+  /// @param[in] target  Analysis target.
   void RunAnalysis(const std::string& name, const GatePtr& target) noexcept;
 
   /// Defines and runs Qualitative analysis on the target.
   /// Calls the Quantitative analysis if requested in settings.
   ///
-  /// @tparam Algorithm Qualitative analysis algorithm.
+  /// @tparam Algorithm  Qualitative analysis algorithm.
   ///
-  /// @param[in] name Identificator for analyses.
-  /// @param[in] target Analysis target.
+  /// @param[in] name  Identificator for analyses.
+  /// @param[in] target  Analysis target.
   template<typename Algorithm>
   void RunAnalysis(const std::string& name, const GatePtr& target) noexcept;
 
   /// Defines and runs Quantitative analysis on the target.
   ///
-  /// @tparam Algorithm Qualitative analysis algorithm.
-  /// @tparam Calculator Quantitative analysis algorithm.
+  /// @tparam Algorithm  Qualitative analysis algorithm.
+  /// @tparam Calculator  Quantitative analysis algorithm.
   ///
-  /// @param[in] name Identificator for analyses.
-  /// @param[in] fta The result of Qualitative analysis.
+  /// @param[in] name  Identificator for analyses.
+  /// @param[in] fta  The result of Qualitative analysis.
   template<typename Algorithm, typename Calculator>
   void RunAnalysis(const std::string& name,
                    const FaultTreeAnalyzer<Algorithm>* fta) noexcept;

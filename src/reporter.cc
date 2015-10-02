@@ -45,7 +45,7 @@ namespace {
 
 /// A generic function to convert numbers to string.
 ///
-/// @param[in] num The number to be converted.
+/// @param[in] num  The number to be converted.
 ///
 /// @returns Formatted string that represents the number.
 template<class T>
@@ -57,8 +57,8 @@ inline std::string ToString(T num) {
 
 /// A helper function to convert a floating point number to string.
 ///
-/// @param[in] num The number to be converted.
-/// @param[in] precision Decimal precision for reporting.
+/// @param[in] num  The number to be converted.
+/// @param[in] precision  Decimal precision for reporting.
 ///
 /// @returns Formatted string that represents the floating point number.
 inline std::string ToString(double num, int precision) {

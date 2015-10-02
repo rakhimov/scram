@@ -34,7 +34,7 @@ class Settings {
 
   /// Sets the limit order for minimal cut sets.
   ///
-  /// @param[in] order A natural number for the limit order.
+  /// @param[in] order  A natural number for the limit order.
   ///
   /// @returns Reference to this object.
   ///
@@ -47,7 +47,7 @@ class Settings {
   /// Sets the cut-off probability for minimal cut sets to be considered
   /// for analysis.
   ///
-  /// @param[in] prob The minimum probability for minimal cut sets.
+  /// @param[in] prob  The minimum probability for minimal cut sets.
   ///
   /// @returns Reference to this object.
   ///
@@ -61,7 +61,7 @@ class Settings {
 
   /// Sets the approximation for quantitative analysis.
   ///
-  /// @param[in] approx Approximation to be applied.
+  /// @param[in] approx  Approximation to be applied.
   ///
   /// @returns Reference to this object.
   ///
@@ -73,7 +73,7 @@ class Settings {
 
   /// Sets the number of trials for Monte Carlo simulations.
   ///
-  /// @param[in] n A natural number for the number of trials.
+  /// @param[in] n  A natural number for the number of trials.
   ///
   /// @returns Reference to this object.
   ///
@@ -85,7 +85,7 @@ class Settings {
 
   /// Sets the number of quantiles for distributions.
   ///
-  /// @param[in] n A natural number for the number of quantiles.
+  /// @param[in] n  A natural number for the number of quantiles.
   ///
   /// @returns Reference to this object.
   ///
@@ -97,7 +97,7 @@ class Settings {
 
   /// Sets the number of bins for histograms.
   ///
-  /// @param[in] n A natural number for the number of bins.
+  /// @param[in] n  A natural number for the number of bins.
   ///
   /// @returns Reference to this object.
   ///
@@ -109,7 +109,7 @@ class Settings {
 
   /// Sets the seed for the pseudo-random number generator.
   ///
-  /// @param[in] s A positive number.
+  /// @param[in] s  A positive number.
   ///
   /// @returns Reference to this object.
   ///
@@ -121,7 +121,7 @@ class Settings {
 
   /// Sets the system mission time.
   ///
-  /// @param[in] time A positive number in hours by default.
+  /// @param[in] time  A positive number in hours by default.
   ///
   /// @returns Reference to this object.
   Settings& mission_time(double time);
@@ -134,7 +134,7 @@ class Settings {
   /// it won't be possible to turn off probability analysis
   /// before the parent analysis.
   ///
-  /// @param[in] flag True or false for turning on or off the analysis.
+  /// @param[in] flag  True or false for turning on or off the analysis.
   ///
   /// @returns Reference to this object.
   Settings& probability_analysis(bool flag) {
@@ -151,7 +151,7 @@ class Settings {
   /// together with probability analysis.
   /// Appropriate flags are turned on.
   ///
-  /// @param[in] flag True or false for turning on or off the analysis.
+  /// @param[in] flag  True or false for turning on or off the analysis.
   ///
   /// @returns Reference to this object.
   Settings& importance_analysis(bool flag) {
@@ -167,7 +167,7 @@ class Settings {
   /// Uncertainty analysis implies probability analysis,
   /// so the probability analysis is turned on implicitly.
   ///
-  /// @param[in] flag True or false for turning on or off the analysis.
+  /// @param[in] flag  True or false for turning on or off the analysis.
   ///
   /// @returns Reference to this object.
   Settings& uncertainty_analysis(bool flag) {
@@ -181,7 +181,7 @@ class Settings {
 
   /// Sets the flag for CCF analysis.
   ///
-  /// @param[in] flag True or false for turning on or off the analysis.
+  /// @param[in] flag  True or false for turning on or off the analysis.
   ///
   /// @returns Reference to this object.
   Settings& ccf_analysis(bool flag) {

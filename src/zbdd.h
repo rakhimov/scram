@@ -39,7 +39,7 @@ class SetNode : public NonTerminal {
 
   /// Recovers a shared pointer to SetNode from a pointer to Vertex.
   ///
-  /// @param[in] vertex Pointer to a Vertex known to be a SetNode.
+  /// @param[in] vertex  Pointer to a Vertex known to be a SetNode.
   ///
   /// @return Casted pointer to SetNode.
   static std::shared_ptr<SetNode> Ptr(const std::shared_ptr<Vertex>& vertex) {
@@ -57,7 +57,7 @@ class Zbdd {
   /// with the representation of a Boolean graph
   /// as a Reduced Ordered BDD.
   ///
-  /// @param[in] bdd ROBDD with the ITE vertices.
+  /// @param[in] bdd  ROBDD with the ITE vertices.
   ///
   /// @note Only coherent (monotonic) graphs are accepted.
   /// @note BDD is assumed to have attributed edges with only one terminal 1.
@@ -77,15 +77,15 @@ class Zbdd {
 
   /// Converts BDD graph into ZBDD graph.
   ///
-  /// @param[in] vertex Vertex of the ROBDD graph.
-  /// @param[in] complement Interpretation of the vertex as complement.
+  /// @param[in] vertex  Vertex of the ROBDD graph.
+  /// @param[in] complement  Interpretation of the vertex as complement.
   ///
   /// @returns Pointer to the root vertex of the ZBDD graph.
   VertexPtr ConvertBdd(const VertexPtr& vertex, bool complement) noexcept;
 
   /// Removes subsets in ZBDD.
   ///
-  /// @param[in] vertex The variable node in the set.
+  /// @param[in] vertex  The variable node in the set.
   ///
   /// @returns Processed vertex.
   ///
@@ -96,8 +96,8 @@ class Zbdd {
   /// Subsume operation removes
   /// paths that exist in Low branch from High branch.
   ///
-  /// @param[in] high True/then/high branch of a variable.
-  /// @param[in] low False/else/low branch of a variable.
+  /// @param[in] high  True/then/high branch of a variable.
+  /// @param[in] low  False/else/low branch of a variable.
   ///
   /// @returns Minimized high branch for a variable.
   VertexPtr Subsume(const VertexPtr& high, const VertexPtr& low) noexcept;
@@ -105,11 +105,11 @@ class Zbdd {
   /// Traverses the reduced ZBDD graph to generate cut sets.
   /// The generated cut sets are stored in the main container.
   ///
-  /// @param[in] vertex The node in traversal.
-  /// @param[in, out] path Current path of high branches.
-  ///                      This container may get modified drastically
-  ///                      upon passing to the main cut sets container.
-  /// @param[in, out] cut_sets A set of cut sets generated in this graph.
+  /// @param[in] vertex  The node in traversal.
+  /// @param[in, out] path  Current path of high branches.
+  ///                       This container may get modified drastically
+  ///                       upon passing to the main cut sets container.
+  /// @param[in, out] cut_sets  A set of cut sets generated in this graph.
   void GenerateCutSets(const VertexPtr& vertex, std::vector<int>* path,
                        std::vector<CutSet>* cut_sets) noexcept;
 

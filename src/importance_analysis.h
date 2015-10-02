@@ -57,7 +57,7 @@ class ImportanceAnalysis : public Analysis {
   /// on the fault tree represented by
   /// its probability analysis.
   ///
-  /// @param[in] prob_analysis Completed probability analysis.
+  /// @param[in] prob_analysis  Completed probability analysis.
   explicit ImportanceAnalysis(const ProbabilityAnalysis* prob_analysis);
 
   virtual ~ImportanceAnalysis() = default;
@@ -87,8 +87,8 @@ class ImportanceAnalysis : public Analysis {
   /// Gathers all events present in cut sets.
   /// Only this events can have importance factors.
   ///
-  /// @param[in] graph Boolean graph with basic event indices and pointers.
-  /// @param[in] cut_sets Cut sets with basic event indices.
+  /// @param[in] graph  Boolean graph with basic event indices and pointers.
+  /// @param[in] cut_sets  Cut sets with basic event indices.
   ///
   /// @returns A unique collection of importance basic events.
   template<typename CutSet>
@@ -105,7 +105,7 @@ class ImportanceAnalysis : public Analysis {
 
   /// Calculates Marginal Importance Factor.
   ///
-  /// @param[in] index Positive index of an event.
+  /// @param[in] index  Positive index of an event.
   ///
   /// @returns Calculated value for MIF.
   virtual double CalculateMif(int index) noexcept = 0;
@@ -148,7 +148,7 @@ class ImportanceAnalyzer : public ImportanceAnalysis {
   /// Probability analyzer facilities are used
   /// to calculate the total and conditional probabilities for factors.
   ///
-  /// @param[in] prob_analyzer Instantiated probability analyzer.
+  /// @param[in] prob_analyzer  Instantiated probability analyzer.
   ///
   /// @pre Probability analyzer can work with modified probability values.
   ///
@@ -204,7 +204,7 @@ class ImportanceAnalyzer<Algorithm, Bdd> : public ImportanceAnalysis {
   /// Probability analyzer facilities are used
   /// to calculate the total and conditional probabilities for factors.
   ///
-  /// @param[in] prob_analyzer Instantiated probability analyzer.
+  /// @param[in] prob_analyzer  Instantiated probability analyzer.
   explicit ImportanceAnalyzer(
       ProbabilityAnalyzer<Algorithm, Bdd>* prob_analyzer)
       : ImportanceAnalysis::ImportanceAnalysis(prob_analyzer),
@@ -227,9 +227,9 @@ class ImportanceAnalyzer<Algorithm, Bdd> : public ImportanceAnalysis {
 
   /// Calculates Marginal Importance Factor of a variable.
   ///
-  /// @param[in] vertex The root vertex of a function graph.
-  /// @param[in] order The identifying order of the variable.
-  /// @param[in] mark A flag to mark traversed vertices.
+  /// @param[in] vertex  The root vertex of a function graph.
+  /// @param[in] order  The identifying order of the variable.
+  /// @param[in] mark  A flag to mark traversed vertices.
   ///
   /// @note Probability factor fields are used to save results.
   /// @note The graph needs cleaning its marks after this function
@@ -238,7 +238,7 @@ class ImportanceAnalyzer<Algorithm, Bdd> : public ImportanceAnalysis {
 
   /// Retrieves memorized probability values for BDD function graphs.
   ///
-  /// @param[in] vertex Vertex with calculated probabilities.
+  /// @param[in] vertex  Vertex with calculated probabilities.
   ///
   /// @returns Saved probability value of the vertex.
   double RetrieveProbability(const VertexPtr& vertex) noexcept;

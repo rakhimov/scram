@@ -50,7 +50,7 @@ class FaultTreeDescriptor {
 
   /// Gathers all information about a fault tree with a root gate.
   ///
-  /// @param[in] root The root gate of a fault tree.
+  /// @param[in] root  The root gate of a fault tree.
   ///
   /// @pre Gate marks must be clear.
   ///
@@ -112,12 +112,12 @@ class FaultTreeDescriptor {
   /// Gates are marked upon visit.
   /// The mark is checked to prevent revisiting.
   ///
-  /// @param[in] gate The gate to start traversal from.
+  /// @param[in] gate  The gate to start traversal from.
   void GatherEvents(const GatePtr& gate) noexcept;
 
   /// Traverses formulas recursively to find all events.
   ///
-  /// @param[in] formula The formula to get events from.
+  /// @param[in] formula  The formula to get events from.
   void GatherEvents(const FormulaPtr& formula) noexcept;
 
   /// Clears marks from gates that were traversed.
@@ -170,8 +170,8 @@ class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
   /// The passed fault tree must be pre-validated without cycles,
   /// and its events must be fully initialized.
   ///
-  /// @param[in] root The top event of the fault tree to analyze.
-  /// @param[in] settings Analysis settings for all calculations.
+  /// @param[in] root  The top event of the fault tree to analyze.
+  /// @param[in] settings  Analysis settings for all calculations.
   ///
   /// @note It is assumed that analysis is done only once.
   ///
@@ -234,8 +234,8 @@ class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
   /// This function also collects basic events in minimal cut sets
   /// and calculates their probabilities.
   ///
-  /// @param[in] imcs Min cut sets with indices of events.
-  /// @param[in] ft Indexed fault tree with basic event indices and pointers.
+  /// @param[in] imcs  Min cut sets with indices of events.
+  /// @param[in] ft  Indexed fault tree with basic event indices and pointers.
   ///
   /// @todo Probability calculation feels more like a hack than design.
   void SetsToString(const std::vector<Set>& imcs,

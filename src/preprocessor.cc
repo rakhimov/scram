@@ -911,10 +911,10 @@ namespace {
 
 /// Detects overlap in ranges.
 ///
-/// @param[in] a_min The lower boundary of the first range.
-/// @param[in] a_max The upper boundary of the first range.
-/// @param[in] b_min The lower boundary of the second range.
-/// @param[in] b_max The upper boundary of the second range.
+/// @param[in] a_min  The lower boundary of the first range.
+/// @param[in] a_max  The upper boundary of the first range.
+/// @param[in] b_min  The lower boundary of the second range.
+/// @param[in] b_max  The upper boundary of the second range.
 ///
 /// @returns true if there's overlap in the ranges.
 bool DetectOverlap(int a_min, int a_max, int b_min, int b_max) noexcept {

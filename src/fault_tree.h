@@ -55,9 +55,9 @@ class Component : public Element, public Role {
   /// Component name is not meant to be public;
   /// however, it must be unique within the parent fault tree or component.
   ///
-  /// @param[in] name The name identificator for the component.
-  /// @param[in] base_path The series of containers to get this container.
-  /// @param[in] is_public A flag to define public or private role for members.
+  /// @param[in] name  The name identificator for the component.
+  /// @param[in] base_path  The series of containers to get this container.
+  /// @param[in] is_public  A flag to define public or private role for members.
   explicit Component(const std::string& name, const std::string& base_path = "",
                      bool is_public = true);
 
@@ -107,35 +107,35 @@ class Component : public Element, public Role {
 
   /// Adds a gate into this component container.
   ///
-  /// @param[in] gate The gate to be added to this tree.
+  /// @param[in] gate  The gate to be added to this tree.
   ///
   /// @throws ValidationError The event is already in this container.
   void AddGate(const GatePtr& gate);
 
   /// Adds a basic event into this component container.
   ///
-  /// @param[in] basic_event The basic event to be added to this tree.
+  /// @param[in] basic_event  The basic event to be added to this tree.
   ///
   /// @throws ValidationError The event is already in this container.
   void AddBasicEvent(const BasicEventPtr& basic_event);
 
   /// Adds a house event into this component container.
   ///
-  /// @param[in] house_event The house event to be added to this tree.
+  /// @param[in] house_event  The house event to be added to this tree.
   ///
   /// @throws ValidationError The event is already in this container.
   void AddHouseEvent(const HouseEventPtr& house_event);
 
   /// Adds a parameter into this component container.
   ///
-  /// @param[in] parameter The parameter to be added to this tree.
+  /// @param[in] parameter  The parameter to be added to this tree.
   ///
   /// @throws ValidationError The parameter is already in this container.
   void AddParameter(const ParameterPtr& parameter);
 
   /// Adds a CCF group and its members into this component container.
   ///
-  /// @param[in] ccf_group The CCF group to be added to this container.
+  /// @param[in] ccf_group  The CCF group to be added to this container.
   ///
   /// @throws ValidationError Duplicate CCF groups
   ///                         or duplicate basic event members.
@@ -145,7 +145,7 @@ class Component : public Element, public Role {
   /// Components are unique.
   /// The ownership is transfered to this component only.
   ///
-  /// @param[in] component The CCF group to be added to this container.
+  /// @param[in] component  The CCF group to be added to this container.
   ///
   /// @throws ValidationError The component is already in this container.
   void AddComponent(ComponentPtr component);
@@ -154,7 +154,7 @@ class Component : public Element, public Role {
   /// Recursively traverses components
   /// to gather gates relevant to the whole component.
   ///
-  /// @param[out] gates Gates belonging to this component
+  /// @param[out] gates  Gates belonging to this component
   ///                   and its subcomponents.
   void GatherGates(std::unordered_set<GatePtr>* gates);
 
@@ -192,7 +192,7 @@ class FaultTree : public Component {
   /// The main constructor of the Fault Tree.
   /// Fault trees are assumed to be public and belong to the root model.
   ///
-  /// @param[in] name The name identificator of this fault tree.
+  /// @param[in] name  The name identificator of this fault tree.
   explicit FaultTree(const std::string& name);
 
   /// @returns The collected top events of this fault tree.
@@ -211,15 +211,15 @@ class FaultTree : public Component {
   /// Recursively marks descendant gates as "non-top".
   /// These gates belong to this fault tree only.
   ///
-  /// @param[in] gate The ancestor gate.
-  /// @param[in] gates Gates belonging to the whole fault tree with components.
+  /// @param[in] gate  The ancestor gate.
+  /// @param[in] gates  Gates belonging to the whole fault tree with components.
   void MarkNonTopGates(const GatePtr& gate,
                        const std::unordered_set<GatePtr>& gates);
 
   /// Recursively marks descendant gates in formulas as "non-top"
   ///
-  /// @param[in] formula The formula of a gate or another formula.
-  /// @param[in] gates Gates belonging to the whole fault tree with components.
+  /// @param[in] formula  The formula of a gate or another formula.
+  /// @param[in] gates  Gates belonging to the whole fault tree with components.
   void MarkNonTopGates(const FormulaPtr& formula,
                        const std::unordered_set<GatePtr>& gates);
 

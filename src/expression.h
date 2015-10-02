@@ -53,7 +53,7 @@ class Expression {
   /// Constructor for use by derived classes
   /// to register their arguments.
   ///
-  /// @param[in] args Arguments of this expression.
+  /// @param[in] args  Arguments of this expression.
   explicit Expression(const std::vector<ExpressionPtr>& args);
 
   Expression(const Expression&) = delete;
@@ -155,16 +155,16 @@ class Parameter : public Expression, public Element, public Role {
  public:
   /// Creates a parameter as a variable for future references.
   ///
-  /// @param[in] name The name of this variable (Case sensitive).
-  /// @param[in] base_path The series of containers to get this parameter.
-  /// @param[in] is_public Whether or not the parameter is public.
+  /// @param[in] name  The name of this variable (Case sensitive).
+  /// @param[in] base_path  The series of containers to get this parameter.
+  /// @param[in] is_public  Whether or not the parameter is public.
   explicit Parameter(const std::string& name,
                      const std::string& base_path = "",
                      bool is_public = true);
 
   /// Sets the expression of this parameter.
   ///
-  /// @param[in] expression The expression to describe this parameter.
+  /// @param[in] expression  The expression to describe this parameter.
   void expression(const ExpressionPtr& expression) {
     expression_ = expression;
     Expression::args_.clear();
@@ -182,7 +182,7 @@ class Parameter : public Expression, public Element, public Role {
 
   /// Sets the unit of this parameter.
   ///
-  /// @param[in] unit A valid unit.
+  /// @param[in] unit  A valid unit.
   void unit(const Units& unit) { unit_ = unit; }
 
   /// @returns The usage state of this parameter.
@@ -190,7 +190,7 @@ class Parameter : public Expression, public Element, public Role {
 
   /// Sets the usage state for this parameter.
   ///
-  /// @param[in] state The usage state for this parameter.
+  /// @param[in] state  The usage state for this parameter.
   void unused(bool state) { unused_ = state; }
 
   double Mean() noexcept { return expression_->Mean(); }
@@ -216,7 +216,7 @@ class Parameter : public Expression, public Element, public Role {
 
   /// Sets the mark for this node.
   ///
-  /// @param[in] label The specific label for the node.
+  /// @param[in] label  The specific label for the node.
   void mark(const std::string& label) { mark_ = label; }
 
  private:
@@ -237,7 +237,7 @@ class MissionTime : public Expression {
   /// Sets the mission time.
   /// This function is expected to be used only once.
   ///
-  /// @param[in] time The mission time.
+  /// @param[in] time  The mission time.
   void mission_time(double time) {
     assert(time >= 0);
     mission_time_ = time;
@@ -248,7 +248,7 @@ class MissionTime : public Expression {
 
   /// Sets the unit of this parameter.
   ///
-  /// @param[in] unit A valid unit.
+  /// @param[in] unit  A valid unit.
   void unit(const Units& unit) { unit_ = unit; }
 
   double Mean() noexcept { return mission_time_; }
@@ -266,17 +266,17 @@ class ConstantExpression : public Expression {
  public:
   /// Constructor for float values.
   ///
-  /// @param[in] val Float numerical value.
+  /// @param[in] val  Float numerical value.
   explicit ConstantExpression(double val) : value_(val) {}
 
   /// Constructor for integer values.
   ///
-  /// @param[in] val Integer numerical value.
+  /// @param[in] val  Integer numerical value.
   explicit ConstantExpression(int val) : value_(val) {}
 
   /// Constructor for boolean values.
   ///
-  /// @param[in] val true for 1 and false for 0 value of this constant.
+  /// @param[in] val  true for 1 and false for 0 value of this constant.
   explicit ConstantExpression(bool val) : value_(val ? 1 : 0) {}
 
   double Mean() noexcept { return value_; }
@@ -294,8 +294,8 @@ class ExponentialExpression : public Expression {
  public:
   /// Constructor for exponential expression with two arguments.
   ///
-  /// @param[in] lambda Hourly rate of failure.
-  /// @param[in] t Mission time in hours.
+  /// @param[in] lambda  Hourly rate of failure.
+  /// @param[in] t  Mission time in hours.
   ExponentialExpression(const ExpressionPtr& lambda, const ExpressionPtr& t)
       : Expression::Expression({lambda, t}),
         lambda_(lambda),
@@ -330,10 +330,10 @@ class GlmExpression : public Expression {
  public:
   /// Constructor for GLM or exponential expression with four arguments.
   ///
-  /// @param[in] gamma Probability of failure on demand.
-  /// @param[in] lambda Hourly rate of failure.
-  /// @param[in] mu Hourly repairing rate.
-  /// @param[in] t Mission time in hours.
+  /// @param[in] gamma  Probability of failure on demand.
+  /// @param[in] lambda  Hourly rate of failure.
+  /// @param[in] mu  Hourly repairing rate.
+  /// @param[in] t  Mission time in hours.
   GlmExpression(const ExpressionPtr& gamma, const ExpressionPtr& lambda,
                 const ExpressionPtr& mu, const ExpressionPtr& t)
       : Expression::Expression({gamma, lambda, mu, t}),
@@ -375,10 +375,10 @@ class WeibullExpression : public Expression {
  public:
   /// Constructor for Weibull distribution.
   ///
-  /// @param[in] alpha Scale parameter.
-  /// @param[in] beta Shape parameter.
-  /// @param[in] t0 Time shift.
-  /// @param[in] time Mission time.
+  /// @param[in] alpha  Scale parameter.
+  /// @param[in] beta  Shape parameter.
+  /// @param[in] t0  Time shift.
+  /// @param[in] time  Mission time.
   WeibullExpression(const ExpressionPtr& alpha, const ExpressionPtr& beta,
                     const ExpressionPtr& t0, const ExpressionPtr& time)
       : Expression::Expression({alpha, beta, t0, time}),
@@ -431,8 +431,8 @@ class UniformDeviate : public RandomDeviate {
  public:
   /// Setup for uniform distribution.
   ///
-  /// @param[in] min Minimum value of the distribution.
-  /// @param[in] max Maximum value of the distribution.
+  /// @param[in] min  Minimum value of the distribution.
+  /// @param[in] max  Maximum value of the distribution.
   UniformDeviate(const ExpressionPtr& min, const ExpressionPtr& max)
       : RandomDeviate::RandomDeviate({min, max}),
         min_(min),
@@ -459,8 +459,8 @@ class NormalDeviate : public RandomDeviate {
  public:
   /// Setup for normal distribution.
   ///
-  /// @param[in] mean The mean of the distribution.
-  /// @param[in] sigma The standard deviation of the distribution.
+  /// @param[in] mean  The mean of the distribution.
+  /// @param[in] sigma  The standard deviation of the distribution.
   NormalDeviate(const ExpressionPtr& mean, const ExpressionPtr& sigma)
       : RandomDeviate::RandomDeviate({mean, sigma}),
         mean_(mean),
@@ -494,15 +494,15 @@ class LogNormalDeviate : public RandomDeviate {
  public:
   /// Setup for log-normal distribution.
   ///
-  /// @param[in] mean The mean of the log-normal distribution
-  ///                 not the mean of underlying normal distribution,
-  ///                 which is parameter mu.
-  ///                 mu is the location parameter,
-  ///                 sigma is the scale factor.
-  ///                 E(x) = exp(mu + sigma^2 / 2)
-  /// @param[in] ef The error factor of the log-normal distribution.
-  ///               EF = exp(z * sigma)
-  /// @param[in] level The confidence level.
+  /// @param[in] mean  The mean of the log-normal distribution
+  ///                  not the mean of underlying normal distribution,
+  ///                  which is parameter mu.
+  ///                  mu is the location parameter,
+  ///                  sigma is the scale factor.
+  ///                  E(x) = exp(mu + sigma^2 / 2)
+  /// @param[in] ef  The error factor of the log-normal distribution.
+  ///                EF = exp(z * sigma)
+  /// @param[in] level  The confidence level.
   LogNormalDeviate(const ExpressionPtr& mean, const ExpressionPtr& ef,
                    const ExpressionPtr& level)
       : RandomDeviate::RandomDeviate({mean, ef, level}),
@@ -542,8 +542,8 @@ class GammaDeviate : public RandomDeviate {
  public:
   /// Setup for Gamma distribution.
   ///
-  /// @param[in] k Shape parameter of Gamma distribution.
-  /// @param[in] theta Scale parameter of Gamma distribution.
+  /// @param[in] k  Shape parameter of Gamma distribution.
+  /// @param[in] theta  Scale parameter of Gamma distribution.
   GammaDeviate(const ExpressionPtr& k, const ExpressionPtr& theta)
       : RandomDeviate::RandomDeviate({k, theta}),
         k_(k),
@@ -575,8 +575,8 @@ class BetaDeviate : public RandomDeviate {
  public:
   /// Setup for Beta distribution.
   ///
-  /// @param[in] alpha Alpha shape parameter of Gamma distribution.
-  /// @param[in] beta Beta shape parameter of Gamma distribution.
+  /// @param[in] alpha  Alpha shape parameter of Gamma distribution.
+  /// @param[in] beta  Beta shape parameter of Gamma distribution.
   BetaDeviate(const ExpressionPtr& alpha, const ExpressionPtr& beta)
       : RandomDeviate::RandomDeviate({alpha, beta}),
         alpha_(alpha),
@@ -609,11 +609,11 @@ class Histogram : public RandomDeviate {
  public:
   /// Histogram distribution setup.
   ///
-  /// @param[in] boundaries The upper bounds of intervals.
-  /// @param[in] weights The positive weights of intervals
-  ///                    restricted by the upper boundaries.
-  ///                    Therefore, the number of weights must be
-  ///                    equal to the number of boundaries.
+  /// @param[in] boundaries  The upper bounds of intervals.
+  /// @param[in] weights  The positive weights of intervals
+  ///                     restricted by the upper boundaries.
+  ///                     Therefore, the number of weights must be
+  ///                     equal to the number of boundaries.
   ///
   /// @throws InvalidArgument The boundaries container size is not equal to
   ///                         weights container size.
@@ -645,15 +645,15 @@ class Histogram : public RandomDeviate {
  private:
   /// Checks if mean values of expressions are strictly increasing.
   ///
-  /// @param[in] boundaries The upper bounds of intervals.
+  /// @param[in] boundaries  The upper bounds of intervals.
   ///
   /// @throws InvalidArgument The mean values are not strictly increasing.
   void CheckBoundaries(const std::vector<ExpressionPtr>& boundaries);
 
   /// Checks if mean values of boundaries are non-negative.
   ///
-  /// @param[in] weights The positive weights of intervals restricted by
-  ///                    the upper boundaries.
+  /// @param[in] weights  The positive weights of intervals restricted by
+  ///                     the upper boundaries.
   ///
   /// @throws InvalidArgument The mean values are negative.
   void CheckWeights(const std::vector<ExpressionPtr>& weights);
@@ -672,7 +672,7 @@ class Neg : public Expression {
   /// Construct a new expression
   /// that negates a given argument expression.
   ///
-  /// @param[in] expression The expression to be negated.
+  /// @param[in] expression  The expression to be negated.
   explicit Neg(const ExpressionPtr& expression)
       : Expression::Expression({expression}),
         expression_(expression) {}

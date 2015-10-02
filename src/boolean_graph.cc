@@ -645,7 +645,7 @@ struct FormulaSig {
 
 /// Provides proper formatting clues for gate formulas.
 ///
-/// @param[in] gate The gate with the formula to be printed.
+/// @param[in] gate  The gate with the formula to be printed.
 ///
 /// @returns The beginning, operator, and end strings for the formula.
 const FormulaSig GetFormulaSig(const std::shared_ptr<const IGate>& gate) {
@@ -683,7 +683,7 @@ const FormulaSig GetFormulaSig(const std::shared_ptr<const IGate>& gate) {
 
 /// Provides special formatting for indexed gate names.
 ///
-/// @param[in] gate The gate which name must be created.
+/// @param[in] gate  The gate which name must be created.
 ///
 /// @returns The name of the gate with extra information about its state.
 const std::string GetName(const std::shared_ptr<const IGate>& gate) {
