@@ -60,7 +60,7 @@ bool DetectCycle(N* node, std::vector<std::string>* cycle) {
 }
 
 /// Helper function to check for cyclic references through connectors.
-/// Connecters may get market upon traversal.
+/// Connectors may get market upon traversal.
 ///
 /// @param[in,out] connector  Connector to nodes.
 /// @param[out] cycle  The cycle path if detected.

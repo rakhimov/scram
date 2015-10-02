@@ -644,8 +644,7 @@ class GateSet {
   /// Functor for hashing gates by their arguments.
   ///
   /// @note The hashing discards the logic of the gate.
-  struct Hash
-      : public std::unary_function<const IGatePtr, std::size_t> {
+  struct Hash : public std::unary_function<const IGatePtr, std::size_t> {
     /// Operator overload for hashing.
     ///
     /// @param[in] gate  The gate which hash must be calculated.

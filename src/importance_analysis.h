@@ -101,7 +101,7 @@ class ImportanceAnalysis : public Analysis {
   ///
   /// @returns Indices and pointers to the basic events.
   virtual std::vector<std::pair<int, BasicEventPtr>>
-      GatherImportantEvents() noexcept = 0;
+  GatherImportantEvents() noexcept = 0;
 
   /// Calculates Marginal Importance Factor.
   ///
