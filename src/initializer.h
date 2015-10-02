@@ -403,6 +403,9 @@ class Initializer {
 
   /// Container for defined expressions for later validation.
   std::vector<ExpressionPtr> expressions_;
+
+  /// Detection of non-coherent models.
+  bool coherent_;
 };
 
 }  // namespace scram
