@@ -22,6 +22,7 @@
 #include "zbdd.h"
 #include "fault_tree.h"
 #include "preprocessor.h"
+#include "settings.h"
 
 namespace scram {
 namespace test {
@@ -34,7 +35,7 @@ TEST_F(RiskAnalysisTest, ZbddTest) {
   BooleanGraph* graph = new BooleanGraph(top_gate);
   Preprocessor* prep = new CustomPreprocessor<Bdd>(graph);
   prep->Run();
-  Bdd* bdd = new Bdd(graph);
+  Bdd* bdd = new Bdd(graph, Settings());
   bdd->Analyze();
   EXPECT_EQ(4, bdd->cut_sets().size());
   delete graph;
@@ -51,7 +52,7 @@ TEST_F(RiskAnalysisTest, ZbddChinese) {
   BooleanGraph* graph = new BooleanGraph(top_gate);
   Preprocessor* prep = new CustomPreprocessor<Bdd>(graph);
   prep->Run();
-  Bdd* bdd = new Bdd(graph);
+  Bdd* bdd = new Bdd(graph, Settings());
   bdd->Analyze();
   EXPECT_EQ(392, bdd->cut_sets().size());
   delete graph;
@@ -68,7 +69,7 @@ TEST_F(RiskAnalysisTest, DISABLED_ZbddBaobab1) {
   BooleanGraph* graph = new BooleanGraph(top_gate);
   Preprocessor* prep = new CustomPreprocessor<Bdd>(graph);
   prep->Run();
-  Bdd* bdd = new Bdd(graph);
+  Bdd* bdd = new Bdd(graph, Settings());
   bdd->Analyze();
   EXPECT_EQ(392, bdd->cut_sets().size());
   delete graph;

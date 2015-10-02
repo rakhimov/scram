@@ -325,7 +325,7 @@ ProbabilityAnalyzer<Algorithm, Bdd>::ProbabilityAnalyzer(
 
   CLOCK(bdd_time);  // BDD based calculation time.
   LOG(DEBUG2) << "Creating BDD for ProbabilityAnalysis...";
-  bdd_graph_ = std::unique_ptr<Bdd>(new Bdd(bool_graph_.get()));
+  bdd_graph_ = std::unique_ptr<Bdd>(new Bdd(bool_graph_.get(), kSettings_));
   LOG(DEBUG2) << "BDD is created in " << DUR(bdd_time);
   analysis_time_ = DUR(main_time);
 }

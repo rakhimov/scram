@@ -32,7 +32,6 @@
 #include "boolean_graph.h"
 #include "event.h"
 #include "logger.h"
-#include "mocus.h"
 #include "preprocessor.h"
 #include "settings.h"
 

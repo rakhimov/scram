@@ -31,6 +31,7 @@
 #include <boost/functional/hash.hpp>
 
 #include "boolean_graph.h"
+#include "settings.h"
 
 namespace scram {
 
@@ -280,11 +281,13 @@ class Bdd {
   /// Constructor with the analysis target.
   /// Reduced Ordered BDD is produced from a Boolean graph.
   ///
-  /// @param[in] fault_tree  Preprocessed, normalized, and indexed fault tree.
+  /// @param[in] fault_tree  Preprocessed, partially normalized,
+  ///                        and indexed fault tree.
+  /// @param[in] settings  The analysis settings.
   ///
   /// @note The passed Boolean graph must already have variable ordering.
   /// @note BDD construction may take considerable time.
-  explicit Bdd(const BooleanGraph* fault_tree);
+  Bdd(const BooleanGraph* fault_tree, const Settings& /*settings*/);
 
   /// Deletes ZBDD if it is created.
   ///
