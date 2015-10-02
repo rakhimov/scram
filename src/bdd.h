@@ -302,6 +302,16 @@ class Bdd {
     return index_to_order_;
   }
 
+  /// Helper function to clear and set vertex marks.
+  ///
+  /// @param[in] mark Desired mark for BDD vertices.
+  ///
+  /// @note Marks will propagate to modules as well.
+  ///
+  /// @warning If the graph is discontinuously and partially marked,
+  ///          this function will not help with the mess.
+  void ClearMarks(bool mark) { Bdd::ClearMarks(root_.vertex, mark); }
+
  private:
   using NodePtr = std::shared_ptr<Node>;
   using VariablePtr = std::shared_ptr<Variable>;
@@ -431,6 +441,14 @@ class Bdd {
   Triplet GetSignature(Operator type,
                        const VertexPtr& arg_one, const VertexPtr& arg_two,
                        bool complement_one, bool complement_two) noexcept;
+
+  /// Clears marks of vertices in BDD graph.
+  ///
+  /// @param[in] vertex The starting root vertex of the graph.
+  /// @param[in] mark The desired mark for the vertices.
+  ///
+  /// @note Marks will propagate to modules as well.
+  void ClearMarks(const VertexPtr& vertex, bool mark) noexcept;
 
   const BooleanGraph* fault_tree_;  ///< The main fault tree.
   Function root_;  ///< The root function of this BDD.

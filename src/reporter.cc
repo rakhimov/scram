@@ -106,6 +106,16 @@ void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
 
   // Report the setup for probability analysis.
   if (settings.probability_analysis()) {
+    if (settings.approximation() == "rare-event") {
+      information->add_child("warning")->add_child_text(
+          " The rare event approximation may be inaccurate for analysis"
+          " if cut sets' probabilities exceed 0.1.");
+    } else if (settings.approximation() == "mcub") {
+      information->add_child("warning")->add_child_text(
+          " The MCUB approximation may not hold"
+          " if the fault tree is non-coherent"
+          " or there are many common events.");
+    }
     quant = information->add_child("calculated-quantity");
     quant->set_attribute("name", "Probability Analysis");
     quant->set_attribute("definition",
@@ -286,11 +296,10 @@ void Reporter::ReportImportance(std::string ft_name,
     importance->add_child("warning")->add_child_text(warning);
   }
 
-  for (const std::pair<std::string, ImportanceFactors>& entry :
-       importance_analysis.importance()) {
-    xmlpp::Element* element = Reporter::ReportBasicEvent(
-        importance_analysis.basic_events().at(entry.first),
-        importance);
+  for (const std::pair<BasicEventPtr, ImportanceFactors>& entry :
+       importance_analysis.important_events()) {
+    xmlpp::Element* element =
+        Reporter::ReportBasicEvent(entry.first, importance);
     const ImportanceFactors& factors = entry.second;
     element->set_attribute("MIF", ToString(factors.mif, 4));
     element->set_attribute("CIF", ToString(factors.cif, 4));

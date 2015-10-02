@@ -72,15 +72,6 @@ void RiskAnalysis::Analyze() noexcept {
       std::string name = base_path + target->name();  // Analysis ID.
 
       RiskAnalysis::RunAnalysis(name, target);
-
-      if (kSettings_.probability_analysis()) {
-        const FaultTreeAnalysisPtr& fta = fault_tree_analyses_.at(name);
-        if (kSettings_.importance_analysis()) {
-          ImportanceAnalysisPtr ia(new ImportanceAnalysis(target, kSettings_));
-          ia->Analyze(fta->min_cut_sets());
-          importance_analyses_.emplace(name, std::move(ia));
-        }
-      }
     }
   }
 }
@@ -114,11 +105,11 @@ void RiskAnalysis::RunAnalysis(
     const FaultTreeAnalyzer<Algorithm>* fta) noexcept {
   auto* pa = new ProbabilityAnalyzer<Algorithm, Calculator>(fta);
   pa->Analyze();
-  /* if (kSettings_.importance_analysis()) { */
-  /*   auto* ia = new ImportanceAnalysis(target, kSettings_); */
-  /*   ia->Analyze(fta->min_cut_sets()); */
-  /*   importance_analyses_.emplace(name, ImportanceAnalysisPtr(ia)); */
-  /* } */
+  if (kSettings_.importance_analysis()) {
+    auto* ia = new ImportanceAnalyzer<Algorithm, Calculator>(pa);
+    ia->Analyze();
+    importance_analyses_.emplace(name, ImportanceAnalysisPtr(ia));
+  }
   if (kSettings_.uncertainty_analysis()) {
     auto* ua = new UncertaintyAnalyzer<Algorithm, Calculator>(pa);
     ua->Analyze();

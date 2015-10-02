@@ -131,11 +131,30 @@ class RiskAnalysis : public Analysis {
   using GatePtr = std::shared_ptr<Gate>;
   using FaultTreePtr = std::unique_ptr<FaultTree>;
 
+  /// Runs all possible analysis on a given target.
+  /// Analysis types are deduced from the settings.
+  ///
+  /// @param[in] name Identificator for analyses.
+  /// @param[in] target Analysis target.
   void RunAnalysis(const std::string& name, const GatePtr& target) noexcept;
 
+  /// Defines and runs Qualitative analysis on the target.
+  /// Calls the Quantitative analysis if requested in settings.
+  ///
+  /// @tparam Algorithm Qualitative analysis algorithm.
+  ///
+  /// @param[in] name Identificator for analyses.
+  /// @param[in] target Analysis target.
   template<typename Algorithm>
   void RunAnalysis(const std::string& name, const GatePtr& target) noexcept;
 
+  /// Defines and runs Quantitative analysis on the target.
+  ///
+  /// @tparam Algorithm Qualitative analysis algorithm.
+  /// @tparam Calculator Quantitative analysis algorithm.
+  ///
+  /// @param[in] name Identificator for analyses.
+  /// @param[in] fta The result of Qualitative analysis.
   template<typename Algorithm, typename Calculator>
   void RunAnalysis(const std::string& name,
                    const FaultTreeAnalyzer<Algorithm>* fta) noexcept;

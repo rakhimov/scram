@@ -75,87 +75,14 @@ class ProbabilityAnalysis : public Analysis {
   }
 
  protected:
-  using CutSet = std::vector<int>;  ///< Unique positive or negative literals.
-
-  /// Assigns an index to each basic event,
-  /// and then populates with these indices
-  /// new databases and basic-to-integer converting maps.
-  /// The previous data are lost.
-  /// These indices will be used for future analysis.
-  void AssignIndices() noexcept;
-
-  /// Populates databases of minimal cut sets
-  /// with indices of the events.
-  /// This traversal detects
-  /// if cut sets contain complement events
-  /// and turns non-coherent analysis.
-  ///
-  /// @param[in] min_cut_sets Minimal cut sets with event IDs.
-  void IndexMcs(const std::set<std::set<std::string>>& min_cut_sets) noexcept;
-
-  /// Calculates probabilities
-  /// using the minimal cut set upper bound (MCUB) approximation.
-  ///
-  /// @param[in] min_cut_sets Sets of indices of basic events.
-  ///
-  /// @returns The total probability with the MCUB approximation.
-  double ProbMcub(const std::vector<CutSet>& min_cut_sets) noexcept;
-
-  /// Calculates probabilities
-  /// using the Rare-Event approximation.
-  ///
-  /// @param[in] min_cut_sets Sets of indices of basic events.
-  ///
-  /// @returns The total probability with the rare-event approximation.
-  double ProbRareEvent(const std::vector<CutSet>& min_cut_sets) noexcept;
-
-  /// Calculates a probability of a cut set,
-  /// whose members are in AND relationship with each other.
-  /// This function assumes independence of each member.
-  ///
-  /// @param[in] cut_set A cut set of indices of basic events.
-  ///
-  /// @returns The total probability of the set.
-  ///
-  /// @note O_avg(N) where N is the size of the passed set.
-  double ProbAnd(const CutSet& cut_set) noexcept;
-
-  /// Calculates the total probability.
-  ///
-  /// @returns The total probability of the graph or cut sets.
-  double CalculateTotalProbability() noexcept;
-
-  /// Calculates exact probability
-  /// of a function graph represented by its root BDD vertex.
-  ///
-  /// @param[in] vertex The root vertex of a function graph.
-  /// @param[in] mark A flag to mark traversed vertices.
-  ///
-  /// @returns Probability value.
-  ///
-  /// @warning If a vertex is already marked with the input mark,
-  ///          it will not be traversed and updated with a probability value.
-  double CalculateProbability(const VertexPtr& vertex, bool mark) noexcept;
-
-  GatePtr top_event_;  ///< Top gate of the passed fault tree.
   std::unique_ptr<BooleanGraph> bool_graph_;  ///< Indexation graph.
   std::unique_ptr<Bdd> bdd_graph_;  ///< The main BDD graph for analysis.
 
   /// Container for input basic events.
   std::unordered_map<std::string, BasicEventPtr> basic_events_;
 
-  std::vector<BasicEventPtr> index_to_basic_;  ///< Indices to basic events.
-  /// Indices of basic events.
-  std::unordered_map<std::string, int> id_to_index_;
   std::vector<double> var_probs_;  ///< Variable probabilities.
-
-  /// Minimal cut sets with indices of events.
-  std::vector<CutSet> imcs_;
-  /// Container for basic event indices that are in minimal cut sets.
-  std::set<int> mcs_basic_events_;
-
   double p_total_;  ///< Total probability of the top event.
-  bool current_mark_; ///< To keep track of BDD current mark.
 };
 
 /// @class CutSetCalculator
@@ -322,6 +249,11 @@ class ProbabilityAnalyzer : public ProbabilityAnalyzerBase {
     return calc_->Calculate(fta_->algorithm()->GetGeneratedMcs(), var_probs_);
   }
 
+  /// @returns Fault tree analyzer as given to this analyzer.
+  ///
+  /// @todo Remove after decoupling analyses.
+  const FaultTreeAnalyzer<Algorithm>* fta() { return fta_; }
+
  private:
   const FaultTreeAnalyzer<Algorithm>* fta_;  ///< Finished fault tree analysis.
   std::unique_ptr<Calculator> calc_;  ///< Provider of the calculation logic.
@@ -363,6 +295,14 @@ class ProbabilityAnalyzer<Algorithm, Bdd> : public ProbabilityAnalyzerBase {
   ///
   /// @returns The total probability of the graph or cut sets.
   double CalculateTotalProbability() noexcept;
+
+  /// @returns Fault tree analyzer as given to this analyzer.
+  ///
+  /// @todo Remove after decoupling analyses.
+  const FaultTreeAnalyzer<Algorithm>* fta() { return fta_; }
+
+  /// @returns Binary decision diagram used for calculations.
+  Bdd* bdd_graph() { return bdd_graph_.get(); }
 
  private:
   /// Calculates exact probability

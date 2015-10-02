@@ -283,4 +283,17 @@ Triplet Bdd::GetSignature(Operator type,
   return sig;
 }
 
+void Bdd::ClearMarks(const VertexPtr& vertex, bool mark) noexcept {
+  if (vertex->terminal()) return;
+  ItePtr ite = Ite::Ptr(vertex);
+  if (ite->mark() == mark) return;
+  ite->mark(mark);
+  if (ite->module()) {
+    const Bdd::Function& res = gates_.find(ite->index())->second;
+    Bdd::ClearMarks(res.vertex, mark);
+  }
+  Bdd::ClearMarks(ite->high(), mark);
+  Bdd::ClearMarks(ite->low(), mark);
+}
+
 }  // namespace scram
