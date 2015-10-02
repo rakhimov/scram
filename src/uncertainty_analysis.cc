@@ -29,7 +29,6 @@
 #include <boost/accumulators/statistics/stats.hpp>
 #include <boost/accumulators/statistics/variance.hpp>
 
-#include "error.h"
 #include "logger.h"
 
 namespace scram {

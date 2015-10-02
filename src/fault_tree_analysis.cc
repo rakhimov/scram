@@ -22,10 +22,6 @@
 
 #include <utility>
 
-#include <boost/algorithm/string.hpp>
-
-#include "error.h"
-
 namespace scram {
 
 FaultTreeDescriptor::FaultTreeDescriptor(const GatePtr& root)

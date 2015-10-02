@@ -22,11 +22,8 @@
 #ifndef SCRAM_SRC_UNCERTAINTY_ANALYSIS_H_
 #define SCRAM_SRC_UNCERTAINTY_ANALYSIS_H_
 
-#include <map>
 #include <memory>
-#include <set>
 #include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
 

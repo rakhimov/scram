@@ -21,9 +21,8 @@
 #include "risk_analysis.h"
 
 #include <fstream>
-#include <set>
-#include <unordered_map>
 #include <utility>
+#include <vector>
 
 #include "error.h"
 #include "event.h"

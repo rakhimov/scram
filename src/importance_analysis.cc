@@ -22,7 +22,6 @@
 #include "importance_analysis.h"
 
 #include "logger.h"
-#include "preprocessor.h"
 
 namespace scram {
 

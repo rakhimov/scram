@@ -24,7 +24,6 @@
 
 #include <algorithm>
 #include <memory>
-#include <set>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -35,7 +34,6 @@
 #include "event.h"
 #include "probability_analysis.h"
 #include "settings.h"
-
 
 namespace scram {
 
