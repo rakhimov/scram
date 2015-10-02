@@ -69,9 +69,9 @@ class Initializer {
   ///
   /// @param[in] xml_files  The formatted XML input files.
   ///
-  /// @throws ValidationError The input contains errors.
-  /// @throws ValueError The input values are not valid.
-  /// @throws IOError One of the input files is not accessible.
+  /// @throws ValidationError  The input contains errors.
+  /// @throws ValueError  The input values are not valid.
+  /// @throws IOError  One of the input files is not accessible.
   void ProcessInputFiles(const std::vector<std::string>& xml_files);
 
   /// @returns The model built from the input files.
@@ -105,16 +105,16 @@ class Initializer {
   ///
   /// @param[in] xml_file  The formatted XML input file.
   ///
-  /// @throws ValidationError The input contains errors.
-  /// @throws ValueError The input values are not valid.
-  /// @throws IOError The input file is not accessible.
+  /// @throws ValidationError  The input contains errors.
+  /// @throws ValueError  The input values are not valid.
+  /// @throws IOError  The input file is not accessible.
   void ProcessInputFile(const std::string& xml_file);
 
   /// Processes definitions of elements
   /// that are left to be determined later.
   /// This late definition happens primarily due to unregistered dependencies.
   ///
-  /// @throws ValidationError The elements contain undefined dependencies.
+  /// @throws ValidationError  The elements contain undefined dependencies.
   void ProcessTbdElements();
 
   /// Attaches attributes and a label to the elements of the analysis.
@@ -131,9 +131,9 @@ class Initializer {
   ///
   /// @param[in] ft_node  XML element defining the fault tree.
   ///
-  /// @throws ValidationError There are issues with registering and defining
-  ///                         the fault tree and its data
-  ///                         like gates and events.
+  /// @throws ValidationError  There are issues with registering and defining
+  ///                          the fault tree and its data
+  ///                          like gates and events.
   void DefineFaultTree(const xmlpp::Element* ft_node);
 
   /// Defines a component container.
@@ -144,9 +144,9 @@ class Initializer {
   ///
   /// @returns Component that is ready for registration.
   ///
-  /// @throws ValidationError There are issues with registering and defining
-  ///                         the component and its data
-  ///                         like gates and events.
+  /// @throws ValidationError  There are issues with registering and defining
+  ///                          the component and its data
+  ///                          like gates and events.
   ComponentPtr DefineComponent(const xmlpp::Element* component_node,
                                const std::string& base_path,
                                bool public_container = true);
@@ -159,8 +159,8 @@ class Initializer {
   /// @param[in,out] component  The component or fault tree container
   ///                          that is the owner of the data.
   ///
-  /// @throws ValidationError There are issues with registering and defining
-  ///                         the component's data like gates and events.
+  /// @throws ValidationError  There are issues with registering and defining
+  ///                          the component's data like gates and events.
   void RegisterFaultTreeData(const xmlpp::Element* ft_node,
                              const std::string& base_path,
                              Component* component);
@@ -178,7 +178,7 @@ class Initializer {
   ///
   /// @returns Pointer to the registered gate.
   ///
-  /// @throws ValidationError An event with the same name is already defined.
+  /// @throws ValidationError  An event with the same name is already defined.
   GatePtr RegisterGate(const xmlpp::Element* gate_node,
                        const std::string& base_path = "",
                        bool public_container = true);
@@ -197,7 +197,7 @@ class Initializer {
   ///
   /// @returns Boolean formula that is defined.
   ///
-  /// @throws ValidationError The defined formula is not valid.
+  /// @throws ValidationError  The defined formula is not valid.
   FormulaPtr GetFormula(const xmlpp::Element* formula_node,
                         const std::string& base_path);
 
@@ -207,7 +207,7 @@ class Initializer {
   /// @param[in] base_path  Series of ancestor containers in the path with dots.
   /// @param[in,out] formula  The formula to be defined by the arguments.
   ///
-  /// @throws ValidationError Repeated arguments are identified.
+  /// @throws ValidationError  Repeated arguments are identified.
   void ProcessFormula(const xmlpp::Element* formula_node,
                       const std::string& base_path,
                       Formula* formula);
@@ -220,7 +220,7 @@ class Initializer {
   ///
   /// @returns Pointer to the registered basic event.
   ///
-  /// @throws ValidationError An event with the same name is already defined.
+  /// @throws ValidationError  An event with the same name is already defined.
   BasicEventPtr RegisterBasicEvent(const xmlpp::Element* event_node,
                                    const std::string& base_path = "",
                                    bool public_container = true);
@@ -240,7 +240,7 @@ class Initializer {
   ///
   /// @returns Pointer to the registered house event.
   ///
-  /// @throws ValidationError An event with the same name is already defined.
+  /// @throws ValidationError  An event with the same name is already defined.
   HouseEventPtr DefineHouseEvent(const xmlpp::Element* event_node,
                                  const std::string& base_path = "",
                                  bool public_container = true);
@@ -253,7 +253,7 @@ class Initializer {
   ///
   /// @returns Pointer to the registered parameter.
   ///
-  /// @throws ValidationError The parameter is already registered.
+  /// @throws ValidationError  The parameter is already registered.
   ParameterPtr RegisterParameter(const xmlpp::Element* param_node,
                                  const std::string& base_path = "",
                                  bool public_container = true);
@@ -272,7 +272,7 @@ class Initializer {
   ///
   /// @returns Pointer to the newly defined or registered expression.
   ///
-  /// @throws ValidationError There are problems with getting the expression.
+  /// @throws ValidationError  There are problems with getting the expression.
   ExpressionPtr GetExpression(const xmlpp::Element* expr_element,
                               const std::string& base_path);
 
@@ -293,7 +293,7 @@ class Initializer {
   ///
   /// @returns true if expression was found and processed.
   ///
-  /// @throws ValidationError The parameter variable is not reachable.
+  /// @throws ValidationError  The parameter variable is not reachable.
   bool GetParameterExpression(const xmlpp::Element* expr_element,
                               const std::string& base_path,
                               ExpressionPtr& expression);
@@ -317,9 +317,9 @@ class Initializer {
   ///
   /// @returns Pointer to the registered CCF group.
   ///
-  /// @throws ValidationError There are problems with registering
-  ///                         the group and its members,
-  ///                         for example, duplications or missing information.
+  /// @throws ValidationError  There are problems with registering
+  ///                          the group and its members,
+  ///                          for example, duplications or missing information.
   CcfGroupPtr RegisterCcfGroup(const xmlpp::Element* ccf_node,
                                const std::string& base_path = "",
                                bool public_container = true);
@@ -336,9 +336,9 @@ class Initializer {
   /// @param[in] members_node  XML element containing all members.
   /// @param[in,out] ccf_group  CCF group of the given members.
   ///
-  /// @throws ValidationError Members are redefined,
-  ///                         or there are other setup issues
-  ///                         with the CCF group.
+  /// @throws ValidationError  Members are redefined,
+  ///                          or there are other setup issues
+  ///                          with the CCF group.
   void ProcessCcfMembers(const xmlpp::Element* members_node,
                          const CcfGroupPtr& ccf_group);
 
@@ -347,22 +347,22 @@ class Initializer {
   /// @param[in] factor_node  XML element containing one factor.
   /// @param[in,out] ccf_group  CCF group to be defined by the given factors.
   ///
-  /// @throws ValidationError There are problems with level numbers
-  ///                         or factors for specific CCF models.
+  /// @throws ValidationError  There are problems with level numbers
+  ///                          or factors for specific CCF models.
   void DefineCcfFactor(const xmlpp::Element* factor_node,
                        const CcfGroupPtr& ccf_group);
 
   /// Validates if the initialization of the analysis is successful.
   /// This validation process also generates optional warnings.
   ///
-  /// @throws ValidationError The initialization contains mistakes.
+  /// @throws ValidationError  The initialization contains mistakes.
   void ValidateInitialization();
 
   /// Validates expressions and anything
   /// that is dependent on them,
   /// such as parameters and basic events.
   ///
-  /// @throws ValidationError There are problems detected with expressions.
+  /// @throws ValidationError  There are problems detected with expressions.
   void ValidateExpressions();
 
   /// Applies the input information to set up for future analysis.

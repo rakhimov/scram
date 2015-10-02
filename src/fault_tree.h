@@ -109,36 +109,36 @@ class Component : public Element, public Role {
   ///
   /// @param[in] gate  The gate to be added to this tree.
   ///
-  /// @throws ValidationError The event is already in this container.
+  /// @throws ValidationError  The event is already in this container.
   void AddGate(const GatePtr& gate);
 
   /// Adds a basic event into this component container.
   ///
   /// @param[in] basic_event  The basic event to be added to this tree.
   ///
-  /// @throws ValidationError The event is already in this container.
+  /// @throws ValidationError  The event is already in this container.
   void AddBasicEvent(const BasicEventPtr& basic_event);
 
   /// Adds a house event into this component container.
   ///
   /// @param[in] house_event  The house event to be added to this tree.
   ///
-  /// @throws ValidationError The event is already in this container.
+  /// @throws ValidationError  The event is already in this container.
   void AddHouseEvent(const HouseEventPtr& house_event);
 
   /// Adds a parameter into this component container.
   ///
   /// @param[in] parameter  The parameter to be added to this tree.
   ///
-  /// @throws ValidationError The parameter is already in this container.
+  /// @throws ValidationError  The parameter is already in this container.
   void AddParameter(const ParameterPtr& parameter);
 
   /// Adds a CCF group and its members into this component container.
   ///
   /// @param[in] ccf_group  The CCF group to be added to this container.
   ///
-  /// @throws ValidationError Duplicate CCF groups
-  ///                         or duplicate basic event members.
+  /// @throws ValidationError  Duplicate CCF groups
+  ///                          or duplicate basic event members.
   void AddCcfGroup(const CcfGroupPtr& ccf_group);
 
   /// Adds a member component container into this component container.
@@ -147,7 +147,7 @@ class Component : public Element, public Role {
   ///
   /// @param[in] component  The CCF group to be added to this container.
   ///
-  /// @throws ValidationError The component is already in this container.
+  /// @throws ValidationError  The component is already in this container.
   void AddComponent(ComponentPtr component);
 
  protected:

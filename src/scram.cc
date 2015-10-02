@@ -141,8 +141,8 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
 /// @param[in] vm  Variables map of program options.
 /// @param[in,out] settings  Pre-configured or default settings.
 ///
-/// @throws std::exception vm does not contain a required option.
-///                        At least defaults are expected.
+/// @throws std::exception  vm does not contain a required option.
+///                         At least defaults are expected.
 void ConstructSettings(const po::variables_map& vm, scram::Settings* settings) {
   // Determine if the probability approximation is requested.
   if (vm.count("rare-event")) {
@@ -177,9 +177,9 @@ void ConstructSettings(const po::variables_map& vm, scram::Settings* settings) {
 /// @returns 0 for success.
 /// @returns 1 for errored state.
 ///
-/// @throws Error Internal problems specific to SCRAM like validation.
-/// @throws boost::exception Boost errors.
-/// @throws std::exception All other problems.
+/// @throws Error  Internal problems specific to SCRAM like validation.
+/// @throws boost::exception  Boost errors.
+/// @throws std::exception  All other problems.
 int RunScram(const po::variables_map& vm) {
   if (vm.count("verbosity")) {
     scram::Logger::ReportLevel() =

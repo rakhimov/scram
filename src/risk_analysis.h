@@ -60,7 +60,7 @@ class RiskAnalysis : public Analysis {
   /// All top events from fault trees are processed
   /// into output files named with fault tree and top event names.
   ///
-  /// @throws IOError The output file cannot be accessed for writing.
+  /// @throws IOError  The output file cannot be accessed for writing.
   ///
   /// @note This function must be called
   ///       only after initializing the tree
@@ -90,7 +90,7 @@ class RiskAnalysis : public Analysis {
   ///
   /// @param[out] output  The output destination.
   ///
-  /// @throws IOError The output file is not accessible.
+  /// @throws IOError  The output file is not accessible.
   ///
   /// @note This function must be called only after Analyze() function.
   void Report(std::string output);

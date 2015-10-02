@@ -38,7 +38,7 @@ class Settings {
   ///
   /// @returns Reference to this object.
   ///
-  /// @throws InvalidArgument The algorithm is not recognized.
+  /// @throws InvalidArgument  The algorithm is not recognized.
   Settings& algorithm(const std::string& algorithm);
 
   /// @returns The limit on the size of minimal cut sets.
@@ -50,7 +50,7 @@ class Settings {
   ///
   /// @returns Reference to this object.
   ///
-  /// @throws InvalidArgument The number is not more than 0.
+  /// @throws InvalidArgument  The number is not more than 0.
   Settings& limit_order(int order);
 
   /// @returns The minimum required probability for cut sets.
@@ -63,7 +63,7 @@ class Settings {
   ///
   /// @returns Reference to this object.
   ///
-  /// @throws InvalidArgument The probability is not in the [0, 1] range.
+  /// @throws InvalidArgument  The probability is not in the [0, 1] range.
   Settings& cut_off(double prob);
 
   /// @returns "no" if no quantitative approximation is requested.
@@ -77,7 +77,7 @@ class Settings {
   ///
   /// @returns Reference to this object.
   ///
-  /// @throws InvalidArgument The approximation is not recognized.
+  /// @throws InvalidArgument  The approximation is not recognized.
   Settings& approximation(const std::string& approx);
 
   /// @returns The number of trials for Monte-Carlo simulations.
@@ -89,7 +89,7 @@ class Settings {
   ///
   /// @returns Reference to this object.
   ///
-  /// @throws InvalidArgument The number is less than 1.
+  /// @throws InvalidArgument  The number is less than 1.
   Settings& num_trials(int n);
 
   /// @returns The number of quantiles for distributions.
@@ -101,7 +101,7 @@ class Settings {
   ///
   /// @returns Reference to this object.
   ///
-  /// @throws InvalidArgument The number is less than 1.
+  /// @throws InvalidArgument  The number is less than 1.
   Settings& num_quantiles(int n);
 
   /// @returns The number of bins for histograms.
@@ -113,7 +113,7 @@ class Settings {
   ///
   /// @returns Reference to this object.
   ///
-  /// @throws InvalidArgument The number is less than 1.
+  /// @throws InvalidArgument  The number is less than 1.
   Settings& num_bins(int n);
 
   /// @returns The seed of the pseudo-random number generator.
@@ -125,7 +125,7 @@ class Settings {
   ///
   /// @returns Reference to this object.
   ///
-  /// @throws InvalidArgument The number is negative.
+  /// @throws InvalidArgument  The number is negative.
   Settings& seed(int s);
 
   /// @returns The length time of the system under risk.

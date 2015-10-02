@@ -167,7 +167,7 @@ class BasicEvent : public PrimaryEvent {
 
   /// Validates the probability expressions for the primary event.
   ///
-  /// @throws ValidationError The expression for the basic event is invalid.
+  /// @throws ValidationError  The expression for the basic event is invalid.
   void Validate() {
     if (expression_->Min() < 0 || expression_->Max() > 1) {
       throw ValidationError("Expression value is invalid.");
@@ -272,7 +272,7 @@ class Gate : public Event {
 
   /// Checks if a gate is initialized correctly.
   ///
-  /// @throws ValidationError Errors in the gate's logic or setup.
+  /// @throws ValidationError  Errors in the gate's logic or setup.
   void Validate();
 
   /// @returns The mark of this gate node.
@@ -308,20 +308,20 @@ class Formula {
 
   /// @returns The type of this formula.
   ///
-  /// @throws LogicError The gate is not yet assigned.
+  /// @throws LogicError  The gate is not yet assigned.
   const std::string& type() const { return type_; }
 
   /// @returns The vote number if and only if the operator is ATLEAST.
   ///
-  /// @throws LogicError The vote number is not yet assigned.
+  /// @throws LogicError  The vote number is not yet assigned.
   int vote_number() const;
 
   /// Sets the vote number only for an ATLEAST formula.
   ///
   /// @param[in] vnumber  The vote number.
   ///
-  /// @throws InvalidArgument The vote number is invalid.
-  /// @throws LogicError The vote number is assigned illegally.
+  /// @throws InvalidArgument  The vote number is invalid.
+  /// @throws LogicError  The vote number is assigned illegally.
   ///
   /// @note (Children number > vote number) should be checked
   ///       outside of this class.
@@ -355,21 +355,21 @@ class Formula {
   ///
   /// @param[in] house_event  A pointer to an argument house event.
   ///
-  /// @throws DuplicateArgumentError The argument is duplicate.
+  /// @throws DuplicateArgumentError  The argument is duplicate.
   void AddArgument(const HouseEventPtr& house_event);
 
   /// Adds a basic event into the arguments list.
   ///
   /// @param[in] basic_event  A pointer to an argument basic event.
   ///
-  /// @throws DuplicateArgumentError The argument is duplicate.
+  /// @throws DuplicateArgumentError  The argument is duplicate.
   void AddArgument(const BasicEventPtr& basic_event);
 
   /// Adds a gate into the arguments list.
   ///
   /// @param[in] gate  A pointer to an argument gate.
   ///
-  /// @throws DuplicateArgumentError The argument is duplicate.
+  /// @throws DuplicateArgumentError  The argument is duplicate.
   void AddArgument(const GatePtr& gate);
 
   /// Adds a formula into the arguments list.
@@ -380,7 +380,7 @@ class Formula {
 
   /// Checks if a formula is initialized correctly with the number of arguments.
   ///
-  /// @throws ValidationError There are problems with the operator or arguments.
+  /// @throws ValidationError  Problems with the operator or arguments.
   void Validate();
 
   /// @returns Gates as nodes.

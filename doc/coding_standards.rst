@@ -272,7 +272,9 @@ Core Code Documentation Style
   ``@param[in,out] arg  Description...``
 
     * Two spaces between parameter and its description
+    * The same formatting for template parameters ``@tparam T  Type desc...``
 
+- The two-space formatting for ``@throws Error  Description``
 - In-code TODOs with Doxygen '``/// @todo``'
   so that Doxygen picks them up.
 

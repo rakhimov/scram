@@ -78,10 +78,10 @@ class CcfGroup : public Element, public Role {
   ///
   /// @param[in] basic_event  A member basic event.
   ///
-  /// @throws DuplicateArgumentError The basic event is already in the group.
-  /// @throws IllegalOperation The probability distribution
-  ///                          for this CCF group is already defined.
-  ///                          No more members are accepted.
+  /// @throws DuplicateArgumentError  The basic event is already in the group.
+  /// @throws IllegalOperation  The probability distribution
+  ///                           for this CCF group is already defined.
+  ///                           No more members are accepted.
   void AddMember(const BasicEventPtr& basic_event);
 
   /// Adds the distribution that describes the probability of
@@ -101,7 +101,7 @@ class CcfGroup : public Element, public Role {
   /// @param[in] factor  A factor for the CCF model.
   /// @param[in] level  The level of the passed factor.
   ///
-  /// @throws ValidationError Level is not what is expected.
+  /// @throws ValidationError  Level is not what is expected.
   virtual void AddFactor(const ExpressionPtr& factor, int level);
 
   /// Checks if the provided distribution is between 0 and 1.
@@ -109,14 +109,14 @@ class CcfGroup : public Element, public Role {
   /// that are members of this CCF group
   /// to give more precise error messages.
   ///
-  /// @throws ValidationError There is an issue with the distribution.
+  /// @throws ValidationError  There is an issue with the distribution.
   void ValidateDistribution();
 
   /// Validates the setup for the CCF model and group.
   /// The passed expressions must be checked for circular logic
   /// before initiating the CCF validation.
   ///
-  /// @throws ValidationError There is an issue with the setup.
+  /// @throws ValidationError  There is an issue with the setup.
   virtual void Validate();
 
   /// Processes the given factors and members
@@ -189,7 +189,7 @@ class BetaFactorModel : public CcfGroup {
   /// @param[in] factor  A factor for the CCF model.
   /// @param[in] level  The level of the passed factor.
   ///
-  /// @throws ValidationError Level is not what is expected.
+  /// @throws ValidationError  Level is not what is expected.
   void AddFactor(const ExpressionPtr& factor, int level) override;
 
  private:
@@ -225,7 +225,7 @@ class MglModel : public CcfGroup {
   /// @param[in] factor  A factor for the CCF model.
   /// @param[in] level  The level of the passed factor.
   ///
-  /// @throws ValidationError Level is not what is expected.
+  /// @throws ValidationError  Level is not what is expected.
   void AddFactor(const ExpressionPtr& factor, int level) override;
 
  private:
@@ -274,7 +274,7 @@ class PhiFactorModel : public CcfGroup {
   /// In addition to the default validation of CcfGroup,
   /// checks if the given factors' sum is 1.
   ///
-  /// @throws ValidationError There is an issue with the setup.
+  /// @throws ValidationError  There is an issue with the setup.
   ///
   /// @todo Problem with sampling the factors and not getting exactly 1.
   ///       Currently only accepts constant expressions.

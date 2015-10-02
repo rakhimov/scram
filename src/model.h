@@ -95,14 +95,14 @@ class Model : public Element {
   ///
   /// @param[in] fault_tree  A fault tree defined in this model.
   ///
-  /// @throws RedefinitionError The model has a container with the same name.
+  /// @throws RedefinitionError  The model has a container with the same name.
   void AddFaultTree(FaultTreePtr fault_tree);
 
   /// Adds a parameter that is used in this model's expressions.
   ///
   /// @param[in] parameter  A parameter defined in this model.
   ///
-  /// @throws RedefinitionError The model has a parameter with the same name.
+  /// @throws RedefinitionError  The model has a parameter with the same name.
   void AddParameter(const ParameterPtr& parameter);
 
   /// Finds a parameter from a reference.
@@ -114,7 +114,7 @@ class Model : public Element {
   ///
   /// @returns Pointer to the parameter found by following the given reference.
   ///
-  /// @throws ValidationError There are problems with referencing.
+  /// @throws ValidationError  There are problems with referencing.
   ParameterPtr GetParameter(const std::string& reference,
                             const std::string& base_path);
 
@@ -130,8 +130,8 @@ class Model : public Element {
   /// @returns A pair of the pointer to the event and its type
   ///          ("gate", "basic-event", "house-event").
   ///
-  /// @throws ValidationError There are problems with referencing.
-  /// @throws LogicError The given base path is invalid.
+  /// @throws ValidationError  There are problems with referencing.
+  /// @throws LogicError  The given base path is invalid.
   std::pair<EventPtr, std::string> GetEvent(const std::string& reference,
                                             const std::string& base_path);
 
@@ -139,7 +139,7 @@ class Model : public Element {
   ///
   /// @param[in] house_event  A house event defined in this model.
   ///
-  /// @throws RedefinitionError An event with the same name already exists.
+  /// @throws RedefinitionError  An event with the same name already exists.
   void AddHouseEvent(const HouseEventPtr& house_event);
 
   /// Finds a house event from a reference.
@@ -151,7 +151,7 @@ class Model : public Element {
   ///
   /// @returns Pointer to the house event found by following the reference.
   ///
-  /// @throws ValidationError There are problems with referencing.
+  /// @throws ValidationError  There are problems with referencing.
   HouseEventPtr GetHouseEvent(const std::string& reference,
                               const std::string& base_path);
 
@@ -159,7 +159,7 @@ class Model : public Element {
   ///
   /// @param[in] basic_event  A basic event defined in this model.
   ///
-  /// @throws RedefinitionError An event with the same name already exists.
+  /// @throws RedefinitionError  An event with the same name already exists.
   void AddBasicEvent(const BasicEventPtr& basic_event);
 
   /// Finds a basic event from a reference.
@@ -171,7 +171,7 @@ class Model : public Element {
   ///
   /// @returns Pointer to the basic event found by following the reference.
   ///
-  /// @throws ValidationError There are problems with referencing.
+  /// @throws ValidationError  There are problems with referencing.
   BasicEventPtr GetBasicEvent(const std::string& reference,
                               const std::string& base_path);
 
@@ -179,7 +179,7 @@ class Model : public Element {
   ///
   /// @param[in] gate  A gate defined in this model.
   ///
-  /// @throws RedefinitionError An event with the same name already exists.
+  /// @throws RedefinitionError  An event with the same name already exists.
   void AddGate(const GatePtr& gate);
 
   /// Finds a gate from a reference.
@@ -191,14 +191,14 @@ class Model : public Element {
   ///
   /// @returns Pointer to the gate found by following the reference.
   ///
-  /// @throws ValidationError There are problems with referencing.
+  /// @throws ValidationError  There are problems with referencing.
   GatePtr GetGate(const std::string& reference, const std::string& base_path);
 
   /// Adds a CCF group that is used in this model's fault trees.
   ///
   /// @param[in] ccf_group  A CCF group defined in this model.
   ///
-  /// @throws RedefinitionError The model has a CCF group with the same name.
+  /// @throws RedefinitionError  The model has a CCF group with the same name.
   void AddCcfGroup(const CcfGroupPtr& ccf_group);
 
  private:
@@ -208,7 +208,7 @@ class Model : public Element {
   ///
   /// @returns A fault tree or component from the base path if any.
   ///
-  /// @throws LogicError There's missing container in the path.
+  /// @throws LogicError  There's missing container in the path.
   const Component* GetContainer(const std::string& base_path);
 
   /// Helper function to find the local container for references.
@@ -227,7 +227,7 @@ class Model : public Element {
   ///
   /// @returns A fault tree or component from the reference.
   ///
-  /// @throws ValidationError There's missing container in the path.
+  /// @throws ValidationError  There's missing container in the path.
   const Component* GetGlobalContainer(const std::string& reference);
 
   std::string name_;  ///< The name of the model.

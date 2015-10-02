@@ -54,15 +54,15 @@ class Element {
   ///
   /// @param[in] new_label  The label to be set.
   ///
-  /// @throws LogicError The label is already set,
-  ///                    or the new label is empty.
+  /// @throws LogicError  The label is already set,
+  ///                     or the new label is empty.
   void label(const std::string& new_label);
 
   /// Adds an attribute to the attribute map.
   ///
   /// @param[in] attr  Unique attribute of this element.
   ///
-  /// @throws LogicError The attribute already exists.
+  /// @throws LogicError  The attribute already exists.
   void AddAttribute(const Attribute& attr);
 
   /// Checks if the element has a given attribute.
@@ -77,7 +77,7 @@ class Element {
   ///
   /// @param[in] id  The id name of the attribute in lower case.
   ///
-  /// @throws LogicError There is no such attribute.
+  /// @throws LogicError  There is no such attribute.
   const Attribute& GetAttribute(const std::string& id) const;
 
  private:

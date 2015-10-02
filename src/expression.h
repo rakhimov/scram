@@ -64,7 +64,7 @@ class Expression {
   /// Validates the expression.
   /// This late validation is due to parameters that are defined late.
   ///
-  /// @throws InvalidArgument The arguments are invalid for setup.
+  /// @throws InvalidArgument  The arguments are invalid for setup.
   virtual void Validate() {}
 
   /// @returns The mean value of this expression.
@@ -301,7 +301,7 @@ class ExponentialExpression : public Expression {
         lambda_(lambda),
         time_(t) {}
 
-  /// @throws InvalidArgument The failure rate or time is negative.
+  /// @throws InvalidArgument  The failure rate or time is negative.
   void Validate();
 
   double Mean() noexcept {
@@ -438,7 +438,7 @@ class UniformDeviate : public RandomDeviate {
         min_(min),
         max_(max) {}
 
-  /// @throws InvalidArgument The min value is more or equal to max value.
+  /// @throws InvalidArgument  The min value is more or equal to max value.
   void Validate();
 
   double Mean() noexcept { return (min_->Mean() + max_->Mean()) / 2; }
@@ -466,7 +466,7 @@ class NormalDeviate : public RandomDeviate {
         mean_(mean),
         sigma_(sigma) {}
 
-  /// @throws InvalidArgument The sigma is negative or zero.
+  /// @throws InvalidArgument  The sigma is negative or zero.
   void Validate();
 
   double Mean() noexcept { return mean_->Mean(); }
@@ -615,8 +615,8 @@ class Histogram : public RandomDeviate {
   ///                     Therefore, the number of weights must be
   ///                     equal to the number of boundaries.
   ///
-  /// @throws InvalidArgument The boundaries container size is not equal to
-  ///                         weights container size.
+  /// @throws InvalidArgument  The boundaries container size is not equal to
+  ///                          weights container size.
   ///
   /// @note This description of histogram sampling is for probabilities mostly.
   ///       Therefore, it is not flexible.
@@ -632,8 +632,8 @@ class Histogram : public RandomDeviate {
   Histogram(const std::vector<ExpressionPtr>& boundaries,
             const std::vector<ExpressionPtr>& weights);
 
-  /// @throws InvalidArgument The boundaries are not strictly increasing,
-  ///                         or weights are negative.
+  /// @throws InvalidArgument  The boundaries are not strictly increasing,
+  ///                          or weights are negative.
   void Validate();
 
   double Mean() noexcept;
@@ -647,7 +647,7 @@ class Histogram : public RandomDeviate {
   ///
   /// @param[in] boundaries  The upper bounds of intervals.
   ///
-  /// @throws InvalidArgument The mean values are not strictly increasing.
+  /// @throws InvalidArgument  The mean values are not strictly increasing.
   void CheckBoundaries(const std::vector<ExpressionPtr>& boundaries);
 
   /// Checks if mean values of boundaries are non-negative.
@@ -655,7 +655,7 @@ class Histogram : public RandomDeviate {
   /// @param[in] weights  The positive weights of intervals restricted by
   ///                     the upper boundaries.
   ///
-  /// @throws InvalidArgument The mean values are negative.
+  /// @throws InvalidArgument  The mean values are negative.
   void CheckWeights(const std::vector<ExpressionPtr>& weights);
 
   /// Upper boundaries of the histogram.

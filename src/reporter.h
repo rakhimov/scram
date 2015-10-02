@@ -61,7 +61,7 @@ class Reporter {
   /// @param[in] settings  Configured settings for analysis.
   /// @param[in,out] doc  An empty document.
   ///
-  /// @throws LogicError The document is not empty.
+  /// @throws LogicError  The document is not empty.
   void SetupReport(const ModelPtr& model, const Settings& settings,
                    xmlpp::Document* doc);
 
