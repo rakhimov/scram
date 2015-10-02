@@ -21,6 +21,7 @@ Pre-Release
     * [ ] Input tests
     * [ ] Integration tests
     * [ ] Benchmarking tests
+    * [ ] Performance tests
 
 - [ ] Coveralls >= 95%
 - [ ] Coverity defects < 0.35 per 1000 SLOC (target: 0)
@@ -36,8 +37,10 @@ Pre-Release
 - [ ] Documentation coverage of the code (coverage target: full) (tools: Doxygen)
 - [ ] Cleanup the code
 
+    * [ ] Unused ``#include`` and improper forward declarations
     * [ ] Style check of C++ code (CppLint)
     * [ ] Style check of Python code (PyLint)
+    * [ ] Unused ``import``
     * [ ] Spell check the code (optional)
     * [-] CppClean check (problem: fails with C++11)
 
