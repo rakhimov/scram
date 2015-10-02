@@ -18,6 +18,15 @@
   <define name="options">
     <element name="options">
       <optional>
+        <element name="algorithm">
+          <attribute name="name">
+            <data type="string">
+              <param name="pattern">mocus|bdd</param>
+            </data>
+          </attribute>
+        </element>
+      </optional>
+      <optional>
         <element name="analysis">
           <interleave>
             <optional>
@@ -44,13 +53,12 @@
         </element>
       </optional>
       <optional>
-        <element name="approximations">
-          <optional>
-            <choice>
-              <element name="rare-event"> <empty/> </element>
-              <element name="mcub"> <empty/> </element>
-            </choice>
-          </optional>
+        <element name="approximation">
+          <attribute name="name">
+            <data type="string">
+              <param name="pattern">rare-event|mcub</param>
+            </data>
+          </attribute>
         </element>
       </optional>
       <optional>

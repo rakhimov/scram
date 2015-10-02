@@ -72,15 +72,20 @@ class Config {
   /// @param[in] root  The root XML element.
   void GetOutputPath(const xmlpp::Node* root);
 
+  /// Extracts Qualitative analysis algorithm.
+  ///
+  /// @param[in] analysis  Analysis element node.
+  void SetAlgorithm(const xmlpp::Element* analysis);
+
   /// Extracts analysis types to be performed from analysis element.
   ///
   /// @param[in] analysis  Analysis element node.
   void SetAnalysis(const xmlpp::Element* analysis);
 
-  /// Extracts approximations from the configurations.
+  /// Extracts the approximation from the configurations.
   ///
   /// @param[in] approx  Approximation element node.
-  void SetApprox(const xmlpp::Element* approx);
+  void SetApproximation(const xmlpp::Element* approx);
 
   /// Extracts limits for analysis.
   ///

@@ -51,6 +51,7 @@ TEST(ConfigTest, FullSettings) {
   EXPECT_EQ("temp_results.xml", config->output_path());
 
   const Settings& settings = config->settings();
+  EXPECT_EQ("bdd", settings.algorithm());
   EXPECT_EQ(true, settings.probability_analysis());
   EXPECT_EQ(true, settings.importance_analysis());
   EXPECT_EQ(true, settings.uncertainty_analysis());
