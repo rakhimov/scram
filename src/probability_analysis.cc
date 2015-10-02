@@ -17,21 +17,29 @@
 
 /// @file probability_analysis.cc
 /// Implementations of functions to provide
-/// probability and importance informations.
+/// probability analysis.
 
 #include "probability_analysis.h"
-
-#include <boost/algorithm/string.hpp>
-
-#include "error.h"
-#include "logger.h"
-#include "preprocessor.h"
 
 namespace scram {
 
 ProbabilityAnalysis::ProbabilityAnalysis(const FaultTreeAnalysis* fta)
     : Analysis::Analysis(fta->settings()),
       p_total_(0) {}
+
+void ProbabilityAnalysis::Analyze() noexcept {
+  CLOCK(p_time);
+  LOG(DEBUG3) << "Calculating probabilities...";
+  // Get the total probability.
+  p_total_ = this->CalculateTotalProbability();
+  assert(p_total_ >= 0 && "The total probability is negative.");
+  if (p_total_ > 1) {
+    warnings_ += " Probability value exceeded 1 and was adjusted to 1.";
+    p_total_ = 1;
+  }
+  LOG(DEBUG3) << "Finished probability calculations in " << DUR(p_time);
+  analysis_time_ += DUR(p_time);
+}
 
 ProbabilityAnalyzerBase::~ProbabilityAnalyzerBase() {}  ///< Default.
 

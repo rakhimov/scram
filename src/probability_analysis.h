@@ -33,6 +33,7 @@
 #include "boolean_graph.h"
 #include "event.h"
 #include "fault_tree_analysis.h"
+#include "logger.h"
 #include "settings.h"
 
 namespace scram {
@@ -41,47 +42,32 @@ namespace scram {
 /// Main quantitative analysis class.
 class ProbabilityAnalysis : public Analysis {
  public:
-  using BasicEventPtr = std::shared_ptr<BasicEvent>;
   using GatePtr = std::shared_ptr<Gate>;
-  using VertexPtr = std::shared_ptr<Vertex>;
-  using ItePtr = std::shared_ptr<Ite>;
 
   /// Probability analysis
-  /// on the fault tree represented by the root gate.
+  /// with the results of qualitative analysis.
   ///
-  /// @param[in] root The top event of the fault tree.
-  /// @param[in] settings Analysis settings for probability calculations.
-  ///
-  /// @todo Remove this constructor.
-  ProbabilityAnalysis(const GatePtr& root, const Settings& settings);
-
+  /// @param[in] fta Fault tree analysis with results.
   explicit ProbabilityAnalysis(const FaultTreeAnalysis* fta);
 
-  virtual ~ProbabilityAnalysis() {}
+  virtual ~ProbabilityAnalysis() = default;
 
   /// Performs quantitative analysis on the supplied fault tree.
   ///
   /// @pre Analysis is called only once.
-  virtual void Analyze() noexcept {}  /// @todo Make pure virtual.
+  void Analyze() noexcept;
 
   /// @returns The total probability calculated by the analysis.
   ///
   /// @note The user should make sure that the analysis is actually done.
   double p_total() const { return p_total_; }
 
-  /// @returns The container of basic events of supplied for the analysis.
-  const std::unordered_map<std::string, BasicEventPtr>& basic_events() const {
-    return basic_events_;
-  }
+ private:
+  /// Calculates the total probability.
+  ///
+  /// @returns The total probability of the graph or cut sets.
+  virtual double CalculateTotalProbability() noexcept = 0;
 
- protected:
-  std::unique_ptr<BooleanGraph> bool_graph_;  ///< Indexation graph.
-  std::unique_ptr<Bdd> bdd_graph_;  ///< The main BDD graph for analysis.
-
-  /// Container for input basic events.
-  std::unordered_map<std::string, BasicEventPtr> basic_events_;
-
-  std::vector<double> var_probs_;  ///< Variable probabilities.
   double p_total_;  ///< Total probability of the top event.
 };
 
@@ -100,8 +86,6 @@ class CutSetCalculator {
   ///
   /// @pre Probability values are non-negative.
   /// @pre Absolute indices of events directly map to vector indices.
-  ///
-  /// @note O_avg(N) where N is the size of the passed set.
   template<typename CutSet>
   double Calculate(const CutSet& cut_set,
                    const std::vector<double>& var_probs) noexcept {
@@ -216,8 +200,11 @@ class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
   ///          due to tight coupling of Quantitative analyzers.
   std::vector<double>& var_probs() { return var_probs_; }
 
- private:
+ protected:
+  using BasicEventPtr = std::shared_ptr<BasicEvent>;
+
   const BooleanGraph* graph_;  ///< Boolean graph from the fault tree analysis.
+  std::vector<double> var_probs_;  ///< Variable probabilities.
 };
 
 /// @class ProbabilityAnalyzer
@@ -239,9 +226,6 @@ class ProbabilityAnalyzer : public ProbabilityAnalyzerBase {
     calc_ = std::unique_ptr<Calculator>(new Calculator());
   }
 
-  /// Runs the analysis to find the total probability.
-  void Analyze() noexcept;
-
   /// Calculates the total probability.
   ///
   /// @returns The total probability of the graph or cut sets.
@@ -259,21 +243,6 @@ class ProbabilityAnalyzer : public ProbabilityAnalyzerBase {
   std::unique_ptr<Calculator> calc_;  ///< Provider of the calculation logic.
 };
 
-template<typename Algorithm, typename Calculator>
-void ProbabilityAnalyzer<Algorithm, Calculator>::Analyze() noexcept {
-  CLOCK(p_time);
-  LOG(DEBUG3) << "Calculating probabilities...";
-  // Get the total probability.
-  p_total_ = ProbabilityAnalyzer::CalculateTotalProbability();
-  assert(p_total_ >= 0 && "The total probability is negative.");
-  if (p_total_ > 1) {
-    warnings_ += " Probability value exceeded 1 and was adjusted to 1.";
-    p_total_ = 1;
-  }
-  LOG(DEBUG3) << "Finished probability calculations in " << DUR(p_time);
-  analysis_time_ = DUR(p_time);
-}
-
 /// @class ProbabilityAnalyzer<typename Algorithm, Bdd>
 /// Specialization of probability analyzer with Binary Decision Diagrams.
 /// The quantitative analysis is done with BDD.
@@ -287,9 +256,6 @@ class ProbabilityAnalyzer<Algorithm, Bdd> : public ProbabilityAnalyzerBase {
   ///
   /// @param[in] fta Finished fault tree analyzer with results.
   explicit ProbabilityAnalyzer(const FaultTreeAnalyzer<Algorithm>* fta);
-
-  /// Runs the analysis to find the total probability.
-  void Analyze() noexcept;
 
   /// Calculates the total probability.
   ///
@@ -305,6 +271,9 @@ class ProbabilityAnalyzer<Algorithm, Bdd> : public ProbabilityAnalyzerBase {
   Bdd* bdd_graph() { return bdd_graph_.get(); }
 
  private:
+  using VertexPtr = std::shared_ptr<Vertex>;
+  using ItePtr = std::shared_ptr<Ite>;
+
   /// Calculates exact probability
   /// of a function graph represented by its root BDD vertex.
   ///
@@ -348,15 +317,6 @@ ProbabilityAnalyzer<Algorithm, Bdd>::ProbabilityAnalyzer(
   bdd_graph_ = std::unique_ptr<Bdd>(new Bdd(bool_graph_.get()));
   LOG(DEBUG2) << "BDD is created in " << DUR(bdd_time);
   analysis_time_ = DUR(main_time);
-}
-
-template<typename Algorithm>
-void ProbabilityAnalyzer<Algorithm, Bdd>::Analyze() noexcept {
-  CLOCK(p_time);
-  LOG(DEBUG3) << "Calculating probabilities...";
-  p_total_ = ProbabilityAnalyzer::CalculateTotalProbability();
-  LOG(DEBUG3) << "Finished probability calculations in " << DUR(p_time);
-  analysis_time_ += DUR(p_time);
 }
 
 template<typename Algorithm>
