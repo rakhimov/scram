@@ -93,6 +93,19 @@ TEST_F(RiskAnalysisTest, AnalyzeDefault) {
   EXPECT_EQ(mcs, min_cut_sets());
 }
 
+// Test Analysis of Two train system.
+TEST_F(RiskAnalysisTest, AnalyzeDefaultBdd) {
+  std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
+  settings.algorithm("bdd");
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  std::set<std::set<std::string>> mcs = {{"pumpone", "pumptwo"},
+                                         {"pumpone", "valvetwo"},
+                                         {"pumptwo", "valveone"},
+                                         {"valveone", "valvetwo"}};
+  EXPECT_EQ(mcs, min_cut_sets());
+}
+
 TEST_F(RiskAnalysisTest, AnalyzeWithProbability) {
   std::string with_prob =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
