@@ -68,7 +68,7 @@ FaultTreeAnalysis::FaultTreeAnalysis(const GatePtr& root,
       sum_mcs_probability_(0),
       max_order_(0) {}
 
-void FaultTreeAnalysis::SetsToString(const std::vector<Set>& imcs,
+void FaultTreeAnalysis::SetsToString(const std::vector<std::vector<int>>& imcs,
                                      const BooleanGraph* ft) noexcept {
   using BasicEventPtr = std::shared_ptr<BasicEvent>;
   // Special cases of sets.
@@ -81,7 +81,7 @@ void FaultTreeAnalysis::SetsToString(const std::vector<Set>& imcs,
     max_order_ = 1;
   }
   assert(!sum_mcs_probability_);
-  for (const Set& min_cut_set : imcs) {
+  for (const auto& min_cut_set : imcs) {
     if (min_cut_set.size() > max_order_) max_order_ = min_cut_set.size();
     CutSet pr_set;
     double prob = 1;  // 1 is for multiplication and Unity set.

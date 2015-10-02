@@ -238,7 +238,7 @@ class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
   /// @param[in] ft  Indexed fault tree with basic event indices and pointers.
   ///
   /// @todo Probability calculation feels more like a hack than design.
-  void SetsToString(const std::vector<Set>& imcs,
+  void SetsToString(const std::vector<std::vector<int>>& imcs,
                     const BooleanGraph* ft) noexcept;
 
   /// Container for minimal cut sets.
@@ -298,9 +298,9 @@ void FaultTreeAnalyzer<Algorithm>::Analyze() noexcept {
 
   algorithm_ =
       std::unique_ptr<Algorithm>(new Algorithm(graph_.get(), kSettings_));
-  algorithm_->FindMcs();
+  algorithm_->Analyze();
   analysis_time_ = DUR(analysis_time);  // Duration of MCS generation.
-  FaultTreeAnalysis::SetsToString(algorithm_->GetGeneratedMcs(), graph_.get());
+  FaultTreeAnalysis::SetsToString(algorithm_->cut_sets(), graph_.get());
 }
 
 }  // namespace scram

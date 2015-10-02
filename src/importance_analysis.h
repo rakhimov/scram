@@ -166,7 +166,7 @@ class ImportanceAnalyzer : public ImportanceAnalysis {
   std::vector<std::pair<int, BasicEventPtr>> GatherImportantEvents() noexcept {
     return ImportanceAnalysis::GatherImportantEvents(
         prob_analyzer_->graph(),
-        prob_analyzer_->fta()->algorithm()->GetGeneratedMcs());
+        prob_analyzer_->fta()->algorithm()->cut_sets());
   }
 
   double CalculateMif(int index) noexcept;
@@ -220,7 +220,7 @@ class ImportanceAnalyzer<Algorithm, Bdd> : public ImportanceAnalysis {
   std::vector<std::pair<int, BasicEventPtr>> GatherImportantEvents() noexcept {
     return ImportanceAnalysis::GatherImportantEvents(
         prob_analyzer_->graph(),
-        prob_analyzer_->fta()->algorithm()->GetGeneratedMcs());
+        prob_analyzer_->fta()->algorithm()->cut_sets());
   }
 
   double CalculateMif(int index) noexcept;

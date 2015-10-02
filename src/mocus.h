@@ -179,10 +179,10 @@ class Mocus {
   explicit Mocus(const BooleanGraph* fault_tree, const Settings& settings);
 
   /// Finds minimal cut sets from the initiated fault tree with indices.
-  void FindMcs();
+  void Analyze();
 
   /// @returns Generated minimal cut sets with basic event indices.
-  const std::vector<Set>& GetGeneratedMcs() const { return imcs_; }
+  const std::vector<std::vector<int>>& cut_sets() const { return cut_sets_; }
 
  private:
   using SimpleGatePtr = std::shared_ptr<SimpleGate>;
@@ -200,8 +200,8 @@ class Mocus {
   ///
   /// @param[in] gate  The simple gate as a parent for processing.
   /// @param[out] mcs  Minimal cut sets.
-  void FindMcsFromSimpleGate(const SimpleGatePtr& gate,
-                             std::vector<Set>* mcs) noexcept;
+  void AnalyzeSimpleGate(const SimpleGatePtr& gate,
+                         std::vector<Set>* mcs) noexcept;
 
   /// Finds minimal cut sets from cut sets.
   /// Reduces unique cut sets to minimal cut sets.
@@ -221,7 +221,7 @@ class Mocus {
                        std::vector<Set>* mcs) noexcept;
 
   const BooleanGraph* fault_tree_;  ///< The main fault tree.
-  std::vector<Set> imcs_;  ///< Min cut sets with indexed events.
+  std::vector<std::vector<int>> cut_sets_;  ///< Min cut sets with indices.
   /// Limit on the size of the minimal cut sets for performance reasons.
   int limit_order_;
 };

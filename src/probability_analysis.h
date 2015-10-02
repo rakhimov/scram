@@ -241,7 +241,7 @@ class ProbabilityAnalyzer : public ProbabilityAnalyzerBase {
   ///
   /// @returns The total probability of the graph or cut sets.
   double CalculateTotalProbability() noexcept {
-    return calc_->Calculate(fta_->algorithm()->GetGeneratedMcs(), var_probs_);
+    return calc_->Calculate(fta_->algorithm()->cut_sets(), var_probs_);
   }
 
   /// @returns Fault tree analyzer as given to this analyzer.
