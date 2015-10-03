@@ -30,7 +30,8 @@ class OpenExpression : public Expression {
  public:
   explicit OpenExpression(double m = 1, double s = 1, double mn = 0,
                           double mx = 0)
-      : mean(m),
+      : Expression::Expression({}),
+        mean(m),
         sample(s),
         min(mn),
         max(mx) {}

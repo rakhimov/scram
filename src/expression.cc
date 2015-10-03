@@ -59,7 +59,8 @@ void Expression::GatherNodesAndConnectors() {
 
 Parameter::Parameter(const std::string& name, const std::string& base_path,
                      bool is_public)
-      : Role::Role(is_public, base_path),
+      : Expression::Expression({}),
+        Role::Role(is_public, base_path),
         name_(name),
         unit_(kUnitless),
         mark_(""),
@@ -291,15 +292,14 @@ double BetaDeviate::Sample() noexcept {
 }
 
 Histogram::Histogram(const std::vector<ExpressionPtr>& boundaries,
-                     const std::vector<ExpressionPtr>& weights) {
+                     const std::vector<ExpressionPtr>& weights)
+    : RandomDeviate::RandomDeviate(boundaries) {
   if (weights.size() != boundaries.size()) {
     throw InvalidArgument("The number of weights is not equal to the number"
                           " of boundaries.");
   }
   boundaries_ = boundaries;
   weights_ = weights;
-  Expression::args_.insert(Expression::args_.end(), boundaries.begin(),
-                           boundaries.end());
   Expression::args_.insert(Expression::args_.end(), weights.begin(),
                            weights.end());
 }

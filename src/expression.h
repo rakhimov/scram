@@ -111,14 +111,6 @@ class Expression {
   }
 
  protected:
-  /// Constructor for use by derived classes
-  /// that do not have or need any arguments
-  /// or can't register arguments on their construction.
-  ///
-  /// @note Derived classes must register their arguments
-  ///       for validation and other common functionality.
-  Expression() {}
-
   bool sampled_ = false;  ///< Indication if the expression is already sampled.
   double sampled_value_ = 0;  ///< The sampled value.
   std::vector<ExpressionPtr> args_;  ///< Expressions arguments.
@@ -232,7 +224,10 @@ class Parameter : public Expression, public Element, public Role {
 /// This is for the system mission time.
 class MissionTime : public Expression {
  public:
-  MissionTime() : mission_time_(-1), unit_(kHours) {}
+  MissionTime()
+      : Expression::Expression({}),
+        mission_time_(-1),
+        unit_(kHours) {}
 
   /// Sets the mission time.
   /// This function is expected to be used only once.
@@ -256,7 +251,7 @@ class MissionTime : public Expression {
   bool IsConstant() noexcept { return true; }
 
  private:
-  double mission_time_;  ///< The constant's value.
+  double mission_time_;  ///< The system mission time.
   Units unit_;  ///< Units of this parameter.
 };
 
@@ -264,27 +259,33 @@ class MissionTime : public Expression {
 /// Indicates a constant value.
 class ConstantExpression : public Expression {
  public:
-  /// Constructor for float values.
+  /// Constructor for numerical values.
   ///
   /// @param[in] val  Float numerical value.
-  explicit ConstantExpression(double val) : value_(val) {}
+  explicit ConstantExpression(double val)
+      : Expression::Expression({}),
+        value_(val) {}
 
-  /// Constructor for integer values.
+  /// Constructor for numerical values.
   ///
   /// @param[in] val  Integer numerical value.
-  explicit ConstantExpression(int val) : value_(val) {}
+  explicit ConstantExpression(int val)
+      : Expression::Expression({}),
+        value_(val) {}
 
   /// Constructor for boolean values.
   ///
   /// @param[in] val  true for 1 and false for 0 value of this constant.
-  explicit ConstantExpression(bool val) : value_(val ? 1 : 0) {}
+  explicit ConstantExpression(bool val)
+      : Expression::Expression({}),
+        value_(val ? 1 : 0) {}
 
   double Mean() noexcept { return value_; }
   double Sample() noexcept { return value_; }
   bool IsConstant() noexcept { return true; }
 
  private:
-  double value_;  ///< The constant's value.
+  double value_;  ///< The Constant value.
 };
 
 /// @class ExponentialExpression
@@ -618,7 +619,7 @@ class Histogram : public RandomDeviate {
   /// @throws InvalidArgument  The boundaries container size is not equal to
   ///                          weights container size.
   ///
-  /// @note This description of histogram sampling is for probabilities mostly.
+  /// @note This description of histogram sampling is mostly for probabilities.
   ///       Therefore, it is not flexible.
   ///       Currently, it allows sampling both boundaries and weights.
   ///       This behavior makes checking
@@ -699,7 +700,6 @@ class Neg : public Expression {
 class Add : public Expression {
  public:
   using Expression::Expression;  // Base class constructors with arguments.
-  Add() = delete;
 
   double Mean() noexcept {
     assert(!args_.empty());
@@ -740,7 +740,6 @@ class Add : public Expression {
 class Sub : public Expression {
  public:
   using Expression::Expression;  // Base class constructors with arguments.
-  Sub() = delete;
 
   double Mean() noexcept {
     assert(!args_.empty());
@@ -791,7 +790,6 @@ class Sub : public Expression {
 class Mul : public Expression {
  public:
   using Expression::Expression;  // Base class constructors with arguments.
-  Mul() = delete;
 
   double Mean() noexcept {
     assert(!args_.empty());
@@ -863,7 +861,6 @@ class Mul : public Expression {
 class Div : public Expression {
  public:
   using Expression::Expression;  // Base class constructors with arguments.
-  Div() = delete;
 
   /// @throws InvalidArgument  Division by 0.
   void Validate();
