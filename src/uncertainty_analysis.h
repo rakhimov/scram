@@ -23,7 +23,6 @@
 #define SCRAM_SRC_UNCERTAINTY_ANALYSIS_H_
 
 #include <memory>
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -115,9 +114,8 @@ class UncertaintyAnalysis : public Analysis {
 /// @class UncertaintyAnalyzer
 /// Uncertainty analysis facility.
 ///
-/// @tparam Algorithm  Qualitative analysis algorithm.
 /// @tparam Calculator  Quantitative analysis calculator.
-template<typename Algorithm, typename Calculator>
+template<typename Calculator>
 class UncertaintyAnalyzer : public UncertaintyAnalysis {
  public:
   /// Constructs uncertainty analyzer from probability analyzer.
@@ -130,8 +128,7 @@ class UncertaintyAnalyzer : public UncertaintyAnalysis {
   ///
   /// @post Probability analyzer's probability values are
   ///       reset to the original values (event probabilities).
-  explicit UncertaintyAnalyzer(
-      ProbabilityAnalyzer<Algorithm, Calculator>* prob_analyzer)
+  explicit UncertaintyAnalyzer(ProbabilityAnalyzer<Calculator>* prob_analyzer)
       : UncertaintyAnalysis::UncertaintyAnalysis(prob_analyzer),
         prob_analyzer_(prob_analyzer) {}
 
@@ -140,12 +137,11 @@ class UncertaintyAnalyzer : public UncertaintyAnalysis {
 
  private:
   /// Calculator of the total probability.
-  ProbabilityAnalyzer<Algorithm, Calculator>* prob_analyzer_;
+  ProbabilityAnalyzer<Calculator>* prob_analyzer_;
 };
 
-template<typename Algorithm, typename Calculator>
-std::vector<double>
-UncertaintyAnalyzer<Algorithm, Calculator>::Sample() noexcept {
+template<typename Calculator>
+std::vector<double> UncertaintyAnalyzer<Calculator>::Sample() noexcept {
   std::vector<std::pair<int, BasicEvent*>> uncertain_events =
       UncertaintyAnalysis::FilterUncertainEvents(prob_analyzer_->graph());
   std::vector<double>& var_probs = prob_analyzer_->var_probs();

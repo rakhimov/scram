@@ -21,6 +21,8 @@
 
 #include "probability_analysis.h"
 
+#include <algorithm>
+
 namespace scram {
 
 ProbabilityAnalysis::ProbabilityAnalysis(const FaultTreeAnalysis* fta)
@@ -41,6 +43,79 @@ void ProbabilityAnalysis::Analyze() noexcept {
   analysis_time_ += DUR(p_time);
 }
 
+double CutSetCalculator::Calculate(
+    const CutSet& cut_set,
+    const std::vector<double>& var_probs) noexcept {
+  if (cut_set.empty()) return 0;
+  double p_sub_set = 1;  // 1 is for multiplication.
+  for (int member : cut_set) {
+    if (member > 0) {
+      p_sub_set *= var_probs[member];
+    } else {
+      p_sub_set *= 1 - var_probs[std::abs(member)];
+    }
+  }
+  return p_sub_set;
+}
+
+double RareEventCalculator::Calculate(
+    const std::vector<CutSet>& cut_sets,
+    const std::vector<double>& var_probs) noexcept {
+  if (CutSetCalculator::CheckUnity(cut_sets)) return 1;
+  double sum = 0;
+  for (const auto& cut_set : cut_sets) {
+    assert(!cut_set.empty() && "Detected an empty cut set.");
+    sum += CutSetCalculator::Calculate(cut_set, var_probs);
+  }
+  return sum;
+}
+
+double McubCalculator::Calculate(
+    const std::vector<CutSet>& cut_sets,
+    const std::vector<double>& var_probs) noexcept {
+  if (CutSetCalculator::CheckUnity(cut_sets)) return 1;
+  double m = 1;
+  for (const auto& cut_set : cut_sets) {
+    assert(!cut_set.empty() && "Detected an empty cut set.");
+    m *= 1 - CutSetCalculator::Calculate(cut_set, var_probs);
+  }
+  return 1 - m;
+}
+
 ProbabilityAnalyzerBase::~ProbabilityAnalyzerBase() {}  ///< Default.
+
+double ProbabilityAnalyzer<Bdd>::CalculateTotalProbability() noexcept {
+  CLOCK(calc_time);  // BDD based calculation time.
+  LOG(DEBUG4) << "Calculating probability with BDD...";
+  current_mark_ = !current_mark_;
+  double prob = ProbabilityAnalyzer::CalculateProbability(
+      bdd_graph_->root().vertex,
+      current_mark_);
+  if (bdd_graph_->root().complement) prob = 1 - prob;
+  LOG(DEBUG4) << "Calculated probability " << prob << " in " << DUR(calc_time);
+  return prob;
+}
+
+double ProbabilityAnalyzer<Bdd>::CalculateProbability(
+    const VertexPtr& vertex,
+    bool mark) noexcept {
+  if (vertex->terminal()) return 1;
+  ItePtr ite = Ite::Ptr(vertex);
+  if (ite->mark() == mark) return ite->prob();
+  ite->mark(mark);
+  double var_prob = 0;
+  if (ite->module()) {
+    const Bdd::Function& res = bdd_graph_->gates().find(ite->index())->second;
+    var_prob = ProbabilityAnalyzer::CalculateProbability(res.vertex, mark);
+    if (res.complement) var_prob = 1 - var_prob;
+  } else {
+    var_prob = var_probs_[ite->index()];
+  }
+  double high = ProbabilityAnalyzer::CalculateProbability(ite->high(), mark);
+  double low = ProbabilityAnalyzer::CalculateProbability(ite->low(), mark);
+  if (ite->complement_edge()) low = 1 - low;
+  ite->prob(var_prob * high + (1 - var_prob) * low);
+  return ite->prob();
+}
 
 }  // namespace scram

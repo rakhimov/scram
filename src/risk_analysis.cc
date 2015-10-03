@@ -109,15 +109,15 @@ template<typename Algorithm, typename Calculator>
 void RiskAnalysis::RunAnalysis(
     const std::string& name,
     const FaultTreeAnalyzer<Algorithm>* fta) noexcept {
-  auto* pa = new ProbabilityAnalyzer<Algorithm, Calculator>(fta);
+  auto* pa = new ProbabilityAnalyzer<Calculator>(fta);
   pa->Analyze();
   if (kSettings_.importance_analysis()) {
-    auto* ia = new ImportanceAnalyzer<Algorithm, Calculator>(pa);
+    auto* ia = new ImportanceAnalyzer<Calculator>(pa);
     ia->Analyze();
     importance_analyses_.emplace(name, ImportanceAnalysisPtr(ia));
   }
   if (kSettings_.uncertainty_analysis()) {
-    auto* ua = new UncertaintyAnalyzer<Algorithm, Calculator>(pa);
+    auto* ua = new UncertaintyAnalyzer<Calculator>(pa);
     ua->Analyze();
     uncertainty_analyses_.emplace(name, UncertaintyAnalysisPtr(ua));
   }

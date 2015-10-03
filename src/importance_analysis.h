@@ -22,11 +22,9 @@
 #ifndef SCRAM_SRC_IMPORTANCE_ANALYSIS_H_
 #define SCRAM_SRC_IMPORTANCE_ANALYSIS_H_
 
-#include <algorithm>
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -84,16 +82,15 @@ class ImportanceAnalysis : public Analysis {
   }
 
  protected:
+  using CutSet = std::vector<int>;
+
   /// Gathers all events present in cut sets.
   /// Only this events can have importance factors.
-  ///
-  /// @tparam CutSet  An iterable container of unique elements.
   ///
   /// @param[in] graph  Boolean graph with basic event indices and pointers.
   /// @param[in] cut_sets  Cut sets with basic event indices.
   ///
   /// @returns A unique collection of importance basic events.
-  template<typename CutSet>
   std::vector<std::pair<int, BasicEventPtr>> GatherImportantEvents(
       const BooleanGraph* graph,
       const std::vector<CutSet>& cut_sets) noexcept;
@@ -121,32 +118,13 @@ class ImportanceAnalysis : public Analysis {
   std::vector<std::pair<BasicEventPtr, ImportanceFactors>> important_events_;
 };
 
-template<typename CutSet>
-std::vector<std::pair<int, std::shared_ptr<BasicEvent>>>
-ImportanceAnalysis::GatherImportantEvents(
-    const BooleanGraph* graph,
-    const std::vector<CutSet>& cut_sets) noexcept {
-  std::vector<std::pair<int, BasicEventPtr>> important_events;
-  std::unordered_set<int> unique_indices;
-  for (const auto& cut_set : cut_sets) {
-    for (int index : cut_set) {
-      if (unique_indices.count(std::abs(index))) continue;  // Most likely.
-      int pos_index = std::abs(index);
-      unique_indices.insert(pos_index);
-      important_events.emplace_back(pos_index,
-                                    graph->GetBasicEvent(pos_index));
-    }
-  }
-  return important_events;
-}
-
 /// @class ImportanceAnalyzer
 /// Analyzer of importance factors
 /// with the help from probability analyzers.
 ///
-/// @tparam Algorithm  Qualitative analysis algorithm.
-template<typename Algorithm, typename Calculator>
-class ImportanceAnalyzer : public ImportanceAnalysis {
+/// @tparam Calculator  Quantitative calculator of probability values.
+template<typename Calculator>
+class ImportanceAnalyzerBase : public ImportanceAnalysis {
  public:
   /// Constructs importance analyzer from probability analyzer.
   /// Probability analyzer facilities are used
@@ -158,29 +136,47 @@ class ImportanceAnalyzer : public ImportanceAnalysis {
   ///
   /// @post Probability analyzer's probability values are
   ///       reset to the original values (event probabilities).
-  explicit ImportanceAnalyzer(
-      ProbabilityAnalyzer<Algorithm, Calculator>* prob_analyzer)
+  explicit ImportanceAnalyzerBase(
+      ProbabilityAnalyzer<Calculator>* prob_analyzer)
       : ImportanceAnalysis::ImportanceAnalysis(prob_analyzer),
         prob_analyzer_(prob_analyzer) {}
+
+  virtual ~ImportanceAnalyzerBase() = 0;  ///< Abstract class.
 
   std::vector<std::pair<int, BasicEventPtr>> GatherImportantEvents() noexcept {
     return ImportanceAnalysis::GatherImportantEvents(
         prob_analyzer_->graph(),
-        prob_analyzer_->fta()->algorithm()->cut_sets());
+        prob_analyzer_->cut_sets());
   }
-
-  double CalculateMif(int index) noexcept;
 
   double p_total() noexcept { return prob_analyzer_->p_total(); }
 
- private:
+ protected:
   /// Calculator of the total probability.
-  ProbabilityAnalyzer<Algorithm, Calculator>* prob_analyzer_;
+  ProbabilityAnalyzer<Calculator>* prob_analyzer_;
 };
 
-template<typename Algorithm, typename Calculator>
-double
-ImportanceAnalyzer<Algorithm, Calculator>::CalculateMif(int index) noexcept {
+template<typename Calculator>
+ImportanceAnalyzerBase<Calculator>::~ImportanceAnalyzerBase() {}
+
+/// @class ImportanceAnalyzer
+/// Analyzer of importance factors
+/// with the help from probability analyzers.
+///
+/// @tparam Calculator  Quantitative calculator of probability values.
+template<typename Calculator>
+class ImportanceAnalyzer : public ImportanceAnalyzerBase<Calculator> {
+ public:
+  using ImportanceAnalyzerBase<Calculator>::ImportanceAnalyzerBase;
+
+  double CalculateMif(int index) noexcept;
+
+ private:
+  using ImportanceAnalyzerBase<Calculator>::prob_analyzer_;
+};
+
+template<typename Calculator>
+double ImportanceAnalyzer<Calculator>::CalculateMif(int index) noexcept {
   std::vector<double>& var_probs = prob_analyzer_->var_probs();
   // Calculate P(top/event)
   var_probs[index] = 1;
@@ -199,37 +195,27 @@ ImportanceAnalyzer<Algorithm, Calculator>::CalculateMif(int index) noexcept {
   return p_e - p_not_e;
 }
 
-/// @class ImportanceAnalyzer<Algorithm, Bdd>
+/// @class ImportanceAnalyzer<Bdd>
 /// Specialization of importance analyzer with Binary Decision Diagrams.
-///
-/// @tparam Algorithm  Qualitative analysis algorithm.
-template<typename Algorithm>
-class ImportanceAnalyzer<Algorithm, Bdd> : public ImportanceAnalysis {
+template<>
+class ImportanceAnalyzer<Bdd> : public ImportanceAnalyzerBase<Bdd> {
  public:
   /// Constructs importance analyzer from probability analyzer.
   /// Probability analyzer facilities are used
   /// to calculate the total and conditional probabilities for factors.
   ///
   /// @param[in] prob_analyzer  Instantiated probability analyzer.
-  explicit ImportanceAnalyzer(
-      ProbabilityAnalyzer<Algorithm, Bdd>* prob_analyzer)
-      : ImportanceAnalysis::ImportanceAnalysis(prob_analyzer),
-        prob_analyzer_(prob_analyzer),
+  explicit ImportanceAnalyzer(ProbabilityAnalyzer<Bdd>* prob_analyzer)
+      : ImportanceAnalyzerBase<Bdd>::ImportanceAnalyzerBase(prob_analyzer),
         bdd_graph_(prob_analyzer->bdd_graph()) {}
 
-  std::vector<std::pair<int, BasicEventPtr>> GatherImportantEvents() noexcept {
-    return ImportanceAnalysis::GatherImportantEvents(
-        prob_analyzer_->graph(),
-        prob_analyzer_->fta()->algorithm()->cut_sets());
-  }
-
   double CalculateMif(int index) noexcept;
-
-  double p_total() noexcept { return prob_analyzer_->p_total(); }
 
  private:
   using VertexPtr = std::shared_ptr<Vertex>;
   using ItePtr = std::shared_ptr<Ite>;
+
+  using ImportanceAnalyzerBase<Bdd>::prob_analyzer_;
 
   /// Calculates Marginal Importance Factor of a variable.
   ///
@@ -251,80 +237,8 @@ class ImportanceAnalyzer<Algorithm, Bdd> : public ImportanceAnalysis {
   /// @returns Saved probability value of the vertex.
   double RetrieveProbability(const VertexPtr& vertex) noexcept;
 
-  /// Calculator of the total probability.
-  ProbabilityAnalyzer<Algorithm, Bdd>* prob_analyzer_;
-
   Bdd* bdd_graph_;  ///< Binary decision diagram for the analyzer.
 };
-
-template<typename Algorithm>
-double
-ImportanceAnalyzer<Algorithm, Bdd>::CalculateMif(int index) noexcept {
-  VertexPtr root = bdd_graph_->root().vertex;
-  if (root->terminal()) return 0;
-  bool original_mark = Ite::Ptr(root)->mark();
-
-  int order = bdd_graph_->index_to_order().find(index)->second;
-  double mif = ImportanceAnalyzer::CalculateMif(bdd_graph_->root().vertex,
-                                                order,
-                                                !original_mark);
-  bdd_graph_->ClearMarks(original_mark);
-  return mif;
-}
-
-template<typename Algorithm>
-double ImportanceAnalyzer<Algorithm, Bdd>::CalculateMif(const VertexPtr& vertex,
-                                                        int order,
-                                                        bool mark) noexcept {
-  if (vertex->terminal()) return 0;
-  ItePtr ite = Ite::Ptr(vertex);
-  if (ite->mark() == mark) return ite->factor();
-  ite->mark(mark);
-  if (ite->order() > order) {
-    if (!ite->module()) {
-      ite->factor(0);
-    } else {  /// @todo Detect if the variable is in the module.
-      // The assumption is
-      // that the order of a module is always larger
-      // than the order of its variables.
-      double high = ImportanceAnalyzer::RetrieveProbability(ite->high());
-      double low = ImportanceAnalyzer::RetrieveProbability(ite->low());
-      if (ite->complement_edge()) low = 1 - low;
-      const Bdd::Function& res = bdd_graph_->gates().find(ite->index())->second;
-      double mif = ImportanceAnalyzer::CalculateMif(res.vertex, order, mark);
-      if (res.complement) mif = -mif;
-      ite->factor((high - low) * mif);
-    }
-  } else if (ite->order() == order) {
-    assert(!ite->module() && "A variable can't be a module.");
-    double high = ImportanceAnalyzer::RetrieveProbability(ite->high());
-    double low = ImportanceAnalyzer::RetrieveProbability(ite->low());
-    if (ite->complement_edge()) low = 1 - low;
-    ite->factor(high - low);
-  } else  {
-    assert(ite->order() < order);
-    double var_prob = 0;
-    if (ite->module()) {
-      const Bdd::Function& res = bdd_graph_->gates().find(ite->index())->second;
-      var_prob = ImportanceAnalyzer::RetrieveProbability(res.vertex);
-      if (res.complement) var_prob = 1 - var_prob;
-    } else {
-      var_prob = prob_analyzer_->var_probs()[ite->index()];
-    }
-    double high = ImportanceAnalyzer::CalculateMif(ite->high(), order, mark);
-    double low = ImportanceAnalyzer::CalculateMif(ite->low(), order, mark);
-    if (ite->complement_edge()) low = -low;
-    ite->factor(var_prob * high + (1 - var_prob) * low);
-  }
-  return ite->factor();
-}
-
-template<typename Algorithm>
-double ImportanceAnalyzer<Algorithm, Bdd>::RetrieveProbability(
-    const VertexPtr& vertex) noexcept {
-  if (vertex->terminal()) return 1;
-  return Ite::Ptr(vertex)->prob();
-}
 
 }  // namespace scram
 
