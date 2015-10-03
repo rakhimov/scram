@@ -271,6 +271,10 @@ class FaultTreeAnalyzer : public FaultTreeAnalysis {
   /// @returns Pointer to the analysis algorithm.
   const Algorithm* algorithm() const { return algorithm_.get(); }
 
+  /// @returns Pointer to the analysis algorithm
+  ///          for use by other analyses.
+  Algorithm* algorithm() { return algorithm_.get(); }
+
   /// @returns Pointer to the Boolean graph representing the fault tree.
   const BooleanGraph* graph() const { return graph_.get(); }
 

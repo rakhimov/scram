@@ -84,6 +84,38 @@ double McubCalculator::Calculate(
 
 ProbabilityAnalyzerBase::~ProbabilityAnalyzerBase() {}  ///< Default.
 
+ProbabilityAnalyzer<Bdd>::ProbabilityAnalyzer(FaultTreeAnalyzer<Bdd>* fta)
+    : ProbabilityAnalyzerBase::ProbabilityAnalyzerBase(fta),
+      owner_(false) {
+  LOG(DEBUG2) << "Re-using BDD from FaultTreeAnalyzer for ProbabilityAnalyzer";
+  bdd_graph_ = fta->algorithm();
+  VertexPtr root = bdd_graph_->root().vertex;
+  current_mark_ = root->terminal() ? false : Ite::Ptr(root)->mark();
+}
+
+ProbabilityAnalyzer<Bdd>::~ProbabilityAnalyzer() noexcept {
+  if (owner_) delete bdd_graph_;
+}
+
+void ProbabilityAnalyzer<Bdd>::CreateBdd(
+    const std::shared_ptr<Gate>& root) noexcept {
+  CLOCK(ft_creation);
+  BooleanGraph* bool_graph = new BooleanGraph(root, kSettings_.ccf_analysis());
+  LOG(DEBUG2) << "Boolean graph is created in " << DUR(ft_creation);
+  CLOCK(prep_time);  // Overall preprocessing time.
+  LOG(DEBUG2) << "Preprocessing...";
+  Preprocessor* preprocessor = new CustomPreprocessor<Bdd>(bool_graph);
+  preprocessor->Run();
+  delete preprocessor;  // No exceptions are expected.
+  LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
+
+  CLOCK(bdd_time);  // BDD based calculation time.
+  LOG(DEBUG2) << "Creating BDD for ProbabilityAnalysis...";
+  bdd_graph_ = new Bdd(bool_graph, kSettings_);
+  LOG(DEBUG2) << "BDD is created in " << DUR(bdd_time);
+  delete bool_graph;  // The original graph of FTA is usable with the BDD.
+}
+
 double ProbabilityAnalyzer<Bdd>::CalculateTotalProbability() noexcept {
   CLOCK(calc_time);  // BDD based calculation time.
   LOG(DEBUG4) << "Calculating probability with BDD...";

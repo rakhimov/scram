@@ -106,9 +106,8 @@ void RiskAnalysis::RunAnalysis(const std::string& name,
 }
 
 template<typename Algorithm, typename Calculator>
-void RiskAnalysis::RunAnalysis(
-    const std::string& name,
-    const FaultTreeAnalyzer<Algorithm>* fta) noexcept {
+void RiskAnalysis::RunAnalysis(const std::string& name,
+                               FaultTreeAnalyzer<Algorithm>* fta) noexcept {
   auto* pa = new ProbabilityAnalyzer<Calculator>(fta);
   pa->Analyze();
   if (kSettings_.importance_analysis()) {

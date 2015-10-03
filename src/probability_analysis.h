@@ -125,7 +125,7 @@ class RareEventCalculator : private CutSetCalculator {
                    const std::vector<double>& var_probs) noexcept;
 };
 
-//// @class McubCalculator
+/// @class McubCalculator
 /// Quantitative calculator of probability values
 /// with the Min-Cut-Upper Bound approximation.
 class McubCalculator : private CutSetCalculator {
@@ -230,17 +230,38 @@ class ProbabilityAnalyzer<Bdd> : public ProbabilityAnalyzerBase {
   template<typename Algorithm>
   explicit ProbabilityAnalyzer(const FaultTreeAnalyzer<Algorithm>* fta);
 
+  /// Reuses BDD structures from Fault tree analyzer.
+  ///
+  /// @param[in] fta  Finished fault tree analyzer with BDD algorithms.
+  ///
+  /// @pre BDD is fully formed and used.
+  ///
+  /// @post FaultTreeAnalyzer is not corrupted
+  ///       by use of its BDD internals.
+  explicit ProbabilityAnalyzer(FaultTreeAnalyzer<Bdd>* fta);
+
+  /// Deletes the Boolean graph and BDD
+  /// only if ProbabilityAnalyzer is the owner of them.
+  ~ProbabilityAnalyzer() noexcept;
+
   /// Calculates the total probability.
   ///
   /// @returns The total probability of the graph or cut sets.
   double CalculateTotalProbability() noexcept;
 
   /// @returns Binary decision diagram used for calculations.
-  Bdd* bdd_graph() { return bdd_graph_.get(); }
+  Bdd* bdd_graph() { return bdd_graph_; }
 
  private:
   using VertexPtr = std::shared_ptr<Vertex>;
   using ItePtr = std::shared_ptr<Ite>;
+
+  /// Creates a new BDD for use by the analyzer.
+  ///
+  /// @param[in] root  The root gate of the fault tree.
+  ///
+  /// @pre The function is called in the constructor only once.
+  void CreateBdd(const std::shared_ptr<Gate>& root) noexcept;
 
   /// Calculates exact probability
   /// of a function graph represented by its root BDD vertex.
@@ -254,34 +275,19 @@ class ProbabilityAnalyzer<Bdd> : public ProbabilityAnalyzerBase {
   ///          it will not be traversed and updated with a probability value.
   double CalculateProbability(const VertexPtr& vertex, bool mark) noexcept;
 
-  std::unique_ptr<BooleanGraph> bool_graph_;  ///< Indexation graph.
-  std::unique_ptr<Bdd> bdd_graph_;  ///< The main BDD graph for analysis.
+  Bdd* bdd_graph_;  ///< The main BDD graph for analysis.
   bool current_mark_; ///< To keep track of BDD current mark.
+  bool owner_;  ///< Indication that pointers are handles.
 };
 
 template<typename Algorithm>
 ProbabilityAnalyzer<Bdd>::ProbabilityAnalyzer(
     const FaultTreeAnalyzer<Algorithm>* fta)
     : ProbabilityAnalyzerBase::ProbabilityAnalyzerBase(fta),
-      current_mark_(false) {
+      current_mark_(false),
+      owner_(true) {
   CLOCK(main_time);
-  CLOCK(ft_creation);
-  bool_graph_ = std::unique_ptr<BooleanGraph>(
-      new BooleanGraph(fta->top_event(), kSettings_.ccf_analysis()));
-  LOG(DEBUG2) << "Boolean graph is created in " << DUR(ft_creation);
-  assert(fta->graph()->basic_events() == bool_graph_->basic_events() &&
-         "Boolean graph is not stable, or the fault tree is corrupted!");
-  CLOCK(prep_time);  // Overall preprocessing time.
-  LOG(DEBUG2) << "Preprocessing...";
-  Preprocessor* preprocessor = new CustomPreprocessor<Bdd>(bool_graph_.get());
-  preprocessor->Run();
-  delete preprocessor;  // No exceptions are expected.
-  LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
-
-  CLOCK(bdd_time);  // BDD based calculation time.
-  LOG(DEBUG2) << "Creating BDD for ProbabilityAnalysis...";
-  bdd_graph_ = std::unique_ptr<Bdd>(new Bdd(bool_graph_.get(), kSettings_));
-  LOG(DEBUG2) << "BDD is created in " << DUR(bdd_time);
+  ProbabilityAnalyzer::CreateBdd(fta->top_event());
   analysis_time_ = DUR(main_time);
 }
 

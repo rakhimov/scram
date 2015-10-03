@@ -154,9 +154,12 @@ class RiskAnalysis : public Analysis {
   ///
   /// @param[in] name  Identificator for analyses.
   /// @param[in] fta  The result of Qualitative analysis.
+  ///
+  /// @pre FaultTreeAnalyzer is ready to tolerate
+  ///      giving its internals to Quantitative analyzers.
   template<typename Algorithm, typename Calculator>
   void RunAnalysis(const std::string& name,
-                   const FaultTreeAnalyzer<Algorithm>* fta) noexcept;
+                   FaultTreeAnalyzer<Algorithm>* fta) noexcept;
 
   ModelPtr model_;  ///< Analysis model with constructs.
 
