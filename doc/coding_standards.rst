@@ -32,7 +32,7 @@ Deviations from the GCSG
 - Exceptions are allowed
 - Prefer streams to ``printf-like`` routines
 - Name mutator functions without ``set_`` prefix
-- Multiple inheritance is allowed (mostly for mixins)
+- Multiple *implementation* inheritance is allowed (mostly for mixins)
 
 
 Additional Coding Conventions
