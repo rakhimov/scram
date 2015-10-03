@@ -562,6 +562,10 @@ TEST(ExpressionTest, Div) {
   EXPECT_DOUBLE_EQ(2.0 / 4 / 6, dev->Sample());
   EXPECT_DOUBLE_EQ(0.1 / 5 / 6, dev->Min());
   EXPECT_DOUBLE_EQ(10.0 / 1 / 2, dev->Max());
+
+  arguments.push_back(OpenExpressionPtr(new OpenExpression(0, 1, 1, 1)));
+  ASSERT_NO_THROW(dev = ExpressionPtr(new Div(arguments)));
+  EXPECT_THROW(dev->Validate(), InvalidArgument);  // Division by 0.
 }
 
 // Test for the special case of finding maximum and minimum division.

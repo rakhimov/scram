@@ -364,4 +364,14 @@ void Histogram::CheckWeights(const std::vector<ExpressionPtr>& weights) {
   }
 }
 
+void Div::Validate() {
+  assert(!args_.empty());
+  std::vector<ExpressionPtr>::iterator it = args_.begin();
+  for (++it; it != args_.end(); ++it) {
+    const auto& expr = *it;
+    if (!expr->Mean() || !expr->Max() || !expr->Min())
+      throw InvalidArgument("Division by 0.");
+  }
+}
+
 }  // namespace scram

@@ -865,6 +865,9 @@ class Div : public Expression {
   using Expression::Expression;  // Base class constructors with arguments.
   Div() = delete;
 
+  /// @throws InvalidArgument  Division by 0.
+  void Validate();
+
   double Mean() noexcept {
     assert(!args_.empty());
     std::vector<ExpressionPtr>::iterator it = args_.begin();
