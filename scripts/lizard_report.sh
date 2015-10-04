@@ -5,29 +5,30 @@
 # This script must be run in scram/src directory
 
 lizard -s cyclomatic_complexity \
-  bdd.cc \
-  boolean_graph.cc \
-  ccf_group.cc \
-  config.cc \
-  cycle.cc \
-  element.cc \
-  error.cc \
-  event.cc \
-  expression.cc \
-  fault_tree_analysis.cc \
-  fault_tree.cc \
-  grapher.cc \
-  initializer.cc \
-  logger.cc \
-  mocus.cc \
-  model.cc \
-  preprocessor.cc \
-  probability_analysis.cc \
-  relax_ng_validator.cc \
-  reporter.cc \
-  risk_analysis.cc \
   scram.cc \
-  settings.cc \
-  uncertainty_analysis.cc \
+  cycle.cc \
+  error.cc \
+  logger.cc \
+  relax_ng_validator.cc \
   xml_parser.cc \
-  zbdd.cc
+  grapher.cc \
+  reporter.cc \
+  element.cc \
+  expression.cc \
+  event.cc \
+  ccf_group.cc \
+  fault_tree.cc \
+  model.cc \
+  config.cc \
+  settings.cc \
+  initializer.cc \
+  risk_analysis.cc \
+  boolean_graph.cc \
+  preprocessor.cc \
+  mocus.cc \
+  bdd.cc \
+  zbdd.cc \
+  fault_tree_analysis.cc \
+  probability_analysis.cc \
+  importance_analysis.cc \
+  uncertainty_analysis.cc \
