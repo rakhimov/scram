@@ -92,7 +92,7 @@ void Preprocessor::PhaseOne() noexcept {
   }
   if (!graph_->coherent_) {
     LOG(DEBUG3) << "Partial normalization of gates...";
-    Preprocessor::NormalizeGates(false);
+    Preprocessor::NormalizeGates(/*full=*/false);
     LOG(DEBUG3) << "Finished the partial normalization of gates!";
   }
   if (!graph_->null_gates_.empty()) {
@@ -161,8 +161,7 @@ void Preprocessor::PhaseTwo() noexcept {
 void Preprocessor::PhaseThree() noexcept {
   assert(!graph_->normal_);
   LOG(DEBUG3) << "Full normalization of gates...";
-  assert(root_sign_ == 1);
-  Preprocessor::NormalizeGates(true);
+  Preprocessor::NormalizeGates(/*full=*/true);
   graph_->normal_ = true;
   LOG(DEBUG3) << "Finished the full normalization gates!";
 
