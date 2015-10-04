@@ -315,7 +315,7 @@ class Bdd {
   }
 
   /// @returns Mapping of variable indices to their orders.
-  inline const std::unordered_map<int, int>& index_to_order() const {
+  const std::unordered_map<int, int>& index_to_order() const {
     return index_to_order_;
   }
 

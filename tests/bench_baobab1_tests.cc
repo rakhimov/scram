@@ -22,19 +22,36 @@
 namespace scram {
 namespace test {
 
+namespace {
+// Data relevant to all tests.
+std::vector<std::string> input_files = {
+    "./share/scram/input/Baobab/baobab1.xml",
+    "./share/scram/input/Baobab/baobab1-basic-events.xml"};
+}
+
 // Benchmark Tests for Baobab 1 fault tree from XFTA.
-// Test Minimal cut sets.
-TEST_F(RiskAnalysisTest, Baobab_1_Test) {
-  std::vector<std::string> input_files;
-  input_files.push_back("./share/scram/input/Baobab/baobab1.xml");
-  input_files.push_back("./share/scram/input/Baobab/baobab1-basic-events.xml");
-  settings.limit_order(6).probability_analysis(true);
+// Test Minimal cut sets with MOCUS.
+TEST_F(RiskAnalysisTest, Baobab_1_Test_MOCUS) {
+  settings.algorithm("mocus").limit_order(6).probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_NEAR(1.2823e-6, p_total(), 1e-8);  // Probability with BDD.
   // Minimal cut set check.
   EXPECT_EQ(2684, min_cut_sets().size());
   std::vector<int> distr = {0, 0, 1, 1, 70, 400, 2212};
+  EXPECT_EQ(distr, McsDistribution());
+}
+
+// Test with BDD.
+TEST_F(RiskAnalysisTest, Baobab_1_Test_BDD) {
+  settings.algorithm("bdd").probability_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFiles(input_files));
+  ASSERT_NO_THROW(ran->Analyze());
+  EXPECT_NEAR(1.2823e-6, p_total(), 1e-8);  // Probability with BDD.
+  // Minimal cut set check.
+  EXPECT_EQ(46188, min_cut_sets().size());
+  std::vector<int> distr = {0,    0,     1,    1,     70,   400,
+                            2212, 14748, 8460, 10624, 6600, 3072};
   EXPECT_EQ(distr, McsDistribution());
 }
 

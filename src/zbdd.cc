@@ -20,6 +20,8 @@
 
 #include "zbdd.h"
 
+#include "logger.h"
+
 namespace scram {
 
 Zbdd::Zbdd() noexcept
@@ -28,14 +30,42 @@ Zbdd::Zbdd() noexcept
       set_id_(2) {}
 
 Zbdd::Zbdd(const Bdd* bdd) noexcept : Zbdd::Zbdd() {
+  CLOCK(init_time);
+  LOG(DEBUG2) << "Creating ZBDD from BDD...";
   const Bdd::Function& bdd_root = bdd->root();
   root_ = Zbdd::ConvertBdd(bdd_root.vertex, bdd_root.complement, bdd);
+  LOG(DEBUG3) << "The total number of ZBDD nodes generated: " << set_id_ - 1;
+  LOG(DEBUG3) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);
+  LOG(DEBUG2) << "Created ZBDD from BDD in " << DUR(init_time);
+
+  Zbdd::ClearMarks(root_);
+  int number = Zbdd::CountCutSets(root_);
+  LOG(DEBUG3) << "There are " << number << " cut sets in total.";
+  Zbdd::ClearMarks(root_);
 }
 
 void Zbdd::Analyze() noexcept {
+  CLOCK(analysis_time);
+  LOG(DEBUG2) << "Analyzing ZBDD...";
+
+  CLOCK(minimize_time);
+  LOG(DEBUG3) << "Minimizing ZBDD...";
   root_ = Zbdd::Subsume(root_);
-  std::vector<int> seed;
-  Zbdd::GenerateCutSets(root_, &seed, &cut_sets_);
+  LOG(DEBUG3) << "Finished ZBDD minimization in " << DUR(minimize_time);
+  Zbdd::ClearMarks(root_);
+  LOG(DEBUG3) << "The total number of ZBDD nodes generated: " << set_id_ - 1;
+  LOG(DEBUG3) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);
+  Zbdd::ClearMarks(root_);
+  int number = Zbdd::CountCutSets(root_);
+  Zbdd::ClearMarks(root_);
+  LOG(DEBUG3) << "There are " << number << " cut sets in total.";
+
+  CLOCK(gen_time);
+  LOG(DEBUG3) << "Getting cut sets from minimized ZBDD...";
+  cut_sets_ = Zbdd::GenerateCutSets(root_);
+  Zbdd::ClearMarks(root_);
+  LOG(DEBUG3) << cut_sets_.size() << " cut sets are found in " << DUR(gen_time);
+  LOG(DEBUG2) << "Finished ZBDD analysis in " << DUR(analysis_time);
 }
 
 std::shared_ptr<Vertex> Zbdd::ConvertBdd(const VertexPtr& vertex,
@@ -145,35 +175,79 @@ std::shared_ptr<Vertex> Zbdd::Subsume(const VertexPtr& high,
   return computed;
 }
 
-void Zbdd::GenerateCutSets(const VertexPtr& vertex, std::vector<int>* path,
-                           std::vector<CutSet>* cut_sets) noexcept {
+std::vector<std::vector<int>>
+Zbdd::GenerateCutSets(const VertexPtr& vertex) noexcept {
   if (vertex->terminal()) {
-    if (Terminal::Ptr(vertex)->value()) {
-      cut_sets->emplace_back(std::move(*path));
-    }
-    return;  // Don't include 0/NULL sets.
+    if (Terminal::Ptr(vertex)->value()) return {{}};  // The Base set signature.
+    return {};  // Don't include 0/NULL sets.
   }
   SetNodePtr node = SetNode::Ptr(vertex);
-  std::vector<int> seed(*path);
-  Zbdd::GenerateCutSets(node->low(), &seed, cut_sets);
-
+  if (node->mark()) return node->cut_sets();
+  node->mark(true);
+  std::vector<CutSet> low = Zbdd::GenerateCutSets(node->low());
+  std::vector<CutSet> high = Zbdd::GenerateCutSets(node->high());
+  auto& result = low;  // For clarity.
   if (node->module()) {
-    std::vector<CutSet>& sub_sets = module_cut_sets_[node->index()];
-    if (sub_sets.empty()) {
-      std::vector<int> init_path;
-      Zbdd::GenerateCutSets(modules_.find(node->index())->second,
-                            &init_path, &sub_sets);
-    }
-    assert(!sub_sets.empty());
-    for (const auto& sub_set : sub_sets) {
-      std::vector<int> expanded_path(*path);
-      expanded_path.insert(expanded_path.end(), sub_set.begin(), sub_set.end());
-      Zbdd::GenerateCutSets(node->high(), &expanded_path, cut_sets);
+    std::vector<CutSet> module =
+        Zbdd::GenerateCutSets(modules_.find(node->index())->second);
+    for (auto& cut_set : high) {  // Cross-product.
+      for (auto& module_set : module) {
+        CutSet combo = cut_set;
+        combo.insert(combo.end(), module_set.begin(), module_set.end());
+        result.emplace_back(std::move(combo));
+      }
     }
   } else {
-    path->push_back(node->index());
-    Zbdd::GenerateCutSets(node->high(), path, cut_sets);
+    for (auto& cut_set : high) {
+      cut_set.push_back(node->index());
+      result.emplace_back(cut_set);
+    }
   }
+  node->cut_sets(result);
+  return result;
+}
+
+int Zbdd::CountSetNodes(const VertexPtr& vertex) noexcept {
+  if (vertex->terminal()) return 0;
+  SetNodePtr node = SetNode::Ptr(vertex);
+  if (node->mark()) return 0;
+  node->mark(true);
+  int in_module = 0;
+  if (node->module()) {
+    in_module = Zbdd::CountSetNodes(modules_.find(node->index())->second);
+  }
+  return 1 + in_module + Zbdd::CountSetNodes(node->high()) +
+         Zbdd::CountSetNodes(node->low());
+}
+
+void Zbdd::ClearMarks(const VertexPtr& vertex) noexcept {
+  if (vertex->terminal()) return;
+  SetNodePtr node = SetNode::Ptr(vertex);
+  if (!node->mark()) return;
+  node->mark(false);
+  if (node->module()) {
+    Zbdd::ClearMarks(modules_.find(node->index())->second);
+  }
+  Zbdd::ClearMarks(node->high());
+  Zbdd::ClearMarks(node->low());
+}
+
+int Zbdd::CountCutSets(const VertexPtr& vertex) noexcept {
+  if (vertex->terminal()) {
+    if (Terminal::Ptr(vertex)->value()) return 1;
+    return 0;
+  }
+  SetNodePtr node = SetNode::Ptr(vertex);
+  if (node->mark()) return node->count();
+  node->mark(true);
+  int multiplier = 1;  // Multiplier of the module.
+  if (node->module()) {
+    VertexPtr module = modules_.find(node->index())->second;
+    multiplier = Zbdd::CountCutSets(module);
+  }
+  node->count(multiplier * Zbdd::CountCutSets(node->high()) +
+              Zbdd::CountCutSets(node->low()));
+  return node->count();
 }
 
 }  // namespace scram

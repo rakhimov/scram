@@ -37,6 +37,26 @@ class SetNode : public NonTerminal {
  public:
   using NonTerminal::NonTerminal;  ///< Constructor with index and order.
 
+  /// @returns Whatever count is stored in this node.
+  int count() const { return count_; }
+
+  /// Stores numerical value for later retrieval.
+  /// This is a helper functionality
+  /// for counting the number of sets or nodes.
+  ///
+  /// @param[in] number  A number with a meaning for the caller.
+  void count(int number) { count_ = number; }
+
+  /// @returns Cut sets found in the ZBDD represented by this node.
+  const std::vector<std::vector<int>>& cut_sets() const { return cut_sets_; }
+
+  /// Sets the cut sets belonging to this ZBDD.
+  ///
+  /// @param[in] cut_sets  Cut sets calculated from low and high edges.
+  void cut_sets(const std::vector<std::vector<int>>& cut_sets) {
+    cut_sets_ = cut_sets;
+  }
+
   /// Recovers a shared pointer to SetNode from a pointer to Vertex.
   ///
   /// @param[in] vertex  Pointer to a Vertex known to be a SetNode.
@@ -45,6 +65,10 @@ class SetNode : public NonTerminal {
   static std::shared_ptr<SetNode> Ptr(const std::shared_ptr<Vertex>& vertex) {
     return std::static_pointer_cast<SetNode>(vertex);
   }
+
+ private:
+  std::vector<std::vector<int>> cut_sets_;  ///< Cut sets of this node.
+  int count_ = 0;  ///< The number of cut sets, nodes, or anything else.
 };
 
 /// @class Zbdd
@@ -111,15 +135,42 @@ class Zbdd {
   VertexPtr Subsume(const VertexPtr& high, const VertexPtr& low) noexcept;
 
   /// Traverses the reduced ZBDD graph to generate cut sets.
-  /// The generated cut sets are stored in the main container.
   ///
-  /// @param[in] vertex  The node in traversal.
-  /// @param[in, out] path  Current path of high branches.
-  ///                       This container may get modified drastically
-  ///                       upon passing to the main cut sets container.
-  /// @param[in, out] cut_sets  A set of cut sets generated in this graph.
-  void GenerateCutSets(const VertexPtr& vertex, std::vector<int>* path,
-                       std::vector<CutSet>* cut_sets) noexcept;
+  /// @param[in] vertex  The root node in traversal.
+  ///
+  /// @returns A collection of cut sets
+  ///          generated from the ZBDD subgraph.
+  std::vector<std::vector<int>>
+  GenerateCutSets(const VertexPtr& vertex) noexcept;
+
+  /// Counts the number of SetNodes.
+  ///
+  /// @param[in] vertex  The root vertex to start counting.
+  ///
+  /// @returns The total number of SetNode vertices
+  ///          including vertices in modules.
+  ///
+  /// @pre SetNode marks are clear (false).
+  int CountSetNodes(const VertexPtr& vertex) noexcept;
+
+  /// Counts the total number of sets in ZBDD.
+  ///
+  /// @param[in] vertex  The root vertex of ZBDD.
+  ///
+  /// @returns The number of cut sets in ZBDD.
+  ///
+  /// @pre SetNode marks are clear (false).
+  ///
+  /// @warning Integer may overflow for a large ZBDD.
+  int CountCutSets(const VertexPtr& vertex) noexcept;
+
+  /// Cleans up non-terminal vertex marks
+  /// by setting them to "false".
+  ///
+  /// @param[in] vertex  The root vertex of the graph.
+  ///
+  /// @pre The graph is marked "true" contiguously.
+  void ClearMarks(const VertexPtr& vertex) noexcept;
 
   /// Table of unique SetNodes denoting sets.
   /// The key consists of (index, id_high, id_low) triplet.
@@ -139,8 +190,6 @@ class Zbdd {
   const TerminalPtr kEmpty_;  ///< Terminal Empty (Null/0) set.
   int set_id_;  ///< Identification assignment for new set graphs.
   std::unordered_map<int, VertexPtr> subsume_results_;  ///< Memorize subsume.
-  /// Storage for cut sets generated for modules.
-  std::unordered_map<int, std::vector<CutSet>> module_cut_sets_;
   std::vector<CutSet> cut_sets_;  ///< Generated cut sets.
 };
 

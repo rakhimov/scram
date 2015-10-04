@@ -287,10 +287,10 @@ template<typename Algorithm>
 void FaultTreeAnalyzer<Algorithm>::Analyze() noexcept {
   CLOCK(analysis_time);
 
-  CLOCK(ft_creation);
+  CLOCK(graph_creation);
   graph_ = std::unique_ptr<BooleanGraph>(new BooleanGraph(
           FaultTreeDescriptor::top_event(), kSettings_.ccf_analysis()));
-  LOG(DEBUG2) << "Boolean graph is created in " << DUR(ft_creation);
+  LOG(DEBUG2) << "Boolean graph is created in " << DUR(graph_creation);
 
   CLOCK(prep_time);  // Overall preprocessing time.
   LOG(DEBUG2) << "Preprocessing...";
@@ -299,9 +299,13 @@ void FaultTreeAnalyzer<Algorithm>::Analyze() noexcept {
   delete preprocessor;  // No exceptions are expected.
   LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
 
+  CLOCK(algo_time);
+  LOG(DEBUG2) << "Launching the algorithm...";
   algorithm_ =
       std::unique_ptr<Algorithm>(new Algorithm(graph_.get(), kSettings_));
   algorithm_->Analyze();
+  LOG(DEBUG2) << "The algorithm finished in " << DUR(algo_time);
+
   analysis_time_ = DUR(analysis_time);  // Duration of MCS generation.
   FaultTreeAnalysis::SetsToString(algorithm_->cut_sets(), graph_.get());
 }

@@ -51,8 +51,11 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& /*settings*/)
       kOne_(std::make_shared<Terminal>(true)),
       function_id_(2),
       zbdd_(nullptr) {
+  CLOCK(init_time);
+  LOG(DEBUG3) << "Converting Boolean graph into BDD...";
   root_ = Bdd::IfThenElse(fault_tree_->root());
   LOG(DEBUG3) << "The number of BDD generated vertices: " << function_id_ - 1;
+  LOG(DEBUG3) << "Finished Boolean graph conversion in " << DUR(init_time);
 }
 
 Bdd::~Bdd() noexcept {
