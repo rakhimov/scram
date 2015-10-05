@@ -2,23 +2,27 @@
 TODO List for the SCRAM Project
 ###############################
 
-.. note:: Relative, subjective importance within groups is given in *italics*.
-
-
 Low Hanging Fruits
 ==================
 
 - `Issues on GitHub <https://github.com/rakhimov/scram/issues>`_
-
 - `TODO list in the code <https://rakhimov.github.io/scram/api/todo.html>`_
+
+
+.. note:: This To-Do list is for features with high uncertainties.
+          Upon becoming more certain (realistic, clear, ready, doable),
+          the items should graduate to GitHub issues.
+
+.. note:: Relative, subjective importance within groups is given in *italics*.
 
 
 Major Enhancements and Capabilities
 ===================================
 
-- Binary Decision Diagram (BDD) based algorithms. *High*
-- Zero-Suppressed BDD (ZBDD) based algorithms. *High*
 - Incorporation of cut-offs for MOCUS. *High*
+- Incorporation of cut-offs for BDD. *Moderate*
+- Incorporation of cut-offs for ZBDD. *Moderate*
+- Advanced variable ordering heuristics for BDD. *High*
 - Sensitivity analysis. *Moderate*
 - Incorporation of an event tree analysis. *Moderate*
 - Event tree chaining. *Moderate*
@@ -29,13 +33,19 @@ Major Enhancements and Capabilities
     * Guaranteed Success/Failure
 
 - Consequences and Consequence groups. *Moderate*
-- Substitutions to represent Delete Terms, Recovery Rules, and Exchange Event. *Moderate*
+- Substitutions to represent
+  Delete Terms, Recovery Rules, and Exchange Event. *Moderate*
 - Dynamic Fault Tree Analysis. *Moderate*
 
 
 Minor Enhancements and Capabilities
 ===================================
 
+- Joint importance reliability factor. *Low*
+- Analysis for all system gates (qualitative and quantitative).
+  Multi-rooted graph analysis. *Low*
+- Importance factor calculation for gates (formulas). *Low*
+- Uncertainty analysis for importance factors. *Moderate*
 - OpenPSA MEF Support:
 
     * Expressions. *Moderate*

@@ -47,10 +47,10 @@ class CcfGroup : public Element, public Role {
 
   /// Constructor to be used by derived classes.
   ///
-  /// @param[in] name The name of a CCF group.
-  /// @param[in] model CCF model of this group.
-  /// @param[in] base_path The series of containers to get this group.
-  /// @param[in] is_public Whether or not the group is public.
+  /// @param[in] name  The name of a CCF group.
+  /// @param[in] model  CCF model of this group.
+  /// @param[in] base_path  The series of containers to get this group.
+  /// @param[in] is_public  Whether or not the group is public.
   CcfGroup(const std::string& name, const std::string& model,
            const std::string& base_path = "", bool is_public = true);
 
@@ -60,28 +60,28 @@ class CcfGroup : public Element, public Role {
   virtual ~CcfGroup() {}
 
   /// @returns The name of this CCF group.
-  inline const std::string& name() const { return name_; }
+  const std::string& name() const { return name_; }
 
   /// @returns The identifier of this CCF group.
-  inline const std::string& id() const { return id_; }
+  const std::string& id() const { return id_; }
 
   /// @returns The CCF model applied to this group.
-  inline const std::string& model() const { return model_; }
+  const std::string& model() const { return model_; }
 
   /// @returns Members of the CCF group with lower-case names as keys.
-  inline const std::map<std::string, BasicEventPtr>& members() const {
+  const std::map<std::string, BasicEventPtr>& members() const {
     return members_;
   }
 
   /// Adds a basic event into this CCF group.
   /// This function asserts that each basic event has unique string id.
   ///
-  /// @param[in] basic_event A member basic event.
+  /// @param[in] basic_event  A member basic event.
   ///
-  /// @throws DuplicateArgumentError The basic event is already in the group.
-  /// @throws IllegalOperation The probability distribution
-  ///                          for this CCF group is already defined.
-  ///                          No more members are accepted.
+  /// @throws DuplicateArgumentError  The basic event is already in the group.
+  /// @throws IllegalOperation  The probability distribution
+  ///                           for this CCF group is already defined.
+  ///                           No more members are accepted.
   void AddMember(const BasicEventPtr& basic_event);
 
   /// Adds the distribution that describes the probability of
@@ -90,7 +90,7 @@ class CcfGroup : public Element, public Role {
   /// before defining their probabilities.
   /// No more basic events can be added after this function.
   ///
-  /// @param[in] distr The probability distribution of this group.
+  /// @param[in] distr  The probability distribution of this group.
   void AddDistribution(const ExpressionPtr& distr);
 
   /// Adds a CCF factor for the specified model.
@@ -98,10 +98,10 @@ class CcfGroup : public Element, public Role {
   /// and no gaps are allowed between levels.
   /// The default case is to start from 1.
   ///
-  /// @param[in] factor A factor for the CCF model.
-  /// @param[in] level The level of the passed factor.
+  /// @param[in] factor  A factor for the CCF model.
+  /// @param[in] level  The level of the passed factor.
   ///
-  /// @throws ValidationError Level is not what is expected.
+  /// @throws ValidationError  Level is not what is expected.
   virtual void AddFactor(const ExpressionPtr& factor, int level);
 
   /// Checks if the provided distribution is between 0 and 1.
@@ -109,14 +109,14 @@ class CcfGroup : public Element, public Role {
   /// that are members of this CCF group
   /// to give more precise error messages.
   ///
-  /// @throws ValidationError There is an issue with the distribution.
+  /// @throws ValidationError  There is an issue with the distribution.
   void ValidateDistribution();
 
   /// Validates the setup for the CCF model and group.
   /// The passed expressions must be checked for circular logic
   /// before initiating the CCF validation.
   ///
-  /// @throws ValidationError There is an issue with the setup.
+  /// @throws ValidationError  There is an issue with the setup.
   virtual void Validate();
 
   /// Processes the given factors and members
@@ -131,8 +131,8 @@ class CcfGroup : public Element, public Role {
   /// Creates new basic events from members.
   /// The new basic events are included in the database of new events.
   ///
-  /// @param[in] max_level The max level for grouping.
-  /// @param[out] new_events New basic events and their parents.
+  /// @param[in] max_level  The max level for grouping.
+  /// @param[out] new_events  New basic events and their parents.
   virtual void ConstructCcfBasicEvents(
       int max_level,
       std::map<BasicEventPtr, std::set<std::string> >* new_events);
@@ -143,15 +143,15 @@ class CcfGroup : public Element, public Role {
   /// must implement this function
   /// with its own specific formulas and assumptions.
   ///
-  /// @param[in] max_level The max level of grouping.
-  /// @param[out] probabilities Expressions representing probabilities for
-  ///                           each level of groupings for CCF events.
+  /// @param[in] max_level  The max level of grouping.
+  /// @param[out] probabilities  Expressions representing probabilities for
+  ///                            each level of groupings for CCF events.
   virtual void CalculateProb(int max_level,
                              std::map<int, ExpressionPtr>* probabilities) = 0;
 
   /// Simple factorial calculation.
   ///
-  /// @param[in] n Positive number for factorial calculation.
+  /// @param[in] n  Positive number for factorial calculation.
   ///
   /// @returns n factorial.
   int Factorial(int n) { return n ? n * Factorial(n - 1) : 1; }
@@ -175,9 +175,9 @@ class BetaFactorModel : public CcfGroup {
  public:
   /// Constructs the group and sets the model.
   ///
-  /// @param[in] name The name for the group.
-  /// @param[in] base_path The series of containers to get this group.
-  /// @param[in] is_public Whether or not the group is public.
+  /// @param[in] name  The name for the group.
+  /// @param[in] base_path  The series of containers to get this group.
+  /// @param[in] is_public  Whether or not the group is public.
   explicit BetaFactorModel(const std::string& name,
                            const std::string& base_path = "",
                            bool is_public = true)
@@ -186,10 +186,10 @@ class BetaFactorModel : public CcfGroup {
   /// Adds a CCF factor for the beta model.
   /// Only one factor is expected.
   ///
-  /// @param[in] factor A factor for the CCF model.
-  /// @param[in] level The level of the passed factor.
+  /// @param[in] factor  A factor for the CCF model.
+  /// @param[in] level  The level of the passed factor.
   ///
-  /// @throws ValidationError Level is not what is expected.
+  /// @throws ValidationError  Level is not what is expected.
   void AddFactor(const ExpressionPtr& factor, int level) override;
 
  private:
@@ -211,9 +211,9 @@ class MglModel : public CcfGroup {
  public:
   /// Constructs the group and sets the model.
   ///
-  /// @param[in] name The name for the group.
-  /// @param[in] base_path The series of containers to get this group.
-  /// @param[in] is_public Whether or not the group is public.
+  /// @param[in] name  The name for the group.
+  /// @param[in] base_path  The series of containers to get this group.
+  /// @param[in] is_public  Whether or not the group is public.
   explicit MglModel(const std::string& name,
                     const std::string& base_path = "",
                     bool is_public = true)
@@ -222,10 +222,10 @@ class MglModel : public CcfGroup {
   /// Adds a CCF factor for the MGL model.
   /// The factor level must start from 2.
   ///
-  /// @param[in] factor A factor for the CCF model.
-  /// @param[in] level The level of the passed factor.
+  /// @param[in] factor  A factor for the CCF model.
+  /// @param[in] level  The level of the passed factor.
   ///
-  /// @throws ValidationError Level is not what is expected.
+  /// @throws ValidationError  Level is not what is expected.
   void AddFactor(const ExpressionPtr& factor, int level) override;
 
  private:
@@ -241,9 +241,9 @@ class AlphaFactorModel : public CcfGroup {
  public:
   /// Constructs the group and sets the model.
   ///
-  /// @param[in] name The name for the group.
-  /// @param[in] base_path The series of containers to get this group.
-  /// @param[in] is_public Whether or not the group is public.
+  /// @param[in] name  The name for the group.
+  /// @param[in] base_path  The series of containers to get this group.
+  /// @param[in] is_public  Whether or not the group is public.
   explicit AlphaFactorModel(const std::string& name,
                             const std::string& base_path = "",
                             bool is_public = true)
@@ -263,9 +263,9 @@ class PhiFactorModel : public CcfGroup {
  public:
   /// Constructs the group and sets the model.
   ///
-  /// @param[in] name The name for the group.
-  /// @param[in] base_path The series of containers to get this group.
-  /// @param[in] is_public Whether or not the group is public.
+  /// @param[in] name  The name for the group.
+  /// @param[in] base_path  The series of containers to get this group.
+  /// @param[in] is_public  Whether or not the group is public.
   explicit PhiFactorModel(const std::string& name,
                           const std::string& base_path = "",
                           bool is_public = true)
@@ -274,7 +274,7 @@ class PhiFactorModel : public CcfGroup {
   /// In addition to the default validation of CcfGroup,
   /// checks if the given factors' sum is 1.
   ///
-  /// @throws ValidationError There is an issue with the setup.
+  /// @throws ValidationError  There is an issue with the setup.
   ///
   /// @todo Problem with sampling the factors and not getting exactly 1.
   ///       Currently only accepts constant expressions.

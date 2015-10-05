@@ -22,7 +22,10 @@
 
 namespace scram {
 
-Analysis::Analysis(const Settings& settings) : kSettings_(settings) {}
+Analysis::Analysis(const Settings& settings)
+    : kSettings_(settings),
+      warnings_(""),
+      analysis_time_(0) {}
 
 Analysis::~Analysis() {}  ///< Empty body for pure virtual destructor.
 

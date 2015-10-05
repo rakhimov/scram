@@ -36,21 +36,17 @@
 
 namespace scram {
 
-namespace test { class PreprocessorTest; }
-
 /// @class Preprocessor
 /// The class provides main preprocessing operations
 /// over a Boolean graph
 /// to simplify the fault tree
 /// and to help generate minimal cut sets more efficiently.
 class Preprocessor {
-  friend class test::PreprocessorTest;
-
  public:
   /// Constructs a preprocessor of a Boolean graph
   /// representing a fault tree.
   ///
-  /// @param[in] graph The Boolean graph to be preprocessed.
+  /// @param[in] graph  The Boolean graph to be preprocessed.
   ///
   /// @warning There should not be another shared pointer to the root gate
   ///          outside of the passed Boolean graph.
@@ -62,19 +58,10 @@ class Preprocessor {
   ///          which will mess the new structure of the Boolean graph.
   explicit Preprocessor(BooleanGraph* graph) noexcept;
 
-  virtual ~Preprocessor() {}
+  virtual ~Preprocessor() = default;
 
-  /// Performs processing of a fault tree
-  /// to simplify the structure to
-  /// normalized (OR/AND gates only),
-  /// modular (independent sub-trees),
-  /// positive-gate-only (negation normal)
-  /// Boolean graph.
-  ///
-  /// @warning There should not be another smart pointer
-  ///          to the indexed top gate of the fault tree
-  ///          outside of the Boolean graph.
-  virtual void Run() noexcept;
+  /// Runs preprocessor with specified techniques.
+  virtual void Run() = 0;
 
  protected:
   using NodePtr = std::shared_ptr<Node>;
@@ -194,7 +181,7 @@ class Preprocessor {
   /// Propagates a Boolean constant bottom-up.
   /// This is a helper function for initial cleanup of the Boolean graph.
   ///
-  /// @param[in,out] constant The constant to be propagated.
+  /// @param[in,out] constant  The constant to be propagated.
   ///
   /// @note This function works together with
   ///       NULL type and constant gate propagation functions
@@ -206,9 +193,9 @@ class Preprocessor {
   /// The function determines its actions depending on
   /// the type of a gate and state of an argument.
   ///
-  /// @param[in,out] gate The parent gate that contains the arguments.
-  /// @param[in] arg The positive or negative index of the argument.
-  /// @param[in] state False or True constant state of the argument.
+  /// @param[in,out] gate  The parent gate that contains the arguments.
+  /// @param[in] arg  The positive or negative index of the argument.
+  /// @param[in] state  False or True constant state of the argument.
   ///
   /// @note This is a helper function that propagates constants.
   /// @note This function takes into account the sign of the index
@@ -219,8 +206,8 @@ class Preprocessor {
 
   /// Processes Boolean constant argument with True value.
   ///
-  /// @param[in,out] gate The parent gate that contains the arguments.
-  /// @param[in] arg The positive or negative index of the argument.
+  /// @param[in,out] gate  The parent gate that contains the arguments.
+  /// @param[in] arg  The positive or negative index of the argument.
   ///
   /// @note This is a helper function that propagates constants.
   /// @note This function may change the state of the gate.
@@ -229,8 +216,8 @@ class Preprocessor {
 
   /// Processes Boolean constant argument with False value.
   ///
-  /// @param[in,out] gate The parent gate that contains the arguments.
-  /// @param[in] arg The positive or negative index of the argument.
+  /// @param[in,out] gate  The parent gate that contains the arguments.
+  /// @param[in] arg  The positive or negative index of the argument.
   ///
   /// @note This is a helper function that propagates constants.
   /// @note This function may change the state of the gate.
@@ -246,8 +233,8 @@ class Preprocessor {
   /// depending on the logic of the gate
   /// and the logic of the Boolean constant propagation.
   ///
-  /// @param[in,out] gate The gate that contains the arguments to be removed.
-  /// @param[in] arg The positive or negative index of the argument.
+  /// @param[in,out] gate  The gate that contains the arguments to be removed.
+  /// @param[in] arg  The positive or negative index of the argument.
   ///
   /// @note This is a helper function that propagates constants,
   ///       so it is coupled with the logic of
@@ -262,7 +249,7 @@ class Preprocessor {
   /// This is a helper function for algorithms
   /// that may produce and need to remove constant gates.
   ///
-  /// @param[in,out] gate The gate that has become constant.
+  /// @param[in,out] gate  The gate that has become constant.
   ///
   /// @note This function works together with
   ///       NULL type gate propagation function
@@ -277,7 +264,7 @@ class Preprocessor {
   /// This is a helper function for algorithms
   /// that may produce and need to remove NULL type gates.
   ///
-  /// @param[in,out] gate The gate that is NULL type.
+  /// @param[in,out] gate  The gate that is NULL type.
   ///
   /// @note This function works together with
   ///       constant state gate propagation function
@@ -303,9 +290,9 @@ class Preprocessor {
   /// Normalizes the gates of the whole Boolean graph
   /// into OR, AND gates.
   ///
-  /// @param[in] full A flag to handle complex gates like XOR and K/N,
-  ///                 which generate a lot more new gates
-  ///                 and make the structure of the graph more complex.
+  /// @param[in] full  A flag to handle complex gates like XOR and K/N,
+  ///                  which generate a lot more new gates
+  ///                  and make the structure of the graph more complex.
   ///
   /// @note The negation of the top gate is saved
   ///       and handled as a special case for negation propagation
@@ -326,7 +313,7 @@ class Preprocessor {
   /// into basic gates of OR and AND.
   /// The argument gates are swapped with a negative sign.
   ///
-  /// @param[in] gate The gate to start processing.
+  /// @param[in] gate  The gate to start processing.
   ///
   /// @note This function is a helper function for NormalizeGates().
   ///
@@ -338,8 +325,8 @@ class Preprocessor {
 
   /// Normalizes complex gates into OR, AND gates.
   ///
-  /// @param[in,out] gate The gate to be processed.
-  /// @param[in] full A flag to handle complex gates like XOR and K/N.
+  /// @param[in,out] gate  The gate to be processed.
+  /// @param[in] full  A flag to handle complex gates like XOR and K/N.
   ///
   /// @note This is a helper function for NormalizeGates().
   ///
@@ -354,7 +341,7 @@ class Preprocessor {
   /// This is a helper function
   /// for the main gate normalization function.
   ///
-  /// @param[in,out] gate The gate to normalize.
+  /// @param[in,out] gate  The gate to normalize.
   ///
   /// @note This is a helper function for NormalizeGate.
   void NormalizeXorGate(const IGatePtr& gate) noexcept;
@@ -371,7 +358,7 @@ class Preprocessor {
   /// than the alternative,
   /// which is OR of AND gates of combinations.
   ///
-  /// @param[in,out] gate The ATLEAST gate to normalize.
+  /// @param[in,out] gate  The ATLEAST gate to normalize.
   ///
   /// @note This is a helper function for NormalizeGate.
   /// @note Normalization of K/N gates is aware of variable ordering.
@@ -383,10 +370,10 @@ class Preprocessor {
   /// The resulting graph will contain only positive gates, OR and AND types.
   /// After this function, the Boolean graph is in negation normal form.
   ///
-  /// @param[in,out] gate The starting gate to traverse the graph.
-  ///                     This is for recursive purposes.
-  /// @param[in] keep_modules A flag to NOT propagate complements to modules.
-  /// @param[in,out] complements The processed complements of shared gates.
+  /// @param[in,out] gate  The starting gate to traverse the graph.
+  ///                      This is for recursive purposes.
+  /// @param[in] keep_modules  A flag to NOT propagate complements to modules.
+  /// @param[in,out] complements  The processed complements of shared gates.
   ///
   /// @note The graph must be normalized.
   ///       It must contain only OR and AND gates.
@@ -401,10 +388,10 @@ class Preprocessor {
       bool keep_modules,
       std::unordered_map<int, IGatePtr>* complements) noexcept;
 
-  /// Runs gate coalescense on the whole Boolean graph.
+  /// Runs gate coalescence on the whole Boolean graph.
   ///
-  /// @param[in] common A flag to also coalesce common/shared gates.
-  ///                   These gates may be important for other algorithms.
+  /// @param[in] common  A flag to also coalesce common/shared gates.
+  ///                    These gates may be important for other algorithms.
   ///
   /// @returns true if the graph has been changed.
   /// @returns false if no change has been made.
@@ -418,10 +405,10 @@ class Preprocessor {
   /// with the same OR or AND logic as parents.
   /// This function merges similar logic gates of NAND and NOR as well.
   ///
-  /// @param[in,out] gate The starting gate to traverse the graph.
-  ///                     This is for recursive purposes.
-  /// @param[in] common A flag to also join common gates.
-  ///                   These gates may be important for other algorithms.
+  /// @param[in,out] gate  The starting gate to traverse the graph.
+  ///                      This is for recursive purposes.
+  /// @param[in] common  A flag to also join common gates.
+  ///                    These gates may be important for other algorithms.
   ///
   /// @returns true if the given graph has been changed by this function.
   /// @returns false if no change has been made.
@@ -449,9 +436,9 @@ class Preprocessor {
 
   /// Traverses the Boolean graph to collect multiple definitions of gates.
   ///
-  /// @param[in] gate The gate to traverse the sub-graph.
-  /// @param[in,out] multi_def Detected multiple definitions.
-  /// @param[in,out] unique_gates A set of semantically unique gates.
+  /// @param[in] gate  The gate to traverse the sub-graph.
+  /// @param[in,out] multi_def  Detected multiple definitions.
+  /// @param[in,out] unique_gates  A set of semantically unique gates.
   ///
   /// @warning Gate marks must be clear.
   void DetectMultipleDefinitions(
@@ -467,21 +454,21 @@ class Preprocessor {
   /// Traverses the given gate
   /// and assigns time of visit to nodes.
   ///
-  /// @param[in] time The current time.
-  /// @param[in,out] gate The gate to traverse and assign time to.
+  /// @param[in] time  The current time.
+  /// @param[in,out] gate  The gate to traverse and assign time to.
   ///
   /// @returns The final time of traversing.
   int AssignTiming(int time, const IGatePtr& gate) noexcept;
 
   /// Checks if a node within a graph enter and exit times.
   ///
-  /// @param[in] node The node to be tested.
-  /// @param[in] enter_time The enter time of the root gate of the graph.
-  /// @param[in] exit_time The exit time of the root gate of the graph.
+  /// @param[in] node  The node to be tested.
+  /// @param[in] enter_time  The enter time of the root gate of the graph.
+  /// @param[in] exit_time  The exit time of the root gate of the graph.
   ///
   /// @returns true if the node within the graph visit times.
-  inline bool IsNodeWithinGraph(const NodePtr& node, int enter_time,
-                                int exit_time) noexcept {
+  bool IsNodeWithinGraph(const NodePtr& node, int enter_time,
+                         int exit_time) noexcept {
     assert(enter_time > 0);
     assert(exit_time > enter_time);
     assert(node->EnterTime() >= 0);
@@ -493,13 +480,13 @@ class Preprocessor {
   /// The positive result means
   /// that all nodes of the subgraph is contained within the main graph.
   ///
-  /// @param[in] root The root gate of the subgraph.
-  /// @param[in] enter_time The enter time of the root gate of the graph.
-  /// @param[in] exit_time The exit time of the root gate of the graph.
+  /// @param[in] root  The root gate of the subgraph.
+  /// @param[in] enter_time  The enter time of the root gate of the graph.
+  /// @param[in] exit_time  The exit time of the root gate of the graph.
   ///
   /// @returns true if the subgraph within the graph visit times.
-  inline bool IsSubgraphWithinGraph(const IGatePtr& root, int enter_time,
-                                    int exit_time) noexcept {
+  bool IsSubgraphWithinGraph(const IGatePtr& root, int enter_time,
+                             int exit_time) noexcept {
     assert(enter_time > 0);
     assert(exit_time > enter_time);
     assert(root->min_time() > 0);
@@ -511,15 +498,15 @@ class Preprocessor {
   /// that have been already timed.
   /// This function can also create new modules from the existing graph.
   ///
-  /// @param[in,out] gate The gate to test for modularity.
+  /// @param[in,out] gate  The gate to test for modularity.
   void FindModules(const IGatePtr& gate) noexcept;
 
   /// Processes gate arguments found during the module detection.
   ///
-  /// @param[in,out] gate The gate with the arguments.
-  /// @param[in] non_shared_args Args that belong only to this gate.
-  /// @param[in,out] modular_args Args that may be grouped into new modules.
-  /// @param[in,out] non_modular_args Args that cannot be grouped into modules.
+  /// @param[in,out] gate  The gate with the arguments.
+  /// @param[in] non_shared_args  Args that belong only to this gate.
+  /// @param[in,out] modular_args  Args that may be grouped into new modules.
+  /// @param[in,out] non_modular_args  Args that cannot be grouped into modules.
   void ProcessModularArgs(
       const IGatePtr& gate,
       const std::vector<std::pair<int, NodePtr>>& non_shared_args,
@@ -535,8 +522,8 @@ class Preprocessor {
   /// the original gate is asserted to be a module,
   /// and no operation is performed.
   ///
-  /// @param[in,out] gate The parent gate for a module.
-  /// @param[in] args Modular arguments to be added into the new module.
+  /// @param[in,out] gate  The parent gate for a module.
+  /// @param[in] args  Modular arguments to be added into the new module.
   ///
   /// @returns Pointer to the new module if it is created.
   IGatePtr CreateNewModule(
@@ -550,8 +537,8 @@ class Preprocessor {
   /// This is due to chain of nodes
   /// that are shared between modular and non-modular arguments.
   ///
-  /// @param[in,out] modular_args Candidates for modular grouping.
-  /// @param[in,out] non_modular_args Non modular arguments.
+  /// @param[in,out] modular_args  Candidates for modular grouping.
+  /// @param[in,out] non_modular_args  Non modular arguments.
   void FilterModularArgs(
       std::vector<std::pair<int, NodePtr>>* modular_args,
       std::vector<std::pair<int, NodePtr>>* non_modular_args) noexcept;
@@ -560,8 +547,8 @@ class Preprocessor {
   /// The gates created with these modular arguments
   /// are guaranteed to be independent modules.
   ///
-  /// @param[in] modular_args Candidates for modular grouping.
-  /// @param[out] groups Grouped modular arguments.
+  /// @param[in] modular_args  Candidates for modular grouping.
+  /// @param[out] groups  Grouped modular arguments.
   void GroupModularArgs(
       const std::vector<std::pair<int, NodePtr>>& modular_args,
       std::vector<std::vector<std::pair<int, NodePtr>>>* groups) noexcept;
@@ -575,9 +562,9 @@ class Preprocessor {
   /// the parent gate is asserted to be a module gate,
   /// and no operation is performed.
   ///
-  /// @param[in,out] gate The parent gate for a module.
-  /// @param[in] modular_args All the modular arguments.
-  /// @param[in] groups Grouped modular arguments.
+  /// @param[in,out] gate  The parent gate for a module.
+  /// @param[in] modular_args  All the modular arguments.
+  /// @param[in] groups  Grouped modular arguments.
   void CreateNewModules(
       const IGatePtr& gate,
       const std::vector<std::pair<int, NodePtr>>& modular_args,
@@ -585,7 +572,7 @@ class Preprocessor {
 
   /// Gathers all modules in the Boolean graph.
   ///
-  /// @param[out] modules Unique modules encountered breadth-first.
+  /// @param[out] modules  Unique modules encountered breadth-first.
   ///
   /// @note It is assumed that module detection is already performed.
   ///
@@ -613,7 +600,7 @@ class Preprocessor {
   /// This is a helper function
   /// that divides the main merging technique by the gate types.
   ///
-  /// @param[in] op The operator that defines the group.
+  /// @param[in] op  The operator that defines the group.
   ///
   /// @returns true if common args are merged into gates.
   ///
@@ -626,9 +613,9 @@ class Preprocessor {
 
   /// Marks common arguments of gates with a specific operator.
   ///
-  /// @param[in] gate The gate to start the traversal.
-  /// @param[in] op The operator of gates
-  ///               which arguments must be marked.
+  /// @param[in] gate  The gate to start the traversal.
+  /// @param[in] op  The operator of gates
+  ///                which arguments must be marked.
   ///
   /// @note Node count information is used to mark the common arguments.
   ///
@@ -662,9 +649,9 @@ class Preprocessor {
   /// The common arguments must be marked
   /// by the second visit exit time.
   ///
-  /// @param[in] gate The gate to start the traversal.
-  /// @param[in] op The operator of gates in the group.
-  /// @param[out] group The group of the gates with their common arguments.
+  /// @param[in] gate  The gate to start the traversal.
+  /// @param[in] op  The operator of gates in the group.
+  /// @param[out] group  The group of the gates with their common arguments.
   ///
   /// @note The common arguments are sorted.
   /// @note The gathering is limited by modules.
@@ -678,7 +665,7 @@ class Preprocessor {
   /// Filters merge candidates and their shared arguments
   /// to detect opportunities for simplifications like gate substitutions.
   ///
-  /// @param[in,out] candidates The group of merge candidate gates
+  /// @param[in,out] candidates  The group of merge candidate gates
   ///
   /// @note The simplifications are based on optimistic heuristics,
   ///       and the end result may not be the most optimal.
@@ -692,8 +679,8 @@ class Preprocessor {
   /// The groups do not intersect
   /// either by candidates or common arguments.
   ///
-  /// @param[in] candidates The group of the gates with their common arguments.
-  /// @param[out] groups Non-intersecting collection of groups of candidates.
+  /// @param[in] candidates  The group of the gates with their common arguments.
+  /// @param[out] groups  Non-intersecting collection of groups of candidates.
   ///
   /// @note Groups with only one member are discarded.
   void GroupCandidatesByArgs(
@@ -704,10 +691,10 @@ class Preprocessor {
   /// Gates with the same common arguments are grouped
   /// to represent common parents for the arguments.
   ///
-  /// @param[in] num_common_args The least number common arguments to consider.
-  /// @param[in] group The group of the gates with their common arguments.
-  /// @param[out] parents Grouped common parent gates
-  ///             for the sets of common arguments.
+  /// @param[in] num_common_args  The least number common arguments to consider.
+  /// @param[in] group  The group of the gates with their common arguments.
+  /// @param[out] parents  Grouped common parent gates
+  ///                      for the sets of common arguments.
   ///
   /// @note The common arguments are sorted.
   void GroupCommonParents(int num_common_args,
@@ -718,8 +705,8 @@ class Preprocessor {
   /// The common parents of arguments are isolated into groups
   /// so that other groups are not affected by the merging operations.
   ///
-  /// @param[in] options Combinations of common args and distributive gates.
-  /// @param[out] table Groups of distributive gates for separate manipulation.
+  /// @param[in] options  Combinations of common args and distributive gates.
+  /// @param[out] table  Groups of distributive gates for separate manipulation.
   void GroupCommonArgs(const MergeTable::Collection& options,
                        MergeTable* table) noexcept;
 
@@ -746,10 +733,10 @@ class Preprocessor {
   /// the most optimal choice
   /// between two mutually exclusive options.
   ///
-  /// @param[in] all_options The sorted set of options.
-  ///                        The options must be sorted
-  ///                        in ascending size of common arguments.
-  /// @param[out] best_group The optimal group of options.
+  /// @param[in] all_options  The sorted set of options.
+  ///                         The options must be sorted
+  ///                         in ascending size of common arguments.
+  /// @param[out] best_group  The optimal group of options.
   ///
   /// @note The all_options parameter is not passed by const reference
   ///       because the best group must store non const pointers to options.
@@ -765,18 +752,18 @@ class Preprocessor {
 
   /// Finds the starting option for group formation.
   ///
-  /// @param[in] all_options The sorted set of options.
-  ///                        The options must be sorted
-  ///                        in ascending size of common arguments.
-  /// @param[out] best_option The optimal starting option if any.
-  ///                         If not found, iterator at the end of the group.
+  /// @param[in] all_options  The sorted set of options.
+  ///                         The options must be sorted
+  ///                         in ascending size of common arguments.
+  /// @param[out] best_option  The optimal starting option if any.
+  ///                          If not found, iterator at the end of the group.
   void FindBaseOption(MergeTable::MergeGroup* all_options,
                       MergeTable::MergeGroup::iterator* best_option) noexcept;
 
   /// Transforms common arguments of gates
   /// into new gates.
   ///
-  /// @param[in,out] group Group of merge options for manipulation.
+  /// @param[in,out] group  Group of merge options for manipulation.
   void TransformCommonArgs(MergeTable::MergeGroup* group) noexcept;
 
   /// Detects and manipulates AND and OR gate distributivity
@@ -789,7 +776,7 @@ class Preprocessor {
   /// For example,
   /// (a | b) & (a | c) = a | b & c.
   ///
-  /// @param[in] gate The gate which arguments and subgraph must be tested.
+  /// @param[in] gate  The gate which arguments and subgraph must be tested.
   ///
   /// @returns true if transformations are performed.
   ///
@@ -802,9 +789,9 @@ class Preprocessor {
   /// Manipulates gates with distributive arguments.
   /// Designed to work with distributivity detection and manipulation logic.
   ///
-  /// @param[in,out] gate The gate which arguments must be manipulated.
-  /// @param[in] distr_type The type of distributive arguments.
-  /// @param[in,out] candidates Candidates for distributivity check.
+  /// @param[in,out] gate  The gate which arguments must be manipulated.
+  /// @param[in] distr_type  The type of distributive arguments.
+  /// @param[in,out] candidates  Candidates for distributivity check.
   ///
   /// @returns true if transformations are performed.
   bool HandleDistributiveArgs(const IGatePtr& gate,
@@ -817,8 +804,8 @@ class Preprocessor {
   /// For example, if any argument is superset of another argument,
   /// it can be removed from the gate.
   ///
-  /// @param[in,out] gate The gate which arguments must be filtered.
-  /// @param[in,out] candidates Candidates for distributivity check.
+  /// @param[in,out] gate  The gate which arguments must be filtered.
+  /// @param[in,out] candidates  Candidates for distributivity check.
   ///
   /// @returns true if the candidates and the gate are manipulated.
   ///
@@ -831,8 +818,8 @@ class Preprocessor {
   /// The function tries to maximize the return
   /// from the gate manipulations.
   ///
-  /// @param[in] options Combinations of common args and distributive gates.
-  /// @param[out] table Groups of distributive gates for separate manipulation.
+  /// @param[in] options  Combinations of common args and distributive gates.
+  /// @param[out] table  Groups of distributive gates for separate manipulation.
   ///
   /// @todo Evaluate various grouping strategies as in common arg merging.
   void GroupDistributiveArgs(const MergeTable::Collection& options,
@@ -841,9 +828,9 @@ class Preprocessor {
   /// Transforms distributive of arguments gates
   /// into a new subgraph.
   ///
-  /// @param[in,out] gate The parent gate of all the distributive arguments.
-  /// @param[in] distr_type The type of distributive arguments.
-  /// @param[in,out] group Group of distributive args options for manipulation.
+  /// @param[in,out] gate  The parent gate of all the distributive arguments.
+  /// @param[in] distr_type  The type of distributive arguments.
+  /// @param[in,out] group  Group of distributive args options for manipulation.
   void TransformDistributiveArgs(const IGatePtr& gate,
                                  const Operator& distr_type,
                                  MergeTable::MergeGroup* group) noexcept;
@@ -864,8 +851,8 @@ class Preprocessor {
   /// Common nodes are encountered breadth-first,
   /// and they are unique.
   ///
-  /// @param[out] common_gates Gates with more than one parent.
-  /// @param[out] common_variables Common variables.
+  /// @param[out] common_gates  Gates with more than one parent.
+  /// @param[out] common_variables  Common variables.
   ///
   /// @note Constant nodes are not expected to be operated.
   ///
@@ -877,7 +864,9 @@ class Preprocessor {
   /// Tries to simplify the graph by removing redundancies
   /// generated by a common node.
   ///
-  /// @param[in] common_node A node with more than one parent.
+  /// @tparam N  Non-Node, concrete (i.e. IGate, etc.) type.
+  ///
+  /// @param[in] common_node  A node with more than one parent.
   template<class N>
   void ProcessCommonNode(const std::weak_ptr<N>& common_node) noexcept;
 
@@ -885,8 +874,8 @@ class Preprocessor {
   /// The marking stops at the root
   /// of an independent subgraph for algorithmic efficiency.
   ///
-  /// @param[in] node The child node.
-  /// @param[out] module The root module gate ancestor.
+  /// @param[in] node  The child node.
+  /// @param[out] module  The root module gate ancestor.
   ///
   /// @warning Since very specific branches are marked 'true',
   ///          cleanup must be performed after/with the use of the ancestors.
@@ -899,8 +888,8 @@ class Preprocessor {
   /// if they fail according to their Boolean logic.
   /// The failure of an argument is similar to propagating constant TRUE.
   ///
-  /// @param[in,out] gate The ancestor gate that may fail.
-  /// @param[in] node The node that is the source of failure.
+  /// @param[in,out] gate  The ancestor gate that may fail.
+  /// @param[in] node  The node that is the source of failure.
   ///
   /// @returns Total multiplicity of the node.
   ///
@@ -913,9 +902,9 @@ class Preprocessor {
   /// If gates fails, its optimization value is set to 1.
   /// If it doesn't, its optimization value is -1;
   ///
-  /// @param[in,out] gate The ancestor gate that may fail.
-  /// @param[in] num_failure The number of failure (TRUE) arguments.
-  /// @param[in] num_success The number of success (FALSE) arguments.
+  /// @param[in,out] gate  The ancestor gate that may fail.
+  /// @param[in] num_failure  The number of failure (TRUE) arguments.
+  /// @param[in] num_success  The number of success (FALSE) arguments.
   void DetermineGateFailure(const IGatePtr& gate, int num_failure,
                             int num_success) noexcept;
 
@@ -923,9 +912,9 @@ class Preprocessor {
   /// and marks non-redundant nodes.
   /// The optimization value for non-redundant gates are set to 2.
   ///
-  /// @param[in] gate The non-failed gate which sub-graph is to be traversed.
-  /// @param[in] index The index of the main failure-source common node.
-  /// @param[in,out] destinations Destinations of the failure.
+  /// @param[in] gate  The non-failed gate which sub-graph is to be traversed.
+  /// @param[in] index  The index of the main failure-source common node.
+  /// @param[in,out] destinations  Destinations of the failure.
   ///
   /// @returns The number of encounters with the destinations.
   int CollectFailureDestinations(
@@ -940,9 +929,9 @@ class Preprocessor {
   /// unless it is also in the destination set with specific logic.
   /// In the latter case, the parent is removed from the destinations.
   ///
-  /// @param[in] node The common node.
-  /// @param[in,out] destinations A set of destination gates.
-  /// @param[out] redundant_parents A set of redundant parents.
+  /// @param[in] node  The common node.
+  /// @param[in,out] destinations  A set of destination gates.
+  /// @param[out] redundant_parents  A set of redundant parents.
   void CollectRedundantParents(
       const NodePtr& node,
       std::map<int, IGateWeakPtr>* destinations,
@@ -955,8 +944,8 @@ class Preprocessor {
   /// unless it is also in the destination set with specific logic.
   /// In the latter case, the parent is removed from the destinations.
   ///
-  /// @param[in] node The common node.
-  /// @param[in] redundant_parents A set of redundant parents.
+  /// @param[in] node  The common node.
+  /// @param[in] redundant_parents  A set of redundant parents.
   ///
   /// @note Constant gates are registered for removal.
   /// @note Null type gates are registered for removal.
@@ -967,8 +956,10 @@ class Preprocessor {
   /// Transforms failure destination
   /// according to the logic and the common node.
   ///
-  /// @param[in] node The common node.
-  /// @param[in] destinations Destination gates for failure.
+  /// @tparam N  Non-Node, concrete (i.e. IGate, etc.) type.
+  ///
+  /// @param[in] node  The common node.
+  /// @param[in] destinations  Destination gates for failure.
   ///
   /// @warning This function will replace the root gate of the graph
   ///          if it is the failure destination.
@@ -1007,7 +998,7 @@ class Preprocessor {
   /// These setups are assumed
   /// to be provided by the DecomposeCommonNodes().
   ///
-  /// @param[in] common_node The common node.
+  /// @param[in] common_node  The common node.
   ///
   /// @returns true if the decomposition setups are found and processed.
   ///
@@ -1019,8 +1010,8 @@ class Preprocessor {
   /// The optimization value of the ancestors of the common node
   /// is marked with the index of the common node.
   ///
-  /// @param[in] parent The parent or ancestor of the common node.
-  /// @param[in] index The positive index of the common node.
+  /// @param[in] parent  The parent or ancestor of the common node.
+  /// @param[in] index  The positive index of the common node.
   ///
   /// @warning The gate optimization value fields are changed.
   ///          It is expected that no ancestor gate has the specific opti-value
@@ -1032,8 +1023,8 @@ class Preprocessor {
   /// Processes decomposition destinations
   /// with the decomposition setups.
   ///
-  /// @param[in] node The common node under consideration.
-  /// @param[in] dest The set of destination parents.
+  /// @param[in] node  The common node under consideration.
+  /// @param[in] dest  The set of destination parents.
   ///
   /// @returns true if the graph is changed by processing.
   ///
@@ -1049,11 +1040,11 @@ class Preprocessor {
   /// Common node's parents shared outside of the subgraph
   /// may get cloned to not mess the whole graph.
   ///
-  /// @param[in] ancestor The parent or ancestor of the common node.
-  /// @param[in] node The common node under consideration.
-  /// @param[in] state The constant state to be propagated.
-  /// @param[in] visit_bounds The main graph's visit enter and exit times.
-  /// @param[in,out] clones Clones of common parents in the subgraph.
+  /// @param[in] ancestor  The parent or ancestor of the common node.
+  /// @param[in] node  The common node under consideration.
+  /// @param[in] state  The constant state to be propagated.
+  /// @param[in] visit_bounds  The main graph's visit enter and exit times.
+  /// @param[in,out] clones  Clones of common parents in the subgraph.
   ///
   /// @returns true if the parent is reached and processed.
   ///
@@ -1070,8 +1061,8 @@ class Preprocessor {
 
   /// Replaces one gate in the graph with another.
   ///
-  /// @param[in,out] gate An existing gate to be replaced.
-  /// @param[in,out] replacement A gate that will replace the old gate.
+  /// @param[in,out] gate  An existing gate to be replaced.
+  /// @param[in,out] replacement  A gate that will replace the old gate.
   ///
   /// @note The sign of the existing gate as an argument
   ///       is transfered to the replacement gate.
@@ -1090,8 +1081,8 @@ class Preprocessor {
   /// The nodes are sorted in descending optimization value.
   /// The highest optimization value belongs to the root.
   ///
-  /// @param[in] root The root or current parent gate of the graph.
-  /// @param[in] order The current order value.
+  /// @param[in] root  The root or current parent gate of the graph.
+  /// @param[in] order  The current order value.
   ///
   /// @returns The final order value.
   ///
@@ -1109,14 +1100,44 @@ class Preprocessor {
   std::vector<IGateWeakPtr> null_gates_;
 };
 
-/// @class PreprocessorBdd
-/// Specilalization of preprocessing for BDD based analyses.
-class PreprocessorBdd : public Preprocessor {
+/// @class CustomPreprocessor
+///
+/// @tparam Algorithm The target algorithm for the preprocessor.
+///
+/// Abstract template class for specialization of Preprocessor
+/// for needs of specific analysis algorithms.
+template<typename Algorithm>
+class CustomPreprocessor : public Preprocessor {};
+
+class Mocus;
+
+/// @class CustomPreprocessor<Mocus>
+/// Specialization of preprocessing for MOCUS based analyses.
+template<>
+class CustomPreprocessor<Mocus> : public Preprocessor {
+ public:
+  using Preprocessor::Preprocessor;  ///< Constructor with a Boolean graph.
+
+  /// Performs processing of a fault tree
+  /// to simplify the structure to
+  /// normalized (OR/AND gates only),
+  /// modular (independent sub-trees),
+  /// positive-gate-only (negation normal)
+  /// Boolean graph.
+  void Run() noexcept override;
+};
+
+class Bdd;
+
+/// @class CustomPreprocessor<Bdd>
+/// Specialization of preprocessing for BDD based analyses.
+template<>
+class CustomPreprocessor<Bdd> : public Preprocessor {
  public:
   using Preprocessor::Preprocessor;  ///< Constructor with a Boolean graph.
 
   /// Performs preprocessing for analyses with Binary Decision Diagrams.
-  /// This preprocessing assings the order for variables for BDD construction.
+  /// This preprocessing assigns the order for variables for BDD construction.
   void Run() noexcept override;
 };
 

@@ -55,9 +55,9 @@ class Component : public Element, public Role {
   /// Component name is not meant to be public;
   /// however, it must be unique within the parent fault tree or component.
   ///
-  /// @param[in] name The name identificator for the component.
-  /// @param[in] base_path The series of containers to get this container.
-  /// @param[in] is_public A flag to define public or private role for members.
+  /// @param[in] name  The name identificator for the component.
+  /// @param[in] base_path  The series of containers to get this container.
+  /// @param[in] is_public  A flag to define public or private role for members.
   explicit Component(const std::string& name, const std::string& base_path = "",
                      bool is_public = true);
 
@@ -67,99 +67,94 @@ class Component : public Element, public Role {
   virtual ~Component() {}
 
   /// @returns The name of this component.
-  inline const std::string& name() const { return name_; }
+  const std::string& name() const { return name_; }
 
   /// @returns The container of all gates of this component
   ///          with lower-case names as keys.
-  inline const std::unordered_map<std::string, GatePtr>& gates() const {
+  const std::unordered_map<std::string, GatePtr>& gates() const {
     return gates_;
   }
 
   /// @returns The container of all basic events of this component
   ///          with lower-case names as keys.
-  inline const std::unordered_map<std::string, BasicEventPtr>&
-      basic_events() const {
+  const std::unordered_map<std::string, BasicEventPtr>& basic_events() const {
     return basic_events_;
   }
 
   /// @returns The container of house events of this component
   ///          with lower-case names as keys.
-  inline const std::unordered_map<std::string, HouseEventPtr>&
-      house_events() const {
+  const std::unordered_map<std::string, HouseEventPtr>& house_events() const {
     return house_events_;
   }
 
   /// @returns The container of parameters of this component
   ///          with lower-case names as keys.
-  inline const std::unordered_map<std::string, ParameterPtr>&
-      parameters() const {
+  const std::unordered_map<std::string, ParameterPtr>& parameters() const {
     return parameters_;
   }
 
   /// @returns CCF groups belonging to this component
   ///          with lower-case names as keys.
-  inline const std::unordered_map<std::string, CcfGroupPtr>&
-      ccf_groups() const {
+  const std::unordered_map<std::string, CcfGroupPtr>& ccf_groups() const {
     return ccf_groups_;
   }
 
   /// @returns Components in this component container
   ///          with lower-case names as keys.
-  inline const std::unordered_map<std::string, ComponentPtr>&
-      components() const {
+  const std::unordered_map<std::string, ComponentPtr>& components() const {
     return components_;
   }
 
   /// Adds a gate into this component container.
   ///
-  /// @param[in] gate The gate to be added to this tree.
+  /// @param[in] gate  The gate to be added to this tree.
   ///
-  /// @throws ValidationError The event is already in this container.
+  /// @throws ValidationError  The event is already in this container.
   void AddGate(const GatePtr& gate);
 
   /// Adds a basic event into this component container.
   ///
-  /// @param[in] basic_event The basic event to be added to this tree.
+  /// @param[in] basic_event  The basic event to be added to this tree.
   ///
-  /// @throws ValidationError The event is already in this container.
+  /// @throws ValidationError  The event is already in this container.
   void AddBasicEvent(const BasicEventPtr& basic_event);
 
   /// Adds a house event into this component container.
   ///
-  /// @param[in] house_event The house event to be added to this tree.
+  /// @param[in] house_event  The house event to be added to this tree.
   ///
-  /// @throws ValidationError The event is already in this container.
+  /// @throws ValidationError  The event is already in this container.
   void AddHouseEvent(const HouseEventPtr& house_event);
 
   /// Adds a parameter into this component container.
   ///
-  /// @param[in] parameter The parameter to be added to this tree.
+  /// @param[in] parameter  The parameter to be added to this tree.
   ///
-  /// @throws ValidationError The parameter is already in this container.
+  /// @throws ValidationError  The parameter is already in this container.
   void AddParameter(const ParameterPtr& parameter);
 
   /// Adds a CCF group and its members into this component container.
   ///
-  /// @param[in] ccf_group The CCF group to be added to this container.
+  /// @param[in] ccf_group  The CCF group to be added to this container.
   ///
-  /// @throws ValidationError Duplicate CCF groups
-  ///                         or duplicate basic event members.
+  /// @throws ValidationError  Duplicate CCF groups
+  ///                          or duplicate basic event members.
   void AddCcfGroup(const CcfGroupPtr& ccf_group);
 
   /// Adds a member component container into this component container.
   /// Components are unique.
   /// The ownership is transfered to this component only.
   ///
-  /// @param[in] component The CCF group to be added to this container.
+  /// @param[in] component  The CCF group to be added to this container.
   ///
-  /// @throws ValidationError The component is already in this container.
+  /// @throws ValidationError  The component is already in this container.
   void AddComponent(ComponentPtr component);
 
  protected:
   /// Recursively traverses components
   /// to gather gates relevant to the whole component.
   ///
-  /// @param[out] gates Gates belonging to this component
+  /// @param[out] gates  Gates belonging to this component
   ///                   and its subcomponents.
   void GatherGates(std::unordered_set<GatePtr>* gates);
 
@@ -197,11 +192,11 @@ class FaultTree : public Component {
   /// The main constructor of the Fault Tree.
   /// Fault trees are assumed to be public and belong to the root model.
   ///
-  /// @param[in] name The name identificator of this fault tree.
+  /// @param[in] name  The name identificator of this fault tree.
   explicit FaultTree(const std::string& name);
 
   /// @returns The collected top events of this fault tree.
-  inline const std::vector<GatePtr>& top_events() const { return top_events_; }
+  const std::vector<GatePtr>& top_events() const { return top_events_; }
 
   /// Collects top event gates in this fault tree with components.
   /// This function is essential to guess the analysis targets
@@ -216,15 +211,15 @@ class FaultTree : public Component {
   /// Recursively marks descendant gates as "non-top".
   /// These gates belong to this fault tree only.
   ///
-  /// @param[in] gate The ancestor gate.
-  /// @param[in] gates Gates belonging to the whole fault tree with components.
+  /// @param[in] gate  The ancestor gate.
+  /// @param[in] gates  Gates belonging to the whole fault tree with components.
   void MarkNonTopGates(const GatePtr& gate,
                        const std::unordered_set<GatePtr>& gates);
 
   /// Recursively marks descendant gates in formulas as "non-top"
   ///
-  /// @param[in] formula The formula of a gate or another formula.
-  /// @param[in] gates Gates belonging to the whole fault tree with components.
+  /// @param[in] formula  The formula of a gate or another formula.
+  /// @param[in] gates  Gates belonging to the whole fault tree with components.
   void MarkNonTopGates(const FormulaPtr& formula,
                        const std::unordered_set<GatePtr>& gates);
 

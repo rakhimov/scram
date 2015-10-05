@@ -40,9 +40,9 @@ namespace {
 
 /// Parses the command-line arguments.
 ///
-/// @param[in] argc Count of arguments.
-/// @param[in] argv Values of arguments.
-/// @param[out] vm Variables map of program options.
+/// @param[in] argc  Count of arguments.
+/// @param[in] argv  Values of arguments.
+/// @param[out] vm  Variables map of program options.
 ///
 /// @returns 0 for success.
 /// @returns 1 for errored state.
@@ -61,6 +61,7 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
          "XML file with analysis configurations")
         ("validate", "Validate input files without analysis")
         ("graph", "Validate and produce graph without analysis")
+        ("bdd", "Perform qualitative analysis with BDD")
         ("probability", po::value<bool>(), "Perform probability analysis")
         ("importance", po::value<bool>(), "Perform importance analysis")
         ("uncertainty", po::value<bool>(), "Perform uncertainty analysis")
@@ -83,8 +84,8 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
 
     po::store(po::parse_command_line(argc, argv, desc), *vm);
   } catch (std::exception& err) {
-    std::cerr << "Option error: " << err.what() << "\n\n"
-        << usage << "\n\n" << desc << "\n";
+    std::cerr << "Option error: " << err.what() << "\n\n" << usage << "\n\n"
+              << desc << "\n";
     return 1;
   }
   po::notify(*vm);
@@ -112,26 +113,23 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
   }
 
   if (!vm->count("input-files") && !vm->count("config-file")) {
-    std::string msg = "No input or configuration file is given.\n";
-    std::cerr << msg << std::endl;
+    std::cerr << "No input or configuration file is given.\n" << std::endl;
     std::cerr << usage << "\n\n" << desc << "\n";
     return 1;
   }
 
   if (vm->count("rare-event") && vm->count("mcub")) {
-    std::string msg = "The rare event and MCUB approximations cannot be "
-                      "applied at the time.";
-    std::cerr << msg << "\n" << std::endl;
-    std::cerr << usage << "\n\n" << desc << std::endl;
+    std::cerr << "The rare event and MCUB approximations cannot be "
+              << "applied at the same time.\n"
+              << usage << "\n\n" << desc << std::endl;
     return 1;
   }
 
   if (vm->count("verbosity")) {
     int verb = (*vm)["verbosity"].as<int>();
     if (verb < 0 || verb > 7) {
-      std::string msg = "Log verbosity must be between 0 and 7.";
-      std::cerr << msg << "\n" << std::endl;
-      std::cerr << usage << "\n\n" << desc << std::endl;
+      std::cerr << "Log verbosity must be between 0 and 7." << "\n"
+                << usage << "\n\n" << desc << std::endl;
       return 1;
     }
   }
@@ -141,18 +139,18 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
 
 /// Updates analysis settings from command-line arguments.
 ///
-/// @param[in] vm Variables map of program options.
-/// @param[in,out] settings Pre-configured or default settings.
+/// @param[in] vm  Variables map of program options.
+/// @param[in,out] settings  Pre-configured or default settings.
 ///
-/// @throws std::exception vm does not contain a required option.
-///                        At least defaults are expected.
+/// @throws std::exception  vm does not contain a required option.
+///                         At least defaults are expected.
 void ConstructSettings(const po::variables_map& vm, scram::Settings* settings) {
   // Determine if the probability approximation is requested.
   if (vm.count("rare-event")) {
     assert(!vm.count("mcub"));
-    settings->approx("rare-event");
+    settings->approximation("rare-event");
   } else if (vm.count("mcub")) {
-    settings->approx("mcub");
+    settings->approximation("mcub");
   }
   if (vm.count("seed")) settings->seed(vm["seed"].as<int>());
   if (vm.count("limit-order"))
@@ -164,6 +162,7 @@ void ConstructSettings(const po::variables_map& vm, scram::Settings* settings) {
   if (vm.count("num-quantiles"))
     settings->num_quantiles(vm["num-quantiles"].as<int>());
   if (vm.count("num-bins")) settings->num_bins(vm["num-bins"].as<int>());
+  if (vm.count("bdd")) settings->algorithm("bdd");
   if (vm.count("importance"))
     settings->importance_analysis(vm["importance"].as<bool>());
   if (vm.count("uncertainty"))
@@ -175,14 +174,14 @@ void ConstructSettings(const po::variables_map& vm, scram::Settings* settings) {
 
 /// Main body of command-line entrance to run the program.
 ///
-/// @param[in] vm Variables map of program options.
+/// @param[in] vm  Variables map of program options.
 ///
 /// @returns 0 for success.
 /// @returns 1 for errored state.
 ///
-/// @throws Error Internal problems specific to SCRAM like validation.
-/// @throws boost::exception Boost errors.
-/// @throws std::exception All other problems.
+/// @throws Error  Internal problems specific to SCRAM like validation.
+/// @throws boost::exception  Boost errors.
+/// @throws std::exception  All other problems.
 int RunScram(const po::variables_map& vm) {
   if (vm.count("verbosity")) {
     scram::Logger::ReportLevel() =
@@ -254,8 +253,8 @@ int RunScram(const po::variables_map& vm) {
 
 /// Command-line SCRAM entrance.
 ///
-/// @param[in] argc Argument count.
-/// @param[in] argv Argument vector.
+/// @param[in] argc  Argument count.
+/// @param[in] argv  Argument vector.
 ///
 /// @returns 0 for success.
 /// @returns 1 for errored state.
@@ -274,52 +273,39 @@ int main(int argc, char* argv[]) {
 
 #ifdef NDEBUG
   } catch (scram::IOError& io_err) {
-    std::cerr << "SCRAM I/O Error\n" << std::endl;
-    std::cerr << io_err.what() << std::endl;
+    std::cerr << "SCRAM I/O Error:\n" << io_err.what() << std::endl;
     return 1;
   } catch (scram::ValidationError& vld_err) {
-    std::cerr << "SCRAM Validation Error\n" << std::endl;
-    std::cerr << vld_err.what() << std::endl;
+    std::cerr << "SCRAM Validation Error:\n" << vld_err.what() << std::endl;
     return 1;
   } catch (scram::ValueError& val_err) {
-    std::cerr << "SCRAM Value Error\n" << std::endl;
-    std::cerr << val_err.what() << std::endl;
+    std::cerr << "SCRAM Value Error:\n" << val_err.what() << std::endl;
     return 1;
   } catch (scram::LogicError& logic_err) {
     std::cerr << "Bad, bad news. Please report this error. Thank you!\n"
-        << std::endl;
-    std::cerr << "SCRAM Logic Error\n" << std::endl;
-    std::cerr << logic_err.what() << std::endl;
+              << "SCRAM Logic Error:\n" << logic_err.what() << std::endl;
     return 1;
   } catch (scram::IllegalOperation& iopp_err) {
     std::cerr << "Bad, bad news. Please report this error. Thank you!\n"
-        << std::endl;
-    std::cerr << "SCRAM Illegal Operation\n" << std::endl;
-    std::cerr << iopp_err.what() << std::endl;
+              << "SCRAM Illegal Operation:\n" << iopp_err.what() << std::endl;
     return 1;
   } catch (scram::InvalidArgument& iarg_err) {
     std::cerr << "Bad, bad news. Please report this error. Thank you!\n"
-        << std::endl;
-    std::cerr << "SCRAM Invalid Argument Error\n" << std::endl;
-    std::cerr << iarg_err.what() << std::endl;
+              << "SCRAM Invalid Argument Error:\n" << iarg_err.what()
+              << std::endl;
     return 1;
   } catch (scram::Error& scram_err) {
     std::cerr << "Bad, bad news. Please report this error. Thank you!\n"
-        << std::endl;
-    std::cerr << "SCRAM Error\n" << std::endl;
-    std::cerr << scram_err.what() << std::endl;
+              << "SCRAM Error:\n" << scram_err.what() << std::endl;
     return 1;
   } catch (boost::exception& boost_err) {
     std::cerr << "Bad, bad news. Please report this error. Thank you!\n"
-        << std::endl;
-    std::cerr << "Boost Exception:\n" << std::endl;
-    std::cerr << boost::diagnostic_information(boost_err) << std::endl;
+              << "Boost Exception:\n"
+              << boost::diagnostic_information(boost_err) << std::endl;
     return 1;
   } catch (std::exception& std_err) {
     std::cerr << "Bad, bad news. Please report this error. Thank you!\n"
-        << std::endl;
-    std::cerr << "Standard Exception:\n" << std::endl;
-    std::cerr << std_err.what() << std::endl;
+              << "Standard Exception:\n" << std_err.what() << std::endl;
     return 1;
   }
 #endif

@@ -31,6 +31,7 @@
 #include "event.h"
 #include "expression.h"
 #include "fault_tree_analysis.h"
+#include "importance_analysis.h"
 #include "model.h"
 #include "probability_analysis.h"
 #include "risk_analysis.h"
@@ -44,7 +45,9 @@ namespace {
 
 /// A generic function to convert numbers to string.
 ///
-/// @param[in] num The number to be converted.
+/// @tparam T  Numerical type.
+///
+/// @param[in] num  The number to be converted.
 ///
 /// @returns Formatted string that represents the number.
 template<class T>
@@ -56,8 +59,8 @@ inline std::string ToString(T num) {
 
 /// A helper function to convert a floating point number to string.
 ///
-/// @param[in] num The number to be converted.
-/// @param[in] precision Decimal precision for reporting.
+/// @param[in] num  The number to be converted.
+/// @param[in] precision  Decimal precision for reporting.
 ///
 /// @returns Formatted string that represents the floating point number.
 inline std::string ToString(double num, int precision) {
@@ -91,9 +94,14 @@ void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
       "Groups of events sufficient for a top event failure");
 
   xmlpp::Element* methods = information->add_child("calculation-method");
-  methods->set_attribute("name", "MOCUS");
-  methods->add_child("limits")->add_child("number-of-basic-events")
-      ->add_child_text(ToString(settings.limit_order()));
+  if (settings.algorithm() == "bdd") {
+    methods->set_attribute("name", "Binary Decision Diagram");
+  } else {
+    assert(settings.algorithm() == "mocus");
+    methods->set_attribute("name", "MOCUS");
+    methods->add_child("limits")->add_child("number-of-basic-events")
+        ->add_child_text(ToString(settings.limit_order()));
+  }
 
   // Report the setup for CCF analysis.
   if (settings.ccf_analysis()) {
@@ -109,10 +117,25 @@ void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
     quant->set_attribute("name", "Probability Analysis");
     quant->set_attribute("definition",
                          "Quantitative analysis of failure probability");
-    quant->set_attribute("approximation", settings.approx());
+    quant->set_attribute("approximation", settings.approximation());
 
     methods = information->add_child("calculation-method");
-    methods->set_attribute("name", "Numerical Probability");
+
+    if (settings.approximation() == "rare-event") {
+      information->add_child("warning")->add_child_text(
+          " The rare event approximation may be inaccurate for analysis"
+          " if cut sets' probabilities exceed 0.1.");
+      methods->set_attribute("name", "Rare Event Approximation");
+    } else if (settings.approximation() == "mcub") {
+      information->add_child("warning")->add_child_text(
+          " The MCUB approximation may not hold"
+          " if the fault tree is non-coherent"
+          " or there are many common events.");
+      methods->set_attribute("name", "MCUB Approximation");
+    } else {
+      assert(settings.approximation() == "no");
+      methods->set_attribute("name", "Binary Decision Diagram");
+    }
     xmlpp::Element* limits = methods->add_child("limits");
     limits->add_child("mission-time")
         ->add_child_text(ToString(settings.mission_time()));
@@ -264,12 +287,12 @@ void Reporter::ReportFta(std::string ft_name, const FaultTreeAnalysis& fta,
       ->add_child_text(ToString(fta.analysis_time(), 5));
   if (prob_analysis) {
     calc_time->add_child("probability")
-        ->add_child_text(ToString(prob_analysis->prob_analysis_time(), 5));
+        ->add_child_text(ToString(prob_analysis->analysis_time(), 5));
   }
 }
 
 void Reporter::ReportImportance(std::string ft_name,
-                                const ProbabilityAnalysis& prob_analysis,
+                                const ImportanceAnalysis& importance_analysis,
                                 xmlpp::Document* doc) {
   xmlpp::Node* root = doc->get_root_node();
   xmlpp::NodeSet res = root->find("./results");
@@ -278,31 +301,30 @@ void Reporter::ReportImportance(std::string ft_name,
   xmlpp::Element* importance = results->add_child("importance");
   importance->set_attribute("name", ft_name);
   importance->set_attribute("basic-events",
-                            ToString(prob_analysis.importance().size()));
+                            ToString(importance_analysis.importance().size()));
 
-  std::string warning = prob_analysis.warnings();
+  std::string warning = importance_analysis.warnings();
   if (warning != "") {
     importance->add_child("warning")->add_child_text(warning);
   }
 
-  for (const std::pair<std::string, ImportanceFactors>& entry :
-       prob_analysis.importance()) {
-    xmlpp::Element* element = Reporter::ReportBasicEvent(
-        prob_analysis.basic_events().at(entry.first),
-        importance);
+  for (const std::pair<BasicEventPtr, ImportanceFactors>& entry :
+       importance_analysis.important_events()) {
+    xmlpp::Element* element =
+        Reporter::ReportBasicEvent(entry.first, importance);
     const ImportanceFactors& factors = entry.second;
-    element->set_attribute("DIF", ToString(factors.dif, 4));
     element->set_attribute("MIF", ToString(factors.mif, 4));
     element->set_attribute("CIF", ToString(factors.cif, 4));
-    element->set_attribute("RRW", ToString(factors.rrw, 4));
+    element->set_attribute("DIF", ToString(factors.dif, 4));
     element->set_attribute("RAW", ToString(factors.raw, 4));
+    element->set_attribute("RRW", ToString(factors.rrw, 4));
   }
   xmlpp::NodeSet calc_times =
       root->find("./information/performance/calculation-time");
   assert(!calc_times.empty());
   xmlpp::Element* calc_time = static_cast<xmlpp::Element*>(calc_times.back());
   calc_time->add_child("importance")
-      ->add_child_text(ToString(prob_analysis.imp_analysis_time(), 5));
+      ->add_child_text(ToString(importance_analysis.analysis_time(), 5));
 }
 
 void Reporter::ReportUncertainty(std::string ft_name,

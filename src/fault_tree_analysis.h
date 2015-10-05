@@ -29,13 +29,117 @@
 #include <vector>
 
 #include "analysis.h"
+#include "boolean_graph.h"
 #include "event.h"
-#include "mocus.h"
+#include "logger.h"
+#include "preprocessor.h"
 #include "settings.h"
 
 namespace scram {
 
-class BooleanGraph;
+/// @class FaultTreeDescriptor
+/// Fault tree description gatherer.
+/// General information about a fault tree
+/// described by a gate as its root.
+class FaultTreeDescriptor {
+ public:
+  using GatePtr = std::shared_ptr<Gate>;
+  using BasicEventPtr = std::shared_ptr<BasicEvent>;
+  using HouseEventPtr = std::shared_ptr<HouseEvent>;
+
+  /// Gathers all information about a fault tree with a root gate.
+  ///
+  /// @param[in] root  The root gate of a fault tree.
+  ///
+  /// @pre Gate marks must be clear.
+  ///
+  /// @warning If the fault tree structure is changed,
+  ///          this description does not incorporate the changed structure.
+  ///          Moreover, the data may get corrupted.
+  explicit FaultTreeDescriptor(const GatePtr& root);
+
+  virtual ~FaultTreeDescriptor() = default;
+
+  /// @returns The top gate that is passed to the analysis.
+  const GatePtr& top_event() const { return top_event_; }
+
+  /// @returns The container of intermediate events.
+  ///
+  /// @warning If the fault tree has changed,
+  ///          this is only a snapshot of the past
+  const std::unordered_map<std::string, GatePtr>& inter_events() const {
+    return inter_events_;
+  }
+
+  /// @returns The container of all basic events of this tree.
+  ///
+  /// @warning If the fault tree has changed,
+  ///          this is only a snapshot of the past
+  const std::unordered_map<std::string, BasicEventPtr>& basic_events() const {
+    return basic_events_;
+  }
+
+  /// @returns Basic events that are in some CCF groups.
+  ///
+  /// @warning If the fault tree has changed,
+  ///          this is only a snapshot of the past
+  const std::unordered_map<std::string, BasicEventPtr>& ccf_events() const {
+    return ccf_events_;
+  }
+
+  /// @returns The container of house events of the fault tree.
+  ///
+  /// @warning If the fault tree has changed,
+  ///          this is only a snapshot of the past
+  const std::unordered_map<std::string, HouseEventPtr>& house_events() const {
+    return house_events_;
+  }
+
+ private:
+  using EventPtr = std::shared_ptr<Event>;
+  using FormulaPtr = std::unique_ptr<Formula>;
+
+  /// Gathers information about the correctly initialized fault tree.
+  /// Databases for events are manipulated
+  /// to best reflect the state and structure of the fault tree.
+  /// This function must be called after validation.
+  /// This function must be called before any analysis is performed
+  /// because there would not be necessary information
+  /// available for analysis like primary events of this fault tree.
+  /// Moreover, all the nodes of this fault tree
+  /// are expected to be defined fully and correctly.
+  /// Gates are marked upon visit.
+  /// The mark is checked to prevent revisiting.
+  ///
+  /// @param[in] gate  The gate to start traversal from.
+  void GatherEvents(const GatePtr& gate) noexcept;
+
+  /// Traverses formulas recursively to find all events.
+  ///
+  /// @param[in] formula  The formula to get events from.
+  void GatherEvents(const FormulaPtr& formula) noexcept;
+
+  /// Clears marks from gates that were traversed.
+  /// Marks are set to empty strings.
+  /// This is important
+  /// because other code may assume that marks are empty.
+  void ClearMarks() noexcept;
+
+  GatePtr top_event_;  ///< Top event of this fault tree.
+
+  /// Container for intermediate events.
+  std::unordered_map<std::string, GatePtr> inter_events_;
+
+  /// Container for basic events.
+  std::unordered_map<std::string, BasicEventPtr> basic_events_;
+
+  /// Container for house events of the tree.
+  std::unordered_map<std::string, HouseEventPtr> house_events_;
+
+  /// Container for basic events that are identified to be in some CCF group.
+  /// These basic events are not necessarily in the same CCF group.
+  std::unordered_map<std::string, BasicEventPtr> ccf_events_;
+};
 
 /// @class FaultTreeAnalysis
 /// Fault tree analysis functionality.
@@ -54,11 +158,9 @@ class BooleanGraph;
 ///
 /// @warning Run analysis only once.
 ///          One analysis per FaultTreeAnalysis object.
-class FaultTreeAnalysis : public Analysis {
+class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
  public:
   using GatePtr = std::shared_ptr<Gate>;
-  using BasicEventPtr = std::shared_ptr<BasicEvent>;
-  using HouseEventPtr = std::shared_ptr<HouseEvent>;
   using CutSet = std::set<std::string>;  ///< Cut set with basic event IDs.
 
   /// Traverses a valid fault tree from the root gate
@@ -67,21 +169,21 @@ class FaultTreeAnalysis : public Analysis {
   /// The passed fault tree must be pre-validated without cycles,
   /// and its events must be fully initialized.
   ///
-  /// @param[in] root The top event of the fault tree to analyze.
-  /// @param[in] settings Analysis settings for all calculations.
+  /// @param[in] root  The top event of the fault tree to analyze.
+  /// @param[in] settings  Analysis settings for all calculations.
   ///
   /// @note It is assumed that analysis is done only once.
   ///
   /// @warning If the fault tree structure is changed,
   ///          this analysis does not incorporate the changed structure.
   ///          Moreover, the analysis results may get corrupted.
-  /// @warning The gates' visit marks must be clean.
-  explicit FaultTreeAnalysis(const GatePtr& root,
-                             const Settings& settings = Settings());
+  FaultTreeAnalysis(const GatePtr& root, const Settings& settings);
+
+  virtual ~FaultTreeAnalysis() = default;
 
   /// Analyzes the fault tree and performs computations.
   /// This function must be called
-  /// only after initializing the tree
+  /// only after initializing the fault tree
   /// with or without its probabilities.
   ///
   /// @note This function is expected to be called only once.
@@ -93,53 +195,15 @@ class FaultTreeAnalysis : public Analysis {
   ///          since the construction of the analysis,
   ///          the analysis will be invalid or fail.
   /// @warning The gates' visit marks must be clean.
-  void Analyze() noexcept;
-
-  /// @returns The top gate that is passed to the analysis.
-  inline const GatePtr& top_event() const { return top_event_; }
-
-  /// @returns The container of intermediate events.
-  ///
-  /// @warning If the fault tree has changed,
-  ///          this is only a snapshot of the past
-  inline const std::unordered_map<std::string, GatePtr>& inter_events() const {
-    return inter_events_;
-  }
-
-  /// @returns The container of all basic events of this tree.
-  ///
-  /// @warning If the fault tree has changed,
-  ///          this is only a snapshot of the past
-  inline const std::unordered_map<std::string, BasicEventPtr>&
-      basic_events() const {
-    return basic_events_;
-  }
-
-  /// @returns Basic events that are in some CCF groups.
-  ///
-  /// @warning If the fault tree has changed,
-  ///          this is only a snapshot of the past
-  inline const std::unordered_map<std::string, BasicEventPtr>&
-      ccf_events() const {
-    return ccf_events_;
-  }
-
-  /// @returns The container of house events of the fault tree.
-  ///
-  /// @warning If the fault tree has changed,
-  ///          this is only a snapshot of the past
-  inline const std::unordered_map<std::string, HouseEventPtr>&
-      house_events() const {
-    return house_events_;
-  }
+  virtual void Analyze() noexcept = 0;
 
   /// @returns Set with minimal cut sets.
   ///
   /// @note The user should make sure that the analysis is actually done.
-  inline const std::set<CutSet>& min_cut_sets() const { return min_cut_sets_; }
+  const std::set<CutSet>& min_cut_sets() const { return min_cut_sets_; }
 
   /// @returns Collection of basic events that are in the minimal cut sets.
-  inline const std::unordered_map<std::string, BasicEventPtr>&
+  const std::unordered_map<std::string, BasicEventPtr>&
       mcs_basic_events() const {
     return mcs_basic_events_;
   }
@@ -147,7 +211,7 @@ class FaultTreeAnalysis : public Analysis {
   /// @returns Map with minimal cut sets and their probabilities.
   ///
   /// @note The user should make sure that the analysis is actually done.
-  inline const std::map<CutSet, double>& mcs_probability() const {
+  const std::map<CutSet, double>& mcs_probability() const {
     assert(kSettings_.probability_analysis());
     return mcs_probability_;
   }
@@ -155,76 +219,26 @@ class FaultTreeAnalysis : public Analysis {
   /// @returns The sum of minimal cut set probabilities.
   ///
   /// @note This value is the same as the rare-event approximation.
-  inline double sum_mcs_probability() const {
+  double sum_mcs_probability() const {
     assert(kSettings_.probability_analysis());
     return sum_mcs_probability_;
   }
 
   /// @returns The maximum order of the found minimal cut sets.
-  inline int max_order() const { return max_order_; }
+  int max_order() const { return max_order_; }
 
-  /// @returns Warnings generated upon analysis.
-  inline const std::string& warnings() const { return warnings_; }
-
-  /// @returns Analysis time spent on finding minimal cut sets.
-  inline double analysis_time() const { return analysis_time_; }
-
- private:
-  using EventPtr = std::shared_ptr<Event>;
-  using FormulaPtr = std::unique_ptr<Formula>;
-
-  /// Gathers information about the correctly initialized fault tree.
-  /// Databases for events are manipulated
-  /// to best reflect the state and structure of the fault tree.
-  /// This function must be called after validation.
-  /// This function must be called before any analysis is performed
-  /// because there would not be necessary information
-  /// available for analysis like primary events of this fault tree.
-  /// Moreover, all the nodes of this fault tree
-  /// are expected to be defined fully and correctly.
-  /// Gates are marked upon visit.
-  /// The mark is checked to prevent revisiting.
-  ///
-  /// @param[in] gate The gate to start traversal from.
-  void GatherEvents(const GatePtr& gate) noexcept;
-
-  /// Traverses formulas recursively to find all events.
-  ///
-  /// @param[in] formula The formula to get events from.
-  void GatherEvents(const FormulaPtr& formula) noexcept;
-
-  /// Cleans marks from gates that were traversed.
-  /// Marks are set to empty strings.
-  /// This is important
-  /// because other code may assume that marks are empty.
-  void CleanMarks() noexcept;
-
+ protected:
   /// Converts minimal cut sets from indices to strings
   /// for future reporting.
   /// This function also collects basic events in minimal cut sets
   /// and calculates their probabilities.
   ///
-  /// @param[in] imcs Min cut sets with indices of events.
-  /// @param[in] ft Indexed fault tree with basic event indices and pointers.
+  /// @param[in] imcs  Min cut sets with indices of events.
+  /// @param[in] ft  Indexed fault tree with basic event indices and pointers.
   ///
   /// @todo Probability calculation feels more like a hack than design.
-  void SetsToString(const std::vector<Set>& imcs,
+  void SetsToString(const std::vector<std::vector<int>>& imcs,
                     const BooleanGraph* ft) noexcept;
-
-  GatePtr top_event_;  ///< Top event of this fault tree.
-
-  /// Container for intermediate events.
-  std::unordered_map<std::string, GatePtr> inter_events_;
-
-  /// Container for basic events.
-  std::unordered_map<std::string, BasicEventPtr> basic_events_;
-
-  /// Container for house events of the tree.
-  std::unordered_map<std::string, HouseEventPtr> house_events_;
-
-  /// Container for basic events that are identified to be in some CCF group.
-  /// These basic events are not necessarily in the same CCF group.
-  std::unordered_map<std::string, BasicEventPtr> ccf_events_;
 
   /// Container for minimal cut sets.
   std::set<CutSet> min_cut_sets_;
@@ -236,10 +250,65 @@ class FaultTreeAnalysis : public Analysis {
   std::map<CutSet, double> mcs_probability_;
 
   double sum_mcs_probability_;  ///< The sum of minimal cut set probabilities.
-  std::string warnings_;  ///< Generated warnings in analysis.
   int max_order_;  ///< Maximum order of minimal cut sets.
-  double analysis_time_;  ///< Time taken by the core analysis.
 };
+
+/// @class FaultTreeAnalyzer
+///
+/// @tparam Algorithm Fault tree analysis algorithm.
+///
+/// Fault tree analysis facility with specific algorithms.
+/// This class is meant to be specialized by fault tree analysis algorithms.
+template<typename Algorithm>
+class FaultTreeAnalyzer : public FaultTreeAnalysis {
+ public:
+  /// Constructor with a fault tree and analysis settings.
+  using FaultTreeAnalysis::FaultTreeAnalysis;
+
+  /// Runs fault tree analysis with the given algorithm.
+  void Analyze() noexcept;
+
+  /// @returns Pointer to the analysis algorithm.
+  const Algorithm* algorithm() const { return algorithm_.get(); }
+
+  /// @returns Pointer to the analysis algorithm
+  ///          for use by other analyses.
+  Algorithm* algorithm() { return algorithm_.get(); }
+
+  /// @returns Pointer to the Boolean graph representing the fault tree.
+  const BooleanGraph* graph() const { return graph_.get(); }
+
+ protected:
+  std::unique_ptr<Algorithm> algorithm_;  ///< Analysis algorithm.
+  std::unique_ptr<BooleanGraph> graph_;  ///< Boolean graph of the fault tree.
+};
+
+template<typename Algorithm>
+void FaultTreeAnalyzer<Algorithm>::Analyze() noexcept {
+  CLOCK(analysis_time);
+
+  CLOCK(graph_creation);
+  graph_ = std::unique_ptr<BooleanGraph>(new BooleanGraph(
+          FaultTreeDescriptor::top_event(), kSettings_.ccf_analysis()));
+  LOG(DEBUG2) << "Boolean graph is created in " << DUR(graph_creation);
+
+  CLOCK(prep_time);  // Overall preprocessing time.
+  LOG(DEBUG2) << "Preprocessing...";
+  Preprocessor* preprocessor = new CustomPreprocessor<Algorithm>(graph_.get());
+  preprocessor->Run();
+  delete preprocessor;  // No exceptions are expected.
+  LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
+
+  CLOCK(algo_time);
+  LOG(DEBUG2) << "Launching the algorithm...";
+  algorithm_ =
+      std::unique_ptr<Algorithm>(new Algorithm(graph_.get(), kSettings_));
+  algorithm_->Analyze();
+  LOG(DEBUG2) << "The algorithm finished in " << DUR(algo_time);
+
+  analysis_time_ = DUR(analysis_time);  // Duration of MCS generation.
+  FaultTreeAnalysis::SetsToString(algorithm_->cut_sets(), graph_.get());
+}
 
 }  // namespace scram
 

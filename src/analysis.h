@@ -29,16 +29,24 @@ namespace scram {
 /// Base abstract class for all analysis with settings.
 class Analysis {
  public:
-  /// @param[in] settings Analysis settings for all calculations.
+  /// @param[in] settings  Analysis settings for all calculations.
   explicit Analysis(const Settings& settings);
 
   virtual ~Analysis() = 0;  ///< Abstract class.
 
   /// @returns Analysis settings.
-  inline const Settings& settings() const { return kSettings_; }
+  const Settings& settings() const { return kSettings_; }
+
+  /// @returns Warnings generated upon analysis.
+  const std::string& warnings() const { return warnings_; }
+
+  /// @returns Time taken by the analysis.
+  double analysis_time() const { return analysis_time_; }
 
  protected:
   const Settings kSettings_;  ///< All settings for analysis.
+  std::string warnings_;  ///< Generated warnings in analysis.
+  double analysis_time_;  ///< Time taken by the analysis.
 };
 
 }  // namespace scram

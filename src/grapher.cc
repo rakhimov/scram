@@ -54,7 +54,7 @@ void Grapher::GraphFaultTree(const GatePtr& top_event, bool prob_requested,
 
   out << "digraph " << top_event->name() << " {\n";
 
-  FaultTreeAnalysis* fta = new FaultTreeAnalysis(top_event);
+  FaultTreeDescriptor* fta = new FaultTreeDescriptor(top_event);
 
   // Keep track of nested formulas for future special formatting.
   std::vector<std::pair<std::string, const Formula*> > formulas;

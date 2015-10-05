@@ -48,27 +48,27 @@ class RelaxNGValidator {
 
   /// Parses a RelaxNG schema XML file.
   ///
-  /// @param[in] contents The contents of the XML file.
+  /// @param[in] contents  The contents of the XML file.
   ///
-  /// @throws LogicError The contents of the schema could not be parsed.
+  /// @throws LogicError  The contents of the schema could not be parsed.
   void ParseMemory(const Glib::ustring& contents);
 
   /// Validates an XML file against the given schema.
   ///
-  /// @param[in] doc The XML file document.
+  /// @param[in] doc  The XML file document.
   ///
-  /// @throws ValidationError The XML snippet failed schema validation.
-  /// @throws InvalidArgrument The pointer to the doc cannot be NULL.
-  /// @throws LogicError There is no schema to validate against.
-  /// @throws Error Could not create validating context.
+  /// @throws ValidationError  The XML snippet failed schema validation.
+  /// @throws InvalidArgrument  The pointer to the doc cannot be NULL.
+  /// @throws LogicError  There is no schema to validate against.
+  /// @throws Error  Could not create validating context.
   void Validate(const xmlpp::Document* doc);
 
  private:
   /// Parses a RelaxNG schema context.
   ///
-  /// @param[in] context The context.
+  /// @param[in] context  The context.
   ///
-  /// @throws ValidationError The schema could not be parsed.
+  /// @throws ValidationError  The schema could not be parsed.
   void ParseContext(xmlRelaxNGParserCtxtPtr context);
 
   /// Frees XML-related memory.

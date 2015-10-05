@@ -16,194 +16,280 @@
  */
 
 /// @file probability_analysis.h
-/// Contains functionality to do numerical analysis
-/// of probabilities and importance factors.
+/// Contains functionality to do numerical analysis of probabilities.
 
 #ifndef SCRAM_SRC_PROBABILITY_ANALYSIS_H_
 #define SCRAM_SRC_PROBABILITY_ANALYSIS_H_
 
-#include <map>
 #include <memory>
-#include <set>
-#include <string>
-#include <unordered_map>
 #include <vector>
-
-#include <boost/container/flat_set.hpp>
 
 #include "analysis.h"
 #include "bdd.h"
+#include "boolean_graph.h"
 #include "event.h"
+#include "fault_tree_analysis.h"
+#include "logger.h"
 #include "settings.h"
 
 namespace scram {
 
-/// @struct ImportanceFactors
-/// Collection of importance factors for variables.
-struct ImportanceFactors {
-  double dif;  ///< Fussel-Vesely diagnosis importance factor.
-  double mif;  ///< Birnbaum marginal importance factor.
-  double cif;  ///< Critical importance factor.
-  double rrw;  ///< Risk reduction worth factor.
-  double raw;  ///< Risk achievement worth factor.
-};
-
 /// @class ProbabilityAnalysis
-/// Main quantitative analysis.
+/// Main quantitative analysis class.
 class ProbabilityAnalysis : public Analysis {
  public:
-  using BasicEventPtr = std::shared_ptr<BasicEvent>;
   using GatePtr = std::shared_ptr<Gate>;
-  using VertexPtr = std::shared_ptr<Vertex>;
-  using ItePtr = std::shared_ptr<Ite>;
 
   /// Probability analysis
-  /// on the fault tree represented by the root gate
-  /// with Binary decision diagrams.
+  /// with the results of qualitative analysis.
   ///
-  /// @param[in] root The top event of the fault tree.
-  /// @param[in] settings Analysis settings for probability calculations.
-  ///
-  /// @note This technique does not require cut sets.
-  ProbabilityAnalysis(const GatePtr& root, const Settings& settings);
+  /// @param[in] fta  Fault tree analysis with results.
+  explicit ProbabilityAnalysis(const FaultTreeAnalysis* fta);
 
-  virtual ~ProbabilityAnalysis() {}
+  virtual ~ProbabilityAnalysis() = default;
 
-  /// Performs quantitative analysis on minimal cut sets
-  /// containing basic events provided in the databases.
-  /// It is assumed that the analysis is called only once.
+  /// Performs quantitative analysis on the supplied fault tree.
   ///
-  /// @param[in] min_cut_sets Minimal cut sets with string ids of events.
-  ///                         Negative event is indicated by "'not' + id"
-  ///
-  /// @note  Undefined behavior if analysis is called two or more times.
-  virtual void Analyze(
-      const std::set< std::set<std::string> >& min_cut_sets) noexcept;
+  /// @pre Analysis is called only once.
+  void Analyze() noexcept;
 
   /// @returns The total probability calculated by the analysis.
   ///
   /// @note The user should make sure that the analysis is actually done.
-  inline double p_total() const { return p_total_; }
+  double p_total() const { return p_total_; }
 
-  /// @returns Map with basic events and their importance factors.
+ private:
+  /// Calculates the total probability.
   ///
-  /// @note The user should make sure that the analysis is actually done.
-  inline const std::unordered_map<std::string, ImportanceFactors>&
-      importance() const {
-    return importance_;
-  }
+  /// @returns The total probability of the graph or cut sets.
+  virtual double CalculateTotalProbability() noexcept = 0;
 
-  /// @returns Warnings generated upon analysis.
-  inline const std::string warnings() const { return warnings_; }
+  double p_total_;  ///< Total probability of the top event.
+};
 
-  /// @returns The container of basic events of supplied for the analysis.
-  inline const std::unordered_map<std::string, BasicEventPtr>&
-      basic_events() const {
-    return basic_events_;
-  }
-
-  /// @returns Analysis time spent on calculating the total probability.
-  inline double prob_analysis_time() const { return p_time_; }
-
-  /// @returns Analysis time spent on calculating the importance factors.
-  inline double imp_analysis_time() const { return imp_time_; }
-
- protected:
-  using FlatSet = boost::container::flat_set<int>;  ///< Faster set.
-
-  /// Assigns an index to each basic event,
-  /// and then populates with these indices
-  /// new databases and basic-to-integer converting maps.
-  /// The previous data are lost.
-  /// These indices will be used for future analysis.
-  void AssignIndices() noexcept;
-
-  /// Populates databases of minimal cut sets
-  /// with indices of the events.
-  /// This traversal detects
-  /// if cut sets contain complement events
-  /// and turns non-coherent analysis.
-  ///
-  /// @param[in] min_cut_sets Minimal cut sets with event IDs.
-  void IndexMcs(const std::set<std::set<std::string> >& min_cut_sets) noexcept;
-
-  /// Calculates probabilities
-  /// using the minimal cut set upper bound (MCUB) approximation.
-  ///
-  /// @param[in] min_cut_sets Sets of indices of basic events.
-  ///
-  /// @returns The total probability with the MCUB approximation.
-  double ProbMcub(const std::vector<FlatSet>& min_cut_sets) noexcept;
-
-  /// Calculates probabilities
-  /// using the Rare-Event approximation.
-  ///
-  /// @param[in] min_cut_sets Sets of indices of basic events.
-  ///
-  /// @returns The total probability with the rare-event approximation.
-  double ProbRareEvent(const std::vector<FlatSet>& min_cut_sets) noexcept;
+/// @class CutSetCalculator
+/// Quantitative calculator of a probability value of a single cut set.
+class CutSetCalculator {
+ public:
+  using CutSet = std::vector<int>;
 
   /// Calculates a probability of a cut set,
   /// whose members are in AND relationship with each other.
   /// This function assumes independence of each member.
   ///
-  /// @param[in] cut_set A flat set of indices of basic events.
+  /// @param[in] cut_set  A cut set of signed indices of basic events.
+  /// @param[in] var_probs  Probabilities of events mapped to a vector.
   ///
   /// @returns The total probability of the set.
   ///
-  /// @note O_avg(N) where N is the size of the passed set.
-  double ProbAnd(const FlatSet& cut_set) noexcept;
+  /// @pre Probability values are non-negative.
+  /// @pre Absolute indices of events directly map to vector indices.
+  double Calculate(const CutSet& cut_set,
+                   const std::vector<double>& var_probs) noexcept;
 
-  /// Calculates the total probability
-  /// using the fault tree directly
-  /// without cut sets.
+  /// Checks the special case of a unity set with probability 1.
   ///
-  /// @todo Replace the main probability calculation functionality
-  ///       with BDD based approach.
+  /// @param[in] cut_sets  Collection of ALL cut sets.
+  ///
+  /// @returns true if the Unity set is detected.
+  ///
+  /// @pre The unity set is indicated by a single empty set.
+  /// @pre Provided cut sets are ALL the cut sets under consideration.
+  double CheckUnity(const std::vector<CutSet>& cut_sets) noexcept {
+    return cut_sets.size() == 1 && cut_sets.front().empty();
+  }
+};
+
+/// @class RareEventCalculator
+/// Quantitative calculator of probability values
+/// with the Rare-Event approximation.
+class RareEventCalculator : private CutSetCalculator {
+ public:
+  using CutSetCalculator::CutSet;
+
+  /// Calculates probabilities
+  /// using the Rare-Event approximation.
+  ///
+  /// @param[in] cut_sets  A collection of sets of indices of basic events.
+  /// @param[in] var_probs  Probabilities of events mapped to a vector.
+  ///
+  /// @returns The total probability with the rare-event approximation.
+  ///
+  /// @pre Absolute indices of events directly map to vector indices.
+  ///
+  /// @post The returned probability value may not be acceptable.
+  ///       That is, it may be out of the acceptable [0, 1] range.
+  ///       The caller of this function must decide
+  ///       what to do in this case.
+  double Calculate(const std::vector<CutSet>& cut_sets,
+                   const std::vector<double>& var_probs) noexcept;
+};
+
+/// @class McubCalculator
+/// Quantitative calculator of probability values
+/// with the Min-Cut-Upper Bound approximation.
+class McubCalculator : private CutSetCalculator {
+ public:
+  using CutSetCalculator::CutSet;
+
+  /// Calculates probabilities
+  /// using the minimal cut set upper bound (MCUB) approximation.
+  ///
+  /// @param[in] cut_sets  A collection of sets of indices of basic events.
+  /// @param[in] var_probs  Probabilities of events mapped to a vector.
+  ///
+  /// @returns The total probability with the MCUB approximation.
+  double Calculate(const std::vector<CutSet>& cut_sets,
+                   const std::vector<double>& var_probs) noexcept;
+};
+
+/// @class ProbabilityAnalyzerBase
+/// Abstract base class for Probability analyzers.
+class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
+ public:
+  using CutSet = std::vector<int>;
+
+  /// Constructs probability analyzer from a fault tree analyzer.
+  ///
+  /// @tparam Algorithm  Qualitative analysis algorithm.
+  ///
+  /// @param[in] fta  Finished fault tree analyzer with results.
+  template<typename Algorithm>
+  explicit ProbabilityAnalyzerBase(const FaultTreeAnalyzer<Algorithm>* fta);
+
+  virtual ~ProbabilityAnalyzerBase() = 0;  ///< Abstract class.
+
+  /// @returns The original Boolean graph from the fault tree analyzer.
+  const BooleanGraph* graph() const { return graph_; }
+
+  /// @returns The resulting cut sets of the fault tree analyzer.
+  const std::vector<CutSet>& cut_sets() const { return *cut_sets_; }
+
+  /// @returns A modifiable mapping for probability values and indices.
+  ///
+  /// @pre Quantitative analyzers aware of how Probability analyzer works.
+  /// @pre Quantitative analyzers will cleanup after themselves.
+  ///
+  /// @warning This is a temporary hack
+  ///          due to tight coupling of Quantitative analyzers.
+  std::vector<double>& var_probs() { return var_probs_; }
+
+ protected:
+  using BasicEventPtr = std::shared_ptr<BasicEvent>;
+
+  const BooleanGraph* graph_;  ///< Boolean graph from the fault tree analysis.
+  const std::vector<CutSet>* cut_sets_;  ///< A collection of cut sets.
+  std::vector<double> var_probs_;  ///< Variable probabilities.
+};
+
+template<typename Algorithm>
+ProbabilityAnalyzerBase::ProbabilityAnalyzerBase(
+    const FaultTreeAnalyzer<Algorithm>* fta)
+    : ProbabilityAnalysis::ProbabilityAnalysis(fta),
+      graph_(fta->graph()),
+      cut_sets_(&fta->algorithm()->cut_sets()) {
+  var_probs_.push_back(-1);
+  for (const BasicEventPtr& event : graph_->basic_events()) {
+    var_probs_.push_back(event->p());
+  }
+}
+
+/// @class ProbabilityAnalyzer
+/// Fault-tree-analysis-aware probability analyzer.
+/// Probability analyzer provides the main engine for probability analysis.
+///
+/// @tparam Calculator  Quantitative analysis calculator.
+template<typename Calculator>
+class ProbabilityAnalyzer : public ProbabilityAnalyzerBase {
+ public:
+  using ProbabilityAnalyzerBase::ProbabilityAnalyzerBase;
+
+  /// Calculates the total probability.
+  ///
+  /// @returns The total probability of the graph or cut sets.
+  double CalculateTotalProbability() noexcept {
+    return calc_.Calculate(*cut_sets_, var_probs_);
+  }
+
+ private:
+  Calculator calc_;  ///< Provider of the calculation logic.
+};
+
+/// @class ProbabilityAnalyzer<Bdd>
+/// Specialization of probability analyzer with Binary Decision Diagrams.
+/// The quantitative analysis is done with BDD.
+template<>
+class ProbabilityAnalyzer<Bdd> : public ProbabilityAnalyzerBase {
+ public:
+  /// Constructs probability analyzer from a fault tree analyzer
+  /// with the same algorithm.
+  ///
+  /// @tparam Algorithm  Fault tree analysis algorithm.
+  ///
+  /// @param[in] fta  Finished fault tree analyzer with results.
+  template<typename Algorithm>
+  explicit ProbabilityAnalyzer(const FaultTreeAnalyzer<Algorithm>* fta);
+
+  /// Reuses BDD structures from Fault tree analyzer.
+  ///
+  /// @param[in] fta  Finished fault tree analyzer with BDD algorithms.
+  ///
+  /// @pre BDD is fully formed and used.
+  ///
+  /// @post FaultTreeAnalyzer is not corrupted
+  ///       by use of its BDD internals.
+  explicit ProbabilityAnalyzer(FaultTreeAnalyzer<Bdd>* fta);
+
+  /// Deletes the Boolean graph and BDD
+  /// only if ProbabilityAnalyzer is the owner of them.
+  ~ProbabilityAnalyzer() noexcept;
+
+  /// Calculates the total probability.
+  ///
+  /// @returns The total probability of the graph or cut sets.
   double CalculateTotalProbability() noexcept;
+
+  /// @returns Binary decision diagram used for calculations.
+  Bdd* bdd_graph() { return bdd_graph_; }
+
+ private:
+  using VertexPtr = std::shared_ptr<Vertex>;
+  using ItePtr = std::shared_ptr<Ite>;
+
+  /// Creates a new BDD for use by the analyzer.
+  ///
+  /// @param[in] root  The root gate of the fault tree.
+  ///
+  /// @pre The function is called in the constructor only once.
+  void CreateBdd(const std::shared_ptr<Gate>& root) noexcept;
 
   /// Calculates exact probability
   /// of a function graph represented by its root BDD vertex.
   ///
-  /// @param[in] vertex The root vertex of a function graph.
-  /// @param[in] mark A flag to mark traversed vertices.
+  /// @param[in] vertex  The root vertex of a function graph.
+  /// @param[in] mark  A flag to mark traversed vertices.
   ///
   /// @returns Probability value.
   ///
-  /// @warning If a vertice is already marked with the input mark,
+  /// @warning If a vertex is already marked with the input mark,
   ///          it will not be traversed and updated with a probability value.
   double CalculateProbability(const VertexPtr& vertex, bool mark) noexcept;
 
-  /// Importance analysis of basic events that are in minimal cut sets.
-  void PerformImportanceAnalysis() noexcept;
-
-  GatePtr top_event_;  ///< Top gate of the passed fault tree.
-  std::unique_ptr<Bdd> bdd_graph_;  ///< The main BDD graph for analysis.
-  std::string warnings_;  ///< Register warnings.
-
-  /// Container for input basic events.
-  std::unordered_map<std::string, BasicEventPtr> basic_events_;
-  std::vector<BasicEventPtr> ordered_basic_events_;  ///< Ordering by indices.
-
-  std::vector<BasicEventPtr> index_to_basic_;  ///< Indices to basic events.
-  /// Indices of basic events.
-  std::unordered_map<std::string, int> id_to_index_;
-  std::vector<double> var_probs_;  ///< Variable probabilities.
-
-  /// Minimal cut sets with indices of events.
-  std::vector<FlatSet> imcs_;
-  /// Container for basic event indices that are in minimal cut sets.
-  std::set<int> mcs_basic_events_;
-
-  double p_total_;  ///< Total probability of the top event.
+  Bdd* bdd_graph_;  ///< The main BDD graph for analysis.
   bool current_mark_; ///< To keep track of BDD current mark.
-
-  /// Container for basic event importance factors.
-  std::unordered_map<std::string, ImportanceFactors> importance_;
-
-  double p_time_;  ///< Time for probability calculations.
-  double imp_time_;  ///< Time for importance calculations.
+  bool owner_;  ///< Indication that pointers are handles.
 };
+
+template<typename Algorithm>
+ProbabilityAnalyzer<Bdd>::ProbabilityAnalyzer(
+    const FaultTreeAnalyzer<Algorithm>* fta)
+    : ProbabilityAnalyzerBase::ProbabilityAnalyzerBase(fta),
+      current_mark_(false),
+      owner_(true) {
+  CLOCK(main_time);
+  ProbabilityAnalyzer::CreateBdd(fta->top_event());
+  analysis_time_ = DUR(main_time);
+}
 
 }  // namespace scram
 

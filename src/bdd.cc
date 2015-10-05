@@ -23,6 +23,8 @@
 #include <algorithm>
 
 #include "event.h"
+#include "logger.h"
+#include "zbdd.h"
 
 namespace scram {
 
@@ -36,19 +38,42 @@ NonTerminal::NonTerminal(int index, int order)
       : index_(index),
         order_(order),
         module_(false),
-        complement_edge_(false),
         mark_(false) {}
 
 NonTerminal::~NonTerminal() {}  // Default pure virtual destructor.
 
-Bdd::Bdd(const BooleanGraph* fault_tree)
+ComplementEdge::ComplementEdge() : complement_edge_(false) {}
+
+ComplementEdge::~ComplementEdge() {}  // Default pure virtual destructor.
+
+Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& /*settings*/)
     : fault_tree_(fault_tree),
-      complement_root_(false),
       kOne_(std::make_shared<Terminal>(true)),
-      function_id_(2) {
-  const Function& result = Bdd::IfThenElse(fault_tree_->root());
-  root_ = result.vertex;
-  complement_root_ = result.complement;
+      function_id_(2),
+      zbdd_(nullptr) {
+  CLOCK(init_time);
+  LOG(DEBUG3) << "Converting Boolean graph into BDD...";
+  root_ = Bdd::IfThenElse(fault_tree_->root());
+  LOG(DEBUG4) << "# of BDD vertices created: " << function_id_ - 1;
+  Bdd::ClearMarks(false);
+  LOG(DEBUG4) << "# of ITE in BDD: " << Bdd::CountIteNodes(root_.vertex);
+  LOG(DEBUG3) << "Finished Boolean graph conversion in " << DUR(init_time);
+  Bdd::ClearMarks(false);
+}
+
+Bdd::~Bdd() noexcept {
+  if (zbdd_) delete zbdd_;
+}
+
+void Bdd::Analyze() noexcept {
+  if (zbdd_) delete zbdd_;
+  zbdd_ = new Zbdd(this);
+  zbdd_->Analyze();
+}
+
+const std::vector<std::vector<int>>& Bdd::cut_sets() const {
+  assert(zbdd_ && "Analysis is not done.");
+  return zbdd_->cut_sets();
 }
 
 const Bdd::Function& Bdd::IfThenElse(const IGatePtr& gate) noexcept {
@@ -80,11 +105,10 @@ const Bdd::Function& Bdd::IfThenElse(const IGatePtr& gate) noexcept {
   }
   std::sort(args.begin(), args.end(),
             [](const Function& lhs, const Function& rhs) {
-              if (lhs.vertex->terminal()) return false;
-              if (rhs.vertex->terminal()) return true;
-              return Ite::Ptr(lhs.vertex)->order() <
-                     Ite::Ptr(rhs.vertex)->order();
-            });
+    if (lhs.vertex->terminal()) return false;
+    if (rhs.vertex->terminal()) return true;
+    return Ite::Ptr(lhs.vertex)->order() < Ite::Ptr(rhs.vertex)->order();
+  });
   auto it = args.cbegin();
   result.complement = it->complement;
   result.vertex = it->vertex;
@@ -99,6 +123,7 @@ const Bdd::Function& Bdd::IfThenElse(const IGatePtr& gate) noexcept {
 std::shared_ptr<Ite> Bdd::IfThenElse(const VariablePtr& variable) noexcept {
   ItePtr& in_table = unique_table_[{variable->index(), 1, -1}];
   if (in_table) return in_table;
+  index_to_order_.emplace(variable->index(), variable->opti_value());
   in_table = std::make_shared<Ite>(variable->index(), variable->opti_value());
   in_table->id(function_id_++);
   in_table->high(kOne_);
@@ -120,51 +145,22 @@ std::shared_ptr<Ite> Bdd::CreateModuleProxy(const IGatePtr& gate) noexcept {
   return in_table;
 }
 
-std::shared_ptr<Vertex> Bdd::Reduce(const VertexPtr& vertex) noexcept {
-  if (vertex->terminal()) return vertex;
-  if (vertex->id()) return vertex;  // Already reduced function graph.
-  ItePtr ite = Ite::Ptr(vertex);
-  ite->high(Bdd::Reduce(ite->high()));
-  ite->low(Bdd::Reduce(ite->low()));
-  if (ite->high()->id() == ite->low()->id()) {  // Redundancy condition.
-    assert(ite->low() == ite->high());
-    return ite->low();
-  }
-  ItePtr& in_table =
-      unique_table_[{ite->index(), ite->high()->id(), ite->low()->id()}];
-  if (in_table) return in_table;  // Existing function graph.
-  ite->id(function_id_++);  // Unique function graph.
-  in_table = ite;
-  return ite;
-}
-
 Bdd::Function Bdd::Apply(Operator type,
                          const VertexPtr& arg_one, const VertexPtr& arg_two,
                          bool complement_one, bool complement_two) noexcept {
-  if (arg_one->terminal() && arg_two->terminal()) {
+  assert(arg_one->id() && arg_two->id());  // Both are reduced function graphs.
+  if (arg_one->terminal() && arg_two->terminal())
     return Bdd::Apply(type, Terminal::Ptr(arg_one), Terminal::Ptr(arg_two),
                       complement_one, complement_two);
-  } else if (arg_one->terminal()) {
+  if (arg_one->terminal())
     return Bdd::Apply(type, Ite::Ptr(arg_two), Terminal::Ptr(arg_one),
                       complement_two, complement_one);
-  } else if (arg_two->terminal()) {
+  if (arg_two->terminal())
     return Bdd::Apply(type, Ite::Ptr(arg_one), Terminal::Ptr(arg_two),
                       complement_one, complement_two);
-  }
-  assert(arg_one->id() && arg_two->id());  // Both are reduced function graphs.
-  if (arg_one->id() == arg_two->id()) {  // Reduction detection.
-    if (complement_one ^ complement_two) {
-      switch (type) {
-        case kOrGate:
-          return {false, kOne_};
-        case kAndGate:
-          return {true, kOne_};
-        default:
-          assert(false);
-      }
-    }
-    return {complement_one, arg_one};
-  }
+  if (arg_one->id() == arg_two->id())  // Reduction detection.
+    return Bdd::Apply(type, arg_one, complement_one, complement_two);
+
   Triplet sig =
       Bdd::GetSignature(type, arg_one, arg_two, complement_one, complement_two);
   Function& result = compute_table_[sig];  // Register if not computed.
@@ -172,26 +168,15 @@ Bdd::Function Bdd::Apply(Operator type,
 
   ItePtr ite_one = Ite::Ptr(arg_one);
   ItePtr ite_two = Ite::Ptr(arg_two);
-  Function high;
-  Function low;
-  if (ite_one->order() == ite_two->order()) {  // The same variable.
-    assert(ite_one->index() == ite_two->index());
-    high = Bdd::Apply(type, ite_one->high(), ite_two->high(),
-                      complement_one, complement_two);
-    low = Bdd::Apply(type, ite_one->low(), ite_two->low(),
-                     complement_one ^ ite_one->complement_edge(),
-                     complement_two ^ ite_two->complement_edge());
-  } else {
-    if (ite_one->order() > ite_two->order()) {
-      std::swap(ite_one, ite_two);
-      std::swap(complement_one, complement_two);
-    }
-    high = Bdd::Apply(type, ite_one->high(), ite_two,
-                      complement_one, complement_two);
-    low = Bdd::Apply(type, ite_one->low(), ite_two,
-                     complement_one ^ ite_one->complement_edge(),
-                     complement_two);
+  if (ite_one->order() > ite_two->order()) {
+    std::swap(ite_one, ite_two);
+    std::swap(complement_one, complement_two);
   }
+  std::pair<Function, Function> new_edges = Bdd::Apply(type, ite_one, ite_two,
+                                                       complement_one,
+                                                       complement_two);
+  Function& high = new_edges.first;
+  Function& low = new_edges.second;
   ItePtr bdd_graph = std::make_shared<Ite>(ite_one->index(), ite_one->order());
   bdd_graph->module(ite_one->module());  /// @todo Create clone function.
   bdd_graph->high(high.vertex);
@@ -254,6 +239,42 @@ Bdd::Function Bdd::Apply(Operator type,
   }
 }
 
+Bdd::Function Bdd::Apply(Operator type, const VertexPtr& single_arg,
+                         bool complement_one, bool complement_two) noexcept {
+  if (complement_one ^ complement_two) {
+    switch (type) {
+      case kOrGate:
+        return {false, kOne_};
+      case kAndGate:
+        return {true, kOne_};
+      default:
+        assert(false);
+    }
+  }
+  return {complement_one, single_arg};
+}
+
+std::pair<Bdd::Function, Bdd::Function>
+Bdd::Apply(Operator type, const ItePtr& arg_one, const ItePtr& arg_two,
+           bool complement_one, bool complement_two) noexcept {
+  if (arg_one->order() == arg_two->order()) {  // The same variable.
+    assert(arg_one->index() == arg_two->index());
+    Function high = Bdd::Apply(type, arg_one->high(), arg_two->high(),
+                               complement_one, complement_two);
+    Function low = Bdd::Apply(type, arg_one->low(), arg_two->low(),
+                              complement_one ^ arg_one->complement_edge(),
+                              complement_two ^ arg_two->complement_edge());
+    return {high, low};
+  }
+  assert(arg_one->order() < arg_two->order());
+  Function high = Bdd::Apply(type, arg_one->high(), arg_two,
+                             complement_one, complement_two);
+  Function low = Bdd::Apply(type, arg_one->low(), arg_two,
+                            complement_one ^ arg_one->complement_edge(),
+                            complement_two);
+  return {high, low};
+}
+
 Triplet Bdd::GetSignature(Operator type,
                           const VertexPtr& arg_one, const VertexPtr& arg_two,
                           bool complement_one, bool complement_two) noexcept {
@@ -283,6 +304,33 @@ Triplet Bdd::GetSignature(Operator type,
       assert(false);
   }
   return sig;
+}
+
+int Bdd::CountIteNodes(const VertexPtr& vertex) noexcept {
+  if (vertex->terminal()) return 0;
+  ItePtr ite = Ite::Ptr(vertex);
+  if (ite->mark()) return 0;
+  ite->mark(true);
+  int in_module = 0;
+  if (ite->module()) {
+    const Function& module = gates_.find(ite->index())->second;
+    in_module = Bdd::CountIteNodes(module.vertex);
+  }
+  return 1 + in_module + Bdd::CountIteNodes(ite->high()) +
+         Bdd::CountIteNodes(ite->low());
+}
+
+void Bdd::ClearMarks(const VertexPtr& vertex, bool mark) noexcept {
+  if (vertex->terminal()) return;
+  ItePtr ite = Ite::Ptr(vertex);
+  if (ite->mark() == mark) return;
+  ite->mark(mark);
+  if (ite->module()) {
+    const Bdd::Function& res = gates_.find(ite->index())->second;
+    Bdd::ClearMarks(res.vertex, mark);
+  }
+  Bdd::ClearMarks(ite->high(), mark);
+  Bdd::ClearMarks(ite->low(), mark);
 }
 
 }  // namespace scram

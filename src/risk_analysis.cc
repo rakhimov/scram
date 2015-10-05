@@ -21,15 +21,16 @@
 #include "risk_analysis.h"
 
 #include <fstream>
-#include <set>
-#include <unordered_map>
 #include <utility>
+#include <vector>
 
+#include "bdd.h"
 #include "error.h"
 #include "event.h"
 #include "fault_tree.h"
 #include "grapher.h"
 #include "logger.h"
+#include "mocus.h"
 #include "model.h"
 #include "random.h"
 #include "reporter.h"
@@ -71,23 +72,55 @@ void RiskAnalysis::Analyze() noexcept {
           target->is_public() ? "" : target->base_path() + ".";
       std::string name = base_path + target->name();  // Analysis ID.
 
-      FaultTreeAnalysisPtr fta(new FaultTreeAnalysis(target, kSettings_));
-      fta->Analyze();
-
-      if (kSettings_.probability_analysis()) {
-        ProbabilityAnalysisPtr pa(new ProbabilityAnalysis(target, kSettings_));
-        pa->Analyze(fta->min_cut_sets());
-        probability_analyses_.emplace(name, std::move(pa));
-      }
-
-      if (kSettings_.uncertainty_analysis()) {
-        UncertaintyAnalysisPtr ua(new UncertaintyAnalysis(target, kSettings_));
-        ua->Analyze(fta->min_cut_sets());
-        uncertainty_analyses_.emplace(name, std::move(ua));
-      }
-      fault_tree_analyses_.emplace(name, std::move(fta));
+      RiskAnalysis::RunAnalysis(name, target);
     }
   }
+}
+
+void RiskAnalysis::RunAnalysis(const std::string& name,
+                               const GatePtr& target) noexcept {
+  if (kSettings_.algorithm() == "bdd") {
+    RiskAnalysis::RunAnalysis<Bdd>(name, target);
+  } else {  // The default algorithm.
+    assert(kSettings_.algorithm() == "mocus");
+    RiskAnalysis::RunAnalysis<Mocus>(name, target);
+  }
+}
+
+template<typename Algorithm>
+void RiskAnalysis::RunAnalysis(const std::string& name,
+                               const GatePtr& target) noexcept {
+  auto* fta = new FaultTreeAnalyzer<Algorithm>(target, kSettings_);
+  fta->Analyze();
+  if (kSettings_.probability_analysis()) {
+    if (kSettings_.approximation() == "no") {
+      RiskAnalysis::RunAnalysis<Algorithm, Bdd>(name, fta);
+    } else if (kSettings_.approximation() == "rare-event") {
+      RiskAnalysis::RunAnalysis<Algorithm, RareEventCalculator>(name, fta);
+    } else {
+      assert(kSettings_.approximation() == "mcub");
+      RiskAnalysis::RunAnalysis<Algorithm, McubCalculator>(name, fta);
+    }
+  }
+  fault_tree_analyses_.emplace(name, FaultTreeAnalysisPtr(fta));
+}
+
+template<typename Algorithm, typename Calculator>
+void RiskAnalysis::RunAnalysis(const std::string& name,
+                               FaultTreeAnalyzer<Algorithm>* fta) noexcept {
+  auto* pa = new ProbabilityAnalyzer<Calculator>(fta);
+  pa->Analyze();
+  if (kSettings_.importance_analysis()) {
+    auto* ia = new ImportanceAnalyzer<Calculator>(pa);
+    ia->Analyze();
+    importance_analyses_.emplace(name, ImportanceAnalysisPtr(ia));
+  }
+  if (kSettings_.uncertainty_analysis()) {
+    auto* ua = new UncertaintyAnalyzer<Calculator>(pa);
+    ua->Analyze();
+    uncertainty_analyses_.emplace(name, UncertaintyAnalysisPtr(ua));
+  }
+  probability_analyses_.emplace(name, ProbabilityAnalysisPtr(pa));
 }
 
 void RiskAnalysis::Report(std::ostream& out) {
@@ -135,7 +168,7 @@ void RiskAnalysis::Report(std::ostream& out) {
     rp.ReportFta(id, *fta.second, prob_analysis, doc.get());
 
     if (kSettings_.importance_analysis()) {
-      rp.ReportImportance(id, *prob_analysis, doc.get());
+      rp.ReportImportance(id, *importance_analyses_.at(id), doc.get());
     }
 
     if (kSettings_.uncertainty_analysis()) {

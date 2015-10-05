@@ -24,76 +24,72 @@
 
 namespace scram {
 
+Settings& Settings::algorithm(const std::string& algorithm) {
+  if (algorithm != "mocus" && algorithm != "bdd")
+    throw InvalidArgument(
+        "The qualitative analysis algorithm is not recognized.");
+
+  algorithm_ = algorithm;
+  return *this;
+}
+
 Settings& Settings::limit_order(int order) {
-  if (order < 1) {
-    std::string msg = "The limit on the order of minimal cut sets "
-                      "cannot be less than 1.";
-    throw InvalidArgument(msg);
-  }
+  if (order < 1)
+    throw InvalidArgument("The limit on the order of minimal cut sets "
+                          "cannot be less than 1.");
   limit_order_ = order;
   return *this;
 }
 
 Settings& Settings::cut_off(double prob) {
-  if (prob < 0 || prob > 1) {
-    std::string msg = "The cut-off probability cannot be negative or"
-                      " more than 1.";
-    throw InvalidArgument(msg);
-  }
+  if (prob < 0 || prob > 1)
+    throw InvalidArgument("The cut-off probability cannot be negative or"
+                          " more than 1.");
   cut_off_ = prob;
   return *this;
 }
 
-Settings& Settings::approx(const std::string& approx) {
-  if (approx != "no" && approx != "rare-event" && approx != "mcub") {
-    std::string msg = "The probability approximation is not recognized.";
-    throw InvalidArgument(msg);
-  }
-  approx_ = approx;
+Settings& Settings::approximation(const std::string& approx) {
+  if (approx != "no" && approx != "rare-event" && approx != "mcub")
+    throw InvalidArgument("The probability approximation is not recognized.");
+
+  approximation_ = approx;
   return *this;
 }
 
 Settings& Settings::num_trials(int n) {
-  if (n < 1) {
-    std::string msg = "The number of trials cannot be less than 1.";
-    throw InvalidArgument(msg);
-  }
+  if (n < 1)
+    throw InvalidArgument("The number of trials cannot be less than 1.");
+
   num_trials_ = n;
   return *this;
 }
 
 Settings& Settings::num_quantiles(int n) {
-  if (n < 1) {
-    std::string msg = "The number of quantiles cannot be less than 1.";
-    throw InvalidArgument(msg);
-  }
+  if (n < 1)
+    throw InvalidArgument("The number of quantiles cannot be less than 1.");
+
   num_quantiles_ = n;
   return *this;
 }
 
 Settings& Settings::num_bins(int n) {
-  if (n < 1) {
-    std::string msg = "The number of bins cannot be less than 1.";
-    throw InvalidArgument(msg);
-  }
+  if (n < 1) throw InvalidArgument("The number of bins cannot be less than 1.");
+
   num_bins_ = n;
   return *this;
 }
 
 Settings& Settings::seed(int s) {
-  if (s < 0) {
-    std::string msg = "The seed for PRNG cannot be negative.";
-    throw InvalidArgument(msg);
-  }
+  if (s < 0) throw InvalidArgument("The seed for PRNG cannot be negative.");
+
   seed_ = s;
   return *this;
 }
 
 Settings& Settings::mission_time(double time) {
-  if (time < 0) {
-    std::string msg = "The mission time cannot be negative.";
-    throw InvalidArgument(msg);
-  }
+  if (time < 0) throw InvalidArgument("The mission time cannot be negative.");
+
   mission_time_ = time;
   return *this;
 }

@@ -35,9 +35,9 @@ class XMLParser {
  public:
   /// Initializes a parser with an XML snippet.
   ///
-  /// @param[in] xml_input_snippet An XML snippet to be used as input.
+  /// @param[in] xml_input_snippet  An XML snippet to be used as input.
   ///
-  /// @throws ValidationError There are problems loading the XML snippet.
+  /// @throws ValidationError  There are problems loading the XML snippet.
   explicit XMLParser(const std::stringstream& xml_input_snippet);
 
   /// Resets the parser.
@@ -45,17 +45,15 @@ class XMLParser {
 
   /// Validates the file against a schema.
   ///
-  /// @param[in] xml_schema_snippet The schema to validate against.
+  /// @param[in] xml_schema_snippet  The schema to validate against.
   ///
-  /// @throws ValidationError The XML file failed schema validation.
-  /// @throws LogicError The schema could not be parsed.
-  /// @throws Error Could not create validating context.
+  /// @throws ValidationError  The XML file failed schema validation.
+  /// @throws LogicError  The schema could not be parsed.
+  /// @throws Error  Could not create validating context.
   void Validate(const std::stringstream& xml_schema_snippet);
 
   /// @returns The parser's document.
-  inline const xmlpp::Document* Document() const {
-    return parser_->get_document();
-  }
+  const xmlpp::Document* Document() const { return parser_->get_document(); }
 
  private:
   std::unique_ptr<xmlpp::DomParser> parser_;  ///< File parser.

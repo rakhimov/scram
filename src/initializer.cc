@@ -44,7 +44,7 @@ namespace {
 
 /// Helper function to staticly cast to XML element.
 ///
-/// @param[in] node XML node known to be XML element.
+/// @param[in] node  XML node known to be XML element.
 ///
 /// @returns XML element cast from the XML node.
 ///
@@ -55,7 +55,7 @@ inline const xmlpp::Element* XmlElement(const xmlpp::Node* node) {
 
 /// Normalizes the string in the XML attribute.
 ///
-/// @param[in] element XML element with the attribute.
+/// @param[in] element  XML element with the attribute.
 ///
 /// @returns Normalized (trimmed) string from the attribute.
 inline std::string GetAttributeValue(const xmlpp::Element* element,
@@ -85,8 +85,9 @@ const char* const Initializer::kUnitToString_[] = {"unitless", "bool", "int",
 
 std::stringstream Initializer::schema_;
 
-Initializer::Initializer(const Settings& settings) {
-  settings_ = settings;
+Initializer::Initializer(const Settings& settings)
+    : settings_(settings),
+      coherent_(true) {
   mission_time_ = std::shared_ptr<MissionTime>(new MissionTime());
   mission_time_->mission_time(settings_.mission_time());
   if (schema_.str().empty()) {
@@ -370,6 +371,7 @@ std::unique_ptr<Formula> Initializer::GetFormula(
       type == "house-event") {
     type = "null";
   }
+  if (type == "not" || type == "xor") coherent_ = false;
   FormulaPtr formula(new Formula(type));
   if (type == "atleast") {
     std::string min_num = GetAttributeValue(formula_node, "min");
@@ -866,16 +868,16 @@ void Initializer::ValidateInitialization() {
     }
   }
 
-  if (!error_messages.str().empty()) {
+  if (!error_messages.str().empty())
     throw ValidationError(error_messages.str());
-  }
 
   Initializer::ValidateExpressions();
 
-  for (const std::pair<std::string, CcfGroupPtr>& group :
-       model_->ccf_groups()) {
+  for (const std::pair<std::string, CcfGroupPtr>& group : model_->ccf_groups())
     group.second->Validate();
-  }
+
+  if (settings_.algorithm() == "bdd" && !coherent_)
+    throw ValidationError("BDD algorithm accepts only coherent models.");
 }
 
 void Initializer::ValidateExpressions() {

@@ -48,26 +48,26 @@ class Element {
 
   /// @returns The empty or preset label.
   /// @returns Empty string if the label has not been set.
-  inline const std::string& label() const { return label_; }
+  const std::string& label() const { return label_; }
 
   /// Sets the label.
   ///
-  /// @param[in] new_label The label to be set.
+  /// @param[in] new_label  The label to be set.
   ///
-  /// @throws LogicError The label is already set,
-  ///                    or the new label is empty.
+  /// @throws LogicError  The label is already set,
+  ///                     or the new label is empty.
   void label(const std::string& new_label);
 
   /// Adds an attribute to the attribute map.
   ///
-  /// @param[in] attr Unique attribute of this element.
+  /// @param[in] attr  Unique attribute of this element.
   ///
-  /// @throws LogicError The attribute already exists.
+  /// @throws LogicError  The attribute already exists.
   void AddAttribute(const Attribute& attr);
 
   /// Checks if the element has a given attribute.
   ///
-  /// @param[in] id The identification name of the attribute in lower case.
+  /// @param[in] id  The identification name of the attribute in lower case.
   ///
   /// @returns true if this element has an attribute with the given ID.
   /// @returns false otherwise.
@@ -75,9 +75,9 @@ class Element {
 
   /// @returns Reference to the attribute if it exists.
   ///
-  /// @param[in] id The id name of the attribute in lower case.
+  /// @param[in] id  The id name of the attribute in lower case.
   ///
-  /// @throws LogicError There is no such attribute.
+  /// @throws LogicError  There is no such attribute.
   const Attribute& GetAttribute(const std::string& id) const;
 
  private:
@@ -94,17 +94,17 @@ class Role {
  public:
   /// Sets the role of an element upon creation.
   ///
-  /// @param[in] is_public A flag to define public or private role.
-  /// @param[in] base_path The series of containers to get this event.
+  /// @param[in] is_public  A flag to define public or private role.
+  /// @param[in] base_path  The series of containers to get this event.
   explicit Role(bool is_public = true, const std::string& base_path = "");
 
   virtual ~Role() = 0;  ///< Abstract class;
 
   /// @returns True for public roles, or False for private roles.
-  inline bool is_public() const { return is_public_; }
+  bool is_public() const { return is_public_; }
 
   /// @returns The base path containing ancestor container names.
-  inline const std::string& base_path() const { return base_path_; }
+  const std::string& base_path() const { return base_path_; }
 
  private:
   bool is_public_;  ///< A flag for public and private roles.

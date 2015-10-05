@@ -40,58 +40,61 @@ class Config {
   /// A constructor with configurations for analysis.
   /// Reads and validates the configurations.
   ///
-  /// @param[in] config_file XML file with configurations.
+  /// @param[in] config_file  XML file with configurations.
   ///
-  /// @throws ValidationError The configurations have problems.
-  /// @throws ValueError Input values are not valid.
-  /// @throws IOError The file is not accessible.
+  /// @throws ValidationError  The configurations have problems.
+  /// @throws ValueError  Input values are not valid.
+  /// @throws IOError  The file is not accessible.
   explicit Config(const std::string& config_file);
 
   /// @returns input files for analysis.
-  inline const std::vector<std::string>& input_files() const {
-    return input_files_;
-  }
+  const std::vector<std::string>& input_files() const { return input_files_; }
 
   /// @returns the settings for analysis.
-  inline const Settings& settings() const { return settings_; }
+  const Settings& settings() const { return settings_; }
 
   /// @returns the output destination if any.
-  inline const std::string& output_path() const { return output_path_; }
+  const std::string& output_path() const { return output_path_; }
 
  private:
   /// Gathers input files with analysis constructs.
   ///
-  /// @param[in] root The root XML element.
+  /// @param[in] root  The root XML element.
   void GatherInputFiles(const xmlpp::Node* root);
 
   /// Gathers options for analysis.
   ///
-  /// @param[in] root The root XML element.
+  /// @param[in] root  The root XML element.
   void GatherOptions(const xmlpp::Node* root);
 
   /// Gets the output path for reports.
   ///
-  /// @param[in] root The root XML element.
+  /// @param[in] root  The root XML element.
   void GetOutputPath(const xmlpp::Node* root);
+
+  /// Extracts Qualitative analysis algorithm.
+  ///
+  /// @param[in] analysis  Analysis element node.
+  void SetAlgorithm(const xmlpp::Element* analysis);
 
   /// Extracts analysis types to be performed from analysis element.
   ///
-  /// @param[in] analysis Analysis element node.
+  /// @param[in] analysis  Analysis element node.
   void SetAnalysis(const xmlpp::Element* analysis);
 
-  /// Extracts approximations from the configurations.
+  /// Extracts the approximation from the configurations.
   ///
-  /// @param[in] approx Approximation element node.
-  void SetApprox(const xmlpp::Element* approx);
+  /// @param[in] approx  Approximation element node.
+  void SetApproximation(const xmlpp::Element* approx);
 
   /// Extracts limits for analysis.
   ///
-  /// @param[in] limits An XML element containing various limits.
+  /// @param[in] limits  An XML element containing various limits.
   void SetLimits(const xmlpp::Element* limits);
 
   /// Interprets the given string into a boolean value.
   ///
-  /// @param[in] flag A flag that can be 0, 1, true, or false.
+  /// @param[in] flag  A flag that can be 0, 1, true, or false.
   ///
   /// @returns The interpreted boolean.
   bool GetBoolFromString(const std::string& flag);

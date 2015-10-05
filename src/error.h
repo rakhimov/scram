@@ -33,7 +33,7 @@ class Error : public std::exception {
  public:
   /// Constructs a new error with a provided message.
   ///
-  /// @param[in] msg The message to be passed with this error.
+  /// @param[in] msg  The message to be passed with this error.
   explicit Error(std::string msg);
 
   /// @returns The error message.
@@ -44,7 +44,7 @@ class Error : public std::exception {
 
   /// Sets the error message.
   ///
-  /// @param[in] msg The error message.
+  /// @param[in] msg  The error message.
   void msg(std::string msg) {
     msg_ = msg;
     thrown_ = kPrefix_ + msg;
@@ -68,7 +68,7 @@ class ValueError : public Error {
  public:
   /// Constructs a new value error with a provided message.
   ///
-  /// @param[in] msg The message to be passed with this error.
+  /// @param[in] msg  The message to be passed with this error.
   explicit ValueError(std::string msg) : Error(msg) {}
 };
 
@@ -78,7 +78,7 @@ class ValidationError : public Error {
  public:
   /// Constructs a new validation error with a provided message.
   ///
-  /// @param[in] msg The message to be passed with this error.
+  /// @param[in] msg  The message to be passed with this error.
   explicit ValidationError(std::string msg) : Error(msg) {}
 };
 
@@ -88,7 +88,7 @@ class RedefinitionError : public ValidationError {
  public:
   /// Constructs a new redefinition error with a provided message.
   ///
-  /// @param[in] msg The message to be passed with this error.
+  /// @param[in] msg  The message to be passed with this error.
   explicit RedefinitionError(std::string msg) : ValidationError(msg) {}
 };
 
@@ -98,7 +98,7 @@ class DuplicateArgumentError : public ValidationError {
  public:
   /// Constructs a new duplicate argument error with a provided message.
   ///
-  /// @param[in] msg The message to be passed with this error.
+  /// @param[in] msg  The message to be passed with this error.
   explicit DuplicateArgumentError(std::string msg) : ValidationError(msg) {}
 };
 
@@ -108,7 +108,7 @@ class IOError : public Error {
  public:
   /// Constructs a new io error with a provided message.
   ///
-  /// @param[in] msg The message to be passed with this error.
+  /// @param[in] msg  The message to be passed with this error.
   explicit IOError(std::string msg) : Error(msg) {}
 };
 
@@ -119,7 +119,7 @@ class InvalidArgument : public Error {
  public:
   /// Constructs a new invalid argument error with a provided message.
   ///
-  /// @param[in] msg The message to be passed with this error.
+  /// @param[in] msg  The message to be passed with this error.
   explicit InvalidArgument(std::string msg) : Error(msg) {}
 };
 
@@ -131,7 +131,7 @@ class LogicError : public Error {
  public:
   /// Constructs a new logic error with a provided message.
   ///
-  /// @param[in] msg The message to be passed with this error.
+  /// @param[in] msg  The message to be passed with this error.
   explicit LogicError(std::string msg) : Error(msg) {}
 };
 
@@ -144,7 +144,7 @@ class IllegalOperation : public Error {
  public:
   /// Constructs a new illegal operation error with a provided message.
   ///
-  /// @param[in] msg The message to be passed with this error.
+  /// @param[in] msg  The message to be passed with this error.
   explicit IllegalOperation(std::string msg) : Error(msg) {}
 };
 

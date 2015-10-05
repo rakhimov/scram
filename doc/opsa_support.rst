@@ -5,7 +5,8 @@ OpenPSA Model Exchange Format
 Open Probabilistic Safety Assessment Initiative hopes
 to bring international community of PSA together
 to improve the tools, techniques, and quality of PSA
-in a non-competitive and open manner for the benefit of the community.
+in a non-competitive and open manner
+for the benefit of the community [OPSA]_ [MEF]_.
 
 The initiative deals with the following issues in the current PSA:
 
@@ -21,7 +22,7 @@ The initiative deals with the following issues in the current PSA:
     - No universal format for industry data
 
 In order to facilitate information exchange and quality assurance,
-OpenPSA community has developed a model exchange format(MEF) for PSA
+OpenPSA community has developed a model exchange format([MEF]_) for PSA
 that covers most needs to describe the analysis input for PSA tools.
 Moreover, the MEF defines the following requirements
 for its development and use:

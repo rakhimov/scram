@@ -91,11 +91,14 @@ void Config::GatherOptions(const xmlpp::Node* root) {
     const xmlpp::Element* option_group =
         static_cast<const xmlpp::Element*>(node);
     std::string name = option_group->get_name();
-    if (name == "analysis") {
+    if (name == "algorithm") {
+      Config::SetAlgorithm(option_group);
+
+    } else if (name == "analysis") {
       Config::SetAnalysis(option_group);
 
-    } else if (name == "approximations") {
-      Config::SetApprox(option_group);
+    } else if (name == "approximation") {
+      Config::SetApproximation(option_group);
 
     } else if (name == "limits") {
       Config::SetLimits(option_group);
@@ -110,6 +113,10 @@ void Config::GetOutputPath(const xmlpp::Node* root) {
   const xmlpp::Element* element =
       static_cast<const xmlpp::Element*>(out.front());
   output_path_ = element->get_child_text()->get_content();
+}
+
+void Config::SetAlgorithm(const xmlpp::Element* analysis) {
+  settings_.algorithm(analysis->get_attribute_value("name"));
 }
 
 void Config::SetAnalysis(const xmlpp::Element* analysis) {
@@ -131,12 +138,8 @@ void Config::SetAnalysis(const xmlpp::Element* analysis) {
   }
 }
 
-void Config::SetApprox(const xmlpp::Element* approx) {
-  for (const xmlpp::Node* node : approx->find("./*")) {
-    std::string name = node->get_name();
-    assert(name == "rare-event" || name == "mcub");
-    settings_.approx(name);
-  }
+void Config::SetApproximation(const xmlpp::Element* approx) {
+  settings_.approximation(approx->get_attribute_value("name"));
 }
 
 void Config::SetLimits(const xmlpp::Element* limits) {

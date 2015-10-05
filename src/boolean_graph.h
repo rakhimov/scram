@@ -63,7 +63,7 @@ class Node {
 
   /// Creates a graph node with its index.
   ///
-  /// @param[in] index An unique positive index of this node.
+  /// @param[in] index  An unique positive index of this node.
   ///
   /// @warning The index is not validated upon instantiation.
   explicit Node(int index) noexcept;
@@ -74,29 +74,28 @@ class Node {
   virtual ~Node() = 0;  ///< Abstract class.
 
   /// @returns The index of this node.
-  inline int index() const { return index_; }
+  int index() const { return index_; }
 
   /// Resets the starting index.
-  inline static void ResetIndex() { next_index_ = 1e6; }
+  static void ResetIndex() { next_index_ = 1e6; }
 
   /// @returns Parents of this gate.
-  inline const std::unordered_map<int, std::weak_ptr<IGate> >&
-      parents() const {
+  const std::unordered_map<int, std::weak_ptr<IGate> >& parents() const {
     return parents_;
   }
 
   /// @returns Optimization value for failure propagation.
-  inline int opti_value() const { return opti_value_; }
+  int opti_value() const { return opti_value_; }
 
   /// Sets the optimization value for failure propagation.
   ///
-  /// @param[in] val Value that makes sense to the caller.
-  inline void opti_value(int val) { opti_value_ = val; }
+  /// @param[in] val  Value that makes sense to the caller.
+  void opti_value(int val) { opti_value_ = val; }
 
   /// Registers the visit time for this node upon graph traversal.
   /// This information can be used to detect dependencies.
   ///
-  /// @param[in] time The current visit time of this node. It must be positive.
+  /// @param[in] time  The current visit time of this node. It must be positive.
   ///
   /// @returns true if this node was previously visited.
   /// @returns false if this is visited and re-visited only once.
@@ -115,52 +114,48 @@ class Node {
 
   /// @returns The time when this node was first encountered or entered.
   /// @returns 0 if no enter time is registered.
-  inline int EnterTime() const { return visits_[0]; }
+  int EnterTime() const { return visits_[0]; }
 
   /// @returns The exit time upon traversal of the graph.
   /// @returns 0 if no exit time is registered.
-  inline int ExitTime() const { return visits_[1]; }
+  int ExitTime() const { return visits_[1]; }
 
   /// @returns The last time this node was visited.
   /// @returns 0 if no last time is registered.
-  inline int LastVisit() const {
-    return visits_[2] ? visits_[2] : visits_[1];
-  }
+  int LastVisit() const { return visits_[2] ? visits_[2] : visits_[1]; }
 
   /// @returns The minimum time of the visit.
   /// @returns 0 if no time is registered.
-  inline virtual int min_time() const { return visits_[0]; }
+  virtual int min_time() const { return visits_[0]; }
 
   /// @returns The maximum time of the visit.
   /// @returns 0 if no time is registered.
-  inline virtual int max_time() const { return LastVisit(); }
+  virtual int max_time() const { return LastVisit(); }
 
   /// @returns false if this node was only visited once upon graph traversal.
   /// @returns true if this node was revisited at one more time.
-  inline bool Revisited() const { return visits_[2] ? true : false; }
+  bool Revisited() const { return visits_[2] ? true : false; }
 
   /// @returns true if this node was visited at least once.
   /// @returns false if this node was never visited upon traversal.
-  inline bool Visited() const { return visits_[0] ? true : false; }
+  bool Visited() const { return visits_[0] ? true : false; }
 
   /// Clears all the visit information. Resets the visit times to 0s.
-  inline void ClearVisits() { return std::fill(visits_, visits_ + 3, 0); }
+  void ClearVisits() { return std::fill(visits_, visits_ + 3, 0); }
 
   /// @returns The positive count of this node.
-  inline int pos_count() const { return pos_count_; }
+  int pos_count() const { return pos_count_; }
 
   /// @returns The negative count of this node.
-  inline int neg_count() const { return neg_count_; }
+  int neg_count() const { return neg_count_; }
 
   /// Increases the count of this node.
   ///
-  /// @param[in] positive Indication of a positive node.
-  inline void AddCount(bool positive) {
-    positive ? ++pos_count_ : ++neg_count_;
-  }
+  /// @param[in] positive  Indication of a positive node.
+  void AddCount(bool positive) { positive ? ++pos_count_ : ++neg_count_; }
 
   /// Resets positive and negative counts of this node.
-  inline void ResetCount() {
+  void ResetCount() {
     pos_count_ = 0;
     neg_count_ = 0;
   }
@@ -183,11 +178,11 @@ class Constant : public Node {
  public:
   /// Constructs a new constant indexed node.
   ///
-  /// @param[in] state Binary state of the Boolean constant.
+  /// @param[in] state  Binary state of the Boolean constant.
   explicit Constant(bool state) noexcept;
 
   /// @returns The state of the constant.
-  inline bool state() const { return state_; }
+  bool state() const { return state_; }
 
  private:
   bool state_;  ///< The Boolean value for the constant state.
@@ -209,7 +204,7 @@ class Variable : public Node {
   Variable() noexcept;
 
   /// Resets the starting index for variables.
-  inline static void ResetIndex() { next_variable_ = 1; }
+  static void ResetIndex() { next_variable_ = 1; }
 
  private:
   static int next_variable_;  ///< The next index for a new variable.
@@ -270,7 +265,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// and one shared pointer exists for this gate
   /// to manage parent-child hierarchy.
   ///
-  /// @param[in] type The type of this gate.
+  /// @param[in] type  The type of this gate.
   explicit IGate(const Operator& type) noexcept;
 
   /// Destructs parent information from the arguments.
@@ -291,14 +286,14 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   IGatePtr Clone() noexcept;
 
   /// @returns Type of this gate.
-  inline const Operator& type() const { return type_; }
+  const Operator& type() const { return type_; }
 
   /// Changes the gate type information.
   /// This function is expected to be used
   /// with only simple AND, OR, NOT, NULL gates.
   ///
-  /// @param[in] t The type for this gate.
-  inline void type(const Operator& t) {
+  /// @param[in] t  The type for this gate.
+  void type(const Operator& t) {
     assert(t == kAndGate || t == kOrGate || t == kNotGate || t == kNullGate);
     type_ = t;
   }
@@ -307,35 +302,35 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   ///
   /// @warning The function does not validate the vote number,
   ///          nor does it check for the ATLEAST type of the gate.
-  inline int vote_number() const { return vote_number_; }
+  int vote_number() const { return vote_number_; }
 
   /// Sets the vote number for this gate.
   /// This function is used for K/N gates.
   ///
-  /// @param[in] number The vote number of ATLEAST gate.
+  /// @param[in] number  The vote number of ATLEAST gate.
   ///
   /// @warning The function does not validate the vote number,
   ///          nor does it check for the ATLEAST type of the gate.
-  inline void vote_number(int number) { vote_number_ = number; }
+  void vote_number(int number) { vote_number_ = number; }
 
   /// @returns The state of this gate.
-  inline const State& state() const { return state_; }
+  const State& state() const { return state_; }
 
   /// @returns Arguments of this gate.
-  inline const std::set<int>& args() const { return args_; }
+  const std::set<int>& args() const { return args_; }
 
   /// @returns Arguments of this gate that are indexed gates.
-  inline const std::unordered_map<int, IGatePtr>& gate_args() const {
+  const std::unordered_map<int, IGatePtr>& gate_args() const {
     return gate_args_;
   }
 
   /// @returns Arguments of this gate that are variables.
-  inline const std::unordered_map<int, VariablePtr>& variable_args() const {
+  const std::unordered_map<int, VariablePtr>& variable_args() const {
     return variable_args_;
   }
 
   /// @returns Arguments of this gate that are indexed constants.
-  inline const std::unordered_map<int, ConstantPtr>& constant_args() const {
+  const std::unordered_map<int, ConstantPtr>& constant_args() const {
     return constant_args_;
   }
 
@@ -344,73 +339,73 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// to visit information provided by the base Node class.
   ///
   /// @returns The mark of this gate.
-  inline bool mark() const { return mark_; }
+  bool mark() const { return mark_; }
 
   /// Sets the mark of this gate.
   ///
-  /// @param[in] flag Marking with the meaning for the marker.
-  inline void mark(bool flag) { mark_ = flag; }
+  /// @param[in] flag  Marking with the meaning for the marker.
+  void mark(bool flag) { mark_ = flag; }
 
   /// @returns The minimum time of visits of the gate's sub-graph.
   /// @returns 0 if no time assignment was performed.
-  inline int min_time() const { return min_time_; }
+  int min_time() const { return min_time_; }
 
   /// Sets the queried minimum visit time of the sub-graph.
   ///
-  /// @param[in] time The positive min time of this gate's sub-graph.
-  inline void min_time(int time) {
+  /// @param[in] time  The positive min time of this gate's sub-graph.
+  void min_time(int time) {
     assert(time > 0);
     min_time_ = time;
   }
 
   /// @returns The maximum time of the visits of the gate's sub-graph.
   /// @returns 0 if no time assignment was performed.
-  inline int max_time() const { return max_time_; }
+  int max_time() const { return max_time_; }
 
   /// Sets the queried maximum visit time of the sub-graph.
   ///
-  /// @param[in] time The positive max time of this gate's sub-graph.
-  inline void max_time(int time) {
+  /// @param[in] time  The positive max time of this gate's sub-graph.
+  void max_time(int time) {
     assert(time > 0);
     max_time_ = time;
   }
 
   /// @returns true if this gate is set to be a module.
   /// @returns false if it is not yet set to be a module.
-  inline bool IsModule() const { return module_; }
+  bool IsModule() const { return module_; }
 
   /// Turns this gate's module flag on.
   /// This should be one time operation.
-  inline void TurnModule() {
+  void TurnModule() {
     assert(!module_);
     module_ = true;
   }
 
   /// Sets the module flag to false.
   /// This is a destruction of the module.
-  inline void DestroyModule() {
+  void DestroyModule() {
     assert(module_);
     module_ = false;
   }
 
   /// Helper function to use the sign of the argument.
   ///
-  /// @param[in] arg One of the arguments of this gate.
+  /// @param[in] arg  One of the arguments of this gate.
   ///
   /// @returns 1 if the argument is positive.
   /// @returns -1 if the argument is negative (complement).
   ///
   /// @warning The function assumes that the argument exists.
   ///          If it doesn't, the return value is invalid.
-  inline int GetArgSign(const NodePtr& arg) const noexcept {
-    assert(arg->parents().count(this->index()));
+  int GetArgSign(const NodePtr& arg) const noexcept {
+    assert(arg->parents().count(Node::index()));
     return args_.count(arg->index()) ? 1 : -1;
   }
 
   /// Helper function for algorithms
   /// to get nodes from argument indices.
   ///
-  /// @param[in] index Positive or negative index of the existing argument.
+  /// @param[in] index  Positive or negative index of the existing argument.
   ///
   /// @returns Pointer to the argument node of this gate.
   ///
@@ -419,7 +414,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// @warning Never try to use dynamic casts to find the type of the node.
   ///          There are other gate's helper functions
   ///          that will avoid any need for the RTTI or other hacks.
-  inline NodePtr GetArg(int index) const noexcept {
+  NodePtr GetArg(int index) const noexcept {
     assert(args_.count(index));
     if (gate_args_.count(index)) return gate_args_.find(index)->second;
     if (variable_args_.count(index)) return variable_args_.find(index)->second;
@@ -435,8 +430,8 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// The caller must be aware of possible changes
   /// due to the logic of the gate.
   ///
-  /// @param[in] arg A positive or negative index of an argument.
-  /// @param[in] gate A pointer to the argument gate.
+  /// @param[in] arg  A positive or negative index of an argument.
+  /// @param[in] gate  A pointer to the argument gate.
   ///
   /// @warning The function does not indicate invalid state.
   ///          For example, a second argument for NOT or NULL type gates
@@ -464,8 +459,8 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// The caller must be aware of possible changes
   /// due to the logic of the gate.
   ///
-  /// @param[in] arg A positive or negative index of an argument.
-  /// @param[in] variable A pointer to the argument variable.
+  /// @param[in] arg  A positive or negative index of an argument.
+  /// @param[in] variable  A pointer to the argument variable.
   ///
   /// @warning The function does not indicate invalid state.
   ///          For example, a second argument for NOT or NULL type gates
@@ -493,8 +488,8 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// The caller must be aware of possible changes
   /// due to the logic of the gate.
   ///
-  /// @param[in] arg A positive or negative index of an argument.
-  /// @param[in] constant A pointer to the argument that is a Constant.
+  /// @param[in] arg  A positive or negative index of an argument.
+  /// @param[in] constant  A pointer to the argument that is a Constant.
   ///
   /// @warning The function does not indicate invalid state.
   ///          For example, a second argument for NOT or NULL type gates
@@ -515,14 +510,14 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
 
   /// Transfers this gates's argument to another gate.
   ///
-  /// @param[in] arg Positive or negative index of the argument.
-  /// @param[in,out] recipient A new parent for the argument.
+  /// @param[in] arg  Positive or negative index of the argument.
+  /// @param[in,out] recipient  A new parent for the argument.
   void TransferArg(int arg, const IGatePtr& recipient) noexcept;
 
   /// Shares this gates's argument with another gate.
   ///
-  /// @param[in] arg Positive or negative index of the argument.
-  /// @param[in,out] recipient Another parent for the argument.
+  /// @param[in] arg  Positive or negative index of the argument.
+  /// @param[in,out] recipient  Another parent for the argument.
   void ShareArg(int arg, const IGatePtr& recipient) noexcept;
 
   /// Makes all arguments complements of themselves.
@@ -534,7 +529,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// This is a helper function to propagate a complement gate
   /// and apply the De Morgan's Law.
   ///
-  /// @param[in] existing_arg Positive or negative index of the argument.
+  /// @param[in] existing_arg  Positive or negative index of the argument.
   void InvertArg(int existing_arg) noexcept;
 
   /// Adds arguments of an argument gate to this gate.
@@ -543,7 +538,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// from the arguments list.
   /// The sign of the argument gate is expected to be positive.
   ///
-  /// @param[in] arg_gate The gate which arguments to be added to this gate.
+  /// @param[in] arg_gate  The gate which arguments to be added to this gate.
   ///
   /// @warning This function does not test
   ///          if the parent and argument logics are
@@ -554,14 +549,14 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// This is separate from other coalescing functions
   /// because this function takes into account the sign of the argument.
   ///
-  /// @param[in] index Positive or negative index of the argument gate.
+  /// @param[in] index  Positive or negative index of the argument gate.
   void JoinNullGate(int index) noexcept;
 
   /// Removes an argument from the arguments container.
   /// The passed argument index must be
   /// in this gate's arguments container and initialized.
   ///
-  /// @param[in] arg The positive or negative index of the existing argument.
+  /// @param[in] arg  The positive or negative index of the existing argument.
   ///
   /// @warning The parent gate may become empty or one-argument gate,
   ///          which must be handled by the caller.
@@ -573,7 +568,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// Sets the state of this gate to null
   /// and clears all its arguments.
   /// This function is expected to be used only once.
-  inline void Nullify() noexcept {
+  void Nullify() noexcept {
     assert(state_ == kNormalState);
     state_ = kNullState;
     IGate::EraseAllArgs();
@@ -582,7 +577,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// Sets the state of this gate to unity
   /// and clears all its arguments.
   /// This function is expected to be used only once.
-  inline void MakeUnity() noexcept {
+  void MakeUnity() noexcept {
     assert(state_ == kNormalState);
     state_ = kUnityState;
     IGate::EraseAllArgs();
@@ -592,7 +587,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// Process an addition of an argument
   /// that already exists in this gate.
   ///
-  /// @param[in] index Positive or negative index of the existing argument.
+  /// @param[in] index  Positive or negative index of the existing argument.
   ///
   /// @warning The addition of a duplicate argument
   ///          has a complex set of possible outcomes
@@ -602,7 +597,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
 
   /// Process an addition of a complement of an existing argument.
   ///
-  /// @param[in] index Positive or negative index of the argument.
+  /// @param[in] index  Positive or negative index of the argument.
   void ProcessComplementArg(int index) noexcept;
 
   Operator type_;  ///< Type of this gate.
@@ -635,11 +630,11 @@ class GateSet {
   /// Inserts a gate into the set
   /// if it is semantically unique.
   ///
-  /// @param[in] gate The gate to insert.
+  /// @param[in] gate  The gate to insert.
   ///
   /// @returns A pair of the unique gate and
   ///          the insertion success flag.
-  inline std::pair<IGatePtr, bool> insert(const IGatePtr& gate) noexcept {
+  std::pair<IGatePtr, bool> insert(const IGatePtr& gate) noexcept {
     auto result = table_[gate->type()].insert(gate);
     return {*result.first, result.second};
   }
@@ -649,11 +644,10 @@ class GateSet {
   /// Functor for hashing gates by their arguments.
   ///
   /// @note The hashing discards the logic of the gate.
-  struct Hash
-      : public std::unary_function<const IGatePtr, std::size_t> {
+  struct Hash : public std::unary_function<const IGatePtr, std::size_t> {
     /// Operator overload for hashing.
     ///
-    /// @param[in] gate The gate which hash must be calculated.
+    /// @param[in] gate  The gate which hash must be calculated.
     ///
     /// @returns Hash value of the gate
     ///          from its arguments but not logic.
@@ -669,8 +663,8 @@ class GateSet {
       : public std::binary_function<const IGatePtr, const IGatePtr, bool> {
     /// Operator overload for gate argument equality test.
     ///
-    /// @param[in] lhs The first gate.
-    /// @param[in] rhs The second gate.
+    /// @param[in] lhs  The first gate.
+    /// @param[in] rhs  The second gate.
     ///
     /// @returns true if the gate arguments are equal.
     bool operator()(const IGatePtr& lhs, const IGatePtr& rhs) const noexcept {
@@ -724,26 +718,26 @@ class BooleanGraph {
   /// features of the fault tree are recorded
   /// to help preprocessing and analysis functions.
   ///
-  /// @param[in] root The top gate of the fault tree.
-  /// @param[in] ccf Incorporation of CCF gates and events for CCF groups.
+  /// @param[in] root  The top gate of the fault tree.
+  /// @param[in] ccf  Incorporation of CCF gates and events for CCF groups.
   explicit BooleanGraph(const GatePtr& root, bool ccf = false) noexcept;
 
   BooleanGraph(const BooleanGraph&) = delete;
   BooleanGraph& operator=(const BooleanGraph&) = delete;
 
   /// @returns true if the fault tree is coherent.
-  inline bool coherent() const { return coherent_; }
+  bool coherent() const { return coherent_; }
 
   /// @returns true if all gates of the fault tree are normalized AND/OR.
-  inline bool normal() const { return normal_; }
+  bool normal() const { return normal_; }
 
   /// @returns The current root gate of the graph.
-  inline const IGatePtr& root() const { return root_; }
+  const IGatePtr& root() const { return root_; }
 
   /// @returns Original basic event
   ///          as initialized in this indexed fault tree.
   ///          The position of a basic event equals (its index - 1).
-  inline const std::vector<BasicEventPtr>& basic_events() const {
+  const std::vector<BasicEventPtr>& basic_events() const {
     return basic_events_;
   }
 
@@ -753,10 +747,10 @@ class BooleanGraph {
   /// minimal cut sets with indices into
   /// minimal cut sets with IDs or pointers.
   ///
-  /// @param[in] index Positive index of the basic event.
+  /// @param[in] index  Positive index of the basic event.
   ///
   /// @returns Pointer to the original basic event from its index.
-  inline const BasicEventPtr& GetBasicEvent(int index) const {
+  const BasicEventPtr& GetBasicEvent(int index) const {
     assert(index > 0);
     assert(index <= basic_events_.size());
     return basic_events_[index - 1];
@@ -782,8 +776,8 @@ class BooleanGraph {
   /// Sets the the root gate.
   /// This function is helpful for preprocessing.
   ///
-  /// @param[in] gate Replacement root gate.
-  inline void root(const IGatePtr& gate) { root_ = gate; }
+  /// @param[in] gate  Replacement root gate.
+  void root(const IGatePtr& gate) { root_ = gate; }
 
   /// @struct ProcessedNodes
   /// Holder for nodes that are created from fault tree events.
@@ -800,9 +794,9 @@ class BooleanGraph {
 
   /// Processes a Boolean formula of a gate into a Boolean graph.
   ///
-  /// @param[in] formula The Boolean formula to be processed.
-  /// @param[in] ccf A flag to replace basic events with CCF gates.
-  /// @param[in,out] nodes The mapping of processed nodes.
+  /// @param[in] formula  The Boolean formula to be processed.
+  /// @param[in] ccf  A flag to replace basic events with CCF gates.
+  /// @param[in,out] nodes  The mapping of processed nodes.
   ///
   /// @returns Pointer to the newly created indexed gate.
   IGatePtr ProcessFormula(const FormulaPtr& formula, bool ccf,
@@ -811,10 +805,10 @@ class BooleanGraph {
   /// Processes a Boolean formula's basic events
   /// into variable arguments of an indexed gate of the Boolean graph.
   ///
-  /// @param[in,out] parent The parent gate to own the arguments.
-  /// @param[in] basic_events The collection of basic events of the formula.
-  /// @param[in] ccf A flag to replace basic events with CCF gates.
-  /// @param[in,out] nodes The mapping of processed nodes.
+  /// @param[in,out] parent  The parent gate to own the arguments.
+  /// @param[in] basic_events  The collection of basic events of the formula.
+  /// @param[in] ccf  A flag to replace basic events with CCF gates.
+  /// @param[in,out] nodes  The mapping of processed nodes.
   void ProcessBasicEvents(const IGatePtr& parent,
                           const std::vector<BasicEventPtr>& basic_events,
                           bool ccf,
@@ -824,9 +818,9 @@ class BooleanGraph {
   /// into constant arguments of an indexed gate of the Boolean graph.
   /// Newly created constants are registered for removal for Preprocessor.
   ///
-  /// @param[in,out] parent The parent gate to own the arguments.
-  /// @param[in] house_events The collection of house events of the formula.
-  /// @param[in,out] nodes The mapping of processed nodes.
+  /// @param[in,out] parent  The parent gate to own the arguments.
+  /// @param[in] house_events  The collection of house events of the formula.
+  /// @param[in,out] nodes  The mapping of processed nodes.
   void ProcessHouseEvents(const IGatePtr& parent,
                           const std::vector<HouseEventPtr>& house_events,
                           ProcessedNodes* nodes) noexcept;
@@ -834,10 +828,10 @@ class BooleanGraph {
   /// Processes a Boolean formula's gates
   /// into gate arguments of an indexed gate of the Boolean graph.
   ///
-  /// @param[in,out] parent The parent gate to own the arguments.
-  /// @param[in] gates The collection of gates of the formula.
-  /// @param[in] ccf A flag to replace basic events with CCF gates.
-  /// @param[in,out] nodes The mapping of processed nodes.
+  /// @param[in,out] parent  The parent gate to own the arguments.
+  /// @param[in] gates  The collection of gates of the formula.
+  /// @param[in] ccf  A flag to replace basic events with CCF gates.
+  /// @param[in,out] nodes  The mapping of processed nodes.
   void ProcessGates(const IGatePtr& parent, const std::vector<GatePtr>& gates,
                     bool ccf, ProcessedNodes* nodes) noexcept;
 
@@ -857,7 +851,7 @@ class BooleanGraph {
   /// starting from the given gate as the root.
   /// The top-down traversal marking is assumed.
   ///
-  /// @param[in,out] gate The root gate to be traversed and marks.
+  /// @param[in,out] gate  The root gate to be traversed and marks.
   ///
   /// @warning If the marks have not been assigned in a top-down traversal,
   ///          starting from the given gate,
@@ -877,7 +871,7 @@ class BooleanGraph {
   /// Clears visit information from descendant nodes
   /// starting from the given gate as the root.
   ///
-  /// @param[in,out] gate The root gate to be traversed and cleaned.
+  /// @param[in,out] gate  The root gate to be traversed and cleaned.
   ///
   /// @note Gate marks are used for linear time traversal.
   void ClearNodeVisits(const IGatePtr& gate) noexcept;
@@ -893,7 +887,7 @@ class BooleanGraph {
   /// The optimization values are set to 0.
   /// Resets the number of failed arguments of gates.
   ///
-  /// @param[in,out] gate The root gate to be traversed and cleaned.
+  /// @param[in,out] gate  The root gate to be traversed and cleaned.
   ///
   /// @note Gate marks are used for linear time traversal.
   void ClearOptiValues(const IGatePtr& gate) noexcept;
@@ -902,7 +896,7 @@ class BooleanGraph {
   /// This is the fastest way to clean
   /// contiguously marked optimization values.
   ///
-  /// @param[in,out] gate The root gate to be traversed and cleaned.
+  /// @param[in,out] gate  The root gate to be traversed and cleaned.
   ///
   /// @note The logic is coupled with Boolean optimization.
   ///       The "dirty" nodes are marked anything but 0,
@@ -916,7 +910,7 @@ class BooleanGraph {
 
   /// Clears counts of nodes.
   ///
-  /// @param[in,out] gate The root gate to be traversed and cleaned.
+  /// @param[in,out] gate  The root gate to be traversed and cleaned.
   ///
   /// @note Gate marks are used for linear time traversal.
   void ClearNodeCounts(const IGatePtr& gate) noexcept;
@@ -924,7 +918,7 @@ class BooleanGraph {
   /// Helper function to find discontinuous gate marking.
   /// Assertion fails if any gate is still marked.
   ///
-  /// @param[in] gate The starting gate to traverse.
+  /// @param[in] gate  The starting gate to traverse.
   ///
   /// @note This functions is not linear and for debugging only.
   void TestGateMarks(const IGatePtr& gate) noexcept;
@@ -932,7 +926,7 @@ class BooleanGraph {
   /// Helper function to find uncleared optimization values.
   /// Assertion fails if any node has non-zero optimization value.
   ///
-  /// @param[in] gate The starting gate to traverse.
+  /// @param[in] gate  The starting gate to traverse.
   ///
   /// @note This functions is not linear and for debugging only.
   void TestOptiValues(const IGatePtr& gate) noexcept;
@@ -949,8 +943,8 @@ class BooleanGraph {
 
 /// Prints indexed house events or constants in the shorthand format.
 ///
-/// @param[in,out] os Output stream.
-/// @param[in] constant The constant to be printed.
+/// @param[in,out] os  Output stream.
+/// @param[in] constant  The constant to be printed.
 ///
 /// @warning Visit information may get changed.
 std::ostream& operator<<(std::ostream& os,
@@ -958,8 +952,8 @@ std::ostream& operator<<(std::ostream& os,
 
 /// Prints indexed variables as basic events in the shorthand format.
 ///
-/// @param[in,out] os Output stream.
-/// @param[in] variable The basic event to be printed.
+/// @param[in,out] os  Output stream.
+/// @param[in] variable  The basic event to be printed.
 ///
 /// @warning Visit information may get changed.
 std::ostream& operator<<(std::ostream& os,
@@ -969,8 +963,8 @@ std::ostream& operator<<(std::ostream& os,
 /// The gates that have become a constant are named "GC".
 /// The gates that are modules are named "GM".
 ///
-/// @param[in,out] os Output stream.
-/// @param[in] gate The gate to be printed.
+/// @param[in,out] os  Output stream.
+/// @param[in] gate  The gate to be printed.
 ///
 /// @warning Visit information may get changed.
 std::ostream& operator<<(std::ostream& os, const std::shared_ptr<IGate>& gate);
@@ -979,8 +973,8 @@ std::ostream& operator<<(std::ostream& os, const std::shared_ptr<IGate>& gate);
 /// This function is mostly for debugging purposes.
 /// The output is not meant to be human readable.
 ///
-/// @param[in,out] os Output stream.
-/// @param[in] ft The fault tree to be printed.
+/// @param[in,out] os  Output stream.
+/// @param[in] ft  The fault tree to be printed.
 ///
 /// @warning Visits of nodes must be clean.
 ///          Visit information may get changed.

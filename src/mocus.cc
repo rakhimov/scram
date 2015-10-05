@@ -173,13 +173,13 @@ void SimpleGate::OrGateCutSets(const SetPtr& cut_set,
   new_cut_sets->insert(local_sets.begin(), local_sets.end());
 }
 
-Mocus::Mocus(const BooleanGraph* fault_tree, int limit_order)
+Mocus::Mocus(const BooleanGraph* fault_tree, const Settings& settings)
       : fault_tree_(fault_tree),
-        limit_order_(limit_order) {
-  SimpleGate::limit_order(limit_order);
+        limit_order_(settings.limit_order()) {
+  SimpleGate::limit_order(limit_order_);
 }
 
-void Mocus::FindMcs() {
+void Mocus::Analyze() {
   CLOCK(mcs_time);
   LOG(DEBUG2) << "Start minimal cut set generation.";
 
@@ -189,18 +189,13 @@ void Mocus::FindMcs() {
   if (top->args().empty()) {
     State state = top->state();
     assert(state == kNullState || state == kUnityState);
-    if (state == kUnityState) {
-      Set empty_set;
-      imcs_.push_back(empty_set);  // Special indication of unity set.
-    }  // Other cases are null.
-    return;
+    if (state == kUnityState) cut_sets_.push_back({});  // Special unity set.
+    return;  // Other cases are null or empty.
   } else if (top->type() == kNullGate) {  // Special case of NULL type top.
     assert(top->args().size() == 1);
     assert(top->gate_args().empty());
     int child = *top->args().begin();
-    Set one_element;
-    one_element.insert(child);
-    imcs_.push_back(one_element);
+    cut_sets_.push_back({child});
     return;
   }
 
@@ -210,7 +205,7 @@ void Mocus::FindMcs() {
 
   LOG(DEBUG3) << "Finding MCS from top module: " << top->index();
   std::vector<Set> mcs;
-  Mocus::FindMcsFromSimpleGate(simple_gates.find(top->index())->second, &mcs);
+  Mocus::AnalyzeSimpleGate(simple_gates.find(top->index())->second, &mcs);
 
   LOG(DEBUG3) << "Top gate cut sets are generated.";
 
@@ -221,9 +216,12 @@ void Mocus::FindMcs() {
   while (!mcs.empty()) {
     Set member = mcs.back();
     mcs.pop_back();
+    /// @todo This works only on positive modules.
     int largest_element = std::abs(*member.rbegin());  // Positive modules!
     if (largest_element <= fault_tree_->basic_events().size()) {
-      imcs_.push_back(member);  // All elements are basic events.
+      /// @todo This couples MOCUS with Boolean Graph logic.
+      // All elements are basic events.
+      cut_sets_.emplace_back(member.begin(), member.end());
     } else {
       Set::iterator it_s = member.end();
       --it_s;
@@ -234,8 +232,8 @@ void Mocus::FindMcs() {
         sub_mcs = module_mcs.find(module_index)->second;
       } else {
         LOG(DEBUG3) << "Finding MCS from module index: " << module_index;
-        Mocus::FindMcsFromSimpleGate(simple_gates.find(module_index)->second,
-                                     &sub_mcs);
+        Mocus::AnalyzeSimpleGate(simple_gates.find(module_index)->second,
+                                 &sub_mcs);
         module_mcs.emplace(module_index, sub_mcs);
       }
       std::vector<Set>::iterator it;
@@ -251,7 +249,7 @@ void Mocus::FindMcs() {
   // Special case of unity with empty sets.
   /// @todo Detect unity in modules.
   assert(top->state() != kUnityState);
-  LOG(DEBUG2) << "The number of MCS found: " << imcs_.size();
+  LOG(DEBUG2) << "The number of MCS found: " << cut_sets_.size();
   LOG(DEBUG2) << "Minimal cut sets found in " << DUR(mcs_time);
 }
 
@@ -281,8 +279,8 @@ void Mocus::CreateSimpleTree(
   }
 }
 
-void Mocus::FindMcsFromSimpleGate(const SimpleGatePtr& gate,
-                                  std::vector<Set>* mcs) noexcept {
+void Mocus::AnalyzeSimpleGate(const SimpleGatePtr& gate,
+                              std::vector<Set>* mcs) noexcept {
   CLOCK(gen_time);
 
   SimpleGate::HashSet cut_sets;

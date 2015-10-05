@@ -169,13 +169,13 @@ void CcfGroup::ConstructCcfBasicEvents(
 
 void BetaFactorModel::AddFactor(const ExpressionPtr& factor, int level) {
   if (!factors_.empty()) {
-    throw ValidationError("Beta-Factor Model " + this->name() + " CCF group" +
-                          " must have exactly one factor.");
+    throw ValidationError("Beta-Factor Model " + CcfGroup::name() +
+                          " CCF group must have exactly one factor.");
   }
   if (level != members_.size()) {
-    throw ValidationError("Beta-Factor Model " + this->name() + " CCF group" +
-                          " must have the level matching the number of" +
-                          " its members.");
+    throw ValidationError(
+        "Beta-Factor Model " + CcfGroup::name() + " CCF group" +
+        " must have the level matching the number of its members.");
   }
   CcfGroup::factors_.emplace_back(level, factor);
 }
@@ -214,7 +214,7 @@ void MglModel::AddFactor(const ExpressionPtr& factor, int level) {
   assert(level > 0);
   if (level != factors_.size() + 2) {
     std::stringstream msg;
-    msg << this->name() << " MGL model CCF group level expected "
+    msg << CcfGroup::name() << " MGL model CCF group level expected "
         << factors_.size() + 2 << ". Instead was given " << level;
     throw ValidationError(msg.str());
   }
