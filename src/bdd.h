@@ -471,6 +471,15 @@ class Bdd {
                        const VertexPtr& arg_one, const VertexPtr& arg_two,
                        bool complement_one, bool complement_two) noexcept;
 
+  /// Counts the number of if-then-else nodes.
+  ///
+  /// @param[in] vertex  The starting root vertex of BDD.
+  ///
+  /// @returns The number of ITE nodes in the BDD.
+  ///
+  /// @pre Non-terminal node marks are clear (false).
+  int CountIteNodes(const VertexPtr& vertex) noexcept;
+
   /// Clears marks of vertices in BDD graph.
   ///
   /// @param[in] vertex  The starting root vertex of the graph.

@@ -54,25 +54,15 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& /*settings*/)
   CLOCK(init_time);
   LOG(DEBUG3) << "Converting Boolean graph into BDD...";
   root_ = Bdd::IfThenElse(fault_tree_->root());
-  LOG(DEBUG3) << "The number of BDD generated vertices: " << function_id_ - 1;
+  LOG(DEBUG4) << "# of BDD vertices created: " << function_id_ - 1;
+  Bdd::ClearMarks(false);
+  LOG(DEBUG4) << "# of ITE in BDD: " << Bdd::CountIteNodes(root_.vertex);
   LOG(DEBUG3) << "Finished Boolean graph conversion in " << DUR(init_time);
+  Bdd::ClearMarks(false);
 }
 
 Bdd::~Bdd() noexcept {
   if (zbdd_) delete zbdd_;
-}
-
-void Bdd::ClearMarks(const VertexPtr& vertex, bool mark) noexcept {
-  if (vertex->terminal()) return;
-  ItePtr ite = Ite::Ptr(vertex);
-  if (ite->mark() == mark) return;
-  ite->mark(mark);
-  if (ite->module()) {
-    const Bdd::Function& res = gates_.find(ite->index())->second;
-    Bdd::ClearMarks(res.vertex, mark);
-  }
-  Bdd::ClearMarks(ite->high(), mark);
-  Bdd::ClearMarks(ite->low(), mark);
 }
 
 void Bdd::Analyze() noexcept {
@@ -314,6 +304,33 @@ Triplet Bdd::GetSignature(Operator type,
       assert(false);
   }
   return sig;
+}
+
+int Bdd::CountIteNodes(const VertexPtr& vertex) noexcept {
+  if (vertex->terminal()) return 0;
+  ItePtr ite = Ite::Ptr(vertex);
+  if (ite->mark()) return 0;
+  ite->mark(true);
+  int in_module = 0;
+  if (ite->module()) {
+    const Function& module = gates_.find(ite->index())->second;
+    in_module = Bdd::CountIteNodes(module.vertex);
+  }
+  return 1 + in_module + Bdd::CountIteNodes(ite->high()) +
+         Bdd::CountIteNodes(ite->low());
+}
+
+void Bdd::ClearMarks(const VertexPtr& vertex, bool mark) noexcept {
+  if (vertex->terminal()) return;
+  ItePtr ite = Ite::Ptr(vertex);
+  if (ite->mark() == mark) return;
+  ite->mark(mark);
+  if (ite->module()) {
+    const Bdd::Function& res = gates_.find(ite->index())->second;
+    Bdd::ClearMarks(res.vertex, mark);
+  }
+  Bdd::ClearMarks(ite->high(), mark);
+  Bdd::ClearMarks(ite->low(), mark);
 }
 
 }  // namespace scram
