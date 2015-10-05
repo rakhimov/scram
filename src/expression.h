@@ -24,7 +24,6 @@
 #include <algorithm>
 #include <cmath>
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -93,10 +92,10 @@ class Expression {
   virtual bool IsConstant() noexcept;
 
   /// @returns Maximum value of this expression.
-  virtual double Max() noexcept { return Mean(); }
+  virtual double Max() noexcept { return this->Mean(); }
 
   /// @returns Minimum value of this expression.
-  virtual double Min() noexcept { return Mean(); }
+  virtual double Min() noexcept { return this->Mean(); }
 
   /// @returns Parameters as nodes.
   const std::vector<Parameter*>& nodes() {
@@ -224,10 +223,7 @@ class Parameter : public Expression, public Element, public Role {
 /// This is for the system mission time.
 class MissionTime : public Expression {
  public:
-  MissionTime()
-      : Expression::Expression({}),
-        mission_time_(-1),
-        unit_(kHours) {}
+  MissionTime();
 
   /// Sets the mission time.
   /// This function is expected to be used only once.
@@ -262,23 +258,17 @@ class ConstantExpression : public Expression {
   /// Constructor for numerical values.
   ///
   /// @param[in] val  Float numerical value.
-  explicit ConstantExpression(double val)
-      : Expression::Expression({}),
-        value_(val) {}
+  explicit ConstantExpression(double val);
 
   /// Constructor for numerical values.
   ///
   /// @param[in] val  Integer numerical value.
-  explicit ConstantExpression(int val)
-      : Expression::Expression({}),
-        value_(val) {}
+  explicit ConstantExpression(int val);
 
   /// Constructor for boolean values.
   ///
   /// @param[in] val  true for 1 and false for 0 value of this constant.
-  explicit ConstantExpression(bool val)
-      : Expression::Expression({}),
-        value_(val ? 1 : 0) {}
+  explicit ConstantExpression(bool val);
 
   double Mean() noexcept { return value_; }
   double Sample() noexcept { return value_; }
@@ -297,10 +287,7 @@ class ExponentialExpression : public Expression {
   ///
   /// @param[in] lambda  Hourly rate of failure.
   /// @param[in] t  Mission time in hours.
-  ExponentialExpression(const ExpressionPtr& lambda, const ExpressionPtr& t)
-      : Expression::Expression({lambda, t}),
-        lambda_(lambda),
-        time_(t) {}
+  ExponentialExpression(const ExpressionPtr& lambda, const ExpressionPtr& t);
 
   /// @throws InvalidArgument  The failure rate or time is negative.
   void Validate();
@@ -327,6 +314,8 @@ class ExponentialExpression : public Expression {
 /// @class GlmExpression
 /// Exponential with probability of failure on demand,
 /// hourly failure rate, hourly repairing rate, and time.
+///
+/// @todo Find the minimum and minimum values.
 class GlmExpression : public Expression {
  public:
   /// Constructor for GLM or exponential expression with four arguments.
@@ -336,35 +325,28 @@ class GlmExpression : public Expression {
   /// @param[in] mu  Hourly repairing rate.
   /// @param[in] t  Mission time in hours.
   GlmExpression(const ExpressionPtr& gamma, const ExpressionPtr& lambda,
-                const ExpressionPtr& mu, const ExpressionPtr& t)
-      : Expression::Expression({gamma, lambda, mu, t}),
-        gamma_(gamma),
-        lambda_(lambda),
-        mu_(mu),
-        time_(t) {}
+                const ExpressionPtr& mu, const ExpressionPtr& t);
 
   void Validate();
 
-  double Mean() noexcept {
-    double r = lambda_->Mean() + mu_->Mean();
-    return (lambda_->Mean() - (lambda_->Mean() - gamma_->Mean() * r) *
-            std::exp(-r * time_->Mean())) / r;
-  }
-
+  double Mean() noexcept;
   double Sample() noexcept;
 
-  double Max() noexcept {
-    /// @todo Find the maximum case.
-    return 1;
-  }
-
-  double Min() noexcept {
-    /// @todo Find the minimum case.
-    return 0;
-  }
+  double Max() noexcept { return 1; }
+  double Min() noexcept { return 0; }
 
  private:
-  ExpressionPtr gamma_;  ///< Probabilty of failure on demand.
+  /// Computes the value for GLM expression.
+  ///
+  /// @param[in] gamma  Value for probability on demand.
+  /// @param[in] lambda  Value for hourly rate of failure.
+  /// @param[in] mu  Value for hourly repair rate.
+  /// @param[in] time  Mission time in hours.
+  ///
+  /// @returns Probability of failure on demand.
+  double Compute(double gamma, double lambda, double mu, double time) noexcept;
+
+  ExpressionPtr gamma_;  ///< Probability of failure on demand.
   ExpressionPtr lambda_;  ///< Failure rate in hours.
   ExpressionPtr mu_;  ///< Repair rate in hours.
   ExpressionPtr time_;  ///< Mission time in hours.
@@ -381,34 +363,38 @@ class WeibullExpression : public Expression {
   /// @param[in] t0  Time shift.
   /// @param[in] time  Mission time.
   WeibullExpression(const ExpressionPtr& alpha, const ExpressionPtr& beta,
-                    const ExpressionPtr& t0, const ExpressionPtr& time)
-      : Expression::Expression({alpha, beta, t0, time}),
-        alpha_(alpha),
-        beta_(beta),
-        t0_(t0),
-        time_(time) {}
+                    const ExpressionPtr& t0, const ExpressionPtr& time);
 
   void Validate();
 
   double Mean() noexcept {
-    return 1 -
-        std::exp(-std::pow((time_->Mean() - t0_->Mean()) / alpha_->Mean(),
-                           beta_->Mean()));
+    return WeibullExpression::Compute(alpha_->Mean(), beta_->Mean(),
+                                      t0_->Mean(), time_->Mean());
   }
 
   double Sample() noexcept;
 
   double Max() noexcept {
-    return 1 - std::exp(-std::pow((time_->Max() - t0_->Min()) / alpha_->Min(),
-                                  beta_->Max()));
+    return WeibullExpression::Compute(alpha_->Min(), beta_->Max(),
+                                      t0_->Min(), time_->Max());
   }
 
   double Min() noexcept {
-    return 1 - std::exp(-std::pow((time_->Min() - t0_->Max()) / alpha_->Max(),
-                                  beta_->Min()));
+    return WeibullExpression::Compute(alpha_->Max(), beta_->Min(),
+                                      t0_->Max(), time_->Min());
   }
 
  private:
+  /// Calculates Weibull expression.
+  ///
+  /// @param[in] alpha  Scale parameter.
+  /// @param[in] beta  Shape parameter.
+  /// @param[in] t0  Time shift.
+  /// @param[in] time  Mission time.
+  ///
+  /// @returns Calculated value.
+  double Compute(double alpha, double beta, double t0, double time) noexcept;
+
   ExpressionPtr alpha_;  ///< Scale parameter.
   ExpressionPtr beta_;  ///< Shape parameter.
   ExpressionPtr t0_;  ///< Time shift in hours.
@@ -434,10 +420,7 @@ class UniformDeviate : public RandomDeviate {
   ///
   /// @param[in] min  Minimum value of the distribution.
   /// @param[in] max  Maximum value of the distribution.
-  UniformDeviate(const ExpressionPtr& min, const ExpressionPtr& max)
-      : RandomDeviate::RandomDeviate({min, max}),
-        min_(min),
-        max_(max) {}
+  UniformDeviate(const ExpressionPtr& min, const ExpressionPtr& max);
 
   /// @throws InvalidArgument  The min value is more or equal to max value.
   void Validate();
@@ -462,10 +445,7 @@ class NormalDeviate : public RandomDeviate {
   ///
   /// @param[in] mean  The mean of the distribution.
   /// @param[in] sigma  The standard deviation of the distribution.
-  NormalDeviate(const ExpressionPtr& mean, const ExpressionPtr& sigma)
-      : RandomDeviate::RandomDeviate({mean, sigma}),
-        mean_(mean),
-        sigma_(sigma) {}
+  NormalDeviate(const ExpressionPtr& mean, const ExpressionPtr& sigma);
 
   /// @throws InvalidArgument  The sigma is negative or zero.
   void Validate();
@@ -505,13 +485,9 @@ class LogNormalDeviate : public RandomDeviate {
   ///                EF = exp(z * sigma)
   /// @param[in] level  The confidence level.
   LogNormalDeviate(const ExpressionPtr& mean, const ExpressionPtr& ef,
-                   const ExpressionPtr& level)
-      : RandomDeviate::RandomDeviate({mean, ef, level}),
-        mean_(mean),
-        ef_(ef),
-        level_(level) {}
+                   const ExpressionPtr& level);
 
-  /// @throws InvalidArgument (mean <= 0) or (ef <= 0) or invalid level
+  /// @throws InvalidArgument  (mean <= 0) or (ef <= 0) or invalid level
   void Validate();
 
   double Mean() noexcept { return mean_->Mean(); }
@@ -519,19 +495,27 @@ class LogNormalDeviate : public RandomDeviate {
   double Sample() noexcept;
 
   /// 99 percentile estimate.
-  double Max() noexcept {
-    double p = level_->Mean() + (1 - level_->Mean()) / 2;
-    double z = std::sqrt(2) * boost::math::erfc_inv(2 * p);
-    z = std::abs(z);
-    double sigma = std::log(ef_->Mean()) / z;
-    double mu = std::log(mean_->Max()) - std::pow(sigma, 2) / 2;
-    return std::exp(
-        std::sqrt(2) * std::pow(boost::math::erfc(1 / 50), -1) * sigma + mu);
-  }
+  double Max() noexcept;
 
   double Min() noexcept { return 0; }
 
  private:
+  /// Computes the scale parameter of the distribution.
+  ///
+  /// @param[in] level  The confidence level.
+  /// @param[in] ef  The error factor of the log-normal distribution.
+  ///
+  /// @returns Scale parameter (sigma) value.
+  double ComputeScale(double level, double ef) noexcept;
+
+  /// Computes the location parameter of the distribution.
+  ///
+  /// @param[in] mean  The mean of the log-normal distribution.
+  /// @param[in] sigma  The scale parameter of the distribution.
+  ///
+  /// @returns Value of location parameter (mu) value.
+  double ComputeLocation(double mean, double sigma) noexcept;
+
   ExpressionPtr mean_;  ///< Mean value of the log-normal distribution.
   ExpressionPtr ef_;  ///< Error factor of the log-normal distribution.
   ExpressionPtr level_;  ///< Confidence level of the log-normal distribution.
@@ -545,18 +529,16 @@ class GammaDeviate : public RandomDeviate {
   ///
   /// @param[in] k  Shape parameter of Gamma distribution.
   /// @param[in] theta  Scale parameter of Gamma distribution.
-  GammaDeviate(const ExpressionPtr& k, const ExpressionPtr& theta)
-      : RandomDeviate::RandomDeviate({k, theta}),
-        k_(k),
-        theta_(theta) {}
+  GammaDeviate(const ExpressionPtr& k, const ExpressionPtr& theta);
 
-  /// @throws InvalidArgument (k <= 0) or (theta <= 0)
+  /// @throws InvalidArgument  (k <= 0) or (theta <= 0)
   void Validate();
 
   double Mean() noexcept { return k_->Mean() * theta_->Mean(); }
 
   double Sample() noexcept;
 
+  /// @returns 99 percentile.
   double Max() noexcept {
     using boost::math::gamma_q;
     return theta_->Max() *
@@ -578,12 +560,9 @@ class BetaDeviate : public RandomDeviate {
   ///
   /// @param[in] alpha  Alpha shape parameter of Gamma distribution.
   /// @param[in] beta  Beta shape parameter of Gamma distribution.
-  BetaDeviate(const ExpressionPtr& alpha, const ExpressionPtr& beta)
-      : RandomDeviate::RandomDeviate({alpha, beta}),
-        alpha_(alpha),
-        beta_(beta) {}
+  BetaDeviate(const ExpressionPtr& alpha, const ExpressionPtr& beta);
 
-  /// @throws InvalidArgument (alpha <= 0) or (beta <= 0)
+  /// @throws InvalidArgument  (alpha <= 0) or (beta <= 0)
   void Validate();
 
   double Mean() noexcept {
@@ -592,7 +571,7 @@ class BetaDeviate : public RandomDeviate {
 
   double Sample() noexcept;
 
-  /// 99 percentile estimate.
+  /// @returns 99 percentile.
   double Max() noexcept {
     return std::pow(boost::math::ibeta(alpha_->Max(), beta_->Max(), 0.99), -1);
   }
@@ -674,9 +653,7 @@ class Neg : public Expression {
   /// that negates a given argument expression.
   ///
   /// @param[in] expression  The expression to be negated.
-  explicit Neg(const ExpressionPtr& expression)
-      : Expression::Expression({expression}),
-        expression_(expression) {}
+  explicit Neg(const ExpressionPtr& expression);
 
   double Mean() noexcept { return -expression_->Mean(); }
 
@@ -701,37 +678,10 @@ class Add : public Expression {
  public:
   using Expression::Expression;  // Base class constructors with arguments.
 
-  double Mean() noexcept {
-    assert(!args_.empty());
-    double mean = 0;
-    for (const ExpressionPtr& arg : args_) mean += arg->Mean();
-    return mean;
-  }
-
-  double Sample() noexcept {
-    assert(!args_.empty());
-    if (!Expression::sampled_) {
-      Expression::sampled_ = true;
-      Expression::sampled_value_ = 0;
-      for (const ExpressionPtr& arg : args_)
-        Expression::sampled_value_ += arg->Sample();
-    }
-    return Expression::sampled_value_;
-  }
-
-  double Max() noexcept {
-    assert(!args_.empty());
-    double max = 0;
-    for (const ExpressionPtr& arg : args_) max += arg->Max();
-    return max;
-  }
-
-  double Min() noexcept {
-    assert(!args_.empty());
-    double min = 0;
-    for (const ExpressionPtr& arg : args_) min += arg->Min();
-    return min;
-  }
+  double Mean() noexcept;
+  double Sample() noexcept;
+  double Max() noexcept;
+  double Min() noexcept;
 };
 
 /// @class Sub
@@ -741,48 +691,10 @@ class Sub : public Expression {
  public:
   using Expression::Expression;  // Base class constructors with arguments.
 
-  double Mean() noexcept {
-    assert(!args_.empty());
-    std::vector<ExpressionPtr>::iterator it = args_.begin();
-    double mean = (*it)->Mean();
-    for (++it; it != args_.end(); ++it) {
-      mean -= (*it)->Mean();
-    }
-    return mean;
-  }
-
-  double Sample() noexcept {
-    assert(!args_.empty());
-    if (!Expression::sampled_) {
-      Expression::sampled_ = true;
-      std::vector<ExpressionPtr>::iterator it = args_.begin();
-      Expression::sampled_value_ = (*it)->Sample();
-      for (++it; it != args_.end(); ++it) {
-        Expression::sampled_value_ -= (*it)->Sample();
-      }
-    }
-    return Expression::sampled_value_;
-  }
-
-  double Max() noexcept {
-    assert(!args_.empty());
-    std::vector<ExpressionPtr>::iterator it = args_.begin();
-    double max = (*it)->Max();
-    for (++it; it != args_.end(); ++it) {
-      max -= (*it)->Min();
-    }
-    return max;
-  }
-
-  double Min() noexcept {
-    assert(!args_.empty());
-    std::vector<ExpressionPtr>::iterator it = args_.begin();
-    double min = (*it)->Min();
-    for (++it; it != args_.end(); ++it) {
-      min -= (*it)->Max();
-    }
-    return min;
-  }
+  double Mean() noexcept;
+  double Sample() noexcept;
+  double Max() noexcept;
+  double Min() noexcept;
 };
 
 /// @class Mul
@@ -791,67 +703,28 @@ class Mul : public Expression {
  public:
   using Expression::Expression;  // Base class constructors with arguments.
 
-  double Mean() noexcept {
-    assert(!args_.empty());
-    double mean = 1;
-    for (const ExpressionPtr& arg : args_) mean *= arg->Mean();
-    return mean;
-  }
-
-  double Sample() noexcept {
-    assert(!args_.empty());
-    if (!Expression::sampled_) {
-      Expression::sampled_ = true;
-      Expression::sampled_value_ = 1;
-      for (const ExpressionPtr& arg : args_)
-        Expression::sampled_value_ *= arg->Sample();
-    }
-    return Expression::sampled_value_;
-  }
+  double Mean() noexcept;
+  double Sample() noexcept;
 
   /// Finds maximum product
   /// from the given arguments' minimum and maximum values.
   /// Negative values may introduce sign cancellation.
   ///
   /// @returns Maximum possible value of the product.
-  double Max() noexcept {
-    assert(!args_.empty());
-    double max = 1;  // Maximum possible product.
-    double min = 1;  // Minimum possible product.
-    for (const ExpressionPtr& arg : args_) {
-      double mult_max = arg->Max();
-      double mult_min = arg->Min();
-      double max_max = max * mult_max;
-      double max_min = max * mult_min;
-      double min_max = min * mult_max;
-      double min_min = min * mult_min;
-      max = std::max({max_max, max_min, min_max, min_min});
-      min = std::min({max_max, max_min, min_max, min_min});
-    }
-    return max;
-  }
+  double Max() noexcept { return Mul::GetExtremum(/*max=*/true); }
 
   /// Finds minimum product
   /// from the given arguments' minimum and maximum values.
   /// Negative values may introduce sign cancellation.
   ///
   /// @returns Minimum possible value of the product.
-  double Min() noexcept {
-    assert(!args_.empty());
-    double max = 1;  // Maximum possible product.
-    double min = 1;  // Minimum possible product.
-    for (const ExpressionPtr& arg : args_) {
-      double mult_max = arg->Max();
-      double mult_min = arg->Min();
-      double max_max = max * mult_max;
-      double max_min = max * mult_min;
-      double min_max = min * mult_max;
-      double min_min = min * mult_min;
-      max = std::max({max_max, max_min, min_max, min_min});
-      min = std::min({max_max, max_min, min_max, min_min});
-    }
-    return min;
-  }
+  double Min() noexcept { return Mul::GetExtremum(/*max=*/false); };
+
+ private:
+  /// @param[in] maximum  Flag to return maximum value.
+  ///
+  /// @returns One of extremums.
+  double GetExtremum(bool maximum) noexcept;
 };
 
 /// @class Div
@@ -865,74 +738,28 @@ class Div : public Expression {
   /// @throws InvalidArgument  Division by 0.
   void Validate();
 
-  double Mean() noexcept {
-    assert(!args_.empty());
-    std::vector<ExpressionPtr>::iterator it = args_.begin();
-    double mean = (*it)->Mean();
-    for (++it; it != args_.end(); ++it) {
-      mean /= (*it)->Mean();
-    }
-    return mean;
-  }
-
-  double Sample() noexcept {
-    assert(!args_.empty());
-    if (!Expression::sampled_) {
-      Expression::sampled_ = true;
-      std::vector<ExpressionPtr>::iterator it = args_.begin();
-      Expression::sampled_value_ = (*it)->Sample();
-      for (++it; it != args_.end(); ++it) {
-        Expression::sampled_value_ /= (*it)->Sample();
-      }
-    }
-    return Expression::sampled_value_;
-  }
+  double Mean() noexcept;
+  double Sample() noexcept;
 
   /// Finds maximum results of division
   /// of the given arguments' minimum and maximum values.
   /// Negative values may introduce sign cancellation.
   ///
   /// @returns Maximum value for division of arguments.
-  double Max() noexcept {
-    assert(!args_.empty());
-    std::vector<ExpressionPtr>::iterator it = args_.begin();
-    double max = (*it)->Max();  // Maximum possible result.
-    double min = (*it)->Min();  // Minimum possible result.
-    for (++it; it != args_.end(); ++it) {
-      double mult_max = (*it)->Max();
-      double mult_min = (*it)->Min();
-      double max_max = max / mult_max;
-      double max_min = max / mult_min;
-      double min_max = min / mult_max;
-      double min_min = min / mult_min;
-      max = std::max({max_max, max_min, min_max, min_min});
-      min = std::min({max_max, max_min, min_max, min_min});
-    }
-    return max;
-  }
+  double Max() noexcept { return Div::GetExtremum(/*max=*/true); }
 
   /// Finds minimum results of division
   /// of the given arguments' minimum and maximum values.
   /// Negative values may introduce sign cancellation.
   ///
   /// @returns Minimum value for division of arguments.
-  double Min() noexcept {
-    assert(!args_.empty());
-    std::vector<ExpressionPtr>::iterator it = args_.begin();
-    double max = (*it)->Max();  // Maximum possible result.
-    double min = (*it)->Min();  // Minimum possible result.
-    for (++it; it != args_.end(); ++it) {
-      double mult_max = (*it)->Max();
-      double mult_min = (*it)->Min();
-      double max_max = max / mult_max;
-      double max_min = max / mult_min;
-      double min_max = min / mult_max;
-      double min_min = min / mult_min;
-      max = std::max({max_max, max_min, min_max, min_min});
-      min = std::min({max_max, max_min, min_max, min_min});
-    }
-    return min;
-  }
+  double Min() noexcept { return Div::GetExtremum(/*max=*/false); };
+
+ private:
+  /// @param[in] maximum  Flag to return maximum value.
+  ///
+  /// @returns One of extremums.
+  double GetExtremum(bool maximum) noexcept;
 };
 
 }  // namespace scram

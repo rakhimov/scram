@@ -70,6 +70,29 @@ Parameter::Parameter(const std::string& name, const std::string& base_path,
   boost::to_lower(id_);
 }
 
+MissionTime::MissionTime()
+      : Expression::Expression({}),
+        mission_time_(-1),
+        unit_(kHours) {}
+
+ConstantExpression::ConstantExpression(double val)
+      : Expression::Expression({}),
+        value_(val) {}
+
+ConstantExpression::ConstantExpression(int val)
+      : Expression::Expression({}),
+        value_(val) {}
+
+ConstantExpression::ConstantExpression(bool val)
+      : Expression::Expression({}),
+        value_(val) {}
+
+ExponentialExpression::ExponentialExpression(const ExpressionPtr& lambda,
+                                             const ExpressionPtr& t)
+    : Expression::Expression({lambda, t}),
+      lambda_(lambda),
+      time_(t) {}
+
 void ExponentialExpression::Validate() {
   if (lambda_->Mean() < 0) {
     throw InvalidArgument("The rate of failure cannot be negative.");
@@ -91,6 +114,16 @@ double ExponentialExpression::Sample() noexcept {
   return Expression::sampled_value_;
 }
 
+GlmExpression::GlmExpression(const ExpressionPtr& gamma,
+                             const ExpressionPtr& lambda,
+                             const ExpressionPtr& mu,
+                             const ExpressionPtr& t)
+    : Expression::Expression({gamma, lambda, mu, t}),
+      gamma_(gamma),
+      lambda_(lambda),
+      mu_(mu),
+      time_(t) {}
+
 void GlmExpression::Validate() {
   if (lambda_->Mean() < 0) {
     throw InvalidArgument("The rate of failure cannot be negative.");
@@ -111,19 +144,36 @@ void GlmExpression::Validate() {
   }
 }
 
+double GlmExpression::Mean() noexcept {
+  return GlmExpression::Compute(gamma_->Mean(), lambda_->Mean(), mu_->Mean(),
+                                time_->Mean());
+}
+
 double GlmExpression::Sample() noexcept {
   if (!Expression::sampled_) {
     Expression::sampled_ = true;
-    double gamma = gamma_->Sample();
-    double lambda = lambda_->Sample();
-    double mu = mu_->Sample();
-    double time = time_->Sample();
-    double r = lambda + mu;
     Expression::sampled_value_ =
-        (lambda - (lambda - gamma * r) * std::exp(-r * time)) / r;
+        GlmExpression::Compute(gamma_->Sample(), lambda_->Sample(),
+                               mu_->Sample(), time_->Sample());
   }
   return Expression::sampled_value_;
 }
+
+double GlmExpression::Compute(double gamma, double lambda, double mu,
+                              double time) noexcept {
+  double r = lambda + mu;
+  return (lambda - (lambda - gamma * r) * std::exp(-r * time)) / r;
+}
+
+WeibullExpression::WeibullExpression(const ExpressionPtr& alpha,
+                                     const ExpressionPtr& beta,
+                                     const ExpressionPtr& t0,
+                                     const ExpressionPtr& time)
+    : Expression::Expression({alpha, beta, t0, time}),
+      alpha_(alpha),
+      beta_(beta),
+      t0_(t0),
+      time_(time) {}
 
 void WeibullExpression::Validate() {
   if (alpha_->Mean() <= 0) {
@@ -157,18 +207,26 @@ void WeibullExpression::Validate() {
 double WeibullExpression::Sample() noexcept {
   if (!Expression::sampled_) {
     Expression::sampled_ = true;
-    double alpha = alpha_->Sample();
-    double beta = beta_->Sample();
-    double t0 = t0_->Sample();
-    double time = time_->Sample();
     Expression::sampled_value_ =
-        1 - std::exp(-std::pow((time - t0) / alpha, beta));
+        WeibullExpression::Compute(alpha_->Sample(), beta_->Sample(),
+                                   t0_->Sample(), time_->Sample());
   }
 
   return Expression::sampled_value_;
 }
 
+double WeibullExpression::Compute(double alpha, double beta,
+                                  double t0, double time) noexcept {
+  return 1 - std::exp(-std::pow((time - t0) / alpha, beta));
+}
+
 RandomDeviate::~RandomDeviate() {}  // Empty destructor for the abstract class.
+
+UniformDeviate::UniformDeviate(const ExpressionPtr& min,
+                               const ExpressionPtr& max)
+      : RandomDeviate::RandomDeviate({min, max}),
+        min_(min),
+        max_(max) {}
 
 void UniformDeviate::Validate() {
   if (min_->Mean() >= max_->Mean()) {
@@ -189,6 +247,12 @@ double UniformDeviate::Sample() noexcept {
   return Expression::sampled_value_;
 }
 
+NormalDeviate::NormalDeviate(const ExpressionPtr& mean,
+                             const ExpressionPtr& sigma)
+      : RandomDeviate::RandomDeviate({mean, sigma}),
+        mean_(mean),
+        sigma_(sigma) {}
+
 void NormalDeviate::Validate() {
   if (sigma_->Mean() <= 0) {
     throw InvalidArgument("Standard deviation cannot be negative or zero.");
@@ -205,6 +269,14 @@ double NormalDeviate::Sample() noexcept {
   }
   return Expression::sampled_value_;
 }
+
+LogNormalDeviate::LogNormalDeviate(const ExpressionPtr& mean,
+                                   const ExpressionPtr& ef,
+                                   const ExpressionPtr& level)
+      : RandomDeviate::RandomDeviate({mean, ef, level}),
+        mean_(mean),
+        ef_(ef),
+        level_(level) {}
 
 void LogNormalDeviate::Validate() {
   if (level_->Mean() <= 0 || level_->Mean() >= 1) {
@@ -230,15 +302,30 @@ void LogNormalDeviate::Validate() {
 double LogNormalDeviate::Sample() noexcept {
   if (!Expression::sampled_) {
     Expression::sampled_ = true;
-    double l = level_->Sample();
-    double p = l + (1 - l) / 2;
-    double z = std::sqrt(2) * boost::math::erfc_inv(2 * p);
-    z = std::abs(z);
-    double sigma = std::log(ef_->Sample()) / z;
-    double mu = std::log(mean_->Sample()) - std::pow(sigma, 2) / 2;
+    double sigma =
+        LogNormalDeviate::ComputeScale(level_->Sample(), ef_->Sample());
+    double mu =
+        LogNormalDeviate::ComputeLocation(mean_->Sample(), sigma);
     Expression::sampled_value_ =  Random::LogNormalGenerator(mu, sigma);
   }
   return Expression::sampled_value_;
+}
+
+double LogNormalDeviate::Max() noexcept {
+  double sigma = LogNormalDeviate::ComputeScale(level_->Mean(), ef_->Mean());
+  double mu = LogNormalDeviate::ComputeLocation(mean_->Max(), sigma);
+  return std::exp(
+      std::sqrt(2) * std::pow(boost::math::erfc(1 / 50), -1) * sigma + mu);
+}
+
+double LogNormalDeviate::ComputeScale(double level, double ef) noexcept {
+  double p = level + (1 - level) / 2;
+  double z = std::sqrt(2) * boost::math::erfc_inv(2 * p);
+  return std::log(ef) / std::abs(z);
+}
+
+double LogNormalDeviate::ComputeLocation(double mean, double sigma) noexcept {
+  return std::log(mean) - std::pow(sigma, 2) / 2;
 }
 
 void GammaDeviate::Validate() {
@@ -257,6 +344,11 @@ void GammaDeviate::Validate() {
   }
 }
 
+GammaDeviate::GammaDeviate(const ExpressionPtr& k, const ExpressionPtr& theta)
+      : RandomDeviate::RandomDeviate({k, theta}),
+        k_(k),
+        theta_(theta) {}
+
 double GammaDeviate::Sample() noexcept {
   if (!Expression::sampled_) {
     Expression::sampled_ = true;
@@ -265,6 +357,11 @@ double GammaDeviate::Sample() noexcept {
   }
   return Expression::sampled_value_;
 }
+
+BetaDeviate::BetaDeviate(const ExpressionPtr& alpha, const ExpressionPtr& beta)
+      : RandomDeviate::RandomDeviate({alpha, beta}),
+        alpha_(alpha),
+        beta_(beta) {}
 
 void BetaDeviate::Validate() {
   if (alpha_->Mean() <= 0) {
@@ -364,6 +461,120 @@ void Histogram::CheckWeights(const std::vector<ExpressionPtr>& weights) {
   }
 }
 
+Neg::Neg(const ExpressionPtr& expression)
+      : Expression::Expression({expression}),
+        expression_(expression) {}
+
+double Add::Mean() noexcept {
+  assert(!args_.empty());
+  double mean = 0;
+  for (const ExpressionPtr& arg : args_) mean += arg->Mean();
+  return mean;
+}
+
+double Add::Sample() noexcept {
+  assert(!args_.empty());
+  if (!Expression::sampled_) {
+    Expression::sampled_ = true;
+    Expression::sampled_value_ = 0;
+    for (const ExpressionPtr& arg : args_)
+      Expression::sampled_value_ += arg->Sample();
+  }
+  return Expression::sampled_value_;
+}
+
+double Add::Max() noexcept {
+  assert(!args_.empty());
+  double max = 0;
+  for (const ExpressionPtr& arg : args_) max += arg->Max();
+  return max;
+}
+
+double Add::Min() noexcept {
+  assert(!args_.empty());
+  double min = 0;
+  for (const ExpressionPtr& arg : args_) min += arg->Min();
+  return min;
+}
+
+double Sub::Mean() noexcept {
+  assert(!args_.empty());
+  std::vector<ExpressionPtr>::iterator it = args_.begin();
+  double mean = (*it)->Mean();
+  for (++it; it != args_.end(); ++it) {
+    mean -= (*it)->Mean();
+  }
+  return mean;
+}
+
+double Sub::Sample() noexcept {
+  assert(!args_.empty());
+  if (!Expression::sampled_) {
+    Expression::sampled_ = true;
+    std::vector<ExpressionPtr>::iterator it = args_.begin();
+    Expression::sampled_value_ = (*it)->Sample();
+    for (++it; it != args_.end(); ++it) {
+      Expression::sampled_value_ -= (*it)->Sample();
+    }
+  }
+  return Expression::sampled_value_;
+}
+
+double Sub::Max() noexcept {
+  assert(!args_.empty());
+  std::vector<ExpressionPtr>::iterator it = args_.begin();
+  double max = (*it)->Max();
+  for (++it; it != args_.end(); ++it) {
+    max -= (*it)->Min();
+  }
+  return max;
+}
+
+double Sub::Min() noexcept {
+  assert(!args_.empty());
+  std::vector<ExpressionPtr>::iterator it = args_.begin();
+  double min = (*it)->Min();
+  for (++it; it != args_.end(); ++it) {
+    min -= (*it)->Max();
+  }
+  return min;
+}
+
+double Mul::Mean() noexcept {
+  assert(!args_.empty());
+  double mean = 1;
+  for (const ExpressionPtr& arg : args_) mean *= arg->Mean();
+  return mean;
+}
+
+double Mul::Sample() noexcept {
+  assert(!args_.empty());
+  if (!Expression::sampled_) {
+    Expression::sampled_ = true;
+    Expression::sampled_value_ = 1;
+    for (const ExpressionPtr& arg : args_)
+      Expression::sampled_value_ *= arg->Sample();
+  }
+  return Expression::sampled_value_;
+}
+
+double Mul::GetExtremum(bool maximum) noexcept {
+  double max_val = 1;  // Maximum possible product.
+  double min_val = 1;  // Minimum possible product.
+  for (const ExpressionPtr& arg : args_) {
+    double mult_max = arg->Max();
+    double mult_min = arg->Min();
+    double max_max = max_val * mult_max;
+    double max_min = max_val * mult_min;
+    double min_max = min_val * mult_max;
+    double min_min = min_val * mult_min;
+    max_val = std::max({max_max, max_min, min_max, min_min});
+    min_val = std::min({max_max, max_min, min_max, min_min});
+  }
+  if (maximum) return max_val;
+  return min_val;
+}
+
 void Div::Validate() {
   assert(!args_.empty());
   std::vector<ExpressionPtr>::iterator it = args_.begin();
@@ -372,6 +583,48 @@ void Div::Validate() {
     if (!expr->Mean() || !expr->Max() || !expr->Min())
       throw InvalidArgument("Division by 0.");
   }
+}
+
+double Div::Mean() noexcept {
+  assert(!args_.empty());
+  std::vector<ExpressionPtr>::iterator it = args_.begin();
+  double mean = (*it)->Mean();
+  for (++it; it != args_.end(); ++it) {
+    mean /= (*it)->Mean();
+  }
+  return mean;
+}
+
+double Div::Sample() noexcept {
+  assert(!args_.empty());
+  if (!Expression::sampled_) {
+    Expression::sampled_ = true;
+    std::vector<ExpressionPtr>::iterator it = args_.begin();
+    Expression::sampled_value_ = (*it)->Sample();
+    for (++it; it != args_.end(); ++it) {
+      Expression::sampled_value_ /= (*it)->Sample();
+    }
+  }
+  return Expression::sampled_value_;
+}
+
+double Div::GetExtremum(bool maximum) noexcept {
+  assert(!args_.empty());
+  std::vector<ExpressionPtr>::iterator it = args_.begin();
+  double max_value = (*it)->Max();  // Maximum possible result.
+  double min_value = (*it)->Min();  // Minimum possible result.
+  for (++it; it != args_.end(); ++it) {
+    double div_max = (*it)->Max();
+    double div_min = (*it)->Min();
+    double max_max = max_value / div_max;
+    double max_min = max_value / div_min;
+    double min_max = min_value / div_max;
+    double min_min = min_value / div_min;
+    max_value = std::max({max_max, max_min, min_max, min_min});
+    min_value = std::min({max_max, max_min, min_max, min_min});
+  }
+  if (maximum) return max_value;
+  return min_value;
 }
 
 }  // namespace scram
