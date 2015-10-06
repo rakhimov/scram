@@ -34,8 +34,8 @@ Zbdd::Zbdd(const Bdd* bdd) noexcept : Zbdd::Zbdd() {
   LOG(DEBUG2) << "Creating ZBDD from BDD...";
   const Bdd::Function& bdd_root = bdd->root();
   root_ = Zbdd::ConvertBdd(bdd_root.vertex, bdd_root.complement, bdd);
-  LOG(DEBUG3) << "The total number of ZBDD nodes generated: " << set_id_ - 1;
-  LOG(DEBUG3) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);
+  LOG(DEBUG4) << "# of ZBDD nodes created: " << set_id_ - 1;
+  LOG(DEBUG4) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);
   LOG(DEBUG2) << "Created ZBDD from BDD in " << DUR(init_time);
 
   Zbdd::ClearMarks(root_);
@@ -50,11 +50,11 @@ void Zbdd::Analyze() noexcept {
 
   CLOCK(minimize_time);
   LOG(DEBUG3) << "Minimizing ZBDD...";
-  root_ = Zbdd::Subsume(root_);
+  root_ = Zbdd::Minimize(root_);
   LOG(DEBUG3) << "Finished ZBDD minimization in " << DUR(minimize_time);
   Zbdd::ClearMarks(root_);
-  LOG(DEBUG3) << "The total number of ZBDD nodes generated: " << set_id_ - 1;
-  LOG(DEBUG3) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);
+  LOG(DEBUG4) << "# of ZBDD nodes created: " << set_id_ - 1;
+  LOG(DEBUG4) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);
   Zbdd::ClearMarks(root_);
   int number = Zbdd::CountCutSets(root_);
   Zbdd::ClearMarks(root_);
@@ -74,10 +74,10 @@ std::shared_ptr<Vertex> Zbdd::ConvertBdd(const VertexPtr& vertex,
   if (vertex->terminal()) return complement ? kEmpty_ : kBase_;
   assert(!complement);  // @todo Make it work for non-coherent cases.
   int sign = complement ? -1 : 1;
-  SetNodePtr& zbdd = ites_[sign * vertex->id()];
-  if (zbdd) return zbdd;
+  VertexPtr& result = ites_[sign * vertex->id()];
+  if (result) return result;
   ItePtr ite = Ite::Ptr(vertex);
-  zbdd = std::make_shared<SetNode>(ite->index(), ite->order());
+  SetNodePtr zbdd = std::make_shared<SetNode>(ite->index(), ite->order());
   if (ite->module()) {  // This is a proxy and not a variable.
     zbdd->module(true);
     const Bdd::Function& module =
@@ -89,28 +89,34 @@ std::shared_ptr<Vertex> Zbdd::ConvertBdd(const VertexPtr& vertex,
   zbdd->high(Zbdd::ConvertBdd(ite->high(), complement, bdd_graph));
   zbdd->low(Zbdd::ConvertBdd(ite->low(), ite->complement_edge() ^ complement,
                              bdd_graph));
-  if (zbdd->high()->terminal() && !Terminal::Ptr(zbdd->high())->value())
-    return zbdd->low();  // Reduce.
+  if ((zbdd->high()->terminal() && !Terminal::Ptr(zbdd->high())->value()) ||
+      (zbdd->high()->id() == zbdd->low()->id()) ||
+      (zbdd->low()->terminal() && Terminal::Ptr(zbdd->low())->value())) {
+    result = zbdd->low();  // Reduce and minimize.
+    return result;
+  }
   SetNodePtr& in_table =
       unique_table_[{zbdd->index(), zbdd->high()->id(), zbdd->low()->id()}];
   if (in_table) return in_table;
   in_table = zbdd;
   zbdd->id(set_id_++);
-  return zbdd;
+  result = zbdd;
+  return result;
 }
 
-std::shared_ptr<Vertex> Zbdd::Subsume(const VertexPtr& vertex) noexcept {
+std::shared_ptr<Vertex> Zbdd::Minimize(const VertexPtr& vertex) noexcept {
   if (vertex->terminal()) return vertex;
-  VertexPtr& result = subsume_results_[vertex->id()];
+  VertexPtr& result = minimal_results_[vertex->id()];
   if (result) return result;
   SetNodePtr node = SetNode::Ptr(vertex);
   if (node->module()) {
     VertexPtr& module = modules_.find(node->index())->second;
-    module = Zbdd::Subsume(module);
+    module = Zbdd::Minimize(module);
   }
-  VertexPtr high = Zbdd::Subsume(node->high());
-  VertexPtr low = Zbdd::Subsume(node->low());
+  VertexPtr high = Zbdd::Minimize(node->high());
+  VertexPtr low = Zbdd::Minimize(node->low());
   high = Zbdd::Subsume(high, low);
+  assert(high->id() != low->id() && "Subsume failed!");
   if (high->terminal() && !Terminal::Ptr(high)->value()) {  // Reduction rule.
     result = low;
     return result;

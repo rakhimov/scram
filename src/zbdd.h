@@ -120,9 +120,7 @@ class Zbdd {
   /// @param[in] vertex  The variable node in the set.
   ///
   /// @returns Processed vertex.
-  ///
-  /// @warning NonTerminal vertex marks are used.
-  VertexPtr Subsume(const VertexPtr& vertex) noexcept;
+  VertexPtr Minimize(const VertexPtr& vertex) noexcept;
 
   /// Applies subsume operation on two sets.
   /// Subsume operation removes
@@ -184,12 +182,12 @@ class Zbdd {
   ComputeTable compute_table_;
 
   VertexPtr root_;  ///< The root vertex of ZBDD.
-  std::unordered_map<int, SetNodePtr> ites_;  ///< Processed function graphs.
+  std::unordered_map<int, VertexPtr> ites_;  ///< Processed function graphs.
   std::unordered_map<int, VertexPtr> modules_;  ///< Module graphs.
   const TerminalPtr kBase_;  ///< Terminal Base (Unity/1) set.
   const TerminalPtr kEmpty_;  ///< Terminal Empty (Null/0) set.
   int set_id_;  ///< Identification assignment for new set graphs.
-  std::unordered_map<int, VertexPtr> subsume_results_;  ///< Memorize subsume.
+  std::unordered_map<int, VertexPtr> minimal_results_;  ///< Memorize minimal.
   std::vector<CutSet> cut_sets_;  ///< Generated cut sets.
 };
 
