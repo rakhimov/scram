@@ -216,7 +216,7 @@ for maintainability and version control.
 .. _reStructuredText: http://docutils.sourceforge.net/rst.html
 .. _DDD talk by Corey Oordt: http://pyvideo.org/video/441/pycon-2011--documentation-driven-development
 .. _Agile Documentation: http://www.agilemodeling.com/essays/agileDocumentationBestPractices.htm
-.. _Philosophy: https://github.com/google/styleguide/blob/gh-pages/docguide/best_practices.md
+.. _Philosophy: https://github.com/google/styleguide/blob/gh-pages/docguide/philosophy.md
 .. _Best Practices: https://github.com/google/styleguide/blob/gh-pages/docguide/best_practices.md
 .. _Semantic Linefeeds: http://rhodesmill.org/brandon/2012/one-sentence-per-line/
 
