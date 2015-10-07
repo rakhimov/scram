@@ -213,13 +213,5 @@ TEST(InitializerTest, NonOrphanTopEvent) {
   delete init;
 }
 
-// Error catch on non-coherent models with BDD.
-TEST(InitializerTest, BddNonCoherent) {
-  std::string tree_input = "./share/scram/input/core/a_or_not_b.xml";
-  Initializer* init = new Initializer(Settings().algorithm("bdd"));
-  EXPECT_THROW(init->ProcessInputFiles({tree_input}), ValidationError);
-  delete init;
-}
-
 }  // namespace test
 }  // namespace scram

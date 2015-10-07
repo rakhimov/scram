@@ -86,8 +86,7 @@ const char* const Initializer::kUnitToString_[] = {"unitless", "bool", "int",
 std::stringstream Initializer::schema_;
 
 Initializer::Initializer(const Settings& settings)
-    : settings_(settings),
-      coherent_(true) {
+    : settings_(settings) {
   mission_time_ = std::shared_ptr<MissionTime>(new MissionTime());
   mission_time_->mission_time(settings_.mission_time());
   if (schema_.str().empty()) {
@@ -371,7 +370,6 @@ std::unique_ptr<Formula> Initializer::GetFormula(
       type == "house-event") {
     type = "null";
   }
-  if (type == "not" || type == "xor") coherent_ = false;
   FormulaPtr formula(new Formula(type));
   if (type == "atleast") {
     std::string min_num = GetAttributeValue(formula_node, "min");
@@ -875,9 +873,6 @@ void Initializer::ValidateInitialization() {
 
   for (const std::pair<std::string, CcfGroupPtr>& group : model_->ccf_groups())
     group.second->Validate();
-
-  if (settings_.algorithm() == "bdd" && !coherent_)
-    throw ValidationError("BDD algorithm accepts only coherent models.");
 }
 
 void Initializer::ValidateExpressions() {
