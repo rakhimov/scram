@@ -36,9 +36,9 @@ namespace po = boost::program_options;
 /**
  * Parses the command-line arguments.
  *
- * @param[in] argc Count of arguments.
- * @param[in] argv Values of arguments.
- * @param[out] vm Variables map of program options.
+ * @param[in] argc  Count of arguments.
+ * @param[in] argv  Values of arguments.
+ * @param[out] vm  Variables map of program options.
  *
  * @returns 0 for success.
  * @returns 1 for errored state.
@@ -90,14 +90,14 @@ int parseArguments(int argc, char *argv[], po::variables_map *vm)
 /**
  * Main body of command-line entrance to run the program.
  *
- * @param[in] vm Variables map of program options.
+ * @param[in] vm  Variables map of program options.
  *
  * @returns 0 for success.
  * @returns 1 for errored state.
  *
- * @throws Error Internal problems specific to SCRAM like validation.
- * @throws boost::exception Boost errors.
- * @throws std::exception All other problems.
+ * @throws Error  Internal problems specific to SCRAM like validation.
+ * @throws boost::exception  Boost errors.
+ * @throws std::exception  All other problems.
  */
 int acceptCmdLine(const po::variables_map& vm)
 {
