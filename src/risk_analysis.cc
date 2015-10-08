@@ -72,7 +72,9 @@ void RiskAnalysis::Analyze() noexcept {
           target->is_public() ? "" : target->base_path() + ".";
       std::string name = base_path + target->name();  // Analysis ID.
 
+      LOG(INFO) << "Running analysis: " << name;
       RiskAnalysis::RunAnalysis(name, target);
+      LOG(INFO) << "Finished analysis: " << name;
     }
   }
 }
@@ -133,9 +135,7 @@ void RiskAnalysis::Report(std::ostream& out) {
   // Container for excess primary events not in the analysis.
   // This container is for warning
   // in case the input is formed not as intended.
-  using PrimaryEventPtr = std::shared_ptr<const PrimaryEvent>;
-  std::vector<PrimaryEventPtr> orphan_primary_events;
-
+  std::vector<std::shared_ptr<const PrimaryEvent>> orphan_primary_events;
   using BasicEventPtr = std::shared_ptr<BasicEvent>;
   for (const std::pair<std::string, BasicEventPtr>& event :
        model_->basic_events()) {
@@ -158,6 +158,8 @@ void RiskAnalysis::Report(std::ostream& out) {
   }
   rp.ReportUnusedParameters(unused_parameters, doc.get());
 
+  CLOCK(report_time);
+  LOG(DEBUG1) << "Reporting analysis results...";
   for (const std::pair<const std::string, FaultTreeAnalysisPtr>& fta :
        fault_tree_analyses_) {
     std::string id = fta.first;
@@ -175,6 +177,7 @@ void RiskAnalysis::Report(std::ostream& out) {
       rp.ReportUncertainty(id, *uncertainty_analyses_.at(id), doc.get());
     }
   }
+  LOG(DEBUG1) << "Finished reporting in " << DUR(report_time);
 
   doc->write_to_stream_formatted(out, "UTF-8");
 }

@@ -32,6 +32,7 @@
 #include "expression.h"
 #include "fault_tree_analysis.h"
 #include "importance_analysis.h"
+#include "logger.h"
 #include "model.h"
 #include "probability_analysis.h"
 #include "risk_analysis.h"
@@ -245,6 +246,8 @@ void Reporter::ReportFta(std::string ft_name, const FaultTreeAnalysis& fta,
     sum_of_products->add_child("warning")->add_child_text(warning);
   }
 
+  CLOCK(cs_time);
+  LOG(DEBUG2) << "Reporting cut sets for " << ft_name << "...";
   for (const std::set<std::string>& cut_set : fta.min_cut_sets()) {
     xmlpp::Element* product = sum_of_products->add_child("product");
     product->set_attribute("order", ToString(cut_set.size()));
@@ -274,6 +277,7 @@ void Reporter::ReportFta(std::string ft_name, const FaultTreeAnalysis& fta,
       Reporter::ReportBasicEvent(fta.mcs_basic_events().at(name), parent);
     }
   }
+  LOG(DEBUG2) << "Finished cut set reporting in " << DUR(cs_time);
 
   // Report calculation time in the information section.
   // It is assumed that MCS reporting is the default
