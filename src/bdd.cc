@@ -55,6 +55,8 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& /*settings*/)
   LOG(DEBUG3) << "Converting Boolean graph into BDD...";
   root_ = Bdd::IfThenElse(fault_tree_->root());
   LOG(DEBUG4) << "# of BDD vertices created: " << function_id_ - 1;
+  LOG(DEBUG4) << "# of entries in unique table: " << unique_table_.size();
+  LOG(DEBUG4) << "# of entries in compute table: " << compute_table_.size();
   Bdd::ClearMarks(false);
   LOG(DEBUG4) << "# of ITE in BDD: " << Bdd::CountIteNodes(root_.vertex);
   LOG(DEBUG3) << "Finished Boolean graph conversion in " << DUR(init_time);
@@ -105,9 +107,9 @@ const Bdd::Function& Bdd::IfThenElse(const IGatePtr& gate) noexcept {
   }
   std::sort(args.begin(), args.end(),
             [](const Function& lhs, const Function& rhs) {
-    if (lhs.vertex->terminal()) return false;
-    if (rhs.vertex->terminal()) return true;
-    return Ite::Ptr(lhs.vertex)->order() < Ite::Ptr(rhs.vertex)->order();
+    if (lhs.vertex->terminal()) return true;
+    if (rhs.vertex->terminal()) return false;
+    return Ite::Ptr(lhs.vertex)->order() > Ite::Ptr(rhs.vertex)->order();
   });
   auto it = args.cbegin();
   result.complement = it->complement;
