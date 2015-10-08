@@ -37,12 +37,11 @@ Pre-Release
 - [ ] Documentation coverage of the code (coverage target: full) (tools: Doxygen)
 - [ ] Cleanup the code
 
-    * [ ] Unused ``#include`` and improper forward declarations
+    * [ ] Unused ``#include`` and improper forward declarations (CppClean)
     * [ ] Style check of C++ code (CppLint)
     * [ ] Style check of Python code (PyLint)
     * [ ] Unused ``import``
     * [ ] Spell check the code (optional)
-    * [-] CppClean check (problem: fails with C++11)
 
 - [ ] Update the Lizard report
 
