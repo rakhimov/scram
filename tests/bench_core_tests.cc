@@ -50,6 +50,24 @@ TEST_F(RiskAnalysisTest, AB_BC) {
   EXPECT_EQ(mcs, min_cut_sets());
 }
 
+// Benchmark Tests for [AB or ~AC] fault tree.
+// Test Minimal cut sets and total probability.
+TEST_F(RiskAnalysisTest, DISABLED_AB_OR_NOT_AC) {
+  std::string tree_input = "./share/scram/input/core/ab_or_not_ac.xml";
+  settings.probability_analysis(true).algorithm("bdd");
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  EXPECT_DOUBLE_EQ(0.29, p_total());
+
+  // Prime implicants.
+  /* std::set<std::set<std::string>> mcs = {{"a", "b"}, {"not a", "c"}, */
+  /*                                        {"b", "c"}}; */
+  // Minimal cut sets.
+  std::set<std::set<std::string>> mcs = {{"a", "b"}, {"c"}};
+  EXPECT_EQ(2, min_cut_sets().size());
+  EXPECT_EQ(mcs, min_cut_sets());
+}
+
 // Simple verification tests for Atleast gate fault tree.
 // Test Minimal cut sets and total probabilty.
 TEST_F(RiskAnalysisTest, ATLEAST) {
