@@ -21,6 +21,8 @@
 #ifndef SCRAM_SRC_ANALYSIS_H_
 #define SCRAM_SRC_ANALYSIS_H_
 
+#include <string>
+
 #include "settings.h"
 
 namespace scram {

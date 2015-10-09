@@ -276,7 +276,7 @@ class ProbabilityAnalyzer<Bdd> : public ProbabilityAnalyzerBase {
   double CalculateProbability(const VertexPtr& vertex, bool mark) noexcept;
 
   Bdd* bdd_graph_;  ///< The main BDD graph for analysis.
-  bool current_mark_; ///< To keep track of BDD current mark.
+  bool current_mark_;  ///< To keep track of BDD current mark.
   bool owner_;  ///< Indication that pointers are handles.
 };
 

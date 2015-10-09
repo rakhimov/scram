@@ -52,9 +52,7 @@ class Vertex {
   bool terminal() const { return terminal_; }
 
   /// @returns Identificator of the BDD graph rooted by this vertex.
-  ///
-  /// @todo Deal with 0 id.
-  int id() const { return id_; };
+  int id() const { return id_; }
 
  protected:
   int id_;  ///< Unique identifier of the BDD graph with this vertex.

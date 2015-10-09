@@ -21,9 +21,12 @@
 #ifndef SCRAM_SRC_ZBDD_H_
 #define SCRAM_SRC_ZBDD_H_
 
-#include "bdd.h"
+#include <utility>
+#include <vector>
 
 #include <boost/unordered_map.hpp>
+
+#include "bdd.h"
 
 namespace scram {
 
