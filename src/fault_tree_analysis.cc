@@ -76,47 +76,31 @@ void FaultTreeDescriptor::ClearMarks() noexcept {
 FaultTreeAnalysis::FaultTreeAnalysis(const GatePtr& root,
                                      const Settings& settings)
     : Analysis::Analysis(settings),
-      FaultTreeDescriptor::FaultTreeDescriptor(root),
-      sum_mcs_probability_(0),
-      max_order_(0) {}
+      FaultTreeDescriptor::FaultTreeDescriptor(root) {}
 
-void FaultTreeAnalysis::SetsToString(const std::vector<std::vector<int>>& imcs,
-                                     const BooleanGraph* ft) noexcept {
-  using BasicEventPtr = std::shared_ptr<BasicEvent>;
+void FaultTreeAnalysis::Convert(const std::vector<std::vector<int>>& i_cut_sets,
+                                const BooleanGraph* graph) noexcept {
   // Special cases of sets.
-  if (imcs.empty()) {
-    // Special case of null of a top event. No minimal cut sets found.
+  if (i_cut_sets.empty()) {
     warnings_ += " The top event is NULL. Success is guaranteed.";
-  } else if (imcs.size() == 1 && imcs.back().empty()) {
-    // Special case of unity of a top event.
+  } else if (i_cut_sets.size() == 1 && i_cut_sets.back().empty()) {
     warnings_ += " The top event is UNITY. Failure is guaranteed.";
-    max_order_ = 1;
   }
-  assert(!sum_mcs_probability_);
-  for (const auto& min_cut_set : imcs) {
-    if (min_cut_set.size() > max_order_) max_order_ = min_cut_set.size();
-    std::set<std::string> pr_set;
+  std::unordered_set<int> unique_events;
+  for (const auto& min_cut_set : i_cut_sets) {
     CutSet result;
-    double prob = 1;  // 1 is for multiplication and Unity set.
     for (int index : min_cut_set) {
-      BasicEventPtr basic_event = ft->GetBasicEvent(std::abs(index));
+      BasicEventPtr basic_event = graph->GetBasicEvent(std::abs(index));
       if (index < 0) {  // NOT logic.
-        if (kSettings_.probability_analysis()) prob *= 1 - basic_event->p();
-        pr_set.insert("not " + basic_event->id());
         result.push_back({true, basic_event});
       } else {
-        if (kSettings_.probability_analysis()) prob *= basic_event->p();
-        pr_set.insert(basic_event->id());
         result.push_back({false, basic_event});
       }
-      mcs_basic_events_.emplace(basic_event->id(), basic_event);
+      if (unique_events.count(std::abs(index))) continue;
+      unique_events.insert(std::abs(index));
+      cut_set_events_.push_back(basic_event);
     }
-    min_cut_sets_.insert(pr_set);
     cut_sets_.push_back(result);
-    if (kSettings_.probability_analysis()) {
-      mcs_probability_.emplace(pr_set, prob);
-      sum_mcs_probability_ += prob;
-    }
   }
 }
 

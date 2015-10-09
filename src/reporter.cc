@@ -231,7 +231,7 @@ void Reporter::ReportFta(std::string ft_name, const FaultTreeAnalysis& fta,
   xmlpp::Element* sum_of_products = results->add_child("sum-of-products");
   sum_of_products->set_attribute("name", ft_name);
   sum_of_products->set_attribute("basic-events",
-                                 ToString(fta.mcs_basic_events().size()));
+                                 ToString(fta.cut_set_events().size()));
   sum_of_products->set_attribute("products",
                                  ToString(fta.cut_sets().size()));
 

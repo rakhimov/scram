@@ -77,10 +77,17 @@ class RiskAnalysisTest : public ::testing::Test {
     return init->model()->basic_events();
   }
 
-  const std::set< std::set<std::string> >& min_cut_sets() {
+  const std::set<std::set<std::string>>& min_cut_sets() {
     assert(!ran->fault_tree_analyses().empty());
     assert(ran->fault_tree_analyses().size() == 1);
-    return ran->fault_tree_analyses().begin()->second->min_cut_sets();
+    if (min_cut_sets_.empty()) {
+      const FaultTreeAnalysis* fta =
+          ran->fault_tree_analyses().begin()->second.get();
+      for (const CutSet& cut_set : fta->cut_sets()) {
+        min_cut_sets_.emplace(Convert(cut_set));
+      }
+    }
+    return min_cut_sets_;
   }
 
   // Provides the number of minimal cut sets per order of sets.
@@ -88,14 +95,13 @@ class RiskAnalysisTest : public ::testing::Test {
   std::vector<int> McsDistribution() {
     assert(!ran->fault_tree_analyses().empty());
     assert(ran->fault_tree_analyses().size() == 1);
-    std::vector<int> distr(
-        ran->fault_tree_analyses().begin()->second->max_order() + 1, 0);
-    const std::set< std::set<std::string> >& mcs =
-        ran->fault_tree_analyses().begin()->second->min_cut_sets();
-    for (const auto& cut_set : mcs) {
-      int order = cut_set.size();
-      distr[order]++;
+    std::vector<int> distr(20, 0);  // Max order is hard-coded.
+    const FaultTreeAnalysis* fta =
+        ran->fault_tree_analyses().begin()->second.get();
+    for (const CutSet& cut_set : fta->cut_sets()) {
+      distr[GetOrder(cut_set)]++;
     }
+    while (!distr.back()) distr.pop_back();
     return distr;
   }
 
@@ -108,7 +114,15 @@ class RiskAnalysisTest : public ::testing::Test {
   const std::map<std::set<std::string>, double>& mcs_probability() {
     assert(!ran->fault_tree_analyses().empty());
     assert(ran->fault_tree_analyses().size() == 1);
-    return ran->fault_tree_analyses().begin()->second->mcs_probability();
+    if (mcs_probability_.empty()) {
+      const FaultTreeAnalysis* fta =
+          ran->fault_tree_analyses().begin()->second.get();
+      for (const CutSet& cut_set : fta->cut_sets()) {
+        mcs_probability_.emplace(Convert(cut_set),
+                                 CalculateProbability(cut_set));
+      }
+    }
+    return mcs_probability_;
   }
 
   const ImportanceFactors& importance(std::string id) {
@@ -130,10 +144,27 @@ class RiskAnalysisTest : public ::testing::Test {
     return ran->uncertainty_analyses().begin()->second->sigma();
   }
 
+  /// Converts a set of pointers to events with complement flags
+  /// into readable and testable strings.
+  /// Complements are communicated by "not" word.
+  std::set<std::string> Convert(const CutSet& cut_set) {
+    std::set<std::string> string_set;
+    for (const Literal& literal : cut_set) {
+      std::string id = literal.event->id();
+      if (literal.complement) id = "not " + id;
+      string_set.insert(id);
+    }
+    return string_set;
+  }
+
   // Members
   RiskAnalysis* ran;
   Initializer* init;
   Settings settings;
+
+ private:
+  std::map<std::set<std::string>, double> mcs_probability_;
+  std::set<std::set<std::string>> min_cut_sets_;
 };
 
 }  // namespace test

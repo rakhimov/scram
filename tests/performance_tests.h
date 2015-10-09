@@ -66,7 +66,7 @@ class PerformanceTest : public ::testing::Test {
   // The number of MCS as a result of analysis.
   int NumOfMcs() {
     assert(!ran->fault_tree_analyses().empty());
-    return ran->fault_tree_analyses().begin()->second->min_cut_sets().size();
+    return ran->fault_tree_analyses().begin()->second->cut_sets().size();
   }
 
   // Time taken to find minimal cut sets.
