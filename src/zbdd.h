@@ -23,13 +23,9 @@
 
 #include "bdd.h"
 
-namespace scram {
+#include <boost/unordered_map.hpp>
 
-/// @enum SetOp
-/// Operations on sets.
-enum class SetOp {
-  Without = 0  ///< Without '\' operator.
-};
+namespace scram {
 
 /// @class SetNode
 /// Representation of non-terminal nodes in ZBDD.
@@ -100,7 +96,7 @@ class Zbdd {
   using ItePtr = std::shared_ptr<Ite>;
   using SetNodePtr = std::shared_ptr<SetNode>;
   using UniqueTable = TripletTable<SetNodePtr>;
-  using ComputeTable = TripletTable<VertexPtr>;
+  using PairTable = boost::unordered_map<std::pair<int, int>, VertexPtr>;
   using CutSet = std::vector<int>;
 
   Zbdd() noexcept;  ///< Default constructor to initialize member variables.
@@ -174,12 +170,8 @@ class Zbdd {
   /// The key consists of (index, id_high, id_low) triplet.
   UniqueTable unique_table_;
 
-  /// Table of processed computations over sets.
-  /// The key must convey the semantics of the operation over sets.
-  /// The argument functions are recorded with their IDs (not vertex indices).
-  /// In order to keep only unique computations,
-  /// the argument IDs must be ordered.
-  ComputeTable compute_table_;
+  /// The results of subsume operations over sets.
+  PairTable subsume_table_;
 
   VertexPtr root_;  ///< The root vertex of ZBDD.
   std::unordered_map<int, VertexPtr> ites_;  ///< Processed function graphs.

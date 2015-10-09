@@ -144,9 +144,7 @@ std::shared_ptr<Vertex> Zbdd::Subsume(const VertexPtr& high,
     }
   }
   if (high->terminal()) return high;  // No need to reduce terminal sets.
-  /// @todo Define set operation signatures.
-  int op = static_cast<int>(SetOp::Without);
-  VertexPtr& computed = compute_table_[{op, high->id(), low->id()}];
+  VertexPtr& computed = subsume_table_[{high->id(), low->id()}];
   if (computed) return computed;
 
   SetNodePtr high_node = SetNode::Ptr(high);
