@@ -130,12 +130,10 @@ void Preprocessor::PhaseTwo() noexcept {
 
   if (Preprocessor::CheckRootGate()) return;
 
-  if (graph_->coherent()) {
-    CLOCK(optim_time);
-    LOG(DEBUG3) << "Boolean optimization...";
-    Preprocessor::BooleanOptimization();
-    LOG(DEBUG3) << "Finished Boolean optimization in " << DUR(optim_time);
-  }
+  CLOCK(optim_time);
+  LOG(DEBUG3) << "Boolean optimization...";
+  Preprocessor::BooleanOptimization();
+  LOG(DEBUG3) << "Finished Boolean optimization in " << DUR(optim_time);
 
   if (Preprocessor::CheckRootGate()) return;
 
