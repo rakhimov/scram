@@ -45,14 +45,25 @@ struct Literal {
   std::shared_ptr<BasicEvent> event;  ///< The event in the cut set.
 };
 
-/// @struct CutSet
-/// Collection of unique literals
-/// representing a cut set of a fault tree.
-struct CutSet {
-  std::vector<Literal> literals;  ///< Member literals of a cut set.
-  double probability;  ///< Probability of a cut set.
-  double contribution;  ///< Contribution to the sum of probabilities.
-};
+using CutSet = std::vector<Literal>;  ///< Collection of unique literals.
+
+/// Helper function to compute cut set probability.
+///
+/// @param[in] cut_set  Cut set of literals.
+///
+/// @returns Cut set probability.
+///
+/// @pre Events are initialized with expressions.
+double CalculateProbability(const CutSet& cut_set);
+
+/// Helper function to determine cut set order.
+///
+/// @param[in] cut_set  Cut set of literals.
+///
+/// @returns The order of the cut set.
+///
+/// @note An empty cut set is assumed to indicate the Base/Unity set.
+int GetOrder(const CutSet& cut_set);
 
 /// @class FaultTreeDescriptor
 /// Fault tree description gatherer.
@@ -178,7 +189,6 @@ class FaultTreeDescriptor {
 class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
  public:
   using GatePtr = std::shared_ptr<Gate>;
-  using CutSet = std::set<std::string>;  ///< Cut set with basic event IDs.
 
   /// Traverses a valid fault tree from the root gate
   /// to collect databases of events, gates,
@@ -217,7 +227,12 @@ class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
   /// @returns Set with minimal cut sets.
   ///
   /// @note The user should make sure that the analysis is actually done.
-  const std::set<CutSet>& min_cut_sets() const { return min_cut_sets_; }
+  const std::set<std::set<std::string>>& min_cut_sets() const {
+    return min_cut_sets_;
+  }
+
+  /// @returns Cut sets as the analysis results.
+  const std::vector<CutSet>& cut_sets() const { return cut_sets_; }
 
   /// @returns Collection of basic events that are in the minimal cut sets.
   const std::unordered_map<std::string, BasicEventPtr>&
@@ -228,7 +243,7 @@ class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
   /// @returns Map with minimal cut sets and their probabilities.
   ///
   /// @note The user should make sure that the analysis is actually done.
-  const std::map<CutSet, double>& mcs_probability() const {
+  const std::map<std::set<std::string>, double>& mcs_probability() const {
     assert(kSettings_.probability_analysis());
     return mcs_probability_;
   }
@@ -258,13 +273,15 @@ class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
                     const BooleanGraph* ft) noexcept;
 
   /// Container for minimal cut sets.
-  std::set<CutSet> min_cut_sets_;
+  std::set<std::set<std::string>> min_cut_sets_;
+
+  std::vector<CutSet> cut_sets_;  ///< Container of analysis results.
 
   /// Container for basic events in minimal cut sets.
   std::unordered_map<std::string, BasicEventPtr> mcs_basic_events_;
 
   /// Container for minimal cut sets and their respective probabilities.
-  std::map<CutSet, double> mcs_probability_;
+  std::map<std::set<std::string>, double> mcs_probability_;
 
   double sum_mcs_probability_;  ///< The sum of minimal cut set probabilities.
   int max_order_;  ///< Maximum order of minimal cut sets.
