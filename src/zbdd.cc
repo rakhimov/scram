@@ -24,12 +24,14 @@
 
 namespace scram {
 
-Zbdd::Zbdd() noexcept
-    : kBase_(std::make_shared<Terminal>(true)),
+Zbdd::Zbdd(const Settings& settings) noexcept
+    : kSettings_(settings),
+      kBase_(std::make_shared<Terminal>(true)),
       kEmpty_(std::make_shared<Terminal>(false)),
       set_id_(2) {}
 
-Zbdd::Zbdd(const Bdd* bdd) noexcept : Zbdd::Zbdd() {
+Zbdd::Zbdd(const Bdd* bdd, const Settings& settings) noexcept
+    : Zbdd::Zbdd(settings) {
   CLOCK(init_time);
   LOG(DEBUG2) << "Creating ZBDD from BDD...";
   const Bdd::Function& bdd_root = bdd->root();

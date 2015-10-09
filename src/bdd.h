@@ -285,7 +285,7 @@ class Bdd {
   ///
   /// @note The passed Boolean graph must already have variable ordering.
   /// @note BDD construction may take considerable time.
-  Bdd(const BooleanGraph* fault_tree, const Settings& /*settings*/);
+  Bdd(const BooleanGraph* fault_tree, const Settings& settings);
 
   /// To handle incomplete ZBDD type with unique pointers.
   ~Bdd() noexcept;
@@ -480,6 +480,7 @@ class Bdd {
   void ClearMarks(const VertexPtr& vertex, bool mark) noexcept;
 
   const BooleanGraph* fault_tree_;  ///< The main fault tree.
+  const Settings kSettings_;  ///< Analysis settings.
   Function root_;  ///< The root function of this BDD.
 
   /// Table of unique if-then-else nodes denoting function graphs.

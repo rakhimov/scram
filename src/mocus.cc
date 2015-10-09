@@ -72,7 +72,7 @@
 
 namespace scram {
 
-int SimpleGate::limit_order_ = 20;
+int SimpleGate::limit_order_ = 20;  /// @todo Code smell. Eliminate.
 
 void SimpleGate::GenerateCutSets(const SetPtr& cut_set,
                                  HashSet* new_cut_sets) noexcept {
@@ -175,8 +175,8 @@ void SimpleGate::OrGateCutSets(const SetPtr& cut_set,
 
 Mocus::Mocus(const BooleanGraph* fault_tree, const Settings& settings)
       : fault_tree_(fault_tree),
-        limit_order_(settings.limit_order()) {
-  SimpleGate::limit_order(limit_order_);
+        kSettings_(settings) {
+  SimpleGate::limit_order(kSettings_.limit_order());
 }
 
 void Mocus::Analyze() {
@@ -238,7 +238,7 @@ void Mocus::Analyze() {
       }
       std::vector<Set>::iterator it;
       for (it = sub_mcs.begin(); it != sub_mcs.end(); ++it) {
-        if (it->size() + member.size() <= limit_order_) {
+        if (it->size() + member.size() <= kSettings_.limit_order()) {
           it->insert(member.begin(), member.end());
           mcs.push_back(*it);
         }

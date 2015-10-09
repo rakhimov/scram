@@ -78,10 +78,11 @@ class Zbdd {
   /// into Zero-Suppressed BDD.
   ///
   /// @param[in] bdd  ROBDD with the ITE vertices.
+  /// @param[in] settings  Settings for analysis.
   ///
   /// @pre Boolean graph is coherent (monotonic).
   /// @pre BDD has attributed edges with only one terminal (1/True).
-  explicit Zbdd(const Bdd* bdd) noexcept;
+  Zbdd(const Bdd* bdd, const Settings& settings) noexcept;
 
   /// Runs the analysis
   /// with the representation of a Boolean graph
@@ -102,7 +103,10 @@ class Zbdd {
   using PairTable = boost::unordered_map<std::pair<int, int>, VertexPtr>;
   using CutSet = std::vector<int>;
 
-  Zbdd() noexcept;  ///< Default constructor to initialize member variables.
+  /// Default constructor to initialize member variables.
+  ///
+  /// @param[in] settings  Settings that control analysis complexity.
+  explicit Zbdd(const Settings& settings) noexcept;
 
   /// Converts BDD graph into ZBDD graph.
   ///
@@ -176,6 +180,7 @@ class Zbdd {
   /// The results of subsume operations over sets.
   PairTable subsume_table_;
 
+  const Settings kSettings_;  ///< Analysis settings.
   VertexPtr root_;  ///< The root vertex of ZBDD.
   std::unordered_map<int, VertexPtr> ites_;  ///< Processed function graphs.
   std::unordered_map<int, VertexPtr> modules_;  ///< Module graphs.

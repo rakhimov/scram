@@ -221,9 +221,8 @@ class Mocus {
                        std::vector<Set>* mcs) noexcept;
 
   const BooleanGraph* fault_tree_;  ///< The main fault tree.
+  const Settings kSettings_;  ///< Analysis settings.
   std::vector<std::vector<int>> cut_sets_;  ///< Min cut sets with indices.
-  /// Limit on the size of the minimal cut sets for performance reasons.
-  int limit_order_;
 };
 
 }  // namespace scram
