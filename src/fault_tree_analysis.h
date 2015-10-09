@@ -37,6 +37,23 @@
 
 namespace scram {
 
+/// @struct Literal
+/// Event or its complement
+/// that may appear in cut sets.
+struct Literal {
+  bool complement;  ///< Indication of a complement event.
+  std::shared_ptr<BasicEvent> event;  ///< The event in the cut set.
+};
+
+/// @struct CutSet
+/// Collection of unique literals
+/// representing a cut set of a fault tree.
+struct CutSet {
+  std::vector<Literal> literals;  ///< Member literals of a cut set.
+  double probability;  ///< Probability of a cut set.
+  double contribution;  ///< Contribution to the sum of probabilities.
+};
+
 /// @class FaultTreeDescriptor
 /// Fault tree description gatherer.
 /// General information about a fault tree
