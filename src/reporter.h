@@ -21,10 +21,7 @@
 #ifndef SCRAM_SRC_REPORTER_H_
 #define SCRAM_SRC_REPORTER_H_
 
-#include <iomanip>
 #include <memory>
-#include <set>
-#include <sstream>
 #include <string>
 #include <vector>
 

@@ -91,7 +91,6 @@ void FaultTreeAnalysis::SetsToString(const std::vector<std::vector<int>>& imcs,
     // Special case of unity of a top event.
     warnings_ += " The top event is UNITY. Failure is guaranteed.";
     max_order_ = 1;
-    cut_sets_.push_back({});
   }
   assert(!sum_mcs_probability_);
   for (const auto& min_cut_set : imcs) {

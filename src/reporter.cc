@@ -20,10 +20,10 @@
 
 #include "reporter.h"
 
-#include <map>
-#include <vector>
+#include <iomanip>
+#include <numeric>
+#include <sstream>
 
-#include <boost/algorithm/string.hpp>
 #include <boost/date_time.hpp>
 
 #include "ccf_group.h"
@@ -233,12 +233,7 @@ void Reporter::ReportFta(std::string ft_name, const FaultTreeAnalysis& fta,
   sum_of_products->set_attribute("basic-events",
                                  ToString(fta.mcs_basic_events().size()));
   sum_of_products->set_attribute("products",
-                                 ToString(fta.min_cut_sets().size()));
-
-  if (prob_analysis) {
-    sum_of_products->set_attribute("probability",
-                                   ToString(prob_analysis->p_total(), 7));
-  }
+                                 ToString(fta.cut_sets().size()));
 
   std::string warning = fta.warnings();
   if (prob_analysis) warning += prob_analysis->warnings();
@@ -248,33 +243,32 @@ void Reporter::ReportFta(std::string ft_name, const FaultTreeAnalysis& fta,
 
   CLOCK(cs_time);
   LOG(DEBUG2) << "Reporting cut sets for " << ft_name << "...";
-  for (const std::set<std::string>& cut_set : fta.min_cut_sets()) {
+  std::vector<xmlpp::Element*> products;  // To add more info later.
+  for (const CutSet& cut_set : fta.cut_sets()) {
     xmlpp::Element* product = sum_of_products->add_child("product");
-    product->set_attribute("order", ToString(cut_set.size()));
-
-    if (prob_analysis) {
-      double mcs_prob = fta.mcs_probability().at(cut_set);
-      product->set_attribute("probability", ToString(mcs_prob, 7));
-      product->set_attribute("contribution",
-                             ToString(mcs_prob / fta.sum_mcs_probability(), 7));
-    }
-
-    // List elements of minimal cut sets.
-    for (std::string full_name : cut_set) {
-      std::vector<std::string> names;
-      boost::split(names, full_name, boost::is_any_of(" "),
-                   boost::token_compress_on);
-      assert(!names.empty());
+    products.push_back(product);
+    product->set_attribute("order", ToString(GetOrder(cut_set)));
+    for (const Literal& literal : cut_set) {
       xmlpp::Element* parent = product;
-      std::string name = full_name;  // Id of a basic event.
-      if (names[0] == "not") {  // Detect negation.
-        std::string comp_name = full_name;
-        boost::replace_first(comp_name, "not ", "");
-        name = comp_name;
-        parent = product->add_child("not");
-      }
-      assert(fta.mcs_basic_events().count(name));
-      Reporter::ReportBasicEvent(fta.mcs_basic_events().at(name), parent);
+      if (literal.complement) parent = product->add_child("not");
+      Reporter::ReportBasicEvent(literal.event, parent);
+    }
+  }
+  if (prob_analysis) {
+    sum_of_products->set_attribute("probability",
+                                   ToString(prob_analysis->p_total(), 7));
+
+    std::vector<double> probs;  // Cut set probabilities.
+    for (const CutSet& cut_set : fta.cut_sets())
+      probs.push_back(CalculateProbability(cut_set));
+
+    double sum = std::accumulate(probs.begin(), probs.end(), 0.0);
+    assert(products.size() == probs.size() && "Elements are missing!");
+    for (int i = 0; i < products.size(); ++i) {
+      auto* product = products[i];
+      double prob = probs[i];
+      product->set_attribute("probability", ToString(prob, 7));
+      product->set_attribute("contribution", ToString(prob / sum, 7));
     }
   }
   LOG(DEBUG2) << "Finished cut set reporting in " << DUR(cs_time);
