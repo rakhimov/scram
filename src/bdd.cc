@@ -53,7 +53,16 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
       function_id_(2) {
   CLOCK(init_time);
   LOG(DEBUG3) << "Converting Boolean graph into BDD...";
-  root_ = Bdd::IfThenElse(fault_tree_->root());
+  if (fault_tree->root()->state() != kNormalState) {
+    // Constant case should only happen to the top gate.
+    if (fault_tree->root()->state() == kNullState) {
+      root_ = {true, kOne_};
+    } else {
+      root_ = {false, kOne_};
+    }
+  } else {
+    root_ = Bdd::IfThenElse(fault_tree->root());
+  }
   LOG(DEBUG4) << "# of BDD vertices created: " << function_id_ - 1;
   LOG(DEBUG4) << "# of entries in unique table: " << unique_table_.size();
   LOG(DEBUG4) << "# of entries in compute table: " << compute_table_.size();
@@ -76,18 +85,9 @@ const std::vector<std::vector<int>>& Bdd::cut_sets() const {
 }
 
 const Bdd::Function& Bdd::IfThenElse(const IGatePtr& gate) noexcept {
+  assert(gate->state() == kNormalState && "Unexpected constant gate!");
   Function& result = gates_[gate->index()];
   if (result.vertex) return result;
-  if (gate->state() != kNormalState) {
-    // Constant case should only happen to the top gate.
-    assert(gate == fault_tree_->root());
-    if (gate->state() == kNullState) {
-      result = {true, kOne_};
-    } else {
-      result = {false, kOne_};
-    }
-    return result;
-  }
   std::vector<Function> args;
   for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
     args.push_back({arg.first < 0, Bdd::IfThenElse(arg.second)});

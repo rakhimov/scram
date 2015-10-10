@@ -186,12 +186,11 @@ void Mocus::Analyze() {
   IGatePtr top = fault_tree_->root();
 
   // Special case of empty top gate.
-  if (top->args().empty()) {
-    State state = top->state();
-    assert(state == kNullState || state == kUnityState);
-    if (state == kUnityState) cut_sets_.push_back({});  // Special unity set.
+  if (top->state() != kNormalState) {
+    if (top->state() == kUnityState) cut_sets_.push_back({});  // Unity set.
     return;  // Other cases are null or empty.
-  } else if (top->type() == kNullGate) {  // Special case of NULL type top.
+  }
+  if (top->type() == kNullGate) {  // Special case of NULL type top.
     assert(top->args().size() == 1);
     assert(top->gate_args().empty());
     int child = *top->args().begin();
