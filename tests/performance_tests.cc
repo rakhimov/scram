@@ -91,16 +91,16 @@ TEST_F(PerformanceTest, DISABLED_Baobab1_L7) {
   EXPECT_NEAR(mcs_time, McsGenerationTime(), mcs_time * delta);
 }
 
-TEST_F(PerformanceTest, DISABLED_CEA9601_L10) {
-  double mcs_time = 0.7;
-  std::vector<std::string> input_files;
-  input_files.push_back("./share/scram/input/CEA9601/CEA9601.xml");
-  input_files.push_back("./share/scram/input/CEA9601/CEA9601-basic-events.xml");
-  settings.limit_order(10);
-  ASSERT_NO_THROW(Analyze(input_files));
-  EXPECT_EQ(5120, NumOfMcs());
-  EXPECT_LT(McsGenerationTime(), mcs_time);
-}
+/* TEST_F(PerformanceTest, DISABLED_CEA9601_L10) { */
+/*   double mcs_time = 0.7; */
+/*   std::vector<std::string> input_files; */
+/*   input_files.push_back("./share/scram/input/CEA9601/CEA9601.xml"); */
+/*   input_files.push_back("./share/scram/input/CEA9601/CEA9601-basic-events.xml"); */
+/*   settings.limit_order(10); */
+/*   ASSERT_NO_THROW(Analyze(input_files)); */
+/*   EXPECT_EQ(5120, NumOfMcs()); */
+/*   EXPECT_LT(McsGenerationTime(), mcs_time); */
+/* } */
 
 TEST_F(PerformanceTest, DISABLED_Baobab2) {
   double mcs_time = 15;
@@ -117,16 +117,16 @@ TEST_F(PerformanceTest, DISABLED_Baobab2) {
 
 // Release only tests.
 #ifdef NDEBUG
-TEST_F(PerformanceTest, DISABLED_CEA9601_L14) {
-  double mcs_time = 4.0;
-  std::vector<std::string> input_files;
-  input_files.push_back("./share/scram/input/CEA9601/CEA9601.xml");
-  input_files.push_back("./share/scram/input/CEA9601/CEA9601-basic-events.xml");
-  settings.limit_order(14);
-  ASSERT_NO_THROW(Analyze(input_files));
-  EXPECT_EQ(5160, NumOfMcs());
-  EXPECT_NEAR(mcs_time, McsGenerationTime(), mcs_time * delta);
-}
+/* TEST_F(PerformanceTest, DISABLED_CEA9601_L14) { */
+/*   double mcs_time = 4.0; */
+/*   std::vector<std::string> input_files; */
+/*   input_files.push_back("./share/scram/input/CEA9601/CEA9601.xml"); */
+/*   input_files.push_back("./share/scram/input/CEA9601/CEA9601-basic-events.xml"); */
+/*   settings.limit_order(14); */
+/*   ASSERT_NO_THROW(Analyze(input_files)); */
+/*   EXPECT_EQ(5160, NumOfMcs()); */
+/*   EXPECT_NEAR(mcs_time, McsGenerationTime(), mcs_time * delta); */
+/* } */
 
 TEST_F(PerformanceTest, DISABLED_Baobab1_L8) {
   double mcs_time = 5.8;
