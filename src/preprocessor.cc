@@ -366,7 +366,7 @@ void Preprocessor::RemoveConstantArg(const IGatePtr& gate, int arg) noexcept {
         gate->type(kNotGate);
         break;
       default:
-        assert(false);  // Other one-arg gates must not happen.
+        assert(false && "NULL/NOT one-arg gates should not appear.");
     }
   }  // More complex cases with K/N gates are handled by the caller functions.
 }
@@ -427,14 +427,18 @@ void Preprocessor::NormalizeGates(bool full) noexcept {
   assert(const_gates_.empty());
   assert(null_gates_.empty());
   if (full) Preprocessor::AssignOrder();  // K/N gates need order.
-  // Handle special case for the root gate.
   IGatePtr root_gate = graph_->root();
   Operator type = root_gate->type();
-  switch (type) {
+  switch (type) {  // Handle special case for the root gate.
     case kNorGate:
     case kNandGate:
     case kNotGate:
       root_sign_ *= -1;
+      break;
+    default:  // All other types keep the sign of the root.
+      assert((type == kAndGate || type == kOrGate || type == kAtleastGate ||
+              type == kXorGate || type == kNullGate) &&
+             "Update the logic if new gate types are introduced.");
   }
   // Process negative gates.
   // Note that root's negative gate is processed in the above lines.
@@ -452,21 +456,23 @@ void Preprocessor::NotifyParentsOfNegativeGates(const IGatePtr& gate) noexcept {
   if (gate->mark()) return;
   gate->mark(true);
   std::vector<int> to_negate;  // Args to get the negation.
-  std::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
-    IGatePtr arg = it->second;
-    Preprocessor::NotifyParentsOfNegativeGates(arg);
-    switch (arg->type()) {
+  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+    Preprocessor::NotifyParentsOfNegativeGates(arg.second);
+    Operator type = arg.second->type();
+    switch (type) {
       case kNorGate:
       case kNandGate:
       case kNotGate:
-        to_negate.push_back(it->first);
+        to_negate.push_back(arg.first);
+        break;
+      default:  // No notification for other types.
+        assert(type != kNullGate && "NULL gates should have been cleared.");
+        assert((type == kAndGate || type == kOrGate || type == kAtleastGate ||
+                type == kXorGate) &&
+               "Update the logic if new gate types are introduced.");
     }
   }
-  std::vector<int>::iterator it_neg;
-  for (it_neg = to_negate.begin(); it_neg != to_negate.end(); ++it_neg) {
-    gate->InvertArg(*it_neg);  // Does not produce constants or duplicates.
-  }
+  for (int index : to_negate) gate->InvertArg(index);  // No constants or NULL.
 }
 
 void Preprocessor::NormalizeGate(const IGatePtr& gate, bool full) noexcept {
@@ -851,20 +857,25 @@ void Preprocessor::ProcessModularArgs(
     std::vector<std::pair<int, NodePtr>>* non_modular_args) noexcept {
   assert(gate->args().size() ==
          (non_shared_args.size() + modular_args->size() +
-          non_modular_args->size()));
+          non_modular_args->size()) &&
+         "Module detection has messed up grouping of arguments.");
   // Attempting to create new modules for specific gate types.
   switch (gate->type()) {
     case kNorGate:
     case kOrGate:
     case kNandGate:
-    case kAndGate:
+    case kAndGate: {
       Preprocessor::CreateNewModule(gate, non_shared_args);
 
       Preprocessor::FilterModularArgs(modular_args, non_modular_args);
-      assert(modular_args->size() != 1);  // One modular arg is non-shared.
+      assert(modular_args->size() != 1 && "One modular arg is non-shared.");
       std::vector<std::vector<std::pair<int, NodePtr>>> groups;
       Preprocessor::GroupModularArgs(*modular_args, &groups);
       Preprocessor::CreateNewModules(gate, *modular_args, groups);
+      break;
+    }
+    default:
+      assert("More complex gates are considered impossible to sub-modularize!");
   }
 }
 
@@ -1672,6 +1683,8 @@ void Preprocessor::TransformDistributiveArgs(
       case kNorGate:
         gate->type(kNandGate);
         break;
+      default:
+        assert(false && "Gate is not suited for distributive operations.");
     }
   } else {
     new_parent = IGatePtr(new IGate(distr_type));
@@ -1938,12 +1951,9 @@ void Preprocessor::CollectRedundantParents(
     assert(!parent->mark());
     if (parent->opti_value() < 2) {
       // Special cases for the redundant parent and the destination parent.
-      switch (parent->type()) {
-        case kOrGate:
-          if (destinations->count(parent->index())) {
-            destinations->erase(parent->index());
-            continue;  // No need to add into the redundancy list.
-          }
+      if (parent->type() == kOrGate && destinations->count(parent->index())) {
+        destinations->erase(parent->index());
+        continue;  // No need to add into the redundancy list.
       }
       redundant_parents->push_back(parent);
     }
@@ -2034,7 +2044,7 @@ bool Preprocessor::ProcessDecompositionCommonNode(
 
   NodePtr node = common_node.lock();
 
-  if (node->parents().size() < 2) return false;
+  if (node->parents().size() < 2) return false;  // Not common anymore.
 
   auto IsDecompositionType = [](Operator type) {  // Possible types for setups.
     switch (type) {
@@ -2043,8 +2053,9 @@ bool Preprocessor::ProcessDecompositionCommonNode(
       case kOrGate:
       case kNorGate:
         return true;
+      default:
+        return false;
     }
-    return false;
   };
   // Determine if the decomposition setups are possible.
   auto it =
@@ -2118,7 +2129,7 @@ bool Preprocessor::ProcessDecompositionDestinations(
         state = false;
         break;
       default:
-        assert(false);
+        assert(false && "Complex gates cannot be decomposition destinations.");
     }
     int sign = parent->GetArgSign(node);
     if (sign < 0) state = !state;

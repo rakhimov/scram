@@ -292,46 +292,42 @@ void IGate::EraseAllArgs() noexcept {
 void IGate::ProcessDuplicateArg(int index) noexcept {
   assert(type_ != kNotGate && type_ != kNullGate);
   assert(args_.count(index));
-  switch (type_) {
-    case kXorGate:
-      IGate::Nullify();
-      break;
-    case kAtleastGate:
-      // This is a very special handling of K/N duplicates.
-      // @(k, [x, x, y_i]) = x & @(k-2, [y_i]) | @(k, [y_i])
-      assert(vote_number_ > 1);
-      if (args_.size() == 2) {
-        assert(vote_number_ == 2);
-        this->EraseArg(index);
-        this->type_ = kNullGate;
-        return;
-      }
-      assert(args_.size() > 2);
-      IGatePtr clone_one = IGate::Clone();  // @(k, [y_i])
+  if (type_ == kAtleastGate) {
+    // This is a very special handling of K/N duplicates.
+    // @(k, [x, x, y_i]) = x & @(k-2, [y_i]) | @(k, [y_i])
+    assert(vote_number_ > 1);
+    if (args_.size() == 2) {
+      assert(vote_number_ == 2);
+      this->EraseArg(index);
+      this->type_ = kNullGate;
+      return;
+    }
+    assert(args_.size() > 2);
+    IGatePtr clone_one = IGate::Clone();  // @(k, [y_i])
 
-      this->EraseAllArgs();  // The main gate turns into OR with x.
-      type_ = kOrGate;
-      this->AddArg(clone_one->index(), clone_one);
-      if (vote_number_ == 2) {  // No need for the second K/N gate.
-        clone_one->TransferArg(index, shared_from_this());  // Transfered the x.
-        assert(this->args_.size() == 2);
-      } else {
-        // Create the AND gate to combine with the duplicate node.
-        IGatePtr and_gate(new IGate(kAndGate));
-        this->AddArg(and_gate->index(), and_gate);
-        clone_one->TransferArg(index, and_gate);  // Transfered the x.
+    this->EraseAllArgs();  // The main gate turns into OR with x.
+    type_ = kOrGate;
+    this->AddArg(clone_one->index(), clone_one);
+    if (vote_number_ == 2) {  // No need for the second K/N gate.
+      clone_one->TransferArg(index, shared_from_this());  // Transfered the x.
+      assert(this->args_.size() == 2);
+    } else {
+      // Create the AND gate to combine with the duplicate node.
+      IGatePtr and_gate(new IGate(kAndGate));
+      this->AddArg(and_gate->index(), and_gate);
+      clone_one->TransferArg(index, and_gate);  // Transfered the x.
 
-        // Have to create the second K/N for vote_number > 2.
-        IGatePtr clone_two = clone_one->Clone();
-        clone_two->vote_number(vote_number_ - 2);  // @(k-2, [y_i])
-        if (clone_two->vote_number() == 1) clone_two->type(kOrGate);
-        and_gate->AddArg(clone_two->index(), clone_two);
+      // Have to create the second K/N for vote_number > 2.
+      IGatePtr clone_two = clone_one->Clone();
+      clone_two->vote_number(vote_number_ - 2);  // @(k-2, [y_i])
+      if (clone_two->vote_number() == 1) clone_two->type(kOrGate);
+      and_gate->AddArg(clone_two->index(), clone_two);
 
-        assert(and_gate->args().size() == 2);
-        assert(this->args_.size() == 2);
-      }
-      if (clone_one->args().size() == clone_one->vote_number())
-        clone_one->type(kAndGate);
+      assert(and_gate->args().size() == 2);
+      assert(this->args_.size() == 2);
+    }
+    if (clone_one->args().size() == clone_one->vote_number())
+      clone_one->type(kAndGate);
   }
   if (args_.size() == 1) {
     switch (type_) {
@@ -343,8 +339,11 @@ void IGate::ProcessDuplicateArg(int index) noexcept {
       case kNorGate:
         type_ = kNotGate;
         break;
+      case kXorGate:
+        IGate::Nullify();
+        break;
       default:
-        assert(false);  // NOT and NULL gates can't have duplicates.
+        assert(false && "NOT and NULL gates can't have duplicates.");
     }
   }
 }
@@ -372,6 +371,8 @@ void IGate::ProcessComplementArg(int index) noexcept {
         type_ = kAndGate;
       }
       break;
+    default:
+      assert(false && "Unexpected gate type for complement arg processing.");
   }
 }
 
@@ -421,6 +422,8 @@ std::shared_ptr<IGate> BooleanGraph::ProcessFormula(
     case kNullGate:
       null_gates_.push_back(parent);
       break;
+    default:
+      assert((type == kOrGate || type == kAndGate) && "Unexpected gate type.");
   }
   BooleanGraph::ProcessBasicEvents(parent, formula->basic_event_args(), ccf,
                                    nodes);

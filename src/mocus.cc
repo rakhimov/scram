@@ -85,6 +85,8 @@ void SimpleGate::GenerateCutSets(const SetPtr& cut_set,
     case kAndGate:
       SimpleGate::AndGateCutSets(cut_set, new_cut_sets);
       break;
+    default:
+      assert(false && "MOCUS works with AND/OR gates only.");
   }
 }
 
