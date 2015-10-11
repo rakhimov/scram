@@ -346,6 +346,14 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// @param[in] flag  Marking with the meaning for the marker.
   void mark(bool flag) { mark_ = flag; }
 
+  /// @returns Pre-assigned index of one of gate's descendants.
+  int descendant() const { return descendant_; }
+
+  /// Assigns an ancestor mark for this gate.
+  ///
+  /// @param[in] index  Positive index of the descendant.
+  void descendant(int index) { descendant_ = index; }
+
   /// @returns The minimum time of visits of the gate's sub-graph.
   /// @returns 0 if no time assignment was performed.
   int min_time() const { return min_time_; }
@@ -569,6 +577,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   State state_;  ///< Indication if this gate's state is normal, null, or unity.
   int vote_number_;  ///< Vote number for ATLEAST gate.
   bool mark_;  ///< Marking for linear traversal of a graph.
+  int descendant_;  //< Mark by descendant indices.
   int min_time_;  ///< Minimum time of visits of the sub-graph of the gate.
   int max_time_;  ///< Maximum time of visits of the sub-graph of the gate.
   bool module_;  ///< Indication of an independent module gate.
@@ -856,17 +865,6 @@ class BooleanGraph {
   ///
   /// @note Gate marks are used for linear time traversal.
   void ClearOptiValues(const IGatePtr& gate) noexcept;
-
-  /// Clears optimization values only for a part of the graph.
-  /// This is the fastest way to clean
-  /// contiguously marked optimization values.
-  ///
-  /// @param[in,out] gate  The root gate to be traversed and cleaned.
-  ///
-  /// @note The logic is coupled with Boolean optimization.
-  ///       The "dirty" nodes are marked anything but 0,
-  ///       and there is only one dirty variable argument at most.
-  void ClearOptiValuesFast(const IGatePtr& gate) noexcept;
 
   /// Clears counts of all nodes in the graph.
   ///

@@ -55,6 +55,7 @@ IGate::IGate(const Operator& type) noexcept
       state_(kNormalState),
       vote_number_(-1),
       mark_(false),
+      descendant_(0),
       min_time_(0),
       max_time_(0),
       module_(false) {}
@@ -584,21 +585,6 @@ void BooleanGraph::ClearOptiValues(const IGatePtr& gate) noexcept {
   }
   for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
     arg.second->opti_value(0);
-  }
-  assert(gate->constant_args().empty());
-}
-
-void BooleanGraph::ClearOptiValuesFast(const IGatePtr& gate) noexcept {
-  if (!gate->opti_value()) return;  // Clean only 'dirty' gates.
-  gate->opti_value(0);
-  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
-    BooleanGraph::ClearOptiValuesFast(arg.second);
-  }
-  for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
-    if (arg.second->opti_value()) {
-      arg.second->opti_value(0);
-      break;  // Only one variable is 'dirty'.
-    }
   }
   assert(gate->constant_args().empty());
 }

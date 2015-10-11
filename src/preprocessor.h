@@ -877,6 +877,8 @@ class Preprocessor {
   /// @param[in] node  The child node.
   /// @param[out] module  The root module gate ancestor.
   ///
+  /// @pre Gate marks are clear.
+  ///
   /// @warning Since very specific branches are marked 'true',
   ///          cleanup must be performed after/with the use of the ancestors.
   ///          If the cleanup is done improperly or not at all,
@@ -893,9 +895,11 @@ class Preprocessor {
   ///
   /// @returns Total multiplicity of the node.
   ///
-  /// @note The optimization value of the main common node must be 1.
-  /// @note The marks of ancestor gates must be 'true'.
-  ///       This function will reset all of them to 'false'.
+  /// @pre The optimization value of the main common node is 1.
+  /// @pre The marks of ancestor gates are 'true'.
+  ///
+  /// @post The marks of all ancestor gates are reset to 'false'.
+  /// @post All ancestor gates are marked with the descendant index.
   int PropagateFailure(const IGatePtr& gate, const NodePtr& node) noexcept;
 
   /// Determines if a gate fails due to failed/succeeded arguments.
@@ -967,6 +971,16 @@ class Preprocessor {
   void ProcessFailureDestinations(
       const std::shared_ptr<N>& node,
       const std::map<int, IGateWeakPtr>& destinations) noexcept;
+
+  /// Clears all the ancestor marks used in Boolean optimization steps.
+  ///
+  /// @param[in] gate  The top ancestor of the common node.
+  ///
+  /// @pre All ancestor gates are marked with the descendant index.
+  /// @pre The common node itself is not the ancestor.
+  ///
+  /// @warning The common node must be cleaned separately.
+  void ClearFailureMarks(const IGatePtr& gate) noexcept;
 
   /// The Shannon decomposition for common nodes in the Boolean graph.
   /// This procedure is also called "Constant Propagation",
