@@ -684,7 +684,7 @@ bool Preprocessor::JoinGates(const IGatePtr& gate, bool common) noexcept {
     if (Preprocessor::JoinGates(arg_gate, common)) changed = true;
 
     if (!possible) continue;  // Joining with the parent is impossible.
-
+    if (arg_gate->state() != kNormalState) continue;  // No args to join.
     if (arg.first < 0) continue;  // Cannot join a negative arg gate.
     if (arg_gate->IsModule()) continue;  // Preserve modules.
     if (!common && arg_gate->parents().size() > 1) continue;  // Check common.

@@ -201,7 +201,9 @@ void IGate::InvertArg(int existing_arg) noexcept {
 }
 
 void IGate::JoinGate(const IGatePtr& arg_gate) noexcept {
-  assert(args_.count(arg_gate->index()));  // Positive argument only.
+  assert(args_.count(arg_gate->index()) && "Cannot join complement gate.");
+  assert(arg_gate->state() == kNormalState && "Impossible to join.");
+  assert(!arg_gate->args().empty() && "Corrupted gate.");
 
   for (const std::pair<int, IGatePtr>& arg : arg_gate->gate_args_) {
     IGate::AddArg(arg.first, arg.second);
