@@ -25,9 +25,27 @@ from __future__ import print_function
 import random
 from subprocess import call
 
-switches = [ "--probability", "--importance"]
-approximation = ["", "--rare-event", "--mcub"]
-analysis = ["", "--bdd"]
+import argparse as ap
+
+
+class Config(object):
+    """Storage for configurations.
+
+    Empty strings mean the default options of SCRAM.
+    """
+    switch = [ "--probability", "--importance"]
+    approximation = ["", "--rare-event", "--mcub"]
+    analysis = ["", "--bdd"]
+    max_limit = 10
+
+    @staticmethod
+    def restrict():
+        """Restricts configurations for testing preprocessor."""
+        Config.switch = []
+        Config.approximation = [""]
+        Config.analysis = [""]
+        Config.max_limit = 1
+
 
 def generate_input():
     """Calls fault tree generator."""
@@ -44,24 +62,46 @@ def generate_input():
 
 def get_limit_order():
     """Generates limit on cut set order."""
-    return random.randint(1, 10)
+    return random.randint(1, Config.max_limit)
 
 def call_scram():
     """Calls SCRAM with generated input files."""
-    cmd = ["scram", "fault_tree.xml", "-o", "/dev/null"] + \
-          ["--limit-order", str(get_limit_order())] + \
-          [random.choice(switches), random.choice(["true", "false"])]
-    approx = random.choice(approximation)
-    algorithm = random.choice(analysis)
+    cmd = ["scram", "fault_tree.xml"] + \
+          ["--limit-order", str(get_limit_order())]
+
+    if Config.switch:
+        cmd += [random.choice(Config.switch), random.choice(["true", "false"])]
+
+    approx = random.choice(Config.approximation)
     if approx:
-        cmd += [approx]
+        cmd.append(approx)
+
+    algorithm = random.choice(Config.analysis)
     if algorithm:
-        cmd += [algorithm]
+        cmd.append(algorithm)
     print(cmd)
+    cmd += ["-o", "/dev/null"]
     return call(cmd)
 
 def main():
-    for _ in range(10):
+    description = "SCRAM Fuzz Tester"
+
+    parser = ap.ArgumentParser(description=description)
+
+    num_runs = "number of SCRAM calls"
+    parser.add_argument("-n", "--num-runs", type=int, help=num_runs, default=10,
+                        metavar="int")
+
+    preprocessor = "restrict to focus on preprocessor"
+    parser.add_argument("--preprocessor", action="store_true",
+                        help=preprocessor)
+
+    args = parser.parse_args()
+
+    if args.preprocessor:
+        Config.restrict()
+
+    for _ in range(args.num_runs):
         generate_input()
         if call_scram():
             print("SCRAM failed!")
