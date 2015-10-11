@@ -553,6 +553,13 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   ///          The complex corner cases must be handled by the caller.
   void ProcessDuplicateArg(int index) noexcept;
 
+  /// Handles the complex case of duplicate arguments for K/N gates.
+  ///
+  /// @param[in] index  Positive or negative index of the existing argument.
+  ///
+  /// @warning New gates may be introduced.
+  void ProcessAtleastGateDuplicateArg(int index) noexcept;
+
   /// Process an addition of a complement of an existing argument.
   ///
   /// @param[in] index  Positive or negative index of the argument.

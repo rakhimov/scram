@@ -288,44 +288,9 @@ void IGate::ProcessDuplicateArg(int index) noexcept {
   assert(type_ != kNotGate && type_ != kNullGate);
   assert(args_.count(index));
   LOG(DEBUG5) << "Handling duplicate argument for G" << Node::index();
-  if (type_ == kAtleastGate) {
-    LOG(DEBUG5) << "Handling special case of K/N duplicate argument!";
-    // This is a very special handling of K/N duplicates.
-    // @(k, [x, x, y_i]) = x & @(k-2, [y_i]) | @(k, [y_i])
-    assert(vote_number_ > 1);
-    if (args_.size() == 2) {
-      assert(vote_number_ == 2);
-      this->EraseArg(index);
-      this->type_ = kNullGate;
-      return;
-    }
-    assert(args_.size() > 2);
-    IGatePtr clone_one = IGate::Clone();  // @(k, [y_i])
+  if (type_ == kAtleastGate)
+    return IGate::ProcessAtleastGateDuplicateArg(index);
 
-    this->EraseAllArgs();  // The main gate turns into OR with x.
-    type_ = kOrGate;
-    this->AddArg(clone_one->index(), clone_one);
-    if (vote_number_ == 2) {  // No need for the second K/N gate.
-      clone_one->TransferArg(index, shared_from_this());  // Transfered the x.
-      assert(this->args_.size() == 2);
-    } else {
-      // Create the AND gate to combine with the duplicate node.
-      IGatePtr and_gate(new IGate(kAndGate));
-      this->AddArg(and_gate->index(), and_gate);
-      clone_one->TransferArg(index, and_gate);  // Transfered the x.
-
-      // Have to create the second K/N for vote_number > 2.
-      IGatePtr clone_two = clone_one->Clone();
-      clone_two->vote_number(vote_number_ - 2);  // @(k-2, [y_i])
-      if (clone_two->vote_number() == 1) clone_two->type(kOrGate);
-      and_gate->AddArg(clone_two->index(), clone_two);
-
-      assert(and_gate->args().size() == 2);
-      assert(this->args_.size() == 2);
-    }
-    if (clone_one->args().size() == clone_one->vote_number())
-      clone_one->type(kAndGate);
-  }
   if (args_.size() == 1) {
     LOG(DEBUG5) << "Handling the case of one-arg duplicate argument!";
     switch (type_) {
@@ -345,6 +310,58 @@ void IGate::ProcessDuplicateArg(int index) noexcept {
         assert(false && "NOT and NULL gates can't have duplicates.");
     }
   }
+}
+
+void IGate::ProcessAtleastGateDuplicateArg(int index) noexcept {
+  LOG(DEBUG5) << "Handling special case of K/N duplicate argument!";
+  assert(type_ == kAtleastGate);
+  // This is a very special handling of K/N duplicates.
+  // @(k, [x, x, y_i]) = x & @(k-2, [y_i]) | @(k, [y_i])
+  assert(vote_number_ > 1);
+  assert(args_.size() >= vote_number_);
+  if (args_.size() == 2) {  // @(2, [x, x, z]) = x
+    assert(vote_number_ == 2);
+    this->EraseArg(index);
+    this->type_ = kNullGate;
+    return;
+  }
+  if (vote_number_ == args_.size()) {  // @(k, [y_i]) is NULL set.
+    assert(vote_number_ > 2 && "Corrupted number of gate arguments.");
+    IGatePtr clone_two = this->Clone();
+    clone_two->vote_number(vote_number_ - 2);  // @(k-2, [y_i])
+    this->EraseAllArgs();
+    this->type_ = kAndGate;
+    clone_two->TransferArg(index, shared_from_this());  // Transfered the x.
+    if (clone_two->vote_number() == 1) clone_two->type(kOrGate);
+    return;
+  }
+  assert(args_.size() > 2);
+  IGatePtr clone_one = this->Clone();  // @(k, [y_i])
+
+  this->EraseAllArgs();  // The main gate turns into OR with x.
+  type_ = kOrGate;
+  this->AddArg(clone_one->index(), clone_one);
+  if (vote_number_ == 2) {  // No need for the second K/N gate.
+    clone_one->TransferArg(index, shared_from_this());  // Transfered the x.
+    assert(this->args_.size() == 2);
+  } else {
+    // Create the AND gate to combine with the duplicate node.
+    IGatePtr and_gate(new IGate(kAndGate));
+    this->AddArg(and_gate->index(), and_gate);
+    clone_one->TransferArg(index, and_gate);  // Transfered the x.
+
+    // Have to create the second K/N for vote_number > 2.
+    IGatePtr clone_two = clone_one->Clone();
+    clone_two->vote_number(vote_number_ - 2);  // @(k-2, [y_i])
+    if (clone_two->vote_number() == 1) clone_two->type(kOrGate);
+    and_gate->AddArg(clone_two->index(), clone_two);
+
+    assert(and_gate->args().size() == 2);
+    assert(this->args_.size() == 2);
+  }
+  assert(clone_one->vote_number() <= clone_one->args().size());
+  if (clone_one->args().size() == clone_one->vote_number())
+    clone_one->type(kAndGate);
 }
 
 void IGate::ProcessComplementArg(int index) noexcept {
