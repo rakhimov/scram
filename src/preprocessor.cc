@@ -1196,12 +1196,13 @@ void Preprocessor::FilterMergeCandidates(
     if (gate->args().size() == 1) continue;
     if (gate->state() != kNormalState) continue;
     if (common_args.size() < 2) continue;
-    if (gate->args().size() != common_args.size()) continue;
+    if (gate->args().size() != common_args.size()) continue;  // Not perfect.
     auto it_next = it;
     for (++it_next; it_next != candidates->end(); ++it_next) {
       IGatePtr comp_gate = it_next->first;
       MergeTable::CommonArgs& comp_args = it_next->second;
       if (comp_args.size() < common_args.size()) continue;  // Changed gate.
+      assert(comp_gate->state() == kNormalState);
       if (!std::includes(comp_args.begin(), comp_args.end(),
                          common_args.begin(), common_args.end())) continue;
 
@@ -1211,6 +1212,7 @@ void Preprocessor::FilterMergeCandidates(
                           std::back_inserter(diff));
       diff.push_back(gate->index());
       std::sort(diff.begin(), diff.end());
+      diff.erase(std::unique(diff.begin(), diff.end()), diff.end());
       comp_args = diff;
       for (int index : common_args) comp_gate->EraseArg(index);
       comp_gate->AddArg(gate->index(), gate);
