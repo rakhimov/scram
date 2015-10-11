@@ -216,6 +216,29 @@ void Preprocessor::PhaseFive() noexcept {
   LOG(DEBUG3) << "Gate coalescence is done!";
 }
 
+namespace {  // Helper functions for all preprocessing algorithms.
+
+/// @param[in] num  Signed integer or index.
+///
+/// @returns -1 for negative numbers and 1 for positive ones.
+int GetSign(int num) noexcept { return num > 0 ? 1 : -1; }
+
+/// Detects overlap in ranges.
+///
+/// @param[in] a_min  The lower boundary of the first range.
+/// @param[in] a_max  The upper boundary of the first range.
+/// @param[in] b_min  The lower boundary of the second range.
+/// @param[in] b_max  The upper boundary of the second range.
+///
+/// @returns true if there's overlap in the ranges.
+bool DetectOverlap(int a_min, int a_max, int b_min, int b_max) noexcept {
+  assert(a_min < a_max);
+  assert(b_min < b_max);
+  return std::max(a_min, b_min) <= std::min(a_max, b_max);
+}
+
+}  // namespace
+
 bool Preprocessor::CheckRootGate() noexcept {
   IGatePtr root = graph_->root();
   if (root->state() != kNormalState) {  // The root gate has become constant.
@@ -240,7 +263,7 @@ bool Preprocessor::CheckRootGate() noexcept {
       root = root->gate_args().begin()->second;
       graph_->root(root);  // Destroy the previous root.
       assert(root->parents().empty());
-      root_sign_ *= signed_index > 0 ? 1 : -1;
+      root_sign_ *= GetSign(signed_index);
     } else {
       assert(root->variable_args().size() == 1);
       if (root_sign_ < 0) root->InvertArgs();
@@ -927,24 +950,6 @@ std::shared_ptr<IGate> Preprocessor::CreateNewModule(
               << args.size() << " arguments for G" << gate->index();
   return module;
 }
-
-namespace {
-
-/// Detects overlap in ranges.
-///
-/// @param[in] a_min  The lower boundary of the first range.
-/// @param[in] a_max  The upper boundary of the first range.
-/// @param[in] b_min  The lower boundary of the second range.
-/// @param[in] b_max  The upper boundary of the second range.
-///
-/// @returns true if there's overlap in the ranges.
-bool DetectOverlap(int a_min, int a_max, int b_min, int b_max) noexcept {
-  assert(a_min < a_max);
-  assert(b_min < b_max);
-  return std::max(a_min, b_min) <= std::min(a_max, b_max);
-}
-
-}  // namespace
 
 void Preprocessor::FilterModularArgs(
     std::vector<std::pair<int, NodePtr>>* modular_args,
@@ -1881,7 +1886,7 @@ int Preprocessor::PropagateFailure(const IGatePtr& gate,
     IGatePtr arg_gate = arg.second;
     mult_tot += Preprocessor::PropagateFailure(arg_gate, node);
     assert(!arg_gate->mark());
-    int failed = arg_gate->opti_value() * (arg.first > 0 ? 1 : -1);
+    int failed = arg_gate->opti_value() * GetSign(arg.first);
     assert(!failed || failed == -1 || failed == 1);
     if (failed == 1) {
       ++num_failure;
@@ -2262,8 +2267,7 @@ bool Preprocessor::ProcessDecompositionAncestors(
 
   for (const auto& arg : to_swap) {
     ancestor->EraseArg(arg.first);
-    int sign = arg.first > 0 ? 1 : -1;
-    ancestor->AddArg(sign * arg.second->index(), arg.second);
+    ancestor->AddArg(GetSign(arg.first) * arg.second->index(), arg.second);
   }
   return changed;
 }
