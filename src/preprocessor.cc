@@ -1824,8 +1824,8 @@ void Preprocessor::ProcessCommonNode(
   if (root->opti_value() == 1) {  // The root gate failed.
     destinations.emplace(root->index(), root);
     num_dest = 1;
-  } else {
-    assert(root->opti_value() == -1);
+  } else {  /// @todo Deal with the success (-1) state.
+    assert(root->opti_value() == -1 || !root->opti_value());
     num_dest = Preprocessor::CollectFailureDestinations(root, node->index(),
                                                         &destinations);
   }
@@ -1835,8 +1835,11 @@ void Preprocessor::ProcessCommonNode(
     std::vector<IGateWeakPtr> redundant_parents;
     Preprocessor::CollectRedundantParents(node, &destinations,
                                           &redundant_parents);
-    graph_->ClearOptiValuesFast(root);  // Important to call before processing.
+    graph_->ClearOptiValues(root);  // Important to call before processing.
+    graph_->ClearGateMarks(root);
+
     if (redundant_parents.empty()) return;  // No optimization.
+
     LOG(DEBUG4) << "Node " << node->index() << ": "
                 << redundant_parents.size() << " redundant parent(s) and "
                 << destinations.size() << " failure destination(s)";
@@ -1844,8 +1847,10 @@ void Preprocessor::ProcessCommonNode(
     Preprocessor::ProcessFailureDestinations(node, destinations);
     Preprocessor::ClearConstGates();
     Preprocessor::ClearNullGates();
+  } else {
+    graph_->ClearOptiValues(root);  // Targeted cleanup.
+    graph_->ClearGateMarks(root);
   }
-  graph_->ClearOptiValuesFast(root);  // Cleanup if any.
 }
 
 void Preprocessor::MarkAncestors(const NodePtr& node,
@@ -1898,8 +1903,6 @@ int Preprocessor::PropagateFailure(const IGatePtr& gate,
     }  // Ignore when 0.
   }
   assert(gate->constant_args().empty());
-  assert(gate->opti_value() == 0);
-  assert((num_success + num_failure) > 0);
   Preprocessor::DetermineGateFailure(gate, num_failure, num_success);
   int mult_add = gate->parents().size();
   if (gate->opti_value() != 1 || mult_add < 2 ) mult_add = 0;
@@ -1908,30 +1911,61 @@ int Preprocessor::PropagateFailure(const IGatePtr& gate,
 
 void Preprocessor::DetermineGateFailure(const IGatePtr& gate, int num_failure,
                                         int num_success) noexcept {
-  assert(num_failure >= 0);
-  assert(num_success >= 0);
-  assert((num_success + num_failure) > 0);
-  gate->opti_value(-1);  // The default assumption of not failing.
+  assert(!gate->opti_value() && "Unclear initial optimization value.");
+  assert(num_failure >= 0 && "Illegal arguments or corrupted state.");
+  assert(num_success >= 0 && "Illegal arguments or corrupted state.");
+  if (!(num_success + num_failure)) return;  // Undetermined 0 state.
   switch (gate->type()) {
     case kNullGate:
+      assert((num_failure + num_success) == 1);
+      gate->opti_value(num_failure ? 1 : -1);
+      break;
     case kOrGate:
-      if (num_failure > 0) gate->opti_value(1);
+      if (num_failure) {
+        gate->opti_value(1);
+      } else if (num_success == gate->args().size()) {
+        gate->opti_value(-1);
+      }
       break;
     case kAndGate:
-      if (num_failure == gate->args().size()) gate->opti_value(1);
+      if (num_success) {
+        gate->opti_value(-1);
+      } else if (num_failure == gate->args().size()) {
+        gate->opti_value(1);
+      }
       break;
     case kAtleastGate:
-      if (num_failure >= gate->vote_number()) gate->opti_value(1);
+      assert(gate->args().size() > gate->vote_number());
+      if (num_failure >= gate->vote_number()) {
+        gate->opti_value(1);
+      } else if (num_success > (gate->args().size() - gate->vote_number())) {
+        gate->opti_value(-1);
+      }
       break;
     case kXorGate:
-      if (num_failure == 1)  gate->opti_value(1);
+      if (num_failure == 1 && num_success == 1) {
+        gate->opti_value(1);
+      } else if (num_success == 2 || num_failure == 2) {
+        gate->opti_value(-1);
+      }
       break;
     case kNotGate:
+      assert((num_failure + num_success) == 1);
+      gate->opti_value(num_success ? 1 : -1);
+      break;
     case kNandGate:
-      if (num_success > 0) gate->opti_value(1);
+      if (num_success) {
+        gate->opti_value(1);
+      } else if (num_failure == gate->args().size()) {
+        gate->opti_value(-1);
+      }
       break;
     case kNorGate:
-      if (num_success == gate->args().size()) gate->opti_value(1);
+      if (num_failure) {
+        gate->opti_value(-1);
+      } else if (num_success == gate->args().size()) {
+        gate->opti_value(1);
+      }
       break;
   }
 }
