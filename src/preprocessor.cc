@@ -1492,10 +1492,10 @@ bool Preprocessor::DetectDistributivity(const IGatePtr& gate) noexcept {
   for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
     IGatePtr child_gate = arg.second;
     bool ret = Preprocessor::DetectDistributivity(child_gate);
+    assert(child_gate->state() == kNormalState && "Impossible state.");
     if (ret) changed = true;
     if (!possible) continue;  // Distributivity is not possible.
     if (arg.first < 0) continue;  // Does not work on negation.
-    if (child_gate->state() != kNormalState) continue;  // No arguments.
     if (child_gate->IsModule()) continue;  // Can't have common arguments.
     if (child_gate->type() == distr_type) candidates.push_back(child_gate);
   }
@@ -1508,8 +1508,8 @@ bool Preprocessor::HandleDistributiveArgs(
     const IGatePtr& gate,
     const Operator& distr_type,
     std::vector<IGatePtr>* candidates) noexcept {
-  assert(gate->args().size() > 1);
   if (candidates->empty()) return false;
+  assert(gate->args().size() > 1 && "Malformed parent gate.");
   bool changed = Preprocessor::FilterDistributiveArgs(gate, candidates);
   if (candidates->size() < 2) return changed;
   // Detecting a combination
@@ -1614,6 +1614,7 @@ bool Preprocessor::FilterDistributiveArgs(
       case kAndGate:
       case kOrGate:
         gate->type(kNullGate);
+        null_gates_.push_back(gate);
         break;
       case kNandGate:
       case kNorGate:

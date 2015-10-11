@@ -293,6 +293,7 @@ void IGate::ProcessDuplicateArg(int index) noexcept {
   assert(type_ != kNotGate && type_ != kNullGate);
   assert(args_.count(index));
   if (type_ == kAtleastGate) {
+    LOG(DEBUG5) << "Handling special case of K/N duplicate argument!";
     // This is a very special handling of K/N duplicates.
     // @(k, [x, x, y_i]) = x & @(k-2, [y_i]) | @(k, [y_i])
     assert(vote_number_ > 1);
@@ -340,6 +341,7 @@ void IGate::ProcessDuplicateArg(int index) noexcept {
         type_ = kNotGate;
         break;
       case kXorGate:
+        LOG(DEBUG5) << "Handling special case of XOR duplicate argument!";
         IGate::Nullify();
         break;
       default:
