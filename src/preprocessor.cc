@@ -117,6 +117,14 @@ void Preprocessor::PhaseTwo() noexcept {
   Preprocessor::DetectModules();
   LOG(DEBUG3) << "Finished module detection!";
 
+  LOG(DEBUG3) << "Coalescing gates...";
+  graph_changed = true;
+  while (graph_changed && !Preprocessor::CheckRootGate())
+    graph_changed = Preprocessor::CoalesceGates(/*common=*/false);
+  LOG(DEBUG3) << "Gate coalescence is done!";
+
+  if (Preprocessor::CheckRootGate()) return;
+
   CLOCK(merge_time);
   LOG(DEBUG3) << "Merging common arguments...";
   Preprocessor::MergeCommonArgs();
