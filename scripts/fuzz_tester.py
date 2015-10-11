@@ -52,7 +52,7 @@ def generate_input():
     cmd = ["./fault_tree_generator.py",
            "-b", "100", "--common-b", "0.4", "--parents-b", "5",
            "--common-g", "0.2", "--parents-g", "3", "--children", "2.5",
-           "--seed", str(random.randint(1, 1e6)),
+           "--seed", str(random.randint(1, 1e8)),
            "--maxprob", "0.5", "--minprob", "0.1"]
     weights = ["--weights-g", "1", "1", "1"]
     if random.choice([True, False]):
@@ -92,14 +92,27 @@ def main():
     parser.add_argument("-n", "--num-runs", type=int, help=num_runs, default=10,
                         metavar="int")
 
-    preprocessor = "restrict to focus on preprocessor"
+    preprocessor = "focus on Preprocessor"
     parser.add_argument("--preprocessor", action="store_true",
                         help=preprocessor)
+
+    mocus = "focus on MOCUS"
+    parser.add_argument("--mocus", action="store_true", help=mocus)
+
+    bdd = "focus on BDD"
+    parser.add_argument("--bdd", action="store_true", help=bdd)
 
     args = parser.parse_args()
 
     if args.preprocessor:
+        print("Focusing on Preprocessor")
         Config.restrict()
+    elif args.mocus:
+        print("Focusing on MOCUS")
+        Config.analysis = [""]
+    elif args.bdd:
+        print("Focusing on BDD")
+        Config.analysis = ["--bdd"]
 
     for _ in range(args.num_runs):
         generate_input()
