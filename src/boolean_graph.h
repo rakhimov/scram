@@ -422,15 +422,17 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   }
 
   /// Adds an argument gate to this gate.
+  ///
   /// Before adding the argument,
   /// the existing arguments are checked for complements and duplicates.
   /// If there is a complement,
   /// the gate may change its state (erasing its arguments) or type.
+  ///
   /// The duplicates are handled according to the logic of the gate.
   /// The caller must be aware of possible changes
   /// due to the logic of the gate.
   ///
-  /// @param[in] arg  A positive or negative index of an argument.
+  /// @param[in] index  A positive or negative index of an argument.
   /// @param[in] gate  A pointer to the argument gate.
   ///
   /// @warning The function does not indicate invalid state.
@@ -448,77 +450,33 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   ///          if the argument is duplicate.
   ///          The caller must be very cautious of
   ///          the side effects of the manipulations.
-  void AddArg(int arg, const IGatePtr& gate) noexcept;
+  void AddArg(int index, const IGatePtr& gate) noexcept;
 
-  /// Adds an argument variable to this gate.
-  /// Before adding the argument,
-  /// the existing arguments are checked for complements and duplicates.
-  /// If there is a complement,
-  /// the gate may change its state (erasing its arguments) or type.
-  /// The duplicates are handled according to the logic of the gate.
-  /// The caller must be aware of possible changes
-  /// due to the logic of the gate.
+  /// Overload of AddArg() to add a variable argument.
+  /// All the AddArg() comments and warnings apply to this overload as well.
   ///
-  /// @param[in] arg  A positive or negative index of an argument.
+  /// @param[in] index  A positive or negative index of an argument.
   /// @param[in] variable  A pointer to the argument variable.
-  ///
-  /// @warning The function does not indicate invalid state.
-  ///          For example, a second argument for NOT or NULL type gates
-  ///          is not going to be reported in any way.
-  /// @warning This function does not indicate error
-  ///          for future additions
-  ///          in case the state is nulled or becomes unity.
-  /// @warning Duplicate arguments may change the type and state of the gate.
-  ///          Depending on the logic of the gate,
-  ///          new gates may be introduced
-  ///          instead of the existing arguments.
-  /// @warning Complex logic gates like ATLEAST and XOR
-  ///          are handled specially
-  ///          if the argument is duplicate.
-  ///          The caller must be very cautious of
-  ///          the side effects of the manipulations.
-  void AddArg(int arg, const VariablePtr& variable) noexcept;
+  void AddArg(int index, const VariablePtr& variable) noexcept;
 
-  /// Adds a constant argument to this gate.
-  /// Before adding the argument,
-  /// the existing arguments are checked for complements and duplicates.
-  /// If there is a complement,
-  /// the gate may change its state (erasing its arguments) or type.
-  /// The duplicates are handled according to the logic of the gate.
-  /// The caller must be aware of possible changes
-  /// due to the logic of the gate.
+  /// Overload of AddArg() to add a constant argument.
+  /// All the AddArg() comments and warnings apply to this overload as well.
   ///
-  /// @param[in] arg  A positive or negative index of an argument.
+  /// @param[in] index  A positive or negative index of an argument.
   /// @param[in] constant  A pointer to the argument that is a Constant.
-  ///
-  /// @warning The function does not indicate invalid state.
-  ///          For example, a second argument for NOT or NULL type gates
-  ///          is not going to be reported in any way.
-  /// @warning This function does not indicate error
-  ///          for future additions
-  ///          in case the state is nulled or becomes unity.
-  /// @warning Duplicate arguments may change the type and state of the gate.
-  ///          Depending on the logic of the gate,
-  ///          new gates may be introduced
-  ///          instead of the existing arguments.
-  /// @warning Complex logic gates like ATLEAST and XOR
-  ///          are handled specially
-  ///          if the argument is duplicate.
-  ///          The caller must be very cautious of
-  ///          the side effects of the manipulations.
-  void AddArg(int arg, const ConstantPtr& constant) noexcept;
+  void AddArg(int index, const ConstantPtr& constant) noexcept;
 
-  /// Transfers this gates's argument to another gate.
+  /// Transfers this gate's argument to another gate.
   ///
-  /// @param[in] arg  Positive or negative index of the argument.
+  /// @param[in] index  Positive or negative index of the argument.
   /// @param[in,out] recipient  A new parent for the argument.
-  void TransferArg(int arg, const IGatePtr& recipient) noexcept;
+  void TransferArg(int index, const IGatePtr& recipient) noexcept;
 
-  /// Shares this gates's argument with another gate.
+  /// Shares this gate's argument with another gate.
   ///
-  /// @param[in] arg  Positive or negative index of the argument.
+  /// @param[in] index  Positive or negative index of the argument.
   /// @param[in,out] recipient  Another parent for the argument.
-  void ShareArg(int arg, const IGatePtr& recipient) noexcept;
+  void ShareArg(int index, const IGatePtr& recipient) noexcept;
 
   /// Makes all arguments complements of themselves.
   /// This is a helper function to propagate a complement gate
@@ -556,11 +514,11 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// The passed argument index must be
   /// in this gate's arguments container and initialized.
   ///
-  /// @param[in] arg  The positive or negative index of the existing argument.
+  /// @param[in] index  The positive or negative index of the existing argument.
   ///
   /// @warning The parent gate may become empty or one-argument gate,
   ///          which must be handled by the caller.
-  void EraseArg(int arg) noexcept;
+  void EraseArg(int index) noexcept;
 
   /// Clears all the arguments of this gate.
   void EraseAllArgs() noexcept;
@@ -773,7 +731,7 @@ class BooleanGraph {
   /// Mapping to string gate types to enum gate types.
   static const std::map<std::string, Operator> kStringToType_;
 
-  /// Sets the the root gate.
+  /// Sets the root gate.
   /// This function is helpful for preprocessing.
   ///
   /// @param[in] gate  Replacement root gate.
@@ -946,6 +904,8 @@ class BooleanGraph {
 /// @param[in,out] os  Output stream.
 /// @param[in] constant  The constant to be printed.
 ///
+/// @returns The provided output stream in its original state.
+///
 /// @warning Visit information may get changed.
 std::ostream& operator<<(std::ostream& os,
                          const std::shared_ptr<Constant>& constant);
@@ -954,6 +914,8 @@ std::ostream& operator<<(std::ostream& os,
 ///
 /// @param[in,out] os  Output stream.
 /// @param[in] variable  The basic event to be printed.
+///
+/// @returns The provided output stream in its original state.
 ///
 /// @warning Visit information may get changed.
 std::ostream& operator<<(std::ostream& os,
@@ -966,6 +928,8 @@ std::ostream& operator<<(std::ostream& os,
 /// @param[in,out] os  Output stream.
 /// @param[in] gate  The gate to be printed.
 ///
+/// @returns The provided output stream in its original state.
+///
 /// @warning Visit information may get changed.
 std::ostream& operator<<(std::ostream& os, const std::shared_ptr<IGate>& gate);
 
@@ -975,6 +939,8 @@ std::ostream& operator<<(std::ostream& os, const std::shared_ptr<IGate>& gate);
 ///
 /// @param[in,out] os  Output stream.
 /// @param[in] ft  The fault tree to be printed.
+///
+/// @returns The provided output stream in its original state.
 ///
 /// @warning Visits of nodes must be clean.
 ///          Visit information may get changed.

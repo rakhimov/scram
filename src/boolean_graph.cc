@@ -24,8 +24,6 @@
 
 #include "boolean_graph.h"
 
-#include <utility>
-
 #include "event.h"
 #include "logger.h"
 
@@ -82,84 +80,81 @@ std::shared_ptr<IGate> IGate::Clone() noexcept {
   return clone;
 }
 
-void IGate::AddArg(int arg, const IGatePtr& gate) noexcept {
-  assert(arg != 0);
-  assert(std::abs(arg) == gate->index());
-  assert(state_ == kNormalState);
-  assert((type_ == kNotGate || type_ == kNullGate) ? args_.empty() : true);
-  assert(type_ == kXorGate ? args_.size() < 2 : true);
+/// @def ADD_ARG_ASSERT(index, ptr)
+/// Common assertions upon addition of a new argument to a gate.
+#define ADD_ARG_ASSERT(index, ptr)                                          \
+  assert(index != 0);                                                       \
+  assert(std::abs(index) == ptr->index());                                  \
+  assert(state_ == kNormalState);                                           \
+  assert((type_ == kNotGate || type_ == kNullGate) ? args_.empty() : true); \
+  assert(type_ == kXorGate ? args_.size() < 2 : true)
 
-  if (args_.count(arg)) return IGate::ProcessDuplicateArg(arg);
-  if (args_.count(-arg)) return IGate::ProcessComplementArg(arg);
+/// @def ADD_SPECIAL_ARG(index)
+/// Short-circuit handling of duplicate and complement arguments.
+#define ADD_SPECIAL_ARG(index)                                      \
+  if (args_.count(index)) return IGate::ProcessDuplicateArg(index); \
+  if (args_.count(-index)) return IGate::ProcessComplementArg(index)
 
-  args_.insert(arg);
-  gate_args_.emplace(arg, gate);
+void IGate::AddArg(int index, const IGatePtr& gate) noexcept {
+  ADD_ARG_ASSERT(index, gate);
+  ADD_SPECIAL_ARG(index);
+  args_.insert(index);
+  gate_args_.emplace(index, gate);
   gate->parents_.emplace(Node::index(), shared_from_this());
 }
 
-void IGate::AddArg(int arg, const VariablePtr& variable) noexcept {
-  assert(arg != 0);
-  assert(std::abs(arg) == variable->index());
-  assert(state_ == kNormalState);
-  assert((type_ == kNotGate || type_ == kNullGate) ? args_.empty() : true);
-  assert(type_ == kXorGate ? args_.size() < 2 : true);
-
-  if (args_.count(arg)) return IGate::ProcessDuplicateArg(arg);
-  if (args_.count(-arg)) return IGate::ProcessComplementArg(arg);
-
-  args_.insert(arg);
-  variable_args_.emplace(arg, variable);
+void IGate::AddArg(int index, const VariablePtr& variable) noexcept {
+  ADD_ARG_ASSERT(index, variable);
+  ADD_SPECIAL_ARG(index);
+  args_.insert(index);
+  variable_args_.emplace(index, variable);
   variable->parents_.emplace(Node::index(), shared_from_this());
 }
 
-void IGate::AddArg(int arg, const ConstantPtr& constant) noexcept {
-  assert(arg != 0);
-  assert(std::abs(arg) == constant->index());
-  assert(state_ == kNormalState);
-  assert((type_ == kNotGate || type_ == kNullGate) ? args_.empty() : true);
-  assert(type_ == kXorGate ? args_.size() < 2 : true);
-
-  if (args_.count(arg)) return IGate::ProcessDuplicateArg(arg);
-  if (args_.count(-arg)) return IGate::ProcessComplementArg(arg);
-
-  args_.insert(arg);
-  constant_args_.emplace(arg, constant);
+void IGate::AddArg(int index, const ConstantPtr& constant) noexcept {
+  ADD_ARG_ASSERT(index, constant);
+  ADD_SPECIAL_ARG(index);
+  args_.insert(index);
+  constant_args_.emplace(index, constant);
   constant->parents_.emplace(Node::index(), shared_from_this());
 }
 
-void IGate::TransferArg(int arg, const IGatePtr& recipient) noexcept {
-  assert(arg != 0);
-  assert(args_.count(arg));
-  args_.erase(arg);
+#undef ADD_ARG_ASSERT
+#undef ADD_SPECIAL_ARG
+
+void IGate::TransferArg(int index, const IGatePtr& recipient) noexcept {
+  assert(index != 0);
+  assert(args_.count(index));
+  args_.erase(index);
   NodePtr node;
-  if (gate_args_.count(arg)) {
-    node = gate_args_.find(arg)->second;
-    recipient->AddArg(arg, gate_args_.find(arg)->second);
-    gate_args_.erase(arg);
-  } else if (variable_args_.count(arg)) {
-    node = variable_args_.find(arg)->second;
-    recipient->AddArg(arg, variable_args_.find(arg)->second);
-    variable_args_.erase(arg);
+  if (gate_args_.count(index)) {
+    node = gate_args_.find(index)->second;
+    recipient->AddArg(index, gate_args_.find(index)->second);
+    gate_args_.erase(index);
+  } else if (variable_args_.count(index)) {
+    node = variable_args_.find(index)->second;
+    recipient->AddArg(index, variable_args_.find(index)->second);
+    variable_args_.erase(index);
   } else {
-    assert(constant_args_.count(arg));
-    node = constant_args_.find(arg)->second;
-    recipient->AddArg(arg, constant_args_.find(arg)->second);
-    constant_args_.erase(arg);
+    assert(constant_args_.count(index));
+    node = constant_args_.find(index)->second;
+    recipient->AddArg(index, constant_args_.find(index)->second);
+    constant_args_.erase(index);
   }
   assert(node->parents_.count(Node::index()));
   node->parents_.erase(Node::index());
 }
 
-void IGate::ShareArg(int arg, const IGatePtr& recipient) noexcept {
-  assert(arg != 0);
-  assert(args_.count(arg));
-  if (gate_args_.count(arg)) {
-    recipient->AddArg(arg, gate_args_.find(arg)->second);
-  } else if (variable_args_.count(arg)) {
-    recipient->AddArg(arg, variable_args_.find(arg)->second);
+void IGate::ShareArg(int index, const IGatePtr& recipient) noexcept {
+  assert(index != 0);
+  assert(args_.count(index));
+  if (gate_args_.count(index)) {
+    recipient->AddArg(index, gate_args_.find(index)->second);
+  } else if (variable_args_.count(index)) {
+    recipient->AddArg(index, variable_args_.find(index)->second);
   } else {
-    assert(constant_args_.count(arg));
-    recipient->AddArg(arg, constant_args_.find(arg)->second);
+    assert(constant_args_.count(index));
+    recipient->AddArg(index, constant_args_.find(index)->second);
   }
 }
 
@@ -240,34 +235,34 @@ void IGate::JoinNullGate(int index) noexcept {
   assert(null_gate->type_ == kNullGate);
   assert(null_gate->args_.size() == 1);
 
-  int arg = *null_gate->args_.begin();
-  arg *= index > 0 ? 1 : -1;  // Carry the parent's sign.
+  int arg_index = *null_gate->args_.begin();
+  arg_index *= index > 0 ? 1 : -1;  // Carry the parent's sign.
 
   if (!null_gate->gate_args_.empty()) {
-    IGate::AddArg(arg, null_gate->gate_args_.begin()->second);
+    IGate::AddArg(arg_index, null_gate->gate_args_.begin()->second);
   } else if (!null_gate->variable_args_.empty()) {
-    IGate::AddArg(arg, null_gate->variable_args_.begin()->second);
+    IGate::AddArg(arg_index, null_gate->variable_args_.begin()->second);
   } else {
     assert(!null_gate->constant_args_.empty());
-    IGate::AddArg(arg, null_gate->constant_args_.begin()->second);
+    IGate::AddArg(arg_index, null_gate->constant_args_.begin()->second);
   }
 }
 
-void IGate::EraseArg(int arg) noexcept {
-  assert(arg != 0);
-  assert(args_.count(arg));
-  args_.erase(arg);
+void IGate::EraseArg(int index) noexcept {
+  assert(index != 0);
+  assert(args_.count(index));
+  args_.erase(index);
   NodePtr node;
-  if (gate_args_.count(arg)) {
-    node = gate_args_.find(arg)->second;
-    gate_args_.erase(arg);
-  } else if (variable_args_.count(arg)) {
-    node = variable_args_.find(arg)->second;
-    variable_args_.erase(arg);
+  if (gate_args_.count(index)) {
+    node = gate_args_.find(index)->second;
+    gate_args_.erase(index);
+  } else if (variable_args_.count(index)) {
+    node = variable_args_.find(index)->second;
+    variable_args_.erase(index);
   } else {
-    assert(constant_args_.count(arg));
-    node = constant_args_.find(arg)->second;
-    constant_args_.erase(arg);
+    assert(constant_args_.count(index));
+    node = constant_args_.find(index)->second;
+    constant_args_.erase(index);
   }
   assert(node->parents_.count(Node::index()));
   node->parents_.erase(Node::index());
