@@ -2187,6 +2187,10 @@ bool Preprocessor::ProcessDecompositionAncestors(
         assert(!clones->count(gate->index()));
         IGatePtr clone = gate->Clone();
         clone->opti_value(node->index());  // New ancestor.
+        clone->Visit(gate->EnterTime());
+        clone->Visit(gate->ExitTime());
+        clone->Visit(gate->LastVisit());
+
         clones->emplace(gate->index(), clone);
         to_swap.emplace_back(arg.first, clone);
         gate = clone;  // Use the clone for further processing!
