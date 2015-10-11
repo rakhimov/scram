@@ -287,6 +287,7 @@ void IGate::EraseAllArgs() noexcept {
 void IGate::ProcessDuplicateArg(int index) noexcept {
   assert(type_ != kNotGate && type_ != kNullGate);
   assert(args_.count(index));
+  LOG(DEBUG5) << "Handling duplicate argument for G" << Node::index();
   if (type_ == kAtleastGate) {
     LOG(DEBUG5) << "Handling special case of K/N duplicate argument!";
     // This is a very special handling of K/N duplicates.
@@ -326,6 +327,7 @@ void IGate::ProcessDuplicateArg(int index) noexcept {
       clone_one->type(kAndGate);
   }
   if (args_.size() == 1) {
+    LOG(DEBUG5) << "Handling the case of one-arg duplicate argument!";
     switch (type_) {
       case kAndGate:
       case kOrGate:
@@ -348,6 +350,7 @@ void IGate::ProcessDuplicateArg(int index) noexcept {
 void IGate::ProcessComplementArg(int index) noexcept {
   assert(type_ != kNotGate && type_ != kNullGate);
   assert(args_.count(-index));
+  LOG(DEBUG5) << "Handling complement argument for G" << Node::index();
   switch (type_) {
     case kNorGate:
     case kAndGate:
@@ -359,10 +362,15 @@ void IGate::ProcessComplementArg(int index) noexcept {
       IGate::MakeUnity();
       break;
     case kAtleastGate:
+      LOG(DEBUG5) << "Handling special case of K/N complement argument!";
+      assert(vote_number_ > 1 && "Vote number is wrong.");
+      assert((args_.size() + 1) > vote_number_ && "Malformed K/N gate.");
+      // @(k, [x, x', y_i]) = @(k-1, [y_i])
       IGate::EraseArg(-index);
-      assert(vote_number_ > 1);
       --vote_number_;
-      if (vote_number_ == 1) {
+      if (args_.size() == 1) {
+        type_ = kNullGate;
+      } else if (vote_number_ == 1) {
         type_ = kOrGate;
       } else if (vote_number_ == args_.size()) {
         type_ = kAndGate;
@@ -598,20 +606,42 @@ void BooleanGraph::ClearNodeCounts(const IGatePtr& gate) noexcept {
   assert(gate->constant_args().empty());
 }
 
+void BooleanGraph::TestGateStructure(const IGatePtr& gate) noexcept {
+  assert(gate->state() == kNormalState && "Constant gates are not clear!");
+  switch (gate->type()) {
+    case kNullGate:
+    case kNotGate:
+      assert(gate->args().size() == 1 && "Malformed one-arg gate!");
+      break;
+    case kXorGate:
+      assert(gate->args().size() == 2 && "Malformed XOR gate!");
+      break;
+    case kAtleastGate:
+      assert(gate->vote_number() > 1 && "K/N has wrong K!");
+      assert(gate->args().size() > gate->vote_number() && "K/N has wrong N!");
+      break;
+    default:
+      assert(gate->args().size() > 1 && "Missing arguments!");
+  }
+  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+    BooleanGraph::TestGateStructure(arg.second);
+  }
+}
+
 void BooleanGraph::TestGateMarks(const IGatePtr& gate) noexcept {
-  assert(!gate->mark());
+  assert(!gate->mark() && "Found 'unclear' gate.");
   for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
     BooleanGraph::TestGateMarks(arg.second);
   }
 }
 
 void BooleanGraph::TestOptiValues(const IGatePtr& gate) noexcept {
-  assert(!gate->opti_value());
+  assert(!gate->opti_value() && "Found 'unclear' opti-value of a gate.");
   for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
     BooleanGraph::TestOptiValues(arg.second);
   }
   for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
-    assert(!arg.second->opti_value());
+    assert(!arg.second->opti_value() && "Found 'unclear' opti-value of a var.");
   }
   assert(gate->constant_args().empty());
 }

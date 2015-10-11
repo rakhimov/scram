@@ -146,7 +146,8 @@ void Preprocessor::PhaseTwo() noexcept {
 
   LOG(DEBUG3) << "Coalescing gates...";
   graph_changed = true;
-  while (graph_changed) graph_changed = Preprocessor::CoalesceGates(false);
+  while (graph_changed && !Preprocessor::CheckRootGate())
+    graph_changed = Preprocessor::CoalesceGates(/*common=*/false);
   LOG(DEBUG3) << "Gate coalescence is done!";
 
   if (Preprocessor::CheckRootGate()) return;
@@ -192,7 +193,8 @@ void Preprocessor::PhaseFour() noexcept {
 void Preprocessor::PhaseFive() noexcept {
   LOG(DEBUG3) << "Coalescing gates...";  // Make layered.
   bool graph_changed = true;
-  while (graph_changed) graph_changed = Preprocessor::CoalesceGates(true);
+  while (graph_changed && !Preprocessor::CheckRootGate())
+    graph_changed = Preprocessor::CoalesceGates(/*common=*/true);
   LOG(DEBUG3) << "Gate coalescence is done!";
 
   if (Preprocessor::CheckRootGate()) return;
@@ -201,7 +203,8 @@ void Preprocessor::PhaseFive() noexcept {
 
   LOG(DEBUG3) << "Coalescing gates...";  // Final coalescing before analysis.
   graph_changed = true;
-  while (graph_changed) graph_changed = Preprocessor::CoalesceGates(true);
+  while (graph_changed && !Preprocessor::CheckRootGate())
+    graph_changed = Preprocessor::CoalesceGates(/*common=*/true);
   LOG(DEBUG3) << "Gate coalescence is done!";
 }
 
@@ -407,6 +410,7 @@ void Preprocessor::PropagateNullGate(const IGatePtr& gate) noexcept {
 
 void Preprocessor::ClearConstGates() noexcept {
   graph_->ClearGateMarks();  // New gates may get created without marks!
+  BLOG(DEBUG5, !const_gates_.empty()) << "Got CONST gates to clear!";
   for (const IGateWeakPtr& ptr : const_gates_) {
     if (ptr.expired()) continue;
     Preprocessor::PropagateConstGate(ptr.lock());
@@ -416,6 +420,7 @@ void Preprocessor::ClearConstGates() noexcept {
 
 void Preprocessor::ClearNullGates() noexcept {
   graph_->ClearGateMarks();  // New gates may get created without marks!
+  BLOG(DEBUG5, !null_gates_.empty()) << "Got NULL gates to clear!";
   for (const IGateWeakPtr& ptr : null_gates_) {
     if (ptr.expired()) continue;
     Preprocessor::PropagateNullGate(ptr.lock());
@@ -481,9 +486,8 @@ void Preprocessor::NormalizeGate(const IGatePtr& gate, bool full) noexcept {
   assert(gate->state() == kNormalState);
   assert(!gate->args().empty());
   // Depth-first traversal before the arguments may get changed.
-  std::unordered_map<int, IGatePtr>::const_iterator it;
-  for (it = gate->gate_args().begin(); it != gate->gate_args().end(); ++it) {
-    Preprocessor::NormalizeGate(it->second, full);
+  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+    Preprocessor::NormalizeGate(arg.second, full);
   }
 
   switch (gate->type()) {  // Negation is already processed.
@@ -493,12 +497,10 @@ void Preprocessor::NormalizeGate(const IGatePtr& gate, bool full) noexcept {
       null_gates_.push_back(gate);  // Register for removal.
       break;
     case kNorGate:
-    case kOrGate:
       assert(gate->args().size() > 1);
       gate->type(kOrGate);
       break;
     case kNandGate:
-    case kAndGate:
       assert(gate->args().size() > 1);
       gate->type(kAndGate);
       break;
@@ -516,6 +518,9 @@ void Preprocessor::NormalizeGate(const IGatePtr& gate, bool full) noexcept {
     case kNullGate:
       null_gates_.push_back(gate);  // Register for removal.
       break;
+    default:  // Already normal gates.
+      assert(gate->type() == kAndGate || gate->type() == kOrGate);
+      assert(gate->args().size() > 1);
   }
 }
 

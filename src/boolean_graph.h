@@ -873,6 +873,13 @@ class BooleanGraph {
   /// @note Gate marks are used for linear time traversal.
   void ClearNodeCounts(const IGatePtr& gate) noexcept;
 
+  /// Helper function to find malformed gates.
+  ///
+  /// @param[in] gate  The starting gate to traverse.
+  ///
+  /// @note This functions is not linear and for debugging only.
+  void TestGateStructure(const IGatePtr& gate) noexcept;
+
   /// Helper function to find discontinuous gate marking.
   /// Assertion fails if any gate is still marked.
   ///
