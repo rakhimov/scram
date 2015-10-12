@@ -2050,7 +2050,10 @@ void Preprocessor::ProcessFailureDestinations(
         break;
       default:
         IGatePtr new_gate(new IGate(kOrGate));
-        if (target->IsModule()) new_gate->TurnModule();
+        if (target->IsModule()) {  // Transfer modularity.
+          target->DestroyModule();
+          new_gate->TurnModule();
+        }
         if (target == graph_->root()) {
           graph_->root(new_gate);
         } else {
