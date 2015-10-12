@@ -138,6 +138,10 @@ void Preprocessor::PhaseTwo() noexcept {
 
   if (Preprocessor::CheckRootGate()) return;
 
+  LOG(DEBUG3) << "Detecting modules...";
+  Preprocessor::DetectModules();
+  LOG(DEBUG3) << "Finished module detection!";
+
   CLOCK(optim_time);
   LOG(DEBUG3) << "Boolean optimization...";
   Preprocessor::BooleanOptimization();
@@ -151,6 +155,10 @@ void Preprocessor::PhaseTwo() noexcept {
   LOG(DEBUG3) << "Finished the Decomposition in " << DUR(decom_time);
 
   if (Preprocessor::CheckRootGate()) return;
+
+  LOG(DEBUG3) << "Detecting modules...";
+  Preprocessor::DetectModules();
+  LOG(DEBUG3) << "Finished module detection!";
 
   LOG(DEBUG3) << "Coalescing gates...";
   graph_changed = true;
@@ -218,10 +226,13 @@ void Preprocessor::PhaseFive() noexcept {
 
 namespace {  // Helper functions for all preprocessing algorithms.
 
-/// @param[in] num  Signed integer or index.
+/// @param[in] num  Signed non-zero integer or index.
 ///
 /// @returns -1 for negative numbers and 1 for positive ones.
-int GetSign(int num) noexcept { return num > 0 ? 1 : -1; }
+int GetSign(int num) noexcept {
+  assert(num);
+  return num > 0 ? 1 : -1;
+}
 
 /// Detects overlap in ranges.
 ///
@@ -237,11 +248,46 @@ bool DetectOverlap(int a_min, int a_max, int b_min, int b_max) noexcept {
   return std::max(a_min, b_min) <= std::min(a_max, b_max);
 }
 
+/// Checks if a node within a graph enter and exit times.
+///
+/// @param[in] node  The node to be tested.
+/// @param[in] enter_time  The enter time of the root gate of the graph.
+/// @param[in] exit_time  The exit time of the root gate of the graph.
+///
+/// @returns true if the node within the graph visit times.
+bool IsNodeWithinGraph(const std::shared_ptr<Node>& node, int enter_time,
+                       int exit_time) noexcept {
+  assert(enter_time > 0);
+  assert(exit_time > enter_time);
+  assert(node->EnterTime() >= 0);
+  assert(node->LastVisit() >= node->EnterTime());
+  return node->EnterTime() > enter_time && node->LastVisit() < exit_time;
+}
+
+/// Checks if a subgraph with a root gate is within a subgraph.
+/// The positive result means
+/// that all nodes of the subgraph is contained within the main graph.
+///
+/// @param[in] root  The root gate of the subgraph.
+/// @param[in] enter_time  The enter time of the root gate of the graph.
+/// @param[in] exit_time  The exit time of the root gate of the graph.
+///
+/// @returns true if the subgraph within the graph visit times.
+bool IsSubgraphWithinGraph(const std::shared_ptr<IGate>& root, int enter_time,
+                           int exit_time) noexcept {
+  assert(enter_time > 0);
+  assert(exit_time > enter_time);
+  assert(root->min_time() > 0);
+  assert(root->max_time() > root->min_time());
+  return root->min_time() > enter_time && root->max_time() < exit_time;
+}
+
 }  // namespace
 
 bool Preprocessor::CheckRootGate() noexcept {
   IGatePtr root = graph_->root();
   if (root->state() != kNormalState) {  // The root gate has become constant.
+    LOG(DEBUG3) << "The root gate has become constant!";
     if (root_sign_ < 0) {
       State orig_state = root->state();
       root = IGatePtr(new IGate(kNullGate));
@@ -257,6 +303,7 @@ bool Preprocessor::CheckRootGate() noexcept {
     return true;  // No more processing is needed.
   }
   if (root->type() == kNullGate) {  // Special case of preprocessing.
+    LOG(DEBUG3) << "The root NULL gate is processed!";
     assert(root->args().size() == 1);
     if (!root->gate_args().empty()) {
       int signed_index = root->gate_args().begin()->first;
@@ -265,6 +312,7 @@ bool Preprocessor::CheckRootGate() noexcept {
       assert(root->parents().empty());
       root_sign_ *= GetSign(signed_index);
     } else {
+      LOG(DEBUG4) << "The root NULL gate has only single variable!";
       assert(root->variable_args().size() == 1);
       if (root_sign_ < 0) root->InvertArgs();
       root_sign_ = 1;
@@ -2137,6 +2185,10 @@ bool Preprocessor::ProcessDecompositionCommonNode(
                    });
   if (it == node->parents().end()) return false;  // No setups possible.
 
+  assert(2 > std::count_if(node->parents().begin(), node->parents().end(),
+                           [](const std::pair<int, IGateWeakPtr>& member) {
+               return member.second.lock()->IsModule();
+             }));
   // Mark parents and ancestors.
   for (const std::pair<int, IGateWeakPtr>& member : node->parents()) {
     assert(!member.second.expired());
@@ -2165,12 +2217,12 @@ bool Preprocessor::ProcessDecompositionCommonNode(
 
 void Preprocessor::MarkDecompositionDestinations(const IGatePtr& parent,
                                                  int index) noexcept {
+  if (parent->IsModule()) return;  // Limited with independent subgraphs.
   for (const std::pair<int, IGateWeakPtr>& member : parent->parents()) {
     assert(!member.second.expired());
     IGatePtr ancestor = member.second.lock();
     if (ancestor->opti_value() == index) continue;  // Already marked.
     ancestor->opti_value(index);
-    if (ancestor->IsModule()) continue;  // Limited with independent subgraphs.
     Preprocessor::MarkDecompositionDestinations(ancestor, index);
   }
 }
@@ -2202,12 +2254,11 @@ bool Preprocessor::ProcessDecompositionDestinations(
       default:
         assert(false && "Complex gates cannot be decomposition destinations.");
     }
-    int sign = parent->GetArgSign(node);
-    if (sign < 0) state = !state;
+    if (parent->GetArgSign(node) < 0) state = !state;
     std::unordered_map<int, IGatePtr>& clones =
         state ? clones_true : clones_false;
     std::pair<int, int> visit_bounds{parent->EnterTime(), parent->ExitTime()};
-    assert(!parent->mark());  // Clean subgraph.
+    assert(!parent->mark() && "Subgraph is not clean!");
     bool ret = Preprocessor::ProcessDecompositionAncestors(parent, node, state,
                                                            visit_bounds,
                                                            &clones);
@@ -2323,9 +2374,19 @@ int Preprocessor::TopologicalOrder(const IGatePtr& root, int order) noexcept {
   return order;
 }
 
+/// @def SANITY_ASSERT
+/// A collection of sanity checks between preprocessing phases.
+#define SANITY_ASSERT                                                          \
+  assert(graph_->root() && "Corrupted pointer to the root gate.");             \
+  assert(graph_->root()->parents().empty() && "Root can't have parents.");     \
+  assert(!(graph_->coherent() && (root_sign_ != 1)));                          \
+  assert(!(graph_->coherent() && (graph_->root()->state() != kNormalState)) && \
+         "Impossible state of the root gate in coherent graphs.");             \
+  assert(const_gates_.empty() && "Const gate cleanup contracts are broken!");  \
+  assert(null_gates_.empty() && "Null gate cleanup contracts are broken!")
+
 void CustomPreprocessor<Mocus>::Run() noexcept {
-  assert(graph_->root());
-  assert(graph_->root()->parents().empty());
+  SANITY_ASSERT;
   assert(!graph_->root()->mark());
 
   CLOCK(time_1);
@@ -2338,6 +2399,7 @@ void CustomPreprocessor<Mocus>::Run() noexcept {
   LOG(DEBUG2) << "Preprocessing Phase II...";
   Preprocessor::PhaseTwo();
   LOG(DEBUG2) << "Finished Preprocessing Phase II in " << DUR(time_2);
+  SANITY_ASSERT;
   if (Preprocessor::CheckRootGate()) return;
 
   if (!graph_->normal()) {
@@ -2345,6 +2407,7 @@ void CustomPreprocessor<Mocus>::Run() noexcept {
     LOG(DEBUG2) << "Preprocessing Phase III...";
     Preprocessor::PhaseThree();
     LOG(DEBUG2) << "Finished Preprocessing Phase III in " << DUR(time_3);
+    SANITY_ASSERT;
     if (Preprocessor::CheckRootGate()) return;
   }
 
@@ -2353,6 +2416,7 @@ void CustomPreprocessor<Mocus>::Run() noexcept {
     LOG(DEBUG2) << "Preprocessing Phase IV...";
     Preprocessor::PhaseFour();
     LOG(DEBUG2) << "Finished Preprocessing Phase IV in " << DUR(time_4);
+    SANITY_ASSERT;
     if (Preprocessor::CheckRootGate()) return;
   }
 
@@ -2361,16 +2425,14 @@ void CustomPreprocessor<Mocus>::Run() noexcept {
   Preprocessor::PhaseFive();
   LOG(DEBUG2) << "Finished Preprocessing Phase V in " << DUR(time_5);
 
+  SANITY_ASSERT;
   Preprocessor::CheckRootGate();  // To cleanup.
-
-  assert(const_gates_.empty());
-  assert(null_gates_.empty());
+  SANITY_ASSERT;
   assert(graph_->normal());
 }
 
 void CustomPreprocessor<Bdd>::Run() noexcept {
-  assert(graph_->root());
-  assert(graph_->root()->parents().empty());
+  SANITY_ASSERT;
   assert(!graph_->root()->mark());
 
   CLOCK(time_1);
@@ -2383,17 +2445,20 @@ void CustomPreprocessor<Bdd>::Run() noexcept {
   LOG(DEBUG2) << "Preprocessing Phase II...";
   Preprocessor::PhaseTwo();
   LOG(DEBUG2) << "Finished Preprocessing Phase II in " << DUR(time_2);
+  SANITY_ASSERT;
   if (Preprocessor::CheckRootGate()) return;
 
-  /// @todo Normalization may require the same ordering as for BDD.
   if (!graph_->normal()) {
     CLOCK(time_3);
     LOG(DEBUG2) << "Preprocessing Phase III...";
     Preprocessor::PhaseThree();
     LOG(DEBUG2) << "Finished Preprocessing Phase III in " << DUR(time_3);
+    SANITY_ASSERT;
     if (Preprocessor::CheckRootGate()) return;
   }
   Preprocessor::AssignOrder();
 }
+
+#undef SANITY_ASSERT
 
 }  // namespace scram

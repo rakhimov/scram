@@ -25,7 +25,6 @@
 #include <map>
 #include <memory>
 #include <set>
-#include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -459,40 +458,6 @@ class Preprocessor {
   ///
   /// @returns The final time of traversing.
   int AssignTiming(int time, const IGatePtr& gate) noexcept;
-
-  /// Checks if a node within a graph enter and exit times.
-  ///
-  /// @param[in] node  The node to be tested.
-  /// @param[in] enter_time  The enter time of the root gate of the graph.
-  /// @param[in] exit_time  The exit time of the root gate of the graph.
-  ///
-  /// @returns true if the node within the graph visit times.
-  bool IsNodeWithinGraph(const NodePtr& node, int enter_time,
-                         int exit_time) noexcept {
-    assert(enter_time > 0);
-    assert(exit_time > enter_time);
-    assert(node->EnterTime() >= 0);
-    assert(node->LastVisit() >= node->EnterTime());
-    return node->EnterTime() > enter_time && node->LastVisit() < exit_time;
-  }
-
-  /// Checks if a subgraph with a root gate is within a subgraph.
-  /// The positive result means
-  /// that all nodes of the subgraph is contained within the main graph.
-  ///
-  /// @param[in] root  The root gate of the subgraph.
-  /// @param[in] enter_time  The enter time of the root gate of the graph.
-  /// @param[in] exit_time  The exit time of the root gate of the graph.
-  ///
-  /// @returns true if the subgraph within the graph visit times.
-  bool IsSubgraphWithinGraph(const IGatePtr& root, int enter_time,
-                             int exit_time) noexcept {
-    assert(enter_time > 0);
-    assert(exit_time > enter_time);
-    assert(root->min_time() > 0);
-    assert(root->max_time() > root->min_time());
-    return root->min_time() > enter_time && root->max_time() < exit_time;
-  }
 
   /// Determines modules from original gates
   /// that have been already timed.
@@ -1021,16 +986,20 @@ class Preprocessor {
       const std::weak_ptr<Node>& common_node) noexcept;
 
   /// Marks destinations for common node decomposition.
-  /// The optimization value of the ancestors of the common node
+  /// The optimization value of some ancestors of the common node
   /// is marked with the index of the common node.
+  /// Parents of the common node may not get marked
+  /// unless they are parents of parents.
   ///
   /// @param[in] parent  The parent or ancestor of the common node.
   /// @param[in] index  The positive index of the common node.
   ///
-  /// @warning The gate optimization value fields are changed.
-  ///          It is expected that no ancestor gate has the specific opti-value
-  ///          before the call of this function.
-  ///          Otherwise, the logic of the algorithm is messed up and invalid.
+  /// @pre No ancestor gate has 'dirty' opti-value with the index
+  ///      before the call of this function.
+  ///      Otherwise, the logic of the algorithm is messed up and invalid.
+  /// @pre Marking is limited by a single root module.
+  ///
+  /// @post The ancestor gate optimization values are set to the index.
   void MarkDecompositionDestinations(const IGatePtr& parent,
                                      int index) noexcept;
 

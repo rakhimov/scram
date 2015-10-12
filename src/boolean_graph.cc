@@ -53,7 +53,7 @@ IGate::IGate(const Operator& type) noexcept
     : Node(),
       type_(type),
       state_(kNormalState),
-      vote_number_(-1),
+      vote_number_(0),
       mark_(false),
       descendant_(0),
       min_time_(0),
@@ -83,12 +83,13 @@ std::shared_ptr<IGate> IGate::Clone() noexcept {
 
 /// @def ADD_ARG_ASSERT(index, ptr)
 /// Common assertions upon addition of a new argument to a gate.
-#define ADD_ARG_ASSERT(index, ptr)                                          \
-  assert(index != 0);                                                       \
-  assert(std::abs(index) == ptr->index());                                  \
-  assert(state_ == kNormalState);                                           \
-  assert((type_ == kNotGate || type_ == kNullGate) ? args_.empty() : true); \
-  assert(type_ == kXorGate ? args_.size() < 2 : true)
+#define ADD_ARG_ASSERT(index, ptr)                                        \
+  assert(index != 0);                                                     \
+  assert(std::abs(index) == ptr->index());                                \
+  assert(state_ == kNormalState);                                         \
+  assert(!((type_ == kNotGate || type_ == kNullGate) && !args_.empty())); \
+  assert(!(type_ == kXorGate && args_.size() > 1));                       \
+  assert(vote_number_ >= 0)
 
 /// @def ADD_SPECIAL_ARG(index)
 /// Short-circuit handling of duplicate and complement arguments.
