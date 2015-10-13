@@ -99,10 +99,11 @@ std::shared_ptr<Vertex> Zbdd::ConvertBdd(const VertexPtr& vertex,
   }
   SetNodePtr& in_table =
       unique_table_[{zbdd->index(), zbdd->high()->id(), zbdd->low()->id()}];
-  if (in_table) return in_table;
-  in_table = zbdd;
-  zbdd->id(set_id_++);
-  result = zbdd;
+  if (!in_table) {
+    in_table = zbdd;
+    zbdd->id(set_id_++);
+  }
+  result = in_table;
   return result;
 }
 
