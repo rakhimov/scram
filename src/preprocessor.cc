@@ -1848,7 +1848,7 @@ void Preprocessor::GatherCommonNodes(
   }
 }
 
-template<class N>
+template<typename N>
 void Preprocessor::ProcessCommonNode(
     const std::weak_ptr<N>& common_node) noexcept {
   assert(const_gates_.empty());
@@ -2084,7 +2084,7 @@ void Preprocessor::ProcessRedundantParents(
   }
 }
 
-template<class N>
+template<typename N>
 void Preprocessor::ProcessFailureDestinations(
     const std::shared_ptr<N>& node,
     const std::map<int, IGateWeakPtr>& destinations) noexcept {

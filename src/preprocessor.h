@@ -832,7 +832,7 @@ class Preprocessor {
   /// @tparam N  Non-Node, concrete (i.e. IGate, etc.) type.
   ///
   /// @param[in] common_node  A node with more than one parent.
-  template<class N>
+  template<typename N>
   void ProcessCommonNode(const std::weak_ptr<N>& common_node) noexcept;
 
   /// Marks ancestor gates true.
@@ -932,7 +932,7 @@ class Preprocessor {
   ///
   /// @warning This function will replace the root gate of the graph
   ///          if it is the failure destination.
-  template<class N>
+  template<typename N>
   void ProcessFailureDestinations(
       const std::shared_ptr<N>& node,
       const std::map<int, IGateWeakPtr>& destinations) noexcept;

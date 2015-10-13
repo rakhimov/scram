@@ -40,7 +40,7 @@ TEST(EventTest, Id) {
 TEST(FormulaTest, VoteNumber) {
   FormulaPtr top(new Formula("and"));
   EXPECT_EQ("and", top->type());
-  // Setting a vote number for non-Vote fromula is an error.
+  // Setting a vote number for non-Vote formula is an error.
   EXPECT_THROW(top->vote_number(2), LogicError);
   // Resetting to VOTE formula.
   top = FormulaPtr(new Formula("atleast"));

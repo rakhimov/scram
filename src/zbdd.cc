@@ -41,7 +41,7 @@ Zbdd::Zbdd(const Bdd* bdd, const Settings& settings) noexcept
   LOG(DEBUG2) << "Created ZBDD from BDD in " << DUR(init_time);
 
   Zbdd::ClearMarks(root_);
-  long int number = Zbdd::CountCutSets(root_);
+  int64_t number = Zbdd::CountCutSets(root_);
   LOG(DEBUG3) << "There are " << number << " cut sets in total.";
   Zbdd::ClearMarks(root_);
 }
@@ -58,7 +58,7 @@ void Zbdd::Analyze() noexcept {
   LOG(DEBUG4) << "# of ZBDD nodes created: " << set_id_ - 1;
   LOG(DEBUG4) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);
   Zbdd::ClearMarks(root_);
-  long int number = Zbdd::CountCutSets(root_);
+  int64_t number = Zbdd::CountCutSets(root_);
   Zbdd::ClearMarks(root_);
   LOG(DEBUG3) << "There are " << number << " cut sets in total.";
 
@@ -239,7 +239,7 @@ void Zbdd::ClearMarks(const VertexPtr& vertex) noexcept {
   Zbdd::ClearMarks(node->low());
 }
 
-long int Zbdd::CountCutSets(const VertexPtr& vertex) noexcept {
+int64_t Zbdd::CountCutSets(const VertexPtr& vertex) noexcept {
   if (vertex->terminal()) {
     if (Terminal::Ptr(vertex)->value()) return 1;
     return 0;
@@ -247,7 +247,7 @@ long int Zbdd::CountCutSets(const VertexPtr& vertex) noexcept {
   SetNodePtr node = SetNode::Ptr(vertex);
   if (node->mark()) return node->count();
   node->mark(true);
-  long int multiplier = 1;  // Multiplier of the module.
+  int64_t multiplier = 1;  // Multiplier of the module.
   if (node->module()) {
     VertexPtr module = modules_.find(node->index())->second;
     multiplier = Zbdd::CountCutSets(module);

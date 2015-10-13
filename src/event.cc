@@ -88,30 +88,27 @@ const std::set<std::string> Formula::kSingle_ = {{"not"}, {"null"}};
 
 Formula::Formula(const std::string& type)
       : type_(type),
-        vote_number_(-1),
+        vote_number_(0),
         gather_(true) {}
 
 int Formula::vote_number() const {
-  if (vote_number_ == -1) {
-    std::string msg = "Vote number is not set for this formula.";
-    throw LogicError(msg);
-  }
+  if (!vote_number_) throw LogicError("Vote number is not set.");
   return vote_number_;
 }
 
-void Formula::vote_number(int vnumber) {
+void Formula::vote_number(int number) {
   if (type_ != "atleast") {
     std::string msg = "Vote number can only be defined for ATLEAST operator. "
                       "The operator of this formula is " + type_ + ".";
     throw LogicError(msg);
-  } else if (vnumber < 2) {
+  } else if (number < 2) {
     std::string msg = "Vote number cannot be less than 2.";
     throw InvalidArgument(msg);
-  } else if (vote_number_ != -1) {
+  } else if (vote_number_) {
     std::string msg = "Trying to re-assign a vote number";
     throw LogicError(msg);
   }
-  vote_number_ = vnumber;
+  vote_number_ = number;
 }
 
 void Formula::AddArgument(const HouseEventPtr& house_event) {

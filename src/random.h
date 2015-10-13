@@ -116,12 +116,14 @@ class Random {
 
   /// RNG from a discrete distribution.
   ///
+  /// @tparam T  Type of discrete values.
+  ///
   /// @param[in] values  Discrete values.
   /// @param[in] weights  Weights for the corresponding values.
   ///                     The size must be the same as the values vector size.
   ///
   /// @returns A sample Value from the value vector.
-  template<class T>
+  template<typename T>
   static T DiscreteGenerator(const std::vector<T>& values,
                              const std::vector<double>& weights) noexcept {
     assert(values.size() == weights.size());

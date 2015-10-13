@@ -161,7 +161,6 @@ void IGate::ShareArg(int index, const IGatePtr& recipient) noexcept {
 }
 
 void IGate::InvertArgs() noexcept {
-  std::set<int> args(args_);  // Not to mess the iterator.
   std::set<int> inverted_args;
   for (int index : args_) inverted_args.insert(inverted_args.begin(), -index);
   args_ = std::move(inverted_args);

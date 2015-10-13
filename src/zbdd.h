@@ -21,6 +21,7 @@
 #ifndef SCRAM_SRC_ZBDD_H_
 #define SCRAM_SRC_ZBDD_H_
 
+#include <cstdint>
 #include <utility>
 #include <vector>
 
@@ -37,14 +38,14 @@ class SetNode : public NonTerminal {
   using NonTerminal::NonTerminal;  ///< Constructor with index and order.
 
   /// @returns Whatever count is stored in this node.
-  long int count() const { return count_; }
+  int64_t count() const { return count_; }
 
   /// Stores numerical value for later retrieval.
   /// This is a helper functionality
   /// for counting the number of sets or nodes.
   ///
   /// @param[in] number  A number with a meaning for the caller.
-  void count(long int number) { count_ = number; }
+  void count(int64_t number) { count_ = number; }
 
   /// @returns Cut sets found in the ZBDD represented by this node.
   const std::vector<std::vector<int>>& cut_sets() const { return cut_sets_; }
@@ -67,7 +68,7 @@ class SetNode : public NonTerminal {
 
  private:
   std::vector<std::vector<int>> cut_sets_;  ///< Cut sets of this node.
-  long int count_ = 0;  ///< The number of cut sets, nodes, or anything else.
+  int64_t count_ = 0;  ///< The number of cut sets, nodes, or anything else.
 };
 
 /// @class Zbdd
@@ -161,7 +162,7 @@ class Zbdd {
   /// @returns The number of cut sets in ZBDD.
   ///
   /// @pre SetNode marks are clear (false).
-  long int CountCutSets(const VertexPtr& vertex) noexcept;
+  int64_t CountCutSets(const VertexPtr& vertex) noexcept;
 
   /// Cleans up non-terminal vertex marks
   /// by setting them to "false".

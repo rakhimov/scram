@@ -52,7 +52,7 @@ namespace {
 /// @param[in] num  The number to be converted.
 ///
 /// @returns Formatted string that represents the number.
-template<class T>
+template<typename T>
 inline std::string ToString(T num) {
   std::stringstream ss;
   ss << num;
@@ -75,7 +75,7 @@ inline std::string ToString(double num, int precision) {
 
 void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
                            xmlpp::Document* doc) {
-  if (doc->get_root_node() != 0) throw LogicError("The document is not empty.");
+  if (doc->get_root_node()) throw LogicError("The document is not empty.");
   xmlpp::Node* root = doc->create_root_node("report");
   // Add an information node.
   xmlpp::Element* information = root->add_child("information");

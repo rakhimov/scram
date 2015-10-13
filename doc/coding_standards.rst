@@ -67,11 +67,12 @@ Core C++ Code
 - Prefer "modern C++" (C++11).
   Refer to `C++ Core Guidelines`_ for best practices.
 
-- In definitions of class member functions,
-  prefix all calls of non-virtual member and inherited functions
-  with corresponding class names, i.e., ``ClassName::Foo()``.
-  Use ``this->Foo()`` only for virtual functions to be overridden by design.
-  Use ``Foo()`` only for free functions in current namespace.
+- In definitions of class member functions:
+
+  * Explicitly qualify non-virtual member and inherited function calls
+    with the corresponding class names, i.e., ``ClassName::Foo()``.
+  * Use ``this->Foo()`` for virtual functions to be overridden by design.
+  * Use ``Foo()`` for free functions in current namespace.
 
 - Declare a getter function before a setter function
   for a corresponding member variable.
