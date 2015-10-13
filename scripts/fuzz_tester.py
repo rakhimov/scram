@@ -114,11 +114,13 @@ def main():
         print("Focusing on BDD")
         Config.analysis = ["--bdd"]
 
-    for _ in range(args.num_runs):
+    for i in range(args.num_runs):
         generate_input()
         if call_scram():
             print("SCRAM failed!")
             break
+        if not (i + 1) % 100:
+            print("Finished run #" + str(i + 1))
 
 if __name__ == "__main__":
     main()
