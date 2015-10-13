@@ -35,7 +35,8 @@ Zbdd::Zbdd(const Bdd* bdd, const Settings& settings) noexcept
   CLOCK(init_time);
   LOG(DEBUG2) << "Creating ZBDD from BDD...";
   const Bdd::Function& bdd_root = bdd->root();
-  root_ = Zbdd::ConvertBdd(bdd_root.vertex, bdd_root.complement, bdd);
+  root_ = Zbdd::ConvertBdd(bdd_root.vertex, bdd_root.complement, bdd,
+                           kSettings_.limit_order());
   LOG(DEBUG4) << "# of ZBDD nodes created: " << set_id_ - 1;
   LOG(DEBUG4) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);
   LOG(DEBUG2) << "Created ZBDD from BDD in " << DUR(init_time);
@@ -72,25 +73,35 @@ void Zbdd::Analyze() noexcept {
 
 std::shared_ptr<Vertex> Zbdd::ConvertBdd(const VertexPtr& vertex,
                                          bool complement,
-                                         const Bdd* bdd_graph) noexcept {
+                                         const Bdd* bdd_graph,
+                                         int limit_order) noexcept {
   if (vertex->terminal()) return complement ? kEmpty_ : kBase_;
-  assert(!complement);  // @todo Make it work for non-coherent cases.
+  if (limit_order == 0) return kEmpty_;  // Cut-off on the cut set size.
   int sign = complement ? -1 : 1;
-  VertexPtr& result = ites_[sign * vertex->id()];
+  VertexPtr& result = ites_[{sign * vertex->id(), limit_order}];
   if (result) return result;
   ItePtr ite = Ite::Ptr(vertex);
   SetNodePtr zbdd = std::make_shared<SetNode>(ite->index(), ite->order());
+  int limit_high = limit_order - 1;  // Requested order for the high node.
   if (ite->module()) {  // This is a proxy and not a variable.
     zbdd->module(true);
     const Bdd::Function& module =
         bdd_graph->gates().find(ite->index())->second;
-    modules_.emplace(
-        ite->index(),
-        Zbdd::ConvertBdd(module.vertex, module.complement, bdd_graph));
+    VertexPtr module_set =
+        Zbdd::ConvertBdd(module.vertex, module.complement,
+                         bdd_graph, kSettings_.limit_order());
+    if (module_set->terminal()) {
+      if (Terminal::Ptr(module_set)->value()) {
+        limit_high += 1;  // Avoid constants in sets.
+      } else {  /// @todo Handle separately.
+        limit_high = 0;  // Empty set.
+      }
+    }
+    modules_.emplace(ite->index(), module_set);
   }
-  zbdd->high(Zbdd::ConvertBdd(ite->high(), complement, bdd_graph));
+  zbdd->high(Zbdd::ConvertBdd(ite->high(), complement, bdd_graph, limit_high));
   zbdd->low(Zbdd::ConvertBdd(ite->low(), ite->complement_edge() ^ complement,
-                             bdd_graph));
+                             bdd_graph, limit_order));
   if ((zbdd->high()->terminal() && !Terminal::Ptr(zbdd->high())->value()) ||
       (zbdd->high()->id() == zbdd->low()->id()) ||
       (zbdd->low()->terminal() && Terminal::Ptr(zbdd->low())->value())) {
@@ -199,6 +210,8 @@ Zbdd::GenerateCutSets(const VertexPtr& vertex) noexcept {
         Zbdd::GenerateCutSets(modules_.find(node->index())->second);
     for (auto& cut_set : high) {  // Cross-product.
       for (auto& module_set : module) {
+        if (cut_set.size() + module_set.size() > kSettings_.limit_order())
+          continue;  // Cut-off on the cut set size.
         CutSet combo = cut_set;
         combo.insert(combo.end(), module_set.begin(), module_set.end());
         result.emplace_back(std::move(combo));

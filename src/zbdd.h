@@ -114,10 +114,11 @@ class Zbdd {
   /// @param[in] vertex  Vertex of the ROBDD graph.
   /// @param[in] complement  Interpretation of the vertex as complement.
   /// @param[in] bdd_graph  The main ROBDD as helper database.
+  /// @param[in] limit_order  The maximum size of requested sets.
   ///
   /// @returns Pointer to the root vertex of the ZBDD graph.
   VertexPtr ConvertBdd(const VertexPtr& vertex, bool complement,
-                       const Bdd* bdd_graph) noexcept;
+                       const Bdd* bdd_graph, int limit_order) noexcept;
 
   /// Removes subsets in ZBDD.
   ///
@@ -181,7 +182,8 @@ class Zbdd {
 
   const Settings kSettings_;  ///< Analysis settings.
   VertexPtr root_;  ///< The root vertex of ZBDD.
-  std::unordered_map<int, VertexPtr> ites_;  ///< Processed function graphs.
+  /// Processed function graphs with ids and limit order.
+  boost::unordered_map<std::pair<int, int>, VertexPtr> ites_;
   std::unordered_map<int, VertexPtr> modules_;  ///< Module graphs.
   const TerminalPtr kBase_;  ///< Terminal Base (Unity/1) set.
   const TerminalPtr kEmpty_;  ///< Terminal Empty (Null/0) set.
