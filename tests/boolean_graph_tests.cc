@@ -41,5 +41,120 @@ TEST(BooleanGraphTest, Print) {
   delete graph;
 }
 
+using VariablePtr = std::shared_ptr<Variable>;
+using IGatePtr = std::shared_ptr<IGate>;
+
+static_assert(kNumOperators == 8, "New gate types are not considered!");
+
+class IGateAddArgTest : public ::testing::Test {
+ protected:
+  virtual void SetUp() {
+    var_one = std::make_shared<Variable>();
+    var_two = std::make_shared<Variable>();
+    var_three = std::make_shared<Variable>();
+    vars_ = {var_one, var_two, var_three};
+  }
+
+  /// Sets up the main gate with the default variables.
+  ///
+  /// @param[in] type  Type for the main gate.
+  /// @param[in] num_vars  Desired number of variables.
+  ///
+  /// @note The setup is not for one-arg gates (NOT/NULL).
+  /// @note For K/N gates, K is set to 2 by default.
+  void DefineGate(Operator type, int num_vars) {
+    assert(type != kNotGate && type != kNullGate);
+    assert(num_vars < 4);
+    assert(!(type == kAtleastGate && num_vars < 3));
+
+    g = std::make_shared<IGate>(type);
+    if (type == kAtleastGate) g->vote_number(2);
+    for (int i = 0; i < num_vars; ++i) g->AddArg(vars_[i]->index(), vars_[i]);
+
+    assert(g->state() == kNormalState);
+    assert(g->type() == type);
+    assert(g->args().size() == num_vars);
+    assert(g->variable_args().size() == num_vars);
+    assert(g->gate_args().empty());
+    assert(g->constant_args().empty());
+  }
+
+  virtual void TearDown() {
+    Node::ResetIndex();
+    Variable::ResetIndex();
+  }
+
+  IGatePtr g;  // Main gate for manipulations.
+  // Collection of variables for gate input.
+  VariablePtr var_one;
+  VariablePtr var_two;
+  VariablePtr var_three;
+
+ private:
+  std::vector<VariablePtr> vars_;  // For convenience only.
+};
+
+/// @def ADD_IGNORE_TEST(Type, num_vars)
+///
+/// Collection of tests
+/// for addition of an existing argument to a gate.
+///
+/// @param Type  Short name of the gate, i.e., 'And'.
+///              It must have the same root in Operator, i.e., 'kAndGate'.
+/// @param num_vars  The number of variables to initialize the gate.
+#define ADD_ARG_IGNORE_TEST(Type, num_vars)       \
+  DefineGate(k##Type##Gate, num_vars);            \
+  g->AddArg(var_one->index(), var_one);           \
+  ASSERT_EQ(kNormalState, g->state());            \
+  EXPECT_EQ(num_vars, g->args().size());          \
+  EXPECT_EQ(num_vars, g->variable_args().size()); \
+  EXPECT_TRUE(g->gate_args().empty());            \
+  EXPECT_TRUE(g->constant_args().empty())
+
+/// @def TEST_DUP_ARG_IGNORE(Type)
+///
+/// Tests addition of an existing argument to Boolean graph gates
+/// that do not change the type of the gate.
+///
+/// @param Type  Short name of the gate type, i.e., 'And'.
+#define TEST_DUP_ARG_IGNORE(Type)                     \
+  TEST_F(IGateAddArgTest, DuplicateArgIgnore##Type) { \
+    ADD_ARG_IGNORE_TEST(Type, 2);                     \
+    EXPECT_EQ(k##Type##Gate, g->type());              \
+  }
+
+TEST_DUP_ARG_IGNORE(And);
+TEST_DUP_ARG_IGNORE(Or);
+TEST_DUP_ARG_IGNORE(Nand);
+TEST_DUP_ARG_IGNORE(Nor);
+
+#undef TEST_DUP_ARG_IGNORE
+
+/// @def TEST_DUP_ARG_TYPE_CHANGE(Type)
+///
+/// Tests duplication addition that changes the type of the gate.
+///
+/// @param InitType  Short name of the initial type of the gate, i.e., 'And'.
+/// @param FinalType  The resulting type of addition operation.
+#define TEST_DUP_ARG_TYPE_CHANGE(InitType, FinalType)           \
+  TEST_F(IGateAddArgTest, DuplicateArgChange##InitType##Type) { \
+    ADD_ARG_IGNORE_TEST(InitType, 1);                           \
+    EXPECT_EQ(k##FinalType##Gate, g->type());                   \
+  }
+
+TEST_DUP_ARG_TYPE_CHANGE(Or, Null);
+TEST_DUP_ARG_TYPE_CHANGE(And, Null);
+TEST_DUP_ARG_TYPE_CHANGE(Nor, Not);
+TEST_DUP_ARG_TYPE_CHANGE(Nand, Not);
+
+#undef TEST_DUP_ARG_TYPE_CHANGE
+
+TEST_F(IGateAddArgTest, DuplicateArgXor) {
+  DefineGate(kXorGate, 1);
+  g->AddArg(var_one->index(), var_one);
+  EXPECT_EQ(kNullState, g->state());
+  EXPECT_TRUE(g->args().empty());
+}
+
 }  // namespace test
 }  // namespace scram

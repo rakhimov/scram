@@ -49,7 +49,7 @@ int Variable::next_variable_ = 1;
 
 Variable::Variable() noexcept : Node(next_variable_++) {}
 
-IGate::IGate(const Operator& type) noexcept
+IGate::IGate(Operator type) noexcept
     : Node(),
       type_(type),
       state_(kNormalState),

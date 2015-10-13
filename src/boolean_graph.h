@@ -266,7 +266,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// to manage parent-child hierarchy.
   ///
   /// @param[in] type  The type of this gate.
-  explicit IGate(const Operator& type) noexcept;
+  explicit IGate(Operator type) noexcept;
 
   /// Destructs parent information from the arguments.
   ~IGate() noexcept {
