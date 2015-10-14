@@ -90,6 +90,26 @@ class CutSet {
                               index);
   }
 
+  /// Checks if the set has any of given positive literals.
+  ///
+  /// @param[in] indices  An ordered set of unique indices.
+  ///
+  /// @returns true if there is a common literal.
+  bool HasPositiveLiteral(const std::vector<int>& indices) const {
+    return Intersects(pos_literals_, indices);
+  }
+
+  /// Checks that the combination of orders of cut sets
+  /// doesn't exceed limits.
+  ///
+  /// @param[in] indices  An ordered set of unique indices.
+  /// @param[in] order  Maximum allowed order.
+  ///
+  /// @returns true if the joint order exceeds the limit.
+  bool CheckJointOrder(const std::vector<int>& indices, int order) const {
+    return CheckDifference(indices, order);
+  }
+
   /// Adds a unique literal to the cut set.
   ///
   /// @param[in] index  Positive index of the literal.
@@ -110,6 +130,15 @@ class CutSet {
                               index);
   }
 
+  /// Checks if the set has any of given negative literals.
+  ///
+  /// @param[in] indices  An ordered set of unique indices.
+  ///
+  /// @returns true if there is a common literal.
+  bool HasNegativeLiteral(const std::vector<int>& indices) const {
+    return Intersects(neg_literals_, indices);
+  }
+
   /// Adds a unique literal to the cut set.
   ///
   /// @param[in] index  Positive index of the complement literal.
@@ -127,6 +156,15 @@ class CutSet {
   bool HasModule(int index) const {
     assert(index > 0 && "Non-sanitized index.");
     return std::binary_search(modules_.begin(), modules_.end(), index);
+  }
+
+  /// Checks if the set has any of given module indices.
+  ///
+  /// @param[in] indices  An ordered set of unique indices.
+  ///
+  /// @returns true if there is a common module.
+  bool HasModule(const std::vector<int>& indices) const {
+    return Intersects(modules_, indices);
   }
 
   /// Adds a module to the cut set.
@@ -179,6 +217,8 @@ class CutSet {
   ///
   /// @note Cut set generation semantics are taken into account.
   bool Includes(const CutSet& cut_set) const {
+    if (cut_set.pos_literals_.size() > pos_literals_.size()) return false;
+    if (cut_set.modules_.size() > modules_.size()) return false;
     return std::includes(pos_literals_.begin(), pos_literals_.end(),
                          cut_set.pos_literals_.begin(),
                          cut_set.pos_literals_.end()) &&
@@ -208,6 +248,74 @@ class CutSet {
   void AddUniqueElement(int index, std::vector<int>* base) {
     base->push_back(index);
     std::inplace_merge(base->begin(), --base->end(), base->end());
+  }
+
+  /// Checks for intersection of two sets.
+  ///
+  /// @param[in] set_one  First set.
+  /// @param[in] set_two  Second set.
+  ///
+  /// @returns true if the sets have a common element.
+  bool Intersects(const std::vector<int>& set_one,
+                  const std::vector<int>& set_two) const {
+    if (!CheckIntersection(set_one, set_two)) return false;
+    auto first1 = set_one.begin();
+    auto last1 = set_one.end();
+    auto first2 = set_two.begin();
+    auto last2 = set_two.end();
+    while (first1 != last1 && first2 != last2) {
+      if (*first1 < *first2) {
+        ++first1;
+      } else if (*first2 < *first1) {
+        ++first2;
+      } else {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /// Checks the size of the joint set doesn't exceed the limit order.
+  ///
+  /// @param[in] set_one  The set to be joined.
+  /// @param[in] order  The limit on order.
+  ///
+  /// @returns true if the joint order exceeds the limit.
+  int CheckDifference(const std::vector<int>& set_one, int order) const {
+    if (!CheckIntersection(set_one, pos_literals_))
+      return set_one.size() + pos_literals_.size() > order;
+    int count = pos_literals_.size();
+    auto first1 = set_one.begin();
+    auto last1 = set_one.end();
+    auto first2 = pos_literals_.begin();
+    auto last2 = pos_literals_.end();
+    while (first1 != last1 && first2 != last2) {
+      if (*first1 < *first2) {
+        ++first1;
+        if (++count > order) return true;
+      } else if (*first2 < *first1) {
+        ++first2;
+      } else {
+        ++first1;
+        ++first2;
+      }
+    }
+    return (count + (last1 - first1)) > order;
+  }
+
+  /// Checks if two sets can have intersections.
+  ///
+  /// @param[in] set_one  First set.
+  /// @param[in] set_two  Second set.
+  ///
+  /// @pre Sets have the same ordering.
+  ///
+  /// @returns true if the sets can have a common element.
+  bool CheckIntersection(const std::vector<int>& set_one,
+                         const std::vector<int>& set_two) const {
+    return !set_one.empty() && !set_two.empty() &&
+           std::max(set_one.front(), set_two.front()) <=
+               std::min(set_one.back(), set_two.back());
   }
 
   std::vector<int> pos_literals_;  ///< Positive indices of basic events.
@@ -268,7 +376,8 @@ class SimpleGate {
   using SimpleGatePtr = std::shared_ptr<SimpleGate>;
 
   /// @param[in] type  The type of this gate. AND or OR types are expected.
-  explicit SimpleGate(Operator type) noexcept : type_(type) {}
+  /// @param[in] limit  The limit order for minimal cut sets.
+  explicit SimpleGate(Operator type, int limit) noexcept;
 
   /// @returns The type of this gate.
   const Operator& type() const { return type_; }
@@ -328,11 +437,6 @@ class SimpleGate {
   void GenerateCutSets(const CutSetPtr& cut_set,
                        CutSetContainer* new_cut_sets) noexcept;
 
-  /// Sets the limit order for all analysis with simple gates.
-  ///
-  /// @param[in] limit  The limit order for minimal cut sets.
-  static void limit_order(int limit) { limit_order_ = limit; }
-
  private:
   /// Generates cut sets for AND gate children
   /// using already generated sets.
@@ -357,7 +461,7 @@ class SimpleGate {
   std::vector<int> neg_literals_;  ///< Negative indices of basic events.
   std::vector<int> modules_;  ///< Container of modules' indices.
   std::vector<SimpleGatePtr> gates_;  ///< Container of child gates.
-  static int limit_order_;  ///< The limit on the order of minimal cut sets.
+  int limit_order_;  ///< The limit on the order of minimal cut sets.
 };
 
 }  // namespace mocus

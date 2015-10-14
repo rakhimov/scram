@@ -65,7 +65,6 @@
 
 #include "mocus.h"
 
-#include <algorithm>
 #include <utility>
 
 #include "logger.h"
@@ -74,21 +73,18 @@ namespace scram {
 
 namespace mocus {
 
-int SimpleGate::limit_order_ = 20;  /// @todo Code smell. Eliminate.
+SimpleGate::SimpleGate(Operator type, int limit) noexcept
+    : type_(type),
+      limit_order_(limit) {}
 
 void SimpleGate::GenerateCutSets(const CutSetPtr& cut_set,
                                  CutSetContainer* new_cut_sets) noexcept {
   assert(cut_set->order() <= limit_order_);
-  assert(type_ == kOrGate || type_ == kAndGate);
-  switch (type_) {  /// @todo Code smell.
-    case kOrGate:
+  if (type_ == kOrGate) {
       SimpleGate::OrGateCutSets(cut_set, new_cut_sets);
-      break;
-    case kAndGate:
-      SimpleGate::AndGateCutSets(cut_set, new_cut_sets);
-      break;
-    default:
-      assert(false && "MOCUS works with AND/OR gates only.");
+  } else {
+    assert(type_ == kAndGate && "MOCUS works with AND/OR gates only.");
+    SimpleGate::AndGateCutSets(cut_set, new_cut_sets);
   }
 }
 
@@ -96,18 +92,10 @@ void SimpleGate::AndGateCutSets(const CutSetPtr& cut_set,
                                 CutSetContainer* new_cut_sets) noexcept {
   assert(cut_set->order() <= limit_order_);
   // Check for null case.
-  for (int index : pos_literals_) {
-    if (cut_set->HasNegativeLiteral(index)) return;
-  }
-  for (int index : neg_literals_) {
-    if (cut_set->HasPositiveLiteral(index)) return;
-  }
+  if (cut_set->HasNegativeLiteral(pos_literals_)) return;
+  if (cut_set->HasPositiveLiteral(neg_literals_)) return;
   // Limit order checks before other expensive operations.
-  int order = cut_set->order();
-  for (int index : pos_literals_) {
-    if (!cut_set->HasPositiveLiteral(index)) ++order;
-    if (order > limit_order_) return;
-  }
+  if (cut_set->CheckJointOrder(pos_literals_, limit_order_)) return;
   CutSetPtr cut_set_copy(new CutSet(*cut_set));
   // Include all basic events and modules into the set.
   cut_set_copy->AddPositiveLiterals(pos_literals_);
@@ -135,18 +123,9 @@ void SimpleGate::OrGateCutSets(const CutSetPtr& cut_set,
                                CutSetContainer* new_cut_sets) noexcept {
   assert(cut_set->order() <= limit_order_);
   // Check for local minimality.
-  for (int index : pos_literals_) {
-    if (!cut_set->HasPositiveLiteral(index)) continue;
-    new_cut_sets->insert(cut_set);
-    return;
-  }
-  for (int index : neg_literals_) {
-    if (!cut_set->HasNegativeLiteral(index)) continue;
-    new_cut_sets->insert(cut_set);
-    return;
-  }
-  for (int index : modules_) {
-    if (!cut_set->HasModule(index)) continue;
+  if (cut_set->HasPositiveLiteral(pos_literals_) ||
+      cut_set->HasNegativeLiteral(neg_literals_) ||
+      cut_set->HasModule(modules_)) {
     new_cut_sets->insert(cut_set);
     return;
   }
@@ -189,9 +168,7 @@ void SimpleGate::OrGateCutSets(const CutSetPtr& cut_set,
 
 Mocus::Mocus(const BooleanGraph* fault_tree, const Settings& settings)
       : fault_tree_(fault_tree),
-        kSettings_(settings) {
-  mocus::SimpleGate::limit_order(kSettings_.limit_order());
-}
+        kSettings_(settings) {}
 
 void Mocus::Analyze() {
   CLOCK(mcs_time);
@@ -254,7 +231,8 @@ void Mocus::CreateSimpleTree(
     std::unordered_map<int, SimpleGatePtr>* processed_gates) noexcept {
   if (processed_gates->count(gate->index())) return;
   assert(gate->type() == kAndGate || gate->type() == kOrGate);
-  SimpleGatePtr simple_gate(new mocus::SimpleGate(gate->type()));
+  SimpleGatePtr simple_gate(
+      new mocus::SimpleGate(gate->type(), kSettings_.limit_order()));
   processed_gates->emplace(gate->index(), simple_gate);
 
   assert(gate->constant_args().empty());
