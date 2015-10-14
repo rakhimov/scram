@@ -471,7 +471,7 @@ class SimpleGate {
 /// to generate minimal cut sets with the MOCUS algorithm.
 class Mocus {
  public:
-  /// Constructor with the analysis target.
+  /// Constructs a simple graph representation from Boolean graph.
   ///
   /// @param[in] fault_tree  Preprocessed, normalized, and indexed fault tree.
   /// @param[in] settings  The analysis settings.
@@ -493,7 +493,9 @@ class Mocus {
   ///
   /// @param[in] gate  The gate to start with.
   /// @param[in,out] processed_gates  Gates turned into simple gates.
-  void CreateSimpleTree(
+  ///
+  /// @returns The root for the simple tree.
+  SimpleGatePtr CreateSimpleTree(
       const IGatePtr& gate,
       std::unordered_map<int, SimpleGatePtr>* processed_gates) noexcept;
 
@@ -519,8 +521,10 @@ class Mocus {
                        int min_order,
                        std::vector<CutSet>* mcs) noexcept;
 
-  const BooleanGraph* fault_tree_;  ///< The main fault tree.
+  bool constant_graph_;  ///< No need for analysis.
   const Settings kSettings_;  ///< Analysis settings.
+  SimpleGatePtr root_;  ///< The root of the MOCUS graph.
+  std::unordered_map<int, SimpleGatePtr> modules_;  ///< Converted modules.
   std::vector<std::vector<int>> cut_sets_;  ///< Min cut sets with indices.
 };
 

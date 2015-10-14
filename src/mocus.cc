@@ -167,18 +167,13 @@ void SimpleGate::OrGateCutSets(const CutSetPtr& cut_set,
 }  // namespace mocus
 
 Mocus::Mocus(const BooleanGraph* fault_tree, const Settings& settings)
-      : fault_tree_(fault_tree),
-        kSettings_(settings) {}
-
-void Mocus::Analyze() {
-  CLOCK(mcs_time);
-  LOG(DEBUG2) << "Start minimal cut set generation.";
-
-  IGatePtr top = fault_tree_->root();
-
+      : constant_graph_(false),
+        kSettings_(settings) {
+  IGatePtr top = fault_tree->root();
   // Special case of empty top gate.
   if (top->state() != kNormalState) {
     if (top->state() == kUnityState) cut_sets_.push_back({});  // Unity set.
+    constant_graph_ = true;
     return;  // Other cases are null or empty.
   }
   if (top->type() == kNullGate) {  // Special case of NULL type top.
@@ -186,16 +181,23 @@ void Mocus::Analyze() {
     assert(top->gate_args().empty());
     int child = *top->args().begin();
     cut_sets_.push_back({child});
+    constant_graph_ = true;
     return;
   }
-
-  // Create simple gates from indexed gates.
   std::unordered_map<int, SimpleGatePtr> simple_gates;
-  Mocus::CreateSimpleTree(top, &simple_gates);
+  root_ = Mocus::CreateSimpleTree(top, &simple_gates);
+  LOG(DEBUG3) << "Converted Boolean graph with top module: G" << top->index();
+}
 
-  LOG(DEBUG3) << "Finding MCS from top module: G" << top->index();
+void Mocus::Analyze() {
+  BLOG(DEBUG2, constant_graph_) << "Graph is constant. No analysis!";
+  if (constant_graph_) return;
+
+  CLOCK(mcs_time);
+  LOG(DEBUG2) << "Start minimal cut set generation.";
+  LOG(DEBUG3) << "Finding MCS from the root";
   std::vector<CutSet> mcs;
-  Mocus::AnalyzeSimpleGate(simple_gates.find(top->index())->second, &mcs);
+  Mocus::AnalyzeSimpleGate(root_, &mcs);
   LOG(DEBUG3) << "Top gate cut sets are generated.";
 
   LOG(DEBUG3) << "Joining modules...";
@@ -211,7 +213,7 @@ void Mocus::Analyze() {
     int module_index = member.PopModule();
     if (!module_mcs.count(module_index)) {
       LOG(DEBUG3) << "Finding MCS from module: G" << module_index;
-      Mocus::AnalyzeSimpleGate(simple_gates.find(module_index)->second,
+      Mocus::AnalyzeSimpleGate(modules_.find(module_index)->second,
                                &module_mcs[module_index]);
     }
     const std::vector<CutSet>& sub_mcs = module_mcs.find(module_index)->second;
@@ -226,14 +228,16 @@ void Mocus::Analyze() {
   LOG(DEBUG2) << "Minimal cut sets found in " << DUR(mcs_time);
 }
 
-void Mocus::CreateSimpleTree(
+Mocus::SimpleGatePtr Mocus::CreateSimpleTree(
     const IGatePtr& gate,
     std::unordered_map<int, SimpleGatePtr>* processed_gates) noexcept {
-  if (processed_gates->count(gate->index())) return;
+  if (processed_gates->count(gate->index()))
+    return processed_gates->find(gate->index())->second;
   assert(gate->type() == kAndGate || gate->type() == kOrGate);
   SimpleGatePtr simple_gate(
       new mocus::SimpleGate(gate->type(), kSettings_.limit_order()));
   processed_gates->emplace(gate->index(), simple_gate);
+  if (gate->IsModule()) modules_.emplace(gate->index(), simple_gate);
 
   assert(gate->constant_args().empty());
   assert(gate->args().size() > 1);
@@ -252,6 +256,7 @@ void Mocus::CreateSimpleTree(
     simple_gate->AddLiteral(arg.first);
   }
   simple_gate->SetupForAnalysis();
+  return simple_gate;
 }
 
 void Mocus::AnalyzeSimpleGate(const SimpleGatePtr& gate,
