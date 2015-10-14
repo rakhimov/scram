@@ -131,7 +131,7 @@ TEST_DUP_ARG_IGNORE(Nor);
 
 #undef TEST_DUP_ARG_IGNORE
 
-/// @def TEST_DUP_ARG_TYPE_CHANGE(Type)
+/// @def TEST_DUP_ARG_TYPE_CHANGE(InitType, FinalType)
 ///
 /// Tests duplication addition that changes the type of the gate.
 ///
@@ -149,6 +149,7 @@ TEST_DUP_ARG_TYPE_CHANGE(Nor, Not);
 TEST_DUP_ARG_TYPE_CHANGE(Nand, Not);
 
 #undef TEST_DUP_ARG_TYPE_CHANGE
+#undef ADD_ARG_IGNORE_TEST
 
 TEST_F(IGateAddArgTest, DuplicateArgXor) {
   DefineGate(kXorGate, 1);
@@ -241,6 +242,61 @@ TEST_F(IGateAddArgTest, DuplicateArgAtleastToOr_TwoClones) {
   EXPECT_EQ(4, clone_two->args().size());
   EXPECT_EQ(4, clone_two->variable_args().size());
 }
+
+/// @def TEST_ADD_COMPLEMENT_ARG(Type, Set)
+///
+/// Collection of tests
+/// for addition of the complement of an existing argument to a gate.
+///
+/// @param Type  Short name of the gate, i.e., 'And'.
+///              It must have the same root in Operator, i.e., 'kAndGate'.
+/// @param Set  The notion of constant set (Null, Unity).
+#define TEST_ADD_COMPLEMENT_ARG(Type, Set)       \
+  TEST_F(IGateAddArgTest, ComplementArg##Type) { \
+    DefineGate(k##Type##Gate, 1);                \
+    g->AddArg(-var_one->index(), var_one);       \
+    ASSERT_EQ(k##Set##State, g->state());        \
+    EXPECT_TRUE(g->args().empty());              \
+    EXPECT_TRUE(g->variable_args().empty());     \
+    EXPECT_TRUE(g->gate_args().empty());         \
+    EXPECT_TRUE(g->constant_args().empty());     \
+  }
+
+TEST_ADD_COMPLEMENT_ARG(And, Null);
+TEST_ADD_COMPLEMENT_ARG(Or, Unity);
+TEST_ADD_COMPLEMENT_ARG(Nand, Unity);
+TEST_ADD_COMPLEMENT_ARG(Nor, Null);
+TEST_ADD_COMPLEMENT_ARG(Xor, Unity);
+
+#undef TEST_ADD_COMPLEMENT_ARG
+
+/// @def TEST_ADD_COMPLEMENT_ARG_KN(num_vars, v_num, FinalType)
+///
+/// Collection of ATLEAST (K/N) gate tests
+/// for addition of the complement of an existing argument.
+///
+/// @param num_vars  Initial number of variables.
+/// @param v_num  Initial K number of the gate.
+/// @param FinalType  Short name of the final type of the gate, i.e., 'And'.
+#define TEST_ADD_COMPLEMENT_ARG_KN(num_vars, v_num, FinalType) \
+  TEST_F(IGateAddArgTest, ComplementArgAtleastTo##FinalType) { \
+    DefineGate(kAtleastGate, num_vars);                        \
+    g->vote_number(v_num);                                     \
+    g->AddArg(-var_one->index(), var_one);                     \
+    ASSERT_EQ(kNormalState, g->state());                       \
+    EXPECT_EQ(k##FinalType##Gate, g->type());                  \
+    EXPECT_EQ(num_vars - 1, g->args().size());                 \
+    EXPECT_EQ(num_vars - 1, g->variable_args().size());        \
+    EXPECT_EQ(v_num - 1, g->vote_number());                    \
+    EXPECT_TRUE(g->gate_args().empty());                       \
+    EXPECT_TRUE(g->constant_args().empty());                   \
+  }
+
+TEST_ADD_COMPLEMENT_ARG_KN(2, 2, Null);  // Join operation.
+TEST_ADD_COMPLEMENT_ARG_KN(3, 2, Or);  // General case.
+TEST_ADD_COMPLEMENT_ARG_KN(3, 3, And);  // Join operation.
+
+#undef TEST_ADD_COMPLEMENT_ARG_KN
 
 }  // namespace test
 }  // namespace scram
