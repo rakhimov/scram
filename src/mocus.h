@@ -58,7 +58,7 @@ class CutSet {
   /// @returns The number of positive literals including modules.
   int size() const { return pos_literals_.size() + modules_.size(); }
 
-  /// @returns true if there are not literals.
+  /// @returns true if there are no literals.
   bool empty() const { return pos_literals_.empty() && modules_.empty(); }
 
   /// @returns Positive literals in the cut set.
@@ -246,8 +246,7 @@ class CutSet {
   /// @param[in] index  The index of the element.
   /// @param[in/out] base  Sorted and unique collection.
   void AddUniqueElement(int index, std::vector<int>* base) {
-    base->push_back(index);
-    std::inplace_merge(base->begin(), --base->end(), base->end());
+    base->insert(std::lower_bound(base->begin(), base->end(), index), index);
   }
 
   /// Checks for intersection of two sets.
@@ -377,7 +376,7 @@ class SimpleGate {
 
   /// @param[in] type  The type of this gate. AND or OR types are expected.
   /// @param[in] limit  The limit order for minimal cut sets.
-  explicit SimpleGate(Operator type, int limit) noexcept;
+  SimpleGate(Operator type, int limit) noexcept;
 
   /// @returns The type of this gate.
   const Operator& type() const { return type_; }
@@ -475,7 +474,7 @@ class Mocus {
   ///
   /// @param[in] fault_tree  Preprocessed, normalized, and indexed fault tree.
   /// @param[in] settings  The analysis settings.
-  explicit Mocus(const BooleanGraph* fault_tree, const Settings& settings);
+  Mocus(const BooleanGraph* fault_tree, const Settings& settings);
 
   /// Finds minimal cut sets from the initiated fault tree with indices.
   void Analyze();
