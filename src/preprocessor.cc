@@ -75,6 +75,7 @@
 #include <algorithm>
 #include <list>
 #include <queue>
+#include <unordered_set>
 
 #include "logger.h"
 
@@ -82,7 +83,8 @@ namespace scram {
 
 Preprocessor::Preprocessor(BooleanGraph* graph) noexcept
     : graph_(graph),
-      root_sign_(1) {}
+      root_sign_(1),
+      constant_graph_(false) {}
 
 void Preprocessor::PhaseOne() noexcept {
   if (!graph_->constants_.empty()) {
@@ -288,6 +290,8 @@ bool Preprocessor::CheckRootGate() noexcept {
   IGatePtr root = graph_->root();
   if (root->state() != kNormalState) {  // The root gate has become constant.
     LOG(DEBUG3) << "The root gate has become constant!";
+    assert(!(graph_->coherent() && !constant_graph_) &&
+          "Impossible state of the root gate in coherent graphs.");
     if (root_sign_ < 0) {
       State orig_state = root->state();
       root = IGatePtr(new IGate(kNullGate));
@@ -348,6 +352,7 @@ void Preprocessor::RemoveConstants() noexcept {
   }
   assert(const_gates_.empty());
   graph_->constants_.clear();
+  constant_graph_ = graph_->root()->state() != kNormalState;
 }
 
 void Preprocessor::PropagateConstant(const ConstantPtr& constant) noexcept {
@@ -2374,16 +2379,83 @@ int Preprocessor::TopologicalOrder(const IGatePtr& root, int order) noexcept {
   return order;
 }
 
+namespace {
+
+/// @class TestGateMarks
+/// Functor to sanity check the marks of Boolean graph gates.
+class TestGateMarks {
+ public:
+  /// Helper function to find discontinuous gate marking.
+  /// The traversal will fail with assert
+  /// upon depth-first encounter of a problem.
+  ///
+  /// @param[in] gate  The starting gate to traverse.
+  /// @param[in] mark  Assumed mark of the whole graph.
+  ///
+  /// @returns true if the job is done.
+  bool operator()(const std::shared_ptr<const IGate>& gate,
+                  bool mark) noexcept {
+    if (tested_gates_.count(gate->index())) return false;
+    tested_gates_.insert(gate->index());
+    assert(gate->mark() == mark && "Found discontinuous gate mark.");
+    for (const auto& arg : gate->gate_args()) (*this)(arg.second, mark);
+    return true;
+  }
+
+ private:
+  std::unordered_set<int> tested_gates_;  ///< Alternative to gate marking.
+};
+
+/// @class TestGateStructure
+/// Functor to sanity check the structure of Boolean graph gates.
+class TestGateStructure {
+ public:
+  /// Helper function to find malformed gates.
+  /// The traversal will fail with assert
+  /// upon depth-first encounter of a problem.
+  ///
+  /// @param[in] gate  The starting gate to traverse.
+  ///
+  /// @returns true if the job is done.
+  bool operator()(const std::shared_ptr<const IGate>& gate) noexcept {
+    if (tested_gates_.count(gate->index())) return false;
+    tested_gates_.insert(gate->index());
+    assert(gate->state() == kNormalState && "Constant gates are not clear!");
+    switch (gate->type()) {
+      case kNullGate:
+      case kNotGate:
+        assert(gate->args().size() == 1 && "Malformed one-arg gate!");
+        break;
+      case kXorGate:
+        assert(gate->args().size() == 2 && "Malformed XOR gate!");
+        break;
+      case kAtleastGate:
+        assert(gate->vote_number() > 1 && "K/N has wrong K!");
+        assert(gate->args().size() > gate->vote_number() && "K/N has wrong N!");
+        break;
+      default:
+        assert(gate->args().size() > 1 && "Missing arguments!");
+    }
+    for (const auto& arg : gate->gate_args()) (*this)(arg.second);
+    return true;
+  }
+
+ private:
+  std::unordered_set<int> tested_gates_;  ///< Alternative to gate marking.
+};
+
+}  // namespace
+
 /// @def SANITY_ASSERT
 /// A collection of sanity checks between preprocessing phases.
-#define SANITY_ASSERT                                                          \
-  assert(graph_->root() && "Corrupted pointer to the root gate.");             \
-  assert(graph_->root()->parents().empty() && "Root can't have parents.");     \
-  assert(!(graph_->coherent() && (root_sign_ != 1)));                          \
-  assert(!(graph_->coherent() && (graph_->root()->state() != kNormalState)) && \
-         "Impossible state of the root gate in coherent graphs.");             \
-  assert(const_gates_.empty() && "Const gate cleanup contracts are broken!");  \
-  assert(null_gates_.empty() && "Null gate cleanup contracts are broken!")
+#define SANITY_ASSERT                                                         \
+  assert(graph_->root() && "Corrupted pointer to the root gate.");            \
+  assert(graph_->root()->parents().empty() && "Root can't have parents.");    \
+  assert(!(graph_->coherent() && (root_sign_ != 1)));                         \
+  assert(const_gates_.empty() && "Const gate cleanup contracts are broken!"); \
+  assert(null_gates_.empty() && "Null gate cleanup contracts are broken!");   \
+  assert(TestGateStructure()(graph_->root()));                                \
+  assert(TestGateMarks()(graph_->root(), graph_->root()->mark()))
 
 void CustomPreprocessor<Mocus>::Run() noexcept {
   SANITY_ASSERT;
@@ -2394,21 +2466,22 @@ void CustomPreprocessor<Mocus>::Run() noexcept {
   Preprocessor::PhaseOne();
   LOG(DEBUG2) << "Finished Preprocessing Phase I in " << DUR(time_1);
   if (Preprocessor::CheckRootGate()) return;
+  SANITY_ASSERT;
 
   CLOCK(time_2);
   LOG(DEBUG2) << "Preprocessing Phase II...";
   Preprocessor::PhaseTwo();
   LOG(DEBUG2) << "Finished Preprocessing Phase II in " << DUR(time_2);
-  SANITY_ASSERT;
   if (Preprocessor::CheckRootGate()) return;
+  SANITY_ASSERT;
 
   if (!graph_->normal()) {
     CLOCK(time_3);
     LOG(DEBUG2) << "Preprocessing Phase III...";
     Preprocessor::PhaseThree();
     LOG(DEBUG2) << "Finished Preprocessing Phase III in " << DUR(time_3);
-    SANITY_ASSERT;
     if (Preprocessor::CheckRootGate()) return;
+    SANITY_ASSERT;
   }
 
   if (!graph_->coherent()) {
@@ -2416,16 +2489,14 @@ void CustomPreprocessor<Mocus>::Run() noexcept {
     LOG(DEBUG2) << "Preprocessing Phase IV...";
     Preprocessor::PhaseFour();
     LOG(DEBUG2) << "Finished Preprocessing Phase IV in " << DUR(time_4);
-    SANITY_ASSERT;
     if (Preprocessor::CheckRootGate()) return;
+    SANITY_ASSERT;
   }
 
   CLOCK(time_5);
   LOG(DEBUG2) << "Preprocessing Phase V...";
   Preprocessor::PhaseFive();
   LOG(DEBUG2) << "Finished Preprocessing Phase V in " << DUR(time_5);
-
-  SANITY_ASSERT;
   Preprocessor::CheckRootGate();  // To cleanup.
   SANITY_ASSERT;
   assert(graph_->normal());
@@ -2440,21 +2511,22 @@ void CustomPreprocessor<Bdd>::Run() noexcept {
   Preprocessor::PhaseOne();
   LOG(DEBUG2) << "Finished Preprocessing Phase I in " << DUR(time_1);
   if (Preprocessor::CheckRootGate()) return;
+  SANITY_ASSERT;
 
   CLOCK(time_2);
   LOG(DEBUG2) << "Preprocessing Phase II...";
   Preprocessor::PhaseTwo();
   LOG(DEBUG2) << "Finished Preprocessing Phase II in " << DUR(time_2);
-  SANITY_ASSERT;
   if (Preprocessor::CheckRootGate()) return;
+  SANITY_ASSERT;
 
   if (!graph_->normal()) {
     CLOCK(time_3);
     LOG(DEBUG2) << "Preprocessing Phase III...";
     Preprocessor::PhaseThree();
     LOG(DEBUG2) << "Finished Preprocessing Phase III in " << DUR(time_3);
-    SANITY_ASSERT;
     if (Preprocessor::CheckRootGate()) return;
+    SANITY_ASSERT;
   }
   Preprocessor::AssignOrder();
 }

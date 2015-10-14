@@ -612,46 +612,6 @@ void BooleanGraph::ClearNodeCounts(const IGatePtr& gate) noexcept {
   assert(gate->constant_args().empty());
 }
 
-void BooleanGraph::TestGateStructure(const IGatePtr& gate) noexcept {
-  assert(gate->state() == kNormalState && "Constant gates are not clear!");
-  switch (gate->type()) {
-    case kNullGate:
-    case kNotGate:
-      assert(gate->args().size() == 1 && "Malformed one-arg gate!");
-      break;
-    case kXorGate:
-      assert(gate->args().size() == 2 && "Malformed XOR gate!");
-      break;
-    case kAtleastGate:
-      assert(gate->vote_number() > 1 && "K/N has wrong K!");
-      assert(gate->args().size() > gate->vote_number() && "K/N has wrong N!");
-      break;
-    default:
-      assert(gate->args().size() > 1 && "Missing arguments!");
-  }
-  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
-    BooleanGraph::TestGateStructure(arg.second);
-  }
-}
-
-void BooleanGraph::TestGateMarks(const IGatePtr& gate) noexcept {
-  assert(!gate->mark() && "Found 'unclear' gate.");
-  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
-    BooleanGraph::TestGateMarks(arg.second);
-  }
-}
-
-void BooleanGraph::TestOptiValues(const IGatePtr& gate) noexcept {
-  assert(!gate->opti_value() && "Found 'unclear' opti-value of a gate.");
-  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
-    BooleanGraph::TestOptiValues(arg.second);
-  }
-  for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
-    assert(!arg.second->opti_value() && "Found 'unclear' opti-value of a var.");
-  }
-  assert(gate->constant_args().empty());
-}
-
 std::ostream& operator<<(std::ostream& os,
                          const std::shared_ptr<Constant>& constant) {
   if (constant->Visited()) return os;

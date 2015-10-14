@@ -1074,6 +1074,7 @@ class Preprocessor {
 
   BooleanGraph* graph_;  ///< The Boolean graph to preprocess.
   int root_sign_;  ///< The negative or positive sign of the root node.
+  bool constant_graph_;  ///< Graph is constant due to constant events.
   /// Container for constant gates to be tracked and cleaned by algorithms.
   /// These constant gates are created
   /// because of complement or constant descendants.
