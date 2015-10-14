@@ -26,13 +26,13 @@
 #ifndef SCRAM_SRC_MOCUS_H_
 #define SCRAM_SRC_MOCUS_H_
 
+#include <algorithm>
 #include <functional>
 #include <memory>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
-#include <boost/container/flat_set.hpp>
 #include <boost/functional/hash.hpp>
 
 #include "boolean_graph.h"
@@ -42,18 +42,42 @@ namespace scram {
 
 namespace mocus {
 
+struct CutSetPtrHash;
+struct CutSetPtrEqual;
+
 /// @class CutSet
 /// Representation of a cut set for operations in MOCUS.
 class CutSet {
+  friend struct CutSetPtrHash;
+  friend struct CutSetPtrEqual;
+
  public:
   /// @returns The order of the cut set.
   int order() const { return pos_literals_.size(); }
+
+  /// @returns The number of positive literals including modules.
+  int size() const { return pos_literals_.size() + modules_.size(); }
+
+  /// @returns true if there are not literals.
+  bool empty() const { return pos_literals_.empty() && modules_.empty(); }
 
   /// @returns Positive literals in the cut set.
   const std::vector<int>& literals() const { return pos_literals_; }
 
   /// @returns A set of module indices.
   const std::vector<int>& modules() const { return modules_; }
+
+  /// Pops and removes a module from the cut set.
+  ///
+  /// @returns Positive index of the popped module.
+  ///
+  /// @pre There are modules to pop.
+  int PopModule() {
+    assert(!modules_.empty());
+    int ret = modules_.back();
+    modules_.pop_back();
+    return ret;
+  }
 
   /// Checks for positive literals.
   ///
@@ -64,6 +88,15 @@ class CutSet {
     assert(index > 0 && "Non-sanitized index.");
     return std::binary_search(pos_literals_.begin(), pos_literals_.end(),
                               index);
+  }
+
+  /// Adds a unique literal to the cut set.
+  ///
+  /// @param[in] index  Positive index of the literal.
+  ///
+  /// @pre The cut set doesn't have the literal.
+  void AddPositiveLiteral(int index) {
+    AddUniqueElement(index, &pos_literals_);
   }
 
   /// Checks for negative literals.
@@ -77,42 +110,104 @@ class CutSet {
                               index);
   }
 
+  /// Adds a unique literal to the cut set.
+  ///
+  /// @param[in] index  Positive index of the complement literal.
+  ///
+  /// @pre The cut set doesn't have the literal.
+  void AddNegativeLiteral(int index) {
+    AddUniqueElement(index, &neg_literals_);
+  }
+
+  /// Checks for module indices.
+  ///
+  /// @param[in] index  Positive index of a module gate.
+  ///
+  /// @returns true if the set has the module.
+  bool HasModule(int index) const {
+    assert(index > 0 && "Non-sanitized index.");
+    return std::binary_search(modules_.begin(), modules_.end(), index);
+  }
+
+  /// Adds a module to the cut set.
+  ///
+  /// @param[in] index  Positive index of the module gate.
+  ///
+  /// @pre The cut set doesn't have the module.
+  void AddModule(int index) { AddUniqueElement(index, &modules_); }
+
   /// Adds a set of positive literals.
   ///
   /// @param[in] literals  A sorted set of unique positive literals.
   void AddPositiveLiterals(const std::vector<int>& literals) {
-    JoinCollection(literals, &pos_literals_);
+    JoinCollection(literals, &pos_literals_, /*modular=*/false);
   }
 
   /// Adds a set of negative literals.
   ///
   /// @param[in] literals  A sorted set of unique negative literals.
   void AddNegativeLiterals(const std::vector<int>& literals) {
-    JoinCollection(literals, &neg_literals_);
+    JoinCollection(literals, &neg_literals_, /*modular=*/false);
   }
 
   /// Adds a set of modules.
   ///
   /// @param[in] modules  A sorted set of unique module indices.
   void AddModules(const std::vector<int>& modules) {
-    JoinCollection(modules, &modules_);
+    JoinCollection(modules, &modules_, /*modular=*/false);
+  }
+
+  /// Joins module cut set into this set.
+  ///
+  /// @param[in] cut_set  Fully analyzed module cut set.
+  ///
+  /// @pre Module cut sets only have modules in common.
+  void JoinModuleCutSet(const CutSet& cut_set) {
+    assert((cut_set.neg_literals_.empty() && neg_literals_.empty()) &&
+           "Non-sanitized cut sets.");
+    JoinCollection(cut_set.modules(), &modules_, /*modular=*/false);
+    JoinCollection(cut_set.literals(), &pos_literals_, true);
   }
 
   /// Removes negative literals.
   /// This must be performed before putting the cut set into the database.
   void Sanitize() { neg_literals_.clear(); }
 
+  /// @param[in] cut_set  Cut set to compare.
+  ///
+  /// @returns true if this cut set includes the argument set.
+  ///
+  /// @note Cut set generation semantics are taken into account.
+  bool Includes(const CutSet& cut_set) const {
+    return std::includes(pos_literals_.begin(), pos_literals_.end(),
+                         cut_set.pos_literals_.begin(),
+                         cut_set.pos_literals_.end()) &&
+           std::includes(modules_.begin(), modules_.end(),
+                         cut_set.modules_.begin(), cut_set.modules_.end());
+  }
+
  private:
   /// Joins a collection of sorted and unique indices into a set.
   ///
   /// @param[in] collection  Sorted and unique collection to add.
   /// @param[in,out] base  Sorted and unique collection.
+  /// @param[in] modular  Treat the collection as a modular.
   void JoinCollection(const std::vector<int>& collection,
-                      std::vector<int>* base) {
+                      std::vector<int>* base, bool modular) {
     int size = base->size();
     base->insert(base->end(), collection.begin(), collection.end());
     std::inplace_merge(base->begin(), base->begin() + size, base->end());
-    base->erase(std::unique(base->begin(), base->end()), base->end());
+    if (!modular)
+      base->erase(std::unique(base->begin(), base->end()), base->end());
+  }
+
+  /// Adds unique element known not to be in the set.
+  ///
+  /// @param[in] index  The index of the element.
+  /// @param[in/out] base  Sorted and unique collection.
+  void AddUniqueElement(int index, std::vector<int>* base) {
+    base->push_back(index);
+    std::inplace_merge(base->begin(), --base->end(), base->end());
   }
 
   std::vector<int> pos_literals_;  ///< Positive indices of basic events.
@@ -134,8 +229,9 @@ struct CutSetPtrHash
   /// @returns Hash value of the set.
   std::size_t operator()(const CutSetPtr& cut_set) const noexcept {
     std::size_t seed = 0;
-    for (int index : cut_set->literals()) boost::hash_combine(seed, index);
-    for (int index : cut_set->modules()) boost::hash_combine(seed, index);
+    for (int index : cut_set->pos_literals_) boost::hash_combine(seed, index);
+    for (int index : cut_set->neg_literals_) boost::hash_combine(seed, index);
+    for (int index : cut_set->modules_) boost::hash_combine(seed, index);
     return seed;
   }
 };
@@ -151,64 +247,15 @@ struct CutSetPtrEqual
   ///
   /// @returns true if the pointed sets are equal.
   bool operator()(const CutSetPtr& lhs, const CutSetPtr& rhs) const noexcept {
-    return lhs->literals() == rhs->literals() &&
-           lhs->modules() == rhs->modules();
+    return lhs->pos_literals_ == rhs->pos_literals_ &&
+           lhs->neg_literals_ == rhs->neg_literals_ &&
+           lhs->modules_ == rhs->modules_;
   }
 };
 
 /// Storage for generated cut sets.
 using CutSetContainer =
     std::unordered_set<CutSetPtr, CutSetPtrHash, CutSetPtrEqual>;
-
-}  // namespace mocus
-
-using Set = boost::container::flat_set<int>;
-using SetPtr = std::shared_ptr<Set>;
-
-/// @struct SetPtrHash
-/// Functor for hashing sets given by pointers.
-struct SetPtrHash
-    : public std::unary_function<const SetPtr, std::size_t> {
-  /// Operator overload for hashing.
-  ///
-  /// @param[in] set  The pointer to set which hash must be calculated.
-  ///
-  /// @returns Hash value of the set.
-  std::size_t operator()(const SetPtr& set) const noexcept {
-    return boost::hash_range(set->begin(), set->end());
-  }
-};
-
-/// @struct SetPtrEqual
-/// Functor for equality test for pointers of sets.
-struct SetPtrEqual
-    : public std::binary_function<const SetPtr, const SetPtr, bool> {
-  /// Operator overload for set equality test.
-  ///
-  /// @param[in] lhs  The first set.
-  /// @param[in] rhs  The second set.
-  ///
-  /// @returns true if the pointed sets are equal.
-  bool operator()(const SetPtr& lhs, const SetPtr& rhs) const noexcept {
-    return *lhs == *rhs;
-  }
-};
-
-/// @class SetPtrComp
-/// Functor for set pointer comparison.
-struct SetPtrComp
-    : public std::binary_function<const SetPtr, const SetPtr, bool> {
-  /// Operator overload.
-  /// Compares sets for sorting.
-  ///
-  /// @param[in] lhs  Pointer to a set.
-  /// @param[in] rhs  Pointer to a set.
-  ///
-  /// @returns true if the lhs pointed set is less than the rhs pointed set.
-  bool operator()(const SetPtr& lhs, const SetPtr& rhs) const noexcept {
-    return *lhs < *rhs;
-  }
-};
 
 /// @class SimpleGate
 /// A helper class to be used in MOCUS.
@@ -219,10 +266,9 @@ struct SetPtrComp
 class SimpleGate {
  public:
   using SimpleGatePtr = std::shared_ptr<SimpleGate>;
-  using HashSet = std::unordered_set<SetPtr, SetPtrHash, SetPtrEqual>;
 
   /// @param[in] type  The type of this gate. AND or OR types are expected.
-  explicit SimpleGate(const Operator& type) noexcept : type_(type) {}
+  explicit SimpleGate(Operator type) noexcept : type_(type) {}
 
   /// @returns The type of this gate.
   const Operator& type() const { return type_; }
@@ -234,7 +280,6 @@ class SimpleGate {
   /// @pre The absolute index is unique.
   void AddLiteral(int index) {
     assert(index && "Index can't be 0.");
-    basic_events_.push_back(index);
     if (index > 0) {
       pos_literals_.push_back(index);
     } else {
@@ -280,7 +325,8 @@ class SimpleGate {
   /// @param[in] cut_set  The base cut set to work with.
   /// @param[out] new_cut_sets  Generated cut sets
   ///                           by adding the gate's children.
-  void GenerateCutSets(const SetPtr& cut_set, HashSet* new_cut_sets) noexcept;
+  void GenerateCutSets(const CutSetPtr& cut_set,
+                       CutSetContainer* new_cut_sets) noexcept;
 
   /// Sets the limit order for all analysis with simple gates.
   ///
@@ -294,7 +340,8 @@ class SimpleGate {
   ///
   /// @param[in] cut_set  The base cut set to work with.
   /// @param[out] new_cut_sets  Generated cut sets by using the gate's children.
-  void AndGateCutSets(const SetPtr& cut_set, HashSet* new_cut_sets) noexcept;
+  void AndGateCutSets(const CutSetPtr& cut_set,
+                      CutSetContainer* new_cut_sets) noexcept;
 
   /// Generates cut sets for OR gate children
   /// using already generated sets.
@@ -302,16 +349,18 @@ class SimpleGate {
   ///
   /// @param[in] cut_set  The base cut set to work with.
   /// @param[out] new_cut_sets  Generated cut sets by using the gate's children.
-  void OrGateCutSets(const SetPtr& cut_set, HashSet* new_cut_sets) noexcept;
+  void OrGateCutSets(const CutSetPtr& cut_set,
+                     CutSetContainer* new_cut_sets) noexcept;
 
   Operator type_;  ///< Type of this gate.
-  std::vector<int> basic_events_;  ///< Container of basic events' indices.
   std::vector<int> pos_literals_;  ///< Positive indices of basic events.
   std::vector<int> neg_literals_;  ///< Negative indices of basic events.
   std::vector<int> modules_;  ///< Container of modules' indices.
   std::vector<SimpleGatePtr> gates_;  ///< Container of child gates.
   static int limit_order_;  ///< The limit on the order of minimal cut sets.
 };
+
+}  // namespace mocus
 
 /// @class Mocus
 /// This class analyzes normalized, preprocessed, and indexed fault trees
@@ -331,8 +380,10 @@ class Mocus {
   const std::vector<std::vector<int>>& cut_sets() const { return cut_sets_; }
 
  private:
-  using SimpleGatePtr = std::shared_ptr<SimpleGate>;
   using IGatePtr = std::shared_ptr<IGate>;
+  using SimpleGatePtr = mocus::SimpleGate::SimpleGatePtr;
+  using CutSetPtr = mocus::CutSetPtr;
+  using CutSet = mocus::CutSet;
 
   /// Traverses the fault tree to convert gates into simple gates.
   ///
@@ -347,7 +398,7 @@ class Mocus {
   /// @param[in] gate  The simple gate as a parent for processing.
   /// @param[out] mcs  Minimal cut sets.
   void AnalyzeSimpleGate(const SimpleGatePtr& gate,
-                         std::vector<Set>* mcs) noexcept;
+                         std::vector<CutSet>* mcs) noexcept;
 
   /// Finds minimal cut sets from cut sets.
   /// Reduces unique cut sets to minimal cut sets.
@@ -359,12 +410,10 @@ class Mocus {
   /// @param[in] mcs_lower_order  Reference minimal cut sets of some order.
   /// @param[in] min_order  The order of sets to become minimal.
   /// @param[out] mcs  Min cut sets.
-  ///
-  /// @note T_avg(N^3 + N^2*logN + N*logN) = O_avg(N^3)
-  void MinimizeCutSets(const std::vector<const Set*>& cut_sets,
-                       const std::vector<Set>& mcs_lower_order,
+  void MinimizeCutSets(const std::vector<const CutSet*>& cut_sets,
+                       const std::vector<CutSet>& mcs_lower_order,
                        int min_order,
-                       std::vector<Set>* mcs) noexcept;
+                       std::vector<CutSet>* mcs) noexcept;
 
   const BooleanGraph* fault_tree_;  ///< The main fault tree.
   const Settings kSettings_;  ///< Analysis settings.

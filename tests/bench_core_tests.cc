@@ -69,7 +69,7 @@ TEST_F(RiskAnalysisTest, AB_OR_NOT_AC) {
 }
 
 // Simple verification tests for Atleast gate fault tree.
-// Test Minimal cut sets and total probabilty.
+// Test Minimal cut sets and total probability.
 TEST_F(RiskAnalysisTest, ATLEAST) {
   std::string tree_input = "./share/scram/input/core/atleast.xml";
   settings.probability_analysis(true);
@@ -105,8 +105,9 @@ TEST_F(RiskAnalysisTest, A_OR_NOT_B) {
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(0.82, p_total());
 
-  std::set< std::set<std::string> > mcs = {{"a"}, {"not b"}};
-  EXPECT_EQ(2, min_cut_sets().size());
+  /// @todo Enable with prime implicants.
+  /* std::set< std::set<std::string> > mcs = {{"a"}, {"not b"}}; */
+  std::set< std::set<std::string> > mcs = {{}};
   EXPECT_EQ(mcs, min_cut_sets());
 }
 
@@ -128,7 +129,9 @@ TEST_F(RiskAnalysisTest, A_AND_NOT_B) {
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_NEAR(0.08, p_total(), 1e-5);
 
-  std::set< std::set<std::string> > mcs = {{"a", "not b"}};
+  /// @todo Enable with prime implicants.
+  /* std::set< std::set<std::string> > mcs = {{"a", "not b"}}; */
+  std::set< std::set<std::string> > mcs = {{"a"}};
   EXPECT_EQ(1, min_cut_sets().size());
   EXPECT_EQ(mcs, min_cut_sets());
 }
@@ -229,8 +232,27 @@ TEST_F(RiskAnalysisTest, HOUSE_NULL) {
   EXPECT_TRUE(min_cut_sets().empty());
 }
 
+// Checks for NAND UNITY top gate cases.
+TEST_F(RiskAnalysisTest, SUBTLE_UNITY) {
+  std::string tree_input = "./share/scram/input/core/subtle_unity.xml";
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
+
+  // Special case of one empty cut set in a container.
+  EXPECT_EQ(1, min_cut_sets().size());
+  EXPECT_TRUE(min_cut_sets().begin()->empty());
+}
+
+// Checks for NAND UNITY top gate cases.
+TEST_F(RiskAnalysisTest, SUBTLE_NULL) {
+  std::string tree_input = "./share/scram/input/core/subtle_null.xml";
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  EXPECT_TRUE(min_cut_sets().empty());
+}
+
 // Benchmark Tests for [A xor B xor C] fault tree.
-// Test Minimal cut sets and total probabilty.
+// Test Minimal cut sets and total probability.
 TEST_F(RiskAnalysisTest, XOR_ABC) {
   std::string tree_input = "./share/scram/input/core/xor.xml";
   settings.probability_analysis(true);
@@ -238,11 +260,13 @@ TEST_F(RiskAnalysisTest, XOR_ABC) {
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(0.404, p_total());
 
-  std::set< std::set<std::string> > mcs = {{"a", "b", "c"},
-                                           {"a", "not b", "not c"},
-                                           {"not a", "b", "not c"},
-                                           {"not a", "not b", "c"}};
-  EXPECT_EQ(4, min_cut_sets().size());
+  /// @todo Enable with prime implicants.
+  /* std::set< std::set<std::string> > mcs = {{"a", "b", "c"}, */
+  /*                                          {"a", "not b", "not c"}, */
+  /*                                          {"not a", "b", "not c"}, */
+  /*                                          {"not a", "not b", "c"}}; */
+  std::set< std::set<std::string> > mcs = {{"a"}, {"b"}, {"c"}};
+  EXPECT_EQ(3, min_cut_sets().size());
   EXPECT_EQ(mcs, min_cut_sets());
 }
 
@@ -269,7 +293,7 @@ TEST_F(RiskAnalysisTest, NULL_A) {
 }
 
 // Benchmark Tests for Beta factor common cause failure model.
-// Test Minimal cut sets and total probabilty.
+// Test Minimal cut sets and total probability.
 TEST_F(RiskAnalysisTest, BetaFactorCCF) {
   std::string tree_input = "./share/scram/input/core/beta_factor_ccf.xml";
   std::string p1 = "[pumpone]";
