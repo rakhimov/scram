@@ -269,15 +269,16 @@ void Mocus::CreateSimpleTree(
     IGatePtr child_gate = arg.second;
     Mocus::CreateSimpleTree(child_gate, processed_gates);
     if (child_gate->IsModule()) {
-      simple_gate->InitiateWithModule(arg.first);
+      simple_gate->AddModule(arg.first);
     } else {
-      simple_gate->AddChildGate(processed_gates->find(arg.first)->second);
+      simple_gate->AddGate(processed_gates->find(arg.first)->second);
     }
   }
   using VariablePtr = std::shared_ptr<Variable>;
   for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
-    simple_gate->InitiateWithBasic(arg.first);
+    simple_gate->AddLiteral(arg.first);
   }
+  simple_gate->SetupForAnalysis();
 }
 
 void Mocus::AnalyzeSimpleGate(const SimpleGatePtr& gate,

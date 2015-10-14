@@ -227,30 +227,52 @@ class SimpleGate {
   /// @returns The type of this gate.
   const Operator& type() const { return type_; }
 
-  /// Adds a basic event index at the end of a container.
-  /// This function is specifically given to initiate the gate.
+  /// Adds an index of a basic event.
   ///
-  /// @param[in] index  The index of a basic event.
-  void InitiateWithBasic(int index) { basic_events_.push_back(index); }
+  /// @param[in] index  Positive or negative index of a basic event.
+  ///
+  /// @pre The absolute index is unique.
+  void AddLiteral(int index) {
+    assert(index && "Index can't be 0.");
+    basic_events_.push_back(index);
+    if (index > 0) {
+      pos_literals_.push_back(index);
+    } else {
+      neg_literals_.push_back(-index);
+    }
+  }
 
   /// Adds a module index at the end of a container.
   /// This function is specifically given to initiate the gate.
   /// Note that modules are treated just like basic events.
   ///
   /// @param[in] index  The index of a module.
-  void InitiateWithModule(int index) {
+  ///
+  /// @pre The graph does not have complement modules.
+  void AddModule(int index) {
     assert(index > 0);
     modules_.push_back(index);
   }
 
-  /// Add a pointer to a child gate.
-  /// This function assumes that the tree does not have complement gates.
+  /// Add a pointer to an argument gate.
   ///
   /// @param[in] gate  The pointer to the child gate.
-  void AddChildGate(const SimpleGatePtr& gate) {
+  ///
+  /// @pre The graph does not have complement gates.
+  void AddGate(const SimpleGatePtr& gate) {
     assert(gate->type() == kAndGate || gate->type() == kOrGate);
     assert(gate->type() != type_);
     gates_.push_back(gate);
+  }
+
+  /// Prepares the state to meet
+  /// the preconditions of analysis.
+  ///
+  /// @pre All the initialization of arguments is done.
+  void SetupForAnalysis() {
+    std::sort(pos_literals_.begin(), pos_literals_.end());
+    std::sort(neg_literals_.begin(), neg_literals_.end());
+    std::sort(modules_.begin(), modules_.end());
   }
 
   /// Generates cut sets by using a provided set.
@@ -284,6 +306,8 @@ class SimpleGate {
 
   Operator type_;  ///< Type of this gate.
   std::vector<int> basic_events_;  ///< Container of basic events' indices.
+  std::vector<int> pos_literals_;  ///< Positive indices of basic events.
+  std::vector<int> neg_literals_;  ///< Negative indices of basic events.
   std::vector<int> modules_;  ///< Container of modules' indices.
   std::vector<SimpleGatePtr> gates_;  ///< Container of child gates.
   static int limit_order_;  ///< The limit on the order of minimal cut sets.
