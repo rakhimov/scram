@@ -336,6 +336,7 @@ void IGate::ProcessAtleastGateDuplicateArg(int index) noexcept {
     this->type_ = kAndGate;
     clone_two->TransferArg(index, shared_from_this());  // Transfered the x.
     if (clone_two->vote_number() == 1) clone_two->type(kOrGate);
+    this->AddArg(clone_two->index(), clone_two);
     return;
   }
   assert(args_.size() > 2);
