@@ -40,6 +40,128 @@
 
 namespace scram {
 
+namespace mocus {
+
+/// @class CutSet
+/// Representation of a cut set for operations in MOCUS.
+class CutSet {
+ public:
+  /// @returns The order of the cut set.
+  int order() const { return pos_literals_.size(); }
+
+  /// @returns Positive literals in the cut set.
+  const std::vector<int>& literals() const { return pos_literals_; }
+
+  /// @returns A set of module indices.
+  const std::vector<int>& modules() const { return modules_; }
+
+  /// Checks for positive literals.
+  ///
+  /// @param[in] index  Positive index of a basic event.
+  ///
+  /// @returns true if the set has the literal.
+  bool HasPositiveLiteral(int index) const {
+    assert(index > 0 && "Non-sanitized index.");
+    return std::binary_search(pos_literals_.begin(), pos_literals_.end(),
+                              index);
+  }
+
+  /// Checks for negative literals.
+  ///
+  /// @param[in] index  Positive index of a basic event.
+  ///
+  /// @returns true if the set has the complement of the literal.
+  bool HasNegativeLiteral(int index) const {
+    assert(index > 0 && "Non-sanitized index.");
+    return std::binary_search(neg_literals_.begin(), neg_literals_.end(),
+                              index);
+  }
+
+  /// Adds a set of positive literals.
+  ///
+  /// @param[in] literals  A sorted set of unique positive literals.
+  void AddPositiveLiterals(const std::vector<int>& literals) {
+    JoinCollection(literals, &pos_literals_);
+  }
+
+  /// Adds a set of negative literals.
+  ///
+  /// @param[in] literals  A sorted set of unique negative literals.
+  void AddNegativeLiterals(const std::vector<int>& literals) {
+    JoinCollection(literals, &neg_literals_);
+  }
+
+  /// Adds a set of modules.
+  ///
+  /// @param[in] modules  A sorted set of unique module indices.
+  void AddModules(const std::vector<int>& modules) {
+    JoinCollection(modules, &modules_);
+  }
+
+  /// Removes negative literals.
+  /// This must be performed before putting the cut set into the database.
+  void Sanitize() { neg_literals_.clear(); }
+
+ private:
+  /// Joins a collection of sorted and unique indices into a set.
+  ///
+  /// @param[in] collection  Sorted and unique collection to add.
+  /// @param[in,out] base  Sorted and unique collection.
+  void JoinCollection(const std::vector<int>& collection,
+                      std::vector<int>* base) {
+    int size = base->size();
+    base->insert(base->end(), collection.begin(), collection.end());
+    std::inplace_merge(base->begin(), base->begin() + size, base->end());
+    base->erase(std::unique(base->begin(), base->end()), base->end());
+  }
+
+  std::vector<int> pos_literals_;  ///< Positive indices of basic events.
+  std::vector<int> neg_literals_;  ///< Negative indices of basic events.
+  std::vector<int> modules_;  ///< Positive indices of modules (gates).
+};
+
+/// Pointer to manage cut sets.
+using CutSetPtr = std::shared_ptr<CutSet>;
+
+/// @struct CutSetPtrHash
+/// Functor for hashing sets given by pointers.
+struct CutSetPtrHash
+    : public std::unary_function<const CutSetPtr, std::size_t> {
+  /// Operator overload for hashing.
+  ///
+  /// @param[in] cut_set  The pointer to cut_set.
+  ///
+  /// @returns Hash value of the set.
+  std::size_t operator()(const CutSetPtr& cut_set) const noexcept {
+    std::size_t seed = 0;
+    for (int index : cut_set->literals()) boost::hash_combine(seed, index);
+    for (int index : cut_set->modules()) boost::hash_combine(seed, index);
+    return seed;
+  }
+};
+
+/// @struct CutSetPtrEqual
+/// Functor for equality test for pointers of sets.
+struct CutSetPtrEqual
+    : public std::binary_function<const CutSetPtr, const CutSetPtr, bool> {
+  /// Operator overload for set equality test.
+  ///
+  /// @param[in] lhs  The first set.
+  /// @param[in] rhs  The second set.
+  ///
+  /// @returns true if the pointed sets are equal.
+  bool operator()(const CutSetPtr& lhs, const CutSetPtr& rhs) const noexcept {
+    return lhs->literals() == rhs->literals() &&
+           lhs->modules() == rhs->modules();
+  }
+};
+
+/// Storage for generated cut sets.
+using CutSetContainer =
+    std::unordered_set<CutSetPtr, CutSetPtrHash, CutSetPtrEqual>;
+
+}  // namespace mocus
+
 using Set = boost::container::flat_set<int>;
 using SetPtr = std::shared_ptr<Set>;
 
