@@ -49,14 +49,45 @@ namespace scram {
 
 class IGate;  // Indexed gate parent of nodes.
 
+/// @class NodeParentManager
+/// Manager of information about parents.
+/// Only gates can manipulate the data.
+class NodeParentManager {
+  friend class IGate;  ///< The main manipulator of parent information.
+
+ public:
+  virtual ~NodeParentManager() = 0;  ///< Abstract class.
+
+  /// @returns Parents of a node.
+  const std::unordered_map<int, std::weak_ptr<IGate>>& parents() const {
+    return parents_;
+  }
+
+ private:
+  /// Adds a new parent of a node.
+  ///
+  /// @param[in] gate  Pointer to the parent gate.
+  void AddParent(const std::shared_ptr<IGate>& gate);
+
+  /// Removes a parent from the node.
+  ///
+  /// @param[in] index  Positive index of the parent gate.
+  ///
+  /// @pre There is a parent with the given index.
+  void EraseParent(int index) {
+    assert(parents_.count(index) && "No parent with the given index exists.");
+    parents_.erase(index);
+  }
+
+  std::unordered_map<int, std::weak_ptr<IGate>> parents_;  ///< Parents.
+};
+
 /// @class Node
 /// An abstract base class that represents a node in a Boolean graph.
 /// The index of the node is a unique identifier for the node.
 /// The node holds weak pointers to the parents
 /// that are managed by the parents.
-class Node {
-  friend class IGate;  ///< To manage parent information.
-
+class Node : public NodeParentManager {
  public:
   /// Creates a graph node with its index assigned sequentially.
   Node() noexcept;
@@ -78,11 +109,6 @@ class Node {
 
   /// Resets the starting index.
   static void ResetIndex() { next_index_ = 1e6; }
-
-  /// @returns Parents of this gate.
-  const std::unordered_map<int, std::weak_ptr<IGate> >& parents() const {
-    return parents_;
-  }
 
   /// @returns Optimization value for failure propagation.
   int opti_value() const { return opti_value_; }
@@ -163,9 +189,7 @@ class Node {
  private:
   static int next_index_;  ///< Automatic indexation of the next new node.
   int index_;  ///< Index of this node.
-  /// This is a traversal array containing first, second, and last visits.
-  int visits_[3];
-  std::unordered_map<int, std::weak_ptr<IGate> > parents_;  ///< Parents.
+  int visits_[3];  ///< Traversal array with first, second, and last visits.
   int opti_value_;  ///< Failure propagation optimization value.
   int pos_count_;  ///< The number of occurrences as a positive node.
   int neg_count_;  ///< The number of occurrences as a negative node.
@@ -458,21 +482,27 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   ///          if the argument is duplicate.
   ///          The caller must be very cautious of
   ///          the side effects of the manipulations.
-  void AddArg(int index, const IGatePtr& gate) noexcept;
+  void AddArg(int index, const IGatePtr& gate) noexcept {
+    AddArg(index, gate, &gate_args_);
+  }
 
   /// Overload of AddArg() to add a variable argument.
   /// All the AddArg() comments and warnings apply to this overload as well.
   ///
   /// @param[in] index  A positive or negative index of an argument.
   /// @param[in] variable  A pointer to the argument variable.
-  void AddArg(int index, const VariablePtr& variable) noexcept;
+  void AddArg(int index, const VariablePtr& variable) noexcept {
+    AddArg(index, variable, &variable_args_);
+  }
 
   /// Overload of AddArg() to add a constant argument.
   /// All the AddArg() comments and warnings apply to this overload as well.
   ///
   /// @param[in] index  A positive or negative index of an argument.
   /// @param[in] constant  A pointer to the argument that is a Constant.
-  void AddArg(int index, const ConstantPtr& constant) noexcept;
+  void AddArg(int index, const ConstantPtr& constant) noexcept {
+    AddArg(index, constant, &constant_args_);
+  }
 
   /// Transfers this gate's argument to another gate.
   ///
@@ -550,6 +580,17 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   }
 
  private:
+  /// Handles addition of arguments to the gate.
+  ///
+  /// @tparam Ptr  Shared pointer type to the argument.
+  /// @tparam Container  Type of the destination container.
+  ///
+  /// @param[in] index  Positive or negative index of the argument.
+  /// @param[in,out] arg  Pointer to the argument.
+  /// @param[in,out] container  The final destination to save the argument.
+  template<typename Ptr, typename Container>
+  void AddArg(int index, const Ptr& arg, Container* container) noexcept;
+
   /// Process an addition of an argument
   /// that already exists in this gate.
   ///

@@ -31,6 +31,12 @@ namespace scram {
 
 int Node::next_index_ = 1e6;  // 1 million basic events per fault tree is crazy!
 
+NodeParentManager::~NodeParentManager() {}  // Pure virtual destructor.
+
+void NodeParentManager::AddParent(const std::shared_ptr<IGate>& gate) {
+  parents_.emplace(gate->index(), gate);
+}
+
 Node::Node() noexcept : Node::Node(next_index_++) {}
 
 Node::Node(int index) noexcept
@@ -61,6 +67,7 @@ IGate::IGate(Operator type) noexcept
       module_(false) {}
 
 std::shared_ptr<IGate> IGate::Clone() noexcept {
+  BLOG(DEBUG5, module_) << "WARNING: Cloning module G" << Node::index();
   IGatePtr clone(new IGate(type_));  // The same type.
   clone->vote_number_ = vote_number_;  // Copy vote number in case it is K/N.
   // Getting arguments copied.
@@ -69,60 +76,28 @@ std::shared_ptr<IGate> IGate::Clone() noexcept {
   clone->variable_args_ = variable_args_;
   clone->constant_args_ = constant_args_;
   // Introducing the new parent to the args.
-  for (const std::pair<int, IGatePtr>& arg : gate_args_) {
-    arg.second->parents_.emplace(clone->index(), clone);
-  }
-  for (const std::pair<int, VariablePtr>& arg : variable_args_) {
-    arg.second->parents_.emplace(clone->index(), clone);
-  }
-  for (const std::pair<int, ConstantPtr>& arg : constant_args_) {
-    arg.second->parents_.emplace(clone->index(), clone);
-  }
+  for (const auto& arg : gate_args_) arg.second->AddParent(clone);
+  for (const auto& arg : variable_args_) arg.second->AddParent(clone);
+  for (const auto& arg : constant_args_) arg.second->AddParent(clone);
   return clone;
 }
 
-/// @def ADD_ARG_ASSERT(index, ptr)
-/// Common assertions upon addition of a new argument to a gate.
-#define ADD_ARG_ASSERT(index, ptr)                                        \
-  assert(index != 0);                                                     \
-  assert(std::abs(index) == ptr->index());                                \
-  assert(state_ == kNormalState);                                         \
-  assert(!((type_ == kNotGate || type_ == kNullGate) && !args_.empty())); \
-  assert(!(type_ == kXorGate && args_.size() > 1));                       \
-  assert(vote_number_ >= 0)
+template<typename Ptr, typename Container>
+void IGate::AddArg(int index, const Ptr& arg, Container* container) noexcept {
+  assert(index != 0);
+  assert(std::abs(index) == arg->index());
+  assert(state_ == kNormalState);
+  assert(!((type_ == kNotGate || type_ == kNullGate) && !args_.empty()));
+  assert(!(type_ == kXorGate && args_.size() > 1));
+  assert(vote_number_ >= 0);
 
-/// @def ADD_SPECIAL_ARG(index)
-/// Short-circuit handling of duplicate and complement arguments.
-#define ADD_SPECIAL_ARG(index)                                      \
-  if (args_.count(index)) return IGate::ProcessDuplicateArg(index); \
-  if (args_.count(-index)) return IGate::ProcessComplementArg(index)
+  if (args_.count(index)) return IGate::ProcessDuplicateArg(index);
+  if (args_.count(-index)) return IGate::ProcessComplementArg(index);
 
-void IGate::AddArg(int index, const IGatePtr& gate) noexcept {
-  ADD_ARG_ASSERT(index, gate);
-  ADD_SPECIAL_ARG(index);
   args_.insert(index);
-  gate_args_.emplace(index, gate);
-  gate->parents_.emplace(Node::index(), shared_from_this());
+  container->emplace(index, arg);
+  arg->AddParent(shared_from_this());
 }
-
-void IGate::AddArg(int index, const VariablePtr& variable) noexcept {
-  ADD_ARG_ASSERT(index, variable);
-  ADD_SPECIAL_ARG(index);
-  args_.insert(index);
-  variable_args_.emplace(index, variable);
-  variable->parents_.emplace(Node::index(), shared_from_this());
-}
-
-void IGate::AddArg(int index, const ConstantPtr& constant) noexcept {
-  ADD_ARG_ASSERT(index, constant);
-  ADD_SPECIAL_ARG(index);
-  args_.insert(index);
-  constant_args_.emplace(index, constant);
-  constant->parents_.emplace(Node::index(), shared_from_this());
-}
-
-#undef ADD_ARG_ASSERT
-#undef ADD_SPECIAL_ARG
 
 void IGate::TransferArg(int index, const IGatePtr& recipient) noexcept {
   assert(index != 0);
@@ -143,8 +118,7 @@ void IGate::TransferArg(int index, const IGatePtr& recipient) noexcept {
     recipient->AddArg(index, constant_args_.find(index)->second);
     constant_args_.erase(index);
   }
-  assert(node->parents_.count(Node::index()));
-  node->parents_.erase(Node::index());
+  node->EraseParent(Node::index());
 }
 
 void IGate::ShareArg(int index, const IGatePtr& recipient) noexcept {
@@ -221,8 +195,7 @@ void IGate::JoinGate(const IGatePtr& arg_gate) noexcept {
 
   args_.erase(arg_gate->index());  // Erase at the end to avoid the type change.
   gate_args_.erase(arg_gate->index());
-  assert(arg_gate->parents_.count(Node::index()));
-  arg_gate->parents_.erase(Node::index());
+  arg_gate->EraseParent(Node::index());
 }
 
 void IGate::JoinNullGate(int index) noexcept {
@@ -233,7 +206,7 @@ void IGate::JoinNullGate(int index) noexcept {
   args_.erase(index);
   IGatePtr null_gate = gate_args_.find(index)->second;
   gate_args_.erase(index);
-  null_gate->parents_.erase(Node::index());
+  null_gate->EraseParent(Node::index());
 
   assert(null_gate->type_ == kNullGate);
   assert(null_gate->args_.size() == 1);
@@ -267,23 +240,16 @@ void IGate::EraseArg(int index) noexcept {
     node = constant_args_.find(index)->second;
     constant_args_.erase(index);
   }
-  assert(node->parents_.count(Node::index()));
-  node->parents_.erase(Node::index());
+  node->EraseParent(Node::index());
 }
 
 void IGate::EraseAllArgs() noexcept {
   args_.clear();
-  for (const std::pair<int, IGatePtr>& arg : gate_args_) {
-    arg.second->parents_.erase(Node::index());
-  }
+  for (const auto& arg : gate_args_) arg.second->EraseParent(Node::index());
   gate_args_.clear();
-  for (const std::pair<int, VariablePtr>& arg : variable_args_) {
-    arg.second->parents_.erase(Node::index());
-  }
+  for (const auto& arg : variable_args_) arg.second->EraseParent(Node::index());
   variable_args_.clear();
-  for (const std::pair<int, ConstantPtr>& arg : constant_args_) {
-    arg.second->parents_.erase(Node::index());
-  }
+  for (const auto& arg : constant_args_) arg.second->EraseParent(Node::index());
   constant_args_.clear();
 }
 
