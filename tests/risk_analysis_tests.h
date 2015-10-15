@@ -41,16 +41,25 @@ class RiskAnalysisTest : public ::testing::Test {
  protected:
   virtual void SetUp() {}
 
-  virtual void TearDown() {
-    delete init;
-    delete ran;
-  }
+  virtual void TearDown() {}
 
   // Parsing multiple input files.
   void ProcessInputFiles(const std::vector<std::string>& input_files) {
-    init = new Initializer(settings);
+    ResetInitializer();
     init->ProcessInputFiles(input_files);
-    ran = new RiskAnalysis(init->model(), settings);
+    ResetRiskAnalysis();
+  }
+
+  // Resets the initializer with the settings of the object.
+  void ResetInitializer() {
+    init = std::unique_ptr<Initializer>(new Initializer(settings));
+  }
+
+  // Resets the risk analysis with the initialized model and settings.
+  void ResetRiskAnalysis() {
+    assert(init && "Missing initializer");
+    ran = std::unique_ptr<RiskAnalysis>(
+        new RiskAnalysis(init->model(), settings));
   }
 
   // Parsing an input file to get the model.
@@ -158,8 +167,8 @@ class RiskAnalysisTest : public ::testing::Test {
   }
 
   // Members
-  RiskAnalysis* ran;
-  Initializer* init;
+  std::unique_ptr<RiskAnalysis> ran;
+  std::unique_ptr<Initializer> init;
   Settings settings;
 
  private:
