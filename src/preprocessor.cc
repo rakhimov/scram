@@ -2495,7 +2495,7 @@ void CustomPreprocessor<Mocus>::Run() noexcept {
   LOG(DEBUG2) << "Preprocessing Phase V...";
   Preprocessor::PhaseFive();
   LOG(DEBUG2) << "Finished Preprocessing Phase V in " << DUR(time_5);
-  Preprocessor::CheckRootGate();  // To cleanup.
+  if (Preprocessor::CheckRootGate()) return;
   SANITY_ASSERT;
   assert(graph_->normal());
 }
