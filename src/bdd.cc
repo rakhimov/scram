@@ -53,7 +53,7 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
       function_id_(2) {
   CLOCK(init_time);
   LOG(DEBUG3) << "Converting Boolean graph into BDD...";
-  if (fault_tree->root()->state() != kNormalState) {
+  if (fault_tree->root()->IsConstant()) {
     // Constant case should only happen to the top gate.
     if (fault_tree->root()->state() == kNullState) {
       root_ = {true, kOne_};
@@ -85,7 +85,7 @@ const std::vector<std::vector<int>>& Bdd::cut_sets() const {
 }
 
 const Bdd::Function& Bdd::IfThenElse(const IGatePtr& gate) noexcept {
-  assert(gate->state() == kNormalState && "Unexpected constant gate!");
+  assert(!gate->IsConstant() && "Unexpected constant gate!");
   Function& result = gates_[gate->index()];
   if (result.vertex) return result;
   std::vector<Function> args;

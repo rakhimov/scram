@@ -340,6 +340,9 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// @returns The state of this gate.
   const State& state() const { return state_; }
 
+  /// @returns true if this gate has become constant.
+  bool IsConstant() const { return state_ != kNormalState; }
+
   /// @returns Arguments of this gate.
   const std::set<int>& args() const { return args_; }
 

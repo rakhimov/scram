@@ -171,7 +171,7 @@ Mocus::Mocus(const BooleanGraph* fault_tree, const Settings& settings)
         kSettings_(settings) {
   IGatePtr top = fault_tree->root();
   // Special case of empty top gate.
-  if (top->state() != kNormalState) {
+  if (top->IsConstant()) {
     if (top->state() == kUnityState) cut_sets_.push_back({});  // Unity set.
     constant_graph_ = true;
     return;  // Other cases are null or empty.

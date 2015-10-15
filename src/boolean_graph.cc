@@ -665,7 +665,7 @@ std::ostream& operator<<(std::ostream& os, const std::shared_ptr<IGate>& gate) {
   if (gate->Visited()) return os;
   gate->Visit(1);
   std::string name = GetName(gate);
-  if (gate->state() != kNormalState) {
+  if (gate->IsConstant()) {
     std::string state = gate->state() == kNullState ? "false" : "true";
     os << "s(" << name << ") = " << state << std::endl;
     return os;
