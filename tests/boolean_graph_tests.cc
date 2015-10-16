@@ -64,7 +64,6 @@ class IGateTest : public ::testing::Test {
   /// @note The setup is not for one-arg gates (NOT/NULL).
   /// @note For K/N gates, K is set to 2 by default.
   void DefineGate(Operator type, int num_vars) {
-    assert(type != kNotGate && type != kNullGate);
     assert(num_vars < 6);
     assert(!(type == kAtleastGate && num_vars < 2));
 
@@ -95,7 +94,7 @@ class IGateTest : public ::testing::Test {
   std::vector<VariablePtr> vars_;  // For convenience only.
 };
 
-/// @def ADD_IGNORE_TEST(Type, num_vars)
+/// @def ADD_IGNORE_TEST
 ///
 /// Collection of tests
 /// for addition of an existing argument to a gate.
@@ -112,7 +111,7 @@ class IGateTest : public ::testing::Test {
   EXPECT_TRUE(g->gate_args().empty());            \
   EXPECT_TRUE(g->constant_args().empty())
 
-/// @def TEST_DUP_ARG_IGNORE(Type)
+/// @def TEST_DUP_ARG_IGNORE
 ///
 /// Tests addition of an existing argument to Boolean graph gates
 /// that do not change the type of the gate.
@@ -131,7 +130,7 @@ TEST_DUP_ARG_IGNORE(Nor);
 
 #undef TEST_DUP_ARG_IGNORE
 
-/// @def TEST_DUP_ARG_TYPE_CHANGE(InitType, FinalType)
+/// @def TEST_DUP_ARG_TYPE_CHANGE
 ///
 /// Tests duplication addition that changes the type of the gate.
 ///
@@ -243,7 +242,7 @@ TEST_F(IGateTest, DuplicateArgAtleastToOr_TwoClones) {
   EXPECT_EQ(4, clone_two->variable_args().size());
 }
 
-/// @def TEST_ADD_COMPLEMENT_ARG(Type, Set)
+/// @def TEST_ADD_COMPLEMENT_ARG
 ///
 /// Collection of tests
 /// for addition of the complement of an existing argument to a gate.
@@ -270,7 +269,7 @@ TEST_ADD_COMPLEMENT_ARG(Xor, Unity);
 
 #undef TEST_ADD_COMPLEMENT_ARG
 
-/// @def TEST_ADD_COMPLEMENT_ARG_KN(num_vars, v_num, FinalType)
+/// @def TEST_ADD_COMPLEMENT_ARG_KN
 ///
 /// Collection of ATLEAST (K/N) gate tests
 /// for addition of the complement of an existing argument.
@@ -297,6 +296,86 @@ TEST_ADD_COMPLEMENT_ARG_KN(3, 2, Or);  // General case.
 TEST_ADD_COMPLEMENT_ARG_KN(3, 3, And);  // Join operation.
 
 #undef TEST_ADD_COMPLEMENT_ARG_KN
+
+/// @def TEST_CONSTANT_ARG_STATE
+///
+/// Tests for processing of a constant argument of a gate,
+/// which results in gate becoming constant itself.
+///
+/// @param Const  The true or false state of the gate argument.
+/// @param num_vars  The initial number of gate arguments.
+/// @param InitType  The initial type of the gate.
+/// @param FinalState  The final state of the gate.
+#define TEST_CONSTANT_ARG_STATE(Const, num_vars, InitType, FinalState) \
+  TEST_F(IGateTest, Const##ConstantArg##InitType) {                    \
+    DefineGate(k##InitType##Gate, num_vars);                           \
+    g->ProcessConstantArg(var_one, Const);                             \
+    EXPECT_EQ(k##FinalState##State, g->state());                       \
+    EXPECT_TRUE(g->args().empty());                                    \
+    EXPECT_TRUE(g->variable_args().empty());                           \
+    EXPECT_TRUE(g->gate_args().empty());                               \
+    EXPECT_TRUE(g->constant_args().empty());                           \
+  }
+
+TEST_CONSTANT_ARG_STATE(true, 1, Null, Unity);
+TEST_CONSTANT_ARG_STATE(false, 1, Null, Null);
+TEST_CONSTANT_ARG_STATE(false, 1, Not, Unity);
+TEST_CONSTANT_ARG_STATE(true, 1, Not, Null);
+TEST_CONSTANT_ARG_STATE(true, 2, Or, Unity);
+TEST_CONSTANT_ARG_STATE(false, 2, And, Null);
+TEST_CONSTANT_ARG_STATE(true, 2, Nor, Null);
+TEST_CONSTANT_ARG_STATE(false, 2, Nand, Unity);
+
+#undef TEST_CONSTANT_ARG_STATE
+
+/// @def TEST_CONSTANT_ARG_VNUM
+///
+/// Tests for processing of a constant argument of a gate,
+/// which results in type change of the gate.
+///
+/// @param Const  The true or false state of the gate argument.
+/// @param num_vars  The initial number of gate arguments.
+/// @param v_num  The initial vote number of the gate.
+/// @param InitType  The initial type of the gate.
+/// @param FinalType  The final type of the gate.
+#define TEST_CONSTANT_ARG_VNUM(Const, num_vars, v_num, InitType, FinalType) \
+  TEST_F(IGateTest, Const##ConstantArg##InitType##To##FinalType) {          \
+    DefineGate(k##InitType##Gate, num_vars);                                \
+    if (v_num) g->vote_number(v_num);                                       \
+    g->ProcessConstantArg(var_one, Const);                                  \
+    ASSERT_EQ(kNormalState, g->state());                                    \
+    EXPECT_EQ(k##FinalType##Gate, g->type());                               \
+    EXPECT_EQ(num_vars - 1, g->args().size());                              \
+    EXPECT_EQ(num_vars - 1, g->variable_args().size());                     \
+    EXPECT_TRUE(g->gate_args().empty());                                    \
+    EXPECT_TRUE(g->constant_args().empty());                                \
+  }
+
+TEST_CONSTANT_ARG_VNUM(true, 3, 2, Atleast, Or);
+TEST_CONSTANT_ARG_VNUM(true, 4, 3, Atleast, Atleast);
+TEST_CONSTANT_ARG_VNUM(false, 3, 2, Atleast, And);
+TEST_CONSTANT_ARG_VNUM(false, 4, 2, Atleast, Atleast);
+
+/// @def TEST_CONSTANT_ARG
+///
+/// The same tests as TEST_CONSTANT_ARG_VNUM
+/// but with no vote number initialization.
+#define TEST_CONSTANT_ARG(Const, num_vars, InitType, FinalType) \
+  TEST_CONSTANT_ARG_VNUM(Const, num_vars, 0, InitType, FinalType)
+
+TEST_CONSTANT_ARG(false, 2, Or, Null);
+TEST_CONSTANT_ARG(false, 3, Or, Or);
+TEST_CONSTANT_ARG(true, 2, And, Null);
+TEST_CONSTANT_ARG(true, 3, And, And);
+TEST_CONSTANT_ARG(false, 2, Nor, Not);
+TEST_CONSTANT_ARG(false, 3, Nor, Nor);
+TEST_CONSTANT_ARG(true, 2, Nand, Not);
+TEST_CONSTANT_ARG(true, 3, Nand, Nand);
+TEST_CONSTANT_ARG(true, 2, Xor, Not);
+TEST_CONSTANT_ARG(false, 2, Xor, Null);
+
+#undef TEST_CONSTANT_ARG_VNUM
+#undef TEST_CONSTANT_ARG
 
 }  // namespace test
 }  // namespace scram
