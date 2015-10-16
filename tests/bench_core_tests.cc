@@ -180,6 +180,28 @@ TEST_F(RiskAnalysisTest, MultipleParentNegativeGate) {
   EXPECT_EQ(mcs, min_cut_sets());
 }
 
+// Checks for NAND gate.
+TEST_F(RiskAnalysisTest, NAND) {
+  std::string tree_input = "./share/scram/input/core/nand.xml";
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  /// @todo Enable with prime implicants.
+  /* std::set<std::set<std::string>> mcs = {{"not a"}, {"not b"}}; */
+  /* EXPECT_EQ(mcs, min_cut_sets()); */
+  EXPECT_EQ(1, min_cut_sets().size());
+}
+
+// Checks for NOR gate.
+TEST_F(RiskAnalysisTest, NOR) {
+  std::string tree_input = "./share/scram/input/core/nor.xml";
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  /// @todo Enable with prime implicants.
+  /* std::set<std::set<std::string>> mcs = {{"not a", "not b"}}; */
+  /* EXPECT_EQ(mcs, min_cut_sets()); */
+  EXPECT_EQ(1, min_cut_sets().size());
+}
+
 // Checks for NAND UNITY top gate cases.
 TEST_F(RiskAnalysisTest, NAND_UNITY) {
   std::string tree_input = "./share/scram/input/core/nand_or_equality.xml";

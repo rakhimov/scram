@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!--
+This input tests NOR(A, B).
+-->
+<opsa-mef>
+  <define-fault-tree name="NOR">
+    <define-gate name="TopEvent">
+      <nor>
+        <basic-event name="A"/>
+        <basic-event name="B"/>
+      </nor>
+    </define-gate>
+    <define-basic-event name="A">
+      <float value="0.1"/>
+    </define-basic-event>
+    <define-basic-event name="B">
+      <float value="0.2"/>
+    </define-basic-event>
+  </define-fault-tree>
+</opsa-mef>

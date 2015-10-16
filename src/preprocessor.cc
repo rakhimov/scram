@@ -414,13 +414,6 @@ void Preprocessor::RemoveNullGates() noexcept {
   assert(!graph_->null_gates_.empty());
   null_gates_ = graph_->null_gates_;  // Transferring for internal uses.
   graph_->null_gates_.clear();
-
-  IGatePtr root = graph_->root();
-  if (null_gates_.size() == 1 && null_gates_.front().lock() == root) {
-    null_gates_.clear();  // Special case of only one NULL gate as the root.
-    return;
-  }
-
   Preprocessor::ClearNullGates();
   assert(null_gates_.empty());
 }
