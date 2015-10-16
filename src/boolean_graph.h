@@ -433,7 +433,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// @warning The function assumes that the argument exists.
   ///          If it doesn't, the return value is invalid.
   int GetArgSign(const NodePtr& arg) const noexcept {
-    assert(arg->parents().count(Node::index()));
+    assert(arg->parents().count(Node::index()) && "Invalid argument.");
     return args_.count(arg->index()) ? 1 : -1;
   }
 
@@ -551,6 +551,21 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// @param[in] index  Positive or negative index of the argument gate.
   void JoinNullGate(int index) noexcept;
 
+  /// Changes the state of a gate
+  /// or removes a constant argument.
+  /// The function determines its actions depending on
+  /// the type of a gate and state of an argument.
+  ///
+  /// @param[in] arg  The pointer the argument of this gate.
+  /// @param[in] state  False or True constant state of the argument.
+  ///
+  /// @note This is a helper function that propagates constants.
+  /// @note This function takes into account the sign of the index
+  ///       to properly assess the Boolean constant argument.
+  /// @note This function may change the state of the gate.
+  /// @note This function may change type and parameters of the gate.
+  void ProcessConstantArg(const NodePtr& arg, bool state) noexcept;
+
   /// Removes an argument from the arguments container.
   /// The passed argument index must be
   /// in this gate's arguments container and initialized.
@@ -616,6 +631,44 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   ///
   /// @param[in] index  Positive or negative index of the argument.
   void ProcessComplementArg(int index) noexcept;
+
+  /// Processes Boolean constant argument with True value.
+  ///
+  /// @param[in] index  The positive or negative index of the argument.
+  ///
+  /// @note This is a helper function that propagates constants.
+  /// @note This function may change the state of the gate.
+  /// @note This function may change type and parameters of the gate.
+  void ProcessTrueArg(int index) noexcept;
+
+  /// Processes Boolean constant argument with False value.
+  ///
+  /// @param[in] index  The positive or negative index of the argument.
+  ///
+  /// @note This is a helper function that propagates constants.
+  /// @note This function may change the state of the gate.
+  /// @note This function may change type and parameters of the gate.
+  void ProcessFalseArg(int index) noexcept;
+
+  /// Removes Boolean constant arguments from a gate
+  /// taking into account the logic.
+  /// This is a helper function
+  /// for NULL and UNITY set or constant propagation for the graph.
+  /// If the final gate is empty,
+  /// its state is turned into NULL or UNITY
+  /// depending on the logic of the gate
+  /// and the logic of the Boolean constant propagation.
+  ///
+  /// @param[in] index  The positive or negative index of the argument.
+  ///
+  /// @note This is a helper function that propagates constants,
+  ///       so it is coupled with the logic of
+  ///       the constant propagation algorithms.
+  ///
+  /// @warning This function does not handle complex K/N gate parents.
+  ///          The logic is not simple for K/N gates,
+  ///          so it must be handled by the caller.
+  void RemoveConstantArg(int index) noexcept;
 
   Operator type_;  ///< Type of this gate.
   State state_;  ///< Indication if this gate's state is normal, null, or unity.

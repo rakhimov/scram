@@ -434,118 +434,23 @@ void Preprocessor::RemoveConstants() noexcept {
 void Preprocessor::PropagateConstant(const ConstantPtr& constant) noexcept {
   while (!constant->parents().empty()) {
     IGatePtr parent = constant->parents().begin()->second.lock();
-
-    int sign = parent->GetArgSign(constant);
-    Preprocessor::ProcessConstantArg(parent, sign * constant->index(),
-                                     constant->state());
-
+    parent->ProcessConstantArg(constant, constant->state());
     if (parent->IsConstant()) {
-      Preprocessor::PropagateConstGate(parent);
+      Preprocessor::PropagateConstant(parent);
     } else if (parent->type() == kNullGate) {
       Preprocessor::PropagateNullGate(parent);
     }
   }
 }
 
-void Preprocessor::ProcessConstantArg(const IGatePtr& gate, int arg,
-                                      bool state) noexcept {
-  if (arg < 0) state = !state;
-
-  if (state) {  // Unity state or True arg.
-    Preprocessor::ProcessTrueArg(gate, arg);
-  } else {  // Null state or False arg.
-    Preprocessor::ProcessFalseArg(gate, arg);
-  }
-}
-
-void Preprocessor::ProcessTrueArg(const IGatePtr& gate, int arg) noexcept {
-  switch (gate->type()) {
-    case kNullGate:
-    case kOrGate:
-      gate->MakeUnity();
-      break;
-    case kNandGate:
-    case kAndGate:
-      Preprocessor::RemoveConstantArg(gate, arg);
-      break;
-    case kNorGate:
-    case kNotGate:
-      gate->Nullify();
-      break;
-    case kXorGate:  // Special handling due to its internal negation.
-      assert(gate->args().size() == 2);
-      gate->EraseArg(arg);
-      assert(gate->args().size() == 1);
-      gate->type(kNotGate);
-      break;
-    case kAtleastGate:  // (K - 1) / (N - 1).
-      assert(gate->args().size() > 2);
-      gate->EraseArg(arg);
-      int k = gate->vote_number();
-      --k;
-      gate->vote_number(k);
-      if (k == 1) gate->type(kOrGate);
-      break;
-  }
-}
-
-void Preprocessor::ProcessFalseArg(const IGatePtr& gate, int arg) noexcept {
-  switch (gate->type()) {
-    case kNorGate:
-    case kXorGate:
-    case kOrGate:
-      Preprocessor::RemoveConstantArg(gate, arg);
-      break;
-    case kNullGate:
-    case kAndGate:
-      gate->Nullify();
-      break;
-    case kNandGate:
-    case kNotGate:
-      gate->MakeUnity();
-      break;
-    case kAtleastGate:  // K / (N - 1).
-      assert(gate->args().size() > 2);
-      gate->EraseArg(arg);
-      int k = gate->vote_number();
-      int n = gate->args().size();
-      if (k == n) gate->type(kAndGate);
-      break;
-  }
-}
-
-void Preprocessor::RemoveConstantArg(const IGatePtr& gate, int arg) noexcept {
-  assert(gate->args().size() > 1);  // One-arg gates must have become constant.
-  gate->EraseArg(arg);
-  if (gate->args().size() == 1) {
-    switch (gate->type()) {
-      case kXorGate:
-      case kOrGate:
-      case kAndGate:
-        gate->type(kNullGate);
-        break;
-      case kNorGate:
-      case kNandGate:
-        gate->type(kNotGate);
-        break;
-      default:
-        assert(false && "NULL/NOT one-arg gates should not appear.");
-    }
-  }  // More complex cases with K/N gates are handled by the caller functions.
-}
-
-void Preprocessor::PropagateConstGate(const IGatePtr& gate) noexcept {
+void Preprocessor::PropagateConstant(const IGatePtr& gate) noexcept {
   assert(gate->IsConstant());
-
   while (!gate->parents().empty()) {
     IGatePtr parent = gate->parents().begin()->second.lock();
-
-    int sign = parent->GetArgSign(gate);
     bool state = gate->state() == kNullState ? false : true;
-    Preprocessor::ProcessConstantArg(parent, sign * gate->index(), state);
-
+    parent->ProcessConstantArg(gate, state);
     if (parent->IsConstant()) {
-      Preprocessor::PropagateConstGate(parent);
+      Preprocessor::PropagateConstant(parent);
     } else if (parent->type() == kNullGate) {
       Preprocessor::PropagateNullGate(parent);
     }
@@ -554,14 +459,12 @@ void Preprocessor::PropagateConstGate(const IGatePtr& gate) noexcept {
 
 void Preprocessor::PropagateNullGate(const IGatePtr& gate) noexcept {
   assert(gate->type() == kNullGate);
-
   while (!gate->parents().empty()) {
     IGatePtr parent = gate->parents().begin()->second.lock();
     int sign = parent->GetArgSign(gate);
     parent->JoinNullGate(sign * gate->index());
-
     if (parent->IsConstant()) {
-      Preprocessor::PropagateConstGate(parent);
+      Preprocessor::PropagateConstant(parent);
     } else if (parent->type() == kNullGate) {
       Preprocessor::PropagateNullGate(parent);
     }
@@ -573,7 +476,7 @@ void Preprocessor::ClearConstGates() noexcept {
   BLOG(DEBUG5, !const_gates_.empty()) << "Got CONST gates to clear!";
   for (const IGateWeakPtr& ptr : const_gates_) {
     if (ptr.expired()) continue;
-    Preprocessor::PropagateConstGate(ptr.lock());
+    Preprocessor::PropagateConstant(ptr.lock());
   }
   const_gates_.clear();
 }
@@ -2155,8 +2058,7 @@ void Preprocessor::ProcessRedundantParents(
   for (const IGateWeakPtr& ptr : redundant_parents) {
     if (ptr.expired()) continue;
     IGatePtr parent = ptr.lock();
-    int sign = parent->GetArgSign(node);
-    Preprocessor::ProcessConstantArg(parent, sign * node->index(), false);
+    parent->ProcessConstantArg(node, false);
     if (parent->IsConstant()) {
       const_gates_.push_back(parent);
     } else if (parent->type() == kNullGate) {
@@ -2392,8 +2294,7 @@ bool Preprocessor::ProcessDecompositionAncestors(
         to_swap.emplace_back(arg.first, clone);
         gate = clone;  // Use the clone for further processing!
       }
-      int sign = gate->GetArgSign(node);
-      Preprocessor::ProcessConstantArg(gate, sign * node->index(), state);
+      gate->ProcessConstantArg(node, state);
       changed = true;
       if (gate->IsConstant()) {
         const_gates_.push_back(gate);

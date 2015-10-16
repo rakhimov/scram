@@ -187,63 +187,6 @@ class Preprocessor {
   ///       to clean the results of the propagation.
   void PropagateConstant(const ConstantPtr& constant) noexcept;
 
-  /// Changes the state of a gate
-  /// or removes a constant argument.
-  /// The function determines its actions depending on
-  /// the type of a gate and state of an argument.
-  ///
-  /// @param[in,out] gate  The parent gate that contains the arguments.
-  /// @param[in] arg  The positive or negative index of the argument.
-  /// @param[in] state  False or True constant state of the argument.
-  ///
-  /// @note This is a helper function that propagates constants.
-  /// @note This function takes into account the sign of the index
-  ///       to properly assess the Boolean constant argument.
-  /// @note This function may change the state of the gate.
-  /// @note This function may change type and parameters of the gate.
-  void ProcessConstantArg(const IGatePtr& gate, int arg, bool state) noexcept;
-
-  /// Processes Boolean constant argument with True value.
-  ///
-  /// @param[in,out] gate  The parent gate that contains the arguments.
-  /// @param[in] arg  The positive or negative index of the argument.
-  ///
-  /// @note This is a helper function that propagates constants.
-  /// @note This function may change the state of the gate.
-  /// @note This function may change type and parameters of the gate.
-  void ProcessTrueArg(const IGatePtr& gate, int arg) noexcept;
-
-  /// Processes Boolean constant argument with False value.
-  ///
-  /// @param[in,out] gate  The parent gate that contains the arguments.
-  /// @param[in] arg  The positive or negative index of the argument.
-  ///
-  /// @note This is a helper function that propagates constants.
-  /// @note This function may change the state of the gate.
-  /// @note This function may change type and parameters of the gate.
-  void ProcessFalseArg(const IGatePtr& gate, int arg) noexcept;
-
-  /// Removes Boolean constant arguments from a gate
-  /// taking into account the logic.
-  /// This is a helper function
-  /// for NULL and UNITY set or constant propagation for the graph.
-  /// If the final gate is empty,
-  /// its state is turned into NULL or UNITY
-  /// depending on the logic of the gate
-  /// and the logic of the Boolean constant propagation.
-  ///
-  /// @param[in,out] gate  The gate that contains the arguments to be removed.
-  /// @param[in] arg  The positive or negative index of the argument.
-  ///
-  /// @note This is a helper function that propagates constants,
-  ///       so it is coupled with the logic of
-  ///       the constant propagation algorithms.
-  ///
-  /// @warning This function does not handle complex K/N gate parents.
-  ///          The logic is not simple for K/N gates,
-  ///          so it must be handled by the caller.
-  void RemoveConstantArg(const IGatePtr& gate, int arg) noexcept;
-
   /// Propagates constant gates bottom-up.
   /// This is a helper function for algorithms
   /// that may produce and need to remove constant gates.
@@ -257,7 +200,7 @@ class Preprocessor {
   /// @warning All parents of the gate will be removed,
   ///          so the gate itself may get deleted
   ///          unless it is the top gate.
-  void PropagateConstGate(const IGatePtr& gate) noexcept;
+  void PropagateConstant(const IGatePtr& gate) noexcept;
 
   /// Propagate NULL type gates bottom-up.
   /// This is a helper function for algorithms
