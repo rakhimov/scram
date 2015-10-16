@@ -94,6 +94,27 @@ class IGateTest : public ::testing::Test {
   std::vector<VariablePtr> vars_;  // For convenience only.
 };
 
+#ifndef NDEBUG
+TEST_F(IGateTest, AddArgDeathTests) {
+  DefineGate(kNullGate, 1);
+  EXPECT_DEATH(g->AddArg(var_two->index(), var_two), "");
+  DefineGate(kNotGate, 1);
+  EXPECT_DEATH(g->AddArg(var_two->index(), var_two), "");
+  DefineGate(kXorGate, 2);
+  EXPECT_DEATH(g->AddArg(var_three->index(), var_three), "");
+  DefineGate(kAndGate, 1);
+  EXPECT_DEATH(g->AddArg(var_three->index(), var_two), "");  // Wrong index.
+  DefineGate(kAndGate, 1);
+  EXPECT_DEATH(g->AddArg(0, var_two), "");  // Wrong index.
+  DefineGate(kAndGate, 2);
+  g->Nullify();  // Constant state.
+  EXPECT_DEATH(g->AddArg(var_two->index(), var_two), "");  // Wrong index.
+  DefineGate(kAtleastGate, 3);
+  g->vote_number(-1);  // Negative vote number.
+  EXPECT_DEATH(g->AddArg(var_three->index(), var_three), "");
+}
+#endif
+
 /// @def ADD_IGNORE_TEST
 ///
 /// Collection of tests
