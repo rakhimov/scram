@@ -46,7 +46,7 @@ using IGatePtr = std::shared_ptr<IGate>;
 
 static_assert(kNumOperators == 8, "New gate types are not considered!");
 
-class IGateAddArgTest : public ::testing::Test {
+class IGateTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
     var_one = std::make_shared<Variable>();
@@ -118,10 +118,10 @@ class IGateAddArgTest : public ::testing::Test {
 /// that do not change the type of the gate.
 ///
 /// @param Type  Short name of the gate type, i.e., 'And'.
-#define TEST_DUP_ARG_IGNORE(Type)                     \
-  TEST_F(IGateAddArgTest, DuplicateArgIgnore##Type) { \
-    ADD_ARG_IGNORE_TEST(Type, 2);                     \
-    EXPECT_EQ(k##Type##Gate, g->type());              \
+#define TEST_DUP_ARG_IGNORE(Type)               \
+  TEST_F(IGateTest, DuplicateArgIgnore##Type) { \
+    ADD_ARG_IGNORE_TEST(Type, 2);               \
+    EXPECT_EQ(k##Type##Gate, g->type());        \
   }
 
 TEST_DUP_ARG_IGNORE(And);
@@ -137,10 +137,10 @@ TEST_DUP_ARG_IGNORE(Nor);
 ///
 /// @param InitType  Short name of the initial type of the gate, i.e., 'And'.
 /// @param FinalType  The resulting type of addition operation.
-#define TEST_DUP_ARG_TYPE_CHANGE(InitType, FinalType)           \
-  TEST_F(IGateAddArgTest, DuplicateArgChange##InitType##Type) { \
-    ADD_ARG_IGNORE_TEST(InitType, 1);                           \
-    EXPECT_EQ(k##FinalType##Gate, g->type());                   \
+#define TEST_DUP_ARG_TYPE_CHANGE(InitType, FinalType)     \
+  TEST_F(IGateTest, DuplicateArgChange##InitType##Type) { \
+    ADD_ARG_IGNORE_TEST(InitType, 1);                     \
+    EXPECT_EQ(k##FinalType##Gate, g->type());             \
   }
 
 TEST_DUP_ARG_TYPE_CHANGE(Or, Null);
@@ -151,14 +151,14 @@ TEST_DUP_ARG_TYPE_CHANGE(Nand, Not);
 #undef TEST_DUP_ARG_TYPE_CHANGE
 #undef ADD_ARG_IGNORE_TEST
 
-TEST_F(IGateAddArgTest, DuplicateArgXor) {
+TEST_F(IGateTest, DuplicateArgXor) {
   DefineGate(kXorGate, 1);
   g->AddArg(var_one->index(), var_one);
   EXPECT_EQ(kNullState, g->state());
   EXPECT_TRUE(g->args().empty());
 }
 
-TEST_F(IGateAddArgTest, DuplicateArgAtleastToNull) {
+TEST_F(IGateTest, DuplicateArgAtleastToNull) {
   DefineGate(kAtleastGate, 2);
   g->AddArg(var_one->index(), var_one);
   EXPECT_EQ(kNormalState, g->state());
@@ -167,7 +167,7 @@ TEST_F(IGateAddArgTest, DuplicateArgAtleastToNull) {
   EXPECT_EQ(var_two->index(), g->variable_args().begin()->first);
 }
 
-TEST_F(IGateAddArgTest, DuplicateArgAtleastToAnd) {
+TEST_F(IGateTest, DuplicateArgAtleastToAnd) {
   DefineGate(kAtleastGate, 3);
   g->vote_number(3);  // K equals to the number of input arguments.
   g->AddArg(var_one->index(), var_one);
@@ -186,7 +186,7 @@ TEST_F(IGateAddArgTest, DuplicateArgAtleastToAnd) {
   EXPECT_EQ(2, sub->variable_args().size());
 }
 
-TEST_F(IGateAddArgTest, DuplicateArgAtleastToOr_OneClone) {
+TEST_F(IGateTest, DuplicateArgAtleastToOr_OneClone) {
   DefineGate(kAtleastGate, 3);
   g->vote_number(2);
   g->AddArg(var_one->index(), var_one);
@@ -206,7 +206,7 @@ TEST_F(IGateAddArgTest, DuplicateArgAtleastToOr_OneClone) {
   EXPECT_EQ(2, sub->variable_args().size());
 }
 
-TEST_F(IGateAddArgTest, DuplicateArgAtleastToOr_TwoClones) {
+TEST_F(IGateTest, DuplicateArgAtleastToOr_TwoClones) {
   DefineGate(kAtleastGate, 5);
   g->vote_number(3);
   g->AddArg(var_one->index(), var_one);
@@ -251,15 +251,15 @@ TEST_F(IGateAddArgTest, DuplicateArgAtleastToOr_TwoClones) {
 /// @param Type  Short name of the gate, i.e., 'And'.
 ///              It must have the same root in Operator, i.e., 'kAndGate'.
 /// @param Set  The notion of constant set (Null, Unity).
-#define TEST_ADD_COMPLEMENT_ARG(Type, Set)       \
-  TEST_F(IGateAddArgTest, ComplementArg##Type) { \
-    DefineGate(k##Type##Gate, 1);                \
-    g->AddArg(-var_one->index(), var_one);       \
-    ASSERT_EQ(k##Set##State, g->state());        \
-    EXPECT_TRUE(g->args().empty());              \
-    EXPECT_TRUE(g->variable_args().empty());     \
-    EXPECT_TRUE(g->gate_args().empty());         \
-    EXPECT_TRUE(g->constant_args().empty());     \
+#define TEST_ADD_COMPLEMENT_ARG(Type, Set)   \
+  TEST_F(IGateTest, ComplementArg##Type) {   \
+    DefineGate(k##Type##Gate, 1);            \
+    g->AddArg(-var_one->index(), var_one);   \
+    ASSERT_EQ(k##Set##State, g->state());    \
+    EXPECT_TRUE(g->args().empty());          \
+    EXPECT_TRUE(g->variable_args().empty()); \
+    EXPECT_TRUE(g->gate_args().empty());     \
+    EXPECT_TRUE(g->constant_args().empty()); \
   }
 
 TEST_ADD_COMPLEMENT_ARG(And, Null);
@@ -279,7 +279,7 @@ TEST_ADD_COMPLEMENT_ARG(Xor, Unity);
 /// @param v_num  Initial K number of the gate.
 /// @param FinalType  Short name of the final type of the gate, i.e., 'And'.
 #define TEST_ADD_COMPLEMENT_ARG_KN(num_vars, v_num, FinalType) \
-  TEST_F(IGateAddArgTest, ComplementArgAtleastTo##FinalType) { \
+  TEST_F(IGateTest, ComplementArgAtleastTo##FinalType) {       \
     DefineGate(kAtleastGate, num_vars);                        \
     g->vote_number(v_num);                                     \
     g->AddArg(-var_one->index(), var_one);                     \
