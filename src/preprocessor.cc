@@ -2264,8 +2264,6 @@ bool Preprocessor::ProcessDecompositionAncestors(
     std::unordered_map<int, IGatePtr>* clones) noexcept {
   if (ancestor->mark()) return false;
   ancestor->mark(true);
-  // Lose ancestorship if the descendant is gone.
-  bool still_ancestor = node->parents().count(ancestor->index());
   bool changed = false;
   std::vector<std::pair<int, IGatePtr>> to_swap;  // For common gates.
   for (const std::pair<int, IGatePtr>& arg : ancestor->gate_args()) {
@@ -2276,7 +2274,6 @@ bool Preprocessor::ProcessDecompositionAncestors(
       LOG(DEBUG5) << "Reached decomposition sub-parent G" << gate->index();
       if (clones->count(gate->index())) {  // Already processed parent.
         IGatePtr clone = clones->find(gate->index())->second;
-        if (clone->descendant() == node->index()) still_ancestor = true;
         to_swap.emplace_back(arg.first, clone);
         changed = true;
         continue;  // Clones are already processed.
@@ -2312,13 +2309,17 @@ bool Preprocessor::ProcessDecompositionAncestors(
                                                            visit_bounds,
                                                            clones);
     if (ret) changed = true;
-    if (gate->descendant() == node->index()) still_ancestor = true;
   }
-  if (!still_ancestor) ancestor->descendant(0);
-
   for (const auto& arg : to_swap) {
     ancestor->EraseArg(arg.first);
     ancestor->AddArg(GetSign(arg.first) * arg.second->index(), arg.second);
+  }
+  if (!node->parents().count(ancestor->index()) &&
+      std::none_of(ancestor->gate_args().begin(), ancestor->gate_args().end(),
+                   [&node](const std::pair<int, IGatePtr>& arg) {
+        return arg.second->descendant() == node->index();
+      })) {
+    ancestor->descendant(0);  // Lose ancestorship if the descendant is gone.
   }
   return changed;
 }
