@@ -908,7 +908,7 @@ class Preprocessor {
   ///       which may increase the size of the graph
   ///       and complicate application and performance of other algorithms.
   ///
-  /// @warning Gate optimization values are used.
+  /// @warning Gate descendant marks are used.
   /// @warning Node visit information is used.
   /// @warning Gate marks are used.
   bool DecomposeCommonNodes() noexcept;
@@ -916,7 +916,7 @@ class Preprocessor {
   /// Processes common nodes in decomposition setups.
   /// This function only works with DecomposeCommonNodes()
   /// because it requires a specific setup of
-  /// optimization values and visit information of nodes.
+  /// descendant marks and visit information of nodes.
   /// These setups are assumed
   /// to be provided by the DecomposeCommonNodes().
   ///
@@ -924,25 +924,25 @@ class Preprocessor {
   ///
   /// @returns true if the decomposition setups are found and processed.
   ///
-  /// @warning Gate optimization values are manipulated.
+  /// @warning Gate descendant marks are manipulated.
   bool ProcessDecompositionCommonNode(
       const std::weak_ptr<Node>& common_node) noexcept;
 
   /// Marks destinations for common node decomposition.
-  /// The optimization value of some ancestors of the common node
-  /// is marked with the index of the common node.
+  /// The descendant mark of some ancestors of the common node
+  /// is set to the index of the common node.
   /// Parents of the common node may not get marked
   /// unless they are parents of parents.
   ///
   /// @param[in] parent  The parent or ancestor of the common node.
   /// @param[in] index  The positive index of the common node.
   ///
-  /// @pre No ancestor gate has 'dirty' opti-value with the index
+  /// @pre No ancestor gate has 'dirty' descendant marks with the index
   ///      before the call of this function.
   ///      Otherwise, the logic of the algorithm is messed up and invalid.
   /// @pre Marking is limited by a single root module.
   ///
-  /// @post The ancestor gate optimization values are set to the index.
+  /// @post The ancestor gate descendant marks are set to the index.
   void MarkDecompositionDestinations(const IGatePtr& parent,
                                      int index) noexcept;
 
@@ -955,7 +955,7 @@ class Preprocessor {
   /// @returns true if the graph is changed by processing.
   ///
   /// @warning Gate marks are used to traverse subgraphs in linear time.
-  /// @warning Gate optimization values are used to detect ancestor.
+  /// @warning Gate descendant marks are used to detect ancestor.
   /// @warning Gate visit time information is used to detect shared nodes.
   bool ProcessDecompositionDestinations(
       const NodePtr& node,
@@ -964,7 +964,7 @@ class Preprocessor {
   /// Processes decomposition ancestors
   /// in the link to the decomposition destinations.
   /// Common node's parents shared outside of the subgraph
-  /// may get cloned to not mess the whole graph.
+  /// may get cloned not to mess the whole graph.
   ///
   /// @param[in] ancestor  The parent or ancestor of the common node.
   /// @param[in] node  The common node under consideration.
@@ -976,7 +976,7 @@ class Preprocessor {
   ///
   /// @warning Gate marks are used to traverse subgraphs in linear time.
   ///          Gate marks must be clear for the subgraph for the first call.
-  /// @warning Gate optimization values are used to detect ancestor.
+  /// @warning Gate descendant marks are used to detect ancestors.
   /// @warning Gate visit time information is used to detect shared nodes.
   bool ProcessDecompositionAncestors(
       const IGatePtr& ancestor,

@@ -661,6 +661,23 @@ void BooleanGraph::ClearNodeCounts(const IGatePtr& gate) noexcept {
   assert(gate->constant_args().empty());
 }
 
+void BooleanGraph::ClearDescendantMarks() noexcept {
+  LOG(DEBUG5) << "Clearing gate descendant marks...";
+  BooleanGraph::ClearGateMarks();
+  BooleanGraph::ClearDescendantMarks(root_);
+  BooleanGraph::ClearGateMarks();
+  LOG(DEBUG5) << "Descendant marks are clear!";
+}
+
+void BooleanGraph::ClearDescendantMarks(const IGatePtr& gate) noexcept {
+  if (gate->mark()) return;
+  gate->mark(true);
+  gate->descendant(0);
+  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+    BooleanGraph::ClearDescendantMarks(arg.second);
+  }
+}
+
 std::ostream& operator<<(std::ostream& os,
                          const std::shared_ptr<Constant>& constant) {
   if (constant->Visited()) return os;

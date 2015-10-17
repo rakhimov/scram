@@ -975,6 +975,18 @@ class BooleanGraph {
   /// @note Gate marks are used for linear time traversal.
   void ClearNodeCounts(const IGatePtr& gate) noexcept;
 
+  /// Clears descendant indices of all gates in the graph.
+  ///
+  /// @note Gate marks are used for linear time traversal.
+  void ClearDescendantMarks() noexcept;
+
+  /// Clears descendant marks of gates.
+  ///
+  /// @param[in,out] gate  The root gate to be traversed and cleaned.
+  ///
+  /// @note Gate marks are used for linear time traversal.
+  void ClearDescendantMarks(const IGatePtr& gate) noexcept;
+
   IGatePtr root_;  ///< The root gate of this graph.
   std::vector<BasicEventPtr> basic_events_;  ///< Mapping for basic events.
   bool coherent_;  ///< Indication that the graph does not contain negation.

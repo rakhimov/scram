@@ -1797,6 +1797,7 @@ void Preprocessor::BooleanOptimization() noexcept {
   assert(null_gates_.empty());
   graph_->ClearGateMarks();
   graph_->ClearOptiValues();
+  graph_->ClearDescendantMarks();
   if (!graph_->root()->IsModule()) graph_->root()->TurnModule();
 
   std::vector<IGateWeakPtr> common_gates;
@@ -2115,7 +2116,7 @@ bool Preprocessor::DecomposeCommonNodes() noexcept {
 
   graph_->ClearNodeVisits();
   Preprocessor::AssignTiming(0, graph_->root());  // Required for optimization.
-  graph_->ClearOptiValues();  // Used for ancestor detection.
+  graph_->ClearDescendantMarks();  // Used for ancestor detection.
   graph_->ClearGateMarks();  // Important for linear traversal.
 
   bool changed = false;
@@ -2143,9 +2144,7 @@ bool Preprocessor::ProcessDecompositionCommonNode(
   assert(const_gates_.empty());
   assert(null_gates_.empty());
   if (common_node.expired()) return false;  // The node has been deleted.
-
   NodePtr node = common_node.lock();
-
   if (node->parents().size() < 2) return false;  // Not common anymore.
 
   auto IsDecompositionType = [](Operator type) {  // Possible types for setups.
@@ -2185,10 +2184,10 @@ bool Preprocessor::ProcessDecompositionCommonNode(
   for (const std::pair<int, IGateWeakPtr>& member : node->parents()) {
     assert(!member.second.expired());
     IGatePtr parent = member.second.lock();
-    if (parent->opti_value() == node->index()) {
+    if (parent->descendant() == node->index()) {
       if (IsDecompositionType(parent->type())) dest.push_back(parent);
     } else {  // Mark for processing by destinations.
-      parent->opti_value(node->index());
+      parent->descendant(node->index());
     }
   }
   if (dest.empty()) return false;  // No setups are found.
@@ -2204,8 +2203,8 @@ void Preprocessor::MarkDecompositionDestinations(const IGatePtr& parent,
   for (const std::pair<int, IGateWeakPtr>& member : parent->parents()) {
     assert(!member.second.expired());
     IGatePtr ancestor = member.second.lock();
-    if (ancestor->opti_value() == index) continue;  // Already marked.
-    ancestor->opti_value(index);
+    if (ancestor->descendant() == index) continue;  // Already marked.
+    ancestor->descendant(index);
     Preprocessor::MarkDecompositionDestinations(ancestor, index);
   }
 }
@@ -2268,13 +2267,13 @@ bool Preprocessor::ProcessDecompositionAncestors(
   std::vector<std::pair<int, IGatePtr>> to_swap;  // For common gates.
   for (const std::pair<int, IGatePtr>& arg : ancestor->gate_args()) {
     IGatePtr gate = arg.second;
-    if (gate->opti_value() != node->index()) continue;  // Not an ancestor.
+    if (gate->descendant() != node->index()) continue;  // Not an ancestor.
 
     if (node->parents().count(gate->index())) {
       LOG(DEBUG5) << "Reached decomposition sub-parent G" << gate->index();
       if (clones->count(gate->index())) {  // Already processed parent.
         IGatePtr clone = clones->find(gate->index())->second;
-        if (clone->opti_value() == node->index()) still_ancestor = true;
+        if (clone->descendant() == node->index()) still_ancestor = true;
         to_swap.emplace_back(arg.first, clone);
         changed = true;
         continue;  // Clones are already processed.
@@ -2285,7 +2284,7 @@ bool Preprocessor::ProcessDecompositionAncestors(
         assert(gate->parents().size() > 1);
         assert(!clones->count(gate->index()));
         IGatePtr clone = gate->Clone();
-        clone->opti_value(node->index());  // New ancestor.
+        clone->descendant(node->index());  // New ancestor.
         clone->Visit(gate->EnterTime());
         clone->Visit(gate->ExitTime());
         clone->Visit(gate->LastVisit());
@@ -2310,9 +2309,9 @@ bool Preprocessor::ProcessDecompositionAncestors(
                                                            visit_bounds,
                                                            clones);
     if (ret) changed = true;
-    if (gate->opti_value() == node->index()) still_ancestor = true;
+    if (gate->descendant() == node->index()) still_ancestor = true;
   }
-  if (!still_ancestor) ancestor->opti_value(0);
+  if (!still_ancestor) ancestor->descendant(0);
 
   for (const auto& arg : to_swap) {
     ancestor->EraseArg(arg.first);
