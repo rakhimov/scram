@@ -245,7 +245,7 @@ class Preprocessor {
   ///
   /// @warning The root get may still be NULL type.
   /// @warning Gate marks are used.
-  /// @warning Optimization values are used.
+  /// @warning Node ordering may be used for full normalization.
   /// @warning Node visit information is used.
   void NormalizeGates(bool full) noexcept;
 
@@ -299,11 +299,12 @@ class Preprocessor {
   /// to other preprocessing and analysis techniques
   /// than the alternative,
   /// which is OR of AND gates of combinations.
+  /// Normalization of K/N gates is aware of variable ordering.
   ///
   /// @param[in,out] gate  The ATLEAST gate to normalize.
   ///
-  /// @note This is a helper function for NormalizeGate.
-  /// @note Normalization of K/N gates is aware of variable ordering.
+  /// @pre Variable ordering is assigned to arguments.
+  /// @pre This helper function is called from NormalizeGate.
   void NormalizeAtleastGate(const IGatePtr& gate) noexcept;
 
   /// Propagates complements of argument gates down to leafs
@@ -999,20 +1000,22 @@ class Preprocessor {
 
   /// Assigns order for Boolean graph variables.
   ///
-  /// @note Optimization values are used for ordering.
+  /// @pre Old node order marks are allowed to get cleaned.
+  ///
+  /// @post Node order marks contain the ordering.
   void AssignOrder() noexcept;
 
   /// Assigns topological ordering to nodes of the Boolean Graph.
-  /// The ordering is assigned to the optimization value of the nodes.
+  /// The ordering is assigned to the node order marks.
   /// The nodes are sorted in descending optimization value.
-  /// The highest optimization value belongs to the root.
+  /// The highest order value belongs to the root.
   ///
   /// @param[in] root  The root or current parent gate of the graph.
   /// @param[in] order  The current order value.
   ///
   /// @returns The final order value.
   ///
-  /// @note Optimization values must be clear before the assignment.
+  /// @post The root and descendant node order marks contain the ordering.
   int TopologicalOrder(const IGatePtr& root, int order) noexcept;
 
   BooleanGraph* graph_;  ///< The Boolean graph to preprocess.

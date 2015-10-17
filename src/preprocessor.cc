@@ -494,7 +494,10 @@ void Preprocessor::ClearNullGates() noexcept {
 void Preprocessor::NormalizeGates(bool full) noexcept {
   assert(const_gates_.empty());
   assert(null_gates_.empty());
-  if (full) Preprocessor::AssignOrder();  // K/N gates need order.
+  if (full) {
+    graph_->ClearNodeOrders();
+    Preprocessor::AssignOrder();  // K/N gates need order.
+  }
   IGatePtr root_gate = graph_->root();
   Operator type = root_gate->type();
   switch (type) {  // Handle special case for the root gate.
@@ -626,7 +629,7 @@ void Preprocessor::NormalizeAtleastGate(const IGatePtr& gate) noexcept {
 
   auto it = std::max_element(gate->args().cbegin(), gate->args().cend(),
                              [&gate](int lhs, int rhs) {
-    return gate->GetArg(lhs)->opti_value() < gate->GetArg(rhs)->opti_value();
+    return gate->GetArg(lhs)->order() < gate->GetArg(rhs)->order();
   });
   assert(it != gate->args().cend());
   IGatePtr first_arg(new IGate(kAndGate));
@@ -2338,20 +2341,20 @@ void Preprocessor::ReplaceGate(const IGatePtr& gate,
 }
 
 void Preprocessor::AssignOrder() noexcept {
-  graph_->ClearOptiValues();
+  graph_->ClearNodeOrders();
   Preprocessor::TopologicalOrder(graph_->root(), 0);
 }
 
 int Preprocessor::TopologicalOrder(const IGatePtr& root, int order) noexcept {
-  if (root->opti_value()) return order;
+  if (root->order()) return order;
   for (const std::pair<int, IGatePtr>& arg : root->gate_args()) {
     order = Preprocessor::TopologicalOrder(arg.second, order);
   }
   for (const std::pair<int, VariablePtr>& arg : root->variable_args()) {
-    if (!arg.second->opti_value()) arg.second->opti_value(++order);
+    if (!arg.second->order()) arg.second->order(++order);
   }
   assert(root->constant_args().empty());
-  root->opti_value(++order);
+  root->order(++order);
   return order;
 }
 

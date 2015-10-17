@@ -41,6 +41,7 @@ Node::Node() noexcept : Node::Node(next_index_++) {}
 
 Node::Node(int index) noexcept
     : index_(index),
+      order_(0),
       opti_value_(0),
       pos_count_(0),
       neg_count_(0) {
@@ -676,6 +677,27 @@ void BooleanGraph::ClearDescendantMarks(const IGatePtr& gate) noexcept {
   for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
     BooleanGraph::ClearDescendantMarks(arg.second);
   }
+}
+
+void BooleanGraph::ClearNodeOrders() noexcept {
+  LOG(DEBUG5) << "Clearing node order marks...";
+  BooleanGraph::ClearGateMarks();
+  BooleanGraph::ClearNodeOrders(root_);
+  BooleanGraph::ClearGateMarks();
+  LOG(DEBUG5) << "Node order marks are clear!";
+}
+
+void BooleanGraph::ClearNodeOrders(const IGatePtr& gate) noexcept {
+  if (gate->mark()) return;
+  gate->mark(true);
+  if (gate->order()) gate->order(0);
+  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+    BooleanGraph::ClearNodeOrders(arg.second);
+  }
+  for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
+    if (arg.second->order()) arg.second->order(0);
+  }
+  assert(gate->constant_args().empty());
 }
 
 std::ostream& operator<<(std::ostream& os,

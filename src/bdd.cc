@@ -122,8 +122,8 @@ const Bdd::Function& Bdd::IfThenElse(const IGatePtr& gate) noexcept {
 std::shared_ptr<Ite> Bdd::IfThenElse(const VariablePtr& variable) noexcept {
   ItePtr& in_table = unique_table_[{variable->index(), 1, -1}];
   if (in_table) return in_table;
-  index_to_order_.emplace(variable->index(), variable->opti_value());
-  in_table = std::make_shared<Ite>(variable->index(), variable->opti_value());
+  index_to_order_.emplace(variable->index(), variable->order());
+  in_table = std::make_shared<Ite>(variable->index(), variable->order());
   in_table->id(function_id_++);
   in_table->high(kOne_);
   in_table->low(kOne_);
@@ -135,7 +135,7 @@ std::shared_ptr<Ite> Bdd::CreateModuleProxy(const IGatePtr& gate) noexcept {
   assert(gate->IsModule());
   ItePtr& in_table = unique_table_[{gate->index(), 1, -1}];
   if (in_table) return in_table;
-  in_table = std::make_shared<Ite>(gate->index(), gate->opti_value());
+  in_table = std::make_shared<Ite>(gate->index(), gate->order());
   in_table->module(true);  // The main difference.
   in_table->id(function_id_++);
   in_table->high(kOne_);

@@ -104,11 +104,20 @@ class Node : public NodeParentManager {
 
   virtual ~Node() = 0;  ///< Abstract class.
 
+  /// Resets the starting index.
+  static void ResetIndex() { next_index_ = 1e6; }
+
   /// @returns The index of this node.
   int index() const { return index_; }
 
-  /// Resets the starting index.
-  static void ResetIndex() { next_index_ = 1e6; }
+  /// @returns Assigned order for this node.
+  int order() const { return order_; }
+
+  /// Sets the order number for this node.
+  /// The order is interpreted by the assigner.
+  ///
+  /// @param[in] val  Positive integer.
+  void order(int val) { order_ = val; }
 
   /// @returns Optimization value for failure propagation.
   int opti_value() const { return opti_value_; }
@@ -189,6 +198,7 @@ class Node : public NodeParentManager {
  private:
   static int next_index_;  ///< Automatic indexation of the next new node.
   int index_;  ///< Index of this node.
+  int order_;  ///< Ordering of nodes in the graph.
   int visits_[3];  ///< Traversal array with first, second, and last visits.
   int opti_value_;  ///< Failure propagation optimization value.
   int pos_count_;  ///< The number of occurrences as a positive node.
@@ -986,6 +996,22 @@ class BooleanGraph {
   ///
   /// @note Gate marks are used for linear time traversal.
   void ClearDescendantMarks(const IGatePtr& gate) noexcept;
+
+  /// Clears ordering marks of nodes in the graph.
+  ///
+  /// @post Node order marks are set to 0.
+  ///
+  /// @note Gate marks are used for linear time traversal.
+  void ClearNodeOrders() noexcept;
+
+  /// Clears ordering marks of descendant nodes of a gate.
+  ///
+  /// @param[in,out] gate  The root gate to be traversed and cleaned.
+  ///
+  /// @post The root and descendant node order marks are set to 0.
+  ///
+  /// @note Gate marks are used for linear time traversal.
+  void ClearNodeOrders(const IGatePtr& gate) noexcept;
 
   IGatePtr root_;  ///< The root gate of this graph.
   std::vector<BasicEventPtr> basic_events_;  ///< Mapping for basic events.
