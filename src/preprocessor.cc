@@ -2180,7 +2180,7 @@ bool Preprocessor::DecompositionProcessor::operator()(
   for (const std::pair<int, IGateWeakPtr>& member : node_->parents()) {
     assert(!member.second.expired());
     IGatePtr parent = member.second.lock();
-    DecompositionProcessor::MarkDestinations(parent, node_->index());
+    DecompositionProcessor::MarkDestinations(parent);
   }
   // Find destinations with particular setups.
   // If a parent gets marked upon destination search,
@@ -2197,26 +2197,24 @@ bool Preprocessor::DecompositionProcessor::operator()(
   }
   if (dest.empty()) return false;  // No setups are found.
 
-  bool ret = DecompositionProcessor::ProcessDestinations(node_, dest);
+  bool ret = DecompositionProcessor::ProcessDestinations(dest);
   BLOG(DEBUG4, ret) << "Successful decomposition of node " << node_->index();
   return ret;
 }
 
 void Preprocessor::DecompositionProcessor::MarkDestinations(
-    const IGatePtr& parent,
-    int index) noexcept {
+    const IGatePtr& parent) noexcept {
   if (parent->IsModule()) return;  // Limited with independent subgraphs.
   for (const std::pair<int, IGateWeakPtr>& member : parent->parents()) {
     assert(!member.second.expired());
     IGatePtr ancestor = member.second.lock();
-    if (ancestor->descendant() == index) continue;  // Already marked.
-    ancestor->descendant(index);
-    DecompositionProcessor::MarkDestinations(ancestor, index);
+    if (ancestor->descendant() == node_->index()) continue;  // Already marked.
+    ancestor->descendant(node_->index());
+    DecompositionProcessor::MarkDestinations(ancestor);
   }
 }
 
 bool Preprocessor::DecompositionProcessor::ProcessDestinations(
-    const NodePtr& node,
     const std::vector<IGateWeakPtr>& dest) noexcept {
   bool changed = false;
   for (const auto& ptr : dest) {
@@ -2225,7 +2223,7 @@ bool Preprocessor::DecompositionProcessor::ProcessDestinations(
 
     // The destination may already be processed
     // in the link of ancestors.
-    if (!node->parents().count(parent->index())) continue;
+    if (!node_->parents().count(parent->index())) continue;
 
     bool state = false;  // State for the constant propagation.
     switch (parent->type()) {
@@ -2240,12 +2238,12 @@ bool Preprocessor::DecompositionProcessor::ProcessDestinations(
       default:
         assert(false && "Complex gates cannot be decomposition destinations.");
     }
-    if (parent->GetArgSign(node) < 0) state = !state;
+    if (parent->GetArgSign(node_) < 0) state = !state;
     std::unordered_map<int, IGatePtr>& clones =
         state ? clones_true_ : clones_false_;
     std::pair<int, int> visit_bounds{parent->EnterTime(), parent->ExitTime()};
     assert(!parent->mark() && "Subgraph is not clean!");
-    bool ret = DecompositionProcessor::ProcessAncestors(parent, node, state,
+    bool ret = DecompositionProcessor::ProcessAncestors(parent, state,
                                                         visit_bounds, &clones);
     if (ret) changed = true;
     preprocessor_->graph_->ClearGateMarks(parent);  // Keep the graph clean.
@@ -2258,7 +2256,6 @@ bool Preprocessor::DecompositionProcessor::ProcessDestinations(
 
 bool Preprocessor::DecompositionProcessor::ProcessAncestors(
     const IGatePtr& ancestor,
-    const NodePtr& node,
     bool state,
     const std::pair<int, int>& visit_bounds,
     std::unordered_map<int, IGatePtr>* clones) noexcept {
@@ -2268,9 +2265,9 @@ bool Preprocessor::DecompositionProcessor::ProcessAncestors(
   std::vector<std::pair<int, IGatePtr>> to_swap;  // For common gates.
   for (const std::pair<int, IGatePtr>& arg : ancestor->gate_args()) {
     IGatePtr gate = arg.second;
-    if (gate->descendant() != node->index()) continue;  // Not an ancestor.
+    if (gate->descendant() != node_->index()) continue;  // Not an ancestor.
 
-    if (node->parents().count(gate->index())) {
+    if (node_->parents().count(gate->index())) {
       LOG(DEBUG5) << "Reached decomposition sub-parent G" << gate->index();
       if (clones->count(gate->index())) {  // Already processed parent.
         IGatePtr clone = clones->find(gate->index())->second;
@@ -2284,7 +2281,7 @@ bool Preprocessor::DecompositionProcessor::ProcessAncestors(
         assert(gate->parents().size() > 1);
         assert(!clones->count(gate->index()));
         IGatePtr clone = gate->Clone();
-        clone->descendant(node->index());  // New ancestor.
+        clone->descendant(node_->index());  // New ancestor.
         clone->Visit(gate->EnterTime());
         clone->Visit(gate->ExitTime());
         clone->Visit(gate->LastVisit());
@@ -2293,7 +2290,7 @@ bool Preprocessor::DecompositionProcessor::ProcessAncestors(
         to_swap.emplace_back(arg.first, clone);
         gate = clone;  // Use the clone for further processing!
       }
-      gate->ProcessConstantArg(node, state);
+      gate->ProcessConstantArg(node_, state);
       changed = true;
       if (gate->IsConstant()) {
         preprocessor_->const_gates_.push_back(gate);
@@ -2305,7 +2302,7 @@ bool Preprocessor::DecompositionProcessor::ProcessAncestors(
         continue;  // Shared non-parent gate.
     }
 
-    bool ret = DecompositionProcessor::ProcessAncestors(gate, node, state,
+    bool ret = DecompositionProcessor::ProcessAncestors(gate, state,
                                                         visit_bounds, clones);
     if (ret) changed = true;
   }
@@ -2313,11 +2310,12 @@ bool Preprocessor::DecompositionProcessor::ProcessAncestors(
     ancestor->EraseArg(arg.first);
     ancestor->AddArg(GetSign(arg.first) * arg.second->index(), arg.second);
   }
-  if (!node->parents().count(ancestor->index()) &&
-      std::none_of(ancestor->gate_args().begin(), ancestor->gate_args().end(),
-                   [&node](const std::pair<int, IGatePtr>& arg) {
-        return arg.second->descendant() == node->index();
-      })) {
+  if (!node_->parents().count(ancestor->index()) &&
+      std::none_of(
+          ancestor->gate_args().begin(), ancestor->gate_args().end(),
+          [index = node_->index()](const std::pair<int, IGatePtr> & arg) {
+            return arg.second->descendant() == index;
+          })) {
     ancestor->descendant(0);  // Lose ancestorship if the descendant is gone.
   }
   return changed;

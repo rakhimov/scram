@@ -941,7 +941,6 @@ class Preprocessor {
     /// unless they are parents of parents.
     ///
     /// @param[in] parent  The parent or ancestor of the common node.
-    /// @param[in] index  The positive index of the common node.
     ///
     /// @pre No ancestor gate has 'dirty' descendant marks with the index
     ///      before the call of this function.
@@ -949,12 +948,11 @@ class Preprocessor {
     /// @pre Marking is limited by a single root module.
     ///
     /// @post The ancestor gate descendant marks are set to the index.
-    void MarkDestinations(const IGatePtr& parent, int index) noexcept;
+    void MarkDestinations(const IGatePtr& parent) noexcept;
 
     /// Processes decomposition destinations
     /// with the decomposition setups.
     ///
-    /// @param[in] node  The common node under consideration.
     /// @param[in] dest  The set of destination parents.
     ///
     /// @returns true if the graph is changed by processing.
@@ -962,8 +960,7 @@ class Preprocessor {
     /// @warning Gate marks are used to traverse subgraphs in linear time.
     /// @warning Gate descendant marks are used to detect ancestor.
     /// @warning Gate visit time information is used to detect shared nodes.
-    bool ProcessDestinations(const NodePtr& node,
-                             const std::vector<IGateWeakPtr>& dest) noexcept;
+    bool ProcessDestinations(const std::vector<IGateWeakPtr>& dest) noexcept;
 
     /// Processes decomposition ancestors
     /// in the link to the decomposition destinations.
@@ -971,7 +968,6 @@ class Preprocessor {
     /// may get cloned not to mess the whole graph.
     ///
     /// @param[in] ancestor  The parent or ancestor of the common node.
-    /// @param[in] node  The common node under consideration.
     /// @param[in] state  The constant state to be propagated.
     /// @param[in] visit_bounds  The main graph's visit enter and exit times.
     /// @param[in,out] clones  Clones of common parents in the subgraph.
@@ -982,7 +978,7 @@ class Preprocessor {
     ///          Gate marks must be clear for the subgraph for the first call.
     /// @warning Gate descendant marks are used to detect ancestors.
     /// @warning Gate visit time information is used to detect shared nodes.
-    bool ProcessAncestors(const IGatePtr& ancestor, const NodePtr& node,
+    bool ProcessAncestors(const IGatePtr& ancestor,
                           bool state, const std::pair<int, int>& visit_bounds,
                           std::unordered_map<int, IGatePtr>* clones) noexcept;
 
