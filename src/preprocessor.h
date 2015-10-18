@@ -970,7 +970,6 @@ class Preprocessor {
     /// @param[in] ancestor  The parent or ancestor of the common node.
     /// @param[in] state  The constant state to be propagated.
     /// @param[in] visit_bounds  The main graph's visit enter and exit times.
-    /// @param[in,out] clones  Clones of common parents in the subgraph.
     ///
     /// @returns true if the parent is reached and processed.
     ///
@@ -978,9 +977,8 @@ class Preprocessor {
     ///          Gate marks must be clear for the subgraph for the first call.
     /// @warning Gate descendant marks are used to detect ancestors.
     /// @warning Gate visit time information is used to detect shared nodes.
-    bool ProcessAncestors(const IGatePtr& ancestor,
-                          bool state, const std::pair<int, int>& visit_bounds,
-                          std::unordered_map<int, IGatePtr>* clones) noexcept;
+    bool ProcessAncestors(const IGatePtr& ancestor, bool state,
+                          const std::pair<int, int>& visit_bounds) noexcept;
 
     std::shared_ptr<Node> node_;  ///< The common node to process.
     Preprocessor* preprocessor_;  ///< The host preprocessor.

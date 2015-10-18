@@ -2239,12 +2239,10 @@ bool Preprocessor::DecompositionProcessor::ProcessDestinations(
         assert(false && "Complex gates cannot be decomposition destinations.");
     }
     if (parent->GetArgSign(node_) < 0) state = !state;
-    std::unordered_map<int, IGatePtr>& clones =
-        state ? clones_true_ : clones_false_;
     std::pair<int, int> visit_bounds{parent->EnterTime(), parent->ExitTime()};
     assert(!parent->mark() && "Subgraph is not clean!");
-    bool ret = DecompositionProcessor::ProcessAncestors(parent, state,
-                                                        visit_bounds, &clones);
+    bool ret =
+        DecompositionProcessor::ProcessAncestors(parent, state, visit_bounds);
     if (ret) changed = true;
     preprocessor_->graph_->ClearGateMarks(parent);  // Keep the graph clean.
     BLOG(DEBUG5, ret) << "Successful decomposition is in G" << parent->index();
@@ -2257,8 +2255,7 @@ bool Preprocessor::DecompositionProcessor::ProcessDestinations(
 bool Preprocessor::DecompositionProcessor::ProcessAncestors(
     const IGatePtr& ancestor,
     bool state,
-    const std::pair<int, int>& visit_bounds,
-    std::unordered_map<int, IGatePtr>* clones) noexcept {
+    const std::pair<int, int>& visit_bounds) noexcept {
   if (ancestor->mark()) return false;
   ancestor->mark(true);
   bool changed = false;
@@ -2268,6 +2265,8 @@ bool Preprocessor::DecompositionProcessor::ProcessAncestors(
     if (gate->descendant() != node_->index()) continue;  // Not an ancestor.
 
     if (node_->parents().count(gate->index())) {
+      std::unordered_map<int, IGatePtr>* clones =
+          state ? &clones_true_ : &clones_false_;
       LOG(DEBUG5) << "Reached decomposition sub-parent G" << gate->index();
       if (clones->count(gate->index())) {  // Already processed parent.
         IGatePtr clone = clones->find(gate->index())->second;
@@ -2302,8 +2301,8 @@ bool Preprocessor::DecompositionProcessor::ProcessAncestors(
         continue;  // Shared non-parent gate.
     }
 
-    bool ret = DecompositionProcessor::ProcessAncestors(gate, state,
-                                                        visit_bounds, clones);
+    bool ret =
+        DecompositionProcessor::ProcessAncestors(gate, state, visit_bounds);
     if (ret) changed = true;
   }
   for (const auto& arg : to_swap) {
