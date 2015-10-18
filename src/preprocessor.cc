@@ -2127,7 +2127,7 @@ bool Preprocessor::DecomposeCommonNodes() noexcept {
   // The deepest-first processing avoids generating extra parents
   // for the nodes that are deep in the graph.
   for (auto it = common_gates.rbegin(); it != common_gates.rend(); ++it) {
-    bool ret = Preprocessor::ProcessDecompositionCommonNode(*it);
+    bool ret = Preprocessor::DecompositionProcessor()(*it, this);
     if (ret) changed = true;
   }
 
@@ -2136,20 +2136,22 @@ bool Preprocessor::DecomposeCommonNodes() noexcept {
   // there may be no need to process these variables.
   for (auto it = common_variables.rbegin(); it != common_variables.rend();
        ++it) {
-    bool ret = Preprocessor::ProcessDecompositionCommonNode(*it);
+    bool ret = Preprocessor::DecompositionProcessor()(*it, this);
     if (ret) changed = true;
   }
   return changed;
 }
 
-bool Preprocessor::ProcessDecompositionCommonNode(
-    const std::weak_ptr<Node>& common_node) noexcept {
-  assert(const_gates_.empty());
-  assert(null_gates_.empty());
+bool Preprocessor::DecompositionProcessor::operator()(
+    const std::weak_ptr<Node>& common_node,
+    Preprocessor* preprocessor) noexcept {
+  assert(preprocessor);
   if (common_node.expired()) return false;  // The node has been deleted.
-  NodePtr node = common_node.lock();
-  if (node->parents().size() < 2) return false;  // Not common anymore.
-
+  node_ = common_node.lock();
+  if (node_->parents().size() < 2) return false;  // Not common anymore.
+  preprocessor_ = preprocessor;
+  assert(preprocessor_->const_gates_.empty());
+  assert(preprocessor_->null_gates_.empty());
   auto IsDecompositionType = [](Operator type) {  // Possible types for setups.
     switch (type) {
       case kAndGate:
@@ -2163,61 +2165,60 @@ bool Preprocessor::ProcessDecompositionCommonNode(
   };
   // Determine if the decomposition setups are possible.
   auto it =
-      std::find_if(node->parents().begin(), node->parents().end(),
+      std::find_if(node_->parents().begin(), node_->parents().end(),
                    [&IsDecompositionType]
                    (const std::pair<int, IGateWeakPtr>& member) {
                      return IsDecompositionType(member.second.lock()->type());
                    });
-  if (it == node->parents().end()) return false;  // No setups possible.
+  if (it == node_->parents().end()) return false;  // No setups possible.
 
-  assert(2 > std::count_if(node->parents().begin(), node->parents().end(),
+  assert(2 > std::count_if(node_->parents().begin(), node_->parents().end(),
                            [](const std::pair<int, IGateWeakPtr>& member) {
                return member.second.lock()->IsModule();
              }));
   // Mark parents and ancestors.
-  for (const std::pair<int, IGateWeakPtr>& member : node->parents()) {
+  for (const std::pair<int, IGateWeakPtr>& member : node_->parents()) {
     assert(!member.second.expired());
     IGatePtr parent = member.second.lock();
-    Preprocessor::MarkDecompositionDestinations(parent, node->index());
+    DecompositionProcessor::MarkDestinations(parent, node_->index());
   }
   // Find destinations with particular setups.
   // If a parent gets marked upon destination search,
   // the parent is the destination.
   std::vector<IGateWeakPtr> dest;
-  for (const std::pair<int, IGateWeakPtr>& member : node->parents()) {
+  for (const std::pair<int, IGateWeakPtr>& member : node_->parents()) {
     assert(!member.second.expired());
     IGatePtr parent = member.second.lock();
-    if (parent->descendant() == node->index()) {
+    if (parent->descendant() == node_->index()) {
       if (IsDecompositionType(parent->type())) dest.push_back(parent);
     } else {  // Mark for processing by destinations.
-      parent->descendant(node->index());
+      parent->descendant(node_->index());
     }
   }
   if (dest.empty()) return false;  // No setups are found.
 
-  bool ret = Preprocessor::ProcessDecompositionDestinations(node, dest);
-  BLOG(DEBUG4, ret) << "Successful decomposition of node " << node->index();
+  bool ret = DecompositionProcessor::ProcessDestinations(node_, dest);
+  BLOG(DEBUG4, ret) << "Successful decomposition of node " << node_->index();
   return ret;
 }
 
-void Preprocessor::MarkDecompositionDestinations(const IGatePtr& parent,
-                                                 int index) noexcept {
+void Preprocessor::DecompositionProcessor::MarkDestinations(
+    const IGatePtr& parent,
+    int index) noexcept {
   if (parent->IsModule()) return;  // Limited with independent subgraphs.
   for (const std::pair<int, IGateWeakPtr>& member : parent->parents()) {
     assert(!member.second.expired());
     IGatePtr ancestor = member.second.lock();
     if (ancestor->descendant() == index) continue;  // Already marked.
     ancestor->descendant(index);
-    Preprocessor::MarkDecompositionDestinations(ancestor, index);
+    DecompositionProcessor::MarkDestinations(ancestor, index);
   }
 }
 
-bool Preprocessor::ProcessDecompositionDestinations(
+bool Preprocessor::DecompositionProcessor::ProcessDestinations(
     const NodePtr& node,
     const std::vector<IGateWeakPtr>& dest) noexcept {
   bool changed = false;
-  std::unordered_map<int, IGatePtr> clones_true;  // True state propagation.
-  std::unordered_map<int, IGatePtr> clones_false;  // False state propagation.
   for (const auto& ptr : dest) {
     if (ptr.expired()) continue;  // Removed by constant propagation.
     IGatePtr parent = ptr.lock();
@@ -2241,22 +2242,21 @@ bool Preprocessor::ProcessDecompositionDestinations(
     }
     if (parent->GetArgSign(node) < 0) state = !state;
     std::unordered_map<int, IGatePtr>& clones =
-        state ? clones_true : clones_false;
+        state ? clones_true_ : clones_false_;
     std::pair<int, int> visit_bounds{parent->EnterTime(), parent->ExitTime()};
     assert(!parent->mark() && "Subgraph is not clean!");
-    bool ret = Preprocessor::ProcessDecompositionAncestors(parent, node, state,
-                                                           visit_bounds,
-                                                           &clones);
+    bool ret = DecompositionProcessor::ProcessAncestors(parent, node, state,
+                                                        visit_bounds, &clones);
     if (ret) changed = true;
-    graph_->ClearGateMarks(parent);  // Keep the graph clean.
+    preprocessor_->graph_->ClearGateMarks(parent);  // Keep the graph clean.
     BLOG(DEBUG5, ret) << "Successful decomposition is in G" << parent->index();
   }
-  Preprocessor::ClearConstGates();  // Actual propagation of the constant.
-  Preprocessor::ClearNullGates();
+  preprocessor_->ClearConstGates();  // Actual propagation of the constant.
+  preprocessor_->ClearNullGates();
   return changed;
 }
 
-bool Preprocessor::ProcessDecompositionAncestors(
+bool Preprocessor::DecompositionProcessor::ProcessAncestors(
     const IGatePtr& ancestor,
     const NodePtr& node,
     bool state,
@@ -2296,18 +2296,17 @@ bool Preprocessor::ProcessDecompositionAncestors(
       gate->ProcessConstantArg(node, state);
       changed = true;
       if (gate->IsConstant()) {
-        const_gates_.push_back(gate);
+        preprocessor_->const_gates_.push_back(gate);
         continue;  // No subgraph to process here.
       }
-      if (gate->type() == kNullGate) null_gates_.push_back(gate);
+      if (gate->type() == kNullGate) preprocessor_->null_gates_.push_back(gate);
     } else if (!IsNodeWithinGraph(gate, visit_bounds.first,
                                   visit_bounds.second)) {
         continue;  // Shared non-parent gate.
     }
 
-    bool ret = Preprocessor::ProcessDecompositionAncestors(gate, node, state,
-                                                           visit_bounds,
-                                                           clones);
+    bool ret = DecompositionProcessor::ProcessAncestors(gate, node, state,
+                                                        visit_bounds, clones);
     if (ret) changed = true;
   }
   for (const auto& arg : to_swap) {

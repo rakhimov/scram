@@ -914,77 +914,83 @@ class Preprocessor {
   /// @warning Gate marks are used.
   bool DecomposeCommonNodes() noexcept;
 
-  /// Processes common nodes in decomposition setups.
-  /// This function only works with DecomposeCommonNodes()
-  /// because it requires a specific setup of
-  /// descendant marks and visit information of nodes.
-  /// These setups are assumed
-  /// to be provided by the DecomposeCommonNodes().
-  ///
-  /// @param[in] common_node  The common node.
-  ///
-  /// @returns true if the decomposition setups are found and processed.
-  ///
-  /// @warning Gate descendant marks are manipulated.
-  bool ProcessDecompositionCommonNode(
-      const std::weak_ptr<Node>& common_node) noexcept;
+  /// @class DecompositionProcessor
+  /// Functor for processing of decomposition setups with common nodes.
+  class DecompositionProcessor {
+   public:
+    /// Launches the processing of decomposition setups in preprocessing.
+    /// Processes common nodes in decomposition setups.
+    /// This function only works with DecomposeCommonNodes()
+    /// because it requires a specific setup of
+    /// descendant marks and visit information of nodes.
+    /// These setups are assumed
+    /// to be provided by the DecomposeCommonNodes().
+    ///
+    /// @param[in/out] common_node  Common node to be processed.
+    /// @param[in/out] preprocessor  The host preprocessor with state.
+    ///
+    /// @returns true if the decomposition setups are found and processed.
+    bool operator()(const std::weak_ptr<Node>& common_node,
+                    Preprocessor* preprocessor) noexcept;
 
-  /// Marks destinations for common node decomposition.
-  /// The descendant mark of some ancestors of the common node
-  /// is set to the index of the common node.
-  /// Parents of the common node may not get marked
-  /// unless they are parents of parents.
-  ///
-  /// @param[in] parent  The parent or ancestor of the common node.
-  /// @param[in] index  The positive index of the common node.
-  ///
-  /// @pre No ancestor gate has 'dirty' descendant marks with the index
-  ///      before the call of this function.
-  ///      Otherwise, the logic of the algorithm is messed up and invalid.
-  /// @pre Marking is limited by a single root module.
-  ///
-  /// @post The ancestor gate descendant marks are set to the index.
-  void MarkDecompositionDestinations(const IGatePtr& parent,
-                                     int index) noexcept;
+   private:
+    /// Marks destinations for common node decomposition.
+    /// The descendant mark of some ancestors of the common node
+    /// is set to the index of the common node.
+    /// Parents of the common node may not get marked
+    /// unless they are parents of parents.
+    ///
+    /// @param[in] parent  The parent or ancestor of the common node.
+    /// @param[in] index  The positive index of the common node.
+    ///
+    /// @pre No ancestor gate has 'dirty' descendant marks with the index
+    ///      before the call of this function.
+    ///      Otherwise, the logic of the algorithm is messed up and invalid.
+    /// @pre Marking is limited by a single root module.
+    ///
+    /// @post The ancestor gate descendant marks are set to the index.
+    void MarkDestinations(const IGatePtr& parent, int index) noexcept;
 
-  /// Processes decomposition destinations
-  /// with the decomposition setups.
-  ///
-  /// @param[in] node  The common node under consideration.
-  /// @param[in] dest  The set of destination parents.
-  ///
-  /// @returns true if the graph is changed by processing.
-  ///
-  /// @warning Gate marks are used to traverse subgraphs in linear time.
-  /// @warning Gate descendant marks are used to detect ancestor.
-  /// @warning Gate visit time information is used to detect shared nodes.
-  bool ProcessDecompositionDestinations(
-      const NodePtr& node,
-      const std::vector<IGateWeakPtr>& dest) noexcept;
+    /// Processes decomposition destinations
+    /// with the decomposition setups.
+    ///
+    /// @param[in] node  The common node under consideration.
+    /// @param[in] dest  The set of destination parents.
+    ///
+    /// @returns true if the graph is changed by processing.
+    ///
+    /// @warning Gate marks are used to traverse subgraphs in linear time.
+    /// @warning Gate descendant marks are used to detect ancestor.
+    /// @warning Gate visit time information is used to detect shared nodes.
+    bool ProcessDestinations(const NodePtr& node,
+                             const std::vector<IGateWeakPtr>& dest) noexcept;
 
-  /// Processes decomposition ancestors
-  /// in the link to the decomposition destinations.
-  /// Common node's parents shared outside of the subgraph
-  /// may get cloned not to mess the whole graph.
-  ///
-  /// @param[in] ancestor  The parent or ancestor of the common node.
-  /// @param[in] node  The common node under consideration.
-  /// @param[in] state  The constant state to be propagated.
-  /// @param[in] visit_bounds  The main graph's visit enter and exit times.
-  /// @param[in,out] clones  Clones of common parents in the subgraph.
-  ///
-  /// @returns true if the parent is reached and processed.
-  ///
-  /// @warning Gate marks are used to traverse subgraphs in linear time.
-  ///          Gate marks must be clear for the subgraph for the first call.
-  /// @warning Gate descendant marks are used to detect ancestors.
-  /// @warning Gate visit time information is used to detect shared nodes.
-  bool ProcessDecompositionAncestors(
-      const IGatePtr& ancestor,
-      const NodePtr& node,
-      bool state,
-      const std::pair<int, int>& visit_bounds,
-      std::unordered_map<int, IGatePtr>* clones) noexcept;
+    /// Processes decomposition ancestors
+    /// in the link to the decomposition destinations.
+    /// Common node's parents shared outside of the subgraph
+    /// may get cloned not to mess the whole graph.
+    ///
+    /// @param[in] ancestor  The parent or ancestor of the common node.
+    /// @param[in] node  The common node under consideration.
+    /// @param[in] state  The constant state to be propagated.
+    /// @param[in] visit_bounds  The main graph's visit enter and exit times.
+    /// @param[in,out] clones  Clones of common parents in the subgraph.
+    ///
+    /// @returns true if the parent is reached and processed.
+    ///
+    /// @warning Gate marks are used to traverse subgraphs in linear time.
+    ///          Gate marks must be clear for the subgraph for the first call.
+    /// @warning Gate descendant marks are used to detect ancestors.
+    /// @warning Gate visit time information is used to detect shared nodes.
+    bool ProcessAncestors(const IGatePtr& ancestor, const NodePtr& node,
+                          bool state, const std::pair<int, int>& visit_bounds,
+                          std::unordered_map<int, IGatePtr>* clones) noexcept;
+
+    std::shared_ptr<Node> node_;  ///< The common node to process.
+    Preprocessor* preprocessor_;  ///< The host preprocessor.
+    std::unordered_map<int, IGatePtr> clones_true_;  ///< True state clones.
+    std::unordered_map<int, IGatePtr> clones_false_;  ///< False state clones.
+  };
 
   /// Replaces one gate in the graph with another.
   ///
