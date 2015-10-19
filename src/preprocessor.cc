@@ -2189,10 +2189,9 @@ bool Preprocessor::DecompositionProcessor::operator()(
   for (const std::pair<int, IGateWeakPtr>& member : node_->parents()) {
     assert(!member.second.expired());
     IGatePtr parent = member.second.lock();
-    if (parent->descendant() == node_->index()) {
-      if (IsDecompositionType(parent->type())) dest.push_back(parent);
-    } else {  // Mark for processing by destinations.
-      parent->descendant(node_->index());
+    if (parent->descendant() == node_->index() &&
+        IsDecompositionType(parent->type())) {
+      dest.push_back(parent);
     }
   }
   if (dest.empty()) return false;  // No setups are found.
@@ -2262,45 +2261,47 @@ bool Preprocessor::DecompositionProcessor::ProcessAncestors(
   std::vector<std::pair<int, IGatePtr>> to_swap;  // For common gates.
   for (const std::pair<int, IGatePtr>& arg : ancestor->gate_args()) {
     IGatePtr gate = arg.second;
-    if (gate->descendant() != node_->index()) continue;  // Not an ancestor.
-
     if (node_->parents().count(gate->index())) {
       std::unordered_map<int, IGatePtr>* clones =
           state ? &clones_true_ : &clones_false_;
       LOG(DEBUG5) << "Reached decomposition sub-parent G" << gate->index();
-      if (clones->count(gate->index())) {  // Already processed parent.
+      if (clones->count(gate->index())) {
         IGatePtr clone = clones->find(gate->index())->second;
         to_swap.emplace_back(arg.first, clone);
         changed = true;
-        continue;  // Clones are already processed.
+        continue;  // Existing clones are not to be traversed further.
       }
-      if (gate->parents().size() != 1 &&
-          !IsNodeWithinGraph(gate, visit_bounds.first,  // Non-cloned.
+      if (!IsNodeWithinGraph(gate, visit_bounds.first,  // Non-cloned.
                              visit_bounds.second)) {    // Shared parent.
-        assert(gate->parents().size() > 1);
-        assert(!clones->count(gate->index()));
         IGatePtr clone = gate->Clone();
-        clone->descendant(node_->index());  // New ancestor.
         clone->Visit(gate->EnterTime());
         clone->Visit(gate->ExitTime());
         clone->Visit(gate->LastVisit());
-
         clones->emplace(gate->index(), clone);
         to_swap.emplace_back(arg.first, clone);
-        gate = clone;  // Use the clone for further processing!
+        clone->ProcessConstantArg(node_, state);
+        changed = true;
+        if (clone->IsConstant()) {
+          preprocessor_->const_gates_.push_back(clone);
+        } else if (clone->type() == kNullGate) {
+          preprocessor_->null_gates_.push_back(clone);
+        }
+        continue;
       }
       gate->ProcessConstantArg(node_, state);
       changed = true;
       if (gate->IsConstant()) {
         preprocessor_->const_gates_.push_back(gate);
-        continue;  // No subgraph to process here.
+        continue;  // No need to process constant gates.
       }
-      if (gate->type() == kNullGate) preprocessor_->null_gates_.push_back(gate);
+      if (gate->type() == kNullGate) {
+        preprocessor_->null_gates_.push_back(gate);
+      }
     } else if (!IsNodeWithinGraph(gate, visit_bounds.first,
                                   visit_bounds.second)) {
-        continue;  // Shared non-parent gate.
+      continue;
     }
-
+    if (gate->descendant() != node_->index()) continue;
     bool ret =
         DecompositionProcessor::ProcessAncestors(gate, state, visit_bounds);
     if (ret) changed = true;
