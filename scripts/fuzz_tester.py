@@ -24,6 +24,7 @@ from __future__ import print_function
 
 import random
 from subprocess import call
+import sys
 
 import argparse as ap
 
@@ -104,6 +105,10 @@ def main():
 
     args = parser.parse_args()
 
+    if call(["which", "scram"]):
+        print("SCRAM is not found in the PATH.")
+        return 1
+
     if args.preprocessor:
         print("Focusing on Preprocessor")
         Config.restrict()
@@ -118,9 +123,11 @@ def main():
         generate_input()
         if call_scram():
             print("SCRAM failed!")
-            break
+            return 1
         if not (i + 1) % 100:
             print("Finished run #" + str(i + 1))
 
+    return 0
+
 if __name__ == "__main__":
-    main()
+    sys.exit(main())
