@@ -2266,41 +2266,26 @@ bool Preprocessor::DecompositionProcessor::ProcessAncestors(
           state ? &clones_true_ : &clones_false_;
       LOG(DEBUG5) << "Reached decomposition sub-parent G" << gate->index();
       if (clones->count(gate->index())) {
-        IGatePtr clone = clones->find(gate->index())->second;
-        to_swap.emplace_back(arg.first, clone);
+        to_swap.emplace_back(arg.first, clones->find(gate->index())->second);
         changed = true;
         continue;  // Existing clones are not to be traversed further.
       }
-      if (!IsNodeWithinGraph(gate, visit_bounds.first,  // Non-cloned.
-                             visit_bounds.second)) {    // Shared parent.
-        IGatePtr clone = gate->Clone();
-        clone->Visit(gate->EnterTime());
-        clone->Visit(gate->ExitTime());
-        clone->Visit(gate->LastVisit());
-        clones->emplace(gate->index(), clone);
-        to_swap.emplace_back(arg.first, clone);
-        clone->ProcessConstantArg(node_, state);
-        changed = true;
-        if (clone->IsConstant()) {
-          preprocessor_->const_gates_.push_back(clone);
-        } else if (clone->type() == kNullGate) {
-          preprocessor_->null_gates_.push_back(clone);
-        }
-        continue;
-      }
-      gate->ProcessConstantArg(node_, state);
+      IGatePtr clone = gate->Clone();
+      clone->Visit(gate->EnterTime());
+      clone->Visit(gate->ExitTime());
+      clone->Visit(gate->LastVisit());
+      to_swap.emplace_back(arg.first, clone);
+      clone->ProcessConstantArg(node_, state);
       changed = true;
-      if (gate->IsConstant()) {
-        preprocessor_->const_gates_.push_back(gate);
-        continue;  // No need to process constant gates.
+      if (clone->IsConstant()) {
+        preprocessor_->const_gates_.push_back(clone);
+      } else if (clone->type() == kNullGate) {
+        preprocessor_->null_gates_.push_back(clone);
       }
-      if (gate->type() == kNullGate) {
-        preprocessor_->null_gates_.push_back(gate);
-      }
-    } else if (!IsNodeWithinGraph(gate, visit_bounds.first,
-                                  visit_bounds.second)) {
-      continue;
+      continue;  // Avoid processing parents.
     }
+    if (!IsNodeWithinGraph(gate, visit_bounds.first, visit_bounds.second))
+      continue;
     if (gate->descendant() != node_->index()) continue;
     bool ret =
         DecompositionProcessor::ProcessAncestors(gate, state, visit_bounds);
