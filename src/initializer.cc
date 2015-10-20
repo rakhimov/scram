@@ -87,8 +87,7 @@ std::stringstream Initializer::schema_;
 
 Initializer::Initializer(const Settings& settings)
     : settings_(settings),
-      coherent_(true) {
-  mission_time_ = std::shared_ptr<MissionTime>(new MissionTime());
+      mission_time_(std::make_shared<MissionTime>()) {
   mission_time_->mission_time(settings_.mission_time());
   if (schema_.str().empty()) {
     std::string schema_path = Env::input_schema();
@@ -108,7 +107,7 @@ void Initializer::ProcessInputFiles(const std::vector<std::string>& xml_files) {
     }
   } catch (ValidationError& err) {
     err.msg("In file '" + *it + "', " + err.msg());
-    throw err;
+    throw;
   }
   CLOCK(def_time);
   Initializer::ProcessTbdElements();
@@ -202,7 +201,7 @@ void Initializer::ProcessTbdElements() {
   } catch (ValidationError& err) {
     const xmlpp::Node* root = el_def->find("/opsa-mef")[0];
     err.msg("In file '" + doc_to_file_.at(root) + "', " + err.msg());
-    throw err;
+    throw;
   }
 }
 
@@ -242,7 +241,7 @@ void Initializer::DefineFaultTree(const xmlpp::Element* ft_node) {
     std::stringstream msg;
     msg << "Line " << ft_node->get_line() << ":\n";
     err.msg(msg.str() + err.msg());
-    throw err;
+    throw;
   }
 }
 
@@ -305,7 +304,7 @@ void Initializer::RegisterFaultTreeData(const xmlpp::Element* ft_node,
       std::stringstream msg;
       msg << "Line " << node->get_line() << ":\n";
       err.msg(msg.str() + err.msg());
-      throw err;
+      throw;
     }
   }
 }
@@ -338,7 +337,7 @@ std::shared_ptr<Gate> Initializer::RegisterGate(const xmlpp::Element* gate_node,
     std::stringstream msg;
     msg << "Line " << gate_node->get_line() << ":\n";
     err.msg(msg.str() + err.msg());
-    throw err;
+    throw;
   }
   tbd_.gates.emplace_back(gate, gate_node);
   Initializer::AttachLabelAndAttributes(gate_node, gate.get());
@@ -359,7 +358,7 @@ void Initializer::DefineGate(const xmlpp::Element* gate_node,
     std::stringstream msg;
     msg << "Line " << gate_node->get_line() << ":\n";
     err.msg(msg.str() + err.msg());
-    throw err;
+    throw;
   }
 }
 
@@ -371,7 +370,6 @@ std::unique_ptr<Formula> Initializer::GetFormula(
       type == "house-event") {
     type = "null";
   }
-  if (type == "not" || type == "xor") coherent_ = false;
   FormulaPtr formula(new Formula(type));
   if (type == "atleast") {
     std::string min_num = GetAttributeValue(formula_node, "min");
@@ -390,7 +388,7 @@ std::unique_ptr<Formula> Initializer::GetFormula(
     std::stringstream msg;
     msg << "Line " << formula_node->get_line() << ":\n";
     err.msg(msg.str() + err.msg());
-    throw err;
+    throw;
   }
   return formula;
 }
@@ -449,7 +447,7 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
       std::stringstream msg;
       msg << "Line " << event->get_line() << ":\n";
       err.msg(msg.str() + err.msg());
-      throw err;
+      throw;
     }
   }
 
@@ -478,7 +476,7 @@ std::shared_ptr<BasicEvent> Initializer::RegisterBasicEvent(
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
     err.msg(msg.str() + err.msg());
-    throw err;
+    throw;
   }
   tbd_.basic_events.emplace_back(basic_event, event_node);
   Initializer::AttachLabelAndAttributes(event_node, basic_event.get());
@@ -513,7 +511,7 @@ std::shared_ptr<HouseEvent> Initializer::DefineHouseEvent(
     std::stringstream msg;
     msg << "Line " << event_node->get_line() << ":\n";
     err.msg(msg.str() + err.msg());
-    throw err;
+    throw;
   }
 
   // Only Boolean constant.
@@ -546,7 +544,7 @@ std::shared_ptr<Parameter> Initializer::RegisterParameter(
     std::stringstream msg;
     msg << "Line " << param_node->get_line() << ":\n";
     err.msg(msg.str() + err.msg());
-    throw err;
+    throw;
   }
   tbd_.parameters.emplace_back(parameter, param_node);
 
@@ -625,7 +623,7 @@ bool Initializer::GetParameterExpression(const xmlpp::Element* expr_element,
       std::stringstream msg;
       msg << "Line " << expr_element->get_line() << ":\n";
       err.msg(msg.str() + err.msg());
-      throw err;
+      throw;
     }
   } else if (expr_name == "system-mission-time") {
     param_unit = kUnitToString_[mission_time_->unit()];
@@ -757,7 +755,7 @@ std::shared_ptr<CcfGroup> Initializer::RegisterCcfGroup(
     std::stringstream msg;
     msg << "Line " << ccf_node->get_line() << ":\n";
     err.msg(msg.str() + err.msg());
-    throw err;
+    throw;
   }
 
   xmlpp::NodeSet members = ccf_node->find("./members");
@@ -809,7 +807,7 @@ void Initializer::ProcessCcfMembers(const xmlpp::Element* members_node,
       std::stringstream msg;
       msg << "Line " << event_node->get_line() << ":\n";
       err.msg(msg.str() + err.msg());
-      throw err;
+      throw;
     }
   }
 }
@@ -835,7 +833,7 @@ void Initializer::DefineCcfFactor(const xmlpp::Element* factor_node,
     std::stringstream msg;
     msg << "Line " << factor_node->get_line() << ":\n";
     err.msg(msg.str() + err.msg());
-    throw err;
+    throw;
   }
 }
 
@@ -875,9 +873,6 @@ void Initializer::ValidateInitialization() {
 
   for (const std::pair<std::string, CcfGroupPtr>& group : model_->ccf_groups())
     group.second->Validate();
-
-  if (settings_.algorithm() == "bdd" && !coherent_)
-    throw ValidationError("BDD algorithm accepts only coherent models.");
 }
 
 void Initializer::ValidateExpressions() {

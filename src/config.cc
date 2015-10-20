@@ -54,7 +54,7 @@ Config::Config(const std::string& config_file) : output_path_("") {
     parser->Validate(schema);
   } catch (ValidationError& err) {
     err.msg("In file '" + config_file + "', " + err.msg());
-    throw err;
+    throw;
   }
   const xmlpp::Document* doc = parser->Document();
   const xmlpp::Node* root = doc->get_root_node();

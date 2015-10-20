@@ -80,7 +80,7 @@ class Expression {
 
   /// Determines if the value of the expression varies.
   /// The default logic is to check arguments with uncertainties for sampling.
-  /// Derivied expression classes must decide
+  /// Derived expression classes must decide
   /// if they don't have arguments,
   /// or if they are random deviates.
   ///
@@ -88,7 +88,7 @@ class Expression {
   /// @returns false if the expression's value has uncertainties.
   ///
   /// @warning Improper registration of arguments
-  ///          may yeild silent failure.
+  ///          may yield silent failure.
   virtual bool IsConstant() noexcept;
 
   /// @returns Maximum value of this expression.

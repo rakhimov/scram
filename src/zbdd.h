@@ -21,15 +21,15 @@
 #ifndef SCRAM_SRC_ZBDD_H_
 #define SCRAM_SRC_ZBDD_H_
 
+#include <cstdint>
+#include <utility>
+#include <vector>
+
+#include <boost/unordered_map.hpp>
+
 #include "bdd.h"
 
 namespace scram {
-
-/// @enum SetOp
-/// Operations on sets.
-enum class SetOp {
-  Without = 0  ///< Without '\' operator.
-};
 
 /// @class SetNode
 /// Representation of non-terminal nodes in ZBDD.
@@ -38,14 +38,14 @@ class SetNode : public NonTerminal {
   using NonTerminal::NonTerminal;  ///< Constructor with index and order.
 
   /// @returns Whatever count is stored in this node.
-  int count() const { return count_; }
+  int64_t count() const { return count_; }
 
   /// Stores numerical value for later retrieval.
   /// This is a helper functionality
   /// for counting the number of sets or nodes.
   ///
   /// @param[in] number  A number with a meaning for the caller.
-  void count(int number) { count_ = number; }
+  void count(int64_t number) { count_ = number; }
 
   /// @returns Cut sets found in the ZBDD represented by this node.
   const std::vector<std::vector<int>>& cut_sets() const { return cut_sets_; }
@@ -68,7 +68,7 @@ class SetNode : public NonTerminal {
 
  private:
   std::vector<std::vector<int>> cut_sets_;  ///< Cut sets of this node.
-  int count_ = 0;  ///< The number of cut sets, nodes, or anything else.
+  int64_t count_ = 0;  ///< The number of cut sets, nodes, or anything else.
 };
 
 /// @class Zbdd
@@ -79,10 +79,11 @@ class Zbdd {
   /// into Zero-Suppressed BDD.
   ///
   /// @param[in] bdd  ROBDD with the ITE vertices.
+  /// @param[in] settings  Settings for analysis.
   ///
   /// @pre Boolean graph is coherent (monotonic).
   /// @pre BDD has attributed edges with only one terminal (1/True).
-  explicit Zbdd(const Bdd* bdd) noexcept;
+  Zbdd(const Bdd* bdd, const Settings& settings) noexcept;
 
   /// Runs the analysis
   /// with the representation of a Boolean graph
@@ -100,29 +101,31 @@ class Zbdd {
   using ItePtr = std::shared_ptr<Ite>;
   using SetNodePtr = std::shared_ptr<SetNode>;
   using UniqueTable = TripletTable<SetNodePtr>;
-  using ComputeTable = TripletTable<VertexPtr>;
+  using PairTable = boost::unordered_map<std::pair<int, int>, VertexPtr>;
   using CutSet = std::vector<int>;
 
-  Zbdd() noexcept;  ///< Default constructor to initialize member variables.
+  /// Default constructor to initialize member variables.
+  ///
+  /// @param[in] settings  Settings that control analysis complexity.
+  explicit Zbdd(const Settings& settings) noexcept;
 
   /// Converts BDD graph into ZBDD graph.
   ///
   /// @param[in] vertex  Vertex of the ROBDD graph.
   /// @param[in] complement  Interpretation of the vertex as complement.
   /// @param[in] bdd_graph  The main ROBDD as helper database.
+  /// @param[in] limit_order  The maximum size of requested sets.
   ///
   /// @returns Pointer to the root vertex of the ZBDD graph.
   VertexPtr ConvertBdd(const VertexPtr& vertex, bool complement,
-                       const Bdd* bdd_graph) noexcept;
+                       const Bdd* bdd_graph, int limit_order) noexcept;
 
   /// Removes subsets in ZBDD.
   ///
   /// @param[in] vertex  The variable node in the set.
   ///
   /// @returns Processed vertex.
-  ///
-  /// @warning NonTerminal vertex marks are used.
-  VertexPtr Subsume(const VertexPtr& vertex) noexcept;
+  VertexPtr Minimize(const VertexPtr& vertex) noexcept;
 
   /// Applies subsume operation on two sets.
   /// Subsume operation removes
@@ -160,9 +163,7 @@ class Zbdd {
   /// @returns The number of cut sets in ZBDD.
   ///
   /// @pre SetNode marks are clear (false).
-  ///
-  /// @warning Integer may overflow for a large ZBDD.
-  int CountCutSets(const VertexPtr& vertex) noexcept;
+  int64_t CountCutSets(const VertexPtr& vertex) noexcept;
 
   /// Cleans up non-terminal vertex marks
   /// by setting them to "false".
@@ -176,20 +177,18 @@ class Zbdd {
   /// The key consists of (index, id_high, id_low) triplet.
   UniqueTable unique_table_;
 
-  /// Table of processed computations over sets.
-  /// The key must convey the semantics of the operation over sets.
-  /// The argument functions are recorded with their IDs (not vertex indices).
-  /// In order to keep only unique computations,
-  /// the argument IDs must be ordered.
-  ComputeTable compute_table_;
+  /// The results of subsume operations over sets.
+  PairTable subsume_table_;
 
+  const Settings kSettings_;  ///< Analysis settings.
   VertexPtr root_;  ///< The root vertex of ZBDD.
-  std::unordered_map<int, SetNodePtr> ites_;  ///< Processed function graphs.
+  /// Processed function graphs with ids and limit order.
+  boost::unordered_map<std::pair<int, int>, VertexPtr> ites_;
   std::unordered_map<int, VertexPtr> modules_;  ///< Module graphs.
   const TerminalPtr kBase_;  ///< Terminal Base (Unity/1) set.
   const TerminalPtr kEmpty_;  ///< Terminal Empty (Null/0) set.
   int set_id_;  ///< Identification assignment for new set graphs.
-  std::unordered_map<int, VertexPtr> subsume_results_;  ///< Memorize subsume.
+  std::unordered_map<int, VertexPtr> minimal_results_;  ///< Memorize minimal.
   std::vector<CutSet> cut_sets_;  ///< Generated cut sets.
 };
 

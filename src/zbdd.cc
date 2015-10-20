@@ -24,22 +24,25 @@
 
 namespace scram {
 
-Zbdd::Zbdd() noexcept
-    : kBase_(std::make_shared<Terminal>(true)),
+Zbdd::Zbdd(const Settings& settings) noexcept
+    : kSettings_(settings),
+      kBase_(std::make_shared<Terminal>(true)),
       kEmpty_(std::make_shared<Terminal>(false)),
       set_id_(2) {}
 
-Zbdd::Zbdd(const Bdd* bdd) noexcept : Zbdd::Zbdd() {
+Zbdd::Zbdd(const Bdd* bdd, const Settings& settings) noexcept
+    : Zbdd::Zbdd(settings) {
   CLOCK(init_time);
   LOG(DEBUG2) << "Creating ZBDD from BDD...";
   const Bdd::Function& bdd_root = bdd->root();
-  root_ = Zbdd::ConvertBdd(bdd_root.vertex, bdd_root.complement, bdd);
-  LOG(DEBUG3) << "The total number of ZBDD nodes generated: " << set_id_ - 1;
-  LOG(DEBUG3) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);
+  root_ = Zbdd::ConvertBdd(bdd_root.vertex, bdd_root.complement, bdd,
+                           kSettings_.limit_order());
+  LOG(DEBUG4) << "# of ZBDD nodes created: " << set_id_ - 1;
+  LOG(DEBUG4) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);
   LOG(DEBUG2) << "Created ZBDD from BDD in " << DUR(init_time);
 
   Zbdd::ClearMarks(root_);
-  int number = Zbdd::CountCutSets(root_);
+  int64_t number = Zbdd::CountCutSets(root_);
   LOG(DEBUG3) << "There are " << number << " cut sets in total.";
   Zbdd::ClearMarks(root_);
 }
@@ -50,13 +53,13 @@ void Zbdd::Analyze() noexcept {
 
   CLOCK(minimize_time);
   LOG(DEBUG3) << "Minimizing ZBDD...";
-  root_ = Zbdd::Subsume(root_);
+  root_ = Zbdd::Minimize(root_);
   LOG(DEBUG3) << "Finished ZBDD minimization in " << DUR(minimize_time);
   Zbdd::ClearMarks(root_);
-  LOG(DEBUG3) << "The total number of ZBDD nodes generated: " << set_id_ - 1;
-  LOG(DEBUG3) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);
+  LOG(DEBUG4) << "# of ZBDD nodes created: " << set_id_ - 1;
+  LOG(DEBUG4) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);
   Zbdd::ClearMarks(root_);
-  int number = Zbdd::CountCutSets(root_);
+  int64_t number = Zbdd::CountCutSets(root_);
   Zbdd::ClearMarks(root_);
   LOG(DEBUG3) << "There are " << number << " cut sets in total.";
 
@@ -70,47 +73,58 @@ void Zbdd::Analyze() noexcept {
 
 std::shared_ptr<Vertex> Zbdd::ConvertBdd(const VertexPtr& vertex,
                                          bool complement,
-                                         const Bdd* bdd_graph) noexcept {
+                                         const Bdd* bdd_graph,
+                                         int limit_order) noexcept {
   if (vertex->terminal()) return complement ? kEmpty_ : kBase_;
-  assert(!complement);  // @todo Make it work for non-coherent cases.
+  if (limit_order == 0) return kEmpty_;  // Cut-off on the cut set size.
   int sign = complement ? -1 : 1;
-  SetNodePtr& zbdd = ites_[sign * vertex->id()];
-  if (zbdd) return zbdd;
+  VertexPtr& result = ites_[{sign * vertex->id(), limit_order}];
+  if (result) return result;
   ItePtr ite = Ite::Ptr(vertex);
-  zbdd = std::make_shared<SetNode>(ite->index(), ite->order());
+  SetNodePtr zbdd = std::make_shared<SetNode>(ite->index(), ite->order());
+  int limit_high = limit_order - 1;  // Requested order for the high node.
   if (ite->module()) {  // This is a proxy and not a variable.
     zbdd->module(true);
     const Bdd::Function& module =
         bdd_graph->gates().find(ite->index())->second;
-    modules_.emplace(
-        ite->index(),
-        Zbdd::ConvertBdd(module.vertex, module.complement, bdd_graph));
+    VertexPtr module_set =
+        Zbdd::ConvertBdd(module.vertex, module.complement,
+                         bdd_graph, kSettings_.limit_order());
+    limit_high += 1;  // Conservative approach.
+    modules_.emplace(ite->index(), module_set);
   }
-  zbdd->high(Zbdd::ConvertBdd(ite->high(), complement, bdd_graph));
+  zbdd->high(Zbdd::ConvertBdd(ite->high(), complement, bdd_graph, limit_high));
   zbdd->low(Zbdd::ConvertBdd(ite->low(), ite->complement_edge() ^ complement,
-                             bdd_graph));
-  if (zbdd->high()->terminal() && !Terminal::Ptr(zbdd->high())->value())
-    return zbdd->low();  // Reduce.
+                             bdd_graph, limit_order));
+  if ((zbdd->high()->terminal() && !Terminal::Ptr(zbdd->high())->value()) ||
+      (zbdd->high()->id() == zbdd->low()->id()) ||
+      (zbdd->low()->terminal() && Terminal::Ptr(zbdd->low())->value())) {
+    result = zbdd->low();  // Reduce and minimize.
+    return result;
+  }
   SetNodePtr& in_table =
       unique_table_[{zbdd->index(), zbdd->high()->id(), zbdd->low()->id()}];
-  if (in_table) return in_table;
-  in_table = zbdd;
-  zbdd->id(set_id_++);
-  return zbdd;
+  if (!in_table) {
+    in_table = zbdd;
+    zbdd->id(set_id_++);
+  }
+  result = in_table;
+  return result;
 }
 
-std::shared_ptr<Vertex> Zbdd::Subsume(const VertexPtr& vertex) noexcept {
+std::shared_ptr<Vertex> Zbdd::Minimize(const VertexPtr& vertex) noexcept {
   if (vertex->terminal()) return vertex;
-  VertexPtr& result = subsume_results_[vertex->id()];
+  VertexPtr& result = minimal_results_[vertex->id()];
   if (result) return result;
   SetNodePtr node = SetNode::Ptr(vertex);
   if (node->module()) {
     VertexPtr& module = modules_.find(node->index())->second;
-    module = Zbdd::Subsume(module);
+    module = Zbdd::Minimize(module);
   }
-  VertexPtr high = Zbdd::Subsume(node->high());
-  VertexPtr low = Zbdd::Subsume(node->low());
+  VertexPtr high = Zbdd::Minimize(node->high());
+  VertexPtr low = Zbdd::Minimize(node->low());
   high = Zbdd::Subsume(high, low);
+  assert(high->id() != low->id() && "Subsume failed!");
   if (high->terminal() && !Terminal::Ptr(high)->value()) {  // Reduction rule.
     result = low;
     return result;
@@ -138,9 +152,7 @@ std::shared_ptr<Vertex> Zbdd::Subsume(const VertexPtr& high,
     }
   }
   if (high->terminal()) return high;  // No need to reduce terminal sets.
-  /// @todo Define set operation signatures.
-  int op = static_cast<int>(SetOp::Without);
-  VertexPtr& computed = compute_table_[{op, high->id(), low->id()}];
+  VertexPtr& computed = subsume_table_[{high->id(), low->id()}];
   if (computed) return computed;
 
   SetNodePtr high_node = SetNode::Ptr(high);
@@ -192,6 +204,8 @@ Zbdd::GenerateCutSets(const VertexPtr& vertex) noexcept {
         Zbdd::GenerateCutSets(modules_.find(node->index())->second);
     for (auto& cut_set : high) {  // Cross-product.
       for (auto& module_set : module) {
+        if (cut_set.size() + module_set.size() > kSettings_.limit_order())
+          continue;  // Cut-off on the cut set size.
         CutSet combo = cut_set;
         combo.insert(combo.end(), module_set.begin(), module_set.end());
         result.emplace_back(std::move(combo));
@@ -199,6 +213,7 @@ Zbdd::GenerateCutSets(const VertexPtr& vertex) noexcept {
     }
   } else {
     for (auto& cut_set : high) {
+      if (cut_set.size() == kSettings_.limit_order()) continue;
       cut_set.push_back(node->index());
       result.emplace_back(cut_set);
     }
@@ -232,7 +247,7 @@ void Zbdd::ClearMarks(const VertexPtr& vertex) noexcept {
   Zbdd::ClearMarks(node->low());
 }
 
-int Zbdd::CountCutSets(const VertexPtr& vertex) noexcept {
+int64_t Zbdd::CountCutSets(const VertexPtr& vertex) noexcept {
   if (vertex->terminal()) {
     if (Terminal::Ptr(vertex)->value()) return 1;
     return 0;
@@ -240,7 +255,7 @@ int Zbdd::CountCutSets(const VertexPtr& vertex) noexcept {
   SetNodePtr node = SetNode::Ptr(vertex);
   if (node->mark()) return node->count();
   node->mark(true);
-  int multiplier = 1;  // Multiplier of the module.
+  int64_t multiplier = 1;  // Multiplier of the module.
   if (node->module()) {
     VertexPtr module = modules_.find(node->index())->second;
     multiplier = Zbdd::CountCutSets(module);

@@ -30,7 +30,7 @@ The source code and issue/bug tracker are located at `GitHub <https://github.com
 Implemented Features
 --------------------
 
-- Static fault tree analysis
+- Static fault tree analysis (MOCUS/BDD/ZBDD)
 - Non-coherent analysis containing NOT logic or complements
 - Analysis with common-cause failure models
 - Probability calculations with importance analysis
@@ -73,7 +73,7 @@ Analysis
     doc/description
     doc/fault_tree_analysis
     doc/fta_preprocessing
-    doc/fta_mcs_algorithms
+    doc/fta_algorithms
     doc/probability_analysis
     doc/uncertainty_analysis
     doc/common_cause_analysis

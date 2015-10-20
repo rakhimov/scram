@@ -52,9 +52,7 @@ class Vertex {
   bool terminal() const { return terminal_; }
 
   /// @returns Identificator of the BDD graph rooted by this vertex.
-  ///
-  /// @todo Deal with 0 id.
-  int id() const { return id_; };
+  int id() const { return id_; }
 
  protected:
   int id_;  ///< Unique identifier of the BDD graph with this vertex.
@@ -287,16 +285,9 @@ class Bdd {
   ///
   /// @note The passed Boolean graph must already have variable ordering.
   /// @note BDD construction may take considerable time.
-  Bdd(const BooleanGraph* fault_tree, const Settings& /*settings*/);
+  Bdd(const BooleanGraph* fault_tree, const Settings& settings);
 
-  /// Deletes ZBDD if it is created.
-  ///
-  /// @note Manual memory memory management is chosen
-  ///       because smart pointers can't be used with forward declarations
-  ///       to resolve circular dependencies.
-  ///       In order to solve this problem correctly,
-  ///       Bdd must be placed in a different file
-  ///       than the rest of BDD data structure class (Vertex, etc.).
+  /// To handle incomplete ZBDD type with unique pointers.
   ~Bdd() noexcept;
 
   /// @struct Function
@@ -489,6 +480,7 @@ class Bdd {
   void ClearMarks(const VertexPtr& vertex, bool mark) noexcept;
 
   const BooleanGraph* fault_tree_;  ///< The main fault tree.
+  const Settings kSettings_;  ///< Analysis settings.
   Function root_;  ///< The root function of this BDD.
 
   /// Table of unique if-then-else nodes denoting function graphs.
@@ -510,10 +502,7 @@ class Bdd {
   std::unordered_map<int, int> index_to_order_;  ///< Indices and orders.
   const TerminalPtr kOne_;  ///< Terminal True.
   int function_id_;  ///< Identification assignment for new function graphs.
-
-  /// ZBDD as a result of analysis.
-  /// @warning This is a handle, owning pointer.
-  Zbdd* zbdd_;
+  std::unique_ptr<Zbdd> zbdd_;  ///< ZBDD as a result of analysis.
 };
 
 }  // namespace scram

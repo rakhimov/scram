@@ -20,7 +20,7 @@
 
 #include "fault_tree.h"
 
-#include <map>
+#include <utility>
 
 #include <boost/algorithm/string.hpp>
 

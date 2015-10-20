@@ -21,9 +21,7 @@
 #ifndef SCRAM_SRC_FAULT_TREE_ANALYSIS_H_
 #define SCRAM_SRC_FAULT_TREE_ANALYSIS_H_
 
-#include <map>
 #include <memory>
-#include <set>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -36,6 +34,34 @@
 #include "settings.h"
 
 namespace scram {
+
+/// @struct Literal
+/// Event or its complement
+/// that may appear in cut sets.
+struct Literal {
+  bool complement;  ///< Indication of a complement event.
+  std::shared_ptr<BasicEvent> event;  ///< The event in the cut set.
+};
+
+using CutSet = std::vector<Literal>;  ///< Collection of unique literals.
+
+/// Helper function to compute cut set probability.
+///
+/// @param[in] cut_set  Cut set of literals.
+///
+/// @returns Cut set probability.
+///
+/// @pre Events are initialized with expressions.
+double CalculateProbability(const CutSet& cut_set);
+
+/// Helper function to determine cut set order.
+///
+/// @param[in] cut_set  Cut set of literals.
+///
+/// @returns The order of the cut set.
+///
+/// @note An empty cut set is assumed to indicate the Base/Unity set.
+int GetOrder(const CutSet& cut_set);
 
 /// @class FaultTreeDescriptor
 /// Fault tree description gatherer.
@@ -161,7 +187,6 @@ class FaultTreeDescriptor {
 class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
  public:
   using GatePtr = std::shared_ptr<Gate>;
-  using CutSet = std::set<std::string>;  ///< Cut set with basic event IDs.
 
   /// Traverses a valid fault tree from the root gate
   /// to collect databases of events, gates,
@@ -171,6 +196,8 @@ class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
   ///
   /// @param[in] root  The top event of the fault tree to analyze.
   /// @param[in] settings  Analysis settings for all calculations.
+  ///
+  /// @pre The gates' visit marks are clean.
   ///
   /// @note It is assumed that analysis is done only once.
   ///
@@ -194,63 +221,28 @@ class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
   /// @warning If the fault tree structure has changed
   ///          since the construction of the analysis,
   ///          the analysis will be invalid or fail.
-  /// @warning The gates' visit marks must be clean.
   virtual void Analyze() noexcept = 0;
 
-  /// @returns Set with minimal cut sets.
-  ///
-  /// @note The user should make sure that the analysis is actually done.
-  const std::set<CutSet>& min_cut_sets() const { return min_cut_sets_; }
+  /// @returns Cut sets as the analysis results.
+  const std::vector<CutSet>& cut_sets() const { return cut_sets_; }
 
-  /// @returns Collection of basic events that are in the minimal cut sets.
-  const std::unordered_map<std::string, BasicEventPtr>&
-      mcs_basic_events() const {
-    return mcs_basic_events_;
+  /// @returns Collection of basic events that are in the cut sets.
+  const std::vector<BasicEventPtr>& cut_set_events() const {
+    return cut_set_events_;
   }
-
-  /// @returns Map with minimal cut sets and their probabilities.
-  ///
-  /// @note The user should make sure that the analysis is actually done.
-  const std::map<CutSet, double>& mcs_probability() const {
-    assert(kSettings_.probability_analysis());
-    return mcs_probability_;
-  }
-
-  /// @returns The sum of minimal cut set probabilities.
-  ///
-  /// @note This value is the same as the rare-event approximation.
-  double sum_mcs_probability() const {
-    assert(kSettings_.probability_analysis());
-    return sum_mcs_probability_;
-  }
-
-  /// @returns The maximum order of the found minimal cut sets.
-  int max_order() const { return max_order_; }
 
  protected:
   /// Converts minimal cut sets from indices to strings
   /// for future reporting.
-  /// This function also collects basic events in minimal cut sets
-  /// and calculates their probabilities.
+  /// This function also collects basic events in cut sets.
   ///
-  /// @param[in] imcs  Min cut sets with indices of events.
-  /// @param[in] ft  Indexed fault tree with basic event indices and pointers.
-  ///
-  /// @todo Probability calculation feels more like a hack than design.
-  void SetsToString(const std::vector<std::vector<int>>& imcs,
-                    const BooleanGraph* ft) noexcept;
+  /// @param[in] i_cut_sets  Cut sets with indices of events from calculations.
+  /// @param[in] graph  Boolean graph with basic event indices and pointers.
+  void Convert(const std::vector<std::vector<int>>& i_cut_sets,
+               const BooleanGraph* graph) noexcept;
 
-  /// Container for minimal cut sets.
-  std::set<CutSet> min_cut_sets_;
-
-  /// Container for basic events in minimal cut sets.
-  std::unordered_map<std::string, BasicEventPtr> mcs_basic_events_;
-
-  /// Container for minimal cut sets and their respective probabilities.
-  std::map<CutSet, double> mcs_probability_;
-
-  double sum_mcs_probability_;  ///< The sum of minimal cut set probabilities.
-  int max_order_;  ///< Maximum order of minimal cut sets.
+  std::vector<CutSet> cut_sets_;  ///< Container of analysis results.
+  std::vector<BasicEventPtr> cut_set_events_;  ///< Basic events in cut sets.
 };
 
 /// @class FaultTreeAnalyzer
@@ -307,7 +299,7 @@ void FaultTreeAnalyzer<Algorithm>::Analyze() noexcept {
   LOG(DEBUG2) << "The algorithm finished in " << DUR(algo_time);
 
   analysis_time_ = DUR(analysis_time);  // Duration of MCS generation.
-  FaultTreeAnalysis::SetsToString(algorithm_->cut_sets(), graph_.get());
+  FaultTreeAnalysis::Convert(algorithm_->cut_sets(), graph_.get());
 }
 
 }  // namespace scram

@@ -23,6 +23,10 @@ Papers
           "Efficient algorithms to assess component and gate importance in fault tree analysis,"
           Reliab. Eng. Syst. Saf., vol. 72, no. 2, pp. 213-222, 2001.
 
+.. [Jun09] W. Jung
+           "ZBDD algorithm features for an efficient probabilistic safety assessment,"
+           Nuc. Eng. Des., vol. 239, pp. 2085-2092, 2009.
+
 .. [Min93] S. Minato,
            "Zero-suppressed BDD's for set manipulation in combinatorial problems,"
            in Proc. 30th ACM/IEEE Design Automation Conf., pp. 272-277, 1993.
@@ -31,9 +35,13 @@ Papers
            "On simplification of large fault trees,"
            Reliab. Eng. Syst. Saf., vol. 44, pp. 135-138, 1994.
 
-.. [NR99] M.Nikolskaia and A.Rauzy,
+.. [NR99] M. Nikolskaia and A. Rauzy,
           "Fine-tuning of boolean formulae preprocessing techniques,"
           in Proc. ESREL Conf., vol. 2, pp. 1027-1032, 1999.
+
+.. [PA09] R. Remenyte-Prescott and J. Andrews
+          "An efficient real-time method of analysis for non-coherent fault trees,"
+          Qual. Reliab. Eng. Int., no. 25, pp. 129-150, 2009.
 
 .. [Rau93] A. Rauzy,
            "New algorithms for fault trees analysis,"

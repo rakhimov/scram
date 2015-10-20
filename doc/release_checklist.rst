@@ -23,8 +23,10 @@ Pre-Release
     * [ ] Benchmarking tests
     * [ ] Performance tests
 
+- [ ] Fuzz testing preprocessor and analysis code (tools: fuzz_tester.py, fault_tree_generator.py)
 - [ ] Coveralls >= 95%
 - [ ] Coverity defects < 0.35 per 1000 SLOC (target: 0)
+- [ ] Static code analysis with CppCheck
 - [ ] Valgrind check for memory leaks
 
     * [ ] Run all *fast* tests under Valgrind memcheck
@@ -37,12 +39,11 @@ Pre-Release
 - [ ] Documentation coverage of the code (coverage target: full) (tools: Doxygen)
 - [ ] Cleanup the code
 
-    * [ ] Unused ``#include`` and improper forward declarations
+    * [ ] Unused ``#include`` and improper forward declarations (CppClean)
     * [ ] Style check of C++ code (CppLint)
     * [ ] Style check of Python code (PyLint)
     * [ ] Unused ``import``
     * [ ] Spell check the code (optional)
-    * [-] CppClean check (problem: fails with C++11)
 
 - [ ] Update the Lizard report
 

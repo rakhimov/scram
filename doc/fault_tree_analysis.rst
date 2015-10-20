@@ -80,5 +80,5 @@ Analysis Algorithms
 ===================
 
 - :ref:`preprocessing`
-- :ref:`mcs_algorithm`
+- :ref:`fta_algorithms`
 - :ref:`prob_calc`

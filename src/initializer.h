@@ -43,7 +43,6 @@ class FaultTree;
 class Component;
 class CcfGroup;
 class Expression;
-class Formula;
 
 /// @class Initializer
 /// This class operates on input files
@@ -403,9 +402,6 @@ class Initializer {
 
   /// Container for defined expressions for later validation.
   std::vector<ExpressionPtr> expressions_;
-
-  /// Detection of non-coherent models.
-  bool coherent_;
 };
 
 }  // namespace scram

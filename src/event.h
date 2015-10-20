@@ -318,14 +318,14 @@ class Formula {
 
   /// Sets the vote number only for an ATLEAST formula.
   ///
-  /// @param[in] vnumber  The vote number.
+  /// @param[in] number  The vote number.
   ///
   /// @throws InvalidArgument  The vote number is invalid.
   /// @throws LogicError  The vote number is assigned illegally.
   ///
   /// @note (Children number > vote number) should be checked
   ///       outside of this class.
-  void vote_number(int vnumber);
+  void vote_number(int number);
 
   /// @returns The event arguments of this formula.
   const std::map<std::string, EventPtr>& event_args() const {

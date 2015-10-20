@@ -19,7 +19,7 @@ If the current performance is not listed, then the best is the current.
 ============== Probability/Importance Analysis ===========
 
 
-==================== MCS Analysis =========================
+============== Fault Tree Analysis (MOCUS)=============
 
 ---------- Baobab1 -l 7 (mcs = 17432) ----------------
 Debug build:
@@ -45,13 +45,6 @@ Release build:
 --------------
 - Cut Set Generation      2.4s  |
 - Cut Set Minimization    23s   |
-
-
----------- CEA9601 -l 14 (mcs = 5160) ----------------
-Release build:
---------------
-- Cut Set Generation      3.9s   |
-- Cut Set Minimization    0.05s  |
 
 
 ---------- Baobab2 (mcs = 4805) ----------------

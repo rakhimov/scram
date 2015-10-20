@@ -46,28 +46,36 @@ ComplementEdge::ComplementEdge() : complement_edge_(false) {}
 
 ComplementEdge::~ComplementEdge() {}  // Default pure virtual destructor.
 
-Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& /*settings*/)
+Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
     : fault_tree_(fault_tree),
+      kSettings_(settings),
       kOne_(std::make_shared<Terminal>(true)),
-      function_id_(2),
-      zbdd_(nullptr) {
+      function_id_(2) {
   CLOCK(init_time);
   LOG(DEBUG3) << "Converting Boolean graph into BDD...";
-  root_ = Bdd::IfThenElse(fault_tree_->root());
+  if (fault_tree->root()->IsConstant()) {
+    // Constant case should only happen to the top gate.
+    if (fault_tree->root()->state() == kNullState) {
+      root_ = {true, kOne_};
+    } else {
+      root_ = {false, kOne_};
+    }
+  } else {
+    root_ = Bdd::IfThenElse(fault_tree->root());
+  }
   LOG(DEBUG4) << "# of BDD vertices created: " << function_id_ - 1;
+  LOG(DEBUG4) << "# of entries in unique table: " << unique_table_.size();
+  LOG(DEBUG4) << "# of entries in compute table: " << compute_table_.size();
   Bdd::ClearMarks(false);
   LOG(DEBUG4) << "# of ITE in BDD: " << Bdd::CountIteNodes(root_.vertex);
   LOG(DEBUG3) << "Finished Boolean graph conversion in " << DUR(init_time);
   Bdd::ClearMarks(false);
 }
 
-Bdd::~Bdd() noexcept {
-  if (zbdd_) delete zbdd_;
-}
+Bdd::~Bdd() noexcept = default;
 
 void Bdd::Analyze() noexcept {
-  if (zbdd_) delete zbdd_;
-  zbdd_ = new Zbdd(this);
+  zbdd_ = std::unique_ptr<Zbdd>(new Zbdd(this, kSettings_));
   zbdd_->Analyze();
 }
 
@@ -77,18 +85,9 @@ const std::vector<std::vector<int>>& Bdd::cut_sets() const {
 }
 
 const Bdd::Function& Bdd::IfThenElse(const IGatePtr& gate) noexcept {
+  assert(!gate->IsConstant() && "Unexpected constant gate!");
   Function& result = gates_[gate->index()];
   if (result.vertex) return result;
-  if (gate->state() != kNormalState) {
-    // Constant case should only happen to the top gate.
-    assert(gate == fault_tree_->root());
-    if (gate->state() == kNullState) {
-      result = {true, kOne_};
-    } else {
-      result = {false, kOne_};
-    }
-    return result;
-  }
   std::vector<Function> args;
   for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
     args.push_back({arg.first < 0, Bdd::IfThenElse(arg.second)});
@@ -105,9 +104,9 @@ const Bdd::Function& Bdd::IfThenElse(const IGatePtr& gate) noexcept {
   }
   std::sort(args.begin(), args.end(),
             [](const Function& lhs, const Function& rhs) {
-    if (lhs.vertex->terminal()) return false;
-    if (rhs.vertex->terminal()) return true;
-    return Ite::Ptr(lhs.vertex)->order() < Ite::Ptr(rhs.vertex)->order();
+    if (lhs.vertex->terminal()) return true;
+    if (rhs.vertex->terminal()) return false;
+    return Ite::Ptr(lhs.vertex)->order() > Ite::Ptr(rhs.vertex)->order();
   });
   auto it = args.cbegin();
   result.complement = it->complement;
@@ -123,8 +122,8 @@ const Bdd::Function& Bdd::IfThenElse(const IGatePtr& gate) noexcept {
 std::shared_ptr<Ite> Bdd::IfThenElse(const VariablePtr& variable) noexcept {
   ItePtr& in_table = unique_table_[{variable->index(), 1, -1}];
   if (in_table) return in_table;
-  index_to_order_.emplace(variable->index(), variable->opti_value());
-  in_table = std::make_shared<Ite>(variable->index(), variable->opti_value());
+  index_to_order_.emplace(variable->index(), variable->order());
+  in_table = std::make_shared<Ite>(variable->index(), variable->order());
   in_table->id(function_id_++);
   in_table->high(kOne_);
   in_table->low(kOne_);
@@ -136,7 +135,7 @@ std::shared_ptr<Ite> Bdd::CreateModuleProxy(const IGatePtr& gate) noexcept {
   assert(gate->IsModule());
   ItePtr& in_table = unique_table_[{gate->index(), 1, -1}];
   if (in_table) return in_table;
-  in_table = std::make_shared<Ite>(gate->index(), gate->opti_value());
+  in_table = std::make_shared<Ite>(gate->index(), gate->order());
   in_table->module(true);  // The main difference.
   in_table->id(function_id_++);
   in_table->high(kOne_);
