@@ -88,6 +88,8 @@ void FaultTreeAnalysis::Convert(const std::vector<std::vector<int>>& i_cut_sets,
   }
   std::unordered_set<int> unique_events;
   for (const auto& min_cut_set : i_cut_sets) {
+    assert(min_cut_set.size() <= kSettings_.limit_order() &&
+           "Miscalculated cut sets with larger-than-required order.");
     CutSet result;
     for (int index : min_cut_set) {
       BasicEventPtr basic_event = graph->GetBasicEvent(std::abs(index));

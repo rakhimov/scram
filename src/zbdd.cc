@@ -90,13 +90,7 @@ std::shared_ptr<Vertex> Zbdd::ConvertBdd(const VertexPtr& vertex,
     VertexPtr module_set =
         Zbdd::ConvertBdd(module.vertex, module.complement,
                          bdd_graph, kSettings_.limit_order());
-    if (module_set->terminal()) {
-      if (Terminal::Ptr(module_set)->value()) {
-        limit_high += 1;  // Avoid constants in sets.
-      } else {  /// @todo Handle separately.
-        limit_high = 0;  // Empty set.
-      }
-    }
+    limit_high += 1;  // Conservative approach.
     modules_.emplace(ite->index(), module_set);
   }
   zbdd->high(Zbdd::ConvertBdd(ite->high(), complement, bdd_graph, limit_high));
@@ -219,6 +213,7 @@ Zbdd::GenerateCutSets(const VertexPtr& vertex) noexcept {
     }
   } else {
     for (auto& cut_set : high) {
+      if (cut_set.size() == kSettings_.limit_order()) continue;
       cut_set.push_back(node->index());
       result.emplace_back(cut_set);
     }
