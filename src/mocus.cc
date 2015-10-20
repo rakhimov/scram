@@ -270,11 +270,16 @@ void Mocus::AnalyzeSimpleGate(const SimpleGatePtr& gate,
 
   CLOCK(min_time);
   LOG(DEBUG4) << "Minimizing the cut sets.";
-  std::vector<const CutSet*> cut_sets_vector;
-  cut_sets_vector.reserve(cut_sets.size());
+  mocus::CutSetContainer sanitized_cut_sets;
   for (const CutSetPtr& cut_set : cut_sets) {
     cut_set->Sanitize();
+    sanitized_cut_sets.insert(cut_set);  // Makes it unique as well.
+  }
+  std::vector<const CutSet*> cut_sets_vector;
+  cut_sets_vector.reserve(sanitized_cut_sets.size());
+  for (const CutSetPtr& cut_set : sanitized_cut_sets) {
     if (cut_set->empty()) {  // Unity set.
+      mcs->clear();
       mcs->push_back(*cut_set);
       return;
     }
