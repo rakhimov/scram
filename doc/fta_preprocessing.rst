@@ -174,25 +174,25 @@ of special cases for the Shannon decomposition.
 Given a Boolean formula **f(x, y)**,
 the following cases are the special cases of its Shannon decomposition:
 
-    1. If ```f(x, y) = 1/True/Failure``` assuming ```x = 1/True/Failure```:
+    1. If ``f(x, y) = 1/True/Failure`` assuming ``x = 1/True/Failure``:
 
         .. math::
 
             f(x, y) = x \| f(0, y)
 
-    2. If ```f(x, y) = 0/False/Success``` assuming ```x = 1/True/Failure```:
+    2. If ``f(x, y) = 0/False/Success`` assuming ``x = 1/True/Failure``:
 
         .. math::
 
-            f(x, y) = ~x \& f(0, y)
+            f(x, y) = \overline{x} \& f(0, y)
 
-    3. If ```f(x, y) = 1/True/Failure``` assuming ```x = 0/False/Success```:
+    3. If ``f(x, y) = 1/True/Failure`` assuming ``x = 0/False/Success``:
 
         .. math::
 
-            f(x, y) = ~x \| f(1, y)
+            f(x, y) = \overline{x} \| f(1, y)
 
-    4. If ```f(x, y) = 0/False/Success``` assuming ```x = 0/False/Success```:
+    4. If ``f(x, y) = 0/False/Success`` assuming ``x = 0/False/Success``:
 
         .. math::
 
@@ -205,7 +205,7 @@ Transformations with disjunctions of the formula (cases 1 and 3)
 are the most desirable for analysis
 because the final result of the analysis is the disjunction of products.
 
-The main optimization criteria for transformations
+The main optimization criterion for transformations
 is to decrease the complexity or multiplicity of the graph.
 That is, the transformation must yield
 fewer destinations than its original multiplicity.

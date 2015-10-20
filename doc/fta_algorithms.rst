@@ -90,7 +90,7 @@ Moreover, the computation of minimal cut sets
 is simpler than the computation of prime implicants.
 Calculation of prime implicants involves
 extra computations in accordance to the Consensus theorem
-and generate a lot more cut sets than calculation of minimal cut sets [PA09]_.
+and generates a lot more cut sets than calculation of minimal cut sets [PA09]_.
 
 The benefit of calculation of prime implicants is
 that it is the exact representation of the system without approximations.
@@ -109,7 +109,7 @@ Given Boolean formula **f(a,b,c)**:
 
     .. math::
 
-        f(a,b,c) = a \& b \| ~a \& c
+        f(a,b,c) = a \& b \| \overline{a} \& c
 
 Considering the complement is always True, the formula is simplified:
 
@@ -122,9 +122,9 @@ when variable **a** is irrelevant:
 
     .. math::
 
-        f(a,b,c) = a \& b \| ~a \& c \| b \& c
+        f(a,b,c) = a \& b \| \overline{a} \& c \| b \& c
 
-Minimal cut sets of the formula are ```{ab, c}```. Prime implicants are ```{ab, ~ac, bc}```.
+Minimal cut sets of the formula are ``{ab, c}``. Prime implicants are ``{ab, ~ac, bc}``.
 
 
 ********************
