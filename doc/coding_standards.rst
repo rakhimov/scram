@@ -69,10 +69,10 @@ Core C++ Code
 
 - In definitions of class member functions:
 
-  * Explicitly qualify non-virtual member and inherited function calls
-    with the corresponding class names, i.e., ``ClassName::Foo()``.
-  * Qualify virtual functions to be overridden by design as ``this->Foo()``.
-  * Free functions in the same namespace may be unqualified, i.e., ``Foo()``.
+    * Explicitly qualify non-virtual member and inherited function calls
+        with the corresponding class names, i.e., ``ClassName::Foo()``.
+    * Qualify virtual functions to be overridden by design as ``this->Foo()``.
+    * Free functions in the same namespace may be unqualified, i.e., ``Foo()``.
 
 - Declare a getter function before a setter function
   for a corresponding member variable.
