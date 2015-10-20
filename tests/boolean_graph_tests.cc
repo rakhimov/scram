@@ -103,7 +103,7 @@ TEST_F(IGateTest, AddArgDeathTests) {
   DefineGate(kXorGate, 2);
   EXPECT_DEATH(g->AddArg(var_three->index(), var_three), "");
   DefineGate(kAndGate, 1);
-  EXPECT_DEATH(g->AddArg(var_three->index(), var_two), "");  // Wrong index.
+  EXPECT_DEATH(g->AddArg(1, var_two), "");  // Wrong index.
   DefineGate(kAndGate, 1);
   EXPECT_DEATH(g->AddArg(0, var_two), "");  // Wrong index.
   DefineGate(kAndGate, 2);

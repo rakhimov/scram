@@ -977,7 +977,7 @@ class Preprocessor {
                           const std::pair<int, int>& visit_bounds) noexcept;
 
     std::shared_ptr<Node> node_;  ///< The common node to process.
-    Preprocessor* preprocessor_;  ///< The host preprocessor.
+    Preprocessor* preprocessor_ = nullptr;  ///< The host preprocessor.
     std::unordered_map<int, IGatePtr> clones_true_;  ///< True state clones.
     std::unordered_map<int, IGatePtr> clones_false_;  ///< False state clones.
   };
