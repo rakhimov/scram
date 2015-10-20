@@ -2282,8 +2282,8 @@ bool Preprocessor::DecompositionProcessor::ProcessAncestors(
   if (!node_->parents().count(ancestor->index()) &&
       std::none_of(
           ancestor->gate_args().begin(), ancestor->gate_args().end(),
-          [index = node_->index()](const std::pair<int, IGatePtr> & arg) {
-            return arg.second->descendant() == index;
+          [this](const std::pair<int, IGatePtr> & arg) {
+            return arg.second->descendant() == this->node_->index();
           })) {
     ancestor->descendant(0);  // Lose ancestorship if the descendant is gone.
   }
