@@ -244,7 +244,7 @@ class CutSet {
   /// Adds unique element known not to be in the set.
   ///
   /// @param[in] index  The index of the element.
-  /// @param[in/out] base  Sorted and unique collection.
+  /// @param[in,out] base  Sorted and unique collection.
   void AddUniqueElement(int index, std::vector<int>* base) {
     base->insert(std::lower_bound(base->begin(), base->end(), index), index);
   }

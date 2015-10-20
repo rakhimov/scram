@@ -922,8 +922,8 @@ class Preprocessor {
     /// These setups are assumed
     /// to be provided by the DecomposeCommonNodes().
     ///
-    /// @param[in/out] common_node  Common node to be processed.
-    /// @param[in/out] preprocessor  The host preprocessor with state.
+    /// @param[in,out] common_node  Common node to be processed.
+    /// @param[in,out] preprocessor  The host preprocessor with state.
     ///
     /// @returns true if the decomposition setups are found and processed.
     bool operator()(const std::weak_ptr<Node>& common_node,

@@ -684,7 +684,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   State state_;  ///< Indication if this gate's state is normal, null, or unity.
   int vote_number_;  ///< Vote number for ATLEAST gate.
   bool mark_;  ///< Marking for linear traversal of a graph.
-  int descendant_;  //< Mark by descendant indices.
+  int descendant_;  ///< Mark by descendant indices.
   int min_time_;  ///< Minimum time of visits of the sub-graph of the gate.
   int max_time_;  ///< Maximum time of visits of the sub-graph of the gate.
   bool module_;  ///< Indication of an independent module gate.
@@ -764,7 +764,6 @@ class HouseEvent;
 class Gate;
 class Formula;
 class Preprocessor;
-class Bdd;
 
 /// @class BooleanGraph
 /// BooleanGraph is a propositional directed acyclic graph (PDAG).

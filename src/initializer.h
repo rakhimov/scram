@@ -43,7 +43,6 @@ class FaultTree;
 class Component;
 class CcfGroup;
 class Expression;
-class Formula;
 
 /// @class Initializer
 /// This class operates on input files

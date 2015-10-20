@@ -118,7 +118,7 @@ class ImportanceAnalysis : public Analysis {
   std::vector<std::pair<BasicEventPtr, ImportanceFactors>> important_events_;
 };
 
-/// @class ImportanceAnalyzer
+/// @class ImportanceAnalyzerBase
 /// Analyzer of importance factors
 /// with the help from probability analyzers.
 ///
@@ -143,12 +143,16 @@ class ImportanceAnalyzerBase : public ImportanceAnalysis {
 
   virtual ~ImportanceAnalyzerBase() = 0;  ///< Abstract class.
 
+  /// Find all events that are in the cut sets.
+  ///
+  /// @returns Indices and pointers to the basic events.
   std::vector<std::pair<int, BasicEventPtr>> GatherImportantEvents() noexcept {
     return ImportanceAnalysis::GatherImportantEvents(
         prob_analyzer_->graph(),
         prob_analyzer_->cut_sets());
   }
 
+  /// @returns Total probability calculated by probability analyzer.
   double p_total() noexcept { return prob_analyzer_->p_total(); }
 
  protected:
