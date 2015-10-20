@@ -18,6 +18,12 @@
 """fuzz_tester.py
 
 Runs SCRAM with various input files and configurations.
+This script is helpful to detect rare bugs, failed assumptions,
+flawed design, and bottlenecks.
+
+In addition to its main purpose,
+the script is handy to discover
+complex auto-generated analysis inputs and configurations.
 """
 
 from __future__ import print_function
@@ -33,8 +39,14 @@ class Config(object):
     """Storage for configurations.
 
     Empty strings mean the default options of SCRAM.
+
+    Attributes:
+        switch: SCRAM flags that take true or false values.
+        approximation: SCRAM quantitative analysis approximations.
+        analysis: Qualitative analysis algorithms.
+        max_limit: The largest size limit on the cut sets.
     """
-    switch = [ "--probability", "--importance"]
+    switch = ["--probability", "--importance"]
     approximation = ["", "--rare-event", "--mcub"]
     analysis = ["", "--bdd"]
     max_limit = 10
@@ -49,7 +61,11 @@ class Config(object):
 
 
 def generate_input():
-    """Calls fault tree generator."""
+    """Calls fault tree generator.
+
+    The auto-generated input file is located in the run-time directory
+    with the default name given by the fault tree generator.
+    """
     cmd = ["./fault_tree_generator.py",
            "-b", "100", "--common-b", "0.4", "--parents-b", "5",
            "--common-g", "0.2", "--parents-g", "3", "--children", "2.5",
@@ -62,11 +78,19 @@ def generate_input():
     call(cmd)
 
 def get_limit_order():
-    """Generates limit on cut set order."""
+    """Generates the size limit on cut set order.
+
+    Returns:
+        Random integer between 1 and the maximum limit on cut set order.
+    """
     return random.randint(1, Config.max_limit)
 
 def call_scram():
-    """Calls SCRAM with generated input files."""
+    """Calls SCRAM with generated input files.
+
+    Returns:
+        0 for successful runs.
+    """
     cmd = ["scram", "fault_tree.xml"] + \
           ["--limit-order", str(get_limit_order())]
 
@@ -85,6 +109,12 @@ def call_scram():
     return call(cmd)
 
 def main():
+    """The main entrance for SCRAM Fuzz Tester.
+
+    Returns:
+        0 if tests finished without failures.
+        1 for failures.
+    """
     description = "SCRAM Fuzz Tester"
 
     parser = ap.ArgumentParser(description=description)
