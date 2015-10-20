@@ -102,7 +102,7 @@ set(LIBS ${LIBS} ${LIBXML2_LIBRARIES})
 # Find LibXML++ and dependencies.
 find_package(LibXML++ REQUIRED)
 set(LIBS ${LIBS} ${LibXML++_LIBRARIES})
-message(${LIBS})
+message(STATUS ${LIBS})
 
 # Include the boost header files and the program_options library.
 # Please be sure to use Boost rather than BOOST.
@@ -123,21 +123,22 @@ else()
   message(STATUS "Linking against boost dynamic libraries")
 endif()
 
-message("--    Boost Root: ${Boost_ROOT}")
-message("--    Boost Include directory: ${Boost_INCLUDE_DIR}")
-message("--    Boost Library directories: ${Boost_LIBRARY_DIRS}")
+message(STATUS "    Boost Root: ${Boost_ROOT}")
+message(STATUS "    Boost Include directory: ${Boost_INCLUDE_DIR}")
+message(STATUS "    Boost Library directories: ${Boost_LIBRARY_DIRS}")
 set(LIBS ${LIBS} ${Boost_PROGRAM_OPTIONS_LIBRARY})
-message("--    Boost Program Options location: ${Boost_PROGRAM_OPTIONS_LIBRARY}")
+message(STATUS "    Boost Program Options location:
+  ${Boost_PROGRAM_OPTIONS_LIBRARY}")
 set(LIBS ${LIBS} ${Boost_SYSTEM_LIBRARY})
-message("--    Boost System location: ${Boost_SYSTEM_LIBRARY}")
+message(STATUS "    Boost System location: ${Boost_SYSTEM_LIBRARY}")
 set(LIBS ${LIBS} ${Boost_FILESYSTEM_LIBRARY})
-message("--    Boost Filesystem location: ${Boost_FILESYSTEM_LIBRARY}")
+message(STATUS "    Boost Filesystem location: ${Boost_FILESYSTEM_LIBRARY}")
 
 # Find the QtWidgets library.
 find_package(Qt5Widgets)
 if(Qt5Widgets_FOUND)
-  message("-- Found Qt5")
-  message("-- Qt5 Version: ${Qt5Widgets_VERSION_STRING}")
+  message(STATUS "Found Qt5")
+  message(STATUS "Qt5 Version: ${Qt5Widgets_VERSION_STRING}")
 endif()
 
 ########################## End of find libraries ########################
