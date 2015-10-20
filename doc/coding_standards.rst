@@ -96,7 +96,7 @@ C++
 #. Code coverage check with Gcov_ and reporting with Coveralls_
 #. Test status dashboard on CDash_
 #. Memory management bugs and leaks with Valgrind_
-#. Static code analysis with Coverity_
+#. Static code analysis with Coverity_ and CppCheck_
 #. Cyclomatic complexity analysis with Lizard_
 #. Google style conformance check with Cpplint_
 #. Common C++ code problem check with cppclean_
@@ -108,6 +108,7 @@ C++
 .. _CDash: http://my.cdash.org/index.php?project=SCRAM
 .. _Valgrind: http://valgrind.org/
 .. _Coverity: https://scan.coverity.com/projects/2555
+.. _CppCheck: https://github.com/danmar/cppcheck/
 .. _Lizard: https://github.com/terryyin/lizard
 .. _Cpplint: https://google-styleguide.googlecode.com/svn/trunk/cpplint/
 .. _cppclean: https://github.com/myint/cppclean
@@ -153,6 +154,10 @@ The following tools are used for this purpose:
 
 These tests are automated,
 and continuous integration is provided by `Travis CI`_.
+
+Guided fuzz testing is performed
+with auto-generated analysis input files
+to discover bugs, bottlenecks, and assumption failures.
 
 .. _GoogleTest: https://code.google.com/p/googletest/
 .. _Nose: https://nose.readthedocs.org/en/latest/
