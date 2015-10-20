@@ -1863,11 +1863,10 @@ void Preprocessor::ProcessCommonNode(
   // The results of the failure propagation.
   std::map<int, IGateWeakPtr> destinations;
   int num_dest = 0;  // This is not the same as the size of destinations.
-  if (root->opti_value() == 1) {  // The root gate failed.
+  if (root->opti_value()) {  // The root gate received the state.
     destinations.emplace(root->index(), root);
     num_dest = 1;
-  } else {  /// @todo Deal with the success (-1) state.
-    assert(root->opti_value() == -1 || !root->opti_value());
+  } else {
     num_dest = Preprocessor::CollectStateDestinations(root, node->index(),
                                                       &destinations);
   }
@@ -1875,24 +1874,17 @@ void Preprocessor::ProcessCommonNode(
   if (num_dest > 0 && num_dest < mult_tot) {  // Redundancy detection criterion.
     assert(!destinations.empty());
     std::vector<IGateWeakPtr> redundant_parents;
-    Preprocessor::CollectRedundantParents(node, &destinations,
-                                          &redundant_parents);
-    node->opti_value(0);  // Important to clear before processing.
-    Preprocessor::ClearStateMarks(root);
-
-    if (redundant_parents.empty()) return;  // No optimization.
-
+    Preprocessor::CollectRedundantParents(node, &redundant_parents);
     LOG(DEBUG4) << "Node " << node->index() << ": "
                 << redundant_parents.size() << " redundant parent(s) and "
                 << destinations.size() << " failure destination(s)";
     Preprocessor::ProcessRedundantParents(node, redundant_parents);
     Preprocessor::ProcessStateDestinations(node, destinations);
-    Preprocessor::ClearConstGates();
-    Preprocessor::ClearNullGates();
-  } else {
-    node->opti_value(0);
-    Preprocessor::ClearStateMarks(root);
   }
+  Preprocessor::ClearStateMarks(root);
+  node->opti_value(0);
+  Preprocessor::ClearConstGates();
+  Preprocessor::ClearNullGates();
 }
 
 void Preprocessor::MarkAncestors(const NodePtr& node,
@@ -1934,9 +1926,9 @@ int Preprocessor::PropagateState(const IGatePtr& gate,
     }  // Ignore when 0.
   }
   if (node->parents().count(gate->index())) {  // Try to find the basic event.
-    assert(node->opti_value() == 1);
     int failed = gate->variable_args().count(node->index());
     if (!failed) failed = -gate->variable_args().count(-node->index());
+    failed *= node->opti_value();
     switch (failed) {
       case 1:
         ++num_failure;
@@ -1949,7 +1941,7 @@ int Preprocessor::PropagateState(const IGatePtr& gate,
   assert(gate->constant_args().empty());
   Preprocessor::DetermineGateState(gate, num_failure, num_success);
   int mult_add = gate->parents().size();
-  if (gate->opti_value() != 1 || mult_add < 2 ) mult_add = 0;
+  if (!gate->opti_value() || mult_add < 2 ) mult_add = 0;
   return mult_tot + mult_add;
 }
 
@@ -2027,31 +2019,23 @@ int Preprocessor::CollectStateDestinations(
     IGatePtr arg = member.second;
     num_dest +=
         Preprocessor::CollectStateDestinations(arg, index, destinations);
-    if (arg->index() == index) continue;  // This is the failure source.
-    if (arg->opti_value() != 1) continue;  // Not a failure destination.
-    if (member.first < 0) continue;  // Complement of failure is success.
-    ++num_dest;                      /// @todo Is success a destination?
-    destinations->emplace(arg->index(), arg);
+    if (std::abs(arg->index()) == index) continue;  // The state source.
+    if (!arg->opti_value()) continue;  // Indeterminate branches.
+    if (arg->opti_value() > 1) continue;  // Not a state destination.
+    ++num_dest;  // Optimization value is 1 or -1.
+    destinations->emplace(std::abs(arg->index()), arg);
   }
   return num_dest;
 }
 
 void Preprocessor::CollectRedundantParents(
     const NodePtr& node,
-    std::map<int, IGateWeakPtr>* destinations,
     std::vector<IGateWeakPtr>* redundant_parents) noexcept {
   for (const std::pair<int, IGateWeakPtr>& member : node->parents()) {
     assert(!member.second.expired());
     IGatePtr parent = member.second.lock();
     assert(!parent->mark());
-    if (parent->opti_value() < 2 && parent->opti_value() >= 0) {
-      // Special cases for the redundant parent and the destination parent.
-      if (parent->type() == kOrGate && destinations->count(parent->index())) {
-        destinations->erase(parent->index());
-        continue;  // No need to add into the redundancy list.
-      }
-      redundant_parents->push_back(parent);
-    }
+    if (parent->opti_value() < 2) redundant_parents->push_back(parent);
   }
 }
 
@@ -2062,7 +2046,7 @@ void Preprocessor::ProcessRedundantParents(
   for (const IGateWeakPtr& ptr : redundant_parents) {
     if (ptr.expired()) continue;
     IGatePtr parent = ptr.lock();
-    parent->ProcessConstantArg(node, false);
+    parent->ProcessConstantArg(node, node->opti_value() == 1 ? false : true);
     if (parent->IsConstant()) {
       const_gates_.push_back(parent);
     } else if (parent->type() == kNullGate) {
@@ -2079,24 +2063,21 @@ void Preprocessor::ProcessStateDestinations(
     if (ptr.second.expired()) continue;
     IGatePtr target = ptr.second.lock();
     assert(!target->mark());
-    switch (target->type()) {
-      case kOrGate:  // The only special case with optimization.
-        target->AddArg(node->index(), node);
-        break;
-      default:
-        IGatePtr new_gate(new IGate(kOrGate));
-        if (target->IsModule()) {  // Transfer modularity.
-          target->DestroyModule();
-          new_gate->TurnModule();
-        }
-        if (target == graph_->root()) {
-          graph_->root(new_gate);
-        } else {
-          Preprocessor::ReplaceGate(target, new_gate);
-        }
-        new_gate->AddArg(target->index(), target);
-        new_gate->AddArg(node->index(), node);
+    assert(target->opti_value() == 1 || target->opti_value() == -1);
+    Operator type = target->opti_value() == 1 ? kOrGate : kAndGate;
+    IGatePtr new_gate(new IGate(type));
+    new_gate->AddArg(target->opti_value() * node->index(), node);
+    if (target->IsModule()) {  // Transfer modularity.
+      target->DestroyModule();
+      new_gate->TurnModule();
     }
+    if (target == graph_->root()) {
+      graph_->root(new_gate);  // The sign is preserved.
+    } else {
+      Preprocessor::ReplaceGate(target, new_gate);
+    }
+    new_gate->AddArg(target->index(), target);  // Only after replacing target!
+    new_gate->descendant(node->index());  // Preserve continuity.
   }
 }
 
@@ -2106,6 +2087,9 @@ void Preprocessor::ClearStateMarks(const IGatePtr& gate) noexcept {
   gate->opti_value(0);
   for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
     Preprocessor::ClearStateMarks(arg.second);
+  }
+  for (const std::pair<int, IGateWeakPtr>& member : gate->parents()) {
+    Preprocessor::ClearStateMarks(member.second.lock());  // Due to replacement.
   }
 }
 

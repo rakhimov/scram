@@ -839,18 +839,11 @@ class Preprocessor {
       std::map<int, IGateWeakPtr>* destinations) noexcept;
 
   /// Detects if parents of a node are redundant.
-  /// If there are redundant parents,
-  /// depending on the logic of the parent,
-  /// the node is removed from the parent
-  /// unless it is also in the destination set with specific logic.
-  /// In the latter case, the parent is removed from the destinations.
   ///
   /// @param[in] node  The common node.
-  /// @param[in,out] destinations  A set of destination gates.
   /// @param[out] redundant_parents  A set of redundant parents.
   void CollectRedundantParents(
       const NodePtr& node,
-      std::map<int, IGateWeakPtr>* destinations,
       std::vector<IGateWeakPtr>* redundant_parents) noexcept;
 
   /// Detects if parents of a node are redundant.

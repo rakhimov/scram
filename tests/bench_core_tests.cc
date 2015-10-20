@@ -270,6 +270,8 @@ TEST_F(RiskAnalysisTest, SUBTLE_NULL) {
   std::string tree_input = "./share/scram/input/core/subtle_null.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
+  std::set< std::set<std::string> > mcs = {};
+  EXPECT_EQ(mcs, min_cut_sets());
   EXPECT_TRUE(min_cut_sets().empty());
 }
 
