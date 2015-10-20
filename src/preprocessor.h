@@ -794,43 +794,46 @@ class Preprocessor {
   ///          the default global contract of clean marks will be broken.
   void MarkAncestors(const NodePtr& node, IGatePtr* module) noexcept;
 
-  /// Propagates failure of a common node
-  /// by setting its ancestors' optimization values to 1
-  /// if they fail according to their Boolean logic.
-  /// The failure of an argument is similar to propagating constant TRUE.
+  /// Propagates failure or success of a common node
+  /// by setting its ancestors' optimization values to 1 or -1
+  /// if they fail or succeed according to their Boolean logic.
+  /// The failure of an argument is similar to propagating constant TRUE/1.
+  /// The success of an argument is similar to propagating constant FALSE/-1.
   ///
-  /// @param[in,out] gate  The ancestor gate that may fail.
+  /// @param[in,out] gate  The root gate under consideration.
   /// @param[in] node  The node that is the source of failure.
   ///
   /// @returns Total multiplicity of the node.
   ///
-  /// @pre The optimization value of the main common node is 1.
+  /// @pre The optimization value of the main common node is 1 or -1.
   /// @pre The marks of ancestor gates are 'true'.
   ///
   /// @post The marks of all ancestor gates are reset to 'false'.
   /// @post All ancestor gates are marked with the descendant index.
-  int PropagateFailure(const IGatePtr& gate, const NodePtr& node) noexcept;
+  int PropagateState(const IGatePtr& gate, const NodePtr& node) noexcept;
 
-  /// Determines if a gate fails due to failed/succeeded arguments.
+  /// Determines if a gate fails or succeeds
+  /// due to failed/succeeded arguments.
   /// If gates fails, its optimization value is set to 1.
-  /// If it doesn't, its optimization value is -1;
+  /// If it succeeds, its optimization value is -1.
+  /// If the state is indeterminate, the optimization value is 0.
   ///
-  /// @param[in,out] gate  The ancestor gate that may fail.
-  /// @param[in] num_failure  The number of failure (TRUE) arguments.
-  /// @param[in] num_success  The number of success (FALSE) arguments.
-  void DetermineGateFailure(const IGatePtr& gate, int num_failure,
-                            int num_success) noexcept;
+  /// @param[in,out] gate  The gate with the arguments.
+  /// @param[in] num_failure  The number of failure (TRUE/1) arguments.
+  /// @param[in] num_success  The number of success (FALSE/-1) arguments.
+  void DetermineGateState(const IGatePtr& gate, int num_failure,
+                          int num_success) noexcept;
 
-  /// Collects failure destinations
+  /// Collects failure or success destinations
   /// and marks non-redundant nodes.
   /// The optimization value for non-redundant gates are set to 2.
   ///
   /// @param[in] gate  The non-failed gate which sub-graph is to be traversed.
-  /// @param[in] index  The index of the main failure-source common node.
+  /// @param[in] index  The index of the main state-source common node.
   /// @param[in,out] destinations  Destinations of the failure.
   ///
   /// @returns The number of encounters with the destinations.
-  int CollectFailureDestinations(
+  int CollectStateDestinations(
       const IGatePtr& gate,
       int index,
       std::map<int, IGateWeakPtr>* destinations) noexcept;
@@ -866,18 +869,18 @@ class Preprocessor {
       const NodePtr& node,
       const std::vector<IGateWeakPtr>& redundant_parents) noexcept;
 
-  /// Transforms failure destination
+  /// Transforms failure or success destination
   /// according to the logic and the common node.
   ///
   /// @tparam N  Non-Node, concrete (i.e. IGate, etc.) type.
   ///
   /// @param[in] node  The common node.
-  /// @param[in] destinations  Destination gates for failure.
+  /// @param[in] destinations  Destination gates for the state.
   ///
   /// @warning This function will replace the root gate of the graph
-  ///          if it is the failure destination.
+  ///          if it is the destination.
   template<typename N>
-  void ProcessFailureDestinations(
+  void ProcessStateDestinations(
       const std::shared_ptr<N>& node,
       const std::map<int, IGateWeakPtr>& destinations) noexcept;
 
@@ -889,7 +892,7 @@ class Preprocessor {
   /// @pre The common node itself is not the ancestor.
   ///
   /// @warning The common node must be cleaned separately.
-  void ClearFailureMarks(const IGatePtr& gate) noexcept;
+  void ClearStateMarks(const IGatePtr& gate) noexcept;
 
   /// The Shannon decomposition for common nodes in the Boolean graph.
   /// This procedure is also called "Constant Propagation",

@@ -167,3 +167,48 @@ and noting the failure destinations [Nie94]_.
 The redundant occurrences of common nodes are minimized
 by directly transferring the common node
 and its failure logic to the failure destinations.
+
+The generalization of this technique
+comes from the observations
+of special cases for the Shannon decomposition.
+Given a Boolean formula **f(x, y)**,
+the following cases are the special cases of its Shannon decomposition:
+
+    1. If ```f(x, y) = 1/True/Failure``` assuming ```x = 1/True/Failure```:
+
+        .. math::
+
+            f(x, y) = x \| f(0, y)
+
+    2. If ```f(x, y) = 0/False/Success``` assuming ```x = 1/True/Failure```:
+
+        .. math::
+
+            f(x, y) = ~x \& f(0, y)
+
+    3. If ```f(x, y) = 1/True/Failure``` assuming ```x = 0/False/Success```:
+
+        .. math::
+
+            f(x, y) = ~x \| f(1, y)
+
+    4. If ```f(x, y) = 0/False/Success``` assuming ```x = 0/False/Success```:
+
+        .. math::
+
+            f(x, y) = x \& f(1, y)
+
+There may be many setups
+that satisfy these special cases in a Boolean graph,
+but only few transformations are beneficial.
+Transformations with disjunctions of the formula (cases 1 and 3)
+are the most desirable for analysis
+because the final result of the analysis is the disjunction of products.
+
+The main optimization criteria for transformations
+is to decrease the complexity or multiplicity of the graph.
+That is, the transformation must yield
+fewer destinations than its original multiplicity.
+This kind of successful transformations
+may help other preprocessing techniques
+achieve better results with the simpler graph as well.

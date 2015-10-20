@@ -1848,15 +1848,15 @@ void Preprocessor::ProcessCommonNode(
   if (node->parents().size() == 1) return;  // The extra parent is deleted.
   IGatePtr root;
   Preprocessor::MarkAncestors(node, &root);
-  assert(root);
-  assert(root->mark());
-  assert(!root->opti_value());
-  assert(!node->opti_value());
-  node->opti_value(1);
+  assert(root && "Marking ancestors ended without guaranteed module.");
+  assert(root->mark() && "Graph gate marks are not cleaned.");
+  assert(!root->opti_value() && "Optimization values are corrupted.");
+  assert(!node->opti_value() && "Optimization values are corrupted.");
+  node->opti_value(1);  // Setting for failure.
 
   int mult_tot = node->parents().size();  // Total multiplicity.
   assert(mult_tot > 1);
-  mult_tot += Preprocessor::PropagateFailure(root, node);
+  mult_tot += Preprocessor::PropagateState(root, node);
   assert(!root->mark() && "Partial unmarking failed.");
   assert(root->descendant() == node->index() && "Ancestors are not indexed.");
 
@@ -1868,8 +1868,8 @@ void Preprocessor::ProcessCommonNode(
     num_dest = 1;
   } else {  /// @todo Deal with the success (-1) state.
     assert(root->opti_value() == -1 || !root->opti_value());
-    num_dest = Preprocessor::CollectFailureDestinations(root, node->index(),
-                                                        &destinations);
+    num_dest = Preprocessor::CollectStateDestinations(root, node->index(),
+                                                      &destinations);
   }
 
   if (num_dest > 0 && num_dest < mult_tot) {  // Redundancy detection criterion.
@@ -1878,7 +1878,7 @@ void Preprocessor::ProcessCommonNode(
     Preprocessor::CollectRedundantParents(node, &destinations,
                                           &redundant_parents);
     node->opti_value(0);  // Important to clear before processing.
-    Preprocessor::ClearFailureMarks(root);
+    Preprocessor::ClearStateMarks(root);
 
     if (redundant_parents.empty()) return;  // No optimization.
 
@@ -1886,12 +1886,12 @@ void Preprocessor::ProcessCommonNode(
                 << redundant_parents.size() << " redundant parent(s) and "
                 << destinations.size() << " failure destination(s)";
     Preprocessor::ProcessRedundantParents(node, redundant_parents);
-    Preprocessor::ProcessFailureDestinations(node, destinations);
+    Preprocessor::ProcessStateDestinations(node, destinations);
     Preprocessor::ClearConstGates();
     Preprocessor::ClearNullGates();
   } else {
     node->opti_value(0);
-    Preprocessor::ClearFailureMarks(root);
+    Preprocessor::ClearStateMarks(root);
   }
 }
 
@@ -1911,8 +1911,8 @@ void Preprocessor::MarkAncestors(const NodePtr& node,
   }
 }
 
-int Preprocessor::PropagateFailure(const IGatePtr& gate,
-                                   const NodePtr& node) noexcept {
+int Preprocessor::PropagateState(const IGatePtr& gate,
+                                 const NodePtr& node) noexcept {
   if (!gate->mark()) return 0;
   gate->mark(false);  // Cleaning up the marks of the ancestors.
   assert(!gate->descendant() && "Descendant marks are corrupted.");
@@ -1923,7 +1923,7 @@ int Preprocessor::PropagateFailure(const IGatePtr& gate,
   int num_success = 0;  // The number of success arguments.
   for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
     IGatePtr arg_gate = arg.second;
-    mult_tot += Preprocessor::PropagateFailure(arg_gate, node);
+    mult_tot += Preprocessor::PropagateState(arg_gate, node);
     assert(!arg_gate->mark());
     int failed = arg_gate->opti_value() * GetSign(arg.first);
     assert(!failed || failed == -1 || failed == 1);
@@ -1947,14 +1947,14 @@ int Preprocessor::PropagateFailure(const IGatePtr& gate,
     }  // Ignore when 0.
   }
   assert(gate->constant_args().empty());
-  Preprocessor::DetermineGateFailure(gate, num_failure, num_success);
+  Preprocessor::DetermineGateState(gate, num_failure, num_success);
   int mult_add = gate->parents().size();
   if (gate->opti_value() != 1 || mult_add < 2 ) mult_add = 0;
   return mult_tot + mult_add;
 }
 
-void Preprocessor::DetermineGateFailure(const IGatePtr& gate, int num_failure,
-                                        int num_success) noexcept {
+void Preprocessor::DetermineGateState(const IGatePtr& gate, int num_failure,
+                                      int num_success) noexcept {
   assert(!gate->opti_value() && "Unclear initial optimization value.");
   assert(num_failure >= 0 && "Illegal arguments or corrupted state.");
   assert(num_success >= 0 && "Illegal arguments or corrupted state.");
@@ -2014,7 +2014,7 @@ void Preprocessor::DetermineGateFailure(const IGatePtr& gate, int num_failure,
   }
 }
 
-int Preprocessor::CollectFailureDestinations(
+int Preprocessor::CollectStateDestinations(
     const IGatePtr& gate,
     int index,
     std::map<int, IGateWeakPtr>* destinations) noexcept {
@@ -2025,8 +2025,8 @@ int Preprocessor::CollectFailureDestinations(
   int num_dest = 0;
   for (const std::pair<int, IGatePtr>& member : gate->gate_args()) {
     IGatePtr arg = member.second;
-    num_dest += Preprocessor::CollectFailureDestinations(arg, index,
-                                                         destinations);
+    num_dest +=
+        Preprocessor::CollectStateDestinations(arg, index, destinations);
     if (arg->index() == index) continue;  // This is the failure source.
     if (arg->opti_value() != 1) continue;  // Not a failure destination.
     if (member.first < 0) continue;  // Complement of failure is success.
@@ -2072,7 +2072,7 @@ void Preprocessor::ProcessRedundantParents(
 }
 
 template<typename N>
-void Preprocessor::ProcessFailureDestinations(
+void Preprocessor::ProcessStateDestinations(
     const std::shared_ptr<N>& node,
     const std::map<int, IGateWeakPtr>& destinations) noexcept {
   for (const auto& ptr : destinations) {
@@ -2100,12 +2100,12 @@ void Preprocessor::ProcessFailureDestinations(
   }
 }
 
-void Preprocessor::ClearFailureMarks(const IGatePtr& gate) noexcept {
+void Preprocessor::ClearStateMarks(const IGatePtr& gate) noexcept {
   if (!gate->descendant()) return;  // Clean only 'dirty' gates.
   gate->descendant(0);
   gate->opti_value(0);
   for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
-    Preprocessor::ClearFailureMarks(arg.second);
+    Preprocessor::ClearStateMarks(arg.second);
   }
 }
 
