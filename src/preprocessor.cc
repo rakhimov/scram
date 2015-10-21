@@ -1861,7 +1861,7 @@ void Preprocessor::ProcessCommonNode(
   assert(root->descendant() == node->index() && "Ancestors are not indexed.");
 
   // The results of the failure propagation.
-  std::map<int, IGateWeakPtr> destinations;
+  std::unordered_map<int, IGateWeakPtr> destinations;
   int num_dest = 0;  // This is not the same as the size of destinations.
   if (root->opti_value()) {  // The root gate received the state.
     destinations.emplace(root->index(), root);
@@ -1874,12 +1874,15 @@ void Preprocessor::ProcessCommonNode(
   if (num_dest > 0 && num_dest < mult_tot) {  // Redundancy detection criterion.
     assert(!destinations.empty());
     std::vector<IGateWeakPtr> redundant_parents;
-    Preprocessor::CollectRedundantParents(node, &redundant_parents);
-    LOG(DEBUG4) << "Node " << node->index() << ": "
-                << redundant_parents.size() << " redundant parent(s) and "
-                << destinations.size() << " failure destination(s)";
-    Preprocessor::ProcessRedundantParents(node, redundant_parents);
-    Preprocessor::ProcessStateDestinations(node, destinations);
+    Preprocessor::CollectRedundantParents(node, &destinations,
+                                          &redundant_parents);
+    if (!redundant_parents.empty()) {  // Note: empty destinations is OK!
+      LOG(DEBUG4) << "Node " << node->index() << ": "
+                  << redundant_parents.size() << " redundant parent(s) and "
+                  << destinations.size() << " failure destination(s)";
+      Preprocessor::ProcessRedundantParents(node, redundant_parents);
+      Preprocessor::ProcessStateDestinations(node, destinations);
+    }
   }
   Preprocessor::ClearStateMarks(root);
   node->opti_value(0);
@@ -1950,6 +1953,8 @@ void Preprocessor::DetermineGateState(const IGatePtr& gate, int num_failure,
   assert(!gate->opti_value() && "Unclear initial optimization value.");
   assert(num_failure >= 0 && "Illegal arguments or corrupted state.");
   assert(num_success >= 0 && "Illegal arguments or corrupted state.");
+  assert(!(num_success && graph_->coherent()) && "Impossible state.");
+
   if (!(num_success + num_failure)) return;  // Undetermined 0 state.
   auto ComputeState = [&num_failure, &num_success](int req_failure,
                                                    int req_success) {
@@ -1997,7 +2002,7 @@ void Preprocessor::DetermineGateState(const IGatePtr& gate, int num_failure,
 int Preprocessor::CollectStateDestinations(
     const IGatePtr& gate,
     int index,
-    std::map<int, IGateWeakPtr>* destinations) noexcept {
+    std::unordered_map<int, IGateWeakPtr>* destinations) noexcept {
   if (!gate->descendant()) return 0;  // Deal with ancestors only.
   assert(gate->descendant() == index && "Corrupted descendant marks.");
   if (gate->opti_value()) return 0;  // Don't change failure information.
@@ -2007,23 +2012,37 @@ int Preprocessor::CollectStateDestinations(
     IGatePtr arg = member.second;
     num_dest +=
         Preprocessor::CollectStateDestinations(arg, index, destinations);
-    if (std::abs(arg->index()) == index) continue;  // The state source.
+    if (arg->index() == index) continue;  // The state source.
     if (!arg->opti_value()) continue;  // Indeterminate branches.
     if (arg->opti_value() > 1) continue;  // Not a state destination.
     ++num_dest;  // Optimization value is 1 or -1.
-    destinations->emplace(std::abs(arg->index()), arg);
+    destinations->emplace(arg->index(), arg);
   }
   return num_dest;
 }
 
 void Preprocessor::CollectRedundantParents(
     const NodePtr& node,
+    std::unordered_map<int, IGateWeakPtr>* destinations,
     std::vector<IGateWeakPtr>* redundant_parents) noexcept {
   for (const std::pair<int, IGateWeakPtr>& member : node->parents()) {
     assert(!member.second.expired());
     IGatePtr parent = member.second.lock();
     assert(!parent->mark());
-    if (parent->opti_value() < 2) redundant_parents->push_back(parent);
+    if (parent->opti_value() == 2) continue;  // Non-redundant parent.
+    if (parent->opti_value()) {
+      assert(parent->opti_value() == 1 || parent->opti_value() == -1);
+      if (destinations->count(parent->index())) {
+        Operator type = parent->opti_value() == 1 ? kOrGate : kAndGate;
+        if (parent->type() == type &&
+            parent->opti_value() == parent->GetArgSign(node)) {
+          destinations->erase(parent->index());
+          continue;  // Destination and redundancy collision.
+        }
+        assert(!(graph_->coherent() && parent->type() == type));
+      }
+    }
+    redundant_parents->push_back(parent);
   }
 }
 
@@ -2046,7 +2065,7 @@ void Preprocessor::ProcessRedundantParents(
 template<typename N>
 void Preprocessor::ProcessStateDestinations(
     const std::shared_ptr<N>& node,
-    const std::map<int, IGateWeakPtr>& destinations) noexcept {
+    const std::unordered_map<int, IGateWeakPtr>& destinations) noexcept {
   for (const auto& ptr : destinations) {
     if (ptr.second.expired()) continue;
     IGatePtr target = ptr.second.lock();
