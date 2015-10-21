@@ -2072,6 +2072,14 @@ void Preprocessor::ProcessStateDestinations(
     assert(!target->mark());
     assert(target->opti_value() == 1 || target->opti_value() == -1);
     Operator type = target->opti_value() == 1 ? kOrGate : kAndGate;
+    if (target->type() == type) {
+      target->AddArg(target->opti_value() * node->index(), node);
+      if (target->IsConstant()) {
+        const_gates_.push_back(target);
+      }
+      assert(!(!target->IsConstant() && target->type() == kNullGate));
+      continue;
+    }
     IGatePtr new_gate(new IGate(type));
     new_gate->AddArg(target->opti_value() * node->index(), node);
     if (target->IsModule()) {  // Transfer modularity.
