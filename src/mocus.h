@@ -280,7 +280,8 @@ class CutSet {
   /// @param[in] order  The limit on order.
   ///
   /// @returns true if the joint order exceeds the limit.
-  int CheckDifference(const std::vector<int>& set_one, int order) const {
+  bool CheckDifference(const std::vector<int>& set_one, int order) const {
+    if (set_one.size() + pos_literals_.size() <= order) return false;
     if (!CheckIntersection(set_one, pos_literals_))
       return set_one.size() + pos_literals_.size() > order;
     int count = pos_literals_.size();

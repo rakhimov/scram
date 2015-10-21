@@ -22,7 +22,6 @@
 #ifndef SCRAM_SRC_PREPROCESSOR_H_
 #define SCRAM_SRC_PREPROCESSOR_H_
 
-#include <map>
 #include <memory>
 #include <set>
 #include <unordered_map>
@@ -830,20 +829,28 @@ class Preprocessor {
   ///
   /// @param[in] gate  The non-failed gate which sub-graph is to be traversed.
   /// @param[in] index  The index of the main state-source common node.
-  /// @param[in,out] destinations  Destinations of the failure.
+  /// @param[in,out] destinations  Destinations of the state.
   ///
   /// @returns The number of encounters with the destinations.
   int CollectStateDestinations(
       const IGatePtr& gate,
       int index,
-      std::map<int, IGateWeakPtr>* destinations) noexcept;
+      std::unordered_map<int, IGateWeakPtr>* destinations) noexcept;
 
   /// Detects if parents of a node are redundant.
   ///
   /// @param[in] node  The common node.
+  /// @param[in,out] destinations  Destinations of the state.
   /// @param[out] redundant_parents  A set of redundant parents.
+  ///
+  /// @pre Destinations have valid state (Success or Failure).
+  /// @pre Non-redundant parents have optimization value 2.
+  ///
+  /// @post Destinations that are also redundant parents are removed
+  ///       if the semantics of the transformations is equivalent.
   void CollectRedundantParents(
       const NodePtr& node,
+      std::unordered_map<int, IGateWeakPtr>* destinations,
       std::vector<IGateWeakPtr>* redundant_parents) noexcept;
 
   /// Detects if parents of a node are redundant.
@@ -875,7 +882,7 @@ class Preprocessor {
   template<typename N>
   void ProcessStateDestinations(
       const std::shared_ptr<N>& node,
-      const std::map<int, IGateWeakPtr>& destinations) noexcept;
+      const std::unordered_map<int, IGateWeakPtr>& destinations) noexcept;
 
   /// Clears all the ancestor marks used in Boolean optimization steps.
   ///

@@ -1,4 +1,4 @@
-.TH SCRAM "1" "September 2015" "SCRAM 0.9.2" "SCRAM Manual"
+.TH SCRAM "1" "October 2015" "SCRAM 0.10.0" "SCRAM Manual"
 .SH NAME
 SCRAM \- Command-line Risk Analysis Multi-tool
 .SH SYNOPSIS
