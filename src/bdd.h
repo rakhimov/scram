@@ -422,7 +422,7 @@ class Bdd {
   Function Apply(Operator type, const VertexPtr& single_arg,
                  bool complement_one, bool complement_two) noexcept;
 
-  /// Applies Boolean operation to BDD graph non-terminal verteices.
+  /// Applies Boolean operation to BDD graph non-terminal vertices.
   ///
   /// @param[in] type  The operator or type of the gate.
   /// @param[in] arg_one  First argument if-then-else vertex.
@@ -433,8 +433,6 @@ class Bdd {
   /// @returns High and Low BDD functions as a result of operation.
   ///
   /// @pre Argument if-then-else vertices must be ordered.
-  ///
-  /// @note The order of arguments does not matter for two variable operators.
   std::pair<Function, Function> Apply(Operator type,
                                       const ItePtr& arg_one,
                                       const ItePtr& arg_two,

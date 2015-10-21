@@ -101,6 +101,7 @@ class Zbdd {
   using ItePtr = std::shared_ptr<Ite>;
   using SetNodePtr = std::shared_ptr<SetNode>;
   using UniqueTable = TripletTable<SetNodePtr>;
+  using ComputeTable = TripletTable<VertexPtr>;
   using PairTable = boost::unordered_map<std::pair<int, int>, VertexPtr>;
   using CutSet = std::vector<int>;
 
@@ -119,6 +120,65 @@ class Zbdd {
   /// @returns Pointer to the root vertex of the ZBDD graph.
   VertexPtr ConvertBdd(const VertexPtr& vertex, bool complement,
                        const Bdd* bdd_graph, int limit_order) noexcept;
+
+  /// Applies Boolean operation to two vertices representing sets.
+  ///
+  /// @param[in] type  The operator or type of the gate.
+  /// @param[in] arg_one  First argument ZBDD set.
+  /// @param[in] arg_two  Second argument ZBDD set.
+  VertexPtr Apply(Operator type, const VertexPtr& arg_one,
+                  const VertexPtr& arg_two) noexcept;
+
+  /// Applies the logic of a Boolean operator
+  /// to terminal vertices.
+  ///
+  /// @param[in] type  The operator to apply.
+  /// @param[in] term_one  First argument terminal vertex.
+  /// @param[in] term_two  Second argument terminal vertex.
+  ///
+  /// @returns The resulting ZBDD vertex.
+  VertexPtr Apply(Operator type, const TerminalPtr& term_one,
+                  const TerminalPtr& term_two) noexcept;
+
+  /// Applies the logic of a Boolean operator
+  /// to non-terminal and terminal vertices.
+  ///
+  /// @param[in] type  The operator or type of the gate.
+  /// @param[in] set_node  Non-terminal vertex.
+  /// @param[in] term  Terminal vertex.
+  ///
+  /// @returns The resulting ZBDD vertex.
+  VertexPtr Apply(Operator type, const SetNodePtr& set_node,
+                  const TerminalPtr& term) noexcept;
+
+  /// Applies Boolean operation to ZBDD graph non-terminal vertices.
+  ///
+  /// @param[in] type  The operator or type of the gate.
+  /// @param[in] arg_one  First argument set vertex.
+  /// @param[in] arg_two  Second argument set vertex.
+  ///
+  /// @returns The resulting ZBDD vertex.
+  ///
+  /// @pre Argument vertices are ordered.
+  VertexPtr Apply(Operator type, const SetNodePtr& arg_one,
+                  const SetNodePtr& arg_two) noexcept;
+
+  /// Produces canonical signature of application of Boolean operations.
+  /// The signature of the operations helps
+  /// detect equivalent operations.
+  ///
+  /// @param[in] type  The operator or type of the gate.
+  /// @param[in] arg_one  First argument vertex.
+  /// @param[in] arg_two  Second argument vertex.
+  ///
+  /// @returns Unique signature of the operation.
+  ///
+  /// @pre The arguments are not the same functions.
+  ///      Equal ID functions are handled by the reduction.
+  /// @pre Even though the arguments are not SetNodePtr type,
+  ///      they are ZBDD SetNode vertices.
+  Triplet GetSignature(Operator type, const VertexPtr& arg_one,
+                       const VertexPtr& arg_two) noexcept;
 
   /// Removes subsets in ZBDD.
   ///
@@ -176,6 +236,13 @@ class Zbdd {
   /// Table of unique SetNodes denoting sets.
   /// The key consists of (index, id_high, id_low) triplet.
   UniqueTable unique_table_;
+
+  /// Table of processed computations over sets.
+  /// The key must convey the semantics of the operation over functions.
+  /// The argument functions are recorded with their IDs (not vertex indices).
+  /// In order to keep only unique computations,
+  /// the argument IDs must be ordered.
+  ComputeTable compute_table_;
 
   /// The results of subsume operations over sets.
   PairTable subsume_table_;
