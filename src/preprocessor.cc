@@ -1951,32 +1951,28 @@ void Preprocessor::DetermineGateState(const IGatePtr& gate, int num_failure,
   assert(num_failure >= 0 && "Illegal arguments or corrupted state.");
   assert(num_success >= 0 && "Illegal arguments or corrupted state.");
   if (!(num_success + num_failure)) return;  // Undetermined 0 state.
+  auto ComputeState = [&num_failure, &num_success](int req_failure,
+                                                   int req_success) {
+    if (num_failure >= req_failure) return 1;
+    if (num_success >= req_success) return -1;
+    return 0;
+  };
   switch (gate->type()) {
     case kNullGate:
       assert((num_failure + num_success) == 1);
-      gate->opti_value(num_failure ? 1 : -1);
+      gate->opti_value(ComputeState(1, 1));
       break;
     case kOrGate:
-      if (num_failure) {
-        gate->opti_value(1);
-      } else if (num_success == gate->args().size()) {
-        gate->opti_value(-1);
-      }
+      gate->opti_value(ComputeState(1, gate->args().size()));
       break;
     case kAndGate:
-      if (num_success) {
-        gate->opti_value(-1);
-      } else if (num_failure == gate->args().size()) {
-        gate->opti_value(1);
-      }
+      gate->opti_value(ComputeState(gate->args().size(), 1));
       break;
     case kAtleastGate:
       assert(gate->args().size() > gate->vote_number());
-      if (num_failure >= gate->vote_number()) {
-        gate->opti_value(1);
-      } else if (num_success > (gate->args().size() - gate->vote_number())) {
-        gate->opti_value(-1);
-      }
+      gate->opti_value(
+          ComputeState(gate->vote_number(),
+                       gate->args().size() - gate->vote_number() + 1));
       break;
     case kXorGate:
       if (num_failure == 1 && num_success == 1) {
@@ -1987,21 +1983,13 @@ void Preprocessor::DetermineGateState(const IGatePtr& gate, int num_failure,
       break;
     case kNotGate:
       assert((num_failure + num_success) == 1);
-      gate->opti_value(num_success ? 1 : -1);
+      gate->opti_value(-ComputeState(1, 1));
       break;
     case kNandGate:
-      if (num_success) {
-        gate->opti_value(1);
-      } else if (num_failure == gate->args().size()) {
-        gate->opti_value(-1);
-      }
+      gate->opti_value(-ComputeState(gate->args().size(), 1));
       break;
     case kNorGate:
-      if (num_failure) {
-        gate->opti_value(-1);
-      } else if (num_success == gate->args().size()) {
-        gate->opti_value(1);
-      }
+      gate->opti_value(-ComputeState(1, gate->args().size()));
       break;
   }
 }
