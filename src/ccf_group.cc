@@ -110,7 +110,7 @@ void CcfGroup::ApplyModel() {
   int max_level = factors_.back().first;  // Assumes that factors are
                                           // sequential.
   std::map<int, ExpressionPtr> probabilities;  // The level is position + 1.
-  this->CalculateProb(max_level, &probabilities);
+  this->CalculateProbabilities(max_level, &probabilities);
 
   // Mapping of new basic events and their parents.
   std::map<BasicEventPtr, std::set<std::string>> new_events;
@@ -194,7 +194,7 @@ void BetaFactorModel::ConstructCcfBasicEvents(
   }
 }
 
-void BetaFactorModel::CalculateProb(
+void BetaFactorModel::CalculateProbabilities(
     int max_level,
     std::map<int, ExpressionPtr>* probabilities) {
   assert(probabilities->empty());
@@ -221,8 +221,9 @@ void MglModel::AddFactor(const ExpressionPtr& factor, int level) {
   CcfGroup::factors_.emplace_back(level, factor);
 }
 
-void MglModel::CalculateProb(int max_level,
-                             std::map<int, ExpressionPtr>* probabilities) {
+void MglModel::CalculateProbabilities(
+    int max_level,
+    std::map<int, ExpressionPtr>* probabilities) {
   assert(factors_.size() == max_level - 1);
 
   ExpressionPtr one(new ConstantExpression(1.0));
@@ -247,7 +248,7 @@ void MglModel::CalculateProb(int max_level,
   assert(probabilities->size() == max_level);
 }
 
-void AlphaFactorModel::CalculateProb(
+void AlphaFactorModel::CalculateProbabilities(
     int max_level,
     std::map<int, ExpressionPtr>* probabilities) {
   assert(probabilities->empty());
@@ -296,7 +297,7 @@ void PhiFactorModel::Validate() {
   }
 }
 
-void PhiFactorModel::CalculateProb(
+void PhiFactorModel::CalculateProbabilities(
     int max_level,
     std::map<int, ExpressionPtr>* probabilities) {
   assert(probabilities->empty());
