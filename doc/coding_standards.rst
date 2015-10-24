@@ -70,7 +70,7 @@ Core C++ Code
 - In definitions of class member functions:
 
     * Explicitly qualify non-virtual member and inherited function calls
-        with the corresponding class names, i.e., ``ClassName::Foo()``.
+      with the corresponding class names, i.e., ``ClassName::Foo()``.
     * Qualify virtual functions to be overridden by design as ``this->Foo()``.
     * Free functions in the same namespace may be unqualified, i.e., ``Foo()``.
 
@@ -82,6 +82,29 @@ Core C++ Code
 - Do not use ``inline``
   when defining a function in a class definition.
   It is implicitly ``inline``.
+
+- Domain-specific ``Probability`` naming rules:
+
+    * If it is a getter/setter function name,
+      abbreviate the name to ``p``, i.e., ``p()`` and ``p(double value)``.
+      Avoid abbreviating the name to ``prob``,
+      or fully spelling it to ``probability``.
+
+    * If a probability variable is a member variable of a class
+      abbreviate it to ``p_``
+      (consistent with its getter/setter functions).
+      Append extra description after ``p_``, i.e., ``p_total_``.
+
+    * For non-member probability variables:
+
+        + Prefer prefixing with ``p_``
+          if the name has more description to the probability value, i.e., ``p_not_event``.
+        + Prefer ``prob`` abbreviation
+          for single word names indicating general probability values.
+
+    * Prefer spelling ``Probability`` fully for cases not covered above
+      (class/function/namespace/typedef/...), i.e., ``CalculateProbability``.
+      Avoid abbreviating the name, i.e., ``CalculateProb``.
 
 .. _C++ Core Guidelines: https://github.com/isocpp/CppCoreGuidelines
 
