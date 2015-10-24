@@ -133,7 +133,7 @@ double ProbabilityAnalyzer<Bdd>::CalculateProbability(
     bool mark) noexcept {
   if (vertex->terminal()) return 1;
   ItePtr ite = Ite::Ptr(vertex);
-  if (ite->mark() == mark) return ite->prob();
+  if (ite->mark() == mark) return ite->p();
   ite->mark(mark);
   double var_prob = 0;
   if (ite->module()) {
@@ -146,8 +146,8 @@ double ProbabilityAnalyzer<Bdd>::CalculateProbability(
   double high = ProbabilityAnalyzer::CalculateProbability(ite->high(), mark);
   double low = ProbabilityAnalyzer::CalculateProbability(ite->low(), mark);
   if (ite->complement_edge()) low = 1 - low;
-  ite->prob(var_prob * high + (1 - var_prob) * low);
-  return ite->prob();
+  ite->p(var_prob * high + (1 - var_prob) * low);
+  return ite->p();
 }
 
 }  // namespace scram
