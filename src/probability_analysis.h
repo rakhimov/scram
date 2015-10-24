@@ -67,9 +67,9 @@ class ProbabilityAnalysis : public Analysis {
   double p_total_;  ///< Total probability of the top event.
 };
 
-/// @class CutSetCalculator
+/// @class CutSetProbabilityCalculator
 /// Quantitative calculator of a probability value of a single cut set.
-class CutSetCalculator {
+class CutSetProbabilityCalculator {
  public:
   using CutSet = std::vector<int>;
 
@@ -103,9 +103,9 @@ class CutSetCalculator {
 /// @class RareEventCalculator
 /// Quantitative calculator of probability values
 /// with the Rare-Event approximation.
-class RareEventCalculator : private CutSetCalculator {
+class RareEventCalculator : private CutSetProbabilityCalculator {
  public:
-  using CutSetCalculator::CutSet;
+  using CutSetProbabilityCalculator::CutSet;
 
   /// Calculates probabilities
   /// using the Rare-Event approximation.
@@ -128,9 +128,9 @@ class RareEventCalculator : private CutSetCalculator {
 /// @class McubCalculator
 /// Quantitative calculator of probability values
 /// with the Min-Cut-Upper Bound approximation.
-class McubCalculator : private CutSetCalculator {
+class McubCalculator : private CutSetProbabilityCalculator {
  public:
-  using CutSetCalculator::CutSet;
+  using CutSetProbabilityCalculator::CutSet;
 
   /// Calculates probabilities
   /// using the minimal cut set upper bound (MCUB) approximation.
