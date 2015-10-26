@@ -8,6 +8,9 @@ SCRAM
     :target: https://coveralls.io/r/rakhimov/scram?branch=develop
 .. image:: https://scan.coverity.com/projects/2555/badge.svg
     :target: https://scan.coverity.com/projects/2555
+.. image:: https://landscape.io/github/rakhimov/scram/develop/landscape.svg?style=plastic
+    :target: https://landscape.io/github/rakhimov/scram/develop
+    :alt: Code Health
 .. image:: doc/cdash.png
     :target: http://my.cdash.org/index.php?project=SCRAM
 .. image:: https://badge.waffle.io/rakhimov/scram.png?label=ready&title=Ready
