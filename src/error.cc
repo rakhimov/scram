@@ -26,7 +26,7 @@ const std::string Error::kPrefix_("scram error: ");
 
 Error::Error(std::string msg) : msg_(msg), thrown_(Error::kPrefix_ + msg) {}
 
-const char* Error::what() const throw() {
+const char* Error::what() const noexcept {
   return thrown_.c_str();
 }
 

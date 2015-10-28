@@ -37,7 +37,7 @@ class Error : public std::exception {
   explicit Error(std::string msg);
 
   /// @returns The error message.
-  virtual const char* what() const throw();
+  virtual const char* what() const noexcept;
 
   /// @returns The error message.
   const std::string& msg() const { return msg_; }
@@ -50,7 +50,7 @@ class Error : public std::exception {
     thrown_ = kPrefix_ + msg;
   }
 
-  virtual ~Error() throw() {}
+  virtual ~Error() noexcept {}
 
  protected:
   /// The error message.
