@@ -36,6 +36,10 @@ class Error : public std::exception {
   /// @param[in] msg  The message to be passed with this error.
   explicit Error(std::string msg);
 
+  Error(const Error&) = default;  ///< Explicit declaration.
+
+  virtual ~Error() noexcept = default;
+
   /// @returns The error message.
   const char* what() const noexcept override;
 
@@ -49,8 +53,6 @@ class Error : public std::exception {
     msg_ = msg;
     thrown_ = kPrefix_ + msg;
   }
-
-  virtual ~Error() noexcept {}
 
  protected:
   /// The error message.

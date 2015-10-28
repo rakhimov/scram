@@ -27,7 +27,7 @@ namespace test {
 class TestElement : public Element {};
 
 TEST(ElementTest, Label) {
-  TestElement el = TestElement();
+  TestElement el;
   EXPECT_EQ("", el.label());
   EXPECT_THROW(el.label(""), LogicError);
   ASSERT_NO_THROW(el.label("label"));
@@ -35,8 +35,8 @@ TEST(ElementTest, Label) {
 }
 
 TEST(ElementTest, Attribute) {
-  TestElement el = TestElement();
-  Attribute attr = Attribute();
+  TestElement el;
+  Attribute attr;
   attr.name = "impact";
   attr.value = "0.1";
   attr.type = "float";

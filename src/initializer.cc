@@ -416,16 +416,16 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
       if (element_type == "event") {  // Undefined type yet.
         std::pair<EventPtr, std::string> target =
             model_->GetEvent(name, base_path);
-        EventPtr event = target.first;
-        event->orphan(false);
-        std::string type = target.second;
-        if (type == "gate") {
-          formula->AddArgument(std::static_pointer_cast<Gate>(event));
-        } else if (type == "basic-event") {
-          formula->AddArgument(std::static_pointer_cast<BasicEvent>(event));
+        EventPtr undefined = target.first;
+        undefined->orphan(false);
+        std::string type_inference = target.second;
+        if (type_inference == "gate") {
+          formula->AddArgument(std::static_pointer_cast<Gate>(undefined));
+        } else if (type_inference == "basic-event") {
+          formula->AddArgument(std::static_pointer_cast<BasicEvent>(undefined));
         } else {
-          assert(type == "house-event");
-          formula->AddArgument(std::static_pointer_cast<HouseEvent>(event));
+          assert(type_inference == "house-event");
+          formula->AddArgument(std::static_pointer_cast<HouseEvent>(undefined));
         }
       } else if (element_type == "gate") {
         GatePtr gate = model_->GetGate(name, base_path);

@@ -479,7 +479,6 @@ class Bdd {
   /// @note Marks will propagate to modules as well.
   void ClearMarks(const VertexPtr& vertex, bool mark) noexcept;
 
-  const BooleanGraph* fault_tree_;  ///< The main fault tree.
   const Settings kSettings_;  ///< Analysis settings.
   Function root_;  ///< The root function of this BDD.
 

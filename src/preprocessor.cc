@@ -1570,14 +1570,15 @@ bool Preprocessor::HandleDistributiveArgs(
   // Detecting a combination
   // that gives the most optimization is combinatorial.
   // The problem is similar to merging common arguments of gates.
-  MergeTable::Candidates group;
+  MergeTable::Candidates all_candidates;
   for (const IGatePtr& candidate : *candidates) {
-    group.emplace_back(candidate, std::vector<int>(candidate->args().begin(),
-                                                   candidate->args().end()));
+    all_candidates.emplace_back(
+        candidate,
+        std::vector<int>(candidate->args().begin(), candidate->args().end()));
   }
-  LOG(DEBUG5) << "Considering " << group.size() << " candidates...";
+  LOG(DEBUG5) << "Considering " << all_candidates.size() << " candidates...";
   MergeTable::Collection options;
-  Preprocessor::GroupCommonParents(1, group, &options);
+  Preprocessor::GroupCommonParents(1, all_candidates, &options);
   if (options.empty()) return false;
   LOG(DEBUG4) << "Got " << options.size() << " distributive option(s).";
 

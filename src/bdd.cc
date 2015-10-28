@@ -47,8 +47,7 @@ ComplementEdge::ComplementEdge() : complement_edge_(false) {}
 ComplementEdge::~ComplementEdge() {}  // Default pure virtual destructor.
 
 Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
-    : fault_tree_(fault_tree),
-      kSettings_(settings),
+    : kSettings_(settings),
       kOne_(std::make_shared<Terminal>(true)),
       function_id_(2) {
   CLOCK(init_time);
