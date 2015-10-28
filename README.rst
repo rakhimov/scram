@@ -241,7 +241,6 @@ the following line will install all major dependencies:
 
     sudo port install cmake boost libxml2 libxmlxx2 python27 graphviz google-perftools
 
-
 The optional installation for GUI building:
 
 .. code-block:: bash
@@ -313,14 +312,44 @@ The dependencies listed for Linux systems must be installed with Cygwin64.
 Running SCRAM and Tests
 ***********************
 
+This guide assumes
+that SCRAM *installation* directories are in the global path.
+If this is not the case,
+``path/to/installation/directory/bin/`` must be appended to the command-line calls.
+However, if SCRAM executables are not in the path,
+some system tests and scripts cannot be initiated.
+
+
+To run SCRAM
+============
+
+Example configuration and input files are provided in the ``input`` directory.
+
+.. code-block:: bash
+
+    scram path/to/input/files
+
+
+On command line, run help to get more detailed information:
+
+.. code-block:: bash
+
+    scram --help
+
+Various other useful tools and helper scripts,
+such as the **fault tree generator** and **shorthand-to-XML** converter,
+can be found in the ``scripts`` directory.
+Help prompts and the documentation have more details how to use these tools.
+
+
 To run tests
-=============
+============
 
 To run the unit and benchmark tests:
 
 .. code-block:: bash
 
-    path/to/installation/directory/bin/scram_tests
+    scram_tests
 
 To test the tools in the ``scripts`` directory:
 
@@ -347,29 +376,36 @@ To run all performance tests (may take considerable time):
 
 .. code-block:: bash
 
-    path/to/installation/directory/bin/scram_tests --gtest_also_run_disabled_tests --gtest_filter=*Performance*
+    scram_tests --gtest_also_run_disabled_tests --gtest_filter=*Performance*
 
 
-To run SCRAM
-============
+To run fuzz testing
+===================
 
-Example configuration and input files are provided in the ``input`` directory.
+The main goal of SCRAM fuzz testing
+is to discover defects in its analysis code.
+It is recommended to build SCRAM
+with assertions preserved
+and sanitizers enabled, for example,
+address sanitizer in GCC and Clang ``-fsanitize=address``.
+In order to speed up the fuzz testing,
+SCRAM should be built with debugging optimizations ``-Og``.
+
+Fuzz testing must be performed inside of the ``scripts/`` directory.
 
 .. code-block:: bash
 
-    path/to/installation/directory/bin/scram path/to/input/files
+    ...scram/scripts$ ./fuzz_tester.py -n 1000
 
-
-On command line, run help to get more detailed information:
+The fuzz tester can be guided with options listed in its help prompt.
 
 .. code-block:: bash
 
-    path/to/installation/directory/bin/scram --help
+    ...scram/scripts$ ./fuzz_tester.py --help
 
-Various other useful tools and helper scripts,
-such as the **fault tree generator** and **shorthand-to-XML** converter,
-can be found in the ``scripts`` directory.
-Help prompts and the documentation have more details how to use these tools.
+The fuzz testing stops on the first failure
+with reporting run configurations
+and preserving auto-generated inputs.
 
 
 **********************

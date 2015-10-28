@@ -85,15 +85,13 @@ Core C++ Code
 
 - Domain-specific ``Probability`` naming rules:
 
-    * If it is a getter/setter function name,
-      abbreviate the name to ``p``, i.e., ``p()`` and ``p(double value)``.
+    * If a probability variable is a member variable of a class
+      abbreviate it to ``p_``.
+      Its getter/setter functions should have
+      corresponding names, i.e., ``p()`` and ``p(double value)``.
+      Append extra description after ``p_``, i.e., ``p_total_``.
       Avoid abbreviating the name to ``prob``,
       or fully spelling it to ``probability``.
-
-    * If a probability variable is a member variable of a class
-      abbreviate it to ``p_``
-      (consistent with its getter/setter functions).
-      Append extra description after ``p_``, i.e., ``p_total_``.
 
     * For non-member probability variables:
 
@@ -144,10 +142,12 @@ Python
 #. Code quality and style check with Pylint_
 #. Profiling with PyVmMonitor_
 #. Code coverage check with coverage_
+#. Continuous code quality control on Landscape_
 
 .. _Pylint: http://www.pylint.org/
 .. _PyVmMonitor: http://www.pyvmmonitor.com/
 .. _coverage: http://nedbatchelder.com/code/coverage/
+.. _Landscape: https://landscape.io/github/rakhimov/scram/develop/
 
 
 Targets
