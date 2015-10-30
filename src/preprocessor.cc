@@ -1448,12 +1448,12 @@ void Preprocessor::FindBaseOption(
     MergeTable::MergeGroup* all_options,
     MergeTable::MergeGroup::iterator* best_option) noexcept {
   *best_option = all_options->end();
-  int best_counts[3] = {0, 0, 0};  // The number of extra parents.
+  int best_counts[3] = {};  // The number of extra parents.
   for (auto it = all_options->begin(); it != all_options->end(); ++it) {
     int num_parents = it->second.size();
     IGatePtr parent = *it->second.begin();  // Representative.
     const MergeTable::CommonArgs& args = it->first;
-    int cur_counts[3] = {0, 0, 0};
+    int cur_counts[3] = {};
     for (int index : args) {
       NodePtr arg = parent->GetArg(index);
       int extra_count = arg->parents().size() - num_parents;

@@ -286,7 +286,7 @@ Triplet Bdd::GetSignature(Operator type,
   min_id *= min_id == arg_one->id() ? sign_one : sign_two;
   max_id *= max_id == arg_one->id() ? sign_one : sign_two;
 
-  std::array<int, 3> sig = {0, 0, 0};  // Signature of the operation.
+  std::array<int, 3> sig;  // Signature of the operation.
   switch (type) {  /// @todo Detect equal calculations with complements.
     case kOrGate:
       sig[0] = min_id;

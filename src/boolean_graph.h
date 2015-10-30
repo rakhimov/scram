@@ -1059,8 +1059,7 @@ class BooleanGraph {
 
     int num_modules = 0;  ///< The number of module gates.
     std::unordered_set<int> gates;  ///< Collection of gates.
-    /// Gate type counts.
-    std::vector<int> gate_types = std::vector<int>(kNumOperators, 0);
+    std::array<int, kNumOperators> gate_types{};  ///< Gate type counts.
     std::unordered_set<int> variables;  ///< Collection of variables.
     std::unordered_set<int> constants;  ///< Collection of constants.
   };

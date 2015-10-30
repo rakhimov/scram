@@ -42,11 +42,10 @@ Node::Node() noexcept : Node::Node(next_index_++) {}
 Node::Node(int index) noexcept
     : index_(index),
       order_(0),
+      visits_{},
       opti_value_(0),
       pos_count_(0),
-      neg_count_(0) {
-  std::fill(visits_, visits_ + 3, 0);
-}
+      neg_count_(0) {}
 
 Node::~Node() {}  // Empty body for pure virtual destructor.
 
