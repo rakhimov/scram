@@ -166,6 +166,7 @@ class TestGateStructure {
 
 void Preprocessor::PhaseOne() noexcept {
   SANITY_ASSERT;
+  graph_->Log();
   if (!graph_->constants_.empty()) {
     LOG(DEBUG3) << "Removing constants...";
     Preprocessor::RemoveConstants();
@@ -185,6 +186,7 @@ void Preprocessor::PhaseOne() noexcept {
 
 void Preprocessor::PhaseTwo() noexcept {
   SANITY_ASSERT;
+  graph_->Log();
   CLOCK(mult_time);
   LOG(DEBUG3) << "Detecting multiple definitions...";
   bool graph_changed = true;
@@ -253,15 +255,18 @@ void Preprocessor::PhaseTwo() noexcept {
   LOG(DEBUG3) << "Detecting modules...";
   Preprocessor::DetectModules();
   LOG(DEBUG3) << "Finished module detection!";
+
+  graph_->Log();
 }
 
 void Preprocessor::PhaseThree() noexcept {
   SANITY_ASSERT;
+  graph_->Log();
   assert(!graph_->normal_);
   LOG(DEBUG3) << "Full normalization of gates...";
   Preprocessor::NormalizeGates(/*full=*/true);
   graph_->normal_ = true;
-  LOG(DEBUG3) << "Finished the full normalization gates!";
+  LOG(DEBUG3) << "Finished the full normalization of gates!";
 
   if (Preprocessor::CheckRootGate()) return;
   Preprocessor::PhaseTwo();
@@ -269,6 +274,7 @@ void Preprocessor::PhaseThree() noexcept {
 
 void Preprocessor::PhaseFour() noexcept {
   SANITY_ASSERT;
+  graph_->Log();
   assert(!graph_->coherent());
   LOG(DEBUG3) << "Propagating complements...";
   if (root_sign_ < 0) {
@@ -292,6 +298,7 @@ void Preprocessor::PhaseFour() noexcept {
 
 void Preprocessor::PhaseFive() noexcept {
   SANITY_ASSERT;
+  graph_->Log();
   LOG(DEBUG3) << "Coalescing gates...";  // Make layered.
   bool graph_changed = true;
   while (graph_changed && !Preprocessor::CheckRootGate())
@@ -307,6 +314,9 @@ void Preprocessor::PhaseFive() noexcept {
   while (graph_changed && !Preprocessor::CheckRootGate())
     graph_changed = Preprocessor::CoalesceGates(/*common=*/true);
   LOG(DEBUG3) << "Gate coalescence is done!";
+
+  if (Preprocessor::CheckRootGate()) return;
+  graph_->Log();
 }
 
 namespace {  // Helper functions for all preprocessing algorithms.

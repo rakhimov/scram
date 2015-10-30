@@ -700,6 +700,78 @@ void BooleanGraph::ClearNodeOrders(const IGatePtr& gate) noexcept {
   assert(gate->constant_args().empty());
 }
 
+void BooleanGraph::GraphLogger::RegisterRoot(const IGatePtr& gate) noexcept {
+  gates.insert(gate->index());
+}
+
+void BooleanGraph::GraphLogger::Log(const IGatePtr& gate) noexcept {
+  ++gate_types[gate->type()];
+  if (gate->IsModule()) ++num_modules;
+  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+    gates.insert(arg.first);
+  }
+  for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
+    variables.insert(arg.first);
+  }
+  for (const std::pair<int, ConstantPtr>& arg : gate->constant_args()) {
+    constants.insert(arg.first);
+  }
+}
+
+void BooleanGraph::Log() noexcept {
+  if (DEBUG4 > scram::Logger::ReportLevel()) return;
+  BooleanGraph::ClearGateMarks();
+  GraphLogger* logger = new GraphLogger();
+  logger->RegisterRoot(root_);
+  BooleanGraph::GatherInformation(root_, logger);
+  LOG(DEBUG4) << "Boolean graph with root G" << root_->index();
+  LOG(DEBUG4) << "Total # of gates: " << logger->Count(logger->gates);
+  LOG(DEBUG4) << "# of modules: " << logger->num_modules;
+  LOG(DEBUG4) << "# of gates with negative indices: "
+              << logger->CountComplements(logger->gates);
+  LOG(DEBUG4) << "# of gates with positive and negative indices: "
+              << logger->CountOverlap(logger->gates);
+
+  BLOG(DEBUG5, logger->gate_types[kAndGate])
+      << "AND gates: " << logger->gate_types[kAndGate];
+  BLOG(DEBUG5, logger->gate_types[kOrGate])
+      << "OR gates: " << logger->gate_types[kOrGate];
+  BLOG(DEBUG5, logger->gate_types[kAtleastGate])
+      << "K/N gates: " << logger->gate_types[kAtleastGate];
+  BLOG(DEBUG5, logger->gate_types[kXorGate])
+      << "XOR gates: " << logger->gate_types[kXorGate];
+  BLOG(DEBUG5, logger->gate_types[kNotGate])
+      << "NOT gates: " << logger->gate_types[kNotGate];
+  BLOG(DEBUG5, logger->gate_types[kNandGate])
+      << "NAND gates: " << logger->gate_types[kNandGate];
+  BLOG(DEBUG5, logger->gate_types[kNorGate])
+      << "NOR gates: " << logger->gate_types[kNorGate];
+  BLOG(DEBUG5, logger->gate_types[kNullGate])
+      << "NULL gates: " << logger->gate_types[kNullGate];
+
+  LOG(DEBUG4) << "Total # of variables: " << logger->Count(logger->variables);
+  LOG(DEBUG4) << "# of variables with negative indices: "
+              << logger->CountComplements(logger->variables);
+  LOG(DEBUG4) << "# of variables with positive and negative indices: "
+              << logger->CountOverlap(logger->variables);
+
+  BLOG(DEBUG4, !logger->constants.empty())
+      << "Total # of constants: " << logger->Count(logger->constants);
+
+  delete logger;
+  BooleanGraph::ClearGateMarks();
+}
+
+void BooleanGraph::GatherInformation(const IGatePtr& gate,
+                                     GraphLogger* logger) noexcept {
+  if (gate->mark()) return;
+  gate->mark(true);
+  logger->Log(gate);
+  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+    BooleanGraph::GatherInformation(arg.second, logger);
+  }
+}
+
 std::ostream& operator<<(std::ostream& os,
                          const std::shared_ptr<Constant>& constant) {
   if (constant->Visited()) return os;
