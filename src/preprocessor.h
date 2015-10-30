@@ -336,7 +336,6 @@ class Preprocessor {
   ///                    These gates may be important for other algorithms.
   ///
   /// @returns true if the graph has been changed.
-  /// @returns false if no change has been made.
   ///
   /// @note Module gates are omitted from coalescing to preserve them.
   ///

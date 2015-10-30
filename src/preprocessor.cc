@@ -171,16 +171,18 @@ void Preprocessor::PhaseOne() noexcept {
     LOG(DEBUG3) << "Removing constants...";
     Preprocessor::RemoveConstants();
     LOG(DEBUG3) << "Constant are removed!";
-  }
-  if (!graph_->coherent_) {
-    LOG(DEBUG3) << "Partial normalization of gates...";
-    Preprocessor::NormalizeGates(/*full=*/false);
-    LOG(DEBUG3) << "Finished the partial normalization of gates!";
+    if (Preprocessor::CheckRootGate()) return;
   }
   if (!graph_->null_gates_.empty()) {
     LOG(DEBUG3) << "Removing NULL gates...";
     Preprocessor::RemoveNullGates();
     LOG(DEBUG3) << "Finished cleaning NULL gates!";
+    if (Preprocessor::CheckRootGate()) return;
+  }
+  if (!graph_->coherent_) {
+    LOG(DEBUG3) << "Partial normalization of gates...";
+    Preprocessor::NormalizeGates(/*full=*/false);
+    LOG(DEBUG3) << "Finished the partial normalization of gates!";
   }
 }
 
@@ -189,10 +191,7 @@ void Preprocessor::PhaseTwo() noexcept {
   graph_->Log();
   CLOCK(mult_time);
   LOG(DEBUG3) << "Detecting multiple definitions...";
-  bool graph_changed = true;
-  while (graph_changed) {
-    graph_changed = Preprocessor::ProcessMultipleDefinitions();
-  }
+  while (Preprocessor::ProcessMultipleDefinitions()) continue;
   LOG(DEBUG3) << "Finished multi-definition detection in " << DUR(mult_time);
 
   if (Preprocessor::CheckRootGate()) return;
@@ -202,9 +201,7 @@ void Preprocessor::PhaseTwo() noexcept {
   LOG(DEBUG3) << "Finished module detection!";
 
   LOG(DEBUG3) << "Coalescing gates...";
-  graph_changed = true;
-  while (graph_changed && !Preprocessor::CheckRootGate())
-    graph_changed = Preprocessor::CoalesceGates(/*common=*/false);
+  while (Preprocessor::CoalesceGates(/*common=*/false)) continue;
   LOG(DEBUG3) << "Gate coalescence is done!";
 
   if (Preprocessor::CheckRootGate()) return;
@@ -245,9 +242,7 @@ void Preprocessor::PhaseTwo() noexcept {
   LOG(DEBUG3) << "Finished module detection!";
 
   LOG(DEBUG3) << "Coalescing gates...";
-  graph_changed = true;
-  while (graph_changed && !Preprocessor::CheckRootGate())
-    graph_changed = Preprocessor::CoalesceGates(/*common=*/false);
+  while (Preprocessor::CoalesceGates(/*common=*/false)) continue;
   LOG(DEBUG3) << "Gate coalescence is done!";
 
   if (Preprocessor::CheckRootGate()) return;
@@ -300,9 +295,7 @@ void Preprocessor::PhaseFive() noexcept {
   SANITY_ASSERT;
   graph_->Log();
   LOG(DEBUG3) << "Coalescing gates...";  // Make layered.
-  bool graph_changed = true;
-  while (graph_changed && !Preprocessor::CheckRootGate())
-    graph_changed = Preprocessor::CoalesceGates(/*common=*/true);
+  while (Preprocessor::CoalesceGates(/*common=*/true)) continue;
   LOG(DEBUG3) << "Gate coalescence is done!";
 
   if (Preprocessor::CheckRootGate()) return;
@@ -310,9 +303,7 @@ void Preprocessor::PhaseFive() noexcept {
   if (Preprocessor::CheckRootGate()) return;
 
   LOG(DEBUG3) << "Coalescing gates...";  // Final coalescing before analysis.
-  graph_changed = true;
-  while (graph_changed && !Preprocessor::CheckRootGate())
-    graph_changed = Preprocessor::CoalesceGates(/*common=*/true);
+  while (Preprocessor::CoalesceGates(/*common=*/true)) continue;
   LOG(DEBUG3) << "Gate coalescence is done!";
 
   if (Preprocessor::CheckRootGate()) return;
@@ -724,7 +715,7 @@ void Preprocessor::PropagateComplements(
 bool Preprocessor::CoalesceGates(bool common) noexcept {
   assert(const_gates_.empty());
   assert(null_gates_.empty());
-  assert(!graph_->root()->IsConstant());
+  if (graph_->root()->IsConstant()) return false;
   graph_->ClearGateMarks();
   bool ret = Preprocessor::JoinGates(graph_->root(), common);
 
@@ -783,6 +774,7 @@ bool Preprocessor::JoinGates(const IGatePtr& gate, bool common) noexcept {
 bool Preprocessor::ProcessMultipleDefinitions() noexcept {
   assert(null_gates_.empty());
   assert(const_gates_.empty());
+  if (graph_->root()->IsConstant()) return false;
 
   graph_->ClearGateMarks();
   // The original gate and its multiple definitions.
