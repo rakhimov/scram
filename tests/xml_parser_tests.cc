@@ -27,19 +27,19 @@
 namespace scram {
 namespace test {
 
-void XMLParserTests::FillSnippet(std::stringstream& ss) {
+void XmlParserTests::FillSnippet(std::stringstream& ss) {
   ss << "<" << outer_node_ << ">"
      << "<" << inner_node_ << ">" << inner_content_
      << "</" << inner_node_ << ">"
      << "</" << outer_node_ << ">";
 }
 
-void XMLParserTests::FillBadSnippet(std::stringstream& ss) {
+void XmlParserTests::FillBadSnippet(std::stringstream& ss) {
   ss << "<" << outer_node_ << ">"
      << "</" << outer_node_ << ">";
 }
 
-void XMLParserTests::FillSchema(std::stringstream& ss) {
+void XmlParserTests::FillSchema(std::stringstream& ss) {
   ss << "<grammar xmlns=\"http://relaxng.org/ns/structure/1.0\"" << std::endl
      << "datatypeLibrary=\"http://www.w3.org/2001/XMLSchema-datatypes\">"
      << std::endl
@@ -53,7 +53,7 @@ void XMLParserTests::FillSchema(std::stringstream& ss) {
      << "</grammar>";
 }
 
-void XMLParserTests::FillBadSchema(std::stringstream& ss) {
+void XmlParserTests::FillBadSchema(std::stringstream& ss) {
   ss << "<grammar xmlns=\"http://relaxng.org/ns/structure/1.0\"" << std::endl
      << "datatypeLibrary=\"http://www.w3.org/2001/XMLSchema-datatypes\">"
      << std::endl
@@ -67,23 +67,23 @@ void XMLParserTests::FillBadSchema(std::stringstream& ss) {
      << "</grammar>";
 }
 
-void XMLParserTests::SetUp() {
+void XmlParserTests::SetUp() {
   inner_node_ = "inside";
   outer_node_ = "outside";
   inner_content_ = "inside_content";
 }
 
-void XMLParserTests::TearDown() {}
+void XmlParserTests::TearDown() {}
 
 // This is an indirect test of the validator.
-TEST_F(XMLParserTests, RelaxNGValidator) {
+TEST_F(XmlParserTests, RelaxNGValidator) {
   std::stringstream snippet("");
   FillSnippet(snippet);
   std::stringstream schema("");
   FillSchema(schema);
 
-  XMLParserPtr parser;
-  EXPECT_NO_THROW(parser = XMLParserPtr(new XMLParser(snippet)));
+  XmlParserPtr parser;
+  EXPECT_NO_THROW(parser = XmlParserPtr(new XmlParser(snippet)));
 
   RelaxNGValidator validator;
   const xmlpp::Document* doc = nullptr;
@@ -98,39 +98,39 @@ TEST_F(XMLParserTests, RelaxNGValidator) {
   EXPECT_NO_THROW(validator.Validate(doc));  // Initialized.
 }
 
-TEST_F(XMLParserTests, WithoutSchema) {
+TEST_F(XmlParserTests, WithoutSchema) {
   std::stringstream snippet("");
   FillSnippet(snippet);
-  EXPECT_NO_THROW(XMLParserPtr(new XMLParser(snippet)));
+  EXPECT_NO_THROW(XmlParserPtr(new XmlParser(snippet)));
 }
 
-TEST_F(XMLParserTests, WithSchema) {
+TEST_F(XmlParserTests, WithSchema) {
   std::stringstream snippet("");
   FillSnippet(snippet);
   std::stringstream schema("");
   FillSchema(schema);
-  XMLParserPtr parser;
-  EXPECT_NO_THROW(parser = XMLParserPtr(new XMLParser(snippet)));
+  XmlParserPtr parser;
+  EXPECT_NO_THROW(parser = XmlParserPtr(new XmlParser(snippet)));
   EXPECT_NO_THROW(parser->Validate(schema));
 }
 
-TEST_F(XMLParserTests, WithBadSchema) {
+TEST_F(XmlParserTests, WithBadSchema) {
   std::stringstream snippet("");
   FillSnippet(snippet);
   std::stringstream schema("");
   FillBadSchema(schema);
-  XMLParserPtr parser;
-  EXPECT_NO_THROW(parser = XMLParserPtr(new XMLParser(snippet)));
+  XmlParserPtr parser;
+  EXPECT_NO_THROW(parser = XmlParserPtr(new XmlParser(snippet)));
   EXPECT_THROW(parser->Validate(schema), LogicError);
 }
 
-TEST_F(XMLParserTests, WithError) {
+TEST_F(XmlParserTests, WithError) {
   std::stringstream snippet("");
   FillBadSnippet(snippet);
   std::stringstream schema("");
   FillSchema(schema);
-  XMLParserPtr parser;
-  EXPECT_NO_THROW(parser = XMLParserPtr(new XMLParser(snippet)));
+  XmlParserPtr parser;
+  EXPECT_NO_THROW(parser = XmlParserPtr(new XmlParser(snippet)));
   EXPECT_THROW(parser->Validate(schema), ValidationError);
 }
 

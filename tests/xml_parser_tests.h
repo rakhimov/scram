@@ -28,13 +28,13 @@
 namespace scram {
 namespace test {
 
-class XMLParserTests : public ::testing::Test {
+class XmlParserTests : public ::testing::Test {
  public:
   virtual void SetUp();
   virtual void TearDown();
 
  protected:
-  using XMLParserPtr = std::unique_ptr<XMLParser>;
+  using XmlParserPtr = std::unique_ptr<XmlParser>;
 
   void FillSnippet(std::stringstream& ss);
   void FillBadSnippet(std::stringstream& ss);

@@ -146,7 +146,7 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
   stream << file_stream.rdbuf();
   file_stream.close();
 
-  XMLParser* parser(new XMLParser(stream));
+  XmlParser* parser = new XmlParser(stream);
   parsers_.emplace_back(parser);
   parser->Validate(schema_);
 
