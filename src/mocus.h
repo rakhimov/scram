@@ -493,37 +493,13 @@ class Mocus {
   ///
   /// @param[in] gate  The gate to start with.
   /// @param[in,out] processed_gates  Gates turned into simple gates.
-  ///
-  /// @returns The root for the simple tree.
-  SimpleGatePtr CreateSimpleTree(
+  void CreateSimpleTree(
       const IGatePtr& gate,
       std::unordered_map<int, SimpleGatePtr>* processed_gates) noexcept;
 
-  /// Finds minimal cut sets of a simple gate.
-  ///
-  /// @param[in] gate  The simple gate as a parent for processing.
-  /// @param[out] mcs  Minimal cut sets.
-  void AnalyzeSimpleGate(const SimpleGatePtr& gate,
-                         std::vector<CutSet>* mcs) noexcept;
-
-  /// Finds minimal cut sets from cut sets.
-  /// Reduces unique cut sets to minimal cut sets.
-  /// The performance is highly dependent on the passed sets.
-  /// If the sets share many events,
-  /// it takes more time to remove supersets.
-  ///
-  /// @param[in] cut_sets  Cut sets with primary events.
-  /// @param[in] mcs_lower_order  Reference minimal cut sets of some order.
-  /// @param[in] min_order  The order of sets to become minimal.
-  /// @param[out] mcs  Min cut sets.
-  void MinimizeCutSets(const std::vector<const CutSet*>& cut_sets,
-                       const std::vector<CutSet>& mcs_lower_order,
-                       int min_order,
-                       std::vector<CutSet>* mcs) noexcept;
-
   bool constant_graph_;  ///< No need for analysis.
   const Settings kSettings_;  ///< Analysis settings.
-  SimpleGatePtr root_;  ///< The root of the MOCUS graph.
+  int root_index_;  ///< The root of the MOCUS graph.
   std::unordered_map<int, SimpleGatePtr> modules_;  ///< Converted modules.
   std::vector<std::vector<int>> cut_sets_;  ///< Min cut sets with indices.
 };

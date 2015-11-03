@@ -61,7 +61,28 @@ Zbdd::Zbdd(const BooleanGraph* fault_tree, const Settings& settings) noexcept
   }
   LOG(DEBUG4) << "# of ZBDD nodes created: " << set_id_ - 1;
   LOG(DEBUG4) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);
-  LOG(DEBUG2) << "Created ZBDD from BDD in " << DUR(init_time);
+  LOG(DEBUG2) << "Created ZBDD from Boolean Graph in " << DUR(init_time);
+
+  Zbdd::ClearMarks(root_);
+  LOG(DEBUG3) << "There are " << Zbdd::CountCutSets(root_) << " cut sets.";
+  Zbdd::ClearMarks(root_);
+}
+
+Zbdd::Zbdd(int root_index,
+           const std::vector<std::pair<int, mocus::CutSetContainer>>& cut_sets,
+           const Settings& settings) noexcept
+    : Zbdd::Zbdd(settings) {
+  CLOCK(init_time);
+  LOG(DEBUG2) << "Creating ZBDD from cut sets...";
+  for (const auto& module : cut_sets) {
+    assert(!modules_.count(module.first) && "Repeated calculation of modules.");
+    modules_.emplace(module.first, Zbdd::ConvertCutSets(module.second));
+  }
+  root_ = modules_.find(root_index)->second;
+
+  LOG(DEBUG4) << "# of ZBDD nodes created: " << set_id_ - 1;
+  LOG(DEBUG4) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);
+  LOG(DEBUG2) << "Created ZBDD from cut sets in " << DUR(init_time);
 
   Zbdd::ClearMarks(root_);
   LOG(DEBUG3) << "There are " << Zbdd::CountCutSets(root_) << " cut sets.";
@@ -176,6 +197,56 @@ std::shared_ptr<SetNode> Zbdd::ConvertGraph(
   in_table->high(kBase_);
   in_table->low(kEmpty_);
   return in_table;
+}
+
+std::shared_ptr<Vertex> Zbdd::ConvertCutSets(
+    const mocus::CutSetContainer& cut_sets) noexcept {
+  std::vector<mocus::CutSetPtr> data(cut_sets.begin(), cut_sets.end());
+  std::sort(data.begin(), data.end(),
+            [](const mocus::CutSetPtr& lhs, const mocus::CutSetPtr& rhs) {
+    return lhs->size() < rhs->size();
+  });
+  if (data.empty()) return kEmpty_;
+  if (data.front()->empty()) return kBase_;
+
+  VertexPtr result = kEmpty_;
+  for (const auto& cut_set : data) {
+    result = Zbdd::Apply(kOrGate, result, Zbdd::EmplaceCutSet(cut_set));
+  }
+  return result;
+}
+
+std::shared_ptr<SetNode> Zbdd::EmplaceCutSet(
+    const mocus::CutSetPtr& cut_set) noexcept {
+  assert(!cut_set->empty() && "Unity cut set must be sanitized.");
+  VertexPtr result = kBase_;
+  std::vector<int>::const_reverse_iterator it;
+  for (it = cut_set->modules().rbegin(); it != cut_set->modules().rend();
+       ++it) {
+    int index = *it;
+    SetNodePtr& in_table = unique_table_[{index, result->id(), 0}];
+    if (!in_table) {
+      in_table = std::make_shared<SetNode>(index, index + 1);
+      in_table->module(true);
+      in_table->id(set_id_++);
+      in_table->high(result);
+      in_table->low(kEmpty_);
+    }
+    result = in_table;
+  }
+  for (it = cut_set->literals().rbegin(); it != cut_set->literals().rend();
+       ++it) {
+    int index = *it;
+    SetNodePtr& in_table = unique_table_[{index, result->id(), 0}];
+    if (!in_table) {
+      in_table = std::make_shared<SetNode>(index, index + 1);
+      in_table->id(set_id_++);
+      in_table->high(result);
+      in_table->low(kEmpty_);
+    }
+    result = in_table;
+  }
+  return SetNode::Ptr(result);
 }
 
 std::shared_ptr<SetNode> Zbdd::CreateModuleProxy(

@@ -17,7 +17,7 @@
 
 /// @file mocus.cc
 /// Implementation of the MOCUS algorithm.
-/// The algorithms assumes
+/// The algorithm assumes
 /// that the tree is layered
 /// with OR and AND gates on each level.
 /// That is, one level contains only AND or OR gates.
@@ -68,6 +68,7 @@
 #include <utility>
 
 #include "logger.h"
+#include "zbdd.h"
 
 namespace scram {
 
@@ -170,6 +171,7 @@ Mocus::Mocus(const BooleanGraph* fault_tree, const Settings& settings)
       : constant_graph_(false),
         kSettings_(settings) {
   IGatePtr top = fault_tree->root();
+  root_index_ = top->index();
   // Special case of empty top gate.
   if (top->IsConstant()) {
     if (top->state() == kUnityState) cut_sets_.push_back({});  // Unity set.
@@ -185,7 +187,7 @@ Mocus::Mocus(const BooleanGraph* fault_tree, const Settings& settings)
     return;
   }
   std::unordered_map<int, SimpleGatePtr> simple_gates;
-  root_ = Mocus::CreateSimpleTree(top, &simple_gates);
+  Mocus::CreateSimpleTree(top, &simple_gates);
   LOG(DEBUG3) << "Converted Boolean graph with top module: G" << top->index();
 }
 
@@ -195,44 +197,29 @@ void Mocus::Analyze() {
 
   CLOCK(mcs_time);
   LOG(DEBUG2) << "Start minimal cut set generation.";
-  LOG(DEBUG3) << "Finding MCS from the root";
-  std::vector<CutSet> mcs;
-  Mocus::AnalyzeSimpleGate(root_, &mcs);
-  LOG(DEBUG3) << "Top gate cut sets are generated.";
-
-  LOG(DEBUG3) << "Joining modules...";
-  // Save minimal cut sets of analyzed modules.
-  std::unordered_map<int, std::vector<CutSet>> module_mcs;
-  while (!mcs.empty()) {
-    CutSet member = mcs.back();
-    mcs.pop_back();
-    if (member.modules().empty()) {
-      cut_sets_.push_back(member.literals());
-      continue;
-    }
-    int module_index = member.PopModule();
-    if (!module_mcs.count(module_index)) {
-      LOG(DEBUG3) << "Finding MCS from module: G" << module_index;
-      Mocus::AnalyzeSimpleGate(modules_.find(module_index)->second,
-                               &module_mcs[module_index]);
-    }
-    const std::vector<CutSet>& sub_mcs = module_mcs.find(module_index)->second;
-    for (const CutSet& cut_set : sub_mcs) {
-      if (cut_set.order() + member.order() > kSettings_.limit_order()) continue;
-      mcs.push_back(cut_set);
-      mcs.back().JoinModuleCutSet(member);
-    }
+  std::vector<std::pair<int, mocus::CutSetContainer>> module_sets;
+  for (const std::pair<const int, SimpleGatePtr>& module : modules_) {
+    CLOCK(gen_time);
+    LOG(DEBUG3) << "Finding cut sets from module: G" << module.first;
+    mocus::CutSetContainer cut_sets;
+    module.second->GenerateCutSets(CutSetPtr(new CutSet), &cut_sets);
+    module_sets.emplace_back(module.first, cut_sets);
+    LOG(DEBUG4) << "Unique cut sets generated: " << cut_sets.size();
+    LOG(DEBUG4) << "Cut set generation time: " << DUR(gen_time);
   }
-
+  LOG(DEBUG2) << "Delegating cut set minimization to ZBDD.";
+  Zbdd* zbdd = new Zbdd(root_index_, module_sets, kSettings_);
+  zbdd->Analyze();
+  cut_sets_ = zbdd->cut_sets();
+  delete zbdd;
   LOG(DEBUG2) << "The number of MCS found: " << cut_sets_.size();
   LOG(DEBUG2) << "Minimal cut sets found in " << DUR(mcs_time);
 }
 
-Mocus::SimpleGatePtr Mocus::CreateSimpleTree(
+void Mocus::CreateSimpleTree(
     const IGatePtr& gate,
     std::unordered_map<int, SimpleGatePtr>* processed_gates) noexcept {
-  if (processed_gates->count(gate->index()))
-    return processed_gates->find(gate->index())->second;
+  if (processed_gates->count(gate->index())) return;
   assert(gate->type() == kAndGate || gate->type() == kOrGate);
   SimpleGatePtr simple_gate(
       new mocus::SimpleGate(gate->type(), kSettings_.limit_order()));
@@ -256,72 +243,6 @@ Mocus::SimpleGatePtr Mocus::CreateSimpleTree(
     simple_gate->AddLiteral(arg.first);
   }
   simple_gate->SetupForAnalysis();
-  return simple_gate;
-}
-
-void Mocus::AnalyzeSimpleGate(const SimpleGatePtr& gate,
-                              std::vector<CutSet>* mcs) noexcept {
-  CLOCK(gen_time);
-  mocus::CutSetContainer cut_sets;
-  // Generate main minimal cut set gates from top module.
-  gate->GenerateCutSets(CutSetPtr(new CutSet), &cut_sets);
-  LOG(DEBUG4) << "Unique cut sets generated: " << cut_sets.size();
-  LOG(DEBUG4) << "Cut set generation time: " << DUR(gen_time);
-
-  CLOCK(min_time);
-  LOG(DEBUG4) << "Minimizing the cut sets.";
-  mocus::CutSetContainer sanitized_cut_sets;
-  for (const CutSetPtr& cut_set : cut_sets) {
-    cut_set->Sanitize();
-    sanitized_cut_sets.insert(cut_set);  // Makes it unique as well.
-  }
-  std::vector<const CutSet*> cut_sets_vector;
-  cut_sets_vector.reserve(sanitized_cut_sets.size());
-  for (const CutSetPtr& cut_set : sanitized_cut_sets) {
-    if (cut_set->empty()) {  // Unity set.
-      mcs->clear();
-      mcs->push_back(*cut_set);
-      return;
-    }
-    if (cut_set->size() == 1) {
-      mcs->push_back(*cut_set);
-    } else {
-      cut_sets_vector.push_back(cut_set.get());
-    }
-  }
-  Mocus::MinimizeCutSets(cut_sets_vector, *mcs, 2, mcs);
-  LOG(DEBUG4) << "The number of local MCS: " << mcs->size();
-  LOG(DEBUG4) << "Cut set minimization time: " << DUR(min_time);
-}
-
-void Mocus::MinimizeCutSets(const std::vector<const CutSet*>& cut_sets,
-                            const std::vector<CutSet>& mcs_lower_order,
-                            int min_order,
-                            std::vector<CutSet>* mcs) noexcept {
-  if (cut_sets.empty()) return;
-
-  std::vector<const CutSet*> temp_sets;  // For mcs of a level above.
-  std::vector<CutSet> temp_min_sets;  // For mcs of this level.
-
-  auto IsMinimal = [&mcs_lower_order](const CutSet* cut_set) {
-    for (const auto& min_cut_set : mcs_lower_order)
-      if (cut_set->Includes(min_cut_set)) return false;
-    return true;
-  };
-
-  for (const auto* unique_cut_set : cut_sets) {
-    if (!IsMinimal(unique_cut_set)) continue;
-    // After checking for non-minimal cut sets,
-    // all minimum sized cut sets are guaranteed to be minimal.
-    if (unique_cut_set->size() == min_order) {
-      temp_min_sets.push_back(*unique_cut_set);
-    } else {
-      temp_sets.push_back(unique_cut_set);
-    }
-  }
-  mcs->insert(mcs->end(), temp_min_sets.begin(), temp_min_sets.end());
-  min_order++;
-  Mocus::MinimizeCutSets(temp_sets, temp_min_sets, min_order, mcs);
 }
 
 }  // namespace scram
