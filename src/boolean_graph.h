@@ -177,7 +177,7 @@ class Node : public NodeParentManager {
   bool Visited() const { return visits_[0] ? true : false; }
 
   /// Clears all the visit information. Resets the visit times to 0s.
-  void ClearVisits() { return std::fill(visits_, visits_ + 3, 0); }
+  void ClearVisits() { std::fill_n(visits_, 3, 0); }
 
   /// @returns The positive count of this node.
   int pos_count() const { return pos_count_; }
