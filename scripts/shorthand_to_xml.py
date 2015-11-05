@@ -266,9 +266,9 @@ class FaultTree(object):
                 FaultTreeError: There is a cycle in the fault tree.
             """
             start = cycle[0]
-            cycle.reverse()
+            cycle.reverse()  # print top-down
             raise FaultTreeError("Detected a cycle: " +
-                                 str([x for x in cycle[cycle.index(start):]]))
+                                 "->".join(cycle[cycle.index(start):]))
 
         assert self.top_gates is not None
         for top_gate in self.top_gates:
