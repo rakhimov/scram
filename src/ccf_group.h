@@ -162,7 +162,7 @@ class CcfGroup : public Element, public Role {
   std::map<std::string, BasicEventPtr> members_;  ///< Members of CCF groups.
   ExpressionPtr distribution_;  ///< The probability distribution of the group.
   /// CCF factors for models to get CCF probabilities.
-  std::vector<std::pair<int, ExpressionPtr> > factors_;
+  std::vector<std::pair<int, ExpressionPtr>> factors_;
 
  private:
   std::string model_;  ///< Common cause model type.

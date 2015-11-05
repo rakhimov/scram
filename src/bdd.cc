@@ -88,10 +88,10 @@ const Bdd::Function& Bdd::IfThenElse(const IGatePtr& gate) noexcept {
   Function& result = gates_[gate->index()];
   if (result.vertex) return result;
   std::vector<Function> args;
-  for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
+  for (const std::pair<const int, VariablePtr>& arg : gate->variable_args()) {
     args.push_back({arg.first < 0, Bdd::IfThenElse(arg.second)});
   }
-  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+  for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
     const Function& res = Bdd::IfThenElse(arg.second);
     if (arg.second->IsModule()) {
       ItePtr proxy = Bdd::CreateModuleProxy(arg.second);

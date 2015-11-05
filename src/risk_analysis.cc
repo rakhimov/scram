@@ -137,12 +137,12 @@ void RiskAnalysis::Report(std::ostream& out) {
   // in case the input is formed not as intended.
   std::vector<std::shared_ptr<const PrimaryEvent>> orphan_primary_events;
   using BasicEventPtr = std::shared_ptr<BasicEvent>;
-  for (const std::pair<std::string, BasicEventPtr>& event :
+  for (const std::pair<const std::string, BasicEventPtr>& event :
        model_->basic_events()) {
     if (event.second->orphan()) orphan_primary_events.push_back(event.second);
   }
   using HouseEventPtr = std::shared_ptr<HouseEvent>;
-  for (const std::pair<std::string, HouseEventPtr>& event :
+  for (const std::pair<const std::string, HouseEventPtr>& event :
        model_->house_events()) {
     if (event.second->orphan()) orphan_primary_events.push_back(event.second);
   }
@@ -152,7 +152,7 @@ void RiskAnalysis::Report(std::ostream& out) {
   // This container is for warning in case the input is formed not as intended.
   using ParameterPtr = std::shared_ptr<Parameter>;
   std::vector<std::shared_ptr<const Parameter>> unused_parameters;
-  for (const std::pair<std::string, ParameterPtr>& param :
+  for (const std::pair<const std::string, ParameterPtr>& param :
        model_->parameters()) {
     if (param.second->unused()) unused_parameters.push_back(param.second);
   }

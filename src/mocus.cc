@@ -241,7 +241,7 @@ Mocus::SimpleGatePtr Mocus::CreateSimpleTree(
 
   assert(gate->constant_args().empty());
   assert(gate->args().size() > 1);
-  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+  for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
     assert(arg.first > 0);
     IGatePtr child_gate = arg.second;
     Mocus::CreateSimpleTree(child_gate, processed_gates);
@@ -252,7 +252,7 @@ Mocus::SimpleGatePtr Mocus::CreateSimpleTree(
     }
   }
   using VariablePtr = std::shared_ptr<Variable>;
-  for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
+  for (const std::pair<const int, VariablePtr>& arg : gate->variable_args()) {
     simple_gate->AddLiteral(arg.first);
   }
   simple_gate->SetupForAnalysis();

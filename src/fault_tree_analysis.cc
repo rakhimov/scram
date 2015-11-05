@@ -68,7 +68,7 @@ void FaultTreeDescriptor::GatherEvents(const FormulaPtr& formula) noexcept {
 
 void FaultTreeDescriptor::ClearMarks() noexcept {
   top_event_->mark("");
-  for (const std::pair<std::string, GatePtr>& member : inter_events_) {
+  for (const std::pair<const std::string, GatePtr>& member : inter_events_) {
     member.second->mark("");
   }
 }

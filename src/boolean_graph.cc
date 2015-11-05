@@ -180,15 +180,15 @@ void IGate::JoinGate(const IGatePtr& arg_gate) noexcept {
   assert(arg_gate->state() == kNormalState && "Impossible to join.");
   assert(!arg_gate->args().empty() && "Corrupted gate.");
 
-  for (const std::pair<int, IGatePtr>& arg : arg_gate->gate_args_) {
+  for (const auto& arg : arg_gate->gate_args_) {
     IGate::AddArg(arg.first, arg.second);
     if (state_ != kNormalState) return;
   }
-  for (const std::pair<int, VariablePtr>& arg : arg_gate->variable_args_) {
+  for (const auto& arg : arg_gate->variable_args_) {
     IGate::AddArg(arg.first, arg.second);
     if (state_ != kNormalState) return;
   }
-  for (const std::pair<int, ConstantPtr>& arg : arg_gate->constant_args_) {
+  for (const auto& arg : arg_gate->constant_args_) {
     IGate::AddArg(arg.first, arg.second);
     if (state_ != kNormalState) return;
   }
@@ -587,7 +587,7 @@ void BooleanGraph::ClearGateMarks() noexcept {
 void BooleanGraph::ClearGateMarks(const IGatePtr& gate) noexcept {
   if (!gate->mark()) return;
   gate->mark(false);
-  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+  for (const auto& arg : gate->gate_args()) {
     BooleanGraph::ClearGateMarks(arg.second);
   }
 }
@@ -606,13 +606,13 @@ void BooleanGraph::ClearNodeVisits(const IGatePtr& gate) noexcept {
 
   if (gate->Visited()) gate->ClearVisits();
 
-  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+  for (const auto& arg : gate->gate_args()) {
     BooleanGraph::ClearNodeVisits(arg.second);
   }
-  for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
+  for (const auto& arg : gate->variable_args()) {
     if (arg.second->Visited()) arg.second->ClearVisits();
   }
-  for (const std::pair<int, ConstantPtr>& arg : gate->constant_args()) {
+  for (const auto& arg : gate->constant_args()) {
     if (arg.second->Visited()) arg.second->ClearVisits();
   }
 }
@@ -630,10 +630,10 @@ void BooleanGraph::ClearOptiValues(const IGatePtr& gate) noexcept {
   gate->mark(true);
 
   gate->opti_value(0);
-  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+  for (const auto& arg : gate->gate_args()) {
     BooleanGraph::ClearOptiValues(arg.second);
   }
-  for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
+  for (const auto& arg : gate->variable_args()) {
     arg.second->opti_value(0);
   }
   assert(gate->constant_args().empty());
@@ -652,10 +652,10 @@ void BooleanGraph::ClearNodeCounts(const IGatePtr& gate) noexcept {
   gate->mark(true);
 
   gate->ResetCount();
-  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+  for (const auto& arg : gate->gate_args()) {
     BooleanGraph::ClearNodeCounts(arg.second);
   }
-  for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
+  for (const auto& arg : gate->variable_args()) {
     arg.second->ResetCount();
   }
   assert(gate->constant_args().empty());
@@ -673,7 +673,7 @@ void BooleanGraph::ClearDescendantMarks(const IGatePtr& gate) noexcept {
   if (gate->mark()) return;
   gate->mark(true);
   gate->descendant(0);
-  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+  for (const auto& arg : gate->gate_args()) {
     BooleanGraph::ClearDescendantMarks(arg.second);
   }
 }
@@ -690,10 +690,10 @@ void BooleanGraph::ClearNodeOrders(const IGatePtr& gate) noexcept {
   if (gate->mark()) return;
   gate->mark(true);
   if (gate->order()) gate->order(0);
-  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+  for (const auto& arg : gate->gate_args()) {
     BooleanGraph::ClearNodeOrders(arg.second);
   }
-  for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
+  for (const auto& arg : gate->variable_args()) {
     if (arg.second->order()) arg.second->order(0);
   }
   assert(gate->constant_args().empty());
@@ -706,15 +706,9 @@ void BooleanGraph::GraphLogger::RegisterRoot(const IGatePtr& gate) noexcept {
 void BooleanGraph::GraphLogger::Log(const IGatePtr& gate) noexcept {
   ++gate_types[gate->type()];
   if (gate->IsModule()) ++num_modules;
-  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
-    gates.insert(arg.first);
-  }
-  for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
-    variables.insert(arg.first);
-  }
-  for (const std::pair<int, ConstantPtr>& arg : gate->constant_args()) {
-    constants.insert(arg.first);
-  }
+  for (const auto& arg : gate->gate_args()) gates.insert(arg.first);
+  for (const auto& arg : gate->variable_args()) variables.insert(arg.first);
+  for (const auto& arg : gate->constant_args()) constants.insert(arg.first);
 }
 
 void BooleanGraph::Log() noexcept {
@@ -766,7 +760,7 @@ void BooleanGraph::GatherInformation(const IGatePtr& gate,
   if (gate->mark()) return;
   gate->mark(true);
   logger->Log(gate);
-  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+  for (const auto& arg : gate->gate_args()) {
     BooleanGraph::GatherInformation(arg.second, logger);
   }
 }
@@ -867,8 +861,7 @@ std::ostream& operator<<(std::ostream& os, const std::shared_ptr<IGate>& gate) {
   const FormulaSig sig = GetFormulaSig(gate);  // Formatting for the formula.
   int num_args = gate->args().size();  // The number of arguments to print.
 
-  using IGatePtr = std::shared_ptr<IGate>;
-  for (const std::pair<int, IGatePtr>& node : gate->gate_args()) {
+  for (const auto& node : gate->gate_args()) {
     if (node.first < 0) formula += "~";  // Negation.
     formula += GetName(node.second);
 
@@ -877,8 +870,7 @@ std::ostream& operator<<(std::ostream& os, const std::shared_ptr<IGate>& gate) {
     os << node.second;
   }
 
-  using VariablePtr = std::shared_ptr<Variable>;
-  for (const std::pair<int, VariablePtr>& basic : gate->variable_args()) {
+  for (const auto& basic : gate->variable_args()) {
     if (basic.first < 0) formula += "~";  // Negation.
     int index = basic.second->index();
     formula += "B" + std::to_string(index);
@@ -888,8 +880,7 @@ std::ostream& operator<<(std::ostream& os, const std::shared_ptr<IGate>& gate) {
     os << basic.second;
   }
 
-  using ConstantPtr = std::shared_ptr<Constant>;
-  for (const std::pair<int, ConstantPtr>& constant : gate->constant_args()) {
+  for (const auto& constant : gate->constant_args()) {
     if (constant.first < 0) formula += "~";  // Negation.
     int index = constant.second->index();
     formula += "H" + std::to_string(index);

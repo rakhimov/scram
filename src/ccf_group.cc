@@ -54,7 +54,7 @@ void CcfGroup::AddDistribution(const ExpressionPtr& distr) {
   assert(!distribution_);
   distribution_ = distr;
   // Define probabilities of all basic events.
-  for (const std::pair<std::string, BasicEventPtr>& mem : members_) {
+  for (const std::pair<const std::string, BasicEventPtr>& mem : members_) {
     mem.second->expression(distribution_);
   }
 }
@@ -97,7 +97,7 @@ void CcfGroup::Validate() {
 void CcfGroup::ApplyModel() {
   // Construct replacement gates for member basic events.
   std::map<std::string, GatePtr> gates;
-  for (const std::pair<std::string, BasicEventPtr>& mem : members_) {
+  for (const std::pair<const std::string, BasicEventPtr>& mem : members_) {
     BasicEventPtr member = mem.second;
     GatePtr new_gate(
         new Gate(member->name(), member->base_path(), member->is_public()));
@@ -141,7 +141,7 @@ void CcfGroup::ConstructCcfBasicEvents(
   for (int i = 0; i < max_level; ++i) {
     std::set<std::set<std::string>> next_level;
     for (const std::set<std::string>& combination : combinations) {
-      for (const std::pair<std::string, BasicEventPtr>& mem : members_) {
+      for (const std::pair<const std::string, BasicEventPtr>& mem : members_) {
         if (!combination.count(mem.first)) {
           std::set<std::string> comb(combination);
           comb.insert(mem.first);
