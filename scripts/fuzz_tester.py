@@ -60,11 +60,14 @@ class Config(object):
         Config.max_limit = 1
 
 
-def generate_input():
+def generate_input(coherent):
     """Calls fault tree generator.
 
     The auto-generated input file is located in the run-time directory
     with the default name given by the fault tree generator.
+
+    Args:
+        coherent: Flag for generation of coherent models.
     """
     cmd = ["./fault_tree_generator.py",
            "-b", "100", "--common-b", "0.4", "--parents-b", "5",
@@ -72,7 +75,7 @@ def generate_input():
            "--seed", str(random.randint(1, 1e8)),
            "--maxprob", "0.5", "--minprob", "0.1"]
     weights = ["--weights-g", "1", "1", "1"]
-    if random.choice([True, False]):
+    if not coherent and random.choice([True, False]):
         weights += ["0.01", "0.1"]  # Add non-coherence
     cmd += weights
     call(cmd)
@@ -133,6 +136,9 @@ def main():
     bdd = "focus on BDD"
     parser.add_argument("--bdd", action="store_true", help=bdd)
 
+    coherent = "focus on coherent models"
+    parser.add_argument("--coherent", action="store_true", help=coherent)
+
     args = parser.parse_args()
 
     if call(["which", "scram"]):
@@ -150,7 +156,7 @@ def main():
         Config.analysis = ["--bdd"]
 
     for i in range(args.num_runs):
-        generate_input()
+        generate_input(args.coherent)
         if call_scram():
             print("SCRAM failed!")
             return 1
