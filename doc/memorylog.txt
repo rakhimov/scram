@@ -1,0 +1,26 @@
+Memory utilization records for the total program.
+Only the highest usage is recorded.
+The build types do not affect the memory as much as the speed.
+Do not confuse this memory usage recordings
+with the actual allocation of the memory by the code.
+The actual memory allocation must be analyzed
+with memory(heap) profilers like Valgrind with Mastif.
+
+The system specs are the same as in the speed recordings.
+
+
+- Input name [flags] :    Best Achieved | Current Consumption (MiB)
+
+
+MOCUS
+-----
+
+- Baobab1 -l 7 :  19 |
+- Baobab1 -l 8 :  35 | 40
+
+
+Initialization and Validation
+-----------------------------
+
+- 10k tree validation  :  70   |
+- 300k tree validation :  1130 |
