@@ -33,7 +33,6 @@ before_script:
     - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 20
     - sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-4.8 20
     - source /opt/qt52/bin/qt52-env.sh
-    - cp ./cmake/CTestConfig.cmake ./
     - mkdir ./install
 
 script:
@@ -50,4 +49,3 @@ after_success:
       --exclude src/logger.cc
       --exclude-pattern .*/src/.*\.h$
       > /dev/null
-    - cp ./cmake/CTestCustom.cmake ./build/ && cd ./build && ctest -D Experimental

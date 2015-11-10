@@ -115,7 +115,6 @@ C++
 
 #. Performance profiling with Gprof_
 #. Code coverage check with Gcov_ and reporting with Coveralls_
-#. Test status dashboard on CDash_
 #. Memory management bugs and leaks with Valgrind_
 #. Static code analysis with Coverity_ and CppCheck_
 #. Cyclomatic complexity analysis with Lizard_
@@ -126,7 +125,6 @@ C++
 .. _Gprof: https://www.cs.utah.edu/dept/old/texinfo/as/gprof.html
 .. _Gcov: https://gcc.gnu.org/onlinedocs/gcc/Gcov.html
 .. _Coveralls: https://coveralls.io/r/rakhimov/scram
-.. _CDash: http://my.cdash.org/index.php?project=SCRAM
 .. _Valgrind: http://valgrind.org/
 .. _Coverity: https://scan.coverity.com/projects/2555
 .. _CppCheck: https://github.com/danmar/cppcheck/

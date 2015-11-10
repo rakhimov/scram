@@ -11,8 +11,6 @@ SCRAM
 .. image:: https://landscape.io/github/rakhimov/scram/develop/landscape.svg?style=plastic
     :target: https://landscape.io/github/rakhimov/scram/develop
     :alt: Code Health
-.. image:: doc/cdash.png
-    :target: http://my.cdash.org/index.php?project=SCRAM
 .. image:: https://badge.waffle.io/rakhimov/scram.png?label=ready&title=Ready
     :target: https://waffle.io/rakhimov/scram
     :alt: 'Stories in Ready'
