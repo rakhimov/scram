@@ -16,15 +16,14 @@ SCRAM
 
 **SCRAM** is a **C**\ommand-line **R**\isk **A**\nalysis **M**\ulti-tool.
 
-SCRAM is under development to be a free and open source probabilistic risk analysis tool
-to perform fault tree analysis, event tree analysis, uncertainty analysis,
-importance analysis, common-cause analysis, and other probabilistic analysis types.
+SCRAM is a free and open source probabilistic risk analysis tool
+that supports the OpenPSA_ Model Exchange Format.
 
 SCRAM is licensed under the GPLv3_.
 The source code and issue/bug tracker are located at `GitHub <https://github.com/rakhimov/scram>`_.
 
-.. _GPLv3:
-    https://github.com/rakhimov/scram/blob/master/LICENSE
+.. _OpenPSA: http://open-psa.org
+.. _GPLv3: https://github.com/rakhimov/scram/blob/master/LICENSE
 
 
 Implemented Features
@@ -37,7 +36,6 @@ Implemented Features
 - Uncertainty analysis with Monte Carlo simulations
 - Fault tree generator
 - Fault tree graphing with Graphviz Dot tool
-- OpenPSA Model Exchange Format
 
 
 Installation
