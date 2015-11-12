@@ -60,13 +60,14 @@ class Config(object):
         Config.max_limit = 1
 
 
-def generate_input(coherent):
+def generate_input(normal, coherent):
     """Calls fault tree generator.
 
     The auto-generated input file is located in the run-time directory
     with the default name given by the fault tree generator.
 
     Args:
+        normal: Flag for models with AND/OR gates only.
         coherent: Flag for generation of coherent models.
     """
     cmd = ["./fault_tree_generator.py",
@@ -74,9 +75,11 @@ def generate_input(coherent):
            "--common-g", "0.2", "--parents-g", "3", "--children", "2.5",
            "--seed", str(random.randint(1, 1e8)),
            "--maxprob", "0.5", "--minprob", "0.1"]
-    weights = ["--weights-g", "1", "1", "1"]
-    if not coherent and random.choice([True, False]):
-        weights += ["0.01", "0.1"]  # Add non-coherence
+    weights = ["--weights-g", "1", "1"]
+    if not normal:
+        weights += ["1"]
+        if not coherent and random.choice([True, False]):
+            weights += ["0.01", "0.1"]  # Add non-coherence
     cmd += weights
     call(cmd)
 
@@ -139,6 +142,9 @@ def main():
     coherent = "focus on coherent models"
     parser.add_argument("--coherent", action="store_true", help=coherent)
 
+    normal = "focus on models only with AND/OR gates"
+    parser.add_argument("--normal", action="store_true", help=normal)
+
     args = parser.parse_args()
 
     if call(["which", "scram"]):
@@ -156,7 +162,7 @@ def main():
         Config.analysis = ["--bdd"]
 
     for i in range(args.num_runs):
-        generate_input(args.coherent)
+        generate_input(args.normal, args.coherent)
         if call_scram():
             print("SCRAM failed!")
             return 1
