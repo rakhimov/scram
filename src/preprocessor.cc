@@ -2075,11 +2075,10 @@ void Preprocessor::ProcessStateDestinations(
     assert(!target->mark());
     assert(target->opti_value() == 1 || target->opti_value() == -1);
     Operator type = target->opti_value() == 1 ? kOrGate : kAndGate;
-    if (target->type() == type) {
+    if (target->type() == type) {  // Reuse of an existing gate.
+      if (target->IsConstant()) continue;  // No need to process.
       target->AddArg(target->opti_value() * node->index(), node);
-      if (target->IsConstant()) {
-        const_gates_.push_back(target);
-      }
+      if (target->IsConstant()) const_gates_.push_back(target);
       assert(!(!target->IsConstant() && target->type() == kNullGate));
       continue;
     }
