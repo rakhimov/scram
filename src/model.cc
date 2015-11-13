@@ -63,7 +63,7 @@ std::shared_ptr<Parameter> Model::GetParameter(const std::string& reference,
     if (container) {
       try {
         return container->parameters().at(target_name);
-      } catch (std::out_of_range& err) {}  // Continue searching.
+      } catch (std::out_of_range&) {}  // Continue searching.
     }
   }
   const std::unordered_map<std::string, ParameterPtr>* parameters =
@@ -75,7 +75,7 @@ std::shared_ptr<Parameter> Model::GetParameter(const std::string& reference,
 
   try {
     return parameters->at(target_name);
-  } catch (std::out_of_range& err) {}
+  } catch (std::out_of_range&) {}
 
   std::string msg = "Undefined parameter " + path.back() + " in reference " +
       reference + " with base path " + base_path;
@@ -98,17 +98,17 @@ std::pair<std::shared_ptr<Event>, std::string> Model::GetEvent(
       try {
         EventPtr event = container->basic_events().at(target_name);
         return {event, "basic-event"};
-      } catch (std::out_of_range& err) {}
+      } catch (std::out_of_range&) {}
 
       try {
         EventPtr event = container->gates().at(target_name);
         return {event, "gate"};
-      } catch (std::out_of_range& err) {}
+      } catch (std::out_of_range&) {}
 
       try {
         EventPtr event = container->house_events().at(target_name);
         return {event, "house-event"};
-      } catch (std::out_of_range& err) {}
+      } catch (std::out_of_range&) {}
     }
   }
   const std::unordered_map<std::string, GatePtr>* gates = &gates_;
@@ -126,17 +126,17 @@ std::pair<std::shared_ptr<Event>, std::string> Model::GetEvent(
   try {
     EventPtr event = basic_events->at(target_name);
     return {event, "basic-event"};
-  } catch (std::out_of_range& err) {}
+  } catch (std::out_of_range&) {}
 
   try {
     EventPtr event = gates->at(target_name);
     return {event, "gate"};
-  } catch (std::out_of_range& err) {}
+  } catch (std::out_of_range&) {}
 
   try {
     EventPtr event = house_events->at(target_name);
     return {event, "house-event"};
-  } catch (std::out_of_range& err) {}
+  } catch (std::out_of_range&) {}
 
   std::string msg = "Undefined event " + path.back() + " in reference " +
                     reference + " with base path " + base_path;
@@ -167,7 +167,7 @@ std::shared_ptr<HouseEvent> Model::GetHouseEvent(const std::string& reference,
     if (container) {
       try {
         return container->house_events().at(target_name);
-      } catch (std::out_of_range& err) {}  // Continue searching.
+      } catch (std::out_of_range&) {}  // Continue searching.
     }
   }
   const std::unordered_map<std::string, HouseEventPtr>* house_events =
@@ -179,7 +179,7 @@ std::shared_ptr<HouseEvent> Model::GetHouseEvent(const std::string& reference,
 
   try {
     return house_events->at(target_name);
-  } catch (std::out_of_range& err) {}
+  } catch (std::out_of_range&) {}
 
   std::string msg = "Undefined house event " + path.back() + " in reference " +
                     reference + " with base path " + base_path;
@@ -210,7 +210,7 @@ std::shared_ptr<BasicEvent> Model::GetBasicEvent(const std::string& reference,
     if (container) {
       try {
         return container->basic_events().at(target_name);
-      } catch (std::out_of_range& err) {}  // Continue searching.
+      } catch (std::out_of_range&) {}  // Continue searching.
     }
   }
   const std::unordered_map<std::string, BasicEventPtr>* basic_events =
@@ -222,7 +222,7 @@ std::shared_ptr<BasicEvent> Model::GetBasicEvent(const std::string& reference,
 
   try {
     return basic_events->at(target_name);
-  } catch (std::out_of_range& err) {}
+  } catch (std::out_of_range&) {}
 
   std::string msg = "Undefined basic event " + path.back() + " in reference " +
                     reference + " with base path " + base_path;
@@ -253,7 +253,7 @@ std::shared_ptr<Gate> Model::GetGate(const std::string& reference,
     if (container) {
       try {
         return container->gates().at(target_name);
-      } catch (std::out_of_range& err) {}  // Continue searching.
+      } catch (std::out_of_range&) {}  // Continue searching.
     }
   }
   const std::unordered_map<std::string, GatePtr>* gates = &gates_;
@@ -264,7 +264,7 @@ std::shared_ptr<Gate> Model::GetGate(const std::string& reference,
 
   try {
     return gates->at(target_name);
-  } catch (std::out_of_range& err) {}  // Continue searching.
+  } catch (std::out_of_range&) {}  // Continue searching.
 
   std::string msg = "Undefined gate " + path.back() + " in reference " +
                     reference + " with base path " + base_path;
@@ -291,7 +291,7 @@ const Component* Model::GetContainer(const std::string& base_path) {
   const Component* container;
   try {
     container = fault_trees_.at(name).get();
-  } catch (std::out_of_range& err) {
+  } catch (std::out_of_range&) {
     throw LogicError("Missing fault tree " + *it);
   }
   for (++it; it != path.end(); ++it) {
@@ -299,7 +299,7 @@ const Component* Model::GetContainer(const std::string& base_path) {
     boost::to_lower(name);
     try {
       container = container->components().at(name).get();
-    } catch (std::out_of_range& err) {
+    } catch (std::out_of_range&) {
       throw LogicError("Undefined component " + *it + " in path " + base_path);
     }
   }
@@ -319,7 +319,7 @@ const Component* Model::GetLocalContainer(const std::string& reference,
       boost::to_lower(name);
       try {
         container = container->components().at(name).get();
-      } catch (std::out_of_range& err) {
+      } catch (std::out_of_range&) {
         return nullptr;  // Not possible to reach locally.
       }
     }
@@ -338,17 +338,17 @@ const Component* Model::GetGlobalContainer(const std::string& reference) {
   const Component* container;
   try {
     container = fault_trees_.at(name).get();
-  } catch (std::out_of_range& err) {
+  } catch (std::out_of_range&) {
     throw ValidationError("Undefined fault tree " + path.front() +
                           " in reference " + reference);
   }
   for (int i = 1; i < path.size() - 1; ++i) {
-    std::string name = path[i];
-    boost::to_lower(name);
+    std::string next_name = path[i];
+    boost::to_lower(next_name);
     try {
-      container = container->components().at(name).get();
-    } catch (std::out_of_range& err) {
-      throw ValidationError("Undefined component " + path[i] +
+      container = container->components().at(next_name).get();
+    } catch (std::out_of_range&) {
+      throw ValidationError("Undefined component " + next_name +
                             " in reference " + reference);
     }
   }

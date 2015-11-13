@@ -28,20 +28,20 @@
 
 namespace scram {
 
-/// @class XMLParser
+/// @class XmlParser
 /// A helper class to hold XML file data
 /// and provide automatic validation.
-class XMLParser {
+class XmlParser {
  public:
   /// Initializes a parser with an XML snippet.
   ///
   /// @param[in] xml_input_snippet  An XML snippet to be used as input.
   ///
   /// @throws ValidationError  There are problems loading the XML snippet.
-  explicit XMLParser(const std::stringstream& xml_input_snippet);
+  explicit XmlParser(const std::stringstream& xml_input_snippet);
 
   /// Resets the parser.
-  ~XMLParser() noexcept;
+  ~XmlParser() noexcept;
 
   /// Validates the file against a schema.
   ///

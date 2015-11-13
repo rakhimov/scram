@@ -146,8 +146,9 @@ class CcfGroup : public Element, public Role {
   /// @param[in] max_level  The max level of grouping.
   /// @param[out] probabilities  Expressions representing probabilities for
   ///                            each level of groupings for CCF events.
-  virtual void CalculateProb(int max_level,
-                             std::map<int, ExpressionPtr>* probabilities) = 0;
+  virtual void CalculateProbabilities(
+      int max_level,
+      std::map<int, ExpressionPtr>* probabilities) = 0;
 
   /// Simple factorial calculation.
   ///
@@ -161,7 +162,7 @@ class CcfGroup : public Element, public Role {
   std::map<std::string, BasicEventPtr> members_;  ///< Members of CCF groups.
   ExpressionPtr distribution_;  ///< The probability distribution of the group.
   /// CCF factors for models to get CCF probabilities.
-  std::vector<std::pair<int, ExpressionPtr> > factors_;
+  std::vector<std::pair<int, ExpressionPtr>> factors_;
 
  private:
   std::string model_;  ///< Common cause model type.
@@ -197,8 +198,9 @@ class BetaFactorModel : public CcfGroup {
       int max_level,
       std::map<BasicEventPtr, std::set<std::string> >* new_events) override;
 
-  void CalculateProb(int max_level,
-                     std::map<int, ExpressionPtr>* probabilities) override;
+  void CalculateProbabilities(
+      int max_level,
+      std::map<int, ExpressionPtr>* probabilities) override;
 };
 
 /// @class MglModel
@@ -229,8 +231,9 @@ class MglModel : public CcfGroup {
   void AddFactor(const ExpressionPtr& factor, int level) override;
 
  private:
-  void CalculateProb(int max_level,
-                     std::map<int, ExpressionPtr>* probabilities) override;
+  void CalculateProbabilities(
+      int max_level,
+      std::map<int, ExpressionPtr>* probabilities) override;
 };
 
 /// @class AlphaFactorModel
@@ -250,8 +253,9 @@ class AlphaFactorModel : public CcfGroup {
       : CcfGroup(name, "alpha-factor", base_path, is_public) {}
 
  private:
-  void CalculateProb(int max_level,
-                     std::map<int, ExpressionPtr>* probabilities) override;
+  void CalculateProbabilities(
+      int max_level,
+      std::map<int, ExpressionPtr>* probabilities) override;
 };
 
 /// @class PhiFactorModel
@@ -281,8 +285,9 @@ class PhiFactorModel : public CcfGroup {
   void Validate() override;
 
  private:
-  void CalculateProb(int max_level,
-                     std::map<int, ExpressionPtr>* probabilities) override;
+  void CalculateProbabilities(
+      int max_level,
+      std::map<int, ExpressionPtr>* probabilities) override;
 };
 
 }  // namespace scram

@@ -70,7 +70,7 @@ Core C++ Code
 - In definitions of class member functions:
 
     * Explicitly qualify non-virtual member and inherited function calls
-        with the corresponding class names, i.e., ``ClassName::Foo()``.
+      with the corresponding class names, i.e., ``ClassName::Foo()``.
     * Qualify virtual functions to be overridden by design as ``this->Foo()``.
     * Free functions in the same namespace may be unqualified, i.e., ``Foo()``.
 
@@ -83,6 +83,27 @@ Core C++ Code
   when defining a function in a class definition.
   It is implicitly ``inline``.
 
+- Domain-specific ``Probability`` naming rules:
+
+    * If a probability variable is a member variable of a class
+      abbreviate it to ``p_``.
+      Its getter/setter functions should have
+      corresponding names, i.e., ``p()`` and ``p(double value)``.
+      Append extra description after ``p_``, i.e., ``p_total_``.
+      Avoid abbreviating the name to ``prob``,
+      or fully spelling it to ``probability``.
+
+    * For non-member probability variables:
+
+        + Prefer prefixing with ``p_``
+          if the name has more description to the probability value, i.e., ``p_not_event``.
+        + Prefer ``prob`` abbreviation
+          for single word names indicating general probability values.
+
+    * Prefer spelling ``Probability`` fully for cases not covered above
+      (class/function/namespace/typedef/...), i.e., ``CalculateProbability``.
+      Avoid abbreviating the name, i.e., ``CalculateProb``.
+
 .. _C++ Core Guidelines: https://github.com/isocpp/CppCoreGuidelines
 
 
@@ -94,7 +115,6 @@ C++
 
 #. Performance profiling with Gprof_
 #. Code coverage check with Gcov_ and reporting with Coveralls_
-#. Test status dashboard on CDash_
 #. Memory management bugs and leaks with Valgrind_
 #. Static code analysis with Coverity_ and CppCheck_
 #. Cyclomatic complexity analysis with Lizard_
@@ -105,7 +125,6 @@ C++
 .. _Gprof: https://www.cs.utah.edu/dept/old/texinfo/as/gprof.html
 .. _Gcov: https://gcc.gnu.org/onlinedocs/gcc/Gcov.html
 .. _Coveralls: https://coveralls.io/r/rakhimov/scram
-.. _CDash: http://my.cdash.org/index.php?project=SCRAM
 .. _Valgrind: http://valgrind.org/
 .. _Coverity: https://scan.coverity.com/projects/2555
 .. _CppCheck: https://github.com/danmar/cppcheck/
@@ -121,10 +140,12 @@ Python
 #. Code quality and style check with Pylint_
 #. Profiling with PyVmMonitor_
 #. Code coverage check with coverage_
+#. Continuous code quality control on Landscape_
 
 .. _Pylint: http://www.pylint.org/
 .. _PyVmMonitor: http://www.pyvmmonitor.com/
 .. _coverage: http://nedbatchelder.com/code/coverage/
+.. _Landscape: https://landscape.io/github/rakhimov/scram/develop/
 
 
 Targets

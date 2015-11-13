@@ -280,8 +280,9 @@ void FaultTreeAnalyzer<Algorithm>::Analyze() noexcept {
   CLOCK(analysis_time);
 
   CLOCK(graph_creation);
-  graph_ = std::unique_ptr<BooleanGraph>(new BooleanGraph(
-          FaultTreeDescriptor::top_event(), kSettings_.ccf_analysis()));
+  graph_ = std::unique_ptr<BooleanGraph>(
+      new BooleanGraph(FaultTreeDescriptor::top_event(),
+                       kSettings_.ccf_analysis()));
   LOG(DEBUG2) << "Boolean graph is created in " << DUR(graph_creation);
 
   CLOCK(prep_time);  // Overall preprocessing time.

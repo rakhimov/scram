@@ -43,9 +43,9 @@ Config::Config(const std::string& config_file) : output_path_("") {
   stream << file_stream.rdbuf();
   file_stream.close();
 
-  std::unique_ptr<XMLParser> parser;
+  std::unique_ptr<XmlParser> parser;
   try {
-    parser = std::unique_ptr<XMLParser>(new XMLParser(stream));
+    parser = std::unique_ptr<XmlParser>(new XmlParser(stream));
     std::stringstream schema;
     std::string schema_path = Env::config_schema();
     std::ifstream schema_stream(schema_path.c_str());

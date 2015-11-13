@@ -146,7 +146,7 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
   stream << file_stream.rdbuf();
   file_stream.close();
 
-  XMLParser* parser(new XMLParser(stream));
+  XmlParser* parser = new XmlParser(stream);
   parsers_.emplace_back(parser);
   parser->Validate(schema_);
 
@@ -416,16 +416,16 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
       if (element_type == "event") {  // Undefined type yet.
         std::pair<EventPtr, std::string> target =
             model_->GetEvent(name, base_path);
-        EventPtr event = target.first;
-        event->orphan(false);
-        std::string type = target.second;
-        if (type == "gate") {
-          formula->AddArgument(std::static_pointer_cast<Gate>(event));
-        } else if (type == "basic-event") {
-          formula->AddArgument(std::static_pointer_cast<BasicEvent>(event));
+        EventPtr undefined = target.first;
+        undefined->orphan(false);
+        std::string type_inference = target.second;
+        if (type_inference == "gate") {
+          formula->AddArgument(std::static_pointer_cast<Gate>(undefined));
+        } else if (type_inference == "basic-event") {
+          formula->AddArgument(std::static_pointer_cast<BasicEvent>(undefined));
         } else {
-          assert(type == "house-event");
-          formula->AddArgument(std::static_pointer_cast<HouseEvent>(event));
+          assert(type_inference == "house-event");
+          formula->AddArgument(std::static_pointer_cast<HouseEvent>(undefined));
         }
       } else if (element_type == "gate") {
         GatePtr gate = model_->GetGate(name, base_path);
@@ -839,7 +839,7 @@ void Initializer::DefineCcfFactor(const xmlpp::Element* factor_node,
 
 void Initializer::ValidateInitialization() {
   // Check if all gates have no cycles.
-  for (const std::pair<std::string, GatePtr>& gate : model_->gates()) {
+  for (const std::pair<const std::string, GatePtr>& gate : model_->gates()) {
     std::vector<std::string> cycle;
     if (cycle::DetectCycle<Gate, Formula>(gate.second.get(), &cycle)) {
       std::string msg =
@@ -852,11 +852,11 @@ void Initializer::ValidateInitialization() {
   // Check if all primary events have expressions for probability analysis.
   if (settings_.probability_analysis()) {
     std::string msg = "";
-    for (const std::pair<std::string, BasicEventPtr>& event :
+    for (const std::pair<const std::string, BasicEventPtr>& event :
          model_->basic_events()) {
       if (!event.second->has_expression()) msg += event.second->name() + "\n";
     }
-    for (const std::pair<std::string, HouseEventPtr>& event :
+    for (const std::pair<const std::string, HouseEventPtr>& event :
          model_->house_events()) {
       if (!event.second->has_expression()) msg += event.second->name() + "\n";
     }
@@ -871,13 +871,16 @@ void Initializer::ValidateInitialization() {
 
   Initializer::ValidateExpressions();
 
-  for (const std::pair<std::string, CcfGroupPtr>& group : model_->ccf_groups())
+  for (const std::pair<const std::string, CcfGroupPtr>& group :
+       model_->ccf_groups()) {
     group.second->Validate();
+  }
 }
 
 void Initializer::ValidateExpressions() {
   // Check for cycles in parameters. This must be done before expressions.
-  for (const std::pair<std::string, ParameterPtr>& p : model_->parameters()) {
+  for (const std::pair<const std::string, ParameterPtr>& p :
+       model_->parameters()) {
     std::vector<std::string> cycle;
     if (cycle::DetectCycle<Parameter, Expression>(p.second.get(), &cycle)) {
       std::string msg = "Detected a cycle in " + p.second->name() +
@@ -898,7 +901,7 @@ void Initializer::ValidateExpressions() {
   if (settings_.probability_analysis()) {
     std::stringstream msg;
     msg << "";
-    for (const std::pair<std::string, CcfGroupPtr>& group :
+    for (const std::pair<const std::string, CcfGroupPtr>& group :
          model_->ccf_groups()) {
       try {
         group.second->ValidateDistribution();
@@ -906,7 +909,7 @@ void Initializer::ValidateExpressions() {
         msg << group.second->name() << " : " << err.msg() << "\n";
       }
     }
-    for (const std::pair<std::string, BasicEventPtr>& event :
+    for (const std::pair<const std::string, BasicEventPtr>& event :
          model_->basic_events()) {
       try {
         event.second->Validate();
@@ -929,7 +932,7 @@ void Initializer::SetupForAnalysis() {
   }
 
   // CCF groups must apply models to basic event members.
-  for (const std::pair<std::string, CcfGroupPtr>& group :
+  for (const std::pair<const std::string, CcfGroupPtr>& group :
        model_->ccf_groups()) {
     group.second->ApplyModel();
   }

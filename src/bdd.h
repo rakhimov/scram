@@ -213,12 +213,12 @@ class Ite : public NonTerminal, public ComplementEdge {
   using NonTerminal::NonTerminal;  ///< Constructor with index and order.
 
   /// @returns The probability of the function graph.
-  double prob() const { return prob_; }
+  double p() const { return p_; }
 
   /// Sets the probability of the function graph.
   ///
   /// @param[in] value  Calculated value for the probability.
-  void prob(double value) { prob_ = value; }
+  void p(double value) { p_ = value; }
 
   /// @returns Saved results of importance factor calculations.
   double factor() const { return factor_; }
@@ -238,7 +238,7 @@ class Ite : public NonTerminal, public ComplementEdge {
   }
 
  private:
-  double prob_ = 0;  ///< Probability of the function graph.
+  double p_ = 0;  ///< Probability of the function graph.
   double factor_ = 0;  ///< Importance factor calculation results.
 };
 
@@ -479,7 +479,6 @@ class Bdd {
   /// @note Marks will propagate to modules as well.
   void ClearMarks(const VertexPtr& vertex, bool mark) noexcept;
 
-  const BooleanGraph* fault_tree_;  ///< The main fault tree.
   const Settings kSettings_;  ///< Analysis settings.
   Function root_;  ///< The root function of this BDD.
 

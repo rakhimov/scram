@@ -81,7 +81,7 @@ void Component::AddCcfGroup(const CcfGroupPtr& ccf_group) {
   if (ccf_groups_.count(name)) {
     throw ValidationError("Duplicate CCF group " + ccf_group->name());
   }
-  for (const std::pair<std::string, BasicEventPtr>& member :
+  for (const std::pair<const std::string, BasicEventPtr>& member :
        ccf_group->members()) {
     if (gates_.count(member.first) || basic_events_.count(member.first) ||
         house_events_.count(member.first)) {
@@ -103,7 +103,7 @@ void Component::AddComponent(ComponentPtr component) {
 }
 
 void Component::GatherGates(std::unordered_set<GatePtr>* gates) {
-  for (const std::pair<std::string, GatePtr>& gate : gates_) {
+  for (const std::pair<const std::string, GatePtr>& gate : gates_) {
     gates->insert(gate.second);
   }
   for (const std::pair<const std::string, ComponentPtr>& comp : components_) {

@@ -30,6 +30,7 @@
 #ifndef SCRAM_SRC_BOOLEAN_GRAPH_H_
 #define SCRAM_SRC_BOOLEAN_GRAPH_H_
 
+#include <algorithm>
 #include <array>
 #include <cassert>
 #include <functional>
@@ -176,7 +177,7 @@ class Node : public NodeParentManager {
   bool Visited() const { return visits_[0] ? true : false; }
 
   /// Clears all the visit information. Resets the visit times to 0s.
-  void ClearVisits() { return std::fill(visits_, visits_ + 3, 0); }
+  void ClearVisits() { std::fill_n(visits_, 3, 0); }
 
   /// @returns The positive count of this node.
   int pos_count() const { return pos_count_; }
@@ -1011,6 +1012,73 @@ class BooleanGraph {
   ///
   /// @note Gate marks are used for linear time traversal.
   void ClearNodeOrders(const IGatePtr& gate) noexcept;
+
+  /// @class GraphLogger
+  /// Container for properties of Boolean Graphs.
+  struct GraphLogger {
+    /// Special handling of the root gate
+    /// because it doesn't have parents.
+    ///
+    /// @param[in] gate  The root gate of the Boolean graph.
+    void RegisterRoot(const IGatePtr& gate) noexcept;
+
+    /// Collects data from a gate.
+    ///
+    /// @param[in] gate  Valid gate with arguments.
+    ///
+    /// @pre The gate has not been passed before.
+    void Log(const IGatePtr& gate) noexcept;
+
+    /// @param[in] container  Collection of indices of elements.
+    ///
+    /// @returns The total number of unique elements.
+    int Count(const std::unordered_set<int>& container) noexcept {
+      return std::count_if(container.begin(), container.end(),
+                           [&container](int index) {
+        return index > 0 || !container.count(-index);
+      });
+    }
+
+    /// @param[in] container  Collection of indices of elements.
+    ///
+    /// @returns The total number of complement elements.
+    int CountComplements(const std::unordered_set<int>& container) noexcept {
+      return std::count_if(container.begin(), container.end(),
+                           [](int index) { return index < 0; });
+    }
+
+    /// @param[in] container  Collection of indices of elements.
+    ///
+    /// @returns The number of literals appearing as positive and negative.
+    int CountOverlap(const std::unordered_set<int>& container) noexcept {
+      return std::count_if(container.begin(), container.end(),
+                           [&container](int index) {
+        return index < 0 && container.count(-index);
+      });
+    }
+
+    int num_modules = 0;  ///< The number of module gates.
+    std::unordered_set<int> gates;  ///< Collection of gates.
+    std::array<int, kNumOperators> gate_types{};  ///< Gate type counts.
+    std::unordered_set<int> variables;  ///< Collection of variables.
+    std::unordered_set<int> constants;  ///< Collection of constants.
+  };
+
+  /// Writes Boolean graph properties into logs.
+  ///
+  /// @pre The graph is valid and well formed.
+  /// @pre Logging cutoff level is Debug 4 or higher.
+  ///
+  /// @post Gate marks are clear.
+  ///
+  /// @warning Gate marks are manipulated.
+  void Log() noexcept;
+
+  /// Traverses a Boolean graph to collect information.
+  ///
+  /// @param[in] gate  The starting gate for traversal.
+  /// @param[in,out] logger  A container with properties of the graph.
+  void GatherInformation(const IGatePtr& gate, GraphLogger* logger) noexcept;
 
   IGatePtr root_;  ///< The root gate of this graph.
   std::vector<BasicEventPtr> basic_events_;  ///< Mapping for basic events.

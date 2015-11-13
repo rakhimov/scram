@@ -154,13 +154,13 @@ void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
 
   // Report the setup for optional uncertainty analysis.
   if (settings.uncertainty_analysis()) {
-    xmlpp::Element* quant = information->add_child("calculated-quantity");
+    quant = information->add_child("calculated-quantity");
     quant->set_attribute("name", "Uncertainty Analysis");
     quant->set_attribute(
         "definition",
         "Calculation of uncertainties with the Monte Carlo method");
 
-    xmlpp::Element* methods = information->add_child("calculation-method");
+    methods = information->add_child("calculation-method");
     methods->set_attribute("name", "Monte Carlo");
     xmlpp::Element* limits = methods->add_child("limits");
     limits->add_child("number-of-trials")

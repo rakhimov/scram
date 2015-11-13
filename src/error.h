@@ -36,8 +36,12 @@ class Error : public std::exception {
   /// @param[in] msg  The message to be passed with this error.
   explicit Error(std::string msg);
 
+  Error(const Error&) = default;  ///< Explicit declaration.
+
+  virtual ~Error() noexcept = default;
+
   /// @returns The error message.
-  virtual const char* what() const throw();
+  const char* what() const noexcept override;
 
   /// @returns The error message.
   const std::string& msg() const { return msg_; }
@@ -49,8 +53,6 @@ class Error : public std::exception {
     msg_ = msg;
     thrown_ = kPrefix_ + msg;
   }
-
-  virtual ~Error() throw() {}
 
  protected:
   /// The error message.
@@ -66,50 +68,35 @@ class Error : public std::exception {
 /// For example, negative probability.
 class ValueError : public Error {
  public:
-  /// Constructs a new value error with a provided message.
-  ///
-  /// @param[in] msg  The message to be passed with this error.
-  explicit ValueError(std::string msg) : Error(msg) {}
+  using Error::Error;  ///< An error with a message.
 };
 
 /// @class ValidationError
 /// For validating input parameters or user arguments.
 class ValidationError : public Error {
  public:
-  /// Constructs a new validation error with a provided message.
-  ///
-  /// @param[in] msg  The message to be passed with this error.
-  explicit ValidationError(std::string msg) : Error(msg) {}
+  using Error::Error;  ///< An error with a message.
 };
 
 /// @class RedefinitionError
 /// For cases when events or practically anything is redefined.
 class RedefinitionError : public ValidationError {
  public:
-  /// Constructs a new redefinition error with a provided message.
-  ///
-  /// @param[in] msg  The message to be passed with this error.
-  explicit RedefinitionError(std::string msg) : ValidationError(msg) {}
+  using ValidationError::ValidationError;  ///< An error with a message.
 };
 
 /// @class DuplicateArgumentError
 /// This error indicates that arguments must be unique.
 class DuplicateArgumentError : public ValidationError {
  public:
-  /// Constructs a new duplicate argument error with a provided message.
-  ///
-  /// @param[in] msg  The message to be passed with this error.
-  explicit DuplicateArgumentError(std::string msg) : ValidationError(msg) {}
+  using ValidationError::ValidationError;  ///< An error with a message.
 };
 
 /// @class IOError
 /// For input/output related errors.
 class IOError : public Error {
  public:
-  /// Constructs a new io error with a provided message.
-  ///
-  /// @param[in] msg  The message to be passed with this error.
-  explicit IOError(std::string msg) : Error(msg) {}
+  using Error::Error;  ///< An error with a message.
 };
 
 /// @class InvalidArgument
@@ -117,10 +104,7 @@ class IOError : public Error {
 /// to indicate unacceptable arguments.
 class InvalidArgument : public Error {
  public:
-  /// Constructs a new invalid argument error with a provided message.
-  ///
-  /// @param[in] msg  The message to be passed with this error.
-  explicit InvalidArgument(std::string msg) : Error(msg) {}
+  using Error::Error;  ///< An error with a message.
 };
 
 /// @class LogicError
@@ -129,10 +113,7 @@ class InvalidArgument : public Error {
 /// or use of functionality in ways not designed to.
 class LogicError : public Error {
  public:
-  /// Constructs a new logic error with a provided message.
-  ///
-  /// @param[in] msg  The message to be passed with this error.
-  explicit LogicError(std::string msg) : Error(msg) {}
+  using Error::Error;  ///< An error with a message.
 };
 
 /// @class IllegalOperation
@@ -142,10 +123,7 @@ class LogicError : public Error {
 /// the call of the virtual function of the base class.
 class IllegalOperation : public Error {
  public:
-  /// Constructs a new illegal operation error with a provided message.
-  ///
-  /// @param[in] msg  The message to be passed with this error.
-  explicit IllegalOperation(std::string msg) : Error(msg) {}
+  using Error::Error;  ///< An error with a message.
 };
 
 }  // namespace scram

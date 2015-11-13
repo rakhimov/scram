@@ -54,7 +54,7 @@ void CcfGroup::AddDistribution(const ExpressionPtr& distr) {
   assert(!distribution_);
   distribution_ = distr;
   // Define probabilities of all basic events.
-  for (const std::pair<std::string, BasicEventPtr>& mem : members_) {
+  for (const std::pair<const std::string, BasicEventPtr>& mem : members_) {
     mem.second->expression(distribution_);
   }
 }
@@ -97,7 +97,7 @@ void CcfGroup::Validate() {
 void CcfGroup::ApplyModel() {
   // Construct replacement gates for member basic events.
   std::map<std::string, GatePtr> gates;
-  for (const std::pair<std::string, BasicEventPtr>& mem : members_) {
+  for (const std::pair<const std::string, BasicEventPtr>& mem : members_) {
     BasicEventPtr member = mem.second;
     GatePtr new_gate(
         new Gate(member->name(), member->base_path(), member->is_public()));
@@ -110,7 +110,7 @@ void CcfGroup::ApplyModel() {
   int max_level = factors_.back().first;  // Assumes that factors are
                                           // sequential.
   std::map<int, ExpressionPtr> probabilities;  // The level is position + 1.
-  this->CalculateProb(max_level, &probabilities);
+  this->CalculateProbabilities(max_level, &probabilities);
 
   // Mapping of new basic events and their parents.
   std::map<BasicEventPtr, std::set<std::string>> new_events;
@@ -141,7 +141,7 @@ void CcfGroup::ConstructCcfBasicEvents(
   for (int i = 0; i < max_level; ++i) {
     std::set<std::set<std::string>> next_level;
     for (const std::set<std::string>& combination : combinations) {
-      for (const std::pair<std::string, BasicEventPtr>& mem : members_) {
+      for (const std::pair<const std::string, BasicEventPtr>& mem : members_) {
         if (!combination.count(mem.first)) {
           std::set<std::string> comb(combination);
           comb.insert(mem.first);
@@ -194,7 +194,7 @@ void BetaFactorModel::ConstructCcfBasicEvents(
   }
 }
 
-void BetaFactorModel::CalculateProb(
+void BetaFactorModel::CalculateProbabilities(
     int max_level,
     std::map<int, ExpressionPtr>* probabilities) {
   assert(probabilities->empty());
@@ -221,8 +221,9 @@ void MglModel::AddFactor(const ExpressionPtr& factor, int level) {
   CcfGroup::factors_.emplace_back(level, factor);
 }
 
-void MglModel::CalculateProb(int max_level,
-                             std::map<int, ExpressionPtr>* probabilities) {
+void MglModel::CalculateProbabilities(
+    int max_level,
+    std::map<int, ExpressionPtr>* probabilities) {
   assert(factors_.size() == max_level - 1);
 
   ExpressionPtr one(new ConstantExpression(1.0));
@@ -247,7 +248,7 @@ void MglModel::CalculateProb(int max_level,
   assert(probabilities->size() == max_level);
 }
 
-void AlphaFactorModel::CalculateProb(
+void AlphaFactorModel::CalculateProbabilities(
     int max_level,
     std::map<int, ExpressionPtr>* probabilities) {
   assert(probabilities->empty());
@@ -296,7 +297,7 @@ void PhiFactorModel::Validate() {
   }
 }
 
-void PhiFactorModel::CalculateProb(
+void PhiFactorModel::CalculateProbabilities(
     int max_level,
     std::map<int, ExpressionPtr>* probabilities) {
   assert(probabilities->empty());

@@ -28,7 +28,7 @@
 
 namespace scram {
 
-XMLParser::XMLParser(const std::stringstream& xml_input_snippet)
+XmlParser::XmlParser(const std::stringstream& xml_input_snippet)
     : parser_(std::unique_ptr<xmlpp::DomParser>(new xmlpp::DomParser())) {
   try {
     parser_->parse_memory(xml_input_snippet.str());
@@ -38,9 +38,9 @@ XMLParser::XMLParser(const std::stringstream& xml_input_snippet)
   }
 }
 
-XMLParser::~XMLParser() noexcept { parser_.reset(); }
+XmlParser::~XmlParser() noexcept { parser_.reset(); }
 
-void XMLParser::Validate(const std::stringstream& xml_schema_snippet) {
+void XmlParser::Validate(const std::stringstream& xml_schema_snippet) {
   RelaxNGValidator validator;
   validator.ParseMemory(xml_schema_snippet.str());
   validator.Validate(parser_->get_document());

@@ -132,7 +132,7 @@ double ImportanceAnalyzer<Bdd>::CalculateMif(const VertexPtr& vertex, int order,
 double ImportanceAnalyzer<Bdd>::RetrieveProbability(
     const VertexPtr& vertex) noexcept {
   if (vertex->terminal()) return 1;
-  return Ite::Ptr(vertex)->prob();
+  return Ite::Ptr(vertex)->p();
 }
 
 }  // namespace scram

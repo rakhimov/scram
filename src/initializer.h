@@ -381,7 +381,7 @@ class Initializer {
   static std::stringstream schema_;
 
   /// Parsers with all documents saved for later access.
-  std::vector<std::unique_ptr<XMLParser>> parsers_;
+  std::vector<std::unique_ptr<XmlParser>> parsers_;
 
   /// Map roots of documents to files. This is for error reporting.
   std::map<const xmlpp::Node*, std::string> doc_to_file_;

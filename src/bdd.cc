@@ -47,8 +47,7 @@ ComplementEdge::ComplementEdge() : complement_edge_(false) {}
 ComplementEdge::~ComplementEdge() {}  // Default pure virtual destructor.
 
 Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
-    : fault_tree_(fault_tree),
-      kSettings_(settings),
+    : kSettings_(settings),
       kOne_(std::make_shared<Terminal>(true)),
       function_id_(2) {
   CLOCK(init_time);
@@ -89,10 +88,10 @@ const Bdd::Function& Bdd::IfThenElse(const IGatePtr& gate) noexcept {
   Function& result = gates_[gate->index()];
   if (result.vertex) return result;
   std::vector<Function> args;
-  for (const std::pair<int, VariablePtr>& arg : gate->variable_args()) {
+  for (const std::pair<const int, VariablePtr>& arg : gate->variable_args()) {
     args.push_back({arg.first < 0, Bdd::IfThenElse(arg.second)});
   }
-  for (const std::pair<int, IGatePtr>& arg : gate->gate_args()) {
+  for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
     const Function& res = Bdd::IfThenElse(arg.second);
     if (arg.second->IsModule()) {
       ItePtr proxy = Bdd::CreateModuleProxy(arg.second);
@@ -287,7 +286,7 @@ Triplet Bdd::GetSignature(Operator type,
   min_id *= min_id == arg_one->id() ? sign_one : sign_two;
   max_id *= max_id == arg_one->id() ? sign_one : sign_two;
 
-  std::array<int, 3> sig = {0, 0, 0};  // Signature of the operation.
+  std::array<int, 3> sig;  // Signature of the operation.
   switch (type) {  /// @todo Detect equal calculations with complements.
     case kOrGate:
       sig[0] = min_id;

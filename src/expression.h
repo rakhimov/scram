@@ -718,7 +718,7 @@ class Mul : public Expression {
   /// Negative values may introduce sign cancellation.
   ///
   /// @returns Minimum possible value of the product.
-  double Min() noexcept { return Mul::GetExtremum(/*max=*/false); };
+  double Min() noexcept { return Mul::GetExtremum(/*max=*/false); }
 
  private:
   /// @param[in] maximum  Flag to return maximum value.
@@ -753,7 +753,7 @@ class Div : public Expression {
   /// Negative values may introduce sign cancellation.
   ///
   /// @returns Minimum value for division of arguments.
-  double Min() noexcept { return Div::GetExtremum(/*max=*/false); };
+  double Min() noexcept { return Div::GetExtremum(/*max=*/false); }
 
  private:
   /// @param[in] maximum  Flag to return maximum value.
