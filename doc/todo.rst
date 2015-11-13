@@ -6,7 +6,7 @@ Low Hanging Fruits
 ==================
 
 - `Issues on GitHub <https://github.com/rakhimov/scram/issues>`_
-- `TODO list in the code <https://rakhimov.github.io/scram/api/todo.html>`_
+- `TODO list in the code <http://scram-pra.org/api/todo.html>`_
 
 
 .. note:: This To-Do list is for features with high uncertainties.
