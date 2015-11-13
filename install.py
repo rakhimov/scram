@@ -109,8 +109,7 @@ def main():
     localdir = absexpanduser("~/.local")
 
     description = "A SCRAM installation helper script. " +\
-                  "For more information, please see " +\
-                  "rakhimov.github.io/scram"
+                  "For more information, please see http://scram-pra.org"
     parser = ap.ArgumentParser(description=description)
 
     build_dir = "where to place the build directory"

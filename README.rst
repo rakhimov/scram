@@ -42,8 +42,8 @@ The documentation_ contains a full description of SCRAM,
 its current capabilities, and future additions.
 
 .. _OpenPSA: http://open-psa.org
-.. _MEF Support: http://rakhimov.github.io/scram/doc/opsa_support.html
-.. _documentation: http://rakhimov.github.io/scram
+.. _MEF Support: http://scram-pra.org/doc/opsa_support.html
+.. _documentation: http://scram-pra.org
 .. _Qt: http://qt-project.org/
 
 .. contents:: **Table of Contents**
