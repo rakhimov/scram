@@ -42,8 +42,29 @@ Zbdd::Zbdd(const Bdd* bdd, const Settings& settings) noexcept
   LOG(DEBUG2) << "Created ZBDD from BDD in " << DUR(init_time);
 
   Zbdd::ClearMarks(root_);
-  int64_t number = Zbdd::CountCutSets(root_);
-  LOG(DEBUG3) << "There are " << number << " cut sets in total.";
+  LOG(DEBUG3) << "There are " << Zbdd::CountCutSets(root_) << " cut sets.";
+  Zbdd::ClearMarks(root_);
+}
+
+Zbdd::Zbdd(const BooleanGraph* fault_tree, const Settings& settings) noexcept
+    : Zbdd::Zbdd(settings) {
+  CLOCK(init_time);
+  LOG(DEBUG2) << "Creating ZBDD from Boolean Graph...";
+  if (fault_tree->root()->IsConstant()) {
+    if (fault_tree->root()->state() == kNullState) {
+      root_ = kEmpty_;
+    } else {
+      root_ = kBase_;
+    }
+  } else {
+    root_ = Zbdd::ConvertGraph(fault_tree->root());
+  }
+  LOG(DEBUG4) << "# of ZBDD nodes created: " << set_id_ - 1;
+  LOG(DEBUG4) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);
+  LOG(DEBUG2) << "Created ZBDD from BDD in " << DUR(init_time);
+
+  Zbdd::ClearMarks(root_);
+  LOG(DEBUG3) << "There are " << Zbdd::CountCutSets(root_) << " cut sets.";
   Zbdd::ClearMarks(root_);
 }
 
@@ -112,6 +133,64 @@ std::shared_ptr<Vertex> Zbdd::ConvertBdd(const VertexPtr& vertex,
   return result;
 }
 
+std::shared_ptr<Vertex> Zbdd::ConvertGraph(const IGatePtr& gate) noexcept {
+  assert(!gate->IsConstant() && "Unexpected constant gate!");
+  VertexPtr& result = gates_[gate->index()];
+  if (result) return result;
+  std::vector<VertexPtr> args;
+  for (const std::pair<const int, VariablePtr>& arg : gate->variable_args()) {
+    assert(arg.first > 0 && "Cannot handle non-coherent graphs.");
+    args.push_back(Zbdd::ConvertGraph(arg.second));
+  }
+  for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
+    assert(arg.first > 0 && "Cannot handle non-coherent graphs.");
+    VertexPtr res = Zbdd::ConvertGraph(arg.second);
+    if (arg.second->IsModule()) {
+      args.push_back(Zbdd::CreateModuleProxy(arg.second));
+      modules_.emplace(arg.second->index(), res);
+    } else {
+      args.push_back(res);
+    }
+  }
+  std::sort(args.begin(), args.end(),
+            [](const VertexPtr& lhs, const VertexPtr& rhs) {
+    if (lhs->terminal()) return true;
+    if (rhs->terminal()) return false;
+    return SetNode::Ptr(lhs)->order() > SetNode::Ptr(rhs)->order();
+  });
+  auto it = args.cbegin();
+  result = *it;
+  for (++it; it != args.cend(); ++it) {
+    result = Zbdd::Apply(gate->type(), result, *it);
+  }
+  assert(result);
+  return result;
+}
+
+std::shared_ptr<SetNode> Zbdd::ConvertGraph(
+    const VariablePtr& variable) noexcept {
+  SetNodePtr& in_table = unique_table_[{variable->index(), 1, 0}];
+  if (in_table) return in_table;
+  in_table = std::make_shared<SetNode>(variable->index(), variable->order());
+  in_table->id(set_id_++);
+  in_table->high(kBase_);
+  in_table->low(kEmpty_);
+  return in_table;
+}
+
+std::shared_ptr<SetNode> Zbdd::CreateModuleProxy(
+    const IGatePtr& gate) noexcept {
+  assert(gate->IsModule());
+  SetNodePtr& in_table = unique_table_[{gate->index(), 1, 0}];
+  if (in_table) return in_table;
+  in_table = std::make_shared<SetNode>(gate->index(), gate->order());
+  in_table->module(true);  // The main difference.
+  in_table->id(set_id_++);
+  in_table->high(kBase_);
+  in_table->low(kEmpty_);
+  return in_table;
+}
+
 std::shared_ptr<Vertex> Zbdd::Apply(Operator type, const VertexPtr& arg_one,
                                     const VertexPtr& arg_two) noexcept {
   assert(arg_one->id() && arg_two->id());  // Both are processed nodes.
@@ -145,7 +224,7 @@ std::shared_ptr<Vertex> Zbdd::Apply(Operator type, const TerminalPtr& term_one,
       if (!term_one->value() || !term_two->value()) return kEmpty_;
       return kBase_;
     default:
-      assert(false && "Only Union and Intersection operations are supported!");
+      assert(false && "Unsupported Boolean operation on ZBDD.");
   }
 }
 
@@ -159,7 +238,7 @@ std::shared_ptr<Vertex> Zbdd::Apply(Operator type, const SetNodePtr& set_node,
       if (!term->value()) return kEmpty_;
       return set_node;
     default:
-      assert(false && "Only Union and Intersection operations are supported!");
+      assert(false && "Unsupported Boolean operation on ZBDD.");
   }
 }
 
@@ -184,7 +263,7 @@ std::shared_ptr<Vertex> Zbdd::Apply(Operator type, const SetNodePtr& arg_one,
         low = Zbdd::Apply(type, arg_one->low(), arg_two->low());
         break;
       default:
-        assert(false && "Unsupported Boolean operation over sets.");
+        assert(false && "Unsupported Boolean operation on ZBDD.");
     }
   } else {
     assert(arg_one->order() < arg_two->order());
@@ -198,9 +277,12 @@ std::shared_ptr<Vertex> Zbdd::Apply(Operator type, const SetNodePtr& arg_one,
         low = Zbdd::Apply(kAndGate, arg_one->low(), arg_two);
         break;
       default:
-        assert(false && "Only Union and Intersection are supported!");
+        assert(false && "Unsupported Boolean operation on ZBDD.");
     }
   }
+  if (high->id() == low->id()) return low;
+  if (high->terminal() && Terminal::Ptr(high)->value() == false) return low;
+
   SetNodePtr& in_table =
       unique_table_[{arg_one->index(), high->id(), low->id()}];
   if (in_table) return in_table;
