@@ -34,6 +34,7 @@
 #include "model.h"
 #include "random.h"
 #include "reporter.h"
+#include "zbdd.h"
 
 namespace scram {
 
@@ -83,6 +84,8 @@ void RiskAnalysis::RunAnalysis(const std::string& name,
                                const GatePtr& target) noexcept {
   if (kSettings_.algorithm() == "bdd") {
     RiskAnalysis::RunAnalysis<Bdd>(name, target);
+  } else if (kSettings_.algorithm() == "zbdd") {
+    RiskAnalysis::RunAnalysis<Zbdd>(name, target);
   } else {  // The default algorithm.
     assert(kSettings_.algorithm() == "mocus");
     RiskAnalysis::RunAnalysis<Mocus>(name, target);

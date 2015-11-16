@@ -1073,6 +1073,17 @@ class CustomPreprocessor<Bdd> : public Preprocessor {
   void Run() noexcept override;
 };
 
+class Zbdd;
+
+/// @class CustomPreprocessor<Zbdd>
+/// Specialization of preprocessing for ZBDD based analyses.
+template<>
+class CustomPreprocessor<Zbdd> : public CustomPreprocessor<Bdd> {
+ public:
+  /// Constructor with a Boolean graph.
+  using CustomPreprocessor<Bdd>::CustomPreprocessor;
+};
+
 }  // namespace scram
 
 #endif  // SCRAM_SRC_PREPROCESSOR_H_

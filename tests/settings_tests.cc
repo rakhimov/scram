@@ -55,6 +55,7 @@ TEST(SettingsTest, CorrectSetup) {
   // Correct algorithm.
   EXPECT_NO_THROW(s.algorithm("mocus"));
   EXPECT_NO_THROW(s.algorithm("bdd"));
+  EXPECT_NO_THROW(s.algorithm("zbdd"));
 
   // Correct approximation argument.
   EXPECT_NO_THROW(s.approximation("rare-event"));

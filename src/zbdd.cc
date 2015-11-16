@@ -193,7 +193,6 @@ std::shared_ptr<SetNode> Zbdd::CreateModuleProxy(
 
 std::shared_ptr<Vertex> Zbdd::Apply(Operator type, const VertexPtr& arg_one,
                                     const VertexPtr& arg_two) noexcept {
-  assert(arg_one->id() && arg_two->id());  // Both are processed nodes.
   if (arg_one->terminal() && arg_two->terminal())
     return Zbdd::Apply(type, Terminal::Ptr(arg_one), Terminal::Ptr(arg_two));
   if (arg_one->terminal())
