@@ -98,12 +98,14 @@ void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
   xmlpp::Element* methods = information->add_child("calculation-method");
   if (settings.algorithm() == "bdd") {
     methods->set_attribute("name", "Binary Decision Diagram");
+  } else if (settings.algorithm() == "zbdd") {
+    methods->set_attribute("name", "Zero-Suppressed Binary Decision Diagram");
   } else {
     assert(settings.algorithm() == "mocus");
     methods->set_attribute("name", "MOCUS");
-    methods->add_child("limits")->add_child("number-of-basic-events")
-        ->add_child_text(ToString(settings.limit_order()));
   }
+  methods->add_child("limits")->add_child("number-of-basic-events")
+      ->add_child_text(ToString(settings.limit_order()));
 
   // Report the setup for CCF analysis.
   if (settings.ccf_analysis()) {

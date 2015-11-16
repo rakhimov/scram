@@ -62,6 +62,7 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
         ("validate", "Validate input files without analysis")
         ("graph", "Validate and produce graph without analysis")
         ("bdd", "Perform qualitative analysis with BDD")
+        ("zbdd", "Perform qualitative analysis with ZBDD")
         ("probability", po::value<bool>(), "Perform probability analysis")
         ("importance", po::value<bool>(), "Perform importance analysis")
         ("uncertainty", po::value<bool>(), "Perform uncertainty analysis")
@@ -118,6 +119,13 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
     return 1;
   }
 
+  if (vm->count("bdd") && vm->count("zbdd")) {
+    std::cerr << "Mutually exclusive qualitative analysis algorithms.\n"
+              << "(MOCUS/BDD/ZBDD) cannot be applied at the same time.\n"
+              << usage << "\n\n" << desc << std::endl;
+    return 1;
+  }
+
   if (vm->count("rare-event") && vm->count("mcub")) {
     std::cerr << "The rare event and MCUB approximations cannot be "
               << "applied at the same time.\n"
@@ -145,6 +153,11 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
 /// @throws std::exception  vm does not contain a required option.
 ///                         At least defaults are expected.
 void ConstructSettings(const po::variables_map& vm, scram::Settings* settings) {
+  if (vm.count("bdd")) {
+    settings->algorithm("bdd");
+  } else if (vm.count("zbdd")) {
+    settings->algorithm("zbdd");
+  }
   // Determine if the probability approximation is requested.
   if (vm.count("rare-event")) {
     assert(!vm.count("mcub"));
@@ -162,7 +175,6 @@ void ConstructSettings(const po::variables_map& vm, scram::Settings* settings) {
   if (vm.count("num-quantiles"))
     settings->num_quantiles(vm["num-quantiles"].as<int>());
   if (vm.count("num-bins")) settings->num_bins(vm["num-bins"].as<int>());
-  if (vm.count("bdd")) settings->algorithm("bdd");
   if (vm.count("importance"))
     settings->importance_analysis(vm["importance"].as<bool>());
   if (vm.count("uncertainty"))

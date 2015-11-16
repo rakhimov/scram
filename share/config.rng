@@ -21,7 +21,7 @@
         <element name="algorithm">
           <attribute name="name">
             <data type="string">
-              <param name="pattern">mocus|bdd</param>
+              <param name="pattern">mocus|bdd|zbdd</param>
             </data>
           </attribute>
         </element>
