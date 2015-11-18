@@ -52,5 +52,16 @@ TEST_F(RiskAnalysisTest, Baobab_2_Test_BDD) {
   EXPECT_EQ(distr, McsDistribution());
 }
 
+// Test with ZBDD.
+TEST_F(RiskAnalysisTest, Baobab_2_Test_ZBDD) {
+  settings.algorithm("zbdd");
+  ASSERT_NO_THROW(ProcessInputFiles(input_files));
+  ASSERT_NO_THROW(ran->Analyze());
+  // Minimal cut set check.
+  EXPECT_EQ(4805, min_cut_sets().size());
+  std::vector<int> distr = {0, 0, 6, 121, 268, 630, 3780};
+  EXPECT_EQ(distr, McsDistribution());
+}
+
 }  // namespace test
 }  // namespace scram
