@@ -48,7 +48,7 @@ class Config(object):
     """
     switch = ["--probability", "--importance"]
     approximation = ["", "--rare-event", "--mcub"]
-    analysis = ["", "--bdd"]
+    analysis = ["", "--bdd", "--zbdd"]
     max_limit = 10
 
     @staticmethod
@@ -139,6 +139,9 @@ def main():
     bdd = "focus on BDD"
     parser.add_argument("--bdd", action="store_true", help=bdd)
 
+    zbdd = "focus on ZBDD"
+    parser.add_argument("--zbdd", action="store_true", help=zbdd)
+
     coherent = "focus on coherent models"
     parser.add_argument("--coherent", action="store_true", help=coherent)
 
@@ -160,6 +163,9 @@ def main():
     elif args.bdd:
         print("Focusing on BDD")
         Config.analysis = ["--bdd"]
+    elif args.zbdd:
+        print("Focusing on ZBDD")
+        Config.analysis = ["--zbdd"]
 
     for i in range(args.num_runs):
         generate_input(args.normal, args.coherent)
