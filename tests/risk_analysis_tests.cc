@@ -91,6 +91,7 @@ TEST_F(RiskAnalysisTest, AnalyzeDefault) {
                                          {"pumptwo", "valveone"},
                                          {"valveone", "valvetwo"}};
   EXPECT_EQ(mcs, min_cut_sets());
+  PrintCutSets();  // Quick visual verification and test.
 }
 
 // Test Analysis of Two train system.

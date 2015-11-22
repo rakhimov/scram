@@ -107,6 +107,15 @@ class RiskAnalysisTest : public ::testing::Test {
     return distr;
   }
 
+  /// Prints cut sets to the standard error.
+  void PrintCutSets() {
+    assert(!ran->fault_tree_analyses().empty());
+    assert(ran->fault_tree_analyses().size() == 1);
+    const FaultTreeAnalysis* fta =
+        ran->fault_tree_analyses().begin()->second.get();
+    Print(fta->cut_sets());
+  }
+
   double p_total() {
     assert(!ran->probability_analyses().empty());
     assert(ran->probability_analyses().size() == 1);

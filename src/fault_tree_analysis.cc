@@ -24,6 +24,45 @@
 
 namespace scram {
 
+void Print(const std::vector<CutSet>& cut_sets) {
+  if (cut_sets.empty()) {
+    std::cerr << "No cut sets!" << std::endl;
+    return;
+  }
+  if (cut_sets.front().empty()) {
+    assert(cut_sets.size() == 1 && "Unity case must have only one cut set.");
+    std::cerr << "Single Unity cut set." << std::endl;
+    return;
+  }
+  std::vector<std::set<std::string>> to_print;
+  for (const auto& cut_set : cut_sets) {
+    std::set<std::string> ids;
+    for (const auto& literal : cut_set) {
+      ids.insert((literal.complement ? "~" : "") + literal.event->name());
+    }
+    to_print.push_back(ids);
+  }
+  std::sort(
+      to_print.begin(), to_print.end(),
+      [](const std::set<std::string>& lhs, const std::set<std::string>& rhs) {
+        if (lhs.size() == rhs.size()) return lhs < rhs;
+        return lhs.size() < rhs.size();
+      });
+  assert(!to_print.front().empty() && "Failure of the analysis with Unity!");
+  std::vector<int> distribution(to_print.back().size());
+  for (const auto& cut_set : to_print) distribution[cut_set.size() - 1]++;
+  std::cerr << " " << to_print.size() << " : {";
+  for (int i : distribution) std::cerr << " " << i;
+  std::cerr << " }" << std::endl << std::endl;
+
+  for (const auto& cut_set : to_print) {
+    for (const auto& id : cut_set) {
+      std::cerr << " " << id;
+    }
+    std::cerr << std::endl;
+  }
+}
+
 double CalculateProbability(const CutSet& cut_set) {
   double p = 1;
   for (const Literal& literal : cut_set) {

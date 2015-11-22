@@ -45,6 +45,17 @@ struct Literal {
 
 using CutSet = std::vector<Literal>;  ///< Collection of unique literals.
 
+/// Prints a collection of cut sets to the standard error.
+/// This is a helper function for easier debugging
+/// and visual comparison of analysis results.
+/// Summary of the number of cut sets and
+/// its size distribution is printed first.
+/// Then, all cut sets are grouped by size and sorted.
+/// The literals of a cut set are sorted by their names.
+///
+/// @param[in] cut_sets  Valid, unique collection of analysis results.
+void Print(const std::vector<CutSet>& cut_sets);
+
 /// Helper function to compute cut set probability.
 ///
 /// @param[in] cut_set  Cut set of literals.
