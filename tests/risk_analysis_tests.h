@@ -30,8 +30,6 @@
 namespace scram {
 namespace test {
 
-using FaultTreePtr = std::unique_ptr<FaultTree>;
-
 class RiskAnalysisTest : public ::testing::Test {
  protected:
   virtual void SetUp() {}

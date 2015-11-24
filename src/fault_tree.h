@@ -40,7 +40,6 @@ class CcfGroup;
 class Component : public Element, public Role {
  public:
   using CcfGroupPtr = std::shared_ptr<CcfGroup>;
-  using ComponentPtr = std::unique_ptr<Component>;
 
   /// Constructs a component assuming
   /// that it exists within some fault tree.
@@ -96,7 +95,8 @@ class Component : public Element, public Role {
 
   /// @returns Components in this component container
   ///          with lower-case names as keys.
-  const std::unordered_map<std::string, ComponentPtr>& components() const {
+  const std::unordered_map<std::string, std::unique_ptr<Component>>&
+  components() const {
     return components_;
   }
 
@@ -143,7 +143,7 @@ class Component : public Element, public Role {
   /// @param[in] component  The CCF group to be added to this container.
   ///
   /// @throws ValidationError  The component is already in this container.
-  void AddComponent(ComponentPtr component);
+  void AddComponent(std::unique_ptr<Component> component);
 
  protected:
   /// Recursively traverses components
@@ -172,8 +172,10 @@ class Component : public Element, public Role {
   std::unordered_map<std::string, CcfGroupPtr> ccf_groups_;
 
   /// Container for components with lower-case names as keys.
-  std::unordered_map<std::string, ComponentPtr> components_;
+  std::unordered_map<std::string, std::unique_ptr<Component>> components_;
 };
+
+using ComponentPtr = std::unique_ptr<Component>;  ///< Unique system components.
 
 /// @class FaultTree
 /// Fault tree representation as a container of
@@ -216,6 +218,8 @@ class FaultTree : public Component {
 
   std::vector<GatePtr> top_events_;  ///< Top events of this fault tree.
 };
+
+using FaultTreePtr = std::unique_ptr<FaultTree>;  ///< Unique trees in models.
 
 }  // namespace scram
 

@@ -28,6 +28,7 @@
 
 #include "analysis.h"
 #include "event.h"
+#include "fault_tree.h"
 #include "fault_tree_analysis.h"
 #include "importance_analysis.h"
 #include "probability_analysis.h"
@@ -36,7 +37,6 @@
 
 namespace scram {
 
-class FaultTree;
 class Model;
 
 /// @class RiskAnalysis
@@ -127,8 +127,6 @@ class RiskAnalysis : public Analysis {
   }
 
  private:
-  using FaultTreePtr = std::unique_ptr<FaultTree>;
-
   /// Runs all possible analysis on a given target.
   /// Analysis types are deduced from the settings.
   ///

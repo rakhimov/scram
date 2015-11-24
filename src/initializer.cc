@@ -21,6 +21,7 @@
 #include "initializer.h"
 
 #include <fstream>
+#include <set>
 #include <unordered_map>
 
 #include <boost/algorithm/string.hpp>
@@ -29,10 +30,8 @@
 
 #include "ccf_group.h"
 #include "cycle.h"
-#include "element.h"
 #include "env.h"
 #include "error.h"
-#include "fault_tree.h"
 #include "logger.h"
 
 namespace fs = boost::filesystem;
@@ -244,10 +243,9 @@ void Initializer::DefineFaultTree(const xmlpp::Element* ft_node) {
   }
 }
 
-std::unique_ptr<Component> Initializer::DefineComponent(
-    const xmlpp::Element* component_node,
-    const std::string& base_path,
-    bool public_container) {
+ComponentPtr Initializer::DefineComponent(const xmlpp::Element* component_node,
+                                          const std::string& base_path,
+                                          bool public_container) {
   std::string name = GetAttributeValue(component_node, "name");
   assert(!name.empty());
   std::string role = GetAttributeValue(component_node, "role");
@@ -361,9 +359,8 @@ void Initializer::DefineGate(const xmlpp::Element* gate_node,
   }
 }
 
-std::unique_ptr<Formula> Initializer::GetFormula(
-    const xmlpp::Element* formula_node,
-    const std::string& base_path) {
+FormulaPtr Initializer::GetFormula(const xmlpp::Element* formula_node,
+                                   const std::string& base_path) {
   std::string type = formula_node->get_name();
   if (type == "event" || type == "basic-event" || type == "gate" ||
       type == "house-event") {

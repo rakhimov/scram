@@ -30,19 +30,17 @@
 #include "element.h"
 #include "event.h"
 #include "expression.h"
+#include "fault_tree.h"
 
 namespace scram {
 
 class CcfGroup;
-class FaultTree;
-class Component;
 
 /// @class Model
 /// This class represents a risk analysis model.
 class Model : public Element {
  public:
   using CcfGroupPtr = std::shared_ptr<CcfGroup>;
-  using FaultTreePtr = std::unique_ptr<FaultTree>;
 
   /// Creates a model container.
   ///

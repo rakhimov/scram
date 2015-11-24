@@ -25,7 +25,6 @@
 #include <boost/algorithm/string.hpp>
 
 #include "ccf_group.h"
-#include "fault_tree.h"
 
 namespace scram {
 
