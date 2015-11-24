@@ -22,7 +22,6 @@
 #ifndef SCRAM_SRC_UNCERTAINTY_ANALYSIS_H_
 #define SCRAM_SRC_UNCERTAINTY_ANALYSIS_H_
 
-#include <memory>
 #include <utility>
 #include <vector>
 

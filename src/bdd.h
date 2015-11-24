@@ -93,12 +93,13 @@ class Terminal : public Vertex {
   bool value_;  ///< The meaning of the terminal.
 };
 
+using VertexPtr = std::shared_ptr<Vertex>;  ///< Shared BDD vertices.
+using TerminalPtr = std::shared_ptr<Terminal>;  ///< Shared terminal vertices.
+
 /// @class NonTerminal
 /// Representation of non-terminal vertices in BDD graphs.
 class NonTerminal : public Vertex {
  public:
-  using VertexPtr = std::shared_ptr<Vertex>;
-
   /// @param[in] index  Index of this non-terminal vertex.
   /// @param[in] order  Specific ordering number for BDD graphs.
   NonTerminal(int index, int order);
@@ -242,6 +243,8 @@ class Ite : public NonTerminal, public ComplementEdge {
   double factor_ = 0;  ///< Importance factor calculation results.
 };
 
+using ItePtr = std::shared_ptr<Ite>;  ///< Shared if-then-else vertices.
+
 using Triplet = std::array<int, 3>;  ///< (v, G, H) triplet for functions.
 
 /// @struct TripletHash
@@ -274,8 +277,6 @@ class Zbdd;  // For analysis purposes.
 ///       There is only one terminal vertex of value 1/True.
 class Bdd {
  public:
-  using VertexPtr = std::shared_ptr<Vertex>;
-
   /// Constructor with the analysis target.
   /// Reduced Ordered BDD is produced from a Boolean graph.
   ///
@@ -336,8 +337,6 @@ class Bdd {
   using NodePtr = std::shared_ptr<Node>;
   using VariablePtr = std::shared_ptr<Variable>;
   using IGatePtr = std::shared_ptr<IGate>;
-  using TerminalPtr = std::shared_ptr<Terminal>;
-  using ItePtr = std::shared_ptr<Ite>;
   using UniqueTable = TripletTable<ItePtr>;  ///< To store unique vertices.
   using ComputeTable = TripletTable<Function>;  ///< To store computed results.
 

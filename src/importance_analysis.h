@@ -22,7 +22,6 @@
 #ifndef SCRAM_SRC_IMPORTANCE_ANALYSIS_H_
 #define SCRAM_SRC_IMPORTANCE_ANALYSIS_H_
 
-#include <memory>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -214,9 +213,6 @@ class ImportanceAnalyzer<Bdd> : public ImportanceAnalyzerBase<Bdd> {
   double CalculateMif(int index) noexcept;
 
  private:
-  using VertexPtr = std::shared_ptr<Vertex>;
-  using ItePtr = std::shared_ptr<Ite>;
-
   using ImportanceAnalyzerBase<Bdd>::prob_analyzer_;
 
   /// Calculates Marginal Importance Factor of a variable.

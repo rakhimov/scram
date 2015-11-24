@@ -123,10 +123,8 @@ void Zbdd::Analyze() noexcept {
   LOG(DEBUG2) << "Finished ZBDD analysis in " << DUR(analysis_time);
 }
 
-std::shared_ptr<Vertex> Zbdd::ConvertBdd(const VertexPtr& vertex,
-                                         bool complement,
-                                         const Bdd* bdd_graph,
-                                         int limit_order) noexcept {
+VertexPtr Zbdd::ConvertBdd(const VertexPtr& vertex, bool complement,
+                           const Bdd* bdd_graph, int limit_order) noexcept {
   if (vertex->terminal()) return complement ? kEmpty_ : kBase_;
   if (limit_order == 0) return kEmpty_;  // Cut-off on the cut set size.
   int sign = complement ? -1 : 1;
@@ -164,7 +162,7 @@ std::shared_ptr<Vertex> Zbdd::ConvertBdd(const VertexPtr& vertex,
   return result;
 }
 
-std::shared_ptr<Vertex> Zbdd::ConvertGraph(const IGatePtr& gate) noexcept {
+VertexPtr Zbdd::ConvertGraph(const IGatePtr& gate) noexcept {
   assert(!gate->IsConstant() && "Unexpected constant gate!");
   VertexPtr& result = gates_[gate->index()];
   if (result) return result;
@@ -198,8 +196,7 @@ std::shared_ptr<Vertex> Zbdd::ConvertGraph(const IGatePtr& gate) noexcept {
   return result;
 }
 
-std::shared_ptr<SetNode> Zbdd::ConvertGraph(
-    const VariablePtr& variable) noexcept {
+SetNodePtr Zbdd::ConvertGraph(const VariablePtr& variable) noexcept {
   SetNodePtr& in_table = unique_table_[{variable->index(), 1, 0}];
   if (in_table) return in_table;
   in_table = std::make_shared<SetNode>(variable->index(), variable->order());
@@ -209,7 +206,7 @@ std::shared_ptr<SetNode> Zbdd::ConvertGraph(
   return in_table;
 }
 
-std::shared_ptr<Vertex> Zbdd::ConvertCutSets(
+VertexPtr Zbdd::ConvertCutSets(
     const mocus::CutSetContainer& cut_sets) noexcept {
   std::vector<mocus::CutSetPtr> data(cut_sets.begin(), cut_sets.end());
   std::sort(data.begin(), data.end(),
@@ -226,8 +223,7 @@ std::shared_ptr<Vertex> Zbdd::ConvertCutSets(
   return result;
 }
 
-std::shared_ptr<SetNode> Zbdd::EmplaceCutSet(
-    const mocus::CutSetPtr& cut_set) noexcept {
+SetNodePtr Zbdd::EmplaceCutSet(const mocus::CutSetPtr& cut_set) noexcept {
   assert(!cut_set->empty() && "Unity cut set must be sanitized.");
   VertexPtr result = kBase_;
   std::vector<int>::const_reverse_iterator it;
@@ -259,8 +255,7 @@ std::shared_ptr<SetNode> Zbdd::EmplaceCutSet(
   return SetNode::Ptr(result);
 }
 
-std::shared_ptr<SetNode> Zbdd::CreateModuleProxy(
-    const IGatePtr& gate) noexcept {
+SetNodePtr Zbdd::CreateModuleProxy(const IGatePtr& gate) noexcept {
   assert(gate->IsModule());
   SetNodePtr& in_table = unique_table_[{gate->index(), 1, 0}];
   if (in_table) return in_table;
@@ -272,8 +267,8 @@ std::shared_ptr<SetNode> Zbdd::CreateModuleProxy(
   return in_table;
 }
 
-std::shared_ptr<Vertex> Zbdd::Apply(Operator type, const VertexPtr& arg_one,
-                                    const VertexPtr& arg_two) noexcept {
+VertexPtr Zbdd::Apply(Operator type, const VertexPtr& arg_one,
+                      const VertexPtr& arg_two) noexcept {
   if (arg_one->terminal() && arg_two->terminal())
     return Zbdd::Apply(type, Terminal::Ptr(arg_one), Terminal::Ptr(arg_two));
   if (arg_one->terminal())
@@ -294,8 +289,8 @@ std::shared_ptr<Vertex> Zbdd::Apply(Operator type, const VertexPtr& arg_one,
   return result;
 }
 
-std::shared_ptr<Vertex> Zbdd::Apply(Operator type, const TerminalPtr& term_one,
-                                    const TerminalPtr& term_two) noexcept {
+VertexPtr Zbdd::Apply(Operator type, const TerminalPtr& term_one,
+                      const TerminalPtr& term_two) noexcept {
   switch (type) {
     case kOrGate:
       if (term_one->value() || term_two->value()) return kBase_;
@@ -308,8 +303,8 @@ std::shared_ptr<Vertex> Zbdd::Apply(Operator type, const TerminalPtr& term_one,
   }
 }
 
-std::shared_ptr<Vertex> Zbdd::Apply(Operator type, const SetNodePtr& set_node,
-                                    const TerminalPtr& term) noexcept {
+VertexPtr Zbdd::Apply(Operator type, const SetNodePtr& set_node,
+                      const TerminalPtr& term) noexcept {
   switch (type) {
     case kOrGate:
       if (term->value()) return kBase_;
@@ -322,8 +317,8 @@ std::shared_ptr<Vertex> Zbdd::Apply(Operator type, const SetNodePtr& set_node,
   }
 }
 
-std::shared_ptr<Vertex> Zbdd::Apply(Operator type, const SetNodePtr& arg_one,
-                                    const SetNodePtr& arg_two) noexcept {
+VertexPtr Zbdd::Apply(Operator type, const SetNodePtr& arg_one,
+                      const SetNodePtr& arg_two) noexcept {
   VertexPtr high;
   VertexPtr low;
   if (arg_one->order() == arg_two->order()) {  // The same variable.
@@ -388,7 +383,7 @@ Triplet Zbdd::GetSignature(Operator type, const VertexPtr& arg_one,
   }
 }
 
-std::shared_ptr<Vertex> Zbdd::Minimize(const VertexPtr& vertex) noexcept {
+VertexPtr Zbdd::Minimize(const VertexPtr& vertex) noexcept {
   if (vertex->terminal()) return vertex;
   VertexPtr& result = minimal_results_[vertex->id()];
   if (result) return result;
@@ -418,8 +413,7 @@ std::shared_ptr<Vertex> Zbdd::Minimize(const VertexPtr& vertex) noexcept {
   return result;
 }
 
-std::shared_ptr<Vertex> Zbdd::Subsume(const VertexPtr& high,
-                                      const VertexPtr& low) noexcept {
+VertexPtr Zbdd::Subsume(const VertexPtr& high, const VertexPtr& low) noexcept {
   if (low->terminal()) return Terminal::Ptr(low)->value() ? kEmpty_ : high;
   if (high->terminal()) return high;  // No need to reduce terminal sets.
   VertexPtr& computed = subsume_table_[{high->id(), low->id()}];

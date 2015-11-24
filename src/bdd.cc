@@ -118,7 +118,7 @@ const Bdd::Function& Bdd::IfThenElse(const IGatePtr& gate) noexcept {
   return result;
 }
 
-std::shared_ptr<Ite> Bdd::IfThenElse(const VariablePtr& variable) noexcept {
+ItePtr Bdd::IfThenElse(const VariablePtr& variable) noexcept {
   ItePtr& in_table = unique_table_[{variable->index(), 1, -1}];
   if (in_table) return in_table;
   index_to_order_.emplace(variable->index(), variable->order());
@@ -130,7 +130,7 @@ std::shared_ptr<Ite> Bdd::IfThenElse(const VariablePtr& variable) noexcept {
   return in_table;
 }
 
-std::shared_ptr<Ite> Bdd::CreateModuleProxy(const IGatePtr& gate) noexcept {
+ItePtr Bdd::CreateModuleProxy(const IGatePtr& gate) noexcept {
   assert(gate->IsModule());
   ItePtr& in_table = unique_table_[{gate->index(), 1, -1}];
   if (in_table) return in_table;

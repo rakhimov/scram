@@ -21,7 +21,6 @@
 #ifndef SCRAM_SRC_PROBABILITY_ANALYSIS_H_
 #define SCRAM_SRC_PROBABILITY_ANALYSIS_H_
 
-#include <memory>
 #include <vector>
 
 #include "analysis.h"
@@ -249,9 +248,6 @@ class ProbabilityAnalyzer<Bdd> : public ProbabilityAnalyzerBase {
   Bdd* bdd_graph() { return bdd_graph_; }
 
  private:
-  using VertexPtr = std::shared_ptr<Vertex>;
-  using ItePtr = std::shared_ptr<Ite>;
-
   /// Creates a new BDD for use by the analyzer.
   ///
   /// @param[in] root  The root gate of the fault tree.

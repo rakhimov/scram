@@ -72,6 +72,8 @@ class SetNode : public NonTerminal {
   int64_t count_ = 0;  ///< The number of cut sets, nodes, or anything else.
 };
 
+using SetNodePtr = std::shared_ptr<SetNode>;  ///< Shared ZBDD set nodes.
+
 /// @class Zbdd
 /// Zero-Suppressed Binary Decision Diagrams for set manipulations.
 class Zbdd {
@@ -119,10 +121,6 @@ class Zbdd {
   using NodePtr = std::shared_ptr<Node>;
   using VariablePtr = std::shared_ptr<Variable>;
   using IGatePtr = std::shared_ptr<IGate>;
-  using VertexPtr = std::shared_ptr<Vertex>;
-  using TerminalPtr = std::shared_ptr<Terminal>;
-  using ItePtr = std::shared_ptr<Ite>;
-  using SetNodePtr = std::shared_ptr<SetNode>;
   using UniqueTable = TripletTable<SetNodePtr>;
   using ComputeTable = TripletTable<VertexPtr>;
   using PairTable = boost::unordered_map<std::pair<int, int>, VertexPtr>;
