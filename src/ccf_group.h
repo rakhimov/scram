@@ -162,6 +162,8 @@ class CcfGroup : public Element, public Role {
   std::string model_;  ///< Common cause model type.
 };
 
+using CcfGroupPtr = std::shared_ptr<CcfGroup>;  ///< Shared CCF groups.
+
 /// @class BetaFactorModel
 /// Common cause failure model that assumes,
 /// if common cause failure occurs,

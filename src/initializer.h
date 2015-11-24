@@ -30,6 +30,7 @@
 
 #include <libxml++/libxml++.h>
 
+#include "ccf_group.h"
 #include "element.h"
 #include "event.h"
 #include "expression.h"
@@ -39,8 +40,6 @@
 #include "xml_parser.h"
 
 namespace scram {
-
-class CcfGroup;
 
 /// @class Initializer
 /// This class operates on input files
@@ -76,7 +75,6 @@ class Initializer {
 
  private:
   using ElementPtr = std::shared_ptr<Element>;
-  using CcfGroupPtr = std::shared_ptr<CcfGroup>;
 
   /// Map of valid units for parameters.
   static const std::map<std::string, Units> kUnits_;

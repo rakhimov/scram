@@ -27,20 +27,17 @@
 #include <unordered_set>
 #include <vector>
 
+#include "ccf_group.h"
 #include "element.h"
 #include "event.h"
 #include "expression.h"
 
 namespace scram {
 
-class CcfGroup;
-
 /// @class Component
 /// Component is for logical grouping of events, gates, and other components.
 class Component : public Element, public Role {
  public:
-  using CcfGroupPtr = std::shared_ptr<CcfGroup>;
-
   /// Constructs a component assuming
   /// that it exists within some fault tree.
   /// The public or private role of a component is not

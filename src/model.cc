@@ -24,8 +24,6 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "ccf_group.h"
-
 namespace scram {
 
 Model::Model(const std::string& name) : name_(name) {}

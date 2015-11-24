@@ -27,6 +27,7 @@
 #include <unordered_set>
 #include <utility>
 
+#include "ccf_group.h"
 #include "element.h"
 #include "event.h"
 #include "expression.h"
@@ -34,14 +35,10 @@
 
 namespace scram {
 
-class CcfGroup;
-
 /// @class Model
 /// This class represents a risk analysis model.
 class Model : public Element {
  public:
-  using CcfGroupPtr = std::shared_ptr<CcfGroup>;
-
   /// Creates a model container.
   ///
   /// @param[in] name  The optional name for the model.

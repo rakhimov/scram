@@ -28,7 +28,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include "ccf_group.h"
 #include "cycle.h"
 #include "env.h"
 #include "error.h"
@@ -715,10 +714,9 @@ bool Initializer::GetDeviateExpression(const xmlpp::Element* expr_element,
   return true;
 }
 
-std::shared_ptr<CcfGroup> Initializer::RegisterCcfGroup(
-    const xmlpp::Element* ccf_node,
-    const std::string& base_path,
-    bool public_container) {
+CcfGroupPtr Initializer::RegisterCcfGroup(const xmlpp::Element* ccf_node,
+                                          const std::string& base_path,
+                                          bool public_container) {
   std::string name = GetAttributeValue(ccf_node, "name");
   std::string model = GetAttributeValue(ccf_node, "model");
   assert(model == "beta-factor" || model == "alpha-factor" || model == "MGL" ||

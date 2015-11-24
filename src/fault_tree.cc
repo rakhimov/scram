@@ -24,7 +24,6 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "ccf_group.h"
 #include "cycle.h"
 #include "error.h"
 

@@ -20,12 +20,9 @@
 #include <gtest/gtest.h>
 
 #include "error.h"
-#include "ccf_group.h"
 
 namespace scram {
 namespace test {
-
-using CcfGroupPtr = std::shared_ptr<CcfGroup>;
 
 TEST(FaultTreeTest, AddGate) {
   FaultTree* ft = new FaultTree("never_fail");
