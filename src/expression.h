@@ -35,7 +35,11 @@
 
 namespace scram {
 
+class Expression;
+using ExpressionPtr = std::shared_ptr<Expression>;  ///< Shared expressions.
+
 class Parameter;  // This is for cycle detection through expressions.
+using ParameterPtr = std::shared_ptr<Parameter>;  ///< Shared parameters.
 
 /// @class Expression
 /// Abstract base class for all sorts of expressions to describe events.
@@ -47,8 +51,6 @@ class Parameter;  // This is for cycle detection through expressions.
 /// after validation phases.
 class Expression {
  public:
-  using ExpressionPtr = std::shared_ptr<Expression>;
-
   /// Constructor for use by derived classes
   /// to register their arguments.
   ///

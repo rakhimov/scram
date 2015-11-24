@@ -47,7 +47,6 @@ class OpenExpression : public Expression {
 };
 
 using OpenExpressionPtr = std::shared_ptr<OpenExpression>;
-using ExpressionPtr = std::shared_ptr<Expression>;
 
 TEST(ExpressionTest, Exponential) {
   OpenExpressionPtr lambda(new OpenExpression(10, 8));

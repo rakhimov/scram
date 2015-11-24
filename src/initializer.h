@@ -85,8 +85,6 @@ class Initializer {
   using BasicEventPtr = std::shared_ptr<BasicEvent>;
   using HouseEventPtr = std::shared_ptr<HouseEvent>;
   using CcfGroupPtr = std::shared_ptr<CcfGroup>;
-  using ExpressionPtr = std::shared_ptr<Expression>;
-  using ParameterPtr = std::shared_ptr<Parameter>;
   using FaultTreePtr = std::unique_ptr<FaultTree>;  ///< Unique fault tree.
   using ComponentPtr = std::unique_ptr<Component>;  ///< Unique component.
 

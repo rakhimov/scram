@@ -27,7 +27,6 @@
 #include "ccf_group.h"
 #include "cycle.h"
 #include "error.h"
-#include "expression.h"
 
 namespace scram {
 

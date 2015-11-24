@@ -27,7 +27,6 @@ namespace scram {
 namespace test {
 
 using BasicEventPtr = std::shared_ptr<BasicEvent>;
-using ExpressionPtr = std::shared_ptr<Expression>;
 
 TEST(CcfGroupTest, AddMemberRepeated) {
   CcfGroup* ccf_group = new BetaFactorModel("general");

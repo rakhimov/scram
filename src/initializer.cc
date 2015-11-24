@@ -529,10 +529,9 @@ std::shared_ptr<HouseEvent> Initializer::DefineHouseEvent(
   return house_event;
 }
 
-std::shared_ptr<Parameter> Initializer::RegisterParameter(
-    const xmlpp::Element* param_node,
-    const std::string& base_path,
-    bool public_container) {
+ParameterPtr Initializer::RegisterParameter(const xmlpp::Element* param_node,
+                                            const std::string& base_path,
+                                            bool public_container) {
   std::string name = GetAttributeValue(param_node, "name");
   std::string role = GetAttributeValue(param_node, "role");
   bool param_role = public_container;  // Inherited role by default.
@@ -571,9 +570,8 @@ void Initializer::DefineParameter(const xmlpp::Element* param_node,
   parameter->expression(expression);
 }
 
-std::shared_ptr<Expression> Initializer::GetExpression(
-    const xmlpp::Element* expr_element,
-    const std::string& base_path) {
+ExpressionPtr Initializer::GetExpression(const xmlpp::Element* expr_element,
+                                         const std::string& base_path) {
   ExpressionPtr expression;
   bool not_parameter = true;  // Parameters are saved in a different container.
   if (GetConstantExpression(expr_element, expression)) {

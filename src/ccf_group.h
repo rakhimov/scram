@@ -42,7 +42,6 @@ namespace scram {
 /// Abstract base class for all common cause failure models.
 class CcfGroup : public Element, public Role {
  public:
-  using ExpressionPtr = std::shared_ptr<Expression>;
   using BasicEventPtr = std::shared_ptr<BasicEvent>;
 
   /// Constructor to be used by derived classes.

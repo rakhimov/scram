@@ -30,7 +30,6 @@ using FormulaPtr = std::shared_ptr<Formula>;
 using BasicEventPtr = std::shared_ptr<BasicEvent>;
 using HouseEventPtr = std::shared_ptr<HouseEvent>;
 using CcfGroupPtr = std::shared_ptr<CcfGroup>;
-using ParameterPtr = std::shared_ptr<Parameter>;
 
 TEST(FaultTreeTest, AddGate) {
   FaultTree* ft = new FaultTree("never_fail");

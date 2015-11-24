@@ -119,7 +119,6 @@ class Gate;
 /// Representation of a basic event in a fault tree.
 class BasicEvent : public PrimaryEvent {
  public:
-  using ExpressionPtr = std::shared_ptr<Expression>;
   using GatePtr = std::shared_ptr<Gate>;
 
   using PrimaryEvent::PrimaryEvent;  // Construction with unique identification.

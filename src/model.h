@@ -29,11 +29,11 @@
 
 #include "element.h"
 #include "event.h"
+#include "expression.h"
 
 namespace scram {
 
 class CcfGroup;
-class Parameter;
 class FaultTree;
 class Component;
 
@@ -41,7 +41,6 @@ class Component;
 /// This class represents a risk analysis model.
 class Model : public Element {
  public:
-  using ParameterPtr = std::shared_ptr<Parameter>;
   using EventPtr = std::shared_ptr<Event>;
   using HouseEventPtr = std::shared_ptr<HouseEvent>;
   using BasicEventPtr = std::shared_ptr<BasicEvent>;

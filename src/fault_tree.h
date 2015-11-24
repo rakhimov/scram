@@ -30,11 +30,11 @@
 
 #include "element.h"
 #include "event.h"
+#include "expression.h"
 
 namespace scram {
 
 class CcfGroup;
-class Parameter;
 
 /// @class Component
 /// Component is for logical grouping of events, gates, and other components.
@@ -43,7 +43,6 @@ class Component : public Element, public Role {
   using GatePtr = std::shared_ptr<Gate>;
   using BasicEventPtr = std::shared_ptr<BasicEvent>;
   using HouseEventPtr = std::shared_ptr<HouseEvent>;
-  using ParameterPtr = std::shared_ptr<Parameter>;
   using CcfGroupPtr = std::shared_ptr<CcfGroup>;
   using ComponentPtr = std::unique_ptr<Component>;
 

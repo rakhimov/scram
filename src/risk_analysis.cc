@@ -27,6 +27,7 @@
 #include "bdd.h"
 #include "error.h"
 #include "event.h"
+#include "expression.h"
 #include "fault_tree.h"
 #include "grapher.h"
 #include "logger.h"
@@ -153,7 +154,6 @@ void RiskAnalysis::Report(std::ostream& out) {
 
   // Container for unused parameters not in the analysis.
   // This container is for warning in case the input is formed not as intended.
-  using ParameterPtr = std::shared_ptr<Parameter>;
   std::vector<std::shared_ptr<const Parameter>> unused_parameters;
   for (const std::pair<const std::string, ParameterPtr>& param :
        model_->parameters()) {

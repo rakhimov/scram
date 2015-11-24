@@ -208,7 +208,7 @@ void Reporter::ReportOrphanPrimaryEvents(
 }
 
 void Reporter::ReportUnusedParameters(
-    const std::vector<ParameterPtr>& unused_parameters,
+    const std::vector<std::shared_ptr<const Parameter>>& unused_parameters,
     xmlpp::Document* doc) {
   if (unused_parameters.empty()) return;
   std::string out = "WARNING! Unused Parameters: ";

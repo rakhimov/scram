@@ -49,8 +49,8 @@ void Model::AddParameter(const ParameterPtr& parameter) {
   }
 }
 
-std::shared_ptr<Parameter> Model::GetParameter(const std::string& reference,
-                                               const std::string& base_path) {
+ParameterPtr Model::GetParameter(const std::string& reference,
+                                 const std::string& base_path) {
   assert(reference != "");
   std::vector<std::string> path;
   boost::split(path, reference, boost::is_any_of("."),
@@ -78,7 +78,7 @@ std::shared_ptr<Parameter> Model::GetParameter(const std::string& reference,
   } catch (std::out_of_range&) {}
 
   std::string msg = "Undefined parameter " + path.back() + " in reference " +
-      reference + " with base path " + base_path;
+                    reference + " with base path " + base_path;
   throw ValidationError(msg);
 }
 
