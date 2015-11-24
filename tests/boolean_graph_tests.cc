@@ -41,9 +41,6 @@ TEST(BooleanGraphTest, Print) {
   delete graph;
 }
 
-using VariablePtr = std::shared_ptr<Variable>;
-using IGatePtr = std::shared_ptr<IGate>;
-
 static_assert(kNumOperators == 8, "New gate types are not considered!");
 
 class IGateTest : public ::testing::Test {

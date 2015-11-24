@@ -62,12 +62,6 @@ class Preprocessor {
   virtual void Run() = 0;
 
  protected:
-  using NodePtr = std::shared_ptr<Node>;
-  using IGatePtr = std::shared_ptr<IGate>;
-  using IGateWeakPtr = std::weak_ptr<IGate>;
-  using VariablePtr = std::shared_ptr<Variable>;
-  using ConstantPtr = std::shared_ptr<Constant>;
-
   /// The initial phase of preprocessing.
   /// The most basic cleanup algorithms are applied.
   /// The cleanup should benefit all other phases
@@ -982,7 +976,7 @@ class Preprocessor {
     bool ProcessAncestors(const IGatePtr& ancestor, bool state,
                           const std::pair<int, int>& visit_bounds) noexcept;
 
-    std::shared_ptr<Node> node_;  ///< The common node to process.
+    NodePtr node_;  ///< The common node to process.
     Preprocessor* preprocessor_ = nullptr;  ///< The host preprocessor.
     std::unordered_map<int, IGatePtr> clones_true_;  ///< True state clones.
     std::unordered_map<int, IGatePtr> clones_false_;  ///< False state clones.

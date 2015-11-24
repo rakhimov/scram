@@ -118,9 +118,6 @@ class Zbdd {
   const std::vector<std::vector<int>>& cut_sets() const { return cut_sets_; }
 
  private:
-  using NodePtr = std::shared_ptr<Node>;
-  using VariablePtr = std::shared_ptr<Variable>;
-  using IGatePtr = std::shared_ptr<IGate>;
   using UniqueTable = TripletTable<SetNodePtr>;
   using ComputeTable = TripletTable<VertexPtr>;
   using PairTable = boost::unordered_map<std::pair<int, int>, VertexPtr>;

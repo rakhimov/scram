@@ -341,7 +341,7 @@ bool DetectOverlap(int a_min, int a_max, int b_min, int b_max) noexcept {
 /// @param[in] exit_time  The exit time of the root gate of the graph.
 ///
 /// @returns true if the node within the graph visit times.
-bool IsNodeWithinGraph(const std::shared_ptr<Node>& node, int enter_time,
+bool IsNodeWithinGraph(const NodePtr& node, int enter_time,
                        int exit_time) noexcept {
   assert(enter_time > 0);
   assert(exit_time > enter_time);
@@ -359,7 +359,7 @@ bool IsNodeWithinGraph(const std::shared_ptr<Node>& node, int enter_time,
 /// @param[in] exit_time  The exit time of the root gate of the graph.
 ///
 /// @returns true if the subgraph within the graph visit times.
-bool IsSubgraphWithinGraph(const std::shared_ptr<IGate>& root, int enter_time,
+bool IsSubgraphWithinGraph(const IGatePtr& root, int enter_time,
                            int exit_time) noexcept {
   assert(enter_time > 0);
   assert(exit_time > enter_time);
@@ -952,7 +952,7 @@ void Preprocessor::ProcessModularArgs(
   }
 }
 
-std::shared_ptr<IGate> Preprocessor::CreateNewModule(
+IGatePtr Preprocessor::CreateNewModule(
     const IGatePtr& gate,
     const std::vector<std::pair<int, NodePtr>>& args) noexcept {
   IGatePtr module;  // Empty pointer as an indication of a failure.

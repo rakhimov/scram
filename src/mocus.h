@@ -484,7 +484,6 @@ class Mocus {
   const std::vector<std::vector<int>>& cut_sets() const { return cut_sets_; }
 
  private:
-  using IGatePtr = std::shared_ptr<IGate>;
   using SimpleGatePtr = mocus::SimpleGate::SimpleGatePtr;
   using CutSetPtr = mocus::CutSetPtr;
   using CutSet = mocus::CutSet;

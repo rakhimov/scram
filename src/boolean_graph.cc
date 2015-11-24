@@ -32,7 +32,7 @@ int Node::next_index_ = 1e6;  // 1 million basic events per fault tree is crazy!
 
 NodeParentManager::~NodeParentManager() {}  // Pure virtual destructor.
 
-void NodeParentManager::AddParent(const std::shared_ptr<IGate>& gate) {
+void NodeParentManager::AddParent(const IGatePtr& gate) {
   parents_.emplace(gate->index(), gate);
 }
 
@@ -65,7 +65,7 @@ IGate::IGate(Operator type) noexcept
       max_time_(0),
       module_(false) {}
 
-std::shared_ptr<IGate> IGate::Clone() noexcept {
+IGatePtr IGate::Clone() noexcept {
   BLOG(DEBUG5, module_) << "WARNING: Cloning module G" << Node::index();
   IGatePtr clone(new IGate(type_));  // The same type.
   clone->vote_number_ = vote_number_;  // Copy vote number in case it is K/N.
@@ -474,10 +474,8 @@ void BooleanGraph::Print() {
   std::cerr << std::endl << this << std::endl;
 }
 
-std::shared_ptr<IGate> BooleanGraph::ProcessFormula(
-    const FormulaPtr& formula,
-    bool ccf,
-    ProcessedNodes* nodes) noexcept {
+IGatePtr BooleanGraph::ProcessFormula(const FormulaPtr& formula, bool ccf,
+                                      ProcessedNodes* nodes) noexcept {
   Operator type = kStringToType_.find(formula->type())->second;
   IGatePtr parent(new IGate(type));
 
@@ -764,8 +762,7 @@ void BooleanGraph::GatherInformation(const IGatePtr& gate,
   }
 }
 
-std::ostream& operator<<(std::ostream& os,
-                         const std::shared_ptr<Constant>& constant) {
+std::ostream& operator<<(std::ostream& os, const ConstantPtr& constant) {
   if (constant->Visited()) return os;
   constant->Visit(1);
   std::string state = constant->state() ? "true" : "false";
@@ -773,8 +770,7 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 
-std::ostream& operator<<(std::ostream& os,
-                         const std::shared_ptr<Variable>& variable) {
+std::ostream& operator<<(std::ostream& os, const VariablePtr& variable) {
   if (variable->Visited()) return os;
   variable->Visit(1);
   os << "p(B" << variable->index() << ") = " << 1 << std::endl;
@@ -847,7 +843,7 @@ const std::string GetName(const std::shared_ptr<const IGate>& gate) {
 
 }  // namespace
 
-std::ostream& operator<<(std::ostream& os, const std::shared_ptr<IGate>& gate) {
+std::ostream& operator<<(std::ostream& os, const IGatePtr& gate) {
   if (gate->Visited()) return os;
   gate->Visit(1);
   std::string name = GetName(gate);

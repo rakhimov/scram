@@ -334,9 +334,6 @@ class Bdd {
   const std::vector<std::vector<int>>& cut_sets() const;
 
  private:
-  using NodePtr = std::shared_ptr<Node>;
-  using VariablePtr = std::shared_ptr<Variable>;
-  using IGatePtr = std::shared_ptr<IGate>;
   using UniqueTable = TripletTable<ItePtr>;  ///< To store unique vertices.
   using ComputeTable = TripletTable<Function>;  ///< To store computed results.
 
