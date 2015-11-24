@@ -82,9 +82,8 @@ ParameterPtr Model::GetParameter(const std::string& reference,
   throw ValidationError(msg);
 }
 
-std::pair<std::shared_ptr<Event>, std::string> Model::GetEvent(
-    const std::string& reference,
-    const std::string& base_path) {
+std::pair<EventPtr, std::string> Model::GetEvent(const std::string& reference,
+                                                 const std::string& base_path) {
   assert(reference != "");
   std::vector<std::string> path;
   boost::split(path, reference, boost::is_any_of("."),
@@ -153,8 +152,8 @@ void Model::AddHouseEvent(const HouseEventPtr& house_event) {
   house_events_.emplace(id, house_event);
 }
 
-std::shared_ptr<HouseEvent> Model::GetHouseEvent(const std::string& reference,
-                                                 const std::string& base_path) {
+HouseEventPtr Model::GetHouseEvent(const std::string& reference,
+                                   const std::string& base_path) {
   assert(reference != "");
   std::vector<std::string> path;
   boost::split(path, reference, boost::is_any_of("."),
@@ -196,8 +195,8 @@ void Model::AddBasicEvent(const BasicEventPtr& basic_event) {
   basic_events_.emplace(id, basic_event);
 }
 
-std::shared_ptr<BasicEvent> Model::GetBasicEvent(const std::string& reference,
-                                                 const std::string& base_path) {
+BasicEventPtr Model::GetBasicEvent(const std::string& reference,
+                                   const std::string& base_path) {
   assert(reference != "");
   std::vector<std::string> path;
   boost::split(path, reference, boost::is_any_of("."),
@@ -239,8 +238,8 @@ void Model::AddGate(const GatePtr& gate) {
   gates_.emplace(id, gate);
 }
 
-std::shared_ptr<Gate> Model::GetGate(const std::string& reference,
-                                     const std::string& base_path) {
+GatePtr Model::GetGate(const std::string& reference,
+                       const std::string& base_path) {
   assert(reference != "");
   std::vector<std::string> path;
   boost::split(path, reference, boost::is_any_of("."),

@@ -32,7 +32,6 @@
 #include "element.h"
 #include "env.h"
 #include "error.h"
-#include "expression.h"
 #include "fault_tree.h"
 #include "logger.h"
 
@@ -323,9 +322,9 @@ void Initializer::ProcessModelData(const xmlpp::Element* model_data) {
   }
 }
 
-std::shared_ptr<Gate> Initializer::RegisterGate(const xmlpp::Element* gate_node,
-                                                const std::string& base_path,
-                                                bool public_container) {
+GatePtr Initializer::RegisterGate(const xmlpp::Element* gate_node,
+                                  const std::string& base_path,
+                                  bool public_container) {
   std::string name = GetAttributeValue(gate_node, "name");
   std::string role = GetAttributeValue(gate_node, "role");
   bool gate_role = public_container;  // Inherited role by default.
@@ -461,10 +460,9 @@ void Initializer::ProcessFormula(const xmlpp::Element* formula_node,
   }
 }
 
-std::shared_ptr<BasicEvent> Initializer::RegisterBasicEvent(
-    const xmlpp::Element* event_node,
-    const std::string& base_path,
-    bool public_container) {
+BasicEventPtr Initializer::RegisterBasicEvent(const xmlpp::Element* event_node,
+                                              const std::string& base_path,
+                                              bool public_container) {
   std::string name = GetAttributeValue(event_node, "name");
   std::string role = GetAttributeValue(event_node, "role");
   bool event_role = public_container;  // Inherited role by default.
@@ -496,10 +494,9 @@ void Initializer::DefineBasicEvent(const xmlpp::Element* event_node,
   }
 }
 
-std::shared_ptr<HouseEvent> Initializer::DefineHouseEvent(
-    const xmlpp::Element* event_node,
-    const std::string& base_path,
-    bool public_container) {
+HouseEventPtr Initializer::DefineHouseEvent(const xmlpp::Element* event_node,
+                                            const std::string& base_path,
+                                            bool public_container) {
   std::string name = GetAttributeValue(event_node, "name");
   std::string role = GetAttributeValue(event_node, "role");
   bool event_role = public_container;  // Inherited role by default.

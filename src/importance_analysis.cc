@@ -53,7 +53,7 @@ void ImportanceAnalysis::Analyze() noexcept {
   analysis_time_ = DUR(imp_time);
 }
 
-std::vector<std::pair<int, std::shared_ptr<BasicEvent>>>
+std::vector<std::pair<int, BasicEventPtr>>
 ImportanceAnalysis::GatherImportantEvents(
     const BooleanGraph* graph,
     const std::vector<CutSet>& cut_sets) noexcept {

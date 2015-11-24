@@ -46,6 +46,8 @@
 
 #include <boost/functional/hash.hpp>
 
+#include "event.h"
+
 namespace scram {
 
 class IGate;  // Indexed gate parent of nodes.
@@ -760,10 +762,6 @@ class GateSet {
   std::array<std::unordered_set<IGatePtr, Hash, Equal>, kNumOperators> table_;
 };
 
-class BasicEvent;
-class HouseEvent;
-class Gate;
-class Formula;
 class Preprocessor;
 
 /// @class BooleanGraph
@@ -789,8 +787,6 @@ class BooleanGraph {
   friend class Preprocessor;  ///< The main manipulator of Boolean graphs.
 
  public:
-  using GatePtr = std::shared_ptr<Gate>;
-  using BasicEventPtr = std::shared_ptr<BasicEvent>;
   using IGatePtr = std::shared_ptr<IGate>;
 
   /// Constructs a BooleanGraph
@@ -845,8 +841,6 @@ class BooleanGraph {
   void Print();
 
  private:
-  using FormulaPtr = std::unique_ptr<Formula>;
-  using HouseEventPtr = std::shared_ptr<HouseEvent>;
   using NodePtr = std::shared_ptr<Node>;
   using ConstantPtr = std::shared_ptr<Constant>;
   using VariablePtr = std::shared_ptr<Variable>;

@@ -38,8 +38,6 @@ namespace scram {
 /// Main quantitative analysis class.
 class ProbabilityAnalysis : public Analysis {
  public:
-  using GatePtr = std::shared_ptr<Gate>;
-
   /// Probability analysis
   /// with the results of qualitative analysis.
   ///
@@ -175,8 +173,6 @@ class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
   std::vector<double>& var_probs() { return var_probs_; }
 
  protected:
-  using BasicEventPtr = std::shared_ptr<BasicEvent>;
-
   const BooleanGraph* graph_;  ///< Boolean graph from the fault tree analysis.
   const std::vector<CutSet>* cut_sets_;  ///< A collection of cut sets.
   std::vector<double> var_probs_;  ///< Variable probabilities.
@@ -261,7 +257,7 @@ class ProbabilityAnalyzer<Bdd> : public ProbabilityAnalyzerBase {
   /// @param[in] root  The root gate of the fault tree.
   ///
   /// @pre The function is called in the constructor only once.
-  void CreateBdd(const std::shared_ptr<Gate>& root) noexcept;
+  void CreateBdd(const GatePtr& root) noexcept;
 
   /// Calculates exact probability
   /// of a function graph represented by its root BDD vertex.

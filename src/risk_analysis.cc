@@ -26,7 +26,6 @@
 
 #include "bdd.h"
 #include "error.h"
-#include "event.h"
 #include "expression.h"
 #include "fault_tree.h"
 #include "grapher.h"
@@ -140,12 +139,11 @@ void RiskAnalysis::Report(std::ostream& out) {
   // This container is for warning
   // in case the input is formed not as intended.
   std::vector<std::shared_ptr<const PrimaryEvent>> orphan_primary_events;
-  using BasicEventPtr = std::shared_ptr<BasicEvent>;
   for (const std::pair<const std::string, BasicEventPtr>& event :
        model_->basic_events()) {
     if (event.second->orphan()) orphan_primary_events.push_back(event.second);
   }
-  using HouseEventPtr = std::shared_ptr<HouseEvent>;
+
   for (const std::pair<const std::string, HouseEventPtr>& event :
        model_->house_events()) {
     if (event.second->orphan()) orphan_primary_events.push_back(event.second);

@@ -97,8 +97,7 @@ ProbabilityAnalyzer<Bdd>::~ProbabilityAnalyzer() noexcept {
   if (owner_) delete bdd_graph_;
 }
 
-void ProbabilityAnalyzer<Bdd>::CreateBdd(
-    const std::shared_ptr<Gate>& root) noexcept {
+void ProbabilityAnalyzer<Bdd>::CreateBdd(const GatePtr& root) noexcept {
   CLOCK(ft_creation);
   BooleanGraph* bool_graph = new BooleanGraph(root, kSettings_.ccf_analysis());
   LOG(DEBUG2) << "Boolean graph is created in " << DUR(ft_creation);

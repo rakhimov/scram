@@ -114,13 +114,12 @@ class HouseEvent : public PrimaryEvent {
 };
 
 class Gate;
+using GatePtr = std::shared_ptr<Gate>;  ///< Shared gates in models.
 
 /// @class BasicEvent
 /// Representation of a basic event in a fault tree.
 class BasicEvent : public PrimaryEvent {
  public:
-  using GatePtr = std::shared_ptr<Gate>;
-
   using PrimaryEvent::PrimaryEvent;  // Construction with unique identification.
 
   virtual ~BasicEvent() {}
@@ -243,14 +242,18 @@ class CcfEvent : public BasicEvent {
   std::vector<std::string> member_names_;
 };
 
+using EventPtr = std::shared_ptr<Event>;  ///< Base shared pointer for events.
+using PrimaryEventPtr = std::shared_ptr<PrimaryEvent>;  ///< Base shared ptr.
+using HouseEventPtr = std::shared_ptr<HouseEvent>;  ///< Shared house events.
+using BasicEventPtr = std::shared_ptr<BasicEvent>;  ///< Shared basic events.
+
 class Formula;  // To describe a gate's formula.
+using FormulaPtr = std::unique_ptr<Formula>;  ///< Non-shared gate formulas.
 
 /// @class Gate
 /// A representation of a gate in a fault tree.
 class Gate : public Event {
  public:
-  using FormulaPtr = std::unique_ptr<Formula>;
-
   using Event::Event;  // Construction with unique identification.
 
   /// @returns The formula of this gate.
@@ -291,12 +294,6 @@ class Gate : public Event {
 /// Formulas are not expected to be shared.
 class Formula {
  public:
-  using EventPtr = std::shared_ptr<Event>;
-  using HouseEventPtr = std::shared_ptr<HouseEvent>;
-  using BasicEventPtr = std::shared_ptr<BasicEvent>;
-  using GatePtr = std::shared_ptr<Gate>;
-  using FormulaPtr = std::unique_ptr<Formula>;
-
   /// Constructs a formula.
   ///
   /// @param[in] type  The logical operator for this Boolean formula.

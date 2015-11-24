@@ -40,8 +40,6 @@ namespace scram {
 /// and probability distributions of basic events.
 class UncertaintyAnalysis : public Analysis {
  public:
-  using BasicEventPtr = std::shared_ptr<BasicEvent>;
-
   /// Uncertainty analysis
   /// on the fault tree processed
   /// by probability analysis.

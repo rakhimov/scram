@@ -49,8 +49,6 @@ struct ImportanceFactors {
 /// Analysis of importance factors of risk model variables.
 class ImportanceAnalysis : public Analysis {
  public:
-  using BasicEventPtr = std::shared_ptr<BasicEvent>;
-
   /// Importance analysis
   /// on the fault tree represented by
   /// its probability analysis.

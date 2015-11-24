@@ -24,7 +24,6 @@
 
 #include "boolean_graph.h"
 
-#include "event.h"
 #include "logger.h"
 
 namespace scram {

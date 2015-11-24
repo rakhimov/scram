@@ -22,7 +22,6 @@
 #define SCRAM_SRC_FAULT_TREE_H_
 
 #include <memory>
-#include <set>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
@@ -40,9 +39,6 @@ class CcfGroup;
 /// Component is for logical grouping of events, gates, and other components.
 class Component : public Element, public Role {
  public:
-  using GatePtr = std::shared_ptr<Gate>;
-  using BasicEventPtr = std::shared_ptr<BasicEvent>;
-  using HouseEventPtr = std::shared_ptr<HouseEvent>;
   using CcfGroupPtr = std::shared_ptr<CcfGroup>;
   using ComponentPtr = std::unique_ptr<Component>;
 
@@ -186,8 +182,6 @@ class Component : public Element, public Role {
 /// detection of top events.
 class FaultTree : public Component {
  public:
-  using GatePtr = std::shared_ptr<Gate>;
-
   /// The main constructor of the Fault Tree.
   /// Fault trees are assumed to be public and belong to the root model.
   ///
@@ -205,8 +199,6 @@ class FaultTree : public Component {
   void CollectTopEvents();
 
  private:
-  using FormulaPtr = std::unique_ptr<Formula>;
-
   /// Recursively marks descendant gates as "non-top".
   /// These gates belong to this fault tree only.
   ///

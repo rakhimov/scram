@@ -69,10 +69,6 @@ int GetOrder(const CutSet& cut_set);
 /// described by a gate as its root.
 class FaultTreeDescriptor {
  public:
-  using GatePtr = std::shared_ptr<Gate>;
-  using BasicEventPtr = std::shared_ptr<BasicEvent>;
-  using HouseEventPtr = std::shared_ptr<HouseEvent>;
-
   /// Gathers all information about a fault tree with a root gate.
   ///
   /// @param[in] root  The root gate of a fault tree.
@@ -122,9 +118,6 @@ class FaultTreeDescriptor {
   }
 
  private:
-  using EventPtr = std::shared_ptr<Event>;
-  using FormulaPtr = std::unique_ptr<Formula>;
-
   /// Gathers information about the correctly initialized fault tree.
   /// Databases for events are manipulated
   /// to best reflect the state and structure of the fault tree.
@@ -186,8 +179,6 @@ class FaultTreeDescriptor {
 ///          One analysis per FaultTreeAnalysis object.
 class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
  public:
-  using GatePtr = std::shared_ptr<Gate>;
-
   /// Traverses a valid fault tree from the root gate
   /// to collect databases of events, gates,
   /// and other members of the fault tree.

@@ -42,8 +42,6 @@ namespace scram {
 /// Abstract base class for all common cause failure models.
 class CcfGroup : public Element, public Role {
  public:
-  using BasicEventPtr = std::shared_ptr<BasicEvent>;
-
   /// Constructor to be used by derived classes.
   ///
   /// @param[in] name  The name of a CCF group.
@@ -124,9 +122,6 @@ class CcfGroup : public Element, public Role {
   void ApplyModel();
 
  protected:
-  using GatePtr = std::shared_ptr<Gate>;
-  using FormulaPtr = std::unique_ptr<Formula>;
-
   /// Creates new basic events from members.
   /// The new basic events are included in the database of new events.
   ///

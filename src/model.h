@@ -41,10 +41,6 @@ class Component;
 /// This class represents a risk analysis model.
 class Model : public Element {
  public:
-  using EventPtr = std::shared_ptr<Event>;
-  using HouseEventPtr = std::shared_ptr<HouseEvent>;
-  using BasicEventPtr = std::shared_ptr<BasicEvent>;
-  using GatePtr = std::shared_ptr<Gate>;
   using CcfGroupPtr = std::shared_ptr<CcfGroup>;
   using FaultTreePtr = std::unique_ptr<FaultTree>;
 

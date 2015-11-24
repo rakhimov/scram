@@ -23,7 +23,6 @@
 
 #include <iostream>
 #include <map>
-#include <memory>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -38,8 +37,6 @@ namespace scram {
 /// Currently operates with Fault Trees only.
 class Grapher {
  public:
-  using GatePtr = std::shared_ptr<Gate>;
-
   /// Outputs instructions for graphviz dot to create a fault tree.
   /// This function must be called only with fully initialized fault tree.
   ///
@@ -50,12 +47,6 @@ class Grapher {
                       std::ostream& out);
 
  private:
-  using EventPtr = std::shared_ptr<Event>;
-  using PrimaryEventPtr = std::shared_ptr<PrimaryEvent>;
-  using BasicEventPtr = std::shared_ptr<BasicEvent>;
-  using HouseEventPtr = std::shared_ptr<HouseEvent>;
-  using FormulaPtr = std::unique_ptr<Formula>;
-
   static const std::map<std::string, std::string> kGateColors_;  ///< Colors.
   static const std::map<std::string, std::string> kEventColors_;  ///< Colors.
 

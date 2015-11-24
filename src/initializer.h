@@ -32,6 +32,7 @@
 #include <libxml++/libxml++.h>
 
 #include "event.h"
+#include "expression.h"
 #include "model.h"
 #include "settings.h"
 #include "xml_parser.h"
@@ -78,12 +79,6 @@ class Initializer {
 
  private:
   using ElementPtr = std::shared_ptr<Element>;
-  using EventPtr = std::shared_ptr<Event>;
-  using GatePtr = std::shared_ptr<Gate>;
-  using FormulaPtr = std::unique_ptr<Formula>;  ///< Unique Formula.
-  using PrimaryEventPtr = std::shared_ptr<PrimaryEvent>;
-  using BasicEventPtr = std::shared_ptr<BasicEvent>;
-  using HouseEventPtr = std::shared_ptr<HouseEvent>;
   using CcfGroupPtr = std::shared_ptr<CcfGroup>;
   using FaultTreePtr = std::unique_ptr<FaultTree>;  ///< Unique fault tree.
   using ComponentPtr = std::unique_ptr<Component>;  ///< Unique component.

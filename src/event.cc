@@ -60,7 +60,6 @@ void Gate::Validate() {
       std::stringstream msg;
       msg << "";
       bool conditional_found = false;
-      using BasicEventPtr = std::shared_ptr<BasicEvent>;
       for (const BasicEventPtr& event : formula_->basic_event_args()) {
         if (!event->HasAttribute("flavor")) continue;
         std::string type = event->GetAttribute("flavor").value;

@@ -18,23 +18,18 @@
 #ifndef SCRAM_TESTS_RISK_ANALYSIS_TESTS_H_
 #define SCRAM_TESTS_RISK_ANALYSIS_TESTS_H_
 
-#include "initializer.h"
 #include "risk_analysis.h"
 
-#include <map>
 #include <set>
-#include <string>
 #include <vector>
 
 #include <gtest/gtest.h>
 
+#include "initializer.h"
+
 namespace scram {
 namespace test {
 
-using EventPtr = std::shared_ptr<Event>;
-using GatePtr = std::shared_ptr<Gate>;
-using HouseEventPtr = std::shared_ptr<HouseEvent>;
-using BasicEventPtr = std::shared_ptr<BasicEvent>;
 using FaultTreePtr = std::unique_ptr<FaultTree>;
 
 class RiskAnalysisTest : public ::testing::Test {
