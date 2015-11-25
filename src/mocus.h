@@ -499,7 +499,7 @@ class Mocus {
   bool constant_graph_;  ///< No need for analysis.
   const Settings kSettings_;  ///< Analysis settings.
   int root_index_;  ///< The root of the MOCUS graph.
-  std::unordered_map<int, SimpleGatePtr> modules_;  ///< Converted modules.
+  std::vector<std::pair<int, SimpleGatePtr>> modules_;  ///< Converted modules.
   std::vector<std::vector<int>> cut_sets_;  ///< Min cut sets with indices.
 };
 

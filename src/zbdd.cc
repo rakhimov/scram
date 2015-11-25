@@ -80,9 +80,9 @@ Zbdd::Zbdd(int root_index,
     : Zbdd::Zbdd(settings) {
   CLOCK(init_time);
   LOG(DEBUG2) << "Creating ZBDD from cut sets...";
-  for (const auto& module : cut_sets) {
-    assert(!modules_.count(module.first) && "Repeated calculation of modules.");
-    modules_.emplace(module.first, Zbdd::ConvertCutSets(module.second));
+  for (auto it = cut_sets.rbegin(); it != cut_sets.rend(); ++it) {
+    assert(!modules_.count(it->first) && "Repeated calculation of modules.");
+    modules_.emplace(it->first, Zbdd::ConvertCutSets(it->second));
   }
   root_ = modules_.find(root_index)->second;
   Zbdd::ClearMarks(root_);
@@ -223,13 +223,18 @@ VertexPtr Zbdd::ConvertCutSets(
   return result;
 }
 
-SetNodePtr Zbdd::EmplaceCutSet(const mocus::CutSetPtr& cut_set) noexcept {
+VertexPtr Zbdd::EmplaceCutSet(const mocus::CutSetPtr& cut_set) noexcept {
   assert(!cut_set->empty() && "Unity cut set must be sanitized.");
   VertexPtr result = kBase_;
   std::vector<int>::const_reverse_iterator it;
   for (it = cut_set->modules().rbegin(); it != cut_set->modules().rend();
        ++it) {
     int index = *it;
+    VertexPtr module = modules_.find(index)->second;
+    if (module->terminal()) {
+      if (!Terminal::Ptr(module)->value()) return kEmpty_;
+      continue;  // The result does not change for the TRUE module.
+    }
     SetNodePtr& in_table = unique_table_[{index, result->id(), 0}];
     if (!in_table) {
       in_table = std::make_shared<SetNode>(index, index + 1);
@@ -252,7 +257,7 @@ SetNodePtr Zbdd::EmplaceCutSet(const mocus::CutSetPtr& cut_set) noexcept {
     }
     result = in_table;
   }
-  return SetNode::Ptr(result);
+  return result;
 }
 
 SetNodePtr Zbdd::CreateModuleProxy(const IGatePtr& gate) noexcept {
@@ -551,6 +556,11 @@ void Zbdd::TestStructure(const VertexPtr& vertex) noexcept {
   assert(!(!node->low()->terminal() &&
            node->order() >= SetNode::Ptr(node->low())->order()) &&
          "Ordering of nodes failed.");
+  if (node->module()) {
+    VertexPtr module = modules_.find(node->index())->second;
+    assert(!module->terminal() && "Terminal modules must be removed.");
+    Zbdd::TestStructure(module);
+  }
   Zbdd::TestStructure(node->high());
   Zbdd::TestStructure(node->low());
 }

@@ -105,6 +105,8 @@ class Zbdd {
   /// @param[in] root_index  Index of the root module.
   /// @param[in] cut_sets  Container with cut sets of modules.
   /// @param[in] settings  Settings for analysis.
+  ///
+  /// @pre Modules are topologically ordered.
   Zbdd(int root_index,
        const std::vector<std::pair<int, mocus::CutSetContainer>>& cut_sets,
        const Settings& settings) noexcept;
@@ -164,14 +166,14 @@ class Zbdd {
   ///
   /// @param[in] cut_set  MOCUS specific cut set.
   ///
-  /// @returns Pointer to the root set node.
+  /// @returns Pointer to the root ZBDD node.
   ///
   /// @pre Cut sets are passed in increasing size.
   /// @pre The order equals index + 1.
   ///
   /// @post The final ZBDD graph is minimal.
   /// @post Negative literals are discarded.
-  SetNodePtr EmplaceCutSet(const mocus::CutSetPtr& cut_set) noexcept;
+  VertexPtr EmplaceCutSet(const mocus::CutSetPtr& cut_set) noexcept;
 
   /// Creates a vertex to represent a module gate.
   ///

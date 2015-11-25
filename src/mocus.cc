@@ -198,7 +198,7 @@ void Mocus::Analyze() {
   CLOCK(mcs_time);
   LOG(DEBUG2) << "Start minimal cut set generation.";
   std::vector<std::pair<int, mocus::CutSetContainer>> module_sets;
-  for (const std::pair<const int, SimpleGatePtr>& module : modules_) {
+  for (const std::pair<int, SimpleGatePtr>& module : modules_) {
     CLOCK(gen_time);
     LOG(DEBUG3) << "Finding cut sets from module: G" << module.first;
     mocus::CutSetContainer cut_sets;
@@ -224,7 +224,7 @@ void Mocus::CreateSimpleTree(
   SimpleGatePtr simple_gate(
       new mocus::SimpleGate(gate->type(), kSettings_.limit_order()));
   processed_gates->emplace(gate->index(), simple_gate);
-  if (gate->IsModule()) modules_.emplace(gate->index(), simple_gate);
+  if (gate->IsModule()) modules_.emplace_back(gate->index(), simple_gate);
 
   assert(gate->constant_args().empty());
   assert(gate->args().size() > 1);
