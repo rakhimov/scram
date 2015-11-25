@@ -15,8 +15,20 @@ The system specs are the same as in the speed recordings.
 MOCUS
 -----
 
-- Baobab1 -l 7 :  19 |
-- Baobab1 -l 8 :  35 | 40
+- Baobab1 -l 7 :  15 |
+- Baobab1 -l 8 :  35 | 400
+
+
+BDD
+---
+
+- Baobab1 : 100
+
+
+ZBDD
+----
+
+- Baobab1 : 600
 
 
 Initialization and Validation

@@ -40,15 +40,15 @@ Release build:
 ---------- Baobab1 -l 8 (mcs = 25892) ----------------
 Release build:
 --------------
-- Cut Set Generation      0.85  |
-- Cut Set Minimization    4.9   |
+- Cut Set Generation      0.85  |  1.0
+- Cut Set Minimization    3.0   |
 
 
 ---------- Baobab1 -l 9 (mcs = 36516) ----------------
 Release build:
 --------------
-- Cut Set Generation      2.4  |
-- Cut Set Minimization    23   |
+- Cut Set Generation      2.4  |  3.0
+- Cut Set Minimization    11.5 |
 
 
 ---------- Baobab2 (mcs = 4805) ----------------
@@ -59,8 +59,35 @@ Debug build:
 
 Release build:
 ---------------
-- Cut Set Generation      1.8   |
-- Cut Set Minimization    0.15  |
+- Cut Set Generation      1.8   |  2.0
+- Cut Set Minimization    0.15  |  1.5
+
+
+============== Fault Tree Analysis (ZBDD) =============
+
+---------- Baobab1 (mcs = 46188) ----------------
+Release build:
+--------------
+- ZBDD creation           4.0  |
+
+    # of ZBDD nodes created: 1743813
+    # of SetNodes in ZBDD:   239514
+
+- Cut Set Minimization    0.30 |
+
+    # of ZBDD nodes created: 1782044
+    # of SetNodes in ZBDD: 3338
+
+
+============== Fault Tree Analysis (BDD) =============
+
+---------- Baobab1 (mcs = 46188) ----------------
+
+Time: 0.15
+# of BDD vertices created: 8289
+# of entries in unique table: 8288
+# of entries in compute table: 8531
+# of ITE in BDD: 3349
 
 
 ==================== Uncertainty Analysis =================
