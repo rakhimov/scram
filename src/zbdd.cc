@@ -37,6 +37,9 @@ Zbdd::Zbdd(const Bdd* bdd, const Settings& settings) noexcept
   const Bdd::Function& bdd_root = bdd->root();
   root_ = Zbdd::ConvertBdd(bdd_root.vertex, bdd_root.complement, bdd,
                            kSettings_.limit_order());
+  Zbdd::ClearMarks(root_);
+  Zbdd::TestStructure(root_);
+  Zbdd::ClearMarks(root_);
   LOG(DEBUG4) << "# of ZBDD nodes created: " << set_id_ - 1;
   LOG(DEBUG4) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);
   LOG(DEBUG2) << "Created ZBDD from BDD in " << DUR(init_time);
@@ -59,6 +62,9 @@ Zbdd::Zbdd(const BooleanGraph* fault_tree, const Settings& settings) noexcept
   } else {
     root_ = Zbdd::ConvertGraph(fault_tree->root());
   }
+  Zbdd::ClearMarks(root_);
+  Zbdd::TestStructure(root_);
+  Zbdd::ClearMarks(root_);
   LOG(DEBUG4) << "# of ZBDD nodes created: " << set_id_ - 1;
   LOG(DEBUG4) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);
   LOG(DEBUG2) << "Created ZBDD from Boolean Graph in " << DUR(init_time);
@@ -79,7 +85,9 @@ Zbdd::Zbdd(int root_index,
     modules_.emplace(module.first, Zbdd::ConvertCutSets(module.second));
   }
   root_ = modules_.find(root_index)->second;
-
+  Zbdd::ClearMarks(root_);
+  Zbdd::TestStructure(root_);
+  Zbdd::ClearMarks(root_);
   LOG(DEBUG4) << "# of ZBDD nodes created: " << set_id_ - 1;
   LOG(DEBUG4) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);
   LOG(DEBUG2) << "Created ZBDD from cut sets in " << DUR(init_time);
@@ -96,6 +104,8 @@ void Zbdd::Analyze() noexcept {
   CLOCK(minimize_time);
   LOG(DEBUG3) << "Minimizing ZBDD...";
   root_ = Zbdd::Minimize(root_);
+  Zbdd::ClearMarks(root_);
+  Zbdd::TestStructure(root_);
   LOG(DEBUG3) << "Finished ZBDD minimization in " << DUR(minimize_time);
   Zbdd::ClearMarks(root_);
   LOG(DEBUG4) << "# of ZBDD nodes created: " << set_id_ - 1;
@@ -410,13 +420,7 @@ std::shared_ptr<Vertex> Zbdd::Minimize(const VertexPtr& vertex) noexcept {
 
 std::shared_ptr<Vertex> Zbdd::Subsume(const VertexPtr& high,
                                       const VertexPtr& low) noexcept {
-  if (low->terminal()) {
-    if (Terminal::Ptr(low)->value()) {
-      return kEmpty_;  // high is always a subset of the Base set.
-    } else {
-      return high;  // high cannot be a subset of the Empty set.
-    }
-  }
+  if (low->terminal()) return Terminal::Ptr(low)->value() ? kEmpty_ : high;
   if (high->terminal()) return high;  // No need to reduce terminal sets.
   VertexPtr& computed = subsume_table_[{high->id(), low->id()}];
   if (computed) return computed;
@@ -431,14 +435,19 @@ std::shared_ptr<Vertex> Zbdd::Subsume(const VertexPtr& high,
   VertexPtr sublow;
   if (high_node->order() == low_node->order()) {
     assert(high_node->index() == low_node->index());
-    /// @todo This is correct only for coherent sets.
     subhigh = Zbdd::Subsume(high_node->high(), low_node->high());
+    subhigh = Zbdd::Subsume(subhigh, low_node->low());
     sublow = Zbdd::Subsume(high_node->low(), low_node->low());
   } else {
     assert(high_node->order() < low_node->order());
     subhigh = Zbdd::Subsume(high_node->high(), low);
     sublow = Zbdd::Subsume(high_node->low(), low);
   }
+  if (subhigh->terminal() && !Terminal::Ptr(subhigh)->value()) {
+    computed = sublow;
+    return computed;
+  }
+  assert(subhigh->id() != sublow->id());
   SetNodePtr& existing_node =
       unique_table_[{high_node->index(), subhigh->id(), sublow->id()}];
   if (!existing_node) {
@@ -529,6 +538,27 @@ int64_t Zbdd::CountCutSets(const VertexPtr& vertex) noexcept {
   node->count(multiplier * Zbdd::CountCutSets(node->high()) +
               Zbdd::CountCutSets(node->low()));
   return node->count();
+}
+
+void Zbdd::TestStructure(const VertexPtr& vertex) noexcept {
+  if (vertex->terminal()) return;
+  SetNodePtr node = SetNode::Ptr(vertex);
+  if (node->mark()) return;
+  node->mark(true);
+  assert(node->index() && "Illegal index for a node.");
+  assert(node->order() && "Improper order for nodes.");
+  assert(node->high() && node->low() && "Malformed node high/low pointers.");
+  assert(!(node->high()->terminal() && !Terminal::Ptr(node->high())->value())
+         && "Reduction rule failure.");
+  assert((node->high()->id() != node->low()->id()) && "Minimization failure.");
+  assert(!(!node->high()->terminal() &&
+           node->order() >= SetNode::Ptr(node->high())->order()) &&
+         "Ordering of nodes failed.");
+  assert(!(!node->low()->terminal() &&
+           node->order() >= SetNode::Ptr(node->low())->order()) &&
+         "Ordering of nodes failed.");
+  Zbdd::TestStructure(node->high());
+  Zbdd::TestStructure(node->low());
 }
 
 }  // namespace scram
