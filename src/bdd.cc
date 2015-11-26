@@ -59,9 +59,17 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
     } else {
       root_ = {false, kOne_};
     }
+  } else if (fault_tree->root()->type() == kNullGate) {
+    IGatePtr top = fault_tree->root();
+    assert(top->args().size() == 1);
+    assert(top->gate_args().empty());
+    int child = *top->args().begin();
+    root_ = {child < 0, Bdd::IfThenElse(top->variable_args().begin()->second)};
   } else {
     root_ = Bdd::IfThenElse(fault_tree->root());
   }
+  Bdd::ClearMarks(false);
+  Bdd::TestStructure(root_.vertex);
   LOG(DEBUG4) << "# of BDD vertices created: " << function_id_ - 1;
   LOG(DEBUG4) << "# of entries in unique table: " << unique_table_.size();
   LOG(DEBUG4) << "# of entries in compute table: " << compute_table_.size();
@@ -121,6 +129,7 @@ const Bdd::Function& Bdd::IfThenElse(const IGatePtr& gate) noexcept {
 ItePtr Bdd::IfThenElse(const VariablePtr& variable) noexcept {
   ItePtr& in_table = unique_table_[{variable->index(), 1, -1}];
   if (in_table) return in_table;
+  assert(variable->order() > 0 && "Order is not proper.");
   index_to_order_.emplace(variable->index(), variable->order());
   in_table = std::make_shared<Ite>(variable->index(), variable->order());
   in_table->id(function_id_++);
@@ -134,6 +143,7 @@ ItePtr Bdd::CreateModuleProxy(const IGatePtr& gate) noexcept {
   assert(gate->IsModule());
   ItePtr& in_table = unique_table_[{gate->index(), 1, -1}];
   if (in_table) return in_table;
+  assert(gate->order() > 0 && "Order is not proper.");
   in_table = std::make_shared<Ite>(gate->index(), gate->order());
   in_table->module(true);  // The main difference.
   in_table->id(function_id_++);
@@ -317,6 +327,32 @@ void Bdd::ClearMarks(const VertexPtr& vertex, bool mark) noexcept {
   }
   Bdd::ClearMarks(ite->high(), mark);
   Bdd::ClearMarks(ite->low(), mark);
+}
+
+void Bdd::TestStructure(const VertexPtr& vertex) noexcept {
+  if (vertex->terminal()) return;
+  ItePtr ite = Ite::Ptr(vertex);
+  if (ite->mark()) return;
+  ite->mark(true);
+  assert(ite->index() && "Illegal index for a node.");
+  assert(ite->order() && "Improper order for nodes.");
+  assert(ite->high() && ite->low() && "Malformed node high/low pointers.");
+  assert(
+      !(!ite->complement_edge() && ite->high()->id() == ite->low()->id()) &&
+      "Reduction rule failure.");
+  assert(!(!ite->high()->terminal() &&
+           ite->order() >= Ite::Ptr(ite->high())->order()) &&
+         "Ordering of nodes failed.");
+  assert(!(!ite->low()->terminal() &&
+           ite->order() >= Ite::Ptr(ite->low())->order()) &&
+         "Ordering of nodes failed.");
+  if (ite->module()) {
+    const Bdd::Function& res = gates_.find(ite->index())->second;
+    assert(!res.vertex->terminal() && "Terminal modules must be removed.");
+    Bdd::TestStructure(res.vertex);
+  }
+  Bdd::TestStructure(ite->high());
+  Bdd::TestStructure(ite->low());
 }
 
 }  // namespace scram

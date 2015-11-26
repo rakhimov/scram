@@ -473,6 +473,14 @@ class Bdd {
   /// @note Marks will propagate to modules as well.
   void ClearMarks(const VertexPtr& vertex, bool mark) noexcept;
 
+  /// Checks BDD graphs for errors in the structure.
+  /// Errors are assertions that fail at runtime.
+  ///
+  /// @param[in] vertex  The root vertex of BDD.
+  ///
+  /// @pre Non-terminal node marks are clear (false).
+  void TestStructure(const VertexPtr& vertex) noexcept;
+
   const Settings kSettings_;  ///< Analysis settings.
   Function root_;  ///< The root function of this BDD.
 
