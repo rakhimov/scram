@@ -279,29 +279,17 @@ Triplet Bdd::GetSignature(Operator type,
   assert(!arg_one->terminal() && !arg_two->terminal());
   assert(arg_one->id() && arg_two->id());
   assert(arg_one->id() != arg_two->id());
-  int sign_one = complement_one ? -1 : 1;
-  int sign_two = complement_two ? -1 : 1;
-  int min_id = std::min(arg_one->id(), arg_two->id());
-  int max_id = std::max(arg_one->id(), arg_two->id());
-  min_id *= min_id == arg_one->id() ? sign_one : sign_two;
-  max_id *= max_id == arg_one->id() ? sign_one : sign_two;
-
-  std::array<int, 3> sig;  // Signature of the operation.
+  int min_id = arg_one->id() * (complement_one ? -1 : 1);
+  int max_id = arg_two->id() * (complement_two ? -1 : 1);
+  if (arg_one->id() > arg_two->id()) std::swap(min_id, max_id);
   switch (type) {  /// @todo Detect equal calculations with complements.
     case kOrGate:
-      sig[0] = min_id;
-      sig[1] = 1;
-      sig[2] = max_id;
-      break;
+      return {min_id, 1, max_id};
     case kAndGate:
-      sig[0] = min_id;
-      sig[1] = max_id;
-      sig[2] = 0;
-      break;
+      return {min_id, max_id, 0};
     default:
       assert(false);
   }
-  return sig;
 }
 
 int Bdd::CountIteNodes(const VertexPtr& vertex) noexcept {
