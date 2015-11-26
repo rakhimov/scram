@@ -175,7 +175,8 @@ TEST_F(RiskAnalysisTest, MultipleParentNegativeGate) {
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_DOUBLE_EQ(0.9, p_total());
 
-  std::set< std::set<std::string> > mcs = {{"not a"}};
+  /* std::set<std::set<std::string>> mcs = {{"not a"}};  // Prime implicants. */
+  std::set<std::set<std::string>> mcs = {{}};  // Minimal cut sets.
   EXPECT_EQ(1, min_cut_sets().size());
   EXPECT_EQ(mcs, min_cut_sets());
 }
@@ -300,7 +301,8 @@ TEST_F(RiskAnalysisTest, NOT_A) {
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
 
-  std::set< std::set<std::string> > mcs = {{"not onlychild"}};
+  /* std::set< std::set<std::string> > mcs = {{"not onlychild"}};  // PI. */
+  std::set< std::set<std::string> > mcs = {{}};  // MCS.
   EXPECT_EQ(1, min_cut_sets().size());
   EXPECT_EQ(mcs, min_cut_sets());
 }

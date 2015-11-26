@@ -182,7 +182,7 @@ Mocus::Mocus(const BooleanGraph* fault_tree, const Settings& settings)
     assert(top->args().size() == 1);
     assert(top->gate_args().empty());
     int child = *top->args().begin();
-    cut_sets_.push_back({child});
+    child > 0 ? cut_sets_.push_back({child}) : cut_sets_.push_back({});
     constant_graph_ = true;
     return;
   }
