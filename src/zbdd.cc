@@ -138,32 +138,40 @@ VertexPtr Zbdd::ConvertBdd(const VertexPtr& vertex, bool complement,
   VertexPtr& result = ites_[{sign * vertex->id(), limit_order}];
   if (result) return result;
   ItePtr ite = Ite::Ptr(vertex);
-  SetNodePtr zbdd = std::make_shared<SetNode>(ite->index(), ite->order());
-  int limit_high = limit_order - 1;  // Requested order for the high node.
+  VertexPtr low =
+      Zbdd::ConvertBdd(ite->low(), ite->complement_edge() ^ complement,
+                       bdd_graph, limit_order);
   if (ite->module()) {  // This is a proxy and not a variable.
-    zbdd->module(true);
     const Bdd::Function& module =
         bdd_graph->gates().find(ite->index())->second;
+    assert(!module.vertex->terminal() && "Unexpected BDD terminal module.");
     VertexPtr module_set =
         Zbdd::ConvertBdd(module.vertex, module.complement,
                          bdd_graph, kSettings_.limit_order());
-    limit_high += 1;  // Conservative approach.
     modules_.emplace(ite->index(), module_set);
+    if (module_set->terminal()) {
+      assert(!Terminal::Ptr(module_set)->value());
+      result = low;
+      return result;
+    }
   }
-  zbdd->high(Zbdd::ConvertBdd(ite->high(), complement, bdd_graph, limit_high));
-  zbdd->low(Zbdd::ConvertBdd(ite->low(), ite->complement_edge() ^ complement,
-                             bdd_graph, limit_order));
-  if ((zbdd->high()->terminal() && !Terminal::Ptr(zbdd->high())->value()) ||
-      (zbdd->high()->id() == zbdd->low()->id()) ||
-      (zbdd->low()->terminal() && Terminal::Ptr(zbdd->low())->value())) {
-    result = zbdd->low();  // Reduce and minimize.
+  int limit_high = limit_order - 1;  // Requested order for the high node.
+  if (ite->module()) limit_high += 1;  // Conservative approach.
+  VertexPtr high =
+      Zbdd::ConvertBdd(ite->high(), complement, bdd_graph, limit_high);
+  if ((high->terminal() && !Terminal::Ptr(high)->value()) ||
+      (high->id() == low->id()) ||
+      (low->terminal() && Terminal::Ptr(low)->value())) {
+    result = low;  // Reduce and minimize.
     return result;
   }
-  SetNodePtr& in_table =
-      unique_table_[{zbdd->index(), zbdd->high()->id(), zbdd->low()->id()}];
+  SetNodePtr& in_table = unique_table_[{ite->index(), high->id(), low->id()}];
   if (!in_table) {
-    in_table = zbdd;
-    zbdd->id(set_id_++);
+    in_table = std::make_shared<SetNode>(ite->index(), ite->order());
+    in_table->module(ite->module());
+    in_table->id(set_id_++);
+    in_table->high(high);
+    in_table->low(low);
   }
   result = in_table;
   return result;
