@@ -288,14 +288,6 @@ class Zbdd {
   /// @pre SetNode marks are clear (false).
   int64_t CountCutSets(const VertexPtr& vertex) noexcept;
 
-  /// Checks ZBDD graphs for errors in the structure.
-  /// Errors are assertions that fail at runtime.
-  ///
-  /// @param[in] vertex  The root vertex of ZBDD.
-  ///
-  /// @pre SetNode marks are clear (false).
-  void TestStructure(const VertexPtr& vertex) noexcept;
-
   /// Cleans up non-terminal vertex marks
   /// by setting them to "false".
   ///
@@ -303,6 +295,14 @@ class Zbdd {
   ///
   /// @pre The graph is marked "true" contiguously.
   void ClearMarks(const VertexPtr& vertex) noexcept;
+
+  /// Checks ZBDD graphs for errors in the structure.
+  /// Errors are assertions that fail at runtime.
+  ///
+  /// @param[in] vertex  The root vertex of ZBDD.
+  ///
+  /// @pre SetNode marks are clear (false).
+  void TestStructure(const VertexPtr& vertex) noexcept;
 
   /// Table of unique SetNodes denoting sets.
   /// The key consists of (index, id_high, id_low) triplet.

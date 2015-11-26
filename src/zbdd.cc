@@ -59,6 +59,13 @@ Zbdd::Zbdd(const BooleanGraph* fault_tree, const Settings& settings) noexcept
     } else {
       root_ = kBase_;
     }
+  } else if (fault_tree->root()->type() == kNullGate) {
+    IGatePtr top = fault_tree->root();
+    assert(top->args().size() == 1);
+    assert(top->gate_args().empty());
+    int child = *top->args().begin();
+    assert(child > 0 && "Cannot handle non-coherent graphs.");
+    root_ = Zbdd::ConvertGraph(top->variable_args().begin()->second);
   } else {
     root_ = Zbdd::ConvertGraph(fault_tree->root());
   }
@@ -199,6 +206,7 @@ VertexPtr Zbdd::ConvertGraph(const IGatePtr& gate) noexcept {
 SetNodePtr Zbdd::ConvertGraph(const VariablePtr& variable) noexcept {
   SetNodePtr& in_table = unique_table_[{variable->index(), 1, 0}];
   if (in_table) return in_table;
+  assert(variable->order() > 0 && "Improper order.");
   in_table = std::make_shared<SetNode>(variable->index(), variable->order());
   in_table->id(set_id_++);
   in_table->high(kBase_);
@@ -264,6 +272,7 @@ SetNodePtr Zbdd::CreateModuleProxy(const IGatePtr& gate) noexcept {
   assert(gate->IsModule());
   SetNodePtr& in_table = unique_table_[{gate->index(), 1, 0}];
   if (in_table) return in_table;
+  assert(gate->order() > 0 && "Improper order.");
   in_table = std::make_shared<SetNode>(gate->index(), gate->order());
   in_table->module(true);  // The main difference.
   in_table->id(set_id_++);
@@ -509,18 +518,6 @@ int Zbdd::CountSetNodes(const VertexPtr& vertex) noexcept {
          Zbdd::CountSetNodes(node->low());
 }
 
-void Zbdd::ClearMarks(const VertexPtr& vertex) noexcept {
-  if (vertex->terminal()) return;
-  SetNodePtr node = SetNode::Ptr(vertex);
-  if (!node->mark()) return;
-  node->mark(false);
-  if (node->module()) {
-    Zbdd::ClearMarks(modules_.find(node->index())->second);
-  }
-  Zbdd::ClearMarks(node->high());
-  Zbdd::ClearMarks(node->low());
-}
-
 int64_t Zbdd::CountCutSets(const VertexPtr& vertex) noexcept {
   if (vertex->terminal()) {
     if (Terminal::Ptr(vertex)->value()) return 1;
@@ -537,6 +534,18 @@ int64_t Zbdd::CountCutSets(const VertexPtr& vertex) noexcept {
   node->count(multiplier * Zbdd::CountCutSets(node->high()) +
               Zbdd::CountCutSets(node->low()));
   return node->count();
+}
+
+void Zbdd::ClearMarks(const VertexPtr& vertex) noexcept {
+  if (vertex->terminal()) return;
+  SetNodePtr node = SetNode::Ptr(vertex);
+  if (!node->mark()) return;
+  node->mark(false);
+  if (node->module()) {
+    Zbdd::ClearMarks(modules_.find(node->index())->second);
+  }
+  Zbdd::ClearMarks(node->high());
+  Zbdd::ClearMarks(node->low());
 }
 
 void Zbdd::TestStructure(const VertexPtr& vertex) noexcept {
