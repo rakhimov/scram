@@ -34,6 +34,8 @@ namespace scram {
 
 /// @class SetNode
 /// Representation of non-terminal nodes in ZBDD.
+/// Complement variables are represented with negative indices.
+/// The order of the complement is higher than the order of the variable.
 class SetNode : public NonTerminal {
  public:
   using NonTerminal::NonTerminal;  ///< Constructor with index and order.
@@ -151,9 +153,11 @@ class Zbdd {
   /// Creates a Zbdd vertex from a Boolean variable.
   ///
   /// @param[in] variable  Boolean graph variable.
+  /// @param[in] complement  A flag for a complement of a variable.
   ///
   /// @returns Pointer to the root vertex of the Zbdd graph.
-  SetNodePtr ConvertGraph(const VariablePtr& variable) noexcept;
+  SetNodePtr ConvertGraph(const VariablePtr& variable,
+                          bool complement) noexcept;
 
   /// Converts cut sets found by MOCUS into a ZBDD graph.
   ///
@@ -243,6 +247,25 @@ class Zbdd {
   Triplet GetSignature(Operator type, const VertexPtr& arg_one,
                        const VertexPtr& arg_two) noexcept;
 
+  /// Removes complements of variables from cut sets.
+  /// This procedure only needs to be performed for non-coherent graphs
+  /// with minimal cut sets as output.
+  ///
+  /// @param[in] vertex  The variable vertex in the ZBDD.
+  ///
+  /// @returns Processed vertex.
+  VertexPtr EliminateComplements(const VertexPtr& vertex) noexcept;
+
+  /// Processes complements in a SetNode with processed high/low edges.
+  ///
+  /// @param[in] node  SetNode to be processed.
+  /// @param[in] high  Processed high edge.
+  /// @param[in] low  Processed low edge.
+  ///
+  /// @returns Processed ZBDD vertex without complements.
+  VertexPtr EliminateComplement(const SetNodePtr& node, const VertexPtr& high,
+                                const VertexPtr& low) noexcept;
+
   /// Removes subsets in ZBDD.
   ///
   /// @param[in] vertex  The variable node in the set.
@@ -327,6 +350,7 @@ class Zbdd {
   const TerminalPtr kBase_;  ///< Terminal Base (Unity/1) set.
   const TerminalPtr kEmpty_;  ///< Terminal Empty (Null/0) set.
   int set_id_;  ///< Identification assignment for new set graphs.
+  std::unordered_map<int, VertexPtr> wide_results_;  ///< Memorize widening.
   std::unordered_map<int, VertexPtr> minimal_results_;  ///< Memorize minimal.
   std::vector<CutSet> cut_sets_;  ///< Generated cut sets.
 };

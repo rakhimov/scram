@@ -64,10 +64,21 @@ Zbdd::Zbdd(const BooleanGraph* fault_tree, const Settings& settings) noexcept
     assert(top->args().size() == 1);
     assert(top->gate_args().empty());
     int child = *top->args().begin();
-    assert(child > 0 && "Cannot handle non-coherent graphs.");
-    root_ = Zbdd::ConvertGraph(top->variable_args().begin()->second);
+    if (child < 0) {
+      root_ = kBase_;
+    } else {
+      root_ = Zbdd::ConvertGraph(top->variable_args().begin()->second, false);
+    }
   } else {
     root_ = Zbdd::ConvertGraph(fault_tree->root());
+    if (!fault_tree->coherent()) {
+      Zbdd::ClearMarks(root_);
+      Zbdd::TestStructure(root_);
+      Zbdd::ClearMarks(root_);
+      LOG(DEBUG5) << "Eliminating complements from ZBDD...";
+      root_ = Zbdd::EliminateComplements(root_);
+      LOG(DEBUG5) << "Finished complement elimination.";
+    }
   }
   Zbdd::ClearMarks(root_);
   Zbdd::TestStructure(root_);
@@ -183,11 +194,10 @@ VertexPtr Zbdd::ConvertGraph(const IGatePtr& gate) noexcept {
   if (result) return result;
   std::vector<VertexPtr> args;
   for (const std::pair<const int, VariablePtr>& arg : gate->variable_args()) {
-    assert(arg.first > 0 && "Cannot handle non-coherent graphs.");
-    args.push_back(Zbdd::ConvertGraph(arg.second));
+    args.push_back(Zbdd::ConvertGraph(arg.second, arg.first < 0));
   }
   for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
-    assert(arg.first > 0 && "Cannot handle non-coherent graphs.");
+    assert(arg.first > 0 && "Complements must be pushed down to variables.");
     VertexPtr res = Zbdd::ConvertGraph(arg.second);
     if (arg.second->IsModule()) {
       args.push_back(Zbdd::CreateModuleProxy(arg.second));
@@ -211,11 +221,13 @@ VertexPtr Zbdd::ConvertGraph(const IGatePtr& gate) noexcept {
   return result;
 }
 
-SetNodePtr Zbdd::ConvertGraph(const VariablePtr& variable) noexcept {
-  SetNodePtr& in_table = unique_table_[{variable->index(), 1, 0}];
+SetNodePtr Zbdd::ConvertGraph(const VariablePtr& variable,
+                              bool complement) noexcept {
+  int index = variable->index() * (complement ? -1 : 1);
+  SetNodePtr& in_table = unique_table_[{index, 1, 0}];
   if (in_table) return in_table;
   assert(variable->order() > 0 && "Improper order.");
-  in_table = std::make_shared<SetNode>(variable->index(), variable->order());
+  in_table = std::make_shared<SetNode>(index, variable->order());
   in_table->id(set_id_++);
   in_table->high(kBase_);
   in_table->low(kEmpty_);
@@ -307,6 +319,8 @@ VertexPtr Zbdd::Apply(Operator type, const VertexPtr& arg_one,
   SetNodePtr set_one = SetNode::Ptr(arg_one);
   SetNodePtr set_two = SetNode::Ptr(arg_two);
   if (set_one->order() > set_two->order()) std::swap(set_one, set_two);
+  if (set_one->order() == set_two->order()
+      && set_one->index() < set_two->index()) std::swap(set_one, set_two);
   result = Zbdd::Apply(type, set_one, set_two);
   return result;
 }
@@ -343,12 +357,12 @@ VertexPtr Zbdd::Apply(Operator type, const SetNodePtr& arg_one,
                       const SetNodePtr& arg_two) noexcept {
   VertexPtr high;
   VertexPtr low;
-  if (arg_one->order() == arg_two->order()) {  // The same variable.
-    assert(arg_one->index() == arg_two->index());
+  if (arg_one->order() == arg_two->order() &&
+      arg_one->index() == arg_two->index()) {  // The same variable.
     switch (type) {
       case kOrGate:
-        high = Zbdd::Apply(type, arg_one->high(), arg_two->high());
-        low = Zbdd::Apply(type, arg_one->low(), arg_two->low());
+        high = Zbdd::Apply(kOrGate, arg_one->high(), arg_two->high());
+        low = Zbdd::Apply(kOrGate, arg_one->low(), arg_two->low());
         break;
       case kAndGate:
         // (x*f1 + f0) * (x*g1 + g0) = x*(f1*(g1 + g0) + f0*g1) + f0*g0
@@ -357,20 +371,31 @@ VertexPtr Zbdd::Apply(Operator type, const SetNodePtr& arg_one,
             Zbdd::Apply(kAndGate, arg_one->high(),
                         Zbdd::Apply(kOrGate, arg_two->high(), arg_two->low())),
             Zbdd::Apply(kAndGate, arg_one->low(), arg_two->high()));
-        low = Zbdd::Apply(type, arg_one->low(), arg_two->low());
+        low = Zbdd::Apply(kAndGate, arg_one->low(), arg_two->low());
         break;
       default:
         assert(false && "Unsupported Boolean operation on ZBDD.");
     }
   } else {
-    assert(arg_one->order() < arg_two->order());
+    assert((arg_one->order() < arg_two->order() ||
+            arg_one->index() > arg_two->index()) &&
+           "Order contract failed.");
     switch (type) {
       case kOrGate:
+        if (arg_one->order() == arg_two->order()) {
+          if (arg_one->high()->terminal() && arg_two->high()->terminal())
+            return kBase_;
+        }
         high = arg_one->high();
         low = Zbdd::Apply(kOrGate, arg_one->low(), arg_two);
         break;
       case kAndGate:
-        high = Zbdd::Apply(kAndGate, arg_one->high(), arg_two);
+        if (arg_one->order() == arg_two->order()) {
+          // (x*f1 + f0) * (~x*g1 + g0) = x*f1*g0 + f0*(~x*g1 + g0)
+          high = Zbdd::Apply(kAndGate, arg_one->high(), arg_two->low());
+        } else {
+          high = Zbdd::Apply(kAndGate, arg_one->high(), arg_two);
+        }
         low = Zbdd::Apply(kAndGate, arg_one->low(), arg_two);
         break;
       default:
@@ -403,6 +428,43 @@ Triplet Zbdd::GetSignature(Operator type, const VertexPtr& arg_one,
     default:
       assert(false && "Only Union and Intersection operations are supported!");
   }
+}
+
+VertexPtr Zbdd::EliminateComplements(const VertexPtr& vertex) noexcept {
+  if (vertex->terminal()) return vertex;
+  VertexPtr& result = wide_results_[vertex->id()];
+  if (result) return result;
+  SetNodePtr node = SetNode::Ptr(vertex);
+  result = Zbdd::EliminateComplement(node,
+                                     Zbdd::EliminateComplements(node->high()),
+                                     Zbdd::EliminateComplements(node->low()));
+  return result;
+}
+
+VertexPtr Zbdd::EliminateComplement(const SetNodePtr& node,
+                                    const VertexPtr& high,
+                                    const VertexPtr& low) noexcept {
+  if (node->index() < 0) return Zbdd::Apply(kOrGate, high, low);
+  if (high->id() == low->id()) return low;
+  if (high->terminal() && Terminal::Ptr(high)->value() == false) return low;
+
+  if (node->module()) {
+    VertexPtr& module = modules_.find(node->index())->second;
+    module = Zbdd::EliminateComplements(module);
+    if (module->terminal()) {
+      if (!Terminal::Ptr(module)->value()) return low;
+      return Zbdd::Apply(kOrGate, high, low);
+    }
+  }
+
+  SetNodePtr& in_table = unique_table_[{node->index(), high->id(), low->id()}];
+  if (in_table) return in_table;
+  in_table = std::make_shared<SetNode>(node->index(), node->order());
+  in_table->module(node->module());
+  in_table->high(high);
+  in_table->low(low);
+  in_table->id(set_id_++);
+  return in_table;
 }
 
 VertexPtr Zbdd::Minimize(const VertexPtr& vertex) noexcept {

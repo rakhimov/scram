@@ -118,6 +118,17 @@ TEST_F(RiskAnalysisTest, AnalyzeDefaultZbdd) {
   EXPECT_EQ(mcs, min_cut_sets());
 }
 
+TEST_F(RiskAnalysisTest, AnalyzeNegZbdd) {
+  std::string tree_input = "./share/scram/input/fta/importance_neg_test.xml";
+  settings.algorithm("zbdd");
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  std::set<std::set<std::string>> mcs = {{"pumpone", "pumptwo"},
+                                         {"pumpone", "valvetwo"},
+                                         {"valveone"}};
+  EXPECT_EQ(mcs, min_cut_sets());
+}
+
 TEST_F(RiskAnalysisTest, AnalyzeWithProbability) {
   std::string with_prob =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";

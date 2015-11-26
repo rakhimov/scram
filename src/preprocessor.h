@@ -1076,6 +1076,12 @@ class CustomPreprocessor<Zbdd> : public CustomPreprocessor<Bdd> {
  public:
   /// Constructor with a Boolean graph.
   using CustomPreprocessor<Bdd>::CustomPreprocessor;
+
+  /// Performs preprocessing for analyses
+  /// with Zero-Suppressed Binary Decision Diagrams.
+  /// Complements are propagated to variables.
+  /// This preprocessing assigns the order for variables for ZBDD construction.
+  void Run() noexcept override;
 };
 
 }  // namespace scram

@@ -107,10 +107,7 @@ class NonTerminal : public Vertex {
   virtual ~NonTerminal() = 0;  ///< Abstract base class.
 
   /// @returns The index of this vertex.
-  int index() const {
-    assert(index_ > 0);
-    return index_;
-  }
+  int index() const { return index_; }
 
   /// @returns The order of the vertex.
   int order() const {

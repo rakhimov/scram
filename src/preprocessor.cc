@@ -2414,6 +2414,23 @@ void CustomPreprocessor<Bdd>::Run() noexcept {
   SANITY_ASSERT;
 }
 
+void CustomPreprocessor<Zbdd>::Run() noexcept {
+  CustomPreprocessor<Bdd>::Run();
+  if (Preprocessor::CheckRootGate()) return;
+  if (!graph_->coherent()) {
+    CLOCK(time_4);
+    LOG(DEBUG2) << "Preprocessing Phase IV...";
+    Preprocessor::PhaseFour();
+    LOG(DEBUG2) << "Finished Preprocessing Phase IV in " << DUR(time_4);
+    if (Preprocessor::CheckRootGate()) {
+      if (!graph_->root()->IsConstant()) Preprocessor::AssignOrder();
+      return;
+    }
+  }
+  Preprocessor::AssignOrder();
+  SANITY_ASSERT;
+}
+
 #undef SANITY_ASSERT
 
 }  // namespace scram
