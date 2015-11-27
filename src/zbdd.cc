@@ -35,8 +35,9 @@ Zbdd::Zbdd(const Bdd* bdd, const Settings& settings) noexcept
   CLOCK(init_time);
   LOG(DEBUG2) << "Creating ZBDD from BDD...";
   const Bdd::Function& bdd_root = bdd->root();
+  PairTable ites;
   root_ = Zbdd::ConvertBdd(bdd_root.vertex, bdd_root.complement, bdd,
-                           kSettings_.limit_order());
+                           kSettings_.limit_order(), &ites);
   Zbdd::ClearMarks(root_);
   Zbdd::TestStructure(root_);
   Zbdd::ClearMarks(root_);
@@ -143,23 +144,24 @@ void Zbdd::Analyze() noexcept {
 }
 
 VertexPtr Zbdd::ConvertBdd(const VertexPtr& vertex, bool complement,
-                           const Bdd* bdd_graph, int limit_order) noexcept {
+                           const Bdd* bdd_graph, int limit_order,
+                           PairTable* ites) noexcept {
   if (vertex->terminal()) return complement ? kEmpty_ : kBase_;
   if (limit_order == 0) return kEmpty_;  // Cut-off on the cut set size.
   int sign = complement ? -1 : 1;
-  VertexPtr& result = ites_[{sign * vertex->id(), limit_order}];
+  VertexPtr& result = (*ites)[{sign * vertex->id(), limit_order}];
   if (result) return result;
   ItePtr ite = Ite::Ptr(vertex);
   VertexPtr low =
       Zbdd::ConvertBdd(ite->low(), ite->complement_edge() ^ complement,
-                       bdd_graph, limit_order);
+                       bdd_graph, limit_order, ites);
   if (ite->module()) {  // This is a proxy and not a variable.
     const Bdd::Function& module =
         bdd_graph->modules().find(ite->index())->second;
     assert(!module.vertex->terminal() && "Unexpected BDD terminal module.");
     VertexPtr module_set =
         Zbdd::ConvertBdd(module.vertex, module.complement,
-                         bdd_graph, kSettings_.limit_order());
+                         bdd_graph, kSettings_.limit_order(), ites);
     modules_.emplace(ite->index(), module_set);
     if (module_set->terminal()) {
       assert(!Terminal::Ptr(module_set)->value());
@@ -170,7 +172,7 @@ VertexPtr Zbdd::ConvertBdd(const VertexPtr& vertex, bool complement,
   int limit_high = limit_order - 1;  // Requested order for the high node.
   if (ite->module()) limit_high += 1;  // Conservative approach.
   VertexPtr high =
-      Zbdd::ConvertBdd(ite->high(), complement, bdd_graph, limit_high);
+      Zbdd::ConvertBdd(ite->high(), complement, bdd_graph, limit_high, ites);
   if ((high->terminal() && !Terminal::Ptr(high)->value()) ||
       (high->id() == low->id()) ||
       (low->terminal() && Terminal::Ptr(low)->value())) {
