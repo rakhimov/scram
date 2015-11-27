@@ -191,6 +191,13 @@ Mocus::Mocus(const BooleanGraph* fault_tree, const Settings& settings)
   LOG(DEBUG3) << "Converted Boolean graph with top module: G" << top->index();
 }
 
+Mocus::~Mocus() noexcept = default;
+
+const std::vector<std::vector<int>>& Mocus::cut_sets() const {
+  if (constant_graph_) return cut_sets_;
+  return zbdd_->cut_sets();
+}
+
 void Mocus::Analyze() {
   BLOG(DEBUG2, constant_graph_) << "Graph is constant. No analysis!";
   if (constant_graph_) return;
@@ -208,11 +215,8 @@ void Mocus::Analyze() {
     LOG(DEBUG4) << "Cut set generation time: " << DUR(gen_time);
   }
   LOG(DEBUG2) << "Delegating cut set minimization to ZBDD.";
-  Zbdd* zbdd = new Zbdd(root_index_, module_sets, kSettings_);
-  zbdd->Analyze();
-  cut_sets_ = zbdd->cut_sets();
-  delete zbdd;
-  LOG(DEBUG2) << "The number of MCS found: " << cut_sets_.size();
+  zbdd_ = std::unique_ptr<Zbdd>(new Zbdd(root_index_, module_sets, kSettings_));
+  zbdd_->Analyze();
   LOG(DEBUG2) << "Minimal cut sets found in " << DUR(mcs_time);
 }
 
