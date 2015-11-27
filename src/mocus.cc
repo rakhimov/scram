@@ -18,50 +18,12 @@
 /// @file mocus.cc
 /// Implementation of the MOCUS algorithm.
 /// The algorithm assumes
-/// that the tree is layered
-/// with OR and AND gates on each level.
-/// That is, one level contains only AND or OR gates.
-/// The algorithm assumes the graph contains only positive gates.
+/// that the graph is in negation normal form.
 ///
-/// The description of the algorithm.
-///
-/// Turn all existing gates in the tree into simple gates
-/// with pointers to the child gates but not modules.
-/// Leave minimal cut set modules to the last moment
-/// till all the gates are operated.
-/// Those modules' minimal cut sets can be joined without
-/// additional check for minimality.
-///
-/// Operate on each module starting from the top gate.
-/// For now, it is assumed that a module cannot be unity,
-/// which means that a module will at least add a new event into a cut set,
-/// so the size of a cut set with modules
-/// is a minimum number of members in the set.
-/// This assumption will fail
-/// if there is unity case
-/// but will hold
-/// if the module is null because the cut set will be deleted anyway.
-///
-/// Upon walking from top to children gates,
-/// there are two types: OR and AND.
-/// The generated sets are passed to child gates,
-/// which use the passed set to generate new sets.
-/// AND gate will simply add its basic events and modules to the set
-/// and pass the resultant sets into its OR child,
-/// which will generate a lot more sets.
-/// These generated sets are passed to the next gate child
-/// to generate even more.
-///
-/// For OR gates, the passed set is checked
-/// to have basic events of the gate.
-/// If so, this is a local minimum cut set,
-/// so generation of the sets stops on this gate.
-/// No new sets should be generated in this case.
-/// This condition is also applicable
-/// if the child AND gate keeps the input set as output
-/// and generates only additional supersets.
-///
-/// The generated sets are kept unique by storing them in a set.
+/// A ZBDD data structure is employed to store and extract
+/// intermediate (containing gates)
+/// and final (basic events only) cut sets
+/// upon cut set generation.
 
 #include "mocus.h"
 
@@ -110,7 +72,7 @@ void SimpleGate::AndGateCutSets(const CutSetPtr& cut_set,
     for (const CutSetPtr& arg_set : arguments) {
       gate->OrGateCutSets(arg_set, &results);
     }
-    arguments = results;
+    arguments = std::move(results);
   }
   if (arguments.empty()) return;
   if (arguments.count(cut_set_copy)) {  // Other sets are supersets.

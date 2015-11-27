@@ -70,7 +70,7 @@ prime implicants are computed as cut sets
 that include complements of variables.
 
 However, the notion of prime implicants may not be
-as intuitive as the notion minimal cut sets for analysts
+as intuitive as the notion of minimal cut sets for analysts
 since consideration of success of an undesired event
 complicates failure scenarios
 or may be irrelevant at all
@@ -151,33 +151,28 @@ After finishing or each of the above steps:
 Implementation Specifics
 ------------------------
 
-The actual implementation uses a set of sets in order to avoid duplicates,
-so Rule 3 is satisfied automatically.
+The implementation uses a ZBDD data structure (a set of sets)
+to store minimal cut sets in a compact form,
+so Rules 3 and 4 are satisfied automatically.
 Elements in a set have AND relationship with each other;
-whereas sets in a set of sets have OR relationship with each other.
-Therefore, a set of elements represents a cut set.
+whereas sets in the ZBDD have OR relationship with each other.
 
 Gates of top and intermediate events affect cut sets.
 Each OR gate adds new sets into the set of sets,
-while each AND gate adds additional elements into one specific set inside the set of sets.
+while each AND gate adds additional elements
+into one specific set or group of sets inside the set of sets.
 
 To generate all cut sets,
 the fault tree is traversed from the top to basic events,
 In this step, the analysis may cancel cut sets
 if the fault tree is non-coherent and contains complements.
 In addition,
-if a cut set size is larger than the limit put by a user,
+if a cut set order is larger than the limit put by a user,
 it is discarded.
 
-The generated cut sets are stored in a set.
-The basics of Boolean algebra are taken into account upon the fault tree traversal
-to detect cut set minimality earlier
-and to reduce the number of generated cut sets.
-
-After all possible and required cut sets are generated,
-the next algorithmically complex part
-is the application of Rule 4 or minimization of the generated cut sets.
-The minimization of the generated cut sets
+After required cut sets are generated,
+the minimization of the generated cut sets
+and extraction of minimal cut sets into a final (result) form
 is delegated to ZBDD facilities.
 
 

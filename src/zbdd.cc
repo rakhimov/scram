@@ -713,4 +713,11 @@ void Zbdd::TestStructure(const VertexPtr& vertex) noexcept {
   Zbdd::TestStructure(node->low());
 }
 
+namespace zbdd {
+
+CutSetContainer::CutSetContainer(const Settings& settings) noexcept
+    : Zbdd::Zbdd(settings) {}
+
+}
+
 }  // namespace scram

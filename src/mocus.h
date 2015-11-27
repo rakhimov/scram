@@ -18,7 +18,7 @@
 /// @file mocus.h
 /// Fault tree analysis with the MOCUS algorithm.
 /// This algorithm requires a fault tree in negation normal form.
-/// The fault tree must only contain layered AND and OR gates.
+/// The fault tree must only contain AND and OR gates.
 /// All gates must be positive.
 /// That is, negations must be pushed down to leaves, basic events.
 /// The fault tree should not contain constants or house events.
@@ -473,16 +473,20 @@ class Zbdd;  // For analysis purposes.
 /// to generate minimal cut sets with the MOCUS algorithm.
 class Mocus {
  public:
-  /// Constructs a simple graph representation from Boolean graph.
+  /// Prepares a Boolean graph for analysis with the MOCUS algorithm.
   ///
   /// @param[in] fault_tree  Preprocessed, normalized, and indexed fault tree.
   /// @param[in] settings  The analysis settings.
+  ///
+  /// @pre The passed Boolean graph already has variable ordering.
+  /// @pre The Boolean graph is in negation normal form;
+  ///      that is, it contains only positive AND/OR gates.
   Mocus(const BooleanGraph* fault_tree, const Settings& settings);
 
   /// To handle incomplete ZBDD type with unique pointers.
   ~Mocus() noexcept;
 
-  /// Finds minimal cut sets from the initiated fault tree with indices.
+  /// Finds minimal cut sets from the Boolean graph.
   void Analyze();
 
   /// @returns Generated minimal cut sets with basic event indices.
