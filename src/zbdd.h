@@ -256,26 +256,36 @@ class Zbdd {
   /// with minimal cut sets as output.
   ///
   /// @param[in] vertex  The variable vertex in the ZBDD.
+  /// @param[in,out] wide_results  Memoisation of the processed vertices.
   ///
   /// @returns Processed vertex.
-  VertexPtr EliminateComplements(const VertexPtr& vertex) noexcept;
+  VertexPtr EliminateComplements(
+      const VertexPtr& vertex,
+      std::unordered_map<int, VertexPtr>* wide_results) noexcept;
 
   /// Processes complements in a SetNode with processed high/low edges.
   ///
   /// @param[in] node  SetNode to be processed.
   /// @param[in] high  Processed high edge.
   /// @param[in] low  Processed low edge.
+  /// @param[in,out] wide_results  Memoisation of the processed vertices.
   ///
   /// @returns Processed ZBDD vertex without complements.
-  VertexPtr EliminateComplement(const SetNodePtr& node, const VertexPtr& high,
-                                const VertexPtr& low) noexcept;
+  VertexPtr EliminateComplement(
+      const SetNodePtr& node,
+      const VertexPtr& high,
+      const VertexPtr& low,
+      std::unordered_map<int, VertexPtr>* wide_results) noexcept;
 
   /// Removes subsets in ZBDD.
   ///
   /// @param[in] vertex  The variable node in the set.
+  /// @param[in,out] minimal_results  Memoisation of minimal results.
   ///
   /// @returns Processed vertex.
-  VertexPtr Minimize(const VertexPtr& vertex) noexcept;
+  VertexPtr Minimize(
+      const VertexPtr& vertex,
+      std::unordered_map<int, VertexPtr>* minimal_results) noexcept;
 
   /// Applies subsume operation on two sets.
   /// Subsume operation removes
@@ -351,8 +361,6 @@ class Zbdd {
   const TerminalPtr kBase_;  ///< Terminal Base (Unity/1) set.
   const TerminalPtr kEmpty_;  ///< Terminal Empty (Null/0) set.
   int set_id_;  ///< Identification assignment for new set graphs.
-  std::unordered_map<int, VertexPtr> wide_results_;  ///< Memorize widening.
-  std::unordered_map<int, VertexPtr> minimal_results_;  ///< Memorize minimal.
   std::vector<CutSet> cut_sets_;  ///< Generated cut sets.
 };
 

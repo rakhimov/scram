@@ -78,7 +78,8 @@ Zbdd::Zbdd(const BooleanGraph* fault_tree, const Settings& settings) noexcept
       Zbdd::TestStructure(root_);
       Zbdd::ClearMarks(root_);
       LOG(DEBUG5) << "Eliminating complements from ZBDD...";
-      root_ = Zbdd::EliminateComplements(root_);
+      std::unordered_map<int, VertexPtr> wide_results;
+      root_ = Zbdd::EliminateComplements(root_, &wide_results);
       LOG(DEBUG5) << "Finished complement elimination.";
     }
   }
@@ -123,7 +124,9 @@ void Zbdd::Analyze() noexcept {
 
   CLOCK(minimize_time);
   LOG(DEBUG3) << "Minimizing ZBDD...";
-  root_ = Zbdd::Minimize(root_);
+  std::unordered_map<int, VertexPtr> minimal_results;
+  root_ = Zbdd::Minimize(root_, &minimal_results);
+  minimal_results.clear();
   Zbdd::ClearMarks(root_);
   Zbdd::TestStructure(root_);
   LOG(DEBUG3) << "Finished ZBDD minimization in " << DUR(minimize_time);
@@ -435,27 +438,33 @@ Triplet Zbdd::GetSignature(Operator type, const VertexPtr& arg_one,
   }
 }
 
-VertexPtr Zbdd::EliminateComplements(const VertexPtr& vertex) noexcept {
+VertexPtr Zbdd::EliminateComplements(
+    const VertexPtr& vertex,
+    std::unordered_map<int, VertexPtr>* wide_results) noexcept {
   if (vertex->terminal()) return vertex;
-  VertexPtr& result = wide_results_[vertex->id()];
+  VertexPtr& result = (*wide_results)[vertex->id()];
   if (result) return result;
   SetNodePtr node = SetNode::Ptr(vertex);
-  result = Zbdd::EliminateComplement(node,
-                                     Zbdd::EliminateComplements(node->high()),
-                                     Zbdd::EliminateComplements(node->low()));
+  result = Zbdd::EliminateComplement(
+      node,
+      Zbdd::EliminateComplements(node->high(), wide_results),
+      Zbdd::EliminateComplements(node->low(), wide_results),
+      wide_results);
   return result;
 }
 
-VertexPtr Zbdd::EliminateComplement(const SetNodePtr& node,
-                                    const VertexPtr& high,
-                                    const VertexPtr& low) noexcept {
+VertexPtr Zbdd::EliminateComplement(
+    const SetNodePtr& node,
+    const VertexPtr& high,
+    const VertexPtr& low,
+    std::unordered_map<int, VertexPtr>* wide_results) noexcept {
   if (node->index() < 0) return Zbdd::Apply(kOrGate, high, low);
   if (high->id() == low->id()) return low;
   if (high->terminal() && Terminal::Ptr(high)->value() == false) return low;
 
   if (node->module()) {
     VertexPtr& module = modules_.find(node->index())->second;
-    module = Zbdd::EliminateComplements(module);
+    module = Zbdd::EliminateComplements(module, wide_results);
     if (module->terminal()) {
       if (!Terminal::Ptr(module)->value()) return low;
       return Zbdd::Apply(kOrGate, high, low);
@@ -472,17 +481,19 @@ VertexPtr Zbdd::EliminateComplement(const SetNodePtr& node,
   return in_table;
 }
 
-VertexPtr Zbdd::Minimize(const VertexPtr& vertex) noexcept {
+VertexPtr Zbdd::Minimize(
+    const VertexPtr& vertex,
+    std::unordered_map<int, VertexPtr>* minimal_results) noexcept {
   if (vertex->terminal()) return vertex;
-  VertexPtr& result = minimal_results_[vertex->id()];
+  VertexPtr& result = (*minimal_results)[vertex->id()];
   if (result) return result;
   SetNodePtr node = SetNode::Ptr(vertex);
   if (node->module()) {
     VertexPtr& module = modules_.find(node->index())->second;
-    module = Zbdd::Minimize(module);
+    module = Zbdd::Minimize(module, minimal_results);
   }
-  VertexPtr high = Zbdd::Minimize(node->high());
-  VertexPtr low = Zbdd::Minimize(node->low());
+  VertexPtr high = Zbdd::Minimize(node->high(), minimal_results);
+  VertexPtr low = Zbdd::Minimize(node->low(), minimal_results);
   high = Zbdd::Subsume(high, low);
   assert(high->id() != low->id() && "Subsume failed!");
   if (high->terminal() && !Terminal::Ptr(high)->value()) {  // Reduction rule.
