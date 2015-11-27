@@ -70,7 +70,8 @@ Zbdd::Zbdd(const BooleanGraph* fault_tree, const Settings& settings) noexcept
       root_ = Zbdd::ConvertGraph(top->variable_args().begin()->second, false);
     }
   } else {
-    root_ = Zbdd::ConvertGraph(fault_tree->root());
+    std::unordered_map<int, VertexPtr> gates;
+    root_ = Zbdd::ConvertGraph(fault_tree->root(), &gates);
     if (!fault_tree->coherent()) {
       Zbdd::ClearMarks(root_);
       Zbdd::TestStructure(root_);
@@ -154,7 +155,7 @@ VertexPtr Zbdd::ConvertBdd(const VertexPtr& vertex, bool complement,
                        bdd_graph, limit_order);
   if (ite->module()) {  // This is a proxy and not a variable.
     const Bdd::Function& module =
-        bdd_graph->gates().find(ite->index())->second;
+        bdd_graph->modules().find(ite->index())->second;
     assert(!module.vertex->terminal() && "Unexpected BDD terminal module.");
     VertexPtr module_set =
         Zbdd::ConvertBdd(module.vertex, module.complement,
@@ -188,9 +189,11 @@ VertexPtr Zbdd::ConvertBdd(const VertexPtr& vertex, bool complement,
   return result;
 }
 
-VertexPtr Zbdd::ConvertGraph(const IGatePtr& gate) noexcept {
+VertexPtr Zbdd::ConvertGraph(
+    const IGatePtr& gate,
+    std::unordered_map<int, VertexPtr>* gates) noexcept {
   assert(!gate->IsConstant() && "Unexpected constant gate!");
-  VertexPtr& result = gates_[gate->index()];
+  VertexPtr& result = (*gates)[gate->index()];
   if (result) return result;
   std::vector<VertexPtr> args;
   for (const std::pair<const int, VariablePtr>& arg : gate->variable_args()) {
@@ -198,7 +201,7 @@ VertexPtr Zbdd::ConvertGraph(const IGatePtr& gate) noexcept {
   }
   for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
     assert(arg.first > 0 && "Complements must be pushed down to variables.");
-    VertexPtr res = Zbdd::ConvertGraph(arg.second);
+    VertexPtr res = Zbdd::ConvertGraph(arg.second, gates);
     if (arg.second->IsModule()) {
       args.push_back(Zbdd::CreateModuleProxy(arg.second));
       modules_.emplace(arg.second->index(), res);

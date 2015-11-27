@@ -298,10 +298,8 @@ class Bdd {
   /// @returns The root function of the ROBDD.
   const Function& root() const { return root_; }
 
-  /// @returns Mapping of Boolean graph gates and BDD graph vertices.
-  const std::unordered_map<int, Function>& gates() const {
-    return gates_;
-  }
+  /// @returns Mapping of Boolean graph modules and BDD graph vertices.
+  const std::unordered_map<int, Function>& modules() const { return modules_; }
 
   /// @returns Mapping of variable indices to their orders.
   const std::unordered_map<int, int>& index_to_order() const {
@@ -339,9 +337,11 @@ class Bdd {
   /// Registers processed gates.
   ///
   /// @param[in] gate  The root or current parent gate of the graph.
+  /// @param[in,out] gates  Processed gates.
   ///
   /// @returns The BDD function representing the gate.
-  const Function& IfThenElse(const IGatePtr& gate) noexcept;
+  const Function& IfThenElse(const IGatePtr& gate,
+                             std::unordered_map<int, Function>* gates) noexcept;
 
   /// Converts variable argument of a Boolean graph gate
   /// into if-then-else BDD graph vertex.
@@ -496,7 +496,7 @@ class Bdd {
   /// the argument IDs must be ordered.
   ComputeTable compute_table_;
 
-  std::unordered_map<int, Function> gates_;  ///< Processed gates.
+  std::unordered_map<int, Function> modules_;  ///< Module graphs.
   std::unordered_map<int, int> index_to_order_;  ///< Indices and orders.
   const TerminalPtr kOne_;  ///< Terminal True.
   int function_id_;  ///< Identification assignment for new function graphs.

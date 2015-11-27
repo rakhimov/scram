@@ -136,7 +136,7 @@ double ProbabilityAnalyzer<Bdd>::CalculateProbability(
   ite->mark(mark);
   double var_prob = 0;
   if (ite->module()) {
-    const Bdd::Function& res = bdd_graph_->gates().find(ite->index())->second;
+    const Bdd::Function& res = bdd_graph_->modules().find(ite->index())->second;
     var_prob = ProbabilityAnalyzer::CalculateProbability(res.vertex, mark);
     if (res.complement) var_prob = 1 - var_prob;
   } else {

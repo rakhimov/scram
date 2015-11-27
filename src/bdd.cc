@@ -66,7 +66,8 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
     int child = *top->args().begin();
     root_ = {child < 0, Bdd::IfThenElse(top->variable_args().begin()->second)};
   } else {
-    root_ = Bdd::IfThenElse(fault_tree->root());
+    std::unordered_map<int, Function> gates;
+    root_ = Bdd::IfThenElse(fault_tree->root(), &gates);
   }
   Bdd::ClearMarks(false);
   Bdd::TestStructure(root_.vertex);
@@ -91,16 +92,18 @@ const std::vector<std::vector<int>>& Bdd::cut_sets() const {
   return zbdd_->cut_sets();
 }
 
-const Bdd::Function& Bdd::IfThenElse(const IGatePtr& gate) noexcept {
+const Bdd::Function& Bdd::IfThenElse(
+    const IGatePtr& gate,
+    std::unordered_map<int, Function>* gates) noexcept {
   assert(!gate->IsConstant() && "Unexpected constant gate!");
-  Function& result = gates_[gate->index()];
+  Function& result = (*gates)[gate->index()];
   if (result.vertex) return result;
   std::vector<Function> args;
   for (const std::pair<const int, VariablePtr>& arg : gate->variable_args()) {
     args.push_back({arg.first < 0, Bdd::IfThenElse(arg.second)});
   }
   for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
-    const Function& res = Bdd::IfThenElse(arg.second);
+    const Function& res = Bdd::IfThenElse(arg.second, gates);
     if (arg.second->IsModule()) {
       ItePtr proxy = Bdd::CreateModuleProxy(arg.second);
       args.push_back({arg.first < 0, proxy});
@@ -123,6 +126,7 @@ const Bdd::Function& Bdd::IfThenElse(const IGatePtr& gate) noexcept {
                         result.complement, it->complement);
   }
   assert(result.vertex);
+  if (gate->IsModule()) modules_.emplace(gate->index(), result);
   return result;
 }
 
@@ -309,7 +313,7 @@ int Bdd::CountIteNodes(const VertexPtr& vertex) noexcept {
   ite->mark(true);
   int in_module = 0;
   if (ite->module()) {
-    const Function& module = gates_.find(ite->index())->second;
+    const Function& module = modules_.find(ite->index())->second;
     in_module = Bdd::CountIteNodes(module.vertex);
   }
   return 1 + in_module + Bdd::CountIteNodes(ite->high()) +
@@ -322,7 +326,7 @@ void Bdd::ClearMarks(const VertexPtr& vertex, bool mark) noexcept {
   if (ite->mark() == mark) return;
   ite->mark(mark);
   if (ite->module()) {
-    const Bdd::Function& res = gates_.find(ite->index())->second;
+    const Bdd::Function& res = modules_.find(ite->index())->second;
     Bdd::ClearMarks(res.vertex, mark);
   }
   Bdd::ClearMarks(ite->high(), mark);
@@ -347,7 +351,7 @@ void Bdd::TestStructure(const VertexPtr& vertex) noexcept {
            ite->order() >= Ite::Ptr(ite->low())->order()) &&
          "Ordering of nodes failed.");
   if (ite->module()) {
-    const Bdd::Function& res = gates_.find(ite->index())->second;
+    const Bdd::Function& res = modules_.find(ite->index())->second;
     assert(!res.vertex->terminal() && "Terminal modules must be removed.");
     Bdd::TestStructure(res.vertex);
   }

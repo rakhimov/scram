@@ -146,9 +146,11 @@ class Zbdd {
   /// Transforms a Boolean graph gate into a Zbdd set graph.
   ///
   /// @param[in] gate  The root gate of the Boolean graph.
+  /// @param[in,out] gates  Processed gates.
   ///
   /// @returns The top vertex of the Zbdd graph.
-  VertexPtr ConvertGraph(const IGatePtr& gate) noexcept;
+  VertexPtr ConvertGraph(const IGatePtr& gate,
+                         std::unordered_map<int, VertexPtr>* gates) noexcept;
 
   /// Creates a Zbdd vertex from a Boolean variable.
   ///
@@ -345,7 +347,6 @@ class Zbdd {
   VertexPtr root_;  ///< The root vertex of ZBDD.
   /// Processed function graphs with ids and limit order.
   boost::unordered_map<std::pair<int, int>, VertexPtr> ites_;
-  std::unordered_map<int, VertexPtr> gates_;  ///< Processed gates.
   std::unordered_map<int, VertexPtr> modules_;  ///< Module graphs.
   const TerminalPtr kBase_;  ///< Terminal Base (Unity/1) set.
   const TerminalPtr kEmpty_;  ///< Terminal Empty (Null/0) set.
