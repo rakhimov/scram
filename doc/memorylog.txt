@@ -22,13 +22,13 @@ MOCUS
 BDD
 ---
 
-- Baobab1 : 100
+- Baobab1 : 31
 
 
 ZBDD
 ----
 
-- Baobab1 : 600
+- Baobab1 : 560
 
 
 Initialization and Validation

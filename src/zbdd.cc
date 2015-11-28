@@ -138,10 +138,19 @@ void Zbdd::Analyze() noexcept {
   Zbdd::ClearMarks(root_);
   LOG(DEBUG3) << "There are " << number << " cut sets in total.";
 
+  // Complete cleanup of the memory.
+  unique_table_.clear();
+  compute_table_.clear();
+  subsume_table_.clear();
+
   CLOCK(gen_time);
   LOG(DEBUG3) << "Getting cut sets from minimized ZBDD...";
   cut_sets_ = Zbdd::GenerateCutSets(root_);
-  Zbdd::ClearMarks(root_);
+
+  // Cleanup of temporary cut sets.
+  modules_.clear();
+  root_ = kBase_;
+
   LOG(DEBUG3) << cut_sets_.size() << " cut sets are found in " << DUR(gen_time);
   LOG(DEBUG2) << "Finished ZBDD analysis in " << DUR(analysis_time);
 }
@@ -584,9 +593,14 @@ Zbdd::GenerateCutSets(const VertexPtr& vertex) noexcept {
     for (auto& cut_set : high) {
       if (cut_set.size() == kSettings_.limit_order()) continue;
       cut_set.push_back(node->index());
-      result.emplace_back(cut_set);
+      result.emplace_back(std::move(cut_set));
     }
   }
+
+  // Destroy the subgraph to remove extra reference counts.
+  node->low(kEmpty_);
+  node->high(kBase_);
+
   node->cut_sets(result);
   return result;
 }
