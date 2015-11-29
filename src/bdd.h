@@ -332,6 +332,22 @@ class Bdd {
   using UniqueTable = TripletTable<ItePtr>;  ///< To store unique vertices.
   using ComputeTable = TripletTable<Function>;  ///< To store computed results.
 
+  /// Fetches a unique if-then-else vertex from a hash table.
+  /// If the vertex doesn't exist,
+  /// a new vertex is created.
+  ///
+  /// @param[in] index  Positive index of the variable.
+  /// @param[in] high  The high vertex.
+  /// @param[in] low  The low vertex.
+  /// @param[in] complement_edge  Interpretation of the low vertex.
+  /// @param[in] order The order for the vertex variable.
+  /// @param[in] module  A flag for the modular ZBDD proxy.
+  ///
+  /// @returns Set node with the given parameters.
+  const ItePtr& FetchUniqueTable(int index, const VertexPtr& high,
+                                 const VertexPtr& low, bool complement_edge,
+                                 int order, bool module) noexcept;
+
   /// Converts all gates in the Boolean graph
   /// into if-then-else BDD graphs.
   /// Registers processed gates.
@@ -342,24 +358,6 @@ class Bdd {
   /// @returns The BDD function representing the gate.
   const Function& IfThenElse(const IGatePtr& gate,
                              std::unordered_map<int, Function>* gates) noexcept;
-
-  /// Converts variable argument of a Boolean graph gate
-  /// into if-then-else BDD graph vertex.
-  /// Registers processed variable.
-  ///
-  /// @param[in] variable  The variable argument.
-  ///
-  /// @returns Pointer to the root vertex of the BDD graph.
-  ItePtr IfThenElse(const VariablePtr& variable) noexcept;
-
-  /// Creates a vertex to represent a module gate.
-  ///
-  /// @param[in] gate  The root or current parent gate of the graph.
-  ///
-  /// @returns Pointer to the BDD if-then-else vertex.
-  ///
-  /// @note The gate still needs to be converted and saved.
-  ItePtr CreateModuleProxy(const IGatePtr& gate) noexcept;
 
   /// Applies Boolean operation to BDD graphs.
   ///

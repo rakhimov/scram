@@ -64,7 +64,9 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
     assert(top->args().size() == 1);
     assert(top->gate_args().empty());
     int child = *top->args().begin();
-    root_ = {child < 0, Bdd::IfThenElse(top->variable_args().begin()->second)};
+    VariablePtr var = top->variable_args().begin()->second;
+    root_ = {child < 0, Bdd::FetchUniqueTable(var->index(), kOne_, kOne_,
+                                              true, var->order(), false)};
   } else {
     std::unordered_map<int, Function> gates;
     root_ = Bdd::IfThenElse(fault_tree->root(), &gates);
@@ -92,6 +94,23 @@ const std::vector<std::vector<int>>& Bdd::cut_sets() const {
   return zbdd_->cut_sets();
 }
 
+const ItePtr& Bdd::FetchUniqueTable(int index, const VertexPtr& high,
+                                    const VertexPtr& low, bool complement_edge,
+                                    int order, bool module) noexcept {
+  assert(index > 0 && "Only positive indices are expected.");
+  int sign = complement_edge ? -1 : 1;
+  ItePtr& in_table = unique_table_[{index, high->id(), sign * low->id()}];
+  if (in_table) return in_table;
+  assert(order > 0 && "Improper order.");
+  in_table = std::make_shared<Ite>(index, order);
+  in_table->id(function_id_++);
+  in_table->module(module);
+  in_table->high(high);
+  in_table->low(low);
+  in_table->complement_edge(complement_edge);
+  return in_table;
+}
+
 const Bdd::Function& Bdd::IfThenElse(
     const IGatePtr& gate,
     std::unordered_map<int, Function>* gates) noexcept {
@@ -100,13 +119,17 @@ const Bdd::Function& Bdd::IfThenElse(
   if (result.vertex) return result;
   std::vector<Function> args;
   for (const std::pair<const int, VariablePtr>& arg : gate->variable_args()) {
-    args.push_back({arg.first < 0, Bdd::IfThenElse(arg.second)});
+    args.push_back({arg.first < 0,
+                    Bdd::FetchUniqueTable(arg.second->index(), kOne_, kOne_,
+                                          true, arg.second->order(), false)});
+    index_to_order_.emplace(arg.second->index(), arg.second->order());
   }
   for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
     const Function& res = Bdd::IfThenElse(arg.second, gates);
     if (arg.second->IsModule()) {
-      ItePtr proxy = Bdd::CreateModuleProxy(arg.second);
-      args.push_back({arg.first < 0, proxy});
+      args.push_back({arg.first < 0,
+                      Bdd::FetchUniqueTable(arg.second->index(), kOne_, kOne_,
+                                            true, arg.second->order(), true)});
     } else {
       bool complement = (arg.first < 0) ^ res.complement;
       args.push_back({complement, res.vertex});
@@ -128,33 +151,6 @@ const Bdd::Function& Bdd::IfThenElse(
   assert(result.vertex);
   if (gate->IsModule()) modules_.emplace(gate->index(), result);
   return result;
-}
-
-ItePtr Bdd::IfThenElse(const VariablePtr& variable) noexcept {
-  ItePtr& in_table = unique_table_[{variable->index(), 1, -1}];
-  if (in_table) return in_table;
-  assert(variable->order() > 0 && "Order is not proper.");
-  index_to_order_.emplace(variable->index(), variable->order());
-  in_table = std::make_shared<Ite>(variable->index(), variable->order());
-  in_table->id(function_id_++);
-  in_table->high(kOne_);
-  in_table->low(kOne_);
-  in_table->complement_edge(true);
-  return in_table;
-}
-
-ItePtr Bdd::CreateModuleProxy(const IGatePtr& gate) noexcept {
-  assert(gate->IsModule());
-  ItePtr& in_table = unique_table_[{gate->index(), 1, -1}];
-  if (in_table) return in_table;
-  assert(gate->order() > 0 && "Order is not proper.");
-  in_table = std::make_shared<Ite>(gate->index(), gate->order());
-  in_table->module(true);  // The main difference.
-  in_table->id(function_id_++);
-  in_table->high(kOne_);
-  in_table->low(kOne_);
-  in_table->complement_edge(true);
-  return in_table;
 }
 
 Bdd::Function Bdd::Apply(Operator type,
@@ -189,31 +185,17 @@ Bdd::Function Bdd::Apply(Operator type,
                                                        complement_two);
   Function& high = new_edges.first;
   Function& low = new_edges.second;
-  ItePtr bdd_graph = std::make_shared<Ite>(ite_one->index(), ite_one->order());
-  bdd_graph->module(ite_one->module());  /// @todo Create clone function.
-  bdd_graph->high(high.vertex);
-  bdd_graph->low(low.vertex);
-  if (high.complement) {
-    result.complement = true;
-    bdd_graph->complement_edge(!low.complement);
-  } else {
-    result.complement = false;
-    bdd_graph->complement_edge(low.complement);
-  }
-  if (!bdd_graph->complement_edge()) {  // Another redundancy detection.
-    if (bdd_graph->high()->id() == bdd_graph->low()->id()) {
-      result.vertex = bdd_graph->low();
+  result.complement = high.complement;
+  bool complement_edge = high.complement ^ low.complement;
+  if (!complement_edge) {  // Another redundancy detection.
+    if (high.vertex->id() == low.vertex->id()) {
+      result.vertex = low.vertex;
       return result;
     }
   }
-  int low_sign = bdd_graph->complement_edge() ? -1 : 1;
-  ItePtr& in_table = unique_table_[{bdd_graph->index(), bdd_graph->high()->id(),
-                                    low_sign * bdd_graph->low()->id()}];
-  if (!in_table) {
-    in_table = bdd_graph;
-    in_table->id(function_id_++);  // Unique function graph.
-  }
-  result.vertex = in_table;
+  result.vertex = Bdd::FetchUniqueTable(ite_one->index(), high.vertex,
+                                        low.vertex, complement_edge,
+                                        ite_one->order(), ite_one->module());
   return result;
 }
 
