@@ -90,6 +90,25 @@ Time: 0.15
 # of ITE in BDD: 3349
 
 
+---------- CEA9601 -l 4 (mcs = 54436) -----------
+Debug build:            Release build:
+-----------             -------------
+BDD Time: 17            BDD Time: 4.5
+ZBDD Time: 16           ZBDD Time: 2.7
+
+# of BDD vertices created: 3013946
+# of entries in unique table: 3013945
+# of entries in compute table: (1467306 + 1694881)
+# of ITE in BDD: 1175468
+
+# of ZBDD nodes created: 100705
+# of entries in unique table: 100704
+# of entries in AND table: 0
+# of entries in OR table: 0
+# of entries in subsume table: 341671
+# of SetNodes in ZBDD: 8238
+
+
 ==================== Uncertainty Analysis =================
 
 

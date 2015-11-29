@@ -23,6 +23,7 @@ BDD
 ---
 
 - Baobab1 : 31
+- CEA9601 : 800
 
 
 ZBDD
