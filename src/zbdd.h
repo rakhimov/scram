@@ -134,6 +134,21 @@ class Zbdd {
   /// @param[in] settings  Settings that control analysis complexity.
   explicit Zbdd(const Settings& settings) noexcept;
 
+  /// Fetches a unique set node from a hash table.
+  /// If the node doesn't exist,
+  /// a new node is created.
+  ///
+  /// @param[in] index  Positive or negative index of the node.
+  /// @param[in] high  The high vertex.
+  /// @param[in] low  The low vertex.
+  /// @param[in] order The order for the vertex variable.
+  /// @param[in] module  A flag for the modular ZBDD proxy.
+  ///
+  /// @returns Set node with the given parameters.
+  const SetNodePtr& FetchUniqueTable(int index, const VertexPtr& high,
+                                     const VertexPtr& low, int order,
+                                     bool module) noexcept;
+
   /// Converts BDD graph into ZBDD graph.
   ///
   /// @param[in] vertex  Vertex of the ROBDD graph.
@@ -156,15 +171,6 @@ class Zbdd {
   VertexPtr ConvertGraph(const IGatePtr& gate,
                          std::unordered_map<int, VertexPtr>* gates) noexcept;
 
-  /// Creates a Zbdd vertex from a Boolean variable.
-  ///
-  /// @param[in] variable  Boolean graph variable.
-  /// @param[in] complement  A flag for a complement of a variable.
-  ///
-  /// @returns Pointer to the root vertex of the Zbdd graph.
-  SetNodePtr ConvertGraph(const VariablePtr& variable,
-                          bool complement) noexcept;
-
   /// Converts cut sets found by MOCUS into a ZBDD graph.
   ///
   /// @param[in] cut_sets  A set of indices of modules and variables.
@@ -184,15 +190,6 @@ class Zbdd {
   /// @post The final ZBDD graph is minimal.
   /// @post Negative literals are discarded.
   VertexPtr EmplaceCutSet(const mocus::CutSetPtr& cut_set) noexcept;
-
-  /// Creates a vertex to represent a module gate.
-  ///
-  /// @param[in] gate  The root or current parent gate of the graph.
-  ///
-  /// @returns Pointer to the ZBDD set vertex.
-  ///
-  /// @note The gate still needs to be converted and saved.
-  SetNodePtr CreateModuleProxy(const IGatePtr& gate) noexcept;
 
   /// Applies Boolean operation to two vertices representing sets.
   ///

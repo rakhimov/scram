@@ -30,6 +30,17 @@ Zbdd::Zbdd(const Settings& settings) noexcept
       kEmpty_(std::make_shared<Terminal>(false)),
       set_id_(2) {}
 
+#define LOG_ZBDD                                                             \
+  LOG(DEBUG4) << "# of ZBDD nodes created: " << set_id_ - 1;                 \
+  LOG(DEBUG4) << "# of entries in unique table: " << unique_table_.size();   \
+  LOG(DEBUG4) << "# of entries in compute table: " << compute_table_.size(); \
+  LOG(DEBUG4) << "# of entries in subsume table: " << subsume_table_.size(); \
+  Zbdd::ClearMarks(root_);                                                   \
+  LOG(DEBUG4) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);    \
+  Zbdd::ClearMarks(root_);                                                   \
+  LOG(DEBUG3) << "There are " << Zbdd::CountCutSets(root_) << " cut sets.";  \
+  Zbdd::ClearMarks(root_)
+
 Zbdd::Zbdd(const Bdd* bdd, const Settings& settings) noexcept
     : Zbdd::Zbdd(settings) {
   CLOCK(init_time);
@@ -40,14 +51,8 @@ Zbdd::Zbdd(const Bdd* bdd, const Settings& settings) noexcept
                            kSettings_.limit_order(), &ites);
   Zbdd::ClearMarks(root_);
   Zbdd::TestStructure(root_);
-  Zbdd::ClearMarks(root_);
-  LOG(DEBUG4) << "# of ZBDD nodes created: " << set_id_ - 1;
-  LOG(DEBUG4) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);
+  LOG_ZBDD;
   LOG(DEBUG2) << "Created ZBDD from BDD in " << DUR(init_time);
-
-  Zbdd::ClearMarks(root_);
-  LOG(DEBUG3) << "There are " << Zbdd::CountCutSets(root_) << " cut sets.";
-  Zbdd::ClearMarks(root_);
 }
 
 Zbdd::Zbdd(const BooleanGraph* fault_tree, const Settings& settings) noexcept
@@ -68,7 +73,9 @@ Zbdd::Zbdd(const BooleanGraph* fault_tree, const Settings& settings) noexcept
     if (child < 0) {
       root_ = kBase_;
     } else {
-      root_ = Zbdd::ConvertGraph(top->variable_args().begin()->second, false);
+      VariablePtr var = top->variable_args().begin()->second;
+      root_ = Zbdd::FetchUniqueTable(var->index(), kBase_, kEmpty_,
+                                     var->order(), false);
     }
   } else {
     std::unordered_map<int, VertexPtr> gates;
@@ -85,14 +92,8 @@ Zbdd::Zbdd(const BooleanGraph* fault_tree, const Settings& settings) noexcept
   }
   Zbdd::ClearMarks(root_);
   Zbdd::TestStructure(root_);
-  Zbdd::ClearMarks(root_);
-  LOG(DEBUG4) << "# of ZBDD nodes created: " << set_id_ - 1;
-  LOG(DEBUG4) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);
+  LOG_ZBDD;
   LOG(DEBUG2) << "Created ZBDD from Boolean Graph in " << DUR(init_time);
-
-  Zbdd::ClearMarks(root_);
-  LOG(DEBUG3) << "There are " << Zbdd::CountCutSets(root_) << " cut sets.";
-  Zbdd::ClearMarks(root_);
 }
 
 Zbdd::Zbdd(int root_index,
@@ -108,14 +109,8 @@ Zbdd::Zbdd(int root_index,
   root_ = modules_.find(root_index)->second;
   Zbdd::ClearMarks(root_);
   Zbdd::TestStructure(root_);
-  Zbdd::ClearMarks(root_);
-  LOG(DEBUG4) << "# of ZBDD nodes created: " << set_id_ - 1;
-  LOG(DEBUG4) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);
+  LOG_ZBDD;
   LOG(DEBUG2) << "Created ZBDD from cut sets in " << DUR(init_time);
-
-  Zbdd::ClearMarks(root_);
-  LOG(DEBUG3) << "There are " << Zbdd::CountCutSets(root_) << " cut sets.";
-  Zbdd::ClearMarks(root_);
 }
 
 void Zbdd::Analyze() noexcept {
@@ -129,14 +124,8 @@ void Zbdd::Analyze() noexcept {
   minimal_results.clear();
   Zbdd::ClearMarks(root_);
   Zbdd::TestStructure(root_);
+  LOG_ZBDD;
   LOG(DEBUG3) << "Finished ZBDD minimization in " << DUR(minimize_time);
-  Zbdd::ClearMarks(root_);
-  LOG(DEBUG4) << "# of ZBDD nodes created: " << set_id_ - 1;
-  LOG(DEBUG4) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);
-  Zbdd::ClearMarks(root_);
-  int64_t number = Zbdd::CountCutSets(root_);
-  Zbdd::ClearMarks(root_);
-  LOG(DEBUG3) << "There are " << number << " cut sets in total.";
 
   // Complete cleanup of the memory.
   unique_table_.clear();
@@ -153,6 +142,22 @@ void Zbdd::Analyze() noexcept {
 
   LOG(DEBUG3) << cut_sets_.size() << " cut sets are found in " << DUR(gen_time);
   LOG(DEBUG2) << "Finished ZBDD analysis in " << DUR(analysis_time);
+}
+
+#undef LOG_ZBDD
+
+const SetNodePtr& Zbdd::FetchUniqueTable(int index, const VertexPtr& high,
+                                         const VertexPtr& low, int order,
+                                         bool module) noexcept {
+  SetNodePtr& in_table = unique_table_[{index, high->id(), low->id()}];
+  if (in_table) return in_table;
+  assert(order > 0 && "Improper order.");
+  in_table = std::make_shared<SetNode>(index, order);
+  in_table->id(set_id_++);
+  in_table->module(module);
+  in_table->high(high);
+  in_table->low(low);
+  return in_table;
 }
 
 VertexPtr Zbdd::ConvertBdd(const VertexPtr& vertex, bool complement,
@@ -191,15 +196,8 @@ VertexPtr Zbdd::ConvertBdd(const VertexPtr& vertex, bool complement,
     result = low;  // Reduce and minimize.
     return result;
   }
-  SetNodePtr& in_table = unique_table_[{ite->index(), high->id(), low->id()}];
-  if (!in_table) {
-    in_table = std::make_shared<SetNode>(ite->index(), ite->order());
-    in_table->module(ite->module());
-    in_table->id(set_id_++);
-    in_table->high(high);
-    in_table->low(low);
-  }
-  result = in_table;
+  result = Zbdd::FetchUniqueTable(ite->index(), high, low, ite->order(),
+                                  ite->module());
   return result;
 }
 
@@ -211,13 +209,15 @@ VertexPtr Zbdd::ConvertGraph(
   if (result) return result;
   std::vector<VertexPtr> args;
   for (const std::pair<const int, VariablePtr>& arg : gate->variable_args()) {
-    args.push_back(Zbdd::ConvertGraph(arg.second, arg.first < 0));
+    args.push_back(Zbdd::FetchUniqueTable(arg.first, kBase_, kEmpty_,
+                                          arg.second->order(), false));
   }
   for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
     assert(arg.first > 0 && "Complements must be pushed down to variables.");
     VertexPtr res = Zbdd::ConvertGraph(arg.second, gates);
     if (arg.second->IsModule()) {
-      args.push_back(Zbdd::CreateModuleProxy(arg.second));
+      args.push_back(Zbdd::FetchUniqueTable(arg.first, kBase_, kEmpty_,
+                                            arg.second->order(), true));
       modules_.emplace(arg.second->index(), res);
     } else {
       args.push_back(res);
@@ -236,19 +236,6 @@ VertexPtr Zbdd::ConvertGraph(
   }
   assert(result);
   return result;
-}
-
-SetNodePtr Zbdd::ConvertGraph(const VariablePtr& variable,
-                              bool complement) noexcept {
-  int index = variable->index() * (complement ? -1 : 1);
-  SetNodePtr& in_table = unique_table_[{index, 1, 0}];
-  if (in_table) return in_table;
-  assert(variable->order() > 0 && "Improper order.");
-  in_table = std::make_shared<SetNode>(index, variable->order());
-  in_table->id(set_id_++);
-  in_table->high(kBase_);
-  in_table->low(kEmpty_);
-  return in_table;
 }
 
 VertexPtr Zbdd::ConvertCutSets(
@@ -275,47 +262,19 @@ VertexPtr Zbdd::EmplaceCutSet(const mocus::CutSetPtr& cut_set) noexcept {
   for (it = cut_set->modules().rbegin(); it != cut_set->modules().rend();
        ++it) {
     int index = *it;
-    VertexPtr module = modules_.find(index)->second;
+    const VertexPtr& module = modules_.find(index)->second;
     if (module->terminal()) {
       if (!Terminal::Ptr(module)->value()) return kEmpty_;
       continue;  // The result does not change for the TRUE module.
     }
-    SetNodePtr& in_table = unique_table_[{index, result->id(), 0}];
-    if (!in_table) {
-      in_table = std::make_shared<SetNode>(index, index + 1);
-      in_table->module(true);
-      in_table->id(set_id_++);
-      in_table->high(result);
-      in_table->low(kEmpty_);
-    }
-    result = in_table;
+    result = Zbdd::FetchUniqueTable(index, result, kEmpty_, index + 1, true);
   }
   for (it = cut_set->literals().rbegin(); it != cut_set->literals().rend();
        ++it) {
     int index = *it;
-    SetNodePtr& in_table = unique_table_[{index, result->id(), 0}];
-    if (!in_table) {
-      in_table = std::make_shared<SetNode>(index, index + 1);
-      in_table->id(set_id_++);
-      in_table->high(result);
-      in_table->low(kEmpty_);
-    }
-    result = in_table;
+    result = Zbdd::FetchUniqueTable(index, result, kEmpty_, index + 1, false);
   }
   return result;
-}
-
-SetNodePtr Zbdd::CreateModuleProxy(const IGatePtr& gate) noexcept {
-  assert(gate->IsModule());
-  SetNodePtr& in_table = unique_table_[{gate->index(), 1, 0}];
-  if (in_table) return in_table;
-  assert(gate->order() > 0 && "Improper order.");
-  in_table = std::make_shared<SetNode>(gate->index(), gate->order());
-  in_table->module(true);  // The main difference.
-  in_table->id(set_id_++);
-  in_table->high(kBase_);
-  in_table->low(kEmpty_);
-  return in_table;
 }
 
 VertexPtr Zbdd::Apply(Operator type, const VertexPtr& arg_one,
@@ -421,16 +380,8 @@ VertexPtr Zbdd::Apply(Operator type, const SetNodePtr& arg_one,
   }
   if (high->id() == low->id()) return low;
   if (high->terminal() && Terminal::Ptr(high)->value() == false) return low;
-
-  SetNodePtr& in_table =
-      unique_table_[{arg_one->index(), high->id(), low->id()}];
-  if (in_table) return in_table;
-  in_table = std::make_shared<SetNode>(arg_one->index(), arg_one->order());
-  in_table->module(arg_one->module());
-  in_table->high(high);
-  in_table->low(low);
-  in_table->id(set_id_++);
-  return in_table;
+  return Zbdd::FetchUniqueTable(arg_one->index(), high, low, arg_one->order(),
+                                arg_one->module());
 }
 
 Triplet Zbdd::GetSignature(Operator type, const VertexPtr& arg_one,
@@ -479,15 +430,8 @@ VertexPtr Zbdd::EliminateComplement(
       return Zbdd::Apply(kOrGate, high, low);
     }
   }
-
-  SetNodePtr& in_table = unique_table_[{node->index(), high->id(), low->id()}];
-  if (in_table) return in_table;
-  in_table = std::make_shared<SetNode>(node->index(), node->order());
-  in_table->module(node->module());
-  in_table->high(high);
-  in_table->low(low);
-  in_table->id(set_id_++);
-  return in_table;
+  return Zbdd::FetchUniqueTable(node->index(), high, low, node->order(),
+                                node->module());
 }
 
 VertexPtr Zbdd::Minimize(
@@ -509,16 +453,8 @@ VertexPtr Zbdd::Minimize(
     result = low;
     return result;
   }
-  SetNodePtr& existing_node =
-      unique_table_[{node->index(), high->id(), low->id()}];
-  if (!existing_node) {
-    existing_node = std::make_shared<SetNode>(node->index(), node->order());
-    existing_node->module(node->module());  // Important to transfer.
-    existing_node->high(high);
-    existing_node->low(low);
-    existing_node->id(set_id_++);
-  }
-  result = existing_node;
+  result = Zbdd::FetchUniqueTable(node->index(), high, low, node->order(),
+                                  node->module());
   return result;
 }
 
@@ -551,17 +487,8 @@ VertexPtr Zbdd::Subsume(const VertexPtr& high, const VertexPtr& low) noexcept {
     return computed;
   }
   assert(subhigh->id() != sublow->id());
-  SetNodePtr& existing_node =
-      unique_table_[{high_node->index(), subhigh->id(), sublow->id()}];
-  if (!existing_node) {
-    existing_node =
-        std::make_shared<SetNode>(high_node->index(), high_node->order());
-    existing_node->module(high_node->module());
-    existing_node->high(subhigh);
-    existing_node->low(sublow);
-    existing_node->id(set_id_++);
-  }
-  computed = existing_node;
+  computed = Zbdd::FetchUniqueTable(high_node->index(), subhigh, sublow,
+                                    high_node->order(), high_node->module());
   return computed;
 }
 
