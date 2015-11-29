@@ -33,7 +33,8 @@ Zbdd::Zbdd(const Settings& settings) noexcept
 #define LOG_ZBDD                                                             \
   LOG(DEBUG4) << "# of ZBDD nodes created: " << set_id_ - 1;                 \
   LOG(DEBUG4) << "# of entries in unique table: " << unique_table_.size();   \
-  LOG(DEBUG4) << "# of entries in compute table: " << compute_table_.size(); \
+  LOG(DEBUG4) << "# of entries in AND table: " << and_table_.size();         \
+  LOG(DEBUG4) << "# of entries in OR table: " << or_table_.size();           \
   LOG(DEBUG4) << "# of entries in subsume table: " << subsume_table_.size(); \
   Zbdd::ClearMarks(root_);                                                   \
   LOG(DEBUG4) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);    \
@@ -129,7 +130,8 @@ void Zbdd::Analyze() noexcept {
 
   // Complete cleanup of the memory.
   unique_table_.clear();
-  compute_table_.clear();
+  and_table_.clear();
+  or_table_.clear();
   subsume_table_.clear();
 
   CLOCK(gen_time);
@@ -277,6 +279,25 @@ VertexPtr Zbdd::EmplaceCutSet(const mocus::CutSetPtr& cut_set) noexcept {
   return result;
 }
 
+VertexPtr& Zbdd::FetchComputeTable(Operator type, const VertexPtr& arg_one,
+                                   const VertexPtr& arg_two,
+                                   int order) noexcept {
+  assert(order > 0 && "Illegal order for computations.");
+  assert(!arg_one->terminal() && !arg_two->terminal());
+  assert(arg_one->id() && arg_two->id());
+  assert(arg_one->id() != arg_two->id());
+  int min_id = std::min(arg_one->id(), arg_two->id());
+  int max_id = std::max(arg_one->id(), arg_two->id());
+  switch (type) {
+    case kOrGate:
+      return or_table_[{min_id, max_id, order}];
+    case kAndGate:
+      return and_table_[{min_id, max_id, order}];
+    default:
+      assert(false && "Unsupported Boolean operation!");
+  }
+}
+
 VertexPtr Zbdd::Apply(Operator type, const VertexPtr& arg_one,
                       const VertexPtr& arg_two) noexcept {
   if (arg_one->terminal() && arg_two->terminal())
@@ -288,8 +309,8 @@ VertexPtr Zbdd::Apply(Operator type, const VertexPtr& arg_one,
 
   if (arg_one->id() == arg_two->id()) return arg_one;
 
-  Triplet sig = Zbdd::GetSignature(type, arg_one, arg_two);
-  VertexPtr& result = compute_table_[sig];  // Register if not computed.
+  VertexPtr& result = Zbdd::FetchComputeTable(type, arg_one, arg_two,
+                                              kSettings_.limit_order());
   if (result) return result;  // Already computed.
 
   SetNodePtr set_one = SetNode::Ptr(arg_one);
@@ -382,20 +403,6 @@ VertexPtr Zbdd::Apply(Operator type, const SetNodePtr& arg_one,
   if (high->terminal() && Terminal::Ptr(high)->value() == false) return low;
   return Zbdd::FetchUniqueTable(arg_one->index(), high, low, arg_one->order(),
                                 arg_one->module());
-}
-
-Triplet Zbdd::GetSignature(Operator type, const VertexPtr& arg_one,
-                           const VertexPtr& arg_two) noexcept {
-  int min_id = std::min(arg_one->id(), arg_two->id());
-  int max_id = std::max(arg_one->id(), arg_two->id());
-  switch (type) {
-    case kOrGate:
-      return {min_id, 1, max_id};
-    case kAndGate:
-      return {min_id, max_id, 0};
-    default:
-      assert(false && "Only Union and Intersection operations are supported!");
-  }
 }
 
 VertexPtr Zbdd::EliminateComplements(

@@ -75,7 +75,8 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
   Bdd::TestStructure(root_.vertex);
   LOG(DEBUG4) << "# of BDD vertices created: " << function_id_ - 1;
   LOG(DEBUG4) << "# of entries in unique table: " << unique_table_.size();
-  LOG(DEBUG4) << "# of entries in compute table: " << compute_table_.size();
+  LOG(DEBUG4) << "# of entries in AND table: " << and_table_.size();
+  LOG(DEBUG4) << "# of entries in OR table: " << or_table_.size();
   Bdd::ClearMarks(false);
   LOG(DEBUG4) << "# of ITE in BDD: " << Bdd::CountIteNodes(root_.vertex);
   LOG(DEBUG3) << "Finished Boolean graph conversion in " << DUR(init_time);
@@ -153,6 +154,27 @@ const Bdd::Function& Bdd::IfThenElse(
   return result;
 }
 
+Bdd::Function& Bdd::FetchComputeTable(Operator type,
+                                      const VertexPtr& arg_one,
+                                      const VertexPtr& arg_two,
+                                      bool complement_one,
+                                      bool complement_two) noexcept {
+  assert(!arg_one->terminal() && !arg_two->terminal());
+  assert(arg_one->id() && arg_two->id());
+  assert(arg_one->id() != arg_two->id());
+  int min_id = arg_one->id() * (complement_one ? -1 : 1);
+  int max_id = arg_two->id() * (complement_two ? -1 : 1);
+  if (arg_one->id() > arg_two->id()) std::swap(min_id, max_id);
+  switch (type) {  /// @todo Detect equal calculations with complements.
+    case kOrGate:
+      return or_table_[{min_id, max_id}];
+    case kAndGate:
+      return and_table_[{min_id, max_id}];
+    default:
+      assert(false);
+  }
+}
+
 Bdd::Function Bdd::Apply(Operator type,
                          const VertexPtr& arg_one, const VertexPtr& arg_two,
                          bool complement_one, bool complement_two) noexcept {
@@ -169,9 +191,8 @@ Bdd::Function Bdd::Apply(Operator type,
   if (arg_one->id() == arg_two->id())  // Reduction detection.
     return Bdd::Apply(type, arg_one, complement_one, complement_two);
 
-  Triplet sig =
-      Bdd::GetSignature(type, arg_one, arg_two, complement_one, complement_two);
-  Function& result = compute_table_[sig];  // Register if not computed.
+  Function& result = Bdd::FetchComputeTable(type, arg_one, arg_two,
+                                            complement_one, complement_two);
   if (result.vertex) return result;  // Already computed.
 
   ItePtr ite_one = Ite::Ptr(arg_one);
@@ -267,25 +288,6 @@ Bdd::Apply(Operator type, const ItePtr& arg_one, const ItePtr& arg_two,
                             complement_one ^ arg_one->complement_edge(),
                             complement_two);
   return {high, low};
-}
-
-Triplet Bdd::GetSignature(Operator type,
-                          const VertexPtr& arg_one, const VertexPtr& arg_two,
-                          bool complement_one, bool complement_two) noexcept {
-  assert(!arg_one->terminal() && !arg_two->terminal());
-  assert(arg_one->id() && arg_two->id());
-  assert(arg_one->id() != arg_two->id());
-  int min_id = arg_one->id() * (complement_one ? -1 : 1);
-  int max_id = arg_two->id() * (complement_two ? -1 : 1);
-  if (arg_one->id() > arg_two->id()) std::swap(min_id, max_id);
-  switch (type) {  /// @todo Detect equal calculations with complements.
-    case kOrGate:
-      return {min_id, 1, max_id};
-    case kAndGate:
-      return {min_id, max_id, 0};
-    default:
-      assert(false);
-  }
 }
 
 int Bdd::CountIteNodes(const VertexPtr& vertex) noexcept {

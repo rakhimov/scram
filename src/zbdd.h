@@ -191,6 +191,26 @@ class Zbdd {
   /// @post Negative literals are discarded.
   VertexPtr EmplaceCutSet(const mocus::CutSetPtr& cut_set) noexcept;
 
+  /// Fetches computation tables for results.
+  ///
+  /// @param[in] type  Boolean operation type.
+  /// @param[in] arg_one  First argument.
+  /// @param[in] arg_two  Second argument.
+  /// @param[in] order  The limit on order for the computations.
+  ///
+  /// @returns nullptr reference for uploading the computation results
+  ///                  if it doesn't exists.
+  /// @returns Pointer to ZBDD root vertex as the computation result.
+  ///
+  /// @pre The arguments are not the same functions.
+  ///      Equal ID functions are handled by the reduction.
+  /// @pre Even though the arguments are not SetNodePtr type,
+  ///      they are ZBDD SetNode vertices.
+  ///
+  /// @note The order of input argument vertices does not matter.
+  VertexPtr& FetchComputeTable(Operator type, const VertexPtr& arg_one,
+                               const VertexPtr& arg_two, int order) noexcept;
+
   /// Applies Boolean operation to two vertices representing sets.
   ///
   /// @param[in] type  The operator or type of the gate.
@@ -232,23 +252,6 @@ class Zbdd {
   /// @pre Argument vertices are ordered.
   VertexPtr Apply(Operator type, const SetNodePtr& arg_one,
                   const SetNodePtr& arg_two) noexcept;
-
-  /// Produces canonical signature of application of Boolean operations.
-  /// The signature of the operations helps
-  /// detect equivalent operations.
-  ///
-  /// @param[in] type  The operator or type of the gate.
-  /// @param[in] arg_one  First argument vertex.
-  /// @param[in] arg_two  Second argument vertex.
-  ///
-  /// @returns Unique signature of the operation.
-  ///
-  /// @pre The arguments are not the same functions.
-  ///      Equal ID functions are handled by the reduction.
-  /// @pre Even though the arguments are not SetNodePtr type,
-  ///      they are ZBDD SetNode vertices.
-  Triplet GetSignature(Operator type, const VertexPtr& arg_one,
-                       const VertexPtr& arg_two) noexcept;
 
   /// Removes complements of variables from cut sets.
   /// This procedure only needs to be performed for non-coherent graphs
@@ -348,11 +351,12 @@ class Zbdd {
   UniqueTable unique_table_;
 
   /// Table of processed computations over sets.
-  /// The key must convey the semantics of the operation over functions.
-  /// The argument functions are recorded with their IDs (not vertex indices).
+  /// The argument sets are recorded with their IDs (not vertex indices).
   /// In order to keep only unique computations,
   /// the argument IDs must be ordered.
-  ComputeTable compute_table_;
+  /// The key is {min_id, max_id, max_order}.
+  ComputeTable and_table_;  ///< Table of processed AND computations over sets.
+  ComputeTable or_table_;  ///< Table of processed OR computations over sets.
 
   /// The results of subsume operations over sets.
   PairTable subsume_table_;

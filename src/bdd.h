@@ -29,6 +29,7 @@
 #include <vector>
 
 #include <boost/functional/hash.hpp>
+#include <boost/unordered_map.hpp>
 
 #include "boolean_graph.h"
 #include "settings.h"
@@ -330,7 +331,8 @@ class Bdd {
 
  private:
   using UniqueTable = TripletTable<ItePtr>;  ///< To store unique vertices.
-  using ComputeTable = TripletTable<Function>;  ///< To store computed results.
+  /// To store computed results.
+  using ComputeTable = boost::unordered_map<std::pair<int, int>, Function>;
 
   /// Fetches a unique if-then-else vertex from a hash table.
   /// If the vertex doesn't exist,
@@ -358,6 +360,29 @@ class Bdd {
   /// @returns The BDD function representing the gate.
   const Function& IfThenElse(const IGatePtr& gate,
                              std::unordered_map<int, Function>* gates) noexcept;
+
+  /// Fetches computation tables for results.
+  ///
+  /// @param[in] type  The operator or type of the gate.
+  /// @param[in] arg_one  First argument function graph.
+  /// @param[in] arg_two  Second argument function graph.
+  /// @param[in] complement_one  Interpretation of arg_one as complement.
+  /// @param[in] complement_two  Interpretation of arg_two as complement.
+  ///
+  /// @returns New function with nullptr vertex pointer
+  ///          for uploading the computation results
+  ///          if it doesn't exists.
+  /// @returns If computation is already performed,
+  ///          the non-null result vertex with the return function.
+  ///
+  /// @note The arguments should not be the same functions.
+  ///       It is assumed
+  ///       that equal ID functions are handled by the reduction.
+  /// @note Even though the arguments are not ItePtr,
+  ///       it is expected that they are if-then-else vertices.
+  Function& FetchComputeTable(Operator type, const VertexPtr& arg_one,
+                              const VertexPtr& arg_two, bool complement_one,
+                              bool complement_two) noexcept;
 
   /// Applies Boolean operation to BDD graphs.
   ///
@@ -430,27 +455,6 @@ class Bdd {
                                       bool complement_one,
                                       bool complement_two) noexcept;
 
-  /// Produces canonical signature of application of Boolean operations.
-  /// The signature of the operations helps
-  /// detect equivalent operations.
-  ///
-  /// @param[in] type  The operator or type of the gate.
-  /// @param[in] arg_one  First argument function graph.
-  /// @param[in] arg_two  Second argument function graph.
-  /// @param[in] complement_one  Interpretation of arg_one as complement.
-  /// @param[in] complement_two  Interpretation of arg_two as complement.
-  ///
-  /// @returns Unique signature of the operation.
-  ///
-  /// @note The arguments should not be the same functions.
-  ///       It is assumed
-  ///       that equal ID functions are handled by the reduction.
-  /// @note Even though the arguments are not ItePtr,
-  ///       it is expected that they are if-then-else vertices.
-  Triplet GetSignature(Operator type,
-                       const VertexPtr& arg_one, const VertexPtr& arg_two,
-                       bool complement_one, bool complement_two) noexcept;
-
   /// Counts the number of if-then-else nodes.
   ///
   /// @param[in] vertex  The starting root vertex of BDD.
@@ -486,13 +490,12 @@ class Bdd {
   UniqueTable unique_table_;
 
   /// Table of processed computations over functions.
-  /// The key must convey the semantics of the operation over functions.
-  /// For example, AND(F, G) is ite(F, G, 0),
-  /// which is also equivalent to ite(G, F, 0).
   /// The argument functions are recorded with their IDs (not vertex indices).
   /// In order to keep only unique computations,
   /// the argument IDs must be ordered.
-  ComputeTable compute_table_;
+  /// The key is {min_id, max_id}.
+  ComputeTable and_table_;  ///< Table of processed AND computations.
+  ComputeTable or_table_;  ///< Table of processed OR computations.
 
   std::unordered_map<int, Function> modules_;  ///< Module graphs.
   std::unordered_map<int, int> index_to_order_;  ///< Indices and orders.
