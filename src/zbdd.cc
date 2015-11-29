@@ -166,7 +166,6 @@ VertexPtr Zbdd::ConvertBdd(const VertexPtr& vertex, bool complement,
                            const Bdd* bdd_graph, int limit_order,
                            PairTable* ites) noexcept {
   if (vertex->terminal()) return complement ? kEmpty_ : kBase_;
-  if (limit_order == 0) return kEmpty_;  // Cut-off on the cut set size.
   int sign = complement ? -1 : 1;
   VertexPtr& result = (*ites)[{sign * vertex->id(), limit_order}];
   if (result) return result;
@@ -174,6 +173,10 @@ VertexPtr Zbdd::ConvertBdd(const VertexPtr& vertex, bool complement,
   VertexPtr low =
       Zbdd::ConvertBdd(ite->low(), ite->complement_edge() ^ complement,
                        bdd_graph, limit_order, ites);
+  if (limit_order == 0) {  // Cut-off on the cut set size.
+    if (low->terminal()) return low;
+    return kEmpty_;
+  }
   if (ite->module()) {  // This is a proxy and not a variable.
     const Bdd::Function& module =
         bdd_graph->modules().find(ite->index())->second;
