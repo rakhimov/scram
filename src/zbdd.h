@@ -196,7 +196,7 @@ class Zbdd {
   /// @param[in] type  Boolean operation type.
   /// @param[in] arg_one  First argument.
   /// @param[in] arg_two  Second argument.
-  /// @param[in] order  The limit on order for the computations.
+  /// @param[in] limit_order  The limit on the order for the computations.
   ///
   /// @returns nullptr reference for uploading the computation results
   ///                  if it doesn't exists.
@@ -209,15 +209,22 @@ class Zbdd {
   ///
   /// @note The order of input argument vertices does not matter.
   VertexPtr& FetchComputeTable(Operator type, const VertexPtr& arg_one,
-                               const VertexPtr& arg_two, int order) noexcept;
+                               const VertexPtr& arg_two,
+                               int limit_order) noexcept;
 
   /// Applies Boolean operation to two vertices representing sets.
   ///
   /// @param[in] type  The operator or type of the gate.
   /// @param[in] arg_one  First argument ZBDD set.
   /// @param[in] arg_two  Second argument ZBDD set.
+  /// @param[in] limit_order  The limit on the order for the computations.
+  ///
+  /// @returns The resulting ZBDD vertex.
+  ///
+  /// @note The limit on the order is not guaranteed.
+  ///       It is for optimization purposes only.
   VertexPtr Apply(Operator type, const VertexPtr& arg_one,
-                  const VertexPtr& arg_two) noexcept;
+                  const VertexPtr& arg_two, int limit_order) noexcept;
 
   /// Applies the logic of a Boolean operator
   /// to terminal vertices.
@@ -246,12 +253,13 @@ class Zbdd {
   /// @param[in] type  The operator or type of the gate.
   /// @param[in] arg_one  First argument set vertex.
   /// @param[in] arg_two  Second argument set vertex.
+  /// @param[in] limit_order  The limit on the order for the computations.
   ///
   /// @returns The resulting ZBDD vertex.
   ///
   /// @pre Argument vertices are ordered.
   VertexPtr Apply(Operator type, const SetNodePtr& arg_one,
-                  const SetNodePtr& arg_two) noexcept;
+                  const SetNodePtr& arg_two, int limit_order) noexcept;
 
   /// Removes complements of variables from cut sets.
   /// This procedure only needs to be performed for non-coherent graphs

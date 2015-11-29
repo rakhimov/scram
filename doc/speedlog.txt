@@ -65,17 +65,25 @@ Release build:
 
 ============== Fault Tree Analysis (ZBDD) =============
 
----------- Baobab1 (mcs = 46188) ----------------
-Release build:
---------------
+---------- Baobab1 -l 11 (mcs = 46188) ----------------
+Debug build:
+------------
 - ZBDD creation           4.0  |
 
-    # of ZBDD nodes created: 1743813
-    # of SetNodes in ZBDD:   239514
+    # of ZBDD nodes created: 1257423
+    # of entries in unique table: 1257422
+    # of entries in AND table: 706703
+    # of entries in OR table: 1888416
+    # of entries in subsume table: 0
+    # of SetNodes in ZBDD: 204831
 
 - Cut Set Minimization    0.30 |
 
-    # of ZBDD nodes created: 1782044
+    # of ZBDD nodes created: 1326639
+    # of entries in unique table: 1326638
+    # of entries in AND table: 706703
+    # of entries in OR table: 1888416
+    # of entries in subsume table: 398934
     # of SetNodes in ZBDD: 3338
 
 

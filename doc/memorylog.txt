@@ -29,7 +29,7 @@ BDD
 ZBDD
 ----
 
-- Baobab1 : 560
+- Baobab1 : 440
 
 
 Initialization and Validation

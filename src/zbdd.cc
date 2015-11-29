@@ -237,7 +237,7 @@ VertexPtr Zbdd::ConvertGraph(
   auto it = args.cbegin();
   result = *it;
   for (++it; it != args.cend(); ++it) {
-    result = Zbdd::Apply(gate->type(), result, *it);
+    result = Zbdd::Apply(gate->type(), result, *it, kSettings_.limit_order());
   }
   assert(result);
   return result;
@@ -255,7 +255,8 @@ VertexPtr Zbdd::ConvertCutSets(
 
   VertexPtr result = kEmpty_;
   for (const auto& cut_set : data) {
-    result = Zbdd::Apply(kOrGate, result, Zbdd::EmplaceCutSet(cut_set));
+    result = Zbdd::Apply(kOrGate, result, Zbdd::EmplaceCutSet(cut_set),
+                         kSettings_.limit_order());
   }
   return result;
 }
@@ -285,7 +286,7 @@ VertexPtr Zbdd::EmplaceCutSet(const mocus::CutSetPtr& cut_set) noexcept {
 VertexPtr& Zbdd::FetchComputeTable(Operator type, const VertexPtr& arg_one,
                                    const VertexPtr& arg_two,
                                    int order) noexcept {
-  assert(order > 0 && "Illegal order for computations.");
+  assert(order >= 0 && "Illegal order for computations.");
   assert(!arg_one->terminal() && !arg_two->terminal());
   assert(arg_one->id() && arg_two->id());
   assert(arg_one->id() != arg_two->id());
@@ -302,7 +303,8 @@ VertexPtr& Zbdd::FetchComputeTable(Operator type, const VertexPtr& arg_one,
 }
 
 VertexPtr Zbdd::Apply(Operator type, const VertexPtr& arg_one,
-                      const VertexPtr& arg_two) noexcept {
+                      const VertexPtr& arg_two, int limit_order) noexcept {
+  if (limit_order < 0) return kEmpty_;
   if (arg_one->terminal() && arg_two->terminal())
     return Zbdd::Apply(type, Terminal::Ptr(arg_one), Terminal::Ptr(arg_two));
   if (arg_one->terminal())
@@ -313,7 +315,7 @@ VertexPtr Zbdd::Apply(Operator type, const VertexPtr& arg_one,
   if (arg_one->id() == arg_two->id()) return arg_one;
 
   VertexPtr& result = Zbdd::FetchComputeTable(type, arg_one, arg_two,
-                                              kSettings_.limit_order());
+                                              limit_order);
   if (result) return result;  // Already computed.
 
   SetNodePtr set_one = SetNode::Ptr(arg_one);
@@ -321,7 +323,7 @@ VertexPtr Zbdd::Apply(Operator type, const VertexPtr& arg_one,
   if (set_one->order() > set_two->order()) std::swap(set_one, set_two);
   if (set_one->order() == set_two->order()
       && set_one->index() < set_two->index()) std::swap(set_one, set_two);
-  result = Zbdd::Apply(type, set_one, set_two);
+  result = Zbdd::Apply(type, set_one, set_two, limit_order);
   return result;
 }
 
@@ -354,24 +356,31 @@ VertexPtr Zbdd::Apply(Operator type, const SetNodePtr& set_node,
 }
 
 VertexPtr Zbdd::Apply(Operator type, const SetNodePtr& arg_one,
-                      const SetNodePtr& arg_two) noexcept {
+                      const SetNodePtr& arg_two, int limit_order) noexcept {
   VertexPtr high;
   VertexPtr low;
+  int limit_high = limit_order - 1;
+  if (arg_one->index() < 0 || arg_one->module()) ++limit_high;
   if (arg_one->order() == arg_two->order() &&
       arg_one->index() == arg_two->index()) {  // The same variable.
     switch (type) {
       case kOrGate:
-        high = Zbdd::Apply(kOrGate, arg_one->high(), arg_two->high());
-        low = Zbdd::Apply(kOrGate, arg_one->low(), arg_two->low());
+        high =
+            Zbdd::Apply(kOrGate, arg_one->high(), arg_two->high(), limit_high);
+        low = Zbdd::Apply(kOrGate, arg_one->low(), arg_two->low(), limit_order);
         break;
       case kAndGate:
         // (x*f1 + f0) * (x*g1 + g0) = x*(f1*(g1 + g0) + f0*g1) + f0*g0
         high = Zbdd::Apply(
             kOrGate,
             Zbdd::Apply(kAndGate, arg_one->high(),
-                        Zbdd::Apply(kOrGate, arg_two->high(), arg_two->low())),
-            Zbdd::Apply(kAndGate, arg_one->low(), arg_two->high()));
-        low = Zbdd::Apply(kAndGate, arg_one->low(), arg_two->low());
+                        Zbdd::Apply(kOrGate, arg_two->high(),
+                                    arg_two->low(), limit_high),
+                        limit_high),
+            Zbdd::Apply(kAndGate, arg_one->low(), arg_two->high(), limit_high),
+            limit_high);
+        low =
+            Zbdd::Apply(kAndGate, arg_one->low(), arg_two->low(), limit_order);
         break;
       default:
         assert(false && "Unsupported Boolean operation on ZBDD.");
@@ -379,7 +388,7 @@ VertexPtr Zbdd::Apply(Operator type, const SetNodePtr& arg_one,
   } else {
     assert((arg_one->order() < arg_two->order() ||
             arg_one->index() > arg_two->index()) &&
-           "Order contract failed.");
+           "Ordering contract failed.");
     switch (type) {
       case kOrGate:
         if (arg_one->order() == arg_two->order()) {
@@ -387,16 +396,17 @@ VertexPtr Zbdd::Apply(Operator type, const SetNodePtr& arg_one,
             return kBase_;
         }
         high = arg_one->high();
-        low = Zbdd::Apply(kOrGate, arg_one->low(), arg_two);
+        low = Zbdd::Apply(kOrGate, arg_one->low(), arg_two, limit_order);
         break;
       case kAndGate:
         if (arg_one->order() == arg_two->order()) {
           // (x*f1 + f0) * (~x*g1 + g0) = x*f1*g0 + f0*(~x*g1 + g0)
-          high = Zbdd::Apply(kAndGate, arg_one->high(), arg_two->low());
+          high = Zbdd::Apply(kAndGate, arg_one->high(), arg_two->low(),
+                             limit_high);
         } else {
-          high = Zbdd::Apply(kAndGate, arg_one->high(), arg_two);
+          high = Zbdd::Apply(kAndGate, arg_one->high(), arg_two, limit_high);
         }
-        low = Zbdd::Apply(kAndGate, arg_one->low(), arg_two);
+        low = Zbdd::Apply(kAndGate, arg_one->low(), arg_two, limit_order);
         break;
       default:
         assert(false && "Unsupported Boolean operation on ZBDD.");
@@ -428,7 +438,8 @@ VertexPtr Zbdd::EliminateComplement(
     const VertexPtr& high,
     const VertexPtr& low,
     std::unordered_map<int, VertexPtr>* wide_results) noexcept {
-  if (node->index() < 0) return Zbdd::Apply(kOrGate, high, low);
+  if (node->index() < 0)  /// @todo Consider tracking the order.
+    return Zbdd::Apply(kOrGate, high, low, kSettings_.limit_order());
   if (high->id() == low->id()) return low;
   if (high->terminal() && Terminal::Ptr(high)->value() == false) return low;
 
@@ -437,7 +448,7 @@ VertexPtr Zbdd::EliminateComplement(
     module = Zbdd::EliminateComplements(module, wide_results);
     if (module->terminal()) {
       if (!Terminal::Ptr(module)->value()) return low;
-      return Zbdd::Apply(kOrGate, high, low);
+      return Zbdd::Apply(kOrGate, high, low, kSettings_.limit_order());
     }
   }
   return Zbdd::FetchUniqueTable(node->index(), high, low, node->order(),
