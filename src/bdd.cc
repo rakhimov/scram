@@ -49,7 +49,8 @@ ComplementEdge::~ComplementEdge() {}  // Default pure virtual destructor.
 Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
     : kSettings_(settings),
       kOne_(std::make_shared<Terminal>(true)),
-      function_id_(2) {
+      function_id_(2),
+      garbage_collection_(true) {
   CLOCK(init_time);
   LOG(DEBUG3) << "Converting Boolean graph into BDD...";
   if (fault_tree->root()->IsConstant()) {
@@ -81,6 +82,15 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
   LOG(DEBUG4) << "# of ITE in BDD: " << Bdd::CountIteNodes(root_.vertex);
   LOG(DEBUG3) << "Finished Boolean graph conversion in " << DUR(init_time);
   Bdd::ClearMarks(false);
+
+  // Cleanup.
+  garbage_collection_ = false;  // For faster cleanup.
+  unique_table_.clear();
+  unique_table_.reserve(0);
+  and_table_.clear();
+  and_table_.reserve(0);
+  or_table_.clear();
+  or_table_.reserve(0);
 }
 
 Bdd::~Bdd() noexcept = default;
@@ -95,21 +105,22 @@ const std::vector<std::vector<int>>& Bdd::cut_sets() const {
   return zbdd_->cut_sets();
 }
 
-const ItePtr& Bdd::FetchUniqueTable(int index, const VertexPtr& high,
-                                    const VertexPtr& low, bool complement_edge,
-                                    int order, bool module) noexcept {
+ItePtr Bdd::FetchUniqueTable(int index, const VertexPtr& high,
+                             const VertexPtr& low, bool complement_edge,
+                             int order, bool module) noexcept {
   assert(index > 0 && "Only positive indices are expected.");
   int sign = complement_edge ? -1 : 1;
-  ItePtr& in_table = unique_table_[{index, high->id(), sign * low->id()}];
-  if (in_table) return in_table;
+  IteWeakPtr& in_table = unique_table_[{index, high->id(), sign * low->id()}];
+  if (!in_table.expired()) return in_table.lock();
   assert(order > 0 && "Improper order.");
-  in_table = std::make_shared<Ite>(index, order);
-  in_table->id(function_id_++);
-  in_table->module(module);
-  in_table->high(high);
-  in_table->low(low);
-  in_table->complement_edge(complement_edge);
-  return in_table;
+  ItePtr ite(new Ite(index, order), GarbageCollector(this));
+  ite->id(function_id_++);
+  ite->module(module);
+  ite->high(high);
+  ite->low(low);
+  ite->complement_edge(complement_edge);
+  in_table = ite;
+  return ite;
 }
 
 const Bdd::Function& Bdd::IfThenElse(

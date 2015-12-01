@@ -122,6 +122,8 @@ class NonTerminal : public Vertex {
   /// Sets this vertex for representation of a module.
   void module(bool flag) { module_ = flag; }
 
+  using Vertex::id;  ///< Conflicting with the overload.
+
   /// Sets the unique identifier of the ROBDD graph.
   ///
   /// @param[in] id  Unique identifier of the ROBDD graph.
@@ -242,6 +244,7 @@ class Ite : public NonTerminal, public ComplementEdge {
 };
 
 using ItePtr = std::shared_ptr<Ite>;  ///< Shared if-then-else vertices.
+using IteWeakPtr = std::weak_ptr<Ite>;  ///< Pointer for storage outside of BDD.
 
 using Triplet = std::array<int, 3>;  ///< (v, G, H) triplet for functions.
 
@@ -330,9 +333,38 @@ class Bdd {
   const std::vector<std::vector<int>>& cut_sets() const;
 
  private:
-  using UniqueTable = TripletTable<ItePtr>;  ///< To store unique vertices.
-  /// To store computed results.
+  using UniqueTable = TripletTable<IteWeakPtr>;  ///< To keep BDD reduced.
+  /// To store computed results with an ordered pair of arguments.
+  /// This table introduces circular reference
+  /// if one of the arguments is the computation result.
   using ComputeTable = boost::unordered_map<std::pair<int, int>, Function>;
+
+  /// @class GarbageCollector
+  /// This garbage collector manages tables of a BDD.
+  /// The garbage collection is triggered
+  /// when the reference count of a BDD vertex reaches 0.
+  class GarbageCollector {
+   public:
+    /// @param[in,out] bdd  BDD to manage.
+    explicit GarbageCollector(Bdd* bdd) noexcept : bdd_(bdd) {}
+
+    /// Frees the memory
+    /// and triggers the garbage collection ONLY if requested.
+    ///
+    /// @param[in] ptr  Pointer to an ITE vertex with reference count 0.
+    void operator()(Ite* ptr) noexcept {
+      if (bdd_->garbage_collection_) {
+        bdd_->unique_table_.erase(
+            {ptr->index(),
+             ptr->high()->id(),
+             (ptr->complement_edge() ? -1 : 1) * ptr->low()->id()});
+      }
+      delete ptr;
+    }
+
+   private:
+    Bdd* bdd_;  ///< Pointer to the managed BDD.
+  };
 
   /// Fetches a unique if-then-else vertex from a hash table.
   /// If the vertex doesn't exist,
@@ -345,10 +377,14 @@ class Bdd {
   /// @param[in] order The order for the vertex variable.
   /// @param[in] module  A flag for the modular ZBDD proxy.
   ///
-  /// @returns Set node with the given parameters.
-  const ItePtr& FetchUniqueTable(int index, const VertexPtr& high,
-                                 const VertexPtr& low, bool complement_edge,
-                                 int order, bool module) noexcept;
+  /// @returns If-then-else node with the given parameters.
+  ///
+  /// @pre Expired pointers in the unique table are garbage collected.
+  /// @pre Only pointers in the unique table are
+  ///      either in the BDD or in the computation table.
+  ItePtr FetchUniqueTable(int index, const VertexPtr& high,
+                          const VertexPtr& low, bool complement_edge,
+                          int order, bool module) noexcept;
 
   /// Converts all gates in the Boolean graph
   /// into if-then-else BDD graphs.
@@ -501,6 +537,7 @@ class Bdd {
   std::unordered_map<int, int> index_to_order_;  ///< Indices and orders.
   const TerminalPtr kOne_;  ///< Terminal True.
   int function_id_;  ///< Identification assignment for new function graphs.
+  bool garbage_collection_;  ///< Switch for garbage collection.
   std::unique_ptr<Zbdd> zbdd_;  ///< ZBDD as a result of analysis.
 };
 
