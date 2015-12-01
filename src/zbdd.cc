@@ -526,8 +526,8 @@ Zbdd::GenerateCutSets(const VertexPtr& vertex) noexcept {
   std::vector<CutSet> high = Zbdd::GenerateCutSets(node->high());
   auto& result = low;  // For clarity.
   if (node->module()) {
-    std::vector<CutSet> module =
-        Zbdd::GenerateCutSets(modules_.find(node->index())->second);
+    VertexPtr module_vertex = modules_.find(node->index())->second;  // Extra.
+    std::vector<CutSet> module = Zbdd::GenerateCutSets(module_vertex);
     for (auto& cut_set : high) {  // Cross-product.
       for (auto& module_set : module) {
         if (cut_set.size() + module_set.size() > kSettings_.limit_order())
@@ -549,7 +549,7 @@ Zbdd::GenerateCutSets(const VertexPtr& vertex) noexcept {
   node->low(kEmpty_);
   node->high(kBase_);
 
-  node->cut_sets(result);
+  if (node.use_count() > 2) node->cut_sets(result);
   return result;
 }
 
