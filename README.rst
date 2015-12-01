@@ -104,7 +104,7 @@ Package                Minimum Version
 ====================   ==================
 
 
-Optional Python modules:
+Python modules:
 
 ====================   ==================
 Package                Tested Version
@@ -433,7 +433,7 @@ For any questions, don't hesitate to ask the mailing list
 How to Contribute
 *****************
 
-Please follow the instructions in `How to Contribute`_.
+Please follow the instructions in `CONTRIBUTING.md`_.
 
-.. _How to Contribute:
+.. _CONTRIBUTING.md:
     https://github.com/rakhimov/scram/blob/develop/CONTRIBUTING.md
