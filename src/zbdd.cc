@@ -47,7 +47,7 @@ Zbdd::Zbdd(const Bdd* bdd, const Settings& settings) noexcept
   CLOCK(init_time);
   LOG(DEBUG2) << "Creating ZBDD from BDD...";
   const Bdd::Function& bdd_root = bdd->root();
-  PairTable ites;
+  PairTable<VertexPtr> ites;
   root_ = Zbdd::ConvertBdd(bdd_root.vertex, bdd_root.complement, bdd,
                            kSettings_.limit_order(), &ites);
   Zbdd::ClearMarks(root_);
@@ -164,7 +164,7 @@ const SetNodePtr& Zbdd::FetchUniqueTable(int index, const VertexPtr& high,
 
 VertexPtr Zbdd::ConvertBdd(const VertexPtr& vertex, bool complement,
                            const Bdd* bdd_graph, int limit_order,
-                           PairTable* ites) noexcept {
+                           PairTable<VertexPtr>* ites) noexcept {
   if (vertex->terminal()) return complement ? kEmpty_ : kBase_;
   int sign = complement ? -1 : 1;
   VertexPtr& result = (*ites)[{sign * vertex->id(), limit_order}];

@@ -25,8 +25,6 @@
 #include <utility>
 #include <vector>
 
-#include <boost/unordered_map.hpp>
-
 #include "bdd.h"
 #include "mocus.h"
 
@@ -126,7 +124,6 @@ class Zbdd {
  private:
   using UniqueTable = TripletTable<SetNodePtr>;
   using ComputeTable = TripletTable<VertexPtr>;
-  using PairTable = boost::unordered_map<std::pair<int, int>, VertexPtr>;
   using CutSet = std::vector<int>;
 
   /// Default constructor to initialize member variables.
@@ -160,7 +157,7 @@ class Zbdd {
   /// @returns Pointer to the root vertex of the ZBDD graph.
   VertexPtr ConvertBdd(const VertexPtr& vertex, bool complement,
                        const Bdd* bdd_graph, int limit_order,
-                       PairTable* ites) noexcept;
+                       PairTable<VertexPtr>* ites) noexcept;
 
   /// Transforms a Boolean graph gate into a Zbdd set graph.
   ///
@@ -367,7 +364,7 @@ class Zbdd {
   ComputeTable or_table_;  ///< Table of processed OR computations over sets.
 
   /// The results of subsume operations over sets.
-  PairTable subsume_table_;
+  PairTable<VertexPtr> subsume_table_;
 
   const Settings kSettings_;  ///< Analysis settings.
   VertexPtr root_;  ///< The root vertex of ZBDD.

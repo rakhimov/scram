@@ -29,7 +29,6 @@
 #include <vector>
 
 #include <boost/functional/hash.hpp>
-#include <boost/unordered_map.hpp>
 
 #include "boolean_graph.h"
 #include "settings.h"
@@ -251,9 +250,9 @@ using Triplet = std::array<int, 3>;  ///< (v, G, H) triplet for functions.
 /// @struct TripletHash
 /// Functor for hashing triplets of ordered numbers.
 struct TripletHash : public std::unary_function<const Triplet, std::size_t> {
-  /// Operator overload for hashing three ordered ID numbers.
+  /// Operator overload for hashing three ordered numbers.
   ///
-  /// @param[in] triplet (v, G, H) nodes.
+  /// @param[in] triplet  (v, G, H) nodes.
   ///
   /// @returns Hash value of the triplet.
   std::size_t operator()(const Triplet& triplet) const noexcept {
@@ -261,11 +260,31 @@ struct TripletHash : public std::unary_function<const Triplet, std::size_t> {
   }
 };
 
-/// Hash table for triplets of numbers as keys.
+/// Hash table with triplets of numbers as keys.
 ///
 /// @tparam Value  Type of values to be stored in the table.
 template<typename Value>
 using TripletTable = std::unordered_map<Triplet, Value, TripletHash>;
+
+/// @class PairHash
+/// Function for hashing a pair of ordered numbers.
+struct PairHash
+    : public std::unary_function<const std::pair<int, int>, std::size_t> {
+  /// Operator overload for hashing two ordered numbers.
+  ///
+  /// @param[in] p  The pair of numbers.
+  ///
+  /// @returns Hash value of the pair.
+  std::size_t operator()(const std::pair<int, int>& p) const noexcept {
+    return boost::hash_value(p);
+  }
+};
+
+/// Hash table with pairs of numbers as keys.
+///
+/// @tparam Value  Type of values to be stored in the table.
+template<typename Value>
+using PairTable = std::unordered_map<std::pair<int, int>, Value, PairHash>;
 
 class Zbdd;  // For analysis purposes.
 
@@ -337,7 +356,7 @@ class Bdd {
   /// To store computed results with an ordered pair of arguments.
   /// This table introduces circular reference
   /// if one of the arguments is the computation result.
-  using ComputeTable = boost::unordered_map<std::pair<int, int>, Function>;
+  using ComputeTable = PairTable<Function>;
 
   /// @class GarbageCollector
   /// This garbage collector manages tables of a BDD.
