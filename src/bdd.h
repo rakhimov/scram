@@ -365,23 +365,18 @@ class Bdd {
   class GarbageCollector {
    public:
     /// @param[in,out] bdd  BDD to manage.
-    explicit GarbageCollector(Bdd* bdd) noexcept : bdd_(bdd) {}
+    explicit GarbageCollector(Bdd* bdd) noexcept
+        : garbage_collection_(bdd->garbage_collection_),
+          bdd_(bdd) {}
 
     /// Frees the memory
     /// and triggers the garbage collection ONLY if requested.
     ///
     /// @param[in] ptr  Pointer to an ITE vertex with reference count 0.
-    void operator()(Ite* ptr) noexcept {
-      if (bdd_->garbage_collection_) {
-        bdd_->unique_table_.erase(
-            {ptr->index(),
-             ptr->high()->id(),
-             (ptr->complement_edge() ? -1 : 1) * ptr->low()->id()});
-      }
-      delete ptr;
-    }
+    void operator()(Ite* ptr) noexcept;
 
    private:
+    std::weak_ptr<bool> garbage_collection_;  ///< Flag for garbage collection.
     Bdd* bdd_;  ///< Pointer to the managed BDD.
   };
 
@@ -552,11 +547,20 @@ class Bdd {
   ComputeTable and_table_;  ///< Table of processed AND computations.
   ComputeTable or_table_;  ///< Table of processed OR computations.
 
+  /// @struct Membership.
+  /// Keys for membership in tables.
+  struct Membership {
+    std::vector<std::pair<int, int>> and_table;  ///< In AND computation table.
+    std::vector<std::pair<int, int>> or_table;  ///< In OR computation table.
+  };
+
+  std::unordered_map<int, Membership> ite_as_arg_;  ///< ITE in compute tables.
+
   std::unordered_map<int, Function> modules_;  ///< Module graphs.
   std::unordered_map<int, int> index_to_order_;  ///< Indices and orders.
   const TerminalPtr kOne_;  ///< Terminal True.
   int function_id_;  ///< Identification assignment for new function graphs.
-  bool garbage_collection_;  ///< Switch for garbage collection.
+  std::shared_ptr<bool> garbage_collection_;  ///< Flag for garbage collection.
   std::unique_ptr<Zbdd> zbdd_;  ///< ZBDD as a result of analysis.
 };
 

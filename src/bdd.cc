@@ -50,7 +50,7 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
     : kSettings_(settings),
       kOne_(std::make_shared<Terminal>(true)),
       function_id_(2),
-      garbage_collection_(true) {
+      garbage_collection_(std::make_shared<bool>(true)) {
   CLOCK(init_time);
   LOG(DEBUG3) << "Converting Boolean graph into BDD...";
   if (fault_tree->root()->IsConstant()) {
@@ -84,7 +84,10 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
   Bdd::ClearMarks(false);
 
   // Cleanup.
-  garbage_collection_ = false;  // For faster cleanup.
+  garbage_collection_ = nullptr;  // For faster cleanup.
+  LOG(DEBUG5) << "BDD switched off the garbage collector.";
+  ite_as_arg_.clear();
+  ite_as_arg_.reserve(0);
   unique_table_.clear();
   unique_table_.reserve(0);
   and_table_.clear();
@@ -103,6 +106,28 @@ void Bdd::Analyze() noexcept {
 const std::vector<std::vector<int>>& Bdd::cut_sets() const {
   assert(zbdd_ && "Analysis is not done.");
   return zbdd_->cut_sets();
+}
+
+void Bdd::GarbageCollector::operator()(Ite* ptr) noexcept {
+  if (!garbage_collection_.expired()) {
+    LOG(DEBUG5) << "Running garbage collection for " << ptr->id();
+    bdd_->unique_table_.erase(
+        {ptr->index(),
+         ptr->high()->id(),
+         (ptr->complement_edge() ? -1 : 1) * ptr->low()->id()});
+    auto it = bdd_->ite_as_arg_.find(ptr->id());
+    if (it != bdd_->ite_as_arg_.end()) {
+      Membership& member_in = it->second;
+      for (const std::pair<int, int>& key : member_in.and_table)
+        bdd_->and_table_.erase(key);
+
+      for (const std::pair<int, int>& key : member_in.or_table)
+        bdd_->or_table_.erase(key);
+
+      bdd_->ite_as_arg_.erase(it);
+    }
+  }
+  delete ptr;
 }
 
 ItePtr Bdd::FetchUniqueTable(int index, const VertexPtr& high,
@@ -176,10 +201,16 @@ Bdd::Function& Bdd::FetchComputeTable(Operator type,
   int min_id = arg_one->id() * (complement_one ? -1 : 1);
   int max_id = arg_two->id() * (complement_two ? -1 : 1);
   if (arg_one->id() > arg_two->id()) std::swap(min_id, max_id);
+  Membership& member_one = ite_as_arg_[arg_one->id()];
+  Membership& member_two = ite_as_arg_[arg_two->id()];
   switch (type) {  /// @todo Detect equal calculations with complements.
     case kOrGate:
+      member_one.or_table.emplace_back(min_id, max_id);
+      member_two.or_table.emplace_back(min_id, max_id);
       return or_table_[{min_id, max_id}];
     case kAndGate:
+      member_one.and_table.emplace_back(min_id, max_id);
+      member_two.and_table.emplace_back(min_id, max_id);
       return and_table_[{min_id, max_id}];
     default:
       assert(false);
@@ -219,11 +250,9 @@ Bdd::Function Bdd::Apply(Operator type,
   Function& low = new_edges.second;
   result.complement = high.complement;
   bool complement_edge = high.complement ^ low.complement;
-  if (!complement_edge) {  // Another redundancy detection.
-    if (high.vertex->id() == low.vertex->id()) {
-      result.vertex = low.vertex;
+  if (!complement_edge && (high.vertex->id() == low.vertex->id())) {
+      result.vertex = low.vertex;  // Another redundancy detection.
       return result;
-    }
   }
   result.vertex = Bdd::FetchUniqueTable(ite_one->index(), high.vertex,
                                         low.vertex, complement_edge,
