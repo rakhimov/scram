@@ -358,6 +358,7 @@ class Bdd {
   /// if one of the arguments is the computation result.
   using ComputeTable = PairTable<Function>;
 
+#ifndef NGARBAGE
   /// @class GarbageCollector
   /// This garbage collector manages tables of a BDD.
   /// The garbage collection is triggered
@@ -379,6 +380,7 @@ class Bdd {
     std::weak_ptr<bool> garbage_collection_;  ///< Flag for garbage collection.
     Bdd* bdd_;  ///< Pointer to the managed BDD.
   };
+#endif
 
   /// Fetches a unique if-then-else vertex from a hash table.
   /// If the vertex doesn't exist,
@@ -547,6 +549,7 @@ class Bdd {
   ComputeTable and_table_;  ///< Table of processed AND computations.
   ComputeTable or_table_;  ///< Table of processed OR computations.
 
+#ifndef NGARBAGE
   /// @struct Membership.
   /// Keys for membership in tables.
   struct Membership {
@@ -555,12 +558,13 @@ class Bdd {
   };
 
   std::unordered_map<int, Membership> ite_as_arg_;  ///< ITE in compute tables.
+  std::shared_ptr<bool> garbage_collection_;  ///< Flag for garbage collection.
+#endif
 
   std::unordered_map<int, Function> modules_;  ///< Module graphs.
   std::unordered_map<int, int> index_to_order_;  ///< Indices and orders.
   const TerminalPtr kOne_;  ///< Terminal True.
   int function_id_;  ///< Identification assignment for new function graphs.
-  std::shared_ptr<bool> garbage_collection_;  ///< Flag for garbage collection.
   std::unique_ptr<Zbdd> zbdd_;  ///< ZBDD as a result of analysis.
 };
 

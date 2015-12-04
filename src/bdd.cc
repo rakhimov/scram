@@ -48,9 +48,11 @@ ComplementEdge::~ComplementEdge() {}  // Default pure virtual destructor.
 
 Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
     : kSettings_(settings),
+#ifndef NGARBAGE
+      garbage_collection_(std::make_shared<bool>(true)),
+#endif
       kOne_(std::make_shared<Terminal>(true)),
-      function_id_(2),
-      garbage_collection_(std::make_shared<bool>(true)) {
+      function_id_(2) {
   CLOCK(init_time);
   LOG(DEBUG3) << "Converting Boolean graph into BDD...";
   if (fault_tree->root()->IsConstant()) {
@@ -84,10 +86,12 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
   Bdd::ClearMarks(false);
 
   // Cleanup.
+#ifndef NGARBAGE
   garbage_collection_ = nullptr;  // For faster cleanup.
-  LOG(DEBUG5) << "BDD switched off the garbage collector.";
   ite_as_arg_.clear();
   ite_as_arg_.reserve(0);
+#endif
+  LOG(DEBUG5) << "BDD switched off the garbage collector.";
   unique_table_.clear();
   unique_table_.reserve(0);
   and_table_.clear();
@@ -108,6 +112,7 @@ const std::vector<std::vector<int>>& Bdd::cut_sets() const {
   return zbdd_->cut_sets();
 }
 
+#ifndef NGARBAGE
 void Bdd::GarbageCollector::operator()(Ite* ptr) noexcept {
   if (!garbage_collection_.expired()) {
     LOG(DEBUG5) << "Running garbage collection for " << ptr->id();
@@ -129,6 +134,7 @@ void Bdd::GarbageCollector::operator()(Ite* ptr) noexcept {
   }
   delete ptr;
 }
+#endif
 
 ItePtr Bdd::FetchUniqueTable(int index, const VertexPtr& high,
                              const VertexPtr& low, bool complement_edge,
@@ -138,7 +144,11 @@ ItePtr Bdd::FetchUniqueTable(int index, const VertexPtr& high,
   IteWeakPtr& in_table = unique_table_[{index, high->id(), sign * low->id()}];
   if (!in_table.expired()) return in_table.lock();
   assert(order > 0 && "Improper order.");
+#ifndef NGARBAGE
   ItePtr ite(new Ite(index, order), GarbageCollector(this));
+#else
+  ItePtr ite(new Ite(index, order));
+#endif
   ite->id(function_id_++);
   ite->module(module);
   ite->high(high);
@@ -201,6 +211,7 @@ Bdd::Function& Bdd::FetchComputeTable(Operator type,
   int min_id = arg_one->id() * (complement_one ? -1 : 1);
   int max_id = arg_two->id() * (complement_two ? -1 : 1);
   if (arg_one->id() > arg_two->id()) std::swap(min_id, max_id);
+#ifndef NGARBAGE
   Membership& member_one = ite_as_arg_[arg_one->id()];
   Membership& member_two = ite_as_arg_[arg_two->id()];
   switch (type) {  /// @todo Detect equal calculations with complements.
@@ -215,6 +226,16 @@ Bdd::Function& Bdd::FetchComputeTable(Operator type,
     default:
       assert(false);
   }
+#else
+  switch (type) {
+    case kOrGate:
+      return or_table_[{min_id, max_id}];
+    case kAndGate:
+      return and_table_[{min_id, max_id}];
+    default:
+      assert(false);
+  }
+#endif
 }
 
 Bdd::Function Bdd::Apply(Operator type,
