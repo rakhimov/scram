@@ -27,7 +27,7 @@
 // Performance testing values are taken
 // from a computer with the following specs:
 //
-//   Proc         Core i5-2410M
+//   Proc         Core i7-2820QM
 //   Ubuntu       14.04 64bit
 //   GCC          4.8.4
 //   Boost        1.55
@@ -78,7 +78,7 @@ TEST_F(PerformanceTest, DISABLED_200Event) {
 }
 
 TEST_F(PerformanceTest, DISABLED_Baobab1_L7) {
-  double mcs_time = 13;
+  double mcs_time = 5.6;
 #ifdef NDEBUG
   mcs_time = 0.90;
 #endif
@@ -122,7 +122,7 @@ TEST_F(PerformanceTest, DISABLED_Baobab2) {
 #ifdef NDEBUG
 
 TEST_F(PerformanceTest, DISABLED_Baobab1_L8) {
-  double mcs_time = 5.8;
+  double mcs_time = 3.4;
   std::vector<std::string> input_files;
   input_files.push_back("./share/scram/input/Baobab/baobab1.xml");
   input_files.push_back("./share/scram/input/Baobab/baobab1-basic-events.xml");
