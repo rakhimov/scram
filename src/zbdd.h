@@ -58,6 +58,12 @@ class SetNode : public NonTerminal {
     cut_sets_ = cut_sets;
   }
 
+  /// @returns true if the ZBDD is minimized.
+  bool minimal() const { return minimal_; }
+
+  /// @param[in] flag  A flag for minimized ZBDD.
+  void minimal(bool flag) { minimal_ = flag; }
+
   /// Recovers a shared pointer to SetNode from a pointer to Vertex.
   ///
   /// @param[in] vertex  Pointer to a Vertex known to be a SetNode.
@@ -70,6 +76,7 @@ class SetNode : public NonTerminal {
  private:
   std::vector<std::vector<int>> cut_sets_;  ///< Cut sets of this node.
   int64_t count_ = 0;  ///< The number of cut sets, nodes, or anything else.
+  bool minimal_ = false;  ///< A flag for minimized collection of sets.
 };
 
 using SetNodePtr = std::shared_ptr<SetNode>;  ///< Shared ZBDD set nodes.

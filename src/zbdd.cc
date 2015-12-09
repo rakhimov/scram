@@ -459,9 +459,10 @@ VertexPtr Zbdd::Minimize(
     const VertexPtr& vertex,
     std::unordered_map<int, VertexPtr>* minimal_results) noexcept {
   if (vertex->terminal()) return vertex;
+  SetNodePtr node = SetNode::Ptr(vertex);
+  if (node->minimal()) return vertex;
   VertexPtr& result = (*minimal_results)[vertex->id()];
   if (result) return result;
-  SetNodePtr node = SetNode::Ptr(vertex);
   if (node->module()) {
     VertexPtr& module = modules_.find(node->index())->second;
     module = Zbdd::Minimize(module, minimal_results);
@@ -474,8 +475,10 @@ VertexPtr Zbdd::Minimize(
     result = low;
     return result;
   }
-  result = Zbdd::FetchUniqueTable(node->index(), high, low, node->order(),
-                                  node->module());
+  node = Zbdd::FetchUniqueTable(node->index(), high, low, node->order(),
+                                node->module());
+  node->minimal(true);
+  result = node;
   return result;
 }
 
@@ -508,8 +511,11 @@ VertexPtr Zbdd::Subsume(const VertexPtr& high, const VertexPtr& low) noexcept {
     return computed;
   }
   assert(subhigh->id() != sublow->id());
-  computed = Zbdd::FetchUniqueTable(high_node->index(), subhigh, sublow,
-                                    high_node->order(), high_node->module());
+  SetNodePtr new_high =
+      Zbdd::FetchUniqueTable(high_node->index(), subhigh, sublow,
+                             high_node->order(), high_node->module());
+  new_high->minimal(high_node->minimal());
+  computed = new_high;
   return computed;
 }
 
@@ -520,6 +526,7 @@ Zbdd::GenerateCutSets(const VertexPtr& vertex) noexcept {
     return {};  // Don't include 0/NULL sets.
   }
   SetNodePtr node = SetNode::Ptr(vertex);
+  assert(node->minimal() && "Detected non-minimal ZBDD.");
   if (node->mark()) return node->cut_sets();
   node->mark(true);
   std::vector<CutSet> low = Zbdd::GenerateCutSets(node->low());
@@ -613,6 +620,12 @@ void Zbdd::TestStructure(const VertexPtr& vertex) noexcept {
   assert(!(!node->low()->terminal() &&
            node->order() >= SetNode::Ptr(node->low())->order()) &&
          "Ordering of nodes failed.");
+  assert(!(!node->high()->terminal() && node->minimal() &&
+           !SetNode::Ptr(node->high())->minimal()) &&
+         "Non-minimal branches in minimal ZBDD.");
+  assert(!(!node->low()->terminal() && node->minimal() &&
+           !SetNode::Ptr(node->low())->minimal()) &&
+         "Non-minimal branches in minimal ZBDD.");
   if (node->module()) {
     VertexPtr module = modules_.find(node->index())->second;
     assert(!module->terminal() && "Terminal modules must be removed.");
