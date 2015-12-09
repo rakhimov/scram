@@ -30,16 +30,17 @@ Zbdd::Zbdd(const Settings& settings) noexcept
       kEmpty_(std::make_shared<Terminal>(false)),
       set_id_(2) {}
 
-#define LOG_ZBDD                                                             \
-  LOG(DEBUG4) << "# of ZBDD nodes created: " << set_id_ - 1;                 \
-  LOG(DEBUG4) << "# of entries in unique table: " << unique_table_.size();   \
-  LOG(DEBUG4) << "# of entries in AND table: " << and_table_.size();         \
-  LOG(DEBUG4) << "# of entries in OR table: " << or_table_.size();           \
-  LOG(DEBUG4) << "# of entries in subsume table: " << subsume_table_.size(); \
-  Zbdd::ClearMarks(root_);                                                   \
-  LOG(DEBUG4) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);    \
-  Zbdd::ClearMarks(root_);                                                   \
-  LOG(DEBUG3) << "There are " << Zbdd::CountCutSets(root_) << " cut sets.";  \
+#define LOG_ZBDD                                                               \
+  LOG(DEBUG4) << "# of ZBDD nodes created: " << set_id_ - 1;                   \
+  LOG(DEBUG4) << "# of entries in unique table: " << unique_table_.size();     \
+  LOG(DEBUG4) << "# of entries in AND table: " << and_table_.size();           \
+  LOG(DEBUG4) << "# of entries in OR table: " << or_table_.size();             \
+  LOG(DEBUG4) << "# of entries in subsume table: " << subsume_table_.size();   \
+  LOG(DEBUG4) << "# of entries in minimal table: " << minimal_results_.size(); \
+  Zbdd::ClearMarks(root_);                                                     \
+  LOG(DEBUG4) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);      \
+  Zbdd::ClearMarks(root_);                                                     \
+  LOG(DEBUG3) << "There are " << Zbdd::CountCutSets(root_) << " cut sets.";    \
   Zbdd::ClearMarks(root_)
 
 Zbdd::Zbdd(const Bdd* bdd, const Settings& settings) noexcept
@@ -120,15 +121,14 @@ void Zbdd::Analyze() noexcept {
 
   CLOCK(minimize_time);
   LOG(DEBUG3) << "Minimizing ZBDD...";
-  std::unordered_map<int, VertexPtr> minimal_results;
-  root_ = Zbdd::Minimize(root_, &minimal_results);
-  minimal_results.clear();
+  root_ = Zbdd::Minimize(root_);
   Zbdd::ClearMarks(root_);
   Zbdd::TestStructure(root_);
   LOG_ZBDD;
   LOG(DEBUG3) << "Finished ZBDD minimization in " << DUR(minimize_time);
 
   // Complete cleanup of the memory.
+  minimal_results_.clear();
   unique_table_.clear();
   and_table_.clear();
   or_table_.clear();
@@ -274,11 +274,13 @@ VertexPtr Zbdd::EmplaceCutSet(const mocus::CutSetPtr& cut_set) noexcept {
       continue;  // The result does not change for the TRUE module.
     }
     result = Zbdd::FetchUniqueTable(index, result, kEmpty_, index + 1, true);
+    SetNode::Ptr(result)->minimal(true);
   }
   for (it = cut_set->literals().rbegin(); it != cut_set->literals().rend();
        ++it) {
     int index = *it;
     result = Zbdd::FetchUniqueTable(index, result, kEmpty_, index + 1, false);
+    SetNode::Ptr(result)->minimal(true);
   }
   return result;
 }
@@ -414,8 +416,9 @@ VertexPtr Zbdd::Apply(Operator type, const SetNodePtr& arg_one,
   }
   if (high->id() == low->id()) return low;
   if (high->terminal() && Terminal::Ptr(high)->value() == false) return low;
-  return Zbdd::FetchUniqueTable(arg_one->index(), high, low, arg_one->order(),
-                                arg_one->module());
+  return Zbdd::Minimize(Zbdd::FetchUniqueTable(arg_one->index(), high, low,
+                                               arg_one->order(),
+                                               arg_one->module()));
 }
 
 VertexPtr Zbdd::EliminateComplements(
@@ -455,30 +458,27 @@ VertexPtr Zbdd::EliminateComplement(
                                 node->module());
 }
 
-VertexPtr Zbdd::Minimize(
-    const VertexPtr& vertex,
-    std::unordered_map<int, VertexPtr>* minimal_results) noexcept {
+VertexPtr Zbdd::Minimize(const VertexPtr& vertex) noexcept {
   if (vertex->terminal()) return vertex;
   SetNodePtr node = SetNode::Ptr(vertex);
   if (node->minimal()) return vertex;
-  VertexPtr& result = (*minimal_results)[vertex->id()];
+  VertexPtr& result = minimal_results_[vertex->id()];
   if (result) return result;
   if (node->module()) {
     VertexPtr& module = modules_.find(node->index())->second;
-    module = Zbdd::Minimize(module, minimal_results);
+    module = Zbdd::Minimize(module);
   }
-  VertexPtr high = Zbdd::Minimize(node->high(), minimal_results);
-  VertexPtr low = Zbdd::Minimize(node->low(), minimal_results);
+  VertexPtr high = Zbdd::Minimize(node->high());
+  VertexPtr low = Zbdd::Minimize(node->low());
   high = Zbdd::Subsume(high, low);
   assert(high->id() != low->id() && "Subsume failed!");
   if (high->terminal() && !Terminal::Ptr(high)->value()) {  // Reduction rule.
     result = low;
     return result;
   }
-  node = Zbdd::FetchUniqueTable(node->index(), high, low, node->order(),
-                                node->module());
-  node->minimal(true);
-  result = node;
+  result = Zbdd::FetchUniqueTable(node->index(), high, low, node->order(),
+                                  node->module());
+  SetNode::Ptr(result)->minimal(true);
   return result;
 }
 
@@ -490,19 +490,24 @@ VertexPtr Zbdd::Subsume(const VertexPtr& high, const VertexPtr& low) noexcept {
 
   SetNodePtr high_node = SetNode::Ptr(high);
   SetNodePtr low_node = SetNode::Ptr(low);
-  if (high_node->order() > low_node->order()) {
+  if (high_node->order() > low_node->order() ||
+      (high_node->order() == low_node->order() &&
+       high_node->index() < low_node->index())) {
     computed = Zbdd::Subsume(high, low_node->low());
     return computed;
   }
   VertexPtr subhigh;
   VertexPtr sublow;
-  if (high_node->order() == low_node->order()) {
+  if (high_node->order() == low_node->order() &&
+      high_node->index() == low_node->index()) {
     assert(high_node->index() == low_node->index());
     subhigh = Zbdd::Subsume(high_node->high(), low_node->high());
     subhigh = Zbdd::Subsume(subhigh, low_node->low());
     sublow = Zbdd::Subsume(high_node->low(), low_node->low());
   } else {
-    assert(high_node->order() < low_node->order());
+    assert(high_node->order() < low_node->order() ||
+           (high_node->order() == low_node->order() &&
+            high_node->index() > low_node->index()));
     subhigh = Zbdd::Subsume(high_node->high(), low);
     sublow = Zbdd::Subsume(high_node->low(), low);
   }

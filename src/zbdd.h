@@ -294,12 +294,9 @@ class Zbdd {
   /// Removes subsets in ZBDD.
   ///
   /// @param[in] vertex  The variable node in the set.
-  /// @param[in,out] minimal_results  Memoisation of minimal results.
   ///
   /// @returns Processed vertex.
-  VertexPtr Minimize(
-      const VertexPtr& vertex,
-      std::unordered_map<int, VertexPtr>* minimal_results) noexcept;
+  VertexPtr Minimize(const VertexPtr& vertex) noexcept;
 
   /// Applies subsume operation on two sets.
   /// Subsume operation removes
@@ -370,6 +367,8 @@ class Zbdd {
   ComputeTable and_table_;  ///< Table of processed AND computations over sets.
   ComputeTable or_table_;  ///< Table of processed OR computations over sets.
 
+  /// Memoisation of minimal ZBDD vertices.
+  std::unordered_map<int, VertexPtr> minimal_results_;
   /// The results of subsume operations over sets.
   PairTable<VertexPtr> subsume_table_;
 

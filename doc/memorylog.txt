@@ -16,7 +16,7 @@ MOCUS
 -----
 
 - Baobab1 -l 7 :  15 |
-- Baobab1 -l 8 :  35 | 400
+- Baobab1 -l 8 :  35 | 600
 
 
 BDD
@@ -29,7 +29,7 @@ BDD
 ZBDD
 ----
 
-- Baobab1 : 440
+- Baobab1 : 60
 
 
 Initialization and Validation
