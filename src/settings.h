@@ -206,7 +206,7 @@ class Settings {
   bool importance_analysis_ = false;  ///< A flag for importance analysis.
   bool uncertainty_analysis_ = false;  ///< A flag for uncertainty analysis.
   bool ccf_analysis_ = false;  ///< A flag for common-cause analysis.
-  std::string algorithm_ = "mocus";  ///< Qualitative analysis algorithm.
+  std::string algorithm_ = "bdd";  ///< Qualitative analysis algorithm.
   int limit_order_ = 20;  ///< Limit on the order of minimal cut sets.
   double mission_time_ = 8760;  ///< System mission time.
   double cut_off_ = 1e-8;  ///< The cut-off probability for cut sets.

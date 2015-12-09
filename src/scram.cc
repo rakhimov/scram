@@ -55,7 +55,7 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
     desc.add_options()
         ("help", "Display this help message")
         ("version", "Display version information")
-        ("input-files", po::value< std::vector<std::string> >(),
+        ("input-files", po::value<std::vector<std::string>>(),
          "XML input files with analysis constructs")
         ("config-file", po::value<std::string>(),
          "XML file with analysis configurations")
@@ -63,6 +63,7 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
         ("graph", "Validate and produce graph without analysis")
         ("bdd", "Perform qualitative analysis with BDD")
         ("zbdd", "Perform qualitative analysis with ZBDD")
+        ("mocus", "Perform qualitative analysis with MOCUS")
         ("probability", po::value<bool>(), "Perform probability analysis")
         ("importance", po::value<bool>(), "Perform importance analysis")
         ("uncertainty", po::value<bool>(), "Perform uncertainty analysis")
@@ -119,7 +120,7 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
     return 1;
   }
 
-  if (vm->count("bdd") && vm->count("zbdd")) {
+  if (vm->count("bdd") && vm->count("zbdd") && vm->count("mocus")) {
     std::cerr << "Mutually exclusive qualitative analysis algorithms.\n"
               << "(MOCUS/BDD/ZBDD) cannot be applied at the same time.\n"
               << usage << "\n\n" << desc << std::endl;
@@ -157,6 +158,8 @@ void ConstructSettings(const po::variables_map& vm, scram::Settings* settings) {
     settings->algorithm("bdd");
   } else if (vm.count("zbdd")) {
     settings->algorithm("zbdd");
+  } else if (vm.count("mocus")) {
+    settings->algorithm("mocus");
   }
   // Determine if the probability approximation is requested.
   if (vm.count("rare-event")) {

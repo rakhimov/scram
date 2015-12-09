@@ -48,7 +48,7 @@ class Config(object):
     """
     switch = ["--probability", "--importance"]
     approximation = ["", "--rare-event", "--mcub"]
-    analysis = ["", "--bdd", "--zbdd"]
+    analysis = ["--mocus", "--bdd", "--zbdd"]
     max_limit = 10
 
     @staticmethod
@@ -107,9 +107,7 @@ def call_scram():
     if approx:
         cmd.append(approx)
 
-    algorithm = random.choice(Config.analysis)
-    if algorithm:
-        cmd.append(algorithm)
+    cmd.append(random.choice(Config.analysis))
     print(cmd)
     cmd += ["-o", "/dev/null"]
     return call(cmd)
@@ -159,7 +157,7 @@ def main():
         Config.restrict()
     elif args.mocus:
         print("Focusing on MOCUS")
-        Config.analysis = [""]
+        Config.analysis = ["--mocus"]
     elif args.bdd:
         print("Focusing on BDD")
         Config.analysis = ["--bdd"]

@@ -32,7 +32,9 @@ namespace test {
 
 class RiskAnalysisTest : public ::testing::Test {
  protected:
-  virtual void SetUp() {}
+  virtual void SetUp() {
+    settings.algorithm("mocus");  /// @todo Different setups for each algorithm.
+  }
 
   virtual void TearDown() {}
 

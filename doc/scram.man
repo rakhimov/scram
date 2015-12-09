@@ -1,4 +1,4 @@
-.TH SCRAM "1" "November 2015" "SCRAM 0.10.0" "SCRAM Manual"
+.TH SCRAM "1" "December 2015" "SCRAM 0.10.0" "SCRAM Manual"
 .SH NAME
 SCRAM \- Command-line Risk Analysis Multi-tool
 .SH SYNOPSIS
@@ -35,13 +35,14 @@ Validate input and configuration files without analysis
 \fB\-\-graph\fR
 Validate and produce graph without analysis
 .TP
-.TP
 \fB\-\-bdd\fR
 Perform qualitative analysis with Binary Decision Diagrams
 .TP
-.TP
 \fB\-\-zbdd\fR
 Perform qualitative analysis with Zero-Suppressed Binary Decision Diagrams
+.TP
+\fB\-\-mocus\fR
+Perform qualitative analysis with the MOCUS algorithm
 .TP
 \fB\-\-probability\fR arg
 Perform probability analysis
