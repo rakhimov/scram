@@ -623,8 +623,12 @@ void Zbdd::TestStructure(const VertexPtr& vertex) noexcept {
            node->order() >= SetNode::Ptr(node->high())->order()) &&
          "Ordering of nodes failed.");
   assert(!(!node->low()->terminal() &&
-           node->order() >= SetNode::Ptr(node->low())->order()) &&
+           node->order() > SetNode::Ptr(node->low())->order()) &&
          "Ordering of nodes failed.");
+  assert(!(!node->low()->terminal() &&
+           node->order() == SetNode::Ptr(node->low())->order() &&
+           node->index() <= SetNode::Ptr(node->low())->index()) &&
+         "Ordering of complements failed.");
   assert(!(!node->high()->terminal() && node->minimal() &&
            !SetNode::Ptr(node->high())->minimal()) &&
          "Non-minimal branches in minimal ZBDD.");
