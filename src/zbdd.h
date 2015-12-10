@@ -22,6 +22,7 @@
 #define SCRAM_SRC_ZBDD_H_
 
 #include <cstdint>
+#include <memory>
 #include <utility>
 #include <vector>
 

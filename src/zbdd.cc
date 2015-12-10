@@ -221,9 +221,13 @@ VertexPtr Zbdd::ConvertGraph(
     assert(arg.first > 0 && "Complements must be pushed down to variables.");
     VertexPtr res = Zbdd::ConvertGraph(arg.second, gates);
     if (arg.second->IsModule()) {
-      args.push_back(Zbdd::FetchUniqueTable(arg.first, kBase_, kEmpty_,
-                                            arg.second->order(), true));
       modules_.emplace(arg.second->index(), res);
+      if (res->terminal()) {
+        args.push_back(res);
+      } else {
+        args.push_back(Zbdd::FetchUniqueTable(arg.first, kBase_, kEmpty_,
+                                              arg.second->order(), true));
+      }
     } else {
       args.push_back(res);
     }
