@@ -418,6 +418,10 @@ VertexPtr Zbdd::Apply(Operator type, const SetNodePtr& arg_one,
         assert(false && "Unsupported Boolean operation on ZBDD.");
     }
   }
+  if (!high->terminal() && SetNode::Ptr(high)->order() == arg_one->order()) {
+    assert(SetNode::Ptr(high)->index() < arg_one->index());
+    high = SetNode::Ptr(high)->low();
+  }
   if (high->id() == low->id()) return low;
   if (high->terminal() && Terminal::Ptr(high)->value() == false) return low;
   return Zbdd::Minimize(Zbdd::FetchUniqueTable(arg_one->index(), high, low,
