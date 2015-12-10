@@ -121,7 +121,10 @@ void Zbdd::Analyze() noexcept {
 
   CLOCK(minimize_time);
   LOG(DEBUG3) << "Minimizing ZBDD...";
+  for (std::pair<const int, VertexPtr>& module : modules_)
+    module.second = Zbdd::Minimize(module.second);
   root_ = Zbdd::Minimize(root_);
+  assert(root_->terminal() || SetNode::Ptr(root_)->minimal());
   Zbdd::ClearMarks(root_);
   Zbdd::TestStructure(root_);
   LOG_ZBDD;
@@ -456,7 +459,7 @@ VertexPtr Zbdd::EliminateComplement(
 
   if (node->module()) {
     VertexPtr& module = modules_.find(node->index())->second;
-    module = Zbdd::EliminateComplements(module, wide_results);
+    module = Zbdd::Minimize(Zbdd::EliminateComplements(module, wide_results));
     if (module->terminal()) {
       if (!Terminal::Ptr(module)->value()) return low;
       return Zbdd::Apply(kOrGate, high, low, kSettings_.limit_order());
@@ -472,10 +475,6 @@ VertexPtr Zbdd::Minimize(const VertexPtr& vertex) noexcept {
   if (node->minimal()) return vertex;
   VertexPtr& result = minimal_results_[vertex->id()];
   if (result) return result;
-  if (node->module()) {
-    VertexPtr& module = modules_.find(node->index())->second;
-    module = Zbdd::Minimize(module);
-  }
   VertexPtr high = Zbdd::Minimize(node->high());
   VertexPtr low = Zbdd::Minimize(node->low());
   high = Zbdd::Subsume(high, low);
