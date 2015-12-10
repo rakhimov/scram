@@ -201,6 +201,11 @@ class Settings {
     return *this;
   }
 
+#ifndef NDEBUG
+  bool preprocessor = false;  ///< Stop analysis after preprocessor.
+  bool print = false;  ///< Print analysis results in a terminal friendly way.
+#endif
+
  private:
   bool probability_analysis_ = false;  ///< A flag for probability analysis.
   bool importance_analysis_ = false;  ///< A flag for importance analysis.

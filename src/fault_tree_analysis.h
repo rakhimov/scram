@@ -293,7 +293,9 @@ void FaultTreeAnalyzer<Algorithm>::Analyze() noexcept {
   preprocessor->Run();
   delete preprocessor;  // No exceptions are expected.
   LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
-
+#ifndef NDEBUG
+  if (kSettings_.preprocessor) return;  // Preprocessor only option.
+#endif
   CLOCK(algo_time);
   LOG(DEBUG2) << "Launching the algorithm...";
   algorithm_ =

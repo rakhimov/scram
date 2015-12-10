@@ -143,6 +143,9 @@ void FaultTreeAnalysis::Convert(const std::vector<std::vector<int>>& i_cut_sets,
     }
     cut_sets_.push_back(result);
   }
+#ifndef NDEBUG
+  if (kSettings_.print) Print(cut_sets_);
+#endif
 }
 
 }  // namespace scram

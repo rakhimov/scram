@@ -81,10 +81,15 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
         ("seed", po::value<int>(),
          "Seed for the pseudo-random number generator")
         ("output-path,o", po::value<std::string>(), "Output path for reports")
-        ("verbosity", po::value<int>(), "Set log verbosity")
-        ;
-
+        ("verbosity", po::value<int>(), "Set log verbosity");
+#ifndef NDEBUG
+    desc.add_options()
+        ("preprocessor", "Stop analysis after the preprocessing step")
+        ("print", "Print analysis results in a terminal friendly way")
+        ("no-report", "Don't generate analysis report");
+#endif
     po::store(po::parse_command_line(argc, argv, desc), *vm);
+
   } catch (std::exception& err) {
     std::cerr << "Option error: " << err.what() << "\n\n" << usage << "\n\n"
               << desc << "\n";
@@ -185,6 +190,10 @@ void ConstructSettings(const po::variables_map& vm, scram::Settings* settings) {
   if (vm.count("probability"))
     settings->probability_analysis(vm["probability"].as<bool>());
   if (vm.count("ccf")) settings->ccf_analysis(vm["ccf"].as<bool>());
+#ifndef NDEBUG
+  settings->preprocessor = vm.count("preprocessor");
+  settings->print = vm.count("print");
+#endif
 }
 
 /// Main body of command-line entrance to run the program.
@@ -254,6 +263,11 @@ int RunScram(const po::variables_map& vm) {
   }
 
   ran->Analyze();
+
+#ifndef NDEBUG
+  if (vm.count("no-report") || vm.count("preprocessor") || vm.count("print"))
+    return 0;
+#endif
 
   if (output_path != "") {
     ran->Report(output_path);
