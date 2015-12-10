@@ -189,15 +189,18 @@ VertexPtr Zbdd::ConvertBdd(const VertexPtr& vertex, bool complement,
                          bdd_graph, kSettings_.limit_order(), ites);
     modules_.emplace(ite->index(), module_set);
     if (module_set->terminal()) {
-      assert(!Terminal::Ptr(module_set)->value());
-      result = low;
+      if (!Terminal::Ptr(module_set)->value()) {
+        result = low;
+      } else {
+        VertexPtr high = Zbdd::ConvertBdd(ite->high(), complement, bdd_graph,
+                                          limit_order, ites);
+        result = Zbdd::Apply(kOrGate, high, low, kSettings_.limit_order());
+      }
       return result;
     }
   }
-  int limit_high = limit_order - 1;  // Requested order for the high node.
-  if (ite->module()) limit_high += 1;  // Conservative approach.
   VertexPtr high =
-      Zbdd::ConvertBdd(ite->high(), complement, bdd_graph, limit_high, ites);
+      Zbdd::ConvertBdd(ite->high(), complement, bdd_graph, --limit_order, ites);
   if ((high->terminal() && !Terminal::Ptr(high)->value()) ||
       (high->id() == low->id()) ||
       (low->terminal() && Terminal::Ptr(low)->value())) {
