@@ -45,19 +45,20 @@ class Config(object):
         approximation: SCRAM quantitative analysis approximations.
         analysis: Qualitative analysis algorithms.
         max_limit: The largest size limit on the cut sets.
+        additional: A list of commands to be appended without fuzzing.
     """
     switch = ["--probability", "--importance"]
     approximation = ["", "--rare-event", "--mcub"]
     analysis = ["--mocus", "--bdd", "--zbdd"]
     max_limit = 10
+    additional = []
 
     @staticmethod
     def restrict():
         """Restricts configurations for testing preprocessor."""
         Config.switch = []
         Config.approximation = [""]
-        Config.analysis = [""]
-        Config.max_limit = 1
+        Config.additional = ["--preprocessor"]
 
 
 def generate_input(normal, coherent):
@@ -108,6 +109,7 @@ def call_scram():
         cmd.append(approx)
 
     cmd.append(random.choice(Config.analysis))
+    cmd += Config.additional
     print(cmd)
     cmd += ["-o", "/dev/null"]
     return call(cmd)
