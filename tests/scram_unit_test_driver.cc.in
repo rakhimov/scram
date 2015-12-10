@@ -15,12 +15,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
-#include <string>
-#include <stdio.h>
 #include <unistd.h>
 
 #include <gtest/gtest.h>
+
+#include "risk_analysis_tests.h"
+
+namespace scram {
+namespace test {
+
+INSTANTIATE_TEST_CASE_P(BDD, RiskAnalysisTest, ::testing::Values("bdd"));
+INSTANTIATE_TEST_CASE_P(ZBDD, RiskAnalysisTest, ::testing::Values("zbdd"));
+INSTANTIATE_TEST_CASE_P(MOCUS, RiskAnalysisTest, ::testing::Values("mocus"));
+
+}
+}
 
 int main(int argc, char* argv[]) {
   const char* target = "@CMAKE_INSTALL_PREFIX@";

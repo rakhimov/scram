@@ -25,7 +25,7 @@ namespace test {
 // Benchmark Tests for an example fault tree with
 // Two trains of Pumps and Valves.
 // Test Minimal cut sets and total probabilty.
-TEST_F(RiskAnalysisTest, TwoTrain) {
+TEST_P(RiskAnalysisTest, TwoTrain) {
   std::string tree_input = "./share/scram/input/TwoTrain/two_train.xml";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));

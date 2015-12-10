@@ -17,13 +17,9 @@
 
 #include "risk_analysis_tests.h"
 
-#include <fstream>
-#include <sstream>
 #include <vector>
 
-#include "env.h"
 #include "error.h"
-#include "xml_parser.h"
 
 namespace scram {
 namespace test {
@@ -82,7 +78,7 @@ TEST_F(RiskAnalysisTest, PopulateProbabilities) {
 }
 
 // Test Analysis of Two train system.
-TEST_F(RiskAnalysisTest, AnalyzeDefault) {
+TEST_P(RiskAnalysisTest, AnalyzeDefault) {
   std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
@@ -94,34 +90,8 @@ TEST_F(RiskAnalysisTest, AnalyzeDefault) {
   PrintCutSets();  // Quick visual verification and test.
 }
 
-// Test Analysis of Two train system.
-TEST_F(RiskAnalysisTest, AnalyzeDefaultBdd) {
-  std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
-  settings.algorithm("bdd");
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
-  ASSERT_NO_THROW(ran->Analyze());
-  std::set<std::set<std::string>> mcs = {{"pumpone", "pumptwo"},
-                                         {"pumpone", "valvetwo"},
-                                         {"pumptwo", "valveone"},
-                                         {"valveone", "valvetwo"}};
-  EXPECT_EQ(mcs, min_cut_sets());
-}
-
-TEST_F(RiskAnalysisTest, AnalyzeDefaultZbdd) {
-  std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
-  settings.algorithm("zbdd");
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
-  ASSERT_NO_THROW(ran->Analyze());
-  std::set<std::set<std::string>> mcs = {{"pumpone", "pumptwo"},
-                                         {"pumpone", "valvetwo"},
-                                         {"pumptwo", "valveone"},
-                                         {"valveone", "valvetwo"}};
-  EXPECT_EQ(mcs, min_cut_sets());
-}
-
-TEST_F(RiskAnalysisTest, AnalyzeNegZbdd) {
-  std::string tree_input = "./share/scram/input/fta/importance_neg_test.xml";
-  settings.algorithm("zbdd");
+TEST_P(RiskAnalysisTest, AnalyzeNonCoherentDefault) {
+  std::string tree_input = "./share/scram/input/fta/correct_non_coherent.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   std::set<std::set<std::string>> mcs = {{"pumpone", "pumptwo"},
@@ -130,7 +100,7 @@ TEST_F(RiskAnalysisTest, AnalyzeNegZbdd) {
   EXPECT_EQ(mcs, min_cut_sets());
 }
 
-TEST_F(RiskAnalysisTest, AnalyzeWithProbability) {
+TEST_P(RiskAnalysisTest, AnalyzeWithProbability) {
   std::string with_prob =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   std::set<std::string> mcs_1 = {"pumpone", "pumptwo"};
@@ -167,7 +137,7 @@ TEST_F(RiskAnalysisTest, AnalyzeWithProbability) {
   }
 }
 
-TEST_F(RiskAnalysisTest, AnalyzeNestedFormula) {
+TEST_P(RiskAnalysisTest, AnalyzeNestedFormula) {
   std::string nested_input = "./share/scram/input/fta/nested_formula.xml";
   std::set<std::set<std::string>> mcs = {{"pumpone", "pumptwo"},
                                          {"pumpone", "valvetwo"},
@@ -178,7 +148,7 @@ TEST_F(RiskAnalysisTest, AnalyzeNestedFormula) {
   EXPECT_EQ(mcs, min_cut_sets());
 }
 
-TEST_F(RiskAnalysisTest, ImportanceNeg) {
+TEST_P(RiskAnalysisTest, ImportanceNeg) {
   std::string tree_input = "./share/scram/input/fta/importance_neg_test.xml";
   settings.importance_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
@@ -203,7 +173,7 @@ TEST_F(RiskAnalysisTest, ImportanceNeg) {
 }
 
 // Apply the rare event approximation.
-TEST_F(RiskAnalysisTest, ImportanceRareEvent) {
+TEST_P(RiskAnalysisTest, ImportanceRareEvent) {
   std::string with_prob = "./share/scram/input/fta/importance_test.xml";
   // Probability calculations with the rare event approximation.
   settings.approximation("rare-event").importance_analysis(true);
@@ -228,7 +198,7 @@ TEST_F(RiskAnalysisTest, ImportanceRareEvent) {
   }
 }
 
-TEST_F(RiskAnalysisTest, DISABLED_ImportanceNegRareEvent) {
+TEST_P(RiskAnalysisTest, DISABLED_ImportanceNegRareEvent) {
   std::string tree_input = "./share/scram/input/fta/importance_neg_test.xml";
   settings.importance_analysis(true).approximation("rare-event");
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
@@ -253,7 +223,7 @@ TEST_F(RiskAnalysisTest, DISABLED_ImportanceNegRareEvent) {
 }
 
 // Apply the minimal cut set upper bound approximation.
-TEST_F(RiskAnalysisTest, MCUB) {
+TEST_P(RiskAnalysisTest, MCUB) {
   std::string with_prob =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   // Probability calculations with the MCUB approximation.
@@ -265,7 +235,7 @@ TEST_F(RiskAnalysisTest, MCUB) {
 
 // Apply the minimal cut set upper bound approximation for non-coherent tree.
 // This should be a warning.
-TEST_F(RiskAnalysisTest, McubNonCoherent) {
+TEST_P(RiskAnalysisTest, McubNonCoherent) {
   std::string with_prob = "./share/scram/input/core/a_and_not_b.xml";
   // Probability calculations with the MCUB approximation.
   settings.approximation("mcub").probability_analysis(true);
@@ -276,7 +246,7 @@ TEST_F(RiskAnalysisTest, McubNonCoherent) {
 
 // Test Monte Carlo Analysis
 /// @todo Expand this test.
-TEST_F(RiskAnalysisTest, AnalyzeMC) {
+TEST_P(RiskAnalysisTest, AnalyzeMC) {
   settings.uncertainty_analysis(true);
   std::string tree_input =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
@@ -297,270 +267,77 @@ TEST_F(RiskAnalysisTest, ReportIOError) {
 }
 
 // Reporting of the default analysis for MCS only without probabilities.
-TEST_F(RiskAnalysisTest, ReportDefaultMCS) {
-  std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
-
-  std::stringstream schema;
-  std::string schema_path = Env::report_schema();
-  std::ifstream schema_stream(schema_path.c_str());
-  schema << schema_stream.rdbuf();
-  schema_stream.close();
-
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
-  ASSERT_NO_THROW(ran->Analyze());
-
-  std::stringstream output;
-  ASSERT_NO_THROW(ran->Report(output));
-
-  std::unique_ptr<XmlParser> parser;
-  ASSERT_NO_THROW(parser = std::unique_ptr<XmlParser>(new XmlParser(output)));
-  ASSERT_NO_THROW(parser->Validate(schema));
-}
-
-TEST_F(RiskAnalysisTest, ReportDefaultBdd) {
-  std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
-
-  std::stringstream schema;
-  std::string schema_path = Env::report_schema();
-  std::ifstream schema_stream(schema_path.c_str());
-  schema << schema_stream.rdbuf();
-  schema_stream.close();
-
-  settings.algorithm("bdd");
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
-  ASSERT_NO_THROW(ran->Analyze());
-
-  std::stringstream output;
-  ASSERT_NO_THROW(ran->Report(output));
-
-  std::unique_ptr<XmlParser> parser;
-  ASSERT_NO_THROW(parser = std::unique_ptr<XmlParser>(new XmlParser(output)));
-  ASSERT_NO_THROW(parser->Validate(schema));
-}
-
-TEST_F(RiskAnalysisTest, ReportDefaultZbdd) {
-  std::string tree_input = "./share/scram/input/fta/correct_tree_input.xml";
-
-  std::stringstream schema;
-  std::string schema_path = Env::report_schema();
-  std::ifstream schema_stream(schema_path.c_str());
-  schema << schema_stream.rdbuf();
-  schema_stream.close();
-
-  settings.algorithm("zbdd");
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
-  ASSERT_NO_THROW(ran->Analyze());
-
-  std::stringstream output;
-  ASSERT_NO_THROW(ran->Report(output));
-
-  std::unique_ptr<XmlParser> parser;
-  ASSERT_NO_THROW(parser = std::unique_ptr<XmlParser>(new XmlParser(output)));
-  ASSERT_NO_THROW(parser->Validate(schema));
+TEST_P(RiskAnalysisTest, ReportDefaultMCS) {
+  CheckReport("./share/scram/input/fta/correct_tree_input.xml");
 }
 
 // Reporting of analysis for MCS with probability results.
 TEST_F(RiskAnalysisTest, ReportProbability) {
   std::string tree_input =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
-
-  std::stringstream schema;
-  std::string schema_path = Env::report_schema();
-  std::ifstream schema_stream(schema_path.c_str());
-  schema << schema_stream.rdbuf();
-  schema_stream.close();
-
   settings.probability_analysis(true);
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
-  ASSERT_NO_THROW(ran->Analyze());
-
-  std::stringstream output;
-  ASSERT_NO_THROW(ran->Report(output));
-
-  std::unique_ptr<XmlParser> parser;
-  ASSERT_NO_THROW(parser = std::unique_ptr<XmlParser>(new XmlParser(output)));
-  ASSERT_NO_THROW(parser->Validate(schema));
+  CheckReport(tree_input);
 }
 
 // Reporting of importance analysis.
 TEST_F(RiskAnalysisTest, ReportImportanceFactors) {
   std::string tree_input =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
-
-  std::stringstream schema;
-  std::string schema_path = Env::report_schema();
-  std::ifstream schema_stream(schema_path.c_str());
-  schema << schema_stream.rdbuf();
-  schema_stream.close();
-
   settings.importance_analysis(true);
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
-  ASSERT_NO_THROW(ran->Analyze());
-
-  std::stringstream output;
-  ASSERT_NO_THROW(ran->Report(output));
-
-  std::unique_ptr<XmlParser> parser;
-  ASSERT_NO_THROW(parser = std::unique_ptr<XmlParser>(new XmlParser(output)));
-  ASSERT_NO_THROW(parser->Validate(schema));
+  CheckReport(tree_input);
 }
 
 // Reporting of uncertainty analysis.
 TEST_F(RiskAnalysisTest, ReportUncertaintyResults) {
   std::string tree_input =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
-
-  std::stringstream schema;
-  std::string schema_path = Env::report_schema();
-  std::ifstream schema_stream(schema_path.c_str());
-  schema << schema_stream.rdbuf();
-  schema_stream.close();
-
   settings.uncertainty_analysis(true);
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
-  ASSERT_NO_THROW(ran->Analyze());
-
-  std::stringstream output;
-  ASSERT_NO_THROW(ran->Report(output));
-
-  std::unique_ptr<XmlParser> parser;
-  ASSERT_NO_THROW(parser = std::unique_ptr<XmlParser>(new XmlParser(output)));
-  ASSERT_NO_THROW(parser->Validate(schema));
+  CheckReport(tree_input);
 }
 
 // Reporting of CCF analysis.
 TEST_F(RiskAnalysisTest, ReportCCF) {
   std::string tree_input = "./share/scram/input/core/mgl_ccf.xml";
-
-  std::stringstream schema;
-  std::string schema_path = Env::report_schema();
-  std::ifstream schema_stream(schema_path.c_str());
-  schema << schema_stream.rdbuf();
-  schema_stream.close();
-
   settings.ccf_analysis(true).importance_analysis(true);
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
-  ASSERT_NO_THROW(ran->Analyze());
-
-  std::stringstream output;
-  ASSERT_NO_THROW(ran->Report(output));
-
-  std::unique_ptr<XmlParser> parser;
-  ASSERT_NO_THROW(parser = std::unique_ptr<XmlParser>(new XmlParser(output)));
-  ASSERT_NO_THROW(parser->Validate(schema));
+  CheckReport(tree_input);
 }
 
 // Reporting of Negative events in MCS.
 TEST_F(RiskAnalysisTest, ReportNegativeEvent) {
   std::string tree_input = "./share/scram/input/core/a_or_not_b.xml";
-
-  std::stringstream schema;
-  std::string schema_path = Env::report_schema();
-  std::ifstream schema_stream(schema_path.c_str());
-  schema << schema_stream.rdbuf();
-  schema_stream.close();
-
   settings.probability_analysis(true);
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
-  ASSERT_NO_THROW(ran->Analyze());
-
-  std::stringstream output;
-  ASSERT_NO_THROW(ran->Report(output));
-
-  std::unique_ptr<XmlParser> parser;
-  ASSERT_NO_THROW(parser = std::unique_ptr<XmlParser>(new XmlParser(output)));
-  ASSERT_NO_THROW(parser->Validate(schema));
+  CheckReport(tree_input);
 }
 
 // Reporting of all possible analyses.
 TEST_F(RiskAnalysisTest, ReportAll) {
   std::string tree_input =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
-
-  std::stringstream schema;
-  std::string schema_path = Env::report_schema();
-  std::ifstream schema_stream(schema_path.c_str());
-  schema << schema_stream.rdbuf();
-  schema_stream.close();
-
   settings.importance_analysis(true).uncertainty_analysis(true)
       .ccf_analysis(true);
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
-  ASSERT_NO_THROW(ran->Analyze());
-
-  std::stringstream output;
-  ASSERT_NO_THROW(ran->Report(output));
-
-  std::unique_ptr<XmlParser> parser;
-  ASSERT_NO_THROW(parser = std::unique_ptr<XmlParser>(new XmlParser(output)));
-  ASSERT_NO_THROW(parser->Validate(schema));
+  CheckReport(tree_input);
 }
 
 // Reporting with public or private roles.
 TEST_F(RiskAnalysisTest, ReportRoles) {
   std::string tree_input = "./share/scram/input/fta/mixed_roles.xml";
-
-  std::stringstream schema;
-  std::string schema_path = Env::report_schema();
-  std::ifstream schema_stream(schema_path.c_str());
-  schema << schema_stream.rdbuf();
-  schema_stream.close();
-
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
-  ASSERT_NO_THROW(ran->Analyze());
-
-  std::stringstream output;
-  ASSERT_NO_THROW(ran->Report(output));
-
-  std::unique_ptr<XmlParser> parser;
-  ASSERT_NO_THROW(parser = std::unique_ptr<XmlParser>(new XmlParser(output)));
-  ASSERT_NO_THROW(parser->Validate(schema));
+  CheckReport(tree_input);
 }
 
 // Reporting of orphan primary events.
 TEST_F(RiskAnalysisTest, ReportOrphanPrimaryEvents) {
   std::string tree_input = "./share/scram/input/fta/orphan_primary_event.xml";
-
-  std::stringstream schema;
-  std::string schema_path = Env::report_schema();
-  std::ifstream schema_stream(schema_path.c_str());
-  schema << schema_stream.rdbuf();
-  schema_stream.close();
-
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
-  ASSERT_NO_THROW(ran->Analyze());
-
-  std::stringstream output;
-  ASSERT_NO_THROW(ran->Report(output));
-
-  std::unique_ptr<XmlParser> parser;
-  ASSERT_NO_THROW(parser = std::unique_ptr<XmlParser>(new XmlParser(output)));
-  ASSERT_NO_THROW(parser->Validate(schema));
+  CheckReport(tree_input);
 }
 
 // Reporting of unused parameters.
 TEST_F(RiskAnalysisTest, ReportUnusedParameters) {
   std::string tree_input = "./share/scram/input/fta/unused_parameter.xml";
-
-  std::stringstream schema;
-  std::string schema_path = Env::report_schema();
-  std::ifstream schema_stream(schema_path.c_str());
-  schema << schema_stream.rdbuf();
-  schema_stream.close();
-
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
-  ASSERT_NO_THROW(ran->Analyze());
-
-  std::stringstream output;
-  ASSERT_NO_THROW(ran->Report(output));
-
-  std::unique_ptr<XmlParser> parser;
-  ASSERT_NO_THROW(parser = std::unique_ptr<XmlParser>(new XmlParser(output)));
-  ASSERT_NO_THROW(parser->Validate(schema));
+  CheckReport(tree_input);
 }
 
 // NAND and NOR as a child cases.
-TEST_F(RiskAnalysisTest, ChildNandNorGates) {
+TEST_P(RiskAnalysisTest, ChildNandNorGates) {
   std::string tree_input = "./share/scram/input/fta/children_nand_nor.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
@@ -573,7 +350,7 @@ TEST_F(RiskAnalysisTest, ChildNandNorGates) {
 }
 
 // Simple test for several house event propagation.
-TEST_F(RiskAnalysisTest, ManyHouseEvents) {
+TEST_P(RiskAnalysisTest, ManyHouseEvents) {
   std::string tree_input = "./share/scram/input/fta/constant_propagation.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
@@ -582,7 +359,7 @@ TEST_F(RiskAnalysisTest, ManyHouseEvents) {
 }
 
 // Simple test for several constant gate propagation.
-TEST_F(RiskAnalysisTest, ConstantGates) {
+TEST_P(RiskAnalysisTest, ConstantGates) {
   std::string tree_input = "./share/scram/input/fta/constant_gates.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());

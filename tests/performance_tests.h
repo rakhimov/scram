@@ -34,6 +34,7 @@ namespace test {
 class PerformanceTest : public ::testing::Test {
  protected:
   virtual void SetUp() {
+    settings.algorithm("mocus");
     delta = 0.10;  // % variation of values.
   }
 

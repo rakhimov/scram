@@ -23,7 +23,7 @@ namespace scram {
 namespace test {
 
 // Benchmark Tests for the ThreeMotor fault tree from OpenFTA.
-TEST_F(RiskAnalysisTest, ThreeMotor) {
+TEST_P(RiskAnalysisTest, ThreeMotor) {
   std::string tree_input = "./share/scram/input/ThreeMotor/three_motor.xml";
   std::set< std::set<std::string> > mcs;  // For expected min cut sets.
   std::string T3 = "t3";

@@ -20,20 +20,24 @@
 
 #include "risk_analysis.h"
 
+#include <fstream>
 #include <set>
+#include <sstream>
 #include <vector>
 
 #include <gtest/gtest.h>
 
+#include "env.h"
 #include "initializer.h"
+#include "xml_parser.h"
 
 namespace scram {
 namespace test {
 
-class RiskAnalysisTest : public ::testing::Test {
+class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
  protected:
   virtual void SetUp() {
-    settings.algorithm("mocus");  /// @todo Different setups for each algorithm.
+    if (HasParam()) settings.algorithm(GetParam());
   }
 
   virtual void TearDown() {}
@@ -62,6 +66,25 @@ class RiskAnalysisTest : public ::testing::Test {
     std::vector<std::string> input_files;
     input_files.push_back(input_file);
     ProcessInputFiles(input_files);
+  }
+
+  // Collection of assertions on the reporting after running analysis.
+  // Note that the analysis is run by this function.
+  void CheckReport(const std::string& tree_input) {
+    std::stringstream schema;
+    std::string schema_path = Env::report_schema();
+    std::ifstream schema_stream(schema_path.c_str());
+    schema << schema_stream.rdbuf();
+    schema_stream.close();
+
+    ASSERT_NO_THROW(ProcessInputFile(tree_input));
+    ASSERT_NO_THROW(ran->Analyze());
+    std::stringstream output;
+    ASSERT_NO_THROW(ran->Report(output));
+
+    std::unique_ptr<XmlParser> parser;
+    ASSERT_NO_THROW(parser = std::unique_ptr<XmlParser>(new XmlParser(output)));
+    ASSERT_NO_THROW(parser->Validate(schema));
   }
 
   // Returns a single fault tree, assuming one fault tree with single top gate.

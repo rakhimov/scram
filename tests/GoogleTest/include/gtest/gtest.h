@@ -1818,6 +1818,11 @@ class WithParamInterface {
   typedef T ParamType;
   virtual ~WithParamInterface() {}
 
+  /// @returns true if the test is called with a parameter.
+  ///
+  /// @note This function is added for SCRAM.
+  bool HasParam() const { return parameter_; }
+
   // The current parameter value. Is also available in the test fixture's
   // constructor. This member function is non-static, even though it only
   // references static data, to reduce the opportunity for incorrect uses
