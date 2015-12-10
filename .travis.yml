@@ -1,3 +1,6 @@
+sudo: required
+dist: trusty
+
 language: cpp
 
 compiler: gcc
@@ -6,33 +9,24 @@ env:
     - PATH=$PATH:`pwd`/install/bin
 
 before_install:
-    - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
-    - sudo add-apt-repository -y ppa:kubuntu-ppa/backports
-    - sudo add-apt-repository -y ppa:beineri/opt-qt521
     - sudo apt-get update -qq
 
 install:
-    - sudo apt-get install -qq gcc-4.8 g++-4.8
     - sudo apt-get install -qq ggcov
-    - sudo apt-get install -qq libboost-program-options1.48-dev
-    - sudo apt-get install -qq libboost-filesystem1.48-dev
-    - sudo apt-get install -qq libboost-system1.48-dev
-    - sudo apt-get install -qq libboost-math1.48-dev
+    - sudo apt-get install -qq libboost-program-options-dev
+    - sudo apt-get install -qq libboost-filesystem-dev
+    - sudo apt-get install -qq libboost-system-dev
+    - sudo apt-get install -qq libboost-math-dev
     - sudo apt-get install -qq libxml2-dev
     - sudo apt-get install -qq libxml++2.6-dev
     - sudo apt-get install -qq libgoogle-perftools-dev
     - sudo apt-get install -qq python-lxml
     - sudo apt-get install -qq graphviz
-    - sudo apt-get install -qq qt52base
-    - sudo apt-get install -qq cmake
+    - sudo apt-get install -qq qt5-default
     - sudo pip install cpp-coveralls
     - sudo pip install nose
 
 before_script:
-    - sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 20
-    - sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-4.8 20
-    - sudo update-alternatives --install /usr/bin/gcov gcov /usr/bin/gcov-4.8 20
-    - source /opt/qt52/bin/qt52-env.sh
     - mkdir ./install
 
 script:
