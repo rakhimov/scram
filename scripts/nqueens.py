@@ -26,6 +26,14 @@ from __future__ import print_function
 import argparse as ap
 
 
+def row(i):
+    """Returns row position signature."""
+    return "r" + str(i)
+
+def col(j):
+    """Returns column position signature."""
+    return "c" + str(j)
+
 def position(i, j, complement):
     """Produces a name for a literal position.
 
@@ -38,7 +46,7 @@ def position(i, j, complement):
         A string "eij" with the complement indicated with "~" in the front.
     """
     assert i and j
-    return ("~" if complement else "") + "e" + str(i) + str(j)
+    return ("~" if complement else "") + "Q" + row(i) + col(j)
 
 def gate(i, j=None):
     """Produces a name for a gate logic for positions.
@@ -47,7 +55,7 @@ def gate(i, j=None):
         i: Row position.
         j: Optional column position.
     """
-    return "g" + str(i) + (str(j) if j else "")
+    return "G" + row(i) + (col(j) if j else "")
 
 
 def main():
