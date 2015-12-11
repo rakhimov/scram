@@ -264,15 +264,15 @@ VertexPtr Zbdd::ConvertCutSets(
   if (data.front()->empty()) return kBase_;
 
   VertexPtr result = kEmpty_;
-  for (const auto& cut_set : data) {
-    result = Zbdd::Apply(kOrGate, result, Zbdd::EmplaceCutSet(cut_set),
-                         kSettings_.limit_order());
-  }
+  for (const auto& cut_set : data)
+    result = Zbdd::EmplaceCutSet(result, Zbdd::EmplaceCutSet(cut_set));
+
   return result;
 }
 
 VertexPtr Zbdd::EmplaceCutSet(const mocus::CutSetPtr& cut_set) noexcept {
   assert(!cut_set->empty() && "Unity cut set must be sanitized.");
+  assert(cut_set->order() <= kSettings_.limit_order() && "Improper order.");
   VertexPtr result = kBase_;
   std::vector<int>::const_reverse_iterator it;
   for (it = cut_set->modules().rbegin(); it != cut_set->modules().rend();
@@ -293,6 +293,43 @@ VertexPtr Zbdd::EmplaceCutSet(const mocus::CutSetPtr& cut_set) noexcept {
     SetNode::Ptr(result)->minimal(true);
   }
   return result;
+}
+
+VertexPtr Zbdd::EmplaceCutSet(const VertexPtr& root,
+                              const VertexPtr& set_vertex) noexcept {
+  if (root->terminal()) {
+    if (Terminal::Ptr(root)->value()) return root;
+    return set_vertex;
+  }
+  if (set_vertex->terminal()) {
+    if (Terminal::Ptr(set_vertex)->value()) return set_vertex;
+    return root;
+  }
+  SetNodePtr root_node = SetNode::Ptr(root);
+  SetNodePtr set_node = SetNode::Ptr(set_vertex);
+  assert(root_node->index() > 0 && set_node->index() > 0);
+  assert(set_node->low()->terminal() && "Not a cut set!");
+  assert(!Terminal::Ptr(set_node->low())->value() && "Not a cut set!");
+  SetNodePtr reference = root_node;
+  VertexPtr high;
+  VertexPtr low;
+  if (root_node->order() == set_node->order()) {  // The same variable.
+    assert(root_node->index() == set_node->index());
+    high = Zbdd::EmplaceCutSet(root_node->high(), set_node->high());
+    low = root_node->low();
+  } else if (root_node->order() < set_node->order()) {
+    high = root_node->high();
+    low = Zbdd::EmplaceCutSet(root_node->low(), set_node);
+  } else {
+    high = set_node->high();
+    low = root_node;
+    reference = set_node;
+  }
+  if (high->id() == low->id()) return low;
+  if (high->terminal() && Terminal::Ptr(high)->value() == false) return low;
+  return Zbdd::FetchUniqueTable(reference->index(), high, low,
+                                reference->order(),
+                                reference->module());
 }
 
 VertexPtr& Zbdd::FetchComputeTable(Operator type, const VertexPtr& arg_one,

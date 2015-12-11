@@ -196,6 +196,15 @@ class Zbdd {
   /// @post Negative literals are discarded.
   VertexPtr EmplaceCutSet(const mocus::CutSetPtr& cut_set) noexcept;
 
+  /// Adds a ZBDD single cut set into a ZBDD cut set database.
+  ///
+  /// @param[in] root  The root vertex of the ZBDD.
+  /// @param[in] set_vertex  The vertex of the cut set.
+  ///
+  /// @returns Pointer to the resulting ZBDD vertex.
+  VertexPtr EmplaceCutSet(const VertexPtr& root,
+                          const VertexPtr& set_vertex) noexcept;
+
   /// Fetches computation tables for results.
   ///
   /// @param[in] type  Boolean operation type.

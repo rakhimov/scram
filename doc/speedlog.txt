@@ -29,38 +29,38 @@ Build type:
 Debug build:
 ---------------
 - Cut Set Generation      2.2  |  2.7
-- Cut Set Minimization    2.9  |
+- Cut Set Minimization    1.9  |
 
 Release build:
 --------------
 - Cut Set Generation      0.25  |
-- Cut Set Minimization    0.65  |  0.80
+- Cut Set Minimization    0.45  |
 
 
 ---------- Baobab1 -l 8 (mcs = 25892) ----------------
 Release build:
 --------------
 - Cut Set Generation      0.85  |
-- Cut Set Minimization    2.5   |
+- Cut Set Minimization    1.5   |
 
 
 ---------- Baobab1 -l 9 (mcs = 36516) ----------------
 Release build:
 --------------
-- Cut Set Generation      2.4  |  3.0
-- Cut Set Minimization    11.5 |
+- Cut Set Generation      2.4  |
+- Cut Set Minimization    7.5  |
 
 
 ---------- Baobab2 (mcs = 4805) ----------------
 Debug build:
 ---------------
-- Cut Set Generation      13   |  15.3
-- Cut Set Minimization    2.1  |  5.5
+- Cut Set Generation      13   |  14
+- Cut Set Minimization    2.1  |  3.0
 
 Release build:
 ---------------
 - Cut Set Generation      1.6   |
-- Cut Set Minimization    0.15  |  1.4
+- Cut Set Minimization    0.15  |  0.6
 
 
 ============== Fault Tree Analysis (ZBDD) =============
