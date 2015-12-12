@@ -167,36 +167,10 @@ class NonTerminal : public Vertex {
  protected:
   int index_;  ///< Index of the variable.
   int order_;  ///< Order of the variable.
-  bool module_;  ///< Mark for module variables.
   VertexPtr high_;  ///< 1 (True/then) branch in the Shannon decomposition.
   VertexPtr low_;  ///< O (False/else) branch in the Shannon decomposition.
+  bool module_;  ///< Mark for module variables.
   bool mark_;  ///< Traversal mark.
-};
-
-/// @class ComplementEdge
-/// Mixin for vertices
-/// that may need to indicate
-/// that one of edges must be interpreted as complement.
-///
-/// @note This is not about the vertex,
-///       but it is about the chosen edge.
-class ComplementEdge {
- public:
-  /// Sets the complement edge to false by default.
-  ComplementEdge();
-
-  virtual ~ComplementEdge() = 0;  ///< Abstract class.
-
-  /// @returns true if the chosen edge is complement.
-  bool complement_edge() const { return complement_edge_; }
-
-  /// Sets the complement flag for the chosen edge.
-  ///
-  /// @param[in] flag  Indicator to treat the chosen edge as a complement.
-  void complement_edge(bool flag) { complement_edge_ = flag; }
-
- private:
-  bool complement_edge_;  ///< Flag for complement edge.
 };
 
 /// @class Ite
@@ -208,9 +182,17 @@ class ComplementEdge {
 ///       one of two (high/low) edges to assign the attribute.
 ///       Consistency is not the responsibility of this class
 ///       but of BDD algorithms and users.
-class Ite : public NonTerminal, public ComplementEdge {
+class Ite : public NonTerminal {
  public:
   using NonTerminal::NonTerminal;  ///< Constructor with index and order.
+
+  /// @returns true if the chosen edge is complement.
+  bool complement_edge() const { return complement_edge_; }
+
+  /// Sets the complement flag for the chosen edge.
+  ///
+  /// @param[in] flag  Indicator to treat the chosen edge as a complement.
+  void complement_edge(bool flag) { complement_edge_ = flag; }
 
   /// @returns The probability of the function graph.
   double p() const { return p_; }
@@ -238,6 +220,7 @@ class Ite : public NonTerminal, public ComplementEdge {
   }
 
  private:
+  bool complement_edge_ = false;  ///< Flag for complement edge.
   double p_ = 0;  ///< Probability of the function graph.
   double factor_ = 0;  ///< Importance factor calculation results.
 };

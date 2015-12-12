@@ -42,10 +42,6 @@ NonTerminal::NonTerminal(int index, int order)
 
 NonTerminal::~NonTerminal() {}  // Default pure virtual destructor.
 
-ComplementEdge::ComplementEdge() : complement_edge_(false) {}
-
-ComplementEdge::~ComplementEdge() {}  // Default pure virtual destructor.
-
 Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
     : kSettings_(settings),
 #ifndef NGARBAGE
