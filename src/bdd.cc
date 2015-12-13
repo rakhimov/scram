@@ -143,7 +143,7 @@ ItePtr Bdd::FetchUniqueTable(int index, const VertexPtr& high,
 #ifndef NGARBAGE
   ItePtr ite(new Ite(index, order), GarbageCollector(this));
 #else
-  ItePtr ite(new Ite(index, order));
+  auto ite = std::make_shared<Ite>(index, order);
 #endif
   ite->id(function_id_++);
   ite->module(module);

@@ -326,7 +326,7 @@ GatePtr Initializer::RegisterGate(const xmlpp::Element* gate_node,
   std::string role = GetAttributeValue(gate_node, "role");
   bool gate_role = public_container;  // Inherited role by default.
   if (role != "") gate_role = role == "public" ? true : false;
-  GatePtr gate(new Gate(name, base_path, gate_role));
+  auto gate = std::make_shared<Gate>(name, base_path, gate_role);
   try {
     model_->AddGate(gate);
   } catch (ValidationError& err) {
@@ -463,7 +463,7 @@ BasicEventPtr Initializer::RegisterBasicEvent(const xmlpp::Element* event_node,
   std::string role = GetAttributeValue(event_node, "role");
   bool event_role = public_container;  // Inherited role by default.
   if (role != "") event_role = role == "public" ? true : false;
-  BasicEventPtr basic_event(new BasicEvent(name, base_path, event_role));
+  auto basic_event = std::make_shared<BasicEvent>(name, base_path, event_role);
   try {
     model_->AddBasicEvent(basic_event);
   } catch (ValidationError& err) {
@@ -497,7 +497,7 @@ HouseEventPtr Initializer::DefineHouseEvent(const xmlpp::Element* event_node,
   std::string role = GetAttributeValue(event_node, "role");
   bool event_role = public_container;  // Inherited role by default.
   if (role != "") event_role = role == "public" ? true : false;
-  HouseEventPtr house_event(new HouseEvent(name, base_path, event_role));
+  auto house_event = std::make_shared<HouseEvent>(name, base_path, event_role);
   try {
     model_->AddHouseEvent(house_event);
   } catch (ValidationError& err) {
@@ -529,7 +529,7 @@ ParameterPtr Initializer::RegisterParameter(const xmlpp::Element* param_node,
   std::string role = GetAttributeValue(param_node, "role");
   bool param_role = public_container;  // Inherited role by default.
   if (role != "") param_role = role == "public" ? true : false;
-  ParameterPtr parameter(new Parameter(name, base_path, param_role));
+  auto parameter = std::make_shared<Parameter>(name, base_path, param_role);
   try {
     model_->AddParameter(parameter);
   } catch (ValidationError& err) {
@@ -724,19 +724,19 @@ CcfGroupPtr Initializer::RegisterCcfGroup(const xmlpp::Element* ccf_node,
 
   CcfGroupPtr ccf_group;
   if (model == "beta-factor") {
-    ccf_group = CcfGroupPtr(new BetaFactorModel(name, base_path,
-                                                public_container));
+    ccf_group =
+        std::make_shared<BetaFactorModel>(name, base_path, public_container);
 
   } else if (model == "MGL") {
-    ccf_group = CcfGroupPtr(new MglModel(name, base_path, public_container));
+    ccf_group = std::make_shared<MglModel>(name, base_path, public_container);
 
   } else if (model == "alpha-factor") {
-    ccf_group = CcfGroupPtr(new AlphaFactorModel(name, base_path,
-                                                 public_container));
+    ccf_group =
+        std::make_shared<AlphaFactorModel>(name, base_path, public_container);
 
   } else if (model == "phi-factor") {
-    ccf_group = CcfGroupPtr(new PhiFactorModel(name, base_path,
-                                               public_container));
+    ccf_group =
+        std::make_shared<PhiFactorModel>(name, base_path, public_container);
   }
 
   try {
@@ -788,8 +788,9 @@ void Initializer::ProcessCcfMembers(const xmlpp::Element* members_node,
     assert("basic-event" == event_node->get_name());
 
     std::string name = GetAttributeValue(event_node, "name");
-    BasicEventPtr basic_event(new BasicEvent(name, ccf_group->base_path(),
-                                             ccf_group->is_public()));
+    auto basic_event = std::make_shared<BasicEvent>(name,
+                                                    ccf_group->base_path(),
+                                                    ccf_group->is_public());
     try {
       ccf_group->AddMember(basic_event);
       model_->AddBasicEvent(basic_event);

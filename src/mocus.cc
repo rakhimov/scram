@@ -97,7 +97,7 @@ void SimpleGate::AndGateCutSets(const CutSetPtr& cut_set,
   if (cut_set->HasPositiveLiteral(neg_literals_)) return;
   // Limit order checks before other expensive operations.
   if (cut_set->CheckJointOrder(pos_literals_, limit_order_)) return;
-  CutSetPtr cut_set_copy(new CutSet(*cut_set));
+  auto cut_set_copy = std::make_shared<CutSet>(*cut_set);
   // Include all basic events and modules into the set.
   cut_set_copy->AddPositiveLiterals(pos_literals_);
   cut_set_copy->AddNegativeLiterals(neg_literals_);
@@ -144,20 +144,20 @@ void SimpleGate::OrGateCutSets(const CutSetPtr& cut_set,
     // There is a guarantee of an order increase of a cut set.
     for (int index : pos_literals_) {
       if (cut_set->HasNegativeLiteral(index)) continue;
-      CutSetPtr new_set(new CutSet(*cut_set));
+      auto new_set = std::make_shared<CutSet>(*cut_set);
       new_set->AddPositiveLiteral(index);
       new_cut_sets->insert(new_set);
     }
   }
   for (int index : neg_literals_) {
     if (cut_set->HasPositiveLiteral(index)) continue;
-    CutSetPtr new_set(new CutSet(*cut_set));
+    auto new_set = std::make_shared<CutSet>(*cut_set);
     new_set->AddNegativeLiteral(index);
     new_cut_sets->insert(new_set);
   }
   for (int index : modules_) {
     // No check for complements. The modules are assumed to be positive.
-    CutSetPtr new_set(new CutSet(*cut_set));
+    auto new_set = std::make_shared<CutSet>(*cut_set);
     new_set->AddModule(index);
     new_cut_sets->insert(new_set);
   }
@@ -209,7 +209,7 @@ void Mocus::Analyze() {
     CLOCK(gen_time);
     LOG(DEBUG3) << "Finding cut sets from module: G" << module.first;
     mocus::CutSetContainer cut_sets;
-    module.second->GenerateCutSets(CutSetPtr(new CutSet), &cut_sets);
+    module.second->GenerateCutSets(std::make_shared<CutSet>(), &cut_sets);
     module_sets.emplace_back(module.first, cut_sets);
     LOG(DEBUG4) << "Unique cut sets generated: " << cut_sets.size();
     LOG(DEBUG4) << "Cut set generation time: " << DUR(gen_time);

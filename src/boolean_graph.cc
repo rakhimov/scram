@@ -65,7 +65,7 @@ IGate::IGate(Operator type) noexcept
 
 IGatePtr IGate::Clone() noexcept {
   BLOG(DEBUG5, module_) << "WARNING: Cloning module G" << Node::index();
-  IGatePtr clone(new IGate(type_));  // The same type.
+  auto clone = std::make_shared<IGate>(type_);  // The same type.
   clone->vote_number_ = vote_number_;  // Copy vote number in case it is K/N.
   // Getting arguments copied.
   clone->args_ = args_;
@@ -396,7 +396,7 @@ void IGate::ProcessAtleastGateDuplicateArg(int index) noexcept {
     assert(this->args_.size() == 2);
   } else {
     // Create the AND gate to combine with the duplicate node.
-    IGatePtr and_gate(new IGate(kAndGate));
+    auto and_gate = std::make_shared<IGate>(kAndGate);
     this->AddArg(and_gate->index(), and_gate);
     clone_one->TransferArg(index, and_gate);  // Transfered the x.
 
@@ -475,7 +475,7 @@ void BooleanGraph::Print() {
 IGatePtr BooleanGraph::ProcessFormula(const FormulaPtr& formula, bool ccf,
                                       ProcessedNodes* nodes) noexcept {
   Operator type = kStringToType_.find(formula->type())->second;
-  IGatePtr parent(new IGate(type));
+  auto parent = std::make_shared<IGate>(type);
 
   if (type != kOrGate && type != kAndGate) normal_ = false;
 
@@ -532,7 +532,7 @@ void BooleanGraph::ProcessBasicEvents(
         parent->AddArg(var->index(), var);
       } else {
         basic_events_.push_back(basic_event);
-        VariablePtr new_basic(new Variable());  // Sequential indexation.
+        auto new_basic = std::make_shared<Variable>();  // Sequential indices.
         assert(basic_events_.size() == new_basic->index());
         parent->AddArg(new_basic->index(), new_basic);
         nodes->variables.emplace(basic_event->id(), new_basic);
@@ -550,7 +550,7 @@ void BooleanGraph::ProcessHouseEvents(
       ConstantPtr constant = nodes->constants.find(house->id())->second;
       parent->AddArg(constant->index(), constant);
     } else {
-      ConstantPtr constant(new Constant(house->state()));
+      auto constant = std::make_shared<Constant>(house->state());
       parent->AddArg(constant->index(), constant);
       nodes->constants.emplace(house->id(), constant);
       constants_.push_back(constant);
