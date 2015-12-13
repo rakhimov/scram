@@ -30,8 +30,6 @@ namespace scram {
 
 int Node::next_index_ = 1e6;  // 1 million basic events per fault tree is crazy!
 
-NodeParentManager::~NodeParentManager() {}  // Pure virtual destructor.
-
 void NodeParentManager::AddParent(const IGatePtr& gate) {
   parents_.emplace(gate->index(), gate);
 }

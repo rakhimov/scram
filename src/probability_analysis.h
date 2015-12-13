@@ -141,7 +141,7 @@ class McubCalculator : private CutSetProbabilityCalculator {
 };
 
 /// @class ProbabilityAnalyzerBase
-/// Abstract base class for Probability analyzers.
+/// Aggregation class for Probability analyzers.
 class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
  public:
   using CutSet = std::vector<int>;
@@ -153,8 +153,6 @@ class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
   /// @param[in] fta  Finished fault tree analyzer with results.
   template<typename Algorithm>
   explicit ProbabilityAnalyzerBase(const FaultTreeAnalyzer<Algorithm>* fta);
-
-  virtual ~ProbabilityAnalyzerBase() = 0;  ///< Abstract class.
 
   /// @returns The original Boolean graph from the fault tree analyzer.
   const BooleanGraph* graph() const { return graph_; }

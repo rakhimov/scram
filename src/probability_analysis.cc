@@ -82,8 +82,6 @@ double McubCalculator::Calculate(
   return 1 - m;
 }
 
-ProbabilityAnalyzerBase::~ProbabilityAnalyzerBase() {}  ///< Default.
-
 ProbabilityAnalyzer<Bdd>::ProbabilityAnalyzer(FaultTreeAnalyzer<Bdd>* fta)
     : ProbabilityAnalyzerBase::ProbabilityAnalyzerBase(fta),
       owner_(false) {

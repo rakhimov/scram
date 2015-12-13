@@ -28,8 +28,6 @@ namespace scram {
 
 Element::Element() : label_("") {}
 
-Element::~Element() {}  // Empty body for pure virtual destructor.
-
 void Element::label(const std::string& new_label) {
   if (label_ != "") {
     throw LogicError("Trying to reset the label: " + label_);
@@ -63,7 +61,5 @@ const Attribute& Element::GetAttribute(const std::string& id) const {
 Role::Role(bool is_public, const std::string& base_path)
       : is_public_(is_public),
         base_path_(base_path) {}
-
-Role::~Role() {}  // Empty body for pure virtual destructor.
 
 }  // namespace scram

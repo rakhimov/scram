@@ -61,8 +61,6 @@ class NodeParentManager {
   friend class IGate;  ///< The main manipulator of parent information.
 
  public:
-  virtual ~NodeParentManager() = 0;  ///< Abstract class.
-
   /// @returns Parents of a node.
   const std::unordered_map<int, IGateWeakPtr>& parents() const {
     return parents_;

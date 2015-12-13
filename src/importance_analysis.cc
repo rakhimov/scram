@@ -37,7 +37,7 @@ void ImportanceAnalysis::Analyze() noexcept {
   LOG(DEBUG3) << "Calculating importance factors...";
   std::vector<std::pair<int, BasicEventPtr>> target_events =
       this->GatherImportantEvents();
-  double p_total = this->p_total();  /// @todo Delegate to Probability analysis.
+  double p_total = this->p_total();
   for (const auto& event : target_events) {
     double p_var = event.second->p();
     ImportanceFactors imp;

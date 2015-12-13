@@ -22,8 +22,8 @@
 #ifndef SCRAM_SRC_ELEMENT_H_
 #define SCRAM_SRC_ELEMENT_H_
 
-#include <string>
 #include <map>
+#include <string>
 
 namespace scram {
 
@@ -36,15 +36,13 @@ struct Attribute {
 };
 
 /// @class Element
-/// This abstract class represents
+/// Mixin class that represents
 /// any element of analysis
 /// that can have extra descriptions,
 /// such as attributes and a label.
 class Element {
  public:
   Element();
-
-  virtual ~Element() = 0;  ///< Abstract class.
 
   /// @returns The empty or preset label.
   /// @returns Empty string if the label has not been set.
@@ -86,7 +84,7 @@ class Element {
 };
 
 /// @class Role
-/// Abstract class that manages private or public roles
+/// Mixin class that manages private or public roles
 /// for elements as needed.
 /// Public is the default assumption.
 /// It is expected to be set only once and never change.
@@ -97,8 +95,6 @@ class Role {
   /// @param[in] is_public  A flag to define public or private role.
   /// @param[in] base_path  The series of containers to get this event.
   explicit Role(bool is_public = true, const std::string& base_path = "");
-
-  virtual ~Role() = 0;  ///< Abstract class;
 
   /// @returns True for public roles, or False for private roles.
   bool is_public() const { return is_public_; }
