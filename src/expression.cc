@@ -28,7 +28,11 @@
 
 namespace scram {
 
-Expression::Expression(const std::vector<ExpressionPtr>& args) : args_(args) {}
+Expression::Expression(std::vector<ExpressionPtr> args)
+    : args_(std::move(args)),
+      sampled_value_(0),
+      sampled_(false),
+      gather_(true) {}
 
 void Expression::Reset() noexcept {
   if (!Expression::sampled_) return;
@@ -388,17 +392,17 @@ double BetaDeviate::Sample() noexcept {
   return Expression::sampled_value_;
 }
 
-Histogram::Histogram(const std::vector<ExpressionPtr>& boundaries,
-                     const std::vector<ExpressionPtr>& weights)
-    : RandomDeviate::RandomDeviate(boundaries) {
-  if (weights.size() != boundaries.size()) {
+Histogram::Histogram(std::vector<ExpressionPtr> boundaries,
+                     std::vector<ExpressionPtr> weights)
+    : RandomDeviate::RandomDeviate(boundaries),
+      boundaries_(std::move(boundaries)),
+      weights_(std::move(weights)) {
+  if (weights_.size() != boundaries_.size()) {
     throw InvalidArgument("The number of weights is not equal to the number"
                           " of boundaries.");
   }
-  boundaries_ = boundaries;
-  weights_ = weights;
-  Expression::args_.insert(Expression::args_.end(), weights.begin(),
-                           weights.end());
+  Expression::args_.insert(Expression::args_.end(), weights_.begin(),
+                           weights_.end());
 }
 
 void Histogram::Validate() {
