@@ -81,6 +81,7 @@ class SetNode : public NonTerminal {
 };
 
 using SetNodePtr = std::shared_ptr<SetNode>;  ///< Shared ZBDD set nodes.
+using SetNodeWeakPtr = std::weak_ptr<SetNode>;  ///< Pointer for tables.
 
 /// @class Zbdd
 /// Zero-Suppressed Binary Decision Diagrams for set manipulations.
@@ -130,9 +131,29 @@ class Zbdd {
   const std::vector<std::vector<int>>& cut_sets() const { return cut_sets_; }
 
  private:
-  using UniqueTable = TripletTable<SetNodePtr>;
+  using UniqueTable = TripletTable<SetNodeWeakPtr>;
   using ComputeTable = TripletTable<VertexPtr>;
   using CutSet = std::vector<int>;
+
+  /// @class GarbageCollector
+  /// This garbage collector manages tables of a ZBDD.
+  /// The garbage collection is triggered
+  /// when the reference count of a ZBDD vertex reaches 0.
+  class GarbageCollector {
+   public:
+    /// @param[in,out] zbdd  ZBDD to manage.
+    explicit GarbageCollector(Zbdd* zbdd) noexcept
+        : unique_table_(zbdd->unique_table_) {}
+
+    /// Frees the memory
+    /// and triggers the garbage collection ONLY if requested.
+    ///
+    /// @param[in] ptr  Pointer to an SetNode vertex with reference count 0.
+    void operator()(SetNode* ptr) noexcept;
+
+   private:
+    std::weak_ptr<UniqueTable> unique_table_;  ///< Managed table.
+  };
 
   /// Default constructor to initialize member variables.
   ///
@@ -150,9 +171,9 @@ class Zbdd {
   /// @param[in] module  A flag for the modular ZBDD proxy.
   ///
   /// @returns Set node with the given parameters.
-  const SetNodePtr& FetchUniqueTable(int index, const VertexPtr& high,
-                                     const VertexPtr& low, int order,
-                                     bool module) noexcept;
+  SetNodePtr FetchUniqueTable(int index, const VertexPtr& high,
+                              const VertexPtr& low, int order,
+                              bool module) noexcept;
 
   /// Converts BDD graph into ZBDD graph.
   ///
@@ -365,9 +386,12 @@ class Zbdd {
   /// @pre SetNode marks are clear (false).
   void TestStructure(const VertexPtr& vertex) noexcept;
 
+  const Settings kSettings_;  ///< Analysis settings.
+  VertexPtr root_;  ///< The root vertex of ZBDD.
+
   /// Table of unique SetNodes denoting sets.
   /// The key consists of (index, id_high, id_low) triplet.
-  UniqueTable unique_table_;
+  std::shared_ptr<UniqueTable> unique_table_;
 
   /// Table of processed computations over sets.
   /// The argument sets are recorded with their IDs (not vertex indices).
@@ -382,8 +406,6 @@ class Zbdd {
   /// The results of subsume operations over sets.
   PairTable<VertexPtr> subsume_table_;
 
-  const Settings kSettings_;  ///< Analysis settings.
-  VertexPtr root_;  ///< The root vertex of ZBDD.
   std::unordered_map<int, VertexPtr> modules_;  ///< Module graphs.
   const TerminalPtr kBase_;  ///< Terminal Base (Unity/1) set.
   const TerminalPtr kEmpty_;  ///< Terminal Empty (Null/0) set.

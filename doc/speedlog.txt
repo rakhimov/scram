@@ -29,33 +29,38 @@ Build type:
 Debug build:
 ---------------
 - Cut Set Generation      2.2  |  2.7
-- Cut Set Minimization    1.9  |
+- Cut Set Minimization    1.9  |  2.5
 
 Release build:
 --------------
 - Cut Set Generation      0.25  |
-- Cut Set Minimization    0.45  |
+- Cut Set Minimization    0.30  |
 
 
 ---------- Baobab1 -l 8 (mcs = 25892) ----------------
+Debug build:
+---------------
+- Cut Set Generation      10
+- Cut Set Minimization    7.0
+
 Release build:
 --------------
 - Cut Set Generation      0.85  |
-- Cut Set Minimization    1.5   |
+- Cut Set Minimization    1.0   |
 
 
 ---------- Baobab1 -l 9 (mcs = 36516) ----------------
 Release build:
 --------------
 - Cut Set Generation      2.4  |
-- Cut Set Minimization    7.5  |
+- Cut Set Minimization    3.3  |
 
 
 ---------- Baobab2 (mcs = 4805) ----------------
 Debug build:
 ---------------
-- Cut Set Generation      13   |  14
-- Cut Set Minimization    2.1  |  3.0
+- Cut Set Generation      13   |  16
+- Cut Set Minimization    2.1  |  4.4
 
 Release build:
 ---------------
@@ -70,12 +75,7 @@ Debug build:
 ------------
 - Total ZBDD time           1.8  |
 
-    # of ZBDD nodes created: 79264
-    # of entries in unique table: 79263
-    # of entries in AND table: 44576
-    # of entries in OR table: 60419
-    # of entries in subsume table: 478892
-    # of entries in minimal table: 52177
+    # of ZBDD nodes created: 79264  |  86228
     # of SetNodes in ZBDD: 3338
 
 
@@ -83,31 +83,23 @@ Debug build:
 
 ---------- Baobab1 (mcs = 46188) ----------------
 
-Time: 0.15
-# of BDD vertices created: 8289  |  8289
-# of entries in unique table: 3358
-# of entries in compute table: (726 + 11)
+# of BDD vertices created: 8289  |  8296
 # of ITE in BDD: 3349
 
 
 ---------- CEA9601 -l 4 (mcs = 54436) -----------
-Debug build:            Release build:
------------             -------------
-BDD Time: 13            BDD Time: 3.8  |  8.1
-ZBDD Time: 1.8          ZBDD Time: 0.35
+Debug build:
+-----------
+BDD Time: 13     |  18
+ZBDD Time: 1.8
 
-# of BDD vertices created: 3013946  |  3014122
-# of entries in unique table: 2099975
-# of entries in compute table: (754964 + 546489)
+Release build:
+-------------
+BDD Time: 3.8    |  5.6
+ZBDD Time: 0.35
+
+# of BDD vertices created: 3013946  |  3014123
 # of ITE in BDD: 1175468
-
-# of ZBDD nodes created: 2721
-# of entries in unique table: 2720
-# of entries in AND table: 0
-# of entries in OR table: 0
-# of entries in subsume table: 12634
-# of entries in minimal table: 2052
-# of SetNodes in ZBDD: 1540
 
 ==================== Uncertainty Analysis =================
 

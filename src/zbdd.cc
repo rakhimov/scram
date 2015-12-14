@@ -26,6 +26,7 @@ namespace scram {
 
 Zbdd::Zbdd(const Settings& settings) noexcept
     : kSettings_(settings),
+      unique_table_(std::make_shared<UniqueTable>()),
       kBase_(std::make_shared<Terminal>(true)),
       kEmpty_(std::make_shared<Terminal>(false)),
       set_id_(2) {}
@@ -34,7 +35,7 @@ Zbdd::Zbdd(const Settings& settings) noexcept
 /// Logs ZBDD characteristics.
 #define LOG_ZBDD                                                               \
   LOG(DEBUG4) << "# of ZBDD nodes created: " << set_id_ - 1;                   \
-  LOG(DEBUG4) << "# of entries in unique table: " << unique_table_.size();     \
+  LOG(DEBUG4) << "# of entries in unique table: " << unique_table_->size();    \
   LOG(DEBUG4) << "# of entries in AND table: " << and_table_.size();           \
   LOG(DEBUG4) << "# of entries in OR table: " << or_table_.size();             \
   LOG(DEBUG4) << "# of entries in subsume table: " << subsume_table_.size();   \
@@ -134,7 +135,7 @@ void Zbdd::Analyze() noexcept {
 
   // Complete cleanup of the memory.
   minimal_results_.clear();
-  unique_table_.clear();
+  unique_table_->clear();
   and_table_.clear();
   or_table_.clear();
   subsume_table_.clear();
@@ -153,18 +154,28 @@ void Zbdd::Analyze() noexcept {
 
 #undef LOG_ZBDD
 
-const SetNodePtr& Zbdd::FetchUniqueTable(int index, const VertexPtr& high,
-                                         const VertexPtr& low, int order,
-                                         bool module) noexcept {
-  SetNodePtr& in_table = unique_table_[{index, high->id(), low->id()}];
-  if (in_table) return in_table;
+void Zbdd::GarbageCollector::operator()(SetNode* ptr) noexcept {
+  if (!unique_table_.expired()) {
+    LOG(DEBUG5) << "Running garbage collection for " << ptr->id();
+    unique_table_.lock()->erase({ptr->index(), ptr->high()->id(),
+                                 ptr->low()->id()});
+  }
+  delete ptr;
+}
+
+SetNodePtr Zbdd::FetchUniqueTable(int index, const VertexPtr& high,
+                                  const VertexPtr& low, int order,
+                                  bool module) noexcept {
+  SetNodeWeakPtr& in_table = (*unique_table_)[{index, high->id(), low->id()}];
+  if (!in_table.expired()) return in_table.lock();
   assert(order > 0 && "Improper order.");
-  in_table = std::make_shared<SetNode>(index, order);
-  in_table->id(set_id_++);
-  in_table->module(module);
-  in_table->high(high);
-  in_table->low(low);
-  return in_table;
+  SetNodePtr node(new SetNode(index, order), GarbageCollector(this));
+  node->id(set_id_++);
+  node->module(module);
+  node->high(high);
+  node->low(low);
+  in_table = node;
+  return node;
 }
 
 VertexPtr Zbdd::ConvertBdd(const VertexPtr& vertex, bool complement,
@@ -251,6 +262,10 @@ VertexPtr Zbdd::ConvertGraph(
   for (++it; it != args.cend(); ++it) {
     result = Zbdd::Apply(gate->type(), result, *it, kSettings_.limit_order());
   }
+  and_table_.clear();
+  or_table_.clear();
+  subsume_table_.clear();
+  minimal_results_.clear();
   assert(result);
   return result;
 }

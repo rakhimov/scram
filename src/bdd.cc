@@ -44,9 +44,7 @@ NonTerminal::~NonTerminal() {}  // Default pure virtual destructor.
 
 Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
     : kSettings_(settings),
-#ifndef NGARBAGE
-      garbage_collection_(std::make_shared<bool>(true)),
-#endif
+      unique_table_(std::make_shared<UniqueTable>()),
       kOne_(std::make_shared<Terminal>(true)),
       function_id_(2) {
   CLOCK(init_time);
@@ -73,7 +71,7 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
   Bdd::ClearMarks(false);
   Bdd::TestStructure(root_.vertex);
   LOG(DEBUG4) << "# of BDD vertices created: " << function_id_ - 1;
-  LOG(DEBUG4) << "# of entries in unique table: " << unique_table_.size();
+  LOG(DEBUG4) << "# of entries in unique table: " << unique_table_->size();
   LOG(DEBUG4) << "# of entries in AND table: " << and_table_.size();
   LOG(DEBUG4) << "# of entries in OR table: " << or_table_.size();
   Bdd::ClearMarks(false);
@@ -81,15 +79,8 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
   LOG(DEBUG3) << "Finished Boolean graph conversion in " << DUR(init_time);
   Bdd::ClearMarks(false);
 
-  // Cleanup.
-#ifndef NGARBAGE
-  garbage_collection_ = nullptr;  // For faster cleanup.
-  ite_as_arg_.clear();
-  ite_as_arg_.reserve(0);
-#endif
   LOG(DEBUG5) << "BDD switched off the garbage collector.";
-  unique_table_.clear();
-  unique_table_.reserve(0);
+  unique_table_.reset();
   and_table_.clear();
   and_table_.reserve(0);
   or_table_.clear();
@@ -108,43 +99,27 @@ const std::vector<std::vector<int>>& Bdd::cut_sets() const {
   return zbdd_->cut_sets();
 }
 
-#ifndef NGARBAGE
 void Bdd::GarbageCollector::operator()(Ite* ptr) noexcept {
-  if (!garbage_collection_.expired()) {
+  if (!unique_table_.expired()) {
     LOG(DEBUG5) << "Running garbage collection for " << ptr->id();
-    bdd_->unique_table_.erase(
+    unique_table_.lock()->erase(
         {ptr->index(),
          ptr->high()->id(),
          (ptr->complement_edge() ? -1 : 1) * ptr->low()->id()});
-    auto it = bdd_->ite_as_arg_.find(ptr->id());
-    if (it != bdd_->ite_as_arg_.end()) {
-      Membership& member_in = it->second;
-      for (const std::pair<int, int>& key : member_in.and_table)
-        bdd_->and_table_.erase(key);
-
-      for (const std::pair<int, int>& key : member_in.or_table)
-        bdd_->or_table_.erase(key);
-
-      bdd_->ite_as_arg_.erase(it);
-    }
   }
   delete ptr;
 }
-#endif
 
 ItePtr Bdd::FetchUniqueTable(int index, const VertexPtr& high,
                              const VertexPtr& low, bool complement_edge,
                              int order, bool module) noexcept {
   assert(index > 0 && "Only positive indices are expected.");
   int sign = complement_edge ? -1 : 1;
-  IteWeakPtr& in_table = unique_table_[{index, high->id(), sign * low->id()}];
+  IteWeakPtr& in_table =
+      (*unique_table_)[{index, high->id(), sign * low->id()}];
   if (!in_table.expired()) return in_table.lock();
   assert(order > 0 && "Improper order.");
-#ifndef NGARBAGE
   ItePtr ite(new Ite(index, order), GarbageCollector(this));
-#else
-  auto ite = std::make_shared<Ite>(index, order);
-#endif
   ite->id(function_id_++);
   ite->module(module);
   ite->high(high);
@@ -191,6 +166,8 @@ const Bdd::Function& Bdd::IfThenElse(
     result = Bdd::Apply(gate->type(), result.vertex, it->vertex,
                         result.complement, it->complement);
   }
+  and_table_.clear();
+  or_table_.clear();
   assert(result.vertex);
   if (gate->IsModule()) modules_.emplace(gate->index(), result);
   return result;
@@ -207,22 +184,6 @@ Bdd::Function& Bdd::FetchComputeTable(Operator type,
   int min_id = arg_one->id() * (complement_one ? -1 : 1);
   int max_id = arg_two->id() * (complement_two ? -1 : 1);
   if (arg_one->id() > arg_two->id()) std::swap(min_id, max_id);
-#ifndef NGARBAGE
-  Membership& member_one = ite_as_arg_[arg_one->id()];
-  Membership& member_two = ite_as_arg_[arg_two->id()];
-  switch (type) {  /// @todo Detect equal calculations with complements.
-    case kOrGate:
-      member_one.or_table.emplace_back(min_id, max_id);
-      member_two.or_table.emplace_back(min_id, max_id);
-      return or_table_[{min_id, max_id}];
-    case kAndGate:
-      member_one.and_table.emplace_back(min_id, max_id);
-      member_two.and_table.emplace_back(min_id, max_id);
-      return and_table_[{min_id, max_id}];
-    default:
-      assert(false);
-  }
-#else
   switch (type) {
     case kOrGate:
       return or_table_[{min_id, max_id}];
@@ -231,7 +192,6 @@ Bdd::Function& Bdd::FetchComputeTable(Operator type,
     default:
       assert(false);
   }
-#endif
 }
 
 Bdd::Function Bdd::Apply(Operator type,

@@ -341,7 +341,6 @@ class Bdd {
   /// if one of the arguments is the computation result.
   using ComputeTable = PairTable<Function>;
 
-#ifndef NGARBAGE
   /// @class GarbageCollector
   /// This garbage collector manages tables of a BDD.
   /// The garbage collection is triggered
@@ -350,8 +349,7 @@ class Bdd {
    public:
     /// @param[in,out] bdd  BDD to manage.
     explicit GarbageCollector(Bdd* bdd) noexcept
-        : garbage_collection_(bdd->garbage_collection_),
-          bdd_(bdd) {}
+        : unique_table_(bdd->unique_table_) {}
 
     /// Frees the memory
     /// and triggers the garbage collection ONLY if requested.
@@ -360,10 +358,8 @@ class Bdd {
     void operator()(Ite* ptr) noexcept;
 
    private:
-    std::weak_ptr<bool> garbage_collection_;  ///< Flag for garbage collection.
-    Bdd* bdd_;  ///< Pointer to the managed BDD.
+    std::weak_ptr<UniqueTable> unique_table_;  ///< Managed table.
   };
-#endif
 
   /// Fetches a unique if-then-else vertex from a hash table.
   /// If the vertex doesn't exist,
@@ -522,7 +518,7 @@ class Bdd {
   /// The key consists of ite(index, id_high, id_low),
   /// where IDs are unique (id_high != id_low) identifications of
   /// unique reduced-ordered function graphs.
-  UniqueTable unique_table_;
+  std::shared_ptr<UniqueTable> unique_table_;
 
   /// Table of processed computations over functions.
   /// The argument functions are recorded with their IDs (not vertex indices).
@@ -531,18 +527,6 @@ class Bdd {
   /// The key is {min_id, max_id}.
   ComputeTable and_table_;  ///< Table of processed AND computations.
   ComputeTable or_table_;  ///< Table of processed OR computations.
-
-#ifndef NGARBAGE
-  /// @struct Membership
-  /// Keys for membership in tables.
-  struct Membership {
-    std::vector<std::pair<int, int>> and_table;  ///< In AND computation table.
-    std::vector<std::pair<int, int>> or_table;  ///< In OR computation table.
-  };
-
-  std::unordered_map<int, Membership> ite_as_arg_;  ///< ITE in compute tables.
-  std::shared_ptr<bool> garbage_collection_;  ///< Flag for garbage collection.
-#endif
 
   std::unordered_map<int, Function> modules_;  ///< Module graphs.
   std::unordered_map<int, int> index_to_order_;  ///< Indices and orders.

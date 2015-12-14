@@ -15,23 +15,23 @@ The system specs are the same as in the speed recordings.
 MOCUS
 -----
 
-- Baobab1 -l 7 :  15 | 110
-- Baobab1 -l 8 :  35 | 300
-- Baobab1 -l 9 :  800
-- Baobab2 : 110
+- Baobab1 -l 7 :  15 | 20
+- Baobab1 -l 8 :  35 | 40
+- Baobab1 -l 9 :  80
+- Baobab2 : 55
 
 
 BDD
 ---
 
 - Baobab1 : 23
-- CEA9601 : 700  |  1000
+- CEA9601 : 600
 
 
 ZBDD
 ----
 
-- Baobab1 : 60
+- Baobab1 : 48
 
 
 Initialization and Validation
