@@ -160,17 +160,13 @@ class RiskAnalysis : public Analysis {
 
   ModelPtr model_;  ///< Analysis model with constructs.
 
-  /// Fault tree analyses that are performed on a specific fault tree.
+  /// Analyses performed by this risk analysis run.
+  /// @{
   std::map<std::string, FaultTreeAnalysisPtr> fault_tree_analyses_;
-
-  /// Probability analyses that are performed on a specific fault tree.
   std::map<std::string, ProbabilityAnalysisPtr> probability_analyses_;
-
-  /// Importance analyses that are performed on a specific fault tree.
   std::map<std::string, ImportanceAnalysisPtr> importance_analyses_;
-
-  /// Uncertainty analyses that are performed on a specific fault tree.
   std::map<std::string, UncertaintyAnalysisPtr> uncertainty_analyses_;
+  /// @}
 };
 
 }  // namespace scram

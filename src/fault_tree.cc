@@ -35,33 +35,15 @@ Component::Component(const std::string& name, const std::string& base_path,
       name_(name) {}
 
 void Component::AddGate(const GatePtr& gate) {
-  std::string name = gate->name();
-  boost::to_lower(name);
-  if (gates_.count(name) || basic_events_.count(name) ||
-      house_events_.count(name)) {
-    throw ValidationError("Duplicate event " + gate->name());
-  }
-  gates_.emplace(name, gate);
+  Component::AddEvent(gate, &gates_);
 }
 
 void Component::AddBasicEvent(const BasicEventPtr& basic_event) {
-  std::string name = basic_event->name();
-  boost::to_lower(name);
-  if (gates_.count(name) || basic_events_.count(name) ||
-      house_events_.count(name)) {
-    throw ValidationError("Duplicate event " + basic_event->name());
-  }
-  basic_events_.emplace(name, basic_event);
+  Component::AddEvent(basic_event, &basic_events_);
 }
 
 void Component::AddHouseEvent(const HouseEventPtr& house_event) {
-  std::string name = house_event->name();
-  boost::to_lower(name);
-  if (gates_.count(name) || basic_events_.count(name) ||
-      house_events_.count(name)) {
-    throw ValidationError("Duplicate event " + house_event->name());
-  }
-  house_events_.emplace(name, house_event);
+  Component::AddEvent(house_event, &house_events_);
 }
 
 void Component::AddParameter(const ParameterPtr& parameter) {
@@ -107,6 +89,17 @@ void Component::GatherGates(std::unordered_set<GatePtr>* gates) {
   for (const std::pair<const std::string, ComponentPtr>& comp : components_) {
     comp.second->GatherGates(gates);
   }
+}
+
+template <typename Ptr, typename Container>
+void Component::AddEvent(const Ptr& event, Container* container) {
+  std::string name = event->name();
+  boost::to_lower(name);
+  if (gates_.count(name) || basic_events_.count(name) ||
+      house_events_.count(name)) {
+    throw ValidationError("Duplicate event " + event->name());
+  }
+  container->emplace(name, event);
 }
 
 FaultTree::FaultTree(const std::string& name) : Component::Component(name) {}

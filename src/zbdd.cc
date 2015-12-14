@@ -30,6 +30,8 @@ Zbdd::Zbdd(const Settings& settings) noexcept
       kEmpty_(std::make_shared<Terminal>(false)),
       set_id_(2) {}
 
+/// @def LOG_ZBDD
+/// Logs ZBDD characteristics.
 #define LOG_ZBDD                                                               \
   LOG(DEBUG4) << "# of ZBDD nodes created: " << set_id_ - 1;                   \
   LOG(DEBUG4) << "# of entries in unique table: " << unique_table_.size();     \

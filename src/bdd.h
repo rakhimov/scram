@@ -533,7 +533,7 @@ class Bdd {
   ComputeTable or_table_;  ///< Table of processed OR computations.
 
 #ifndef NGARBAGE
-  /// @struct Membership.
+  /// @struct Membership
   /// Keys for membership in tables.
   struct Membership {
     std::vector<std::pair<int, int>> and_table;  ///< In AND computation table.

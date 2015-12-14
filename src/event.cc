@@ -110,30 +110,6 @@ void Formula::vote_number(int number) {
   vote_number_ = number;
 }
 
-void Formula::AddArgument(const HouseEventPtr& house_event) {
-  if (event_args_.count(house_event->id())) {
-    throw DuplicateArgumentError("Duplicate argument " + house_event->name());
-  }
-  event_args_.emplace(house_event->id(), house_event);
-  house_event_args_.emplace_back(house_event);
-}
-
-void Formula::AddArgument(const BasicEventPtr& basic_event) {
-  if (event_args_.count(basic_event->id())) {
-    throw DuplicateArgumentError("Duplicate argument " + basic_event->name());
-  }
-  event_args_.emplace(basic_event->id(), basic_event);
-  basic_event_args_.emplace_back(basic_event);
-}
-
-void Formula::AddArgument(const GatePtr& gate) {
-  if (event_args_.count(gate->id())) {
-    throw DuplicateArgumentError("Duplicate argument " + gate->name());
-  }
-  event_args_.emplace(gate->id(), gate);
-  gate_args_.emplace_back(gate);
-}
-
 void Formula::AddArgument(FormulaPtr formula) {
   formula_args_.emplace_back(std::move(formula));
 }

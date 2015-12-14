@@ -50,35 +50,27 @@ class Model : public Element {
   /// @returns The name of the model.
   const std::string& name() const { return name_; }
 
-  /// @returns Defined fault trees in the model.
+  /// @returns Defined constructs in the model.
+  /// @{
   const std::unordered_map<std::string, FaultTreePtr>& fault_trees() const {
     return fault_trees_;
   }
-
-  /// @returns Parameters defined for this model.
   const std::unordered_map<std::string, ParameterPtr>& parameters() const {
     return parameters_;
   }
-
-  /// @returns House events defined for this model.
   const std::unordered_map<std::string, HouseEventPtr>& house_events() const {
     return house_events_;
   }
-
-  /// @returns Basic events defined for this model.
   const std::unordered_map<std::string, BasicEventPtr>& basic_events() const {
     return basic_events_;
   }
-
-  /// @returns Gates defined for this model.
   const std::unordered_map<std::string, GatePtr>& gates() const {
     return gates_;
   }
-
-  /// @returns CCF groups defined for this model.
   const std::unordered_map<std::string, CcfGroupPtr>& ccf_groups() const {
     return ccf_groups_;
   }
+  /// @}
 
   /// Adds a fault tree into the model container.
   /// Fault trees are uniquely owned by this model.
@@ -222,26 +214,16 @@ class Model : public Element {
 
   std::string name_;  ///< The name of the model.
 
-  /// A collection of fault trees.
+  /// A collection of defined constructs in the model.
+  /// @{
   std::unordered_map<std::string, FaultTreePtr> fault_trees_;
-
-  /// Container for fully defined gates.
   std::unordered_map<std::string, GatePtr> gates_;
-
-  /// Container for fully defined house events.
   std::unordered_map<std::string, HouseEventPtr> house_events_;
-
-  /// Container for fully defined basic events.
   std::unordered_map<std::string, BasicEventPtr> basic_events_;
-
-  /// Container for event identifiers.
-  std::unordered_set<std::string> event_ids_;
-
-  /// Container for defined parameters or variables.
   std::unordered_map<std::string, ParameterPtr> parameters_;
-
-  /// A collection of common cause failure groups.
   std::unordered_map<std::string, CcfGroupPtr> ccf_groups_;
+  /// @}
+  std::unordered_set<std::string> event_ids_;  ///< For faster lookup.
 };
 
 }  // namespace scram

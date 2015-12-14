@@ -323,50 +323,41 @@ class Formula {
   ///       outside of this class.
   void vote_number(int number);
 
-  /// @returns The event arguments of this formula.
+  /// @returns The arguments of this formula of specific type.
+  /// @{
   const std::map<std::string, EventPtr>& event_args() const {
     return event_args_;
   }
-
-  /// @returns The house event arguments of this formula.
   const std::vector<HouseEventPtr>& house_event_args() const {
     return house_event_args_;
   }
-
-  /// @returns The basic event arguments of this formula.
   const std::vector<BasicEventPtr>& basic_event_args() const {
     return basic_event_args_;
   }
-
-  /// @returns The gate arguments of this formula.
   const std::vector<GatePtr>& gate_args() const { return gate_args_; }
-
-  /// @returns The formula arguments of this formula.
   const std::vector<FormulaPtr>& formula_args() const { return formula_args_; }
+  /// @}
 
   /// @returns The number of arguments.
   int num_args() const { return event_args_.size() + formula_args_.size(); }
 
-  /// Adds a house event into the arguments list.
+  /// Adds an event into the arguments list.
   ///
-  /// @param[in] house_event  A pointer to an argument house event.
+  /// @param[in] event  A pointer to an argument event.
   ///
-  /// @throws DuplicateArgumentError  The argument is duplicate.
-  void AddArgument(const HouseEventPtr& house_event);
-
-  /// Adds a basic event into the arguments list.
+  /// @throws DuplicateArgumentError  The argument event is duplicate.
   ///
-  /// @param[in] basic_event  A pointer to an argument basic event.
-  ///
-  /// @throws DuplicateArgumentError  The argument is duplicate.
-  void AddArgument(const BasicEventPtr& basic_event);
-
-  /// Adds a gate into the arguments list.
-  ///
-  /// @param[in] gate  A pointer to an argument gate.
-  ///
-  /// @throws DuplicateArgumentError  The argument is duplicate.
-  void AddArgument(const GatePtr& gate);
+  /// @{
+  void AddArgument(const HouseEventPtr& event) {
+    AddArgument(event, &house_event_args_);
+  }
+  void AddArgument(const BasicEventPtr& event) {
+    AddArgument(event, &basic_event_args_);
+  }
+  void AddArgument(const GatePtr& event) {
+    AddArgument(event, &gate_args_);
+  }
+  /// @}
 
   /// Adds a formula into the arguments list.
   /// Formulas are unique.
@@ -396,6 +387,22 @@ class Formula {
   static const std::set<std::string> kTwoOrMore_;
   /// Formula types that require exactly one argument.
   static const std::set<std::string> kSingle_;
+
+  /// Handles addition of an event to the formula.
+  ///
+  /// @tparam Ptr  Shared pointer type to the event.
+  ///
+  /// @param[in] event  Pointer to the event.
+  /// @param[in,out] container  The final destination to save the event.
+  ///
+  /// @throws DuplicateArgumentError  The argument even tis duplicate.
+  template<typename Ptr>
+  void AddArgument(const Ptr& event, std::vector<Ptr>* container) {
+    if (event_args_.count(event->id()))
+      throw DuplicateArgumentError("Duplicate argument " + event->name());
+    event_args_.emplace(event->id(), event);
+    container->emplace_back(event);
+  }
 
   /// Gathers nodes and connectors from arguments of the gate.
   void GatherNodesAndConnectors();

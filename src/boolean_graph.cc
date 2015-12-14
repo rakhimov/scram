@@ -79,23 +79,6 @@ IGatePtr IGate::Clone() noexcept {
   return clone;
 }
 
-template<typename Ptr, typename Container>
-void IGate::AddArg(int index, const Ptr& arg, Container* container) noexcept {
-  assert(index != 0);
-  assert(std::abs(index) == arg->index());
-  assert(state_ == kNormalState);
-  assert(!((type_ == kNotGate || type_ == kNullGate) && !args_.empty()));
-  assert(!(type_ == kXorGate && args_.size() > 1));
-  assert(vote_number_ >= 0);
-
-  if (args_.count(index)) return IGate::ProcessDuplicateArg(index);
-  if (args_.count(-index)) return IGate::ProcessComplementArg(index);
-
-  args_.insert(index);
-  container->emplace(index, arg);
-  arg->AddParent(shared_from_this());
-}
-
 void IGate::TransferArg(int index, const IGatePtr& recipient) noexcept {
   assert(index != 0);
   assert(args_.count(index));
