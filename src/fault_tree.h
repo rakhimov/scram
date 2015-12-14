@@ -22,31 +22,22 @@
 #define SCRAM_SRC_FAULT_TREE_H_
 
 #include <memory>
-#include <set>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
+#include "ccf_group.h"
 #include "element.h"
 #include "event.h"
+#include "expression.h"
 
 namespace scram {
-
-class CcfGroup;
-class Parameter;
 
 /// @class Component
 /// Component is for logical grouping of events, gates, and other components.
 class Component : public Element, public Role {
  public:
-  using GatePtr = std::shared_ptr<Gate>;
-  using BasicEventPtr = std::shared_ptr<BasicEvent>;
-  using HouseEventPtr = std::shared_ptr<HouseEvent>;
-  using ParameterPtr = std::shared_ptr<Parameter>;
-  using CcfGroupPtr = std::shared_ptr<CcfGroup>;
-  using ComponentPtr = std::unique_ptr<Component>;
-
   /// Constructs a component assuming
   /// that it exists within some fault tree.
   /// The public or private role of a component is not
@@ -69,41 +60,29 @@ class Component : public Element, public Role {
   /// @returns The name of this component.
   const std::string& name() const { return name_; }
 
-  /// @returns The container of all gates of this component
+  /// @returns The container of component constructs of specific kind
   ///          with lower-case names as keys.
+  /// @{
   const std::unordered_map<std::string, GatePtr>& gates() const {
     return gates_;
   }
-
-  /// @returns The container of all basic events of this component
-  ///          with lower-case names as keys.
   const std::unordered_map<std::string, BasicEventPtr>& basic_events() const {
     return basic_events_;
   }
-
-  /// @returns The container of house events of this component
-  ///          with lower-case names as keys.
   const std::unordered_map<std::string, HouseEventPtr>& house_events() const {
     return house_events_;
   }
-
-  /// @returns The container of parameters of this component
-  ///          with lower-case names as keys.
   const std::unordered_map<std::string, ParameterPtr>& parameters() const {
     return parameters_;
   }
-
-  /// @returns CCF groups belonging to this component
-  ///          with lower-case names as keys.
   const std::unordered_map<std::string, CcfGroupPtr>& ccf_groups() const {
     return ccf_groups_;
   }
-
-  /// @returns Components in this component container
-  ///          with lower-case names as keys.
-  const std::unordered_map<std::string, ComponentPtr>& components() const {
+  const std::unordered_map<std::string, std::unique_ptr<Component>>&
+  components() const {
     return components_;
   }
+  /// @}
 
   /// Adds a gate into this component container.
   ///
@@ -148,7 +127,7 @@ class Component : public Element, public Role {
   /// @param[in] component  The CCF group to be added to this container.
   ///
   /// @throws ValidationError  The component is already in this container.
-  void AddComponent(ComponentPtr component);
+  void AddComponent(std::unique_ptr<Component> component);
 
  protected:
   /// Recursively traverses components
@@ -159,26 +138,32 @@ class Component : public Element, public Role {
   void GatherGates(std::unordered_set<GatePtr>* gates);
 
  private:
+  /// Adds an event into this component container.
+  ///
+  /// @tparam Ptr  The pointer type to the event.
+  /// @tparam Container  Map with the lower case name as the key.
+  ///
+  /// @param[in] event  The event to be added to this component.
+  /// @param[in,out] container  The destination container.
+  ///
+  /// @throws ValidationError  The event is already in this container.
+  template<typename Ptr, typename Container>
+  void AddEvent(const Ptr& event, Container* container);
+
   std::string name_;  ///< The name of this component.
 
-  /// Container for gates with lower-case names as keys.
+  /// Container for component constructs with lower-case names as keys.
+  /// @{
   std::unordered_map<std::string, GatePtr> gates_;
-
-  /// Container for basic events with lower-case names as keys.
   std::unordered_map<std::string, BasicEventPtr> basic_events_;
-
-  /// Container for house events with lower-case names as keys.
   std::unordered_map<std::string, HouseEventPtr> house_events_;
-
-  /// Container for parameters with lower-case names as keys.
   std::unordered_map<std::string, ParameterPtr> parameters_;
-
-  /// Container for CCF groups with lower-case names as keys.
   std::unordered_map<std::string, CcfGroupPtr> ccf_groups_;
-
-  /// Container for components with lower-case names as keys.
-  std::unordered_map<std::string, ComponentPtr> components_;
+  std::unordered_map<std::string, std::unique_ptr<Component>> components_;
+  /// @}
 };
+
+using ComponentPtr = std::unique_ptr<Component>;  ///< Unique system components.
 
 /// @class FaultTree
 /// Fault tree representation as a container of
@@ -187,8 +172,6 @@ class Component : public Element, public Role {
 /// detection of top events.
 class FaultTree : public Component {
  public:
-  using GatePtr = std::shared_ptr<Gate>;
-
   /// The main constructor of the Fault Tree.
   /// Fault trees are assumed to be public and belong to the root model.
   ///
@@ -206,8 +189,6 @@ class FaultTree : public Component {
   void CollectTopEvents();
 
  private:
-  using FormulaPtr = std::unique_ptr<Formula>;
-
   /// Recursively marks descendant gates as "non-top".
   /// These gates belong to this fault tree only.
   ///
@@ -225,6 +206,8 @@ class FaultTree : public Component {
 
   std::vector<GatePtr> top_events_;  ///< Top events of this fault tree.
 };
+
+using FaultTreePtr = std::unique_ptr<FaultTree>;  ///< Unique trees in models.
 
 }  // namespace scram
 

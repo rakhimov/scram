@@ -134,8 +134,8 @@ SCRAM FTA Algorithms
 MOCUS
 =====
 
+This algorithm is similar to the MOCUS algorithm as described in [Rau03]_.
 Steps in the algorithm for minimal cut set generation from a fault tree.
-This algorithm is similar to the MOCUS algorithm [Rau03]_.
 
 **Rule 1.** Each OR gate generates new rows(sets) in the table(set) of cut sets
 
@@ -148,11 +148,9 @@ After finishing or each of the above steps:
 **Rule 4.** Eliminate non-minimal cut sets
 
 
-MCS Generation Implementation Specifics
----------------------------------------
+Implementation Specifics
+------------------------
 
-The implemented algorithm is similar to the MOCUS algorithm,
-but it is not formally verified as a MOCUS-like algorithm.
 The actual implementation uses a set of sets in order to avoid duplicates,
 so Rule 3 is satisfied automatically.
 Elements in a set have AND relationship with each other;
@@ -179,17 +177,8 @@ and to reduce the number of generated cut sets.
 After all possible and required cut sets are generated,
 the next algorithmically complex part
 is the application of Rule 4 or minimization of the generated cut sets.
-The set of cut sets is traversed to find sets of size one,
-which are minimal by default.
-Then all other sets are tested
-if they are supersets of the found minimal sets so far.
-If this is not the case,
-the sets with size 2 are minimal,
-and these size 2 cut sets are added into the minimal cut sets.
-Then these size 2 minimal cut sets are used to check
-if they are subsets of the remaining cut sets.
-If not, then size 3 cut sets are minimal.
-This incremental logic is continued till the initial set of cut sets is empty.
+The minimization of the generated cut sets
+is delegated to ZBDD facilities.
 
 
 Binary Decision Diagram
@@ -203,6 +192,17 @@ Minimization of sets is performed with subsume operations described in [Rau93]_.
 After these operations,
 any path leading to 1 (True) terminal
 is extracted as a cut set.
+
+
+Zero-Suppressed Binary Decision Diagram
+=======================================
+
+In addition to being a helpful facility for cut set minimization,
+ZBDDs can work directly with Boolean graphs [Jun09]_.
+The major benefit of this approach
+is that cut sets can be kept minimal and truncated upon generation.
+However, the application of Boolean operators on the ZBDD decomposition
+requires extra computations compared to the BDD approach.
 
 
 ********************

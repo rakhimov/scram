@@ -21,7 +21,6 @@
 #ifndef SCRAM_SRC_PROBABILITY_ANALYSIS_H_
 #define SCRAM_SRC_PROBABILITY_ANALYSIS_H_
 
-#include <memory>
 #include <vector>
 
 #include "analysis.h"
@@ -38,8 +37,6 @@ namespace scram {
 /// Main quantitative analysis class.
 class ProbabilityAnalysis : public Analysis {
  public:
-  using GatePtr = std::shared_ptr<Gate>;
-
   /// Probability analysis
   /// with the results of qualitative analysis.
   ///
@@ -144,7 +141,7 @@ class McubCalculator : private CutSetProbabilityCalculator {
 };
 
 /// @class ProbabilityAnalyzerBase
-/// Abstract base class for Probability analyzers.
+/// Aggregation class for Probability analyzers.
 class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
  public:
   using CutSet = std::vector<int>;
@@ -156,8 +153,6 @@ class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
   /// @param[in] fta  Finished fault tree analyzer with results.
   template<typename Algorithm>
   explicit ProbabilityAnalyzerBase(const FaultTreeAnalyzer<Algorithm>* fta);
-
-  virtual ~ProbabilityAnalyzerBase() = 0;  ///< Abstract class.
 
   /// @returns The original Boolean graph from the fault tree analyzer.
   const BooleanGraph* graph() const { return graph_; }
@@ -175,8 +170,6 @@ class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
   std::vector<double>& var_probs() { return var_probs_; }
 
  protected:
-  using BasicEventPtr = std::shared_ptr<BasicEvent>;
-
   const BooleanGraph* graph_;  ///< Boolean graph from the fault tree analysis.
   const std::vector<CutSet>* cut_sets_;  ///< A collection of cut sets.
   std::vector<double> var_probs_;  ///< Variable probabilities.
@@ -253,15 +246,12 @@ class ProbabilityAnalyzer<Bdd> : public ProbabilityAnalyzerBase {
   Bdd* bdd_graph() { return bdd_graph_; }
 
  private:
-  using VertexPtr = std::shared_ptr<Vertex>;
-  using ItePtr = std::shared_ptr<Ite>;
-
   /// Creates a new BDD for use by the analyzer.
   ///
   /// @param[in] root  The root gate of the fault tree.
   ///
   /// @pre The function is called in the constructor only once.
-  void CreateBdd(const std::shared_ptr<Gate>& root) noexcept;
+  void CreateBdd(const GatePtr& root) noexcept;
 
   /// Calculates exact probability
   /// of a function graph represented by its root BDD vertex.

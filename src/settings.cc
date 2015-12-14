@@ -25,7 +25,7 @@
 namespace scram {
 
 Settings& Settings::algorithm(const std::string& algorithm) {
-  if (algorithm != "mocus" && algorithm != "bdd")
+  if (algorithm != "mocus" && algorithm != "bdd" && algorithm != "zbdd")
     throw InvalidArgument(
         "The qualitative analysis algorithm is not recognized.");
 

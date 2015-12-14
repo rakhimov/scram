@@ -27,6 +27,8 @@
 #include <string>
 
 #include "analysis.h"
+#include "event.h"
+#include "fault_tree.h"
 #include "fault_tree_analysis.h"
 #include "importance_analysis.h"
 #include "probability_analysis.h"
@@ -35,8 +37,6 @@
 
 namespace scram {
 
-class Gate;
-class FaultTree;
 class Model;
 
 /// @class RiskAnalysis
@@ -127,9 +127,6 @@ class RiskAnalysis : public Analysis {
   }
 
  private:
-  using GatePtr = std::shared_ptr<Gate>;
-  using FaultTreePtr = std::unique_ptr<FaultTree>;
-
   /// Runs all possible analysis on a given target.
   /// Analysis types are deduced from the settings.
   ///
@@ -163,17 +160,13 @@ class RiskAnalysis : public Analysis {
 
   ModelPtr model_;  ///< Analysis model with constructs.
 
-  /// Fault tree analyses that are performed on a specific fault tree.
+  /// Analyses performed by this risk analysis run.
+  /// @{
   std::map<std::string, FaultTreeAnalysisPtr> fault_tree_analyses_;
-
-  /// Probability analyses that are performed on a specific fault tree.
   std::map<std::string, ProbabilityAnalysisPtr> probability_analyses_;
-
-  /// Importance analyses that are performed on a specific fault tree.
   std::map<std::string, ImportanceAnalysisPtr> importance_analyses_;
-
-  /// Uncertainty analyses that are performed on a specific fault tree.
   std::map<std::string, UncertaintyAnalysisPtr> uncertainty_analyses_;
+  /// @}
 };
 
 }  // namespace scram

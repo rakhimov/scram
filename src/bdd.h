@@ -93,12 +93,13 @@ class Terminal : public Vertex {
   bool value_;  ///< The meaning of the terminal.
 };
 
+using VertexPtr = std::shared_ptr<Vertex>;  ///< Shared BDD vertices.
+using TerminalPtr = std::shared_ptr<Terminal>;  ///< Shared terminal vertices.
+
 /// @class NonTerminal
 /// Representation of non-terminal vertices in BDD graphs.
 class NonTerminal : public Vertex {
  public:
-  using VertexPtr = std::shared_ptr<Vertex>;
-
   /// @param[in] index  Index of this non-terminal vertex.
   /// @param[in] order  Specific ordering number for BDD graphs.
   NonTerminal(int index, int order);
@@ -106,10 +107,7 @@ class NonTerminal : public Vertex {
   virtual ~NonTerminal() = 0;  ///< Abstract base class.
 
   /// @returns The index of this vertex.
-  int index() const {
-    assert(index_ > 0);
-    return index_;
-  }
+  int index() const { return index_; }
 
   /// @returns The order of the vertex.
   int order() const {
@@ -122,6 +120,8 @@ class NonTerminal : public Vertex {
 
   /// Sets this vertex for representation of a module.
   void module(bool flag) { module_ = flag; }
+
+  using Vertex::id;  ///< Conflicting with the overload.
 
   /// Sets the unique identifier of the ROBDD graph.
   ///
@@ -167,36 +167,10 @@ class NonTerminal : public Vertex {
  protected:
   int index_;  ///< Index of the variable.
   int order_;  ///< Order of the variable.
-  bool module_;  ///< Mark for module variables.
   VertexPtr high_;  ///< 1 (True/then) branch in the Shannon decomposition.
   VertexPtr low_;  ///< O (False/else) branch in the Shannon decomposition.
+  bool module_;  ///< Mark for module variables.
   bool mark_;  ///< Traversal mark.
-};
-
-/// @class ComplementEdge
-/// Mixin for vertices
-/// that may need to indicate
-/// that one of edges must be interpreted as complement.
-///
-/// @note This is not about the vertex,
-///       but it is about the chosen edge.
-class ComplementEdge {
- public:
-  /// Sets the complement edge to false by default.
-  ComplementEdge();
-
-  virtual ~ComplementEdge() = 0;  ///< Abstract class.
-
-  /// @returns true if the chosen edge is complement.
-  bool complement_edge() const { return complement_edge_; }
-
-  /// Sets the complement flag for the chosen edge.
-  ///
-  /// @param[in] flag  Indicator to treat the chosen edge as a complement.
-  void complement_edge(bool flag) { complement_edge_ = flag; }
-
- private:
-  bool complement_edge_;  ///< Flag for complement edge.
 };
 
 /// @class Ite
@@ -208,9 +182,17 @@ class ComplementEdge {
 ///       one of two (high/low) edges to assign the attribute.
 ///       Consistency is not the responsibility of this class
 ///       but of BDD algorithms and users.
-class Ite : public NonTerminal, public ComplementEdge {
+class Ite : public NonTerminal {
  public:
   using NonTerminal::NonTerminal;  ///< Constructor with index and order.
+
+  /// @returns true if the chosen edge is complement.
+  bool complement_edge() const { return complement_edge_; }
+
+  /// Sets the complement flag for the chosen edge.
+  ///
+  /// @param[in] flag  Indicator to treat the chosen edge as a complement.
+  void complement_edge(bool flag) { complement_edge_ = flag; }
 
   /// @returns The probability of the function graph.
   double p() const { return p_; }
@@ -238,18 +220,22 @@ class Ite : public NonTerminal, public ComplementEdge {
   }
 
  private:
+  bool complement_edge_ = false;  ///< Flag for complement edge.
   double p_ = 0;  ///< Probability of the function graph.
   double factor_ = 0;  ///< Importance factor calculation results.
 };
+
+using ItePtr = std::shared_ptr<Ite>;  ///< Shared if-then-else vertices.
+using IteWeakPtr = std::weak_ptr<Ite>;  ///< Pointer for storage outside of BDD.
 
 using Triplet = std::array<int, 3>;  ///< (v, G, H) triplet for functions.
 
 /// @struct TripletHash
 /// Functor for hashing triplets of ordered numbers.
 struct TripletHash : public std::unary_function<const Triplet, std::size_t> {
-  /// Operator overload for hashing three ordered ID numbers.
+  /// Operator overload for hashing three ordered numbers.
   ///
-  /// @param[in] triplet (v, G, H) nodes.
+  /// @param[in] triplet  (v, G, H) nodes.
   ///
   /// @returns Hash value of the triplet.
   std::size_t operator()(const Triplet& triplet) const noexcept {
@@ -257,11 +243,31 @@ struct TripletHash : public std::unary_function<const Triplet, std::size_t> {
   }
 };
 
-/// Hash table for triplets of numbers as keys.
+/// Hash table with triplets of numbers as keys.
 ///
 /// @tparam Value  Type of values to be stored in the table.
 template<typename Value>
 using TripletTable = std::unordered_map<Triplet, Value, TripletHash>;
+
+/// @class PairHash
+/// Function for hashing a pair of ordered numbers.
+struct PairHash
+    : public std::unary_function<const std::pair<int, int>, std::size_t> {
+  /// Operator overload for hashing two ordered numbers.
+  ///
+  /// @param[in] p  The pair of numbers.
+  ///
+  /// @returns Hash value of the pair.
+  std::size_t operator()(const std::pair<int, int>& p) const noexcept {
+    return boost::hash_value(p);
+  }
+};
+
+/// Hash table with pairs of numbers as keys.
+///
+/// @tparam Value  Type of values to be stored in the table.
+template<typename Value>
+using PairTable = std::unordered_map<std::pair<int, int>, Value, PairHash>;
 
 class Zbdd;  // For analysis purposes.
 
@@ -274,8 +280,6 @@ class Zbdd;  // For analysis purposes.
 ///       There is only one terminal vertex of value 1/True.
 class Bdd {
  public:
-  using VertexPtr = std::shared_ptr<Vertex>;
-
   /// Constructor with the analysis target.
   /// Reduced Ordered BDD is produced from a Boolean graph.
   ///
@@ -300,10 +304,8 @@ class Bdd {
   /// @returns The root function of the ROBDD.
   const Function& root() const { return root_; }
 
-  /// @returns Mapping of Boolean graph gates and BDD graph vertices.
-  const std::unordered_map<int, Function>& gates() const {
-    return gates_;
-  }
+  /// @returns Mapping of Boolean graph modules and BDD graph vertices.
+  const std::unordered_map<int, Function>& modules() const { return modules_; }
 
   /// @returns Mapping of variable indices to their orders.
   const std::unordered_map<int, int>& index_to_order() const {
@@ -333,40 +335,89 @@ class Bdd {
   const std::vector<std::vector<int>>& cut_sets() const;
 
  private:
-  using NodePtr = std::shared_ptr<Node>;
-  using VariablePtr = std::shared_ptr<Variable>;
-  using IGatePtr = std::shared_ptr<IGate>;
-  using TerminalPtr = std::shared_ptr<Terminal>;
-  using ItePtr = std::shared_ptr<Ite>;
-  using UniqueTable = TripletTable<ItePtr>;  ///< To store unique vertices.
-  using ComputeTable = TripletTable<Function>;  ///< To store computed results.
+  using UniqueTable = TripletTable<IteWeakPtr>;  ///< To keep BDD reduced.
+  /// To store computed results with an ordered pair of arguments.
+  /// This table introduces circular reference
+  /// if one of the arguments is the computation result.
+  using ComputeTable = PairTable<Function>;
+
+#ifndef NGARBAGE
+  /// @class GarbageCollector
+  /// This garbage collector manages tables of a BDD.
+  /// The garbage collection is triggered
+  /// when the reference count of a BDD vertex reaches 0.
+  class GarbageCollector {
+   public:
+    /// @param[in,out] bdd  BDD to manage.
+    explicit GarbageCollector(Bdd* bdd) noexcept
+        : garbage_collection_(bdd->garbage_collection_),
+          bdd_(bdd) {}
+
+    /// Frees the memory
+    /// and triggers the garbage collection ONLY if requested.
+    ///
+    /// @param[in] ptr  Pointer to an ITE vertex with reference count 0.
+    void operator()(Ite* ptr) noexcept;
+
+   private:
+    std::weak_ptr<bool> garbage_collection_;  ///< Flag for garbage collection.
+    Bdd* bdd_;  ///< Pointer to the managed BDD.
+  };
+#endif
+
+  /// Fetches a unique if-then-else vertex from a hash table.
+  /// If the vertex doesn't exist,
+  /// a new vertex is created.
+  ///
+  /// @param[in] index  Positive index of the variable.
+  /// @param[in] high  The high vertex.
+  /// @param[in] low  The low vertex.
+  /// @param[in] complement_edge  Interpretation of the low vertex.
+  /// @param[in] order The order for the vertex variable.
+  /// @param[in] module  A flag for the modular ZBDD proxy.
+  ///
+  /// @returns If-then-else node with the given parameters.
+  ///
+  /// @pre Expired pointers in the unique table are garbage collected.
+  /// @pre Only pointers in the unique table are
+  ///      either in the BDD or in the computation table.
+  ItePtr FetchUniqueTable(int index, const VertexPtr& high,
+                          const VertexPtr& low, bool complement_edge,
+                          int order, bool module) noexcept;
 
   /// Converts all gates in the Boolean graph
   /// into if-then-else BDD graphs.
   /// Registers processed gates.
   ///
   /// @param[in] gate  The root or current parent gate of the graph.
+  /// @param[in,out] gates  Processed gates.
   ///
   /// @returns The BDD function representing the gate.
-  const Function& IfThenElse(const IGatePtr& gate) noexcept;
+  const Function& IfThenElse(const IGatePtr& gate,
+                             std::unordered_map<int, Function>* gates) noexcept;
 
-  /// Converts variable argument of a Boolean graph gate
-  /// into if-then-else BDD graph vertex.
-  /// Registers processed variable.
+  /// Fetches computation tables for results.
   ///
-  /// @param[in] variable  The variable argument.
+  /// @param[in] type  The operator or type of the gate.
+  /// @param[in] arg_one  First argument function graph.
+  /// @param[in] arg_two  Second argument function graph.
+  /// @param[in] complement_one  Interpretation of arg_one as complement.
+  /// @param[in] complement_two  Interpretation of arg_two as complement.
   ///
-  /// @returns Pointer to the root vertex of the BDD graph.
-  ItePtr IfThenElse(const VariablePtr& variable) noexcept;
-
-  /// Creates a vertex to represent a module gate.
+  /// @returns New function with nullptr vertex pointer
+  ///          for uploading the computation results
+  ///          if it doesn't exists.
+  /// @returns If computation is already performed,
+  ///          the non-null result vertex with the return function.
   ///
-  /// @param[in] gate  The root or current parent gate of the graph.
-  ///
-  /// @returns Pointer to the BDD if-then-else vertex.
-  ///
-  /// @note The gate still needs to be converted and saved.
-  ItePtr CreateModuleProxy(const IGatePtr& gate) noexcept;
+  /// @note The arguments should not be the same functions.
+  ///       It is assumed
+  ///       that equal ID functions are handled by the reduction.
+  /// @note Even though the arguments are not ItePtr,
+  ///       it is expected that they are if-then-else vertices.
+  Function& FetchComputeTable(Operator type, const VertexPtr& arg_one,
+                              const VertexPtr& arg_two, bool complement_one,
+                              bool complement_two) noexcept;
 
   /// Applies Boolean operation to BDD graphs.
   ///
@@ -422,7 +473,7 @@ class Bdd {
   Function Apply(Operator type, const VertexPtr& single_arg,
                  bool complement_one, bool complement_two) noexcept;
 
-  /// Applies Boolean operation to BDD graph non-terminal verteices.
+  /// Applies Boolean operation to BDD graph non-terminal vertices.
   ///
   /// @param[in] type  The operator or type of the gate.
   /// @param[in] arg_one  First argument if-then-else vertex.
@@ -433,34 +484,11 @@ class Bdd {
   /// @returns High and Low BDD functions as a result of operation.
   ///
   /// @pre Argument if-then-else vertices must be ordered.
-  ///
-  /// @note The order of arguments does not matter for two variable operators.
   std::pair<Function, Function> Apply(Operator type,
                                       const ItePtr& arg_one,
                                       const ItePtr& arg_two,
                                       bool complement_one,
                                       bool complement_two) noexcept;
-
-  /// Produces canonical signature of application of Boolean operations.
-  /// The signature of the operations helps
-  /// detect equivalent operations.
-  ///
-  /// @param[in] type  The operator or type of the gate.
-  /// @param[in] arg_one  First argument function graph.
-  /// @param[in] arg_two  Second argument function graph.
-  /// @param[in] complement_one  Interpretation of arg_one as complement.
-  /// @param[in] complement_two  Interpretation of arg_two as complement.
-  ///
-  /// @returns Unique signature of the operation.
-  ///
-  /// @note The arguments should not be the same functions.
-  ///       It is assumed
-  ///       that equal ID functions are handled by the reduction.
-  /// @note Even though the arguments are not ItePtr,
-  ///       it is expected that they are if-then-else vertices.
-  Triplet GetSignature(Operator type,
-                       const VertexPtr& arg_one, const VertexPtr& arg_two,
-                       bool complement_one, bool complement_two) noexcept;
 
   /// Counts the number of if-then-else nodes.
   ///
@@ -479,6 +507,14 @@ class Bdd {
   /// @note Marks will propagate to modules as well.
   void ClearMarks(const VertexPtr& vertex, bool mark) noexcept;
 
+  /// Checks BDD graphs for errors in the structure.
+  /// Errors are assertions that fail at runtime.
+  ///
+  /// @param[in] vertex  The root vertex of BDD.
+  ///
+  /// @pre Non-terminal node marks are clear (false).
+  void TestStructure(const VertexPtr& vertex) noexcept;
+
   const Settings kSettings_;  ///< Analysis settings.
   Function root_;  ///< The root function of this BDD.
 
@@ -489,15 +525,26 @@ class Bdd {
   UniqueTable unique_table_;
 
   /// Table of processed computations over functions.
-  /// The key must convey the semantics of the operation over functions.
-  /// For example, AND(F, G) is ite(F, G, 0),
-  /// which is also equivalent to ite(G, F, 0).
   /// The argument functions are recorded with their IDs (not vertex indices).
   /// In order to keep only unique computations,
   /// the argument IDs must be ordered.
-  ComputeTable compute_table_;
+  /// The key is {min_id, max_id}.
+  ComputeTable and_table_;  ///< Table of processed AND computations.
+  ComputeTable or_table_;  ///< Table of processed OR computations.
 
-  std::unordered_map<int, Function> gates_;  ///< Processed gates.
+#ifndef NGARBAGE
+  /// @struct Membership
+  /// Keys for membership in tables.
+  struct Membership {
+    std::vector<std::pair<int, int>> and_table;  ///< In AND computation table.
+    std::vector<std::pair<int, int>> or_table;  ///< In OR computation table.
+  };
+
+  std::unordered_map<int, Membership> ite_as_arg_;  ///< ITE in compute tables.
+  std::shared_ptr<bool> garbage_collection_;  ///< Flag for garbage collection.
+#endif
+
+  std::unordered_map<int, Function> modules_;  ///< Module graphs.
   std::unordered_map<int, int> index_to_order_;  ///< Indices and orders.
   const TerminalPtr kOne_;  ///< Terminal True.
   int function_id_;  ///< Identification assignment for new function graphs.

@@ -23,7 +23,6 @@
 
 #include <map>
 #include <memory>
-#include <set>
 #include <sstream>
 #include <string>
 #include <utility>
@@ -31,18 +30,16 @@
 
 #include <libxml++/libxml++.h>
 
+#include "ccf_group.h"
+#include "element.h"
 #include "event.h"
+#include "expression.h"
+#include "fault_tree.h"
 #include "model.h"
 #include "settings.h"
 #include "xml_parser.h"
 
 namespace scram {
-
-class Element;
-class FaultTree;
-class Component;
-class CcfGroup;
-class Expression;
 
 /// @class Initializer
 /// This class operates on input files
@@ -78,17 +75,6 @@ class Initializer {
 
  private:
   using ElementPtr = std::shared_ptr<Element>;
-  using EventPtr = std::shared_ptr<Event>;
-  using GatePtr = std::shared_ptr<Gate>;
-  using FormulaPtr = std::unique_ptr<Formula>;  ///< Unique Formula.
-  using PrimaryEventPtr = std::shared_ptr<PrimaryEvent>;
-  using BasicEventPtr = std::shared_ptr<BasicEvent>;
-  using HouseEventPtr = std::shared_ptr<HouseEvent>;
-  using CcfGroupPtr = std::shared_ptr<CcfGroup>;
-  using ExpressionPtr = std::shared_ptr<Expression>;
-  using ParameterPtr = std::shared_ptr<Parameter>;
-  using FaultTreePtr = std::unique_ptr<FaultTree>;  ///< Unique fault tree.
-  using ComponentPtr = std::unique_ptr<Component>;  ///< Unique component.
 
   /// Map of valid units for parameters.
   static const std::map<std::string, Units> kUnits_;

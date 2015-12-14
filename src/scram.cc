@@ -55,13 +55,15 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
     desc.add_options()
         ("help", "Display this help message")
         ("version", "Display version information")
-        ("input-files", po::value< std::vector<std::string> >(),
+        ("input-files", po::value<std::vector<std::string>>(),
          "XML input files with analysis constructs")
         ("config-file", po::value<std::string>(),
          "XML file with analysis configurations")
         ("validate", "Validate input files without analysis")
         ("graph", "Validate and produce graph without analysis")
         ("bdd", "Perform qualitative analysis with BDD")
+        ("zbdd", "Perform qualitative analysis with ZBDD")
+        ("mocus", "Perform qualitative analysis with MOCUS")
         ("probability", po::value<bool>(), "Perform probability analysis")
         ("importance", po::value<bool>(), "Perform importance analysis")
         ("uncertainty", po::value<bool>(), "Perform uncertainty analysis")
@@ -79,10 +81,15 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
         ("seed", po::value<int>(),
          "Seed for the pseudo-random number generator")
         ("output-path,o", po::value<std::string>(), "Output path for reports")
-        ("verbosity", po::value<int>(), "Set log verbosity")
-        ;
-
+        ("verbosity", po::value<int>(), "Set log verbosity");
+#ifndef NDEBUG
+    desc.add_options()
+        ("preprocessor", "Stop analysis after the preprocessing step")
+        ("print", "Print analysis results in a terminal friendly way")
+        ("no-report", "Don't generate analysis report");
+#endif
     po::store(po::parse_command_line(argc, argv, desc), *vm);
+
   } catch (std::exception& err) {
     std::cerr << "Option error: " << err.what() << "\n\n" << usage << "\n\n"
               << desc << "\n";
@@ -118,6 +125,13 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
     return 1;
   }
 
+  if (vm->count("bdd") && vm->count("zbdd") && vm->count("mocus")) {
+    std::cerr << "Mutually exclusive qualitative analysis algorithms.\n"
+              << "(MOCUS/BDD/ZBDD) cannot be applied at the same time.\n"
+              << usage << "\n\n" << desc << std::endl;
+    return 1;
+  }
+
   if (vm->count("rare-event") && vm->count("mcub")) {
     std::cerr << "The rare event and MCUB approximations cannot be "
               << "applied at the same time.\n"
@@ -145,6 +159,13 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
 /// @throws std::exception  vm does not contain a required option.
 ///                         At least defaults are expected.
 void ConstructSettings(const po::variables_map& vm, scram::Settings* settings) {
+  if (vm.count("bdd")) {
+    settings->algorithm("bdd");
+  } else if (vm.count("zbdd")) {
+    settings->algorithm("zbdd");
+  } else if (vm.count("mocus")) {
+    settings->algorithm("mocus");
+  }
   // Determine if the probability approximation is requested.
   if (vm.count("rare-event")) {
     assert(!vm.count("mcub"));
@@ -162,7 +183,6 @@ void ConstructSettings(const po::variables_map& vm, scram::Settings* settings) {
   if (vm.count("num-quantiles"))
     settings->num_quantiles(vm["num-quantiles"].as<int>());
   if (vm.count("num-bins")) settings->num_bins(vm["num-bins"].as<int>());
-  if (vm.count("bdd")) settings->algorithm("bdd");
   if (vm.count("importance"))
     settings->importance_analysis(vm["importance"].as<bool>());
   if (vm.count("uncertainty"))
@@ -170,6 +190,10 @@ void ConstructSettings(const po::variables_map& vm, scram::Settings* settings) {
   if (vm.count("probability"))
     settings->probability_analysis(vm["probability"].as<bool>());
   if (vm.count("ccf")) settings->ccf_analysis(vm["ccf"].as<bool>());
+#ifndef NDEBUG
+  settings->preprocessor = vm.count("preprocessor");
+  settings->print = vm.count("print");
+#endif
 }
 
 /// Main body of command-line entrance to run the program.
@@ -239,6 +263,11 @@ int RunScram(const po::variables_map& vm) {
   }
 
   ran->Analyze();
+
+#ifndef NDEBUG
+  if (vm.count("no-report") || vm.count("preprocessor") || vm.count("print"))
+    return 0;
+#endif
 
   if (output_path != "") {
     ran->Report(output_path);

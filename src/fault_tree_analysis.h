@@ -45,6 +45,17 @@ struct Literal {
 
 using CutSet = std::vector<Literal>;  ///< Collection of unique literals.
 
+/// Prints a collection of cut sets to the standard error.
+/// This is a helper function for easier debugging
+/// and visual comparison of analysis results.
+/// Summary of the number of cut sets and
+/// its size distribution is printed first.
+/// Then, all cut sets are grouped by size and sorted.
+/// The literals of a cut set are sorted by their names.
+///
+/// @param[in] cut_sets  Valid, unique collection of analysis results.
+void Print(const std::vector<CutSet>& cut_sets);
+
 /// Helper function to compute cut set probability.
 ///
 /// @param[in] cut_set  Cut set of literals.
@@ -69,10 +80,6 @@ int GetOrder(const CutSet& cut_set);
 /// described by a gate as its root.
 class FaultTreeDescriptor {
  public:
-  using GatePtr = std::shared_ptr<Gate>;
-  using BasicEventPtr = std::shared_ptr<BasicEvent>;
-  using HouseEventPtr = std::shared_ptr<HouseEvent>;
-
   /// Gathers all information about a fault tree with a root gate.
   ///
   /// @param[in] root  The root gate of a fault tree.
@@ -122,9 +129,6 @@ class FaultTreeDescriptor {
   }
 
  private:
-  using EventPtr = std::shared_ptr<Event>;
-  using FormulaPtr = std::unique_ptr<Formula>;
-
   /// Gathers information about the correctly initialized fault tree.
   /// Databases for events are manipulated
   /// to best reflect the state and structure of the fault tree.
@@ -186,8 +190,6 @@ class FaultTreeDescriptor {
 ///          One analysis per FaultTreeAnalysis object.
 class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
  public:
-  using GatePtr = std::shared_ptr<Gate>;
-
   /// Traverses a valid fault tree from the root gate
   /// to collect databases of events, gates,
   /// and other members of the fault tree.
@@ -291,7 +293,9 @@ void FaultTreeAnalyzer<Algorithm>::Analyze() noexcept {
   preprocessor->Run();
   delete preprocessor;  // No exceptions are expected.
   LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
-
+#ifndef NDEBUG
+  if (kSettings_.preprocessor) return;  // Preprocessor only option.
+#endif
   CLOCK(algo_time);
   LOG(DEBUG2) << "Launching the algorithm...";
   algorithm_ =

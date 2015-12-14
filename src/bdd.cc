@@ -42,12 +42,11 @@ NonTerminal::NonTerminal(int index, int order)
 
 NonTerminal::~NonTerminal() {}  // Default pure virtual destructor.
 
-ComplementEdge::ComplementEdge() : complement_edge_(false) {}
-
-ComplementEdge::~ComplementEdge() {}  // Default pure virtual destructor.
-
 Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
     : kSettings_(settings),
+#ifndef NGARBAGE
+      garbage_collection_(std::make_shared<bool>(true)),
+#endif
       kOne_(std::make_shared<Terminal>(true)),
       function_id_(2) {
   CLOCK(init_time);
@@ -59,16 +58,42 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
     } else {
       root_ = {false, kOne_};
     }
+  } else if (fault_tree->root()->type() == kNullGate) {
+    IGatePtr top = fault_tree->root();
+    assert(top->args().size() == 1);
+    assert(top->gate_args().empty());
+    int child = *top->args().begin();
+    VariablePtr var = top->variable_args().begin()->second;
+    root_ = {child < 0, Bdd::FetchUniqueTable(var->index(), kOne_, kOne_,
+                                              true, var->order(), false)};
   } else {
-    root_ = Bdd::IfThenElse(fault_tree->root());
+    std::unordered_map<int, Function> gates;
+    root_ = Bdd::IfThenElse(fault_tree->root(), &gates);
   }
+  Bdd::ClearMarks(false);
+  Bdd::TestStructure(root_.vertex);
   LOG(DEBUG4) << "# of BDD vertices created: " << function_id_ - 1;
   LOG(DEBUG4) << "# of entries in unique table: " << unique_table_.size();
-  LOG(DEBUG4) << "# of entries in compute table: " << compute_table_.size();
+  LOG(DEBUG4) << "# of entries in AND table: " << and_table_.size();
+  LOG(DEBUG4) << "# of entries in OR table: " << or_table_.size();
   Bdd::ClearMarks(false);
   LOG(DEBUG4) << "# of ITE in BDD: " << Bdd::CountIteNodes(root_.vertex);
   LOG(DEBUG3) << "Finished Boolean graph conversion in " << DUR(init_time);
   Bdd::ClearMarks(false);
+
+  // Cleanup.
+#ifndef NGARBAGE
+  garbage_collection_ = nullptr;  // For faster cleanup.
+  ite_as_arg_.clear();
+  ite_as_arg_.reserve(0);
+#endif
+  LOG(DEBUG5) << "BDD switched off the garbage collector.";
+  unique_table_.clear();
+  unique_table_.reserve(0);
+  and_table_.clear();
+  and_table_.reserve(0);
+  or_table_.clear();
+  or_table_.reserve(0);
 }
 
 Bdd::~Bdd() noexcept = default;
@@ -83,19 +108,71 @@ const std::vector<std::vector<int>>& Bdd::cut_sets() const {
   return zbdd_->cut_sets();
 }
 
-const Bdd::Function& Bdd::IfThenElse(const IGatePtr& gate) noexcept {
+#ifndef NGARBAGE
+void Bdd::GarbageCollector::operator()(Ite* ptr) noexcept {
+  if (!garbage_collection_.expired()) {
+    LOG(DEBUG5) << "Running garbage collection for " << ptr->id();
+    bdd_->unique_table_.erase(
+        {ptr->index(),
+         ptr->high()->id(),
+         (ptr->complement_edge() ? -1 : 1) * ptr->low()->id()});
+    auto it = bdd_->ite_as_arg_.find(ptr->id());
+    if (it != bdd_->ite_as_arg_.end()) {
+      Membership& member_in = it->second;
+      for (const std::pair<int, int>& key : member_in.and_table)
+        bdd_->and_table_.erase(key);
+
+      for (const std::pair<int, int>& key : member_in.or_table)
+        bdd_->or_table_.erase(key);
+
+      bdd_->ite_as_arg_.erase(it);
+    }
+  }
+  delete ptr;
+}
+#endif
+
+ItePtr Bdd::FetchUniqueTable(int index, const VertexPtr& high,
+                             const VertexPtr& low, bool complement_edge,
+                             int order, bool module) noexcept {
+  assert(index > 0 && "Only positive indices are expected.");
+  int sign = complement_edge ? -1 : 1;
+  IteWeakPtr& in_table = unique_table_[{index, high->id(), sign * low->id()}];
+  if (!in_table.expired()) return in_table.lock();
+  assert(order > 0 && "Improper order.");
+#ifndef NGARBAGE
+  ItePtr ite(new Ite(index, order), GarbageCollector(this));
+#else
+  auto ite = std::make_shared<Ite>(index, order);
+#endif
+  ite->id(function_id_++);
+  ite->module(module);
+  ite->high(high);
+  ite->low(low);
+  ite->complement_edge(complement_edge);
+  in_table = ite;
+  return ite;
+}
+
+const Bdd::Function& Bdd::IfThenElse(
+    const IGatePtr& gate,
+    std::unordered_map<int, Function>* gates) noexcept {
   assert(!gate->IsConstant() && "Unexpected constant gate!");
-  Function& result = gates_[gate->index()];
+  Function& result = (*gates)[gate->index()];
   if (result.vertex) return result;
   std::vector<Function> args;
   for (const std::pair<const int, VariablePtr>& arg : gate->variable_args()) {
-    args.push_back({arg.first < 0, Bdd::IfThenElse(arg.second)});
+    args.push_back({arg.first < 0,
+                    Bdd::FetchUniqueTable(arg.second->index(), kOne_, kOne_,
+                                          true, arg.second->order(), false)});
+    index_to_order_.emplace(arg.second->index(), arg.second->order());
   }
   for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
-    const Function& res = Bdd::IfThenElse(arg.second);
+    const Function& res = Bdd::IfThenElse(arg.second, gates);
     if (arg.second->IsModule()) {
-      ItePtr proxy = Bdd::CreateModuleProxy(arg.second);
-      args.push_back({arg.first < 0, proxy});
+      args.push_back({arg.first < 0,
+                      Bdd::FetchUniqueTable(arg.second->index(), kOne_, kOne_,
+                                            true, arg.second->order(), true)});
     } else {
       bool complement = (arg.first < 0) ^ res.complement;
       args.push_back({complement, res.vertex});
@@ -115,32 +192,46 @@ const Bdd::Function& Bdd::IfThenElse(const IGatePtr& gate) noexcept {
                         result.complement, it->complement);
   }
   assert(result.vertex);
+  if (gate->IsModule()) modules_.emplace(gate->index(), result);
   return result;
 }
 
-std::shared_ptr<Ite> Bdd::IfThenElse(const VariablePtr& variable) noexcept {
-  ItePtr& in_table = unique_table_[{variable->index(), 1, -1}];
-  if (in_table) return in_table;
-  index_to_order_.emplace(variable->index(), variable->order());
-  in_table = std::make_shared<Ite>(variable->index(), variable->order());
-  in_table->id(function_id_++);
-  in_table->high(kOne_);
-  in_table->low(kOne_);
-  in_table->complement_edge(true);
-  return in_table;
-}
-
-std::shared_ptr<Ite> Bdd::CreateModuleProxy(const IGatePtr& gate) noexcept {
-  assert(gate->IsModule());
-  ItePtr& in_table = unique_table_[{gate->index(), 1, -1}];
-  if (in_table) return in_table;
-  in_table = std::make_shared<Ite>(gate->index(), gate->order());
-  in_table->module(true);  // The main difference.
-  in_table->id(function_id_++);
-  in_table->high(kOne_);
-  in_table->low(kOne_);
-  in_table->complement_edge(true);
-  return in_table;
+Bdd::Function& Bdd::FetchComputeTable(Operator type,
+                                      const VertexPtr& arg_one,
+                                      const VertexPtr& arg_two,
+                                      bool complement_one,
+                                      bool complement_two) noexcept {
+  assert(!arg_one->terminal() && !arg_two->terminal());
+  assert(arg_one->id() && arg_two->id());
+  assert(arg_one->id() != arg_two->id());
+  int min_id = arg_one->id() * (complement_one ? -1 : 1);
+  int max_id = arg_two->id() * (complement_two ? -1 : 1);
+  if (arg_one->id() > arg_two->id()) std::swap(min_id, max_id);
+#ifndef NGARBAGE
+  Membership& member_one = ite_as_arg_[arg_one->id()];
+  Membership& member_two = ite_as_arg_[arg_two->id()];
+  switch (type) {  /// @todo Detect equal calculations with complements.
+    case kOrGate:
+      member_one.or_table.emplace_back(min_id, max_id);
+      member_two.or_table.emplace_back(min_id, max_id);
+      return or_table_[{min_id, max_id}];
+    case kAndGate:
+      member_one.and_table.emplace_back(min_id, max_id);
+      member_two.and_table.emplace_back(min_id, max_id);
+      return and_table_[{min_id, max_id}];
+    default:
+      assert(false);
+  }
+#else
+  switch (type) {
+    case kOrGate:
+      return or_table_[{min_id, max_id}];
+    case kAndGate:
+      return and_table_[{min_id, max_id}];
+    default:
+      assert(false);
+  }
+#endif
 }
 
 Bdd::Function Bdd::Apply(Operator type,
@@ -159,9 +250,8 @@ Bdd::Function Bdd::Apply(Operator type,
   if (arg_one->id() == arg_two->id())  // Reduction detection.
     return Bdd::Apply(type, arg_one, complement_one, complement_two);
 
-  Triplet sig =
-      Bdd::GetSignature(type, arg_one, arg_two, complement_one, complement_two);
-  Function& result = compute_table_[sig];  // Register if not computed.
+  Function& result = Bdd::FetchComputeTable(type, arg_one, arg_two,
+                                            complement_one, complement_two);
   if (result.vertex) return result;  // Already computed.
 
   ItePtr ite_one = Ite::Ptr(arg_one);
@@ -175,31 +265,15 @@ Bdd::Function Bdd::Apply(Operator type,
                                                        complement_two);
   Function& high = new_edges.first;
   Function& low = new_edges.second;
-  ItePtr bdd_graph = std::make_shared<Ite>(ite_one->index(), ite_one->order());
-  bdd_graph->module(ite_one->module());  /// @todo Create clone function.
-  bdd_graph->high(high.vertex);
-  bdd_graph->low(low.vertex);
-  if (high.complement) {
-    result.complement = true;
-    bdd_graph->complement_edge(!low.complement);
-  } else {
-    result.complement = false;
-    bdd_graph->complement_edge(low.complement);
-  }
-  if (!bdd_graph->complement_edge()) {  // Another redundancy detection.
-    if (bdd_graph->high()->id() == bdd_graph->low()->id()) {
-      result.vertex = bdd_graph->low();
+  result.complement = high.complement;
+  bool complement_edge = high.complement ^ low.complement;
+  if (!complement_edge && (high.vertex->id() == low.vertex->id())) {
+      result.vertex = low.vertex;  // Another redundancy detection.
       return result;
-    }
   }
-  int low_sign = bdd_graph->complement_edge() ? -1 : 1;
-  ItePtr& in_table = unique_table_[{bdd_graph->index(), bdd_graph->high()->id(),
-                                    low_sign * bdd_graph->low()->id()}];
-  if (!in_table) {
-    in_table = bdd_graph;
-    in_table->id(function_id_++);  // Unique function graph.
-  }
-  result.vertex = in_table;
+  result.vertex = Bdd::FetchUniqueTable(ite_one->index(), high.vertex,
+                                        low.vertex, complement_edge,
+                                        ite_one->order(), ite_one->module());
   return result;
 }
 
@@ -273,37 +347,6 @@ Bdd::Apply(Operator type, const ItePtr& arg_one, const ItePtr& arg_two,
   return {high, low};
 }
 
-Triplet Bdd::GetSignature(Operator type,
-                          const VertexPtr& arg_one, const VertexPtr& arg_two,
-                          bool complement_one, bool complement_two) noexcept {
-  assert(!arg_one->terminal() && !arg_two->terminal());
-  assert(arg_one->id() && arg_two->id());
-  assert(arg_one->id() != arg_two->id());
-  int sign_one = complement_one ? -1 : 1;
-  int sign_two = complement_two ? -1 : 1;
-  int min_id = std::min(arg_one->id(), arg_two->id());
-  int max_id = std::max(arg_one->id(), arg_two->id());
-  min_id *= min_id == arg_one->id() ? sign_one : sign_two;
-  max_id *= max_id == arg_one->id() ? sign_one : sign_two;
-
-  std::array<int, 3> sig;  // Signature of the operation.
-  switch (type) {  /// @todo Detect equal calculations with complements.
-    case kOrGate:
-      sig[0] = min_id;
-      sig[1] = 1;
-      sig[2] = max_id;
-      break;
-    case kAndGate:
-      sig[0] = min_id;
-      sig[1] = max_id;
-      sig[2] = 0;
-      break;
-    default:
-      assert(false);
-  }
-  return sig;
-}
-
 int Bdd::CountIteNodes(const VertexPtr& vertex) noexcept {
   if (vertex->terminal()) return 0;
   ItePtr ite = Ite::Ptr(vertex);
@@ -311,7 +354,7 @@ int Bdd::CountIteNodes(const VertexPtr& vertex) noexcept {
   ite->mark(true);
   int in_module = 0;
   if (ite->module()) {
-    const Function& module = gates_.find(ite->index())->second;
+    const Function& module = modules_.find(ite->index())->second;
     in_module = Bdd::CountIteNodes(module.vertex);
   }
   return 1 + in_module + Bdd::CountIteNodes(ite->high()) +
@@ -324,11 +367,37 @@ void Bdd::ClearMarks(const VertexPtr& vertex, bool mark) noexcept {
   if (ite->mark() == mark) return;
   ite->mark(mark);
   if (ite->module()) {
-    const Bdd::Function& res = gates_.find(ite->index())->second;
+    const Bdd::Function& res = modules_.find(ite->index())->second;
     Bdd::ClearMarks(res.vertex, mark);
   }
   Bdd::ClearMarks(ite->high(), mark);
   Bdd::ClearMarks(ite->low(), mark);
+}
+
+void Bdd::TestStructure(const VertexPtr& vertex) noexcept {
+  if (vertex->terminal()) return;
+  ItePtr ite = Ite::Ptr(vertex);
+  if (ite->mark()) return;
+  ite->mark(true);
+  assert(ite->index() && "Illegal index for a node.");
+  assert(ite->order() && "Improper order for nodes.");
+  assert(ite->high() && ite->low() && "Malformed node high/low pointers.");
+  assert(
+      !(!ite->complement_edge() && ite->high()->id() == ite->low()->id()) &&
+      "Reduction rule failure.");
+  assert(!(!ite->high()->terminal() &&
+           ite->order() >= Ite::Ptr(ite->high())->order()) &&
+         "Ordering of nodes failed.");
+  assert(!(!ite->low()->terminal() &&
+           ite->order() >= Ite::Ptr(ite->low())->order()) &&
+         "Ordering of nodes failed.");
+  if (ite->module()) {
+    const Bdd::Function& res = modules_.find(ite->index())->second;
+    assert(!res.vertex->terminal() && "Terminal modules must be removed.");
+    Bdd::TestStructure(res.vertex);
+  }
+  Bdd::TestStructure(ite->high());
+  Bdd::TestStructure(ite->low());
 }
 
 }  // namespace scram

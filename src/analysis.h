@@ -34,6 +34,9 @@ class Analysis {
   /// @param[in] settings  Analysis settings for all calculations.
   explicit Analysis(const Settings& settings);
 
+  Analysis(const Analysis&) = delete;
+  Analysis& operator=(const Analysis&) = delete;
+
   virtual ~Analysis() = 0;  ///< Abstract class.
 
   /// @returns Analysis settings.

@@ -4,7 +4,7 @@ The build types do not affect the memory as much as the speed.
 Do not confuse this memory usage recordings
 with the actual allocation of the memory by the code.
 The actual memory allocation must be analyzed
-with memory(heap) profilers like Valgrind with Mastif.
+with memory(heap) profilers like Valgrind with Massif.
 
 The system specs are the same as in the speed recordings.
 
@@ -15,8 +15,23 @@ The system specs are the same as in the speed recordings.
 MOCUS
 -----
 
-- Baobab1 -l 7 :  19 |
-- Baobab1 -l 8 :  35 | 40
+- Baobab1 -l 7 :  15 | 110
+- Baobab1 -l 8 :  35 | 300
+- Baobab1 -l 9 :  800
+- Baobab2 : 110
+
+
+BDD
+---
+
+- Baobab1 : 23
+- CEA9601 : 700  |  1000
+
+
+ZBDD
+----
+
+- Baobab1 : 60
 
 
 Initialization and Validation

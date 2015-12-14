@@ -32,6 +32,7 @@
 #include <string>
 
 namespace scram {
+
 /// @def LOG(level)
 /// Logging with the level defined.
 #define LOG(level) if (level > scram::Logger::ReportLevel()); \

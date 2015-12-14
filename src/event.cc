@@ -60,7 +60,6 @@ void Gate::Validate() {
       std::stringstream msg;
       msg << "";
       bool conditional_found = false;
-      using BasicEventPtr = std::shared_ptr<BasicEvent>;
       for (const BasicEventPtr& event : formula_->basic_event_args()) {
         if (!event->HasAttribute("flavor")) continue;
         std::string type = event->GetAttribute("flavor").value;
@@ -109,30 +108,6 @@ void Formula::vote_number(int number) {
     throw LogicError(msg);
   }
   vote_number_ = number;
-}
-
-void Formula::AddArgument(const HouseEventPtr& house_event) {
-  if (event_args_.count(house_event->id())) {
-    throw DuplicateArgumentError("Duplicate argument " + house_event->name());
-  }
-  event_args_.emplace(house_event->id(), house_event);
-  house_event_args_.emplace_back(house_event);
-}
-
-void Formula::AddArgument(const BasicEventPtr& basic_event) {
-  if (event_args_.count(basic_event->id())) {
-    throw DuplicateArgumentError("Duplicate argument " + basic_event->name());
-  }
-  event_args_.emplace(basic_event->id(), basic_event);
-  basic_event_args_.emplace_back(basic_event);
-}
-
-void Formula::AddArgument(const GatePtr& gate) {
-  if (event_args_.count(gate->id())) {
-    throw DuplicateArgumentError("Duplicate argument " + gate->name());
-  }
-  event_args_.emplace(gate->id(), gate);
-  gate_args_.emplace_back(gate);
 }
 
 void Formula::AddArgument(FormulaPtr formula) {

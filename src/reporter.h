@@ -45,7 +45,6 @@ class Reporter {
  public:
   using ModelPtr = std::shared_ptr<const Model>;
   using PrimaryEventPtr = std::shared_ptr<const PrimaryEvent>;
-  using ParameterPtr = std::shared_ptr<const Parameter>;
 
   /// Sets up XML report document according to a specific standards.
   /// This function populates information
@@ -77,7 +76,7 @@ class Reporter {
   /// @param[in] unused_parameters  Container of unused parameters.
   /// @param[in,out] doc  Pre-formatted XML document.
   void ReportUnusedParameters(
-      const std::vector<ParameterPtr>& unused_parameters,
+      const std::vector<std::shared_ptr<const Parameter>>& unused_parameters,
       xmlpp::Document* doc);
 
   /// Reports the results of analysis

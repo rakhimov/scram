@@ -22,7 +22,6 @@
 #ifndef SCRAM_SRC_UNCERTAINTY_ANALYSIS_H_
 #define SCRAM_SRC_UNCERTAINTY_ANALYSIS_H_
 
-#include <memory>
 #include <utility>
 #include <vector>
 
@@ -40,8 +39,6 @@ namespace scram {
 /// and probability distributions of basic events.
 class UncertaintyAnalysis : public Analysis {
  public:
-  using BasicEventPtr = std::shared_ptr<BasicEvent>;
-
   /// Uncertainty analysis
   /// on the fault tree processed
   /// by probability analysis.

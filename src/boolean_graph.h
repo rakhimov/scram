@@ -46,9 +46,13 @@
 
 #include <boost/functional/hash.hpp>
 
+#include "event.h"
+
 namespace scram {
 
 class IGate;  // Indexed gate parent of nodes.
+using IGatePtr = std::shared_ptr<IGate>;  ///< Shared gates in the graph.
+using IGateWeakPtr = std::weak_ptr<IGate>;  ///< Acyclic ptr to parent gates.
 
 /// @class NodeParentManager
 /// Manager of information about parents.
@@ -57,10 +61,8 @@ class NodeParentManager {
   friend class IGate;  ///< The main manipulator of parent information.
 
  public:
-  virtual ~NodeParentManager() = 0;  ///< Abstract class.
-
   /// @returns Parents of a node.
-  const std::unordered_map<int, std::weak_ptr<IGate>>& parents() const {
+  const std::unordered_map<int, IGateWeakPtr>& parents() const {
     return parents_;
   }
 
@@ -68,7 +70,7 @@ class NodeParentManager {
   /// Adds a new parent of a node.
   ///
   /// @param[in] gate  Pointer to the parent gate.
-  void AddParent(const std::shared_ptr<IGate>& gate);
+  void AddParent(const IGatePtr& gate);
 
   /// Removes a parent from the node.
   ///
@@ -80,7 +82,7 @@ class NodeParentManager {
     parents_.erase(index);
   }
 
-  std::unordered_map<int, std::weak_ptr<IGate>> parents_;  ///< Parents.
+  std::unordered_map<int, IGateWeakPtr> parents_;  ///< Parents.
 };
 
 /// @class Node
@@ -245,6 +247,10 @@ class Variable : public Node {
   static int next_variable_;  ///< The next index for a new variable.
 };
 
+using NodePtr = std::shared_ptr<Node>;  ///< Shared base nodes in the graph.
+using ConstantPtr = std::shared_ptr<Constant>;  ///< Shared Boolean constants.
+using VariablePtr = std::shared_ptr<Variable>;  ///< Shared Boolean variables.
+
 /// @enum Operator
 /// Boolean operators of gates
 /// for representation, preprocessing, and analysis purposes.
@@ -290,11 +296,6 @@ enum State {
 /// before any complex analysis is done.
 class IGate : public Node, public std::enable_shared_from_this<IGate> {
  public:
-  using NodePtr = std::shared_ptr<Node>;
-  using ConstantPtr = std::shared_ptr<Constant>;
-  using VariablePtr = std::shared_ptr<Variable>;
-  using IGatePtr = std::shared_ptr<IGate>;
-
   /// Creates an indexed gate with its unique index.
   /// It is assumed that smart pointers are used to manage the graph,
   /// and one shared pointer exists for this gate
@@ -355,22 +356,18 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   bool IsConstant() const { return state_ != kNormalState; }
 
   /// @returns Arguments of this gate.
+  /// @{
   const std::set<int>& args() const { return args_; }
-
-  /// @returns Arguments of this gate that are indexed gates.
   const std::unordered_map<int, IGatePtr>& gate_args() const {
     return gate_args_;
   }
-
-  /// @returns Arguments of this gate that are variables.
   const std::unordered_map<int, VariablePtr>& variable_args() const {
     return variable_args_;
   }
-
-  /// @returns Arguments of this gate that are indexed constants.
   const std::unordered_map<int, ConstantPtr>& constant_args() const {
     return constant_args_;
   }
+  /// @}
 
   /// Marks are used for linear traversal of graphs.
   /// This can be an alternative
@@ -467,7 +464,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
     return constant_args_.find(index)->second;
   }
 
-  /// Adds an argument gate to this gate.
+  /// Adds an argument node to this gate.
   ///
   /// Before adding the argument,
   /// the existing arguments are checked for complements and duplicates.
@@ -479,7 +476,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// due to the logic of the gate.
   ///
   /// @param[in] index  A positive or negative index of an argument.
-  /// @param[in] gate  A pointer to the argument gate.
+  /// @param[in] arg  A pointer to the argument node.
   ///
   /// @warning The function does not indicate invalid state.
   ///          For example, a second argument for NOT or NULL type gates
@@ -496,27 +493,17 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   ///          if the argument is duplicate.
   ///          The caller must be very cautious of
   ///          the side effects of the manipulations.
-  void AddArg(int index, const IGatePtr& gate) noexcept {
-    AddArg(index, gate, &gate_args_);
+  /// @{
+  void AddArg(int index, const IGatePtr& arg) noexcept {
+    AddArg(index, arg, &gate_args_);
   }
-
-  /// Overload of AddArg() to add a variable argument.
-  /// All the AddArg() comments and warnings apply to this overload as well.
-  ///
-  /// @param[in] index  A positive or negative index of an argument.
-  /// @param[in] variable  A pointer to the argument variable.
-  void AddArg(int index, const VariablePtr& variable) noexcept {
-    AddArg(index, variable, &variable_args_);
+  void AddArg(int index, const VariablePtr& arg) noexcept {
+    AddArg(index, arg, &variable_args_);
   }
-
-  /// Overload of AddArg() to add a constant argument.
-  /// All the AddArg() comments and warnings apply to this overload as well.
-  ///
-  /// @param[in] index  A positive or negative index of an argument.
-  /// @param[in] constant  A pointer to the argument that is a Constant.
-  void AddArg(int index, const ConstantPtr& constant) noexcept {
-    AddArg(index, constant, &constant_args_);
+  void AddArg(int index, const ConstantPtr& arg) noexcept {
+    AddArg(index, arg, &constant_args_);
   }
+  /// @}
 
   /// Transfers this gate's argument to another gate.
   ///
@@ -618,7 +605,21 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// @param[in,out] arg  Pointer to the argument.
   /// @param[in,out] container  The final destination to save the argument.
   template<typename Ptr, typename Container>
-  void AddArg(int index, const Ptr& arg, Container* container) noexcept;
+  void AddArg(int index, const Ptr& arg, Container* container) noexcept {
+    assert(index != 0);
+    assert(std::abs(index) == arg->index());
+    assert(state_ == kNormalState);
+    assert(!((type_ == kNotGate || type_ == kNullGate) && !args_.empty()));
+    assert(!(type_ == kXorGate && args_.size() > 1));
+    assert(vote_number_ >= 0);
+
+    if (args_.count(index)) return IGate::ProcessDuplicateArg(index);
+    if (args_.count(-index)) return IGate::ProcessComplementArg(index);
+
+    args_.insert(index);
+    container->emplace(index, arg);
+    arg->AddParent(shared_from_this());
+  }
 
   /// Process an addition of an argument
   /// that already exists in this gate.
@@ -707,8 +708,6 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
 /// for the isomorphism of the gates' Boolean formulas.
 class GateSet {
  public:
-  using IGatePtr = std::shared_ptr<IGate>;
-
   /// Inserts a gate into the set
   /// if it is semantically unique.
   ///
@@ -760,10 +759,6 @@ class GateSet {
   std::array<std::unordered_set<IGatePtr, Hash, Equal>, kNumOperators> table_;
 };
 
-class BasicEvent;
-class HouseEvent;
-class Gate;
-class Formula;
 class Preprocessor;
 
 /// @class BooleanGraph
@@ -789,10 +784,6 @@ class BooleanGraph {
   friend class Preprocessor;  ///< The main manipulator of Boolean graphs.
 
  public:
-  using GatePtr = std::shared_ptr<Gate>;
-  using BasicEventPtr = std::shared_ptr<BasicEvent>;
-  using IGatePtr = std::shared_ptr<IGate>;
-
   /// Constructs a BooleanGraph
   /// starting from the top gate of a fault tree.
   /// Upon construction,
@@ -845,12 +836,6 @@ class BooleanGraph {
   void Print();
 
  private:
-  using FormulaPtr = std::unique_ptr<Formula>;
-  using HouseEventPtr = std::shared_ptr<HouseEvent>;
-  using NodePtr = std::shared_ptr<Node>;
-  using ConstantPtr = std::shared_ptr<Constant>;
-  using VariablePtr = std::shared_ptr<Variable>;
-
   /// Mapping to string gate types to enum gate types.
   static const std::map<std::string, Operator> kStringToType_;
 
@@ -1090,39 +1075,20 @@ class BooleanGraph {
   std::vector<std::weak_ptr<IGate> > null_gates_;
 };
 
-/// Prints indexed house events or constants in the shorthand format.
+/// Prints Boolean graph nodes in the shorthand format.
 ///
 /// @param[in,out] os  Output stream.
-/// @param[in] constant  The constant to be printed.
+/// @param[in] node  The graph node.
 ///
 /// @returns The provided output stream in its original state.
 ///
 /// @warning Visit information may get changed.
-std::ostream& operator<<(std::ostream& os,
-                         const std::shared_ptr<Constant>& constant);
-
-/// Prints indexed variables as basic events in the shorthand format.
 ///
-/// @param[in,out] os  Output stream.
-/// @param[in] variable  The basic event to be printed.
-///
-/// @returns The provided output stream in its original state.
-///
-/// @warning Visit information may get changed.
-std::ostream& operator<<(std::ostream& os,
-                         const std::shared_ptr<Variable>& variable);
-
-/// Prints indexed gates in the shorthand format.
-/// The gates that have become a constant are named "GC".
-/// The gates that are modules are named "GM".
-///
-/// @param[in,out] os  Output stream.
-/// @param[in] gate  The gate to be printed.
-///
-/// @returns The provided output stream in its original state.
-///
-/// @warning Visit information may get changed.
-std::ostream& operator<<(std::ostream& os, const std::shared_ptr<IGate>& gate);
+/// @{
+std::ostream& operator<<(std::ostream& os, const ConstantPtr& constant);
+std::ostream& operator<<(std::ostream& os, const VariablePtr& variable);
+std::ostream& operator<<(std::ostream& os, const IGatePtr& gate);
+/// @}
 
 /// Prints the BooleanGraph as a fault tree in the shorthand format.
 /// This function is mostly for debugging purposes.

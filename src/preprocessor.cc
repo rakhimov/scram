@@ -341,7 +341,7 @@ bool DetectOverlap(int a_min, int a_max, int b_min, int b_max) noexcept {
 /// @param[in] exit_time  The exit time of the root gate of the graph.
 ///
 /// @returns true if the node within the graph visit times.
-bool IsNodeWithinGraph(const std::shared_ptr<Node>& node, int enter_time,
+bool IsNodeWithinGraph(const NodePtr& node, int enter_time,
                        int exit_time) noexcept {
   assert(enter_time > 0);
   assert(exit_time > enter_time);
@@ -359,7 +359,7 @@ bool IsNodeWithinGraph(const std::shared_ptr<Node>& node, int enter_time,
 /// @param[in] exit_time  The exit time of the root gate of the graph.
 ///
 /// @returns true if the subgraph within the graph visit times.
-bool IsSubgraphWithinGraph(const std::shared_ptr<IGate>& root, int enter_time,
+bool IsSubgraphWithinGraph(const IGatePtr& root, int enter_time,
                            int exit_time) noexcept {
   assert(enter_time > 0);
   assert(exit_time > enter_time);
@@ -378,7 +378,7 @@ bool Preprocessor::CheckRootGate() noexcept {
           "Impossible state of the root gate in coherent graphs.");
     if (root_sign_ < 0) {
       State orig_state = root->state();
-      root = IGatePtr(new IGate(kNullGate));
+      root = std::make_shared<IGate>(kNullGate);
       graph_->root(root);
       if (orig_state == kNullState) {
         root->MakeUnity();
@@ -593,8 +593,8 @@ void Preprocessor::NormalizeGate(const IGatePtr& gate, bool full) noexcept {
 
 void Preprocessor::NormalizeXorGate(const IGatePtr& gate) noexcept {
   assert(gate->args().size() == 2);
-  IGatePtr gate_one(new IGate(kAndGate));
-  IGatePtr gate_two(new IGate(kAndGate));
+  auto gate_one = std::make_shared<IGate>(kAndGate);
+  auto gate_two = std::make_shared<IGate>(kAndGate);
   gate_one->mark(true);
   gate_two->mark(true);
 
@@ -633,14 +633,14 @@ void Preprocessor::NormalizeAtleastGate(const IGatePtr& gate) noexcept {
     return gate->GetArg(lhs)->order() < gate->GetArg(rhs)->order();
   });
   assert(it != gate->args().cend());
-  IGatePtr first_arg(new IGate(kAndGate));
+  auto first_arg = std::make_shared<IGate>(kAndGate);
   gate->TransferArg(*it, first_arg);
 
-  IGatePtr grand_arg(new IGate(kAtleastGate));
+  auto grand_arg = std::make_shared<IGate>(kAtleastGate);
   first_arg->AddArg(grand_arg->index(), grand_arg);
   grand_arg->vote_number(vote_number - 1);
 
-  IGatePtr second_arg(new IGate(kAtleastGate));
+  auto second_arg = std::make_shared<IGate>(kAtleastGate);
   second_arg->vote_number(vote_number);
 
   for (it = gate->args().cbegin(); it != gate->args().cend(); ++it) {
@@ -952,7 +952,7 @@ void Preprocessor::ProcessModularArgs(
   }
 }
 
-std::shared_ptr<IGate> Preprocessor::CreateNewModule(
+IGatePtr Preprocessor::CreateNewModule(
     const IGatePtr& gate,
     const std::vector<std::pair<int, NodePtr>>& args) noexcept {
   IGatePtr module;  // Empty pointer as an indication of a failure.
@@ -966,11 +966,11 @@ std::shared_ptr<IGate> Preprocessor::CreateNewModule(
   switch (gate->type()) {
     case kNandGate:
     case kAndGate:
-      module = IGatePtr(new IGate(kAndGate));
+      module = std::make_shared<IGate>(kAndGate);
       break;
     case kNorGate:
     case kOrGate:
-      module = IGatePtr(new IGate(kOrGate));
+      module = std::make_shared<IGate>(kOrGate);
       break;
     default:
       return module;  // Cannot create sub-modules for other types.
@@ -1481,7 +1481,7 @@ void Preprocessor::TransformCommonArgs(MergeTable::MergeGroup* group) noexcept {
     LOG(DEBUG5) << "The number of common parents: " << common_parents.size();
     IGatePtr parent = *common_parents.begin();  // To get the arguments.
     assert(parent->args().size() > 1);
-    IGatePtr merge_gate(new IGate(parent->type()));
+    auto merge_gate = std::make_shared<IGate>(parent->type());
     for (int index : common_args) {
       parent->ShareArg(index, merge_gate);
       for (const IGatePtr& common_parent : common_parents) {
@@ -1746,12 +1746,13 @@ void Preprocessor::TransformDistributiveArgs(
         assert(false && "Gate is not suited for distributive operations.");
     }
   } else {
-    new_parent = IGatePtr(new IGate(distr_type));
+    new_parent = std::make_shared<IGate>(distr_type);
     new_parent->mark(true);
     gate->AddArg(new_parent->index(), new_parent);
   }
 
-  IGatePtr sub_parent(new IGate(distr_type == kAndGate ? kOrGate : kAndGate));
+  auto sub_parent =
+      std::make_shared<IGate>(distr_type == kAndGate ? kOrGate : kAndGate);
   sub_parent->mark(true);
   new_parent->AddArg(sub_parent->index(), sub_parent);
 
@@ -2082,7 +2083,7 @@ void Preprocessor::ProcessStateDestinations(
       assert(!(!target->IsConstant() && target->type() == kNullGate));
       continue;
     }
-    IGatePtr new_gate(new IGate(type));
+    auto new_gate = std::make_shared<IGate>(type);
     new_gate->AddArg(target->opti_value() * node->index(), node);
     if (target->IsModule()) {  // Transfer modularity.
       target->DestroyModule();
@@ -2386,20 +2387,46 @@ void CustomPreprocessor<Bdd>::Run() noexcept {
   LOG(DEBUG2) << "Preprocessing Phase I...";
   Preprocessor::PhaseOne();
   LOG(DEBUG2) << "Finished Preprocessing Phase I in " << DUR(time_1);
-  if (Preprocessor::CheckRootGate()) return;
+  if (Preprocessor::CheckRootGate()) {
+    if (!graph_->root()->IsConstant()) Preprocessor::AssignOrder();
+    return;
+  }
 
   CLOCK(time_2);
   LOG(DEBUG2) << "Preprocessing Phase II...";
   Preprocessor::PhaseTwo();
   LOG(DEBUG2) << "Finished Preprocessing Phase II in " << DUR(time_2);
-  if (Preprocessor::CheckRootGate()) return;
+  if (Preprocessor::CheckRootGate()) {
+    if (!graph_->root()->IsConstant()) Preprocessor::AssignOrder();
+    return;
+  }
 
   if (!graph_->normal()) {
     CLOCK(time_3);
     LOG(DEBUG2) << "Preprocessing Phase III...";
     Preprocessor::PhaseThree();
     LOG(DEBUG2) << "Finished Preprocessing Phase III in " << DUR(time_3);
-    if (Preprocessor::CheckRootGate()) return;
+    if (Preprocessor::CheckRootGate()) {
+      if (!graph_->root()->IsConstant()) Preprocessor::AssignOrder();
+      return;
+    }
+  }
+  Preprocessor::AssignOrder();
+  SANITY_ASSERT;
+}
+
+void CustomPreprocessor<Zbdd>::Run() noexcept {
+  CustomPreprocessor<Bdd>::Run();
+  if (Preprocessor::CheckRootGate()) return;
+  if (!graph_->coherent()) {
+    CLOCK(time_4);
+    LOG(DEBUG2) << "Preprocessing Phase IV...";
+    Preprocessor::PhaseFour();
+    LOG(DEBUG2) << "Finished Preprocessing Phase IV in " << DUR(time_4);
+    if (Preprocessor::CheckRootGate()) {
+      if (!graph_->root()->IsConstant()) Preprocessor::AssignOrder();
+      return;
+    }
   }
   Preprocessor::AssignOrder();
   SANITY_ASSERT;

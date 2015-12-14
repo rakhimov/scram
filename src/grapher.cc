@@ -20,8 +20,6 @@
 
 #include "grapher.h"
 
-#include <set>
-
 #include <boost/algorithm/string.hpp>
 
 #include "fault_tree_analysis.h"

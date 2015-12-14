@@ -37,7 +37,7 @@ void ImportanceAnalysis::Analyze() noexcept {
   LOG(DEBUG3) << "Calculating importance factors...";
   std::vector<std::pair<int, BasicEventPtr>> target_events =
       this->GatherImportantEvents();
-  double p_total = this->p_total();  /// @todo Delegate to Probability analysis.
+  double p_total = this->p_total();
   for (const auto& event : target_events) {
     double p_var = event.second->p();
     ImportanceFactors imp;
@@ -53,7 +53,7 @@ void ImportanceAnalysis::Analyze() noexcept {
   analysis_time_ = DUR(imp_time);
 }
 
-std::vector<std::pair<int, std::shared_ptr<BasicEvent>>>
+std::vector<std::pair<int, BasicEventPtr>>
 ImportanceAnalysis::GatherImportantEvents(
     const BooleanGraph* graph,
     const std::vector<CutSet>& cut_sets) noexcept {
@@ -100,7 +100,8 @@ double ImportanceAnalyzer<Bdd>::CalculateMif(const VertexPtr& vertex, int order,
       double high = ImportanceAnalyzer::RetrieveProbability(ite->high());
       double low = ImportanceAnalyzer::RetrieveProbability(ite->low());
       if (ite->complement_edge()) low = 1 - low;
-      const Bdd::Function& res = bdd_graph_->gates().find(ite->index())->second;
+      const Bdd::Function& res =
+          bdd_graph_->modules().find(ite->index())->second;
       double mif = ImportanceAnalyzer::CalculateMif(res.vertex, order, mark);
       if (res.complement) mif = -mif;
       ite->factor((high - low) * mif);
@@ -115,7 +116,8 @@ double ImportanceAnalyzer<Bdd>::CalculateMif(const VertexPtr& vertex, int order,
     assert(ite->order() < order);
     double var_prob = 0;
     if (ite->module()) {
-      const Bdd::Function& res = bdd_graph_->gates().find(ite->index())->second;
+      const Bdd::Function& res =
+          bdd_graph_->modules().find(ite->index())->second;
       var_prob = ImportanceAnalyzer::RetrieveProbability(res.vertex);
       if (res.complement) var_prob = 1 - var_prob;
     } else {
