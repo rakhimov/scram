@@ -28,19 +28,19 @@
 
 namespace scram {
 
-Vertex::Vertex(bool terminal, int id) : id_(id), terminal_(terminal) {}
+Vertex::Vertex(int id) : id_(id) {}
 
-Vertex::~Vertex() {}  // Empty body for pure virtual destructor.
+Terminal::Terminal(bool value) : Vertex::Vertex(value) {}
 
-Terminal::Terminal(bool value) : Vertex::Vertex(true, value), value_(value) {}
-
-NonTerminal::NonTerminal(int index, int order)
-      : index_(index),
+NonTerminal::NonTerminal(int index, int order, int id, const VertexPtr& high,
+                         const VertexPtr& low)
+      : Vertex(id),
         order_(order),
+        high_(high),
+        low_(low),
+        index_(index),
         module_(false),
         mark_(false) {}
-
-NonTerminal::~NonTerminal() {}  // Default pure virtual destructor.
 
 Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
     : kSettings_(settings),
@@ -79,8 +79,8 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
   LOG(DEBUG3) << "Finished Boolean graph conversion in " << DUR(init_time);
   Bdd::ClearMarks(false);
 
-  LOG(DEBUG5) << "BDD switched off the garbage collector.";
   unique_table_.reset();
+  LOG(DEBUG5) << "BDD switched off the garbage collector.";
   and_table_.clear();
   and_table_.reserve(0);
   or_table_.clear();
@@ -119,11 +119,9 @@ ItePtr Bdd::FetchUniqueTable(int index, const VertexPtr& high,
       (*unique_table_)[{index, high->id(), sign * low->id()}];
   if (!in_table.expired()) return in_table.lock();
   assert(order > 0 && "Improper order.");
-  ItePtr ite(new Ite(index, order), GarbageCollector(this));
-  ite->id(function_id_++);
+  ItePtr ite(new Ite(index, order, function_id_++, high, low),
+             GarbageCollector(this));
   ite->module(module);
-  ite->high(high);
-  ite->low(low);
   ite->complement_edge(complement_edge);
   in_table = ite;
   return ite;

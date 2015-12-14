@@ -135,7 +135,7 @@ void Zbdd::Analyze() noexcept {
 
   // Complete cleanup of the memory.
   minimal_results_.clear();
-  unique_table_->clear();
+  unique_table_.reset();  // Important to turn the garbage collector off.
   and_table_.clear();
   or_table_.clear();
   subsume_table_.clear();
@@ -169,11 +169,9 @@ SetNodePtr Zbdd::FetchUniqueTable(int index, const VertexPtr& high,
   SetNodeWeakPtr& in_table = (*unique_table_)[{index, high->id(), low->id()}];
   if (!in_table.expired()) return in_table.lock();
   assert(order > 0 && "Improper order.");
-  SetNodePtr node(new SetNode(index, order), GarbageCollector(this));
-  node->id(set_id_++);
+  SetNodePtr node(new SetNode(index, order, set_id_++, high, low),
+                  GarbageCollector(this));
   node->module(module);
-  node->high(high);
-  node->low(low);
   in_table = node;
   return node;
 }
@@ -622,8 +620,7 @@ Zbdd::GenerateCutSets(const VertexPtr& vertex) noexcept {
   }
 
   // Destroy the subgraph to remove extra reference counts.
-  node->low(kEmpty_);
-  node->high(kBase_);
+  node->CutBranches();
 
   if (node.use_count() > 2) node->cut_sets(result);
   return result;

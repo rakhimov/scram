@@ -65,6 +65,15 @@ class SetNode : public NonTerminal {
     cut_sets_ = cut_sets;
   }
 
+  /// Cuts of this node from its high and low branches.
+  /// This is for destructive extraction of cut sets.
+  ///
+  /// @pre This branches are not going to be used again.
+  void CutBranches() {
+    high_.reset();
+    low_.reset();
+  }
+
   /// Recovers a shared pointer to SetNode from a pointer to Vertex.
   ///
   /// @param[in] vertex  Pointer to a Vertex known to be a SetNode.
