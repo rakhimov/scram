@@ -3,7 +3,7 @@ for optimization and regression-detection purposes.
 Only cases that help detect bottlenecks are recorded in this file.
 The case/record is removed
 if the performance becomes good enough (less than 0.5s)
-to make the running times negligible.
+to make the running times negligible or noisy.
 The running times are taken from the logs and reports.
 
 System specs:     Core i7-2820QM, Ubuntu 14.04 64bit
@@ -54,6 +54,27 @@ Release build:
 --------------
 - Cut Set Generation      2.4  |
 - Cut Set Minimization    3.3  |
+
+
+---------- Baobab1 -l 10 (mcs = 43116) ----------------
+Release build:
+--------------
+- Cut Set Generation      5.8  |
+- Cut Set Minimization    10.5 |
+
+
+---------- Baobab1 -l 11 (mcs = 46188) ----------------
+Release build:
+--------------
+- Cut Set Generation      10   |
+- Cut Set Minimization    25   |
+
+
+---------- Baobab1 (mcs = 46188) ----------------
+Release build:
+--------------
+- Cut Set Generation      17   |
+- Cut Set Minimization    40   |
 
 
 ---------- Baobab2 (mcs = 4805) ----------------

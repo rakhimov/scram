@@ -1,7 +1,8 @@
-Memory utilization records for the total program.
-Only the highest usage is recorded.
+Memory utilization records for the total program
+or analysis facilities.
+Only the peak consumption is recorded.
 The build types do not affect the memory as much as the speed.
-Do not confuse this memory usage recordings
+Do not confuse this memory recordings
 with the actual allocation of the memory by the code.
 The actual memory allocation must be analyzed
 with memory(heap) profilers like Valgrind with Massif.
@@ -15,10 +16,14 @@ The system specs are the same as in the speed recordings.
 MOCUS
 -----
 
-- Baobab1 -l 7 :  15 | 20
-- Baobab1 -l 8 :  35 | 40
-- Baobab1 -l 9 :  80
-- Baobab2 : 55
+- Baobab1 -l 7  : 15 | 20
+- Baobab1 -l 8  : 35 | 40
+- Baobab1 -l 9  : 80
+- Baobab1 -l 10 : 200
+- Baobab1 -l 11 : 400
+- Baobab1       : 700
+
+- Baobab2       : 55
 
 
 BDD
