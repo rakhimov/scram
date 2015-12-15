@@ -98,7 +98,7 @@ Release build:
 BDD Time: 3.8    |  5.6
 ZBDD Time: 0.35
 
-# of BDD vertices created: 3013946  |  3014123
+# of BDD vertices created: 3013946  |  3048123
 # of ITE in BDD: 1175468
 
 ==================== Uncertainty Analysis =================

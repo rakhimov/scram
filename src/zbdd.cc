@@ -83,7 +83,7 @@ Zbdd::Zbdd(const BooleanGraph* fault_tree, const Settings& settings) noexcept
                                      var->order(), false);
     }
   } else {
-    std::unordered_map<int, VertexPtr> gates;
+    std::unordered_map<int, std::pair<VertexPtr, int>> gates;
     root_ = Zbdd::ConvertGraph(fault_tree->root(), &gates);
     if (!fault_tree->coherent()) {
       Zbdd::ClearMarks(root_);
@@ -225,10 +225,17 @@ VertexPtr Zbdd::ConvertBdd(const VertexPtr& vertex, bool complement,
 
 VertexPtr Zbdd::ConvertGraph(
     const IGatePtr& gate,
-    std::unordered_map<int, VertexPtr>* gates) noexcept {
+    std::unordered_map<int, std::pair<VertexPtr, int>>* gates) noexcept {
   assert(!gate->IsConstant() && "Unexpected constant gate!");
-  VertexPtr& result = (*gates)[gate->index()];
-  if (result) return result;
+  VertexPtr result;
+  if (gates->count(gate->index())) {
+    std::pair<VertexPtr, int>& entry = gates->find(gate->index())->second;
+    result = entry.first;
+    assert(entry.second < gate->parents().size());
+    entry.second++;
+    if (entry.second == gate->parents().size()) gates->erase(gate->index());
+    return result;
+  }
   std::vector<VertexPtr> args;
   for (const std::pair<const int, VariablePtr>& arg : gate->variable_args()) {
     args.push_back(Zbdd::FetchUniqueTable(arg.first, kBase_, kEmpty_,
@@ -238,7 +245,6 @@ VertexPtr Zbdd::ConvertGraph(
     assert(arg.first > 0 && "Complements must be pushed down to variables.");
     VertexPtr res = Zbdd::ConvertGraph(arg.second, gates);
     if (arg.second->IsModule()) {
-      modules_.emplace(arg.second->index(), res);
       if (res->terminal()) {
         args.push_back(res);
       } else {
@@ -265,6 +271,8 @@ VertexPtr Zbdd::ConvertGraph(
   subsume_table_.clear();
   minimal_results_.clear();
   assert(result);
+  if (gate->IsModule()) modules_.emplace(gate->index(), result);
+  if (gate->parents().size() > 1) gates->insert({gate->index(), {result, 1}});
   return result;
 }
 

@@ -65,7 +65,7 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
     root_ = {child < 0, Bdd::FetchUniqueTable(var->index(), kOne_, kOne_,
                                               true, var->order(), false)};
   } else {
-    std::unordered_map<int, Function> gates;
+    std::unordered_map<int, std::pair<Function, int>> gates;
     root_ = Bdd::IfThenElse(fault_tree->root(), &gates);
   }
   Bdd::ClearMarks(false);
@@ -127,12 +127,19 @@ ItePtr Bdd::FetchUniqueTable(int index, const VertexPtr& high,
   return ite;
 }
 
-const Bdd::Function& Bdd::IfThenElse(
+Bdd::Function Bdd::IfThenElse(
     const IGatePtr& gate,
-    std::unordered_map<int, Function>* gates) noexcept {
+    std::unordered_map<int, std::pair<Function, int>>* gates) noexcept {
   assert(!gate->IsConstant() && "Unexpected constant gate!");
-  Function& result = (*gates)[gate->index()];
-  if (result.vertex) return result;
+  Function result;
+  if (gates->count(gate->index())) {
+    std::pair<Function, int>& entry = gates->find(gate->index())->second;
+    result = entry.first;
+    assert(entry.second < gate->parents().size());
+    entry.second++;
+    if (entry.second == gate->parents().size()) gates->erase(gate->index());
+    return result;
+  }
   std::vector<Function> args;
   for (const std::pair<const int, VariablePtr>& arg : gate->variable_args()) {
     args.push_back({arg.first < 0,
@@ -141,7 +148,7 @@ const Bdd::Function& Bdd::IfThenElse(
     index_to_order_.emplace(arg.second->index(), arg.second->order());
   }
   for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
-    const Function& res = Bdd::IfThenElse(arg.second, gates);
+    Function res = Bdd::IfThenElse(arg.second, gates);
     if (arg.second->IsModule()) {
       args.push_back({arg.first < 0,
                       Bdd::FetchUniqueTable(arg.second->index(), kOne_, kOne_,
@@ -168,6 +175,7 @@ const Bdd::Function& Bdd::IfThenElse(
   or_table_.clear();
   assert(result.vertex);
   if (gate->IsModule()) modules_.emplace(gate->index(), result);
+  if (gate->parents().size() > 1) gates->insert({gate->index(), {result, 1}});
   return result;
 }
 

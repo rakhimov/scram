@@ -357,11 +357,14 @@ class Bdd {
   /// Registers processed gates.
   ///
   /// @param[in] gate  The root or current parent gate of the graph.
-  /// @param[in,out] gates  Processed gates.
+  /// @param[in,out] gates  Processed gates with use counts.
   ///
   /// @returns The BDD function representing the gate.
-  const Function& IfThenElse(const IGatePtr& gate,
-                             std::unordered_map<int, Function>* gates) noexcept;
+  ///
+  /// @pre The memoisation container is not used outside of this function.
+  Function IfThenElse(
+      const IGatePtr& gate,
+      std::unordered_map<int, std::pair<Function, int>>* gates) noexcept;
 
   /// Fetches computation tables for results.
   ///

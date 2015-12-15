@@ -200,11 +200,14 @@ class Zbdd {
   /// Transforms a Boolean graph gate into a Zbdd set graph.
   ///
   /// @param[in] gate  The root gate of the Boolean graph.
-  /// @param[in,out] gates  Processed gates.
+  /// @param[in,out] gates  Processed gates with use counts.
   ///
   /// @returns The top vertex of the Zbdd graph.
-  VertexPtr ConvertGraph(const IGatePtr& gate,
-                         std::unordered_map<int, VertexPtr>* gates) noexcept;
+  ///
+  /// @pre The memoisation container is not used outside of this function.
+  VertexPtr ConvertGraph(
+      const IGatePtr& gate,
+      std::unordered_map<int, std::pair<VertexPtr, int>>* gates) noexcept;
 
   /// Converts cut sets found by MOCUS into a ZBDD graph.
   ///
