@@ -432,7 +432,7 @@ VertexPtr Zbdd::Apply(Operator type, const SetNodePtr& arg_one,
   VertexPtr high;
   VertexPtr low;
   int limit_high = limit_order - 1;
-  if (arg_one->index() < 0 || arg_one->module()) ++limit_high;
+  if (arg_one->index() < 0 || arg_one->module()) ++limit_high;  // Conservative.
   if (arg_one->order() == arg_two->order() &&
       arg_one->index() == arg_two->index()) {  // The same variable.
     switch (type) {
@@ -716,7 +716,44 @@ void Zbdd::TestStructure(const VertexPtr& vertex) noexcept {
 namespace zbdd {
 
 CutSetContainer::CutSetContainer(const Settings& settings) noexcept
-    : Zbdd::Zbdd(settings) {}
+    : Zbdd::Zbdd(settings) {
+  root_ = kEmpty_;  // Empty container.
+}
+
+VertexPtr CutSetContainer::ConvertGate(const IGatePtr& gate) noexcept {
+  assert(gate->type() == kAndGate || gate->type() == kOrGate);
+  assert(gate->constant_args().empty());
+  assert(gate->args().size() > 1);
+  std::vector<SetNodePtr> args;
+  for (const std::pair<const int, VariablePtr>& arg : gate->variable_args()) {
+    args.push_back(Zbdd::FetchUniqueTable(arg.first, kBase_, kEmpty_,
+                                          arg.second->order(), false));
+  }
+  for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
+    assert(arg.first > 0 && "Complements must be pushed down to variables.");
+    args.push_back(Zbdd::FetchUniqueTable(arg.first, kBase_, kEmpty_,
+                                          arg.second->order(),
+                                          arg.second->IsModule()));
+  }
+  std::sort(args.begin(), args.end(),
+            [](const SetNodePtr& lhs, const SetNodePtr& rhs) {
+    return lhs->order() > rhs->order();
+  });
+  auto it = args.cbegin();
+  VertexPtr result = *it;
+  for (++it; it != args.cend(); ++it) {
+    result = Zbdd::Apply(gate->type(), result, *it, kSettings_.limit_order());
+  }
+  return result;
+}
+
+void CutSetContainer::Merge(const VertexPtr& vertex) noexcept {
+  root_ = Zbdd::Apply(kOrGate, root_, vertex, kSettings_.limit_order());
+  and_table_.clear();
+  or_table_.clear();
+  subsume_table_.clear();
+  minimal_results_.clear();
+}
 
 }
 

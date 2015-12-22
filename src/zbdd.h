@@ -437,6 +437,13 @@ class CutSetContainer : public Zbdd {
   /// @param[in] settings  Settings that control analysis complexity.
   explicit CutSetContainer(const Settings& settings) noexcept;
 
+  /// Converts a Boolean graph gate into intermediate cut sets.
+  ///
+  /// @param[in] gate  The target AND/OR gate with arguments.
+  ///
+  /// @returns The root vertex of the ZBDD representing the gate cut sets.
+  VertexPtr ConvertGate(const IGatePtr& gate) noexcept;
+
   /// Finds a gate in intermediate cut sets.
   ///
   /// @param[in] root  The root of ZBDD to search for.
