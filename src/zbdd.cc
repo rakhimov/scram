@@ -715,8 +715,10 @@ void Zbdd::TestStructure(const VertexPtr& vertex) noexcept {
 
 namespace zbdd {
 
-CutSetContainer::CutSetContainer(const Settings& settings) noexcept
-    : Zbdd::Zbdd(settings) {
+CutSetContainer::CutSetContainer(const Settings& settings,
+                                 int gate_index_bound) noexcept
+    : Zbdd::Zbdd(settings),
+      gate_index_bound_(gate_index_bound) {
   root_ = kEmpty_;  // Empty container.
 }
 
@@ -747,12 +749,90 @@ VertexPtr CutSetContainer::ConvertGate(const IGatePtr& gate) noexcept {
   return result;
 }
 
+int CutSetContainer::GetNextGate(const VertexPtr& vertex) noexcept {
+  int index = 0;  // "Not-found" indicator.
+  if (vertex->terminal()) return index;
+  SetNodePtr node = SetNode::Ptr(vertex);
+  assert(!node->mark());
+  if (CutSetContainer::IsGate(node) && !node->module()) {
+    index = node->index();
+  } else {
+    index = CutSetContainer::GetNextGate(node->high());
+    if (!index) index = CutSetContainer::GetNextGate(node->low());
+  }
+  node->mark(index);  // Mark the path to the vertex if found.
+  return index;
+}
+
+VertexPtr CutSetContainer::ExtractIntermediateCutSets(int index) noexcept {
+  assert(index && index > gate_index_bound_);
+  assert(!root_->terminal() && "Impossible to have intermediate cut sets.");
+  std::pair<VertexPtr, VertexPtr> result =
+      CutSetContainer::ExtractIntermediateCutSets(SetNode::Ptr(root_), index);
+  root_ = result.second;
+  return result.first;
+}
+
+VertexPtr CutSetContainer::ExpandGate(const VertexPtr& gate_zbdd,
+                                      const VertexPtr& cut_sets) noexcept {
+  return Zbdd::Apply(kAndGate, gate_zbdd, cut_sets, kSettings_.limit_order());
+}
+
+
 void CutSetContainer::Merge(const VertexPtr& vertex) noexcept {
   root_ = Zbdd::Apply(kOrGate, root_, vertex, kSettings_.limit_order());
   and_table_.clear();
   or_table_.clear();
   subsume_table_.clear();
   minimal_results_.clear();
+}
+
+void CutSetContainer::EliminateComplements() noexcept {
+  std::unordered_map<int, VertexPtr> wide_results;
+  root_ = Zbdd::EliminateComplements(root_, &wide_results);
+}
+
+void CutSetContainer::JoinModule(int index,
+                                 const CutSetContainer& container) noexcept {
+  assert(!modules_.count(index));
+  modules_.emplace(index, container.root_);
+  modules_.insert(container.modules_.begin(), container.modules_.end());
+}
+
+std::pair<VertexPtr, VertexPtr>
+CutSetContainer::ExtractIntermediateCutSets(const SetNodePtr& node,
+                                            int index) noexcept {
+  assert(node->mark() && "The path to the vertex is not marked.");
+  node->mark(false);
+  if (node->index() == index) return {node->high(), node->low()};
+
+  if (!node->high()->terminal() && SetNode::Ptr(node->high())->mark()) {
+    assert(node->low()->terminal() || !SetNode::Ptr(node->low())->mark());
+    std::pair<VertexPtr, VertexPtr> result =
+        CutSetContainer::ExtractIntermediateCutSets(SetNode::Ptr(node->high()),
+                                                    index);
+    SetNodePtr high =
+        Zbdd::FetchUniqueTable(node->index(), result.first, kEmpty_,
+                               node->order(), node->module());
+    high->minimal(node->minimal());
+    SetNodePtr low =
+        Zbdd::FetchUniqueTable(node->index(), result.second, node->low(),
+                               node->order(), node->module());
+    low->minimal(node->minimal());
+    return {high, low};
+  }
+
+  if (!node->low()->terminal() && SetNode::Ptr(node->low())->mark()) {
+    std::pair<VertexPtr, VertexPtr> result =
+        CutSetContainer::ExtractIntermediateCutSets(SetNode::Ptr(node->low()),
+                                                    index);
+    SetNodePtr low =
+        Zbdd::FetchUniqueTable(node->index(), node->high(), result.second,
+                               node->order(), node->module());
+    low->minimal(node->minimal());
+    return {result.first, low};
+  }
+  assert(false && "The path to the vertex is misleading.");
 }
 
 }
