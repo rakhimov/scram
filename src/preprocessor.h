@@ -124,6 +124,9 @@ class Preprocessor {
   ///
   /// @returns true if no more processing is needed.
   ///
+  /// @post If no more processing is needed,
+  ///       the graph is fully ready for analysis.
+  ///
   /// @note This function may swap the root gate of the graph.
   bool CheckRootGate() noexcept;
 

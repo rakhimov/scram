@@ -404,6 +404,7 @@ bool Preprocessor::CheckRootGate() noexcept {
       assert(root->variable_args().size() == 1);
       if (root_sign_ < 0) root->InvertArgs();
       root_sign_ = 1;
+      root->variable_args().begin()->second->order(1);
       return true;  // Only one variable argument.
     }
   }
@@ -2349,29 +2350,20 @@ void CustomPreprocessor<Mocus>::Run() noexcept {
   LOG(DEBUG2) << "Preprocessing Phase I...";
   Preprocessor::PhaseOne();
   LOG(DEBUG2) << "Finished Preprocessing Phase I in " << DUR(time_1);
-  if (Preprocessor::CheckRootGate()) {
-    if (!graph_->root()->IsConstant()) Preprocessor::AssignOrder();
-    return;
-  }
+  if (Preprocessor::CheckRootGate()) return;
 
   CLOCK(time_2);
   LOG(DEBUG2) << "Preprocessing Phase II...";
   Preprocessor::PhaseTwo();
   LOG(DEBUG2) << "Finished Preprocessing Phase II in " << DUR(time_2);
-  if (Preprocessor::CheckRootGate()) {
-    if (!graph_->root()->IsConstant()) Preprocessor::AssignOrder();
-    return;
-  }
+  if (Preprocessor::CheckRootGate()) return;
 
   if (!graph_->normal()) {
     CLOCK(time_3);
     LOG(DEBUG2) << "Preprocessing Phase III...";
     Preprocessor::PhaseThree();
     LOG(DEBUG2) << "Finished Preprocessing Phase III in " << DUR(time_3);
-    if (Preprocessor::CheckRootGate()) {
-      if (!graph_->root()->IsConstant()) Preprocessor::AssignOrder();
-      return;
-    }
+    if (Preprocessor::CheckRootGate()) return;
   }
 
   if (!graph_->coherent()) {
@@ -2379,20 +2371,14 @@ void CustomPreprocessor<Mocus>::Run() noexcept {
     LOG(DEBUG2) << "Preprocessing Phase IV...";
     Preprocessor::PhaseFour();
     LOG(DEBUG2) << "Finished Preprocessing Phase IV in " << DUR(time_4);
-    if (Preprocessor::CheckRootGate()) {
-      if (!graph_->root()->IsConstant()) Preprocessor::AssignOrder();
-      return;
-    }
+    if (Preprocessor::CheckRootGate()) return;
   }
 
   CLOCK(time_5);
   LOG(DEBUG2) << "Preprocessing Phase V...";
   Preprocessor::PhaseFive();
   LOG(DEBUG2) << "Finished Preprocessing Phase V in " << DUR(time_5);
-  if (Preprocessor::CheckRootGate()) {
-    if (!graph_->root()->IsConstant()) Preprocessor::AssignOrder();
-    return;
-  }
+  if (Preprocessor::CheckRootGate()) return;
   Preprocessor::AssignOrder();
   SANITY_ASSERT;
   assert(graph_->normal());
@@ -2403,29 +2389,20 @@ void CustomPreprocessor<Bdd>::Run() noexcept {
   LOG(DEBUG2) << "Preprocessing Phase I...";
   Preprocessor::PhaseOne();
   LOG(DEBUG2) << "Finished Preprocessing Phase I in " << DUR(time_1);
-  if (Preprocessor::CheckRootGate()) {
-    if (!graph_->root()->IsConstant()) Preprocessor::AssignOrder();
-    return;
-  }
+  if (Preprocessor::CheckRootGate()) return;
 
   CLOCK(time_2);
   LOG(DEBUG2) << "Preprocessing Phase II...";
   Preprocessor::PhaseTwo();
   LOG(DEBUG2) << "Finished Preprocessing Phase II in " << DUR(time_2);
-  if (Preprocessor::CheckRootGate()) {
-    if (!graph_->root()->IsConstant()) Preprocessor::AssignOrder();
-    return;
-  }
+  if (Preprocessor::CheckRootGate()) return;
 
   if (!graph_->normal()) {
     CLOCK(time_3);
     LOG(DEBUG2) << "Preprocessing Phase III...";
     Preprocessor::PhaseThree();
     LOG(DEBUG2) << "Finished Preprocessing Phase III in " << DUR(time_3);
-    if (Preprocessor::CheckRootGate()) {
-      if (!graph_->root()->IsConstant()) Preprocessor::AssignOrder();
-      return;
-    }
+    if (Preprocessor::CheckRootGate()) return;
   }
   Preprocessor::AssignOrder();
   SANITY_ASSERT;
@@ -2439,10 +2416,7 @@ void CustomPreprocessor<Zbdd>::Run() noexcept {
     LOG(DEBUG2) << "Preprocessing Phase IV...";
     Preprocessor::PhaseFour();
     LOG(DEBUG2) << "Finished Preprocessing Phase IV in " << DUR(time_4);
-    if (Preprocessor::CheckRootGate()) {
-      if (!graph_->root()->IsConstant()) Preprocessor::AssignOrder();
-      return;
-    }
+    if (Preprocessor::CheckRootGate()) return;
   }
   Preprocessor::AssignOrder();
   SANITY_ASSERT;
