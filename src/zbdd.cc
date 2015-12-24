@@ -90,8 +90,23 @@ Zbdd::Zbdd(const BooleanGraph* fault_tree, const Settings& settings) noexcept
       Zbdd::TestStructure(root_);
       Zbdd::ClearMarks(root_);
       LOG(DEBUG5) << "Eliminating complements from ZBDD...";
-      std::unordered_map<int, VertexPtr> wide_results;
-      root_ = Zbdd::EliminateComplements(root_, &wide_results);
+      std::unordered_map<int, VertexPtr> results;
+      root_ = Zbdd::EliminateComplements(root_, &results);
+      std::vector<int> sub_modules;
+      Zbdd::GatherModules(root_, &sub_modules);
+      for (int i = 0; i < sub_modules.size(); ++i) {
+        results.clear();
+        VertexPtr& module = modules_.find(sub_modules[i])->second;
+        module = Zbdd::EliminateComplements(module, &results);
+        Zbdd::GatherModules(module, &sub_modules);
+      }
+      for (auto it = sub_modules.rbegin(); it != sub_modules.rend(); ++it) {
+        results.clear();
+        VertexPtr& module = modules_.find(*it)->second;
+        module = Zbdd::EliminateConstantModules(module, &results);
+      }
+      results.clear();
+      root_ = Zbdd::EliminateConstantModules(root_, &results);
       LOG(DEBUG5) << "Finished complement elimination.";
     }
   }
@@ -505,31 +520,49 @@ VertexPtr Zbdd::EliminateComplements(
   result = Zbdd::EliminateComplement(
       node,
       Zbdd::EliminateComplements(node->high(), wide_results),
-      Zbdd::EliminateComplements(node->low(), wide_results),
-      wide_results);
+      Zbdd::EliminateComplements(node->low(), wide_results));
   return result;
 }
 
-VertexPtr Zbdd::EliminateComplement(
-    const SetNodePtr& node,
-    const VertexPtr& high,
-    const VertexPtr& low,
-    std::unordered_map<int, VertexPtr>* wide_results) noexcept {
-  if (node->index() < 0)  /// @todo Consider tracking the order.
-    return Zbdd::Apply(kOrGate, high, low, kSettings_.limit_order());
+VertexPtr Zbdd::EliminateComplement(const SetNodePtr& node,
+                                    const VertexPtr& high,
+                                    const VertexPtr& low) noexcept {
   if (high->id() == low->id()) return low;
   if (high->terminal() && Terminal::Ptr(high)->value() == false) return low;
+  if (node->index() < 0)  /// @todo Consider tracking the order.
+    return Zbdd::Apply(kOrGate, high, low, kSettings_.limit_order());
+  return Zbdd::Minimize(Zbdd::FetchUniqueTable(node->index(), high, low,
+                                               node->order(), node->module()));
+}
 
+VertexPtr Zbdd::EliminateConstantModules(
+    const VertexPtr& vertex,
+    std::unordered_map<int, VertexPtr>* results) noexcept {
+  if (vertex->terminal()) return vertex;
+  VertexPtr& result = (*results)[vertex->id()];
+  if (result) return result;
+  SetNodePtr node = SetNode::Ptr(vertex);
+  result = Zbdd::EliminateConstantModule(
+      node,
+      Zbdd::EliminateConstantModules(node->high(), results),
+      Zbdd::EliminateConstantModules(node->low(), results));
+  return result;
+}
+
+VertexPtr Zbdd::EliminateConstantModule(const SetNodePtr& node,
+                                        const VertexPtr& high,
+                                        const VertexPtr& low) noexcept {
+  if (high->id() == low->id()) return low;
+  if (high->terminal() && Terminal::Ptr(high)->value() == false) return low;
   if (node->module()) {
     VertexPtr& module = modules_.find(node->index())->second;
-    module = Zbdd::Minimize(Zbdd::EliminateComplements(module, wide_results));
     if (module->terminal()) {
       if (!Terminal::Ptr(module)->value()) return low;
       return Zbdd::Apply(kOrGate, high, low, kSettings_.limit_order());
     }
   }
-  return Zbdd::FetchUniqueTable(node->index(), high, low, node->order(),
-                                node->module());
+  return Zbdd::Minimize(Zbdd::FetchUniqueTable(node->index(), high, low,
+                                               node->order(), node->module()));
 }
 
 VertexPtr Zbdd::Minimize(const VertexPtr& vertex) noexcept {
@@ -592,6 +625,18 @@ VertexPtr Zbdd::Subsume(const VertexPtr& high, const VertexPtr& low) noexcept {
   new_high->minimal(high_node->minimal());
   computed = new_high;
   return computed;
+}
+
+void Zbdd::GatherModules(const VertexPtr& vertex,
+                         std::vector<int>* modules) noexcept {
+  if (vertex->terminal()) return;
+  SetNodePtr node = SetNode::Ptr(vertex);
+  if (node->module()) {
+    auto it = std::find(modules->begin(), modules->end(), node->index());
+    if (it == modules->end()) modules->push_back(node->index());
+  }
+  Zbdd::GatherModules(node->high(), modules);
+  Zbdd::GatherModules(node->low(), modules);
 }
 
 std::vector<std::vector<int>>
@@ -778,7 +823,6 @@ VertexPtr CutSetContainer::ExpandGate(const VertexPtr& gate_zbdd,
   return Zbdd::Apply(kAndGate, gate_zbdd, cut_sets, kSettings_.limit_order());
 }
 
-
 void CutSetContainer::Merge(const VertexPtr& vertex) noexcept {
   root_ = Zbdd::Apply(kOrGate, root_, vertex, kSettings_.limit_order());
   and_table_.clear();
@@ -790,6 +834,11 @@ void CutSetContainer::Merge(const VertexPtr& vertex) noexcept {
 void CutSetContainer::EliminateComplements() noexcept {
   std::unordered_map<int, VertexPtr> wide_results;
   root_ = Zbdd::EliminateComplements(root_, &wide_results);
+}
+
+void CutSetContainer::EliminateConstantModules() noexcept {
+  std::unordered_map<int, VertexPtr> results;
+  root_ = Zbdd::EliminateConstantModules(root_, &results);
 }
 
 void CutSetContainer::JoinModule(int index,

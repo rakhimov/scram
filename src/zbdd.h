@@ -316,6 +316,8 @@ class Zbdd {
   /// @param[in,out] wide_results  Memoisation of the processed vertices.
   ///
   /// @returns Processed vertex.
+  ///
+  /// @post Sub-modules are not processed.
   VertexPtr EliminateComplements(
       const VertexPtr& vertex,
       std::unordered_map<int, VertexPtr>* wide_results) noexcept;
@@ -328,11 +330,35 @@ class Zbdd {
   /// @param[in,out] wide_results  Memoisation of the processed vertices.
   ///
   /// @returns Processed ZBDD vertex without complements.
-  VertexPtr EliminateComplement(
-      const SetNodePtr& node,
-      const VertexPtr& high,
-      const VertexPtr& low,
-      std::unordered_map<int, VertexPtr>* wide_results) noexcept;
+  ///
+  /// @post Sub-modules are not processed.
+  VertexPtr EliminateComplement(const SetNodePtr& node, const VertexPtr& high,
+                                const VertexPtr& low) noexcept;
+
+  /// Removes constant modules from cut sets.
+  ///
+  /// @param[in] vertex  The variable vertex in the ZBDD.
+  /// @param[in,out] results  Memoisation of the processed vertices.
+  ///
+  /// @returns Processed vertex.
+  ///
+  /// @pre All sub-modules are already processed.
+  VertexPtr EliminateConstantModules(
+      const VertexPtr& vertex,
+      std::unordered_map<int, VertexPtr>* results) noexcept;
+
+  /// Processes constant modules in a SetNode with processed high/low edges.
+  ///
+  /// @param[in] node  SetNode to be processed.
+  /// @param[in] high  Processed high edge.
+  /// @param[in] low  Processed low edge.
+  ///
+  /// @returns Processed ZBDD vertex without constant modules.
+  ///
+  /// @pre All sub-modules are already processed.
+  VertexPtr EliminateConstantModule(const SetNodePtr& node,
+                                    const VertexPtr& high,
+                                    const VertexPtr& low) noexcept;
 
   /// Removes subsets in ZBDD.
   ///
@@ -350,6 +376,14 @@ class Zbdd {
   ///
   /// @returns Minimized high branch for a variable.
   VertexPtr Subsume(const VertexPtr& high, const VertexPtr& low) noexcept;
+
+  /// Traverses ZBDD to find modules.
+  /// Modules within modules are not gathered.
+  ///
+  /// @param[in] vertex  The root vertex to start with.
+  /// @param[in,out] modules  A set of indices of the modules.
+  void GatherModules(const VertexPtr& vertex,
+                     std::vector<int>* modules) noexcept;
 
   /// Traverses the reduced ZBDD graph to generate cut sets.
   /// ZBDD is destructively converted into cut sets.
@@ -501,7 +535,20 @@ class CutSetContainer : public Zbdd {
   /// if the cut set generation is certain not to have conflicts.
   ///
   /// @pre The cut sets have negative literals, i.e., non-coherent.
+  ///
+  /// @post Sub-modules are not processed.
   void EliminateComplements() noexcept;
+
+  /// Removes constant modules from cut sets.
+  /// Constant modules are likely to happen after complement elimination.
+  /// This procedure is inherently bottom-up,
+  /// so the caller must make sure
+  /// that the modules have already been pre-processed.
+  ///
+  /// @pre All modules have been joined to this container.
+  ///
+  /// @post Sub-modules are not processed.
+  void EliminateConstantModules() noexcept;
 
   /// Joins a ZBDD representing a module gate.
   ///
@@ -511,14 +558,6 @@ class CutSetContainer : public Zbdd {
   /// @pre The module cut sets are final,
   ///      and no more processing or sanitizing is needed.
   void JoinModule(int index, const CutSetContainer& container) noexcept;
-
-  /// Sanitizes the container
-  /// after finishing all the cut set generation operations.
-  ///
-  /// @pre No complements in the container.
-  ///
-  /// @post No constant modules in the container.
-  void Sanitize() noexcept;
 
  private:
   /// Checks if a set node represents a gate.
