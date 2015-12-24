@@ -468,6 +468,12 @@ class SimpleGate {
 
 class Zbdd;  // For analysis purposes.
 
+namespace zbdd {
+
+class CutSetContainer;  // Replacement.
+
+}
+
 /// @class Mocus
 /// This class analyzes normalized, preprocessed, and indexed fault trees
 /// to generate minimal cut sets with the MOCUS algorithm.
@@ -490,7 +496,7 @@ class Mocus {
   void Analyze();
 
   /// @returns Generated minimal cut sets with basic event indices.
-  const std::vector<std::vector<int>>& cut_sets() const;
+  const std::vector<std::vector<int>>& cut_sets() const { return cut_sets_; }
 
  private:
   using SimpleGatePtr = mocus::SimpleGate::SimpleGatePtr;
@@ -505,7 +511,16 @@ class Mocus {
       const IGatePtr& gate,
       std::unordered_map<int, SimpleGatePtr>* processed_gates) noexcept;
 
+  /// Runs analysis on a module gate.
+  /// All sub-modules are analyzed and joined recursively.
+  ///
+  /// @param[in] gate  A Boolean graph gate for analysis.
+  ///
+  /// @returns Collection of minimal cut sets.
+  zbdd::CutSetContainer AnalyzeModule(const IGatePtr& gate) noexcept;
+
   bool constant_graph_;  ///< No need for analysis.
+  const BooleanGraph* graph_;  ///< The analysis PDAG.
   const Settings kSettings_;  ///< Analysis settings.
   int root_index_;  ///< The root of the MOCUS graph.
   std::vector<std::pair<int, SimpleGatePtr>> modules_;  ///< Converted modules.

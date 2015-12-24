@@ -31,7 +31,7 @@ std::vector<std::string> input_files = {
 
 // Benchmark Tests for Baobab 1 fault tree from XFTA.
 // Test Minimal cut sets with MOCUS.
-TEST_F(RiskAnalysisTest, Baobab_1_Test_MOCUS) {
+TEST_F(RiskAnalysisTest, DISABLED_Baobab_1_Test_MOCUS) {
   settings.algorithm("mocus").limit_order(6).probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
   ASSERT_NO_THROW(ran->Analyze());

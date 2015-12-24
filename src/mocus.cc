@@ -131,6 +131,7 @@ void SimpleGate::OrGateCutSets(const CutSetPtr& cut_set,
 
 Mocus::Mocus(const BooleanGraph* fault_tree, const Settings& settings)
       : constant_graph_(false),
+        graph_(fault_tree),
         kSettings_(settings) {
   IGatePtr top = fault_tree->root();
   root_index_ = top->index();
@@ -148,17 +149,9 @@ Mocus::Mocus(const BooleanGraph* fault_tree, const Settings& settings)
     constant_graph_ = true;
     return;
   }
-  std::unordered_map<int, SimpleGatePtr> simple_gates;
-  Mocus::CreateSimpleTree(top, &simple_gates);
-  LOG(DEBUG3) << "Converted Boolean graph with top module: G" << top->index();
 }
 
 Mocus::~Mocus() noexcept = default;
-
-const std::vector<std::vector<int>>& Mocus::cut_sets() const {
-  if (constant_graph_) return cut_sets_;
-  return zbdd_->cut_sets();
-}
 
 void Mocus::Analyze() {
   BLOG(DEBUG2, constant_graph_) << "Graph is constant. No analysis!";
@@ -167,19 +160,44 @@ void Mocus::Analyze() {
   CLOCK(mcs_time);
   LOG(DEBUG2) << "Start minimal cut set generation.";
   std::vector<std::pair<int, mocus::CutSetContainer>> module_sets;
-  for (const std::pair<int, SimpleGatePtr>& module : modules_) {
-    CLOCK(gen_time);
-    LOG(DEBUG3) << "Finding cut sets from module: G" << module.first;
-    mocus::CutSetContainer cut_sets;
-    module.second->GenerateCutSets(std::make_shared<CutSet>(), &cut_sets);
-    module_sets.emplace_back(module.first, cut_sets);
-    LOG(DEBUG4) << "Unique cut sets generated: " << cut_sets.size();
-    LOG(DEBUG4) << "Cut set generation time: " << DUR(gen_time);
-  }
+  zbdd::CutSetContainer container = Mocus::AnalyzeModule(graph_->root());
   LOG(DEBUG2) << "Delegating cut set minimization to ZBDD.";
-  zbdd_ = std::unique_ptr<Zbdd>(new Zbdd(root_index_, module_sets, kSettings_));
-  zbdd_->Analyze();
+  container.Analyze();
+  cut_sets_ = container.cut_sets();
   LOG(DEBUG2) << "Minimal cut sets found in " << DUR(mcs_time);
+}
+
+zbdd::CutSetContainer Mocus::AnalyzeModule(const IGatePtr& gate) noexcept {
+  assert(gate->IsModule() && "Expected only module gates.");
+  CLOCK(gen_time);
+  LOG(DEBUG3) << "Finding cut sets from module: G" << gate->index();
+  std::unordered_map<int, IGatePtr> gates;
+  gates.insert(gate->gate_args().begin(), gate->gate_args().end());
+
+  zbdd::CutSetContainer cut_sets(kSettings_, graph_->basic_events().size());
+  cut_sets.Merge(cut_sets.ConvertGate(gate));
+  int next_gate = cut_sets.GetNextGate();
+  while (next_gate) {
+    LOG(DEBUG5) << "Expanding gate G" << next_gate;
+    IGatePtr inter_gate = gates.find(next_gate)->second;
+    gates.insert(inter_gate->gate_args().begin(),
+                 inter_gate->gate_args().end());
+    cut_sets.Merge(
+        cut_sets.ExpandGate(cut_sets.ConvertGate(inter_gate),
+                            cut_sets.ExtractIntermediateCutSets(next_gate)));
+    next_gate = cut_sets.GetNextGate();
+  }
+  if (!graph_->coherent()) cut_sets.EliminateComplements();
+  for (int module : cut_sets.GatherModules()) {
+    cut_sets.JoinModule(module,
+                        Mocus::AnalyzeModule(gates.find(module)->second));
+  }
+  cut_sets.EliminateConstantModules();
+  /* LOG(DEBUG4) << "Unique cut sets generated: " << cut_sets.size(); */
+  /// @todo Log the complexity of the ZBDD for the module.
+  LOG(DEBUG4) << "G" << gate->index()
+              << " cut set generation time: " << DUR(gen_time);
+  return cut_sets;
 }
 
 void Mocus::CreateSimpleTree(

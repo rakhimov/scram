@@ -841,6 +841,13 @@ void CutSetContainer::EliminateConstantModules() noexcept {
   root_ = Zbdd::EliminateConstantModules(root_, &results);
 }
 
+std::vector<int> CutSetContainer::GatherModules() noexcept {
+  assert(modules_.empty() && "Unexpected call with defined modules?!");
+  std::vector<int> modules;
+  Zbdd::GatherModules(root_, &modules);
+  return modules;
+}
+
 void CutSetContainer::JoinModule(int index,
                                  const CutSetContainer& container) noexcept {
   assert(!modules_.count(index));

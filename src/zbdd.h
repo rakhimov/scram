@@ -487,13 +487,13 @@ class CutSetContainer : public Zbdd {
 
   /// Finds a gate in intermediate cut sets.
   ///
-  /// @param[in] vertex  The root vertex of ZBDD to search for.
-  ///
   /// @returns The index of the gate in intermediate cut sets.
   /// @returns 0 if no gates are found.
   ///
+  /// @pre Vertex marks are clear.
+  ///
   /// @post The path to the target vertex is marked.
-  int GetNextGate(const VertexPtr& vertex) noexcept;
+  int GetNextGate() noexcept { return CutSetContainer::GetNextGate(root_); }
 
   /// Extracts (removes!) intermediate cut sets
   /// containing a node with a given index.
@@ -550,6 +550,11 @@ class CutSetContainer : public Zbdd {
   /// @post Sub-modules are not processed.
   void EliminateConstantModules() noexcept;
 
+  /// Gathers all module indices in the cut sets.
+  ///
+  /// @returns An unordered set of indices.
+  std::vector<int> GatherModules() noexcept;
+
   /// Joins a ZBDD representing a module gate.
   ///
   /// @param[in] index  The index of the module.
@@ -571,6 +576,18 @@ class CutSetContainer : public Zbdd {
   bool IsGate(const SetNodePtr& node) noexcept {
     return node->index() > gate_index_bound_;
   }
+
+  /// Finds a gate in intermediate cut sets.
+  ///
+  /// @param[in] vertex  The root vertex of ZBDD to search for.
+  ///
+  /// @returns The index of the gate in intermediate cut sets.
+  /// @returns 0 if no gates are found.
+  ///
+  /// @pre Vertex marks are clear.
+  ///
+  /// @post The path to the target vertex is marked.
+  int GetNextGate(const VertexPtr& vertex) noexcept;
 
   /// Extracts intermediate cut set representation from a given ZBDD.
   ///
