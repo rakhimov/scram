@@ -116,23 +116,6 @@ Zbdd::Zbdd(const BooleanGraph* fault_tree, const Settings& settings) noexcept
   LOG(DEBUG2) << "Created ZBDD from Boolean Graph in " << DUR(init_time);
 }
 
-Zbdd::Zbdd(int root_index,
-           const std::vector<std::pair<int, mocus::CutSetContainer>>& cut_sets,
-           const Settings& settings) noexcept
-    : Zbdd::Zbdd(settings) {
-  CLOCK(init_time);
-  LOG(DEBUG2) << "Creating ZBDD from cut sets...";
-  for (auto it = cut_sets.rbegin(); it != cut_sets.rend(); ++it) {
-    assert(!modules_.count(it->first) && "Repeated calculation of modules.");
-    modules_.emplace(it->first, Zbdd::ConvertCutSets(it->second));
-  }
-  root_ = modules_.find(root_index)->second;
-  Zbdd::ClearMarks(root_);
-  Zbdd::TestStructure(root_);
-  LOG_ZBDD;
-  LOG(DEBUG2) << "Created ZBDD from cut sets in " << DUR(init_time);
-}
-
 void Zbdd::Analyze() noexcept {
   CLOCK(analysis_time);
   LOG(DEBUG2) << "Analyzing ZBDD...";
@@ -289,85 +272,6 @@ VertexPtr Zbdd::ConvertGraph(
   if (gate->IsModule()) modules_.emplace(gate->index(), result);
   if (gate->parents().size() > 1) gates->insert({gate->index(), {result, 1}});
   return result;
-}
-
-VertexPtr Zbdd::ConvertCutSets(
-    const mocus::CutSetContainer& cut_sets) noexcept {
-  std::vector<mocus::CutSetPtr> data(cut_sets.begin(), cut_sets.end());
-  std::sort(data.begin(), data.end(),
-            [](const mocus::CutSetPtr& lhs, const mocus::CutSetPtr& rhs) {
-    return lhs->size() < rhs->size();
-  });
-  if (data.empty()) return kEmpty_;
-  if (data.front()->empty()) return kBase_;
-
-  VertexPtr result = kEmpty_;
-  for (const auto& cut_set : data)
-    result = Zbdd::EmplaceCutSet(result, Zbdd::EmplaceCutSet(cut_set));
-
-  return result;
-}
-
-VertexPtr Zbdd::EmplaceCutSet(const mocus::CutSetPtr& cut_set) noexcept {
-  assert(!cut_set->empty() && "Unity cut set must be sanitized.");
-  assert(cut_set->order() <= kSettings_.limit_order() && "Improper order.");
-  VertexPtr result = kBase_;
-  std::vector<int>::const_reverse_iterator it;
-  for (it = cut_set->modules().rbegin(); it != cut_set->modules().rend();
-       ++it) {
-    int index = *it;
-    const VertexPtr& module = modules_.find(index)->second;
-    if (module->terminal()) {
-      if (!Terminal::Ptr(module)->value()) return kEmpty_;
-      continue;  // The result does not change for the TRUE module.
-    }
-    result = Zbdd::FetchUniqueTable(index, result, kEmpty_, index + 1, true);
-    SetNode::Ptr(result)->minimal(true);
-  }
-  for (it = cut_set->literals().rbegin(); it != cut_set->literals().rend();
-       ++it) {
-    int index = *it;
-    result = Zbdd::FetchUniqueTable(index, result, kEmpty_, index + 1, false);
-    SetNode::Ptr(result)->minimal(true);
-  }
-  return result;
-}
-
-VertexPtr Zbdd::EmplaceCutSet(const VertexPtr& root,
-                              const VertexPtr& set_vertex) noexcept {
-  if (root->terminal()) {
-    if (Terminal::Ptr(root)->value()) return root;
-    return set_vertex;
-  }
-  if (set_vertex->terminal()) {
-    if (Terminal::Ptr(set_vertex)->value()) return set_vertex;
-    return root;
-  }
-  SetNodePtr root_node = SetNode::Ptr(root);
-  SetNodePtr set_node = SetNode::Ptr(set_vertex);
-  assert(root_node->index() > 0 && set_node->index() > 0);
-  assert(set_node->low()->terminal() && "Not a cut set!");
-  assert(!Terminal::Ptr(set_node->low())->value() && "Not a cut set!");
-  SetNodePtr reference = root_node;
-  VertexPtr high;
-  VertexPtr low;
-  if (root_node->order() == set_node->order()) {  // The same variable.
-    assert(root_node->index() == set_node->index());
-    high = Zbdd::EmplaceCutSet(root_node->high(), set_node->high());
-    low = root_node->low();
-  } else if (root_node->order() < set_node->order()) {
-    high = root_node->high();
-    low = Zbdd::EmplaceCutSet(root_node->low(), set_node);
-  } else {
-    high = set_node->high();
-    low = root_node;
-    reference = set_node;
-  }
-  if (high->id() == low->id()) return low;
-  if (high->terminal() && Terminal::Ptr(high)->value() == false) return low;
-  return Zbdd::FetchUniqueTable(reference->index(), high, low,
-                                reference->order(),
-                                reference->module());
 }
 
 VertexPtr& Zbdd::FetchComputeTable(Operator type, const VertexPtr& arg_one,
