@@ -217,6 +217,16 @@ class Zbdd {
                                const VertexPtr& arg_two,
                                int limit_order) noexcept;
 
+  /// Checks if a set node represents a gate.
+  /// Apply operations and truncation operations
+  /// should avoid accounting gates
+  /// if they exist in ZBDD.
+  ///
+  /// @param[in] node  A node to be tested.
+  ///
+  /// @returns false by default.
+  virtual bool IsGate(const SetNodePtr& /*node*/) noexcept { return false; }
+
   /// Applies Boolean operation to two vertices representing sets.
   ///
   /// @param[in] type  The operator or type of the gate.
@@ -508,6 +518,11 @@ class CutSetContainer : public Zbdd {
   /// @post Sub-modules are not processed.
   void EliminateConstantModules() noexcept;
 
+  /// Minimizes cut sets in the container.
+  ///
+  /// @post Sub-modules are not processed.
+  void Minimize() noexcept { root_ = Zbdd::Minimize(root_); }
+
   /// Gathers all module indices in the cut sets.
   ///
   /// @returns An unordered set of indices.
@@ -531,7 +546,7 @@ class CutSetContainer : public Zbdd {
   ///
   /// @pre There are no complements of gates.
   /// @pre Gate indexation has a lower bound.
-  bool IsGate(const SetNodePtr& node) noexcept {
+  bool IsGate(const SetNodePtr& node) noexcept override {
     return node->index() > gate_index_bound_;
   }
 

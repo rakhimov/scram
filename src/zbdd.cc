@@ -351,7 +351,8 @@ VertexPtr Zbdd::Apply(Operator type, const SetNodePtr& arg_one,
   VertexPtr high;
   VertexPtr low;
   int limit_high = limit_order - 1;
-  if (arg_one->index() < 0 || arg_one->module()) ++limit_high;  // Conservative.
+  if (arg_one->index() < 0 || arg_one->module() || this->IsGate(arg_one))
+    ++limit_high;  // Conservative.
   if (arg_one->order() == arg_two->order() &&
       arg_one->index() == arg_two->index()) {  // The same variable.
     switch (type) {
@@ -675,6 +676,7 @@ VertexPtr CutSetContainer::ConvertGate(const IGatePtr& gate) noexcept {
   assert(gate->type() == kAndGate || gate->type() == kOrGate);
   assert(gate->constant_args().empty());
   assert(gate->args().size() > 1);
+  LOG(DEBUG4) << "Converting gate G" << gate->index();
   std::vector<SetNodePtr> args;
   for (const std::pair<const int, VariablePtr>& arg : gate->variable_args()) {
     args.push_back(Zbdd::FetchUniqueTable(arg.first, kBase_, kEmpty_,
@@ -716,6 +718,7 @@ int CutSetContainer::GetNextGate(const VertexPtr& vertex) noexcept {
 VertexPtr CutSetContainer::ExtractIntermediateCutSets(int index) noexcept {
   assert(index && index > gate_index_bound_);
   assert(!root_->terminal() && "Impossible to have intermediate cut sets.");
+  LOG(DEBUG4) << "Extracting cut sets for G" << index;
   std::pair<VertexPtr, VertexPtr> result =
       CutSetContainer::ExtractIntermediateCutSets(SetNode::Ptr(root_), index);
   root_ = result.second;
@@ -755,6 +758,8 @@ std::vector<int> CutSetContainer::GatherModules() noexcept {
 void CutSetContainer::JoinModule(int index,
                                  const CutSetContainer& container) noexcept {
   assert(!modules_.count(index));
+  assert(container.root_->terminal() ||
+         SetNode::Ptr(container.root_)->minimal());
   modules_.emplace(index, container.root_);
   modules_.insert(container.modules_.begin(), container.modules_.end());
 }

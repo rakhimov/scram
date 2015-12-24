@@ -85,12 +85,17 @@ zbdd::CutSetContainer Mocus::AnalyzeModule(const IGatePtr& gate) noexcept {
                             cut_sets.ExtractIntermediateCutSets(next_gate)));
     next_gate = cut_sets.GetNextGate();
   }
-  if (!graph_->coherent()) cut_sets.EliminateComplements();
+  cut_sets.Minimize();
+  if (!graph_->coherent()) {
+    cut_sets.EliminateComplements();
+    cut_sets.Minimize();
+  }
   for (int module : cut_sets.GatherModules()) {
     cut_sets.JoinModule(module,
                         Mocus::AnalyzeModule(gates.find(module)->second));
   }
   cut_sets.EliminateConstantModules();
+  cut_sets.Minimize();
   /* LOG(DEBUG4) << "Unique cut sets generated: " << cut_sets.size(); */
   /// @todo Log the complexity of the ZBDD for the module.
   LOG(DEBUG4) << "G" << gate->index()
