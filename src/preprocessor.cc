@@ -2345,6 +2345,30 @@ int Preprocessor::TopologicalOrder(const IGatePtr& root, int order) noexcept {
   return order;
 }
 
+void Preprocessor::GatherNodes(std::vector<IGatePtr>* gates,
+                               std::vector<VariablePtr>* variables) noexcept {
+  graph_->ClearNodeVisits();
+  Preprocessor::GatherNodes(graph_->root(), gates, variables);
+}
+
+void Preprocessor::GatherNodes(
+    const IGatePtr& gate,
+    std::vector<IGatePtr>* gates,
+    std::vector<VariablePtr>* variables) noexcept {
+  if (gate->Visited()) return;
+  gate->Visit(1);
+  gates->push_back(gate);
+  for (const auto& arg : gate->gate_args()) {
+    Preprocessor::GatherNodes(arg.second, gates, variables);
+  }
+  for (const auto& arg : gate->variable_args()) {
+    if (!arg.second->Visited()) {
+      arg.second->Visit(1);
+      variables->push_back(arg.second);
+    }
+  }
+}
+
 void CustomPreprocessor<Mocus>::Run() noexcept {
   CLOCK(time_1);
   LOG(DEBUG2) << "Preprocessing Phase I...";
@@ -2380,8 +2404,31 @@ void CustomPreprocessor<Mocus>::Run() noexcept {
   LOG(DEBUG2) << "Finished Preprocessing Phase V in " << DUR(time_5);
   if (Preprocessor::CheckRootGate()) return;
   Preprocessor::AssignOrder();
+  CustomPreprocessor<Mocus>::InvertOrder();
   SANITY_ASSERT;
   assert(graph_->normal());
+}
+
+void CustomPreprocessor<Mocus>::InvertOrder() noexcept {
+  std::vector<IGatePtr> gates;
+  std::vector<VariablePtr> variables;
+  Preprocessor::GatherNodes(&gates, &variables);
+  auto middle =
+      std::partition(gates.begin(), gates.end(),
+                     [](const IGatePtr& gate) { return gate->IsModule(); });
+
+  std::sort(middle, gates.end(), [](const IGatePtr& lhs, const IGatePtr& rhs) {
+    assert(lhs->order() != rhs->order());
+    return lhs->order() > rhs->order();  // Inversion.
+  });
+  for (auto it = middle; it != gates.end(); ++it)
+    (*it)->order(gates.end() - it);
+
+  int shift = gates.end() - middle;
+  for (auto it = gates.begin(); it != middle; ++it)
+    (*it)->order(shift + (*it)->order());
+
+  for (auto var : variables) var->order(shift + var->order());
 }
 
 void CustomPreprocessor<Bdd>::Run() noexcept {

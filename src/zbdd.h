@@ -432,6 +432,8 @@ namespace zbdd {
 /// @class CutSetContainer
 /// Storage for generated cut sets in MOCUS.
 /// The semantics is similar to a set of cut sets.
+/// The container assumes special variable ordering.
+/// Gates to be processed must be ordered to the top.
 class CutSetContainer : public Zbdd {
  public:
   /// Default constructor to initialize member variables.
@@ -458,10 +460,12 @@ class CutSetContainer : public Zbdd {
   /// @returns The index of the gate in intermediate cut sets.
   /// @returns 0 if no gates are found.
   ///
-  /// @pre Vertex marks are clear.
-  ///
-  /// @post The path to the target vertex is marked.
-  int GetNextGate() noexcept { return CutSetContainer::GetNextGate(root_); }
+  /// @pre Variable ordering puts the gate to the top (root).
+  int GetNextGate() noexcept {
+    if (root_->terminal()) return 0;
+    SetNodePtr node = SetNode::Ptr(root_);
+    return CutSetContainer::IsGate(node) && !node->module() ? node->index() : 0;
+  }
 
   /// Extracts (removes!) intermediate cut sets
   /// containing a node with a given index.
@@ -470,10 +474,8 @@ class CutSetContainer : public Zbdd {
   ///
   /// @returns The root of the ZBDD containing the intermediate cut sets.
   ///
-  /// @pre The path to the target vertex is marked.
-  /// @pre Not all nodes containing the index may be extracted.
+  /// @pre Variable ordering puts the gate to the top (root).
   ///
-  /// @post The path to the target vertex is cleaned.
   /// @post The extracted cut sets are pre-processed
   ///       by removing the vertex with the index of the gate.
   VertexPtr ExtractIntermediateCutSets(int index) noexcept;
@@ -549,32 +551,6 @@ class CutSetContainer : public Zbdd {
   bool IsGate(const SetNodePtr& node) noexcept override {
     return node->index() > gate_index_bound_;
   }
-
-  /// Finds a gate in intermediate cut sets.
-  ///
-  /// @param[in] vertex  The root vertex of ZBDD to search for.
-  ///
-  /// @returns The index of the gate in intermediate cut sets.
-  /// @returns 0 if no gates are found.
-  ///
-  /// @pre Vertex marks are clear.
-  ///
-  /// @post The path to the target vertex is marked.
-  int GetNextGate(const VertexPtr& vertex) noexcept;
-
-  /// Extracts intermediate cut set representation from a given ZBDD.
-  ///
-  /// @param[in] node  The root vertex of the ZBDD.
-  /// @param[in] index  The index of the target gate.
-  ///
-  /// @returns A pair of vertices representing the target cut sets
-  ///          and the remaining ZBDD cut sets.
-  ///
-  /// @pre The path to the target vertex is marked.
-  ///
-  /// @post The path to the target vertex is cleaned.
-  std::pair<VertexPtr, VertexPtr>
-  ExtractIntermediateCutSets(const SetNodePtr& node, int index) noexcept;
 
   int gate_index_bound_;  ///< The exclusive lower bound for the gate indices.
 };
