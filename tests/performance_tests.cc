@@ -106,9 +106,9 @@ TEST_F(PerformanceTest, DISABLED_CEA9601_BDD) {
 }
 
 TEST_F(PerformanceTest, DISABLED_Baobab2) {
-  double mcs_time = 15;
+  double mcs_time = 1.7;
 #ifdef NDEBUG
-  mcs_time = 2.0;
+  mcs_time = 0.22;
 #endif
   std::vector<std::string> input_files;
   input_files.push_back("./share/scram/input/Baobab/baobab2.xml");
@@ -118,11 +118,11 @@ TEST_F(PerformanceTest, DISABLED_Baobab2) {
   EXPECT_NEAR(mcs_time, McsGenerationTime(), mcs_time * delta);
 }
 
-// Release only tests.
+TEST_F(PerformanceTest, DISABLED_Baobab1) {
+  double mcs_time = 8;
 #ifdef NDEBUG
-
-TEST_F(PerformanceTest, DISABLED_Baobab1_L8) {
-  double mcs_time = 1.9;
+  mcs_time = 1.1;
+#endif
   std::vector<std::string> input_files;
   input_files.push_back("./share/scram/input/Baobab/baobab1.xml");
   input_files.push_back("./share/scram/input/Baobab/baobab1-basic-events.xml");
@@ -131,7 +131,6 @@ TEST_F(PerformanceTest, DISABLED_Baobab1_L8) {
   EXPECT_EQ(25892, NumOfMcs());
   EXPECT_NEAR(mcs_time, McsGenerationTime(), mcs_time * delta);
 }
-#endif
 
 }  // namespace test
 }  // namespace scram

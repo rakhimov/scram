@@ -22,39 +22,11 @@
 namespace scram {
 namespace test {
 
-namespace {
-// Data relevant to all tests.
-std::vector<std::string> input_files = {
-    "./share/scram/input/Baobab/baobab2.xml",
-    "./share/scram/input/Baobab/baobab2-basic-events.xml"};
-}
-
 // Benchmark Tests for Baobab 2 fault tree from XFTA.
-// Test Minimal cut sets.
-TEST_F(RiskAnalysisTest, DISABLED_Baobab_2_Test_MOCUS) {
-  settings.algorithm("mocus").limit_order(3);
-  ASSERT_NO_THROW(ProcessInputFiles(input_files));
-  ASSERT_NO_THROW(ran->Analyze());
-  // Minimal cut set check.
-  EXPECT_EQ(127, min_cut_sets().size());
-  std::vector<int> distr = {0, 0, 6, 121};
-  EXPECT_EQ(distr, McsDistribution());
-}
-
-// Test with BDD.
-TEST_F(RiskAnalysisTest, Baobab_2_Test_BDD) {
-  settings.algorithm("bdd");
-  ASSERT_NO_THROW(ProcessInputFiles(input_files));
-  ASSERT_NO_THROW(ran->Analyze());
-  // Minimal cut set check.
-  EXPECT_EQ(4805, min_cut_sets().size());
-  std::vector<int> distr = {0, 0, 6, 121, 268, 630, 3780};
-  EXPECT_EQ(distr, McsDistribution());
-}
-
-// Test with ZBDD.
-TEST_F(RiskAnalysisTest, Baobab_2_Test_ZBDD) {
-  settings.algorithm("zbdd");
+TEST_P(RiskAnalysisTest, Baobab_2_Test) {
+  std::vector<std::string> input_files = {
+      "./share/scram/input/Baobab/baobab2.xml",
+      "./share/scram/input/Baobab/baobab2-basic-events.xml"};
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
   ASSERT_NO_THROW(ran->Analyze());
   // Minimal cut set check.

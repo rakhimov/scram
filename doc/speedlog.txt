@@ -26,67 +26,27 @@ Build type:
 ============== Fault Tree Analysis (MOCUS) =============
 
 ---------- Baobab1 -l 7 (mcs = 17432) ----------------
-Debug build:
----------------
-- Cut Set Generation      2.2  |  2.7
-- Cut Set Minimization    1.9  |  2.5
+Debug build:  4.7 | 8.0
+------------
 
-Release build:
+Release build:  0.55 | 1.1
 --------------
-- Cut Set Generation      0.25  |
-- Cut Set Minimization    0.30  |
-
-
----------- Baobab1 -l 8 (mcs = 25892) ----------------
-Debug build:
----------------
-- Cut Set Generation      10
-- Cut Set Minimization    7.0
-
-Release build:
---------------
-- Cut Set Generation      0.85  |
-- Cut Set Minimization    1.0   |
-
-
----------- Baobab1 -l 9 (mcs = 36516) ----------------
-Release build:
---------------
-- Cut Set Generation      2.4  |
-- Cut Set Minimization    3.3  |
-
-
----------- Baobab1 -l 10 (mcs = 43116) ----------------
-Release build:
---------------
-- Cut Set Generation      5.8  |
-- Cut Set Minimization    10.5 |
-
-
----------- Baobab1 -l 11 (mcs = 46188) ----------------
-Release build:
---------------
-- Cut Set Generation      10   |
-- Cut Set Minimization    25   |
 
 
 ---------- Baobab1 (mcs = 46188) ----------------
-Release build:
+Debug build:  8.0
+------------
+
+Release build: 1.1
 --------------
-- Cut Set Generation      17   |
-- Cut Set Minimization    40   |
 
 
 ---------- Baobab2 (mcs = 4805) ----------------
-Debug build:
----------------
-- Cut Set Generation      13   |  16
-- Cut Set Minimization    2.1  |  4.4
+Debug build:  1.7
+------------
 
-Release build:
+Release build: 0.22
 ---------------
-- Cut Set Generation      1.6   |
-- Cut Set Minimization    0.15  |  0.6
 
 
 ============== Fault Tree Analysis (ZBDD) =============

@@ -16,14 +16,8 @@ The system specs are the same as in the speed recordings.
 MOCUS
 -----
 
-- Baobab1 -l 7  : 15 | 20
-- Baobab1 -l 8  : 35 | 40
-- Baobab1 -l 9  : 80
-- Baobab1 -l 10 : 200
-- Baobab1 -l 11 : 400
-- Baobab1       : 700
-
-- Baobab2       : 55
+- Baobab1       : 23
+- Baobab2       : 15
 
 
 BDD
