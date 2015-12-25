@@ -171,6 +171,17 @@ class Zbdd {
                               const VertexPtr& low, int order,
                               bool module) noexcept;
 
+  /// Fetches a replacement for an existing node
+  /// or a new node based on an existing node.
+  ///
+  /// @param[in] node  An existing node.
+  /// @param[in] high  The new high vertex.
+  /// @param[in] low  The new low vertex.
+  ///
+  /// @returns Set node for a replacement.
+  SetNodePtr FetchUniqueTable(const SetNodePtr& node, const VertexPtr& high,
+                              const VertexPtr& low) noexcept;
+
   /// Converts BDD graph into ZBDD graph.
   ///
   /// @param[in] vertex  Vertex of the ROBDD graph.

@@ -174,6 +174,14 @@ SetNodePtr Zbdd::FetchUniqueTable(int index, const VertexPtr& high,
   return node;
 }
 
+SetNodePtr Zbdd::FetchUniqueTable(const SetNodePtr& node, const VertexPtr& high,
+                                  const VertexPtr& low) noexcept {
+  if (node->high()->id() == high->id() &&
+      node->low()->id() == low->id()) return node;
+  return Zbdd::FetchUniqueTable(node->index(), high, low, node->order(),
+                                node->module());
+}
+
 VertexPtr Zbdd::ConvertBdd(const VertexPtr& vertex, bool complement,
                            const Bdd* bdd_graph, int limit_order,
                            PairTable<VertexPtr>* ites) noexcept {
@@ -410,9 +418,7 @@ VertexPtr Zbdd::Apply(Operator type, const SetNodePtr& arg_one,
   }
   if (high->id() == low->id()) return low;
   if (high->terminal() && Terminal::Ptr(high)->value() == false) return low;
-  return Zbdd::Minimize(Zbdd::FetchUniqueTable(arg_one->index(), high, low,
-                                               arg_one->order(),
-                                               arg_one->module()));
+  return Zbdd::Minimize(Zbdd::FetchUniqueTable(arg_one, high, low));
 }
 
 VertexPtr Zbdd::EliminateComplements(
@@ -436,8 +442,7 @@ VertexPtr Zbdd::EliminateComplement(const SetNodePtr& node,
   if (high->terminal() && Terminal::Ptr(high)->value() == false) return low;
   if (node->index() < 0)  /// @todo Consider tracking the order.
     return Zbdd::Apply(kOrGate, high, low, kSettings_.limit_order());
-  return Zbdd::Minimize(Zbdd::FetchUniqueTable(node->index(), high, low,
-                                               node->order(), node->module()));
+  return Zbdd::Minimize(Zbdd::FetchUniqueTable(node, high, low));
 }
 
 VertexPtr Zbdd::EliminateConstantModules(
@@ -466,8 +471,7 @@ VertexPtr Zbdd::EliminateConstantModule(const SetNodePtr& node,
       return Zbdd::Apply(kOrGate, high, low, kSettings_.limit_order());
     }
   }
-  return Zbdd::Minimize(Zbdd::FetchUniqueTable(node->index(), high, low,
-                                               node->order(), node->module()));
+  return Zbdd::Minimize(Zbdd::FetchUniqueTable(node, high, low));
 }
 
 VertexPtr Zbdd::Minimize(const VertexPtr& vertex) noexcept {
@@ -484,8 +488,7 @@ VertexPtr Zbdd::Minimize(const VertexPtr& vertex) noexcept {
     result = low;
     return result;
   }
-  result = Zbdd::FetchUniqueTable(node->index(), high, low, node->order(),
-                                  node->module());
+  result = Zbdd::FetchUniqueTable(node, high, low);
   SetNode::Ptr(result)->minimal(true);
   return result;
 }
@@ -524,9 +527,7 @@ VertexPtr Zbdd::Subsume(const VertexPtr& high, const VertexPtr& low) noexcept {
     return computed;
   }
   assert(subhigh->id() != sublow->id());
-  SetNodePtr new_high =
-      Zbdd::FetchUniqueTable(high_node->index(), subhigh, sublow,
-                             high_node->order(), high_node->module());
+  SetNodePtr new_high = Zbdd::FetchUniqueTable(high_node, subhigh, sublow);
   new_high->minimal(high_node->minimal());
   computed = new_high;
   return computed;
