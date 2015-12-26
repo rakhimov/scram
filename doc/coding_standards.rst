@@ -140,12 +140,13 @@ Python
 #. Code quality and style check with Pylint_
 #. Profiling with PyVmMonitor_
 #. Code coverage check with coverage_
-#. Continuous code quality control on Landscape_
+#. Continuous code quality control on Landscape_ with Prospector_
 
 .. _Pylint: http://www.pylint.org/
 .. _PyVmMonitor: http://www.pyvmmonitor.com/
 .. _coverage: http://nedbatchelder.com/code/coverage/
 .. _Landscape: https://landscape.io/github/rakhimov/scram/develop/
+.. _Prospector: https://github.com/landscapeio/prospector
 
 
 Targets
