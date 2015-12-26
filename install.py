@@ -86,8 +86,7 @@ def install_scram(args):
     elif not args.build_only:
         make_cmd += ["install"]
 
-    subprocess.check_call(make_cmd, cwd=args.build_dir,
-                          shell=(os.name == "nt"))
+    subprocess.check_call(make_cmd, cwd=args.build_dir, shell=(os.name == "nt"))
 
 def uninstall_scram(args):
     """Uninstalls SCRAM if it is installed.
@@ -106,8 +105,6 @@ def uninstall_scram(args):
 
 def main():
     """Initiates installation processes taking command-line arguments."""
-    localdir = absexpanduser("~/.local")
-
     description = "A SCRAM installation helper script. " +\
                   "For more information, please see http://scram-pra.org"
     parser = ap.ArgumentParser(description=description)
@@ -126,7 +123,8 @@ def main():
     parser.add_argument("-j", "--threads", type=int, help=threads)
 
     prefix = "the relative path to the installation directory"
-    parser.add_argument("--prefix", help=prefix, default=localdir)
+    parser.add_argument("--prefix", help=prefix,
+                        default=absexpanduser("~/.local"))
 
     build_only = "only build the package, do not install"
     parser.add_argument("--build-only", action="store_true", help=build_only)

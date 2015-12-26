@@ -255,8 +255,7 @@ A python script is provided to make the installation process easier.
 If there are dependency issues, ``CMake`` output should guide with errors.
 ``CMake`` can be used directly without the python script to configure the build.
 
-If not specified,
-the installation directory might be the user's ``.local`` or ``/usr/``.
+The default installation directory is ``~/.local``.
 The default linkage is dynamic;
 however, tests are statically linked against GoogleTest.
 
