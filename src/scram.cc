@@ -100,8 +100,9 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
   po::positional_options_description p;
   p.add("input-files", -1);
 
-  po::store(po::command_line_parser(argc, argv).options(desc).positional(p).
-            run(), *vm);
+  po::store(
+      po::command_line_parser(argc, argv).options(desc).positional(p).run(),
+      *vm);
   po::notify(*vm);
 
   // Process command-line arguments.
@@ -125,16 +126,16 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
     return 1;
   }
 
-  if (vm->count("bdd") && vm->count("zbdd") && vm->count("mocus")) {
+  if ((vm->count("bdd") + vm->count("zbdd") + vm->count("mocus")) > 1) {
     std::cerr << "Mutually exclusive qualitative analysis algorithms.\n"
-              << "(MOCUS/BDD/ZBDD) cannot be applied at the same time.\n"
+              << "(MOCUS/BDD/ZBDD) cannot be applied at the same time.\n\n"
               << usage << "\n\n" << desc << std::endl;
     return 1;
   }
 
   if (vm->count("rare-event") && vm->count("mcub")) {
     std::cerr << "The rare event and MCUB approximations cannot be "
-              << "applied at the same time.\n"
+              << "applied at the same time.\n\n"
               << usage << "\n\n" << desc << std::endl;
     return 1;
   }
@@ -142,7 +143,7 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
   if (vm->count("verbosity")) {
     int verb = (*vm)["verbosity"].as<int>();
     if (verb < 0 || verb > 7) {
-      std::cerr << "Log verbosity must be between 0 and 7." << "\n"
+      std::cerr << "Log verbosity must be between 0 and 7.\n\n"
                 << usage << "\n\n" << desc << std::endl;
       return 1;
     }
