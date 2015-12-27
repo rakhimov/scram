@@ -1,10 +1,24 @@
-Speed recordings of SCRAM
+SCRAM performance data
 for optimization and regression-detection purposes.
 Only cases that help detect bottlenecks are recorded in this file.
 The case/record is removed
-if the performance becomes good enough (less than 0.5s)
-to make the running times negligible or noisy.
-The running times are taken from the logs and reports.
+if the performance becomes good enough
+to make the parameter negligible or noisy
+(time < 0.5s, memory consumption < 10 MiB, etc.).
+
+There are two main performance records in this file:
+run-time (in seconds) and memory utilization (in MiB).
+The record can also include (specialize on) performance proxies
+specific to the subject.
+
+Running times are taken from the logs and reports.
+Peak consumption is recorded for memory utilization with the top program.
+Records are for the total program or specific analysis facilities.
+The build types do not affect the memory as much as the speed.
+Do not confuse these memory records
+with the actual allocation of the memory by the code.
+The actual memory allocation must be analyzed
+with memory(heap) profilers like Valgrind with Massif.
 
 System specs:     Core i7-2820QM, Ubuntu 14.04 64bit
 GCC version:      4.8.4
@@ -46,11 +60,15 @@ Release build: 0.40
 # of ZBDD nodes created: 34862
 # of SetNodes in ZBDD: 3333
 
+- Memory:   23
+
 
 ---------- Baobab2 (mcs = 4805) ----------------
 
 # of ZBDD nodes created: 70169
 # of SetNodes in ZBDD: 167
+
+- Memory:   15
 
 
 ============== Fault Tree Analysis (ZBDD) =============
@@ -62,6 +80,9 @@ Debug build:
 
     # of ZBDD nodes created: 79264  |  86228
     # of SetNodes in ZBDD: 3338
+
+- Memory:   48
+
 
 ---------- Baobab2 (mcs = 4805) ----------------
 
@@ -75,6 +96,8 @@ Debug build:
 
 # of BDD vertices created: 8289  |  8296
 # of ITE in BDD: 3349
+
+- Memory:   23
 
 
 ---------- CEA9601 -l 4 (mcs = 54436) -----------
@@ -91,24 +114,33 @@ ZBDD Time: 0.35
 # of BDD vertices created: 3013946  |  3048123
 # of ITE in BDD: 1175468
 
+- Memory:   480
+
+
 ==================== Uncertainty Analysis =================
 
 
 ==================== Fault Tree Generation ================
 
 ---| -b 100000 -c 3 --common-g 0.1 --common-b 0.1 |---
-Python script:
---------------
+
 - Generation Time  8.7  |  15
 
 
 ==================== Fault Tree Validation ================
 
+---| -b 10000 -c 3 --common-g 0.1 --common-b 0.1 |---
+
+- Memory:   70
+
+
 ---| -b 300000 -c 3 --common-g 0.1 --common-b 0.1 |---
 Debug build:
 ---------------
-- Parsing and Validation    37  |  40
+- Initialization and Validation    37  |  40
 
 Release build:
 --------------
-- Parsing and Validation    21  |
+- Initialization and Validation    21  |
+
+- Memory:   1130
