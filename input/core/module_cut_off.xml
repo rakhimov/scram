@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<!--
+This input demonstrates
+whether sub-modules are given differnt cut-offs.
+
+The input must be run with cut-off 6 on the cut set order.
+Some very expensive module must be given for gate "r1" in this input.
+If the "r1" gate is analyzed with cut-off 6,
+the analysis treats all sub-modules as a top module
+and does extra computation.
+If the "r1" is analyzed with cut-off 1,
+the analysis computes sub-module cut sets only as necessary.
+
+Note that preprocessing techniques may prune the graph
+and correctly handle this demonstration.
+In this case, the analysis algorithms
+may not have a chance to demonstrate its work.
+
+Also note that gate coalescing techniques may mess the demonstration.
+-->
+<opsa-mef>
+  <define-fault-tree name="r">
+    <define-gate name="r">
+      <or>
+        <and>
+          <event name="event1"/>
+          <event name="event2"/>
+          <event name="event3"/>
+          <event name="event4"/>
+          <event name="event5"/>
+          <gate name="r1"/> <!-- Stick some expensive module here -->
+        </and>
+        <event name = "event6"/>
+      </or>
+    </define-gate>
+    <define-basic-event name="event1"/>
+    <define-basic-event name="event2"/>
+    <define-basic-event name="event3"/>
+    <define-basic-event name="event4"/>
+    <define-basic-event name="event5"/>
+    <define-basic-event name="event6"/>
+  </define-fault-tree>
+</opsa-mef>
