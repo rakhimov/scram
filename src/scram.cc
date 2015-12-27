@@ -247,11 +247,8 @@ int RunScram(const po::variables_map& vm) {
   // Validation phase happens upon processing.
   init->ProcessInputFiles(input_files);
 
-  // Stop if only validation is requested.
-  if (vm.count("validate")) {
-    std::cout << "The files are VALID." << std::endl;
-    return 0;
-  }
+  if (vm.count("validate")) return 0;  // Stop if only validation is requested.
+
   // Initiate risk analysis with the given information.
   std::unique_ptr<scram::RiskAnalysis>
       ran(new scram::RiskAnalysis(init->model(), settings));
