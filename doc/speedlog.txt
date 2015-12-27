@@ -26,27 +26,31 @@ Build type:
 ============== Fault Tree Analysis (MOCUS) =============
 
 ---------- Baobab1 -l 7 (mcs = 17432) ----------------
-Debug build:  4.7 | 6.7
+Debug build:  2.5
 ------------
 
-Release build:  0.55 | 1.0
+Release build:  0.40
 --------------
+
+# of ZBDD nodes created: 34966
+# of SetNodes in ZBDD: 3377
 
 
 ---------- Baobab1 (mcs = 46188) ----------------
-Debug build:  6.5
+Debug build:  2.5
 ------------
 
-Release build: 1.0
+Release build: 0.40
 --------------
+
+# of ZBDD nodes created: 34862
+# of SetNodes in ZBDD: 3333
 
 
 ---------- Baobab2 (mcs = 4805) ----------------
-Debug build:  1.5
-------------
 
-Release build: 0.20
----------------
+# of ZBDD nodes created: 70169
+# of SetNodes in ZBDD: 167
 
 
 ============== Fault Tree Analysis (ZBDD) =============
@@ -58,6 +62,11 @@ Debug build:
 
     # of ZBDD nodes created: 79264  |  86228
     # of SetNodes in ZBDD: 3338
+
+---------- Baobab2 (mcs = 4805) ----------------
+
+    # of ZBDD nodes created: 33297
+    # of SetNodes in ZBDD: 168
 
 
 ============== Fault Tree Analysis (BDD) =============

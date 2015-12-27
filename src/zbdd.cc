@@ -677,7 +677,6 @@ VertexPtr CutSetContainer::ConvertGate(const IGatePtr& gate) noexcept {
   assert(gate->type() == kAndGate || gate->type() == kOrGate);
   assert(gate->constant_args().empty());
   assert(gate->args().size() > 1);
-  LOG(DEBUG4) << "Converting gate G" << gate->index();
   std::vector<SetNodePtr> args;
   for (const std::pair<const int, VariablePtr>& arg : gate->variable_args()) {
     args.push_back(Zbdd::FetchUniqueTable(arg.first, kBase_, kEmpty_,
@@ -705,7 +704,7 @@ VertexPtr CutSetContainer::ExtractIntermediateCutSets(int index) noexcept {
   assert(index && index > gate_index_bound_);
   assert(!root_->terminal() && "Impossible to have intermediate cut sets.");
   assert(index == SetNode::Ptr(root_)->index() && "Broken ordering!");
-  LOG(DEBUG4) << "Extracting cut sets for G" << index;
+  LOG(DEBUG5) << "Extracting cut sets for G" << index;
   SetNodePtr node = SetNode::Ptr(root_);
   root_ = node->low();
   return node->high();

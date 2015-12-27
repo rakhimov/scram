@@ -2419,10 +2419,10 @@ void CustomPreprocessor<Mocus>::InvertOrder() noexcept {
 
   std::sort(middle, gates.end(), [](const IGatePtr& lhs, const IGatePtr& rhs) {
     assert(lhs->order() != rhs->order());
-    return lhs->order() > rhs->order();  // Inversion.
+    return lhs->order() < rhs->order();
   });
   for (auto it = middle; it != gates.end(); ++it)
-    (*it)->order(gates.end() - it);
+    (*it)->order(gates.end() - it);  // Inversion.
 
   int shift = gates.end() - middle;
   for (auto it = gates.begin(); it != middle; ++it)
