@@ -405,31 +405,17 @@ class Bdd {
                  bool complement_one, bool complement_two) noexcept;
 
   /// Applies the logic of a Boolean operator
-  /// to terminal vertices.
+  /// to a terminal vertex.
   ///
   /// @param[in] type  The operator to apply.
   /// @param[in] term_one  First argument terminal vertex.
-  /// @param[in] term_two  Second argument terminal vertex.
+  /// @param[in] arg_two  Second argument vertex.
   /// @param[in] complement_one  Interpretation of term_one as complement.
-  /// @param[in] complement_two  Interpretation of term_two as complement.
+  /// @param[in] complement_two  Interpretation of arg_two as complement.
   ///
   /// @returns The resulting BDD function.
   Function Apply(Operator type,
-                 const TerminalPtr& term_one, const TerminalPtr& term_two,
-                 bool complement_one, bool complement_two) noexcept;
-
-  /// Applies the logic of a Boolean operator
-  /// to non-terminal and terminal vertices.
-  ///
-  /// @param[in] type  The operator or type of the gate.
-  /// @param[in] ite_one  Non-terminal vertex.
-  /// @param[in] term_two  Terminal vertex.
-  /// @param[in] complement_one  Interpretation of ite_one as complement.
-  /// @param[in] complement_two  Interpretation of term_two as complement.
-  ///
-  /// @returns The resulting BDD function.
-  Function Apply(Operator type,
-                 const ItePtr& ite_one, const TerminalPtr& term_two,
+                 const TerminalPtr& term_one, const VertexPtr& arg_two,
                  bool complement_one, bool complement_two) noexcept;
 
   /// Applies Boolean operation for a special case of the same arguments.

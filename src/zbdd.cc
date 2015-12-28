@@ -304,12 +304,10 @@ VertexPtr& Zbdd::FetchComputeTable(Operator type, const VertexPtr& arg_one,
 VertexPtr Zbdd::Apply(Operator type, const VertexPtr& arg_one,
                       const VertexPtr& arg_two, int limit_order) noexcept {
   if (limit_order < 0) return kEmpty_;
-  if (arg_one->terminal() && arg_two->terminal())
-    return Zbdd::Apply(type, Terminal::Ptr(arg_one), Terminal::Ptr(arg_two));
   if (arg_one->terminal())
-    return Zbdd::Apply(type, SetNode::Ptr(arg_two), Terminal::Ptr(arg_one));
+    return Zbdd::Apply(type, Terminal::Ptr(arg_one), arg_two);
   if (arg_two->terminal())
-    return Zbdd::Apply(type, SetNode::Ptr(arg_one), Terminal::Ptr(arg_two));
+    return Zbdd::Apply(type, Terminal::Ptr(arg_two), arg_one);
 
   if (arg_one->id() == arg_two->id()) return arg_one;
 
@@ -327,28 +325,14 @@ VertexPtr Zbdd::Apply(Operator type, const VertexPtr& arg_one,
 }
 
 VertexPtr Zbdd::Apply(Operator type, const TerminalPtr& term_one,
-                      const TerminalPtr& term_two) noexcept {
+                      const VertexPtr& arg_two) noexcept {
   switch (type) {
     case kOrGate:
-      if (term_one->value() || term_two->value()) return kBase_;
-      return kEmpty_;
+      if (term_one->value()) return kBase_;
+      return arg_two;
     case kAndGate:
-      if (!term_one->value() || !term_two->value()) return kEmpty_;
-      return kBase_;
-    default:
-      assert(false && "Unsupported Boolean operation on ZBDD.");
-  }
-}
-
-VertexPtr Zbdd::Apply(Operator type, const SetNodePtr& set_node,
-                      const TerminalPtr& term) noexcept {
-  switch (type) {
-    case kOrGate:
-      if (term->value()) return kBase_;
-      return set_node;
-    case kAndGate:
-      if (!term->value()) return kEmpty_;
-      return set_node;
+      if (!term_one->value()) return kEmpty_;
+      return arg_two;
     default:
       assert(false && "Unsupported Boolean operation on ZBDD.");
   }

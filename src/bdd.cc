@@ -204,15 +204,12 @@ Bdd::Function Bdd::Apply(Operator type,
                          const VertexPtr& arg_one, const VertexPtr& arg_two,
                          bool complement_one, bool complement_two) noexcept {
   assert(arg_one->id() && arg_two->id());  // Both are reduced function graphs.
-  if (arg_one->terminal() && arg_two->terminal())
-    return Bdd::Apply(type, Terminal::Ptr(arg_one), Terminal::Ptr(arg_two),
-                      complement_one, complement_two);
   if (arg_one->terminal())
-    return Bdd::Apply(type, Ite::Ptr(arg_two), Terminal::Ptr(arg_one),
-                      complement_two, complement_one);
+    return Bdd::Apply(type, Terminal::Ptr(arg_one), arg_two, complement_one,
+                      complement_two);
   if (arg_two->terminal())
-    return Bdd::Apply(type, Ite::Ptr(arg_one), Terminal::Ptr(arg_two),
-                      complement_one, complement_two);
+    return Bdd::Apply(type, Terminal::Ptr(arg_two), arg_one, complement_two,
+                      complement_one);
   if (arg_one->id() == arg_two->id())  // Reduction detection.
     return Bdd::Apply(type, arg_one, complement_one, complement_two);
 
@@ -244,34 +241,16 @@ Bdd::Function Bdd::Apply(Operator type,
 }
 
 Bdd::Function Bdd::Apply(Operator type, const TerminalPtr& term_one,
-                         const TerminalPtr& term_two, bool complement_one,
+                         const VertexPtr& arg_two, bool complement_one,
                          bool complement_two) noexcept {
   assert(term_one->value());
-  assert(term_two->value());
-  assert(term_one == term_two);
   switch (type) {
     case kOrGate:
-      if (complement_one && complement_two) return {true, kOne_};
-      return {false, kOne_};
-    case kAndGate:  // Reverse of OR logic!
-      if (complement_one || complement_two) return {true, kOne_};
-      return {false, kOne_};
-    default:
-      assert(false);
-  }
-}
-
-Bdd::Function Bdd::Apply(Operator type,
-                         const ItePtr& ite_one, const TerminalPtr& term_two,
-                         bool complement_one, bool complement_two) noexcept {
-  assert(term_two->value());
-  switch (type) {
-    case kOrGate:
-      if (complement_two) return {complement_one, ite_one};
-      return {false, kOne_};
+      if (!complement_one) return {false, kOne_};
+      return {complement_two, arg_two};
     case kAndGate:
-      if (complement_two) return {true, kOne_};
-      return {complement_one, ite_one};
+      if (complement_one) return {true, kOne_};
+      return {complement_two, arg_two};
     default:
       assert(false);
   }
