@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,11 @@ Settings& Settings::algorithm(const std::string& algorithm) {
         "The qualitative analysis algorithm is not recognized.");
 
   algorithm_ = algorithm;
+  if (algorithm_ == "bdd") {
+    Settings::approximation("no");
+  } else if (approximation_ == "no") {
+    Settings::approximation("rare-event");
+  }
   return *this;
 }
 

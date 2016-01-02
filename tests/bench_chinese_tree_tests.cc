@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,11 @@ TEST_P(RiskAnalysisTest, ChineseTree) {
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
   ASSERT_NO_THROW(ran->Analyze());
-  EXPECT_NEAR(0.0045691, p_total(), 1e-5);
+  if (settings.approximation() == "rare-event") {
+    EXPECT_NEAR(0.004804, p_total(), 1e-5);
+  } else {
+    EXPECT_NEAR(0.0045691, p_total(), 1e-5);
+  }
   // Minimal cut set check.
   EXPECT_EQ(392, min_cut_sets().size());
   std::vector<int> distr = {0, 0, 12, 0, 24, 188, 168};

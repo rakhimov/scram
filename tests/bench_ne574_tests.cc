@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,11 +30,15 @@ TEST_P(RiskAnalysisTest, ne574) {
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  EXPECT_NEAR(0.662208, p_total(), 1e-6);
+  if (settings.approximation() == "rare-event") {
+    EXPECT_DOUBLE_EQ(1, p_total());
+  } else {
+    EXPECT_NEAR(0.662208, p_total(), 1e-6);
+  }
 
-  std::set< std::set<std::string> > mcs = {{"c"}, {"d", "f"}, {"d", "g"},
-                                           {"d", "b"}, {"h", "i", "f"},
-                                           {"h", "i", "g"}, {"h", "i", "b"}};
+  std::set<std::set<std::string>> mcs = {{"c"}, {"d", "f"}, {"d", "g"},
+                                         {"d", "b"}, {"h", "i", "f"},
+                                         {"h", "i", "g"}, {"h", "i", "b"}};
   EXPECT_EQ(7, min_cut_sets().size());
   EXPECT_EQ(mcs, min_cut_sets());
 }

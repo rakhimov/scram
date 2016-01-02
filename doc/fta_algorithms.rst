@@ -147,10 +147,6 @@ After finishing or each of the above steps:
 
 **Rule 4.** Eliminate non-minimal cut sets
 
-
-Implementation Specifics
-------------------------
-
 The implementation uses a ZBDD data structure (a set of sets)
 to store minimal cut sets in a compact form,
 so Rules 3 and 4 are satisfied automatically.

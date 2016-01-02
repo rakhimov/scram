@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -108,17 +108,50 @@ TEST_P(RiskAnalysisTest, AnalyzeWithProbability) {
   std::set<std::string> mcs_3 = {"pumptwo", "valveone"};
   std::set<std::string> mcs_4 = {"valveone", "valvetwo"};
   std::set<std::set<std::string>> mcs = {mcs_1, mcs_2, mcs_3, mcs_4};
-  settings.probability_analysis(true).importance_analysis(true);
+  settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(with_prob));
   ASSERT_NO_THROW(ran->Analyze());
 
   EXPECT_EQ(mcs, min_cut_sets());
-  EXPECT_DOUBLE_EQ(0.646, p_total());
+  if (settings.approximation() == "rare-event") {
+    EXPECT_DOUBLE_EQ(1, p_total());
+  } else {
+    EXPECT_DOUBLE_EQ(0.646, p_total());
+  }
   EXPECT_DOUBLE_EQ(0.42, mcs_probability().at(mcs_1));
   EXPECT_DOUBLE_EQ(0.3, mcs_probability().at(mcs_2));
   EXPECT_DOUBLE_EQ(0.28, mcs_probability().at(mcs_3));
   EXPECT_DOUBLE_EQ(0.2, mcs_probability().at(mcs_4));
+}
 
+// Test for exact probability calculation
+// regardless of the qualitative analysis algorithm.
+TEST_P(RiskAnalysisTest, EnforceExactProbability) {
+  std::string with_prob =
+      "./share/scram/input/fta/correct_tree_input_with_probs.xml";
+  settings.probability_analysis(true).approximation("no");
+  ASSERT_NO_THROW(ProcessInputFile(with_prob));
+  ASSERT_NO_THROW(ran->Analyze());
+  EXPECT_DOUBLE_EQ(0.646, p_total());
+}
+
+TEST_P(RiskAnalysisTest, AnalyzeNestedFormula) {
+  std::string nested_input = "./share/scram/input/fta/nested_formula.xml";
+  std::set<std::set<std::string>> mcs = {{"pumpone", "pumptwo"},
+                                         {"pumpone", "valvetwo"},
+                                         {"pumptwo", "valveone"},
+                                         {"valveone", "valvetwo"}};
+  ASSERT_NO_THROW(ProcessInputFile(nested_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  EXPECT_EQ(mcs, min_cut_sets());
+}
+
+TEST_F(RiskAnalysisTest, ImportanceDefault) {
+  std::string with_prob =
+      "./share/scram/input/fta/correct_tree_input_with_probs.xml";
+  settings.importance_analysis(true);
+  ASSERT_NO_THROW(ProcessInputFile(with_prob));
+  ASSERT_NO_THROW(ran->Analyze());
   // Check importance values.
   std::vector<std::pair<std::string, ImportanceFactors>> importance = {
       {"pumpone", {0.51, 0.4737, 0.7895, 1.316, 1.9}},
@@ -135,20 +168,10 @@ TEST_P(RiskAnalysisTest, AnalyzeWithProbability) {
     EXPECT_NEAR(test.raw, result.raw, 1e-3) << entry.first;
     EXPECT_NEAR(test.rrw, result.rrw, 1e-3) << entry.first;
   }
+
 }
 
-TEST_P(RiskAnalysisTest, AnalyzeNestedFormula) {
-  std::string nested_input = "./share/scram/input/fta/nested_formula.xml";
-  std::set<std::set<std::string>> mcs = {{"pumpone", "pumptwo"},
-                                         {"pumpone", "valvetwo"},
-                                         {"pumptwo", "valveone"},
-                                         {"valveone", "valvetwo"}};
-  ASSERT_NO_THROW(ProcessInputFile(nested_input));
-  ASSERT_NO_THROW(ran->Analyze());
-  EXPECT_EQ(mcs, min_cut_sets());
-}
-
-TEST_P(RiskAnalysisTest, ImportanceNeg) {
+TEST_F(RiskAnalysisTest, ImportanceNeg) {
   std::string tree_input = "./share/scram/input/fta/importance_neg_test.xml";
   settings.importance_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
@@ -195,30 +218,6 @@ TEST_P(RiskAnalysisTest, ImportanceRareEvent) {
     EXPECT_NEAR(test.dif, result.dif, 1e-3) << entry.first;
     EXPECT_NEAR(test.raw, result.raw, 1e-3) << entry.first;
     EXPECT_NEAR(test.rrw, result.rrw, 1e-3) << entry.first;
-  }
-}
-
-TEST_P(RiskAnalysisTest, DISABLED_ImportanceNegRareEvent) {
-  std::string tree_input = "./share/scram/input/fta/importance_neg_test.xml";
-  settings.importance_analysis(true).approximation("rare-event");
-  ASSERT_NO_THROW(ProcessInputFile(tree_input));
-  ASSERT_NO_THROW(ran->Analyze());
-  EXPECT_DOUBLE_EQ(1, p_total());
-  // Check importance values with negative event.
-  std::vector<std::pair<std::string, ImportanceFactors>> importance = {
-      {"pumpone", {0.40299, 0.45, 0.675, 1.675, 1.2687}},
-      {"pumptwo", {0.31343, 0.3, 0.45652, 1.4565, 1.1343}},
-      {"valveone", {0.23881, 0.4, 0.31373, 1.3137, 1.3582}},
-      {"valvetwo", {0.13433, 0.18, 0.15517, 1.1552, 1.1343}}};
-
-  for (const auto& entry : importance) {
-    const ImportanceFactors& result = RiskAnalysisTest::importance(entry.first);
-    const ImportanceFactors& test = entry.second;
-    EXPECT_NEAR(test.mif, result.mif, 1e-3);
-    EXPECT_NEAR(test.cif, result.cif, 1e-3);
-    EXPECT_NEAR(test.dif, result.dif, 1e-3);
-    EXPECT_NEAR(test.raw, result.raw, 1e-3);
-    EXPECT_NEAR(test.rrw, result.rrw, 1e-3);
   }
 }
 

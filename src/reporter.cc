@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -124,9 +124,9 @@ void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
 
     if (settings.approximation() == "rare-event") {
       information->add_child("warning")->add_child_text(
-          " The rare event approximation may be inaccurate for analysis"
+          " The rare-event approximation may be inaccurate for analysis"
           " if cut sets' probabilities exceed 0.1.");
-      methods->set_attribute("name", "Rare Event Approximation");
+      methods->set_attribute("name", "Rare-Event Approximation");
     } else if (settings.approximation() == "mcub") {
       information->add_child("warning")->add_child_text(
           " The MCUB approximation may not hold"

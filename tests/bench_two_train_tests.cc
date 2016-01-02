@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,17 +24,21 @@ namespace test {
 
 // Benchmark Tests for an example fault tree with
 // Two trains of Pumps and Valves.
-// Test Minimal cut sets and total probabilty.
+// Test Minimal cut sets and total probability.
 TEST_P(RiskAnalysisTest, TwoTrain) {
   std::string tree_input = "./share/scram/input/TwoTrain/two_train.xml";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  EXPECT_DOUBLE_EQ(0.7225, p_total());  // Total prob check.
-  std::set< std::set<std::string> > mcs = {{"valveone", "valvetwo"},
-                                           {"valveone", "pumptwo"},
-                                           {"valvetwo", "pumpone"},
-                                           {"pumpone", "pumptwo"}};
+  if (settings.approximation() == "rare-event") {
+    EXPECT_DOUBLE_EQ(1, p_total());
+  } else {
+    EXPECT_DOUBLE_EQ(0.7225, p_total());
+  }
+  std::set<std::set<std::string>> mcs = {{"valveone", "valvetwo"},
+                                         {"valveone", "pumptwo"},
+                                         {"valvetwo", "pumpone"},
+                                         {"pumpone", "pumptwo"}};
   EXPECT_EQ(4, min_cut_sets().size());
   EXPECT_EQ(mcs, min_cut_sets());
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,11 @@ TEST_P(RiskAnalysisTest, 200Event) {
   settings.probability_analysis(true).limit_order(15);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  EXPECT_NEAR(0.55985, p_total(), 1e-5);
+  if (settings.approximation() == "rare-event") {
+    EXPECT_NEAR(0.794828, p_total(), 1e-5);
+  } else {
+    EXPECT_NEAR(0.55985, p_total(), 1e-5);
+  }
   // Minimal cut set check.
   EXPECT_EQ(287, min_cut_sets().size());
 }

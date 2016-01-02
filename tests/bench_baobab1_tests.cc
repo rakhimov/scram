@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,7 +35,11 @@ TEST_F(RiskAnalysisTest, Baobab_1_Test) {
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
   ASSERT_NO_THROW(ran->Analyze());
-  EXPECT_NEAR(1.2823e-6, p_total(), 1e-8);  // Probability with BDD.
+  if (settings.approximation() == "rare-event") {
+    EXPECT_NEAR(1.6815e-6, p_total(), 1e-8);  // Probability with BDD.
+  } else {
+    EXPECT_NEAR(1.2823e-6, p_total(), 1e-8);  // Probability with BDD.
+  }
   // Minimal cut set check.
   EXPECT_EQ(46188, min_cut_sets().size());
   std::vector<int> distr = {0,    0,     1,    1,     70,   400,

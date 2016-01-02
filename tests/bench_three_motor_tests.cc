@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ namespace test {
 // Benchmark Tests for the ThreeMotor fault tree from OpenFTA.
 TEST_P(RiskAnalysisTest, ThreeMotor) {
   std::string tree_input = "./share/scram/input/ThreeMotor/three_motor.xml";
-  std::set< std::set<std::string> > mcs;  // For expected min cut sets.
+  std::set<std::set<std::string>> mcs;  // For expected min cut sets.
   std::string T3 = "t3";
   std::string S1 = "s1";
   std::string T4 = "t4";
@@ -45,7 +45,11 @@ TEST_P(RiskAnalysisTest, ThreeMotor) {
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  EXPECT_NEAR(0.0211538, p_total(), 1e-5);
+  if (settings.approximation() == "rare-event") {
+    EXPECT_NEAR(0.0212013, p_total(), 1e-5);
+  } else {
+    EXPECT_NEAR(0.0211538, p_total(), 1e-5);
+  }
   // Minimal cut set check.
   // Order 1
   mcs.insert({K5});

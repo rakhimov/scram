@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,11 @@ TEST_P(RiskAnalysisTest, ABC) {
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  EXPECT_DOUBLE_EQ(0.496, p_total());
+  if (settings.approximation() == "rare-event") {
+    EXPECT_DOUBLE_EQ(0.6, p_total());
+  } else {
+    EXPECT_DOUBLE_EQ(0.496, p_total());
+  }
 
   std::set< std::set<std::string> > mcs = {{"a"}, {"b"} , {"c"}};
   EXPECT_EQ(3, min_cut_sets().size());
@@ -43,7 +47,11 @@ TEST_P(RiskAnalysisTest, AB_BC) {
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  EXPECT_DOUBLE_EQ(0.074, p_total());
+  if (settings.approximation() == "rare-event") {
+    EXPECT_DOUBLE_EQ(0.08, p_total());
+  } else {
+    EXPECT_DOUBLE_EQ(0.074, p_total());
+  }
 
   std::set< std::set<std::string> > mcs = {{"a", "b"}, {"b", "c"}};
   EXPECT_EQ(2, min_cut_sets().size());
@@ -57,7 +65,11 @@ TEST_P(RiskAnalysisTest, AB_OR_NOT_AC) {
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  EXPECT_DOUBLE_EQ(0.29, p_total());
+  if (settings.approximation() == "rare-event") {
+    EXPECT_DOUBLE_EQ(0.32, p_total());
+  } else {
+    EXPECT_DOUBLE_EQ(0.29, p_total());
+  }
 
   // Prime implicants.
   /* std::set<std::set<std::string>> mcs = {{"a", "b"}, {"not a", "c"}, */
@@ -75,7 +87,11 @@ TEST_P(RiskAnalysisTest, ATLEAST) {
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  EXPECT_DOUBLE_EQ(0.098, p_total());
+  if (settings.approximation() == "rare-event") {
+    EXPECT_DOUBLE_EQ(0.11, p_total());
+  } else {
+    EXPECT_DOUBLE_EQ(0.098, p_total());
+  }
 
   std::set< std::set<std::string> > mcs = {{"a", "b"}, {"b", "c"}, {"a", "c"}};
   EXPECT_EQ(3, min_cut_sets().size());
@@ -103,7 +119,11 @@ TEST_P(RiskAnalysisTest, A_OR_NOT_B) {
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  EXPECT_DOUBLE_EQ(0.82, p_total());
+  if (settings.approximation() == "rare-event") {
+    EXPECT_DOUBLE_EQ(1, p_total());
+  } else {
+    EXPECT_DOUBLE_EQ(0.82, p_total());
+  }
 
   /// @todo Enable with prime implicants.
   /* std::set< std::set<std::string> > mcs = {{"a"}, {"not b"}}; */
@@ -127,7 +147,11 @@ TEST_P(RiskAnalysisTest, A_AND_NOT_B) {
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  EXPECT_NEAR(0.08, p_total(), 1e-5);
+  if (settings.approximation() == "rare-event") {
+    EXPECT_DOUBLE_EQ(0.1, p_total());
+  } else {
+    EXPECT_NEAR(0.08, p_total(), 1e-5);
+  }
 
   /// @todo Enable with prime implicants.
   /* std::set< std::set<std::string> > mcs = {{"a", "not b"}}; */
@@ -142,7 +166,11 @@ TEST_P(RiskAnalysisTest, A_OR_NOT_AB) {
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  EXPECT_DOUBLE_EQ(0.28, p_total());
+  if (settings.approximation() == "rare-event") {
+    EXPECT_DOUBLE_EQ(0.3, p_total());
+  } else {
+    EXPECT_DOUBLE_EQ(0.28, p_total());
+  }
 
   std::set< std::set<std::string> > mcs = {{"a"}, {"b"}};
   EXPECT_EQ(2, min_cut_sets().size());
@@ -173,7 +201,11 @@ TEST_P(RiskAnalysisTest, MultipleParentNegativeGate) {
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  EXPECT_DOUBLE_EQ(0.9, p_total());
+  if (settings.approximation() == "rare-event") {
+    EXPECT_DOUBLE_EQ(1, p_total());
+  } else {
+    EXPECT_DOUBLE_EQ(0.9, p_total());
+  }
 
   /* std::set<std::set<std::string>> mcs = {{"not a"}};  // Prime implicants. */
   std::set<std::set<std::string>> mcs = {{}};  // Minimal cut sets.
@@ -282,7 +314,11 @@ TEST_P(RiskAnalysisTest, XOR_ABC) {
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  EXPECT_DOUBLE_EQ(0.404, p_total());
+  if (settings.approximation() == "rare-event") {
+    EXPECT_DOUBLE_EQ(0.6, p_total());
+  } else {
+    EXPECT_DOUBLE_EQ(0.404, p_total());
+  }
 
   /// @todo Enable with prime implicants.
   /* std::set< std::set<std::string> > mcs = {{"a", "b", "c"}, */
@@ -333,7 +369,11 @@ TEST_P(RiskAnalysisTest, BetaFactorCCF) {
   settings.ccf_analysis(true).probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  EXPECT_NEAR(0.04308, p_total(), 1e-5);
+  if (settings.approximation() == "rare-event") {
+    EXPECT_NEAR(0.044096, p_total(), 1e-5);
+  } else {
+    EXPECT_NEAR(0.04308, p_total(), 1e-5);
+  }
   // Minimal cut set check.
   std::set< std::set<std::string> > mcs;  // For expected min cut sets.
   mcs.insert({pumps});
@@ -357,7 +397,11 @@ TEST_P(RiskAnalysisTest, PhiFactorCCF) {
   settings.ccf_analysis(true).probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  EXPECT_NEAR(0.04104, p_total(), 1e-5);
+  if (settings.approximation() == "rare-event") {
+    EXPECT_NEAR(0.04434, p_total(), 1e-5);
+  } else {
+    EXPECT_NEAR(0.04104, p_total(), 1e-5);
+  }
   EXPECT_EQ(34, min_cut_sets().size());
   std::vector<int> distr = {0, 2, 24, 8};
   EXPECT_EQ(distr, McsDistribution());
@@ -370,7 +414,11 @@ TEST_P(RiskAnalysisTest, MGLFactorCCF) {
   settings.ccf_analysis(true).probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  EXPECT_NEAR(0.01630, p_total(), 1e-5);
+  if (settings.approximation() == "rare-event") {
+    EXPECT_NEAR(0.01771, p_total(), 1e-5);
+  } else {
+    EXPECT_NEAR(0.01630, p_total(), 1e-5);
+  }
   EXPECT_EQ(34, min_cut_sets().size());
   std::vector<int> distr = {0, 2, 24, 8};
   EXPECT_EQ(distr, McsDistribution());
@@ -383,7 +431,11 @@ TEST_P(RiskAnalysisTest, AlphaFactorCCF) {
   settings.ccf_analysis(true).probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  EXPECT_NEAR(0.03092, p_total(), 1e-5);
+  if (settings.approximation() == "rare-event") {
+    EXPECT_NEAR(0.03234, p_total(), 1e-5);
+  } else {
+    EXPECT_NEAR(0.03092, p_total(), 1e-5);
+  }
   EXPECT_EQ(34, min_cut_sets().size());
   std::vector<int> distr = {0, 2, 24, 8};
   EXPECT_EQ(distr, McsDistribution());
