@@ -176,7 +176,7 @@ Binary Decision Diagram
 =======================
 
 Binary decision diagrams are constructed from Boolean graphs for analysis.
-In order to calculate minimal cut sets,
+In order to calculate minimal cut sets or prime implicants,
 BDD is converted into Zero-suppressed binary decision diagrams (ZBDD).
 ZBDD is a data structure that encodes sets in a compact way [Min93]_.
 Minimization of sets is performed with subsume operations described in [Rau93]_.

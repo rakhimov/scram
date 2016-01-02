@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -89,6 +89,20 @@ TEST(SettingsTest, CorrectSetup) {
   EXPECT_NO_THROW(s.mission_time(0));
   EXPECT_NO_THROW(s.mission_time(10));
   EXPECT_NO_THROW(s.mission_time(1e6));
+}
+
+TEST(SettingsTest, SetupForPrimeImplicants) {
+  Settings s;
+  // Incorrect request for prime implicants.
+  EXPECT_NO_THROW(s.algorithm("mocus"));
+  EXPECT_THROW(s.prime_implicants(true), InvalidArgument);
+  // Correct request for prime implicants.
+  ASSERT_NO_THROW(s.algorithm("bdd"));
+  ASSERT_NO_THROW(s.prime_implicants(true));
+  // Prime implicants with quantitative approximations.
+  EXPECT_NO_THROW(s.approximation("no"));
+  EXPECT_THROW(s.approximation("rare-event"), InvalidArgument);
+  EXPECT_THROW(s.approximation("mcub"), InvalidArgument);
 }
 
 }  // namespace test

@@ -32,9 +32,19 @@ Settings& Settings::algorithm(const std::string& algorithm) {
   algorithm_ = algorithm;
   if (algorithm_ == "bdd") {
     Settings::approximation("no");
-  } else if (approximation_ == "no") {
-    Settings::approximation("rare-event");
+  } else {
+    if (approximation_ == "no") Settings::approximation("rare-event");
+    if (prime_implicants_) Settings::prime_implicants(false);
   }
+  return *this;
+}
+
+Settings& Settings::prime_implicants(bool flag) {
+  if (flag && algorithm_ != "bdd")
+    throw InvalidArgument("Prime implicants can only be calculated with BDD");
+
+  prime_implicants_ = flag;
+  if (prime_implicants_) Settings::approximation("no");
   return *this;
 }
 
@@ -57,6 +67,10 @@ Settings& Settings::cut_off(double prob) {
 Settings& Settings::approximation(const std::string& approx) {
   if (approx != "no" && approx != "rare-event" && approx != "mcub")
     throw InvalidArgument("The probability approximation is not recognized.");
+
+  if (approx != "no" && prime_implicants_)
+    throw InvalidArgument(
+        "Prime implicants require no quantitative approximation.");
 
   approximation_ = approx;
   return *this;

@@ -23,6 +23,17 @@ the maximum order of cut sets can be specified for faster analysis.
 The default values of the parameters can be used for initial runs
 before adjusting them for accuracy and performance.
 
+- Run ``scram --help`` to see all the flags and options for analysis.
+
+- Analyses may use a lot of time and computing resources
+  depending on the complexity of the model.
+  You can adjust SCRAM flags and parameters to reduce these demands.
+
+- All analyses can be run with logging.
+  The logging system outputs useful information
+  for figuring out limiting bottlenecks.
+  This information can be used for debugging and testing purposes.
+
 
 Fault Tree Analysis
 ===================
@@ -32,7 +43,7 @@ Fault Tree Analysis
 #. Output a graphing dot file per fault tree. *Probability input is optional*
 #. Instantiate the analysis.
    Create the fault trees for the analysis.
-#. Find minimal cut sets. *Probability input is optional*
+#. Find minimal cut sets or prime implicants. *Probability input is optional*
 
    - Cut-off probability for cut sets. *Unused*
    - Maximum order for cut sets for faster calculations.
@@ -84,20 +95,3 @@ Future Additions
 #. Event tree analysis
 #. Dynamic fault tree analysis
 #. Reliability block diagram
-
-
-General Information for Users
-=============================
-
-#. Run ``scram --help`` to see all the flags and options for analysis.
-
-#. The minimal cut set generation for fault trees and probability calculations
-   may use a lot of time and computing power
-   depending on the complexity of the model.
-   You can adjust SCRAM flags and parameters to reduce these demands.
-
-#. All analysis can be run with logging the steps.
-   The logging system outputs useful information
-   for figuring out limiting bottlenecks
-   and the source of errors in the analysis.
-   This information can be used for debugging and testing purposes.
