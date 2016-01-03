@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,29 +23,12 @@ namespace scram {
 namespace test {
 
 // Benchmark Tests for CEA9601 fault tree from XFTA.
-// Test Minimal cut sets.
-TEST_F(RiskAnalysisTest, DISABLED_CEA9601_Test) {
-  std::vector<std::string> input_files;
-  input_files.push_back("./share/scram/input/CEA9601/CEA9601.xml");
-  input_files.push_back("./share/scram/input/CEA9601/CEA9601-basic-events.xml");
-  settings.limit_order(4);
-  ASSERT_NO_THROW(ProcessInputFiles(input_files));
-  ASSERT_NO_THROW(ran->Analyze());
-  // Minimal cut set check.
-  EXPECT_EQ(2732, min_cut_sets().size());
-  std::vector<int> distr = {0, 0, 0, 858, 1874};
-  EXPECT_EQ(distr, McsDistribution());
-
-  /// @todo Run probability tests.
-  // EXPECT_NEAR(2.0812e-8, p_total(), 1e-10);
-}
-
 #ifdef NDEBUG
 TEST_F(RiskAnalysisTest, CEA9601_Test_BDD) {
   std::vector<std::string> input_files;
   input_files.push_back("./share/scram/input/CEA9601/CEA9601.xml");
   input_files.push_back("./share/scram/input/CEA9601/CEA9601-basic-events.xml");
-  settings.limit_order(4).algorithm("bdd").probability_analysis(true);
+  settings.limit_order(4).probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
   ASSERT_NO_THROW(ran->Analyze());
   // Minimal cut set check.
