@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <config>
   <input-files>
-    <file>two_train.xml</file>
+    <file>input.xml</file>
   </input-files>
   <options>
     <analysis importance="true" uncertainty="false" ccf="false"/>
