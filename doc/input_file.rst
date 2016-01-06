@@ -120,12 +120,12 @@ Fault Tree Input File
 ---------------------
 
 .. highlight:: xml
-.. literalinclude:: two_train.xml
+.. literalinclude:: example/input.xml
 
 
 Shorthand Version
 -----------------
 
-.. literalinclude:: shorthand_two_train.txt
+.. literalinclude:: example/shorthand_input.txt
 
 .. _RelaxNG: http://relaxng.org/

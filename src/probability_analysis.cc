@@ -21,8 +21,6 @@
 
 #include "probability_analysis.h"
 
-#include <algorithm>
-
 namespace scram {
 
 ProbabilityAnalysis::ProbabilityAnalysis(const FaultTreeAnalysis* fta)
@@ -49,11 +47,8 @@ double CutSetProbabilityCalculator::Calculate(
   if (cut_set.empty()) return 0;
   double p_sub_set = 1;  // 1 is for multiplication.
   for (int member : cut_set) {
-    if (member > 0) {
-      p_sub_set *= var_probs[member];
-    } else {
-      p_sub_set *= 1 - var_probs[std::abs(member)];
-    }
+    assert(member > 0 && "Complements in a cut set.");
+    p_sub_set *= var_probs[member];
   }
   return p_sub_set;
 }
@@ -107,7 +102,7 @@ void ProbabilityAnalyzer<Bdd>::CreateBdd(const GatePtr& root) noexcept {
   LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
 
   CLOCK(bdd_time);  // BDD based calculation time.
-  LOG(DEBUG2) << "Creating BDD for ProbabilityAnalysis...";
+  LOG(DEBUG2) << "Creating BDD for Probability Analysis...";
   bdd_graph_ = new Bdd(bool_graph, kSettings_);
   LOG(DEBUG2) << "BDD is created in " << DUR(bdd_time);
   delete bool_graph;  // The original graph of FTA is usable with the BDD.

@@ -41,7 +41,7 @@ Pre-Release
 
     * [ ] Unused ``#include`` and improper forward declarations (CppClean)
     * [ ] Style check of C++ code (CppLint)
-    * [ ] Style check of Python code (PyLint)
+    * [ ] Style check of Python code (PyLint, Prospector)
     * [ ] Unused ``import``
     * [ ] Spell check the code (optional)
 

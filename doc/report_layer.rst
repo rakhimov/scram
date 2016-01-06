@@ -80,4 +80,4 @@ Report File Example
 ===================
 
 .. highlight:: xml
-.. literalinclude:: report.xml
+.. literalinclude:: example/report.xml

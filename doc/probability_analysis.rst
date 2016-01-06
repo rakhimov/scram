@@ -81,6 +81,9 @@ for independent minimal cut sets with very low probabilities.
 However, if the cut set probabilities are high,
 the total probability may exceed 1.
 
+This is the default quantitative approximation
+for analysis algorithms that inherently run with approximations (MOCUS and ZBDD).
+
 
 The Min-Cut-Upper Bound (MCUB) Approximation
 --------------------------------------------
@@ -90,9 +93,7 @@ by subtracting the probability of all minimal cut sets' being successful from 1;
 thus, the total probability never exceeds 1.
 Non-independence of the minimal cut sets introduce the major discrepancy for this technique.
 Moreover, the MCUB approximation provides non-conservative estimation
-for non-coherent trees containing NOT logic.
-There are other limitations
-described by Don Wakefield in "You Can't Just Build Trees and Call It PSA" [WakXX]_.
+for non-coherent trees containing NOT logic [WakXX]_.
 
 
 *******************

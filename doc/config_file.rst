@@ -22,4 +22,4 @@ Configuration File Example
 ==========================
 
 .. highlight:: xml
-.. literalinclude:: config.xml
+.. literalinclude:: example/config.xml

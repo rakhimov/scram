@@ -25,6 +25,7 @@
 #include <memory>
 #include <set>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -123,6 +124,9 @@ class Preprocessor {
   /// and no need for further processing.
   ///
   /// @returns true if no more processing is needed.
+  ///
+  /// @post If no more processing is needed,
+  ///       the graph is fully ready for analysis.
   ///
   /// @note This function may swap the root gate of the graph.
   bool CheckRootGate() noexcept;
@@ -1014,6 +1018,25 @@ class Preprocessor {
   /// @post The root and descendant node order marks contain the ordering.
   int TopologicalOrder(const IGatePtr& root, int order) noexcept;
 
+  /// Gathers all nodes in the Boolean graph.
+  ///
+  /// @param[out] gates  A set of gates.
+  /// @param[out] variables  A set of variables.
+  ///
+  /// @warning Node visit information is manipulated.
+  void GatherNodes(std::vector<IGatePtr>* gates,
+                   std::vector<VariablePtr>* variables) noexcept;
+
+  /// Gathers nodes in the sub-graph.
+  ///
+  /// @param[in] gate  The root gate to traverse.
+  /// @param[in,out] gates  A set of gates.
+  /// @param[in,out] variables  A set of variables.
+  ///
+  /// @pre Visited nodes are marked.
+  void GatherNodes(const IGatePtr& gate, std::vector<IGatePtr>* gates,
+                   std::vector<VariablePtr>* variables) noexcept;
+
   BooleanGraph* graph_;  ///< The Boolean graph to preprocess.
   int root_sign_;  ///< The negative or positive sign of the root node.
   bool constant_graph_;  ///< Graph is constant due to constant events.
@@ -1050,7 +1073,22 @@ class CustomPreprocessor<Mocus> : public Preprocessor {
   /// modular (independent sub-trees),
   /// positive-gate-only (negation normal)
   /// Boolean graph.
+  /// The variable ordering is assigned specifically for MOCUS.
   void Run() noexcept override;
+
+ private:
+  /// Groups and inverts the topological ordering for nodes.
+  /// The inversion is done to simplify the work of MOCUS facilities,
+  /// which rely on the top-down approach.
+  ///
+  /// Gates are ordered so that they show up at the top of ZBDD.
+  /// However, module gates are handled just as basic events.
+  /// Basic events preserve
+  /// the original topological ordering.
+  ///
+  /// Note, however, the inversion of the order
+  /// generally (dramatically) increases the size of Binary Decision Diagrams.
+  void InvertOrder() noexcept;
 };
 
 class Bdd;

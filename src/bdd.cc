@@ -28,25 +28,23 @@
 
 namespace scram {
 
-Vertex::Vertex(bool terminal, int id) : id_(id), terminal_(terminal) {}
+Vertex::Vertex(int id) : id_(id) {}
 
-Vertex::~Vertex() {}  // Empty body for pure virtual destructor.
+Terminal::Terminal(bool value) : Vertex::Vertex(value) {}
 
-Terminal::Terminal(bool value) : Vertex::Vertex(true, value), value_(value) {}
-
-NonTerminal::NonTerminal(int index, int order)
-      : index_(index),
+NonTerminal::NonTerminal(int index, int order, int id, const VertexPtr& high,
+                         const VertexPtr& low)
+      : Vertex(id),
         order_(order),
+        high_(high),
+        low_(low),
+        index_(index),
         module_(false),
         mark_(false) {}
 
-NonTerminal::~NonTerminal() {}  // Default pure virtual destructor.
-
 Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
     : kSettings_(settings),
-#ifndef NGARBAGE
-      garbage_collection_(std::make_shared<bool>(true)),
-#endif
+      unique_table_(std::make_shared<UniqueTable>()),
       kOne_(std::make_shared<Terminal>(true)),
       function_id_(2) {
   CLOCK(init_time);
@@ -67,13 +65,13 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
     root_ = {child < 0, Bdd::FetchUniqueTable(var->index(), kOne_, kOne_,
                                               true, var->order(), false)};
   } else {
-    std::unordered_map<int, Function> gates;
+    std::unordered_map<int, std::pair<Function, int>> gates;
     root_ = Bdd::IfThenElse(fault_tree->root(), &gates);
   }
   Bdd::ClearMarks(false);
   Bdd::TestStructure(root_.vertex);
   LOG(DEBUG4) << "# of BDD vertices created: " << function_id_ - 1;
-  LOG(DEBUG4) << "# of entries in unique table: " << unique_table_.size();
+  LOG(DEBUG4) << "# of entries in unique table: " << unique_table_->size();
   LOG(DEBUG4) << "# of entries in AND table: " << and_table_.size();
   LOG(DEBUG4) << "# of entries in OR table: " << or_table_.size();
   Bdd::ClearMarks(false);
@@ -81,15 +79,8 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
   LOG(DEBUG3) << "Finished Boolean graph conversion in " << DUR(init_time);
   Bdd::ClearMarks(false);
 
-  // Cleanup.
-#ifndef NGARBAGE
-  garbage_collection_ = nullptr;  // For faster cleanup.
-  ite_as_arg_.clear();
-  ite_as_arg_.reserve(0);
-#endif
+  unique_table_.reset();
   LOG(DEBUG5) << "BDD switched off the garbage collector.";
-  unique_table_.clear();
-  unique_table_.reserve(0);
   and_table_.clear();
   and_table_.reserve(0);
   or_table_.clear();
@@ -108,58 +99,47 @@ const std::vector<std::vector<int>>& Bdd::cut_sets() const {
   return zbdd_->cut_sets();
 }
 
-#ifndef NGARBAGE
 void Bdd::GarbageCollector::operator()(Ite* ptr) noexcept {
-  if (!garbage_collection_.expired()) {
+  if (!unique_table_.expired()) {
     LOG(DEBUG5) << "Running garbage collection for " << ptr->id();
-    bdd_->unique_table_.erase(
+    unique_table_.lock()->erase(
         {ptr->index(),
          ptr->high()->id(),
          (ptr->complement_edge() ? -1 : 1) * ptr->low()->id()});
-    auto it = bdd_->ite_as_arg_.find(ptr->id());
-    if (it != bdd_->ite_as_arg_.end()) {
-      Membership& member_in = it->second;
-      for (const std::pair<int, int>& key : member_in.and_table)
-        bdd_->and_table_.erase(key);
-
-      for (const std::pair<int, int>& key : member_in.or_table)
-        bdd_->or_table_.erase(key);
-
-      bdd_->ite_as_arg_.erase(it);
-    }
   }
   delete ptr;
 }
-#endif
 
 ItePtr Bdd::FetchUniqueTable(int index, const VertexPtr& high,
                              const VertexPtr& low, bool complement_edge,
                              int order, bool module) noexcept {
   assert(index > 0 && "Only positive indices are expected.");
   int sign = complement_edge ? -1 : 1;
-  IteWeakPtr& in_table = unique_table_[{index, high->id(), sign * low->id()}];
+  IteWeakPtr& in_table =
+      (*unique_table_)[{index, high->id(), sign * low->id()}];
   if (!in_table.expired()) return in_table.lock();
   assert(order > 0 && "Improper order.");
-#ifndef NGARBAGE
-  ItePtr ite(new Ite(index, order), GarbageCollector(this));
-#else
-  auto ite = std::make_shared<Ite>(index, order);
-#endif
-  ite->id(function_id_++);
+  ItePtr ite(new Ite(index, order, function_id_++, high, low),
+             GarbageCollector(this));
   ite->module(module);
-  ite->high(high);
-  ite->low(low);
   ite->complement_edge(complement_edge);
   in_table = ite;
   return ite;
 }
 
-const Bdd::Function& Bdd::IfThenElse(
+Bdd::Function Bdd::IfThenElse(
     const IGatePtr& gate,
-    std::unordered_map<int, Function>* gates) noexcept {
+    std::unordered_map<int, std::pair<Function, int>>* gates) noexcept {
   assert(!gate->IsConstant() && "Unexpected constant gate!");
-  Function& result = (*gates)[gate->index()];
-  if (result.vertex) return result;
+  Function result;
+  if (gates->count(gate->index())) {
+    std::pair<Function, int>& entry = gates->find(gate->index())->second;
+    result = entry.first;
+    assert(entry.second < gate->parents().size());
+    entry.second++;
+    if (entry.second == gate->parents().size()) gates->erase(gate->index());
+    return result;
+  }
   std::vector<Function> args;
   for (const std::pair<const int, VariablePtr>& arg : gate->variable_args()) {
     args.push_back({arg.first < 0,
@@ -168,7 +148,7 @@ const Bdd::Function& Bdd::IfThenElse(
     index_to_order_.emplace(arg.second->index(), arg.second->order());
   }
   for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
-    const Function& res = Bdd::IfThenElse(arg.second, gates);
+    Function res = Bdd::IfThenElse(arg.second, gates);
     if (arg.second->IsModule()) {
       args.push_back({arg.first < 0,
                       Bdd::FetchUniqueTable(arg.second->index(), kOne_, kOne_,
@@ -191,8 +171,11 @@ const Bdd::Function& Bdd::IfThenElse(
     result = Bdd::Apply(gate->type(), result.vertex, it->vertex,
                         result.complement, it->complement);
   }
+  and_table_.clear();
+  or_table_.clear();
   assert(result.vertex);
   if (gate->IsModule()) modules_.emplace(gate->index(), result);
+  if (gate->parents().size() > 1) gates->insert({gate->index(), {result, 1}});
   return result;
 }
 
@@ -207,22 +190,6 @@ Bdd::Function& Bdd::FetchComputeTable(Operator type,
   int min_id = arg_one->id() * (complement_one ? -1 : 1);
   int max_id = arg_two->id() * (complement_two ? -1 : 1);
   if (arg_one->id() > arg_two->id()) std::swap(min_id, max_id);
-#ifndef NGARBAGE
-  Membership& member_one = ite_as_arg_[arg_one->id()];
-  Membership& member_two = ite_as_arg_[arg_two->id()];
-  switch (type) {  /// @todo Detect equal calculations with complements.
-    case kOrGate:
-      member_one.or_table.emplace_back(min_id, max_id);
-      member_two.or_table.emplace_back(min_id, max_id);
-      return or_table_[{min_id, max_id}];
-    case kAndGate:
-      member_one.and_table.emplace_back(min_id, max_id);
-      member_two.and_table.emplace_back(min_id, max_id);
-      return and_table_[{min_id, max_id}];
-    default:
-      assert(false);
-  }
-#else
   switch (type) {
     case kOrGate:
       return or_table_[{min_id, max_id}];
@@ -231,22 +198,18 @@ Bdd::Function& Bdd::FetchComputeTable(Operator type,
     default:
       assert(false);
   }
-#endif
 }
 
 Bdd::Function Bdd::Apply(Operator type,
                          const VertexPtr& arg_one, const VertexPtr& arg_two,
                          bool complement_one, bool complement_two) noexcept {
   assert(arg_one->id() && arg_two->id());  // Both are reduced function graphs.
-  if (arg_one->terminal() && arg_two->terminal())
-    return Bdd::Apply(type, Terminal::Ptr(arg_one), Terminal::Ptr(arg_two),
-                      complement_one, complement_two);
   if (arg_one->terminal())
-    return Bdd::Apply(type, Ite::Ptr(arg_two), Terminal::Ptr(arg_one),
-                      complement_two, complement_one);
+    return Bdd::Apply(type, Terminal::Ptr(arg_one), arg_two, complement_one,
+                      complement_two);
   if (arg_two->terminal())
-    return Bdd::Apply(type, Ite::Ptr(arg_one), Terminal::Ptr(arg_two),
-                      complement_one, complement_two);
+    return Bdd::Apply(type, Terminal::Ptr(arg_two), arg_one, complement_two,
+                      complement_one);
   if (arg_one->id() == arg_two->id())  // Reduction detection.
     return Bdd::Apply(type, arg_one, complement_one, complement_two);
 
@@ -278,34 +241,16 @@ Bdd::Function Bdd::Apply(Operator type,
 }
 
 Bdd::Function Bdd::Apply(Operator type, const TerminalPtr& term_one,
-                         const TerminalPtr& term_two, bool complement_one,
+                         const VertexPtr& arg_two, bool complement_one,
                          bool complement_two) noexcept {
   assert(term_one->value());
-  assert(term_two->value());
-  assert(term_one == term_two);
   switch (type) {
     case kOrGate:
-      if (complement_one && complement_two) return {true, kOne_};
-      return {false, kOne_};
-    case kAndGate:  // Reverse of OR logic!
-      if (complement_one || complement_two) return {true, kOne_};
-      return {false, kOne_};
-    default:
-      assert(false);
-  }
-}
-
-Bdd::Function Bdd::Apply(Operator type,
-                         const ItePtr& ite_one, const TerminalPtr& term_two,
-                         bool complement_one, bool complement_two) noexcept {
-  assert(term_two->value());
-  switch (type) {
-    case kOrGate:
-      if (complement_two) return {complement_one, ite_one};
-      return {false, kOne_};
+      if (!complement_one) return {false, kOne_};
+      return {complement_two, arg_two};
     case kAndGate:
-      if (complement_two) return {true, kOne_};
-      return {complement_one, ite_one};
+      if (complement_one) return {true, kOne_};
+      return {complement_two, arg_two};
     default:
       assert(false);
   }

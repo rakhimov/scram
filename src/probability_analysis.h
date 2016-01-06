@@ -74,13 +74,14 @@ class CutSetProbabilityCalculator {
   /// whose members are in AND relationship with each other.
   /// This function assumes independence of each member.
   ///
-  /// @param[in] cut_set  A cut set of signed indices of basic events.
+  /// @param[in] cut_set  A cut set with indices of basic events.
   /// @param[in] var_probs  Probabilities of events mapped to a vector.
   ///
-  /// @returns The total probability of the set.
+  /// @returns The total probability of the cut set.
   ///
+  /// @pre The cut set doesn't contain complements.
   /// @pre Probability values are non-negative.
-  /// @pre Absolute indices of events directly map to vector indices.
+  /// @pre Indices of events directly map to vector indices.
   double Calculate(const CutSet& cut_set,
                    const std::vector<double>& var_probs) noexcept;
 
@@ -158,7 +159,7 @@ class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
   const BooleanGraph* graph() const { return graph_; }
 
   /// @returns The resulting cut sets of the fault tree analyzer.
-  const std::vector<CutSet>& cut_sets() const { return *cut_sets_; }
+  const std::vector<CutSet>& cut_sets() const { return cut_sets_; }
 
   /// @returns A modifiable mapping for probability values and indices.
   ///
@@ -171,7 +172,7 @@ class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
 
  protected:
   const BooleanGraph* graph_;  ///< Boolean graph from the fault tree analysis.
-  const std::vector<CutSet>* cut_sets_;  ///< A collection of cut sets.
+  const std::vector<CutSet>& cut_sets_;  ///< A collection of cut sets.
   std::vector<double> var_probs_;  ///< Variable probabilities.
 };
 
@@ -180,8 +181,8 @@ ProbabilityAnalyzerBase::ProbabilityAnalyzerBase(
     const FaultTreeAnalyzer<Algorithm>* fta)
     : ProbabilityAnalysis::ProbabilityAnalysis(fta),
       graph_(fta->graph()),
-      cut_sets_(&fta->algorithm()->cut_sets()) {
-  var_probs_.push_back(-1);
+      cut_sets_(fta->algorithm()->cut_sets()) {
+  var_probs_.push_back(-1);  // Padding.
   for (const BasicEventPtr& event : graph_->basic_events()) {
     var_probs_.push_back(event->p());
   }
@@ -201,7 +202,7 @@ class ProbabilityAnalyzer : public ProbabilityAnalyzerBase {
   ///
   /// @returns The total probability of the graph or cut sets.
   double CalculateTotalProbability() noexcept {
-    return calc_.Calculate(*cut_sets_, var_probs_);
+    return calc_.Calculate(cut_sets_, var_probs_);
   }
 
  private:
