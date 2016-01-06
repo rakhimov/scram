@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Olzhas Rakhimov
+ * Copyright (C) 2015-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,6 +53,11 @@ class IGateTest : public ::testing::Test {
     for (int i = 0; i < 2; ++i) vars_.emplace_back(new Variable());  // Extra.
   }
 
+  virtual void TearDown() {
+    Node::ResetIndex();
+    Variable::ResetIndex();
+  }
+
   /// Sets up the main gate with the default variables.
   ///
   /// @param[in] type  Type for the main gate.
@@ -74,11 +79,6 @@ class IGateTest : public ::testing::Test {
     assert(g->variable_args().size() == num_vars);
     assert(g->gate_args().empty());
     assert(g->constant_args().empty());
-  }
-
-  virtual void TearDown() {
-    Node::ResetIndex();
-    Variable::ResetIndex();
   }
 
   IGatePtr g;  // Main gate for manipulations.
@@ -112,13 +112,11 @@ TEST_F(IGateTest, AddArgDeathTests) {
 }
 #endif
 
-/// @def ADD_IGNORE_TEST
-///
 /// Collection of tests
 /// for addition of an existing argument to a gate.
 ///
 /// @param short_type  Short name of the gate, i.e., 'And'.
-///              It must have the same root in Operator, i.e., 'kAndGate'.
+///                    It must have the same root in Operator, i.e., 'kAndGate'.
 /// @param num_vars  The number of variables to initialize the gate.
 #define ADD_ARG_IGNORE_TEST(short_type, num_vars) \
   DefineGate(k##short_type##Gate, num_vars);      \
@@ -129,8 +127,6 @@ TEST_F(IGateTest, AddArgDeathTests) {
   EXPECT_TRUE(g->gate_args().empty());            \
   EXPECT_TRUE(g->constant_args().empty())
 
-/// @def TEST_DUP_ARG_IGNORE
-///
 /// Tests addition of an existing argument to Boolean graph gates
 /// that do not change the type of the gate.
 ///
@@ -148,9 +144,8 @@ TEST_DUP_ARG_IGNORE(Nor);
 
 #undef TEST_DUP_ARG_IGNORE
 
-/// @def TEST_DUP_ARG_TYPE_CHANGE
-///
-/// Tests duplication addition that changes the type of the gate.
+/// Tests addition of an existing argument
+/// that changes the type of the gate.
 ///
 /// @param init_type  Short name of the initial type of the gate, i.e., 'And'.
 /// @param final_type  The resulting type of addition operation.
@@ -260,8 +255,6 @@ TEST_F(IGateTest, DuplicateArgAtleastToOr_TwoClones) {
   EXPECT_EQ(4, clone_two->variable_args().size());
 }
 
-/// @def TEST_ADD_COMPLEMENT_ARG
-///
 /// Collection of tests
 /// for addition of the complement of an existing argument to a gate.
 ///
@@ -287,8 +280,6 @@ TEST_ADD_COMPLEMENT_ARG(Xor, Unity);
 
 #undef TEST_ADD_COMPLEMENT_ARG
 
-/// @def TEST_ADD_COMPLEMENT_ARG_KN
-///
 /// Collection of ATLEAST (K/N) gate tests
 /// for addition of the complement of an existing argument.
 ///
@@ -315,8 +306,6 @@ TEST_ADD_COMPLEMENT_ARG_KN(3, 3, And);  // Join operation.
 
 #undef TEST_ADD_COMPLEMENT_ARG_KN
 
-/// @def TEST_CONSTANT_ARG_STATE
-///
 /// Tests for processing of a constant argument of a gate,
 /// which results in gate becoming constant itself.
 ///
@@ -346,8 +335,6 @@ TEST_CONSTANT_ARG_STATE(false, 2, Nand, Unity);
 
 #undef TEST_CONSTANT_ARG_STATE
 
-/// @def TEST_CONSTANT_ARG_VNUM
-///
 /// Tests for processing of a constant argument of a gate,
 /// which results in type change of the gate.
 ///
@@ -375,8 +362,6 @@ TEST_CONSTANT_ARG_VNUM(true, 4, 3, Atleast, Atleast);
 TEST_CONSTANT_ARG_VNUM(false, 3, 2, Atleast, And);
 TEST_CONSTANT_ARG_VNUM(false, 4, 2, Atleast, Atleast);
 
-/// @def TEST_CONSTANT_ARG
-///
 /// The same tests as TEST_CONSTANT_ARG_VNUM
 /// but with no vote number initialization.
 #define TEST_CONSTANT_ARG(arg_state, num_vars, init_type, final_type) \
