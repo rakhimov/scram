@@ -66,7 +66,7 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
                                               true, var->order(), false)};
   } else {
     std::unordered_map<int, std::pair<Function, int>> gates;
-    root_ = Bdd::IfThenElse(fault_tree->root(), &gates);
+    root_ = Bdd::ConvertGraph(fault_tree->root(), &gates);
   }
   Bdd::ClearMarks(false);
   Bdd::TestStructure(root_.vertex);
@@ -127,7 +127,7 @@ ItePtr Bdd::FetchUniqueTable(int index, const VertexPtr& high,
   return ite;
 }
 
-Bdd::Function Bdd::IfThenElse(
+Bdd::Function Bdd::ConvertGraph(
     const IGatePtr& gate,
     std::unordered_map<int, std::pair<Function, int>>* gates) noexcept {
   assert(!gate->IsConstant() && "Unexpected constant gate!");
@@ -148,7 +148,7 @@ Bdd::Function Bdd::IfThenElse(
     index_to_order_.emplace(arg.second->index(), arg.second->order());
   }
   for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
-    Function res = Bdd::IfThenElse(arg.second, gates);
+    Function res = Bdd::ConvertGraph(arg.second, gates);
     if (arg.second->IsModule()) {
       args.push_back({arg.first < 0,
                       Bdd::FetchUniqueTable(arg.second->index(), kOne_, kOne_,
