@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2014-2015 Olzhas Rakhimov
+# Copyright (C) 2014-2016 Olzhas Rakhimov
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,10 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""test_shorthand_to_xml.py
-
-Tests for the shorthand-to-XML converter.
-"""
+"""Tests for the shorthand-to-XML converter."""
 
 from tempfile import NamedTemporaryFile
 from unittest import TestCase
@@ -224,7 +221,7 @@ def test_orphan_nodes():
     yield assert_is_not_none, parse_input_file(tmp.name)
 
 def test_cycle_detection():
-    """Tests cycles in the fault tree"""
+    """Tests cycles in the fault tree."""
     tmp = NamedTemporaryFile()
     tmp.write("FT\n")
     tmp.write("g1 := g2 & e1\n")
@@ -371,6 +368,7 @@ class OperatorPrecedenceTestCase(TestCase):
 
 class ParenthesesTestCase(TestCase):
     """Application of parentheses tests."""
+
     def setUp(self):
         self.tmp = NamedTemporaryFile()
         self.tmp.write("FT\n")

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2014-2015 Olzhas Rakhimov
+# Copyright (C) 2014-2016 Olzhas Rakhimov
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,10 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""run_inputs.py
-
-Runs SCRAM with test inputs to examine the output visually.
-"""
+"""Runs SCRAM with test inputs to examine the output visually."""
 
 from __future__ import print_function
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2014-2015 Olzhas Rakhimov
+# Copyright (C) 2014-2016 Olzhas Rakhimov
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,9 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""fault_tree_generator.py
+"""Generates a fault tree of various complexities.
 
-This script generates a fault tree of various complexities.
 The generated fault tree can be put into an XML file with the OpenPSA MEF
 or a shorthand format file.
 The resulting fault tree is topologically sorted.
@@ -117,11 +116,12 @@ class Gate(Node):
             child: Gate, HouseEvent, or BasicEvent child.
         """
         child.parents.add(self)
-        if type(child) is Gate:
+        if isinstance(child, Gate):
             self.g_children.add(child)
-        elif type(child) is BasicEvent:
+        elif isinstance(child, BasicEvent):
             self.b_children.add(child)
-        elif type(child) is HouseEvent:
+        else:
+            assert isinstance(child, HouseEvent)
             self.h_children.add(child)
 
     def get_ancestors(self):
@@ -544,8 +544,8 @@ def init_gates(gates_queue, common_basics, common_gates):
     def candidate_gates():
         """Lazy generator of candidates for common gates.
 
-        Returns:
-            A gate candidate from common gates container.
+        Yields:
+            A next gate candidate from common gates container.
         """
         orphans = [x for x in common_gates if not x.parents]
         random.shuffle(orphans)
@@ -627,8 +627,9 @@ def init_gates(gates_queue, common_basics, common_gates):
         gates_queue.append(Gate(random_gate))
 
 def generate_fault_tree():
-    """Generates a fault tree of specified complexity from Factors class
-    attributes.
+    """Generates a fault tree of specified complexity.
+
+    The Factors class attributes are used as parameters for complexity.
 
     Returns:
         Top gate of the created fault tree.

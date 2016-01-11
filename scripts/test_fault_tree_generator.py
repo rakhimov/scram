@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2014-2015 Olzhas Rakhimov
+# Copyright (C) 2014-2016 Olzhas Rakhimov
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,10 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""test_fault_tree_generator.py
-
-Tests for the fault tree generator.
-"""
+"""Tests for the fault tree generator."""
 
 from __future__ import division
 
@@ -28,7 +25,7 @@ from unittest import TestCase
 
 from lxml import etree
 from nose.tools import assert_equal, assert_true, assert_is_not_none, \
-        assert_almost_equal, assert_less
+        assert_less
 
 from fault_tree_generator import Settings, Factors, generate_fault_tree, \
         write_results, write_shorthand, BasicEvent, Gate, HouseEvent, \
@@ -37,6 +34,7 @@ from fault_tree_generator import Settings, Factors, generate_fault_tree, \
 
 class FaultTreeGeneratorTestCase(TestCase):
     """General tests for the fault tree generator script."""
+
     def setUp(self):
         Gate.gates = []
         Gate.num_gates = 0

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2015 Olzhas Rakhimov
+# Copyright (C) 2015-2016 Olzhas Rakhimov
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,9 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""fuzz_tester.py
+"""Runs SCRAM with various input files and configurations.
 
-Runs SCRAM with various input files and configurations.
 This script is helpful to detect rare bugs, failed assumptions,
 flawed design, and bottlenecks.
 
@@ -47,6 +46,7 @@ class Config(object):
         max_limit: The largest size limit on the cut sets.
         additional: A list of commands to be appended without fuzzing.
     """
+
     switch = ["--probability", "--importance"]
     approximation = ["", "--rare-event", "--mcub"]
     analysis = ["--mocus", "--bdd", "--zbdd"]

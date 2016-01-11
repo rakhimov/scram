@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2014-2015 Olzhas Rakhimov
+# Copyright (C) 2014-2016 Olzhas Rakhimov
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,10 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""shorthand_to_xml.py
+"""Converts the shorthand notation for fault trees into an XML file.
 
-This script converts
-the shorthand notation for fault trees into an XML file.
 The output file is formatted according to the OpenPSA MEF.
 The default output file name is the input file name with the XML extension.
 
@@ -92,7 +90,7 @@ class Node(object):
             formula: The formula where this node appears.
         """
         assert formula not in self.__parents
-        assert type(formula) is Formula
+        assert isinstance(formula, Formula)
         self.__parents.add(formula)
 
     def is_orphan(self):

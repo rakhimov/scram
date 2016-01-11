@@ -1,8 +1,7 @@
-"""generate_gtest_macros.py
+"""Generates a listing of ADD_TEST CMake macros from GoogleTest.
 
-A simple module and default main execution
-to generate a listing of ADD_TEST CMake macros
-for all non-disabled tests in a google-test-based executable.
+The macros are generated only for non-disabled tests
+in a google-test-based executable.
 
 The default main function writes a list of macros
 to the given output file.

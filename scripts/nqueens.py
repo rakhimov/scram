@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright (C) 2015 Olzhas Rakhimov
+# Copyright (C) 2015-2016 Olzhas Rakhimov
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,9 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-"""nqueens.py
+"""Generates a fault tree representation of the N Queens problem.
 
-This script generates a fault tree representation of the N Queens problem.
 The representation is given in the shorthand format.
 """
 
@@ -93,10 +92,10 @@ def main():
     board = []  # top logic
     for i in range(1, n + 1):
         board.append(gate(i))
-        row = []
+        single_row = []
         for j in range(1, n + 1):
-            row.append(gate(i, j))
-        print(gate(i) + " := " + " | ".join(row))
+            single_row.append(gate(i, j))
+        print(gate(i) + " := " + " | ".join(single_row))
 
     print(gate(0) + " := " + " & ".join(board))
 

@@ -1,7 +1,9 @@
 doc-warnings: yes
 test-warnings: yes
 strictness: veryhigh
-max-line-length: 60
+max-line-length: 80
+pep257:
+    disable: [D203, D401]
 pep8:
     full: true
 python-targets:
