@@ -102,7 +102,13 @@ class Zbdd {
   /// @param[in] settings  Settings for analysis.
   ///
   /// @pre BDD has attributed edges with only one terminal (1/True).
-  Zbdd(const Bdd* bdd, const Settings& settings) noexcept;
+  ///
+  /// @post The input BDD structure is not changed.
+  ///
+  /// @note The input BDD is not passed as a constant
+  ///       because ZBDD needs BDD facilities to calculate prime implicants.
+  ///       However, ZBDD guarantees to preserve the original BDD structure.
+  Zbdd(Bdd* bdd, const Settings& settings) noexcept;
 
   /// Constructor with the analysis target.
   /// ZBDD is directly produced from a Boolean graph.
@@ -144,7 +150,7 @@ class Zbdd {
     /// Frees the memory
     /// and triggers the garbage collection ONLY if requested.
     ///
-    /// @param[in] ptr  Pointer to an SetNode vertex with reference count 0.
+    /// @param[in] ptr  Pointer to a SetNode vertex with reference count 0.
     void operator()(SetNode* ptr) noexcept;
 
    private:
@@ -191,8 +197,10 @@ class Zbdd {
   /// @param[in,out] ites  Processed function graphs with ids and limit order.
   ///
   /// @returns Pointer to the root vertex of the ZBDD graph.
+  ///
+  /// @post The input BDD structure is not changed.
   VertexPtr ConvertBdd(const VertexPtr& vertex, bool complement,
-                       const Bdd* bdd_graph, int limit_order,
+                       Bdd* bdd_graph, int limit_order,
                        PairTable<VertexPtr>* ites) noexcept;
 
   /// Converts BDD if-then-else vertex into ZBDD graph.
@@ -209,8 +217,23 @@ class Zbdd {
   ///
   /// @returns Pointer to the root vertex of the ZBDD graph.
   VertexPtr ConvertBdd(const ItePtr& ite, bool complement,
-                       const Bdd* bdd_graph, int limit_order,
+                       Bdd* bdd_graph, int limit_order,
                        PairTable<VertexPtr>* ites) noexcept;
+
+  /// Converts BDD if-then-else vertex into ZBDD graph for prime implicants.
+  /// This is used by the BDD vertex to ZBDD converter,
+  /// and this function should not be called directly.
+  ///
+  /// @param[in] ite  ITE vertex of the ROBDD graph.
+  /// @param[in] complement  Interpretation of the vertex as complement.
+  /// @param[in] bdd_graph  The main ROBDD as helper database.
+  /// @param[in] limit_order  The maximum size of requested sets.
+  /// @param[in,out] ites  Processed function graphs with ids and limit order.
+  ///
+  /// @returns Pointer to the root vertex of the ZBDD graph.
+  VertexPtr ConvertBddPI(const ItePtr& ite, bool complement,
+                         Bdd* bdd_graph, int limit_order,
+                         PairTable<VertexPtr>* ites) noexcept;
 
   /// Transforms a Boolean graph gate into a Zbdd set graph.
   ///
@@ -219,7 +242,7 @@ class Zbdd {
   ///
   /// @returns The top vertex of the Zbdd graph.
   ///
-  /// @pre The memoisation container is not used outside of this function.
+  /// @pre The memoization container is not used outside of this function.
   VertexPtr ConvertGraph(
       const IGatePtr& gate,
       std::unordered_map<int, std::pair<VertexPtr, int>>* gates) noexcept;
@@ -433,7 +456,7 @@ class Zbdd {
   ComputeTable or_table_;
   /// @}
 
-  /// Memoisation of minimal ZBDD vertices.
+  /// Memoization of minimal ZBDD vertices.
   std::unordered_map<int, VertexPtr> minimal_results_;
   /// The results of subsume operations over sets.
   PairTable<VertexPtr> subsume_table_;

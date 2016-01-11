@@ -70,14 +70,20 @@ TEST_P(RiskAnalysisTest, AB_OR_NOT_AC) {
   } else {
     EXPECT_DOUBLE_EQ(0.29, p_total());
   }
-
-  // Prime implicants.
-  /* std::set<std::set<std::string>> mcs = {{"a", "b"}, {"not a", "c"}, */
-  /*                                        {"b", "c"}}; */
-  // Minimal cut sets.
   std::set<std::set<std::string>> mcs = {{"a", "b"}, {"c"}};
   EXPECT_EQ(2, min_cut_sets().size());
   EXPECT_EQ(mcs, min_cut_sets());
+}
+
+TEST_F(RiskAnalysisTest, PI_AB_OR_NOT_AC) {
+  std::string tree_input = "./share/scram/input/core/ab_or_not_ac.xml";
+  ASSERT_NO_THROW(settings.prime_implicants(true));
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  std::set<std::set<std::string>> pi = {{"a", "b"}, {"not a", "c"},
+                                        {"b", "c"}};
+  EXPECT_EQ(3, min_cut_sets().size());
+  EXPECT_EQ(pi, min_cut_sets());
 }
 
 // Simple verification tests for Atleast gate fault tree.
@@ -125,10 +131,18 @@ TEST_P(RiskAnalysisTest, A_OR_NOT_B) {
     EXPECT_DOUBLE_EQ(0.82, p_total());
   }
 
-  /// @todo Enable with prime implicants.
-  /* std::set< std::set<std::string> > mcs = {{"a"}, {"not b"}}; */
-  std::set< std::set<std::string> > mcs = {{}};
+  std::set<std::set<std::string>> mcs = {{}};
   EXPECT_EQ(mcs, min_cut_sets());
+}
+
+TEST_F(RiskAnalysisTest, PI_A_OR_NOT_B) {
+  std::string tree_input = "./share/scram/input/core/a_or_not_b.xml";
+  ASSERT_NO_THROW(settings.prime_implicants(true));
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  std::set<std::set<std::string>> pi = {{"a"}, {"not b"}};
+  EXPECT_EQ(2, min_cut_sets().size());
+  EXPECT_EQ(pi, min_cut_sets());
 }
 
 // [A AND NOT A]
@@ -153,11 +167,19 @@ TEST_P(RiskAnalysisTest, A_AND_NOT_B) {
     EXPECT_NEAR(0.08, p_total(), 1e-5);
   }
 
-  /// @todo Enable with prime implicants.
-  /* std::set< std::set<std::string> > mcs = {{"a", "not b"}}; */
   std::set< std::set<std::string> > mcs = {{"a"}};
   EXPECT_EQ(1, min_cut_sets().size());
   EXPECT_EQ(mcs, min_cut_sets());
+}
+
+TEST_F(RiskAnalysisTest, PI_A_AND_NOT_B) {
+  std::string tree_input = "./share/scram/input/core/a_and_not_b.xml";
+  ASSERT_NO_THROW(settings.prime_implicants(true));
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  std::set<std::set<std::string>> pi = {{"a", "not b"}};
+  EXPECT_EQ(1, min_cut_sets().size());
+  EXPECT_EQ(pi, min_cut_sets());
 }
 
 // [A OR (B, NOT A)]
@@ -214,14 +236,23 @@ TEST_P(RiskAnalysisTest, MultipleParentNegativeGate) {
 }
 
 // Checks for NAND gate.
-TEST_P(RiskAnalysisTest, NAND) {
+TEST_P(RiskAnalysisTest, DISABLED_NAND) {  /// @todo Complement module.
   std::string tree_input = "./share/scram/input/core/nand.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  /// @todo Enable with prime implicants.
-  /* std::set<std::set<std::string>> mcs = {{"not a"}, {"not b"}}; */
-  /* EXPECT_EQ(mcs, min_cut_sets()); */
+  std::set<std::set<std::string>> mcs = {{}};
   EXPECT_EQ(1, min_cut_sets().size());
+  EXPECT_EQ(mcs, min_cut_sets());
+}
+
+TEST_F(RiskAnalysisTest, DISABLED_PI_NAND) {  /// @todo Complement module.
+  std::string tree_input = "./share/scram/input/core/nand.xml";
+  ASSERT_NO_THROW(settings.prime_implicants(true));
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  std::set<std::set<std::string>> pi = {{"not a"}, {"not b"}};
+  EXPECT_EQ(2, min_cut_sets().size());
+  EXPECT_EQ(pi, min_cut_sets());
 }
 
 // Checks for NOR gate.
@@ -320,14 +351,22 @@ TEST_P(RiskAnalysisTest, XOR_ABC) {
     EXPECT_DOUBLE_EQ(0.404, p_total());
   }
 
-  /// @todo Enable with prime implicants.
-  /* std::set< std::set<std::string> > mcs = {{"a", "b", "c"}, */
-  /*                                          {"a", "not b", "not c"}, */
-  /*                                          {"not a", "b", "not c"}, */
-  /*                                          {"not a", "not b", "c"}}; */
-  std::set< std::set<std::string> > mcs = {{"a"}, {"b"}, {"c"}};
+  std::set<std::set<std::string>> mcs = {{"a"}, {"b"}, {"c"}};
   EXPECT_EQ(3, min_cut_sets().size());
   EXPECT_EQ(mcs, min_cut_sets());
+}
+
+TEST_F(RiskAnalysisTest, PI_XOR_ABC) {
+  std::string tree_input = "./share/scram/input/core/xor.xml";
+  ASSERT_NO_THROW(settings.prime_implicants(true));
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  std::set<std::set<std::string>> pi = {{"a", "b", "c"},
+                                        {"a", "not b", "not c"},
+                                        {"not a", "b", "not c"},
+                                        {"not a", "not b", "c"}};
+  EXPECT_EQ(4, min_cut_sets().size());
+  EXPECT_EQ(pi, min_cut_sets());
 }
 
 // Checks for top gate of NOT with a single basic event child.
@@ -336,10 +375,19 @@ TEST_P(RiskAnalysisTest, NOT_A) {
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
 
-  /* std::set< std::set<std::string> > mcs = {{"not onlychild"}};  // PI. */
-  std::set< std::set<std::string> > mcs = {{}};  // MCS.
+  std::set<std::set<std::string>> mcs = {{}};
   EXPECT_EQ(1, min_cut_sets().size());
   EXPECT_EQ(mcs, min_cut_sets());
+}
+
+TEST_F(RiskAnalysisTest, PI_NOT_A) {
+  std::string tree_input = "./share/scram/input/core/not_a.xml";
+  ASSERT_NO_THROW(settings.prime_implicants(true));
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  std::set<std::set<std::string>> pi = {{"not onlychild"}};
+  EXPECT_EQ(1, min_cut_sets().size());
+  EXPECT_EQ(pi, min_cut_sets());
 }
 
 // Checks for top gate of NULL with a single basic event child.

@@ -48,7 +48,7 @@ Zbdd::Zbdd(const Settings& settings) noexcept
   LOG(DEBUG3) << "There are " << Zbdd::CountCutSets(root_) << " cut sets.";    \
   Zbdd::ClearMarks(root_)
 
-Zbdd::Zbdd(const Bdd* bdd, const Settings& settings) noexcept
+Zbdd::Zbdd(Bdd* bdd, const Settings& settings) noexcept
     : Zbdd::Zbdd(settings) {
   CLOCK(init_time);
   LOG(DEBUG2) << "Creating ZBDD from BDD...";
@@ -185,19 +185,24 @@ SetNodePtr Zbdd::FetchUniqueTable(const SetNodePtr& node, const VertexPtr& high,
 }
 
 VertexPtr Zbdd::ConvertBdd(const VertexPtr& vertex, bool complement,
-                           const Bdd* bdd_graph, int limit_order,
+                           Bdd* bdd_graph, int limit_order,
                            PairTable<VertexPtr>* ites) noexcept {
   if (vertex->terminal()) return complement ? kEmpty_ : kBase_;
   int sign = complement ? -1 : 1;
   VertexPtr& result = (*ites)[{sign * vertex->id(), limit_order}];
   if (result) return result;
-  result = Zbdd::ConvertBdd(Ite::Ptr(vertex), complement, bdd_graph,
-                            limit_order, ites);
+  if (kSettings_.prime_implicants()) {
+    result = Zbdd::ConvertBddPI(Ite::Ptr(vertex), complement, bdd_graph,
+                                limit_order, ites);
+  } else {
+    result = Zbdd::ConvertBdd(Ite::Ptr(vertex), complement, bdd_graph,
+                              limit_order, ites);
+  }
   return result;
 }
 
 VertexPtr Zbdd::ConvertBdd(const ItePtr& ite, bool complement,
-                           const Bdd* bdd_graph, int limit_order,
+                           Bdd* bdd_graph, int limit_order,
                            PairTable<VertexPtr>* ites) noexcept {
   VertexPtr low =
       Zbdd::ConvertBdd(ite->low(), ite->complement_edge() ^ complement,
@@ -230,6 +235,53 @@ VertexPtr Zbdd::ConvertBdd(const ItePtr& ite, bool complement,
   }
   return Zbdd::FetchUniqueTable(ite->index(), high, low, ite->order(),
                                 ite->module());
+}
+
+VertexPtr Zbdd::ConvertBddPI(const ItePtr& ite, bool complement,
+                             Bdd* bdd_graph, int limit_order,
+                             PairTable<VertexPtr>* ites) noexcept {
+  Bdd::Function common = bdd_graph->CalculateConsensus(ite, complement);
+  VertexPtr consensus = Zbdd::ConvertBdd(common.vertex, common.complement,
+                                         bdd_graph, limit_order, ites);
+  if (limit_order == 0) {  // Cut-off on the product order.
+    if (consensus->terminal()) return consensus;
+    return kEmpty_;
+  }
+  if (ite->module()) {  // This is a proxy and not a variable.
+    const Bdd::Function& module =
+        bdd_graph->modules().find(ite->index())->second;
+    assert(!module.vertex->terminal() && "Unexpected BDD terminal module.");
+    VertexPtr module_pos =
+        Zbdd::ConvertBdd(module.vertex, module.complement,
+                         bdd_graph, kSettings_.limit_order(), ites);
+    modules_.emplace(ite->index(), module_pos);
+    assert(!module_pos->terminal());
+    VertexPtr module_neg =
+        Zbdd::ConvertBdd(module.vertex, !module.complement,
+                         bdd_graph, kSettings_.limit_order(), ites);
+    modules_.emplace(-ite->index(), module_neg);
+    assert(!module_neg->terminal());
+  }
+  int sublimit = limit_order - 1;
+  VertexPtr high =
+      Zbdd::ConvertBdd(ite->high(), complement, bdd_graph, sublimit, ites);
+  VertexPtr low =
+      Zbdd::ConvertBdd(ite->low(), ite->complement_edge() ^ complement,
+                       bdd_graph, sublimit, ites);
+  if ((high->terminal() && !Terminal::Ptr(high)->value()) &&
+      (low->terminal() && !Terminal::Ptr(low)->value())) {
+    return consensus;
+  } else if (high->terminal() && !Terminal::Ptr(high)->value()) {
+    return Zbdd::FetchUniqueTable(-ite->index(), low, consensus, ite->order(),
+                                  ite->module());
+  } else if (low->terminal() && !Terminal::Ptr(low)->value()) {
+    return Zbdd::FetchUniqueTable(ite->index(), high, consensus, ite->order(),
+                                  ite->module());
+  }
+  return Zbdd::FetchUniqueTable(
+      ite->index(), high, Zbdd::FetchUniqueTable(-ite->index(), low, consensus,
+                                                 ite->order(), ite->module()),
+      ite->order(), ite->module());
 }
 
 VertexPtr Zbdd::ConvertGraph(

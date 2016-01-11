@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Olzhas Rakhimov
+ * Copyright (C) 2015-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -79,12 +79,16 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
   LOG(DEBUG3) << "Finished Boolean graph conversion in " << DUR(init_time);
   Bdd::ClearMarks(false);
 
-  unique_table_.reset();
-  LOG(DEBUG5) << "BDD switched off the garbage collector.";
+  if (!kSettings_.prime_implicants()) {  // No more calculations are expected.
+    LOG(DEBUG5) << "BDD switched off the garbage collector.";
+    unique_table_.reset();
+  }
   and_table_.clear();
-  and_table_.reserve(0);
   or_table_.clear();
-  or_table_.reserve(0);
+  if (!kSettings_.prime_implicants()) {
+    and_table_.reserve(0);
+    or_table_.reserve(0);
+  }
 }
 
 Bdd::~Bdd() noexcept = default;
@@ -198,6 +202,12 @@ Bdd::Function& Bdd::FetchComputeTable(Operator type,
     default:
       assert(false);
   }
+}
+
+Bdd::Function Bdd::CalculateConsensus(const ItePtr& ite,
+                                      bool complement) noexcept {
+  return Bdd::Apply(kAndGate, ite->high(), ite->low(), complement,
+                    ite->complement_edge() ^ complement);
 }
 
 Bdd::Function Bdd::Apply(Operator type,

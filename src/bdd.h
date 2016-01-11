@@ -250,6 +250,8 @@ class Zbdd;  // For analysis purposes.
 /// @note The low/else edge is chosen to have the attribute for an ITE vertex.
 ///       There is only one terminal vertex of value 1/True.
 class Bdd {
+  friend class Zbdd;  // Direct access for calculation of prime implicants.
+
  public:
   /// Constructor with the analysis target.
   /// Reduced Ordered BDD is produced from a Boolean graph.
@@ -385,6 +387,14 @@ class Bdd {
   Function& FetchComputeTable(Operator type, const VertexPtr& arg_one,
                               const VertexPtr& arg_two, bool complement_one,
                               bool complement_two) noexcept;
+
+  /// Calculates consensus of high and low of an if-then-else BDD vertex.
+  ///
+  /// @param[in] ite  The BDD vertex with the input.
+  /// @param[in] complement  Interpretation of the BDD vertex.
+  ///
+  /// @returns The consensus BDD function.
+  Bdd::Function CalculateConsensus(const ItePtr& ite, bool complement) noexcept;
 
   /// Applies Boolean operation to BDD graphs.
   ///
