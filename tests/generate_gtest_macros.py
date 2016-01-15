@@ -4,9 +4,6 @@
 
 The macros are generated only for non-disabled tests
 in a google-test-based executable.
-
-The default main function writes a list of macros
-to the given output file.
 """
 
 from __future__ import print_function
@@ -66,6 +63,7 @@ def write_macros_to_output(tests, executable, output=None):
 
 
 def main():
+    """Writes a list of macros to a given output file."""
     description = "A simple script to add CTest ADD_TEST macros to a " + \
                   "file for every test in a google-test executable."
     parser = ap.ArgumentParser(description=description)

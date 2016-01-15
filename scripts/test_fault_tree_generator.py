@@ -36,6 +36,7 @@ class FaultTreeGeneratorTestCase(TestCase):
     """General tests for the fault tree generator script."""
 
     def setUp(self):
+        """Initializes the generator factors for default complexity."""
         Gate.gates = []
         Gate.num_gates = 0
         BasicEvent.num_basic = 0

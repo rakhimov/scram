@@ -83,6 +83,11 @@ class Node(object):
     """
 
     def __init__(self, name):
+        """Initializes a node with an identifier.
+
+        Args:
+            name: Identifier of the node.
+        """
         self.name = name
         self.__parents = set()
 
@@ -109,6 +114,12 @@ class BasicEvent(Node):
     """
 
     def __init__(self, name, prob):
+        """Initializes a basic event node.
+
+        Args:
+            name: Identifier of the node.
+            prob: Probability of the basic event.
+        """
         super(BasicEvent, self).__init__(name)
         self.prob = prob
 
@@ -121,6 +132,12 @@ class HouseEvent(Node):
     """
 
     def __init__(self, name, state):
+        """Initializes a house event node.
+
+        Args:
+            name: Identifier of the node.
+            state: Boolean state of the constant.
+        """
         super(HouseEvent, self).__init__(name)
         self.state = state
 
@@ -134,6 +151,12 @@ class Gate(Node):
     """
 
     def __init__(self, name, formula):
+        """Initializes a gate.
+
+        Args:
+            name: Identifier of the node.
+            formula: Unique (non-shared) formula of the gate.
+        """
         super(Gate, self).__init__(name)
         self.mark = None  # marking for various algorithms
         self.formula = formula  # the formula of this gate
@@ -154,6 +177,12 @@ class Formula(object):
     """
 
     def __init__(self, operator=None, k_num=None):
+        """Initializer a Boolean formula for gates.
+
+        Args:
+            operator: Boolean operator of this formula.
+            k_num: Min number for the combination operator.
+        """
         self.operator = operator
         self.k_num = k_num
         self.node_arguments = []
@@ -183,6 +212,12 @@ class FaultTree(object):
     """
 
     def __init__(self, name=None, multi_top=False):
+        """Initializes an empty fault tree.
+
+        Args:
+            name: The name of the system described by the fault tree container.
+            multi_top: A flag to indicate multi-rooted container.
+        """
         self.name = name
         self.gates = {}
         self.basic_events = {}

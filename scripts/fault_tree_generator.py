@@ -57,6 +57,14 @@ class Node(object):
     """
 
     def __init__(self, name, parent=None):
+        """Constructs a node and adds it as a child for the parent.
+
+        Note that the tracking of parents introduces a cyclic reference.
+
+        Args:
+            name: Identifier for the node.
+            parent: Optional initial parent of this node.
+        """
         self.name = name
         self.parents = set()
         if parent:
@@ -92,6 +100,13 @@ class Gate(Node):
     gates = []  # container for all created gates
 
     def __init__(self, parent=None):
+        """Initializes a new gate.
+
+        The unique identifier is created with the static variables.
+
+        Args:
+            parent: Optional initial parent of this node.
+        """
         super(Gate, self).__init__("G" + str(Gate.num_gates), parent)
         Gate.num_gates += 1  # post-decrement to account for the root gate
         self.b_children = set()  # children that are basic events
@@ -161,6 +176,11 @@ class BasicEvent(Node):
     non_ccf_events = []  # basic events that are not in ccf groups
 
     def __init__(self, parent=None):
+        """Initializes a basic event with a unique identifier.
+
+        Args:
+            parent: Optional initial parent of this node.
+        """
         BasicEvent.num_basic += 1
         super(BasicEvent, self).__init__("B" + str(BasicEvent.num_basic),
                                          parent)
@@ -183,6 +203,11 @@ class HouseEvent(Node):
     house_events = []  # container for created house events
 
     def __init__(self, parent=None):
+        """Initializes a house event with a unique identifier.
+
+        Args:
+            parent: Optional initial parent of this node.
+        """
         HouseEvent.num_house += 1
         super(HouseEvent, self).__init__("H" + str(HouseEvent.num_house),
                                          parent)
@@ -208,6 +233,7 @@ class CcfGroup(object):
     ccf_groups = []
 
     def __init__(self):
+        """Constructs a unique CCF group with factors."""
         CcfGroup.num_ccf += 1
         self.name = "CCF" + str(CcfGroup.num_ccf)
         self.members = []

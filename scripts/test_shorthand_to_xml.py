@@ -265,6 +265,7 @@ class OperatorPrecedenceTestCase(TestCase):
     """Logical operator precedence tests."""
 
     def setUp(self):
+        """Launches a temporary file."""
         self.tmp = NamedTemporaryFile()
         self.tmp.write("FT\n")
 
@@ -384,6 +385,7 @@ class ParenthesesTestCase(TestCase):
     """Application of parentheses tests."""
 
     def setUp(self):
+        """Launches a temporary file."""
         self.tmp = NamedTemporaryFile()
         self.tmp.write("FT\n")
 
