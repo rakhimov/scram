@@ -84,6 +84,7 @@ def generate_input(normal, coherent):
     cmd += weights
     call(cmd)
 
+
 def get_limit_order():
     """Generates the size limit on cut set order.
 
@@ -91,6 +92,7 @@ def get_limit_order():
         Random integer between 1 and the maximum limit on cut set order.
     """
     return random.randint(1, Config.max_limit)
+
 
 def call_scram():
     """Calls SCRAM with generated input files.
@@ -113,6 +115,7 @@ def call_scram():
     print(cmd)
     cmd += ["-o", "/dev/null"]
     return call(cmd)
+
 
 def main():
     """The main entrance for SCRAM Fuzz Tester.

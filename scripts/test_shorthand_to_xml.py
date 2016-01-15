@@ -22,10 +22,10 @@ from unittest import TestCase
 
 from lxml import etree
 from nose.tools import assert_raises, assert_is_not_none, assert_equal, \
-        assert_true
+    assert_true
 
 from shorthand_to_xml import ParsingError, FormatError, FaultTreeError, \
-        parse_input_file, write_to_xml_file
+    parse_input_file, write_to_xml_file
 
 
 def test_correct():
@@ -59,6 +59,7 @@ def test_correct():
     doc = etree.parse(out)
     assert_true(relaxng.validate(doc))
 
+
 def test_ft_name_redefinition():
     """Tests the redefinition of the fault tree name."""
     tmp = NamedTemporaryFile()
@@ -66,6 +67,7 @@ def test_ft_name_redefinition():
     tmp.write("AnotherFaultTree\n")
     tmp.flush()
     assert_raises(FormatError, parse_input_file, tmp.name)
+
 
 def test_ncname_ft():
     """The name of the fault tree must conform to NCNAME format."""
@@ -95,6 +97,7 @@ def test_ncname_ft():
     tmp.flush()
     yield parse_input_file, tmp.name
 
+
 def test_no_ft_name():
     """Tests the case where no fault tree name is provided."""
     tmp = NamedTemporaryFile()
@@ -102,6 +105,7 @@ def test_no_ft_name():
     tmp.write("g2 := h1 & e1\n")
     tmp.flush()
     assert_raises(FormatError, parse_input_file, tmp.name)
+
 
 def test_illegal_format():
     """Test Arithmetic operators."""
@@ -126,6 +130,7 @@ def test_illegal_format():
     tmp.flush()
     yield assert_raises, ParsingError, parse_input_file, tmp.name
 
+
 def test_repeated_argument():
     """Tests the formula with a repeated argument."""
     tmp = NamedTemporaryFile()
@@ -135,6 +140,7 @@ def test_repeated_argument():
     tmp.flush()
     assert_raises(FaultTreeError, parse_input_file, tmp.name)
 
+
 def test_parenthesis_count():
     """Tests cases with missing parenthesis."""
     tmp = NamedTemporaryFile()
@@ -143,6 +149,7 @@ def test_parenthesis_count():
     tmp.flush()
     yield assert_raises, FormatError, parse_input_file, tmp.name
     # Other errors: (a|)b&c; ()a|b&c; a(|b&c); )a|b(&c;
+
 
 def test_combination_gate_children():
     """K/N or Combination gate/operator should have its K < its N."""
@@ -156,6 +163,7 @@ def test_combination_gate_children():
     tmp.write("g1 := @(4, [a, b, c])")  # K > N
     tmp.flush()
     yield assert_raises, FaultTreeError, parse_input_file, tmp.name
+
 
 def test_null_gate():
     """Tests if NULL type gates are recognized correctly."""
@@ -183,6 +191,7 @@ def test_no_top_event():
     tmp.flush()
     assert_raises(FaultTreeError, parse_input_file, tmp.name)
 
+
 def test_multi_top():
     """Multiple root nodes without the flag causes a problem by default."""
     tmp = NamedTemporaryFile()
@@ -193,6 +202,7 @@ def test_multi_top():
     yield assert_raises, FaultTreeError, parse_input_file, tmp.name
     yield assert_is_not_none, parse_input_file(tmp.name, True)  # with the flag
 
+
 def test_redefinition():
     """Tests name collision detection of nodes."""
     tmp = NamedTemporaryFile()
@@ -202,6 +212,7 @@ def test_redefinition():
     tmp.write("g2 := e2 & e1\n")  # redefining a node
     tmp.flush()
     assert_raises(FaultTreeError, parse_input_file, tmp.name)
+
 
 def test_orphan_nodes():
     """Tests cases with orphan house and basic event nodes."""
@@ -220,6 +231,7 @@ def test_orphan_nodes():
     tmp.flush()
     yield assert_is_not_none, parse_input_file(tmp.name)
 
+
 def test_cycle_detection():
     """Tests cycles in the fault tree."""
     tmp = NamedTemporaryFile()
@@ -237,6 +249,7 @@ def test_cycle_detection():
     tmp.flush()
     yield assert_raises, FaultTreeError, parse_input_file, tmp.name
 
+
 def test_detached_gates():
     """Some cycles may get detached from the original fault tree."""
     tmp = NamedTemporaryFile()
@@ -246,6 +259,7 @@ def test_detached_gates():
     tmp.write("g3 := g2 & e1\n")  # cycle
     tmp.flush()
     assert_raises(FaultTreeError, parse_input_file, tmp.name)
+
 
 class OperatorPrecedenceTestCase(TestCase):
     """Logical operator precedence tests."""

@@ -59,16 +59,19 @@ import argparse as ap
 
 class ParsingError(Exception):
     """General parsing errors."""
+
     pass
 
 
 class FormatError(Exception):
     """Common errors in writing the shorthand format."""
+
     pass
 
 
 class FaultTreeError(Exception):
     """Indication of problems in the fault tree."""
+
     pass
 
 
@@ -198,8 +201,8 @@ class FaultTree(object):
             FaultTreeError: The given name already exists.
         """
         if (name.lower() in self.basic_events or
-            name.lower() in self.gates or
-            name.lower() in self.house_events):
+                name.lower() in self.gates or
+                name.lower() in self.house_events):
             raise FaultTreeError("Redefinition of a node: " + name)
 
     def __detect_cycle(self):
@@ -537,7 +540,7 @@ def parse_input_file(input_file, multi_top=False):
             arguments = get_arguments(arguments, ",")
             if int(k_num) >= len(arguments):
                 raise FaultTreeError(
-                        "Invalid k/n for the combination formula:\n" + line)
+                    "Invalid k/n for the combination formula:\n" + line)
             operator = "atleast"
         elif not_re.match(line):
             arguments = not_re.match(line).group(1)
@@ -565,8 +568,8 @@ def parse_input_file(input_file, multi_top=False):
             if blank_line.match(line):
                 continue
             elif gate_re.match(line):
-                gate_name, formula_line = \
-                        gate_re.match(line).group("name", "formula")
+                gate_name, formula_line = gate_re.match(line).group("name",
+                                                                    "formula")
                 check_parentheses(line)
                 fault_tree.add_gate(gate_name, get_formula(formula_line))
             elif prob_re.match(line):
@@ -578,8 +581,8 @@ def parse_input_file(input_file, multi_top=False):
             elif ft_name_re.match(line):
                 if ft_name:
                     raise FormatError(
-                            "Redefinition of the fault tree name:\n%s to %s" %
-                            (ft_name, line))
+                        "Redefinition of the fault tree name:\n%s to %s" %
+                        (ft_name, line))
                 ft_name = ft_name_re.match(line).group(1)
             else:
                 raise ParsingError("Cannot interpret the line.")
@@ -643,6 +646,7 @@ def toposort_gates(top_gates, gates):
         visit(top_gate, sorted_gates)
     assert len(sorted_gates) == len(gates)
     return sorted_gates
+
 
 def write_to_xml_file(fault_tree, output_file):
     """Writes the fault tree into an XML file.
@@ -716,13 +720,13 @@ def write_to_xml_file(fault_tree, output_file):
         t_file.write("<model-data>\n")
         for basic in fault_tree.basic_events.values():
             t_file.write("<define-basic-event name=\"" + basic.name + "\">\n"
-                        "<float value=\"" + str(basic.prob) + "\"/>\n"
-                        "</define-basic-event>\n")
+                         "<float value=\"" + str(basic.prob) + "\"/>\n"
+                         "</define-basic-event>\n")
 
         for house in fault_tree.house_events.values():
             t_file.write("<define-house-event name=\"" + house.name + "\">\n"
-                        "<constant value=\"" + str(house.state) + "\"/>\n"
-                        "</define-house-event>\n")
+                         "<constant value=\"" + str(house.state) + "\"/>\n"
+                         "</define-house-event>\n")
         t_file.write("</model-data>\n")
 
     t_file.write("</opsa-mef>")

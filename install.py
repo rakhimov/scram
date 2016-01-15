@@ -25,6 +25,7 @@ def absexpanduser(rel_path):
     """
     return os.path.abspath(os.path.expanduser(rel_path))
 
+
 def install_scram(args):
     """Installs SCRAM with the specified configurations.
 
@@ -87,6 +88,7 @@ def install_scram(args):
 
     subprocess.check_call(make_cmd, cwd=args.build_dir, shell=(os.name == "nt"))
 
+
 def uninstall_scram(args):
     """Uninstalls SCRAM if it is installed.
 
@@ -104,8 +106,7 @@ def uninstall_scram(args):
 
 def main():
     """Initiates installation processes taking command-line arguments."""
-    description = "A SCRAM installation helper script. " +\
-                  "For more information, please see http://scram-pra.org"
+    description = "A SCRAM installation helper script."
     parser = ap.ArgumentParser(description=description)
 
     build_dir = "where to place the build directory"

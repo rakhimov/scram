@@ -25,11 +25,11 @@ from unittest import TestCase
 
 from lxml import etree
 from nose.tools import assert_equal, assert_true, assert_is_not_none, \
-        assert_less
+    assert_less
 
 from fault_tree_generator import Settings, Factors, generate_fault_tree, \
-        write_results, write_shorthand, BasicEvent, Gate, HouseEvent, \
-        CcfGroup
+    write_results, write_shorthand, BasicEvent, Gate, HouseEvent, \
+    CcfGroup
 
 
 class FaultTreeGeneratorTestCase(TestCase):

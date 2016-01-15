@@ -28,6 +28,7 @@ def test_empty_call():
     cmd = ["scram"]
     yield assert_equal, 1, call(cmd)
 
+
 def test_info_calls():
     """Tests general information calls about SCRAM."""
     # Test help
@@ -37,6 +38,7 @@ def test_info_calls():
     # Test version information
     cmd = ["scram", "--version"]
     yield assert_equal, 0, call(cmd)
+
 
 def test_fta_no_prob():
     """Tests calls for fault tree analysis without probability information."""
@@ -50,6 +52,7 @@ def test_fta_no_prob():
     yield assert_equal, 0, call(cmd)  # report into an output file
     if os.path.isfile(out_temp):
         os.remove(out_temp)
+
 
 def test_fta_calls():
     """Tests calls for full fault tree analysis."""
@@ -99,6 +102,7 @@ def test_fta_calls():
            "--num-quantiles", "20"]
     yield assert_equal, 0, call(cmd)
 
+
 def test_config_file():
     """Tests calls with configuration files."""
     # Test with a configuration file
@@ -112,8 +116,9 @@ def test_config_file():
     # Test the clash of files from configuration and command-line
     config_file = "./input/fta/full_configuration.xml"
     cmd = ["scram", "--config-file", config_file,
-            "input/fta/correct_tree_input_with_probs.xml"]
+           "input/fta/correct_tree_input_with_probs.xml"]
     yield assert_not_equal, 0, call(cmd)
+
 
 def test_logging():
     """Tests invokation with logging."""
@@ -124,6 +129,7 @@ def test_logging():
     yield assert_equal, 1, call(cmd)
     cmd = ["scram", fta_input, "--verbosity", "7"]
     yield assert_equal, 0, call(cmd)
+
 
 def test_graph_call():
     """Tests the calls for graphing instructions for a fault tree."""

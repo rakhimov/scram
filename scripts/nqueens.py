@@ -29,9 +29,11 @@ def row(i):
     """Returns row position signature."""
     return "r" + str(i)
 
+
 def col(j):
     """Returns column position signature."""
     return "c" + str(j)
+
 
 def position(i, j, complement):
     """Produces a name for a literal position.
@@ -46,6 +48,7 @@ def position(i, j, complement):
     """
     assert i and j
     return ("~" if complement else "") + "Q" + row(i) + col(j)
+
 
 def gate(i, j=None):
     """Produces a name for a gate logic for positions.
@@ -109,5 +112,4 @@ if __name__ == "__main__":
     try:
         main()
     except ap.ArgumentTypeError as error:
-        print("Argument Error:")
-        print(error)
+        print("Argument Error: " + str(error))

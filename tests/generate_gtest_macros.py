@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 """Generates a listing of ADD_TEST CMake macros from GoogleTest.
 
 The macros are generated only for non-disabled tests
@@ -14,6 +16,7 @@ import subprocess
 import sys
 
 import argparse as ap
+
 
 def parse_tests(test_lines):
     """Parses lines to detect test names.
@@ -38,6 +41,7 @@ def parse_tests(test_lines):
                 tests.append(current_test + line)
     return tests
 
+
 def write_macros_to_output(tests, executable, output=None):
     """Writes a list of test names as ADD_TEST cmake macros to an output file.
 
@@ -50,7 +54,7 @@ def write_macros_to_output(tests, executable, output=None):
     """
     lines = []
     for test in tests:
-        lines.append("ADD_TEST(" + test + " " + \
+        lines.append("ADD_TEST(" + test + " " +
                      executable + " " + "--gtest_filter=" + test + ")")
     if output is None:
         for line in lines:
@@ -62,14 +66,14 @@ def write_macros_to_output(tests, executable, output=None):
 
 
 def main():
-    description = "A simple script to add CTest ADD_TEST macros to a "+\
+    description = "A simple script to add CTest ADD_TEST macros to a " + \
                   "file for every test in a google-test executable."
     parser = ap.ArgumentParser(description=description)
 
     executable = 'the path to the test exectuable to call'
     parser.add_argument('--executable', help=executable, required=True)
 
-    output = "the file to write the ADD_TEST macros to "+\
+    output = "the file to write the ADD_TEST macros to " + \
              "(nominally CTestTestfile.cmake)"
     parser.add_argument('--output', help=output, required=True)
 

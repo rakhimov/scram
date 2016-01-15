@@ -163,7 +163,7 @@ class BasicEvent(Node):
     def __init__(self, parent=None):
         BasicEvent.num_basic += 1
         super(BasicEvent, self).__init__("B" + str(BasicEvent.num_basic),
-                                           parent)
+                                         parent)
         self.prob = random.uniform(BasicEvent.min_prob, BasicEvent.max_prob)
         BasicEvent.basic_events.append(self)
 
@@ -296,7 +296,7 @@ class Factors(object):
 
         # AND, OR, K/N gate types can have the varying number of children.
         # Since the distribution is symmetric, the average is (max + min) / 2.
-        return ((2*avg_children - sum(var_contrib) - 2*sum(const_contrib)) /
+        return ((2 * avg_children - sum(var_contrib) - 2 * sum(const_contrib)) /
                 sum(var_weights))
 
     @staticmethod
@@ -306,11 +306,10 @@ class Factors(object):
         This function must be called after all public factors are initialized.
         """
         Factors.__max_children = Factors.__calculate_max_children(
-                Factors.avg_children,
-                Factors.__norm_weights)
-        Factors.__ratio = Factors.avg_children * \
-                (1 - Factors.common_g +
-                        Factors.common_g / Factors.parents_g) - 1
+            Factors.avg_children,
+            Factors.__norm_weights)
+        g_factor = 1 - Factors.common_g + Factors.common_g / Factors.parents_g
+        Factors.__ratio = Factors.avg_children * g_factor - 1
         Factors.__percent_basics = Factors.__ratio / (1 + Factors.__ratio)
         Factors.__percent_gates = 1 / (1 + Factors.__ratio)
 
@@ -407,11 +406,9 @@ class Factors(object):
         # Special case of constrained gates
         if Factors.__num_gates:
             return Factors.__num_gates
-
+        b_factor = 1 - Factors.common_b + Factors.common_b / Factors.parents_b
         return int(Factors.num_basics /
-                (Factors.__percent_basics * Factors.avg_children *
-                    (1 - Factors.common_b +
-                        Factors.common_b / Factors.parents_b)))
+                   (Factors.__percent_basics * Factors.avg_children * b_factor))
 
     @staticmethod
     def get_num_common_basics(num_gates):
@@ -428,7 +425,7 @@ class Factors(object):
             The estimated number of common basic events.
         """
         return int(Factors.common_b * Factors.__percent_basics *
-                Factors.avg_children * num_gates / Factors.parents_b)
+                   Factors.avg_children * num_gates / Factors.parents_b)
 
     @staticmethod
     def get_num_common_gates(num_gates):
@@ -463,12 +460,12 @@ class Factors(object):
         Returns:
             The estimated average number of parents of gates.
         """
-        ratio = 1 / (-1 + num_gates / Factors.num_basics *
-                Factors.avg_children *
-                (1 - Factors.common_b + Factors.common_b / Factors.parents_b))
+        b_factor = 1 - Factors.common_b + Factors.common_b / Factors.parents_b
+        ratio = 1 / (num_gates / Factors.num_basics *
+                     Factors.avg_children * b_factor - 1)
         assert ratio > 0
         parents = Factors.common_g / (Factors.common_g - 1 +
-                                   (1 + ratio) / Factors.avg_children)
+                                      (1 + ratio) / Factors.avg_children)
         if parents < 2:
             parents = 2
         return parents
@@ -621,10 +618,11 @@ def init_gates(gates_queue, common_basics, common_gates):
         # fault tree.
         random_gate = random.choice(Gate.gates)
         while (random_gate.gate_type == "not" or
-                random_gate.gate_type == "xor" or
-                random_gate in common_gates):
+               random_gate.gate_type == "xor" or
+               random_gate in common_gates):
             random_gate = random.choice(Gate.gates)
         gates_queue.append(Gate(random_gate))
+
 
 def generate_fault_tree():
     """Generates a fault tree of specified complexity.
@@ -674,11 +672,11 @@ def generate_fault_tree():
         first_mem = 0
         last_mem = 0
         while len(CcfGroup.ccf_groups) < Factors.num_ccf:
-            last_mem = first_mem + \
-                       random.randint(2, int(2 * Factors.avg_children - 2))
+            group_size = random.randint(2, int(2 * Factors.avg_children - 2))
+            last_mem = first_mem + group_size
             if last_mem > len(members):
                 break
-            CcfGroup().members = members[first_mem: last_mem]
+            CcfGroup().members = members[first_mem:last_mem]
             first_mem = last_mem
         BasicEvent.non_ccf_events = members[first_mem:]
 
@@ -718,6 +716,7 @@ def toposort_gates(top_gate, gates):
     assert len(sorted_gates) == len(gates)
     return sorted_gates
 
+
 def write_info():
     """Writes the information about the setup and generated fault tree.
 
@@ -726,34 +725,33 @@ def write_info():
     t_file = open(Settings.output, "w")
     t_file.write("<?xml version=\"1.0\"?>\n")
     t_file.write(
-            "<!--\nThis is a description of the auto-generated fault tree\n"
-            "with the following parameters:\n\n"
-            "The output file name: " + Settings.output + "\n"
-            "The fault tree name: " + Settings.ft_name + "\n"
-            "The root gate name: " + Settings.root_name + "\n\n"
-            "The seed of the random number generator: " +
-            str(Settings.seed) + "\n"
-            "The number of basic events: " + str(Factors.num_basics) + "\n"
-            "The number of house events: " + str(Factors.num_house) + "\n"
-            "The number of CCF groups: " + str(Factors.num_ccf) + "\n"
-            "The average number of children for gates: " +
-            str(Factors.avg_children) + "\n"
-            "The weights of gate types [AND, OR, K/N, NOT, XOR]: " +
-            str(Factors.get_weights()) + "\n"
-            "Percentage of common basic events per gate: " +
-            str(Factors.common_b) + "\n"
-            "Percentage of common gates per gate: " +
-            str(Factors.common_g) + "\n"
-            "The avg. number of parents for common basic events: " +
-            str(Factors.parents_b) + "\n"
-            "The avg. number of parents for common gates: " +
-            str(Factors.parents_g) + "\n"
-            "Maximum probability for basic events: " +
-            str(BasicEvent.max_prob) + "\n"
-            "Minimum probability for basic events: " +
-            str(BasicEvent.min_prob) + "\n"
-            "-->\n"
-            )
+        "<!--\nThis is a description of the auto-generated fault tree\n"
+        "with the following parameters:\n\n"
+        "The output file name: " + Settings.output + "\n"
+        "The fault tree name: " + Settings.ft_name + "\n"
+        "The root gate name: " + Settings.root_name + "\n\n"
+        "The seed of the random number generator: " +
+        str(Settings.seed) + "\n"
+        "The number of basic events: " + str(Factors.num_basics) + "\n"
+        "The number of house events: " + str(Factors.num_house) + "\n"
+        "The number of CCF groups: " + str(Factors.num_ccf) + "\n"
+        "The average number of children for gates: " +
+        str(Factors.avg_children) + "\n"
+        "The weights of gate types [AND, OR, K/N, NOT, XOR]: " +
+        str(Factors.get_weights()) + "\n"
+        "Percentage of common basic events per gate: " +
+        str(Factors.common_b) + "\n"
+        "Percentage of common gates per gate: " +
+        str(Factors.common_g) + "\n"
+        "The avg. number of parents for common basic events: " +
+        str(Factors.parents_b) + "\n"
+        "The avg. number of parents for common gates: " +
+        str(Factors.parents_g) + "\n"
+        "Maximum probability for basic events: " +
+        str(BasicEvent.max_prob) + "\n"
+        "Minimum probability for basic events: " +
+        str(BasicEvent.min_prob) + "\n"
+        "-->\n")
 
     shared_b = [x for x in BasicEvent.basic_events if x.is_common()]
     shared_g = [x for x in Gate.gates if x.is_common()]
@@ -767,51 +765,52 @@ def write_info():
     common_b = 0  # fraction of common basic events in basic events per gate
     common_g = 0  # fraction of common gates in gates per gate
     for gate in Gate.gates:
-        frac_b += len(gate.b_children) / \
-                (len(gate.g_children) + len(gate.b_children))
+        num_b_children = len(gate.b_children)
+        num_g_children = len(gate.g_children)
+        frac_b += num_b_children / (num_g_children + num_b_children)
         if gate.b_children:
-            common_b += len([x for x in gate.b_children if x.is_common()]) / \
-                    len(gate.b_children)
+            num_common_b = len([x for x in gate.b_children if x.is_common()])
+            common_b += num_common_b / num_b_children
         if gate.g_children:
-            common_g += len([x for x in gate.g_children if x.is_common()]) / \
-                    len(gate.g_children)
+            num_common_g = len([x for x in gate.g_children if x.is_common()])
+            common_g += num_common_g / num_g_children
     num_gates = len(Gate.gates)
     common_b /= len([x for x in Gate.gates if x.b_children])
     common_g /= len([x for x in Gate.gates if x.g_children])
     frac_b /= num_gates
 
     t_file.write(
-            "<!--\nThe generated fault tree has the following metrics:\n\n"
-            "The number of basic events: %d" % BasicEvent.num_basic + "\n"
-            "The number of house events: %d" % HouseEvent.num_house + "\n"
-            "The number of CCF groups: %d" % CcfGroup.num_ccf + "\n"
-            "The number of gates: %d" % Gate.num_gates + "\n"
-            "    AND gates: %d" % len(and_gates) + "\n"
-            "    OR gates: %d" % len(or_gates) + "\n"
-            "    K/N gates: %d" % len(atleast_gates) + "\n"
-            "    NOT gates: %d" % len(not_gates) + "\n"
-            "    XOR gates: %d" % len(xor_gates) + "\n"
-            "Basic events to gates ratio: %f" %
-            (BasicEvent.num_basic / Gate.num_gates) + "\n"
-            "The average number of children for gates: %f" %
-            (sum(x.num_children() for x in Gate.gates) / len(Gate.gates)) + "\n"
-            "The number of common basic events: %d" % len(shared_b) + "\n"
-            "The number of common gates: %d" % len(shared_g) + "\n"
-            "Percentage of common basic events per gate: %f" % common_b + "\n"
-            "Percentage of common gates per gate: %f" % common_g + "\n"
-            "Percentage of children that are basic events per gate: %f" %
-            frac_b + "\n"
-            )
+        "<!--\nThe generated fault tree has the following metrics:\n\n"
+        "The number of basic events: %d" % BasicEvent.num_basic + "\n"
+        "The number of house events: %d" % HouseEvent.num_house + "\n"
+        "The number of CCF groups: %d" % CcfGroup.num_ccf + "\n"
+        "The number of gates: %d" % Gate.num_gates + "\n"
+        "    AND gates: %d" % len(and_gates) + "\n"
+        "    OR gates: %d" % len(or_gates) + "\n"
+        "    K/N gates: %d" % len(atleast_gates) + "\n"
+        "    NOT gates: %d" % len(not_gates) + "\n"
+        "    XOR gates: %d" % len(xor_gates) + "\n"
+        "Basic events to gates ratio: %f" %
+        (BasicEvent.num_basic / Gate.num_gates) + "\n"
+        "The average number of children for gates: %f" %
+        (sum(x.num_children() for x in Gate.gates) / len(Gate.gates)) + "\n"
+        "The number of common basic events: %d" % len(shared_b) + "\n"
+        "The number of common gates: %d" % len(shared_g) + "\n"
+        "Percentage of common basic events per gate: %f" % common_b + "\n"
+        "Percentage of common gates per gate: %f" % common_g + "\n"
+        "Percentage of children that are basic events per gate: %f" %
+        frac_b + "\n")
     if shared_b:
         t_file.write(
-                "The avg. number of parents for common basic events: %f" %
-                (sum(x.num_parents() for x in shared_b) / len(shared_b)) + "\n")
+            "The avg. number of parents for common basic events: %f" %
+            (sum(x.num_parents() for x in shared_b) / len(shared_b)) + "\n")
     if shared_g:
         t_file.write(
-                "The avg. number of parents for common gates: %f" %
-                (sum(x.num_parents() for x in shared_g) / len(shared_g)) + "\n")
+            "The avg. number of parents for common gates: %f" %
+            (sum(x.num_parents() for x in shared_g) / len(shared_g)) + "\n")
 
     t_file.write("-->\n\n")
+
 
 def write_model_data(t_file, basic_events):
     """Appends model data with primary event descriptions.
@@ -834,6 +833,7 @@ def write_model_data(t_file, basic_events):
                      "</define-house-event>\n")
 
     t_file.write("</model-data>\n")
+
 
 def write_results(top_event):
     """Writes results of a generated fault tree into an XML file.
@@ -934,6 +934,7 @@ def write_results(top_event):
 
     t_file.write("</opsa-mef>")
     t_file.close()
+
 
 def write_shorthand(top_event):
     """Writes the results into the shorthand format file.
@@ -1066,6 +1067,7 @@ def check_if_positive(desc, val):
     if val < 0:
         raise ap.ArgumentTypeError(desc + " is negative")
 
+
 def check_if_less(desc, val, ref):
     """Verifies that the value is less than some reference for the argument.
 
@@ -1080,6 +1082,7 @@ def check_if_less(desc, val, ref):
     if val > ref:
         raise ap.ArgumentTypeError(desc + " is more than " + str(ref))
 
+
 def check_if_more(desc, val, ref):
     """Verifies that the value is more than some reference for the argument.
 
@@ -1093,6 +1096,7 @@ def check_if_more(desc, val, ref):
     """
     if val < ref:
         raise ap.ArgumentTypeError(desc + " is less than " + str(ref))
+
 
 def manage_cmd_args():
     """Manages command-line description and arguments.
@@ -1148,8 +1152,7 @@ def manage_cmd_args():
     parser.add_argument("--parents-g", type=float, help=parents_g, default=2.0,
                         metavar="float")
 
-    gates = "number of gates (if set, discards --parents-g and --parents-b, " \
-            "and may choose the maximum of --common-g and --common-b)"
+    gates = "number of gates (discards parents-g and parents-b, common-b/g)"
     parser.add_argument("-g", "--gates", type=int, help=gates, default=0,
                         metavar="int")
 
@@ -1203,6 +1206,7 @@ def manage_cmd_args():
     check_if_more(parents_g, args.parents_g, 2)
     return args
 
+
 def validate_setup(args):
     """Checks if the relationships between arguments are valid for use.
 
@@ -1247,6 +1251,7 @@ def validate_setup(args):
         if args.gates * args.children <= args.basics:
             raise ap.ArgumentTypeError("not enough gates and average children "
                                        "to achieve the number of basic events")
+
 
 def setup_factors(args):
     """Configures the fault generation by assigning factors.
