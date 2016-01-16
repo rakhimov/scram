@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Olzhas Rakhimov
+ * Copyright (C) 2015-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -189,11 +189,18 @@ VertexPtr Zbdd::ConvertBdd(const VertexPtr& vertex, bool complement,
   int sign = complement ? -1 : 1;
   VertexPtr& result = (*ites)[{sign * vertex->id(), limit_order}];
   if (result) return result;
-  ItePtr ite = Ite::Ptr(vertex);
+  result = Zbdd::ConvertBdd(Ite::Ptr(vertex), complement, bdd_graph,
+                            limit_order, ites);
+  return result;
+}
+
+VertexPtr Zbdd::ConvertBdd(const ItePtr& ite, bool complement,
+                           const Bdd* bdd_graph, int limit_order,
+                           PairTable<VertexPtr>* ites) noexcept {
   VertexPtr low =
       Zbdd::ConvertBdd(ite->low(), ite->complement_edge() ^ complement,
                        bdd_graph, limit_order, ites);
-  if (limit_order == 0) {  // Cut-off on the cut set size.
+  if (limit_order == 0) {  // Cut-off on the set order.
     if (low->terminal()) return low;
     return kEmpty_;
   }
@@ -206,14 +213,10 @@ VertexPtr Zbdd::ConvertBdd(const VertexPtr& vertex, bool complement,
                          bdd_graph, kSettings_.limit_order(), ites);
     modules_.emplace(ite->index(), module_set);
     if (module_set->terminal()) {
-      if (!Terminal::Ptr(module_set)->value()) {
-        result = low;
-      } else {
-        VertexPtr high = Zbdd::ConvertBdd(ite->high(), complement, bdd_graph,
-                                          limit_order, ites);
-        result = Zbdd::Apply(kOrGate, high, low, kSettings_.limit_order());
-      }
-      return result;
+      if (!Terminal::Ptr(module_set)->value()) return low;
+      VertexPtr high = Zbdd::ConvertBdd(ite->high(), complement, bdd_graph,
+                                        limit_order, ites);
+      return Zbdd::Apply(kOrGate, high, low, kSettings_.limit_order());
     }
   }
   VertexPtr high =
@@ -221,12 +224,10 @@ VertexPtr Zbdd::ConvertBdd(const VertexPtr& vertex, bool complement,
   if ((high->terminal() && !Terminal::Ptr(high)->value()) ||
       (high->id() == low->id()) ||
       (low->terminal() && Terminal::Ptr(low)->value())) {
-    result = low;  // Reduce and minimize.
-    return result;
+    return low;  // Reduce and minimize.
   }
-  result = Zbdd::FetchUniqueTable(ite->index(), high, low, ite->order(),
-                                  ite->module());
-  return result;
+  return Zbdd::FetchUniqueTable(ite->index(), high, low, ite->order(),
+                                ite->module());
 }
 
 VertexPtr Zbdd::ConvertGraph(

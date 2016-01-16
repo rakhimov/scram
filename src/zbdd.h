@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Olzhas Rakhimov
+ * Copyright (C) 2015-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -192,6 +192,23 @@ class Zbdd {
   ///
   /// @returns Pointer to the root vertex of the ZBDD graph.
   VertexPtr ConvertBdd(const VertexPtr& vertex, bool complement,
+                       const Bdd* bdd_graph, int limit_order,
+                       PairTable<VertexPtr>* ites) noexcept;
+
+  /// Converts BDD if-then-else vertex into ZBDD graph.
+  /// This overload differs in that
+  /// it does not register the results.
+  /// It is used by the BDD vertex to ZBDD converter,
+  /// and this function should not be called directly.
+  ///
+  /// @param[in] ite  ITE vertex of the ROBDD graph.
+  /// @param[in] complement  Interpretation of the vertex as complement.
+  /// @param[in] bdd_graph  The main ROBDD as helper database.
+  /// @param[in] limit_order  The maximum size of requested sets.
+  /// @param[in,out] ites  Processed function graphs with ids and limit order.
+  ///
+  /// @returns Pointer to the root vertex of the ZBDD graph.
+  VertexPtr ConvertBdd(const ItePtr& ite, bool complement,
                        const Bdd* bdd_graph, int limit_order,
                        PairTable<VertexPtr>* ites) noexcept;
 
