@@ -58,7 +58,7 @@ class Config(object):
         """Restricts configurations for testing preprocessor."""
         Config.switch = []
         Config.approximation = [""]
-        Config.additional = ["--preprocessor"]
+        Config.additional.append("--preprocessor")
 
 
 def generate_input(normal, coherent):
@@ -151,15 +151,20 @@ def main():
     normal = "focus on models only with AND/OR gates"
     parser.add_argument("--normal", action="store_true", help=normal)
 
+    pi = "focus on Prime Implicants"
+    parser.add_argument("--prime-implicants", action="store_true", help=pi)
+
     args = parser.parse_args()
 
     if call(["which", "scram"]):
         print("SCRAM is not found in the PATH.")
         return 1
 
-    if args.preprocessor:
-        print("Focusing on Preprocessor")
-        Config.restrict()
+    if args.prime_implicants:
+        print("Focusing on Prime Implicants")
+        Config.analysis = ["--bdd"]
+        Config.approximation = [""]
+        Config.additional.append("--prime-implicants")
     elif args.mocus:
         print("Focusing on MOCUS")
         Config.analysis = ["--mocus"]
@@ -169,6 +174,10 @@ def main():
     elif args.zbdd:
         print("Focusing on ZBDD")
         Config.analysis = ["--zbdd"]
+
+    if args.preprocessor:
+        print("Focusing on Preprocessor")
+        Config.restrict()
 
     for i in range(args.num_runs):
         generate_input(args.normal, args.coherent)
