@@ -52,6 +52,7 @@ TEST(ConfigTest, FullSettings) {
 
   const Settings& settings = config->settings();
   EXPECT_EQ("bdd", settings.algorithm());
+  EXPECT_FALSE(settings.prime_implicants());
   EXPECT_EQ(true, settings.probability_analysis());
   EXPECT_EQ(true, settings.importance_analysis());
   EXPECT_EQ(true, settings.uncertainty_analysis());
@@ -64,6 +65,22 @@ TEST(ConfigTest, FullSettings) {
   EXPECT_EQ(13, settings.num_quantiles());
   EXPECT_EQ(31, settings.num_bins());
   EXPECT_EQ(97531, settings.seed());
+}
+
+TEST(ConfigTest, PrimeImplicantsSettings) {
+  std::string config_file = "./share/scram/input/fta/pi_configuration.xml";
+  std::unique_ptr<Config> config(new Config(config_file));
+  // Check the input files.
+  EXPECT_EQ(config->input_files().size(), 1);
+  if (!config->input_files().empty())
+    EXPECT_EQ("input/fta/correct_tree_input_with_probs.xml",
+              config->input_files().back());
+  // Check the output destination.
+  EXPECT_EQ("temp_results.xml", config->output_path());
+
+  const Settings& settings = config->settings();
+  EXPECT_EQ("bdd", settings.algorithm());
+  EXPECT_TRUE(settings.prime_implicants());
 }
 
 }  // namespace test
