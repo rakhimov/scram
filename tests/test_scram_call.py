@@ -102,6 +102,14 @@ def test_fta_calls():
            "--num-quantiles", "20"]
     yield assert_equal, 0, call(cmd)
 
+    # Test calls for prime implicants
+    cmd = ["scram", fta_input, "--prime-implicants", "--mocus"]
+    yield assert_not_equal, 0, call(cmd)
+    cmd = ["scram", fta_input, "--prime-implicants", "--rare-event"]
+    yield assert_not_equal, 0, call(cmd)
+    cmd = ["scram", fta_input, "--prime-implicants", "--mcub"]
+    yield assert_not_equal, 0, call(cmd)
+
 
 def test_config_file():
     """Tests calls with configuration files."""

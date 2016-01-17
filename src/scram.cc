@@ -64,6 +64,7 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
         ("bdd", "Perform qualitative analysis with BDD")
         ("zbdd", "Perform qualitative analysis with ZBDD")
         ("mocus", "Perform qualitative analysis with MOCUS")
+        ("prime-implicants", "Calculate prime implicants")
         ("probability", po::value<bool>(), "Perform probability analysis")
         ("importance", po::value<bool>(), "Perform importance analysis")
         ("uncertainty", po::value<bool>(), "Perform uncertainty analysis")
@@ -166,6 +167,7 @@ void ConstructSettings(const po::variables_map& vm, scram::Settings* settings) {
   } else if (vm.count("mocus")) {
     settings->algorithm("mocus");
   }
+  settings->prime_implicants(vm.count("prime-implicants"));
   // Determine if the probability approximation is requested.
   if (vm.count("rare-event")) {
     assert(!vm.count("mcub"));
