@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -89,7 +89,6 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
         ("no-report", "Don't generate analysis report");
 #endif
     po::store(po::parse_command_line(argc, argv, desc), *vm);
-
   } catch (std::exception& err) {
     std::cerr << "Option error: " << err.what() << "\n\n" << usage << "\n\n"
               << desc << "\n";

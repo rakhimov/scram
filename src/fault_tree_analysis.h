@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -249,7 +249,7 @@ class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
 
 /// @class FaultTreeAnalyzer
 ///
-/// @tparam Algorithm Fault tree analysis algorithm.
+/// @tparam Algorithm  Fault tree analysis algorithm.
 ///
 /// Fault tree analysis facility with specific algorithms.
 /// This class is meant to be specialized by fault tree analysis algorithms.

@@ -17,7 +17,7 @@
 
 #include "risk_analysis_tests.h"
 
-#include <vector>
+#include <utility>
 
 #include "error.h"
 
@@ -168,7 +168,6 @@ TEST_F(RiskAnalysisTest, ImportanceDefault) {
     EXPECT_NEAR(test.raw, result.raw, 1e-3) << entry.first;
     EXPECT_NEAR(test.rrw, result.rrw, 1e-3) << entry.first;
   }
-
 }
 
 TEST_F(RiskAnalysisTest, ImportanceNeg) {

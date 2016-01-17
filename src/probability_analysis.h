@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,7 +68,7 @@ class ProbabilityAnalysis : public Analysis {
 /// Quantitative calculator of a probability value of a single cut set.
 class CutSetProbabilityCalculator {
  public:
-  using CutSet = std::vector<int>;
+  using CutSet = std::vector<int>;  ///< Alias for clarity.
 
   /// Calculates a probability of a cut set,
   /// whose members are in AND relationship with each other.
@@ -103,8 +103,6 @@ class CutSetProbabilityCalculator {
 /// with the Rare-Event approximation.
 class RareEventCalculator : private CutSetProbabilityCalculator {
  public:
-  using CutSetProbabilityCalculator::CutSet;
-
   /// Calculates probabilities
   /// using the Rare-Event approximation.
   ///
@@ -128,8 +126,6 @@ class RareEventCalculator : private CutSetProbabilityCalculator {
 /// with the Min-Cut-Upper Bound approximation.
 class McubCalculator : private CutSetProbabilityCalculator {
  public:
-  using CutSetProbabilityCalculator::CutSet;
-
   /// Calculates probabilities
   /// using the minimal cut set upper bound (MCUB) approximation.
   ///
@@ -145,7 +141,7 @@ class McubCalculator : private CutSetProbabilityCalculator {
 /// Aggregation class for Probability analyzers.
 class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
  public:
-  using CutSet = std::vector<int>;
+  using CutSet = std::vector<int>;  ///< Alias for clarity.
 
   /// Constructs probability analyzer from a fault tree analyzer.
   ///

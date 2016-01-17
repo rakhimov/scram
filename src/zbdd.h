@@ -64,10 +64,10 @@ class SetNode : public NonTerminal {
     cut_sets_ = cut_sets;
   }
 
-  /// Cuts of this node from its high and low branches.
+  /// Cuts off this node from its high and low branches.
   /// This is for destructive extraction of cut sets.
   ///
-  /// @pre This branches are not going to be used again.
+  /// @pre These branches are not going to be used again.
   void CutBranches() {
     high_.reset();
     low_.reset();
@@ -127,9 +127,9 @@ class Zbdd {
   const std::vector<std::vector<int>>& cut_sets() const { return cut_sets_; }
 
  protected:
-  using UniqueTable = TripletTable<SetNodeWeakPtr>;
-  using ComputeTable = TripletTable<VertexPtr>;
-  using CutSet = std::vector<int>;
+  using UniqueTable = TripletTable<SetNodeWeakPtr>;  ///< To keep ZBDD reduced.
+  using ComputeTable = TripletTable<VertexPtr>;  ///< General computation table.
+  using CutSet = std::vector<int>;  ///< For clarity of expected results.
 
   /// @class GarbageCollector
   /// This garbage collector manages tables of a ZBDD.
@@ -312,7 +312,6 @@ class Zbdd {
   /// @param[in] node  SetNode to be processed.
   /// @param[in] high  Processed high edge.
   /// @param[in] low  Processed low edge.
-  /// @param[in,out] wide_results  Memoisation of the processed vertices.
   ///
   /// @returns Processed ZBDD vertex without complements.
   ///
@@ -429,8 +428,10 @@ class Zbdd {
   /// In order to keep only unique computations,
   /// the argument IDs must be ordered.
   /// The key is {min_id, max_id, max_order}.
-  ComputeTable and_table_;  ///< Table of processed AND computations over sets.
-  ComputeTable or_table_;  ///< Table of processed OR computations over sets.
+  /// @{
+  ComputeTable and_table_;
+  ComputeTable or_table_;
+  /// @}
 
   /// Memoisation of minimal ZBDD vertices.
   std::unordered_map<int, VertexPtr> minimal_results_;

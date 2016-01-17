@@ -20,6 +20,8 @@
 
 #include "zbdd.h"
 
+#include <algorithm>
+
 #include "logger.h"
 
 namespace scram {
@@ -734,6 +736,6 @@ void CutSetContainer::JoinModule(int index,
   modules_.insert(container.modules_.begin(), container.modules_.end());
 }
 
-}
+}  // namespace zbdd
 
 }  // namespace scram

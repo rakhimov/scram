@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,8 +50,6 @@ namespace scram {
 /// for future use or analysis.
 class Initializer {
  public:
-  using ModelPtr = std::shared_ptr<Model>;
-
   /// Prepares common information to be used by
   /// the future input file constructs,
   /// for example, mission time and validation schema.
@@ -71,11 +69,9 @@ class Initializer {
   void ProcessInputFiles(const std::vector<std::string>& xml_files);
 
   /// @returns The model built from the input files.
-  ModelPtr model() const { return model_; }
+  std::shared_ptr<Model> model() const { return model_; }
 
  private:
-  using ElementPtr = std::shared_ptr<Element>;
-
   /// Map of valid units for parameters.
   static const std::map<std::string, Units> kUnits_;
   /// String representation of units.
@@ -359,7 +355,7 @@ class Initializer {
   /// is applied to analysis.
   void SetupForAnalysis();
 
-  ModelPtr model_;  ///< Analysis model with constructs.
+  std::shared_ptr<Model> model_;  ///< Analysis model with constructs.
   Settings settings_;  ///< Settings for analysis.
   std::shared_ptr<MissionTime> mission_time_;  ///< Mission time expression.
 

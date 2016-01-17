@@ -73,7 +73,8 @@ inline std::string ToString(double num, int precision) {
 
 }  // namespace
 
-void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
+void Reporter::SetupReport(const std::shared_ptr<const Model>& model,
+                           const Settings& settings,
                            xmlpp::Document* doc) {
   if (doc->get_root_node()) throw LogicError("The document is not empty.");
   xmlpp::Node* root = doc->create_root_node("report");

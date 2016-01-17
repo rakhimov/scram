@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,11 +43,14 @@ class Model;
 /// Main system that performs analyses.
 class RiskAnalysis : public Analysis {
  public:
+  /// Pointer aliases for convenience.
+  /// @{
   using ModelPtr = std::shared_ptr<const Model>;
   using FaultTreeAnalysisPtr = std::unique_ptr<FaultTreeAnalysis>;
   using ProbabilityAnalysisPtr = std::unique_ptr<ProbabilityAnalysis>;
   using ImportanceAnalysisPtr = std::unique_ptr<ImportanceAnalysis>;
   using UncertaintyAnalysisPtr = std::unique_ptr<UncertaintyAnalysis>;
+  /// @}
 
   /// Constructs RiskAnalysis with a valid model and analysis settings.
   ///
