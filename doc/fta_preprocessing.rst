@@ -72,10 +72,10 @@ Modules are defined as gates or group of nodes
 whose sub-graph does not have common nodes with the rest of the graph.
 Modules are detected and analyzed
 as separate and independent fault trees [DR96]_.
-If a module appears in the final minimal cut sets,
-then the cut sets are populated with the minimal cut sets of the module.
+If a module appears in the final products,
+then the products are populated with the sum of products of the module.
 This operation guarantees
-that the final, joint cut sets are minimal,
+that the final, joint sum is minimal,
 and no expensive check for minimality is needed.
 However, most complex fault trees do not contain big modules in their original Boolean formula.
 

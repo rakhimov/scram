@@ -32,9 +32,9 @@ TEST_F(RiskAnalysisTest, CEA9601_Test_BDD) {
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
   ASSERT_NO_THROW(ran->Analyze());
   // Minimal cut set check.
-  EXPECT_EQ(54436, min_cut_sets().size());
+  EXPECT_EQ(54436, products().size());
   std::vector<int> distr = {0, 0, 0, 1144, 53292};
-  EXPECT_EQ(distr, McsDistribution());
+  EXPECT_EQ(distr, ProductDistribution());
 
   EXPECT_NEAR(2.38155e-6, p_total(), 1e-10);
 }

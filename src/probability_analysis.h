@@ -58,7 +58,7 @@ class ProbabilityAnalysis : public Analysis {
  private:
   /// Calculates the total probability.
   ///
-  /// @returns The total probability of the graph or cut sets.
+  /// @returns The total probability of the graph or products.
   virtual double CalculateTotalProbability() noexcept = 0;
 
   double p_total_;  ///< Total probability of the top event.
@@ -74,7 +74,7 @@ class CutSetProbabilityCalculator {
   /// whose members are in AND relationship with each other.
   /// This function assumes independence of each member.
   ///
-  /// @param[in] cut_set  A cut set with indices of basic events.
+  /// @param[in] cut_set  A cut set with positive indices of basic events.
   /// @param[in] var_probs  Probabilities of events mapped to a vector.
   ///
   /// @returns The total probability of the cut set.
@@ -141,7 +141,7 @@ class McubCalculator : private CutSetProbabilityCalculator {
 /// Aggregation class for Probability analyzers.
 class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
  public:
-  using CutSet = std::vector<int>;  ///< Alias for clarity.
+  using Product = std::vector<int>;  ///< Alias for clarity.
 
   /// Constructs probability analyzer from a fault tree analyzer.
   ///
@@ -154,8 +154,8 @@ class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
   /// @returns The original Boolean graph from the fault tree analyzer.
   const BooleanGraph* graph() const { return graph_; }
 
-  /// @returns The resulting cut sets of the fault tree analyzer.
-  const std::vector<CutSet>& cut_sets() const { return cut_sets_; }
+  /// @returns The resulting products of the fault tree analyzer.
+  const std::vector<Product>& products() const { return products_; }
 
   /// @returns A modifiable mapping for probability values and indices.
   ///
@@ -168,7 +168,7 @@ class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
 
  protected:
   const BooleanGraph* graph_;  ///< Boolean graph from the fault tree analysis.
-  const std::vector<CutSet>& cut_sets_;  ///< A collection of cut sets.
+  const std::vector<Product>& products_;  ///< A collection of products.
   std::vector<double> var_probs_;  ///< Variable probabilities.
 };
 
@@ -177,7 +177,7 @@ ProbabilityAnalyzerBase::ProbabilityAnalyzerBase(
     const FaultTreeAnalyzer<Algorithm>* fta)
     : ProbabilityAnalysis::ProbabilityAnalysis(fta),
       graph_(fta->graph()),
-      cut_sets_(fta->algorithm()->cut_sets()) {
+      products_(fta->algorithm()->products()) {
   var_probs_.push_back(-1);  // Padding.
   for (const BasicEventPtr& event : graph_->basic_events()) {
     var_probs_.push_back(event->p());
@@ -196,9 +196,9 @@ class ProbabilityAnalyzer : public ProbabilityAnalyzerBase {
 
   /// Calculates the total probability.
   ///
-  /// @returns The total probability of the graph or cut sets.
+  /// @returns The total probability of the graph or the sum of products.
   double CalculateTotalProbability() noexcept {
-    return calc_.Calculate(cut_sets_, var_probs_);
+    return calc_.Calculate(products_, var_probs_);
   }
 
  private:
@@ -236,7 +236,7 @@ class ProbabilityAnalyzer<Bdd> : public ProbabilityAnalyzerBase {
 
   /// Calculates the total probability.
   ///
-  /// @returns The total probability of the graph or cut sets.
+  /// @returns The total probability of the graph.
   double CalculateTotalProbability() noexcept;
 
   /// @returns Binary decision diagram used for calculations.

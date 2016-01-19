@@ -98,9 +98,9 @@ void Bdd::Analyze() noexcept {
   zbdd_->Analyze();
 }
 
-const std::vector<std::vector<int>>& Bdd::cut_sets() const {
+const std::vector<std::vector<int>>& Bdd::products() const {
   assert(zbdd_ && "Analysis is not done.");
-  return zbdd_->cut_sets();
+  return zbdd_->products();
 }
 
 void Bdd::GarbageCollector::operator()(Ite* ptr) noexcept {

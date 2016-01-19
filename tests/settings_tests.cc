@@ -30,7 +30,7 @@ TEST(SettingsTest, IncorrectSetup) {
   EXPECT_THROW(s.algorithm("the-best"), InvalidArgument);
   // Incorrect approximation argument.
   EXPECT_THROW(s.approximation("approx"), InvalidArgument);
-  // Incorrect limit order for minimal cut sets.
+  // Incorrect limit order for products.
   EXPECT_THROW(s.limit_order(-1), InvalidArgument);
   // Incorrect cut-off probability.
   EXPECT_THROW(s.cut_off(-1), InvalidArgument);
@@ -61,7 +61,7 @@ TEST(SettingsTest, CorrectSetup) {
   EXPECT_NO_THROW(s.approximation("rare-event"));
   EXPECT_NO_THROW(s.approximation("mcub"));
 
-  // Correct limit order for minimal cut sets.
+  // Correct limit order for products.
   EXPECT_NO_THROW(s.limit_order(1));
   EXPECT_NO_THROW(s.limit_order(100));
 

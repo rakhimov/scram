@@ -71,10 +71,10 @@ class Settings {
   /// @throws InvalidArgument  The request is not relevant to the algorithm.
   Settings& prime_implicants(bool flag);
 
-  /// @returns The limit on the size of minimal cut sets.
+  /// @returns The limit on the size of products.
   int limit_order() const { return limit_order_; }
 
-  /// Sets the limit order for minimal cut sets.
+  /// Sets the limit order for products.
   ///
   /// @param[in] order  A natural number for the limit order.
   ///
@@ -83,13 +83,13 @@ class Settings {
   /// @throws InvalidArgument  The number is not more than 0.
   Settings& limit_order(int order);
 
-  /// @returns The minimum required probability for cut sets.
+  /// @returns The minimum required probability for products.
   double cut_off() const { return cut_off_; }
 
-  /// Sets the cut-off probability for minimal cut sets to be considered
-  /// for analysis.
+  /// Sets the cut-off probability for products
+  /// to be considered for analysis.
   ///
-  /// @param[in] prob  The minimum probability for minimal cut sets.
+  /// @param[in] prob  The minimum probability for products.
   ///
   /// @returns Reference to this object.
   ///
@@ -244,9 +244,9 @@ class Settings {
   bool ccf_analysis_ = false;  ///< A flag for common-cause analysis.
   std::string algorithm_ = "bdd";  ///< Qualitative analysis algorithm.
   bool prime_implicants_ = false;  ///< Calculation of prime implicants.
-  int limit_order_ = 20;  ///< Limit on the order of minimal cut sets.
+  int limit_order_ = 20;  ///< Limit on the order of products.
   double mission_time_ = 8760;  ///< System mission time.
-  double cut_off_ = 1e-8;  ///< The cut-off probability for cut sets.
+  double cut_off_ = 1e-8;  ///< The cut-off probability for products.
   std::string approximation_ = "no";  ///< The approximations for calculations.
   int seed_ = 0;  ///< The seed for the pseudo-random number generator.
   int num_trials_ = 1e3;  ///< The number of trials for Monte Carlo simulations.

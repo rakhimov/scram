@@ -49,11 +49,11 @@ The dependence can be communicated with common cause groups.
 The Exact Probability Calculation
 =================================
 
-Since minimal cut sets may neither be mutually exclusive nor independent,
+Since the resultant sets may neither be mutually exclusive nor independent,
 direct use of the sets' total probabilities may be inaccurate [WakXX]_.
 The exact probability calculation is achieved
 with Binary Decision Diagram ([BDD]_) based algorithms [DR01]_.
-This approach does not require calculation of minimal cut sets.
+This approach does not require calculation of products.
 As long as a fault tree ([PDAG]_) can be converted into BDD,
 the calculation of its probability is linear in the size of BDD.
 

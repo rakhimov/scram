@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,9 +30,9 @@ TEST_P(RiskAnalysisTest, Baobab_2_Test) {
   ASSERT_NO_THROW(ProcessInputFiles(input_files));
   ASSERT_NO_THROW(ran->Analyze());
   // Minimal cut set check.
-  EXPECT_EQ(4805, min_cut_sets().size());
+  EXPECT_EQ(4805, products().size());
   std::vector<int> distr = {0, 0, 6, 121, 268, 630, 3780};
-  EXPECT_EQ(distr, McsDistribution());
+  EXPECT_EQ(distr, ProductDistribution());
 }
 
 }  // namespace test

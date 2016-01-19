@@ -39,8 +39,8 @@ TEST_P(RiskAnalysisTest, TwoTrain) {
                                          {"valveone", "pumptwo"},
                                          {"valvetwo", "pumpone"},
                                          {"pumpone", "pumptwo"}};
-  EXPECT_EQ(4, min_cut_sets().size());
-  EXPECT_EQ(mcs, min_cut_sets());
+  EXPECT_EQ(4, products().size());
+  EXPECT_EQ(mcs, products());
 }
 
 }  // namespace test

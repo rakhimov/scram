@@ -36,7 +36,7 @@
             <element name="calculation-time">
               <attribute name="name"> <data type="NCName"/> </attribute>
               <optional>
-                <element name="minimal-cut-set">
+                <element name="products">
                   <data type="float"/>
                 </element>
               </optional>

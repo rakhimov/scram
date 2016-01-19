@@ -35,7 +35,6 @@ namespace scram {
 /// @class UncertaintyAnalysis
 /// Uncertainty analysis and statistics
 /// for top event or gate probabilities
-/// from minimal cut sets
 /// and probability distributions of basic events.
 class UncertaintyAnalysis : public Analysis {
  public:

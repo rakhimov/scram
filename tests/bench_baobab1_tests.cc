@@ -41,10 +41,10 @@ TEST_F(RiskAnalysisTest, Baobab_1_Test) {
     EXPECT_NEAR(1.2823e-6, p_total(), 1e-8);  // Probability with BDD.
   }
   // Minimal cut set check.
-  EXPECT_EQ(46188, min_cut_sets().size());
+  EXPECT_EQ(46188, products().size());
   std::vector<int> distr = {0,    0,     1,    1,     70,   400,
                             2212, 14748, 8460, 10624, 6600, 3072};
-  EXPECT_EQ(distr, McsDistribution());
+  EXPECT_EQ(distr, ProductDistribution());
 }
 
 }  // namespace test

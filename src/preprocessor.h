@@ -39,7 +39,7 @@ namespace scram {
 /// The class provides main preprocessing operations
 /// over a Boolean graph
 /// to simplify the fault tree
-/// and to help generate minimal cut sets more efficiently.
+/// and to help analysis run more efficiently.
 class Preprocessor {
  public:
   /// Constructs a preprocessor of a Boolean graph

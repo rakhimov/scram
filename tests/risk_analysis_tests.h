@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -104,41 +104,41 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
     return init->model()->basic_events();
   }
 
-  const std::set<std::set<std::string>>& min_cut_sets() {
+  const std::set<std::set<std::string>>& products() {
     assert(!ran->fault_tree_analyses().empty());
     assert(ran->fault_tree_analyses().size() == 1);
-    if (min_cut_sets_.empty()) {
+    if (products_.empty()) {
       const FaultTreeAnalysis* fta =
           ran->fault_tree_analyses().begin()->second.get();
-      for (const CutSet& cut_set : fta->cut_sets()) {
-        min_cut_sets_.emplace(Convert(cut_set));
+      for (const Product& product : fta->products()) {
+        products_.emplace(Convert(product));
       }
     }
-    return min_cut_sets_;
+    return products_;
   }
 
-  // Provides the number of minimal cut sets per order of sets.
+  // Provides the number of products per order of sets.
   // The order starts from 0.
-  std::vector<int> McsDistribution() {
+  std::vector<int> ProductDistribution() {
     assert(!ran->fault_tree_analyses().empty());
     assert(ran->fault_tree_analyses().size() == 1);
-    std::vector<int> distr(20, 0);  // Max order is hard-coded.
+    std::vector<int> distr(settings.limit_order(), 0);
     const FaultTreeAnalysis* fta =
         ran->fault_tree_analyses().begin()->second.get();
-    for (const CutSet& cut_set : fta->cut_sets()) {
-      distr[GetOrder(cut_set)]++;
+    for (const Product& product : fta->products()) {
+      distr[GetOrder(product)]++;
     }
     while (!distr.back()) distr.pop_back();
     return distr;
   }
 
-  /// Prints cut sets to the standard error.
-  void PrintCutSets() {
+  /// Prints products to the standard error.
+  void PrintProducts() {
     assert(!ran->fault_tree_analyses().empty());
     assert(ran->fault_tree_analyses().size() == 1);
     const FaultTreeAnalysis* fta =
         ran->fault_tree_analyses().begin()->second.get();
-    Print(fta->cut_sets());
+    Print(fta->products());
   }
 
   double p_total() {
@@ -147,18 +147,18 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
     return ran->probability_analyses().begin()->second->p_total();
   }
 
-  const std::map<std::set<std::string>, double>& mcs_probability() {
+  const std::map<std::set<std::string>, double>& product_probability() {
     assert(!ran->fault_tree_analyses().empty());
     assert(ran->fault_tree_analyses().size() == 1);
-    if (mcs_probability_.empty()) {
+    if (product_probability_.empty()) {
       const FaultTreeAnalysis* fta =
           ran->fault_tree_analyses().begin()->second.get();
-      for (const CutSet& cut_set : fta->cut_sets()) {
-        mcs_probability_.emplace(Convert(cut_set),
-                                 CalculateProbability(cut_set));
+      for (const Product& product : fta->products()) {
+        product_probability_.emplace(Convert(product),
+                                     CalculateProbability(product));
       }
     }
-    return mcs_probability_;
+    return product_probability_;
   }
 
   const ImportanceFactors& importance(std::string id) {
@@ -183,9 +183,9 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
   /// Converts a set of pointers to events with complement flags
   /// into readable and testable strings.
   /// Complements are communicated by "not" word.
-  std::set<std::string> Convert(const CutSet& cut_set) {
+  std::set<std::string> Convert(const Product& product) {
     std::set<std::string> string_set;
-    for (const Literal& literal : cut_set) {
+    for (const Literal& literal : product) {
       std::string id = literal.event->id();
       if (literal.complement) id = "not " + id;
       string_set.insert(id);
@@ -199,8 +199,8 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
   Settings settings;
 
  private:
-  std::map<std::set<std::string>, double> mcs_probability_;
-  std::set<std::set<std::string>> min_cut_sets_;
+  std::map<std::set<std::string>, double> product_probability_;
+  std::set<std::set<std::string>> products_;
 };
 
 }  // namespace test

@@ -71,8 +71,8 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
         ("ccf", po::value<bool>(), "Perform common-cause failure analysis")
         ("rare-event", "Use the rare event approximation")
         ("mcub", "Use the MCUB approximation")
-        ("limit-order,l", po::value<int>(), "Upper limit for cut set order")
-        ("cut-off", po::value<double>(), "Cut-off probability for cut sets")
+        ("limit-order,l", po::value<int>(), "Upper limit for product order")
+        ("cut-off", po::value<double>(), "Cut-off probability for products")
         ("mission-time", po::value<double>(), "System mission time in hours")
         ("num-trials", po::value<int>(),
          "Number of trials for Monte Carlo simulations")

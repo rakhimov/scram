@@ -50,7 +50,7 @@ Settings& Settings::prime_implicants(bool flag) {
 
 Settings& Settings::limit_order(int order) {
   if (order < 1)
-    throw InvalidArgument("The limit on the order of minimal cut sets "
+    throw InvalidArgument("The limit on the order of products "
                           "cannot be less than 1.");
   limit_order_ = order;
   return *this;

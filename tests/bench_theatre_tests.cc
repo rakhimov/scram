@@ -37,8 +37,8 @@ TEST_P(RiskAnalysisTest, Theatre) {
 
   std::set<std::set<std::string>> mcs = {{"gen_fail", "mains_fail"},
                                          {"mains_fail", "relay_fail"}};
-  EXPECT_EQ(2, min_cut_sets().size());
-  EXPECT_EQ(mcs, min_cut_sets());
+  EXPECT_EQ(2, products().size());
+  EXPECT_EQ(mcs, products());
 }
 
 }  // namespace test

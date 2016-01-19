@@ -104,7 +104,7 @@ class Reporter {
                         const ImportanceAnalysis& importance_analysis,
                         xmlpp::Document* doc);
 
-  /// Reports the results of uncertainty analysis with minimal cut sets.
+  /// Reports the results of uncertainty analysis.
   ///
   /// @param[in] ft_name  The original name of a fault tree.
   /// @param[in] uncert_analysis  UncertaintyAnalysis with results.

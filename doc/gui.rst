@@ -34,7 +34,7 @@ GUI Features
 - Convenient review of results
 - Context menu
 - Smart defaults
-- Cut set editor
+- Viewer of analysis results
 - Revision control
 
 

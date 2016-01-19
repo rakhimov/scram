@@ -86,8 +86,8 @@ TEST_P(RiskAnalysisTest, AnalyzeDefault) {
                                          {"pumpone", "valvetwo"},
                                          {"pumptwo", "valveone"},
                                          {"valveone", "valvetwo"}};
-  EXPECT_EQ(mcs, min_cut_sets());
-  PrintCutSets();  // Quick visual verification and test.
+  EXPECT_EQ(mcs, products());
+  PrintProducts();  // Quick visual verification.
 }
 
 TEST_P(RiskAnalysisTest, AnalyzeNonCoherentDefault) {
@@ -97,7 +97,7 @@ TEST_P(RiskAnalysisTest, AnalyzeNonCoherentDefault) {
   std::set<std::set<std::string>> mcs = {{"pumpone", "pumptwo"},
                                          {"pumpone", "valvetwo"},
                                          {"valveone"}};
-  EXPECT_EQ(mcs, min_cut_sets());
+  EXPECT_EQ(mcs, products());
 }
 
 TEST_P(RiskAnalysisTest, AnalyzeWithProbability) {
@@ -112,16 +112,16 @@ TEST_P(RiskAnalysisTest, AnalyzeWithProbability) {
   ASSERT_NO_THROW(ProcessInputFile(with_prob));
   ASSERT_NO_THROW(ran->Analyze());
 
-  EXPECT_EQ(mcs, min_cut_sets());
+  EXPECT_EQ(mcs, products());
   if (settings.approximation() == "rare-event") {
     EXPECT_DOUBLE_EQ(1, p_total());
   } else {
     EXPECT_DOUBLE_EQ(0.646, p_total());
   }
-  EXPECT_DOUBLE_EQ(0.42, mcs_probability().at(mcs_1));
-  EXPECT_DOUBLE_EQ(0.3, mcs_probability().at(mcs_2));
-  EXPECT_DOUBLE_EQ(0.28, mcs_probability().at(mcs_3));
-  EXPECT_DOUBLE_EQ(0.2, mcs_probability().at(mcs_4));
+  EXPECT_DOUBLE_EQ(0.42, product_probability().at(mcs_1));
+  EXPECT_DOUBLE_EQ(0.3, product_probability().at(mcs_2));
+  EXPECT_DOUBLE_EQ(0.28, product_probability().at(mcs_3));
+  EXPECT_DOUBLE_EQ(0.2, product_probability().at(mcs_4));
 }
 
 // Test for exact probability calculation
@@ -143,7 +143,7 @@ TEST_P(RiskAnalysisTest, AnalyzeNestedFormula) {
                                          {"valveone", "valvetwo"}};
   ASSERT_NO_THROW(ProcessInputFile(nested_input));
   ASSERT_NO_THROW(ran->Analyze());
-  EXPECT_EQ(mcs, min_cut_sets());
+  EXPECT_EQ(mcs, products());
 }
 
 TEST_F(RiskAnalysisTest, ImportanceDefault) {
@@ -344,7 +344,7 @@ TEST_P(RiskAnalysisTest, ChildNandNorGates) {
   /*     {"not pumpone", "not pumptwo", "not valveone"}, */
   /*     {"not pumpone", "not valvetwo", "not valveone"}}; */
   std::set<std::set<std::string>> mcs = {{}};
-  EXPECT_EQ(mcs, min_cut_sets());
+  EXPECT_EQ(mcs, products());
 }
 
 // Simple test for several house event propagation.
@@ -353,7 +353,7 @@ TEST_P(RiskAnalysisTest, ManyHouseEvents) {
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   std::set<std::set<std::string>> mcs = {{"a", "b"}};
-  EXPECT_EQ(mcs, min_cut_sets());
+  EXPECT_EQ(mcs, products());
 }
 
 // Simple test for several constant gate propagation.
@@ -362,7 +362,7 @@ TEST_P(RiskAnalysisTest, ConstantGates) {
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   std::set<std::set<std::string>> mcs = {{}};
-  EXPECT_EQ(mcs, min_cut_sets());
+  EXPECT_EQ(mcs, products());
 }
 
 }  // namespace test

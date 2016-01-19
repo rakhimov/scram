@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,8 +31,8 @@ TEST_P(RiskAnalysisTest, SmallTree) {
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   std::set<std::set<std::string>> mcs = {{"e1", "e2"}, {"e3", "e4"}};
-  EXPECT_EQ(2, min_cut_sets().size());
-  EXPECT_EQ(mcs, min_cut_sets());
+  EXPECT_EQ(2, products().size());
+  EXPECT_EQ(mcs, products());
   EXPECT_NEAR(0.02569, mean(), 1e-3);
   EXPECT_NEAR(0.018065, sigma(), 2e-3);
 }

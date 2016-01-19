@@ -35,7 +35,7 @@ TEST_P(RiskAnalysisTest, 200Event) {
     EXPECT_NEAR(0.55985, p_total(), 1e-5);
   }
   // Minimal cut set check.
-  EXPECT_EQ(287, min_cut_sets().size());
+  EXPECT_EQ(287, products().size());
 }
 
 }  // namespace test

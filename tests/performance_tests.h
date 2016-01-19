@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,20 +64,20 @@ class PerformanceTest : public ::testing::Test {
     return ran->probability_analyses().begin()->second->p_total();
   }
 
-  // The number of MCS as a result of analysis.
-  int NumOfMcs() {
+  // The number of products as a result of analysis.
+  int NumOfProducts() {
     assert(!ran->fault_tree_analyses().empty());
-    return ran->fault_tree_analyses().begin()->second->cut_sets().size();
+    return ran->fault_tree_analyses().begin()->second->products().size();
   }
 
-  // Time taken to find minimal cut sets.
-  double McsGenerationTime() {
+  // Time taken to find products.
+  double ProductGenerationTime() {
     assert(!ran->fault_tree_analyses().empty());
     return ran->fault_tree_analyses().begin()->second->analysis_time();
   }
 
   // Time taken to calculate total probability.
-  double ProbCalcTime() {
+  double ProbabilityCalculationTime() {
     assert(!ran->probability_analyses().empty());
     return ran->probability_analyses().begin()->second->analysis_time();
   }

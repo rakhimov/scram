@@ -70,8 +70,8 @@ TEST_P(RiskAnalysisTest, ThreeMotor) {
   mcs.insert({KT1inc, KT2inc, T2, T4inc});
   mcs.insert({KT1inc, KT2inc, KT3inc, T2});
 
-  EXPECT_EQ(12, min_cut_sets().size());
-  EXPECT_EQ(mcs, min_cut_sets());
+  EXPECT_EQ(12, products().size());
+  EXPECT_EQ(mcs, products());
 }
 
 }  // namespace test

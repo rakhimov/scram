@@ -104,6 +104,11 @@ Core C++ Code
       (class/function/namespace/typedef/...), i.e., ``CalculateProbability``.
       Avoid abbreviating the name, i.e., ``CalculateProb``.
 
+- Prefer the terminology and concepts of Boolean algebra and graph theory
+  to the terminology and concepts of risk analysis in **analysis code**.
+  For example, a Boolean product is more general and appropriate for analysis facilities
+  than cut sets or prime implicants.
+
 .. _C++ Core Guidelines: https://github.com/isocpp/CppCoreGuidelines
 
 

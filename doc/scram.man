@@ -67,10 +67,11 @@ calculations
 Use the MCUB approximation for probability
 calculations
 .HP
-\fB\-l\fR [ \fB\-\-limit\-order\fR ] arg Upper limit for cut set order
+\fB\-l\fR [ \fB\-\-limit\-order\fR ] arg
+Upper limit for product order
 .TP
 \fB\-\-cut\-off\fR arg
-Cut\-off probability for cut sets
+Cut\-off probability for products
 .TP
 \fB\-\-mission\-time\fR arg
 Set the system mission time in hours for probability calculations

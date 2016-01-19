@@ -2,12 +2,12 @@
 <report>
   <information>
     <software name="SCRAM" version="0.10.0"/>
-    <time>2016-Jan-05 20:31:57</time>
+    <time>2016-Jan-19 07:34:14</time>
     <performance>
       <calculation-time name="TopEvent">
-        <minimal-cut-set>0.00154</minimal-cut-set>
-        <probability>6e-06</probability>
-        <importance>8.2e-05</importance>
+        <products>0.001879</products>
+        <probability>5e-06</probability>
+        <importance>8.5e-05</importance>
       </calculation-time>
     </performance>
     <calculated-quantity name="Minimal Cut Sets"/>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,13 +30,13 @@ TEST_P(RiskAnalysisTest, Lift) {
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_NEAR(1.19999e-5, p_total(), 1e-5);
 
-  std::set< std::set<std::string> > mcs = {{"lmd_1"}, {"dpd_1"}, {"dm_1"},
-                                           {"ps_1"}, {"dod_1"}, {"dod_2"},
-                                           {"dms_1"}, {"cp_1"}, {"dms_2"},
-                                           {"lmd_2"}, {"lpd_1"}, {"d_1"}};
+  std::set<std::set<std::string>> mcs = {{"lmd_1"}, {"dpd_1"}, {"dm_1"},
+                                         {"ps_1"}, {"dod_1"}, {"dod_2"},
+                                         {"dms_1"}, {"cp_1"}, {"dms_2"},
+                                         {"lmd_2"}, {"lpd_1"}, {"d_1"}};
 
-  EXPECT_EQ(12, min_cut_sets().size());
-  EXPECT_EQ(mcs, min_cut_sets());
+  EXPECT_EQ(12, products().size());
+  EXPECT_EQ(mcs, products());
 }
 
 }  // namespace test

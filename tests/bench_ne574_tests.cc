@@ -39,8 +39,8 @@ TEST_P(RiskAnalysisTest, ne574) {
   std::set<std::set<std::string>> mcs = {{"c"}, {"d", "f"}, {"d", "g"},
                                          {"d", "b"}, {"h", "i", "f"},
                                          {"h", "i", "g"}, {"h", "i", "b"}};
-  EXPECT_EQ(7, min_cut_sets().size());
-  EXPECT_EQ(mcs, min_cut_sets());
+  EXPECT_EQ(7, products().size());
+  EXPECT_EQ(mcs, products());
 }
 
 }  // namespace test
