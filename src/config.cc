@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -96,6 +96,9 @@ void Config::GatherOptions(const xmlpp::Node* root) {
 
     } else if (name == "analysis") {
       Config::SetAnalysis(option_group);
+
+    } else if (name == "prime-implicants") {
+      settings_.prime_implicants(true);
 
     } else if (name == "approximation") {
       Config::SetApproximation(option_group);

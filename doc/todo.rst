@@ -9,20 +9,19 @@ Low Hanging Fruits
 - `TODO list in the code <http://scram-pra.org/api/todo.html>`_
 
 
-.. note:: This To-Do list is for features with high uncertainties.
+.. note:: The following To-Do items are features with high uncertainties.
           Upon becoming more certain (realistic, clear, ready, doable),
           the items should graduate to GitHub issues.
 
-.. note:: Relative, subjective importance within groups is given in *italics*.
+.. note:: Relative, subjective importance within groups is tagged in *italics*.
 
 
 Major Enhancements and Capabilities
 ===================================
 
 - Incorporation of cut-offs for MOCUS. *High*
-- Incorporation of cut-offs for BDD. *Moderate*
 - Incorporation of cut-offs for ZBDD. *Moderate*
-- Advanced variable ordering heuristics for BDD. *High*
+- Advanced variable ordering heuristics for BDD. *Moderate*
 
     * Post-construction reordering.
 
@@ -49,17 +48,12 @@ Minor Enhancements and Capabilities
   Multi-rooted graph analysis. *Low*
 - Importance factor calculation for gates (formulas). *Low*
 - Uncertainty analysis for importance factors. *Moderate*
+- Arithmetic equation interpreter for basic events in shorthand format. *Low*
 - OpenPSA MEF Support:
 
     * Expressions. *Moderate*
-    * Include directive in input files to include other input files. *Low*
+    * "Include directive" in input files to include other input files. *Low*
     * Cardinality/Imply/IFF gates. *Low*
-
-- Shorthand format to XML converter. *Low*
-
-    * Arithmetic equation interpreter for basic events.
-
-- Create a cut-set generator. *Low*
 
 
 GUI Development: Moderate Importance
@@ -73,12 +67,6 @@ GUI Development: Moderate Importance
 - Running analyses
 - View of analysis results
 - Common cause group construction
-
-
-Documentation: Moderate Importance
-==================================
-
-- Getting Started
 
 
 Platform Support

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -85,7 +85,7 @@ void RiskAnalysis::RunAnalysis(const std::string& name,
     RiskAnalysis::RunAnalysis<Bdd>(name, target);
   } else if (kSettings_.algorithm() == "zbdd") {
     RiskAnalysis::RunAnalysis<Zbdd>(name, target);
-  } else {  // The default algorithm.
+  } else {
     assert(kSettings_.algorithm() == "mocus");
     RiskAnalysis::RunAnalysis<Mocus>(name, target);
   }

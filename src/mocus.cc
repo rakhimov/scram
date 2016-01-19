@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ Mocus::Mocus(const BooleanGraph* fault_tree, const Settings& settings)
   IGatePtr top = fault_tree->root();
   // Special case of empty top gate.
   if (top->IsConstant()) {
-    if (top->state() == kUnityState) cut_sets_.push_back({});  // Unity set.
+    if (top->state() == kUnityState) products_.push_back({});  // Unity set.
     constant_graph_ = true;
     return;  // Other cases are null or empty.
   }
@@ -46,7 +46,7 @@ Mocus::Mocus(const BooleanGraph* fault_tree, const Settings& settings)
     assert(top->args().size() == 1);
     assert(top->gate_args().empty());
     int child = *top->args().begin();
-    child > 0 ? cut_sets_.push_back({child}) : cut_sets_.push_back({});
+    child > 0 ? products_.push_back({child}) : products_.push_back({});
     constant_graph_ = true;
     return;
   }
@@ -61,7 +61,7 @@ void Mocus::Analyze() {
   zbdd::CutSetContainer container = Mocus::AnalyzeModule(graph_->root());
   LOG(DEBUG2) << "Delegating cut set minimization to ZBDD.";
   container.Analyze();
-  cut_sets_ = container.cut_sets();
+  products_ = container.products();
   LOG(DEBUG2) << "Minimal cut sets found in " << DUR(mcs_time);
 }
 
@@ -96,8 +96,6 @@ zbdd::CutSetContainer Mocus::AnalyzeModule(const IGatePtr& gate) noexcept {
   }
   cut_sets.EliminateConstantModules();
   cut_sets.Minimize();
-  /* LOG(DEBUG4) << "Unique cut sets generated: " << cut_sets.size(); */
-  /// @todo Log the complexity of the ZBDD for the module.
   LOG(DEBUG4) << "G" << gate->index()
               << " cut set generation time: " << DUR(gen_time);
   return cut_sets;

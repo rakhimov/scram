@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Olzhas Rakhimov
+ * Copyright (C) 2015-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,7 +66,7 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
                                               true, var->order(), false)};
   } else {
     std::unordered_map<int, std::pair<Function, int>> gates;
-    root_ = Bdd::IfThenElse(fault_tree->root(), &gates);
+    root_ = Bdd::ConvertGraph(fault_tree->root(), &gates);
   }
   Bdd::ClearMarks(false);
   Bdd::TestStructure(root_.vertex);
@@ -79,12 +79,16 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
   LOG(DEBUG3) << "Finished Boolean graph conversion in " << DUR(init_time);
   Bdd::ClearMarks(false);
 
-  unique_table_.reset();
-  LOG(DEBUG5) << "BDD switched off the garbage collector.";
+  if (!kSettings_.prime_implicants()) {  // No more calculations are expected.
+    LOG(DEBUG5) << "BDD switched off the garbage collector.";
+    unique_table_.reset();
+  }
   and_table_.clear();
-  and_table_.reserve(0);
   or_table_.clear();
-  or_table_.reserve(0);
+  if (!kSettings_.prime_implicants()) {
+    and_table_.reserve(0);
+    or_table_.reserve(0);
+  }
 }
 
 Bdd::~Bdd() noexcept = default;
@@ -94,9 +98,9 @@ void Bdd::Analyze() noexcept {
   zbdd_->Analyze();
 }
 
-const std::vector<std::vector<int>>& Bdd::cut_sets() const {
+const std::vector<std::vector<int>>& Bdd::products() const {
   assert(zbdd_ && "Analysis is not done.");
-  return zbdd_->cut_sets();
+  return zbdd_->products();
 }
 
 void Bdd::GarbageCollector::operator()(Ite* ptr) noexcept {
@@ -127,7 +131,7 @@ ItePtr Bdd::FetchUniqueTable(int index, const VertexPtr& high,
   return ite;
 }
 
-Bdd::Function Bdd::IfThenElse(
+Bdd::Function Bdd::ConvertGraph(
     const IGatePtr& gate,
     std::unordered_map<int, std::pair<Function, int>>* gates) noexcept {
   assert(!gate->IsConstant() && "Unexpected constant gate!");
@@ -148,7 +152,7 @@ Bdd::Function Bdd::IfThenElse(
     index_to_order_.emplace(arg.second->index(), arg.second->order());
   }
   for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
-    Function res = Bdd::IfThenElse(arg.second, gates);
+    Function res = Bdd::ConvertGraph(arg.second, gates);
     if (arg.second->IsModule()) {
       args.push_back({arg.first < 0,
                       Bdd::FetchUniqueTable(arg.second->index(), kOne_, kOne_,
@@ -198,6 +202,12 @@ Bdd::Function& Bdd::FetchComputeTable(Operator type,
     default:
       assert(false);
   }
+}
+
+Bdd::Function Bdd::CalculateConsensus(const ItePtr& ite,
+                                      bool complement) noexcept {
+  return Bdd::Apply(kAndGate, ite->high(), ite->low(), complement,
+                    ite->complement_edge() ^ complement);
 }
 
 Bdd::Function Bdd::Apply(Operator type,

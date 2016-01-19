@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,7 +58,7 @@ class ImportanceAnalysis : public Analysis {
   virtual ~ImportanceAnalysis() = default;
 
   /// Performs quantitative analysis of importance factors
-  /// of basic events in minimal cut sets.
+  /// of basic events in products.
   ///
   /// @pre Analysis is called only once.
   void Analyze() noexcept;
@@ -79,21 +79,19 @@ class ImportanceAnalysis : public Analysis {
   }
 
  protected:
-  using CutSet = std::vector<int>;
-
-  /// Gathers all events present in cut sets.
+  /// Gathers all events present in products.
   /// Only this events can have importance factors.
   ///
   /// @param[in] graph  Boolean graph with basic event indices and pointers.
-  /// @param[in] cut_sets  Cut sets with basic event indices.
+  /// @param[in] products  Products with basic event indices.
   ///
-  /// @returns A unique collection of importance basic events.
+  /// @returns A unique collection of important basic events.
   std::vector<std::pair<int, BasicEventPtr>> GatherImportantEvents(
       const BooleanGraph* graph,
-      const std::vector<CutSet>& cut_sets) noexcept;
+      const std::vector<std::vector<int>>& products) noexcept;
 
  private:
-  /// Find all events that are in the cut sets.
+  /// Find all events that are in the products.
   ///
   /// @returns Indices and pointers to the basic events.
   virtual std::vector<std::pair<int, BasicEventPtr>>
@@ -140,13 +138,13 @@ class ImportanceAnalyzerBase : public ImportanceAnalysis {
 
   virtual ~ImportanceAnalyzerBase() = 0;  ///< Abstract class.
 
-  /// Find all events that are in the cut sets.
+  /// Find all events that are in the products.
   ///
   /// @returns Indices and pointers to the basic events.
   std::vector<std::pair<int, BasicEventPtr>> GatherImportantEvents() noexcept {
     return ImportanceAnalysis::GatherImportantEvents(
         prob_analyzer_->graph(),
-        prob_analyzer_->cut_sets());
+        prob_analyzer_->products());
   }
 
   /// @returns Total probability calculated by probability analyzer.

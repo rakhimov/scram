@@ -816,8 +816,8 @@ class BooleanGraph {
   /// Helper function to map the results of the indexation
   /// to the original basic events.
   /// This function, for example, helps transform
-  /// minimal cut sets with indices into
-  /// minimal cut sets with IDs or pointers.
+  /// products with indices into
+  /// products with IDs or pointers.
   ///
   /// @param[in] index  Positive index of the basic event.
   ///

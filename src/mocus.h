@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,7 +54,7 @@ class Mocus {
   void Analyze();
 
   /// @returns Generated minimal cut sets with basic event indices.
-  const std::vector<std::vector<int>>& cut_sets() const { return cut_sets_; }
+  const std::vector<std::vector<int>>& products() const { return products_; }
 
  private:
   /// Runs analysis on a module gate.
@@ -68,7 +68,7 @@ class Mocus {
   bool constant_graph_;  ///< No need for analysis.
   const BooleanGraph* graph_;  ///< The analysis PDAG.
   const Settings kSettings_;  ///< Analysis settings.
-  std::vector<std::vector<int>> cut_sets_;  ///< Special cut sets with indices.
+  std::vector<std::vector<int>> products_;  ///< Cut sets with indices.
 };
 
 }  // namespace scram

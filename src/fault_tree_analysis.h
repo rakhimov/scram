@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,42 +37,42 @@ namespace scram {
 
 /// @struct Literal
 /// Event or its complement
-/// that may appear in cut sets.
+/// that may appear in products.
 struct Literal {
   bool complement;  ///< Indication of a complement event.
-  std::shared_ptr<BasicEvent> event;  ///< The event in the cut set.
+  std::shared_ptr<BasicEvent> event;  ///< The event in the product.
 };
 
-using CutSet = std::vector<Literal>;  ///< Collection of unique literals.
+using Product = std::vector<Literal>;  ///< Collection of unique literals.
 
-/// Prints a collection of cut sets to the standard error.
+/// Prints a collection of products to the standard error.
 /// This is a helper function for easier debugging
 /// and visual comparison of analysis results.
-/// Summary of the number of cut sets and
+/// Summary of the number of products and
 /// its size distribution is printed first.
-/// Then, all cut sets are grouped by size and sorted.
-/// The literals of a cut set are sorted by their names.
+/// Then, all products are grouped by size and sorted.
+/// The literals of a product are sorted by their names.
 ///
-/// @param[in] cut_sets  Valid, unique collection of analysis results.
-void Print(const std::vector<CutSet>& cut_sets);
+/// @param[in] products  Valid, unique collection of analysis results.
+void Print(const std::vector<Product>& products);
 
-/// Helper function to compute cut set probability.
+/// Helper function to compute a Boolean product probability.
 ///
-/// @param[in] cut_set  Cut set of literals.
+/// @param[in] product  A set of literals.
 ///
-/// @returns Cut set probability.
+/// @returns Product of probabilities of the literals.
 ///
 /// @pre Events are initialized with expressions.
-double CalculateProbability(const CutSet& cut_set);
+double CalculateProbability(const Product& product);
 
-/// Helper function to determine cut set order.
+/// Helper function to determine order of a Boolean product.
 ///
-/// @param[in] cut_set  Cut set of literals.
+/// @param[in] Product  A set of literals.
 ///
-/// @returns The order of the cut set.
+/// @returns The order of the product.
 ///
-/// @note An empty cut set is assumed to indicate the Base/Unity set.
-int GetOrder(const CutSet& cut_set);
+/// @note An empty set is assumed to indicate the Base/Unity set.
+int GetOrder(const Product& product);
 
 /// @class FaultTreeDescriptor
 /// Fault tree description gatherer.
@@ -225,31 +225,31 @@ class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
   ///          the analysis will be invalid or fail.
   virtual void Analyze() noexcept = 0;
 
-  /// @returns Cut sets as the analysis results.
-  const std::vector<CutSet>& cut_sets() const { return cut_sets_; }
+  /// @returns A set of Boolean products as the analysis results.
+  const std::vector<Product>& products() const { return products_; }
 
-  /// @returns Collection of basic events that are in the cut sets.
-  const std::vector<BasicEventPtr>& cut_set_events() const {
-    return cut_set_events_;
+  /// @returns Collection of basic events that are in the products.
+  const std::vector<BasicEventPtr>& product_events() const {
+    return product_events_;
   }
 
  protected:
-  /// Converts minimal cut sets from indices to strings
+  /// Converts resultant sets of basic event indices to strings
   /// for future reporting.
-  /// This function also collects basic events in cut sets.
+  /// This function also collects basic events in products.
   ///
-  /// @param[in] i_cut_sets  Cut sets with indices of events from calculations.
+  /// @param[in] results  A sets with indices of events from calculations.
   /// @param[in] graph  Boolean graph with basic event indices and pointers.
-  void Convert(const std::vector<std::vector<int>>& i_cut_sets,
+  void Convert(const std::vector<std::vector<int>>& results,
                const BooleanGraph* graph) noexcept;
 
-  std::vector<CutSet> cut_sets_;  ///< Container of analysis results.
-  std::vector<BasicEventPtr> cut_set_events_;  ///< Basic events in cut sets.
+  std::vector<Product> products_;  ///< Container of analysis results.
+  std::vector<BasicEventPtr> product_events_;  ///< Basic events in the sets.
 };
 
 /// @class FaultTreeAnalyzer
 ///
-/// @tparam Algorithm Fault tree analysis algorithm.
+/// @tparam Algorithm  Fault tree analysis algorithm.
 ///
 /// Fault tree analysis facility with specific algorithms.
 /// This class is meant to be specialized by fault tree analysis algorithms.
@@ -304,7 +304,7 @@ void FaultTreeAnalyzer<Algorithm>::Analyze() noexcept {
   LOG(DEBUG2) << "The algorithm finished in " << DUR(algo_time);
 
   analysis_time_ = DUR(analysis_time);  // Duration of MCS generation.
-  FaultTreeAnalysis::Convert(algorithm_->cut_sets(), graph_.get());
+  FaultTreeAnalysis::Convert(algorithm_->products(), graph_.get());
 }
 
 }  // namespace scram

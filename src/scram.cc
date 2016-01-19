@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,14 +64,15 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
         ("bdd", "Perform qualitative analysis with BDD")
         ("zbdd", "Perform qualitative analysis with ZBDD")
         ("mocus", "Perform qualitative analysis with MOCUS")
+        ("prime-implicants", "Calculate prime implicants")
         ("probability", po::value<bool>(), "Perform probability analysis")
         ("importance", po::value<bool>(), "Perform importance analysis")
         ("uncertainty", po::value<bool>(), "Perform uncertainty analysis")
         ("ccf", po::value<bool>(), "Perform common-cause failure analysis")
         ("rare-event", "Use the rare event approximation")
         ("mcub", "Use the MCUB approximation")
-        ("limit-order,l", po::value<int>(), "Upper limit for cut set order")
-        ("cut-off", po::value<double>(), "Cut-off probability for cut sets")
+        ("limit-order,l", po::value<int>(), "Upper limit for product order")
+        ("cut-off", po::value<double>(), "Cut-off probability for products")
         ("mission-time", po::value<double>(), "System mission time in hours")
         ("num-trials", po::value<int>(),
          "Number of trials for Monte Carlo simulations")
@@ -89,7 +90,6 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
         ("no-report", "Don't generate analysis report");
 #endif
     po::store(po::parse_command_line(argc, argv, desc), *vm);
-
   } catch (std::exception& err) {
     std::cerr << "Option error: " << err.what() << "\n\n" << usage << "\n\n"
               << desc << "\n";
@@ -167,6 +167,7 @@ void ConstructSettings(const po::variables_map& vm, scram::Settings* settings) {
   } else if (vm.count("mocus")) {
     settings->algorithm("mocus");
   }
+  settings->prime_implicants(vm.count("prime-implicants"));
   // Determine if the probability approximation is requested.
   if (vm.count("rare-event")) {
     assert(!vm.count("mcub"));

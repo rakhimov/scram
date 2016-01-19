@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,8 +43,7 @@ class UncertaintyAnalysis;
 /// This class reports the results of the analyses.
 class Reporter {
  public:
-  using ModelPtr = std::shared_ptr<const Model>;
-  using PrimaryEventPtr = std::shared_ptr<const PrimaryEvent>;
+  using PrimaryEventPtr = std::shared_ptr<const PrimaryEvent>;  ///< @todo Ugly!
 
   /// Sets up XML report document according to a specific standards.
   /// This function populates information
@@ -58,7 +57,8 @@ class Reporter {
   /// @param[in,out] doc  An empty document.
   ///
   /// @throws LogicError  The document is not empty.
-  void SetupReport(const ModelPtr& model, const Settings& settings,
+  void SetupReport(const std::shared_ptr<const Model>& model,
+                   const Settings& settings,
                    xmlpp::Document* doc);
 
   /// Reports orphan primary events
@@ -104,7 +104,7 @@ class Reporter {
                         const ImportanceAnalysis& importance_analysis,
                         xmlpp::Document* doc);
 
-  /// Reports the results of uncertainty analysis with minimal cut sets.
+  /// Reports the results of uncertainty analysis.
   ///
   /// @param[in] ft_name  The original name of a fault tree.
   /// @param[in] uncert_analysis  UncertaintyAnalysis with results.
@@ -116,7 +116,7 @@ class Reporter {
                          xmlpp::Document* doc);
 
  private:
-  using BasicEventPtr = std::shared_ptr<const BasicEvent>;
+  using BasicEventPtr = std::shared_ptr<const BasicEvent>;  ///< For simplicity.
 
   /// Detects if a given basic event is a CCF event,
   /// and reports it with specific formatting.

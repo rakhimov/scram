@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,11 +56,11 @@ void ImportanceAnalysis::Analyze() noexcept {
 std::vector<std::pair<int, BasicEventPtr>>
 ImportanceAnalysis::GatherImportantEvents(
     const BooleanGraph* graph,
-    const std::vector<CutSet>& cut_sets) noexcept {
+    const std::vector<std::vector<int>>& products) noexcept {
   std::vector<std::pair<int, BasicEventPtr>> important_events;
   std::unordered_set<int> unique_indices;
-  for (const auto& cut_set : cut_sets) {
-    for (int index : cut_set) {
+  for (const auto& product : products) {
+    for (int index : product) {
       if (unique_indices.count(std::abs(index))) continue;  // Most likely.
       int pos_index = std::abs(index);
       unique_indices.insert(pos_index);

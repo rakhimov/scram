@@ -1,4 +1,4 @@
-.TH SCRAM "1" "December 2015" "SCRAM 0.10.0" "SCRAM Manual"
+.TH SCRAM "1" "January 2016" "SCRAM 0.10.0" "SCRAM Manual"
 .SH NAME
 SCRAM \- Command-line Risk Analysis Multi-tool
 .SH SYNOPSIS
@@ -44,6 +44,9 @@ Perform qualitative analysis with Zero-Suppressed Binary Decision Diagrams
 \fB\-\-mocus\fR
 Perform qualitative analysis with the MOCUS algorithm
 .TP
+\fB\-\-prime\-implicants\fR
+Calcualte prime implicants instead of minimal cut sets
+.TP
 \fB\-\-probability\fR arg
 Perform probability analysis
 .TP
@@ -64,10 +67,11 @@ calculations
 Use the MCUB approximation for probability
 calculations
 .HP
-\fB\-l\fR [ \fB\-\-limit\-order\fR ] arg Upper limit for cut set order
+\fB\-l\fR [ \fB\-\-limit\-order\fR ] arg
+Upper limit for product order
 .TP
 \fB\-\-cut\-off\fR arg
-Cut\-off probability for cut sets
+Cut\-off probability for products
 .TP
 \fB\-\-mission\-time\fR arg
 Set the system mission time in hours for probability calculations

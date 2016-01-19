@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Olzhas Rakhimov
+ * Copyright (C) 2015-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
 /// Implementation of Zero-Suppressed BDD algorithms.
 
 #include "zbdd.h"
+
+#include <algorithm>
 
 #include "logger.h"
 
@@ -43,10 +45,10 @@ Zbdd::Zbdd(const Settings& settings) noexcept
   Zbdd::ClearMarks(root_);                                                     \
   LOG(DEBUG4) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);      \
   Zbdd::ClearMarks(root_);                                                     \
-  LOG(DEBUG3) << "There are " << Zbdd::CountCutSets(root_) << " cut sets.";    \
+  LOG(DEBUG3) << "There are " << Zbdd::CountProducts(root_) << " products.";   \
   Zbdd::ClearMarks(root_)
 
-Zbdd::Zbdd(const Bdd* bdd, const Settings& settings) noexcept
+Zbdd::Zbdd(Bdd* bdd, const Settings& settings) noexcept
     : Zbdd::Zbdd(settings) {
   CLOCK(init_time);
   LOG(DEBUG2) << "Creating ZBDD from BDD...";
@@ -139,14 +141,14 @@ void Zbdd::Analyze() noexcept {
   subsume_table_.clear();
 
   CLOCK(gen_time);
-  LOG(DEBUG3) << "Getting cut sets from minimized ZBDD...";
-  cut_sets_ = Zbdd::GenerateCutSets(root_);
+  LOG(DEBUG3) << "Getting products from minimized ZBDD...";
+  products_ = Zbdd::GenerateProducts(root_);
 
-  // Cleanup of temporary cut sets.
+  // Cleanup of temporary products.
   modules_.clear();
   root_ = kBase_;
 
-  LOG(DEBUG3) << cut_sets_.size() << " cut sets are found in " << DUR(gen_time);
+  LOG(DEBUG3) << products_.size() << " products are found in " << DUR(gen_time);
   LOG(DEBUG2) << "Finished ZBDD analysis in " << DUR(analysis_time);
 }
 
@@ -183,17 +185,29 @@ SetNodePtr Zbdd::FetchUniqueTable(const SetNodePtr& node, const VertexPtr& high,
 }
 
 VertexPtr Zbdd::ConvertBdd(const VertexPtr& vertex, bool complement,
-                           const Bdd* bdd_graph, int limit_order,
+                           Bdd* bdd_graph, int limit_order,
                            PairTable<VertexPtr>* ites) noexcept {
   if (vertex->terminal()) return complement ? kEmpty_ : kBase_;
   int sign = complement ? -1 : 1;
   VertexPtr& result = (*ites)[{sign * vertex->id(), limit_order}];
   if (result) return result;
-  ItePtr ite = Ite::Ptr(vertex);
+  if (kSettings_.prime_implicants()) {
+    result = Zbdd::ConvertBddPI(Ite::Ptr(vertex), complement, bdd_graph,
+                                limit_order, ites);
+  } else {
+    result = Zbdd::ConvertBdd(Ite::Ptr(vertex), complement, bdd_graph,
+                              limit_order, ites);
+  }
+  return result;
+}
+
+VertexPtr Zbdd::ConvertBdd(const ItePtr& ite, bool complement,
+                           Bdd* bdd_graph, int limit_order,
+                           PairTable<VertexPtr>* ites) noexcept {
   VertexPtr low =
       Zbdd::ConvertBdd(ite->low(), ite->complement_edge() ^ complement,
                        bdd_graph, limit_order, ites);
-  if (limit_order == 0) {  // Cut-off on the cut set size.
+  if (limit_order == 0) {  // Cut-off on the set order.
     if (low->terminal()) return low;
     return kEmpty_;
   }
@@ -206,14 +220,10 @@ VertexPtr Zbdd::ConvertBdd(const VertexPtr& vertex, bool complement,
                          bdd_graph, kSettings_.limit_order(), ites);
     modules_.emplace(ite->index(), module_set);
     if (module_set->terminal()) {
-      if (!Terminal::Ptr(module_set)->value()) {
-        result = low;
-      } else {
-        VertexPtr high = Zbdd::ConvertBdd(ite->high(), complement, bdd_graph,
-                                          limit_order, ites);
-        result = Zbdd::Apply(kOrGate, high, low, kSettings_.limit_order());
-      }
-      return result;
+      if (!Terminal::Ptr(module_set)->value()) return low;
+      VertexPtr high = Zbdd::ConvertBdd(ite->high(), complement, bdd_graph,
+                                        limit_order, ites);
+      return Zbdd::Apply(kOrGate, high, low, kSettings_.limit_order());
     }
   }
   VertexPtr high =
@@ -221,12 +231,57 @@ VertexPtr Zbdd::ConvertBdd(const VertexPtr& vertex, bool complement,
   if ((high->terminal() && !Terminal::Ptr(high)->value()) ||
       (high->id() == low->id()) ||
       (low->terminal() && Terminal::Ptr(low)->value())) {
-    result = low;  // Reduce and minimize.
-    return result;
+    return low;  // Reduce and minimize.
   }
-  result = Zbdd::FetchUniqueTable(ite->index(), high, low, ite->order(),
+  return Zbdd::FetchUniqueTable(ite->index(), high, low, ite->order(),
+                                ite->module());
+}
+
+VertexPtr Zbdd::ConvertBddPI(const ItePtr& ite, bool complement,
+                             Bdd* bdd_graph, int limit_order,
+                             PairTable<VertexPtr>* ites) noexcept {
+  Bdd::Function common = bdd_graph->CalculateConsensus(ite, complement);
+  VertexPtr consensus = Zbdd::ConvertBdd(common.vertex, common.complement,
+                                         bdd_graph, limit_order, ites);
+  if (limit_order == 0) {  // Cut-off on the product order.
+    if (consensus->terminal()) return consensus;
+    return kEmpty_;
+  }
+  if (ite->module()) {  // This is a proxy and not a variable.
+    const Bdd::Function& module =
+        bdd_graph->modules().find(ite->index())->second;
+    assert(!module.vertex->terminal() && "Unexpected BDD terminal module.");
+    VertexPtr module_pos =
+        Zbdd::ConvertBdd(module.vertex, module.complement,
+                         bdd_graph, kSettings_.limit_order(), ites);
+    modules_.emplace(ite->index(), module_pos);
+    assert(!module_pos->terminal());
+    VertexPtr module_neg =
+        Zbdd::ConvertBdd(module.vertex, !module.complement,
+                         bdd_graph, kSettings_.limit_order(), ites);
+    modules_.emplace(-ite->index(), module_neg);
+    assert(!module_neg->terminal());
+  }
+  int sublimit = limit_order - 1;
+  VertexPtr high =
+      Zbdd::ConvertBdd(ite->high(), complement, bdd_graph, sublimit, ites);
+  VertexPtr low =
+      Zbdd::ConvertBdd(ite->low(), ite->complement_edge() ^ complement,
+                       bdd_graph, sublimit, ites);
+  if ((high->terminal() && !Terminal::Ptr(high)->value()) &&
+      (low->terminal() && !Terminal::Ptr(low)->value())) {
+    return consensus;
+  } else if (high->terminal() && !Terminal::Ptr(high)->value()) {
+    return Zbdd::FetchUniqueTable(-ite->index(), low, consensus, ite->order(),
                                   ite->module());
-  return result;
+  } else if (low->terminal() && !Terminal::Ptr(low)->value()) {
+    return Zbdd::FetchUniqueTable(ite->index(), high, consensus, ite->order(),
+                                  ite->module());
+  }
+  return Zbdd::FetchUniqueTable(
+      ite->index(), high, Zbdd::FetchUniqueTable(-ite->index(), low, consensus,
+                                                 ite->order(), ite->module()),
+      ite->order(), ite->module());
 }
 
 VertexPtr Zbdd::ConvertGraph(
@@ -530,42 +585,42 @@ void Zbdd::GatherModules(const VertexPtr& vertex,
 }
 
 std::vector<std::vector<int>>
-Zbdd::GenerateCutSets(const VertexPtr& vertex) noexcept {
+Zbdd::GenerateProducts(const VertexPtr& vertex) noexcept {
   if (vertex->terminal()) {
     if (Terminal::Ptr(vertex)->value()) return {{}};  // The Base set signature.
     return {};  // Don't include 0/NULL sets.
   }
   SetNodePtr node = SetNode::Ptr(vertex);
   assert(node->minimal() && "Detected non-minimal ZBDD.");
-  if (node->mark()) return node->cut_sets();
+  if (node->mark()) return node->products();
   node->mark(true);
-  std::vector<CutSet> low = Zbdd::GenerateCutSets(node->low());
-  std::vector<CutSet> high = Zbdd::GenerateCutSets(node->high());
+  std::vector<Product> low = Zbdd::GenerateProducts(node->low());
+  std::vector<Product> high = Zbdd::GenerateProducts(node->high());
   auto& result = low;  // For clarity.
   if (node->module()) {
     VertexPtr module_vertex = modules_.find(node->index())->second;  // Extra.
-    std::vector<CutSet> module = Zbdd::GenerateCutSets(module_vertex);
-    for (auto& cut_set : high) {  // Cross-product.
+    std::vector<Product> module = Zbdd::GenerateProducts(module_vertex);
+    for (auto& product : high) {  // Cross-product.
       for (auto& module_set : module) {
-        if (cut_set.size() + module_set.size() > kSettings_.limit_order())
-          continue;  // Cut-off on the cut set size.
-        CutSet combo = cut_set;
+        if (product.size() + module_set.size() > kSettings_.limit_order())
+          continue;  // Cut-off on the product size.
+        Product combo = product;
         combo.insert(combo.end(), module_set.begin(), module_set.end());
         result.emplace_back(std::move(combo));
       }
     }
   } else {
-    for (auto& cut_set : high) {
-      if (cut_set.size() == kSettings_.limit_order()) continue;
-      cut_set.push_back(node->index());
-      result.emplace_back(std::move(cut_set));
+    for (auto& product : high) {
+      if (product.size() == kSettings_.limit_order()) continue;
+      product.push_back(node->index());
+      result.emplace_back(std::move(product));
     }
   }
 
   // Destroy the subgraph to remove extra reference counts.
   node->CutBranches();
 
-  if (node.use_count() > 2) node->cut_sets(result);
+  if (node.use_count() > 2) node->products(result);
   return result;
 }
 
@@ -582,7 +637,7 @@ int Zbdd::CountSetNodes(const VertexPtr& vertex) noexcept {
          Zbdd::CountSetNodes(node->low());
 }
 
-int64_t Zbdd::CountCutSets(const VertexPtr& vertex) noexcept {
+int64_t Zbdd::CountProducts(const VertexPtr& vertex) noexcept {
   if (vertex->terminal()) {
     if (Terminal::Ptr(vertex)->value()) return 1;
     return 0;
@@ -593,10 +648,10 @@ int64_t Zbdd::CountCutSets(const VertexPtr& vertex) noexcept {
   int64_t multiplier = 1;  // Multiplier of the module.
   if (node->module()) {
     VertexPtr module = modules_.find(node->index())->second;
-    multiplier = Zbdd::CountCutSets(module);
+    multiplier = Zbdd::CountProducts(module);
   }
-  node->count(multiplier * Zbdd::CountCutSets(node->high()) +
-              Zbdd::CountCutSets(node->low()));
+  node->count(multiplier * Zbdd::CountProducts(node->high()) +
+              Zbdd::CountProducts(node->low()));
   return node->count();
 }
 
@@ -733,6 +788,6 @@ void CutSetContainer::JoinModule(int index,
   modules_.insert(container.modules_.begin(), container.modules_.end());
 }
 
-}
+}  // namespace zbdd
 
 }  // namespace scram

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,23 +33,22 @@
 
 namespace scram {
 
-/// @def LOG(level)
-/// Logging with the level defined.
-#define LOG(level) if (level > scram::Logger::ReportLevel()); \
-  else scram::Logger().Get(level)
+/// Logging with a level.
+#define LOG(level) \
+  if (level <= scram::Logger::ReportLevel()) scram::Logger().Get(level)
 
-/// @def BLOG(level, cond)
-/// Conditional logging with the level defined.
-#define BLOG(level, cond) if (!cond || level > scram::Logger::ReportLevel()); \
-  else scram::Logger().Get(level)
+/// Conditional logging with a level.
+#define BLOG(level, cond) \
+  if (cond && level <= scram::Logger::ReportLevel()) scram::Logger().Get(level)
 
-/// @def CLOCK(var)
-/// Starts the timing where var is the unique variable for the clock.
+/// Starts the timing.
+///
+/// @param[out] var  A unique name for time variable in the scope.
 #define CLOCK(var) std::clock_t var = std::clock()
 
-/// @def DUR(var)
-/// Calculates the time duration from the start of the clock with variable name
-/// var. This macro must be in the same scope as CLOCK(var).
+/// Calculates the time duration from the start of the clock.
+///
+/// @param[in] var  The variable initialized by the CLOCK macro.
 #define DUR(var) (std::clock() - var) / static_cast<double>(CLOCKS_PER_SEC)
 
 /// @enum LogLevel

@@ -27,6 +27,13 @@ namespace scram {
 
 /// @class Settings
 /// Builder for analysis settings.
+/// Analysis facilities are guaranteed not to throw or fail
+/// with an instance of this class.
+///
+/// @warning Some settings with defaults and constraints
+///          may have side-effects on other settings.
+///
+/// @warning The order of building the settings matters.
 class Settings {
  public:
   /// @returns The Qualitative analysis algorithm.
@@ -47,10 +54,27 @@ class Settings {
   /// @throws InvalidArgument  The algorithm is not recognized.
   Settings& algorithm(const std::string& algorithm);
 
-  /// @returns The limit on the size of minimal cut sets.
+  /// @returns true if prime implicants are to be calculated
+  ///               instead of minimal cut sets.
+  bool prime_implicants() const { return prime_implicants_; }
+
+  /// Sets a flag to calculate prime implicants instead of minimal cut sets.
+  /// Prime implicants can only be calculated with BDD-based algorithms.
+  ///
+  /// The request for prime implicants cancels
+  /// the request for inapplicable quantitative analysis approximations.
+  ///
+  /// @param[in] flag  True for the request.
+  ///
+  /// @returns Reference to this object.
+  ///
+  /// @throws InvalidArgument  The request is not relevant to the algorithm.
+  Settings& prime_implicants(bool flag);
+
+  /// @returns The limit on the size of products.
   int limit_order() const { return limit_order_; }
 
-  /// Sets the limit order for minimal cut sets.
+  /// Sets the limit order for products.
   ///
   /// @param[in] order  A natural number for the limit order.
   ///
@@ -59,13 +83,13 @@ class Settings {
   /// @throws InvalidArgument  The number is not more than 0.
   Settings& limit_order(int order);
 
-  /// @returns The minimum required probability for cut sets.
+  /// @returns The minimum required probability for products.
   double cut_off() const { return cut_off_; }
 
-  /// Sets the cut-off probability for minimal cut sets to be considered
-  /// for analysis.
+  /// Sets the cut-off probability for products
+  /// to be considered for analysis.
   ///
-  /// @param[in] prob  The minimum probability for minimal cut sets.
+  /// @param[in] prob  The minimum probability for products.
   ///
   /// @returns Reference to this object.
   ///
@@ -83,7 +107,8 @@ class Settings {
   ///
   /// @returns Reference to this object.
   ///
-  /// @throws InvalidArgument  The approximation is not recognized.
+  /// @throws InvalidArgument  The approximation is not recognized
+  ///                          or inappropriate for analysis.
   Settings& approximation(const std::string& approx);
 
   /// @returns The number of trials for Monte-Carlo simulations.
@@ -218,9 +243,10 @@ class Settings {
   bool uncertainty_analysis_ = false;  ///< A flag for uncertainty analysis.
   bool ccf_analysis_ = false;  ///< A flag for common-cause analysis.
   std::string algorithm_ = "bdd";  ///< Qualitative analysis algorithm.
-  int limit_order_ = 20;  ///< Limit on the order of minimal cut sets.
+  bool prime_implicants_ = false;  ///< Calculation of prime implicants.
+  int limit_order_ = 20;  ///< Limit on the order of products.
   double mission_time_ = 8760;  ///< System mission time.
-  double cut_off_ = 1e-8;  ///< The cut-off probability for cut sets.
+  double cut_off_ = 1e-8;  ///< The cut-off probability for products.
   std::string approximation_ = "no";  ///< The approximations for calculations.
   int seed_ = 0;  ///< The seed for the pseudo-random number generator.
   int num_trials_ = 1e3;  ///< The number of trials for Monte Carlo simulations.

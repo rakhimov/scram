@@ -19,7 +19,7 @@ Boolean logic is used to combine events
 that could lead to the undesired top event.
 This analysis assumes that events are independent
 and may incorporate Common Cause Failure for the analysis with dependent systems.
-The analysis generates minimal cut sets,
+The analysis generates minimal cut sets or prime implicants,
 importance factors of events,
 probabilities of top event and gates.
 
@@ -240,8 +240,8 @@ Uncertainty Analysis
 ********************
 
 Uncertainty quantification is performed for a top event(gate)
-with determined minimal cut sets [UA]_.
-If events in the minimal cut sets have their probabilities
+with determined minimal cut sets  or prime implicants[UA]_.
+If events in the products have their probabilities
 expressed by a statistical distribution with some uncertainties,
 these uncertainties propagate to the total probability of the top event.
 This analysis is performed employing the Monte Carlo Method.

@@ -42,7 +42,7 @@ Design Description
 
     * Fault Tree Analyzer operates on one fault tree with a single top event,
       and may provide primary events, intermediate events,
-      and  minimal cut sets as output,
+      and  products (minimal cut sets or prime implicants) as output,
       or other information about the passed fault tree.
       This fault tree analyzer uses many other helper facilities
       specifically designed to make the analysis efficient and fast.

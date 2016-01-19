@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,24 +20,25 @@
 
 #include "fault_tree_analysis.h"
 
+#include <set>
 #include <utility>
 
 namespace scram {
 
-void Print(const std::vector<CutSet>& cut_sets) {
-  if (cut_sets.empty()) {
-    std::cerr << "No cut sets!" << std::endl;
+void Print(const std::vector<Product>& products) {
+  if (products.empty()) {
+    std::cerr << "No products!" << std::endl;
     return;
   }
-  if (cut_sets.front().empty()) {
-    assert(cut_sets.size() == 1 && "Unity case must have only one cut set.");
-    std::cerr << "Single Unity cut set." << std::endl;
+  if (products.front().empty()) {
+    assert(products.size() == 1 && "Unity case must have only one product.");
+    std::cerr << "Single Unity product." << std::endl;
     return;
   }
   std::vector<std::set<std::string>> to_print;
-  for (const auto& cut_set : cut_sets) {
+  for (const auto& product : products) {
     std::set<std::string> ids;
-    for (const auto& literal : cut_set) {
+    for (const auto& literal : product) {
       ids.insert((literal.complement ? "~" : "") + literal.event->name());
     }
     to_print.push_back(ids);
@@ -50,29 +51,27 @@ void Print(const std::vector<CutSet>& cut_sets) {
       });
   assert(!to_print.front().empty() && "Failure of the analysis with Unity!");
   std::vector<int> distribution(to_print.back().size());
-  for (const auto& cut_set : to_print) distribution[cut_set.size() - 1]++;
+  for (const auto& product : to_print) distribution[product.size() - 1]++;
   std::cerr << " " << to_print.size() << " : {";
   for (int i : distribution) std::cerr << " " << i;
   std::cerr << " }" << std::endl << std::endl;
 
-  for (const auto& cut_set : to_print) {
-    for (const auto& id : cut_set) {
-      std::cerr << " " << id;
-    }
+  for (const auto& product : to_print) {
+    for (const auto& id : product) std::cerr << " " << id;
     std::cerr << std::endl;
   }
 }
 
-double CalculateProbability(const CutSet& cut_set) {
+double CalculateProbability(const Product& product) {
   double p = 1;
-  for (const Literal& literal : cut_set) {
+  for (const Literal& literal : product) {
     p *= literal.complement ? 1 - literal.event->p() : literal.event->p();
   }
   return p;
 }
 
-int GetOrder(const CutSet& cut_set) {
-  return cut_set.empty() ? 1 : cut_set.size();
+int GetOrder(const Product& product) {
+  return product.empty() ? 1 : product.size();
 }
 
 FaultTreeDescriptor::FaultTreeDescriptor(const GatePtr& root)
@@ -117,34 +116,34 @@ FaultTreeAnalysis::FaultTreeAnalysis(const GatePtr& root,
     : Analysis::Analysis(settings),
       FaultTreeDescriptor::FaultTreeDescriptor(root) {}
 
-void FaultTreeAnalysis::Convert(const std::vector<std::vector<int>>& i_cut_sets,
+void FaultTreeAnalysis::Convert(const std::vector<std::vector<int>>& results,
                                 const BooleanGraph* graph) noexcept {
   // Special cases of sets.
-  if (i_cut_sets.empty()) {
+  if (results.empty()) {
     warnings_ += " The top event is NULL. Success is guaranteed.";
-  } else if (i_cut_sets.size() == 1 && i_cut_sets.back().empty()) {
+  } else if (results.size() == 1 && results.back().empty()) {
     warnings_ += " The top event is UNITY. Failure is guaranteed.";
   }
   std::unordered_set<int> unique_events;
-  for (const auto& min_cut_set : i_cut_sets) {
-    assert(min_cut_set.size() <= kSettings_.limit_order() &&
-           "Miscalculated cut sets with larger-than-required order.");
-    CutSet result;
-    for (int index : min_cut_set) {
+  for (const auto& result_set : results) {
+    assert(result_set.size() <= kSettings_.limit_order() &&
+           "Miscalculated product sets with larger-than-required order.");
+    Product product;
+    for (int index : result_set) {
       BasicEventPtr basic_event = graph->GetBasicEvent(std::abs(index));
       if (index < 0) {  // NOT logic.
-        result.push_back({true, basic_event});
+        product.push_back({true, basic_event});
       } else {
-        result.push_back({false, basic_event});
+        product.push_back({false, basic_event});
       }
       if (unique_events.count(std::abs(index))) continue;
       unique_events.insert(std::abs(index));
-      cut_set_events_.push_back(basic_event);
+      product_events_.push_back(basic_event);
     }
-    cut_sets_.push_back(result);
+    products_.push_back(product);
   }
 #ifndef NDEBUG
-  if (kSettings_.print) Print(cut_sets_);
+  if (kSettings_.print) Print(products_);
 #endif
 }
 

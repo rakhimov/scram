@@ -73,7 +73,8 @@ inline std::string ToString(double num, int precision) {
 
 }  // namespace
 
-void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
+void Reporter::SetupReport(const std::shared_ptr<const Model>& model,
+                           const Settings& settings,
                            xmlpp::Document* doc) {
   if (doc->get_root_node()) throw LogicError("The document is not empty.");
   xmlpp::Node* root = doc->create_root_node("report");
@@ -88,9 +89,13 @@ void Reporter::SetupReport(const ModelPtr& model, const Settings& settings,
   // Setup for performance information.
   information->add_child("performance");
 
-  // Report the setup for main minimal cut set analysis.
+  // Report the setup for main analysis.
   xmlpp::Element* quant = information->add_child("calculated-quantity");
-  quant->set_attribute("name", "Minimal Cut Sets");
+  if (settings.prime_implicants()) {
+    quant->set_attribute("name", "Prime Implicants");
+  } else {
+    quant->set_attribute("name", "Minimal Cut Sets");
+  }
 
   xmlpp::Element* methods = information->add_child("calculation-method");
   if (settings.algorithm() == "bdd") {
@@ -231,9 +236,9 @@ void Reporter::ReportFta(std::string ft_name, const FaultTreeAnalysis& fta,
   xmlpp::Element* sum_of_products = results->add_child("sum-of-products");
   sum_of_products->set_attribute("name", ft_name);
   sum_of_products->set_attribute("basic-events",
-                                 ToString(fta.cut_set_events().size()));
+                                 ToString(fta.product_events().size()));
   sum_of_products->set_attribute("products",
-                                 ToString(fta.cut_sets().size()));
+                                 ToString(fta.products().size()));
 
   std::string warning = fta.warnings();
   if (prob_analysis) warning += prob_analysis->warnings();
@@ -242,13 +247,13 @@ void Reporter::ReportFta(std::string ft_name, const FaultTreeAnalysis& fta,
   }
 
   CLOCK(cs_time);
-  LOG(DEBUG2) << "Reporting cut sets for " << ft_name << "...";
+  LOG(DEBUG2) << "Reporting products for " << ft_name << "...";
   std::vector<xmlpp::Element*> products;  // To add more info later.
-  for (const CutSet& cut_set : fta.cut_sets()) {
+  for (const Product& product_set : fta.products()) {
     xmlpp::Element* product = sum_of_products->add_child("product");
     products.push_back(product);
-    product->set_attribute("order", ToString(GetOrder(cut_set)));
-    for (const Literal& literal : cut_set) {
+    product->set_attribute("order", ToString(GetOrder(product_set)));
+    for (const Literal& literal : product_set) {
       xmlpp::Element* parent = product;
       if (literal.complement) parent = product->add_child("not");
       Reporter::ReportBasicEvent(literal.event, parent);
@@ -258,9 +263,9 @@ void Reporter::ReportFta(std::string ft_name, const FaultTreeAnalysis& fta,
     sum_of_products->set_attribute("probability",
                                    ToString(prob_analysis->p_total(), 7));
 
-    std::vector<double> probs;  // Cut set probabilities.
-    for (const CutSet& cut_set : fta.cut_sets())
-      probs.push_back(CalculateProbability(cut_set));
+    std::vector<double> probs;  // Product probabilities.
+    for (const Product& product_set : fta.products())
+      probs.push_back(CalculateProbability(product_set));
 
     double sum = std::accumulate(probs.begin(), probs.end(), 0.0);
     assert(products.size() == probs.size() && "Elements are missing!");
@@ -271,7 +276,7 @@ void Reporter::ReportFta(std::string ft_name, const FaultTreeAnalysis& fta,
       product->set_attribute("contribution", ToString(prob / sum, 7));
     }
   }
-  LOG(DEBUG2) << "Finished cut set reporting in " << DUR(cs_time);
+  LOG(DEBUG2) << "Finished reporting products in " << DUR(cs_time);
 
   // Report calculation time in the information section.
   // It is assumed that MCS reporting is the default
@@ -281,7 +286,7 @@ void Reporter::ReportFta(std::string ft_name, const FaultTreeAnalysis& fta,
   xmlpp::Element* performance = static_cast<xmlpp::Element*>(perf[0]);
   xmlpp::Element* calc_time = performance->add_child("calculation-time");
   calc_time->set_attribute("name", ft_name);
-  calc_time->add_child("minimal-cut-set")
+  calc_time->add_child("products")
       ->add_child_text(ToString(fta.analysis_time(), 5));
   if (prob_analysis) {
     calc_time->add_child("probability")
