@@ -451,7 +451,7 @@ TEST_P(RiskAnalysisTest, PhiFactorCCF) {
     EXPECT_NEAR(0.04104, p_total(), 1e-5);
   }
   EXPECT_EQ(34, products().size());
-  std::vector<int> distr = {0, 2, 24, 8};
+  std::vector<int> distr = {2, 24, 8};
   EXPECT_EQ(distr, ProductDistribution());
 }
 
@@ -468,7 +468,7 @@ TEST_P(RiskAnalysisTest, MGLFactorCCF) {
     EXPECT_NEAR(0.01630, p_total(), 1e-5);
   }
   EXPECT_EQ(34, products().size());
-  std::vector<int> distr = {0, 2, 24, 8};
+  std::vector<int> distr = {2, 24, 8};
   EXPECT_EQ(distr, ProductDistribution());
 }
 
@@ -485,7 +485,7 @@ TEST_P(RiskAnalysisTest, AlphaFactorCCF) {
     EXPECT_NEAR(0.03092, p_total(), 1e-5);
   }
   EXPECT_EQ(34, products().size());
-  std::vector<int> distr = {0, 2, 24, 8};
+  std::vector<int> distr = {2, 24, 8};
   EXPECT_EQ(distr, ProductDistribution());
 }
 

@@ -204,5 +204,5 @@ The analyzed products may result in NULL(empty) or UNITY(base) sets,
 which may indicate guaranteed success or failure.
 These cases are handled as special
 and given appropriate messages and probabilities.
-UNITY(base) set shows only one empty product of order 0 but probability 1.
+UNITY(base) set shows only one empty product of order 1 and probability 1.
 NULL(empty) set has probability 0 and shows no products.

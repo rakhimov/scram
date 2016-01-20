@@ -31,7 +31,7 @@ TEST_P(RiskAnalysisTest, Baobab_2_Test) {
   ASSERT_NO_THROW(ran->Analyze());
   // Minimal cut set check.
   EXPECT_EQ(4805, products().size());
-  std::vector<int> distr = {0, 0, 6, 121, 268, 630, 3780};
+  std::vector<int> distr = {0, 6, 121, 268, 630, 3780};
   EXPECT_EQ(distr, ProductDistribution());
 }
 

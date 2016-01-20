@@ -43,8 +43,6 @@
 
 #include "performance_tests.h"
 
-#include <string>
-
 namespace scram {
 namespace test {
 

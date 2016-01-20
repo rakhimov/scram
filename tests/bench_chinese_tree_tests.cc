@@ -39,7 +39,7 @@ TEST_P(RiskAnalysisTest, ChineseTree) {
   }
   // Minimal cut set check.
   EXPECT_EQ(392, products().size());
-  std::vector<int> distr = {0, 0, 12, 0, 24, 188, 168};
+  std::vector<int> distr = {0, 12, 0, 24, 188, 168};
   EXPECT_EQ(distr, ProductDistribution());
 }
 

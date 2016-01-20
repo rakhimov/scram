@@ -118,7 +118,7 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
   }
 
   // Provides the number of products per order of sets.
-  // The order starts from 0.
+  // The order starts from 1.
   std::vector<int> ProductDistribution() {
     assert(!ran->fault_tree_analyses().empty());
     assert(ran->fault_tree_analyses().size() == 1);
@@ -126,9 +126,9 @@ class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
     const FaultTreeAnalysis* fta =
         ran->fault_tree_analyses().begin()->second.get();
     for (const Product& product : fta->products()) {
-      distr[GetOrder(product)]++;
+      distr[GetOrder(product) - 1]++;
     }
-    while (!distr.back()) distr.pop_back();
+    while (!distr.empty() && !distr.back()) distr.pop_back();
     return distr;
   }
 
