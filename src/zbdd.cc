@@ -184,6 +184,14 @@ SetNodePtr Zbdd::FetchUniqueTable(const SetNodePtr& node, const VertexPtr& high,
                                 node->module());
 }
 
+VertexPtr Zbdd::FetchReducedVertex(int index, const VertexPtr& high,
+                                   const VertexPtr& low, int order,
+                                   bool module) noexcept {
+  if (high->id() == low->id()) return low;
+  if (high->terminal() && !Terminal::Ptr(high)->value()) return low;
+  return Zbdd::FetchUniqueTable(index, high, low, order, module);
+}
+
 VertexPtr Zbdd::ConvertBdd(const VertexPtr& vertex, bool complement,
                            Bdd* bdd_graph, int limit_order,
                            PairTable<VertexPtr>* ites) noexcept {
@@ -268,19 +276,10 @@ VertexPtr Zbdd::ConvertBddPI(const ItePtr& ite, bool complement,
   VertexPtr low =
       Zbdd::ConvertBdd(ite->low(), ite->complement_edge() ^ complement,
                        bdd_graph, sublimit, ites);
-  if ((high->terminal() && !Terminal::Ptr(high)->value()) &&
-      (low->terminal() && !Terminal::Ptr(low)->value())) {
-    return consensus;
-  } else if (high->terminal() && !Terminal::Ptr(high)->value()) {
-    return Zbdd::FetchUniqueTable(-ite->index(), low, consensus, ite->order(),
-                                  ite->module());
-  } else if (low->terminal() && !Terminal::Ptr(low)->value()) {
-    return Zbdd::FetchUniqueTable(ite->index(), high, consensus, ite->order(),
-                                  ite->module());
-  }
-  return Zbdd::FetchUniqueTable(
-      ite->index(), high, Zbdd::FetchUniqueTable(-ite->index(), low, consensus,
-                                                 ite->order(), ite->module()),
+  return Zbdd::FetchReducedVertex(
+      ite->index(), high,
+      Zbdd::FetchReducedVertex(-ite->index(), low, consensus, ite->order(),
+                               ite->module()),
       ite->order(), ite->module());
 }
 

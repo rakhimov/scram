@@ -173,6 +173,8 @@ class Zbdd {
   /// @param[in] module  A flag for the modular ZBDD proxy.
   ///
   /// @returns Set node with the given parameters.
+  ///
+  /// @warning This function is not aware of reduction rules.
   SetNodePtr FetchUniqueTable(int index, const VertexPtr& high,
                               const VertexPtr& low, int order,
                               bool module) noexcept;
@@ -185,8 +187,24 @@ class Zbdd {
   /// @param[in] low  The new low vertex.
   ///
   /// @returns Set node for a replacement.
+  ///
+  /// @warning This function is not aware of reduction rules.
   SetNodePtr FetchUniqueTable(const SetNodePtr& node, const VertexPtr& high,
                               const VertexPtr& low) noexcept;
+
+  /// Fetches unique table
+  /// only if the resultant node is going to be reduced.
+  ///
+  /// @param[in] index  Positive or negative index of the node.
+  /// @param[in] high  The high vertex.
+  /// @param[in] low  The low vertex.
+  /// @param[in] order The order for the vertex variable.
+  /// @param[in] module  A flag for the modular ZBDD proxy.
+  ///
+  /// @returns Resultant reduced vertex.
+  VertexPtr FetchReducedVertex(int index, const VertexPtr& high,
+                               const VertexPtr& low, int order,
+                               bool module) noexcept;
 
   /// Converts BDD graph into ZBDD graph.
   ///
