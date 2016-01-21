@@ -25,6 +25,7 @@ namespace scram {
 namespace test {
 
 INSTANTIATE_TEST_CASE_P(BDD, RiskAnalysisTest, ::testing::Values("bdd"));
+INSTANTIATE_TEST_CASE_P(PI, RiskAnalysisTest, ::testing::Values("pi"));
 INSTANTIATE_TEST_CASE_P(ZBDD, RiskAnalysisTest, ::testing::Values("zbdd"));
 INSTANTIATE_TEST_CASE_P(MOCUS, RiskAnalysisTest, ::testing::Values("mocus"));
 

@@ -37,7 +37,15 @@ namespace test {
 class RiskAnalysisTest : public ::testing::TestWithParam<const char*> {
  protected:
   virtual void SetUp() {
-    if (HasParam()) settings.algorithm(GetParam());
+    if (HasParam()) {
+      std::string param = GetParam();
+      if (param == "pi") {
+        settings.algorithm("bdd");
+        settings.prime_implicants(true);
+      } else {
+        settings.algorithm(GetParam());
+      }
+    }
   }
 
   virtual void TearDown() {}

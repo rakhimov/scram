@@ -94,10 +94,20 @@ TEST_P(RiskAnalysisTest, AnalyzeNonCoherentDefault) {
   std::string tree_input = "./share/scram/input/fta/correct_non_coherent.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  std::set<std::set<std::string>> mcs = {{"pumpone", "pumptwo"},
-                                         {"pumpone", "valvetwo"},
-                                         {"valveone"}};
-  EXPECT_EQ(mcs, products());
+  if (settings.prime_implicants()) {
+    std::set<std::set<std::string>> pi = {{"not pumpone", "valveone"},
+                                          {"pumpone", "pumptwo"},
+                                          {"pumpone", "valvetwo"},
+                                          {"pumptwo", "valveone"},
+                                          {"valveone", "valvetwo"}};
+    EXPECT_EQ(5, products().size());
+    EXPECT_EQ(pi, products());
+  } else {
+    std::set<std::set<std::string>> mcs = {{"pumpone", "pumptwo"},
+                                           {"pumpone", "valvetwo"},
+                                           {"valveone"}};
+    EXPECT_EQ(mcs, products());
+  }
 }
 
 TEST_P(RiskAnalysisTest, AnalyzeWithProbability) {
@@ -172,7 +182,7 @@ TEST_F(RiskAnalysisTest, ImportanceDefault) {
 
 TEST_F(RiskAnalysisTest, ImportanceNeg) {
   std::string tree_input = "./share/scram/input/fta/importance_neg_test.xml";
-  settings.importance_analysis(true);
+  settings.prime_implicants(true).importance_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
   EXPECT_NEAR(0.04459, p_total(), 1e-3);
@@ -195,7 +205,7 @@ TEST_F(RiskAnalysisTest, ImportanceNeg) {
 }
 
 // Apply the rare event approximation.
-TEST_P(RiskAnalysisTest, ImportanceRareEvent) {
+TEST_F(RiskAnalysisTest, ImportanceRareEvent) {
   std::string with_prob = "./share/scram/input/fta/importance_test.xml";
   // Probability calculations with the rare event approximation.
   settings.approximation("rare-event").importance_analysis(true);
@@ -221,7 +231,7 @@ TEST_P(RiskAnalysisTest, ImportanceRareEvent) {
 }
 
 // Apply the minimal cut set upper bound approximation.
-TEST_P(RiskAnalysisTest, MCUB) {
+TEST_F(RiskAnalysisTest, MCUB) {
   std::string with_prob =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   // Probability calculations with the MCUB approximation.
@@ -233,7 +243,7 @@ TEST_P(RiskAnalysisTest, MCUB) {
 
 // Apply the minimal cut set upper bound approximation for non-coherent tree.
 // This should be a warning.
-TEST_P(RiskAnalysisTest, McubNonCoherent) {
+TEST_F(RiskAnalysisTest, McubNonCoherent) {
   std::string with_prob = "./share/scram/input/core/a_and_not_b.xml";
   // Probability calculations with the MCUB approximation.
   settings.approximation("mcub").probability_analysis(true);
@@ -339,12 +349,15 @@ TEST_P(RiskAnalysisTest, ChildNandNorGates) {
   std::string tree_input = "./share/scram/input/fta/children_nand_nor.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  /// @todo Enable for prime implicants.
-  /* std::set<std::set<std::string>> mcs = { */
-  /*     {"not pumpone", "not pumptwo", "not valveone"}, */
-  /*     {"not pumpone", "not valvetwo", "not valveone"}}; */
-  std::set<std::set<std::string>> mcs = {{}};
-  EXPECT_EQ(mcs, products());
+  if (settings.prime_implicants()) {
+    std::set<std::set<std::string>> pi = {
+        {"not pumpone", "not pumptwo", "not valveone"},
+        {"not pumpone", "not valvetwo", "not valveone"}};
+    EXPECT_EQ(pi, products());
+  } else {
+    std::set<std::set<std::string>> mcs = {{}};
+    EXPECT_EQ(mcs, products());
+  }
 }
 
 // Simple test for several house event propagation.
