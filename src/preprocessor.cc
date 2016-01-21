@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -83,7 +83,6 @@ namespace scram {
 
 Preprocessor::Preprocessor(BooleanGraph* graph) noexcept
     : graph_(graph),
-      root_sign_(1),
       constant_graph_(false) {}
 
 namespace {  // Boolean graph structure verification tools.
@@ -158,7 +157,7 @@ class TestGateStructure {
 #define SANITY_ASSERT                                                         \
   assert(graph_->root() && "Corrupted pointer to the root gate.");            \
   assert(graph_->root()->parents().empty() && "Root can't have parents.");    \
-  assert(!(graph_->coherent() && (root_sign_ != 1)));                         \
+  assert(!(graph_->coherent() && graph_->complement()));                      \
   assert(const_gates_.empty() && "Const gate cleanup contracts are broken!"); \
   assert(null_gates_.empty() && "Null gate cleanup contracts are broken!");   \
   assert(TestGateStructure()(graph_->root()));                                \
@@ -272,14 +271,14 @@ void Preprocessor::PhaseFour() noexcept {
   graph_->Log();
   assert(!graph_->coherent());
   LOG(DEBUG3) << "Propagating complements...";
-  if (root_sign_ < 0) {
+  if (graph_->root_sign_ < 0) {
     IGatePtr root = graph_->root();
     assert(root->type() == kOrGate || root->type() == kAndGate ||
            root->type() == kNullGate);
     if (root->type() == kOrGate || root->type() == kAndGate)
       root->type(root->type() == kOrGate ? kAndGate : kOrGate);
     root->InvertArgs();
-    root_sign_ = 1;
+    graph_->root_sign_ = 1;
   }
   std::unordered_map<int, IGatePtr> complements;
   graph_->ClearGateMarks();
@@ -376,7 +375,7 @@ bool Preprocessor::CheckRootGate() noexcept {
     LOG(DEBUG3) << "The root gate has become constant!";
     assert(!(graph_->coherent() && !constant_graph_) &&
           "Impossible state of the root gate in coherent graphs.");
-    if (root_sign_ < 0) {
+    if (graph_->root_sign_ < 0) {
       State orig_state = root->state();
       root = std::make_shared<IGate>(kNullGate);
       graph_->root(root);
@@ -386,7 +385,7 @@ bool Preprocessor::CheckRootGate() noexcept {
         assert(orig_state == kUnityState);
         root->Nullify();
       }
-      root_sign_ = 1;
+      graph_->root_sign_ = 1;
     }
     return true;  // No more processing is needed.
   }
@@ -398,12 +397,12 @@ bool Preprocessor::CheckRootGate() noexcept {
       root = root->gate_args().begin()->second;
       graph_->root(root);  // Destroy the previous root.
       assert(root->parents().empty());
-      root_sign_ *= GetSign(signed_index);
+      graph_->root_sign_ *= GetSign(signed_index);
     } else {
       LOG(DEBUG4) << "The root NULL gate has only single variable!";
       assert(root->variable_args().size() == 1);
-      if (root_sign_ < 0) root->InvertArgs();
-      root_sign_ = 1;
+      if (graph_->root_sign_ < 0) root->InvertArgs();
+      graph_->root_sign_ = 1;
       root->variable_args().begin()->second->order(1);
       return true;  // Only one variable argument.
     }
@@ -506,7 +505,7 @@ void Preprocessor::NormalizeGates(bool full) noexcept {
     case kNorGate:
     case kNandGate:
     case kNotGate:
-      root_sign_ *= -1;
+      graph_->root_sign_ *= -1;
       break;
     default:  // All other types keep the sign of the root.
       assert((type == kAndGate || type == kOrGate || type == kAtleastGate ||

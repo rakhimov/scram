@@ -236,7 +236,7 @@ TEST_P(RiskAnalysisTest, MultipleParentNegativeGate) {
 }
 
 // Checks for NAND gate.
-TEST_P(RiskAnalysisTest, DISABLED_NAND) {  /// @todo Complement module.
+TEST_P(RiskAnalysisTest, NAND) {
   std::string tree_input = "./share/scram/input/core/nand.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
@@ -245,7 +245,7 @@ TEST_P(RiskAnalysisTest, DISABLED_NAND) {  /// @todo Complement module.
   EXPECT_EQ(mcs, products());
 }
 
-TEST_F(RiskAnalysisTest, DISABLED_PI_NAND) {  /// @todo Complement module.
+TEST_F(RiskAnalysisTest, PI_NAND) {
   std::string tree_input = "./share/scram/input/core/nand.xml";
   ASSERT_NO_THROW(settings.prime_implicants(true));
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
@@ -256,14 +256,22 @@ TEST_F(RiskAnalysisTest, DISABLED_PI_NAND) {  /// @todo Complement module.
 }
 
 // Checks for NOR gate.
-TEST_P(RiskAnalysisTest, DISABLED_NOR) {  /// @todo Enable with BDD-to-ZBDD
+TEST_P(RiskAnalysisTest, NOR) {
   std::string tree_input = "./share/scram/input/core/nor.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
-  /// @todo Enable with prime implicants.
-  /* std::set<std::set<std::string>> mcs = {{"not a", "not b"}}; */
-  /* EXPECT_EQ(mcs, products()); */
+  std::set<std::set<std::string>> mcs = {{}};
   EXPECT_EQ(1, products().size());
+  EXPECT_EQ(mcs, products());
+}
+
+TEST_F(RiskAnalysisTest, PI_NOR) {
+  std::string tree_input = "./share/scram/input/core/nor.xml";
+  ASSERT_NO_THROW(settings.prime_implicants(true));
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  std::set<std::set<std::string>> pi = {{"not a", "not b"}};
+  EXPECT_EQ(pi, products());
 }
 
 // Checks for NAND UNITY top gate cases.

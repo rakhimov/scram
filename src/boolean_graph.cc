@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -442,7 +442,8 @@ const std::map<std::string, Operator> BooleanGraph::kStringToType_ = {
     {"null", kNullGate}};
 
 BooleanGraph::BooleanGraph(const GatePtr& root, bool ccf) noexcept
-    : coherent_(true),
+    : root_sign_(1),
+      coherent_(true),
       normal_(true) {
   Node::ResetIndex();
   Variable::ResetIndex();

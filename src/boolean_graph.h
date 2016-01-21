@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -806,6 +806,9 @@ class BooleanGraph {
   /// @returns The current root gate of the graph.
   const IGatePtr& root() const { return root_; }
 
+  /// @returns true if the root must be complemented.
+  bool complement() const { return root_sign_ < 0; }
+
   /// @returns Original basic event
   ///          as initialized in this indexed fault tree.
   ///          The position of a basic event equals (its index - 1).
@@ -1066,9 +1069,10 @@ class BooleanGraph {
   void GatherInformation(const IGatePtr& gate, GraphLogger* logger) noexcept;
 
   IGatePtr root_;  ///< The root gate of this graph.
-  std::vector<BasicEventPtr> basic_events_;  ///< Mapping for basic events.
+  int root_sign_;  ///< The negative or positive sign of the root node.
   bool coherent_;  ///< Indication that the graph does not contain negation.
   bool normal_;  ///< Indication for the graph containing only OR and AND gates.
+  std::vector<BasicEventPtr> basic_events_;  ///< Mapping for basic events.
   /// Registered house events upon the creation of the Boolean graph.
   std::vector<std::weak_ptr<Constant> > constants_;
   /// Registered NULL type gates upon the creation of the Boolean graph.

@@ -67,6 +67,7 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
   } else {
     std::unordered_map<int, std::pair<Function, int>> gates;
     root_ = Bdd::ConvertGraph(fault_tree->root(), &gates);
+    root_.complement ^= fault_tree->complement();
   }
   Bdd::ClearMarks(false);
   Bdd::TestStructure(root_.vertex);
