@@ -5,7 +5,7 @@
 which scram || ( echo "No SCRAM Found!" && exit 1 )
 which scram_tests || ( echo "No SCRAM Tests Found!" && exit 1 )
 
-scram_tests
+scram_tests --gtest_filter=-*Performance*
 
 if [[ "$?" -ne 0 ]]; then
   echo "SCRAM Tests Failed!"
