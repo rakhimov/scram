@@ -64,10 +64,10 @@
 /// Moreover, the algorithms must be deterministic
 /// and produce stable results.
 ///
-/// If the contract is not respected,
+/// If the contract is violated,
 /// the result or behavior of the algorithm can be undefined.
 /// There is no requirement
-/// to check for the broken contract
+/// to check for the contract violations
 /// and to exit gracefully.
 
 #include "preprocessor.h"
