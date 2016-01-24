@@ -332,6 +332,15 @@ TEST_P(RiskAnalysisTest, SUBTLE_NULL) {
   EXPECT_TRUE(products().empty());
 }
 
+// Handling of complement a module.
+TEST_P(RiskAnalysisTest, COMPLEMENT_MODULE) {
+  std::string tree_input = "./share/scram/input/core/complement_module.xml";
+  ASSERT_NO_THROW(ProcessInputFile(tree_input));
+  ASSERT_NO_THROW(ran->Analyze());
+  std::set<std::set<std::string>> mcs = {{"e1", "e2", "e3"}};
+  EXPECT_EQ(mcs, products());
+}
+
 // Benchmark Tests for [A xor B xor C] fault tree.
 // Test Minimal cut sets and total probability.
 TEST_P(RiskAnalysisTest, XOR_ABC) {

@@ -121,6 +121,8 @@ class Zbdd {
   /// @note The construction may take considerable time.
   Zbdd(const BooleanGraph* fault_tree, const Settings& settings) noexcept;
 
+  virtual ~Zbdd() noexcept = default;
+
   /// Runs the analysis
   /// with the representation of a Boolean graph as ZBDD.
   ///
@@ -161,6 +163,38 @@ class Zbdd {
   ///
   /// @param[in] settings  Settings that control analysis complexity.
   explicit Zbdd(const Settings& settings) noexcept;
+
+  /// Converts a modular BDD function
+  /// into Zero-Suppressed BDD.
+  ///
+  /// @param[in] module  Modular BDD function.
+  /// @param[in] bdd  ROBDD with the ITE vertices.
+  /// @param[in] settings  Settings for analysis.
+  ///
+  /// @pre BDD has attributed edges with only one terminal (1/True).
+  ///
+  /// @post The input BDD structure is not changed.
+  ///
+  /// @note The input BDD is not passed as a constant
+  ///       because ZBDD needs BDD facilities to calculate prime implicants.
+  ///       However, ZBDD guarantees to preserve the original BDD structure.
+  Zbdd(const Bdd::Function& module, Bdd* bdd,
+       const Settings& settings) noexcept;
+
+  /// Constructs ZBDD from modular Boolean graphs.
+  /// This constructor does not handle constant or single variable graphs.
+  /// These cases are expected to be handled
+  /// after calling this constructor.
+  /// In these special cases,
+  /// this constructor guarantees
+  /// all initialization except for the root.
+  ///
+  /// @param[in] gate  The root gate of a module.
+  /// @param[in] settings  Analysis settings.
+  ///
+  /// @post The root vertex pointer is uninitialized
+  ///       if the Boolean graph is constant or single variable.
+  Zbdd(const IGatePtr& gate, const Settings& settings) noexcept;
 
   /// Fetches a unique set node from a hash table.
   /// If the node doesn't exist,
@@ -257,13 +291,17 @@ class Zbdd {
   ///
   /// @param[in] gate  The root gate of the Boolean graph.
   /// @param[in,out] gates  Processed gates with use counts.
+  /// @param[out] module_gates  Sub-module gates.
   ///
   /// @returns The top vertex of the Zbdd graph.
   ///
   /// @pre The memoization container is not used outside of this function.
+  ///
+  /// @post Sub-module gates are not processed.
   VertexPtr ConvertGraph(
       const IGatePtr& gate,
-      std::unordered_map<int, std::pair<VertexPtr, int>>* gates) noexcept;
+      std::unordered_map<int, std::pair<VertexPtr, int>>* gates,
+      std::unordered_map<int, IGatePtr>* module_gates) noexcept;
 
   /// Fetches computation tables for results.
   ///
@@ -344,6 +382,7 @@ class Zbdd {
   /// @returns Processed vertex.
   ///
   /// @post Sub-modules are not processed.
+  /// @post Complements of modules are not eliminated.
   VertexPtr EliminateComplements(
       const VertexPtr& vertex,
       std::unordered_map<int, VertexPtr>* wide_results) noexcept;
@@ -357,6 +396,7 @@ class Zbdd {
   /// @returns Processed ZBDD vertex without complements.
   ///
   /// @post Sub-modules are not processed.
+  /// @post Complements of modules are not eliminated.
   VertexPtr EliminateComplement(const SetNodePtr& node, const VertexPtr& high,
                                 const VertexPtr& low) noexcept;
 
@@ -418,11 +458,14 @@ class Zbdd {
   /// @returns A collection of products
   ///          generated from the ZBDD subgraph.
   ///
+  /// @post The products of modules are incorporated to the result.
+  ///
   /// @warning Product generation will destroy ZBDD.
   std::vector<std::vector<int>>
   GenerateProducts(const VertexPtr& vertex) noexcept;
 
-  /// Counts the number of SetNodes.
+  /// Counts the number of SetNodes
+  /// excluding the nodes in the modules.
   ///
   /// @param[in] vertex  The root vertex to start counting.
   ///
@@ -479,7 +522,7 @@ class Zbdd {
   /// The results of subsume operations over sets.
   PairTable<VertexPtr> subsume_table_;
 
-  std::unordered_map<int, VertexPtr> modules_;  ///< Module graphs.
+  std::unordered_map<int, std::unique_ptr<Zbdd>> modules_;  ///< Module graphs.
   const TerminalPtr kBase_;  ///< Terminal Base (Unity/1) set.
   const TerminalPtr kEmpty_;  ///< Terminal Empty (Null/0) set.
   int set_id_;  ///< Identification assignment for new set graphs.
@@ -592,11 +635,12 @@ class CutSetContainer : public Zbdd {
   /// Joins a ZBDD representing a module gate.
   ///
   /// @param[in] index  The index of the module.
-  /// @param[in] container  The container of the module cut sets.
+  /// @param[in] container  The container of the module graph.
   ///
   /// @pre The module cut sets are final,
   ///      and no more processing or sanitizing is needed.
-  void JoinModule(int index, const CutSetContainer& container) noexcept;
+  void JoinModule(int index,
+                  std::unique_ptr<CutSetContainer> container) noexcept;
 
  private:
   /// Checks if a set node represents a gate.

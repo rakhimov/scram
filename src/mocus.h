@@ -54,7 +54,7 @@ class Mocus {
   void Analyze();
 
   /// @returns Generated minimal cut sets with basic event indices.
-  const std::vector<std::vector<int>>& products() const { return products_; }
+  const std::vector<std::vector<int>>& products() const;
 
  private:
   /// Runs analysis on a module gate.
@@ -62,13 +62,14 @@ class Mocus {
   ///
   /// @param[in] gate  A Boolean graph gate for analysis.
   ///
-  /// @returns Collection of minimal cut sets.
-  zbdd::CutSetContainer AnalyzeModule(const IGatePtr& gate) noexcept;
+  /// @returns Fully processed, minimized Zbdd cut set container.
+  std::unique_ptr<zbdd::CutSetContainer>
+  AnalyzeModule(const IGatePtr& gate) noexcept;
 
   bool constant_graph_;  ///< No need for analysis.
   const BooleanGraph* graph_;  ///< The analysis PDAG.
   const Settings kSettings_;  ///< Analysis settings.
-  std::vector<std::vector<int>> products_;  ///< Cut sets with indices.
+  std::unique_ptr<Zbdd> zbdd_;  ///< ZBDD as a result of analysis.
 };
 
 }  // namespace scram

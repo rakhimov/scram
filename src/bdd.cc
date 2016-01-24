@@ -79,8 +79,8 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
   LOG(DEBUG4) << "# of ITE in BDD: " << Bdd::CountIteNodes(root_.vertex);
   LOG(DEBUG3) << "Finished Boolean graph conversion in " << DUR(init_time);
   Bdd::ClearMarks(false);
-
-  if (!kSettings_.prime_implicants()) {  // No more calculations are expected.
+  // Clear tables if no more calculations are expected.
+  if (false && !kSettings_.prime_implicants()) {  // Problems with neg modules.
     LOG(DEBUG5) << "BDD switched off the garbage collector.";
     unique_table_.reset();
   }
