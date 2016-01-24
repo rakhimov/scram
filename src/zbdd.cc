@@ -266,7 +266,9 @@ VertexPtr Zbdd::ConvertBddPI(const ItePtr& ite, bool complement,
     if (consensus->terminal()) return consensus;
     return kEmpty_;
   }
-  int sublimit = limit_order - 1;
+  int sublimit = limit_order - 1;  // Assumes non-Unity modules.
+  if (ite->module() && !kSettings_.prime_implicants())
+    sublimit += 1;  // Unity modules may happen with minimal cut sets.
   VertexPtr high =
       Zbdd::ConvertBdd(ite->high(), complement, bdd_graph, sublimit, ites);
   VertexPtr low =
