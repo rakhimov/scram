@@ -314,6 +314,7 @@ class Zbdd {
   ///                  if it doesn't exists.
   /// @returns Pointer to ZBDD root vertex as the computation result.
   ///
+  /// @pre The operator is either AND or OR.
   /// @pre The arguments are not the same functions.
   ///      Equal ID functions are handled by the reduction.
   /// @pre Even though the arguments are not SetNodePtr type,
@@ -343,6 +344,8 @@ class Zbdd {
   ///
   /// @returns The resulting ZBDD vertex.
   ///
+  /// @pre The operator is either AND or OR.
+  ///
   /// @note The limit on the order is not guaranteed.
   ///       It is for optimization purposes only.
   VertexPtr Apply(Operator type, const VertexPtr& arg_one,
@@ -356,6 +359,8 @@ class Zbdd {
   /// @param[in] arg_two  Second argument vertex.
   ///
   /// @returns The resulting ZBDD vertex.
+  ///
+  /// @pre The operator is either AND or OR.
   VertexPtr Apply(Operator type, const TerminalPtr& term_one,
                   const VertexPtr& arg_two) noexcept;
 
@@ -369,6 +374,8 @@ class Zbdd {
   /// @returns The resulting ZBDD vertex.
   ///
   /// @pre Argument vertices are ordered.
+  ///
+  /// @pre The operator is either AND or OR.
   VertexPtr Apply(Operator type, const SetNodePtr& arg_one,
                   const SetNodePtr& arg_two, int limit_order) noexcept;
 

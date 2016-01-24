@@ -331,20 +331,18 @@ VertexPtr& Zbdd::FetchComputeTable(Operator type, const VertexPtr& arg_one,
   assert(!arg_one->terminal() && !arg_two->terminal());
   assert(arg_one->id() && arg_two->id());
   assert(arg_one->id() != arg_two->id());
+  assert((type == kOrGate || type == kAndGate) &&
+         "Only normalized operations in BDD.");
   int min_id = std::min(arg_one->id(), arg_two->id());
   int max_id = std::max(arg_one->id(), arg_two->id());
-  switch (type) {
-    case kOrGate:
-      return or_table_[{min_id, max_id, order}];
-    case kAndGate:
-      return and_table_[{min_id, max_id, order}];
-    default:
-      assert(false && "Unsupported Boolean operation!");
-  }
+  return type == kAndGate ? and_table_[{min_id, max_id, order}]
+                          : or_table_[{min_id, max_id, order}];
 }
 
 VertexPtr Zbdd::Apply(Operator type, const VertexPtr& arg_one,
                       const VertexPtr& arg_two, int limit_order) noexcept {
+  assert((type == kOrGate || type == kAndGate) &&
+         "Only normalized operations in BDD.");
   if (limit_order < 0) return kEmpty_;
   if (arg_one->terminal())
     return Zbdd::Apply(type, Terminal::Ptr(arg_one), arg_two);
@@ -368,20 +366,20 @@ VertexPtr Zbdd::Apply(Operator type, const VertexPtr& arg_one,
 
 VertexPtr Zbdd::Apply(Operator type, const TerminalPtr& term_one,
                       const VertexPtr& arg_two) noexcept {
-  switch (type) {
-    case kOrGate:
-      if (term_one->value()) return kBase_;
-      return arg_two;
-    case kAndGate:
-      if (!term_one->value()) return kEmpty_;
-      return arg_two;
-    default:
-      assert(false && "Unsupported Boolean operation on ZBDD.");
+  assert((type == kOrGate || type == kAndGate) &&
+         "Only normalized operations in BDD.");
+  if (type == kAndGate) {
+    if (!term_one->value()) return kEmpty_;
+  } else {
+    if (term_one->value()) return kBase_;
   }
+  return arg_two;
 }
 
 VertexPtr Zbdd::Apply(Operator type, const SetNodePtr& arg_one,
                       const SetNodePtr& arg_two, int limit_order) noexcept {
+  assert((type == kOrGate || type == kAndGate) &&
+         "Only normalized operations in BDD.");
   VertexPtr high;
   VertexPtr low;
   int limit_high = limit_order - 1;
@@ -389,53 +387,41 @@ VertexPtr Zbdd::Apply(Operator type, const SetNodePtr& arg_one,
     ++limit_high;  // Conservative.
   if (arg_one->order() == arg_two->order() &&
       arg_one->index() == arg_two->index()) {  // The same variable.
-    switch (type) {
-      case kOrGate:
-        high =
-            Zbdd::Apply(kOrGate, arg_one->high(), arg_two->high(), limit_high);
-        low = Zbdd::Apply(kOrGate, arg_one->low(), arg_two->low(), limit_order);
-        break;
-      case kAndGate:
-        // (x*f1 + f0) * (x*g1 + g0) = x*(f1*(g1 + g0) + f0*g1) + f0*g0
-        high = Zbdd::Apply(
-            kOrGate,
-            Zbdd::Apply(kAndGate, arg_one->high(),
-                        Zbdd::Apply(kOrGate, arg_two->high(),
-                                    arg_two->low(), limit_high),
-                        limit_high),
-            Zbdd::Apply(kAndGate, arg_one->low(), arg_two->high(), limit_high),
-            limit_high);
-        low =
-            Zbdd::Apply(kAndGate, arg_one->low(), arg_two->low(), limit_order);
-        break;
-      default:
-        assert(false && "Unsupported Boolean operation on ZBDD.");
+    if (type == kAndGate) {
+      // (x*f1 + f0) * (x*g1 + g0) = x*(f1*(g1 + g0) + f0*g1) + f0*g0
+      high = Zbdd::Apply(
+          kOrGate,
+          Zbdd::Apply(kAndGate, arg_one->high(),
+                      Zbdd::Apply(kOrGate, arg_two->high(),
+                                  arg_two->low(), limit_high),
+                      limit_high),
+          Zbdd::Apply(kAndGate, arg_one->low(), arg_two->high(), limit_high),
+          limit_high);
+      low = Zbdd::Apply(kAndGate, arg_one->low(), arg_two->low(), limit_order);
+    } else {
+      high = Zbdd::Apply(kOrGate, arg_one->high(), arg_two->high(), limit_high);
+      low = Zbdd::Apply(kOrGate, arg_one->low(), arg_two->low(), limit_order);
     }
   } else {
     assert((arg_one->order() < arg_two->order() ||
             arg_one->index() > arg_two->index()) &&
            "Ordering contract failed.");
-    switch (type) {
-      case kOrGate:
-        if (arg_one->order() == arg_two->order()) {
-          if (arg_one->high()->terminal() && arg_two->high()->terminal())
-            return kBase_;
-        }
-        high = arg_one->high();
-        low = Zbdd::Apply(kOrGate, arg_one->low(), arg_two, limit_order);
-        break;
-      case kAndGate:
-        if (arg_one->order() == arg_two->order()) {
-          // (x*f1 + f0) * (~x*g1 + g0) = x*f1*g0 + f0*(~x*g1 + g0)
-          high = Zbdd::Apply(kAndGate, arg_one->high(), arg_two->low(),
-                             limit_high);
-        } else {
-          high = Zbdd::Apply(kAndGate, arg_one->high(), arg_two, limit_high);
-        }
-        low = Zbdd::Apply(kAndGate, arg_one->low(), arg_two, limit_order);
-        break;
-      default:
-        assert(false && "Unsupported Boolean operation on ZBDD.");
+    if (type == kAndGate) {
+      if (arg_one->order() == arg_two->order()) {
+        // (x*f1 + f0) * (~x*g1 + g0) = x*f1*g0 + f0*(~x*g1 + g0)
+        high = Zbdd::Apply(kAndGate, arg_one->high(), arg_two->low(),
+                            limit_high);
+      } else {
+        high = Zbdd::Apply(kAndGate, arg_one->high(), arg_two, limit_high);
+      }
+      low = Zbdd::Apply(kAndGate, arg_one->low(), arg_two, limit_order);
+    } else {
+      if (arg_one->order() == arg_two->order()) {
+        if (arg_one->high()->terminal() && arg_two->high()->terminal())
+          return kBase_;
+      }
+      high = arg_one->high();
+      low = Zbdd::Apply(kOrGate, arg_one->low(), arg_two, limit_order);
     }
   }
   if (!high->terminal() && SetNode::Ptr(high)->order() == arg_one->order()) {

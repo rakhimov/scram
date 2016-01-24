@@ -380,6 +380,7 @@ class Bdd {
   /// @returns If computation is already performed,
   ///          the non-null result vertex with the return function.
   ///
+  /// @pre The operator is either AND or OR.
   /// @pre The arguments are not be the same function.
   ///      Equal ID functions are handled by the reduction.
   /// @pre Even though the arguments are not ItePtr type,
@@ -406,6 +407,8 @@ class Bdd {
   ///
   /// @returns The BDD function as a result of operation.
   ///
+  /// @pre The operator is either AND or OR.
+  ///
   /// @note The order of arguments does not matter for two variable operators.
   Function Apply(Operator type,
                  const VertexPtr& arg_one, const VertexPtr& arg_two,
@@ -421,6 +424,8 @@ class Bdd {
   /// @param[in] complement_two  Interpretation of arg_two as complement.
   ///
   /// @returns The resulting BDD function.
+  ///
+  /// @pre The operator is either AND or OR.
   Function Apply(Operator type,
                  const TerminalPtr& term_one, const VertexPtr& arg_two,
                  bool complement_one, bool complement_two) noexcept;
@@ -433,6 +438,8 @@ class Bdd {
   /// @param[in] complement_two  Interpretation of the second vertex argument.
   ///
   /// @returns The BDD function as a result of operation.
+  ///
+  /// @pre The operator is either AND or OR.
   Function Apply(Operator type, const VertexPtr& single_arg,
                  bool complement_one, bool complement_two) noexcept;
 
@@ -447,6 +454,7 @@ class Bdd {
   /// @returns High and Low BDD functions as a result of operation.
   ///
   /// @pre Argument if-then-else vertices must be ordered.
+  /// @pre The operator is either AND or OR.
   std::pair<Function, Function> Apply(Operator type,
                                       const ItePtr& arg_one,
                                       const ItePtr& arg_two,
