@@ -478,6 +478,12 @@ class Bdd {
   /// @pre Non-terminal node marks are clear (false).
   void TestStructure(const VertexPtr& vertex) noexcept;
 
+  /// Clears all memoization tables.
+  void ClearTables() noexcept {
+    and_table_.clear();
+    or_table_.clear();
+  }
+
   const Settings kSettings_;  ///< Analysis settings.
   Function root_;  ///< The root function of this BDD.
 

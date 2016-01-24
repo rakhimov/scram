@@ -84,8 +84,7 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
     LOG(DEBUG5) << "BDD switched off the garbage collector.";
     unique_table_.reset();
   }
-  and_table_.clear();
-  or_table_.clear();
+  Bdd::ClearTables();
   if (!kSettings_.prime_implicants()) {
     and_table_.reserve(0);
     or_table_.reserve(0);
@@ -176,8 +175,7 @@ Bdd::Function Bdd::ConvertGraph(
     result = Bdd::Apply(gate->type(), result.vertex, it->vertex,
                         result.complement, it->complement);
   }
-  and_table_.clear();
-  or_table_.clear();
+  Bdd::ClearTables();
   assert(result.vertex);
   if (gate->IsModule()) modules_.emplace(gate->index(), result);
   if (gate->parents().size() > 1) gates->insert({gate->index(), {result, 1}});
@@ -207,6 +205,7 @@ Bdd::Function& Bdd::FetchComputeTable(Operator type,
 
 Bdd::Function Bdd::CalculateConsensus(const ItePtr& ite,
                                       bool complement) noexcept {
+  Bdd::ClearTables();
   return Bdd::Apply(kAndGate, ite->high(), ite->low(), complement,
                     ite->complement_edge() ^ complement);
 }

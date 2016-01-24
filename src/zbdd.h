@@ -500,6 +500,14 @@ class Zbdd {
   /// @pre SetNode marks are clear (false).
   void TestStructure(const VertexPtr& vertex) noexcept;
 
+  /// Clears all memoization tables.
+  void ClearTables() noexcept {
+    and_table_.clear();
+    or_table_.clear();
+    minimal_results_.clear();
+    subsume_table_.clear();
+  }
+
   const Settings kSettings_;  ///< Analysis settings.
   VertexPtr root_;  ///< The root vertex of ZBDD.
 

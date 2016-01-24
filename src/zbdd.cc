@@ -83,10 +83,7 @@ void Zbdd::Analyze() noexcept {
 
   // Complete cleanup of the memory.
   unique_table_.reset();  // Important to turn the garbage collector off.
-  minimal_results_.clear();
-  and_table_.clear();
-  or_table_.clear();
-  subsume_table_.clear();
+  Zbdd::ClearTables();
 
   CLOCK(gen_time);
   LOG(DEBUG3) << "Getting products from minimized ZBDD...";
@@ -321,10 +318,7 @@ VertexPtr Zbdd::ConvertGraph(
   for (++it; it != args.cend(); ++it) {
     result = Zbdd::Apply(gate->type(), result, *it, kSettings_.limit_order());
   }
-  and_table_.clear();
-  or_table_.clear();
-  subsume_table_.clear();
-  minimal_results_.clear();
+  Zbdd::ClearTables();
   assert(result);
   if (gate->parents().size() > 1) gates->insert({gate->index(), {result, 1}});
   return result;
@@ -747,10 +741,7 @@ VertexPtr CutSetContainer::ExpandGate(const VertexPtr& gate_zbdd,
 
 void CutSetContainer::Merge(const VertexPtr& vertex) noexcept {
   root_ = Zbdd::Apply(kOrGate, root_, vertex, kSettings_.limit_order());
-  and_table_.clear();
-  or_table_.clear();
-  subsume_table_.clear();
-  minimal_results_.clear();
+  Zbdd::ClearTables();
 }
 
 void CutSetContainer::EliminateComplements() noexcept {
