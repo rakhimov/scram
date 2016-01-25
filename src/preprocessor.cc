@@ -2309,6 +2309,44 @@ bool Preprocessor::DecompositionProcessor::ProcessAncestors(
   return changed;
 }
 
+void Preprocessor::MarkCoherence() noexcept {
+  graph_->ClearGateMarks();
+  Preprocessor::MarkCoherence(graph_->root());
+  assert(!(graph_->coherent_ && !graph_->root()->coherent()));
+  graph_->coherent_ = !graph_->complement() && graph_->root()->coherent();
+}
+
+void Preprocessor::MarkCoherence(const IGatePtr& gate) noexcept {
+  if (gate->mark()) return;
+  gate->mark(true);
+  bool coherent = true;  // Optimistic initialization.
+  switch(gate->type()) {
+    case kXorGate:
+    case kNorGate:
+    case kNotGate:
+    case kNandGate:
+      coherent = false;
+      break;
+    default:
+      assert(coherent);
+  }
+  for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
+    Preprocessor::MarkCoherence(arg.second);
+    if (coherent && (arg.first < 0 || !arg.second->coherent()))
+      coherent = false;  // Must continue with all gates.
+  }
+  if (coherent) {
+    for (const std::pair<const int, VariablePtr>& arg : gate->variable_args()) {
+      if (arg.first < 0) {
+        coherent = false;
+        break;
+      }
+    }
+  }
+  assert(gate->constant_args().empty());
+  gate->coherent(coherent);
+}
+
 void Preprocessor::ReplaceGate(const IGatePtr& gate,
                                const IGatePtr& replacement) noexcept {
   assert(!gate->parents().empty());
@@ -2402,6 +2440,7 @@ void CustomPreprocessor<Mocus>::Run() noexcept {
   Preprocessor::PhaseFive();
   LOG(DEBUG2) << "Finished Preprocessing Phase V in " << DUR(time_5);
   if (Preprocessor::CheckRootGate()) return;
+  Preprocessor::MarkCoherence();
   Preprocessor::AssignOrder();
   CustomPreprocessor<Mocus>::InvertOrder();
   SANITY_ASSERT;
@@ -2450,6 +2489,7 @@ void CustomPreprocessor<Bdd>::Run() noexcept {
     LOG(DEBUG2) << "Finished Preprocessing Phase III in " << DUR(time_3);
     if (Preprocessor::CheckRootGate()) return;
   }
+  Preprocessor::MarkCoherence();
   Preprocessor::AssignOrder();
   SANITY_ASSERT;
 }
@@ -2464,6 +2504,7 @@ void CustomPreprocessor<Zbdd>::Run() noexcept {
     LOG(DEBUG2) << "Finished Preprocessing Phase IV in " << DUR(time_4);
     if (Preprocessor::CheckRootGate()) return;
   }
+  Preprocessor::MarkCoherence();
   Preprocessor::AssignOrder();
   SANITY_ASSERT;
 }

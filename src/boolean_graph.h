@@ -413,6 +413,14 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
     max_time_ = time;
   }
 
+  /// @returns true if the whole graph of this gate is marked coherent.
+  bool coherent() const { return coherent_; }
+
+  /// Sets a coherence flag for the graph rooted by this gate.
+  ///
+  /// @param[in] flag  true if the whole graph is coherent.
+  void coherent(bool flag) { coherent_ = flag; }
+
   /// @returns true if this gate is set to be a module.
   /// @returns false if it is not yet set to be a module.
   bool IsModule() const { return module_; }
@@ -690,6 +698,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   int min_time_;  ///< Minimum time of visits of the sub-graph of the gate.
   int max_time_;  ///< Maximum time of visits of the sub-graph of the gate.
   bool module_;  ///< Indication of an independent module gate.
+  bool coherent_;  ///< Indication of a coherent graph.
   std::set<int> args_;  ///< Arguments of the gate.
   /// Arguments that are gates.
   std::unordered_map<int, IGatePtr> gate_args_;

@@ -61,11 +61,13 @@ IGate::IGate(Operator type) noexcept
       descendant_(0),
       min_time_(0),
       max_time_(0),
-      module_(false) {}
+      module_(false),
+      coherent_(false) {}
 
 IGatePtr IGate::Clone() noexcept {
   BLOG(DEBUG5, module_) << "WARNING: Cloning module G" << Node::index();
   auto clone = std::make_shared<IGate>(type_);  // The same type.
+  clone->coherent_ = coherent_;
   clone->vote_number_ = vote_number_;  // Copy vote number in case it is K/N.
   // Getting arguments copied.
   clone->args_ = args_;
