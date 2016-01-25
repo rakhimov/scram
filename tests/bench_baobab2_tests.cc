@@ -23,7 +23,7 @@ namespace scram {
 namespace test {
 
 // Benchmark Tests for Baobab 2 fault tree from XFTA.
-TEST_P(RiskAnalysisTest, Baobab_2_Test) {
+TEST_P(RiskAnalysisTest, Baobab2) {
   std::vector<std::string> input_files = {
       "./share/scram/input/Baobab/baobab2.xml",
       "./share/scram/input/Baobab/baobab2-basic-events.xml"};

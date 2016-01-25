@@ -42,7 +42,7 @@ TEST_P(RiskAnalysisTest, ABC) {
 
 // Benchmark Tests for [AB or BC] fault tree.
 // Test Minimal cut sets and total probability.
-TEST_P(RiskAnalysisTest, AB_BC) {
+TEST_P(RiskAnalysisTest, ABorBC) {
   std::string tree_input = "./share/scram/input/core/ab_bc.xml";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
@@ -60,7 +60,7 @@ TEST_P(RiskAnalysisTest, AB_BC) {
 
 // Benchmark Tests for [AB or ~AC] fault tree.
 // Test Minimal cut sets and total probability.
-TEST_P(RiskAnalysisTest, AB_OR_NOT_AC) {
+TEST_P(RiskAnalysisTest, ABorNotAC) {
   std::string tree_input = "./share/scram/input/core/ab_or_not_ac.xml";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
@@ -104,7 +104,7 @@ TEST_P(RiskAnalysisTest, ATLEAST) {
 // Benchmark tests for NOT gate.
 // [A OR NOT A]
 // This produces UNITY top gate.
-TEST_P(RiskAnalysisTest, A_OR_NOT_A) {
+TEST_P(RiskAnalysisTest, AorNotA) {
   std::string tree_input = "./share/scram/input/core/a_or_not_a.xml";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
@@ -117,7 +117,7 @@ TEST_P(RiskAnalysisTest, A_OR_NOT_A) {
 }
 
 // [A OR NOT B]
-TEST_P(RiskAnalysisTest, A_OR_NOT_B) {
+TEST_P(RiskAnalysisTest, AorNotB) {
   std::string tree_input = "./share/scram/input/core/a_or_not_b.xml";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
@@ -139,7 +139,7 @@ TEST_P(RiskAnalysisTest, A_OR_NOT_B) {
 }
 
 // [A AND NOT A]
-TEST_P(RiskAnalysisTest, A_AND_NOT_A) {
+TEST_P(RiskAnalysisTest, AandNotA) {
   std::string tree_input = "./share/scram/input/core/a_and_not_a.xml";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
@@ -149,7 +149,7 @@ TEST_P(RiskAnalysisTest, A_AND_NOT_A) {
 }
 
 // [A AND NOT B]
-TEST_P(RiskAnalysisTest, A_AND_NOT_B) {
+TEST_P(RiskAnalysisTest, AandNotB) {
   std::string tree_input = "./share/scram/input/core/a_and_not_b.xml";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
@@ -172,7 +172,7 @@ TEST_P(RiskAnalysisTest, A_AND_NOT_B) {
 }
 
 // [A OR (B, NOT A)]
-TEST_P(RiskAnalysisTest, A_OR_NOT_AB) {
+TEST_P(RiskAnalysisTest, AorNotAB) {
   std::string tree_input = "./share/scram/input/core/a_or_not_ab.xml";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
@@ -189,7 +189,7 @@ TEST_P(RiskAnalysisTest, A_OR_NOT_AB) {
 }
 
 // Uncertainty report for Unity case.
-TEST_F(RiskAnalysisTest, MC_A_OR_NOT_A) {
+TEST_F(RiskAnalysisTest, mcAorNotA) {
   std::string tree_input = "./share/scram/input/core/a_or_not_a.xml";
   settings.uncertainty_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
@@ -197,7 +197,7 @@ TEST_F(RiskAnalysisTest, MC_A_OR_NOT_A) {
 }
 
 // [A OR NOT B] FTA MC
-TEST_F(RiskAnalysisTest, MC_A_OR_NOT_B) {
+TEST_F(RiskAnalysisTest, mcAorNotB) {
   settings.uncertainty_analysis(true);
   std::string tree_input = "./share/scram/input/core/a_or_not_b.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
@@ -230,7 +230,7 @@ TEST_P(RiskAnalysisTest, MultipleParentNegativeGate) {
 }
 
 // Checks for NAND gate.
-TEST_P(RiskAnalysisTest, NAND) {
+TEST_P(RiskAnalysisTest, Nand) {
   std::string tree_input = "./share/scram/input/core/nand.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
@@ -246,7 +246,7 @@ TEST_P(RiskAnalysisTest, NAND) {
 }
 
 // Checks for NOR gate.
-TEST_P(RiskAnalysisTest, NOR) {
+TEST_P(RiskAnalysisTest, Nor) {
   std::string tree_input = "./share/scram/input/core/nor.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
@@ -261,7 +261,7 @@ TEST_P(RiskAnalysisTest, NOR) {
 }
 
 // Checks for NAND UNITY top gate cases.
-TEST_P(RiskAnalysisTest, NAND_UNITY) {
+TEST_P(RiskAnalysisTest, NandUnity) {
   std::string tree_input = "./share/scram/input/core/nand_or_equality.xml";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
@@ -274,7 +274,7 @@ TEST_P(RiskAnalysisTest, NAND_UNITY) {
 }
 
 // Checks for OR UNITY top gate cases.
-TEST_P(RiskAnalysisTest, OR_UNITY) {
+TEST_P(RiskAnalysisTest, OrUnity) {
   std::string tree_input = "./share/scram/input/core/not_and_or_equality.xml";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
@@ -287,7 +287,7 @@ TEST_P(RiskAnalysisTest, OR_UNITY) {
 }
 
 // Checks for UNITY due to house event.
-TEST_P(RiskAnalysisTest, HOUSE_UNITY) {
+TEST_P(RiskAnalysisTest, HouseUnity) {
   std::string tree_input = "./share/scram/input/core/unity.xml";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
@@ -300,7 +300,7 @@ TEST_P(RiskAnalysisTest, HOUSE_UNITY) {
 }
 
 // Checks for NULL due to house event.
-TEST_P(RiskAnalysisTest, HOUSE_NULL) {
+TEST_P(RiskAnalysisTest, HouseNull) {
   std::string tree_input = "./share/scram/input/core/null.xml";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
@@ -312,7 +312,7 @@ TEST_P(RiskAnalysisTest, HOUSE_NULL) {
 }
 
 // Checks for NAND UNITY top gate cases.
-TEST_P(RiskAnalysisTest, SUBTLE_UNITY) {
+TEST_P(RiskAnalysisTest, SubtleUnity) {
   std::string tree_input = "./share/scram/input/core/subtle_unity.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
@@ -323,7 +323,7 @@ TEST_P(RiskAnalysisTest, SUBTLE_UNITY) {
 }
 
 // Checks for NAND UNITY top gate cases.
-TEST_P(RiskAnalysisTest, SUBTLE_NULL) {
+TEST_P(RiskAnalysisTest, SubtleNull) {
   std::string tree_input = "./share/scram/input/core/subtle_null.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
@@ -333,7 +333,7 @@ TEST_P(RiskAnalysisTest, SUBTLE_NULL) {
 }
 
 // Handling of complement a module.
-TEST_P(RiskAnalysisTest, COMPLEMENT_MODULE) {
+TEST_P(RiskAnalysisTest, ComplementModule) {
   std::string tree_input = "./share/scram/input/core/complement_module.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
@@ -343,7 +343,7 @@ TEST_P(RiskAnalysisTest, COMPLEMENT_MODULE) {
 
 // Benchmark Tests for [A xor B xor C] fault tree.
 // Test Minimal cut sets and total probability.
-TEST_P(RiskAnalysisTest, XOR_ABC) {
+TEST_P(RiskAnalysisTest, XorABC) {
   std::string tree_input = "./share/scram/input/core/xor.xml";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
@@ -369,7 +369,7 @@ TEST_P(RiskAnalysisTest, XOR_ABC) {
 }
 
 // Checks for top gate of NOT with a single basic event child.
-TEST_P(RiskAnalysisTest, NOT_A) {
+TEST_P(RiskAnalysisTest, NotA) {
   std::string tree_input = "./share/scram/input/core/not_a.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());
@@ -386,7 +386,7 @@ TEST_P(RiskAnalysisTest, NOT_A) {
 }
 
 // Checks for top gate of NULL with a single basic event child.
-TEST_P(RiskAnalysisTest, NULL_A) {
+TEST_P(RiskAnalysisTest, NullA) {
   std::string tree_input = "./share/scram/input/core/null_a.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
   ASSERT_NO_THROW(ran->Analyze());

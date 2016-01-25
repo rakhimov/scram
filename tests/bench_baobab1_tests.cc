@@ -23,11 +23,10 @@ namespace scram {
 namespace test {
 
 #ifdef NDEBUG
-// Test with BDD.
-TEST_P(RiskAnalysisTest, Baobab_1_Test) {
+TEST_P(RiskAnalysisTest, Baobab1) {
 #else
-TEST_F(RiskAnalysisTest, Baobab_1_Test) {
-  settings.algorithm("bdd").probability_analysis(true);
+TEST_F(RiskAnalysisTest, Baobab1) {
+  settings.algorithm("bdd");
 #endif
   std::vector<std::string> input_files = {
       "./share/scram/input/Baobab/baobab1.xml",

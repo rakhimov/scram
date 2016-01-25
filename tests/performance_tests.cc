@@ -74,7 +74,7 @@ TEST_F(PerformanceTest, DISABLED_200Event) {
   EXPECT_LT(ProductGenerationTime(), mcs_time);
 }
 
-TEST_F(PerformanceTest, DISABLED_Baobab1_L7) {
+TEST_F(PerformanceTest, DISABLED_Baobab1L7) {
   double mcs_time = 2.5;
 #ifdef NDEBUG
   mcs_time = 0.40;
@@ -88,7 +88,7 @@ TEST_F(PerformanceTest, DISABLED_Baobab1_L7) {
   EXPECT_NEAR(mcs_time, ProductGenerationTime(), mcs_time * delta);
 }
 
-TEST_F(PerformanceTest, DISABLED_CEA9601_BDD) {
+TEST_F(PerformanceTest, DISABLED_CEA9601) {
   double mcs_time = 20;
 #ifdef NDEBUG
   mcs_time = 6;

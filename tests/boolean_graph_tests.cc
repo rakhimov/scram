@@ -198,7 +198,7 @@ TEST_F(IGateTest, DuplicateArgAtleastToAnd) {
   EXPECT_EQ(2, sub->variable_args().size());
 }
 
-TEST_F(IGateTest, DuplicateArgAtleastToOr_OneClone) {
+TEST_F(IGateTest, DuplicateArgAtleastToOrWithOneClone) {
   DefineGate(kAtleastGate, 3);
   g->vote_number(2);
   g->AddArg(var_one->index(), var_one);
@@ -218,7 +218,7 @@ TEST_F(IGateTest, DuplicateArgAtleastToOr_OneClone) {
   EXPECT_EQ(2, sub->variable_args().size());
 }
 
-TEST_F(IGateTest, DuplicateArgAtleastToOr_TwoClones) {
+TEST_F(IGateTest, DuplicateArgAtleastToOrWithTwoClones) {
   DefineGate(kAtleastGate, 5);
   g->vote_number(3);
   g->AddArg(var_one->index(), var_one);

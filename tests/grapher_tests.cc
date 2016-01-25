@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,7 +54,7 @@ TEST_F(RiskAnalysisTest, GraphingNestedFormula) {
                                     false, out));
 }
 
-TEST_F(RiskAnalysisTest, GraphingHOUSE_UNITY) {
+TEST_F(RiskAnalysisTest, GraphingHouseUnity) {
   Grapher gr = Grapher();
   std::stringstream out;
   std::string tree_input = "./share/scram/input/core/unity.xml";
@@ -64,7 +64,7 @@ TEST_F(RiskAnalysisTest, GraphingHOUSE_UNITY) {
                                     true, out));
 }
 
-TEST_F(RiskAnalysisTest, GraphingHOUSE_NULL) {
+TEST_F(RiskAnalysisTest, GraphingHouseNull) {
   Grapher gr = Grapher();
   std::stringstream out;
   std::string tree_input = "./share/scram/input/core/null.xml";
