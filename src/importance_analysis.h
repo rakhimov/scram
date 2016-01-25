@@ -176,21 +176,21 @@ class ImportanceAnalyzer : public ImportanceAnalyzerBase<Calculator> {
 
 template<typename Calculator>
 double ImportanceAnalyzer<Calculator>::CalculateMif(int index) noexcept {
-  std::vector<double>& var_probs = prob_analyzer_->var_probs();
+  std::vector<double>& p_vars = prob_analyzer_->p_vars();
   // Calculate P(top/event)
-  var_probs[index] = 1;
+  p_vars[index] = 1;
   double p_e = prob_analyzer_->CalculateTotalProbability();
   assert(p_e >= 0);
   if (p_e > 1) p_e = 1;
 
   // Calculate P(top/Not event)
-  var_probs[index] = 0;
+  p_vars[index] = 0;
   double p_not_e = prob_analyzer_->CalculateTotalProbability();
   assert(p_not_e >= 0);
   if (p_not_e > 1) p_not_e = 1;
 
   // Restore the probability.
-  var_probs[index] = prob_analyzer_->graph()->GetBasicEvent(index)->p();
+  p_vars[index] = prob_analyzer_->graph()->GetBasicEvent(index)->p();
   return p_e - p_not_e;
 }
 

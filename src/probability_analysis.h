@@ -75,7 +75,7 @@ class CutSetProbabilityCalculator {
   /// This function assumes independence of each member.
   ///
   /// @param[in] cut_set  A cut set with positive indices of basic events.
-  /// @param[in] var_probs  Probabilities of events mapped to a vector.
+  /// @param[in] p_vars  Probabilities of events mapped to a vector.
   ///
   /// @returns The total probability of the cut set.
   ///
@@ -83,7 +83,7 @@ class CutSetProbabilityCalculator {
   /// @pre Probability values are non-negative.
   /// @pre Indices of events directly map to vector indices.
   double Calculate(const CutSet& cut_set,
-                   const std::vector<double>& var_probs) noexcept;
+                   const std::vector<double>& p_vars) noexcept;
 
   /// Checks the special case of a unity set with probability 1.
   ///
@@ -107,7 +107,7 @@ class RareEventCalculator : private CutSetProbabilityCalculator {
   /// using the Rare-Event approximation.
   ///
   /// @param[in] cut_sets  A collection of sets of indices of basic events.
-  /// @param[in] var_probs  Probabilities of events mapped to a vector.
+  /// @param[in] p_vars  Probabilities of events mapped to a vector.
   ///
   /// @returns The total probability with the rare-event approximation.
   ///
@@ -118,7 +118,7 @@ class RareEventCalculator : private CutSetProbabilityCalculator {
   ///       The caller of this function must decide
   ///       what to do in this case.
   double Calculate(const std::vector<CutSet>& cut_sets,
-                   const std::vector<double>& var_probs) noexcept;
+                   const std::vector<double>& p_vars) noexcept;
 };
 
 /// @class McubCalculator
@@ -130,11 +130,11 @@ class McubCalculator : private CutSetProbabilityCalculator {
   /// using the minimal cut set upper bound (MCUB) approximation.
   ///
   /// @param[in] cut_sets  A collection of sets of indices of basic events.
-  /// @param[in] var_probs  Probabilities of events mapped to a vector.
+  /// @param[in] p_vars  Probabilities of events mapped to a vector.
   ///
   /// @returns The total probability with the MCUB approximation.
   double Calculate(const std::vector<CutSet>& cut_sets,
-                   const std::vector<double>& var_probs) noexcept;
+                   const std::vector<double>& p_vars) noexcept;
 };
 
 /// @class ProbabilityAnalyzerBase
@@ -164,12 +164,12 @@ class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
   ///
   /// @warning This is a temporary hack
   ///          due to tight coupling of Quantitative analyzers.
-  std::vector<double>& var_probs() { return var_probs_; }
+  std::vector<double>& p_vars() { return p_vars_; }
 
  protected:
   const BooleanGraph* graph_;  ///< Boolean graph from the fault tree analysis.
   const std::vector<Product>& products_;  ///< A collection of products.
-  std::vector<double> var_probs_;  ///< Variable probabilities.
+  std::vector<double> p_vars_;  ///< Variable probabilities.
 };
 
 template<typename Algorithm>
@@ -178,9 +178,9 @@ ProbabilityAnalyzerBase::ProbabilityAnalyzerBase(
     : ProbabilityAnalysis::ProbabilityAnalysis(fta),
       graph_(fta->graph()),
       products_(fta->algorithm()->products()) {
-  var_probs_.push_back(-1);  // Padding.
+  p_vars_.push_back(-1);  // Padding.
   for (const BasicEventPtr& event : graph_->basic_events()) {
-    var_probs_.push_back(event->p());
+    p_vars_.push_back(event->p());
   }
 }
 
@@ -198,7 +198,7 @@ class ProbabilityAnalyzer : public ProbabilityAnalyzerBase {
   ///
   /// @returns The total probability of the graph or the sum of products.
   double CalculateTotalProbability() noexcept {
-    return calc_.Calculate(products_, var_probs_);
+    return calc_.Calculate(products_, p_vars_);
   }
 
  private:
