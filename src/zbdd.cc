@@ -134,8 +134,8 @@ Zbdd::Zbdd(const Bdd::Function& module, Bdd* bdd,
   }
   if (std::any_of(
           modules_.begin(), modules_.end(),
-          [](const std::pair<const int, std::unique_ptr<Zbdd>>& module) {
-            return module.second->root_->terminal();
+          [](const std::pair<const int, std::unique_ptr<Zbdd>>& member) {
+            return member.second->root_->terminal();
           })) {
     LOG(DEBUG4) << "Eliminating constant modules from ZBDD...";
     std::unordered_map<int, VertexPtr> results;

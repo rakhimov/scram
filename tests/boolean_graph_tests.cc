@@ -137,10 +137,10 @@ TEST_F(IGateTest, AddArgDeathTests) {
     EXPECT_EQ(k##short_type##Gate, g->type());        \
   }
 
-TEST_DUP_ARG_IGNORE(And);
-TEST_DUP_ARG_IGNORE(Or);
-TEST_DUP_ARG_IGNORE(Nand);
-TEST_DUP_ARG_IGNORE(Nor);
+TEST_DUP_ARG_IGNORE(And)
+TEST_DUP_ARG_IGNORE(Or)
+TEST_DUP_ARG_IGNORE(Nand)
+TEST_DUP_ARG_IGNORE(Nor)
 
 #undef TEST_DUP_ARG_IGNORE
 
@@ -155,10 +155,10 @@ TEST_DUP_ARG_IGNORE(Nor);
     EXPECT_EQ(k##final_type##Gate, g->type());             \
   }
 
-TEST_DUP_ARG_TYPE_CHANGE(Or, Null);
-TEST_DUP_ARG_TYPE_CHANGE(And, Null);
-TEST_DUP_ARG_TYPE_CHANGE(Nor, Not);
-TEST_DUP_ARG_TYPE_CHANGE(Nand, Not);
+TEST_DUP_ARG_TYPE_CHANGE(Or, Null)
+TEST_DUP_ARG_TYPE_CHANGE(And, Null)
+TEST_DUP_ARG_TYPE_CHANGE(Nor, Not)
+TEST_DUP_ARG_TYPE_CHANGE(Nand, Not)
 
 #undef TEST_DUP_ARG_TYPE_CHANGE
 #undef ADD_ARG_IGNORE_TEST
@@ -272,11 +272,11 @@ TEST_F(IGateTest, DuplicateArgAtleastToOrWithTwoClones) {
     EXPECT_TRUE(g->constant_args().empty());           \
   }
 
-TEST_ADD_COMPLEMENT_ARG(And, Null);
-TEST_ADD_COMPLEMENT_ARG(Or, Unity);
-TEST_ADD_COMPLEMENT_ARG(Nand, Unity);
-TEST_ADD_COMPLEMENT_ARG(Nor, Null);
-TEST_ADD_COMPLEMENT_ARG(Xor, Unity);
+TEST_ADD_COMPLEMENT_ARG(And, Null)
+TEST_ADD_COMPLEMENT_ARG(Or, Unity)
+TEST_ADD_COMPLEMENT_ARG(Nand, Unity)
+TEST_ADD_COMPLEMENT_ARG(Nor, Null)
+TEST_ADD_COMPLEMENT_ARG(Xor, Unity)
 
 #undef TEST_ADD_COMPLEMENT_ARG
 
@@ -300,9 +300,9 @@ TEST_ADD_COMPLEMENT_ARG(Xor, Unity);
     EXPECT_TRUE(g->constant_args().empty());                    \
   }
 
-TEST_ADD_COMPLEMENT_ARG_KN(2, 2, Null);  // Join operation.
-TEST_ADD_COMPLEMENT_ARG_KN(3, 2, Or);  // General case.
-TEST_ADD_COMPLEMENT_ARG_KN(3, 3, And);  // Join operation.
+TEST_ADD_COMPLEMENT_ARG_KN(2, 2, Null)  // Join operation.
+TEST_ADD_COMPLEMENT_ARG_KN(3, 2, Or)  // General case.
+TEST_ADD_COMPLEMENT_ARG_KN(3, 3, And)  // Join operation.
 
 #undef TEST_ADD_COMPLEMENT_ARG_KN
 
@@ -324,14 +324,14 @@ TEST_ADD_COMPLEMENT_ARG_KN(3, 3, And);  // Join operation.
     EXPECT_TRUE(g->constant_args().empty());                               \
   }
 
-TEST_CONSTANT_ARG_STATE(true, 1, Null, Unity);
-TEST_CONSTANT_ARG_STATE(false, 1, Null, Null);
-TEST_CONSTANT_ARG_STATE(false, 1, Not, Unity);
-TEST_CONSTANT_ARG_STATE(true, 1, Not, Null);
-TEST_CONSTANT_ARG_STATE(true, 2, Or, Unity);
-TEST_CONSTANT_ARG_STATE(false, 2, And, Null);
-TEST_CONSTANT_ARG_STATE(true, 2, Nor, Null);
-TEST_CONSTANT_ARG_STATE(false, 2, Nand, Unity);
+TEST_CONSTANT_ARG_STATE(true, 1, Null, Unity)
+TEST_CONSTANT_ARG_STATE(false, 1, Null, Null)
+TEST_CONSTANT_ARG_STATE(false, 1, Not, Unity)
+TEST_CONSTANT_ARG_STATE(true, 1, Not, Null)
+TEST_CONSTANT_ARG_STATE(true, 2, Or, Unity)
+TEST_CONSTANT_ARG_STATE(false, 2, And, Null)
+TEST_CONSTANT_ARG_STATE(true, 2, Nor, Null)
+TEST_CONSTANT_ARG_STATE(false, 2, Nand, Unity)
 
 #undef TEST_CONSTANT_ARG_STATE
 
@@ -357,26 +357,26 @@ TEST_CONSTANT_ARG_STATE(false, 2, Nand, Unity);
     EXPECT_TRUE(g->constant_args().empty());                             \
   }
 
-TEST_CONSTANT_ARG_VNUM(true, 3, 2, Atleast, Or);
-TEST_CONSTANT_ARG_VNUM(true, 4, 3, Atleast, Atleast);
-TEST_CONSTANT_ARG_VNUM(false, 3, 2, Atleast, And);
-TEST_CONSTANT_ARG_VNUM(false, 4, 2, Atleast, Atleast);
+TEST_CONSTANT_ARG_VNUM(true, 3, 2, Atleast, Or)
+TEST_CONSTANT_ARG_VNUM(true, 4, 3, Atleast, Atleast)
+TEST_CONSTANT_ARG_VNUM(false, 3, 2, Atleast, And)
+TEST_CONSTANT_ARG_VNUM(false, 4, 2, Atleast, Atleast)
 
 /// The same tests as TEST_CONSTANT_ARG_VNUM
 /// but with no vote number initialization.
 #define TEST_CONSTANT_ARG(arg_state, num_vars, init_type, final_type) \
   TEST_CONSTANT_ARG_VNUM(arg_state, num_vars, false, init_type, final_type)
 
-TEST_CONSTANT_ARG(false, 2, Or, Null);
-TEST_CONSTANT_ARG(false, 3, Or, Or);
-TEST_CONSTANT_ARG(true, 2, And, Null);
-TEST_CONSTANT_ARG(true, 3, And, And);
-TEST_CONSTANT_ARG(false, 2, Nor, Not);
-TEST_CONSTANT_ARG(false, 3, Nor, Nor);
-TEST_CONSTANT_ARG(true, 2, Nand, Not);
-TEST_CONSTANT_ARG(true, 3, Nand, Nand);
-TEST_CONSTANT_ARG(true, 2, Xor, Not);
-TEST_CONSTANT_ARG(false, 2, Xor, Null);
+TEST_CONSTANT_ARG(false, 2, Or, Null)
+TEST_CONSTANT_ARG(false, 3, Or, Or)
+TEST_CONSTANT_ARG(true, 2, And, Null)
+TEST_CONSTANT_ARG(true, 3, And, And)
+TEST_CONSTANT_ARG(false, 2, Nor, Not)
+TEST_CONSTANT_ARG(false, 3, Nor, Nor)
+TEST_CONSTANT_ARG(true, 2, Nand, Not)
+TEST_CONSTANT_ARG(true, 3, Nand, Nand)
+TEST_CONSTANT_ARG(true, 2, Xor, Not)
+TEST_CONSTANT_ARG(false, 2, Xor, Null)
 
 #undef TEST_CONSTANT_ARG_VNUM
 #undef TEST_CONSTANT_ARG

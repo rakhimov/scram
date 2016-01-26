@@ -67,7 +67,7 @@ def install_scram(args):
         else:
             # Build for developers with all relevant warnings ON.
             cmake_cmd += ["-DCMAKE_BUILD_TYPE=Debug"]
-            cmake_cmd += ["-DCMAKE_CXX_FLAGS='-Wall -Wextra "
+            cmake_cmd += ["-DCMAKE_CXX_FLAGS='-Wall -Wextra -Werror -Wpedantic "
                           "-Wno-sign-compare -Wno-missing-field-initializers'"]
         if args.D is not None:
             cmake_cmd += ['-D' + x for x in args.D]
