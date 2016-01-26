@@ -11,7 +11,7 @@ configure_file(
   )
 ################### End File Configurations ####################
 
-set(SCRAM_CORE_SRC ${SCRAM_CORE_SRC}
+set(SCRAM_CORE_SRC
   "${CMAKE_CURRENT_SOURCE_DIR}/env.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/version.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/error.cc"

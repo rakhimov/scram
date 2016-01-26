@@ -149,12 +149,12 @@ Zbdd::Zbdd(const Bdd::Function& module, bool coherent, Bdd* bdd,
     assert(!modules_.count(index) && "Recalculating modules.");
     Bdd::Function sub = bdd->modules().find(std::abs(index))->second;
     assert(!sub.vertex->terminal() && "Unexpected BDD terminal vertex.");
-    bool coherent = entry.second.first && (index > 0);
+    bool module_coherence = entry.second.first && (index > 0);
     Settings adjusted(settings);
     adjusted.limit_order(entry.second.second);
     sub.complement ^= index < 0;
-    modules_.emplace(index, std::unique_ptr<Zbdd>(new Zbdd(sub, coherent, bdd,
-                                                           adjusted, index)));
+    modules_.emplace(index, std::unique_ptr<Zbdd>(
+            new Zbdd(sub, module_coherence, bdd, adjusted, index)));
   }
   if (std::any_of(
           modules_.begin(), modules_.end(),
