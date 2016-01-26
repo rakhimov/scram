@@ -57,18 +57,14 @@ def install_scram(args):
             cmake_cmd += ['-DCMAKE_BUILD_TYPE=' + args.build_type]
         elif args.release:
             cmake_cmd += ["-DCMAKE_BUILD_TYPE=Release"]
-        elif args.debug:
-            cmake_cmd += ["-DCMAKE_BUILD_TYPE=Debug"]
         elif args.profile:
             cmake_cmd += ["-DCMAKE_BUILD_TYPE=Debug"]
             cmake_cmd += ["-DCMAKE_C_FLAGS=-pg"]
             cmake_cmd += ["-DCMAKE_CXX_FLAGS=-pg"]
             cmake_cmd += ["-DCMAKE_CXX_FLAGS='-fprofile-arcs -ftest-coverage'"]
         else:
-            # Build for developers with all relevant warnings ON.
             cmake_cmd += ["-DCMAKE_BUILD_TYPE=Debug"]
-            cmake_cmd += ["-DCMAKE_CXX_FLAGS='-Wall -Wextra -Werror -Wpedantic "
-                          "-Wno-sign-compare -Wno-missing-field-initializers'"]
+
         if args.D is not None:
             cmake_cmd += ['-D' + x for x in args.D]
 
@@ -135,7 +131,7 @@ def main():
     build_type = "the CMAKE_BUILD_TYPE"
     parser.add_argument('--build-type', help=build_type)
 
-    debug = "build for debugging"
+    debug = "build for debugging (default)"
     parser.add_argument("-d", "--debug", help=debug, action="store_true",
                         default=False)
 

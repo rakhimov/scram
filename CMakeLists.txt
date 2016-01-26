@@ -23,6 +23,9 @@ if(NOT COMPILER_SUPPORTS_CXX11)
 endif()
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
+set(CMAKE_CXX_FLAGS_DEBUG
+  "${CMAKE_CXX_FLAGS_DEBUG} -Wall -Wextra -Werror -Wpedantic -Wno-sign-compare -Wno-missing-field-initializers")
+
 ######################## End compiler configurations ####################
 
 ##################### Begin cmake configuration ###################
