@@ -43,8 +43,22 @@
 
 #include "performance_tests.h"
 
+#include "bdd.h"
+#include "zbdd.h"
+
 namespace scram {
 namespace test {
+
+// Regression check for performance assumptions of developers.
+#ifndef NDEBUG
+// Test for performance critical object sizes.
+// 64-bit platform and alignment at 8-byte boundaries are assumed.
+TEST(RegressionTest, ObjectSize) {
+  EXPECT_EQ(48, sizeof(NonTerminal));
+  EXPECT_EQ(64, sizeof(Ite));
+  EXPECT_EQ(80, sizeof(SetNode));
+}
+#endif
 
 // Tests the performance of probability calculations
 // with cut-off approximations tests are done.
