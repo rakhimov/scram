@@ -168,6 +168,7 @@ class Zbdd {
   /// into Zero-Suppressed BDD.
   ///
   /// @param[in] module  Modular BDD function.
+  /// @param[in] coherent  A flag for coherent modular functions.
   /// @param[in] bdd  ROBDD with the ITE vertices.
   /// @param[in] settings  Settings for analysis.
   ///
@@ -178,7 +179,7 @@ class Zbdd {
   /// @note The input BDD is not passed as a constant
   ///       because ZBDD needs BDD facilities to calculate prime implicants.
   ///       However, ZBDD guarantees to preserve the original BDD structure.
-  Zbdd(const Bdd::Function& module, Bdd* bdd,
+  Zbdd(const Bdd::Function& module, bool coherent, Bdd* bdd,
        const Settings& settings) noexcept;
 
   /// Constructs ZBDD from modular Boolean graphs.
@@ -204,14 +205,12 @@ class Zbdd {
   /// @param[in] high  The high vertex.
   /// @param[in] low  The low vertex.
   /// @param[in] order The order for the vertex variable.
-  /// @param[in] module  A flag for the modular ZBDD proxy.
   ///
   /// @returns Set node with the given parameters.
   ///
   /// @warning This function is not aware of reduction rules.
   SetNodePtr FetchUniqueTable(int index, const VertexPtr& high,
-                              const VertexPtr& low, int order,
-                              bool module) noexcept;
+                              const VertexPtr& low, int order) noexcept;
 
   /// Fetches a replacement for an existing node
   /// or a new node based on an existing node.
@@ -226,19 +225,41 @@ class Zbdd {
   SetNodePtr FetchUniqueTable(const SetNodePtr& node, const VertexPtr& high,
                               const VertexPtr& low) noexcept;
 
-  /// Fetches unique table
-  /// only if the resultant node is going to be reduced.
+  /// Fetches a representation of a gate as ZBDD SetNode.
   ///
-  /// @param[in] index  Positive or negative index of the node.
-  /// @param[in] high  The high vertex.
-  /// @param[in] low  The low vertex.
-  /// @param[in] order The order for the vertex variable.
-  /// @param[in] module  A flag for the modular ZBDD proxy.
+  /// @param[in] gate  Gate with index, order, and other information.
+  /// @param[in] high  The new high vertex.
+  /// @param[in] low  The new low vertex.
+  ///
+  /// @returns SetNode for a replacement.
+  ///
+  /// @warning This function is not aware of reduction rules.
+  SetNodePtr FetchUniqueTable(const IGatePtr& gate, const VertexPtr& high,
+                              const VertexPtr& low) noexcept;
+
+  /// Gets a new or existing reduced ZBDD vertex
+  /// with parameters of a prototype BDD ITE vertex.
+  ///
+  /// @param[in] ite  The prototype BDD ITE vertex.
+  /// @param[in] high  The high ZBDD vertex.
+  /// @param[in] low  The low ZBDD vertex.
   ///
   /// @returns Resultant reduced vertex.
-  VertexPtr FetchReducedVertex(int index, const VertexPtr& high,
-                               const VertexPtr& low, int order,
-                               bool module) noexcept;
+  VertexPtr GetReducedVertex(const ItePtr& ite, bool complement,
+                             const VertexPtr& high,
+                             const VertexPtr& low) noexcept;
+
+  /// Fetches a replacement reduced vertex for an existing node
+  /// or a new node based on an existing node.
+  ///
+  /// @param[in] node  An existing node.
+  /// @param[in] high  The new high vertex.
+  /// @param[in] low  The new low vertex.
+  ///
+  /// @returns Set node for a replacement.
+  VertexPtr GetReducedVertex(const SetNodePtr& node,
+                             const VertexPtr& high,
+                             const VertexPtr& low) noexcept;
 
   /// Converts BDD graph into ZBDD graph.
   ///
@@ -517,6 +538,7 @@ class Zbdd {
 
   const Settings kSettings_;  ///< Analysis settings.
   VertexPtr root_;  ///< The root vertex of ZBDD.
+  bool coherent_;  ///< Inherited coherence from BDD.
 
   /// Table of unique SetNodes denoting sets.
   /// The key consists of (index, id_high, id_low) triplet.

@@ -82,12 +82,12 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
   LOG(DEBUG3) << "Finished Boolean graph conversion in " << DUR(init_time);
   Bdd::ClearMarks(false);
   // Clear tables if no more calculations are expected.
-  if (false && coherent_) {
+  if (coherent_) {
     LOG(DEBUG5) << "BDD switched off the garbage collector.";
     unique_table_.reset();
   }
   Bdd::ClearTables();
-  if (false && coherent_) {
+  if (coherent_) {
     and_table_.reserve(0);
     or_table_.reserve(0);
   }

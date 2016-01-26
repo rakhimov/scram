@@ -42,7 +42,7 @@ namespace scram {
   Zbdd::ClearMarks(root_)
 
 Zbdd::Zbdd(Bdd* bdd, const Settings& settings) noexcept
-    : Zbdd::Zbdd(bdd->root(), bdd, settings) {}
+    : Zbdd::Zbdd(bdd->root(), bdd->coherent_, bdd, settings) {}
 
 Zbdd::Zbdd(const BooleanGraph* fault_tree, const Settings& settings) noexcept
     : Zbdd::Zbdd(fault_tree->root(), settings) {
@@ -62,8 +62,8 @@ Zbdd::Zbdd(const BooleanGraph* fault_tree, const Settings& settings) noexcept
       root_ = kBase_;
     } else {
       VariablePtr var = top->variable_args().begin()->second;
-      root_ = Zbdd::FetchUniqueTable(var->index(), kBase_, kEmpty_,
-                                     var->order(), false);
+      root_ =
+          Zbdd::FetchUniqueTable(var->index(), kBase_, kEmpty_, var->order());
     }
   }
 }
@@ -108,16 +108,18 @@ void Zbdd::GarbageCollector::operator()(SetNode* ptr) noexcept {
 
 Zbdd::Zbdd(const Settings& settings) noexcept
     : kSettings_(settings),
+      coherent_(false),
       unique_table_(std::make_shared<UniqueTable>()),
       kBase_(std::make_shared<Terminal>(true)),
       kEmpty_(std::make_shared<Terminal>(false)),
       set_id_(2) {}
 
-Zbdd::Zbdd(const Bdd::Function& module, Bdd* bdd,
+Zbdd::Zbdd(const Bdd::Function& module, bool coherent, Bdd* bdd,
            const Settings& settings) noexcept
     : Zbdd::Zbdd(settings) {
   CLOCK(init_time);
   LOG(DEBUG2) << "Creating ZBDD from BDD...";
+  coherent_ = coherent;
   PairTable<VertexPtr> ites;
   root_ = Zbdd::Minimize(Zbdd::ConvertBdd(module.vertex, module.complement, bdd,
                                           kSettings_.limit_order(), &ites));
@@ -129,8 +131,9 @@ Zbdd::Zbdd(const Bdd::Function& module, Bdd* bdd,
     Bdd::Function sub = bdd->modules().find(std::abs(index))->second;
     assert(!sub.vertex->terminal() && "Unexpected BDD terminal vertex.");
     sub.complement ^= index < 0;
-    modules_.emplace(index,
-                     std::unique_ptr<Zbdd>(new Zbdd(sub, bdd, settings)));
+    /// @todo Find module coherence.
+    modules_.emplace(index, std::unique_ptr<Zbdd>(new Zbdd(sub, coherent_, bdd,
+                                                           settings)));
   }
   if (std::any_of(
           modules_.begin(), modules_.end(),
@@ -150,6 +153,7 @@ Zbdd::Zbdd(const Bdd::Function& module, Bdd* bdd,
 Zbdd::Zbdd(const IGatePtr& gate, const Settings& settings) noexcept
     : Zbdd::Zbdd(settings) {
   if (gate->IsConstant() || gate->type() == kNullGate) return;
+  coherent_ = gate->coherent();
   CLOCK(init_time);
   assert(gate->IsModule() && "The constructor is meant for module gates.");
   LOG(DEBUG3) << "Converting module to ZBDD: G" << gate->index();
@@ -189,14 +193,12 @@ Zbdd::Zbdd(const IGatePtr& gate, const Settings& settings) noexcept
 #undef LOG_ZBDD
 
 SetNodePtr Zbdd::FetchUniqueTable(int index, const VertexPtr& high,
-                                  const VertexPtr& low, int order,
-                                  bool module) noexcept {
+                                  const VertexPtr& low, int order) noexcept {
   SetNodeWeakPtr& in_table = (*unique_table_)[{index, high->id(), low->id()}];
   if (!in_table.expired()) return in_table.lock();
   assert(order > 0 && "Improper order.");
   SetNodePtr node(new SetNode(index, order, set_id_++, high, low),
                   GarbageCollector(this));
-  node->module(module);
   in_table = node;
   return node;
 }
@@ -205,17 +207,57 @@ SetNodePtr Zbdd::FetchUniqueTable(const SetNodePtr& node, const VertexPtr& high,
                                   const VertexPtr& low) noexcept {
   if (node->high()->id() == high->id() &&
       node->low()->id() == low->id()) return node;
-  return Zbdd::FetchUniqueTable(node->index(), high, low, node->order(),
-                                node->module());
+  SetNodePtr in_table =
+      Zbdd::FetchUniqueTable(node->index(), high, low, node->order());
+  if (in_table.unique()) {
+    in_table->module(node->module());
+    in_table->coherent(node->coherent());
+  }
+  assert(in_table->module() == node->module());
+  assert(in_table->coherent() == node->coherent());
+  return in_table;
 }
 
-VertexPtr Zbdd::FetchReducedVertex(int index, const VertexPtr& high,
-                                   const VertexPtr& low, int order,
-                                   bool module) noexcept {
+SetNodePtr Zbdd::FetchUniqueTable(const IGatePtr& gate, const VertexPtr& high,
+                                  const VertexPtr& low) noexcept {
+  SetNodePtr in_table =
+      Zbdd::FetchUniqueTable(gate->index(), high, low, gate->order());
+  if (in_table.unique()) {
+    in_table->module(gate->IsModule());
+    in_table->coherent(gate->coherent());
+  }
+  assert(in_table->module() == gate->IsModule());
+  assert(in_table->coherent() == gate->coherent());
+  return in_table;
+}
+
+VertexPtr Zbdd::GetReducedVertex(const ItePtr& ite, bool complement,
+                                 const VertexPtr& high,
+                                 const VertexPtr& low) noexcept {
   if (high->id() == low->id()) return low;
   if (high->terminal() && !Terminal::Ptr(high)->value()) return low;
   if (low->terminal() && Terminal::Ptr(low)->value()) return low;
-  return Zbdd::FetchUniqueTable(index, high, low, order, module);
+  assert(ite->index() > 0 && "BDD indices are never negative.");
+  int sign = complement ? -1 : 1;
+  SetNodePtr in_table = Zbdd::FetchUniqueTable(sign * ite->index(), high, low,
+                                               ite->order());
+  if (in_table.unique()) {
+    in_table->module(ite->module());
+    in_table->coherent(ite->coherent());
+  }
+  assert(in_table->module() == ite->module());
+  assert(in_table->coherent() == ite->coherent());
+  return in_table;
+}
+
+VertexPtr Zbdd::GetReducedVertex(const SetNodePtr& node, const VertexPtr& high,
+                                 const VertexPtr& low) noexcept {
+  if (high->id() == low->id()) return low;
+  if (high->terminal() && !Terminal::Ptr(high)->value()) return low;
+  if (low->terminal() && Terminal::Ptr(low)->value()) return low;
+  if (node->high()->id() == high->id() &&
+      node->low()->id() == low->id()) return node;
+  return Zbdd::FetchUniqueTable(node, high, low);
 }
 
 VertexPtr Zbdd::ConvertBdd(const VertexPtr& vertex, bool complement,
@@ -225,7 +267,7 @@ VertexPtr Zbdd::ConvertBdd(const VertexPtr& vertex, bool complement,
   int sign = complement ? -1 : 1;
   VertexPtr& result = (*ites)[{sign * vertex->id(), limit_order}];
   if (result) return result;
-  if (kSettings_.prime_implicants()) {
+  if (!coherent_ && kSettings_.prime_implicants()) {
     result = Zbdd::ConvertBddPI(Ite::Ptr(vertex), complement, bdd_graph,
                                 limit_order, ites);
   } else {
@@ -238,8 +280,8 @@ VertexPtr Zbdd::ConvertBdd(const VertexPtr& vertex, bool complement,
 VertexPtr Zbdd::ConvertBdd(const ItePtr& ite, bool complement,
                            Bdd* bdd_graph, int limit_order,
                            PairTable<VertexPtr>* ites) noexcept {
-  if (ite->module()) return Zbdd::ConvertBddPI(ite, complement, bdd_graph,
-                                               limit_order, ites);
+  if (ite->module() && !ite->coherent())
+    return Zbdd::ConvertBddPI(ite, complement, bdd_graph, limit_order, ites);
   VertexPtr low =
       Zbdd::ConvertBdd(ite->low(), ite->complement_edge() ^ complement,
                        bdd_graph, limit_order, ites);
@@ -249,8 +291,7 @@ VertexPtr Zbdd::ConvertBdd(const ItePtr& ite, bool complement,
   }
   VertexPtr high =
       Zbdd::ConvertBdd(ite->high(), complement, bdd_graph, --limit_order, ites);
-  return Zbdd::FetchReducedVertex(ite->index(), high, low, ite->order(),
-                                  ite->module());
+  return Zbdd::GetReducedVertex(ite, false, high, low);
 }
 
 VertexPtr Zbdd::ConvertBddPI(const ItePtr& ite, bool complement,
@@ -263,19 +304,19 @@ VertexPtr Zbdd::ConvertBddPI(const ItePtr& ite, bool complement,
     if (consensus->terminal()) return consensus;
     return kEmpty_;
   }
-  int sublimit = limit_order - 1;  // Assumes non-Unity modules.
-  if (ite->module() && !kSettings_.prime_implicants())
+  int sublimit = limit_order - 1;  // Assumes non-Unity element.
+  if (ite->module() && !kSettings_.prime_implicants()) {
+    assert(!ite->coherent() && "Only non-coherent modules through PI.");
     sublimit += 1;  // Unity modules may happen with minimal cut sets.
+  }
   VertexPtr high =
       Zbdd::ConvertBdd(ite->high(), complement, bdd_graph, sublimit, ites);
   VertexPtr low =
       Zbdd::ConvertBdd(ite->low(), ite->complement_edge() ^ complement,
                        bdd_graph, sublimit, ites);
-  return Zbdd::FetchReducedVertex(
-      ite->index(), high,
-      Zbdd::FetchReducedVertex(-ite->index(), low, consensus, ite->order(),
-                               ite->module()),
-      ite->order(), ite->module());
+  return Zbdd::GetReducedVertex(ite, false, high,
+                                Zbdd::GetReducedVertex(ite, true, low,
+                                                       consensus));
 }
 
 VertexPtr Zbdd::ConvertGraph(
@@ -295,14 +336,13 @@ VertexPtr Zbdd::ConvertGraph(
   std::vector<VertexPtr> args;
   for (const std::pair<const int, VariablePtr>& arg : gate->variable_args()) {
     args.push_back(Zbdd::FetchUniqueTable(arg.first, kBase_, kEmpty_,
-                                          arg.second->order(), false));
+                                          arg.second->order()));
   }
   for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
     assert(arg.first > 0 && "Complements must be pushed down to variables.");
     if (arg.second->IsModule()) {
       module_gates->insert(arg);
-      args.push_back(Zbdd::FetchUniqueTable(arg.first, kBase_, kEmpty_,
-                                            arg.second->order(), true));
+      args.push_back(Zbdd::FetchUniqueTable(arg.second, kBase_, kEmpty_));
     } else {
       args.push_back(Zbdd::ConvertGraph(arg.second, gates, module_gates));
     }
@@ -383,8 +423,12 @@ VertexPtr Zbdd::Apply(Operator type, const SetNodePtr& arg_one,
   VertexPtr high;
   VertexPtr low;
   int limit_high = limit_order - 1;
-  if (arg_one->index() < 0 || arg_one->module() || this->IsGate(arg_one))
-    ++limit_high;  // Conservative.
+  if (this->IsGate(arg_one) && !arg_one->module()) {
+    ++limit_high;  // It is unknown if the gate adds any unique literal.
+  } else if (!kSettings_.prime_implicants()) {
+    if (arg_one->index() < 0 || (arg_one->module() && !arg_one->coherent()))
+      ++limit_high;  // Conservative for MCS.
+  }
   if (arg_one->order() == arg_two->order() &&
       arg_one->index() == arg_two->index()) {  // The same variable.
     if (type == kAndGate) {
@@ -428,9 +472,7 @@ VertexPtr Zbdd::Apply(Operator type, const SetNodePtr& arg_one,
     assert(SetNode::Ptr(high)->index() < arg_one->index());
     high = SetNode::Ptr(high)->low();
   }
-  if (high->id() == low->id()) return low;
-  if (high->terminal() && Terminal::Ptr(high)->value() == false) return low;
-  return Zbdd::Minimize(Zbdd::FetchUniqueTable(arg_one, high, low));
+  return Zbdd::Minimize(Zbdd::GetReducedVertex(arg_one, high, low));
 }
 
 VertexPtr Zbdd::EliminateComplements(
@@ -450,11 +492,10 @@ VertexPtr Zbdd::EliminateComplements(
 VertexPtr Zbdd::EliminateComplement(const SetNodePtr& node,
                                     const VertexPtr& high,
                                     const VertexPtr& low) noexcept {
-  if (high->id() == low->id()) return low;
-  if (high->terminal() && Terminal::Ptr(high)->value() == false) return low;
-  if (node->index() < 0 && !node->module())  /// @todo Track the cut-off.
+  /// @todo Track the cut-off.
+  if (node->index() < 0 && !(node->module() && !node->coherent()))
     return Zbdd::Apply(kOrGate, high, low, kSettings_.limit_order());
-  return Zbdd::Minimize(Zbdd::FetchUniqueTable(node, high, low));
+  return Zbdd::Minimize(Zbdd::GetReducedVertex(node, high, low));
 }
 
 VertexPtr Zbdd::EliminateConstantModules(
@@ -474,8 +515,6 @@ VertexPtr Zbdd::EliminateConstantModules(
 VertexPtr Zbdd::EliminateConstantModule(const SetNodePtr& node,
                                         const VertexPtr& high,
                                         const VertexPtr& low) noexcept {
-  if (high->id() == low->id()) return low;
-  if (high->terminal() && Terminal::Ptr(high)->value() == false) return low;
   if (node->module()) {
     Zbdd* module = modules_.find(node->index())->second.get();
     if (module->root_->terminal()) {
@@ -483,7 +522,7 @@ VertexPtr Zbdd::EliminateConstantModule(const SetNodePtr& node,
       return Zbdd::Apply(kOrGate, high, low, kSettings_.limit_order());
     }
   }
-  return Zbdd::Minimize(Zbdd::FetchUniqueTable(node, high, low));
+  return Zbdd::Minimize(Zbdd::GetReducedVertex(node, high, low));
 }
 
 VertexPtr Zbdd::Minimize(const VertexPtr& vertex) noexcept {
@@ -690,13 +729,11 @@ VertexPtr CutSetContainer::ConvertGate(const IGatePtr& gate) noexcept {
   std::vector<SetNodePtr> args;
   for (const std::pair<const int, VariablePtr>& arg : gate->variable_args()) {
     args.push_back(Zbdd::FetchUniqueTable(arg.first, kBase_, kEmpty_,
-                                          arg.second->order(), false));
+                                          arg.second->order()));
   }
   for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
     assert(arg.first > 0 && "Complements must be pushed down to variables.");
-    args.push_back(Zbdd::FetchUniqueTable(arg.first, kBase_, kEmpty_,
-                                          arg.second->order(),
-                                          arg.second->IsModule()));
+    args.push_back(Zbdd::FetchUniqueTable(arg.second, kBase_, kEmpty_));
   }
   std::sort(args.begin(), args.end(),
             [](const SetNodePtr& lhs, const SetNodePtr& rhs) {
