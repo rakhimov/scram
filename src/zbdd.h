@@ -171,6 +171,7 @@ class Zbdd {
   /// @param[in] coherent  A flag for coherent modular functions.
   /// @param[in] bdd  ROBDD with the ITE vertices.
   /// @param[in] settings  Settings for analysis.
+  /// @param[in] module_index  The of a module if known.
   ///
   /// @pre BDD has attributed edges with only one terminal (1/True).
   ///
@@ -180,7 +181,7 @@ class Zbdd {
   ///       because ZBDD needs BDD facilities to calculate prime implicants.
   ///       However, ZBDD guarantees to preserve the original BDD structure.
   Zbdd(const Bdd::Function& module, bool coherent, Bdd* bdd,
-       const Settings& settings) noexcept;
+       const Settings& settings, int module_index = 0) noexcept;
 
   /// Constructs ZBDD from modular Boolean graphs.
   /// This constructor does not handle constant or single variable graphs.
@@ -565,6 +566,7 @@ class Zbdd {
   const Settings kSettings_;  ///< Analysis settings.
   VertexPtr root_;  ///< The root vertex of ZBDD.
   bool coherent_;  ///< Inherited coherence from BDD.
+  int module_index_;  ///< Identifier for a module if any.
 
   /// Table of unique SetNodes denoting sets.
   /// The key consists of (index, id_high, id_low) triplet.

@@ -26,7 +26,6 @@
 
 namespace scram {
 
-/// @def LOG_ZBDD
 /// Logs ZBDD characteristics.
 #define LOG_ZBDD                                                               \
   LOG(DEBUG4) << "# of ZBDD nodes created: " << set_id_ - 1;                   \
@@ -38,11 +37,25 @@ namespace scram {
   Zbdd::ClearMarks(root_, false);                                              \
   LOG(DEBUG4) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);      \
   Zbdd::ClearMarks(root_, false);                                              \
-  LOG(DEBUG3) << "# of products: " << Zbdd::CountProducts(root_, false);       \
+  LOG(DEBUG4) << "# of products: " << Zbdd::CountProducts(root_, false);       \
   Zbdd::ClearMarks(root_, false)
 
+#ifndef NDEBUG
+/// Runs assertions on ZBDD structure.
+///
+/// @param[in] full  A flag for full test including submodules.
+#define CHECK_ZBDD(full)            \
+  Zbdd::ClearMarks(root_, full);    \
+  Zbdd::TestStructure(root_, full); \
+  Zbdd::ClearMarks(root_, full)
+#else
+#define CHECK_ZBDD(full)  ///< No checks on release.
+#endif
+
 Zbdd::Zbdd(Bdd* bdd, const Settings& settings) noexcept
-    : Zbdd::Zbdd(bdd->root(), bdd->coherent_, bdd, settings) {}
+    : Zbdd::Zbdd(bdd->root(), bdd->coherent_, bdd, settings) {
+  CHECK_ZBDD(true);
+}
 
 Zbdd::Zbdd(const BooleanGraph* fault_tree, const Settings& settings) noexcept
     : Zbdd::Zbdd(fault_tree->root(), settings) {
@@ -66,15 +79,16 @@ Zbdd::Zbdd(const BooleanGraph* fault_tree, const Settings& settings) noexcept
           Zbdd::FetchUniqueTable(var->index(), kBase_, kEmpty_, var->order());
     }
   }
+  CHECK_ZBDD(true);
 }
 
 void Zbdd::Analyze() noexcept {
-  root_ = Zbdd::Minimize(root_);
+  root_ = Zbdd::Minimize(root_);  // Likely to be minimal by now.
   assert(root_->terminal() || SetNode::Ptr(root_)->minimal());
   for (const auto& entry : modules_) entry.second->Analyze();
 
   CLOCK(gen_time);
-  LOG(DEBUG3) << "Getting products from minimized ZBDD...";
+  LOG(DEBUG3) << "Getting products from minimized ZBDD: G" << module_index_;
   // Complete cleanup of the memory.
   unique_table_.reset();  // Important to turn the garbage collector off.
   Zbdd::ClearTables();
@@ -84,7 +98,8 @@ void Zbdd::Analyze() noexcept {
   // Cleanup of temporary products.
   modules_.clear();
   root_ = kEmpty_;
-  LOG(DEBUG3) << products_.size() << " products are found in " << DUR(gen_time);
+  LOG(DEBUG4) << "# of generated products: " << products_.size();
+  LOG(DEBUG3) << "G" << module_index_ << " analysis time: " << DUR(gen_time);
 }
 
 void Zbdd::GarbageCollector::operator()(SetNode* ptr) noexcept {
@@ -99,29 +114,28 @@ void Zbdd::GarbageCollector::operator()(SetNode* ptr) noexcept {
 Zbdd::Zbdd(const Settings& settings) noexcept
     : kSettings_(settings),
       coherent_(false),
+      module_index_(0),
       unique_table_(std::make_shared<UniqueTable>()),
       kBase_(std::make_shared<Terminal>(true)),
       kEmpty_(std::make_shared<Terminal>(false)),
       set_id_(2) {}
 
 Zbdd::Zbdd(const Bdd::Function& module, bool coherent, Bdd* bdd,
-           const Settings& settings) noexcept
+           const Settings& settings, int module_index) noexcept
     : Zbdd::Zbdd(settings) {
   CLOCK(init_time);
-  LOG(DEBUG2) << "Creating ZBDD from BDD...";
+  LOG(DEBUG2) << "Creating ZBDD from BDD: G" << module_index;
   coherent_ = coherent;
+  module_index_ = module_index;
   PairTable<VertexPtr> ites;
   root_ = Zbdd::Minimize(Zbdd::ConvertBdd(module.vertex, module.complement, bdd,
                                           kSettings_.limit_order(), &ites));
   assert(root_->terminal() || SetNode::Ptr(root_)->minimal());
-  Zbdd::ClearMarks(root_, false);
-  Zbdd::TestStructure(root_, false);
-  Zbdd::ClearMarks(root_, false);
+  CHECK_ZBDD(false);
   LOG_ZBDD;
   LOG(DEBUG2) << "Created ZBDD from BDD in " << DUR(init_time);
   std::unordered_map<int, std::pair<bool, int>> sub_modules;
   Zbdd::GatherModules(root_, 0, &sub_modules);
-  BLOG(DEBUG2, !sub_modules.empty()) << "Proceeding with submodules...";
   for (const auto& entry : sub_modules) {
     int index = entry.first;
     assert(!modules_.count(index) && "Recalculating modules.");
@@ -132,7 +146,7 @@ Zbdd::Zbdd(const Bdd::Function& module, bool coherent, Bdd* bdd,
     adjusted.limit_order(entry.second.second);
     sub.complement ^= index < 0;
     modules_.emplace(index, std::unique_ptr<Zbdd>(new Zbdd(sub, coherent, bdd,
-                                                           adjusted)));
+                                                           adjusted, index)));
   }
   if (std::any_of(
           modules_.begin(), modules_.end(),
@@ -149,18 +163,21 @@ Zbdd::Zbdd(const IGatePtr& gate, const Settings& settings) noexcept
     : Zbdd::Zbdd(settings) {
   if (gate->IsConstant() || gate->type() == kNullGate) return;
   coherent_ = gate->coherent();
+  module_index_ = gate->index();
   CLOCK(init_time);
   assert(gate->IsModule() && "The constructor is meant for module gates.");
   LOG(DEBUG3) << "Converting module to ZBDD: G" << gate->index();
   std::unordered_map<int, std::pair<VertexPtr, int>> gates;
   std::unordered_map<int, IGatePtr> module_gates;
   root_ = Zbdd::ConvertGraph(gate, &gates, &module_gates);
-  LOG(DEBUG4) << "Eliminating complements from ZBDD...";
-  std::unordered_map<int, VertexPtr> results;
-  root_ = Zbdd::EliminateComplements(root_, &results);
-  results.clear();
+  if (!coherent_) {
+    LOG(DEBUG4) << "Eliminating complements from ZBDD...";
+    std::unordered_map<int, VertexPtr> results;
+    root_ = Zbdd::EliminateComplements(root_, &results);
+  }
   LOG(DEBUG4) << "Minimizing ZBDD...";
   root_ = Zbdd::Minimize(root_);
+  CHECK_ZBDD(false);
   LOG_ZBDD;
   LOG(DEBUG3) << "Finished module conversion to ZBDD in " << DUR(init_time);
   std::vector<int> sub_modules;
@@ -176,16 +193,14 @@ Zbdd::Zbdd(const IGatePtr& gate, const Settings& settings) noexcept
           [](const std::pair<const int, std::unique_ptr<Zbdd>>& module) {
             return module.second->root_->terminal();
           })) {
-    LOG(DEBUG4) << "Eliminating constant modules from ZBDD...";
+    LOG(DEBUG4) << "Eliminating constant modules from ZBDD: G" << module_index_;
+    std::unordered_map<int, VertexPtr> results;
     root_ = Zbdd::EliminateConstantModules(root_, &results);
-    results.clear();
   }
-  Zbdd::ClearMarks(root_, true);
-  Zbdd::TestStructure(root_, true);
-  Zbdd::ClearMarks(root_, true);
 }
 
 #undef LOG_ZBDD
+#undef CHECK_ZBDD
 
 SetNodePtr Zbdd::FetchUniqueTable(int index, const VertexPtr& high,
                                   const VertexPtr& low, int order) noexcept {
