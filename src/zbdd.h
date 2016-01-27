@@ -486,6 +486,8 @@ class Zbdd {
   /// @returns A collection of products
   ///          generated from the ZBDD subgraph.
   ///
+  /// @pre The ZBDD is minimized.
+  ///
   /// @post The products of modules are incorporated to the result.
   ///
   /// @warning Product generation will destroy ZBDD.
@@ -506,27 +508,30 @@ class Zbdd {
   /// Counts the total number of sets in ZBDD.
   ///
   /// @param[in] vertex  The root vertex of ZBDD.
+  /// @param[in] modules  Unroll sets with modules.
   ///
   /// @returns The number of products in ZBDD.
   ///
   /// @pre SetNode marks are clear (false).
-  int64_t CountProducts(const VertexPtr& vertex) noexcept;
+  int64_t CountProducts(const VertexPtr& vertex, bool modules) noexcept;
 
   /// Cleans up non-terminal vertex marks
   /// by setting them to "false".
   ///
   /// @param[in] vertex  The root vertex of the graph.
+  /// @param[in] modules  Clear marks in modules as well.
   ///
   /// @pre The graph is marked "true" contiguously.
-  void ClearMarks(const VertexPtr& vertex) noexcept;
+  void ClearMarks(const VertexPtr& vertex, bool modules) noexcept;
 
   /// Checks ZBDD graphs for errors in the structure.
   /// Errors are assertions that fail at runtime.
   ///
   /// @param[in] vertex  The root vertex of ZBDD.
+  /// @param[in] modules  Test modules as well.
   ///
   /// @pre SetNode marks are clear (false).
-  void TestStructure(const VertexPtr& vertex) noexcept;
+  void TestStructure(const VertexPtr& vertex, bool modules) noexcept;
 
   /// Clears all memoization tables.
   void ClearTables() noexcept {

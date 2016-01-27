@@ -35,11 +35,11 @@ namespace scram {
   LOG(DEBUG4) << "# of entries in OR table: " << or_table_.size();             \
   LOG(DEBUG4) << "# of entries in subsume table: " << subsume_table_.size();   \
   LOG(DEBUG4) << "# of entries in minimal table: " << minimal_results_.size(); \
-  Zbdd::ClearMarks(root_);                                                     \
+  Zbdd::ClearMarks(root_, false);                                              \
   LOG(DEBUG4) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);      \
-  Zbdd::ClearMarks(root_);                                                     \
-  LOG(DEBUG3) << "There are " << Zbdd::CountProducts(root_) << " products.";   \
-  Zbdd::ClearMarks(root_)
+  Zbdd::ClearMarks(root_, false);                                              \
+  LOG(DEBUG3) << "# of products: " << Zbdd::CountProducts(root_, false);       \
+  Zbdd::ClearMarks(root_, false)
 
 Zbdd::Zbdd(Bdd* bdd, const Settings& settings) noexcept
     : Zbdd::Zbdd(bdd->root(), bdd->coherent_, bdd, settings) {}
@@ -69,32 +69,22 @@ Zbdd::Zbdd(const BooleanGraph* fault_tree, const Settings& settings) noexcept
 }
 
 void Zbdd::Analyze() noexcept {
-  CLOCK(analysis_time);
-  LOG(DEBUG2) << "Analyzing ZBDD...";
-
-  CLOCK(minimize_time);
-  LOG(DEBUG3) << "Minimizing ZBDD...";
   root_ = Zbdd::Minimize(root_);
   assert(root_->terminal() || SetNode::Ptr(root_)->minimal());
-  Zbdd::ClearMarks(root_);
-  Zbdd::TestStructure(root_);
-  LOG_ZBDD;
-  LOG(DEBUG3) << "Finished ZBDD minimization in " << DUR(minimize_time);
+  for (const auto& entry : modules_) entry.second->Analyze();
 
+  CLOCK(gen_time);
+  LOG(DEBUG3) << "Getting products from minimized ZBDD...";
   // Complete cleanup of the memory.
   unique_table_.reset();  // Important to turn the garbage collector off.
   Zbdd::ClearTables();
 
-  CLOCK(gen_time);
-  LOG(DEBUG3) << "Getting products from minimized ZBDD...";
   products_ = Zbdd::GenerateProducts(root_);
 
   // Cleanup of temporary products.
   modules_.clear();
   root_ = kEmpty_;
-
   LOG(DEBUG3) << products_.size() << " products are found in " << DUR(gen_time);
-  LOG(DEBUG2) << "Finished ZBDD analysis in " << DUR(analysis_time);
 }
 
 void Zbdd::GarbageCollector::operator()(SetNode* ptr) noexcept {
@@ -124,8 +114,14 @@ Zbdd::Zbdd(const Bdd::Function& module, bool coherent, Bdd* bdd,
   root_ = Zbdd::Minimize(Zbdd::ConvertBdd(module.vertex, module.complement, bdd,
                                           kSettings_.limit_order(), &ites));
   assert(root_->terminal() || SetNode::Ptr(root_)->minimal());
+  Zbdd::ClearMarks(root_, false);
+  Zbdd::TestStructure(root_, false);
+  Zbdd::ClearMarks(root_, false);
+  LOG_ZBDD;
+  LOG(DEBUG2) << "Created ZBDD from BDD in " << DUR(init_time);
   std::vector<int> sub_modules;
   Zbdd::GatherModules(root_, &sub_modules);
+  BLOG(DEBUG2, !sub_modules.empty()) << "Proceeding with submodules...";
   for (int index : sub_modules) {
     assert(!modules_.count(index) && "Recalculating modules.");
     Bdd::Function sub = bdd->modules().find(std::abs(index))->second;
@@ -144,10 +140,6 @@ Zbdd::Zbdd(const Bdd::Function& module, bool coherent, Bdd* bdd,
     std::unordered_map<int, VertexPtr> results;
     root_ = Zbdd::EliminateConstantModules(root_, &results);
   }
-  Zbdd::ClearMarks(root_);
-  Zbdd::TestStructure(root_);
-  LOG_ZBDD;
-  LOG(DEBUG2) << "Created ZBDD from BDD in " << DUR(init_time);
 }
 
 Zbdd::Zbdd(const IGatePtr& gate, const Settings& settings) noexcept
@@ -185,9 +177,9 @@ Zbdd::Zbdd(const IGatePtr& gate, const Settings& settings) noexcept
     root_ = Zbdd::EliminateConstantModules(root_, &results);
     results.clear();
   }
-  Zbdd::ClearMarks(root_);
-  Zbdd::TestStructure(root_);
-  Zbdd::ClearMarks(root_);
+  Zbdd::ClearMarks(root_, true);
+  Zbdd::TestStructure(root_, true);
+  Zbdd::ClearMarks(root_, true);
 }
 
 #undef LOG_ZBDD
@@ -611,8 +603,6 @@ Zbdd::GenerateProducts(const VertexPtr& vertex) noexcept {
   auto& result = low;  // For clarity.
   if (node->module()) {
     Zbdd* module = modules_.find(node->index())->second.get();
-    if (!module->root_->terminal() || Terminal::Ptr(module->root_)->value())
-      module->Analyze();
     for (auto& product : high) {  // Cross-product.
       for (const auto& module_set : module->products()) {
         if (product.size() + module_set.size() > kSettings_.limit_order())
@@ -646,7 +636,7 @@ int Zbdd::CountSetNodes(const VertexPtr& vertex) noexcept {
          Zbdd::CountSetNodes(node->low());
 }
 
-int64_t Zbdd::CountProducts(const VertexPtr& vertex) noexcept {
+int64_t Zbdd::CountProducts(const VertexPtr& vertex, bool modules) noexcept {
   if (vertex->terminal()) {
     if (Terminal::Ptr(vertex)->value()) return 1;
     return 0;
@@ -655,29 +645,29 @@ int64_t Zbdd::CountProducts(const VertexPtr& vertex) noexcept {
   if (node->mark()) return node->count();
   node->mark(true);
   int64_t multiplier = 1;  // Multiplier of the module.
-  if (node->module()) {
+  if (modules && node->module()) {
     Zbdd* module = modules_.find(node->index())->second.get();
-    multiplier = module->CountProducts(module->root_);
+    multiplier = module->CountProducts(module->root_, true);
   }
-  node->count(multiplier * Zbdd::CountProducts(node->high()) +
-              Zbdd::CountProducts(node->low()));
+  node->count(multiplier * Zbdd::CountProducts(node->high(), modules) +
+              Zbdd::CountProducts(node->low(), modules));
   return node->count();
 }
 
-void Zbdd::ClearMarks(const VertexPtr& vertex) noexcept {
+void Zbdd::ClearMarks(const VertexPtr& vertex, bool modules) noexcept {
   if (vertex->terminal()) return;
   SetNodePtr node = SetNode::Ptr(vertex);
   if (!node->mark()) return;
   node->mark(false);
-  if (node->module()) {
+  if (modules && node->module()) {
     Zbdd* module = modules_.find(node->index())->second.get();
-    module->ClearMarks(module->root_);
+    module->ClearMarks(module->root_, true);
   }
-  Zbdd::ClearMarks(node->high());
-  Zbdd::ClearMarks(node->low());
+  Zbdd::ClearMarks(node->high(), modules);
+  Zbdd::ClearMarks(node->low(), modules);
 }
 
-void Zbdd::TestStructure(const VertexPtr& vertex) noexcept {
+void Zbdd::TestStructure(const VertexPtr& vertex, bool modules) noexcept {
   if (vertex->terminal()) return;
   SetNodePtr node = SetNode::Ptr(vertex);
   if (node->mark()) return;
@@ -704,13 +694,13 @@ void Zbdd::TestStructure(const VertexPtr& vertex) noexcept {
   assert(!(!node->low()->terminal() && node->minimal() &&
            !SetNode::Ptr(node->low())->minimal()) &&
          "Non-minimal branches in minimal ZBDD.");
-  if (node->module()) {
+  if (modules && node->module()) {
     Zbdd* module = modules_.find(node->index())->second.get();
     assert(!module->root_->terminal() && "Terminal modules must be removed.");
-    module->TestStructure(module->root_);
+    module->TestStructure(module->root_, true);
   }
-  Zbdd::TestStructure(node->high());
-  Zbdd::TestStructure(node->low());
+  Zbdd::TestStructure(node->high(), modules);
+  Zbdd::TestStructure(node->low(), modules);
 }
 
 namespace zbdd {
