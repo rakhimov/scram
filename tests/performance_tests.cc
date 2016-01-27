@@ -24,7 +24,7 @@
 // Different tests are compiled depending on the build type.
 // Generally, debug or non-debug types are recognized.
 //
-// Performance testing values are taken
+// Reference performance values are taken
 // from a computer with the following specs:
 //
 //   Proc         Core i7-2820QM
@@ -33,7 +33,7 @@
 //   Boost        1.55
 //   TCMalloc     2.1
 //
-// The values for performance are expected to have some random variation.
+// The performance measurements are expected to have some random variation.
 // Better as well as worse performance are reported
 // as test failures to indicate the change.
 //
@@ -52,16 +52,16 @@ namespace test {
 // Regression check for performance assumptions of developers.
 #ifndef NDEBUG
 // Test for performance critical object sizes.
-// 64-bit platform and alignment at 8-byte boundaries are assumed.
 TEST(RegressionTest, ObjectSize) {
+  // x86-64 platform.
+  // 64-bit platform with alignment at 8-byte boundaries.
   EXPECT_EQ(48, sizeof(NonTerminal));
   EXPECT_EQ(64, sizeof(Ite));
   EXPECT_EQ(80, sizeof(SetNode));
 }
 #endif
 
-// Tests the performance of probability calculations
-// with cut-off approximations tests are done.
+// Tests the performance of probability calculations.
 TEST_F(PerformanceTest, DISABLED_ThreeMotor) {
   double p_time_std = 0.01;
   std::string input = "./share/scram/input/ThreeMotor/three_motor.xml";

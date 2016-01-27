@@ -231,7 +231,7 @@ TEST_F(RiskAnalysisTest, ImportanceRareEvent) {
 }
 
 // Apply the minimal cut set upper bound approximation.
-TEST_F(RiskAnalysisTest, MCUB) {
+TEST_F(RiskAnalysisTest, Mcub) {
   std::string with_prob =
       "./share/scram/input/fta/correct_tree_input_with_probs.xml";
   // Probability calculations with the MCUB approximation.

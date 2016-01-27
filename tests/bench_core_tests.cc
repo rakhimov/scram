@@ -85,7 +85,7 @@ TEST_P(RiskAnalysisTest, ABorNotAC) {
 
 // Simple verification tests for Atleast gate fault tree.
 // Test Minimal cut sets and total probability.
-TEST_P(RiskAnalysisTest, ATLEAST) {
+TEST_P(RiskAnalysisTest, Atleast) {
   std::string tree_input = "./share/scram/input/core/atleast.xml";
   settings.probability_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
@@ -189,7 +189,7 @@ TEST_P(RiskAnalysisTest, AorNotAB) {
 }
 
 // Uncertainty report for Unity case.
-TEST_F(RiskAnalysisTest, mcAorNotA) {
+TEST_F(RiskAnalysisTest, MonteCarloAorNotA) {
   std::string tree_input = "./share/scram/input/core/a_or_not_a.xml";
   settings.uncertainty_analysis(true);
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
@@ -197,7 +197,7 @@ TEST_F(RiskAnalysisTest, mcAorNotA) {
 }
 
 // [A OR NOT B] FTA MC
-TEST_F(RiskAnalysisTest, mcAorNotB) {
+TEST_F(RiskAnalysisTest, MonteCarloAorNotB) {
   settings.uncertainty_analysis(true);
   std::string tree_input = "./share/scram/input/core/a_or_not_b.xml";
   ASSERT_NO_THROW(ProcessInputFile(tree_input));
