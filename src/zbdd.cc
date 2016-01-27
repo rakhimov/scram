@@ -119,17 +119,20 @@ Zbdd::Zbdd(const Bdd::Function& module, bool coherent, Bdd* bdd,
   Zbdd::ClearMarks(root_, false);
   LOG_ZBDD;
   LOG(DEBUG2) << "Created ZBDD from BDD in " << DUR(init_time);
-  std::vector<int> sub_modules;
-  Zbdd::GatherModules(root_, &sub_modules);
+  std::unordered_map<int, std::pair<bool, int>> sub_modules;
+  Zbdd::GatherModules(root_, 0, &sub_modules);
   BLOG(DEBUG2, !sub_modules.empty()) << "Proceeding with submodules...";
-  for (int index : sub_modules) {
+  for (const auto& entry : sub_modules) {
+    int index = entry.first;
     assert(!modules_.count(index) && "Recalculating modules.");
     Bdd::Function sub = bdd->modules().find(std::abs(index))->second;
     assert(!sub.vertex->terminal() && "Unexpected BDD terminal vertex.");
+    bool coherent = entry.second.first && (index > 0);
+    Settings adjusted(settings);
+    adjusted.limit_order(entry.second.second);
     sub.complement ^= index < 0;
-    /// @todo Find module coherence.
-    modules_.emplace(index, std::unique_ptr<Zbdd>(new Zbdd(sub, coherent_, bdd,
-                                                           settings)));
+    modules_.emplace(index, std::unique_ptr<Zbdd>(new Zbdd(sub, coherent, bdd,
+                                                           adjusted)));
   }
   if (std::any_of(
           modules_.begin(), modules_.end(),
@@ -586,6 +589,39 @@ void Zbdd::GatherModules(const VertexPtr& vertex,
   }
   Zbdd::GatherModules(node->high(), modules);
   Zbdd::GatherModules(node->low(), modules);
+}
+
+bool Zbdd::MayBeUnity(const SetNodePtr& node) noexcept {
+  assert(!this->IsGate(node));
+  if (!node->module()) return false;
+  if (kSettings_.prime_implicants()) return false;  // No Unity PI modules.
+  if (node->coherent() && (node->index() > 0)) return false;
+  return true;
+}
+
+int Zbdd::GatherModules(
+    const VertexPtr& vertex,
+    int current_order,
+    std::unordered_map<int, std::pair<bool, int>>* modules) noexcept {
+  assert(current_order >= 0);
+  if (vertex->terminal()) return 0;
+  SetNodePtr node = SetNode::Ptr(vertex);
+  int contribution = !Zbdd::MayBeUnity(node);
+  int high_order = current_order + contribution;
+  int min_high = Zbdd::GatherModules(node->high(), high_order, modules);
+  if (node->module()) {
+    int module_order = kSettings_.limit_order() - min_high - current_order;
+    assert(module_order > 0 && "Improper application of a cut-off.");
+    if (!modules->count(node->index())) {
+      modules->insert({node->index(), {node->coherent(), module_order}});
+    } else {
+      std::pair<bool, int>& entry = modules->find(node->index())->second;
+      assert(entry.first == node->coherent() && "Inconsistent flags.");
+      entry.second = std::max(entry.second, module_order);
+    }
+  }
+  int min_low = Zbdd::GatherModules(node->low(), current_order, modules);
+  return std::min(min_high + contribution, min_low);
 }
 
 std::vector<std::vector<int>>

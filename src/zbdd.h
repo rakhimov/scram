@@ -478,6 +478,27 @@ class Zbdd {
   void GatherModules(const VertexPtr& vertex,
                      std::vector<int>* modules) noexcept;
 
+  /// Checks if a node have a possibility to represent Unity.
+  ///
+  /// @param[in] node  SetNode to test for possibility of Unity.
+  ///
+  /// @returns false if the passed node can never be Unity.
+  ///
+  /// @pre The node doesn't represent a non-module gate.
+  bool MayBeUnity(const SetNodePtr& node) noexcept;
+
+  /// Traverses ZBDD to find modules and adjusted cut-offs.
+  ///
+  /// @param[in] vertex  The root vertex to start with.
+  /// @param[in] current_order  The product order from the top to the module.
+  /// @param[in,out] modules  A map of module indices, coherence, and cut-offs.
+  ///
+  /// @returns The minimum product order from the bottom.
+  int GatherModules(
+      const VertexPtr& vertex,
+      int current_order,
+      std::unordered_map<int, std::pair<bool, int>>* modules) noexcept;
+
   /// Traverses the reduced ZBDD graph to generate products.
   /// ZBDD is destructively converted into products.
   ///
