@@ -61,10 +61,11 @@ class Mocus {
   /// All sub-modules are analyzed and joined recursively.
   ///
   /// @param[in] gate  A Boolean graph gate for analysis.
+  /// @param[in] settings  Settings for analysis.
   ///
   /// @returns Fully processed, minimized Zbdd cut set container.
   std::unique_ptr<zbdd::CutSetContainer>
-  AnalyzeModule(const IGatePtr& gate) noexcept;
+  AnalyzeModule(const IGatePtr& gate, const Settings& settings) noexcept;
 
   bool constant_graph_;  ///< No need for analysis.
   const BooleanGraph* graph_;  ///< The analysis PDAG.

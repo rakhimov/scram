@@ -432,6 +432,15 @@ class Zbdd {
                                 const VertexPtr& low) noexcept;
 
   /// Removes constant modules from products.
+  /// Constant modules are likely to happen after complement elimination.
+  /// This procedure is inherently bottom-up,
+  /// so the caller must make sure
+  /// that the modules have already been pre-processed.
+  ///
+  /// @pre All modules have been processed.
+  void EliminateConstantModules() noexcept;
+
+  /// Removes constant modules from products.
   ///
   /// @param[in] vertex  The variable vertex in the ZBDD.
   /// @param[in,out] results  Memoisation of the processed vertices.
@@ -473,14 +482,6 @@ class Zbdd {
   /// @returns Minimized high branch for a variable.
   VertexPtr Subsume(const VertexPtr& high, const VertexPtr& low) noexcept;
 
-  /// Traverses ZBDD to find modules.
-  /// Modules within modules are not gathered.
-  ///
-  /// @param[in] vertex  The root vertex to start with.
-  /// @param[in,out] modules  A set of indices of the modules.
-  void GatherModules(const VertexPtr& vertex,
-                     std::vector<int>* modules) noexcept;
-
   /// Checks if a node have a possibility to represent Unity.
   ///
   /// @param[in] node  SetNode to test for possibility of Unity.
@@ -489,6 +490,7 @@ class Zbdd {
   bool MayBeUnity(const SetNodePtr& node) noexcept;
 
   /// Traverses ZBDD to find modules and adjusted cut-offs.
+  /// Modules within modules are not gathered.
   ///
   /// @param[in] vertex  The root vertex to start with.
   /// @param[in] current_order  The product order from the top to the module.
@@ -609,6 +611,7 @@ class CutSetContainer : public Zbdd {
   /// Default constructor to initialize member variables.
   ///
   /// @param[in] settings  Settings that control analysis complexity.
+  /// @param[in] module_index  The of a module if known.
   /// @param[in] gate_index_bound  The exclusive lower bound for gate indices.
   ///
   /// @pre No complements of gates.
@@ -616,7 +619,8 @@ class CutSetContainer : public Zbdd {
   ///      starting from a number larger than the lower bound.
   /// @pre Basic events are indexed sequentially
   ///      up to a number less than or equal to the given lower bound.
-  CutSetContainer(const Settings& settings, int gate_index_bound) noexcept;
+  CutSetContainer(const Settings& settings, int module_index,
+                  int gate_index_bound) noexcept;
 
   /// Converts a Boolean graph gate into intermediate cut sets.
   ///
@@ -661,14 +665,19 @@ class CutSetContainer : public Zbdd {
   /// @pre The intermediate cut sets are pre-processed
   ///      by removing the vertex with the index of the gate.
   VertexPtr ExpandGate(const VertexPtr& gate_zbdd,
-                       const VertexPtr& cut_sets) noexcept;
+                       const VertexPtr& cut_sets) noexcept {
+    return Zbdd::Apply(kAndGate, gate_zbdd, cut_sets, kSettings_.limit_order());
+  }
 
   /// Merges a set of cut sets into the main container.
   ///
   /// @param[in] vertex  The root ZBDD vertex representing the cut sets.
   ///
   /// @pre The argument ZBDD cut sets are managed by this container.
-  void Merge(const VertexPtr& vertex) noexcept;
+  void Merge(const VertexPtr& vertex) noexcept {
+    root_ = Zbdd::Apply(kOrGate, root_, vertex, kSettings_.limit_order());
+    Zbdd::ClearTables();
+  }
 
   /// Eliminates all complements from cut sets.
   /// This can only be done
@@ -677,18 +686,12 @@ class CutSetContainer : public Zbdd {
   /// @pre The cut sets have negative literals, i.e., non-coherent.
   ///
   /// @post Sub-modules are not processed.
-  void EliminateComplements() noexcept;
+  void EliminateComplements() noexcept {
+    std::unordered_map<int, VertexPtr> wide_results;
+    root_ = Zbdd::EliminateComplements(root_, &wide_results);
+  }
 
-  /// Removes constant modules from cut sets.
-  /// Constant modules are likely to happen after complement elimination.
-  /// This procedure is inherently bottom-up,
-  /// so the caller must make sure
-  /// that the modules have already been pre-processed.
-  ///
-  /// @pre All modules have been joined to this container.
-  ///
-  /// @post Sub-modules are not processed.
-  void EliminateConstantModules() noexcept;
+  using Zbdd::EliminateConstantModules;  ///< Remove all constant modules.
 
   /// Minimizes cut sets in the container.
   ///
@@ -697,8 +700,13 @@ class CutSetContainer : public Zbdd {
 
   /// Gathers all module indices in the cut sets.
   ///
-  /// @returns An unordered set of indices.
-  std::vector<int> GatherModules() noexcept;
+  /// @returns An unordered map module of indices, coherence, and cut-offs.
+  std::unordered_map<int, std::pair<bool, int>> GatherModules() noexcept {
+    assert(modules_.empty() && "Unexpected call with defined modules?!");
+    std::unordered_map<int, std::pair<bool, int>> modules;
+    Zbdd::GatherModules(root_, 0, &modules);
+    return modules;
+  }
 
   /// Joins a ZBDD representing a module gate.
   ///
@@ -708,7 +716,15 @@ class CutSetContainer : public Zbdd {
   /// @pre The module cut sets are final,
   ///      and no more processing or sanitizing is needed.
   void JoinModule(int index,
-                  std::unique_ptr<CutSetContainer> container) noexcept;
+                  std::unique_ptr<CutSetContainer> container) noexcept {
+    assert(!modules_.count(index));
+    assert(container->root_->terminal() ||
+           SetNode::Ptr(container->root_)->minimal());
+    modules_.emplace(index, std::move(container));
+  }
+
+  /// Logs properties of the container.
+  void Log() noexcept;
 
  private:
   /// Checks if a set node represents a gate.

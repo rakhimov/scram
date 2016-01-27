@@ -52,6 +52,13 @@ namespace scram {
 #define CHECK_ZBDD(full)  ///< No checks on release.
 #endif
 
+namespace zbdd {
+void CutSetContainer::Log() noexcept {
+  CHECK_ZBDD(false);
+  LOG_ZBDD;
+}
+}  // namespace zbdd
+
 Zbdd::Zbdd(Bdd* bdd, const Settings& settings) noexcept
     : Zbdd::Zbdd(bdd->root(), bdd->coherent_, bdd, settings) {
   CHECK_ZBDD(true);
@@ -201,15 +208,7 @@ Zbdd::Zbdd(const IGatePtr& gate, const Settings& settings) noexcept
     modules_.emplace(index,
                      std::unique_ptr<Zbdd>(new Zbdd(module_gate, adjusted)));
   }
-  if (std::any_of(
-          modules_.begin(), modules_.end(),
-          [](const std::pair<const int, std::unique_ptr<Zbdd>>& module) {
-            return module.second->root_->terminal();
-          })) {
-    LOG(DEBUG4) << "Eliminating constant modules from ZBDD: G" << module_index_;
-    std::unordered_map<int, VertexPtr> results;
-    root_ = Zbdd::EliminateConstantModules(root_, &results);
-  }
+  Zbdd::EliminateConstantModules();
 }
 
 #undef LOG_ZBDD
@@ -515,6 +514,18 @@ VertexPtr Zbdd::EliminateComplement(const SetNodePtr& node,
   return Zbdd::Minimize(Zbdd::GetReducedVertex(node, high, low));
 }
 
+void Zbdd::EliminateConstantModules() noexcept {
+  if (std::any_of(
+          modules_.begin(), modules_.end(),
+          [](const std::pair<const int, std::unique_ptr<Zbdd>>& module) {
+            return module.second->root_->terminal();
+          })) {
+    LOG(DEBUG4) << "Eliminating constant modules from ZBDD: G" << module_index_;
+    std::unordered_map<int, VertexPtr> results;
+    root_ = Zbdd::EliminateConstantModules(root_, &results);
+  }
+}
+
 VertexPtr Zbdd::EliminateConstantModules(
     const VertexPtr& vertex,
     std::unordered_map<int, VertexPtr>* results) noexcept {
@@ -599,18 +610,6 @@ VertexPtr Zbdd::Subsume(const VertexPtr& high, const VertexPtr& low) noexcept {
   new_high->minimal(high_node->minimal());
   computed = new_high;
   return computed;
-}
-
-void Zbdd::GatherModules(const VertexPtr& vertex,
-                         std::vector<int>* modules) noexcept {
-  if (vertex->terminal()) return;
-  SetNodePtr node = SetNode::Ptr(vertex);
-  if (node->module()) {
-    auto it = std::find(modules->begin(), modules->end(), node->index());
-    if (it == modules->end()) modules->push_back(node->index());
-  }
-  Zbdd::GatherModules(node->high(), modules);
-  Zbdd::GatherModules(node->low(), modules);
 }
 
 bool Zbdd::MayBeUnity(const SetNodePtr& node) noexcept {
@@ -767,11 +766,12 @@ void Zbdd::TestStructure(const VertexPtr& vertex, bool modules) noexcept {
 
 namespace zbdd {
 
-CutSetContainer::CutSetContainer(const Settings& settings,
+CutSetContainer::CutSetContainer(const Settings& settings, int module_index,
                                  int gate_index_bound) noexcept
     : Zbdd::Zbdd(settings),
       gate_index_bound_(gate_index_bound) {
   root_ = kEmpty_;  // Empty container.
+  module_index_ = module_index;
 }
 
 VertexPtr CutSetContainer::ConvertGate(const IGatePtr& gate) noexcept {
@@ -807,42 +807,6 @@ VertexPtr CutSetContainer::ExtractIntermediateCutSets(int index) noexcept {
   SetNodePtr node = SetNode::Ptr(root_);
   root_ = node->low();
   return node->high();
-}
-
-VertexPtr CutSetContainer::ExpandGate(const VertexPtr& gate_zbdd,
-                                      const VertexPtr& cut_sets) noexcept {
-  return Zbdd::Apply(kAndGate, gate_zbdd, cut_sets, kSettings_.limit_order());
-}
-
-void CutSetContainer::Merge(const VertexPtr& vertex) noexcept {
-  root_ = Zbdd::Apply(kOrGate, root_, vertex, kSettings_.limit_order());
-  Zbdd::ClearTables();
-}
-
-void CutSetContainer::EliminateComplements() noexcept {
-  std::unordered_map<int, VertexPtr> wide_results;
-  root_ = Zbdd::EliminateComplements(root_, &wide_results);
-}
-
-void CutSetContainer::EliminateConstantModules() noexcept {
-  std::unordered_map<int, VertexPtr> results;
-  root_ = Zbdd::EliminateConstantModules(root_, &results);
-}
-
-std::vector<int> CutSetContainer::GatherModules() noexcept {
-  assert(modules_.empty() && "Unexpected call with defined modules?!");
-  std::vector<int> modules;
-  Zbdd::GatherModules(root_, &modules);
-  return modules;
-}
-
-void CutSetContainer::JoinModule(
-    int index,
-    std::unique_ptr<CutSetContainer> container) noexcept {
-  assert(!modules_.count(index));
-  assert(container->root_->terminal() ||
-         SetNode::Ptr(container->root_)->minimal());
-  modules_.emplace(index, std::move(container));
 }
 
 }  // namespace zbdd

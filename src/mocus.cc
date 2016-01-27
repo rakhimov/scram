@@ -49,8 +49,8 @@ void Mocus::Analyze() {
 
   CLOCK(mcs_time);
   LOG(DEBUG2) << "Start minimal cut set generation.";
-  zbdd_ = Mocus::AnalyzeModule(graph_->root());
-  LOG(DEBUG2) << "Delegating cut set minimization to ZBDD.";
+  zbdd_ = Mocus::AnalyzeModule(graph_->root(), kSettings_);
+  LOG(DEBUG2) << "Delegating cut set extraction to ZBDD.";
   zbdd_->Analyze();
   LOG(DEBUG2) << "Minimal cut sets found in " << DUR(mcs_time);
 }
@@ -61,15 +61,17 @@ const std::vector<std::vector<int>>& Mocus::products() const {
 }
 
 std::unique_ptr<zbdd::CutSetContainer>
-Mocus::AnalyzeModule(const IGatePtr& gate) noexcept {
+Mocus::AnalyzeModule(const IGatePtr& gate, const Settings& settings) noexcept {
   assert(gate->IsModule() && "Expected only module gates.");
   CLOCK(gen_time);
   LOG(DEBUG3) << "Finding cut sets from module: G" << gate->index();
+  LOG(DEBUG4) << "Limit on product order: " << settings.limit_order();
   std::unordered_map<int, IGatePtr> gates;
   gates.insert(gate->gate_args().begin(), gate->gate_args().end());
 
   std::unique_ptr<zbdd::CutSetContainer> container(
-      new zbdd::CutSetContainer(kSettings_, graph_->basic_events().size()));
+      new zbdd::CutSetContainer(kSettings_, gate->index(),
+                                graph_->basic_events().size()));
   container->Merge(container->ConvertGate(gate));
   int next_gate = container->GetNextGate();
   while (next_gate) {
@@ -83,18 +85,31 @@ Mocus::AnalyzeModule(const IGatePtr& gate) noexcept {
     next_gate = container->GetNextGate();
   }
   container->Minimize();
-  if (!graph_->coherent()) {
+  container->Log();
+  LOG(DEBUG3) << "G" << gate->index()
+              << " cut set generation time: " << DUR(gen_time);
+  if (!gate->coherent()) {
     container->EliminateComplements();
     container->Minimize();
   }
-  for (int module : container->GatherModules()) {
-    container->JoinModule(module,
-                          Mocus::AnalyzeModule(gates.find(module)->second));
+  for (const auto& entry : container->GatherModules()) {
+    int index = entry.first;
+    int limit = entry.second.second;
+    if (limit == 0) {  /// @todo Make cut-offs strict.
+      std::unique_ptr<zbdd::CutSetContainer> empty_zbdd(
+          new zbdd::CutSetContainer(kSettings_, index,
+                                    graph_->basic_events().size()));
+      container->JoinModule(index, std::move(empty_zbdd));
+      continue;
+    }
+    Settings adjusted(settings);
+    adjusted.limit_order(limit);
+    container->JoinModule(index,
+                          Mocus::AnalyzeModule(gates.find(index)->second,
+                                               adjusted));
   }
   container->EliminateConstantModules();
   container->Minimize();
-  LOG(DEBUG4) << "G" << gate->index()
-              << " cut set generation time: " << DUR(gen_time);
   return container;
 }
 
