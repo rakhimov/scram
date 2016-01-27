@@ -125,6 +125,7 @@ Zbdd::Zbdd(const Bdd::Function& module, bool coherent, Bdd* bdd,
     : Zbdd::Zbdd(settings) {
   CLOCK(init_time);
   LOG(DEBUG2) << "Creating ZBDD from BDD: G" << module_index;
+  LOG(DEBUG4) << "Limit on product order: " << settings.limit_order();
   coherent_ = coherent;
   module_index_ = module_index;
   PairTable<VertexPtr> ites;
@@ -162,11 +163,13 @@ Zbdd::Zbdd(const Bdd::Function& module, bool coherent, Bdd* bdd,
 Zbdd::Zbdd(const IGatePtr& gate, const Settings& settings) noexcept
     : Zbdd::Zbdd(settings) {
   if (gate->IsConstant() || gate->type() == kNullGate) return;
+  assert(!settings.prime_implicants() && "Not implemented.");
   coherent_ = gate->coherent();
   module_index_ = gate->index();
   CLOCK(init_time);
   assert(gate->IsModule() && "The constructor is meant for module gates.");
   LOG(DEBUG3) << "Converting module to ZBDD: G" << gate->index();
+  LOG(DEBUG4) << "Limit on product order: " << settings.limit_order();
   std::unordered_map<int, std::pair<VertexPtr, int>> gates;
   std::unordered_map<int, IGatePtr> module_gates;
   root_ = Zbdd::ConvertGraph(gate, &gates, &module_gates);
@@ -180,13 +183,23 @@ Zbdd::Zbdd(const IGatePtr& gate, const Settings& settings) noexcept
   CHECK_ZBDD(false);
   LOG_ZBDD;
   LOG(DEBUG3) << "Finished module conversion to ZBDD in " << DUR(init_time);
-  std::vector<int> sub_modules;
-  Zbdd::GatherModules(root_, &sub_modules);
-  for (int index : sub_modules) {
+  std::unordered_map<int, std::pair<bool, int>> sub_modules;
+  Zbdd::GatherModules(root_, 0, &sub_modules);
+  for (const auto& entry : sub_modules) {
+    int index = entry.first;
     assert(!modules_.count(index) && "Recalculating modules.");
+    int limit = entry.second.second;
+    if (limit == 0) {  /// @todo Make cut-offs strict.
+      std::unique_ptr<Zbdd> empty_zbdd(new Zbdd(settings));
+      empty_zbdd->root_ = empty_zbdd->kEmpty_;
+      modules_.emplace(index, std::move(empty_zbdd));
+      continue;
+    }
     IGatePtr module_gate = module_gates.find(index)->second;
+    Settings adjusted(settings);
+    adjusted.limit_order(limit);
     modules_.emplace(index,
-                     std::unique_ptr<Zbdd>(new Zbdd(module_gate, settings)));
+                     std::unique_ptr<Zbdd>(new Zbdd(module_gate, adjusted)));
   }
   if (std::any_of(
           modules_.begin(), modules_.end(),
@@ -432,13 +445,7 @@ VertexPtr Zbdd::Apply(Operator type, const SetNodePtr& arg_one,
          "Only normalized operations in BDD.");
   VertexPtr high;
   VertexPtr low;
-  int limit_high = limit_order - 1;
-  if (this->IsGate(arg_one) && !arg_one->module()) {
-    ++limit_high;  // It is unknown if the gate adds any unique literal.
-  } else if (!kSettings_.prime_implicants()) {
-    if (arg_one->index() < 0 || (arg_one->module() && !arg_one->coherent()))
-      ++limit_high;  // Conservative for MCS.
-  }
+  int limit_high = limit_order - !Zbdd::MayBeUnity(arg_one);
   if (arg_one->order() == arg_two->order() &&
       arg_one->index() == arg_two->index()) {  // The same variable.
     if (type == kAndGate) {
@@ -463,8 +470,8 @@ VertexPtr Zbdd::Apply(Operator type, const SetNodePtr& arg_one,
     if (type == kAndGate) {
       if (arg_one->order() == arg_two->order()) {
         // (x*f1 + f0) * (~x*g1 + g0) = x*f1*g0 + f0*(~x*g1 + g0)
-        high = Zbdd::Apply(kAndGate, arg_one->high(), arg_two->low(),
-                            limit_high);
+        high =
+            Zbdd::Apply(kAndGate, arg_one->high(), arg_two->low(), limit_high);
       } else {
         high = Zbdd::Apply(kAndGate, arg_one->high(), arg_two, limit_high);
       }
@@ -607,11 +614,11 @@ void Zbdd::GatherModules(const VertexPtr& vertex,
 }
 
 bool Zbdd::MayBeUnity(const SetNodePtr& node) noexcept {
-  assert(!this->IsGate(node));
-  if (!node->module()) return false;
+  if (!this->IsGate(node)) return false;  // Variables are never constants.
+  if (!node->module()) return true;  // Non-module gate.
   if (kSettings_.prime_implicants()) return false;  // No Unity PI modules.
   if (node->coherent() && (node->index() > 0)) return false;
-  return true;
+  return true;  // Non-coherent module in MCS.
 }
 
 int Zbdd::GatherModules(
@@ -619,14 +626,16 @@ int Zbdd::GatherModules(
     int current_order,
     std::unordered_map<int, std::pair<bool, int>>* modules) noexcept {
   assert(current_order >= 0);
-  if (vertex->terminal()) return 0;
+  if (vertex->terminal()) return Terminal::Ptr(vertex)->value() ? 0 : -1;
   SetNodePtr node = SetNode::Ptr(vertex);
   int contribution = !Zbdd::MayBeUnity(node);
   int high_order = current_order + contribution;
   int min_high = Zbdd::GatherModules(node->high(), high_order, modules);
+  assert(min_high >= 0 && "No terminal Empty should be on high branch.");
   if (node->module()) {
     int module_order = kSettings_.limit_order() - min_high - current_order;
-    assert(module_order > 0 && "Improper application of a cut-off.");
+    /* assert(module_order > 0 && "Improper application of a cut-off."); */
+    if (module_order < 0) module_order = 0;  /// @todo Make this strict.
     if (!modules->count(node->index())) {
       modules->insert({node->index(), {node->coherent(), module_order}});
     } else {
@@ -636,6 +645,8 @@ int Zbdd::GatherModules(
     }
   }
   int min_low = Zbdd::GatherModules(node->low(), current_order, modules);
+  assert(min_low >= -1);
+  if (min_low == -1) return min_high + contribution;
   return std::min(min_high + contribution, min_low);
 }
 

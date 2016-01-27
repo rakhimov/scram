@@ -349,13 +349,15 @@ class Zbdd {
 
   /// Checks if a set node represents a gate.
   /// Apply operations and truncation operations
-  /// should avoid accounting gates
+  /// should avoid accounting non-module gates
   /// if they exist in ZBDD.
   ///
   /// @param[in] node  A node to be tested.
   ///
-  /// @returns false by default.
-  virtual bool IsGate(const SetNodePtr& /*node*/) noexcept { return false; }
+  /// @returns true for modules by default.
+  virtual bool IsGate(const SetNodePtr& node) noexcept {
+    return node->module();
+  }
 
   /// Applies Boolean operation to two vertices representing sets.
   ///
@@ -484,8 +486,6 @@ class Zbdd {
   /// @param[in] node  SetNode to test for possibility of Unity.
   ///
   /// @returns false if the passed node can never be Unity.
-  ///
-  /// @pre The node doesn't represent a non-module gate.
   bool MayBeUnity(const SetNodePtr& node) noexcept;
 
   /// Traverses ZBDD to find modules and adjusted cut-offs.
@@ -495,6 +495,9 @@ class Zbdd {
   /// @param[in,out] modules  A map of module indices, coherence, and cut-offs.
   ///
   /// @returns The minimum product order from the bottom.
+  /// @returns -1 if the vertex is terminal Empty on low branch only.
+  ///
+  /// @pre The ZBDD is minimal.
   int GatherModules(
       const VertexPtr& vertex,
       int current_order,
