@@ -22,16 +22,33 @@
 /// The design and code are inspired by
 /// the C++ logging framework of Petru Marginean,
 /// published at http://www.drdobbs.com/cpp/logging-in-c/201804215
+///
+/// The timing facilities are inspired by
+/// the talk of Bryce Adelstein "Benchmarking C++ Code" at CppCon 2015.
 
 #ifndef SCRAM_SRC_LOGGER_H_
 #define SCRAM_SRC_LOGGER_H_
 
+#include <chrono>
+#include <cstdint>
 #include <cstdio>
-#include <ctime>
 #include <sstream>
 #include <string>
 
 namespace scram {
+
+/// Takes a current time stamp in nanoseconds.
+#define TIME_STAMP() std::chrono::steady_clock::now().time_since_epoch().count()
+
+/// Starts the timing in nanoseconds.
+///
+/// @param[out] var  A unique name for time variable in the scope.
+#define CLOCK(var) uint64_t var = TIME_STAMP()
+
+/// Calculates the time duration since the start of the clock in seconds.
+///
+/// @param[in] var  The variable initialized by the CLOCK macro (in the past!).
+#define DUR(var) (TIME_STAMP() - var) * 1e-9
 
 /// Logging with a level.
 #define LOG(level) \
@@ -40,16 +57,6 @@ namespace scram {
 /// Conditional logging with a level.
 #define BLOG(level, cond) \
   if (cond && level <= scram::Logger::ReportLevel()) scram::Logger().Get(level)
-
-/// Starts the timing.
-///
-/// @param[out] var  A unique name for time variable in the scope.
-#define CLOCK(var) std::clock_t var = std::clock()
-
-/// Calculates the time duration from the start of the clock.
-///
-/// @param[in] var  The variable initialized by the CLOCK macro.
-#define DUR(var) (std::clock() - var) / static_cast<double>(CLOCKS_PER_SEC)
 
 /// @enum LogLevel
 /// Levels for log statements.

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -986,15 +986,27 @@ class Preprocessor {
     std::unordered_map<int, IGatePtr> clones_false_;  ///< False state clones.
   };
 
+  /// Marks coherence of the whole graph.
+  ///
+  /// @warning Gate marks are used.
+  void MarkCoherence() noexcept;
+
+  /// Marks gates with coherence flags.
+  ///
+  /// @param[in] gate  The root gate for processing.
+  ///
+  /// @warning Gate marks are used.
+  void MarkCoherence(const IGatePtr& gate) noexcept;
+
   /// Replaces one gate in the graph with another.
   ///
   /// @param[in,out] gate  An existing gate to be replaced.
   /// @param[in,out] replacement  A gate that will replace the old gate.
   ///
-  /// @note The sign of the existing gate as an argument
+  /// @post The sign of the existing gate as an argument
   ///       is transfered to the replacement gate.
   ///
-  /// @note If any parent becomes constant or NULL type,
+  /// @post If any parent becomes constant or NULL type,
   ///       the parent is registered for removal.
   void ReplaceGate(const IGatePtr& gate, const IGatePtr& replacement) noexcept;
 
@@ -1038,7 +1050,6 @@ class Preprocessor {
                    std::vector<VariablePtr>* variables) noexcept;
 
   BooleanGraph* graph_;  ///< The Boolean graph to preprocess.
-  int root_sign_;  ///< The negative or positive sign of the root node.
   bool constant_graph_;  ///< Graph is constant due to constant events.
   /// Container for constant gates to be tracked and cleaned by algorithms.
   /// These constant gates are created

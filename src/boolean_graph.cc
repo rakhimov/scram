@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,11 +61,13 @@ IGate::IGate(Operator type) noexcept
       descendant_(0),
       min_time_(0),
       max_time_(0),
-      module_(false) {}
+      module_(false),
+      coherent_(false) {}
 
 IGatePtr IGate::Clone() noexcept {
   BLOG(DEBUG5, module_) << "WARNING: Cloning module G" << Node::index();
   auto clone = std::make_shared<IGate>(type_);  // The same type.
+  clone->coherent_ = coherent_;
   clone->vote_number_ = vote_number_;  // Copy vote number in case it is K/N.
   // Getting arguments copied.
   clone->args_ = args_;
@@ -442,7 +444,8 @@ const std::map<std::string, Operator> BooleanGraph::kStringToType_ = {
     {"null", kNullGate}};
 
 BooleanGraph::BooleanGraph(const GatePtr& root, bool ccf) noexcept
-    : coherent_(true),
+    : root_sign_(1),
+      coherent_(true),
       normal_(true) {
   Node::ResetIndex();
   Variable::ResetIndex();

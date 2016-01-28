@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -140,7 +140,7 @@ template<typename Calculator>
 std::vector<double> UncertaintyAnalyzer<Calculator>::Sample() noexcept {
   std::vector<std::pair<int, BasicEvent*>> uncertain_events =
       UncertaintyAnalysis::FilterUncertainEvents(prob_analyzer_->graph());
-  std::vector<double>& var_probs = prob_analyzer_->var_probs();
+  std::vector<double>& p_vars = prob_analyzer_->p_vars();
   std::vector<double> samples;
   samples.reserve(kSettings_.num_trials());
   for (int i = 0; i < kSettings_.num_trials(); ++i) {
@@ -155,16 +155,16 @@ std::vector<double> UncertaintyAnalyzer<Calculator>::Sample() noexcept {
       } else if (prob > 1) {
         prob = 1;
       }
-      var_probs[event.first] = prob;
+      p_vars[event.first] = prob;
     }
     double result = prob_analyzer_->CalculateTotalProbability();
     assert(result >= 0);
     if (result > 1) result = 1;
     samples.push_back(result);
   }
-  // Cleanup.
+  // Reset probabilities.
   for (const auto& event : uncertain_events)
-    var_probs[event.first] = event.second->p();
+    p_vars[event.first] = event.second->p();
 
   return samples;
 }

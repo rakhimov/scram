@@ -40,10 +40,12 @@ NonTerminal::NonTerminal(int index, int order, int id, const VertexPtr& high,
         low_(low),
         index_(index),
         module_(false),
+        coherent_(false),
         mark_(false) {}
 
 Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
     : kSettings_(settings),
+      coherent_(fault_tree->coherent()),
       unique_table_(std::make_shared<UniqueTable>()),
       kOne_(std::make_shared<Terminal>(true)),
       function_id_(2) {
@@ -63,10 +65,11 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
     int child = *top->args().begin();
     VariablePtr var = top->variable_args().begin()->second;
     root_ = {child < 0, Bdd::FetchUniqueTable(var->index(), kOne_, kOne_,
-                                              true, var->order(), false)};
+                                              true, var->order())};
   } else {
     std::unordered_map<int, std::pair<Function, int>> gates;
     root_ = Bdd::ConvertGraph(fault_tree->root(), &gates);
+    root_.complement ^= fault_tree->complement();
   }
   Bdd::ClearMarks(false);
   Bdd::TestStructure(root_.vertex);
@@ -78,14 +81,13 @@ Bdd::Bdd(const BooleanGraph* fault_tree, const Settings& settings)
   LOG(DEBUG4) << "# of ITE in BDD: " << Bdd::CountIteNodes(root_.vertex);
   LOG(DEBUG3) << "Finished Boolean graph conversion in " << DUR(init_time);
   Bdd::ClearMarks(false);
-
-  if (!kSettings_.prime_implicants()) {  // No more calculations are expected.
+  // Clear tables if no more calculations are expected.
+  if (coherent_) {
     LOG(DEBUG5) << "BDD switched off the garbage collector.";
     unique_table_.reset();
   }
-  and_table_.clear();
-  or_table_.clear();
-  if (!kSettings_.prime_implicants()) {
+  Bdd::ClearTables();
+  if (coherent_) {
     and_table_.reserve(0);
     or_table_.reserve(0);
   }
@@ -116,7 +118,7 @@ void Bdd::GarbageCollector::operator()(Ite* ptr) noexcept {
 
 ItePtr Bdd::FetchUniqueTable(int index, const VertexPtr& high,
                              const VertexPtr& low, bool complement_edge,
-                             int order, bool module) noexcept {
+                             int order) noexcept {
   assert(index > 0 && "Only positive indices are expected.");
   int sign = complement_edge ? -1 : 1;
   IteWeakPtr& in_table =
@@ -125,10 +127,38 @@ ItePtr Bdd::FetchUniqueTable(int index, const VertexPtr& high,
   assert(order > 0 && "Improper order.");
   ItePtr ite(new Ite(index, order, function_id_++, high, low),
              GarbageCollector(this));
-  ite->module(module);
   ite->complement_edge(complement_edge);
   in_table = ite;
   return ite;
+}
+
+ItePtr Bdd::FetchUniqueTable(const ItePtr& ite, const VertexPtr& high,
+                             const VertexPtr& low,
+                             bool complement_edge) noexcept {
+  ItePtr in_table = Bdd::FetchUniqueTable(ite->index(), high, low,
+                                          complement_edge, ite->order());
+  if (in_table.unique()) {
+    in_table->module(ite->module());
+    in_table->coherent(ite->coherent());
+  }
+  assert(in_table->module() == ite->module());
+  assert(in_table->coherent() == ite->coherent());
+  return in_table;
+}
+
+ItePtr Bdd::FetchUniqueTable(const IGatePtr& gate, const VertexPtr& high,
+                             const VertexPtr& low,
+                             bool complement_edge) noexcept {
+  assert(gate->IsModule() && "Only module gates are expected for proxies.");
+  ItePtr in_table = Bdd::FetchUniqueTable(gate->index(), high, low,
+                                          complement_edge, gate->order());
+  if (in_table.unique()) {
+    in_table->module(gate->IsModule());
+    in_table->coherent(gate->coherent());
+  }
+  assert(in_table->module() == gate->IsModule());
+  assert(in_table->coherent() == gate->coherent());
+  return in_table;
 }
 
 Bdd::Function Bdd::ConvertGraph(
@@ -148,15 +178,14 @@ Bdd::Function Bdd::ConvertGraph(
   for (const std::pair<const int, VariablePtr>& arg : gate->variable_args()) {
     args.push_back({arg.first < 0,
                     Bdd::FetchUniqueTable(arg.second->index(), kOne_, kOne_,
-                                          true, arg.second->order(), false)});
+                                          true, arg.second->order())});
     index_to_order_.emplace(arg.second->index(), arg.second->order());
   }
   for (const std::pair<const int, IGatePtr>& arg : gate->gate_args()) {
     Function res = Bdd::ConvertGraph(arg.second, gates);
     if (arg.second->IsModule()) {
       args.push_back({arg.first < 0,
-                      Bdd::FetchUniqueTable(arg.second->index(), kOne_, kOne_,
-                                            true, arg.second->order(), true)});
+                      Bdd::FetchUniqueTable(arg.second, kOne_, kOne_, true)});
     } else {
       bool complement = (arg.first < 0) ^ res.complement;
       args.push_back({complement, res.vertex});
@@ -175,8 +204,7 @@ Bdd::Function Bdd::ConvertGraph(
     result = Bdd::Apply(gate->type(), result.vertex, it->vertex,
                         result.complement, it->complement);
   }
-  and_table_.clear();
-  or_table_.clear();
+  Bdd::ClearTables();
   assert(result.vertex);
   if (gate->IsModule()) modules_.emplace(gate->index(), result);
   if (gate->parents().size() > 1) gates->insert({gate->index(), {result, 1}});
@@ -191,21 +219,18 @@ Bdd::Function& Bdd::FetchComputeTable(Operator type,
   assert(!arg_one->terminal() && !arg_two->terminal());
   assert(arg_one->id() && arg_two->id());
   assert(arg_one->id() != arg_two->id());
+  assert((type == kOrGate || type == kAndGate) &&
+         "Only normalized operations in BDD.");
   int min_id = arg_one->id() * (complement_one ? -1 : 1);
   int max_id = arg_two->id() * (complement_two ? -1 : 1);
   if (arg_one->id() > arg_two->id()) std::swap(min_id, max_id);
-  switch (type) {
-    case kOrGate:
-      return or_table_[{min_id, max_id}];
-    case kAndGate:
-      return and_table_[{min_id, max_id}];
-    default:
-      assert(false);
-  }
+  return type == kAndGate ? and_table_[{min_id, max_id}]
+                          : or_table_[{min_id, max_id}];
 }
 
 Bdd::Function Bdd::CalculateConsensus(const ItePtr& ite,
                                       bool complement) noexcept {
+  Bdd::ClearTables();
   return Bdd::Apply(kAndGate, ite->high(), ite->low(), complement,
                     ite->complement_edge() ^ complement);
 }
@@ -244,9 +269,8 @@ Bdd::Function Bdd::Apply(Operator type,
       result.vertex = low.vertex;  // Another redundancy detection.
       return result;
   }
-  result.vertex = Bdd::FetchUniqueTable(ite_one->index(), high.vertex,
-                                        low.vertex, complement_edge,
-                                        ite_one->order(), ite_one->module());
+  result.vertex = Bdd::FetchUniqueTable(ite_one, high.vertex,
+                                        low.vertex, complement_edge);
   return result;
 }
 
@@ -254,28 +278,25 @@ Bdd::Function Bdd::Apply(Operator type, const TerminalPtr& term_one,
                          const VertexPtr& arg_two, bool complement_one,
                          bool complement_two) noexcept {
   assert(term_one->value());
-  switch (type) {
-    case kOrGate:
-      if (!complement_one) return {false, kOne_};
-      return {complement_two, arg_two};
-    case kAndGate:
-      if (complement_one) return {true, kOne_};
-      return {complement_two, arg_two};
-    default:
-      assert(false);
+  assert((type == kOrGate || type == kAndGate) &&
+         "Only normalized operations in BDD.");
+  if (type == kAndGate) {
+    if (complement_one) return {true, kOne_};
+  } else {
+    if (!complement_one) return {false, kOne_};
   }
+  return {complement_two, arg_two};
 }
 
 Bdd::Function Bdd::Apply(Operator type, const VertexPtr& single_arg,
                          bool complement_one, bool complement_two) noexcept {
+  assert((type == kOrGate || type == kAndGate) &&
+         "Only normalized operations in BDD.");
   if (complement_one ^ complement_two) {
-    switch (type) {
-      case kOrGate:
-        return {false, kOne_};
-      case kAndGate:
-        return {true, kOne_};
-      default:
-        assert(false);
+    if (type == kAndGate) {
+      return {true, kOne_};
+    } else {
+      return {false, kOne_};
     }
   }
   return {complement_one, single_arg};
@@ -284,6 +305,8 @@ Bdd::Function Bdd::Apply(Operator type, const VertexPtr& single_arg,
 std::pair<Bdd::Function, Bdd::Function>
 Bdd::Apply(Operator type, const ItePtr& arg_one, const ItePtr& arg_two,
            bool complement_one, bool complement_two) noexcept {
+  assert((type == kOrGate || type == kAndGate) &&
+         "Only normalized operations in BDD.");
   if (arg_one->order() == arg_two->order()) {  // The same variable.
     assert(arg_one->index() == arg_two->index());
     Function high = Bdd::Apply(type, arg_one->high(), arg_two->high(),

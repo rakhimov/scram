@@ -121,6 +121,17 @@ class NonTerminal : public Vertex {
   /// Sets this vertex for representation of a module.
   void module(bool flag) { module_ = flag; }
 
+  /// @returns true if the vertex represents a coherent module.
+  bool coherent() const { return coherent_; }
+
+  /// Sets the flag for coherent modules.
+  ///
+  /// @param[in] flag  true for coherent modules.
+  void coherent(bool flag) {
+    assert(!(coherent_ && !flag) && "Inverting existing coherence.");
+    coherent_ = flag;
+  }
+
   /// @returns (1/True/then/left) branch if-then-else vertex.
   const VertexPtr& high() const { return high_; }
 
@@ -141,6 +152,7 @@ class NonTerminal : public Vertex {
   VertexPtr low_;  ///< O (False/else) branch in the Shannon decomposition.
   int index_;  ///< Index of the variable.
   bool module_;  ///< Mark for module variables.
+  bool coherent_;  ///< Mark for coherence.
   bool mark_;  ///< Traversal mark.
 };
 
@@ -341,7 +353,6 @@ class Bdd {
   /// @param[in] low  The low vertex.
   /// @param[in] complement_edge  Interpretation of the low vertex.
   /// @param[in] order The order for the vertex variable.
-  /// @param[in] module  A flag for the modular ZBDD proxy.
   ///
   /// @returns If-then-else node with the given parameters.
   ///
@@ -350,7 +361,36 @@ class Bdd {
   ///      either in the BDD or in the computation table.
   ItePtr FetchUniqueTable(int index, const VertexPtr& high,
                           const VertexPtr& low, bool complement_edge,
-                          int order, bool module) noexcept;
+                          int order) noexcept;
+
+  /// Fetches a replacement for an existing node
+  /// or a new node based on an existing node.
+  ///
+  /// @param[in] ite  An existing vertex.
+  /// @param[in] high  The new high vertex.
+  /// @param[in] low  The new low vertex.
+  /// @param[in] complement_edge  Interpretation of the low vertex.
+  ///
+  /// @returns Ite for a replacement.
+  ///
+  /// @warning This function is not aware of reduction rules.
+  ItePtr FetchUniqueTable(const ItePtr& ite, const VertexPtr& high,
+                          const VertexPtr& low, bool complement_edge) noexcept;
+
+  /// Fetches a representation of a gate as Ite.
+  ///
+  /// @param[in] gate  Gate with index, order, and other information.
+  /// @param[in] high  The new high vertex.
+  /// @param[in] low  The new low vertex.
+  /// @param[in] complement_edge  Interpretation of the low vertex.
+  ///
+  /// @returns Ite for a replacement.
+  ///
+  /// @pre The gate is a module.
+  ///
+  /// @warning This function is not aware of reduction rules.
+  ItePtr FetchUniqueTable(const IGatePtr& gate, const VertexPtr& high,
+                          const VertexPtr& low, bool complement_edge) noexcept;
 
   /// Converts all gates in the Boolean graph
   /// into function BDD graphs.
@@ -380,6 +420,7 @@ class Bdd {
   /// @returns If computation is already performed,
   ///          the non-null result vertex with the return function.
   ///
+  /// @pre The operator is either AND or OR.
   /// @pre The arguments are not be the same function.
   ///      Equal ID functions are handled by the reduction.
   /// @pre Even though the arguments are not ItePtr type,
@@ -406,6 +447,8 @@ class Bdd {
   ///
   /// @returns The BDD function as a result of operation.
   ///
+  /// @pre The operator is either AND or OR.
+  ///
   /// @note The order of arguments does not matter for two variable operators.
   Function Apply(Operator type,
                  const VertexPtr& arg_one, const VertexPtr& arg_two,
@@ -421,6 +464,8 @@ class Bdd {
   /// @param[in] complement_two  Interpretation of arg_two as complement.
   ///
   /// @returns The resulting BDD function.
+  ///
+  /// @pre The operator is either AND or OR.
   Function Apply(Operator type,
                  const TerminalPtr& term_one, const VertexPtr& arg_two,
                  bool complement_one, bool complement_two) noexcept;
@@ -433,6 +478,8 @@ class Bdd {
   /// @param[in] complement_two  Interpretation of the second vertex argument.
   ///
   /// @returns The BDD function as a result of operation.
+  ///
+  /// @pre The operator is either AND or OR.
   Function Apply(Operator type, const VertexPtr& single_arg,
                  bool complement_one, bool complement_two) noexcept;
 
@@ -447,6 +494,7 @@ class Bdd {
   /// @returns High and Low BDD functions as a result of operation.
   ///
   /// @pre Argument if-then-else vertices must be ordered.
+  /// @pre The operator is either AND or OR.
   std::pair<Function, Function> Apply(Operator type,
                                       const ItePtr& arg_one,
                                       const ItePtr& arg_two,
@@ -478,8 +526,15 @@ class Bdd {
   /// @pre Non-terminal node marks are clear (false).
   void TestStructure(const VertexPtr& vertex) noexcept;
 
+  /// Clears all memoization tables.
+  void ClearTables() noexcept {
+    and_table_.clear();
+    or_table_.clear();
+  }
+
   const Settings kSettings_;  ///< Analysis settings.
   Function root_;  ///< The root function of this BDD.
+  bool coherent_;  ///< Inherited coherence from PDAG.
 
   /// Table of unique if-then-else nodes denoting function graphs.
   /// The key consists of ite(index, id_high, id_low),

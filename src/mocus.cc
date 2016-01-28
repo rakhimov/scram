@@ -36,19 +36,10 @@ Mocus::Mocus(const BooleanGraph* fault_tree, const Settings& settings)
         graph_(fault_tree),
         kSettings_(settings) {
   IGatePtr top = fault_tree->root();
-  // Special case of empty top gate.
-  if (top->IsConstant()) {
-    if (top->state() == kUnityState) products_.push_back({});  // Unity set.
+  if (top->IsConstant() || top->type() == kNullGate) {
     constant_graph_ = true;
-    return;  // Other cases are null or empty.
-  }
-  if (top->type() == kNullGate) {  // Special case of NULL type top.
-    assert(top->args().size() == 1);
-    assert(top->gate_args().empty());
-    int child = *top->args().begin();
-    child > 0 ? products_.push_back({child}) : products_.push_back({});
-    constant_graph_ = true;
-    return;
+    zbdd_ = std::unique_ptr<Zbdd>(new Zbdd(fault_tree, settings));
+    zbdd_->Analyze();
   }
 }
 
@@ -58,47 +49,68 @@ void Mocus::Analyze() {
 
   CLOCK(mcs_time);
   LOG(DEBUG2) << "Start minimal cut set generation.";
-  zbdd::CutSetContainer container = Mocus::AnalyzeModule(graph_->root());
-  LOG(DEBUG2) << "Delegating cut set minimization to ZBDD.";
-  container.Analyze();
-  products_ = container.products();
+  zbdd_ = Mocus::AnalyzeModule(graph_->root(), kSettings_);
+  LOG(DEBUG2) << "Delegating cut set extraction to ZBDD.";
+  zbdd_->Analyze();
   LOG(DEBUG2) << "Minimal cut sets found in " << DUR(mcs_time);
 }
 
-zbdd::CutSetContainer Mocus::AnalyzeModule(const IGatePtr& gate) noexcept {
+const std::vector<std::vector<int>>& Mocus::products() const {
+  assert(zbdd_ && "Analysis is not done.");
+  return zbdd_->products();
+}
+
+std::unique_ptr<zbdd::CutSetContainer>
+Mocus::AnalyzeModule(const IGatePtr& gate, const Settings& settings) noexcept {
   assert(gate->IsModule() && "Expected only module gates.");
   CLOCK(gen_time);
   LOG(DEBUG3) << "Finding cut sets from module: G" << gate->index();
+  LOG(DEBUG4) << "Limit on product order: " << settings.limit_order();
   std::unordered_map<int, IGatePtr> gates;
   gates.insert(gate->gate_args().begin(), gate->gate_args().end());
 
-  zbdd::CutSetContainer cut_sets(kSettings_, graph_->basic_events().size());
-  cut_sets.Merge(cut_sets.ConvertGate(gate));
-  int next_gate = cut_sets.GetNextGate();
+  std::unique_ptr<zbdd::CutSetContainer> container(
+      new zbdd::CutSetContainer(kSettings_, gate->index(),
+                                graph_->basic_events().size()));
+  container->Merge(container->ConvertGate(gate));
+  int next_gate = container->GetNextGate();
   while (next_gate) {
     LOG(DEBUG5) << "Expanding gate G" << next_gate;
     IGatePtr inter_gate = gates.find(next_gate)->second;
     gates.insert(inter_gate->gate_args().begin(),
                  inter_gate->gate_args().end());
-    cut_sets.Merge(
-        cut_sets.ExpandGate(cut_sets.ConvertGate(inter_gate),
-                            cut_sets.ExtractIntermediateCutSets(next_gate)));
-    next_gate = cut_sets.GetNextGate();
+    container->Merge(container->ExpandGate(
+        container->ConvertGate(inter_gate),
+        container->ExtractIntermediateCutSets(next_gate)));
+    next_gate = container->GetNextGate();
   }
-  cut_sets.Minimize();
-  if (!graph_->coherent()) {
-    cut_sets.EliminateComplements();
-    cut_sets.Minimize();
-  }
-  for (int module : cut_sets.GatherModules()) {
-    cut_sets.JoinModule(module,
-                        Mocus::AnalyzeModule(gates.find(module)->second));
-  }
-  cut_sets.EliminateConstantModules();
-  cut_sets.Minimize();
-  LOG(DEBUG4) << "G" << gate->index()
+  container->Minimize();
+  container->Log();
+  LOG(DEBUG3) << "G" << gate->index()
               << " cut set generation time: " << DUR(gen_time);
-  return cut_sets;
+  if (!gate->coherent()) {
+    container->EliminateComplements();
+    container->Minimize();
+  }
+  for (const auto& entry : container->GatherModules()) {
+    int index = entry.first;
+    int limit = entry.second.second;
+    if (limit == 0) {  /// @todo Make cut-offs strict.
+      std::unique_ptr<zbdd::CutSetContainer> empty_zbdd(
+          new zbdd::CutSetContainer(kSettings_, index,
+                                    graph_->basic_events().size()));
+      container->JoinModule(index, std::move(empty_zbdd));
+      continue;
+    }
+    Settings adjusted(settings);
+    adjusted.limit_order(limit);
+    container->JoinModule(index,
+                          Mocus::AnalyzeModule(gates.find(index)->second,
+                                               adjusted));
+  }
+  container->EliminateConstantModules();
+  container->Minimize();
+  return container;
 }
 
 }  // namespace scram

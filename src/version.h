@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,7 @@
 #define SCRAM_SRC_VERSION_H_
 
 #define SCRAM_VERSION_MAJOR 0  ///< Indicate major API change after 1.0.0
-#define SCRAM_VERSION_MINOR 10  ///< New features and improvements.
+#define SCRAM_VERSION_MINOR 11  ///< New features and improvements.
 #define SCRAM_VERSION_MICRO 0  ///< Bug fixes.
 
 namespace scram {

@@ -114,19 +114,19 @@ double ImportanceAnalyzer<Bdd>::CalculateMif(const VertexPtr& vertex, int order,
     ite->factor(high - low);
   } else  {
     assert(ite->order() < order);
-    double var_prob = 0;
+    double p_var = 0;
     if (ite->module()) {
       const Bdd::Function& res =
           bdd_graph_->modules().find(ite->index())->second;
-      var_prob = ImportanceAnalyzer::RetrieveProbability(res.vertex);
-      if (res.complement) var_prob = 1 - var_prob;
+      p_var = ImportanceAnalyzer::RetrieveProbability(res.vertex);
+      if (res.complement) p_var = 1 - p_var;
     } else {
-      var_prob = prob_analyzer_->var_probs()[ite->index()];
+      p_var = prob_analyzer_->p_vars()[ite->index()];
     }
     double high = ImportanceAnalyzer::CalculateMif(ite->high(), order, mark);
     double low = ImportanceAnalyzer::CalculateMif(ite->low(), order, mark);
     if (ite->complement_edge()) low = -low;
-    ite->factor(var_prob * high + (1 - var_prob) * low);
+    ite->factor(p_var * high + (1 - p_var) * low);
   }
   return ite->factor();
 }

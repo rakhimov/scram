@@ -43,36 +43,36 @@ void ProbabilityAnalysis::Analyze() noexcept {
 
 double CutSetProbabilityCalculator::Calculate(
     const CutSet& cut_set,
-    const std::vector<double>& var_probs) noexcept {
+    const std::vector<double>& p_vars) noexcept {
   if (cut_set.empty()) return 0;
   double p_sub_set = 1;  // 1 is for multiplication.
   for (int member : cut_set) {
     assert(member > 0 && "Complements in a cut set.");
-    p_sub_set *= var_probs[member];
+    p_sub_set *= p_vars[member];
   }
   return p_sub_set;
 }
 
 double RareEventCalculator::Calculate(
     const std::vector<CutSet>& cut_sets,
-    const std::vector<double>& var_probs) noexcept {
+    const std::vector<double>& p_vars) noexcept {
   if (CutSetProbabilityCalculator::CheckUnity(cut_sets)) return 1;
   double sum = 0;
   for (const auto& cut_set : cut_sets) {
     assert(!cut_set.empty() && "Detected an empty cut set.");
-    sum += CutSetProbabilityCalculator::Calculate(cut_set, var_probs);
+    sum += CutSetProbabilityCalculator::Calculate(cut_set, p_vars);
   }
   return sum;
 }
 
 double McubCalculator::Calculate(
     const std::vector<CutSet>& cut_sets,
-    const std::vector<double>& var_probs) noexcept {
+    const std::vector<double>& p_vars) noexcept {
   if (CutSetProbabilityCalculator::CheckUnity(cut_sets)) return 1;
   double m = 1;
   for (const auto& cut_set : cut_sets) {
     assert(!cut_set.empty() && "Detected an empty cut set.");
-    m *= 1 - CutSetProbabilityCalculator::Calculate(cut_set, var_probs);
+    m *= 1 - CutSetProbabilityCalculator::Calculate(cut_set, p_vars);
   }
   return 1 - m;
 }
@@ -127,18 +127,18 @@ double ProbabilityAnalyzer<Bdd>::CalculateProbability(
   ItePtr ite = Ite::Ptr(vertex);
   if (ite->mark() == mark) return ite->p();
   ite->mark(mark);
-  double var_prob = 0;
+  double p_var = 0;
   if (ite->module()) {
     const Bdd::Function& res = bdd_graph_->modules().find(ite->index())->second;
-    var_prob = ProbabilityAnalyzer::CalculateProbability(res.vertex, mark);
-    if (res.complement) var_prob = 1 - var_prob;
+    p_var = ProbabilityAnalyzer::CalculateProbability(res.vertex, mark);
+    if (res.complement) p_var = 1 - p_var;
   } else {
-    var_prob = var_probs_[ite->index()];
+    p_var = p_vars_[ite->index()];
   }
   double high = ProbabilityAnalyzer::CalculateProbability(ite->high(), mark);
   double low = ProbabilityAnalyzer::CalculateProbability(ite->low(), mark);
   if (ite->complement_edge()) low = 1 - low;
-  ite->p(var_prob * high + (1 - var_prob) * low);
+  ite->p(p_var * high + (1 - p_var) * low);
   return ite->p();
 }
 
