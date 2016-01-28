@@ -2320,7 +2320,7 @@ void Preprocessor::MarkCoherence(const IGatePtr& gate) noexcept {
   if (gate->mark()) return;
   gate->mark(true);
   bool coherent = true;  // Optimistic initialization.
-  switch(gate->type()) {
+  switch (gate->type()) {
     case kXorGate:
     case kNorGate:
     case kNotGate:
