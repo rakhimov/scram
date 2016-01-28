@@ -6,9 +6,7 @@ set(GENERATED_FILTER_LIST "" CACHE INTERNAL "")
 set(GENERATED_TEST_SOURCE_LIST "" CACHE INTERNAL "")
 
 # The gtest include file directories.
-set(GTEST_INCLUDE_DIRS
-  "${CMAKE_CURRENT_SOURCE_DIR}/GoogleTest/include"
-  )
+set(GTEST_INCLUDE_DIRS "${CMAKE_CURRENT_SOURCE_DIR}/GoogleTest/include")
 
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/GoogleTest")
 
@@ -16,17 +14,10 @@ add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/GoogleTest")
 # we need to worry about.
 include_directories(${GTEST_INCLUDE_DIRS})
 
-find_package(Threads)
-if(CMAKE_USE_PTHREADS_INIT)  # The pthreads library is available.
-  set(cxx_base_flags "${cxx_base_flags} -DGTEST_HAS_PTHREAD=1")
-endif()
-
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}")
-
 # To add a new file,
 # just add it to this list.
 # Any GoogleTests inside will be automatically added to ctest.
-set(SCRAM_CORE_TEST_SOURCE ${SCRAM_CORE_TEST_SOURCE}
+set(SCRAM_CORE_TEST_SOURCE
   "${CMAKE_CURRENT_SOURCE_DIR}/xml_parser_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/settings_tests.cc"
   "${CMAKE_CURRENT_SOURCE_DIR}/config_tests.cc"

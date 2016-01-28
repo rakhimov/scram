@@ -77,8 +77,10 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 # Tell CMake where the modules are.
-list(APPEND CMAKE_MODULE_PATH
-  "${CMAKE_DIR}/share/cmake-2.8/Modules" "${PROJECT_SOURCE_DIR}/cmake")
+if(CMAKE_DIR)
+  list(APPEND CMAKE_MODULE_PATH "${CMAKE_DIR}/share/cmake-2.8/Modules")
+endif()
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
 
 # Set configuration for all library builds.
 if(WIN32)
@@ -101,6 +103,8 @@ endif()
 ######################## End cmake configuration ###################
 
 ######################## Begin find libraries ######################
+
+set(LIBS "")
 
 # Optional TCMalloc for optimization.
 find_package(Tcmalloc)
@@ -136,7 +140,9 @@ else()
   message(STATUS "Linking against boost dynamic libraries")
 endif()
 
-message(STATUS "    Boost Root: ${Boost_ROOT}")
+if(Boost_ROOT)
+  message(STATUS "    Boost Root: ${Boost_ROOT}")
+endif()
 message(STATUS "    Boost Include directory: ${Boost_INCLUDE_DIR}")
 message(STATUS "    Boost Library directories: ${Boost_LIBRARY_DIRS}")
 set(LIBS ${LIBS} ${Boost_PROGRAM_OPTIONS_LIBRARY})

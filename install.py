@@ -54,7 +54,7 @@ def install_scram(args):
                           absexpanduser(args.prefix)]
 
         if args.build_type:
-            cmake_cmd += ['-DCMAKE_BUILD_TYPE=' + args.build_type]
+            cmake_cmd += ["-DCMAKE_BUILD_TYPE=" + args.build_type]
         elif args.release:
             cmake_cmd += ["-DCMAKE_BUILD_TYPE=Release"]
         elif args.profile:
@@ -64,6 +64,8 @@ def install_scram(args):
             cmake_cmd += ["-DCMAKE_CXX_FLAGS='-fprofile-arcs -ftest-coverage'"]
         else:
             cmake_cmd += ["-DCMAKE_BUILD_TYPE=Debug"]
+            cmake_cmd += ["--warn-uninitialized"]
+            cmake_cmd += ["-Wdev"]
 
         if args.D is not None:
             cmake_cmd += ['-D' + x for x in args.D]
