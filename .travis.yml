@@ -12,6 +12,7 @@ git:
 
 env:
     - PATH=$PATH:`pwd`/install/bin
+    - PATH=$PATH:`pwd`/install/bin RELEASE=true
 
 before_install:
     - sudo apt-get update -qq
