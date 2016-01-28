@@ -149,9 +149,16 @@ Zbdd::Zbdd(const Bdd::Function& module, bool coherent, Bdd* bdd,
     assert(!modules_.count(index) && "Recalculating modules.");
     Bdd::Function sub = bdd->modules().find(std::abs(index))->second;
     assert(!sub.vertex->terminal() && "Unexpected BDD terminal vertex.");
-    bool module_coherence = entry.second.first && (index > 0);
+    int limit = entry.second.second;
+    if (limit == 0) {  /// @todo Make cut-offs strict.
+      std::unique_ptr<Zbdd> empty_zbdd(new Zbdd(settings));
+      empty_zbdd->root_ = empty_zbdd->kEmpty_;
+      modules_.emplace(index, std::move(empty_zbdd));
+      continue;
+    }
     Settings adjusted(settings);
-    adjusted.limit_order(entry.second.second);
+    adjusted.limit_order(limit);
+    bool module_coherence = entry.second.first && (index > 0);
     sub.complement ^= index < 0;
     modules_.emplace(index, std::unique_ptr<Zbdd>(
             new Zbdd(sub, module_coherence, bdd, adjusted, index)));
