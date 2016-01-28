@@ -46,7 +46,8 @@ Core C++ Code
 - RTTI (typeid, dynamic_cast, dynamic_pointer_cast)
   is forbidden in **analysis code**.
 
-- Check all preconditions and assumptions
+- `Defensive Programming`_.
+  Check all preconditions, postconditions, invariants, and assumptions
   with the ``assert`` macro wherever possible in **analysis code**.
   Consider supplying an error message to clarify the assertion,
   for example, ``assert(!node->mark() && "Detected a cycle!")``.
@@ -109,6 +110,7 @@ Core C++ Code
   For example, a Boolean product is more general and appropriate for analysis facilities
   than cut sets or prime implicants.
 
+.. _Defensive Programming: https://www.youtube.com/watch?v=1QhtXRMp3Hg
 .. _C++ Core Guidelines: https://github.com/isocpp/CppCoreGuidelines
 
 

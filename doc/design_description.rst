@@ -37,7 +37,7 @@ Design Description
   Common facilities, utilities, and functionalities
   can be shared among these analyzers.
   Analyzers and analysis facilities are designed
-  in the spirit of Design by Contract and `Policy-based design`_
+  in the spirit of `Design by Contract`_ and `Policy-based design`_
   to keep the code simple and flexible with algorithms.
 
     * Fault Tree Analyzer operates on one fault tree with a single top event,
@@ -70,6 +70,7 @@ Design Description
   This can be used before any analysis,
   but a valid fault tree with or without probability information must be provided.
 
+.. _Design by Contract: https://en.wikipedia.org/wiki/Design_by_contract
 .. _Policy-based design: https://en.wikipedia.org/wiki/Policy-based_design
 
 
