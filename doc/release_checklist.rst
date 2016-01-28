@@ -51,8 +51,12 @@ Pre-Release
 Release
 =======
 
-- [ ] Update version number in code version.h
-- [ ] Update version numbers on the gh-source branch (file: conf.py)
+- [ ] Update version number
+
+    * [ ] version.h
+    * [ ] scram.man
+    * [ ] conf.py on the gh-source branch
+
 - [ ] Update the website
 
     * [ ] Sitemap
