@@ -369,6 +369,7 @@ class Bdd {
   /// @param[in] ite  An existing vertex.
   /// @param[in] high  The new high vertex.
   /// @param[in] low  The new low vertex.
+  /// @param[in] complement_edge  Interpretation of the low vertex.
   ///
   /// @returns Ite for a replacement.
   ///
@@ -381,6 +382,7 @@ class Bdd {
   /// @param[in] gate  Gate with index, order, and other information.
   /// @param[in] high  The new high vertex.
   /// @param[in] low  The new low vertex.
+  /// @param[in] complement_edge  Interpretation of the low vertex.
   ///
   /// @returns Ite for a replacement.
   ///

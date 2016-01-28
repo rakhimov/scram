@@ -9,9 +9,10 @@ else
   ./install.py -d --prefix=./install --threads 2
 fi
 
-./.run_tests.sh
+./.travis/run_tests.sh
 
 if [[ -z "${RELEASE}" && "$CXX" = "g++" ]]; then
+  # Check test coverage
   coveralls --exclude tests  --exclude ./build/CMakeFiles/ \
     --exclude ./build/lib/ --exclude ./build/gui/ \
     --exclude ./build/bin/  --exclude install/include/ \
@@ -22,4 +23,15 @@ if [[ -z "${RELEASE}" && "$CXX" = "g++" ]]; then
     --exclude src/logger.cc \
     --exclude-pattern .*/src/.*\.h$ \
     > /dev/null
+  # Check documentation coverage
+  doxygen ./.travis/doxygen.conf 2> doc_errors.txt
+  # Deletion of compiler generated default functions
+  sed -i '/=delete/d' doc_errors.txt
+  # Doxygen 1.8.6 can't deal with C++11 initializer list in constructor.
+  sed -i '/expression\.cc/d' doc_errors.txt
+  if [[ -s doc_errors.txt ]]; then
+    echo "Documentation errors:" >&2
+    cat doc_errors.txt >&2
+    exit 1
+  fi
 fi

@@ -242,6 +242,7 @@ class Zbdd {
   /// with parameters of a prototype BDD ITE vertex.
   ///
   /// @param[in] ite  The prototype BDD ITE vertex.
+  /// @param[in] complement  Vertex represents complement of a variable.
   /// @param[in] high  The high ZBDD vertex.
   /// @param[in] low  The low ZBDD vertex.
   ///
