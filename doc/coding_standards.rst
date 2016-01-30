@@ -230,8 +230,7 @@ Documentation
 *************
 
 Good documentation of the code and functionality is
-the requirement for maintainability and evolution of the project
-and its acceptance by users.
+the requirement for maintainability and evolution of the project.
 
 The project adheres to the Documentation Driven Development model (`DDD talk by Corey Oordt`_),
 following the best practices of `Agile Documentation`_,
