@@ -23,8 +23,9 @@ if [[ -z "${RELEASE}" && "$CXX" = "g++" ]]; then
     --exclude src/logger.cc \
     --exclude-pattern .*/src/.*\.h$ \
     > /dev/null
+
   # Check documentation coverage
-  doxygen ./.travis/doxygen.conf 2> doc_errors.txt
+  doxygen ./.travis/doxygen.conf > /dev/null 2> doc_errors.txt
   # Deletion of compiler generated default functions
   sed -i '/=delete/d' doc_errors.txt
   # Doxygen 1.8.6 can't deal with C++11 initializer list in constructor.
@@ -34,4 +35,7 @@ if [[ -z "${RELEASE}" && "$CXX" = "g++" ]]; then
     cat doc_errors.txt >&2
     exit 1
   fi
+
+  # Lizard function complexity printout
+  ( cd ./src && ../scripts/lizard_report.sh | tail -n 30 )
 fi

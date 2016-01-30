@@ -17,4 +17,5 @@ sudo pip install nose
 if [[ -z "${RELEASE}" && "$CXX" = "g++" ]]; then
   sudo apt-get install -qq doxygen
   sudo pip install cpp-coveralls
+  sudo pip install lizard
 fi
