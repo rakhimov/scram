@@ -133,7 +133,8 @@ class Node : public NodeParentManager {
   /// Registers the visit time for this node upon graph traversal.
   /// This information can be used to detect dependencies.
   ///
-  /// @param[in] time  The current visit time of this node. It must be positive.
+  /// @param[in] time  The current visit time of this node.
+  ///                  It must be positive.
   ///
   /// @returns true if this node was previously visited.
   /// @returns false if this is visited and re-visited only once.
@@ -171,12 +172,12 @@ class Node : public NodeParentManager {
   virtual int max_time() const { return LastVisit(); }
 
   /// @returns false if this node was only visited once upon graph traversal.
-  /// @returns true if this node was revisited at one more time.
-  bool Revisited() const { return visits_[2] ? true : false; }
+  /// @returns true if this node was revisited at least one more time.
+  bool Revisited() const { return visits_[2]; }
 
   /// @returns true if this node was visited at least once.
   /// @returns false if this node was never visited upon traversal.
-  bool Visited() const { return visits_[0] ? true : false; }
+  bool Visited() const { return visits_[0]; }
 
   /// Clears all the visit information. Resets the visit times to 0s.
   void ClearVisits() { std::fill_n(visits_, 3, 0); }

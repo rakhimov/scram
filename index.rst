@@ -101,8 +101,8 @@ Tools
     doc/gui
 
 
-Misc.
-~~~~~
+Miscellanea
+~~~~~~~~~~~
 
 .. toctree::
     :maxdepth: 1
@@ -115,6 +115,10 @@ Misc.
 Contact Us
 ----------
 
-- `Mailing List and Forum`_
+- `User Support and Discussions`_
+- `Announcement List`_
+- `Developer Mailing List`_
 
-.. _Mailing List and Forum: https://groups.google.com/forum/#!forum/scram-dev
+.. _User Support and Discussions: https://groups.google.com/forum/#!forum/scram-users
+.. _Announcement List: https://groups.google.com/forum/#!forum/scram-announce
+.. _Developer Mailing List: https://groups.google.com/forum/#!forum/scram-dev
