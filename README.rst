@@ -424,8 +424,13 @@ the Documentation Driven Development paradigm for some new features.
 Therefore, some documentation may be ahead of the actual development
 and describe features under current development or consideration.
 
-For any questions, don't hesitate to ask the mailing list
-(https://groups.google.com/forum/#!forum/scram-dev, scram-dev@googlegroups.com).
+For any questions, don't hesitate to ask the user support mailing list
+(https://groups.google.com/forum/#!forum/scram-users, scram-users@googlegroups.com).
+
+For latest releases and information about SCRAM,
+feel free to subscribe to the announcements
+(https://groups.google.com/forum/#!forum/scram-announce,
+scram-announce+subscribe@googlegroups.com).
 
 
 *****************

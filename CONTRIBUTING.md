@@ -23,12 +23,13 @@ Best practices are encouraged:
    Rebasing is highly recommended for streamlining the history.
    However, **DO NOT** rebase any commits
    that have been pulled/pushed anywhere else other than your own fork.
-6. Use the [mailing list] and Issue Tracker to stay in touch with the project development.
+6. Use the [developer mailing list] and Issue Tracker
+   to stay in touch with the project development.
 7. Submit your [pull request] from **your topic** branch to the **upstream develop** branch.
 8. Your pull request will be reviewed by another developer before merging.
 
 [Coding Style and Quality Assurance]: http://scram-pra.org/doc/coding_standards.html
-[mailing list]: https://groups.google.com/forum/#!forum/scram-dev
+[developer mailing list]: https://groups.google.com/forum/#!forum/scram-dev
 [pull request]: https://help.github.com/articles/using-pull-requests/
 
 
