@@ -22,7 +22,6 @@
 #define SCRAM_SRC_BDD_H_
 
 #include <array>
-#include <functional>
 #include <memory>
 #include <unordered_map>
 #include <utility>
@@ -215,7 +214,7 @@ using Triplet = std::array<int, 3>;  ///< (v, G, H) triplet for functions.
 
 /// @struct TripletHash
 /// Functor for hashing triplets of ordered numbers.
-struct TripletHash : public std::unary_function<const Triplet, std::size_t> {
+struct TripletHash {
   /// Operator overload for hashing three ordered numbers.
   ///
   /// @param[in] triplet  (v, G, H) nodes.
@@ -234,8 +233,7 @@ using TripletTable = std::unordered_map<Triplet, Value, TripletHash>;
 
 /// @class PairHash
 /// Function for hashing a pair of ordered numbers.
-struct PairHash
-    : public std::unary_function<const std::pair<int, int>, std::size_t> {
+struct PairHash {
   /// Operator overload for hashing two ordered numbers.
   ///
   /// @param[in] p  The pair of numbers.

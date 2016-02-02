@@ -33,7 +33,6 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
-#include <functional>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -735,7 +734,7 @@ class GateSet {
   /// Functor for hashing gates by their arguments.
   ///
   /// @note The hashing discards the logic of the gate.
-  struct Hash : public std::unary_function<const IGatePtr, std::size_t> {
+  struct Hash {
     /// Operator overload for hashing.
     ///
     /// @param[in] gate  The gate which hash must be calculated.
@@ -750,8 +749,7 @@ class GateSet {
   /// Functor for equality test for gates by their arguments.
   ///
   /// @note The equality discards the logic of the gate.
-  struct Equal
-      : public std::binary_function<const IGatePtr, const IGatePtr, bool> {
+  struct Equal {
     /// Operator overload for gate argument equality test.
     ///
     /// @param[in] lhs  The first gate.
