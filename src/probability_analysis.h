@@ -148,7 +148,7 @@ class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
   /// @tparam Algorithm  Qualitative analysis algorithm.
   ///
   /// @param[in] fta  Finished fault tree analyzer with results.
-  template<typename Algorithm>
+  template<class Algorithm>
   explicit ProbabilityAnalyzerBase(const FaultTreeAnalyzer<Algorithm>* fta);
 
   /// @returns The original Boolean graph from the fault tree analyzer.
@@ -172,7 +172,7 @@ class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
   std::vector<double> p_vars_;  ///< Variable probabilities.
 };
 
-template<typename Algorithm>
+template<class Algorithm>
 ProbabilityAnalyzerBase::ProbabilityAnalyzerBase(
     const FaultTreeAnalyzer<Algorithm>* fta)
     : ProbabilityAnalysis::ProbabilityAnalysis(fta),
@@ -189,7 +189,7 @@ ProbabilityAnalyzerBase::ProbabilityAnalyzerBase(
 /// Probability analyzer provides the main engine for probability analysis.
 ///
 /// @tparam Calculator  Quantitative analysis calculator.
-template<typename Calculator>
+template<class Calculator>
 class ProbabilityAnalyzer : public ProbabilityAnalyzerBase {
  public:
   using ProbabilityAnalyzerBase::ProbabilityAnalyzerBase;
@@ -217,7 +217,7 @@ class ProbabilityAnalyzer<Bdd> : public ProbabilityAnalyzerBase {
   /// @tparam Algorithm  Fault tree analysis algorithm.
   ///
   /// @param[in] fta  Finished fault tree analyzer with results.
-  template<typename Algorithm>
+  template<class Algorithm>
   explicit ProbabilityAnalyzer(const FaultTreeAnalyzer<Algorithm>* fta);
 
   /// Reuses BDD structures from Fault tree analyzer.
@@ -267,7 +267,7 @@ class ProbabilityAnalyzer<Bdd> : public ProbabilityAnalyzerBase {
   bool owner_;  ///< Indication that pointers are handles.
 };
 
-template<typename Algorithm>
+template<class Algorithm>
 ProbabilityAnalyzer<Bdd>::ProbabilityAnalyzer(
     const FaultTreeAnalyzer<Algorithm>* fta)
     : ProbabilityAnalyzerBase::ProbabilityAnalyzerBase(fta),

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -396,7 +396,7 @@ class Formula {
   /// @param[in,out] container  The final destination to save the event.
   ///
   /// @throws DuplicateArgumentError  The argument even tis duplicate.
-  template<typename Ptr>
+  template<class Ptr>
   void AddArgument(const Ptr& event, std::vector<Ptr>* container) {
     if (event_args_.count(event->id()))
       throw DuplicateArgumentError("Duplicate argument " + event->name());

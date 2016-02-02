@@ -612,7 +612,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// @param[in] index  Positive or negative index of the argument.
   /// @param[in,out] arg  Pointer to the argument.
   /// @param[in,out] container  The final destination to save the argument.
-  template<typename Ptr, typename Container>
+  template<class Ptr, class Container>
   void AddArg(int index, const Ptr& arg, Container* container) noexcept {
     assert(index != 0);
     assert(std::abs(index) == arg->index());

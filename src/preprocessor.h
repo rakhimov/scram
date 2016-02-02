@@ -772,7 +772,7 @@ class Preprocessor {
   /// @tparam N  Non-Node, concrete (i.e. IGate, etc.) type.
   ///
   /// @param[in] common_node  A node with more than one parent.
-  template<typename N>
+  template<class N>
   void ProcessCommonNode(const std::weak_ptr<N>& common_node) noexcept;
 
   /// Marks ancestor gates true.
@@ -876,7 +876,7 @@ class Preprocessor {
   ///
   /// @warning This function will replace the root gate of the graph
   ///          if it is the destination.
-  template<typename N>
+  template<class N>
   void ProcessStateDestinations(
       const std::shared_ptr<N>& node,
       const std::unordered_map<int, IGateWeakPtr>& destinations) noexcept;
@@ -1066,7 +1066,7 @@ class Preprocessor {
 ///
 /// Undefined template class for specialization of Preprocessor
 /// for needs of specific analysis algorithms.
-template<typename Algorithm>
+template<class Algorithm>
 class CustomPreprocessor;
 
 class Mocus;

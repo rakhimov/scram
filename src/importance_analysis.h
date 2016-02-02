@@ -118,7 +118,7 @@ class ImportanceAnalysis : public Analysis {
 /// with the help from probability analyzers.
 ///
 /// @tparam Calculator  Quantitative calculator of probability values.
-template<typename Calculator>
+template<class Calculator>
 class ImportanceAnalyzerBase : public ImportanceAnalysis {
  public:
   /// Constructs importance analyzer from probability analyzer.
@@ -155,7 +155,7 @@ class ImportanceAnalyzerBase : public ImportanceAnalysis {
   ProbabilityAnalyzer<Calculator>* prob_analyzer_;
 };
 
-template<typename Calculator>
+template<class Calculator>
 ImportanceAnalyzerBase<Calculator>::~ImportanceAnalyzerBase() {}
 
 /// @class ImportanceAnalyzer
@@ -163,7 +163,7 @@ ImportanceAnalyzerBase<Calculator>::~ImportanceAnalyzerBase() {}
 /// with the help from probability analyzers.
 ///
 /// @tparam Calculator  Quantitative calculator of probability values.
-template<typename Calculator>
+template<class Calculator>
 class ImportanceAnalyzer : public ImportanceAnalyzerBase<Calculator> {
  public:
   using ImportanceAnalyzerBase<Calculator>::ImportanceAnalyzerBase;
@@ -174,7 +174,7 @@ class ImportanceAnalyzer : public ImportanceAnalyzerBase<Calculator> {
   using ImportanceAnalyzerBase<Calculator>::prob_analyzer_;
 };
 
-template<typename Calculator>
+template<class Calculator>
 double ImportanceAnalyzer<Calculator>::CalculateMif(int index) noexcept {
   std::vector<double>& p_vars = prob_analyzer_->p_vars();
   // Calculate P(top/event)

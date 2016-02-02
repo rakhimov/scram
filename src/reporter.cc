@@ -23,6 +23,7 @@
 #include <iomanip>
 #include <numeric>
 #include <sstream>
+#include <type_traits>
 #include <utility>
 
 #include <boost/date_time.hpp>
@@ -53,8 +54,10 @@ namespace {
 ///
 /// @returns Formatted string that represents the number.
 template<typename T>
-inline std::string ToString(T num) {
-  std::stringstream ss;
+inline
+typename std::enable_if<std::is_arithmetic<T>::value, std::string>::type
+ToString(T num) {
+  std::stringstream ss;  // Gets better formatting than std::to_string.
   ss << num;
   return ss.str();
 }

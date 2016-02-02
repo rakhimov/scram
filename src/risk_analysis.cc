@@ -91,7 +91,7 @@ void RiskAnalysis::RunAnalysis(const std::string& name,
   }
 }
 
-template<typename Algorithm>
+template<class Algorithm>
 void RiskAnalysis::RunAnalysis(const std::string& name,
                                const GatePtr& target) noexcept {
   auto* fta = new FaultTreeAnalyzer<Algorithm>(target, kSettings_);
@@ -109,7 +109,7 @@ void RiskAnalysis::RunAnalysis(const std::string& name,
   fault_tree_analyses_.emplace(name, FaultTreeAnalysisPtr(fta));
 }
 
-template<typename Algorithm, typename Calculator>
+template<class Algorithm, class Calculator>
 void RiskAnalysis::RunAnalysis(const std::string& name,
                                FaultTreeAnalyzer<Algorithm>* fta) noexcept {
   auto* pa = new ProbabilityAnalyzer<Calculator>(fta);
