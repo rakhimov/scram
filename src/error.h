@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,12 +54,9 @@ class Error : public std::exception {
     thrown_ = kPrefix_ + msg;
   }
 
- protected:
-  /// The error message.
-  std::string msg_;
-
  private:
   static const std::string kPrefix_;  ///< Prefix specific to SCRAM.
+  std::string msg_;  ///< The error message.
   std::string thrown_;  ///< The message to throw with the prefix.
 };
 
