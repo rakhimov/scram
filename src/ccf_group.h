@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -54,7 +54,7 @@ class CcfGroup : public Element, public Role {
   CcfGroup(const CcfGroup&) = delete;
   CcfGroup& operator=(const CcfGroup&) = delete;
 
-  virtual ~CcfGroup() {}
+  virtual ~CcfGroup() = default;
 
   /// @returns The name of this CCF group.
   const std::string& name() const { return name_; }
@@ -99,7 +99,10 @@ class CcfGroup : public Element, public Role {
   /// @param[in] level  The level of the passed factor.
   ///
   /// @throws ValidationError  Level is not what is expected.
-  virtual void AddFactor(const ExpressionPtr& factor, int level);
+  void AddFactor(const ExpressionPtr& factor, int level) {
+    this->CheckLevel(level);
+    factors_.emplace_back(level, factor);
+  }
 
   /// Checks if the provided distribution is between 0 and 1.
   /// This check must be performed before validating basic events
@@ -122,6 +125,14 @@ class CcfGroup : public Element, public Role {
   void ApplyModel();
 
  protected:
+  /// @returns The probability distribution of the events.
+  const ExpressionPtr& distribution() const { return distribution_; }
+
+  /// @returns CCF factors of the model.
+  const std::vector<std::pair<int, ExpressionPtr>>& factors() const {
+    return factors_;
+  }
+
   /// Creates new basic events from members.
   /// The new basic events are included in the database of new events.
   ///
@@ -130,6 +141,18 @@ class CcfGroup : public Element, public Role {
   virtual void ConstructCcfBasicEvents(
       int max_level,
       std::map<BasicEventPtr, std::set<std::string> >* new_events);
+
+ private:
+  /// Checks the level of factors
+  /// before the addition of factors.
+  /// By default,
+  /// the addition of factors must be in ascending level order
+  /// and no gaps are allowed between levels.
+  ///
+  /// @param[in] level  The level of the passed factor.
+  ///
+  /// @throws ValidationError  Level is not what is expected.
+  virtual void CheckLevel(int level);
 
   /// Calculates probabilities for new basic events
   /// representing failures due to common cause.
@@ -144,22 +167,13 @@ class CcfGroup : public Element, public Role {
       int max_level,
       std::map<int, ExpressionPtr>* probabilities) = 0;
 
-  /// Simple factorial calculation.
-  ///
-  /// @param[in] n  Positive number for factorial calculation.
-  ///
-  /// @returns n factorial.
-  int Factorial(int n) { return n ? n * Factorial(n - 1) : 1; }
-
   std::string name_;  ///< The name of the CCF group.
   std::string id_;  ///< The unique identifier of the CCF group.
+  std::string model_;  ///< Common cause model type.
   std::map<std::string, BasicEventPtr> members_;  ///< Members of CCF groups.
   ExpressionPtr distribution_;  ///< The probability distribution of the group.
   /// CCF factors for models to get CCF probabilities.
   std::vector<std::pair<int, ExpressionPtr>> factors_;
-
- private:
-  std::string model_;  ///< Common cause model type.
 };
 
 using CcfGroupPtr = std::shared_ptr<CcfGroup>;  ///< Shared CCF groups.
@@ -180,16 +194,15 @@ class BetaFactorModel : public CcfGroup {
                            bool is_public = true)
       : CcfGroup(name, "beta-factor", base_path, is_public) {}
 
-  /// Adds a CCF factor for the beta model.
+ private:
+  /// Checks a CCF factor level for the beta model.
   /// Only one factor is expected.
   ///
-  /// @param[in] factor  A factor for the CCF model.
   /// @param[in] level  The level of the passed factor.
   ///
   /// @throws ValidationError  Level is not what is expected.
-  void AddFactor(const ExpressionPtr& factor, int level) override;
+  void CheckLevel(int level) override;
 
- private:
   void ConstructCcfBasicEvents(
       int max_level,
       std::map<BasicEventPtr, std::set<std::string> >* new_events) override;
@@ -217,16 +230,15 @@ class MglModel : public CcfGroup {
                     bool is_public = true)
       : CcfGroup(name, "MGL", base_path, is_public) {}
 
-  /// Adds a CCF factor for the MGL model.
+ private:
+  /// Checks a CCF factor level for the MGL model.
   /// The factor level must start from 2.
   ///
-  /// @param[in] factor  A factor for the CCF model.
   /// @param[in] level  The level of the passed factor.
   ///
   /// @throws ValidationError  Level is not what is expected.
-  void AddFactor(const ExpressionPtr& factor, int level) override;
+  void CheckLevel(int level) override;
 
- private:
   void CalculateProbabilities(
       int max_level,
       std::map<int, ExpressionPtr>* probabilities) override;

@@ -86,6 +86,12 @@ class PrimaryEvent : public Event {
   bool has_expression() const { return has_expression_; }
 
  protected:
+  /// Sets indication for existence of an expression.
+  ///
+  /// @param[in] flag  true if the expression is defined.
+  void has_expression(bool flag) { has_expression_ = flag; }
+
+ private:
   /// Flag to notify that expression for the event is defined.
   bool has_expression_ = false;
 };
@@ -100,7 +106,7 @@ class HouseEvent : public PrimaryEvent {
   ///
   /// @param[in] constant  False or True for the state of this house event.
   void state(bool constant) {
-    PrimaryEvent::has_expression_ = true;
+    PrimaryEvent::has_expression(true);
     state_ = constant;
   }
 
@@ -129,7 +135,7 @@ class BasicEvent : public PrimaryEvent {
   /// @param[in] expression  The expression to describe this event.
   void expression(const ExpressionPtr& expression) {
     assert(!expression_);
-    PrimaryEvent::has_expression_ = true;
+    PrimaryEvent::has_expression(true);
     expression_ = expression;
   }
 

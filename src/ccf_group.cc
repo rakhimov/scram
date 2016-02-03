@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,7 +59,7 @@ void CcfGroup::AddDistribution(const ExpressionPtr& distr) {
   }
 }
 
-void CcfGroup::AddFactor(const ExpressionPtr& factor, int level) {
+void CcfGroup::CheckLevel(int level) {
   assert(level > 0);
   if (level != factors_.size() + 1) {
     std::stringstream msg;
@@ -67,7 +67,6 @@ void CcfGroup::AddFactor(const ExpressionPtr& factor, int level) {
         << factors_.size() + 1 << ". Instead was given " << level;
     throw ValidationError(msg.str());
   }
-  factors_.emplace_back(level, factor);
 }
 
 void CcfGroup::ValidateDistribution() {
@@ -167,24 +166,24 @@ void CcfGroup::ConstructCcfBasicEvents(
   }
 }
 
-void BetaFactorModel::AddFactor(const ExpressionPtr& factor, int level) {
-  if (!factors_.empty()) {
+void BetaFactorModel::CheckLevel(int level) {
+  assert(level > 0);
+  if (!CcfGroup::factors().empty()) {
     throw ValidationError("Beta-Factor Model " + CcfGroup::name() +
                           " CCF group must have exactly one factor.");
   }
-  if (level != members_.size()) {
+  if (level != CcfGroup::members().size()) {
     throw ValidationError(
         "Beta-Factor Model " + CcfGroup::name() + " CCF group" +
         " must have the level matching the number of its members.");
   }
-  CcfGroup::factors_.emplace_back(level, factor);
 }
 
 void BetaFactorModel::ConstructCcfBasicEvents(
     int max_level,
     std::map<BasicEventPtr, std::set<std::string> >* new_events) {
   // This function is not optimized or efficient for beta-factor models.
-  assert(CcfGroup::factors_.size() == 1);
+  assert(CcfGroup::factors().size() == 1);
   std::map<BasicEventPtr, std::set<std::string>> all_events;
   CcfGroup::ConstructCcfBasicEvents(max_level, &all_events);  // Standard case.
 
@@ -199,50 +198,69 @@ void BetaFactorModel::CalculateProbabilities(
     std::map<int, ExpressionPtr>* probabilities) {
   assert(probabilities->empty());
   ExpressionPtr one(new ConstantExpression(1.0));
-  ExpressionPtr beta = CcfGroup::factors_.begin()->second;
+  ExpressionPtr beta = CcfGroup::factors().begin()->second;
   ExpressionPtr indep_factor(new Sub({one, beta}));  // (1 - beta)
   probabilities->emplace(  // (1 - beta) * Q
       1,
-      ExpressionPtr(new Mul({indep_factor, CcfGroup::distribution_})));
+      ExpressionPtr(new Mul({indep_factor, CcfGroup::distribution()})));
 
   probabilities->emplace(  // beta * Q
       max_level,
-      ExpressionPtr(new Mul({beta, CcfGroup::distribution_})));
+      ExpressionPtr(new Mul({beta, CcfGroup::distribution()})));
 }
 
-void MglModel::AddFactor(const ExpressionPtr& factor, int level) {
+void MglModel::CheckLevel(int level) {
   assert(level > 0);
-  if (level != factors_.size() + 2) {
+  if (level != CcfGroup::factors().size() + 2) {
     std::stringstream msg;
     msg << CcfGroup::name() << " MGL model CCF group level expected "
-        << factors_.size() + 2 << ". Instead was given " << level;
+        << CcfGroup::factors().size() + 2 << ". Instead was given " << level;
     throw ValidationError(msg.str());
   }
-  CcfGroup::factors_.emplace_back(level, factor);
 }
+
+namespace {
+
+/// Helper function to calculate reciprocal of
+/// nCk (n-choose-k) combination.
+///
+/// @param[in] n  The total number elements.
+/// @param[in] k  Subset size.
+///
+/// @returns 1 / nCk
+double CalculateCombinationReciprocal(int n, int k) {
+  assert(n >= 0);
+  assert(k >= 0);
+  assert(n >= k);
+  if (n - k > k) k = n - k;
+  double result = 1;
+  for (int i = 1; i <= n - k; ++i) {
+    result *= static_cast<double>(i) / static_cast<double>(k + i);
+  }
+  return result;
+}
+
+}  // namespace
 
 void MglModel::CalculateProbabilities(
     int max_level,
     std::map<int, ExpressionPtr>* probabilities) {
-  assert(factors_.size() == max_level - 1);
+  assert(CcfGroup::factors().size() == max_level - 1);
 
   ExpressionPtr one(new ConstantExpression(1.0));
-  int num_members = members_.size();
+  int num_members = CcfGroup::members().size();
   for (int i = 0; i < max_level; ++i) {
-    // (n - 1) choose (k - 1) element in the equation.
-    int mult = CcfGroup::Factorial(num_members - 1) /
-               CcfGroup::Factorial(num_members - i - 1) /
-               CcfGroup::Factorial(i);
-
+    double mult = CalculateCombinationReciprocal(num_members - 1, i);
     std::vector<ExpressionPtr> args;
-    args.push_back(ExpressionPtr(new ConstantExpression(1.0 / mult)));
+    args.push_back(ExpressionPtr(new ConstantExpression(mult)));
     for (int j = 0; j < i; ++j) {
-      args.push_back(factors_[j].second);
+      args.push_back(CcfGroup::factors()[j].second);
     }
     if (i < max_level - 1) {
-      args.push_back(ExpressionPtr(new Sub({one, factors_[i].second})));
+      args.push_back(
+          ExpressionPtr(new Sub({one, CcfGroup::factors()[i].second})));
     }
-    args.push_back(CcfGroup::distribution_);
+    args.push_back(CcfGroup::distribution());
     probabilities->emplace(i + 1, ExpressionPtr(new Mul(args)));
   }
   assert(probabilities->size() == max_level);
@@ -252,23 +270,19 @@ void AlphaFactorModel::CalculateProbabilities(
     int max_level,
     std::map<int, ExpressionPtr>* probabilities) {
   assert(probabilities->empty());
-  assert(factors_.size() == max_level);
+  assert(CcfGroup::factors().size() == max_level);
   std::vector<ExpressionPtr> sum_args;
-  for (const std::pair<int, ExpressionPtr>& factor : CcfGroup::factors_) {
+  for (const std::pair<int, ExpressionPtr>& factor : CcfGroup::factors()) {
     sum_args.push_back(factor.second);
   }
   ExpressionPtr sum(new Add(sum_args));
-  int num_members = members_.size();
+  int num_members = CcfGroup::members().size();
 
   for (int i = 0; i < max_level; ++i) {
-    // (n - 1) choose (k - 1) element in the equation.
-    int mult = CcfGroup::Factorial(num_members - 1) /
-               CcfGroup::Factorial(num_members - i - 1) /
-               CcfGroup::Factorial(i);
-
-    ExpressionPtr k(new ConstantExpression(1.0 / mult));
-    ExpressionPtr fraction(new Div({CcfGroup::factors_[i].second, sum}));
-    ExpressionPtr prob(new Mul({k, fraction, CcfGroup::distribution_}));
+    double mult = CalculateCombinationReciprocal(num_members - 1, i);
+    ExpressionPtr k(new ConstantExpression(mult));
+    ExpressionPtr fraction(new Div({CcfGroup::factors()[i].second, sum}));
+    ExpressionPtr prob(new Mul({k, fraction, CcfGroup::distribution()}));
     probabilities->emplace(i + 1, prob);
   }
   assert(probabilities->size() == max_level);
@@ -281,7 +295,7 @@ void PhiFactorModel::Validate() {
   double sum_max = 0;
   /// @todo How to assure that the sum will be 1 in sampling.
   ///       Is it allowed to have a factor sampling for Uncertainty analysis.
-  for (const std::pair<int, ExpressionPtr>& factor : CcfGroup::factors_) {
+  for (const std::pair<int, ExpressionPtr>& factor : CcfGroup::factors()) {
     sum += factor.second->Mean();
     sum_min += factor.second->Min();
     sum_max += factor.second->Max();
@@ -301,8 +315,8 @@ void PhiFactorModel::CalculateProbabilities(
     int max_level,
     std::map<int, ExpressionPtr>* probabilities) {
   assert(probabilities->empty());
-  for (const std::pair<int, ExpressionPtr>& factor : CcfGroup::factors_) {
-    ExpressionPtr prob(new Mul({factor.second, CcfGroup::distribution_}));
+  for (const std::pair<int, ExpressionPtr>& factor : CcfGroup::factors()) {
+    ExpressionPtr prob(new Mul({factor.second, CcfGroup::distribution()}));
     probabilities->emplace(factor.first, prob);
   }
   assert(probabilities->size() == max_level);
