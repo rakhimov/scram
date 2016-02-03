@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,13 +40,21 @@ class OpenExpression : public Expression {
   double min;  // This value is used only if explicitly set non-zero.
   double max;  // This value is used only if explicitly set non-zero.
   double Mean() noexcept { return mean; }
-  double Sample() noexcept { return sample; }
+  double GetSample() noexcept { return sample; }
   double Max() noexcept { return max ? max : sample; }
   double Min() noexcept { return min ? min : sample; }
   bool IsConstant() noexcept { return true; }
 };
 
 using OpenExpressionPtr = std::shared_ptr<OpenExpression>;
+
+TEST(ExpressionTest, Parameter) {
+  OpenExpressionPtr expr(new OpenExpression(10, 8));
+  ParameterPtr param;
+  ASSERT_NO_THROW(param = ParameterPtr(new Parameter("param")));
+  ASSERT_NO_THROW(param->expression(expr));
+  ASSERT_THROW(param->expression(expr), LogicError);
+}
 
 TEST(ExpressionTest, Exponential) {
   OpenExpressionPtr lambda(new OpenExpression(10, 8));
