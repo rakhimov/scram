@@ -179,7 +179,7 @@
     <element name="results">
       <oneOrMore>
         <choice>
-          <ref name="minimal-cut-sets"/>
+          <ref name="sum-of-products"/>
           <ref name="importance"/>
           <ref name="statistical-measure"/>
           <ref name="curve"/>
@@ -189,10 +189,10 @@
   </define>
 
   <!-- ============================================================= -->
-  <!-- II.1. Minimal Cut Sets -->
+  <!-- II.1. Sum of Products -->
   <!-- ============================================================= -->
 
-  <define name="minimal-cut-sets">
+  <define name="sum-of-products">
     <element name="sum-of-products">
       <optional>
         <attribute name="name"> <data type="NCName"/> </attribute>
@@ -243,14 +243,14 @@
 
   <define name="literal">
     <choice>
-      <ref name="mcs-event"/>
+      <ref name="literal-event"/>
       <element name="not">
-        <ref name="mcs-event"/>
+        <ref name="literal-event"/>
       </element>
     </choice>
   </define>
 
-  <define name="mcs-event">
+  <define name="literal-event">
     <choice>
       <element name="basic-event">
         <attribute name="name"> <data type="NCName"/> </attribute>
