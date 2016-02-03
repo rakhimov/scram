@@ -50,7 +50,7 @@ void ImportanceAnalysis::Analyze() noexcept {
     important_events_.emplace_back(event.second, imp);
   }
   LOG(DEBUG3) << "Calculated importance factors in " << DUR(imp_time);
-  analysis_time_ = DUR(imp_time);
+  Analysis::AddAnalysisTime(DUR(imp_time));
 }
 
 std::vector<std::pair<int, BasicEventPtr>>

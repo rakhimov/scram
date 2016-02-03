@@ -275,7 +275,7 @@ ProbabilityAnalyzer<Bdd>::ProbabilityAnalyzer(
       owner_(true) {
   CLOCK(main_time);
   ProbabilityAnalyzer::CreateBdd(fta->top_event());
-  analysis_time_ = DUR(main_time);
+  Analysis::AddAnalysisTime(DUR(main_time));
 }
 
 }  // namespace scram

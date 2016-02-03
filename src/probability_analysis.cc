@@ -34,11 +34,11 @@ void ProbabilityAnalysis::Analyze() noexcept {
   p_total_ = this->CalculateTotalProbability();
   assert(p_total_ >= 0 && "The total probability is negative.");
   if (p_total_ > 1) {
-    warnings_ += " Probability value exceeded 1 and was adjusted to 1.";
+    Analysis::AddWarning("Probability value exceeded 1 and was adjusted to 1.");
     p_total_ = 1;
   }
   LOG(DEBUG3) << "Finished probability calculations in " << DUR(p_time);
-  analysis_time_ += DUR(p_time);
+  Analysis::AddAnalysisTime(DUR(p_time));
 }
 
 double CutSetProbabilityCalculator::Calculate(
@@ -92,7 +92,8 @@ ProbabilityAnalyzer<Bdd>::~ProbabilityAnalyzer() noexcept {
 
 void ProbabilityAnalyzer<Bdd>::CreateBdd(const GatePtr& root) noexcept {
   CLOCK(ft_creation);
-  BooleanGraph* bool_graph = new BooleanGraph(root, kSettings_.ccf_analysis());
+  BooleanGraph* bool_graph =
+      new BooleanGraph(root, Analysis::settings().ccf_analysis());
   LOG(DEBUG2) << "Boolean graph is created in " << DUR(ft_creation);
   CLOCK(prep_time);  // Overall preprocessing time.
   LOG(DEBUG2) << "Preprocessing...";
@@ -103,7 +104,7 @@ void ProbabilityAnalyzer<Bdd>::CreateBdd(const GatePtr& root) noexcept {
 
   CLOCK(bdd_time);  // BDD based calculation time.
   LOG(DEBUG2) << "Creating BDD for Probability Analysis...";
-  bdd_graph_ = new Bdd(bool_graph, kSettings_);
+  bdd_graph_ = new Bdd(bool_graph, Analysis::settings());
   LOG(DEBUG2) << "BDD is created in " << DUR(bdd_time);
   delete bool_graph;  // The original graph of FTA is usable with the BDD.
 }

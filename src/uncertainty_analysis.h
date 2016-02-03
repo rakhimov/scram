@@ -142,8 +142,8 @@ std::vector<double> UncertaintyAnalyzer<Calculator>::Sample() noexcept {
       UncertaintyAnalysis::FilterUncertainEvents(prob_analyzer_->graph());
   std::vector<double>& p_vars = prob_analyzer_->p_vars();
   std::vector<double> samples;
-  samples.reserve(kSettings_.num_trials());
-  for (int i = 0; i < kSettings_.num_trials(); ++i) {
+  samples.reserve(Analysis::settings().num_trials());
+  for (int i = 0; i < Analysis::settings().num_trials(); ++i) {
     // Reset distributions.
     for (const auto& event : uncertain_events) event.second->Reset();
 

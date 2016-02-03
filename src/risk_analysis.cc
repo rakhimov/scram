@@ -54,7 +54,8 @@ void RiskAnalysis::GraphingInstructions() {
         throw IOError(output +  " : Cannot write the graphing file.");
       }
       Grapher gr = Grapher();
-      gr.GraphFaultTree(top_event, kSettings_.probability_analysis(), of);
+      gr.GraphFaultTree(top_event, Analysis::settings().probability_analysis(),
+                        of);
       of.flush();
     }
   }
@@ -64,7 +65,8 @@ void RiskAnalysis::GraphingInstructions() {
 void RiskAnalysis::Analyze() noexcept {
   // Set the seed for the pseudo-random number generator if given explicitly.
   // Otherwise it defaults to the current time.
-  if (kSettings_.seed() >= 0) Random::seed(kSettings_.seed());
+  if (Analysis::settings().seed() >= 0)
+    Random::seed(Analysis::settings().seed());
   for (const std::pair<const std::string, FaultTreePtr>& ft :
        model_->fault_trees()) {
     for (const GatePtr& target : ft.second->top_events()) {
@@ -81,12 +83,12 @@ void RiskAnalysis::Analyze() noexcept {
 
 void RiskAnalysis::RunAnalysis(const std::string& name,
                                const GatePtr& target) noexcept {
-  if (kSettings_.algorithm() == "bdd") {
+  if (Analysis::settings().algorithm() == "bdd") {
     RiskAnalysis::RunAnalysis<Bdd>(name, target);
-  } else if (kSettings_.algorithm() == "zbdd") {
+  } else if (Analysis::settings().algorithm() == "zbdd") {
     RiskAnalysis::RunAnalysis<Zbdd>(name, target);
   } else {
-    assert(kSettings_.algorithm() == "mocus");
+    assert(Analysis::settings().algorithm() == "mocus");
     RiskAnalysis::RunAnalysis<Mocus>(name, target);
   }
 }
@@ -94,15 +96,15 @@ void RiskAnalysis::RunAnalysis(const std::string& name,
 template<class Algorithm>
 void RiskAnalysis::RunAnalysis(const std::string& name,
                                const GatePtr& target) noexcept {
-  auto* fta = new FaultTreeAnalyzer<Algorithm>(target, kSettings_);
+  auto* fta = new FaultTreeAnalyzer<Algorithm>(target, Analysis::settings());
   fta->Analyze();
-  if (kSettings_.probability_analysis()) {
-    if (kSettings_.approximation() == "no") {
+  if (Analysis::settings().probability_analysis()) {
+    if (Analysis::settings().approximation() == "no") {
       RiskAnalysis::RunAnalysis<Algorithm, Bdd>(name, fta);
-    } else if (kSettings_.approximation() == "rare-event") {
+    } else if (Analysis::settings().approximation() == "rare-event") {
       RiskAnalysis::RunAnalysis<Algorithm, RareEventCalculator>(name, fta);
     } else {
-      assert(kSettings_.approximation() == "mcub");
+      assert(Analysis::settings().approximation() == "mcub");
       RiskAnalysis::RunAnalysis<Algorithm, McubCalculator>(name, fta);
     }
   }
@@ -114,12 +116,12 @@ void RiskAnalysis::RunAnalysis(const std::string& name,
                                FaultTreeAnalyzer<Algorithm>* fta) noexcept {
   auto* pa = new ProbabilityAnalyzer<Calculator>(fta);
   pa->Analyze();
-  if (kSettings_.importance_analysis()) {
+  if (Analysis::settings().importance_analysis()) {
     auto* ia = new ImportanceAnalyzer<Calculator>(pa);
     ia->Analyze();
     importance_analyses_.emplace(name, ImportanceAnalysisPtr(ia));
   }
-  if (kSettings_.uncertainty_analysis()) {
+  if (Analysis::settings().uncertainty_analysis()) {
     auto* ua = new UncertaintyAnalyzer<Calculator>(pa);
     ua->Analyze();
     uncertainty_analyses_.emplace(name, UncertaintyAnalysisPtr(ua));
@@ -132,7 +134,7 @@ void RiskAnalysis::Report(std::ostream& out) {
 
   // Create XML or use already created document.
   std::unique_ptr<xmlpp::Document> doc(new xmlpp::Document());
-  rp.SetupReport(model_, kSettings_, doc.get());
+  rp.SetupReport(model_, Analysis::settings(), doc.get());
 
   // Container for excess primary events not in the analysis.
   // This container is for warning
@@ -164,16 +166,16 @@ void RiskAnalysis::Report(std::ostream& out) {
        fault_tree_analyses_) {
     std::string id = fta.first;
     ProbabilityAnalysis* prob_analysis = nullptr;  // Null if no analysis.
-    if (kSettings_.probability_analysis()) {
+    if (Analysis::settings().probability_analysis()) {
       prob_analysis = probability_analyses_.at(id).get();
     }
     rp.ReportFta(id, *fta.second, prob_analysis, doc.get());
 
-    if (kSettings_.importance_analysis()) {
+    if (Analysis::settings().importance_analysis()) {
       rp.ReportImportance(id, *importance_analyses_.at(id), doc.get());
     }
 
-    if (kSettings_.uncertainty_analysis()) {
+    if (Analysis::settings().uncertainty_analysis()) {
       rp.ReportUncertainty(id, *uncertainty_analyses_.at(id), doc.get());
     }
   }

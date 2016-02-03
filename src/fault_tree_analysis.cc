@@ -120,13 +120,13 @@ void FaultTreeAnalysis::Convert(const std::vector<std::vector<int>>& results,
                                 const BooleanGraph* graph) noexcept {
   // Special cases of sets.
   if (results.empty()) {
-    warnings_ += " The top event is NULL. Success is guaranteed.";
+    Analysis::AddWarning("The top event is NULL. Success is guaranteed.");
   } else if (results.size() == 1 && results.back().empty()) {
-    warnings_ += " The top event is UNITY. Failure is guaranteed.";
+    Analysis::AddWarning("The top event is UNITY. Failure is guaranteed.");
   }
   std::unordered_set<int> unique_events;
   for (const auto& result_set : results) {
-    assert(result_set.size() <= kSettings_.limit_order() &&
+    assert(result_set.size() <= Analysis::settings().limit_order() &&
            "Miscalculated product sets with larger-than-required order.");
     Product product;
     for (int index : result_set) {
@@ -143,7 +143,7 @@ void FaultTreeAnalysis::Convert(const std::vector<std::vector<int>>& results,
     products_.push_back(product);
   }
 #ifndef NDEBUG
-  if (kSettings_.print) Print(products_);
+  if (Analysis::settings().print) Print(products_);
 #endif
 }
 
