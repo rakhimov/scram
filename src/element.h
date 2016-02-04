@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,10 +28,10 @@
 namespace scram {
 
 /// @struct Attribute
-/// This struct allows for any attribute.
+/// This struct allows any attribute.
 struct Attribute {
   std::string name;  ///< The name that identifies this attribute.
-  std::string value;  ///< Value of this attributes.
+  std::string value;  ///< Value of this attribute.
   std::string type;  ///< Optional type of the attribute.
 };
 
@@ -78,6 +78,9 @@ class Element {
   /// @throws LogicError  There is no such attribute.
   const Attribute& GetAttribute(const std::string& id) const;
 
+ protected:
+  ~Element() = default;
+
  private:
   std::string label_;  ///< The label for the element.
   std::map<std::string, Attribute> attributes_;  ///< Collection of attributes.
@@ -101,6 +104,9 @@ class Role {
 
   /// @returns The base path containing ancestor container names.
   const std::string& base_path() const { return base_path_; }
+
+ protected:
+  ~Role() = default;
 
  private:
   bool is_public_;  ///< A flag for public and private roles.

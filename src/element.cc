@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,22 +29,16 @@ namespace scram {
 Element::Element() : label_("") {}
 
 void Element::label(const std::string& new_label) {
-  if (label_ != "") {
-    throw LogicError("Trying to reset the label: " + label_);
-  }
-  if (new_label == "") {
-    throw LogicError("Trying to apply empty label");
-  }
+  if (!label_.empty()) throw LogicError("Trying to reset the label: " + label_);
+  if (new_label.empty()) throw LogicError("Trying to apply empty label");
   label_ = new_label;
 }
 
 void Element::AddAttribute(const Attribute& attr) {
   std::string id = attr.name;
   boost::to_lower(id);
-  if (attributes_.count(id)) {
+  if (attributes_.emplace(id, attr).second == false)
     throw LogicError("Trying to re-add an attribute: " + attr.name);
-  }
-  attributes_.insert(std::make_pair(id, attr));
 }
 
 bool Element::HasAttribute(const std::string& id) const {
@@ -52,10 +46,11 @@ bool Element::HasAttribute(const std::string& id) const {
 }
 
 const Attribute& Element::GetAttribute(const std::string& id) const {
-  if (!attributes_.count(id)) {
+  try {
+    return attributes_.at(id);
+  } catch (std::out_of_range&) {
     throw LogicError("Element does not have attribute: " + id);
   }
-  return attributes_.find(id)->second;
 }
 
 Role::Role(bool is_public, const std::string& base_path)
