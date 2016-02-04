@@ -128,7 +128,7 @@ class BasicEvent : public PrimaryEvent {
  public:
   using PrimaryEvent::PrimaryEvent;  // Construction with unique identification.
 
-  virtual ~BasicEvent() {}
+  virtual ~BasicEvent() = default;
 
   /// Sets the expression of this basic event.
   ///

@@ -57,6 +57,9 @@ class Preprocessor {
   ///          which will mess the new structure of the Boolean graph.
   explicit Preprocessor(BooleanGraph* graph) noexcept;
 
+  Preprocessor(const Preprocessor&) = delete;
+  Preprocessor& operator=(const Preprocessor&) = delete;
+
   virtual ~Preprocessor() = default;
 
   /// Runs the default preprocessing

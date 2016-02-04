@@ -57,6 +57,9 @@ class Initializer {
   /// @param[in] settings  Analysis settings.
   explicit Initializer(const Settings& settings);
 
+  Initializer(const Initializer&) = delete;
+  Initializer& operator=(const Initializer&) = delete;
+
   /// Reads input files with the structure of analysis constructs.
   /// Initializes the analysis model from the given input files.
   /// Puts all events into their appropriate containers in the model.

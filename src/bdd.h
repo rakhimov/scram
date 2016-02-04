@@ -289,6 +289,9 @@ class Bdd {
   /// @note BDD construction may take considerable time.
   Bdd(const BooleanGraph* fault_tree, const Settings& settings);
 
+  Bdd(const Bdd&) = delete;
+  Bdd& operator=(const Bdd&) = delete;
+
   /// To handle incomplete ZBDD type with unique pointers.
   ~Bdd() noexcept;
 

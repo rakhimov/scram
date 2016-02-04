@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,8 +40,11 @@ class XmlParser {
   /// @throws ValidationError  There are problems loading the XML snippet.
   explicit XmlParser(const std::stringstream& xml_input_snippet);
 
+  XmlParser(const XmlParser&) = delete;
+  XmlParser& operator=(const XmlParser&) = delete;
+
   /// Resets the parser.
-  ~XmlParser() noexcept;
+  ~XmlParser() noexcept { parser_.reset(); }
 
   /// Validates the file against a schema.
   ///

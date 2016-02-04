@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,9 +38,8 @@ Event::Event(const std::string& name, const std::string& base_path,
   boost::to_lower(id_);
 }
 
-Event::~Event() {}  // Empty body for pure virtual destructor.
-
-PrimaryEvent::~PrimaryEvent() {}  // Empty body for pure virtual destructor.
+Event::~Event() = default;
+PrimaryEvent::~PrimaryEvent() = default;
 
 CcfEvent::CcfEvent(const std::string& name, const CcfGroup* ccf_group,
                    const std::vector<std::string>& member_names)

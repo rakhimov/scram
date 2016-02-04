@@ -65,6 +65,9 @@ class NodeParentManager {
     return parents_;
   }
 
+ protected:
+  ~NodeParentManager() = default;
+
  private:
   /// Adds a new parent of a node.
   ///

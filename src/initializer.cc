@@ -144,7 +144,7 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
   file_stream.close();
 
   XmlParser* parser = new XmlParser(stream);
-  parsers_.emplace_back(parser);
+  parsers_.emplace_back(parser);  // Gets managed by unique pointer.
   parser->Validate(schema_);
 
   const xmlpp::Document* doc = parser->Document();

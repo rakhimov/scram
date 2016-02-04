@@ -77,18 +77,14 @@ TEST_F(XmlParserTests, RelaxNGValidator) {
   FillSchema(schema);
 
   XmlParserPtr parser;
-  EXPECT_NO_THROW(parser = XmlParserPtr(new XmlParser(snippet)));
+  ASSERT_NO_THROW(parser = XmlParserPtr(new XmlParser(snippet)));
 
   RelaxNGValidator validator;
-  const xmlpp::Document* doc = nullptr;
-  EXPECT_NO_THROW(validator.ParseMemory(schema.str()));
-  EXPECT_THROW(validator.Validate(doc), InvalidArgument);
-
-  doc = parser->Document();
-  validator = RelaxNGValidator();
+  EXPECT_THROW(validator.Validate(nullptr), LogicError);
+  const xmlpp::Document* doc = parser->Document();
   EXPECT_THROW(validator.Validate(doc), LogicError);  // No schema initialized.
 
-  EXPECT_NO_THROW(validator.ParseMemory(schema.str()));
+  ASSERT_NO_THROW(validator.ParseMemory(schema.str()));
   EXPECT_NO_THROW(validator.Validate(doc));  // Initialized.
 }
 

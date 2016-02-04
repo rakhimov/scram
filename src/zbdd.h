@@ -114,6 +114,9 @@ class Zbdd {
   /// @note The construction may take considerable time.
   Zbdd(const BooleanGraph* fault_tree, const Settings& settings) noexcept;
 
+  Zbdd(const Zbdd&) = delete;
+  Zbdd& operator=(const Zbdd&) = delete;
+
   virtual ~Zbdd() noexcept = default;
 
   /// Runs the analysis

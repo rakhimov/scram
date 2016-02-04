@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -49,34 +49,21 @@ void RelaxNGValidator::ParseMemory(const Glib::ustring& contents) {
 }
 
 void RelaxNGValidator::Validate(const xmlpp::Document* doc) {
-  if (!doc) {
-    throw InvalidArgument("Document pointer cannot be NULL");
-  }
-
-  if (!schema_) {
-    throw LogicError("Must have a schema to validate document");
-  }
+  if (!doc) throw LogicError("Document pointer cannot be NULL");
+  if (!schema_) throw LogicError("Must have a schema to validate document");
 
   // A context is required at this stage only.
-  if (!valid_context_) {
-    valid_context_ = xmlRelaxNGNewValidCtxt(schema_);
-  }
+  if (!valid_context_) valid_context_ = xmlRelaxNGNewValidCtxt(schema_);
+  if (!valid_context_) throw Error("Couldn't create validating context");
 
-  if (!valid_context_) {
-    throw Error("Couldn't create validating context");
-  }
-
-  int res = 0;  // Validation result.
+  int error_state = 0;  // Validation result.
   try {
-    res = xmlRelaxNGValidateDoc(valid_context_,
-                                const_cast<xmlDocPtr>(doc->cobj()));
+    error_state = xmlRelaxNGValidateDoc(valid_context_,
+                                        const_cast<xmlDocPtr>(doc->cobj()));
   } catch (xmlError& e) {
     throw ValidationError(e.message);
   }
-
-  if (res != 0) {
-    throw ValidationError("Document failed schema validation");
-  }
+  if (error_state) throw ValidationError("Document failed schema validation");
 }
 
 void RelaxNGValidator::ParseContext(xmlRelaxNGParserCtxtPtr context) {
