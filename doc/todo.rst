@@ -118,5 +118,3 @@ Technical Issues
 - The code is not well designed as public API.
   (Example design flaw: call analysis twice and get undefined behavior.)
 - Virtually everything is under one namespace.
-- Python code coverage is not continuously tracked through CI.
-  (Problems with merging C++ and Python code coverage on Coveralls.)

@@ -13,7 +13,13 @@ if [[ "$?" -ne 0 ]]; then
 fi
 
 nosetests -w ./tests/ || ( echo "CMD-Line Call Tests Failed!" && exit 1 )
-nosetests -w ./scripts/ || ( echo "Tests for Scripts Failed!" && exit 1 )
+
+if [[ -z "${RELEASE}" && "$CXX" = "g++" ]]; then
+  nosetests --with-coverage -w ./scripts/ \
+    || ( echo "Tests for Scripts Failed!" && exit 1 )
+else
+  nosetests -w ./scripts/ || ( echo "Tests for Scripts Failed!" && exit 1 )
+fi
 
 ./scripts/fault_tree_generator.py -b 200 -c 5 \
   || ( echo "Can't generate a fault tree." && exit 1 )

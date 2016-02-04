@@ -12,7 +12,7 @@ fi
 ./.travis/run_tests.sh
 
 if [[ -z "${RELEASE}" && "$CXX" = "g++" ]]; then
-  # Check test coverage
+  # Submit coverage of C++
   coveralls --exclude tests  --exclude ./build/CMakeFiles/ \
     --exclude ./build/lib/ --exclude ./build/gui/ \
     --exclude ./build/bin/  --exclude install/include/ \
@@ -23,6 +23,9 @@ if [[ -z "${RELEASE}" && "$CXX" = "g++" ]]; then
     --exclude src/logger.cc \
     --exclude-pattern .*/src/.*\.h$ \
     > /dev/null
+
+  # Submit coverage of Python
+  codecov > /dev/null
 
   # Check documentation coverage
   doxygen ./.travis/doxygen.conf > /dev/null 2> doc_errors.txt
