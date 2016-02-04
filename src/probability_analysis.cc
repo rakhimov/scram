@@ -90,6 +90,18 @@ ProbabilityAnalyzer<Bdd>::~ProbabilityAnalyzer() noexcept {
   if (owner_) delete bdd_graph_;
 }
 
+double ProbabilityAnalyzer<Bdd>::CalculateTotalProbability() noexcept {
+  CLOCK(calc_time);  // BDD based calculation time.
+  LOG(DEBUG4) << "Calculating probability with BDD...";
+  current_mark_ = !current_mark_;
+  double prob = ProbabilityAnalyzer::CalculateProbability(
+      bdd_graph_->root().vertex,
+      current_mark_);
+  if (bdd_graph_->root().complement) prob = 1 - prob;
+  LOG(DEBUG4) << "Calculated probability " << prob << " in " << DUR(calc_time);
+  return prob;
+}
+
 void ProbabilityAnalyzer<Bdd>::CreateBdd(const GatePtr& root) noexcept {
   CLOCK(ft_creation);
   BooleanGraph* bool_graph =
@@ -109,18 +121,6 @@ void ProbabilityAnalyzer<Bdd>::CreateBdd(const GatePtr& root) noexcept {
   delete bool_graph;  // The original graph of FTA is usable with the BDD.
 }
 
-double ProbabilityAnalyzer<Bdd>::CalculateTotalProbability() noexcept {
-  CLOCK(calc_time);  // BDD based calculation time.
-  LOG(DEBUG4) << "Calculating probability with BDD...";
-  current_mark_ = !current_mark_;
-  double prob = ProbabilityAnalyzer::CalculateProbability(
-      bdd_graph_->root().vertex,
-      current_mark_);
-  if (bdd_graph_->root().complement) prob = 1 - prob;
-  LOG(DEBUG4) << "Calculated probability " << prob << " in " << DUR(calc_time);
-  return prob;
-}
-
 double ProbabilityAnalyzer<Bdd>::CalculateProbability(
     const VertexPtr& vertex,
     bool mark) noexcept {
@@ -134,7 +134,7 @@ double ProbabilityAnalyzer<Bdd>::CalculateProbability(
     p_var = ProbabilityAnalyzer::CalculateProbability(res.vertex, mark);
     if (res.complement) p_var = 1 - p_var;
   } else {
-    p_var = p_vars_[ite->index()];
+    p_var = ProbabilityAnalyzerBase::p_vars()[ite->index()];
   }
   double high = ProbabilityAnalyzer::CalculateProbability(ite->high(), mark);
   double low = ProbabilityAnalyzer::CalculateProbability(ite->low(), mark);

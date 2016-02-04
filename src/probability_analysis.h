@@ -138,7 +138,7 @@ class McubCalculator : private CutSetProbabilityCalculator {
 };
 
 /// @class ProbabilityAnalyzerBase
-/// Aggregation class for Probability analyzers.
+/// Base class for Probability analyzers.
 class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
  public:
   using Product = std::vector<int>;  ///< Alias for clarity.
@@ -162,11 +162,16 @@ class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
   /// @pre Quantitative analyzers aware of how Probability analyzer works.
   /// @pre Quantitative analyzers will cleanup after themselves.
   ///
-  /// @warning This is a temporary hack
+  /// @warning This is a hack
   ///          due to tight coupling of Quantitative analyzers.
+  ///
+  /// @todo Redesign the use and manipulation of variable probabilities.
   std::vector<double>& p_vars() { return p_vars_; }
 
  protected:
+  ~ProbabilityAnalyzerBase() = default;
+
+ private:
   const BooleanGraph* graph_;  ///< Boolean graph from the fault tree analysis.
   const std::vector<Product>& products_;  ///< A collection of products.
   std::vector<double> p_vars_;  ///< Variable probabilities.
@@ -197,8 +202,9 @@ class ProbabilityAnalyzer : public ProbabilityAnalyzerBase {
   /// Calculates the total probability.
   ///
   /// @returns The total probability of the graph or the sum of products.
-  double CalculateTotalProbability() noexcept {
-    return calc_.Calculate(products_, p_vars_);
+  double CalculateTotalProbability() noexcept override {
+    return calc_.Calculate(ProbabilityAnalyzerBase::products(),
+                           ProbabilityAnalyzerBase::p_vars());
   }
 
  private:
@@ -234,13 +240,13 @@ class ProbabilityAnalyzer<Bdd> : public ProbabilityAnalyzerBase {
   /// only if ProbabilityAnalyzer is the owner of them.
   ~ProbabilityAnalyzer() noexcept;
 
+  /// @returns Binary decision diagram used for calculations.
+  Bdd* bdd_graph() { return bdd_graph_; }
+
   /// Calculates the total probability.
   ///
   /// @returns The total probability of the graph.
-  double CalculateTotalProbability() noexcept;
-
-  /// @returns Binary decision diagram used for calculations.
-  Bdd* bdd_graph() { return bdd_graph_; }
+  double CalculateTotalProbability() noexcept override;
 
  private:
   /// Creates a new BDD for use by the analyzer.

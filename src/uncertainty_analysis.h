@@ -75,13 +75,6 @@ class UncertaintyAnalysis : public Analysis {
   const std::vector<double>& quantiles() const { return quantiles_; }
 
  protected:
-  /// Performs Monte Carlo Simulation
-  /// by sampling the probability distributions
-  /// and providing the final sampled values of the final probability.
-  ///
-  /// @returns Sampled values.
-  virtual std::vector<double> Sample() noexcept = 0;
-
   /// Gathers basic events that have distributions.
   ///
   /// @param[in] graph  Boolean graph with the variables.
@@ -91,6 +84,13 @@ class UncertaintyAnalysis : public Analysis {
       const BooleanGraph* graph) noexcept;
 
  private:
+  /// Performs Monte Carlo Simulation
+  /// by sampling the probability distributions
+  /// and providing the final sampled values of the final probability.
+  ///
+  /// @returns Sampled values.
+  virtual std::vector<double> Sample() noexcept = 0;
+
   /// Calculates statistical values from the final distribution.
   ///
   /// @param[in] samples  Gathered samples for statistical analysis.
@@ -128,10 +128,10 @@ class UncertaintyAnalyzer : public UncertaintyAnalysis {
       : UncertaintyAnalysis::UncertaintyAnalysis(prob_analyzer),
         prob_analyzer_(prob_analyzer) {}
 
+ private:
   /// @returns Samples of the total probability.
   std::vector<double> Sample() noexcept override;
 
- private:
   /// Calculator of the total probability.
   ProbabilityAnalyzer<Calculator>* prob_analyzer_;
 };

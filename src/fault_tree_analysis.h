@@ -243,6 +243,7 @@ class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
   void Convert(const std::vector<std::vector<int>>& results,
                const BooleanGraph* graph) noexcept;
 
+ private:
   std::vector<Product> products_;  ///< Container of analysis results.
   std::vector<BasicEventPtr> product_events_;  ///< Basic events in the sets.
 };
@@ -272,7 +273,7 @@ class FaultTreeAnalyzer : public FaultTreeAnalysis {
   /// @returns Pointer to the Boolean graph representing the fault tree.
   const BooleanGraph* graph() const { return graph_.get(); }
 
- protected:
+ private:
   std::unique_ptr<Algorithm> algorithm_;  ///< Analysis algorithm.
   std::unique_ptr<BooleanGraph> graph_;  ///< Boolean graph of the fault tree.
 };
