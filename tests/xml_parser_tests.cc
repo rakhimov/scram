@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -67,13 +67,7 @@ void XmlParserTests::FillBadSchema(std::stringstream& ss) {
      << "</grammar>";
 }
 
-void XmlParserTests::SetUp() {
-  inner_node_ = "inside";
-  outer_node_ = "outside";
-  inner_content_ = "inside_content";
-}
-
-void XmlParserTests::TearDown() {}
+using XmlParserPtr = std::unique_ptr<XmlParser>;
 
 // This is an indirect test of the validator.
 TEST_F(XmlParserTests, RelaxNGValidator) {
