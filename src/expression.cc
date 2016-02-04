@@ -212,8 +212,6 @@ double WeibullExpression::Compute(double alpha, double beta,
   return 1 - std::exp(-std::pow((time - t0) / alpha, beta));
 }
 
-RandomDeviate::~RandomDeviate() {}  // Empty destructor for the abstract class.
-
 UniformDeviate::UniformDeviate(const ExpressionPtr& min,
                                const ExpressionPtr& max)
       : RandomDeviate::RandomDeviate({min, max}),

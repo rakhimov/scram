@@ -419,9 +419,8 @@ class WeibullExpression : public Expression {
 class RandomDeviate : public Expression {
  public:
   using Expression::Expression;  // Main helper constructors with arguments.
-  virtual ~RandomDeviate() = 0;  ///< Make it abstract.
 
-  bool IsConstant() noexcept { return false; }
+  bool IsConstant() noexcept override { return false; }
 };
 
 /// @class UniformDeviate
