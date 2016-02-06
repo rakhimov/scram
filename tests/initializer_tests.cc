@@ -137,6 +137,7 @@ TEST(InitializerTest, IncorrectFTAInputs) {
   std::string dir = "./share/scram/input/fta/";
 
   std::vector<std::string> incorrect_inputs = {
+      "int_overflow.xml",
       "doubly_defined_gate.xml",
       "doubly_defined_house.xml",
       "doubly_defined_basic.xml",

@@ -65,6 +65,7 @@ def main():
         "../unsupported_gate.xml",
         "../unsupported_expression.xml",
         "nonexistent_file.xml",
+        "int_overflow.xml",
         "doubly_defined_gate.xml",
         "doubly_defined_house.xml",
         "doubly_defined_basic.xml",

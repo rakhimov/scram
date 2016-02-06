@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<opsa-mef>
+  <define-fault-tree name="ParameterContainer">
+    <define-parameter name="Overflow32Bit">
+      <int value="10000000000"/>  <!-- 1e10 -->
+    </define-parameter>
+  </define-fault-tree>
+</opsa-mef>
