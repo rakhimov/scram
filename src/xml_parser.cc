@@ -21,6 +21,7 @@
 #include "xml_parser.h"
 
 #include <cassert>
+
 #include <string>
 
 #include "error.h"

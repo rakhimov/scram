@@ -22,6 +22,7 @@
 #define SCRAM_SRC_ANALYSIS_H_
 
 #include <cassert>
+
 #include <string>
 
 #include "settings.h"

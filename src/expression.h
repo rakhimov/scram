@@ -21,8 +21,9 @@
 #ifndef SCRAM_SRC_EXPRESSION_H_
 #define SCRAM_SRC_EXPRESSION_H_
 
-#include <algorithm>
 #include <cmath>
+
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>

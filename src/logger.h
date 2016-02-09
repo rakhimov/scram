@@ -29,9 +29,10 @@
 #ifndef SCRAM_SRC_LOGGER_H_
 #define SCRAM_SRC_LOGGER_H_
 
-#include <chrono>
 #include <cstdint>
 #include <cstdio>
+
+#include <chrono>
 #include <sstream>
 #include <string>
 
@@ -103,8 +104,8 @@ class Logger {
   ~Logger() noexcept {
     os_ << std::endl;
     // fprintf used for thread safety.
-    fprintf(stderr, "%s", os_.str().c_str());
-    fflush(stderr);
+    std::fprintf(stderr, "%s", os_.str().c_str());
+    std::fflush(stderr);
   }
 
   /// @returns Reference to the cut-off level for reporting.

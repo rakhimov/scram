@@ -30,9 +30,10 @@
 #ifndef SCRAM_SRC_BOOLEAN_GRAPH_H_
 #define SCRAM_SRC_BOOLEAN_GRAPH_H_
 
+#include <cassert>
+
 #include <algorithm>
 #include <array>
-#include <cassert>
 #include <iostream>
 #include <map>
 #include <memory>

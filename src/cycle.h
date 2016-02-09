@@ -22,6 +22,7 @@
 #define SCRAM_SRC_CYCLE_H_
 
 #include <cassert>
+
 #include <string>
 #include <vector>
 

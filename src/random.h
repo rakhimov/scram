@@ -21,9 +21,10 @@
 #ifndef SCRAM_SRC_RANDOM_H_
 #define SCRAM_SRC_RANDOM_H_
 
-#include <array>
 #include <cassert>
 #include <cmath>
+
+#include <array>
 #include <random>
 #include <vector>
 
