@@ -67,7 +67,6 @@ class Initializer {
   /// @param[in] xml_files  The formatted XML input files.
   ///
   /// @throws ValidationError  The input contains errors.
-  /// @throws ValueError  The input values are not valid.
   /// @throws IOError  One of the input files is not accessible.
   void ProcessInputFiles(const std::vector<std::string>& xml_files);
 
@@ -90,7 +89,6 @@ class Initializer {
   /// @param[in] xml_file  The formatted XML input file.
   ///
   /// @throws ValidationError  The input contains errors.
-  /// @throws ValueError  The input values are not valid.
   /// @throws IOError  The input file is not accessible.
   void ProcessInputFile(const std::string& xml_file);
 

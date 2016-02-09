@@ -76,9 +76,9 @@ def test_fta_calls():
     yield assert_equal, 0, call(cmd)
 
     # Test the incorrect cut-off probability
-    cmd = ["scram", fta_input, "-c", "-1"]
+    cmd = ["scram", fta_input, "--cut-off", "-1"]
     yield assert_not_equal, 0, call(cmd)
-    cmd = ["scram", fta_input, "-c", "10"]
+    cmd = ["scram", fta_input, "--cut-off", "10"]
     yield assert_not_equal, 0, call(cmd)
 
     # Test conflicting algorithms

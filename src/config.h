@@ -43,7 +43,7 @@ class Config {
   /// @param[in] config_file  XML file with configurations.
   ///
   /// @throws ValidationError  The configurations have problems.
-  /// @throws ValueError  Input values are not valid.
+  /// @throws InvalidArgument  Settings values contain errors.
   /// @throws IOError  The file is not accessible.
   explicit Config(const std::string& config_file);
 

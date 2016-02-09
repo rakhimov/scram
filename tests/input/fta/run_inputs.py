@@ -80,8 +80,8 @@ def main():
         "undefined_house_event.xml",
         "undefined_gate.xml",
         "undefined_parameter.xml",
-        "reference_missing_fault_tree.xml"
-        "reference_missing_component.xml"
+        "reference_missing_fault_tree.xml",
+        "reference_missing_component.xml",
         "wrong_parameter_unit.xml",
         "name_clash_two_trees.xml",
         "def_clash_basic_gate.xml",
