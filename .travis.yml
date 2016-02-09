@@ -11,8 +11,11 @@ git:
     depth: 3
 
 env:
-    - PATH=$PATH:`pwd`/install/bin
-    - PATH=$PATH:`pwd`/install/bin RELEASE=true
+    global:
+        - PATH=$PATH:`pwd`/install/bin
+    matrix:
+        - RELEASE=
+        - RELEASE=true
 
 before_install:
     - sudo apt-get update -qq
