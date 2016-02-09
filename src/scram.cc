@@ -138,14 +138,6 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
               << usage << "\n\n" << desc << std::endl;
     return 1;
   }
-  if (vm->count("verbosity")) {
-    int verb = (*vm)["verbosity"].as<int>();
-    if (verb < 0 || verb > 7) {
-      std::cerr << "Log verbosity must be between 0 and 7.\n\n"
-                << usage << "\n\n" << desc << std::endl;
-      return 1;
-    }
-  }
   return 0;
 }
 
@@ -207,8 +199,7 @@ void ConstructSettings(const po::variables_map& vm, scram::Settings* settings) {
 /// @throws std::exception  All other problems.
 int RunScram(const po::variables_map& vm) {
   if (vm.count("verbosity")) {
-    scram::Logger::ReportLevel() =
-        static_cast<scram::LogLevel>(vm["verbosity"].as<int>());
+    scram::Logger::SetVerbosity(vm["verbosity"].as<int>());
   }
   scram::Settings settings;  // Analysis settings.
   std::vector<std::string> input_files;
