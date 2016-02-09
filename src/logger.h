@@ -118,7 +118,7 @@ class Logger {
 
   /// Sets the reporting level cut-off from an integer.
   ///
-  /// @param[int] level  Integer representation of the log level.
+  /// @param[in] level  Integer representation of the log level.
   ///
   /// @throws InvalidArgument  The level is out of range.
   static void SetVerbosity(int level);

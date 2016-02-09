@@ -141,6 +141,12 @@ int ParseArguments(int argc, char* argv[], po::variables_map* vm) {
   return 0;
 }
 
+/// Helper macro for ConstructSettings
+/// to set the flag in "settings"
+/// only if provided by "vm" arguments.
+#define SET(tag, type, member) \
+  if (vm.count(tag)) settings->member(vm[tag].as<type>())
+
 /// Updates analysis settings from command-line arguments.
 ///
 /// @param[in] vm  Variables map of program options.
@@ -165,9 +171,6 @@ void ConstructSettings(const po::variables_map& vm, scram::Settings* settings) {
   } else if (vm.count("mcub")) {
     settings->approximation("mcub");
   }
-  // Sets the flag in settings only if provided by the arguments.
-#define SET(tag, type, member) \
-  if (vm.count(tag)) settings->member(vm[tag].as<type>())
 
   SET("probability", bool, probability_analysis);
   SET("importance", bool, importance_analysis);
@@ -180,12 +183,12 @@ void ConstructSettings(const po::variables_map& vm, scram::Settings* settings) {
   SET("num-trials", int, num_trials);
   SET("num-quantiles", int, num_quantiles);
   SET("num-bins", int, num_bins);
-#undef SET
 #ifndef NDEBUG
   settings->preprocessor = vm.count("preprocessor");
   settings->print = vm.count("print");
 #endif
 }
+#undef SET
 
 /// Main body of command-line entrance to run the program.
 ///
