@@ -34,18 +34,13 @@
 
 namespace scram {
 
-RelaxNGValidator::RelaxNGValidator()
-    : schema_(nullptr),
-      valid_context_(nullptr) {}
-
-RelaxNGValidator::~RelaxNGValidator() noexcept {
-  RelaxNGValidator::ReleaseUnderlying();
-}
-
 void RelaxNGValidator::ParseMemory(const Glib::ustring& contents) {
   xmlRelaxNGParserCtxtPtr context =
       xmlRelaxNGNewMemParserCtxt(contents.c_str(), contents.bytes());
-  RelaxNGValidator::ParseContext(context);
+  RelaxNGValidator::ReleaseUnderlying();  // Free any existing info.
+  schema_ = xmlRelaxNGParse(context);
+  xmlRelaxNGFreeParserCtxt(context);
+  if (!schema_) throw LogicError("Schema could not be parsed");
 }
 
 void RelaxNGValidator::Validate(const xmlpp::Document* doc) {
@@ -64,14 +59,6 @@ void RelaxNGValidator::Validate(const xmlpp::Document* doc) {
     throw ValidationError(e.message);
   }
   if (error_state) throw ValidationError("Document failed schema validation");
-}
-
-void RelaxNGValidator::ParseContext(xmlRelaxNGParserCtxtPtr context) {
-  RelaxNGValidator::ReleaseUnderlying();  // Free any existing info.
-  schema_ = xmlRelaxNGParse(context);
-  if (!schema_) {
-    throw LogicError("Schema could not be parsed");
-  }
 }
 
 void RelaxNGValidator::ReleaseUnderlying() noexcept {
