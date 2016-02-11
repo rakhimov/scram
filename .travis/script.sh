@@ -12,6 +12,14 @@ fi
 ./.travis/run_tests.sh
 
 if [[ -z "${RELEASE}" && "$CXX" = "g++" ]]; then
+  # Check for memory leaks with Valgrind
+  valgrind --tool=memcheck --leak-check=full --show-leak-kinds=definite \
+    --errors-for-leak-kinds=definite --error-exitcode=127 \
+    --track-fds=yes \
+    scram_tests \
+    --gtest_filter=-*Death*:*Baobab*:*IncorrectFTAInputs:GateTest.Cycle \
+    || [[ $? -ne 127 ]]
+
   # Submit coverage of C++
   coveralls --exclude tests  --exclude ./build/CMakeFiles/ \
     --exclude ./build/lib/ --exclude ./build/gui/ \

@@ -59,6 +59,7 @@ def install_scram(args):
             cmake_cmd += ["-DCMAKE_BUILD_TYPE=Release"]
         elif args.profile:
             cmake_cmd += ["-DCMAKE_BUILD_TYPE=Debug"]
+            cmake_cmd += ["-DNTCMALLOC=1"]
             cmake_cmd += ["-DCMAKE_C_FLAGS=-pg"]
             cmake_cmd += ["-DCMAKE_CXX_FLAGS=-pg"]
             cmake_cmd += ["-DCMAKE_CXX_FLAGS='-fprofile-arcs -ftest-coverage'"]

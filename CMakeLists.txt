@@ -107,8 +107,10 @@ endif()
 set(LIBS "")
 
 # Optional TCMalloc for optimization.
-find_package(Tcmalloc)
-set(LIBS ${LIBS} ${Tcmalloc_LIBRARIES})
+if(NOT NTCMALLOC)
+  find_package(Tcmalloc)
+  set(LIBS ${LIBS} ${Tcmalloc_LIBRARIES})
+endif()
 
 # Debian installs useful LibXML2 files to /usr/include/libxml2/libxml.
 # libxml2 is required for relaxng schema validation.
