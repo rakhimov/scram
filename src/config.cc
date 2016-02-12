@@ -21,6 +21,7 @@
 #include "config.h"
 
 #include <cassert>
+
 #include <fstream>
 #include <memory>
 #include <sstream>
@@ -60,8 +61,13 @@ Config::Config(const std::string& config_file) : output_path_("") {
   const xmlpp::Node* root = doc->get_root_node();
   assert(root->get_name() == "config");
   Config::GatherInputFiles(root);
-  Config::GatherOptions(root);
   Config::GetOutputPath(root);
+  try {
+    Config::GatherOptions(root);
+  } catch (InvalidArgument& err) {
+    err.msg("In file '" + config_file + "', " + err.msg());
+    throw;
+  }
 }
 
 void Config::GatherInputFiles(const xmlpp::Node* root) {
@@ -87,25 +93,37 @@ void Config::GatherOptions(const xmlpp::Node* root) {
       static_cast<const xmlpp::Element*>(options.front());
   xmlpp::NodeSet all_options = element->find("./*");
   assert(!all_options.empty());
-  for (const xmlpp::Node* node : all_options) {
-    const xmlpp::Element* option_group =
-        static_cast<const xmlpp::Element*>(node);
-    std::string name = option_group->get_name();
-    if (name == "algorithm") {
-      Config::SetAlgorithm(option_group);
+  int line_number = 0;  // For error reporting.
+  try {
+    // The loop is used instead of query
+    // because the order of options matters,
+    // yet this function should not know what the order is.
+    for (const xmlpp::Node* node : all_options) {
+      line_number = node->get_line();
+      const xmlpp::Element* option_group =
+          static_cast<const xmlpp::Element*>(node);
+      std::string name = option_group->get_name();
+      if (name == "algorithm") {
+        Config::SetAlgorithm(option_group);
 
-    } else if (name == "analysis") {
-      Config::SetAnalysis(option_group);
+      } else if (name == "analysis") {
+        Config::SetAnalysis(option_group);
 
-    } else if (name == "prime-implicants") {
-      settings_.prime_implicants(true);
+      } else if (name == "prime-implicants") {
+        settings_.prime_implicants(true);
 
-    } else if (name == "approximation") {
-      Config::SetApproximation(option_group);
+      } else if (name == "approximation") {
+        Config::SetApproximation(option_group);
 
-    } else if (name == "limits") {
-      Config::SetLimits(option_group);
+      } else if (name == "limits") {
+        Config::SetLimits(option_group);
+      }
     }
+  } catch (InvalidArgument& err) {
+    std::stringstream msg;
+    msg << "Line " << line_number << ":\n";
+    err.msg(msg.str() + err.msg());
+    throw;
   }
 }
 

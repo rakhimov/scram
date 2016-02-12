@@ -146,12 +146,13 @@ Python
 
 #. Code quality and style check with Pylint_
 #. Profiling with PyVmMonitor_
-#. Code coverage check with coverage_
+#. Code coverage check with coverage_ and reporting with Codecov_
 #. Continuous code quality control on Landscape_ with Prospector_
 
 .. _Pylint: http://www.pylint.org/
 .. _PyVmMonitor: http://www.pyvmmonitor.com/
 .. _coverage: http://nedbatchelder.com/code/coverage/
+.. _Codecov: https://codecov.io/github/rakhimov/scram?ref=develop
 .. _Landscape: https://landscape.io/github/rakhimov/scram/develop/
 .. _Prospector: https://github.com/landscapeio/prospector
 
@@ -229,8 +230,7 @@ Documentation
 *************
 
 Good documentation of the code and functionality is
-the requirement for maintainability and evolution of the project
-and its acceptance by users.
+the requirement for maintainability and evolution of the project.
 
 The project adheres to the Documentation Driven Development model (`DDD talk by Corey Oordt`_),
 following the best practices of `Agile Documentation`_,

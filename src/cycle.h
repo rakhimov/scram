@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,13 +22,14 @@
 #define SCRAM_SRC_CYCLE_H_
 
 #include <cassert>
+
 #include <string>
 #include <vector>
 
 namespace scram {
 namespace cycle {
 
-template<typename N, typename C>
+template<class N, class C>
 bool ContinueConnector(C* connector, std::vector<std::string>* cycle);
 
 /// Traverses nodes with connectors to find a cycle.
@@ -45,7 +46,7 @@ bool ContinueConnector(C* connector, std::vector<std::string>* cycle);
 ///                    This is for printing errors and efficiency.
 ///
 /// @returns True if a cycle is found.
-template<typename N, typename C>
+template<class N, class C>
 bool DetectCycle(N* node, std::vector<std::string>* cycle) {
   if (node->mark() == "") {
     node->mark("temporary");
@@ -72,7 +73,7 @@ bool DetectCycle(N* node, std::vector<std::string>* cycle) {
 /// @param[out] cycle  The cycle path if detected.
 ///
 /// @returns True if a cycle is detected.
-template<typename N, typename C>
+template<class N, class C>
 bool ContinueConnector(C* connector, std::vector<std::string>* cycle) {
   for (N* node : connector->nodes()) {
     if (DetectCycle<N, C>(node, cycle)) return true;

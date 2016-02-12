@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Olzhas Rakhimov
+ * Copyright (C) 2015-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,8 @@
 
 #ifndef SCRAM_SRC_ANALYSIS_H_
 #define SCRAM_SRC_ANALYSIS_H_
+
+#include <cassert>
 
 #include <string>
 
@@ -49,6 +51,24 @@ class Analysis {
   double analysis_time() const { return analysis_time_; }
 
  protected:
+  /// Appends a warning message to the analysis warnings.
+  /// Warnings are separated by spaces.
+  ///
+  /// @param[in] msg  Informative message without special characters.
+  void AddWarning(std::string msg) {
+    assert(!msg.empty() && "Warnings cannot be empty.");
+    warnings_ += " " + msg;
+  }
+
+  /// Adds time to the total analysis time.
+  ///
+  /// @param[in] time  Additional time spent on analysis.
+  void AddAnalysisTime(double time) {
+    assert(time >= 0 && "Cannot subtract time.");
+    analysis_time_ += time;
+  }
+
+ private:
   const Settings kSettings_;  ///< All settings for analysis.
   std::string warnings_;  ///< Generated warnings in analysis.
   double analysis_time_;  ///< Time taken by the analysis.

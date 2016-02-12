@@ -91,7 +91,7 @@ void Component::GatherGates(std::unordered_set<GatePtr>* gates) {
   }
 }
 
-template <typename Ptr, typename Container>
+template<class Ptr, class Container>
 void Component::AddEvent(const Ptr& event, Container* container) {
   std::string name = event->name();
   boost::to_lower(name);

@@ -29,9 +29,10 @@
 #ifndef SCRAM_SRC_LOGGER_H_
 #define SCRAM_SRC_LOGGER_H_
 
-#include <chrono>
 #include <cstdint>
 #include <cstdio>
+
+#include <chrono>
 #include <sstream>
 #include <string>
 
@@ -52,11 +53,11 @@ namespace scram {
 
 /// Logging with a level.
 #define LOG(level) \
-  if (level <= scram::Logger::ReportLevel()) scram::Logger().Get(level)
+  if (level <= scram::Logger::report_level()) scram::Logger().Get(level)
 
 /// Conditional logging with a level.
 #define BLOG(level, cond) \
-  if (cond && level <= scram::Logger::ReportLevel()) scram::Logger().Get(level)
+  if (cond) LOG(level)
 
 /// @enum LogLevel
 /// Levels for log statements.
@@ -75,6 +76,8 @@ enum LogLevel {  // The numbers are used for array indices.
   DEBUG4,  ///< Debugging information for the code inside of DEBUG3.
   DEBUG5  ///< Debugging information for the code inside of DEBUG4.
 };
+
+static const int kMaxVerbosity = 7;  ///< The index of the last level.
 
 /// @class Logger
 /// This is a general purpose logger;
@@ -101,14 +104,24 @@ class Logger {
   ~Logger() noexcept {
     os_ << std::endl;
     // fprintf used for thread safety.
-    fprintf(stderr, "%s", os_.str().c_str());
-    fflush(stderr);
+    std::fprintf(stderr, "%s", os_.str().c_str());
+    std::fflush(stderr);
   }
 
-  /// This function can be used to get and set the cut-off level for logging.
-  ///
   /// @returns Reference to the cut-off level for reporting.
-  static LogLevel& ReportLevel() { return report_level_; }
+  static const LogLevel& report_level() { return report_level_; }
+
+  /// Sets the reporting level cut-off.
+  ///
+  /// @param[in] level  The maximum level of logging.
+  static void report_level(LogLevel level) { report_level_ = level; }
+
+  /// Sets the reporting level cut-off from an integer.
+  ///
+  /// @param[in] level  Integer representation of the log level.
+  ///
+  /// @throws InvalidArgument  The level is out of range.
+  static void SetVerbosity(int level);
 
   /// Returns a string stream by reference
   /// that is flushed to stderr by the Logger class destructor.

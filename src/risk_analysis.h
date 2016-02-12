@@ -144,7 +144,7 @@ class RiskAnalysis : public Analysis {
   ///
   /// @param[in] name  Identificator for analyses.
   /// @param[in] target  Analysis target.
-  template<typename Algorithm>
+  template<class Algorithm>
   void RunAnalysis(const std::string& name, const GatePtr& target) noexcept;
 
   /// Defines and runs Quantitative analysis on the target.
@@ -157,7 +157,7 @@ class RiskAnalysis : public Analysis {
   ///
   /// @pre FaultTreeAnalyzer is ready to tolerate
   ///      giving its internals to Quantitative analyzers.
-  template<typename Algorithm, typename Calculator>
+  template<class Algorithm, class Calculator>
   void RunAnalysis(const std::string& name,
                    FaultTreeAnalyzer<Algorithm>* fta) noexcept;
 

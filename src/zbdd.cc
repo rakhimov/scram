@@ -26,20 +26,6 @@
 
 namespace scram {
 
-/// Logs ZBDD characteristics.
-#define LOG_ZBDD                                                               \
-  LOG(DEBUG4) << "# of ZBDD nodes created: " << set_id_ - 1;                   \
-  LOG(DEBUG4) << "# of entries in unique table: " << unique_table_->size();    \
-  LOG(DEBUG4) << "# of entries in AND table: " << and_table_.size();           \
-  LOG(DEBUG4) << "# of entries in OR table: " << or_table_.size();             \
-  LOG(DEBUG4) << "# of entries in subsume table: " << subsume_table_.size();   \
-  LOG(DEBUG4) << "# of entries in minimal table: " << minimal_results_.size(); \
-  Zbdd::ClearMarks(root_, false);                                              \
-  LOG(DEBUG4) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);      \
-  Zbdd::ClearMarks(root_, false);                                              \
-  LOG(DEBUG4) << "# of products: " << Zbdd::CountProducts(root_, false);       \
-  Zbdd::ClearMarks(root_, false)
-
 #ifndef NDEBUG
 /// Runs assertions on ZBDD structure.
 ///
@@ -52,12 +38,20 @@ namespace scram {
 #define CHECK_ZBDD(full)  ///< No checks on release.
 #endif
 
-namespace zbdd {
-void CutSetContainer::Log() noexcept {
+void Zbdd::Log() noexcept {
   CHECK_ZBDD(false);
-  LOG_ZBDD;
+  LOG(DEBUG4) << "# of ZBDD nodes created: " << set_id_ - 1;
+  LOG(DEBUG4) << "# of entries in unique table: " << unique_table_->size();
+  LOG(DEBUG4) << "# of entries in AND table: " << and_table_.size();
+  LOG(DEBUG4) << "# of entries in OR table: " << or_table_.size();
+  LOG(DEBUG4) << "# of entries in subsume table: " << subsume_table_.size();
+  LOG(DEBUG4) << "# of entries in minimal table: " << minimal_results_.size();
+  Zbdd::ClearMarks(root_, false);
+  LOG(DEBUG4) << "# of SetNodes in ZBDD: " << Zbdd::CountSetNodes(root_);
+  Zbdd::ClearMarks(root_, false);
+  LOG(DEBUG4) << "# of products: " << Zbdd::CountProducts(root_, false);
+  Zbdd::ClearMarks(root_, false);
 }
-}  // namespace zbdd
 
 Zbdd::Zbdd(Bdd* bdd, const Settings& settings) noexcept
     : Zbdd::Zbdd(bdd->root(), bdd->coherent_, bdd, settings) {
@@ -118,29 +112,27 @@ void Zbdd::GarbageCollector::operator()(SetNode* ptr) noexcept {
   delete ptr;
 }
 
-Zbdd::Zbdd(const Settings& settings) noexcept
-    : kSettings_(settings),
-      coherent_(false),
-      module_index_(0),
-      unique_table_(std::make_shared<UniqueTable>()),
-      kBase_(std::make_shared<Terminal>(true)),
+Zbdd::Zbdd(const Settings& settings, bool coherent, int module_index) noexcept
+    : kBase_(std::make_shared<Terminal>(true)),
       kEmpty_(std::make_shared<Terminal>(false)),
+      kSettings_(settings),
+      root_(kEmpty_),
+      coherent_(coherent),
+      module_index_(module_index),
+      unique_table_(std::make_shared<UniqueTable>()),
       set_id_(2) {}
 
 Zbdd::Zbdd(const Bdd::Function& module, bool coherent, Bdd* bdd,
            const Settings& settings, int module_index) noexcept
-    : Zbdd::Zbdd(settings) {
+    : Zbdd::Zbdd(settings, coherent, module_index) {
   CLOCK(init_time);
   LOG(DEBUG2) << "Creating ZBDD from BDD: G" << module_index;
   LOG(DEBUG4) << "Limit on product order: " << settings.limit_order();
-  coherent_ = coherent;
-  module_index_ = module_index;
   PairTable<VertexPtr> ites;
   root_ = Zbdd::Minimize(Zbdd::ConvertBdd(module.vertex, module.complement, bdd,
                                           kSettings_.limit_order(), &ites));
   assert(root_->terminal() || SetNode::Ptr(root_)->minimal());
-  CHECK_ZBDD(false);
-  LOG_ZBDD;
+  Zbdd::Log();
   LOG(DEBUG2) << "Created ZBDD from BDD in " << DUR(init_time);
   std::unordered_map<int, std::pair<bool, int>> sub_modules;
   Zbdd::GatherModules(root_, 0, &sub_modules);
@@ -151,16 +143,14 @@ Zbdd::Zbdd(const Bdd::Function& module, bool coherent, Bdd* bdd,
     assert(!sub.vertex->terminal() && "Unexpected BDD terminal vertex.");
     int limit = entry.second.second;
     if (limit == 0) {  /// @todo Make cut-offs strict.
-      std::unique_ptr<Zbdd> empty_zbdd(new Zbdd(settings));
-      empty_zbdd->root_ = empty_zbdd->kEmpty_;
-      modules_.emplace(index, std::move(empty_zbdd));
+      Zbdd::JoinModule(index, std::unique_ptr<Zbdd>(new Zbdd(settings)));
       continue;
     }
     Settings adjusted(settings);
     adjusted.limit_order(limit);
     bool module_coherence = entry.second.first && (index > 0);
     sub.complement ^= index < 0;
-    modules_.emplace(index, std::unique_ptr<Zbdd>(
+    Zbdd::JoinModule(index, std::unique_ptr<Zbdd>(
             new Zbdd(sub, module_coherence, bdd, adjusted, index)));
   }
   if (std::any_of(
@@ -175,11 +165,9 @@ Zbdd::Zbdd(const Bdd::Function& module, bool coherent, Bdd* bdd,
 }
 
 Zbdd::Zbdd(const IGatePtr& gate, const Settings& settings) noexcept
-    : Zbdd::Zbdd(settings) {
+    : Zbdd::Zbdd(settings, gate->coherent(), gate->index()) {
   if (gate->IsConstant() || gate->type() == kNullGate) return;
   assert(!settings.prime_implicants() && "Not implemented.");
-  coherent_ = gate->coherent();
-  module_index_ = gate->index();
   CLOCK(init_time);
   assert(gate->IsModule() && "The constructor is meant for module gates.");
   LOG(DEBUG3) << "Converting module to ZBDD: G" << gate->index();
@@ -194,8 +182,7 @@ Zbdd::Zbdd(const IGatePtr& gate, const Settings& settings) noexcept
   }
   LOG(DEBUG4) << "Minimizing ZBDD...";
   root_ = Zbdd::Minimize(root_);
-  CHECK_ZBDD(false);
-  LOG_ZBDD;
+  Zbdd::Log();
   LOG(DEBUG3) << "Finished module conversion to ZBDD in " << DUR(init_time);
   std::unordered_map<int, std::pair<bool, int>> sub_modules;
   Zbdd::GatherModules(root_, 0, &sub_modules);
@@ -204,21 +191,18 @@ Zbdd::Zbdd(const IGatePtr& gate, const Settings& settings) noexcept
     assert(!modules_.count(index) && "Recalculating modules.");
     int limit = entry.second.second;
     if (limit == 0) {  /// @todo Make cut-offs strict.
-      std::unique_ptr<Zbdd> empty_zbdd(new Zbdd(settings));
-      empty_zbdd->root_ = empty_zbdd->kEmpty_;
-      modules_.emplace(index, std::move(empty_zbdd));
+      Zbdd::JoinModule(index, std::unique_ptr<Zbdd>(new Zbdd(settings)));
       continue;
     }
     IGatePtr module_gate = module_gates.find(index)->second;
     Settings adjusted(settings);
     adjusted.limit_order(limit);
-    modules_.emplace(index,
+    Zbdd::JoinModule(index,
                      std::unique_ptr<Zbdd>(new Zbdd(module_gate, adjusted)));
   }
   Zbdd::EliminateConstantModules();
 }
 
-#undef LOG_ZBDD
 #undef CHECK_ZBDD
 
 SetNodePtr Zbdd::FetchUniqueTable(int index, const VertexPtr& high,
@@ -775,11 +759,8 @@ namespace zbdd {
 
 CutSetContainer::CutSetContainer(const Settings& settings, int module_index,
                                  int gate_index_bound) noexcept
-    : Zbdd::Zbdd(settings),
-      gate_index_bound_(gate_index_bound) {
-  root_ = kEmpty_;  // Empty container.
-  module_index_ = module_index;
-}
+    : Zbdd::Zbdd(settings, /*coherence=*/false, module_index),
+      gate_index_bound_(gate_index_bound) {}
 
 VertexPtr CutSetContainer::ConvertGate(const IGatePtr& gate) noexcept {
   assert(gate->type() == kAndGate || gate->type() == kOrGate);
@@ -801,18 +782,21 @@ VertexPtr CutSetContainer::ConvertGate(const IGatePtr& gate) noexcept {
   auto it = args.cbegin();
   VertexPtr result = *it;
   for (++it; it != args.cend(); ++it) {
-    result = Zbdd::Apply(gate->type(), result, *it, kSettings_.limit_order());
+    result =
+        Zbdd::Apply(gate->type(), result, *it, Zbdd::settings().limit_order());
   }
+  Zbdd::ClearTables();
   return result;
 }
 
 VertexPtr CutSetContainer::ExtractIntermediateCutSets(int index) noexcept {
   assert(index && index > gate_index_bound_);
-  assert(!root_->terminal() && "Impossible to have intermediate cut sets.");
-  assert(index == SetNode::Ptr(root_)->index() && "Broken ordering!");
+  assert(!Zbdd::root()->terminal() &&
+         "Impossible to have intermediate cut sets.");
+  assert(index == SetNode::Ptr(Zbdd::root())->index() && "Broken ordering!");
   LOG(DEBUG5) << "Extracting cut sets for G" << index;
-  SetNodePtr node = SetNode::Ptr(root_);
-  root_ = node->low();
+  SetNodePtr node = SetNode::Ptr(Zbdd::root());
+  Zbdd::root(node->low());
   return node->high();
 }
 

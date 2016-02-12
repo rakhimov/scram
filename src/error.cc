@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,8 +26,6 @@ const std::string Error::kPrefix_("scram error: ");
 
 Error::Error(std::string msg) : msg_(msg), thrown_(Error::kPrefix_ + msg) {}
 
-const char* Error::what() const noexcept {
-  return thrown_.c_str();
-}
+const char* Error::what() const noexcept { return thrown_.c_str(); }
 
 }  // namespace scram

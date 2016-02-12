@@ -54,7 +54,7 @@ void UncertaintyAnalysis::Analyze() noexcept {
   UncertaintyAnalysis::CalculateStatistics(samples);
   LOG(DEBUG3) << "Finished calculating statistics in " << DUR(stat_time);
 
-  analysis_time_ = DUR(analysis_time);
+  Analysis::AddAnalysisTime(DUR(analysis_time));
 }
 
 std::vector<std::pair<int, BasicEvent*>>
@@ -75,16 +75,16 @@ void UncertaintyAnalysis::CalculateStatistics(
   using accumulator_q =
       accumulator_set<double, stats<tag::extended_p_square_quantile>>;
   quantiles_.clear();
-  int num_quantiles = kSettings_.num_quantiles();
+  int num_quantiles = Analysis::settings().num_quantiles();
   double delta = 1.0 / num_quantiles;
   for (int i = 0; i < num_quantiles; ++i) {
     quantiles_.push_back(delta * (i + 1));
   }
   accumulator_q acc_q(extended_p_square_probabilities = quantiles_);
 
-  int num_trials = kSettings_.num_trials();
+  int num_trials = Analysis::settings().num_trials();
   accumulator_set<double, stats<tag::mean, tag::variance, tag::density> >
-      acc(tag::density::num_bins = kSettings_.num_bins(),
+      acc(tag::density::num_bins = Analysis::settings().num_bins(),
           tag::density::cache_size = num_trials);
 
   for (double sample : samples) {

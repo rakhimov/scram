@@ -693,7 +693,7 @@ void BooleanGraph::GraphLogger::Log(const IGatePtr& gate) noexcept {
 }
 
 void BooleanGraph::Log() noexcept {
-  if (DEBUG4 > scram::Logger::ReportLevel()) return;
+  if (DEBUG4 > scram::Logger::report_level()) return;
   BooleanGraph::ClearGateMarks();
   GraphLogger* logger = new GraphLogger();
   logger->RegisterRoot(root_);

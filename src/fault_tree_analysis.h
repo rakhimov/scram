@@ -243,6 +243,7 @@ class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
   void Convert(const std::vector<std::vector<int>>& results,
                const BooleanGraph* graph) noexcept;
 
+ private:
   std::vector<Product> products_;  ///< Container of analysis results.
   std::vector<BasicEventPtr> product_events_;  ///< Basic events in the sets.
 };
@@ -253,7 +254,7 @@ class FaultTreeAnalysis : public Analysis, public FaultTreeDescriptor {
 ///
 /// Fault tree analysis facility with specific algorithms.
 /// This class is meant to be specialized by fault tree analysis algorithms.
-template<typename Algorithm>
+template<class Algorithm>
 class FaultTreeAnalyzer : public FaultTreeAnalysis {
  public:
   /// Constructor with a fault tree and analysis settings.
@@ -272,19 +273,19 @@ class FaultTreeAnalyzer : public FaultTreeAnalysis {
   /// @returns Pointer to the Boolean graph representing the fault tree.
   const BooleanGraph* graph() const { return graph_.get(); }
 
- protected:
+ private:
   std::unique_ptr<Algorithm> algorithm_;  ///< Analysis algorithm.
   std::unique_ptr<BooleanGraph> graph_;  ///< Boolean graph of the fault tree.
 };
 
-template<typename Algorithm>
+template<class Algorithm>
 void FaultTreeAnalyzer<Algorithm>::Analyze() noexcept {
   CLOCK(analysis_time);
 
   CLOCK(graph_creation);
   graph_ = std::unique_ptr<BooleanGraph>(
       new BooleanGraph(FaultTreeDescriptor::top_event(),
-                       kSettings_.ccf_analysis()));
+                       Analysis::settings().ccf_analysis()));
   LOG(DEBUG2) << "Boolean graph is created in " << DUR(graph_creation);
 
   CLOCK(prep_time);  // Overall preprocessing time.
@@ -294,16 +295,16 @@ void FaultTreeAnalyzer<Algorithm>::Analyze() noexcept {
   delete preprocessor;  // No exceptions are expected.
   LOG(DEBUG2) << "Finished preprocessing in " << DUR(prep_time);
 #ifndef NDEBUG
-  if (kSettings_.preprocessor) return;  // Preprocessor only option.
+  if (Analysis::settings().preprocessor) return;  // Preprocessor only option.
 #endif
   CLOCK(algo_time);
   LOG(DEBUG2) << "Launching the algorithm...";
-  algorithm_ =
-      std::unique_ptr<Algorithm>(new Algorithm(graph_.get(), kSettings_));
+  algorithm_ = std::unique_ptr<Algorithm>(new Algorithm(graph_.get(),
+                                                        Analysis::settings()));
   algorithm_->Analyze();
   LOG(DEBUG2) << "The algorithm finished in " << DUR(algo_time);
 
-  analysis_time_ = DUR(analysis_time);  // Duration of MCS generation.
+  Analysis::AddAnalysisTime(DUR(analysis_time));
   FaultTreeAnalysis::Convert(algorithm_->products(), graph_.get());
 }
 

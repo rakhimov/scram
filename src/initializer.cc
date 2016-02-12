@@ -22,6 +22,7 @@
 
 #include <fstream>
 #include <set>
+#include <type_traits>
 #include <unordered_map>
 
 #include <boost/algorithm/string.hpp>
@@ -39,7 +40,7 @@ namespace scram {
 
 namespace {
 
-/// Helper function to staticly cast to XML element.
+/// Helper function to statically cast to XML element.
 ///
 /// @param[in] node  XML node known to be XML element.
 ///
@@ -50,9 +51,10 @@ inline const xmlpp::Element* XmlElement(const xmlpp::Node* node) {
   return static_cast<const xmlpp::Element*>(node);
 }
 
-/// Normalizes the string in the XML attribute.
+/// Normalizes the string in an XML attribute.
 ///
 /// @param[in] element  XML element with the attribute.
+/// @param[in] attribute  The name of the attribute.
 ///
 /// @returns Normalized (trimmed) string from the attribute.
 inline std::string GetAttributeValue(const xmlpp::Element* element,
@@ -60,6 +62,31 @@ inline std::string GetAttributeValue(const xmlpp::Element* element,
   std::string value = element->get_attribute_value(attribute);
   boost::trim(value);
   return value;
+}
+
+/// Gets a number from an XML attribute.
+///
+/// @tparam T  Numerical type.
+///
+/// @param[in] element  XML element with the attribute.
+/// @param[in] attribute  The name of the attribute.
+///
+/// @returns The interpreted value.
+///
+/// @throws ValidationError  Casting is unsuccessful.
+///                          The error message will include the line number.
+template<typename T>
+inline typename std::enable_if<std::is_arithmetic<T>::value, T>::type
+CastAttributeValue(const xmlpp::Element* element,
+                   const std::string& attribute) {
+  try {
+    return boost::lexical_cast<T>(GetAttributeValue(element, attribute));
+  } catch (boost::bad_lexical_cast&) {
+    std::stringstream msg;
+    msg << "Line " << element->get_line() << ":\n"
+        << "Failed to interpret attribute '" << attribute << "' to a number.";
+    throw ValidationError(msg.str());
+  }
 }
 
 }  // namespace
@@ -144,7 +171,7 @@ void Initializer::ProcessInputFile(const std::string& xml_file) {
   file_stream.close();
 
   XmlParser* parser = new XmlParser(stream);
-  parsers_.emplace_back(parser);
+  parsers_.emplace_back(parser);  // Gets managed by unique pointer.
   parser->Validate(schema_);
 
   const xmlpp::Document* doc = parser->Document();
@@ -367,8 +394,7 @@ FormulaPtr Initializer::GetFormula(const xmlpp::Element* formula_node,
   }
   FormulaPtr formula(new Formula(type));
   if (type == "atleast") {
-    std::string min_num = GetAttributeValue(formula_node, "min");
-    int vote_number = boost::lexical_cast<int>(min_num);
+    int vote_number = CastAttributeValue<int>(formula_node, "min");
     formula->vote_number(vote_number);
   }
   // Process arguments of this formula.
@@ -582,15 +608,17 @@ bool Initializer::GetConstantExpression(const xmlpp::Element* expr_element,
                                         ExpressionPtr& expression) {
   assert(expr_element);
   std::string expr_name = expr_element->get_name();
-  if (expr_name == "float" || expr_name == "int") {
-    std::string val = GetAttributeValue(expr_element, "value");
-    double num = boost::lexical_cast<double>(val);
-    expression = std::make_shared<ConstantExpression>(num);
+  if (expr_name == "int") {
+    int val = CastAttributeValue<int>(expr_element, "value");
+    expression = std::make_shared<ConstantExpression>(val);
+
+  } else if (expr_name == "float") {
+    double val = CastAttributeValue<double>(expr_element, "value");
+    expression = std::make_shared<ConstantExpression>(val);
 
   } else if (expr_name == "bool") {
     std::string val = GetAttributeValue(expr_element, "value");
-    bool state = (val == "true") ? true : false;
-    expression = std::make_shared<ConstantExpression>(state);
+    expression = std::make_shared<ConstantExpression>(val == "true");
   } else {
     return false;
   }
@@ -813,7 +841,7 @@ void Initializer::DefineCcfFactor(const xmlpp::Element* factor_node,
     msg << "CCF group factor level number is not provided.";
     throw ValidationError(msg.str());
   }
-  int level_num = boost::lexical_cast<int>(level);
+  int level_num = CastAttributeValue<int>(factor_node, "level");
   assert(factor_node->find("./*").size() == 1);
   const xmlpp::Element* expr_node = XmlElement(factor_node->find("./*")[0]);
   ExpressionPtr expression =

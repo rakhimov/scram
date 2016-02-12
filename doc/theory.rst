@@ -240,7 +240,7 @@ Uncertainty Analysis
 ********************
 
 Uncertainty quantification is performed for a top event(gate)
-with determined minimal cut sets  or prime implicants[UA]_.
+with determined minimal cut sets or prime implicants [UA]_.
 If events in the products have their probabilities
 expressed by a statistical distribution with some uncertainties,
 these uncertainties propagate to the total probability of the top event.
@@ -360,13 +360,37 @@ by using specific gates, such as Priority AND, Sequence.
 GATES
 =====
 
-#. Priority AND :
+#. Priority AND (PAND) :
     Output fault occurs
     if all the input faults occur in a specific sequence.
     The sequence may also be from first to last member or left to right.
-    For most packages with the static fault tree analysis,
+    In most packages with static fault tree analysis,
     this gate is treated just like AND gate without the sequence,
     so it stays for graphical purposes only.
+
+#. Functional Dependency (FDEP) :
+    This is not a gate with an output
+    but a description that a set of basic events depends on one trigger event.
+    If the trigger event occurs,
+    all the basic events occur immediately and simultaneously (no ordering).
+    To achieve this behavior with existing static gates,
+    each occurrence of a basic event in the set
+    can be replaced with an OR gate with two inputs,
+    the basic event and the trigger.
+
+#. Sequence Enforcer (SEQ) :
+    This is not a gate with an output
+    but a constraint that events can only occur in given order.
+
+#. Spare Gates :
+    A collection of spare parts
+    ready to replace failed components.
+    If there are no more replacements,
+    the gate fails.
+    The spare components can be shared and have a waiting state (hot, warm, cold).
+    For simple analysis with hot spare components
+    (the same failure characteristics as the deployed component),
+    this gate can be approximated with an AND gate.
 
 
 *************************

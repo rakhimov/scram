@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,9 +21,10 @@
 #ifndef SCRAM_SRC_RANDOM_H_
 #define SCRAM_SRC_RANDOM_H_
 
-#include <array>
 #include <cassert>
 #include <cmath>
+
+#include <array>
 #include <random>
 #include <vector>
 

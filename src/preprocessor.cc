@@ -85,6 +85,28 @@ Preprocessor::Preprocessor(BooleanGraph* graph) noexcept
     : graph_(graph),
       constant_graph_(false) {}
 
+void Preprocessor::Run() noexcept {
+  CLOCK(time_1);
+  LOG(DEBUG2) << "Preprocessing Phase I...";
+  Preprocessor::PhaseOne();
+  LOG(DEBUG2) << "Finished Preprocessing Phase I in " << DUR(time_1);
+  if (Preprocessor::CheckRootGate()) return;
+
+  CLOCK(time_2);
+  LOG(DEBUG2) << "Preprocessing Phase II...";
+  Preprocessor::PhaseTwo();
+  LOG(DEBUG2) << "Finished Preprocessing Phase II in " << DUR(time_2);
+  if (Preprocessor::CheckRootGate()) return;
+
+  if (!graph_->normal()) {
+    CLOCK(time_3);
+    LOG(DEBUG2) << "Preprocessing Phase III...";
+    Preprocessor::PhaseThree();
+    LOG(DEBUG2) << "Finished Preprocessing Phase III in " << DUR(time_3);
+    if (Preprocessor::CheckRootGate()) return;
+  }
+}
+
 namespace {  // Boolean graph structure verification tools.
 
 /// @class TestGateMarks
@@ -308,6 +330,8 @@ void Preprocessor::PhaseFive() noexcept {
   if (Preprocessor::CheckRootGate()) return;
   graph_->Log();
 }
+
+#undef SANITY_ASSERT
 
 namespace {  // Helper functions for all preprocessing algorithms.
 
@@ -1840,7 +1864,7 @@ void Preprocessor::GatherCommonNodes(
   }
 }
 
-template<typename N>
+template<class N>
 void Preprocessor::ProcessCommonNode(
     const std::weak_ptr<N>& common_node) noexcept {
   assert(const_gates_.empty());
@@ -2066,7 +2090,7 @@ void Preprocessor::ProcessRedundantParents(
   }
 }
 
-template<typename N>
+template<class N>
 void Preprocessor::ProcessStateDestinations(
     const std::shared_ptr<N>& node,
     const std::unordered_map<int, IGateWeakPtr>& destinations) noexcept {
@@ -2406,35 +2430,23 @@ void Preprocessor::GatherNodes(
   }
 }
 
-void CustomPreprocessor<Mocus>::Run() noexcept {
-  CLOCK(time_1);
-  LOG(DEBUG2) << "Preprocessing Phase I...";
-  Preprocessor::PhaseOne();
-  LOG(DEBUG2) << "Finished Preprocessing Phase I in " << DUR(time_1);
+void CustomPreprocessor<Bdd>::Run() noexcept {
+  Preprocessor::Run();
   if (Preprocessor::CheckRootGate()) return;
+  Preprocessor::MarkCoherence();
+  Preprocessor::AssignOrder();
+}
 
-  CLOCK(time_2);
-  LOG(DEBUG2) << "Preprocessing Phase II...";
-  Preprocessor::PhaseTwo();
-  LOG(DEBUG2) << "Finished Preprocessing Phase II in " << DUR(time_2);
+void CustomPreprocessor<Zbdd>::Run() noexcept {
+  Preprocessor::Run();
   if (Preprocessor::CheckRootGate()) return;
-
-  if (!graph_->normal()) {
-    CLOCK(time_3);
-    LOG(DEBUG2) << "Preprocessing Phase III...";
-    Preprocessor::PhaseThree();
-    LOG(DEBUG2) << "Finished Preprocessing Phase III in " << DUR(time_3);
-    if (Preprocessor::CheckRootGate()) return;
-  }
-
-  if (!graph_->coherent()) {
+  if (!Preprocessor::graph().coherent()) {
     CLOCK(time_4);
     LOG(DEBUG2) << "Preprocessing Phase IV...";
     Preprocessor::PhaseFour();
     LOG(DEBUG2) << "Finished Preprocessing Phase IV in " << DUR(time_4);
     if (Preprocessor::CheckRootGate()) return;
   }
-
   CLOCK(time_5);
   LOG(DEBUG2) << "Preprocessing Phase V...";
   Preprocessor::PhaseFive();
@@ -2442,9 +2454,12 @@ void CustomPreprocessor<Mocus>::Run() noexcept {
   if (Preprocessor::CheckRootGate()) return;
   Preprocessor::MarkCoherence();
   Preprocessor::AssignOrder();
+}
+
+void CustomPreprocessor<Mocus>::Run() noexcept {
+  CustomPreprocessor<Zbdd>::Run();
+  if (Preprocessor::CheckRootGate()) return;
   CustomPreprocessor<Mocus>::InvertOrder();
-  SANITY_ASSERT;
-  assert(graph_->normal());
 }
 
 void CustomPreprocessor<Mocus>::InvertOrder() noexcept {
@@ -2468,47 +2483,5 @@ void CustomPreprocessor<Mocus>::InvertOrder() noexcept {
 
   for (auto var : variables) var->order(shift + var->order());
 }
-
-void CustomPreprocessor<Bdd>::Run() noexcept {
-  CLOCK(time_1);
-  LOG(DEBUG2) << "Preprocessing Phase I...";
-  Preprocessor::PhaseOne();
-  LOG(DEBUG2) << "Finished Preprocessing Phase I in " << DUR(time_1);
-  if (Preprocessor::CheckRootGate()) return;
-
-  CLOCK(time_2);
-  LOG(DEBUG2) << "Preprocessing Phase II...";
-  Preprocessor::PhaseTwo();
-  LOG(DEBUG2) << "Finished Preprocessing Phase II in " << DUR(time_2);
-  if (Preprocessor::CheckRootGate()) return;
-
-  if (!graph_->normal()) {
-    CLOCK(time_3);
-    LOG(DEBUG2) << "Preprocessing Phase III...";
-    Preprocessor::PhaseThree();
-    LOG(DEBUG2) << "Finished Preprocessing Phase III in " << DUR(time_3);
-    if (Preprocessor::CheckRootGate()) return;
-  }
-  Preprocessor::MarkCoherence();
-  Preprocessor::AssignOrder();
-  SANITY_ASSERT;
-}
-
-void CustomPreprocessor<Zbdd>::Run() noexcept {
-  CustomPreprocessor<Bdd>::Run();
-  if (Preprocessor::CheckRootGate()) return;
-  if (!graph_->coherent()) {
-    CLOCK(time_4);
-    LOG(DEBUG2) << "Preprocessing Phase IV...";
-    Preprocessor::PhaseFour();
-    LOG(DEBUG2) << "Finished Preprocessing Phase IV in " << DUR(time_4);
-    if (Preprocessor::CheckRootGate()) return;
-  }
-  Preprocessor::MarkCoherence();
-  Preprocessor::AssignOrder();
-  SANITY_ASSERT;
-}
-
-#undef SANITY_ASSERT
 
 }  // namespace scram

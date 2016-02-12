@@ -75,13 +75,6 @@ class UncertaintyAnalysis : public Analysis {
   const std::vector<double>& quantiles() const { return quantiles_; }
 
  protected:
-  /// Performs Monte Carlo Simulation
-  /// by sampling the probability distributions
-  /// and providing the final sampled values of the final probability.
-  ///
-  /// @returns Sampled values.
-  virtual std::vector<double> Sample() noexcept = 0;
-
   /// Gathers basic events that have distributions.
   ///
   /// @param[in] graph  Boolean graph with the variables.
@@ -91,6 +84,13 @@ class UncertaintyAnalysis : public Analysis {
       const BooleanGraph* graph) noexcept;
 
  private:
+  /// Performs Monte Carlo Simulation
+  /// by sampling the probability distributions
+  /// and providing the final sampled values of the final probability.
+  ///
+  /// @returns Sampled values.
+  virtual std::vector<double> Sample() noexcept = 0;
+
   /// Calculates statistical values from the final distribution.
   ///
   /// @param[in] samples  Gathered samples for statistical analysis.
@@ -111,7 +111,7 @@ class UncertaintyAnalysis : public Analysis {
 /// Uncertainty analysis facility.
 ///
 /// @tparam Calculator  Quantitative analysis calculator.
-template<typename Calculator>
+template<class Calculator>
 class UncertaintyAnalyzer : public UncertaintyAnalysis {
  public:
   /// Constructs uncertainty analyzer from probability analyzer.
@@ -128,22 +128,22 @@ class UncertaintyAnalyzer : public UncertaintyAnalysis {
       : UncertaintyAnalysis::UncertaintyAnalysis(prob_analyzer),
         prob_analyzer_(prob_analyzer) {}
 
+ private:
   /// @returns Samples of the total probability.
   std::vector<double> Sample() noexcept override;
 
- private:
   /// Calculator of the total probability.
   ProbabilityAnalyzer<Calculator>* prob_analyzer_;
 };
 
-template<typename Calculator>
+template<class Calculator>
 std::vector<double> UncertaintyAnalyzer<Calculator>::Sample() noexcept {
   std::vector<std::pair<int, BasicEvent*>> uncertain_events =
       UncertaintyAnalysis::FilterUncertainEvents(prob_analyzer_->graph());
   std::vector<double>& p_vars = prob_analyzer_->p_vars();
   std::vector<double> samples;
-  samples.reserve(kSettings_.num_trials());
-  for (int i = 0; i < kSettings_.num_trials(); ++i) {
+  samples.reserve(Analysis::settings().num_trials());
+  for (int i = 0; i < Analysis::settings().num_trials(); ++i) {
     // Reset distributions.
     for (const auto& event : uncertain_events) event.second->Reset();
 

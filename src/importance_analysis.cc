@@ -50,7 +50,7 @@ void ImportanceAnalysis::Analyze() noexcept {
     important_events_.emplace_back(event.second, imp);
   }
   LOG(DEBUG3) << "Calculated importance factors in " << DUR(imp_time);
-  analysis_time_ = DUR(imp_time);
+  Analysis::AddAnalysisTime(DUR(imp_time));
 }
 
 std::vector<std::pair<int, BasicEventPtr>>
@@ -121,7 +121,7 @@ double ImportanceAnalyzer<Bdd>::CalculateMif(const VertexPtr& vertex, int order,
       p_var = ImportanceAnalyzer::RetrieveProbability(res.vertex);
       if (res.complement) p_var = 1 - p_var;
     } else {
-      p_var = prob_analyzer_->p_vars()[ite->index()];
+      p_var = ImportanceAnalyzerBase::prob_analyzer()->p_vars()[ite->index()];
     }
     double high = ImportanceAnalyzer::CalculateMif(ite->high(), order, mark);
     double low = ImportanceAnalyzer::CalculateMif(ite->low(), order, mark);

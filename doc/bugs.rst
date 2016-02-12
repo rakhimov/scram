@@ -2,4 +2,40 @@
 Bugs and Issues
 ###############
 
-`Issues on GitHub <https://github.com/rakhimov/scram/issues>`_
+- `Issues on GitHub <https://github.com/rakhimov/scram/issues>`_
+
+
+Technical Issues
+----------------
+
+.. note:: The following list contains
+          non-critical or questionable
+          low-level technical issues.
+
+- Copying Settings around is expensive (~100B)
+- Abuse of smart pointers (shared pointers)
+- Operator enum has "Gate" in its names
+- IGate and Formula have 'type' field instead of 'operator' (reserved in C++)
+- 'Atleast' vs. 'Vote' vs. 'K/N' vs. 'Combination'
+- Bdd and Zbdd friendship is a design smell.
+  (Access controlled Bdd::Consensus for Zbdd needs Bdd::Function outside of Bdd.)
+- FetchTable() functions (Bdd/Zbdd) may not make sense semantically.
+- IGate::IsModule() vs. IGate::module(). (Inconsistent with the rest of the code.)
+- ConvertBddPI is an easy-to-get-wrong name. (There is ConvertBdd.)
+- IGate in Boolean graph is confusing (There is Gate in event.h)
+- Questionable explicit qualification rules for member functions.
+- Parsing code for nested formulas in ``shorthand_to_xml.py`` is add-hoc (ugly, incorrect).
+- Fault tree generator script is too complex.
+- Fuzz tester runs are coupled.
+  Can't run two jobs at the same time.
+- Fuzz tester error collection and reporting are non-existent.
+- Preprocessing contracts need review, update, and clarification.
+- BooleanGraph must guarantee stable results (construction from PDAG).
+- Migrate "Quick Installation" to "Installation" web page.
+  (Windows installation is needed to get any value out of this migration.)
+- The code is not well designed as public API.
+  (Example design flaw: call analysis twice and get undefined behavior.)
+- Virtually everything is under one namespace.
+- The violation of a basic guarantee (memory leaks)
+  due to circular references in incorrect models
+  (formulas, parameters, containers).

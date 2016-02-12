@@ -57,10 +57,14 @@ class Preprocessor {
   ///          which will mess the new structure of the Boolean graph.
   explicit Preprocessor(BooleanGraph* graph) noexcept;
 
+  Preprocessor(const Preprocessor&) = delete;
+  Preprocessor& operator=(const Preprocessor&) = delete;
+
   virtual ~Preprocessor() = default;
 
-  /// Runs preprocessor with specified techniques.
-  virtual void Run() = 0;
+  /// Runs the default preprocessing
+  /// that achieves the graph in a normal form.
+  virtual void Run() noexcept = 0;
 
  protected:
   /// The initial phase of preprocessing.
@@ -772,7 +776,7 @@ class Preprocessor {
   /// @tparam N  Non-Node, concrete (i.e. IGate, etc.) type.
   ///
   /// @param[in] common_node  A node with more than one parent.
-  template<typename N>
+  template<class N>
   void ProcessCommonNode(const std::weak_ptr<N>& common_node) noexcept;
 
   /// Marks ancestor gates true.
@@ -876,7 +880,7 @@ class Preprocessor {
   ///
   /// @warning This function will replace the root gate of the graph
   ///          if it is the destination.
-  template<typename N>
+  template<class N>
   void ProcessStateDestinations(
       const std::shared_ptr<N>& node,
       const std::unordered_map<int, IGateWeakPtr>& destinations) noexcept;
@@ -1049,6 +1053,10 @@ class Preprocessor {
   void GatherNodes(const IGatePtr& gate, std::vector<IGatePtr>* gates,
                    std::vector<VariablePtr>* variables) noexcept;
 
+  /// @returns The graph under processing.
+  const BooleanGraph& graph() const { return *graph_; }
+
+ private:
   BooleanGraph* graph_;  ///< The Boolean graph to preprocess.
   bool constant_graph_;  ///< Graph is constant due to constant events.
   /// Container for constant gates to be tracked and cleaned by algorithms.
@@ -1066,17 +1074,48 @@ class Preprocessor {
 ///
 /// Undefined template class for specialization of Preprocessor
 /// for needs of specific analysis algorithms.
-template<typename Algorithm>
+template<class Algorithm>
 class CustomPreprocessor;
+
+class Bdd;
+
+/// @class CustomPreprocessor<Bdd>
+/// Specialization of preprocessing for BDD based analyses.
+template<>
+class CustomPreprocessor<Bdd> : public Preprocessor {
+ public:
+  using Preprocessor::Preprocessor;  ///< Constructor with a Boolean graph.
+
+  /// Performs preprocessing for analyses with Binary Decision Diagrams.
+  /// This preprocessing assigns the order for variables for BDD construction.
+  void Run() noexcept override;
+};
+
+class Zbdd;
+
+/// @class CustomPreprocessor<Zbdd>
+/// Specialization of preprocessing for ZBDD based analyses.
+template<>
+class CustomPreprocessor<Zbdd> : public Preprocessor {
+ public:
+  using Preprocessor::Preprocessor;  ///< Constructor with a Boolean graph.
+
+  /// Performs preprocessing for analyses
+  /// with Zero-Suppressed Binary Decision Diagrams.
+  /// Complements are propagated to variables.
+  /// This preprocessing assigns the order for variables for ZBDD construction.
+  void Run() noexcept override;
+};
 
 class Mocus;
 
 /// @class CustomPreprocessor<Mocus>
 /// Specialization of preprocessing for MOCUS based analyses.
 template<>
-class CustomPreprocessor<Mocus> : public Preprocessor {
+class CustomPreprocessor<Mocus> : public CustomPreprocessor<Zbdd> {
  public:
-  using Preprocessor::Preprocessor;  ///< Constructor with a Boolean graph.
+  /// Constructor with a Boolean graph.
+  using CustomPreprocessor<Zbdd>::CustomPreprocessor;
 
   /// Performs processing of a fault tree
   /// to simplify the structure to
@@ -1100,37 +1139,6 @@ class CustomPreprocessor<Mocus> : public Preprocessor {
   /// Note, however, the inversion of the order
   /// generally (dramatically) increases the size of Binary Decision Diagrams.
   void InvertOrder() noexcept;
-};
-
-class Bdd;
-
-/// @class CustomPreprocessor<Bdd>
-/// Specialization of preprocessing for BDD based analyses.
-template<>
-class CustomPreprocessor<Bdd> : public Preprocessor {
- public:
-  using Preprocessor::Preprocessor;  ///< Constructor with a Boolean graph.
-
-  /// Performs preprocessing for analyses with Binary Decision Diagrams.
-  /// This preprocessing assigns the order for variables for BDD construction.
-  void Run() noexcept override;
-};
-
-class Zbdd;
-
-/// @class CustomPreprocessor<Zbdd>
-/// Specialization of preprocessing for ZBDD based analyses.
-template<>
-class CustomPreprocessor<Zbdd> : public CustomPreprocessor<Bdd> {
- public:
-  /// Constructor with a Boolean graph.
-  using CustomPreprocessor<Bdd>::CustomPreprocessor;
-
-  /// Performs preprocessing for analyses
-  /// with Zero-Suppressed Binary Decision Diagrams.
-  /// Complements are propagated to variables.
-  /// This preprocessing assigns the order for variables for ZBDD construction.
-  void Run() noexcept override;
 };
 
 }  // namespace scram

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,16 +34,23 @@ Expression::Expression(std::vector<ExpressionPtr> args)
       sampled_(false),
       gather_(true) {}
 
+double Expression::Sample() noexcept {
+  if (!sampled_) {
+    sampled_ = true;
+    sampled_value_ = this->GetSample();
+  }
+  return sampled_value_;
+}
+
 void Expression::Reset() noexcept {
-  if (!Expression::sampled_) return;
-  Expression::sampled_ = false;
+  if (!sampled_) return;
+  sampled_ = false;
   for (const ExpressionPtr& arg : args_) arg->Reset();
 }
 
 bool Expression::IsConstant() noexcept {
-  for (const ExpressionPtr& arg : args_) {
+  for (const ExpressionPtr& arg : args_)
     if (!arg->IsConstant()) return false;
-  }
   return true;
 }
 
@@ -72,6 +79,12 @@ Parameter::Parameter(const std::string& name, const std::string& base_path,
   assert(name != "");
   id_ = is_public ? name : base_path + "." + name;  // Unique combination.
   boost::to_lower(id_);
+}
+
+void Parameter::expression(const ExpressionPtr& expression) {
+  if (expression_) throw LogicError("Parameter expression is already set.");
+  expression_ = expression;
+  Expression::AddArg(expression);
 }
 
 MissionTime::MissionTime()
@@ -109,15 +122,6 @@ void ExponentialExpression::Validate() {
   }
 }
 
-double ExponentialExpression::Sample() noexcept {
-  if (!Expression::sampled_) {
-    Expression::sampled_ = true;
-    Expression::sampled_value_ =
-        1 - std::exp(-(lambda_->Sample() * time_->Sample()));
-  }
-  return Expression::sampled_value_;
-}
-
 GlmExpression::GlmExpression(const ExpressionPtr& gamma,
                              const ExpressionPtr& lambda,
                              const ExpressionPtr& mu,
@@ -153,14 +157,9 @@ double GlmExpression::Mean() noexcept {
                                 time_->Mean());
 }
 
-double GlmExpression::Sample() noexcept {
-  if (!Expression::sampled_) {
-    Expression::sampled_ = true;
-    Expression::sampled_value_ =
-        GlmExpression::Compute(gamma_->Sample(), lambda_->Sample(),
-                               mu_->Sample(), time_->Sample());
-  }
-  return Expression::sampled_value_;
+double GlmExpression::GetSample() noexcept {
+  return GlmExpression::Compute(gamma_->Sample(), lambda_->Sample(),
+                                mu_->Sample(), time_->Sample());
 }
 
 double GlmExpression::Compute(double gamma, double lambda, double mu,
@@ -208,23 +207,10 @@ void WeibullExpression::Validate() {
   }
 }
 
-double WeibullExpression::Sample() noexcept {
-  if (!Expression::sampled_) {
-    Expression::sampled_ = true;
-    Expression::sampled_value_ =
-        WeibullExpression::Compute(alpha_->Sample(), beta_->Sample(),
-                                   t0_->Sample(), time_->Sample());
-  }
-
-  return Expression::sampled_value_;
-}
-
 double WeibullExpression::Compute(double alpha, double beta,
                                   double t0, double time) noexcept {
   return 1 - std::exp(-std::pow((time - t0) / alpha, beta));
 }
-
-RandomDeviate::~RandomDeviate() {}  // Empty destructor for the abstract class.
 
 UniformDeviate::UniformDeviate(const ExpressionPtr& min,
                                const ExpressionPtr& max)
@@ -242,13 +228,8 @@ void UniformDeviate::Validate() {
   }
 }
 
-double UniformDeviate::Sample() noexcept {
-  if (!Expression::sampled_) {
-    Expression::sampled_ = true;
-    Expression::sampled_value_ = Random::UniformRealGenerator(min_->Sample(),
-                                                              max_->Sample());
-  }
-  return Expression::sampled_value_;
+double UniformDeviate::GetSample() noexcept {
+  return Random::UniformRealGenerator(min_->Sample(), max_->Sample());
 }
 
 NormalDeviate::NormalDeviate(const ExpressionPtr& mean,
@@ -265,13 +246,8 @@ void NormalDeviate::Validate() {
   }
 }
 
-double NormalDeviate::Sample() noexcept {
-  if (!Expression::sampled_) {
-    Expression::sampled_ = true;
-    Expression::sampled_value_ =  Random::NormalGenerator(mean_->Sample(),
-                                                          sigma_->Sample());
-  }
-  return Expression::sampled_value_;
+double NormalDeviate::GetSample() noexcept {
+  return Random::NormalGenerator(mean_->Sample(), sigma_->Sample());
 }
 
 LogNormalDeviate::LogNormalDeviate(const ExpressionPtr& mean,
@@ -303,16 +279,11 @@ void LogNormalDeviate::Validate() {
   }
 }
 
-double LogNormalDeviate::Sample() noexcept {
-  if (!Expression::sampled_) {
-    Expression::sampled_ = true;
-    double sigma =
-        LogNormalDeviate::ComputeScale(level_->Sample(), ef_->Sample());
-    double mu =
-        LogNormalDeviate::ComputeLocation(mean_->Sample(), sigma);
-    Expression::sampled_value_ =  Random::LogNormalGenerator(mu, sigma);
-  }
-  return Expression::sampled_value_;
+double LogNormalDeviate::GetSample() noexcept {
+  double sigma =
+      LogNormalDeviate::ComputeScale(level_->Sample(), ef_->Sample());
+  double mu = LogNormalDeviate::ComputeLocation(mean_->Sample(), sigma);
+  return Random::LogNormalGenerator(mu, sigma);
 }
 
 double LogNormalDeviate::Max() noexcept {
@@ -353,13 +324,8 @@ GammaDeviate::GammaDeviate(const ExpressionPtr& k, const ExpressionPtr& theta)
         k_(k),
         theta_(theta) {}
 
-double GammaDeviate::Sample() noexcept {
-  if (!Expression::sampled_) {
-    Expression::sampled_ = true;
-    Expression::sampled_value_ = Random::GammaGenerator(k_->Sample(),
-                                                        theta_->Sample());
-  }
-  return Expression::sampled_value_;
+double GammaDeviate::GetSample() noexcept {
+  return Random::GammaGenerator(k_->Sample(), theta_->Sample());
 }
 
 BetaDeviate::BetaDeviate(const ExpressionPtr& alpha, const ExpressionPtr& beta)
@@ -383,26 +349,20 @@ void BetaDeviate::Validate() {
   }
 }
 
-double BetaDeviate::Sample() noexcept {
-  if (!Expression::sampled_) {
-    Expression::sampled_ = true;
-    Expression::sampled_value_ = Random::BetaGenerator(alpha_->Sample(),
-                                                       beta_->Sample());
-  }
-  return Expression::sampled_value_;
+double BetaDeviate::GetSample() noexcept {
+  return Random::BetaGenerator(alpha_->Sample(), beta_->Sample());
 }
 
 Histogram::Histogram(std::vector<ExpressionPtr> boundaries,
                      std::vector<ExpressionPtr> weights)
-    : RandomDeviate::RandomDeviate(boundaries),
+    : RandomDeviate::RandomDeviate(boundaries),  // Partial registration!
       boundaries_(std::move(boundaries)),
       weights_(std::move(weights)) {
-  if (weights_.size() != boundaries_.size()) {
+  if (weights_.size() != boundaries_.size())
     throw InvalidArgument("The number of weights is not equal to the number"
                           " of boundaries.");
-  }
-  Expression::args_.insert(Expression::args_.end(), weights_.begin(),
-                           weights_.end());
+  // Complete the argument registration.
+  for (const ExpressionPtr& arg : weights_) Expression::AddArg(arg);
 }
 
 void Histogram::Validate() {
@@ -422,20 +382,15 @@ double Histogram::Mean() noexcept {
   return sum_product / (lower_bound * sum_weights);
 }
 
-double Histogram::Sample() noexcept {
-  if (!Expression::sampled_) {
-    Expression::sampled_ = true;
-    std::vector<double> sampled_boundaries;
-    sampled_boundaries.push_back(0);  // The initial point.
-    std::vector<double> sampled_weights;
-    for (int i = 0; i < boundaries_.size(); ++i) {
-      sampled_boundaries.push_back(boundaries_[i]->Sample());
-      sampled_weights.push_back(weights_[i]->Sample());
-    }
-    Expression::sampled_value_ = Random::HistogramGenerator(sampled_boundaries,
-                                                            sampled_weights);
+double Histogram::GetSample() noexcept {
+  std::vector<double> sampled_boundaries;
+  sampled_boundaries.push_back(0);  // The initial point.
+  std::vector<double> sampled_weights;
+  for (int i = 0; i < boundaries_.size(); ++i) {
+    sampled_boundaries.push_back(boundaries_[i]->Sample());
+    sampled_weights.push_back(weights_[i]->Sample());
   }
-  return Expression::sampled_value_;
+  return Random::HistogramGenerator(sampled_boundaries, sampled_weights);
 }
 
 void Histogram::CheckBoundaries(const std::vector<ExpressionPtr>& boundaries) {
@@ -470,102 +425,89 @@ Neg::Neg(const ExpressionPtr& expression)
         expression_(expression) {}
 
 double Add::Mean() noexcept {
-  assert(!args_.empty());
+  assert(!Expression::args().empty());
   double mean = 0;
-  for (const ExpressionPtr& arg : args_) mean += arg->Mean();
+  for (const ExpressionPtr& arg : Expression::args()) mean += arg->Mean();
   return mean;
 }
 
-double Add::Sample() noexcept {
-  assert(!args_.empty());
-  if (!Expression::sampled_) {
-    Expression::sampled_ = true;
-    Expression::sampled_value_ = 0;
-    for (const ExpressionPtr& arg : args_)
-      Expression::sampled_value_ += arg->Sample();
-  }
-  return Expression::sampled_value_;
+double Add::GetSample() noexcept {
+  assert(!Expression::args().empty());
+  double sum = 0;
+  for (const ExpressionPtr& arg : Expression::args()) sum += arg->Sample();
+  return sum;
 }
 
 double Add::Max() noexcept {
-  assert(!args_.empty());
+  assert(!Expression::args().empty());
   double max = 0;
-  for (const ExpressionPtr& arg : args_) max += arg->Max();
+  for (const ExpressionPtr& arg : Expression::args()) max += arg->Max();
   return max;
 }
 
 double Add::Min() noexcept {
-  assert(!args_.empty());
+  assert(!Expression::args().empty());
   double min = 0;
-  for (const ExpressionPtr& arg : args_) min += arg->Min();
+  for (const ExpressionPtr& arg : Expression::args()) min += arg->Min();
   return min;
 }
 
 double Sub::Mean() noexcept {
-  assert(!args_.empty());
-  std::vector<ExpressionPtr>::iterator it = args_.begin();
+  assert(!Expression::args().empty());
+  auto it = Expression::args().begin();
   double mean = (*it)->Mean();
-  for (++it; it != args_.end(); ++it) {
+  for (++it; it != Expression::args().end(); ++it) {
     mean -= (*it)->Mean();
   }
   return mean;
 }
 
-double Sub::Sample() noexcept {
-  assert(!args_.empty());
-  if (!Expression::sampled_) {
-    Expression::sampled_ = true;
-    std::vector<ExpressionPtr>::iterator it = args_.begin();
-    Expression::sampled_value_ = (*it)->Sample();
-    for (++it; it != args_.end(); ++it) {
-      Expression::sampled_value_ -= (*it)->Sample();
-    }
-  }
-  return Expression::sampled_value_;
+double Sub::GetSample() noexcept {
+  assert(!Expression::args().empty());
+  auto it = Expression::args().begin();
+  double result = (*it)->Sample();
+  for (++it; it != Expression::args().end(); ++it) result -= (*it)->Sample();
+  return result;
 }
 
 double Sub::Max() noexcept {
-  assert(!args_.empty());
-  std::vector<ExpressionPtr>::iterator it = args_.begin();
+  assert(!Expression::args().empty());
+  auto it = Expression::args().begin();
   double max = (*it)->Max();
-  for (++it; it != args_.end(); ++it) {
+  for (++it; it != Expression::args().end(); ++it) {
     max -= (*it)->Min();
   }
   return max;
 }
 
 double Sub::Min() noexcept {
-  assert(!args_.empty());
-  std::vector<ExpressionPtr>::iterator it = args_.begin();
+  assert(!Expression::args().empty());
+  auto it = Expression::args().begin();
   double min = (*it)->Min();
-  for (++it; it != args_.end(); ++it) {
+  for (++it; it != Expression::args().end(); ++it) {
     min -= (*it)->Max();
   }
   return min;
 }
 
 double Mul::Mean() noexcept {
-  assert(!args_.empty());
+  assert(!Expression::args().empty());
   double mean = 1;
-  for (const ExpressionPtr& arg : args_) mean *= arg->Mean();
+  for (const ExpressionPtr& arg : Expression::args()) mean *= arg->Mean();
   return mean;
 }
 
-double Mul::Sample() noexcept {
-  assert(!args_.empty());
-  if (!Expression::sampled_) {
-    Expression::sampled_ = true;
-    Expression::sampled_value_ = 1;
-    for (const ExpressionPtr& arg : args_)
-      Expression::sampled_value_ *= arg->Sample();
-  }
-  return Expression::sampled_value_;
+double Mul::GetSample() noexcept {
+  assert(!Expression::args().empty());
+  double result = 1;
+  for (const ExpressionPtr& arg : Expression::args()) result *= arg->Sample();
+  return result;
 }
 
 double Mul::GetExtremum(bool maximum) noexcept {
   double max_val = 1;  // Maximum possible product.
   double min_val = 1;  // Minimum possible product.
-  for (const ExpressionPtr& arg : args_) {
+  for (const ExpressionPtr& arg : Expression::args()) {
     double mult_max = arg->Max();
     double mult_min = arg->Min();
     double max_max = max_val * mult_max;
@@ -580,9 +522,9 @@ double Mul::GetExtremum(bool maximum) noexcept {
 }
 
 void Div::Validate() {
-  assert(!args_.empty());
-  std::vector<ExpressionPtr>::iterator it = args_.begin();
-  for (++it; it != args_.end(); ++it) {
+  assert(!Expression::args().empty());
+  auto it = Expression::args().begin();
+  for (++it; it != Expression::args().end(); ++it) {
     const auto& expr = *it;
     if (!expr->Mean() || !expr->Max() || !expr->Min())
       throw InvalidArgument("Division by 0.");
@@ -590,34 +532,29 @@ void Div::Validate() {
 }
 
 double Div::Mean() noexcept {
-  assert(!args_.empty());
-  std::vector<ExpressionPtr>::iterator it = args_.begin();
+  assert(!Expression::args().empty());
+  auto it = Expression::args().begin();
   double mean = (*it)->Mean();
-  for (++it; it != args_.end(); ++it) {
+  for (++it; it != Expression::args().end(); ++it) {
     mean /= (*it)->Mean();
   }
   return mean;
 }
 
-double Div::Sample() noexcept {
-  assert(!args_.empty());
-  if (!Expression::sampled_) {
-    Expression::sampled_ = true;
-    std::vector<ExpressionPtr>::iterator it = args_.begin();
-    Expression::sampled_value_ = (*it)->Sample();
-    for (++it; it != args_.end(); ++it) {
-      Expression::sampled_value_ /= (*it)->Sample();
-    }
-  }
-  return Expression::sampled_value_;
+double Div::GetSample() noexcept {
+  assert(!Expression::args().empty());
+  auto it = Expression::args().begin();
+  double result = (*it)->Sample();
+  for (++it; it != Expression::args().end(); ++it) result /= (*it)->Sample();
+  return result;
 }
 
 double Div::GetExtremum(bool maximum) noexcept {
-  assert(!args_.empty());
-  std::vector<ExpressionPtr>::iterator it = args_.begin();
+  assert(!Expression::args().empty());
+  auto it = Expression::args().begin();
   double max_value = (*it)->Max();  // Maximum possible result.
   double min_value = (*it)->Min();  // Minimum possible result.
-  for (++it; it != args_.end(); ++it) {
+  for (++it; it != Expression::args().end(); ++it) {
     double div_max = (*it)->Max();
     double div_min = (*it)->Min();
     double max_max = max_value / div_max;

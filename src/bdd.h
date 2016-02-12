@@ -22,7 +22,6 @@
 #define SCRAM_SRC_BDD_H_
 
 #include <array>
-#include <functional>
 #include <memory>
 #include <unordered_map>
 #include <utility>
@@ -41,7 +40,9 @@ namespace scram {
 /// however, it is NOT polymorphic for performance reasons.
 class Vertex {
  public:
-  Vertex() = delete;
+  /// @param[in] id  Identificator of the BDD graph.
+  explicit Vertex(int id);
+
   Vertex(const Vertex&) = delete;
   Vertex& operator=(const Vertex&) = delete;
 
@@ -52,9 +53,9 @@ class Vertex {
   bool terminal() const { return id_ < 2; }
 
  protected:
-  /// @param[in] id  Identificator of the BDD graph.
-  explicit Vertex(int id);
+  ~Vertex() = default;
 
+ private:
   int id_;  ///< Unique identifier of the BDD graph with this vertex.
 };
 
@@ -75,7 +76,7 @@ class Terminal : public Vertex {
   /// @note The value serves as an id for this terminal vertex.
   ///       Non-terminal if-then-else vertices should never have
   ///       identifications of value 0 or 1.
-  bool value() const { return id_; }
+  bool value() const { return Vertex::id(); }
 
   /// Recovers a shared pointer to Terminal from a pointer to Vertex.
   ///
@@ -147,6 +148,18 @@ class NonTerminal : public Vertex {
   void mark(bool flag) { mark_ = flag; }
 
  protected:
+  ~NonTerminal() = default;
+
+  /// Cuts off this node from its high and low branches.
+  /// This is for destructive operations on the BDD graph.
+  ///
+  /// @pre These branches are not going to be used again.
+  void CutBranches() {
+    high_.reset();
+    low_.reset();
+  }
+
+ private:
   int order_;  ///< Order of the variable.
   VertexPtr high_;  ///< 1 (True/then) branch in the Shannon decomposition.
   VertexPtr low_;  ///< O (False/else) branch in the Shannon decomposition.
@@ -215,7 +228,7 @@ using Triplet = std::array<int, 3>;  ///< (v, G, H) triplet for functions.
 
 /// @struct TripletHash
 /// Functor for hashing triplets of ordered numbers.
-struct TripletHash : public std::unary_function<const Triplet, std::size_t> {
+struct TripletHash {
   /// Operator overload for hashing three ordered numbers.
   ///
   /// @param[in] triplet  (v, G, H) nodes.
@@ -234,8 +247,7 @@ using TripletTable = std::unordered_map<Triplet, Value, TripletHash>;
 
 /// @class PairHash
 /// Function for hashing a pair of ordered numbers.
-struct PairHash
-    : public std::unary_function<const std::pair<int, int>, std::size_t> {
+struct PairHash {
   /// Operator overload for hashing two ordered numbers.
   ///
   /// @param[in] p  The pair of numbers.
@@ -276,6 +288,9 @@ class Bdd {
   ///
   /// @note BDD construction may take considerable time.
   Bdd(const BooleanGraph* fault_tree, const Settings& settings);
+
+  Bdd(const Bdd&) = delete;
+  Bdd& operator=(const Bdd&) = delete;
 
   /// To handle incomplete ZBDD type with unique pointers.
   ~Bdd() noexcept;

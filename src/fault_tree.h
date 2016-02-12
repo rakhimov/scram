@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -140,14 +140,14 @@ class Component : public Element, public Role {
  private:
   /// Adds an event into this component container.
   ///
-  /// @tparam Ptr  The pointer type to the event.
+  /// @tparam Ptr  The smart pointer type to the event.
   /// @tparam Container  Map with the lower case name as the key.
   ///
   /// @param[in] event  The event to be added to this component.
   /// @param[in,out] container  The destination container.
   ///
   /// @throws ValidationError  The event is already in this container.
-  template<typename Ptr, typename Container>
+  template<class Ptr, class Container>
   void AddEvent(const Ptr& event, Container* container);
 
   std::string name_;  ///< The name of this component.

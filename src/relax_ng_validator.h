@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -41,10 +41,12 @@ namespace scram {
 /// against a given RelaxNG schema.
 class RelaxNGValidator {
  public:
-  RelaxNGValidator();
+  RelaxNGValidator() = default;
+  RelaxNGValidator(const RelaxNGValidator&) = delete;
+  RelaxNGValidator& operator=(const RelaxNGValidator&) = delete;
 
-  /// Releases XML related memory by calling ReleaseUnderlying().
-  ~RelaxNGValidator() noexcept;
+  /// Releases XML related memory.
+  ~RelaxNGValidator() noexcept { RelaxNGValidator::ReleaseUnderlying(); }
 
   /// Parses a RelaxNG schema XML file.
   ///
@@ -64,18 +66,11 @@ class RelaxNGValidator {
   void Validate(const xmlpp::Document* doc);
 
  private:
-  /// Parses a RelaxNG schema context.
-  ///
-  /// @param[in] context  The context.
-  ///
-  /// @throws ValidationError  The schema could not be parsed.
-  void ParseContext(xmlRelaxNGParserCtxtPtr context);
-
   /// Frees XML-related memory.
   void ReleaseUnderlying() noexcept;
 
-  xmlRelaxNGPtr schema_;  ///< The schema.
-  xmlRelaxNGValidCtxtPtr valid_context_;  ///< The validated context.
+  xmlRelaxNGPtr schema_ = nullptr;  ///< The schema.
+  xmlRelaxNGValidCtxtPtr valid_context_ = nullptr;  ///< The validated context.
 };
 
 }  // namespace scram

@@ -20,11 +20,22 @@
 
 #include "logger.h"
 
+#include <string>
+
+#include "error.h"
+
 namespace scram {
 
 const char* const Logger::kLevelToString_[] = {"ERROR", "WARNING", "INFO",
                                                "DEBUG1", "DEBUG2", "DEBUG3",
                                                "DEBUG4", "DEBUG5"};
 LogLevel Logger::report_level_ = ERROR;
+
+void Logger::SetVerbosity(int level) {
+  if (level < 0 || level > kMaxVerbosity)
+    throw InvalidArgument("Log verbosity must be between 0 and " +
+                          std::to_string(kMaxVerbosity));
+  report_level_ = static_cast<LogLevel>(level);
+}
 
 }  // namespace scram

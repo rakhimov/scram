@@ -30,10 +30,10 @@
 #ifndef SCRAM_SRC_BOOLEAN_GRAPH_H_
 #define SCRAM_SRC_BOOLEAN_GRAPH_H_
 
+#include <cassert>
+
 #include <algorithm>
 #include <array>
-#include <cassert>
-#include <functional>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -65,6 +65,9 @@ class NodeParentManager {
   const std::unordered_map<int, IGateWeakPtr>& parents() const {
     return parents_;
   }
+
+ protected:
+  ~NodeParentManager() = default;
 
  private:
   /// Adds a new parent of a node.
@@ -613,7 +616,7 @@ class IGate : public Node, public std::enable_shared_from_this<IGate> {
   /// @param[in] index  Positive or negative index of the argument.
   /// @param[in,out] arg  Pointer to the argument.
   /// @param[in,out] container  The final destination to save the argument.
-  template<typename Ptr, typename Container>
+  template<class Ptr, class Container>
   void AddArg(int index, const Ptr& arg, Container* container) noexcept {
     assert(index != 0);
     assert(std::abs(index) == arg->index());
@@ -735,7 +738,7 @@ class GateSet {
   /// Functor for hashing gates by their arguments.
   ///
   /// @note The hashing discards the logic of the gate.
-  struct Hash : public std::unary_function<const IGatePtr, std::size_t> {
+  struct Hash {
     /// Operator overload for hashing.
     ///
     /// @param[in] gate  The gate which hash must be calculated.
@@ -750,8 +753,7 @@ class GateSet {
   /// Functor for equality test for gates by their arguments.
   ///
   /// @note The equality discards the logic of the gate.
-  struct Equal
-      : public std::binary_function<const IGatePtr, const IGatePtr, bool> {
+  struct Equal {
     /// Operator overload for gate argument equality test.
     ///
     /// @param[in] lhs  The first gate.

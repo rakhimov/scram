@@ -138,7 +138,7 @@ class McubCalculator : private CutSetProbabilityCalculator {
 };
 
 /// @class ProbabilityAnalyzerBase
-/// Aggregation class for Probability analyzers.
+/// Base class for Probability analyzers.
 class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
  public:
   using Product = std::vector<int>;  ///< Alias for clarity.
@@ -148,7 +148,7 @@ class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
   /// @tparam Algorithm  Qualitative analysis algorithm.
   ///
   /// @param[in] fta  Finished fault tree analyzer with results.
-  template<typename Algorithm>
+  template<class Algorithm>
   explicit ProbabilityAnalyzerBase(const FaultTreeAnalyzer<Algorithm>* fta);
 
   /// @returns The original Boolean graph from the fault tree analyzer.
@@ -162,17 +162,22 @@ class ProbabilityAnalyzerBase : public ProbabilityAnalysis {
   /// @pre Quantitative analyzers aware of how Probability analyzer works.
   /// @pre Quantitative analyzers will cleanup after themselves.
   ///
-  /// @warning This is a temporary hack
+  /// @warning This is a hack
   ///          due to tight coupling of Quantitative analyzers.
+  ///
+  /// @todo Redesign the use and manipulation of variable probabilities.
   std::vector<double>& p_vars() { return p_vars_; }
 
  protected:
+  ~ProbabilityAnalyzerBase() = default;
+
+ private:
   const BooleanGraph* graph_;  ///< Boolean graph from the fault tree analysis.
   const std::vector<Product>& products_;  ///< A collection of products.
   std::vector<double> p_vars_;  ///< Variable probabilities.
 };
 
-template<typename Algorithm>
+template<class Algorithm>
 ProbabilityAnalyzerBase::ProbabilityAnalyzerBase(
     const FaultTreeAnalyzer<Algorithm>* fta)
     : ProbabilityAnalysis::ProbabilityAnalysis(fta),
@@ -189,7 +194,7 @@ ProbabilityAnalyzerBase::ProbabilityAnalyzerBase(
 /// Probability analyzer provides the main engine for probability analysis.
 ///
 /// @tparam Calculator  Quantitative analysis calculator.
-template<typename Calculator>
+template<class Calculator>
 class ProbabilityAnalyzer : public ProbabilityAnalyzerBase {
  public:
   using ProbabilityAnalyzerBase::ProbabilityAnalyzerBase;
@@ -197,8 +202,9 @@ class ProbabilityAnalyzer : public ProbabilityAnalyzerBase {
   /// Calculates the total probability.
   ///
   /// @returns The total probability of the graph or the sum of products.
-  double CalculateTotalProbability() noexcept {
-    return calc_.Calculate(products_, p_vars_);
+  double CalculateTotalProbability() noexcept override {
+    return calc_.Calculate(ProbabilityAnalyzerBase::products(),
+                           ProbabilityAnalyzerBase::p_vars());
   }
 
  private:
@@ -217,7 +223,7 @@ class ProbabilityAnalyzer<Bdd> : public ProbabilityAnalyzerBase {
   /// @tparam Algorithm  Fault tree analysis algorithm.
   ///
   /// @param[in] fta  Finished fault tree analyzer with results.
-  template<typename Algorithm>
+  template<class Algorithm>
   explicit ProbabilityAnalyzer(const FaultTreeAnalyzer<Algorithm>* fta);
 
   /// Reuses BDD structures from Fault tree analyzer.
@@ -234,13 +240,13 @@ class ProbabilityAnalyzer<Bdd> : public ProbabilityAnalyzerBase {
   /// only if ProbabilityAnalyzer is the owner of them.
   ~ProbabilityAnalyzer() noexcept;
 
+  /// @returns Binary decision diagram used for calculations.
+  Bdd* bdd_graph() { return bdd_graph_; }
+
   /// Calculates the total probability.
   ///
   /// @returns The total probability of the graph.
-  double CalculateTotalProbability() noexcept;
-
-  /// @returns Binary decision diagram used for calculations.
-  Bdd* bdd_graph() { return bdd_graph_; }
+  double CalculateTotalProbability() noexcept override;
 
  private:
   /// Creates a new BDD for use by the analyzer.
@@ -267,7 +273,7 @@ class ProbabilityAnalyzer<Bdd> : public ProbabilityAnalyzerBase {
   bool owner_;  ///< Indication that pointers are handles.
 };
 
-template<typename Algorithm>
+template<class Algorithm>
 ProbabilityAnalyzer<Bdd>::ProbabilityAnalyzer(
     const FaultTreeAnalyzer<Algorithm>* fta)
     : ProbabilityAnalyzerBase::ProbabilityAnalyzerBase(fta),
@@ -275,7 +281,7 @@ ProbabilityAnalyzer<Bdd>::ProbabilityAnalyzer(
       owner_(true) {
   CLOCK(main_time);
   ProbabilityAnalyzer::CreateBdd(fta->top_event());
-  analysis_time_ = DUR(main_time);
+  Analysis::AddAnalysisTime(DUR(main_time));
 }
 
 }  // namespace scram

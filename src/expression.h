@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014-2015 Olzhas Rakhimov
+ * Copyright (C) 2014-2016 Olzhas Rakhimov
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,9 @@
 #ifndef SCRAM_SRC_EXPRESSION_H_
 #define SCRAM_SRC_EXPRESSION_H_
 
-#include <algorithm>
 #include <cmath>
+
+#include <algorithm>
 #include <memory>
 #include <string>
 #include <vector>
@@ -60,7 +61,7 @@ class Expression {
   Expression(const Expression&) = delete;
   Expression& operator=(const Expression&) = delete;
 
-  virtual ~Expression() {}
+  virtual ~Expression() = default;
 
   /// Validates the expression.
   /// This late validation is due to parameters that are defined late.
@@ -72,9 +73,9 @@ class Expression {
   virtual double Mean() noexcept = 0;
 
   /// @returns A sampled value of this expression.
-  virtual double Sample() noexcept = 0;
+  double Sample() noexcept;
 
-  /// This routine resets the sampling to get a new values.
+  /// This routine resets the sampling to get new values.
   /// All the arguments are called to reset themselves.
   /// If this expression was not sampled,
   /// its arguments are not going to get any calls.
@@ -112,14 +113,27 @@ class Expression {
   }
 
  protected:
-  std::vector<ExpressionPtr> args_;  ///< Expressions arguments.
-  double sampled_value_;  ///< The sampled value.
-  bool sampled_;  ///< Indication if the expression is already sampled.
+  /// @returns A set of arguments of the expression.
+  const std::vector<ExpressionPtr>& args() const { return args_; }
+
+  /// Registers an additional argument expression.
+  ///
+  /// @param[in] arg  An argument expression used by this expression.
+  void AddArg(const ExpressionPtr& arg) { args_.push_back(arg); }
 
  private:
+  /// Runs sampling of the expression.
+  /// Derived concrete classes must provide the calculation.
+  ///
+  /// @returns A sampled value of this expression.
+  virtual double GetSample() noexcept = 0;
+
   /// Gathers nodes and connectors from arguments of the expression.
   void GatherNodesAndConnectors();
 
+  std::vector<ExpressionPtr> args_;  ///< Expression's arguments.
+  double sampled_value_;  ///< The sampled value.
+  bool sampled_;  ///< Indication if the expression is already sampled.
   bool gather_;  ///< A flag to gather nodes and connectors.
   std::vector<Parameter*> nodes_;  ///< Parameters as nodes.
   std::vector<Expression*> connectors_;  ///< Expressions as connectors.
@@ -158,11 +172,9 @@ class Parameter : public Expression, public Element, public Role {
   /// Sets the expression of this parameter.
   ///
   /// @param[in] expression  The expression to describe this parameter.
-  void expression(const ExpressionPtr& expression) {
-    expression_ = expression;
-    Expression::args_.clear();
-    Expression::args_.push_back(expression);
-  }
+  ///
+  /// @throws LogicError  The parameter expression is already set.
+  void expression(const ExpressionPtr& expression);
 
   /// @returns The name of this variable.
   const std::string& name() const { return name_; }
@@ -187,15 +199,6 @@ class Parameter : public Expression, public Element, public Role {
   void unused(bool state) { unused_ = state; }
 
   double Mean() noexcept { return expression_->Mean(); }
-
-  double Sample() noexcept {
-    if (!Expression::sampled_) {
-      Expression::sampled_ = true;
-      Expression::sampled_value_ = expression_->Sample();
-    }
-    return Expression::sampled_value_;
-  }
-
   double Max() noexcept { return expression_->Max(); }
   double Min() noexcept { return expression_->Min(); }
 
@@ -213,6 +216,8 @@ class Parameter : public Expression, public Element, public Role {
   void mark(const std::string& label) { mark_ = label; }
 
  private:
+  double GetSample() noexcept override { return expression_->Sample(); }
+
   std::string name_;  ///< Name of this parameter or variable.
   std::string id_;  ///< Identifier of this parameter or variable.
   ExpressionPtr expression_;  ///< Expression for this parameter.
@@ -245,10 +250,11 @@ class MissionTime : public Expression {
   void unit(const Units& unit) { unit_ = unit; }
 
   double Mean() noexcept { return mission_time_; }
-  double Sample() noexcept { return mission_time_; }
   bool IsConstant() noexcept { return true; }
 
  private:
+  double GetSample() noexcept override { return mission_time_; }
+
   double mission_time_;  ///< The system mission time.
   Units unit_;  ///< Units of this parameter.
 };
@@ -273,10 +279,10 @@ class ConstantExpression : public Expression {
   explicit ConstantExpression(bool val);
 
   double Mean() noexcept { return value_; }
-  double Sample() noexcept { return value_; }
   bool IsConstant() noexcept { return true; }
 
  private:
+  double GetSample() noexcept override { return value_; }
   double value_;  ///< The Constant value.
 };
 
@@ -298,8 +304,6 @@ class ExponentialExpression : public Expression {
     return 1 - std::exp(-(lambda_->Mean() * time_->Mean()));
   }
 
-  double Sample() noexcept;
-
   double Max() noexcept {
     return 1 - std::exp(-(lambda_->Max() * time_->Max()));
   }
@@ -309,6 +313,10 @@ class ExponentialExpression : public Expression {
   }
 
  private:
+  double GetSample() noexcept override {
+    return 1 - std::exp(-(lambda_->Sample() * time_->Sample()));
+  }
+
   ExpressionPtr lambda_;  ///< Failure rate in hours.
   ExpressionPtr time_;  ///< Mission time in hours.
 };
@@ -332,12 +340,12 @@ class GlmExpression : public Expression {
   void Validate();
 
   double Mean() noexcept;
-  double Sample() noexcept;
-
   double Max() noexcept { return 1; }
   double Min() noexcept { return 0; }
 
  private:
+  double GetSample() noexcept override;
+
   /// Computes the value for GLM expression.
   ///
   /// @param[in] gamma  Value for probability on demand.
@@ -374,8 +382,6 @@ class WeibullExpression : public Expression {
                                       t0_->Mean(), time_->Mean());
   }
 
-  double Sample() noexcept;
-
   double Max() noexcept {
     return WeibullExpression::Compute(alpha_->Min(), beta_->Max(),
                                       t0_->Min(), time_->Max());
@@ -387,6 +393,11 @@ class WeibullExpression : public Expression {
   }
 
  private:
+  double GetSample() noexcept override {
+    return WeibullExpression::Compute(alpha_->Sample(), beta_->Sample(),
+                                      t0_->Sample(), time_->Sample());
+  }
+
   /// Calculates Weibull expression.
   ///
   /// @param[in] alpha  Scale parameter.
@@ -409,9 +420,8 @@ class WeibullExpression : public Expression {
 class RandomDeviate : public Expression {
  public:
   using Expression::Expression;  // Main helper constructors with arguments.
-  virtual ~RandomDeviate() = 0;  ///< Make it abstract.
 
-  bool IsConstant() noexcept { return false; }
+  bool IsConstant() noexcept override { return false; }
 };
 
 /// @class UniformDeviate
@@ -428,13 +438,12 @@ class UniformDeviate : public RandomDeviate {
   void Validate();
 
   double Mean() noexcept { return (min_->Mean() + max_->Mean()) / 2; }
-
-  double Sample() noexcept;
-
   double Max() noexcept { return max_->Max(); }
   double Min() noexcept { return min_->Min(); }
 
  private:
+  double GetSample() noexcept override;
+
   ExpressionPtr min_;  ///< Minimum value of the distribution.
   ExpressionPtr max_;  ///< Maximum value of the distribution.
 };
@@ -454,8 +463,6 @@ class NormalDeviate : public RandomDeviate {
 
   double Mean() noexcept { return mean_->Mean(); }
 
-  double Sample() noexcept;
-
   /// @returns ~99.9% percentile value.
   ///
   /// @warning This is only an approximation of the maximum value.
@@ -467,6 +474,8 @@ class NormalDeviate : public RandomDeviate {
   double Min() noexcept { return mean_->Min() - 6 * sigma_->Max(); }
 
  private:
+  double GetSample() noexcept override;
+
   ExpressionPtr mean_;  ///< Mean value of normal distribution.
   ExpressionPtr sigma_;  ///< Standard deviation of normal distribution.
 };
@@ -494,14 +503,14 @@ class LogNormalDeviate : public RandomDeviate {
 
   double Mean() noexcept { return mean_->Mean(); }
 
-  double Sample() noexcept;
-
   /// 99 percentile estimate.
   double Max() noexcept;
 
   double Min() noexcept { return 0; }
 
  private:
+  double GetSample() noexcept override;
+
   /// Computes the scale parameter of the distribution.
   ///
   /// @param[in] level  The confidence level.
@@ -538,8 +547,6 @@ class GammaDeviate : public RandomDeviate {
 
   double Mean() noexcept { return k_->Mean() * theta_->Mean(); }
 
-  double Sample() noexcept;
-
   /// @returns 99 percentile.
   double Max() noexcept {
     using boost::math::gamma_q;
@@ -550,6 +557,8 @@ class GammaDeviate : public RandomDeviate {
   double Min() noexcept { return 0; }
 
  private:
+  double GetSample() noexcept override;
+
   ExpressionPtr k_;  ///< The shape parameter of the gamma distribution.
   ExpressionPtr theta_;  ///< The scale factor of the gamma distribution.
 };
@@ -571,8 +580,6 @@ class BetaDeviate : public RandomDeviate {
     return alpha_->Mean() / (alpha_->Mean() + beta_->Mean());
   }
 
-  double Sample() noexcept;
-
   /// @returns 99 percentile.
   double Max() noexcept {
     return std::pow(boost::math::ibeta(alpha_->Max(), beta_->Max(), 0.99), -1);
@@ -581,6 +588,8 @@ class BetaDeviate : public RandomDeviate {
   double Min() noexcept { return 0; }
 
  private:
+  double GetSample() noexcept override;
+
   ExpressionPtr alpha_;  ///< The alpha shape parameter.
   ExpressionPtr beta_;  ///< The beta shape parameter.
 };
@@ -619,12 +628,12 @@ class Histogram : public RandomDeviate {
   void Validate();
 
   double Mean() noexcept;
-  double Sample() noexcept;
-
   double Max() noexcept { return boundaries_.back()->Max(); }
   double Min() noexcept { return boundaries_.front()->Min(); }
 
  private:
+  double GetSample() noexcept override;
+
   /// Checks if mean values of expressions are strictly increasing.
   ///
   /// @param[in] boundaries  The upper bounds of intervals.
@@ -658,19 +667,12 @@ class Neg : public Expression {
   explicit Neg(const ExpressionPtr& expression);
 
   double Mean() noexcept { return -expression_->Mean(); }
-
-  double Sample() noexcept {
-    if (!Expression::sampled_) {
-      Expression::sampled_ = true;
-      Expression::sampled_value_ = -expression_->Sample();
-    }
-    return Expression::sampled_value_;
-  }
-
   double Max() noexcept { return -expression_->Min(); }
   double Min() noexcept { return -expression_->Max(); }
 
  private:
+  double GetSample() noexcept override { return -expression_->Sample(); }
+
   ExpressionPtr expression_;  ///< Expression that is used for negation.
 };
 
@@ -681,9 +683,11 @@ class Add : public Expression {
   using Expression::Expression;  // Base class constructors with arguments.
 
   double Mean() noexcept;
-  double Sample() noexcept;
   double Max() noexcept;
   double Min() noexcept;
+
+ private:
+  double GetSample() noexcept override;
 };
 
 /// @class Sub
@@ -694,9 +698,11 @@ class Sub : public Expression {
   using Expression::Expression;  // Base class constructors with arguments.
 
   double Mean() noexcept;
-  double Sample() noexcept;
   double Max() noexcept;
   double Min() noexcept;
+
+ private:
+  double GetSample() noexcept override;
 };
 
 /// @class Mul
@@ -706,7 +712,6 @@ class Mul : public Expression {
   using Expression::Expression;  // Base class constructors with arguments.
 
   double Mean() noexcept;
-  double Sample() noexcept;
 
   /// Finds maximum product
   /// from the given arguments' minimum and maximum values.
@@ -723,6 +728,8 @@ class Mul : public Expression {
   double Min() noexcept { return Mul::GetExtremum(/*max=*/false); }
 
  private:
+  double GetSample() noexcept override;
+
   /// @param[in] maximum  Flag to return maximum value.
   ///
   /// @returns One of extremums.
@@ -741,7 +748,6 @@ class Div : public Expression {
   void Validate();
 
   double Mean() noexcept;
-  double Sample() noexcept;
 
   /// Finds maximum results of division
   /// of the given arguments' minimum and maximum values.
@@ -758,6 +764,8 @@ class Div : public Expression {
   double Min() noexcept { return Div::GetExtremum(/*max=*/false); }
 
  private:
+  double GetSample() noexcept override;
+
   /// @param[in] maximum  Flag to return maximum value.
   ///
   /// @returns One of extremums.
