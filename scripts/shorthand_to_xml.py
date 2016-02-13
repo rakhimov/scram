@@ -21,12 +21,12 @@ The output file is formatted according to the OpenPSA MEF.
 The default output file name is the input file name with the XML extension.
 
 The shorthand notation is described as follows:
-AND gate:                          gate_name := (child1 & child2 & ...)
-OR gate:                           gate_name := (child1 | child2 | ...)
-ATLEAST(k/n) gate:                 gate_name := @(k, [child1, child2, ...])
-NOT gate:                          gate_name := ~child
-XOR gate:                          gate_name := (child1 ^ child2)
-NULL gate:                         gate_name := child
+AND gate:                          gate_name := (arg1 & arg2 & ...)
+OR gate:                           gate_name := (arg1 | arg2 | ...)
+ATLEAST(k/n) gate:                 gate_name := @(k, [arg1, arg2, ...])
+NOT gate:                          gate_name := ~arg
+XOR gate:                          gate_name := (arg1 ^ arg2)
+NULL gate:                         gate_name := arg
 Probability of a basic event:      p(event_name) = probability
 Boolean state of a house event:    s(event_name) = state
 
@@ -34,18 +34,17 @@ Some requirements and additions to the shorthand format:
 1. The names and references are not case-sensitive
    and must be formatted according to 'XML NCNAME datatype'
    without double dashes('--'), period('.'), and trailing '-'.
-2. No requirement for the structure of the input, i.e. topologically sorted.
+2. Arguments can be complemented with '~'.
 3. Undefined nodes are processed as 'events' to the final XML output.
    Only warnings are emitted in the case of undefined nodes.
 4. Name clashes or redefinitions are errors.
-5. Cyclic trees are detected by the script as errors.
+5. Cycles in the graph are detected by the script as errors.
 6. The top gate is detected by the script.
    Only one top gate is allowed
    unless otherwise specified by the user.
-7. Repeated children are considered an error.
+7. Repeated arguments are considered an error.
 8. The script is flexible with whitespace characters in the input file.
 9. Parentheses are optional for logical operators except for ATLEAST.
-10. (Experimental) Boolean formula can be nested: g1 := a & b | c ^ ~d | ~(e|f)
 """
 
 from __future__ import print_function
@@ -91,19 +90,19 @@ class Node(object):
         self.name = name
         self.__parents = set()
 
-    def add_parent(self, formula):
-        """Adds a formula as a parent of the node.
+    def add_parent(self, gate):
+        """Adds a gate as a parent of the node.
 
         Args:
-            formula: The formula where this node appears.
+            gate: The gate where this node appears.
         """
-        assert formula not in self.__parents
-        assert isinstance(formula, Formula)
-        self.__parents.add(formula)
+        assert gate not in self.__parents
+        assert isinstance(gate, Gate)
+        self.__parents.add(gate)
 
     def is_orphan(self):
         """Determines if the node is parentless."""
-        return len(self.__parents) == 0
+        return not self.__parents
 
 
 class BasicEvent(Node):
@@ -143,50 +142,32 @@ class HouseEvent(Node):
 
 
 class Gate(Node):
-    """Representation of a gate of a fault tree.
-
-    Attributes:
-        mark: Marking for various algorithms like toposort.
-        formula: The formula of this gate.
-    """
-
-    def __init__(self, name, formula):
-        """Initializes a gate.
-
-        Args:
-            name: Identifier of the node.
-            formula: Unique (non-shared) formula of the gate.
-        """
-        super(Gate, self).__init__(name)
-        self.mark = None  # marking for various algorithms
-        self.formula = formula  # the formula of this gate
-
-
-class Formula(object):
-    """Boolean formula with arguments.
+    """Representation of a fault tree gate.
 
     Attributes:
         operator: Logical operator of this formula.
         k_num: Min number for the combination operator.
         node_arguments: String names of non-formula arguments like basic events.
-        f_arguments: arguments that are formulas.
         g_arguments: arguments that are gates.
         b_arguments: arguments that are basic events.
         h_arguments: arguments that are house events.
         u_arguments: arguments that are undefined from the input.
+        mark: Marking for various algorithms like toposort.
     """
 
-    def __init__(self, operator=None, k_num=None):
-        """Initializer a Boolean formula for gates.
+    def __init__(self, name, operator=None, k_num=None):
+        """Initializes a gate.
 
         Args:
+            name: Identifier of the node.
             operator: Boolean operator of this formula.
             k_num: Min number for the combination operator.
         """
+        super(Gate, self).__init__(name)
+        self.mark = None
         self.operator = operator
         self.k_num = k_num
         self.node_arguments = []
-        self.f_arguments = []
         self.g_arguments = []
         self.b_arguments = []
         self.h_arguments = []
@@ -194,7 +175,7 @@ class Formula(object):
 
     def num_arguments(self):
         """Returns the number of arguments."""
-        return len(self.f_arguments) + len(self.node_arguments)
+        return len(self.node_arguments)
 
 
 class FaultTree(object):
@@ -246,28 +227,6 @@ class FaultTree(object):
         Raises:
             FaultTreeError: There is a cycle in the fault tree.
         """
-        def continue_formula(formula):
-            """Continues visiting gates in the formula.
-
-            This is a helper function of visit(gate) function.
-
-            Args:
-                formula: The formula to be visited further.
-
-            Returns:
-                None if no cycle is found.
-                A list of node names in a detected cycle path in reverse order.
-            """
-            for gate in formula.g_arguments:
-                cycle = visit(gate)
-                if cycle:
-                    return cycle
-            for arg in formula.f_arguments:
-                cycle = continue_formula(arg)
-                if cycle:
-                    return cycle
-            return None
-
         def visit(gate):
             """Recursively visits the given gate sub-tree to detect a cycle.
 
@@ -283,17 +242,18 @@ class FaultTree(object):
             """
             if not gate.mark:
                 gate.mark = "temp"
-                cycle = continue_formula(gate.formula)
-                if cycle:
-                    cycle.append(gate.name)
-                    return cycle
+                for child in gate.g_arguments:
+                    cycle = visit(child)
+                    if cycle:
+                        cycle.append(gate.name)
+                        return cycle
                 gate.mark = "perm"
             elif gate.mark == "temp":
                 return [gate.name]  # a cycle is detected
             return None  # the permanent mark
 
         def print_cycle(cycle):
-            """Prints the detected cycle.
+            """Prints the detected cycle to the error.
 
             Args:
                 cycle: A list of gate names in the cycle path in reverse order.
@@ -365,61 +325,51 @@ class FaultTree(object):
         self.__check_redefinition(name)
         self.house_events.update({name.lower(): HouseEvent(name, state)})
 
-    def add_gate(self, name, formula):
+    def add_gate(self, name, operator, arguments, k_num=None):
         """Creates and adds a new gate into the fault tree.
 
         Args:
             name: A name for the new gate.
-            gate_type: A gate type for the new gate.
-            children: Collection of children names of the new gate.
+            operator: A gate operator for the new gate.
+            arguments: Collection of argument node names of the new gate.
             k_num: K number is required for a combination type of a gate.
 
         Raises:
             FaultTreeError: The given name already exists.
         """
         self.__check_redefinition(name)
-        gate = Gate(name, formula)
+        gate = Gate(name, operator, k_num)
+        gate.node_arguments = arguments
         self.gates.update({name.lower(): gate})
 
     def populate(self):
-        """Assigns children to gates and parents to children.
+        """Assigns arguments to gates and parents to arguments.
 
         Raises:
             FaultTreeError: There are problems with the fault tree.
         """
-        def populate_formula(formula):
-            """Assigns children to formula.
-
-            Args:
-                formula: A formula with arguments.
-            """
-            assert formula.num_arguments() > 0
-            for child in formula.node_arguments:
+        for gate in self.gates.values():
+            assert gate.num_arguments() > 0
+            for child in gate.node_arguments:
                 child_node = None
                 if child.lower() in self.gates:
                     child_node = self.gates[child.lower()]
-                    formula.g_arguments.append(child_node)
+                    gate.g_arguments.append(child_node)
                 elif child.lower() in self.basic_events:
                     child_node = self.basic_events[child.lower()]
-                    formula.b_arguments.append(child_node)
+                    gate.b_arguments.append(child_node)
                 elif child.lower() in self.house_events:
                     child_node = self.house_events[child.lower()]
-                    formula.h_arguments.append(child_node)
+                    gate.h_arguments.append(child_node)
                 elif child.lower() in self.undef_nodes:
                     child_node = self.undef_nodes[child.lower()]
-                    formula.u_arguments.append(child_node)
+                    gate.u_arguments.append(child_node)
                 else:
                     print("Warning. Unidentified node: " + child)
                     child_node = Node(child)
                     self.undef_nodes.update({child.lower(): child_node})
-                    formula.u_arguments.append(child_node)
-                child_node.add_parent(formula)
-
-            for child_formula in formula.f_arguments:
-                populate_formula(child_formula)
-
-        for gate in self.gates.values():
-            populate_formula(gate.formula)
+                    gate.u_arguments.append(child_node)
+                child_node.add_parent(gate)
 
         for basic in self.basic_events.values():
             if basic.is_orphan():
@@ -448,66 +398,31 @@ def parse_input_file(input_file, multi_top=False):
     """
     # Pattern for names and references
     name_sig = r"[a-zA-Z]\w*(-\w+)*"
+    literal = r"~?" + name_sig
     # Fault tree name
-    ft_name_re = re.compile(r"^\s*(" + name_sig + r")\s*$")
-    # Node names
-    name_re = re.compile(r"\s*(" + name_sig + r")\s*$")
+    ft_name_re = re.compile(r"^(" + name_sig + r")$")
     # Probability description for a basic event
-    prob_re = re.compile(r"^\s*p\(\s*(?P<name>" + name_sig +
-                         r")\s*\)\s*=\s*(?P<prob>1|0|0\.\d+)\s*$")
+    prob_re = re.compile(r"^p\(\s*(?P<name>" + name_sig +
+                         r")\s*\)\s*=\s*(?P<prob>1|0|0\.\d+)$")
     # State description for a house event
-    state_re = re.compile(r"^\s*s\(\s*(?P<name>" + name_sig +
-                          r")\s*\)\s*=\s*(?P<state>true|false)\s*$")
+    state_re = re.compile(r"^s\(\s*(?P<name>" + name_sig +
+                          r")\s*\)\s*=\s*(?P<state>true|false)$")
     # General gate name and pattern
-    gate_sig = r"^\s*(?P<name>" + name_sig + r")\s*:=\s*"
+    gate_sig = r"^(?P<name>" + name_sig + r")\s*:=\s*"
     gate_re = re.compile(gate_sig + r"(?P<formula>.+)$")
-    # Parentheses for formulas
-    paren_re = re.compile(r"\s*\((([^()]*(\(.+\))?[^()]*)+)\)\s*$")
-    # Formula
-    form = r"([^()]*\(.+\)[^()]*|[^()]+)"
-    # AND gate identification
-    and_re = re.compile(r"(\s*" + form + r"(\s*&\s*" + form + r"\s*)+)$")
-    # OR gate identification
-    or_re = re.compile(r"(\s*" + form + r"(\s*\|\s*" + form + r"\s*)+)$")
-    # Combination gate identification
-    comb_children = r"\[(\s*.+(\s*,\s*.+\s*){2,})\]"
-    comb_re = re.compile(r"@\(\s*([2-9])\s*,\s*" + comb_children + r"\s*\)\s*$")
-    # XOR gate identification
-    xor_re = re.compile(r"(\s*" + form + r"\s*\^\s*" + form + r"\s*)$")
-    # NOT gate identification
-    not_re = re.compile(r"~\s*(" + name_sig + r"|@?\(.+\))$")
-    # NULL gate identification
-    null_re = re.compile(r"\s*(" + name_sig + r")$")
-
-    blank_line = re.compile(r"^\s*$")
+    # Optional parentheses for formulas
+    paren_re = re.compile(r"\(([^()]+)\)$")
+    # Gate type identification
+    and_re = re.compile(r"(" + literal + r"(\s*&\s*" + literal + r"\s*)+)$")
+    or_re = re.compile(r"(" + literal + r"(\s*\|\s*" + literal + r"\s*)+)$")
+    vote_args = r"\[(\s*" + literal + r"(\s*,\s*" + literal + r"\s*){2,})\]"
+    vote_re = re.compile(r"@\(\s*([2-9])\s*,\s*" + vote_args + r"\s*\)\s*$")
+    xor_re = re.compile(r"(" + literal + r"\s*\^\s*" + literal + r")$")
+    not_re = re.compile(r"~(" + name_sig + r")$")
+    null_re = re.compile(r"(" + name_sig + r")$")
 
     ft_name = None
     fault_tree = FaultTree()
-
-    def check_parentheses(line):
-        """Verifies correct formatting for closing and opening parentheses.
-
-        Args:
-            line: A string containing a Boolean formula.
-
-        Raises:
-            FormatError: There are problems with parentheses.
-        """
-        pos = 0
-        count = 0
-        for char in line:
-            pos += 1
-            if char == "(":
-                count += 1
-            elif char == ")":
-                if count == 0:
-                    msg = "Extra closing parenthesis at position %d:\n" % pos
-                    msg += line
-                    msg += " " * (pos - 1) + "^"
-                    raise FormatError(msg)
-                count -= 1
-        if count > 0:
-            raise FormatError("Missing %d closing parentheses" % count)
 
     def get_arguments(arguments_string, splitter):
         """Splits the input string into arguments of a formula.
@@ -522,20 +437,10 @@ def parse_input_file(input_file, multi_top=False):
         Raises:
             FaultTreeError: Repeated arguments for the node.
         """
-        splitter = "\\" + splitter
-        split_re = re.compile(r"(?!\([^)]*)" + splitter + r"(?![^(]*\))")
-        arguments = split_re.split(arguments_string)
+        arguments = arguments_string.strip().split(splitter)
         arguments = [x.strip() for x in arguments]
         if len(arguments) > len(set([x.lower() for x in arguments])):
             raise FaultTreeError("Repeated arguments:\n" + arguments_string)
-        # This is a hack for XOR with more than 2 arguments.
-        if splitter == "\\^" and len(arguments) > 2:
-            hacked_args = arguments[1:]
-            joined_args = hacked_args[0]
-            for i in range(1, len(hacked_args)):
-                joined_args += "^" + hacked_args[i]
-            arguments = [arguments[0], joined_args]
-
         return arguments
 
     def get_formula(line):
@@ -545,16 +450,16 @@ def parse_input_file(input_file, multi_top=False):
             line: A string containing a Boolean equation.
 
         Returns:
-            A Formula object.
+            A formula operator, arguments, and k_num.
 
         Raises:
             ParsingError: Parsing is unsuccessful.
             FormatError: Formatting problems in the input.
             FaultTreeError: Problems in the structure of the formula.
         """
+        line = line.strip()
         if paren_re.match(line):
-            formula_line = paren_re.match(line).group(1)
-            return get_formula(formula_line)
+            line = paren_re.match(line).group(1).strip()
         arguments = None
         operator = None
         k_num = None
@@ -570,8 +475,8 @@ def parse_input_file(input_file, multi_top=False):
             arguments = and_re.match(line).group(1)
             arguments = get_arguments(arguments, "&")
             operator = "and"
-        elif comb_re.match(line):
-            k_num, arguments = comb_re.match(line).group(1, 2)
+        elif vote_re.match(line):
+            k_num, arguments = vote_re.match(line).group(1, 2)
             arguments = get_arguments(arguments, ",")
             if int(k_num) >= len(arguments):
                 raise FaultTreeError(
@@ -587,26 +492,21 @@ def parse_input_file(input_file, multi_top=False):
             operator = "null"  # pass-through
         else:
             raise ParsingError("Cannot interpret the formula:\n" + line)
-        formula = Formula(operator, k_num)
-        for arg in arguments:
-            if name_re.match(arg):
-                formula.node_arguments.append(arg)
-            else:
-                formula.f_arguments.append(get_formula(arg))
-        return formula
+        return operator, arguments, k_num
 
     line_num = 0
     shorthand_file = open(input_file, "r")
     for line in shorthand_file:
         line_num += 1
+        line = line.strip()
+        if not line:
+            continue
         try:
-            if blank_line.match(line):
-                continue
-            elif gate_re.match(line):
+            if gate_re.match(line):
                 gate_name, formula_line = gate_re.match(line).group("name",
                                                                     "formula")
-                check_parentheses(line)
-                fault_tree.add_gate(gate_name, get_formula(formula_line))
+                operator, arguments, k_num = get_formula(formula_line)
+                fault_tree.add_gate(gate_name, operator, arguments, k_num)
             elif prob_re.match(line):
                 event_name, prob = prob_re.match(line).group("name", "prob")
                 fault_tree.add_basic(event_name, prob)
@@ -648,20 +548,6 @@ def toposort_gates(top_gates, gates):
     for gate in gates:
         gate.mark = ""
 
-    def continue_formula(formula, final_list):
-        """Continues visiting gates in the formula.
-
-        This is a helper function of visit(gate) function.
-
-        Args:
-            formula: The formula to be visited further.
-            final_list: A deque of sorted gates.
-        """
-        for gate in formula.g_arguments:
-            visit(gate, final_list)
-        for arg in formula.f_arguments:
-            continue_formula(arg, final_list)
-
     def visit(gate, final_list):
         """Recursively visits the given gate sub-tree to include into the list.
 
@@ -672,7 +558,8 @@ def toposort_gates(top_gates, gates):
         assert gate.mark != "temp"
         if not gate.mark:
             gate.mark = "temp"
-            continue_formula(gate.formula, final_list)
+            for arg in gate.g_arguments:
+                visit(arg, final_list)
             gate.mark = "perm"
             final_list.appendleft(gate)
 
@@ -698,41 +585,6 @@ def write_to_xml_file(fault_tree, output_file):
     t_file.write("<opsa-mef>\n")
     t_file.write("<define-fault-tree name=\"%s\">\n" % fault_tree.name)
 
-    def write_formula(formula, o_file):
-        """Write the formula in the OpenPSA MEF XML.
-
-        Args:
-            formula: The formula to be printed.
-            o_file: The output file stream.
-        """
-        if formula.operator != "null":
-            o_file.write("<" + formula.operator)
-            if formula.operator == "atleast":
-                o_file.write(" min=\"" + formula.k_num + "\"")
-            o_file.write(">\n")
-        # Print house events
-        for h_child in formula.h_arguments:
-            o_file.write("<house-event name=\"" + h_child.name + "\"/>\n")
-
-        # Print basic events
-        for b_child in formula.b_arguments:
-            o_file.write("<basic-event name=\"" + b_child.name + "\"/>\n")
-
-        # Print undefined events
-        for u_child in formula.u_arguments:
-            o_file.write("<event name=\"" + u_child.name + "\"/>\n")
-
-        # Print gates
-        for g_child in formula.g_arguments:
-            o_file.write("<gate name=\"" + g_child.name + "\"/>\n")
-
-        # Print formulas
-        for f_child in formula.f_arguments:
-            write_formula(f_child, o_file)
-
-        if formula.operator != "null":
-            o_file.write("</" + formula.operator + ">\n")
-
     def write_gate(gate, o_file):
         """Write the gate in the OpenPSA MEF XML.
 
@@ -741,7 +593,29 @@ def write_to_xml_file(fault_tree, output_file):
             o_file: The output file stream.
         """
         o_file.write("<define-gate name=\"" + gate.name + "\">\n")
-        write_formula(gate.formula, o_file)
+        if gate.operator != "null":
+            o_file.write("<" + gate.operator)
+            if gate.operator == "atleast":
+                o_file.write(" min=\"" + gate.k_num + "\"")
+            o_file.write(">\n")
+        # Print house events
+        for h_child in gate.h_arguments:
+            o_file.write("<house-event name=\"" + h_child.name + "\"/>\n")
+
+        # Print basic events
+        for b_child in gate.b_arguments:
+            o_file.write("<basic-event name=\"" + b_child.name + "\"/>\n")
+
+        # Print undefined events
+        for u_child in gate.u_arguments:
+            o_file.write("<event name=\"" + u_child.name + "\"/>\n")
+
+        # Print gates
+        for g_child in gate.g_arguments:
+            o_file.write("<gate name=\"" + g_child.name + "\"/>\n")
+
+        if gate.operator != "null":
+            o_file.write("</" + gate.operator + ">\n")
         o_file.write("</define-gate>\n")
 
     sorted_gates = toposort_gates(fault_tree.top_gates,

@@ -45,7 +45,6 @@ Minor Enhancements and Capabilities
   Multi-rooted graph analysis. *Low*
 - Importance factor calculation for gates (formulas). *Low*
 - Uncertainty analysis for importance factors. *Moderate*
-- Arithmetic equation interpreter for basic events in shorthand format. *Low*
 - OpenPSA MEF Support:
 
     * Expressions. *Moderate*
@@ -64,6 +63,7 @@ GUI Development: Moderate Importance
 - Running analyses
 - View of analysis results
 - Common cause group construction
+- Arithmetic equation converter for expressions.
 
 
 Platform Support

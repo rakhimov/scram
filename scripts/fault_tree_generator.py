@@ -80,7 +80,7 @@ class Node(object):
 
 
 class Gate(Node):
-    """Representation of a gate of a fault tree.
+    """Representation of a fault tree gate.
 
         Names are assigned sequentially starting from G0.
         G0 is assumed to be the root gate.

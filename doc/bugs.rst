@@ -24,7 +24,6 @@ Technical Issues
 - ConvertBddPI is an easy-to-get-wrong name. (There is ConvertBdd.)
 - IGate in Boolean graph is confusing (There is Gate in event.h)
 - Questionable explicit qualification rules for member functions.
-- Parsing code for nested formulas in ``shorthand_to_xml.py`` is add-hoc (ugly, incorrect).
 - Fault tree generator script is too complex.
 - Fuzz tester runs are coupled.
   Can't run two jobs at the same time.
