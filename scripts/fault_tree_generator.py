@@ -47,6 +47,8 @@ import random
 
 import argparse as ap
 
+from fault_tree import CcfGroup
+
 
 class Node(object):
     """Representation of a base class for a node in a fault tree.
@@ -214,43 +216,55 @@ class HouseEvent(Node):
         self.state = random.choice(["true", "false"])
         HouseEvent.house_events.append(self)
 
+class FaultTree(object):
+    """Representation of a fault tree for generation purposes.
 
-class CcfGroup(object):
-    """Representation of CCF groups in a fault tree.
-
-    Names are assigned sequentially starting from CCF1.
+    The construction of fault tree members are handled through this object.
+    It is assumed that no removal is going to happen after construction.
 
     Attributes:
-        num_ccf: The total number of CCF groups.
+        name: The name of a fault tree.
+        top_gate: The root gate of the fault tree.
+        gates: A set of all gates that are created for the fault tree.
+        basic_events: A list of all basic events created for the fault tree.
+        house_events: A list of all house events created for the fault tree.
         ccf_groups: A collection of created CCF groups.
-        name: The name of an instance CCF group.
-        prob: Probability for a CCF group.
-        model: The CCF model chosen for a group.
-        members: A collection of members in a CCF group.
     """
 
-    num_ccf = 0
-    ccf_groups = []
+    min_prob = 0  # TODO: move to factors.
+    max_prob = 1  # TODO: move to factors.
 
-    def __init__(self):
-        """Constructs a unique CCF group with factors."""
-        CcfGroup.num_ccf += 1
-        self.name = "CCF" + str(CcfGroup.num_ccf)
-        self.members = []
-        self.prob = random.uniform(BasicEvent.min_prob, BasicEvent.max_prob)
-        self.model = "MGL"
-        CcfGroup.ccf_groups.append(self)
+    def __init__(self, name=None):
+        """Initializes an empty fault tree.
 
-    def get_factors(self):
-        """Generates CCF factors.
+        Args:
+            name: The name of the system described by the fault tree container.
+        """
+        self.name = name
+        self.top_gate = None
+        self.gates = []
+        self.basic_events = []
+        self.house_events = []
+        self.ccf_groups = []
+
+    def construct_ccf_group(self, members):
+        """Constructs a unique CCF group with factors.
+
+        Args:
+            members: A list of member basic events.
 
         Returns:
-            A list of CCF factors.
+            A fully initialized CCF group with random factors.
         """
-        assert len(self.members) > 1
-        levels = random.randint(2, len(self.members))
-        factors = [random.uniform(0.1, 1) for _ in range(levels - 1)]
-        return factors
+        assert len(members) > 1
+        ccf_group = CcfGroup("CCF" + str(len(self.ccf_groups) + 1))
+        self.ccf_groups.append(ccf_group)
+        ccf_group.members = members
+        ccf_group.prob = random.uniform(FaultTree.min_prob, FaultTree.max_prob)
+        ccf_group.model = "MGL"
+        levels = random.randint(2, len(members))
+        ccf_group.factors = [random.uniform(0.1, 1) for _ in range(levels - 1)]
+        return ccf_group
 
 
 class Factors(object):
@@ -525,6 +539,7 @@ class Factors(object):
         Factors.parents_b = parents
 
 
+# TODO: Eliminate.
 class Settings(object):
     """Collection of settings specific to this script per run.
 
@@ -658,8 +673,10 @@ def generate_fault_tree():
     Returns:
         Top gate of the created fault tree.
     """
+    fault_tree = FaultTree(Settings.ft_name)
     # Start with a top event
     top_event = Gate()
+    fault_tree.top_gate = top_event
     while top_event.gate_type == "xor" or top_event.gate_type == "not":
         top_event.gate_type = Factors.get_random_type()
     top_event.name = Settings.root_name
@@ -697,16 +714,16 @@ def generate_fault_tree():
         random.shuffle(members)
         first_mem = 0
         last_mem = 0
-        while len(CcfGroup.ccf_groups) < Factors.num_ccf:
+        while len(fault_tree.ccf_groups) < Factors.num_ccf:
             group_size = random.randint(2, int(2 * Factors.avg_children - 2))
             last_mem = first_mem + group_size
             if last_mem > len(members):
                 break
-            CcfGroup().members = members[first_mem:last_mem]
+            fault_tree.construct_ccf_group(members[first_mem:last_mem])
             first_mem = last_mem
         BasicEvent.non_ccf_events = members[first_mem:]
 
-    return top_event
+    return fault_tree
 
 
 def toposort_gates(top_gate, gates):
@@ -743,10 +760,13 @@ def toposort_gates(top_gate, gates):
     return sorted_gates
 
 
-def write_info():
+def write_info(fault_tree):
     """Writes the information about the setup and generated fault tree.
 
     This function uses the output destination from the arguments.
+
+    Args:
+        fault_tree: A full, valid, well-formed fault tree.
     """
     t_file = open(Settings.output, "w")
     t_file.write("<?xml version=\"1.0\"?>\n")
@@ -809,7 +829,7 @@ def write_info():
         "<!--\nThe generated fault tree has the following metrics:\n\n"
         "The number of basic events: %d" % BasicEvent.num_basic + "\n"
         "The number of house events: %d" % HouseEvent.num_house + "\n"
-        "The number of CCF groups: %d" % CcfGroup.num_ccf + "\n"
+        "The number of CCF groups: %d" % len(fault_tree.ccf_groups) + "\n"
         "The number of gates: %d" % Gate.num_gates + "\n"
         "    AND gates: %d" % len(and_gates) + "\n"
         "    OR gates: %d" % len(or_gates) + "\n"
@@ -861,7 +881,7 @@ def write_model_data(t_file, basic_events):
     t_file.write("</model-data>\n")
 
 
-def write_results(top_event):
+def write_results(fault_tree):
     """Writes results of a generated fault tree into an XML file.
 
     Writes the information about the fault tree in an XML file.
@@ -869,14 +889,14 @@ def write_results(top_event):
     The output XML file is not formatted for human readability.
 
     Args:
-        top_event: Top gate of the generated fault tree.
+        fault_tree: A full, valid, well-formed fault tree.
     """
     # Plane text is used instead of any XML tools for performance reasons.
-    write_info()
+    write_info(fault_tree)
     t_file = open(Settings.output, "a")
 
     t_file.write("<opsa-mef>\n")
-    t_file.write("<define-fault-tree name=\"%s\">\n" % Settings.ft_name)
+    t_file.write("<define-fault-tree name=\"%s\">\n" % fault_tree.name)
 
     nested_gates = set()  # collection of gates that got nested
 
@@ -925,31 +945,15 @@ def write_results(top_event):
         write_formula(gate, o_file)
         o_file.write("</define-gate>\n")
 
-    sorted_gates = toposort_gates(top_event, Gate.gates)
+    sorted_gates = toposort_gates(fault_tree.top_gate, Gate.gates)
     for gate in sorted_gates:
         if Settings.nested and gate in nested_gates:
             continue
         write_gate(gate, t_file)
 
     # Proceed with ccf groups
-    for ccf_group in CcfGroup.ccf_groups:
-        t_file.write("<define-CCF-group name=\"" + ccf_group.name + "\""
-                     " model=\"" + ccf_group.model + "\">\n"
-                     "<members>\n")
-        for member in ccf_group.members:
-            t_file.write("<basic-event name=\"" + member.name + "\"/>\n")
-        t_file.write("</members>\n<distribution>\n<float value=\"" +
-                     str(ccf_group.prob) + "\"/>\n</distribution>\n")
-        t_file.write("<factors>\n")
-        factors = ccf_group.get_factors()
-        level = 2
-        for factor in factors:
-            t_file.write("<factor level=\"" + str(level) + "\">\n"
-                         "<float value=\"" + str(factor) + "\"/>\n</factor>\n")
-            level += 1
-
-        t_file.write("</factors>\n")
-        t_file.write("</define-CCF-group>\n")
+    for ccf_group in fault_tree.ccf_groups:
+        t_file.write(ccf_group.to_xml())
 
     t_file.write("</define-fault-tree>\n")
 
@@ -962,16 +966,16 @@ def write_results(top_event):
     t_file.close()
 
 
-def write_shorthand(top_event):
+def write_shorthand(fault_tree):
     """Writes the results into the shorthand format file.
 
     Note that the shorthand format does not support advanced gates or groups.
 
     Args:
-        top_event: The top gate of the generated fault tree.
+        fault_tree: A full, valid, well-formed fault tree.
     """
     t_file = open(Settings.output, "w")
-    t_file.write(Settings.ft_name + "\n\n")
+    t_file.write(fault_tree.name + "\n\n")
 
     nested_gates = set()
 
@@ -1063,7 +1067,7 @@ def write_shorthand(top_event):
         o_file.write("".join(line))
         o_file.write("\n")
 
-    sorted_gates = toposort_gates(top_event, Gate.gates)
+    sorted_gates = toposort_gates(fault_tree.top_gate, Gate.gates)
     for gate in sorted_gates:
         if Settings.nested and gate in nested_gates:
             continue
@@ -1297,6 +1301,8 @@ def setup_factors(args):
     Settings.nested = args.nested
     BasicEvent.min_prob = args.minprob
     BasicEvent.max_prob = args.maxprob
+    FaultTree.min_prob = args.minprob  # TODO: Eliminate.
+    FaultTree.max_prob = args.maxprob  # TODO: Eliminate.
     Factors.num_basics = args.basics
     Factors.num_house = args.house
     Factors.num_ccf = args.ccf
@@ -1326,13 +1332,13 @@ def main():
     args = manage_cmd_args()
     setup_factors(args)
 
-    top_event = generate_fault_tree()
+    fault_tree = generate_fault_tree()
 
     # Write output files
     if args.shorthand:
-        write_shorthand(top_event)
+        write_shorthand(fault_tree)
     else:
-        write_results(top_event)
+        write_results(fault_tree)
 
 if __name__ == "__main__":
     try:
