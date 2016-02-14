@@ -47,7 +47,7 @@ import random
 
 import argparse as ap
 
-from fault_tree import HouseEvent, CcfGroup
+from fault_tree import BasicEvent, HouseEvent, CcfGroup
 
 
 class Node(object):
@@ -157,39 +157,6 @@ class Gate(Node):
         return ancestors
 
 
-class BasicEvent(Node):
-    """Representation of a basic event in a fault tree.
-
-        Names are assigned sequentially starting from B1.
-
-    Attributes:
-        num_basic: Total number of basic events created.
-        min_prob: Lower bound of the distribution.
-        max_prob: Upper bound of the distribution.
-        prob: Probability of failure of this basic event. Assigned randomly.
-        basic_events: A list of all basic events created for the fault tree.
-        non_ccf_events: A list of basic events that not in CCF groups.
-    """
-
-    num_basic = 0
-    min_prob = 0
-    max_prob = 1
-    basic_events = []  # container for created basic events
-    non_ccf_events = []  # basic events that are not in ccf groups
-
-    def __init__(self, parent=None):
-        """Initializes a basic event with a unique identifier.
-
-        Args:
-            parent: Optional initial parent of this node.
-        """
-        BasicEvent.num_basic += 1
-        super(BasicEvent, self).__init__("B" + str(BasicEvent.num_basic),
-                                         parent)
-        self.prob = random.uniform(BasicEvent.min_prob, BasicEvent.max_prob)
-        BasicEvent.basic_events.append(self)
-
-
 class FaultTree(object):
     """Representation of a fault tree for generation purposes.
 
@@ -203,6 +170,7 @@ class FaultTree(object):
         basic_events: A list of all basic events created for the fault tree.
         house_events: A list of all house events created for the fault tree.
         ccf_groups: A collection of created CCF groups.
+        non_ccf_events: A list of basic events that not in CCF groups.
     """
 
     min_prob = 0  # TODO: move to factors.
@@ -220,12 +188,25 @@ class FaultTree(object):
         self.basic_events = []
         self.house_events = []
         self.ccf_groups = []
+        non_ccf_events = None  # must be assigned directly.
+
+    def construct_basic_event(self):
+        """Constructs a basic event with a unique identifier.
+
+        Returns:
+            A fully initialized basic event with a random probability.
+        """
+        basic_event = BasicEvent("B" + str(len(self.basic_events) + 1),
+                                 random.uniform(FaultTree.min_prob,
+                                                FaultTree.max_prob))
+        self.basic_events.append(basic_event)
+        return basic_event
 
     def construct_house_event(self):
         """Constructs a house event with a unique identifier.
 
         Returns:
-            A fully initialized house event with random state.
+            A fully initialized house event with a random state.
         """
         house_event = HouseEvent("H" + str(len(self.house_events) + 1),
                                  random.choice(["true", "false"]))
@@ -547,13 +528,14 @@ class Settings(object):
     nested = None
 
 
-def init_gates(gates_queue, common_basics, common_gates):
+def init_gates(gates_queue, common_basics, common_gates, fault_tree):
     """Initializes gates and other basic events.
 
     Args:
         gates_queue: A deque of gates to be initialized.
         common_basics: A list of common basic events.
         common_gates: A list of common gates.
+        fault_tree: The fault tree container of all events and constructs.
     """
     # Get an intermediate gate to initialize breadth-first
     gate = gates_queue.popleft()
@@ -590,10 +572,10 @@ def init_gates(gates_queue, common_basics, common_gates):
         s_common = random.random()  # sample the reuse frequency
 
         # Case when the number of basic events is already satisfied
-        if len(BasicEvent.basic_events) == Factors.num_basics:
+        if len(fault_tree.basic_events) == Factors.num_basics:
             if not Factors.common_g and not Factors.common_b:
                 # Reuse already initialized basic events
-                gate.add_child(random.choice(BasicEvent.basic_events))
+                gate.add_child(random.choice(fault_tree.basic_events))
                 continue
             else:
                 s_common = 0  # use only common nodes
@@ -634,12 +616,12 @@ def init_gates(gates_queue, common_basics, common_gates):
                 else:
                     gate.add_child(random.choice(common_basics))
             else:
-                BasicEvent(gate)  # create a new basic event
+                gate.add_child(fault_tree.construct_basic_event())
 
     # Corner case when not enough new basic events initialized, but
     # there are no more intermediate gates to use due to a big ratio
     # or just random accident.
-    if not gates_queue and len(BasicEvent.basic_events) < Factors.num_basics:
+    if not gates_queue and len(fault_tree.basic_events) < Factors.num_basics:
         # Initialize more gates by randomly choosing places in the
         # fault tree.
         random_gate = random.choice(Gate.gates)
@@ -670,7 +652,8 @@ def generate_fault_tree():
     num_gates = Factors.get_num_gates()
     num_common_basics = Factors.get_num_common_basics(num_gates)
     num_common_gates = Factors.get_num_common_gates(num_gates)
-    common_basics = [BasicEvent() for _ in range(num_common_basics)]
+    common_basics = [fault_tree.construct_basic_event()
+                     for _ in range(num_common_basics)]
     common_gates = [Gate() for _ in range(num_common_gates)]
 
     # Container for not yet initialized gates
@@ -680,9 +663,9 @@ def generate_fault_tree():
 
     # Proceed with children gates
     while gates_queue:
-        init_gates(gates_queue, common_basics, common_gates)
+        init_gates(gates_queue, common_basics, common_gates, fault_tree)
 
-    assert(not [x for x in BasicEvent.basic_events if not x.parents])
+    assert(not [x for x in fault_tree.basic_events if x.is_orphan()])
     assert(not [x for x in Gate.gates if not x.parents and x is not top_event])
 
     # Distribute house events
@@ -695,7 +678,7 @@ def generate_fault_tree():
 
     # Create CCF groups from the existing basic events.
     if Factors.num_ccf:
-        members = BasicEvent.basic_events[:]
+        members = fault_tree.basic_events[:]
         random.shuffle(members)
         first_mem = 0
         last_mem = 0
@@ -706,7 +689,7 @@ def generate_fault_tree():
                 break
             fault_tree.construct_ccf_group(members[first_mem:last_mem])
             first_mem = last_mem
-        BasicEvent.non_ccf_events = members[first_mem:]
+        fault_tree.non_ccf_events = members[first_mem:]
 
     return fault_tree
 
@@ -779,12 +762,12 @@ def write_info(fault_tree):
         "The avg. number of parents for common gates: " +
         str(Factors.parents_g) + "\n"
         "Maximum probability for basic events: " +
-        str(BasicEvent.max_prob) + "\n"
+        str(fault_tree.max_prob) + "\n"
         "Minimum probability for basic events: " +
-        str(BasicEvent.min_prob) + "\n"
+        str(fault_tree.min_prob) + "\n"
         "-->\n")
 
-    shared_b = [x for x in BasicEvent.basic_events if x.is_common()]
+    shared_b = [x for x in fault_tree.basic_events if x.is_common()]
     shared_g = [x for x in Gate.gates if x.is_common()]
     and_gates = [x for x in Gate.gates if x.gate_type == "and"]
     or_gates = [x for x in Gate.gates if x.gate_type == "or"]
@@ -812,7 +795,7 @@ def write_info(fault_tree):
 
     t_file.write(
         "<!--\nThe generated fault tree has the following metrics:\n\n"
-        "The number of basic events: %d" % BasicEvent.num_basic + "\n"
+        "The number of basic events: %d" % len(fault_tree.basic_events) + "\n"
         "The number of house events: %d" % len(fault_tree.house_events) + "\n"
         "The number of CCF groups: %d" % len(fault_tree.ccf_groups) + "\n"
         "The number of gates: %d" % Gate.num_gates + "\n"
@@ -822,7 +805,7 @@ def write_info(fault_tree):
         "    NOT gates: %d" % len(not_gates) + "\n"
         "    XOR gates: %d" % len(xor_gates) + "\n"
         "Basic events to gates ratio: %f" %
-        (BasicEvent.num_basic / Gate.num_gates) + "\n"
+        (len(fault_tree.basic_events) / Gate.num_gates) + "\n"
         "The average number of children for gates: %f" %
         (sum(x.num_children() for x in Gate.gates) / len(Gate.gates)) + "\n"
         "The number of common basic events: %d" % len(shared_b) + "\n"
@@ -849,15 +832,13 @@ def write_model_data(t_file, basic_events, house_events):
     Args:
         t_file: The output stream.
         basic_events: A set of basic events.
-        basic_events: A set of house events.
+        house_events: A set of house events.
     """
     # Print probabilities of basic events
     t_file.write("<model-data>\n")
 
-    for basic in basic_events:
-        t_file.write("<define-basic-event name=\"" + basic.name + "\">\n"
-                     "<float value=\"" + str(basic.prob) + "\"/>\n"
-                     "</define-basic-event>\n")
+    for basic_event in basic_events:
+        t_file.write(basic_event.to_xml())
 
     for house_event in house_events:
         t_file.write(house_event.to_xml())
@@ -942,10 +923,10 @@ def write_results(fault_tree):
     t_file.write("</define-fault-tree>\n")
 
     if Factors.num_ccf:
-        write_model_data(t_file, BasicEvent.non_ccf_events,
+        write_model_data(t_file, fault_tree.non_ccf_events,
                          fault_tree.house_events)
     else:
-        write_model_data(t_file, BasicEvent.basic_events,
+        write_model_data(t_file, fault_tree.basic_events,
                          fault_tree.house_events)
 
     t_file.write("</opsa-mef>")
@@ -1061,8 +1042,8 @@ def write_shorthand(fault_tree):
 
     # Write basic events
     t_file.write("\n")
-    for basic in BasicEvent.basic_events:
-        t_file.write("p(" + basic.name + ") = " + str(basic.prob) + "\n")
+    for basic_event in fault_tree.basic_events:
+        t_file.write(basic_event.to_shorthand())
 
     # Write house events
     t_file.write("\n")
@@ -1285,8 +1266,6 @@ def setup_factors(args):
     Settings.root_name = args.root
     Settings.output = args.out
     Settings.nested = args.nested
-    BasicEvent.min_prob = args.minprob
-    BasicEvent.max_prob = args.maxprob
     FaultTree.min_prob = args.minprob  # TODO: Eliminate.
     FaultTree.max_prob = args.maxprob  # TODO: Eliminate.
     Factors.num_basics = args.basics

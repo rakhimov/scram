@@ -55,7 +55,7 @@ import re
 
 import argparse as ap
 
-from fault_tree import Node, HouseEvent
+from fault_tree import Node, BasicEvent, HouseEvent
 
 
 class ParsingError(Exception):
@@ -74,24 +74,6 @@ class FaultTreeError(Exception):
     """Indication of problems in the fault tree."""
 
     pass
-
-
-class BasicEvent(Node):
-    """Representation of a basic event in a fault tree.
-
-    Attributes:
-        prob: Probability of failure of this basic event.
-    """
-
-    def __init__(self, name, prob):
-        """Initializes a basic event node.
-
-        Args:
-            name: Identifier of the node.
-            prob: Probability of the basic event.
-        """
-        super(BasicEvent, self).__init__(name)
-        self.prob = prob
 
 
 class Gate(Node):
@@ -580,10 +562,8 @@ def write_to_xml_file(fault_tree, output_file):
 
     if fault_tree.basic_events or fault_tree.house_events:
         t_file.write("<model-data>\n")
-        for basic in fault_tree.basic_events.values():
-            t_file.write("<define-basic-event name=\"" + basic.name + "\">\n"
-                         "<float value=\"" + str(basic.prob) + "\"/>\n"
-                         "</define-basic-event>\n")
+        for basic_event in fault_tree.basic_events.values():
+            t_file.write(basic_event.to_xml())
 
         for house_event in fault_tree.house_events.values():
             t_file.write(house_event.to_xml())
