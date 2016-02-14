@@ -584,7 +584,7 @@ def generate_fault_tree(ft_name, root_name):
 
 
 def write_info(fault_tree, tree_file, seed):
-    """Writes the information about the setup and generated fault tree.
+    """Writes the information about the setup for fault tree generation.
 
     Args:
         fault_tree: A full, valid, well-formed fault tree.
@@ -620,6 +620,14 @@ def write_info(fault_tree, tree_file, seed):
         str(fault_tree.min_prob) + "\n"
         "-->\n")
 
+
+def write_summary(fault_tree, tree_file):
+    """Writes the summary of the generated fault tree.
+
+    Args:
+        fault_tree: A full, valid, well-formed fault tree.
+        tree_file: A file open for writing.
+    """
     shared_b = [x for x in fault_tree.basic_events if x.is_common()]
     shared_g = [x for x in fault_tree.gates if x.is_common()]
     and_gates = [x for x in fault_tree.gates if x.operator == "and"]
@@ -1012,6 +1020,7 @@ def main():
             write_shorthand(fault_tree, tree_file)
         else:
             write_info(fault_tree, tree_file, args.seed)
+            write_summary(fault_tree, tree_file)
             write_xml(fault_tree, tree_file, args.nest)
 
 if __name__ == "__main__":

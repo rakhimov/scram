@@ -25,7 +25,7 @@ from nose.tools import assert_raises, assert_is_not_none, assert_equal, \
     assert_true
 
 from shorthand_to_xml import ParsingError, FormatError, FaultTreeError, \
-    parse_input_file, write_to_xml_file
+    parse_input_file, write_xml
 
 
 def test_correct():
@@ -53,11 +53,13 @@ def test_correct():
     yield assert_equal, 2, len(fault_tree.house_events)
     yield assert_equal, 1, len(fault_tree.undef_nodes)
     out = NamedTemporaryFile()
-    write_to_xml_file(fault_tree, out.name)
+    write_xml(fault_tree, out)
+    out.flush()
     relaxng_doc = etree.parse("../share/input.rng")
     relaxng = etree.RelaxNG(relaxng_doc)
-    doc = etree.parse(out)
-    assert_true(relaxng.validate(doc))
+    with open(out.name, "r") as test_file:
+        doc = etree.parse(test_file)
+        assert_true(relaxng.validate(doc))
 
 
 def test_ft_name_redefinition():

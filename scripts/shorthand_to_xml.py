@@ -450,7 +450,7 @@ def parse_input_file(input_file, multi_top=False):
     return fault_tree
 
 
-def write_to_xml_file(fault_tree, output_file):
+def write_xml(fault_tree, tree_file):
     """Writes the fault tree into an XML file.
 
     The file is formatted according to OpenPSA MEF
@@ -458,30 +458,28 @@ def write_to_xml_file(fault_tree, output_file):
 
     Args:
         fault_tree: A full fault tree.
-        output_file: The output destination.
+        tree_file: A file open for writing.
     """
-    t_file = open(output_file, "w")
-    t_file.write("<?xml version=\"1.0\"?>\n")
-    t_file.write("<opsa-mef>\n")
-    t_file.write("<define-fault-tree name=\"%s\">\n" % fault_tree.name)
+    tree_file.write("<?xml version=\"1.0\"?>\n")
+    tree_file.write("<opsa-mef>\n")
+    tree_file.write("<define-fault-tree name=\"%s\">\n" % fault_tree.name)
     sorted_gates = toposort_gates(fault_tree.top_gates,
                                   fault_tree.gates.values())
     for gate in sorted_gates:
-        t_file.write(gate.to_xml())
+        tree_file.write(gate.to_xml())
 
-    t_file.write("</define-fault-tree>\n")
+    tree_file.write("</define-fault-tree>\n")
 
     if fault_tree.basic_events or fault_tree.house_events:
-        t_file.write("<model-data>\n")
+        tree_file.write("<model-data>\n")
         for basic_event in fault_tree.basic_events.values():
-            t_file.write(basic_event.to_xml())
+            tree_file.write(basic_event.to_xml())
 
         for house_event in fault_tree.house_events.values():
-            t_file.write(house_event.to_xml())
-        t_file.write("</model-data>\n")
+            tree_file.write(house_event.to_xml())
+        tree_file.write("</model-data>\n")
 
-    t_file.write("</opsa-mef>")
-    t_file.close()
+    tree_file.write("</opsa-mef>")
 
 
 def main():
@@ -513,7 +511,9 @@ def main():
     if not out:
         out = os.path.basename(args.input_file)
         out = out[:out.rfind(".")] + ".xml"
-    write_to_xml_file(fault_tree, out)
+
+    with open(out, "w") as tree_file:
+        write_xml(fault_tree, tree_file)
 
 if __name__ == "__main__":
     try:

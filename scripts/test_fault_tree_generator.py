@@ -29,7 +29,7 @@ from nose.tools import assert_equal, assert_true, assert_is_not_none, \
     assert_less
 
 from fault_tree_generator import Factors, generate_fault_tree, write_info, \
-    write_xml, write_shorthand, FaultTree
+    write_summary, write_xml, write_shorthand, FaultTree
 
 
 class FaultTreeGeneratorTestCase(TestCase):
@@ -61,6 +61,7 @@ class FaultTreeGeneratorTestCase(TestCase):
         fault_tree = generate_fault_tree("TestingTree", "root")
         assert_is_not_none(fault_tree)
         write_info(fault_tree, self.output, 123)
+        write_summary(fault_tree, self.output)
         write_xml(fault_tree, self.output, 1)
         self.output.flush()
         relaxng_doc = etree.parse("../share/input.rng")
