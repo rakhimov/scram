@@ -48,8 +48,8 @@ class FaultTreeGeneratorTestCase(TestCase):
         Factors.parents_b = 2
         Factors.parents_g = 2
         Factors.set_weights([1, 1, 0, 0, 0])
-        GeneratorFaultTree.min_prob = 0.01
-        GeneratorFaultTree.max_prob = 0.1
+        Factors.min_prob = 0.01
+        Factors.max_prob = 0.1
         Factors.calculate()
 
     def test_xml_output(self):

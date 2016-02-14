@@ -57,9 +57,6 @@ class GeneratorFaultTree(FaultTree):
     It is assumed that no removal is going to happen after construction.
     """
 
-    min_prob = 0  # TODO: move to factors.
-    max_prob = 1  # TODO: move to factors.
-
     def __init__(self, name=None):
         """Initializes an empty fault tree.
 
@@ -84,8 +81,8 @@ class GeneratorFaultTree(FaultTree):
             A fully initialized basic event with a random probability.
         """
         basic_event = BasicEvent("B" + str(len(self.basic_events) + 1),
-                                 random.uniform(GeneratorFaultTree.min_prob,
-                                                GeneratorFaultTree.max_prob))
+                                 random.uniform(Factors.min_prob,
+                                                Factors.max_prob))
         self.basic_events.append(basic_event)
         return basic_event
 
@@ -113,8 +110,7 @@ class GeneratorFaultTree(FaultTree):
         ccf_group = CcfGroup("CCF" + str(len(self.ccf_groups) + 1))
         self.ccf_groups.append(ccf_group)
         ccf_group.members = members
-        ccf_group.prob = random.uniform(GeneratorFaultTree.min_prob,
-                                        GeneratorFaultTree.max_prob)
+        ccf_group.prob = random.uniform(Factors.min_prob, Factors.max_prob)
         ccf_group.model = "MGL"
         levels = random.randint(2, len(members))
         ccf_group.factors = [random.uniform(0.1, 1) for _ in range(levels - 1)]
@@ -137,6 +133,10 @@ class Factors(object):
         parents_b: The average number of parents for common basic events.
         parents_g: The average number of parents for common gates.
     """
+
+    # Probabilistic factors
+    min_prob = 0
+    max_prob = 1
 
     # Factors from the arguments
     num_basics = None
@@ -601,9 +601,9 @@ def write_info(fault_tree, tree_file, seed):
         "The avg. number of parents for common gates: " +
         str(Factors.parents_g) + "\n"
         "Maximum probability for basic events: " +
-        str(fault_tree.max_prob) + "\n"
+        str(Factors.max_prob) + "\n"
         "Minimum probability for basic events: " +
-        str(fault_tree.min_prob) + "\n"
+        str(Factors.min_prob) + "\n"
         "-->\n")
 
 
@@ -655,7 +655,7 @@ def write_summary(fault_tree, tree_file):
         (len(fault_tree.basic_events) / len(fault_tree.gates)) + "\n"
         "The average number of gate arguments: %f" %
         (sum(x.num_arguments() for x in fault_tree.gates) /
-            len(fault_tree.gates)) + "\n"
+         len(fault_tree.gates)) + "\n"
         "The number of common basic events: %d" % len(shared_b) + "\n"
         "The number of common gates: %d" % len(shared_g) + "\n"
         "Percentage of common basic events per gate: %f" % common_b + "\n"
@@ -889,8 +889,8 @@ def setup_factors(args):
     """
     validate_setup(args)
     random.seed(args.seed)
-    GeneratorFaultTree.min_prob = args.minprob  # TODO: Eliminate.
-    GeneratorFaultTree.max_prob = args.maxprob  # TODO: Eliminate.
+    Factors.min_prob = args.minprob
+    Factors.max_prob = args.maxprob
     Factors.num_basics = args.basics
     Factors.num_house = args.house
     Factors.num_ccf = args.ccf
