@@ -234,13 +234,13 @@ class Gate(Node):
         """
         line = [self.name, " := "]
         line_start, div, line_end = {
-                "and" : ("(", " & ", ")"),
-                "or" : ("(", " | ", ")"),
-                "xor" : ("(", " ^ ", ")"),
-                "not" : ("~", "", ""),
-                "null" : ("", "", ""),
-                "atleast" : ("@(" + str(self.k_num) + ", [", ", ", "])")
-                }[self.operator]
+            "and": ("(", " & ", ")"),
+            "or": ("(", " | ", ")"),
+            "xor": ("(", " ^ ", ")"),
+            "not": ("~", "", ""),
+            "null": ("", "", ""),
+            "atleast": ("@(" + str(self.k_num) + ", [", ", ", "])")
+            }[self.operator]
         line.append(line_start)
 
         args = []
@@ -278,7 +278,7 @@ class CcfGroup(object):
         self.members = []
         self.prob = None
         self.model = None
-        self.factors = None
+        self.factors = []
 
     def to_xml(self):
         """Produces OpenPSA MEF XML definition of the CCF group."""
@@ -290,6 +290,7 @@ class CcfGroup(object):
                     str(self.prob) + "\"/>\n</distribution>\n")
         mef_xml += "<factors>\n"
         assert self.model == "MGL"
+        assert self.factors
         level = 2
         for factor in self.factors:
             mef_xml += ("<factor level=\"" + str(level) + "\">\n"

@@ -407,29 +407,6 @@ class Factors(object):
         Factors.parents_b = parents
 
 
-# TODO: Eliminate.
-class Settings(object):
-    """Collection of settings specific to this script per run.
-
-    These settings include arguments
-    that do not influence the complexity
-    of the generated fault tree.
-
-    Attributes:
-        ft_name: The name of the fault tree.
-        root_name: The name of the root gate of the fault tree.
-        seed: The seed for the pseudo-random number generator.
-        output: The output destination.
-        nest: A nesting factor for the Boolean formulae.
-    """
-
-    ft_name = None
-    root_name = None
-    seed = None
-    output = None
-    nest = None
-
-
 def init_gates(gates_queue, common_basics, common_gates, fault_tree):
     """Initializes gates and other basic events.
 
@@ -538,21 +515,25 @@ def init_gates(gates_queue, common_basics, common_gates, fault_tree):
         gates_queue.append(new_gate)
 
 
-def generate_fault_tree():
+def generate_fault_tree(ft_name, root_name):
     """Generates a fault tree of specified complexity.
 
     The Factors class attributes are used as parameters for complexity.
 
+    Args:
+        ft_name: The name of the fault tree.
+        root_name: The name for the root gate of the fault tree.
+
     Returns:
         Top gate of the created fault tree.
     """
-    fault_tree = FaultTree(Settings.ft_name)
+    fault_tree = FaultTree(ft_name)
     # Start with a top event
     top_event = fault_tree.construct_gate()
     fault_tree.top_gate = top_event
     while top_event.operator == "xor" or top_event.operator == "not":
         top_event.operator = Factors.get_random_operator()
-    top_event.name = Settings.root_name
+    top_event.name = root_name
 
     # Estimating the parameters
     num_gates = Factors.get_num_gates()
@@ -602,24 +583,22 @@ def generate_fault_tree():
     return fault_tree
 
 
-def write_info(fault_tree):
+def write_info(fault_tree, tree_file, seed):
     """Writes the information about the setup and generated fault tree.
-
-    This function uses the output destination from the arguments.
 
     Args:
         fault_tree: A full, valid, well-formed fault tree.
+        tree_file: A file open for writing.
+        seed: The seed of the pseudo-random number generator.
     """
-    t_file = open(Settings.output, "w")
-    t_file.write("<?xml version=\"1.0\"?>\n")
-    t_file.write(
+    tree_file.write("<?xml version=\"1.0\"?>\n")
+    tree_file.write(
         "<!--\nThis is a description of the auto-generated fault tree\n"
         "with the following parameters:\n\n"
-        "The output file name: " + Settings.output + "\n"
+        "The output file name: " + tree_file.name + "\n"
         "The fault tree name: " + fault_tree.name + "\n"
-        "The root gate name: " + Settings.root_name + "\n\n"
-        "The seed of the random number generator: " +
-        str(Settings.seed) + "\n"
+        "The root gate name: " + fault_tree.top_gate.name + "\n\n"
+        "The seed of the random number generator: " + str(seed) + "\n"
         "The number of basic events: " + str(Factors.num_basics) + "\n"
         "The number of house events: " + str(Factors.num_house) + "\n"
         "The number of CCF groups: " + str(Factors.num_ccf) + "\n"
@@ -667,7 +646,7 @@ def write_info(fault_tree):
     common_g /= len([x for x in fault_tree.gates if x.g_arguments])
     frac_b /= num_gates
 
-    t_file.write(
+    tree_file.write(
         "<!--\nThe generated fault tree has the following metrics:\n\n"
         "The number of basic events: %d" % len(fault_tree.basic_events) + "\n"
         "The number of house events: %d" % len(fault_tree.house_events) + "\n"
@@ -690,38 +669,35 @@ def write_info(fault_tree):
         "Percentage of arguments that are basic events per gate: %f" %
         frac_b + "\n")
     if shared_b:
-        t_file.write(
+        tree_file.write(
             "The avg. number of parents for common basic events: %f" %
             (sum(x.num_parents() for x in shared_b) / len(shared_b)) + "\n")
     if shared_g:
-        t_file.write(
+        tree_file.write(
             "The avg. number of parents for common gates: %f" %
             (sum(x.num_parents() for x in shared_g) / len(shared_g)) + "\n")
 
-    t_file.write("-->\n\n")
+    tree_file.write("-->\n\n")
 
 
-def write_model_data(t_file, basic_events, house_events):
+def write_model_data(basic_events, house_events, tree_file):
     """Appends model data with primary event descriptions.
 
     Args:
-        t_file: The output stream.
         basic_events: A set of basic events.
         house_events: A set of house events.
+        tree_file: A file open for writing.
     """
-    # Print probabilities of basic events
-    t_file.write("<model-data>\n")
-
+    tree_file.write("<model-data>\n")
     for basic_event in basic_events:
-        t_file.write(basic_event.to_xml())
+        tree_file.write(basic_event.to_xml())
 
     for house_event in house_events:
-        t_file.write(house_event.to_xml())
+        tree_file.write(house_event.to_xml())
+    tree_file.write("</model-data>\n")
 
-    t_file.write("</model-data>\n")
 
-
-def write_results(fault_tree):
+def write_xml(fault_tree, tree_file, nest=0):
     """Writes results of a generated fault tree into an XML file.
 
     Writes the information about the fault tree in an XML file.
@@ -730,59 +706,57 @@ def write_results(fault_tree):
 
     Args:
         fault_tree: A full, valid, well-formed fault tree.
+        tree_file: A file open for writing.
+        nest: A nesting factor for the Boolean formulae.
     """
-    # Plane text is used instead of any XML tools for performance reasons.
-    write_info(fault_tree)
-    t_file = open(Settings.output, "a")
-
-    t_file.write("<opsa-mef>\n")
-    t_file.write("<define-fault-tree name=\"%s\">\n" % fault_tree.name)
+    # Plain text is used instead of any XML tools for performance reasons.
+    tree_file.write("<opsa-mef>\n")
+    tree_file.write("<define-fault-tree name=\"%s\">\n" % fault_tree.name)
 
     sorted_gates = toposort_gates([fault_tree.top_gate], fault_tree.gates)
     for gate in sorted_gates:
-        t_file.write(gate.to_xml(Settings.nest))
+        tree_file.write(gate.to_xml(nest))
 
     # Proceed with ccf groups
     for ccf_group in fault_tree.ccf_groups:
-        t_file.write(ccf_group.to_xml())
+        tree_file.write(ccf_group.to_xml())
 
-    t_file.write("</define-fault-tree>\n")
+    tree_file.write("</define-fault-tree>\n")
 
     if Factors.num_ccf:
-        write_model_data(t_file, fault_tree.non_ccf_events,
-                         fault_tree.house_events)
+        write_model_data(fault_tree.non_ccf_events, fault_tree.house_events,
+                         tree_file)
     else:
-        write_model_data(t_file, fault_tree.basic_events,
-                         fault_tree.house_events)
+        write_model_data(fault_tree.basic_events, fault_tree.house_events,
+                         tree_file)
 
-    t_file.write("</opsa-mef>")
-    t_file.close()
+    tree_file.write("</opsa-mef>")
 
 
-def write_shorthand(fault_tree):
+def write_shorthand(fault_tree, tree_file):
     """Writes the results into the shorthand format file.
 
     Note that the shorthand format does not support advanced gates or groups.
 
     Args:
         fault_tree: A full, valid, well-formed fault tree.
+        tree_file: A file open for writing.
     """
-    t_file = open(Settings.output, "w")
-    t_file.write(fault_tree.name + "\n\n")
+    tree_file.write(fault_tree.name + "\n\n")
 
     sorted_gates = toposort_gates([fault_tree.top_gate], fault_tree.gates)
     for gate in sorted_gates:
-        t_file.write(gate.to_shorthand())
+        tree_file.write(gate.to_shorthand())
 
     # Write basic events
-    t_file.write("\n")
+    tree_file.write("\n")
     for basic_event in fault_tree.basic_events:
-        t_file.write(basic_event.to_shorthand())
+        tree_file.write(basic_event.to_shorthand())
 
     # Write house events
-    t_file.write("\n")
+    tree_file.write("\n")
     for house_event in fault_tree.house_events:
-        t_file.write(house_event.to_shorthand())
+        tree_file.write(house_event.to_shorthand())
 
 
 def check_if_positive(desc, val):
@@ -1000,11 +974,6 @@ def setup_factors(args):
     """
     validate_setup(args)
     random.seed(args.seed)
-    Settings.seed = args.seed
-    Settings.ft_name = args.ft_name
-    Settings.root_name = args.root
-    Settings.output = args.out
-    Settings.nest = args.nest
     FaultTree.min_prob = args.minprob  # TODO: Eliminate.
     FaultTree.max_prob = args.maxprob  # TODO: Eliminate.
     Factors.num_basics = args.basics
@@ -1036,13 +1005,14 @@ def main():
     args = manage_cmd_args()
     setup_factors(args)
 
-    fault_tree = generate_fault_tree()
+    fault_tree = generate_fault_tree(args.ft_name, args.root)
 
-    # Write output files
-    if args.shorthand:
-        write_shorthand(fault_tree)
-    else:
-        write_results(fault_tree)
+    with open(args.out, "w") as tree_file:
+        if args.shorthand:
+            write_shorthand(fault_tree, tree_file)
+        else:
+            write_info(fault_tree, tree_file, args.seed)
+            write_xml(fault_tree, tree_file, args.nest)
 
 if __name__ == "__main__":
     try:
